@@ -26,6 +26,7 @@ function createView(u){
   const v={u,fac,bob:Math.random()*6.28,bank:0,lastA:null,fires:[],state:'alive'};
   if(u.isSq){ v.root=new BABYLON.TransformNode('sq',G.scene); v.crafts=[]; v.L=5; v.H=2;
     for(let i=0;i<3;i++){ const c=craftInstance(fac,u.sqKind)||buildCraft(fac,u.sqKind); c.root.parent=v.root; c.root.scaling.setAll(1.35); c.meshes.forEach(m=>m.metadata={unit:u.id}); v.crafts.push({c,ph:i*2.09,rad:2+i*.7,h:(i-1)*.5}); }
+    if(typeof craftTrails==='function') craftTrails(v,fac);
     const pv=u.parent&&G.views.get(u.parent);
     if(pv&&pv.model&&!u.launched){ u.launched=true; const bay=pv.model.bays.length?pv.model.bays[Math.floor(Math.random()*pv.model.bays.length)]:new V3(0,0,0); v.launch={from:toWorld(pv,bay),t0:G.time}; SFX.launch(); }
   } else { const mdl=buildShipModel(u); v.model=mdl; v.root=mdl.root; v.L=mdl.L; v.H=mdl.H; mdl.meshes.forEach(m=>m.metadata={unit:u.id}); }
@@ -64,7 +65,7 @@ function arcBolt(a,b,col){ const pts=[a.clone()], n=7; for(let i=1;i<n;i++){ con
 
 // ---------- per-frame world update ----------
 function updateWorld(dt){
-  try{ gfxTick(); }catch(e){}
+  try{ gfxTick(); }catch(e){} try{ if(typeof vfxTick==='function') vfxTick(); }catch(e){}
   if(!B) return;
   const t=G.time, cw=G.engine.getRenderingCanvas().clientWidth, ch=G.engine.getRenderingCanvas().clientHeight;
   const tm=G.scene.getTransformMatrix(), vp=G.cam.viewport.toGlobal(cw,ch);
@@ -98,7 +99,7 @@ function updateWorld(dt){
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
     v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.12+.55*f:0)+s.pulse*.9; s.m.scaling.setAll(1+s.pulse*.08); });
     // damage fires
-    if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); }
+    if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); if(typeof damageSparks==='function') damageSparks(v,hr,dt); }
     // nameplate
     const top=new V3(px,y+Math.max(v.H,2)+2.4,pz), sp=V3.Project(top,BABYLON.Matrix.Identity(),tm,vp);
     const pe=v.plate.el; if(sp.z<0||sp.z>1){ pe.style.display='none'; } else { pe.style.display=''; pe.style.transform=`translate(${sp.x}px,${sp.y}px) translate(-50%,-100%)`; }
@@ -159,12 +160,12 @@ function rcsPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a
 // ---------- projectiles ----------
 const PROJ=[]; const TORPS=new Set(); G.boltBases={};
 function boltBase(col,thick,shape){ const k=col.toHexString()+thick+(shape||''); if(G.boltBases[k]) return G.boltBases[k];
-  const m=shape==='sphere'?MB.CreateSphere('bolt',{diameter:thick,segments:8},G.scene):MB.CreateBox('bolt',{width:thick,height:thick,depth:1},G.scene); m.material=emMat('boltM'+k,col.scale(1.35)); m.isVisible=false; m.isPickable=false; return G.boltBases[k]=m; }
+  const m=MB.CreateSphere('bolt',{diameter:thick,segments:G.quality==='medium'?6:10},G.scene); m.material=typeof boltMat==='function'?boltMat('boltM'+k,col):emMat('boltM'+k,col.scale(1.35)); m.isVisible=false; m.isPickable=false; try{ G.glow.addExcludedMesh(m); }catch(e){} return G.boltBases[k]=m; } // v44: soft glowing bolts, white-hot at the core
 function shoot(from,to,col,{speed=140,len=3.2,thick=.28,onArrive,overshoot=0,settle,shape}={}){
-  const m=boltBase(col,thick,shape).createInstance('b'); m.isPickable=false; m.position.copyFrom(from); m.scaling.z=shape==='sphere'?len/thick:len;
+  const m=boltBase(col,thick,shape).createInstance('b'); m.isPickable=false; m.position.copyFrom(from); m.scaling.z=len/thick;
   const dir=to.subtract(from), dist=dir.length(); dir.normalize(); m.lookAt(to);
   PROJ.push({m,dir,dist:dist+overshoot,go:0,speed,onArrive,settle,arriveAt:dist,arrived:false});
-  const tl=boltBase(col.scale(.45),thick*.55).createInstance('bt'); tl.isPickable=false; tl.scaling.z=len*4; tl.position.copyFrom(from.subtract(dir.scale(len*2))); tl.lookAt(to);
+  const tl=boltBase(col.scale(.45),thick*.55).createInstance('bt'); tl.isPickable=false; tl.scaling.z=len*4/(thick*.55); tl.position.copyFrom(from.subtract(dir.scale(len*2))); tl.lookAt(to);
   PROJ.push({m:tl,dir,dist:dist+overshoot,go:-len*2,speed,onArrive:null,arriveAt:1e9,arrived:true});
 }
 function updateProjectiles(dt){
@@ -208,7 +209,7 @@ function beam(from,to,col,width,dur){
     if(!mat){ mat=emMat('bm',c,a); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.disableDepthWrite=true; const bt=beamTex().clone(); bt.vScale=Math.max(1,len/10); mat.emissiveTexture=bt; }
     m.material=mat; try{ G.glow.addExcludedMesh(m); }catch(e){} return [m,mat]; };
   if(!G.tex.beam){ G.tex.beam=dynTex('beamT',64,256,(g,w,h)=>{ const r=seeded(5); g.fillStyle='#000'; g.fillRect(0,0,w,h); for(let i=0;i<60;i++){ g.fillStyle=`rgba(255,255,255,${.15+r()*.4})`; g.fillRect(0,r()*h,w,2+r()*10); } }); G.tex.beam.vScale=3; }
-  const sh=typeof beamMaterial==='function'; const parts=sh?[mk(width*1.5,col.scale(1.25),1,true)]:[mk(width,col.scale(1.6),.9),mk(width*.35,new C3(1,1,1).scale(1.5),1)]; if(!sh) parts[0][1].emissiveTexture=G.tex.beam;
+  const sh=typeof beamMaterial==='function'; const parts=sh?[mk(width*1.15,col.scale(1.15),1,true)]:[mk(width,col.scale(1.6),.9),mk(width*.35,new C3(1,1,1).scale(1.5),1)]; if(!sh) parts[0][1].emissiveTexture=G.tex.beam;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); parts.forEach(([m,mt])=>{m.dispose();mt.dispose();}); return; } G.tex.beam.vOffset=(G.time*4)%1;
     parts.forEach(([m,mt],i)=>{ if(mt.setFloat){ mt.setFloat('t',G.time%100); mt.setFloat('fade',Math.pow(1-k,1.4)); mt.setVector3('camPos',G.cam.position); } else { if(mt.emissiveTexture) mt.emissiveTexture.vOffset-=.04; mt.alpha=(1-k)*(i?1:.9); } m.scaling.x=m.scaling.y=1-k*.55+Math.sin(G.time*80)*.06; }); });
 }
@@ -241,9 +242,9 @@ function sparks(pos,n,power,col=new C4(1,.8,.45,1)){ const ps=new BABYLON.Partic
   ps.billboardMode=BABYLON.ParticleSystem.BILLBOARDMODE_STRETCHED; ps.color1=col; ps.color2=new C4(1,.5,.15,1); ps.colorDead=new C4(.4,.1,0,0); ps.minSize=.06; ps.maxSize=.2; ps.minScaleY=3; ps.maxScaleY=7;
   ps.minLifeTime=.3; ps.maxLifeTime=.9; ps.minEmitPower=power*.4; ps.maxEmitPower=power; ps.gravity=new V3(0,-2,0); ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE; ps.manualEmitCount=n; ps.targetStopDuration=.1; ps.disposeOnStop=true; ps.updateSpeed=.016/Math.max(.35,SPEED); ps.start(); }
 function smoke(pos,size,n,life=2.6){ burst(pos,{n,tex:G.tex.smoke,c1:new C4(.34,.31,.29,.7),c2:new C4(.16,.15,.14,.55),size:[size*.5,size*1.1],life:[life*.6,life],power:[size*.1,size*.45],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
-function explode(pos,size,{light=true,shock=false}={}){ flash(pos,size*2.2,new C3(1,.85,.6),.35); const shFire=typeof fireballFx==='function'&&!G.fxReduced&&(size>=(G.quality==='medium'?3:1.3)); if(shFire) fireballFx(pos,size*1.15,.75+size*.05); fireball(pos,size,Math.round((shFire?3:5)+size*(shFire?.6:1.2))); sparks(pos,Math.round(20+size*8),6+size*2.5); smoke(pos,size*1.2,Math.round(4+size));
+function explode(pos,size,{light=true,shock=false}={}){ flash(pos,size*2.2,new C3(1,.85,.6),.35); if(typeof fxSprite==='function'&&size>=1) fxSprite(pos,size*3.2,new C3(1,.78,.5),starTex(),.22,{grow:.7}); const shFire=typeof fireballFx==='function'&&!G.fxReduced&&(size>=(G.quality==='medium'?3:1.3)); if(shFire) fireballFx(pos,size*1.15,.75+size*.05); fireball(pos,size,Math.round((shFire?3:5)+size*(shFire?.6:1.2))); sparks(pos,Math.round(20+size*8),6+size*2.5); smoke(pos,size*1.2,Math.round(4+size));
   if(light) lightFlash(pos,new C3(1,.62,.3),3+size*.6,size*9,.6); if(shock) shockwave(pos,size*3); }
-function muzzleFx(pos,out,col){ flash(pos,2.4,col,.18); const p=pos.add(out.scale(.4)); burst(p,{n:4,tex:G.tex.smoke,c1:new C4(.5,.47,.44,.5),c2:new C4(.3,.28,.27,.35),size:[.5,1],life:[.8,1.5],power:[.5,1.5],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
+function muzzleFx(pos,out,col){ if(typeof muzzleBlast==='function'){ muzzleBlast(pos,out,col); return; } flash(pos,2.4,col,.18); const p=pos.add(out.scale(.4)); burst(p,{n:4,tex:G.tex.smoke,c1:new C4(.5,.47,.44,.5),c2:new C4(.3,.28,.27,.35),size:[.5,1],life:[.8,1.5],power:[.5,1.5],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
 
 // ---------- persistent battle damage ----------
 let SCORCH=null;
@@ -299,21 +300,24 @@ async function animWeapon(u,w,t,shots){
   const impact=(hit,from)=>{ if(t.dead&&!vt.root) return; if(!hit){ return; }
     const p=hitPoint(vt,from,shielded);
     if(shielded){ shieldDome(vt,from.subtract(tp).normalize(),SHIELD_C); burst(p,{n:16,c1:new C4(.6,.9,1,1),c2:new C4(.3,.6,1,1),power:[3,9]}); SFX.shield(); if((w.pierce||0)>0) explode(hitPoint(vt,from,false),.8,{light:false}); }
-    else { if(Math.random()<(w.k==='torp'||w.k==='lance'?1:.35)) hullDecal(vt,from,w.k==='torp');
-      if(w.k==='torp'){ explode(p,4.5,{shock:true}); G.shake=Math.min(1,G.shake+.35); SFX.boom(.8); } else if(w.k==='lance'){ explode(p,1.8); sparks(p,40,14,new C4(1,.95,.8,1)); SFX.hit(); } else if(style==='glob'){ explode(p,.8,{light:false}); burst(p,{n:22,c1:new C4(1,.45,.85,1),c2:new C4(.55,1,.4,1),size:[.3,.8],life:[.3,.8],power:[3,8]}); SFX.hit(); }
+    else { if(Math.random()<(w.k==='torp'||w.k==='lance'?1:.35)) hullDecal(vt,from,w.k==='torp'); if((w.k==='torp'||w.k==='lance')&&!vt.jolt){ const d=tp.subtract(from); d.y=0; d.normalize(); vt.jolt={d:d.scale(w.k==='torp'?1.6:.9),t0:G.time}; } // big hits rock the ship
+      if(w.k==='torp'){ explode(p,4.5,{shock:true}); G.shake=Math.min(1,G.shake+.35); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.35); SFX.boom(.8); } else if(w.k==='lance'){ explode(p,1.8); sparks(p,40,14,new C4(1,.95,.8,1)); SFX.hit(); } else if(style==='glob'){ explode(p,.8,{light:false}); burst(p,{n:22,c1:new C4(1,.45,.85,1),c2:new C4(.55,1,.4,1),size:[.3,.8],life:[.3,.8],power:[3,8]}); SFX.hit(); }
       else if(style==='needle'){ explode(p,.8,{light:false}); burst(p,{n:14,c1:new C4(.85,1,1,1),c2:new C4(.5,.85,1,1),size:[.1,.35],power:[6,14]}); SFX.hit(); }
       else { explode(p,style==='shell'?1.4:1.1,{light:Math.random()<.3}); SFX.hit(); } } };
   if(w.k==='lance'){
     for(let i=0;i<shots.length;i++){ const from=mz[i%mz.length], h=shots[i], to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
-      flash(from,5,col,.35); lightFlash(from,col,2,40,.5); await wait(100); beam(from,to,col,w.ion?1.1:1.6,.7); beam(from,to,col.scale(.6),w.ion?2.6:3.6,.45); SFX.lance(!!w.ion); if(h) impact(true,from); else flash(to,2,col.scale(.6)); await wait(150); }
+      if(typeof chargeFx==='function') chargeFx(from,col); flash(from,5,col,.35); lightFlash(from,col,2,40,.5); await wait(100); beam(from,to,col,w.ion?1.1:1.6,.7); if(typeof beamMaterial!=='function') beam(from,to,col.scale(.6),w.ion?2.6:3.6,.45); SFX.lance(!!w.ion); if(h){ impact(true,from); if(typeof fxSprite==='function') fxSprite(to,7,C3.Lerp(col,new C3(1,1,1),.4).scale(1.5),starTex(),.6,{grow:.5,spin:2}); } else flash(to,2,col.scale(.6)); await wait(150); }
     await wait(150);
   } else if(w.k==='torp'){
     const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ const from=mz[i%mz.length]; const to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
       const m=MB.CreateCylinder('torp',{height:1.4,diameterTop:0,diameterBottom:.45,tessellation:8},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2)); m.material=emMat('tm',col.scale(1.8)); m.position.copyFrom(from); m.isPickable=false;
       const tr=new BABYLON.ParticleSystem('trail',240,G.scene); tr.particleTexture=G.tex.smoke; tr.emitter=m; tr.color1=new C4(1,.7,.35,.8); tr.color2=new C4(.6,.5,.45,.5); tr.colorDead=new C4(.1,.1,.1,0); tr.minSize=.4; tr.maxSize=.9; tr.minLifeTime=.4; tr.maxLifeTime=.9; tr.emitRate=160; tr.minEmitPower=.1; tr.maxEmitPower=.4; tr.addSizeGradient(0,.5); tr.addSizeGradient(1,2); tr.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; tr.start();
+      let trl=null, head=null; try{ trl=new BABYLON.TrailMesh('ttr',m,G.scene,.42,G.quality==='medium'?24:44,true); const tmM=emMat('ttrM',col.scale(1.5),.55); tmM.alphaMode=BABYLON.Engine.ALPHA_ADD; tmM.disableDepthWrite=true; tmM.backFaceCulling=false; trl.material=tmM; trl.isPickable=false; try{ G.glow.addExcludedMesh(trl); }catch(e){}
+        head=MB.CreatePlane('thead',{size:2.6},G.scene); head.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; head.parent=m; head.isPickable=false; const hm=emMat('theadM',C3.Lerp(col,new C3(1,1,1),.4).scale(1.8),1); hm.opacityTexture=G.tex.flare; hm.alphaMode=BABYLON.Engine.ALPHA_ADD; hm.disableDepthWrite=true; head.material=hm; }catch(e){}
       SFX.torp(); const dur=.75, t0=G.time;
       const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=Math.min(1,(G.time-t0)/(dur*Math.max(.3,SPEED))); const p=V3.Lerp(from,to,k); p.y+=Math.sin(k*Math.PI)*3; m.lookAt(p.add(to.subtract(from).normalize().scale(2))); m.position.copyFrom(p);
-        if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); TORPS.delete(rec); tr.stop(); setTimeout(()=>tr.dispose(),1200); m.dispose(); try{ if(h) impact(true,from); else flash(to,3,new C3(1,.6,.3)); } finally{ res(); } } });
+        if(head&&head.material) head.material.alpha=.75+.25*Math.sin(G.time*40);
+        if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); TORPS.delete(rec); tr.stop(); setTimeout(()=>tr.dispose(),1200); if(trl){ const tm=trl.material; trl.stop&&trl.stop(); vfxFadeDispose(trl,tm,.5); } if(head){ head.parent=null; head.material.dispose(); head.dispose(); } m.dispose(); try{ if(h) impact(true,from); else flash(to,3,new C3(1,.6,.3)); } finally{ res(); } } });
       const rec={obs,m,tr,res}; TORPS.add(rec);
     }, i*120*SPEED); }));
     await Promise.all(arrivals); await wait(90);
@@ -353,8 +357,12 @@ async function animExplode(u){
   if(u.isSq){ v.state='dead'; flash(c,5,new C3(1,.7,.4)); burst(c,{n:30,power:[5,14]}); SFX.pop(); disposeView(v); G.views.delete(u.id); await wait(250); return; }
   v.state='dying'; if(v.engLight){ v.engLight.dispose(); v.engLight=null; } (v.extras||[]).forEach(p=>p.stop()); v.plate.el.remove(); v.ring.node.dispose(false,true); v.fires.forEach(f=>f.stop()); v.fires=[];
   const L=v.L;
-  for(let i=0;i<4;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(i%2===0) SFX.hit(); await wait(100); }
-  flash(c,L*1.4,new C3(1,.85,.6),.7); explode(c,L*.45); if(typeof fireballFx==='function'&&!G.fxReduced) fireballFx(c.add(new V3(0,1,0)),L*.42,1.7); fireball(c.add(new V3(0,1,0)),L*.35,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
+  // v44: the death plays out: the hull scorches and splits with glowing cracks, internal blasts tear through it, then the reactor goes
+  try{ if(typeof shipDamageFx==='function'){ v.state='alive'; shipDamageFx(v,-1); v.state='dying'; } }catch(e){}
+  if(G.cine&&!G.fxReduced&&!B.over){ try{ clearTimeout(G.cineTimer); G.ctl.hold(new V3(c.x,0,c.z),G.ctl.a+.35,1.05,clamp(L*3.4+40,60,190)); G.cineTimer=setTimeout(()=>G.ctl.release(),2300*SPEED); }catch(e){} }
+  for(let i=0;i<5;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(typeof fxStreak==='function'&&i%2===0){ const o=p.subtract(c); o.y=Math.abs(o.y)+.5; fxStreak(p,o.normalize(),6+L*.25,3+L*.06,new C3(1,.6,.25).scale(1.6),coneTex(),.35); } if(i%2===0) SFX.hit(); await wait(90); }
+  if(typeof fxSprite==='function'){ fxSprite(c,L*2.6,new C3(1,.9,.75).scale(1.5),starTex(),.55,{grow:.8}); shockRing(c,L*3.2,(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.3),{flat:true,dur:1.6,thick:.03,tilt:.5}); }
+  flash(c,L*1.4,new C3(1,.85,.6),.7); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.9); explode(c,L*.45); if(typeof fireballFx==='function'&&!G.fxReduced) fireballFx(c.add(new V3(0,1,0)),L*.42,1.7); fireball(c.add(new V3(0,1,0)),L*.35,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
   burst(c,{n:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
   shockwave(c,L*2.4); SFX.boom(1.2); G.shake=Math.min(1,G.shake+.6+L/60);
   debris(c,L,v.fac);
@@ -367,25 +375,26 @@ async function animExplode(u){
   for(const [n,sgn] of [[v.model.fore,1],[v.model.aft,-1]]){ const wp=n.getAbsolutePosition().clone(); const wr=v.root.rotation.clone(); n.parent=null; n.position=wp; n.rotation=wr.clone();
     n.vel=fwd.scale(sgn*(1.2+Math.random())).add(new V3((Math.random()-.5)*.6,persist?0:-.35-Math.random()*.3,(Math.random()-.5)*.6)); n.spin=new V3((Math.random()-.5)*.25,(Math.random()-.5)*.2,sgn*(.12+Math.random()*.2));
     const ps=new BABYLON.ParticleSystem('hf',120,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.color1=new C4(1,.5,.15,.8); ps.color2=new C4(.5,.3,.2,.5); ps.colorDead=new C4(0,0,0,0); ps.minSize=.8; ps.maxSize=2; ps.minLifeTime=.5; ps.maxLifeTime=1.4; ps.emitRate=40; ps.addSizeGradient(0,.6); ps.addSizeGradient(1,2.6); ps.minEmitPower=.5; ps.maxEmitPower=1.5; ps.start(); n.ps=ps; }
-  G.hulks.push({nodes,t0:G.time,persist}); v.root.dispose(true,false); v.state='hulk'; G.views.delete(u.id);
+  G.hulks.push({nodes,t0:G.time,persist,L}); v.root.dispose(true,false); v.state='hulk'; G.views.delete(u.id);
   await wait(280);
 }
 function updateHulks(dt){
-  for(let i=G.hulks.length-1;i>=0;i--){ const h=G.hulks[i]; const age=G.time-h.t0;
+  for(let i=G.hulks.length-1;i>=0;i--){ const h=G.hulks[i]; const age=G.time-h.t0; if(typeof hulkCookOff==='function') hulkCookOff(h,dt);
     for(const n of h.nodes){ n.position.addInPlace(n.vel.scale(dt)); n.rotation.addInPlace(n.spin.scale(dt));
       if(h.persist){ n.vel.scaleInPlace(Math.max(0,1-dt*.9)); n.spin.scaleInPlace(Math.max(0,1-dt*.6)); if(age>6&&n.ps) n.ps.emitRate=Math.max(8,40-(age-6)*8); }
       else { n.vel.y-=dt*.08; if(age>6&&n.ps) n.ps.emitRate=Math.max(0,40-(age-6)*8); } }
     if(h.persist&&age>25&&!h.burnedOut){ h.burnedOut=true; h.nodes.forEach(n=>n.ps&&n.ps.stop()); } // permanent wrecks stop burning
     if(!h.persist&&age>22){ h.nodes.forEach(n=>{ if(n.ps){ n.ps.dispose(); } n.dispose(); }); G.hulks.splice(i,1); } }
 }
-function shockwave(c,size){ const d=MB.CreateDisc('sw',{radius:1,tessellation:48},G.scene); d.rotation.x=Math.PI/2; d.position=c.clone(); d.isPickable=false; const m=emMat('swM',new C3(1,.75,.5),1); m.opacityTexture=G.tex.ring; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.backFaceCulling=false; m.disableDepthWrite=true; d.material=m;
+function shockwave(c,size){ if(typeof shockRing==='function'){ shockRing(c,size*1.15,new C3(1,.72,.45),{flat:true,dur:1.1,thick:.05}); if(size>30) shockRing(c,size*.6,new C3(1,.9,.8),{flat:false,dur:.7,thick:.06}); return; } const d=MB.CreateDisc('sw',{radius:1,tessellation:48},G.scene); d.rotation.x=Math.PI/2; d.position=c.clone(); d.isPickable=false; const m=emMat('swM',new C3(1,.75,.5),1); m.opacityTexture=G.tex.ring; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.backFaceCulling=false; m.disableDepthWrite=true; d.material=m;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(1.1*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); d.dispose(); m.dispose(); return; } d.scaling.setAll(size*(.2+Math.sqrt(k))); m.alpha=(1-k)*(1-k)*.5; }); }
 function debris(c,L,fac){ const M=facMats(fac); const n=Math.round(10+L*.8); const pieces=[];
   for(let i=0;i<n;i++){ const s=.3+Math.random()*L*.06; const m=MB.CreateBox('deb',{width:s,height:s*.4,depth:s*.7},G.scene); m.material=Math.random()<.3?M.ember:M.wreck; m.position=c.add(new V3((Math.random()-.5)*L*.4,(Math.random()-.5)*2,(Math.random()-.5)*L*.2)); m.isPickable=false;
     pieces.push({m,vel:new V3((Math.random()-.5),(Math.random()-.3)*.6,(Math.random()-.5)).normalize().scale(4+Math.random()*16),spin:new V3(Math.random()*4,Math.random()*4,Math.random()*4)}); }
+  if(typeof debrisTrail==='function'&&!G.fxReduced) pieces.slice(0,G.quality==='medium'?3:7).forEach(p=>{ p.m.material=M.ember; p.tr=debrisTrail(p.m,3+Math.random()*2); }); // v44: burning chunks
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const age=G.time-t0, dt=G.engine.getDeltaTime()/1000;
     for(const p of pieces){ p.m.position.addInPlace(p.vel.scale(dt)); p.vel.scaleInPlace(1-dt*.25); p.m.rotation.addInPlace(p.spin.scale(dt)); if(age>5) p.m.scaling.scaleInPlace(1-dt*.6); }
-    if(age>9){ G.scene.onBeforeRenderObservable.remove(obs); pieces.forEach(p=>p.m.dispose()); } });
+    if(age>9){ G.scene.onBeforeRenderObservable.remove(obs); pieces.forEach(p=>{ if(p.tr){ try{ p.tr.dispose(); }catch(e){} } p.m.dispose(); }); } });
 }
 // Ithar phase jump: a flash where the ship was, then the hyperspace arrival plays at the new hex
 async function animBlink(u,from){ const v=G.views.get(u.id); if(!v) return; const P=FAC3D[v.fac]||FAC3D.ithar; try{ flash(hexWorld(from.q,from.r,HOVER_Y),6+v.L*.2,P.eng.scale(1.4),.3); }catch(e){} v.arrive={t0:G.time}; try{ SFX.launch(); }catch(e){} await wait(750*Math.max(.4,SPEED)); }

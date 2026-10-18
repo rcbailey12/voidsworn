@@ -75,6 +75,7 @@ function facMats(fac){
   const stx=dynTex(fac+'sailT',256,256,(g,w)=>{ const gr=g.createLinearGradient(0,w,0,0); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(255,255,255,.12)'); g.fillStyle=gr; g.fillRect(0,0,w,w); g.fillStyle='rgba(255,255,255,.5)'; for(let y=6;y<w;y+=18) g.fillRect(0,y,w,1); }); M._sailT=stx;
   M.sail=emMat(fac+'sail',fac==='chorus'?new C3(.55,.16,.42):new C3(.25,.6,.75),.26); M.sail.backFaceCulling=false; M.sail.disableDepthWrite=true; M.sail.alphaMode=BABYLON.Engine.ALPHA_ADD; M.sail.opacityTexture=M._sailT; M.sail.alpha=.3;
   M.plume=emMat(fac+'plume',P.eng.scale(1.25),.85); M.plume.alphaMode=BABYLON.Engine.ALPHA_ADD; if(typeof plumeMaterial==='function') plumeMaterial(M.plume,P.eng.scale(1.7)); else M.plume.opacityTexture=G.tex.soft; M.plume.disableDepthWrite=true; M.plume.backFaceCulling=false;
+  { const ps=typeof plumeShaderMat==='function'?plumeShaderMat(fac,P.eng.scale(1.35)):null; if(ps){ M.plumeOld=M.plume; M.plume=ps; } } // v44: shader plumes with shock diamonds
   M.flare=emMat(fac+'flare',P.eng.scale(1.05),.75); M.flare.alphaMode=BABYLON.Engine.ALPHA_ADD; M.flare.opacityTexture=G.tex.flare; M.flare.disableDepthWrite=true; M.flare.backFaceCulling=false;
   if(typeof addHullFx==='function') addHullFx(M,fac); // v42: faction rim light
   return MATS[fac]=M;
@@ -579,7 +580,7 @@ function splitModel(model,proto){
 function buildShipModelFresh(u){
   const fac=u.fac||'voidsworn';
   const style=(FACTIONS[fac]||{}).style, cls=u.cls, L=CLS_LEN[cls]||14;
-  const b=new SB(fac,L); b.greebleN=(({gothic:18,wedge:14,junk:12,sail:3,bio:0,tomb:0})[style]*L||0)*(G.mobile?.6:1);
+  const b=new SB(fac,L); b.greebleN=(({gothic:18,wedge:14,junk:12,sail:3,bio:0,tomb:0})[style]*L||0)*(G.mobile?.6:G.quality==='ultra'?1.8:1.3); /* v44: denser surface detail on High and Ultra */
   if(style==='gothic') return buildGothic(b,cls);
   if(style==='wedge') return buildWedge(b,cls);
   if(style==='junk') return buildJunk(b,cls);

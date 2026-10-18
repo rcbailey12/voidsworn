@@ -10,18 +10,19 @@
 const HULLFX_STYLE={deathless:1,chorus:2,ithar:3,voidsworn:4,hegemony:4,corsair:5};
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
   constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'; }
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!!(G.engine&&G.engine.webGLVersion>=2); }
   getClassName(){ return 'HullFxPlugin'; }
   getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'}],
     fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\n#endif\n'}; }
   bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); }
   getCustomCode(type){
-    if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\n#endif\n'};
+    if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\nvarying vec3 vHfxN;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\nvHfxN=normalUpdated;\n#endif\n'};
     if(type!=='fragment') return null;
     return {
 CUSTOM_FRAGMENT_DEFINITIONS:`
 #ifdef HULLFX
 varying vec3 vHfxL;
+varying vec3 vHfxN;
 float hfxH(vec3 p){ p=fract(p*0.3183099+vec3(0.71,0.113,0.419)); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float hfxN(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
   return mix(mix(mix(hfxH(i),hfxH(i+vec3(1,0,0)),f.x),mix(hfxH(i+vec3(0,1,0)),hfxH(i+vec3(1,1,0)),f.x),f.y),mix(mix(hfxH(i+vec3(0,0,1)),hfxH(i+vec3(1,0,1)),f.x),mix(hfxH(i+vec3(0,1,1)),hfxH(i+vec3(1,1,1)),f.x),f.y),f.z); }
@@ -38,6 +39,24 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
     if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3;
       float burn=smoothstep(1.0-hfxD.x*0.62,1.0-hfxD.x*0.62+0.07,dn);
       surfaceAlbedo=mix(surfaceAlbedo,surfaceAlbedo*vec3(0.09,0.075,0.065),burn); } }
+#endif
+`,
+CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
+#ifdef HULLFX
+#ifdef HULLFX_HI
+    // plating: seams, inset hatches and per-plate tone, bump-mapped from a height computed per pixel (no texture), fading out with distance
+    { float hd0=length(vEyePosition.xyz-vPositionW); float pf=1.0-smoothstep(55.0,130.0,hd0);
+      if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy); pu*=1.15;
+        float row=floor(pu.y/0.85); float wd=1.3+hfxH(vec3(row,3.1,0.0))*2.8; float off=hfxH(vec3(row,7.7,0.0))*wd;
+        float cx=floor((pu.x+off)/wd); vec2 fr=vec2(fract((pu.x+off)/wd)*wd,fract(pu.y/0.85)*0.85);
+        float e=min(min(fr.x,wd-fr.x),min(fr.y,0.85-fr.y)); float seam=smoothstep(0.0,0.045,e); float id=hfxH(vec3(cx,row,1.3));
+        float inset=step(0.8,id)*smoothstep(0.1,0.15,e);
+        float ht=(seam-inset*0.45+(id-0.5)*0.08)*0.035;
+        vec3 dpx=dFdx(vPositionW), dpy=dFdy(vPositionW); float dhx=dFdx(ht), dhy=dFdy(ht);
+        vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
+        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.9));
+        surfaceAlbedo*=mix(1.0,(0.7+0.3*seam)*(0.93+0.14*id),pf); } }
+#endif
 #endif
 `,
 CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
@@ -206,13 +225,15 @@ const FIRE_GLSL={
       float heat=clamp(1.05-t*1.25+(n-0.5)*1.2+(n2-0.5)*0.5+fac*0.3-(1.0-vD)*0.45,0.0,1.0);
       vec3 c=heat>0.72?mix(vec3(1.0,0.48,0.12),vec3(1.0,0.78,0.42),(heat-0.72)/0.28):heat>0.38?mix(vec3(0.62,0.12,0.03),vec3(1.0,0.55,0.16),(heat-0.38)/0.34):mix(vec3(0.0),vec3(0.62,0.12,0.03),heat/0.38);
       c=mix(c,c*tint,0.35);
-      float a=smoothstep(0.0,0.1,t)*(1.0-smoothstep(0.5,1.0,t))*(0.3+0.7*fac)*smoothstep(0.32,0.62,n+0.22*fac+0.15*n2);
-      gl_FragColor=vec4(c*(0.22+heat*0.8),a*0.8); }`
+      float a=smoothstep(0.0,0.08,t)*(1.0-smoothstep(0.55,1.0,t))*smoothstep(0.3,0.58,n+0.2*fac+0.15*n2)*(0.55+0.45*fac);
+      vec3 smoke=vec3(0.07,0.06,0.055)*(0.6+0.8*n);
+      float hot=max(smoothstep(0.18,0.5,heat),1.0-smoothstep(0.25,0.55,t)); vec3 rgb=mix(smoke,c*(0.6+heat*2.4),hot);
+      gl_FragColor=vec4(rgb,a*mix(0.92,0.7,1.0-hot)); }`
 };
 function fireballFx(pos,size,dur=1.1,tint){ try{ if(!G.scene) return; const S=BABYLON.Effect.ShadersStore; if(!S.vsFireVertexShader){ S.vsFireVertexShader=FIRE_GLSL.vert.replace('NOISE',PLANET_GLSL.noise); S.vsFireFragmentShader=FIRE_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
     if(!G.fireBase||G.fireBase.isDisposed()){ G.fireBase=MB.CreateSphere('fireBase',{diameter:2,segments:G.quality==='medium'?14:28},G.scene); G.fireBase.isVisible=false; G.fireBase.isPickable=false; }
     const m=new BABYLON.ShaderMaterial('fireM',G.scene,{vertex:'vsFire',fragment:'vsFire'},{attributes:['position','normal'],uniforms:['world','worldViewProjection','t','seed','camPos','tint'],needAlphaBlending:true});
-    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=true; const sd=Math.random()*40; m.setFloat('seed',sd); m.setColor3('tint',tint||new C3(1,1,1)); m.setFloat('t',0); m.setVector3('camPos',G.cam.position);
+    m.alphaMode=BABYLON.Engine.ALPHA_COMBINE; m.disableDepthWrite=true; m.backFaceCulling=true; const sd=Math.random()*40; m.setFloat('seed',sd); m.setColor3('tint',tint||new C3(1,1,1)); m.setFloat('t',0); m.setVector3('camPos',G.cam.position);
     const sp=G.fireBase.clone('fire'); sp.isVisible=true; sp.material=m; sp.position.copyFrom(pos); sp.rotation.set(Math.random()*6,Math.random()*6,0); try{ G.glow.addExcludedMesh(sp); }catch(e){}
     const t0=G.time, D=dur*Math.max(.3,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||sp.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!sp.isDisposed()) sp.dispose(); m.dispose(); return; }
       m.setFloat('t',k); m.setVector3('camPos',G.cam.position); sp.scaling.setAll(size*(.35+.9*Math.pow(k,.45))); }); }catch(e){ console.warn('fireball',e); } }
@@ -226,8 +247,8 @@ const BEAM_GLSL={
     void main(){ vec3 V=normalize(camPos-vP); float f=abs(dot(normalize(vN),V)); float core=pow(f,6.0); float sheath=pow(f,1.6);
       float n=fbm(vec3(vUV.y*len*0.12-t*14.0,vUV.x*6.0,t*3.0),3); float crawl=0.55+0.9*n;
       float ends=smoothstep(0.0,0.02,vUV.y)*smoothstep(1.0,0.97,vUV.y);
-      vec3 c=col*sheath*crawl*1.6+vec3(1.0,0.97,0.9)*core*2.2;
-      gl_FragColor=vec4(c*fade*ends,(sheath*0.8+core)*fade*ends); }`
+      vec3 c=col*sheath*crawl*1.25+mix(col,vec3(1.0,0.97,0.9),0.6)*core*1.6;
+      gl_FragColor=vec4(c*fade*ends,(sheath*0.6+core)*fade*ends); }`
 };
 function beamMaterial(col){ const S=BABYLON.Effect.ShadersStore; if(!S.vsBeamVertexShader){ S.vsBeamVertexShader=BEAM_GLSL.vert; S.vsBeamFragmentShader=BEAM_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
   const m=new BABYLON.ShaderMaterial('beamM',G.scene,{vertex:'vsBeam',fragment:'vsBeam'},{attributes:['position','normal','uv'],uniforms:['world','worldViewProjection','camPos','col','t','len','fade'],needAlphaBlending:true});
@@ -242,13 +263,15 @@ const FRAMES={ft:[],draws:0,inst:null,
     return {p50:q(.5),p90:q(.9),n:a.length,draws:draws==null?null:Math.round(draws),rw:G.engine?G.engine.getRenderWidth():0,rh:G.engine?G.engine.getRenderHeight():0,q:G.quality,mob:!!G.mobile}; } };
 
 // per-frame updates for the shader library: rim strength and tactical ship scale follow the camera distance; planets and nebulae animate
-function gfxTick(dt){ const cr=G.cam?G.cam.radius:250, k=Math.max(0,Math.min(1,(cr-130)/320));
+function gfxTick(dt){ dt=dt||(G.engine?G.engine.getDeltaTime()/1000:.016); const cr=G.cam?G.cam.radius:250, k=Math.max(0,Math.min(1,(cr-130)/320));
   G.rimBoost=.5+1.25*k; G.tacScale=1+.38*Math.max(0,Math.min(1,(cr-170)/300)); G.hullEnergy=G.fxReduced?.55:1;
   const sunAt=pos=>G.sunPosW?G.sunPosW.subtract(pos).normalize():V3.Up();
   const p=G.planet&&G.planet.material; if(p&&p.setVector3){ p.setVector3('sunDir',sunAt(G.planet.position)); p.setVector3('camPos',G.cam.position); p.setFloat('t',G.time||0); }
   const a=G.atmo&&G.atmo.material; if(a&&a.setVector3){ a.setVector3('sunDir',sunAt(G.planet.position)); a.setVector3('camPos',G.cam.position); }
   if(G.nearPlanet&&!G.nearPlanet.isDisposed()){ const s=G.sun?G.sun.direction.scale(-1).add(new V3(-.55,.3,0)).normalize():sunAt(G.nearPlanet.position); for(const m of [G.nearPlanet.material,G.nearAtmo&&G.nearAtmo.material]) if(m&&m.setVector3){ m.setVector3('sunDir',s); m.setVector3('camPos',G.cam.position); if(m===G.nearPlanet.material) m.setFloat('t',G.time||0); } }
   if(G.tex.plume) G.tex.plume.vOffset=((G.time||0)*1.7)%1;
+  // big blasts briefly flare the exposure and split the colour at the screen edges
+  try{ const ip=G.pipe&&G.pipe.imageProcessing; if(ip){ if(G.expBase==null) G.expBase=ip.exposure; const k=Math.max(0,G.pulse||0); ip.exposure=G.expBase*(1+k*.55); if(G.pipe.chromaticAberration&&G.pipe.chromaticAberrationEnabled) G.pipe.chromaticAberration.aberrationAmount=10+k*40; G.pulse=k>0?Math.max(0,k-(dt||.016)*2.4):0; } }catch(e){}
   if(G.nebMats&&!(G.fskip&1)) for(const m of G.nebMats) if(m.setFloat) m.setFloat('t',G.time||0); }
 
 // ---------- shield collapse: the broken facing shatters into hexagonal shards that spin away and fade ----------

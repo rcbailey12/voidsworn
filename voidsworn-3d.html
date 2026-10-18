@@ -84,6 +84,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--iron3);border-bott
 .plate{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;will-change:transform}
 .plate .nm{font-size:12px;font-weight:600;white-space:nowrap;text-shadow:0 1px 3px #000,0 0 6px #000;opacity:0;transition:opacity .15s}
 .plate.hi .nm{opacity:1}
+.plate.elite .nm::after{content:' \00b7  elite';color:var(--gilt);font-weight:500}
 .plate .hb{width:54px;height:4px;background:rgba(8,12,20,.85);border-radius:2px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
 .plate .hb i{display:block;height:100%}
 .plate .sp{display:flex;gap:2px} .plate .sp b{width:12px;height:3px;border-radius:1px;background:rgba(45,58,86,.9)}
@@ -114,7 +115,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--iron3);border-bott
 @media (max-width:900px){
   #btop{height:auto;min-height:48px;flex-wrap:wrap;gap:6px;padding:6px 8px} #btop .t,#scenName,#roundlbl{display:none} #btop button{padding:6px 9px;font-size:13px}
   #b_fleet{display:inline-block} #roster{display:none;top:64px;bottom:auto;max-height:45vh;width:220px;z-index:8} body.showroster #roster{display:block}
-  #panel{top:auto;bottom:0;left:0;right:0;width:auto;max-height:42vh;border-radius:10px 10px 0 0} #log,#camhint{display:none}
+  #panel{top:auto;bottom:0;left:0;right:0;width:auto;max-height:42vh;border-radius:10px 10px 0 0} #log,#camhint{display:none} body.showlog #log{display:block;position:absolute;left:8px;right:8px;width:auto;top:auto;bottom:calc(42vh + 8px);height:26vh;z-index:9;font-size:14px} body.sheetmin.showlog #log{bottom:110px}
   .setpanel{right:0;width:min(290px,92vw)}
   #app .mapwrap{grid-template-columns:1fr;height:auto} #app .mapmain{overflow:visible;padding:12px 14px} #app .mapmain h2{font-size:34px} #app .mapmain svg{width:100%;max-width:520px;margin:6px auto 0}
   #app .side{border-left:none;border-top:1px solid rgba(208,166,75,.25)} #app .legend,#app .mapmain .row.wrap{flex-wrap:wrap}
@@ -305,7 +306,7 @@ body #app .facpick.on{background:var(--gilt)!important;color:#1a1206!important;b
 <div class="loading" id="loading">Assembling the fleet&hellip;</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/8.20.0/babylon.js"></script>
 <script>
-const BUILD_ID='20261018-1455-88aa807';
+const BUILD_ID='20261018-1909-2780c1f';
 // ======================= DATA =======================
 const W = {
   autocannon:{n:'Autocannon',k:'battery',shots:3,dmg:5,r:4,opt:2,acc:80,fall:8,crit:5},
@@ -629,6 +630,22 @@ const MASTERY_PERKS=[
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Watching'},{at:4,n:'Favoured',d:'Their boons are rare more often.'},{at:12,n:'Devoted',d:'If they watch your run, you start with one of their boons.'},{at:25,n:'Chosen',d:'Their boons are never common.'}];
 // Heat: optional rules after your first victory; each level adds 10% renown
+// enemy fleet archetypes: the same budget spent three different ways, named per faction and shown on the map
+const ARCHETYPES={
+  swarm:{d:'Many light hulls. Broadsides and flak shine; lances are wasted on them.',names:{voidsworn:'Zealot flotilla',hegemony:'Picket screen',corsair:'Wolfpack',chorus:'Brood swarm',ithar:'Wisp flight',deathless:'Scythe harvest'}},
+  heavy:{d:'Few, big hulls. Bring lances, torpedoes and a flank.',names:{voidsworn:'Cathedral line',hegemony:'Line of battle',corsair:'Hulk convoy',chorus:'Titan pod',ithar:'Songline',deathless:'Phalanx'}},
+  carrier:{d:'Built around a carrier and its wings. Fighters and flak pay off.',names:{voidsworn:'Reliquary group',hegemony:'Carrier group',corsair:'Raider nest',chorus:'Hive cluster',ithar:'Wraith host',deathless:'Harvest ark'}}};
+// node modifiers: a twist on one fight, shown on the map
+const NODE_MODS={
+  bounty:{n:'Bounty',short:'Bounty',d:'A price on this fleet: +50% credits, and they bring 10% more ships.'},
+  veteran:{n:'Veteran captain',short:'Veteran',d:'Their largest ship has an elite captain.'}};
+// sector conditions: each sector of a run has one, shown on the sector map and applied to every fight there
+const SECTOR_CONDS={
+  ion:{n:'Ion season',d:'Ion storms sweep every battlefield, and shields recharge 25% slower on both sides.',regen:.75,terr:'storm'},
+  dark:{n:'Dark sector',d:'Thick nebulae choke every battlefield: more hexes where shots go wide (\u221215 to hit inside).',terr:'neb'},
+  wreck:{n:'Wreck belt',d:'Old battle wreckage everywhere: more debris hexes (\u221210 to hit inside), and salvage adds 15% to every battle\u2019s pay.',terr:'debris',cred:.15},
+  war:{n:'War zone',d:'Every fight here draws reinforcements for one side or the other, and pays 20% more credits.',cred:.2,war:1},
+  scarce:{n:'Scarcity',d:'Supply lines are cut: shipyards charge 20% more and repairs restore 25% less, but battles pay 25% more credits.',cred:.25,price:1.2,repair:.75}};
 const HEAT={
   h_flag:{n:'Vengeful flagships',d:'Sector flagships have 20% more hull.',w:1},
   h_hunted:{n:'Hunted',d:'Enemy fleets are 15% larger.',w:2},
@@ -865,9 +882,9 @@ function derive(ship){
 function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); const after=derive(ship).maxHp; ship.hp=clamp(ship.hp+(after-before),1,after); }
 function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>{ const a=derive(s).maxHp; s.hp=clamp(s.hp+(a-b[i]),1,a); }); }
 function fleetCP(){ return RUN.fleet.reduce((a,s)=>a+HULLS[s.tpl].cp,0); }
-function priceMult(){ return (META.unlocked.wrights?.85:1)*(heatOn('h_coffers')?1.25:1); }
+function priceMult(){ const c=sectorCond(); return (META.unlocked.wrights?.85:1)*(heatOn('h_coffers')?1.25:1)*((c&&c.price)||1); }
 function heatOn(k){ return !!(typeof RUN!=='undefined'&&RUN&&RUN.heat&&RUN.heat.includes(k)); }
-function repairMult(){ return heatOn('h_repair')?.5:1; }
+function repairMult(){ const c=sectorCond(); return (heatOn('h_repair')?.5:1)*((c&&c.repair)||1); }
 function mkCost(s){ return Math.round((40*HULLS[s.tpl].cp*s.mk+30)*priceMult()); }
 function addXp(ship, n){ const c=ship.cap; c.xp+=Math.round(n*(1+(runFx().xpPct||0)));
   while(c.rank<RANKS.length-1 && c.xp>=RANK_XP[c.rank+1]){ c.rank++; c.pending++; } }
@@ -928,8 +945,13 @@ function genSector(s){
       edges.push([a.id,near[0].id]); if(near[1] && rnd()<.45 && Math.abs(near[1].y-a.y)<.5) edges.push([a.id,near[1].id]); }
     for(const b of B){ if(!edges.some(e=>e[1]===b.id)){ const near=[...A].sort((x,y)=>Math.abs(x.y-b.y)-Math.abs(y.y-b.y))[0]; edges.push([near.id,b.id]); } }
   }
-  return {fac, cols, edges};
+  // fleet archetypes and node modifiers on ordinary fights (bosses keep their own escort)
+  for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite'){ const x=rnd(); n.arch=x<.25?'swarm':x<.47?'heavy':x<.62?'carrier':null; const y=rnd(); n.mod=n.col>=2&&y<.14?'bounty':n.col>=2&&n.type==='battle'&&y<.26?'veteran':null; }
+  // one condition per sector, never the same twice in a run
+  let cond=null; try{ const used=(RUN&&RUN.condsUsed)||[], pool=Object.keys(SECTOR_CONDS).filter(k=>!used.includes(k)); cond=pick(pool.length?pool:Object.keys(SECTOR_CONDS)); if(RUN){ RUN.condsUsed=used.concat(cond); } }catch(e){ cond=null; }
+  return {fac, cols, edges, cond};
 }
+function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.map.cond; return k&&SECTOR_CONDS[k]?SECTOR_CONDS[k]:null; }catch(e){ return null; } }
 
 // ---------- progression helpers ----------
 function masteryXP(id){ return (META.mastery&&META.mastery[id])||0; }
@@ -1089,7 +1111,8 @@ function playerStrength(){ return fleetPower(); }
 const BOSS_FAC={corsair:1.45,voidsworn:1.25,hegemony:.95,chorus:1,deathless:1,ithar:.9}; // per-flagship tuning from the boss matrix (v40)
 let BOSS_SCALE=[0,.5,.55,.7], BOSS_DMG=[0,.85,.88,.95];
 try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE')); if(process_env('BOSS_DMG')) BOSS_DMG=JSON.parse(process_env('BOSS_DMG')); }catch(e){}
-function genEnemyFleet(fac,s,col,kind){
+function effArch(arch,fac){ if(arch==='carrier'){ const F=FACTIONS[fac]; if(!F||!F.roster.some(id=>HULLS[id]&&HULLS[id].ab==='launch')) return 'heavy'; } return arch||null; }
+function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
   // each map column has a fixed difficulty, so a fleet that grows can outgrow it (the point of buying that cruiser)
   const F=FACTIONS[fac]; let budget=[0,4.2,9.5,14][s]+col*(s===1?0.9:s===2?1:1.1); if(kind==='elite') budget*=1.05;
   const list=[];
@@ -1098,11 +1121,16 @@ function genEnemyFleet(fac,s,col,kind){
   if(typeof RUN!=='undefined'&&RUN&&RUN.fleet&&!(typeof NO_CAP!=='undefined'&&NO_CAP)){ const target=fleetPower()*(kind==='elite'?1:kind==='boss'?.5:.85)+.3;
     if(target<budget) budget=Math.max(target,budget*.75); }
   if(heatOn('h_hunted')) budget*=1.15;
-  const roster=F.roster.map(id=>({id,cp:HULLS[id].cp}));
+  if(mod==='bounty') budget*=1.1;
+  let roster=F.roster.map(id=>({id,cp:HULLS[id].cp,car:HULLS[id].ab==='launch'}));
+  // archetypes reshape the same budget: a swarm of the lightest hulls, a heavy line, or a carrier with its escort
+  if(arch==='swarm'){ const mn=Math.min(...roster.map(x=>x.cp)); const light=roster.filter(x=>x.cp<=mn+1&&!x.car); if(light.length) roster=light; }
+  if(arch==='heavy'){ const big=roster.filter(x=>x.cp>=2&&(!x.car||!roster.some(y=>y.cp>=3&&!y.car))); if(big.length&&budget>=Math.min(...big.map(x=>x.cp))){ const top=big.filter(x=>x.cp<=budget+.3).sort((a,b)=>b.cp-a.cp)[0]; if(top){ list.push({tpl:top.id}); budget-=top.cp; } roster=big.concat(roster.filter(x=>x.cp<2&&!x.car).slice(0,1)); } }
+  if(arch==='carrier'&&kind!=='boss'){ const cr=roster.filter(x=>x.car&&x.cp<=budget+.3).sort((a,b)=>b.cp-a.cp)[0]; if(cr){ list.push({tpl:cr.id}); budget-=cr.cp; roster=roster.filter(x=>!x.car); } }
   let g=0;
   while(budget>=1 && list.length<8 && g++<60){
     const opts=roster.filter(x=>x.cp<=budget+.3); if(!opts.length) break;
-    const wts=opts.map(x=> x.cp===1?1.1:Math.min(2,budget/(x.cp*2))+.35);
+    const wts=opts.map(x=> arch==='heavy'?Math.pow(x.cp,1.6):x.cp===1?1.1:Math.min(2,budget/(x.cp*2))+.35);
     let r=rnd()*wts.reduce((a,b)=>a+b,0), ch=opts[0];
     for(let i=0;i<opts.length;i++){ r-=wts[i]; if(r<=0){ch=opts[i];break;} }
     list.push({tpl:ch.id}); budget-=ch.cp;
@@ -1167,6 +1195,8 @@ function genTerrain(map,shape,opt){
   if(m==='graveyard'){ const spots=[]; for(let k=0;k<60&&spots.length<7;k++){ const h=offToAx(ri(6,BW-7),ri(1,BH-2)); if(spots.every(p=>hdist(p,h)>=3)) spots.push(h); }
     for(const h of spots){ T[hkey(h.q,h.r)]='hulk'; for(const d of DIRS) if(rnd()<.55) put({q:h.q+d[0],r:h.r+d[1]},'debris'); }
     TERRAIN_META.wrecks=spots; for(let i=0;i<2;i++) blob('rock',ri(2,4),6,BW-7); blob('neb',ri(4,7),5,BW-6); }
+  // the sector's condition adds its own terrain to every battlefield in it (never in the deployment columns)
+  { const sc=(opt&&opt.cond)||null; if(sc&&sc.terr){ const n=sc.terr==='storm'?3:sc.terr==='neb'?3:4; for(let i=0;i<n;i++) blob(sc.terr,ri(sc.terr==='debris'?4:6,sc.terr==='debris'?7:11),8,BW-9); } }
   // board shape features on top of the sector terrain
   const force=(h,t)=>{ const k=hkey(h.q,h.r); if(onBoard(h.q,h.r)&&!BLOCKING[T[k]]) T[k]=t; }, midR=Math.floor(BH/2);
   if(shape==='lanes'){ const g1=ri(8,10), g2=ri(14,16); for(let c=7;c<=BW-8;c++){ if((c>=g1&&c<=g1+1)||(c>=g2&&c<=g2+1)) continue; force(offToAx(c,midR),'rock'); if(rnd()<.45&&c!==g1-1&&c!==g2-1&&c!==g1+2&&c!==g2+2) force(offToAx(c,midR-1),'rock'); } }
@@ -1215,19 +1245,19 @@ function startBattle(cfg){
   if(shape==='open'&&B0small(cfg)&&['rout','hunt','ambush'].includes(enc)) shape='compact'; // small fleets fight in close quarters
   if(!['belt','station','planet','storm','graveyard'].includes(map)&&FAC_MAP[cfg.fac]&&rnd()<.55) map=pick(FAC_MAP[cfg.fac]); // each faction has home ground
   if((shape==='lanes'||shape==='ring')&&map==='belt') map=pick(['station','planet','storm','graveyard']);
-  const topt={stationAt:enc==='defend'?offToAx(9,midR):null,enc,pieces:{belt:['asteroid','asteroid','comet','station'],graveyard:['hulk','hulk','station','asteroid'],planet:['moon','moon','asteroid','station'],station:['station','station','hulk','asteroid'],storm:['comet','asteroid','asteroid','moon']}[map]||null};
+  const topt={cond:cfg.kind==='boss'?null:sectorCond(),stationAt:enc==='defend'?offToAx(9,midR):null,enc,pieces:{belt:['asteroid','asteroid','comet','station'],graveyard:['hulk','hulk','station','asteroid'],planet:['moon','moon','asteroid','station'],station:['station','station','hulk','asteroid'],storm:['comet','asteroid','asteroid','moon']}[map]||null};
   let T=null; for(let k=0;k<6;k++){ T=genTerrain(map,shape,topt); if(terrainConnected(T)) break; T=null; }
   if(!T){ shape='open'; T=genTerrain(map,'open',topt); }
   if(cfg.kind==='boss') for(const k of Object.keys(T)) if(T[k]==='rock'&&rnd()<.45) delete T[k]; // flagship duels need firing lanes, not a maze
   B={seed, units:[], terrain:T, map:TERRAIN_META, shape, enc, deployMode:enc==='ambush'?'ambush':['defend','hunt','intercept','break'].includes(enc)?'line':(cfg.dep||'line'), resolve:{player:1,enemy:1}, round:1, side:'player', sel:null, armed:null, mode:null, hover:null, reach:null,
-     busy:false, log:[], fx:[], cfg, over:false, reviveUsed:false, inspect:null, showArcs:true, sector:RUN.sector};
+     busy:false, log:[], fx:[], cfg, over:false, reviveUsed:false, inspect:null, showArcs:true, sector:RUN.sector}; { const sc=sectorCond(); B.cond=sc&&RUN&&RUN.map?RUN.map.cond:null; B.condRegen=(sc&&sc.regen)||1; }
   const s=RUN.sector;
   for(const ship of RUN.fleet){ if(ship.hp<=0) continue; B.units.push(makeUnit('player', ship.tpl, {ship})); }
-  const eList = cfg.enemies || genEnemyFleet(cfg.fac, s, cfg.col, cfg.kind);
+  const eList = cfg.enemies || genEnemyFleet(cfg.fac, s, cfg.col, cfg.kind, cfg.arch, cfg.mod);
   const sc=1+.12*(s-1), dm=1+.08*(s-1);
   const bossFit=Math.max(.55,Math.min(1,playerStrength()/([0,6,9,12][s]||12))); // a battered fleet faces a weakened flagship
   const eliteIdx=cfg.kind==='elite'?new Set(eList.map((e,i)=>[i,HULLS[e.tpl].cp||1]).sort((x,y)=>y[1]-x[1]).slice(0,Math.ceil(eList.length/2)).map(x=>x[0])):null; // elite fights: the bigger half of their fleet are elites
-  eList.forEach((e,ei)=>B.units.push(makeUnit('enemy', e.tpl, {scale:sc*(HULLS[e.tpl].boss?BOSS_SCALE[s]*bossFit*(BOSS_FAC[cfg.fac]||1)*(heatOn('h_flag')?1.2:1):1), dmg:dm*(HULLS[e.tpl].boss?BOSS_DMG[s]:1), elite:!!(eliteIdx&&eliteIdx.has(ei))||cfg.kind==='boss'&&!HULLS[e.tpl].boss&&rnd()<.3||heatOn('h_elite')&&ei===(HULLS[eList[0].tpl].boss&&eList.length>1?1:0), fac:cfg.fac})));
+  eList.forEach((e,ei)=>B.units.push(makeUnit('enemy', e.tpl, {scale:sc*(HULLS[e.tpl].boss?BOSS_SCALE[s]*bossFit*(BOSS_FAC[cfg.fac]||1)*(heatOn('h_flag')?1.2:1):1), dmg:dm*(HULLS[e.tpl].boss?BOSS_DMG[s]:1), elite:!!(eliteIdx&&eliteIdx.has(ei))||cfg.kind==='boss'&&!HULLS[e.tpl].boss&&rnd()<.3||heatOn('h_elite')&&ei===(HULLS[eList[0].tpl].boss&&eList.length>1?1:0)||cfg.mod==='veteran'&&ei===eList.map((x,i)=>[i,HULLS[x.tpl].cp||1]).sort((x,y)=>y[1]-x[1])[0][0], fac:cfg.fac})));
   if(heatOn('h_undying')) for(const u of B.units) if(u.side==='enemy'&&!u.isSq&&!u.t.boss) u.reanimate=true;
   // enemies adapt to carrier-heavy fleets: escorts bolt on point defense
   { const nCar0=RUN.fleet.filter(sh=>sh.hp>0&&HULLS[sh.tpl]&&HULLS[sh.tpl].hangar).length, carDoc=(ADMIRALS[RUN.admiral]&&ADMIRALS[RUN.admiral].cmd&&ADMIRALS[RUN.admiral].cmd.id==='scramble')||RUN.aspect==='hive';
@@ -1276,7 +1306,7 @@ function startSideTurn(side){
     u.mp=Math.max(1,u.speed-u.st.engine); u.turnsLeft=u.turns;
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
-    if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0) for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+u.regen);
+    if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)); for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+rg); }
     if(u.hullRegen && u.hp<u.maxHp && !u.pyre) u.hp=Math.min(u.maxHp,u.hp+u.hullRegen);
     if(u.st.fire>0){ const fd=u.st.fireDmg||6; u.st.fire--; u.hp-=fd; fxText(u,'Fire \u2212'+fd,'#f08a4b'); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} burns out.`, u.side==='player'?'e':'p'); Promise.resolve(killUnit(u,null)).catch(e=>console.error(e)); } if(!u.st.fire) u.st.fireDmg=0; }
     u.hexMoved=0; if(u.fx&&u.fx.stormRegen&&u.shMax>0&&!(u.st.shieldOff>0)){ for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+Math.round(u.shMax*u.fx.stormRegen)); }
@@ -2043,7 +2073,7 @@ function castShadows(mesh){ mesh.receiveShadows=true; if(G.shadow) G.shadow.addS
 function setQuality(q){
   G.quality=q; const ultra=q==='ultra', hi=q!=='medium';
   const taa=ultra&&!!G.taaOn; if(taa&&!G.taa){ try{ G.taa=new BABYLON.TAARenderingPipeline('taa',G.scene,[G.cam]); G.taa.samples=8; }catch(e){ console.warn('TAA unavailable',e); G.taaOn=false; } } if(G.taa) G.taa.isEnabled=taa;
-  if(G.shadow) G.sun.shadowEnabled=hi;
+  if(G.shadow) G.sun.shadowEnabled=hi; try{ if(G.shadow) G.shadow.filteringQuality=ultra?BABYLON.ShadowGenerator.QUALITY_HIGH:BABYLON.ShadowGenerator.QUALITY_MEDIUM; G.pipe.bloomKernel=ultra?96:hi?72:48; }catch(e){} // Ultra: softer shadows, wider bloom, up to four weapon lights
   const mgr=G.scene.postProcessRenderPipelineManager;
   try{ if(ultra&&!G.vls&&G.sunMesh){ G.vls=new BABYLON.VolumetricLightScatteringPostProcess('vls',.5,G.cam,G.sunMesh,70,BABYLON.Texture.BILINEAR_SAMPLINGMODE,G.engine,false,G.scene); G.vls.exposure=.22; G.vls.decay=.965; G.vls.weight=.5; G.vls.density=.9;
     // points and lines break the occlusion pass (no element buffer), so keep them out of it
@@ -2203,7 +2233,7 @@ function buildBattleEnv(){
   // asteroids
   const rockMat=new BABYLON.StandardMaterial('rockM',sc);
   rockMat.diffuseTexture=dynTex('rockTex',256,256,(g,w)=>{ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
-  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; G.env.push(rockMat);
+  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
   const bases=[]; for(let k=0;k<4;k++){ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+k,{radius:1,subdivisions:3},sc);
     const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind); for(let i=0;i<p.length;i+=3){ const x=p[i],y=p[i+1],z=p[i+2]; const n=1+.28*Math.sin(x*3.1+k)*Math.cos(y*2.7+k*2)+.18*Math.sin(z*5.3+x*2)+(rr()-.5)*.08; p[i]=x*n*(1+.3*(k%2)); p[i+1]=y*n*.8; p[i+2]=z*n; }
     m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.convertToFlatShadedMesh(); m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); bases.push(m); G.env.push(m); }
@@ -3011,7 +3041,7 @@ function createView(u){
   if(B&&(u.reinf&&!u.arrived||G.jumpUntil&&G.time<G.jumpUntil)){ u.arrived=true; v.arrive={t0:G.time+(u.reinf?0:(u.side==='player'?.05:.4)+Math.random()*.55+(u.isSq?.55:0))}; }
   G.views.set(u.id,v); return v;
 }
-function disposeView(v){ if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
+function disposeView(v){ if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
 function disposeAllViews(){ for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
 
 function addFire(v){
@@ -3060,6 +3090,7 @@ function updateWorld(dt){
       if(!u.isSq&&k<.75){ if(!v.arrive.streak){ const P=FAC3D[v.fac]||FAC3D.hegemony, m=MB.CreateBox('jumpStreak',{width:1,height:.35,depth:.35},G.scene), mt=emMat('jumpM',P.eng.scale(1.6),.8); mt.alphaMode=BABYLON.Engine.ALPHA_ADD; mt.disableDepthWrite=true; m.material=mt; m.isPickable=false; v.arrive.streak=m; }
         const sm=v.arrive.streak, len=Math.max(4,back+v.L*.5); sm.position.set(px-f.x*len/2,y,pz-f.z*len/2); sm.rotation.y=vis.a*Math.PI/180; sm.scaling.set(len,1+v.L*.02,1+v.L*.02); sm.material.alpha=.8*(1-k/.75); }
       else if(v.arrive.streak){ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); v.arrive.streak=null; }
+      if(!v.arrive.rift&&!u.isSq&&typeof warpRift==='function'){ v.arrive.rift=true; warpRift(new V3(p.x,y,p.z).subtract(f.scale(v.L*.35)),f,Math.max(14,v.L*1.3),(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.2)); }
       if(!v.arrive.flashed&&k>.55){ v.arrive.flashed=true; try{ flash(new V3(px,y,pz),u.isSq?5:6+v.L*.25,(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.4),.3); }catch(e){} }
       if(k>=1){ if(v.arrive.streak){ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); } v.arrive=null; v.ring.node.setEnabled(true); v.plate.el.style.visibility=''; } }
     if(v.launch){ const k=clamp((G.time-v.launch.t0)/(.9*SPEED),0,1), e=1-Math.pow(1-k,3); px=v.launch.from.x+(p.x-v.launch.from.x)*e; pz=v.launch.from.z+(p.z-v.launch.from.z)*e; y=v.launch.from.y+(y-v.launch.from.y)*e; if(k>=1) v.launch=null; }
@@ -3072,14 +3103,14 @@ function updateWorld(dt){
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
     v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.12+.55*f:0)+s.pulse*.9; s.m.scaling.setAll(1+s.pulse*.08); });
     // damage fires
-    if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } }
+    if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); }
     // nameplate
     const top=new V3(px,y+Math.max(v.H,2)+2.4,pz), sp=V3.Project(top,BABYLON.Matrix.Identity(),tm,vp);
     const pe=v.plate.el; if(sp.z<0||sp.z>1){ pe.style.display='none'; } else { pe.style.display=''; pe.style.transform=`translate(${sp.x}px,${sp.y}px) translate(-50%,-100%)`; }
     const hr=clamp(u.hp/u.maxHp,0,1), key=Math.round(hr*100)+'|'+u.sh.map(x=>Math.round(x)).join(',')+'|'+(B.sel===u||B.inspect===u||B.hover&&B.hover.q===u.q&&B.hover.r===u.r?1:0)+(B.side==='player'&&u.side==='player'&&isDone(u)?'d':'');
     if(key!==v.plate.key){ v.plate.key=key; v.plate.hb.style.width=(hr*100)+'%'; v.plate.hb.style.background=hr>.3?HULL_HEX:HULL_LOW_HEX;
       v.plate.sp.forEach((b,i)=>{ const q=[3,0,1,2][i]; const f=u.shMax?u.sh[q]/u.shMax:0; b.style.background=f>.66?SHIELD_HEX:f>.01?'#2c6f93':'rgba(45,58,86,.9)'; });
-      pe.classList.toggle('hi',key.split('|')[2][0]==='1'||!!u.flagship||!!u.transport||!!u.pflag); pe.classList.toggle('flag',!!u.flagship||!!u.transport||!!u.pflag); pe.classList.toggle('done',key.endsWith('d')); }
+      pe.classList.toggle('hi',key.split('|')[2][0]==='1'||!!u.flagship||!!u.transport||!!u.pflag||(!!u.elite&&u.side==='enemy')); pe.classList.toggle('flag',!!u.flagship||!!u.transport||!!u.pflag); pe.classList.toggle('elite',!!u.elite&&u.side==='enemy'); pe.classList.toggle('done',key.endsWith('d')); }
   }
   G.arcT=(G.arcT||0)-dt; if(G.arcT<=0){ G.arcT=.1+Math.random()*.18; const cands=[]; for(const v of G.views.values()) if(v.state==='alive'&&v.model&&v.model.arcs&&v.model.arcs.length>1) cands.push(v);
     if(cands.length){ const v=cands[Math.floor(Math.random()*cands.length)], A=v.model.arcs, i=Math.floor(Math.random()*A.length), j=(i+1)%A.length, a=toWorld(v,A[i]), c=toWorld(v,A[j]), pts=[];
@@ -3205,7 +3236,7 @@ function fireSheet(){ if(G.tex.fire) return G.tex.fire; const N=8,S=128;
 function hexTex(){ if(G.tex.hex) return G.tex.hex; G.tex.hex=dynTex('hexT',512,512,(g,w)=>{ g.clearRect(0,0,w,w); g.strokeStyle='rgba(255,255,255,.9)'; g.lineWidth=3; const R=22, H=R*Math.sqrt(3);
     for(let row=-1;row<w/H+1;row++) for(let col=-1;col<w/(R*1.5)+1;col++){ const cx=col*R*1.5, cy=row*H+(col%2?H/2:0); g.beginPath(); for(let i=0;i<=6;i++){ const a=i*Math.PI/3; g.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a)); } g.stroke(); } }); return G.tex.hex; }
 let LIGHTS=0;
-function lightFlash(pos,col,intensity,range,dur){ if(LIGHTS>=2||G.quality==='medium'||G.fxReduced) return; LIGHTS++; const l=new BABYLON.PointLight('xl',pos.clone(),G.scene); l.diffuse=col; l.specular=col; l.range=range; l.intensity=intensity; const t0=G.time;
+function lightFlash(pos,col,intensity,range,dur){ if(LIGHTS>=(G.quality==='ultra'?4:2)||G.quality==='medium'||G.fxReduced) return; LIGHTS++; const l=new BABYLON.PointLight('xl',pos.clone(),G.scene); l.diffuse=col; l.specular=col; l.range=range; l.intensity=intensity; const t0=G.time;
   const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); l.dispose(); LIGHTS--; return; } l.intensity=intensity*(1-k)*(1-k); }); }
 function fireball(pos,size,n,life=1.2,spread=.35){ const ps=new BABYLON.ParticleSystem('fb',n,G.scene,null,true); ps.particleTexture=fireSheet(); ps.spriteCellWidth=128; ps.spriteCellHeight=128; ps.startSpriteCellID=0; ps.endSpriteCellID=63; ps.spriteCellLoop=false; ps.spriteCellChangeSpeed=1;
   ps.emitter=pos.clone(); ps.createSphereEmitter(size*spread,1); ps.color1=new C4(1,1,1,1); ps.color2=new C4(1,.92,.85,1); ps.colorDead=new C4(1,1,1,0); ps.minSize=size*.55; ps.maxSize=size*1.25;
@@ -3334,7 +3365,7 @@ async function animExplode(u){
   debris(c,L,v.fac);
   // split the hull and let the wreck drift out of the battle plane
   if(v.model.toSplit){ try{ v.model.toSplit(); }catch(e){ console.error(e); } }
-  const M=facMats(v.fac); for(const m of v.model.meshes){ m.material=(m.material===M.win||m.material===M.eng||m.material===M.tip)?M.ember:M.wreck; m.isPickable=false; }
+  const M=facMats(v.fac); const dm=v.dmgMats; v.dmgMats=null; for(const m of v.model.meshes){ m.material=(m.material===M.win||m.material===M.eng||m.material===M.tip)?M.ember:M.wreck; m.isPickable=false; } if(dm) setTimeout(()=>{ try{ dm.forEach(m=>m.dispose(false,false)); }catch(e){} },0);
   v.model.plumes.forEach(p=>p.dispose()); (v.model.flares||[]).forEach(p=>p.dispose()); (v.model.anim||[]).forEach(an=>an.node.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); v.stackFx=null; (v.fires||[]).forEach(p=>p.dispose()); v.fires=[];
   const fwd=new V3(Math.cos(v.root.rotation.y),0,-Math.sin(v.root.rotation.y));
   const nodes=[v.model.fore,v.model.aft], persist=!!u.hulk;
@@ -3484,9 +3515,9 @@ class HullFxPlugin extends BABYLON.MaterialPluginBase{
   constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false}); Object.assign(this,o); this._enable(true); }
   prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'; }
   getClassName(){ return 'HullFxPlugin'; }
-  getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'}],
-    fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\n#endif\n'}; }
-  bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); }
+  getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'}],
+    fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\n#endif\n'}; }
+  bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); }
   getCustomCode(type){
     if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\n#endif\n'};
     if(type!=='fragment') return null;
@@ -3506,7 +3537,10 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
 #ifdef HULLFX_HI
     gr+=smoothstep(0.5,0.95,hfxN(vec3(hl.x*0.03,hl.y*0.9,hl.z*0.9)))*0.4;
 #endif
-    surfaceAlbedo*=1.0-gr*hfxK.z; }
+    surfaceAlbedo*=1.0-gr*hfxK.z;
+    if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3;
+      float burn=smoothstep(1.0-hfxD.x*0.62,1.0-hfxD.x*0.62+0.07,dn);
+      surfaceAlbedo=mix(surfaceAlbedo,surfaceAlbedo*vec3(0.09,0.075,0.065),burn); } }
 #endif
 `,
 CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
@@ -3514,6 +3548,11 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
   { vec3 hv=normalize(vEyePosition.xyz-vPositionW); float hd=length(vEyePosition.xyz-vPositionW);
     float hf=pow(1.0-clamp(abs(dot(normalW,hv)),0.0,1.0),2.6);
     finalEmissive+=hfxRim*hf*hfxK.x;
+    if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3; float th=1.0-hfxD.x*0.62;
+      float edge=smoothstep(th-0.014,th,dn)*(1.0-smoothstep(th+0.004,th+0.022,dn));
+      float crack=(1.0-smoothstep(0.0,0.035+hd*0.0003,abs(hfxN(vHfxL*0.9+hfxD.y*3.0)-0.5)))*smoothstep(th+0.04,th+0.12,dn);
+      float fl=0.7+0.3*sin(hfxK.y*9.0+vHfxL.x*1.7)*sin(hfxK.y*5.3+vHfxL.z*2.1);
+      finalEmissive+=vec3(1.3,0.4,0.08)*(edge*1.1+crack*0.7)*fl*hfxD.x; }
     float st=hfxK.w, t=hfxK.y, w=0.05+hd*0.00045, en=hfxS.y; vec3 lp=vHfxL;
     if(st>0.5&&st<1.5){ vec3 q=lp*0.55+hfxS.x; vec3 c=floor(q); vec3 f=fract(q);
       float lx=(1.0-smoothstep(0.0,w,abs(f.y-0.5)))*step(0.45,hfxH(c));
@@ -3530,6 +3569,7 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
 #endif
 `}; }
 }
+try{ BABYLON.RegisterClass('BABYLON.HullFxPlugin',HullFxPlugin); }catch(e){}
 function addHullFx(M,fac){ try{ const P=FAC3D[fac]||FAC3D.hegemony; const rim=C3.Lerp(P.eng,new C3(.75,.85,1),.45), style=HULLFX_STYLE[fac]||0, ecol=P.win.scale(fac==='deathless'?1.6:fac==='chorus'?1.2:fac==='ithar'?.35:.9);
     const wear={corsair:.45,voidsworn:.32,hegemony:.22,deathless:.3,chorus:.12,ithar:.08}[fac]??.25, seed=(fac.length*13.7)%10;
     for(const [k,s,en] of [['hull',.85,1],['dark',.55,1],['steel',.45,0],['trim',.35,0]]) if(M[k]&&!M[k]._hullFx){ M[k]._hullFx=new HullFxPlugin(M[k],{rim,str:s,style,ecol,wear:k==='trim'?wear*.4:wear,seed,energy:!!en}); } }catch(e){ console.warn('hull shading unavailable',e); } }
@@ -3725,6 +3765,63 @@ function shieldShatter(p,dir,col){ try{ if(!G.scene||G.fxReduced) return; const 
       if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); parts.forEach(q=>q.s.dispose()); return; }
       for(const q of parts){ q.s.position.addInPlace(q.v.scale(dt)); q.v.scaleInPlace(1-dt*1.6); q.s.rotation.addInPlace(q.spin.scale(dt)); q.s.scaling.setAll(q.sc*(1-k*k)); } }); }catch(e){ console.warn('shatter',e); } }
 
+// ---------- battle damage that burns into the hull ----------
+// Damaged ships get their own copies of the hull and dark materials, so scorched plating and glowing cracks spread across that ship alone as its hull drops.
+function shipDamageFx(v,hr){ try{ if(!v||!v.model||v.state!=='alive') return; const amt=Math.max(0,Math.min(1,(.8-hr)/.72)); if(amt<=0&&!v.dmgMats) return;
+    if(v.lastDmg!=null&&Math.abs(v.lastDmg-amt)<.01) return; v.lastDmg=amt;
+    if(!v.dmgMats){ const M=facMats(v.fac), map=new Map(); v.dmgMats=[]; const seed=(v.u&&v.u.id?String(v.u.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0):Math.random()*100)%37;
+      for(const src of [M.hull,M.dark]){ if(!src||!src._hullFx) continue; const c=src.clone(src.name+'_dmg');
+        for(const k of ['albedoTexture','bumpTexture','metallicTexture','emissiveTexture','ambientTexture','opacityTexture','microSurfaceTexture','reflectivityTexture','lightmapTexture','reflectionTexture']){ if(c[k]!==src[k]){ const blank=c[k]; c[k]=src[k]||null; try{ if(blank&&blank!==src[k]&&!Object.values(G.tex).includes(blank)) blank.dispose(); }catch(e){} } } // clones of generated textures come back blank: share the originals
+        const o=src._hullFx, opts={rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy}; let pl=c.pluginManager&&c.pluginManager.getPlugin&&c.pluginManager.getPlugin('HullFx');
+        if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(c,opts); c._hullFx=pl; pl.dseed=seed; map.set(src,c); v.dmgMats.push(c); }
+      for(const m of v.model.meshes) if(map.has(m.material)) m.material=map.get(m.material); }
+    for(const c of v.dmgMats) if(c._hullFx) c._hullFx.dmg=amt; }catch(e){ console.warn('damage shading',e); } }
+function disposeDamageMats(v){ try{ (v.dmgMats||[]).forEach(m=>m.dispose(false,false)); }catch(e){} v.dmgMats=null; }
+
+// ---------- asteroid surfaces: dust, darker basalt and mineral veins over the rock texture, in each rock's own coordinates ----------
+class RockFxPlugin extends BABYLON.MaterialPluginBase{
+  constructor(material){ super(material,'RockFx',200,{ROCKFX:false}); this._enable(true); }
+  prepareDefines(defines){ defines.ROCKFX=true; }
+  getClassName(){ return 'RockFxPlugin'; }
+  getCustomCode(type){
+    if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef ROCKFX\nvarying vec3 vRfxL;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef ROCKFX\nvRfxL=positionUpdated;\n#endif\n'};
+    if(type!=='fragment') return null;
+    return {CUSTOM_FRAGMENT_DEFINITIONS:`
+#ifdef ROCKFX
+varying vec3 vRfxL;
+float rfxH(vec3 p){ p=fract(p*0.3183099+vec3(0.71,0.113,0.419)); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float rfxN(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
+  return mix(mix(mix(rfxH(i),rfxH(i+vec3(1,0,0)),f.x),mix(rfxH(i+vec3(0,1,0)),rfxH(i+vec3(1,1,0)),f.x),f.y),mix(mix(rfxH(i+vec3(0,0,1)),rfxH(i+vec3(1,0,1)),f.x),mix(rfxH(i+vec3(0,1,1)),rfxH(i+vec3(1,1,1)),f.x),f.y),f.z); }
+#endif
+`,CUSTOM_FRAGMENT_UPDATE_DIFFUSE:`
+#ifdef ROCKFX
+  { vec3 q=vRfxL*2.3; float a=rfxN(q)*0.6+rfxN(q*2.7)*0.28+rfxN(q*7.5)*0.12;
+    float dust=smoothstep(0.45,0.75,a); float basalt=1.0-smoothstep(0.2,0.45,a);
+    float vein=1.0-smoothstep(0.0,0.02,abs(rfxN(vRfxL*4.1+7.0)-0.5));
+    baseColor.rgb*=mix(1.0,1.35,dust)*mix(1.0,0.5,basalt);
+    baseColor.rgb=mix(baseColor.rgb,baseColor.rgb*vec3(1.2,0.98,0.85),vein*0.22); }
+#endif
+`}; }
+}
+function addRockFx(mat){ try{ if(mat&&!mat._rockFx) mat._rockFx=new RockFxPlugin(mat); }catch(e){ console.warn('rock shading',e); } }
+
+// ---------- hyperspace rift: a ring of light tears open where a ship drops in, swirls, and snaps shut behind it ----------
+const RIFT_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec2 uv; uniform mat4 worldViewProjection; varying vec2 vUV; void main(){ vUV=uv; gl_Position=worldViewProjection*vec4(position,1.0); }`,
+  frag:`precision highp float; varying vec2 vUV; uniform vec3 col; uniform float t; uniform float seed;
+    NOISE
+    void main(){ vec2 p=vUV-0.5; float r=length(p)*2.0; float ang=atan(p.y,p.x);
+      float open=sin(clamp(t,0.0,1.0)*3.14159); float R=0.25+0.6*open;
+      float sw=fbm(vec3(cos(ang)*2.0,sin(ang)*2.0,r*3.0-t*4.0+seed),4);
+      float ring=exp(-pow((r-R+0.1*(sw-0.5))*14.0,2.0))*(0.6+0.8*sw);
+      float inner=smoothstep(R,0.0,r)*open*(0.15+0.35*sw);
+      float a=(ring*0.75+inner*0.3)*open; if(r>1.0) a=0.0;
+      gl_FragColor=vec4(col*a*1.1+vec3(1.0)*ring*open*0.15,a*0.8); }`};
+function warpRift(pos,fwd,size,col){ try{ if(!G.scene||G.fxReduced) return; const S=BABYLON.Effect.ShadersStore; if(!S.vsRiftVertexShader){ S.vsRiftVertexShader=RIFT_GLSL.vert; S.vsRiftFragmentShader=RIFT_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
+    const pl=MB.CreatePlane('rift',{size:1,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.isPickable=false; pl.position.copyFrom(pos); pl.lookAt(pos.add(fwd)); pl.scaling.setAll(size);
+    const m=new BABYLON.ShaderMaterial('riftM',G.scene,{vertex:'vsRift',fragment:'vsRift'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed'],needAlphaBlending:true});
+    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('seed',Math.random()*30); m.setFloat('t',0); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
+    const t0=G.time, D=1.15*Math.max(.4,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||pl.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!pl.isDisposed()) pl.dispose(); m.dispose(); return; } m.setFloat('t',k); }); }catch(e){ console.warn('rift',e); } }
+
 // ======================= UI: shell, title, meta =======================
 const app=document.getElementById('app');
 const tipEl=document.getElementById('tip');
@@ -3850,7 +3947,7 @@ ACT.pickAspect=k=>{ if(!ASPECTS[k]||!RUN) return; changeFleet(()=>{ RUN.aspect=k
 function introModal(){
   mapScreen();
   const F=FACTIONS[RUN.map.fac];
-  modal(`<h2>Sector I</h2><p>The ${runWord()} crosses into contested space. Long-range auspex confirms <b>${esc(F.n)}</b> activity along every jump route.</p><p class="muted">${esc(F.blurb)}</p>
+  modal(`<h2>Sector I</h2><p>The ${runWord()} crosses into contested space. Long-range auspex confirms <b>${esc(F.n)}</b> activity along every jump route.</p><p class="muted">${esc(F.blurb)}</p>${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}
     <p class="muted">Pick a route across the sector map. Battles marked with a patron’s sigil pay out that patron’s boons, so the route you choose shapes your build. The flagship of the sector waits at the far end.</p><button class="primary" data-act="closeModal">Plot a course</button>`);
 }
 
@@ -3969,6 +4066,7 @@ function nodeIcon(type,x,y,col){
   return '';
 }
 // a node's payout, shown on the map: a patron's sigil for a boon, a small tag otherwise
+function archLabel(n,fac){ const A=n&&n.arch&&ARCHETYPES[effArch(n.arch,fac)]; return A?(A.names[fac]||A.names.hegemony):''; }
 function rewardLabel(rw){ if(!rw) return ''; if(rw.k==='boon'&&PATRONS[rw.p]) return 'Boon of '+PATRONS[rw.p].short; return rw.k==='mod'?'Refit':rw.k==='cred'?'Credits':rw.k==='repair'?'Repairs':''; }
 function rewardBadge(n,x,y,r,av){ const rw=n.rw; if(!rw||n.done) return ''; const bx=x+r*.78, by=y-r*.78, ty=n.enc&&ENCOUNTERS[n.enc]?y+r+29:y+r+15;
   if(rw.k==='boon'&&PATRONS[rw.p]){ const P=PATRONS[rw.p]; return `<circle cx="${bx}" cy="${by}" r="10" fill="${P.col}" stroke="#0f1626" stroke-width="2"/><text x="${bx}" y="${by+4.5}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f1626" font-family="var(--ui)">${P.glyph}</text><text x="${x}" y="${ty}" text-anchor="middle" font-size="11.5" fill="${av?P.col:'#8a8474'}" font-family="var(--ui)">${esc(P.short)}${rw.min?' \u2605':''}</text>`; }
@@ -3988,10 +4086,10 @@ function mapScreen(){
   const nodes=Object.values(byId).map(n=>{ const x=PX(n), y=PY(n), av=avail.has(n.id), cur=RUN.pos===n.id, r=n.type==='boss'?26:19;
     const col = n.done?'#7d7768': n.type==='elite'||n.type==='boss'?'#e07a70': av?'#e6dcc4':'#8a8474';
     return `<g class="node ${av?'avail':''}" ${av?`data-act="enterNode" data-arg="${n.id}" tabindex="0" role="button" aria-label="${NODE_INFO[n.type].n}"`:''}>
-      <title>${NODE_INFO[n.type].n}: ${n.enc&&ENCOUNTERS[n.enc]?ENCOUNTERS[n.enc].n+'. '+ENCOUNTERS[n.enc].d:NODE_INFO[n.type].d}</title>
+      <title>${NODE_INFO[n.type].n}: ${n.enc&&ENCOUNTERS[n.enc]?ENCOUNTERS[n.enc].n+'. '+ENCOUNTERS[n.enc].d:NODE_INFO[n.type].d}${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?' '+archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))+'.':''}${n.mod&&NODE_MODS[n.mod]?' '+NODE_MODS[n.mod].n+': '+NODE_MODS[n.mod].d:''}</title>
       <circle cx="${x}" cy="${y}" r="${r}" fill="${n.done?'#1b2436':'#182133'}" class="ring" stroke="${cur?'#d0a64b':av?'rgba(208,166,75,.8)':'rgba(230,220,196,.18)'}" stroke-width="${cur||av?2.5:1.5}"/>
       ${av?`<circle cx="${x}" cy="${y}" r="${r+6}" fill="none" stroke="rgba(208,166,75,.35)" stroke-width="1"><animate attributeName="r" values="${r+3};${r+9};${r+3}" dur="2.4s" repeatCount="indefinite"/></circle>`:''}
-      ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}</text>`:''}${rewardBadge(n,x,y,r,av)}</g>`; }).join('');
+      ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${rewardBadge(n,x,y,r,av)}</g>`; }).join('');
   const fleet=RUN.fleet.map(s=>{ const d=derive(s); return `<div class="shiprow"><span>${esc(s.name)}</span><span class="dim num">${s.hp}/${d.maxHp}</span>
     <span class="dim" style="grid-column:1/-1;font-size:13px">${HULLS[s.tpl].cls} Mk ${roman(s.mk)}, ${rankName(s.cap)} ${esc(s.cap.name)}${s.cap.pending?' <span class="gilt">(promotion ready)</span>':''}</span>${hpBar(s.hp,d.maxHp)}</div>`; }).join('');
   const relics=RUN.relics.length?RUN.relics.map(r=>`<div style="margin-bottom:6px"><b>${esc(relicName(r))}</b><div class="muted" style="font-size:14px">${esc(RELICS[r].d)}</div></div>`).join(''):'<p class="dim">None yet. Elite fleets and flagships carry them.</p>';
@@ -3999,11 +4097,11 @@ function mapScreen(){
   show(`<div class="mapwrap">
     <div class="mapmain">
       <div class="row wrap"><h2>Sector ${roman(RUN.sector)}</h2><span class="spacer"></span><button data-act="saveQuit">Save and quit</button></div>
-      <p class="muted" style="margin:6px 0 0;max-width:75ch">Hostile presence: <b class="blood">${esc(F.n)}</b>. ${esc(F.blurb)}</p>
+      <p class="muted" style="margin:6px 0 0;max-width:75ch">Hostile presence: <b class="blood">${esc(F.n)}</b>. ${esc(F.blurb)}</p>${(()=>{ const c=sectorCond(); return c?`<p style="margin:6px 0 0;max-width:75ch"><span class="gilt">Sector condition: <b>${esc(c.n)}</b>.</span> <span class="muted">${esc(c.d)}</span></p>`:''; })()}
       <svg viewBox="0 0 ${port?450:900} ${port?900:450}" style="width:100%;max-width:1400px;max-height:calc(100vh - 230px)" role="img" aria-label="Sector map">${edges}${nodes}</svg>
       <div class="legend">${Object.entries(NODE_INFO).map(([k,v])=>`<span class="row" style="gap:6px"><svg width="26" height="26" viewBox="0 0 30 30" aria-hidden="true">${nodeIcon(k,15,15,k==='elite'||k==='boss'?'#e07a70':'#e6dcc4')}</svg>${v.n}</span>`).join('')}</div>
-      ${(()=>{ const nx=[...avail].map(id=>byId[id]).filter(n=>n&&n.enc&&ENCOUNTERS[n.enc]); const seen=new Set(); const rows=nx.filter(n=>{ const k=n.enc+'|'+rewardLabel(n.rw)+'|'+n.type; return !seen.has(k)&&seen.add(k); });
-        return rows.length?`<div class="encprev">${rows.map(n=>`<div><b class="gilt">${ENCOUNTERS[n.enc].n}</b>${n.type==='elite'?' <span class="blood">(elite)</span>':''}${n.shape&&n.shape!=='open'?` <span class="dim">\u00b7 ${SHAPES[n.shape].toLowerCase()}</span>`:''}<div class="muted">${ENCOUNTERS[n.enc].d}</div>${n.rw?`<div style="font-size:13px;margin-top:2px;color:${n.rw.k==='boon'&&PATRONS[n.rw.p]?PATRONS[n.rw.p].col:'#bfb6a0'}">Reward: ${rewardLabel(n.rw)}${n.rw.min?' (rare or better)':''}</div>`:''}</div>`).join('')}</div>`:''; })()}      <p class="dim" style="margin-top:10px">Choose a pulsing node to jump there. You can only move forward along the lines.</p>
+      ${(()=>{ const nx=[...avail].map(id=>byId[id]).filter(n=>n&&n.enc&&ENCOUNTERS[n.enc]); const seen=new Set(); const rows=nx.filter(n=>{ const k=n.enc+'|'+rewardLabel(n.rw)+'|'+n.type+'|'+(n.arch||'')+'|'+(n.mod||''); return !seen.has(k)&&seen.add(k); });
+        return rows.length?`<div class="encprev">${rows.map(n=>`<div><b class="gilt">${ENCOUNTERS[n.enc].n}</b>${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?` <span class="blood">\u00b7 ${esc(archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac)))}</span>`:''}${n.mod&&NODE_MODS[n.mod]?` <span class="gilt">\u00b7 ${esc(NODE_MODS[n.mod].n)}</span>`:''}${n.type==='elite'?' <span class="blood">(elite)</span>':''}${n.shape&&n.shape!=='open'?` <span class="dim">\u00b7 ${SHAPES[n.shape].toLowerCase()}</span>`:''}<div class="muted">${ENCOUNTERS[n.enc].d}</div>${n.arch&&ARCHETYPES[n.arch]?`<div class="muted" style="font-size:13px">${esc(ARCHETYPES[effArch(n.arch,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))].d)}</div>`:''}${n.mod&&NODE_MODS[n.mod]?`<div class="gilt" style="font-size:13px">${esc(NODE_MODS[n.mod].d)}</div>`:''}${n.rw?`<div style="font-size:13px;margin-top:2px;color:${n.rw.k==='boon'&&PATRONS[n.rw.p]?PATRONS[n.rw.p].col:'#bfb6a0'}">Reward: ${rewardLabel(n.rw)}${n.rw.min?' (rare or better)':''}</div>`:''}</div>`).join('')}</div>`:''; })()}      <p class="dim" style="margin-top:10px">Choose a pulsing node to jump there. You can only move forward along the lines.</p>
     </div>
     <aside class="side">
       <div class="row"><div><div class="dim" style="font-size:13px">Credits</div><div class="gilt num" style="font-size:24px">${RUN.credits}</div></div><span class="spacer"></span>
@@ -4185,7 +4283,7 @@ function rewardFlow(summary){
   const cfg=summary.cfg, s=RUN.sector, rf=runFx();
   RUN.stats.battles++; if(cfg.kind==='elite') RUN.stats.elites++; if(cfg.kind==='boss') RUN.stats.bosses++;
   const kindMult=cfg.kind==='boss'?3:cfg.kind==='elite'?1.6:1;
-  let credits=Math.round((25+12*s+3*(cfg.col||0))*kindMult*(1+(rf.credPct||0)));
+  const scnd=sectorCond(); let credits=Math.round((25+12*s+3*(cfg.col||0))*kindMult*(1+(rf.credPct||0)+((scnd&&scnd.cred)||0))); if(cfg.mod==='bounty') credits=Math.round(credits*1.5);
   if(summary.partial) credits=Math.round(credits/2); // the objective got away: half pay
   if(rf.salvage){ credits+=15; RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.08)); }); }
   RUN.credits+=credits;
@@ -4247,7 +4345,7 @@ function afterBattle(){
     saveRun(); mapScreen();
     const F=FACTIONS[RUN.map.fac];
     modal(`<h2>Sector ${roman(RUN.sector)}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
-      <p>Auspex confirms <b>${esc(F.n)}</b> ahead.</p><p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
+      <p>Auspex confirms <b>${esc(F.n)}</b> ahead.</p>${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
     return;
   }
   mapScreen();
@@ -4313,7 +4411,7 @@ function buildHud(){
   st.insertAdjacentHTML('beforeend',`
   <div class="hud" id="btop"><span class="t">Voidsworn</span><span class="muted" id="scenName"></span><span class="num" id="roundlbl"></span><span class="gilt" id="turnlbl"></span><span class="num" id="resolvelbl" title="Admiral\u2019s Command: a fleet-wide signature move, once per battle, growing each round you hold it"></span><span class="spacer"></span>
     <span class="num" id="objlbl"></span><button data-act="threat" id="b_threat2" title="Where the enemy can hit next turn (R)">Threat</button><button data-act="fleetToggle" id="b_fleet">Fleet</button><button data-act="settings" id="b_set" title="Display, camera and sound options"><span class="sl">Settings</span><span class="si">\u2699</span></button><div class="hud setpanel hidden" id="setpanel"><div class="dim" style="font-size:12.5px;margin-bottom:6px">Battle view</div><button data-act="arcs" id="b_arcs" title="Toggle firing arcs (V)"></button><button data-act="threat" id="b_threat" title="Where the enemy can hit next turn (R)"></button><button data-act="cine" id="b_cine" title="Camera swings in on big attacks"></button><button data-act="top" id="b_top" title="Top-down planning view (T)"></button>
-    <button data-act="quality" id="b_quality" title="Ultra: supersampling, ambient occlusion, god rays, planet relief. High: shadows, live nebulae, full hull shading. Medium: tuned for phones"></button><button data-act="fxmode" id="b_fx" title="Reduce flashes, strobing lights and camera shake"></button><button data-act="follow" id="b_follow" title="Camera moves to each ship as it activates"></button><button data-act="aiLevel" id="b_ai" title="How cleverly the enemy fights"></button><button data-act="taa" id="b_taa" title="Temporal anti-aliasing: smoother fine detail, may ghost on fast effects (Ultra only)"></button><button data-act="sound" id="b_sound"></button><button data-act="speed" id="b_speed" title="Animation speed (Space)"></button><button data-act="restart" id="b_restart">Restart battle</button><button data-act="reportProblem" title="Save a snapshot of the game state for debugging">Report a problem</button><button data-act="copyReport" title="Copy your recent play data to paste to Claude">Copy report</button></div><button data-act="c3retreat" id="b_retreat" title="Jump the fleet out. Every surviving ship loses 10% hull.">Retreat</button><button class="primary" data-act="endTurn" id="endbtn">End turn</button></div>
+    <button data-act="quality" id="b_quality" title="Ultra: supersampling, ambient occlusion, god rays, planet relief. High: shadows, live nebulae, full hull shading. Medium: tuned for phones"></button><button data-act="fxmode" id="b_fx" title="Reduce flashes, strobing lights and camera shake"></button><button data-act="follow" id="b_follow" title="Camera moves to each ship as it activates"></button><button data-act="aiLevel" id="b_ai" title="How cleverly the enemy fights"></button><button data-act="taa" id="b_taa" title="Temporal anti-aliasing: smoother fine detail, may ghost on fast effects (Ultra only)"></button><button data-act="sound" id="b_sound"></button><button data-act="speed" id="b_speed" title="Animation speed (Space)"></button><button data-act="logToggle" id="b_log" title="Show the battle log over the board (phones)">Battle log</button><button data-act="restart" id="b_restart">Restart battle</button><button data-act="reportProblem" title="Save a snapshot of the game state for debugging">Report a problem</button><button data-act="copyReport" title="Copy your recent play data to paste to Claude">Copy report</button></div><button data-act="c3retreat" id="b_retreat" title="Jump the fleet out. Every surviving ship loses 10% hull.">Retreat</button><button class="primary" data-act="endTurn" id="endbtn">End turn</button></div>
   <div class="hud" id="roster"></div><div class="hud" id="panel"></div><div class="hud" id="log" aria-live="polite"></div>
   <div class="hud" id="camhint"><span><kbd>Right-drag</kbd> orbit</span><span><kbd>Left-drag</kbd> or <kbd>WASD</kbd> pan</span><span><kbd>Wheel</kbd> zoom</span><span><kbd>F</kbd> focus ship</span><span><kbd>T</kbd> top-down</span></div>`);
 }
@@ -4682,6 +4780,7 @@ ACT.sheet=()=>{ document.body.classList.toggle('sheetmin'); refreshPanel(); };
 ACT.taa=()=>{ G.taaOn=!G.taaOn; setQuality(G.quality); saveOpts(); refreshTop(); };
 ACT.aiLevel=()=>{ AI_LEVEL=AI_LEVEL==='veteran'?'standard':'veteran'; saveOpts(); refreshTop(); };
 ACT.fleetToggle=()=>document.body.classList.toggle('showroster');
+ACT.logToggle=()=>{ const on=document.body.classList.toggle('showlog'); const b=document.getElementById('b_log'); if(b) b.classList.toggle('on',on); const el=document.getElementById('log'); if(el) el.scrollTop=el.scrollHeight; };
 ACT.settings=()=>{ document.getElementById('setpanel').classList.toggle('hidden'); };
 function saveOpts(){ try{ META.opts=Object.assign(META.opts||{},{cine2:G.cine,follow:G.follow,taa:!!G.taaOn,ai:AI_LEVEL,quality:G.quality,fxReduced:G.fxReduced,sfxOn:G.sfxOn,cine:G.cine,alt:SETUP.alt,fast:SPEED<1}); Persist.saveLocal(); }catch(e){} }
 ACT.arcs=()=>{ B.showArcs=!B.showArcs; bRefresh(); };
@@ -4903,11 +5002,11 @@ function battleScreen(cfg){
   if(RUN.fleet.length<=1&&(RUN.reinf||0)<RUN.sector){ RUN.reinf=RUN.sector; const sh=newShip('warden'); RUN.fleet.push(sh); setTimeout(()=>toast(`The sector garrison sends the ${sh.name} to reinforce you.`),600); tel('reinforced',{}); }
   const nd=cfg.node&&findNode(cfg.node); if(nd&&!nd.enc&&cfg.kind!=='boss') Object.assign(nd,rollEncounter(nd.type,nd.col));
   const ro=cfg.kind==='boss'?bossEncounter():nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);
-  const c=Object.assign({map:cfg.kind==='boss'&&FAC_MAP[cfg.fac]?FAC_MAP[cfg.fac][0]:'random',dep:cfg.kind==='boss'?'line':pick(['line','line','flank']),obj:ro.enc,shape:ro.shape},cfg); // bosses fight on their faction's home ground
-  const setupT0=performance.now(); startBattle(c); B.campaign=true; B.event=rollBattleEvent(c); prepBattle(); const setupMs=Math.round(performance.now()-setupT0);
+  const c=Object.assign({map:cfg.kind==='boss'&&FAC_MAP[cfg.fac]?FAC_MAP[cfg.fac][0]:'random',dep:cfg.kind==='boss'?'line':pick(['line','line','flank']),obj:ro.enc,shape:ro.shape,arch:cfg.kind!=='boss'&&nd?nd.arch:null,mod:cfg.kind!=='boss'&&nd?nd.mod:null},cfg); // bosses fight on their faction's home ground
+  const setupT0=performance.now(); startBattle(c); B.campaign=true; B.event=rollBattleEvent(c,(sectorCond()||{}).war&&c.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null); prepBattle(); const setupMs=Math.round(performance.now()-setupT0);
   const E=ENCOUNTERS[B.obj.type]||ENCOUNTERS.rout; document.getElementById('scenName').textContent=`Sector ${roman(RUN.sector)}: ${cfg.kind==='boss'?'flagship battle':(cfg.kind==='elite'?'elite ':'')+E.n.toLowerCase()} against ${FACTIONS[cfg.fac].n}`;
-  G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); banner(cfg.kind==='boss'?'Sector flagship':E.n); { const bn=(RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].n).filter(Boolean), bt=bn.length?` Boons active: ${bn.slice(0,4).join(', ')}${bn.length>4?` and ${bn.length-4} more`:''}.`:''; setTimeout(()=>{ try{ if(B&&!B.over) toast((cfg.kind!=='boss'?E.d:'The sector flagship and its escort.')+bt); }catch(e){} },1400); }
-  try{ FRAMES.reset(); }catch(e){} tel('battle_start',{setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
+  G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); banner(cfg.kind==='boss'?'Sector flagship':E.n); { const bn=(RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].n).filter(Boolean), bt=bn.length?` Boons active: ${bn.slice(0,4).join(', ')}${bn.length>4?` and ${bn.length-4} more`:''}.`:''; setTimeout(()=>{ try{ if(B&&!B.over) toast((cfg.kind!=='boss'?E.d:'The sector flagship and its escort.')+(sectorCond()?' '+sectorCond().n+' in effect.':'')+bt); }catch(e){} },1400); }
+  try{ FRAMES.reset(); }catch(e){} tel('battle_start',{cond:B.cond||null,arch:c.arch||null,mod:c.mod||null,setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
 }
 function finishBattle(result){
   if(result==='loss'&&B.withdraw&&survivorsP()) result='retreat';
