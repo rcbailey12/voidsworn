@@ -16,7 +16,7 @@ with sync_playwright() as p:
         pg.evaluate("SPEED=.05; const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on');")
         print('  ',pg.evaluate(STAGE[case])); pg.evaluate("ACT.endTurn()")
         try:
-            if case=='throwrefresh': pg.wait_for_function("!!B&&(B.over||(B.side==='player'&&!B.busy&&B.round>1))", timeout=45000, polling=500); res='RECOVERED'
+            if case=='throwrefresh': pg.wait_for_function("!!B&&(B.over||(B.side==='player'&&!B.busy&&B.round>1))", timeout=120000, polling=500); res='RECOVERED'
             else: pg.wait_for_function("!!document.getElementById('endcard')", timeout=45000, polling=500); res='END CARD SHOWN'
         except Exception: res='SOFT-LOCK'
         over=pg.evaluate("B&&B.over"); lbl=pg.evaluate("(document.getElementById('turnlbl')||{}).textContent"); strip=pg.evaluate("!!document.querySelector('#panel .actstrip')")

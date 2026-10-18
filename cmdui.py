@@ -14,6 +14,8 @@ with sync_playwright() as p:
     print('round 1 :',pg.evaluate(STATE))
     pg.evaluate("B.round=2; bRefresh(); 0"); time.sleep(.5); print('round 2 :',pg.evaluate(STATE))
     pg.evaluate("B.round=3; bRefresh(); 0"); time.sleep(.5); print('round 3 :',pg.evaluate(STATE))
+    pg.locator('#panel .actstrip button.cmd').first.tap(); time.sleep(.6); print('armed   :',pg.evaluate(STATE),'used after one tap =',pg.evaluate("!!B.cmdUsed"))
+    pg.evaluate("B.cmdArm=performance.now(); 0") # the software renderer can take longer than the 4 s confirm window between taps
     pg.locator('#panel .actstrip button.cmd').first.tap(); pg.wait_for_function("B.cmdUsed&&!B.busy", timeout=90000, polling=500); time.sleep(1)
     pg.evaluate("(()=>{ const s=alive('player').find(u=>!u.isSq); if(s) selectUnit(s); bRefresh(); })()"); print('after use:',pg.evaluate(STATE))
     print('errors:',errs[:3]); b.close()

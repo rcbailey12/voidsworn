@@ -72,7 +72,7 @@ check('hung volley is abandoned and never lands','target hp unchanged after late
 st=subprocess.run(['python3',os.path.join(here,'striptap.py')],capture_output=True,text=True,timeout=400).stdout
 check('strip buttons act on real taps (Center, Brace, Done)',st.count(': True')>=3,' / '.join(st.splitlines()[:3])[:160])
 cu=subprocess.run(['python3',os.path.join(here,'cmdui.py')],capture_output=True,text=True,timeout=400).stdout
-check('Command: ready in round 1, full power by round 3, gone after use','"enabled":true' in (cu.splitlines()[0] if cu else '') and 'Command \u25cf\u25cb\u25cb' in cu and 'Command \u25cf\u25cf\u25cf' in cu and 'Command used' in cu,' / '.join(l[:70] for l in cu.splitlines()[:3]))
+check('Command: ready in round 1, full power by round 3, gone after use','"enabled":true' in (cu.splitlines()[0] if cu else '') and 'Command \u25cf\u25cb\u25cb' in cu and 'Command \u25cf\u25cf\u25cf' in cu and 'Tap again' in cu and 'used after one tap = False' in cu and 'Command used' in cu,' / '.join(l[:70] for l in cu.splitlines()[:3]))
 yc=subprocess.run(['python3',os.path.join(here,'yardcheck.py')],capture_output=True,text=True,timeout=400).stdout
 check('shipyard and refits work for every faction','YARDCHECK PASSED' in yc,(yc.splitlines()[-1] if yc else 'no output')[:120])
 hc=subprocess.run(['python3',os.path.join(here,'healtest.py')],capture_output=True,text=True,timeout=400).stdout
