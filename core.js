@@ -220,11 +220,18 @@ function favourOf(p){ return (META.favour&&META.favour[p])||0; }
 function favourTier(p){ const f=favourOf(p); let t=0; FAVOUR_TIERS.forEach((x,i)=>{ if(f>=x.at) t=i; }); return t; }
 function heatLevel(list){ return (list||[]).reduce((a,k)=>a+((HEAT[k]&&HEAT[k].w)||0),0); }
 // an admiral's alternate fleet: split the biggest hull into two mid-size ones, or merge the two smallest into one larger hull
-function altFleet(admiralId,fac){ const base=ADMIRALS[admiralId].start.map(t=>equivHull(t,fac)), ros=FACTIONS[fac].roster.filter(h=>HULLS[h]&&!HULLS[h].boss&&!HULLS[h].unique);
-  const byCp=cp=>ros.filter(h=>(HULLS[h].cp||1)===cp)[0]; const L=base.slice().sort((a,b)=>(HULLS[b].cp||1)-(HULLS[a].cp||1));
-  if((HULLS[L[0]].cp||1)>=4){ const half=Math.floor((HULLS[L[0]].cp||1)/2), h=byCp(half)||byCp(half-1); if(h){ const out=base.slice(); out.splice(out.indexOf(L[0]),1,h,h); return out; } }
-  const small=base.slice().sort((a,b)=>(HULLS[a].cp||1)-(HULLS[b].cp||1)); if(small.length>=2){ const sum=(HULLS[small[0]].cp||1)+(HULLS[small[1]].cp||1), h=byCp(sum)||byCp(sum-1); if(h){ const out=base.slice(); out.splice(out.indexOf(small[0]),1); out.splice(out.indexOf(small[1]),1,h); return out; } }
-  return base; }
+// v41: the alternate fleet keeps the same command points and never loses a carrier (a carrier admiral's passive and Command need one)
+function altFleetPlan(admiralId,fac){ const base=ADMIRALS[admiralId].start.map(t=>equivHull(t,fac)), ros=FACTIONS[fac].roster.filter(h=>HULLS[h]&&!HULLS[h].boss&&!HULLS[h].unique);
+  const cp=t=>HULLS[t].cp||1, car=t=>HULLS[t].ab==='launch', sum=l=>l.reduce((s,t)=>s+cp(t),0), key=l=>l.slice().sort().join(','), by=c=>ros.filter(h=>!car(h)&&cp(h)===c)[0];
+  const need=base.filter(car).length, total=sum(base), nc=base.filter(t=>!car(t)).sort((x,y)=>cp(y)-cp(x)), splits=[], merges=[];
+  for(const L of nc){ const c=cp(L); for(let x=Math.ceil(c/2);x<c;x++){ const A=by(x), Bh=by(c-x); if(A&&Bh){ const out=base.slice(); out.splice(out.indexOf(L),1,A,Bh); splits.push(out); } } }
+  const sm=nc.slice().reverse(); for(let i=0;i+1<sm.length;i++){ const H=by(cp(sm[i])+cp(sm[i+1])); if(H){ const out=base.slice(); out.splice(out.indexOf(sm[i]),1); out.splice(out.indexOf(sm[i+1]),1,H); merges.push(out); } }
+  const big=nc.length&&cp(nc[0])>=4, cands=big?[...splits,...merges]:[...merges,...splits];
+  const ok=cands.find(o=>sum(o)===total&&o.filter(car).length>=need&&key(o)!==key(base));
+  if(ok) return {fleet:ok,mod:null};
+  // nothing to reshuffle (a carrier plus one escort): the carrier gets a hangar expansion instead
+  return {fleet:base,mod:need&&MODULES.hangar?'hangar':null}; }
+function altFleet(admiralId,fac){ return altFleetPlan(admiralId,fac).fleet; }
 // a second Command: the next distinct Command among this faction's admirals
 function altCommand(admiralId){ const a=ADMIRALS[admiralId], fac=a.fac||'voidsworn', ids=Object.keys(ADMIRALS).filter(k=>(ADMIRALS[k].fac||'voidsworn')===fac), i=ids.indexOf(admiralId);
   for(let k=1;k<ids.length;k++){ const c=ADMIRALS[ids[(i+k)%ids.length]].cmd; if(c&&a.cmd&&c.id!==a.cmd.id) return c; } return null; }
@@ -236,8 +243,9 @@ function newRun(admiralId,fac,opt){
   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }
   RUN.heat=(opt.heat||[]).filter(k=>HEAT[k]); RUN.mastery=masteryLevel(admiralId);
-  const start=opt.alt&&RUN.mastery>=1?altFleet(admiralId,fac):adm.start.map(t=>equivHull(t,fac)); RUN.altFleet=!!(opt.alt&&RUN.mastery>=1);
+  const plan=opt.alt&&RUN.mastery>=1?altFleetPlan(admiralId,fac):null, start=plan?plan.fleet:adm.start.map(t=>equivHull(t,fac)); RUN.altFleet=!!plan;
   for(const t of start) RUN.fleet.push(newShip(t, !!META.unlocked.vets));
+  if(plan&&plan.mod){ const c=RUN.fleet.find(s=>HULLS[s.tpl].ab==='launch'); if(c){ c.mods.push(plan.mod); c.hp=derive(c).maxHp; } }
   if(opt.cmdAlt&&RUN.mastery>=3){ const c=altCommand(admiralId); if(c) RUN.cmdOverride=c; }
   RUN.cpCap=Math.max(RUN.cpCap, fleetCP()+3); ensureFlagship();
   if(RUN.mastery>=4){ const f=flagshipOf(); if(f){ f.mk=Math.max(f.mk||1,2); f.cap.rank=Math.max(f.cap.rank,2); f.cap.xp=Math.max(f.cap.xp,RANK_XP[2]); if(f.cap.perks.length<2) f.cap.perks.push(pick(Object.keys(PERKS).filter(p=>!f.cap.perks.includes(p)))); f.hp=derive(f).maxHp; } }

@@ -328,7 +328,8 @@ async function scenSim(n){ const SC={
   console.log('SCEN '+JSON.stringify(out,null,1)); }
 function progCheck(){ const out=[]; const ok=(n,c,d)=>out.push((c?'PASS ':'FAIL ')+n+(d?': '+d:''));
   META.mastery={sekhmar:60,vex:0}; META.favour={storm:13}; 
-  for(const [adm,fac] of [['sekhmar','deathless'],['vex','voidsworn'],['matriarch','chorus'],['grax','corsair'],['reyes','hegemony'],['thorne','ithar']]){ const a=altFleet(adm,fac); ok('alt fleet '+adm,a.length>0&&a.every(t=>HULLS[t]&&HULLS[t].fac===fac), ADMIRALS[adm].start.map(t=>equivHull(t,fac)).join('+')+' -> '+a.join('+')); }
+  for(const adm of Object.keys(ADMIRALS)){ const fac=ADMIRALS[adm].fac||'voidsworn', base=ADMIRALS[adm].start.map(t=>equivHull(t,fac)), p=altFleetPlan(adm,fac), a=p.fleet, cp=l=>l.reduce((s,t)=>s+(HULLS[t].cp||1),0), car=l=>l.filter(t=>HULLS[t].ab==='launch').length;
+    ok('alt fleet '+adm, a.length>0&&a.every(t=>HULLS[t]&&HULLS[t].fac===fac)&&cp(a)===cp(base)&&car(a)>=car(base)&&(a.slice().sort().join()!==base.slice().sort().join()||!!p.mod), base.join('+')+' -> '+a.join('+')+(p.mod?' +'+p.mod:'')); }
   for(const adm of Object.keys(ADMIRALS)){ const c=altCommand(adm); if(!c||c.id===ADMIRALS[adm].cmd.id) ok('alt command '+adm,false,String(c&&c.id)); }
   ok('every admiral has a distinct second Command',!out.some(x=>x.startsWith('FAIL alt command')));
   newRun('sekhmar','deathless',{alt:true,cmdAlt:true,heat:['h_hunted','h_cmd']}); RUN.patrons=['storm','rook','iron','ember'];
