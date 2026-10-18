@@ -328,8 +328,8 @@ const ARCHETYPES={
   carrier:{d:'Built around a carrier and its wings. Fighters and flak pay off.',names:{voidsworn:'Reliquary group',hegemony:'Carrier group',corsair:'Raider nest',chorus:'Hive cluster',ithar:'Wraith host',deathless:'Harvest ark'}}};
 // node modifiers: a twist on one fight, shown on the map
 const NODE_MODS={
-  bounty:{n:'Bounty',d:'A price on this fleet: +50% credits, and they bring 10% more ships.'},
-  veteran:{n:'Veteran captain',d:'Their largest ship has an elite captain.'}};
+  bounty:{n:'Bounty',short:'Bounty',d:'A price on this fleet: +50% credits, and they bring 10% more ships.'},
+  veteran:{n:'Veteran captain',short:'Veteran',d:'Their largest ship has an elite captain.'}};
 // sector conditions: each sector of a run has one, shown on the sector map and applied to every fight there
 const SECTOR_CONDS={
   ion:{n:'Ion season',d:'Ion storms sweep every battlefield, and shields recharge 25% slower on both sides.',regen:.75,terr:'storm'},
