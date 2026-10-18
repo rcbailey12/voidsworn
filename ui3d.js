@@ -442,7 +442,7 @@ async function endTurn(){
   if(!B||B.busy||B.side!=='player'||B.over) return;
   B.busy=true; B.sel=null; B.armed=null; B.mode=null; B.inspect=null; B.reach=null; hideTip(); G.playerView={a:G.ctl.a,b:G.ctl.b,r:G.ctl.r,t:G.ctl.t.clone(),at:performance.now()};
   B.side='enemy'; startSideTurn('enemy'); bRefresh(); await banner('Enemy turn','#e07a70');
-  { const sp=SPEED; SPEED=Math.min(SPEED,.65); try{ await aiTurn(); }catch(e){ console.error(e); } SPEED=sp; }
+  { const sp=SPEED; SPEED=Math.min(SPEED,.65); try{ await stallGuard(aiTurn(),90000,'enemy_turn',{}); }catch(e){ console.error(e); } SPEED=sp; } // v41: Classic mode gets the same stall net as Alternating
   if(!B) return; B.aiActive=null; G.lastAi=null;
   await wait(150); G.ctl.release();
   if(B.over){ B.busy=false; await endBattleFlow(); return; }
@@ -462,12 +462,13 @@ async function aiStep(){
   if(!B||B.over) return; const b=B; // leftover turn logic from an earlier battle must never touch this one
   const pe=pendingE(), pp=pendingP();
   if(pe.length){
-    B.busy=true; B.side='enemy'; camKeep(); bRefresh();
-    const sqs=alive('enemy').filter(u=>u.isSq&&!u.activated);
-    const batch=pp.length?[aiPickActivation(pe.sort((a,b)=>b.speed-a.speed))]:pe;
-    const sp=SPEED; SPEED=Math.min(SPEED,.65);
-    try{ for(const u of [...sqs,...batch]){ if(B!==b||B.over) break; await stallGuard(aiUnit(u),30000,'enemy',{name:u.name,isSq:!!u.isSq}); u.activated=true; } }catch(e){ console.error(e); }
-    SPEED=sp;
+    B.busy=true; B.side='enemy'; const sp=SPEED;
+    try{ camKeep(); bRefresh(); // v41: a failed refresh here used to leave the enemy side active with nothing to run it
+      const sqs=alive('enemy').filter(u=>u.isSq&&!u.activated);
+      const batch=pp.length?[aiPickActivation(pe.sort((a,b)=>b.speed-a.speed))]:pe;
+      SPEED=Math.min(SPEED,.65);
+      for(const u of [...sqs,...batch]){ if(B!==b||B.over) break; await stallGuard(aiUnit(u),30000,'enemy',{name:u.name,isSq:!!u.isSq}); u.activated=true; } }catch(e){ console.error(e); }
+    finally{ SPEED=sp; }
     if(B!==b) return; B.aiActive=null; G.lastAi=null; await wait(120); if(B!==b) return; G.ctl.release(); camRestore(); B.side='player'; B.busy=false;
     if(B.over){ bRefresh(); await endBattleFlow(); return; }
   }
@@ -566,7 +567,8 @@ ACT.stripHelp=()=>{ const old=document.getElementById('helpcard'); if(old){ old.
 // busy watchdog: measures progress, not wall time. Any new log line, acting ship, movement step, shot or round resets it; hidden time doesn't count.
 setInterval(()=>{ if(!B||!B.busy){ G.busyIdle=0; G.busySig=''; return; } const sig=B.log.length+'|'+(B.aiActive&&B.aiActive.id)+'|'+B.round+'|'+B.side+'|'+(B.prog||0);
   if(sig!==G.busySig){ G.busySig=sig; G.busyIdle=0; return; } if(document.visibilityState==='hidden') return; G.busyIdle=(G.busyIdle||0)+2000;
-  if(G.busyIdle>=20000){ G.busyIdle=0; B.epoch=(B.epoch||0)+1; B.busy=false; try{ tel('busy_watchdog',{round:B.round,side:B.side,ai:B.aiActive&&B.aiActive.name,logTail:B.log.slice(-3).map(x=>x.m.slice(0,80))}); Persist.saveLocal(); }catch(e){} try{ bRefresh(); }catch(e){} } },2000);
+  if(G.busyIdle>=20000){ G.busyIdle=0; B.epoch=(B.epoch||0)+1; B.busy=false; const side0=B.side; try{ tel('busy_watchdog',{round:B.round,side:B.side,ai:B.aiActive&&B.aiActive.name,logTail:B.log.slice(-3).map(x=>x.m.slice(0,80))}); Persist.saveLocal(); }catch(e){}
+    if(!B.over&&side0==='enemy'){ B.side='player'; B.aiActive=null; try{ G.ctl.release(); }catch(e){} try{ toast('The enemy turn stalled, so it was skipped. Your move.'); }catch(e){} } /* v41: hand the turn back instead of leaving the enemy side active */ try{ bRefresh(); }catch(e){} } },2000);
 // one-tap diagnostics: snapshot the game state into telemetry and save immediately
 // touch and command history so a report can show where taps actually land
 G.tapLog=[]; G.actLog=[]; G.panelRenders=[];

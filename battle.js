@@ -515,10 +515,11 @@ function ramEstimate(u,t,run){ const f=u.fx||{}, base=(14+46*u.size)*(RAM_FAC[u.
   const raw=base*(1+(f.ramPct||0))*(u.ramBoost||1)*(quad===0?1:1.2)*(1-t.armor*.5), soak=Math.min(raw*.5,(t.sh&&t.sh[quad])||0);
   return {dmg:Math.round(Math.min(raw-soak,t.maxHp*(.4+Math.min(.3,f.ramCap||0)))), soak:Math.round(soak), recoil:Math.round(base*(RAM_FAC[u.fac]?.35:.5)*clamp(t.size/u.size,.5,1.6)*(1-u.armor*.5)*(1-Math.min(1,f.ramGuard||0))), sec:SEC_OF_QUAD[quad]}; }
 async function ramUnit(u){
-  const info=ramInfo(u); if(!info) return false; const t=info.t;
+  const info=ramInfo(u); if(!info) return false; const t=info.t, live=liveFrom(u);
   if(typeof animPath==='function') await animPath(u,info.path,{charge:true}); else for(const p of info.path){ await animMove(u,p.q,p.r,p.f); }
+  if(!live()) return false; // abandoned after a stall: the ram never lands
   u.mp=0; u.turnsLeft=0; u.rammed=true; if(B.usage&&u.side==='player'){ B.usage.ram=(B.usage.ram||0)+1; for(const id of ['d_jugg','r_prow']) if(hasBoon(id)){ B.boonStats=B.boonStats||{}; B.boonStats[id]=(B.boonStats[id]||0)+1; } } const e=ramEstimate(u,t,info.path.length);
-  await fxRam(u,t);
+  await fxRam(u,t); if(!live()||t.dead) return false;
   const qd=shieldQuad(t,u); if(e.soak&&t.sh) t.sh[qd]=Math.max(0,t.sh[qd]-e.soak*1.5);
   t.hp-=e.dmg; u.dealt+=e.dmg; damageSection(t,e.sec,e.dmg,u); u.hp-=e.recoil; damageSection(u,'prow',e.recoil,t);
   fxText(t,'\u2212'+e.dmg,'#f0b35a',0); fxText(u,'\u2212'+e.recoil,'#ff7a6e',0);
@@ -547,7 +548,7 @@ function boardOdds(u,t){ const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.b
 async function boardUnit(u,t){
   if(!boardTargets(u).includes(t)) return false;
   if(B.usage&&u.side==='player') B.usage.board=(B.usage.board||0)+1; u.boarded=true; u.repel=true; u.mp=0; u.weapons.forEach(w=>w.fired=true);
-  await fxBoard(u,t);
+  const live=liveFrom(u); await fxBoard(u,t); if(!live()||t.dead) return false; // abandoned after a stall: the boarders never land
   const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0))*(.75+rnd()*.5), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5)*(.75+rnd()*.5);
   const kill=Math.round(a*.38), loss=Math.min(u.crew-1,Math.round(d*.3)); t.crew=Math.max(0,t.crew-kill); u.crew=Math.max(1,u.crew-loss);
   const who=u.side==='player'?'p':'e';
@@ -576,7 +577,7 @@ async function killUnit(t,by){
   if(by&&!t.isSq) gainResolve(by.side,1);
   if(by){ by.kills++; if(by.parent){ const p=B.units.find(x=>x.id===by.parent); if(p) p.kills+=0; } }
   if(by&&by.isSq){ const p=B.units.find(x=>x.id===by.parent&&!x.dead); if(p&&p.fx&&p.fx.feast){ p.spare=(p.spare||0)+1; const h=Math.round(p.maxHp*p.fx.feast); p.hp=Math.min(p.maxHp,p.hp+h); boonFx(p,'h_feast','+'+h+' hull, +1 wing',-30); } }
-  await animExplode(t);
+  const b0=B; await animExplode(t); if(B!==b0) return; // a later battle must never see this explosion's aftermath
   { const cb=by&&!t.isSq&&by.side!==t.side?ownerFx(by).chainBoom:0; if(cb){ const near=B.units.filter(x=>!x.dead&&x.side===t.side&&x!==t&&hdist(x,t)<=2); if(near.length) log(`${t.name}'s reactor goes up, scorching ${near.length} nearby ship${near.length>1?'s':''}.`,by.side==='player'?'p':'e');
       for(const x of near){ if(x.dead) continue; x.hp-=cb; boonFx(x,'e_chain','\u2212'+cb,-12); if(x.hp<=0) await killUnit(x,by); } } }
   log(`${t.name} ${t.isSq?'is shot down':'is destroyed'}.`, t.side==='player'?'e':'p');
@@ -703,18 +704,18 @@ function cmdTaken(t){ return cmdActive(t.side,'iron')?1-cmdPow('iron',null,t.sid
 async function useCommand(side){ if(!canCommand(side)) return false; const c=commandFor(side); const tier=cmdTier(); B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
   log(`Admiral's Command${tier?` at power ${tier+1} of 3`:''}: ${c.n}. ${cmdDesc(c,tier,(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn')}`,side==='player'?'p':'e'); try{ if(typeof tel==='function') tel('command',{id:c.id,round:B.round,tier}); }catch(e){}
   return runCommand(side,c,tier); }
-async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'player';
+async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'player', bStart=B;
   for(const u of alive(side)) if(!u.isSq) fxText(u,c.n,side==='player'?'#e8c66a':'#ff8a6a',-44);
-  if(c.id==='barrage'){ B.volleyMul={side,m:1+cmdPow('barrage',tier)}; try{ for(const u of alive(side).filter(x=>!x.isSq)){ if(B.over) break; const keep=u.weapons.map(w=>[w.fired,w.cdLeft]); u.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; });
-      for(let i=0;i<u.weapons.length;i++){ if(B.over) break; const w=u.weapons[i]; const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue; const val=t=>{ const e=expectedVs(u,w,t); return e.hull+e.shield*.3+(e.hull>=t.hp?25:0); }; ts.sort((a,b2)=>val(b2)-val(a)); await fireWeapon(u,i,ts[0]); }
-      u.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); } } finally{ B.volleyMul=null; } }
+  if(c.id==='barrage'){ const b0=B, live=liveFrom(null); B.volleyMul={side,m:1+cmdPow('barrage',tier)}; try{ for(const u of alive(side).filter(x=>!x.isSq)){ if(B.over||!live()) break; const keep=u.weapons.map(w=>[w.fired,w.cdLeft]); u.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; });
+      for(let i=0;i<u.weapons.length;i++){ if(B.over||!live()||u.dead) break; const w=u.weapons[i]; const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue; const val=t=>{ const e=expectedVs(u,w,t); return e.hull+e.shield*.3+(e.hull>=t.hp?25:0); }; ts.sort((a,b2)=>val(b2)-val(a)); await fireWeapon(u,i,ts[0]); }
+      u.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); } } finally{ if(B===b0) B.volleyMul=null; } }
   if(c.id==='hunt') for(const u of alive(side)) for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; }
   if(c.id==='iron') for(const u of alive(side)) if(u.shMax) u.sh=u.sh.map(()=>u.shMax);
   if(c.id==='restore') for(const u of alive(side).filter(x=>!x.isSq)){ const rp=cmdPow('restore',tier); u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*rp)); if(u.sec){ let fixed=0; for(const k of Object.keys(u.sec)) if(repairSection(u,k,rp)) fixed++; if(fixed) fxText(u,fixed>1?fixed+' sections restored':'Section restored','#8ff0a0',-34); } fxText(u,'+'+Math.round(u.maxHp*rp)+' hull','#8ff0a0',-20); }
   if(c.id==='surge') for(const u of alive(side).filter(x=>!x.isSq)){ u.mp=(u.mp||0)+cmdPow('surge',tier); u.turnsLeft=(u.turnsLeft||0)+(tier>=2?2:1); }
   if(c.id==='scramble'){ for(const u of alive(side).filter(x=>x.ab==='launch')){ const hs=launchHexes(u); if(!hs.length) continue; const fs=alive(foe); hs.sort((a,b2)=>Math.min(...fs.map(f=>hdist(a,f)))-Math.min(...fs.map(f=>hdist(b2,f)))); for(let k=0;k<(tier>=2?2:1)&&k<hs.length;k++){ makeWing(u,hs[k],wingKind(u)); try{ fxFlash(hs[k],'#f0b35a'); }catch(e){} } } // extra wings, even past the hangar limit, even past the hangar limit
     for(const s of alive(side).filter(x=>x.isSq)){ s.activated=false; s.mp=s.speed; s.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; }); } await swarmPhase(side); }
-  checkEnd(); return true; }
+  if(B===bStart) checkEnd(); return true; }
 // enemy flagships carry a Command of their own: announced a round ahead, fired once, at power 2
 const BOSS_CMD={hegemony:{id:'barrage',n:'Imperial broadside'},corsair:{id:'surge',n:'Burn and board'},chorus:{id:'restore',n:'Hive regrowth'},ithar:{id:'iron',n:'Prism ward'},deathless:{id:'restore',n:'Rise again'},voidsworn:{id:'hunt',n:'Crusader\u2019s wrath'}};
 function bossCmdText(c,fac){ return cmdDesc(c,1,fac).replace(/your ships/g,'its ships').replace(/against you/g,'against them').replace(/Every ship/g,'Every enemy ship'); }
@@ -805,7 +806,7 @@ async function useAbility(u,arg){
   if(a==='nova'){
     const c=arg.hex; u.abCd=abilityCd(u);
     log(`${u.name} fires its nova cannon.`, u.side==='player'?'p':'e');
-    await animNova(u,c);
+    const live=liveFrom(u); await animNova(u,c); if(!live()) return false; // abandoned after a stall: the blast never lands
     const hitList=alive().filter(x=>hdist(x,c)<=1);
     for(const x of hitList){
       const dmg=(hdist(x,c)===0?40:20)*u.dmg*(x.isSq?1.5:1);

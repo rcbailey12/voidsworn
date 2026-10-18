@@ -61,6 +61,8 @@ sl=subprocess.run(['python3',os.path.join(os.path.dirname(os.path.abspath(__file
 for case in ['relay','squadron']:
     line=next((l for l in sl.stdout.splitlines() if l.startswith(case)),'no output: '+sl.stderr[-200:])
     check(f'battle ending at round start shows end card ({case})','END CARD SHOWN' in line,line.strip()[:160])
+line=next((l for l in sl.stdout.splitlines() if l.startswith('throwrefresh')),'no output: '+sl.stderr[-200:])
+check('a failed refresh in the enemy step hands the turn back','RECOVERED' in line,line.strip()[:160])
 # freeze-cause regressions (frame error, phone lock mid enemy turn, hung volley) and real-tap strip buttons
 here=os.path.dirname(os.path.abspath(__file__))
 s2=subprocess.run(['python3',os.path.join(here,'step2test.py')],capture_output=True,text=True,timeout=900).stdout
