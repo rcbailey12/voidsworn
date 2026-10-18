@@ -99,7 +99,7 @@ function castShadows(mesh){ mesh.receiveShadows=true; if(G.shadow) G.shadow.addS
 function setQuality(q){
   G.quality=q; const ultra=q==='ultra', hi=q!=='medium';
   const taa=ultra&&!!G.taaOn; if(taa&&!G.taa){ try{ G.taa=new BABYLON.TAARenderingPipeline('taa',G.scene,[G.cam]); G.taa.samples=8; }catch(e){ console.warn('TAA unavailable',e); G.taaOn=false; } } if(G.taa) G.taa.isEnabled=taa;
-  if(G.shadow) G.sun.shadowEnabled=hi;
+  if(G.shadow) G.sun.shadowEnabled=hi; try{ if(G.shadow) G.shadow.filteringQuality=ultra?BABYLON.ShadowGenerator.QUALITY_HIGH:BABYLON.ShadowGenerator.QUALITY_MEDIUM; G.pipe.bloomKernel=ultra?96:hi?72:48; }catch(e){} // Ultra: softer shadows, wider bloom, up to four weapon lights
   const mgr=G.scene.postProcessRenderPipelineManager;
   try{ if(ultra&&!G.vls&&G.sunMesh){ G.vls=new BABYLON.VolumetricLightScatteringPostProcess('vls',.5,G.cam,G.sunMesh,70,BABYLON.Texture.BILINEAR_SAMPLINGMODE,G.engine,false,G.scene); G.vls.exposure=.22; G.vls.decay=.965; G.vls.weight=.5; G.vls.density=.9;
     // points and lines break the occlusion pass (no element buffer), so keep them out of it
@@ -259,7 +259,7 @@ function buildBattleEnv(){
   // asteroids
   const rockMat=new BABYLON.StandardMaterial('rockM',sc);
   rockMat.diffuseTexture=dynTex('rockTex',256,256,(g,w)=>{ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
-  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; G.env.push(rockMat);
+  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
   const bases=[]; for(let k=0;k<4;k++){ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+k,{radius:1,subdivisions:3},sc);
     const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind); for(let i=0;i<p.length;i+=3){ const x=p[i],y=p[i+1],z=p[i+2]; const n=1+.28*Math.sin(x*3.1+k)*Math.cos(y*2.7+k*2)+.18*Math.sin(z*5.3+x*2)+(rr()-.5)*.08; p[i]=x*n*(1+.3*(k%2)); p[i+1]=y*n*.8; p[i+2]=z*n; }
     m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.convertToFlatShadedMesh(); m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); bases.push(m); G.env.push(m); }

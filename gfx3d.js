@@ -12,9 +12,9 @@ class HullFxPlugin extends BABYLON.MaterialPluginBase{
   constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false}); Object.assign(this,o); this._enable(true); }
   prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'; }
   getClassName(){ return 'HullFxPlugin'; }
-  getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'}],
-    fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\n#endif\n'}; }
-  bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); }
+  getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'}],
+    fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\n#endif\n'}; }
+  bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); }
   getCustomCode(type){
     if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\n#endif\n'};
     if(type!=='fragment') return null;
@@ -34,7 +34,10 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
 #ifdef HULLFX_HI
     gr+=smoothstep(0.5,0.95,hfxN(vec3(hl.x*0.03,hl.y*0.9,hl.z*0.9)))*0.4;
 #endif
-    surfaceAlbedo*=1.0-gr*hfxK.z; }
+    surfaceAlbedo*=1.0-gr*hfxK.z;
+    if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3;
+      float burn=smoothstep(1.0-hfxD.x*0.62,1.0-hfxD.x*0.62+0.07,dn);
+      surfaceAlbedo=mix(surfaceAlbedo,surfaceAlbedo*vec3(0.09,0.075,0.065),burn); } }
 #endif
 `,
 CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
@@ -42,6 +45,11 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
   { vec3 hv=normalize(vEyePosition.xyz-vPositionW); float hd=length(vEyePosition.xyz-vPositionW);
     float hf=pow(1.0-clamp(abs(dot(normalW,hv)),0.0,1.0),2.6);
     finalEmissive+=hfxRim*hf*hfxK.x;
+    if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3; float th=1.0-hfxD.x*0.62;
+      float edge=smoothstep(th-0.014,th,dn)*(1.0-smoothstep(th+0.004,th+0.022,dn));
+      float crack=(1.0-smoothstep(0.0,0.035+hd*0.0003,abs(hfxN(vHfxL*0.9+hfxD.y*3.0)-0.5)))*smoothstep(th+0.04,th+0.12,dn);
+      float fl=0.7+0.3*sin(hfxK.y*9.0+vHfxL.x*1.7)*sin(hfxK.y*5.3+vHfxL.z*2.1);
+      finalEmissive+=vec3(1.3,0.4,0.08)*(edge*1.1+crack*0.7)*fl*hfxD.x; }
     float st=hfxK.w, t=hfxK.y, w=0.05+hd*0.00045, en=hfxS.y; vec3 lp=vHfxL;
     if(st>0.5&&st<1.5){ vec3 q=lp*0.55+hfxS.x; vec3 c=floor(q); vec3 f=fract(q);
       float lx=(1.0-smoothstep(0.0,w,abs(f.y-0.5)))*step(0.45,hfxH(c));
@@ -58,6 +66,7 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
 #endif
 `}; }
 }
+try{ BABYLON.RegisterClass('BABYLON.HullFxPlugin',HullFxPlugin); }catch(e){}
 function addHullFx(M,fac){ try{ const P=FAC3D[fac]||FAC3D.hegemony; const rim=C3.Lerp(P.eng,new C3(.75,.85,1),.45), style=HULLFX_STYLE[fac]||0, ecol=P.win.scale(fac==='deathless'?1.6:fac==='chorus'?1.2:fac==='ithar'?.35:.9);
     const wear={corsair:.45,voidsworn:.32,hegemony:.22,deathless:.3,chorus:.12,ithar:.08}[fac]??.25, seed=(fac.length*13.7)%10;
     for(const [k,s,en] of [['hull',.85,1],['dark',.55,1],['steel',.45,0],['trim',.35,0]]) if(M[k]&&!M[k]._hullFx){ M[k]._hullFx=new HullFxPlugin(M[k],{rim,str:s,style,ecol,wear:k==='trim'?wear*.4:wear,seed,energy:!!en}); } }catch(e){ console.warn('hull shading unavailable',e); } }
@@ -252,3 +261,60 @@ function shieldShatter(p,dir,col){ try{ if(!G.scene||G.fxReduced) return; const 
     const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const dt=G.engine.getDeltaTime()/1000, k=(G.time-t0)/(.9*Math.max(.3,SPEED));
       if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); parts.forEach(q=>q.s.dispose()); return; }
       for(const q of parts){ q.s.position.addInPlace(q.v.scale(dt)); q.v.scaleInPlace(1-dt*1.6); q.s.rotation.addInPlace(q.spin.scale(dt)); q.s.scaling.setAll(q.sc*(1-k*k)); } }); }catch(e){ console.warn('shatter',e); } }
+
+// ---------- battle damage that burns into the hull ----------
+// Damaged ships get their own copies of the hull and dark materials, so scorched plating and glowing cracks spread across that ship alone as its hull drops.
+function shipDamageFx(v,hr){ try{ if(!v||!v.model||v.state!=='alive') return; const amt=Math.max(0,Math.min(1,(.8-hr)/.72)); if(amt<=0&&!v.dmgMats) return;
+    if(v.lastDmg!=null&&Math.abs(v.lastDmg-amt)<.01) return; v.lastDmg=amt;
+    if(!v.dmgMats){ const M=facMats(v.fac), map=new Map(); v.dmgMats=[]; const seed=(v.u&&v.u.id?String(v.u.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0):Math.random()*100)%37;
+      for(const src of [M.hull,M.dark]){ if(!src||!src._hullFx) continue; const c=src.clone(src.name+'_dmg');
+        for(const k of ['albedoTexture','bumpTexture','metallicTexture','emissiveTexture','ambientTexture','opacityTexture','microSurfaceTexture','reflectivityTexture','lightmapTexture','reflectionTexture']){ if(c[k]!==src[k]){ const blank=c[k]; c[k]=src[k]||null; try{ if(blank&&blank!==src[k]&&!Object.values(G.tex).includes(blank)) blank.dispose(); }catch(e){} } } // clones of generated textures come back blank: share the originals
+        const o=src._hullFx, opts={rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy}; let pl=c.pluginManager&&c.pluginManager.getPlugin&&c.pluginManager.getPlugin('HullFx');
+        if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(c,opts); c._hullFx=pl; pl.dseed=seed; map.set(src,c); v.dmgMats.push(c); }
+      for(const m of v.model.meshes) if(map.has(m.material)) m.material=map.get(m.material); }
+    for(const c of v.dmgMats) if(c._hullFx) c._hullFx.dmg=amt; }catch(e){ console.warn('damage shading',e); } }
+function disposeDamageMats(v){ try{ (v.dmgMats||[]).forEach(m=>m.dispose(false,false)); }catch(e){} v.dmgMats=null; }
+
+// ---------- asteroid surfaces: dust, darker basalt and mineral veins over the rock texture, in each rock's own coordinates ----------
+class RockFxPlugin extends BABYLON.MaterialPluginBase{
+  constructor(material){ super(material,'RockFx',200,{ROCKFX:false}); this._enable(true); }
+  prepareDefines(defines){ defines.ROCKFX=true; }
+  getClassName(){ return 'RockFxPlugin'; }
+  getCustomCode(type){
+    if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef ROCKFX\nvarying vec3 vRfxL;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef ROCKFX\nvRfxL=positionUpdated;\n#endif\n'};
+    if(type!=='fragment') return null;
+    return {CUSTOM_FRAGMENT_DEFINITIONS:`
+#ifdef ROCKFX
+varying vec3 vRfxL;
+float rfxH(vec3 p){ p=fract(p*0.3183099+vec3(0.71,0.113,0.419)); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float rfxN(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
+  return mix(mix(mix(rfxH(i),rfxH(i+vec3(1,0,0)),f.x),mix(rfxH(i+vec3(0,1,0)),rfxH(i+vec3(1,1,0)),f.x),f.y),mix(mix(rfxH(i+vec3(0,0,1)),rfxH(i+vec3(1,0,1)),f.x),mix(rfxH(i+vec3(0,1,1)),rfxH(i+vec3(1,1,1)),f.x),f.y),f.z); }
+#endif
+`,CUSTOM_FRAGMENT_UPDATE_DIFFUSE:`
+#ifdef ROCKFX
+  { vec3 q=vRfxL*2.3; float a=rfxN(q)*0.6+rfxN(q*2.7)*0.28+rfxN(q*7.5)*0.12;
+    float dust=smoothstep(0.45,0.75,a); float basalt=1.0-smoothstep(0.2,0.45,a);
+    float vein=1.0-smoothstep(0.0,0.02,abs(rfxN(vRfxL*4.1+7.0)-0.5));
+    baseColor.rgb*=mix(1.0,1.35,dust)*mix(1.0,0.5,basalt);
+    baseColor.rgb=mix(baseColor.rgb,baseColor.rgb*vec3(1.2,0.98,0.85),vein*0.22); }
+#endif
+`}; }
+}
+function addRockFx(mat){ try{ if(mat&&!mat._rockFx) mat._rockFx=new RockFxPlugin(mat); }catch(e){ console.warn('rock shading',e); } }
+
+// ---------- hyperspace rift: a ring of light tears open where a ship drops in, swirls, and snaps shut behind it ----------
+const RIFT_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec2 uv; uniform mat4 worldViewProjection; varying vec2 vUV; void main(){ vUV=uv; gl_Position=worldViewProjection*vec4(position,1.0); }`,
+  frag:`precision highp float; varying vec2 vUV; uniform vec3 col; uniform float t; uniform float seed;
+    NOISE
+    void main(){ vec2 p=vUV-0.5; float r=length(p)*2.0; float ang=atan(p.y,p.x);
+      float open=sin(clamp(t,0.0,1.0)*3.14159); float R=0.25+0.6*open;
+      float sw=fbm(vec3(cos(ang)*2.0,sin(ang)*2.0,r*3.0-t*4.0+seed),4);
+      float ring=exp(-pow((r-R+0.1*(sw-0.5))*14.0,2.0))*(0.6+0.8*sw);
+      float inner=smoothstep(R,0.0,r)*open*(0.15+0.35*sw);
+      float a=(ring*0.75+inner*0.3)*open; if(r>1.0) a=0.0;
+      gl_FragColor=vec4(col*a*1.1+vec3(1.0)*ring*open*0.15,a*0.8); }`};
+function warpRift(pos,fwd,size,col){ try{ if(!G.scene||G.fxReduced) return; const S=BABYLON.Effect.ShadersStore; if(!S.vsRiftVertexShader){ S.vsRiftVertexShader=RIFT_GLSL.vert; S.vsRiftFragmentShader=RIFT_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
+    const pl=MB.CreatePlane('rift',{size:1,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.isPickable=false; pl.position.copyFrom(pos); pl.lookAt(pos.add(fwd)); pl.scaling.setAll(size);
+    const m=new BABYLON.ShaderMaterial('riftM',G.scene,{vertex:'vsRift',fragment:'vsRift'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed'],needAlphaBlending:true});
+    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('seed',Math.random()*30); m.setFloat('t',0); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
+    const t0=G.time, D=1.15*Math.max(.4,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||pl.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!pl.isDisposed()) pl.dispose(); m.dispose(); return; } m.setFloat('t',k); }); }catch(e){ console.warn('rift',e); } }
