@@ -276,7 +276,7 @@ function buildBattleEnv(){
     for(let i=0;i<2500;i++){ const a=rr()*Math.PI*2, d=G.bx*(1.15+rr()*.75), s=.4+Math.pow(rr(),3)*4; mats.push(BABYLON.Matrix.Compose(new V3(s,s*(.6+rr()*.6),s),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(Math.cos(a)*d,-70-rr()*170+Math.sin(a*3)*25,Math.sin(a)*d*.75))); }
     ring.thinInstanceAdd(mats); G.ringNode=node; G.env.push(ring,node); }
   buildTerrainFeatures(rr); try{ buildTerrainTints(); }catch(e){ console.error(e); }
-  buildBelt(rr,bases); buildTraffic(rr); gradeFor((B.map||{}).map);
+  buildBelt(rr,bases); buildTraffic(rr); gradeFor((B.map||{}).map,B.cfg&&B.cfg.fac);
   { // only dispose textures that battlefield materials actually use; never the shared lighting textures
     const keep=cachedTextures(); [G.scene.environmentBRDFTexture,G.scene.environmentTexture].forEach(t=>t&&keep.add(t)); const used=new Set();
     for(const m of G.env){ const mat=m instanceof BABYLON.Material?m:m.material; if(mat&&mat.getActiveTextures) mat.getActiveTextures().forEach(t=>used.add(t)); if(m instanceof BABYLON.BaseTexture) used.add(m); }
@@ -432,6 +432,8 @@ function buildTraffic(rr){ G.traffic=[]; if(!B||B.showcase==='fleet') return; co
   for(let i=0;i<(G.mobile?0:3);i++){ try{ const md=buildShipModel({fac:i===1?'voidsworn':fac,cls:i===2?'Cruiser':'Battleship',isSq:false,side:'enemy',tpl:'bg'}); /* phones skip the distant traffic */ md.meshes.forEach(m=>{ m.isPickable=false; if(G.shadow) G.shadow.removeShadowCaster(m); });
       const a=(rr()-.5)*1.6+(i%2?Math.PI:0), d=1100+rr()*900; md.root.position=new V3(Math.cos(a)*d,-60+rr()*140,Math.sin(a)*d+600); md.root.scaling.setAll(3.5+rr()*2); md.root.rotation.y=rr()*6.28;
       G.traffic.push({root:md.root,vel:new V3(Math.cos(md.root.rotation.y),0,-Math.sin(md.root.rotation.y)).scale(2.5+rr()*3)}); G.env.push(md.root); }catch(e){} } }
-function gradeFor(map){ try{ const ip=G.pipe.imageProcessing; ip.colorCurvesEnabled=true; const cc=new BABYLON.ColorCurves();
+const FAC_GRADE={voidsworn:[38,8],hegemony:[212,8],corsair:[24,10],chorus:[312,9],ithar:[186,9],deathless:[138,9]}; // v42: each enemy faction's space tints the highlights
+function hueMix(a,b,k){ let d=((b-a)%360+540)%360-180; return Math.round((a+d*k+360)%360); }
+function gradeFor(map,fac){ try{ const ip=G.pipe.imageProcessing; ip.colorCurvesEnabled=true; const cc=new BABYLON.ColorCurves();
   const g={belt:[35,22,215,12],station:[190,10,210,14],planet:[200,16,30,10],storm:[275,24,250,18],graveyard:[25,26,210,22],none:[40,14,220,10]}[map||'none']||[40,14,220,10];
-  cc.highlightsHue=g[0]; cc.highlightsDensity=g[1]; cc.highlightsSaturation=20; cc.shadowsHue=g[2]; cc.shadowsDensity=g[3]; cc.shadowsSaturation=25; cc.globalSaturation=8; ip.colorCurves=cc; }catch(e){} }
+  const fg=FAC_GRADE[fac]; cc.highlightsHue=fg?hueMix(g[0],fg[0],.6):g[0]; cc.highlightsDensity=g[1]+(fg?fg[1]:0); cc.highlightsSaturation=20; cc.shadowsHue=g[2]; cc.shadowsDensity=g[3]; cc.shadowsSaturation=25; cc.globalSaturation=8; ip.colorCurves=cc; }catch(e){} }

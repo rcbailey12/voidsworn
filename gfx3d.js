@@ -53,12 +53,12 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
       float beat=0.5+0.5*sin(t*2.4-lp.x*0.22); beat=pow(beat,5.0);
       finalEmissive+=hfxE*v*(0.18+1.4*beat)*en; }
     else if(st>2.5&&st<3.5){ float b=pow(0.5+0.5*sin(lp.x*0.42-t*1.3+lp.y*0.25),22.0);
-      finalEmissive+=hfxE*b*(0.25+0.6*hf)*en; }
+      finalEmissive+=hfxE*b*(0.2+0.4*hf)*en; }
   }
 #endif
 `}; }
 }
-function addHullFx(M,fac){ try{ const P=FAC3D[fac]||FAC3D.hegemony; const rim=C3.Lerp(P.eng,new C3(.75,.85,1),.45), style=HULLFX_STYLE[fac]||0, ecol=P.win.scale(fac==='deathless'?1.6:fac==='chorus'?1.2:.9);
+function addHullFx(M,fac){ try{ const P=FAC3D[fac]||FAC3D.hegemony; const rim=C3.Lerp(P.eng,new C3(.75,.85,1),.45), style=HULLFX_STYLE[fac]||0, ecol=P.win.scale(fac==='deathless'?1.6:fac==='chorus'?1.2:fac==='ithar'?.35:.9);
     const wear={corsair:.45,voidsworn:.32,hegemony:.22,deathless:.3,chorus:.12,ithar:.08}[fac]??.25, seed=(fac.length*13.7)%10;
     for(const [k,s,en] of [['hull',.85,1],['dark',.55,1],['steel',.45,0],['trim',.35,0]]) if(M[k]&&!M[k]._hullFx){ M[k]._hullFx=new HullFxPlugin(M[k],{rim,str:s,style,ecol,wear:k==='trim'?wear*.4:wear,seed,energy:!!en}); } }catch(e){ console.warn('hull shading unavailable',e); } }
 
@@ -195,10 +195,10 @@ const FIRE_GLSL={
     void main(){ vec3 V=normalize(camPos-vP); float fac=abs(dot(normalize(vN),V));
       float n=fbm(vO*4.5+vec3(seed,t*2.0,-t*1.3),5); float n2=fbm(vO*11.0+vec3(-t*3.0,seed,t),3);
       float heat=clamp(1.05-t*1.25+(n-0.5)*1.2+(n2-0.5)*0.5+fac*0.3-(1.0-vD)*0.45,0.0,1.0);
-      vec3 c=heat>0.72?mix(vec3(1.0,0.55,0.16),vec3(1.0,0.86,0.55),(heat-0.72)/0.28):heat>0.38?mix(vec3(0.62,0.12,0.03),vec3(1.0,0.55,0.16),(heat-0.38)/0.34):mix(vec3(0.0),vec3(0.62,0.12,0.03),heat/0.38);
+      vec3 c=heat>0.72?mix(vec3(1.0,0.48,0.12),vec3(1.0,0.78,0.42),(heat-0.72)/0.28):heat>0.38?mix(vec3(0.62,0.12,0.03),vec3(1.0,0.55,0.16),(heat-0.38)/0.34):mix(vec3(0.0),vec3(0.62,0.12,0.03),heat/0.38);
       c=mix(c,c*tint,0.35);
       float a=smoothstep(0.0,0.1,t)*(1.0-smoothstep(0.5,1.0,t))*(0.3+0.7*fac)*smoothstep(0.32,0.62,n+0.22*fac+0.15*n2);
-      gl_FragColor=vec4(c*(0.3+heat*1.05),a*0.85); }`
+      gl_FragColor=vec4(c*(0.22+heat*0.8),a*0.8); }`
 };
 function fireballFx(pos,size,dur=1.1,tint){ try{ if(!G.scene) return; const S=BABYLON.Effect.ShadersStore; if(!S.vsFireVertexShader){ S.vsFireVertexShader=FIRE_GLSL.vert.replace('NOISE',PLANET_GLSL.noise); S.vsFireFragmentShader=FIRE_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
     if(!G.fireBase||G.fireBase.isDisposed()){ G.fireBase=MB.CreateSphere('fireBase',{diameter:2,segments:G.quality==='medium'?14:28},G.scene); G.fireBase.isVisible=false; G.fireBase.isPickable=false; }
@@ -227,9 +227,9 @@ function beamMaterial(col){ const S=BABYLON.Effect.ShadersStore; if(!S.vsBeamVer
 // ---------- frame time: p50/p90 per battle and quality level, logged at battle end ----------
 const FRAMES={ft:[],draws:0,inst:null,
   tick(dt){ if(dt>0&&dt<1){ this.ft.push(dt*1000); if(this.ft.length>3600) this.ft.splice(0,600); } },
-  reset(){ this.ft=[]; },
+  reset(){ this.ft=[]; try{ if(!this.inst&&G.scene) this.inst=new BABYLON.SceneInstrumentation(G.scene); }catch(e){} },
   summary(){ const a=this.ft.slice().sort((x,y)=>x-y), q=p=>a.length?Math.round(a[Math.min(a.length-1,Math.floor(a.length*p))]*10)/10:null;
-    let draws=null; try{ if(!this.inst&&G.scene) this.inst=new BABYLON.SceneInstrumentation(G.scene); if(this.inst) draws=this.inst.drawCallsCounter.current; }catch(e){}
+    let draws=null; try{ if(this.inst) draws=this.inst.drawCallsCounter.lastSecAverage||this.inst.drawCallsCounter.current; }catch(e){}
     return {p50:q(.5),p90:q(.9),n:a.length,draws:draws==null?null:Math.round(draws),rw:G.engine?G.engine.getRenderWidth():0,rh:G.engine?G.engine.getRenderHeight():0,q:G.quality,mob:!!G.mobile}; } };
 
 // per-frame updates for the shader library: rim strength and tactical ship scale follow the camera distance; planets and nebulae animate
