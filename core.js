@@ -109,7 +109,7 @@ function hasBoon(id){ return !!(RUN&&RUN.boons&&RUN.boons.some(b=>b.id===id)); }
 function boonPatrons(){ return new Set((RUN&&RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].p).filter(Boolean)); }
 function rollRarity(minR,s,p){ const ft=p?favourTier(p):0, x=rnd(), rare=.24+.06*((s||1)-1)+(ft>=1?.12:0), epic=.06+.03*((s||1)-1)+(ft>=1?.03:0); let r=x<epic?2:x<epic+rare?1:0; if(ft>=3) r=Math.max(r,1); return Math.max(minR||0,r); }
 // three boons from one patron; a duo boon can take a slot once you hold boons from both of its patrons
-function fleetKit(){ const k={}; for(const sh of (RUN&&RUN.fleet)||[]){ const d=derive(sh); for(const w of d.weapons){ if(w.k==='torp') k.torp=1; if(w.k==='lance') k.lance=1; if(w.k==='battery') k.batt=1; if(w.k==='flak') k.flak=1; if(w.arc==='P'||w.arc==='S') k.broad=1; } if((HULLS[sh.tpl].sh||0)>0) k.shields=1; if(HULLS[sh.tpl].hangar) k.carrier=1; if(d.hangar) k.sq=1; } return k; }
+function fleetKit(){ const k={}; for(const sh of (RUN&&RUN.fleet)||[]){ const d=derive(sh); for(const w of d.weapons){ if(w.k==='torp') k.torp=1; if(w.k==='lance') k.lance=1; if(w.k==='battery') k.batt=1; if(w.k==='flak') k.flak=1; if(w.arc==='P'||w.arc==='S') k.broad=1; if(w.arc==='P'||w.arc==='S'||w.k==='battery') k.still=1; } if((HULLS[sh.tpl].sh||0)>0) k.shields=1; if(HULLS[sh.tpl].hangar) k.carrier=1; if(d.hangar) k.sq=1; } return k; }
 function boonUseful(id,kit){ const n=BOON_NEED[id]; return !n||!!kit[n]; }
 function rollBoonOffer(p,minR){ ensurePatrons(); const s=(RUN&&RUN.sector)||1, have=boonPatrons(), kit=fleetKit();
   let pool=Object.keys(BOONS).filter(id=>BOONS[id].p===p&&!hasBoon(id)); pool=shuffle(pool); const junk=pool.filter(id=>!boonUseful(id,kit)); pool=pool.filter(id=>boonUseful(id,kit));
