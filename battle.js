@@ -42,8 +42,10 @@ const ENCOUNTERS={
   break:{n:'Breakthrough',d:'Get ships off the far edge: a ship that ends its move on a green hex jumps clear. Their fleet blocks the way ahead and more close in from behind.',shapes:['open','lanes','corridor','dense','rift','shoals','archipelago','colossus']},
   hold:{n:'Relay',d:'Have a ship next to the relay, with no enemy there, at the start of 3 rounds.',shapes:['open','corridor','dense','rift','shoals','hourglass','archipelago','colossus']},
   flagship:{n:'Decapitation',d:'Destroy their flagship and the rest of their fleet scatters.',shapes:['open','corridor','lanes','ring','dense','deadstar','rift','shoals','hourglass','archipelago','colossus']}};
-const ENC_POOL=['rout','ambush','defend','hunt','intercept','break','hold']; const ENC_SPECIAL=['defend','hunt','intercept','break','ambush'];
-function rollEncounter(kind,col){ if(kind==='boss') return {enc:'rout',shape:'open'}; const enc=col===0?'rout':pick(ENC_POOL); return {enc,shape:pick(ENCOUNTERS[enc].shapes)}; }
+const ENC_POOL=['rout','ambush','defend','hunt','intercept','break','hold','flagship']; const ENC_SPECIAL=['defend','hunt','intercept','break','ambush','hold','flagship']; // v41: Relay and Decapitation can roll again
+// v41: sector flagships no longer always fight a plain Engagement: sometimes they spring an ambush, sometimes the fight is decided by their death alone
+function bossEncounter(){ const enc=pick(['rout','rout','ambush','flagship']); const sh=['ring','open','hourglass'].filter(s=>ENCOUNTERS[enc].shapes.includes(s)); return {enc,shape:pick(sh.length?sh:['open'])}; }
+function rollEncounter(kind,col){ if(kind==='boss') return bossEncounter(); const enc=col===0?'rout':pick(ENC_POOL); return {enc,shape:pick(ENCOUNTERS[enc].shapes)}; }
 function terrainConnected(T){
   const ok=h=>onBoard(h.q,h.r)&&!BLOCKING[T[hkey(h.q,h.r)]], all=boardHexes(), col=h=>h.q+Math.floor(h.r/2), bb=boardBounds();
   const reach=(from,goal)=>{ const seen=new Set(from.map(h=>hkey(h.q,h.r))), q=from.slice(); while(q.length){ const h=q.pop(); if(goal(h)) return true; for(const d of DIRS){ const n={q:h.q+d[0],r:h.r+d[1]}, k=hkey(n.q,n.r); if(!seen.has(k)&&ok(n)){ seen.add(k); q.push(n); } } } return false; };
@@ -101,7 +103,7 @@ function fleetPower(){ if(typeof RUN==='undefined'||!RUN||!RUN.fleet) return 99;
   const boons=(RUN.boons||[]).reduce((a,b)=>a+((RARITY[b.r||0]||RARITY[0]).m),0); return p*(1+.035*boons+.025*((RUN.relics||[]).length)); }
 function playerStrength(){ return fleetPower(); }
 // sector flagship hull/shield scale and damage, by sector (sims can override with BOSS_SCALE / BOSS_DMG)
-const BOSS_FAC={corsair:1.45,voidsworn:1.25,hegemony:1.05,chorus:1,deathless:1,ithar:.9}; // per-flagship tuning from the boss matrix (v40)
+const BOSS_FAC={corsair:1.45,voidsworn:1.25,hegemony:.95,chorus:1,deathless:1,ithar:.9}; // per-flagship tuning from the boss matrix (v40)
 let BOSS_SCALE=[0,.5,.55,.7], BOSS_DMG=[0,.85,.88,.95];
 try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE')); if(process_env('BOSS_DMG')) BOSS_DMG=JSON.parse(process_env('BOSS_DMG')); }catch(e){}
 function genEnemyFleet(fac,s,col,kind){
@@ -224,6 +226,7 @@ function clearSpawns(){ if(process_env('NOCLEAR')==='1') return; const T=B.terra
     for(const u of mine){ near(u,side==='player'?2:1); const line=hexLine(u,tgt), L=Math.min(line.length-1,side==='player'?6:4); for(let i=1;i<=L;i++) near(line[i],i<=3&&side==='player'?1:0); } }
   if(B.map&&B.map.wrecks) B.map.wrecks=B.map.wrecks.filter(h=>T[hkey(h.q,h.r)]==='hulk'); B.spawnCleared=n; }
 function startBattle(cfg){
+  const seed=cfg.seed!=null?(cfg.seed>>>0):Math.floor(rnd()*4294967296); rndSeed(seed);
   const enc=ENCOUNTERS[cfg.obj]?cfg.obj:'rout', midR=Math.floor(BH/2);
   let shape=SHAPES[cfg.shape]?cfg.shape:'open', map=enc==='defend'?'station':cfg.map;
   if(shape==='open'&&B0small(cfg)&&['rout','hunt','ambush'].includes(enc)) shape='compact'; // small fleets fight in close quarters
@@ -233,7 +236,7 @@ function startBattle(cfg){
   let T=null; for(let k=0;k<6;k++){ T=genTerrain(map,shape,topt); if(terrainConnected(T)) break; T=null; }
   if(!T){ shape='open'; T=genTerrain(map,'open',topt); }
   if(cfg.kind==='boss') for(const k of Object.keys(T)) if(T[k]==='rock'&&rnd()<.45) delete T[k]; // flagship duels need firing lanes, not a maze
-  B={units:[], terrain:T, map:TERRAIN_META, shape, enc, deployMode:enc==='ambush'?'ambush':['defend','hunt','intercept','break'].includes(enc)?'line':(cfg.dep||'line'), resolve:{player:1,enemy:1}, round:1, side:'player', sel:null, armed:null, mode:null, hover:null, reach:null,
+  B={seed, units:[], terrain:T, map:TERRAIN_META, shape, enc, deployMode:enc==='ambush'?'ambush':['defend','hunt','intercept','break'].includes(enc)?'line':(cfg.dep||'line'), resolve:{player:1,enemy:1}, round:1, side:'player', sel:null, armed:null, mode:null, hover:null, reach:null,
      busy:false, log:[], fx:[], cfg, over:false, reviveUsed:false, inspect:null, showArcs:true, sector:RUN.sector};
   const s=RUN.sector;
   for(const ship of RUN.fleet){ if(ship.hp<=0) continue; B.units.push(makeUnit('player', ship.tpl, {ship})); }
@@ -585,7 +588,7 @@ async function killUnit(t,by){
 }
 function sideCP(side){ return B.units.filter(u=>u.side===side&&!u.isSq&&!u.dead).reduce((a,u)=>a+(u.t.cp||1),0); }
 function setupObjective(type){ const o={type:type||'rout',score:0,escore:0};
-  if(o.type==='flagship'&&caps('enemy').length<3) o.type='hunt'; // killing the "flagship" of a one- or two-ship fleet is just a rout
+  if(o.type==='flagship'&&caps('enemy').length<3) o.type=caps('enemy').some(u=>u.t&&u.t.boss)?'rout':'hunt'; // killing the "flagship" of a one- or two-ship fleet is just a rout
   if(o.type==='defend'&&!B.map.station) o.type='hold';
   if(o.type==='hunt'){ const e=alive('enemy').filter(u=>!u.isSq).sort((a,c)=>(c.t.cp||1)-(a.t.cp||1)||c.maxHp-a.maxHp)[0]; if(e){ e.flagship=true; o.rounds=ENC_ROUNDS; } else o.type='rout'; }
   if(o.type==='defend'){ o.hex={q:B.map.station.q,r:B.map.station.r}; o.hp=o.hpMax=5; o.rounds=ENC_ROUNDS; }
@@ -757,7 +760,7 @@ function makeWing(u,h,kind){ const fx=u.side==='player'?sumFx(fleetFxList()):{};
   sq.fac=u.fac; sq.q=h.q; sq.r=h.r; sq.facing=u.facing; sq.name=`${HULLS[kind].n} (${u.side==='player'?u.name:u.t.n.split(' ').slice(-1)[0]})`; B.units.push(sq); return sq; }
 // carriers open the battle with their wings already in flight; launching only replaces losses
 function deployWings(){ for(const u of B.units.filter(x=>(x.ab==='launch'||(x.fx&&x.fx.hive))&&!x.dead&&!x.isSq)){ const foes=alive(u.side==='player'?'enemy':'player'), sec=B.sector||1, bossWings=u.side==='enemy'&&u.t.boss;
-  u.spare=bossWings?Math.max(0,sec-1):(u.hangar||0)*2; /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // two spare wings per hangar slot, so losses end instead of a stream of relaunches
+  u.spare=bossWings?Math.max(0,sec-1):(u.hangar||0); /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // v41: one spare wing per hangar slot (was two): carriers keep their opening wings, but losses end sooner
   for(let i=0;i<(bossWings?Math.min(u.hangar||0,sec):(u.hangar||0));i++){ const hs=launchHexes(u); if(!hs.length) break; hs.sort((a,b)=>Math.min(99,...foes.map(f=>hdist(a,f)))-Math.min(99,...foes.map(f=>hdist(b,f))));
     makeWing(u,hs[0],wingKind(u,i)); } }
   /* fighter screen against carrier-heavy fleets, flown off the biggest escorts */
@@ -789,7 +792,7 @@ async function useAbility(u,arg){
   if(a==='evasive'){ u.evBuff=25; u.mp+=2; fxText(u,'Evasive','#9fe3ff',-24); }
   if(a==='reload'){ for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; } fxText(u,'Tubes loaded','#f0b35a',-24); }
   if(a==='focus'){ u.focus=true; fxText(u,'Focus fire','#f0b35a',-24); }
-  if(a==='phase'){ u.evBuff=15; u.mp+=1; fxText(u,'Phase shift','#7dff9b',-24); }
+  if(a==='phase'){ u.evBuff=22; u.mp+=2; fxText(u,'Phase shift','#7dff9b',-24); }
   if(a==='frenzy'){ u.focus=true; fxText(u,'Blood frenzy','#ff8fe0',-24); }
   if(a==='overburn'){ u.mp+=3; u.ramBoost=1.5; fxText(u,'Overburn','#ffb35c',-24); }
   if(a==='regrow'){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*.25)); u.hp+=h; fxText(u,'+'+h+' hull','#8ff0a0',-24); }

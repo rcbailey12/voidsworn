@@ -68,7 +68,7 @@ const HULLS = {
   i_boss:{n:'Worldsong Ark',cls:'Ark',fac:'ithar',size:1.26,cp:11,hp:470,sh:34,rg:14,ar:.2,sp:3,tn:2,ev:6,w:[['pulsar','F'],['pulsar','F'],['pulsar','T'],['turret','T'],['flak','T']],ab:'surge',boss:true},
   // ---- The Deathless Dynasty
   d_scythe:{n:'Deathless scythe',cls:'Frigate',fac:'deathless',size:.5,cp:1,hp:56,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:14,w:[['gauss','T']],ab:'phase',regen:3,reanimate:true},
-  d_jackal:{n:'Deathless jackal',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:88,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['gauss','T'],['gauss','F']],ab:'phase',regen:4,reanimate:true},
+  d_jackal:{n:'Deathless jackal',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:110,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['gauss','T'],['gauss','F']],ab:'phase',regen:4,reanimate:true},
   d_harvester:{n:'Deathless harvester',cls:'Cruiser',fac:'deathless',size:.82,cp:4,hp:145,sh:0,rg:0,ar:.3,sp:2,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['gsentry','T']],ab:'reclaim',regen:4,reanimate:true},
   d_boss:{n:'The Undying Throne',cls:'Tomb-ark',fac:'deathless',size:1.3,cp:12,hp:480,sh:0,rg:0,ar:.35,sp:1,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['flak','T']],ab:'nova',regen:8,boss:true},
 };
@@ -97,7 +97,7 @@ const ABILITIES = {
   evasive:{n:'Evasive burn',d:'+25 evasion until your next turn and +2 movement now.',cd:3},
   reload:{n:'Reload torpedoes',d:'Torpedo tubes are ready to fire again immediately.',cd:3},
   focus:{n:'Concentrated fire',d:'All of this ship\u2019s weapons deal +30% damage this turn.',cd:3},
-  launch:{n:'Launch squadron',d:'Carriers start each battle with their wings in flight. This launches a replacement for a lost wing into an adjacent hex; each carrier has two spare wings per hangar slot.',cd:1},
+  launch:{n:'Launch squadron',d:'Carriers start each battle with their wings in flight. This launches a replacement for a lost wing into an adjacent hex; each carrier has one spare wing per hangar slot.',cd:1},
   surge:{n:'Shield surge',d:'Every shield facing restored to full strength.',cd:4},
   nova:{n:'Nova cannon',d:'Spinal shell: 40 damage to a hex 3\u20139 away and 20 to everything adjacent. Hits friends too.',cd:3,target:true},
   // faction abilities: every faction's line ships get something to press besides fire and brace
@@ -106,7 +106,7 @@ const ABILITIES = {
   frenzy:{n:'Blood frenzy',d:'All of this ship\u2019s weapons deal +30% damage this turn.',cd:3},
   regrow:{n:'Rapid regrowth',d:'Regrow 25% of this ship\u2019s hull right now.',cd:3},
   blink:{n:'Phase jump',d:'Jump to any open hex within 3, straight past rocks and ships. Tap the hex.',cd:3,target:true},
-  phase:{n:'Dimensional shift',d:'+15 evasion until your next turn and +1 movement now.',cd:3},
+  phase:{n:'Dimensional shift',d:'+22 evasion until your next turn and +2 movement now.',cd:3},
   reclaim:{n:'Reanimation beam',d:'Restore 20% hull to your most damaged ship within 3 hexes (this one included).',cd:3},
 };
 const ORDERS = {
@@ -193,10 +193,10 @@ Object.assign(ADMIRALS,{
   vaelen:{fac:'ithar',n:'Seraph Vaelen',doc:'Lance choir',d:'Lances deal +20% damage and gain +10 aim.',fx:{lancePct:.2,aim:10},start:['i_song','i_blade'],cost:30,cmd:{id:'barrage',n:'Chord of light',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
   thorne:{fac:'ithar',n:'Thorne of the Veil',doc:'Veil tactics',d:'+8 evasion for every ship.',fx:{ev:8},start:['i_blade','i_blade','i_wisp','i_wisp'],cost:45,cmd:{id:'surge',n:'Phase drift',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
   mirelle:{fac:'ithar',n:'Mirelle Starwarden',doc:'Prism hulls',d:'All ships +15% shields, and shields recharge 20% faster.',fx:{shPct:.15,regenPct:.2},start:['i_song','i_wisp','i_wisp'],cost:80,cmd:{id:'iron',n:'Prism ward',d:'All shields refill and your ships take 40% less hull damage this round.'}},
-  nekhet:{fac:'deathless',n:'Overlord Nekhet the Undying',doc:'Eternal legion',d:'Ships regrow 6% of their hull each round.',fx:{hullRegenPct:.06},start:['d_harvester','d_jackal'],cost:0,cmd:{id:'restore',n:'Reanimation protocol',d:'Every ship rebuilds 25% of its hull and mends damaged sections, even destroyed ones.'}},
+  nekhet:{fac:'deathless',n:'Overlord Nekhet the Undying',doc:'Eternal legion',d:'Ships regrow 6% of their hull each round.',fx:{hullRegenPct:.06},start:['d_harvester','d_jackal','d_scythe'],cost:0,cmd:{id:'restore',n:'Reanimation protocol',d:'Every ship rebuilds 25% of its hull and mends damaged sections, even destroyed ones.'}},
   sekhmar:{fac:'deathless',n:'Sekhmar the Reaper',doc:'Reaping arcs',d:'Doom arcs deal +20% damage and every weapon +10%.',fx:{lancePct:.2,dmgPct:.1},start:['d_harvester','d_scythe','d_scythe'],cost:30,cmd:{id:'barrage',n:'Harvest of souls',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
   anuket:{fac:'deathless',n:'Cryptlord Anuket',doc:'Silent hunters',d:'+20% damage on rear-arc hits and +10 evasion.',fx:{rearPct:.2,ev:10},start:['d_jackal','d_jackal','d_scythe','d_scythe'],cost:45,cmd:{id:'hunt',n:'Tomb-blade strike',d:'Every ship deals +30% damage this round.'}},
-  khepra:{fac:'deathless',n:'Khepra the Patient',doc:'Living stone',d:'All ships +20% hull.',fx:{hpPct:.2},start:['d_jackal','d_jackal','d_jackal'],cost:80,cmd:{id:'iron',n:'Living stone',d:'All shields refill and your ships take 40% less hull damage this round.'}},
+  khepra:{fac:'deathless',n:'Khepra the Patient',doc:'Living stone',d:'All ships +20% hull.',fx:{hpPct:.2},start:['d_jackal','d_jackal','d_jackal','d_scythe'],cost:80,cmd:{id:'iron',n:'Living stone',d:'All shields refill and your ships take 40% less hull damage this round.'}},
 });
 
 const LEGACY = {

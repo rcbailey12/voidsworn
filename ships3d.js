@@ -549,6 +549,7 @@ function buildShipModel(u){ if(u.isSq) return null; const fac=u.fac||'voidsworn'
   const meshes=all.filter(m=>m.name.includes('hull_')), plumes=all.filter(m=>m.name.endsWith('plume')), flares=all.filter(m=>m.name.endsWith('flare'));
   for(const m of meshes){ m.isPickable=true; m.alwaysSelectAsActiveMesh=true; if(m.material===M.hull||m.material===M.dark) castShadows(m); else if(m.material===M.trim||m.material===M.steel) m.receiveShadows=true; if(m.material===M.dark||m.material===M.trim||m.material===M.steel||(G.quality==='medium'&&m.material===M.hull)) G.glow.addExcludedMesh(m); }
   for(const m of plumes.concat(flares)) m.isPickable=false; all.filter(m=>m.name.endsWith('emblem')).forEach(m=>G.glow.addExcludedMesh(m));
+  for(const m of all) try{ m.refreshBoundingInfo(true); }catch(e){} // v41: every clone gets its own bounding data before its first transparent sort
   const model={root,fore,aft,meshes,plumes,flares,surf:p.surf,stacks:p.stacks,arcs:p.arcs,hard:p.hard,bays:p.bays,L:p.L,H:p.H,fac:p.fac};
   if(p.whole) model.toSplit=()=>splitModel(model,p.root);
   return model; }
@@ -556,10 +557,10 @@ function buildShipModel(u){ if(u.isSq) return null; const fac=u.fac||'voidsworn'
 // The fore/aft split copy is only swapped in when the ship dies and breaks in two.
 function makeWholeProto(proto){
   const wr=proto.clone('ship',null), fore=wr.getChildren().find(n=>n.name.endsWith('fore'));
-  const byMat=new Map(); for(const m of wr.getChildMeshes(false)){ if(!(m.name.includes('hull_')||m.name.endsWith('emblem'))||m instanceof BABYLON.InstancedMesh) continue; if(!byMat.has(m.material)) byMat.set(m.material,[]); byMat.get(m.material).push(m); }
+  const byMat=new Map(); for(const m of wr.getChildMeshes(false)){ if(!m.name.includes('hull_')||m instanceof BABYLON.InstancedMesh) continue; /* v41: emblems are never merged; two tiny planes, and the merge was what broke transparent sorting */ if(!byMat.has(m.material)) byMat.set(m.material,[]); byMat.get(m.material).push(m); }
   for(const [mat,ms] of byMat){ if(ms.length<2) continue;
     const vds=ms.map(m=>{ const vd=BABYLON.VertexData.ExtractFromMesh(m,true,true); const loc=m.computeWorldMatrix(true).multiply(BABYLON.Matrix.Invert(wr.computeWorldMatrix(true))); vd.transform(loc); return vd; });
-    const nm=new BABYLON.Mesh(ms[0].name.replace(/^.*?(hull_)/,'$1'),G.scene); vds[0].merge(vds.slice(1),true); vds[0].applyToMesh(nm); nm.refreshBoundingInfo(true); nm.material=mat; nm.parent=fore; nm.receiveShadows=ms[0].receiveShadows; nm.isPickable=ms[0].isPickable; if(ms[0].name.endsWith('emblem')){ nm.name='emblem'; G.glow.addExcludedMesh(nm); }
+    const nm=new BABYLON.Mesh(ms[0].name.replace(/^.*?(hull_)/,'$1'),G.scene); vds[0].merge(vds.slice(1),true); vds[0].applyToMesh(nm); nm.refreshBoundingInfo(true); nm.material=mat; nm.parent=fore; nm.receiveShadows=ms[0].receiveShadows; nm.isPickable=ms[0].isPickable;
     ms.forEach(m=>m.dispose(false,false)); }
   // engine plumes: one mesh, scaled from the nozzle face; flares are billboards, so phones keep a single bigger one
   const aft=wr.getChildren().find(n=>n.name.endsWith('aft')), all=wr.getChildMeshes(false), pl=all.filter(m=>m.name.endsWith('plume')), fl=all.filter(m=>m.name.endsWith('flare'));

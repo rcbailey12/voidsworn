@@ -1,5 +1,9 @@
 // ======================= CORE =======================
-const rnd = Math.random;
+// v41: seeded rules randomness (mulberry32). Each battle reseeds from B.seed, so a seed plus the same moves replays a fight;
+// the simulator takes SEED from the environment so whole runs repeat exactly. Cosmetic effects keep Math.random.
+let RNG_S=(Math.random()*4294967296)>>>0;
+function rndSeed(s){ RNG_S=(s>>>0); }
+function rnd(){ RNG_S=(RNG_S+0x6D2B79F5)|0; let t=Math.imul(RNG_S^(RNG_S>>>15),1|RNG_S); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }
 const ri = (a,b) => a + Math.floor(rnd()*(b-a+1));
 const pick = a => a[Math.floor(rnd()*a.length)];
 const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
@@ -48,6 +52,8 @@ function migrateMeta(m){ if(!m.v||m.v<2){ m.opts=m.opts||{}; m.tel=m.tel||[]; m.
       else if(e.ev==='battle_end'&&adm&&e.result==='win') m.mastery[adm]=(m.mastery[adm]||0)+(e.kind==='boss'?5:e.kind==='elite'?2:1);
       else if(e.ev==='run_end'){ if(adm&&e.victory) m.mastery[adm]=(m.mastery[adm]||0)+10; adm=null; const st=e.stats||{}; m._back=(m._back||0)+(st.battles||0)*2+(st.elites||0)*4+(st.bosses||0)*15+Math.floor((st.kills||0)/4)+((e.sector||1)-1)*5; }
       else if(e.ev==='boon_pick'&&e.id&&typeof BOONS!=='undefined'&&BOONS[e.id]){ const ps=BOONS[e.id].p?[BOONS[e.id].p]:(BOONS[e.id].duo||[]); for(const p of ps) m.favour[p]=(m.favour[p]||0)+1+(e.r||0); } } m.renown=(m.renown||0)+Math.min(60,m._back||0); delete m._back; /* a capped credit for runs already flown, so there is something to unlock right away */ }catch(err){} }
+  // v41: older builds logged run_end without a faction, so early victories never reached wonFacs; recover them from the run's run_start
+  if(!m.wonFix41){ m.wonFix41=1; try{ let fac=null; const won=new Set((m.stats&&m.stats.wonFacs)||[]); for(const e of (m.tel||[])){ if(e.ev==='run_start'&&e.fac) fac=e.fac; else if(e.ev==='run_end'){ if(e.victory&&(e.fac||fac)) won.add(e.fac||fac); fac=null; } } if(m.stats) m.stats.wonFacs=[...won]; }catch(e){} }
   return m; }
 function migrateRun(r){ if(r&&!r.fac) r.fac='voidsworn';
   if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return r; }
@@ -56,9 +62,14 @@ let SAVED_RUN = null;
 let onPersistLoaded = ()=>{};
 const Persist = {
   db:null, uid:null, writing:false, pending:false,
-  loadLocal(){ try{ const s=localStorage.getItem(STORE_KEY); if(s){ const o=JSON.parse(s);
+  loadLocal(){ let s=null, o=null; try{ s=localStorage.getItem(STORE_KEY); }catch(e){} try{ if(s) o=JSON.parse(s); }catch(e){ o=null; } // v41: a damaged save falls back to the backup copy
+    if(s&&(!o||typeof o!=='object')){ try{ const b=localStorage.getItem(STORE_KEY+'.bak'); if(b){ o=JSON.parse(b); this.recovered=true; } }catch(e){ o=null; } }
+    try{ if(o&&typeof o==='object'){
       if(o.meta){ META=migrateMeta(Object.assign(defaultMeta(),o.meta)); if(typeof mergeLocalTel==='function') mergeLocalTel(); } SAVED_RUN=migrateRun((o.run&&!o.run.none)?o.run:null); } }catch(e){} },
-  saveLocal(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify({meta:META, run:SAVED_RUN})); }catch(e){} },
+  saveLocal(){ const data=JSON.stringify({meta:META, run:SAVED_RUN});
+    try{ const prev=localStorage.getItem(STORE_KEY); if(prev&&prev!==data){ try{ JSON.parse(prev); localStorage.setItem(STORE_KEY+'.bak',prev); }catch(e){} } }catch(e){} // v41: keep the last good save one step behind
+    try{ localStorage.setItem(STORE_KEY, data); this.failed=false; }
+    catch(e){ if(!this.failed&&typeof toast==='function') toast('This device could not save locally (storage full?). Your cloud save still updates.'); this.failed=true; } },
   async connect(){
     try{
       if(!window.claude || typeof window.claude.use!=='function') return;

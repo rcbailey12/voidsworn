@@ -4,7 +4,7 @@ eval(['data.js','core.js','battle.js'].map(f=>fs.readFileSync(f,'utf8')).join('\
 function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){}
 var CLOCK={old:0,neu:0}, ESC=1; async function animMove(u,q,r,f){ u.q=q; u.r=r; u.facing=f; CLOCK.old+=u.isSq?.11:u.size>.8?.3:.22; CLOCK.neu+=ESC*u.isSq?.07:u.size>.8?.19:.15; } async function animRotate(u,f){ u.facing=f; CLOCK.old+=u.size>.8?.42:.28; CLOCK.neu+=ESC*u.size>.8?.26:.19; }
 async function animWeapon(u,w,t,shots){ const n=shots.length; if(w.k==='lance'){ CLOCK.old+=.48+n*.34+.22; CLOCK.neu+=ESC*.32+n*.25+.15; } else if(w.k==='torp'){ CLOCK.old+=.48+n*.17+1.07; CLOCK.neu+=ESC*.32+n*.12+.84; } else { CLOCK.old+=(u.isSq?0:.48)+n*.095+.59; CLOCK.neu+=ESC*n*.07+.49; } } async function animExplode(u){ CLOCK.old+=u.isSq?.25:1.2; CLOCK.neu+=ESC*u.isSq?.25:.68; } async function animNova(){} async function fxRam(){ STATS.rams++; } async function fxBoard(){ STATS.boards++; } function onCapture(){ STATS.caps++; } function fxShieldBreak(){} function fxWithdraw(){}
-SPEED=0;
+SPEED=0; if(process.env.SEED) rndSeed(+process.env.SEED);
 var AI_LEVEL=process.env.AI||'veteran'; var NO_CAP=process.env.CAP==='0';
 function botObj(v){ const o=B.obj; if(!o) return 0; const col=h=>h.q+Math.floor(h.r/2);
   if(o.type==='hold') return hdist(v,o.hex)*1.6;
@@ -16,7 +16,7 @@ function botObj(v){ const o=B.obj; if(!o) return 0; const col=h=>h.q+Math.floor(
 async function botTurn(){ await swarmPhase('player');
   for(const u of alive('player').filter(x=>!x.isSq)){
     if(B.over||u.dead) continue;
-    if(u.ab && canAbility(u)){ if(u.ab==='launch') await useAbility(u,{hex:launchHexes(u)[0],kind:Math.random()<.5?'fighter':'bomber'});
+    if(u.ab && canAbility(u)){ if(u.ab==='launch') await useAbility(u,{hex:launchHexes(u)[0],kind:rnd()<.5?'fighter':'bomber'});
       else if(u.ab==='nova'){ const t=novaTargets(u).find(h=>alive('enemy').some(e=>hdist(e,h)<=1)&&!alive('player').some(p=>hdist(p,h)<=1)); if(t) await useAbility(u,{hex:t}); }
       else await useAbility(u); }
     const foes=alive('enemy'); if(!foes.length) break;
@@ -63,7 +63,7 @@ async function botCommand(){ if(process.env.BOTCMD==='0'||!canCommand('player'))
 async function botUnit(u){
   if(B.over||u.dead) return;
   await botCommand(); if(B.over||u.dead) return;
-  if(u.ab && canAbility(u)){ if(u.ab==='launch'){ const hs=launchHexes(u); if(hs.length) await useAbility(u,{hex:hs[0],kind:u.fac==='voidsworn'?(Math.random()<.5?'fighter':'bomber'):wingKind(u)}); }
+  if(u.ab && canAbility(u)){ if(u.ab==='launch'){ const hs=launchHexes(u); if(hs.length) await useAbility(u,{hex:hs[0],kind:u.fac==='voidsworn'?(rnd()<.5?'fighter':'bomber'):wingKind(u)}); }
     else if(u.ab==='nova'){ const t=novaTargets(u).find(h=>alive('enemy').some(e=>hdist(e,h)<=1)&&!alive('player').some(p=>hdist(p,h)<=1)); if(t) await useAbility(u,{hex:t}); }
     else await useAbility(u); }
   if(!u.isSq) await tacticRam(u); if(B.over||u.dead) return;
