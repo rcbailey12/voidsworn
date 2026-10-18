@@ -321,6 +321,22 @@ const MASTERY_PERKS=[
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Watching'},{at:4,n:'Favoured',d:'Their boons are rare more often.'},{at:12,n:'Devoted',d:'If they watch your run, you start with one of their boons.'},{at:25,n:'Chosen',d:'Their boons are never common.'}];
 // Heat: optional rules after your first victory; each level adds 10% renown
+// enemy fleet archetypes: the same budget spent three different ways, named per faction and shown on the map
+const ARCHETYPES={
+  swarm:{d:'Many light hulls. Broadsides and flak shine; lances are wasted on them.',names:{voidsworn:'Zealot flotilla',hegemony:'Picket screen',corsair:'Wolfpack',chorus:'Brood swarm',ithar:'Wisp flight',deathless:'Scythe harvest'}},
+  heavy:{d:'Few, big hulls. Bring lances, torpedoes and a flank.',names:{voidsworn:'Cathedral line',hegemony:'Line of battle',corsair:'Hulk convoy',chorus:'Titan pod',ithar:'Songline',deathless:'Phalanx'}},
+  carrier:{d:'Built around a carrier and its wings. Fighters and flak pay off.',names:{voidsworn:'Reliquary group',hegemony:'Carrier group',corsair:'Raider nest',chorus:'Hive cluster',ithar:'Wraith host',deathless:'Harvest ark'}}};
+// node modifiers: a twist on one fight, shown on the map
+const NODE_MODS={
+  bounty:{n:'Bounty',d:'A price on this fleet: +50% credits, and they bring 10% more ships.'},
+  veteran:{n:'Veteran captain',d:'Their largest ship has an elite captain.'}};
+// sector conditions: each sector of a run has one, shown on the sector map and applied to every fight there
+const SECTOR_CONDS={
+  ion:{n:'Ion season',d:'Ion storms sweep every battlefield, and shields recharge 25% slower on both sides.',regen:.75,terr:'storm'},
+  dark:{n:'Dark sector',d:'Thick nebulae choke every battlefield: more hexes where shots go wide (\u221215 to hit inside).',terr:'neb'},
+  wreck:{n:'Wreck belt',d:'Old battle wreckage everywhere: more debris hexes (\u221210 to hit inside), and salvage adds 15% to every battle\u2019s pay.',terr:'debris',cred:.15},
+  war:{n:'War zone',d:'Every fight here draws reinforcements for one side or the other, and pays 20% more credits.',cred:.2,war:1},
+  scarce:{n:'Scarcity',d:'Supply lines are cut: shipyards charge 20% more and repairs restore 25% less, but battles pay 25% more credits.',cred:.25,price:1.2,repair:.75}};
 const HEAT={
   h_flag:{n:'Vengeful flagships',d:'Sector flagships have 20% more hull.',w:1},
   h_hunted:{n:'Hunted',d:'Enemy fleets are 15% larger.',w:2},

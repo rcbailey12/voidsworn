@@ -105,7 +105,7 @@ function updateWorld(dt){
     const hr=clamp(u.hp/u.maxHp,0,1), key=Math.round(hr*100)+'|'+u.sh.map(x=>Math.round(x)).join(',')+'|'+(B.sel===u||B.inspect===u||B.hover&&B.hover.q===u.q&&B.hover.r===u.r?1:0)+(B.side==='player'&&u.side==='player'&&isDone(u)?'d':'');
     if(key!==v.plate.key){ v.plate.key=key; v.plate.hb.style.width=(hr*100)+'%'; v.plate.hb.style.background=hr>.3?HULL_HEX:HULL_LOW_HEX;
       v.plate.sp.forEach((b,i)=>{ const q=[3,0,1,2][i]; const f=u.shMax?u.sh[q]/u.shMax:0; b.style.background=f>.66?SHIELD_HEX:f>.01?'#2c6f93':'rgba(45,58,86,.9)'; });
-      pe.classList.toggle('hi',key.split('|')[2][0]==='1'||!!u.flagship||!!u.transport||!!u.pflag); pe.classList.toggle('flag',!!u.flagship||!!u.transport||!!u.pflag); pe.classList.toggle('done',key.endsWith('d')); }
+      pe.classList.toggle('hi',key.split('|')[2][0]==='1'||!!u.flagship||!!u.transport||!!u.pflag||(!!u.elite&&u.side==='enemy')); pe.classList.toggle('flag',!!u.flagship||!!u.transport||!!u.pflag); pe.classList.toggle('elite',!!u.elite&&u.side==='enemy'); pe.classList.toggle('done',key.endsWith('d')); }
   }
   G.arcT=(G.arcT||0)-dt; if(G.arcT<=0){ G.arcT=.1+Math.random()*.18; const cands=[]; for(const v of G.views.values()) if(v.state==='alive'&&v.model&&v.model.arcs&&v.model.arcs.length>1) cands.push(v);
     if(cands.length){ const v=cands[Math.floor(Math.random()*cands.length)], A=v.model.arcs, i=Math.floor(Math.random()*A.length), j=(i+1)%A.length, a=toWorld(v,A[i]), c=toWorld(v,A[j]), pts=[];

@@ -106,7 +106,8 @@ function playerStrength(){ return fleetPower(); }
 const BOSS_FAC={corsair:1.45,voidsworn:1.25,hegemony:.95,chorus:1,deathless:1,ithar:.9}; // per-flagship tuning from the boss matrix (v40)
 let BOSS_SCALE=[0,.5,.55,.7], BOSS_DMG=[0,.85,.88,.95];
 try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE')); if(process_env('BOSS_DMG')) BOSS_DMG=JSON.parse(process_env('BOSS_DMG')); }catch(e){}
-function genEnemyFleet(fac,s,col,kind){
+function effArch(arch,fac){ if(arch==='carrier'){ const F=FACTIONS[fac]; if(!F||!F.roster.some(id=>HULLS[id]&&HULLS[id].ab==='launch')) return 'heavy'; } return arch||null; }
+function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
   // each map column has a fixed difficulty, so a fleet that grows can outgrow it (the point of buying that cruiser)
   const F=FACTIONS[fac]; let budget=[0,4.2,9.5,14][s]+col*(s===1?0.9:s===2?1:1.1); if(kind==='elite') budget*=1.05;
   const list=[];
@@ -115,11 +116,16 @@ function genEnemyFleet(fac,s,col,kind){
   if(typeof RUN!=='undefined'&&RUN&&RUN.fleet&&!(typeof NO_CAP!=='undefined'&&NO_CAP)){ const target=fleetPower()*(kind==='elite'?1:kind==='boss'?.5:.85)+.3;
     if(target<budget) budget=Math.max(target,budget*.75); }
   if(heatOn('h_hunted')) budget*=1.15;
-  const roster=F.roster.map(id=>({id,cp:HULLS[id].cp}));
+  if(mod==='bounty') budget*=1.1;
+  let roster=F.roster.map(id=>({id,cp:HULLS[id].cp,car:HULLS[id].ab==='launch'}));
+  // archetypes reshape the same budget: a swarm of the lightest hulls, a heavy line, or a carrier with its escort
+  if(arch==='swarm'){ const mn=Math.min(...roster.map(x=>x.cp)); const light=roster.filter(x=>x.cp<=mn+1&&!x.car); if(light.length) roster=light; }
+  if(arch==='heavy'){ const big=roster.filter(x=>x.cp>=2&&(!x.car||!roster.some(y=>y.cp>=3&&!y.car))); if(big.length&&budget>=Math.min(...big.map(x=>x.cp))){ const top=big.filter(x=>x.cp<=budget+.3).sort((a,b)=>b.cp-a.cp)[0]; if(top){ list.push({tpl:top.id}); budget-=top.cp; } roster=big.concat(roster.filter(x=>x.cp<2&&!x.car).slice(0,1)); } }
+  if(arch==='carrier'&&kind!=='boss'){ const cr=roster.filter(x=>x.car&&x.cp<=budget+.3).sort((a,b)=>b.cp-a.cp)[0]; if(cr){ list.push({tpl:cr.id}); budget-=cr.cp; roster=roster.filter(x=>!x.car); } }
   let g=0;
   while(budget>=1 && list.length<8 && g++<60){
     const opts=roster.filter(x=>x.cp<=budget+.3); if(!opts.length) break;
-    const wts=opts.map(x=> x.cp===1?1.1:Math.min(2,budget/(x.cp*2))+.35);
+    const wts=opts.map(x=> arch==='heavy'?Math.pow(x.cp,1.6):x.cp===1?1.1:Math.min(2,budget/(x.cp*2))+.35);
     let r=rnd()*wts.reduce((a,b)=>a+b,0), ch=opts[0];
     for(let i=0;i<opts.length;i++){ r-=wts[i]; if(r<=0){ch=opts[i];break;} }
     list.push({tpl:ch.id}); budget-=ch.cp;
@@ -184,6 +190,8 @@ function genTerrain(map,shape,opt){
   if(m==='graveyard'){ const spots=[]; for(let k=0;k<60&&spots.length<7;k++){ const h=offToAx(ri(6,BW-7),ri(1,BH-2)); if(spots.every(p=>hdist(p,h)>=3)) spots.push(h); }
     for(const h of spots){ T[hkey(h.q,h.r)]='hulk'; for(const d of DIRS) if(rnd()<.55) put({q:h.q+d[0],r:h.r+d[1]},'debris'); }
     TERRAIN_META.wrecks=spots; for(let i=0;i<2;i++) blob('rock',ri(2,4),6,BW-7); blob('neb',ri(4,7),5,BW-6); }
+  // the sector's condition adds its own terrain to every battlefield in it (never in the deployment columns)
+  { const sc=(opt&&opt.cond)||null; if(sc&&sc.terr){ const n=sc.terr==='storm'?3:sc.terr==='neb'?3:4; for(let i=0;i<n;i++) blob(sc.terr,ri(sc.terr==='debris'?4:6,sc.terr==='debris'?7:11),8,BW-9); } }
   // board shape features on top of the sector terrain
   const force=(h,t)=>{ const k=hkey(h.q,h.r); if(onBoard(h.q,h.r)&&!BLOCKING[T[k]]) T[k]=t; }, midR=Math.floor(BH/2);
   if(shape==='lanes'){ const g1=ri(8,10), g2=ri(14,16); for(let c=7;c<=BW-8;c++){ if((c>=g1&&c<=g1+1)||(c>=g2&&c<=g2+1)) continue; force(offToAx(c,midR),'rock'); if(rnd()<.45&&c!==g1-1&&c!==g2-1&&c!==g1+2&&c!==g2+2) force(offToAx(c,midR-1),'rock'); } }
@@ -232,19 +240,19 @@ function startBattle(cfg){
   if(shape==='open'&&B0small(cfg)&&['rout','hunt','ambush'].includes(enc)) shape='compact'; // small fleets fight in close quarters
   if(!['belt','station','planet','storm','graveyard'].includes(map)&&FAC_MAP[cfg.fac]&&rnd()<.55) map=pick(FAC_MAP[cfg.fac]); // each faction has home ground
   if((shape==='lanes'||shape==='ring')&&map==='belt') map=pick(['station','planet','storm','graveyard']);
-  const topt={stationAt:enc==='defend'?offToAx(9,midR):null,enc,pieces:{belt:['asteroid','asteroid','comet','station'],graveyard:['hulk','hulk','station','asteroid'],planet:['moon','moon','asteroid','station'],station:['station','station','hulk','asteroid'],storm:['comet','asteroid','asteroid','moon']}[map]||null};
+  const topt={cond:cfg.kind==='boss'?null:sectorCond(),stationAt:enc==='defend'?offToAx(9,midR):null,enc,pieces:{belt:['asteroid','asteroid','comet','station'],graveyard:['hulk','hulk','station','asteroid'],planet:['moon','moon','asteroid','station'],station:['station','station','hulk','asteroid'],storm:['comet','asteroid','asteroid','moon']}[map]||null};
   let T=null; for(let k=0;k<6;k++){ T=genTerrain(map,shape,topt); if(terrainConnected(T)) break; T=null; }
   if(!T){ shape='open'; T=genTerrain(map,'open',topt); }
   if(cfg.kind==='boss') for(const k of Object.keys(T)) if(T[k]==='rock'&&rnd()<.45) delete T[k]; // flagship duels need firing lanes, not a maze
   B={seed, units:[], terrain:T, map:TERRAIN_META, shape, enc, deployMode:enc==='ambush'?'ambush':['defend','hunt','intercept','break'].includes(enc)?'line':(cfg.dep||'line'), resolve:{player:1,enemy:1}, round:1, side:'player', sel:null, armed:null, mode:null, hover:null, reach:null,
-     busy:false, log:[], fx:[], cfg, over:false, reviveUsed:false, inspect:null, showArcs:true, sector:RUN.sector};
+     busy:false, log:[], fx:[], cfg, over:false, reviveUsed:false, inspect:null, showArcs:true, sector:RUN.sector}; { const sc=sectorCond(); B.cond=sc&&RUN&&RUN.map?RUN.map.cond:null; B.condRegen=(sc&&sc.regen)||1; }
   const s=RUN.sector;
   for(const ship of RUN.fleet){ if(ship.hp<=0) continue; B.units.push(makeUnit('player', ship.tpl, {ship})); }
-  const eList = cfg.enemies || genEnemyFleet(cfg.fac, s, cfg.col, cfg.kind);
+  const eList = cfg.enemies || genEnemyFleet(cfg.fac, s, cfg.col, cfg.kind, cfg.arch, cfg.mod);
   const sc=1+.12*(s-1), dm=1+.08*(s-1);
   const bossFit=Math.max(.55,Math.min(1,playerStrength()/([0,6,9,12][s]||12))); // a battered fleet faces a weakened flagship
   const eliteIdx=cfg.kind==='elite'?new Set(eList.map((e,i)=>[i,HULLS[e.tpl].cp||1]).sort((x,y)=>y[1]-x[1]).slice(0,Math.ceil(eList.length/2)).map(x=>x[0])):null; // elite fights: the bigger half of their fleet are elites
-  eList.forEach((e,ei)=>B.units.push(makeUnit('enemy', e.tpl, {scale:sc*(HULLS[e.tpl].boss?BOSS_SCALE[s]*bossFit*(BOSS_FAC[cfg.fac]||1)*(heatOn('h_flag')?1.2:1):1), dmg:dm*(HULLS[e.tpl].boss?BOSS_DMG[s]:1), elite:!!(eliteIdx&&eliteIdx.has(ei))||cfg.kind==='boss'&&!HULLS[e.tpl].boss&&rnd()<.3||heatOn('h_elite')&&ei===(HULLS[eList[0].tpl].boss&&eList.length>1?1:0), fac:cfg.fac})));
+  eList.forEach((e,ei)=>B.units.push(makeUnit('enemy', e.tpl, {scale:sc*(HULLS[e.tpl].boss?BOSS_SCALE[s]*bossFit*(BOSS_FAC[cfg.fac]||1)*(heatOn('h_flag')?1.2:1):1), dmg:dm*(HULLS[e.tpl].boss?BOSS_DMG[s]:1), elite:!!(eliteIdx&&eliteIdx.has(ei))||cfg.kind==='boss'&&!HULLS[e.tpl].boss&&rnd()<.3||heatOn('h_elite')&&ei===(HULLS[eList[0].tpl].boss&&eList.length>1?1:0)||cfg.mod==='veteran'&&ei===eList.map((x,i)=>[i,HULLS[x.tpl].cp||1]).sort((x,y)=>y[1]-x[1])[0][0], fac:cfg.fac})));
   if(heatOn('h_undying')) for(const u of B.units) if(u.side==='enemy'&&!u.isSq&&!u.t.boss) u.reanimate=true;
   // enemies adapt to carrier-heavy fleets: escorts bolt on point defense
   { const nCar0=RUN.fleet.filter(sh=>sh.hp>0&&HULLS[sh.tpl]&&HULLS[sh.tpl].hangar).length, carDoc=(ADMIRALS[RUN.admiral]&&ADMIRALS[RUN.admiral].cmd&&ADMIRALS[RUN.admiral].cmd.id==='scramble')||RUN.aspect==='hive';
@@ -293,7 +301,7 @@ function startSideTurn(side){
     u.mp=Math.max(1,u.speed-u.st.engine); u.turnsLeft=u.turns;
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
-    if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0) for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+u.regen);
+    if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)); for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+rg); }
     if(u.hullRegen && u.hp<u.maxHp && !u.pyre) u.hp=Math.min(u.maxHp,u.hp+u.hullRegen);
     if(u.st.fire>0){ const fd=u.st.fireDmg||6; u.st.fire--; u.hp-=fd; fxText(u,'Fire \u2212'+fd,'#f08a4b'); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} burns out.`, u.side==='player'?'e':'p'); Promise.resolve(killUnit(u,null)).catch(e=>console.error(e)); } if(!u.st.fire) u.st.fireDmg=0; }
     u.hexMoved=0; if(u.fx&&u.fx.stormRegen&&u.shMax>0&&!(u.st.shieldOff>0)){ for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+Math.round(u.shMax*u.fx.stormRegen)); }

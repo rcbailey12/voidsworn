@@ -123,7 +123,7 @@ ACT.pickAspect=k=>{ if(!ASPECTS[k]||!RUN) return; changeFleet(()=>{ RUN.aspect=k
 function introModal(){
   mapScreen();
   const F=FACTIONS[RUN.map.fac];
-  modal(`<h2>Sector I</h2><p>The ${runWord()} crosses into contested space. Long-range auspex confirms <b>${esc(F.n)}</b> activity along every jump route.</p><p class="muted">${esc(F.blurb)}</p>
+  modal(`<h2>Sector I</h2><p>The ${runWord()} crosses into contested space. Long-range auspex confirms <b>${esc(F.n)}</b> activity along every jump route.</p><p class="muted">${esc(F.blurb)}</p>${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}
     <p class="muted">Pick a route across the sector map. Battles marked with a patron’s sigil pay out that patron’s boons, so the route you choose shapes your build. The flagship of the sector waits at the far end.</p><button class="primary" data-act="closeModal">Plot a course</button>`);
 }
 

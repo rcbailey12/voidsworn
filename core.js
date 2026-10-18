@@ -158,9 +158,9 @@ function derive(ship){
 function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); const after=derive(ship).maxHp; ship.hp=clamp(ship.hp+(after-before),1,after); }
 function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>{ const a=derive(s).maxHp; s.hp=clamp(s.hp+(a-b[i]),1,a); }); }
 function fleetCP(){ return RUN.fleet.reduce((a,s)=>a+HULLS[s.tpl].cp,0); }
-function priceMult(){ return (META.unlocked.wrights?.85:1)*(heatOn('h_coffers')?1.25:1); }
+function priceMult(){ const c=sectorCond(); return (META.unlocked.wrights?.85:1)*(heatOn('h_coffers')?1.25:1)*((c&&c.price)||1); }
 function heatOn(k){ return !!(typeof RUN!=='undefined'&&RUN&&RUN.heat&&RUN.heat.includes(k)); }
-function repairMult(){ return heatOn('h_repair')?.5:1; }
+function repairMult(){ const c=sectorCond(); return (heatOn('h_repair')?.5:1)*((c&&c.repair)||1); }
 function mkCost(s){ return Math.round((40*HULLS[s.tpl].cp*s.mk+30)*priceMult()); }
 function addXp(ship, n){ const c=ship.cap; c.xp+=Math.round(n*(1+(runFx().xpPct||0)));
   while(c.rank<RANKS.length-1 && c.xp>=RANK_XP[c.rank+1]){ c.rank++; c.pending++; } }
@@ -221,8 +221,13 @@ function genSector(s){
       edges.push([a.id,near[0].id]); if(near[1] && rnd()<.45 && Math.abs(near[1].y-a.y)<.5) edges.push([a.id,near[1].id]); }
     for(const b of B){ if(!edges.some(e=>e[1]===b.id)){ const near=[...A].sort((x,y)=>Math.abs(x.y-b.y)-Math.abs(y.y-b.y))[0]; edges.push([near.id,b.id]); } }
   }
-  return {fac, cols, edges};
+  // fleet archetypes and node modifiers on ordinary fights (bosses keep their own escort)
+  for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite'){ const x=rnd(); n.arch=x<.25?'swarm':x<.47?'heavy':x<.62?'carrier':null; const y=rnd(); n.mod=n.col>=2&&y<.14?'bounty':n.col>=2&&n.type==='battle'&&y<.26?'veteran':null; }
+  // one condition per sector, never the same twice in a run
+  let cond=null; try{ const used=(RUN&&RUN.condsUsed)||[], pool=Object.keys(SECTOR_CONDS).filter(k=>!used.includes(k)); cond=pick(pool.length?pool:Object.keys(SECTOR_CONDS)); if(RUN){ RUN.condsUsed=used.concat(cond); } }catch(e){ cond=null; }
+  return {fac, cols, edges, cond};
 }
+function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.map.cond; return k&&SECTOR_CONDS[k]?SECTOR_CONDS[k]:null; }catch(e){ return null; } }
 
 // ---------- progression helpers ----------
 function masteryXP(id){ return (META.mastery&&META.mastery[id])||0; }
