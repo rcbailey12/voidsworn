@@ -52,7 +52,7 @@ function battleScreen(cfg){
   const setupT0=performance.now(); startBattle(c); B.campaign=true; B.event=rollBattleEvent(c); prepBattle(); const setupMs=Math.round(performance.now()-setupT0);
   const E=ENCOUNTERS[B.obj.type]||ENCOUNTERS.rout; document.getElementById('scenName').textContent=`Sector ${roman(RUN.sector)}: ${cfg.kind==='boss'?'flagship battle':(cfg.kind==='elite'?'elite ':'')+E.n.toLowerCase()} against ${FACTIONS[cfg.fac].n}`;
   G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); banner(cfg.kind==='boss'?'Sector flagship':E.n); { const bn=(RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].n).filter(Boolean), bt=bn.length?` Boons active: ${bn.slice(0,4).join(', ')}${bn.length>4?` and ${bn.length-4} more`:''}.`:''; setTimeout(()=>{ try{ if(B&&!B.over) toast((cfg.kind!=='boss'?E.d:'The sector flagship and its escort.')+bt); }catch(e){} },1400); }
-  tel('battle_start',{setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
+  try{ FRAMES.reset(); }catch(e){} tel('battle_start',{setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
 }
 function finishBattle(result){
   if(result==='loss'&&B.withdraw&&survivorsP()) result='retreat';
@@ -71,7 +71,7 @@ function finishBattle(result){
   if(result==='win'){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp; sh.hp=Math.min(mx,sh.hp+Math.round(mx*.15)); } summary.patched=true; }
   if(result==='win') for(const u of B.units) if(u.captured&&u.side==='player'&&(!u.dead||u.exited)&&!u.ship&&!u.isSq){ const sh=newShip(u.tpl); sh.name=u.name; sh.hp=clamp(Math.round(u.hp),1,derive(sh).maxHp); RUN.fleet.push(sh); summary.prizes.push(u.name); }
   if(summary.escaped) setTimeout(()=>toast(`${summary.escaped.join(' and ')} escaped in a lifepod, wounded, and will take command of your next hull.`),1800);
-  tel('battle_end',{boons:B.boonStats||{},ecp:B.cp0&&B.cp0.enemy,pcp:B.cp0&&B.cp0.player,usage:B.usage,obj:B.obj?B.obj.type:'rout',shape:B.shape,adapt:(B.adapt||0)+(B.adaptWings?'w'+B.adaptWings:''),event:B.event?B.event.k:null,partial:!!B.partial,escaped:(summary.escaped||[]).length,result,kind:cfg.kind,fac:cfg.fac,rounds:B.round,kills:summary.kills,lost:summary.lost.length,prizes:summary.prizes.length,
+  tel('battle_end',{perf:(()=>{ try{ return FRAMES.summary(); }catch(e){ return null; } })(),boons:B.boonStats||{},ecp:B.cp0&&B.cp0.enemy,pcp:B.cp0&&B.cp0.player,usage:B.usage,obj:B.obj?B.obj.type:'rout',shape:B.shape,adapt:(B.adapt||0)+(B.adaptWings?'w'+B.adaptWings:''),event:B.event?B.event.k:null,partial:!!B.partial,escaped:(summary.escaped||[]).length,result,kind:cfg.kind,fac:cfg.fac,rounds:B.round,kills:summary.kills,lost:summary.lost.length,prizes:summary.prizes.length,
     rams:(B.usage&&B.usage.ram)||0,boardings:(B.usage&&B.usage.board)||0,captures:(B.usage&&B.usage.cap)||0,cmdRound:B.cmd?B.cmd.round:null});
   disposeAllViews(); clearOverlays(); B=null; hideTip(); hideEnd();
   if(result==='loss' || RUN.fleet.length===0){ endRun(false); return; }
@@ -107,7 +107,7 @@ function setupFleetShowcase(){ if(!RUN||!RUN.fleet.length) return; if(B&&B.showc
 let PERF=null; document.addEventListener('keydown',e=>{ if((e.key==='p'||e.key==='P')&&e.target.tagName!=='INPUT') perfToggle(); });
 function perfToggle(){ { if(PERF){ clearInterval(PERF.t); PERF.el.remove(); PERF=null; return; }
   const el=document.createElement('div'); el.className='hud'; el.style.cssText='position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:70;padding:6px 12px;font:13px monospace;color:#9fe2ff'; document.body.appendChild(el);
-  const ins=new BABYLON.SceneInstrumentation(G.scene); PERF={el,t:setInterval(()=>{ el.textContent=`${G.engine.getFps().toFixed(0)} fps | ${ins.drawCallsCounter.current} draws | ${(G.scene.getTotalVertices()/1e6).toFixed(2)}M verts | ${G.quality} | ${G.engine.getRenderWidth()}x${G.engine.getRenderHeight()} | errors ${ERRS}`; },500)}; } }
+  const ins=new BABYLON.SceneInstrumentation(G.scene); PERF={el,t:setInterval(()=>{ el.textContent=`${G.engine.getFps().toFixed(0)} fps | ${(()=>{ const f=FRAMES.summary(); return 'p50 '+f.p50+' p90 '+f.p90+' ms'; })()} | ${ins.drawCallsCounter.current} draws | ${(G.scene.getTotalVertices()/1e6).toFixed(2)}M verts | ${G.quality} | ${G.engine.getRenderWidth()}x${G.engine.getRenderHeight()} | errors ${ERRS}`; },500)}; } }
 
 // preview builds only: a self-running, captioned visual test so screenshots need no input
 async function runDemo(){ if(!window.PREVIEW_DEMO) return; const sleep=ms=>new Promise(r=>setTimeout(r,ms));

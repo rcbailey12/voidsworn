@@ -74,7 +74,7 @@ function facMats(fac){
   M.flesh=new BABYLON.PBRMaterial(fac+'flesh',sc); M.flesh.albedoColor=hexC3('#6e2a5c'); M.flesh.metallic=0; M.flesh.roughness=.3; M.flesh.emissiveColor=P.win.scale(.45); M.flesh.bumpTexture=hm.normal; M.flesh.environmentIntensity=1.2;
   const stx=dynTex(fac+'sailT',256,256,(g,w)=>{ const gr=g.createLinearGradient(0,w,0,0); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(255,255,255,.12)'); g.fillStyle=gr; g.fillRect(0,0,w,w); g.fillStyle='rgba(255,255,255,.5)'; for(let y=6;y<w;y+=18) g.fillRect(0,y,w,1); }); M._sailT=stx;
   M.sail=emMat(fac+'sail',fac==='chorus'?new C3(.55,.16,.42):new C3(.25,.6,.75),.26); M.sail.backFaceCulling=false; M.sail.disableDepthWrite=true; M.sail.alphaMode=BABYLON.Engine.ALPHA_ADD; M.sail.opacityTexture=M._sailT; M.sail.alpha=.3;
-  M.plume=emMat(fac+'plume',P.eng.scale(1.25),.7); M.plume.alphaMode=BABYLON.Engine.ALPHA_ADD; M.plume.opacityTexture=(typeof plumeTex==='function')?plumeTex():G.tex.soft; M.plume.disableDepthWrite=true; M.plume.backFaceCulling=false;
+  M.plume=emMat(fac+'plume',P.eng.scale(1.25),.85); M.plume.alphaMode=BABYLON.Engine.ALPHA_ADD; if(typeof plumeMaterial==='function') plumeMaterial(M.plume,P.eng.scale(1.7)); else M.plume.opacityTexture=G.tex.soft; M.plume.disableDepthWrite=true; M.plume.backFaceCulling=false;
   M.flare=emMat(fac+'flare',P.eng.scale(1.2),.9); M.flare.alphaMode=BABYLON.Engine.ALPHA_ADD; M.flare.opacityTexture=G.tex.flare; M.flare.disableDepthWrite=true; M.flare.backFaceCulling=false;
   if(typeof addHullFx==='function') addHullFx(M,fac); // v42: faction rim light
   return MATS[fac]=M;
@@ -170,7 +170,7 @@ class SB{
   part(name,x,y,z,o={}){ const lib=partLib()[name]; const sc=o.s||1; for(const sub of lib){ const h=this.push(sub.vd,this.M[sub.mat]||this.M.dark,null,o.half); h.position.set(x,y,z); if(Array.isArray(sc)) h.scaling.set(sc[0],sc[1],sc[2]); else h.scaling.setAll(sc); h.rotation.set(o.rx||0,o.ry||0,o.rz||0); if(o.q) h.q=o.q; } }
   bake(){ const g={}; for(const h of this.parts){ (g[h.mat]=g[h.mat]||new GeoBuf()).add(h.vd,h.matrix()); } return Object.entries(g).map(([mat,b])=>({mat,vd:{positions:b.p,normals:b.n,indices:b.i}})); }
   plume(x,y,z,d,len){ const m=MB.CreateCylinder('plume',{height:len,diameterTop:d*.9,diameterBottom:0,tessellation:12},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationZ(-Math.PI/2)); m.position.set(x-len/2,y,z); m.material=this.M.plume; m.isPickable=false; this.plumes.push(m); return m; }
-  engine(x,y,z,d){ this.part('nozzle',x,y,z,{s:d}); this.plume(x-d*.42,y,z,d*.8,d*2.6);
+  engine(x,y,z,d){ this.part('nozzle',x,y,z,{s:d}); this.plume(x-d*.42,y,z,d*.85,d*1.9);
     const f=MB.CreatePlane('flare',{size:d*3.4},G.scene); f.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; f.position.set(x-d*.45,y,z); f.material=this.M.flare; f.isPickable=false; this.flares.push(f); }
   greeble(n){ const r=seeded(Math.round(this.L*131)+n), M=this.M, L=this.L, st=this.stations, x0=st[0].x*.86, x1=st[st.length-1].x*.72, junk=this.fac==='corsair', gothic=this.fac==='voidsworn';
     const parts=['vent','pipes','radiator','antenna'];

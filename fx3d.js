@@ -201,10 +201,15 @@ function shieldDome(v,dirToAtt,col){
 
 function beamTex(){ if(G.tex.beam) return G.tex.beam; G.tex.beam=dynTex('beamT',64,256,(g,w,h)=>{ g.fillStyle='#000'; g.fillRect(0,0,w,h); const r=seeded(21); for(let i=0;i<70;i++){ const y=r()*h, l=8+r()*40; const gr=g.createLinearGradient(0,y,0,y+l); gr.addColorStop(0,'rgba(255,255,255,0)'); gr.addColorStop(.5,`rgba(255,255,255,${.3+r()*.6})`); gr.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=gr; g.fillRect(0,y,w,l); } }); G.tex.beam.hasAlpha=false; G.tex.beam.wrapV=BABYLON.Texture.WRAP_ADDRESSMODE; return G.tex.beam; }
 function beam(from,to,col,width,dur){
-  const len=V3.Distance(from,to); const mk=(w,c,a)=>{ const m=MB.CreateCylinder('beam',{height:1,diameter:w,tessellation:8},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2)); m.scaling.z=len; m.position=from.add(to).scale(.5); m.lookAt(to); m.isPickable=false; const mat=emMat('bm',c,a); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.disableDepthWrite=true; const bt=beamTex().clone(); bt.vScale=Math.max(1,len/10); mat.emissiveTexture=bt; m.material=mat; return [m,mat]; };
+  const len=V3.Distance(from,to); // v42: a shader beam (white core, coloured sheath, energy crawling along it); the old textured cylinder stays as the fallback
+  const mk=(w,c,a,shader)=>{ const m=MB.CreateCylinder('beam',{height:1,diameter:w,tessellation:shader?14:8},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2)); m.scaling.z=len; m.position=from.add(to).scale(.5); m.lookAt(to); m.isPickable=false;
+    let mat=null; if(shader){ try{ mat=beamMaterial(c); mat.setFloat('len',len); }catch(e){ mat=null; } }
+    if(!mat){ mat=emMat('bm',c,a); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.disableDepthWrite=true; const bt=beamTex().clone(); bt.vScale=Math.max(1,len/10); mat.emissiveTexture=bt; }
+    m.material=mat; try{ G.glow.addExcludedMesh(m); }catch(e){} return [m,mat]; };
   if(!G.tex.beam){ G.tex.beam=dynTex('beamT',64,256,(g,w,h)=>{ const r=seeded(5); g.fillStyle='#000'; g.fillRect(0,0,w,h); for(let i=0;i<60;i++){ g.fillStyle=`rgba(255,255,255,${.15+r()*.4})`; g.fillRect(0,r()*h,w,2+r()*10); } }); G.tex.beam.vScale=3; }
-  const parts=[mk(width,col.scale(1.6),.9),mk(width*.35,new C3(1,1,1).scale(1.5),1)]; parts[0][1].emissiveTexture=G.tex.beam;
-  const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); parts.forEach(([m,mt])=>{m.dispose();mt.dispose();}); return; } G.tex.beam.vOffset=(G.time*4)%1; parts.forEach(([m,mt],i)=>{ if(mt.emissiveTexture) mt.emissiveTexture.vOffset-=.04; mt.alpha=(1-k)*(i?1:.9); m.scaling.x=m.scaling.y=1-k*.6+Math.sin(G.time*80)*.08; }); });
+  const sh=typeof beamMaterial==='function'; const parts=sh?[mk(width*1.5,col.scale(1.25),1,true)]:[mk(width,col.scale(1.6),.9),mk(width*.35,new C3(1,1,1).scale(1.5),1)]; if(!sh) parts[0][1].emissiveTexture=G.tex.beam;
+  const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); parts.forEach(([m,mt])=>{m.dispose();mt.dispose();}); return; } G.tex.beam.vOffset=(G.time*4)%1;
+    parts.forEach(([m,mt],i)=>{ if(mt.setFloat){ mt.setFloat('t',G.time%100); mt.setFloat('fade',Math.pow(1-k,1.4)); mt.setVector3('camPos',G.cam.position); } else { if(mt.emissiveTexture) mt.emissiveTexture.vOffset-=.04; mt.alpha=(1-k)*(i?1:.9); } m.scaling.x=m.scaling.y=1-k*.55+Math.sin(G.time*80)*.06; }); });
 }
 
 // ---------- high-fidelity effect kit ----------
@@ -235,7 +240,7 @@ function sparks(pos,n,power,col=new C4(1,.8,.45,1)){ const ps=new BABYLON.Partic
   ps.billboardMode=BABYLON.ParticleSystem.BILLBOARDMODE_STRETCHED; ps.color1=col; ps.color2=new C4(1,.5,.15,1); ps.colorDead=new C4(.4,.1,0,0); ps.minSize=.06; ps.maxSize=.2; ps.minScaleY=3; ps.maxScaleY=7;
   ps.minLifeTime=.3; ps.maxLifeTime=.9; ps.minEmitPower=power*.4; ps.maxEmitPower=power; ps.gravity=new V3(0,-2,0); ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE; ps.manualEmitCount=n; ps.targetStopDuration=.1; ps.disposeOnStop=true; ps.updateSpeed=.016/Math.max(.35,SPEED); ps.start(); }
 function smoke(pos,size,n,life=2.6){ burst(pos,{n,tex:G.tex.smoke,c1:new C4(.34,.31,.29,.7),c2:new C4(.16,.15,.14,.55),size:[size*.5,size*1.1],life:[life*.6,life],power:[size*.1,size*.45],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
-function explode(pos,size,{light=true,shock=false}={}){ flash(pos,size*2.2,new C3(1,.85,.6),.35); fireball(pos,size,Math.round(5+size*1.2)); sparks(pos,Math.round(20+size*8),6+size*2.5); smoke(pos,size*1.2,Math.round(4+size));
+function explode(pos,size,{light=true,shock=false}={}){ flash(pos,size*2.2,new C3(1,.85,.6),.35); const shFire=typeof fireballFx==='function'&&!G.fxReduced&&(size>=(G.quality==='medium'?3:1.3)); if(shFire) fireballFx(pos,size*1.15,.75+size*.05); fireball(pos,size,Math.round((shFire?3:5)+size*(shFire?.6:1.2))); sparks(pos,Math.round(20+size*8),6+size*2.5); smoke(pos,size*1.2,Math.round(4+size));
   if(light) lightFlash(pos,new C3(1,.62,.3),3+size*.6,size*9,.6); if(shock) shockwave(pos,size*3); }
 function muzzleFx(pos,out,col){ flash(pos,2.4,col,.18); const p=pos.add(out.scale(.4)); burst(p,{n:4,tex:G.tex.smoke,c1:new C4(.5,.47,.44,.5),c2:new C4(.3,.28,.27,.35),size:[.5,1],life:[.8,1.5],power:[.5,1.5],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
 
@@ -336,7 +341,7 @@ function fxShield(u,quad){ const v=G.views.get(u.id); if(!v) return; v.ring.segs
 function ripple(p,n){ const r=MB.CreateTorus('rip',{diameter:1,thickness:.08,tessellation:32},G.scene); r.position=p.clone(); r.rotationQuaternion=qFromUp(n); r.isPickable=false; const m=emMat('ripM',SHIELD_C.scale(1.6),1); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; r.material=m;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(.5*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); r.dispose(); m.dispose(); return; } r.scaling.setAll(1+k*7); m.alpha=(1-k); }); }
 function fxShieldBreak(u,quad){ const v=G.views.get(u.id); if(!v) return; const c=v.root.getAbsolutePosition(); const a=((quad===0?0:quad===1?90:quad===2?180:270)+unitVis(u).a)*Math.PI/180; const d=new V3(Math.cos(a),0,-Math.sin(a)); const p=c.add(d.scale(Math.max(4.2,v.L*.5)));
-  shieldDome(v,d,SHIELD_C.scale(1.6)); burst(p,{n:40,c1:new C4(.7,.95,1,1),c2:new C4(.2,.5,1,1),size:[.12,.4],power:[6,16]}); flash(p,5,SHIELD_C,.3); const s=v.ring.segs[quad]; if(s) s.pulse=1.6; SFX.shield(); }
+  shieldDome(v,d,SHIELD_C.scale(1.6)); if(typeof shieldShatter==='function') shieldShatter(p,d,SHIELD_C); burst(p,{n:40,c1:new C4(.7,.95,1,1),c2:new C4(.2,.5,1,1),size:[.12,.4],power:[6,16]}); flash(p,5,SHIELD_C,.3); const s=v.ring.segs[quad]; if(s) s.pulse=1.6; SFX.shield(); }
 function fxFlash(h,color){ const p=hexWorld(h.q,h.r,1); flash(p,8,hexC3(color.length===7?color:'#f0b35a')); }
 
 // ---------- destruction ----------
@@ -348,7 +353,7 @@ async function animExplode(u){
   v.state='dying'; if(v.engLight){ v.engLight.dispose(); v.engLight=null; } (v.extras||[]).forEach(p=>p.stop()); v.plate.el.remove(); v.ring.node.dispose(false,true); v.fires.forEach(f=>f.stop()); v.fires=[];
   const L=v.L;
   for(let i=0;i<4;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(i%2===0) SFX.hit(); await wait(100); }
-  flash(c,L*1.4,new C3(1,.85,.6),.7); explode(c,L*.45); fireball(c.add(new V3(0,1,0)),L*.35,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
+  flash(c,L*1.4,new C3(1,.85,.6),.7); explode(c,L*.45); if(typeof fireballFx==='function'&&!G.fxReduced) fireballFx(c.add(new V3(0,1,0)),L*.42,1.7); fireball(c.add(new V3(0,1,0)),L*.35,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
   burst(c,{n:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
   shockwave(c,L*2.4); SFX.boom(1.2); G.shake=Math.min(1,G.shake+.6+L/60);
   debris(c,L,v.fac);
