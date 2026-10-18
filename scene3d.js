@@ -105,7 +105,7 @@ function setQuality(q){
     // points and lines break the occlusion pass (no element buffer), so keep them out of it
     const skipVls=m=>{ if(!G.vls) return; if(m instanceof BABYLON.LinesMesh||(m.material&&m.material.pointsCloud)||m===G.stars||m===G.sky) G.vls.excludedMeshes.push(m); };
     G.scene.meshes.forEach(skipVls); G.scene.onNewMeshAddedObservable.add(m=>setTimeout(()=>skipVls(m),0)); } else if(!ultra&&G.vls){ G.vls.dispose(G.cam); G.vls=null; } }catch(e){ console.warn('god rays unavailable',e); G.vls=null; }
-  if(G.ssao){ if(G.ssaoOn===undefined) G.ssaoOn=true; if(ultra&&!G.ssaoOn){ mgr.attachCamerasToRenderPipeline('ssao',G.cam); G.ssaoOn=true; } else if(!ultra&&G.ssaoOn){ mgr.detachCamerasFromRenderPipeline('ssao',G.cam); G.ssaoOn=false; } }
+  if(G.ssao){ const want=ultra||(hi&&!G.mobile); /* v44: contact shadows between hull parts on High too (desktop) */ if(G.ssaoOn===undefined) G.ssaoOn=true; if(want&&!G.ssaoOn){ mgr.attachCamerasToRenderPipeline('ssao',G.cam); G.ssaoOn=true; } else if(!want&&G.ssaoOn){ mgr.detachCamerasFromRenderPipeline('ssao',G.cam); G.ssaoOn=false; } try{ G.ssao.samples=ultra?16:8; G.ssao.totalStrength=ultra?1.25:1.05; }catch(e){} }
   G.pipe.samples=hi&&!(ultra&&G.taaOn)?4:1; G.pipe.fxaaEnabled=!(ultra&&G.taaOn); G.pipe.chromaticAberrationEnabled=hi&&!G.fxReduced; G.pipe.grainEnabled=hi; G.glow.intensity=hi?.6:.45;
   const dpr=window.devicePixelRatio||1; // v42: Medium renders at about 1.5x CSS pixels (was clamped to 1x: 41% of a Pixel's resolution per axis), width capped at 720
   G.engine.setHardwareScalingLevel(q==='medium'?1/Math.max(1,Math.min(dpr,1.5,720/Math.max(320,innerWidth))):ultra&&!G.mobile&&dpr<1.5?1/Math.min(1.25,1.25*dpr):1/Math.min(2,dpr)); // Ultra supersamples 1.25x on screens below 4K
@@ -260,9 +260,15 @@ function buildBattleEnv(){
   const rockMat=new BABYLON.StandardMaterial('rockM',sc);
   rockMat.diffuseTexture=dynTex('rockTex',256,256,(g,w)=>{ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
   rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
-  const bases=[]; for(let k=0;k<4;k++){ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+k,{radius:1,subdivisions:3},sc);
-    const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind); for(let i=0;i<p.length;i+=3){ const x=p[i],y=p[i+1],z=p[i+2]; const n=1+.28*Math.sin(x*3.1+k)*Math.cos(y*2.7+k*2)+.18*Math.sin(z*5.3+x*2)+(rr()-.5)*.08; p[i]=x*n*(1+.3*(k%2)); p[i+1]=y*n*.8; p[i+2]=z*n; }
-    m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.convertToFlatShadedMesh(); m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); bases.push(m); G.env.push(m); }
+  // v44: rocks are smooth-shaded, multi-octave and cratered (were faceted 'crumpled paper' icospheres)
+  const bases=[]; for(let k=0;k<4;k++){ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+k,{radius:1,subdivisions:G.mobile?3:4,flat:false},sc);
+    const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind), ph=[rr()*6,rr()*6,rr()*6]; const cr=[]; for(let i=0;i<7;i++){ const u=rr()*2-1,t=rr()*6.28,q=Math.sqrt(1-u*u); cr.push([q*Math.cos(t),u,q*Math.sin(t),.2+rr()*.3,.05+rr()*.08]); }
+    for(let i=0;i<p.length;i+=3){ const x=p[i],y=p[i+1],z=p[i+2]; let n=1+.26*Math.sin(x*2.1+ph[0])*Math.cos(y*1.8+ph[1])+.14*Math.sin(z*3.9+x*1.6+ph[2]);
+      n+=.07*(1-Math.abs(Math.sin(x*6.3+y*4.1+ph[1])*Math.cos(z*5.7-ph[0])))-.035; n+=.025*Math.sin(x*15+y*11+z*13+ph[2]);
+      for(const [cx,cy,cz,r0,d0] of cr){ const d=Math.hypot(x-cx,y-cy,z-cz); if(d<r0) n-=d0*(1-d/r0)*(1-d/r0)*2; else if(d<r0*1.3) n+=d0*.3*(1-(d-r0)/(r0*.3)); }
+      p[i]=x*n*(1+.32*(k%2)); p[i+1]=y*n*.78; p[i+2]=z*n*(k===3?1.2:1); }
+    m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); const nr=[]; BABYLON.VertexData.ComputeNormals(p,m.getIndices(),nr); m.setVerticesData(BABYLON.VertexBuffer.NormalKind,nr);
+    m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); bases.push(m); G.env.push(m); }
   G.rocks=[];
   const rr=seeded(B.seed||42);
   const addRock=(pos,s)=>{ const inst=bases[Math.floor(rr()*4)].createInstance('rock'); inst.position=pos; inst.scaling.setAll(s); inst.rotation.set(rr()*6,rr()*6,rr()*6); inst.isPickable=false; inst.spin=new V3((rr()-.5)*.1,(rr()-.5)*.14,(rr()-.5)*.1); G.rocks.push(inst); G.env.push(inst); };

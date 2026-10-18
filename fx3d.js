@@ -37,7 +37,7 @@ function createView(u){
   if(B&&(u.reinf&&!u.arrived||G.jumpUntil&&G.time<G.jumpUntil)){ u.arrived=true; v.arrive={t0:G.time+(u.reinf?0:(u.side==='player'?.05:.4)+Math.random()*.55+(u.isSq?.55:0))}; }
   G.views.set(u.id,v); return v;
 }
-function disposeView(v){ if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
+function disposeView(v){ if(v.navSp){ try{ v.navSp.forEach(sp=>sp.dispose()); }catch(e){} v.navSp=null; } if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
 function disposeAllViews(){ for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
 
 function addFire(v){
@@ -93,7 +93,7 @@ function updateWorld(dt){
     if(v.jolt){ const k=(G.time-v.jolt.t0)/.6; if(k>=1) v.jolt=null; else { const e=Math.sin(k*Math.PI)*(1-k); px+=v.jolt.d.x*e; pz+=v.jolt.d.z*e; } }
     v.root.position.set(px,y,pz); v.root.rotation.set(v.bank,a,0); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1); if(stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts,ts/Math.sqrt(stretch),ts/Math.sqrt(stretch)); v.stretched=stretch!==1; v.tsc=ts; } } // v42: ships grow a little as the camera pulls back
     if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1; v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
-      for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt;
+      for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt; if(v.model.turrets&&typeof updateTurrets==='function') updateTurrets(v,dt);
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx){ v.stackFx=v.model.stacks.map(sp=>{ const n=new BABYLON.TransformNode('stk',G.scene); n.parent=v.root; n.position=sp.clone(); const ps=new BABYLON.ParticleSystem('stack',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.direction1=new V3(-.2,1,-.2); ps.direction2=new V3(.2,1.5,.2); ps.color1=new C4(.32,.28,.25,.5); ps.color2=new C4(.2,.18,.17,.4); ps.colorDead=new C4(.1,.1,.1,0); ps.minSize=.3; ps.maxSize=.7; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,3.2); ps.minLifeTime=1.5; ps.maxLifeTime=3; ps.emitRate=10; ps.minEmitPower=.6; ps.maxEmitPower=1.2; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); return ps; }); } }
     if(v.crafts){ for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
@@ -164,12 +164,13 @@ function boltBase(col,thick,shape){ const k=col.toHexString()+thick+(shape||'');
 function shoot(from,to,col,{speed=140,len=3.2,thick=.28,onArrive,overshoot=0,settle,shape}={}){
   const m=boltBase(col,thick,shape).createInstance('b'); m.isPickable=false; m.position.copyFrom(from); m.scaling.z=len/thick;
   const dir=to.subtract(from), dist=dir.length(); dir.normalize(); m.lookAt(to);
-  PROJ.push({m,dir,dist:dist+overshoot,go:0,speed,onArrive,settle,arriveAt:dist,arrived:false});
+  const rec={m,dir,dist:dist+overshoot,go:0,speed,onArrive,settle,arriveAt:dist,arrived:false}; PROJ.push(rec);
+  if(typeof fxp==='function'&&!G.fxReduced&&(!G.mobile||onArrive)){ const hc=C3.Lerp(col,new C3(1,1,1),.15).scale(.85); rec.halo=fxp(from,{cell:0,size:Math.min(5,thick*7+1.4),col:hc,dur:.14,grow:0,fade:1}); rec.hg=rec.halo&&rec.halo.gen; } // v44: a soft glow rides every bolt
   const tl=boltBase(col.scale(.45),thick*.55).createInstance('bt'); tl.isPickable=false; tl.scaling.z=len*4/(thick*.55); tl.position.copyFrom(from.subtract(dir.scale(len*2))); tl.lookAt(to);
   PROJ.push({m:tl,dir,dist:dist+overshoot,go:-len*2,speed,onArrive:null,arriveAt:1e9,arrived:true});
 }
 function updateProjectiles(dt){
-  for(let i=PROJ.length-1;i>=0;i--){ const p=PROJ[i]; const step=p.speed*dt/Math.max(.2,SPEED); p.go+=step; p.m.position.addInPlace(p.dir.scale(step));
+  for(let i=PROJ.length-1;i>=0;i--){ const p=PROJ[i]; const step=p.speed*dt/Math.max(.2,SPEED); p.go+=step; p.m.position.addInPlace(p.dir.scale(step)); if(p.halo&&p.halo.gen===p.hg){ p.halo.sp.position.copyFrom(p.m.position); p.halo.t0=G.time; }
     if(!p.arrived && p.go>=p.arriveAt){ p.arrived=true; if(p.onArrive){ try{ p.onArrive(); }catch(e){ frameError(e); } } }
     if(p.go>=p.dist){ p.m.dispose(); PROJ.splice(i,1); } }
 }
@@ -272,6 +273,17 @@ function muzzles(v,arc,tgtPos){
   const h=v.model.hard; let list=(arc==='P'?h.P:arc==='S'?h.S:arc==='F'?h.F:h.T); if(!list||!list.length) list=h.T.length?h.T:h.F;
   return list.map(p=>toWorld(v,p));
 }
+// v44 volleys: every barrel on the engaged side joins in, rippling bow to stern. Purely visual; the lead bolts still carry the dice
+function turretTips(v){ const out=[]; const T=v.model&&v.model.turrets; if(!T) return out; for(const t of T){ try{ t.yaw.computeWorldMatrix(true); const s=t.inst.scaling.x, m=t.yaw.getWorldMatrix();
+    for(const x of [.18,-.18]) out.push({p:V3.TransformCoordinates(new V3(x*s,.34*s,1.7*s),m),o:V3.TransformNormal(new V3(0,0,1),m).normalize(),x:t.yaw.position.x,tur:t}); }catch(e){} } return out; }
+function volleyPlan(va,w,nShots,tgtPos){ const md=va.model; if(!md||!md.guns) return [];
+  const cap=G.fxReduced?6:G.mobile?9:G.quality==='ultra'?42:G.quality==='high'?30:14; let src=(md.guns[w.arc]||[]).slice(); if(w.arc==='T') src=src.concat(md.guns.P.filter((_,i)=>i%3===0),md.guns.S.filter((_,i)=>i%3===0));
+  const c=va.root.getAbsolutePosition(); va.root.computeWorldMatrix(true); const M=va.root.getWorldMatrix();
+  let pts=src.map(lp=>{ const p=V3.TransformCoordinates(lp,M), o=p.subtract(c); o.y*=.2; return {p,o:o.normalize(),x:lp.x}; });
+  if(w.arc==='P'||w.arc==='S'||w.arc==='T'){ const tt=turretTips(va); for(const t of tt) pts.push(t); }
+  if(tgtPos){ const toT=tgtPos.subtract(c).normalize(); pts=pts.filter(q=>V3.Dot(q.o,toT)>-.25); for(const q of pts) if(!q.tur) q.o=V3.Lerp(q.o,tgtPos.subtract(q.p).normalize(),.6).normalize(); }
+  for(let i=pts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pts[i],pts[j]]=[pts[j],pts[i]]; } pts=pts.slice(0,Math.max(0,cap-nShots));
+  pts.sort((a,b)=>b.x-a.x); return pts; }
 async function cineFrame(a,t){
   if(!G.cine||a.isSq||B.over) return;
   if(G.mobile&&!((t.t&&t.t.boss)||(a.t&&a.t.boss)||(t.hp!=null&&t.maxHp&&t.hp<=t.maxHp*.35))) return; // phones: swing in only for likely kills and flagship duels
@@ -297,6 +309,7 @@ async function animWeapon(u,w,t,shots){
   if(u.isSq) col=P.bolt;
   const style=(u.isSq||w.k==='flak'||w.k==='lance'||w.k==='torp')?null:(w.k==='gauss'?'rail':w.k==='bio'?'glob':WSTYLE[va.fac]||'shell');
   const tp=vt.root.getAbsolutePosition(), mz=muzzles(va,w.arc,tp).sort((p1,p2)=>V3.Distance(p1,tp)-V3.Distance(p2,tp));
+  if(w.arc==='T'&&typeof aimTurrets==='function'&&va.model&&va.model.turrets){ aimTurrets(va,tp); await wait(160); }
   const impact=(hit,from)=>{ if(t.dead&&!vt.root) return; if(!hit){ return; }
     const p=hitPoint(vt,from,shielded);
     if(shielded){ shieldDome(vt,from.subtract(tp).normalize(),SHIELD_C); burst(p,{n:16,c1:new C4(.6,.9,1,1),c2:new C4(.3,.6,1,1),power:[3,9]}); SFX.shield(); if((w.pierce||0)>0) explode(hitPoint(vt,from,false),.8,{light:false}); }
@@ -317,12 +330,19 @@ async function animWeapon(u,w,t,shots){
       SFX.torp(); const dur=.75, t0=G.time;
       const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=Math.min(1,(G.time-t0)/(dur*Math.max(.3,SPEED))); const p=V3.Lerp(from,to,k); p.y+=Math.sin(k*Math.PI)*3; m.lookAt(p.add(to.subtract(from).normalize().scale(2))); m.position.copyFrom(p);
         if(head&&head.material) head.material.alpha=.75+.25*Math.sin(G.time*40);
+        if(typeof pdFire==='function'&&k>.25&&k<.92) pdFire(vt,p);
         if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); TORPS.delete(rec); tr.stop(); setTimeout(()=>tr.dispose(),1200); if(trl){ const tm=trl.material; trl.stop&&trl.stop(); vfxFadeDispose(trl,tm,.5); } if(head){ head.parent=null; head.material.dispose(); head.dispose(); } m.dispose(); try{ if(h) impact(true,from); else flash(to,3,new C3(1,.6,.3)); } finally{ res(); } } });
       const rec={obs,m,tr,res}; TORPS.add(rec);
     }, i*120*SPEED); }));
     await Promise.all(arrivals); await wait(90);
   } else {
     const gap=w.k==='flak'?45:u.isSq?55:70, speed=w.k==='flak'?170:u.isSq?110:150;
+    if(!u.isSq&&typeof fxp==='function'){ try{ const vol=volleyPlan(va,w,shots.length,tp).filter((_,i)=>w.k!=='flak'||i%2===0), span=Math.max(shots.length*gap,300+vol.length*9), anyHit=shots.some(x=>x), o=style?WOPT[style]||WOPT.needle:null;
+      vol.forEach((q,j)=>{ setTimeout(()=>{ try{ if(!vt.root||vt.root.isDisposed()) return; const h=anyHit&&Math.random()<.78, to=h?hitPoint(vt,q.p,shielded):missPoint(vt,q.p); if(h&&shielded) to.addInPlace(new V3((Math.random()-.5)*vt.L*.35,(Math.random()-.3)*2.5,(Math.random()-.5)*vt.L*.35)); volleyMuzzle(q.p,q.o,col); if(j%3===0) SFX.gun(w.k,false);
+          const opt=w.k==='flak'?{speed:175,len:1.3,thick:.15}:style==='rail'?{speed:420,len:11,thick:.12}:o?{speed:o.speed*(.92+Math.random()*.16),len:o.len,thick:o.thick*.85,shape:o.shape}:{speed,len:3,thick:.26};
+          const done=()=>{ if(h){ volleyImpact(to,col,shielded,q.p); if(!shielded&&Math.random()<.06) hullDecal(vt,q.p,false); } };
+          if(style==='twin'){ const sd=V3.Cross(to.subtract(q.p),new V3(0,1,0)).normalize().scale(.5); shoot(q.p.add(sd),to.add(sd),col,{...opt,overshoot:h?0:30}); }
+          shoot(q.p,to,col,{...opt,overshoot:h?0:30,onArrive:done}); }catch(e){} },(j/Math.max(1,vol.length))*span*SPEED+Math.random()*25); }); }catch(e){ console.warn('volley',e); } }
     const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ const from=mz[i%mz.length]; const to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
       if(!u.isSq){ if(w.k==='flak') flash(from,1.2,col); else { const out=from.subtract(va.root.getAbsolutePosition()); out.y=0; muzzleFx(from,out.normalize(),col); } } SFX.gun(w.k,u.isSq);
       if(style==='rail'){ beam(from,to,col,.42,.32); flash(from,2,col,.15); setTimeout(()=>{ try{ if(h) impact(true,from); else flash(to,1.5,col.scale(.6)); }catch(e){ frameError(e); } finally{ res(); } },60*Math.max(.3,SPEED)); return; }

@@ -9,8 +9,8 @@
 //  - faction energy: Deathless circuit traces with pulses, Chorus veins with a heartbeat, Ithar light sweeping along the hull
 const HULLFX_STYLE={deathless:1,chorus:2,ithar:3,voidsworn:4,hegemony:4,corsair:5};
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
-  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!!(G.engine&&G.engine.webGLVersion>=2); }
+  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false}); Object.assign(this,o); this._enable(true); }
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3; } // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
   getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'}],
     fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\n#endif\n'}; }
@@ -36,6 +36,8 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
     gr+=smoothstep(0.5,0.95,hfxN(vec3(hl.x*0.03,hl.y*0.9,hl.z*0.9)))*0.4;
 #endif
     surfaceAlbedo*=1.0-gr*hfxK.z;
+    { vec3 cq=floor(vHfxL*vec3(0.32,0.55,0.55)+hfxS.x*3.0); float tone=hfxH(cq); surfaceAlbedo*=0.88+0.22*tone; // plate-to-plate tone, visible at any distance
+      float ny=normalize(vHfxN).y; surfaceAlbedo*=mix(0.72,1.0,smoothstep(-0.85,0.35,ny)); } // undersides sit in shadow
     if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3;
       float burn=smoothstep(1.0-hfxD.x*0.62,1.0-hfxD.x*0.62+0.07,dn);
       surfaceAlbedo=mix(surfaceAlbedo,surfaceAlbedo*vec3(0.09,0.075,0.065),burn); } }
@@ -43,7 +45,7 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
 `,
 CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
 #ifdef HULLFX
-#ifdef HULLFX_HI
+#if defined(HULLFX_HI) && defined(HULLFX_PLATE)
     // plating: seams, inset hatches and per-plate tone, bump-mapped from a height computed per pixel (no texture), fading out with distance
     { float hd0=length(vEyePosition.xyz-vPositionW); float pf=1.0-smoothstep(55.0,130.0,hd0);
       if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy); pu*=1.15;

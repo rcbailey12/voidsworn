@@ -76,7 +76,7 @@ const PLUME_GLSL={vert:`precision highp float; attribute vec3 position; attribut
 function plumeShaderMat(fac,col){ try{ const S=BABYLON.Effect.ShadersStore; if(!S.vsPlumeVertexShader){ S.vsPlumeVertexShader=PLUME_GLSL.vert; S.vsPlumeFragmentShader=PLUME_GLSL.frag; }
     const m=new BABYLON.ShaderMaterial(fac+'plumeS',G.scene,{vertex:'vsPlume',fragment:'vsPlume'},{attributes:['position','normal','uv'],uniforms:['world','worldViewProjection','col','camPos','t','flip'],needAlphaBlending:true});
     m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('t',0); m.setFloat('flip',0); m.setVector3('camPos',V3.Zero()); (G.plumeMats=G.plumeMats||[]).push(m); return m; }catch(e){ console.warn('plume shader',e); return null; } }
-function vfxTick(){ if(G.plumeMats&&G.cam) for(const m of G.plumeMats){ m.setFloat('t',(G.time||0)%100); m.setVector3('camPos',G.cam.position); } }
+function vfxTick(){ try{ fxPoolTick(); }catch(e){} if(G.plumeMats&&G.cam) for(const m of G.plumeMats){ m.setFloat('t',(G.time||0)%100); m.setVector3('camPos',G.cam.position); } }
 
 // wrecks keep cooking off: small secondary explosions on fresh hulks
 function hulkCookOff(h,dt){ try{ const age=G.time-h.t0; if(age>7||G.fxReduced) return; const rate=(age<2?1.6:.7)*(G.quality==='medium'?.5:1); if(Math.random()>rate*dt) return;
@@ -92,3 +92,83 @@ function damageSparks(v,hr,dt){ try{ if(hr>.55||G.fxReduced||!v.model||!v.root) 
 // fighter wings leave short glowing trails as they wheel around their carrier (High and Ultra)
 function craftTrails(v,fac){ try{ if(G.quality==='medium'||!v.crafts) return; const P=FAC3D[fac]||FAC3D.hegemony; const m=emMat('ctrM',P.eng.scale(1.3),.5); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false;
     v.extras=v.extras||[]; for(const c of v.crafts){ const t=new BABYLON.TrailMesh('ctr',c.c.root,G.scene,.22,16,true); t.material=m; t.isPickable=false; try{ G.glow.addExcludedMesh(t); }catch(e){} v.extras.push(t); } v.extras.push({dispose:()=>m.dispose(),stop:()=>{}}); }catch(e){} }
+
+// ---------- turrets that track their targets (High and Ultra) ----------
+// One turret mesh per faction drawn as instances (one draw call per faction), parented to each capital ship's turret hardpoints.
+const TURRET_PROTO={};
+function turretProto(fac){ let p=TURRET_PROTO[fac]; if(p&&!p.isDisposed()) return p; const M=facMats(fac), sc=G.scene;
+  const base=MB.CreateCylinder('tb',{height:.35,diameterTop:.9,diameterBottom:1.15,tessellation:10},sc);
+  const hood=MB.CreateBox('th',{width:.8,height:.4,depth:.95},sc); hood.position.set(0,.32,-.05);
+  const b1=MB.CreateCylinder('tbr',{height:1.5,diameter:.13,tessellation:6},sc); b1.rotation.x=Math.PI/2; b1.position.set(.18,.34,.95);
+  const b2=b1.clone('tbr2'); b2.position.x=-.18;
+  p=BABYLON.Mesh.MergeMeshes([base,hood,b1,b2],true,true); p.name='turretProto_'+fac; p.material=M.dark; p.isVisible=false; p.isPickable=false; p.position.y=-9000; try{ G.glow.addExcludedMesh(p); }catch(e){} return TURRET_PROTO[fac]=p; }
+function addTurrets(model,fore,fac){ try{ if(G.mobile||!fore||!model.hard||!model.hard.T||!model.hard.T.length||model.L<12) return; const P=turretProto(fac), s=Math.max(1.4,model.L*.075);
+    model.turrets=model.hard.T.slice(0,3).map((pt,i)=>{ const yaw=new BABYLON.TransformNode('tyaw',G.scene); yaw.parent=fore; yaw.position=pt.clone(); yaw.position.y-=s*.25; yaw.rotation.y=Math.PI/2+(i%2?.4:-.4);
+      const inst=P.createInstance('turret'); inst.parent=yaw; inst.scaling.setAll(s); inst.isPickable=false; return {yaw,inst,target:yaw.rotation.y}; }); }catch(e){ console.warn('turrets',e); } }
+function aimTurrets(v,worldTarget){ try{ const T=v&&v.model&&v.model.turrets; if(!T) return; for(const t of T){ const par=t.yaw.parent; if(!par) continue; par.computeWorldMatrix(true);
+      const l=V3.TransformCoordinates(worldTarget,BABYLON.Matrix.Invert(par.getWorldMatrix())).subtract(t.yaw.position); t.target=Math.atan2(l.x,l.z); } }catch(e){} }
+function updateTurrets(v,dt){ const T=v&&v.model&&v.model.turrets; if(!T) return; for(const t of T){ let d=((t.target-t.yaw.rotation.y)%6.283+9.425)%6.283-3.1416; const st=Math.min(Math.abs(d),dt*2.6); t.yaw.rotation.y+=Math.sign(d)*st; } }
+
+// ---------- v44 GPU sprite pool: hundreds of flashes, sparks and streaks in a single draw call ----------
+// cells: 0 soft glow, 1 four-point star, 2 ring, 3 streak (along x)
+function fxPoolURL(){ const S=128, N=4, c=document.createElement('canvas'); c.width=S*N; c.height=S; const g=c.getContext('2d'), img=g.createImageData(S*N,S), d=img.data;
+  for(let cell=0;cell<N;cell++) for(let y=0;y<S;y++) for(let x=0;x<S;x++){ const dx=(x+.5-S/2)/(S/2), dy=(y+.5-S/2)/(S/2), r=Math.hypot(dx,dy); let v=0;
+    if(cell===0) v=Math.exp(-r*r*4.5)*clamp((1-r)*5,0,1);
+    else if(cell===1) v=(Math.exp(-r*r*16)*1.3+(Math.exp(-Math.abs(dy)*34)*Math.exp(-Math.abs(dx)*2.6)+Math.exp(-Math.abs(dx)*34)*Math.exp(-Math.abs(dy)*2.6))*.9+Math.exp(-r*r*3.2)*.22)*clamp((1-r)*3,0,1);
+    else if(cell===2) v=(Math.exp(-Math.pow((r-.74)*10,2))*.95+Math.exp(-r*r*5)*.1)*clamp((1-r)*6,0,1);
+    else v=Math.exp(-dy*dy*38)*Math.pow(Math.max(0,1-Math.abs(dx)),.7)*(dx>0?1:.75+.25*(1+dx));
+    const o=(y*S*N+cell*S+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=Math.round(clamp(v,0,1)*255); }
+  g.putImageData(img,0,0); return c.toDataURL(); }
+function fxPool(){ const P=G.fxPool; if(P&&P.scene===G.scene) return P;
+  try{ const cap=G.mobile?700:1800; const mgr=new BABYLON.SpriteManager('fxPool',fxPoolURL(),cap,{width:128,height:128},G.scene);
+    mgr.blendMode=BABYLON.Constants.ALPHA_ADD; mgr.disableDepthWrite=true; mgr.isPickable=false;
+    G.fxPool={scene:G.scene,mgr,cap,live:[],free:[],last:G.time||0,amb:0}; return G.fxPool; }catch(e){ console.warn('fxPool',e); G.fxPool={scene:G.scene,mgr:null,live:[],free:[]}; return G.fxPool; } }
+// spawn one pooled sprite. size is in world units; vel moves it; ang rotates in screen space; w/h stretch it
+function fxp(pos,{cell=0,size=1,col=new C3(1,1,1),dur=.3,grow=.8,vel=null,drag=0,spin=0,alpha=1,ang=null,w=1,h=1,fade=2}={}){ const P=fxPool(); if(!P.mgr) return null;
+  let e; if(P.live.length>=P.cap-2){ e=P.live.shift(); } else if(P.free.length) e=P.free.pop(); else e={sp:new BABYLON.Sprite('fxp',P.mgr)};
+  e.gen=(e.gen||0)+1; const sp=e.sp; sp.isVisible=true; sp.cellIndex=cell; sp.position.copyFrom(pos); sp.angle=ang==null?Math.random()*6.283:ang; sp.color=new C4(col.r,col.g,col.b,alpha);
+  e.t0=G.time; e.dur=Math.max(.02,dur)*Math.max(.3,SPEED); e.s0=size; e.grow=grow; e.vel=vel?vel.clone():null; e.drag=drag; e.spin=spin; e.col=col; e.alpha=alpha; e.w=w; e.h=h; e.fade=fade;
+  sp.width=size*w*.45; sp.height=size*h*.45; P.live.push(e); return e; }
+function fxPoolTick(){ const P=G.fxPool; if(!P||!P.mgr||P.scene!==G.scene) return; const now=G.time, dt=Math.min(.1,Math.max(0,now-P.last)); P.last=now; const L=P.live;
+  for(let i=L.length-1;i>=0;i--){ const e=L[i], k=(now-e.t0)/e.dur, sp=e.sp; if(k>=1){ sp.isVisible=false; L.splice(i,1); P.free.push(e); continue; }
+    const s=e.s0*(.45+k*e.grow); sp.width=s*e.w; sp.height=s*e.h; const a=e.alpha*Math.pow(1-k,e.fade); sp.color.r=e.col.r*a; sp.color.g=e.col.g*a; sp.color.b=e.col.b*a; sp.color.a=a;
+    if(e.vel){ sp.position.addInPlace(e.vel.scale(dt/Math.max(.3,SPEED))); if(e.drag) e.vel.scaleInPlace(Math.max(0,1-e.drag*dt)); } if(e.spin) sp.angle+=e.spin*dt; }
+  if(G.views&&G.quality!=='low') for(const v of G.views.values()) navLights(v,P);
+  ambientBattle(dt); }
+function navLights(v,P){ const md=v.model; if(!md||!md.nav||v.crafts) return; const dead=!v.root||v.root.isDisposed()||v.state!=='alive';
+  if(!v.navSp){ if(dead) return; v.navSp=md.nav.map(n=>{ const sp=new BABYLON.Sprite('nav',P.mgr); sp.cellIndex=n.k?1:0; sp.angle=n.k?0:Math.random()*6; sp.color=new C4(0,0,0,0); return sp; }); }
+  if(dead){ for(const sp of v.navSp) sp.dispose(); v.navSp=null; return; } v.root.computeWorldMatrix(true); const M=v.root.getWorldMatrix(), t=G.time, L=v.L||10, ph0=(v.bob||0);
+  md.nav.forEach((n,i)=>{ const sp=v.navSp[i]; V3.TransformCoordinatesToRef(n.p,M,sp.position); let a,s;
+    if(n.k){ const c=((t*.7+ph0+n.ph)%1+1)%1; a=c<.05?1:c<.1?.25:c<.15?.9:0; s=(L*.09+2.2)*(a>.5?1:.6); } else { a=.55+.25*Math.sin(t*2+i); s=L*.035+1.1; }
+    sp.width=sp.height=s; sp.color.r=n.c.r*a*1.6; sp.color.g=n.c.g*a*1.6; sp.color.b=n.c.b*a*1.6; sp.color.a=a; }); }
+// screen-space angle of a world direction, so streak sprites line up with what they represent
+function screenAng(pos,dir){ try{ const vm=G.cam.getViewMatrix(); const a=V3.TransformCoordinates(pos,vm), b=V3.TransformCoordinates(pos.add(dir),vm); return Math.atan2(b.y/Math.max(.1,b.z)-a.y/Math.max(.1,a.z),b.x/Math.max(.1,b.z)-a.x/Math.max(.1,a.z)); }catch(e){ return 0; } }
+const WHITE3=new C3(1,1,1);
+// small muzzle flash for the extra barrels of a broadside
+function volleyMuzzle(pos,out,col){ const hot=C3.Lerp(col,WHITE3,.5).scale(1.8); fxp(pos,{cell:1,size:2.6,col:hot,dur:.13,grow:.5}); fxp(pos.add(out.scale(.5)),{cell:0,size:2.2,col:col.scale(1.3),dur:.16,grow:.4});
+  fxp(pos.add(out.scale(1.1)),{cell:3,size:3.4,col:C3.Lerp(col,new C3(1,.85,.6),.4).scale(1.5),dur:.12,grow:.6,ang:screenAng(pos,out),w:1,h:.3,fade:1.5});
+  if(!G.mobile&&Math.random()<.45) fxp(pos.add(out.scale(1.6)),{cell:0,size:2.4,col:new C3(.12,.11,.1),dur:.9,grow:1.6,vel:out.scale(2.5),drag:1.5,fade:1}); }
+// small hit for extra bolts: a star, a hot glow and a fan of streak sparks; on shields a coloured ring
+function volleyImpact(p,col,shielded,from){ const back=from?from.subtract(p).normalize():new V3(0,1,0);
+  if(shielded){ if(Math.random()<.4) fxp(p,{cell:2,size:2.2,col:SHIELD_C.scale(.9),dur:.26,grow:1.4,fade:2,alpha:.7}); fxp(p,{cell:0,size:2.8,col:SHIELD_C.scale(1.1),dur:.25,grow:.6}); fxp(p,{cell:1,size:2.4,col:C3.Lerp(SHIELD_C,WHITE3,.5).scale(1.6),dur:.12}); return; }
+  fxp(p,{cell:1,size:3.2,col:C3.Lerp(col,WHITE3,.55).scale(1.8),dur:.14,grow:.5}); fxp(p,{cell:0,size:2.6,col:new C3(1,.62,.3).scale(1.5),dur:.32,grow:.8}); fxp(p,{cell:0,size:1.6,col:new C3(1,.9,.7).scale(1.6),dur:.08,grow:.3});
+  const n=G.mobile?3:6; for(let i=0;i<n;i++){ const v=back.add(new V3(Math.random()-.5,Math.random()-.4,Math.random()-.5).scale(1.6)).normalize().scale(7+Math.random()*14);
+    fxp(p,{cell:3,size:1.2+Math.random()*.8,col:new C3(1,.75+Math.random()*.2,.45).scale(1.6),dur:.35+Math.random()*.35,grow:0,vel:v,drag:2.2,ang:screenAng(p,v),w:1,h:.22,fade:1.2}); }
+  if(!G.mobile&&Math.random()<.5) fxp(p.add(back.scale(.6)),{cell:0,size:3,col:new C3(.14,.12,.1),dur:1.4,grow:1.4,vel:back.scale(1.2),drag:.8,fade:1}); }
+// a far-off fleet action on the skyline: flashes, tracer streaks and the odd big detonation, so the battle feels like part of a war
+function ambientBattle(dt){ const P=G.fxPool; if(!P||G.quality==='low'||!B||B.over||G.fxReduced) return; P.amb-=dt; if(P.amb>0) return;
+  P.amb=(G.mobile?1.6:.55)*(.4+Math.random()*1.2); if(!P.front||Math.random()<.04){ const a=Math.random()*6.283; P.front={a,y:(Math.random()-.4)*260,d:900+Math.random()*700}; }
+  const f=P.front, c=G.ctl?G.ctl.t:V3.Zero(), aa=f.a+(Math.random()-.5)*.5, d=f.d*(.85+Math.random()*.3); const pos=new V3(c.x+Math.cos(aa)*d,f.y+(Math.random()-.5)*90,c.z+Math.sin(aa)*d);
+  const pal=[new C3(1,.6,.3),new C3(.5,.8,1),new C3(.4,1,.5),new C3(1,.45,.85)], col=pal[Math.floor(Math.random()*pal.length)];
+  const big=Math.random()<.12; fxp(pos,{cell:1,size:big?70:22+Math.random()*20,col:C3.Lerp(col,WHITE3,.4).scale(big?1.1:.6),dur:big?.9:.35,grow:big?1.2:.6});
+  if(big) fxp(pos,{cell:0,size:90,col:new C3(1,.55,.25).scale(.5),dur:2.2,grow:1.3,fade:1.5});
+  const nT=Math.floor(Math.random()*4); for(let i=0;i<nT;i++){ const v=new V3(Math.random()-.5,(Math.random()-.5)*.3,Math.random()-.5).normalize(); const q=pos.add(v.scale(20+Math.random()*60));
+    fxp(q,{cell:3,size:40+Math.random()*40,col:col.scale(.7),dur:.4+Math.random()*.4,grow:0,vel:v.scale(220),ang:screenAng(q,v),w:1,h:.12,fade:1}); } }
+
+// point defence: the target's guns hose tracer streams at an incoming torpedo and flak pops around it
+function pdFire(vt,p){ try{ if(!vt||!vt.root||vt.root.isDisposed()||G.fxReduced) return; if(Math.random()>(G.mobile?.18:.5)) return; const gl=vt.model&&vt.model.guns; if(!gl) return;
+  const pool=gl.T.length?gl.T:gl.P.concat(gl.S); if(!pool.length) return; vt.root.computeWorldMatrix(true); const g=V3.TransformCoordinates(pool[Math.floor(Math.random()*pool.length)],vt.root.getWorldMatrix());
+  const aim=p.add(new V3((Math.random()-.5)*5,(Math.random()-.5)*3,(Math.random()-.5)*5)), v=aim.subtract(g), d=v.length(); v.normalize(); const col=(FAC3D[vt.fac]||FAC3D.hegemony).bolt;
+  fxp(g,{cell:1,size:1.6,col:C3.Lerp(col,WHITE3,.5).scale(1.5),dur:.08});
+  for(let i=0;i<3;i++){ const q=g.add(v.scale(i*2.2)); fxp(q,{cell:3,size:2.6,col:col.scale(1.5),dur:Math.min(.5,d/240),grow:0,vel:v.scale(240),ang:screenAng(q,v),w:1,h:.16,fade:.6}); }
+  if(Math.random()<.55){ const f=p.add(new V3((Math.random()-.5)*6,(Math.random()-.5)*4,(Math.random()-.5)*6)); fxp(f,{cell:0,size:3.2,col:new C3(1,.7,.35).scale(1.4),dur:.22,grow:.9}); fxp(f,{cell:1,size:2.4,col:new C3(1,.95,.8).scale(1.4),dur:.09}); if(!G.mobile) fxp(f,{cell:0,size:3.5,col:new C3(.12,.11,.1),dur:1.2,grow:1.3,fade:1}); } }catch(e){} }
