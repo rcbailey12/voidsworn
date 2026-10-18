@@ -58,7 +58,7 @@ function noiseTex(name,size,seed,soft=.55){ return dynTex(name,size,size,(g,w)=>
       const v=clamp((t-.35)*2.2,0,1)*Math.pow(clamp(1-r,0,1),soft); const o=(y*w+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=v*255; }
     g.putImageData(img,0,0); }); }
 function makeSunAndSky(){
-  const sc=G.scene, dir=new V3(-.55,.22,.8).normalize(), pos=dir.scale(9000);
+  const sc=G.scene, dir=new V3(-.55,.22,.8).normalize(), pos=dir.scale(9000); G.sunPosW=pos.clone();
   const sun=MB.CreatePlane('sun',{size:900},sc); sun.position=pos; sun.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; sun.infiniteDistance=true; sun.isPickable=false;
   sun.material=addMat('sunM',new C3(2.2,1.9,1.5),1,G.tex.flare); G.glow.addExcludedMesh(sun); G.sunMesh=sun;
   const halo=MB.CreatePlane('sunHalo',{size:3400},sc); halo.position=pos.scale(1.001); halo.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; halo.infiniteDistance=true; halo.isPickable=false; halo.material=addMat('haloM',new C3(.55,.38,.22),.55,G.tex.soft); G.glow.addExcludedMesh(halo);
@@ -78,7 +78,8 @@ function makeSunAndSky(){
   const gal=MB.CreatePlane('galaxy',{size:1500},sc); gal.position=new V3(.62,.35,-.7).normalize().scale(8800); gal.lookAt(V3.Zero()); gal.rotation.z=.6; gal.infiniteDistance=true; gal.isPickable=false; gal.material=addMat('galM',new C3(.9,.85,1),.8,gt); G.glow.addExcludedMesh(gal);
   const nts=[noiseTex('cloudA',256,1),noiseTex('cloudB',256,2,.8),noiseTex('cloudC',256,3,.4)], cols=[new C3(.35,.2,.6),new C3(.18,.3,.7),new C3(.7,.35,.25),new C3(.5,.22,.45)];
   G.clouds=[]; for(let i=0;i<(G.mobile?14:34);i++){ const a=r()*Math.PI*2, d=250+r()*900, sz=260+r()*520; const pl=MB.CreatePlane('bank',{size:sz},sc); pl.position=new V3(Math.cos(a)*d*1.2,-80-r()*380,Math.sin(a)*d); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false;
-    pl.material=addMat('bankM',cols[i%4].scale(.9),.1+r()*.16,nts[i%3]); pl.rotation.z=r()*6; G.glow.addExcludedMesh(pl); G.clouds.push(pl); }
+    if(!G.mobile){ const nm=nebulaMaterial('nebM'+i,cols[i%4].scale(.9),cols[(i+1)%4].scale(1.15),.12+r()*.14,r()*20); pl.material=nm; (G.nebMats=G.nebMats||[]).push(nm); } // v42: animated emission clouds on desktop
+    else pl.material=addMat('bankM',cols[i%4].scale(.9),.1+r()*.16,nts[i%3]); pl.rotation.z=r()*6; G.glow.addExcludedMesh(pl); G.clouds.push(pl); }
 }
 
 function makeEnvProbe(){
@@ -106,7 +107,9 @@ function setQuality(q){
     G.scene.meshes.forEach(skipVls); G.scene.onNewMeshAddedObservable.add(m=>setTimeout(()=>skipVls(m),0)); } else if(!ultra&&G.vls){ G.vls.dispose(G.cam); G.vls=null; } }catch(e){ console.warn('god rays unavailable',e); G.vls=null; }
   if(G.ssao){ if(G.ssaoOn===undefined) G.ssaoOn=true; if(ultra&&!G.ssaoOn){ mgr.attachCamerasToRenderPipeline('ssao',G.cam); G.ssaoOn=true; } else if(!ultra&&G.ssaoOn){ mgr.detachCamerasFromRenderPipeline('ssao',G.cam); G.ssaoOn=false; } }
   G.pipe.samples=hi&&!(ultra&&G.taaOn)?4:1; G.pipe.fxaaEnabled=!(ultra&&G.taaOn); G.pipe.chromaticAberrationEnabled=hi&&!G.fxReduced; G.pipe.grainEnabled=hi; G.glow.intensity=hi?.6:.45;
-  G.engine.setHardwareScalingLevel(q==='medium'?Math.max(1,1/(window.devicePixelRatio||1)*1.5):1/Math.min(2,window.devicePixelRatio||1));
+  const dpr=window.devicePixelRatio||1; // v42: Medium renders at about 1.5x CSS pixels (was clamped to 1x: 41% of a Pixel's resolution per axis), width capped at 720
+  G.engine.setHardwareScalingLevel(q==='medium'?1/Math.max(1,Math.min(dpr,1.5,720/Math.max(320,innerWidth))):1/Math.min(2,dpr));
+  G.pipe.sharpenEnabled=hi; G.glow.isEnabled=hi; // the phone image is sharp enough now, and bloom carries the emissives
 }
 // procedural normal + occlusion/roughness/metal maps derived from an albedo canvas
 function mapsFromCanvas(name,src,{strength=2.4,metal=.5,rough=.55}={}){
@@ -197,27 +200,12 @@ function makeStars(){
   const mat=new BABYLON.ShaderMaterial('starM',G.scene,{vertex:'star',fragment:'star'},{attributes:['position','color'],uniforms:['worldViewProjection','scale']});
   mat.pointsCloud=true; mat.setFloat('scale',Math.max(1,Math.min(2.2,window.devicePixelRatio||1))); m.material=mat; m.infiniteDistance=true; m.isPickable=false; G.glow.addExcludedMesh(m); G.stars=m;
 }
-function makePlanet(){
-  const tex=dynTex('planetTex',2048,1024,(g,w,h)=>{ const img=g.createImageData(w,h), dd=img.data;
-    const hs=(x,y)=>{ const v=Math.sin(x*127.1+y*311.7)*43758.5453; return v-Math.floor(v); };
-    const ns=(x,y)=>{ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf); return (hs(xi,yi)*(1-u)+hs(xi+1,yi)*u)*(1-v)+(hs(xi,yi+1)*(1-u)+hs(xi+1,yi+1)*u)*v; };
-    const fb=(x,y)=>{ let a=.5,t=0; for(let o=0;o<4;o++){ t+=a*ns(x,y); x*=2.07; y*=2.07; a*=.5; } return t; };
-    const pal=[[212,184,138],[178,138,96],[226,208,166],[150,108,78],[198,158,112],[236,220,182],[168,120,86]];
-    for(let y=0;y<h;y++){ const v=y/h; for(let x=0;x<w;x++){ const u=x/w; const warp=(fb(u*9,v*24)-.5)*.05+(fb(u*30+3,v*70)-.5)*.012; const vv=clamp(v+warp,0,.999);
-        const bi=vv*13, i0=Math.floor(bi)%pal.length, i1=(i0+1)%pal.length, k=bi-Math.floor(bi); const sk=k*k*(3-2*k); const tt=fb(u*60,vv*140)*.25;
-        const o=(y*w+x)*4; for(let c=0;c<3;c++) dd[o+c]=(pal[i0][c]*(1-sk)+pal[i1][c]*sk)*(.85+tt); dd[o+3]=255; } }
-    for(const [sx,sy,rw,rh,cr,cg,cb] of [[.62,.58,.035,.018,176,96,58],[.21,.34,.02,.01,236,226,200],[.8,.71,.015,.008,150,90,60]]){ const cx=sx*w, cy=sy*h;
-      for(let y=Math.floor(cy-rh*h*1.5);y<cy+rh*h*1.5;y++) for(let x=Math.floor(cx-rw*w*1.5);x<cx+rw*w*1.5;x++){ const e=((x-cx)/(rw*w))**2+((y-cy)/(rh*h))**2; if(e>1) continue; const o=(y*w+x)*4, f=(1-e)*.85; dd[o]=dd[o]*(1-f)+cr*f; dd[o+1]=dd[o+1]*(1-f)+cg*f; dd[o+2]=dd[o+2]*(1-f)+cb*f; } }
-    g.putImageData(img,0,0); });
-  tex.hasAlpha=false;
+function makePlanet(){ // v42: a procedural planet shader (bands, continents, ice, clouds, city lights, limb scattering) replaces the painted texture
   const p=MB.CreateSphere('planet',{diameter:2600,segments:64},G.scene);
   p.position=new V3(5200,-5600,11800); p.rotation.set(.35,-.6,.18);
-  const m=new BABYLON.StandardMaterial('planetM',G.scene); m.diffuseTexture=tex; m.specularColor=new C3(.05,.05,.05); m.ambientColor=new C3(.04,.04,.06); p.material=m; p.isPickable=false;
-  const at=MB.CreateSphere('atmo',{diameter:2705,segments:48},G.scene); at.position=p.position.clone(); at.isPickable=false;
-  const am=new BABYLON.StandardMaterial('atmoM',G.scene); am.diffuseColor=C3.Black(); am.specularColor=C3.Black(); am.emissiveColor=new C3(1,.75,.5);
-  am.emissiveFresnelParameters=new BABYLON.FresnelParameters(); am.emissiveFresnelParameters.bias=.15; am.emissiveFresnelParameters.power=3.2; am.emissiveFresnelParameters.leftColor=new C3(1,.78,.55); am.emissiveFresnelParameters.rightColor=C3.Black();
-  am.alphaMode=BABYLON.Engine.ALPHA_ADD; am.alpha=.65; am.disableDepthWrite=true; at.material=am;
-  G.glow.addExcludedMesh(p); G.glow.addExcludedMesh(at); G.planet=p; G.atmo=at;
+  const m=planetMaterial('planetM'); m.setFloat('oct',G.mobile?4:6); p.material=m; p.isPickable=false;
+  const at=MB.CreateSphere('atmo',{diameter:2780,segments:48},G.scene); at.position=p.position.clone(); at.isPickable=false; at.material=atmoMaterial('atmoM');
+  G.glow.addExcludedMesh(p); G.glow.addExcludedMesh(at); G.planet=p; G.atmo=at; setPlanetLook(PLANET_LOOKS[0],.37,null);
   // a thin ring system
   const ring=MB.CreateDisc('pring',{radius:2340,tessellation:128,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene);
   ring.position=p.position.clone(); ring.rotation.set(Math.PI/2-.28,0,.2); ring.isPickable=false;
@@ -246,7 +234,9 @@ function cachedTextures(){ const keep=new Set(Object.values(G.tex)); const sc=G.
 // each enemy faction's space has its own colour: the sky nebula is re-tinted per battle and reseeded so its shape changes too
 const BIOMES={voidsworn:[[.13,.26,.6],[.62,.22,.45],[1,.64,.36]], hegemony:[[.08,.2,.42],[.22,.42,.72],[.85,.93,1]], corsair:[[.32,.12,.06],[.8,.32,.1],[1,.74,.34]],
   chorus:[[.16,.36,.16],[.6,.18,.56],[.9,1,.5]], ithar:[[.04,.26,.32],[.38,.18,.7],[.7,.95,1]], deathless:[[.06,.22,.15],[.16,.52,.34],[.6,1,.72]]};
-function applyBiome(fac){ try{ const b=BIOMES[fac]||BIOMES.voidsworn, m=G.skyMat, k=1.45; if(!m) return; m.setColor3('c1',new C3(...b[0]).scale(k)); m.setColor3('c2',new C3(...b[1]).scale(k)); m.setColor3('c3',new C3(...b[2]).scale(k*1.1)); m.setFloat('seed',.1+Math.random()*.8); }catch(e){ console.warn(e); } }
+function applyBiome(fac){ try{ const b=BIOMES[fac]||BIOMES.voidsworn, m=G.skyMat, k=1.45; if(!m) return; m.setColor3('c1',new C3(...b[0]).scale(k)); m.setColor3('c2',new C3(...b[1]).scale(k)); m.setColor3('c3',new C3(...b[2]).scale(k*1.1)); m.setFloat('seed',.1+Math.random()*.8);
+  if(G.nebMats) G.nebMats.forEach((nm,i)=>{ nm.setColor3('ca',new C3(...b[i%2]).scale(.9)); nm.setColor3('cb',new C3(...b[(i+1)%3]).scale(1.1)); nm.setFloat('seed',Math.random()*20); });
+  composeBackdrop(fac); }catch(e){ console.warn(e); } } // v42: each battle also gets its own planet and re-coloured nebula banks
 // light the grid up around a hex (the selected ship); with no focus the whole grid stays a faint wash
 function gridFocus(c,R){ const g=G.grid; if(!g||g.isDisposed()||!G.gridHexes) return; R=R||6; const key=c?c.q+','+c.r+','+R:'none'; if(G.gridKey===key) return; G.gridKey=key;
   const cols=new Float32Array(G.gridHexes.length*28); let o=0;

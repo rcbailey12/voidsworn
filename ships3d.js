@@ -74,8 +74,9 @@ function facMats(fac){
   M.flesh=new BABYLON.PBRMaterial(fac+'flesh',sc); M.flesh.albedoColor=hexC3('#6e2a5c'); M.flesh.metallic=0; M.flesh.roughness=.3; M.flesh.emissiveColor=P.win.scale(.45); M.flesh.bumpTexture=hm.normal; M.flesh.environmentIntensity=1.2;
   const stx=dynTex(fac+'sailT',256,256,(g,w)=>{ const gr=g.createLinearGradient(0,w,0,0); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(255,255,255,.12)'); g.fillStyle=gr; g.fillRect(0,0,w,w); g.fillStyle='rgba(255,255,255,.5)'; for(let y=6;y<w;y+=18) g.fillRect(0,y,w,1); }); M._sailT=stx;
   M.sail=emMat(fac+'sail',fac==='chorus'?new C3(.55,.16,.42):new C3(.25,.6,.75),.26); M.sail.backFaceCulling=false; M.sail.disableDepthWrite=true; M.sail.alphaMode=BABYLON.Engine.ALPHA_ADD; M.sail.opacityTexture=M._sailT; M.sail.alpha=.3;
-  M.plume=emMat(fac+'plume',P.eng,.55); M.plume.alphaMode=BABYLON.Engine.ALPHA_ADD; M.plume.opacityTexture=G.tex.soft; M.plume.disableDepthWrite=true; M.plume.backFaceCulling=false;
+  M.plume=emMat(fac+'plume',P.eng.scale(1.25),.7); M.plume.alphaMode=BABYLON.Engine.ALPHA_ADD; M.plume.opacityTexture=(typeof plumeTex==='function')?plumeTex():G.tex.soft; M.plume.disableDepthWrite=true; M.plume.backFaceCulling=false;
   M.flare=emMat(fac+'flare',P.eng.scale(1.2),.9); M.flare.alphaMode=BABYLON.Engine.ALPHA_ADD; M.flare.opacityTexture=G.tex.flare; M.flare.disableDepthWrite=true; M.flare.backFaceCulling=false;
+  if(typeof addHullFx==='function') addHullFx(M,fac); // v42: faction rim light
   return MATS[fac]=M;
 }
 // class lengths (world units; one hex is ~17 across)
