@@ -46,7 +46,7 @@ const HULLS = {
   h_picket:{n:'Hegemony picket',cls:'Frigate',fac:'hegemony',size:.5,cp:1,hp:40,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:18,w:[['laser','F'],['flak','T']],ab:'evasive'},
   h_interdictor:{n:'Interdictor destroyer',cls:'Destroyer',fac:'hegemony',size:.6,cp:2,hp:74,sh:18,rg:7,ar:.15,sp:4,tn:2,ev:10,w:[['ion','F'],['turbo','T']],ab:'ionpulse'},
   h_vanguard:{n:'Vanguard star cruiser',cls:'Cruiser',fac:'hegemony',size:.78,cp:4,hp:140,sh:24,rg:10,ar:.2,sp:3,tn:1,ev:4,w:[['turbo','T'],['turbo','T'],['ion','F']],ab:'launch',hangar:1},
-  h_dominion:{n:'Dominion star destroyer',cls:'Battleship',fac:'hegemony',size:.98,cp:6,hp:230,sh:32,rg:12,ar:.25,sp:2,tn:1,ev:0,w:[['hturbo','P'],['hturbo','S'],['ion','F'],['flak','T']],ab:'launch',hangar:1},
+  h_dominion:{n:'Dominion star dreadnought',cls:'Battleship',fac:'hegemony',size:.98,cp:6,hp:230,sh:32,rg:12,ar:.25,sp:2,tn:1,ev:0,w:[['hturbo','P'],['hturbo','S'],['ion','F'],['flak','T']],ab:'launch',hangar:1},
   h_boss:{n:'The Iron Mandate',cls:'Super-dreadnought',fac:'hegemony',size:1.3,cp:12,hp:560,sh:40,rg:10,ar:.3,sp:1,tn:1,ev:0,w:[['hturbo','P'],['hturbo','S'],['turbo','T'],['ion','F'],['flak','T']],ab:'nova',boss:true},
   // ---- Ashfall Corsairs
   c_raider:{n:'Corsair raider',cls:'Frigate',fac:'corsair',size:.48,cp:1,hp:46,sh:8,rg:4,ar:.05,sp:6,tn:3,ev:28,w:[['autocannon','T']],ab:'overburn'},
@@ -68,7 +68,7 @@ const HULLS = {
   i_boss:{n:'Worldsong Ark',cls:'Ark',fac:'ithar',size:1.26,cp:11,hp:470,sh:34,rg:14,ar:.2,sp:3,tn:2,ev:6,w:[['pulsar','F'],['pulsar','F'],['pulsar','T'],['turret','T'],['flak','T']],ab:'surge',boss:true},
   // ---- The Deathless Dynasty
   d_scythe:{n:'Deathless scythe',cls:'Frigate',fac:'deathless',size:.5,cp:1,hp:56,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:14,w:[['gauss','T']],ab:'phase',regen:3,reanimate:true},
-  d_jackal:{n:'Deathless jackal',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:110,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['gauss','T'],['gauss','F']],ab:'phase',regen:4,reanimate:true},
+  d_jackal:{n:'Deathless jackal',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:110,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['gauss','T'],['gauss','F']],ab:'phase',regen:3,reanimate:true},
   d_harvester:{n:'Deathless harvester',cls:'Cruiser',fac:'deathless',size:.82,cp:4,hp:145,sh:0,rg:0,ar:.3,sp:2,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['gsentry','T']],ab:'reclaim',regen:4,reanimate:true},
   d_boss:{n:'The Undying Throne',cls:'Tomb-ark',fac:'deathless',size:1.3,cp:12,hp:480,sh:0,rg:0,ar:.35,sp:1,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['flak','T']],ab:'nova',regen:8,boss:true},
 };
@@ -106,7 +106,7 @@ const ABILITIES = {
   frenzy:{n:'Blood frenzy',d:'All of this ship\u2019s weapons deal +30% damage this turn.',cd:3},
   regrow:{n:'Rapid regrowth',d:'Regrow 25% of this ship\u2019s hull right now.',cd:3},
   blink:{n:'Phase jump',d:'Jump to any open hex within 3, straight past rocks and ships. Tap the hex.',cd:3,target:true},
-  phase:{n:'Dimensional shift',d:'+22 evasion until your next turn and +2 movement now.',cd:3},
+  phase:{n:'Dimensional shift',d:'+25 evasion until your next turn and +2 movement now.',cd:3},
   reclaim:{n:'Reanimation beam',d:'Restore 20% hull to your most damaged ship within 3 hexes (this one included).',cd:3},
 };
 const ORDERS = {

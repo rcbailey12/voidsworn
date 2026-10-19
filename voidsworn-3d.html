@@ -306,7 +306,7 @@ body #app .facpick.on{background:var(--gilt)!important;color:#1a1206!important;b
 <div class="loading" id="loading">Assembling the fleet&hellip;</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/8.20.0/babylon.js"></script>
 <script>
-const BUILD_ID='20261018-1909-2780c1f';
+const BUILD_ID='20261019-0147-38c14f0';
 // ======================= DATA =======================
 const W = {
   autocannon:{n:'Autocannon',k:'battery',shots:3,dmg:5,r:4,opt:2,acc:80,fall:8,crit:5},
@@ -2079,8 +2079,8 @@ function setQuality(q){
     // points and lines break the occlusion pass (no element buffer), so keep them out of it
     const skipVls=m=>{ if(!G.vls) return; if(m instanceof BABYLON.LinesMesh||(m.material&&m.material.pointsCloud)||m===G.stars||m===G.sky) G.vls.excludedMeshes.push(m); };
     G.scene.meshes.forEach(skipVls); G.scene.onNewMeshAddedObservable.add(m=>setTimeout(()=>skipVls(m),0)); } else if(!ultra&&G.vls){ G.vls.dispose(G.cam); G.vls=null; } }catch(e){ console.warn('god rays unavailable',e); G.vls=null; }
-  if(G.ssao){ if(G.ssaoOn===undefined) G.ssaoOn=true; if(ultra&&!G.ssaoOn){ mgr.attachCamerasToRenderPipeline('ssao',G.cam); G.ssaoOn=true; } else if(!ultra&&G.ssaoOn){ mgr.detachCamerasFromRenderPipeline('ssao',G.cam); G.ssaoOn=false; } }
-  G.pipe.samples=hi&&!(ultra&&G.taaOn)?4:1; G.pipe.fxaaEnabled=!(ultra&&G.taaOn); G.pipe.chromaticAberrationEnabled=hi&&!G.fxReduced; G.pipe.grainEnabled=hi; G.glow.intensity=hi?.6:.45;
+  if(G.ssao){ const want=ultra||(hi&&!G.mobile); /* v44: contact shadows between hull parts on High too (desktop) */ if(G.ssaoOn===undefined) G.ssaoOn=true; if(want&&!G.ssaoOn){ mgr.attachCamerasToRenderPipeline('ssao',G.cam); G.ssaoOn=true; } else if(!want&&G.ssaoOn){ mgr.detachCamerasFromRenderPipeline('ssao',G.cam); G.ssaoOn=false; } try{ const gb=G.scene.geometryBufferRenderer; if(gb) gb.renderList=G.ssaoOn?null:[]; }catch(e){} /* v44.1: a detached SSAO left its geometry buffer rendering every mesh every frame */ try{ G.ssao.samples=ultra?16:8; G.ssao.totalStrength=ultra?1.25:1.05; }catch(e){} }
+  G.pipe.samples=hi&&!(ultra&&G.taaOn)?4:1; G.pipe.fxaaEnabled=!(ultra&&G.taaOn); G.pipe.chromaticAberrationEnabled=hi&&!G.fxReduced; G.pipe.grainEnabled=hi; G.glow.intensity=hi?.6:.45; try{ G.glow.blurKernelSize=hi?48:24; }catch(e){} /* v44.1: half the glow blur on Medium (phones) */
   const dpr=window.devicePixelRatio||1; // v42: Medium renders at about 1.5x CSS pixels (was clamped to 1x: 41% of a Pixel's resolution per axis), width capped at 720
   G.engine.setHardwareScalingLevel(q==='medium'?1/Math.max(1,Math.min(dpr,1.5,720/Math.max(320,innerWidth))):ultra&&!G.mobile&&dpr<1.5?1/Math.min(1.25,1.25*dpr):1/Math.min(2,dpr)); // Ultra supersamples 1.25x on screens below 4K
   G.pipe.sharpenEnabled=hi; G.glow.isEnabled=hi; try{ for(const M of Object.values(MATS)) for(const k of ['hull','dark','steel','trim']) if(M[k]) M[k].markAsDirty(BABYLON.Material.AllDirtyFlag); }catch(e){} // hull shading detail follows the quality level // the phone image is sharp enough now, and bloom carries the emissives
@@ -2234,15 +2234,21 @@ function buildBattleEnv(){
   const rockMat=new BABYLON.StandardMaterial('rockM',sc);
   rockMat.diffuseTexture=dynTex('rockTex',256,256,(g,w)=>{ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
   rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
-  const bases=[]; for(let k=0;k<4;k++){ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+k,{radius:1,subdivisions:3},sc);
-    const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind); for(let i=0;i<p.length;i+=3){ const x=p[i],y=p[i+1],z=p[i+2]; const n=1+.28*Math.sin(x*3.1+k)*Math.cos(y*2.7+k*2)+.18*Math.sin(z*5.3+x*2)+(rr()-.5)*.08; p[i]=x*n*(1+.3*(k%2)); p[i+1]=y*n*.8; p[i+2]=z*n; }
-    m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.convertToFlatShadedMesh(); m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); bases.push(m); G.env.push(m); }
+  // v44: rocks are smooth-shaded, multi-octave and cratered (were faceted 'crumpled paper' icospheres)
+  const bases=[]; for(let k=0;k<4;k++){ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+k,{radius:1,subdivisions:G.mobile?3:4,flat:false},sc);
+    const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind), ph=[rr()*6,rr()*6,rr()*6]; const cr=[]; for(let i=0;i<7;i++){ const u=rr()*2-1,t=rr()*6.28,q=Math.sqrt(1-u*u); cr.push([q*Math.cos(t),u,q*Math.sin(t),.2+rr()*.3,.05+rr()*.08]); }
+    for(let i=0;i<p.length;i+=3){ const x=p[i],y=p[i+1],z=p[i+2]; let n=1+.26*Math.sin(x*2.1+ph[0])*Math.cos(y*1.8+ph[1])+.14*Math.sin(z*3.9+x*1.6+ph[2]);
+      n+=.07*(1-Math.abs(Math.sin(x*6.3+y*4.1+ph[1])*Math.cos(z*5.7-ph[0])))-.035; n+=.025*Math.sin(x*15+y*11+z*13+ph[2]);
+      for(const [cx,cy,cz,r0,d0] of cr){ const d=Math.hypot(x-cx,y-cy,z-cz); if(d<r0) n-=d0*(1-d/r0)*(1-d/r0)*2; else if(d<r0*1.3) n+=d0*.3*(1-(d-r0)/(r0*.3)); }
+      p[i]=x*n*(1+.32*(k%2)); p[i+1]=y*n*.78; p[i+2]=z*n*(k===3?1.2:1); }
+    m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); const nr=[]; BABYLON.VertexData.ComputeNormals(p,m.getIndices(),nr); m.setVerticesData(BABYLON.VertexBuffer.NormalKind,nr);
+    m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); bases.push(m); G.env.push(m); }
   G.rocks=[];
   const rr=seeded(B.seed||42);
   const addRock=(pos,s)=>{ const inst=bases[Math.floor(rr()*4)].createInstance('rock'); inst.position=pos; inst.scaling.setAll(s); inst.rotation.set(rr()*6,rr()*6,rr()*6); inst.isPickable=false; inst.spin=new V3((rr()-.5)*.1,(rr()-.5)*.14,(rr()-.5)*.1); G.rocks.push(inst); G.env.push(inst); };
   for(const [k,t] of Object.entries(B.terrain)){ const [q,r]=k.split(',').map(Number); const c=hexWorld(q,r);
     if(t==='rock'){ addRock(c.add(new V3(0,1.5,0)),4+rr()*2.5); for(let i=0;i<4;i++) addRock(c.add(new V3((rr()-.5)*8,(rr()-.3)*5,(rr()-.5)*8)),1+rr()*2.2); }
-    if(t==='neb'){ for(let i=0;i<3;i++){ const pl=MB.CreatePlane('neb',{size:22+rr()*14},sc); pl.position=c.add(new V3((rr()-.5)*8,1+rr()*6,(rr()-.5)*8)); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false;
+    if(t==='neb'){ for(let i=0;i<(G.mobile?2:3);i++){ const pl=MB.CreatePlane('neb',{size:(22+rr()*14)*(G.mobile?1.15:1)},sc); pl.position=c.add(new V3((rr()-.5)*8,1+rr()*6,(rr()-.5)*8)); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false;
         const nm=addMat('nebM',rr()<.5?new C3(.42,.25,.62):new C3(.25,.35,.7),.34,G.tex.neb); pl.material=nm; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl,nm); } } }
   // distant decorative rocks below and around the table for depth
   for(let i=0;i<70;i++){ const a=rr()*Math.PI*2, d=G.bx*.9+rr()*380; addRock(new V3(Math.cos(a)*d*1.15,-50-rr()*200,Math.sin(a)*d*.8),2+rr()*12); }
@@ -2354,12 +2360,21 @@ function buildHoleFills(holes,rr){ for(const h of holes){ if(h.kind==='deadstar'
 // the rift: a violet tear in space below the board where the chasm runs
 function buildRift(cells,rr){ const sc=G.scene, m=emMat('riftM',new C3(.85,.42,1.7),.6); m.opacityTexture=G.tex.soft; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; G.env.push(m);
   for(const [q,r] of cells){ const c=hexWorld(q,r,0); for(let i=0;i<2;i++){ const pl=MB.CreatePlane('rift',{size:HS*(2.6+rr()*1.4)},sc); pl.position=new V3(c.x+(rr()-.5)*5,-4-rr()*10,c.z+(rr()-.5)*5); pl.rotation.x=Math.PI/2; pl.rotation.y=rr()*6.28; pl.material=m; pl.isPickable=false; G.glow.addExcludedMesh(pl); G.env.push(pl); } } }
+function debThinUpdate(rec,dt){ const {items,buf,q,mt,sv}=rec; for(let i=0;i<items.length;i++){ const it=items[i]; it.r.x+=it.spin.x*dt; it.r.y+=it.spin.y*dt; it.r.z+=it.spin.z*dt;
+    BABYLON.Quaternion.RotationYawPitchRollToRef(it.r.y,it.r.x,it.r.z,q); sv.set(it.s,it.s,it.s); BABYLON.Matrix.ComposeToRef(sv,q,it.p,mt); mt.copyToArray(buf,i*16); }
+  for(const x of rec.ms) if(!x.isDisposed()) x.thinInstanceBufferUpdated('matrix'); }
 function buildTerrainFeatures(rr){
   const sc=G.scene, M=facMats('hegemony'); G.storms=[]; G.lightT=0;
   const debBases=[0,1,2].map(k=>{ const b=new SB('hegemony',6); if(k===0){ b.box(M.dark,0,0,0,3,.4,1.2); b.box(M.hull,.8,.3,.2,1.2,.3,.9); } else if(k===1){ b.cylX(M.dark,0,0,0,4,.35,.35,6); b.box(M.hull,-1.2,0,0,.4,1.2,1.2); } else { b.box(M.hull,0,0,0,1.6,1,1.4,.3,.2,.1); b.box(M.dark,0,.6,0,.3,1.4,.3); } const m=b.finish(); m.meshes.forEach(x=>{ x.material=facMats('hegemony').wreck; x.isVisible=false; }); m.root.position.y=-5000; G.env.push(m.root); return m; });
+  const debItems=[[],[],[]];
   for(const [k,t] of Object.entries(B.terrain)){ const [q,r]=k.split(',').map(Number); const c=hexWorld(q,r);
-    if(t==='debris'){ for(let i=0;i<9;i++){ const src=debBases[Math.floor(rr()*3)]; const inst=src.root.instantiateHierarchy(null); inst.getChildMeshes().forEach(m=>{ m.isVisible=true; m.isPickable=false; }); inst.position=c.add(new V3((rr()-.5)*14,(rr()-.2)*5,(rr()-.5)*14)); inst.rotation.set(rr()*6,rr()*6,rr()*6); inst.scaling.setAll(.5+rr()*1.3); inst.spin=new V3((rr()-.5)*.2,(rr()-.5)*.2,(rr()-.5)*.2); G.rocks.push(inst); G.env.push(inst); } }
-    if(t==='storm'){ G.storms.push(c); for(let i=0;i<2;i++){ const pl=MB.CreatePlane('storm',{size:26+rr()*16},sc); pl.position=c.add(new V3((rr()-.5)*6,2+rr()*6,(rr()-.5)*6)); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false; const sm=addMat('stormM',rr()<.5?new C3(.28,.36,.9):new C3(.45,.3,.85),.36,G.tex.neb); pl.material=sm; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl,sm); } } }
+    if(t==='debris'){ for(let i=0;i<9;i++){ const k=Math.floor(rr()*3); debItems[k].push({p:c.add(new V3((rr()-.5)*14,(rr()-.2)*5,(rr()-.5)*14)),r:new V3(rr()*6,rr()*6,rr()*6),s:.5+rr()*1.3,spin:new V3((rr()-.5)*.2,(rr()-.5)*.2,(rr()-.5)*.2)}); } }
+    if(t==='storm'){ G.storms.push(c); for(let i=0;i<(G.mobile?1:2);i++){ const pl=MB.CreatePlane('storm',{size:(26+rr()*16)*(G.mobile?1.2:1)},sc); /* v44.1: one cloud card per storm hex on phones (overdraw) */ pl.position=c.add(new V3((rr()-.5)*6,2+rr()*6,(rr()-.5)*6)); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false; const sm=addMat('stormM',rr()<.5?new C3(.28,.36,.9):new C3(.45,.3,.85),.36,G.tex.neb); pl.material=sm; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl,sm); } } }
+  // v44.1: wreck debris is drawn as thin instances (one draw per piece type and material, no scene node per piece); it used to be
+  // ~190 instanced hierarchies (~380 active meshes) on a graveyard map, each with its own world matrix every frame
+  G.debThin=[]; debBases.forEach((m,k)=>{ const items=debItems[k]; if(!items.length) return; m.root.position.y=0; const buf=new Float32Array(items.length*16);
+    const ms=m.meshes.filter(x=>x.getTotalVertices()>0); m.root.getChildMeshes(false).forEach(x=>{ if(!ms.includes(x)) x.setEnabled(false); }); ms.forEach(x=>{ x.isVisible=true; x.isPickable=false; x.alwaysSelectAsActiveMesh=true; x.thinInstanceSetBuffer('matrix',buf,16,false); });
+    const rec={items,buf,ms,q:new BABYLON.Quaternion(),mt:new BABYLON.Matrix(),sv:new V3()}; G.debThin.push(rec); debThinUpdate(rec,0); });
   const meta=B.map||{};
   if(meta.station) buildStation(hexWorld(meta.station.q,meta.station.r),rr);
   if(meta.planet) buildNearPlanet(meta.planet);
@@ -2489,6 +2504,7 @@ function facMats(fac){
   const stx=dynTex(fac+'sailT',256,256,(g,w)=>{ const gr=g.createLinearGradient(0,w,0,0); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(255,255,255,.12)'); g.fillStyle=gr; g.fillRect(0,0,w,w); g.fillStyle='rgba(255,255,255,.5)'; for(let y=6;y<w;y+=18) g.fillRect(0,y,w,1); }); M._sailT=stx;
   M.sail=emMat(fac+'sail',fac==='chorus'?new C3(.55,.16,.42):new C3(.25,.6,.75),.26); M.sail.backFaceCulling=false; M.sail.disableDepthWrite=true; M.sail.alphaMode=BABYLON.Engine.ALPHA_ADD; M.sail.opacityTexture=M._sailT; M.sail.alpha=.3;
   M.plume=emMat(fac+'plume',P.eng.scale(1.25),.85); M.plume.alphaMode=BABYLON.Engine.ALPHA_ADD; if(typeof plumeMaterial==='function') plumeMaterial(M.plume,P.eng.scale(1.7)); else M.plume.opacityTexture=G.tex.soft; M.plume.disableDepthWrite=true; M.plume.backFaceCulling=false;
+  { const ps=typeof plumeShaderMat==='function'?plumeShaderMat(fac,P.eng.scale(1.35)):null; if(ps){ M.plumeOld=M.plume; M.plume=ps; } } // v44: shader plumes with shock diamonds
   M.flare=emMat(fac+'flare',P.eng.scale(1.05),.75); M.flare.alphaMode=BABYLON.Engine.ALPHA_ADD; M.flare.opacityTexture=G.tex.flare; M.flare.disableDepthWrite=true; M.flare.backFaceCulling=false;
   if(typeof addHullFx==='function') addHullFx(M,fac); // v42: faction rim light
   return MATS[fac]=M;
@@ -2518,8 +2534,8 @@ const PROF={
 const VDC={}, q20=x=>Math.round(x*20)/20;
 function vdCache(k,f){ return VDC[k]||(VDC[k]=f()); }
 function vdBox(){ return vdCache('box',()=>BABYLON.VertexData.CreateBox({size:1})); }
-function vdCyl(tess,ratio,down){ const r=q20(ratio); return vdCache('c'+tess+'_'+r+(down?'d':''),()=>BABYLON.VertexData.CreateCylinder({height:1,diameterTop:down?1:r,diameterBottom:down?0:1,tessellation:tess})); }
-function vdSph(seg){ return vdCache('s'+seg,()=>BABYLON.VertexData.CreateSphere({diameter:1,segments:seg})); }
+function vdCyl(tess,ratio,down){ if(tess>4&&!G.mobile) tess=Math.max(tess,tess<=8?16:tess); else if(tess>4) tess=Math.max(tess,10); const r=q20(ratio); return vdCache('c'+tess+'_'+r+(down?'d':''),()=>BABYLON.VertexData.CreateCylinder({height:1,diameterTop:down?1:r,diameterBottom:down?0:1,tessellation:tess})); }
+function vdSph(seg){ seg=G.mobile?seg:Math.max(seg,10); return vdCache('s'+seg,()=>BABYLON.VertexData.CreateSphere({diameter:1,segments:seg})); }
 function vdTor(th){ const t=Math.max(.04,q20(th)); return vdCache('t'+t,()=>BABYLON.VertexData.CreateTorus({diameter:1,thickness:t,tessellation:20})); }
 let WIND=null;
 function windSign(){ if(WIND!==null) return WIND; const v=vdBox(), P=v.positions, I=v.indices, N=v.normals; const a=I[0]*3,b=I[1]*3,c=I[2]*3;
@@ -2546,19 +2562,33 @@ class GeoBuf{ constructor(){ this.p=[]; this.n=[]; this.uv=[]; this.i=[]; }
       if(ax>=ay&&ax>=az) this.uv.push(wz*uvs,wy*uvs); else if(ay>=az) this.uv.push(wx*uvs,wz*uvs); else this.uv.push(wx*uvs,wy*uvs); }
     const flip=det3(a)<0; for(let k=0;k<I.length;k+=3){ if(flip) this.i.push(base+I[k],base+I[k+2],base+I[k+1]); else this.i.push(base+I[k],base+I[k+1],base+I[k+2]); } }
   mesh(name){ const m=new BABYLON.Mesh(name,G.scene); const vd=new BABYLON.VertexData(); vd.positions=this.p; vd.normals=this.n; vd.uvs=this.uv; vd.indices=this.i; vd.applyToMesh(m); return m; } }
-function loftVD(stations,prof,flat){
-  const rings=stations.map(st=>{ const hp=prof(st), y0=st.y||0, ring=[]; for(const [y,z] of hp) ring.push([st.x,y+y0,z]); for(let i=hp.length-2;i>=1;i--){ const [y,z]=hp[i]; ring.push([st.x,y+y0,-z]); } return ring; });
+// v44 hull lofting: the cross-section is corner-cut (Chaikin) so every hard edge becomes a small machined bevel that catches light,
+// stations are resampled along the hull with a gentle spline, normals are smooth, and the end caps get their own flat normals
+function refineRing(pts,cut,iters){ for(let it=0;it<iters;it++){ const out=[], n=pts.length; for(let i=0;i<n;i++){ const p=pts[i], q=pts[(i+1)%n]; out.push([p[0]+(q[0]-p[0])*cut,p[1]+(q[1]-p[1])*cut],[p[0]+(q[0]-p[0])*(1-cut),p[1]+(q[1]-p[1])*(1-cut)]); } pts=out; } return pts; }
+function resampleStations(st,sub){ if(sub<=1||st.length<2) return st; const out=[], K=['w','t','b','y'], g=(i)=>st[Math.max(0,Math.min(st.length-1,i))];
+  for(let i=0;i<st.length-1;i++){ const p0=g(i-1),p1=g(i),p2=g(i+1),p3=g(i+2); for(let k=0;k<sub;k++){ const u=k/sub; if(k===0){ out.push(Object.assign({},p1)); continue; }
+      const o={x:p1.x+(p2.x-p1.x)*u}; for(const key of K){ const a=p0[key]||0,b=p1[key]||0,c=p2[key]||0,d=p3[key]||0; const lin=b+(c-b)*u;
+        const cr=.5*((2*b)+(-a+c)*u+(2*a-5*b+4*c-d)*u*u+(-a+3*b-3*c+d)*u*u*u); let v=lin+(cr-lin)*.55; if(key!=='y') v=Math.max(Math.min(b,c)*.85,Math.min(Math.max(b,c)*1.08,v)); o[key]=v; } out.push(o); } }
+  out.push(Object.assign({},st[st.length-1])); return out; }
+function loftVD(stations,prof,flat,opt){ opt=opt||{}; const cut=opt.cut==null?.11:opt.cut, iters=opt.iters==null?2:opt.iters, sub=opt.sub==null?3:opt.sub;
+  const sts=resampleStations(stations,sub);
+  const rings=sts.map(st=>{ const hp=prof(st), y0=st.y||0, full=[]; for(const [y,z] of hp) full.push([y,z]); for(let i=hp.length-2;i>=1;i--){ const [y,z]=hp[i]; full.push([y,-z]); }
+    const rr=iters>0?refineRing(full,cut,iters):full; return rr.map(([y,z])=>[st.x,y+y0,z]); });
   const n=rings[0].length; let pos=[], idx=[];
   rings.forEach(ring=>ring.forEach(p=>pos.push(p[0],p[1],p[2])));
   for(let i=0;i<rings.length-1;i++) for(let j=0;j<n;j++){ const a=i*n+j,b=i*n+(j+1)%n,c=(i+1)*n+j,d=(i+1)*n+(j+1)%n; idx.push(a,c,b,b,c,d); }
-  const cap=(i,flip)=>{ const ring=rings[i]; let cx=0,cy=0,cz=0; for(const p of ring){cx+=p[0];cy+=p[1];cz+=p[2];} const ci=pos.length/3; pos.push(cx/n,cy/n,cz/n); for(let j=0;j<n;j++){ const a=i*n+j,b=i*n+(j+1)%n; if(flip) idx.push(ci,a,b); else idx.push(ci,b,a); } };
-  cap(0,false); cap(rings.length-1,true);
   if(flat){ const np=[],ni=[]; for(let k=0;k<idx.length;k++){ const v=idx[k]*3; np.push(pos[v],pos[v+1],pos[v+2]); ni.push(k); } pos=np; idx=ni; }
-  const nr=[]; BABYLON.VertexData.ComputeNormals(pos,idx,nr); return {positions:pos,indices:idx,normals:nr};
+  const nr=[]; BABYLON.VertexData.ComputeNormals(pos,idx,nr);
+  // end caps: duplicated vertices with flat normals, so the hull sides keep their smooth shading
+  const cap=(i,flip)=>{ const ring=rings[i]; let cx=0,cy=0,cz=0; for(const p of ring){cx+=p[0];cy+=p[1];cz+=p[2];} const nx=flip?1:-1, base=pos.length/3;
+    for(const p of ring){ pos.push(p[0],p[1],p[2]); nr.push(nx,0,0); } pos.push(cx/n,cy/n,cz/n); nr.push(nx,0,0); const ci=base+n;
+    for(let j=0;j<n;j++){ const a=base+j,b=base+(j+1)%n; if(flip) idx.push(ci,a,b); else idx.push(ci,b,a); } };
+  cap(0,false); cap(rings.length-1,true);
+  return {positions:pos,indices:idx,normals:nr};
 }
 const MATKEYS={hull:'hull',dark:'dark',trim:'trim',win:'win',eng:'eng',tip:'tip',steel:'steel',sail:'sail',ember:'ember',paint:'paint',flesh:'flesh'};
 class SB{
-  constructor(fac,L){ this.fac=fac; this.L=L; this.M=fac?facMats(fac):MATKEYS; this.parts=[]; this.split=0; this.hard={F:[],P:[],S:[],T:[],R:[]}; this.plumes=[]; this.flares=[]; this.bays=[]; this.flashers=[]; this.stations=null; this.greebleN=0; this.anim=[]; this.stacks=[]; this.arcs=[]; }
+  constructor(fac,L){ this.fac=fac; this.L=L; this.M=fac?facMats(fac):MATKEYS; this.parts=[]; this.split=0; this.hard={F:[],P:[],S:[],T:[],R:[]}; this.plumes=[]; this.flares=[]; this.bays=[]; this.flashers=[]; this.stations=null; this.greebleN=0; this.anim=[]; this.stacks=[]; this.arcs=[]; this.guns={P:[],S:[],F:[],T:[]}; }
   ring(mat,glow,x,y,z,d,th,tilt,speed){ const node=new BABYLON.TransformNode('ringN',G.scene); node.position.set(x,y,z); const t=MB.CreateTorus('ring',{diameter:d,thickness:th,tessellation:64},G.scene); t.rotation.z=Math.PI/2+tilt; t.parent=node; t.material=mat; t.isPickable=false; castShadows(t);
     for(let i=0;i<8;i++){ const a=i/8*Math.PI*2, st=MB.CreateSphere('stud',{diameter:th*2.4,segments:6},G.scene); st.position.set(Math.cos(a)*d/2,0,Math.sin(a)*d/2); st.parent=t; st.material=glow; st.isPickable=false; }
     this.anim.push({node,axis:'x',speed}); return node; }
@@ -2566,35 +2596,57 @@ class SB{
   topY(s,z){ const a=Math.min(1,Math.abs(z)/Math.max(.001,s.w)), y0=s.y||0; if(this.prof===PROF.wedge) return y0+s.t*(1-a*.86); if(this.prof===PROF.round) return y0+s.t*Math.sqrt(Math.max(0,1-a*a)); return y0+(a<.55?s.t:s.t*(1-(a-.55)*.5)); }
   push(vd,mat,pre,half){ const h=new PH(vd,mat,pre,half); this.parts.push(h); return h; }
   add(mesh,mat,half){ mesh.computeWorldMatrix(true); mesh.refreshBoundingInfo(); const cx=mesh.getBoundingInfo().boundingBox.centerWorld.x; const vd=BABYLON.VertexData.ExtractFromMesh(mesh,true,true); const w=mesh.getWorldMatrix().clone(); mesh.dispose(); return this.push({positions:vd.positions,normals:vd.normals,indices:vd.indices},mat,w,half||(cx>=this.split?'fore':'aft')); }
-  box(mat,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){ const mn=Math.min(sx,sy,sz), bev=this.fac?mn>this.L*.022:mn>.14; // bevel only structural blocks, where edge highlights read
-    const h=bev?this.push(bevelBoxVD(sx,sy,sz,Math.min(mn*.17,this.fac?this.L*.012:.06)),mat,null):this.push(vdBox(),mat,BABYLON.Matrix.Scaling(sx,sy,sz)); h.position.set(x,y,z); h.rotation.set(rx,ry,rz); return h; }
+  box(mat,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){ const mn=Math.min(sx,sy,sz), bev=this.fac?mn>this.L*(G.mobile?.02:.006):(!G.mobile&&mn>.14); // kit parts are tiny on the hull: only their chunky blocks get bevels, none on phones // bevel only structural blocks, where edge highlights read
+    const h=bev?this.push(bevelBoxVD(sx,sy,sz,Math.min(mn*.2,this.fac?this.L*.01:.07)),mat,null):this.push(vdBox(),mat,BABYLON.Matrix.Scaling(sx,sy,sz)); h.position.set(x,y,z); h.rotation.set(rx,ry,rz); return h; }
   cylX(mat,x,y,z,len,dBack,dFront,tess=12,sy=1,sz=1){ const down=dBack<=0, d=down?dFront:dBack; const h=this.push(vdCyl(tess,down?1:dFront/dBack,down),mat,BABYLON.Matrix.Scaling(d,len,d).multiply(BABYLON.Matrix.RotationZ(-Math.PI/2))); h.scaling.set(1,sy,sz); h.position.set(x,y,z); return h; }
   cylY(mat,x,y,z,hh,dTop,dBot,tess=8,ry=0,sx=1,sz=1){ const down=dBot<=0, d=down?dTop:dBot; const h=this.push(vdCyl(tess,down?1:dTop/dBot,down),mat,BABYLON.Matrix.Scaling(d,hh,d)); h.position.set(x,y+hh/2,z); h.rotation.y=ry; h.scaling.set(sx,1,sz); return h; }
   cylZ(mat,x,y,z,len,dIn,dOut,tess=8){ const down=dIn<=0, d=down?dOut:dIn; const h=this.push(vdCyl(tess,down?1:dOut/dIn,down),mat,BABYLON.Matrix.Scaling(d,len,d).multiply(BABYLON.Matrix.RotationX(Math.PI/2))); h.position.set(x,y,z); return h; }
   sph(mat,x,y,z,d,sx=1,sy=1,sz=1,seg=12){ const h=this.push(vdSph(Math.min(seg,12)),mat,BABYLON.Matrix.Scaling(d,d,d)); h.position.set(x,y,z); h.scaling.set(sx,sy,sz); return h; }
   torusY(mat,x,y,z,d,th){ const h=this.push(vdTor(th/d),mat,BABYLON.Matrix.Scaling(d,d,d)); h.position.set(x,y,z); return h; }
   torusX(mat,x,y,z,d,th){ const h=this.push(vdTor(th/d),mat,BABYLON.Matrix.Scaling(d,d,d).multiply(BABYLON.Matrix.RotationZ(-Math.PI/2))); h.position.set(x,y,z); return h; }
+  // v44: tapered, chamfered superstructure block (a short loft) - sloped walls and raked ends instead of a plain box.
+  // y is the base; wB/wT are full widths at the base and the top; o.rake/o.rakeB chamfer the fore/aft ends; o.cut is the edge bevel
+  slab(mat,x,y,z,len,h,wB,wT,o={}){ const k=wT/Math.max(1e-4,wB), rf=o.rake==null?.14:o.rake, rb=o.rakeB==null?rf:o.rakeB, sh=o.shrink==null?.72:o.shrink;
+    const prof=st=>[[st.t,0],[st.t,st.w*k],[0,st.w],[0,0]], w=wB/2, hl=len/2;
+    const sts=[{x:-hl,w:w*(1-rb*.9),t:h*(rb>0?sh:1)},{x:-hl+len*rb*.5,w,t:h},{x:hl-len*rf*.5,w,t:h},{x:hl,w:w*(1-rf*.9),t:h*(rf>0?sh:1)}];
+    const vd=loftVD(sts,prof,false,{cut:o.cut==null?.1:o.cut,iters:G.mobile?1:2,sub:1}); const hh=this.push(vd,mat,null,o.half); hh.position.set(x,y,z); if(o.ry) hh.rotation.y=o.ry; if(o.rx) hh.rotation.x=o.rx; if(o.rz) hh.rotation.z=o.rz; return hh; }
   loft(mat,stations,prof,flat=true){
     const s=this.split; const aft=[],fore=[];
     for(let i=0;i<stations.length;i++){ const st=stations[i]; if(st.x<=s) aft.push(st); if(st.x>=s) fore.push(st);
       const nx=stations[i+1]; if(nx && st.x<s && nx.x>s){ const m=interpStation(st,nx,s); aft.push(m); fore.push(m); } }
     if(!this.stations){ this.stations=stations; this.prof=prof; }
-    for(const [list,half] of [[aft,'aft'],[fore,'fore']]){ if(list.length<2) continue; this.push(loftVD(list,prof,flat),mat,null,half); }
+    const fl=false, opt=prof===PROF.round?{cut:.25,iters:1,sub:2}:prof===PROF.wedge?{cut:.06,iters:2,sub:2}:{cut:.11,iters:2,sub:3};
+    for(const [list,half] of [[aft,'aft'],[fore,'fore']]){ if(list.length<2) continue; this.push(loftVD(list,prof,fl,opt),mat,null,half); }
   }
   part(name,x,y,z,o={}){ const lib=partLib()[name]; const sc=o.s||1; for(const sub of lib){ const h=this.push(sub.vd,this.M[sub.mat]||this.M.dark,null,o.half); h.position.set(x,y,z); if(Array.isArray(sc)) h.scaling.set(sc[0],sc[1],sc[2]); else h.scaling.setAll(sc); h.rotation.set(o.rx||0,o.ry||0,o.rz||0); if(o.q) h.q=o.q; } }
   bake(){ const g={}; for(const h of this.parts){ (g[h.mat]=g[h.mat]||new GeoBuf()).add(h.vd,h.matrix()); } return Object.entries(g).map(([mat,b])=>({mat,vd:{positions:b.p,normals:b.n,indices:b.i}})); }
   plume(x,y,z,d,len){ const m=MB.CreateCylinder('plume',{height:len,diameterTop:d*.9,diameterBottom:0,tessellation:12},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationZ(-Math.PI/2)); m.position.set(x-len/2,y,z); m.material=this.M.plume; m.isPickable=false; this.plumes.push(m); return m; }
   engine(x,y,z,d){ this.part('nozzle',x,y,z,{s:d}); this.plume(x-d*.42,y,z,d*.85,d*1.9);
     const f=MB.CreatePlane('flare',{size:d*2.5},G.scene); f.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; f.position.set(x-d*.45,y,z); f.material=this.M.flare; f.isPickable=false; this.flares.push(f); }
-  greeble(n){ const r=seeded(Math.round(this.L*131)+n), M=this.M, L=this.L, st=this.stations, x0=st[0].x*.86, x1=st[st.length-1].x*.72, junk=this.fac==='corsair', gothic=this.fac==='voidsworn';
-    const parts=['vent','pipes','radiator','antenna'];
-    for(let i=0;i<n;i++){ const x=x0+(x1-x0)*r(), s=this.surfAt(x); if(s.w<L*.02) continue; const k=r(), side=r()<.5?1:-1;
-      if(k<.34){ const z=(r()-.5)*s.w*1.1, y=this.topY(s,z), sx=L*(.01+r()*.03), sy=L*(.004+r()*.013), sz=L*(.008+r()*.022); const m=this.box(r()<.35?M.dark:M.hull,x,y+sy/2,z,sx,sy,sz); if(junk) m.rotation.set((r()-.5)*.5,(r()-.5)*.6,(r()-.5)*.5); }
-      else if(k<.52){ const z=(r()-.5)*s.w*.8, y=this.topY(s,z), pk=parts[Math.floor(r()*3)]; this.part(pk,x,y,z,{s:L*(.018+r()*.025),ry:r()<.5?0:Math.PI/2}); }
-      else if(k<.6){ const z=(r()-.5)*s.w*.6, y=this.topY(s,z); if(gothic&&r()<.6) this.part('spire',x,y,z,{s:L*(.012+r()*.012)}); else this.part('antenna',x,y,z,{s:L*(.015+r()*.03)}); }
-      else if(k<.68){ const z=(r()-.5)*s.w*.9, y=this.topY(s,z); this.cylX(M.steel,x,y+L*.004,z,L*(.03+r()*.1),L*.005,L*.005,6); }
-      else if(k<.75){ const z=(r()-.5)*s.w*.7, y=this.topY(s,z); this.sph(M.dark,x,y,z,L*(.01+r()*.018),1,.5,1,8); }
-      else { const y=(s.y||0)+(r()-.35)*s.t*.8; const m=this.box(r()<.5?M.dark:M.steel,x,y,side*s.w*.99,L*(.006+r()*.02),L*(.01+r()*.03),L*.012); if(junk) m.rotation.z=(r()-.5)*.6; } } }
+  // surface kit-bash. Designed factions get mirrored (bilaterally symmetric) detail laid out in rows, which reads as engineered
+  // rather than random; the corsairs keep their lopsided scatter
+  greeble(n){ const r=seeded(Math.round(this.L*131)+n), M=this.M, L=this.L, st=this.stations, x0=st[0].x*.86, x1=st[st.length-1].x*.72, junk=this.fac==='corsair', gothic=this.fac==='voidsworn', sym=!junk;
+    const parts=['vent','pipes','radiator','antenna'], N=sym?Math.round(n*.55):n;
+    for(let i=0;i<N;i++){ let x=x0+(x1-x0)*r(); if(sym) x=Math.round(x/(L*.018))*L*.018; const s=this.surfAt(x); if(s.w<L*.02||(sym&&r()>s.w/(L*.09))) continue; const k=r(), side0=r()<.5?1:-1;
+      const zs=(z)=>sym&&Math.abs(z)>L*.006?[Math.abs(z),-Math.abs(z)]:[z];
+      if(k<.34){ const z0=(r()-.5)*s.w*1.1, sx=L*(.012+r()*.03), sy=L*(.003+r()*.007), sz=L*(.008+r()*.02), mat=r()<.35?M.dark:M.hull, rot=[(r()-.5)*.5,(r()-.5)*.6,(r()-.5)*.5];
+        for(const z of zs(z0)){ const y=this.topY(s,z); if(sym) this.slab(mat,x,y-sy*.1,z,sx,sy*1.1,sz,sz*.8,{rake:.25,cut:.12}); else { const m=this.box(mat,x,y+sy/2,z,sx,sy,sz); m.rotation.set(rot[0],rot[1],rot[2]); } } }
+      else if(k<.52){ const z0=(r()-.5)*s.w*.8, pk=parts[Math.floor(r()*3)], sc=L*(.018+r()*.025), ry=r()<.5?0:Math.PI/2; for(const z of zs(z0)) this.part(pk,x,this.topY(s,z),z,{s:sc,ry}); }
+      else if(k<.6){ const z0=(r()-.5)*s.w*.6, sp=gothic&&r()<.6, sc=sp?L*(.012+r()*.012):L*(.015+r()*.03); for(const z of zs(z0)) this.part(sp?'spire':'antenna',x,this.topY(s,z),z,{s:sc}); }
+      else if(k<.68){ const z0=(r()-.5)*s.w*.9, ln=L*(.03+r()*.1); for(const z of zs(z0)) this.cylX(M.steel,x,this.topY(s,z)+L*.004,z,ln,L*.005,L*.005,6); }
+      else if(k<.75){ const z0=(r()-.5)*s.w*.7, d=L*(.01+r()*.018); for(const z of zs(z0)) this.sph(M.dark,x,this.topY(s,z),z,d,1,.5,1,8); }
+      else { const y=(s.y||0)+(r()-.35)*s.t*.8, mat=r()<.5?M.dark:M.steel, sx=L*(.006+r()*.02), sy=L*(.01+r()*.03), rz=(r()-.5)*.6; for(const side of sym?[1,-1]:[side0]){ const m=this.box(mat,x,y,side*s.w*.99,sx,sy,L*.012); if(junk) m.rotation.z=rz; } } } }
+  // v44: every visible barrel, per arc, so a broadside really is a broadside. Builders add exact ports; the rest is synthesised
+  gunList(){ const G2=this.guns, L=this.L;
+    if(this.stations){ for(const [arc,sd] of [['P',1],['S',-1]]) if(G2[arc].length<8){ for(let i=0;i<16;i++){ const x=(-.4+i*.048)*L, s=this.surfAt(x); if(s.w<L*.03) continue; G2[arc].push(new V3(x,(s.y||0)+s.t*(i%2?.12:.42),sd*(s.w+L*.012))); } }
+      if(G2.T.length<6) for(let i=0;i<10;i++){ const x=(-.32+i*.065)*L, s=this.surfAt(x); if(s.w<L*.03) continue; const z=(i%2?1:-1)*s.w*.42; G2.T.push(new V3(x,this.topY(s,z)+L*.012,z)); }
+      if(G2.F.length<3){ const x=.3*L, s=this.surfAt(x); for(const z of [-.5,.5]) for(const y of [.3,-.2]) G2.F.push(new V3(x+L*.06,(s.y||0)+y*s.t,z*s.w)); } }
+    for(const arc of ['P','S','F','T']) for(const p of this.hard[arc]) G2[arc].push(p.clone()); return G2; }
+  // navigation lights: red to port, green to starboard at the widest frame, white strobes fore and aft (space-opera running lights)
+  navList(){ const L=this.L, out=[]; if(this.stations){ const st=this.stations; let wi=st[0]; for(const s of st) if(s.w>wi.w) wi=s;
+      out.push({p:new V3(wi.x,(wi.y||0)+wi.t*.1,wi.w+L*.008),c:new C3(1,.15,.1),k:0},{p:new V3(wi.x,(wi.y||0)+wi.t*.1,-wi.w-L*.008),c:new C3(.15,1,.3),k:0});
+      const a=st[0], f=st[st.length-1]; out.push({p:new V3(a.x+L*.02,(a.y||0)+a.t*1.05,0),c:new C3(1,1,1),k:1,ph:0},{p:new V3(f.x-L*.01,(f.y||0),0),c:new C3(1,1,1),k:1,ph:.5}); }
+    else out.push({p:new V3(-.3*L,.02*L,0),c:new C3(1,1,1),k:1,ph:0}); return out; }
   finish(){
     if(this.greebleN&&this.stations) this.greeble(Math.round(this.greebleN));
     const root=new BABYLON.TransformNode('ship',G.scene), fore=new BABYLON.TransformNode('fore',G.scene), aft=new BABYLON.TransformNode('aft',G.scene); fore.parent=root; aft.parent=root;
@@ -2606,7 +2658,7 @@ class SB{
     for(const p of this.plumes) p.parent=aft; for(const f of this.flares) f.parent=aft;
     if(this.stations&&this.fac&&this.L>=6){ const em=emblemMat(this.fac), x=.17*this.L, st=this.surfAt(x), sz=Math.max(.9,Math.min((st.t+st.b)*.85,this.L*.07));
       for(const sd of [1,-1]){ const pl=MB.CreatePlane('emblem',{size:sz,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.material=em; pl.position.set(x,(st.y||0)+(st.t-st.b)*.25,sd*(st.w+this.L*.006)); pl.rotation.y=sd>0?Math.PI:0; pl.parent=x>=this.split?fore:aft; pl.isPickable=false; G.glow.addExcludedMesh(pl); } } for(const a of this.anim) a.node.parent=a.node.position.x>=this.split?fore:aft;
-    return {root,fore,aft,meshes,surf:this.stations?{st:this.stations,prof:this.prof,split:this.split}:null,stacks:this.stacks||[],arcs:this.arcs||[],plumes:this.plumes,flares:this.flares,anim:this.anim,stacks:this.stacks,arcs:this.arcs,hard:this.hard,bays:this.bays,L:this.L,H:top,fac:this.fac};
+    return {root,fore,aft,meshes,surf:this.stations?{st:this.stations,prof:this.prof,split:this.split}:null,stacks:this.stacks||[],arcs:this.arcs||[],plumes:this.plumes,flares:this.flares,anim:this.anim,stacks:this.stacks,arcs:this.arcs,hard:this.hard,guns:this.gunList(),nav:this.navList(),bays:this.bays,L:this.L,H:top,fac:this.fac};
   }
 }
 // ---------- kitbash part library (unit-sized, built once) ----------
@@ -2639,7 +2691,7 @@ function partLib(){ if(PL) return PL; PL={}; const mk=(name,fn)=>{ const b=new S
   mk('vane',(b,M)=>{ b.cylX(M.hull,0,0,0,1,.16,.01,4,1,.12); b.box(M.trim,.05,0,0,.9,.012,.035); b.sph(M.win,.5,0,0,.07,1,1,1,8); });
   mk('coil',(b,M)=>{ b.cylY(M.dark,0,0,0,.9,.1,.16,6); for(let i=0;i<4;i++) b.cylY(M.steel,0,.18+i*.16,0,.03,.34-i*.04,.34-i*.04,12); b.sph(M.win,0,1,0,.2,1,1,1,10); });
   mk('obelisk',(b,M)=>{ b.cylY(M.dark,0,0,0,1,.14,.2,4,Math.PI/4); b.cylY(M.dark,0,1,0,.14,0,.14,4,Math.PI/4); b.box(M.win,0,.5,.075,.03,.7,.01); b.box(M.win,0,.5,-.075,.03,.7,.01); b.box(M.win,.075,.5,0,.01,.7,.03); });
-  mk('zig',(b,M)=>{ for(let i=0;i<4;i++){ const w=1-i*.22; b.box(M.dark,0,.1+i*.2,0,w,.2,w); for(const sg of [1,-1]){ b.box(M.win,0,.2+i*.2,sg*(w/2+.005),w*.8,.015,.01); b.box(M.win,sg*(w/2+.005),.2+i*.2,0,.01,.015,w*.8); } } b.sph(M.win,0,.95,0,.18,1,1,1,10); });
+  mk('zig',(b,M)=>{ for(let i=0;i<4;i++){ const w=1-i*.22, wt=w*.84; b.slab(M.dark,0,i*.2,0,w,.205,w,wt,{rake:.16,shrink:.86,cut:.08}); const zw=(w+wt)/4+.006; for(const sg of [1,-1]){ b.box(M.win,0,.1+i*.2,sg*zw,w*.72,.014,.01); b.box(M.win,sg*zw,.1+i*.2,0,.01,.014,w*.72); } } b.sph(M.win,0,.95,0,.18,1,1,1,10); });
   mk('glyph',(b,M)=>{ b.box(M.dark,0,.02,0,1,.04,.6); b.box(M.win,0,.046,0,.8,.012,.03); b.box(M.win,.2,.046,.15,.03,.012,.3); b.box(M.win,-.25,.046,-.12,.03,.012,.25); b.box(M.win,-.05,.046,.2,.25,.012,.03); });
   return PL; }
 // ---------- Voidsworn: gothic cathedral ships ----------
@@ -2658,32 +2710,33 @@ function buildGothic(b,cls){
     .map(([x,w,t,bb])=>({x:x*L,w:w*W*(p.bays&&x>-.4&&x<.3?1.12:1),t:t*T,b:bb*Bt}));
   b.loft(M.hull,sts,PROF.gothic2);
   // keel blade and armoured ram
-  b.box(M.dark,-.08*L,-Bt*1.15,0,.62*L,Bt*.6,W*.28);
+  b.slab(M.dark,-.08*L,-Bt*1.45,0,.62*L,Bt*.62,W*.1,W*.3,{rake:.35,rakeB:.2,shrink:.4});
   b.cylX(M.trim,.53*L,-Bt*.25,0,.16*L,W*.7,0,4,.55,1).rotation.x=Math.PI/4;
-  b.box(M.trim,.36*L,T*.05,0,.14*L,T*.5,W*1.5);
+  b.slab(M.trim,.36*L,T*.05-T*.25,0,.14*L,T*.5,W*1.5,W*1.22,{rake:.3,rakeB:.1});
   // stepped deck city
   let x=-.2*L; const steps=cls==='Frigate'?2:4;
-  for(let i=0;i<steps;i++){ const len=.1*L, h=T*(.55-.08*i), wd=W*(1.3-.12*i); b.box(i%2?M.dark:M.hull,x,T+h/2,0,len,h,wd); b.box(M.win,x,T+h*.62,wd/2+.01,len*.8,h*.1,.05); b.box(M.win,x,T+h*.62,-wd/2-.01,len*.8,h*.1,.05); x+=len*1.02; }
+  for(let i=0;i<steps;i++){ const len=.1*L, h=T*(.55-.08*i), wd=W*(1.3-.12*i), ang=Math.atan2(wd*.11,h), zw=wd/2*(1-.62*.22)+.012*L;
+    b.slab(i%2?M.dark:M.hull,x,T-h*.04,0,len,h*1.04,wd,wd*.78,{rake:.12}); for(const sd of [1,-1]) b.box(M.win,x,T+h*.62,sd*zw,len*.78,h*.09,.004*L,sd*ang,0,0); x+=len*1.02; }
   // cathedral tower with spires and flying buttresses
   const tx=-.3*L, th=.14*L*p.tower;
-  b.box(M.hull,tx,T+th*.5,0,.13*L,th,W*1.25); b.box(M.dark,tx,T+th+th*.25,0,.1*L,th*.5,W*.9);
+  b.slab(M.hull,tx,T-th*.03,0,.13*L,th*1.03,W*1.25,W*1.02,{rake:.1}); b.slab(M.dark,tx,T+th,0,.1*L,th*.5,W*.92,W*.62,{rake:.18,shrink:.6});
   b.box(M.win,tx+.066*L,T+th*.7,0,.02,th*.35,W*.5); // great window facing the prow
   const spireH=.2*L*p.tower;
   b.cylY(M.trim,tx,T+th*1.5,0,spireH,0,W*.55,4,Math.PI/4);
   const tipY=T+th*1.5+spireH; b.flashers.push(b.sph(M.tip,tx,tipY+.2,0,Math.max(.25,L*.012)));
   for(let s=1;s<p.spires;s++){ const side=s%2?1:-1, off=Math.ceil(s/2); const sx=tx+(.07*off)*L*(s>2?1:.2), sz=side*W*(.45+.12*off); const hh=spireH*(.62-.08*off);
-    b.box(M.hull,sx,T+th*.4,sz,.06*L,th*.8,W*.3); b.cylY(M.trim,sx,T+th*.8,sz,hh,0,W*.3,4,Math.PI/4); }
+    b.slab(M.hull,sx,T-th*.02,sz,.06*L,th*.82,W*.32,W*.22,{rake:.15}); b.cylY(M.trim,sx,T+th*.8,sz,hh,0,W*.3,4,Math.PI/4); }
   for(const side of [1,-1]){ const bt=b.box(M.dark,tx+.02*L,T+th*.55,side*W*1.05,.035*L,th*.9,W*.12); bt.rotation.x=side*.55; }
   // broadside gun decks (port +z, starboard -z)
   for(let d=0;d<p.decks;d++){ const y=T*.45-d*(T+Bt)*.3; const n=cls==='Dreadnought'?26:cls==='Battleship'?22:15;
     for(let i=0;i<n;i++){ const gx=(-.26+i*(.5/(n-1)))*L; const zz=W*(gx>.3*L?.8:1);
-      for(const side of [1,-1]){ b.part('gunport',gx,y,side*(zz+.004*L),{s:L*.021,ry:side>0?0:Math.PI});
+      for(const side of [1,-1]){ b.part('gunport',gx,y,side*(zz+.004*L),{s:L*.021,ry:side>0?0:Math.PI}); (side>0?b.guns.P:b.guns.S).push(new V3(gx,y,side*(zz+.016*L)));
         if(i%4===0) (side>0?b.hard.P:b.hard.S).push(new V3(gx,y,side*(zz+.065*L))); } }
-    for(const side of [1,-1]){ b.box(M.dark,-.01*L,y,side*(W+.004*L),.54*L,.03*L,.012*L); b.box(M.trim,-.01*L,y+.019*L,side*(W+.012*L),.54*L,.004*L,.01*L); }
+    for(const side of [1,-1]){ b.cylX(M.dark,-.01*L,y,side*(W+.004*L),.54*L,.03*L,.03*L,12,1,.45); b.cylX(M.trim,-.01*L,y+.018*L,side*(W+.008*L),.54*L,.007*L,.007*L,8); }
   }
   if(!p.decks){ for(const side of [1,-1]) b.box(M.win,-.05*L,T*.35,side*(W+.01),.5*L,T*.07,.05); b.hard.P.push(new V3(0,T*.4,W*1.1)); b.hard.S.push(new V3(0,T*.4,-W*1.1)); }
   // dorsal turrets
-  for(let i=0;i<(p.turret||0);i++){ const gx=(.12-i*.3)*L, gy=T+(i?.6:.35)*T; b.cylY(M.dark,gx,T,0,gy-T+.1,W*.7,W*.85,10); b.box(M.hull,gx,gy+.25*T,0,.08*L,T*.35,W*.7);
+  for(let i=0;i<(p.turret||0);i++){ const gx=(.12-i*.3)*L, gy=T+(i?.6:.35)*T; b.cylY(M.dark,gx,T,0,gy-T+.1,W*.7,W*.85,10); b.slab(M.hull,gx,gy+.075*T,0,.08*L,T*.35,W*.72,W*.5,{rake:.45,rakeB:.12,shrink:.55});
     for(const z of [-.15,.15]) b.cylX(M.trim,gx+.07*L,gy+.28*T,z*W,.1*L,W*.12,W*.1,8); b.hard.T.push(new V3(gx+.12*L,gy+.3*T,0)); }
   // prow weapons
   if(p.lance){ b.cylX(M.dark,.44*L,T*.55,0,.2*L,W*.3,W*.22,10); b.cylX(M.win,.545*L,T*.55,0,.012*L,W*.24,W*.24,10); b.torusX(M.trim,.47*L,T*.55,0,W*.42,W*.08); b.hard.F.push(new V3(.56*L,T*.55,0)); }
@@ -2726,13 +2779,13 @@ function buildWedge(b,cls){
   // terraced superstructure
   let tx=-.44*L;
   for(let i=0;i<(p.terr||1);i++){ const len=.11*L*(1-i*.06), wd=wAt(tx)*.9, h=T*(.55-i*.06);
-    b.box(M.hull,tx+len/2,T*.9+h/2-.1,0,len,h,wd); b.box(M.dark,tx+len/2,T*.9+h,0,len*.95,h*.15,wd*.7);
-    for(let k=0;k<3;k++) for(const sd of [1,-1]) b.box(M.win,tx+len/2,T*.9+h*(.22+.22*k)-.1,sd*(wd/2+.01),len*.86,h*.045,.02);
+    b.slab(M.hull,tx+len/2,T*.9-.1,0,len,h,wd,wd*.8,{rake:.1,rakeB:.04}); b.slab(M.dark,tx+len/2,T*.9+h-.1-h*.01,0,len*.92,h*.13,wd*.66,wd*.56,{rake:.2});
+    const ang=Math.atan2(wd*.1,h); for(let k=0;k<3;k++){ const f=.22+.22*k; for(const sd of [1,-1]) b.box(M.win,tx+len/2,T*.9+h*f-.1,sd*(wd/2*(1-f*.2)+.003*L),len*.84,h*.04,.003*L,sd*ang,0,0); }
     b.part('vent',tx+len*.3,T*.9+h-.1+h*.075,wd*.2,{s:[len*.35,L*.012,wd*.25]}); b.part('radiator',tx+len*.7,T*.9+h-.1+h*.075,-wd*.2,{s:[len*.25,L*.012,wd*.2]}); tx+=len*.95; }
   // bridge tower on a neck with a T-shaped command deck and sensor masts
   const bx=-.4*L, by=T*1.5;
-  b.box(M.hull,bx,by+.05*L,0,.05*L,.1*L,.05*L);
-  b.box(M.hull,bx,by+.11*L,0,.07*L,.03*L,.22*L); b.box(M.win,bx+.036*L,by+.112*L,0,.004*L,.008*L,.18*L);
+  b.slab(M.hull,bx,by-.002*L,0,.06*L,.1*L,.06*L,.036*L,{rake:.25});
+  b.slab(M.hull,bx,by+.095*L,0,.075*L,.032*L,.17*L,.22*L,{rake:.3,rakeB:.1,shrink:.55}); b.box(M.win,bx+.036*L,by+.112*L,0,.004*L,.008*L,.18*L);
   b.box(M.trim,bx+.02*L,by+.127*L,0,.012*L,.004*L,.2*L);
   for(const z of [-.08,.08]){ b.cylY(M.dark,bx-.01*L,by+.125*L,z*L,.07*L,.002*L,.008*L,6); b.flashers.push(b.sph(M.tip,bx-.01*L,by+.2*L,z*L,.012*L)); }
   // turbolaser turrets along the upper slopes
@@ -2745,7 +2798,7 @@ function buildWedge(b,cls){
   if(p.ion){ b.torusX(M.dark,.3*L,T*.35,0,.07*L,.012*L); b.torusX(M.eng,.33*L,T*.35,0,.055*L,.006*L); b.cylX(M.trim,.38*L,T*.35,0,.14*L,.02*L,.004*L,6); b.hard.F.unshift(new V3(.45*L,T*.35,0)); }
   if(p.bay){ b.box(M.dark,-.1*L,-Bt*.95,0,.2*L,.02*L,Wr*.5); b.box(M.win,-.1*L,-Bt*.97,0,.17*L,.01*L,Wr*.38); b.bays.push(new V3(-.1*L,-Bt*1.2,0)); }
   if(p.spinal){ b.cylX(M.dark,.18*L,T*1.25,0,.6*L,.05*L,.04*L,12); for(let i=0;i<5;i++) b.torusX(M.trim,(-.02+i*.1)*L,T*1.25,0,.07*L,.01*L); b.cylX(M.eng,.485*L,T*1.25,0,.01*L,.035*L,.035*L,12); b.hard.F.unshift(new V3(.5*L,T*1.25,0));
-    const bx2=-.2*L; b.box(M.hull,bx2,T*1.5+.04*L,0,.04*L,.08*L,.04*L); b.box(M.hull,bx2,T*1.5+.09*L,0,.06*L,.025*L,.16*L); b.box(M.win,bx2+.031*L,T*1.5+.092*L,0,.003*L,.007*L,.13*L); }
+    const bx2=-.2*L; b.slab(M.hull,bx2,T*1.5,0,.05*L,.08*L,.05*L,.03*L,{rake:.25}); b.slab(M.hull,bx2,T*1.5+.077*L,0,.065*L,.026*L,.12*L,.16*L,{rake:.3,rakeB:.1,shrink:.55}); b.box(M.win,bx2+.031*L,T*1.5+.092*L,0,.003*L,.007*L,.13*L); }
   if(p.pods){ for(const side of [1,-1]){ b.box(M.dark,-.3*L,0,side*Wr*.8,.12*L,.02*L,Wr*.5); b.cylX(M.hull,-.32*L,0,side*Wr*1.1,.34*L,.07*L,.05*L,10); b.engine(-.5*L,0,side*Wr*1.1,.06*L); } }
   // stern engines
   const n=p.eng; for(let i=0;i<n;i++){ const z=(i-(n-1)/2)*(Wr*1.6/n); const y=(i%2?-.25:.15)*T; b.engine(-.5*L,y,z,Math.min(Wr*1.4/n,T*1.3)); }
@@ -2760,7 +2813,7 @@ function gothicDetail(b,p,cls,W,T,Bt){ const L=b.L, M=b.M, r=seeded(Math.round(L
   for(let k=0;k<rows;k++){ const y=T*.36-k*(T+Bt)*.27; for(let x=-.42;x<=.3;x+=big?.017:.028){ const s=b.surfAt(x*L); if(s.w<W*.7) continue; for(const side of [1,-1]) b.part('gwin',x*L,y-L*.009,side*(s.w+.001*L),{s:L*.013,ry:side>0?0:Math.PI}); } }
   for(let x=-.36;x<=.3;x+=.07){ const s=b.surfAt(x*L); for(const side of [1,-1]) b.part('statue',x*L,s.t,side*s.w*.84,{s:L*.024,ry:side>0?0:Math.PI}); }
   for(let x=-.2;x<=.3;x+=.038){ const s=b.surfAt(x*L); for(const zf of [-.56,.56]){ if(r()<.2) continue; const hh=1+r()*.8; b.part('house',x*L,s.t,zf*s.w,{s:[L*.032,L*.026*hh,L*.024]}); if(r()<.3) b.part('spire',x*L,s.t+L*.026*hh*.9,zf*s.w,{s:L*.018}); } }
-  for(let row=0;row<3;row++) for(let c=0;c<4;c++){ const x=tx+(-.045+c*.03)*L, y=T+th*(.16+row*.26); for(const side of [1,-1]) b.part('gwin',x,y,side*(W*.625+.001*L),{s:L*.02,ry:side>0?0:Math.PI}); }
+  for(let row=0;row<3;row++) for(let c=0;c<4;c++){ const x=tx+(-.045+c*.03)*L, f=.16+row*.26, y=T+th*f; for(const side of [1,-1]) b.part('gwin',x,y,side*(W*.625*(1-f*.184)+.002*L),{s:L*.02,ry:side>0?0:Math.PI}); }
   for(let row=0;row<2;row++) for(let c=0;c<3;c++) b.part('gwin',tx+.066*L,T+th*(.2+row*.3),(c-1)*W*.35,{s:L*.018,ry:Math.PI/2});
   for(const dx of [-.05,0,.05]) for(const side of [1,-1]) b.part('buttress',tx+dx*L,T,side*W*.62,{s:L*.07,ry:side>0?0:Math.PI});
   for(const [dx,dz] of [[-.05,.4],[.05,.4],[-.05,-.4],[.05,-.4]]) b.part('spire',tx+dx*L,T+th,dz*W,{s:L*.04});
@@ -2772,11 +2825,11 @@ function gothicDetail(b,p,cls,W,T,Bt){ const L=b.L, M=b.M, r=seeded(Math.round(L
 }
 function wedgeDetail(b,p,cls,Wr,T,Bt){ const L=b.L, M=b.M, r=seeded(Math.round(L*53)+cls.length);
   for(let x=-.45;x<=.38;x+=.035){ const s=b.surfAt(x*L); if(s.w<L*.03) continue; const slope=(s.t*.86)/s.w, slopeB=(s.b*.86)/s.w;
-    for(const side of [1,-1]) for(const f of [.2,.4,.6,.8]){ if(r()<.2) continue; const z=side*f*s.w;
+    for(const f of [.2,.4,.6,.8]){ if(r()<.2) continue; const under=f<.7&&r()<.5; for(const side of [1,-1]){ const z=side*f*s.w;
       b.part('trench',x*L,b.topY(s,z)+.0015*L,z,{s:[L*.03,L*.018,L*.02],q:qFromUp(new V3(0,1,side*slope).normalize())});
-      if(f<.7&&r()<.5){ const yb=(s.y||0)-s.b*(1-Math.min(1,Math.abs(z)/s.w)*.86); b.part('trench',x*L,yb-.0015*L,z,{s:[L*.03,L*.018,L*.02],q:qFromUp(new V3(0,-1,side*slopeB).normalize())}); } } }
-  for(let x=-.36;x<=.26;x+=.05) for(const side of [1,-1]){ const s=b.surfAt(x*L), z=side*s.w*.66, y=b.topY(s,z); b.part('battery',x*L,y,z,{s:L*.02,ry:side*-.3}); }
-  for(let x=-.2;x<=.4;x+=.04){ const s=b.surfAt(x*L); b.box(M.dark,x*L,s.t+.002*L,0,.03*L,.006*L,.02*L); if(r()<.4) b.part('vent',x*L,s.t,(r()-.5)*s.w*.3,{s:L*.022}); }
+      if(under){ const yb=(s.y||0)-s.b*(1-Math.min(1,Math.abs(z)/s.w)*.86); b.part('trench',x*L,yb-.0015*L,z,{s:[L*.03,L*.018,L*.02],q:qFromUp(new V3(0,-1,side*slopeB).normalize())}); } } } }
+  for(let x=-.36;x<=.26;x+=.05) for(const side of [1,-1]){ const s=b.surfAt(x*L), z=side*s.w*.66, y=b.topY(s,z); b.part('battery',x*L,y,z,{s:L*.02,ry:side*-.3}); (side>0?b.guns.P:b.guns.S).push(new V3(x*L+L*.018,y+L*.01,z+side*L*.004)); b.guns.T.push(new V3(x*L+L*.018,y+L*.01,z)); }
+  for(let x=-.2;x<=.4;x+=.04){ const s=b.surfAt(x*L); b.slab(M.dark,x*L,s.t-.001*L,0,.032*L,.007*L,.024*L,.016*L,{rake:.3}); if(r()<.4){ const z=r()*s.w*.15+.01*L; for(const sd of [1,-1]) b.part('vent',x*L,b.topY(s,sd*z),sd*z,{s:L*.022}); } }
   const bx=-.4*L, by=T*1.5; for(const z of [-.08,-.03,.03,.08]) b.part('antenna',bx-.02*L,by+.125*L,z*L,{s:L*.035});
   for(let i=0;i<3;i++) b.box(M.win,bx+.036*L,by+.08*L+i*.012*L,0,.003*L,.004*L,.05*L);
   for(let x=-.45;x<=.45;x+=.05){ const s=b.surfAt(x*L); for(const side of [1,-1]) b.box(M.tip,x*L,0,side*(s.w+.002*L),.004*L,.004*L,.004*L); }
@@ -2820,7 +2873,7 @@ function sailDetail(b,p,cls,W,T,Bt){ const L=b.L,M=b.M,r=seeded(Math.round(L*19)
 }
 function tombDetail(b,p,cls,R,cx){ const L=b.L; const n=Math.round(p.arc/12);
   for(let i=1;i<n;i++){ const a=(-p.arc/2+p.arc*i/n)*Math.PI/180, x=cx+Math.cos(a)*R-R*.45, z=Math.sin(a)*R, u=i/n, taper=Math.min(u,1-u)*2, y=p.th*L*.4*(.2+.8*taper)+.001*L;
-    b.part('glyph',x,y,z,{s:[L*.045,L*.02,L*.03],ry:-a}); if(i%3===0) b.part('pylon',x,y,z,{s:L*(.03+.03*taper)}); }
+    b.part('glyph',x,y,z,{s:[L*.045,L*.02,L*.03],ry:-a}); (z>=0?b.guns.P:b.guns.S).push(new V3(x,y+L*.012,z)); if(i%2===0) b.guns.T.push(new V3(x,y+L*.012,z)); if(i%3===0) b.part('pylon',x,y,z,{s:L*(.03+.03*taper)}); }
   const R2=R*.72, pts=[]; for(let i=0;i<=20;i++){ const a=(-p.arc*.4+p.arc*.8*i/20)*Math.PI/180; pts.push(new V3(cx+Math.cos(a)*R2-R*.45,p.th*L*.5,Math.sin(a)*R2)); } tube(b,b.M.hull,pts,(i)=>p.th*L*.4*(1-Math.abs(i-10)/12),4,true,.5);
   b.part('zig',-.08*L,.02*L,0,{s:L*(cls==='Frigate'?.08:.13)});
   for(let i=1;i<8;i++){ const a=(-p.arc/2+p.arc*i/8)*Math.PI/180; b.part('obelisk',cx+Math.cos(a)*R*.84-R*.45,.02*L,Math.sin(a)*R*.84,{s:L*.07}); }
@@ -2841,12 +2894,12 @@ function buildJunk(b,cls){
   b.loft(M.hull,sts,PROF.gothic);
   // bolted-on armour plates and scrap, deliberately lopsided
   for(let i=0;i<Math.round(6+L*.5);i++){ const x=(r()-.55)*.8*L, side=r()<.6?1:-1; const pl=b.box(r()<.35?M.dark:M.hull,x,(r()-.3)*T,side*(W*(.8+r()*.4)),.06*L+r()*.1*L,.03*L+r()*.05*L,.02*L+r()*.03*L); pl.rotation.set((r()-.5)*.4,(r()-.5)*.3,(r()-.5)*.5); }
-  for(let i=0;i<(p.chunks||0);i++){ const cx=(r()-.5)*.5*L, cz=(i%2?1:-1)*W*(1.1+r()*.3); const sub=[-.12,-.05,.05,.12].map(x=>({x:cx+x*L,w:W*(.35+r()*.2),t:T*(.5+r()*.3),b:Bt*.5,y:(r()-.5)*T})); const m=loftMesh(sub,PROF.gothic); m.position.z=cz; m.rotation.y=(r()-.5)*.35; m.convertToFlatShadedMesh(); b.add(m,M.hull,cx>=b.split?'fore':'aft'); b.box(M.dark,cx,0,cz*.55,.06*L,T*.5,Math.abs(cz)*.6); }
+  for(let i=0;i<(p.chunks||0);i++){ const cx=(r()-.5)*.5*L, cz=(i%2?1:-1)*W*(1.1+r()*.3); const sub=[-.12,-.05,.05,.12].map(x=>({x:cx+x*L,w:W*(.35+r()*.2),t:T*(.5+r()*.3),b:Bt*.5,y:(r()-.5)*T})); const h=b.push(loftVD(sub,PROF.gothic,false,{cut:.12,iters:2,sub:2}),M.hull,null,cx>=b.split?'fore':'aft'); h.position.z=cz; h.rotation.y=(r()-.5)*.35; b.slab(M.dark,cx,-T*.25,cz*.55,.06*L,T*.5,Math.abs(cz)*.6,Math.abs(cz)*.45,{rake:.2,ry:Math.PI/2*0}); }
   // toothed ram-scoop
   b.cylX(M.trim,.52*L,-Bt*.1,0,.14*L,W*1.4,W*.3,4,.7,1).rotation.x=Math.PI/4;
   for(let i=0;i<5;i++){ const z=(i-2)*W*.3; b.cylX(M.dark,.58*L,-Bt*.3+(i%2)*T*.3,z,.06*L,W*.18,0,4); }
   // superstructure: a crooked bridge stack and antenna
-  const bx=-.28*L; b.box(M.hull,bx,T+.05*L,W*.2,.12*L,.1*L,W*.9); b.box(M.dark,bx-.02*L,T+.12*L,W*.1,.08*L,.05*L,W*.6); b.box(M.win,bx+.06*L,T+.07*L,W*.2,.004*L,.02*L,W*.6);
+  const bx=-.28*L; b.slab(M.hull,bx,T-.002*L,W*.2,.12*L,.102*L,W*.9,W*.72,{rake:.2,rakeB:.06,ry:.06}); b.slab(M.dark,bx-.02*L,T+.098*L,W*.1,.08*L,.05*L,W*.62,W*.42,{rake:.3,rz:-.04}); b.box(M.win,bx+.06*L,T+.07*L,W*.2,.004*L,.02*L,W*.6);
   const ant=b.cylY(M.dark,bx-.04*L,T+.14*L,W*.1,.14*L,.002*L,.008*L,5); ant.rotation.z=.25; b.flashers.push(b.sph(M.tip,bx-.07*L,T+.28*L,W*.1,.014*L));
   // weapons
   if(p.scat){ for(const side of [1,-1]) for(const x of [-.12,.08]){ b.box(M.dark,x*L,T*.2,side*(W*1.02),.06*L,.04*L,.04*L); for(const dy of [-.01,0,.01]) b.box(M.dark,x*L,T*.2+dy*L,side*(W*1.02+.04*L),.006*L,.006*L,.05*L); (side>0?b.hard.P:b.hard.S).push(new V3(x*L,T*.2,side*(W*1.1+.04*L))); } }
@@ -2917,10 +2970,10 @@ function buildTomb(b,cls){
   const arcPts=(rr,y=0,n=28)=>{ const pts=[]; for(let i=0;i<=n;i++){ const a=(-p.arc/2+p.arc*i/n)*Math.PI/180; pts.push(new V3(cx+Math.cos(a)*rr-R*.45,y,Math.sin(a)*rr)); } return pts; };
   const half=(side)=>arcPts(R).filter(v=>side*v.z>=-.001);
   for(const side of [1,-1]){ const pts=half(side); if(side<0) pts.reverse();
-    tube(b,M.hull,pts,(k,d)=>{ const u=k/(pts.length-1); return p.th*L*(side>0?(1-u)*.8+.2:(u*.8+.2)); },4,true,.4); }
+    tube(b,M.hull,pts,(k,d)=>{ const u=k/(pts.length-1); return p.th*L*(side>0?(1-u)*.8+.2:(u*.8+.2)); },6,true,.4); }
   for(const side of [1,-1]){ const pts=half(side).map(v=>new V3(v.x,.035*L,v.z)); tube(b,M.win,pts,()=>.006*L,4); }
-  b.box(M.dark,-.05*L,0,0,.5*L,.05*L,.07*L);
-  for(let i=0;i<(p.mono||0);i++){ const x=(-.12-i*.18)*L; b.box(M.dark,x,.08*L,0,.07*L,.2*L,.07*L); b.box(M.win,x+.036*L,.1*L,0,.002*L,.14*L,.012*L); }
+  b.slab(M.dark,-.05*L,-.025*L,0,.5*L,.05*L,.08*L,.05*L,{rake:.2});
+  for(let i=0;i<(p.mono||0);i++){ const x=(-.12-i*.18)*L; b.slab(M.dark,x,-.02*L,0,.075*L,.2*L,.075*L,.045*L,{rake:.08,cut:.06}); b.box(M.win,x+.036*L,.1*L,0,.002*L,.14*L,.012*L); }
   for(let i=0;i<(p.pyr||0);i++){ const x=(.05-i*.14)*L, z=(i%2?1:-1)*(i?.08*L:0); b.cylY(M.dark,x,.02*L,z,.12*L,0,.14*L,4,Math.PI/4); b.flashers.push(b.sph(M.win,x,.15*L,z,.016*L)); }
   if(p.ring){ b.torusX(M.dark,-.3*L,0,0,.3*L,.02*L); b.torusX(M.win,-.3*L,0,0,.3*L,.006*L); }
   const tipA=p.arc/2*Math.PI/180; const tip=s=>new V3(cx+Math.cos(tipA)*R-R*.45,.02*L,s*Math.sin(tipA)*R);
@@ -2965,7 +3018,8 @@ function buildShipModel(u){ if(u.isSq) return null; const fac=u.fac||'voidsworn'
   for(const m of meshes){ m.isPickable=true; m.alwaysSelectAsActiveMesh=true; if(m.material===M.hull||m.material===M.dark) castShadows(m); else if(m.material===M.trim||m.material===M.steel) m.receiveShadows=true; if(m.material===M.dark||m.material===M.trim||m.material===M.steel||(G.quality==='medium'&&m.material===M.hull)) G.glow.addExcludedMesh(m); }
   for(const m of plumes.concat(flares)) m.isPickable=false; all.filter(m=>m.name.endsWith('emblem')).forEach(m=>G.glow.addExcludedMesh(m));
   for(const m of all) try{ m.refreshBoundingInfo(true); }catch(e){} // v41: every clone gets its own bounding data before its first transparent sort
-  const model={root,fore,aft,meshes,plumes,flares,surf:p.surf,stacks:p.stacks,arcs:p.arcs,hard:p.hard,bays:p.bays,L:p.L,H:p.H,fac:p.fac};
+  const model={root,fore,aft,meshes,plumes,flares,surf:p.surf,stacks:p.stacks,arcs:p.arcs,hard:p.hard,guns:p.guns,nav:p.nav,bays:p.bays,L:p.L,H:p.H,fac:p.fac};
+  if(typeof addTurrets==='function') addTurrets(model,fore,fac);
   if(p.whole) model.toSplit=()=>splitModel(model,p.root);
   return model; }
 // Live ships render from a merged copy (one mesh per material, about half the draw calls).
@@ -2993,7 +3047,7 @@ function splitModel(model,proto){
 function buildShipModelFresh(u){
   const fac=u.fac||'voidsworn';
   const style=(FACTIONS[fac]||{}).style, cls=u.cls, L=CLS_LEN[cls]||14;
-  const b=new SB(fac,L); b.greebleN=(({gothic:18,wedge:14,junk:12,sail:3,bio:0,tomb:0})[style]*L||0)*(G.mobile?.6:1);
+  const b=new SB(fac,L); b.greebleN=(({gothic:18,wedge:10,junk:10,sail:3,bio:0,tomb:0})[style]*L||0)*(G.mobile?.6:.85); /* v44: fewer, better greebles: the hull carries the detail */
   if(style==='gothic') return buildGothic(b,cls);
   if(style==='wedge') return buildWedge(b,cls);
   if(style==='junk') return buildJunk(b,cls);
@@ -3031,6 +3085,7 @@ function createView(u){
   const v={u,fac,bob:Math.random()*6.28,bank:0,lastA:null,fires:[],state:'alive'};
   if(u.isSq){ v.root=new BABYLON.TransformNode('sq',G.scene); v.crafts=[]; v.L=5; v.H=2;
     for(let i=0;i<3;i++){ const c=craftInstance(fac,u.sqKind)||buildCraft(fac,u.sqKind); c.root.parent=v.root; c.root.scaling.setAll(1.35); c.meshes.forEach(m=>m.metadata={unit:u.id}); v.crafts.push({c,ph:i*2.09,rad:2+i*.7,h:(i-1)*.5}); }
+    if(typeof craftTrails==='function') craftTrails(v,fac);
     const pv=u.parent&&G.views.get(u.parent);
     if(pv&&pv.model&&!u.launched){ u.launched=true; const bay=pv.model.bays.length?pv.model.bays[Math.floor(Math.random()*pv.model.bays.length)]:new V3(0,0,0); v.launch={from:toWorld(pv,bay),t0:G.time}; SFX.launch(); }
   } else { const mdl=buildShipModel(u); v.model=mdl; v.root=mdl.root; v.L=mdl.L; v.H=mdl.H; mdl.meshes.forEach(m=>m.metadata={unit:u.id}); }
@@ -3041,8 +3096,8 @@ function createView(u){
   if(B&&(u.reinf&&!u.arrived||G.jumpUntil&&G.time<G.jumpUntil)){ u.arrived=true; v.arrive={t0:G.time+(u.reinf?0:(u.side==='player'?.05:.4)+Math.random()*.55+(u.isSq?.55:0))}; }
   G.views.set(u.id,v); return v;
 }
-function disposeView(v){ if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
-function disposeAllViews(){ for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
+function disposeView(v){ if(v.navSp){ try{ v.navSp.forEach(sp=>sp.dispose()); }catch(e){} v.navSp=null; } if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
+function disposeAllViews(){ (G.deadLights||[]).forEach(l=>{ try{ l.dispose(); }catch(e){} }); G.deadLights=[]; for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
 
 function addFire(v){
   const node=new BABYLON.TransformNode('fire',G.scene); node.parent=v.root; node.position=new V3((Math.random()-.5)*v.L*.6,v.H*.35,(Math.random()-.5)*v.L*.12);
@@ -3069,13 +3124,14 @@ function arcBolt(a,b,col){ const pts=[a.clone()], n=7; for(let i=1;i<n;i++){ con
 
 // ---------- per-frame world update ----------
 function updateWorld(dt){
-  try{ gfxTick(); }catch(e){}
+  try{ gfxTick(); }catch(e){} try{ if(typeof vfxTick==='function') vfxTick(); }catch(e){}
   if(!B) return;
   const t=G.time, cw=G.engine.getRenderingCanvas().clientWidth, ch=G.engine.getRenderingCanvas().clientHeight;
   const tm=G.scene.getTransformMatrix(), vp=G.cam.viewport.toGlobal(cw,ch);
   if(MATS.chorus){ const k=Math.sin(G.time*2.2); MATS.chorus.win.emissiveColor=MATS.chorus.P.win.scale(.8+.35*k); MATS.chorus.flesh.emissiveColor=MATS.chorus.P.win.scale(.32+.22*k); }
   if(MATS.deathless) MATS.deathless.win.emissiveColor=MATS.deathless.P.win.scale(.72+.35*Math.sin(G.time*1.3));
   if(MATS.ithar) MATS.ithar.sail.alpha=.26+.07*Math.sin(G.time*1.7);
+  if(!B._warm&&G.views.size&&typeof warmFx==='function'){ B._warm=1; setTimeout(warmFx,50); } // v44.1: build the explosion shaders while the fleets arrive
   for(const u of B.units){
     let v=G.views.get(u.id);
     if(!v){ if(u.dead) continue; v=createView(u); }
@@ -3097,13 +3153,13 @@ function updateWorld(dt){
     if(v.jolt){ const k=(G.time-v.jolt.t0)/.6; if(k>=1) v.jolt=null; else { const e=Math.sin(k*Math.PI)*(1-k); px+=v.jolt.d.x*e; pz+=v.jolt.d.z*e; } }
     v.root.position.set(px,y,pz); v.root.rotation.set(v.bank,a,0); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1); if(stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts,ts/Math.sqrt(stretch),ts/Math.sqrt(stretch)); v.stretched=stretch!==1; v.tsc=ts; } } // v42: ships grow a little as the camera pulls back
     if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1; v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
-      for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt;
+      for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt; if(v.model.turrets&&typeof updateTurrets==='function') updateTurrets(v,dt);
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx){ v.stackFx=v.model.stacks.map(sp=>{ const n=new BABYLON.TransformNode('stk',G.scene); n.parent=v.root; n.position=sp.clone(); const ps=new BABYLON.ParticleSystem('stack',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.direction1=new V3(-.2,1,-.2); ps.direction2=new V3(.2,1.5,.2); ps.color1=new C4(.32,.28,.25,.5); ps.color2=new C4(.2,.18,.17,.4); ps.colorDead=new C4(.1,.1,.1,0); ps.minSize=.3; ps.maxSize=.7; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,3.2); ps.minLifeTime=1.5; ps.maxLifeTime=3; ps.emitRate=10; ps.minEmitPower=.6; ps.maxEmitPower=1.2; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); return ps; }); } }
     if(v.crafts){ for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
     v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.12+.55*f:0)+s.pulse*.9; s.m.scaling.setAll(1+s.pulse*.08); });
     // damage fires
-    if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); }
+    if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); if(typeof damageSparks==='function') damageSparks(v,hr,dt); }
     // nameplate
     const top=new V3(px,y+Math.max(v.H,2)+2.4,pz), sp=V3.Project(top,BABYLON.Matrix.Identity(),tm,vp);
     const pe=v.plate.el; if(sp.z<0||sp.z>1){ pe.style.display='none'; } else { pe.style.display=''; pe.style.transform=`translate(${sp.x}px,${sp.y}px) translate(-50%,-100%)`; }
@@ -3118,6 +3174,7 @@ function updateWorld(dt){
       const tb=MB.CreateTube('arc',{path:pts,radius:.07,tessellation:4},G.scene); tb.material=G.arcMat||(G.arcMat=emMat('arcM',new C3(.5,2.2,.9))); tb.isPickable=false; setTimeout(()=>tb.dispose(),110); } }
   animateFactionMats(t); updateBeacon(); updateProjectiles(dt); updateHulks(dt); updateOverlays(dt);
   if(G.rocks) for(const r of G.rocks){ r.rotation.x+=r.spin.x*dt; r.rotation.y+=r.spin.y*dt; r.rotation.z+=r.spin.z*dt; }
+  if(G.debThin&&G.debThin.length&&!(G.mobile&&(G.fskip&1))) for(const rec of G.debThin) debThinUpdate(rec,G.mobile?dt*2:dt);
 }
 
 // ---------- movement animations (called by the rules engine) ----------
@@ -3164,25 +3221,33 @@ function rcsPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a
 // ---------- projectiles ----------
 const PROJ=[]; const TORPS=new Set(); G.boltBases={};
 function boltBase(col,thick,shape){ const k=col.toHexString()+thick+(shape||''); if(G.boltBases[k]) return G.boltBases[k];
-  const m=shape==='sphere'?MB.CreateSphere('bolt',{diameter:thick,segments:8},G.scene):MB.CreateBox('bolt',{width:thick,height:thick,depth:1},G.scene); m.material=emMat('boltM'+k,col.scale(1.35)); m.isVisible=false; m.isPickable=false; return G.boltBases[k]=m; }
+  const m=MB.CreateSphere('bolt',{diameter:thick,segments:G.quality==='medium'?6:10},G.scene); m.material=typeof boltMat==='function'?boltMat('boltM'+k,col):emMat('boltM'+k,col.scale(1.35)); m.isVisible=false; m.isPickable=false; try{ G.glow.addExcludedMesh(m); }catch(e){} return G.boltBases[k]=m; } // v44: soft glowing bolts, white-hot at the core
 function shoot(from,to,col,{speed=140,len=3.2,thick=.28,onArrive,overshoot=0,settle,shape}={}){
-  const m=boltBase(col,thick,shape).createInstance('b'); m.isPickable=false; m.position.copyFrom(from); m.scaling.z=shape==='sphere'?len/thick:len;
+  const m=boltBase(col,thick,shape).createInstance('b'); m.isPickable=false; m.position.copyFrom(from); m.scaling.z=len/thick;
   const dir=to.subtract(from), dist=dir.length(); dir.normalize(); m.lookAt(to);
-  PROJ.push({m,dir,dist:dist+overshoot,go:0,speed,onArrive,settle,arriveAt:dist,arrived:false});
-  const tl=boltBase(col.scale(.45),thick*.55).createInstance('bt'); tl.isPickable=false; tl.scaling.z=len*4; tl.position.copyFrom(from.subtract(dir.scale(len*2))); tl.lookAt(to);
+  const rec={m,dir,dist:dist+overshoot,go:0,speed,onArrive,settle,arriveAt:dist,arrived:false}; PROJ.push(rec);
+  if(typeof fxp==='function'&&!G.fxReduced&&(!G.mobile||onArrive)){ const hc=C3.Lerp(col,new C3(1,1,1),.15).scale(.85); rec.halo=fxp(from,{cell:0,size:Math.min(5,thick*7+1.4),col:hc,dur:.14,grow:0,fade:1}); rec.hg=rec.halo&&rec.halo.gen; } // v44: a soft glow rides every bolt
+  const tl=boltBase(col.scale(.45),thick*.55).createInstance('bt'); tl.isPickable=false; tl.scaling.z=len*4/(thick*.55); tl.position.copyFrom(from.subtract(dir.scale(len*2))); tl.lookAt(to);
   PROJ.push({m:tl,dir,dist:dist+overshoot,go:-len*2,speed,onArrive:null,arriveAt:1e9,arrived:true});
 }
 function updateProjectiles(dt){
-  for(let i=PROJ.length-1;i>=0;i--){ const p=PROJ[i]; const step=p.speed*dt/Math.max(.2,SPEED); p.go+=step; p.m.position.addInPlace(p.dir.scale(step));
+  for(let i=PROJ.length-1;i>=0;i--){ const p=PROJ[i]; const step=p.speed*dt/Math.max(.2,SPEED); p.go+=step; p.m.position.addInPlace(p.dir.scale(step)); if(p.halo&&p.halo.gen===p.hg){ p.halo.sp.position.copyFrom(p.m.position); p.halo.t0=G.time; }
     if(!p.arrived && p.go>=p.arriveAt){ p.arrived=true; if(p.onArrive){ try{ p.onArrive(); }catch(e){ frameError(e); } } }
     if(p.go>=p.dist){ p.m.dispose(); PROJ.splice(i,1); } }
 }
+// v44.1: small effects go through the pooled sprite managers (no new mesh, material or particle system per effect); the old paths remain as fallbacks
+function fxMark(k){ G.fxLast={k,t:performance.now()}; }
+function poolOK(){ try{ return typeof fxp==='function'&&!!fxPool().mgr; }catch(e){ return false; } }
 function flash(pos,size,col,dur=.35){ if(G.fxReduced){ size*=.55; col=col.scale(.6); }
+  if(poolOK()){ fxp(pos,{cell:0,size:size*1.15,col:col.scale(1.8),dur,grow:.9,fade:1.4}); return; }
   const pl=MB.CreatePlane('fl',{size:1},G.scene); pl.position.copyFrom(pos); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false;
   const m=emMat('flM',col.scale(1.8),1); m.opacityTexture=G.tex.flare; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; pl.material=m; pl.rotation.z=Math.random()*6;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); pl.dispose(); m.dispose(); return; } pl.scaling.setAll(size*(.4+k*.9)); m.alpha=1-k*k; });
 }
 function burst(pos,{n=24,c1=new C4(1,.8,.4,1),c2=new C4(1,.45,.1,1),size=[.15,.5],life=[.2,.6],power=[4,14],tex=G.tex.soft,blend=BABYLON.ParticleSystem.BLENDMODE_ONEONE,grav=0,sizeGrow=false}={}){
+  if(poolOK()&&(tex===G.tex.soft||tex===G.tex.smoke)){ const sm=blend===BABYLON.ParticleSystem.BLENDMODE_STANDARD, N=Math.max(1,Math.round(n*(G.mobile?.4:.7))), R=(a)=>a[0]+Math.random()*(a[1]-a[0]);
+    for(let i=0;i<N;i++){ const k=Math.random(), c=new C3(c1.r+(c2.r-c1.r)*k,c1.g+(c2.g-c1.g)*k,c1.b+(c2.b-c1.b)*k), al=c1.a+(c2.a-c1.a)*k, d=new V3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize(), sz=R(size);
+      fxp(pos,{smoke:sm,cell:0,size:sz*(sm?1.5:1.7),col:sm?c:c.scale(1.3),alpha:sm?al:Math.min(1,al),dur:R(life),grow:sizeGrow?2:.55,vel:d.scale(R(power)),drag:sm?.9:1.4,grav:-grav,fade:sm?1.3:1.6}); } return; }
   const ps=new BABYLON.ParticleSystem('bs',n,G.scene); ps.particleTexture=tex; ps.emitter=pos.clone(); ps.minEmitBox=V3.Zero(); ps.maxEmitBox=V3.Zero();
   ps.color1=c1; ps.color2=c2; ps.colorDead=new C4(c2.r*.2,c2.g*.2,c2.b*.2,0); ps.minSize=size[0]; ps.maxSize=size[1]; ps.minLifeTime=life[0]; ps.maxLifeTime=life[1];
   ps.minEmitPower=power[0]; ps.maxEmitPower=power[1]; ps.direction1=new V3(-1,-1,-1); ps.direction2=new V3(1,1,1); ps.gravity=new V3(0,grav,0); ps.blendMode=blend;
@@ -3213,7 +3278,7 @@ function beam(from,to,col,width,dur){
     if(!mat){ mat=emMat('bm',c,a); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.disableDepthWrite=true; const bt=beamTex().clone(); bt.vScale=Math.max(1,len/10); mat.emissiveTexture=bt; }
     m.material=mat; try{ G.glow.addExcludedMesh(m); }catch(e){} return [m,mat]; };
   if(!G.tex.beam){ G.tex.beam=dynTex('beamT',64,256,(g,w,h)=>{ const r=seeded(5); g.fillStyle='#000'; g.fillRect(0,0,w,h); for(let i=0;i<60;i++){ g.fillStyle=`rgba(255,255,255,${.15+r()*.4})`; g.fillRect(0,r()*h,w,2+r()*10); } }); G.tex.beam.vScale=3; }
-  const sh=typeof beamMaterial==='function'; const parts=sh?[mk(width*1.5,col.scale(1.25),1,true)]:[mk(width,col.scale(1.6),.9),mk(width*.35,new C3(1,1,1).scale(1.5),1)]; if(!sh) parts[0][1].emissiveTexture=G.tex.beam;
+  const sh=typeof beamMaterial==='function'; const parts=sh?[mk(width*1.15,col.scale(1.15),1,true)]:[mk(width,col.scale(1.6),.9),mk(width*.35,new C3(1,1,1).scale(1.5),1)]; if(!sh) parts[0][1].emissiveTexture=G.tex.beam;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); parts.forEach(([m,mt])=>{m.dispose();mt.dispose();}); return; } G.tex.beam.vOffset=(G.time*4)%1;
     parts.forEach(([m,mt],i)=>{ if(mt.setFloat){ mt.setFloat('t',G.time%100); mt.setFloat('fade',Math.pow(1-k,1.4)); mt.setVector3('camPos',G.cam.position); } else { if(mt.emissiveTexture) mt.emissiveTexture.vOffset-=.04; mt.alpha=(1-k)*(i?1:.9); } m.scaling.x=m.scaling.y=1-k*.55+Math.sin(G.time*80)*.06; }); });
 }
@@ -3236,19 +3301,28 @@ function fireSheet(){ if(G.tex.fire) return G.tex.fire; const N=8,S=128;
 function hexTex(){ if(G.tex.hex) return G.tex.hex; G.tex.hex=dynTex('hexT',512,512,(g,w)=>{ g.clearRect(0,0,w,w); g.strokeStyle='rgba(255,255,255,.9)'; g.lineWidth=3; const R=22, H=R*Math.sqrt(3);
     for(let row=-1;row<w/H+1;row++) for(let col=-1;col<w/(R*1.5)+1;col++){ const cx=col*R*1.5, cy=row*H+(col%2?H/2:0); g.beginPath(); for(let i=0;i<=6;i++){ const a=i*Math.PI/3; g.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a)); } g.stroke(); } }); return G.tex.hex; }
 let LIGHTS=0;
-function lightFlash(pos,col,intensity,range,dur){ if(LIGHTS>=(G.quality==='ultra'?4:2)||G.quality==='medium'||G.fxReduced) return; LIGHTS++; const l=new BABYLON.PointLight('xl',pos.clone(),G.scene); l.diffuse=col; l.specular=col; l.range=range; l.intensity=intensity; const t0=G.time;
-  const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); l.dispose(); LIGHTS--; return; } l.intensity=intensity*(1-k)*(1-k); }); }
-function fireball(pos,size,n,life=1.2,spread=.35){ const ps=new BABYLON.ParticleSystem('fb',n,G.scene,null,true); ps.particleTexture=fireSheet(); ps.spriteCellWidth=128; ps.spriteCellHeight=128; ps.startSpriteCellID=0; ps.endSpriteCellID=63; ps.spriteCellLoop=false; ps.spriteCellChangeSpeed=1;
+// v44.1: a fixed pool of flash lights, created once and kept at zero intensity, so blasts never change the scene's light count
+// (adding or removing a light marks every material dirty and stalls the frame); Medium has no flash lights at all
+function flashLights(){ const want=G.fxReduced?0:G.quality==='ultra'?3:G.quality==='high'?2:0; const pool=G.flPool=G.flPool||[];
+  if(pool.length&&pool[0].getScene()!==G.scene) pool.length=0;
+  while(pool.length<want){ const l=new BABYLON.PointLight('xl',new V3(0,-9000,0),G.scene); l.intensity=0; l.range=1; l.busy=false; pool.push(l); }
+  pool.forEach((l,i)=>{ const on=i<want; if(l.isEnabled(false)!==on) l.setEnabled(on); }); return pool.slice(0,want); }
+function lightFlash(pos,col,intensity,range,dur){ const l=flashLights().find(x=>!x.busy); if(!l) return; l.busy=true; l.position.copyFrom(pos); l.diffuse.copyFrom(col); l.specular.copyFrom(col); l.range=range; l.intensity=intensity; const t0=G.time;
+  const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1||l.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); l.intensity=0; l.position.set(0,-9000,0); l.busy=false; return; } l.intensity=intensity*(1-k)*(1-k); }); }
+function fireball(pos,size,n,life=1.2,spread=.35){ if(G.mobile) n=Math.max(2,Math.round(n*.55)); const ps=new BABYLON.ParticleSystem('fb',n,G.scene,null,true); ps.particleTexture=fireSheet(); ps.spriteCellWidth=128; ps.spriteCellHeight=128; ps.startSpriteCellID=0; ps.endSpriteCellID=63; ps.spriteCellLoop=false; ps.spriteCellChangeSpeed=1;
   ps.emitter=pos.clone(); ps.createSphereEmitter(size*spread,1); ps.color1=new C4(1,1,1,1); ps.color2=new C4(1,.92,.85,1); ps.colorDead=new C4(1,1,1,0); ps.minSize=size*.55; ps.maxSize=size*1.25;
   ps.minLifeTime=life*.7; ps.maxLifeTime=life*1.2; ps.minEmitPower=size*.08; ps.maxEmitPower=size*.35; ps.minAngularSpeed=-1.2; ps.maxAngularSpeed=1.2; ps.minInitialRotation=0; ps.maxInitialRotation=6.28;
   ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.manualEmitCount=n; ps.targetStopDuration=.15; ps.disposeOnStop=true; ps.updateSpeed=.016/Math.max(.35,SPEED); ps.start(); }
-function sparks(pos,n,power,col=new C4(1,.8,.45,1)){ const ps=new BABYLON.ParticleSystem('sp',n,G.scene); ps.particleTexture=G.tex.soft; ps.emitter=pos.clone(); ps.createSphereEmitter(.2,1);
+function sparks(pos,n,power,col=new C4(1,.8,.45,1)){ if(poolOK()){ const N=Math.max(2,Math.round(n*(G.mobile?.3:.55))), base=new C3(col.r,col.g,col.b), hot=new C3(1,.5,.15);
+    for(let i=0;i<N;i++){ const d=new V3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize(), v=d.scale(power*(.4+.6*Math.random()));
+      fxp(pos.add(d.scale(.2)),{cell:3,size:.8+Math.random()*1.1,col:C3.Lerp(base,hot,Math.random()).scale(1.6),dur:.3+Math.random()*.6,grow:0,vel:v,drag:1.1,grav:2,ang:screenAng(pos,v),w:1,h:.2,fade:1.1}); } return; }
+  const ps=new BABYLON.ParticleSystem('sp',n,G.scene); ps.particleTexture=G.tex.soft; ps.emitter=pos.clone(); ps.createSphereEmitter(.2,1);
   ps.billboardMode=BABYLON.ParticleSystem.BILLBOARDMODE_STRETCHED; ps.color1=col; ps.color2=new C4(1,.5,.15,1); ps.colorDead=new C4(.4,.1,0,0); ps.minSize=.06; ps.maxSize=.2; ps.minScaleY=3; ps.maxScaleY=7;
   ps.minLifeTime=.3; ps.maxLifeTime=.9; ps.minEmitPower=power*.4; ps.maxEmitPower=power; ps.gravity=new V3(0,-2,0); ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE; ps.manualEmitCount=n; ps.targetStopDuration=.1; ps.disposeOnStop=true; ps.updateSpeed=.016/Math.max(.35,SPEED); ps.start(); }
 function smoke(pos,size,n,life=2.6){ burst(pos,{n,tex:G.tex.smoke,c1:new C4(.34,.31,.29,.7),c2:new C4(.16,.15,.14,.55),size:[size*.5,size*1.1],life:[life*.6,life],power:[size*.1,size*.45],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
-function explode(pos,size,{light=true,shock=false}={}){ flash(pos,size*2.2,new C3(1,.85,.6),.35); const shFire=typeof fireballFx==='function'&&!G.fxReduced&&(size>=(G.quality==='medium'?3:1.3)); if(shFire) fireballFx(pos,size*1.15,.75+size*.05); fireball(pos,size,Math.round((shFire?3:5)+size*(shFire?.6:1.2))); sparks(pos,Math.round(20+size*8),6+size*2.5); smoke(pos,size*1.2,Math.round(4+size));
+function explode(pos,size,{light=true,shock=false}={}){ flash(pos,size*2.2,new C3(1,.85,.6),.35); if(typeof fxSprite==='function'&&size>=1) fxSprite(pos,size*3.2,new C3(1,.78,.5),starTex(),.22,{grow:.7}); const shFire=typeof fireballFx==='function'&&!G.fxReduced&&(size>=(G.quality==='medium'?3:1.3)); if(shFire) fireballFx(pos,size*1.15,.75+size*.05); fireball(pos,size,Math.round((shFire?3:5)+size*(shFire?.6:1.2))); sparks(pos,Math.round(20+size*8),6+size*2.5); smoke(pos,size*1.2,Math.round(4+size));
   if(light) lightFlash(pos,new C3(1,.62,.3),3+size*.6,size*9,.6); if(shock) shockwave(pos,size*3); }
-function muzzleFx(pos,out,col){ flash(pos,2.4,col,.18); const p=pos.add(out.scale(.4)); burst(p,{n:4,tex:G.tex.smoke,c1:new C4(.5,.47,.44,.5),c2:new C4(.3,.28,.27,.35),size:[.5,1],life:[.8,1.5],power:[.5,1.5],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
+function muzzleFx(pos,out,col){ if(typeof muzzleBlast==='function'){ muzzleBlast(pos,out,col); return; } flash(pos,2.4,col,.18); const p=pos.add(out.scale(.4)); burst(p,{n:4,tex:G.tex.smoke,c1:new C4(.5,.47,.44,.5),c2:new C4(.3,.28,.27,.35),size:[.5,1],life:[.8,1.5],power:[.5,1.5],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
 
 // ---------- persistent battle damage ----------
 let SCORCH=null;
@@ -3276,6 +3350,17 @@ function muzzles(v,arc,tgtPos){
   const h=v.model.hard; let list=(arc==='P'?h.P:arc==='S'?h.S:arc==='F'?h.F:h.T); if(!list||!list.length) list=h.T.length?h.T:h.F;
   return list.map(p=>toWorld(v,p));
 }
+// v44 volleys: every barrel on the engaged side joins in, rippling bow to stern. Purely visual; the lead bolts still carry the dice
+function turretTips(v){ const out=[]; const T=v.model&&v.model.turrets; if(!T) return out; for(const t of T){ try{ t.yaw.computeWorldMatrix(true); const s=t.inst.scaling.x, m=t.yaw.getWorldMatrix();
+    for(const x of [.18,-.18]) out.push({p:V3.TransformCoordinates(new V3(x*s,.34*s,1.7*s),m),o:V3.TransformNormal(new V3(0,0,1),m).normalize(),x:t.yaw.position.x,tur:t}); }catch(e){} } return out; }
+function volleyPlan(va,w,nShots,tgtPos){ const md=va.model; if(!md||!md.guns) return [];
+  const cap=G.fxReduced?6:G.mobile?9:G.quality==='ultra'?42:G.quality==='high'?30:14; let src=(md.guns[w.arc]||[]).slice(); if(w.arc==='T') src=src.concat(md.guns.P.filter((_,i)=>i%3===0),md.guns.S.filter((_,i)=>i%3===0));
+  const c=va.root.getAbsolutePosition(); va.root.computeWorldMatrix(true); const M=va.root.getWorldMatrix();
+  let pts=src.map(lp=>{ const p=V3.TransformCoordinates(lp,M), o=p.subtract(c); o.y*=.2; return {p,o:o.normalize(),x:lp.x}; });
+  if(w.arc==='P'||w.arc==='S'||w.arc==='T'){ const tt=turretTips(va); for(const t of tt) pts.push(t); }
+  if(tgtPos){ const toT=tgtPos.subtract(c).normalize(); pts=pts.filter(q=>V3.Dot(q.o,toT)>-.25); for(const q of pts) if(!q.tur) q.o=V3.Lerp(q.o,tgtPos.subtract(q.p).normalize(),.6).normalize(); }
+  for(let i=pts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pts[i],pts[j]]=[pts[j],pts[i]]; } pts=pts.slice(0,Math.max(0,cap-nShots));
+  pts.sort((a,b)=>b.x-a.x); return pts; }
 async function cineFrame(a,t){
   if(!G.cine||a.isSq||B.over) return;
   if(G.mobile&&!((t.t&&t.t.boss)||(a.t&&a.t.boss)||(t.hp!=null&&t.maxHp&&t.hp<=t.maxHp*.35))) return; // phones: swing in only for likely kills and flagship duels
@@ -3296,34 +3381,45 @@ const WOPT={shell:{speed:120,len:2.2,thick:.46},twin:{speed:210,len:5.5,thick:.1
 async function animWeapon(u,w,t,shots){
   const va=G.views.get(u.id), vt=G.views.get(t.id); if(!va||!vt) return;
   if(w.k==='lance'||w.k==='torp') await cineFrame(u,t);
-  const P=FAC3D[va.fac]||FAC3D.hegemony, quad=shieldQuad(t,u), shielded=(t.sh[quad]||0)>.5&&(w.pierce||0)<1;
+  fxMark(w.k==='lance'?'lance':w.k==='torp'?'torp':'volley'); const P=FAC3D[va.fac]||FAC3D.hegemony, quad=shieldQuad(t,u), shielded=(t.sh[quad]||0)>.5&&(w.pierce||0)<1;
   let col=w.ion?new C3(.45,.75,1):w.k==='lance'?P.beam:w.k==='gauss'?FAC3D.deathless.bolt:w.k==='bio'?FAC3D.chorus.bolt:P.bolt;
   if(u.isSq) col=P.bolt;
   const style=(u.isSq||w.k==='flak'||w.k==='lance'||w.k==='torp')?null:(w.k==='gauss'?'rail':w.k==='bio'?'glob':WSTYLE[va.fac]||'shell');
   const tp=vt.root.getAbsolutePosition(), mz=muzzles(va,w.arc,tp).sort((p1,p2)=>V3.Distance(p1,tp)-V3.Distance(p2,tp));
+  if(w.arc==='T'&&typeof aimTurrets==='function'&&va.model&&va.model.turrets){ aimTurrets(va,tp); await wait(160); }
   const impact=(hit,from)=>{ if(t.dead&&!vt.root) return; if(!hit){ return; }
     const p=hitPoint(vt,from,shielded);
     if(shielded){ shieldDome(vt,from.subtract(tp).normalize(),SHIELD_C); burst(p,{n:16,c1:new C4(.6,.9,1,1),c2:new C4(.3,.6,1,1),power:[3,9]}); SFX.shield(); if((w.pierce||0)>0) explode(hitPoint(vt,from,false),.8,{light:false}); }
-    else { if(Math.random()<(w.k==='torp'||w.k==='lance'?1:.35)) hullDecal(vt,from,w.k==='torp');
-      if(w.k==='torp'){ explode(p,4.5,{shock:true}); G.shake=Math.min(1,G.shake+.35); SFX.boom(.8); } else if(w.k==='lance'){ explode(p,1.8); sparks(p,40,14,new C4(1,.95,.8,1)); SFX.hit(); } else if(style==='glob'){ explode(p,.8,{light:false}); burst(p,{n:22,c1:new C4(1,.45,.85,1),c2:new C4(.55,1,.4,1),size:[.3,.8],life:[.3,.8],power:[3,8]}); SFX.hit(); }
+    else { if(Math.random()<(w.k==='torp'||w.k==='lance'?1:.35)) hullDecal(vt,from,w.k==='torp'); if((w.k==='torp'||w.k==='lance')&&!vt.jolt){ const d=tp.subtract(from); d.y=0; d.normalize(); vt.jolt={d:d.scale(w.k==='torp'?1.6:.9),t0:G.time}; } // big hits rock the ship
+      if(w.k==='torp'){ explode(p,4.5,{shock:true}); G.shake=Math.min(1,G.shake+.35); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.35); SFX.boom(.8); } else if(w.k==='lance'){ explode(p,1.8); sparks(p,40,14,new C4(1,.95,.8,1)); SFX.hit(); } else if(style==='glob'){ explode(p,.8,{light:false}); burst(p,{n:22,c1:new C4(1,.45,.85,1),c2:new C4(.55,1,.4,1),size:[.3,.8],life:[.3,.8],power:[3,8]}); SFX.hit(); }
       else if(style==='needle'){ explode(p,.8,{light:false}); burst(p,{n:14,c1:new C4(.85,1,1,1),c2:new C4(.5,.85,1,1),size:[.1,.35],power:[6,14]}); SFX.hit(); }
       else { explode(p,style==='shell'?1.4:1.1,{light:Math.random()<.3}); SFX.hit(); } } };
   if(w.k==='lance'){
     for(let i=0;i<shots.length;i++){ const from=mz[i%mz.length], h=shots[i], to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
-      flash(from,5,col,.35); lightFlash(from,col,2,40,.5); await wait(100); beam(from,to,col,w.ion?1.1:1.6,.7); beam(from,to,col.scale(.6),w.ion?2.6:3.6,.45); SFX.lance(!!w.ion); if(h) impact(true,from); else flash(to,2,col.scale(.6)); await wait(150); }
+      if(typeof chargeFx==='function') chargeFx(from,col); flash(from,5,col,.35); lightFlash(from,col,2,40,.5); await wait(100); beam(from,to,col,w.ion?1.1:1.6,.7); if(typeof beamMaterial!=='function') beam(from,to,col.scale(.6),w.ion?2.6:3.6,.45); SFX.lance(!!w.ion); if(h){ impact(true,from); if(typeof fxSprite==='function') fxSprite(to,7,C3.Lerp(col,new C3(1,1,1),.4).scale(1.5),starTex(),.6,{grow:.5,spin:2}); } else flash(to,2,col.scale(.6)); await wait(150); }
     await wait(150);
   } else if(w.k==='torp'){
     const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ const from=mz[i%mz.length]; const to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
       const m=MB.CreateCylinder('torp',{height:1.4,diameterTop:0,diameterBottom:.45,tessellation:8},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2)); m.material=emMat('tm',col.scale(1.8)); m.position.copyFrom(from); m.isPickable=false;
       const tr=new BABYLON.ParticleSystem('trail',240,G.scene); tr.particleTexture=G.tex.smoke; tr.emitter=m; tr.color1=new C4(1,.7,.35,.8); tr.color2=new C4(.6,.5,.45,.5); tr.colorDead=new C4(.1,.1,.1,0); tr.minSize=.4; tr.maxSize=.9; tr.minLifeTime=.4; tr.maxLifeTime=.9; tr.emitRate=160; tr.minEmitPower=.1; tr.maxEmitPower=.4; tr.addSizeGradient(0,.5); tr.addSizeGradient(1,2); tr.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; tr.start();
+      let trl=null, head=null; try{ trl=new BABYLON.TrailMesh('ttr',m,G.scene,.42,G.quality==='medium'?24:44,true); const tmM=emMat('ttrM',col.scale(1.5),.55); tmM.alphaMode=BABYLON.Engine.ALPHA_ADD; tmM.disableDepthWrite=true; tmM.backFaceCulling=false; trl.material=tmM; trl.isPickable=false; try{ G.glow.addExcludedMesh(trl); }catch(e){}
+        head=MB.CreatePlane('thead',{size:2.6},G.scene); head.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; head.parent=m; head.isPickable=false; const hm=emMat('theadM',C3.Lerp(col,new C3(1,1,1),.4).scale(1.8),1); hm.opacityTexture=G.tex.flare; hm.alphaMode=BABYLON.Engine.ALPHA_ADD; hm.disableDepthWrite=true; head.material=hm; }catch(e){}
       SFX.torp(); const dur=.75, t0=G.time;
       const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=Math.min(1,(G.time-t0)/(dur*Math.max(.3,SPEED))); const p=V3.Lerp(from,to,k); p.y+=Math.sin(k*Math.PI)*3; m.lookAt(p.add(to.subtract(from).normalize().scale(2))); m.position.copyFrom(p);
-        if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); TORPS.delete(rec); tr.stop(); setTimeout(()=>tr.dispose(),1200); m.dispose(); try{ if(h) impact(true,from); else flash(to,3,new C3(1,.6,.3)); } finally{ res(); } } });
+        if(head&&head.material) head.material.alpha=.75+.25*Math.sin(G.time*40);
+        if(typeof pdFire==='function'&&k>.25&&k<.92) pdFire(vt,p);
+        if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); TORPS.delete(rec); tr.stop(); setTimeout(()=>tr.dispose(),1200); if(trl){ const tm=trl.material; trl.stop&&trl.stop(); vfxFadeDispose(trl,tm,.5); } if(head){ head.parent=null; head.material.dispose(); head.dispose(); } m.dispose(); try{ if(h) impact(true,from); else flash(to,3,new C3(1,.6,.3)); } finally{ res(); } } });
       const rec={obs,m,tr,res}; TORPS.add(rec);
     }, i*120*SPEED); }));
     await Promise.all(arrivals); await wait(90);
   } else {
     const gap=w.k==='flak'?45:u.isSq?55:70, speed=w.k==='flak'?170:u.isSq?110:150;
+    if(!u.isSq&&typeof fxp==='function'){ try{ const vol=volleyPlan(va,w,shots.length,tp).filter((_,i)=>w.k!=='flak'||i%2===0), span=Math.max(shots.length*gap,300+vol.length*9), anyHit=shots.some(x=>x), o=style?WOPT[style]||WOPT.needle:null;
+      vol.forEach((q,j)=>{ setTimeout(()=>{ try{ if(!vt.root||vt.root.isDisposed()) return; const h=anyHit&&Math.random()<.78, to=h?hitPoint(vt,q.p,shielded):missPoint(vt,q.p); if(h&&shielded) to.addInPlace(new V3((Math.random()-.5)*vt.L*.35,(Math.random()-.3)*2.5,(Math.random()-.5)*vt.L*.35)); volleyMuzzle(q.p,q.o,col); if(j%3===0) SFX.gun(w.k,false);
+          const opt=w.k==='flak'?{speed:175,len:1.3,thick:.15}:style==='rail'?{speed:420,len:11,thick:.12}:o?{speed:o.speed*(.92+Math.random()*.16),len:o.len,thick:o.thick*.85,shape:o.shape}:{speed,len:3,thick:.26};
+          const done=()=>{ if(h){ volleyImpact(to,col,shielded,q.p); if(!shielded&&Math.random()<.06) hullDecal(vt,q.p,false); } };
+          if(style==='twin'){ const sd=V3.Cross(to.subtract(q.p),new V3(0,1,0)).normalize().scale(.5); shoot(q.p.add(sd),to.add(sd),col,{...opt,overshoot:h?0:30}); }
+          shoot(q.p,to,col,{...opt,overshoot:h?0:30,onArrive:done}); }catch(e){} },(j/Math.max(1,vol.length))*span*SPEED+Math.random()*25); }); }catch(e){ console.warn('volley',e); } }
     const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ const from=mz[i%mz.length]; const to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
       if(!u.isSq){ if(w.k==='flak') flash(from,1.2,col); else { const out=from.subtract(va.root.getAbsolutePosition()); out.y=0; muzzleFx(from,out.normalize(),col); } } SFX.gun(w.k,u.isSq);
       if(style==='rail'){ beam(from,to,col,.42,.32); flash(from,2,col,.15); setTimeout(()=>{ try{ if(h) impact(true,from); else flash(to,1.5,col.scale(.6)); }catch(e){ frameError(e); } finally{ res(); } },60*Math.max(.3,SPEED)); return; }
@@ -3356,11 +3452,15 @@ async function animExplode(u){
   const v=G.views.get(u.id); if(!v||v.state!=='alive') return;
   const c=v.root.getAbsolutePosition().clone();
   if(u.isSq){ v.state='dead'; flash(c,5,new C3(1,.7,.4)); burst(c,{n:30,power:[5,14]}); SFX.pop(); disposeView(v); G.views.delete(u.id); await wait(250); return; }
-  v.state='dying'; if(v.engLight){ v.engLight.dispose(); v.engLight=null; } (v.extras||[]).forEach(p=>p.stop()); v.plate.el.remove(); v.ring.node.dispose(false,true); v.fires.forEach(f=>f.stop()); v.fires=[];
+  fxMark(u.isSq?'craft':'explode'); v.state='dying'; if(v.engLight){ const el=v.engLight; el.intensity=0; el.parent=null; el.position.set(0,-9000,0); (G.deadLights=G.deadLights||[]).push(el); v.engLight=null; } /* v44.1: disposing a light mid-fight re-dirties materials; it goes dark now and is freed at battle end */ (v.extras||[]).forEach(p=>p.stop()); v.plate.el.remove(); v.ring.node.dispose(false,true); v.fires.forEach(f=>f.stop()); v.fires=[];
   const L=v.L;
-  for(let i=0;i<4;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(i%2===0) SFX.hit(); await wait(100); }
-  flash(c,L*1.4,new C3(1,.85,.6),.7); explode(c,L*.45); if(typeof fireballFx==='function'&&!G.fxReduced) fireballFx(c.add(new V3(0,1,0)),L*.42,1.7); fireball(c.add(new V3(0,1,0)),L*.35,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
-  burst(c,{n:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
+  // v44: the death plays out: the hull scorches and splits with glowing cracks, internal blasts tear through it, then the reactor goes
+  try{ if(typeof shipDamageFx==='function'){ v.state='alive'; shipDamageFx(v,-1); v.state='dying'; } }catch(e){}
+  if(G.cine&&!G.fxReduced&&!B.over){ try{ clearTimeout(G.cineTimer); G.ctl.hold(new V3(c.x,0,c.z),G.ctl.a+.35,1.05,clamp(L*3.4+40,60,190)); G.cineTimer=setTimeout(()=>G.ctl.release(),2300*SPEED); }catch(e){} }
+  const nPop=G.mobile?3:5; for(let i=0;i<nPop;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(typeof fxStreak==='function'&&i%2===0){ const o=p.subtract(c); o.y=Math.abs(o.y)+.5; fxStreak(p,o.normalize(),6+L*.25,3+L*.06,new C3(1,.6,.25).scale(1.6),coneTex(),.35); } if(i%2===0) SFX.hit(); await wait(90); }
+  if(typeof fxSprite==='function'){ fxSprite(c,L*(G.mobile?1.7:2.6),new C3(1,.9,.75).scale(1.5),starTex(),.55,{grow:.8}); shockRing(c,L*3.2,(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.3),{flat:true,dur:1.6,thick:.03,tilt:.5}); }
+  flash(c,L*1.4,new C3(1,.85,.6),.7); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.9); explode(c,L*.45); if(typeof fireballFx==='function'&&!G.fxReduced) fireballFx(c.add(new V3(0,1,0)),L*.42,1.7); fireball(c.add(new V3(0,1,0)),L*.35,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
+  burst(c,{n:G.mobile?30:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
   shockwave(c,L*2.4); SFX.boom(1.2); G.shake=Math.min(1,G.shake+.6+L/60);
   debris(c,L,v.fac);
   // split the hull and let the wreck drift out of the battle plane
@@ -3371,26 +3471,32 @@ async function animExplode(u){
   const nodes=[v.model.fore,v.model.aft], persist=!!u.hulk;
   for(const [n,sgn] of [[v.model.fore,1],[v.model.aft,-1]]){ const wp=n.getAbsolutePosition().clone(); const wr=v.root.rotation.clone(); n.parent=null; n.position=wp; n.rotation=wr.clone();
     n.vel=fwd.scale(sgn*(1.2+Math.random())).add(new V3((Math.random()-.5)*.6,persist?0:-.35-Math.random()*.3,(Math.random()-.5)*.6)); n.spin=new V3((Math.random()-.5)*.25,(Math.random()-.5)*.2,sgn*(.12+Math.random()*.2));
+    if(poolOK()){ n.ps=null; n.smk={acc:0}; continue; } // v44.1: wreck smoke comes from the pool
     const ps=new BABYLON.ParticleSystem('hf',120,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.color1=new C4(1,.5,.15,.8); ps.color2=new C4(.5,.3,.2,.5); ps.colorDead=new C4(0,0,0,0); ps.minSize=.8; ps.maxSize=2; ps.minLifeTime=.5; ps.maxLifeTime=1.4; ps.emitRate=40; ps.addSizeGradient(0,.6); ps.addSizeGradient(1,2.6); ps.minEmitPower=.5; ps.maxEmitPower=1.5; ps.start(); n.ps=ps; }
-  G.hulks.push({nodes,t0:G.time,persist}); v.root.dispose(true,false); v.state='hulk'; G.views.delete(u.id);
+  G.hulks.push({nodes,t0:G.time,persist,L}); v.root.dispose(true,false); v.state='hulk'; G.views.delete(u.id);
   await wait(280);
 }
 function updateHulks(dt){
-  for(let i=G.hulks.length-1;i>=0;i--){ const h=G.hulks[i]; const age=G.time-h.t0;
+  for(let i=G.hulks.length-1;i>=0;i--){ const h=G.hulks[i]; const age=G.time-h.t0; if(typeof hulkCookOff==='function') hulkCookOff(h,dt);
     for(const n of h.nodes){ n.position.addInPlace(n.vel.scale(dt)); n.rotation.addInPlace(n.spin.scale(dt));
+      if(n.smk&&!h.burnedOut){ const rate=(age<6?40:h.persist?Math.max(8,40-(age-6)*8):Math.max(0,40-(age-6)*8))*(G.mobile?.35:.7); n.smk.acc+=rate*dt; const L=h.L||14;
+        while(n.smk.acc>=1){ n.smk.acc-=1; const p=n.getAbsolutePosition().add(new V3((Math.random()-.5)*L*.25,(Math.random()-.3)*L*.04,(Math.random()-.5)*L*.08)), hot=Math.random()<.35;
+          fxp(p,{smoke:true,size:1.6+Math.random()*1.6,col:hot?new C3(.62,.38,.22):new C3(.3,.27,.25),alpha:.6,dur:1+Math.random()*.8,grow:1.6,vel:new V3((Math.random()-.5)*.8,.4+Math.random()*.6,(Math.random()-.5)*.8),drag:.4,fade:1.2});
+          if(hot) fxp(p,{cell:0,size:1.4,col:new C3(1,.5,.18).scale(1.3),dur:.4,grow:.4}); } }
       if(h.persist){ n.vel.scaleInPlace(Math.max(0,1-dt*.9)); n.spin.scaleInPlace(Math.max(0,1-dt*.6)); if(age>6&&n.ps) n.ps.emitRate=Math.max(8,40-(age-6)*8); }
       else { n.vel.y-=dt*.08; if(age>6&&n.ps) n.ps.emitRate=Math.max(0,40-(age-6)*8); } }
     if(h.persist&&age>25&&!h.burnedOut){ h.burnedOut=true; h.nodes.forEach(n=>n.ps&&n.ps.stop()); } // permanent wrecks stop burning
     if(!h.persist&&age>22){ h.nodes.forEach(n=>{ if(n.ps){ n.ps.dispose(); } n.dispose(); }); G.hulks.splice(i,1); } }
 }
-function shockwave(c,size){ const d=MB.CreateDisc('sw',{radius:1,tessellation:48},G.scene); d.rotation.x=Math.PI/2; d.position=c.clone(); d.isPickable=false; const m=emMat('swM',new C3(1,.75,.5),1); m.opacityTexture=G.tex.ring; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.backFaceCulling=false; m.disableDepthWrite=true; d.material=m;
+function shockwave(c,size){ if(typeof shockRing==='function'){ shockRing(c,size*1.15,new C3(1,.72,.45),{flat:true,dur:1.1,thick:.05}); if(size>30) shockRing(c,size*.6,new C3(1,.9,.8),{flat:false,dur:.7,thick:.06}); return; } const d=MB.CreateDisc('sw',{radius:1,tessellation:48},G.scene); d.rotation.x=Math.PI/2; d.position=c.clone(); d.isPickable=false; const m=emMat('swM',new C3(1,.75,.5),1); m.opacityTexture=G.tex.ring; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.backFaceCulling=false; m.disableDepthWrite=true; d.material=m;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(1.1*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); d.dispose(); m.dispose(); return; } d.scaling.setAll(size*(.2+Math.sqrt(k))); m.alpha=(1-k)*(1-k)*.5; }); }
 function debris(c,L,fac){ const M=facMats(fac); const n=Math.round(10+L*.8); const pieces=[];
   for(let i=0;i<n;i++){ const s=.3+Math.random()*L*.06; const m=MB.CreateBox('deb',{width:s,height:s*.4,depth:s*.7},G.scene); m.material=Math.random()<.3?M.ember:M.wreck; m.position=c.add(new V3((Math.random()-.5)*L*.4,(Math.random()-.5)*2,(Math.random()-.5)*L*.2)); m.isPickable=false;
     pieces.push({m,vel:new V3((Math.random()-.5),(Math.random()-.3)*.6,(Math.random()-.5)).normalize().scale(4+Math.random()*16),spin:new V3(Math.random()*4,Math.random()*4,Math.random()*4)}); }
+  if(typeof debrisTrail==='function'&&!G.fxReduced) pieces.slice(0,G.quality==='medium'?3:7).forEach(p=>{ p.m.material=M.ember; p.tr=debrisTrail(p.m,3+Math.random()*2); }); // v44: burning chunks
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const age=G.time-t0, dt=G.engine.getDeltaTime()/1000;
     for(const p of pieces){ p.m.position.addInPlace(p.vel.scale(dt)); p.vel.scaleInPlace(1-dt*.25); p.m.rotation.addInPlace(p.spin.scale(dt)); if(age>5) p.m.scaling.scaleInPlace(1-dt*.6); }
-    if(age>9){ G.scene.onBeforeRenderObservable.remove(obs); pieces.forEach(p=>p.m.dispose()); } });
+    if(age>9){ G.scene.onBeforeRenderObservable.remove(obs); pieces.forEach(p=>{ if(p.tr){ try{ p.tr.dispose(); }catch(e){} } p.m.dispose(); }); } });
 }
 // Ithar phase jump: a flash where the ship was, then the hyperspace arrival plays at the new hex
 async function animBlink(u,from){ const v=G.views.get(u.id); if(!v) return; const P=FAC3D[v.fac]||FAC3D.ithar; try{ flash(hexWorld(from.q,from.r,HOVER_Y),6+v.L*.2,P.eng.scale(1.4),.3); }catch(e){} v.arrive={t0:G.time}; try{ SFX.launch(); }catch(e){} await wait(750*Math.max(.4,SPEED)); }
@@ -3512,19 +3618,20 @@ function buildTerrainTints(){ if(!B||!B.terrain) return; const byType={}; for(co
 //  - faction energy: Deathless circuit traces with pulses, Chorus veins with a heartbeat, Ithar light sweeping along the hull
 const HULLFX_STYLE={deathless:1,chorus:2,ithar:3,voidsworn:4,hegemony:4,corsair:5};
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
-  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'; }
+  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false}); Object.assign(this,o); this._enable(true); }
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3; } // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
   getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'}],
     fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\n#endif\n'}; }
   bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); }
   getCustomCode(type){
-    if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\n#endif\n'};
+    if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\nvarying vec3 vHfxN;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\nvHfxN=normalUpdated;\n#endif\n'};
     if(type!=='fragment') return null;
     return {
 CUSTOM_FRAGMENT_DEFINITIONS:`
 #ifdef HULLFX
 varying vec3 vHfxL;
+varying vec3 vHfxN;
 float hfxH(vec3 p){ p=fract(p*0.3183099+vec3(0.71,0.113,0.419)); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float hfxN(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
   return mix(mix(mix(hfxH(i),hfxH(i+vec3(1,0,0)),f.x),mix(hfxH(i+vec3(0,1,0)),hfxH(i+vec3(1,1,0)),f.x),f.y),mix(mix(hfxH(i+vec3(0,0,1)),hfxH(i+vec3(1,0,1)),f.x),mix(hfxH(i+vec3(0,1,1)),hfxH(i+vec3(1,1,1)),f.x),f.y),f.z); }
@@ -3538,9 +3645,29 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
     gr+=smoothstep(0.5,0.95,hfxN(vec3(hl.x*0.03,hl.y*0.9,hl.z*0.9)))*0.4;
 #endif
     surfaceAlbedo*=1.0-gr*hfxK.z;
+    { vec3 cq=floor(vHfxL*vec3(0.32,0.55,0.55)+hfxS.x*3.0); float tone=hfxH(cq); surfaceAlbedo*=0.88+0.22*tone; // plate-to-plate tone, visible at any distance
+      float ny=normalize(vHfxN).y; surfaceAlbedo*=mix(0.72,1.0,smoothstep(-0.85,0.35,ny)); } // undersides sit in shadow
     if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3;
       float burn=smoothstep(1.0-hfxD.x*0.62,1.0-hfxD.x*0.62+0.07,dn);
       surfaceAlbedo=mix(surfaceAlbedo,surfaceAlbedo*vec3(0.09,0.075,0.065),burn); } }
+#endif
+`,
+CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
+#ifdef HULLFX
+#if defined(HULLFX_HI) && defined(HULLFX_PLATE)
+    // plating: seams, inset hatches and per-plate tone, bump-mapped from a height computed per pixel (no texture), fading out with distance
+    { float hd0=length(vEyePosition.xyz-vPositionW); float pf=1.0-smoothstep(55.0,130.0,hd0);
+      if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy); pu*=1.15;
+        float row=floor(pu.y/0.85); float wd=1.3+hfxH(vec3(row,3.1,0.0))*2.8; float off=hfxH(vec3(row,7.7,0.0))*wd;
+        float cx=floor((pu.x+off)/wd); vec2 fr=vec2(fract((pu.x+off)/wd)*wd,fract(pu.y/0.85)*0.85);
+        float e=min(min(fr.x,wd-fr.x),min(fr.y,0.85-fr.y)); float seam=smoothstep(0.0,0.045,e); float id=hfxH(vec3(cx,row,1.3));
+        float inset=step(0.8,id)*smoothstep(0.1,0.15,e);
+        float ht=(seam-inset*0.45+(id-0.5)*0.08)*0.035;
+        vec3 dpx=dFdx(vPositionW), dpy=dFdy(vPositionW); float dhx=dFdx(ht), dhy=dFdy(ht);
+        vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
+        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.9));
+        surfaceAlbedo*=mix(1.0,(0.7+0.3*seam)*(0.93+0.14*id),pf); } }
+#endif
 #endif
 `,
 CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
@@ -3709,13 +3836,15 @@ const FIRE_GLSL={
       float heat=clamp(1.05-t*1.25+(n-0.5)*1.2+(n2-0.5)*0.5+fac*0.3-(1.0-vD)*0.45,0.0,1.0);
       vec3 c=heat>0.72?mix(vec3(1.0,0.48,0.12),vec3(1.0,0.78,0.42),(heat-0.72)/0.28):heat>0.38?mix(vec3(0.62,0.12,0.03),vec3(1.0,0.55,0.16),(heat-0.38)/0.34):mix(vec3(0.0),vec3(0.62,0.12,0.03),heat/0.38);
       c=mix(c,c*tint,0.35);
-      float a=smoothstep(0.0,0.1,t)*(1.0-smoothstep(0.5,1.0,t))*(0.3+0.7*fac)*smoothstep(0.32,0.62,n+0.22*fac+0.15*n2);
-      gl_FragColor=vec4(c*(0.22+heat*0.8),a*0.8); }`
+      float a=smoothstep(0.0,0.08,t)*(1.0-smoothstep(0.55,1.0,t))*smoothstep(0.3,0.58,n+0.2*fac+0.15*n2)*(0.55+0.45*fac);
+      vec3 smoke=vec3(0.07,0.06,0.055)*(0.6+0.8*n);
+      float hot=max(smoothstep(0.18,0.5,heat),1.0-smoothstep(0.25,0.55,t)); vec3 rgb=mix(smoke,c*(0.6+heat*2.4),hot);
+      gl_FragColor=vec4(rgb,a*mix(0.92,0.7,1.0-hot)); }`
 };
 function fireballFx(pos,size,dur=1.1,tint){ try{ if(!G.scene) return; const S=BABYLON.Effect.ShadersStore; if(!S.vsFireVertexShader){ S.vsFireVertexShader=FIRE_GLSL.vert.replace('NOISE',PLANET_GLSL.noise); S.vsFireFragmentShader=FIRE_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
     if(!G.fireBase||G.fireBase.isDisposed()){ G.fireBase=MB.CreateSphere('fireBase',{diameter:2,segments:G.quality==='medium'?14:28},G.scene); G.fireBase.isVisible=false; G.fireBase.isPickable=false; }
     const m=new BABYLON.ShaderMaterial('fireM',G.scene,{vertex:'vsFire',fragment:'vsFire'},{attributes:['position','normal'],uniforms:['world','worldViewProjection','t','seed','camPos','tint'],needAlphaBlending:true});
-    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=true; const sd=Math.random()*40; m.setFloat('seed',sd); m.setColor3('tint',tint||new C3(1,1,1)); m.setFloat('t',0); m.setVector3('camPos',G.cam.position);
+    m.alphaMode=BABYLON.Engine.ALPHA_COMBINE; m.disableDepthWrite=true; m.backFaceCulling=true; const sd=Math.random()*40; m.setFloat('seed',sd); m.setColor3('tint',tint||new C3(1,1,1)); m.setFloat('t',0); m.setVector3('camPos',G.cam.position);
     const sp=G.fireBase.clone('fire'); sp.isVisible=true; sp.material=m; sp.position.copyFrom(pos); sp.rotation.set(Math.random()*6,Math.random()*6,0); try{ G.glow.addExcludedMesh(sp); }catch(e){}
     const t0=G.time, D=dur*Math.max(.3,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||sp.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!sp.isDisposed()) sp.dispose(); m.dispose(); return; }
       m.setFloat('t',k); m.setVector3('camPos',G.cam.position); sp.scaling.setAll(size*(.35+.9*Math.pow(k,.45))); }); }catch(e){ console.warn('fireball',e); } }
@@ -3729,29 +3858,33 @@ const BEAM_GLSL={
     void main(){ vec3 V=normalize(camPos-vP); float f=abs(dot(normalize(vN),V)); float core=pow(f,6.0); float sheath=pow(f,1.6);
       float n=fbm(vec3(vUV.y*len*0.12-t*14.0,vUV.x*6.0,t*3.0),3); float crawl=0.55+0.9*n;
       float ends=smoothstep(0.0,0.02,vUV.y)*smoothstep(1.0,0.97,vUV.y);
-      vec3 c=col*sheath*crawl*1.6+vec3(1.0,0.97,0.9)*core*2.2;
-      gl_FragColor=vec4(c*fade*ends,(sheath*0.8+core)*fade*ends); }`
+      vec3 c=col*sheath*crawl*1.25+mix(col,vec3(1.0,0.97,0.9),0.6)*core*1.6;
+      gl_FragColor=vec4(c*fade*ends,(sheath*0.6+core)*fade*ends); }`
 };
 function beamMaterial(col){ const S=BABYLON.Effect.ShadersStore; if(!S.vsBeamVertexShader){ S.vsBeamVertexShader=BEAM_GLSL.vert; S.vsBeamFragmentShader=BEAM_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
   const m=new BABYLON.ShaderMaterial('beamM',G.scene,{vertex:'vsBeam',fragment:'vsBeam'},{attributes:['position','normal','uv'],uniforms:['world','worldViewProjection','camPos','col','t','len','fade'],needAlphaBlending:true});
   m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('t',0); m.setFloat('len',10); m.setFloat('fade',1); m.setVector3('camPos',G.cam.position); return m; }
 
 // ---------- frame time: p50/p90 per battle and quality level, logged at battle end ----------
-const FRAMES={ft:[],draws:0,inst:null,
-  tick(dt){ if(dt>0&&dt<1){ this.ft.push(dt*1000); if(this.ft.length>3600) this.ft.splice(0,600); } },
-  reset(){ this.ft=[]; try{ if(!this.inst&&G.scene) this.inst=new BABYLON.SceneInstrumentation(G.scene); }catch(e){} },
+const FRAMES={ft:[],draws:0,inst:null,h50:0,h100:0,max:0,by:{},
+  tick(dt){ if(dt>0&&dt<3){ const ms=dt*1000; this.ft.push(ms); if(this.ft.length>3600) this.ft.splice(0,600); if(ms>this.max) this.max=ms;
+      if(ms>50&&!document.hidden){ this.h50++; if(ms>100){ this.h100++; const f=G.fxLast&&performance.now()-G.fxLast.t<1500?G.fxLast.k:'other'; this.by[f]=(this.by[f]||0)+1; } } } },
+  reset(){ this.ft=[]; this.h50=0; this.h100=0; this.max=0; this.by={}; try{ if(!this.inst&&G.scene) this.inst=new BABYLON.SceneInstrumentation(G.scene); }catch(e){} },
   summary(){ const a=this.ft.slice().sort((x,y)=>x-y), q=p=>a.length?Math.round(a[Math.min(a.length-1,Math.floor(a.length*p))]*10)/10:null;
     let draws=null; try{ if(this.inst) draws=this.inst.drawCallsCounter.lastSecAverage||this.inst.drawCallsCounter.current; }catch(e){}
-    return {p50:q(.5),p90:q(.9),n:a.length,draws:draws==null?null:Math.round(draws),rw:G.engine?G.engine.getRenderWidth():0,rh:G.engine?G.engine.getRenderHeight():0,q:G.quality,mob:!!G.mobile}; } };
+    return {p50:q(.5),p90:q(.9),p99:q(.99),max:Math.round(this.max),h50:this.h50,h100:this.h100,hitch:this.by,n:a.length,draws:draws==null?null:Math.round(draws),rw:G.engine?G.engine.getRenderWidth():0,rh:G.engine?G.engine.getRenderHeight():0,q:G.quality,mob:!!G.mobile}; } };
 
 // per-frame updates for the shader library: rim strength and tactical ship scale follow the camera distance; planets and nebulae animate
-function gfxTick(dt){ const cr=G.cam?G.cam.radius:250, k=Math.max(0,Math.min(1,(cr-130)/320));
+function gfxTick(dt){ dt=dt||(G.engine?G.engine.getDeltaTime()/1000:.016); const cr=G.cam?G.cam.radius:250, k=Math.max(0,Math.min(1,(cr-130)/320));
   G.rimBoost=.5+1.25*k; G.tacScale=1+.38*Math.max(0,Math.min(1,(cr-170)/300)); G.hullEnergy=G.fxReduced?.55:1;
   const sunAt=pos=>G.sunPosW?G.sunPosW.subtract(pos).normalize():V3.Up();
   const p=G.planet&&G.planet.material; if(p&&p.setVector3){ p.setVector3('sunDir',sunAt(G.planet.position)); p.setVector3('camPos',G.cam.position); p.setFloat('t',G.time||0); }
   const a=G.atmo&&G.atmo.material; if(a&&a.setVector3){ a.setVector3('sunDir',sunAt(G.planet.position)); a.setVector3('camPos',G.cam.position); }
   if(G.nearPlanet&&!G.nearPlanet.isDisposed()){ const s=G.sun?G.sun.direction.scale(-1).add(new V3(-.55,.3,0)).normalize():sunAt(G.nearPlanet.position); for(const m of [G.nearPlanet.material,G.nearAtmo&&G.nearAtmo.material]) if(m&&m.setVector3){ m.setVector3('sunDir',s); m.setVector3('camPos',G.cam.position); if(m===G.nearPlanet.material) m.setFloat('t',G.time||0); } }
   if(G.tex.plume) G.tex.plume.vOffset=((G.time||0)*1.7)%1;
+  // big blasts briefly flare the exposure and split the colour at the screen edges
+  // v44.1: the flare rides bloom weight, not exposure: an exposure change re-dirties every material in the scene each frame
+  try{ const pp=G.pipe; if(pp){ if(G.bloomBase==null) G.bloomBase=pp.bloomWeight; const k=Math.max(0,G.pulse||0), bw=G.bloomBase*(1+k*1.3); if(Math.abs(pp.bloomWeight-bw)>.003) pp.bloomWeight=bw; if(G.pipe.chromaticAberration&&G.pipe.chromaticAberrationEnabled) G.pipe.chromaticAberration.aberrationAmount=10+k*40; G.pulse=k>0?Math.max(0,k-(dt||.016)*2.4):0; } }catch(e){}
   if(G.nebMats&&!(G.fskip&1)) for(const m of G.nebMats) if(m.setFloat) m.setFloat('t',G.time||0); }
 
 // ---------- shield collapse: the broken facing shatters into hexagonal shards that spin away and fade ----------
@@ -3821,6 +3954,210 @@ function warpRift(pos,fwd,size,col){ try{ if(!G.scene||G.fxReduced) return; cons
     const m=new BABYLON.ShaderMaterial('riftM',G.scene,{vertex:'vsRift',fragment:'vsRift'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed'],needAlphaBlending:true});
     m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('seed',Math.random()*30); m.setFloat('t',0); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
     const t0=G.time, D=1.15*Math.max(.4,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||pl.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!pl.isDisposed()) pl.dispose(); m.dispose(); return; } m.setFloat('t',k); }); }catch(e){ console.warn('rift',e); } }
+
+// ---------- v44 combat effects: muzzle blasts, glowing bolts, shock rings, plasma rings, burning debris, engine plumes ----------
+// All generated in code. fx3d.js calls these when they exist; every one has a cheaper path on Medium and respects Reduced flashes.
+
+// a many-pointed star burst, for muzzle blasts and impacts
+function starTex(){ if(G.tex.star) return G.tex.star; G.tex.star=dynTex('starT3',256,256,(g,w)=>{ const c=w/2, img=g.createImageData(w,w), d=img.data, r=seeded(91);
+    const sp=[...Array(11)].map(()=>({a:r()*6.283,l:.4+r()*.6,wd:.035+r()*.05}));
+    for(let y=0;y<w;y++) for(let x=0;x<w;x++){ const dx=(x-c)/c, dy=(y-c)/c, rr=Math.hypot(dx,dy), a=Math.atan2(dy,dx); let v=Math.exp(-rr*rr*16)+Math.exp(-rr*5)*.3;
+      for(const s of sp){ const da=Math.abs(((a-s.a)%6.283+9.425)%6.283-3.1416); v+=Math.exp(-da*da/(s.wd*s.wd))*Math.max(0,1-rr/s.l)*.85; }
+      const o=(y*w+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=Math.min(255,v*255); } g.putImageData(img,0,0); }); return G.tex.star; }
+// a flame tongue that narrows at the muzzle and fans out as it fades
+function coneTex(){ if(G.tex.cone) return G.tex.cone; G.tex.cone=dynTex('coneT2',256,64,(g,w,h)=>{ const img=g.createImageData(w,h), d=img.data;
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const u=x/(w-1), v=(y-h/2)/(h/2), wd=.12+.75*Math.pow(u,.8), a=Math.pow(1-u,1.3)*Math.exp(-(v*v)/(wd*wd)*2.2)*Math.min(1,u*14);
+      const o=(y*w+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=Math.min(255,a*255); } g.putImageData(img,0,0); }); return G.tex.cone; }
+function vfxMat(name,col,tex,alpha){ const m=new BABYLON.StandardMaterial(name,G.scene); m.disableLighting=true; m.diffuseColor=C3.Black(); m.specularColor=C3.Black(); m.emissiveColor=col; m.opacityTexture=tex; m.alpha=alpha==null?1:alpha; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; return m; }
+function vfxLife(mesh,mat,dur,fn){ const t0=G.time, D=dur*Math.max(.3,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||mesh.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!mesh.isDisposed()) mesh.dispose(); mat.dispose(); return; } fn(k); }); }
+// a camera-facing sprite: stars, glows
+function fxSprite(pos,size,col,tex,dur,{grow=.9,spin=0,alpha=1}={}){ try{ if(G.fxReduced){ size*=.6; col=col.scale(.6); }
+    if((tex===G.tex.star||tex===G.tex.soft||tex===G.tex.flare)&&typeof fxp==='function'&&fxPool().mgr){ if(G.mobile) size*=.8; fxp(pos,{cell:tex===G.tex.star?1:0,size,col,dur,grow,spin:spin*60,alpha,fade:2}); return; }
+    const pl=MB.CreatePlane('fxs',{size:1},G.scene); pl.position.copyFrom(pos); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false; pl.rotation.z=Math.random()*6.28;
+    const m=vfxMat('fxsM',col,tex,alpha); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
+    vfxLife(pl,m,dur,k=>{ pl.scaling.setAll(size*(.45+k*grow)); m.alpha=alpha*(1-k)*(1-k); if(spin) pl.rotation.z+=spin*.016; }); }catch(e){} }
+// a quad stretched along a direction and turned to face the camera: muzzle flames, streaks
+function fxStreak(pos,dir,len,wid,col,tex,dur){ try{ const pl=MB.CreatePlane('fxk',{width:1,height:1,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.bakeTransformIntoVertices(BABYLON.Matrix.Translation(.5,0,0)); pl.isPickable=false; pl.position.copyFrom(pos);
+    const X=dir.normalize(), cd=G.cam.position.subtract(pos).normalize(); let Z=cd.subtract(X.scale(V3.Dot(cd,X))); if(Z.lengthSquared()<1e-4) Z=new V3(0,1,0); Z.normalize(); const Y=V3.Cross(Z,X).normalize();
+    pl.rotationQuaternion=BABYLON.Quaternion.RotationQuaternionFromAxis(X,Y,Z); const m=vfxMat('fxkM',col,tex,1); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
+    vfxLife(pl,m,dur,k=>{ const e=1-Math.pow(1-k,3); pl.scaling.set(len*(.55+.6*e),wid*(.7+.5*e),1); m.alpha=Math.pow(1-k,1.6); }); }catch(e){} }
+
+// muzzle blast: a star, a flame tongue along the barrel, a puff of smoke and a few hot fragments
+function muzzleBlast(pos,out,col,big){ const s=big?1.5:1; fxSprite(pos,3.2*s,C3.Lerp(col,new C3(1,1,1),.35).scale(1.6),starTex(),.16,{grow:.6});
+  fxStreak(pos,out,5.5*s,2.1*s,C3.Lerp(col,new C3(1,.85,.6),.4).scale(1.7),coneTex(),.18);
+  if(G.quality!=='medium'&&!G.fxReduced) sparks(pos.add(out.scale(.6)),6,9,new C4(1,.85,.55,1));
+  burst(pos.add(out.scale(1.2)),{n:5,tex:G.tex.smoke,c1:new C4(.55,.52,.5,.45),c2:new C4(.32,.3,.29,.3),size:[.6,1.2],life:[.9,1.7],power:[.6,1.8],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
+
+// glowing bolt material: a white-hot centre fading to the faction colour at the edges, soft-edged, additive
+function boltMat(name,col){ const m=new BABYLON.StandardMaterial(name,G.scene); m.disableLighting=true; m.diffuseColor=C3.Black(); m.specularColor=C3.Black(); m.emissiveColor=col.scale(1.4);
+  try{ m.emissiveFresnelParameters=new BABYLON.FresnelParameters(); m.emissiveFresnelParameters.leftColor=col.scale(.55); m.emissiveFresnelParameters.rightColor=C3.Lerp(col,new C3(1,1,1),.65).scale(2.4); m.emissiveFresnelParameters.power=1.5; m.emissiveFresnelParameters.bias=0;
+    m.opacityFresnelParameters=new BABYLON.FresnelParameters(); m.opacityFresnelParameters.leftColor=C3.Black(); m.opacityFresnelParameters.rightColor=new C3(1,1,1); m.opacityFresnelParameters.power=1.1; m.opacityFresnelParameters.bias=0; }catch(e){}
+  m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; return m; }
+
+// shock ring: a thin, noisy, bright ring that races outward; flat for blasts in the battle plane, camera-facing for spherical shocks
+const SHOCK_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec2 uv; uniform mat4 worldViewProjection; varying vec2 vUV; void main(){ vUV=uv; gl_Position=worldViewProjection*vec4(position,1.0); }`,
+  frag:`precision highp float; varying vec2 vUV; uniform vec3 col; uniform float t; uniform float seed; uniform float thick;
+    NOISE
+    void main(){ vec2 p=vUV-0.5; float r=length(p)*2.0; float ang=atan(p.y,p.x); float n=fbm(vec3(cos(ang)*3.0,sin(ang)*3.0,seed+t*2.0),4);
+      float w=thick*(1.0+t*1.5); float ring=exp(-pow((r-0.86+(n-0.5)*0.08)/w,2.0)); float inner=smoothstep(0.86,0.2,r)*0.18*(0.5+n);
+      float fade=pow(1.0-t,1.6); float a=(ring*(0.6+0.8*n)+inner)*fade; if(r>1.0) a=0.0;
+      gl_FragColor=vec4(col*a*1.5+vec3(1.0)*ring*fade*0.35*(1.0-t),a); }`};
+function shockRing(pos,size,col,{flat=true,dur=1.1,thick=.05,tilt=.25}={}){ try{ if(G.fxReduced){ col=col.scale(.55); } const S=BABYLON.Effect.ShadersStore; if(!S.vsShockVertexShader){ S.vsShockVertexShader=SHOCK_GLSL.vert; S.vsShockFragmentShader=SHOCK_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
+    const pl=MB.CreatePlane('shock',{size:2,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.isPickable=false; pl.position.copyFrom(pos);
+    if(flat){ pl.rotation.x=Math.PI/2+(Math.random()-.5)*tilt; pl.rotation.z=(Math.random()-.5)*tilt; } else pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL;
+    const m=new BABYLON.ShaderMaterial('shockM',G.scene,{vertex:'vsShock',fragment:'vsShock'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed','thick'],needAlphaBlending:true});
+    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('seed',Math.random()*40); m.setFloat('thick',thick); m.setFloat('t',0); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
+    vfxLife(pl,m,dur,k=>{ m.setFloat('t',k); pl.scaling.setAll(size*(.12+Math.pow(k,.55))); }); }catch(e){ console.warn('shock',e); } }
+
+// converging energy before a lance fires
+function chargeFx(pos,col,dur=.28){ try{ if(G.fxReduced) return; const ps=new BABYLON.ParticleSystem('charge',G.quality==='medium'?24:60,G.scene); ps.particleTexture=G.tex.soft; ps.emitter=pos.clone(); ps.createSphereEmitter(4.5,0);
+    ps.minEmitPower=-14; ps.maxEmitPower=-9; ps.minLifeTime=.22; ps.maxLifeTime=.32; ps.minSize=.15; ps.maxSize=.45; ps.color1=new C4(col.r,col.g,col.b,1); ps.color2=new C4(1,1,1,1); ps.colorDead=new C4(col.r,col.g,col.b,0);
+    ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE; ps.emitRate=260; ps.targetStopDuration=dur; ps.disposeOnStop=true; ps.updateSpeed=.016/Math.max(.35,SPEED); ps.start();
+    fxSprite(pos,4,col.scale(1.4),G.tex.flare,dur+.1,{grow:-.3}); }catch(e){} }
+
+// debris that burns: a few chunks trail fire and smoke as they tumble away
+function debrisTrail(mesh,life){ try{
+    if(typeof fxp==='function'&&fxPool().mgr){ const st={on:true,acc:0,t0:G.time,last:G.time}, rate=G.mobile?14:30; // v44.1: pooled smoke and embers instead of a particle system per chunk
+      const obs=G.scene.onBeforeRenderObservable.add(()=>{ if(!st.on||mesh.isDisposed()||G.time-st.t0>life){ G.scene.onBeforeRenderObservable.remove(obs); return; } st.acc+=rate*Math.max(0,G.time-st.last); st.last=G.time; /* game time, like the sprite lifetimes, so a slow frame can't flood the pool */
+        while(st.acc>=1){ st.acc-=1; const p=mesh.getAbsolutePosition(); fxp(p,{smoke:true,size:.7+Math.random()*.6,col:new C3(.34,.28,.24),alpha:.55,dur:.7+Math.random()*.5,grow:1.8,drag:.5,fade:1.2});
+          if(Math.random()<.5) fxp(p,{cell:0,size:.9,col:new C3(1,.55,.2).scale(1.4),dur:.3,grow:.3}); } });
+      return {stop(){ st.on=false; },dispose(){ st.on=false; }}; }
+    const ps=new BABYLON.ParticleSystem('dtr',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=mesh; ps.minEmitBox=V3.Zero(); ps.maxEmitBox=V3.Zero();
+    ps.color1=new C4(1,.62,.25,.9); ps.color2=new C4(.9,.35,.12,.7); ps.colorDead=new C4(.08,.07,.07,0); ps.minSize=.35; ps.maxSize=.9; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,2.4);
+    ps.minLifeTime=.5; ps.maxLifeTime=1.1; ps.emitRate=45; ps.minEmitPower=.1; ps.maxEmitPower=.5; ps.direction1=new V3(-.2,-.2,-.2); ps.direction2=new V3(.2,.2,.2); ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start();
+    setTimeout(()=>{ try{ ps.stop(); setTimeout(()=>ps.dispose(),1400); }catch(e){} },life*1000); return ps; }catch(e){ return null; } }
+
+// engine plumes: white-hot core, faction-coloured sheath, shock diamonds near the nozzle, flicker
+const PLUME_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec3 normal; attribute vec2 uv; uniform mat4 world; uniform mat4 worldViewProjection; varying vec2 vUV; varying vec3 vN; varying vec3 vP;
+    void main(){ vUV=uv; vN=normalize((world*vec4(normal,0.0)).xyz); vP=(world*vec4(position,1.0)).xyz; gl_Position=worldViewProjection*vec4(position,1.0); }`,
+  frag:`precision highp float; varying vec2 vUV; varying vec3 vN; varying vec3 vP; uniform vec3 col; uniform vec3 camPos; uniform float t; uniform float flip;
+    void main(){ float v=mix(vUV.y,1.0-vUV.y,flip); vec3 V=normalize(camPos-vP); float f=abs(dot(normalize(vN),V)); float core=pow(f,2.6);
+      float along=pow(v,1.5); float dia=0.5+0.5*cos((1.0-v)*34.0-t*6.0); dia=mix(1.0,0.55+0.45*dia,smoothstep(0.45,0.96,v));
+      float fl=0.86+0.14*sin(t*41.0+vUV.x*25.0)*sin(t*17.0+vUV.x*9.0);
+      vec3 c=mix(col,vec3(1.0,0.97,0.93),core*smoothstep(0.55,1.0,v)*0.85);
+      float a=along*(0.2+0.8*core)*dia*fl;
+      gl_FragColor=vec4(c*a*1.9,a); }`};
+function plumeShaderMat(fac,col){ try{ const S=BABYLON.Effect.ShadersStore; if(!S.vsPlumeVertexShader){ S.vsPlumeVertexShader=PLUME_GLSL.vert; S.vsPlumeFragmentShader=PLUME_GLSL.frag; }
+    const m=new BABYLON.ShaderMaterial(fac+'plumeS',G.scene,{vertex:'vsPlume',fragment:'vsPlume'},{attributes:['position','normal','uv'],uniforms:['world','worldViewProjection','col','camPos','t','flip'],needAlphaBlending:true});
+    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('t',0); m.setFloat('flip',0); m.setVector3('camPos',V3.Zero()); (G.plumeMats=G.plumeMats||[]).push(m); return m; }catch(e){ console.warn('plume shader',e); return null; } }
+function vfxTick(){ try{ fxPoolTick(); }catch(e){} if(G.plumeMats&&G.cam) for(const m of G.plumeMats){ m.setFloat('t',(G.time||0)%100); m.setVector3('camPos',G.cam.position); } }
+
+// wrecks keep cooking off: small secondary explosions on fresh hulks
+function hulkCookOff(h,dt){ try{ const age=G.time-h.t0; if(age>7||G.fxReduced) return; const rate=(age<2?1.6:.7)*(G.quality==='medium'?.5:1); if(Math.random()>rate*dt) return;
+    const n=h.nodes[Math.floor(Math.random()*h.nodes.length)]; if(!n||n.isDisposed()) return; const L=h.L||14, p=n.getAbsolutePosition().add(new V3((Math.random()-.5)*L*.35,(Math.random()-.2)*L*.08,(Math.random()-.5)*L*.12));
+    explode(p,.9+L*.04,{light:Math.random()<.3}); if(Math.random()<.4) fxSprite(p,5+L*.15,new C3(1,.7,.4),starTex(),.25); }catch(e){} }
+function vfxFadeDispose(mesh,mat,dur){ try{ const a0=mat.alpha; const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); try{ mesh.dispose(); mat.dispose(); }catch(e){} return; } mat.alpha=a0*(1-k); }); }catch(e){ try{ mesh.dispose(); }catch(_){} } }
+
+// damaged ships spit sparks and short electrical arcs from breached plating
+function damageSparks(v,hr,dt){ try{ if(hr>.55||G.fxReduced||!v.model||!v.root) return; const rate=(hr<.3?2.2:1.1)*(G.quality==='medium'?.5:1); if(Math.random()>rate*dt) return;
+    const L=v.L, p=toWorld(v,new V3((Math.random()-.5)*L*.7,Math.random()*v.H*.5,(Math.random()-.5)*L*.12));
+    sparks(p,G.quality==='medium'?8:16,5+Math.random()*5,new C4(1,.85,.55,1)); if(Math.random()<.45){ const q=p.add(new V3((Math.random()-.5)*3,(Math.random()-.2)*2,(Math.random()-.5)*3)); arcBolt(p,q,new C3(.6,.8,1.6)); }
+    if(Math.random()<.5) fxSprite(p,2.2,new C3(1,.8,.55),starTex(),.18,{grow:.4}); }catch(e){} }
+// fighter wings leave short glowing trails as they wheel around their carrier (High and Ultra)
+function craftTrails(v,fac){ try{ if(G.quality==='medium'||!v.crafts) return; const P=FAC3D[fac]||FAC3D.hegemony; const m=emMat('ctrM',P.eng.scale(1.3),.5); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false;
+    v.extras=v.extras||[]; for(const c of v.crafts){ const t=new BABYLON.TrailMesh('ctr',c.c.root,G.scene,.22,16,true); t.material=m; t.isPickable=false; try{ G.glow.addExcludedMesh(t); }catch(e){} v.extras.push(t); } v.extras.push({dispose:()=>m.dispose(),stop:()=>{}}); }catch(e){} }
+
+// ---------- turrets that track their targets (High and Ultra) ----------
+// One turret mesh per faction drawn as instances (one draw call per faction), parented to each capital ship's turret hardpoints.
+const TURRET_PROTO={};
+function turretProto(fac){ let p=TURRET_PROTO[fac]; if(p&&!p.isDisposed()) return p; const M=facMats(fac), sc=G.scene;
+  const base=MB.CreateCylinder('tb',{height:.35,diameterTop:.9,diameterBottom:1.15,tessellation:10},sc);
+  const hood=MB.CreateBox('th',{width:.8,height:.4,depth:.95},sc); hood.position.set(0,.32,-.05);
+  const b1=MB.CreateCylinder('tbr',{height:1.5,diameter:.13,tessellation:6},sc); b1.rotation.x=Math.PI/2; b1.position.set(.18,.34,.95);
+  const b2=b1.clone('tbr2'); b2.position.x=-.18;
+  p=BABYLON.Mesh.MergeMeshes([base,hood,b1,b2],true,true); p.name='turretProto_'+fac; p.material=M.dark; p.isVisible=false; p.isPickable=false; p.position.y=-9000; try{ G.glow.addExcludedMesh(p); }catch(e){} return TURRET_PROTO[fac]=p; }
+function addTurrets(model,fore,fac){ try{ if(G.mobile||!fore||!model.hard||!model.hard.T||!model.hard.T.length||model.L<12) return; const P=turretProto(fac), s=Math.max(1.4,model.L*.075);
+    model.turrets=model.hard.T.slice(0,3).map((pt,i)=>{ const yaw=new BABYLON.TransformNode('tyaw',G.scene); yaw.parent=fore; yaw.position=pt.clone(); yaw.position.y-=s*.25; yaw.rotation.y=Math.PI/2+(i%2?.4:-.4);
+      const inst=P.createInstance('turret'); inst.parent=yaw; inst.scaling.setAll(s); inst.isPickable=false; return {yaw,inst,target:yaw.rotation.y}; }); }catch(e){ console.warn('turrets',e); } }
+function aimTurrets(v,worldTarget){ try{ const T=v&&v.model&&v.model.turrets; if(!T) return; for(const t of T){ const par=t.yaw.parent; if(!par) continue; par.computeWorldMatrix(true);
+      const l=V3.TransformCoordinates(worldTarget,BABYLON.Matrix.Invert(par.getWorldMatrix())).subtract(t.yaw.position); t.target=Math.atan2(l.x,l.z); } }catch(e){} }
+function updateTurrets(v,dt){ const T=v&&v.model&&v.model.turrets; if(!T) return; for(const t of T){ let d=((t.target-t.yaw.rotation.y)%6.283+9.425)%6.283-3.1416; const st=Math.min(Math.abs(d),dt*2.6); t.yaw.rotation.y+=Math.sign(d)*st; } }
+
+// ---------- v44 GPU sprite pool: hundreds of flashes, sparks and streaks in a single draw call ----------
+// cells: 0 soft glow, 1 four-point star, 2 ring, 3 streak (along x)
+function fxPoolURL(){ const S=128, N=4, c=document.createElement('canvas'); c.width=S*N; c.height=S; const g=c.getContext('2d'), img=g.createImageData(S*N,S), d=img.data;
+  for(let cell=0;cell<N;cell++) for(let y=0;y<S;y++) for(let x=0;x<S;x++){ const dx=(x+.5-S/2)/(S/2), dy=(y+.5-S/2)/(S/2), r=Math.hypot(dx,dy); let v=0;
+    if(cell===0) v=Math.exp(-r*r*4.5)*clamp((1-r)*5,0,1);
+    else if(cell===1) v=(Math.exp(-r*r*16)*1.3+(Math.exp(-Math.abs(dy)*34)*Math.exp(-Math.abs(dx)*2.6)+Math.exp(-Math.abs(dx)*34)*Math.exp(-Math.abs(dy)*2.6))*.9+Math.exp(-r*r*3.2)*.22)*clamp((1-r)*3,0,1);
+    else if(cell===2) v=(Math.exp(-Math.pow((r-.74)*10,2))*.95+Math.exp(-r*r*5)*.1)*clamp((1-r)*6,0,1);
+    else v=Math.exp(-dy*dy*38)*Math.pow(Math.max(0,1-Math.abs(dx)),.7)*(dx>0?1:.75+.25*(1+dx));
+    const o=(y*S*N+cell*S+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=Math.round(clamp(v,0,1)*255); }
+  g.putImageData(img,0,0); return c.toDataURL(); }
+// a second pool for smoke: soft alpha-blended puffs (not additive), so explosions and wrecks smoke without a particle system each
+function fxSmokeURL(){ const S=128, c=document.createElement('canvas'); c.width=S; c.height=S; const g=c.getContext('2d'), img=g.createImageData(S,S), d=img.data, r=seeded(77);
+  const blobs=[]; for(let i=0;i<9;i++) blobs.push([(r()-.5)*.6,(r()-.5)*.6,.25+r()*.3]);
+  for(let y=0;y<S;y++) for(let x=0;x<S;x++){ const dx=(x+.5-S/2)/(S/2), dy=(y+.5-S/2)/(S/2); let v=0; for(const [bx,by,br] of blobs){ const q=Math.hypot(dx-bx,dy-by)/br; v+=Math.exp(-q*q*2.2); }
+    v=clamp(v*.55,0,1)*clamp((1-Math.hypot(dx,dy))*2.5,0,1); const sh=.75+.25*(-dx-dy)*.5; const o=(y*S+x)*4; d[o]=d[o+1]=d[o+2]=Math.round(255*clamp(sh,0,1)); d[o+3]=Math.round(v*255); }
+  g.putImageData(img,0,0); return c.toDataURL(); }
+function mkPool(kind){ const smoke=kind==='smoke', cap=smoke?(G.mobile?220:600):(G.mobile?700:1800);
+  const mgr=new BABYLON.SpriteManager(smoke?'fxSmoke':'fxPool',smoke?fxSmokeURL():fxPoolURL(),cap,{width:128,height:128},G.scene);
+  mgr.blendMode=smoke?BABYLON.Constants.ALPHA_COMBINE:BABYLON.Constants.ALPHA_ADD; mgr.disableDepthWrite=true; mgr.isPickable=false; return {mgr,cap,live:[],free:[],smoke}; }
+function fxPool(){ const P=G.fxPool; if(P&&P.scene===G.scene) return P;
+  try{ const add=mkPool('add'); let sm=null; try{ sm=mkPool('smoke'); }catch(e){}
+    G.fxPool={scene:G.scene,mgr:add.mgr,cap:add.cap,live:add.live,free:add.free,pools:[add].concat(sm?[sm]:[]),add,sm,last:G.time||0,amb:0}; return G.fxPool; }catch(e){ console.warn('fxPool',e); G.fxPool={scene:G.scene,mgr:null,live:[],free:[],pools:[]}; return G.fxPool; } }
+// spawn one pooled sprite. size is in world units; vel moves it (grav pulls it down); ang rotates in screen space; w/h stretch it; smoke:true uses the alpha-blended smoke pool
+function fxp(pos,{cell=0,size=1,col=WHITE3,dur=.3,grow=.8,vel=null,drag=0,spin=0,alpha=1,ang=null,w=1,h=1,fade=2,grav=0,smoke=false}={}){ const P0=fxPool(); const P=smoke?P0.sm:P0.add; if(!P||!P.mgr) return null;
+  let e; if(P.live.length>=P.cap-2){ e=P.live.shift(); } else if(P.free.length) e=P.free.pop(); else e={sp:new BABYLON.Sprite('fxp',P.mgr),vel:new V3(0,0,0),c:new C4(1,1,1,1)};
+  e.gen=(e.gen||0)+1; const sp=e.sp; sp.isVisible=true; sp.cellIndex=smoke?0:cell; sp.position.copyFrom(pos); sp.angle=ang==null?Math.random()*6.283:ang; e.c.set(col.r,col.g,col.b,alpha); sp.color=e.c;
+  e.t0=G.time; e.dur=Math.max(.02,dur)*Math.max(.3,SPEED); e.s0=size; e.grow=grow; e.mv=!!vel; if(vel) e.vel.copyFrom(vel); e.drag=drag; e.spin=spin; e.r=col.r; e.g=col.g; e.b=col.b; e.alpha=alpha; e.w=w; e.h=h; e.fade=fade; e.grav=grav; e.smoke=smoke;
+  sp.width=size*w*.45; sp.height=size*h*.45; P.live.push(e); return e; }
+function fxPoolTick(){ const P=G.fxPool; if(!P||!P.mgr||P.scene!==G.scene) return; const now=G.time, dt=Math.min(.1,Math.max(0,now-P.last)); P.last=now; const sc=dt/Math.max(.3,SPEED);
+  for(const Q of P.pools){ const L=Q.live; for(let i=L.length-1;i>=0;i--){ const e=L[i], k=(now-e.t0)/e.dur, sp=e.sp; if(k>=1){ sp.isVisible=false; L.splice(i,1); Q.free.push(e); continue; }
+      const s=e.s0*(.45+k*e.grow); sp.width=s*e.w; sp.height=s*e.h; const a=e.alpha*Math.pow(1-k,e.fade); if(e.smoke){ e.c.r=e.r; e.c.g=e.g; e.c.b=e.b; e.c.a=a*Math.min(1,k*6); } else { e.c.r=e.r*a; e.c.g=e.g*a; e.c.b=e.b*a; e.c.a=a; }
+      if(e.mv){ const v=e.vel; if(e.grav) v.y-=e.grav*dt; sp.position.x+=v.x*sc; sp.position.y+=v.y*sc; sp.position.z+=v.z*sc; if(e.drag){ const f=Math.max(0,1-e.drag*dt); v.x*=f; v.y*=f; v.z*=f; } } if(e.spin) sp.angle+=e.spin*dt; } }
+  if(G.views&&G.quality!=='low') for(const v of G.views.values()) navLights(v,P);
+  ambientBattle(dt); }
+function navLights(v,P){ const md=v.model; if(!md||!md.nav||v.crafts) return; const dead=!v.root||v.root.isDisposed()||v.state!=='alive';
+  if(!v.navSp){ if(dead) return; v.navSp=md.nav.map(n=>{ const sp=new BABYLON.Sprite('nav',P.mgr); sp.cellIndex=n.k?1:0; sp.angle=n.k?0:Math.random()*6; sp.color=new C4(0,0,0,0); return sp; }); }
+  if(dead){ for(const sp of v.navSp) sp.dispose(); v.navSp=null; return; } v.root.computeWorldMatrix(true); const M=v.root.getWorldMatrix(), t=G.time, L=v.L||10, ph0=(v.bob||0);
+  md.nav.forEach((n,i)=>{ const sp=v.navSp[i]; V3.TransformCoordinatesToRef(n.p,M,sp.position); let a,s;
+    if(n.k){ const c=((t*.7+ph0+n.ph)%1+1)%1; a=c<.05?1:c<.1?.25:c<.15?.9:0; s=(L*.09+2.2)*(a>.5?1:.6); } else { a=.55+.25*Math.sin(t*2+i); s=L*.035+1.1; }
+    sp.width=sp.height=s; sp.color.r=n.c.r*a*1.6; sp.color.g=n.c.g*a*1.6; sp.color.b=n.c.b*a*1.6; sp.color.a=a; }); }
+// screen-space angle of a world direction, so streak sprites line up with what they represent
+function screenAng(pos,dir){ try{ const vm=G.cam.getViewMatrix(); const a=V3.TransformCoordinates(pos,vm), b=V3.TransformCoordinates(pos.add(dir),vm); return Math.atan2(b.y/Math.max(.1,b.z)-a.y/Math.max(.1,a.z),b.x/Math.max(.1,b.z)-a.x/Math.max(.1,a.z)); }catch(e){ return 0; } }
+const WHITE3=new C3(1,1,1);
+// small muzzle flash for the extra barrels of a broadside
+function volleyMuzzle(pos,out,col){ const hot=C3.Lerp(col,WHITE3,.5).scale(1.8); fxp(pos,{cell:1,size:2.6,col:hot,dur:.13,grow:.5}); fxp(pos.add(out.scale(.5)),{cell:0,size:2.2,col:col.scale(1.3),dur:.16,grow:.4});
+  fxp(pos.add(out.scale(1.1)),{cell:3,size:3.4,col:C3.Lerp(col,new C3(1,.85,.6),.4).scale(1.5),dur:.12,grow:.6,ang:screenAng(pos,out),w:1,h:.3,fade:1.5});
+  if(!G.mobile&&Math.random()<.45) fxp(pos.add(out.scale(1.6)),{cell:0,size:2.4,col:new C3(.12,.11,.1),dur:.9,grow:1.6,vel:out.scale(2.5),drag:1.5,fade:1}); }
+// small hit for extra bolts: a star, a hot glow and a fan of streak sparks; on shields a coloured ring
+function volleyImpact(p,col,shielded,from){ const back=from?from.subtract(p).normalize():new V3(0,1,0);
+  if(shielded){ if(Math.random()<.4) fxp(p,{cell:2,size:2.2,col:SHIELD_C.scale(.9),dur:.26,grow:1.4,fade:2,alpha:.7}); fxp(p,{cell:0,size:2.8,col:SHIELD_C.scale(1.1),dur:.25,grow:.6}); fxp(p,{cell:1,size:2.4,col:C3.Lerp(SHIELD_C,WHITE3,.5).scale(1.6),dur:.12}); return; }
+  fxp(p,{cell:1,size:3.2,col:C3.Lerp(col,WHITE3,.55).scale(1.8),dur:.14,grow:.5}); fxp(p,{cell:0,size:2.6,col:new C3(1,.62,.3).scale(1.5),dur:.32,grow:.8}); fxp(p,{cell:0,size:1.6,col:new C3(1,.9,.7).scale(1.6),dur:.08,grow:.3});
+  const n=G.mobile?3:6; for(let i=0;i<n;i++){ const v=back.add(new V3(Math.random()-.5,Math.random()-.4,Math.random()-.5).scale(1.6)).normalize().scale(7+Math.random()*14);
+    fxp(p,{cell:3,size:1.2+Math.random()*.8,col:new C3(1,.75+Math.random()*.2,.45).scale(1.6),dur:.35+Math.random()*.35,grow:0,vel:v,drag:2.2,ang:screenAng(p,v),w:1,h:.22,fade:1.2}); }
+  if(!G.mobile&&Math.random()<.5) fxp(p.add(back.scale(.6)),{cell:0,size:3,col:new C3(.14,.12,.1),dur:1.4,grow:1.4,vel:back.scale(1.2),drag:.8,fade:1}); }
+// a far-off fleet action on the skyline: flashes, tracer streaks and the odd big detonation, so the battle feels like part of a war
+function ambientBattle(dt){ const P=G.fxPool; if(!P||G.quality==='low'||!B||B.over||G.fxReduced) return; P.amb-=dt; if(P.amb>0) return;
+  P.amb=(G.mobile?1.6:.55)*(.4+Math.random()*1.2); if(!P.front||Math.random()<.04){ const a=Math.random()*6.283; P.front={a,y:(Math.random()-.4)*260,d:900+Math.random()*700}; }
+  const f=P.front, c=G.ctl?G.ctl.t:V3.Zero(), aa=f.a+(Math.random()-.5)*.5, d=f.d*(.85+Math.random()*.3); const pos=new V3(c.x+Math.cos(aa)*d,f.y+(Math.random()-.5)*90,c.z+Math.sin(aa)*d);
+  const pal=[new C3(1,.6,.3),new C3(.5,.8,1),new C3(.4,1,.5),new C3(1,.45,.85)], col=pal[Math.floor(Math.random()*pal.length)];
+  const big=Math.random()<.12; fxp(pos,{cell:1,size:big?70:22+Math.random()*20,col:C3.Lerp(col,WHITE3,.4).scale(big?1.1:.6),dur:big?.9:.35,grow:big?1.2:.6});
+  if(big) fxp(pos,{cell:0,size:90,col:new C3(1,.55,.25).scale(.5),dur:2.2,grow:1.3,fade:1.5});
+  const nT=Math.floor(Math.random()*4); for(let i=0;i<nT;i++){ const v=new V3(Math.random()-.5,(Math.random()-.5)*.3,Math.random()-.5).normalize(); const q=pos.add(v.scale(20+Math.random()*60));
+    fxp(q,{cell:3,size:40+Math.random()*40,col:col.scale(.7),dur:.4+Math.random()*.4,grow:0,vel:v.scale(220),ang:screenAng(q,v),w:1,h:.12,fade:1}); } }
+
+// point defence: the target's guns hose tracer streams at an incoming torpedo and flak pops around it
+function pdFire(vt,p){ try{ if(!vt||!vt.root||vt.root.isDisposed()||G.fxReduced) return; if(Math.random()>(G.mobile?.18:.5)) return; const gl=vt.model&&vt.model.guns; if(!gl) return;
+  const pool=gl.T.length?gl.T:gl.P.concat(gl.S); if(!pool.length) return; vt.root.computeWorldMatrix(true); const g=V3.TransformCoordinates(pool[Math.floor(Math.random()*pool.length)],vt.root.getWorldMatrix());
+  const aim=p.add(new V3((Math.random()-.5)*5,(Math.random()-.5)*3,(Math.random()-.5)*5)), v=aim.subtract(g), d=v.length(); v.normalize(); const col=(FAC3D[vt.fac]||FAC3D.hegemony).bolt;
+  fxp(g,{cell:1,size:1.6,col:C3.Lerp(col,WHITE3,.5).scale(1.5),dur:.08});
+  for(let i=0;i<3;i++){ const q=g.add(v.scale(i*2.2)); fxp(q,{cell:3,size:2.6,col:col.scale(1.5),dur:Math.min(.5,d/240),grow:0,vel:v.scale(240),ang:screenAng(q,v),w:1,h:.16,fade:.6}); }
+  if(Math.random()<.55){ const f=p.add(new V3((Math.random()-.5)*6,(Math.random()-.5)*4,(Math.random()-.5)*6)); fxp(f,{cell:0,size:3.2,col:new C3(1,.7,.35).scale(1.4),dur:.22,grow:.9}); fxp(f,{cell:1,size:2.4,col:new C3(1,.95,.8).scale(1.4),dur:.09}); if(!G.mobile) fxp(f,{cell:0,size:3.5,col:new C3(.12,.11,.1),dur:1.2,grow:1.3,fade:1}); } }catch(e){} }
+
+// v44.1 warm-up: on battle start, a tiny blast far off on the skyline (it reads as the distant war) compiles the explosion, fireball, shock-ring
+// and beam shaders, and every faction's wreck materials are compiled against a real hull mesh, so the first kill doesn't stall
+function warmFx(){ try{ if(!G.scene||!G.cam||!B) return; fxMark('warmup'); fxPool(); flashLights(); fireSheet(); starTex(); coneTex(); scorchMat();
+    let far; try{ const eng=G.engine, ray=G.scene.createPickingRay(eng.getRenderWidth()*.62,eng.getRenderHeight()*.12,BABYLON.Matrix.Identity(),G.cam); far=ray.origin.add(ray.direction.scale(520)); }catch(e){ far=null; } // on screen (near the top) so the shaders really draw and compile
+    if(!far){ const tg=G.cam.getTarget(), fwd=tg.subtract(G.cam.position); fwd.normalize(); far=G.cam.position.add(fwd.scale(520)); }
+    explode(far,3,{light:false}); if(typeof fireballFx==='function') fireballFx(far,6,1); shockRing(far,14,new C3(1,.7,.45),{flat:false,dur:.6}); beam(far,far.add(new V3(40,0,10)),new C3(.6,.8,1),.6,.3);
+    // decal and streak materials (scorch, ember glow, flame tongue) on a throwaway plane
+    try{ const pl=MB.CreatePlane('warmPl',{size:1},G.scene); pl.position.set(0,-9000,0); pl.scaling.set(2,.5,1); pl.computeWorldMatrix(true); /* streaks are scaled unevenly, which selects a different shader variant */ const em=emMat('emberM',new C3(1.4,.55,.15),1); em.opacityTexture=G.tex.soft; em.alphaMode=BABYLON.Engine.ALPHA_ADD; em.disableDepthWrite=true;
+      const vm=vfxMat('fxkM',new C3(1,.7,.4),coneTex(),1); let left=3; const done=()=>{ if(--left<=0){ pl.dispose(); em.dispose(); vm.dispose(); } };
+      for(const m of [scorchMat(),em,vm]) m.forceCompilation(pl,done); }catch(e){}
+    // wreck materials against both the merged live hull and the split copy a dying ship swaps to (their vertex layouts can differ)
+    const facs=new Set(); for(const v of G.views.values()) if(v.model&&v.model.meshes){ facs.add(v.fac); const M=facMats(v.fac); for(const m of v.model.meshes.slice(0,2)) for(const mat of [M.wreck,M.ember]) try{ mat.forceCompilation(m); }catch(e){} }
+    if(typeof MODEL_CACHE!=='undefined') for(const [k,p] of Object.entries(MODEL_CACHE)){ const fac=k.split('|')[0]; if(!facs.has(fac)||!p||!p.root) continue; const M=facMats(fac); for(const m of p.root.getChildMeshes(false).filter(x=>x.name.includes('hull_')).slice(0,3)) for(const mat of [M.wreck,M.ember]) try{ mat.forceCompilation(m); }catch(e){} } }catch(e){ console.warn('warmFx',e); } }
 
 // ======================= UI: shell, title, meta =======================
 const app=document.getElementById('app');

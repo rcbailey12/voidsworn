@@ -281,6 +281,7 @@ function gfxTick(dt){ dt=dt||(G.engine?G.engine.getDeltaTime()/1000:.016); const
 // ---------- shield collapse: the broken facing shatters into hexagonal shards that spin away and fade ----------
 function shieldShatter(p,dir,col){ try{ if(!G.scene||G.fxReduced) return; const n=G.quality==='medium'?10:22;
     if(!G.shardBase||G.shardBase.isDisposed()){ const d=MB.CreateDisc('shardBase',{radius:.9,tessellation:6,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); const m=emMat('shardM',SHIELD_C.scale(1.8),.85); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; d.material=m; d.isVisible=false; d.isPickable=false; try{ G.glow.addExcludedMesh(d); }catch(e){} G.shardBase=d; }
+    if(col&&G.shardBase.material&&G.shardBase.material.emissiveColor) G.shardBase.material.emissiveColor=col.scale(1.8); // v45: shards take the shield's faction colour
     const side=new V3(-dir.z,0,dir.x), parts=[];
     for(let i=0;i<n;i++){ const s=G.shardBase.createInstance('shard'); s.isPickable=false; s.position.copyFrom(p.add(side.scale((Math.random()-.5)*6)).add(new V3(0,(Math.random()-.3)*4,0)));
       const v=dir.scale(4+Math.random()*10).add(side.scale((Math.random()-.5)*10)).add(new V3(0,(Math.random()-.2)*6,0)); s.rotation.set(Math.random()*6,Math.random()*6,Math.random()*6); const sc=.4+Math.random()*.9; s.scaling.setAll(sc);

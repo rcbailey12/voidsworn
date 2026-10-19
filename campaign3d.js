@@ -52,7 +52,7 @@ function battleScreen(cfg){
   const setupT0=performance.now(); startBattle(c); B.campaign=true; B.event=rollBattleEvent(c,(sectorCond()||{}).war&&c.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null); prepBattle(); const setupMs=Math.round(performance.now()-setupT0);
   const E=ENCOUNTERS[B.obj.type]||ENCOUNTERS.rout; document.getElementById('scenName').textContent=`Sector ${roman(RUN.sector)}: ${cfg.kind==='boss'?'flagship battle':(cfg.kind==='elite'?'elite ':'')+E.n.toLowerCase()} against ${FACTIONS[cfg.fac].n}`;
   G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); banner(cfg.kind==='boss'?'Sector flagship':E.n); { const bn=(RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].n).filter(Boolean), bt=bn.length?` Boons active: ${bn.slice(0,4).join(', ')}${bn.length>4?` and ${bn.length-4} more`:''}.`:''; setTimeout(()=>{ try{ if(B&&!B.over) toast((cfg.kind!=='boss'?E.d:'The sector flagship and its escort.')+(sectorCond()?' '+sectorCond().n+' in effect.':'')+bt); }catch(e){} },1400); }
-  try{ FRAMES.reset(); }catch(e){} tel('battle_start',{cond:B.cond||null,arch:c.arch||null,mod:c.mod||null,setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
+  try{ FRAMES.reset(); fxMark('setup'); }catch(e){} tel('battle_start',{cond:B.cond||null,arch:c.arch||null,mod:c.mod||null,setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
 }
 function finishBattle(result){
   if(result==='loss'&&B.withdraw&&survivorsP()) result='retreat';
@@ -116,7 +116,7 @@ async function runDemo(){ if(!window.PREVIEW_DEMO) return; const sleep=ms=>new P
   const battle=(pf,ef,map)=>{ hideApp(); setupBattle({pf,ef,map,dep:'line'}); const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); B.sel=null; B.showArcs=false; bRefresh(); G.cine=false; };
   await sleep(4000); perfToggle(); battle('voidsworn','hegemony','belt'); const A=B.units.find(u=>u.tpl==='cathedral'), T=B.units.find(u=>u.tpl==='h_dominion');
   say('Demo 1/11: Voidsworn battleship close-up'); frame(A,28,1.05,-2.25); await sleep(9000);
-  say('Demo 2/11: Hegemony star destroyer close-up'); frame(T,30,1.05,-.9); await sleep(9000);
+  say('Demo 2/11: Hegemony star dreadnought close-up'); frame(T,30,1.05,-.9); await sleep(9000);
   say('Demo 3/11: battlefield wide shot'); G.ctl.reset(); G.ctl.r=260; G.ctl.b=.95; G.ctl.a=-1.9; await sleep(9000);
   for(const u of B.units){ if(u!==A&&u!==T&&(u.r===7||u.r===8)) u.r=u.side==='player'?14:1; } for(const k of ['9,8','12,8','10,8','11,8','9,7','10,7']) delete B.terrain[k];
   A.q=9;A.r=8;A.facing=5; T.q=12;T.r=8;T.facing=3; say('Demo 4/11: broadside exchange'); G.ctl.t=hexWorld(10.5,7.8); G.ctl.r=80; G.ctl.b=1.05; G.ctl.a=-Math.PI/2;

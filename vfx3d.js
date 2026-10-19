@@ -12,7 +12,10 @@ function coneTex(){ if(G.tex.cone) return G.tex.cone; G.tex.cone=dynTex('coneT2'
     for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const u=x/(w-1), v=(y-h/2)/(h/2), wd=.12+.75*Math.pow(u,.8), a=Math.pow(1-u,1.3)*Math.exp(-(v*v)/(wd*wd)*2.2)*Math.min(1,u*14);
       const o=(y*w+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=Math.min(255,a*255); } g.putImageData(img,0,0); }); return G.tex.cone; }
 function vfxMat(name,col,tex,alpha){ const m=new BABYLON.StandardMaterial(name,G.scene); m.disableLighting=true; m.diffuseColor=C3.Black(); m.specularColor=C3.Black(); m.emissiveColor=col; m.opacityTexture=tex; m.alpha=alpha==null?1:alpha; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; return m; }
-function vfxLife(mesh,mat,dur,fn){ const t0=G.time, D=dur*Math.max(.3,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||mesh.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!mesh.isDisposed()) mesh.dispose(); mat.dispose(); return; } fn(k); }); }
+function vfxLife(mesh,mat,dur,fn,release){ const t0=G.time, D=dur*Math.max(.3,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||mesh.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(release&&!mesh.isDisposed()){ release(); return; } if(!mesh.isDisposed()) mesh.dispose(); mat.dispose(); return; } fn(k); }); }
+// v45: small reuse pools for shader-material effects (mesh + material kept, hidden between uses)
+function fxShPool(key,make){ const P=G.shPools||(G.shPools={}); const L=P[key]=(P[key]||[]).filter(e=>!e.mesh.isDisposed()); let e=L.find(x=>!x.busy); if(!e){ e=make(); e.busy=false; if(L.length<12) L.push(e); else e.temp=true; } e.busy=true; e.mesh.setEnabled(true);
+  e.release=()=>{ if(e.temp){ e.mesh.dispose(); e.mat.dispose(); return; } e.mesh.setEnabled(false); e.busy=false; }; return e; }
 // a camera-facing sprite: stars, glows
 function fxSprite(pos,size,col,tex,dur,{grow=.9,spin=0,alpha=1}={}){ try{ if(G.fxReduced){ size*=.6; col=col.scale(.6); }
     if((tex===G.tex.star||tex===G.tex.soft||tex===G.tex.flare)&&typeof fxp==='function'&&fxPool().mgr){ if(G.mobile) size*=.8; fxp(pos,{cell:tex===G.tex.star?1:0,size,col,dur,grow,spin:spin*60,alpha,fade:2}); return; }
@@ -46,11 +49,14 @@ const SHOCK_GLSL={vert:`precision highp float; attribute vec3 position; attribut
       float fade=pow(1.0-t,1.6); float a=(ring*(0.6+0.8*n)+inner)*fade; if(r>1.0) a=0.0;
       gl_FragColor=vec4(col*a*1.5+vec3(1.0)*ring*fade*0.35*(1.0-t),a); }`};
 function shockRing(pos,size,col,{flat=true,dur=1.1,thick=.05,tilt=.25}={}){ try{ if(G.fxReduced){ col=col.scale(.55); } const S=BABYLON.Effect.ShadersStore; if(!S.vsShockVertexShader){ S.vsShockVertexShader=SHOCK_GLSL.vert; S.vsShockFragmentShader=SHOCK_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
-    const pl=MB.CreatePlane('shock',{size:2,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.isPickable=false; pl.position.copyFrom(pos);
+    if(G.mobile&&G.cam){ const d=V3.Distance(G.cam.position,pos); size=Math.min(size,d*.55); } // v45: a phone never gets a half-screen ring
+    const e=fxShPool('shock',()=>{ const pl=MB.CreatePlane('shock',{size:2,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.isPickable=false;
+      const m=new BABYLON.ShaderMaterial('shockM',G.scene,{vertex:'vsShock',fragment:'vsShock'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed','thick'],needAlphaBlending:true});
+      m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){} return {mesh:pl,mat:m}; });
+    const pl=e.mesh, m=e.mat; pl.position.copyFrom(pos); pl.rotation.set(0,0,0); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_NONE;
     if(flat){ pl.rotation.x=Math.PI/2+(Math.random()-.5)*tilt; pl.rotation.z=(Math.random()-.5)*tilt; } else pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL;
-    const m=new BABYLON.ShaderMaterial('shockM',G.scene,{vertex:'vsShock',fragment:'vsShock'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed','thick'],needAlphaBlending:true});
-    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('seed',Math.random()*40); m.setFloat('thick',thick); m.setFloat('t',0); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
-    vfxLife(pl,m,dur,k=>{ m.setFloat('t',k); pl.scaling.setAll(size*(.12+Math.pow(k,.55))); }); }catch(e){ console.warn('shock',e); } }
+    m.setColor3('col',col); m.setFloat('seed',Math.random()*40); m.setFloat('thick',thick); m.setFloat('t',0); pl.scaling.setAll(size*.12);
+    vfxLife(pl,m,dur,k=>{ m.setFloat('t',k); pl.scaling.setAll(size*(.12+Math.pow(k,.55))); },e.release); }catch(e){ console.warn('shock',e); } }
 
 // converging energy before a lance fires
 function chargeFx(pos,col,dur=.28){ try{ if(G.fxReduced) return; const ps=new BABYLON.ParticleSystem('charge',G.quality==='medium'?24:60,G.scene); ps.particleTexture=G.tex.soft; ps.emitter=pos.clone(); ps.createSphereEmitter(4.5,0);
@@ -164,8 +170,8 @@ function volleyMuzzle(pos,out,col){ const hot=C3.Lerp(col,WHITE3,.5).scale(1.8);
   fxp(pos.add(out.scale(1.1)),{cell:3,size:3.4,col:C3.Lerp(col,new C3(1,.85,.6),.4).scale(1.5),dur:.12,grow:.6,ang:screenAng(pos,out),w:1,h:.3,fade:1.5});
   if(!G.mobile&&Math.random()<.45) fxp(pos.add(out.scale(1.6)),{cell:0,size:2.4,col:new C3(.12,.11,.1),dur:.9,grow:1.6,vel:out.scale(2.5),drag:1.5,fade:1}); }
 // small hit for extra bolts: a star, a hot glow and a fan of streak sparks; on shields a coloured ring
-function volleyImpact(p,col,shielded,from){ const back=from?from.subtract(p).normalize():new V3(0,1,0);
-  if(shielded){ if(Math.random()<.4) fxp(p,{cell:2,size:2.2,col:SHIELD_C.scale(.9),dur:.26,grow:1.4,fade:2,alpha:.7}); fxp(p,{cell:0,size:2.8,col:SHIELD_C.scale(1.1),dur:.25,grow:.6}); fxp(p,{cell:1,size:2.4,col:C3.Lerp(SHIELD_C,WHITE3,.5).scale(1.6),dur:.12}); return; }
+function volleyImpact(p,col,shielded,from,sc){ const back=from?from.subtract(p).normalize():new V3(0,1,0); sc=sc||SHIELD_C;
+  if(shielded){ if(Math.random()<.4) fxp(p,{cell:2,size:2.2,col:sc.scale(.9),dur:.26,grow:1.4,fade:2,alpha:.7}); fxp(p,{cell:0,size:2.8,col:sc.scale(1.1),dur:.25,grow:.6}); fxp(p,{cell:1,size:2.4,col:C3.Lerp(sc,WHITE3,.5).scale(1.6),dur:.12}); return; }
   fxp(p,{cell:1,size:3.2,col:C3.Lerp(col,WHITE3,.55).scale(1.8),dur:.14,grow:.5}); fxp(p,{cell:0,size:2.6,col:new C3(1,.62,.3).scale(1.5),dur:.32,grow:.8}); fxp(p,{cell:0,size:1.6,col:new C3(1,.9,.7).scale(1.6),dur:.08,grow:.3});
   const n=G.mobile?3:6; for(let i=0;i<n;i++){ const v=back.add(new V3(Math.random()-.5,Math.random()-.4,Math.random()-.5).scale(1.6)).normalize().scale(7+Math.random()*14);
     fxp(p,{cell:3,size:1.2+Math.random()*.8,col:new C3(1,.75+Math.random()*.2,.45).scale(1.6),dur:.35+Math.random()*.35,grow:0,vel:v,drag:2.2,ang:screenAng(p,v),w:1,h:.22,fade:1.2}); }
@@ -193,11 +199,16 @@ function pdFire(vt,p){ try{ if(!vt||!vt.root||vt.root.isDisposed()||G.fxReduced)
 function warmFx(){ try{ if(!G.scene||!G.cam||!B) return; fxMark('warmup'); fxPool(); flashLights(); fireSheet(); starTex(); coneTex(); scorchMat();
     let far; try{ const eng=G.engine, ray=G.scene.createPickingRay(eng.getRenderWidth()*.62,eng.getRenderHeight()*.12,BABYLON.Matrix.Identity(),G.cam); far=ray.origin.add(ray.direction.scale(520)); }catch(e){ far=null; } // on screen (near the top) so the shaders really draw and compile
     if(!far){ const tg=G.cam.getTarget(), fwd=tg.subtract(G.cam.position); fwd.normalize(); far=G.cam.position.add(fwd.scale(520)); }
-    explode(far,3,{light:false}); if(typeof fireballFx==='function') fireballFx(far,6,1); shockRing(far,14,new C3(1,.7,.45),{flat:false,dur:.6}); beam(far,far.add(new V3(40,0,10)),new C3(.6,.8,1),.6,.3);
+    explode(far,3,{light:false}); if(typeof fireballFx==='function') fireballFx(far,6,1);
+    try{ const dn=new BABYLON.TransformNode('warmDome',G.scene); dn.position.copyFrom(far); shieldDome({root:dn,L:10,H:3,fac:'hegemony'},new V3(0,0,1),new C3(.5,.8,1)); setTimeout(()=>{ try{ dn.dispose(); }catch(e){} },2500); }catch(e){ console.warn('warm dome',e); } /* v45: shield dome shader too */
+    shockRing(far,14,new C3(1,.7,.45),{flat:false,dur:.6}); beam(far,far.add(new V3(40,0,10)),new C3(.6,.8,1),.6,.3);
+    try{ if(typeof beamMaterial==='function'){ const cy=MB.CreateCylinder('warmBeam',{height:1,diameter:1,tessellation:14},G.scene); cy.position.set(0,-9000,0); const bm=beamMaterial(new C3(.6,.8,1)); cy.material=bm; bm.forceCompilation(cy,()=>{ cy.dispose(); bm.dispose(); }); } }catch(e){} // a short beam can expire before its first frame on a slow device
+    try{ for(const m of G.scene.meshes){ const mt=m.material; if(mt&&/^(fireM|shRipM|shockM|beamM)/.test(mt.name)&&!m.isDisposed()) mt.forceCompilation(m); } }catch(e){} // compile even if the warm-up blast lands off screen
     // decal and streak materials (scorch, ember glow, flame tongue) on a throwaway plane
     try{ const pl=MB.CreatePlane('warmPl',{size:1},G.scene); pl.position.set(0,-9000,0); pl.scaling.set(2,.5,1); pl.computeWorldMatrix(true); /* streaks are scaled unevenly, which selects a different shader variant */ const em=emMat('emberM',new C3(1.4,.55,.15),1); em.opacityTexture=G.tex.soft; em.alphaMode=BABYLON.Engine.ALPHA_ADD; em.disableDepthWrite=true;
       const vm=vfxMat('fxkM',new C3(1,.7,.4),coneTex(),1); let left=3; const done=()=>{ if(--left<=0){ pl.dispose(); em.dispose(); vm.dispose(); } };
       for(const m of [scorchMat(),em,vm]) m.forceCompilation(pl,done); }catch(e){}
     // wreck materials against both the merged live hull and the split copy a dying ship swaps to (their vertex layouts can differ)
     const facs=new Set(); for(const v of G.views.values()) if(v.model&&v.model.meshes){ facs.add(v.fac); const M=facMats(v.fac); for(const m of v.model.meshes.slice(0,2)) for(const mat of [M.wreck,M.ember]) try{ mat.forceCompilation(m); }catch(e){} }
+    if(typeof debBatch==='function') for(const f of facs){ for(const kind of ['wreck','ember']){ try{ const db=debBatch(f,kind); db.buf.fill(0,0,16); db.mesh.thinInstanceCount=1; db.mesh.thinInstanceBufferUpdated('matrix'); db.dirty=true; db.mesh.material.forceCompilation(db.mesh); }catch(e){} } } // v45: the thin-instance debris variant
     if(typeof MODEL_CACHE!=='undefined') for(const [k,p] of Object.entries(MODEL_CACHE)){ const fac=k.split('|')[0]; if(!facs.has(fac)||!p||!p.root) continue; const M=facMats(fac); for(const m of p.root.getChildMeshes(false).filter(x=>x.name.includes('hull_')).slice(0,3)) for(const mat of [M.wreck,M.ember]) try{ mat.forceCompilation(m); }catch(e){} } }catch(e){ console.warn('warmFx',e); } }

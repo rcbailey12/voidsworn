@@ -1,3 +1,4 @@
+import os
 # Pre-publish smoke test: run before every publish; exits non-zero on any failure.
 import re, sys, time, subprocess, functools, json
 from playwright.sync_api import sync_playwright
@@ -36,6 +37,13 @@ with sync_playwright() as p:
         ms=pg.evaluate("(()=>{ const t=performance.now(); setupBattle({pf:'voidsworn',ef:'hegemony',map:'station'}); return Math.round(performance.now()-t); })()"); t.append(ms); tex.append(pg.evaluate("G.scene.textures.length"))
     check('no texture leak across battles',max(tex)-min(tex)<=3,f'textures {tex}')
     check('ship cache speeds rebuilds',t[1]<t[0]*.8,f'build ms {t}')
+    # v45 gates: scene budget on the standard station battle, and every effect shader warmed before the first shot
+    bud=pg.evaluate("""(async()=>{ const ins=new BABYLON.SceneInstrumentation(G.scene); ins.captureFrameTime=false; for(let i=0;i<6;i++){ G.scene.render(); await new Promise(r=>setTimeout(r,30)); }
+      try{ warmFx(); }catch(e){} for(let i=0;i<8;i++){ G.scene.render(); await new Promise(r=>setTimeout(r,40)); }
+      const names=Object.keys(G.engine._compiledEffects||{}).join('|'); const need=['vsFire','vsShock','vsBeam','shRip','vsPlume'];
+      return {act:G.scene.getActiveMeshes().length, draws:ins.drawCallsCounter.current, missing:need.filter(n=>!names.includes(n))}; })()""")
+    check('scene budget: active meshes and draw calls',bud['act']<=int(os.environ.get('MAX_ACT','340')) and bud['draws']<=int(os.environ.get('MAX_DRAWS','420')),f"active {bud['act']}, draws {bud['draws']}")
+    check('every effect shader is warmed before the first shot',not bud['missing'],'missing '+','.join(bud['missing']) if bud['missing'] else 'fire, shock, beam, shield dome, plume')
     pg.evaluate("ACT.c3title();"); time.sleep(2); pg.click('#app [data-act=newRunScreen]'); time.sleep(1); pg.click('#app [data-act=startRun]'); time.sleep(2); pg.evaluate("(()=>{ const a=document.querySelector('[data-act=pickAspect]'); if(a) a.click(); })()"); time.sleep(1)
     pg.evaluate("closeModal(); (()=>{ const el=document.querySelector('#app .node.avail'); (el.closest('[data-act]')||el).dispatchEvent(new MouseEvent('click',{bubbles:true})); })()"); time.sleep(6)
     inb=pg.evaluate("!!(B&&B.campaign)")

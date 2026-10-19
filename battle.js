@@ -103,7 +103,7 @@ function fleetPower(){ if(typeof RUN==='undefined'||!RUN||!RUN.fleet) return 99;
   const boons=(RUN.boons||[]).reduce((a,b)=>a+((RARITY[b.r||0]||RARITY[0]).m),0); return p*(1+.035*boons+.025*((RUN.relics||[]).length)); }
 function playerStrength(){ return fleetPower(); }
 // sector flagship hull/shield scale and damage, by sector (sims can override with BOSS_SCALE / BOSS_DMG)
-const BOSS_FAC={corsair:1.45,voidsworn:1.25,hegemony:.95,chorus:1,deathless:1,ithar:.9}; // per-flagship tuning from the boss matrix (v40)
+const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.95,chorus:1.10,deathless:1,ithar:.80}; // per-flagship tuning from the boss matrix (v40, retuned v45 at n=12)
 let BOSS_SCALE=[0,.5,.55,.7], BOSS_DMG=[0,.85,.88,.95];
 try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE')); if(process_env('BOSS_DMG')) BOSS_DMG=JSON.parse(process_env('BOSS_DMG')); }catch(e){}
 function effArch(arch,fac){ if(arch==='carrier'){ const F=FACTIONS[fac]; if(!F||!F.roster.some(id=>HULLS[id]&&HULLS[id].ab==='launch')) return 'heavy'; } return arch||null; }
@@ -480,12 +480,12 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   const res={shield:0,hull:0,crits:0,hits:0,misses:0,sys:null};
   const called=opts.called&&!t.isSq&&!opts.intercept?opts.called:null;
   const hc=hitChance(u,w,t);
-  if(called){ u.crit+=15; t._calledSec=called; }
   const shots=[];
   for(let i=0;i<w.shots;i++) shots.push(rnd()*100<hc);
   await animWeapon(u,w,t,shots);
   if(B) B.prog=(B.prog||0)+1;
   if(!live()) return false; // abandoned after a stall: the shot never lands
+  if(called){ u.crit+=15; t._calledSec=called; } // v45: applied only once the shot is known to land, so a stall can never leave it behind
   for(const h of shots){
     if(t.dead) break;
     if(!h){ res.misses++; continue; }
@@ -588,7 +588,7 @@ async function killUnit(t,by){
   if(by&&!t.isSq) gainResolve(by.side,1);
   if(by){ by.kills++; if(by.parent){ const p=B.units.find(x=>x.id===by.parent); if(p) p.kills+=0; } }
   if(by&&by.isSq){ const p=B.units.find(x=>x.id===by.parent&&!x.dead); if(p&&p.fx&&p.fx.feast){ p.spare=(p.spare||0)+1; const h=Math.round(p.maxHp*p.fx.feast); p.hp=Math.min(p.maxHp,p.hp+h); boonFx(p,'h_feast','+'+h+' hull, +1 wing',-30); } }
-  const b0=B; await animExplode(t); if(B!==b0) return; // a later battle must never see this explosion's aftermath
+  const b0=B, live=liveFrom(null); await animExplode(t); if(!live()){ if(B===b0&&!B.over) try{ checkEnd(); }catch(e){} return; } // v45: epoch check like every other await, so a stalled battle never sees this explosion's aftermath
   { const cb=by&&!t.isSq&&by.side!==t.side?ownerFx(by).chainBoom:0; if(cb){ const near=B.units.filter(x=>!x.dead&&x.side===t.side&&x!==t&&hdist(x,t)<=2); if(near.length) log(`${t.name}'s reactor goes up, scorching ${near.length} nearby ship${near.length>1?'s':''}.`,by.side==='player'?'p':'e');
       for(const x of near){ if(x.dead) continue; x.hp-=cb; boonFx(x,'e_chain','\u2212'+cb,-12); if(x.hp<=0) await killUnit(x,by); } } }
   log(`${t.name} ${t.isSq?'is shot down':'is destroyed'}.`, t.side==='player'?'e':'p');
@@ -731,7 +731,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
 const BOSS_CMD={hegemony:{id:'barrage',n:'Imperial broadside'},corsair:{id:'surge',n:'Burn and board'},chorus:{id:'restore',n:'Hive regrowth'},ithar:{id:'iron',n:'Prism ward'},deathless:{id:'restore',n:'Rise again'},voidsworn:{id:'hunt',n:'Crusader\u2019s wrath'}};
 function bossCmdText(c,fac){ return cmdDesc(c,1,fac).replace(/your ships/g,'its ships').replace(/against you/g,'against them').replace(/Every ship/g,'Every enemy ship'); }
 function bossCmdTick(){ if(!B||B.over||B.cmdEUsed) return; const boss=B.units.find(u=>u.side==='enemy'&&u.t&&u.t.boss&&!u.dead); if(!boss) return; const c=BOSS_CMD[boss.fac]; if(!c) return;
-  if(B.cmdENext==null){ if(B.round>=2||boss.hp<boss.maxHp*.6){ B.cmdENext=B.round+1; log(`${boss.name} is preparing ${c.n}. ${bossCmdText(c,boss.fac)} It strikes next round.`,'e'); try{ fxText(boss,'Preparing: '+c.n,'#ff8a6a',-56); }catch(e){} try{ if(typeof toast==='function'&&typeof document!=='undefined') toast(`${boss.name} is preparing ${c.n}. It strikes next round.`); }catch(e){} } return; } }
+  if(B.cmdENext==null){ if(B.round>=2||boss.hp<boss.maxHp*.6){ B.cmdENext=B.round+1; log(`${boss.name} is preparing ${c.n}. ${bossCmdText(c,boss.fac)} It strikes next round.`,'e'); try{ fxText(boss,'Preparing: '+c.n,'#ff8a6a',-56); }catch(e){} try{ if(typeof toast==='function'&&typeof document!=='undefined') toast(`${boss.name} is preparing ${c.n}. It strikes next round.`); if(typeof banner==='function'&&typeof document!=='undefined') setTimeout(()=>{ try{ banner(`${c.n} next round`,'#ff8a6a'); }catch(e){} },900); }catch(e){} /* v45: the boss Command gets a banner too */ } return; } }
 async function bossCmdFire(){ if(!B||B.over||B.cmdEUsed||B.cmdENext==null||B.round<B.cmdENext) return; const boss=B.units.find(u=>u.side==='enemy'&&u.t&&u.t.boss&&!u.dead); if(!boss){ B.cmdEUsed=true; return; } const c=BOSS_CMD[boss.fac];
   B.cmdEUsed=true; B.cmdE={id:c.id,side:'enemy',round:B.round,tier:1}; log(`${boss.name}: ${c.n}!`,'e'); await runCommand('enemy',c,1); }
 // a ship that isn't part of the current battle (a hung action from an earlier fight) may never act
@@ -800,7 +800,7 @@ async function useAbility(u,arg){
   if(a==='evasive'){ u.evBuff=25; u.mp+=2; fxText(u,'Evasive','#9fe3ff',-24); }
   if(a==='reload'){ for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; } fxText(u,'Tubes loaded','#f0b35a',-24); }
   if(a==='focus'){ u.focus=true; fxText(u,'Focus fire','#f0b35a',-24); }
-  if(a==='phase'){ u.evBuff=22; u.mp+=2; fxText(u,'Phase shift','#7dff9b',-24); }
+  if(a==='phase'){ u.evBuff=25; /* v45: was 22, strictly weaker than Evasive Burn; now level (Deathless is already the strongest faction, so parity rather than a buff) */ u.mp+=2; fxText(u,'Phase shift','#7dff9b',-24); }
   if(a==='frenzy'){ u.focus=true; fxText(u,'Blood frenzy','#ff8fe0',-24); }
   if(a==='overburn'){ u.mp+=3; u.ramBoost=1.5; fxText(u,'Overburn','#ffb35c',-24); }
   if(a==='regrow'){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*.25)); u.hp+=h; fxText(u,'+'+h+' hull','#8ff0a0',-24); }

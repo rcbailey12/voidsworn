@@ -328,7 +328,7 @@ function buildGothic(b,cls){
   return b.finish();
 }
 
-// ---------- Hegemony: wedge-hulled star destroyers ----------
+// ---------- Hegemony: wedge-hulled star dreadnoughts ----------
 const WEDGE={
   Frigate:{wr:.2,t:.05,b:.04,eng:2,pods:1},
   Destroyer:{wr:.27,t:.058,b:.048,eng:3,ion:1,terr:2},

@@ -10,7 +10,7 @@ function seeded(seed){ let s=seed>>>0; return ()=>{ s=(s*1664525+1013904223)>>>0
 function hexC3(h){ return C3.FromHexString(h); }
 
 function init3D(canvas){
-  const engine=new BABYLON.Engine(canvas,true,{stencil:true,antialias:true,preserveDrawingBuffer:true},true);
+  const engine=new BABYLON.Engine(canvas,true,{stencil:/[?&]shots/.test(location.search),antialias:true,preserveDrawingBuffer:/[?&]shots/.test(location.search)},true); /* v45: no preserved buffer or stencil unless a capture script asks for them */
   const scene=new BABYLON.Scene(engine);
   scene.clearColor=new C4(.01,.015,.03,1);
   scene.ambientColor=new C3(.2,.22,.28);
@@ -18,9 +18,9 @@ function init3D(canvas){
   const cam=new BABYLON.ArcRotateCamera('cam',-Math.PI/2,.84,290,new V3(-90,0,-10),scene);
   cam.minZ=.5; cam.maxZ=30000; cam.fov=.72; cam.lowerBetaLimit=.04; cam.upperBetaLimit=1.42;
   // lights: warm key from behind the viewer, cool fill from the far side
-  const sun=new BABYLON.DirectionalLight('sun',new V3(-.45,-.62,.64).normalize(),scene); sun.intensity=3; sun.diffuse=new C3(1,.86,.68); sun.specular=new C3(1,.9,.75);
-  const fill=new BABYLON.DirectionalLight('fill',new V3(.55,-.25,-.8).normalize(),scene); fill.intensity=1.7; fill.diffuse=new C3(.42,.72,1); fill.specular=new C3(.5,.8,1); G.rim=fill; /* cool rim against the warm key: ships read as silhouettes */
-  const hemi=new BABYLON.HemisphericLight('hemi',new V3(0,1,0),scene); hemi.intensity=.34; hemi.diffuse=new C3(.4,.5,.75); hemi.groundColor=new C3(.08,.06,.12); hemi.specular=C3.Black();
+  const sun=new BABYLON.DirectionalLight('sun',new V3(.55,-.45,-.7).normalize(),scene); sun.intensity=3.2; /* v45: the key light comes from the visible star */ sun.diffuse=new C3(1,.86,.68); sun.specular=new C3(1,.9,.75);
+  const fill=new BABYLON.DirectionalLight('fill',new V3(-.55,-.15,.8).normalize(),scene); fill.intensity=.6; /* v45: dim cool fill from the far side, so every hull has a lit side and a dark side */ fill.diffuse=new C3(.42,.72,1); fill.specular=new C3(.5,.8,1); G.rim=fill; /* cool rim against the warm key: ships read as silhouettes */
+  const hemi=new BABYLON.HemisphericLight('hemi',new V3(0,1,0),scene); hemi.intensity=.1; hemi.diffuse=new C3(.4,.5,.75); hemi.groundColor=new C3(.08,.06,.12); hemi.specular=C3.Black();
   const glow=new BABYLON.GlowLayer('glow',scene,{mainTextureFixedSize:1024,blurKernelSize:48}); glow.intensity=.6;
   const pipe=new BABYLON.DefaultRenderingPipeline('pipe',true,scene,[cam]);
   pipe.samples=4; pipe.fxaaEnabled=true;
@@ -28,9 +28,9 @@ function init3D(canvas){
   pipe.imageProcessingEnabled=true;
   const ip=pipe.imageProcessing; ip.toneMappingEnabled=true; ip.toneMappingType=BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES; ip.exposure=1.12; ip.contrast=1.42;
   { const cc=new BABYLON.ColorCurves(); cc.globalSaturation=18; cc.shadowsHue=205; cc.shadowsDensity=45; cc.shadowsSaturation=35; cc.highlightsHue=32; cc.highlightsDensity=28; cc.highlightsSaturation=25; ip.colorCurvesEnabled=true; ip.colorCurves=cc; } // cinematic grade: teal shadows, warm highlights
-  ip.vignetteEnabled=true; ip.vignetteWeight=3.2; ip.vignetteColor=new C4(0,0,0,0); ip.vignetteStretch=.2;
-  pipe.chromaticAberrationEnabled=true; pipe.chromaticAberration.aberrationAmount=10; pipe.chromaticAberration.radialIntensity=.8;
-  pipe.grainEnabled=true; pipe.grain.intensity=5; pipe.grain.animated=true;
+  ip.vignetteEnabled=true; ip.vignetteWeight=2.0; ip.vignetteColor=new C4(0,0,0,0); ip.vignetteStretch=.2;
+  pipe.chromaticAberrationEnabled=false; /* v45: off on every tier */ pipe.chromaticAberration.aberrationAmount=10; pipe.chromaticAberration.radialIntensity=.8;
+  pipe.grainEnabled=false; pipe.grain.intensity=5; pipe.grain.animated=true;
   pipe.sharpenEnabled=true; pipe.sharpen.edgeAmount=.22;
   Object.assign(G,{engine,scene,cam,glow,pipe,sun});
   // the shared PBR lighting table must exist before any battlefield is built, so cleanup never mistakes it for a battlefield texture
@@ -45,7 +45,7 @@ function init3D(canvas){
   engine.onContextLostObservable.add(()=>{ G.ctxLost=performance.now(); notice('The graphics driver reset. Restoring the battlefield\u2026'); setTimeout(()=>{ if(G.ctxLost) notice('The graphics context could not be restored. Reload to continue; your campaign is saved at the last node.',true); },7000); });
   engine.onContextRestoredObservable.add(()=>{ G.ctxLost=0; notice(null); });
   let last=performance.now();
-  scene.onBeforeRenderObservable.add(()=>{ const now=performance.now(); const raw=(now-last)/1000, dt=Math.min(.05,raw); last=now; try{ FRAMES.tick(raw); }catch(e){} G.time+=dt; try{ G.ctl.update(dt); updateWorld(dt); updateStorms(dt); if(G.planet) G.planet.rotation.y+=dt*.0025; if(G.npClouds) G.npClouds.rotation.y+=dt*.006; if(G.ringNode) G.ringNode.rotation.y+=dt*.003; if(G.planet) G.planet.rotation.y+=dt*.004; if(G.npClouds) G.npClouds.rotation.y+=dt*.01; if(G.traffic) for(const t of G.traffic) if(!t.root.isDisposed()) t.root.position.addInPlace(t.vel.scale(dt)); if(G.gridFar) G.gridFar.alpha=clamp((G.cam.radius-260)/240,0,1)*.6; }catch(e){ frameError(e); } });
+  scene.onBeforeRenderObservable.add(()=>{ const now=performance.now(); const raw=(now-last)/1000, dt=Math.min(.05,raw); last=now; try{ FRAMES.tick(raw); }catch(e){} G.time+=dt; try{ G.ctl.update(dt); updateWorld(dt); updateStorms(dt); if(G.planet) G.planet.rotation.y+=dt*.0065; if(G.npClouds) G.npClouds.rotation.y+=dt*.016; if(G.ringNode) G.ringNode.rotation.y+=dt*.003; /* v45: one update each (was two per frame) */ if(G.traffic) for(const t of G.traffic) if(!t.root.isDisposed()) t.root.position.addInPlace(t.vel.scale(dt)); if(G.gridFar) G.gridFar.alpha=clamp((G.cam.radius-260)/240,0,1)*.6; }catch(e){ frameError(e); } });
   // phones: ~30 fps in play, ~15 fps when idle, to save battery and heat
   ['pointerdown','pointermove','keydown','wheel'].forEach(ev=>window.addEventListener(ev,()=>{ G.lastInput=performance.now(); },{passive:true}));
   engine.runRenderLoop(()=>{ if(G.mobile){ G.fskip=(G.fskip||0)+1; const idle=performance.now()-G.lastInput>4000&&!(typeof PROJ!=='undefined'&&PROJ.length)&&!(B&&B.busy)&&scene.particleSystems.length<=1; if(G.fskip%(idle?4:2)) return; } try{ scene.render(); }catch(e){ frameError(e); } });
@@ -58,7 +58,7 @@ function noiseTex(name,size,seed,soft=.55){ return dynTex(name,size,size,(g,w)=>
       const v=clamp((t-.35)*2.2,0,1)*Math.pow(clamp(1-r,0,1),soft); const o=(y*w+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=v*255; }
     g.putImageData(img,0,0); }); }
 function makeSunAndSky(){
-  const sc=G.scene, dir=new V3(-.55,.22,.8).normalize(), pos=dir.scale(9000); G.sunPosW=pos.clone();
+  const sc=G.scene, dir=new V3(-.55,.45,.7).normalize(), pos=dir.scale(9000); /* v45: matches the key light */ G.sunPosW=pos.clone();
   const sun=MB.CreatePlane('sun',{size:900},sc); sun.position=pos; sun.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; sun.infiniteDistance=true; sun.isPickable=false;
   sun.material=addMat('sunM',new C3(2.2,1.9,1.5),1,G.tex.flare); G.glow.addExcludedMesh(sun); G.sunMesh=sun;
   const halo=MB.CreatePlane('sunHalo',{size:3400},sc); halo.position=pos.scale(1.001); halo.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; halo.infiniteDistance=true; halo.isPickable=false; halo.material=addMat('haloM',new C3(.55,.38,.22),.55,G.tex.soft); G.glow.addExcludedMesh(halo);
@@ -89,7 +89,7 @@ function makeEnvProbe(){
 }
 function makeShadows(){
   try{ const sg=new BABYLON.CascadedShadowGenerator(G.mobile?1024:2048,G.sun); sg.numCascades=3; sg.lambda=.82; sg.shadowMaxZ=1600; sg.stabilizeCascades=true; sg.usePercentageCloserFiltering=true;
-    sg.filteringQuality=BABYLON.ShadowGenerator.QUALITY_MEDIUM; sg.darkness=.32; sg.bias=.003; sg.normalBias=.015; G.shadow=sg; }catch(e){ console.warn('shadows unavailable',e); G.shadow=null; }
+    sg.filteringQuality=BABYLON.ShadowGenerator.QUALITY_MEDIUM; sg.darkness=.12; /* v45: darkness is the light left in shadow, so lower is darker */ sg.bias=.003; sg.normalBias=.015; G.shadow=sg; }catch(e){ console.warn('shadows unavailable',e); G.shadow=null; }
 }
 function makeSSAO(){
   try{ if(!BABYLON.SSAO2RenderingPipeline.IsSupported) return; const p=new BABYLON.SSAO2RenderingPipeline('ssao',G.scene,{ssaoRatio:.5,blurRatio:.5},[G.cam],true);
@@ -104,9 +104,9 @@ function setQuality(q){
   try{ if(ultra&&!G.vls&&G.sunMesh){ G.vls=new BABYLON.VolumetricLightScatteringPostProcess('vls',.5,G.cam,G.sunMesh,70,BABYLON.Texture.BILINEAR_SAMPLINGMODE,G.engine,false,G.scene); G.vls.exposure=.22; G.vls.decay=.965; G.vls.weight=.5; G.vls.density=.9;
     // points and lines break the occlusion pass (no element buffer), so keep them out of it
     const skipVls=m=>{ if(!G.vls) return; if(m instanceof BABYLON.LinesMesh||(m.material&&m.material.pointsCloud)||m===G.stars||m===G.sky) G.vls.excludedMeshes.push(m); };
-    G.scene.meshes.forEach(skipVls); G.scene.onNewMeshAddedObservable.add(m=>setTimeout(()=>skipVls(m),0)); } else if(!ultra&&G.vls){ G.vls.dispose(G.cam); G.vls=null; } }catch(e){ console.warn('god rays unavailable',e); G.vls=null; }
+    G.scene.meshes.forEach(skipVls); if(!G.vlsObs) G.vlsObs=G.scene.onNewMeshAddedObservable.add(m=>setTimeout(()=>skipVls(m),0)); } else if(!ultra&&G.vls){ G.vls.dispose(G.cam); G.vls=null; if(G.vlsObs){ G.scene.onNewMeshAddedObservable.remove(G.vlsObs); G.vlsObs=null; } } /* v45: one observer, removed when god rays go */ }catch(e){ console.warn('god rays unavailable',e); G.vls=null; }
   if(G.ssao){ const want=ultra||(hi&&!G.mobile); /* v44: contact shadows between hull parts on High too (desktop) */ if(G.ssaoOn===undefined) G.ssaoOn=true; if(want&&!G.ssaoOn){ mgr.attachCamerasToRenderPipeline('ssao',G.cam); G.ssaoOn=true; } else if(!want&&G.ssaoOn){ mgr.detachCamerasFromRenderPipeline('ssao',G.cam); G.ssaoOn=false; } try{ const gb=G.scene.geometryBufferRenderer; if(gb) gb.renderList=G.ssaoOn?null:[]; }catch(e){} /* v44.1: a detached SSAO left its geometry buffer rendering every mesh every frame */ try{ G.ssao.samples=ultra?16:8; G.ssao.totalStrength=ultra?1.25:1.05; }catch(e){} }
-  G.pipe.samples=hi&&!(ultra&&G.taaOn)?4:1; G.pipe.fxaaEnabled=!(ultra&&G.taaOn); G.pipe.chromaticAberrationEnabled=hi&&!G.fxReduced; G.pipe.grainEnabled=hi; G.glow.intensity=hi?.6:.45; try{ G.glow.blurKernelSize=hi?48:24; }catch(e){} /* v44.1: half the glow blur on Medium (phones) */
+  G.pipe.samples=hi&&!(ultra&&G.taaOn)?4:1; G.pipe.fxaaEnabled=!(ultra&&G.taaOn); G.pipe.chromaticAberrationEnabled=false; G.pipe.grainEnabled=false; G.glow.intensity=hi?.6:.45; try{ G.glow.blurKernelSize=hi?48:24; }catch(e){} /* v44.1: half the glow blur on Medium (phones) */
   const dpr=window.devicePixelRatio||1; // v42: Medium renders at about 1.5x CSS pixels (was clamped to 1x: 41% of a Pixel's resolution per axis), width capped at 720
   G.engine.setHardwareScalingLevel(q==='medium'?1/Math.max(1,Math.min(dpr,1.5,720/Math.max(320,innerWidth))):ultra&&!G.mobile&&dpr<1.5?1/Math.min(1.25,1.25*dpr):1/Math.min(2,dpr)); // Ultra supersamples 1.25x on screens below 4K
   G.pipe.sharpenEnabled=hi; G.glow.isEnabled=hi; try{ for(const M of Object.values(MATS)) for(const k of ['hull','dark','steel','trim']) if(M[k]) M[k].markAsDirty(BABYLON.Material.AllDirtyFlag); }catch(e){} // hull shading detail follows the quality level // the phone image is sharp enough now, and bloom carries the emissives
@@ -234,7 +234,7 @@ function cachedTextures(){ const keep=new Set(Object.values(G.tex)); const sc=G.
 // each enemy faction's space has its own colour: the sky nebula is re-tinted per battle and reseeded so its shape changes too
 const BIOMES={voidsworn:[[.13,.26,.6],[.62,.22,.45],[1,.64,.36]], hegemony:[[.08,.2,.42],[.22,.42,.72],[.85,.93,1]], corsair:[[.32,.12,.06],[.8,.32,.1],[1,.74,.34]],
   chorus:[[.16,.36,.16],[.6,.18,.56],[.9,1,.5]], ithar:[[.04,.26,.32],[.38,.18,.7],[.7,.95,1]], deathless:[[.06,.22,.15],[.16,.52,.34],[.6,1,.72]]};
-function applyBiome(fac){ try{ const b=BIOMES[fac]||BIOMES.voidsworn, m=G.skyMat, k=1.45; if(!m) return; m.setColor3('c1',new C3(...b[0]).scale(k)); m.setColor3('c2',new C3(...b[1]).scale(k)); m.setColor3('c3',new C3(...b[2]).scale(k*1.1)); m.setFloat('seed',.1+Math.random()*.8);
+function applyBiome(fac){ try{ const b=BIOMES[fac]||BIOMES.voidsworn, m=G.skyMat, k=G.mobile?.95:1.45; /* v45: darker backdrop on the phone so hulls read against it */ if(G.sun){ const warm=new C3(1,.86,.68), st=new C3(...b[2]); G.sun.diffuse=C3.Lerp(warm,st,.35); G.sun.specular=C3.Lerp(new C3(1,.9,.75),st,.3); const hm=G.scene.getMaterialByName('haloM'); if(hm&&hm.emissiveColor) hm.emissiveColor=C3.Lerp(new C3(.55,.38,.22),st.scale(.5),.5); } /* v45: each battle's star tints the key light */ if(!m) return; m.setColor3('c1',new C3(...b[0]).scale(k)); m.setColor3('c2',new C3(...b[1]).scale(k)); m.setColor3('c3',new C3(...b[2]).scale(k*1.1)); m.setFloat('seed',.1+Math.random()*.8);
   if(G.nebMats) G.nebMats.forEach((nm,i)=>{ nm.setColor3('ca',new C3(...b[i%2]).scale(.9)); nm.setColor3('cb',new C3(...b[(i+1)%3]).scale(1.1)); nm.setFloat('seed',Math.random()*20); });
   if(G.nebBaked) G.nebBaked.forEach((nm,i)=>rebakeNebula(nm,new C3(...b[i%2]).scale(.9),new C3(...b[(i+1)%3]).scale(1.1),Math.random()*20));
   composeBackdrop(fac); }catch(e){ console.warn(e); } } // v42: each battle also gets its own planet and re-coloured nebula banks
@@ -320,8 +320,8 @@ class CamCtl{
       if(pl.length){ const P=avg(pl), E=en.length?avg(en):P.add(new V3(100,0,0)), d=E.subtract(P); d.y=0; const L=Math.max(1,d.length());
         const ux=-d.z/L, uz=d.x/L; let spread=0; for(const u of pl.concat(en)){ const p=hexWorld(u.q,u.r,0); spread=Math.max(spread,Math.abs((p.x-P.x)*ux+(p.z-P.z)*uz)); } /* v35: frame the fleets, not the whole board, so ships read on a phone */
         this.a=Math.atan2(-d.z,-d.x); this.b=.64; this.r=clamp(Math.max(L*1.55,spread*2.3),170,380); this.t=P.add(d.scale(.32)); } } }catch(e){ console.warn(e); } }
-  hold(t,a,b,r){ if(!this.saved) this.saved={a:this.a,b:this.b,r:this.r,t:this.t.clone()}; this.t=t; if(a!=null) this.a=a; if(b!=null) this.b=b; if(r!=null) this.r=r; }
-  release(){ if(G.pipe&&G.pipe.depthOfFieldEnabled) G.pipe.depthOfFieldEnabled=false; if(this.saved){ Object.assign(this,{a:this.saved.a,b:this.saved.b,r:this.saved.r,t:this.saved.t}); this.saved=null; } }
+  hold(t,a,b,r){ if(!this.saved){ this.saved={a:this.a,b:this.b,r:this.r,t:this.t.clone()}; try{ cineBars(true); }catch(e){} } this.t=t; if(a!=null) this.a=a; if(b!=null) this.b=b; if(r!=null) this.r=r; }
+  release(){ if(G.pipe&&G.pipe.depthOfFieldEnabled) G.pipe.depthOfFieldEnabled=false; try{ cineBars(false); }catch(e){} if(this.saved){ Object.assign(this,{a:this.saved.a,b:this.saved.b,r:this.saved.r,t:this.saved.t}); this.saved=null; } }
   update(dt){
     const c=this.cam;
     if(this.attract){ this.a+=dt*.05; }
