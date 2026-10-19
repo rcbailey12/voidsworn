@@ -622,11 +622,11 @@ function splitModel(model,proto){
 // v46 test: hulls made from Ryan's concept art (FLUX image -> Hunyuan3D mesh -> 16k triangles) replace the procedural hull skin.
 // Guns, engines, stats and damage points still come from the procedural build, so the game plays the same.
 const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes in comments)
-  'hegemony|Frigate':'H6_23','hegemony|Destroyer':'H2a_r_23','hegemony|Cruiser':'H5_11','hegemony|Battleship':'H4_11', // H6b, H2a rev, H5a carrier-cruiser, H4a
-  'voidsworn|Cruiser':'V5_37','voidsworn|Battleship':'V4_37','voidsworn|Dreadnought':'V1b_r_23', // V5c, V4c, V1b rev
+  'hegemony|Frigate':'H7_23','hegemony|Destroyer':'H8_23','hegemony|Cruiser':'H9_23','hegemony|Battleship':'H10_23','hegemony|Super-dreadnought':'H4_11', // H7b-H10b (round 7 light grey and blue), H4a for the flagship
+  'voidsworn|Frigate':'V14_23','voidsworn|Destroyer':'V15_37','voidsworn|Cruiser':'V16_37','voidsworn|Battleship':'V17_37','voidsworn|Dreadnought':'V1b_r_23', // V14b, V15c, V16c, V17c (round 7 grimdark), V1b rev flagship
   'corsair|Frigate':'C12_23','corsair|Destroyer':'C9_23','corsair|Cruiser':'C11_23','corsair|Carrier':'C10_37', // C12b, C9b, C11b, C10c
   'chorus|Frigate':'B18_11','chorus|Destroyer':'B15_23','chorus|Cruiser':'B13_23','chorus|Carrier':'B17_37','chorus|Bio-titan':'B16_23', // B18a, B15b, B13b, B17c, B16b
-  'ithar|Frigate':'I13_11','ithar|Destroyer':'I11_37','ithar|Cruiser':'I10_11','ithar|Carrier':'I12_23','ithar|Ark':'I8_37', // I13a, I11c, I10a, I12b, I8c
+  'ithar|Frigate':'I14_23','ithar|Destroyer':'I11_37','ithar|Cruiser':'I15_11','ithar|Carrier':'I16_11','ithar|Ark':'I8_37', // I14b, I11c, I15a, I16a, I8c
   'deathless|Frigate':'D9_23','deathless|Destroyer':'D7_11','deathless|Cruiser':'D4_37','deathless|Tomb-ark':'D8_37'}, AI_HULL_DATA={}; // D9b, D7a, D4c, D8c
 function aiHullsOn(){ return G.aiHulls!==false; }
 function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new T(u.buffer); };
