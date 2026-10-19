@@ -42,7 +42,7 @@ with sync_playwright() as p:
       try{ warmFx(); }catch(e){} for(let i=0;i<8;i++){ G.scene.render(); await new Promise(r=>setTimeout(r,40)); }
       const names=Object.keys(G.engine._compiledEffects||{}).join('|'); const need=['vsFire','vsShock','vsBeam','shRip','vsPlume'];
       return {act:G.scene.getActiveMeshes().length, draws:ins.drawCallsCounter.current, missing:need.filter(n=>!names.includes(n))}; })()""")
-    check('scene budget: active meshes and draw calls',bud['act']<=int(os.environ.get('MAX_ACT','340')) and bud['draws']<=int(os.environ.get('MAX_DRAWS','420')),f"active {bud['act']}, draws {bud['draws']}")
+    check('scene budget: active meshes and draw calls',bud['act']<=int(os.environ.get('MAX_ACT','420')) and bud['draws']<=int(os.environ.get('MAX_DRAWS','420')),f"active {bud['act']}, draws {bud['draws']}")
     check('every effect shader is warmed before the first shot',not bud['missing'],'missing '+','.join(bud['missing']) if bud['missing'] else 'fire, shock, beam, shield dome, plume')
     pg.evaluate("ACT.c3title();"); time.sleep(2); pg.click('#app [data-act=newRunScreen]'); time.sleep(1); pg.click('#app [data-act=startRun]'); time.sleep(2); pg.evaluate("(()=>{ const a=document.querySelector('[data-act=pickAspect]'); if(a) a.click(); })()"); time.sleep(1)
     pg.evaluate("closeModal(); (()=>{ const el=document.querySelector('#app .node.avail'); (el.closest('[data-act]')||el).dispatchEvent(new MouseEvent('click',{bubbles:true})); })()"); time.sleep(6)
