@@ -222,7 +222,7 @@ async function boonCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
   // kindling (forced)
   { const {P,E}=setup(['e_kindle']); P[0].fx.igniteCh=1; const t=E[0]; t.sh=[0,0,0,0]; applyHit(P[0],P[0].weapons[0],t,30,0); ok('Kindling sets fires',t.st.fire>0&&t.st.fireDmg>6,'fire '+t.st.fire+' for '+t.st.fireDmg); const hp=t.hp; startSideTurn('enemy'); ok('Fires burn for the boosted amount',hp-t.hp===t.st.fireDmg||hp-t.hp>=10,(hp-t.hp)+' burned'); }
   // arc discharge
-  { const {P,E}=setup(['s_arc']); const a=P[0], t=E[0]; place(a,5,5,0); place(t,7,5,3); const wi=a.weapons.findIndex(x=>inReach(a,x,t)); const q=shieldQuad(t,a); t.sh[q]=1; const hp=t.hp; a.aim=300; for(let k=0;k<6&&t.sh[q]>.5;k++){ a.weapons[wi].fired=false; a.weapons[wi].cdLeft=0; await fireWeapon(a,wi,t); } ok('Arc Discharge on a broken facing',wi>=0&&hp-t.hp>=12,'hull lost '+(hp-t.hp)); }
+  { const {P,E}=setup(['s_arc']); const a=P[0], t=E[0]; if(B&&B.terrain) for(const k of Object.keys(B.terrain)) delete B.terrain[k]; place(t,7,5,3); let wi=-1; for(let f=0;f<6&&wi<0;f++){ place(a,5,5,f); wi=a.weapons.findIndex(x=>inReach(a,x,t)); } if(wi<0){ ok('Arc Discharge on a broken facing',false,'no weapon in reach in any facing'); } else { const q=shieldQuad(t,a); t.sh[q]=1; const hp=t.hp; a.aim=300; for(let k=0;k<6&&t.sh[q]>.5;k++){ a.weapons[wi].fired=false; a.weapons[wi].cdLeft=0; await fireWeapon(a,wi,t); } ok('Arc Discharge on a broken facing',wi>=0&&hp-t.hp>=12,'hull lost '+(hp-t.hp)); } }
   // bastion duo
   { const {P}=setup(['d_bastion']); const u=P[0]; u.sh=[0,0,0,0]; giveOrder(u,'brace'); ok('Bastion refills shields on brace',u.sh.every(x=>x===u.shMax)&&u.shMax>0,u.sh.join('/')); }
   // storm mantle
