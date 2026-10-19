@@ -38,7 +38,7 @@ function createView(u){
   G.views.set(u.id,v); return v;
 }
 function disposeView(v){ if(v.navSp){ try{ v.navSp.forEach(sp=>sp.dispose()); }catch(e){} v.navSp=null; } if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
-function disposeAllViews(){ for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
+function disposeAllViews(){ (G.deadLights||[]).forEach(l=>{ try{ l.dispose(); }catch(e){} }); G.deadLights=[]; for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
 
 function addFire(v){
   const node=new BABYLON.TransformNode('fire',G.scene); node.parent=v.root; node.position=new V3((Math.random()-.5)*v.L*.6,v.H*.35,(Math.random()-.5)*v.L*.12);
@@ -72,6 +72,7 @@ function updateWorld(dt){
   if(MATS.chorus){ const k=Math.sin(G.time*2.2); MATS.chorus.win.emissiveColor=MATS.chorus.P.win.scale(.8+.35*k); MATS.chorus.flesh.emissiveColor=MATS.chorus.P.win.scale(.32+.22*k); }
   if(MATS.deathless) MATS.deathless.win.emissiveColor=MATS.deathless.P.win.scale(.72+.35*Math.sin(G.time*1.3));
   if(MATS.ithar) MATS.ithar.sail.alpha=.26+.07*Math.sin(G.time*1.7);
+  if(!B._warm&&G.views.size&&typeof warmFx==='function'){ B._warm=1; setTimeout(warmFx,50); } // v44.1: build the explosion shaders while the fleets arrive
   for(const u of B.units){
     let v=G.views.get(u.id);
     if(!v){ if(u.dead) continue; v=createView(u); }
@@ -114,6 +115,7 @@ function updateWorld(dt){
       const tb=MB.CreateTube('arc',{path:pts,radius:.07,tessellation:4},G.scene); tb.material=G.arcMat||(G.arcMat=emMat('arcM',new C3(.5,2.2,.9))); tb.isPickable=false; setTimeout(()=>tb.dispose(),110); } }
   animateFactionMats(t); updateBeacon(); updateProjectiles(dt); updateHulks(dt); updateOverlays(dt);
   if(G.rocks) for(const r of G.rocks){ r.rotation.x+=r.spin.x*dt; r.rotation.y+=r.spin.y*dt; r.rotation.z+=r.spin.z*dt; }
+  if(G.debThin&&G.debThin.length&&!(G.mobile&&(G.fskip&1))) for(const rec of G.debThin) debThinUpdate(rec,G.mobile?dt*2:dt);
 }
 
 // ---------- movement animations (called by the rules engine) ----------
@@ -174,12 +176,19 @@ function updateProjectiles(dt){
     if(!p.arrived && p.go>=p.arriveAt){ p.arrived=true; if(p.onArrive){ try{ p.onArrive(); }catch(e){ frameError(e); } } }
     if(p.go>=p.dist){ p.m.dispose(); PROJ.splice(i,1); } }
 }
+// v44.1: small effects go through the pooled sprite managers (no new mesh, material or particle system per effect); the old paths remain as fallbacks
+function fxMark(k){ G.fxLast={k,t:performance.now()}; }
+function poolOK(){ try{ return typeof fxp==='function'&&!!fxPool().mgr; }catch(e){ return false; } }
 function flash(pos,size,col,dur=.35){ if(G.fxReduced){ size*=.55; col=col.scale(.6); }
+  if(poolOK()){ fxp(pos,{cell:0,size:size*1.15,col:col.scale(1.8),dur,grow:.9,fade:1.4}); return; }
   const pl=MB.CreatePlane('fl',{size:1},G.scene); pl.position.copyFrom(pos); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false;
   const m=emMat('flM',col.scale(1.8),1); m.opacityTexture=G.tex.flare; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; pl.material=m; pl.rotation.z=Math.random()*6;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); pl.dispose(); m.dispose(); return; } pl.scaling.setAll(size*(.4+k*.9)); m.alpha=1-k*k; });
 }
 function burst(pos,{n=24,c1=new C4(1,.8,.4,1),c2=new C4(1,.45,.1,1),size=[.15,.5],life=[.2,.6],power=[4,14],tex=G.tex.soft,blend=BABYLON.ParticleSystem.BLENDMODE_ONEONE,grav=0,sizeGrow=false}={}){
+  if(poolOK()&&(tex===G.tex.soft||tex===G.tex.smoke)){ const sm=blend===BABYLON.ParticleSystem.BLENDMODE_STANDARD, N=Math.max(1,Math.round(n*(G.mobile?.4:.7))), R=(a)=>a[0]+Math.random()*(a[1]-a[0]);
+    for(let i=0;i<N;i++){ const k=Math.random(), c=new C3(c1.r+(c2.r-c1.r)*k,c1.g+(c2.g-c1.g)*k,c1.b+(c2.b-c1.b)*k), al=c1.a+(c2.a-c1.a)*k, d=new V3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize(), sz=R(size);
+      fxp(pos,{smoke:sm,cell:0,size:sz*(sm?1.5:1.7),col:sm?c:c.scale(1.3),alpha:sm?al:Math.min(1,al),dur:R(life),grow:sizeGrow?2:.55,vel:d.scale(R(power)),drag:sm?.9:1.4,grav:-grav,fade:sm?1.3:1.6}); } return; }
   const ps=new BABYLON.ParticleSystem('bs',n,G.scene); ps.particleTexture=tex; ps.emitter=pos.clone(); ps.minEmitBox=V3.Zero(); ps.maxEmitBox=V3.Zero();
   ps.color1=c1; ps.color2=c2; ps.colorDead=new C4(c2.r*.2,c2.g*.2,c2.b*.2,0); ps.minSize=size[0]; ps.maxSize=size[1]; ps.minLifeTime=life[0]; ps.maxLifeTime=life[1];
   ps.minEmitPower=power[0]; ps.maxEmitPower=power[1]; ps.direction1=new V3(-1,-1,-1); ps.direction2=new V3(1,1,1); ps.gravity=new V3(0,grav,0); ps.blendMode=blend;
@@ -233,13 +242,22 @@ function fireSheet(){ if(G.tex.fire) return G.tex.fire; const N=8,S=128;
 function hexTex(){ if(G.tex.hex) return G.tex.hex; G.tex.hex=dynTex('hexT',512,512,(g,w)=>{ g.clearRect(0,0,w,w); g.strokeStyle='rgba(255,255,255,.9)'; g.lineWidth=3; const R=22, H=R*Math.sqrt(3);
     for(let row=-1;row<w/H+1;row++) for(let col=-1;col<w/(R*1.5)+1;col++){ const cx=col*R*1.5, cy=row*H+(col%2?H/2:0); g.beginPath(); for(let i=0;i<=6;i++){ const a=i*Math.PI/3; g.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a)); } g.stroke(); } }); return G.tex.hex; }
 let LIGHTS=0;
-function lightFlash(pos,col,intensity,range,dur){ if(LIGHTS>=(G.quality==='ultra'?4:2)||G.quality==='medium'||G.fxReduced) return; LIGHTS++; const l=new BABYLON.PointLight('xl',pos.clone(),G.scene); l.diffuse=col; l.specular=col; l.range=range; l.intensity=intensity; const t0=G.time;
-  const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); l.dispose(); LIGHTS--; return; } l.intensity=intensity*(1-k)*(1-k); }); }
-function fireball(pos,size,n,life=1.2,spread=.35){ const ps=new BABYLON.ParticleSystem('fb',n,G.scene,null,true); ps.particleTexture=fireSheet(); ps.spriteCellWidth=128; ps.spriteCellHeight=128; ps.startSpriteCellID=0; ps.endSpriteCellID=63; ps.spriteCellLoop=false; ps.spriteCellChangeSpeed=1;
+// v44.1: a fixed pool of flash lights, created once and kept at zero intensity, so blasts never change the scene's light count
+// (adding or removing a light marks every material dirty and stalls the frame); Medium has no flash lights at all
+function flashLights(){ const want=G.fxReduced?0:G.quality==='ultra'?3:G.quality==='high'?2:0; const pool=G.flPool=G.flPool||[];
+  if(pool.length&&pool[0].getScene()!==G.scene) pool.length=0;
+  while(pool.length<want){ const l=new BABYLON.PointLight('xl',new V3(0,-9000,0),G.scene); l.intensity=0; l.range=1; l.busy=false; pool.push(l); }
+  pool.forEach((l,i)=>{ const on=i<want; if(l.isEnabled(false)!==on) l.setEnabled(on); }); return pool.slice(0,want); }
+function lightFlash(pos,col,intensity,range,dur){ const l=flashLights().find(x=>!x.busy); if(!l) return; l.busy=true; l.position.copyFrom(pos); l.diffuse.copyFrom(col); l.specular.copyFrom(col); l.range=range; l.intensity=intensity; const t0=G.time;
+  const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(dur*Math.max(.3,SPEED)); if(k>=1||l.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); l.intensity=0; l.position.set(0,-9000,0); l.busy=false; return; } l.intensity=intensity*(1-k)*(1-k); }); }
+function fireball(pos,size,n,life=1.2,spread=.35){ if(G.mobile) n=Math.max(2,Math.round(n*.55)); const ps=new BABYLON.ParticleSystem('fb',n,G.scene,null,true); ps.particleTexture=fireSheet(); ps.spriteCellWidth=128; ps.spriteCellHeight=128; ps.startSpriteCellID=0; ps.endSpriteCellID=63; ps.spriteCellLoop=false; ps.spriteCellChangeSpeed=1;
   ps.emitter=pos.clone(); ps.createSphereEmitter(size*spread,1); ps.color1=new C4(1,1,1,1); ps.color2=new C4(1,.92,.85,1); ps.colorDead=new C4(1,1,1,0); ps.minSize=size*.55; ps.maxSize=size*1.25;
   ps.minLifeTime=life*.7; ps.maxLifeTime=life*1.2; ps.minEmitPower=size*.08; ps.maxEmitPower=size*.35; ps.minAngularSpeed=-1.2; ps.maxAngularSpeed=1.2; ps.minInitialRotation=0; ps.maxInitialRotation=6.28;
   ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.manualEmitCount=n; ps.targetStopDuration=.15; ps.disposeOnStop=true; ps.updateSpeed=.016/Math.max(.35,SPEED); ps.start(); }
-function sparks(pos,n,power,col=new C4(1,.8,.45,1)){ const ps=new BABYLON.ParticleSystem('sp',n,G.scene); ps.particleTexture=G.tex.soft; ps.emitter=pos.clone(); ps.createSphereEmitter(.2,1);
+function sparks(pos,n,power,col=new C4(1,.8,.45,1)){ if(poolOK()){ const N=Math.max(2,Math.round(n*(G.mobile?.3:.55))), base=new C3(col.r,col.g,col.b), hot=new C3(1,.5,.15);
+    for(let i=0;i<N;i++){ const d=new V3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize(), v=d.scale(power*(.4+.6*Math.random()));
+      fxp(pos.add(d.scale(.2)),{cell:3,size:.8+Math.random()*1.1,col:C3.Lerp(base,hot,Math.random()).scale(1.6),dur:.3+Math.random()*.6,grow:0,vel:v,drag:1.1,grav:2,ang:screenAng(pos,v),w:1,h:.2,fade:1.1}); } return; }
+  const ps=new BABYLON.ParticleSystem('sp',n,G.scene); ps.particleTexture=G.tex.soft; ps.emitter=pos.clone(); ps.createSphereEmitter(.2,1);
   ps.billboardMode=BABYLON.ParticleSystem.BILLBOARDMODE_STRETCHED; ps.color1=col; ps.color2=new C4(1,.5,.15,1); ps.colorDead=new C4(.4,.1,0,0); ps.minSize=.06; ps.maxSize=.2; ps.minScaleY=3; ps.maxScaleY=7;
   ps.minLifeTime=.3; ps.maxLifeTime=.9; ps.minEmitPower=power*.4; ps.maxEmitPower=power; ps.gravity=new V3(0,-2,0); ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE; ps.manualEmitCount=n; ps.targetStopDuration=.1; ps.disposeOnStop=true; ps.updateSpeed=.016/Math.max(.35,SPEED); ps.start(); }
 function smoke(pos,size,n,life=2.6){ burst(pos,{n,tex:G.tex.smoke,c1:new C4(.34,.31,.29,.7),c2:new C4(.16,.15,.14,.55),size:[size*.5,size*1.1],life:[life*.6,life],power:[size*.1,size*.45],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
@@ -304,7 +322,7 @@ const WOPT={shell:{speed:120,len:2.2,thick:.46},twin:{speed:210,len:5.5,thick:.1
 async function animWeapon(u,w,t,shots){
   const va=G.views.get(u.id), vt=G.views.get(t.id); if(!va||!vt) return;
   if(w.k==='lance'||w.k==='torp') await cineFrame(u,t);
-  const P=FAC3D[va.fac]||FAC3D.hegemony, quad=shieldQuad(t,u), shielded=(t.sh[quad]||0)>.5&&(w.pierce||0)<1;
+  fxMark(w.k==='lance'?'lance':w.k==='torp'?'torp':'volley'); const P=FAC3D[va.fac]||FAC3D.hegemony, quad=shieldQuad(t,u), shielded=(t.sh[quad]||0)>.5&&(w.pierce||0)<1;
   let col=w.ion?new C3(.45,.75,1):w.k==='lance'?P.beam:w.k==='gauss'?FAC3D.deathless.bolt:w.k==='bio'?FAC3D.chorus.bolt:P.bolt;
   if(u.isSq) col=P.bolt;
   const style=(u.isSq||w.k==='flak'||w.k==='lance'||w.k==='torp')?null:(w.k==='gauss'?'rail':w.k==='bio'?'glob':WSTYLE[va.fac]||'shell');
@@ -375,15 +393,15 @@ async function animExplode(u){
   const v=G.views.get(u.id); if(!v||v.state!=='alive') return;
   const c=v.root.getAbsolutePosition().clone();
   if(u.isSq){ v.state='dead'; flash(c,5,new C3(1,.7,.4)); burst(c,{n:30,power:[5,14]}); SFX.pop(); disposeView(v); G.views.delete(u.id); await wait(250); return; }
-  v.state='dying'; if(v.engLight){ v.engLight.dispose(); v.engLight=null; } (v.extras||[]).forEach(p=>p.stop()); v.plate.el.remove(); v.ring.node.dispose(false,true); v.fires.forEach(f=>f.stop()); v.fires=[];
+  fxMark(u.isSq?'craft':'explode'); v.state='dying'; if(v.engLight){ const el=v.engLight; el.intensity=0; el.parent=null; el.position.set(0,-9000,0); (G.deadLights=G.deadLights||[]).push(el); v.engLight=null; } /* v44.1: disposing a light mid-fight re-dirties materials; it goes dark now and is freed at battle end */ (v.extras||[]).forEach(p=>p.stop()); v.plate.el.remove(); v.ring.node.dispose(false,true); v.fires.forEach(f=>f.stop()); v.fires=[];
   const L=v.L;
   // v44: the death plays out: the hull scorches and splits with glowing cracks, internal blasts tear through it, then the reactor goes
   try{ if(typeof shipDamageFx==='function'){ v.state='alive'; shipDamageFx(v,-1); v.state='dying'; } }catch(e){}
   if(G.cine&&!G.fxReduced&&!B.over){ try{ clearTimeout(G.cineTimer); G.ctl.hold(new V3(c.x,0,c.z),G.ctl.a+.35,1.05,clamp(L*3.4+40,60,190)); G.cineTimer=setTimeout(()=>G.ctl.release(),2300*SPEED); }catch(e){} }
-  for(let i=0;i<5;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(typeof fxStreak==='function'&&i%2===0){ const o=p.subtract(c); o.y=Math.abs(o.y)+.5; fxStreak(p,o.normalize(),6+L*.25,3+L*.06,new C3(1,.6,.25).scale(1.6),coneTex(),.35); } if(i%2===0) SFX.hit(); await wait(90); }
-  if(typeof fxSprite==='function'){ fxSprite(c,L*2.6,new C3(1,.9,.75).scale(1.5),starTex(),.55,{grow:.8}); shockRing(c,L*3.2,(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.3),{flat:true,dur:1.6,thick:.03,tilt:.5}); }
+  const nPop=G.mobile?3:5; for(let i=0;i<nPop;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(typeof fxStreak==='function'&&i%2===0){ const o=p.subtract(c); o.y=Math.abs(o.y)+.5; fxStreak(p,o.normalize(),6+L*.25,3+L*.06,new C3(1,.6,.25).scale(1.6),coneTex(),.35); } if(i%2===0) SFX.hit(); await wait(90); }
+  if(typeof fxSprite==='function'){ fxSprite(c,L*(G.mobile?1.7:2.6),new C3(1,.9,.75).scale(1.5),starTex(),.55,{grow:.8}); shockRing(c,L*3.2,(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.3),{flat:true,dur:1.6,thick:.03,tilt:.5}); }
   flash(c,L*1.4,new C3(1,.85,.6),.7); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.9); explode(c,L*.45); if(typeof fireballFx==='function'&&!G.fxReduced) fireballFx(c.add(new V3(0,1,0)),L*.42,1.7); fireball(c.add(new V3(0,1,0)),L*.35,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
-  burst(c,{n:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
+  burst(c,{n:G.mobile?30:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
   shockwave(c,L*2.4); SFX.boom(1.2); G.shake=Math.min(1,G.shake+.6+L/60);
   debris(c,L,v.fac);
   // split the hull and let the wreck drift out of the battle plane
@@ -394,6 +412,7 @@ async function animExplode(u){
   const nodes=[v.model.fore,v.model.aft], persist=!!u.hulk;
   for(const [n,sgn] of [[v.model.fore,1],[v.model.aft,-1]]){ const wp=n.getAbsolutePosition().clone(); const wr=v.root.rotation.clone(); n.parent=null; n.position=wp; n.rotation=wr.clone();
     n.vel=fwd.scale(sgn*(1.2+Math.random())).add(new V3((Math.random()-.5)*.6,persist?0:-.35-Math.random()*.3,(Math.random()-.5)*.6)); n.spin=new V3((Math.random()-.5)*.25,(Math.random()-.5)*.2,sgn*(.12+Math.random()*.2));
+    if(poolOK()){ n.ps=null; n.smk={acc:0}; continue; } // v44.1: wreck smoke comes from the pool
     const ps=new BABYLON.ParticleSystem('hf',120,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.color1=new C4(1,.5,.15,.8); ps.color2=new C4(.5,.3,.2,.5); ps.colorDead=new C4(0,0,0,0); ps.minSize=.8; ps.maxSize=2; ps.minLifeTime=.5; ps.maxLifeTime=1.4; ps.emitRate=40; ps.addSizeGradient(0,.6); ps.addSizeGradient(1,2.6); ps.minEmitPower=.5; ps.maxEmitPower=1.5; ps.start(); n.ps=ps; }
   G.hulks.push({nodes,t0:G.time,persist,L}); v.root.dispose(true,false); v.state='hulk'; G.views.delete(u.id);
   await wait(280);
@@ -401,6 +420,10 @@ async function animExplode(u){
 function updateHulks(dt){
   for(let i=G.hulks.length-1;i>=0;i--){ const h=G.hulks[i]; const age=G.time-h.t0; if(typeof hulkCookOff==='function') hulkCookOff(h,dt);
     for(const n of h.nodes){ n.position.addInPlace(n.vel.scale(dt)); n.rotation.addInPlace(n.spin.scale(dt));
+      if(n.smk&&!h.burnedOut){ const rate=(age<6?40:h.persist?Math.max(8,40-(age-6)*8):Math.max(0,40-(age-6)*8))*(G.mobile?.35:.7); n.smk.acc+=rate*dt; const L=h.L||14;
+        while(n.smk.acc>=1){ n.smk.acc-=1; const p=n.getAbsolutePosition().add(new V3((Math.random()-.5)*L*.25,(Math.random()-.3)*L*.04,(Math.random()-.5)*L*.08)), hot=Math.random()<.35;
+          fxp(p,{smoke:true,size:1.6+Math.random()*1.6,col:hot?new C3(.62,.38,.22):new C3(.3,.27,.25),alpha:.6,dur:1+Math.random()*.8,grow:1.6,vel:new V3((Math.random()-.5)*.8,.4+Math.random()*.6,(Math.random()-.5)*.8),drag:.4,fade:1.2});
+          if(hot) fxp(p,{cell:0,size:1.4,col:new C3(1,.5,.18).scale(1.3),dur:.4,grow:.4}); } }
       if(h.persist){ n.vel.scaleInPlace(Math.max(0,1-dt*.9)); n.spin.scaleInPlace(Math.max(0,1-dt*.6)); if(age>6&&n.ps) n.ps.emitRate=Math.max(8,40-(age-6)*8); }
       else { n.vel.y-=dt*.08; if(age>6&&n.ps) n.ps.emitRate=Math.max(0,40-(age-6)*8); } }
     if(h.persist&&age>25&&!h.burnedOut){ h.burnedOut=true; h.nodes.forEach(n=>n.ps&&n.ps.stop()); } // permanent wrecks stop burning

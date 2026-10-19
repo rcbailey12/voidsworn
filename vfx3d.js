@@ -15,6 +15,7 @@ function vfxMat(name,col,tex,alpha){ const m=new BABYLON.StandardMaterial(name,G
 function vfxLife(mesh,mat,dur,fn){ const t0=G.time, D=dur*Math.max(.3,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||mesh.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!mesh.isDisposed()) mesh.dispose(); mat.dispose(); return; } fn(k); }); }
 // a camera-facing sprite: stars, glows
 function fxSprite(pos,size,col,tex,dur,{grow=.9,spin=0,alpha=1}={}){ try{ if(G.fxReduced){ size*=.6; col=col.scale(.6); }
+    if((tex===G.tex.star||tex===G.tex.soft||tex===G.tex.flare)&&typeof fxp==='function'&&fxPool().mgr){ if(G.mobile) size*=.8; fxp(pos,{cell:tex===G.tex.star?1:0,size,col,dur,grow,spin:spin*60,alpha,fade:2}); return; }
     const pl=MB.CreatePlane('fxs',{size:1},G.scene); pl.position.copyFrom(pos); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false; pl.rotation.z=Math.random()*6.28;
     const m=vfxMat('fxsM',col,tex,alpha); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
     vfxLife(pl,m,dur,k=>{ pl.scaling.setAll(size*(.45+k*grow)); m.alpha=alpha*(1-k)*(1-k); if(spin) pl.rotation.z+=spin*.016; }); }catch(e){} }
@@ -58,7 +59,13 @@ function chargeFx(pos,col,dur=.28){ try{ if(G.fxReduced) return; const ps=new BA
     fxSprite(pos,4,col.scale(1.4),G.tex.flare,dur+.1,{grow:-.3}); }catch(e){} }
 
 // debris that burns: a few chunks trail fire and smoke as they tumble away
-function debrisTrail(mesh,life){ try{ const ps=new BABYLON.ParticleSystem('dtr',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=mesh; ps.minEmitBox=V3.Zero(); ps.maxEmitBox=V3.Zero();
+function debrisTrail(mesh,life){ try{
+    if(typeof fxp==='function'&&fxPool().mgr){ const st={on:true,acc:0,t0:G.time,last:G.time}, rate=G.mobile?14:30; // v44.1: pooled smoke and embers instead of a particle system per chunk
+      const obs=G.scene.onBeforeRenderObservable.add(()=>{ if(!st.on||mesh.isDisposed()||G.time-st.t0>life){ G.scene.onBeforeRenderObservable.remove(obs); return; } st.acc+=rate*Math.max(0,G.time-st.last); st.last=G.time; /* game time, like the sprite lifetimes, so a slow frame can't flood the pool */
+        while(st.acc>=1){ st.acc-=1; const p=mesh.getAbsolutePosition(); fxp(p,{smoke:true,size:.7+Math.random()*.6,col:new C3(.34,.28,.24),alpha:.55,dur:.7+Math.random()*.5,grow:1.8,drag:.5,fade:1.2});
+          if(Math.random()<.5) fxp(p,{cell:0,size:.9,col:new C3(1,.55,.2).scale(1.4),dur:.3,grow:.3}); } });
+      return {stop(){ st.on=false; },dispose(){ st.on=false; }}; }
+    const ps=new BABYLON.ParticleSystem('dtr',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=mesh; ps.minEmitBox=V3.Zero(); ps.maxEmitBox=V3.Zero();
     ps.color1=new C4(1,.62,.25,.9); ps.color2=new C4(.9,.35,.12,.7); ps.colorDead=new C4(.08,.07,.07,0); ps.minSize=.35; ps.maxSize=.9; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,2.4);
     ps.minLifeTime=.5; ps.maxLifeTime=1.1; ps.emitRate=45; ps.minEmitPower=.1; ps.maxEmitPower=.5; ps.direction1=new V3(-.2,-.2,-.2); ps.direction2=new V3(.2,.2,.2); ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start();
     setTimeout(()=>{ try{ ps.stop(); setTimeout(()=>ps.dispose(),1400); }catch(e){} },life*1000); return ps; }catch(e){ return null; } }
@@ -119,20 +126,28 @@ function fxPoolURL(){ const S=128, N=4, c=document.createElement('canvas'); c.wi
     else v=Math.exp(-dy*dy*38)*Math.pow(Math.max(0,1-Math.abs(dx)),.7)*(dx>0?1:.75+.25*(1+dx));
     const o=(y*S*N+cell*S+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=Math.round(clamp(v,0,1)*255); }
   g.putImageData(img,0,0); return c.toDataURL(); }
+// a second pool for smoke: soft alpha-blended puffs (not additive), so explosions and wrecks smoke without a particle system each
+function fxSmokeURL(){ const S=128, c=document.createElement('canvas'); c.width=S; c.height=S; const g=c.getContext('2d'), img=g.createImageData(S,S), d=img.data, r=seeded(77);
+  const blobs=[]; for(let i=0;i<9;i++) blobs.push([(r()-.5)*.6,(r()-.5)*.6,.25+r()*.3]);
+  for(let y=0;y<S;y++) for(let x=0;x<S;x++){ const dx=(x+.5-S/2)/(S/2), dy=(y+.5-S/2)/(S/2); let v=0; for(const [bx,by,br] of blobs){ const q=Math.hypot(dx-bx,dy-by)/br; v+=Math.exp(-q*q*2.2); }
+    v=clamp(v*.55,0,1)*clamp((1-Math.hypot(dx,dy))*2.5,0,1); const sh=.75+.25*(-dx-dy)*.5; const o=(y*S+x)*4; d[o]=d[o+1]=d[o+2]=Math.round(255*clamp(sh,0,1)); d[o+3]=Math.round(v*255); }
+  g.putImageData(img,0,0); return c.toDataURL(); }
+function mkPool(kind){ const smoke=kind==='smoke', cap=smoke?(G.mobile?220:600):(G.mobile?700:1800);
+  const mgr=new BABYLON.SpriteManager(smoke?'fxSmoke':'fxPool',smoke?fxSmokeURL():fxPoolURL(),cap,{width:128,height:128},G.scene);
+  mgr.blendMode=smoke?BABYLON.Constants.ALPHA_COMBINE:BABYLON.Constants.ALPHA_ADD; mgr.disableDepthWrite=true; mgr.isPickable=false; return {mgr,cap,live:[],free:[],smoke}; }
 function fxPool(){ const P=G.fxPool; if(P&&P.scene===G.scene) return P;
-  try{ const cap=G.mobile?700:1800; const mgr=new BABYLON.SpriteManager('fxPool',fxPoolURL(),cap,{width:128,height:128},G.scene);
-    mgr.blendMode=BABYLON.Constants.ALPHA_ADD; mgr.disableDepthWrite=true; mgr.isPickable=false;
-    G.fxPool={scene:G.scene,mgr,cap,live:[],free:[],last:G.time||0,amb:0}; return G.fxPool; }catch(e){ console.warn('fxPool',e); G.fxPool={scene:G.scene,mgr:null,live:[],free:[]}; return G.fxPool; } }
-// spawn one pooled sprite. size is in world units; vel moves it; ang rotates in screen space; w/h stretch it
-function fxp(pos,{cell=0,size=1,col=new C3(1,1,1),dur=.3,grow=.8,vel=null,drag=0,spin=0,alpha=1,ang=null,w=1,h=1,fade=2}={}){ const P=fxPool(); if(!P.mgr) return null;
-  let e; if(P.live.length>=P.cap-2){ e=P.live.shift(); } else if(P.free.length) e=P.free.pop(); else e={sp:new BABYLON.Sprite('fxp',P.mgr)};
-  e.gen=(e.gen||0)+1; const sp=e.sp; sp.isVisible=true; sp.cellIndex=cell; sp.position.copyFrom(pos); sp.angle=ang==null?Math.random()*6.283:ang; sp.color=new C4(col.r,col.g,col.b,alpha);
-  e.t0=G.time; e.dur=Math.max(.02,dur)*Math.max(.3,SPEED); e.s0=size; e.grow=grow; e.vel=vel?vel.clone():null; e.drag=drag; e.spin=spin; e.col=col; e.alpha=alpha; e.w=w; e.h=h; e.fade=fade;
+  try{ const add=mkPool('add'); let sm=null; try{ sm=mkPool('smoke'); }catch(e){}
+    G.fxPool={scene:G.scene,mgr:add.mgr,cap:add.cap,live:add.live,free:add.free,pools:[add].concat(sm?[sm]:[]),add,sm,last:G.time||0,amb:0}; return G.fxPool; }catch(e){ console.warn('fxPool',e); G.fxPool={scene:G.scene,mgr:null,live:[],free:[],pools:[]}; return G.fxPool; } }
+// spawn one pooled sprite. size is in world units; vel moves it (grav pulls it down); ang rotates in screen space; w/h stretch it; smoke:true uses the alpha-blended smoke pool
+function fxp(pos,{cell=0,size=1,col=WHITE3,dur=.3,grow=.8,vel=null,drag=0,spin=0,alpha=1,ang=null,w=1,h=1,fade=2,grav=0,smoke=false}={}){ const P0=fxPool(); const P=smoke?P0.sm:P0.add; if(!P||!P.mgr) return null;
+  let e; if(P.live.length>=P.cap-2){ e=P.live.shift(); } else if(P.free.length) e=P.free.pop(); else e={sp:new BABYLON.Sprite('fxp',P.mgr),vel:new V3(0,0,0),c:new C4(1,1,1,1)};
+  e.gen=(e.gen||0)+1; const sp=e.sp; sp.isVisible=true; sp.cellIndex=smoke?0:cell; sp.position.copyFrom(pos); sp.angle=ang==null?Math.random()*6.283:ang; e.c.set(col.r,col.g,col.b,alpha); sp.color=e.c;
+  e.t0=G.time; e.dur=Math.max(.02,dur)*Math.max(.3,SPEED); e.s0=size; e.grow=grow; e.mv=!!vel; if(vel) e.vel.copyFrom(vel); e.drag=drag; e.spin=spin; e.r=col.r; e.g=col.g; e.b=col.b; e.alpha=alpha; e.w=w; e.h=h; e.fade=fade; e.grav=grav; e.smoke=smoke;
   sp.width=size*w*.45; sp.height=size*h*.45; P.live.push(e); return e; }
-function fxPoolTick(){ const P=G.fxPool; if(!P||!P.mgr||P.scene!==G.scene) return; const now=G.time, dt=Math.min(.1,Math.max(0,now-P.last)); P.last=now; const L=P.live;
-  for(let i=L.length-1;i>=0;i--){ const e=L[i], k=(now-e.t0)/e.dur, sp=e.sp; if(k>=1){ sp.isVisible=false; L.splice(i,1); P.free.push(e); continue; }
-    const s=e.s0*(.45+k*e.grow); sp.width=s*e.w; sp.height=s*e.h; const a=e.alpha*Math.pow(1-k,e.fade); sp.color.r=e.col.r*a; sp.color.g=e.col.g*a; sp.color.b=e.col.b*a; sp.color.a=a;
-    if(e.vel){ sp.position.addInPlace(e.vel.scale(dt/Math.max(.3,SPEED))); if(e.drag) e.vel.scaleInPlace(Math.max(0,1-e.drag*dt)); } if(e.spin) sp.angle+=e.spin*dt; }
+function fxPoolTick(){ const P=G.fxPool; if(!P||!P.mgr||P.scene!==G.scene) return; const now=G.time, dt=Math.min(.1,Math.max(0,now-P.last)); P.last=now; const sc=dt/Math.max(.3,SPEED);
+  for(const Q of P.pools){ const L=Q.live; for(let i=L.length-1;i>=0;i--){ const e=L[i], k=(now-e.t0)/e.dur, sp=e.sp; if(k>=1){ sp.isVisible=false; L.splice(i,1); Q.free.push(e); continue; }
+      const s=e.s0*(.45+k*e.grow); sp.width=s*e.w; sp.height=s*e.h; const a=e.alpha*Math.pow(1-k,e.fade); if(e.smoke){ e.c.r=e.r; e.c.g=e.g; e.c.b=e.b; e.c.a=a*Math.min(1,k*6); } else { e.c.r=e.r*a; e.c.g=e.g*a; e.c.b=e.b*a; e.c.a=a; }
+      if(e.mv){ const v=e.vel; if(e.grav) v.y-=e.grav*dt; sp.position.x+=v.x*sc; sp.position.y+=v.y*sc; sp.position.z+=v.z*sc; if(e.drag){ const f=Math.max(0,1-e.drag*dt); v.x*=f; v.y*=f; v.z*=f; } } if(e.spin) sp.angle+=e.spin*dt; } }
   if(G.views&&G.quality!=='low') for(const v of G.views.values()) navLights(v,P);
   ambientBattle(dt); }
 function navLights(v,P){ const md=v.model; if(!md||!md.nav||v.crafts) return; const dead=!v.root||v.root.isDisposed()||v.state!=='alive';
@@ -172,3 +187,16 @@ function pdFire(vt,p){ try{ if(!vt||!vt.root||vt.root.isDisposed()||G.fxReduced)
   fxp(g,{cell:1,size:1.6,col:C3.Lerp(col,WHITE3,.5).scale(1.5),dur:.08});
   for(let i=0;i<3;i++){ const q=g.add(v.scale(i*2.2)); fxp(q,{cell:3,size:2.6,col:col.scale(1.5),dur:Math.min(.5,d/240),grow:0,vel:v.scale(240),ang:screenAng(q,v),w:1,h:.16,fade:.6}); }
   if(Math.random()<.55){ const f=p.add(new V3((Math.random()-.5)*6,(Math.random()-.5)*4,(Math.random()-.5)*6)); fxp(f,{cell:0,size:3.2,col:new C3(1,.7,.35).scale(1.4),dur:.22,grow:.9}); fxp(f,{cell:1,size:2.4,col:new C3(1,.95,.8).scale(1.4),dur:.09}); if(!G.mobile) fxp(f,{cell:0,size:3.5,col:new C3(.12,.11,.1),dur:1.2,grow:1.3,fade:1}); } }catch(e){} }
+
+// v44.1 warm-up: on battle start, a tiny blast far off on the skyline (it reads as the distant war) compiles the explosion, fireball, shock-ring
+// and beam shaders, and every faction's wreck materials are compiled against a real hull mesh, so the first kill doesn't stall
+function warmFx(){ try{ if(!G.scene||!G.cam||!B) return; fxMark('warmup'); fxPool(); flashLights(); fireSheet(); starTex(); coneTex(); scorchMat();
+    const tg=G.cam.getTarget(), fwd=tg.subtract(G.cam.position); fwd.y=0; if(fwd.lengthSquared()<1e-4) fwd.set(1,0,0); fwd.normalize(); const far=tg.add(fwd.scale(700)).add(new V3(0,70,0));
+    explode(far,3,{light:false}); if(typeof fireballFx==='function') fireballFx(far,6,1); shockRing(far,14,new C3(1,.7,.45),{flat:false,dur:.6}); beam(far,far.add(new V3(40,0,10)),new C3(.6,.8,1),.6,.3);
+    // decal and streak materials (scorch, ember glow, flame tongue) on a throwaway plane
+    try{ const pl=MB.CreatePlane('warmPl',{size:1},G.scene); pl.position.set(0,-9000,0); const em=emMat('emberM',new C3(1.4,.55,.15),1); em.opacityTexture=G.tex.soft; em.alphaMode=BABYLON.Engine.ALPHA_ADD; em.disableDepthWrite=true;
+      const vm=vfxMat('fxkM',new C3(1,.7,.4),coneTex(),1); let left=3; const done=()=>{ if(--left<=0){ pl.dispose(); em.dispose(); vm.dispose(); } };
+      for(const m of [scorchMat(),em,vm]) m.forceCompilation(pl,done); }catch(e){}
+    // wreck materials against both the merged live hull and the split copy a dying ship swaps to (their vertex layouts can differ)
+    const facs=new Set(); for(const v of G.views.values()) if(v.model&&v.model.meshes){ facs.add(v.fac); const M=facMats(v.fac); for(const m of v.model.meshes.slice(0,2)) for(const mat of [M.wreck,M.ember]) try{ mat.forceCompilation(m); }catch(e){} }
+    if(typeof MODEL_CACHE!=='undefined') for(const [k,p] of Object.entries(MODEL_CACHE)){ const fac=k.split('|')[0]; if(!facs.has(fac)||!p||!p.root) continue; const M=facMats(fac); for(const m of p.root.getChildMeshes(false).filter(x=>x.name.includes('hull_')).slice(0,3)) for(const mat of [M.wreck,M.ember]) try{ mat.forceCompilation(m); }catch(e){} } }catch(e){ console.warn('warmFx',e); } }

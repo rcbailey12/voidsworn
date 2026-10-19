@@ -257,12 +257,13 @@ function beamMaterial(col){ const S=BABYLON.Effect.ShadersStore; if(!S.vsBeamVer
   m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('t',0); m.setFloat('len',10); m.setFloat('fade',1); m.setVector3('camPos',G.cam.position); return m; }
 
 // ---------- frame time: p50/p90 per battle and quality level, logged at battle end ----------
-const FRAMES={ft:[],draws:0,inst:null,
-  tick(dt){ if(dt>0&&dt<1){ this.ft.push(dt*1000); if(this.ft.length>3600) this.ft.splice(0,600); } },
-  reset(){ this.ft=[]; try{ if(!this.inst&&G.scene) this.inst=new BABYLON.SceneInstrumentation(G.scene); }catch(e){} },
+const FRAMES={ft:[],draws:0,inst:null,h50:0,h100:0,max:0,by:{},
+  tick(dt){ if(dt>0&&dt<3){ const ms=dt*1000; this.ft.push(ms); if(this.ft.length>3600) this.ft.splice(0,600); if(ms>this.max) this.max=ms;
+      if(ms>50&&!document.hidden){ this.h50++; if(ms>100){ this.h100++; const f=G.fxLast&&performance.now()-G.fxLast.t<1500?G.fxLast.k:'other'; this.by[f]=(this.by[f]||0)+1; } } } },
+  reset(){ this.ft=[]; this.h50=0; this.h100=0; this.max=0; this.by={}; try{ if(!this.inst&&G.scene) this.inst=new BABYLON.SceneInstrumentation(G.scene); }catch(e){} },
   summary(){ const a=this.ft.slice().sort((x,y)=>x-y), q=p=>a.length?Math.round(a[Math.min(a.length-1,Math.floor(a.length*p))]*10)/10:null;
     let draws=null; try{ if(this.inst) draws=this.inst.drawCallsCounter.lastSecAverage||this.inst.drawCallsCounter.current; }catch(e){}
-    return {p50:q(.5),p90:q(.9),n:a.length,draws:draws==null?null:Math.round(draws),rw:G.engine?G.engine.getRenderWidth():0,rh:G.engine?G.engine.getRenderHeight():0,q:G.quality,mob:!!G.mobile}; } };
+    return {p50:q(.5),p90:q(.9),p99:q(.99),max:Math.round(this.max),h50:this.h50,h100:this.h100,hitch:this.by,n:a.length,draws:draws==null?null:Math.round(draws),rw:G.engine?G.engine.getRenderWidth():0,rh:G.engine?G.engine.getRenderHeight():0,q:G.quality,mob:!!G.mobile}; } };
 
 // per-frame updates for the shader library: rim strength and tactical ship scale follow the camera distance; planets and nebulae animate
 function gfxTick(dt){ dt=dt||(G.engine?G.engine.getDeltaTime()/1000:.016); const cr=G.cam?G.cam.radius:250, k=Math.max(0,Math.min(1,(cr-130)/320));
@@ -273,7 +274,8 @@ function gfxTick(dt){ dt=dt||(G.engine?G.engine.getDeltaTime()/1000:.016); const
   if(G.nearPlanet&&!G.nearPlanet.isDisposed()){ const s=G.sun?G.sun.direction.scale(-1).add(new V3(-.55,.3,0)).normalize():sunAt(G.nearPlanet.position); for(const m of [G.nearPlanet.material,G.nearAtmo&&G.nearAtmo.material]) if(m&&m.setVector3){ m.setVector3('sunDir',s); m.setVector3('camPos',G.cam.position); if(m===G.nearPlanet.material) m.setFloat('t',G.time||0); } }
   if(G.tex.plume) G.tex.plume.vOffset=((G.time||0)*1.7)%1;
   // big blasts briefly flare the exposure and split the colour at the screen edges
-  try{ const ip=G.pipe&&G.pipe.imageProcessing; if(ip){ if(G.expBase==null) G.expBase=ip.exposure; const k=Math.max(0,G.pulse||0); ip.exposure=G.expBase*(1+k*.55); if(G.pipe.chromaticAberration&&G.pipe.chromaticAberrationEnabled) G.pipe.chromaticAberration.aberrationAmount=10+k*40; G.pulse=k>0?Math.max(0,k-(dt||.016)*2.4):0; } }catch(e){}
+  // v44.1: the flare rides bloom weight, not exposure: an exposure change re-dirties every material in the scene each frame
+  try{ const pp=G.pipe; if(pp){ if(G.bloomBase==null) G.bloomBase=pp.bloomWeight; const k=Math.max(0,G.pulse||0), bw=G.bloomBase*(1+k*1.3); if(Math.abs(pp.bloomWeight-bw)>.003) pp.bloomWeight=bw; if(G.pipe.chromaticAberration&&G.pipe.chromaticAberrationEnabled) G.pipe.chromaticAberration.aberrationAmount=10+k*40; G.pulse=k>0?Math.max(0,k-(dt||.016)*2.4):0; } }catch(e){}
   if(G.nebMats&&!(G.fskip&1)) for(const m of G.nebMats) if(m.setFloat) m.setFloat('t',G.time||0); }
 
 // ---------- shield collapse: the broken facing shatters into hexagonal shards that spin away and fade ----------
