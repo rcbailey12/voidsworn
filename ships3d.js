@@ -9,8 +9,9 @@ const FAC3D={ // v46 faction identity: every colour below feeds hulls, windows, 
 };
 // v46: how each faction moves. ta/td = share of the move spent speeding up / braking, per = ms per hex (x size), bank = roll into turns,
 // sway = organic side-to-side, bob = glide arc, jit = burn stutter, phase = blinks out and reappears at the destination
-const MOVE_FEEL={voidsworn:{ta:.38,td:.38,per:1.15,bank:1.5},hegemony:{ta:.2,td:.22,per:.9,bank:.35},corsair:{ta:.1,td:.32,per:.85,bank:1.2,jit:.12},
-  chorus:{ta:.3,td:.3,per:1.1,bank:.8,sway:.28},ithar:{ta:.45,td:.45,per:1,bank:.6,bob:1.1},deathless:{ta:.2,td:.2,per:.8,bank:.2,phase:true}};
+const MOVE_FEEL={voidsworn:{ta:.42,td:.42,per:1.25,bank:1.8,over:.32,pitch:.08}, // v46.1: much stronger; see animPath
+  hegemony:{ta:.12,td:.14,per:.75,bank:.15,linear:true,retro:true},corsair:{ta:.08,td:.3,per:.85,bank:1.3,jit:.38,roll:.22},
+  chorus:{ta:.3,td:.3,per:1.1,bank:.6,sway:.5,cyc:1.5,squash:.16,str:3},ithar:{ta:.45,td:.45,per:1,bank:.5,arc:.75,bob:2.6,roll:.3},deathless:{ta:.2,td:.2,per:.6,bank:.1,phase:true}};
 const MATS={}, EMBLEMS={};
 function emblemMat(fac){ if(EMBLEMS[fac]) return EMBLEMS[fac]; const P=FAC3D[fac]||FAC3D.hegemony;
   const t=dynTex('emb_'+fac,256,256,(g,w)=>{ g.clearRect(0,0,w,w); const c=w/2; g.lineCap='round'; g.lineJoin='round';

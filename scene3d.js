@@ -96,6 +96,10 @@ function makeSSAO(){
     p.radius=2.4; p.totalStrength=1.15; p.base=.12; p.samples=16; p.maxZ=1600; p.minZAspect=.4; p.expensiveBlur=true; G.ssao=p; }catch(e){ console.warn('ssao unavailable',e); G.ssao=null; }
 }
 function castShadows(mesh){ mesh.receiveShadows=true; if(G.shadow) G.shadow.addShadowCaster(mesh,false); }
+// v46.1: the default pipeline (bloom, tone mapping, sharpen, FXAA) must run after ambient occlusion and god rays. Attaching those later appended them
+// behind it, so they ran on the tone-mapped image and the bloom blur spread bad pixels into black squares around ships on desktop GPUs.
+function orderPostFx(){ try{ const pps=(G.cam&&G.cam._postProcesses||[]).filter(Boolean), ix=n=>pps.findIndex(pp=>pp.name===n), first=pps.findIndex(pp=>pp.name==='highlights'||pp.name==='imageProcessing');
+  const late=pps.findIndex((pp,i)=>i>first&&/^(ssao|blurh|blurv|vls|taa)/i.test(pp.name)); if(first>=0&&late>first&&G.pipe&&G.pipe._buildPipeline) G.pipe._buildPipeline(); }catch(e){ console.warn('post order',e); } }
 function setQuality(q){
   G.quality=q; const ultra=q==='ultra', hi=q!=='medium';
   const taa=ultra&&!!G.taaOn; if(taa&&!G.taa){ try{ G.taa=new BABYLON.TAARenderingPipeline('taa',G.scene,[G.cam]); G.taa.samples=8; }catch(e){ console.warn('TAA unavailable',e); G.taaOn=false; } } if(G.taa) G.taa.isEnabled=taa;
@@ -110,6 +114,7 @@ function setQuality(q){
   const dpr=window.devicePixelRatio||1; // v42: Medium renders at about 1.5x CSS pixels (was clamped to 1x: 41% of a Pixel's resolution per axis), width capped at 720
   G.engine.setHardwareScalingLevel(q==='medium'?1/Math.max(1,Math.min(dpr,1.5,720/Math.max(320,innerWidth))):ultra&&!G.mobile&&dpr<1.5?1/Math.min(1.25,1.25*dpr):1/Math.min(2,dpr)); // Ultra supersamples 1.25x on screens below 4K
   G.pipe.sharpenEnabled=hi; G.glow.isEnabled=hi; try{ for(const M of Object.values(MATS)) for(const k of ['hull','dark','steel','trim']) if(M[k]) M[k].markAsDirty(BABYLON.Material.AllDirtyFlag); }catch(e){} // hull shading detail follows the quality level // the phone image is sharp enough now, and bloom carries the emissives
+  orderPostFx();
 }
 // procedural normal + occlusion/roughness/metal maps derived from an albedo canvas
 function mapsFromCanvas(name,src,{strength=2.4,metal=.5,rough=.55}={}){

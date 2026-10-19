@@ -39,7 +39,7 @@ function createView(u){
   G.views.set(u.id,v); return v;
 }
 function disposeView(v){ if(v.navSp){ try{ v.navSp.forEach(sp=>sp.dispose()); }catch(e){} v.navSp=null; } if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
-function disposeAllViews(){ (G.deadLights||[]).forEach(l=>{ try{ l.dispose(); }catch(e){} }); G.deadLights=[]; debrisClear(); for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
+function disposeAllViews(){ if(G.trails){ for(const tr of G.trails) try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} G.trails.clear(); } /* v46.1: wakes from moves cut short by the battle ending */ (G.deadLights||[]).forEach(l=>{ try{ l.dispose(); }catch(e){} }); G.deadLights=[]; debrisClear(); for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
 
 function addFire(v){
   const node=new BABYLON.TransformNode('fire',G.scene); node.parent=v.root; node.position=new V3((Math.random()-.5)*v.L*.6,v.H*.35,(Math.random()-.5)*v.L*.12);
@@ -93,7 +93,7 @@ function updateWorld(dt){
       if(k>=1){ if(v.arrive.streak){ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); } v.arrive=null; v.ring.node.setEnabled(true); v.plate.el.style.visibility=''; } }
     if(v.launch){ const k=clamp((G.time-v.launch.t0)/(.9*SPEED),0,1), e=1-Math.pow(1-k,3); px=v.launch.from.x+(p.x-v.launch.from.x)*e; pz=v.launch.from.z+(p.z-v.launch.from.z)*e; y=v.launch.from.y+(y-v.launch.from.y)*e; if(k>=1) v.launch=null; }
     if(v.jolt){ const k=(G.time-v.jolt.t0)/.6; if(k>=1) v.jolt=null; else { const e=Math.sin(k*Math.PI)*(1-k); px+=v.jolt.d.x*e; pz+=v.jolt.d.z*e; } }
-    v.root.position.set(px,y,pz); v.root.rotation.set(v.bank,a,0); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1); if(stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts,ts/Math.sqrt(stretch),ts/Math.sqrt(stretch)); v.stretched=stretch!==1; v.tsc=ts; } } // v42: ships grow a little as the camera pulls back
+    const uv=u.vis; v.root.position.set(px,y,pz); v.root.rotation.set(v.bank+((uv&&uv.roll)||0),a,(uv&&uv.pitch)||0); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1), sc=uv&&uv.sc; if(sc||stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts*(sc?sc[0]:1),ts/Math.sqrt(stretch)*(sc?sc[1]:1),ts/Math.sqrt(stretch)*(sc?sc[2]:1)); v.stretched=stretch!==1||!!sc; v.tsc=ts; } } // v46.1: roll, pitch and squash from the faction's movement // v42: ships grow a little as the camera pulls back
     if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1; v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
       for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt; if(v.model.turrets&&typeof updateTurrets==='function') updateTurrets(v,dt);
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx){ v.stackFx=v.model.stacks.map(sp=>{ const n=new BABYLON.TransformNode('stk',G.scene); n.parent=v.root; n.position=sp.clone(); const ps=new BABYLON.ParticleSystem('stack',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.direction1=new V3(-.2,1,-.2); ps.direction2=new V3(.2,1.5,.2); ps.color1=new C4(.32,.28,.25,.5); ps.color2=new C4(.2,.18,.17,.4); ps.colorDead=new C4(.1,.1,.1,0); ps.minSize=.3; ps.maxSize=.7; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,3.2); ps.minLifeTime=1.5; ps.maxLifeTime=3; ps.emitRate=10; ps.minEmitPower=.6; ps.maxEmitPower=1.2; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); return ps; }); } }
@@ -144,18 +144,47 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
   const prog=p=>p<ta?vmax*p*p/(2*ta):p<1-td?vmax*(ta/2+(p-ta)):1-vmax*(1-p)*(1-p)/(2*td);
   const thrAt=p=>p<ta?1:p<1-td?.65:.15;
   if(!u.isSq&&G.views.get(u.id)) SFX.engine(u.size);
-  const v=G.views.get(u.id); let trail=null; if(v&&!u.isSq&&v.root&&S>=1&&!(typeof process!=='undefined'&&process.env)) trail=startTrail(v); let ri=0, lastKey=0;
-  await tween(dur,(e,p)=>{ const x=S*clamp(prog(p),0,1), ps=posAt(x);
+  const v=G.views.get(u.id); let trail=null; if(v&&!u.isSq&&v.root&&S>=1&&!FE.phase&&!(typeof process!=='undefined'&&process.env)) trail=startTrail(v); let ri=0, lastKey=0;
+  // v46.1 movement signatures, strong enough to read at battle zoom (Ryan: "I didn't see or feel any real differences")
+  const sd=String(u.id).split('').reduce((h,c)=>h*31+c.charCodeAt(0)|0,7), side=(sd&1)?1:-1, ph=(Math.abs(sd)%100)*.0628;
+  const P0=pk[0], P1=pk.at(-1), W0=hexWorld(P0.q,P0.r), W1=hexWorld(P1.q,P1.r), span=Math.hypot(W1.x-W0.x,W1.z-W0.z), travels=span>.5&&!opt.charge;
+  const perp=travels?{x:-(W1.z-W0.z)/span,z:(W1.x-W0.x)/span}:{x:0,z:0}, w2h=(dx,dz)=>{ const rr=-dz/(1.5*HS); return {q:dx/HW-rr/2,r:rr}; };
+  const linPos=x=>{ let i=0; while(i<pk.length-2&&x>pk.at(i+1).s) i++; const A=pk.at(i), Bk=pk.at(i+1)||A, t=clamp((x-A.s)/Math.max(.001,Bk.s-A.s),0,1); return {q:A.q+(Bk.q-A.q)*t,r:A.r+(Bk.r-A.r)*t}; };
+  const base=FE.linear?linPos:posAt, posX=x=>{ if(x<=S) return base(x); const e0=base(S), e1=base(Math.max(0,S-.3)), dq=e0.q-e1.q, dr=e0.r-e1.r, n=Math.hypot(dq,dr)||1; return {q:e0.q+dq/n*(x-S),r:e0.r+dr/n*(x-S)}; };
+  const latOff=(x,p)=>{ if(!travels) return 0; const f=x/S, env=Math.sin(clamp(f,0,1)*Math.PI); // sideways offset, in hexes
+    if(FE.arc) return FE.arc*side*Math.sin(clamp(f,0,1)*Math.PI); // Ithar: one wide, graceful curve
+    if(FE.sway) return FE.sway*Math.sin(f*Math.PI*2*(FE.cyc||1.5)+ph)*env; // Chorus: swims, side to side
+    if(FE.jit) return FE.jit*(Math.sin(x*5.3+ph)*.6+Math.sin(x*11.7+ph*2.3)*.4)*env; // Corsair: drifts and corrects
+    return 0; };
+  const at=(x,p)=>{ const b0=posX(x), o=latOff(x,p); if(!o) return b0; const h=w2h(perp.x*o*HW,perp.z*o*HW); return {q:b0.q+h.q,r:b0.r+h.r}; };
+  const headDelta=(x,p)=>{ if(!travels||!(FE.arc||FE.sway||FE.jit)) return 0; const x2=Math.min(S,x+.06), x1=Math.max(0,x2-.12); if(x2-x1<.01) return 0;
+    const A0=hexWorld(posX(x1).q,posX(x1).r), A1=hexWorld(posX(x2).q,posX(x2).r), O0=at(x1,p), O1=at(x2,p), B0=hexWorld(O0.q,O0.r), B1=hexWorld(O1.q,O1.r);
+    let d=(Math.atan2(-(B1.z-B0.z),B1.x-B0.x)-Math.atan2(-(A1.z-A0.z),A1.x-A0.x))*180/Math.PI; d=((d+540)%360)-180; return clamp(d,-40,40); };
+  const fxAt=(q,r,y)=>{ const w=hexWorld(q,r); return new V3(w.x,y==null?HOVER_Y:y,w.z); };
+  const P=FAC3D[u.fac]||FAC3D.hegemony; let retroDone=false, coughT=0, phased=false;
+  const phaseFx=(q,r,out)=>{ try{ const c=fxAt(q,r), L=(v&&v.L)||8; flash(c,6+L*.5,P.eng.scale(1.8),.3); if(typeof shockRing==='function') shockRing(c,L*1.1,P.eng,{flat:true,dur:.5});
+      const col=MB.CreateCylinder('phaseCol',{height:26,diameterTop:L*.08,diameterBottom:L*.5,tessellation:18},G.scene), cm=emMat('phaseColM',P.eng.scale(1.5),.55); cm.alphaMode=BABYLON.Engine.ALPHA_ADD; cm.disableDepthWrite=true; cm.backFaceCulling=false; col.material=cm; col.isPickable=false; col.position.copyFrom(c); col.position.y+=8;
+      const t0=G.time, obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(.55*Math.max(.4,SPEED)); if(k>=1||col.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); try{ col.dispose(); cm.dispose(); }catch(e){} return; } cm.alpha=.55*(1-k); col.scaling.set(1-k*.6,1+k*.4,1-k*.6); });
+      if(typeof sparks==='function') sparks(c,18,9,new C4(P.eng.r,P.eng.g,P.eng.b,1)); }catch(e){} };
+  await tween(dur,(e,p)=>{ let x=S*clamp(prog(p),0,1);
+    if(FE.over&&travels){ x+=FE.over*Math.sin(Math.PI*clamp((p-.6)/.4,0,1)); } // Voidsworn: the mass carries it past the hex, then it hauls back
+    if(FE.str&&travels){ x=clamp(x+.06*Math.sin(2*Math.PI*FE.str*p)*Math.sin(Math.PI*p),0,S); } // Chorus: surges with each stroke
+    const ps=at(x,p);
     while(ri<rotS.length&&x>=rotS.at(ri).s){ if(v) rcsPuff(v,rotS.at(ri).dir); ri++; }
     const k=Math.floor(x); if(k!==lastKey){ lastKey=k; if(B) B.prog=(B.prog||0)+1; }
-    let q=ps.q, r=ps.r, lift=u.isSq?Math.sin(p*Math.PI)*1.6:0, thr=thrAt(p);
-    if(FE.sway||FE.jit){ const p2=posAt(Math.min(S,x+.05)), dq=p2.q-ps.q, dr=p2.r-ps.r, n=Math.hypot(dq,dr)||1, env=Math.sin(clamp(p,0,1)*Math.PI);
-      if(FE.sway){ const o=FE.sway*Math.sin(x*Math.PI*1.6)*env; q+=-dr/n*o; r+=dq/n*o; } // the hull writhes along its path
-      if(FE.jit&&p>ta&&p<1-td){ const j=FE.jit*env; q+=(Math.random()-.5)*j*.4; r+=(Math.random()-.5)*j*.4; thr=Math.random()<.3?1.6:.5; } } // patched engines cough and surge
-    if(FE.bob) lift+=FE.bob*Math.sin(clamp(p,0,1)*Math.PI); // a gliding arc
-    if(FE.phase&&v&&v.root){ const hide=p>.18&&p<.82; if(hide!==!!v.phased){ v.phased=hide; v.root.setEnabled(!hide); try{ const P=FAC3D[u.fac]||FAC3D.deathless, wp=hexWorld(ps.q,ps.r); flash(new V3(wp.x,HOVER_Y,wp.z),5+(v.L||8)*.35,P.eng.scale(1.6),.25); if(typeof shockRing==='function') shockRing(new V3(wp.x,HOVER_Y,wp.z),(v.L||8)*.9,P.eng,{flat:true,dur:.45}); }catch(e){} } } // phase: gone, then back at the far hex
-    u.vis={q,r,a:angAt(x),thr,lift}; }, true);
-  if(v&&v.phased){ v.phased=false; if(v.root) v.root.setEnabled(true); }
+    let lift=u.isSq?Math.sin(p*Math.PI)*1.6:0, thr=thrAt(p), roll=0, pitch=0, sc=null;
+    if(FE.bob&&travels) lift+=FE.bob*Math.sin(clamp(p,0,1)*Math.PI); // Ithar: rises into a glide
+    if(FE.arc&&travels) roll=-side*(FE.roll||.3)*Math.sin(clamp(x/S,0,1)*Math.PI); // banks into the curve
+    if(FE.over&&travels){ pitch=(p<ta?-1:p>.6?.8:0)*(FE.pitch||.07)*Math.sin(Math.PI*clamp(p<ta?p/ta:(p-.6)/.4,0,1)); thr=p<ta?2.4:thr; }
+    if(FE.squash&&travels){ const w=Math.sin(2*Math.PI*(FE.str||3)*p); sc=[1+FE.squash*w,1/Math.sqrt(1+FE.squash*w),1/Math.sqrt(1+FE.squash*w)]; thr=.5+.9*Math.max(0,w); }
+    if(FE.jit&&travels){ roll=(FE.roll||.2)*Math.sin(x*7.1+ph)*Math.sin(Math.PI*p); if(p>ta&&p<1-td){ const c=Math.sin(G.time*23+ph)>.55; thr=c?2:.35; if(v&&v.root&&G.time-coughT>.16&&Math.random()<.35){ coughT=G.time; try{ const st=toWorld(v,new V3(-v.L*.55,0,0)); burst(st,{n:8,c1:new C4(.3,.27,.25,.75),c2:new C4(.15,.13,.12,.5),size:[.5,1.3],life:[.5,1.1],power:[1,3],tex:G.tex.smoke,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(err){} } } } // patched engines cough smoke
+    if(FE.linear&&travels){ if(p<ta) thr=2.2; if(FE.retro&&!retroDone&&p>=1-td){ retroDone=true; try{ if(v&&v.root){ const bow=toWorld(v,new V3(v.L*.5,0,0)); flash(bow,3+v.L*.18,P.eng.scale(1.6),.22); rcsPuff(v,1); rcsPuff(v,-1); } }catch(err){} } } // Hegemony: hard burn, dead-straight, retro-thrust stop
+    if(FE.phase&&v&&v.root&&travels){ // Deathless: the hull dissolves, and is simply elsewhere
+      const k1=clamp((p-.02)/.1,0,1), k2=clamp((.98-p)/.1,0,1); const hide=p>.12&&p<.88;
+      if(!hide){ const s=p<.5?1-k1*.95:1-k2*.95; sc=[1+(1-s)*.6,Math.max(.05,s),Math.max(.05,s)]; }
+      if(hide!==phased){ phased=hide; v.phased=hide; v.root.setEnabled(!hide); if(v.ring&&v.ring.node) v.ring.node.setEnabled(!hide); if(v.plate) v.plate.el.style.visibility=hide?'hidden':''; const at0=hide?pk[0]:P1; phaseFx(at0.q,at0.r,hide); } }
+    u.vis={q:ps.q,r:ps.r,a:angAt(Math.min(x,S))+headDelta(Math.min(x,S),p),thr,lift,roll,pitch,sc}; }, true);
+  if(v&&v.phased){ v.phased=false; if(v.root) v.root.setEnabled(true); if(v.ring&&v.ring.node) v.ring.node.setEnabled(true); if(v.plate) v.plate.el.style.visibility=''; }
   const L=path.at(-1); for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=L.f; u.vis=null; if(trail) endTrail(trail);
 }
 async function animMove(u,q,r,f){ return animPath(u,[{q,r,f}]); }
@@ -163,8 +192,8 @@ async function animRotate(u,f){ return animPath(u,[{rot:true,f}]); }
 // engine wake: a ribbon that follows the stern and collapses once the ship stops
 function startTrail(v){ try{ if(G.quality==='low') return null; const P=FAC3D[v.fac]||FAC3D.hegemony, n=new BABYLON.TransformNode('wakeN',G.scene); n.parent=v.root; n.position.set(-v.L*.5,0,0);
     const tm=new BABYLON.TrailMesh('wake',n,G.scene,Math.max(.6,v.L*.07),48,true), m=emMat('wakeM',P.eng.scale(.9),.42); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; tm.material=m; tm.isPickable=false; try{ G.glow.addExcludedMesh(tm); }catch(e){}
-    return {tm,n,m}; }catch(e){ return null; } }
-function endTrail(tr){ const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/1.4; tr.m.alpha=.42*Math.max(0,1-k); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} } }); }
+    const tr={tm,n,m}; (G.trails=G.trails||new Set()).add(tr); return tr; }catch(e){ return null; } }
+function endTrail(tr){ const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/1.4; tr.m.alpha=.42*Math.max(0,1-k); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} if(G.trails) G.trails.delete(tr); } }); }
 // manoeuvring thrusters: small cold-gas puffs at the bow when a ship swings its nose round
 function rcsPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), side=new V3(-f.z,0,f.x).scale(dir>=0?1:-1), p=v.root.getAbsolutePosition().add(f.scale(v.L*.38)).add(side.scale(v.L*.06));
     burst(p,{n:10,c1:new C4(.85,.92,1,.7),c2:new C4(.6,.7,.8,.4),size:[.25,.7],life:[.25,.55],power:[3,7],tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(e){} }

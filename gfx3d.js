@@ -10,7 +10,7 @@
 const HULLFX_STYLE={deathless:1,chorus:2,ithar:3,voidsworn:4,hegemony:4,corsair:5};
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
   constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3; } // organic Chorus and porcelain Ithar hulls get no riveted plating
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3; } // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
   getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'}],
     fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\n#endif\n'}; }
