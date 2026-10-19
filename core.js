@@ -152,7 +152,7 @@ function derive(ship){
     aim:fx.aim||0, crit:fx.crit||0, dmg:1+.15*(mk-1)+(fx.dmgPct||0), fx,
     hangar:t.hangar?t.hangar+(fx.hangar||0)+(fx.hive||0):(fx.hive||0),
     hullRegen:(fx.hullRegen||0)+Math.round((fx.hullRegenPct||0)*maxHp)+Math.round((t.regen||0)*mm),
-    weapons:t.w.map(([id,arc])=>mkWeapon(id,arc,fx)),
+    weapons:nameWeapons(t.fac,t.w.map(([id,arc])=>mkWeapon(id,arc,fx))),
   };
 }
 function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); const after=derive(ship).maxHp; ship.hp=clamp(ship.hp+(after-before),1,after); }

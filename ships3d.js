@@ -1,16 +1,20 @@
 // ======================= PROCEDURAL SHIPS =======================
-const FAC3D={
-  voidsworn:{hull:'#b7a782',dark:'#3b3229',trim:'#c7953a',win:new C3(1,.58,.2),eng:new C3(.5,.8,1),bolt:new C3(1,.7,.28),beam:new C3(1,.84,.5),shield:new C3(.35,.85,.75),tip:new C3(1,.2,.15)},
-  hegemony:{hull:'#a3abb6',dark:'#373d45',trim:'#b53c35',win:new C3(.82,.92,1),eng:new C3(.42,.64,1),bolt:new C3(.35,1,.45),beam:new C3(.5,.78,1),shield:new C3(1,.38,.32),tip:new C3(1,.15,.15)},
-  corsair:{hull:'#9a6040',dark:'#3a2a20',trim:'#d9a441',win:new C3(1,.7,.3),eng:new C3(1,.55,.25),bolt:new C3(1,.6,.2),beam:new C3(1,.5,.2),shield:new C3(1,.6,.3),tip:new C3(1,.3,.1)},
-  chorus:{hull:'#6d3f68',dark:'#2c1a2b',trim:'#c77ab8',win:new C3(1,.45,.85),eng:new C3(.9,.4,1),bolt:new C3(1,.45,.85),beam:new C3(1,.5,.9),shield:new C3(1,.5,.9),tip:new C3(1,.4,.9)},
-  ithar:{hull:'#d8e4ea',dark:'#6c8594',trim:'#9fe3ff',win:new C3(.6,.95,1),eng:new C3(.6,.95,1),bolt:new C3(.6,.95,1),beam:new C3(.7,.95,1),shield:new C3(.6,.9,1),tip:new C3(.6,1,1)},
-  deathless:{hull:'#2c3431',dark:'#151a18',trim:'#58c878',win:new C3(.35,1,.5),eng:new C3(.35,1,.5),bolt:new C3(.4,1,.55),beam:new C3(.4,1,.55),shield:new C3(.4,1,.55),tip:new C3(.4,1,.5)},
+const FAC3D={ // v46 faction identity: every colour below feeds hulls, windows, engines, bolts, beams and shields
+  voidsworn:{hull:'#4a4440',dark:'#1c1918',trim:'#9c3a1c',win:new C3(1,.42,.12),eng:new C3(1,.5,.16),bolt:new C3(1,.52,.18),beam:new C3(1,.45,.15),shield:new C3(1,.46,.16),tip:new C3(1,.2,.08)}, // grimdark: black steel, ember orange
+  hegemony:{hull:'#c4ccd5',dark:'#5a6573',trim:'#3a78d0',win:new C3(.78,.9,1),eng:new C3(.45,.72,1),bolt:new C3(.5,.78,1),beam:new C3(.55,.82,1),shield:new C3(.38,.68,1),tip:new C3(.4,.7,1)}, // clean sci-fi navy: light grey, blue
+  corsair:{hull:'#6a2c22',dark:'#28140f',trim:'#a3542c',win:new C3(1,.4,.2),eng:new C3(1,.38,.16),bolt:new C3(.95,.2,.1),beam:new C3(.95,.22,.1),shield:new C3(.85,.16,.1),tip:new C3(1,.15,.08)}, // blood and rust
+  chorus:{hull:'#57364c',dark:'#211419',trim:'#a4913a',win:new C3(.85,.92,.25),eng:new C3(.8,.9,.28),bolt:new C3(.82,.92,.22),beam:new C3(.85,.9,.3),shield:new C3(.9,.82,.22),tip:new C3(.9,1,.3)}, // plague flesh, bile glow
+  ithar:{hull:'#eef3f1',dark:'#9fb7ae',trim:'#d7c88a',win:new C3(.6,1,.82),eng:new C3(.62,1,.84),bolt:new C3(.7,1,.86),beam:new C3(.75,1,.88),shield:new C3(.72,1,.86),tip:new C3(.8,1,.9)}, // pearl white, soft jade
+  deathless:{hull:'#1d2220',dark:'#0b0e0d',trim:'#1fbf4a',win:new C3(.15,1,.35),eng:new C3(.15,1,.35),bolt:new C3(.2,1,.38),beam:new C3(.2,1,.38),shield:new C3(.18,1,.36),tip:new C3(.2,1,.4)}, // black, terminal green
 };
+// v46: how each faction moves. ta/td = share of the move spent speeding up / braking, per = ms per hex (x size), bank = roll into turns,
+// sway = organic side-to-side, bob = glide arc, jit = burn stutter, phase = blinks out and reappears at the destination
+const MOVE_FEEL={voidsworn:{ta:.38,td:.38,per:1.15,bank:1.5},hegemony:{ta:.2,td:.22,per:.9,bank:.35},corsair:{ta:.1,td:.32,per:.85,bank:1.2,jit:.12},
+  chorus:{ta:.3,td:.3,per:1.1,bank:.8,sway:.28},ithar:{ta:.45,td:.45,per:1,bank:.6,bob:1.1},deathless:{ta:.2,td:.2,per:.8,bank:.2,phase:true}};
 const MATS={}, EMBLEMS={};
 function emblemMat(fac){ if(EMBLEMS[fac]) return EMBLEMS[fac]; const P=FAC3D[fac]||FAC3D.hegemony;
   const t=dynTex('emb_'+fac,256,256,(g,w)=>{ g.clearRect(0,0,w,w); const c=w/2; g.lineCap='round'; g.lineJoin='round';
-    const col={voidsworn:'#d8b25a',hegemony:'#d0463c',corsair:'#e8dcc4',chorus:'#ff6fcf',ithar:'#9fe8ff',deathless:'#6dff8e'}[fac]||'#ddd'; g.strokeStyle=col; g.fillStyle=col; g.lineWidth=9;
+    const col={voidsworn:'#ff7a2a',hegemony:'#4c8ee8',corsair:'#d8382a',chorus:'#d6d24a',ithar:'#b2ffdc',deathless:'#3dff6a'}[fac]||'#ddd'; g.strokeStyle=col; g.fillStyle=col; g.lineWidth=9;
     if(fac==='voidsworn'){ for(const sd of [1,-1]) for(let i=0;i<6;i++){ g.beginPath(); g.moveTo(c+sd*18,c-4+i*7); g.quadraticCurveTo(c+sd*(60+i*8),c-50+i*14,c+sd*(110-i*6),c-30+i*18); g.stroke(); } g.beginPath(); g.arc(c,c+6,22,0,Math.PI*2); g.fill(); g.fillStyle='#1a1408'; g.fillRect(c-10,c,7,7); g.fillRect(c+3,c,7,7); }
     else if(fac==='hegemony'){ g.beginPath(); for(let i=0;i<=6;i++){ const a=i*Math.PI/3-Math.PI/2; g.lineTo(c+Math.cos(a)*92,c+Math.sin(a)*92); } g.stroke(); g.beginPath(); g.moveTo(c-50,c-20); g.lineTo(c,c+40); g.lineTo(c+50,c-20); g.stroke(); g.beginPath(); g.moveTo(c,c-70); g.lineTo(c,c+10); g.stroke(); }
     else if(fac==='corsair'){ g.beginPath(); g.arc(c,c-18,42,0,Math.PI*2); g.fill(); g.fillStyle='#120c08'; g.beginPath(); g.arc(c-16,c-22,10,0,7); g.arc(c+16,c-22,10,0,7); g.fill(); g.lineWidth=14; g.beginPath(); g.moveTo(c-80,c+30); g.lineTo(c+80,c+100); g.moveTo(c+80,c+30); g.lineTo(c-80,c+100); g.stroke(); }
@@ -69,8 +73,8 @@ function facMats(fac){
   if(fac==='ithar'){ M.hull.iridescence.isEnabled=true; M.hull.iridescence.intensity=.9; M.hull.iridescence.indexOfRefraction=1.3; M.hull.iridescence.minimumThickness=120; M.hull.iridescence.maximumThickness=420; }
   if(fac==='chorus'){ M.hull.clearCoat.isEnabled=true; M.hull.clearCoat.intensity=.7; M.hull.clearCoat.roughness=.12; M.hull.subSurface.isTranslucencyEnabled=true; M.hull.subSurface.translucencyIntensity=.55; M.hull.subSurface.tintColor=new C3(1,.35,.65); }
   if(fac==='voidsworn'||fac==='hegemony'){ M.hull.clearCoat.isEnabled=true; M.hull.clearCoat.intensity=.25; M.hull.clearCoat.roughness=.3; }
-  M.steel=new BABYLON.PBRMaterial(fac+'steel',sc); M.steel.albedoColor=hexC3({voidsworn:'#8a7651',hegemony:'#6f757d',corsair:'#6b5140',chorus:'#3a2638',ithar:'#b9c7cf',deathless:'#2c3431'}[fac]||'#707070'); M.steel.metallic=.9; M.steel.roughness=.33; M.steel.bumpTexture=dm.normal; M.steel.environmentIntensity=1; M.steel.backFaceCulling=false; M.steel.twoSidedLighting=true;
-  M.paint=new BABYLON.PBRMaterial(fac+'paint',sc); M.paint.albedoColor=hexC3({corsair:'#8e2a22',hegemony:'#9a2e28',voidsworn:'#7a1f1a'}[fac]||P.trim); M.paint.metallic=.15; M.paint.roughness=.6; M.paint.bumpTexture=hm.normal; M.paint.environmentIntensity=1.3;
+  M.steel=new BABYLON.PBRMaterial(fac+'steel',sc); M.steel.albedoColor=hexC3({voidsworn:'#3a3532',hegemony:'#a2abb5',corsair:'#4f2b21',chorus:'#3a2638',ithar:'#dfe8e4',deathless:'#1a1f1d'}[fac]||'#707070'); M.steel.metallic=.9; M.steel.roughness=.33; M.steel.bumpTexture=dm.normal; M.steel.environmentIntensity=1; M.steel.backFaceCulling=false; M.steel.twoSidedLighting=true;
+  M.paint=new BABYLON.PBRMaterial(fac+'paint',sc); M.paint.albedoColor=hexC3({corsair:'#7a1a14',hegemony:'#2f6cc4',voidsworn:'#6e2410'}[fac]||P.trim); M.paint.metallic=.15; M.paint.roughness=.6; M.paint.bumpTexture=hm.normal; M.paint.environmentIntensity=1.3;
   M.flesh=new BABYLON.PBRMaterial(fac+'flesh',sc); M.flesh.albedoColor=hexC3('#6e2a5c'); M.flesh.metallic=0; M.flesh.roughness=.3; M.flesh.emissiveColor=P.win.scale(.45); M.flesh.bumpTexture=hm.normal; M.flesh.environmentIntensity=1.2;
   const stx=dynTex(fac+'sailT',256,256,(g,w)=>{ const gr=g.createLinearGradient(0,w,0,0); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(255,255,255,.12)'); g.fillStyle=gr; g.fillRect(0,0,w,w); g.fillStyle='rgba(255,255,255,.5)'; for(let y=6;y<w;y+=18) g.fillRect(0,y,w,1); }); M._sailT=stx;
   M.sail=emMat(fac+'sail',fac==='chorus'?new C3(.55,.16,.42):new C3(.25,.6,.75),.26); M.sail.backFaceCulling=false; M.sail.disableDepthWrite=true; M.sail.alphaMode=BABYLON.Engine.ALPHA_ADD; M.sail.opacityTexture=M._sailT; M.sail.alpha=.3;
@@ -615,7 +619,50 @@ function splitModel(model,proto){
   for(const d of s.getDescendants(false)){ if(d===fore||d===aft||d.isDisposed()) continue; const keep=d.name.includes('hull_')||d.name.endsWith('emblem'); if(!keep&&(d.parent===fore||d.parent===aft)) d.dispose(false,false); }
   for(const m of model.meshes) m.dispose(false,false);
   model.meshes=s.getChildMeshes(false).filter(m=>m.name.includes('hull_')); model.fore=fore; model.aft=aft; model.toSplit=null; return model; }
+// v46 test: hulls made from Ryan's concept art (FLUX image -> Hunyuan3D mesh -> 16k triangles) replace the procedural hull skin.
+// Guns, engines, stats and damage points still come from the procedural build, so the game plays the same.
+const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes in comments)
+  'hegemony|Frigate':'H6_23','hegemony|Destroyer':'H2a_r_23','hegemony|Cruiser':'H5_11','hegemony|Battleship':'H4_11', // H6b, H2a rev, H5a carrier-cruiser, H4a
+  'voidsworn|Cruiser':'V5_37','voidsworn|Battleship':'V4_37','voidsworn|Dreadnought':'V1b_r_23', // V5c, V4c, V1b rev
+  'corsair|Frigate':'C12_23','corsair|Destroyer':'C9_23','corsair|Cruiser':'C11_23','corsair|Carrier':'C10_37', // C12b, C9b, C11b, C10c
+  'chorus|Frigate':'B18_11','chorus|Destroyer':'B15_23','chorus|Cruiser':'B13_23','chorus|Carrier':'B17_37','chorus|Bio-titan':'B16_23', // B18a, B15b, B13b, B17c, B16b
+  'ithar|Frigate':'I13_11','ithar|Destroyer':'I11_37','ithar|Cruiser':'I10_11','ithar|Carrier':'I12_23','ithar|Ark':'I8_37', // I13a, I11c, I10a, I12b, I8c
+  'deathless|Frigate':'D9_23','deathless|Destroyer':'D7_11','deathless|Cruiser':'D4_37','deathless|Tomb-ark':'D8_37'}, AI_HULL_DATA={}; // D9b, D7a, D4c, D8c
+function aiHullsOn(){ return G.aiHulls!==false; }
+function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new T(u.buffer); };
+  const qp=b64(j.p,Int16Array), qn=b64(j.q,Int8Array), idx=b64(j.i,j.i32?Uint32Array:Uint16Array), n=qp.length/3, pos=new Float32Array(qp.length), nor=new Float32Array(qp.length), uv=new Float32Array(n*2);
+  for(let i=0;i<qp.length;i++){ pos[i]=qp[i]/32767*j.ext[i%3]; nor[i]=qn[i]/127; }
+  for(let v=0;v<n;v++){ const x=pos[v*3],y=pos[v*3+1],z=pos[v*3+2], ax=Math.abs(nor[v*3]), ay=Math.abs(nor[v*3+1]), az=Math.abs(nor[v*3+2]); const k=3.2; // box-projected plating, about three panels per hull length
+    if(ay>=ax&&ay>=az){ uv[v*2]=x*k; uv[v*2+1]=z*k; } else if(ax>=az){ uv[v*2]=z*k; uv[v*2+1]=y*k; } else { uv[v*2]=x*k; uv[v*2+1]=y*k; } }
+  return {pos,nor,idx,uv,tris:j.t}; }
+async function loadAIHulls(){ if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:') return;
+  for(const [k,id] of Object.entries(AI_HULLS)){ try{ const r=await fetch('hulls/'+id+'.json'); if(!r.ok) continue; AI_HULL_DATA[k]=decodeAIHull(await r.json()); delete MODEL_CACHE[k]; /* ships built from now on use it */ }catch(e){ console.warn('AI hull not loaded',k,e); } } }
+function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')); if(!fore) return p; const M=facMats(fac), L=p.L;
+  for(const m of p.root.getChildMeshes(false)) if(m.name.includes('hull_')||m.name.endsWith('emblem')) m.dispose(false,false);
+  p.root.computeWorldMatrix(true); fore.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(fore.getWorldMatrix()).multiply(p.root.getWorldMatrix());
+  const pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*L;
+  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; vd.transform(inv);
+  // split at the procedural break line so a dying ship still breaks in two
+  const split=(p.surf&&p.surf.split!=null)?p.surf.split:-.05*L, aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, P=vd.positions, I=vd.indices, parts={fore:[],aft:[]};
+  for(let t=0;t<I.length;t+=3){ const cx=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3; parts[cx>=split?'fore':'aft'].push(I[t],I[t+1],I[t+2]); }
+  for(const half of ['fore','aft']){ if(!parts[half].length) continue; const sub=new BABYLON.VertexData(); sub.positions=P; sub.normals=vd.normals; sub.uvs=vd.uvs; sub.indices=parts[half];
+    const m=new BABYLON.Mesh('hull_ai',G.scene); sub.applyToMesh(m); m.material=M.hull; m.parent=half==='fore'?fore:aftN; if(half==='aft'&&aftN!==fore){ aftN.computeWorldMatrix(true); m.position.copyFrom(fore.position.subtract(aftN.position)); } m.refreshBoundingInfo(true); }
+  // engine plumes and flares move to the new hull's stern (they were placed for the procedural hull)
+  try{ let minX=1e9; for(let i=0;i<P.length;i+=3) minX=Math.min(minX,P[i]); let y0=1e9,y1=-1e9,z0=1e9,z1=-1e9; for(let i=0;i<P.length;i+=3) if(P[i]<minX+.1*L){ y0=Math.min(y0,P[i+1]); y1=Math.max(y1,P[i+1]); z0=Math.min(z0,P[i+2]); z1=Math.max(z1,P[i+2]); }
+    const o=aftN!==fore?fore.position.subtract(aftN.position):V3.Zero(), cy=(y0+y1)/2, cz=(z0+z1)/2, hy=Math.max(.2,(y1-y0)*.42), hz=Math.max(.2,(z1-z0)*.42);
+    const fit=(m,isPlume)=>{ const q=m.position.subtract(o); q.y=cy+clamp(q.y-cy,-hy,hy); q.z=cz+clamp(q.z-cz,-hz,hz);
+      if(isPlume){ m.refreshBoundingInfo(); const bx=m.getBoundingInfo().boundingBox.maximum.x*(m.scaling?m.scaling.x:1); q.x=minX+.03*L-bx; } else { q.x=minX-.01*L; try{ m.bakeTransformIntoVertices(BABYLON.Matrix.Scaling(.55,.55,.55)); }catch(e){} } m.position.copyFrom(q.add(o)); }; // smaller glows: the new hulls taper at the stern
+    for(const m of p.plumes||[]) if(!m.isDisposed()) fit(m,true); for(const m of p.flares||[]) if(!m.isDisposed()) fit(m,false); }catch(e){ console.warn('AI hull engines',e); }
+  // turret hard points sit on the new hull's top surface (a coarse height map from its vertices)
+  try{ const T=p.hard&&p.hard.T; if(T&&T.length){ const NX=40,NZ=14; let zmax=0; for(let i=2;i<P.length;i+=3) zmax=Math.max(zmax,Math.abs(P[i])); const hm=new Float32Array(NX*NZ).fill(-1e9);
+      for(let i=0;i<P.length;i+=3){ const ix=Math.floor((P[i]/L+.5)*NX), iz=Math.floor((P[i+2]/(2*zmax+1e-6)+.5)*NZ); if(ix>=0&&ix<NX&&iz>=0&&iz<NZ) hm[ix*NZ+iz]=Math.max(hm[ix*NZ+iz],P[i+1]); }
+      for(const pt of T){ const ix=Math.floor((pt.x/L+.5)*NX), iz=Math.floor((pt.z/(2*zmax+1e-6)+.5)*NZ); const h=(ix>=0&&ix<NX&&iz>=0&&iz<NZ)?hm[ix*NZ+iz]:-1e9; if(h>-1e8) pt.y=h; } } }catch(e){}
+  p.aiHull=true; return p; }
 function buildShipModelFresh(u){
+  const p=buildShipModelProc(u), k=(u.fac||'voidsworn')+'|'+u.cls;
+  if(aiHullsOn()&&AI_HULL_DATA[k]) try{ applyAIHull(p,u.fac||'voidsworn',AI_HULL_DATA[k]); }catch(e){ console.warn('AI hull swap failed',e); }
+  return p; }
+function buildShipModelProc(u){
   const fac=u.fac||'voidsworn';
   const style=(FACTIONS[fac]||{}).style, cls=u.cls, L=CLS_LEN[cls]||14;
   const b=new SB(fac,L); b.greebleN=(({gothic:18,wedge:10,junk:10,sail:3,bio:0,tomb:0})[style]*L||0)*(G.mobile?.6:.85); /* v44: fewer, better greebles: the hull carries the detail */

@@ -80,7 +80,7 @@ function updateWorld(dt){
     if(v.state!=='alive') continue;
     const vis=unitVis(u), p=hexWorld(vis.q,vis.r), a=vis.a*Math.PI/180;
     if(v.lastA==null) v.lastA=a;
-    const da=a-v.lastA; v.lastA=a; const bk=u.isSq?.2:u.size>.8?.07:u.size>.6?.1:.14, bankT=clamp(-da/Math.max(dt,.001)*bk,-.38,.38); v.bank+=(bankT-v.bank)*Math.min(1,dt*3.2);
+    const da=a-v.lastA; v.lastA=a; const bk=(u.isSq?.2:u.size>.8?.07:u.size>.6?.1:.14)*((!u.isSq&&typeof MOVE_FEEL!=='undefined'&&MOVE_FEEL[u.fac]&&MOVE_FEEL[u.fac].bank)||1), bankT=clamp(-da/Math.max(dt,.001)*bk,-.38,.38); v.bank+=(bankT-v.bank)*Math.min(1,dt*3.2);
     let y=HOVER_Y+Math.sin(t*.8+v.bob)*.22+((u.vis&&u.vis.lift)||0);
     let px=p.x, pz=p.z, stretch=1;
     if(v.arrive){ const k=(G.time-v.arrive.t0)/(.95*Math.max(.4,SPEED)); if(k<0){ v.root.setEnabled(false); v.ring.node.setEnabled(false); v.plate.el.style.visibility='hidden'; continue; }
@@ -138,8 +138,9 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     return {q:h00*A.q+h10*ds*mA.q+h01*Bk.q+h11*ds*mB.q, r:h00*A.r+h10*ds*mA.r+h01*Bk.r+h11*ds*mB.r}; };
   const angAt=x=>{ let i=0; while(i<ak.length-2&&x>ak.at(i+1).s) i++; const A=ak.at(i), Bk=ak.at(Math.min(ak.length-1,i+1)); if(Bk===A) return A.a; const t=clamp((x-A.s)/Math.max(.001,Bk.s-A.s),0,1), e=t*t*(3-2*t); return A.a+(Bk.a-A.a)*e; };
   // a trapezoid speed profile: spool up, cruise, brake; big hulls take longer to get going
-  const per=u.isSq?110:u.size>.8?430:u.size>.6?350:280, dur=Math.min((per*S+(u.isSq?60:260))*(opt.charge?.72:1), u.isSq?900:3600);
-  const ta=u.isSq?.12:opt.charge?.45:u.size>.8?.32:.25, td=opt.charge?.05:u.isSq?.15:.3, vmax=1/(1-ta/2-td/2);
+  const FE=(!u.isSq&&typeof MOVE_FEEL!=='undefined'&&MOVE_FEEL[u.fac])||{};
+  const per=(u.isSq?110:u.size>.8?430:u.size>.6?350:280)*(FE.per||1), dur=Math.min((per*S+(u.isSq?60:260))*(opt.charge?.72:1), u.isSq?900:3600);
+  const ta=u.isSq?.12:opt.charge?.45:(FE.ta!=null?FE.ta*(u.size>.8?1.15:1):u.size>.8?.32:.25), td=opt.charge?.05:u.isSq?.15:(FE.td!=null?FE.td:.3), vmax=1/(1-ta/2-td/2);
   const prog=p=>p<ta?vmax*p*p/(2*ta):p<1-td?vmax*(ta/2+(p-ta)):1-vmax*(1-p)*(1-p)/(2*td);
   const thrAt=p=>p<ta?1:p<1-td?.65:.15;
   if(!u.isSq&&G.views.get(u.id)) SFX.engine(u.size);
@@ -147,7 +148,14 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
   await tween(dur,(e,p)=>{ const x=S*clamp(prog(p),0,1), ps=posAt(x);
     while(ri<rotS.length&&x>=rotS.at(ri).s){ if(v) rcsPuff(v,rotS.at(ri).dir); ri++; }
     const k=Math.floor(x); if(k!==lastKey){ lastKey=k; if(B) B.prog=(B.prog||0)+1; }
-    u.vis={q:ps.q,r:ps.r,a:angAt(x),thr:thrAt(p),lift:u.isSq?Math.sin(p*Math.PI)*1.6:0}; }, true);
+    let q=ps.q, r=ps.r, lift=u.isSq?Math.sin(p*Math.PI)*1.6:0, thr=thrAt(p);
+    if(FE.sway||FE.jit){ const p2=posAt(Math.min(S,x+.05)), dq=p2.q-ps.q, dr=p2.r-ps.r, n=Math.hypot(dq,dr)||1, env=Math.sin(clamp(p,0,1)*Math.PI);
+      if(FE.sway){ const o=FE.sway*Math.sin(x*Math.PI*1.6)*env; q+=-dr/n*o; r+=dq/n*o; } // the hull writhes along its path
+      if(FE.jit&&p>ta&&p<1-td){ const j=FE.jit*env; q+=(Math.random()-.5)*j*.4; r+=(Math.random()-.5)*j*.4; thr=Math.random()<.3?1.6:.5; } } // patched engines cough and surge
+    if(FE.bob) lift+=FE.bob*Math.sin(clamp(p,0,1)*Math.PI); // a gliding arc
+    if(FE.phase&&v&&v.root){ const hide=p>.18&&p<.82; if(hide!==!!v.phased){ v.phased=hide; v.root.setEnabled(!hide); try{ const P=FAC3D[u.fac]||FAC3D.deathless, wp=hexWorld(ps.q,ps.r); flash(new V3(wp.x,HOVER_Y,wp.z),5+(v.L||8)*.35,P.eng.scale(1.6),.25); if(typeof shockRing==='function') shockRing(new V3(wp.x,HOVER_Y,wp.z),(v.L||8)*.9,P.eng,{flat:true,dur:.45}); }catch(e){} } } // phase: gone, then back at the far hex
+    u.vis={q,r,a:angAt(x),thr,lift}; }, true);
+  if(v&&v.phased){ v.phased=false; if(v.root) v.root.setEnabled(true); }
   const L=path.at(-1); for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=L.f; u.vis=null; if(trail) endTrail(trail);
 }
 async function animMove(u,q,r,f){ return animPath(u,[{q,r,f}]); }
@@ -342,15 +350,15 @@ async function cineFrame(a,t,kind='lance'){
   G.cineTimer=setTimeout(()=>G.ctl.release(),900*SPEED);
 }
 // every faction's guns look different: heavy shells, paired turbolasers, scattered tracers, bio-plasma globs, light needles, gauss rails
-const WSTYLE={voidsworn:'shell',hegemony:'twin',corsair:'tracer',chorus:'glob',ithar:'needle',deathless:'rail'};
-const WOPT={shell:{speed:120,len:2.2,thick:.46},twin:{speed:210,len:5.5,thick:.17},tracer:{speed:170,len:2,thick:.13},glob:{speed:72,len:1.4,thick:1.05,shape:'sphere'},needle:{speed:290,len:8,thick:.1}};
+const WSTYLE={voidsworn:'las',hegemony:'plasma',corsair:'tracer',chorus:'spine',ithar:'needle',deathless:'rail'}; // v46: grim las-beams, blue plasma lances, junk tracers, bone spines, light needles, gauss rails
+const WOPT={las:{speed:320,len:9,thick:.2},plasma:{speed:165,len:4.2,thick:.5},spine:{speed:105,len:2.6,thick:.16},shell:{speed:120,len:2.2,thick:.46},twin:{speed:210,len:5.5,thick:.17},tracer:{speed:170,len:2,thick:.13},glob:{speed:72,len:1.4,thick:1.05,shape:'sphere'},needle:{speed:290,len:8,thick:.1}};
 async function animWeapon(u,w,t,shots){
   const va=G.views.get(u.id), vt=G.views.get(t.id); if(!va||!vt) return;
   if(w.k==='lance'||w.k==='torp') await cineFrame(u,t,w.k); else if(!u.isSq) await cineFrame(u,t,'volley');
   fxMark(w.k==='lance'?'lance':w.k==='torp'?'torp':'volley'); const P=FAC3D[va.fac]||FAC3D.hegemony, quad=shieldQuad(t,u), shielded=(t.sh[quad]||0)>.5&&(w.pierce||0)<1;
   let col=w.ion?new C3(.45,.75,1):w.k==='lance'?P.beam:w.k==='gauss'?FAC3D.deathless.bolt:w.k==='bio'?FAC3D.chorus.bolt:P.bolt;
   if(u.isSq) col=P.bolt;
-  const style=(u.isSq||w.k==='flak'||w.k==='lance'||w.k==='torp')?null:(w.k==='gauss'?'rail':w.k==='bio'?'glob':WSTYLE[va.fac]||'shell');
+  const style=(u.isSq||w.k==='flak'||w.k==='lance'||w.k==='torp')?null:(w.k==='gauss'?'rail':w.id==='bioplasma'?'spine':w.k==='bio'?'glob':WSTYLE[va.fac]||'shell');
   const tp=vt.root.getAbsolutePosition(), mz=muzzles(va,w.arc,tp).sort((p1,p2)=>V3.Distance(p1,tp)-V3.Distance(p2,tp));
   if(w.arc==='T'&&typeof aimTurrets==='function'&&va.model&&va.model.turrets){ aimTurrets(va,tp); await wait(160); }
   const impact=(hit,from)=>{ if(t.dead&&!vt.root) return; if(!hit){ return; }
@@ -366,12 +374,13 @@ async function animWeapon(u,w,t,shots){
     await wait(150);
   } else if(w.k==='torp'){
     const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ const from=mz[i%mz.length]; const to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
-      const m=MB.CreateCylinder('torp',{height:1.4,diameterTop:0,diameterBottom:.45,tessellation:8},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2)); m.material=emMat('tm',col.scale(1.8)); m.position.copyFrom(from); m.isPickable=false;
+      const TF={corsair:{dur:.8,arc:2,wob:.9},chorus:{dur:1.15,arc:5.5,sac:true},ithar:{dur:.55,arc:.6},voidsworn:{dur:.85,arc:3.2}}[va.fac]||{dur:.75,arc:3}; const ph=Math.random()*6.28; // v46: rattling rockets, lobbed acid sacs, fast star torpedoes, heavy hellfire
+      const m=TF.sac?MB.CreateSphere('torp',{diameter:1.1,segments:10},G.scene):MB.CreateCylinder('torp',{height:1.4,diameterTop:0,diameterBottom:.45,tessellation:8},G.scene); if(TF.sac) m.scaling.set(.8,.8,1.3); else m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2)); m.material=emMat('tm',col.scale(1.8)); m.position.copyFrom(from); m.isPickable=false;
       const tr=new BABYLON.ParticleSystem('trail',240,G.scene); tr.particleTexture=G.tex.smoke; tr.emitter=m; tr.color1=new C4(1,.7,.35,.8); tr.color2=new C4(.6,.5,.45,.5); tr.colorDead=new C4(.1,.1,.1,0); tr.minSize=.4; tr.maxSize=.9; tr.minLifeTime=.4; tr.maxLifeTime=.9; tr.emitRate=160; tr.minEmitPower=.1; tr.maxEmitPower=.4; tr.addSizeGradient(0,.5); tr.addSizeGradient(1,2); tr.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; tr.start();
       let trl=null, head=null; try{ trl=new BABYLON.TrailMesh('ttr',m,G.scene,.42,G.quality==='medium'?24:44,true); const tmM=emMat('ttrM',col.scale(1.5),.55); tmM.alphaMode=BABYLON.Engine.ALPHA_ADD; tmM.disableDepthWrite=true; tmM.backFaceCulling=false; trl.material=tmM; trl.isPickable=false; try{ G.glow.addExcludedMesh(trl); }catch(e){}
         head=MB.CreatePlane('thead',{size:2.6},G.scene); head.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; head.parent=m; head.isPickable=false; const hm=emMat('theadM',C3.Lerp(col,new C3(1,1,1),.4).scale(1.8),1); hm.opacityTexture=G.tex.flare; hm.alphaMode=BABYLON.Engine.ALPHA_ADD; hm.disableDepthWrite=true; head.material=hm; }catch(e){}
-      SFX.torp(); const dur=.75, t0=G.time;
-      const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=Math.min(1,(G.time-t0)/(dur*Math.max(.3,SPEED))); const p=V3.Lerp(from,to,k); p.y+=Math.sin(k*Math.PI)*3; m.lookAt(p.add(to.subtract(from).normalize().scale(2))); m.position.copyFrom(p);
+      SFX.torp(); const dur=TF.dur, t0=G.time;
+      const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=Math.min(1,(G.time-t0)/(dur*Math.max(.3,SPEED))); const p=V3.Lerp(from,to,k); p.y+=Math.sin(k*Math.PI)*TF.arc; if(TF.wob){ const e=Math.sin(k*Math.PI)*TF.wob; p.x+=Math.sin(k*22+ph)*e; p.z+=Math.cos(k*17+ph)*e; } m.lookAt(p.add(to.subtract(from).normalize().scale(2))); m.position.copyFrom(p);
         if(head&&head.material) head.material.alpha=.75+.25*Math.sin(G.time*40);
         if(typeof pdFire==='function'&&k>.25&&k<.92) pdFire(vt,p);
         if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); TORPS.delete(rec); tr.stop(); setTimeout(()=>tr.dispose(),1200); if(trl){ const tm=trl.material; trl.stop&&trl.stop(); vfxFadeDispose(trl,tm,.5); } if(head){ head.parent=null; head.material.dispose(); head.dispose(); } m.dispose(); try{ if(h) impact(true,from); else flash(to,3,new C3(1,.6,.3)); } finally{ res(); } } });

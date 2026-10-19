@@ -30,6 +30,17 @@ const ARC_NAME = {F:'Prow',P:'Port broadside',S:'Starboard broadside',T:'Turret 
 const KIND_NAME = {battery:'Battery',lance:'Lance',torp:'Torpedo',flak:'Point defense',bio:'Bio-weapon',gauss:'Gauss',sq:'Squadron'};
 
 // Ship templates. size = draw scale; cp = command points.
+// v46: each faction names (and draws) its guns its own way; the numbers underneath are unchanged until the v47 mechanics pass
+const FAC_WNAMES={
+  voidsworn:{autocannon:'Las-repeater',battery:'Las-battery',hbattery:'Heavy las-broadside',turret:'Las-turret',lance:'Penance lance',torp:'Hellfire torpedo',flak:'Censer flak'},
+  hegemony:{laser:'Plasma cannon',turbo:'Plasma lance',hturbo:'Heavy plasma lance',ion:'Ion cannon',flak:'Picket lasers'},
+  corsair:{autocannon:'Autocannon',scatter:'Scrap scatter gun',turret:'Junk turret',torp:'Rattle-rocket pod',htorp:'Heavy rocket pod',flak:'Chaff guns'},
+  chorus:{bioplasma:'Spine volley',tendril:'Boarding tendrils',spores:'Spore cloud',sporeb:'Acid sacs'},
+  ithar:{shard:'Prism shards',pulsar:'Pulsar lance',startorp:'Star torpedo',turret:'Needle beam',flak:'Mirror veil'},
+  deathless:{gauss:'Gauss flayer',doom:'Doom arc',gsentry:'Gauss pylon',flak:'Gauss shredder'}};
+function wName(fac,id){ return (FAC_WNAMES[fac]&&FAC_WNAMES[fac][id])||(W[id]&&W[id].n)||id; }
+function nameWeapons(fac,list){ for(const w of list) w.n=wName(fac,w.id); return list; }
+
 const HULLS = {
   // ---- player: Voidsworn gothic fleet
   warden:{n:'Warden-class frigate',cls:'Frigate',fac:'voidsworn',size:.5,cp:1,hp:45,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:20,w:[['autocannon','F'],['flak','T']],ab:'evasive',slots:1,cost:70},
@@ -74,20 +85,20 @@ const HULLS = {
 };
 
 const FACTIONS = {
-  voidsworn:{n:'Voidsworn Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#d9ccaa',trim:'#d0a64b',glow:'#5fb3a6',style:'gothic',blurb:'Gothic crusader battleships. Heavy armor, lance batteries and broadsides that hit like a cathedral falling.'},
-  hegemony:{n:'Hegemony Navy',hull:'#b9c2cf',trim:'#c8453c',glow:'#ff6a5c',style:'wedge',
+  voidsworn:{n:'Voidsworn Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#4a4440',trim:'#c8501f',glow:'#ff7a2a',style:'gothic',blurb:'Gothic crusader battleships. Heavy armor, lance batteries and broadsides that hit like a cathedral falling.'},
+  hegemony:{n:'Hegemony Navy',hull:'#c4ccd5',trim:'#3a78d0',glow:'#5fa0ff',style:'wedge',
     blurb:'An imperial war-machine of wedge-hulled destroyers. Ion cannons strip shields; carriers launch fighter screens.',
     roster:['h_picket','h_interdictor','h_vanguard','h_dominion'],boss:'h_boss',sq:'fighter'},
-  corsair:{n:'Ashfall Corsairs',hull:'#b8693a',trim:'#e0b060',glow:'#ffb35c',style:'junk',
+  corsair:{n:'Ashfall Corsairs',hull:'#6a2c22',trim:'#b8402a',glow:'#e0402c',style:'junk',
     blurb:'Pirate raiders in stolen hulls. Fast, thin shields, and far too many torpedoes.',
     roster:['c_raider','c_reaver','c_marauder','c_hulk'],boss:'c_boss',sq:'bomber'},
-  chorus:{n:'The Chorus',hull:'#9a5a95',trim:'#e38fd0',glow:'#ff8fe0',style:'bio',
+  chorus:{n:'The Chorus',hull:'#57364c',trim:'#a4913a',glow:'#d6d24a',style:'bio',
     blurb:'A hungering bio-swarm. No shields at all, but their flesh knits back together every round.',
     roster:['b_drone','b_spitter','b_razor','b_brood'],boss:'b_boss',sq:'spore'},
-  ithar:{n:'The Ithar',hull:'#a9d8e8',trim:'#f4f1ff',glow:'#9fe3ff',style:'sail',
+  ithar:{n:'The Ithar',hull:'#eef3f1',trim:'#d7c88a',glow:'#9fffd2',style:'sail',
     blurb:'An ancient, dying elder race. Blindingly fast, heavily shielded, fragile once the shields fall.',
     roster:['i_wisp','i_blade','i_song','i_carrier'],boss:'i_boss',sq:'fighter'},
-  deathless:{n:'The Deathless Dynasty',hull:'#3c4a44',trim:'#6fe08a',glow:'#7dff9b',style:'tomb',
+  deathless:{n:'The Deathless Dynasty',hull:'#1d2220',trim:'#1fbf4a',glow:'#3dff6a',style:'tomb',
     blurb:'Machine necropolis-ships. Gauss weapons tear through shields, and wrecks sometimes stand back up.',
     roster:['d_scythe','d_jackal','d_harvester'],boss:'d_boss',sq:null},
 };
