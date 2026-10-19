@@ -191,10 +191,11 @@ function pdFire(vt,p){ try{ if(!vt||!vt.root||vt.root.isDisposed()||G.fxReduced)
 // v44.1 warm-up: on battle start, a tiny blast far off on the skyline (it reads as the distant war) compiles the explosion, fireball, shock-ring
 // and beam shaders, and every faction's wreck materials are compiled against a real hull mesh, so the first kill doesn't stall
 function warmFx(){ try{ if(!G.scene||!G.cam||!B) return; fxMark('warmup'); fxPool(); flashLights(); fireSheet(); starTex(); coneTex(); scorchMat();
-    const tg=G.cam.getTarget(), fwd=tg.subtract(G.cam.position); fwd.y=0; if(fwd.lengthSquared()<1e-4) fwd.set(1,0,0); fwd.normalize(); const far=tg.add(fwd.scale(700)).add(new V3(0,70,0));
+    let far; try{ const eng=G.engine, ray=G.scene.createPickingRay(eng.getRenderWidth()*.62,eng.getRenderHeight()*.12,BABYLON.Matrix.Identity(),G.cam); far=ray.origin.add(ray.direction.scale(520)); }catch(e){ far=null; } // on screen (near the top) so the shaders really draw and compile
+    if(!far){ const tg=G.cam.getTarget(), fwd=tg.subtract(G.cam.position); fwd.normalize(); far=G.cam.position.add(fwd.scale(520)); }
     explode(far,3,{light:false}); if(typeof fireballFx==='function') fireballFx(far,6,1); shockRing(far,14,new C3(1,.7,.45),{flat:false,dur:.6}); beam(far,far.add(new V3(40,0,10)),new C3(.6,.8,1),.6,.3);
     // decal and streak materials (scorch, ember glow, flame tongue) on a throwaway plane
-    try{ const pl=MB.CreatePlane('warmPl',{size:1},G.scene); pl.position.set(0,-9000,0); const em=emMat('emberM',new C3(1.4,.55,.15),1); em.opacityTexture=G.tex.soft; em.alphaMode=BABYLON.Engine.ALPHA_ADD; em.disableDepthWrite=true;
+    try{ const pl=MB.CreatePlane('warmPl',{size:1},G.scene); pl.position.set(0,-9000,0); pl.scaling.set(2,.5,1); pl.computeWorldMatrix(true); /* streaks are scaled unevenly, which selects a different shader variant */ const em=emMat('emberM',new C3(1.4,.55,.15),1); em.opacityTexture=G.tex.soft; em.alphaMode=BABYLON.Engine.ALPHA_ADD; em.disableDepthWrite=true;
       const vm=vfxMat('fxkM',new C3(1,.7,.4),coneTex(),1); let left=3; const done=()=>{ if(--left<=0){ pl.dispose(); em.dispose(); vm.dispose(); } };
       for(const m of [scorchMat(),em,vm]) m.forceCompilation(pl,done); }catch(e){}
     // wreck materials against both the merged live hull and the split copy a dying ship swaps to (their vertex layouts can differ)
