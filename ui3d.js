@@ -101,7 +101,7 @@ function refreshRoster(){
   const el=document.getElementById('roster');
   const card=u=>{ const q=[3,0,1,2].map(i=>`<span class="${u.shMax&&u.sh[i]>u.shMax*.33?'on':''}"></span>`).join('');
     return `<div class="rcard ${B.sel===u||B.inspect===u?'sel':''} ${u.dead||(B.side==='player'&&u.side==='player'&&isDone(u))?'done':''}" data-act="rosterPick" data-arg="${u.id}">
-      <div class="row"><span class="n">${esc(u.isSq?u.t.n:u.name)}</span><span class="spacer"></span><span class="c">${u.dead?'Lost':u.braced?'Braced':B.alt&&!u.isSq?(B.activeUnit===u?'<span class="gilt">Active</span>':u.activated?'Activated':'Ready'):B.side==='player'&&u.side==='player'?(isDone(u)?'Done':'Ready'):''}</span></div>
+      <div class="row"><span class="n">${esc(u.isSq?u.t.n:u.name)}</span>${u===B.aiFocus&&!u.dead?'<span class="tgtTag">Targeted</span>':''}<span class="spacer"></span><span class="c">${u.dead?'Lost':u.braced?'Braced':B.alt&&!u.isSq?(B.activeUnit===u?'<span class="gilt">Active</span>':u.activated?'Activated':'Ready'):B.side==='player'&&u.side==='player'?(isDone(u)?'Done':'Ready'):''}</span></div>
       <div class="c">${esc(u.isSq?'Squadron':u.cls)}${u.elite?', elite':''}</div>
       ${u.dead?'':`${u.shMax&&!u.isSq?`<div class="row num" style="font-size:12px;gap:6px;margin-top:3px"><div class="sh4" style="flex:1;margin:0" title="Shields: port, prow, starboard, rear">${q}</div><span class="shv">${Math.round(u.sh.reduce((a,x)=>a+x,0))}</span></div>`:''}<div class="row num" style="font-size:12px;gap:6px;margin-top:3px"><span style="flex:1">${hpBar(u.hp,u.maxHp)}</span><span class="hlv">${Math.max(0,u.hp)}</span></div>`}</div>`; };
   const pl=B.units.filter(u=>u.side==='player'&&(!u.dead||!u.isSq)), en=B.units.filter(u=>u.side==='enemy'&&!u.dead);
@@ -128,6 +128,8 @@ function refreshPanel(){
   if(u.hullRegen) tr.push(`Repairs ${u.hullRegen} hull each turn.`); if(u.st.engine) tr.push(`Engines damaged (\u2212${u.st.engine} speed).`); if(u.st.shieldOff) tr.push('Shield generator offline.'); if(u.st.fire) tr.push('Burning.');
   if(u.ab==='launch'&&!u.isSq){ const ws=squadronsOf(u), nb=ws.filter(x=>x.t.sq!=='fighter').length, nf=ws.length-nb; tr.push(`Wings flying: ${nb} strike (bombers hit ships), ${nf} fighter (guards your wings, hunts enemy craft)${u.spare!=null?`, ${u.spare} spare`:''}. They act on their own each round unless you order them: tap a wing, then a target to strike or a ship to guard.`); }
   if(u.evBuff) tr.push(`Evasive: +${u.evBuff} evasion.`); if(u.lockOn) tr.push('Locked on: +15 aim, +10% crit.'); if(u.focus) tr.push('Concentrated fire: +30% damage.'); if(u.braced) tr.push('Braced: hull damage \u221240%.');
+  if(u===B.aiFocus&&!u.dead) tr.push('<span class="blood">The enemy fleet is focusing its fire on this ship.</span>'); // v53-D enemy intent
+  if(u.side==='enemy'&&!u.isSq&&!u.dead){ const th=inspThreat(u), hit=alive('player').filter(p=>!p.isSq&&th.has(hkey(p.q,p.r))); tr.push(`<span class="blood">${B.alt&&u.activated?'Next round it':'Its next move'} can bring guns to bear on ${hit.length?hit.map(p=>esc(p.name)).join(', '):'none of your ships'}${hit.length?'':' (red hexes show its reach)'}.</span>`); }
   let h=`<button class="sheetbtn" data-act="sheet" aria-label="Collapse panel">${document.body.classList.contains('sheetmin')?'\u25b4':'\u25be'}</button>${actionStrip(u)}<h3>${esc(u.isSq?u.t.n:u.name)}</h3><div class="cls">${esc(u.t.n)}${u.elite?', elite captain':''}</div>
     ${cap?`<div style="margin-top:4px;font-size:13.5px">${rankName(cap)} ${esc(cap.name)} ${cap.perks.map(p=>`<span class="pill" title="${esc(PERKS[p].d)}">${esc(PERKS[p].n)}</span>`).join('')}</div>`:''}
     <div class="row num" style="margin-top:10px;font-size:13.5px"><span class="hlv">Hull</span><span class="spacer"></span><span class="hlv">${Math.max(0,u.hp)}/${u.maxHp}</span></div>${hpBar(u.hp,u.maxHp)}
@@ -210,6 +212,9 @@ function refreshOverlays(){
       const col=enemy?new C3(1,.3,.25):arc==='F'||arc==='R'?new C3(1,.62,.22):new C3(.3,.85,.72);
       const fm=fanMesh(spans[arc][0],spans[arc][1],R,col,enemy?.05:.06); /* holo: outline the arc, barely fill it */ fm.parent=node; fm.position.y=.08; }
   }
+  if(B.inspect&&B.inspect.side==='enemy'&&!B.inspect.dead&&!B.inspect.isSq&&!B.showThreat&&!B.mode){ const th=inspThreat(B.inspect); // v53-D: the tapped enemy's reach, faint, and a thin ring on each of your ships inside it
+    for(const k of th.keys()){ const [q,r]=k.split(',').map(Number); tile('ithr',new C3(1,.2,.14),.022,{q,r},OV.items); }
+    for(const p of alive('player')){ if(p.isSq||!th.has(hkey(p.q,p.r))) continue; const v=G.views.get(p.id), rm=ringMesh(new C3(1,.32,.25),.6,v?Math.max(5.5,v.L*.62):6,.2); rm.position=hexWorld(p.q,p.r,.25); OV.items.push(rm); } }
   if(B.showThreat){ const th=computeThreat(); for(const [k,v] of th){ const [q,r]=k.split(',').map(Number); const lv=v>=45?3:v>=20?2:1; tile('thr'+lv,new C3(1,.18,.12),[0,.08,.16,.28][lv],{q,r},OV.items); } }
   if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ const g=s.guns>0; if(g) tile('reachG4',new C3(.95,.7,.28),.03,s,OV.items); tile(g?'reachGE3':'reachE2',g?new C3(1,.92,.62):new C3(1,.8,.4),g?.8:.36,s,OV.items,true); /* v53: outline only, so hulls stay readable; a hex your guns can fire from gets a brighter edge and a whisper of fill (additive reads ~3x brighter on screen) */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
     const per=reachOutline(sel,B.reach); if(per) OV.items.push(per); }
@@ -243,7 +248,7 @@ function updateOverlays(){
   try{ boardMarks(); }catch(e){ if(!FP.warned){ FP.warned=1; console.warn('boardMarks',e); } }
   if(!B||!OV.selRing) return;
   const place=(ring,u)=>{ if(u&&!u.dead&&G.views.get(u.id)){ const v=G.views.get(u.id); const p=v.root.getAbsolutePosition(); ring.setEnabled(true); ring.position.set(p.x,.2,p.z); const R=Math.max(5.5,v.L*.6)/6; ring.scaling.set(R,1,R); } else ring.setEnabled(false); };
-  place(OV.selRing,B.sel); place(OV.insRing,B.inspect); place(OV.aiRing,B.side==='enemy'?B.aiActive:null);
+  place(OV.selRing,B.sel); place(OV.insRing,B.inspect); place(OV.aiRing,B.side==='enemy'?B.aiActive:null); aiFocusMark();
   OV.selRing.rotation.y+=.01; const pulse=.45+.4*Math.sin(G.time*4.5);
   for(const r of OV.targets){ const u=r.metadata.u, v=G.views.get(u.id); if(v){ const p=v.root.getAbsolutePosition(); r.position.set(p.x,.25,p.z); r.material.alpha=pulse; } }
   if(OV.fan){ const u=OV.fan.metadata.u, v=G.views.get(u.id);
@@ -290,16 +295,28 @@ function fpShadows(){ const U=B.units, ts=G.tacScale||1; let ns=0; for(let j=0;j
   if(!i){ if(m.isEnabled()) m.setEnabled(false); return; }
   if(FP.sNew||!m.hasThinInstances){ FP.sNew=false; m.thinInstanceSetBuffer('matrix',b,16,false); } else m.thinInstanceBufferUpdated('matrix'); m.thinInstanceCount=i; if(!m.isEnabled()) m.setEnabled(true); }
 
+// v53-D enemy intent: corner brackets just outside the footprint of the player ship the enemy fleet is focusing (B.aiFocus, sticky, veteran AI),
+// and a "Targeted" tag under its nameplate. Built once; per frame it only moves when the target or its hex changes and pulses its alpha (no allocation).
+function focusRetMesh(){ const R0=HS*.92, R1=HS*1.12, f=.34, pos=[], idx=[], C=i=>Math.cos(Math.PI/180*(60*i-30)), S=i=>Math.sin(Math.PI/180*(60*i-30));
+  for(let i=0;i<6;i++){ const j=(i+1)%6, P=(R,t)=>[(C(i)*(1-t)+C(j)*t)*R,0,(S(i)*(1-t)+S(j)*t)*R]; for(const [a,b] of [[0,f],[1-f,1]]){ const b0=pos.length/3; pos.push(...P(R0,a),...P(R1,a),...P(R1,b),...P(R0,b)); idx.push(b0,b0+1,b0+2,b0,b0+2,b0+3); } }
+  const m=new BABYLON.Mesh('aiFocusRet',G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.indices=idx; vd.applyToMesh(m);
+  const mt=ovMat('aiFocusRet',new C3(1.25,.36,.3),.8); mt._keep=true; m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.alphaIndex=-55; try{ G.glow.addExcludedMesh(m); }catch(e){} m.setEnabled(false); if(G.env) G.env.push(m,mt); return m; }
+function aiFocusMark(){ const t=B&&!B.over&&!B.showcase&&B.aiFocus&&!B.aiFocus.dead&&B.aiFocus.side==='player'?B.aiFocus:null, v=t&&G.views?G.views.get(t.id):null, on=!!(v&&fpOn(t,v)&&!G.cineHidePlates);
+  if(OV.focusRet&&OV.focusRet.isDisposed()) OV.focusRet=null; if(on&&!OV.focusRet&&G.scene) OV.focusRet=focusRetMesh(); const m=OV.focusRet;
+  if(m){ if(on){ if(m._q!==t.q||m._r!==t.r){ m._q=t.q; m._r=t.r; const p=hexWorld(t.q,t.r,.11); m.position.copyFrom(p); } m.material.alpha=.62+.25*Math.sin(G.time*3.2); if(!m.isEnabled()) m.setEnabled(true); } else if(m.isEnabled()) m.setEnabled(false); }
+  const el=on&&v.plate?v.plate.el:null; if(el!==OV.tgtEl){ if(OV.tgtEl) OV.tgtEl.classList.remove('tgt'); if(el) el.classList.add('tgt'); OV.tgtEl=el; } }
 function computeThreatAt(h){ if(!B.threatCache||B.threatCache.key!==B.log.length+'|'+B.round) B.threatCache={key:B.log.length+'|'+B.round,map:computeThreat()}; return B.threatCache.map.get(hkey(h.q,h.r))||0; }
-function computeThreat(){
-  const map=new Map(), hexes=boardHexes();
-  for(const e of alive('enemy')){
+// v53-D: what one enemy ship threatens (tap an enemy): computeThreat on that ship alone, cached until the board changes
+function inspThreat(e){ const k=e.id+'|'+B.log.length+'|'+B.round+'|'+e.q+','+e.r+','+e.facing; if(!B.inspThr||B.inspThr.key!==k) B.inspThr={key:k,map:computeThreat(e)}; return B.inspThr.map; }
+function computeThreat(only){ // v53-D: same numbers, cheaper: each end hex and facing once, guns summed per hex, line of sight cached per (from, to) pair
+  const map=new Map(), hexes=boardHexes(), losC=new Map();
+  for(const e of only?[only]:alive('enemy')){
     const ws=e.weapons.filter(w=>w.off<=1&&w.cdLeft<=1); if(!ws.length) continue;
-    const states=[{q:e.q,r:e.r,f:e.facing,cost:0,path:[]}].concat(e.isSq?[]:computeReach(e).states);
-    const per=new Map();
-    for(const s of states){ const v=stateView(e,s); const tmp=new Map();
-      for(const w of ws){ const val=w.shots*w.dmg*(e.dmg||1); for(const h of hexes){ if(hdist(v,h)>w.r||!inArc(v,h,w.arc)||!los(v,h)) continue; const k=hkey(h.q,h.r); tmp.set(k,(tmp.get(k)||0)+val); } }
-      for(const [k,val] of tmp) if(val>(per.get(k)||0)) per.set(k,val); }
+    const seen=new Set(), states=[{q:e.q,r:e.r,f:e.facing,cost:0,path:[]}].concat(e.isSq?[]:computeReach(e).states).filter(s=>{ const k=s.q+','+s.r+','+s.f; if(seen.has(k)) return false; seen.add(k); return true; });
+    const per=new Map(), maxR=Math.max(...ws.map(w=>w.r)), mul=e.dmg||1;
+    for(const s of states){ const v=stateView(e,s), fk=s.q+','+s.r+'|'+maxR; let lc=losC.get(fk); if(!lc){ lc={near:[],los:new Map()}; for(const h of hexes){ const d=hdist(v,h); if(d<=maxR) lc.near.push({h,d,k:hkey(h.q,h.r)}); } losC.set(fk,lc); }
+      for(const n of lc.near){ const h=n.h, d=n.d; let val=0; for(const w of ws){ if(d>w.r||!inArc(v,h,w.arc)) continue; val+=w.shots*w.dmg*mul; } if(!val) continue;
+        let l=lc.los.get(n.k); if(l===undefined){ l=los(v,h); lc.los.set(n.k,l); } if(l&&val>(per.get(n.k)||0)) per.set(n.k,val); } }
     for(const [k,val] of per) map.set(k,(map.get(k)||0)+val);
   }
   return map;

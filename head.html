@@ -84,6 +84,8 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--iron3);border-bott
 .plate{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;will-change:transform}
 .plate .nm{font-size:12px;font-weight:600;white-space:nowrap;text-shadow:0 1px 3px #000,0 0 6px #000;opacity:0;transition:opacity .15s}
 .plate.hi .nm{opacity:1}
+.plate.tgt::after{content:'Targeted';font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#ff7466;background:rgba(36,6,6,.8);border:1px solid rgba(255,96,80,.7);border-radius:3px;padding:0 4px;line-height:13px;margin-top:1px}
+.tgtTag{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#ff7466;border:1px solid rgba(255,96,80,.6);border-radius:3px;padding:0 4px;margin-left:6px;line-height:15px}
 .plate.elite .nm::after{content:' \00b7  elite';color:var(--gilt);font-weight:500}
 .plate .hb{width:54px;height:4px;background:rgba(8,12,20,.85);border-radius:2px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
 .plate .hb i{display:block;height:100%}
