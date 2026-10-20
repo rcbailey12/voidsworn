@@ -99,11 +99,11 @@ function vfxFadeDispose(mesh,mat,dur){ try{ const a0=mat.alpha; const t0=G.time;
 
 // damaged ships spit sparks and short electrical arcs from breached plating
 function damageSparks(v,hr,dt){ try{ if(hr>.55||G.fxReduced||!v.model||!v.root) return; const rate=(hr<.3?2.2:1.1)*(G.quality==='medium'?.5:1); if(Math.random()>rate*dt) return;
-    const L=v.L, p=toWorld(v,new V3((Math.random()-.5)*L*.7,Math.random()*v.H*.5,(Math.random()-.5)*L*.12));
+    const L=v.L, sk=typeof skinPoint==='function'?skinPoint(v,null):null, p=toWorld(v,sk?sk.p:new V3((Math.random()-.5)*L*.7,Math.random()*v.H*.5,(Math.random()-.5)*L*.12)); // v53-G: sparks leave the real hull surface
     sparks(p,G.quality==='medium'?8:16,5+Math.random()*5,new C4(1,.85,.55,1)); if(Math.random()<.45){ const q=p.add(new V3((Math.random()-.5)*3,(Math.random()-.2)*2,(Math.random()-.5)*3)); arcBolt(p,q,new C3(.6,.8,1.6)); }
     if(Math.random()<.5) fxSprite(p,2.2,new C3(1,.8,.55),starTex(),.18,{grow:.4}); }catch(e){} }
 // fighter wings leave short glowing trails as they wheel around their carrier (High and Ultra)
-function craftTrails(v,fac){ try{ if(G.quality==='medium'||!v.crafts) return; const P=FAC3D[fac]||FAC3D.hegemony; const m=emMat('ctrM',P.eng.scale(1.3),.5); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false;
+function craftTrails(v,fac){ try{ if(G.quality==='medium'||!v.crafts||v.crafts.some(c=>c.c.trail)) return; /* v53-G: craft carry instanced engine trails */ const P=FAC3D[fac]||FAC3D.hegemony; const m=emMat('ctrM',P.eng.scale(1.3),.5); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false;
     v.extras=v.extras||[]; for(const c of v.crafts){ const t=new BABYLON.TrailMesh('ctr',c.c.root,G.scene,.22,16,true); t.material=m; t.isPickable=false; try{ G.glow.addExcludedMesh(t); }catch(e){} v.extras.push(t); } v.extras.push({dispose:()=>m.dispose(),stop:()=>{}}); }catch(e){} }
 
 // ---------- turrets that track their targets (High and Ultra) ----------

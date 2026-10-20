@@ -480,7 +480,7 @@ function buildTerrainFeatures(rr){
     G._wreckMeshes=null; }
 }
 // v47: three station types, matched to the sector: an orbital ring hub, a scaffolded mining rig, or a dark derelict spire
-function buildStation(c,rr){ const kind=(B&&B.biome&&B.biome.station)||'ring'; if(kind==='rig') return buildRigStation(c,rr); if(kind==='spire') return buildSpireStation(c,rr); return buildRingStation(c,rr); }
+function buildStation(c,rr){ const kind=(B&&B.biome&&B.biome.station)||'ring'; if((kind==='ring'||(B&&B.enc==='defend'))&&typeof buildMeshStation==='function'&&aiHullsOn()&&buildMeshStation(c,rr)) return; /* v53-G: the concept station mesh */ if(kind==='rig') return buildRigStation(c,rr); if(kind==='spire') return buildSpireStation(c,rr); return buildRingStation(c,rr); }
 function stationFinish(b,c,rr){ const m=b.finish(); m.root.position=c.add(new V3(0,4,0)); m.root.rotation.set(.12,rr()*6,.08); m.meshes.forEach(x=>x.isPickable=false); G.env.push(m.root); G.station=m; }
 function buildRigStation(c,rr){ const b=new SB('corsair',30), M=b.M;
   b.cylY(M.dark,0,-14,0,30,2.4,2.8,8); b.cylY(M.hull,0,9,0,7,6.5,6.5,12); b.cylY(M.steel,0,16,0,2,3,6.5,12); b.cylY(M.dark,0,-16,0,3,4.5,2.6,8);
