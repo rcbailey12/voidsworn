@@ -5,7 +5,7 @@ const FAC3D={ // v46 faction identity: every colour below feeds hulls, windows, 
   corsair:{hull:'#6a2c22',dark:'#28140f',trim:'#a3542c',win:new C3(1,.4,.2),eng:new C3(1,.38,.16),bolt:new C3(.95,.2,.1),beam:new C3(.95,.22,.1),shield:new C3(.85,.16,.1),tip:new C3(1,.15,.08)}, // blood and rust
   chorus:{hull:'#57364c',dark:'#211419',trim:'#a4913a',win:new C3(.85,.92,.25),eng:new C3(.8,.9,.28),bolt:new C3(.82,.92,.22),beam:new C3(.85,.9,.3),shield:new C3(.9,.82,.22),tip:new C3(.9,1,.3)}, // plague flesh, bile glow
   ithar:{hull:'#eef3f1',dark:'#9fb7ae',trim:'#d7c88a',win:new C3(.6,1,.82),eng:new C3(.62,1,.84),bolt:new C3(.7,1,.86),beam:new C3(.75,1,.88),shield:new C3(.72,1,.86),tip:new C3(.8,1,.9)}, // pearl white, soft jade
-  deathless:{hull:'#1d2220',dark:'#0b0e0d',trim:'#1fbf4a',win:new C3(.15,1,.35),eng:new C3(.15,1,.35),bolt:new C3(.2,1,.38),beam:new C3(.2,1,.38),shield:new C3(.18,1,.36),tip:new C3(.2,1,.4)}, // black, terminal green
+  deathless:{hull:'#2c3431',dark:'#121715',trim:'#1fbf4a',win:new C3(.15,1,.35),eng:new C3(.15,1,.35),bolt:new C3(.2,1,.38),beam:new C3(.2,1,.38),shield:new C3(.18,1,.36),tip:new C3(.2,1,.4)}, // black, terminal green
 };
 // v46: how each faction moves. ta/td = share of the move spent speeding up / braking, per = ms per hex (x size), bank = roll into turns,
 // sway = organic side-to-side, bob = glide arc, jit = burn stutter, phase = blinks out and reappears at the destination
@@ -635,18 +635,19 @@ function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array
   for(let i=0;i<qp.length;i++){ pos[i]=qp[i]/32767*j.ext[i%3]; nor[i]=qn[i]/127; }
   for(let v=0;v<n;v++){ const x=pos[v*3],y=pos[v*3+1],z=pos[v*3+2], ax=Math.abs(nor[v*3]), ay=Math.abs(nor[v*3+1]), az=Math.abs(nor[v*3+2]); const k=3.2; // box-projected plating, about three panels per hull length
     if(ay>=ax&&ay>=az){ uv[v*2]=x*k; uv[v*2+1]=z*k; } else if(ax>=az){ uv[v*2]=z*k; uv[v*2+1]=y*k; } else { uv[v*2]=x*k; uv[v*2+1]=y*k; } }
-  return {pos,nor,idx,uv,tris:j.t}; }
+  let col=null; if(j.a){ const a=b64(j.a,Uint8Array); col=new Float32Array(n*4); for(let v=0;v<n;v++){ const k=a[v]/255; col[v*4]=k; col[v*4+1]=k; col[v*4+2]=k; col[v*4+3]=1; } } // v52 baked ambient occlusion + cavity
+  return {pos,nor,idx,uv,col,tris:j.t}; }
 async function loadAIHulls(){ if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:') return;
   const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'; /* v49: desktop loads the denser exports (20k to 38k triangles) */ for(const [k,id] of Object.entries(AI_HULLS)){ try{ let r=await fetch(dir+id+'.json'); if(!r.ok&&dir!=='hulls/') r=await fetch('hulls/'+id+'.json'); if(!r.ok) continue; AI_HULL_DATA[k]=decodeAIHull(await r.json()); delete MODEL_CACHE[k]; /* ships built from now on use it */ }catch(e){ console.warn('AI hull not loaded',k,e); } } }
 function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')); if(!fore) return p; const M=facMats(fac), L=p.L;
   for(const m of p.root.getChildMeshes(false)) if(m.name.includes('hull_')||m.name.endsWith('emblem')) m.dispose(false,false);
   p.root.computeWorldMatrix(true); fore.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(fore.getWorldMatrix()).multiply(p.root.getWorldMatrix());
   const pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*L;
-  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; vd.transform(inv);
+  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.col&&!G.diagNoAO) vd.colors=d.col; vd.transform(inv);
   // split at the procedural break line so a dying ship still breaks in two
   const split=(p.surf&&p.surf.split!=null)?p.surf.split:-.05*L, aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, P=vd.positions, I=vd.indices, parts={fore:[],aft:[]};
   for(let t=0;t<I.length;t+=3){ const cx=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3; parts[cx>=split?'fore':'aft'].push(I[t],I[t+1],I[t+2]); }
-  for(const half of ['fore','aft']){ if(!parts[half].length) continue; const sub=new BABYLON.VertexData(); sub.positions=P; sub.normals=vd.normals; sub.uvs=vd.uvs; sub.indices=parts[half];
+  for(const half of ['fore','aft']){ if(!parts[half].length) continue; const sub=new BABYLON.VertexData(); sub.positions=P; sub.normals=vd.normals; sub.uvs=vd.uvs; if(vd.colors) sub.colors=vd.colors; sub.indices=parts[half];
     const m=new BABYLON.Mesh('hull_ai',G.scene); sub.applyToMesh(m); m.material=M.hull; m.parent=half==='fore'?fore:aftN; if(half==='aft'&&aftN!==fore){ aftN.computeWorldMatrix(true); m.position.copyFrom(fore.position.subtract(aftN.position)); } m.refreshBoundingInfo(true); }
   // engine plumes and flares move to the new hull's stern (they were placed for the procedural hull)
   try{ let minX=1e9; for(let i=0;i<P.length;i+=3) minX=Math.min(minX,P[i]); let y0=1e9,y1=-1e9,z0=1e9,z1=-1e9; for(let i=0;i<P.length;i+=3) if(P[i]<minX+.1*L){ y0=Math.min(y0,P[i+1]); y1=Math.max(y1,P[i+1]); z0=Math.min(z0,P[i+2]); z1=Math.max(z1,P[i+2]); }

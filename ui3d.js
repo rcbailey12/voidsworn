@@ -211,7 +211,7 @@ function refreshOverlays(){
       const fm=fanMesh(spans[arc][0],spans[arc][1],R,col,enemy?.05:.06); /* holo: outline the arc, barely fill it */ fm.parent=node; fm.position.y=.08; }
   }
   if(B.showThreat){ const th=computeThreat(); for(const [k,v] of th){ const [q,r]=k.split(',').map(Number); const lv=v>=45?3:v>=20?2:1; tile('thr'+lv,new C3(1,.18,.12),[0,.08,.16,.28][lv],{q,r},OV.items); } }
-  if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ tile('reach2',new C3(.95,.7,.28),.16,s,OV.items); tile('reachE2',new C3(1,.8,.4),.2,s,OV.items,true); if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
+  if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ tile('reach2',new C3(.95,.7,.28),.075,s,OV.items); tile('reachE2',new C3(1,.8,.4),.42,s,OV.items,true); /* v52: hollow hexes, bright edge and faint fill, so ships inside stay readable */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
     const per=reachOutline(sel,B.reach); if(per) OV.items.push(per); }
   if(sel&&playerTurn&&sel.side==='player'&&!B.mode&&!sel.isSq&&canUse(sel)){ const ri=ramInfo(sel); if(ri) ramLane(sel,ri); }
   if(B.wingSel&&!B.wingSel.dead){ tile('wingSel',new C3(1,.8,.35),.55,B.wingSel,OV.items); tile('wingSelE',new C3(1,.85,.45),.8,B.wingSel,OV.items,true); }

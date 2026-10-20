@@ -239,9 +239,9 @@ function cachedTextures(){ const keep=new Set(Object.values(G.tex)); const sc=G.
 // each enemy faction's space has its own colour: the sky nebula is re-tinted per battle and reseeded so its shape changes too
 const BIOMES={voidsworn:[[.13,.26,.6],[.62,.22,.45],[1,.64,.36]], hegemony:[[.08,.2,.42],[.22,.42,.72],[.85,.93,1]], corsair:[[.32,.12,.06],[.8,.32,.1],[1,.74,.34]],
   chorus:[[.16,.36,.16],[.6,.18,.56],[.9,1,.5]], ithar:[[.04,.26,.32],[.38,.18,.7],[.7,.95,1]], deathless:[[.06,.22,.15],[.16,.52,.34],[.6,1,.72]]};
-function applyBiome(fac){ try{ const b=BIOMES[fac]||BIOMES.voidsworn, m=G.skyMat, k=G.mobile?.95:1.45; /* v45: darker backdrop on the phone so hulls read against it */ if(G.sun){ const warm=new C3(1,.86,.68), st=new C3(...b[2]); G.sun.diffuse=C3.Lerp(warm,st,.35); G.sun.specular=C3.Lerp(new C3(1,.9,.75),st,.3); const hm=G.scene.getMaterialByName('haloM'); if(hm&&hm.emissiveColor) hm.emissiveColor=C3.Lerp(new C3(.55,.38,.22),st.scale(.5),.5); } /* v45: each battle's star tints the key light */ if(!m) return; m.setColor3('c1',new C3(...b[0]).scale(k)); m.setColor3('c2',new C3(...b[1]).scale(k)); m.setColor3('c3',new C3(...b[2]).scale(k*1.1)); m.setFloat('seed',.1+Math.random()*.8);
-  if(G.nebMats) G.nebMats.forEach((nm,i)=>{ nm.setColor3('ca',new C3(...b[i%2]).scale(.9)); nm.setColor3('cb',new C3(...b[(i+1)%3]).scale(1.1)); nm.setFloat('seed',Math.random()*20); });
-  if(G.nebBaked) G.nebBaked.forEach((nm,i)=>rebakeNebula(nm,new C3(...b[i%2]).scale(.9),new C3(...b[(i+1)%3]).scale(1.1),Math.random()*20));
+function applyBiome(fac){ try{ const b=BIOMES[fac]||BIOMES.voidsworn, m=G.skyMat, k=G.mobile?.8:1.0; /* v52: backdrop ~30% darker so hulls, hexes and fire own the contrast (was .95/1.45) */ if(G.sun){ const warm=new C3(1,.86,.68), st=new C3(...b[2]); G.sun.diffuse=C3.Lerp(warm,st,.35); G.sun.specular=C3.Lerp(new C3(1,.9,.75),st,.3); const hm=G.scene.getMaterialByName('haloM'); if(hm&&hm.emissiveColor) hm.emissiveColor=C3.Lerp(new C3(.55,.38,.22),st.scale(.5),.5); } /* v45: each battle's star tints the key light */ if(!m) return; m.setColor3('c1',new C3(...b[0]).scale(k)); m.setColor3('c2',new C3(...b[1]).scale(k)); m.setColor3('c3',new C3(...b[2]).scale(k*1.1)); m.setFloat('seed',.1+Math.random()*.8);
+  if(G.nebMats) G.nebMats.forEach((nm,i)=>{ nm.setColor3('ca',new C3(...b[i%2]).scale(.62)); nm.setColor3('cb',new C3(...b[(i+1)%3]).scale(.76)); nm.setFloat('seed',Math.random()*20); });
+  if(G.nebBaked) G.nebBaked.forEach((nm,i)=>rebakeNebula(nm,new C3(...b[i%2]).scale(.62),new C3(...b[(i+1)%3]).scale(.76),Math.random()*20));
   composeBackdrop(fac); }catch(e){ console.warn(e); } } // v42: each battle also gets its own planet and re-coloured nebula banks
 // light the grid up around a hex (the selected ship); with no focus the whole grid stays a faint wash
 function gridFocus(c,R){ const g=G.grid; if(!g||g.isDisposed()||!G.gridHexes) return; R=R||6; const key=c?c.q+','+c.r+','+R:'none'; if(G.gridKey===key) return; G.gridKey=key;
@@ -268,8 +268,8 @@ function buildBattleEnv(){
   // asteroids
   const rockMat=new BABYLON.StandardMaterial('rockM',sc); const RK=(typeof ROCK_KINDS!=='undefined'&&B&&B.biome&&ROCK_KINDS[B.biome.rock])||null; // v47: the sector's asteroid type
   rockMat.diffuseTexture=dynTex('rockTex',256,256,(g,w)=>{ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
-  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
-  if(RK){ rockMat.diffuseColor=new C3(RK.col[0],RK.col[1],RK.col[2]); rockMat.specularColor=new C3(RK.spec,RK.spec,RK.spec*1.05); rockMat.specularPower=RK.spec>.3?48:16; if(RK.em) rockMat.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); }
+  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.035,.035,.035); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
+  if(RK){ rockMat.diffuseColor=new C3(RK.col[0],RK.col[1],RK.col[2]); const sk=RK.spec>.3?.7:.35; /* v52: matte regolith, not wet coal (ice keeps some gloss) */ rockMat.specularColor=new C3(RK.spec*sk,RK.spec*sk,RK.spec*sk*1.05); rockMat.specularPower=RK.spec>.3?40:10; if(RK.em) rockMat.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); }
   // v44: rocks are smooth-shaded, multi-octave and cratered (were faceted 'crumpled paper' icospheres)
   // v49 asteroids: two sets of eight shapes (dense ones for the asteroids on the board, light ones for small chunks, the belt and the distance),
   // each a lumpy fBm body with ridges, boulder bumps and overlapping craters
@@ -393,7 +393,7 @@ const HOLE_BUILD={
     b.cylY(M.dark,0,0,0,7,4,5,12); b.cylY(M.hull,0,6,0,3,2.4,3.4,12); b.cylY(M.dark,0,-7,0,4,2.6,1.2,10);
     for(const [a0,a1] of [[10,120],[160,230],[275,330]]){ const pts=[]; for(let a=a0;a<=a1;a+=5){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*15,(rr()-.5)*.6,Math.sin(r)*15)); } tube(b,rr()<.5?M.hull:M.dark,pts,()=>1.6,8); }
     for(let i=0;i<5;i++){ const a=i*1.256+rr()*.3, l=6+rr()*8; b.box(M.dark,Math.cos(a)*(3+l/2),(rr()-.5)*2,Math.sin(a)*(3+l/2),l,.9,.9,(rr()-.5)*.3,-a,(rr()-.5)*.4); }
-    for(let i=0;i<14;i++){ const a=rr()*6.28, r=rr()<.5?15:3+rr()*9; b.box(M.ember,Math.cos(a)*r,(rr()-.5)*2,Math.sin(a)*r,.6+rr()*.8,.4,.6+rr()*.8); }
+    for(let i=0;i<5;i++){ const a=rr()*6.28, r=rr()<.5?15:3+rr()*9; b.box(M.ember,Math.cos(a)*r,(rr()-.5)*2,Math.sin(a)*r,.6+rr()*.8,.4,.6+rr()*.8); }
     for(let i=0;i<10;i++){ const a=rr()*6.28, r=6+rr()*8; b.box(rr()<.5?M.hull:M.dark,Math.cos(a)*r,(rr()-.5)*5,Math.sin(a)*r,.8+rr()*2.4,.5+rr()*1.2,.6+rr()*2,rr()*3,rr()*3,rr()*3); }
     const m=b.finish(); m.root.position=c.add(new V3(0,1.5,0)); m.root.scaling.setAll(R/16.5); m.root.rotation.set((rr()-.5)*.5,rr()*6,(rr()-.5)*.4); m.meshes.forEach(x=>x.isPickable=false); G.env.push(m.root); },
   hulk(c,R,rr){ const facs=battleFacs(), f=facs[Math.floor(rr()*facs.length)];

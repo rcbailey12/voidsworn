@@ -65,13 +65,14 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
 #ifdef HULLFX
   { vec3 hv=normalize(vEyePosition.xyz-vPositionW); float hd=length(vEyePosition.xyz-vPositionW);
     float hf=pow(1.0-clamp(abs(dot(normalW,hv)),0.0,1.0),2.6);
-    finalEmissive+=hfxRim*hf*hfxK.x;
+    float hdk=clamp(hd/110.0,1.0,2.4); // v52: rims and running lights grow with camera distance, so hulls keep their outline at fleet zoom
+    finalEmissive+=hfxRim*hf*hfxK.x*hdk;
     if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3; float th=1.0-hfxD.x*0.62;
       float edge=smoothstep(th-0.014,th,dn)*(1.0-smoothstep(th+0.004,th+0.022,dn));
       float crack=(1.0-smoothstep(0.0,0.035+hd*0.0003,abs(hfxN(vHfxL*0.9+hfxD.y*3.0)-0.5)))*smoothstep(th+0.04,th+0.12,dn);
       float fl=0.7+0.3*sin(hfxK.y*9.0+vHfxL.x*1.7)*sin(hfxK.y*5.3+vHfxL.z*2.1);
       finalEmissive+=vec3(1.3,0.4,0.08)*(edge*1.1+crack*0.7)*fl*hfxD.x; }
-    float st=hfxK.w, t=hfxK.y, w=0.05+hd*0.00045, en=hfxS.y; vec3 lp=vHfxL;
+    float st=hfxK.w, t=hfxK.y, w=0.05+hd*0.00045, en=hfxS.y*mix(1.0,hdk,0.7); vec3 lp=vHfxL;
     if(st>0.5&&st<1.5){ vec3 q=lp*0.55+hfxS.x; vec3 c=floor(q); vec3 f=fract(q);
       float lx=(1.0-smoothstep(0.0,w,abs(f.y-0.5)))*step(0.45,hfxH(c));
       float lz=(1.0-smoothstep(0.0,w,abs(f.x-0.5)))*step(0.78,hfxH(c+3.1))*step(abs(f.y-0.5),0.5);
@@ -90,7 +91,8 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
 try{ BABYLON.RegisterClass('BABYLON.HullFxPlugin',HullFxPlugin); }catch(e){}
 function addHullFx(M,fac){ try{ const P=FAC3D[fac]||FAC3D.hegemony; const rim=C3.Lerp(P.eng,new C3(.75,.85,1),.45), style=HULLFX_STYLE[fac]||0, ecol=P.win.scale(fac==='deathless'?1.6:fac==='chorus'?1.2:fac==='ithar'?.35:.9);
     const wear={corsair:.45,voidsworn:.32,hegemony:.22,deathless:.3,chorus:.12,ithar:.08}[fac]??.25, seed=(fac.length*13.7)%10;
-    for(const [k,s,en] of [['hull',.85,1],['dark',.55,1],['steel',.45,0],['trim',.35,0]]) if(M[k]&&!M[k]._hullFx){ M[k]._hullFx=new HullFxPlugin(M[k],{rim,str:s,style,ecol,wear:k==='trim'?wear*.4:wear,seed,energy:!!en}); } }catch(e){ console.warn('hull shading unavailable',e); } }
+    const dk=(fac==='voidsworn'||fac==='deathless')?1.7:1; // the black fleets need a stronger rim to read against space
+    for(const [k,s0,en] of [['hull',.85,1],['dark',.55,1],['steel',.45,0],['trim',.35,0]]) if(M[k]&&!M[k]._hullFx){ const s=s0*dk; M[k]._hullFx=new HullFxPlugin(M[k],{rim,str:s,style,ecol,wear:k==='trim'?wear*.4:wear,seed,energy:!!en}); } }catch(e){ console.warn('hull shading unavailable',e); } }
 
 // ---------- procedural planets: gas giants, rocky worlds and ice worlds, lit by the sun with scattering at the limb ----------
 const PLANET_GLSL={

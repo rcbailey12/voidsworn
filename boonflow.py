@@ -20,7 +20,12 @@ with sync_playwright() as p:
     pg.evaluate("(()=>{ RUN.boons=[{id:'e_chain',r:0}]; B.boonStats={e_chain:2}; for(const u of B.units) if(u.side==='enemy'){ u.dead=true; u.hp=0; } checkEnd(); })()")
     pg.wait_for_function("!!document.getElementById('endcard')", timeout=120000, polling=500); pg.evaluate("ACT.c3continue(); 0"); pg.wait_for_timeout(1200)
     pg.screenshot(path=OUT+'/bf_victory.png'); print('victory modal:',pg.evaluate("(document.querySelector('.modal')||document.body).innerText.replace(/\\s+/g,' ').slice(0,300)"))
-    pg.evaluate("document.querySelector('[data-act=rewardNext]').click()"); pg.wait_for_timeout(600)
+    if pg.evaluate("!!document.querySelector('[data-act=salvageStep]')"):
+        pg.evaluate("document.querySelector('[data-act=salvageStep]').click()"); pg.wait_for_timeout(500)
+        print('salvage modal:',pg.evaluate("(document.querySelector('.modal')||document.body).innerText.replace(/\\s+/g,' ').slice(0,400)"))
+        pg.screenshot(path=OUT+'/bf_salvage.png'); c0=pg.evaluate("RUN.credits")
+        pg.evaluate("document.querySelector('[data-act=takeSalvage]').click()"); pg.wait_for_timeout(700); print('salvage taken: credits',c0,'->',pg.evaluate("RUN.credits"),'hold',pg.evaluate("JSON.stringify(RUN.inventory)"))
+    else: pg.evaluate("document.querySelector('[data-act=rewardNext]').click()"); pg.wait_for_timeout(600)
     pg.screenshot(path=OUT+'/bf_boon.png'); print('boon modal:',pg.evaluate("(document.querySelector('.modal')||document.body).innerText.replace(/\\s+/g,' ').slice(0,500)"))
     pg.evaluate("document.querySelector('[data-act=takeBoon]').click()"); pg.wait_for_timeout(800)
     # promotions may follow; clear them

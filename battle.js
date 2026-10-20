@@ -363,8 +363,8 @@ function startSideTurn(side){
     if(u.abCd>0) u.abCd--;
     if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)); for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+rg); }
     if(u.hullRegen && u.hp<u.maxHp && !u.pyre) u.hp=Math.min(u.maxHp,u.hp+u.hullRegen);
-    if(u.st.acid>0&&!u.isSq){ u.st.acid--; u.hp-=4; fxText(u,'Acid \u22124','#c8e04a',-12); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} dissolves.`, u.side==='player'?'e':'p'); Promise.resolve(killUnit(u,null)).catch(e=>console.error(e)); } }
-    if(u.st.fire>0){ const fd=u.st.fireDmg||6; u.st.fire--; u.hp-=fd; fxText(u,'Fire \u2212'+fd,'#f08a4b'); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} burns out.`, u.side==='player'?'e':'p'); Promise.resolve(killUnit(u,null)).catch(e=>console.error(e)); } if(!u.st.fire) u.st.fireDmg=0; }
+    if(u.st.acid>0&&!u.isSq){ u.st.acid--; u.hp-=4; fxText(u,'Acid \u22124','#c8e04a',-12); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} dissolves.`, u.side==='player'?'e':'p'); u.killCause='melt'; Promise.resolve(killUnit(u,null)).catch(e=>console.error(e)); } }
+    if(u.st.fire>0){ const fd=u.st.fireDmg||6; u.st.fire--; u.hp-=fd; fxText(u,'Fire \u2212'+fd,'#f08a4b'); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} burns out.`, u.side==='player'?'e':'p'); u.killCause='dark'; Promise.resolve(killUnit(u,null)).catch(e=>console.error(e)); } if(!u.st.fire) u.st.fireDmg=0; }
     u.hexMoved=0; if(u.fx&&u.fx.stormRegen&&u.shMax>0&&!(u.st.shieldOff>0)){ for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+Math.round(u.shMax*u.fx.stormRegen)); }
     u.intercepts = u.weapons.some(w=>w.k==='flak')?2:0;
     u.boarded=false; u.rammed=false; u.emerg=false; u.repel=false;
@@ -607,7 +607,7 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   if(res.crits) parts.push(res.crits>1?`${res.crits} criticals`:'critical');
   log(`${u.name} ${opts.intercept?'intercepts with':'fires'} ${w.n} at ${t.name}: ${parts.join(', ')}.${res.sys?' '+res.sys+'!':''}`, who);
   if(res.hits>0&&t.braced&&!t.dead&&!u.dead&&!opts.intercept&&t.side!==u.side){ const rp=ownerFx(t).riposte; if(rp){ u.hp-=rp; t.dealt=(t.dealt||0)+rp; boonFx(u,'i_brace','\u2212'+rp,-40); if(u.hp<=0) await killUnit(u,t); } } // Iron Discipline: braced ships strike back
-  if(t.hp<=0) await killUnit(t,u);
+  if(t.hp<=0){ t.killCause=killCauseOf(w,t); await killUnit(t,u); }
   return true;
 }
 // a ram: any enemy ship dead ahead of the bow, with at least one clear hex of run-up and movement left to cover the gap
@@ -637,7 +637,7 @@ async function ramUnit(u){
   log(`${u.name} rams ${t.name} at full speed: ${e.dmg} to its ${SEC_NAME[e.sec]}, ${e.recoil} back to the ram.`, u.side==='player'?'p':'e');
   if(rnd()<.35){ const sy=systemDamage(t,e.sec); if(sy) log(`${t.name}: ${sy}.`, u.side==='player'?'p':'e'); }
   if(u.fx&&u.fx.ramSplash){ const sd=Math.round(e.dmg*u.fx.ramSplash); for(const x of B.units.filter(x=>!x.dead&&x!==t&&x.side===t.side&&hdist(x,t)===1)){ x.hp-=sd; boonFx(x,'r_shock','\u2212'+sd,-10); if(x.hp<=0) await killUnit(x,u); } }
-  if(t.hp<=0) await killUnit(t,u); if(u.hp<=0) await killUnit(u,t); checkEnd(); return true;
+  if(t.hp<=0){ t.killCause='big'; await killUnit(t,u); } if(u.hp<=0){ u.killCause='big'; await killUnit(u,t); } checkEnd(); return true;
 }
 function boardTargets(u){ if(!u||u.isSq||u.braced||u.boarded||u.dead||!u.crewMax||u.crew<Math.max(4,u.crewMax*.4)||u.weapons.some(w=>w.fired)) return [];
   return alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(u,t)===1); }
@@ -676,7 +676,15 @@ async function tacticRam(u){ const info=ramInfo(u); if(!info||info.path.length<2
   if(e.dmg>=info.t.hp || e.dmg>=info.t.hp*(bold?.3:.45)){ await ramUnit(u); return true; } return false; }
 async function tacticBoard(u){ let best=null,bv=0; for(const t of boardTargets(u)){ const o=boardOdds(u,t); const v=o.chance>=70?100+t.maxHp/10:0; if(v>bv){bv=v;best=t;} }
   if(best){ await boardUnit(u,best); return true; } return false; }
-async function killUnit(t,by){
+// v52: how a ship dies depends on what killed it (presentation only; fx3d animExplode reads u.killCause)
+function killCauseOf(w,t){ if(!w) return 'blast'; const k=w.k, tr=w.trait;
+  if(tr==='gauss'||k==='gauss'||k==='doom') return 'flay';
+  if(tr==='acid'||tr==='spines'||k==='bioplasma'||k==='tendril'||k==='sporeb') return 'melt';
+  if(k==='lance'||k==='beam'||tr==='plasma'&&/lance/i.test(w.n||'')) return 'cut';
+  if(k==='torp'||k==='htorp'||k==='startorp'||k==='bombs') return 'big';
+  if((k==='battery'||k==='hbattery'||k==='turret'||k==='autocannon'||k==='scatter')&&(String(t&&t.id).split('').reduce((h,c)=>h*31+c.charCodeAt(0)|0,B?B.round||0:0)>>>0)%10<3) return 'dark'; // no rules RNG for looks
+  return 'blast'; }
+async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.units.find(x=>x.id===by.parent)||by).name):by.name;
   if(t.dead) return;
   if(t.fx.lastStand && !t.usedLastStand){ t.usedLastStand=true; t.hp=1; fxText(t,'Last stand','#f0b35a',-30); log(`${t.name} refuses to die! (Last stand)`,'s'); return; }
   if(t.side==='player' && !t.isSq && runFx().revive && !B.reviveUsed){ B.reviveUsed=true; t.hp=Math.round(t.maxHp*.25); fxText(t,'Reawakens','#7dff9b',-30); log(`The phylactery hums. ${t.name} reawakens at 25% hull.`,'s'); return; }

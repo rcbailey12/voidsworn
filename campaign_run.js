@@ -246,13 +246,31 @@ function rewardFlow(summary){
   window._relicChoice=(cfg.kind==='elite'||cfg.kind==='boss')?shuffle(Object.keys(RELICS).filter(r=>!RUN.relics.includes(r)&&relicUseful(r))).slice(0,cfg.kind==='boss'?3:2):[];
   const xpLines=summary.xp.map(x=>`<li>${esc(x.cap)} of the ${esc(x.ship)}: +${x.xp} experience${x.up?` <span class="gilt">promoted to ${RANKS[x.rank]}</span>`:''}</li>`).join('');
   const lost=summary.lost.length?`<p class="blood">Lost: ${summary.lost.map(l=>`the ${esc(l.ship)} and ${esc(l.cap)}`).join(', ')}.</p>`:'';
-  const next=rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a boon</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
+  window._wrecks=(summary.wrecks||[]).map(w=>Object.assign(w,{yield:salvageYield(w)}));
+  const next=window._wrecks.length?'<button class="primary" data-act="salvageStep">Salvage the field</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a boon</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
   modal(`<h2>${cfg.kind==='boss'?'Flagship destroyed':'Victory'}</h2>
     <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra}
     ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Boons in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No boon triggered this battle. Check the Fleet boons section on a ship to see what sets each one off.</p>':''; })()}
     ${flagMoved?`<p class="gilt">The admiral transfers the flag to the ${esc(flagMoved.name)}. Its aspect goes with it.</p>`:''}
     ${xpLines?`<ul class="num" style="padding-left:18px">${xpLines}</ul>`:''}${next}`);
 }
+// v52 salvage: pick one wreck from the ships you actually destroyed. What it yields depends on what it carried; Corsairs can tow small hulls home as prizes.
+const CAUSE_WORD={cut:'cut in two by a lance',big:'blown apart',flay:'flayed by gauss fire',melt:'dissolved',dark:'gutted and dark',blast:'destroyed'};
+function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODULES[m], wk=w.wk||[];
+  const pickM=[wk.includes('lance')&&'crystal',(wk.includes('torp')||wk.includes('htorp')||wk.includes('startorp'))&&'magazine',(wk.includes('battery')||wk.includes('hbattery'))&&'loaders',wk.includes('flak')&&'flakplus',w.ab==='launch'&&'hangar',(wk.includes('gauss')||wk.includes('needle')||wk.includes('shard'))&&'cogitator',w.regen&&'damcon',w.sh>=20&&'capacitor',(wk.includes('turret')||wk.includes('autocannon'))&&'auspex'].filter(Boolean).filter(has);
+  // a wreck that was flayed or dissolved has little left to strip
+  const intact=w.cause!=='flay'&&w.cause!=='melt'&&w.cause!=='big', m=intact&&pickM.length?pickM[0]:null, cred=Math.round((10+9*w.cp)*(intact?1:1.3));
+  const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'?true:false;
+  return {mod:m,cred,tow}; }
+ACT.salvageStep=()=>{ closeModal(); const ws=window._wrecks||[];
+  modal(`<h2>Salvage the field</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
+    return `<div class="choice" style="cursor:default"><b>${esc(w.name)}</b> <span class="dim">${esc(w.cls||'')}${F?', '+esc(F.n):''}</span><small>${esc(CAUSE_WORD[w.cause]||'destroyed')}${w.by?` by the ${esc(w.by)}`:''}.</small>
+      <div class="orders" style="margin-top:6px">${y.mod?`<button data-act="takeSalvage" data-arg="${i}:mod">Strip it: <b>${esc(modName(y.mod))}</b><small>${esc(MODULES[y.mod].d)}</small></button>`:''}<button data-act="takeSalvage" data-arg="${i}:cred">Scrap it<small>+${y.cred} credits</small></button>${y.tow?`<button data-act="takeSalvage" data-arg="${i}:tow">Tow it home<small>Joins your fleet at 35% hull</small></button>`:''}</div></div>`; }).join('')}`); };
+ACT.takeSalvage=a=>{ const [i,k]=String(a).split(':'), w=(window._wrecks||[])[+i]; if(!w){ closeModal(); return ACT.rewardNext(); } const y=w.yield;
+  if(k==='mod'&&y.mod){ RUN.inventory.push(y.mod); toast(`${modName(y.mod)} stripped from the ${w.name} and stowed in the hold.`); }
+  else if(k==='tow'&&y.tow){ try{ const sh=newShip(w.tpl); sh.name=w.name; sh.hp=Math.max(1,Math.round(derive(sh).maxHp*.35)); RUN.fleet.push(sh); toast(`The ${w.name} is under tow. Patch her up at a shipyard.`); }catch(e){ RUN.credits+=y.cred; } }
+  else { RUN.credits+=y.cred; toast(`The ${w.name} is broken up for scrap: +${y.cred} credits.`); }
+  try{ tel('salvage_pick',{k,cause:w.cause,cls:w.cls,mod:y.mod||null}); }catch(e){} window._wrecks=[]; saveRun&&saveRun(); closeModal(); ACT.rewardNext(); };
 ACT.rewardNext=()=>{ const rw=window._rw||{}; closeModal();
   if(rw.k==='boon') return boonStep(rw.p,rw.min||0);
   if(rw.k==='mod'){ const opts=shuffle(modulePool()).slice(0,3); window._modOffer=opts;
