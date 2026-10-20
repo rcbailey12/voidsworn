@@ -13,6 +13,16 @@ Gate before every publish: `node sim3d.js rulecheck`, `node sim3d.js fuzz 20`, `
 - [ ] E. World: asteroid rebuild (tall faceted blockers on a marked hex, sparse dressing off playable hexes, recipe variety, sharper shapes, v51 filler pulled back); Ithar material fix; one Ithar sail card test.
 - [x] F. Sound: rebuilt audio graph (buses, reverb, pan, voice limits, volley aggregation) with recorded clips from Kenney (CC0) and the Sonniss GDC 2026 bundle embedded as Opus (~470 KB), synth fallback, hidden sound test.
 
+## v53.5+: cleanup and fidelity (owner decisions Oct 20)
+Full audit: AUDIT_v53H.md. Owner chose: full per-ship detail bake; desktop loads the sharp set, phone a lighter set; after ships do explosions and weapons; GPU jobs on the PC may run any time it is on.
+- [ ] G. Ship close-ups: strays and floating windows gone, shader ports, new meshes (V18 carrier, C19 barge, S1/S2/B23 craft, O1 station, O2 transport, O3 beacon). Follow-ups: squadron end-card soft-lock, stray orange orb, no windows on Chorus, thinner Deathless circuits, hex fill fades on zoom-in.
+- [ ] H. Cleanup now: dead title animation/preview demo, hexTex, ripple, "low" tier branches, 30 unused hull files.
+- [ ] Cleanup after G: points-only ship build (skip the thrown-away procedural hull, ~3.3 s and 2 M vertices), drop the concept-hull toggle, decals/fires on the real hull, wrecks from concept meshes, then delete the procedural builders.
+- [ ] Cleanup after C: pool per-call effect meshes/materials, drop old effect fallbacks, refresh the reflection probe per battle.
+- [ ] Per-hull bake on the PC (Blender, GPU): UV unwrap each game mesh, bake normal + AO + curvature + window mask from the high-poly Hunyuan output; albedo from faction plating (Hunyuan Paint if it fits in VRAM). Game: hull JSON carries UVs, per-hull texture sidecars (desktop 2K, phone 1K), hull material uses them; replaces the generated plating textures (75% of texture memory).
+- [ ] Explosions and weapons: Blender-rendered explosion flipbooks, closed cut faces on broken hulls, thicker beams at board zoom, textured torpedoes, bolts that are not capsules.
+- [ ] Then: world (CC0 triplanar rock, black-hole lensing and accretion disc, depth-faded nebula, shader hex grid), stations/wrecks polish.
+
 ## v54: factions and rewards (parallel with v55)
 
 Doctrines (Ithar and Chorus first, then Corsair, Deathless, Hegemony, Voidsworn); boon decline + reroll; rule-changing boons; legendary per patron (Hades style, unlocked at boss/elite after 2-3 of that patron's boons); rarity changes effect; shared refit tracks per class; kill marks and sector chronicle; section consequences; fire damage-control choice; earned Admiral's Command; objectives that change priorities; faction AI behaviours; differentiated admirals.
