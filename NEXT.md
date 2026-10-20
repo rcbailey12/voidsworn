@@ -11,7 +11,7 @@ Gate before every publish: `node sim3d.js rulecheck`, `node sim3d.js fuzz 20`, `
 - [ ] C. Loading and phone performance: parallel awaited hull fetch before the title with progress and a log line naming the live hull path; skip fragmentHull at Medium; pool fxText; full frame rate while animating; shared shield ring geometry; a ?prof=1 profiler capture that exports CSV.
 - [x] D. AI that reads: per-weapon target re-pick; shield strippers first; sticky focus; threat ignores fired guns + death cliff; objective terms with round clock; abilities after moving; squadron focus; escort spacing; enemy focus marker on the board (tap, not hover).
 - [ ] E. World: asteroid rebuild (tall faceted blockers on a marked hex, sparse dressing off playable hexes, recipe variety, sharper shapes, v51 filler pulled back); Ithar material fix; one Ithar sail card test.
-- [ ] F. Sound: rebuilt audio graph (buses, reverb, pan, voice limits, volley aggregation) with recorded clips from Kenney (CC0) and the Sonniss GDC 2026 bundle embedded as Opus (~470 KB), synth fallback, hidden sound test.
+- [x] F. Sound: rebuilt audio graph (buses, reverb, pan, voice limits, volley aggregation) with recorded clips from Kenney (CC0) and the Sonniss GDC 2026 bundle embedded as Opus (~470 KB), synth fallback, hidden sound test.
 
 ## v54: factions and rewards (parallel with v55)
 
@@ -30,3 +30,5 @@ Altitude combat rules and class heights; stances and momentum; undo after a move
 ## Parking lot
 
 (new ideas land here first)
+- Rulecheck flaked once (1 in 10 runs) after v53-D: find the unseeded check.
+- Sector 1 too easy: owner won 4/4 in 3 rounds each with 0 losses on v53.2 (balance pass after AI lands).
