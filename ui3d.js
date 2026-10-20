@@ -213,7 +213,7 @@ function refreshOverlays(){
       const fm=fanMesh(spans[arc][0],spans[arc][1],R,col,enemy?.05:.06); /* holo: outline the arc, barely fill it */ fm.parent=node; fm.position.y=.08; }
   }
   if(B.inspect&&B.inspect.side==='enemy'&&!B.inspect.dead&&!B.inspect.isSq&&!B.showThreat&&!B.mode){ const th=inspThreat(B.inspect); // v53-D: the tapped enemy's reach, faint, and a thin ring on each of your ships inside it
-    for(const k of th.keys()){ const [q,r]=k.split(',').map(Number); tile('ithr',new C3(1,.2,.14),.022,{q,r},OV.items); }
+    for(const k of th.keys()){ const [q,r]=k.split(',').map(Number); tile('ithr',new C3(1,.2,.14),.011,{q,r},OV.items); }
     for(const p of alive('player')){ if(p.isSq||!th.has(hkey(p.q,p.r))) continue; const v=G.views.get(p.id), rm=ringMesh(new C3(1,.32,.25),.6,v?Math.max(5.5,v.L*.62):6,.2); rm.position=hexWorld(p.q,p.r,.25); OV.items.push(rm); } }
   if(B.showThreat){ const th=computeThreat(); for(const [k,v] of th){ const [q,r]=k.split(',').map(Number); const lv=v>=45?3:v>=20?2:1; tile('thr'+lv,new C3(1,.18,.12),[0,.08,.16,.28][lv],{q,r},OV.items); } }
   if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ const g=s.guns>0; if(g) tile('reachG4',new C3(.95,.7,.28),.03,s,OV.items); tile(g?'reachGE3':'reachE2',g?new C3(1,.92,.62):new C3(1,.8,.4),g?.8:.36,s,OV.items,true); /* v53: outline only, so hulls stay readable; a hex your guns can fire from gets a brighter edge and a whisper of fill (additive reads ~3x brighter on screen) */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
