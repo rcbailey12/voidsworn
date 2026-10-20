@@ -353,7 +353,7 @@ function escortsBreak(){ if(!B.cfg||B.cfg.kind!=='boss'||B.escortsFled) return; 
 function startSideTurn(side){
   const deaths=[]; // v53: ships killed by the turn's ticks; the caller awaits the returned promise so their deaths finish in order
   if(side==='player'&&B.round>1){ eventTick(); objectiveTick(deaths); }
-  if(side==='enemy'){ B.aiFocus=null; try{ bossCmdTick(); }catch(e){} }
+  if(side==='enemy'){ try{ aiRefreshFocus(); }catch(e){} try{ bossCmdTick(); }catch(e){} } // v53-D: the fleet focus is kept (sticky) and re-checked, not wiped, each enemy turn
   escortsBreak();
   gainResolve(side,1); let burned=false;
   for(const u of B.units){
@@ -738,9 +738,23 @@ function objAfterMove(u){ const o=B&&B.obj; if(!o||!u||u.dead||u.isSq) return;
 function aiObjScore(u,v){ const o=B.obj; if(!o||u.isSq) return 0;
   if(u.transport) return -(o.exitR-v.r)*14;
   if(o.type==='hunt'&&u.flagship){ const d=Math.min(30,...caps('player').map(p=>hdist(v,p))); return Math.min(d,9)*3; } // runs, but stops running once well clear
-  if(o.type==='defend') return -Math.max(0,hdist(v,o.hex)-2)*3;
-  if(o.type==='break'){ const pl=caps('player'); if(!pl.length) return 0; const lead=Math.max(...pl.map(p=>p.q+Math.floor(p.r/2))), c=v.q+Math.floor(v.r/2); return -Math.max(0,lead+1-c)*1.2; }
+  const vet=aiVet(), urg=vet?aiObjUrgency(o):1; // v53-D: veterans feel the round clock and the station's integrity; standard keeps the flat pull
+  if(o.type==='defend') return -Math.max(0,hdist(v,o.hex)-2)*3*urg;
+  if(o.type==='break'){ const pl=caps('player'); if(!pl.length) return 0; const lead=Math.max(...pl.map(p=>p.q+Math.floor(p.r/2))), c=v.q+Math.floor(v.r/2); if(!vet) return -Math.max(0,lead+1-c)*1.2;
+    // veterans block the exit lane in front of the leading ship, harder the further it has got
+    const L=pl.find(p=>p.q+Math.floor(p.r/2)===lead), c0=o.c0!=null?o.c0:(o.c0=boardBounds().c0), prog=clamp((lead-c0)/Math.max(1,o.exitC-c0),0,1);
+    return -(Math.max(0,lead+1-c)*1.2+Math.max(0,Math.abs(v.r-L.r)-2)*.5)*(1+1.5*prog); }
+  if(vet&&o.type==='intercept'){ let d=99; for(const x of B.units) if(x.transport&&!x.dead) d=Math.min(d,hdist(v,x)); return d<99?-Math.max(0,d-3)*1.5:0; } // escorts screen their convoy
+  if(vet&&o.type==='hold'){ // the relay pulls only the two enemy ships nearest it; the rest fight nearby. A ship already holding it uncontested is paid to stay
+    const mine=caps('enemy').filter(x=>!x.transport).sort((a,b)=>hdist(a,o.hex)-hdist(b,o.hex)||(a.id<b.id?-1:1)), k=mine.indexOf(u), d=hdist(v,o.hex);
+    if(k<0||k>1) return -Math.max(0,d-5)*.4;
+    const held=hdist(u,o.hex)<=1&&!caps('player').some(p=>hdist(p,o.hex)<=1); return -d*1.6*urg+(held&&d<=1?4:0); }
   return 0; }
+// v53-D: objective urgency (veteran): rises as the round clock runs down and when the station or the relay score is close to decided
+function aiObjUrgency(o){ const done=clamp(((B.round||1)-1)/(o.rounds||ENC_ROUNDS),0,1);
+  if(o.type==='defend') return 1+done*1.2+(o.hp<=2?.6:0);
+  if(o.type==='hold') return 1+done*.8+(o.score>=2?.8:0)+(o.escore>=2?.4:0);
+  return 1; }
 function objectiveTick(dq){ const o=B.obj; if(!o||B.over) return;
   if(o.type==='defend'){ const near=caps('enemy').filter(u=>hdist(u,o.hex)<=2); if(near.length){ o.hp=Math.max(0,o.hp-near.length); log(`${near.length} enemy ship${near.length>1?'s':''} at the station. Integrity ${o.hp}/${o.hpMax}.`,'e'); }
     if(o.hp>0&&B.round<=o.rounds) stationFire(dq); checkEnd(); return; }
@@ -859,7 +873,9 @@ const SQ_LEASH=8; // hexes a squadron may range from a living carrier
 function sqRole(s){ return s.t.sq==='fighter'?'fighter':'bomber'; }
 // bombers strike ships; fighters hunt enemy craft and only strafe ships when no enemy craft are flying
 function sqWants(s,t){ if(t.dead||t.side===s.side) return false; if(sqRole(s)==='bomber') return !t.isSq; return alive(t.side).some(x=>x.isSq)?t.isSq:true; }
-function sqValue(t,e){ let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=25; if(t.isSq&&sqRole(t)==='bomber') v*=1.5; return v+(1-t.hp/t.maxHp)*10; }
+function sqValue(t,e,s){ let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=25; if(t.isSq&&sqRole(t)==='bomber') v*=1.5; if(s&&s.side==='enemy'&&t===B.aiFocus&&aiVet()) v*=1.3; if(s&&(s.side==='player'||aiVet())&&sqObjNear(t)) v+=6; return v+(1-t.hp/t.maxHp)*10; }
+// v53-D: wings lean on the fleet focus (as evalOffenseVet does) and on targets close to the station or a transport in defend and intercept
+function sqObjNear(t){ const o=B&&B.obj; if(!o) return false; if(o.type==='defend'&&o.hex) return hdist(t,o.hex)<=3; if(o.type==='intercept'){ for(const x of B.units) if(x.transport&&!x.dead&&hdist(x,t)<=3) return true; } return false; }
 // a target is "in reach" only if some hex the squadron can actually fly to this round lets a weapon legally hit it (same range, arc and sight rules as manual fire)
 // wing orders (player only): 'strike' a chosen enemy, or 'guard' a friendly ship and hit whatever comes near it
 function sqOrder(s){ const o=s.wingOrder; if(!o) return null; const t=B.units.find(x=>x.id===o.id); if(!t||t.dead||t.side===s.side){ s.wingOrder=null; return null; } return {kind:o.kind,t}; }
@@ -868,7 +884,7 @@ function sqPlan(s){ const ord=sqOrder(s); let foes=alive(s.side==='player'?'enem
   const guard=ord&&ord.kind==='guard'?ord.t:null;
   const lim=SQ_LEASH+(ord&&ord.kind==='strike'?2:0), leashOK=v=>guard?hdist(v,guard)<=3:(!carrier||hdist(v,carrier)<=lim); let best=null;
   for(const st of [here,...states]){ const v=stateView(s,st); if(!leashOK(v)) continue;
-    for(const t of foes) for(const w of ready){ if(!inReach(v,w,t)) continue; let val=sqValue(t,expectedVs(v,w,t))-(st.cost||0)*.01;
+    for(const t of foes) for(const w of ready){ if(!inReach(v,w,t)) continue; let val=sqValue(t,expectedVs(v,w,t),s)-(st.cost||0)*.01;
       if(ord&&ord.kind==='strike'&&ord.t===t) val=val*3+60; if(guard&&hdist(t,guard)<=3) val=val*2+20;
       if(!best||val>best.val) best={st,t,val,attack:true}; } }
   if(best) return best;
@@ -976,18 +992,33 @@ const FACTION_AI={
 // ---------- veteran AI helpers ----------
 function aiVet(){ return (typeof AI_LEVEL==='undefined'?'veteran':AI_LEVEL)==='veteran'; }
 // threat now includes what enemies could reach after moving, not just where they sit
-function evalThreatVet(v,foes){ let tot=0; for(const p of foes){ const d=hdist(p,v); if(d>13) continue;
-    for(const w of p.weapons){ if(w.cdLeft>1||w.off>1) continue; if(d<=w.r&&inArc(p,v,w.arc)){ const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; }
-      else if(d<=w.r+Math.max(1,(p.speed||2)-1)){ const e=expectedVs(p,w,v); tot+=(e.hull+e.shield*.2)*.2; } } } return tot; }
+// v53-D: guns that already fired this round (alternating) are spent; the after-move term needs the gun to bear after a one-step turn and a clear line
+function evalThreatVet(v,foes){ let tot=0; for(const p of foes){ const d=hdist(p,v); if(d>13) continue; let ls=null;
+    for(const w of p.weapons){ if(w.cdLeft>1||w.off>1||!aiGunLive(p,w)) continue; if(d<=w.r&&inArc(p,v,w.arc)){ const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; }
+      else if(d<=w.r+Math.max(1,(p.speed||2)-1)&&aiArcSoon(p,v,w.arc)&&(ls==null?(ls=los(p,v)):ls)){ const e=expectedVs(p,w,v); tot+=(e.hull+e.shield*.2)*.2; } } } return tot; }
+// can this gun still fire before the round ends? In alternating play a gun that fired (or a braced hull) is done until the next round; flak never fires at ships
+function aiGunLive(p,w){ if(w.k==='flak') return false; if(B&&B.alt&&(w.fired||p.braced)) return false; return true; }
+// would the target sit in this arc now, or after a one-step turn (if the ship has a turn)?
+function aiArcSoon(p,v,arc){ if(arc==='T'||inArc(p,v,arc)) return true; if(!((p.turns||0)>0)) return false; const f=p.facing; return inArc({q:p.q,r:p.r,facing:(f+1)%6},v,arc)||inArc({q:p.q,r:p.r,facing:(f+5)%6},v,arc); }
 // a position that lines up a ram for next activation
 function ramSetup(v,u){ const d=DIRS[v.facing]; let q=v.q,r=v.r; for(let i=0;i<=(u.speed||2);i++){ q+=d[0]; r+=d[1]; if(!onBoard(q,r)||blocks(terr(q,r))) return 0; const o=unitAt(q,r); if(o&&o!==u){ return (o.side!==u.side&&!o.isSq&&i>=1)?ramEstimate(Object.assign(Object.create(u),{q:v.q,r:v.r,facing:v.facing}),o).dmg:0; } } return 0; }
 // the fleet-wide focus target: the most valuable ship that is closest to dying
-function aiFocusTarget(){ let best=null,bv=0; for(const t of alive('player')){ if(t.isSq) continue; const ehp=t.hp+t.sh.reduce((a,x)=>a+x,0)*.3; const v=((t.t.cp||1)*12+(t.flagship?20:0))/Math.max(20,ehp); if(v>bv){bv=v;best=t;} } return best; }
+function aiFocusTarget(){ const sh=aiShooters(); let best=null,bv=0; for(const t of alive('player')){ if(t.isSq) continue; const v=aiFocusVal(t,sh); if(v>bv){bv=v;best=t;} } return best; }
+// v53-D: value over effective hull, priced the way expectedVs will price it (brace, guard aura, Iron Command), and worth less when few of our guns can reach it this turn
+function aiShooters(){ return caps('enemy').filter(u=>!u.transport&&u.weapons.length); }
+function aiFocusVal(t,shooters){ if(!t||t.dead||t.isSq) return 0; const br=t.braced?Math.max(.15,1-.4-((t.fx&&t.fx.bracePlus)||0)):1, take=Math.max(.15,br*guardMul(t)*cmdTaken(t));
+  const ehp=t.hp/take+t.sh.reduce((a,x)=>a+x,0)*.3; let n=0;
+  for(const u of shooters){ let rr=0; for(const w of u.weapons) if(w.cdLeft<=1&&w.off<=1&&w.k!=='flak'&&w.r>rr) rr=w.r; if(rr&&hdist(u,t)<=rr+(u.speed||2)) n++; }
+  return ((t.t.cp||1)*12+(t.flagship||t.pflag?20:0))/Math.max(20,ehp)*(n>=2?1:n===1?.8:.4); }
+// sticky fleet focus (veteran only): kept until the target dies or another is clearly (25%) better; re-checked each enemy turn and activation, never overwritten by a single ship's volley
+function aiRefreshFocus(){ if(!B) return null; if(!aiVet()){ B.aiFocus=null; return null; } const sh=aiShooters(), cur=B.aiFocus&&!B.aiFocus.dead&&B.aiFocus.side==='player'&&inThisBattle(B.aiFocus)?B.aiFocus:null, cv=cur?aiFocusVal(cur,sh):0;
+  let best=null,bv=0; for(const t of alive('player')){ if(t.isSq||t===cur) continue; const v=aiFocusVal(t,sh); if(v>bv){bv=v;best=t;} }
+  B.aiFocus=!cur||(best&&bv>cv*1.25)?(best||cur):cur; return B.aiFocus; }
 function evalOffenseVet(a,ready,targets,focus){ let tot=0;
   for(const w of ready){ let best=0; for(const t of targets){ if(!inReach(a,w,t)) continue; const e=expectedVs(a,w,t); let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=15+t.maxHp*.1; if(t.isSq&&!w.vsSq) v*=.5; if(t===focus) v*=1.3; if(e.rear) v*=1.1; if(v>best) best=v; } tot+=best; }
   return tot; }
 // alternating activations: veterans act with the ship that has the best opportunity, or the most danger, right now
-function aiPickActivation(list){ if(!aiVet()||list.length<2) return list[0]; const foes=alive('player'); let best=list[0],bv=-1e9;
+function aiPickActivation(list){ if(!aiVet()||list.length<2) return list[0]; aiRefreshFocus(); const foes=alive('player'); let best=list[0],bv=-1e9;
   for(const u of list){ if(u.isSq) continue; const ready=u.weapons.filter(weaponReady); let mx=0;
     for(let f=0;f<6;f++){ const o=evalOffenseVet(Object.assign(Object.create(u),{facing:f}),ready,foes,B.aiFocus); if(o>mx) mx=o; }
     let reach=0; for(const t of foes){ const d=hdist(u,t); for(const w of ready) if(d<=w.r+(u.speed||2)) reach=Math.max(reach,w.dmg*w.shots*(t===B.aiFocus?1.3:1)); }
@@ -996,40 +1027,67 @@ function aiPickActivation(list){ if(!aiVet()||list.length<2) return list[0]; con
 function evalThreat(v, foes){
   let tot=0;
   for(const p of foes){ if(hdist(p,v)>9) continue;
-    for(const w of p.weapons){ if(w.cdLeft>1||w.off>1) continue; if(hdist(p,v)>w.r) continue; if(!inArc(p,v,w.arc)) continue; const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; } }
+    for(const w of p.weapons){ if(w.cdLeft>1||w.off>1||!aiGunLive(p,w)) continue; if(hdist(p,v)>w.r) continue; if(!inArc(p,v,w.arc)) continue; const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; } }
   return tot;
 }
+// v53-D: the volley primary is re-picked before every gun from current hull and shields, with damage counted only up to the hull a target has left
+// (a 2-hull wreck is not worth a full broadside); a heavy gun leaves a kill that a lighter ready gun can make to that gun and fires elsewhere
+function aiPickPrimary(u,ws,focus){ let pv=0,primary=null;
+  for(const t of alive('player')){ let sh=0,hull=0; for(const w of ws){ if(!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); sh+=e.shield*.3; hull+=e.hull; } if(!sh&&!hull) continue;
+    const val=(Math.min(hull,t.hp)+sh)*(t.isSq?.6:1.1)+(hull>=t.hp?25+t.maxHp*.15:0)+(t===focus?10:0)+(1-t.hp/t.maxHp)*15; if(val>pv){pv=val;primary=t;} }
+  return primary; }
+// shield strippers first: the order key is the share of a gun's fire that comes off shields (ion strips more than it deals), then raw weight
+function aiGunOrder(u,ws,t){ const k=new Map(); for(const w of ws){ let v=-1; if(t&&canFire(u,w,t)){ const e=expectedVs(u,w,t); v=e.raw>0?Math.round(e.shield/e.raw*4):0; } k.set(w,v); }
+  return ws.slice().sort((a,b)=>k.get(b)-k.get(a)||(b.dmg*b.shots)-(a.dmg*a.shots)); }
 async function aiVolley(u,live){
-    // fire: veterans pick one primary target and concentrate on it
-    let primary=null; if(aiVet()){ let pv=0; const focus=B.aiFocus&&!B.aiFocus.dead?B.aiFocus:null;
-      for(const t of alive('player')){ let tot=0,hull=0; for(const w of u.weapons){ if(!weaponReady(w)||!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); tot+=e.hull+e.shield*.3; hull+=e.hull; } if(!tot) continue;
-        const val=tot*(t.isSq?.6:1.1)+(hull>=t.hp?25+t.maxHp*.15:0)+(t===focus?10:0)+(1-t.hp/t.maxHp)*15; if(val>pv){pv=val;primary=t;} }
-      if(primary&&!primary.isSq) B.aiFocus=primary; }
-    const wlist=u.weapons.map((w,i)=>i).sort((a,b)=>(u.weapons[b].dmg*u.weapons[b].shots)-(u.weapons[a].dmg*u.weapons[a].shots));
+    const vet=aiVet(), focus=vet&&B.aiFocus&&!B.aiFocus.dead?B.aiFocus:null, tried=new Set();
     let fired=false;
-    for(const wi of wlist){
-      if(B.over) return null;
-      const w=u.weapons[wi]; if(!weaponReady(w)) continue;
+    for(let g=0;g<u.weapons.length;g++){
+      if(B.over) return null; if(u.dead) break;
+      const ws=u.weapons.filter(w=>weaponReady(w)&&w.k!=='flak'&&!tried.has(w)); if(!ws.length) break;
+      const primary=aiPickPrimary(u,ws,focus); // veterans concentrate on it; both levels use it to order the guns
+      const w=aiGunOrder(u,ws,primary)[0], wi=u.weapons.indexOf(w); tried.add(w);
       let bt=null, bv=0;
       const taunt=alive('player').find(p=>!p.isSq&&p.fx&&p.fx.taunt&&hdist(p,u)<=p.fx.taunt); /* Aspect of the Bulwark: ships in its reach must fire on it */
-      if(taunt&&w.k!=='flak'&&canFire(u,w,taunt)){ bt=taunt; bv=1; }
-      else if(primary&&!primary.dead&&canFire(u,w,primary)&&!(w.vsSq>1&&!primary.isSq&&alive('player').some(s=>s.isSq&&canFire(u,w,s)))){ bt=primary; bv=1; }
-      else for(const t of alive('player')){ if(!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=20; if(!t.isSq) v*=1.1; if(v>bv){bv=v;bt=t;} }
-      const call=null; // called shots removed
-      if(bt && bv>0.5){ await fireWeapon(u,wi,bt,{called:call}); fired=true; await wait(30); if(!live()) return null; }
-      if(u.dead) break;
+      if(taunt&&canFire(u,w,taunt)){ bt=taunt; bv=1; }
+      else if(vet&&primary&&canFire(u,w,primary)&&!(w.vsSq>1&&!primary.isSq&&alive('player').some(s=>s.isSq&&canFire(u,w,s)))){ bt=primary; bv=1;
+        if(expectedVs(u,w,primary).hull>=primary.hp*2&&ws.some(x=>x!==w&&canFire(u,x,primary)&&expectedVs(u,x,primary).hull>=primary.hp)){ let av=3;
+          for(const t of alive('player')){ if(t===primary||!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); const v=Math.min(e.hull,t.hp)+e.shield*.3+(e.hull>=t.hp?20:0); if(v>av){av=v;bt=t;} } } }
+      else for(const t of alive('player')){ if(!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); let v=Math.min(e.hull,t.hp)+e.shield*.3; if(e.hull>=t.hp) v+=20; if(!t.isSq) v*=1.1; if(v>bv){bv=v;bt=t;} }
+      if(bt && bv>0.5){ await fireWeapon(u,wi,bt,{called:null}); fired=true; await wait(30); if(!live()) return null; }
     }
     return fired;
 }
 async function aiTurn(){
   const order=alive('enemy').sort((a,b)=>(a.isSq?0:1)-(b.isSq?0:1) || b.speed-a.speed);
-  for(const u of order){ if(B.over) return; if(u.dead) continue; await aiUnit(u); }
+  for(const u of order){ if(B.over) return; if(u.dead||!u.isSq) continue; await aiUnit(u); }
+  // v53-D: Classic mode picks each next ship by opportunity (aiPickActivation, veteran); standard keeps the fixed speed order
+  const done=new Set(); for(let g=0;g<order.length;g++){ if(B.over) return; const left=order.filter(u=>!u.isSq&&!u.dead&&!done.has(u)); if(!left.length) break; const u=aiPickActivation(left); done.add(u); await aiUnit(u); }
 }
 // true travel distance (in hexes, around holes, rocks and wrecks) from every hex to the nearest of the given targets
 function pathField(targets){ const D=new Map(), q=[]; for(const t of targets){ const k=hkey(t.q,t.r); if(!D.has(k)){ D.set(k,0); q.push(t); } }
   for(let i=0;i<q.length;i++){ const h=q[i], d=D.get(hkey(h.q,h.r)); for(const dd of DIRS){ const n={q:h.q+dd[0],r:h.r+dd[1]}, k=hkey(n.q,n.r); if(D.has(k)||!onBoard(n.q,n.r)||blocks(terr(n.q,n.r))) continue; D.set(k,d+1); q.push(n); } }
   return D; }
 function fieldDist(D,v,fallback){ const d=D.get(hkey(v.q,v.r)); return d==null?fallback+6:d; }
+// v53-D: the ability checks in one helper. 'pre' runs before moving; 'aim' re-runs the ones that depend on where the ship ended up (focus and frenzy
+// only once a gun bears, reload when a spent tube now reaches a target) just before it fires; 'escape' is the phase jump away after firing when hurt
+// and still under the guns. canAbility and cooldowns already stop a double use.
+async function aiAbilities(u,live,mode){ const foes=alive('player'); if(!foes.length||u.dead) return live(); const pre=mode==='pre', aim=mode==='aim';
+    if(pre&&u.ab==='launch' && canAbility(u)){ const hs=launchHexes(u).sort((a,b)=>Math.min(...foes.map(f=>hdist(a,f)))-Math.min(...foes.map(f=>hdist(b,f)))); await useAbility(u,{hex:hs[0]}); await wait(200); }
+    const nearF=foes.filter(f=>!f.isSq).reduce((a,f)=>!a||hdist(u,f)<hdist(u,a)?f:a,null);
+    /* shields: surge when the facing toward the nearest threat is under half, not when all four facings are drained */
+    if(pre&&u.ab==='surge' && canAbility(u) && nearF && hdist(u,nearF)<=8 && u.sh[shieldQuad(u,nearF)]<u.shMax*.5) { await useAbility(u); await wait(200); if(!live()) return false; }
+    if(aim&&(u.ab==='focus'||u.ab==='frenzy') && canAbility(u) && u.weapons.some(w=>weaponReady(w)&&foes.some(f=>canFire(u,w,f)))) await useAbility(u);
+    if(pre&&(u.ab==='evasive'||u.ab==='phase') && canAbility(u) && foes.some(f=>hdist(u,f)<=5)) await useAbility(u);
+    if(u.ab==='reload' && canAbility(u) && (pre?foes.some(f=>!f.isSq&&hdist(u,f)<=6+(u.speed||2)):aim&&u.weapons.some(w=>w.k==='torp'&&w.off===0&&!weaponReady(w)&&foes.some(f=>!f.isSq&&inReach(u,w,f))))) { await useAbility(u); if(!live()) return false; }
+    if(pre&&u.ab==='regrow' && canAbility(u) && u.hp<u.maxHp*.6) await useAbility(u);
+    if(pre&&u.ab==='reclaim' && canAbility(u) && alive('enemy').some(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp*.6)) await useAbility(u);
+    if(pre&&u.ab==='ionpulse' && canAbility(u) && foes.filter(t=>!t.isSq&&hdist(t,u)<=4).reduce((a,t)=>a+t.sh.reduce((x,y)=>x+y,0),0)>=30) await useAbility(u);
+    if(pre&&u.ab==='overburn' && canAbility(u) && nearF && hdist(u,nearF)>(u.speed||2)+1) await useAbility(u);
+    if(u.ab==='blink' && canAbility(u) && nearF && (pre?(u.hp<u.maxHp*.35&&evalThreat(u,foes)>u.hp*.3 || !u.weapons.some(w=>weaponReady(w)&&foes.some(f=>hdist(u,f)<=w.r+(u.speed||2)))):mode==='escape'&&u.hp<u.maxHp*.35&&evalThreat(u,foes)>u.hp*.3)) { await useAbility(u); if(!live()) return false; }
+    return live(); }
+// after the volley: a ram the move lined up, then the escape jump
+async function aiAfterFire(u,live,runner){ if(!u.isSq&&!runner&&!u.dead) await tacticRam(u); if(B.over||u.dead||!live()) return false; return await aiAbilities(u,live,'escape')&&!B.over; }
 async function aiUnit(u){
   if(u.isSq){ if(!B.over&&!u.dead&&u.side==='enemy') await sqAct(u); return; } // squadrons follow the swarm rules
   if(u.side==='enemy'&&!B.cmdEUsed&&B.cmdENext!=null){ await bossCmdFire(); if(B.over||u.dead) return; }
@@ -1038,20 +1096,7 @@ async function aiUnit(u){
     B.aiActive=u; await wait(60); if(!live()) return;
     const foes=alive('player');
     if(!foes.length) return;
-    // abilities before moving
-    if(u.ab==='launch' && canAbility(u)){ const hs=launchHexes(u).sort((a,b)=>Math.min(...foes.map(f=>hdist(a,f)))-Math.min(...foes.map(f=>hdist(b,f)))); await useAbility(u,{hex:hs[0]}); await wait(200); }
-    const nearF=foes.filter(f=>!f.isSq).reduce((a,f)=>!a||hdist(u,f)<hdist(u,a)?f:a,null);
-    /* shields: surge when the facing toward the nearest threat is under half, not when all four facings are drained */
-    if(u.ab==='surge' && canAbility(u) && nearF && hdist(u,nearF)<=8 && u.sh[shieldQuad(u,nearF)]<u.shMax*.5) { await useAbility(u); await wait(200); if(!live()) return; }
-    if((u.ab==='focus'||u.ab==='frenzy') && canAbility(u) && foes.some(f=>hdist(u,f)<=6)) await useAbility(u);
-    if((u.ab==='evasive'||u.ab==='phase') && canAbility(u) && foes.some(f=>hdist(u,f)<=5)) await useAbility(u);
-    if(u.ab==='reload' && canAbility(u) && foes.some(f=>!f.isSq&&hdist(u,f)<=6+(u.speed||2))) { await useAbility(u); if(!live()) return; }
-    if(u.ab==='regrow' && canAbility(u) && u.hp<u.maxHp*.6) await useAbility(u);
-    if(u.ab==='reclaim' && canAbility(u) && alive('enemy').some(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp*.6)) await useAbility(u);
-    if(u.ab==='ionpulse' && canAbility(u) && foes.filter(t=>!t.isSq&&hdist(t,u)<=4).reduce((a,t)=>a+t.sh.reduce((x,y)=>x+y,0),0)>=30) await useAbility(u);
-    if(u.ab==='overburn' && canAbility(u) && nearF && hdist(u,nearF)>(u.speed||2)+1) await useAbility(u);
-    if(u.ab==='blink' && canAbility(u) && nearF && (u.hp<u.maxHp*.35&&evalThreat(u,foes)>u.hp*.3 || !u.weapons.some(w=>weaponReady(w)&&foes.some(f=>hdist(u,f)<=w.r+(u.speed||2))))) { await useAbility(u); if(!live()) return; }
-    if(!live()) return;
+    if(!await aiAbilities(u,live,'pre')) return; // abilities before moving (v53-D: one helper, re-run after the move)
     const runner=u.transport||(B.obj&&B.obj.type==='hunt'&&u.flagship);
     if(!u.isSq&&!runner) await tacticRam(u); if(B.over||u.dead||!live()) return;
     // plan movement
@@ -1059,26 +1104,28 @@ async function aiUnit(u){
     const {states}=computeReach(u);
     const minR=Math.min(...u.weapons.map(w=>w.opt));
     let best=null, bestScore=-1e9; const PF=pathField(foes.filter(f=>!f.isSq||u.isSq));
+    const vet0=aiVet(), focus0=vet0?aiRefreshFocus():null; // v53-D: the sticky fleet focus, checked once per activation
+    const flE=vet0&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq?B.units.find(x=>x.flagship&&!x.dead&&x.side==='enemy'):null, escO=flE?caps('enemy').filter(x=>x!==u&&x!==flE&&!x.transport):[], escIn=flE?escO.filter(x=>hdist(x,flE)<=3).length:0; // escort spacing
     for(const s of states){
       const v=stateView(u,s);
-      const vet=aiVet(), focus=vet?(B.aiFocus&&!B.aiFocus.dead?B.aiFocus:(B.aiFocus=aiFocusTarget())):null;
+      const vet=vet0, focus=focus0;
       const off=vet?evalOffenseVet(v,ready,foes,focus):evalOffense(v,ready,foes);
       const threat=vet?evalThreatVet(v,foes):evalThreat(v,foes);
       const prof=(!u.isSq&&FACTION_AI[u.fac])||FACTION_AI.voidsworn, tw=(u.isSq?.15:!vet?.3:u.flagship?.65:u.hp<u.maxHp*.3?.6*prof.hurt:.32)*prof.tw;
-      let score=off-threat*tw;
+      let score=off-threat*tw; if(vet&&!u.isSq&&threat>=u.hp) score-=25; // v53-D death cliff: a hex where the expected fire could finish us
       if(vet&&!u.isSq&&prof.range){ const nd2=Math.min(99,...foes.filter(f=>!f.isSq).map(f=>hdist(v,f))); if(prof.range>0) score-=Math.max(0,prof.range-nd2)*prof.rw; else score-=Math.max(0,nd2+prof.range)*prof.rw; }
       if(vet&&!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u)*.35;
-      if(vet&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq){ const fl=B.units.find(x=>x.flagship&&!x.dead); if(fl) score-=Math.max(0,hdist(v,fl)-3)*2; }
+      if(vet&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq){ const fl=flE; if(fl){ const dv=hdist(v,fl); score-=Math.max(0,dv-3)*(escIn>=2?.6:2); if(dv<=3) for(const x of escO) if(hdist(x,v)===1) score-=1; } } // two escorts in the ring cap the pull, and escorts spread out instead of stacking
       if(off<=0){ const hd=Math.min(...foes.filter(f=>!f.isSq||u.isSq).map(f=>hdist(v,f)).concat([99])), nd=Math.max(hd,fieldDist(PF,v,hd)); score-=Math.max(0,nd-minR)*4; } // travel distance, so a hole or a rock wall between us is not a shortcut
       score-=s.cost*.05;
-      if(B.obj&&B.obj.type==='hold'&&!u.isSq) score-=hdist(v,B.obj.hex)*1.6;
+      if(B.obj&&B.obj.type==='hold'&&!u.isSq&&!vet) score-=hdist(v,B.obj.hex)*1.6; // veterans: aiObjScore (two nearest, urgency)
       score+=aiObjScore(u,v); score+=aiWellScore(u,v);
       if(score>bestScore){ bestScore=score; best=s; }
     }
     let volleyP=null;
     if(best && best.path.length){ const midFire=!u.isSq&&!runner&&!(u.ab==='nova'&&canAbility(u))&&!(typeof animPath==='function'&&typeof process!=='undefined'&&process.env&&process.env.NOMIDFIRE);
-      await moveUnit(u,best,midFire?{onLate:()=>{ if(boardTargets(u).length) return; volleyP=aiVolley(u,live); return volleyP; }}:undefined); if(!live()) return; }
-    if(volleyP){ const fired=await volleyP; if(!live()||B.over) return; if(!fired && !u.dead && u.hp<u.maxHp*.5 && canOrder(u,'brace') && evalThreat(u,alive('player'))>10){ giveOrder(u,'brace'); } B.aiActive=null; u.activated=true; return; }
+      await moveUnit(u,best,midFire?{onLate:()=>{ if(boardTargets(u).length) return; volleyP=(async()=>{ if(!await aiAbilities(u,live,'aim')||u.dead) return null; return aiVolley(u,live); })(); return volleyP; }}:undefined); if(!live()) return; }
+    if(volleyP){ const fired=await volleyP; if(!live()||B.over) return; if(!await aiAfterFire(u,live,runner)) return; if(!fired && !u.dead && u.hp<u.maxHp*.5 && canOrder(u,'brace') && evalThreat(u,alive('player'))>10){ giveOrder(u,'brace'); } B.aiActive=null; u.activated=true; return; }
     // nova
     if(u.ab==='nova' && canAbility(u)){
       let bh=null, bv=0;
@@ -1088,7 +1135,9 @@ async function aiUnit(u){
     if(!u.isSq && !runner && await tacticBoard(u)){ if(live()){ B.aiActive=null; u.activated=true; } return; }
     if(!live()) return;
     if(aiVet()&&!u.isSq&&!u.t.boss&&canOrder(u,'brace')){ const pf=alive('player'), myOff=evalOffense(u,u.weapons.filter(weaponReady),pf), thr=evalThreat(u,pf); if(thr>u.hp*.45&&myOff<thr*.35&&u.hp<u.maxHp*.7){ giveOrder(u,'brace'); B.aiActive=null; u.activated=true; return; } }
+    if(!await aiAbilities(u,live,'aim')) return;
     const fired=await aiVolley(u,live); if(fired===null) return;
+    if(!await aiAfterFire(u,live,runner)) return;
     if(!fired && !u.isSq && !u.dead && u.hp<u.maxHp*.5 && canOrder(u,'brace') && evalThreat(u,alive('player'))>10){ giveOrder(u,'brace'); }
     B.aiActive=null; u.activated=true;
 }
