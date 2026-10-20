@@ -39,7 +39,22 @@ const FAC_WNAMES={
   ithar:{shard:'Prism shards',pulsar:'Pulsar lance',startorp:'Star torpedo',turret:'Needle beam',flak:'Mirror veil'},
   deathless:{gauss:'Gauss flayer',doom:'Doom arc',gsentry:'Gauss pylon',flak:'Gauss shredder'}};
 function wName(fac,id){ return (FAC_WNAMES[fac]&&FAC_WNAMES[fac][id])||(W[id]&&W[id].n)||id; }
-function nameWeapons(fac,list){ for(const w of list) w.n=wName(fac,w.id); return list; }
+// v48 faction weapon traits: same hulls and budgets, but each faction's guns behave differently
+const WTRAITS={
+  las:{d:'holds its aim at long range',f:w=>{ w.fall=Math.ceil(w.fall/2); w.acc+=4; }},
+  hellfire:{d:'sets the target burning',f:w=>{ w.ignite=1; }},
+  plasma:{d:'a quarter burns through shields',f:w=>{ w.pierce=Math.max(w.pierce||0,.25); w.dmg+=1; }},
+  scrap:{d:'an extra shot, wild aim, lucky crits',f:w=>{ w.shots+=1; w.acc-=8; w.crit=(w.crit||0)+5; }},
+  rockets:{d:'a rocket salvo: hard to dodge, but point defense can shoot rockets down',f:w=>{ w.shots*=3; w.dmg=Math.round(w.dmg/2.6); w.acc+=6; w.evMult=1.5; w.rockets=1; }},
+  spines:{d:'each hit strips 3% armor (down to 15% less)',f:w=>{ w.shred=.03; }},
+  acid:{d:'acid eats 4 hull a turn for 2 turns, through shields and armor',f:w=>{ w.acid=1; }},
+  needle:{d:'precise: better aim and more criticals',f:w=>{ w.acc+=6; w.crit=(w.crit||0)+8; }},
+  star:{d:'fast: hard to dodge',f:w=>{ w.evMult=1.2; }},
+  gauss:{d:'ignores half of armor',f:w=>{ w.armorPierce=.5; }}};
+const FAC_WTRAIT={voidsworn:{autocannon:'las',battery:'las',hbattery:'las',turret:'las',torp:'hellfire'},hegemony:{laser:'plasma',turbo:'plasma',hturbo:'plasma'},
+  corsair:{autocannon:'scrap',scatter:'scrap',turret:'scrap',torp:'rockets',htorp:'rockets'},chorus:{bioplasma:'spines',tendril:'acid',sporeb:'acid'},
+  ithar:{shard:'needle',turret:'needle',startorp:'star'},deathless:{gauss:'gauss',doom:'gauss'}};
+function nameWeapons(fac,list){ for(const w of list){ w.n=wName(fac,w.id); const tk=!(typeof process!=='undefined'&&process.env&&process.env.NOTRAITS)&&FAC_WTRAIT[fac]&&FAC_WTRAIT[fac][w.id]; if(tk&&WTRAITS[tk]&&!w.trait){ w.trait=tk; WTRAITS[tk].f(w); } } return list; }
 
 const HULLS = {
   // ---- player: Voidsworn gothic fleet

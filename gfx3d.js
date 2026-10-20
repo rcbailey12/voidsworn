@@ -175,7 +175,7 @@ function setPlanetLook(look,seed,spot){ const p=G.planet, m=p&&p.material; if(!m
 function composeBackdrop(fac){ try{ const r=Math.random, ids=FAC_PLANETS[fac]||[0,1,3], look=PLANET_LOOKS[ids[Math.floor(r()*ids.length)]];
     setPlanetLook(look,r()*10,PLANET_SPOTS[Math.floor(r()*PLANET_SPOTS.length)]); }catch(e){ console.warn('backdrop',e); } }
 // the planet whose edge the battle is fought over: the same shader, close up, with more octaves for the detail
-function nearPlanetMaterial(fac){ const m=planetMaterial('nearPlanetM'), ids=FAC_WORLDS[fac]||[3]; lookTo(m,PLANET_LOOKS[ids[Math.floor(Math.random()*ids.length)]],Math.random()*10); m.setFloat('oct',G.mobile?6:8); m.setFloat('expo',.95); m.setFloat('freq',3.2); G.nearMats=[m]; return m; }
+function nearPlanetMaterial(fac,look){ const m=planetMaterial('nearPlanetM'), ids=FAC_WORLDS[fac]||[3]; lookTo(m,PLANET_LOOKS[look!=null&&PLANET_LOOKS[look]?look:ids[Math.floor(Math.random()*ids.length)]],Math.random()*10); m.setFloat('oct',G.mobile?6:8); m.setFloat('expo',.95); m.setFloat('freq',3.2); G.nearMats=[m]; return m; }
 
 // ---------- engine plumes: a static fade from the nozzle to the tip, with plasma streaks scrolling down its length ----------
 // (cylinder UVs: u runs around the cone, v along it, so the streaks vary with u and the fade with v)
@@ -271,7 +271,7 @@ function gfxTick(dt){ dt=dt||(G.engine?G.engine.getDeltaTime()/1000:.016); const
   const sunAt=pos=>G.sunPosW?G.sunPosW.subtract(pos).normalize():V3.Up();
   const p=G.planet&&G.planet.material; if(p&&p.setVector3){ p.setVector3('sunDir',sunAt(G.planet.position)); p.setVector3('camPos',G.cam.position); p.setFloat('t',G.time||0); }
   const a=G.atmo&&G.atmo.material; if(a&&a.setVector3){ a.setVector3('sunDir',sunAt(G.planet.position)); a.setVector3('camPos',G.cam.position); }
-  if(G.nearPlanet&&!G.nearPlanet.isDisposed()){ const s=G.sun?G.sun.direction.scale(-1).add(new V3(-.55,.3,0)).normalize():sunAt(G.nearPlanet.position); for(const m of [G.nearPlanet.material,G.nearAtmo&&G.nearAtmo.material]) if(m&&m.setVector3){ m.setVector3('sunDir',s); m.setVector3('camPos',G.cam.position); if(m===G.nearPlanet.material) m.setFloat('t',G.time||0); } }
+  if(G.nearPlanet&&!G.nearPlanet.isDisposed()){ const s=G.sun?G.sun.direction.scale(-1).add(new V3(-.55,.3,0)).normalize():sunAt(G.nearPlanet.position); for(const m of [G.nearPlanet.material,G.nearAtmo&&G.nearAtmo.material].concat((G.nearMats||[]).slice(1))) if(m&&m.setVector3&&!m._disposed){ m.setVector3('sunDir',s); m.setVector3('camPos',G.cam.position); if(m===G.nearPlanet.material) m.setFloat('t',G.time||0); } }
   if(G.tex.plume) G.tex.plume.vOffset=((G.time||0)*1.7)%1;
   // big blasts briefly flare the exposure and split the colour at the screen edges
   // v44.1: the flare rides bloom weight, not exposure: an exposure change re-dirties every material in the scene each frame

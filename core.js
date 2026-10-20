@@ -225,7 +225,9 @@ function genSector(s){
   for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite'){ const x=rnd(); n.arch=x<.25?'swarm':x<.47?'heavy':x<.62?'carrier':null; const y=rnd(); n.mod=n.col>=2&&y<.14?'bounty':n.col>=2&&n.type==='battle'&&y<.26?'veteran':null; }
   // one condition per sector, never the same twice in a run
   let cond=null; try{ const used=(RUN&&RUN.condsUsed)||[], pool=Object.keys(SECTOR_CONDS).filter(k=>!used.includes(k)); cond=pick(pool.length?pool:Object.keys(SECTOR_CONDS)); if(RUN){ RUN.condsUsed=used.concat(cond); } }catch(e){ cond=null; }
-  return {fac, cols, edges, cond};
+  let region=null; try{ region=pickRegion(fac); for(const col of cols) for(const n of col){ n.map=regionMap(region,n.col,COLS); fitEncounter(n); } }catch(e){ region=null; }
+  let biome=null; try{ biome=rollBiome(region); }catch(e){}
+  return {fac, cols, edges, cond, region, biome};
 }
 function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.map.cond; return k&&SECTOR_CONDS[k]?SECTOR_CONDS[k]:null; }catch(e){ return null; } }
 

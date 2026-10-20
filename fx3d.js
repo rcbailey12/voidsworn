@@ -92,6 +92,7 @@ function updateWorld(dt){
       if(!v.arrive.flashed&&k>.55){ v.arrive.flashed=true; try{ flash(new V3(px,y,pz),u.isSq?5:6+v.L*.25,(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.4),.3); }catch(e){} }
       if(k>=1){ if(v.arrive.streak){ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); } v.arrive=null; v.ring.node.setEnabled(true); v.plate.el.style.visibility=''; } }
     if(v.launch){ const k=clamp((G.time-v.launch.t0)/(.9*SPEED),0,1), e=1-Math.pow(1-k,3); px=v.launch.from.x+(p.x-v.launch.from.x)*e; pz=v.launch.from.z+(p.z-v.launch.from.z)*e; y=v.launch.from.y+(y-v.launch.from.y)*e; if(k>=1) v.launch=null; }
+    if(v.slide){ const k=(G.time-v.slide.t0)/(.9*Math.max(.4,SPEED)); if(k>=1) v.slide=null; else { const e=1-Math.pow(1-k,3); px=v.slide.x+(px-v.slide.x)*e; pz=v.slide.z+(pz-v.slide.z)*e; } }
     if(v.jolt){ const k=(G.time-v.jolt.t0)/.6; if(k>=1) v.jolt=null; else { const e=Math.sin(k*Math.PI)*(1-k); px+=v.jolt.d.x*e; pz+=v.jolt.d.z*e; } }
     const uv=u.vis; v.root.position.set(px,y,pz); v.root.rotation.set(v.bank+((uv&&uv.roll)||0),a,(uv&&uv.pitch)||0); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1), sc=uv&&uv.sc; if(sc||stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts*(sc?sc[0]:1),ts/Math.sqrt(stretch)*(sc?sc[1]:1),ts/Math.sqrt(stretch)*(sc?sc[2]:1)); v.stretched=stretch!==1||!!sc; v.tsc=ts; } } // v46.1: roll, pitch and squash from the faction's movement // v42: ships grow a little as the camera pulls back
     if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1; v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
@@ -619,4 +620,9 @@ function buildTerrainTints(){ if(!B||!B.terrain) return; const byType={}; for(co
   G.blockTint=null; refreshBlockTint();
   // objective zones: breakthrough exit, transport exit, station perimeter
   const zones={}; for(const h of boardHexes()){ const z=objZone(h.q,h.r); if(z&&!blocks(terr(h.q,h.r))) (zones[z]=zones[z]||[]).push([h.q,h.r]); }
-  for(const [z,hs] of Object.entries(zones)) tintHexes('zone_'+z,hs,C3.FromHexString(ZONE_INFO[z].col),false,.2); }
+  for(const [z,hs] of Object.entries(zones)) tintHexes('zone_'+z,hs,C3.FromHexString(ZONE_INFO[z].col),false,.2);
+  // v47 gravity well: the slingshot band, the pull band, and the rim that tears hulls
+  if(B.well&&typeof WELL_RIM!=='undefined'){ const rim=[],pull=[],sling=[]; for(const h of boardHexes()){ if(blocks(terr(h.q,h.r))) continue; const d=hdist(h,B.well); if(d<=WELL_RIM) rim.push([h.q,h.r]); else if(d<=WELL_PULL) pull.push([h.q,h.r]); else if(d<=WELL_ASSIST) sling.push([h.q,h.r]); }
+    if(rim.length) tintHexes('wellRim',rim,new C3(.95,.35,1),false,.1); if(pull.length) tintHexes('wellPull',pull,new C3(.62,.42,1),false,.04); if(sling.length) tintHexes('wellSling',sling,new C3(.45,.6,1),false,.015); } }
+// v47: a ship dragged by a gravity well slides into its new hex
+function fxGravPull(u,from){ const v=G.views.get(u.id); if(!v||!v.root) return; const p=hexWorld(from.q,from.r); v.slide={x:p.x,z:p.z,t0:G.time}; try{ flash(new V3(p.x,HOVER_Y,p.z),4+(v.L||8)*.3,new C3(.7,.45,1.4),.3); }catch(e){} }

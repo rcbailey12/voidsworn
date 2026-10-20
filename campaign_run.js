@@ -21,6 +21,7 @@ function rewardBadge(n,x,y,r,av){ const rw=n.rw; if(!rw||n.done) return ''; cons
   const lab=rewardLabel(rw); return lab?`<text x="${x}" y="${ty}" text-anchor="middle" font-size="11.5" fill="${av?'#bfb6a0':'#6f6a5e'}" font-family="var(--ui)">${lab}</text>`:''; }
 function boonLine(b,small){ const B0=BOONS[b.id]; if(!B0) return ''; const P=B0.p?PATRONS[B0.p]:null, R=RARITY[b.r||0], col=P?P.col:'#f0b35a';
   return `<div style="margin-bottom:6px;border-left:3px solid ${col};padding-left:8px"><b>${esc(B0.n)}</b> <span style="color:${R.col};font-size:12px">${B0.duo?'Duo':R.n}</span><div class="muted" style="font-size:${small?13:14}px">${esc(B0.d(R.m))}</div></div>`; }
+const MAP_NAME={belt:'asteroid belt',station:'orbital station',planet:'planet edge',storm:'ion storm',graveyard:'ship graveyard'};
 function mapScreen(){
   B=null;
   const m=RUN.map, avail=new Set(availableNodes()), F=FACTIONS[m.fac];
@@ -28,23 +29,24 @@ function mapScreen(){
   const PX=n=>port?34+n.y*380:60+n.col*130, PY=n=>port?60+n.col*130:34+n.y*380;
   const byId={}; for(const c of m.cols) for(const n of c) byId[n.id]=n;
   for(const n of Object.values(byId)) if(!n.done&&!n.enc&&(n.type==='battle'||n.type==='elite')) Object.assign(n,rollEncounter(n.type,n.col)); // older saves
+  if(!m.region&&typeof pickRegion==='function'){ try{ m.region=pickRegion(m.fac); m.biome=rollBiome(m.region); for(const n of Object.values(byId)) if(!n.done){ n.map=regionMap(m.region,n.col,m.cols.length); fitEncounter(n); } saveRun(); }catch(e){} } // v47: runs started before regions
   ensurePatrons(); for(const n of Object.values(byId)) if(!n.done&&!n.rw&&(n.type==='battle'||n.type==='elite'||n.type==='boss')) n.rw=rollNodeReward(n.type);
   const edges=m.edges.map(([a,b])=>{ const A=byId[a],Bn=byId[b]; const trav=A.done&&(Bn.done||RUN.pos===b);
     return `<line x1="${PX(A)}" y1="${PY(A)}" x2="${PX(Bn)}" y2="${PY(Bn)}" stroke="${trav?'#d0a64b':RUN.pos===a&&avail.has(b)?'rgba(208,166,75,.55)':'rgba(230,220,196,.13)'}" stroke-width="${trav?3:2}" ${RUN.pos===a&&avail.has(b)?'stroke-dasharray="6 5"':''}/>`; }).join('');
   const nodes=Object.values(byId).map(n=>{ const x=PX(n), y=PY(n), av=avail.has(n.id), cur=RUN.pos===n.id, r=n.type==='boss'?26:19;
     const col = n.done?'#7d7768': n.type==='elite'||n.type==='boss'?'#e07a70': av?'#e6dcc4':'#8a8474';
     return `<g class="node ${av?'avail':''}" ${av?`data-act="enterNode" data-arg="${n.id}" tabindex="0" role="button" aria-label="${NODE_INFO[n.type].n}"`:''}>
-      <title>${NODE_INFO[n.type].n}: ${n.enc&&ENCOUNTERS[n.enc]?ENCOUNTERS[n.enc].n+'. '+ENCOUNTERS[n.enc].d:NODE_INFO[n.type].d}${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?' '+archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))+'.':''}${n.mod&&NODE_MODS[n.mod]?' '+NODE_MODS[n.mod].n+': '+NODE_MODS[n.mod].d:''}</title>
+      <title>${NODE_INFO[n.type].n}${n.map&&MAP_NAME[n.map]&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?' ('+MAP_NAME[n.map]+')':''}: ${n.enc&&ENCOUNTERS[n.enc]?ENCOUNTERS[n.enc].n+'. '+ENCOUNTERS[n.enc].d:NODE_INFO[n.type].d}${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?' '+archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))+'.':''}${n.mod&&NODE_MODS[n.mod]?' '+NODE_MODS[n.mod].n+': '+NODE_MODS[n.mod].d:''}</title>
       <circle cx="${x}" cy="${y}" r="${r}" fill="${n.done?'#1b2436':'#182133'}" class="ring" stroke="${cur?'#d0a64b':av?'rgba(208,166,75,.8)':'rgba(230,220,196,.18)'}" stroke-width="${cur||av?2.5:1.5}"/>
       ${av?`<circle cx="${x}" cy="${y}" r="${r+6}" fill="none" stroke="rgba(208,166,75,.35)" stroke-width="1"><animate attributeName="r" values="${r+3};${r+9};${r+3}" dur="2.4s" repeatCount="indefinite"/></circle>`:''}
-      ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${rewardBadge(n,x,y,r,av)}</g>`; }).join('');
+      ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${n.map&&MAP_NAME[n.map]&&!n.done&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?`<text x="${x}" y="${y-r-7}" text-anchor="middle" font-size="10.5" fill="#7f8fa6" font-family="var(--ui)">${MAP_NAME[n.map]}</text>`:''}${rewardBadge(n,x,y,r,av)}</g>`; }).join('');
   const fleet=RUN.fleet.map(s=>{ const d=derive(s); return `<div class="shiprow"><span>${esc(s.name)}</span><span class="dim num">${s.hp}/${d.maxHp}</span>
     <span class="dim" style="grid-column:1/-1;font-size:13px">${HULLS[s.tpl].cls} Mk ${roman(s.mk)}, ${rankName(s.cap)} ${esc(s.cap.name)}${s.cap.pending?' <span class="gilt">(promotion ready)</span>':''}</span>${hpBar(s.hp,d.maxHp)}</div>`; }).join('');
   const relics=RUN.relics.length?RUN.relics.map(r=>`<div style="margin-bottom:6px"><b>${esc(relicName(r))}</b><div class="muted" style="font-size:14px">${esc(RELICS[r].d)}</div></div>`).join(''):'<p class="dim">None yet. Elite fleets and flagships carry them.</p>';
   const pend=RUN.fleet.some(s=>s.cap.pending);
   show(`<div class="mapwrap">
     <div class="mapmain">
-      <div class="row wrap"><h2>Sector ${roman(RUN.sector)}</h2><span class="spacer"></span><button data-act="saveQuit">Save and quit</button></div>
+      <div class="row wrap"><h2>Sector ${roman(RUN.sector)}${m.region&&REGIONS[m.region]?`: ${esc(REGIONS[m.region].n)}`:''}</h2><span class="spacer"></span><button data-act="saveQuit">Save and quit</button></div>
       <p class="muted" style="margin:6px 0 0;max-width:75ch">Hostile presence: <b class="blood">${esc(F.n)}</b>. ${esc(F.blurb)}</p>${(()=>{ const c=sectorCond(); return c?`<p style="margin:6px 0 0;max-width:75ch"><span class="gilt">Sector condition: <b>${esc(c.n)}</b>.</span> <span class="muted">${esc(c.d)}</span></p>`:''; })()}
       <svg viewBox="0 0 ${port?450:900} ${port?900:450}" style="width:100%;max-width:1400px;max-height:calc(100vh - 230px)" role="img" aria-label="Sector map">${edges}${nodes}</svg>
       <div class="legend">${Object.entries(NODE_INFO).map(([k,v])=>`<span class="row" style="gap:6px"><svg width="26" height="26" viewBox="0 0 30 30" aria-hidden="true">${nodeIcon(k,15,15,k==='elite'||k==='boss'?'#e07a70':'#e6dcc4')}</svg>${v.n}</span>`).join('')}</div>
@@ -292,7 +294,7 @@ function afterBattle(){
     RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.4*repairMult())); });
     saveRun(); mapScreen();
     const F=FACTIONS[RUN.map.fac];
-    modal(`<h2>Sector ${roman(RUN.sector)}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
+    modal(`<h2>Sector ${roman(RUN.sector)}${m.region&&REGIONS[m.region]?`: ${esc(REGIONS[m.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
       <p>Auspex confirms <b>${esc(F.n)}</b> ahead.</p>${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
     return;
   }

@@ -9,9 +9,10 @@ function isDone(u){ if(u.dead||u.braced) return true; if(B.alt&&!u.isSq&&u.side=
 
 // ---------- skirmish setup ----------
 const PLAYABLE=['voidsworn','hegemony','corsair','chorus','ithar','deathless'];
-let SETUP={pf:'voidsworn',ef:'hegemony',mode:'sk',alt:true,map:'random',dep:'line',obj:'rout',shape:'random'};
+let SETUP={pf:'voidsworn',ef:'hegemony',mode:'sk',alt:true,map:'random',dep:'line',obj:'rout',shape:'random',arena:'random'};
 const OBJS=[['rout','Engagement'],['ambush','Ambush'],['defend','Hold the station'],['hunt','Hunt'],['intercept','Intercept'],['break','Breakthrough'],['hold','Relay'],['flagship','Decapitation']];
-const SHAPE_OPTS=[['random','Random'],['open','Open void'],['corridor','Corridor'],['lanes','Split lanes'],['ring','Ring'],['dense','Dense field']];
+const SHAPE_OPTS=[['random','Random'],['open','Open void'],['corridor','Corridor'],['lanes','Split lanes'],['ring','Ring'],['dense','Dense field'],['deadstar','Dead star']];
+const ARENA_OPTS=[['random','Random'],['strip','Classic strip'],['square','Square (diagonal or crossing)'],['round','Round (any angle, pincers)']];
 const MAPS=[['random','Random'],['belt','Asteroid belt'],['station','Derelict station'],['planet','Planet edge'],['storm','Ion storm'],['graveyard','Ship graveyard']], DEPS=[['line','Line'],['flank','Flank'],['ambush','Ambush']];
 const SEC_LBL={prow:'Prow',mid:'Midships',eng:'Engines'};
 const FNAMES={hegemony:['HNS Dominator','HNS Relentless','HNS Sovereign','HNS Executor','HNS Imperious','HNS Harbinger','HNS Adjudicator','HNS Vigilance','HNS Tyrant','HNS Resolute'],
@@ -35,7 +36,7 @@ function setupBattle(cfg){
   RUN={admiral:'vex',credits:0,cpCap:40,sector:SETUP.mode==='fl'?3:1,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
   const names=(FNAMES[SETUP.pf]||[]).slice().sort(()=>Math.random()-.5);
   for(const t of genFleet(SETUP.pf,SETUP.mode).slice(0,SETUP.small?3:99)){ const sh=newShip(t,true); if(names.length) sh.name=names.pop(); RUN.fleet.push(sh); }
-  startBattle({kind:SETUP.mode==='fl'?'boss':'battle',fac:SETUP.ef,col:3,enemies:genFleet(SETUP.ef,SETUP.mode).slice(0,SETUP.small?3:99).map(tpl=>({tpl})),map:SETUP.map,dep:SETUP.dep,obj:SETUP.obj,shape:SETUP.shape==='random'||!SETUP.shape?pick((ENCOUNTERS[SETUP.obj]||ENCOUNTERS.rout).shapes):SETUP.shape});
+  startBattle({kind:SETUP.mode==='fl'?'boss':'battle',fac:SETUP.ef,col:3,enemies:genFleet(SETUP.ef,SETUP.mode).slice(0,SETUP.small?3:99).map(tpl=>({tpl})),map:SETUP.map,dep:SETUP.dep,obj:SETUP.obj,arena:SETUP.arena==='random'?null:SETUP.arena,shape:SETUP.shape==='random'||!SETUP.shape?pick((ENCOUNTERS[SETUP.obj]||ENCOUNTERS.rout).shapes):SETUP.shape});
   { const ps=alive('player').map(x=>hexWorld(x.q,x.r)); const c=ps.reduce((a,p)=>a.add(p),V3.Zero()).scale(1/Math.max(1,ps.length)); G.home=V3.Lerp(c,V3.Zero(),.32); G.home.y=0; }
   prepBattle();
   document.getElementById('scenName').textContent=`${FACTIONS[SETUP.pf].n} vs ${FACTIONS[SETUP.ef].n}, ${(MAPS.find(m=>m[0]===B.map.map)||['',''])[1].toLowerCase()}${SETUP.mode==='fl'?', flagships':''}`;
@@ -117,7 +118,7 @@ function weaponLine(u,w,i,own){
   let status; if(w.off>0) status='<span class="blood">Offline</span>'; else if(w.cdLeft>0) status=`<span class="dim">Reloading, ${w.cdLeft}</span>`; else if(w.fired) status='<span class="dim">Fired</span>'; else status='<span class="verd">Ready</span>';
   const ready=weaponReady(w)&&own&&!u.braced;
   return `<div class="weap ${B.armed===i&&own?'armed':''} ${ready?'':'off'}" ${ready?`data-act="arm" data-arg="${i}"`:''}><span class="wn">${own?`<kbd>${i+1}</kbd> `:''}${esc(w.n)}${(w.evMult||1)>1?` <span class="dim" title="Slow: the target's evasion counts ${w.evMult}x against it">(slow)</span>`:''}</span><span>${status}</span>
-    <span class="wd">${w.arc==='T'?'Turret':ARC_NAME[w.arc]}, ${w.shots}\u00d7${Math.round(w.dmg*u.dmg)} damage, range ${w.r}${w.pierce?`, ${pct(w.pierce)} through shields`:''}${w.ion?', shreds shields':''}${w.vsSq>1?', anti-squadron':''}${w.cd?`, reload ${w.cd}`:''}</span></div>`;
+    <span class="wd">${w.arc==='T'?'Turret':ARC_NAME[w.arc]}, ${w.shots}\u00d7${Math.round(w.dmg*u.dmg)} damage, range ${w.r}${w.pierce?`, ${pct(w.pierce)} through shields`:''}${w.ion?', shreds shields':''}${w.vsSq>1?', anti-squadron':''}${w.cd?`, reload ${w.cd}`:''}${w.trait&&WTRAITS[w.trait]?`<br><span class="gilt" style="font-size:.92em">${WTRAITS[w.trait].d}</span>`:''}</span></div>`;
 }
 function refreshPanel(){
   if(G.panelRenders){ G.panelRenders.push(performance.now()); if(G.panelRenders.length>60) G.panelRenders.shift(); }
@@ -516,6 +517,7 @@ function showIntro(){
     <div class="pickh">Battlefield</div><div class="facs">${MAPS.map(([k,n])=>`<button class="${SETUP.map===k?'sel':''}" data-act="pick" data-arg="map:${k}">${n}</button>`).join('')}</div>
     <div class="pickh">Deployment</div><div class="facs">${DEPS.map(([k,n])=>`<button class="${SETUP.dep===k?'sel':''}" data-act="pick" data-arg="dep:${k}">${n}</button>`).join('')}</div>
     <div class="pickh">Encounter</div><div class="facs">${OBJS.map(([k,n])=>`<button class="${SETUP.obj===k?'sel':''}" data-act="pick" data-arg="obj:${k}">${n}</button>`).join('')}</div>
+    <div class="pickh">Arena</div><div class="facs">${ARENA_OPTS.map(([k,n])=>`<button class="${(SETUP.arena||'random')===k?'sel':''}" data-act="pick" data-arg="arena:${k}">${n}</button>`).join('')}</div>
     <div class="pickh">Board</div><div class="facs">${SHAPE_OPTS.map(([k,n])=>`<button class="${(SETUP.shape||'random')===k?'sel':''}" data-act="pick" data-arg="shape:${k}">${n}</button>`).join('')}</div>
     <div class="pickh">Turn order</div><div class="facs"><button class="${SETUP.alt?'sel':''}" data-act="pick" data-arg="alt:1">Alternating<small>One ship each, back and forth</small></button><button class="${!SETUP.alt?'sel':''}" data-act="pick" data-arg="alt:0">Classic<small>Whole fleet moves, then theirs</small></button></div>
     <div class="row" style="margin-top:16px"><button class="primary" style="font-size:17px;padding:10px 22px" data-act="begin">Begin engagement</button><button data-act="c3title">Back to title</button></div>

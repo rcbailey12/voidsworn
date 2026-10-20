@@ -261,10 +261,15 @@ function buildBattleEnv(){
       for(let i=0;i<6;i++){ const a0=Math.PI/180*(60*i-30), a1=Math.PI/180*(60*(i+1)-30), mx=(Math.cos(a0)+Math.cos(a1))/2, mz=(Math.sin(a0)+Math.sin(a1))/2; const out=worldHex(c.x+mx*HS*1.6,c.z+mz*HS*1.6);
         if(onBoard(out.q,out.r)) continue; fr.push([new V3(c.x+HS*Math.cos(a0),.05,c.z+HS*Math.sin(a0)),new V3(c.x+HS*Math.cos(a1),.05,c.z+HS*Math.sin(a1))]); } }
     const fm=MB.CreateLineSystem('frame',{lines:fr},sc); fm.color=new C3(.45,.85,1); fm.alpha=.75; fm.isPickable=false; G.env.push(fm); }
+  // v47: a smoked-glass plate under the board, so the grid, move highlights and ships stay readable over bright planets, rings and nebulae
+  { const discs=boardHexes().map(h=>{ const d=MB.CreateDisc('ul',{radius:HS*1.02,tessellation:6},sc); d.rotation.x=Math.PI/2; d.rotation.y=Math.PI/6; d.position=hexWorld(h.q,h.r,-.4); d.bakeCurrentTransformIntoVertices(); return d; });
+    const ul=BABYLON.Mesh.MergeMeshes(discs,true,true); if(ul){ ul.name='boardUnder'; const um=new BABYLON.StandardMaterial('boardUnderM',sc); um.diffuseColor=C3.Black(); um.specularColor=C3.Black(); um.emissiveColor=new C3(.008,.016,.03); um.disableLighting=true; um.alpha=G.boardDim!=null?G.boardDim:.36; um.disableDepthWrite=false; um.backFaceCulling=false; /* writes depth: far nebula cards drawn after it stay behind the plate */
+      ul.material=um; ul.isPickable=false; ul.alphaIndex=-100; try{ G.glow.addExcludedMesh(ul); if(G.vls) G.vls.excludedMeshes.push(ul); }catch(e){} G.env.push(ul,um); G.boardUnder=ul; } }
   // asteroids
-  const rockMat=new BABYLON.StandardMaterial('rockM',sc);
+  const rockMat=new BABYLON.StandardMaterial('rockM',sc); const RK=(typeof ROCK_KINDS!=='undefined'&&B&&B.biome&&ROCK_KINDS[B.biome.rock])||null; // v47: the sector's asteroid type
   rockMat.diffuseTexture=dynTex('rockTex',256,256,(g,w)=>{ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
   rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
+  if(RK){ rockMat.diffuseColor=new C3(RK.col[0],RK.col[1],RK.col[2]); rockMat.specularColor=new C3(RK.spec,RK.spec,RK.spec*1.05); rockMat.specularPower=RK.spec>.3?48:16; if(RK.em) rockMat.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); }
   // v44: rocks are smooth-shaded, multi-octave and cratered (were faceted 'crumpled paper' icospheres)
   const bases=[]; for(let k=0;k<4;k++){ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+k,{radius:1,subdivisions:G.mobile?3:4,flat:false},sc);
     const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind), ph=[rr()*6,rr()*6,rr()*6]; const cr=[]; for(let i=0;i<7;i++){ const u=rr()*2-1,t=rr()*6.28,q=Math.sqrt(1-u*u); cr.push([q*Math.cos(t),u,q*Math.sin(t),.2+rr()*.3,.05+rr()*.08]); }
@@ -319,6 +324,10 @@ class CamCtl{
     setTimeout(()=>{ if(this.estab!==tok) return; this.a=fin.a; this.b=fin.b; this.r=fin.r; this.t=fin.t; this.estab=null; },1500); }
   toggleTop(){ if(this.topdown){ this.b=this.prevBeta; this.topdown=false; } else { this.prevBeta=this.b; this.b=.05; this.topdown=true; } }
   reset(){ this.a=-Math.PI/2; this.b=.86; this.r=215; this.t=G.home.clone(); this.topdown=false;
+    // v47: when the fleets come in at an angle, swing round so yours is on the left and theirs on the right, as on the classic strip
+    try{ if(!(innerHeight>innerWidth*1.1)&&typeof B!=='undefined'&&B&&B.approach&&!B.showcase&&B.units){ const pl=B.units.filter(u=>u.side==='player'&&!u.dead&&!u.isSq), en=B.units.filter(u=>u.side==='enemy'&&!u.dead&&!u.isSq);
+      if(pl.length&&en.length){ const avg=l=>{ let x=0,z=0; for(const u of l){ const p=hexWorld(u.q,u.r,0); x+=p.x; z+=p.z; } return new V3(x/l.length,0,z/l.length); }; const P=avg(pl), d=avg(en).subtract(P); const L=Math.max(1,d.length());
+        this.a=Math.atan2(-d.x/L,d.z/L); this.r=clamp(L*1.05,190,330); this.t=P.add(d.scale(.38)); this.t.y=0; } } }catch(e){ console.warn(e); }
     // portrait phones: look up the field from behind your fleet (yours at the bottom, theirs at the top) instead of across a board too wide to fit
     try{ if(innerHeight>innerWidth*1.1&&typeof B!=='undefined'&&B&&!B.showcase&&B.units){ const pl=B.units.filter(u=>u.side==='player'&&!u.dead&&!u.isSq), en=B.units.filter(u=>u.side==='enemy'&&!u.dead&&!u.isSq);
       const avg=l=>{ let x=0,z=0; for(const u of l){ const p=hexWorld(u.q,u.r,0); x+=p.x; z+=p.z; } return new V3(x/l.length,0,z/l.length); };
@@ -420,7 +429,22 @@ function buildTerrainFeatures(rr){
     for(const [mat,ms] of by){ if(ms.length<2) continue; try{ const mm=BABYLON.Mesh.MergeMeshes(ms,true,true); if(mm){ mm.name='wreckMerged'; mm.material=mat; mm.isPickable=false; mm.receiveShadows=true; G.env.push(mm); } }catch(e){ console.warn('wreck merge',e); } }
     G._wreckMeshes=null; }
 }
-function buildStation(c,rr){
+// v47: three station types, matched to the sector: an orbital ring hub, a scaffolded mining rig, or a dark derelict spire
+function buildStation(c,rr){ const kind=(B&&B.biome&&B.biome.station)||'ring'; if(kind==='rig') return buildRigStation(c,rr); if(kind==='spire') return buildSpireStation(c,rr); return buildRingStation(c,rr); }
+function stationFinish(b,c,rr){ const m=b.finish(); m.root.position=c.add(new V3(0,4,0)); m.root.rotation.set(.12,rr()*6,.08); m.meshes.forEach(x=>x.isPickable=false); G.env.push(m.root); G.station=m; }
+function buildRigStation(c,rr){ const b=new SB('corsair',30), M=b.M;
+  b.cylY(M.dark,0,-14,0,30,2.4,2.8,8); b.cylY(M.hull,0,9,0,7,6.5,6.5,12); b.cylY(M.steel,0,16,0,2,3,6.5,12); b.cylY(M.dark,0,-16,0,3,4.5,2.6,8);
+  for(let i=0;i<3;i++){ const a=i*2.094+.3; b.box(M.steel,Math.cos(a)*8,2,Math.sin(a)*8,16,1.2,1.4,0,-a,0); b.box(M.hull,Math.cos(a)*16,2,Math.sin(a)*16,3.2,3.2,3.2,0,-a,0); b.box(M.dark,Math.cos(a)*16,-3,Math.sin(a)*16,.8,7,.8,0,-a,0); }
+  for(const y of [-8,-2,4]){ const pts=[]; for(let a=0;a<=360;a+=20){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*5.2,y,Math.sin(r)*5.2)); } tube(b,M.steel,pts,()=>.35,5); }
+  b.box(M.trim,4,14,0,14,1,1.2,0,.4,.5); for(let i=0;i<14;i++){ const a=rr()*6.28; b.box(M.win,Math.cos(a)*6.6,7+rr()*6,Math.sin(a)*6.6,.5,.3,.5); }
+  for(let i=0;i<4;i++) b.flashers.push(b.sph(M.tip,(rr()-.5)*30,2,(rr()-.5)*30,.5)); stationFinish(b,c,rr); }
+function buildSpireStation(c,rr){ const b=new SB('voidsworn',30), M=b.M;
+  b.cylY(M.hull,0,-10,0,34,1.2,6,8); b.cylY(M.dark,0,-14,0,5,6,3,8); b.cylY(M.trim,0,22,0,8,0,1.2,6);
+  for(let i=0;i<4;i++){ const a=i*Math.PI/2+.4; b.box(M.dark,Math.cos(a)*6,-2,Math.sin(a)*6,2,18,1.4,0,-a,.22*(i%2?1:-1)); b.cylY(M.trim,Math.cos(a)*9,6,Math.sin(a)*9,9,0,.8,6); }
+  const pts=[]; for(let a=0;a<=360;a+=10){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*11,-4,Math.sin(r)*11)); } tube(b,M.dark,pts,()=>.9,6);
+  for(let i=0;i<18;i++){ const a=rr()*6.28, y=-6+rr()*22; b.box(M.win,Math.cos(a)*(5.8-y*.13),y,Math.sin(a)*(5.8-y*.13),.4,.9,.4); }
+  for(let i=0;i<3;i++) b.flashers.push(b.sph(M.tip,(rr()-.5)*4,10+rr()*12,(rr()-.5)*4,.45)); stationFinish(b,c,rr); }
+function buildRingStation(c,rr){
   const b=new SB('hegemony',30), M=b.M;
   b.cylY(M.hull,0,-8,0,18,6,7,16); b.cylY(M.dark,0,10,0,4,3.2,5,16); b.cylY(M.dark,0,-12,0,4,5,3,16); b.cylY(M.dark,0,14,0,9,.2,.6,6);
   for(let i=0;i<4;i++){ const a=i*Math.PI/2+.4; b.box(M.dark,Math.cos(a)*7.5,0,Math.sin(a)*7.5,9,1.1,1.1,0,-a,0); }
@@ -432,9 +456,18 @@ function buildStation(c,rr){
 }
 function buildNearPlanet(P){ // v42: the planet under the battlefield uses the procedural planet shader (relief, oceans, two cloud decks, city lights, limb scattering)
   const edge=planetEdge(P.R), Rs=edge/.89, c=hexWorld(P.q,P.r,-Rs*.45), fac=(B&&B.cfg&&B.cfg.fac)||'voidsworn';
-  const p=MB.CreateSphere('nearPlanet',{diameter:Rs*2,segments:G.mobile?72:128},G.scene); p.position=c; p.rotation.set(.3,.8,0); p.isPickable=false; p.material=nearPlanetMaterial(fac);
+  const p=MB.CreateSphere('nearPlanet',{diameter:Rs*2,segments:G.mobile?72:128},G.scene); p.position=c; p.rotation.set(.3,.8,0); p.isPickable=false; const look=(B&&B.biome&&B.biome.planet!=null)?B.biome.planet:null; p.material=nearPlanetMaterial(fac,look);
   const at=MB.CreateSphere('nearAtmo',{diameter:Rs*2.035,segments:G.mobile?48:80},G.scene); at.position=c; at.isPickable=false; at.material=atmoMaterial('nearAtmoM'); at.material.setColor3('atmo',new C3(.45,.7,1).scale(.9));
   G.glow.addExcludedMesh(p); G.glow.addExcludedMesh(at); G.nearPlanet=p; G.nearAtmo=at; G.npClouds=null; G.env.push(p,at,p.material,at.material);
+  // v47: a gas giant gets its ring system and a pair of moons; rocky and ice worlds keep a clear sky
+  try{ const L=look!=null&&PLANET_LOOKS[look]; if(L){ at.material.setColor3('atmo',new C3(L.atmo[0],L.atmo[1],L.atmo[2]).scale(.9)); }
+    if(L&&L.kind===0){ const ring=MB.CreateDisc('npRing',{radius:Rs*1.34,tessellation:160,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); ring.position=c.clone(); ring.rotation.set(Math.PI/2,0,0); ring.isPickable=false; /* flat, level with the planet's equator, well below the board: the fleets skim above the ring plane */
+      const rt=dynTex('npRingT',512,8,(g,w)=>{ const r=seeded(21); for(let x=0;x<w;x++){ const u=x/w, band=u<.78?0:(.35+.65*Math.abs(Math.sin(u*41+r()*.4))*(u>.92?.4:1)); g.fillStyle=`rgba(${Math.round(200+L.pc[0]*50)},${Math.round(180+L.pc[1]*60)},${Math.round(150+L.pc[2]*80)},${(band*(.55+r()*.4)).toFixed(3)})`; g.fillRect(x,0,1,8); } });
+      const rm=new BABYLON.StandardMaterial('npRingM',G.scene); rm.diffuseTexture=rt; rm.diffuseTexture.hasAlpha=true; rm.useAlphaFromDiffuseTexture=true; rm.backFaceCulling=false; rm.specularColor=C3.Black(); rm.emissiveColor=new C3(.22,.2,.19); rm.alpha=.42; rm.disableDepthWrite=true;
+      ring.material=rm; const uv=[]; const pos=ring.getVerticesData(BABYLON.VertexBuffer.PositionKind); for(let i=0;i<pos.length;i+=3){ const rr2=Math.hypot(pos[i],pos[i+1])/(Rs*1.34); uv.push(rr2,.5); } ring.setVerticesData(BABYLON.VertexBuffer.UVKind,uv);
+      G.glow.addExcludedMesh(ring); G.env.push(ring,rm,rt);
+      for(let i=0;i<2;i++){ const mr=Rs*(.09+.05*i), a=1.1+i*1.9, d=Rs*(2.3+i*.7), moon=MB.CreateSphere('npMoon',{diameter:mr*2,segments:40},G.scene); moon.position=c.add(new V3(Math.cos(a)*d,Rs*(.35+.25*i),Math.sin(a)*d*.6)); moon.isPickable=false;
+        const mm=planetMaterial('npMoonM'+i); lookTo(mm,PLANET_LOOKS[i?7:5],3+i*2); mm.setFloat('oct',5); mm.setFloat('expo',.9); mm.setFloat('freq',2.4); moon.material=mm; G.glow.addExcludedMesh(moon); G.env.push(moon,mm); (G.nearMats=G.nearMats||[]).push(mm); } } }catch(e){ console.warn('gas giant extras',e); }
 }
 function updateStorms(dt){
   if(!G.storms||!G.storms.length||G.fxReduced) return; G.lightT-=dt; if(G.lightT>0) return; G.lightT=.25+Math.random()*.7;
