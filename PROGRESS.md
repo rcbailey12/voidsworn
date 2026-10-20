@@ -471,3 +471,10 @@ Live main: https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH | Preview: https://
 - Mid-battle reload replays the same node, seed and enemy fleet.
 - Tests: 8 new rulecheck checks (seed replay and one per bug class); smoke now reloads mid-fight and wins a sector boss through to the next sector intro. Full smoke now runs on the owner's PC (real GPU, about 4 minutes) via Downloads/voidsworn_test.
 - Repo backed up to github.com/rcbailey12/voidsworn (private).
+
+## v53.2 (Oct 20): AI that reads, enemy intent
+- Enemy AI re-picks targets per gun (no overkill), fires shield strippers first, keeps a sticky focus (veteran), ignores guns that already fired when judging danger, avoids hexes where it would die, plays objectives with a round clock, uses abilities after moving, spaces escorts.
+- Enemy focus target shows on the board (red brackets, TARGETED tag on the ship and roster row). Tap an enemy to see where it can bring guns to bear next move and which of your ships are inside it (fill toned down to 0.011 after desktop screenshots).
+- Threat overlay about 2x faster. 5 new rulechecks. Balance matrix flat overall (player win 75.7% -> 77.1%).
+- Gates: rulecheck, fuzz 20 sandbox; full smoke on PC passed (14:50).
+- Owner feedback logged: lag much better on v53.1; nameplates sit under the wrong hex (root cause found, workstream E); sounds janky (workstream F started with Kenney + Sonniss clips).
