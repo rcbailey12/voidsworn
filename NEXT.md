@@ -30,7 +30,8 @@ Full audit: AUDIT_v53H.md. Owner chose: full per-ship detail bake; desktop loads
   - Torpedoes: textured bodies, exhaust trails that curve, big detonation with flipbook fire and shockwave.
   - Punch for everything: hit-stop on big hits, scaled camera kick, flash, hull sparks/debris, shield ripples at the struck point, sound synced (sfx.js).
   - Explosions: Blender-rendered flipbooks (fireball, debris, smoke) on the PC GPU, broken hulls with closed cut faces, staged capital deaths.
-- [ ] Then: world (CC0 triplanar rock, black-hole lensing and accretion disc, depth-faded nebula, shader hex grid), stations/wrecks polish.
+- [ ] Blender world pass (owner approved): asteroid libraries per rock type (20-30 sculpted rocks each, baked maps), wrecks and death pieces fractured from the concept hulls with solid interiors, volumetric nebula/backdrop cloud renders, accretion-disc texture for black holes. Stations/beacon/transport already in the hull bake.
+- [ ] Live-shader pass for what Blender can't do: black-hole gravitational lensing (screen-space distortion of the scene behind it) with an animated accretion disc; beams and shields with flowing energy textures (generated once, animated by flowmaps); shader-drawn anti-aliased hex grid; engine plumes as volumetric cones that read from the side; GPU particles for sparks, embers and debris.
 
 ## v54: factions and rewards (parallel with v55)
 
