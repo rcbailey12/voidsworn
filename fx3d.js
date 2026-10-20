@@ -71,8 +71,8 @@ function arcBolt(a,b,col){ const pts=[a.clone()], n=7; for(let i=1;i<n;i++){ con
 function physKick(u,dir,mag,roll){ const v=u&&G.views.get(u.id); if(!v||!v.ph||u.isSq) return; const m=u.size>.8?2.2:u.size>.6?1.4:1; const l=Math.hypot(dir.x,dir.z)||1; v.ph.vx+=dir.x/l*mag/m; v.ph.vz+=dir.z/l*mag/m; if(roll) v.ph.vr+=roll/m; }
 // v51 coast: after a burn the hull keeps the velocity it ended with and runs on along that vector, easing to a stop a little way
 // past its hex (critically damped, so it never drifts back). Ships that have not moved hold station with a slow surge and sway.
-function coastStart(v,u,dx,dz,sp,FE){ const w=u.size>.8?.38:u.size>.6?.48:.6, cap=HW*((FE&&FE.coastCap)||.34)*(u.size>.8?1.15:1);
-  v.coast={dx,dz,c:0,vc:sp,w,T:Math.min(cap,sp/w)}; }
+function coastStart(v,u,dx,dz,sp,FE){ const w=u.size>.8?.38:u.size>.6?.48:.6, cap=HW*((FE&&FE.coastCap!=null)?FE.coastCap:.05)*(u.size>.8?1.15:1);
+  const T=Math.min(cap,sp/w); v.coast={dx,dz,c:0,vc:Math.min(sp,w*T),w,T}; } // v53: the hull stays on its hex (within ~0.1 hex): drift capped and the start speed trimmed so the spring can't overshoot the cap
 function coastTick(v,u,a,dt,t){ const C=v.coast; let ox=0,oz=0;
   if(C&&(C.c||C.vc)){ const ac=C.w*C.w*(C.T-C.c)-2*C.w*C.vc; C.vc+=ac*dt; C.c+=C.vc*dt; if(C.vc<0) C.vc=0; ox=C.dx*C.c; oz=C.dz*C.c; }
   if(!u.vis){ const ph=(v.bob||0)*3.1, per=u.size>.8?11:u.size>.6?9:7, k=2*Math.PI/per, f=Math.cos(a), g=-Math.sin(a), sv=HW*.035*Math.sin(t*k+ph), sw=HW*.02*Math.sin(t*k*.5+ph*1.7);

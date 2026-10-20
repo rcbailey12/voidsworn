@@ -246,7 +246,7 @@ function applyBiome(fac){ try{ const b=BIOMES[fac]||BIOMES.voidsworn, m=G.skyMat
 // light the grid up around a hex (the selected ship); with no focus the whole grid stays a faint wash
 function gridFocus(c,R){ const g=G.grid; if(!g||g.isDisposed()||!G.gridHexes) return; R=R||6; const key=c?c.q+','+c.r+','+R:'none'; if(G.gridKey===key) return; G.gridKey=key;
   const cols=new Float32Array(G.gridHexes.length*28); let o=0;
-  for(const h of G.gridHexes){ let a=.075; if(c){ const d=hdist(h,c); a=d<=R?.5-.36*(d/R):Math.max(.06,.14-.03*(d-R)); } for(let i=0;i<7;i++){ cols[o++]=.5; cols[o++]=.82; cols[o++]=1; cols[o++]=a; } }
+  for(const h of G.gridHexes){ let a=.13; if(c){ const d=hdist(h,c); a=d<=R?.5-.34*(d/R):Math.max(.1,.16-.02*(d-R)); } /* v53: the grid never fades out (was .075 / .06) */ for(let i=0;i<7;i++){ cols[o++]=.5; cols[o++]=.82; cols[o++]=1; cols[o++]=a; } }
   try{ g.updateVerticesData(BABYLON.VertexBuffer.ColorKind,cols); }catch(e){ console.warn(e); } }
 function buildBattleEnv(){
   clearEnv(); const texBefore=new Set(G.scene.textures); applyBiome(B&&B.cfg&&B.cfg.fac);
@@ -263,7 +263,7 @@ function buildBattleEnv(){
     const fm=MB.CreateLineSystem('frame',{lines:fr},sc); fm.color=new C3(.45,.85,1); fm.alpha=.75; fm.isPickable=false; G.env.push(fm); }
   // v47: a smoked-glass plate under the board, so the grid, move highlights and ships stay readable over bright planets, rings and nebulae
   { const discs=boardHexes().map(h=>{ const d=MB.CreateDisc('ul',{radius:HS*1.02,tessellation:6},sc); d.rotation.x=Math.PI/2; d.rotation.y=Math.PI/6; d.position=hexWorld(h.q,h.r,-.4); d.bakeCurrentTransformIntoVertices(); return d; });
-    const ul=BABYLON.Mesh.MergeMeshes(discs,true,true); if(ul){ ul.name='boardUnder'; const um=new BABYLON.StandardMaterial('boardUnderM',sc); um.diffuseColor=C3.Black(); um.specularColor=C3.Black(); um.emissiveColor=new C3(.008,.016,.03); um.disableLighting=true; um.alpha=G.boardDim!=null?G.boardDim:.36; um.disableDepthWrite=false; um.backFaceCulling=false; /* writes depth: far nebula cards drawn after it stay behind the plate */
+    const ul=BABYLON.Mesh.MergeMeshes(discs,true,true); if(ul){ ul.name='boardUnder'; const um=new BABYLON.StandardMaterial('boardUnderM',sc); um.diffuseColor=C3.Black(); um.specularColor=C3.Black(); um.emissiveColor=new C3(.008,.016,.03); um.disableLighting=true; um.alpha=G.boardDim!=null?G.boardDim:.6; /* v53: darker smoked glass (was .36) so the grid reads over bright nebula and planets */ um.disableDepthWrite=false; um.backFaceCulling=false; /* writes depth: far nebula cards drawn after it stay behind the plate */
       ul.material=um; ul.isPickable=false; ul.alphaIndex=-100; try{ G.glow.addExcludedMesh(ul); if(G.vls) G.vls.excludedMeshes.push(ul); }catch(e){} G.env.push(ul,um); G.boardUnder=ul; } }
   // asteroids
   const rockMat=new BABYLON.StandardMaterial('rockM',sc); const RK=(typeof ROCK_KINDS!=='undefined'&&B&&B.biome&&ROCK_KINDS[B.biome.rock])||null; // v47: the sector's asteroid type

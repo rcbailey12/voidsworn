@@ -211,7 +211,7 @@ function refreshOverlays(){
       const fm=fanMesh(spans[arc][0],spans[arc][1],R,col,enemy?.05:.06); /* holo: outline the arc, barely fill it */ fm.parent=node; fm.position.y=.08; }
   }
   if(B.showThreat){ const th=computeThreat(); for(const [k,v] of th){ const [q,r]=k.split(',').map(Number); const lv=v>=45?3:v>=20?2:1; tile('thr'+lv,new C3(1,.18,.12),[0,.08,.16,.28][lv],{q,r},OV.items); } }
-  if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ tile('reach2',new C3(.95,.7,.28),.075,s,OV.items); tile('reachE2',new C3(1,.8,.4),.42,s,OV.items,true); /* v52: hollow hexes, bright edge and faint fill, so ships inside stay readable */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
+  if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ const g=s.guns>0; if(g) tile('reachG4',new C3(.95,.7,.28),.03,s,OV.items); tile(g?'reachGE3':'reachE2',g?new C3(1,.92,.62):new C3(1,.8,.4),g?.8:.36,s,OV.items,true); /* v53: outline only, so hulls stay readable; a hex your guns can fire from gets a brighter edge and a whisper of fill (additive reads ~3x brighter on screen) */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
     const per=reachOutline(sel,B.reach); if(per) OV.items.push(per); }
   if(sel&&playerTurn&&sel.side==='player'&&!B.mode&&!sel.isSq&&canUse(sel)){ const ri=ramInfo(sel); if(ri) ramLane(sel,ri); }
   if(B.wingSel&&!B.wingSel.dead){ tile('wingSel',new C3(1,.8,.35),.55,B.wingSel,OV.items); tile('wingSelE',new C3(1,.85,.45),.8,B.wingSel,OV.items,true); }
@@ -236,10 +236,11 @@ function refreshHover(){
   if(sel&&sel.side==='player'&&B.side==='player'&&B.reach&&!B.mode){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st&&!unitAt(st.q,st.r)){
       const pts=[hexWorld(sel.q,sel.r,.6),...st.path.map(p=>hexWorld(p.q,p.r,.6))]; const ln=MB.CreateDashedLines('path',{points:pts,dashSize:2,gapSize:1.2,dashNb:Math.max(8,pts.length*10)},G.scene); ln.color=new C3(1,.75,.35); ln.isPickable=false; OV.hover.push(ln);
       const v=G.views.get(sel.id);
-      if(v&&v.model){ if(OV.ghostFor!==sel.id){ if(OV.ghost) OV.ghost.dispose(); OV.ghost=v.model.root.clone('ghost'); const gm=OV.bases.ghostMat||(OV.bases.ghostMat=ovMat('ghost',new C3(1,.72,.35),.28)); OV.ghost.getChildMeshes().forEach(m=>{ m.material=gm; m.isPickable=false; }); OV.ghostFor=sel.id; }
+      if(v&&v.model){ if(OV.ghostFor!==sel.id){ if(OV.ghost) OV.ghost.dispose(); OV.ghost=v.model.root.clone('ghost'); const gm=OV.bases.ghostMat||(OV.bases.ghostMat=(()=>{ const g=emMat('ov_ghost2',new C3(1,.8,.48),.4); g.needDepthPrePass=true; g.backFaceCulling=false; g._keep=true; return g; })()); /* v53: a clean translucent silhouette (depth pre-pass, no glow) instead of an additive blob */ OV.ghost.getChildMeshes().forEach(m=>{ m.material=gm; m.isPickable=false; try{ G.glow.addExcludedMesh(m); }catch(e){} }); OV.ghostFor=sel.id; }
         OV.ghost.setEnabled(true); const p=hexWorld(st.q,st.r,HOVER_Y); OV.ghost.position=p; OV.ghost.rotation.set(0,st.f*Math.PI/3,0); } } }
 }
 function updateOverlays(){
+  try{ boardMarks(); }catch(e){ if(!FP.warned){ FP.warned=1; console.warn('boardMarks',e); } }
   if(!B||!OV.selRing) return;
   const place=(ring,u)=>{ if(u&&!u.dead&&G.views.get(u.id)){ const v=G.views.get(u.id); const p=v.root.getAbsolutePosition(); ring.setEnabled(true); ring.position.set(p.x,.2,p.z); const R=Math.max(5.5,v.L*.6)/6; ring.scaling.set(R,1,R); } else ring.setEnabled(false); };
   place(OV.selRing,B.sel); place(OV.insRing,B.inspect); place(OV.aiRing,B.side==='enemy'?B.aiActive:null);
@@ -250,6 +251,44 @@ function updateOverlays(){
     else if(v){ const p=v.root.getAbsolutePosition(); OV.fan.position.set(p.x,0,p.z); OV.fan.rotation.y=unitVis(u).a*Math.PI/180; } }
   if(B.side==='enemy'&&B.aiActive!==G.lastAi){ G.lastAi=B.aiActive; if(B.aiActive&&G.follow&&!G.ctl.saved) camShow(B.aiActive); }
 }
+
+// v53 board readability: every occupied hex wears its side's colour (faint fill, crisp inner edge) on the LOGICAL hex the rules use, brighter for the
+// selected/inspected/hovered ship and for valid targets; every hull casts a soft contact shadow on the board under where it actually floats.
+// Fill and edge are one thin-instanced mesh rebuilt only when occupancy, selection, hover or targets change (a cheap numeric hash per frame);
+// the shadows are one thin-instanced mesh whose matrix buffer is rewritten in place each frame (no per-frame allocation).
+const FP={hash:0,cap:0,scap:0,fill:null,shadow:null,mbuf:null,fcol:null,sbuf:null,sNew:false,warned:0};
+// one mesh per mark: a faint fill (vertex alpha k) inside a crisp edge band (vertex alpha 1); the per-instance colour sets hue and edge strength
+function fpHexMesh(name,R0,R1,k){ const pos=[0,0,0], col=[1,1,1,k], idx=[]; for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30), c=Math.cos(a), sn=Math.sin(a); pos.push(c*R0,0,sn*R0, c*R0,0,sn*R0, c*R1,0,sn*R1); col.push(1,1,1,k, 1,1,1,1, 1,1,1,1); }
+  for(let i=0;i<6;i++){ const a=1+3*i, b=1+3*((i+1)%6); idx.push(0,a,b, a+1,a+2,b+2, a+1,b+2,b+1); }
+  const m=new BABYLON.Mesh(name,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.colors=col; vd.indices=idx; vd.applyToMesh(m); m.hasVertexAlpha=true; return m; }
+function fpEnsure(){ if(FP.fill&&!FP.fill.isDisposed()&&FP.shadow&&!FP.shadow.isDisposed()) return true; if(!G.scene||!G.tex||!G.tex.soft||!G.env) return false;
+  const mk=(m,name)=>{ const mt=new BABYLON.StandardMaterial(name,G.scene); mt.disableLighting=true; mt.diffuseColor=C3.Black(); mt.specularColor=C3.Black(); mt.emissiveColor=C3.White(); mt.alpha=.999; mt.alphaMode=BABYLON.Engine.ALPHA_ADD; mt.backFaceCulling=false; mt.disableDepthWrite=true; mt.zOffset=-1;
+    m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.setEnabled(false); m.alphaIndex=-60; try{ G.glow.addExcludedMesh(m); }catch(e){} G.env.push(m,mt); return m; };
+  FP.fill=mk(fpHexMesh('fpMark',HS*.75,HS*.86,.17),'fpMarkM');
+  const sh=MB.CreateGround('fpShadow',{width:1,height:1},G.scene), sm=new BABYLON.StandardMaterial('fpShadowM',G.scene); sm.disableLighting=true; sm.diffuseColor=C3.Black(); sm.specularColor=C3.Black(); sm.emissiveColor=C3.Black(); sm.opacityTexture=G.tex.soft; sm.alpha=.7; sm.backFaceCulling=false; sm.disableDepthWrite=true;
+  sh.material=sm; sh.isPickable=false; sh.alwaysSelectAsActiveMesh=true; sh.alphaIndex=-50; sh.setEnabled(false); try{ G.glow.addExcludedMesh(sh); }catch(e){} G.env.push(sh,sm); FP.shadow=sh;
+  FP.hash=NaN; FP.cap=0; FP.scap=0; return true; }
+function fpOn(u,v){ return !u.dead&&!!v&&v.state==='alive'&&!v.arrive&&!v.phased&&!u.vis; } // a ship mid-burn has left its hex: its mark returns where it lands
+function fpLevel(u){ const h=B.hover; if(u===B.sel||u===B.inspect||(h&&h.q===u.q&&h.r===u.r)) return 2; const tg=OV.targets; for(let j=0;j<tg.length;j++) if(tg[j].metadata&&tg[j].metadata.u===u) return 1; return 0; }
+function boardMarks(){ if(!B||B.showcase||!G.views||!fpEnsure()) return;
+  const U=B.units, hide=!!G.cineHidePlates; let h=hide?3:7, n=0;
+  for(let i=0;i<U.length;i++){ const u=U[i], v=G.views.get(u.id); let k=0; if(!hide&&fpOn(u,v)){ k=1+(u.q+64)*997+(u.r+64)*31+(u.side==='player'?3:5)+fpLevel(u)*7+(u.isSq?11:0); n++; } h=(Math.imul(h,31)+k)|0; }
+  if(h!==FP.hash){ FP.hash=h; fpRebuild(n); }
+  fpShadows(); }
+function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
+  const M=FP.mbuf, F=FP.fcol, U=B.units; let i=0;
+  if(n) for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!fpOn(u,v)) continue; const lv=fpLevel(u), p=hexWorld(u.q,u.r,0), c=u.side==='player'?FRIEND_C:FOE_C, o=i*16, q=i*4;
+    M[o]=1; M[o+5]=1; M[o+10]=1; M[o+15]=1; M[o+12]=p.x; M[o+13]=.09; M[o+14]=p.z;
+    const ea=u.isSq?.28:[.42,.8,1][lv]; F[q]=c.r; F[q+1]=c.g; F[q+2]=c.b; F[q+3]=ea; i++; } // fill reads at ~17% of the edge
+  const m=FP.fill; if(grow||!m.hasThinInstances){ m.thinInstanceSetBuffer('matrix',M,16,false); m.thinInstanceSetBuffer('color',F,4,false); } else { m.thinInstanceBufferUpdated('matrix'); m.thinInstanceBufferUpdated('color'); } m.thinInstanceCount=i; m.setEnabled(i>0); }
+function fpShadows(){ const U=B.units, ts=G.tacScale||1; let ns=0; for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!u.isSq&&v&&v.state==='alive'&&v.root&&v.root.isEnabled()) ns++; }
+  if(ns>FP.scap){ FP.scap=Math.max(16,ns*2); FP.sbuf=new Float32Array(FP.scap*16); FP.sNew=true; }
+  const b=FP.sbuf, m=FP.shadow; let i=0;
+  for(let j=0;j<U.length&&i<ns;j++){ const u=U[j], v=G.views.get(u.id); if(u.isSq||!v||v.state!=='alive'||!v.root||!v.root.isEnabled()) continue;
+    const p=v.root.position, a=v.root.rotation.y, c=Math.cos(a), sn=Math.sin(a), sx=(v.L||8)*1.2*ts, sz=Math.max(5,(v.L||8)*.55)*ts, o=i*16;
+    b[o]=sx*c; b[o+1]=0; b[o+2]=-sx*sn; b[o+3]=0; b[o+4]=0; b[o+5]=1; b[o+6]=0; b[o+7]=0; b[o+8]=sz*sn; b[o+9]=0; b[o+10]=sz*c; b[o+11]=0; b[o+12]=p.x; b[o+13]=.05; b[o+14]=p.z; b[o+15]=1; i++; }
+  if(!i){ if(m.isEnabled()) m.setEnabled(false); return; }
+  if(FP.sNew||!m.hasThinInstances){ FP.sNew=false; m.thinInstanceSetBuffer('matrix',b,16,false); } else m.thinInstanceBufferUpdated('matrix'); m.thinInstanceCount=i; if(!m.isEnabled()) m.setEnabled(true); }
 
 function computeThreatAt(h){ if(!B.threatCache||B.threatCache.key!==B.log.length+'|'+B.round) B.threatCache={key:B.log.length+'|'+B.round,map:computeThreat()}; return B.threatCache.map.get(hkey(h.q,h.r))||0; }
 function computeThreat(){
@@ -303,7 +342,7 @@ function onHover(e){
   const tip=boardTip(); if(tip) showTip(tip,e.clientX,e.clientY); else hideTip();
 }
 function markRamSpots(u,reach){ if(!reach||!u||u.isSq) return reach; try{ for(const st of reach.map.values()) st.ram=ramFrom(u,st)?1:0; }catch(e){} return reach; }
-function selectUnit(u){ try{ if(u&&B&&B.usage&&u.side==='player'&&!u.isSq&&ramInfo(u)){ B.ramSeen=B.ramSeen||new Set(); const k=u.id+':'+B.round; if(!B.ramSeen.has(k)){ B.ramSeen.add(k); B.usage.ramReady=(B.usage.ramReady||0)+1; } } }catch(e){} B.sel=u; B.inspect=null; B.armed=null; B.mode=null; B.reach=(u&&u.side==='player'&&B.side==='player'&&canUse(u))?markRamSpots(u,computeReach(u)):null; bRefresh(); }
+function selectUnit(u){ try{ if(u&&B&&B.usage&&u.side==='player'&&!u.isSq&&ramInfo(u)){ B.ramSeen=B.ramSeen||new Set(); const k=u.id+':'+B.round; if(!B.ramSeen.has(k)){ B.ramSeen.add(k); B.usage.ramReady=(B.usage.ramReady||0)+1; } } }catch(e){} B.sel=u; B.inspect=null; B.armed=null; B.mode=null; B.reach=(u&&u.side==='player'&&B.side==='player'&&canUse(u))?markRamSpots(u,bestFacingReach(u,computeReach(u))):null; bRefresh(); }
 // facing helper: for each hex, end on the facing that brings the most ready guns onto an enemy (cheapest on ties)
 function bestFacingReach(u,R){ const foes=alive('enemy'), ready=u.weapons.filter(w=>weaponReady(w)&&w.k!=='flak'); if(!R||!ready.length||!foes.length) return R; const best=new Map();
   for(const st of R.states){ const k=hkey(st.q,st.r), v=stateView(u,st); let n=0; const per=new Map();
@@ -365,7 +404,7 @@ function boardTip(){
   if(B.mode==='board'&&s&&u&&boardTargets(s).includes(u)){ const o=boardOdds(s,u); return `<div class="h">Board ${esc(u.name)}</div><div class="num">Your ${s.crew} crew against their ${u.crew}. Expect to kill about ${o.kill} and lose about ${o.loss}.</div><div class="${o.capture?'ember':'muted'}" style="margin-top:4px">${o.chance>0?`${o.chance}% chance to capture: the ship joins your fleet.${o.chance<100?' Otherwise saboteurs may still knock out a system.':''}`:'No chance to capture this time, but saboteurs may knock out a system.'}</div>`; }
   if(u&&s&&s.side==='player'&&u.side==='enemy'&&B.side==='player') return attackTip(s,u);
   if(u) return unitTip(u);
-  if(s&&s.side==='player'&&B.reach&&!B.mode){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st) return `<div class="h">Move here</div><div class="num">${st.cost} movement${st.t?`, ${st.t} turn${st.t>1?'s':''}`:''}. ${s.mp-st.cost} movement left after.</div>${moveNote(st)}${objZone(st.q,st.r)==='exit'?'<div style="margin-top:4px;color:#7dff9b">Exit: this ship jumps clear and counts toward the breakthrough.</div>':''}${(()=>{ const tt=terr(st.q,st.r); return TERRAIN_INFO[tt]&&!blocks(tt)?`<div style="margin-top:4px;color:${TERRAIN_INFO[tt].col}">Ends in ${TERRAIN_INFO[tt].n.toLowerCase()}: ${TERRAIN_INFO[tt].fx}</div>`:''; })()}${st.guns!=null?`<div style="margin-top:4px">From here: <b class="gilt">${st.guns} of ${st.gunsOf}</b> ready guns can fire${st.gunTarget?` (on ${esc(st.gunTarget.isSq?st.gunTarget.t.n:st.gunTarget.name)})`:''}.</div>`:''}${(()=>{ const bl=blockedFrom(s,st); return bl.length?`<div style="margin-top:4px;color:#ff8a7a">Blocked from here by asteroids or wrecks: ${bl.map(x=>esc(x.name)).join(', ')}.</div>`:''; })()}${(()=>{ const rf=st.ram?ramFrom(s,st):null; if(!rf) return ''; const e=ramEstimate(Object.assign({},s,{q:st.q,r:st.r,facing:st.f}),rf.t,rf.path.length); return `<div style="margin-top:4px;color:#ff6b5a"><b>Ram spot:</b> from here your bow points at ${esc(rf.t.name)}. Move, then tap Ram for about ${e.dmg} damage.</div>`; })()}`; }
+  if(s&&s.side==='player'&&B.reach&&!B.mode){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st) return `<div class="h">Move here</div><div class="num">${st.cost} movement${st.t?`, ${st.t} turn${st.t>1?'s':''}`:''}. ${s.mp-st.cost} movement left after.</div>${moveNote(st)}${objZone(st.q,st.r)==='exit'?'<div style="margin-top:4px;color:#7dff9b">Exit: this ship jumps clear and counts toward the breakthrough.</div>':''}${(()=>{ const tt=terr(st.q,st.r); return TERRAIN_INFO[tt]&&!blocks(tt)?`<div style="margin-top:4px;color:${TERRAIN_INFO[tt].col}">Ends in ${TERRAIN_INFO[tt].n.toLowerCase()}: ${TERRAIN_INFO[tt].fx}</div>`:''; })()}${st.guns!=null?`<div style="margin-top:4px">From here: <b class="gilt">${st.guns} of ${st.gunsOf}</b> ready guns can fire${st.gunTarget?` (on ${esc(st.gunTarget.isSq?st.gunTarget.t.n:st.gunTarget.name)})`:''}.</div>${moveDmgLine(s,st)}`:''}${(()=>{ const bl=blockedFrom(s,st); return bl.length?`<div style="margin-top:4px;color:#ff8a7a">Blocked from here by asteroids or wrecks: ${bl.map(x=>esc(x.name)).join(', ')}.</div>`:''; })()}${(()=>{ const rf=st.ram?ramFrom(s,st):null; if(!rf) return ''; const e=ramEstimate(Object.assign({},s,{q:st.q,r:st.r,facing:st.f}),rf.t,rf.path.length); return `<div style="margin-top:4px;color:#ff6b5a"><b>Ram spot:</b> from here your bow points at ${esc(rf.t.name)}. Move, then tap Ram for about ${e.dmg} damage.</div>`; })()}`; }
   if(B.showThreat){ const v=computeThreatAt(h); if(v) return `<div class="h blood">Enemy threat</div><div class="num">Up to about ${Math.round(v)} damage could reach this hex next turn, before shields and armor.</div>`; }
   { const z=objZone(h.q,h.r); if(z&&!terr(h.q,h.r)) return `<div class="h" style="color:${ZONE_INFO[z].col}">${ZONE_INFO[z].n}</div><div class="muted">${ZONE_INFO[z].fx}</div>`; }
   const t=terr(h.q,h.r); if(TERRAIN_INFO[t]) return `<div class="h" style="color:${TERRAIN_INFO[t].col}">${TERRAIN_INFO[t].n}</div><div class="muted">${TERRAIN_INFO[t].fx}</div>`;
@@ -377,6 +416,10 @@ function driveLine(u){ if(!u||u.isSq) return ''; const R=moveRules(u), M=MOVE_RU
 function moveNote(st){ const p=st.path||[], n=k=>p.filter(x=>x[k]).length, bits=[]; const sl=n('slip'), rv=n('rev'), up=p.filter(x=>x.over>0).length, dn=p.filter(x=>x.over<0).length;
   if(sl) bits.push(`sideslips ${sl>1?sl+' times':'once'}`); if(rv) bits.push(`backs off ${rv>1?rv+' hexes':'a hex'}`); if(up) bits.push(`climbs over ${up>1?up+' obstacles':'an obstacle'}`); if(dn) bits.push(`dives under ${dn>1?dn+' ships':'a ship'}`);
   return bits.length?`<div style="margin-top:4px;color:#9fd0ff">Thrusters: ${bits.join(', ')}, heading held.</div>`:''; }
+// v53: what the guns that bear from this hex would do to their target, with the real rules (hit chance, range falloff, motion, shields, armor)
+function moveDmgLine(s,st){ try{ const t=st.gunTarget; if(!t||t.dead||!st.guns) return ''; const v=stateView(s,st), idx=B.armed!=null?[B.armed]:s.weapons.map((w,i)=>i); let sh=0,hull=0,n=0;
+    for(const i of idx){ const w=s.weapons[i]; if(!w||!canFire(v,w,t)) continue; const e=expectedVs(v,w,t); sh+=e.shield; hull+=e.hull; n++; } if(!n) return '';
+    return `<div class="num" style="margin-top:2px">Expected: about <span class="shv">${Math.round(sh)} shield</span> and <span class="hlv">${Math.round(hull)} hull</span> damage${hull>=t.hp?' <span class="ember">(likely kill)</span>':''}.</div>`; }catch(e){ return ''; } }
 function motionNote(a,t){ const m=motionHit(t), out=[]; if(m>0) out.push(`<span class="ember">Sitting still: +${m} to hit.</span>`); else if(m<0) out.push(`<span class="muted">Burning evasive: \u2212${-m} to hit.</span>`);
   const rk=a.weapons.some(w=>weaponReady(w)&&rakeBonus(a,w)>0); if(rk) out.push(`<span class="gilt">Raking pass: broadsides +${Math.round(moveRules(a).rake*100)}%.</span>`); return out.length?' '+out.join(' '):''; }
 function unitTip(u){ return `<div class="h ${u.side==='player'?'verd':'blood'}">${esc(u.isSq?u.t.n:u.name)}</div><div class="muted">${esc(u.t.n)}${u.elite?', elite':''}</div>
