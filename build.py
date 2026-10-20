@@ -14,7 +14,6 @@ if dups: sys.exit('BUILD FAILED: duplicate top-level functions: '+', '.join(sort
 with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False) as tf: tf.write(js); tmp=tf.name
 chk=subprocess.run(['node','--check',tmp],capture_output=True,text=True); os.unlink(tmp)
 if chk.returncode: sys.exit('BUILD FAILED: script does not parse\n'+chk.stderr[-600:])
-flag='<script>window.PREVIEW_DEMO=true</script>\n' if mode=='preview' else ''
-html=open('head.html').read()+f'<script src="{src}"></script>\n'+flag+f'<script>\n{js}</script>\n</body>\n</html>\n'
-out='index_test.html' if mode=='test' else ('voidsworn-3d-preview.html' if mode=='preview' else 'voidsworn-3d.html')
+html=open('head.html').read()+f'<script src="{src}"></script>\n'+f'<script>\n{js}</script>\n</body>\n</html>\n'
+out='index_test.html' if mode=='test' else 'voidsworn-3d.html'
 open(out,'w').write(html); print(out,len(html))
