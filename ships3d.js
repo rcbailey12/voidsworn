@@ -585,8 +585,14 @@ function craftInstance(fac,kind){ const key=fac+'|'+kind; let p=CRAFT_CACHE[key]
   const inst=p.createInstance('craft'); inst.isPickable=true; inst.position.set(0,0,0); return {root:inst,meshes:[inst]}; }
 // each ship class is built once, then cloned (clones share geometry)
 const MODEL_CACHE={};
+// v53: a class prototype not used in the last three scene setups is freed when the views are cleared (fragments and split halves are clones
+// with their own geometry references, so freeing the prototype never breaks a wreck); a prototype replaced by a newly arrived hull is freed then too
+const MODEL_GEN={n:0,stale:[]};
+function dropModel(k){ const p=MODEL_CACHE[k]; if(p) MODEL_GEN.stale.push(p); delete MODEL_CACHE[k]; }
+function trimModelCache(){ try{ MODEL_GEN.n++; for(const [k,p] of Object.entries(MODEL_CACHE)) if((p.gen||0)<MODEL_GEN.n-3){ MODEL_GEN.stale.push(p); delete MODEL_CACHE[k]; }
+    for(const p of MODEL_GEN.stale.splice(0)){ try{ if(p.whole&&!p.whole.isDisposed()) p.whole.dispose(false,false); if(p.root&&!p.root.isDisposed()) p.root.dispose(false,false); }catch(e){} } }catch(e){ console.warn('model cache trim',e); } }
 function buildShipModel(u){ if(u.isSq) return null; const fac=u.fac||'voidsworn', key=fac+'|'+u.cls;
-  let p=MODEL_CACHE[key]; if(!p){ p=buildShipModelFresh(u); p.root.setEnabled(false); p.root.position.y=-9000; MODEL_CACHE[key]=p; }
+  let p=MODEL_CACHE[key]; if(!p){ p=buildShipModelFresh(u); p.root.setEnabled(false); p.root.position.y=-9000; MODEL_CACHE[key]=p; } p.gen=MODEL_GEN.n;
   if(p.whole===undefined){ try{ p.whole=makeWholeProto(p.root); }catch(e){ console.warn('whole model failed',e); p.whole=null; } }
   const root=(p.whole||p.root).clone('ship',null); root.setEnabled(true); root.position.set(0,0,0);
   const kids=root.getChildren(), fore=kids.find(n=>n.name.endsWith('fore')), aft=kids.find(n=>n.name.endsWith('aft')), all=root.getChildMeshes(false), M=facMats(fac);
@@ -637,8 +643,25 @@ function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array
     if(ay>=ax&&ay>=az){ uv[v*2]=x*k; uv[v*2+1]=z*k; } else if(ax>=az){ uv[v*2]=z*k; uv[v*2+1]=y*k; } else { uv[v*2]=x*k; uv[v*2+1]=y*k; } }
   let col=null; if(j.a){ const a=b64(j.a,Uint8Array); col=new Float32Array(n*4); for(let v=0;v<n;v++){ const k=a[v]/255; col[v*4]=k; col[v*4+1]=k; col[v*4+2]=k; col[v*4+3]=1; } } // v52 baked ambient occlusion + cavity
   return {pos,nor,idx,uv,col,tris:j.t}; }
-async function loadAIHulls(){ if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:') return;
-  const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'; /* v49: desktop loads the denser exports (20k to 38k triangles) */ for(const [k,id] of Object.entries(AI_HULLS)){ try{ let r=await fetch(dir+id+'.json'); if(!r.ok&&dir!=='hulls/') r=await fetch('hulls/'+id+'.json'); if(!r.ok) continue; AI_HULL_DATA[k]=decodeAIHull(await r.json()); delete MODEL_CACHE[k]; /* ships built from now on use it */ }catch(e){ console.warn('AI hull not loaded',k,e); } } }
+// v53: every hull file is fetched at once (was one after another), started before the title screen; the first battle waits for it (see main3d)
+// so it never races the fetch and falls back to the heavy procedural ships. HULLS_LOAD says which hull path is live.
+const HULLS_LOAD={state:'idle',total:0,loaded:0,failed:0,fallback:0,bad:[],dir:'',ms:0,promise:null,onProgress:null};
+function hullPath(){ const S=HULLS_LOAD; return {path:!aiHullsOn()?'procedural (off in settings)':S.loaded?'concept':'procedural',state:S.state,loaded:S.loaded,failed:S.failed,total:S.total,dir:S.dir,fallback:S.fallback,ms:S.ms}; }
+function loadAIHulls(){ const S=HULLS_LOAD; if(S.promise) return S.promise;
+  if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'){ S.state='skipped'; return S.promise=Promise.resolve(S); }
+  const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'; /* v49: desktop loads the denser exports (20k to 38k triangles) */ const ents=Object.entries(AI_HULLS), t0=performance.now(); S.state='loading'; S.dir=dir; S.total=ents.length;
+  const get=async id=>{ let r=null; try{ r=await fetch(dir+id+'.json'); }catch(e){} if((!r||!r.ok)&&dir!=='hulls/'){ S.fallback++; try{ r=await fetch('hulls/'+id+'.json'); }catch(e){} } if(!r||!r.ok) throw new Error('http '+(r?r.status:'network')); return r.json(); };
+  let q=Promise.resolve(), ly=performance.now(); const idle=()=>(document.hidden||performance.now()-ly<10)?Promise.resolve():new Promise(r=>setTimeout(()=>{ ly=performance.now(); r(); },0)); // decodes yield to the page every ~10 ms, so a burst of arrivals never stalls a frame for long
+  S.promise=Promise.all(ents.map(([k,id])=>get(id).then(j=>(q=q.then(idle).then(()=>{ try{ AI_HULL_DATA[k]=decodeAIHull(j); dropModel(k); /* ships built from now on use it */ S.loaded++; }catch(e){ S.failed++; S.bad.push(id); console.warn('AI hull not decoded',k,e); } })),e=>{ S.failed++; S.bad.push(id); console.warn('AI hull not loaded',k,e); }).then(()=>{ try{ S.onProgress&&S.onProgress(S); }catch(e){} })))
+    .then(()=>q).then(()=>{ S.ms=Math.round(performance.now()-t0); S.state='done'; const hp=hullPath(); console.info('[hulls] live path: '+hp.path+' ('+S.loaded+'/'+S.total+' loaded from '+dir+(S.failed?', '+S.failed+' failed: '+S.bad.slice(0,6).join(' '):'')+(S.fallback?', '+S.fallback+' fell back to hulls/':'')+') in '+S.ms+'ms');
+      try{ if(typeof tel==='function') tel('hulls',hp); }catch(e){} return S; });
+  return S.promise; }
+// v53: each half keeps only the vertices its triangles use (both halves used to carry the whole hull's vertex arrays, so the merged live mesh held every vertex twice)
+function compactHalf(vd,idx){ const P=vd.positions, N=vd.normals, U=vd.uvs, C=vd.colors, map=new Int32Array(P.length/3).fill(-1); let n=0; const out=new Uint32Array(idx.length);
+  for(let i=0;i<idx.length;i++){ const v=idx[i]; if(map[v]<0) map[v]=n++; out[i]=map[v]; }
+  const pos=new Float32Array(n*3), nor=new Float32Array(n*3), uv=U?new Float32Array(n*2):null, col=C?new Float32Array(n*4):null;
+  for(let v=0;v<map.length;v++){ const m=map[v]; if(m<0) continue; for(let c=0;c<3;c++){ pos[m*3+c]=P[v*3+c]; nor[m*3+c]=N[v*3+c]; } if(uv){ uv[m*2]=U[v*2]; uv[m*2+1]=U[v*2+1]; } if(col) for(let c=0;c<4;c++) col[m*4+c]=C[v*4+c]; }
+  const sub=new BABYLON.VertexData(); sub.positions=pos; sub.normals=nor; if(uv) sub.uvs=uv; if(col) sub.colors=col; sub.indices=n<65536?Uint16Array.from(out):out; return sub; }
 function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')); if(!fore) return p; const M=facMats(fac), L=p.L;
   for(const m of p.root.getChildMeshes(false)) if(m.name.includes('hull_')||m.name.endsWith('emblem')) m.dispose(false,false);
   p.root.computeWorldMatrix(true); fore.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(fore.getWorldMatrix()).multiply(p.root.getWorldMatrix());
@@ -647,7 +670,7 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
   // split at the procedural break line so a dying ship still breaks in two
   const split=(p.surf&&p.surf.split!=null)?p.surf.split:-.05*L, aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, P=vd.positions, I=vd.indices, parts={fore:[],aft:[]};
   for(let t=0;t<I.length;t+=3){ const cx=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3; parts[cx>=split?'fore':'aft'].push(I[t],I[t+1],I[t+2]); }
-  for(const half of ['fore','aft']){ if(!parts[half].length) continue; const sub=new BABYLON.VertexData(); sub.positions=P; sub.normals=vd.normals; sub.uvs=vd.uvs; if(vd.colors) sub.colors=vd.colors; sub.indices=parts[half];
+  for(const half of ['fore','aft']){ if(!parts[half].length) continue; const sub=compactHalf(vd,parts[half]);
     const m=new BABYLON.Mesh('hull_ai',G.scene); sub.applyToMesh(m); m.material=M.hull; m.parent=half==='fore'?fore:aftN; if(half==='aft'&&aftN!==fore){ aftN.computeWorldMatrix(true); m.position.copyFrom(fore.position.subtract(aftN.position)); } m.refreshBoundingInfo(true); }
   // engine plumes and flares move to the new hull's stern (they were placed for the procedural hull)
   try{ let minX=1e9; for(let i=0;i<P.length;i+=3) minX=Math.min(minX,P[i]); let y0=1e9,y1=-1e9,z0=1e9,z1=-1e9; for(let i=0;i<P.length;i+=3) if(P[i]<minX+.1*L){ y0=Math.min(y0,P[i+1]); y1=Math.max(y1,P[i+1]); z0=Math.min(z0,P[i+2]); z1=Math.max(z1,P[i+2]); }
