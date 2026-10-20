@@ -357,7 +357,7 @@ function startSideTurn(side){
   gainResolve(side,1); let burned=false;
   for(const u of B.units){
     if(u.dead||u.side!==side) continue;
-    u.braced=false; u.lockOn=false; u.focus=false; u.fullAhead=false; u.noTurn=false; u.evBuff=0; u.order=null; u.ramBoost=0;
+    u.braced=false; u.pivotUsed=false; u.lockOn=false; u.focus=false; u.fullAhead=false; u.noTurn=false; u.evBuff=0; u.order=null; u.ramBoost=0;
     u.mp=Math.max(1,u.speed-u.st.engine); u.turnsLeft=u.turns;
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
@@ -379,27 +379,47 @@ function startSideTurn(side){
 // ---------- movement ----------
 function passable(u,q,r,occ){ if(!onBoard(q,r)) return false; if(blocks(terr(q,r))) return false;
   const o=occ.get(hkey(q,r)); if(o && o.side!==u.side && !u.isSq) return false; return true; }
+// v50 thrusters: besides burning forward, a hull can slip into either forward-diagonal hex or back off one hex while
+// holding its heading, and can climb over or dive under a rock, wreck or enemy ship it cannot stop on.
+// Each faction bends one of these rules (MOVE_RULES in data.js).
+const MOVE_BASE={slip:2,rev:2,over:1,evadeAt:3,evade:5,still:10,rake:.1};
+function moveRules(u){ return Object.assign({},MOVE_BASE,(u&&!u.isSq&&MOVE_RULES[u.fac])||{}); }
+function canEnd(u,q,r,occ){ if(!onBoard(q,r)||blocks(terr(q,r))) return false; const o=occ.get(hkey(q,r)); return !o||o===u; }
 function computeReach(u){
   const map=new Map(), states=[];
-  const occ=occMap();
+  const occ=occMap(), R=moveRules(u);
   const sk=s=>s.q+','+s.r+','+s.f+','+s.t;
   const start={q:u.q,r:u.r,f:u.facing,t:0,cost:0,path:[]};
   const seen=new Map([[sk(start),0]]); const queue=[start]; let qi=0;
+  const pivotFree=R.pivot&&!u.pivotUsed;
   while(qi<queue.length){
-    const s=queue[qi++]; states.push(s);
+    const s=queue[qi++]; if(seen.get(sk(s))<s.cost) continue; states.push(s);
     if(s.cost>=u.mp) continue;
     const nexts=[];
-    const dirs = u.isSq ? [0,1,2,3,4,5] : [s.f];
-    for(const f of dirs){ const d=DIRS[f]; const nq=s.q+d[0], nr=s.r+d[1];
-      if(passable(u,nq,nr,occ)) nexts.push({q:nq,r:nr,f,t:s.t,cost:s.cost+1,path:[...s.path,{q:nq,r:nr,f}]}); }
+    if(u.isSq){ for(let f=0;f<6;f++){ const d=DIRS[f]; const nq=s.q+d[0], nr=s.r+d[1];
+      if(passable(u,nq,nr,occ)) nexts.push({q:nq,r:nr,f,t:s.t,cost:s.cost+1,path:[...s.path,{q:nq,r:nr,f}]}); } }
+    else {
+      const opts=[[s.f,1,null],[(s.f+1)%6,R.slip,'slip'],[(s.f+5)%6,R.slip,'slip'],[(s.f+3)%6,R.rev,'rev']];
+      for(const [df,c0,kind] of opts){ const d=DIRS[df], nq=s.q+d[0], nr=s.r+d[1]; if(!onBoard(nq,nr)) continue;
+        // a heavy hull with too little movement can still spend all of it on one thruster hop
+        let c=kind&&s.cost===0?Math.min(c0,u.mp):c0; let over=0; const tt=terr(nq,nr);
+        if(blocks(tt)){ if(tt!=='rock'&&tt!=='hulk') continue; over=1; }
+        const o=occ.get(hkey(nq,nr)); if(o&&o.side!==u.side) over=over||-1; // climb over terrain, dive under ships
+        if(over) c+=R.over;
+        if(s.cost+c>u.mp) continue;
+        const st={q:nq,r:nr,f:s.f}; if(kind) st[kind]=1; if(kind==='slip') st.side=df===(s.f+1)%6?1:-1; if(over) st.over=over;
+        nexts.push({q:nq,r:nr,f:s.f,t:s.t,cost:s.cost+c,path:[...s.path,st],slips:(s.slips||0)+(kind==='slip'?1:0),revs:(s.revs||0)+(kind==='rev'?1:0),overs:(s.overs||0)+(over?1:0)}); }
+    }
     if(!u.isSq && !u.noTurn && s.t<u.turnsLeft){
-      for(const dd of [1,-1]){ const f=(s.f+dd+6)%6; nexts.push({q:s.q,r:s.r,f,t:s.t+1,cost:s.cost+1,path:[...s.path,{q:s.q,r:s.r,f,rot:true}]}); }
+      const tc=pivotFree&&s.t===0?0:1; if(s.cost+tc<=u.mp||tc===0)
+      for(const dd of [1,-1]){ const f=(s.f+dd+6)%6; nexts.push({q:s.q,r:s.r,f,t:s.t+1,cost:s.cost+tc,path:[...s.path,{q:s.q,r:s.r,f,rot:true}],slips:s.slips,revs:s.revs,overs:s.overs}); }
     }
     for(const n of nexts){ const k=sk(n); if(seen.has(k)&&seen.get(k)<=n.cost) continue; seen.set(k,n.cost); queue.push(n); }
   }
-  for(const s of states){ if(s.q===u.q&&s.r===u.r) continue; const k=hkey(s.q,s.r); if(occ.has(k)) continue;
+  const ok=states.filter(s=>seen.get(sk(s))===s.cost&&canEnd(u,s.q,s.r,occ));
+  for(const s of ok){ if(s.q===u.q&&s.r===u.r) continue; const k=hkey(s.q,s.r);
     const c=map.get(k); if(!c || s.cost<c.cost || (s.cost===c.cost&&s.t<c.t)) map.set(k,s); }
-  return {map, states:states.filter(s=>{ const o=occ.get(hkey(s.q,s.r)); return !o||o===u; })};
+  return {map, states:ok};
 }
 async function moveUnit(u, state){
   if(!inThisBattle(u)) return; const live=liveFrom(null);
@@ -411,11 +431,12 @@ async function moveUnit(u, state){
     if(B) B.prog=(B.prog||0)+1; // progress for the busy watchdog
     if(!live()) return;
   }
-  u.mp-=state.cost; u.turnsLeft-=state.t; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++;
+  u.mp=Math.max(0,u.mp-state.cost); u.turnsLeft-=state.t; if(state.t>0&&moveRules(u).pivot) u.pivotUsed=true; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++;
   objAfterMove(u);
 }
-function canRotate(u){ return !u.dead && !u.isSq && !u.noTurn && u.turnsLeft>0 && u.mp>0 && !u.braced; }
-async function rotateUnit(u,dir){ if(!canRotate(u)) return; u.mp--; u.turnsLeft--; u.moved=true; await animRotate(u,(u.facing+dir+6)%6); }
+function freePivot(u){ return !!(moveRules(u).pivot&&!u.pivotUsed); }
+function canRotate(u){ return !u.dead && !u.isSq && !u.noTurn && u.turnsLeft>0 && (u.mp>0||freePivot(u)) && !u.braced; }
+async function rotateUnit(u,dir){ if(!canRotate(u)) return; if(freePivot(u)) u.pivotUsed=true; else u.mp--; u.turnsLeft--; u.moved=true; await animRotate(u,(u.facing+dir+6)%6); }
 
 // ---------- combat math ----------
 function sightBlocked(q,r){ return blocks(terr(q,r))||!!(SOLID&&SOLID.has(q+','+r)); }
@@ -423,6 +444,9 @@ function los(a,b){ const line=hexLine(a,b); for(let i=1;i<line.length-1;i++){ if
 function weaponReady(w){ return !w.fired && w.cdLeft===0 && w.off===0; }
 function inReach(u,w,t){ const d=hdist(u,t); if(d<1||d>w.r) return false; if(!inArc(u,t,w.arc)) return false; return los(u,t); }
 function canFire(u,w,t){ if(u.dead||t.dead||u.side===t.side||u.braced||w.k==='flak') return false; if(!weaponReady(w)) return false; return inReach(u,w,t); }
+// v50: a hull that sat still last turn is an easy solution; one that burned hard is not
+function motionHit(t){ if(!t||t.isSq||t.hexMoved==null||t.braced) return 0; const R=moveRules(t); if(t.hexMoved===0) return R.still; if(t.hexMoved>=R.evadeAt) return -R.evade; return 0; }
+function rakeBonus(u,w){ if(!u||u.isSq||!(w.arc==='P'||w.arc==='S')||(u.hexMoved||0)<2) return 0; return moveRules(u).rake; }
 function hitChance(u,w,t){
   const d=hdist(u,t), over=Math.max(0,d-w.opt-(u.fx.longAim||0));
   let c=w.acc+u.aim+(u.lockOn?15:0)-(u.fullAhead?15:0)-over*w.fall-Math.min(45,t.ev+(t.evBuff||0))*(w.evMult||1); // evasion caps at 45
@@ -432,6 +456,7 @@ function hitChance(u,w,t){
   if(terr(u.q,u.r)==='storm') c-=10;
   if(u.crewMax){ if(u.crew<u.crewMax*.5) c-=10; if(u.crew<u.crewMax*.25) c-=10; }
   if(t.fx&&t.fx.burnEv&&(t.hexMoved||0)>=3) c-=t.fx.burnEv;
+  c+=motionHit(t);
   if(u.side==='player'&&!u.isSq&&!(u.sureUsed>0)&&runFx().firstSure) return 95; // the rangefinder relic: every ship's first attack of the battle
   return clamp(Math.round(c),5,95);
 }
@@ -454,6 +479,7 @@ function dmgMult(u,w,t,rear){
   if(u.fx.stillPct&&!u.hexMoved&&(w.arc==='P'||w.arc==='S'||w.k==='battery')) m+=u.fx.stillPct;
   if(u.fx.momPct) m+=Math.min(4,u.hexMoved||0)*u.fx.momPct;
   if(u.fx.prowPct&&w.arc==='F') m+=u.fx.prowPct;
+  m+=rakeBonus(u,w);
   let base=w.dmg*m;
   base*= t.isSq ? (w.vsSq||1) : (w.vsCap||1);
   return base;
@@ -906,7 +932,7 @@ async function useAbility(u,arg){
 function novaTargets(u){ return boardHexes().filter(h=>{ const d=hdist(u,h); return d>=3&&d<=9&&inArc(u,h,'F'); }); }
 
 // ---------- enemy AI ----------
-function stateView(u,s){ const v=Object.create(u); v.q=s.q; v.r=s.r; v.facing=s.f; return v; }
+function stateView(u,s){ const v=Object.create(u); v.q=s.q; v.r=s.r; v.facing=s.f; if(s.path&&!u.isSq) v.hexMoved=(u.hexMoved||0)+s.path.filter(p=>!p.rot).length; return v; }
 function evalOffense(a, ready, targets){
   let tot=0;
   for(const w of ready){ let best=0;

@@ -99,6 +99,14 @@ const HULLS = {
   d_boss:{n:'The Undying Throne',cls:'Tomb-ark',fac:'deathless',size:1.3,cp:12,hp:480,sh:0,rg:0,ar:.35,sp:1,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['flak','T']],ab:'nova',regen:8,boss:true},
 };
 
+// v50 drives: how each faction bends the thruster rules (battle.js MOVE_BASE). n/d show in the ship panel and codex.
+const MOVE_RULES={
+  voidsworn:{rake:.2,n:'Broadside doctrine',d:'Port and starboard guns hit 20% harder after moving 2+ hexes (others get 10%).'},
+  hegemony:{rev:1,n:'Retro thrusters',d:'Backing off one hex costs 1 movement instead of 2.'},
+  corsair:{slip:1,n:'Bolted burners',d:'Sideslips cost 1 movement instead of 2.'},
+  chorus:{pivot:1,n:'Living hull',d:'The first turn each round costs no movement.'},
+  ithar:{evadeAt:2,evade:10,n:'Fan sails',d:'After moving 2+ hexes, enemies get \u221210 to hit it (others need 3 hexes for \u22125).'},
+  deathless:{over:0,n:'Phase drive',d:'Passes through rocks, wrecks and enemy ships at no extra cost.'}};
 const FACTIONS = {
   voidsworn:{n:'Voidsworn Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#4a4440',trim:'#c8501f',glow:'#ff7a2a',style:'gothic',blurb:'Gothic crusader battleships. Heavy armor, lance batteries and broadsides that hit like a cathedral falling.'},
   hegemony:{n:'Hegemony Navy',hull:'#c4ccd5',trim:'#3a78d0',glow:'#5fa0ff',style:'wedge',

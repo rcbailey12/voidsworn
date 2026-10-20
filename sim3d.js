@@ -199,6 +199,22 @@ async function ruleCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
   { const {P,E}=setup(['penitent','harrow','warden']); for(const u of P){ u.q=E[0].q-3; u.r=E[0].r; } let calls=0, after=0, bumped=false; const keep=fireWeapon; fireWeapon=async function(u,i,t,o){ calls++; if(bumped) after++; const r=await keep(u,i,t,o); if(!bumped){ bumped=true; B.epoch=(B.epoch||0)+1; } return r; };
     await runCommand('player',{id:'barrage',n:'Barrage'},2); fireWeapon=keep; ok('a skipped Command volley stops firing',bumped&&after===0,'shots before skip '+(calls-after)+', after '+after); }
   { const {P,E}=setup(['penitent']); const u=P[0], t=E[0]; t.hp=t.maxHp; u.q=t.q-1; u.r=t.r; const keep=animExplode; let release; animExplode=()=>new Promise(r=>{ release=r; }); t.hp=1; const p=killUnit(t,u); const b1=B; setup(['harrow']); const hp0=alive('enemy').map(x=>x.hp).join(), lg=B.log.length; release(); await p; animExplode=keep; ok('an old explosion never touches the next battle',B!==b1&&alive('enemy').map(x=>x.hp).join()===hp0&&B.log.length===lg,'log lines added '+(B.log.length-lg)); }
+  // v50 thrusters and pass-overs
+  { const {P,E}=setup(); const u=P[0]; for(const x of [...P.slice(1),...E]){ x.q=0; x.r=0; x.dead=true; } B.terrain={}; u.q=10; u.r=8; u.facing=0; u.mp=2; u.turnsLeft=1; u.st.engine=0;
+    const fwd=DIRS[0], ahead={q:u.q+fwd[0],r:u.r+fwd[1]}; B.terrain[hkey(ahead.q,ahead.r)]='rock';
+    let R=computeReach(u); const back={q:u.q+DIRS[3][0],r:u.r+DIRS[3][1]}, sl={q:u.q+DIRS[1][0],r:u.r+DIRS[1][1]};
+    const bs=R.map.get(hkey(back.q,back.r)), ss=R.map.get(hkey(sl.q,sl.r));
+    ok('a boxed-in hull can back off or sideslip holding its heading',!!bs&&bs.f===0&&bs.cost===2&&!!ss&&ss.f===0&&ss.cost===2,'reverse '+(bs&&bs.cost)+' slip '+(ss&&ss.cost));
+    ok('a rock cannot be stopped on',!R.map.has(hkey(ahead.q,ahead.r)));
+    u.mp=3; R=computeReach(u); const past={q:ahead.q+fwd[0],r:ahead.r+fwd[1]}, ps=R.map.get(hkey(past.q,past.r));
+    ok('a hull can climb over a rock for +1 movement',!!ps&&ps.cost===3&&ps.path.some(p=>p.over===1),'cost '+(ps&&ps.cost));
+    u.mp=1; R=computeReach(u); ok('a 1-movement hull can still spend it all on one thruster hop',!!R.map.get(hkey(back.q,back.r)));
+    u.fac='deathless'; u.mp=2; R=computeReach(u); const pd=R.map.get(hkey(past.q,past.r)); ok('Deathless phase through rocks at no extra cost',!!pd&&pd.cost===2,'cost '+(pd&&pd.cost));
+    u.fac='chorus'; u.mp=1; u.pivotUsed=false; R=computeReach(u); const tw=R.states.find(s=>s.q===u.q&&s.r===u.r&&s.f===1&&s.cost===0); ok('Chorus first turn is free',!!tw);
+    u.fac='voidsworn'; const e=E[0]; e.dead=false; e.q=14; e.r=8; e.facing=3; u.q=10; u.r=8; u.facing=0; delete B.terrain[hkey(ahead.q,ahead.r)]; const w=e.weapons[0];
+    u.hexMoved=1; const c1=hitChance(e,w,u); u.hexMoved=0; const c0=hitChance(e,w,u); u.hexMoved=3; const c3=hitChance(e,w,u);
+    ok('a hull that held still is easier to hit, one that burned hard is harder',c0>c1&&c3<c1,c0+' / '+c1+' / '+c3);
+    const bw=u.weapons.find(x=>x.arc==='P'||x.arc==='S'); if(bw){ u.hexMoved=0; const m0=dmgMult(u,bw,e,false); u.hexMoved=2; const m2=dmgMult(u,bw,e,false); ok('raking pass: broadsides hit harder after moving 2+ hexes',m2>m0,m0.toFixed(2)+' -> '+m2.toFixed(2)); } }
   console.log(out.join('\\n')); console.log(out.some(x=>x.startsWith('FAIL'))?'RULECHECK FAILED':'RULECHECK PASSED'); if(out.some(x=>x.startsWith('FAIL'))) process.exitCode=1; }
 async function boonCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS ':'FAIL ')+n+(note?': '+note:''));
   const setup=(boons,aspect,fleet,fac)=>{ RUN={fac:'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:boons.map(id=>({id,r:0})),aspect:aspect||null};

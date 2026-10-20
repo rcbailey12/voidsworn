@@ -625,8 +625,8 @@ function splitModel(model,proto){
 const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes in comments)
   'hegemony|Frigate':'H7_23','hegemony|Destroyer':'H8_23','hegemony|Cruiser':'H9_23','hegemony|Battleship':'H10_23','hegemony|Super-dreadnought':'H4_11', // H7b-H10b (round 7 light grey and blue), H4a for the flagship
   'voidsworn|Frigate':'V14_23','voidsworn|Destroyer':'V15_37','voidsworn|Cruiser':'V16_37','voidsworn|Battleship':'V17_37','voidsworn|Dreadnought':'V1b_r_23', // V14b, V15c, V16c, V17c (round 7 grimdark), V1b rev flagship
-  'corsair|Frigate':'C12_23','corsair|Destroyer':'C9_23','corsair|Cruiser':'C11_23','corsair|Carrier':'C10_37', // C12b, C9b, C11b, C10c
-  'chorus|Frigate':'B18_11','chorus|Destroyer':'B15_23','chorus|Cruiser':'B13_23','chorus|Carrier':'B17_37','chorus|Bio-titan':'B16_23', // B18a, B15b, B13b, B17c, B16b
+  'corsair|Frigate':'C13_23','corsair|Destroyer':'C14_23','corsair|Cruiser':'C15_23','corsair|Carrier':'C16_23', // round 8 B set (Ryan's pick)
+  'chorus|Frigate':'B19_11','chorus|Destroyer':'B20_11','chorus|Cruiser':'B21_11','chorus|Carrier':'B22_11','chorus|Bio-titan':'B16_23', // round 8 A set (Ryan's pick), B16b titan
   'ithar|Frigate':'I14_23','ithar|Destroyer':'I11_37','ithar|Cruiser':'I15_11','ithar|Carrier':'I16_11','ithar|Ark':'I8_37', // I14b, I11c, I15a, I16a, I8c
   'deathless|Frigate':'D9_23','deathless|Destroyer':'D7_11','deathless|Cruiser':'D4_37','deathless|Tomb-ark':'D8_37'}, AI_HULL_DATA={}; // D9b, D7a, D4c, D8c
 function aiHullsOn(){ return G.aiHulls!==false; }

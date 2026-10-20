@@ -142,7 +142,8 @@ function updateWorld(dt){
 function fwdOf(a){ const r=a*Math.PI/180; return new V3(Math.cos(r),0,-Math.sin(r)); }
 async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return; const v0=unitVis(u);
   const pk=[{q:v0.q,r:v0.r,s:0}], ak=[{a:v0.a,s:0}], rotS=[]; let s=0, la=v0.a; const rc=u.isSq?.3:.75;
-  for(const st of path){ const a=shortAng(la,st.f*60); if(st.rot){ rotS.push({s,dir:Math.sign(a-la)}); s+=rc; ak.push({a,s}); } else { s+=1; pk.push({q:st.q,r:st.r,s}); ak.push({a,s}); } la=a; }
+  const altK=[{s:0,y:0}], thrS=[]; // v50: altitude keys for climbing over rocks / diving under ships, and thruster hops
+  for(const st of path){ const a=shortAng(la,st.f*60); if(st.rot){ rotS.push({s,dir:Math.sign(a-la)}); s+=rc; ak.push({a,s}); } else { if(st.slip||st.rev) thrS.push({s,slip:st.slip?st.side||1:0,rev:!!st.rev}); s+=1; pk.push({q:st.q,r:st.r,s}); ak.push({a,s}); altK.push({s,y:st.over?(st.over>0?9:-7.5)*(u.isSq?.5:1):0}); } la=a; }
   const S=Math.max(s,.001); if(pk.at(-1).s<S) pk.push({q:pk.at(-1).q,r:pk.at(-1).r,s:S});
   // Hermite tangents over the path length, so corners round off instead of snapping
   const tan=pk.map((p,i)=>{ const a=pk.at(Math.max(0,i-1)), b=pk.at(Math.min(pk.length-1,i+1)), ds=Math.max(.001,b.s-a.s); return {q:(b.q-a.q)/ds,r:(b.r-a.r)/ds}; });
@@ -153,6 +154,10 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     const t2=t*t, t3=t2*t, h00=2*t3-3*t2+1, h10=t3-2*t2+t, h01=-2*t3+3*t2, h11=t3-t2, mA=tan.at(i), mB=tan.at(i+1);
     return {q:h00*A.q+h10*ds*mA.q+h01*Bk.q+h11*ds*mB.q, r:h00*A.r+h10*ds*mA.r+h01*Bk.r+h11*ds*mB.r}; };
   const angAt=x=>{ let i=0; while(i<ak.length-2&&x>ak.at(i+1).s) i++; const A=ak.at(i), Bk=ak.at(Math.min(ak.length-1,i+1)); if(Bk===A) return A.a; const t=clamp((x-A.s)/Math.max(.001,Bk.s-A.s),0,1), e=t*t*(3-2*t); return A.a+(Bk.a-A.a)*e; };
+  const hasAlt=altK.some(k=>k.y), altAt=x=>{ if(!hasAlt) return 0; let i=0; while(i<altK.length-2&&x>altK[i+1].s) i++; const A=altK[i], Bk=altK[Math.min(altK.length-1,i+1)]; if(Bk===A) return A.y;
+    // ease out of the old height early and into the new one late, so the hull clears the obstacle hex at full height
+    const t=clamp((x-A.s)/Math.max(.001,Bk.s-A.s)*1.35,0,1), e=t*t*(3-2*t); return A.y+(Bk.y-A.y)*e; };
+  const slipAt=x=>{ for(const h of thrS) if(h.slip&&x>=h.s&&x<h.s+1) return h.slip*Math.sin(Math.PI*(x-h.s)); return 0; };
   // a trapezoid speed profile: spool up, cruise, brake; big hulls take longer to get going
   const FE=(!u.isSq&&typeof MOVE_FEEL!=='undefined'&&MOVE_FEEL[u.fac])||{};
   const per=(u.isSq?110:u.size>.8?430:u.size>.6?350:280)*(FE.per||1), dur=Math.min((per*S+(u.isSq?60:260))*(opt.charge?.72:1), u.isSq?900:3600);
@@ -160,7 +165,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
   const prog=p=>p<ta?vmax*p*p/(2*ta):p<1-td?vmax*(ta/2+(p-ta)):1-vmax*(1-p)*(1-p)/(2*td);
   const thrAt=p=>p<ta?1:p<1-td?.65:.15;
   if(!u.isSq&&G.views.get(u.id)) SFX.engine(u.size);
-  const v=G.views.get(u.id); let trail=null; if(v&&!u.isSq&&v.root&&S>=1&&!FE.phase&&!(typeof process!=='undefined'&&process.env)) trail=startTrail(v); let ri=0, lastKey=0;
+  const v=G.views.get(u.id); let trail=null; if(v&&!u.isSq&&v.root&&S>=1&&!FE.phase&&!(typeof process!=='undefined'&&process.env)) trail=startTrail(v); let ri=0, ti=0, lastKey=0;
   // v46.1 movement signatures, strong enough to read at battle zoom (Ryan: "I didn't see or feel any real differences")
   const sd=String(u.id).split('').reduce((h,c)=>h*31+c.charCodeAt(0)|0,7), side=(sd&1)?1:-1, ph=(Math.abs(sd)%100)*.0628;
   const P0=pk[0], P1=pk.at(-1), W0=hexWorld(P0.q,P0.r), W1=hexWorld(P1.q,P1.r), span=Math.hypot(W1.x-W0.x,W1.z-W0.z), travels=span>.5&&!opt.charge;
@@ -187,6 +192,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     if(FE.str&&travels){ x=clamp(x+.06*Math.sin(2*Math.PI*FE.str*p)*Math.sin(Math.PI*p),0,S); } // Chorus: surges with each stroke
     const ps=at(x,p);
     while(ri<rotS.length&&x>=rotS.at(ri).s){ if(v) rcsPuff(v,rotS.at(ri).dir); ri++; }
+    while(ti<thrS.length&&x>=thrS[ti].s){ const h=thrS[ti]; if(v&&v.root){ if(h.slip) slipPuff(v,h.slip); else if(h.rev) revPuff(v); } ti++; }
     const k=Math.floor(x); if(k!==lastKey){ lastKey=k; if(B) B.prog=(B.prog||0)+1; }
     let lift=u.isSq?Math.sin(p*Math.PI)*1.6:0, thr=thrAt(p), roll=0, pitch=0, sc=null;
     if(FE.bob&&travels) lift+=FE.bob*Math.sin(clamp(p,0,1)*Math.PI); // Ithar: rises into a glide
@@ -199,6 +205,8 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
       const k1=clamp((p-.02)/.1,0,1), k2=clamp((.98-p)/.1,0,1); const hide=p>.12&&p<.88;
       if(!hide){ const s=p<.5?1-k1*.95:1-k2*.95; sc=[1+(1-s)*.6,Math.max(.05,s),Math.max(.05,s)]; }
       if(hide!==phased){ phased=hide; v.phased=hide; v.root.setEnabled(!hide); if(v.ring&&v.ring.node) v.ring.node.setEnabled(!hide); if(v.plate) v.plate.el.style.visibility=hide?'hidden':''; const at0=hide?pk[0]:P1; phaseFx(at0.q,at0.r,hide); } }
+    if(hasAlt){ const xc=Math.min(x,S), y0=altAt(xc), y1=altAt(Math.min(S,xc+.08)); lift+=y0; pitch+=clamp((y1-y0)*.1,-.3,.3); }
+    if(thrS.length){ const sl=slipAt(Math.min(x,S)); if(sl) roll+=-sl*.16; }
     u.vis={q:ps.q,r:ps.r,a:angAt(Math.min(x,S))+headDelta(Math.min(x,S),p),thr,lift,roll,pitch,sc}; }, true);
   if(v&&v.phased){ v.phased=false; if(v.root) v.root.setEnabled(true); if(v.ring&&v.ring.node) v.ring.node.setEnabled(true); if(v.plate) v.plate.el.style.visibility=''; }
   const L=path.at(-1); for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=L.f; u.vis=null; if(trail) endTrail(trail);
@@ -213,6 +221,13 @@ function endTrail(tr){ const t0=G.time; const obs=G.scene.onBeforeRenderObservab
 // manoeuvring thrusters: small cold-gas puffs at the bow when a ship swings its nose round
 function rcsPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), side=new V3(-f.z,0,f.x).scale(dir>=0?1:-1), p=v.root.getAbsolutePosition().add(f.scale(v.L*.38)).add(side.scale(v.L*.06));
     burst(p,{n:10,c1:new C4(.85,.92,1,.7),c2:new C4(.6,.7,.8,.4),size:[.25,.7],life:[.25,.55],power:[3,7],tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(e){} }
+
+// v50 lateral thrusters: a broadside of cold-gas jets fore and aft when a hull slips sideways; a bow retro burst when it backs off
+function slipPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), side=new V3(-f.z,0,f.x).scale(dir>=0?-1:1), c=v.root.getAbsolutePosition();
+    for(const k of [.32,-.3]){ const p=c.add(f.scale(v.L*k)).add(side.scale(v.L*.09)); burst(p,{n:9,c1:new C4(.85,.92,1,.7),c2:new C4(.6,.7,.8,.35),size:[.3,.8],life:[.3,.6],power:[4,8],dir:side,tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
+    if(typeof SFX!=='undefined'&&SFX.puff) SFX.puff(); }catch(e){} }
+function revPuff(v){ try{ if(!v.root) return; const P=FAC3D[v.fac]||FAC3D.hegemony, a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), bow=v.root.getAbsolutePosition().add(f.scale(v.L*.5));
+    flash(bow,2.5+v.L*.15,P.eng.scale(1.4),.2); burst(bow,{n:12,c1:new C4(.85,.92,1,.75),c2:new C4(.6,.7,.8,.35),size:[.3,.9],life:[.3,.6],power:[5,9],dir:f,tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(e){} }
 
 // ---------- projectiles ----------
 const PROJ=[]; const TORPS=new Set(); G.boltBases={};

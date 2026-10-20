@@ -306,7 +306,7 @@ body #app .facpick.on{background:var(--gilt)!important;color:#1a1206!important;b
 <div class="loading" id="loading">Assembling the fleet&hellip;</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/8.20.0/babylon.js"></script>
 <script>
-const BUILD_ID='20261020-0134-8db33fd';
+const BUILD_ID='20261020-0341-8568753';
 // ======================= DATA =======================
 const W = {
   autocannon:{n:'Autocannon',k:'battery',shots:3,dmg:5,r:4,opt:2,acc:80,fall:8,crit:5},
@@ -408,6 +408,14 @@ const HULLS = {
   d_boss:{n:'The Undying Throne',cls:'Tomb-ark',fac:'deathless',size:1.3,cp:12,hp:480,sh:0,rg:0,ar:.35,sp:1,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['flak','T']],ab:'nova',regen:8,boss:true},
 };
 
+// v50 drives: how each faction bends the thruster rules (battle.js MOVE_BASE). n/d show in the ship panel and codex.
+const MOVE_RULES={
+  voidsworn:{rake:.2,n:'Broadside doctrine',d:'Port and starboard guns hit 20% harder after moving 2+ hexes (others get 10%).'},
+  hegemony:{rev:1,n:'Retro thrusters',d:'Backing off one hex costs 1 movement instead of 2.'},
+  corsair:{slip:1,n:'Bolted burners',d:'Sideslips cost 1 movement instead of 2.'},
+  chorus:{pivot:1,n:'Living hull',d:'The first turn each round costs no movement.'},
+  ithar:{evadeAt:2,evade:10,n:'Fan sails',d:'After moving 2+ hexes, enemies get \u221210 to hit it (others need 3 hexes for \u22125).'},
+  deathless:{over:0,n:'Phase drive',d:'Passes through rocks, wrecks and enemy ships at no extra cost.'}};
 const FACTIONS = {
   voidsworn:{n:'Voidsworn Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#4a4440',trim:'#c8501f',glow:'#ff7a2a',style:'gothic',blurb:'Gothic crusader battleships. Heavy armor, lance batteries and broadsides that hit like a cathedral falling.'},
   hegemony:{n:'Hegemony Navy',hull:'#c4ccd5',trim:'#3a78d0',glow:'#5fa0ff',style:'wedge',
@@ -1390,7 +1398,7 @@ function startSideTurn(side){
   gainResolve(side,1); let burned=false;
   for(const u of B.units){
     if(u.dead||u.side!==side) continue;
-    u.braced=false; u.lockOn=false; u.focus=false; u.fullAhead=false; u.noTurn=false; u.evBuff=0; u.order=null; u.ramBoost=0;
+    u.braced=false; u.pivotUsed=false; u.lockOn=false; u.focus=false; u.fullAhead=false; u.noTurn=false; u.evBuff=0; u.order=null; u.ramBoost=0;
     u.mp=Math.max(1,u.speed-u.st.engine); u.turnsLeft=u.turns;
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
@@ -1412,27 +1420,47 @@ function startSideTurn(side){
 // ---------- movement ----------
 function passable(u,q,r,occ){ if(!onBoard(q,r)) return false; if(blocks(terr(q,r))) return false;
   const o=occ.get(hkey(q,r)); if(o && o.side!==u.side && !u.isSq) return false; return true; }
+// v50 thrusters: besides burning forward, a hull can slip into either forward-diagonal hex or back off one hex while
+// holding its heading, and can climb over or dive under a rock, wreck or enemy ship it cannot stop on.
+// Each faction bends one of these rules (MOVE_RULES in data.js).
+const MOVE_BASE={slip:2,rev:2,over:1,evadeAt:3,evade:5,still:10,rake:.1};
+function moveRules(u){ return Object.assign({},MOVE_BASE,(u&&!u.isSq&&MOVE_RULES[u.fac])||{}); }
+function canEnd(u,q,r,occ){ if(!onBoard(q,r)||blocks(terr(q,r))) return false; const o=occ.get(hkey(q,r)); return !o||o===u; }
 function computeReach(u){
   const map=new Map(), states=[];
-  const occ=occMap();
+  const occ=occMap(), R=moveRules(u);
   const sk=s=>s.q+','+s.r+','+s.f+','+s.t;
   const start={q:u.q,r:u.r,f:u.facing,t:0,cost:0,path:[]};
   const seen=new Map([[sk(start),0]]); const queue=[start]; let qi=0;
+  const pivotFree=R.pivot&&!u.pivotUsed;
   while(qi<queue.length){
-    const s=queue[qi++]; states.push(s);
+    const s=queue[qi++]; if(seen.get(sk(s))<s.cost) continue; states.push(s);
     if(s.cost>=u.mp) continue;
     const nexts=[];
-    const dirs = u.isSq ? [0,1,2,3,4,5] : [s.f];
-    for(const f of dirs){ const d=DIRS[f]; const nq=s.q+d[0], nr=s.r+d[1];
-      if(passable(u,nq,nr,occ)) nexts.push({q:nq,r:nr,f,t:s.t,cost:s.cost+1,path:[...s.path,{q:nq,r:nr,f}]}); }
+    if(u.isSq){ for(let f=0;f<6;f++){ const d=DIRS[f]; const nq=s.q+d[0], nr=s.r+d[1];
+      if(passable(u,nq,nr,occ)) nexts.push({q:nq,r:nr,f,t:s.t,cost:s.cost+1,path:[...s.path,{q:nq,r:nr,f}]}); } }
+    else {
+      const opts=[[s.f,1,null],[(s.f+1)%6,R.slip,'slip'],[(s.f+5)%6,R.slip,'slip'],[(s.f+3)%6,R.rev,'rev']];
+      for(const [df,c0,kind] of opts){ const d=DIRS[df], nq=s.q+d[0], nr=s.r+d[1]; if(!onBoard(nq,nr)) continue;
+        // a heavy hull with too little movement can still spend all of it on one thruster hop
+        let c=kind&&s.cost===0?Math.min(c0,u.mp):c0; let over=0; const tt=terr(nq,nr);
+        if(blocks(tt)){ if(tt!=='rock'&&tt!=='hulk') continue; over=1; }
+        const o=occ.get(hkey(nq,nr)); if(o&&o.side!==u.side) over=over||-1; // climb over terrain, dive under ships
+        if(over) c+=R.over;
+        if(s.cost+c>u.mp) continue;
+        const st={q:nq,r:nr,f:s.f}; if(kind) st[kind]=1; if(kind==='slip') st.side=df===(s.f+1)%6?1:-1; if(over) st.over=over;
+        nexts.push({q:nq,r:nr,f:s.f,t:s.t,cost:s.cost+c,path:[...s.path,st],slips:(s.slips||0)+(kind==='slip'?1:0),revs:(s.revs||0)+(kind==='rev'?1:0),overs:(s.overs||0)+(over?1:0)}); }
+    }
     if(!u.isSq && !u.noTurn && s.t<u.turnsLeft){
-      for(const dd of [1,-1]){ const f=(s.f+dd+6)%6; nexts.push({q:s.q,r:s.r,f,t:s.t+1,cost:s.cost+1,path:[...s.path,{q:s.q,r:s.r,f,rot:true}]}); }
+      const tc=pivotFree&&s.t===0?0:1; if(s.cost+tc<=u.mp||tc===0)
+      for(const dd of [1,-1]){ const f=(s.f+dd+6)%6; nexts.push({q:s.q,r:s.r,f,t:s.t+1,cost:s.cost+tc,path:[...s.path,{q:s.q,r:s.r,f,rot:true}],slips:s.slips,revs:s.revs,overs:s.overs}); }
     }
     for(const n of nexts){ const k=sk(n); if(seen.has(k)&&seen.get(k)<=n.cost) continue; seen.set(k,n.cost); queue.push(n); }
   }
-  for(const s of states){ if(s.q===u.q&&s.r===u.r) continue; const k=hkey(s.q,s.r); if(occ.has(k)) continue;
+  const ok=states.filter(s=>seen.get(sk(s))===s.cost&&canEnd(u,s.q,s.r,occ));
+  for(const s of ok){ if(s.q===u.q&&s.r===u.r) continue; const k=hkey(s.q,s.r);
     const c=map.get(k); if(!c || s.cost<c.cost || (s.cost===c.cost&&s.t<c.t)) map.set(k,s); }
-  return {map, states:states.filter(s=>{ const o=occ.get(hkey(s.q,s.r)); return !o||o===u; })};
+  return {map, states:ok};
 }
 async function moveUnit(u, state){
   if(!inThisBattle(u)) return; const live=liveFrom(null);
@@ -1444,11 +1472,12 @@ async function moveUnit(u, state){
     if(B) B.prog=(B.prog||0)+1; // progress for the busy watchdog
     if(!live()) return;
   }
-  u.mp-=state.cost; u.turnsLeft-=state.t; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++;
+  u.mp=Math.max(0,u.mp-state.cost); u.turnsLeft-=state.t; if(state.t>0&&moveRules(u).pivot) u.pivotUsed=true; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++;
   objAfterMove(u);
 }
-function canRotate(u){ return !u.dead && !u.isSq && !u.noTurn && u.turnsLeft>0 && u.mp>0 && !u.braced; }
-async function rotateUnit(u,dir){ if(!canRotate(u)) return; u.mp--; u.turnsLeft--; u.moved=true; await animRotate(u,(u.facing+dir+6)%6); }
+function freePivot(u){ return !!(moveRules(u).pivot&&!u.pivotUsed); }
+function canRotate(u){ return !u.dead && !u.isSq && !u.noTurn && u.turnsLeft>0 && (u.mp>0||freePivot(u)) && !u.braced; }
+async function rotateUnit(u,dir){ if(!canRotate(u)) return; if(freePivot(u)) u.pivotUsed=true; else u.mp--; u.turnsLeft--; u.moved=true; await animRotate(u,(u.facing+dir+6)%6); }
 
 // ---------- combat math ----------
 function sightBlocked(q,r){ return blocks(terr(q,r))||!!(SOLID&&SOLID.has(q+','+r)); }
@@ -1456,6 +1485,9 @@ function los(a,b){ const line=hexLine(a,b); for(let i=1;i<line.length-1;i++){ if
 function weaponReady(w){ return !w.fired && w.cdLeft===0 && w.off===0; }
 function inReach(u,w,t){ const d=hdist(u,t); if(d<1||d>w.r) return false; if(!inArc(u,t,w.arc)) return false; return los(u,t); }
 function canFire(u,w,t){ if(u.dead||t.dead||u.side===t.side||u.braced||w.k==='flak') return false; if(!weaponReady(w)) return false; return inReach(u,w,t); }
+// v50: a hull that sat still last turn is an easy solution; one that burned hard is not
+function motionHit(t){ if(!t||t.isSq||t.hexMoved==null||t.braced) return 0; const R=moveRules(t); if(t.hexMoved===0) return R.still; if(t.hexMoved>=R.evadeAt) return -R.evade; return 0; }
+function rakeBonus(u,w){ if(!u||u.isSq||!(w.arc==='P'||w.arc==='S')||(u.hexMoved||0)<2) return 0; return moveRules(u).rake; }
 function hitChance(u,w,t){
   const d=hdist(u,t), over=Math.max(0,d-w.opt-(u.fx.longAim||0));
   let c=w.acc+u.aim+(u.lockOn?15:0)-(u.fullAhead?15:0)-over*w.fall-Math.min(45,t.ev+(t.evBuff||0))*(w.evMult||1); // evasion caps at 45
@@ -1465,6 +1497,7 @@ function hitChance(u,w,t){
   if(terr(u.q,u.r)==='storm') c-=10;
   if(u.crewMax){ if(u.crew<u.crewMax*.5) c-=10; if(u.crew<u.crewMax*.25) c-=10; }
   if(t.fx&&t.fx.burnEv&&(t.hexMoved||0)>=3) c-=t.fx.burnEv;
+  c+=motionHit(t);
   if(u.side==='player'&&!u.isSq&&!(u.sureUsed>0)&&runFx().firstSure) return 95; // the rangefinder relic: every ship's first attack of the battle
   return clamp(Math.round(c),5,95);
 }
@@ -1487,6 +1520,7 @@ function dmgMult(u,w,t,rear){
   if(u.fx.stillPct&&!u.hexMoved&&(w.arc==='P'||w.arc==='S'||w.k==='battery')) m+=u.fx.stillPct;
   if(u.fx.momPct) m+=Math.min(4,u.hexMoved||0)*u.fx.momPct;
   if(u.fx.prowPct&&w.arc==='F') m+=u.fx.prowPct;
+  m+=rakeBonus(u,w);
   let base=w.dmg*m;
   base*= t.isSq ? (w.vsSq||1) : (w.vsCap||1);
   return base;
@@ -1939,7 +1973,7 @@ async function useAbility(u,arg){
 function novaTargets(u){ return boardHexes().filter(h=>{ const d=hdist(u,h); return d>=3&&d<=9&&inArc(u,h,'F'); }); }
 
 // ---------- enemy AI ----------
-function stateView(u,s){ const v=Object.create(u); v.q=s.q; v.r=s.r; v.facing=s.f; return v; }
+function stateView(u,s){ const v=Object.create(u); v.q=s.q; v.r=s.r; v.facing=s.f; if(s.path&&!u.isSq) v.hexMoved=(u.hexMoved||0)+s.path.filter(p=>!p.rot).length; return v; }
 function evalOffense(a, ready, targets){
   let tot=0;
   for(const w of ready){ let best=0;
@@ -2342,28 +2376,38 @@ function buildBattleEnv(){
   rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.08,.08,.08); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
   if(RK){ rockMat.diffuseColor=new C3(RK.col[0],RK.col[1],RK.col[2]); rockMat.specularColor=new C3(RK.spec,RK.spec,RK.spec*1.05); rockMat.specularPower=RK.spec>.3?48:16; if(RK.em) rockMat.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); }
   // v44: rocks are smooth-shaded, multi-octave and cratered (were faceted 'crumpled paper' icospheres)
-  const bases=[]; for(let k=0;k<4;k++){ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+k,{radius:1,subdivisions:G.mobile?3:4,flat:false},sc);
-    const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind), ph=[rr()*6,rr()*6,rr()*6]; const cr=[]; for(let i=0;i<7;i++){ const u=rr()*2-1,t=rr()*6.28,q=Math.sqrt(1-u*u); cr.push([q*Math.cos(t),u,q*Math.sin(t),.2+rr()*.3,.05+rr()*.08]); }
-    for(let i=0;i<p.length;i+=3){ const x=p[i],y=p[i+1],z=p[i+2]; let n=1+.26*Math.sin(x*2.1+ph[0])*Math.cos(y*1.8+ph[1])+.14*Math.sin(z*3.9+x*1.6+ph[2]);
-      n+=.07*(1-Math.abs(Math.sin(x*6.3+y*4.1+ph[1])*Math.cos(z*5.7-ph[0])))-.035; n+=.025*Math.sin(x*15+y*11+z*13+ph[2]);
-      for(const [cx,cy,cz,r0,d0] of cr){ const d=Math.hypot(x-cx,y-cy,z-cz); if(d<r0) n-=d0*(1-d/r0)*(1-d/r0)*2; else if(d<r0*1.3) n+=d0*.3*(1-(d-r0)/(r0*.3)); }
-      p[i]=x*n*(1+.32*(k%2)); p[i+1]=y*n*.78; p[i+2]=z*n*(k===3?1.2:1); }
+  // v49 asteroids: two sets of eight shapes (dense ones for the asteroids on the board, light ones for small chunks, the belt and the distance),
+  // each a lumpy fBm body with ridges, boulder bumps and overlapping craters
+  const vn=(x,y,z,sd)=>{ const h=(i,j,k)=>{ let n=(i*374761393+j*668265263+k*1440662683+sd*974711)|0; n=(n^(n>>>13))*1274126177|0; return ((n^(n>>>16))>>>0)/4294967296; };
+    const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z),xf=x-xi,yf=y-yi,zf=z-zi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),w=zf*zf*(3-2*zf), L=(a,b,t)=>a+(b-a)*t;
+    return L(L(L(h(xi,yi,zi),h(xi+1,yi,zi),u),L(h(xi,yi+1,zi),h(xi+1,yi+1,zi),u),v),L(L(h(xi,yi,zi+1),h(xi+1,yi,zi+1),u),L(h(xi,yi+1,zi+1),h(xi+1,yi+1,zi+1),u),v),w)*2-1; };
+  const mkBase=(k,sub,tag)=>{ const rr=seeded(100+k); const m=MB.CreateIcoSphere('rockBase'+tag+k,{radius:1,subdivisions:sub,flat:false},sc);
+    const p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind), sd=k*31+7, cr=[]; const ncr=6+Math.floor(rr()*8);
+    for(let i=0;i<ncr;i++){ const u=rr()*2-1,t=rr()*6.28,q=Math.sqrt(1-u*u); cr.push([q*Math.cos(t),u,q*Math.sin(t),.12+rr()*.32,.04+rr()*.09]); }
+    const sx=[1.35,1,1.6,1.1,.9,1.25,1.8,1.05][k], sy=[.78,.9,.7,1,.85,.6,.65,.95][k], sz=[1,1.15,.9,1.25,1,1.1,.8,1.3][k];
+    for(let i=0;i<p.length;i+=3){ const x=p[i],y=p[i+1],z=p[i+2]; let n=1, amp=.32, f=1.3;
+      for(let o=0;o<5;o++){ n+=amp*vn(x*f+o*7.1,y*f-o*3.3,z*f+o*5.7,sd); amp*=.5; f*=2.1; }
+      n+=.06*(1-Math.abs(vn(x*5.5,y*5.5,z*5.5,sd+3)))-.03; // ridges
+      for(const [cx,cy,cz,r0,d0] of cr){ const d=Math.hypot(x-cx,y-cy,z-cz); if(d<r0) n-=d0*(1-d/r0)*(1-d/r0)*2.2; else if(d<r0*1.35) n+=d0*.35*(1-(d-r0)/(r0*.35)); }
+      p[i]=x*n*sx; p[i+1]=y*n*sy; p[i+2]=z*n*sz; }
     m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); const nr=[]; BABYLON.VertexData.ComputeNormals(p,m.getIndices(),nr); m.setVerticesData(BABYLON.VertexBuffer.NormalKind,nr);
-    m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); bases.push(m); G.env.push(m); }
+    m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; };
+  const bases=[], hiBases=[]; for(let k=0;k<8;k++){ bases.push(mkBase(k,G.mobile?6:9,'lo')); hiBases.push(G.quality==='medium'?bases[k]:mkBase(k,G.quality==='ultra'?24:17,'hi')); } /* Babylon icospheres have 20*s^2 faces: about 1.6k for small rocks, 5.8k to 11.5k for the big ones */
+  const tinyB=[0,1,2].map(i=>mkBase([0,2,5][i],G.mobile?3:4,'tiny')); // the 2,500-rock background ring and belt stay light (thin instances)
   G.rocks=[];
   const rr=seeded(B.seed||42);
-  const addRock=(pos,s)=>{ const inst=bases[Math.floor(rr()*4)].createInstance('rock'); inst.position=pos; inst.scaling.setAll(s); inst.rotation.set(rr()*6,rr()*6,rr()*6); inst.isPickable=false; inst.spin=new V3((rr()-.5)*.1,(rr()-.5)*.14,(rr()-.5)*.1); G.rocks.push(inst); G.env.push(inst); };
+  const addRock=(pos,s,big)=>{ const inst=(big?hiBases:bases)[Math.floor(rr()*8)].createInstance('rock'); inst.position=pos; inst.scaling.setAll(s); inst.rotation.set(rr()*6,rr()*6,rr()*6); inst.isPickable=false; inst.spin=new V3((rr()-.5)*.1,(rr()-.5)*.14,(rr()-.5)*.1); G.rocks.push(inst); G.env.push(inst); };
   for(const [k,t] of Object.entries(B.terrain)){ const [q,r]=k.split(',').map(Number); const c=hexWorld(q,r);
-    if(t==='rock'){ addRock(c.add(new V3(0,1.5,0)),4+rr()*2.5); for(let i=0;i<4;i++) addRock(c.add(new V3((rr()-.5)*8,(rr()-.3)*5,(rr()-.5)*8)),1+rr()*2.2); }
+    if(t==='rock'){ addRock(c.add(new V3(0,1.5,0)),4+rr()*2.5,true); for(let i=0;i<4;i++) addRock(c.add(new V3((rr()-.5)*8,(rr()-.3)*5,(rr()-.5)*8)),1+rr()*2.2); }
     if(t==='neb'){ for(let i=0;i<(G.mobile?2:3);i++){ const pl=MB.CreatePlane('neb',{size:(22+rr()*14)*(G.mobile?1.15:1)},sc); pl.position=c.add(new V3((rr()-.5)*8,1+rr()*6,(rr()-.5)*8)); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false;
         const nm=addMat('nebM',rr()<.5?new C3(.42,.25,.62):new C3(.25,.35,.7),.34,G.tex.neb); pl.material=nm; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl,nm); } } }
   // distant decorative rocks below and around the table for depth
   for(let i=0;i<70;i++){ const a=rr()*Math.PI*2, d=G.bx*.9+rr()*380; addRock(new V3(Math.cos(a)*d*1.15,-50-rr()*200,Math.sin(a)*d*.8),2+rr()*12); }
-  { const ring=bases[0].clone('rockRing'); ring.isVisible=true; ring.material=rockMat; ring.isPickable=false; G.glow.addExcludedMesh(ring); const node=new BABYLON.TransformNode('ringNode',sc); ring.parent=node; const mats=[];
+  { const ring=tinyB[0].clone('rockRing'); ring.isVisible=true; ring.material=rockMat; ring.isPickable=false; G.glow.addExcludedMesh(ring); const node=new BABYLON.TransformNode('ringNode',sc); ring.parent=node; const mats=[];
     for(let i=0;i<2500;i++){ const a=rr()*Math.PI*2, d=G.bx*(1.15+rr()*.75), s=.4+Math.pow(rr(),3)*4; mats.push(BABYLON.Matrix.Compose(new V3(s,s*(.6+rr()*.6),s),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(Math.cos(a)*d,-70-rr()*170+Math.sin(a*3)*25,Math.sin(a)*d*.75))); }
     ring.thinInstanceAdd(mats); G.ringNode=node; G.env.push(ring,node); }
   buildTerrainFeatures(rr); try{ buildTerrainTints(); }catch(e){ console.error(e); }
-  buildBelt(rr,bases); buildTraffic(rr); gradeFor((B.map||{}).map,B.cfg&&B.cfg.fac);
+  buildBelt(rr,tinyB); buildTraffic(rr); gradeFor((B.map||{}).map,B.cfg&&B.cfg.fac);
   { // only dispose textures that battlefield materials actually use; never the shared lighting textures
     const keep=cachedTextures(); [G.scene.environmentBRDFTexture,G.scene.environmentTexture].forEach(t=>t&&keep.add(t)); const used=new Set();
     for(const m of G.env){ const mat=m instanceof BABYLON.Material?m:m.material; if(mat&&mat.getActiveTextures) mat.getActiveTextures().forEach(t=>used.add(t)); if(m instanceof BABYLON.BaseTexture) used.add(m); }
@@ -3189,8 +3233,8 @@ function splitModel(model,proto){
 const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes in comments)
   'hegemony|Frigate':'H7_23','hegemony|Destroyer':'H8_23','hegemony|Cruiser':'H9_23','hegemony|Battleship':'H10_23','hegemony|Super-dreadnought':'H4_11', // H7b-H10b (round 7 light grey and blue), H4a for the flagship
   'voidsworn|Frigate':'V14_23','voidsworn|Destroyer':'V15_37','voidsworn|Cruiser':'V16_37','voidsworn|Battleship':'V17_37','voidsworn|Dreadnought':'V1b_r_23', // V14b, V15c, V16c, V17c (round 7 grimdark), V1b rev flagship
-  'corsair|Frigate':'C12_23','corsair|Destroyer':'C9_23','corsair|Cruiser':'C11_23','corsair|Carrier':'C10_37', // C12b, C9b, C11b, C10c
-  'chorus|Frigate':'B18_11','chorus|Destroyer':'B15_23','chorus|Cruiser':'B13_23','chorus|Carrier':'B17_37','chorus|Bio-titan':'B16_23', // B18a, B15b, B13b, B17c, B16b
+  'corsair|Frigate':'C13_23','corsair|Destroyer':'C14_23','corsair|Cruiser':'C15_23','corsair|Carrier':'C16_23', // round 8 B set (Ryan's pick)
+  'chorus|Frigate':'B19_11','chorus|Destroyer':'B20_11','chorus|Cruiser':'B21_11','chorus|Carrier':'B22_11','chorus|Bio-titan':'B16_23', // round 8 A set (Ryan's pick), B16b titan
   'ithar|Frigate':'I14_23','ithar|Destroyer':'I11_37','ithar|Cruiser':'I15_11','ithar|Carrier':'I16_11','ithar|Ark':'I8_37', // I14b, I11c, I15a, I16a, I8c
   'deathless|Frigate':'D9_23','deathless|Destroyer':'D7_11','deathless|Cruiser':'D4_37','deathless|Tomb-ark':'D8_37'}, AI_HULL_DATA={}; // D9b, D7a, D4c, D8c
 function aiHullsOn(){ return G.aiHulls!==false; }
@@ -3201,7 +3245,7 @@ function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array
     if(ay>=ax&&ay>=az){ uv[v*2]=x*k; uv[v*2+1]=z*k; } else if(ax>=az){ uv[v*2]=z*k; uv[v*2+1]=y*k; } else { uv[v*2]=x*k; uv[v*2+1]=y*k; } }
   return {pos,nor,idx,uv,tris:j.t}; }
 async function loadAIHulls(){ if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:') return;
-  for(const [k,id] of Object.entries(AI_HULLS)){ try{ const r=await fetch('hulls/'+id+'.json'); if(!r.ok) continue; AI_HULL_DATA[k]=decodeAIHull(await r.json()); delete MODEL_CACHE[k]; /* ships built from now on use it */ }catch(e){ console.warn('AI hull not loaded',k,e); } } }
+  const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'; /* v49: desktop loads the denser exports (20k to 38k triangles) */ for(const [k,id] of Object.entries(AI_HULLS)){ try{ let r=await fetch(dir+id+'.json'); if(!r.ok&&dir!=='hulls/') r=await fetch('hulls/'+id+'.json'); if(!r.ok) continue; AI_HULL_DATA[k]=decodeAIHull(await r.json()); delete MODEL_CACHE[k]; /* ships built from now on use it */ }catch(e){ console.warn('AI hull not loaded',k,e); } } }
 function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')); if(!fore) return p; const M=facMats(fac), L=p.L;
   for(const m of p.root.getChildMeshes(false)) if(m.name.includes('hull_')||m.name.endsWith('emblem')) m.dispose(false,false);
   p.root.computeWorldMatrix(true); fore.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(fore.getWorldMatrix()).multiply(p.root.getWorldMatrix());
@@ -3293,8 +3337,8 @@ function createView(u){
   if(B&&(u.reinf&&!u.arrived||G.jumpUntil&&G.time<G.jumpUntil)){ u.arrived=true; v.arrive={t0:G.time+(u.reinf?0:(u.side==='player'?.05:.4)+Math.random()*.55+(u.isSq?.55:0))}; }
   G.views.set(u.id,v); return v;
 }
-function disposeView(v){ if(v.navSp){ try{ v.navSp.forEach(sp=>sp.dispose()); }catch(e){} v.navSp=null; } if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
-function disposeAllViews(){ if(G.trails){ for(const tr of G.trails) try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} G.trails.clear(); } /* v46.1: wakes from moves cut short by the battle ending */ (G.deadLights||[]).forEach(l=>{ try{ l.dispose(); }catch(e){} }); G.deadLights=[]; debrisClear(); for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
+function disposeView(v){ if(v.navSp){ try{ v.navSp.forEach(sp=>sp.dispose()); }catch(e){} v.navSp=null; } if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.flagRing&&v.flagRing.material){ try{ v.flagRing.material.dispose(); }catch(e){} } if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
+function disposeAllViews(){ try{ const ids=new Set(G.scene.meshes.map(m=>m.uniqueId)); if(G.glow&&G.glow._excludedMeshes) G.glow._excludedMeshes=G.glow._excludedMeshes.filter(id=>ids.has(id)); if(G.glow&&G.glow._includedOnlyMeshes&&G.glow._includedOnlyMeshes.length) G.glow._includedOnlyMeshes=G.glow._includedOnlyMeshes.filter(id=>ids.has(id)); }catch(e){} /* v49: the glow layer kept every excluded mesh id ever added */ if(G.trails){ for(const tr of G.trails) try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} G.trails.clear(); } /* v46.1: wakes from moves cut short by the battle ending */ (G.deadLights||[]).forEach(l=>{ try{ l.dispose(); }catch(e){} }); G.deadLights=[]; debrisClear(); for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
 
 function addFire(v){
   const node=new BABYLON.TransformNode('fire',G.scene); node.parent=v.root; node.position=new V3((Math.random()-.5)*v.L*.6,v.H*.35,(Math.random()-.5)*v.L*.12);
@@ -3320,6 +3364,8 @@ function arcBolt(a,b,col){ const pts=[a.clone()], n=7; for(let i=1;i<n;i++){ con
   if(G.fxReduced&&Math.random()<.6) return; const t=MB.CreateTube('arc',{path:pts,radius:.08,tessellation:4},G.scene); const m=emMat('arcM',col.scale(G.fxReduced?.5:1)); t.material=m; t.isPickable=false; if(!G.fxReduced) flash(b,2.5,col,.2); setTimeout(()=>{ t.dispose(); m.dispose(); },130); }
 
 // ---------- per-frame world update ----------
+// v49: push a ship's visible hull (hits rock it, broadsides kick it); mag in world units per second
+function physKick(u,dir,mag,roll){ const v=u&&G.views.get(u.id); if(!v||!v.ph||u.isSq) return; const m=u.size>.8?2.2:u.size>.6?1.4:1; const l=Math.hypot(dir.x,dir.z)||1; v.ph.vx+=dir.x/l*mag/m; v.ph.vz+=dir.z/l*mag/m; if(roll) v.ph.vr+=roll/m; }
 function updateWorld(dt){
   try{ gfxTick(); }catch(e){} try{ if(typeof vfxTick==='function') vfxTick(); }catch(e){}
   if(!B) return;
@@ -3348,8 +3394,21 @@ function updateWorld(dt){
       if(k>=1){ if(v.arrive.streak){ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); } v.arrive=null; v.ring.node.setEnabled(true); v.plate.el.style.visibility=''; } }
     if(v.launch){ const k=clamp((G.time-v.launch.t0)/(.9*SPEED),0,1), e=1-Math.pow(1-k,3); px=v.launch.from.x+(p.x-v.launch.from.x)*e; pz=v.launch.from.z+(p.z-v.launch.from.z)*e; y=v.launch.from.y+(y-v.launch.from.y)*e; if(k>=1) v.launch=null; }
     if(v.slide){ const k=(G.time-v.slide.t0)/(.9*Math.max(.4,SPEED)); if(k>=1) v.slide=null; else { const e=1-Math.pow(1-k,3); px=v.slide.x+(px-v.slide.x)*e; pz=v.slide.z+(pz-v.slide.z)*e; } }
+    // v49 weight: the visible hull follows its path through a mass-spring, so capitals lag, overshoot and settle, hits and recoil push it around,
+    // and pitch and bank come from real acceleration (the rules still use the exact hex)
+    let physPitch=0, physRoll=0, physYaw=0;
+    if(!u.isSq){ const P=v.ph||(v.ph={x:px,z:pz,vx:0,vz:0,a:a,va:0,r:0,vr:0,ax:0,az:0});
+      const snap=!!(v.arrive||v.launch||v.slide||v.phased||(!v.root.isEnabled())||Math.hypot(px-P.x,pz-P.z)>HW*4);
+      if(snap){ P.x=px; P.z=pz; P.vx=0; P.vz=0; P.a=a; P.va=0; }
+      else { const w=u.size>.8?3.1:u.size>.6?4.2:5.6, zt=u.size>.8?.62:.55, h=Math.min(dt,1/20), n=Math.max(1,Math.ceil(dt/h)), hs=dt/n; let ax=0,az=0;
+        for(let i=0;i<n;i++){ ax=w*w*(px-P.x)-2*zt*w*P.vx; az=w*w*(pz-P.z)-2*zt*w*P.vz; P.vx+=ax*hs; P.vz+=az*hs; P.x+=P.vx*hs; P.z+=P.vz*hs;
+          let da=((a-P.a+Math.PI*3)%(Math.PI*2))-Math.PI; const ww=w*1.15; const aa=ww*ww*da-2*.7*ww*P.va; P.va+=aa*hs; P.a+=P.va*hs;
+          const ar=-(36)*P.r-2*.35*6*P.vr; P.vr+=ar*hs; P.r+=P.vr*hs; }
+        P.ax+=(ax-P.ax)*Math.min(1,dt*8); P.az+=(az-P.az)*Math.min(1,dt*8); // smoothed acceleration
+        const fw=Math.cos(P.a), fz=-Math.sin(P.a), af=P.ax*fw+P.az*fz, al=-P.ax*fz+P.az*fw, sm=u.size>.8?.0022:u.size>.6?.003:.0038;
+        physPitch=clamp(-af*sm,-.14,.14); physRoll=clamp(-al*sm*1.4,-.32,.32)+P.r; physYaw=P.a-a; px=P.x; pz=P.z; } }
     if(v.jolt){ const k=(G.time-v.jolt.t0)/.6; if(k>=1) v.jolt=null; else { const e=Math.sin(k*Math.PI)*(1-k); px+=v.jolt.d.x*e; pz+=v.jolt.d.z*e; } }
-    const uv=u.vis; v.root.position.set(px,y,pz); v.root.rotation.set(v.bank+((uv&&uv.roll)||0),a,(uv&&uv.pitch)||0); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1), sc=uv&&uv.sc; if(sc||stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts*(sc?sc[0]:1),ts/Math.sqrt(stretch)*(sc?sc[1]:1),ts/Math.sqrt(stretch)*(sc?sc[2]:1)); v.stretched=stretch!==1||!!sc; v.tsc=ts; } } // v46.1: roll, pitch and squash from the faction's movement // v42: ships grow a little as the camera pulls back
+    const uv=u.vis; v.root.position.set(px,y,pz); v.root.rotation.set(v.bank+((uv&&uv.roll)||0)+physRoll,a+physYaw,((uv&&uv.pitch)||0)+physPitch); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1), sc=uv&&uv.sc; if(sc||stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts*(sc?sc[0]:1),ts/Math.sqrt(stretch)*(sc?sc[1]:1),ts/Math.sqrt(stretch)*(sc?sc[2]:1)); v.stretched=stretch!==1||!!sc; v.tsc=ts; } } // v46.1: roll, pitch and squash from the faction's movement // v42: ships grow a little as the camera pulls back
     if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1; v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
       for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt; if(v.model.turrets&&typeof updateTurrets==='function') updateTurrets(v,dt);
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx){ v.stackFx=v.model.stacks.map(sp=>{ const n=new BABYLON.TransformNode('stk',G.scene); n.parent=v.root; n.position=sp.clone(); const ps=new BABYLON.ParticleSystem('stack',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.direction1=new V3(-.2,1,-.2); ps.direction2=new V3(.2,1.5,.2); ps.color1=new C4(.32,.28,.25,.5); ps.color2=new C4(.2,.18,.17,.4); ps.colorDead=new C4(.1,.1,.1,0); ps.minSize=.3; ps.maxSize=.7; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,3.2); ps.minLifeTime=1.5; ps.maxLifeTime=3; ps.emitRate=10; ps.minEmitPower=.6; ps.maxEmitPower=1.2; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); return ps; }); } }
@@ -3382,7 +3441,8 @@ function updateWorld(dt){
 function fwdOf(a){ const r=a*Math.PI/180; return new V3(Math.cos(r),0,-Math.sin(r)); }
 async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return; const v0=unitVis(u);
   const pk=[{q:v0.q,r:v0.r,s:0}], ak=[{a:v0.a,s:0}], rotS=[]; let s=0, la=v0.a; const rc=u.isSq?.3:.75;
-  for(const st of path){ const a=shortAng(la,st.f*60); if(st.rot){ rotS.push({s,dir:Math.sign(a-la)}); s+=rc; ak.push({a,s}); } else { s+=1; pk.push({q:st.q,r:st.r,s}); ak.push({a,s}); } la=a; }
+  const altK=[{s:0,y:0}], thrS=[]; // v50: altitude keys for climbing over rocks / diving under ships, and thruster hops
+  for(const st of path){ const a=shortAng(la,st.f*60); if(st.rot){ rotS.push({s,dir:Math.sign(a-la)}); s+=rc; ak.push({a,s}); } else { if(st.slip||st.rev) thrS.push({s,slip:st.slip?st.side||1:0,rev:!!st.rev}); s+=1; pk.push({q:st.q,r:st.r,s}); ak.push({a,s}); altK.push({s,y:st.over?(st.over>0?9:-7.5)*(u.isSq?.5:1):0}); } la=a; }
   const S=Math.max(s,.001); if(pk.at(-1).s<S) pk.push({q:pk.at(-1).q,r:pk.at(-1).r,s:S});
   // Hermite tangents over the path length, so corners round off instead of snapping
   const tan=pk.map((p,i)=>{ const a=pk.at(Math.max(0,i-1)), b=pk.at(Math.min(pk.length-1,i+1)), ds=Math.max(.001,b.s-a.s); return {q:(b.q-a.q)/ds,r:(b.r-a.r)/ds}; });
@@ -3393,6 +3453,10 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     const t2=t*t, t3=t2*t, h00=2*t3-3*t2+1, h10=t3-2*t2+t, h01=-2*t3+3*t2, h11=t3-t2, mA=tan.at(i), mB=tan.at(i+1);
     return {q:h00*A.q+h10*ds*mA.q+h01*Bk.q+h11*ds*mB.q, r:h00*A.r+h10*ds*mA.r+h01*Bk.r+h11*ds*mB.r}; };
   const angAt=x=>{ let i=0; while(i<ak.length-2&&x>ak.at(i+1).s) i++; const A=ak.at(i), Bk=ak.at(Math.min(ak.length-1,i+1)); if(Bk===A) return A.a; const t=clamp((x-A.s)/Math.max(.001,Bk.s-A.s),0,1), e=t*t*(3-2*t); return A.a+(Bk.a-A.a)*e; };
+  const hasAlt=altK.some(k=>k.y), altAt=x=>{ if(!hasAlt) return 0; let i=0; while(i<altK.length-2&&x>altK[i+1].s) i++; const A=altK[i], Bk=altK[Math.min(altK.length-1,i+1)]; if(Bk===A) return A.y;
+    // ease out of the old height early and into the new one late, so the hull clears the obstacle hex at full height
+    const t=clamp((x-A.s)/Math.max(.001,Bk.s-A.s)*1.35,0,1), e=t*t*(3-2*t); return A.y+(Bk.y-A.y)*e; };
+  const slipAt=x=>{ for(const h of thrS) if(h.slip&&x>=h.s&&x<h.s+1) return h.slip*Math.sin(Math.PI*(x-h.s)); return 0; };
   // a trapezoid speed profile: spool up, cruise, brake; big hulls take longer to get going
   const FE=(!u.isSq&&typeof MOVE_FEEL!=='undefined'&&MOVE_FEEL[u.fac])||{};
   const per=(u.isSq?110:u.size>.8?430:u.size>.6?350:280)*(FE.per||1), dur=Math.min((per*S+(u.isSq?60:260))*(opt.charge?.72:1), u.isSq?900:3600);
@@ -3400,7 +3464,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
   const prog=p=>p<ta?vmax*p*p/(2*ta):p<1-td?vmax*(ta/2+(p-ta)):1-vmax*(1-p)*(1-p)/(2*td);
   const thrAt=p=>p<ta?1:p<1-td?.65:.15;
   if(!u.isSq&&G.views.get(u.id)) SFX.engine(u.size);
-  const v=G.views.get(u.id); let trail=null; if(v&&!u.isSq&&v.root&&S>=1&&!FE.phase&&!(typeof process!=='undefined'&&process.env)) trail=startTrail(v); let ri=0, lastKey=0;
+  const v=G.views.get(u.id); let trail=null; if(v&&!u.isSq&&v.root&&S>=1&&!FE.phase&&!(typeof process!=='undefined'&&process.env)) trail=startTrail(v); let ri=0, ti=0, lastKey=0;
   // v46.1 movement signatures, strong enough to read at battle zoom (Ryan: "I didn't see or feel any real differences")
   const sd=String(u.id).split('').reduce((h,c)=>h*31+c.charCodeAt(0)|0,7), side=(sd&1)?1:-1, ph=(Math.abs(sd)%100)*.0628;
   const P0=pk[0], P1=pk.at(-1), W0=hexWorld(P0.q,P0.r), W1=hexWorld(P1.q,P1.r), span=Math.hypot(W1.x-W0.x,W1.z-W0.z), travels=span>.5&&!opt.charge;
@@ -3427,6 +3491,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     if(FE.str&&travels){ x=clamp(x+.06*Math.sin(2*Math.PI*FE.str*p)*Math.sin(Math.PI*p),0,S); } // Chorus: surges with each stroke
     const ps=at(x,p);
     while(ri<rotS.length&&x>=rotS.at(ri).s){ if(v) rcsPuff(v,rotS.at(ri).dir); ri++; }
+    while(ti<thrS.length&&x>=thrS[ti].s){ const h=thrS[ti]; if(v&&v.root){ if(h.slip) slipPuff(v,h.slip); else if(h.rev) revPuff(v); } ti++; }
     const k=Math.floor(x); if(k!==lastKey){ lastKey=k; if(B) B.prog=(B.prog||0)+1; }
     let lift=u.isSq?Math.sin(p*Math.PI)*1.6:0, thr=thrAt(p), roll=0, pitch=0, sc=null;
     if(FE.bob&&travels) lift+=FE.bob*Math.sin(clamp(p,0,1)*Math.PI); // Ithar: rises into a glide
@@ -3439,6 +3504,8 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
       const k1=clamp((p-.02)/.1,0,1), k2=clamp((.98-p)/.1,0,1); const hide=p>.12&&p<.88;
       if(!hide){ const s=p<.5?1-k1*.95:1-k2*.95; sc=[1+(1-s)*.6,Math.max(.05,s),Math.max(.05,s)]; }
       if(hide!==phased){ phased=hide; v.phased=hide; v.root.setEnabled(!hide); if(v.ring&&v.ring.node) v.ring.node.setEnabled(!hide); if(v.plate) v.plate.el.style.visibility=hide?'hidden':''; const at0=hide?pk[0]:P1; phaseFx(at0.q,at0.r,hide); } }
+    if(hasAlt){ const xc=Math.min(x,S), y0=altAt(xc), y1=altAt(Math.min(S,xc+.08)); lift+=y0; pitch+=clamp((y1-y0)*.1,-.3,.3); }
+    if(thrS.length){ const sl=slipAt(Math.min(x,S)); if(sl) roll+=-sl*.16; }
     u.vis={q:ps.q,r:ps.r,a:angAt(Math.min(x,S))+headDelta(Math.min(x,S),p),thr,lift,roll,pitch,sc}; }, true);
   if(v&&v.phased){ v.phased=false; if(v.root) v.root.setEnabled(true); if(v.ring&&v.ring.node) v.ring.node.setEnabled(true); if(v.plate) v.plate.el.style.visibility=''; }
   const L=path.at(-1); for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=L.f; u.vis=null; if(trail) endTrail(trail);
@@ -3453,6 +3520,13 @@ function endTrail(tr){ const t0=G.time; const obs=G.scene.onBeforeRenderObservab
 // manoeuvring thrusters: small cold-gas puffs at the bow when a ship swings its nose round
 function rcsPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), side=new V3(-f.z,0,f.x).scale(dir>=0?1:-1), p=v.root.getAbsolutePosition().add(f.scale(v.L*.38)).add(side.scale(v.L*.06));
     burst(p,{n:10,c1:new C4(.85,.92,1,.7),c2:new C4(.6,.7,.8,.4),size:[.25,.7],life:[.25,.55],power:[3,7],tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(e){} }
+
+// v50 lateral thrusters: a broadside of cold-gas jets fore and aft when a hull slips sideways; a bow retro burst when it backs off
+function slipPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), side=new V3(-f.z,0,f.x).scale(dir>=0?-1:1), c=v.root.getAbsolutePosition();
+    for(const k of [.32,-.3]){ const p=c.add(f.scale(v.L*k)).add(side.scale(v.L*.09)); burst(p,{n:9,c1:new C4(.85,.92,1,.7),c2:new C4(.6,.7,.8,.35),size:[.3,.8],life:[.3,.6],power:[4,8],dir:side,tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
+    if(typeof SFX!=='undefined'&&SFX.puff) SFX.puff(); }catch(e){} }
+function revPuff(v){ try{ if(!v.root) return; const P=FAC3D[v.fac]||FAC3D.hegemony, a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), bow=v.root.getAbsolutePosition().add(f.scale(v.L*.5));
+    flash(bow,2.5+v.L*.15,P.eng.scale(1.4),.2); burst(bow,{n:12,c1:new C4(.85,.92,1,.75),c2:new C4(.6,.7,.8,.35),size:[.3,.9],life:[.3,.6],power:[5,9],dir:f,tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(e){} }
 
 // ---------- projectiles ----------
 const PROJ=[]; const TORPS=new Set(); G.boltBases={};
@@ -3645,9 +3719,10 @@ async function animWeapon(u,w,t,shots){
   if(u.isSq) col=P.bolt;
   const style=(u.isSq||w.k==='flak'||w.k==='lance'||w.k==='torp')?null:(w.k==='gauss'?'rail':w.id==='bioplasma'?'spine':w.k==='bio'?'glob':WSTYLE[va.fac]||'shell');
   const tp=vt.root.getAbsolutePosition(), mz=muzzles(va,w.arc,tp).sort((p1,p2)=>V3.Distance(p1,tp)-V3.Distance(p2,tp));
+  if(!u.isSq&&w.k!=='flak'){ const d=va.root.getAbsolutePosition().subtract(tp); const rk=w.k==='lance'?3.2:w.k==='torp'?1.6:(w.arc==='P'||w.arc==='S')?2.4:1.2; setTimeout(()=>{ try{ physKick(u,d,rk*(G.fxReduced?.6:1),(w.arc==='P'?1:w.arc==='S'?-1:0)*rk*.05); }catch(e){} },w.k==='lance'?260:120); } // v49: recoil
   if(w.arc==='T'&&typeof aimTurrets==='function'&&va.model&&va.model.turrets){ aimTurrets(va,tp); await wait(160); }
   const impact=(hit,from)=>{ if(t.dead&&!vt.root) return; if(!hit){ return; }
-    const p=hitPoint(vt,from,shielded);
+    const p=hitPoint(vt,from,shielded); { const d=tp.subtract(from); const mag=w.k==='torp'?(shielded?5:11):w.k==='lance'?(shielded?3:7):w.k==='gauss'?3.2:shielded?.9:2.2; physKick(t,d,mag,(Math.random()-.5)*mag*.06); } // v49: every hit pushes the hull
     if(shielded){ { const sc=shCol(vt); shieldDome(vt,from.subtract(tp).normalize(),sc); burst(p,{n:16,c1:new C4(sc.r,sc.g,sc.b,1),c2:new C4(sc.r*.6,sc.g*.6,sc.b*.6,1),power:[3,9]}); } SFX.shield(); if((w.pierce||0)>0) explode(hitPoint(vt,from,false),.8,{light:false}); }
     else { if(Math.random()<(w.k==='torp'||w.k==='lance'?1:.35)) hullDecal(vt,from,w.k==='torp'); if((w.k==='torp'||w.k==='lance')&&!vt.jolt){ const d=tp.subtract(from); d.y=0; d.normalize(); vt.jolt={d:d.scale(w.k==='torp'?1.6:.9),t0:G.time}; } // big hits rock the ship
       if(w.k==='torp'){ explode(p,4.5,{shock:true}); G.shake=Math.min(1,G.shake+.35); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.35); SFX.boom(.8); } else if(w.k==='lance'){ explode(p,1.8); sparks(p,40,14,new C4(1,.95,.8,1)); SFX.hit(); } else if(style==='glob'){ explode(p,.8,{light:false}); burst(p,{n:22,c1:new C4(1,.45,.85,1),c2:new C4(.55,1,.4,1),size:[.3,.8],life:[.3,.8],power:[3,8]}); SFX.hit(); }
@@ -3708,36 +3783,72 @@ function fxFlash(h,color){ const p=hexWorld(h.q,h.r,1); flash(p,8,hexC3(color.le
 
 // ---------- destruction ----------
 G.hulks=[];
+// v49: cut the dying hull into jagged sections. Triangles go to the nearest of K seed points (with noise, so the cuts are ragged), per material,
+// and each section becomes its own node with an outward velocity and tumble. Wreck materials replace the live ones.
+function fragmentHull(v,M,persist){ const ms=v.model.meshes.filter(m=>m&&!m.isDisposed()&&m.getTotalVertices&&m.getTotalVertices()>0&&m.getIndices()); if(!ms.length) return null;
+  const L=v.L, K=Math.max(3,Math.min(7,Math.round(2.5+Math.random()*2.5+L/16))); v.root.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(v.root.getWorldMatrix());
+  const seeds=[]; for(let k=0;k<K;k++){ const t=(k+.5)/K+(Math.random()-.5)*.6/K; seeds.push(new V3((t-.5)*L*.95,(Math.random()-.5)*v.H*.3,(Math.random()-.5)*L*.12)); }
+  const nz=(x,y,z)=>Math.sin(x*1.7+y*2.3)*Math.cos(z*2.1-x*.9)+Math.sin(x*.53+z*1.31);
+  const groups=[]; for(let k=0;k<K;k++) groups.push(new Map());
+  for(const m of ms){ m.computeWorldMatrix(true); const W=m.getWorldMatrix().multiply(inv), P=m.getVerticesData(BABYLON.VertexBuffer.PositionKind), N=m.getVerticesData(BABYLON.VertexBuffer.NormalKind), I=m.getIndices(); if(!P||!I) continue;
+    const mat=(m.material===M.win||m.material===M.eng||m.material===M.tip||(m.material&&/aiwin|aitrim/.test(m.material.name)))?M.ember:M.wreck;
+    const lp=new Float32Array(P.length), ln=new Float32Array(P.length), tv=new V3(), tn=new V3(); for(let i=0;i<P.length;i+=3){ V3.TransformCoordinatesFromFloatsToRef(P[i],P[i+1],P[i+2],W,tv); lp[i]=tv.x; lp[i+1]=tv.y; lp[i+2]=tv.z; if(N){ V3.TransformNormalFromFloatsToRef(N[i],N[i+1],N[i+2],W,tn); tn.normalize(); ln[i]=tn.x; ln[i+1]=tn.y; ln[i+2]=tn.z; } }
+    for(let t=0;t<I.length;t+=3){ const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3; const cx=(lp[a]+lp[b]+lp[c])/3, cy=(lp[a+1]+lp[b+1]+lp[c+1])/3, cz=(lp[a+2]+lp[b+2]+lp[c+2])/3; const jx=cx+nz(cx*.4,cy*.4,cz*.4)*L*.05;
+      let best=0,bd=1e9; for(let k=0;k<K;k++){ const s0=seeds[k], d=(jx-s0.x)*(jx-s0.x)+(cy-s0.y)*(cy-s0.y)*.5+(cz-s0.z)*(cz-s0.z)*.5; if(d<bd){ bd=d; best=k; } }
+      let g=groups[best].get(mat); if(!g){ g={pos:[],nor:[],idx:[]}; groups[best].set(mat,g); } const base=g.pos.length/3; for(const o of [a,b,c]){ g.pos.push(lp[o]-seeds[best].x,lp[o+1]-seeds[best].y,lp[o+2]-seeds[best].z); g.nor.push(ln[o],ln[o+1],ln[o+2]); } g.idx.push(base,base+1,base+2); } }
+  const cen=v.root.getAbsolutePosition(), rot=v.root.rotation.clone(), nodes=[];
+  for(let k=0;k<K;k++){ if(!groups[k].size) continue; const node=new BABYLON.TransformNode('wreckPart',G.scene); node.position=V3.TransformCoordinates(seeds[k],v.root.getWorldMatrix()); node.rotation=rot.clone();
+    for(const [mat,g] of groups[k]){ if(!g.idx.length) continue; const mm=new BABYLON.Mesh('hull_wreck',G.scene), vd=new BABYLON.VertexData(); vd.positions=g.pos; vd.normals=g.nor; vd.indices=g.idx; vd.applyToMesh(mm); mm.material=mat; mm.parent=node; mm.isPickable=false; try{ castShadows(mm); }catch(e){} }
+    const out=node.position.subtract(cen); out.y=0; const ol=out.length()||1; const sp=(1.6+Math.random()*2.6)*(persist?.5:1)*(1+ (K-3)*.12);
+    node.vel=out.scale(sp/ol).add(new V3((Math.random()-.5)*1.4,persist?(Math.random()-.5)*.2:-.3-Math.random()*.6,(Math.random()-.5)*1.4)); const small=1/Math.max(1,groups[k].size);
+    node.spin=new V3((Math.random()-.5)*.8,(Math.random()-.5)*.6,(Math.random()-.5)*.9).scale(1+small); nodes.push(node); }
+  for(const m of ms) m.dispose(false,false); return nodes.length?nodes:null; }
 async function animExplode(u){
   const v=G.views.get(u.id); if(!v||v.state!=='alive') return;
   const c=v.root.getAbsolutePosition().clone();
   if(u.isSq){ v.state='dead'; flash(c,5,new C3(1,.7,.4)); burst(c,{n:30,power:[5,14]}); SFX.pop(); disposeView(v); G.views.delete(u.id); await wait(250); return; }
   fxMark(u.isSq?'craft':'explode'); v.state='dying'; if(v.engLight){ const el=v.engLight; el.intensity=0; el.parent=null; el.position.set(0,-9000,0); (G.deadLights=G.deadLights||[]).push(el); v.engLight=null; } /* v44.1: disposing a light mid-fight re-dirties materials; it goes dark now and is freed at battle end */ (v.extras||[]).forEach(p=>p.stop()); v.plate.el.remove(); v.ring.node.dispose(false,true); v.fires.forEach(f=>f.stop()); v.fires=[];
   const L=v.L;
+  // v49: the hull dies in stages: a run of secondary blasts walks along it (it lurches and lists), then the reactor goes and it breaks apart
+  { const pre=G.fxReduced?2:G.mobile?3:Math.round(4+Math.min(4,L/10)), preDur=(700+L*14)*Math.max(.4,SPEED); const c0=c.clone();
+    for(let i=0;i<pre;i++){ const delay=preDur*((i+.3)/pre)*(.85+Math.random()*.3); setTimeout(()=>{ try{ if(!v.root||v.root.isDisposed()) return; const p=toWorld(v,new V3((Math.random()-.5)*L*.85,v.H*(.15+Math.random()*.5),(Math.random()-.5)*L*.14));
+        explode(p,.9+L*.05,{light:i%3===0}); sparks(p,G.mobile?10:26,10+L*.3); if(typeof fxStreak==='function'){ const o=p.subtract(c0); o.y=Math.abs(o.y)+.4; fxStreak(p,o.normalize(),4+L*.2,2+L*.05,new C3(1,.55,.2).scale(1.6),coneTex(),.45); }
+        try{ hullDecal(v,p.add(p.subtract(c0).normalize().scale(4)),true); }catch(e){}
+        v.root.rotation.x+=(Math.random()-.5)*.09; v.root.rotation.z+=(Math.random()-.5)*.05; v.root.position.y-=.25; G.shake=Math.min(1,G.shake+.1+L/400); SFX.boom(.3); }catch(e){} },delay); }
+    await wait(preDur); if(!v.root||v.root.isDisposed()) return; }
   // v44: the death plays out: the hull scorches and splits with glowing cracks, internal blasts tear through it, then the reactor goes
   try{ if(typeof shipDamageFx==='function'){ v.state='alive'; shipDamageFx(v,-1); v.state='dying'; } }catch(e){}
   if(!B.over&&cineWants('kill',null,u)){ try{ clearTimeout(G.cineTimer); fxMark('cine'); const r0=clamp(L*3.4+40,60,190), tgt=new V3(c.x,0,c.z), a0=G.ctl.a+.35; G.ctl.hold(tgt,a0,1.05,r0*.72); /* v45 kill cam: punch in on the first blasts, then drift out for the reactor */ setTimeout(()=>{ if(G.ctl.saved) G.ctl.hold(tgt,a0+.18,1.0,r0*1.05); },650*SPEED); G.cineTimer=setTimeout(()=>G.ctl.release(),2500*SPEED); }catch(e){} }
   const nPop=G.mobile?3:5; for(let i=0;i<nPop;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(typeof fxStreak==='function'&&i%2===0){ const o=p.subtract(c); o.y=Math.abs(o.y)+.5; fxStreak(p,o.normalize(),6+L*.25,3+L*.06,new C3(1,.6,.25).scale(1.6),coneTex(),.35); } if(i%2===0) SFX.hit(); await wait(90); }
   if(typeof fxSprite==='function'){ fxSprite(c,L*(G.mobile?1.7:2.6),new C3(1,.9,.75).scale(1.5),starTex(),.55,{grow:.8}); shockRing(c,L*3.2,(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.3),{flat:true,dur:1.6,thick:.03,tilt:.5}); }
-  flash(c,L*1.4,new C3(1,.85,.6),.7); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.9); explode(c,L*.45); if(typeof fireballFx==='function'&&!G.fxReduced) fireballFx(c.add(new V3(0,1,0)),L*.42,1.7); fireball(c.add(new V3(0,1,0)),L*.35,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
+  // v49: no two deaths alike: size, colour (reactor tint per faction), off-centre fireballs and an occasional late second blast
+  const VB={voidsworn:new C3(1,.62,.3),hegemony:new C3(.75,.88,1),corsair:new C3(1,.5,.25),chorus:new C3(.85,.95,.4),ithar:new C3(.8,1,.92),deathless:new C3(.45,1,.55)}[v.fac]||new C3(1,.85,.6), bs=.8+Math.random()*.55;
+  flash(c,L*1.4*bs,C3.Lerp(new C3(1,.9,.7),VB,.5),.7); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.9); explode(c,L*.45*bs); if(typeof fireballFx==='function'&&!G.fxReduced){ fireballFx(c.add(new V3(0,1,0)),L*.42*bs,1.7); const nX=Math.floor(Math.random()*3); for(let i=0;i<nX;i++){ const off=new V3((Math.random()-.5)*L*.7,Math.random()*2,(Math.random()-.5)*L*.3); setTimeout(()=>{ try{ fireballFx(c.add(off),L*(.15+Math.random()*.15),1.2); }catch(e){} },(120+Math.random()*380)*Math.max(.4,SPEED)); } }
+  if(Math.random()<.45&&!G.fxReduced) setTimeout(()=>{ try{ const q=c.add(new V3((Math.random()-.5)*L*.4,1,(Math.random()-.5)*L*.2)); flash(q,L*.9,VB.scale(1.3),.45); explode(q,L*.3); shockRing(q,L*2,VB.scale(1.2),{flat:true,dur:1.1,thick:.03,tilt:.6}); SFX.boom(.8); G.shake=Math.min(1,G.shake+.3); }catch(e){} },(500+Math.random()*500)*Math.max(.4,SPEED));
+  fireball(c.add(new V3(0,1,0)),L*.35*bs,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
   burst(c,{n:G.mobile?30:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
   shockwave(c,L*2.4); SFX.boom(1.2); G.shake=Math.min(1,G.shake+.6+L/60);
   debris(c,L,v.fac);
-  // split the hull and let the wreck drift out of the battle plane
-  if(v.model.toSplit){ try{ v.model.toSplit(); }catch(e){ console.error(e); } }
-  const M=facMats(v.fac); const dm=v.dmgMats; v.dmgMats=null; for(const m of v.model.meshes){ m.material=(m.material===M.win||m.material===M.eng||m.material===M.tip)?M.ember:M.wreck; m.isPickable=false; } if(dm) setTimeout(()=>{ try{ dm.forEach(m=>m.dispose(false,false)); }catch(e){} },0);
+  // v49: the hull tears into 3 to 7 jagged sections (different every time), each tumbling away on its own momentum
+  const M=facMats(v.fac); const dm=v.dmgMats; v.dmgMats=null; if(dm) setTimeout(()=>{ try{ dm.forEach(m=>m.dispose(false,false)); }catch(e){} },0);
   v.model.plumes.forEach(p=>p.dispose()); (v.model.flares||[]).forEach(p=>p.dispose()); (v.model.anim||[]).forEach(an=>an.node.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); v.stackFx=null; (v.fires||[]).forEach(p=>p.dispose()); v.fires=[];
-  const fwd=new V3(Math.cos(v.root.rotation.y),0,-Math.sin(v.root.rotation.y));
-  const nodes=[v.model.fore,v.model.aft], persist=!!u.hulk;
-  for(const [n,sgn] of [[v.model.fore,1],[v.model.aft,-1]]){ const wp=n.getAbsolutePosition().clone(); const wr=v.root.rotation.clone(); n.parent=null; n.position=wp; n.rotation=wr.clone();
-    n.vel=fwd.scale(sgn*(1.2+Math.random())).add(new V3((Math.random()-.5)*.6,persist?0:-.35-Math.random()*.3,(Math.random()-.5)*.6)); n.spin=new V3((Math.random()-.5)*.25,(Math.random()-.5)*.2,sgn*(.12+Math.random()*.2));
-    if(poolOK()){ n.ps=null; n.smk={acc:0}; continue; } // v44.1: wreck smoke comes from the pool
-    const ps=new BABYLON.ParticleSystem('hf',120,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.color1=new C4(1,.5,.15,.8); ps.color2=new C4(.5,.3,.2,.5); ps.colorDead=new C4(0,0,0,0); ps.minSize=.8; ps.maxSize=2; ps.minLifeTime=.5; ps.maxLifeTime=1.4; ps.emitRate=40; ps.addSizeGradient(0,.6); ps.addSizeGradient(1,2.6); ps.minEmitPower=.5; ps.maxEmitPower=1.5; ps.start(); n.ps=ps; }
+  const persist=!!u.hulk; let nodes=null;
+  try{ nodes=fragmentHull(v,M,persist); }catch(e){ console.warn('fragment',e); nodes=null; }
+  if(!nodes){ if(v.model.toSplit){ try{ v.model.toSplit(); }catch(e){ console.error(e); } }
+    for(const m of v.model.meshes){ m.material=(m.material===M.win||m.material===M.eng||m.material===M.tip)?M.ember:M.wreck; m.isPickable=false; }
+    const fwd=new V3(Math.cos(v.root.rotation.y),0,-Math.sin(v.root.rotation.y)); nodes=[v.model.fore,v.model.aft];
+    for(const [n,sgn] of [[v.model.fore,1],[v.model.aft,-1]]){ const wp=n.getAbsolutePosition().clone(); const wr=v.root.rotation.clone(); n.parent=null; n.position=wp; n.rotation=wr.clone();
+      n.vel=fwd.scale(sgn*(2.2+Math.random()*1.4)*(persist?.6:1)).add(new V3((Math.random()-.5)*1.2,persist?0:-.4-Math.random()*.4,(Math.random()-.5)*1.2)); n.spin=new V3((Math.random()-.5)*.45,(Math.random()-.5)*.35,sgn*(.2+Math.random()*.3)); } }
+  for(const n of nodes){ if(poolOK()){ n.ps=null; n.smk={acc:0}; continue; }
+    const ps=new BABYLON.ParticleSystem('hf',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.color1=new C4(1,.5,.15,.8); ps.color2=new C4(.5,.3,.2,.5); ps.colorDead=new C4(0,0,0,0); ps.minSize=.8; ps.maxSize=2; ps.minLifeTime=.5; ps.maxLifeTime=1.4; ps.emitRate=30; ps.addSizeGradient(0,.6); ps.addSizeGradient(1,2.6); ps.minEmitPower=.5; ps.maxEmitPower=1.5; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); n.ps=ps; }
   G.hulks.push({nodes,t0:G.time,persist,L}); v.root.dispose(true,false); v.state='hulk'; G.views.delete(u.id);
   await wait(280);
 }
 function updateHulks(dt){
   for(let i=G.hulks.length-1;i>=0;i--){ const h=G.hulks[i]; const age=G.time-h.t0; if(typeof hulkCookOff==='function') hulkCookOff(h,dt);
+    if(age<4.5&&h.nodes.length>=2&&!G.fxReduced&&typeof fxp==='function'){ let cx=0,cy=0,cz=0; for(const n of h.nodes){ const q=n.getAbsolutePosition(); cx+=q.x; cy+=q.y; cz+=q.z; } const ctr=new V3(cx/h.nodes.length,cy/h.nodes.length,cz/h.nodes.length), Lh=h.L||14; h.ventAcc=(h.ventAcc||0)+dt*(G.mobile?18:44)*(1-age/4.5);
+      while(h.ventAcc>=1){ h.ventAcc-=1; const from=h.nodes[Math.floor(Math.random()*h.nodes.length)].getAbsolutePosition(), d=ctr.subtract(from); const len=d.length()||1; const p=from.add(d.scale(Math.min(.5,(Lh*.08)/len))); // v49: fire vents from the torn faces
+        fxp(p,{cell:0,size:1.2+Math.random()*1.6,col:new C3(1,.5+Math.random()*.2,.16).scale(1.4),dur:.35+Math.random()*.3,grow:.7,vel:d.scale(.5/len).add(new V3((Math.random()-.5)*2,Math.random()*1.5,(Math.random()-.5)*2)),drag:.6}); } }
     for(const n of h.nodes){ n.position.addInPlace(n.vel.scale(dt)); n.rotation.addInPlace(n.spin.scale(dt));
       if(n.smk&&!h.burnedOut){ const rate=(age<6?40:h.persist?Math.max(8,40-(age-6)*8):Math.max(0,40-(age-6)*8))*(G.mobile?.35:.7); n.smk.acc+=rate*dt; const L=h.L||14;
         while(n.smk.acc>=1){ n.smk.acc-=1; const p=n.getAbsolutePosition().add(new V3((Math.random()-.5)*L*.25,(Math.random()-.3)*L*.04,(Math.random()-.5)*L*.08)), hot=Math.random()<.35;
@@ -3752,7 +3863,7 @@ function shockwave(c,size){ if(typeof shockRing==='function'){ shockRing(c,size*
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(1.1*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); d.dispose(); m.dispose(); return; } d.scaling.setAll(size*(.2+Math.sqrt(k))); m.alpha=(1-k)*(1-k)*.5; }); }
 // v45: capital-death debris lives in two shared thin-instance batches per faction (wreck + ember); no meshes or observers per death
 function debBatch(fac,kind){ const B0=G.debBatches||(G.debBatches={}), k=fac+'|'+kind; let b=B0[k];
-  if(!b||b.mesh.isDisposed()){ const M=facMats(fac), m=MB.CreateBox('debB_'+k,{width:1,height:.4,depth:.7},G.scene); m.material=kind==='ember'?M.ember:M.wreck; m.isPickable=false; m.alwaysSelectAsActiveMesh=true;
+  if(!b||b.mesh.isDisposed()){ const M=facMats(fac), m=MB.CreateIcoSphere('debB_'+k,{radius:.6,subdivisions:2,flat:true},G.scene); { const pp=m.getVerticesData(BABYLON.VertexBuffer.PositionKind), rr=seeded(fac.length*7+kind.length); for(let i=0;i<pp.length;i+=3){ const j=.55+rr()*.9; pp[i]*=1.5*j; pp[i+1]*=.35*(.6+rr()*.8); pp[i+2]*=1.1*j; } m.setVerticesData(BABYLON.VertexBuffer.PositionKind,pp); const nr=[]; BABYLON.VertexData.ComputeNormals(pp,m.getIndices(),nr); m.setVerticesData(BABYLON.VertexBuffer.NormalKind,nr); } /* v49: torn, jagged hull plates instead of boxes */ m.material=kind==='ember'?M.ember:M.wreck; m.isPickable=false; m.alwaysSelectAsActiveMesh=true;
     const cap=G.mobile?140:320; b={mesh:m,cap,items:[],buf:new Float32Array(cap*16),q:new BABYLON.Quaternion(),mt:new BABYLON.Matrix(),sv:new V3(),zero:new V3(0,0,0)};
     m.thinInstanceSetBuffer('matrix',b.buf,16,false); m.thinInstanceCount=0; B0[k]=b; }
   return b; }
@@ -4626,6 +4737,8 @@ function helpScreen(){
     <p>What carries between runs (Progression, on the title screen): <b>renown</b> buys hull variants for your shipyards; each <b>admiral</b> levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; <b>patrons</b> grow fond of you as you take their boons, offering rarer boons and eventually a gift at the start of a run; and after your first victory, <b>Heat</b> lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight.</p>
     <h3 class="gilt" style="margin:18px 0 6px">Your turn</h3>
     <p>Every ship can move, turn and fire each of its weapons once per turn, in any order. Click a ship, then click a highlighted hex to move. Moving forward costs 1 movement. Turning 60\u00b0 also costs 1 movement and uses one of the ship\u2019s turns; big ships only get one turn per round, so plan their heading early. Press <kbd>Q</kbd> and <kbd>E</kbd> to turn in place.</p>
+    <p>Thrusters keep you from getting boxed in. A ship can slip into either forward-diagonal hex, or back off one hex, without changing its heading (2 movement each; a slow ship can always spend its whole move on one hop). It can climb over a rock or wreck, or dive under an enemy ship, for +1 movement, but cannot stop there. Each faction bends one of these rules: see the Helm panel.</p>
+    <p>Moving matters. A ship that did not move last turn gets hit more easily (+10 to hit). One that moved 3+ hexes is harder to hit (\u22125). Port and starboard guns hit 10% harder on a raking pass, after moving 2+ hexes.</p>
     <h3 class="gilt" style="margin:18px 0 6px">Firing arcs</h3>
     <p>Weapons only fire into their arc. Prow weapons cover the 120\u00b0 in front, port and starboard broadsides each cover a wide 120\u00b0 cone to the side, and turrets fire anywhere. The tinted hexes around a selected ship show where its guns reach: amber for the prow, teal for broadsides. Click an enemy to fire everything that can reach it, or press a number key to fire a single weapon.</p>
     <h3 class="gilt" style="margin:18px 0 6px">Shields and flanking</h3>
@@ -5136,7 +5249,7 @@ function refreshPanel(){
     if(typeof RUN!=='undefined'&&RUN&&((RUN.boons||[]).length||(RUN.aspect&&u.pflag))){ const st=B.boonStats||{};
       h+=`<div class="sect"><h4>Fleet boons</h4>${u.pflag&&RUN.aspect&&ASPECTS[RUN.aspect]?`<div style="font-size:13px;margin-bottom:5px"><b class="gilt">${esc(ASPECTS[RUN.aspect].n)}</b> <span class="muted">${esc(ASPECTS[RUN.aspect].d)}</span></div>`:''}${(RUN.boons||[]).map(b=>{ const B0=BOONS[b.id]; if(!B0) return ''; const P=B0.p?PATRONS[B0.p]:PATRONS[B0.duo[0]], R=RARITY[b.r||0]; return `<div style="font-size:13px;margin-bottom:4px;border-left:3px solid ${P.col};padding-left:6px"><b>${esc(B0.n)}</b>${st[b.id]?` <span class="gilt">\u00d7${st[b.id]} this battle</span>`:''} <span class="muted">${esc(B0.d(R.m))}</span></div>`; }).join('')}</div>`; } }
   if(u.side==='player'){
-    if(!u.isSq) h+=`<div class="sect"><h4>Helm</h4><div class="orders"><button ${own&&canRotate(u)?'':'disabled'} data-act="rot" data-arg="-1">Turn to port<small><kbd>Q</kbd> 1 movement</small></button><button ${own&&canRotate(u)?'':'disabled'} data-act="rot" data-arg="1">Turn to starboard<small><kbd>E</kbd> 1 movement</small></button></div></div>
+    if(!u.isSq) h+=`<div class="sect"><h4>Helm</h4><div class="orders"><button ${own&&canRotate(u)?'':'disabled'} data-act="rot" data-arg="-1">Turn to port<small><kbd>Q</kbd> ${freePivot(u)?'free':'1 movement'}</small></button><button ${own&&canRotate(u)?'':'disabled'} data-act="rot" data-arg="1">Turn to starboard<small><kbd>E</kbd> ${freePivot(u)?'free':'1 movement'}</small></button></div>${driveLine(u)}</div>
 `;
     if(u.ab){ const A=ABILITIES[u.ab], extra=u.ab==='launch'?` (${squadronsOf(u).length}/${u.hangar} in flight)`:'';
       h+=`<div class="sect"><h4>Ability</h4><button style="width:100%;text-align:left" ${own&&canAbility(u)&&!B.mode?'':'disabled'} data-act="ability"><b>${esc(A.n)}</b>${extra}<br><span class="muted" style="font-size:12.5px">${esc(A.d)}${u.abCd?` Ready in ${u.abCd} turn${u.abCd>1?'s':''}.`:''}</span></button>
@@ -5154,7 +5267,7 @@ function tileBase(key,col,alpha,edge){
   if(OV.bases[key]) return OV.bases[key];
   let m; if(edge){ m=MB.CreateTorus('tb',{diameter:HS*2*.94,thickness:.35,tessellation:6},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationY(Math.PI/6)); }
   else { m=MB.CreateDisc('tb',{radius:HS*.9,tessellation:6,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2).multiply(BABYLON.Matrix.RotationY(Math.PI/6))); }
-  m.material=ovMat(key,col,alpha); m.isVisible=false; m.isPickable=false; G.glow.addExcludedMesh(m); return OV.bases[key]=m;
+  m.material=ovMat(key,col,alpha); m.material._keep=true; m.isVisible=false; m.isPickable=false; G.glow.addExcludedMesh(m); return OV.bases[key]=m;
 }
 function tile(key,col,alpha,h,list,edge){ const inst=tileBase(key,col,alpha,edge).createInstance('t'); inst.position=hexWorld(h.q,h.r,.12); inst.isPickable=false; list.push(inst); return inst; }
 function ringMesh(col,alpha,R,th=.3){ const m=MB.CreateTorus('rg',{diameter:R*2,thickness:th,tessellation:48},G.scene); m.material=ovMat('ring',col,alpha); m.isPickable=false; G.glow.addExcludedMesh(m); return m; }
@@ -5182,10 +5295,12 @@ function ramLane(u,ri){ try{ const a=hexWorld(u.q,u.r,.9), b=hexWorld(ri.t.q,ri.
     const d=b.subtract(a); d.y=0; d.normalize(); const side=new V3(-d.z,0,d.x), tip=b.subtract(d.scale(HS*.75)), k=HS*.38;
     const ar=MB.CreateTube('ramArrow',{path:[tip.subtract(d.scale(k)).add(side.scale(k)),tip,tip.subtract(d.scale(k)).subtract(side.scale(k))],radius:HS*.09,tessellation:6},G.scene); ar.material=m; ar.isPickable=false; OV.items.push(ar);
     const v=G.views.get(ri.t.id), rm=ringMesh(new C3(1.3,.35,.25),.9,v?Math.max(6,v.L*.66):6.5,.45); rm.position=hexWorld(ri.t.q,ri.t.r,.3); OV.items.push(rm); }catch(e){ console.warn(e); } }
-function clearOverlays(){ for(const m of OV.items) m.dispose(); OV.items=[]; for(const m of OV.hover) m.dispose(); OV.hover=[]; if(OV.fan){ OV.fan.dispose(); OV.fan=null; } if(OV.ghost){ OV.ghost.dispose(); OV.ghost=null; OV.ghostFor=null; } OV.targets=[]; }
+// v49: overlay meshes own their materials (rings, fans, lines), so free those too; the shared tile templates keep theirs
+function ovDispose(m){ if(!m||m.isDisposed&&m.isDisposed()) return; const mats=new Set(); const grab=x=>{ const mt=x&&x.material; if(mt&&!mt._keep&&!(G.aimMats&&Object.values(G.aimMats).includes(mt))) mats.add(mt); }; grab(m); if(m.getChildMeshes) m.getChildMeshes(false).forEach(grab); m.dispose(); mats.forEach(mt=>{ try{ mt.dispose(); }catch(e){} }); }
+function clearOverlays(){ for(const m of OV.items) ovDispose(m); OV.items=[]; for(const m of OV.hover) ovDispose(m); OV.hover=[]; if(OV.fan){ ovDispose(OV.fan); OV.fan=null; } if(OV.ghost){ OV.ghost.dispose(); OV.ghost=null; OV.ghostFor=null; } OV.targets=[]; }
 function refreshOverlays(){
-  for(const m of OV.items) m.dispose(); OV.items=[]; OV.targets=[];
-  if(OV.fan){ OV.fan.dispose(); OV.fan=null; }
+  for(const m of OV.items) ovDispose(m); OV.items=[]; OV.targets=[];
+  if(OV.fan){ ovDispose(OV.fan); OV.fan=null; }
   if(!B||B.over) { refreshHover(); return; }
   const sel=B.sel, playerTurn=B.side==='player'&&!B.busy;
   const arcU=sel||B.inspect;
@@ -5216,7 +5331,7 @@ function refreshOverlays(){
   refreshHover();
 }
 function refreshHover(){
-  for(const m of OV.hover) m.dispose(); OV.hover=[];
+  for(const m of OV.hover) ovDispose(m); OV.hover=[];
   if(OV.ghost) OV.ghost.setEnabled(false);
   if(!B||B.over||B.busy) return;
   const h=B.hover, sel=B.sel; if(!h) return;
@@ -5348,12 +5463,20 @@ function boardTip(){
   if(B.mode==='board'&&s&&u&&boardTargets(s).includes(u)){ const o=boardOdds(s,u); return `<div class="h">Board ${esc(u.name)}</div><div class="num">Your ${s.crew} crew against their ${u.crew}. Expect to kill about ${o.kill} and lose about ${o.loss}.</div><div class="${o.capture?'ember':'muted'}" style="margin-top:4px">${o.chance>0?`${o.chance}% chance to capture: the ship joins your fleet.${o.chance<100?' Otherwise saboteurs may still knock out a system.':''}`:'No chance to capture this time, but saboteurs may knock out a system.'}</div>`; }
   if(u&&s&&s.side==='player'&&u.side==='enemy'&&B.side==='player') return attackTip(s,u);
   if(u) return unitTip(u);
-  if(s&&s.side==='player'&&B.reach&&!B.mode){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st) return `<div class="h">Move here</div><div class="num">${st.cost} movement${st.t?`, ${st.t} turn${st.t>1?'s':''}`:''}. ${s.mp-st.cost} movement left after.</div>${objZone(st.q,st.r)==='exit'?'<div style="margin-top:4px;color:#7dff9b">Exit: this ship jumps clear and counts toward the breakthrough.</div>':''}${(()=>{ const tt=terr(st.q,st.r); return TERRAIN_INFO[tt]&&!blocks(tt)?`<div style="margin-top:4px;color:${TERRAIN_INFO[tt].col}">Ends in ${TERRAIN_INFO[tt].n.toLowerCase()}: ${TERRAIN_INFO[tt].fx}</div>`:''; })()}${st.guns!=null?`<div style="margin-top:4px">From here: <b class="gilt">${st.guns} of ${st.gunsOf}</b> ready guns can fire${st.gunTarget?` (on ${esc(st.gunTarget.isSq?st.gunTarget.t.n:st.gunTarget.name)})`:''}.</div>`:''}${(()=>{ const bl=blockedFrom(s,st); return bl.length?`<div style="margin-top:4px;color:#ff8a7a">Blocked from here by asteroids or wrecks: ${bl.map(x=>esc(x.name)).join(', ')}.</div>`:''; })()}${(()=>{ const rf=st.ram?ramFrom(s,st):null; if(!rf) return ''; const e=ramEstimate(Object.assign({},s,{q:st.q,r:st.r,facing:st.f}),rf.t,rf.path.length); return `<div style="margin-top:4px;color:#ff6b5a"><b>Ram spot:</b> from here your bow points at ${esc(rf.t.name)}. Move, then tap Ram for about ${e.dmg} damage.</div>`; })()}`; }
+  if(s&&s.side==='player'&&B.reach&&!B.mode){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st) return `<div class="h">Move here</div><div class="num">${st.cost} movement${st.t?`, ${st.t} turn${st.t>1?'s':''}`:''}. ${s.mp-st.cost} movement left after.</div>${moveNote(st)}${objZone(st.q,st.r)==='exit'?'<div style="margin-top:4px;color:#7dff9b">Exit: this ship jumps clear and counts toward the breakthrough.</div>':''}${(()=>{ const tt=terr(st.q,st.r); return TERRAIN_INFO[tt]&&!blocks(tt)?`<div style="margin-top:4px;color:${TERRAIN_INFO[tt].col}">Ends in ${TERRAIN_INFO[tt].n.toLowerCase()}: ${TERRAIN_INFO[tt].fx}</div>`:''; })()}${st.guns!=null?`<div style="margin-top:4px">From here: <b class="gilt">${st.guns} of ${st.gunsOf}</b> ready guns can fire${st.gunTarget?` (on ${esc(st.gunTarget.isSq?st.gunTarget.t.n:st.gunTarget.name)})`:''}.</div>`:''}${(()=>{ const bl=blockedFrom(s,st); return bl.length?`<div style="margin-top:4px;color:#ff8a7a">Blocked from here by asteroids or wrecks: ${bl.map(x=>esc(x.name)).join(', ')}.</div>`:''; })()}${(()=>{ const rf=st.ram?ramFrom(s,st):null; if(!rf) return ''; const e=ramEstimate(Object.assign({},s,{q:st.q,r:st.r,facing:st.f}),rf.t,rf.path.length); return `<div style="margin-top:4px;color:#ff6b5a"><b>Ram spot:</b> from here your bow points at ${esc(rf.t.name)}. Move, then tap Ram for about ${e.dmg} damage.</div>`; })()}`; }
   if(B.showThreat){ const v=computeThreatAt(h); if(v) return `<div class="h blood">Enemy threat</div><div class="num">Up to about ${Math.round(v)} damage could reach this hex next turn, before shields and armor.</div>`; }
   { const z=objZone(h.q,h.r); if(z&&!terr(h.q,h.r)) return `<div class="h" style="color:${ZONE_INFO[z].col}">${ZONE_INFO[z].n}</div><div class="muted">${ZONE_INFO[z].fx}</div>`; }
   const t=terr(h.q,h.r); if(TERRAIN_INFO[t]) return `<div class="h" style="color:${TERRAIN_INFO[t].col}">${TERRAIN_INFO[t].n}</div><div class="muted">${TERRAIN_INFO[t].fx}</div>`;
   return null;
 }
+// v50: thruster rules for this hull, and how its last move affects incoming fire
+function driveLine(u){ if(!u||u.isSq) return ''; const R=moveRules(u), M=MOVE_RULES[u.fac]; const mv=u.hexMoved==null?'':u.hexMoved===0?` <span class="blood">Has not moved: enemies get +${R.still} to hit.</span>`:u.hexMoved>=R.evadeAt?` <span class="verd">Evasive: enemies get \u2212${R.evade} to hit.</span>`:'';
+  return `<div class="muted" style="font-size:12.5px;margin-top:5px">Thrusters: sideslip ${R.slip}, back off ${R.rev}, pass over or under ${R.over?'+'+R.over:'free'}.${M?` <b class="gilt">${esc(M.n)}</b>: ${esc(M.d)}`:''}${mv}</div>`; }
+function moveNote(st){ const p=st.path||[], n=k=>p.filter(x=>x[k]).length, bits=[]; const sl=n('slip'), rv=n('rev'), up=p.filter(x=>x.over>0).length, dn=p.filter(x=>x.over<0).length;
+  if(sl) bits.push(`sideslips ${sl>1?sl+' times':'once'}`); if(rv) bits.push(`backs off ${rv>1?rv+' hexes':'a hex'}`); if(up) bits.push(`climbs over ${up>1?up+' obstacles':'an obstacle'}`); if(dn) bits.push(`dives under ${dn>1?dn+' ships':'a ship'}`);
+  return bits.length?`<div style="margin-top:4px;color:#9fd0ff">Thrusters: ${bits.join(', ')}, heading held.</div>`:''; }
+function motionNote(a,t){ const m=motionHit(t), out=[]; if(m>0) out.push(`<span class="ember">Sitting still: +${m} to hit.</span>`); else if(m<0) out.push(`<span class="muted">Burning evasive: \u2212${-m} to hit.</span>`);
+  const rk=a.weapons.some(w=>weaponReady(w)&&rakeBonus(a,w)>0); if(rk) out.push(`<span class="gilt">Raking pass: broadsides +${Math.round(moveRules(a).rake*100)}%.</span>`); return out.length?' '+out.join(' '):''; }
 function unitTip(u){ return `<div class="h ${u.side==='player'?'verd':'blood'}">${esc(u.isSq?u.t.n:u.name)}</div><div class="muted">${esc(u.t.n)}${u.elite?', elite':''}</div>
   <div class="num">Hull ${Math.max(0,u.hp)}/${u.maxHp}${u.shMax?`. Shields: prow ${Math.round(u.sh[0])}, port ${Math.round(u.sh[3])}, starboard ${Math.round(u.sh[1])}, rear ${Math.round(u.sh[2])}`:''}.</div><div class="dim">Armor ${pct(u.armor)}, evasion ${u.ev+(u.evBuff||0)}, speed ${u.speed}</div>${u.sec?`<div class="dim num">Prow ${u.sec.prow.hp}, midships ${u.sec.mid.hp}, engines ${u.sec.eng.hp}. Crew ${u.crew}/${u.crewMax}.</div>`:''}`; }
 // which boons and aspect bonuses apply to this shot, so the player sees them working
@@ -5381,7 +5504,7 @@ function attackTip(a,t){
       else { const e=expectedVs(a,w,t); hull+=e.hull; sh+=e.shield; n++; right=`<b>${hitChance(a,w,t)}%</b> <span class="dim">${w.shots}\u00d7${Math.round(dmgMult(a,w,t,rear))}</span>`; } }
     rows+=`<tr><td>${esc(w.n)}${(w.evMult||1)>1?` <span class="dim">(slow: evasion counts ${w.evMult}x)</span>`:''}</td><td class="r">${right}</td></tr>`; }
   return `<div class="h blood">${esc(t.isSq?t.t.n:t.name)}</div><div class="muted num">Hull ${t.hp}/${t.maxHp}, armor ${pct(t.armor)}, evasion ${t.ev+(t.evBuff||0)}</div>
-    <div style="margin:4px 0">${t.shMax?`Hits the <b class="shv">${QUAD_NAME[quad]} shield</b> <span class="shv">(${Math.round(t.sh[quad])}/${t.shMax})</span>${t.sh[quad]<1?' <span class="hlv">down, straight to hull</span>':''}.`:'Target is unshielded: <span class="hlv">every hit lands on the hull</span>.'}${rear?' <span class="ember">Rear arc: armor halved, +15% crit.</span>':''}${terr(t.q,t.r)==='neb'?' <span class="muted">In nebula, \u221215 to hit.</span>':terr(t.q,t.r)==='debris'?' <span class="muted">In debris, \u221210 to hit.</span>':''}${terr(a.q,a.r)==='storm'?' <span class="muted">You are in an ion storm, \u221210 to hit.</span>':''}</div>
+    <div style="margin:4px 0">${t.shMax?`Hits the <b class="shv">${QUAD_NAME[quad]} shield</b> <span class="shv">(${Math.round(t.sh[quad])}/${t.shMax})</span>${t.sh[quad]<1?' <span class="hlv">down, straight to hull</span>':''}.`:'Target is unshielded: <span class="hlv">every hit lands on the hull</span>.'}${rear?' <span class="ember">Rear arc: armor halved, +15% crit.</span>':''}${motionNote(a,t)}${terr(t.q,t.r)==='neb'?' <span class="muted">In nebula, \u221215 to hit.</span>':terr(t.q,t.r)==='debris'?' <span class="muted">In debris, \u221210 to hit.</span>':''}${terr(a.q,a.r)==='storm'?' <span class="muted">You are in an ion storm, \u221210 to hit.</span>':''}</div>
     ${t.sec?`<div class="muted">Hull damage lands on the <b>${SEC_NAME[SEC_OF_QUAD[quad]]}</b>. Crew ${t.crew}/${t.crewMax}.</div>`:''}<table>${rows}</table>${n?`<div style="margin-top:5px" class="num">Expected: about <span class="shv">${Math.round(sh)} shield</span> and <span class="hlv">${Math.round(hull)} hull</span> damage.${hull>=t.hp?' <span class="ember">Likely kill.</span>':''}</div>${(()=>{ const bm=boonMods(a,t); return bm.length?`<div style="margin-top:4px;font-size:12.5px">${bm.join('<br>')}</div>`:''; })()}<div class="gilt" style="margin-top:3px">Click to fire ${n} weapon${n>1?'s':''}.</div>`:'<div class="dim" style="margin-top:5px">No ready weapon can reach this target.</div>'}`;
 }
 function onKey(e){
