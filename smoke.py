@@ -85,4 +85,10 @@ yc=subprocess.run(['python3',os.path.join(here,'yardcheck.py')],capture_output=T
 check('shipyard and refits work for every faction','YARDCHECK PASSED' in yc,(yc.splitlines()[-1] if yc else 'no output')[:120])
 hc=subprocess.run(['python3',os.path.join(here,'healtest.py')],capture_output=True,text=True,timeout=400).stdout
 check('a broken mesh cannot freeze the screen',('HEALTEST PASSED' in hc),(hc.splitlines()[-2] if hc and len(hc.splitlines())>1 else 'no output')[:120])
+# v53: a mid-battle reload replays the same fight (owner's rule), and a sector boss win reaches the next sector intro (v51 m.region crash class)
+bc=subprocess.run(['python3',os.path.join(here,'bosscheck.py'),os.path.join(here,'index_test.html')],capture_output=True,text=True,timeout=1200)
+line=next((l for l in bc.stdout.splitlines() if l.startswith('replay')),'no output: '+bc.stderr[-200:])
+check('mid-battle reload replays the same node and enemy fleet','SAME FIGHT' in line,line.strip()[:160])
+line=next((l for l in bc.stdout.splitlines() if l.startswith('bossintro')),'no output: '+bc.stderr[-200:])
+check('sector boss win runs through rewards into the next sector intro','NEXT SECTOR INTRO' in line,line.strip()[:200])
 fails=[n for n,ok in results if not ok]; print('SMOKE', 'PASSED' if not fails else 'FAILED: '+', '.join(fails)); sys.exit(1 if fails else 0)

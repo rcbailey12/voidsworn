@@ -44,7 +44,7 @@ function setupBattle(cfg){
 }
 function prepBattle(){
   try{ FRAMES.reset(); }catch(e){}
-  B.seed=Math.floor(Math.random()*1e6); B.showArcs=true; B.alt=!!SETUP.alt; B.showThreat=false; B.called=null; B.wingSel=null; B.activeUnit=null;
+  B.alt=!!SETUP.alt; // v53: B.seed is the one startBattle seeded the rules with (no overwrite), and the other UI fields start in the startBattle literal
   for(const x of B.units) x.activated=false;
   if(B.alt) startSideTurn('enemy');
   buildBattleEnv(); if(B.obj&&B.obj.type==='hold') buildBeacon(B.obj.hex); G.jumpUntil=G.time+.6; for(const u of B.units) u.arrived=false;
@@ -506,13 +506,13 @@ async function banner(text,color){ const el=document.getElementById('banner'); e
 async function endTurn(){
   if(!B||B.busy||B.side!=='player'||B.over) return;
   B.busy=true; B.sel=null; B.armed=null; B.mode=null; B.inspect=null; B.reach=null; hideTip(); G.playerView={a:G.ctl.a,b:G.ctl.b,r:G.ctl.r,t:G.ctl.t.clone(),at:performance.now()};
-  B.side='enemy'; startSideTurn('enemy'); bRefresh(); await banner('Enemy turn','#e07a70');
-  { const sp=SPEED; SPEED=Math.min(SPEED,.65); try{ await stallGuard(aiTurn(),90000,'enemy_turn',{}); }catch(e){ console.error(e); } SPEED=sp; } // v41: Classic mode gets the same stall net as Alternating
+  B.side='enemy'; const dq=startSideTurn('enemy'); bRefresh(); await Promise.all([dq,banner('Enemy turn','#e07a70')]); // v53: burn-outs and other tick deaths finish before the AI moves
+  { const sp=SPEED; SPEED=Math.min(SPEED,.65); try{ if(await stallGuard(aiTurn(),90000,'enemy_turn',{})==='stall') log('Enemy orders lost in interference.','x'); }catch(e){ console.error(e); } SPEED=sp; } // v41: Classic mode gets the same stall net as Alternating
   if(!B) return; B.aiActive=null; G.lastAi=null;
   await wait(150); G.ctl.release();
   if(B.over){ B.busy=false; await endBattleFlow(); return; }
   if(G.playerView&&!((G.camMoved||0)>(G.playerView.at||0))){ G.ctl.t=G.playerView.t.clone(); G.ctl.r=G.playerView.r; G.ctl.a=G.playerView.a; G.ctl.b=G.playerView.b; }
-  B.round++; B.side='player'; startSideTurn('player'); if(B.over){ B.busy=false; bRefresh(); return; } log(`Round ${B.round}.`,'x'); try{ await swarmPhase('player'); }catch(e){ console.error(e); } finally{ B.busy=false; } bRefresh(); if(!B||B.over) return;
+  B.round++; B.side='player'; const dq2=startSideTurn('player'); if(dq2) await dq2; if(!B) return; if(B.over){ B.busy=false; bRefresh(); return; } log(`Round ${B.round}.`,'x'); try{ await swarmGuard('player'); }catch(e){ console.error(e); } finally{ B.busy=false; } bRefresh(); if(!B||B.over) return;
   await banner('Your turn'); if(B&&!B.sel){ const f=caps('player').find(u=>!isDone(u))||caps('player')[0]; if(f) selectUnit(f); }
 }
 function isDoneRaw(u){ if(u.dead||u.braced) return true; return !(u.mp>0) && !u.weapons.some(w=>weaponReady(w)&&alive('enemy').some(t=>canFire(u,w,t))); }
@@ -532,7 +532,7 @@ async function aiStep(){
       const sqs=alive('enemy').filter(u=>u.isSq&&!u.activated);
       const batch=pp.length?[aiPickActivation(pe.sort((a,b)=>b.speed-a.speed))]:pe;
       SPEED=Math.min(SPEED,.65);
-      for(const u of [...sqs,...batch]){ if(B!==b||B.over) break; await stallGuard(aiUnit(u),30000,'enemy',{name:u.name,isSq:!!u.isSq}); u.activated=true; } }catch(e){ console.error(e); }
+      for(const u of [...sqs,...batch]){ if(B!==b||B.over) break; if(await stallGuard(aiUnit(u),30000,'enemy',{name:u.name,isSq:!!u.isSq})==='stall'&&B===b) log(`${u.isSq?u.t.n:u.name}: orders lost in interference.`,'x'); u.activated=true; } }catch(e){ console.error(e); }
     finally{ SPEED=sp; }
     if(B!==b) return; B.aiActive=null; G.lastAi=null; await wait(120); if(B!==b) return; G.ctl.release(); camRestore(); B.side='player'; B.busy=false;
     if(B.over){ bRefresh(); await endBattleFlow(); return; }
@@ -542,11 +542,13 @@ async function aiStep(){
   if(!pendingP().length){ await aiStep(); return; }
   bRefresh(); const f=pendingP()[0]; if(f&&!B.sel){ selectUnit(f); camShow(f); }
 }
+// v53: the squadron phase under the same stall net as the AI turn (each wing also has its own guard inside swarmPhase)
+async function swarmGuard(side){ if(await stallGuard(swarmPhase(side),60000,'swarm',{side})==='stall') log((side==='player'?'Your':'Enemy')+' squadron orders lost in interference.','x'); }
 async function nextRound(){
   if(!B||B.over) return; const b=B;
   B.round++; for(const x of B.units) x.activated=false; B.activeUnit=null;
-  startSideTurn('player'); if(!B.over) startSideTurn('enemy'); if(B.over){ bRefresh(); return; } // the relay can be decided right here
-  log(`Round ${B.round}.`,'x'); B.busy=true; bRefresh(); try{ await swarmPhase('player'); if(B===b&&!B.over) await swarmPhase('enemy'); }catch(e){ console.error(e); } finally{ if(B===b) B.busy=false; } if(B!==b||B.over) return; bRefresh();
+  B.busy=true; const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2; if(B!==b) return; if(B.over){ B.busy=false; bRefresh(); return; } // the relay can be decided right here; v53: tick deaths finish first, under busy
+  log(`Round ${B.round}.`,'x'); B.busy=true; bRefresh(); try{ await swarmGuard('player'); if(B===b&&!B.over) await swarmGuard('enemy'); }catch(e){ console.error(e); } finally{ if(B===b) B.busy=false; } if(B!==b||B.over) return; bRefresh();
   await banner(`Round ${B.round}`); if(B!==b||B.over) return; const f=pendingP()[0]; if(f) selectUnit(f);
 }
 async function endBattleFlow(){
@@ -646,7 +648,7 @@ ACT.reportProblem=()=>{ try{ const now=performance.now(); const dn=centerOf('#pa
     appClass:app?app.className:'none',appDisplay:app?getComputedStyle(app).display:'none',bodyClass:document.body.className,taps:G.tapLog.slice(-10),acts:G.actLog.slice(-8),panelRenders5s:G.panelRenders.filter(t=>now-t<5000).length};
   const s=Object.assign(s0,{round:B&&B.round,side:B&&B.side,busy:B&&B.busy,over:B&&B.over,mode:B&&B.mode,sel:B&&B.sel&&B.sel.name,active:B&&B.activeUnit&&B.activeUnit.name,ai:B&&B.aiActive&&B.aiActive.name,
     pending:B?pendingP().length:0,touch:G.touchState?G.touchState():null,intro:!!document.querySelector('.intro'),loading:!!document.getElementById('loading'),log:B?B.log.slice(-12).map(x=>x.m.slice(0,90)):[]});
-  tel('problem_report',s); console.debug('[report]',JSON.stringify(s)); Persist.saveLocal(); try{ Persist.save&&Persist.save(); }catch(e){} toast('Problem report saved. Thanks: tell Claude in chat and it can read exactly what happened.'); }catch(e){ try{ toast('Could not save the report: '+e.message); }catch(_){} } };
+  tel('problem_report',s); console.debug('[report]',JSON.stringify(s)); Persist.saveLocal(); try{ Persist.save&&Persist.save({meta:true}); }catch(e){} toast('Problem report saved. Thanks: tell Claude in chat and it can read exactly what happened.'); }catch(e){ try{ toast('Could not save the report: '+e.message); }catch(_){} } };
 
 // terrain legend: only what is on this battlefield; tap to expand
 function refreshLegend(){ let el=document.getElementById('terrlegend'); if(!B||B.showcase||!B.terrain){ if(el) el.remove(); return; } const ks=terrainPresent(); if(!B._zones) B._zones=Object.keys(ZONE_INFO).filter(z=>boardHexes().some(h=>objZone(h.q,h.r)===z)); const zs=B._zones, E=ENCOUNTERS[B.obj&&B.obj.type]; if(!ks.length&&!zs.length&&!E){ if(el) el.remove(); return; }

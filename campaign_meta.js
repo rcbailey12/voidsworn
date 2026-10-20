@@ -153,9 +153,9 @@ function legacyScreen(){
 }
 ACT.legacy=()=>legacyScreen();
 ACT.progTab=k=>{ progTab=k; legacyScreen(); };
-ACT.buyVariant=id=>{ const v=HULL_VARIANTS[id]; META.variants=META.variants||{}; if(!v||META.variants[id]||(META.renown||0)<v.cost) return; META.renown-=v.cost; META.variants[id]=true; try{ tel('variant_buy',{id,cost:v.cost}); }catch(e){} Persist.save(); legacyScreen(); };
-ACT.buyLegacy=id=>{ const u=LEGACY[id]; if(META.unlocked[id]||META.renown<u.cost) return; META.renown-=u.cost; META.unlocked[id]=true; Persist.save(); legacyScreen(); };
-ACT.buyAdmiral=id=>{ const a=ADMIRALS[id]; if(META.admirals[id]||META.renown<a.cost) return; META.renown-=a.cost; META.admirals[id]=true; Persist.save(); legacyScreen(); };
+ACT.buyVariant=id=>{ const v=HULL_VARIANTS[id]; META.variants=META.variants||{}; if(!v||META.variants[id]||(META.renown||0)<v.cost) return; META.renown-=v.cost; META.variants[id]=true; try{ tel('variant_buy',{id,cost:v.cost}); }catch(e){} Persist.save({meta:true}); legacyScreen(); };
+ACT.buyLegacy=id=>{ const u=LEGACY[id]; if(META.unlocked[id]||META.renown<u.cost) return; META.renown-=u.cost; META.unlocked[id]=true; Persist.save({meta:true}); legacyScreen(); };
+ACT.buyAdmiral=id=>{ const a=ADMIRALS[id]; if(META.admirals[id]||META.renown<a.cost) return; META.renown-=a.cost; META.admirals[id]=true; Persist.save({meta:true}); legacyScreen(); };
 
 // ---------- help ----------
 function helpScreen(){

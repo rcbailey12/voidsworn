@@ -228,7 +228,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     u.vis={q:ps.q,r:ps.r,a:angAt(Math.min(x,S))+headDelta(Math.min(x,S),p),thr,lift,roll,pitch,sc}; }, true);
   fireLate();
   if(v&&v.phased){ v.phased=false; if(v.root) v.root.setEnabled(true); if(v.ring&&v.ring.node) v.ring.node.setEnabled(true); if(v.plate) v.plate.el.style.visibility=''; }
-  const L=path.at(-1); for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=L.f; u.vis=null; if(trail) endTrail(trail);
+  u.vis=null; if(trail) endTrail(trail); // v53: presentation only; the caller commits u.q/u.r/facing after its live() check (moveUnit commit, ramUnit, rotateUnit)
   if(v&&!u.isSq&&travels&&!opt.charge&&cr>0){ let ia=pk.length-2; while(ia>0&&Math.abs(pk[ia].q-P1.q)+Math.abs(pk[ia].r-P1.r)<1e-6) ia--; const A=hexWorld(pk[ia].q,pk[ia].r), Bw=hexWorld(P1.q,P1.r), dx=Bw.x-A.x, dz=Bw.z-A.z, l=Math.hypot(dx,dz)||1;
     const sp=vmax*cr*S*HW/(dur/1000); coastStart(v,u,dx/l,dz/l,sp,FE); }
 }

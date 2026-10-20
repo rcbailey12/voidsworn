@@ -31,6 +31,7 @@ function mapScreen(){
   for(const n of Object.values(byId)) if(!n.done&&!n.enc&&(n.type==='battle'||n.type==='elite')) Object.assign(n,rollEncounter(n.type,n.col)); // older saves
   if(!m.region&&typeof pickRegion==='function'){ try{ m.region=pickRegion(m.fac); m.biome=rollBiome(m.region); for(const n of Object.values(byId)) if(!n.done){ n.map=regionMap(m.region,n.col,m.cols.length); fitEncounter(n); } saveRun(); }catch(e){} } // v47: runs started before regions
   ensurePatrons(); for(const n of Object.values(byId)) if(!n.done&&!n.rw&&(n.type==='battle'||n.type==='elite'||n.type==='boss')) n.rw=rollNodeReward(n.type);
+  if(nodeSeeds(Object.values(byId))) saveRun(); // v53: each fight node carries its battle seed in the save, so a mid-battle reload replays the same fight
   const edges=m.edges.map(([a,b])=>{ const A=byId[a],Bn=byId[b]; const trav=A.done&&(Bn.done||RUN.pos===b);
     return `<line x1="${PX(A)}" y1="${PY(A)}" x2="${PX(Bn)}" y2="${PY(Bn)}" stroke="${trav?'#d0a64b':RUN.pos===a&&avail.has(b)?'rgba(208,166,75,.55)':'rgba(230,220,196,.13)'}" stroke-width="${trav?3:2}" ${RUN.pos===a&&avail.has(b)?'stroke-dasharray="6 5"':''}/>`; }).join('');
   const nodes=Object.values(byId).map(n=>{ const x=PX(n), y=PY(n), av=avail.has(n.id), cur=RUN.pos===n.id, r=n.type==='boss'?26:19;
@@ -255,11 +256,11 @@ function rewardFlow(summary){
     ${xpLines?`<ul class="num" style="padding-left:18px">${xpLines}</ul>`:''}${next}`);
 }
 // v52 salvage: pick one wreck from the ships you actually destroyed. What it yields depends on what it carried; Corsairs can tow small hulls home as prizes.
-const CAUSE_WORD={cut:'cut in two by a lance',big:'blown apart',flay:'flayed by gauss fire',melt:'dissolved',dark:'gutted and dark',blast:'destroyed'};
+const CAUSE_WORD=Object.fromEntries(Object.entries(KILL_CAUSES).map(([k,c])=>[k,c.w])); // v53: words come from the shared KILL_CAUSES list (battle.js)
 function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODULES[m], wk=w.wk||[];
   const pickM=[wk.includes('lance')&&'crystal',(wk.includes('torp')||wk.includes('htorp')||wk.includes('startorp'))&&'magazine',(wk.includes('battery')||wk.includes('hbattery'))&&'loaders',wk.includes('flak')&&'flakplus',w.ab==='launch'&&'hangar',(wk.includes('gauss')||wk.includes('needle')||wk.includes('shard'))&&'cogitator',w.regen&&'damcon',w.sh>=20&&'capacitor',(wk.includes('turret')||wk.includes('autocannon'))&&'auspex'].filter(Boolean).filter(has);
   // a wreck that was flayed or dissolved has little left to strip
-  const intact=w.cause!=='flay'&&w.cause!=='melt'&&w.cause!=='big', m=intact&&pickM.length?pickM[0]:null, cred=Math.round((10+9*w.cp)*(intact?1:1.3));
+  const intact=!(KILL_CAUSES[w.cause]&&KILL_CAUSES[w.cause].scrap), m=intact&&pickM.length?pickM[0]:null, cred=Math.round((10+9*w.cp)*(intact?1:1.3));
   const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'?true:false;
   return {mod:m,cred,tow}; }
 ACT.salvageStep=()=>{ closeModal(); const ws=window._wrecks||[];

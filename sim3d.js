@@ -215,6 +215,39 @@ async function ruleCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
     u.hexMoved=1; const c1=hitChance(e,w,u); u.hexMoved=0; const c0=hitChance(e,w,u); u.hexMoved=3; const c3=hitChance(e,w,u);
     ok('a hull that held still is easier to hit, one that burned hard is harder',c0>c1&&c3<c1,c0+' / '+c1+' / '+c3);
     const bw=u.weapons.find(x=>x.arc==='P'||x.arc==='S'); if(bw){ u.hexMoved=0; const m0=dmgMult(u,bw,e,false); u.hexMoved=2; const m2=dmgMult(u,bw,e,false); ok('raking pass: broadsides hit harder after moving 2+ hexes',m2>m0,m0.toFixed(2)+' -> '+m2.toFixed(2)); } }
+  // ---- v53 correctness checks (one per bug class fixed) ----
+  const at=(u,q,r,f)=>{ u.q=q; u.r=r; if(f!=null) u.facing=f; }, clearT=()=>{ for(const k of Object.keys(B.terrain)) delete B.terrain[k]; };
+  // seed replay: the same seed and the same scripted moves give the same opening rounds (and a different seed does not)
+  { const fp=async seed=>{ RUN={fac:'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:[],aspect:null}; rndSeed(99);
+      for(const t of ['penitent','harrow','warden']) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
+      startBattle({kind:'battle',fac:'hegemony',col:3,obj:'rout',seed}); const s0=B.seed; for(let r=0;r<3&&!B.over;r++){ await botTurn(); if(B.over) break; B.side='enemy'; await startSideTurn('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await startSideTurn('player'); }
+      return JSON.stringify([s0,B.shape,Object.keys(B.terrain).sort().join(';'),B.units.map(u=>[u.tpl,u.q,u.r,u.facing,Math.round(u.hp*10),u.dead?1:0,u.weapons.map(w=>w.fired?1:0).join('')]),B.log.map(x=>x.m)]); };
+    const a=await fp(12345), b=await fp(12345), c=await fp(54321); ok('seed replay: same seed and moves give the same opening rounds',a===b&&a!==c,'fingerprint '+a.length+' chars'+(a===b?'':' (replay diverged)')+(a===c?' (different seed matched too)':'')); }
+  // animPath is presentation only: moves, turns and rams commit their own position after the live check
+  { globalThis.animPath=async function(){}; try{ const {P,E}=setup(['penitent'],null,['h_interdictor']); const u=P[0], t=E[0]; clearT();
+      const st=[...computeReach(u).map.values()].find(s=>s.path.some(p=>!p.rot)); if(st) await moveUnit(u,st); const moved=!st||(u.q===st.q&&u.r===st.r&&u.facing===st.f);
+      u.turnsLeft=1; u.mp=Math.max(1,u.mp); const f0=u.facing; await rotateUnit(u,1); const rot=u.facing===(f0+1)%6;
+      at(u,8,6,0); at(t,11,6,3); u.mp=u.speed; u.rammed=false; u.braced=false; const info=ramInfo(u); let rammed=false; if(info){ const end=info.path[info.path.length-1]; await ramUnit(u); rammed=u.q===end.q&&u.r===end.r; }
+      ok('moves, turns and rams commit their own position (animPath is presentation only)',moved&&rot&&rammed,'move '+moved+', turn '+rot+', ram '+(info?rammed:'no lane')); } finally{ delete globalThis.animPath; } }
+  // a turn abandoned mid-animation (stall) does not commit; a blink to a hex that is no longer free is refused
+  { const {P,E}=setup(['i_wisp','i_blade'],'ithar'); const u=P[0]; const keepR=animRotate; animRotate=async function(){ B.epoch=(B.epoch||0)+1; }; u.turnsLeft=1; u.mp=Math.max(1,u.mp); const f0=u.facing; await rotateUnit(u,1); animRotate=keepR;
+    u.ab='blink'; u.abCd=0; const q0=u.q, r0=u.r, okB=await useAbility(u,{hex:{q:E[0].q,r:E[0].r}}); ok('a stalled turn does not commit, a blink onto a ship is refused',u.facing===f0&&okB===false&&u.q===q0&&u.r===r0,'facing '+f0+' -> '+u.facing+', blink '+okB); }
+  // a shot abandoned after a stall leaves the gun ready and the target untouched
+  { const {P,E}=setup(['penitent'],null,['h_interdictor']); const u=P[0], t=E[0]; clearT(); at(t,10,6,3); let wi=-1; for(let f=0;f<6&&wi<0;f++){ at(u,7,6,f); wi=u.weapons.findIndex(w=>canFire(u,w,t)); }
+    if(wi<0) ok('an abandoned shot does not spend the gun',false,'no firing solution'); else { const keepW=animWeapon; animWeapon=async function(){ B.epoch=(B.epoch||0)+1; }; const hp=t.hp, r=await fireWeapon(u,wi,t); animWeapon=keepW; ok('an abandoned shot does not spend the gun',r===false&&weaponReady(u.weapons[wi])&&t.hp===hp,'ready '+weaponReady(u.weapons[wi])+', hp '+hp+' -> '+t.hp); } }
+  // tick deaths: startSideTurn hands back a promise; the death is logged once and has finished when it resolves; the dead star has its own kill cause
+  { const {E}=setup(); const t=E[1]; t.reanimate=false; t.hp=3; t.st.acid=1; t.st.fire=1; t.st.fireDmg=6; const n0=B.log.length; const p=startSideTurn('enemy'); const was=!!p&&typeof p.then==='function'; await p; const L=B.log.slice(n0).map(x=>x.m);
+    ok('tick deaths are awaited, logged once, and finish before the turn goes on',was&&t.dead&&L.filter(m=>m.indexOf(t.name+' is destroyed')>=0).length===1&&!L.some(m=>m.indexOf(t.name+' burns out')>=0),'promise '+was+', lines '+L.filter(m=>m.indexOf(t.name)>=0).length); }
+  { const {E}=setup(); const t=E[0]; t.reanimate=false; t.hp=5; B.well={q:t.q+1,r:t.r}; await startSideTurn('enemy'); const bad=[]; for(const id in W){ const c=killCauseOf(W[id],{id:'x'}); if(!KILL_CAUSES[c]) bad.push(id+':'+c); } for(const c of ['melt','dark','big','tidal','blast']) if(!KILL_CAUSES[c]) bad.push(c);
+    ok('a dead star kill has its own cause, and every cause is in KILL_CAUSES',t.dead&&t.killCause==='tidal'&&!bad.length,'cause '+t.killCause+(bad.length?', missing '+bad.join(','):'')); }
+  // a squadron whose orders stall is skipped with a log line
+  { setup(['reliquary','warden']); const keepS=stallGuard; stallGuard=async function(){ return 'stall'; }; const n0=B.log.length; await swarmPhase('player'); stallGuard=keepS; const L=B.log.slice(n0).map(x=>x.m); const sq=alive('player').filter(u=>u.isSq);
+    ok('stalled squadron orders are logged as lost',!sq.length||(L.some(m=>m.indexOf('orders lost in interference')>=0)&&sq.every(u=>u.activated)),sq.length+' wings, '+L.length+' lines'); }
+  // saves: one defaults list, malformed saves rejected, renamed ids skipped
+  { const r=migrateRun({fac:'chorus',fleet:[{tpl:'penitent',hp:10,cap:{name:'x'}}],map:{cols:[]}}), miss=Object.keys(runDefaults()).filter(k=>r[k]===undefined);
+    const rej=!saneSave({meta:{},run:{fleet:{},map:{cols:[]}}})&&!saneSave({meta:[],run:null})&&!saneSave({meta:{stats:'x'}})&&saneSave({meta:defaultMeta(),run:{none:true}})&&saneSave({meta:defaultMeta(),run:r});
+    const R0=RUN; RUN=null; let threw=null; const cw=console.warn; console.warn=()=>{}; try{ derive({tpl:'penitent',mods:['no_such_mod'],cap:{perks:['no_such_perk']}}); }catch(e){ threw=e.message; } console.warn=cw; RUN=R0;
+    ok('saves: one defaults list, malformed saves rejected, renamed ids skipped',!miss.length&&rej&&!threw&&Array.isArray(r.fleet[0].mods)&&Array.isArray(r.fleet[0].cap.perks),'missing ['+miss.join(',')+'], rejects '+rej+(threw?', threw '+threw:'')); }
   console.log(out.join('\\n')); console.log(out.some(x=>x.startsWith('FAIL'))?'RULECHECK FAILED':'RULECHECK PASSED'); if(out.some(x=>x.startsWith('FAIL'))) process.exitCode=1; }
 async function boonCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS ':'FAIL ')+n+(note?': '+note:''));
   const setup=(boons,aspect,fleet,fac)=>{ RUN={fac:'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:boons.map(id=>({id,r:0})),aspect:aspect||null};
