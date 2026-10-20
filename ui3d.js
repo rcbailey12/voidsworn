@@ -162,7 +162,7 @@ function tileBase(key,col,alpha,edge){
   if(OV.bases[key]) return OV.bases[key];
   let m; if(edge){ m=MB.CreateTorus('tb',{diameter:HS*2*.94,thickness:.35,tessellation:6},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationY(Math.PI/6)); }
   else { m=MB.CreateDisc('tb',{radius:HS*.9,tessellation:6,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2).multiply(BABYLON.Matrix.RotationY(Math.PI/6))); }
-  m.material=ovMat(key,col,alpha); m.isVisible=false; m.isPickable=false; G.glow.addExcludedMesh(m); return OV.bases[key]=m;
+  m.material=ovMat(key,col,alpha); m.material._keep=true; m.isVisible=false; m.isPickable=false; G.glow.addExcludedMesh(m); return OV.bases[key]=m;
 }
 function tile(key,col,alpha,h,list,edge){ const inst=tileBase(key,col,alpha,edge).createInstance('t'); inst.position=hexWorld(h.q,h.r,.12); inst.isPickable=false; list.push(inst); return inst; }
 function ringMesh(col,alpha,R,th=.3){ const m=MB.CreateTorus('rg',{diameter:R*2,thickness:th,tessellation:48},G.scene); m.material=ovMat('ring',col,alpha); m.isPickable=false; G.glow.addExcludedMesh(m); return m; }
@@ -190,10 +190,12 @@ function ramLane(u,ri){ try{ const a=hexWorld(u.q,u.r,.9), b=hexWorld(ri.t.q,ri.
     const d=b.subtract(a); d.y=0; d.normalize(); const side=new V3(-d.z,0,d.x), tip=b.subtract(d.scale(HS*.75)), k=HS*.38;
     const ar=MB.CreateTube('ramArrow',{path:[tip.subtract(d.scale(k)).add(side.scale(k)),tip,tip.subtract(d.scale(k)).subtract(side.scale(k))],radius:HS*.09,tessellation:6},G.scene); ar.material=m; ar.isPickable=false; OV.items.push(ar);
     const v=G.views.get(ri.t.id), rm=ringMesh(new C3(1.3,.35,.25),.9,v?Math.max(6,v.L*.66):6.5,.45); rm.position=hexWorld(ri.t.q,ri.t.r,.3); OV.items.push(rm); }catch(e){ console.warn(e); } }
-function clearOverlays(){ for(const m of OV.items) m.dispose(); OV.items=[]; for(const m of OV.hover) m.dispose(); OV.hover=[]; if(OV.fan){ OV.fan.dispose(); OV.fan=null; } if(OV.ghost){ OV.ghost.dispose(); OV.ghost=null; OV.ghostFor=null; } OV.targets=[]; }
+// v49: overlay meshes own their materials (rings, fans, lines), so free those too; the shared tile templates keep theirs
+function ovDispose(m){ if(!m||m.isDisposed&&m.isDisposed()) return; const mats=new Set(); const grab=x=>{ const mt=x&&x.material; if(mt&&!mt._keep&&!(G.aimMats&&Object.values(G.aimMats).includes(mt))) mats.add(mt); }; grab(m); if(m.getChildMeshes) m.getChildMeshes(false).forEach(grab); m.dispose(); mats.forEach(mt=>{ try{ mt.dispose(); }catch(e){} }); }
+function clearOverlays(){ for(const m of OV.items) ovDispose(m); OV.items=[]; for(const m of OV.hover) ovDispose(m); OV.hover=[]; if(OV.fan){ ovDispose(OV.fan); OV.fan=null; } if(OV.ghost){ OV.ghost.dispose(); OV.ghost=null; OV.ghostFor=null; } OV.targets=[]; }
 function refreshOverlays(){
-  for(const m of OV.items) m.dispose(); OV.items=[]; OV.targets=[];
-  if(OV.fan){ OV.fan.dispose(); OV.fan=null; }
+  for(const m of OV.items) ovDispose(m); OV.items=[]; OV.targets=[];
+  if(OV.fan){ ovDispose(OV.fan); OV.fan=null; }
   if(!B||B.over) { refreshHover(); return; }
   const sel=B.sel, playerTurn=B.side==='player'&&!B.busy;
   const arcU=sel||B.inspect;
@@ -224,7 +226,7 @@ function refreshOverlays(){
   refreshHover();
 }
 function refreshHover(){
-  for(const m of OV.hover) m.dispose(); OV.hover=[];
+  for(const m of OV.hover) ovDispose(m); OV.hover=[];
   if(OV.ghost) OV.ghost.setEnabled(false);
   if(!B||B.over||B.busy) return;
   const h=B.hover, sel=B.sel; if(!h) return;
