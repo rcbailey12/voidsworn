@@ -3,7 +3,7 @@ import os
 import re, sys, time, subprocess, functools, json
 from playwright.sync_api import sync_playwright
 print=functools.partial(print,flush=True)
-FILES=['data.js','core.js','battle.js','scene3d.js','ships3d.js','fx3d.js','campaign_meta.js','campaign_run.js','ui3d.js','campaign3d.js','main3d.js']
+FILES=['data.js','core.js','battle.js','scene3d.js','ships3d.js','fx3d.js','sfx_data.js','sfx.js','campaign_meta.js','campaign_run.js','ui3d.js','campaign3d.js','main3d.js']
 results=[]
 def check(name,ok,detail=''): results.append((name,ok)); print(('PASS ' if ok else 'FAIL ')+name+(' | '+detail if detail else ''))
 subprocess.run(['python3','build.py','test'],check=True,capture_output=True)

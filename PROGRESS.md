@@ -484,3 +484,9 @@ Live main: https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH | Preview: https://
 - updateWorld takes canvas size from the engine (no per-frame layout read).
 - Gates: rulecheck (one flaky fail in 10 runs, logged), fuzz 20; PC smoke passed 15:14.
 - Owner playtest (v53.2): 4 wins / 0 losses, every battle over in round 3 (sector 1 too easy). Big call-out: close-up graphics look haphazard (floating window lights, stray procedural parts on mesh hulls, faceted asteroids, box squadrons). Workstream G started for ship close-ups; E told asteroids are top priority.
+
+## v53.4 (Oct 20): sound rebuild
+- New sfx.js: buses (weapons, impacts, explosions, UI, ambient) into a generated dark reverb, compressor and limiter; pan from screen position and distance falloff; voice limits with oldest-voice stealing; overlapping guns become a rolling salvo with a low body from the 4th gun; synth cues pre-rendered once, no per-frame audio JS.
+- 52 recorded clips embedded (sfx_data.js, ~470 KB Opus): Kenney CC0 sci-fi/interface and Sonniss GDC 2026 (booms, debris, metal hits, force fields, lasers, arcs, UI, turn cues, roomtone ambient), layered with synth and per-faction pitch.
+- Volume slider in Settings; ?sfx=1 audition panel / sfxTest(); menu and reward-pick clicks now play UI sounds.
+- Gates: rulecheck, fuzz 20; PC smoke passed 15:31.

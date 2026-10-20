@@ -43,10 +43,11 @@ function createView(u){
   const fac=u.fac||'voidsworn';
   const v={u,fac,bob:Math.random()*6.28,bank:0,lastA:null,fires:[],state:'alive'};
   if(u.isSq){ v.root=new BABYLON.TransformNode('sq',G.scene); v.crafts=[]; v.L=5; v.H=2;
-    for(let i=0;i<3;i++){ const c=craftInstance(fac,u.sqKind)||buildCraft(fac,u.sqKind); c.root.parent=v.root; c.root.scaling.setAll(1.35); c.meshes.forEach(m=>m.metadata={unit:u.id}); v.crafts.push({c,ph:i*2.09,rad:2+i*.7,h:(i-1)*.5}); }
+    const fm=typeof craftFormation==='function'?craftFormation(fac,u.sqKind):{s:1.35,pts:[[0,0,0],[-1.6,0,1.7],[-1.6,0,-1.7]]}; v.wing=new BABYLON.TransformNode('wing',G.scene); v.wing.parent=v.root; v.wingPh=Math.random()*6.28; // v53-G: the wing flies as one formation
+    fm.pts.forEach(([x,y,z],i)=>{ const c=craftInstance(fac,u.sqKind)||buildCraft(fac,u.sqKind); c.root.parent=v.wing; c.root.scaling.setAll(fm.s); c.root.position.set(x,y,z); c.meshes.forEach(m=>m.metadata={unit:u.id}); v.crafts.push({c,ph:i*1.7,y}); });
     if(typeof craftTrails==='function') craftTrails(v,fac);
     const pv=u.parent&&G.views.get(u.parent);
-    if(pv&&pv.model&&!u.launched){ u.launched=true; const bay=pv.model.bays.length?pv.model.bays[Math.floor(Math.random()*pv.model.bays.length)]:new V3(0,0,0); v.launch={from:toWorld(pv,bay),t0:G.time}; SFX.launch(); }
+    if(pv&&pv.model&&!u.launched){ u.launched=true; const bay=pv.model.bays.length?pv.model.bays[Math.floor(Math.random()*pv.model.bays.length)]:new V3(0,0,0); v.launch={from:toWorld(pv,bay),t0:G.time}; SFX.launch(v.launch.from); }
   } else { const mdl=buildShipModel(u); v.model=mdl; v.root=mdl.root; v.L=mdl.L; v.H=mdl.H; mdl.meshes.forEach(m=>m.metadata={unit:u.id}); }
   v.ring=makeShieldRing(u,v); v.plate=makePlate(u);
   if(v.model&&G.quality!=='medium'&&u.size>=.6&&!(B&&B._warm)){ /* v45: engine lights only for the opening fleets; a light added mid-battle recompiles every hull material */ const el=new BABYLON.PointLight('engLight',new V3(-v.L*.56,0,0),G.scene); el.parent=v.root; el.diffuse=(FAC3D[fac]||FAC3D.hegemony).eng; el.specular=el.diffuse; el.intensity=1.6; el.range=v.L*.8; el.includedOnlyMeshes=v.model.meshes.slice(); v.engLight=el; }
@@ -141,7 +142,8 @@ function updateWorld(dt){
     if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1.35; /* v51: always under way, engines at cruise */ v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
       for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt; if(v.model.turrets&&typeof updateTurrets==='function') updateTurrets(v,dt);
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx){ v.stackFx=v.model.stacks.map(sp=>{ const n=new BABYLON.TransformNode('stk',G.scene); n.parent=v.root; n.position=sp.clone(); const ps=new BABYLON.ParticleSystem('stack',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.direction1=new V3(-.2,1,-.2); ps.direction2=new V3(.2,1.5,.2); ps.color1=new C4(.32,.28,.25,.5); ps.color2=new C4(.2,.18,.17,.4); ps.colorDead=new C4(.1,.1,.1,0); ps.minSize=.3; ps.maxSize=.7; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,3.2); ps.minLifeTime=1.5; ps.maxLifeTime=3; ps.emitRate=10; ps.minEmitPower=.6; ps.maxEmitPower=1.2; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); return ps; }); } }
-    if(v.crafts){ for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
+    if(v.crafts){ if(v.wing){ const ang=t*.95+v.wingPh, R=3.4; v.wing.position.set(Math.cos(ang)*R,Math.sin(t*.8+v.wingPh)*.4,-Math.sin(ang)*R); v.wing.rotation.set(.3,ang+Math.PI/2,0); for(const c of v.crafts) c.c.root.position.y=c.y+Math.sin(t*2.1+c.ph)*.16; }
+      else for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
     v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.07+.3*f:0)+s.pulse*.9; s.m.scaling.setAll(1+s.pulse*.08); });
     // damage fires
@@ -199,7 +201,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
   const cr=(u.isSq||opt.charge)?0:(FE.cruise!=null?FE.cruise:.22), vmax=1/(ta*(1+cr)/2+(1-ta-td)+td*(1+cr)/2);
   const prog=p=>{ if(p<ta) return vmax*(cr*p+(1-cr)*p*p/(2*ta)); if(p<1-td) return vmax*(ta*(1+cr)/2+p-ta); const q=p-(1-td); return vmax*(ta*(1+cr)/2+1-ta-td)+vmax*q-vmax*(1-cr)*q*q/(2*td); };
   const thrAt=p=>p<ta?1:p<1-td?.65:.15;
-  if(!u.isSq&&G.views.get(u.id)) SFX.engine(u.size);
+  if(!u.isSq&&G.views.get(u.id)) SFX.engine(u.size,u);
   const v=G.views.get(u.id); let trail=null; if(v&&!u.isSq&&v.root&&S>=1&&!FE.phase&&!(typeof process!=='undefined'&&process.env)) trail=startTrail(v); let ri=0, ti=0, lastKey=0;
   // v46.1 movement signatures, strong enough to read at battle zoom (Ryan: "I didn't see or feel any real differences")
   const sd=String(u.id).split('').reduce((h,c)=>h*31+c.charCodeAt(0)|0,7), side=(sd&1)?1:-1, ph=(Math.abs(sd)%100)*.0628;
@@ -218,7 +220,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     let d=(Math.atan2(-(B1.z-B0.z),B1.x-B0.x)-Math.atan2(-(A1.z-A0.z),A1.x-A0.x))*180/Math.PI; d=((d+540)%360)-180; return clamp(d,-40,40); };
   const fxAt=(q,r,y)=>{ const w=hexWorld(q,r); return new V3(w.x,y==null?HOVER_Y:y,w.z); };
   const P=FAC3D[u.fac]||FAC3D.hegemony; let retroDone=false, coughT=0, phased=false;
-  const phaseFx=(q,r,out)=>{ try{ SFX.phase(); const c=fxAt(q,r), L=(v&&v.L)||8; flash(c,6+L*.5,P.eng.scale(1.8),.3); if(typeof shockRing==='function') shockRing(c,L*1.1,P.eng,{flat:true,dur:.5});
+  const phaseFx=(q,r,out)=>{ try{ SFX.phase({q,r}); const c=fxAt(q,r), L=(v&&v.L)||8; flash(c,6+L*.5,P.eng.scale(1.8),.3); if(typeof shockRing==='function') shockRing(c,L*1.1,P.eng,{flat:true,dur:.5});
       const col=MB.CreateCylinder('phaseCol',{height:26,diameterTop:L*.08,diameterBottom:L*.5,tessellation:18},G.scene), cm=emMat('phaseColM',P.eng.scale(1.5),.55); cm.alphaMode=BABYLON.Engine.ALPHA_ADD; cm.disableDepthWrite=true; cm.backFaceCulling=false; col.material=cm; col.isPickable=false; col.position.copyFrom(c); col.position.y+=8;
       const t0=G.time, obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(.55*Math.max(.4,SPEED)); if(k>=1||col.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); try{ col.dispose(); cm.dispose(); }catch(e){} return; } cm.alpha=.55*(1-k); col.scaling.set(1-k*.6,1+k*.4,1-k*.6); });
       if(typeof sparks==='function') sparks(c,18,9,new C4(P.eng.r,P.eng.g,P.eng.b,1)); }catch(e){} };
@@ -234,7 +236,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     if(FE.arc&&travels) roll=-side*(FE.roll||.3)*Math.sin(clamp(x/S,0,1)*Math.PI); // banks into the curve
     if(FE.over&&travels){ pitch=(p<ta?-1:0)*(FE.pitch||.07)*Math.sin(Math.PI*clamp(p/ta,0,1)); thr=p<ta?2.4:thr; } // Voidsworn: the nose digs in as the heavy drive lights
     if(FE.squash&&travels){ const w=Math.sin(2*Math.PI*(FE.str||3)*p); sc=[1+FE.squash*w,1/Math.sqrt(1+FE.squash*w),1/Math.sqrt(1+FE.squash*w)]; thr=.5+.9*Math.max(0,w); }
-    if(FE.jit&&travels){ roll=(FE.roll||.2)*Math.sin(x*7.1+ph)*Math.sin(Math.PI*p); if(p>ta&&p<1-td){ const c=Math.sin(G.time*23+ph)>.55; thr=c?2:.35; if(v&&v.root&&G.time-coughT>.16&&Math.random()<.35){ coughT=G.time; try{ SFX.cough(); const st=toWorld(v,new V3(-v.L*.55,0,0)); burst(st,{n:8,c1:new C4(.3,.27,.25,.75),c2:new C4(.15,.13,.12,.5),size:[.5,1.3],life:[.5,1.1],power:[1,3],tex:G.tex.smoke,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(err){} } } } // patched engines cough smoke
+    if(FE.jit&&travels){ roll=(FE.roll||.2)*Math.sin(x*7.1+ph)*Math.sin(Math.PI*p); if(p>ta&&p<1-td){ const c=Math.sin(G.time*23+ph)>.55; thr=c?2:.35; if(v&&v.root&&G.time-coughT>.16&&Math.random()<.35){ coughT=G.time; try{ SFX.cough(v); const st=toWorld(v,new V3(-v.L*.55,0,0)); burst(st,{n:8,c1:new C4(.3,.27,.25,.75),c2:new C4(.15,.13,.12,.5),size:[.5,1.3],life:[.5,1.1],power:[1,3],tex:G.tex.smoke,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(err){} } } } // patched engines cough smoke
     if(FE.linear&&travels){ if(p<ta) thr=2.2; if(FE.retro&&!retroDone&&p>=1-td){ retroDone=true; try{ if(v&&v.root){ const bow=toWorld(v,new V3(v.L*.5,0,0)); flash(bow,3+v.L*.18,P.eng.scale(1.6),.22); rcsPuff(v,1); rcsPuff(v,-1); } }catch(err){} } } // Hegemony: hard burn, dead-straight, retro-thrust stop
     if(FE.phase&&v&&v.root&&travels){ // Deathless: the hull dissolves, and is simply elsewhere
       const k1=clamp((p-.02)/.1,0,1), k2=clamp((.98-p)/.1,0,1); const hide=p>.12&&p<.88;
@@ -263,7 +265,7 @@ function rcsPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a
 // v50 lateral thrusters: a broadside of cold-gas jets fore and aft when a hull slips sideways; a bow retro burst when it backs off
 function slipPuff(v,dir){ try{ if(!v.root||G.fxReduced&&G.mobile) return; const a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), side=new V3(-f.z,0,f.x).scale(dir>=0?-1:1), c=v.root.getAbsolutePosition();
     for(const k of [.32,-.3]){ const p=c.add(f.scale(v.L*k)).add(side.scale(v.L*.09)); burst(p,{n:9,c1:new C4(.85,.92,1,.7),c2:new C4(.6,.7,.8,.35),size:[.3,.8],life:[.3,.6],power:[4,8],dir:side,tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }
-    if(typeof SFX!=='undefined'&&SFX.puff) SFX.puff(); }catch(e){} }
+    if(typeof SFX!=='undefined'&&SFX.puff) SFX.puff(c); }catch(e){} }
 function revPuff(v){ try{ if(!v.root) return; const P=FAC3D[v.fac]||FAC3D.hegemony, a=v.root.rotation.y, f=fwdOf(a*180/Math.PI), bow=v.root.getAbsolutePosition().add(f.scale(v.L*.5));
     flash(bow,2.5+v.L*.15,P.eng.scale(1.4),.2); burst(bow,{n:12,c1:new C4(.85,.92,1,.75),c2:new C4(.6,.7,.8,.35),size:[.3,.9],life:[.3,.6],power:[5,9],dir:f,tex:G.tex.soft,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(e){} }
 
@@ -389,6 +391,7 @@ function scorchMat(){ if(SCORCH) return SCORCH; const t=dynTex('scorchT',128,128
   const m=new BABYLON.StandardMaterial('scorchM',G.scene); m.diffuseTexture=t; m.diffuseTexture.hasAlpha=true; m.useAlphaFromDiffuseTexture=true; m.specularColor=C3.Black(); m.backFaceCulling=false; m.zOffset=-2; return SCORCH=m; }
 function surfAtModel(sf,x){ const st=sf.st; if(x<=st[0].x) return st[0]; for(let i=0;i<st.length-1;i++) if(x>=st[i].x&&x<=st[i+1].x) return interpStation(st[i],st[i+1],x); return st[st.length-1]; }
 function hullDecal(vt,from,big){ const md=vt&&vt.model; if(!md||!md.surf||!vt.root||vt.root.isDisposed()) return; const L=vt.L; vt.root.computeWorldMatrix(true);
+  if(md.skin&&md.skin.length) return skinDecal(vt,from,big);
   const lf=V3.TransformCoordinates(from,BABYLON.Matrix.Invert(vt.root.getWorldMatrix())), side=lf.z>=0?1:-1, x=(Math.random()-.5)*L*.75, st=surfAtModel(md.surf,x); if(!st||st.w<L*.02) return;
   const y=(st.y||0)+(Math.random()-.3)*st.t*.7, node=x>=md.surf.split?md.fore:md.aft; if(!node||node.isDisposed()) return; const sz=(big?2.2:1.1)*(.7+Math.random()*.6)*Math.max(1,L/14);
   const pl=MB.CreatePlane('scorch',{size:sz},G.scene); pl.material=scorchMat(); pl.isPickable=false; G.glow.addExcludedMesh(pl); pl.parent=node; pl.position.set(x,y,side*(st.w+L*.004)); pl.rotation.set(0,side>0?Math.PI:0,Math.random()*6);
@@ -396,12 +399,24 @@ function hullDecal(vt,from,big){ const md=vt&&vt.model; if(!md||!md.surf||!vt.ro
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/9; if(k>=1||em.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!em.isDisposed()) em.dispose(); eM.dispose(); return; } eM.alpha=(1-k)*(.7+.3*Math.sin(G.time*13+x)); });
   (vt.decals=vt.decals||[]).push(pl); if(vt.decals.length>28){ const old=vt.decals.shift(); if(!old.isDisposed()) old.dispose(); } }
 
+// v53-G: scorch marks on a concept hull lie flat on a sampled surface point, turned to its normal
+function skinDecal(vt,from,big){ const md=vt.model, L=vt.L, c=skinPoint(vt,from.subtract(vt.root.getAbsolutePosition())); if(!c) return; const node=c.p.x>=((md.surf&&md.surf.split)||0)?md.fore:md.aft; if(!node||node.isDisposed()) return;
+  const sz=(big?1.8:.9)*(.7+Math.random()*.6)*Math.max(1,L/14), q=BABYLON.Quaternion.FromLookDirectionLH(c.n,Math.abs(c.n.y)>.9?new V3(1,0,0):new V3(0,1,0)).multiply(BABYLON.Quaternion.RotationAxis(new V3(0,0,1),Math.random()*6.28));
+  const pl=MB.CreatePlane('scorch',{size:sz},G.scene); pl.material=scorchMat(); pl.isPickable=false; G.glow.addExcludedMesh(pl); pl.parent=node; pl.position=c.p.add(c.n.scale(L*.002)); pl.rotationQuaternion=q;
+  const em=MB.CreatePlane('ember',{size:sz*.4},G.scene), eM=emMat('emberM',new C3(1.4,.55,.15),1); eM.opacityTexture=G.tex.soft; eM.alphaMode=BABYLON.Engine.ALPHA_ADD; eM.disableDepthWrite=true; em.material=eM; em.parent=node; em.position=c.p.add(c.n.scale(L*.003)); em.rotationQuaternion=q.clone(); em.isPickable=false;
+  const t0=G.time, x=c.p.x; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/9; if(k>=1||em.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!em.isDisposed()) em.dispose(); eM.dispose(); return; } eM.alpha=(1-k)*(.7+.3*Math.sin(G.time*13+x)); });
+  (vt.decals=vt.decals||[]).push(pl); if(vt.decals.length>28){ const old=vt.decals.shift(); if(!old.isDisposed()) old.dispose(); } }
+
 // ---------- weapon fire (called by the rules engine before damage is applied) ----------
 function hitPoint(vt,att,shielded){
   const c=vt.root.getAbsolutePosition(); const toA=att.subtract(c); toA.y=0; toA.normalize();
   if(shielded) return c.add(toA.scale(Math.max(4.2,vt.L*.5)*.85)).add(new V3(0,1,0));
+  const sk=skinPoint(vt,toA); if(sk) return toWorld(vt,sk.p); // v53-G: concept hulls take hits on their real surface, on the side facing the shooter
   const local=new V3((Math.random()-.5)*vt.L*.55,Math.random()*vt.H*.6,(Math.random()-.5)*vt.L*.1); return toWorld(vt,local);
 }
+function skinPoint(vt,worldDir){ const sk=vt&&vt.model&&vt.model.skin; if(!sk||!sk.length||!vt.root) return null; let ld=null;
+  if(worldDir){ vt.root.computeWorldMatrix(true); ld=V3.TransformNormal(worldDir,BABYLON.Matrix.Invert(vt.root.getWorldMatrix())); ld.normalize(); }
+  let best=null,bs=-9; for(let i=0;i<6;i++){ const c=sk[Math.floor(Math.random()*sk.length)], sc=(ld?V3.Dot(c.n,ld):0)+Math.random()*.6; if(sc>bs){ bs=sc; best=c; } } return best; }
 function missPoint(vt,from){ const c=vt.root.getAbsolutePosition(); const d=c.subtract(from); d.y=0; d.normalize(); const perp=new V3(-d.z,0,d.x).scale((Math.random()<.5?-1:1)*(vt.L*.45+3+Math.random()*4)); return c.add(perp).add(d.scale(10+Math.random()*14)).add(new V3(0,(Math.random()-.3)*4,0)); }
 function muzzles(v,arc,tgtPos){
   if(v.crafts) return v.crafts.map(c=>c.c.root.getAbsolutePosition().clone());
@@ -462,14 +477,14 @@ async function animWeapon(u,w,t,shots){
   if(w.arc==='T'&&typeof aimTurrets==='function'&&va.model&&va.model.turrets){ aimTurrets(va,tp); await wait(160); }
   const impact=(hit,from)=>{ if(t.dead&&!vt.root) return; if(!hit){ return; }
     const p=hitPoint(vt,from,shielded); { const d=tp.subtract(from); const mag=w.k==='torp'?(shielded?5:11):w.k==='lance'?(shielded?3:7):w.k==='gauss'?3.2:shielded?.9:2.2; physKick(t,d,mag,(Math.random()-.5)*mag*.06); } // v49: every hit pushes the hull
-    if(shielded){ { const sc=shCol(vt); shieldDome(vt,from.subtract(tp).normalize(),sc); burst(p,{n:16,c1:new C4(sc.r,sc.g,sc.b,1),c2:new C4(sc.r*.6,sc.g*.6,sc.b*.6,1),power:[3,9]}); } SFX.shield(); if((w.pierce||0)>0) explode(hitPoint(vt,from,false),.8,{light:false}); }
+    if(shielded){ { const sc=shCol(vt); shieldDome(vt,from.subtract(tp).normalize(),sc); burst(p,{n:16,c1:new C4(sc.r,sc.g,sc.b,1),c2:new C4(sc.r*.6,sc.g*.6,sc.b*.6,1),power:[3,9]}); } SFX.shield(p); if((w.pierce||0)>0) explode(hitPoint(vt,from,false),.8,{light:false}); }
     else { if(Math.random()<(w.k==='torp'||w.k==='lance'?1:.35)) hullDecal(vt,from,w.k==='torp'); if((w.k==='torp'||w.k==='lance')&&!vt.jolt){ const d=tp.subtract(from); d.y=0; d.normalize(); vt.jolt={d:d.scale(w.k==='torp'?1.6:.9),t0:G.time}; } // big hits rock the ship
-      if(w.k==='torp'){ explode(p,4.5,{shock:true}); G.shake=Math.min(1,G.shake+.35); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.35); SFX.boom(.8); } else if(w.k==='lance'){ explode(p,1.8); sparks(p,40,14,new C4(1,.95,.8,1)); SFX.hit(); } else if(style==='glob'){ explode(p,.8,{light:false}); burst(p,{n:22,c1:new C4(1,.45,.85,1),c2:new C4(.55,1,.4,1),size:[.3,.8],life:[.3,.8],power:[3,8]}); SFX.hit(); }
-      else if(style==='needle'){ explode(p,.8,{light:false}); burst(p,{n:14,c1:new C4(.85,1,1,1),c2:new C4(.5,.85,1,1),size:[.1,.35],power:[6,14]}); SFX.hit(); }
-      else { explode(p,style==='shell'?1.4:1.1,{light:Math.random()<.3}); SFX.hit(); } } };
+      if(w.k==='torp'){ explode(p,4.5,{shock:true}); G.shake=Math.min(1,G.shake+.35); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.35); SFX.boom(.8,p); } else if(w.k==='lance'){ explode(p,1.8); sparks(p,40,14,new C4(1,.95,.8,1)); SFX.hit(p,1); } else if(style==='glob'){ explode(p,.8,{light:false}); burst(p,{n:22,c1:new C4(1,.45,.85,1),c2:new C4(.55,1,.4,1),size:[.3,.8],life:[.3,.8],power:[3,8]}); SFX.hit(p); }
+      else if(style==='needle'){ explode(p,.8,{light:false}); burst(p,{n:14,c1:new C4(.85,1,1,1),c2:new C4(.5,.85,1,1),size:[.1,.35],power:[6,14]}); SFX.hit(p); }
+      else { explode(p,style==='shell'?1.4:1.1,{light:Math.random()<.3}); SFX.hit(p); } } };
   if(w.k==='lance'){
     for(let i=0;i<shots.length;i++){ const from=mz[i%mz.length], h=shots[i], to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
-      if(typeof chargeFx==='function') chargeFx(from,col); flash(from,5,col,.35); lightFlash(from,col,2,40,.5); await wait(100); beam(from,to,col,w.ion?1.1:1.6,.7); if(typeof beamMaterial!=='function') beam(from,to,col.scale(.6),w.ion?2.6:3.6,.45); SFX.lance(!!w.ion,va.fac); if(h){ impact(true,from); if(typeof fxSprite==='function') fxSprite(to,7,C3.Lerp(col,new C3(1,1,1),.4).scale(1.5),starTex(),.6,{grow:.5,spin:2}); } else flash(to,2,col.scale(.6)); await wait(150); }
+      if(typeof chargeFx==='function') chargeFx(from,col); flash(from,5,col,.35); lightFlash(from,col,2,40,.5); await wait(100); beam(from,to,col,w.ion?1.1:1.6,.7); if(typeof beamMaterial!=='function') beam(from,to,col.scale(.6),w.ion?2.6:3.6,.45); SFX.lance(!!w.ion,va.fac,from); if(h){ impact(true,from); if(typeof fxSprite==='function') fxSprite(to,7,C3.Lerp(col,new C3(1,1,1),.4).scale(1.5),starTex(),.6,{grow:.5,spin:2}); } else flash(to,2,col.scale(.6)); await wait(150); }
     await wait(150);
   } else if(w.k==='torp'){
     const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ const from=mz[i%mz.length]; const to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
@@ -478,7 +493,7 @@ async function animWeapon(u,w,t,shots){
       const tr=new BABYLON.ParticleSystem('trail',240,G.scene); tr.particleTexture=G.tex.smoke; tr.emitter=m; tr.color1=new C4(1,.7,.35,.8); tr.color2=new C4(.6,.5,.45,.5); tr.colorDead=new C4(.1,.1,.1,0); tr.minSize=.4; tr.maxSize=.9; tr.minLifeTime=.4; tr.maxLifeTime=.9; tr.emitRate=160; tr.minEmitPower=.1; tr.maxEmitPower=.4; tr.addSizeGradient(0,.5); tr.addSizeGradient(1,2); tr.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; tr.start();
       let trl=null, head=null; try{ trl=new BABYLON.TrailMesh('ttr',m,G.scene,.42,G.quality==='medium'?24:44,true); const tmM=emMat('ttrM',col.scale(1.5),.55); tmM.alphaMode=BABYLON.Engine.ALPHA_ADD; tmM.disableDepthWrite=true; tmM.backFaceCulling=false; trl.material=tmM; trl.isPickable=false; try{ G.glow.addExcludedMesh(trl); }catch(e){}
         head=MB.CreatePlane('thead',{size:2.6},G.scene); head.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; head.parent=m; head.isPickable=false; const hm=emMat('theadM',C3.Lerp(col,new C3(1,1,1),.4).scale(1.8),1); hm.opacityTexture=G.tex.flare; hm.alphaMode=BABYLON.Engine.ALPHA_ADD; hm.disableDepthWrite=true; head.material=hm; }catch(e){}
-      SFX.torp(va.fac); const dur=TF.dur, t0=G.time;
+      SFX.torp(va.fac,from); const dur=TF.dur, t0=G.time;
       const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=Math.min(1,(G.time-t0)/(dur*Math.max(.3,SPEED))); const p=V3.Lerp(from,to,k); p.y+=Math.sin(k*Math.PI)*TF.arc; if(TF.wob){ const e=Math.sin(k*Math.PI)*TF.wob; p.x+=Math.sin(k*22+ph)*e; p.z+=Math.cos(k*17+ph)*e; } m.lookAt(p.add(to.subtract(from).normalize().scale(2))); m.position.copyFrom(p);
         if(head&&head.material) head.material.alpha=.75+.25*Math.sin(G.time*40);
         if(typeof pdFire==='function'&&k>.25&&k<.92) pdFire(vt,p);
@@ -489,13 +504,13 @@ async function animWeapon(u,w,t,shots){
   } else {
     const gap=w.k==='flak'?45:u.isSq?55:70, speed=w.k==='flak'?170:u.isSq?110:150;
     if(!u.isSq&&typeof fxp==='function'){ try{ const vol=volleyPlan(va,w,shots.length,tp).filter((_,i)=>w.k!=='flak'||i%2===0), span=Math.max(shots.length*gap,300+vol.length*9), anyHit=shots.some(x=>x), o=style?WOPT[style]||WOPT.needle:null; /* v45: honest broadside: the share of bolts that land matches the share of shots the dice landed */ const nHit=anyHit?Math.max(1,Math.round(vol.length*shots.filter(Boolean).length/Math.max(1,shots.length))):0, hitIx=new Set(vol.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0,nHit));
-      vol.forEach((q,j)=>{ setTimeout(()=>{ try{ if(!vt.root||vt.root.isDisposed()) return; const h=hitIx.has(j), to=h?hitPoint(vt,q.p,shielded):missPoint(vt,q.p); if(h&&shielded) to.addInPlace(new V3((Math.random()-.5)*vt.L*.35,(Math.random()-.3)*2.5,(Math.random()-.5)*vt.L*.35)); volleyMuzzle(q.p,q.o,col); if(j%3===0) SFX.gun(w.k,false);
+      vol.forEach((q,j)=>{ setTimeout(()=>{ try{ if(!vt.root||vt.root.isDisposed()) return; const h=hitIx.has(j), to=h?hitPoint(vt,q.p,shielded):missPoint(vt,q.p); if(h&&shielded) to.addInPlace(new V3((Math.random()-.5)*vt.L*.35,(Math.random()-.3)*2.5,(Math.random()-.5)*vt.L*.35)); volleyMuzzle(q.p,q.o,col); if(j%2===0) SFX.gun(w.k,false,style,q.p); // sfx.js staggers and caps these into one rolling salvo
           const opt=w.k==='flak'?{speed:175,len:1.3,thick:.15}:style==='rail'?{speed:420,len:11,thick:.12}:o?{speed:o.speed*(.92+Math.random()*.16),len:o.len,thick:o.thick*.85,shape:o.shape}:{speed,len:3,thick:.26};
-          const done=()=>{ if(h){ volleyImpact(to,col,shielded,q.p,shCol(vt)); if(!shielded&&Math.random()<.06) hullDecal(vt,q.p,false); } };
+          const done=()=>{ if(h){ volleyImpact(to,col,shielded,q.p,shCol(vt)); if(j%3===1) SFX.patter(shielded,to); if(!shielded&&Math.random()<.06) hullDecal(vt,q.p,false); } };
           if(style==='twin'){ const sd=V3.Cross(to.subtract(q.p),new V3(0,1,0)).normalize().scale(.5); shoot(q.p.add(sd),to.add(sd),col,{...opt,overshoot:h?0:30}); }
           shoot(q.p,to,col,{...opt,overshoot:h?0:30,onArrive:done}); }catch(e){} },(j/Math.max(1,vol.length))*span*SPEED+Math.random()*25); }); }catch(e){ console.warn('volley',e); } }
     const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ const from=mz[i%mz.length]; const to=h?hitPoint(vt,from,shielded):missPoint(vt,from);
-      if(!u.isSq){ if(w.k==='flak') flash(from,1.2,col); else { const out=from.subtract(va.root.getAbsolutePosition()); out.y=0; muzzleFx(from,out.normalize(),col); } } SFX.gun(w.k,u.isSq,style);
+      if(!u.isSq){ if(w.k==='flak') flash(from,1.2,col); else { const out=from.subtract(va.root.getAbsolutePosition()); out.y=0; muzzleFx(from,out.normalize(),col); } } SFX.gun(w.k,u.isSq,style,from);
       if(style==='rail'){ beam(from,to,col,.42,.32); flash(from,2,col,.15); setTimeout(()=>{ try{ if(h) impact(true,from); else flash(to,1.5,col.scale(.6)); }catch(e){ frameError(e); } finally{ res(); } },60*Math.max(.3,SPEED)); return; }
       const o=style?WOPT[style]:null;
       if(style==='twin'){ const sd=V3.Cross(to.subtract(from),new V3(0,1,0)).normalize().scale(.6); shoot(from.add(sd),to.add(sd),col,{speed:o.speed,len:o.len,thick:o.thick,overshoot:h?0:30}); }
@@ -513,11 +528,11 @@ function fxText(u,txt,color,dy=0){
   const sp=V3.Project(p,BABYLON.Matrix.Identity(),G.scene.getTransformMatrix(),G.cam.viewport.toGlobal(cw,ch)); if(sp.z<0||sp.z>1) return;
   const el=document.createElement('div'); el.className='ftxt'; el.textContent=txt; el.style.color=color; el.style.left=sp.x+'px'; el.style.top=(sp.y+dy)+'px'; document.getElementById('plates').appendChild(el); setTimeout(()=>el.remove(),1300);
 }
-function fxShield(u,quad){ const v=G.views.get(u.id); if(!v) return; v.ring.segs.forEach((s,i)=>{ if(quad<0||quad===i) s.pulse=1; }); if(quad<0){ const c=v.root.getAbsolutePosition(); shieldDome(v,new V3(0,1,0),shCol(v)); SFX.shield(); } }
+function fxShield(u,quad){ const v=G.views.get(u.id); if(!v) return; v.ring.segs.forEach((s,i)=>{ if(quad<0||quad===i) s.pulse=1; }); if(quad<0){ const c=v.root.getAbsolutePosition(); shieldDome(v,new V3(0,1,0),shCol(v)); SFX.shield(v); } }
 function ripple(p,n){ const r=MB.CreateTorus('rip',{diameter:1,thickness:.08,tessellation:32},G.scene); r.position=p.clone(); r.rotationQuaternion=qFromUp(n); r.isPickable=false; const m=emMat('ripM',SHIELD_C.scale(1.6),1); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; r.material=m;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(.5*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); r.dispose(); m.dispose(); return; } r.scaling.setAll(1+k*7); m.alpha=(1-k); }); }
 function fxShieldBreak(u,quad){ const v=G.views.get(u.id); if(!v) return; const c=v.root.getAbsolutePosition(); const a=((quad===0?0:quad===1?90:quad===2?180:270)+unitVis(u).a)*Math.PI/180; const d=new V3(Math.cos(a),0,-Math.sin(a)); const p=c.add(d.scale(Math.max(4.2,v.L*.5)));
-  const sc=shCol(v); shieldDome(v,d,sc.scale(1.6)); if(typeof shieldShatter==='function') shieldShatter(p,d,sc); burst(p,{n:40,c1:new C4(Math.min(1,sc.r+.3),Math.min(1,sc.g+.3),Math.min(1,sc.b+.3),1),c2:new C4(sc.r*.5,sc.g*.5,sc.b*.5,1),size:[.12,.4],power:[6,16]}); flash(p,5,sc,.3); const s=v.ring.segs[quad]; if(s) s.pulse=1.6; SFX.shield(); }
+  const sc=shCol(v); shieldDome(v,d,sc.scale(1.6)); if(typeof shieldShatter==='function') shieldShatter(p,d,sc); burst(p,{n:40,c1:new C4(Math.min(1,sc.r+.3),Math.min(1,sc.g+.3),Math.min(1,sc.b+.3),1),c2:new C4(sc.r*.5,sc.g*.5,sc.b*.5,1),size:[.12,.4],power:[6,16]}); flash(p,5,sc,.3); const s=v.ring.segs[quad]; if(s) s.pulse=1.6; SFX.shield(p,true); }
 function fxFlash(h,color){ const p=hexWorld(h.q,h.r,1); flash(p,8,hexC3(color.length===7?color:'#f0b35a')); }
 
 // ---------- destruction ----------
@@ -545,7 +560,7 @@ function fragmentHull(v,M,persist,opt){ opt=opt||{}; const ms=v.model.meshes.fil
 async function animExplode(u){
   const v=G.views.get(u.id); if(!v||v.state!=='alive') return;
   const c=v.root.getAbsolutePosition().clone();
-  if(u.isSq){ v.state='dead'; flash(c,5,new C3(1,.7,.4)); burst(c,{n:30,power:[5,14]}); SFX.pop(); disposeView(v); G.views.delete(u.id); await wait(250); return; }
+  if(u.isSq){ v.state='dead'; flash(c,5,new C3(1,.7,.4)); burst(c,{n:30,power:[5,14]}); SFX.pop(c); disposeView(v); G.views.delete(u.id); await wait(250); return; }
   fxMark(u.isSq?'craft':'explode'); v.state='dying'; if(v.engLight){ const el=v.engLight; el.intensity=0; el.parent=null; el.position.set(0,-9000,0); (G.deadLights=G.deadLights||[]).push(el); v.engLight=null; } /* v44.1: disposing a light mid-fight re-dirties materials; it goes dark now and is freed at battle end */ (v.extras||[]).forEach(p=>p.stop()); v.plate.el.remove(); v.ring.node.dispose(false,true); v.fires.forEach(f=>f.stop()); v.fires=[];
   const L=v.L, cause=u.killCause||'blast', P3=FAC3D[v.fac]||FAC3D.hegemony;
   // v52 cause-driven deaths: a lance cuts the hull in two, torpedoes and rams blow it apart at once, gauss flays it into dissolving shards,
@@ -555,31 +570,31 @@ async function animExplode(u){
   if(CZ.pre!==0){ const pre=CZ.pre>0?CZ.pre:G.fxReduced?2:G.mobile?3:Math.round(4+Math.min(4,L/10)), preDur=(CZ.pre>0?500+L*12:700+L*14)*Math.max(.4,SPEED); const c0=c.clone();
     if(CZ.sag){ const t0=G.time, du=preDur/1000+.4, y0=v.root.position.y, sc0=v.root.scaling.clone(); const ob=G.scene.onBeforeRenderObservable.add(()=>{ if(!v.root||v.root.isDisposed()){ G.scene.onBeforeRenderObservable.remove(ob); return; } const k=clamp((G.time-t0)/du,0,1), e=k*k*(3-2*k); v.root.scaling.set(sc0.x*(1+.08*e),sc0.y*(1-.45*e),sc0.z*(1+.12*e)); v.root.position.y=y0-2.2*e; v.root.rotation.z+=.0015; if(k>=1) G.scene.onBeforeRenderObservable.remove(ob); }); } if(CZ.dark) try{ v.model.meshes.forEach(m=>{ const Mf=facMats(v.fac); if(m.material===Mf.win||m.material===Mf.eng||m.material===Mf.tip||(m.material&&/aiwin|aitrim/.test(m.material.name))) m.material=Mf.wreck; }); v.model.plumes.forEach(p=>p.setEnabled(false)); (v.model.flares||[]).forEach(p=>p.setEnabled(false)); }catch(e){}
     for(let i=0;i<pre;i++){ const delay=preDur*((i+.3)/pre)*(.85+Math.random()*.3); setTimeout(()=>{ try{ if(!v.root||v.root.isDisposed()) return; const p=toWorld(v,new V3((Math.random()-.5)*L*.85,v.H*(.15+Math.random()*.5),(Math.random()-.5)*L*.14));
-        if(CZ.dissolve){ try{ arcBolt(p,toWorld(v,new V3((Math.random()-.5)*L*.9,v.H*.4,(Math.random()-.5)*L*.2)),P3.eng.scale(1.6)); sparks(p,G.mobile?8:20,8+L*.2); fxp&&fxp(p,{cell:0,size:2+L*.08,col:P3.eng.scale(1.5),dur:.4,grow:.6}); }catch(e){} v.root.rotation.z+=(Math.random()-.5)*.03; SFX.boom(.15); return; }
-        if(CZ.sag){ try{ burst(p,{n:G.mobile?10:22,tex:G.tex.smoke,c1:new C4(.62,.72,.25,.75),c2:new C4(.3,.36,.12,.5),size:[1.2,3],life:[.9,1.8],power:[1,4],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(e){} SFX.boom(.12); return; }
-        if(CZ.dark){ sparks(p,G.mobile?6:14,6+L*.2); try{ flash(p,1.5+L*.04,new C3(1,.75,.5),.15); }catch(e){} v.root.rotation.x+=(Math.random()-.5)*.05; SFX.boom(.1); return; }
+        if(CZ.dissolve){ try{ arcBolt(p,toWorld(v,new V3((Math.random()-.5)*L*.9,v.H*.4,(Math.random()-.5)*L*.2)),P3.eng.scale(1.6)); sparks(p,G.mobile?8:20,8+L*.2); fxp&&fxp(p,{cell:0,size:2+L*.08,col:P3.eng.scale(1.5),dur:.4,grow:.6}); }catch(e){} v.root.rotation.z+=(Math.random()-.5)*.03; SFX.boom(.15,p); return; }
+        if(CZ.sag){ try{ burst(p,{n:G.mobile?10:22,tex:G.tex.smoke,c1:new C4(.62,.72,.25,.75),c2:new C4(.3,.36,.12,.5),size:[1.2,3],life:[.9,1.8],power:[1,4],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(e){} SFX.boom(.12,p); return; }
+        if(CZ.dark){ sparks(p,G.mobile?6:14,6+L*.2); try{ flash(p,1.5+L*.04,new C3(1,.75,.5),.15); }catch(e){} v.root.rotation.x+=(Math.random()-.5)*.05; SFX.boom(.1,p); return; }
         explode(p,.9+L*.05,{light:i%3===0}); sparks(p,G.mobile?10:26,10+L*.3); if(typeof fxStreak==='function'){ const o=p.subtract(c0); o.y=Math.abs(o.y)+.4; fxStreak(p,o.normalize(),4+L*.2,2+L*.05,new C3(1,.55,.2).scale(1.6),coneTex(),.45); }
         try{ hullDecal(v,p.add(p.subtract(c0).normalize().scale(4)),true); }catch(e){}
-        v.root.rotation.x+=(Math.random()-.5)*.09; v.root.rotation.z+=(Math.random()-.5)*.05; v.root.position.y-=.25; G.shake=Math.min(1,G.shake+.1+L/400); SFX.boom(.3); }catch(e){} },delay); }
+        v.root.rotation.x+=(Math.random()-.5)*.09; v.root.rotation.z+=(Math.random()-.5)*.05; v.root.position.y-=.25; G.shake=Math.min(1,G.shake+.1+L/400); SFX.boom(.3,p); }catch(e){} },delay); }
     await wait(preDur); if(!v.root||v.root.isDisposed()) return; }
   // v44: the death plays out: the hull scorches and splits with glowing cracks, internal blasts tear through it, then the reactor goes
   try{ if(typeof shipDamageFx==='function'){ v.state='alive'; shipDamageFx(v,-1); v.state='dying'; } }catch(e){}
   if(!B.over&&cineWants('kill',null,u)){ try{ clearTimeout(G.cineTimer); fxMark('cine'); const r0=clamp(L*3.4+40,60,190), tgt=new V3(c.x,0,c.z), a0=G.ctl.a+.35; G.ctl.hold(tgt,a0,1.05,r0*.72); /* v45 kill cam: punch in on the first blasts, then drift out for the reactor */ setTimeout(()=>{ if(G.ctl.saved) G.ctl.hold(tgt,a0+.18,1.0,r0*1.05); },650*SPEED); G.cineTimer=setTimeout(()=>G.ctl.release(),2500*SPEED); }catch(e){} }
-  if(CZ.reactor>0){ const nPop=Math.round((G.mobile?3:5)*Math.min(1.4,CZ.reactor)); for(let i=0;i<nPop;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(typeof fxStreak==='function'&&i%2===0){ const o=p.subtract(c); o.y=Math.abs(o.y)+.5; fxStreak(p,o.normalize(),6+L*.25,3+L*.06,new C3(1,.6,.25).scale(1.6),coneTex(),.35); } if(i%2===0) SFX.hit(); await wait(90); }
+  if(CZ.reactor>0){ const nPop=Math.round((G.mobile?3:5)*Math.min(1.4,CZ.reactor)); for(let i=0;i<nPop;i++){ const p=toWorld(v,new V3((Math.random()-.5)*L*.8,Math.random()*v.H*.6,(Math.random()-.5)*L*.12)); explode(p,1.5+L*.08,{light:i%2===0}); if(typeof fxStreak==='function'&&i%2===0){ const o=p.subtract(c); o.y=Math.abs(o.y)+.5; fxStreak(p,o.normalize(),6+L*.25,3+L*.06,new C3(1,.6,.25).scale(1.6),coneTex(),.35); } if(i%2===0) SFX.hit(p); await wait(90); }
   } if(CZ.reactor>0&&typeof fxSprite==='function'){ fxSprite(c,L*(G.mobile?1.7:2.6)*CZ.reactor,new C3(1,.9,.75).scale(1.5),starTex(),.55,{grow:.8}); shockRing(c,L*3.2,(FAC3D[v.fac]||FAC3D.hegemony).eng.scale(1.3),{flat:true,dur:1.6,thick:.03,tilt:.5}); }
   // v49: no two deaths alike: size, colour (reactor tint per faction), off-centre fireballs and an occasional late second blast
   const VB={voidsworn:new C3(1,.62,.3),hegemony:new C3(.75,.88,1),corsair:new C3(1,.5,.25),chorus:new C3(.85,.95,.4),ithar:new C3(.8,1,.92),deathless:new C3(.45,1,.55)}[v.fac]||new C3(1,.85,.6), bs=(.8+Math.random()*.55)*CZ.reactor;
   if(CZ.reactor>0){
   flash(c,L*1.4*bs,C3.Lerp(new C3(1,.9,.7),VB,.5),.7); if(!G.fxReduced) G.pulse=Math.min(1.2,(G.pulse||0)+.9); explode(c,L*.45*bs); if(typeof fireballFx==='function'&&!G.fxReduced){ fireballFx(c.add(new V3(0,1,0)),L*.42*bs,1.7); const nX=Math.floor(Math.random()*3); for(let i=0;i<nX;i++){ const off=new V3((Math.random()-.5)*L*.7,Math.random()*2,(Math.random()-.5)*L*.3); setTimeout(()=>{ try{ fireballFx(c.add(off),L*(.15+Math.random()*.15),1.2); }catch(e){} },(120+Math.random()*380)*Math.max(.4,SPEED)); } }
-  if(Math.random()<.45&&!G.fxReduced) setTimeout(()=>{ try{ const q=c.add(new V3((Math.random()-.5)*L*.4,1,(Math.random()-.5)*L*.2)); flash(q,L*.9,VB.scale(1.3),.45); explode(q,L*.3); shockRing(q,L*2,VB.scale(1.2),{flat:true,dur:1.1,thick:.03,tilt:.6}); SFX.boom(.8); G.shake=Math.min(1,G.shake+.3); }catch(e){} },(500+Math.random()*500)*Math.max(.4,SPEED));
+  if(Math.random()<.45&&!G.fxReduced) setTimeout(()=>{ try{ const q=c.add(new V3((Math.random()-.5)*L*.4,1,(Math.random()-.5)*L*.2)); flash(q,L*.9,VB.scale(1.3),.45); explode(q,L*.3); shockRing(q,L*2,VB.scale(1.2),{flat:true,dur:1.1,thick:.03,tilt:.6}); SFX.boom(.8,q); G.shake=Math.min(1,G.shake+.3); }catch(e){} },(500+Math.random()*500)*Math.max(.4,SPEED));
   fireball(c.add(new V3(0,1,0)),L*.35*bs,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30);
   burst(c,{n:G.mobile?30:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
-  shockwave(c,L*2.4*CZ.reactor); SFX.boom(1.2*CZ.reactor); G.shake=Math.min(1,G.shake+(.6+L/60)*CZ.reactor);
+  shockwave(c,L*2.4*CZ.reactor); SFX.boom(CZ.reactor*(.25+L/24),c); /* frigates crack, capitals rumble */ G.shake=Math.min(1,G.shake+(.6+L/60)*CZ.reactor);
   debris(c,L*Math.max(.5,CZ.reactor),v.fac); }
   else { // quiet deaths: no reactor fireball
-    if(CZ.dissolve){ flash(c,L*.8,P3.eng.scale(1.3),.4); shockRing(c,L*1.6,P3.eng.scale(1.2),{flat:true,dur:1,thick:.02,tilt:.4}); sparks(c,G.mobile?40:90,18); SFX.phase&&SFX.phase(); }
-    else if(CZ.sag){ burst(c,{n:G.mobile?24:46,tex:G.tex.smoke,c1:new C4(.6,.7,.25,.8),c2:new C4(.25,.3,.1,.55),size:[2,5],life:[1.4,2.8],power:[1,5],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); SFX.boom(.4); }
-    else if(CZ.dark){ sparks(c,G.mobile?20:50,10); SFX.boom(.3); G.shake=Math.min(1,G.shake+.1); } }
+    if(CZ.dissolve){ flash(c,L*.8,P3.eng.scale(1.3),.4); shockRing(c,L*1.6,P3.eng.scale(1.2),{flat:true,dur:1,thick:.02,tilt:.4}); sparks(c,G.mobile?40:90,18); SFX.phase(c); }
+    else if(CZ.sag){ burst(c,{n:G.mobile?24:46,tex:G.tex.smoke,c1:new C4(.6,.7,.25,.8),c2:new C4(.25,.3,.1,.55),size:[2,5],life:[1.4,2.8],power:[1,5],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); SFX.boom(.4,c); }
+    else if(CZ.dark){ sparks(c,G.mobile?20:50,10); SFX.boom(.3,c); G.shake=Math.min(1,G.shake+.1); } }
   if(CZ.cut&&typeof fxStreak==='function'){ try{ const f=fwdOf(v.root.rotation.y*180/Math.PI), side=new V3(-f.z,0,f.x); for(let i=0;i<5;i++){ const q=c.add(side.scale((i/4-.5)*v.H*2.2)); fxp(q,{cell:0,size:2+L*.05,col:new C3(1,.85,.55).scale(1.8),dur:.5,grow:.5}); } flash(c,L*.7,new C3(1,.9,.7),.3); }catch(e){} }
   // v49: the hull tears into 3 to 7 jagged sections (different every time), each tumbling away on its own momentum
   const M=facMats(v.fac); const dm=v.dmgMats; v.dmgMats=null; if(dm) setTimeout(()=>{ try{ dm.forEach(m=>m.dispose(false,false)); }catch(e){} },0);
@@ -633,86 +648,49 @@ function debris(c,L,fac){ const n=Math.round((10+L*.8)*(G.mobile?.6:1)), hero=G.
     if(i<hero&&typeof debrisTrail==='function') p.tr=debrisTrail({getAbsolutePosition:()=>p.pos,isDisposed:()=>!!p.dead},3+Math.random()*2); // burning chunks trail pooled smoke
     b.items.push(p); } }
 // Ithar phase jump: a flash where the ship was, then the hyperspace arrival plays at the new hex
-async function animBlink(u,from){ const v=G.views.get(u.id); if(!v) return; const P=FAC3D[v.fac]||FAC3D.ithar; try{ flash(hexWorld(from.q,from.r,HOVER_Y),6+v.L*.2,P.eng.scale(1.4),.3); }catch(e){} v.arrive={t0:G.time}; try{ SFX.launch(); }catch(e){} await wait(750*Math.max(.4,SPEED)); }
+async function animBlink(u,from){ const v=G.views.get(u.id); if(!v) return; const P=FAC3D[v.fac]||FAC3D.ithar; try{ flash(hexWorld(from.q,from.r,HOVER_Y),6+v.L*.2,P.eng.scale(1.4),.3); }catch(e){} v.arrive={t0:G.time}; try{ SFX.launch(v); }catch(e){} await wait(750*Math.max(.4,SPEED)); }
 async function animNova(u,h){
   const va=G.views.get(u.id); if(!va) return;
+  try{ SFX.charge(va); }catch(e){}
   await cineFrame(u,{...u,q:h.q,r:h.r,id:'__none'},'nova');
   const from=muzzles(va,'F')[0], to=hexWorld(h.q,h.r,HOVER_Y);
-  flash(from,8,new C3(1,.9,.6)); SFX.boom(.6); G.shake=Math.min(1,G.shake+.3);
+  flash(from,8,new C3(1,.9,.6)); SFX.boom(.6,from); G.shake=Math.min(1,G.shake+.3);
   const m=MB.CreateSphere('shell',{diameter:1.6,segments:10},G.scene); m.material=emMat('shellM',new C3(3,2.4,1.5)); m.isPickable=false;
   await tween(700,(e,k)=>{ const p=V3.Lerp(from,to,k); p.y+=Math.sin(k*Math.PI)*12; m.position.copyFrom(p); });
   m.dispose();
-  flash(to,40,new C3(1,.85,.6),.9); flash(to,26,new C3(1,.5,.2),1.2); burst(to,{n:200,size:[.3,1.2],life:[.5,1.5],power:[10,40]}); shockwave(to,HW*2.2); SFX.boom(1.5); G.shake=1;
+  flash(to,40,new C3(1,.85,.6),.9); flash(to,26,new C3(1,.5,.2),1.2); burst(to,{n:200,size:[.3,1.2],life:[.5,1.5],power:[10,40]}); shockwave(to,HW*2.2); SFX.boom(1.5,to); G.shake=1;
   await wait(350);
 }
 
-// ---------- procedural sound ----------
-const SFX={ctx:null,master:null,noise:null,last:{},
-  init(){ if(this.ctx) return; try{ const C=window.AudioContext||window.webkitAudioContext; this.ctx=new C(); }catch(e){ return; }
-    const c=this.ctx; this.master=c.createGain(); this.master.gain.value=G.sfxOn?.55:0; const comp=c.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=4; this.master.connect(comp); comp.connect(c.destination);
-    const len=c.sampleRate*2, buf=c.createBuffer(1,len,c.sampleRate), d=buf.getChannelData(0); let b=0; for(let i=0;i<len;i++){ const w=Math.random()*2-1; b=(b+.02*w)/1.02; d[i]=w*.6+b*3; } this.noise=buf; this.ambient(); },
-  setOn(on){ G.sfxOn=on; if(this.master) this.master.gain.setTargetAtTime(on?.55:0,this.ctx.currentTime,.05); },
-  ok(key,gap){ if(!this.ctx||!G.sfxOn) return false; const now=this.ctx.currentTime; if(key&&this.last[key]&&now-this.last[key]<gap) return false; if(key) this.last[key]=now; return true; },
-  env(node,t,a,peak,dec){ node.gain.setValueAtTime(0,t); node.gain.linearRampToValueAtTime(peak,t+a); node.gain.exponentialRampToValueAtTime(.0005,t+a+dec); },
-  noiseHit({f0=800,f1=120,q=.8,peak=.5,dec=.4,type='lowpass',start=0}={}){ const c=this.ctx,t=c.currentTime+start; const s=c.createBufferSource(); s.buffer=this.noise; s.playbackRate.value=.8+Math.random()*.4; const f=c.createBiquadFilter(); f.type=type; f.Q.value=q; f.frequency.setValueAtTime(f0,t); f.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t+dec); const g=c.createGain(); this.env(g,t,.005,peak,dec); s.connect(f); f.connect(g); g.connect(this.master); s.start(t,Math.random()); s.stop(t+dec+.1); },
-  tone({type='sine',f0=60,f1=40,peak=.4,dec=.3,start=0}={}){ const c=this.ctx,t=c.currentTime+start; const o=c.createOscillator(); o.type=type; o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dec); const g=c.createGain(); this.env(g,t,.004,peak,dec); o.connect(g); g.connect(this.master); o.start(t); o.stop(t+dec+.05); },
-  gun(k,sq,style){ if(!this.ok('gun',.045)) return; if(sq){ this.noiseHit({f0:2500,f1:900,peak:.12,dec:.07,type:'bandpass',q:2}); return; } if(k==='flak'){ this.noiseHit({f0:3000,f1:1200,peak:.14,dec:.06,type:'highpass'}); return; }
-    // v48: every faction's guns sound like their own
-    if(style==='las'){ this.tone({type:'sawtooth',f0:1100+Math.random()*120,f1:260,peak:.13,dec:.16}); this.noiseHit({f0:5200,f1:2400,peak:.06,dec:.08,type:'highpass'}); return; }
-    if(style==='plasma'){ this.tone({type:'square',f0:320,f1:70,peak:.12,dec:.32}); this.noiseHit({f0:900,f1:120,peak:.2,dec:.3}); return; }
-    if(style==='tracer'){ for(let i=0;i<3;i++) this.noiseHit({f0:2000,f1:500,peak:.2,dec:.05,type:'bandpass',q:1.4,start:i*.055}); this.tone({f0:120,f1:50,peak:.18,dec:.12}); return; }
-    if(style==='spine'){ this.noiseHit({f0:380,f1:1500,peak:.16,dec:.18,type:'bandpass',q:3}); this.tone({type:'sine',f0:140,f1:55,peak:.22,dec:.26}); return; }
-    if(style==='needle'){ this.tone({type:'triangle',f0:2500,f1:1800,peak:.1,dec:.28}); this.tone({type:'sine',f0:3700,f1:3500,peak:.05,dec:.35}); return; }
-    if(style==='rail'){ this.tone({type:'sawtooth',f0:1800,f1:160,peak:.12,dec:.12}); this.noiseHit({f0:6000,f1:1500,peak:.1,dec:.07,type:'highpass'}); this.tone({type:'sine',f0:62,f1:58,peak:.12,dec:.3}); return; }
-    this.noiseHit({f0:1600,f1:140,peak:.32,dec:.28}); this.tone({f0:95+Math.random()*20,f1:38,peak:.35,dec:.25}); },
-  lance(ion,fac){ if(!this.ok('lance',.08)) return; if(fac==='deathless'){ this.tone({type:'sawtooth',f0:110,f1:90,peak:.18,dec:.7}); this.tone({type:'square',f0:55,f1:50,peak:.1,dec:.7}); this.noiseHit({f0:5000,f1:1000,peak:.08,dec:.5,type:'bandpass',q:3}); return; } if(fac==='ithar'){ this.tone({type:'triangle',f0:1300,f1:900,peak:.12,dec:.5}); this.tone({type:'sine',f0:2600,f1:1800,peak:.07,dec:.55}); return; }
-    this.tone({type:'sawtooth',f0:ion?520:220,f1:ion?140:70,peak:.16,dec:.5}); this.tone({type:'sine',f0:ion?1040:440,f1:ion?300:180,peak:.1,dec:.45}); this.noiseHit({f0:4000,f1:600,peak:.06,dec:.4,type:'bandpass',q:3}); },
-  torp(fac){ if(!this.ok('torp',.1)) return; if(fac==='corsair'){ for(let i=0;i<4;i++) this.noiseHit({f0:500,f1:2600,peak:.12,dec:.25,type:'bandpass',q:2,start:i*.06}); return; }
-    if(fac==='chorus'){ this.noiseHit({f0:250,f1:700,peak:.2,dec:.35,type:'bandpass',q:4}); this.tone({type:'sine',f0:90,f1:45,peak:.2,dec:.4}); return; }
-    if(fac==='ithar'){ this.tone({type:'triangle',f0:900,f1:2400,peak:.1,dec:.45}); this.noiseHit({f0:3000,f1:6000,peak:.06,dec:.4,type:'highpass'}); return; }
-    this.noiseHit({f0:300,f1:2200,peak:.18,dec:.5,type:'bandpass',q:1.5}); if(fac==='voidsworn') this.tone({f0:80,f1:40,peak:.2,dec:.6}); },
-  phase(){ if(!this.ok('phase',.1)) return; this.tone({type:'sawtooth',f0:200,f1:1600,peak:.08,dec:.25}); this.tone({type:'sine',f0:2400,f1:600,peak:.06,dec:.3,start:.05}); this.noiseHit({f0:7000,f1:3000,peak:.05,dec:.2,type:'highpass'}); },
-  cough(){ if(!this.ok('cough',.12)) return; this.noiseHit({f0:300,f1:90,peak:.16,dec:.12,type:'lowpass',q:2}); },
-  hit(){ if(!this.ok('hit',.06)) return; this.noiseHit({f0:1200,f1:200,peak:.22,dec:.22}); },
-  shield(){ if(!this.ok('shield',.07)) return; this.tone({type:'triangle',f0:900+Math.random()*200,f1:500,peak:.12,dec:.22}); this.noiseHit({f0:5000,f1:2000,peak:.05,dec:.15,type:'highpass'}); },
-  boom(s=1){ if(!this.ok()) return; this.noiseHit({f0:900,f1:40,peak:.55*s,dec:1.2+s*.6}); this.tone({f0:70,f1:22,peak:.6*s,dec:1+s*.5}); },
-  pop(){ if(!this.ok('pop',.05)) return; this.noiseHit({f0:2000,f1:300,peak:.2,dec:.2}); },
-  launch(){ if(!this.ok('launch',.15)) return; this.noiseHit({f0:500,f1:3000,peak:.12,dec:.6,type:'bandpass',q:2}); },
-  engine(size){ if(!this.ok('eng',.4)) return; this.noiseHit({f0:180,f1:90,peak:.12+size*.08,dec:.7,type:'lowpass',q:4}); },
-  click(){ if(!this.ok('click',.03)) return; this.tone({type:'sine',f0:1400,f1:900,peak:.05,dec:.05}); },
-  sting(win){ if(!this.ok()) return; const notes=win?[220,277,330,440]:[196,233,277,185]; notes.forEach((f,i)=>{ this.tone({type:'triangle',f0:f,f1:f*.995,peak:.12,dec:2.2,start:i*.12}); this.tone({type:'sine',f0:f/2,f1:f/2,peak:.1,dec:2.4,start:i*.12}); }); },
-  ambient(){ const c=this.ctx; const g=c.createGain(); g.gain.value=.07; const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=320; f.Q.value=2; f.connect(g); g.connect(this.master);
-    for(const fr of [55,55.4,82.5]){ const o=c.createOscillator(); o.type='sine'; o.frequency.value=fr; const og=c.createGain(); og.gain.value=fr>60?.25:.5; o.connect(og); og.connect(f); o.start(); }
-    const s=c.createBufferSource(); s.buffer=this.noise; s.loop=true; const ng=c.createGain(); ng.gain.value=.15; s.connect(ng); ng.connect(f); s.start();
-    const lfo=c.createOscillator(); lfo.frequency.value=.05; const lg=c.createGain(); lg.gain.value=140; lfo.connect(lg); lg.connect(f.frequency); lfo.start(); },
-};
+// ---------- sound lives in sfx.js (SFX); this file only calls it ----------
 
 // ---------- close action ----------
 async function fxRam(u,t){ const va=G.views.get(u.id), vt=G.views.get(t.id); if(!va||!vt) return;
   const a=va.root.getAbsolutePosition(), b=vt.root.getAbsolutePosition(), p=V3.Lerp(a,b,.55); p.y+=1;
   flash(p,18,new C3(1,.8,.55),.6); explode(p,6); sparks(p,140,26);
   burst(p,{n:40,tex:G.tex.smoke,c1:new C4(.5,.45,.4,.8),c2:new C4(.2,.18,.16,.6),size:[1.5,4],life:[1,2.2],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
-  shockwave(p,24); hullDecal(vt,a,true); SFX.boom(1.1); SFX.hit(); G.shake=1; const d=b.subtract(a); d.y=0; d.normalize(); vt.jolt={d:d.scale(3),t0:G.time}; va.jolt={d:d.scale(-1.2),t0:G.time}; await wait(450); }
+  shockwave(p,24); hullDecal(vt,a,true); SFX.boom(1.1,p); SFX.hit(p,1); G.shake=1; const d=b.subtract(a); d.y=0; d.normalize(); vt.jolt={d:d.scale(3),t0:G.time}; va.jolt={d:d.scale(-1.2),t0:G.time}; await wait(450); }
 async function fxBoard(u,t){ const va=G.views.get(u.id), vt=G.views.get(t.id); if(!va||!vt) return;
   const a=va.root.getAbsolutePosition(), b=vt.root.getAbsolutePosition(), P=FAC3D[va.fac]||FAC3D.hegemony, dir=b.subtract(a).normalize(), pods=[];
   for(let i=0;i<6;i++){ const m=MB.CreateCylinder('pod',{height:1.2,diameterTop:.2,diameterBottom:.5,tessellation:6},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationX(Math.PI/2)); m.material=emMat('podM',P.eng.scale(1.6)); m.isPickable=false; pods.push({m,off:new V3((Math.random()-.5)*6,Math.random()*3,(Math.random()-.5)*6),delay:i*.08}); }
-  SFX.launch(); const t0=G.time;
+  SFX.launch(a); const t0=G.time;
   await new Promise(res=>{ const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/Math.max(.3,SPEED); let done=true;
     for(const p of pods){ const kk=clamp((k-p.delay)/.8,0,1); if(kk<1) done=false; const pos=V3.Lerp(a.add(p.off.scale(.3)),b.add(p.off.scale(.35)),kk); pos.y+=Math.sin(kk*Math.PI)*5; p.m.position.copyFrom(pos); p.m.lookAt(pos.add(dir));
-      if(kk>=1&&!p.hit){ p.hit=true; flash(pos,2.5,new C3(1,.7,.4)); burst(pos,{n:12,power:[3,8]}); SFX.pop(); } }
+      if(kk>=1&&!p.hit){ p.hit=true; flash(pos,2.5,new C3(1,.7,.4)); burst(pos,{n:12,power:[3,8]}); SFX.pop(pos); } }
     if(done||k>2.5){ G.scene.onBeforeRenderObservable.remove(obs); pods.forEach(p=>{ p.m.material.dispose(); p.m.dispose(); }); res(); } }); });
   await wait(250); }
 function onCapture(t){ const v=G.views.get(t.id); if(v){ disposeView(v); G.views.delete(t.id); } }
 
 // ---------- objective markers ----------
 function buildBeacon(h){ const c=hexWorld(h.q,h.r,0), sc=G.scene, parts=[];
-  const base=MB.CreateCylinder('bcnBase',{height:1.2,diameterTop:5,diameterBottom:7,tessellation:6},sc); base.position=c.add(new V3(0,.6,0)); base.material=facMats('hegemony').dark; parts.push(base);
-  const mast=MB.CreateCylinder('bcnMast',{height:16,diameterTop:.4,diameterBottom:1.4,tessellation:6},sc); mast.position=c.add(new V3(0,8,0)); mast.material=facMats('hegemony').steel; parts.push(mast);
-  const coreM=emMat('bcnCoreM',new C3(1.4,1.2,.8)); const core=MB.CreateSphere('bcnCore',{diameter:2.2,segments:12},sc); core.position=c.add(new V3(0,16.5,0)); core.material=coreM; parts.push(core,coreM);
-  const rings=[0,1].map(i=>{ const r=MB.CreateTorus('bcnRing',{diameter:5+i*3,thickness:.18,tessellation:40},sc); r.position=c.add(new V3(0,12+i*2.5,0)); const m=emMat('bcnRingM',new C3(1,.85,.5)); r.material=m; parts.push(r,m); return {r,m}; });
+  const H=18, bm=typeof beaconMesh==='function'?beaconMesh(c,H):null, Y=bm?{core:H*.95,coreD:1.7,ring:[H*.6,H*.73],pip:H*.8,pipR:2.7}:{core:16.5,coreD:2.2,ring:[12,14.5],pip:14.5,pipR:2.4}; // v53-G: the concept mast, rings and pips re-seated on it
+  if(bm) parts.push(bm); else { const base=MB.CreateCylinder('bcnBase',{height:1.2,diameterTop:5,diameterBottom:7,tessellation:6},sc); base.position=c.add(new V3(0,.6,0)); base.material=facMats('hegemony').dark; parts.push(base);
+  const mast=MB.CreateCylinder('bcnMast',{height:16,diameterTop:.4,diameterBottom:1.4,tessellation:6},sc); mast.position=c.add(new V3(0,8,0)); mast.material=facMats('hegemony').steel; parts.push(mast); }
+  const coreM=emMat('bcnCoreM',new C3(1.4,1.2,.8)); const core=MB.CreateSphere('bcnCore',{diameter:Y.coreD,segments:12},sc); core.position=c.add(new V3(0,Y.core,0)); core.material=coreM; parts.push(core,coreM);
+  const rings=[0,1].map(i=>{ const r=MB.CreateTorus('bcnRing',{diameter:5+i*3,thickness:.18,tessellation:40},sc); r.position=c.add(new V3(0,Y.ring[i],0)); const m=emMat('bcnRingM',new C3(1,.85,.5)); r.material=m; parts.push(r,m); return {r,m}; });
   const zm=emMat('bcnZoneM',new C3(1,.85,.5),.5); zm.alphaMode=BABYLON.Engine.ALPHA_ADD; zm.disableDepthWrite=true; zm.backFaceCulling=false;
   const zone=MB.CreateTorus('bcnZone',{diameter:HW*3.1,thickness:.45,tessellation:6},sc); zone.rotation.y=Math.PI/6; zone.position=c.add(new V3(0,.2,0)); zone.material=zm; G.glow.addExcludedMesh(zone); parts.push(zone,zm);
-  const pips=[0,1,2].map(i=>{ const m=emMat('bcnPipM',new C3(.3,.3,.3)); const s=MB.CreateSphere('bcnPip',{diameter:.9,segments:8},sc); s.position=c.add(new V3(Math.cos(i*2.09)*2.4,14.5,Math.sin(i*2.09)*2.4)); s.material=m; parts.push(s,m); return m; });
+  const pips=[0,1,2].map(i=>{ const m=emMat('bcnPipM',new C3(.3,.3,.3)); const s=MB.CreateSphere('bcnPip',{diameter:.9,segments:8},sc); s.position=c.add(new V3(Math.cos(i*2.09)*Y.pipR,Y.pip,Math.sin(i*2.09)*Y.pipR)); s.material=m; parts.push(s,m); return m; });
   for(const p of parts) if(p.isPickable!==undefined) p.isPickable=false;
   G.env.push(...parts); G.beacon={rings,coreM,zm,pips};
 }
@@ -734,7 +712,7 @@ function fxWithdraw(u){ const v=G.views.get(u.id); if(!v||v.state!=='alive') ret
 // a knocked-out section becomes a burning breach
 function fxSectionDown(t,sec){ const v=G.views.get(t.id); if(!v||!v.model||v.state!=='alive') return; const x=sec==='prow'?.3:sec==='eng'?-.36:0;
   const c=toWorld(v,new V3(x*v.L,v.H*.3,0)); for(let i=0;i<3;i++) hullDecal(v,c.add(new V3((Math.random()-.5)*20,10,(Math.random()<.5?-1:1)*30)),true);
-  explode(c,2+v.L*.07,{light:true}); if(v.fires.length<3) addFire(v); SFX.boom(.6); G.shake=Math.min(1,G.shake+.25); }
+  explode(c,2+v.L*.07,{light:true}); if(v.fires.length<3) addFire(v); SFX.boom(.6,c); G.shake=Math.min(1,G.shake+.25); }
 
 // terrain tints: each terrain hex gets an outline and a faint fill in its legend colour (one mesh per type)
 function tintHexes(name,hs,col,blk,fill){
