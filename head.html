@@ -81,16 +81,17 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--iron3);border-bott
 .intro-on .hud:not(.endcard){display:none}
 .banner{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-family:var(--gothic);font-size:84px;pointer-events:none;text-shadow:0 0 30px rgba(0,0,0,.9),0 0 60px rgba(0,0,0,.6);opacity:0;transition:opacity .35s}
 .banner.show{opacity:1}
-.plate{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;will-change:transform}
-.plate .nm{font-size:12px;font-weight:600;white-space:nowrap;text-shadow:0 1px 3px #000,0 0 6px #000;opacity:0;transition:opacity .15s}
+.plate{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;gap:1px;pointer-events:none;will-change:transform;--bw:54px}
+.plate .nm{order:0;margin-bottom:1px;font-size:12px;font-weight:600;white-space:nowrap;text-shadow:0 1px 3px #000,0 0 6px #000;opacity:0;transition:opacity .15s}
 .plate.hi .nm{opacity:1}
 .plate.elite .nm::after{content:' \00b7  elite';color:var(--gilt);font-weight:500}
-.plate .hb{width:54px;height:4px;background:rgba(8,12,20,.85);border-radius:2px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+.plate .hb{order:2;width:var(--bw);height:4px;background:rgba(8,12,20,.85);border-radius:2px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 0 2px var(--iff)}
+.plate.friend{--iff:rgba(110,245,140,.5)} .plate.foe{--iff:rgba(255,92,80,.6)} .plate.flag .hb{box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 0 2px var(--gilt)}
 .plate .hb i{display:block;height:100%}
-.plate .sp{display:flex;gap:2px} .plate .sp b{width:12px;height:3px;border-radius:1px;background:rgba(45,58,86,.9)}
+.plate .sp{order:1;display:flex;gap:2px} .plate .sp b{width:calc((var(--bw) - 6px)/4);height:3px;border-radius:1px;background:rgba(45,58,86,.9)}
 .plate.done{opacity:.55}
-/* enemies carry a shape, not just a colour: a red diamond over the hull bar */
-.plate.foe::before{content:'';order:1;width:7px;height:7px;transform:rotate(45deg);background:#ff6b5e;box-shadow:0 0 0 1.5px rgba(0,0,0,.8);margin:1px 0 2px} .plate.foe .hb{order:2} .plate.foe .sp{order:3} .plate.foe .nm{order:0}
+/* enemies carry a shape, not just a colour: a red diamond beside the hull bar */
+.plate.foe::before{content:'';position:absolute;right:100%;bottom:-2px;margin-right:4px;width:7px;height:7px;transform:rotate(45deg);background:#ff6b5e;box-shadow:0 0 0 1.5px rgba(0,0,0,.8)} /* v53: the diamond sits beside the bars, so a foe's plate is no taller than a friend's */
 .ftxt{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:19px;white-space:nowrap;text-shadow:0 0 3px #000,0 2px 8px #000;animation:rise 1.2s ease-out forwards;pointer-events:none}
 @keyframes rise{0%{opacity:0;margin-top:8px}12%{opacity:1}75%{opacity:1}100%{opacity:0;margin-top:-48px}}
 .intro{position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,6,12,.94) 0%,rgba(4,6,12,.82) 38%,rgba(4,6,12,0) 68%);display:flex;align-items:center;z-index:20}
@@ -124,7 +125,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--iron3);border-bott
 .sheetbtn{display:none;width:100%;margin:-6px 0 8px;padding:2px;background:transparent;border:none;color:var(--bone2);font-size:18px}
 .tipcard{left:12px;bottom:150px;width:360px;padding:12px 14px;z-index:6} .tipcard h4{color:var(--gilt);font-size:15px;margin:0 0 4px} .tipcard p{margin:0 0 8px;font-size:13.5px;color:var(--bone2)}
 @media (max-width:900px){ .tipcard{left:8px;right:8px;width:auto;bottom:auto;top:62px} }
-@media (min-width:2200px){ body{font-size:16.5px} #roster{width:280px} #panel{width:400px} #log{width:520px;height:150px;font-size:15px} .weap,.stats{font-size:15px} .plate .nm{font-size:13.5px} .plate .hb{width:64px} }
+@media (min-width:2200px){ body{font-size:16.5px} #roster{width:280px} #panel{width:400px} #log{width:520px;height:150px;font-size:15px} .weap,.stats{font-size:15px} .plate .nm{font-size:13.5px} }
 
 #app{position:fixed;inset:0;z-index:30;overflow:auto;background:radial-gradient(ellipse at 70% 40%,rgba(10,16,32,.55),rgba(4,6,12,.9) 70%);backdrop-filter:blur(2px)}
 #app.hidden{display:none}
