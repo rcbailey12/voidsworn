@@ -30,10 +30,10 @@ const SFX={ctx:null,master:null,bus:{},chain:null,bank:{},peaks:{},custom:{},rea
     const hp=c.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=24; hp.Q.value=.6; // sub-sonic mud only eats headroom
     const comp=c.createDynamicsCompressor(); comp.threshold.value=-22; comp.knee.value=14; comp.ratio.value=2.6; comp.attack.value=.014; comp.release.value=.3;
     const lim=c.createDynamicsCompressor(); lim.threshold.value=-6; lim.knee.value=0; lim.ratio.value=20; lim.attack.value=.001; lim.release.value=.12;
-    const trim=c.createGain(); trim.gain.value=.6;
+    const trim=c.createGain(); trim.gain.value=.8;
     m.connect(hp); hp.connect(comp); comp.connect(lim); lim.connect(trim); trim.connect(dest);
     const conv=c.createConvolver(); conv.buffer=ir; const ret=c.createGain(); ret.gain.value=.5; conv.connect(ret); ret.connect(hp);
-    const bus={}; for(const [k,lvl,send] of [['weapons',.8,.22],['impacts',.8,.2],['explosions',1,.3],['ui',.6,.06],['ambient',.5,0]]){ const g=c.createGain(); g.gain.value=lvl; g.connect(m); if(send){ const s=c.createGain(); s.gain.value=send; g.connect(s); s.connect(conv); } bus[k]=g; }
+    const bus={}; for(const [k,lvl,send] of [['weapons',.8,.22],['impacts',.8,.2],['explosions',1,.3],['ui',1,.06],['ambient',.5,0]]){ const g=c.createGain(); g.gain.value=lvl; g.connect(m); if(send){ const s=c.createGain(); s.gain.value=send; g.connect(s); s.connect(conv); } bus[k]=g; }
     return {m,bus,comp,lim,trim,conv}; },
   _makeNoise(c){ const SR=this.SR, L=SR*2, mk=()=>c.createBuffer(1,L,SR); const rnd=this._rng(7);
     const w=mk(), p=mk(), b=mk(), k=mk(); const dw=w.getChannelData(0), dp=p.getChannelData(0), db=b.getChannelData(0), dk=k.getChannelData(0);
@@ -190,10 +190,10 @@ const SFX={ctx:null,master:null,bus:{},chain:null,bank:{},peaks:{},custom:{},rea
     const l1=mk(c.createOscillator()); l1.frequency.value=.023; const l1g=mk(c.createGain()); l1g.gain.value=60; l1.connect(l1g); l1g.connect(lp.frequency);
     const l2=mk(c.createOscillator()); l2.frequency.value=.011; const l2g=mk(c.createGain()); l2g.gain.value=260; l2.connect(l2g); l2g.connect(bp.frequency);
     const l3=mk(c.createOscillator()); l3.frequency.value=.017; const l3g=mk(c.createGain()); l3g.gain.value=.008; l3.connect(l3g); l3g.connect(ag.gain);
-    br.start(); air.start(); l1.start(); l2.start(); l3.start(); const t=c.currentTime; lg.gain.setValueAtTime(0,t); lg.gain.linearRampToValueAtTime(.55,t+4); // fades in, never pops
+    br.start(); air.start(); l1.start(); l2.start(); l3.start(); const t=c.currentTime; lg.gain.setValueAtTime(0,t); lg.gain.linearRampToValueAtTime(.13,t+4); // fades in, never pops
     this._amb={n,lg}; this._ambSample(); },
-  _ambSample(){ const c=this.ctx, a=this.samp.ambient; if(!c||!a||!this._amb||this._ambS) return; try{ const s=c.createBufferSource(); s.buffer=a[0]; s.loop=true; const g=c.createGain(), t=c.currentTime; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.3,t+5);
-      s.connect(g); g.connect(this.bus.ambient); s.start(t,Math.random()*a[0].duration*.5); this._ambS={s,g}; this._amb.lg.gain.setTargetAtTime(.25,t,2); }catch(e){} }, // recorded roomtone over a thinner synth bed
+  _ambSample(){ const c=this.ctx, a=this.samp.ambient; if(!c||!a||!this._amb||this._ambS) return; try{ const s=c.createBufferSource(); s.buffer=a[0]; s.loop=true; const g=c.createGain(), t=c.currentTime; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.032,t+5);
+      s.connect(g); g.connect(this.bus.ambient); s.start(t,Math.random()*a[0].duration*.5); this._ambS={s,g}; this._amb.lg.gain.setTargetAtTime(.065,t,2); }catch(e){} }, // recorded roomtone over a thinner synth bed
 };
 
 // ---- cue table: bus, level, voice cap, min gap/defer (rolling), pitch jitter, variants, length, stereo, synth ----
@@ -204,7 +204,7 @@ SFX.CUES={
     K.noise({k:'p',type:'bandpass',f0:2100,f1:700,q:.9,t,a:.001,dec:.05,pk:.5}); K.noise({k:'b',f0:1500,f1:170,t,a:.002,dec:.32,pk:.9});
     K.osc({f0:f,f1:40,gl:.22,t,a:.002,dec:.34,pk:1}); K.osc({type:'triangle',f0:f*2.2,f1:f,lp:900,t,dec:.09,pk:.22}); K.noise({k:'b',f0:340,f1:110,t,a:.03,dec:.6,pk:.28}); }},
   gun_flak:{bus:'weapons',g:.26,max:4,gap:.04,defer:.1,salvo:'gun',tail:.4,n:4,len:.4,fn(K,t){ for(let i=0;i<2;i++){ const u=t+i*K.rv(.045,.07); K.noise({k:'p',type:'bandpass',f0:1300,f1:600,q:1.1,t:u,dec:.05,pk:.55-i*.12}); K.osc({f0:190,f1:90,t:u,dec:.07,pk:.4-i*.1}); } }},
-  gun_sq:{bus:'weapons',g:.16,max:3,gap:.05,defer:.08,n:3,len:.3,fn(K,t){ for(let i=0;i<3;i++){ const u=t+i*K.rv(.04,.05); K.noise({k:'p',type:'bandpass',f0:K.rv(2400,3000),q:2,t:u,dec:.025,pk:.45*(1-i*.15)}); K.osc({f0:170,f1:110,t:u,dec:.04,pk:.16}); } }},
+  gun_sq:{bus:'weapons',g:.25,max:3,gap:.05,defer:.08,n:3,len:.3,fn(K,t){ for(let i=0;i<3;i++){ const u=t+i*K.rv(.04,.05); K.noise({k:'p',type:'bandpass',f0:K.rv(2400,3000),q:2,t:u,dec:.025,pk:.45*(1-i*.15)}); K.osc({f0:170,f1:110,t:u,dec:.04,pk:.16}); } }},
   gun_las:{bus:'weapons',g:.3,max:6,gap:.045,defer:.14,salvo:'gun',n:4,len:.7,fn(K,t){ const f=K.rv(1450,1700);
     K.osc({type:'triangle',f0:f,f1:f*.22,gl:.16,lp:3600,t,a:.002,dec:.18,pk:.5}); K.osc({f0:f*1.007,f1:f*.23,gl:.17,t,a:.002,dec:.2,pk:.32});
     K.osc({f0:125,f1:52,gl:.12,t,dec:.22,pk:.75}); K.noise({k:'p',type:'bandpass',f0:5000,f1:2500,q:.8,t,dec:.06,pk:.12}); K.noise({k:'b',f0:520,f1:150,t,a:.01,dec:.32,pk:.16}); }},
@@ -216,7 +216,7 @@ SFX.CUES={
     K.noise({k:'b',f0:420,f1:130,t,a:.02,dec:.3,pk:.16}); }},
   gun_spine:{bus:'weapons',g:.32,max:5,gap:.05,defer:.14,salvo:'gun',n:3,len:.7,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:320,f1:1300,gl:.1,q:6,t,dec:.14,pk:.6});
     K.osc({f0:K.rv(140,160),f1:55,t,dec:.24,pk:.75}); K.osc({f0:1100,f1:700,t,a:.001,dec:.02,pk:.25}); K.osc({type:'triangle',f0:72,f1:60,lp:400,t,a:.02,dec:.3,pk:.2,vib:30,vibHz:7}); }},
-  gun_needle:{bus:'weapons',g:.22,max:6,gap:.045,defer:.14,salvo:'gun',tail:.5,n:4,len:.7,fn(K,t){ const f=K.rv(2250,2600);
+  gun_needle:{bus:'weapons',g:.32,max:6,gap:.045,defer:.14,salvo:'gun',tail:.5,n:4,len:.7,fn(K,t){ const f=K.rv(2250,2600);
     K.osc({f0:f,f1:f*.86,gl:.25,t,a:.002,dec:.3,pk:.45}); K.osc({f0:f*1.5,f1:f*1.3,gl:.25,t,a:.002,dec:.22,pk:.24}); K.osc({f0:f*2.01,t,dec:.12,pk:.09});
     K.noise({k:'w',type:'bandpass',f0:7000,q:.8,t,dec:.05,pk:.1}); K.osc({f0:180,f1:90,t,dec:.1,pk:.3}); }},
   gun_rail:{bus:'weapons',g:.42,max:4,gap:.06,defer:.16,salvo:'gun',n:3,len:1.1,fn(K,t){ K.osc({f0:420,f1:2600,gl:.05,t,a:.045,dec:.012,pk:.18}); const u=t+.05;
@@ -225,15 +225,15 @@ SFX.CUES={
     for(let i=0;i<2;i++) K.osc({f0:K.rv(550,700),f1:950,gl:.04,t:t+.1+i*K.rv(.05,.09),dec:.04,pk:.12}); }},
   salvo_tail:{bus:'weapons',g:.4,max:2,n:2,len:2,pj:.06,fn(K,t){ K.noise({k:'b',f0:260,f1:90,t,a:.08,dec:1.1,pk:.9}); K.noise({k:'p',type:'bandpass',f0:600,q:.7,t,a:.05,dec:.4,pk:.14}); K.osc({f0:52,f1:38,gl:.6,t,a:.05,dec:.7,pk:.42});
     for(let i=0;i<3;i++) K.noise({k:'b',f0:500,f1:140,t:t+.15+i*K.rv(.12,.22),a:.01,dec:.3,pk:.35}); }},
-  lance:{bus:'weapons',g:.36,max:3,gap:.08,defer:.2,n:2,len:1.4,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:900,f1:3000,gl:.05,q:1.2,t,dec:.08,pk:.3});
+  lance:{bus:'weapons',g:.26,max:3,gap:.08,defer:.2,n:2,len:1.4,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:900,f1:3000,gl:.05,q:1.2,t,dec:.08,pk:.3});
     K.osc({type:'sawtooth',f0:110,lp:1600,lp1:500,lgl:.8,lq:1.5,t,a:.03,hold:.25,dec:.45,pk:.32}); K.osc({type:'triangle',f0:165,t,a:.03,hold:.25,dec:.45,pk:.28});
     K.osc({f0:55,t,a:.02,hold:.2,dec:.5,pk:.5}); K.noise({k:'k',type:'bandpass',f0:2500,q:1.2,t,a:.02,hold:.25,dec:.3,pk:.3}); }},
-  lance_ion:{bus:'weapons',g:.32,max:3,gap:.08,defer:.2,n:2,len:1.4,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:1400,f1:4000,gl:.05,q:1.2,t,dec:.07,pk:.25});
+  lance_ion:{bus:'weapons',g:.24,max:3,gap:.08,defer:.2,n:2,len:1.4,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:1400,f1:4000,gl:.05,q:1.2,t,dec:.07,pk:.25});
     K.osc({type:'sawtooth',f0:220,lp:2400,lp1:800,lgl:.8,lq:1.4,t,a:.03,hold:.22,dec:.4,pk:.26}); K.osc({type:'triangle',f0:330,t,a:.03,hold:.22,dec:.4,pk:.24});
     K.osc({f0:880,t,a:.03,hold:.2,dec:.35,pk:.1,vib:25,vibHz:9}); K.osc({f0:110,t,a:.02,hold:.2,dec:.45,pk:.4}); K.noise({k:'k',type:'bandpass',f0:3500,q:1,t,a:.02,hold:.25,dec:.3,pk:.38}); }},
-  lance_dark:{bus:'weapons',g:.4,max:3,gap:.08,defer:.2,n:2,len:1.6,fn(K,t){ K.osc({type:'sawtooth',f0:82,lp:520,lq:3,t,a:.04,hold:.3,dec:.5,pk:.42,vib:15,vibHz:5});
+  lance_dark:{bus:'weapons',g:.3,max:3,gap:.08,defer:.2,n:2,len:1.6,fn(K,t){ K.osc({type:'sawtooth',f0:82,lp:520,lq:3,t,a:.04,hold:.3,dec:.5,pk:.42,vib:15,vibHz:5});
     K.osc({f0:41,t,a:.04,hold:.3,dec:.55,pk:.6}); K.noise({k:'b',f0:320,t,a:.04,hold:.3,dec:.4,pk:.3}); K.noise({k:'k',type:'bandpass',f0:1200,q:1,t,a:.03,hold:.3,dec:.35,pk:.18}); }},
-  lance_choir:{bus:'weapons',g:.3,max:3,gap:.08,defer:.2,n:2,len:1.5,fn(K,t){ for(const [f,a] of [[440,.25],[880,.3],[1320,.2],[1760.5,.1]]) K.osc({type:f===880?'triangle':'sine',f0:f,f1:f*.95,gl:.7,t,a:.04,hold:.25,dec:.5,pk:a,det:(K.rnd()-.5)*10});
+  lance_choir:{bus:'weapons',g:.24,max:3,gap:.08,defer:.2,n:2,len:1.5,fn(K,t){ for(const [f,a] of [[440,.25],[880,.3],[1320,.2],[1760.5,.1]]) K.osc({type:f===880?'triangle':'sine',f0:f,f1:f*.95,gl:.7,t,a:.04,hold:.25,dec:.5,pk:a,det:(K.rnd()-.5)*10});
     K.noise({k:'p',type:'bandpass',f0:6000,q:1,t,a:.04,hold:.2,dec:.3,pk:.06}); }},
   torp:{bus:'weapons',g:.36,max:4,gap:.07,defer:.2,n:3,len:1.3,fn(K,t){ K.osc({f0:85,f1:45,t,dec:.3,pk:.7}); K.noise({k:'b',f0:800,f1:200,t,dec:.12,pk:.5});
     K.noise({k:'p',type:'bandpass',f0:350,f1:1800,gl:.6,q:1.4,t,a:.06,dec:.55,pk:.5}); K.noise({k:'b',f0:500,t,a:.05,dec:.6,pk:.3}); }},
@@ -244,11 +244,11 @@ SFX.CUES={
   torp_heavy:{bus:'weapons',g:.4,max:4,gap:.07,defer:.2,n:3,len:1.4,fn(K,t){ K.osc({f0:62,f1:32,gl:.4,t,dec:.6,pk:.85}); K.noise({k:'b',f0:700,f1:160,t,dec:.16,pk:.55}); K.metal({f:150,t,dec:.4,pk:.15});
     K.noise({k:'p',type:'bandpass',f0:300,f1:1500,gl:.7,q:1.4,t:t+.03,a:.08,dec:.6,pk:.45}); K.noise({k:'b',f0:420,t,a:.06,dec:.7,pk:.32}); }},
   // impacts
-  hit:{bus:'impacts',g:.36,max:4,gap:.05,defer:.12,n:4,len:.9,first:1,fn(K,t){ K.noise({k:'b',type:'bandpass',f0:K.rv(700,1100),f1:300,q:.8,t,dec:.12,pk:.75});
+  hit:{bus:'impacts',g:.5,max:4,gap:.05,defer:.12,n:4,len:.9,first:1,fn(K,t){ K.noise({k:'b',type:'bandpass',f0:K.rv(700,1100),f1:300,q:.8,t,dec:.12,pk:.75});
     K.noise({k:'p',type:'bandpass',f0:2600,q:1,t,a:.001,dec:.03,pk:.42}); K.metal({f:K.rv(170,260),t,dec:.45,pk:.3}); K.osc({f0:95,f1:48,t,dec:.16,pk:.6}); K.noise({k:'k',type:'bandpass',f0:3000,q:.8,t:t+.02,a:.01,dec:.25,pk:.18}); }},
   hit_heavy:{bus:'impacts',g:.46,max:3,gap:.08,defer:.15,n:3,len:1.5,fn(K,t){ K.noise({k:'b',type:'bandpass',f0:K.rv(500,800),f1:180,q:.7,t,dec:.22,pk:.85}); K.noise({k:'p',type:'bandpass',f0:2200,q:1,t,a:.001,dec:.04,pk:.4});
     K.metal({f:K.rv(90,130),t,dec:.8,pk:.32}); K.osc({f0:72,f1:34,t,dec:.3,pk:.8}); K.noise({k:'k',type:'bandpass',f0:2400,q:.7,t:t+.03,a:.02,dec:.6,pk:.25}); }},
-  shield:{bus:'impacts',g:.3,max:4,gap:.06,defer:.12,n:3,len:1.1,first:1,fn(K,t){ const f=K.rv(780,940);
+  shield:{bus:'impacts',g:.24,max:4,gap:.06,defer:.12,n:3,len:1.1,first:1,fn(K,t){ const f=K.rv(780,940);
     [[1,.5,.24],[1.5,.42,.18],[2.32,.34,.13],[3.01,.24,.08]].forEach(([r,d,a])=>{ K.osc({f0:f*r,f1:f*r*.99,t,a:.002,dec:d,pk:a,det:-5}); K.osc({f0:f*r,f1:f*r*.99,t,a:.002,dec:d*.9,pk:a*.7,det:6}); });
     K.noise({k:'w',type:'bandpass',f0:4200,f1:2200,q:3,t,dec:.1,pk:.22}); K.osc({f0:240,f1:180,t,dec:.2,pk:.3}); K.noise({k:'k',type:'bandpass',f0:6000,q:1,t:t+.02,a:.01,dec:.3,pk:.1}); }},
   patter_hull:{bus:'impacts',g:.12,max:3,gap:.07,defer:0,n:3,len:.3,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:K.rv(1300,1800),q:1,t,dec:.04,pk:.5}); K.osc({f0:K.rv(800,1000),t,dec:.06,pk:.15}); K.osc({f0:110,f1:70,t,dec:.05,pk:.25}); }},
@@ -276,17 +276,17 @@ SFX.CUES={
   cough:{bus:'impacts',g:.18,max:2,gap:.12,defer:0,n:3,len:.45,fn(K,t){ for(let i=0;i<2;i++){ const u=t+i*K.rv(.07,.11); K.noise({k:'b',f0:450,f1:120,q:2,t:u,dec:.09,pk:.6}); K.osc({f0:70,f1:50,t:u,dec:.08,pk:.3}); } }},
   puff:{bus:'impacts',g:.14,max:2,gap:.1,defer:0,n:2,len:.5,fn(K,t){ K.noise({k:'p',f0:900,f1:300,t,a:.02,dec:.22,pk:.5}); K.noise({k:'b',f0:300,t,a:.02,dec:.2,pk:.3}); }},
   // ui: soft and short
-  ui_click:{bus:'ui',g:.12,max:2,gap:.03,defer:0,n:4,len:.12,pj:.015,first:1,fn(K,t){ const f=K.rv(1450,1700); K.osc({f0:f,f1:f*.75,gl:.02,t,a:.001,dec:.03,pk:.5}); K.osc({f0:f/2,t,a:.001,dec:.04,pk:.28}); K.noise({k:'p',type:'bandpass',f0:4000,q:2,t,dec:.01,pk:.12}); }},
-  ui_confirm:{bus:'ui',g:.16,max:2,gap:.06,defer:0,n:1,len:.55,pj:0,first:1,fn(K,t){ K.osc({f0:660,t,a:.004,dec:.18,pk:.5}); K.osc({f0:1320,t,a:.004,dec:.1,pk:.08}); K.osc({f0:990,t:t+.07,a:.004,dec:.25,pk:.5}); K.osc({f0:1980,t:t+.07,a:.004,dec:.12,pk:.07}); }},
-  ui_cancel:{bus:'ui',g:.14,max:2,gap:.06,defer:0,n:1,len:.45,pj:0,first:1,fn(K,t){ K.osc({type:'triangle',f0:520,lp:1500,t,a:.004,dec:.12,pk:.5}); K.osc({type:'triangle',f0:390,lp:1200,t:t+.06,a:.004,dec:.2,pk:.5}); }},
-  ui_round:{bus:'ui',g:.2,max:1,gap:.3,defer:0,n:1,len:1.3,pj:0,fn(K,t){ K.osc({f0:440,t,a:.005,dec:.6,pk:.5}); K.osc({f0:880,t,a:.005,dec:.35,pk:.18}); K.osc({f0:1324,t,a:.005,dec:.2,pk:.08}); K.osc({f0:220,t,a:.005,dec:.7,pk:.3}); }},
-  ui_your:{bus:'ui',g:.22,max:1,gap:.3,defer:0,n:1,len:1.4,pj:0,fn(K,t){ [[220,0],[277.18,.08],[329.63,.16],[440,.24]].forEach(([f,d],i)=>K.osc({type:'triangle',f0:f,lp:2200,t:t+d,a:.006,dec:.55,pk:i===3?.25:.4})); K.osc({f0:110,t,a:.01,dec:.6,pk:.25}); }},
-  ui_enemy:{bus:'ui',g:.22,max:1,gap:.3,defer:0,n:1,len:1.5,pj:0,fn(K,t){ K.osc({type:'triangle',f0:146.83,lp:900,t,a:.008,dec:.6,pk:.45}); K.osc({type:'triangle',f0:110,lp:900,t,a:.008,dec:.6,pk:.3});
+  ui_click:{bus:'ui',g:.35,max:2,gap:.03,defer:0,n:4,len:.12,pj:.015,first:1,fn(K,t){ const f=K.rv(1450,1700); K.osc({f0:f,f1:f*.75,gl:.02,t,a:.001,dec:.03,pk:.5}); K.osc({f0:f/2,t,a:.001,dec:.04,pk:.28}); K.noise({k:'p',type:'bandpass',f0:4000,q:2,t,dec:.01,pk:.12}); }},
+  ui_confirm:{bus:'ui',g:.4,max:2,gap:.06,defer:0,n:1,len:.55,pj:0,first:1,fn(K,t){ K.osc({f0:660,t,a:.004,dec:.18,pk:.5}); K.osc({f0:1320,t,a:.004,dec:.1,pk:.08}); K.osc({f0:990,t:t+.07,a:.004,dec:.25,pk:.5}); K.osc({f0:1980,t:t+.07,a:.004,dec:.12,pk:.07}); }},
+  ui_cancel:{bus:'ui',g:.38,max:2,gap:.06,defer:0,n:1,len:.45,pj:0,first:1,fn(K,t){ K.osc({type:'triangle',f0:520,lp:1500,t,a:.004,dec:.12,pk:.5}); K.osc({type:'triangle',f0:390,lp:1200,t:t+.06,a:.004,dec:.2,pk:.5}); }},
+  ui_round:{bus:'ui',g:.18,max:1,gap:.3,defer:0,n:1,len:1.3,pj:0,fn(K,t){ K.osc({f0:440,t,a:.005,dec:.6,pk:.5}); K.osc({f0:880,t,a:.005,dec:.35,pk:.18}); K.osc({f0:1324,t,a:.005,dec:.2,pk:.08}); K.osc({f0:220,t,a:.005,dec:.7,pk:.3}); }},
+  ui_your:{bus:'ui',g:.2,max:1,gap:.3,defer:0,n:1,len:1.4,pj:0,fn(K,t){ [[220,0],[277.18,.08],[329.63,.16],[440,.24]].forEach(([f,d],i)=>K.osc({type:'triangle',f0:f,lp:2200,t:t+d,a:.006,dec:.55,pk:i===3?.25:.4})); K.osc({f0:110,t,a:.01,dec:.6,pk:.25}); }},
+  ui_enemy:{bus:'ui',g:.2,max:1,gap:.3,defer:0,n:1,len:1.5,pj:0,fn(K,t){ K.osc({type:'triangle',f0:146.83,lp:900,t,a:.008,dec:.6,pk:.45}); K.osc({type:'triangle',f0:110,lp:900,t,a:.008,dec:.6,pk:.3});
     K.osc({type:'triangle',f0:130.81,lp:900,t:t+.14,a:.008,dec:.65,pk:.45}); K.osc({f0:55,t,a:.02,dec:.8,pk:.3}); K.osc({f0:155.56,t:t+.14,a:.05,dec:.6,pk:.07}); }},
-  sting_win:{bus:'ui',g:.4,max:1,n:1,len:4,st:1,pj:0,fn(K,t){ const L=K.pan(-.45), R=K.pan(.45);
+  sting_win:{bus:'ui',g:.34,max:1,n:1,len:4,st:1,pj:0,fn(K,t){ const L=K.pan(-.45), R=K.pan(.45);
     [220,277.18,329.63,440,493.88,554.37].forEach((f,i)=>{ const u=t+i*.1; K.osc({type:'triangle',f0:f,lp:1800,t:u,a:.06,hold:.3,dec:1.6,pk:.18,det:-6,to:L}); K.osc({type:'triangle',f0:f,lp:1800,t:u,a:.06,hold:.3,dec:1.6,pk:.18,det:6,to:R}); });
     K.osc({f0:880,t:t+.45,a:.004,dec:1,pk:.12,to:L}); K.osc({f0:1318.5,t:t+.55,a:.004,dec:1,pk:.08,to:R}); K.osc({f0:55,t,a:.2,dec:1.8,pk:.3}); }},
-  sting_loss:{bus:'ui',g:.4,max:1,n:1,len:4,st:1,pj:0,fn(K,t){ const L=K.pan(-.4), R=K.pan(.4);
+  sting_loss:{bus:'ui',g:.34,max:1,n:1,len:4,st:1,pj:0,fn(K,t){ const L=K.pan(-.4), R=K.pan(.4);
     [293.66,261.63,233.08,220].forEach((f,i)=>{ const u=t+i*.22; K.osc({type:'triangle',f0:f,lp:1100,t:u,a:.05,hold:.2,dec:1.2,pk:.2,det:-5,to:L}); K.osc({type:'triangle',f0:f,lp:1100,t:u,a:.05,hold:.2,dec:1.2,pk:.2,det:5,to:R}); });
     [146.83,174.61,220].forEach(f=>K.osc({type:'triangle',f0:f,lp:700,t,a:.3,hold:.5,dec:1.6,pk:.12})); K.osc({f0:73.42,t,a:.3,dec:2,pk:.3}); }},
   // added with the recorded set: each still has a synth take for when its clip is missing
@@ -296,11 +296,11 @@ SFX.CUES={
   charge:{bus:'weapons',g:.32,max:1,gap:.5,defer:0,n:1,len:1.9,pj:0,fn(K,t){ K.osc({type:'triangle',f0:180,f1:900,gl:1.4,lp:2500,t,a:1.3,dec:.25,pk:.4,vib:30,vibHz:9}); K.osc({f0:90,f1:180,gl:1.4,t,a:1.3,dec:.25,pk:.4}); K.noise({k:'p',type:'bandpass',f0:500,f1:3000,gl:1.4,q:2,t,a:1.3,dec:.15,pk:.25}); }},
   bass_drop:{bus:'explosions',g:.5,max:1,gap:.5,defer:0,pri:4,n:1,len:2.4,pj:0,fn(K,t){ K.osc({f0:46,f1:24,gl:1.4,t,a:.01,dec:1.6,pk:1}); K.noise({k:'b',f0:120,t,a:.02,dec:1.2,pk:.4}); }},
   wreck:{bus:'explosions',g:.2,max:1,gap:1,defer:0,n:1,len:3,pj:.05,fn(K,t){ K.osc({type:'sawtooth',f0:58,f1:41,gl:2,lp:240,lq:2,t,a:.4,dec:1.6,pk:.5,vib:30,vibHz:1.3}); K.noise({k:'b',f0:300,t,a:.4,dec:1.5,pk:.4}); K.noise({k:'k',type:'bandpass',f0:1500,q:.8,t:t+.3,a:.3,dec:1.4,pk:.15}); }},
-  ui_select:{bus:'ui',g:.13,max:2,gap:.04,defer:0,n:1,len:.3,pj:0,spj:.02,fn(K,t){ K.osc({f0:880,t,a:.003,dec:.09,pk:.5}); K.osc({f0:1320,t:t+.03,a:.003,dec:.1,pk:.3}); }},
-  ui_panel:{bus:'ui',g:.12,max:2,gap:.06,defer:0,n:1,len:.3,pj:0,spj:.02,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:900,f1:2400,gl:.08,q:1.2,t,a:.02,dec:.08,pk:.5}); K.osc({f0:600,t,a:.01,dec:.08,pk:.2}); }},
-  ui_reward:{bus:'ui',g:.2,max:1,gap:.2,defer:0,n:1,len:1.2,pj:0,spj:.02,fn(K,t){ [523.25,659.25,783.99,1046.5].forEach((f,i)=>{ K.osc({f0:f,t:t+i*.06,a:.004,dec:.5,pk:.4}); K.osc({f0:f*2,t:t+i*.06,a:.004,dec:.2,pk:.08}); }); K.osc({f0:130.8,t,a:.01,dec:.5,pk:.3}); }},
+  ui_select:{bus:'ui',g:.35,max:2,gap:.04,defer:0,n:1,len:.3,pj:0,spj:.02,fn(K,t){ K.osc({f0:880,t,a:.003,dec:.09,pk:.5}); K.osc({f0:1320,t:t+.03,a:.003,dec:.1,pk:.3}); }},
+  ui_panel:{bus:'ui',g:.32,max:2,gap:.06,defer:0,n:1,len:.3,pj:0,spj:.02,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:900,f1:2400,gl:.08,q:1.2,t,a:.02,dec:.08,pk:.5}); K.osc({f0:600,t,a:.01,dec:.08,pk:.2}); }},
+  ui_reward:{bus:'ui',g:.3,max:1,gap:.2,defer:0,n:1,len:1.2,pj:0,spj:.02,fn(K,t){ [523.25,659.25,783.99,1046.5].forEach((f,i)=>{ K.osc({f0:f,t:t+i*.06,a:.004,dec:.5,pk:.4}); K.osc({f0:f*2,t:t+i*.06,a:.004,dec:.2,pk:.08}); }); K.osc({f0:130.8,t,a:.01,dec:.5,pk:.3}); }},
   ui_alert:{bus:'ui',g:.18,max:1,gap:.5,defer:0,n:1,len:1.6,pj:0,spj:.02,fn(K,t){ K.osc({type:'triangle',f0:164.8,lp:900,t,a:.01,dec:.6,pk:.45}); K.osc({type:'triangle',f0:155.6,lp:900,t:t+.16,a:.01,dec:.7,pk:.45}); K.osc({f0:61.7,t,a:.03,dec:.9,pk:.35}); }},
-  ui_boss:{bus:'ui',g:.3,max:1,gap:1,defer:0,n:1,len:2.6,st:1,pj:0,spj:.02,fn(K,t){ const L=K.pan(-.4), R=K.pan(.4); [73.42,110,146.83].forEach((f,i)=>{ K.osc({type:'triangle',f0:f,lp:600,t,a:.02,hold:.2,dec:1.5,pk:.3,det:-5,to:L}); K.osc({type:'triangle',f0:f,lp:600,t,a:.02,hold:.2,dec:1.5,pk:.3,det:5,to:R}); });
+  ui_boss:{bus:'ui',g:.22,max:1,gap:1,defer:0,n:1,len:2.6,st:1,pj:0,spj:.02,fn(K,t){ const L=K.pan(-.4), R=K.pan(.4); [73.42,110,146.83].forEach((f,i)=>{ K.osc({type:'triangle',f0:f,lp:600,t,a:.02,hold:.2,dec:1.5,pk:.3,det:-5,to:L}); K.osc({type:'triangle',f0:f,lp:600,t,a:.02,hold:.2,dec:1.5,pk:.3,det:5,to:R}); });
     K.osc({f0:48,f1:30,t,a:.005,dec:.9,pk:.8}); K.noise({k:'b',f0:500,f1:90,t,dec:.7,pk:.5}); }},
 };
 
