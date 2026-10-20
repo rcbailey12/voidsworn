@@ -20,7 +20,16 @@ Full audit: AUDIT_v53H.md. Owner chose: full per-ship detail bake; desktop loads
 - [ ] Cleanup after G: points-only ship build (skip the thrown-away procedural hull, ~3.3 s and 2 M vertices), drop the concept-hull toggle, decals/fires on the real hull, wrecks from concept meshes, then delete the procedural builders.
 - [ ] Cleanup after C: pool per-call effect meshes/materials, drop old effect fallbacks, refresh the reflection probe per battle.
 - [ ] Per-hull bake on the PC (Blender, GPU): UV unwrap each game mesh, bake normal + AO + curvature + window mask from the high-poly Hunyuan output; albedo from faction plating (Hunyuan Paint if it fits in VRAM). Game: hull JSON carries UVs, per-hull texture sidecars (desktop 2K, phone 1K), hull material uses them; replaces the generated plating textures (75% of texture memory).
-- [ ] Explosions and weapons: Blender-rendered explosion flipbooks, closed cut faces on broken hulls, thicker beams at board zoom, textured torpedoes, bolts that are not capsules.
+- [ ] Effects, doubled down (owner: "extremely high quality", "visceral and punchy", plasma must feel nothing like lasers). Starts as soon as C (perf, touches effect pooling) merges. Every weapon family gets its own look, timing and impact:
+  - Laser/las: instant coherent beam, hard white core with faction-colour glow, sharp muzzle flash, burn line and spark spray on impact.
+  - Plasma: slow fat bolts with a churning molten core and wobbling corona, heat shimmer, splashing impact that leaves glowing slag, drips and smoke; low thump.
+  - Autocannon/tracer: rapid stream of small tracers, brass-bright flicker, peppered hull pings.
+  - Rail: near-instant streak with a shock ring at the muzzle, delayed punch-through, debris out the far side.
+  - Lance/ion: thick charged beam with build-up, crackling arcs; ion leaves a blue static wash on the shield facing.
+  - Needle (Ithar): fine glassy shards, prismatic glints. Spine/bio (Chorus): spat organic projectiles, wet bursts.
+  - Torpedoes: textured bodies, exhaust trails that curve, big detonation with flipbook fire and shockwave.
+  - Punch for everything: hit-stop on big hits, scaled camera kick, flash, hull sparks/debris, shield ripples at the struck point, sound synced (sfx.js).
+  - Explosions: Blender-rendered flipbooks (fireball, debris, smoke) on the PC GPU, broken hulls with closed cut faces, staged capital deaths.
 - [ ] Then: world (CC0 triplanar rock, black-hole lensing and accretion disc, depth-faded nebula, shader hex grid), stations/wrecks polish.
 
 ## v54: factions and rewards (parallel with v55)
