@@ -1,5 +1,5 @@
 // ======================= UI: HUD, overlays, input =======================
-document.addEventListener('click',e=>{ const path=e.composedPath(); if(path.some(n=>n.id==='app'||(n.classList&&n.classList.contains('modal')))) return; const el=e.target.closest('[data-act]'); if(!el||el.disabled) return; const fn=ACT[el.dataset.act]; if(fn){ try{ if(G&&G.actLog){ G.actLog.push({t:Math.round(performance.now()/100)/10,act:el.dataset.act}); if(G.actLog.length>12) G.actLog.shift(); } }catch(_){} try{ SFX.click(); }catch(_){} fn(el.dataset.arg,el,e); } }); // a sound failure must never swallow a command
+document.addEventListener('click',e=>{ const path=e.composedPath(); if(path.some(n=>n.id==='app'||(n.classList&&n.classList.contains('modal')))) return; const el=e.target.closest('[data-act]'); if(!el||el.disabled) return; const fn=ACT[el.dataset.act]; if(fn){ try{ if(G&&G.actLog){ G.actLog.push({t:Math.round(performance.now()/100)/10,act:el.dataset.act}); if(G.actLog.length>12) G.actLog.shift(); } }catch(_){} try{ SFX.click(el.dataset.act); }catch(_){} fn(el.dataset.arg,el,e); } }); // a sound failure must never swallow a command
 function logHtml(m){ return esc(m).replace(/(\d+) to (\w+) shields/g,'<span class="shv">$1 to $2 shields</span>').replace(/(\d+) hull/g,'<span class="hlv">$1 hull</span>'); }
 function log(m,c){ if(!B) return; B.log.push({m,c}); const el=document.getElementById('log'); if(el){ const d=document.createElement('div'); d.className=c||''; d.innerHTML=logHtml(m); el.appendChild(d); while(el.childNodes.length>200) el.firstChild.remove(); el.scrollTop=el.scrollHeight; } }
 function pendingP(){ return B?alive('player').filter(u=>!u.isSq&&!u.activated&&u!==B.activeUnit):[]; }
@@ -502,7 +502,7 @@ ACT.endTurn=()=>{ if(B&&B.alt) endActivation(true); else endTurn(); };
 ACT.restart=()=>{ if(B&&B.busy&&!B.over) return; hideEnd(); setupBattle(); G.ctl.reset(); const f=caps('player')[0]; if(f) selectUnit(f); banner(B.alt?'Round 1':'Your turn'); };
 
 // ---------- turn flow ----------
-async function banner(text,color){ const el=document.getElementById('banner'); el.textContent=text; el.style.color=color||'var(--bone)'; el.classList.add('show'); await wait(520); el.classList.remove('show'); await wait(140); }
+async function banner(text,color){ try{ SFX.banner(text,color); }catch(e){} const el=document.getElementById('banner'); el.textContent=text; el.style.color=color||'var(--bone)'; el.classList.add('show'); await wait(520); el.classList.remove('show'); await wait(140); }
 async function endTurn(){
   if(!B||B.busy||B.side!=='player'||B.over) return;
   B.busy=true; B.sel=null; B.armed=null; B.mode=null; B.inspect=null; B.reach=null; hideTip(); G.playerView={a:G.ctl.a,b:G.ctl.b,r:G.ctl.r,t:G.ctl.t.clone(),at:performance.now()};
