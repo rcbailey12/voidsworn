@@ -28,6 +28,21 @@ function makeShieldRing(u,v){
 }
 function makePlate(u){ const el=document.createElement('div'); el.className='plate '+(u.side==='player'?'friend':'foe'); el.innerHTML=`<div class="nm"></div>${u.shMax&&!u.isSq?'<div class="sp" title="Shields: port, prow, starboard, rear"><b></b><b></b><b></b><b></b></div>':''}<div class="hb" title="Hull"><i></i></div>`;
   el.querySelector('.nm').textContent=u.isSq?u.t.n:u.name; document.getElementById('plates').appendChild(el); return {el,hb:el.querySelector('.hb i'),sp:[...el.querySelectorAll('.sp b')],key:''}; }
+// v53 status display. Every ship's status stays inside its own hex: shields on the ring around the hull (makeShieldRing), and a damaged ship gets a
+// hull gauge drawn on its own hex footprint (one mesh for the whole board, rebuilt only when hull values, positions or the camera quarter change).
+// The DOM label (name and full bars) shows only for the ship in hand (selected, hovered, inspected), so a hovered target shows its own, and it sits
+// above that ship's hull; valid targets are already marked by their brighter footprints. Hidden labels cost nothing per frame; a shown one writes one transform, and only when it moves a pixel.
+function plateLevel(u){ if(typeof fpLevel==='function') return fpLevel(u); const h=B.hover; return u===B.sel||u===B.inspect||(h&&h.q===u.q&&h.r===u.r)?2:0; }
+function hullArcs(){ const A=G._ha||(G._ha={hash:0,mesh:null}); if(!B||B.showcase||!G.scene){ if(A.mesh&&!A.mesh.isDisposed()) A.mesh.dispose(false,false); A.mesh=null; A.hash=0; return; } const hide=!!G.cineHidePlates, qa=Math.round(((G.cam&&G.cam.alpha)||0)/(Math.PI/6));
+  let h=hide?7:qa*131+3, n=0; const list=[];
+  for(const u of B.units){ if(u.dead||u.isSq) continue; const v=G.views.get(u.id); if(!v||v.state!=='alive'||v.arrive||v.phased||u.vis) continue; const hr=clamp(u.hp/u.maxHp,0,1); if(hr>.995||hide) continue;
+    const k=Math.round(hr*60); list.push([u,k/60]); h=(Math.imul(h,31)+(u.q+64)*977+(u.r+64)*29+k*7+(u.side==='player'?1:2))|0; n++; }
+  if(h===A.hash&&A.mesh&&!A.mesh.isDisposed()) return; A.hash=h; if(A.mesh&&!A.mesh.isDisposed()) A.mesh.dispose(false,false); A.mesh=null; if(!n) return;
+  const pos=[], col=[], ind=[], c0=-Math.PI/2-qa*Math.PI/6, span=Math.PI*4/3, NS=28, r0=HS*.7, r1=HS*.79, tr=[.03,.05,.08,.62]; // centred on the side nearest the camera
+  const band=(cx,cz,a0,a1,c)=>{ const b=pos.length/3, ns=Math.max(2,Math.round(NS*(a1-a0)/span)); for(let i=0;i<=ns;i++){ const a=a0+(a1-a0)*i/ns, ca=Math.cos(a), sa=Math.sin(a); pos.push(cx+ca*r0,.16,cz+sa*r0,cx+ca*r1,.16,cz+sa*r1); col.push(...c,...c); if(i) ind.push(b+2*i-2,b+2*i-1,b+2*i+1,b+2*i-2,b+2*i+1,b+2*i); } };
+  for(const [u,hr] of list){ const p=hexWorld(u.q,u.r), lo=hr<=.3, c=lo?[1,.36,.24,.95]:[1,.68,.26,.92], a0=c0-span/2, am=a0+span*hr; band(p.x,p.z,am,a0+span,tr); if(hr>.01) band(p.x,p.z,a0,am,c); }
+  const m=new BABYLON.Mesh('hullArcs',G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.colors=col; vd.indices=ind; vd.applyToMesh(m); m.hasVertexAlpha=true; m.isPickable=false;
+  const mt=G._haMat&&G.scene.materials.includes(G._haMat)?G._haMat:(G._haMat=emMat('hullArcM',new C3(1,1,1),1)); mt.disableLighting=true; mt.backFaceCulling=false; mt.disableDepthWrite=true; m.material=mt; m.alphaIndex=40; try{ G.glow.addExcludedMesh(m); }catch(e){} A.mesh=m; }
 function createView(u){
   const fac=u.fac||'voidsworn';
   const v={u,fac,bob:Math.random()*6.28,bank:0,lastA:null,fires:[],state:'alive'};
@@ -75,8 +90,8 @@ function arcBolt(a,b,col){ const pts=[a.clone()], n=7; for(let i=1;i<n;i++){ con
 function physKick(u,dir,mag,roll){ const v=u&&G.views.get(u.id); if(!v||!v.ph||u.isSq) return; const m=u.size>.8?2.2:u.size>.6?1.4:1; const l=Math.hypot(dir.x,dir.z)||1; v.ph.vx+=dir.x/l*mag/m; v.ph.vz+=dir.z/l*mag/m; if(roll) v.ph.vr+=roll/m; }
 // v51 coast: after a burn the hull keeps the velocity it ended with and runs on along that vector, easing to a stop a little way
 // past its hex (critically damped, so it never drifts back). Ships that have not moved hold station with a slow surge and sway.
-function coastStart(v,u,dx,dz,sp,FE){ const w=u.size>.8?.38:u.size>.6?.48:.6, cap=HW*((FE&&FE.coastCap)||.34)*(u.size>.8?1.15:1);
-  v.coast={dx,dz,c:0,vc:sp,w,T:Math.min(cap,sp/w)}; }
+function coastStart(v,u,dx,dz,sp,FE){ const w=u.size>.8?.38:u.size>.6?.48:.6, cap=HW*((FE&&FE.coastCap!=null)?FE.coastCap:.05)*(u.size>.8?1.15:1);
+  const T=Math.min(cap,sp/w); v.coast={dx,dz,c:0,vc:Math.min(sp,w*T),w,T}; } // v53: the hull stays on its hex (within ~0.1 hex): drift capped and the start speed trimmed so the spring can't overshoot the cap
 function coastTick(v,u,a,dt,t){ const C=v.coast; let ox=0,oz=0;
   if(C&&(C.c||C.vc)){ const ac=C.w*C.w*(C.T-C.c)-2*C.w*C.vc; C.vc+=ac*dt; C.c+=C.vc*dt; if(C.vc<0) C.vc=0; ox=C.dx*C.c; oz=C.dz*C.c; }
   if(!u.vis){ const ph=(v.bob||0)*3.1, per=u.size>.8?11:u.size>.6?9:7, k=2*Math.PI/per, f=Math.cos(a), g=-Math.sin(a), sv=HW*.035*Math.sin(t*k+ph), sw=HW*.02*Math.sin(t*k*.5+ph*1.7);
@@ -85,12 +100,13 @@ function coastTick(v,u,a,dt,t){ const C=v.coast; let ox=0,oz=0;
 function updateWorld(dt){
   try{ gfxTick(); }catch(e){} try{ if(typeof vfxTick==='function') vfxTick(); }catch(e){}
   if(!B) return;
-  const t=G.time, cw=G.engine.getRenderingCanvas().clientWidth, ch=G.engine.getRenderingCanvas().clientHeight;
+  const t=G.time, hsl=G.engine.getHardwareScalingLevel(), cw=Math.round(G.engine.getRenderWidth()*hsl), ch=Math.round(G.engine.getRenderHeight()*hsl); // v53: from the engine, not clientWidth (a layout read every frame after the plate transforms were written)
   const tm=G.scene.getTransformMatrix(), vp=G.cam.viewport.toGlobal(cw,ch);
   if(MATS.chorus){ const k=Math.sin(G.time*2.2); MATS.chorus.P.win.scaleToRef(.8+.35*k,MATS.chorus.win.emissiveColor); MATS.chorus.P.win.scaleToRef(.32+.22*k,MATS.chorus.flesh.emissiveColor); } // v53: written in place; assigning a new colour went through the material setter and marked every submesh in the scene dirty each frame
   if(MATS.deathless) MATS.deathless.P.win.scaleToRef(.72+.35*Math.sin(G.time*1.3),MATS.deathless.win.emissiveColor);
   if(MATS.ithar) MATS.ithar.sail.alpha=.26+.07*Math.sin(G.time*1.7);
   if(!B._warm&&G.views.size&&typeof warmFx==='function'){ B._warm=1; const b0=B; setTimeout(()=>{ if(B===b0&&!B.over) warmFx(); },50); } /* v45: never warms into a different battle */ // v44.1: build the explosion shaders while the fleets arrive
+  try{ hullArcs(); }catch(e){ console.warn('hull arcs',e); }
   for(const u of B.units){
     let v=G.views.get(u.id);
     if(!v){ if(u.dead) continue; v=createView(u); }
@@ -135,13 +151,14 @@ function updateWorld(dt){
     // damage fires
     if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); if(typeof damageSparks==='function') damageSparks(v,hr,dt); }
     // nameplate
-    // v52: the plate hangs under the ship's ring instead of over the hull, so bars never cover the silhouette (at top-down zoom they sat on top of it)
-    const gnd=new V3(px,.3,pz), sp=V3.Project(gnd,BABYLON.Matrix.Identity(),tm,vp), spR=V3.Project(gnd.add(G.cam.getDirection(BABYLON.Axis.X).scale(HS*.82)),BABYLON.Matrix.Identity(),tm,vp); sp.y+=Math.min(90,Math.hypot(spR.x-sp.x,spR.y-sp.y))*.8+4;
-    const pe=v.plate.el; if(sp.z<0||sp.z>1||G.cineHidePlates){ if(v.plate.vis!==0){ pe.style.display='none'; v.plate.vis=0; } } else { if(v.plate.vis!==1){ pe.style.display=''; v.plate.vis=1; } const tx=Math.round(sp.x), ty=Math.round(sp.y); if(tx!==v.plate.tx||ty!==v.plate.ty){ v.plate.tx=tx; v.plate.ty=ty; pe.style.transform=`translate(${tx}px,${ty}px) translate(-50%,0)`; } } /* v45: DOM written only when a plate actually moves */
-    const hr=clamp(u.hp/u.maxHp,0,1), key=Math.round(hr*100)+'|'+u.sh.map(x=>Math.round(x)).join(',')+'|'+(B.sel===u||B.inspect===u||B.hover&&B.hover.q===u.q&&B.hover.r===u.r?1:0)+(B.side==='player'&&u.side==='player'&&isDone(u)?'d':'');
+    // v53: shown only for the ship in hand (selected, hovered, inspected; hovering a target shows it), above that ship's own hull (v52 hung every plate under the ring, which with the angled camera
+    // put it over the neighbouring hex toward the camera, so adjacent ships seemed to own each other's bars)
+    const lv=plateLevel(u), pe=v.plate.el; let sp=null; if(lv===2&&!G.cineHidePlates){ const rp=v.root.position; sp=V3.Project(new V3(rp.x,rp.y+(v.H||2)*.6+1.2,rp.z),BABYLON.Matrix.Identity(),tm,vp); if(sp.z<0||sp.z>1) sp=null; }
+    if(!sp){ if(v.plate.vis!==0){ pe.style.display='none'; v.plate.vis=0; } } else { if(v.plate.vis!==1){ pe.style.display=''; v.plate.vis=1; } const tx=Math.round(sp.x), ty=Math.round(sp.y); if(tx!==v.plate.tx||ty!==v.plate.ty){ v.plate.tx=tx; v.plate.ty=ty; pe.style.transform=`translate(${tx}px,${ty}px) translate(-50%,-100%)`; } } /* v45: DOM written only when a plate actually moves */
+    const hr=clamp(u.hp/u.maxHp,0,1), key=Math.round(hr*100)+'|'+u.sh.map(x=>Math.round(x)).join(',')+'|'+(lv===2?1:0)+(lv===1?'t':'')+(B.side==='player'&&u.side==='player'&&isDone(u)?'d':'');
     if(key!==v.plate.key){ v.plate.key=key; v.plate.hb.style.width=(hr*100)+'%'; v.plate.hb.style.background=hr>.3?HULL_HEX:HULL_LOW_HEX;
       v.plate.sp.forEach((b,i)=>{ const q=[3,0,1,2][i]; const f=u.shMax?u.sh[q]/u.shMax:0; b.style.background=f>.66?SHIELD_HEX:f>.01?'#2c6f93':'rgba(45,58,86,.9)'; });
-      pe.classList.toggle('hi',key.split('|')[2][0]==='1'||!!u.flagship||!!u.transport||!!u.pflag||(!!u.elite&&u.side==='enemy')); pe.classList.toggle('flag',!!u.flagship||!!u.transport||!!u.pflag); pe.classList.toggle('elite',!!u.elite&&u.side==='enemy'); pe.classList.toggle('done',key.endsWith('d')); }
+      pe.classList.toggle('hi',lv===2); /* v53: the label only shows for the ship in hand, so the name always comes with it */ pe.classList.toggle('flag',!!u.flagship||!!u.transport||!!u.pflag); pe.classList.toggle('elite',!!u.elite&&u.side==='enemy'); pe.classList.toggle('done',key.endsWith('d')); }
   }
   G.arcT=(G.arcT||0)-dt; if(G.arcT<=0){ G.arcT=.1+Math.random()*.18; const cands=[]; for(const v of G.views.values()) if(v.state==='alive'&&v.model&&v.model.arcs&&v.model.arcs.length>1) cands.push(v);
     if(cands.length){ const v=cands[Math.floor(Math.random()*cands.length)], A=v.model.arcs, i=Math.floor(Math.random()*A.length), j=(i+1)%A.length, a=toWorld(v,A[i]), c=toWorld(v,A[j]), pts=[];
@@ -232,7 +249,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     u.vis={q:ps.q,r:ps.r,a:angAt(Math.min(x,S))+headDelta(Math.min(x,S),p),thr,lift,roll,pitch,sc}; }, true);
   fireLate();
   if(v&&v.phased){ v.phased=false; if(v.root) v.root.setEnabled(true); if(v.ring&&v.ring.node) v.ring.node.setEnabled(true); if(v.plate) v.plate.el.style.visibility=''; }
-  const L=path.at(-1); for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=L.f; u.vis=null; if(trail) endTrail(trail);
+  u.vis=null; if(trail) endTrail(trail); // v53: presentation only; the caller commits u.q/u.r/facing after its live() check (moveUnit commit, ramUnit, rotateUnit)
   if(v&&!u.isSq&&travels&&!opt.charge&&cr>0){ let ia=pk.length-2; while(ia>0&&Math.abs(pk[ia].q-P1.q)+Math.abs(pk[ia].r-P1.r)<1e-6) ia--; const A=hexWorld(pk[ia].q,pk[ia].r), Bw=hexWorld(P1.q,P1.r), dx=Bw.x-A.x, dz=Bw.z-A.z, l=Math.hypot(dx,dz)||1;
     const sp=vmax*cr*S*HW/(dur/1000); coastStart(v,u,dx/l,dz/l,sp,FE); }
 }

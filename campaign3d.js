@@ -2,7 +2,7 @@
 const appEl=document.getElementById('app');
 let AI_LEVEL='veteran';
 // global error reporter: a calm notice instead of silent failure, logged for review
-let ERRS=0; function reportError(msg,stack){ if(++ERRS>5) return; try{ tel('error',{msg:String(msg||'').slice(0,160),at:String(stack||'').split('\n').slice(1,3).join(' | ').trim().slice(0,240),round:B&&B.round,side:B&&B.side,busy:B&&B.busy}); Persist.saveLocal(); if(Persist.save) Persist.save(); }catch(e){} try{ toast('Something went wrong. Your campaign is saved at the last node; reload if anything looks stuck.'); }catch(e){} }
+let ERRS=0; function reportError(msg,stack){ if(++ERRS>5) return; try{ tel('error',{msg:String(msg||'').slice(0,160),at:String(stack||'').split('\n').slice(1,3).join(' | ').trim().slice(0,240),round:B&&B.round,side:B&&B.side,busy:B&&B.busy}); Persist.saveLocal(); }catch(e){} /* v53: local only, no stamp: an error report must never win a cloud conflict */ try{ toast('Something went wrong. Your campaign is saved at the last node; reload if anything looks stuck.'); }catch(e){} }
 window.addEventListener('error',e=>{ if(e.message) reportError(e.message,e.error&&e.error.stack); });
 window.addEventListener('unhandledrejection',e=>reportError(e.reason&&(e.reason.message||e.reason),e.reason&&e.reason.stack));
 function drawShipShape(){} // the old 2D title animation is hidden behind the live 3D backdrop
@@ -42,9 +42,13 @@ ACT.c3title=()=>{ const i=document.querySelector('.intro'); if(i) i.remove(); do
 function fieldRepairs(n){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp; sh.hp=Math.min(mx,sh.hp+Math.round(mx*.2*repairMult())); } tel('field_repairs',{}); completeNode(); mapScreen(); toast('Field repairs: every ship recovers 20% of its hull.'); }
 
 // campaign battles run in the 3D engine
+// v53: owner's rule, a reload replays the same node and enemy fleet. Every fight node gets a seed when the map first shows it (saved with the run);
+// battleScreen seeds the pre-battle rolls from it and hands it to startBattle, so the same saved run always rebuilds the same battle
+function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss')){ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
 function battleScreen(cfg){
   closeModal(); hideTip(); hideApp(); hideEnd(); const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on');
   disposeAllViews(); clearOverlays();
+  { const sn=cfg.node&&findNode(cfg.node); if(sn&&!cfg.eventRelic){ nodeSeeds([sn]); if(sn.seed!=null&&cfg.seed==null){ cfg=Object.assign({},cfg,{seed:sn.seed}); rndSeed((sn.seed^0x5bd1e995)>>>0); } } } // v53: seeded before any pre-battle roll
   if(RUN.fleet.length<=1&&(RUN.reinf||0)<RUN.sector){ RUN.reinf=RUN.sector; const sh=newShip('warden'); RUN.fleet.push(sh); setTimeout(()=>toast(`The sector garrison sends the ${sh.name} to reinforce you.`),600); tel('reinforced',{}); }
   const nd=cfg.node&&findNode(cfg.node); if(nd&&!nd.enc&&cfg.kind!=='boss'){ Object.assign(nd,rollEncounter(nd.type,nd.col)); if(!nd.map&&RUN.map&&RUN.map.region) nd.map=regionMap(RUN.map.region,nd.col,7); fitEncounter(nd); }
   const ro=cfg.kind==='boss'?bossEncounter():nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);
@@ -60,6 +64,7 @@ function sceneCensus(){ try{ const s=G.scene, a=s.getActiveMeshes(), act={}, all
     const top=o=>Object.entries(o).sort((x,y)=>y[1]-x[1]).slice(0,10).map(e=>e[0]+':'+e[1]).join(',');
     return {meshes:s.meshes.length,on:Object.values(all).reduce((x,y)=>x+y,0),act:a.length,mats:s.materials.length,tex:s.textures.length,ps:s.particleSystems.length,lights:s.lights.length,obs:s.onBeforeRenderObservable.observers.length,topAct:top(act),topOn:top(all)}; }catch(e){ return null; } }
 function finishBattle(result){
+  if(!B||B.finished) return; B.finished=true; hideEnd(); // v53: once per battle, and the end card goes first so it can never be tapped twice
   if(result==='loss'&&B.withdraw&&survivorsP()) result='retreat';
   const cfg=B.cfg; const summary={cfg,xp:[],lost:[],kills:0,rounds:B.round,prizes:[],partial:!!B.partial,boonStats:Object.assign({},B.boonStats||{})}; const r0=runRenown();
   for(const u of B.units) if(u.parent){ const p=B.units.find(x=>x.id===u.parent); if(p){ p.dealt+=u.dealt; p.kills+=u.kills; } }
@@ -67,8 +72,8 @@ function finishBattle(result){
   RUN.stats.kills+=summary.kills;
   for(const u of B.units){
     if(!u.ship) continue; const ship=u.ship; if(u.side==='player'){ const c=ship.car=ship.car||{dealt:0,kills:0,battles:0}; c.dealt+=Math.round(u.dealt||0); c.kills+=u.kills||0; c.battles++; }
-    if((u.dead&&!u.exited)||u.side!=='player'){ summary.lost.push({ship:ship.name,cap:ship.cap.name}); RUN.stats.lost=(RUN.stats.lost||0)+1; RUN.fleet=RUN.fleet.filter(x=>x!==ship);
-      if(Math.random()<.6){ (RUN.reserve=RUN.reserve||[]).push({cap:ship.cap,from:ship.name}); (summary.escaped=summary.escaped||[]).push(ship.cap.name); } else RUN.fallen.push({name:ship.cap.name,rank:ship.cap.rank,fac:ship.cap.fac,ship:ship.name,sector:RUN.sector}); continue; }
+    if(u.dead&&!u.exited){ summary.lost.push({ship:ship.name,cap:ship.cap.name}); RUN.stats.lost=(RUN.stats.lost||0)+1; RUN.fleet=RUN.fleet.filter(x=>x!==ship);
+      if(rnd()<.6){ (RUN.reserve=RUN.reserve||[]).push({cap:ship.cap,from:ship.name}); (summary.escaped=summary.escaped||[]).push(ship.cap.name); } else RUN.fallen.push({name:ship.cap.name,rank:ship.cap.rank,fac:ship.cap.fac,ship:ship.name,sector:RUN.sector}); continue; }
     ship.hp=clamp(Math.round(u.hp),1,derive(ship).maxHp);
     if(result==='retreat'){ ship.hp=Math.max(1,ship.hp-Math.round(u.maxHp*.1)); continue; }
     if(result==='win'){ const xp=Math.min(60,Math.round(8+u.dealt/4+u.kills*12)); const rk=ship.cap.rank; addXp(ship,xp); summary.xp.push({ship:ship.name,cap:ship.cap.name,xp,up:ship.cap.rank>rk,rank:ship.cap.rank}); }
@@ -86,7 +91,7 @@ function finishBattle(result){
   rewardFlow(summary);
   const gained=runRenown()-r0; if(summary.prizes.length) setTimeout(()=>toast(`Prize ship${summary.prizes.length>1?'s':''} join the fleet: ${summary.prizes.join(', ')}.`),300);
 }
-ACT.c3continue=()=>{ if(B&&B.over) finishBattle(B.over); };
+ACT.c3continue=()=>{ if(!B||B.busy||!B.over||!B.campaign||B.finished) return; finishBattle(B.over); }; // v53: same gate as c3retreat
 ACT.c3retreat=()=>{ if(!B||B.busy||B.over||!B.campaign||B.cfg.kind==='boss') return; modal(`<h2>Retreat?</h2><p>The fleet jumps out. Every surviving ship loses 10% of its hull, and this node counts as passed.</p><div class="row" style="margin-top:14px"><button class="primary" data-act="c3retreatYes">Jump out</button><button data-act="c3retreatNo">Stay and fight</button></div>`); };
 ACT.c3retreatYes=()=>{ closeModal(); if(B&&B.campaign) finishBattle('retreat'); };
 ACT.c3retreatNo=()=>closeModal();

@@ -32,7 +32,7 @@ async function sim(S,sector){
   RUN.boons=(S.boons||process.env.BOONS||'').split(',').filter(Boolean).map(x=>({id:x.split(':')[0],r:+(x.split(':')[1]||0)})); RUN.aspect=S.aspect||process.env.ASPECT||null; RUN.flagUid=RUN.fleet[0].uid;
   startBattle({kind:S.kind,fac:S.fac||'hegemony',col:3,enemies:S.enemy.map(tpl=>({tpl}))});
   let r=0;
-  if(process.env.ALT==='1'){ for(const x of B.units) x.activated=false; startSideTurn('enemy'); // alternating activations, as the game plays by default
+  if(process.env.ALT==='1'){ B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy'); // alternating activations, as the game plays by default
     while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
       while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
         if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe; for(const u of batch){ if(B.over) break; await aiUnit(u); u.activated=true; } }
@@ -82,7 +82,7 @@ async function match(pf,ef,mode,alt){
   startBattle({kind:mode==='fl'?'boss':'battle',fac:ef,col:3,enemies:genFleet(ef,mode).map(tpl=>({tpl})),dep:pick(['line','flank','ambush'])});
   STATS.rounds+=0; let r=0;
   if(!alt){ while(!B.over&&r<30){ await botTurn(); if(B.over) break; B.side='enemy'; startSideTurn('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; startSideTurn('player'); r++; } }
-  else { for(const x of B.units) x.activated=false; startSideTurn('enemy');
+  else { B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
     while(!B.over&&r<30){
       await swarmPhase('player'); await swarmPhase('enemy');
       let guard=0;
@@ -103,7 +103,7 @@ async function campaignSim(n){ const FLEET={1:['penitent','harrow','warden','war
     for(let i=0;i<n;i++){ RUN={admiral:'vex',credits:0,cpCap:40,sector:sec,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
       for(const t of FLEET[sec]) RUN.fleet.push(newShip(t,true)); const fac=pick(SECTOR_POOL[sec-1]);
       const obj=kind==='boss'?'rout':pick(['rout','rout','flagship','hold']); OBJS_SEEN[obj]=(OBJS_SEEN[obj]||{n:0,w:0}); OBJS_SEEN[obj].n++;
-      startBattle({kind,fac,col,obj,dep:kind==='boss'?'line':pick(['line','line','flank','ambush'])}); let r=0; for(const x of B.units) x.activated=false; startSideTurn('enemy');
+      startBattle({kind,fac,col,obj,dep:kind==='boss'?'line':pick(['line','line','flank','ambush'])}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
       while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
         while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
           if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; if(B.over) break; } const pp2=alive('player').filter(x=>!x.isSq&&!x.activated); const sqs=alive('enemy').filter(x=>x.isSq&&!x.activated); const batch=pp2.length?(pe.length?[aiPickActivation(pe)]:[]):pe;
@@ -118,7 +118,7 @@ async function fuzz(n){ const F=['voidsworn','hegemony','corsair','chorus','itha
       for(const t of genFleet(pf,mode)) RUN.fleet.push(newShip(t,true));
       startBattle({kind:mode==='fl'?'boss':'battle',fac:ef,col:3,enemies:genFleet(ef,mode).map(tpl=>({tpl})),map:pick(['belt','station','planet','storm','graveyard']),dep:pick(['line','flank','ambush']),obj:FZ_ENC||pick(Object.keys(ENCOUNTERS)),shape:process.env.FZ_SHAPE||pick(Object.keys(SHAPES))}); B.event=rollBattleEvent(B.cfg,process.env.EVT||(rnd()<.5?'any':null)); FZ_OUT[B.obj.type]=FZ_OUT[B.obj.type]||{n:0,win:0,partial:0,withdraw:0,timeout:0,rounds:0};
       const check=tag=>{ const seen=new Set(); for(const u of alive()){ const k=u.q+','+u.r; if(seen.has(k)) bad.push(tag+' overlap '+u.tpl); seen.add(k); if(blocks(terr(u.q,u.r))) bad.push(tag+' on '+terr(u.q,u.r)+' '+u.tpl); if(!isFinite(u.hp)||(u.crewMax&&!isFinite(u.crew))) bad.push(tag+' NaN '+u.tpl); if(!onBoard(u.q,u.r)) bad.push(tag+' offboard '+u.tpl); } if(B.resolve.player<0||B.resolve.enemy<0||B.resolve.player>5||B.resolve.enemy>5) bad.push(tag+' resolve '+JSON.stringify(B.resolve)); };
-      check('deploy'); let r=0; for(const x of B.units) x.activated=false; startSideTurn('enemy');
+      check('deploy'); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
       while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
         while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
           if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const sqs=alive('enemy').filter(x=>x.isSq&&!x.activated); const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe; for(const u of [...sqs,...batch]){ if(B.over) break; await aiUnit(u); u.activated=true; } }
@@ -141,7 +141,7 @@ global.evCheck=evCheck;
 async function bossCheck(n){ let odd=0; const outs={}; let rsum=0;
   for(let i=0;i<n;i++){ RUN={admiral:'aelith',fac:'ithar',credits:0,cpCap:40,sector:+(process.env.BS||1),relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
     for(const t of (process.env.BFL||'i_carrier,warden').split(',')) RUN.fleet.push(newShip(t,false));
-    startBattle({kind:'boss',fac:process.env.BF||'voidsworn',col:6,dep:'line',obj:'rout',shape:process.env.BSHAPE||'open',map:process.env.BMAP||'planet'}); let r=0; for(const x of B.units) x.activated=false; startSideTurn('enemy');
+    startBattle({kind:'boss',fac:process.env.BF||'voidsworn',col:6,dep:'line',obj:'rout',shape:process.env.BSHAPE||'open',map:process.env.BMAP||'planet'}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
     while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
       while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
         if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe; for(const u of batch){ if(B.over) break; await aiUnit(u); u.activated=true; } }
@@ -215,6 +215,60 @@ async function ruleCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
     u.hexMoved=1; const c1=hitChance(e,w,u); u.hexMoved=0; const c0=hitChance(e,w,u); u.hexMoved=3; const c3=hitChance(e,w,u);
     ok('a hull that held still is easier to hit, one that burned hard is harder',c0>c1&&c3<c1,c0+' / '+c1+' / '+c3);
     const bw=u.weapons.find(x=>x.arc==='P'||x.arc==='S'); if(bw){ u.hexMoved=0; const m0=dmgMult(u,bw,e,false); u.hexMoved=2; const m2=dmgMult(u,bw,e,false); ok('raking pass: broadsides hit harder after moving 2+ hexes',m2>m0,m0.toFixed(2)+' -> '+m2.toFixed(2)); } }
+  // ---- v53 correctness checks (one per bug class fixed) ----
+  const at=(u,q,r,f)=>{ u.q=q; u.r=r; if(f!=null) u.facing=f; }, clearT=()=>{ for(const k of Object.keys(B.terrain)) delete B.terrain[k]; };
+  // seed replay: the same seed and the same scripted moves give the same opening rounds (and a different seed does not)
+  { const fp=async seed=>{ RUN={fac:'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:[],aspect:null}; rndSeed(99);
+      for(const t of ['penitent','harrow','warden']) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
+      startBattle({kind:'battle',fac:'hegemony',col:3,obj:'rout',seed}); const s0=B.seed; for(let r=0;r<3&&!B.over;r++){ await botTurn(); if(B.over) break; B.side='enemy'; await startSideTurn('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await startSideTurn('player'); }
+      return JSON.stringify([s0,B.shape,Object.keys(B.terrain).sort().join(';'),B.units.map(u=>[u.tpl,u.q,u.r,u.facing,Math.round(u.hp*10),u.dead?1:0,u.weapons.map(w=>w.fired?1:0).join('')]),B.log.map(x=>x.m)]); };
+    const a=await fp(12345), b=await fp(12345), c=await fp(54321); ok('seed replay: same seed and moves give the same opening rounds',a===b&&a!==c,'fingerprint '+a.length+' chars'+(a===b?'':' (replay diverged)')+(a===c?' (different seed matched too)':'')); }
+  // animPath is presentation only: moves, turns and rams commit their own position after the live check
+  { globalThis.animPath=async function(){}; try{ const {P,E}=setup(['penitent'],null,['h_interdictor']); const u=P[0], t=E[0]; clearT();
+      const st=[...computeReach(u).map.values()].find(s=>s.path.some(p=>!p.rot)); if(st) await moveUnit(u,st); const moved=!st||(u.q===st.q&&u.r===st.r&&u.facing===st.f);
+      u.turnsLeft=1; u.mp=Math.max(1,u.mp); const f0=u.facing; await rotateUnit(u,1); const rot=u.facing===(f0+1)%6;
+      at(u,8,6,0); at(t,11,6,3); u.mp=u.speed; u.rammed=false; u.braced=false; const info=ramInfo(u); let rammed=false; if(info){ const end=info.path[info.path.length-1]; await ramUnit(u); rammed=u.q===end.q&&u.r===end.r; }
+      ok('moves, turns and rams commit their own position (animPath is presentation only)',moved&&rot&&rammed,'move '+moved+', turn '+rot+', ram '+(info?rammed:'no lane')); } finally{ delete globalThis.animPath; } }
+  // a turn abandoned mid-animation (stall) does not commit; a blink to a hex that is no longer free is refused
+  { const {P,E}=setup(['i_wisp','i_blade'],'ithar'); const u=P[0]; const keepR=animRotate; animRotate=async function(){ B.epoch=(B.epoch||0)+1; }; u.turnsLeft=1; u.mp=Math.max(1,u.mp); const f0=u.facing; await rotateUnit(u,1); animRotate=keepR;
+    u.ab='blink'; u.abCd=0; const q0=u.q, r0=u.r, okB=await useAbility(u,{hex:{q:E[0].q,r:E[0].r}}); ok('a stalled turn does not commit, a blink onto a ship is refused',u.facing===f0&&okB===false&&u.q===q0&&u.r===r0,'facing '+f0+' -> '+u.facing+', blink '+okB); }
+  // a shot abandoned after a stall leaves the gun ready and the target untouched
+  { const {P,E}=setup(['penitent'],null,['h_interdictor']); const u=P[0], t=E[0]; clearT(); at(t,10,6,3); let wi=-1; for(let f=0;f<6&&wi<0;f++){ at(u,7,6,f); wi=u.weapons.findIndex(w=>canFire(u,w,t)); }
+    if(wi<0) ok('an abandoned shot does not spend the gun',false,'no firing solution'); else { const keepW=animWeapon; animWeapon=async function(){ B.epoch=(B.epoch||0)+1; }; const hp=t.hp, r=await fireWeapon(u,wi,t); animWeapon=keepW; ok('an abandoned shot does not spend the gun',r===false&&weaponReady(u.weapons[wi])&&t.hp===hp,'ready '+weaponReady(u.weapons[wi])+', hp '+hp+' -> '+t.hp); } }
+  // tick deaths: startSideTurn hands back a promise; the death is logged once and has finished when it resolves; the dead star has its own kill cause
+  { const {E}=setup(); const t=E[1]; t.reanimate=false; t.hp=3; t.st.acid=1; t.st.fire=1; t.st.fireDmg=6; const n0=B.log.length; const p=startSideTurn('enemy'); const was=!!p&&typeof p.then==='function'; await p; const L=B.log.slice(n0).map(x=>x.m);
+    ok('tick deaths are awaited, logged once, and finish before the turn goes on',was&&t.dead&&L.filter(m=>m.indexOf(t.name+' is destroyed')>=0).length===1&&!L.some(m=>m.indexOf(t.name+' burns out')>=0),'promise '+was+', lines '+L.filter(m=>m.indexOf(t.name)>=0).length); }
+  { const {E}=setup(); const t=E[0]; t.reanimate=false; t.hp=5; B.well={q:t.q+1,r:t.r}; await startSideTurn('enemy'); const bad=[]; for(const id in W){ const c=killCauseOf(W[id],{id:'x'}); if(!KILL_CAUSES[c]) bad.push(id+':'+c); } for(const c of ['melt','dark','big','tidal','blast']) if(!KILL_CAUSES[c]) bad.push(c);
+    ok('a dead star kill has its own cause, and every cause is in KILL_CAUSES',t.dead&&t.killCause==='tidal'&&!bad.length,'cause '+t.killCause+(bad.length?', missing '+bad.join(','):'')); }
+  // a squadron whose orders stall is skipped with a log line
+  { setup(['reliquary','warden']); const keepS=stallGuard; stallGuard=async function(){ return 'stall'; }; const n0=B.log.length; await swarmPhase('player'); stallGuard=keepS; const L=B.log.slice(n0).map(x=>x.m); const sq=alive('player').filter(u=>u.isSq);
+    ok('stalled squadron orders are logged as lost',!sq.length||(L.some(m=>m.indexOf('orders lost in interference')>=0)&&sq.every(u=>u.activated)),sq.length+' wings, '+L.length+' lines'); }
+  // saves: one defaults list, malformed saves rejected, renamed ids skipped
+  { const r=migrateRun({fac:'chorus',fleet:[{tpl:'penitent',hp:10,cap:{name:'x'}}],map:{cols:[]}}), miss=Object.keys(runDefaults()).filter(k=>r[k]===undefined);
+    const rej=!saneSave({meta:{},run:{fleet:{},map:{cols:[]}}})&&!saneSave({meta:[],run:null})&&!saneSave({meta:{stats:'x'}})&&saneSave({meta:defaultMeta(),run:{none:true}})&&saneSave({meta:defaultMeta(),run:r});
+    const R0=RUN; RUN=null; let threw=null; const cw=console.warn; console.warn=()=>{}; try{ derive({tpl:'penitent',mods:['no_such_mod'],cap:{perks:['no_such_perk']}}); }catch(e){ threw=e.message; } console.warn=cw; RUN=R0;
+    ok('saves: one defaults list, malformed saves rejected, renamed ids skipped',!miss.length&&rej&&!threw&&Array.isArray(r.fleet[0].mods)&&Array.isArray(r.fleet[0].cap.perks),'missing ['+miss.join(',')+'], rejects '+rej+(threw?', threw '+threw:'')); }
+  // ---- v53-D enemy AI checks ----
+  // per-gun re-pick: the heavy guns are not poured into a 2-hull wreck that the light gun can finish; shield strippers fire first into shields
+  { const {P,E}=setup(['penitent','harrow'],null,['h_dominion']); const u=E[0], A=P[0], Bq=P[1]; clearT(); at(u,10,6,3); at(A,8,6,0); at(Bq,8,7,0); for(const w of u.weapons) if(w.k!=='flak') w.arc='T';
+    A.hp=2; A.sh=[0,0,0,0]; A.reanimate=false; B.aiFocus=null; const shots=[]; const keepF=fireWeapon; fireWeapon=async function(x,wi,t){ shots.push([x.weapons[wi],t]); x.weapons[wi].fired=true; return true; };
+    try{ await aiVolley(u,()=>true); } finally{ fireWeapon=keepF; } const heavy=u.weapons.filter(w=>w.k!=='flak').sort((a,b)=>b.dmg*b.shots-a.dmg*a.shots)[0], hs=shots.find(x=>x[0]===heavy);
+    ok('volley re-pick: heavy guns skip a 2-hull target a lighter gun can kill',shots.length>=2&&hs&&hs[1]===Bq&&shots.some(x=>x[1]===A),shots.map(x=>x[0].n+'>'+(x[1]===A?'wreck':'healthy')).join(', '));
+    for(const w of u.weapons) w.fired=false; const ord=aiGunOrder(u,u.weapons.filter(w=>w.k!=='flak'),Bq); ok('shield strippers fire first into a shielded target',ord[0].ion>1,ord.map(w=>w.n).join(' > ')); }
+  // threat: guns that already fired this round are spent in alternating play (but not in Classic, where they reload before the next enemy turn)
+  { const {P,E}=setup(['penitent'],null,['h_interdictor']); const p=P[0], v=E[0]; clearT(); at(p,8,6,0); at(v,11,6,3); B.alt=true; const t0=evalThreat(v,[p]), tv0=evalThreatVet(v,[p]);
+    for(const w of p.weapons) w.fired=true; const t1=evalThreat(v,[p]), tv1=evalThreatVet(v,[p]); B.alt=false; const t2=evalThreat(v,[p]);
+    ok('threat ignores guns that already fired this round (alternating)',t0>0&&tv0>0&&t1===0&&tv1===0&&t2===t0,'alt '+t0.toFixed(1)+' -> '+t1.toFixed(1)+', vet '+tv0.toFixed(1)+' -> '+tv1.toFixed(1)+', classic '+t2.toFixed(1)); }
+  // sticky focus: equal candidates never steal it, a dead target releases it, brace lowers a target's worth, standard AI keeps no focus
+  { const {P,E}=setup(['harrow','harrow','harrow'],null,['h_vanguard','h_interdictor']); const [a,b,c]=P; clearT(); at(a,9,8,0); at(b,9,6,0); at(c,9,10,0); at(E[0],12,7,3); at(E[1],12,9,3); for(const x of P) x.pflag=false; B.aiFocus=b; const k1=aiRefreshFocus()===b; B.aiFocus=c; const k2=aiRefreshFocus()===c;
+    c.dead=true; const k3=aiRefreshFocus()!==c&&!!B.aiFocus; c.dead=false; B.aiFocus=c; const h0=a.hp; a.hp=Math.round(a.hp*.4); const k5=aiRefreshFocus()===a; a.hp=h0; const sh=aiShooters(), v0=aiFocusVal(a,sh); a.braced=true; const v1=aiFocusVal(a,sh); a.braced=false;
+    const lv=AI_LEVEL; AI_LEVEL='standard'; const k4=aiRefreshFocus()===null; AI_LEVEL=lv;
+    ok('fleet focus is sticky, switches only for a clearly better target, brace-aware, veteran only',k1&&k2&&k3&&k5&&v1<v0&&k4,'values '+[a,b,c].map(x=>aiFocusVal(x,sh).toFixed(2)).join('/')+', keep '+k1+'/'+k2+', release '+k3+', clearly better '+k5+', brace '+v0.toFixed(2)+' -> '+v1.toFixed(2)+', standard '+k4); }
+  // relay: only the two nearest enemy ships are pulled onto it; urgency rises with the round clock
+  { const {E}=setup(['penitent'],null,['h_picket','h_picket','h_picket']); clearT(); const hex={q:10,r:8}; B.obj={type:'hold',hex,score:0,escore:0}; at(E[0],12,8,3); at(E[1],13,8,3); at(E[2],18,8,3);
+    const gain=(u,dq)=>aiObjScore(u,stateView(u,{q:u.q-dq,r:u.r,f:3}))-aiObjScore(u,stateView(u,{q:u.q,r:u.r,f:3})); const g0=gain(E[0],1), g2=gain(E[2],1);
+    B.round=1; const u1=aiObjUrgency({type:'defend',rounds:6,hp:5}); B.round=5; const u5=aiObjUrgency({type:'defend',rounds:6,hp:2});
+    ok('relay pulls the two nearest ships; objective urgency rises with the clock',g0>=1.6&&g2<=.5&&u5>u1,'near +'+g0.toFixed(2)+', far +'+g2.toFixed(2)+', urgency '+u1.toFixed(2)+' -> '+u5.toFixed(2)); }
   console.log(out.join('\\n')); console.log(out.some(x=>x.startsWith('FAIL'))?'RULECHECK FAILED':'RULECHECK PASSED'); if(out.some(x=>x.startsWith('FAIL'))) process.exitCode=1; }
 async function boonCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS ':'FAIL ')+n+(note?': '+note:''));
   const setup=(boons,aspect,fleet,fac)=>{ RUN={fac:'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:boons.map(id=>({id,r:0})),aspect:aspect||null};
@@ -274,7 +328,7 @@ async function bossMatrix(n){ const S=+(process.env.BS||1), res={}, byBoss={}, b
       RUN={admiral:adm,fac,credits:0,cpCap:40,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:(process.env.BOONS||'').split(',').filter(Boolean).map(x=>({id:x,r:0})),patrons:[]};
       for(const tp of A.start) RUN.fleet.push(newShip(equivHull(tp,fac),false)); RUN.flagUid=RUN.fleet[0].uid;
       { const G2=+(process.env.GROW||0), ros=FACTIONS[fac].roster.filter(id=>!HULLS[id].unique&&(HULLS[id].cp||1)<=(S>=3?4:3)); let g=0; while(G2&&fleetCP()<G2&&g++<20){ const pk=pick(ros); if(fleetCP()+(HULLS[pk].cp||1)>G2+1) continue; RUN.fleet.push(newShip(pk,false)); } if(process.env.MK) RUN.fleet.forEach(sh=>{ sh.mk=+process.env.MK; sh.hp=derive(sh).maxHp; }); }
-      startBattle({kind:'boss',fac:bf,col:6,dep:'line',obj:'rout',shape:pick(['ring','open','hourglass']),map:'random'}); let r=0; for(const x of B.units) x.activated=false; startSideTurn('enemy');
+      startBattle({kind:'boss',fac:bf,col:6,dep:'line',obj:'rout',shape:pick(['ring','open','hourglass']),map:'random'}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
       while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
         while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
           if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe; for(const u of batch){ if(B.over) break; await aiUnit(u); u.activated=true; } }
@@ -289,7 +343,7 @@ async function archMatrix(n){ const S=2, out={}, cnt={};
         RUN={admiral:adm,fac,credits:0,cpCap:40,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
         for(const tp of A.start) RUN.fleet.push(newShip(equivHull(tp,fac),false)); RUN.flagUid=RUN.fleet[0].uid;
         { const ros=FACTIONS[fac].roster.filter(id=>!HULLS[id].unique&&(HULLS[id].cp||1)<=3); let g=0; while(fleetCP()<10&&g++<20){ const pk=pick(ros); if(fleetCP()+(HULLS[pk].cp||1)>11) continue; RUN.fleet.push(newShip(pk,false)); } }
-        startBattle({kind:'battle',fac:bf,col:3,dep:'line',obj:'rout',shape:'open',map:'random',arch:arch==='none'?null:arch}); ships+=B.units.filter(x=>x.side==='enemy'&&!x.isSq).length; let r=0; for(const x of B.units) x.activated=false; startSideTurn('enemy');
+        startBattle({kind:'battle',fac:bf,col:3,dep:'line',obj:'rout',shape:'open',map:'random',arch:arch==='none'?null:arch}); ships+=B.units.filter(x=>x.side==='enemy'&&!x.isSq).length; let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
         while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
           while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
             if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe; for(const u of batch){ if(B.over) break; await aiUnit(u); u.activated=true; } }
@@ -305,7 +359,7 @@ async function fMatrix(n){ const F=RUN_FACTIONS, T=+(process.env.CPT||8), out={}
     for(let i=0;i<n;i++){ const adms=Object.keys(ADMIRALS).filter(a=>(ADMIRALS[a].fac||'voidsworn')===pf);
       RUN={admiral:process.env.NOADM?'none':pick(adms),fac:pf,credits:0,cpCap:60,sector:2,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
       const pl=rf(pf), en=rf(ef); for(const t of pl) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
-      startBattle({kind:'battle',fac:ef,col:3,enemies:en.map(tpl=>({tpl})),dep:'line',obj:'rout',shape:pick(Object.keys(SHAPES)),map:'random'}); let r=0; for(const x of B.units) x.activated=false; startSideTurn('enemy');
+      startBattle({kind:'battle',fac:ef,col:3,enemies:en.map(tpl=>({tpl})),dep:'line',obj:'rout',shape:pick(Object.keys(SHAPES)),map:'random'}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
       while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
         while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
           if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe; for(const u of batch){ if(B.over) break; await aiUnit(u); u.activated=true; } }
@@ -322,7 +376,7 @@ async function boonSingle(n){ const S0={tag:'b',player:['penitent','harrow','har
   for(const id of Object.keys(BOONS)){ const r=await run(id+':0'); res.push(id+' '+r[0]+'/'+r[1]+' '+(BOON_NEED[id]||'')); }
   for(const a of Object.keys(ASPECTS)){ const r=await run('',a); res.push('asp:'+a+' '+r[0]+'/'+r[1]); }
   console.log('BS '+JSON.stringify(res)); }
-async function rsFight(cfg){ startBattle(cfg); let r=0; for(const x of B.units) x.activated=false; startSideTurn('enemy');
+async function rsFight(cfg){ startBattle(cfg); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
   const pcp=RUN.fleet.reduce((a,s)=>a+(HULLS[s.tpl].cp||1),0), ecp=B.units.filter(u=>u.side==='enemy'&&!u.isSq).reduce((a,u)=>a+(u.t.cp||1),0), n0=RUN.fleet.length;
   while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
     while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
@@ -439,7 +493,7 @@ async function chainSim(n){ const nodes=[['battle',0],['battle',1],['elite',2],[
     for(const t of ['penitent','harrow','warden']) RUN.fleet.push(newShip(t,false)); let dead=null;
     for(const [kind,col] of nodes){ if(RUN.fleet.length<=1&&!RUN.reinf&&!NO_CAP){ RUN.reinf=1; RUN.fleet.push(newShip('warden',false)); }
       if(col===3) for(const s of RUN.fleet){ const mx=derive(s).maxHp; s.hp=Math.min(mx,s.hp+Math.round(mx*.2)); }
-      { const ro=process.env.ENC==='roll'?rollEncounter(kind,col):{enc:'rout',shape:'open'}; startBattle({kind,fac:'corsair',col,dep:'line',obj:ro.enc,shape:ro.shape}); CH_ENC[B.obj.type]=(CH_ENC[B.obj.type]||0)+1; } let r=0; for(const x of B.units) x.activated=false; startSideTurn('enemy');
+      { const ro=process.env.ENC==='roll'?rollEncounter(kind,col):{enc:'rout',shape:'open'}; startBattle({kind,fac:'corsair',col,dep:'line',obj:ro.enc,shape:ro.shape}); CH_ENC[B.obj.type]=(CH_ENC[B.obj.type]||0)+1; } let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
       while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
         while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
           if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const sqs=alive('enemy').filter(x=>x.isSq&&!x.activated); const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe;

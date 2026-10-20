@@ -44,7 +44,7 @@ function setupBattle(cfg){
 }
 function prepBattle(){
   try{ FRAMES.reset(); }catch(e){}
-  B.seed=Math.floor(Math.random()*1e6); B.showArcs=true; B.alt=!!SETUP.alt; B.showThreat=false; B.called=null; B.wingSel=null; B.activeUnit=null;
+  B.alt=!!SETUP.alt; // v53: B.seed is the one startBattle seeded the rules with (no overwrite), and the other UI fields start in the startBattle literal
   for(const x of B.units) x.activated=false;
   if(B.alt) startSideTurn('enemy');
   buildBattleEnv(); if(B.obj&&B.obj.type==='hold') buildBeacon(B.obj.hex); G.jumpUntil=G.time+.6; for(const u of B.units) u.arrived=false;
@@ -101,7 +101,7 @@ function refreshRoster(){
   const el=document.getElementById('roster');
   const card=u=>{ const q=[3,0,1,2].map(i=>`<span class="${u.shMax&&u.sh[i]>u.shMax*.33?'on':''}"></span>`).join('');
     return `<div class="rcard ${B.sel===u||B.inspect===u?'sel':''} ${u.dead||(B.side==='player'&&u.side==='player'&&isDone(u))?'done':''}" data-act="rosterPick" data-arg="${u.id}">
-      <div class="row"><span class="n">${esc(u.isSq?u.t.n:u.name)}</span><span class="spacer"></span><span class="c">${u.dead?'Lost':u.braced?'Braced':B.alt&&!u.isSq?(B.activeUnit===u?'<span class="gilt">Active</span>':u.activated?'Activated':'Ready'):B.side==='player'&&u.side==='player'?(isDone(u)?'Done':'Ready'):''}</span></div>
+      <div class="row"><span class="n">${esc(u.isSq?u.t.n:u.name)}</span>${u===B.aiFocus&&!u.dead?'<span class="tgtTag">Targeted</span>':''}<span class="spacer"></span><span class="c">${u.dead?'Lost':u.braced?'Braced':B.alt&&!u.isSq?(B.activeUnit===u?'<span class="gilt">Active</span>':u.activated?'Activated':'Ready'):B.side==='player'&&u.side==='player'?(isDone(u)?'Done':'Ready'):''}</span></div>
       <div class="c">${esc(u.isSq?'Squadron':u.cls)}${u.elite?', elite':''}</div>
       ${u.dead?'':`${u.shMax&&!u.isSq?`<div class="row num" style="font-size:12px;gap:6px;margin-top:3px"><div class="sh4" style="flex:1;margin:0" title="Shields: port, prow, starboard, rear">${q}</div><span class="shv">${Math.round(u.sh.reduce((a,x)=>a+x,0))}</span></div>`:''}<div class="row num" style="font-size:12px;gap:6px;margin-top:3px"><span style="flex:1">${hpBar(u.hp,u.maxHp)}</span><span class="hlv">${Math.max(0,u.hp)}</span></div>`}</div>`; };
   const pl=B.units.filter(u=>u.side==='player'&&(!u.dead||!u.isSq)), en=B.units.filter(u=>u.side==='enemy'&&!u.dead);
@@ -128,6 +128,8 @@ function refreshPanel(){
   if(u.hullRegen) tr.push(`Repairs ${u.hullRegen} hull each turn.`); if(u.st.engine) tr.push(`Engines damaged (\u2212${u.st.engine} speed).`); if(u.st.shieldOff) tr.push('Shield generator offline.'); if(u.st.fire) tr.push('Burning.');
   if(u.ab==='launch'&&!u.isSq){ const ws=squadronsOf(u), nb=ws.filter(x=>x.t.sq!=='fighter').length, nf=ws.length-nb; tr.push(`Wings flying: ${nb} strike (bombers hit ships), ${nf} fighter (guards your wings, hunts enemy craft)${u.spare!=null?`, ${u.spare} spare`:''}. They act on their own each round unless you order them: tap a wing, then a target to strike or a ship to guard.`); }
   if(u.evBuff) tr.push(`Evasive: +${u.evBuff} evasion.`); if(u.lockOn) tr.push('Locked on: +15 aim, +10% crit.'); if(u.focus) tr.push('Concentrated fire: +30% damage.'); if(u.braced) tr.push('Braced: hull damage \u221240%.');
+  if(u===B.aiFocus&&!u.dead) tr.push('<span class="blood">The enemy fleet is focusing its fire on this ship.</span>'); // v53-D enemy intent
+  if(u.side==='enemy'&&!u.isSq&&!u.dead){ const th=inspThreat(u), hit=alive('player').filter(p=>!p.isSq&&th.has(hkey(p.q,p.r))); tr.push(`<span class="blood">${B.alt&&u.activated?'Next round it':'Its next move'} can bring guns to bear on ${hit.length?hit.map(p=>esc(p.name)).join(', '):'none of your ships'}${hit.length?'':' (red hexes show its reach)'}.</span>`); }
   let h=`<button class="sheetbtn" data-act="sheet" aria-label="Collapse panel">${document.body.classList.contains('sheetmin')?'\u25b4':'\u25be'}</button>${actionStrip(u)}<h3>${esc(u.isSq?u.t.n:u.name)}</h3><div class="cls">${esc(u.t.n)}${u.elite?', elite captain':''}</div>
     ${cap?`<div style="margin-top:4px;font-size:13.5px">${rankName(cap)} ${esc(cap.name)} ${cap.perks.map(p=>`<span class="pill" title="${esc(PERKS[p].d)}">${esc(PERKS[p].n)}</span>`).join('')}</div>`:''}
     <div class="row num" style="margin-top:10px;font-size:13.5px"><span class="hlv">Hull</span><span class="spacer"></span><span class="hlv">${Math.max(0,u.hp)}/${u.maxHp}</span></div>${hpBar(u.hp,u.maxHp)}
@@ -210,8 +212,11 @@ function refreshOverlays(){
       const col=enemy?new C3(1,.3,.25):arc==='F'||arc==='R'?new C3(1,.62,.22):new C3(.3,.85,.72);
       const fm=fanMesh(spans[arc][0],spans[arc][1],R,col,enemy?.05:.06); /* holo: outline the arc, barely fill it */ fm.parent=node; fm.position.y=.08; }
   }
+  if(B.inspect&&B.inspect.side==='enemy'&&!B.inspect.dead&&!B.inspect.isSq&&!B.showThreat&&!B.mode){ const th=inspThreat(B.inspect); // v53-D: the tapped enemy's reach, faint, and a thin ring on each of your ships inside it
+    for(const k of th.keys()){ const [q,r]=k.split(',').map(Number); tile('ithr',new C3(1,.2,.14),.011,{q,r},OV.items); }
+    for(const p of alive('player')){ if(p.isSq||!th.has(hkey(p.q,p.r))) continue; const v=G.views.get(p.id), rm=ringMesh(new C3(1,.32,.25),.6,v?Math.max(5.5,v.L*.62):6,.2); rm.position=hexWorld(p.q,p.r,.25); OV.items.push(rm); } }
   if(B.showThreat){ const th=computeThreat(); for(const [k,v] of th){ const [q,r]=k.split(',').map(Number); const lv=v>=45?3:v>=20?2:1; tile('thr'+lv,new C3(1,.18,.12),[0,.08,.16,.28][lv],{q,r},OV.items); } }
-  if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ tile('reach2',new C3(.95,.7,.28),.075,s,OV.items); tile('reachE2',new C3(1,.8,.4),.42,s,OV.items,true); /* v52: hollow hexes, bright edge and faint fill, so ships inside stay readable */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
+  if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ const g=s.guns>0; if(g) tile('reachG4',new C3(.95,.7,.28),.03,s,OV.items); tile(g?'reachGE3':'reachE2',g?new C3(1,.92,.62):new C3(1,.8,.4),g?.8:.36,s,OV.items,true); /* v53: outline only, so hulls stay readable; a hex your guns can fire from gets a brighter edge and a whisper of fill (additive reads ~3x brighter on screen) */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
     const per=reachOutline(sel,B.reach); if(per) OV.items.push(per); }
   if(sel&&playerTurn&&sel.side==='player'&&!B.mode&&!sel.isSq&&canUse(sel)){ const ri=ramInfo(sel); if(ri) ramLane(sel,ri); }
   if(B.wingSel&&!B.wingSel.dead){ tile('wingSel',new C3(1,.8,.35),.55,B.wingSel,OV.items); tile('wingSelE',new C3(1,.85,.45),.8,B.wingSel,OV.items,true); }
@@ -236,13 +241,14 @@ function refreshHover(){
   if(sel&&sel.side==='player'&&B.side==='player'&&B.reach&&!B.mode){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st&&!unitAt(st.q,st.r)){
       const pts=[hexWorld(sel.q,sel.r,.6),...st.path.map(p=>hexWorld(p.q,p.r,.6))]; const ln=MB.CreateDashedLines('path',{points:pts,dashSize:2,gapSize:1.2,dashNb:Math.max(8,pts.length*10)},G.scene); ln.color=new C3(1,.75,.35); ln.isPickable=false; OV.hover.push(ln);
       const v=G.views.get(sel.id);
-      if(v&&v.model){ if(OV.ghostFor!==sel.id){ if(OV.ghost) OV.ghost.dispose(); OV.ghost=v.model.root.clone('ghost'); const gm=OV.bases.ghostMat||(OV.bases.ghostMat=ovMat('ghost',new C3(1,.72,.35),.28)); OV.ghost.getChildMeshes().forEach(m=>{ m.material=gm; m.isPickable=false; }); OV.ghostFor=sel.id; }
+      if(v&&v.model){ if(OV.ghostFor!==sel.id){ if(OV.ghost) OV.ghost.dispose(); OV.ghost=v.model.root.clone('ghost'); const gm=OV.bases.ghostMat||(OV.bases.ghostMat=(()=>{ const g=emMat('ov_ghost2',new C3(1,.8,.48),.4); g.needDepthPrePass=true; g.backFaceCulling=false; g._keep=true; return g; })()); /* v53: a clean translucent silhouette (depth pre-pass, no glow) instead of an additive blob */ OV.ghost.getChildMeshes().forEach(m=>{ m.material=gm; m.isPickable=false; try{ G.glow.addExcludedMesh(m); }catch(e){} }); OV.ghostFor=sel.id; }
         OV.ghost.setEnabled(true); const p=hexWorld(st.q,st.r,HOVER_Y); OV.ghost.position=p; OV.ghost.rotation.set(0,st.f*Math.PI/3,0); } } }
 }
 function updateOverlays(){
+  try{ boardMarks(); }catch(e){ if(!FP.warned){ FP.warned=1; console.warn('boardMarks',e); } }
   if(!B||!OV.selRing) return;
   const place=(ring,u)=>{ if(u&&!u.dead&&G.views.get(u.id)){ const v=G.views.get(u.id); const p=v.root.getAbsolutePosition(); ring.setEnabled(true); ring.position.set(p.x,.2,p.z); const R=Math.max(5.5,v.L*.6)/6; ring.scaling.set(R,1,R); } else ring.setEnabled(false); };
-  place(OV.selRing,B.sel); place(OV.insRing,B.inspect); place(OV.aiRing,B.side==='enemy'?B.aiActive:null);
+  place(OV.selRing,B.sel); place(OV.insRing,B.inspect); place(OV.aiRing,B.side==='enemy'?B.aiActive:null); aiFocusMark();
   OV.selRing.rotation.y+=.01; const pulse=.45+.4*Math.sin(G.time*4.5);
   for(const r of OV.targets){ const u=r.metadata.u, v=G.views.get(u.id); if(v){ const p=v.root.getAbsolutePosition(); r.position.set(p.x,.25,p.z); r.material.alpha=pulse; } }
   if(OV.fan){ const u=OV.fan.metadata.u, v=G.views.get(u.id);
@@ -251,16 +257,66 @@ function updateOverlays(){
   if(B.side==='enemy'&&B.aiActive!==G.lastAi){ G.lastAi=B.aiActive; if(B.aiActive&&G.follow&&!G.ctl.saved) camShow(B.aiActive); }
 }
 
+// v53 board readability: every occupied hex wears its side's colour (faint fill, crisp inner edge) on the LOGICAL hex the rules use, brighter for the
+// selected/inspected/hovered ship and for valid targets; every hull casts a soft contact shadow on the board under where it actually floats.
+// Fill and edge are one thin-instanced mesh rebuilt only when occupancy, selection, hover or targets change (a cheap numeric hash per frame);
+// the shadows are one thin-instanced mesh whose matrix buffer is rewritten in place each frame (no per-frame allocation).
+const FP={hash:0,cap:0,scap:0,fill:null,shadow:null,mbuf:null,fcol:null,sbuf:null,sNew:false,warned:0};
+// one mesh per mark: a faint fill (vertex alpha k) inside a crisp edge band (vertex alpha 1); the per-instance colour sets hue and edge strength
+function fpHexMesh(name,R0,R1,k){ const pos=[0,0,0], col=[1,1,1,k], idx=[]; for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30), c=Math.cos(a), sn=Math.sin(a); pos.push(c*R0,0,sn*R0, c*R0,0,sn*R0, c*R1,0,sn*R1); col.push(1,1,1,k, 1,1,1,1, 1,1,1,1); }
+  for(let i=0;i<6;i++){ const a=1+3*i, b=1+3*((i+1)%6); idx.push(0,a,b, a+1,a+2,b+2, a+1,b+2,b+1); }
+  const m=new BABYLON.Mesh(name,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.colors=col; vd.indices=idx; vd.applyToMesh(m); m.hasVertexAlpha=true; return m; }
+function fpEnsure(){ if(FP.fill&&!FP.fill.isDisposed()&&FP.shadow&&!FP.shadow.isDisposed()) return true; if(!G.scene||!G.tex||!G.tex.soft||!G.env) return false;
+  const mk=(m,name)=>{ const mt=new BABYLON.StandardMaterial(name,G.scene); mt.disableLighting=true; mt.diffuseColor=C3.Black(); mt.specularColor=C3.Black(); mt.emissiveColor=C3.White(); mt.alpha=.999; mt.alphaMode=BABYLON.Engine.ALPHA_ADD; mt.backFaceCulling=false; mt.disableDepthWrite=true; mt.zOffset=-1;
+    m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.setEnabled(false); m.alphaIndex=-60; try{ G.glow.addExcludedMesh(m); }catch(e){} G.env.push(m,mt); return m; };
+  FP.fill=mk(fpHexMesh('fpMark',HS*.75,HS*.86,.17),'fpMarkM');
+  const sh=MB.CreateGround('fpShadow',{width:1,height:1},G.scene), sm=new BABYLON.StandardMaterial('fpShadowM',G.scene); sm.disableLighting=true; sm.diffuseColor=C3.Black(); sm.specularColor=C3.Black(); sm.emissiveColor=C3.Black(); sm.opacityTexture=G.tex.soft; sm.alpha=.7; sm.backFaceCulling=false; sm.disableDepthWrite=true;
+  sh.material=sm; sh.isPickable=false; sh.alwaysSelectAsActiveMesh=true; sh.alphaIndex=-50; sh.setEnabled(false); try{ G.glow.addExcludedMesh(sh); }catch(e){} G.env.push(sh,sm); FP.shadow=sh;
+  FP.hash=NaN; FP.cap=0; FP.scap=0; return true; }
+function fpOn(u,v){ return !u.dead&&!!v&&v.state==='alive'&&!v.arrive&&!v.phased&&!u.vis; } // a ship mid-burn has left its hex: its mark returns where it lands
+function fpLevel(u){ const h=B.hover; if(u===B.sel||u===B.inspect||(h&&h.q===u.q&&h.r===u.r)) return 2; const tg=OV.targets; for(let j=0;j<tg.length;j++) if(tg[j].metadata&&tg[j].metadata.u===u) return 1; return 0; }
+function boardMarks(){ if(!B||B.showcase||!G.views||!fpEnsure()) return;
+  const U=B.units, hide=!!G.cineHidePlates; let h=hide?3:7, n=0;
+  for(let i=0;i<U.length;i++){ const u=U[i], v=G.views.get(u.id); let k=0; if(!hide&&fpOn(u,v)){ k=1+(u.q+64)*997+(u.r+64)*31+(u.side==='player'?3:5)+fpLevel(u)*7+(u.isSq?11:0); n++; } h=(Math.imul(h,31)+k)|0; }
+  if(h!==FP.hash){ FP.hash=h; fpRebuild(n); }
+  fpShadows(); }
+function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
+  const M=FP.mbuf, F=FP.fcol, U=B.units; let i=0;
+  if(n) for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!fpOn(u,v)) continue; const lv=fpLevel(u), p=hexWorld(u.q,u.r,0), c=u.side==='player'?FRIEND_C:FOE_C, o=i*16, q=i*4;
+    M[o]=1; M[o+5]=1; M[o+10]=1; M[o+15]=1; M[o+12]=p.x; M[o+13]=.09; M[o+14]=p.z;
+    const ea=u.isSq?.28:[.42,.8,1][lv]; F[q]=c.r; F[q+1]=c.g; F[q+2]=c.b; F[q+3]=ea; i++; } // fill reads at ~17% of the edge
+  const m=FP.fill; if(grow||!m.hasThinInstances){ m.thinInstanceSetBuffer('matrix',M,16,false); m.thinInstanceSetBuffer('color',F,4,false); } else { m.thinInstanceBufferUpdated('matrix'); m.thinInstanceBufferUpdated('color'); } m.thinInstanceCount=i; m.setEnabled(i>0); }
+function fpShadows(){ const U=B.units, ts=G.tacScale||1; let ns=0; for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!u.isSq&&v&&v.state==='alive'&&v.root&&v.root.isEnabled()) ns++; }
+  if(ns>FP.scap){ FP.scap=Math.max(16,ns*2); FP.sbuf=new Float32Array(FP.scap*16); FP.sNew=true; }
+  const b=FP.sbuf, m=FP.shadow; let i=0;
+  for(let j=0;j<U.length&&i<ns;j++){ const u=U[j], v=G.views.get(u.id); if(u.isSq||!v||v.state!=='alive'||!v.root||!v.root.isEnabled()) continue;
+    const p=v.root.position, a=v.root.rotation.y, c=Math.cos(a), sn=Math.sin(a), sx=(v.L||8)*1.2*ts, sz=Math.max(5,(v.L||8)*.55)*ts, o=i*16;
+    b[o]=sx*c; b[o+1]=0; b[o+2]=-sx*sn; b[o+3]=0; b[o+4]=0; b[o+5]=1; b[o+6]=0; b[o+7]=0; b[o+8]=sz*sn; b[o+9]=0; b[o+10]=sz*c; b[o+11]=0; b[o+12]=p.x; b[o+13]=.05; b[o+14]=p.z; b[o+15]=1; i++; }
+  if(!i){ if(m.isEnabled()) m.setEnabled(false); return; }
+  if(FP.sNew||!m.hasThinInstances){ FP.sNew=false; m.thinInstanceSetBuffer('matrix',b,16,false); } else m.thinInstanceBufferUpdated('matrix'); m.thinInstanceCount=i; if(!m.isEnabled()) m.setEnabled(true); }
+
+// v53-D enemy intent: corner brackets just outside the footprint of the player ship the enemy fleet is focusing (B.aiFocus, sticky, veteran AI),
+// and a "Targeted" tag under its nameplate. Built once; per frame it only moves when the target or its hex changes and pulses its alpha (no allocation).
+function focusRetMesh(){ const R0=HS*.92, R1=HS*1.12, f=.34, pos=[], idx=[], C=i=>Math.cos(Math.PI/180*(60*i-30)), S=i=>Math.sin(Math.PI/180*(60*i-30));
+  for(let i=0;i<6;i++){ const j=(i+1)%6, P=(R,t)=>[(C(i)*(1-t)+C(j)*t)*R,0,(S(i)*(1-t)+S(j)*t)*R]; for(const [a,b] of [[0,f],[1-f,1]]){ const b0=pos.length/3; pos.push(...P(R0,a),...P(R1,a),...P(R1,b),...P(R0,b)); idx.push(b0,b0+1,b0+2,b0,b0+2,b0+3); } }
+  const m=new BABYLON.Mesh('aiFocusRet',G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.indices=idx; vd.applyToMesh(m);
+  const mt=ovMat('aiFocusRet',new C3(1.25,.36,.3),.8); mt._keep=true; m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.alphaIndex=-55; try{ G.glow.addExcludedMesh(m); }catch(e){} m.setEnabled(false); if(G.env) G.env.push(m,mt); return m; }
+function aiFocusMark(){ const t=B&&!B.over&&!B.showcase&&B.aiFocus&&!B.aiFocus.dead&&B.aiFocus.side==='player'?B.aiFocus:null, v=t&&G.views?G.views.get(t.id):null, on=!!(v&&fpOn(t,v)&&!G.cineHidePlates);
+  if(OV.focusRet&&OV.focusRet.isDisposed()) OV.focusRet=null; if(on&&!OV.focusRet&&G.scene) OV.focusRet=focusRetMesh(); const m=OV.focusRet;
+  if(m){ if(on){ if(m._q!==t.q||m._r!==t.r){ m._q=t.q; m._r=t.r; const p=hexWorld(t.q,t.r,.11); m.position.copyFrom(p); } m.material.alpha=.62+.25*Math.sin(G.time*3.2); if(!m.isEnabled()) m.setEnabled(true); } else if(m.isEnabled()) m.setEnabled(false); }
+  const el=on&&v.plate?v.plate.el:null; if(el!==OV.tgtEl){ if(OV.tgtEl) OV.tgtEl.classList.remove('tgt'); if(el) el.classList.add('tgt'); OV.tgtEl=el; } }
 function computeThreatAt(h){ if(!B.threatCache||B.threatCache.key!==B.log.length+'|'+B.round) B.threatCache={key:B.log.length+'|'+B.round,map:computeThreat()}; return B.threatCache.map.get(hkey(h.q,h.r))||0; }
-function computeThreat(){
-  const map=new Map(), hexes=boardHexes();
-  for(const e of alive('enemy')){
+// v53-D: what one enemy ship threatens (tap an enemy): computeThreat on that ship alone, cached until the board changes
+function inspThreat(e){ const k=e.id+'|'+B.log.length+'|'+B.round+'|'+e.q+','+e.r+','+e.facing; if(!B.inspThr||B.inspThr.key!==k) B.inspThr={key:k,map:computeThreat(e)}; return B.inspThr.map; }
+function computeThreat(only){ // v53-D: same numbers, cheaper: each end hex and facing once, guns summed per hex, line of sight cached per (from, to) pair
+  const map=new Map(), hexes=boardHexes(), losC=new Map();
+  for(const e of only?[only]:alive('enemy')){
     const ws=e.weapons.filter(w=>w.off<=1&&w.cdLeft<=1); if(!ws.length) continue;
-    const states=[{q:e.q,r:e.r,f:e.facing,cost:0,path:[]}].concat(e.isSq?[]:computeReach(e).states);
-    const per=new Map();
-    for(const s of states){ const v=stateView(e,s); const tmp=new Map();
-      for(const w of ws){ const val=w.shots*w.dmg*(e.dmg||1); for(const h of hexes){ if(hdist(v,h)>w.r||!inArc(v,h,w.arc)||!los(v,h)) continue; const k=hkey(h.q,h.r); tmp.set(k,(tmp.get(k)||0)+val); } }
-      for(const [k,val] of tmp) if(val>(per.get(k)||0)) per.set(k,val); }
+    const seen=new Set(), states=[{q:e.q,r:e.r,f:e.facing,cost:0,path:[]}].concat(e.isSq?[]:computeReach(e).states).filter(s=>{ const k=s.q+','+s.r+','+s.f; if(seen.has(k)) return false; seen.add(k); return true; });
+    const per=new Map(), maxR=Math.max(...ws.map(w=>w.r)), mul=e.dmg||1;
+    for(const s of states){ const v=stateView(e,s), fk=s.q+','+s.r+'|'+maxR; let lc=losC.get(fk); if(!lc){ lc={near:[],los:new Map()}; for(const h of hexes){ const d=hdist(v,h); if(d<=maxR) lc.near.push({h,d,k:hkey(h.q,h.r)}); } losC.set(fk,lc); }
+      for(const n of lc.near){ const h=n.h, d=n.d; let val=0; for(const w of ws){ if(d>w.r||!inArc(v,h,w.arc)) continue; val+=w.shots*w.dmg*mul; } if(!val) continue;
+        let l=lc.los.get(n.k); if(l===undefined){ l=los(v,h); lc.los.set(n.k,l); } if(l&&val>(per.get(n.k)||0)) per.set(n.k,val); } }
     for(const [k,val] of per) map.set(k,(map.get(k)||0)+val);
   }
   return map;
@@ -303,7 +359,7 @@ function onHover(e){
   const tip=boardTip(); if(tip) showTip(tip,e.clientX,e.clientY); else hideTip();
 }
 function markRamSpots(u,reach){ if(!reach||!u||u.isSq) return reach; try{ for(const st of reach.map.values()) st.ram=ramFrom(u,st)?1:0; }catch(e){} return reach; }
-function selectUnit(u){ try{ if(u&&B&&B.usage&&u.side==='player'&&!u.isSq&&ramInfo(u)){ B.ramSeen=B.ramSeen||new Set(); const k=u.id+':'+B.round; if(!B.ramSeen.has(k)){ B.ramSeen.add(k); B.usage.ramReady=(B.usage.ramReady||0)+1; } } }catch(e){} B.sel=u; B.inspect=null; B.armed=null; B.mode=null; B.reach=(u&&u.side==='player'&&B.side==='player'&&canUse(u))?markRamSpots(u,computeReach(u)):null; bRefresh(); }
+function selectUnit(u){ try{ if(u&&B&&B.usage&&u.side==='player'&&!u.isSq&&ramInfo(u)){ B.ramSeen=B.ramSeen||new Set(); const k=u.id+':'+B.round; if(!B.ramSeen.has(k)){ B.ramSeen.add(k); B.usage.ramReady=(B.usage.ramReady||0)+1; } } }catch(e){} B.sel=u; B.inspect=null; B.armed=null; B.mode=null; B.reach=(u&&u.side==='player'&&B.side==='player'&&canUse(u))?markRamSpots(u,bestFacingReach(u,computeReach(u))):null; bRefresh(); }
 // facing helper: for each hex, end on the facing that brings the most ready guns onto an enemy (cheapest on ties)
 function bestFacingReach(u,R){ const foes=alive('enemy'), ready=u.weapons.filter(w=>weaponReady(w)&&w.k!=='flak'); if(!R||!ready.length||!foes.length) return R; const best=new Map();
   for(const st of R.states){ const k=hkey(st.q,st.r), v=stateView(u,st); let n=0; const per=new Map();
@@ -365,7 +421,7 @@ function boardTip(){
   if(B.mode==='board'&&s&&u&&boardTargets(s).includes(u)){ const o=boardOdds(s,u); return `<div class="h">Board ${esc(u.name)}</div><div class="num">Your ${s.crew} crew against their ${u.crew}. Expect to kill about ${o.kill} and lose about ${o.loss}.</div><div class="${o.capture?'ember':'muted'}" style="margin-top:4px">${o.chance>0?`${o.chance}% chance to capture: the ship joins your fleet.${o.chance<100?' Otherwise saboteurs may still knock out a system.':''}`:'No chance to capture this time, but saboteurs may knock out a system.'}</div>`; }
   if(u&&s&&s.side==='player'&&u.side==='enemy'&&B.side==='player') return attackTip(s,u);
   if(u) return unitTip(u);
-  if(s&&s.side==='player'&&B.reach&&!B.mode){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st) return `<div class="h">Move here</div><div class="num">${st.cost} movement${st.t?`, ${st.t} turn${st.t>1?'s':''}`:''}. ${s.mp-st.cost} movement left after.</div>${moveNote(st)}${objZone(st.q,st.r)==='exit'?'<div style="margin-top:4px;color:#7dff9b">Exit: this ship jumps clear and counts toward the breakthrough.</div>':''}${(()=>{ const tt=terr(st.q,st.r); return TERRAIN_INFO[tt]&&!blocks(tt)?`<div style="margin-top:4px;color:${TERRAIN_INFO[tt].col}">Ends in ${TERRAIN_INFO[tt].n.toLowerCase()}: ${TERRAIN_INFO[tt].fx}</div>`:''; })()}${st.guns!=null?`<div style="margin-top:4px">From here: <b class="gilt">${st.guns} of ${st.gunsOf}</b> ready guns can fire${st.gunTarget?` (on ${esc(st.gunTarget.isSq?st.gunTarget.t.n:st.gunTarget.name)})`:''}.</div>`:''}${(()=>{ const bl=blockedFrom(s,st); return bl.length?`<div style="margin-top:4px;color:#ff8a7a">Blocked from here by asteroids or wrecks: ${bl.map(x=>esc(x.name)).join(', ')}.</div>`:''; })()}${(()=>{ const rf=st.ram?ramFrom(s,st):null; if(!rf) return ''; const e=ramEstimate(Object.assign({},s,{q:st.q,r:st.r,facing:st.f}),rf.t,rf.path.length); return `<div style="margin-top:4px;color:#ff6b5a"><b>Ram spot:</b> from here your bow points at ${esc(rf.t.name)}. Move, then tap Ram for about ${e.dmg} damage.</div>`; })()}`; }
+  if(s&&s.side==='player'&&B.reach&&!B.mode){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st) return `<div class="h">Move here</div><div class="num">${st.cost} movement${st.t?`, ${st.t} turn${st.t>1?'s':''}`:''}. ${s.mp-st.cost} movement left after.</div>${moveNote(st)}${objZone(st.q,st.r)==='exit'?'<div style="margin-top:4px;color:#7dff9b">Exit: this ship jumps clear and counts toward the breakthrough.</div>':''}${(()=>{ const tt=terr(st.q,st.r); return TERRAIN_INFO[tt]&&!blocks(tt)?`<div style="margin-top:4px;color:${TERRAIN_INFO[tt].col}">Ends in ${TERRAIN_INFO[tt].n.toLowerCase()}: ${TERRAIN_INFO[tt].fx}</div>`:''; })()}${st.guns!=null?`<div style="margin-top:4px">From here: <b class="gilt">${st.guns} of ${st.gunsOf}</b> ready guns can fire${st.gunTarget?` (on ${esc(st.gunTarget.isSq?st.gunTarget.t.n:st.gunTarget.name)})`:''}.</div>${moveDmgLine(s,st)}`:''}${(()=>{ const bl=blockedFrom(s,st); return bl.length?`<div style="margin-top:4px;color:#ff8a7a">Blocked from here by asteroids or wrecks: ${bl.map(x=>esc(x.name)).join(', ')}.</div>`:''; })()}${(()=>{ const rf=st.ram?ramFrom(s,st):null; if(!rf) return ''; const e=ramEstimate(Object.assign({},s,{q:st.q,r:st.r,facing:st.f}),rf.t,rf.path.length); return `<div style="margin-top:4px;color:#ff6b5a"><b>Ram spot:</b> from here your bow points at ${esc(rf.t.name)}. Move, then tap Ram for about ${e.dmg} damage.</div>`; })()}`; }
   if(B.showThreat){ const v=computeThreatAt(h); if(v) return `<div class="h blood">Enemy threat</div><div class="num">Up to about ${Math.round(v)} damage could reach this hex next turn, before shields and armor.</div>`; }
   { const z=objZone(h.q,h.r); if(z&&!terr(h.q,h.r)) return `<div class="h" style="color:${ZONE_INFO[z].col}">${ZONE_INFO[z].n}</div><div class="muted">${ZONE_INFO[z].fx}</div>`; }
   const t=terr(h.q,h.r); if(TERRAIN_INFO[t]) return `<div class="h" style="color:${TERRAIN_INFO[t].col}">${TERRAIN_INFO[t].n}</div><div class="muted">${TERRAIN_INFO[t].fx}</div>`;
@@ -377,6 +433,10 @@ function driveLine(u){ if(!u||u.isSq) return ''; const R=moveRules(u), M=MOVE_RU
 function moveNote(st){ const p=st.path||[], n=k=>p.filter(x=>x[k]).length, bits=[]; const sl=n('slip'), rv=n('rev'), up=p.filter(x=>x.over>0).length, dn=p.filter(x=>x.over<0).length;
   if(sl) bits.push(`sideslips ${sl>1?sl+' times':'once'}`); if(rv) bits.push(`backs off ${rv>1?rv+' hexes':'a hex'}`); if(up) bits.push(`climbs over ${up>1?up+' obstacles':'an obstacle'}`); if(dn) bits.push(`dives under ${dn>1?dn+' ships':'a ship'}`);
   return bits.length?`<div style="margin-top:4px;color:#9fd0ff">Thrusters: ${bits.join(', ')}, heading held.</div>`:''; }
+// v53: what the guns that bear from this hex would do to their target, with the real rules (hit chance, range falloff, motion, shields, armor)
+function moveDmgLine(s,st){ try{ const t=st.gunTarget; if(!t||t.dead||!st.guns) return ''; const v=stateView(s,st), idx=B.armed!=null?[B.armed]:s.weapons.map((w,i)=>i); let sh=0,hull=0,n=0;
+    for(const i of idx){ const w=s.weapons[i]; if(!w||!canFire(v,w,t)) continue; const e=expectedVs(v,w,t); sh+=e.shield; hull+=e.hull; n++; } if(!n) return '';
+    return `<div class="num" style="margin-top:2px">Expected: about <span class="shv">${Math.round(sh)} shield</span> and <span class="hlv">${Math.round(hull)} hull</span> damage${hull>=t.hp?' <span class="ember">(likely kill)</span>':''}.</div>`; }catch(e){ return ''; } }
 function motionNote(a,t){ const m=motionHit(t), out=[]; if(m>0) out.push(`<span class="ember">Sitting still: +${m} to hit.</span>`); else if(m<0) out.push(`<span class="muted">Burning evasive: \u2212${-m} to hit.</span>`);
   const rk=a.weapons.some(w=>weaponReady(w)&&rakeBonus(a,w)>0); if(rk) out.push(`<span class="gilt">Raking pass: broadsides +${Math.round(moveRules(a).rake*100)}%.</span>`); return out.length?' '+out.join(' '):''; }
 function unitTip(u){ return `<div class="h ${u.side==='player'?'verd':'blood'}">${esc(u.isSq?u.t.n:u.name)}</div><div class="muted">${esc(u.t.n)}${u.elite?', elite':''}</div>
@@ -463,13 +523,13 @@ async function banner(text,color){ const el=document.getElementById('banner'); e
 async function endTurn(){
   if(!B||B.busy||B.side!=='player'||B.over) return;
   B.busy=true; B.sel=null; B.armed=null; B.mode=null; B.inspect=null; B.reach=null; hideTip(); G.playerView={a:G.ctl.a,b:G.ctl.b,r:G.ctl.r,t:G.ctl.t.clone(),at:performance.now()};
-  B.side='enemy'; startSideTurn('enemy'); bRefresh(); await banner('Enemy turn','#e07a70');
-  { const sp=SPEED; SPEED=Math.min(SPEED,.65); try{ await stallGuard(aiTurn(),90000,'enemy_turn',{}); }catch(e){ console.error(e); } SPEED=sp; } // v41: Classic mode gets the same stall net as Alternating
+  B.side='enemy'; const dq=startSideTurn('enemy'); bRefresh(); await Promise.all([dq,banner('Enemy turn','#e07a70')]); // v53: burn-outs and other tick deaths finish before the AI moves
+  { const sp=SPEED; SPEED=Math.min(SPEED,.65); try{ if(await stallGuard(aiTurn(),90000,'enemy_turn',{})==='stall') log('Enemy orders lost in interference.','x'); }catch(e){ console.error(e); } SPEED=sp; } // v41: Classic mode gets the same stall net as Alternating
   if(!B) return; B.aiActive=null; G.lastAi=null;
   await wait(150); G.ctl.release();
   if(B.over){ B.busy=false; await endBattleFlow(); return; }
   if(G.playerView&&!((G.camMoved||0)>(G.playerView.at||0))){ G.ctl.t=G.playerView.t.clone(); G.ctl.r=G.playerView.r; G.ctl.a=G.playerView.a; G.ctl.b=G.playerView.b; }
-  B.round++; B.side='player'; startSideTurn('player'); if(B.over){ B.busy=false; bRefresh(); return; } log(`Round ${B.round}.`,'x'); try{ await swarmPhase('player'); }catch(e){ console.error(e); } finally{ B.busy=false; } bRefresh(); if(!B||B.over) return;
+  B.round++; B.side='player'; const dq2=startSideTurn('player'); if(dq2) await dq2; if(!B) return; if(B.over){ B.busy=false; bRefresh(); return; } log(`Round ${B.round}.`,'x'); try{ await swarmGuard('player'); }catch(e){ console.error(e); } finally{ B.busy=false; } bRefresh(); if(!B||B.over) return;
   await banner('Your turn'); if(B&&!B.sel){ const f=caps('player').find(u=>!isDone(u))||caps('player')[0]; if(f) selectUnit(f); }
 }
 function isDoneRaw(u){ if(u.dead||u.braced) return true; return !(u.mp>0) && !u.weapons.some(w=>weaponReady(w)&&alive('enemy').some(t=>canFire(u,w,t))); }
@@ -489,7 +549,7 @@ async function aiStep(){
       const sqs=alive('enemy').filter(u=>u.isSq&&!u.activated);
       const batch=pp.length?[aiPickActivation(pe.sort((a,b)=>b.speed-a.speed))]:pe;
       SPEED=Math.min(SPEED,.65);
-      for(const u of [...sqs,...batch]){ if(B!==b||B.over) break; await stallGuard(aiUnit(u),30000,'enemy',{name:u.name,isSq:!!u.isSq}); u.activated=true; } }catch(e){ console.error(e); }
+      for(const u of [...sqs,...batch]){ if(B!==b||B.over) break; if(await stallGuard(aiUnit(u),30000,'enemy',{name:u.name,isSq:!!u.isSq})==='stall'&&B===b) log(`${u.isSq?u.t.n:u.name}: orders lost in interference.`,'x'); u.activated=true; } }catch(e){ console.error(e); }
     finally{ SPEED=sp; }
     if(B!==b) return; B.aiActive=null; G.lastAi=null; await wait(120); if(B!==b) return; G.ctl.release(); camRestore(); B.side='player'; B.busy=false;
     if(B.over){ bRefresh(); await endBattleFlow(); return; }
@@ -499,11 +559,13 @@ async function aiStep(){
   if(!pendingP().length){ await aiStep(); return; }
   bRefresh(); const f=pendingP()[0]; if(f&&!B.sel){ selectUnit(f); camShow(f); }
 }
+// v53: the squadron phase under the same stall net as the AI turn (each wing also has its own guard inside swarmPhase)
+async function swarmGuard(side){ if(await stallGuard(swarmPhase(side),60000,'swarm',{side})==='stall') log((side==='player'?'Your':'Enemy')+' squadron orders lost in interference.','x'); }
 async function nextRound(){
   if(!B||B.over) return; const b=B;
   B.round++; for(const x of B.units) x.activated=false; B.activeUnit=null;
-  startSideTurn('player'); if(!B.over) startSideTurn('enemy'); if(B.over){ bRefresh(); return; } // the relay can be decided right here
-  log(`Round ${B.round}.`,'x'); B.busy=true; bRefresh(); try{ await swarmPhase('player'); if(B===b&&!B.over) await swarmPhase('enemy'); }catch(e){ console.error(e); } finally{ if(B===b) B.busy=false; } if(B!==b||B.over) return; bRefresh();
+  B.busy=true; const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2; if(B!==b) return; if(B.over){ B.busy=false; bRefresh(); return; } // the relay can be decided right here; v53: tick deaths finish first, under busy
+  log(`Round ${B.round}.`,'x'); B.busy=true; bRefresh(); try{ await swarmGuard('player'); if(B===b&&!B.over) await swarmGuard('enemy'); }catch(e){ console.error(e); } finally{ if(B===b) B.busy=false; } if(B!==b||B.over) return; bRefresh();
   await banner(`Round ${B.round}`); if(B!==b||B.over) return; const f=pendingP()[0]; if(f) selectUnit(f);
 }
 async function endBattleFlow(){
@@ -603,7 +665,7 @@ ACT.reportProblem=()=>{ try{ const now=performance.now(); const dn=centerOf('#pa
     appClass:app?app.className:'none',appDisplay:app?getComputedStyle(app).display:'none',bodyClass:document.body.className,taps:G.tapLog.slice(-10),acts:G.actLog.slice(-8),panelRenders5s:G.panelRenders.filter(t=>now-t<5000).length};
   const s=Object.assign(s0,{round:B&&B.round,side:B&&B.side,busy:B&&B.busy,over:B&&B.over,mode:B&&B.mode,sel:B&&B.sel&&B.sel.name,active:B&&B.activeUnit&&B.activeUnit.name,ai:B&&B.aiActive&&B.aiActive.name,
     pending:B?pendingP().length:0,touch:G.touchState?G.touchState():null,intro:!!document.querySelector('.intro'),loading:!!document.getElementById('loading'),log:B?B.log.slice(-12).map(x=>x.m.slice(0,90)):[]});
-  tel('problem_report',s); console.debug('[report]',JSON.stringify(s)); Persist.saveLocal(); try{ Persist.save&&Persist.save(); }catch(e){} toast('Problem report saved. Thanks: tell Claude in chat and it can read exactly what happened.'); }catch(e){ try{ toast('Could not save the report: '+e.message); }catch(_){} } };
+  tel('problem_report',s); console.debug('[report]',JSON.stringify(s)); Persist.saveLocal(); try{ Persist.save&&Persist.save({meta:true}); }catch(e){} toast('Problem report saved. Thanks: tell Claude in chat and it can read exactly what happened.'); }catch(e){ try{ toast('Could not save the report: '+e.message); }catch(_){} } };
 
 // terrain legend: only what is on this battlefield; tap to expand
 function refreshLegend(){ let el=document.getElementById('terrlegend'); if(!B||B.showcase||!B.terrain){ if(el) el.remove(); return; } const ks=terrainPresent(); if(!B._zones) B._zones=Object.keys(ZONE_INFO).filter(z=>boardHexes().some(h=>objZone(h.q,h.r)===z)); const zs=B._zones, E=ENCOUNTERS[B.obj&&B.obj.type]; if(!ks.length&&!zs.length&&!E){ if(el) el.remove(); return; }

@@ -56,14 +56,29 @@ function migrateMeta(m){ if(!m.v||m.v<2){ m.opts=m.opts||{}; m.tel=m.tel||[]; m.
   if(!m.wonFix41){ m.wonFix41=1; try{ let fac=null; const won=new Set((m.stats&&m.stats.wonFacs)||[]); for(const e of (m.tel||[])){ if(e.ev==='run_start'&&e.fac) fac=e.fac; else if(e.ev==='run_end'){ if(e.victory&&(e.fac||fac)) won.add(e.fac||fac); fac=null; } } if(m.stats) m.stats.wonFacs=[...won]; }catch(e){} }
   return m; }
 function migrateRun(r){ if(r&&!r.fac) r.fac='voidsworn';
-  if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return r; }
+  if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return normalizeRun(r); }
+// v53: the one place that knows every field a RUN carries. newRun sets the real starting values; this fills anything an older or partial save lacks
+function runDefaults(){ return {fac:'voidsworn',foes:null,admiral:'vex',credits:0,cpCap:10,sector:1,relics:[],inventory:[],fleet:[],pos:null,stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},t0:0,fallen:[],ambush:false,over:false,boons:[],patrons:[],aspect:null,flagUid:null,
+  heat:[],mastery:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0}; }
+function normalizeRun(r){ if(!r||typeof r!=='object') return r; const d=runDefaults(); for(const k in d) if(r[k]==null) r[k]=d[k];
+  for(const k of ['relics','inventory','fleet','fallen','boons','patrons','heat','reserve','seenEvents','regionsUsed','condsUsed']) if(!Array.isArray(r[k])) r[k]=[];
+  if(typeof r.stats!=='object'||Array.isArray(r.stats)) r.stats={}; for(const k in d.stats) if(typeof r.stats[k]!=='number') r.stats[k]=0;
+  r.fleet=r.fleet.filter(s=>s&&typeof s==='object'); for(const s of r.fleet){ if(!Array.isArray(s.mods)) s.mods=[]; if(!s.mk) s.mk=1; if(!s.cap||typeof s.cap!=='object') s.cap={fac:r.fac,name:'Captain',xp:0,rank:0,perks:[],pending:0}; if(!Array.isArray(s.cap.perks)) s.cap.perks=[]; }
+  return r; }
+// v53: a save is only trusted when its run has a fleet array and a map, and its meta is a plain object with the expected containers
+function saneMeta(m){ if(!m||typeof m!=='object'||Array.isArray(m)) return false; for(const k of ['unlocked','admirals','stats','opts','mastery','favour','variants','heatBest']) if(m[k]!=null&&(typeof m[k]!=='object'||Array.isArray(m[k]))) return false; for(const k of ['tel','fallen']) if(m[k]!=null&&!Array.isArray(m[k])) return false; return m.renown==null||typeof m.renown==='number'; }
+function saneRun(r){ return r==null||!!r.none||(typeof r==='object'&&Array.isArray(r.fleet)&&!!r.map&&Array.isArray(r.map.cols)); }
+function saneSave(o){ return !!o&&typeof o==='object'&&!Array.isArray(o)&&(o.meta==null||saneMeta(o.meta))&&saneRun(o.run); }
+// a renamed module, perk or relic id in an old save is logged once and skipped instead of throwing
+const UNKNOWN_IDS=new Set(); function unknownId(kind,id){ const k=kind+':'+id; if(!UNKNOWN_IDS.has(k)){ UNKNOWN_IDS.add(k); try{ console.warn('Unknown '+kind+' id skipped:',id); if(typeof tel==='function') tel('unknown_id',{kind,id:String(id).slice(0,40)}); }catch(e){} } return null; }
 let META = defaultMeta();
 let SAVED_RUN = null;
 let onPersistLoaded = ()=>{};
 const Persist = {
   db:null, uid:null, writing:false, pending:false,
   loadLocal(){ let s=null, o=null; try{ s=localStorage.getItem(STORE_KEY); }catch(e){} try{ if(s) o=JSON.parse(s); }catch(e){ o=null; } // v41: a damaged save falls back to the backup copy
-    if(s&&(!o||typeof o!=='object')){ try{ const b=localStorage.getItem(STORE_KEY+'.bak'); if(b){ o=JSON.parse(b); this.recovered=true; } }catch(e){ o=null; } }
+    if(s&&!saneSave(o)){ try{ const b=localStorage.getItem(STORE_KEY+'.bak'), ob=b?JSON.parse(b):null; if(saneSave(ob)){ o=ob; this.recovered=true; } }catch(e){} } // v53: a save that parses but is malformed (fleet not an array, broken meta) also falls back
+    if(o&&typeof o==='object'&&!saneSave(o)){ if(!saneRun(o.run)) o.run=null; if(o.meta!=null&&!saneMeta(o.meta)) o.meta=null; } // no good backup either: keep whichever half is sound
     try{ if(o&&typeof o==='object'){
       if(o.meta){ META=migrateMeta(Object.assign(defaultMeta(),o.meta)); if(typeof mergeLocalTel==='function') mergeLocalTel(); } SAVED_RUN=migrateRun((o.run&&!o.run.none)?o.run:null); } }catch(e){} },
   saveLocal(){ const data=JSON.stringify({meta:META, run:SAVED_RUN});
@@ -80,12 +95,16 @@ const Persist = {
       const snap = await db.doc('data/users/'+id+'/save').get();
       if(snap.exists){
         const d = JSON.parse(JSON.stringify(snap.data()||{}));
-        const rm = d.meta||{};
-        if((rm.updated||0) > (META.updated||0)){
-          META = migrateMeta(Object.assign(defaultMeta(), rm)); if(typeof mergeLocalTel==='function') mergeLocalTel();
-          SAVED_RUN = migrateRun((d.run && !d.run.none) ? d.run : null);
+        if(!saneSave(d)){ console.warn('Cloud save malformed; keeping this device\'s save'); if(META.updated) this.push(); return; }
+        // v53: meta (unlocks, renown, settings) and the run resolve on separate stamps, so a purchase or a report on one device never rolls back a newer run from another
+        const rm = d.meta||{}, lRunAt=META.runAt||META.updated||0, rRunAt=rm.runAt||rm.updated||0, lRun=SAVED_RUN;
+        const takeMeta=(rm.updated||0) > (META.updated||0), takeRun=rRunAt > lRunAt;
+        if(takeMeta||takeRun){
+          if(takeMeta){ META = migrateMeta(Object.assign(defaultMeta(), rm)); if(typeof mergeLocalTel==='function') mergeLocalTel(); }
+          if(takeRun){ SAVED_RUN = migrateRun((d.run && !d.run.none) ? d.run : null); META.runAt=rRunAt; } else { SAVED_RUN=lRun; META.runAt=lRunAt; }
           this.saveLocal(); onPersistLoaded();
-        } else if((META.updated||0) > (rm.updated||0)) this.push();
+        }
+        if((!takeMeta&&(META.updated||0) > (rm.updated||0)) || (!takeRun&&lRunAt > rRunAt)) this.push();
       } else if(META.updated) this.push();
     }catch(e){ console.warn('Cloud save unavailable', e); this.db=null; }
   },
@@ -98,7 +117,8 @@ const Persist = {
     this.writing=false;
     if(this.pending){ this.pending=false; this.push(); }
   },
-  save(){ META.updated=Date.now(); this.saveLocal(); this.push(); }
+  // v53: a run write stamps both meta and run; {meta:true} (purchases, problem reports) stamps meta only. Telemetry, error and stall paths call saveLocal() and stamp nothing
+  save(opt){ const now=Date.now(); META.updated=now; if(!(opt&&opt.meta)) META.runAt=now; this.saveLocal(); this.push(); }
 };
 
 // ---------- run state ----------
@@ -113,7 +133,7 @@ function newCaptain(vet,fac){ const c={fac:fac||'voidsworn',name:capName(fac), x
 function newShip(tpl, vet){ const fac=factionOfTpl(tpl); const s={uid:newId(), tpl, name:shipName(fac), mk:1, hp:0, mods:[], cap:newCaptain(vet,fac)}; s.hp=derive(s).maxHp; return s; }
 
 function sumFx(list){const o={}; for(const fx of list){ if(!fx) continue; for(const k in fx) o[k]=(o[k]||0)+fx[k]; } return o;}
-function fleetFxList(){ const l=[]; if(RUN){ for(const r of RUN.relics) if(RELICS[r].fx) l.push(RELICS[r].fx); if(ADMIRALS[RUN.admiral]) l.push(ADMIRALS[RUN.admiral].fx); for(const b of (RUN.boons||[])) if(BOONS[b.id]) l.push(BOONS[b.id].fx(RARITY[b.r||0].m)); } return l; }
+function fleetFxList(){ const l=[]; if(RUN){ for(const r of RUN.relics) if(RELICS[r]?RELICS[r].fx:unknownId('relic',r)) l.push(RELICS[r].fx); if(ADMIRALS[RUN.admiral]) l.push(ADMIRALS[RUN.admiral].fx); for(const b of (RUN.boons||[])) if(BOONS[b.id]) l.push(BOONS[b.id].fx(RARITY[b.r||0].m)); } return l; }
 // ---------- patrons and boons ----------
 function ensurePatrons(){ if(!RUN) return; if(!RUN.patrons||!RUN.patrons.length) RUN.patrons=shuffle(Object.keys(PATRONS)).slice(0,4); if(!RUN.boons) RUN.boons=[]; }
 function hasBoon(id){ return !!(RUN&&RUN.boons&&RUN.boons.some(b=>b.id===id)); }
@@ -133,7 +153,7 @@ function rollBoonOffer(p,minR){ ensurePatrons(); const s=(RUN&&RUN.sector)||1, h
 function rollNodeReward(type){ ensurePatrons(); const p=pick(RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
 function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
 function ensureFlagship(){ if(!RUN||!RUN.fleet||!RUN.fleet.length) return null; if(!flagshipOf()){ const f=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1)||derive(b).maxHp-derive(a).maxHp)[0]; RUN.flagUid=f.uid; return f; } return flagshipOf(); }
-function runFx(){ const o={}; if(RUN) for(const r of RUN.relics){ const x=RELICS[r].run; if(x) for(const k in x) o[k]=(o[k]||0)+x[k]; } if(RUN && META.unlocked.salvagers) o.credPct=(o.credPct||0)+.2; return o; }
+function runFx(){ const o={}; if(RUN) for(const r of RUN.relics){ const x=RELICS[r]?RELICS[r].run:unknownId('relic',r); if(x) for(const k in x) o[k]=(o[k]||0)+x[k]; } if(RUN && META.unlocked.salvagers) o.credPct=(o.credPct||0)+.2; return o; }
 function mkWeapon(id,arc,fx){ const b=W[id]; const w=Object.assign({id,arc},b); w.cd=b.cd||0;
   if(b.k==='battery'&&fx.battShots) w.shots+=fx.battShots;
   if(b.k==='flak'&&fx.flakPlus){ w.shots+=2*fx.flakPlus; w.r+=fx.flakPlus; w.opt+=fx.flakPlus; }
@@ -143,7 +163,7 @@ function mkWeapon(id,arc,fx){ const b=W[id]; const w=Object.assign({id,arc},b); 
 function derive(ship){
   const t=HULLS[ship.tpl];
   const asp=RUN&&RUN.aspect&&ship.uid===RUN.flagUid&&ASPECTS[RUN.aspect]?[ASPECTS[RUN.aspect].fx]:[];
-  const fx=sumFx([...fleetFxList(), ...ship.mods.map(m=>MODULES[m].fx), ...ship.cap.perks.map(p=>PERKS[p].fx), ...asp]);
+  const fx=sumFx([...fleetFxList(), ...ship.mods.map(m=>MODULES[m]?MODULES[m].fx:unknownId('module',m)), ...ship.cap.perks.map(p=>PERKS[p]?PERKS[p].fx:unknownId('perk',p)), ...asp]);
   const mk=ship.mk||1, mm=1+.2*(mk-1);
   const maxHp=Math.round(t.hp*mm*(1+(fx.hpPct||0)));
   return {
