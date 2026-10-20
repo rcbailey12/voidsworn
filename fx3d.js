@@ -67,6 +67,15 @@ function arcBolt(a,b,col){ const pts=[a.clone()], n=7; for(let i=1;i<n;i++){ con
 // ---------- per-frame world update ----------
 // v49: push a ship's visible hull (hits rock it, broadsides kick it); mag in world units per second
 function physKick(u,dir,mag,roll){ const v=u&&G.views.get(u.id); if(!v||!v.ph||u.isSq) return; const m=u.size>.8?2.2:u.size>.6?1.4:1; const l=Math.hypot(dir.x,dir.z)||1; v.ph.vx+=dir.x/l*mag/m; v.ph.vz+=dir.z/l*mag/m; if(roll) v.ph.vr+=roll/m; }
+// v51 coast: after a burn the hull keeps the velocity it ended with and runs on along that vector, easing to a stop a little way
+// past its hex (critically damped, so it never drifts back). Ships that have not moved hold station with a slow surge and sway.
+function coastStart(v,u,dx,dz,sp,FE){ const w=u.size>.8?.38:u.size>.6?.48:.6, cap=HW*((FE&&FE.coastCap)||.34)*(u.size>.8?1.15:1);
+  v.coast={dx,dz,c:0,vc:sp,w,T:Math.min(cap,sp/w)}; }
+function coastTick(v,u,a,dt,t){ const C=v.coast; let ox=0,oz=0;
+  if(C&&(C.c||C.vc)){ const ac=C.w*C.w*(C.T-C.c)-2*C.w*C.vc; C.vc+=ac*dt; C.c+=C.vc*dt; if(C.vc<0) C.vc=0; ox=C.dx*C.c; oz=C.dz*C.c; }
+  if(!u.vis){ const ph=(v.bob||0)*3.1, per=u.size>.8?11:u.size>.6?9:7, k=2*Math.PI/per, f=Math.cos(a), g=-Math.sin(a), sv=HW*.035*Math.sin(t*k+ph), sw=HW*.02*Math.sin(t*k*.5+ph*1.7);
+    ox+=f*sv-g*sw; oz+=g*sv+f*sw; }
+  return {x:ox,z:oz}; }
 function updateWorld(dt){
   try{ gfxTick(); }catch(e){} try{ if(typeof vfxTick==='function') vfxTick(); }catch(e){}
   if(!B) return;
@@ -95,22 +104,23 @@ function updateWorld(dt){
       if(k>=1){ if(v.arrive.streak){ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); } v.arrive=null; v.ring.node.setEnabled(true); v.plate.el.style.visibility=''; } }
     if(v.launch){ const k=clamp((G.time-v.launch.t0)/(.9*SPEED),0,1), e=1-Math.pow(1-k,3); px=v.launch.from.x+(p.x-v.launch.from.x)*e; pz=v.launch.from.z+(p.z-v.launch.from.z)*e; y=v.launch.from.y+(y-v.launch.from.y)*e; if(k>=1) v.launch=null; }
     if(v.slide){ const k=(G.time-v.slide.t0)/(.9*Math.max(.4,SPEED)); if(k>=1) v.slide=null; else { const e=1-Math.pow(1-k,3); px=v.slide.x+(px-v.slide.x)*e; pz=v.slide.z+(pz-v.slide.z)*e; } }
+    if(!u.isSq){ if(v.arrive||v.launch||v.slide){ if(v.coast) v.coast.c=v.coast.vc=0; } else { const o=coastTick(v,u,a,dt,t); px+=o.x; pz+=o.z; } }
     // v49 weight: the visible hull follows its path through a mass-spring, so capitals lag, overshoot and settle, hits and recoil push it around,
     // and pitch and bank come from real acceleration (the rules still use the exact hex)
     let physPitch=0, physRoll=0, physYaw=0;
     if(!u.isSq){ const P=v.ph||(v.ph={x:px,z:pz,vx:0,vz:0,a:a,va:0,r:0,vr:0,ax:0,az:0});
       const snap=!!(v.arrive||v.launch||v.slide||v.phased||(!v.root.isEnabled())||Math.hypot(px-P.x,pz-P.z)>HW*4);
       if(snap){ P.x=px; P.z=pz; P.vx=0; P.vz=0; P.a=a; P.va=0; }
-      else { const w=u.size>.8?3.1:u.size>.6?4.2:5.6, zt=u.size>.8?.62:.55, h=Math.min(dt,1/20), n=Math.max(1,Math.ceil(dt/h)), hs=dt/n; let ax=0,az=0;
+      else { const w=u.size>.8?3.1:u.size>.6?4.2:5.6, zt=1, /* v51: critically damped, the hull lags but never swings back */ h=Math.min(dt,1/20), n=Math.max(1,Math.ceil(dt/h)), hs=dt/n; let ax=0,az=0;
         for(let i=0;i<n;i++){ ax=w*w*(px-P.x)-2*zt*w*P.vx; az=w*w*(pz-P.z)-2*zt*w*P.vz; P.vx+=ax*hs; P.vz+=az*hs; P.x+=P.vx*hs; P.z+=P.vz*hs;
-          let da=((a-P.a+Math.PI*3)%(Math.PI*2))-Math.PI; const ww=w*1.15; const aa=ww*ww*da-2*.7*ww*P.va; P.va+=aa*hs; P.a+=P.va*hs;
+          let da=((a-P.a+Math.PI*3)%(Math.PI*2))-Math.PI; const ww=w*1.15; const aa=ww*ww*da-2*1*ww*P.va; P.va+=aa*hs; P.a+=P.va*hs;
           const ar=-(36)*P.r-2*.35*6*P.vr; P.vr+=ar*hs; P.r+=P.vr*hs; }
         P.ax+=(ax-P.ax)*Math.min(1,dt*8); P.az+=(az-P.az)*Math.min(1,dt*8); // smoothed acceleration
         const fw=Math.cos(P.a), fz=-Math.sin(P.a), af=P.ax*fw+P.az*fz, al=-P.ax*fz+P.az*fw, sm=u.size>.8?.0022:u.size>.6?.003:.0038;
         physPitch=clamp(-af*sm,-.14,.14); physRoll=clamp(-al*sm*1.4,-.32,.32)+P.r; physYaw=P.a-a; px=P.x; pz=P.z; } }
     if(v.jolt){ const k=(G.time-v.jolt.t0)/.6; if(k>=1) v.jolt=null; else { const e=Math.sin(k*Math.PI)*(1-k); px+=v.jolt.d.x*e; pz+=v.jolt.d.z*e; } }
     const uv=u.vis; v.root.position.set(px,y,pz); v.root.rotation.set(v.bank+((uv&&uv.roll)||0)+physRoll,a+physYaw,((uv&&uv.pitch)||0)+physPitch); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1), sc=uv&&uv.sc; if(sc||stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts*(sc?sc[0]:1),ts/Math.sqrt(stretch)*(sc?sc[1]:1),ts/Math.sqrt(stretch)*(sc?sc[2]:1)); v.stretched=stretch!==1||!!sc; v.tsc=ts; } } // v46.1: roll, pitch and squash from the faction's movement // v42: ships grow a little as the camera pulls back
-    if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1; v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
+    if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1.35; /* v51: always under way, engines at cruise */ v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
       for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt; if(v.model.turrets&&typeof updateTurrets==='function') updateTurrets(v,dt);
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx){ v.stackFx=v.model.stacks.map(sp=>{ const n=new BABYLON.TransformNode('stk',G.scene); n.parent=v.root; n.position=sp.clone(); const ps=new BABYLON.ParticleSystem('stack',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.direction1=new V3(-.2,1,-.2); ps.direction2=new V3(.2,1.5,.2); ps.color1=new C4(.32,.28,.25,.5); ps.color2=new C4(.2,.18,.17,.4); ps.colorDead=new C4(.1,.1,.1,0); ps.minSize=.3; ps.maxSize=.7; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,3.2); ps.minLifeTime=1.5; ps.maxLifeTime=3; ps.emitRate=10; ps.minEmitPower=.6; ps.maxEmitPower=1.2; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); return ps; }); } }
     if(v.crafts){ for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
@@ -144,7 +154,9 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
   const pk=[{q:v0.q,r:v0.r,s:0}], ak=[{a:v0.a,s:0}], rotS=[]; let s=0, la=v0.a; const rc=u.isSq?.3:.75;
   const altK=[{s:0,y:0}], thrS=[]; // v50: altitude keys for climbing over rocks / diving under ships, and thruster hops
   for(const st of path){ const a=shortAng(la,st.f*60); if(st.rot){ rotS.push({s,dir:Math.sign(a-la)}); s+=rc; ak.push({a,s}); } else { if(st.slip||st.rev) thrS.push({s,slip:st.slip?st.side||1:0,rev:!!st.rev}); s+=1; pk.push({q:st.q,r:st.r,s}); ak.push({a,s}); altK.push({s,y:st.over?(st.over>0?9:-7.5)*(u.isSq?.5:1):0}); } la=a; }
-  const S=Math.max(s,.001); if(pk.at(-1).s<S) pk.push({q:pk.at(-1).q,r:pk.at(-1).r,s:S});
+  const S=Math.max(s,.001);
+  { const vv=!u.isSq&&G.views.get(u.id); if(vv&&vv.coast&&pk.length>1&&Math.abs(vv.coast.c)>.01){ const C=vv.coast, rr=-(C.dz*C.c)/(1.5*HS); pk[0]={q:pk[0].q+(C.dx*C.c)/HW-rr/2,r:pk[0].r+rr,s:0}; C.c=0; C.vc=0; } }
+  if(pk.at(-1).s<S) pk.push({q:pk.at(-1).q,r:pk.at(-1).r,s:S});
   // Hermite tangents over the path length, so corners round off instead of snapping
   const tan=pk.map((p,i)=>{ const a=pk.at(Math.max(0,i-1)), b=pk.at(Math.min(pk.length-1,i+1)), ds=Math.max(.001,b.s-a.s); return {q:(b.q-a.q)/ds,r:(b.r-a.r)/ds}; });
   const same=(a,b)=>!!a&&!!b&&Math.abs(a.q-b.q)+Math.abs(a.r-b.r)<1e-6;
@@ -161,8 +173,11 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
   // a trapezoid speed profile: spool up, cruise, brake; big hulls take longer to get going
   const FE=(!u.isSq&&typeof MOVE_FEEL!=='undefined'&&MOVE_FEEL[u.fac])||{};
   const per=(u.isSq?110:u.size>.8?430:u.size>.6?350:280)*(FE.per||1), dur=Math.min((per*S+(u.isSq?60:260))*(opt.charge?.72:1), u.isSq?900:3600);
-  const ta=u.isSq?.12:opt.charge?.45:(FE.ta!=null?FE.ta*(u.size>.8?1.15:1):u.size>.8?.32:.25), td=opt.charge?.05:u.isSq?.15:(FE.td!=null?FE.td:.3), vmax=1/(1-ta/2-td/2);
-  const prog=p=>p<ta?vmax*p*p/(2*ta):p<1-td?vmax*(ta/2+(p-ta)):1-vmax*(1-p)*(1-p)/(2*td);
+  const ta=u.isSq?.12:opt.charge?.45:(FE.ta!=null?FE.ta*(u.size>.8?1.15:1):u.size>.8?.32:.25), td=opt.charge?.05:u.isSq?.15:(FE.td!=null?FE.td:.3);
+  // v51 underway: hulls never come to a dead stop. A burn starts from the cruise the ship was already holding and eases back to cruise,
+  // then the ship coasts on (see coastTick), so the next order picks up a moving ship instead of a parked one.
+  const cr=(u.isSq||opt.charge)?0:(FE.cruise!=null?FE.cruise:.22), vmax=1/(ta*(1+cr)/2+(1-ta-td)+td*(1+cr)/2);
+  const prog=p=>{ if(p<ta) return vmax*(cr*p+(1-cr)*p*p/(2*ta)); if(p<1-td) return vmax*(ta*(1+cr)/2+p-ta); const q=p-(1-td); return vmax*(ta*(1+cr)/2+1-ta-td)+vmax*q-vmax*(1-cr)*q*q/(2*td); };
   const thrAt=p=>p<ta?1:p<1-td?.65:.15;
   if(!u.isSq&&G.views.get(u.id)) SFX.engine(u.size);
   const v=G.views.get(u.id); let trail=null; if(v&&!u.isSq&&v.root&&S>=1&&!FE.phase&&!(typeof process!=='undefined'&&process.env)) trail=startTrail(v); let ri=0, ti=0, lastKey=0;
@@ -187,8 +202,8 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
       const col=MB.CreateCylinder('phaseCol',{height:26,diameterTop:L*.08,diameterBottom:L*.5,tessellation:18},G.scene), cm=emMat('phaseColM',P.eng.scale(1.5),.55); cm.alphaMode=BABYLON.Engine.ALPHA_ADD; cm.disableDepthWrite=true; cm.backFaceCulling=false; col.material=cm; col.isPickable=false; col.position.copyFrom(c); col.position.y+=8;
       const t0=G.time, obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(.55*Math.max(.4,SPEED)); if(k>=1||col.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); try{ col.dispose(); cm.dispose(); }catch(e){} return; } cm.alpha=.55*(1-k); col.scaling.set(1-k*.6,1+k*.4,1-k*.6); });
       if(typeof sparks==='function') sparks(c,18,9,new C4(P.eng.r,P.eng.g,P.eng.b,1)); }catch(e){} };
-  await tween(dur,(e,p)=>{ let x=S*clamp(prog(p),0,1);
-    if(FE.over&&travels){ x+=FE.over*Math.sin(Math.PI*clamp((p-.6)/.4,0,1)); } // Voidsworn: the mass carries it past the hex, then it hauls back
+  let lateDone=!opt.onLate; const fireLate=()=>{ if(lateDone) return; lateDone=true; try{ opt.onLate(); }catch(err){ console.error(err); } };
+  await tween(dur,(e,p)=>{ let x=S*clamp(prog(p),0,1); if(!lateDone&&p>=.62) fireLate();
     if(FE.str&&travels){ x=clamp(x+.06*Math.sin(2*Math.PI*FE.str*p)*Math.sin(Math.PI*p),0,S); } // Chorus: surges with each stroke
     const ps=at(x,p);
     while(ri<rotS.length&&x>=rotS.at(ri).s){ if(v) rcsPuff(v,rotS.at(ri).dir); ri++; }
@@ -197,7 +212,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     let lift=u.isSq?Math.sin(p*Math.PI)*1.6:0, thr=thrAt(p), roll=0, pitch=0, sc=null;
     if(FE.bob&&travels) lift+=FE.bob*Math.sin(clamp(p,0,1)*Math.PI); // Ithar: rises into a glide
     if(FE.arc&&travels) roll=-side*(FE.roll||.3)*Math.sin(clamp(x/S,0,1)*Math.PI); // banks into the curve
-    if(FE.over&&travels){ pitch=(p<ta?-1:p>.6?.8:0)*(FE.pitch||.07)*Math.sin(Math.PI*clamp(p<ta?p/ta:(p-.6)/.4,0,1)); thr=p<ta?2.4:thr; }
+    if(FE.over&&travels){ pitch=(p<ta?-1:0)*(FE.pitch||.07)*Math.sin(Math.PI*clamp(p/ta,0,1)); thr=p<ta?2.4:thr; } // Voidsworn: the nose digs in as the heavy drive lights
     if(FE.squash&&travels){ const w=Math.sin(2*Math.PI*(FE.str||3)*p); sc=[1+FE.squash*w,1/Math.sqrt(1+FE.squash*w),1/Math.sqrt(1+FE.squash*w)]; thr=.5+.9*Math.max(0,w); }
     if(FE.jit&&travels){ roll=(FE.roll||.2)*Math.sin(x*7.1+ph)*Math.sin(Math.PI*p); if(p>ta&&p<1-td){ const c=Math.sin(G.time*23+ph)>.55; thr=c?2:.35; if(v&&v.root&&G.time-coughT>.16&&Math.random()<.35){ coughT=G.time; try{ SFX.cough(); const st=toWorld(v,new V3(-v.L*.55,0,0)); burst(st,{n:8,c1:new C4(.3,.27,.25,.75),c2:new C4(.15,.13,.12,.5),size:[.5,1.3],life:[.5,1.1],power:[1,3],tex:G.tex.smoke,blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); }catch(err){} } } } // patched engines cough smoke
     if(FE.linear&&travels){ if(p<ta) thr=2.2; if(FE.retro&&!retroDone&&p>=1-td){ retroDone=true; try{ if(v&&v.root){ const bow=toWorld(v,new V3(v.L*.5,0,0)); flash(bow,3+v.L*.18,P.eng.scale(1.6),.22); rcsPuff(v,1); rcsPuff(v,-1); } }catch(err){} } } // Hegemony: hard burn, dead-straight, retro-thrust stop
@@ -208,8 +223,11 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
     if(hasAlt){ const xc=Math.min(x,S), y0=altAt(xc), y1=altAt(Math.min(S,xc+.08)); lift+=y0; pitch+=clamp((y1-y0)*.1,-.3,.3); }
     if(thrS.length){ const sl=slipAt(Math.min(x,S)); if(sl) roll+=-sl*.16; }
     u.vis={q:ps.q,r:ps.r,a:angAt(Math.min(x,S))+headDelta(Math.min(x,S),p),thr,lift,roll,pitch,sc}; }, true);
+  fireLate();
   if(v&&v.phased){ v.phased=false; if(v.root) v.root.setEnabled(true); if(v.ring&&v.ring.node) v.ring.node.setEnabled(true); if(v.plate) v.plate.el.style.visibility=''; }
   const L=path.at(-1); for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=L.f; u.vis=null; if(trail) endTrail(trail);
+  if(v&&!u.isSq&&travels&&!opt.charge&&cr>0){ let ia=pk.length-2; while(ia>0&&Math.abs(pk[ia].q-P1.q)+Math.abs(pk[ia].r-P1.r)<1e-6) ia--; const A=hexWorld(pk[ia].q,pk[ia].r), Bw=hexWorld(P1.q,P1.r), dx=Bw.x-A.x, dz=Bw.z-A.z, l=Math.hypot(dx,dz)||1;
+    const sp=vmax*cr*S*HW/(dur/1000); coastStart(v,u,dx/l,dz/l,sp,FE); }
 }
 async function animMove(u,q,r,f){ return animPath(u,[{q,r,f}]); }
 async function animRotate(u,f){ return animPath(u,[{rot:true,f}]); }

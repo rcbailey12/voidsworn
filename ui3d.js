@@ -323,6 +323,12 @@ async function act(fn){
   if(B.over){ await endBattleFlow(); return; }
   if(B.alt&&B.activeUnit&&(B.activeUnit.dead||isDoneRaw(B.activeUnit))) await endActivation();
 }
+// v51 attack-move: tap an enemy your guns can't reach yet and the ship burns to the best hex for that shot and opens fire on the way
+function attackMovePlan(s,t){ if(!B||!B.reach||!s||s.isSq||s.braced||t.dead) return null; let best=null;
+  const idx=(B.armed!=null?[B.armed]:s.weapons.map((w,i)=>i)).filter(i=>{ const w=s.weapons[i]; return w.k!=='flak'&&weaponReady(w); }); if(!idx.length) return null;
+  for(const st of B.reach.states){ if(st.q===s.q&&st.r===s.r) continue; const v=stateView(s,st); const n=idx.filter(i=>inReach(v,s.weapons[i],t)).length; if(!n) continue;
+    const hx=(st.path||[]).filter(p=>!p.rot).length, sc=n*100-st.cost*3-(st.t||0)+(hx>=2?4:0); if(!best||sc>best.sc) best={st,n,sc,of:idx.length}; }
+  return best; }
 function firingSet(a,t){ const idx=B.armed!=null?[B.armed]:a.weapons.map((w,i)=>i); return idx.filter(i=>canFire(a,a.weapons[i],t)); }
 async function onBoardClick(){
   if(!B||B.busy||B.side!=='player'||B.over||document.querySelector('.intro')) return;
@@ -335,6 +341,7 @@ async function onBoardClick(){
   if(u&&u.side==='player'&&u.isSq){ B.wingSel=B.wingSel===u?null:u; try{ toast(B.wingSel?(u.wingOrder?'Wing selected (it has orders). Tap an enemy ship to strike, one of your ships to guard, or the wing again to cancel.':'Wing selected. Tap an enemy ship to strike it, or one of your ships to guard it.'):'Wing deselected.'); }catch(e){} bRefresh(); return; }
   if(u&&u.side==='player'){ selectUnit(u); return; }
   if(u&&u.side==='enemy'){ if(s&&s.side==='player'&&canUse(s)){ const set=firingSet(s,u); if(set.length){ guard(s); await act(async()=>{ const live=liveFrom(s); for(const i of set){ if(u.dead||s.dead||B.over||!live()) break; await fireWeapon(s,i,u); await wait(80); } }); if(B) B.armed=null; bRefresh(); return; } }
+    if(s&&s.side==='player'&&canUse(s)){ const am=attackMovePlan(s,u); if(am&&guard(s)){ await act(()=>moveUnit(s,am.st,{onLate:async()=>{ const live=liveFrom(s); for(const i of firingSet(s,u)){ if(u.dead||s.dead||B.over||!live()) break; await fireWeapon(s,i,u); await wait(80); } }})); if(B) B.armed=null; bRefresh(); return; } }
     if(s&&s.side==='player'&&canUse(s)&&!(G.lastWhy&&G.lastWhy.id===u.id&&performance.now()-G.lastWhy.t<3000)){ const why=cantFireReason(s,u); G.lastWhy={id:u.id,t:performance.now()}; B.why=why; if(B.usage){ const cat=/braced/.test(why)?'braced':/already fired/.test(why)?'spent':/Out of range/.test(why)?'range':/points at it/.test(why)?'arc':/sight/.test(why)?'sight':'other'; B.usage.cant[cat]=(B.usage.cant[cat]||0)+1; } try{ toast(why); }catch(e){} clearTimeout(G.whyT); G.whyT=setTimeout(()=>{ if(B){ B.why=null; bRefresh(); } },7000); bRefresh(); return; }
     G.lastWhy=null; B.sel=null; B.inspect=u; B.armed=null; B.reach=null; bRefresh(); return; }
   if(s&&s.side==='player'&&B.reach){ const st=B.reach.map.get(hkey(h.q,h.r)); if(st&&guard(s)){ await act(()=>moveUnit(s,st)); return; } }
@@ -400,7 +407,7 @@ function attackTip(a,t){
     rows+=`<tr><td>${esc(w.n)}${(w.evMult||1)>1?` <span class="dim">(slow: evasion counts ${w.evMult}x)</span>`:''}</td><td class="r">${right}</td></tr>`; }
   return `<div class="h blood">${esc(t.isSq?t.t.n:t.name)}</div><div class="muted num">Hull ${t.hp}/${t.maxHp}, armor ${pct(t.armor)}, evasion ${t.ev+(t.evBuff||0)}</div>
     <div style="margin:4px 0">${t.shMax?`Hits the <b class="shv">${QUAD_NAME[quad]} shield</b> <span class="shv">(${Math.round(t.sh[quad])}/${t.shMax})</span>${t.sh[quad]<1?' <span class="hlv">down, straight to hull</span>':''}.`:'Target is unshielded: <span class="hlv">every hit lands on the hull</span>.'}${rear?' <span class="ember">Rear arc: armor halved, +15% crit.</span>':''}${motionNote(a,t)}${terr(t.q,t.r)==='neb'?' <span class="muted">In nebula, \u221215 to hit.</span>':terr(t.q,t.r)==='debris'?' <span class="muted">In debris, \u221210 to hit.</span>':''}${terr(a.q,a.r)==='storm'?' <span class="muted">You are in an ion storm, \u221210 to hit.</span>':''}</div>
-    ${t.sec?`<div class="muted">Hull damage lands on the <b>${SEC_NAME[SEC_OF_QUAD[quad]]}</b>. Crew ${t.crew}/${t.crewMax}.</div>`:''}<table>${rows}</table>${n?`<div style="margin-top:5px" class="num">Expected: about <span class="shv">${Math.round(sh)} shield</span> and <span class="hlv">${Math.round(hull)} hull</span> damage.${hull>=t.hp?' <span class="ember">Likely kill.</span>':''}</div>${(()=>{ const bm=boonMods(a,t); return bm.length?`<div style="margin-top:4px;font-size:12.5px">${bm.join('<br>')}</div>`:''; })()}<div class="gilt" style="margin-top:3px">Click to fire ${n} weapon${n>1?'s':''}.</div>`:'<div class="dim" style="margin-top:5px">No ready weapon can reach this target.</div>'}`;
+    ${t.sec?`<div class="muted">Hull damage lands on the <b>${SEC_NAME[SEC_OF_QUAD[quad]]}</b>. Crew ${t.crew}/${t.crewMax}.</div>`:''}<table>${rows}</table>${n?`<div style="margin-top:5px" class="num">Expected: about <span class="shv">${Math.round(sh)} shield</span> and <span class="hlv">${Math.round(hull)} hull</span> damage.${hull>=t.hp?' <span class="ember">Likely kill.</span>':''}</div>${(()=>{ const bm=boonMods(a,t); return bm.length?`<div style="margin-top:4px;font-size:12.5px">${bm.join('<br>')}</div>`:''; })()}<div class="gilt" style="margin-top:3px">Click to fire ${n} weapon${n>1?'s':''}.</div>`:(()=>{ const am=a.side==='player'&&canUse(a)?attackMovePlan(a,t):null; return am?`<div class="gilt" style="margin-top:5px">Click to burn ${am.st.cost} movement into position and fire ${am.n} weapon${am.n>1?'s':''} on the way.</div>`:'<div class="dim" style="margin-top:5px">No ready weapon can reach this target.</div>'; })()}`;
 }
 function onKey(e){
   if(!B||e.target.tagName==='INPUT'||document.body.classList.contains('app-on')) return; const k=e.key.toLowerCase();

@@ -294,7 +294,7 @@ function afterBattle(){
     RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.4*repairMult())); });
     saveRun(); mapScreen();
     const F=FACTIONS[RUN.map.fac];
-    modal(`<h2>Sector ${roman(RUN.sector)}${m.region&&REGIONS[m.region]?`: ${esc(REGIONS[m.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
+    modal(`<h2>Sector ${roman(RUN.sector)}${RUN.map.region&&REGIONS[RUN.map.region]?`: ${esc(REGIONS[RUN.map.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
       <p>Auspex confirms <b>${esc(F.n)}</b> ahead.</p>${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
     return;
   }

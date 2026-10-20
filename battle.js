@@ -421,17 +421,22 @@ function computeReach(u){
     const c=map.get(k); if(!c || s.cost<c.cost || (s.cost===c.cost&&s.t<c.t)) map.set(k,s); }
   return {map, states:ok};
 }
-async function moveUnit(u, state){
+// v51 fire on the move: opts.onLate runs about two-thirds of the way through the burn, after the rules have already put the ship
+// on its destination hex, so guns open up while the hull is still travelling (the maths is identical to firing after the move)
+async function moveUnit(u, state, opts){
   if(!inThisBattle(u)) return; const live=liveFrom(null);
-  const path=state.path;
-  if(typeof animPath==='function'){ await animPath(u,path); if(B) B.prog=(B.prog||0)+1; if(!live()) return; } // one continuous burn
+  const path=state.path; let committed=false;
+  const commit=()=>{ if(committed) return; committed=true; for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=path.at(-1).f;
+    u.mp=Math.max(0,u.mp-state.cost); u.turnsLeft-=state.t; if(state.t>0&&moveRules(u).pivot) u.pivotUsed=true; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++; };
+  let lateP=null; const onLate=opts&&opts.onLate?()=>{ if(!live()) return; commit(); try{ lateP=Promise.resolve(opts.onLate()).catch(e=>console.error(e)); }catch(e){ console.error(e); } }:null;
+  if(typeof animPath==='function'){ await animPath(u,path,onLate?{onLate}:undefined); if(B) B.prog=(B.prog||0)+1; if(lateP) await lateP; if(!live()) return; if(committed){ objAfterMove(u); return; } } // one continuous burn
   else for(const st of path){
     if(st.rot){ await animRotate(u, st.f); }
     else { await animMove(u, st.q, st.r, st.f); }
     if(B) B.prog=(B.prog||0)+1; // progress for the busy watchdog
     if(!live()) return;
   }
-  u.mp=Math.max(0,u.mp-state.cost); u.turnsLeft-=state.t; if(state.t>0&&moveRules(u).pivot) u.pivotUsed=true; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++;
+  commit();
   objAfterMove(u);
 }
 function freePivot(u){ return !!(moveRules(u).pivot&&!u.pivotUsed); }
@@ -975,6 +980,28 @@ function evalThreat(v, foes){
     for(const w of p.weapons){ if(w.cdLeft>1||w.off>1) continue; if(hdist(p,v)>w.r) continue; if(!inArc(p,v,w.arc)) continue; const e=expectedVs(p,w,v); tot+=e.hull+e.shield*.2; } }
   return tot;
 }
+async function aiVolley(u,live){
+    // fire: veterans pick one primary target and concentrate on it
+    let primary=null; if(aiVet()){ let pv=0; const focus=B.aiFocus&&!B.aiFocus.dead?B.aiFocus:null;
+      for(const t of alive('player')){ let tot=0,hull=0; for(const w of u.weapons){ if(!weaponReady(w)||!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); tot+=e.hull+e.shield*.3; hull+=e.hull; } if(!tot) continue;
+        const val=tot*(t.isSq?.6:1.1)+(hull>=t.hp?25+t.maxHp*.15:0)+(t===focus?10:0)+(1-t.hp/t.maxHp)*15; if(val>pv){pv=val;primary=t;} }
+      if(primary&&!primary.isSq) B.aiFocus=primary; }
+    const wlist=u.weapons.map((w,i)=>i).sort((a,b)=>(u.weapons[b].dmg*u.weapons[b].shots)-(u.weapons[a].dmg*u.weapons[a].shots));
+    let fired=false;
+    for(const wi of wlist){
+      if(B.over) return null;
+      const w=u.weapons[wi]; if(!weaponReady(w)) continue;
+      let bt=null, bv=0;
+      const taunt=alive('player').find(p=>!p.isSq&&p.fx&&p.fx.taunt&&hdist(p,u)<=p.fx.taunt); /* Aspect of the Bulwark: ships in its reach must fire on it */
+      if(taunt&&w.k!=='flak'&&canFire(u,w,taunt)){ bt=taunt; bv=1; }
+      else if(primary&&!primary.dead&&canFire(u,w,primary)&&!(w.vsSq>1&&!primary.isSq&&alive('player').some(s=>s.isSq&&canFire(u,w,s)))){ bt=primary; bv=1; }
+      else for(const t of alive('player')){ if(!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=20; if(!t.isSq) v*=1.1; if(v>bv){bv=v;bt=t;} }
+      const call=null; // called shots removed
+      if(bt && bv>0.5){ await fireWeapon(u,wi,bt,{called:call}); fired=true; await wait(30); if(!live()) return null; }
+      if(u.dead) break;
+    }
+    return fired;
+}
 async function aiTurn(){
   const order=alive('enemy').sort((a,b)=>(a.isSq?0:1)-(b.isSq?0:1) || b.speed-a.speed);
   for(const u of order){ if(B.over) return; if(u.dead) continue; await aiUnit(u); }
@@ -1029,7 +1056,10 @@ async function aiUnit(u){
       score+=aiObjScore(u,v); score+=aiWellScore(u,v);
       if(score>bestScore){ bestScore=score; best=s; }
     }
-    if(best && best.path.length){ await moveUnit(u,best); if(!live()) return; }
+    let volleyP=null;
+    if(best && best.path.length){ const midFire=!u.isSq&&!runner&&!(u.ab==='nova'&&canAbility(u))&&!(typeof animPath==='function'&&typeof process!=='undefined'&&process.env&&process.env.NOMIDFIRE);
+      await moveUnit(u,best,midFire?{onLate:()=>{ if(boardTargets(u).length) return; volleyP=aiVolley(u,live); return volleyP; }}:undefined); if(!live()) return; }
+    if(volleyP){ const fired=await volleyP; if(!live()||B.over) return; if(!fired && !u.dead && u.hp<u.maxHp*.5 && canOrder(u,'brace') && evalThreat(u,alive('player'))>10){ giveOrder(u,'brace'); } B.aiActive=null; u.activated=true; return; }
     // nova
     if(u.ab==='nova' && canAbility(u)){
       let bh=null, bv=0;
@@ -1039,25 +1069,7 @@ async function aiUnit(u){
     if(!u.isSq && !runner && await tacticBoard(u)){ if(live()){ B.aiActive=null; u.activated=true; } return; }
     if(!live()) return;
     if(aiVet()&&!u.isSq&&!u.t.boss&&canOrder(u,'brace')){ const pf=alive('player'), myOff=evalOffense(u,u.weapons.filter(weaponReady),pf), thr=evalThreat(u,pf); if(thr>u.hp*.45&&myOff<thr*.35&&u.hp<u.maxHp*.7){ giveOrder(u,'brace'); B.aiActive=null; u.activated=true; return; } }
-    // fire: veterans pick one primary target and concentrate on it
-    let primary=null; if(aiVet()){ let pv=0; const focus=B.aiFocus&&!B.aiFocus.dead?B.aiFocus:null;
-      for(const t of alive('player')){ let tot=0,hull=0; for(const w of u.weapons){ if(!weaponReady(w)||!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); tot+=e.hull+e.shield*.3; hull+=e.hull; } if(!tot) continue;
-        const val=tot*(t.isSq?.6:1.1)+(hull>=t.hp?25+t.maxHp*.15:0)+(t===focus?10:0)+(1-t.hp/t.maxHp)*15; if(val>pv){pv=val;primary=t;} }
-      if(primary&&!primary.isSq) B.aiFocus=primary; }
-    const wlist=u.weapons.map((w,i)=>i).sort((a,b)=>(u.weapons[b].dmg*u.weapons[b].shots)-(u.weapons[a].dmg*u.weapons[a].shots));
-    let fired=false;
-    for(const wi of wlist){
-      if(B.over) return;
-      const w=u.weapons[wi]; if(!weaponReady(w)) continue;
-      let bt=null, bv=0;
-      const taunt=alive('player').find(p=>!p.isSq&&p.fx&&p.fx.taunt&&hdist(p,u)<=p.fx.taunt); /* Aspect of the Bulwark: ships in its reach must fire on it */
-      if(taunt&&w.k!=='flak'&&canFire(u,w,taunt)){ bt=taunt; bv=1; }
-      else if(primary&&!primary.dead&&canFire(u,w,primary)&&!(w.vsSq>1&&!primary.isSq&&alive('player').some(s=>s.isSq&&canFire(u,w,s)))){ bt=primary; bv=1; }
-      else for(const t of alive('player')){ if(!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); let v=e.hull+e.shield*.3; if(e.hull>=t.hp) v+=20; if(!t.isSq) v*=1.1; if(v>bv){bv=v;bt=t;} }
-      const call=null; // called shots removed
-      if(bt && bv>0.5){ await fireWeapon(u,wi,bt,{called:call}); fired=true; await wait(30); if(!live()) return; }
-      if(u.dead) break;
-    }
+    const fired=await aiVolley(u,live); if(fired===null) return;
     if(!fired && !u.isSq && !u.dead && u.hp<u.maxHp*.5 && canOrder(u,'brace') && evalThreat(u,alive('player'))>10){ giveOrder(u,'brace'); }
     B.aiActive=null; u.activated=true;
 }

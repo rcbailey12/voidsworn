@@ -9,9 +9,9 @@ const FAC3D={ // v46 faction identity: every colour below feeds hulls, windows, 
 };
 // v46: how each faction moves. ta/td = share of the move spent speeding up / braking, per = ms per hex (x size), bank = roll into turns,
 // sway = organic side-to-side, bob = glide arc, jit = burn stutter, phase = blinks out and reappears at the destination
-const MOVE_FEEL={voidsworn:{ta:.42,td:.42,per:1.25,bank:1.8,over:.32,pitch:.08}, // v46.1: much stronger; see animPath
-  hegemony:{ta:.12,td:.14,per:.75,bank:.15,linear:true,retro:true},corsair:{ta:.08,td:.3,per:.85,bank:1.3,jit:.38,roll:.22},
-  chorus:{ta:.3,td:.3,per:1.1,bank:.6,sway:.5,cyc:1.5,squash:.16,str:3},ithar:{ta:.45,td:.45,per:1,bank:.5,arc:.75,bob:2.6,roll:.3},deathless:{ta:.2,td:.2,per:.6,bank:.1,phase:true}};
+const MOVE_FEEL={voidsworn:{ta:.42,td:.5,per:1.25,bank:1.8,over:.32,pitch:.08,cruise:.28,coastCap:.42}, // v46.1: much stronger; see animPath
+  hegemony:{ta:.12,td:.14,per:.75,bank:.15,linear:true,retro:true,cruise:.1,coastCap:.2},corsair:{ta:.08,td:.3,per:.85,bank:1.3,jit:.38,roll:.22},
+  chorus:{ta:.3,td:.3,per:1.1,bank:.6,sway:.5,cyc:1.5,squash:.16,str:3},ithar:{ta:.45,td:.45,per:1,bank:.5,arc:.75,bob:2.6,roll:.3,cruise:.32,coastCap:.45},deathless:{ta:.2,td:.2,per:.6,bank:.1,phase:true,cruise:.15}};
 const MATS={}, EMBLEMS={}, AI_MATS={};
 function emblemMat(fac){ if(EMBLEMS[fac]) return EMBLEMS[fac]; const P=FAC3D[fac]||FAC3D.hegemony;
   const t=dynTex('emb_'+fac,256,256,(g,w)=>{ g.clearRect(0,0,w,w); const c=w/2; g.lineCap='round'; g.lineJoin='round';
@@ -625,10 +625,10 @@ function splitModel(model,proto){
 const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes in comments)
   'hegemony|Frigate':'H7_23','hegemony|Destroyer':'H8_23','hegemony|Cruiser':'H9_23','hegemony|Battleship':'H10_23','hegemony|Super-dreadnought':'H4_11', // H7b-H10b (round 7 light grey and blue), H4a for the flagship
   'voidsworn|Frigate':'V14_23','voidsworn|Destroyer':'V15_37','voidsworn|Cruiser':'V16_37','voidsworn|Battleship':'V17_37','voidsworn|Dreadnought':'V1b_r_23', // V14b, V15c, V16c, V17c (round 7 grimdark), V1b rev flagship
-  'corsair|Frigate':'C13_23','corsair|Destroyer':'C14_23','corsair|Cruiser':'C15_23','corsair|Carrier':'C16_23', // round 8 B set (Ryan's pick)
+  'corsair|Frigate':'C13s_23','corsair|Destroyer':'C14s_23','corsair|Cruiser':'C15s_23','corsair|Carrier':'C16s_23', // round 10 bolt-on B pass over the round 8 B set (Ryan's pick)
   'chorus|Frigate':'B19_11','chorus|Destroyer':'B20_11','chorus|Cruiser':'B21_11','chorus|Carrier':'B22_11','chorus|Bio-titan':'B16_23', // round 8 A set (Ryan's pick), B16b titan
   'ithar|Frigate':'I14_23','ithar|Destroyer':'I11_37','ithar|Cruiser':'I15_11','ithar|Carrier':'I16_11','ithar|Ark':'I8_37', // I14b, I11c, I15a, I16a, I8c
-  'deathless|Frigate':'D9_23','deathless|Destroyer':'D7_11','deathless|Cruiser':'D4_37','deathless|Tomb-ark':'D8_37'}, AI_HULL_DATA={}; // D9b, D7a, D4c, D8c
+  'deathless|Frigate':'D9_23','deathless|Destroyer':'D20_23','deathless|Cruiser':'D21_23','deathless|Tomb-ark':'D22_23'}, AI_HULL_DATA={}; // round 10 B set (star dart, monolith half-disc, ring tomb-ark); the B sickle frigate meshed as a flat plaque, so D9b stays until a remesh
 function aiHullsOn(){ return G.aiHulls!==false; }
 function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new T(u.buffer); };
   const qp=b64(j.p,Int16Array), qn=b64(j.q,Int8Array), idx=b64(j.i,j.i32?Uint32Array:Uint16Array), n=qp.length/3, pos=new Float32Array(qp.length), nor=new Float32Array(qp.length), uv=new Float32Array(n*2);

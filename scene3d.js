@@ -302,6 +302,7 @@ function buildBattleEnv(){
     for(let i=0;i<2500;i++){ const a=rr()*Math.PI*2, d=G.bx*(1.15+rr()*.75), s=.4+Math.pow(rr(),3)*4; mats.push(BABYLON.Matrix.Compose(new V3(s,s*(.6+rr()*.6),s),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(Math.cos(a)*d,-70-rr()*170+Math.sin(a*3)*25,Math.sin(a)*d*.75))); }
     ring.thinInstanceAdd(mats); G.ringNode=node; G.env.push(ring,node); }
   buildTerrainFeatures(rr); try{ buildTerrainTints(); }catch(e){ console.error(e); }
+  try{ buildRimFill(mkBase,rockMat,rr); }catch(e){ console.warn('rim fill',e); }
   buildBelt(rr,tinyB); buildTraffic(rr); gradeFor((B.map||{}).map,B.cfg&&B.cfg.fac);
   { // only dispose textures that battlefield materials actually use; never the shared lighting textures
     const keep=cachedTextures(); [G.scene.environmentBRDFTexture,G.scene.environmentTexture].forEach(t=>t&&keep.add(t)); const used=new Set();
@@ -378,6 +379,8 @@ function lumpyRock(name,rr,sub){ const m=MB.CreateIcoSphere(name,{radius:1,subdi
     for(const [cx,cy,cz,cr,cd] of craters){ const d=Math.hypot(x-cx,y-cy,z-cz); if(d<cr) n-=cd*(1-d/cr)*(1-d/cr)*2; else if(d<cr*1.25) n+=cd*.25; }
     p[i]=x*n; p[i+1]=y*n; p[i+2]=z*n; }
   m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.convertToFlatShadedMesh(); m.isPickable=false; return m; }
+// wrecks on the field come from the fleets in this fight, so they reuse materials already built (no new faction texture sets per battle)
+function battleFacs(){ const f=new Set(); try{ for(const u of (B&&B.units)||[]) if(u.fac) f.add(u.fac); }catch(e){} return f.size?[...f]:['hegemony','voidsworn','corsair','ithar','deathless','chorus']; }
 const HOLE_BUILD={
   asteroid(c,R,rr){ const sc=G.scene, m=lumpyRock('giantRock',rr,4); m.material=sc.getMaterialByName('rockM'); m.scaling=new V3(R*.86,R*.7,R*.78); m.position=c.add(new V3(0,-R*.06,0)); m.rotation.set((rr()-.5)*.4,rr()*6,(rr()-.5)*.3); m.spin=new V3(0,.006,0); G.rocks.push(m); G.env.push(m); castShadows(m);
     for(let i=0;i<7;i++){ const k=lumpyRock('rockChunk',rr,2); k.material=m.material; const a=rr()*6.28, d=R*(.55+rr()*.3), s=R*(.07+rr()*.08); k.scaling.setAll(s); k.position=c.add(new V3(Math.cos(a)*d,(rr()-.3)*R*.4,Math.sin(a)*d)); k.spin=new V3((rr()-.5)*.2,(rr()-.5)*.2,0); G.rocks.push(k); G.env.push(k); } },
@@ -393,7 +396,7 @@ const HOLE_BUILD={
     for(let i=0;i<14;i++){ const a=rr()*6.28, r=rr()<.5?15:3+rr()*9; b.box(M.ember,Math.cos(a)*r,(rr()-.5)*2,Math.sin(a)*r,.6+rr()*.8,.4,.6+rr()*.8); }
     for(let i=0;i<10;i++){ const a=rr()*6.28, r=6+rr()*8; b.box(rr()<.5?M.hull:M.dark,Math.cos(a)*r,(rr()-.5)*5,Math.sin(a)*r,.8+rr()*2.4,.5+rr()*1.2,.6+rr()*2,rr()*3,rr()*3,rr()*3); }
     const m=b.finish(); m.root.position=c.add(new V3(0,1.5,0)); m.root.scaling.setAll(R/16.5); m.root.rotation.set((rr()-.5)*.5,rr()*6,(rr()-.5)*.4); m.meshes.forEach(x=>x.isPickable=false); G.env.push(m.root); },
-  hulk(c,R,rr){ const facs=['hegemony','voidsworn','corsair','ithar','deathless','chorus'], f=facs[Math.floor(rr()*6)];
+  hulk(c,R,rr){ const facs=battleFacs(), f=facs[Math.floor(rr()*facs.length)];
     const mdl=buildShipModel({fac:f,cls:'Battleship',isSq:false,side:'enemy',tpl:'wreck'}); if(mdl.toSplit) mdl.toSplit(); const Mw=facMats(f);
     mdl.meshes.forEach(m=>{ m.material=(m.material===Mw.win||m.material===Mw.eng||m.material===Mw.tip||m.material===Mw.sail)?Mw.ember:Mw.wreck; m.isPickable=false; }); mdl.plumes.forEach(p=>p.dispose()); (mdl.flares||[]).forEach(p=>p.dispose());
     mdl.root.position=c.add(new V3(0,1,0)); mdl.root.scaling.setAll(R*1.85/Math.max(10,mdl.L)); mdl.root.rotation.set((rr()-.5)*.4,rr()*6.28,(rr()-.5)*.6); mdl.fore.position.x+=mdl.L*.12; mdl.fore.rotation.set((rr()-.5)*.5,(rr()-.5)*.7,(rr()-.5)*.5); mdl.aft.rotation.z=(rr()-.5)*.4; G.env.push(mdl.root); },
@@ -407,6 +410,43 @@ function buildHoleFills(holes,rr){ for(const h of holes){ if(h.kind==='deadstar'
     let dmin=1e9; for(const b of boardHexes()){ const p=hexWorld(b.q,b.r,0); dmin=Math.min(dmin,Math.hypot(p.x-c.x,p.z-c.z)); }
     for(const o of holes){ if(o===h) continue; let ox=0,oz=0; for(const [q,r] of o.cells){ const p=hexWorld(q,r,0); ox+=p.x; oz+=p.z; } dmin=Math.min(dmin,Math.hypot(ox/o.cells.length-c.x,oz/o.cells.length-c.z)*.5+HS*.75); }
     R=Math.max(Math.min(HS*.8,dmin*.6),Math.min(R,dmin-HS*.55)); h.vis={x:c.x,z:c.z,R,dmin}; try{ HOLE_BUILD[h.kind](c,R,rr); }catch(e){ console.warn('hole fill',e); } } }
+// v51 rim fill: every hex cut away from the board (ragged edges, arena margins, hourglass waists, corridor walls) now has a visible
+// reason to be impassable. Close to the playable hexes it is a dense wall (asteroid scree, wreck debris, ice, ion cloud); further out
+// it thins into big bodies, and the largest rim pockets get a centrepiece (a giant asteroid, a wrecked capital, a derelict station).
+function buildRimFill(mkBase,rockMat,rr){ if(!B||!B.terrain) return; const sc=G.scene, meta=B.map||{}, kind=(TERRAIN_META&&TERRAIN_META.map)||meta.map||'belt';
+  const solid=k=>SOLID&&SOLID.has(k), rift=new Set((meta.riftCells||[]).map(x=>x[0]+','+x[1]));
+  const cells=new Map(), q0=[]; // BFS outward from the playable board over the canvas (+2 rings)
+  for(const h of boardHexes()) { cells.set(h.q+','+h.r,0); q0.push(h); }
+  const inCanvas=(q,r)=>{ if(r<-2||r>=BH+2) return false; const c=q+Math.floor(r/2); return c>=-2&&c<BW+2; };
+  let qi=0; while(qi<q0.length){ const h=q0[qi++], d=cells.get(h.q+','+h.r); if(d>=7) continue;
+    for(const D of DIRS){ const q=h.q+D[0], r=h.r+D[1], k=q+','+r; if(cells.has(k)||!inCanvas(q,r)||onBoard(q,r)||solid(k)||rift.has(k)) continue; cells.set(k,d+1); q0.push({q,r}); } }
+  const rim=[...cells].filter(([k,d])=>d>0).map(([k,d])=>{ const [q,r]=k.split(',').map(Number); return {q,r,d}; }); if(!rim.length) return;
+  // keep clear of the near planet and the dead star, which explain their own space
+  const avoid=[]; if(G.nearPlanet){ const p=G.nearPlanet.position, R=(G.nearPlanet.getBoundingInfo().boundingSphere.radiusWorld||0)*1.02; avoid.push({x:p.x,z:p.z,R}); }
+  const ok=c=>{ const w=hexWorld(c.q,c.r); return !avoid.some(a=>Math.hypot(w.x-a.x,w.z-a.z)<a.R); };
+  const R=rim.filter(ok); G.rimCells=R.length;
+  const debrisWall=kind==='graveyard', cloudWall=kind==='storm', mob=G.mobile;
+  // one light rock base set shared by thin instances: one draw per shape
+  const sub=mob?3:(G.quality==='medium'?4:5), shapes=[0,3,6].map(k=>mkBase(k,sub,'rim')); const bufs=shapes.map(()=>[]);
+  const put=(c,w,s,y,squash)=>{ const m=BABYLON.Matrix.Compose(new V3(s,s*(squash||(.6+rr()*.5)),s*(.8+rr()*.4)),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(w.x,y,w.z)); bufs[Math.floor(rr()*shapes.length)].push(m); };
+  for(const c of R){ const w0=hexWorld(c.q,c.r), n=c.d===1?(debrisWall?2:mob?3:4):c.d===2?(mob?2:3):c.d<=4?2:1;
+    for(let i=0;i<n;i++){ const j=c.d===1?.42:.6, w=w0.add(new V3((rr()-.5)*HW*j,0,(rr()-.5)*HS*j*1.4));
+      const s=c.d===1?(2.2+rr()*3.4)*(debrisWall?.7:1):c.d===2?3.5+rr()*4.5:c.d<=4?5+rr()*7:7+rr()*10;
+      const y=c.d===1?(rr()-.4)*4:c.d===2?-2+(rr()-.5)*6:-6+(rr()-.5)*10; put(c,w,s,y,cloudWall?.5:null); }
+    if(c.d===1&&!mob) for(let i=0;i<3;i++){ const w=w0.add(new V3((rr()-.5)*HW*.8,0,(rr()-.5)*HS*.9)); put(c,w,.6+rr()*1.1,(rr()-.3)*6); } } // scree
+  const rimMat=rockMat.clone('rimRockM'); rimMat.diffuseColor=rockMat.diffuseColor.scale(.62); rimMat.specularColor=rockMat.specularColor.scale(.35); rimMat.emissiveColor=rockMat.emissiveColor.scale(.5); G.env.push(rimMat); // a shade darker than the board's own rocks, so the playfield stays the brightest thing
+  shapes.forEach((m,i)=>{ if(!bufs[i].length){ return; } m.material=rimMat; m.isVisible=true; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.thinInstanceAdd(bufs[i]); m.receiveShadows=false; try{ if(G.shadow) G.shadow.removeShadowCaster(m); }catch(e){} });
+  if(debrisWall&&typeof debThinUpdate==='function'&&G.debThin&&G.debThin.length){ // add wreck plates and spars to the existing debris batches
+    for(const c of R) if(c.d<=2) for(let i=0;i<(mob?2:4);i++){ const rec=G.debThin[Math.floor(rr()*G.debThin.length)], w=hexWorld(c.q,c.r).add(new V3((rr()-.5)*HW*.6,(rr()-.4)*5,(rr()-.5)*HS*.8)); rec.items.push({p:w,r:new V3(rr()*6,rr()*6,rr()*6),s:1+rr()*2.4,spin:new V3((rr()-.5)*.15,(rr()-.5)*.15,(rr()-.5)*.15)}); }
+    for(const rec of G.debThin){ rec.buf=new Float32Array(rec.items.length*16); for(const x of rec.ms) x.thinInstanceSetBuffer('matrix',rec.buf,16,false); debThinUpdate(rec,0); } }
+  if(cloudWall||kind==='planet'){ const nm=addMat('rimNebM',cloudWall?new C3(.3,.36,.85):new C3(.36,.42,.6),cloudWall?.3:.16,G.tex.neb); G.env.push(nm); let k=0;
+    for(const c of R){ if(c.d!==1&&c.d!==3) continue; if(rr()>(cloudWall?.5:.22)||k>(mob?14:34)) continue; k++; const pl=MB.CreatePlane('rimNeb',{size:HS*(2.4+rr()*1.8)},sc); pl.position=hexWorld(c.q,c.r).add(new V3(0,-1+rr()*5,0)); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.material=nm; pl.isPickable=false; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl); } }
+  // centrepieces in the deepest rim pockets
+  const deep=R.filter(c=>c.d>=3).sort((a,b)=>b.d-a.d||rr()-.5), used=[], pool={belt:['asteroid','asteroid','station'],station:['station','hulk','asteroid'],planet:['moon','asteroid','station'],storm:['comet','asteroid','moon'],graveyard:['hulk','hulk','station']}[kind]||['asteroid','hulk','station'];
+  for(const c of deep){ if(used.length>=(mob?1:2)) break; const w=hexWorld(c.q,c.r); if(used.some(u=>Math.hypot(u.x-w.x,u.z-w.z)<HW*7)) continue;
+    let dmin=1e9; for(const b of boardHexes()){ const p=hexWorld(b.q,b.r); dmin=Math.min(dmin,Math.hypot(p.x-w.x,p.z-w.z)); } const Rr=Math.max(HS*1.2,dmin-HS*1.3); if(Rr<HS*1.6) continue;
+    const kd=pool[Math.floor(rr()*pool.length)]; try{ HOLE_BUILD[kd](new V3(w.x,-HS*.4,w.z),Math.min(Rr,HS*3.4),rr); used.push(w); }catch(e){ console.warn('rim piece',e); } }
+  G.rimPieces=used.length; }
 // the rift: a violet tear in space below the board where the chasm runs
 function buildRift(cells,rr){ const sc=G.scene, m=emMat('riftM',new C3(.85,.42,1.7),.6); m.opacityTexture=G.tex.soft; m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; G.env.push(m);
   for(const [q,r] of cells){ const c=hexWorld(q,r,0); for(let i=0;i<2;i++){ const pl=MB.CreatePlane('rift',{size:HS*(2.6+rr()*1.4)},sc); pl.position=new V3(c.x+(rr()-.5)*5,-4-rr()*10,c.z+(rr()-.5)*5); pl.rotation.x=Math.PI/2; pl.rotation.y=rr()*6.28; pl.material=m; pl.isPickable=false; G.glow.addExcludedMesh(pl); G.env.push(pl); } } }
@@ -431,7 +471,7 @@ function buildTerrainFeatures(rr){
   if(meta.deadstar) buildDeadStar(hexWorld(meta.deadstar.q,meta.deadstar.r,0));
   if(meta.riftCells) buildRift(meta.riftCells,rr);
   if(meta.holes) buildHoleFills(meta.holes,rr);
-  if(meta.wrecks) for(const h of meta.wrecks){ const facs=['hegemony','voidsworn','corsair','ithar','deathless','chorus'], f=facs[Math.floor(rr()*6)], cls=['Cruiser','Battleship','Carrier'][Math.floor(rr()*3)];
+  if(meta.wrecks) for(const h of meta.wrecks){ const facs=battleFacs(), f=facs[Math.floor(rr()*facs.length)], cls=['Cruiser','Battleship','Carrier'][Math.floor(rr()*3)];
     const mdl=buildShipModel({fac:f,cls,isSq:false,side:'enemy',tpl:'wreck'}); if(mdl.toSplit) mdl.toSplit(); const Mw=facMats(f); mdl.meshes.forEach(m=>{ m.material=(m.material===Mw.win||m.material===Mw.eng||m.material===Mw.tip||m.material===Mw.sail)?Mw.ember:Mw.wreck; m.isPickable=false; }); mdl.plumes.forEach(p=>p.dispose()); (mdl.flares||[]).forEach(p=>p.dispose());
     const c=hexWorld(h.q,h.r,1.5); mdl.root.position=c; mdl.root.scaling.setAll(Math.min(1,HS*1.7/Math.max(1,mdl.L))); /* a wreck fills its own hex, not its neighbours */ mdl.root.rotation.set((rr()-.5)*.5,rr()*6.28,(rr()-.5)*.7); mdl.fore.position.x+=mdl.L*.08; mdl.fore.rotation.set((rr()-.5)*.4,(rr()-.5)*.5,(rr()-.5)*.4); mdl.aft.rotation.z=(rr()-.5)*.3; G.env.push(mdl.root); (G._wreckMeshes=G._wreckMeshes||[]).push(...mdl.meshes, ...mdl.root.getChildMeshes(false).filter(m=>m.name.endsWith('emblem'))); }
   // wrecks never move: bake them into one mesh per material (dozens of draw calls become a handful)
