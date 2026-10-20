@@ -254,7 +254,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
 async function animMove(u,q,r,f){ return animPath(u,[{q,r,f}]); }
 async function animRotate(u,f){ return animPath(u,[{rot:true,f}]); }
 // engine wake: a ribbon that follows the stern and collapses once the ship stops
-function startTrail(v){ try{ if(G.quality==='low') return null; const P=FAC3D[v.fac]||FAC3D.hegemony, n=new BABYLON.TransformNode('wakeN',G.scene); n.parent=v.root; n.position.set(-v.L*.5,0,0);
+function startTrail(v){ try{ const P=FAC3D[v.fac]||FAC3D.hegemony, n=new BABYLON.TransformNode('wakeN',G.scene); n.parent=v.root; n.position.set(-v.L*.5,0,0);
     const tm=new BABYLON.TrailMesh('wake',n,G.scene,Math.max(.6,v.L*.07),48,true), m=emMat('wakeM',P.eng.scale(.9),.42); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; tm.material=m; tm.isPickable=false; try{ G.glow.addExcludedMesh(tm); }catch(e){}
     const tr={tm,n,m}; (G.trails=G.trails||new Set()).add(tr); return tr; }catch(e){ return null; } }
 function endTrail(tr){ const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/1.4; tr.m.alpha=.42*Math.max(0,1-k); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} if(G.trails) G.trails.delete(tr); } }); }
@@ -350,9 +350,6 @@ function fireSheet(){ if(G.tex.fire) return G.tex.fire; const N=8,S=128;
         const o=((oy+y)*S*N+ox+x)*4; d[o]=R; d[o+1]=Gc; d[o+2]=Bc; d[o+3]=m*(1-Math.pow(t,2.5))*255; } }
     g.putImageData(img,0,0); });
   return G.tex.fire; }
-function hexTex(){ if(G.tex.hex) return G.tex.hex; G.tex.hex=dynTex('hexT',512,512,(g,w)=>{ g.clearRect(0,0,w,w); g.strokeStyle='rgba(255,255,255,.9)'; g.lineWidth=3; const R=22, H=R*Math.sqrt(3);
-    for(let row=-1;row<w/H+1;row++) for(let col=-1;col<w/(R*1.5)+1;col++){ const cx=col*R*1.5, cy=row*H+(col%2?H/2:0); g.beginPath(); for(let i=0;i<=6;i++){ const a=i*Math.PI/3; g.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a)); } g.stroke(); } }); return G.tex.hex; }
-let LIGHTS=0;
 // v44.1: a fixed pool of flash lights, created once and kept at zero intensity, so blasts never change the scene's light count
 // (adding or removing a light marks every material dirty and stalls the frame); Medium has no flash lights at all
 function flashLights(){ const want=G.fxReduced?0:G.quality==='ultra'?3:G.quality==='high'?2:0; const pool=G.flPool=G.flPool||[];
