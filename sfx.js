@@ -1,10 +1,11 @@
 // ---------- sound (v53-F) ----------
-// All audio is synthesised in code; the page stays one self-contained file.
-// How it works: on the first user gesture every cue is rendered once, offline, into a few round-robin AudioBuffers
-// (OfflineAudioContext, 32 kHz). Playback is then just buffer voices: source -> gain -> stereo pan -> bus.
+// The page stays one self-contained file: recorded clips are base64 in sfx_data.js, everything else is synthesised here.
+// How it works: on the first user gesture the clips are decoded once, then every cue not fully covered by clips is rendered
+// once, offline, into a few round-robin AudioBuffers (OfflineAudioContext, 32 kHz). Each play() resolves a cue to layers
+// (clips from SFX.MAP and/or its synth take) under one voice: sources -> gain -> stereo pan -> bus.
 // Buses (weapons, impacts, explosions, ui, ambient) feed a short dark generated reverb send and a master chain of
 // gentle compressor -> brickwall limiter -> trim. No per-frame JS runs for audio.
-// A recorded sample can replace any cue later: SFX.setSample('gun_las', audioBuffer) or await SFX.loadSample('gun_las', url).
+// More clips: add keys to sfx_data.js and layers to SFX.MAP, or SFX.setSample(cue, audioBuffer) / await SFX.loadSample(cue, url).
 // Every legacy method keeps its signature; each takes an optional trailing source (world position, unit, view, {q,r} or {pan}).
 const SFX={ctx:null,master:null,bus:{},chain:null,bank:{},peaks:{},custom:{},ready:false,last:{},active:[],byCue:{},salvo:{},tailT:0,noise:null,vol:.8,SR:32000,_rendering:null,_amb:null,
   // ---- lifecycle ----
