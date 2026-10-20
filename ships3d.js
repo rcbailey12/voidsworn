@@ -12,7 +12,7 @@ const FAC3D={ // v46 faction identity: every colour below feeds hulls, windows, 
 const MOVE_FEEL={voidsworn:{ta:.42,td:.42,per:1.25,bank:1.8,over:.32,pitch:.08}, // v46.1: much stronger; see animPath
   hegemony:{ta:.12,td:.14,per:.75,bank:.15,linear:true,retro:true},corsair:{ta:.08,td:.3,per:.85,bank:1.3,jit:.38,roll:.22},
   chorus:{ta:.3,td:.3,per:1.1,bank:.6,sway:.5,cyc:1.5,squash:.16,str:3},ithar:{ta:.45,td:.45,per:1,bank:.5,arc:.75,bob:2.6,roll:.3},deathless:{ta:.2,td:.2,per:.6,bank:.1,phase:true}};
-const MATS={}, EMBLEMS={};
+const MATS={}, EMBLEMS={}, AI_MATS={};
 function emblemMat(fac){ if(EMBLEMS[fac]) return EMBLEMS[fac]; const P=FAC3D[fac]||FAC3D.hegemony;
   const t=dynTex('emb_'+fac,256,256,(g,w)=>{ g.clearRect(0,0,w,w); const c=w/2; g.lineCap='round'; g.lineJoin='round';
     const col={voidsworn:'#ff7a2a',hegemony:'#4c8ee8',corsair:'#d8382a',chorus:'#d6d24a',ithar:'#b2ffdc',deathless:'#3dff6a'}[fac]||'#ddd'; g.strokeStyle=col; g.fillStyle=col; g.lineWidth=9;
@@ -654,6 +654,19 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
     const fit=(m,isPlume)=>{ const q=m.position.subtract(o); q.y=cy+clamp(q.y-cy,-hy,hy); q.z=cz+clamp(q.z-cz,-hz,hz);
       if(isPlume){ m.refreshBoundingInfo(); const bx=m.getBoundingInfo().boundingBox.maximum.x*(m.scaling?m.scaling.x:1); q.x=minX+.03*L-bx; } else { q.x=minX-.01*L; try{ m.bakeTransformIntoVertices(BABYLON.Matrix.Scaling(.55,.55,.55)); }catch(e){} } m.position.copyFrom(q.add(o)); }; // smaller glows: the new hulls taper at the stern
     for(const m of p.plumes||[]) if(!m.isDisposed()) fit(m,true); for(const m of p.flares||[]) if(!m.isDisposed()) fit(m,false); }catch(e){ console.warn('AI hull engines',e); }
+  // v48: rows of lit ports along the hull sides and a faction-colour trim line along the spine, so the concept-art hulls don't read as flat silhouettes
+  try{ const P0=FAC3D[fac]||FAC3D.hegemony, N=vd.normals, rr=seeded(Math.round(L*97)+fac.length*13), want=Math.round(L*(G.mobile?3:5)), byHalf={fore:[],aft:[]};
+    const winM=AI_MATS['aiwin_'+fac]||(AI_MATS['aiwin_'+fac]=emMat('aiwin_'+fac,P0.win.scale(1.5))); const trimM=AI_MATS['aitrim_'+fac]||(AI_MATS['aitrim_'+fac]=emMat('aitrim_'+fac,P0.eng.scale(.9))); winM.backFaceCulling=false; trimM.backFaceCulling=false;
+    let ymax=-1e9, ymin=1e9; for(let i=1;i<P.length;i+=3){ ymax=Math.max(ymax,P[i]); ymin=Math.min(ymin,P[i]); }
+    const quad=(arr,cx,cy,cz,nx,ny,nz,w,h)=>{ let tx=-nz, tz=nx; const tl=Math.hypot(tx,tz)||1; tx/=tl; tz/=tl; const o=.012*L; cx+=nx*o; cy+=ny*o; cz+=nz*o; arr.push([cx-tx*w,cy-h,cz-tz*w],[cx+tx*w,cy-h,cz+tz*w],[cx+tx*w,cy+h,cz+tz*w],[cx-tx*w,cy+h,cz-tz*w]); };
+    for(let k=0,tries=0;k<want&&tries<want*30;tries++){ const t=Math.floor(rr()*(I.length/3))*3, a=I[t]; const nx=N[a*3],ny=N[a*3+1],nz=N[a*3+2]; if(Math.abs(ny)>.3) continue;
+      const cx=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3, cy=(P[I[t]*3+1]+P[I[t+1]*3+1]+P[I[t+2]*3+1])/3, cz=(P[I[t]*3+2]+P[I[t+1]*3+2]+P[I[t+2]*3+2])/3; const hf=(cy-ymin)/Math.max(1e-6,ymax-ymin); if(hf<.25||hf>.8) continue;
+      const half=cx>=split?'fore':'aft', run=1+Math.floor(rr()*4); for(let j=0;j<run;j++) quad(byHalf[half],cx+(j-run/2)*.03*L,cy,cz,nx,ny,nz,.006*L,.004*L); k++; }
+    const spine={fore:[],aft:[]}; for(let t=0;t<I.length;t+=3){ const a=I[t]; if(N[a*3+1]<.85) continue; const cx=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3, cy=(P[I[t]*3+1]+P[I[t+1]*3+1]+P[I[t+2]*3+1])/3, cz=(P[I[t]*3+2]+P[I[t+1]*3+2]+P[I[t+2]*3+2])/3;
+      if(Math.abs(cz)>.012*L||(cy-ymin)/Math.max(1e-6,ymax-ymin)<.55||rr()>.5) continue; const half=cx>=split?'fore':'aft', o=.01*L; spine[half].push([cx-.02*L,cy+o,cz-.004*L],[cx+.02*L,cy+o,cz-.004*L],[cx+.02*L,cy+o,cz+.004*L],[cx-.02*L,cy+o,cz+.004*L]); }
+    const mk=(pts,mat,half,name)=>{ if(!pts.length) return; const pos=[],ind=[]; for(let i=0;i<pts.length;i+=4){ const b=pos.length/3; for(let j=0;j<4;j++) pos.push(...pts[i+j]); ind.push(b,b+1,b+2,b,b+2,b+3); }
+      const m=new BABYLON.Mesh(name,G.scene), d2=new BABYLON.VertexData(); d2.positions=pos; d2.indices=ind; d2.applyToMesh(m); m.material=mat; m.parent=half==='fore'?fore:aftN; if(half==='aft'&&aftN!==fore) m.position.copyFrom(fore.position.subtract(aftN.position)); m.isPickable=false; m.refreshBoundingInfo(true); };
+    for(const h of ['fore','aft']){ mk(byHalf[h],winM,h,'hull_aiwin'); mk(spine[h],trimM,h,'hull_aitrim'); } }catch(e){ console.warn('AI hull lights',e); }
   // turret hard points sit on the new hull's top surface (a coarse height map from its vertices)
   try{ const T=p.hard&&p.hard.T; if(T&&T.length){ const NX=40,NZ=14; let zmax=0; for(let i=2;i<P.length;i+=3) zmax=Math.max(zmax,Math.abs(P[i])); const hm=new Float32Array(NX*NZ).fill(-1e9);
       for(let i=0;i<P.length;i+=3){ const ix=Math.floor((P[i]/L+.5)*NX), iz=Math.floor((P[i+2]/(2*zmax+1e-6)+.5)*NZ); if(ix>=0&&ix<NX&&iz>=0&&iz<NZ) hm[ix*NZ+iz]=Math.max(hm[ix*NZ+iz],P[i+1]); }
