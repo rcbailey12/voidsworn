@@ -30,3 +30,5 @@ Altitude combat rules and class heights; stances and momentum; undo after a move
 ## Parking lot
 
 (new ideas land here first)
+- Rulecheck flaked once (1 in 10 runs) after v53-D: find the unseeded check.
+- Sector 1 too easy: owner won 4/4 in 3 rounds each with 0 losses on v53.2 (balance pass after AI lands).

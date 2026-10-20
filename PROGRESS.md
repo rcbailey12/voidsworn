@@ -478,3 +478,9 @@ Live main: https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH | Preview: https://
 - Threat overlay about 2x faster. 5 new rulechecks. Balance matrix flat overall (player win 75.7% -> 77.1%).
 - Gates: rulecheck, fuzz 20 sandbox; full smoke on PC passed (14:50).
 - Owner feedback logged: lag much better on v53.1; nameplates sit under the wrong hex (root cause found, workstream E); sounds janky (workstream F started with Kenney + Sonniss clips).
+
+## v53.3 (Oct 20): ship status stays in its own hex
+- Floating name/health bars under ships removed by default (they were pushed about a hex down screen, onto the neighbour). Shields stay on the shield ring; damaged ships get a hull gauge on their own hex footprint; name and full bars only for the selected, hovered or inspected ship, above its own hull.
+- updateWorld takes canvas size from the engine (no per-frame layout read).
+- Gates: rulecheck (one flaky fail in 10 runs, logged), fuzz 20; PC smoke passed 15:14.
+- Owner playtest (v53.2): 4 wins / 0 losses, every battle over in round 3 (sector 1 too easy). Big call-out: close-up graphics look haphazard (floating window lights, stray procedural parts on mesh hulls, faceted asteroids, box squadrons). Workstream G started for ship close-ups; E told asteroids are top priority.
