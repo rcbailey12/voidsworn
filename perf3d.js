@@ -66,3 +66,42 @@ function profCopy(){ const csv=PERFCAP.csv; if(!csv) return; const manual=()=>mo
 // Settings: a Profiler row under the others
 { const _h=settingsHtml; settingsHtml=function(){ const h=_h(); const row=`<div class="row" style="margin:6px 0"><span style="flex:1">Profiler (perf CSV after each battle)</span><button data-act="c3opt" data-arg="prof">${PERFCAP.on?'On':'Off'}</button></div>`; const at=h.lastIndexOf('<div class="row" style="margin-top:14px">'); return at>0?h.slice(0,at)+row+h.slice(at):h+row; }; }
 { const _o=ACT.c3opt; ACT.c3opt=function(k){ if(k==='prof'){ META.opts=META.opts||{}; META.opts.prof=!PERFCAP.on; profSetOn(META.opts.prof); toast(PERFCAP.on?'Profiler on: a perf CSV is offered at the end of each battle':'Profiler off'); } return _o.apply(this,arguments); }; }
+
+// ---------- scene-graph diet (v53): less per-frame Babylon bookkeeping, same pixels ----------
+// glow layer: Babylon 8 keeps the exclusion list on the thin layer, so disposeAllViews' prune never reached it and the list grew every battle;
+// hasMesh() ran indexOf over that list for every submesh every frame. Now: a Set lookup, and the list is pruned when views are cleared.
+function glowThin(){ return G.glow&&(G.glow._thinEffectLayer||G.glow); }
+function glowFastHasMesh(){ const L=glowThin(); if(!L||L._fastHas) return; L._fastHas=true; let arr=null,len=-1,set=null;
+  L.hasMesh=function(m){ if(this.renderingGroupId!==-1&&m.renderingGroupId!==this.renderingGroupId) return false; const inc=this._includedOnlyMeshes; if(inc&&inc.length) return inc.indexOf(m.uniqueId)!==-1;
+    const ex=this._excludedMeshes; if(!ex||!ex.length) return true; if(ex!==arr||ex.length!==len){ arr=ex; len=ex.length; set=new Set(ex); } return !set.has(m.uniqueId); }; }
+function prunePassLists(){ try{ const ids=new Set(G.scene.meshes.map(m=>m.uniqueId)), L=glowThin();
+    if(L&&L._excludedMeshes&&L._excludedMeshes.length){ const keep=L._excludedMeshes.filter(id=>ids.has(id)); L._excludedMeshes.length=0; L._excludedMeshes.push(...keep); }
+    if(L&&L._includedOnlyMeshes&&L._includedOnlyMeshes.length){ const keep=L._includedOnlyMeshes.filter(id=>ids.has(id)); L._includedOnlyMeshes.length=0; L._includedOnlyMeshes.push(...keep); }
+    if(G.vls&&G.vls.excludedMeshes) G.vls.excludedMeshes=G.vls.excludedMeshes.filter(m=>m&&!m.isDisposed()); }catch(e){ console.warn('prune',e); } }
+{ const _d=disposeAllViews; disposeAllViews=function(){ const x=_d.apply(this,arguments); prunePassLists(); return x; }; }
+// rocks: the decorative field far below the board stops spinning (nobody can see it turn) and its world matrices freeze;
+// rocks on and around the board keep turning, a quarter of them each frame with four frames of rotation (same speed, a quarter of the matrix work)
+const DIET={spin:[],k:0,frozen:[],watch:null,obs:null};
+function dietRocks(){ const all=G.rocks||[]; DIET.spin=[]; for(const r of all){ if(!r||r.isDisposed()) continue; if(!r.parent&&r.position.y<-30&&r instanceof BABYLON.InstancedMesh){ r.freezeWorldMatrix(); r.doNotSyncBoundingInfo=true; } else { r._st=G.time; DIET.spin.push(r); } } G.rocks=[]; }
+// shadows: the cascaded shadow map re-renders when a ship or wreck moves or turns, when the camera moves (the cascades follow it), and every
+// fourth frame otherwise (hold-station bob and sway); a still board no longer redraws every caster three times a frame
+function shipsMoving(){ for(const h of G.hulks||[]) if(G.time-h.t0<25&&!h.burnedOut) return true; for(const v of G.views.values()){ if(v.arrive||v.launch||v.slide||v.jolt||v.state==='dying'||(v.u&&v.u.vis)) return true; const C=v.coast; if(C&&C.vc>.05) return true; const P=v.ph; if(P&&(Math.abs(P.vx)+Math.abs(P.vz)>.6||Math.abs(P.va)>.01||Math.abs(P.vr)>.01)) return true; } return false; }
+function dietShadows(){ const sm=G.shadow&&G.sun&&G.sun.shadowEnabled&&G.shadow.getShadowMap&&G.shadow.getShadowMap(); if(!sm) return; const R=BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+  if(sm.refreshRate!==R){ sm.refreshRate=R; } const c=G.cam, t=c.target, key=c.alpha.toFixed(4)+','+c.beta.toFixed(4)+','+c.radius.toFixed(2)+','+t.x.toFixed(2)+','+t.z.toFixed(2)+','+(G.tacScale||1).toFixed(3);
+  const camMoved=key!==DIET.camKey; DIET.camKey=key; DIET.sf=(DIET.sf||0)+1; if(camMoved||DIET.sf%4===0||shipsMoving()) sm.resetRefreshCounter(); }
+function dietTick(){ try{ dietShadows(); }catch(e){} const S=DIET.spin, n=S.length; if(n){ const k=DIET.k++&3; for(let i=k;i<n;i+=4){ const r=S[i]; if(r.isDisposed()) continue; const d=G.time-r._st; r._st=G.time; r.rotation.x+=r.spin.x*d; r.rotation.y+=r.spin.y*d; r.rotation.z+=r.spin.z*d; } }
+  // static battlefield props: after the arrival settles, anything in the environment that has not moved freezes its world matrix; a slow sweep
+  // unfreezes any frozen prop whose transform (or a parent's) is changed later, so nothing that moves can get stuck
+  const W=DIET.watch; if(W){ W.f++; if(W.f===24) W.a=dietSnap(); else if(W.f===60){ dietFreeze(W.a,dietSnap()); DIET.watch=null; } }
+  const F=DIET.frozen; if(F.length){ const step=Math.max(1,Math.ceil(F.length/30)); for(let j=0;j<step;j++){ DIET.fi=((DIET.fi||0)+1)%F.length; const e=F[DIET.fi]; if(!e) continue; if(e.m.isDisposed()){ F.splice(DIET.fi,1); continue; } if(dietLocalKey(e.m)!==e.key){ e.m.unfreezeWorldMatrix(); e.m.doNotSyncBoundingInfo=false; F.splice(DIET.fi,1); } } } }
+function dietLocalKey(m){ let s='', n=m; for(let d=0;n&&d<6;d++,n=n.parent){ const p=n.position, r=n.rotationQuaternion||n.rotation, c=n.scaling; s+=(p?p.x+','+p.y+','+p.z:'')+'|'+(r?r.x+','+r.y+','+r.z+','+(r.w||0):'')+'|'+(c?c.x+','+c.y+','+c.z:'')+'|'+(n.billboardMode||0)+';'; } return s; }
+function dietEnvMeshes(){ const out=new Set(); for(const x of G.env||[]){ if(!x||!x.getClassName) continue; if(x instanceof BABYLON.AbstractMesh) out.add(x); if(x.getChildMeshes) for(const c of x.getChildMeshes(false)) out.add(c); } return [...out]; }
+function dietSnap(){ const m=new Map(); for(const x of dietEnvMeshes()){ if(x.isDisposed()||x.isWorldMatrixFrozen) continue; m.set(x,x.getWorldMatrix().m.slice()); } return m; }
+function dietFreeze(a,b){ if(!a) return; const spin=new Set(DIET.spin); let n=0;
+  for(const [x,A] of a){ const B1=b.get(x); if(!B1||x.isDisposed()||spin.has(x)||x.infiniteDistance||x.skeleton) continue; let bb=false; for(let p=x;p;p=p.parent) if(p.billboardMode){ bb=true; break; } if(bb) continue;
+    let same=true; for(let i=0;i<16;i++) if(Math.abs(A[i]-B1[i])>1e-7){ same=false; break; } if(!same) continue;
+    x.computeWorldMatrix(true); x.freezeWorldMatrix(); x.doNotSyncBoundingInfo=true; DIET.frozen.push({m:x,key:dietLocalKey(x)}); n++; }
+  DIET.lastFrozen=n; }
+function dietEnv(){ try{ glowFastHasMesh(); dietRocks(); DIET.frozen=DIET.frozen.filter(e=>!e.m.isDisposed()); DIET.watch={f:0,a:null};
+    if(!DIET.obs&&G.scene) DIET.obs=G.scene.onBeforeRenderObservable.add(()=>{ try{ dietTick(); }catch(e){} }); }catch(e){ console.warn('diet',e); } }
+{ const _b=buildBattleEnv; buildBattleEnv=function(){ const x=_b.apply(this,arguments); dietEnv(); return x; }; }

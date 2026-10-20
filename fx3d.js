@@ -87,8 +87,8 @@ function updateWorld(dt){
   if(!B) return;
   const t=G.time, cw=G.engine.getRenderingCanvas().clientWidth, ch=G.engine.getRenderingCanvas().clientHeight;
   const tm=G.scene.getTransformMatrix(), vp=G.cam.viewport.toGlobal(cw,ch);
-  if(MATS.chorus){ const k=Math.sin(G.time*2.2); MATS.chorus.win.emissiveColor=MATS.chorus.P.win.scale(.8+.35*k); MATS.chorus.flesh.emissiveColor=MATS.chorus.P.win.scale(.32+.22*k); }
-  if(MATS.deathless) MATS.deathless.win.emissiveColor=MATS.deathless.P.win.scale(.72+.35*Math.sin(G.time*1.3));
+  if(MATS.chorus){ const k=Math.sin(G.time*2.2); MATS.chorus.P.win.scaleToRef(.8+.35*k,MATS.chorus.win.emissiveColor); MATS.chorus.P.win.scaleToRef(.32+.22*k,MATS.chorus.flesh.emissiveColor); } // v53: written in place; assigning a new colour went through the material setter and marked every submesh in the scene dirty each frame
+  if(MATS.deathless) MATS.deathless.P.win.scaleToRef(.72+.35*Math.sin(G.time*1.3),MATS.deathless.win.emissiveColor);
   if(MATS.ithar) MATS.ithar.sail.alpha=.26+.07*Math.sin(G.time*1.7);
   if(!B._warm&&G.views.size&&typeof warmFx==='function'){ B._warm=1; const b0=B; setTimeout(()=>{ if(B===b0&&!B.over) warmFx(); },50); } /* v45: never warms into a different battle */ // v44.1: build the explosion shaders while the fleets arrive
   for(const u of B.units){
@@ -131,7 +131,7 @@ function updateWorld(dt){
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx){ v.stackFx=v.model.stacks.map(sp=>{ const n=new BABYLON.TransformNode('stk',G.scene); n.parent=v.root; n.position=sp.clone(); const ps=new BABYLON.ParticleSystem('stack',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.direction1=new V3(-.2,1,-.2); ps.direction2=new V3(.2,1.5,.2); ps.color1=new C4(.32,.28,.25,.5); ps.color2=new C4(.2,.18,.17,.4); ps.colorDead=new C4(.1,.1,.1,0); ps.minSize=.3; ps.maxSize=.7; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,3.2); ps.minLifeTime=1.5; ps.maxLifeTime=3; ps.emitRate=10; ps.minEmitPower=.6; ps.maxEmitPower=1.2; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); return ps; }); } }
     if(v.crafts){ for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
-    v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.07+.3*f:0)+s.pulse*.9; s.m.scaling.setAll(1+s.pulse*.08); });
+    v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.07+.3*f:0)+s.pulse*.9; const sk=1+s.pulse*.08; if(s.m.scaling.x!==sk) s.m.scaling.setAll(sk); }); /* v53: an unchanged scale is not rewritten (a write forces a world matrix rebuild) */
     // damage fires
     if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); if(typeof damageSparks==='function') damageSparks(v,hr,dt); }
     // nameplate
