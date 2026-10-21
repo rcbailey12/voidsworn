@@ -11,7 +11,27 @@ Gate before every publish: `node sim3d.js rulecheck`, `node sim3d.js fuzz 20`, `
 - [ ] C. Loading and phone performance: parallel awaited hull fetch before the title with progress and a log line naming the live hull path; skip fragmentHull at Medium; pool fxText; full frame rate while animating; shared shield ring geometry; a ?prof=1 profiler capture that exports CSV.
 - [x] D. AI that reads: per-weapon target re-pick; shield strippers first; sticky focus; threat ignores fired guns + death cliff; objective terms with round clock; abilities after moving; squadron focus; escort spacing; enemy focus marker on the board (tap, not hover).
 - [ ] E. World: asteroid rebuild (tall faceted blockers on a marked hex, sparse dressing off playable hexes, recipe variety, sharper shapes, v51 filler pulled back); Ithar material fix; one Ithar sail card test.
-- [ ] F. Sound: rebuilt audio graph (buses, reverb, pan, voice limits, volley aggregation) with recorded clips from Kenney (CC0) and the Sonniss GDC 2026 bundle embedded as Opus (~470 KB), synth fallback, hidden sound test.
+- [x] F. Sound: rebuilt audio graph (buses, reverb, pan, voice limits, volley aggregation) with recorded clips from Kenney (CC0) and the Sonniss GDC 2026 bundle embedded as Opus (~470 KB), synth fallback, hidden sound test.
+
+## v53.5+: cleanup and fidelity (owner decisions Oct 20)
+Full audit: AUDIT_v53H.md. Owner chose: full per-ship detail bake; desktop loads the sharp set, phone a lighter set; after ships do explosions and weapons; GPU jobs on the PC may run any time it is on.
+- [ ] G. Ship close-ups: strays and floating windows gone, shader ports, new meshes (V18 carrier, C19 barge, S1/S2/B23 craft, O1 station, O2 transport, O3 beacon). Follow-ups: squadron end-card soft-lock, stray orange orb, no windows on Chorus, thinner Deathless circuits, hex fill fades on zoom-in.
+- [ ] H. Cleanup now: dead title animation/preview demo, hexTex, ripple, "low" tier branches, 30 unused hull files.
+- [ ] Cleanup after G: points-only ship build (skip the thrown-away procedural hull, ~3.3 s and 2 M vertices), drop the concept-hull toggle, decals/fires on the real hull, wrecks from concept meshes, then delete the procedural builders.
+- [ ] Cleanup after C: pool per-call effect meshes/materials, drop old effect fallbacks, refresh the reflection probe per battle.
+- [ ] Per-hull bake on the PC (Blender, GPU): UV unwrap each game mesh, bake normal + AO + curvature + window mask from the high-poly Hunyuan output; albedo from faction plating (Hunyuan Paint if it fits in VRAM). Game: hull JSON carries UVs, per-hull texture sidecars (desktop 2K, phone 1K), hull material uses them; replaces the generated plating textures (75% of texture memory).
+- [ ] Effects, doubled down (owner: "extremely high quality", "visceral and punchy", plasma must feel nothing like lasers). Starts as soon as C (perf, touches effect pooling) merges. Every weapon family gets its own look, timing and impact:
+  - Laser/las: instant coherent beam, hard white core with faction-colour glow, sharp muzzle flash, burn line and spark spray on impact.
+  - Plasma: slow fat bolts with a churning molten core and wobbling corona, heat shimmer, splashing impact that leaves glowing slag, drips and smoke; low thump.
+  - Autocannon/tracer: rapid stream of small tracers, brass-bright flicker, peppered hull pings.
+  - Rail: near-instant streak with a shock ring at the muzzle, delayed punch-through, debris out the far side.
+  - Lance/ion: thick charged beam with build-up, crackling arcs; ion leaves a blue static wash on the shield facing.
+  - Needle (Ithar): fine glassy shards, prismatic glints. Spine/bio (Chorus): spat organic projectiles, wet bursts.
+  - Torpedoes: textured bodies, exhaust trails that curve, big detonation with flipbook fire and shockwave.
+  - Punch for everything: hit-stop on big hits, scaled camera kick, flash, hull sparks/debris, shield ripples at the struck point, sound synced (sfx.js).
+  - Explosions: Blender-rendered flipbooks (fireball, debris, smoke) on the PC GPU, broken hulls with closed cut faces, staged capital deaths.
+- [ ] Blender world pass (owner approved): asteroid libraries per rock type (20-30 sculpted rocks each, baked maps), wrecks and death pieces fractured from the concept hulls with solid interiors, volumetric nebula/backdrop cloud renders, accretion-disc texture for black holes. Stations/beacon/transport already in the hull bake.
+- [ ] Live-shader pass for what Blender can't do: black-hole gravitational lensing (screen-space distortion of the scene behind it) with an animated accretion disc; beams and shields with flowing energy textures (generated once, animated by flowmaps); shader-drawn anti-aliased hex grid; engine plumes as volumetric cones that read from the side; GPU particles for sparks, embers and debris.
 
 ## v54: factions and rewards (parallel with v55)
 
@@ -30,3 +50,5 @@ Altitude combat rules and class heights; stances and momentum; undo after a move
 ## Parking lot
 
 (new ideas land here first)
+- Rulecheck flaked once (1 in 10 runs) after v53-D: find the unseeded check.
+- Sector 1 too easy: owner won 4/4 in 3 rounds each with 0 losses on v53.2 (balance pass after AI lands).
