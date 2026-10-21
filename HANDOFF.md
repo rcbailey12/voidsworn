@@ -3,14 +3,14 @@
 ## What and where
 - Babylon.js 8.20 single-HTML hex fleet tactics roguelite. Ryan plays on a Pixel 10 XL and a PC (RTX 5080).
 - Live game (one link only): https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH (publish `voidsworn-3d.html` from `python3 build.py publish`; hull sidecars `hulls/`, `hulls_hi/` are uploaded as artifact files and kept on republish).
-- Repo: github.com/rcbailey12/voidsworn (private). `master` is pushed to `main`. Workstream branches (both pushed to GitHub): `v53-I` (effects, master merged in, under PC review), `v53-E` (rock library + Ithar sail; an agent was mid-work when this was written, so check its last commit). `v53-C` and `v53-G` are merged.
+- Repo: github.com/rcbailey12/voidsworn (private). `master` is pushed to `main`. Workstream branches (both pushed to GitHub): `v53-I` (effects, merged and published as v53.6), `v53-E` (rock library + Ithar sail; an agent was mid-work when this was written, so check its last commit). `v53-C` and `v53-G` are merged.
 - Plan and queue: `NEXT.md`. History: `PROGRESS.md`. Code audit and asset grades: `AUDIT_v53H.md`. Reference checklists: `docs/skills/`.
 - Master review doc (Claude Docs): https://claude.ai/code/artifact/aef64607-980c-49ce-977b-ff7b8a32868a
 
 ## Current state
 - Live: **v53.5** (Oct 21, artifact Version 62): concept meshes for the carrier (V18_51), Corsair boss (C19_51), squadron craft (S1_51, S2_23, B23_51), station (O1_37), transport (O2_37) and beacon (O3_11); baked normal + AO/curvature maps on all 36 hulls (desktop `hulls_hi/`, phone `hulls/`); leftover-code cleanup; asteroid rebuild; perf work. Hull sidecars are uploaded artifact files (about 110 MB, published in 3 batches because one publish caps at 64 MB). `rocks/index.json` ships as a `{}` placeholder.
 - Known issues: a small orange glow floats above some hulls (cathedral, h_vanguard, i_song); the Ithar sail is a flat grey sheet; Deathless lines are heavy; a few red/green bake errors in the normal maps; desktop CPU frame time went up (10 to 15 ms) while the phone got faster.
-- `v53-I` effects pass (blue-white plasma bolt, thicker lasers, rail with green wake + accelerator rings, visible tracers, flat shock rings, game-feel tiers, reduce flash/shake toggles) is merged with master and under PC fxshot review.
+- Live since Version 63: **v53.6** effects pass (blue plasma bolt, thicker lasers, rail with green wake + accelerator rings, visible tracers, flat shock rings, game-feel tiers, reduce flash/shake toggles), merged to master.
 - `v53-E`: 32-rock library (carbon, stone, crystal, ice) baked, being wired; Ithar sail material.
 - Explosion sims (Mantaflow, `tools/blender/fxsim.py`) run on the PC but look blobby at 64 res; not usable yet.
 
@@ -46,7 +46,7 @@
 
 ## Next 3 tasks
 1. Ryan's Pixel feedback above. Ask him 3-5 scope questions first (his saved preference), mainly about how far to push close-up detail. Fix the station first: it's a bug, not a quality question. Pass: Pixel close-ups of the station, the flagship and a hegemony hull look intact and crisp, and battle load has no visible hitch.
-2. Finish `v53-I` effects (pushed to GitHub; round 3 fixes in 6d6e4cb, master merged). Review the PC fxshot sheets (`python3 build.py && python3 fxshot.py`, board + close views), run full smoke, merge, publish v53.6. Laser, tracer and capital death were approved in round 2; plasma and rail were reworked in round 3. Pass: Ryan says plasma, laser, rail and tracer each feel distinct and punchy on the Pixel.
+2. Get Ryan's Pixel verdict on v53.6 effects (live, artifact Version 63). Plasma, laser, rail and tracer were approved on PC fxshot round 3; open items are plasma sprite counts (about 440-600 alive per volley on desktop) and swapping in Blender-rendered flipbooks via `fxBookLoad(url, cols, rows)`.
 3. Merge `v53-E` (rock library + Ithar sail). Pass: PC worldshot/closeshot show cracked, layered rocks and a glassy sail; draws stay under ~500 on desktop; upload `rocks/` + `rocks_hi/` as artifact files. Then hunt the floating orange glow (closeshot `PROBE=1 EXP=1`) and the desktop CPU regression.
 
 ## Gotchas
