@@ -308,7 +308,7 @@ body #app .facpick.on{background:var(--gilt)!important;color:#1a1206!important;b
 <div class="loading" id="loading">Assembling the fleet&hellip;</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/8.20.0/babylon.js"></script>
 <script>
-const BUILD_ID='20261021-1031-8772b2f';
+const BUILD_ID='20261021-1146-9e07bd8';
 // ======================= DATA =======================
 const W = {
   autocannon:{n:'Autocannon',k:'battery',shots:3,dmg:5,r:4,opt:2,acc:80,fall:8,crit:5},
@@ -2455,7 +2455,7 @@ function gridFocus(c,R){ const g=G.grid; if(!g||g.isDisposed()||!G.gridHexes) re
   const cols=new Float32Array(G.gridHexes.length*28); let o=0;
   for(const h of G.gridHexes){ let a=.13; if(c){ const d=hdist(h,c); a=d<=R?.5-.34*(d/R):Math.max(.1,.16-.02*(d-R)); } /* v53: the grid never fades out (was .075 / .06) */ for(let i=0;i<7;i++){ cols[o++]=.5; cols[o++]=.82; cols[o++]=1; cols[o++]=a; } }
   try{ g.updateVerticesData(BABYLON.VertexBuffer.ColorKind,cols); }catch(e){ console.warn(e); } }
-function buildBattleEnv(){
+function buildBattleEnv(){ G.rockPending=false;
   clearEnv(); const texBefore=new Set(G.scene.textures); applyBiome(B&&B.cfg&&B.cfg.fac);
   const sc=G.scene;
   // holographic tactical layer: a faint cyan grid that lights up around the selected ship, and a glowing frame on the board edge
@@ -2502,8 +2502,9 @@ function buildBattleEnv(){
   // well above the hulls, or a cluster of mediums, or a boulder in a rubble drift) cut from icospheres by flat planes; the recipe is rolled per hex
   // from B.seed. Dressing (rim fill, the deep field, the belt) stays soft, low, sparse and darker, and never sits on a playable hex.
   const blockMat=rockMatLike(rockMat,'blockRockM'); blockMat.diffuseColor=rockMat.diffuseColor.scale(.6); blockMat.specularColor=rockMat.specularColor.scale(.25); blockMat.specularPower=6; blockMat.emissiveColor=rockMat.emissiveColor.scale(.6); blockMat.bumpTexture=rockMat.bumpTexture; G.env.push(blockMat); /* the clone carries the RockFx plugin, like rimRockM */
-  try{ loadRockLib(); }catch(e){} const fb=rockLibBases(B.biome&&B.biome.rock,RK)||[0,1,2,3,4,5,6].map(k=>mkFacet(k,blockMat)), fbuf=fb.map(()=>[]); /* a sculpted library, when present, replaces the procedural shapes */
-  const fput=(k,x,y,z,s,ax,az,yaw,tx,tz)=>fbuf[k].push(BABYLON.Matrix.Compose(new V3(s*ax,s,s*az),BABYLON.Quaternion.RotationYawPitchRoll(yaw,tx,tz),new V3(x,y,z)));
+  const libSet=ROCK_SET[B.biome&&B.biome.rock]||'RST', libReady=!!ROCK_LIB.sets[libSet]; let fb=null; if(libReady) try{ fb=rockLibMeshes(ROCK_LIB.sets[libSet]); }catch(e){ console.warn('rock library meshes',e); }
+  if(!fb) fb=[0,1,2,3,4,5,6].map(k=>mkFacet(k,blockMat)); const fbuf=fb.map(()=>[]); /* sculpted rocks when this kind is loaded, procedural until then */
+  const fput=(k,x,y,z,s,ax,az,yaw,tx,tz)=>fbuf[k].push(BABYLON.Matrix.Compose(new V3(s*ax*(.86+rr()*.28),s,s*az*(.86+rr()*.28)),BABYLON.Quaternion.RotationYawPitchRoll(yaw,tx,tz),new V3(x,y,z)));
   const tilt=()=>(rr()-.5)*.44, around=(c,rad,f)=>{ const a=rr()*6.28, d=rad*(.6+rr()*.4); f(c.x+Math.cos(a)*d,c.z+Math.sin(a)*d); };
   const rockHex=(c,q,r)=>{ const pick=rr(), j=()=>(rr()-.5)*3;
     if(pick<.36){ fput(rr()<.5?0:1,c.x+j(),2.1,c.z+j(),6.6+rr()*1.1,.9+rr()*.3,.9+rr()*.3,rr()*6.28,tilt(),tilt()); /* hero pillar: top ~7.5, about 1.5x a hull's height */
@@ -2521,6 +2522,9 @@ function buildBattleEnv(){
         const nm=addMat('nebM',rr()<.5?new C3(.42,.25,.62):new C3(.25,.35,.7),.34,G.tex.neb); pl.material=nm; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl,nm); } } }
   // distant decorative rocks below and around the table for depth
   fb.forEach((m,k)=>{ if(!fbuf[k].length) return; m.isVisible=true; m.thinInstanceAdd(fbuf[k]); m.thinInstanceRefreshBoundingInfo(false); }); /* one draw per shape for every blocker on the board */
+  G.rockPending=!libReady; /* v53.8: the battle cover waits for the sculpted set too */
+  if(!libReady){ const b0=B; loadRockSet(libSet).then(list=>{ if(B!==b0||!fb||!fb[0]||fb[0].isDisposed()){ G.rockPending=false; return; } const lib=rockLibMeshes(list), tex=[]; lib.forEach(m=>m.material.getActiveTextures().forEach(t=>{ if(!tex.includes(t)) tex.push(t); }));
+      BABYLON.Texture.WhenAllReady(tex,()=>{ if(B!==b0||lib[0].isDisposed()){ G.rockPending=false; return; } lib.forEach((m,k)=>{ if(!fbuf[k].length) return; m.isVisible=true; m.thinInstanceAdd(fbuf[k]); m.thinInstanceRefreshBoundingInfo(false); fb[k].setEnabled(false); }); G.rockPending=false; }); }).catch(()=>{ G.rockPending=false; }); } // swap in place once the sculpted set and its maps have arrived
   { const dm=rockMatLike(rockMat,'dressRockM'); dm.diffuseColor=rockMat.diffuseColor.scale(.55); dm.specularColor=C3.Black(); dm.emissiveColor=rockMat.emissiveColor.scale(.4); G.env.push(dm); const buf=bases.map(()=>[]); /* v53: the deep field is thin instances (was 70 spinning instances) */
     for(let i=0;i<70;i++){ const a=rr()*Math.PI*2, d=G.bx*.9+rr()*380, s=2+rr()*12; buf[Math.floor(rr()*bases.length)].push(BABYLON.Matrix.Compose(new V3(s,s,s),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(Math.cos(a)*d*1.15,-50-rr()*200,Math.sin(a)*d*.8))); }
     bases.forEach((m,k)=>{ if(!buf[k].length) return; m.material=dm; m.isVisible=true; m.thinInstanceAdd(buf[k]); m.thinInstanceRefreshBoundingInfo(false); m.receiveShadows=false; try{ if(G.shadow) G.shadow.removeShadowCaster(m); }catch(e){} }); }
@@ -2590,6 +2594,35 @@ class CamCtl{
     if(typeof shakeOffset==='function'){ const s=shakeOffset(dt,c); if(s){ c.target.addInPlace(s.o); c.alpha+=s.a; c.beta+=s.b; this._sh=s; } } /* v53-I: trauma shake (wfx3d) */
   }
 }
+// v53.8 battle load (Ryan: "lag on loading into a battle"; his pick: a short loading moment is fine, no hitch once the battle shows).
+// Every battle start goes through the establishing shot, so that is where the work moves: a dark "Entering battle" cover goes up, the ships
+// are built (first frame), every hull's baked maps load and upload, and the shaders compile with those maps in place; then the cover lifts
+// and the establishing shot plays. Before v53.8 the maps arrived a second or two into the battle and each one recompiled its hull material.
+// A 4 s cap means a slow network can never hold the battle (late maps then swap in as before).
+const _establish=CamCtl.prototype.establish;
+CamCtl.prototype.establish=function(){ const self=this; if(!(typeof B!=='undefined'&&B&&!B.showcase)||G.noWarm) return _establish.call(self);
+  const tok=G.warmTok={}; battleVeil(true); try{ _establish.call(self); }catch(e){}
+  battleWarm().catch(e=>console.warn('battle warm',e)).then(r=>{ if(G.warmTok!==tok) return; G.lastWarm=r; try{ _establish.call(self); }catch(e){} battleVeil(false); try{ if(typeof FRAMES!=='undefined') FRAMES.reset(); }catch(e){} }); };
+function battleVeil(on){ let el=document.getElementById('bveil');
+  if(on){ if(!el){ el=document.createElement('div'); el.id='bveil'; el.textContent='Entering battle…'; el.style.cssText='position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:#04060c;color:var(--bone2,#b3aa95);font-size:18px;font-family:var(--ui,sans-serif);letter-spacing:.04em;transition:opacity .35s;pointer-events:auto'; document.body.appendChild(el); } el.style.opacity='1'; el.style.pointerEvents='auto'; clearTimeout(G._veilT); G._veilT=setTimeout(()=>battleVeil(false),8000); } /* never traps input: lifts after 8 s regardless */
+  else if(el){ clearTimeout(G._veilT); el.style.opacity='0'; el.style.pointerEvents='none'; setTimeout(()=>{ try{ if(el.style.opacity==='0') el.remove(); }catch(e){} },400); } }
+const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
+async function battleWarm(){ const t0=performance.now(), cap=t0+4000, out={ms:0,maps:0,late:0,build:0,compile:0};
+  await nextFrame(); await nextFrame(); out.build=Math.round(performance.now()-t0); // updateWorld builds every ship view on the first frame
+  const live=new Set(), add=mt=>{ if(!mt) return; if(mt.subMaterials) mt.subMaterials.forEach(add); else if(mt._isAiHull) live.add(mt); }; for(const m of G.scene.meshes) if(m.isEnabled()) add(m.material); // merged live ships carry multi-materials
+  const ents=Object.values(AI_TEX).filter(e=>!e.failed&&(live.has(e.m)||e.loading)); out.maps=ents.length; for(const e of ents) if(live.has(e.m)) aiTexTouch(e); // every map still on its way counts too
+  while(performance.now()<cap&&ents.some(e=>e.loading||!e.n||!e.t||!e.n.isReady()||!e.t.isReady())){ if(ents.every(e=>e.failed)) break; await new Promise(r=>setTimeout(r,40)); }
+  while(performance.now()<cap&&G.rockPending) await new Promise(r=>setTimeout(r,40)); out.rocks=!G.rockPending;
+  out.late=ents.filter(e=>!(e.n&&e.t&&e.n.isReady()&&e.t.isReady())).length;
+  const t1=performance.now(); { const ms=[]; for(const v of G.views.values()) if(v&&v.root&&v.root.getChildMeshes) for(const m of v.root.getChildMeshes(false)) if(m.isEnabled()&&m.material) ms.push(m); // the ships' own shaders, compiled with their maps in place
+    while(performance.now()<cap){ let ok=true; for(const m of ms){ try{ if(!m.isDisposed()&&!m.isReady(true)){ ok=false; break; } }catch(e){} } if(ok) break; await new Promise(r=>setTimeout(r,40)); } out.notReady=ms.filter(m=>{ try{ return !m.isDisposed()&&!m.isReady(true); }catch(e){ return false; } }).length; } out.compile=Math.round(performance.now()-t1);
+  await nextFrame(); await nextFrame(); out.ms=Math.round(performance.now()-t0); out.end=performance.now(); try{ if(typeof tel==='function') tel('battle_warm',out); }catch(e){} return out; }
+// on the sector map: start fetching the baked maps of your fleet and the sector's enemy roster (browser cache), so the battle cover is short
+function hullMapPrefetch(){ try{ if(!aiHullsOn()||G.noBake||typeof RUN==='undefined'||!RUN||!RUN.fleet) return; const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/', want=new Set(), seen=G._pref||(G._pref=new Set());
+    const add=tpl=>{ const h=HULLS[tpl]; if(!h||h.sq) return; const k=(h.fac||'voidsworn')+'|'+h.cls, d=AI_HULL_DATA[k]; if(d&&d.tex&&AI_HULLS[k]) want.add(AI_HULLS[k]); };
+    for(const s of RUN.fleet) add(s.tpl); const ef=RUN.foes&&RUN.foes[(RUN.sector||1)-1]; if(ef&&FACTIONS[ef]) for(const t of FACTIONS[ef].roster.concat([FACTIONS[ef].boss])) add(t);
+    try{ for(const s of new Set(Object.values(ROCK_SET))) setTimeout(()=>loadRockSet(s).catch(()=>{}),900); }catch(e){} // the sculpted asteroid sets decode once per session
+    let i=0; for(const c of want){ const cd=dir==='hulls/'&&AI_HI_ON_PHONE.has(c)?'hulls_hi/':dir; for(const s of ['_n.webp','_m.webp']){ const url=cd+c+s; if(seen.has(url)) continue; seen.add(url); setTimeout(()=>{ try{ fetch(url,{priority:'low'}).catch(()=>{}); }catch(e){} },400+120*(i++)); } } }catch(e){ console.warn('prefetch',e); } }
 
 // ---------- battlefield features: debris, derelict station, planet edge, ion storms, graveyard wrecks ----------
 // a collapsed star fills the hole in the middle of a 'dead star' board: a black core, a hot photon ring and a slow accretion disc
@@ -2608,28 +2641,62 @@ function lumpyRock(name,rr,sub){ const m=MB.CreateIcoSphere(name,{radius:1,subdi
     for(const [cx,cy,cz,cr,cd] of craters){ const d=Math.hypot(x-cx,y-cy,z-cz); if(d<cr) n-=cd*(1-d/cr)*(1-d/cr)*2; else if(d<cr*1.25) n+=cd*.25; }
     p[i]=x*n; p[i+1]=y*n; p[i+2]=z*n; }
   m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.convertToFlatShadedMesh(); m.isPickable=false; return m; }
-// v53 rock library hook (stopgap until it ships): sculpted rocks per asteroid kind replace the procedural board rocks when present.
-// Layout, served next to hulls/: rocks/index.json = {"stone":["stone_01",...],"carbon":[...],"crystal":[...],"ice":[...]}; rocks/<id>.json uses the
-// hull JSON format (p, q, i, i32, ext, optional a = baked AO) plus u = UVs as base64 Int16 (value/32767*uext, uext defaults to [1,1]);
-// with "maps":true, rocks/<id>_n.webp (tangent-space normal) and rocks/<id>_m.webp (R ambient occlusion, G roughness, B metalness) are loaded.
-// Loaded once, lazily, from the first battle (no boot cost); that battle stays procedural and later ones use the library. Kinds without a set
-// borrow one through ROCK_LIB_ALIAS. Each mesh is sorted into a role (tall: pillar/slab/shard; low: chunk) by its bounding box.
-const ROCK_LIB={tried:false,sets:{}}, ROCK_LIB_ALIAS={iron:'carbon'};
-async function loadRockLib(){ if(ROCK_LIB.tried) return; ROCK_LIB.tried=true; if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'||typeof decodeAIHull!=='function') return;
-  try{ const r=await fetch('rocks/index.json'); if(!r.ok) return; const idx=await r.json();
-    for(const [kind,ids] of Object.entries(idx)){ const list=[]; for(const id of ids||[]){ try{ const q=await fetch('rocks/'+id+'.json'); if(!q.ok) continue; const j=await q.json(), d=decodeAIHull(j);
-          if(j.u){ const bin=atob(j.u), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); const qu=new Int16Array(u8.buffer), ue=j.uext||[1,1]; d.uv=new Float32Array(qu.length); for(let i=0;i<qu.length;i++) d.uv[i]=qu[i]/32767*ue[i%2]; }
-          d.id=id; d.maps=!!j.maps; list.push(d); }catch(e){ console.warn('rock mesh',id,e); } }
-      if(list.length) ROCK_LIB.sets[kind]=list; }
-    console.debug('[rocks] library: '+Object.entries(ROCK_LIB.sets).map(([k,l])=>k+' '+l.length).join(', ')); }catch(e){ console.warn('rock library',e); } }
-function rockLibBases(kind,RK){ const set=ROCK_LIB.sets[kind]||ROCK_LIB.sets[ROCK_LIB_ALIAS[kind]]; if(!set||!set.length) return null; const sc=G.scene, tall=[], low=[];
-  for(const d of set){ let x=0,y=0,z=0; for(let i=0;i<d.pos.length;i+=3){ x=Math.max(x,Math.abs(d.pos[i])); y=Math.max(y,Math.abs(d.pos[i+1])); z=Math.max(z,Math.abs(d.pos[i+2])); } (y>1.4*Math.max(x,z)?tall:low).push({d,ext:[x,y,z]}); }
-  const pick=(arr,alt,i)=>{ const a=arr.length?arr:alt; return a[i%a.length]; }, col=RK?RK.col:[1,1,1];
-  return [0,1,2,3,4,5,6].map(k=>{ const isTall=k<3||k===5, e=pick(isTall?tall:low,isTall?low:tall,k), d=e.d, s=isTall?1/Math.max(1e-6,e.ext[1]):.9/Math.max(1e-6,...e.ext), pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*s;
-    const m=new BABYLON.Mesh('rockLib'+k,sc), vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=d.nor; vd.indices=d.idx; vd.uvs=d.uv; if(d.col) vd.colors=d.col; vd.applyToMesh(m);
-    const mt=new BABYLON.PBRMaterial('rockLibM_'+d.id+'_'+k,sc); mt.albedoColor=new C3(col[0]*.34,col[1]*.33,col[2]*.31); mt.metallic=0; mt.roughness=.92; mt.environmentIntensity=.6;
-    if(d.maps){ mt.bumpTexture=new BABYLON.Texture('rocks/'+d.id+'_n.webp',sc); mt.metallicTexture=new BABYLON.Texture('rocks/'+d.id+'_m.webp',sc); mt.useAmbientOcclusionFromMetallicTextureRed=true; mt.useRoughnessFromMetallicTextureGreen=true; mt.useMetallnessFromMetallicTextureBlue=true; mt.metallic=1; mt.roughness=1; }
-    if(RK&&RK.em) mt.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); G.env.push(mt); m.material=mt; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; }); }
+// v53 sculpted asteroid library (Blender: rocks/ for phones and Medium, 512 maps; rocks_hi/ for desktop, 1024 maps). Eight rocks per kind:
+// RCA carbon (craggy, cratered), RST stone (planar fracture faces, strata), RCR crystal (rock with crystal spikes), RIC ice (smooth, crack lines).
+// CODE.json is the hull format (quantised p/q/i, 'u' UVs as Uint16/65535, normalised so x length = 1, centred), CODE_n.webp a tangent-space
+// normal map, CODE_m.webp R = ambient occlusion, G = curvature. Only the kind a battle needs is fetched, lazily: until it arrives (or if it fails,
+// or on file://) the board shows the procedural rocks, and the library meshes then take over the same thin-instance matrices in place.
+const ROCK_LIB={sets:{},loading:{},mats:{},index:{}}, ROCK_SET={stone:'RST',carbon:'RCA',iron:'RCA',crystal:'RCR',ice:'RIC'};
+const ROCK_TINT={RST:[.34,.31,.28],RCA:[.27,.255,.245],RCR:[.25,.27,.28],RIC:[.34,.4,.47]}, ROCK_GLOW={RCR:[.12,.5,.42]}; // dark albedo per kind; crystal spikes glow
+function rockLibDir(){ return (G.mobile||G.quality==='medium')?'rocks/':'rocks_hi/'; }
+function loadRockSet(set){ if(ROCK_LIB.sets[set]) return Promise.resolve(ROCK_LIB.sets[set]); if(ROCK_LIB.loading[set]) return ROCK_LIB.loading[set];
+  if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'||typeof decodeAIHull!=='function') return Promise.reject(new Error('no rock library here'));
+  const dir=rockLibDir(), t0=performance.now();
+  // dir/index.json lists the kinds that are present ({"RST":8,...}); the live build may ship {} until the files are uploaded, which keeps it procedural
+  const idx=ROCK_LIB.index[dir]||(ROCK_LIB.index[dir]=fetch(dir+'index.json').then(r=>r.ok?r.json():{}).catch(()=>({})));
+  return ROCK_LIB.loading[set]=idx.then(ix=>{ if(!ix||!ix[set]) throw new Error('rock set '+set+' not in '+dir+'index.json'); }).then(()=>Promise.all([0,1,2,3,4,5,6,7].map(async i=>{ const code=set+'0'+i, r=await fetch(dir+code+'.json'); if(!r.ok) throw new Error(code+' '+r.status); const j=await r.json(), d=decodeAIHull(j);
+      if(j.u){ const bin=atob(j.u), u8=new Uint8Array(bin.length); for(let k=0;k<bin.length;k++) u8[k]=bin.charCodeAt(k); const qu=new Uint16Array(u8.buffer); d.uv=new Float32Array(qu.length); for(let k=0;k<qu.length;k++) d.uv[k]=qu[k]/65535; }
+      d.code=code; d.dir=dir; d.size=j.size||[1,1,1]; return d; })))
+    .then(list=>{ ROCK_LIB.sets[set]=list; console.debug('[rocks] '+set+' library from '+dir+' in '+Math.round(performance.now()-t0)+'ms'); return list; })
+    .catch(e=>{ console.warn('rock library',set,e); delete ROCK_LIB.loading[set]; throw e; }); }
+// cavity darkening and edge highlights from the baked AO/curvature map, and (crystal) a glow on the convex spikes; no extra draws
+class RockLibPlugin extends BABYLON.MaterialPluginBase{
+  constructor(mat,tex,glow){ super(mat,'RockLib',201,{ROCKLIB:false}); this.tex=tex; this.glow=glow; this._enable(true); }
+  prepareDefines(d){ d.ROCKLIB=true; } getClassName(){ return 'RockLibPlugin'; }
+  isReadyForSubMesh(){ return !this.tex||this.tex.isReady(); }
+  getSamplers(s){ s.push('rlibM'); } getActiveTextures(a){ if(this.tex) a.push(this.tex); } hasTexture(t){ return t===this.tex; }
+  getUniforms(){ return {ubo:[{name:'rlibG',size:3,type:'vec3'}],fragment:'#ifdef ROCKLIB\nuniform vec3 rlibG;\n#endif\n'}; }
+  bindForSubMesh(ubo){ ubo.updateColor3('rlibG',this.glow); if(this.tex) ubo.setTexture('rlibM',this.tex); }
+  getCustomCode(type){ if(type!=='fragment') return null; return {CUSTOM_FRAGMENT_DEFINITIONS:'#ifdef ROCKLIB\nuniform sampler2D rlibM;\n#endif\n',
+    CUSTOM_FRAGMENT_UPDATE_DIFFUSE:`
+#ifdef ROCKLIB
+#ifdef MAINUV1
+  vec4 rlm=texture2D(rlibM,vMainUV1);
+#else
+  vec4 rlm=vec4(1.0,0.5,1.0,1.0);
+#endif
+  baseColor.rgb*=mix(0.32,1.0,rlm.r)*mix(1.0,0.62,smoothstep(0.5,0.18,rlm.g))*mix(1.0,1.45,smoothstep(0.56,0.9,rlm.g));
+#endif
+`,CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR:`
+#ifdef ROCKLIB
+  color.rgb+=rlibG*smoothstep(0.62,0.92,rlm.g);
+#endif
+`}; } }
+function rockLibMat(d){ const k=d.code+'@'+d.dir; let m=ROCK_LIB.mats[k]; if(m&&G.scene.materials.includes(m)) return m; const set=d.code.slice(0,3), t=ROCK_TINT[set]||[.3,.3,.3], gl=ROCK_GLOW[set];
+  m=new BABYLON.StandardMaterial('rockLib_'+d.code,G.scene); m.diffuseColor=new C3(t[0],t[1],t[2]); /* v53.6 lighting: the 2.2x lift blew stone out to cream */ m.specularColor=set==='RIC'?new C3(.1,.11,.13):new C3(.025,.025,.025); m.specularPower=set==='RIC'?24:8; /* rough, non-metallic, no sparkle */
+  m.bumpTexture=new BABYLON.Texture(d.dir+d.code+'_n.webp',G.scene); const mt=new BABYLON.Texture(d.dir+d.code+'_m.webp',G.scene);
+  try{ new RockLibPlugin(m,mt,gl?new C3(gl[0],gl[1],gl[2]):new C3(0,0,0)); }catch(e){ console.warn('rock lib shading',e); } return ROCK_LIB.mats[k]=m; } // cached across battles (not in G.env), so the maps load once
+// the eight rocks fill the seven board roles: the most elongated stand up as pillars, slab and shard (long axis turned vertical, squeezed toward
+// a column), the rest are chunks; each bakes into a mesh shaped like the procedural role so the per-hex recipes and matrices carry over unchanged
+function rockLibMeshes(list){ const el=list.map(d=>({d,e:1/Math.max(.05,Math.max(d.size[1],d.size[2]))})).sort((a,b)=>b.e-a.e), order=[1,2,3,4,5,0,6]; // role k takes el[order[k]]
+  return [0,1,2,3,4,5,6].map(k=>{ const d=el[order[k]].d, tall=k<3||k===5, P=d.pos, N=d.nor, n=P.length/3, pos=new Float32Array(P.length), nor=new Float32Array(N.length);
+    let ex=[0,0,0]; for(let i=0;i<P.length;i+=3) for(let c=0;c<3;c++) ex[c]=Math.max(ex[c],Math.abs(P[i+c]));
+    const sx=tall?.5/Math.max(.05,ex[1]):.9/Math.max(...ex), sy=tall?1/Math.max(.05,ex[0]):sx, sz=tall?.45/Math.max(.05,ex[2]):sx; // tall: x (long) becomes y
+    for(let v=0;v<n;v++){ const o=v*3; if(tall){ pos[o]=P[o+1]*sx; pos[o+1]=P[o]*sy; pos[o+2]=P[o+2]*sz; let a=N[o+1]/sx, b=N[o]/sy, c=N[o+2]/sz; const l=Math.hypot(a,b,c)||1; nor[o]=a/l; nor[o+1]=b/l; nor[o+2]=c/l; }
+      else { pos[o]=P[o]*sx; pos[o+1]=P[o+1]*sy; pos[o+2]=P[o+2]*sz; nor[o]=N[o]; nor[o+1]=N[o+1]; nor[o+2]=N[o+2]; } }
+    const idx=tall?Uint32Array.from(d.idx):d.idx; if(tall) for(let t=0;t<idx.length;t+=3){ const x=idx[t+1]; idx[t+1]=idx[t+2]; idx[t+2]=x; } // swapping x and y mirrors the mesh: keep the winding
+    const m=new BABYLON.Mesh('rockLib'+k,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=nor; vd.indices=idx; vd.uvs=d.uv; vd.applyToMesh(m);
+    m.material=rockLibMat(d); m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; }); }
 // v53: a fresh material sharing the rock textures. A clone of rockM tries to re-create the RockFx plugin from its serialized form, cannot find the
 // class, and the clone never becomes ready, so nothing using it drew (this is why the v51 rim fill rocks were invisible).
 function rockMatLike(b,name){ const m=new BABYLON.StandardMaterial(name,G.scene); m.diffuseTexture=b.diffuseTexture; m.bumpTexture=b.bumpTexture; m.diffuseColor=b.diffuseColor.clone(); m.specularColor=b.specularColor.clone(); m.specularPower=b.specularPower; m.emissiveColor=b.emissiveColor.clone(); if(typeof addRockFx==='function') addRockFx(m); return m; }
@@ -3535,6 +3602,9 @@ const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes 
   'craft|fighter':'S1_51','craft|bomber':'S2_23','craft|spore':'B23_51', // v53-G squadron craft, shared by every faction (tinted per faction); Chorus wings fly the spore
   'obj|station':'O1_37','obj|transport':'O2_37','obj|beacon':'O3_11'}, AI_HULL_DATA={}; // v53-G objective structures: the defend-objective station, the intercept transports, the hold-objective relay beacon. Deathless: round 10 B set (star dart, monolith half-disc, ring tomb-ark); the B sickle frigate meshed as a flat plaque, so D9b stays until a remesh
 function aiHullsOn(){ return G.aiHulls!==false; }
+// v53.8 (Ryan: "everything still feels pretty low poly"): on phones and Medium the twelve biggest hulls load the desktop mesh (38k triangles,
+// was 16k) and its 2K maps, so the ships you zoom in on keep a smooth outline; everything smaller keeps the light set
+const AI_HI_ON_PHONE=new Set(['B16_23','B22_11','C16s_23','C19_51','D22_23','H10_23','H4_11','I16_11','I8_37','V17_37','V18_51','V1b_r_23']);
 const AI_HULL_YAW={I14_23:1,I15_11:-1}; // v53: these two meshed side-on (spike prow along the mesh's z axis): +1 turns -z to the bow, -1 turns +z
 // v53 sail card test, one hull only: the Hunyuan fan sails (thick lumpy volumes) are cropped off at the root and replaced by thin, double-sided,
 // translucent fans with jade ribs and a glowing rim, oversized so they read top-down at phone zoom. Off: G.ithSails=false (or ITHAR_SAIL_TEST.on=false).
@@ -3542,7 +3612,10 @@ const ITHAR_SAIL_TEST={on:true,hull:'I14_23',keep:.075,root:-.15,R:.6,lift:.3};
 function ithSailsOn(){ return ITHAR_SAIL_TEST.on&&G.ithSails!==false; }
 function aoCurve(d,fac){ const g={ithar:1.9}[fac]; if(!g) return d.col; if(d['_ao_'+fac]) return d['_ao_'+fac]; const c=Float32Array.from(d.col); for(let i=0;i<c.length;i+=4){ const k=Math.pow(c[i],g); c[i]=c[i+1]=c[i+2]=k; } return d['_ao_'+fac]=c; } // deeper cavities on the pale hull: seams and edges stop melting into the highlights
 function cropAISails(P,I,keep){ const out=[]; for(let t=0;t<I.length;t+=3){ const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3; if(Math.abs(P[a+2]+P[b+2]+P[c+2])/3>keep) continue; out.push(I[t],I[t+1],I[t+2]); } return out.length>I.length*.2?out:I; }
-function aiSailMat(){ if(AI_MATS.aisail_ithar) return AI_MATS.aisail_ithar; const m=new BABYLON.StandardMaterial('aisail_ithar',G.scene); m.diffuseColor=new C3(.6,.72,.68); m.specularColor=new C3(.04,.05,.05); m.emissiveColor=new C3(.05,.12,.1); m.alpha=.46; /* translucent, not a white kite under bloom */ m.backFaceCulling=false; m.twoSidedLighting=true; m.disableDepthWrite=true; return AI_MATS.aisail_ithar=m; }
+function aiSailMat(){ if(AI_MATS.aisail_ithar&&G.scene.materials.includes(AI_MATS.aisail_ithar)) return AI_MATS.aisail_ithar; // v53: glassy, iridescent and see-through (was a lit StandardMaterial on a mesh without normals: a flat grey sheet on real GPUs)
+  const m=new BABYLON.PBRMaterial('aisail_ithar',G.scene); m.albedoColor=new C3(.8,.95,.92); m.metallic=0; m.roughness=.1; m.alpha=.34; m.emissiveColor=new C3(.025,.08,.07); m.environmentIntensity=1.4; m.directIntensity=1.1;
+  m.iridescence.isEnabled=true; m.iridescence.intensity=1; m.iridescence.indexOfRefraction=1.3; m.iridescence.minimumThickness=180; m.iridescence.maximumThickness=520; m.useRadianceOverAlpha=true; m.useSpecularOverAlpha=true;
+  m.backFaceCulling=false; m.twoSidedLighting=true; m.disableDepthWrite=true; m.transparencyMode=BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND; return AI_MATS.aisail_ithar=m; }
 // v53 Ithar facing and sails, added after the concept hull is in place: a bright jade chevron on the prow and (one hull) the sail card test.
 // Both use the hull's trim material or the sail material, so the merged ship gains at most one draw (the sail panels).
 function ithAIExtras(p){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')), aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, hm=fore&&fore.getChildMeshes(true).find(m=>m.name==='hull_ai'); if(!hm) return;
@@ -3551,17 +3624,20 @@ function ithAIExtras(p){ const fore=p.root.getChildren().find(n=>n.name.endsWith
     const m=new BABYLON.Mesh(name,G.scene), d2=new BABYLON.VertexData(); d2.positions=pos; d2.indices=ind; d2.applyToMesh(m); m.material=mat; m.parent=half==='fore'?fore:aftN; if(half==='aft'&&aftN!==fore) m.position.copyFrom(fore.position.subtract(aftN.position)); m.isPickable=false; m.refreshBoundingInfo(true); };
   let mx=-1e9; for(let i=0;i<P.length;i+=3) mx=Math.max(mx,P[i]); const top=x=>{ let h=-1e9; for(let i=0;i<P.length;i+=3) if(Math.abs(P[i]-x)<.025*L&&Math.abs(P[i+2])<.04*L) h=Math.max(h,P[i+1]); return h>-1e8?h:0; };
   for(const sg of [1,-1]){ const x0=mx-.17*L, x1=mx-.05*L, y0=top(x0)+.012*L, y1=top(x1)+.012*L, w=.011*L, z0=sg*.05*L; bins.fore.e.push([x0-w,y0,z0-sg*w],[x1,y1,-sg*w*.5],[x1,y1,sg*w*.5],[x0+w,y0,z0+sg*w]); } // prow chevron: facing at phone zoom
-  if(p._sailHull) aiSails(P,L,split,(pts,half)=>bins[half].q.push(...pts),(pts,half)=>bins[half].e.push(...pts));
-  for(const h of ['fore','aft']){ mk(bins[h].q,aiSailMat(),h,'hull_aisail'); mk(bins[h].e,trimM,h,'hull_aiprow'); } }
+  const rimM=AI_MATS.aisailrim_ithar&&G.scene.materials.includes(AI_MATS.aisailrim_ithar)?AI_MATS.aisailrim_ithar:(AI_MATS.aisailrim_ithar=emMat('aisailrim_ithar',FAC3D.ithar.eng.scale(.5))); rimM.backFaceCulling=false; bins.fore.r=[]; bins.aft.r=[];
+  if(p._sailHull) aiSails(P,L,split,(g,half)=>bins[half].q.push(g),(pts,half)=>bins[half].r.push(...pts)); // ribs and rim: a softer jade than the trim, so bloom does not turn them white
+  for(const h of ['fore','aft']){ if(bins[h].q.length){ const pos=[],uv=[],ind=[]; for(const g of bins[h].q){ const b=pos.length/3; pos.push(...g.pos); uv.push(...g.uv); for(const i of g.ind) ind.push(i+b); } const nor=[]; BABYLON.VertexData.ComputeNormals(pos,ind,nor);
+      const m=new BABYLON.Mesh('hull_aisail',G.scene), d2=new BABYLON.VertexData(); d2.positions=pos; d2.indices=ind; d2.normals=nor; d2.uvs=uv; d2.applyToMesh(m); m.material=aiSailMat(); m.parent=h==='fore'?fore:aftN; if(h==='aft'&&aftN!==fore) m.position.copyFrom(fore.position.subtract(aftN.position)); m.isPickable=false; m.alphaIndex=50; m.refreshBoundingInfo(true); }
+    mk(bins[h].e,trimM,h,'hull_aiprow'); mk(bins[h].r,rimM,h,'hull_aisailrim'); } }
 function aiSails(P,L,split,panel,edge){ const S=ITHAR_SAIL_TEST, R=S.R*L, x0=S.root*L, to=(x,y,z)=>[x,y,z]; // built in the hull's fore-local space (P), like the ports and trim
   let y0=-1e9; for(let i=0;i<P.length;i+=3) if(Math.abs(P[i]-x0)<.04*L&&Math.abs(P[i+2])<.05*L) y0=Math.max(y0,P[i+1]); if(y0<-1e8) y0=0; y0-=.03*L;
   const NA=9, NR=4, a0=1.15, a1=2.75; // fan from just forward of abeam to well aft, like the concept's fans, only thinner and bigger
   for(const sg of [1,-1]){ const pt=(ai,rf)=>{ const a=a0+(a1-a0)*ai/NA, rr=R*(rf*(1-.07*Math.abs(Math.sin(ai/NA*Math.PI*4)))), bil=Math.sin(Math.PI*rf)*.05*L*Math.sin(Math.PI*ai/NA); return to(x0+Math.cos(a)*rr,y0+rr*S.lift+bil,sg*(.06*L+Math.sin(a)*rr)); };
-    const hx=x0>=split?'fore':'aft', quads=[], rim=[];
-    for(let i=0;i<NA;i++) for(let j=0;j<NR;j++){ const r0=.06+.94*j/NR, r1=.06+.94*(j+1)/NR; quads.push(pt(i,r0),pt(i+1,r0),pt(i+1,r1),pt(i,r1)); }
+    const hx=x0>=split?'fore':'aft', rim=[], GA=NA*3, GR=NR*3, grid={pos:[],uv:[],ind:[]}; // a smooth shared-vertex panel (normals for the glass and iridescence)
+    for(let i=0;i<=GA;i++) for(let j=0;j<=GR;j++){ grid.pos.push(...pt(i*NA/GA,.06+.94*j/GR)); grid.uv.push(i/GA,j/GR); if(i<GA&&j<GR){ const b=i*(GR+1)+j; grid.ind.push(b,b+1,b+GR+2,b,b+GR+2,b+GR+1); } }
     for(let i=0;i<NA;i++) rim.push(pt(i,.97),pt(i+1,.97),pt(i+1,1.01),pt(i,1.01)); // glowing rim
     for(let i=0;i<=NA;i+=3) for(let j=0;j<NR;j++){ const r0=.06+.94*j/NR, r1=.06+.94*(j+1)/NR, e=.012; rim.push(pt(i-e*NA,r0),pt(i+e*NA,r0),pt(i+e*NA,r1),pt(i-e*NA,r1)); } // ribs
-    panel(quads,hx); edge(rim,hx); } }
+    panel(grid,hx); edge(rim,hx); } }
 function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new T(u.buffer); };
   const qp=b64(j.p,Int16Array), qn=b64(j.q,Int8Array), idx=b64(j.i,j.i32?Uint32Array:Uint16Array), n=qp.length/3, pos=new Float32Array(qp.length), nor=new Float32Array(qp.length), uv=new Float32Array(n*2);
   for(let i=0;i<qp.length;i++){ pos[i]=qp[i]/32767*j.ext[i%3]; nor[i]=qn[i]/127; }
@@ -3577,9 +3653,9 @@ function hullPath(){ const S=HULLS_LOAD; return {path:!aiHullsOn()?'procedural (
 function loadAIHulls(){ const S=HULLS_LOAD; if(S.promise) return S.promise;
   if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'){ S.state='skipped'; return S.promise=Promise.resolve(S); }
   const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'; /* v49: desktop loads the denser exports (20k to 38k triangles) */ const ents=Object.entries(AI_HULLS), t0=performance.now(); S.state='loading'; S.dir=dir; S.total=ents.length;
-  const get=async id=>{ let r=null; try{ r=await fetch(dir+id+'.json'); }catch(e){} if((!r||!r.ok)&&dir!=='hulls/'){ S.fallback++; try{ r=await fetch('hulls/'+id+'.json'); }catch(e){} } if(!r||!r.ok) throw new Error('http '+(r?r.status:'network')); return r.json(); };
+  const get=async id=>{ const dd=dir==='hulls/'&&AI_HI_ON_PHONE.has(id)?'hulls_hi/':dir; let r=null; try{ r=await fetch(dd+id+'.json'); }catch(e){} if(r&&r.ok){ const j=await r.json(); j._dir=dd; return j; } if(dd!=='hulls/'){ S.fallback++; try{ r=await fetch('hulls/'+id+'.json'); }catch(e){} } if(!r||!r.ok) throw new Error('http '+(r?r.status:'network')); const j=await r.json(); j._dir='hulls/'; return j; };
   let q=Promise.resolve(), ly=performance.now(); const idle=()=>(document.hidden||performance.now()-ly<10)?Promise.resolve():new Promise(r=>setTimeout(()=>{ ly=performance.now(); r(); },0)); // decodes yield to the page every ~10 ms, so a burst of arrivals never stalls a frame for long
-  S.promise=Promise.all(ents.map(([k,id])=>get(id).then(j=>(q=q.then(idle).then(()=>{ try{ AI_HULL_DATA[k]=decodeAIHull(j); dropModel(k); /* ships built from now on use it */ S.loaded++; }catch(e){ S.failed++; S.bad.push(id); console.warn('AI hull not decoded',k,e); } })),e=>{ S.failed++; S.bad.push(id); console.warn('AI hull not loaded',k,e); }).then(()=>{ try{ S.onProgress&&S.onProgress(S); }catch(e){} })))
+  S.promise=Promise.all(ents.map(([k,id])=>get(id).then(j=>(q=q.then(idle).then(()=>{ try{ AI_HULL_DATA[k]=decodeAIHull(j); AI_HULL_DATA[k].dir=j._dir; dropModel(k); /* ships built from now on use it */ S.loaded++; }catch(e){ S.failed++; S.bad.push(id); console.warn('AI hull not decoded',k,e); } })),e=>{ S.failed++; S.bad.push(id); console.warn('AI hull not loaded',k,e); }).then(()=>{ try{ S.onProgress&&S.onProgress(S); }catch(e){} })))
     .then(()=>q).then(()=>{ S.ms=Math.round(performance.now()-t0); S.state='done'; const hp=hullPath(); console.info('[hulls] live path: '+hp.path+' ('+S.loaded+'/'+S.total+' loaded from '+dir+(S.failed?', '+S.failed+' failed: '+S.bad.slice(0,6).join(' '):'')+(S.fallback?', '+S.fallback+' fell back to hulls/':'')+') in '+S.ms+'ms');
       try{ if(typeof tel==='function') tel('hulls',hp); }catch(e){} return S; });
   return S.promise; }
@@ -3697,9 +3773,9 @@ function aiHullMatFor(fac,d){ const code=d&&d.tex&&d.uv2?aiHullCode(d):null; if(
     const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const opts=Object.assign(hfxOpts(o,fac),{ai:true,wcol:o&&o.wcol!==undefined?o.wcol:(fac==='chorus'?null:(FAC3D[fac]||FAC3D.hegemony).win.scale(AI_WIN_GAIN[fac]??1.4)),mtex:null});
     { const P=FAC3D[fac]||FAC3D.hegemony; m.albedoTexture=null; m.metallicTexture=null; m.albedoColor=hexC3(P.hull); // the bake carries the real panel detail: no tiled panel texture (it read as brickwork up close)
       m.metallic={voidsworn:.3,hegemony:.4,corsair:.35,chorus:.05,ithar:.25,deathless:.55}[fac]??.35; m.roughness={voidsworn:.55,hegemony:.48,corsair:.62,chorus:.38,ithar:.42,deathless:.5}[fac]??.5; m.useRoughnessFromMetallicTextureGreen=false; m.useMetallnessFromMetallicTextureBlue=false; m.useAmbientOcclusionFromMetallicTextureRed=false; }
-    if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(m,opts); m._hullFx=pl; m._isAiHull=true; e=AI_TEX[key]={m,code,dir:(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/',n:null,t:null,lastB:null}; }
+    if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(m,opts); m._hullFx=pl; m._isAiHull=true; e=AI_TEX[key]={m,code,dir:d.dir||((G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'),n:null,t:null,lastB:null}; } // maps come from the same set as the mesh (their UVs belong to it)
   aiTexTouch(e); return e.m; }
-function aiTexTouch(e){ if(e.n||e.loading) return; e.loading=true; const sc=G.scene, m=e.m, pl=m._hullFx, url=e.dir+e.code;
+function aiTexTouch(e){ try{ e.touchB=B; }catch(x){} if(e.n||e.loading) return; e.loading=true; const sc=G.scene, m=e.m, pl=m._hullFx, url=e.dir+e.code;
   const gen=e.gen||0; const done=()=>{ if(gen!==(e.gen||0)||!e.n||!e.t||!e.n.isReady()||!e.t.isReady()) return; e.loading=false; if(m.isDisposed&&m.isDisposed()) return; m.bumpTexture=e.n; m.bumpTexture.level=1; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } };
   const fail=(x)=>{ console.warn('hull maps not loaded',e.code,x||''); e.loading=false; e.n=e.t=null; e.failed=true; };
   if(e.failed) return; e.n=new BABYLON.Texture(url+'_n.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,()=>done(),fail); e.n.coordinatesIndex=1; e.n.anisotropicFilteringLevel=4;
@@ -4803,16 +4879,27 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.9));
         surfaceAlbedo*=mix(1.0,(0.7+0.3*seam)*(0.93+0.14*id),pf); } }
 #endif
-#if defined(HULLFX_AI) && defined(HULLFX_D2) && !defined(HULLFX_MAP)
-    // v53-G close-up detail on concept hulls: fine access hatches and dents (bump from a per-pixel height), gone by mid zoom so it never shimmers
-    { float hd0=length(vEyePosition.xyz-vPositionW); float pf=1.0-smoothstep(14.0,48.0,hd0);
-      if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy); pu*=vec2(3.4,4.6);
-        vec2 ci=floor(pu); vec2 fr=fract(pu); float id=hfxH(vec3(ci,2.7)); float e=min(min(fr.x,1.0-fr.x),min(fr.y,1.0-fr.y));
-        float hatch=step(0.86,id)*smoothstep(0.05,0.11,e); float seam=(1.0-smoothstep(0.0,0.035,e))*step(0.55,hfxH(vec3(ci.y,9.1,0.0)));
-        float ht=(-hatch*0.5-seam*0.35+(hfxN(vHfxL*7.0)-0.5)*0.35)*0.012;
+#if defined(HULLFX_AI) && defined(HULLFX_D2)
+    // v53.8 close-up plating on concept hulls (Ryan: "melted" up close): staggered panel seams, inset hatches, small raised blocks and dents,
+    // bump-mapped from a per-pixel height. Laid in ship units on the open plating only (the baked cavities and raised edges keep their own shape).
+    // Each layer fades out by its own pixel footprint, so it is crisp when there are pixels for it and never shimmers when there are not.
+    { float hd0=length(vEyePosition.xyz-vPositionW); float pf=1.0-smoothstep(60.0,120.0,hd0);
+#ifdef HULLFX_MAP
+      { vec3 mq=texture2D(hfxMap,vMainUV2).rgb; pf*=smoothstep(0.22,0.5,mq.r)*(1.0-smoothstep(0.1,0.28,abs(mq.g-0.5))); }
+#endif
+      if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy);
+        vec2 pp=pu*vec2(1.5,2.3); float row=floor(pp.y); float wd=1.0+hfxH(vec3(row,3.1,hfxS.x))*2.4; float off=hfxH(vec3(row,7.7,0.0))*wd; float cx=floor((pp.x+off)/wd);
+        vec2 fr=vec2(fract((pp.x+off)/wd)*wd,fract(pp.y)); float e=min(min(fr.x,wd-fr.x),min(fr.y,1.0-fr.y)); float pid=hfxH(vec3(cx,row,1.3));
+        float fp=max(fwidth(pp.x),fwidth(pp.y)); float pk=pf*(1.0-smoothstep(0.06,0.16,fp)); // plates: gone once a seam is under a pixel
+        float seam=(1.0-smoothstep(0.0,max(0.035,fp*1.2),e))*pk;
+        vec2 sp=pu*vec2(5.2,6.8); vec2 ci=floor(sp); vec2 sf=fract(sp); float id=hfxH(vec3(ci,2.7+hfxS.x)); float se=min(min(sf.x,1.0-sf.x),min(sf.y,1.0-sf.y));
+        float fs=max(fwidth(sp.x),fwidth(sp.y)); float sk=pf*(1.0-smoothstep(0.07,0.16,fs)); // small cells need about eight pixels, or they read as a screen-door grain
+        float hatch=step(0.87,id)*smoothstep(0.07,0.13,se)*sk; float greeb=step(id,0.07)*smoothstep(0.1,0.17,se)*sk;
+        float ht=(-seam*0.6+(pid-0.5)*0.22*pk-hatch*0.45+greeb*0.6+(hfxN(vHfxL*2.2)-0.5)*0.12*pk)*0.016;
         vec3 dpx=dFdx(vPositionW), dpy=dFdy(vPositionW); float dhx=dFdx(ht), dhy=dFdy(ht);
         vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
-        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.8)); surfaceAlbedo*=1.0-pf*(hatch*0.12+seam*0.18); } }
+        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,0.85));
+        surfaceAlbedo*=(1.0-seam*0.24-hatch*0.1+greeb*0.05)*(1.0+(pid-0.5)*0.12*pk); } }
 #endif
 #endif
 `,
@@ -7101,7 +7188,7 @@ ACT.copyReport=()=>{ let txt=''; try{ txt=JSON.stringify({build:typeof BUILD_ID!
 
 // renown earned so far this run, shown on the map
 function runRenown(){ if(!RUN) return 0; const s=RUN.stats; return s.battles*2+s.elites*4+s.bosses*15+Math.floor(s.kills/4)+(RUN.sector-1)*5; }
-const _map=mapScreen; mapScreen=function(){ _map(); appEl.classList.add('see3d'); setupFleetShowcase(); try{ const hp=[...appEl.querySelectorAll('.mapmain p')].find(p=>p.textContent.includes('Hostile presence')); if(hp&&RUN.foes&&RUN.foes.length>=5) hp.insertAdjacentHTML('beforeend',` <span class="dim">Rival raiders from the ${esc(FACTIONS[RUN.foes[3]].n.replace(/^The /,''))} and the ${esc(FACTIONS[RUN.foes[4]].n.replace(/^The /,''))} may also strike.</span>`); }catch(e){}  };
+const _map=mapScreen; mapScreen=function(){ _map(); appEl.classList.add('see3d'); setupFleetShowcase(); try{ hullMapPrefetch(); }catch(e){} try{ const hp=[...appEl.querySelectorAll('.mapmain p')].find(p=>p.textContent.includes('Hostile presence')); if(hp&&RUN.foes&&RUN.foes.length>=5) hp.insertAdjacentHTML('beforeend',` <span class="dim">Rival raiders from the ${esc(FACTIONS[RUN.foes[3]].n.replace(/^The /,''))} and the ${esc(FACTIONS[RUN.foes[4]].n.replace(/^The /,''))} may also strike.</span>`); }catch(e){}  };
 
 // title screen: live 3D showcase battle behind the menu, plus the skirmish mode
 const _title=titleScreen; titleScreen=function(){ disposeAllViews(); clearOverlays(); B=null; _title(); const menu=appEl.querySelector('.title .menu'); if(menu) menu.insertAdjacentHTML('beforeend','<button data-act="c3skirmish">3D skirmish</button><button data-act="c3settings">Settings</button>'); setupShowcase(); };

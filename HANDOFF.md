@@ -9,7 +9,7 @@
 
 ## Current state
 - Live: **v53.7** (artifact Version 64): concept station on every station map (the "broken station" was the old procedural spire), camera floor (biggest ship about half the screen), board overlays fade when close.
-- Ready, final PC check pending: **v53.8** (commit 738a811+): sculpted rock library (v53-E merged), "Entering battle" cover that holds until ships, this battle's hull maps, rocks and ship shaders are ready (4 s cap), map-screen prefetch, the 12 biggest hulls load the desktop mesh on phones, footprint-faded close-up plating. Publish needs rocks/ and rocks_hi/ uploaded as artifact files (index.json last). hulls/ is unchanged from v53.7.
+- Live since Version 65: **v53.8**: sculpted rock library (v53-E merged), "Entering battle" cover that holds until ships, this battle's hull maps, rocks and ship shaders are ready (4 s cap), map-screen prefetch, the 12 biggest hulls load the desktop mesh on phones, footprint-faded close-up plating. rocks/ and rocks_hi/ are uploaded artifact files. hulls/ is unchanged from v53.7. (Publishing warns the page references an undeclared `downloads` capability: the ?prof=1 CSV export, old debug code, left as is.)
 - Ryan's verdict on v53.7 (Pixel and desktop screenshots, Oct 21): "everything still feels pretty low poly". Cause: the Hunyuan shapes themselves. Shape bake-off running (NEXT.md "Ship shapes"): A Hunyuan 512/640 and B Blender clean-up show no gain; D Blender hard-surface rebuild (tools/blender/hs/) is crisp in-game on first pass and is my pick; C TRELLIS.2 downloading to Downloads\trellis2 (approved by Ryan, 736 MB zip, then its own installer).
 - Known: box/T-shape wreck debris looks crude; the bright gold ring on Ryan's Pixel close-up (PC shots show it faded, re-check on v53.8).
 
@@ -45,7 +45,7 @@
 - **Lag on loading into a battle**: hull JSON + webp map fetch/decode, plus the effect atlas build (v53-I moves it to idle slices on the title screen). Measure with perfprobe. Ideas: prefetch the next battle's hulls on the map screen, compressed GPU textures (KTX2), decode off the main thread.
 
 ## Next 3 tasks
-1. Publish v53.8 after the PC load probe shows maps>0 and no frames over 50 ms after the cover lifts (loadprobe.py e1/e2), plus a passing smoke. Then ask Ryan for one Pixel battle (rocks, load, gold ring).
+1. Ryan's Pixel battle on v53.8 (rocks, load cover, gold ring at close zoom).
 2. Finish the shape bake-off: TRELLIS.2 on the Pyre-Barge and station (Downloads\trellis2, API mode run-stableprojectorz.bat, see its INSTRUCTIONS), add it to bakeoff_round1.png, get Ryan's pick. If D: iterate C19 and O1 to concept density (tools/blender/hs/c19_hs.py, o1_hs.py; compare with render.py at az -50 el 34), then export_json.py -> uvprep -> hullbake -> closeshot, then the other capitals.
 3. Replace the box wreck debris with chunks of the rebuilt hulls; check v53.6 effects on the Pixel (old task 2).
 

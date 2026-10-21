@@ -5,6 +5,7 @@ src, out = sys.argv[1], sys.argv[2]; glb = sys.argv[3] if len(sys.argv) > 3 else
 bpy.ops.wm.open_mainfile(filepath=src)
 o = [x for x in bpy.context.scene.objects if x.type == 'MESH'][0]; bpy.context.view_layer.objects.active = o; o.select_set(True)
 m = o.modifiers.new('tri', 'TRIANGULATE'); m.keep_custom_normals = True; bpy.ops.object.modifier_apply(modifier='tri')
+for mm in list(o.modifiers): bpy.ops.object.modifier_apply(modifier=mm.name)
 me = o.data; me.calc_loop_triangles() if hasattr(me, 'calc_loop_triangles') else None
 co = np.array([v.co[:] for v in me.vertices]); keys = {}; P = []; N = []; I = []
 for poly in me.polygons:
