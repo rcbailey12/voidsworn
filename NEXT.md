@@ -53,6 +53,8 @@ Altitude combat rules and class heights; stances and momentum; undo after a move
 
 ## Parking lot
 
+- After v55, revisit the engine (owner agreed to circle back): port to Godot 4 if the phone can't hold frame rate with full-detail art/effects, the web download gets too large, or a native Android/PC app is wanted. Art, baked maps, sounds and flipbooks carry over; rules port; 3D/UI and the test harness are rebuilt.
+
 (new ideas land here first)
 - Rulecheck flaked once (1 in 10 runs) after v53-D: find the unseeded check.
 - Sector 1 too easy: owner won 4/4 in 3 rounds each with 0 losses on v53.2 (balance pass after AI lands).
