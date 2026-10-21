@@ -616,7 +616,7 @@ function showIntro(){
   document.getElementById('stage').appendChild(el); document.body.classList.add('intro-on');
 }
 ACT.pick=arg=>{ const [k,v]=arg.split(':'); const nv=k==='alt'?v==='1':v; if(SETUP[k]===nv) return; setupBattle({[k]:nv}); showIntro(); };
-ACT.begin=()=>{ SFX.init(); document.querySelector('.intro').remove(); document.body.classList.remove('intro-on'); G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); refreshTop(); banner(B.alt?'Round 1':'Your turn'); };
+ACT.begin=()=>{ SFX.init(); { const it=document.querySelector('.intro'); if(it) it.remove(); } document.body.classList.remove('intro-on'); G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); refreshTop(); banner(B.alt?'Round 1':'Your turn'); };
 
 // ---------- onboarding: one tip at a time, each shown once ----------
 const TIPS=[
