@@ -39,7 +39,7 @@ def run(prompt, tag, timeout=3600):
 # ---------- views: Qwen-Image-Edit 2511 + multiple-angles LoRA (chain from the official template, lightning 8-step) ----------
 VIEWS = {'front': 'front view', 'left': 'left side view', 'back': 'back view', 'right': 'right side view',
          'q_fl': 'front-left quarter view', 'top': 'front view high-angle shot'}
-def qwen_prompt(img, view_txt, seed, prefix, steps=8, cfg=1.0, lightning=True, angle_w=0.9):
+def qwen_prompt(img, view_txt, seed, prefix, steps=8, cfg=1.0, lightning=True, angle_w=0.9, full=False):
     p = {
       '1': {'class_type': 'LoadImage', 'inputs': {'image': img}},
       '2': {'class_type': 'FluxKontextImageScale', 'inputs': {'image': ['1', 0]}},
@@ -50,7 +50,7 @@ def qwen_prompt(img, view_txt, seed, prefix, steps=8, cfg=1.0, lightning=True, a
       '8': {'class_type': 'CLIPLoader', 'inputs': {'clip_name': 'qwen_2.5_vl_7b_fp8_scaled.safetensors', 'type': 'qwen_image', 'device': 'default'}},
       '9': {'class_type': 'VAELoader', 'inputs': {'vae_name': 'qwen_image_vae.safetensors'}},
       '10': {'class_type': 'TextEncodeQwenImageEditPlus', 'inputs': {'clip': ['8', 0], 'vae': ['9', 0], 'image1': ['2', 0],
-             'prompt': '<sks> ' + view_txt + ' eye-level shot medium shot'}},
+             'prompt': '<sks> ' + view_txt + ('' if full else ' eye-level shot medium shot')}},
       '11': {'class_type': 'TextEncodeQwenImageEditPlus', 'inputs': {'clip': ['8', 0], 'vae': ['9', 0], 'image1': ['2', 0], 'prompt': ''}},
       '12': {'class_type': 'FluxKontextMultiReferenceLatentMethod', 'inputs': {'conditioning': ['10', 0], 'reference_latents_method': 'index_timestep_zero'}},
       '13': {'class_type': 'FluxKontextMultiReferenceLatentMethod', 'inputs': {'conditioning': ['11', 0], 'reference_latents_method': 'index_timestep_zero'}},
@@ -61,16 +61,17 @@ def qwen_prompt(img, view_txt, seed, prefix, steps=8, cfg=1.0, lightning=True, a
       '17': {'class_type': 'SaveImage', 'inputs': {'images': ['16', 0], 'filename_prefix': prefix}}}
     if lightning: p['7'] = {'class_type': 'LoraLoaderModelOnly', 'inputs': {'model': ['6', 0], 'lora_name': 'Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors', 'strength_model': 1.0}}
     return p
-def views(code, seeds=2, which=None):
+def views(code, seeds=2, which=None, src=None, tag=''):
     d = os.path.join(IO_, code); os.makedirs(d, exist_ok=True)
-    src = os.path.join(PICKS, 'flux11_' + code + '_cut.png'); img = code + '_concept.png'
+    src = src or os.path.join(PICKS, 'flux11_' + code + '_cut.png'); img = code + '_src' + tag + '.png'
     from PIL import Image
     im = Image.open(src).convert('RGBA'); bg = Image.new('RGBA', im.size, (255, 255, 255, 255)); bg.alpha_composite(im); bg.convert('RGB').save(os.path.join(d, img))  # plain white backdrop
     p = start(d)
     try:
         for v in (which or ['right', 'left', 'front', 'back']):
+            name, txt = (v.split('=', 1) if '=' in v else (v, VIEWS[v]))  # name=raw angle words, e.g. front_lo=front view low-angle shot
             for s in range(seeds):
-                run(qwen_prompt(img, VIEWS[v], 1000 + s, f'views/{code}_{v}_s{s}'), f'{code} {v} s{s}')
+                run(qwen_prompt(img, txt, 1000 + s, f'views{tag}/{code}_{name}_s{s}', full=('=' in v)), f'{code}{tag} {name} s{s}')
     finally: p.terminate(); p.wait(30)
     log('VIEWS DONE', code)
 
@@ -111,24 +112,37 @@ def prune(api, outs):
         for v in api[k]['inputs'].values():
             if isinstance(v, list) and len(v) == 2 and isinstance(v[0], str): st.append(v[0])
     return {k: v for k, v in api.items() if k in keep}
-def mesh(code, res=1536, tris=2000000, fov=20.0, int8=False):
+def mesh(code, res=1536, tris=2000000, fov=20.0, int8=False, cams=None, tag=''):
     d = os.path.join(IO_, code); p = start(d)
     try:
         info = get('/object_info'); wf = json.load(open(os.path.join(REF, '3d_pixal3d_multi_views.json'), encoding='utf-8'))
         api = ui_to_api(wf, info)
         api['319']['inputs']['unet_name'] = 'pixal3d_multiview_int8_convrot.safetensors' if int8 else 'pixal3d_multiview_bf16.safetensors'
-        for v in ('front', 'left', 'back', 'right'):  # prepared views: square, black backdrop, one shared scale (made in the sandbox)
-            api['L' + v] = {'class_type': 'LoadImage', 'inputs': {'image': f'mv/{code}_{v}.png'}}; api['324']['inputs'][v] = ['L' + v, 0]
-        api['324']['inputs']['fov'] = fov
+        if cams:  # free cameras: name:az,el;name:az,el;... -> custom node VoidswornPixal3DViews (views mv/CODE_name.png)
+            spec = [c.split(':') for c in cams.split(';') if c.strip()]
+            api['324'] = {'class_type': 'VoidswornPixal3DViews', 'inputs': {'clip_vision_model': api['324']['inputs']['clip_vision_model'], 'fov': fov, 'cams': ';'.join(c[1] for c in spec)}}
+            for i, (nm, _) in enumerate(spec):
+                api['L' + nm] = {'class_type': 'LoadImage', 'inputs': {'image': f'mv{tag}/{code}_{nm}.png'}}; api['324']['inputs'][f'view{i + 1}'] = ['L' + nm, 0]
+        else:
+            for v in ('front', 'left', 'back', 'right'):  # prepared views: square, black backdrop, one shared scale (made in the sandbox)
+                if os.path.exists(os.path.join(d, 'mv' + tag, f'{code}_{v}.png')):
+                    api['L' + v] = {'class_type': 'LoadImage', 'inputs': {'image': f'mv{tag}/{code}_{v}.png'}}; api['324']['inputs'][v] = ['L' + v, 0]
+                else: api['324']['inputs'].pop(v, None)
+            api['324']['inputs']['fov'] = fov
         api['94']['inputs']['target_resolution'] = res
         for k, v in list(api['186']['inputs'].items()):
             if isinstance(v, int) and not isinstance(v, bool): api['186']['inputs'][k] = tris
         log('decimate', api['186']['inputs'], 'remesh', api['241']['inputs'])
-        for k in ('372',): api[k]['inputs']['filename_prefix'] = f'mesh/{code}_pixal_tex'
-        api['M1'] = {'class_type': 'MeshToFile3D', 'inputs': {'mesh': ['241', 0]}}; api['S1'] = {'class_type': 'Save3DAdvanced', 'inputs': dict(api['372']['inputs'], model_3d=['M1', 0], filename_prefix=f'mesh/{code}_pixal_hi')}
-        api['M2'] = {'class_type': 'MeshToFile3D', 'inputs': {'mesh': ['92', 0]}}; api['S2'] = {'class_type': 'Save3DAdvanced', 'inputs': dict(api['372']['inputs'], model_3d=['M2', 0], filename_prefix=f'mesh/{code}_pixal_raw')}
+        pk = next((k for k, v in api['372']['inputs'].items() if isinstance(v, str) and v.startswith('3d/')), 'filename_prefix')  # the save node's prefix widget
+        mk = next((k for k, v in api['372']['inputs'].items() if isinstance(v, list)), 'model_3d')
+        log('save inputs', api['372']['inputs'], 'mesh2file', api['285']['inputs'] if '285' in api else '')
+        api['372']['inputs'][pk] = f'mesh/{code}{tag}_pixal_tex'
+        api['M1'] = dict(api['285'], inputs=dict(api['285']['inputs'], mesh=['241', 0])) if '285' in api else {'class_type': 'MeshToFile3D', 'inputs': {'mesh': ['241', 0]}}
+        api['S1'] = {'class_type': 'Save3DAdvanced', 'inputs': dict(api['372']['inputs'], **{mk: ['M1', 0], pk: f'mesh/{code}{tag}_pixal_hi'})}
+        api['M2'] = dict(api['M1'], inputs=dict(api['M1']['inputs'], mesh=['92', 0]))
+        api['S2'] = {'class_type': 'Save3DAdvanced', 'inputs': dict(api['372']['inputs'], **{mk: ['M2', 0], pk: f'mesh/{code}{tag}_pixal_raw'})}
         api = prune(api, ['372', 'S1', 'S2'])
-        json.dump(api, open(os.path.join(d, f'{code}_mesh_api.json'), 'w'), indent=1)
+        json.dump(api, open(os.path.join(d, f'{code}{tag}_mesh_api.json'), 'w'), indent=1)
         log('mesh api nodes', len(api))
         run(api, f'{code} pixal3d mv res {res}', timeout=7200)
     finally: p.terminate(); p.wait(30)
@@ -137,7 +151,8 @@ def mesh(code, res=1536, tris=2000000, fov=20.0, int8=False):
 if __name__ == '__main__':
     os.makedirs(IO_, exist_ok=True); a = sys.argv[1:]
     try:
-        if a[0] == 'views': views(a[1], int(a[2]) if len(a) > 2 else 2, a[3].split(',') if len(a) > 3 else None)
-        elif a[0] == 'mesh': mesh(a[1], int(a[2]) if len(a) > 2 else 1536, int(a[3]) if len(a) > 3 else 2000000, int8=len(a) > 4 and a[4] == 'int8')
+        if a[0] == 'views': views(a[1], int(a[2]) if len(a) > 2 else 2, a[3].split(';') if len(a) > 3 else None, a[4] if len(a) > 4 else None, a[5] if len(a) > 5 else '')
+        elif a[0] == 'mesh':  # mesh CODE res tris [cams|-] [tag]
+            mesh(a[1], int(a[2]) if len(a) > 2 else 1536, int(a[3]) if len(a) > 3 else 2000000, cams=(a[4] if len(a) > 4 and a[4] != '-' else None), tag=(a[5] if len(a) > 5 else ''))
     except Exception as e:
         import traceback; log('FAILED', repr(e)); log(traceback.format_exc())
