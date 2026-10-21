@@ -264,13 +264,15 @@ function updateOverlays(){
 // the shadows are one thin-instanced mesh whose matrix buffer is rewritten in place each frame (no per-frame allocation).
 const FP={hash:0,cap:0,scap:0,fill:null,shadow:null,mbuf:null,fcol:null,sbuf:null,sNew:false,warned:0};
 // one mesh per mark: a faint fill (vertex alpha k) inside a crisp edge band (vertex alpha 1); the per-instance colour sets hue and edge strength
-function fpHexMesh(name,R0,R1,k){ const pos=[0,0,0], col=[1,1,1,k], idx=[]; for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30), c=Math.cos(a), sn=Math.sin(a); pos.push(c*R0,0,sn*R0, c*R0,0,sn*R0, c*R1,0,sn*R1); col.push(1,1,1,k, 1,1,1,1, 1,1,1,1); }
-  for(let i=0;i<6;i++){ const a=1+3*i, b=1+3*((i+1)%6); idx.push(0,a,b, a+1,a+2,b+2, a+1,b+2,b+1); }
-  const m=new BABYLON.Mesh(name,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.colors=col; vd.indices=idx; vd.applyToMesh(m); m.hasVertexAlpha=true; return m; }
-function fpEnsure(){ if(FP.fill&&!FP.fill.isDisposed()&&FP.shadow&&!FP.shadow.isDisposed()) return true; if(!G.scene||!G.tex||!G.tex.soft||!G.env) return false;
+// v53-I: the fill and the edge are two meshes sharing the instance buffers. Vertex colours plus thin-instance colours made Babylon compile a
+// variant that uses instanceColor without declaring it (a shader error on real GPUs, the marks went missing)
+function fpHexMesh(name,R0,R1,fill){ const pos=fill?[0,0,0]:[], idx=[]; for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30), c=Math.cos(a), sn=Math.sin(a); if(fill) pos.push(c*R0,0,sn*R0); else pos.push(c*R0,0,sn*R0, c*R1,0,sn*R1); }
+  for(let i=0;i<6;i++){ const j=(i+1)%6; if(fill) idx.push(0,1+i,1+j); else idx.push(2*i,2*i+1,2*j+1, 2*i,2*j+1,2*j); }
+  const m=new BABYLON.Mesh(name,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.indices=idx; vd.applyToMesh(m); return m; }
+function fpEnsure(){ if(FP.fill&&!FP.fill.isDisposed()&&FP.fill2&&!FP.fill2.isDisposed()&&FP.shadow&&!FP.shadow.isDisposed()) return true; if(!G.scene||!G.tex||!G.tex.soft||!G.env) return false;
   const mk=(m,name)=>{ const mt=new BABYLON.StandardMaterial(name,G.scene); mt.disableLighting=true; mt.diffuseColor=C3.Black(); mt.specularColor=C3.Black(); mt.emissiveColor=C3.White(); mt.alpha=.999; mt.alphaMode=BABYLON.Engine.ALPHA_ADD; mt.backFaceCulling=false; mt.disableDepthWrite=true; mt.zOffset=-1;
     m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.setEnabled(false); m.alphaIndex=-60; try{ G.glow.addExcludedMesh(m); }catch(e){} G.env.push(m,mt); return m; };
-  FP.fill=mk(fpHexMesh('fpMark',HS*.75,HS*.86,.17),'fpMarkM');
+  FP.fill=mk(fpHexMesh('fpMark',HS*.75,HS*.86,false),'fpMarkM'); FP.fill2=mk(fpHexMesh('fpMarkFill',HS*.75,HS*.86,true),'fpMarkFillM');
   const sh=MB.CreateGround('fpShadow',{width:1,height:1},G.scene), sm=new BABYLON.StandardMaterial('fpShadowM',G.scene); sm.disableLighting=true; sm.diffuseColor=C3.Black(); sm.specularColor=C3.Black(); sm.emissiveColor=C3.Black(); sm.opacityTexture=G.tex.soft; sm.alpha=.7; sm.backFaceCulling=false; sm.disableDepthWrite=true;
   sh.material=sm; sh.isPickable=false; sh.alwaysSelectAsActiveMesh=true; sh.alphaIndex=-50; sh.setEnabled(false); try{ G.glow.addExcludedMesh(sh); }catch(e){} G.env.push(sh,sm); FP.shadow=sh;
   FP.hash=NaN; FP.cap=0; FP.scap=0; return true; }
@@ -280,14 +282,14 @@ function boardMarks(){ if(!B||B.showcase||!G.views||!fpEnsure()) return;
   const U=B.units, hide=!!G.cineHidePlates; let h=hide?3:7, n=0;
   for(let i=0;i<U.length;i++){ const u=U[i], v=G.views.get(u.id); let k=0; if(!hide&&fpOn(u,v)){ k=1+(u.q+64)*997+(u.r+64)*31+(u.side==='player'?3:5)+fpLevel(u)*7+(u.isSq?11:0); n++; } h=(Math.imul(h,31)+k)|0; }
   if(h!==FP.hash){ FP.hash=h; fpRebuild(n); }
-  { const r=G.cam?G.cam.radius:300, k=Math.round(clamp((r-30)/120,.2,1)*20)/20, mt=FP.fill.material; if(mt&&mt.alpha!==k*.999) mt.alpha=k*.999; } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
+  { const r=G.cam?G.cam.radius:300, k=Math.round(clamp((r-30)/120,.2,1)*20)/20, mt=FP.fill.material, m2=FP.fill2.material; if(mt&&mt.alpha!==k*.999){ mt.alpha=k*.999; if(m2) m2.alpha=k*.999*.17; } } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
   fpShadows(); }
-function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
+function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); FP.fill2.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
   const M=FP.mbuf, F=FP.fcol, U=B.units; let i=0;
   if(n) for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!fpOn(u,v)) continue; const lv=fpLevel(u), p=hexWorld(u.q,u.r,0), c=u.side==='player'?FRIEND_C:FOE_C, o=i*16, q=i*4;
     M[o]=1; M[o+5]=1; M[o+10]=1; M[o+15]=1; M[o+12]=p.x; M[o+13]=.09; M[o+14]=p.z;
     const ea=u.isSq?.28:[.42,.8,1][lv]; F[q]=c.r; F[q+1]=c.g; F[q+2]=c.b; F[q+3]=ea; i++; } // fill reads at ~17% of the edge
-  const m=FP.fill; if(grow||!m.hasThinInstances){ m.thinInstanceSetBuffer('matrix',M,16,false); m.thinInstanceSetBuffer('color',F,4,false); } else { m.thinInstanceBufferUpdated('matrix'); m.thinInstanceBufferUpdated('color'); } m.thinInstanceCount=i; m.setEnabled(i>0); }
+  for(const m of [FP.fill,FP.fill2]){ if(grow||!m.hasThinInstances){ m.thinInstanceSetBuffer('matrix',M,16,false); m.thinInstanceSetBuffer('color',F,4,false); } else { m.thinInstanceBufferUpdated('matrix'); m.thinInstanceBufferUpdated('color'); } m.thinInstanceCount=i; m.setEnabled(i>0); } }
 function fpShadows(){ const U=B.units, ts=G.tacScale||1; let ns=0; for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!u.isSq&&v&&v.state==='alive'&&v.root&&v.root.isEnabled()) ns++; }
   if(ns>FP.scap){ FP.scap=Math.max(16,ns*2); FP.sbuf=new Float32Array(FP.scap*16); FP.sNew=true; }
   const b=FP.sbuf, m=FP.shadow; let i=0;

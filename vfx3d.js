@@ -47,7 +47,7 @@ function shockRing(pos,size,col,{flat=true,dur=1.1,thick=.05,tilt=.25}={}){ try{
       const m=new BABYLON.ShaderMaterial('shockM',G.scene,{vertex:'vsShock',fragment:'vsShock'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed','thick'],needAlphaBlending:true});
       m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){} return {mesh:pl,mat:m}; });
     const pl=e.mesh, m=e.mat; pl.position.copyFrom(pos); pl.rotation.set(0,0,0); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_NONE;
-    if(flat){ pl.rotation.x=Math.PI/2+(Math.random()-.5)*tilt; pl.rotation.z=(Math.random()-.5)*tilt; } else pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL;
+    if(flat){ pl.rotation.x=Math.PI/2; } /* v53-I: blast rings lie flat on the board plane (tilted rings read as misaligned spirals) */ else pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL;
     m.setColor3('col',col); m.setFloat('seed',Math.random()*40); m.setFloat('thick',thick); m.setFloat('t',0); pl.scaling.setAll(size*.12);
     vfxLife(pl,m,dur,k=>{ m.setFloat('t',k); pl.scaling.setAll(size*(.12+Math.pow(k,.55))); },e.release); }catch(e){ console.warn('shock',e); } }
 

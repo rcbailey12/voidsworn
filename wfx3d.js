@@ -105,7 +105,7 @@ function screenFlash(a,col){ try{ if(typeof document==='undefined'||G.fxReduced)
 
 // ---------- sprite helpers ----------
 // effects read at battle zoom: sprite sizes follow the camera distance (like the ships' tactical scale), velocities by the square root
-function fxScaleTick(){ const r=G.cam?G.cam.radius:200; G.fxK=clamp(.7+r/250,1,1.8); }
+function fxScaleTick(){ const r=G.cam?G.cam.radius:200; G.fxK=clamp(.9+r/160,1.3,2.4)*(G.mobile?1.35:G.quality==='medium'?1.15:1); } // a 412-wide phone gets bigger effects
 function wfp(p,o){ const k=G.fxK||1; if(k!==1){ if(o.size) o.size*=k; if(o.vel) o.vel=o.vel.scale(Math.sqrt(k)); } return fxp(p,o); }
 function fxQ(){ return G.mobile?.45:G.quality==='medium'?.6:G.quality==='ultra'?1.15:1; } // particle budget; Medium keeps every layer, just fewer of each
 function nq(n,cap){ return Math.max(1,Math.min(cap||999,Math.round(n*fxQ()*(G.fxReduced?.7:1)))); }
@@ -118,6 +118,8 @@ function viewMats(){ const f=G.scene.getFrameId(); if(G._vmF!==f||!G._vm){ G._vm
 function alignSprite(e,a,b,thick){ viewMats(); const A=V3.TransformCoordinates(a,G._vm), Bv=V3.TransformCoordinates(b,G._vm); if(A.z<.5&&Bv.z<.5){ e.sp.width=0; return false; }
   const za=Math.max(.5,A.z), zb=Math.max(.5,Bv.z), sax=A.x/za, say=A.y/za, sbx=Bv.x/zb, sby=Bv.y/zb, zm=(za+zb)/2, len=Math.max(thick*.5,Math.hypot(sbx-sax,sby-say)*zm);
   V3.TransformCoordinatesToRef(new V3((sax+sbx)/2*zm,(say+sby)/2*zm,zm),G._ivm,e.sp.position); e.sp.angle=Math.atan2(sby-say,sbx-sax); e.s0=thick/.45; e.w=len/thick; e.h=1; e.sp.width=len; e.sp.height=thick; return true; }
+// a thin ring around axis d at p, drawn as a sprite squashed to the ellipse it projects to
+function ringAround(p,d,R,col,o){ o=o||{}; const vd=p.subtract(G.cam.position).normalize(), ratio=Math.max(.14,Math.abs(V3.Dot(d,vd))); return wfp(p,{cell:12,size:R,col,dur:o.dur||.35,grow:o.grow==null?1.2:o.grow,ang:screenAng(p,d),w:ratio,h:1,fade:o.fade||1.4}); }
 function lineSprite(a,b,thick,col,o){ o=o||{}; thick*=G.fxK||1; const e=fxp(a,{cell:o.cell==null?4:o.cell,size:thick/.45,col,dur:o.dur||.12,grow:0,fade:o.fade==null?1.5:o.fade,alpha:o.alpha==null?1:o.alpha,c2:o.c2||null}); if(e){ alignSprite(e,a,b,thick); e.grow=0; } return e; }
 function sparkSpray(p,dir,n,sp,col,spread,o){ o=o||{}; for(let i=0;i<n;i++){ const d=dir?coneDir(dir,spread==null?.8:spread):rdir(), v=d.scale(rr(sp[0],sp[1]));
     wfp(p,{cell:3,size:rr(.9,1.8)*(o.k||1),col:C3.Lerp(col,new C3(1,.5,.15),Math.random()*.6).scale(1.7),dur:rr(.25,.6)*(o.life||1),grow:0,vel:v,drag:o.drag==null?2:o.drag,grav:o.grav==null?3:o.grav,ang:screenAng(p,v),w:1,h:.2,fade:1.1}); } }
@@ -145,7 +147,7 @@ function blast(pos,size,o){ o=o||{}; const s=Math.max(.3,size), tint=o.tint||new
     embers(pos,nq(3+s*2,30),null,{v0:s*1.2,v1:s*3.5+2,l0:1,l1:2.4});
     if(o.smoke!==false) smokePuff(pos,nq(2+s*.7,14),s*1.9,{l0:2.2+s*.08,l1:3.8+s*.12,v:s*.5});
     if(o.debris||s>=2.2) chunks(pos,null,nq(3+s*.8,18),[5+s,12+s*1.6],{k:Math.sqrt(s)*.8,hot:.35});
-    if(o.ring||s>=2.6){ if(typeof shockRing==='function'&&s>=2.6) shockRing(pos,s*3.4,(o.ringCol||new C3(1,.72,.45)),{flat:true,dur:.9+s*.03,thick:.05}); else wfp(pos,{cell:12,size:s*2,col:new C3(1,.8,.55).scale(1.3),dur:.28,grow:3,fade:1.5}); }
+    if(o.ring){ wfp(pos,{cell:0,size:s*4,col:hot.scale(1.4),dur:.22,grow:1.2,fade:2}); if(typeof shockRing==='function'&&s>=2.2) shockRing(pos,s*3,(o.ringCol||new C3(1,.72,.45)).scale(.8),{flat:true,dur:.9+s*.03,thick:.04}); else wfp(pos,{cell:12,size:s*2,col:new C3(1,.8,.55).scale(1.3),dur:.28,grow:3,fade:1.5}); } /* one flat ring on the board plane and a spherical flash */
     if(o.light!==false&&typeof lightFlash==='function') lightFlash(pos,new C3(1,.62,.3),3+s*.6,s*9,.6);
   }catch(e){ console.warn('blast',e); } }
 
@@ -182,40 +184,42 @@ function wMuzzle(p,d,col,k,o){ o=o||{}; wfp(p,{cell:1,size:(o.star||2.8)*k,col:h
 function boltTo(from,to,h,lead,done,o){ return wbFly(from,to,Object.assign({overshoot:h?0:30,onArrive:lead?done:(h?done:null),settle:done},o)); }
 const WFX={
   las:{tier:'s',gap:60,vol:1,decal:.3,
-    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), k=lead?1:.75, hot=hotOf(c.col,.75);
-      wMuzzle(from,d,c.col,k,{star:2.6,glow:3,sd:.06,gd:.1});
-      lineSprite(from,to,.24*k,hot.scale(2.3),{dur:.09,fade:1.3}); lineSprite(from,to,.95*k,c.col.scale(1.5),{dur:.15,fade:1.6});
-      if(lead&&!G.mobile) lineSprite(from,to,2.6,c.col.scale(.45),{dur:.22,fade:2.2,alpha:.5});
+    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), k=lead?1:.7, hot=hotOf(c.col,.8);
+      wfp(from,{cell:1,size:6*k,col:new C3(1,.98,.92).scale(2.6),dur:.07,grow:.25}); wfp(from,{cell:0,size:5*k,col:c.col.scale(1.6),dur:.12,grow:.4}); // hard muzzle flash
+      lineSprite(from,to,.95*k,new C3(1,.98,.94).scale(3),{dur:.11,fade:1.2}); lineSprite(from,to,2.8*k,c.col.scale(1.8),{dur:.16,fade:1.5}); // white-hot core inside a coloured halo
+      if(lead) lineSprite(from,to,6.5,c.col.scale(.5),{dur:.2,fade:2,alpha:.6});
       setTimeout(done,16); },
-    impact(c,p,from,lead){ const back=from.subtract(p).normalize(), n=lead?1:.55; wfp(p,{cell:1,size:3.4*n+.6,col:new C3(1,.97,.9).scale(2),dur:.08,grow:.4});
-      wfp(p,{cell:0,size:4*n+.8,col:new C3(1,.55,.22).scale(1.6),dur:.4,grow:.5,fade:1.2});
-      const tg=V3.Cross(back,V3.Up()); if(tg.lengthSquared()<.01) tg.set(1,0,0); tg.normalize(); const L=(lead?2.8:1.6)*rr(.7,1.2), ax=tg.add(new V3(0,rr(-.5,.5),0)).normalize();
-      lineSprite(p.subtract(ax.scale(L*.5)),p.add(ax.scale(L*.5)),.42,new C3(1,.72,.36).scale(1.9),{dur:lead?.8:.45,fade:.9,c2:new C3(.55,.07,.02)});
-      sparkSpray(p,back,nq(lead?12:5),[10,26],new C3(1,.85,.55),.9);
-      if(lead&&Math.random()<.5) smokePuff(p.add(back.scale(.6)),1,1.1,{l0:1.2,l1:2}); },
+    impact(c,p,from,lead){ const back=from.subtract(p).normalize(), n=lead?1:.6; wfp(p,{cell:1,size:7*n,col:new C3(1,.97,.9).scale(2.4),dur:.09,grow:.35}); wfp(p,{cell:0,size:6*n,col:hotOf(c.col,.3).scale(1.8),dur:.14,grow:.4});
+      wfp(p,{cell:0,size:5*n+1,col:new C3(1,.55,.22).scale(1.7),dur:.5,grow:.5,fade:1.1});
+      const tg=V3.Cross(back,V3.Up()); if(tg.lengthSquared()<.01) tg.set(1,0,0); tg.normalize(); const L=(lead?3.6:2)*rr(.7,1.2), ax=tg.add(new V3(0,rr(-.5,.5),0)).normalize();
+      lineSprite(p.subtract(ax.scale(L*.5)),p.add(ax.scale(L*.5)),.6,new C3(1,.72,.36).scale(2),{dur:lead?.9:.5,fade:.9,c2:new C3(.55,.07,.02)});
+      sparkSpray(p,back,nq(lead?14:6),[12,30],new C3(1,.88,.6),.9,{k:1.3});
+      if(lead&&Math.random()<.5) smokePuff(p.add(back.scale(.6)),1,1.3,{l0:1.2,l1:2}); },
     hitSfx(p){ SFX.play('hit_las',{pos:p}); }},
   plasma:{tier:'m',gap:150,vol:.55,decal:.5,
-    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), k=lead?1:.8, col=c.col, hot=hotOf(col,.6);
-      wfp(from,{cell:0,size:5.5*k,col:col.scale(1.4),dur:.22,grow:.6}); wfp(from,{cell:6,size:4.5*k,col:col.scale(1.3),dur:.22,grow:1.3,spin:6});
-      for(let i=0;i<nq(3);i++){ const v=coneDir(d,.8).scale(rr(4,9)); wfp(from,{cell:5,size:rr(.5,.9),col:hot.scale(1.8),c2:col.scale(.4),dur:rr(.25,.45),grow:0,vel:v,drag:1,grav:4}); }
-      boltTo(from,to,h,lead,done,{speed:110*rr(.95,1.05),heat:lead?4.5:3,layers:[{cell:0,size:6.2*k,col:col.scale(.55)},{cell:6,size:3.6*k,col:col.scale(1.35),wob:.24,wf:21,spin:5},{cell:5,size:1.8*k,col:hot.scale(2.1),spin:-9,wob:.1,wf:33},{cell:3,len:5.5*k,thick:1.4*k,col:col.scale(.85),back:.3}],
-        trail(r,p,dd,dt){ r.acc+=dt; const st=(G.mobile?.09:.05)*(lead?1:2.2); while(r.acc>=st){ r.acc-=st; r.ti=(r.ti||0)+1; wfp(p.subtract(dd.scale(1.2)),{cell:11,size:rr(.6,.95),col:hot.scale(1.8),c2:new C3(.55,.06,.02),dur:rr(.28,.45),grow:0,vel:dd.scale(-rr(2,5)).add(new V3(rr(-.8,.8),-rr(.5,2),rr(-.8,.8))),grav:6,ang:screenAng(p,dd.scale(-1)),w:1.4,h:1,fade:.8});
-          if(!G.mobile&&lead&&r.ti%2) wfp(p.subtract(dd.scale(2)),{cell:0,size:rr(2.2,3),col:col.scale(.3),dur:.25,grow:.8,fade:1.4}); } }}); },
-    impact(c,p,from,lead){ const back=from.subtract(p).normalize(), col=c.col, hot=hotOf(col,.6), k=lead?1:.6;
-      wfp(p,{cell:1,size:4.8*k,col:hot.scale(2),dur:.1,grow:.5}); wfp(p,{cell:0,size:8*k,col:col.scale(1.4),dur:.38,grow:.7,fade:1.3}); wfp(p,{cell:6,size:7*k,col:col.scale(1.4),dur:.32,grow:1.5,spin:4,fade:1.6});
-      for(let i=0;i<nq(lead?15:5);i++){ const v=coneDir(back.add(rdir().scale(.6)).normalize(),.9).scale(rr(5,15)); wfp(p,{cell:5,size:rr(.5,1.1)*k+.2,col:hot.scale(1.8),c2:col.scale(.35),dur:rr(.45,.9),grow:0,vel:v,drag:.8,grav:9,spin:rr(-6,6),fade:.7}); }
-      for(let i=0;i<nq(lead?5:1);i++) wfp(p.add(rdir().scale(.6)),{cell:11,size:rr(.8,1.1),col:new C3(1,.7,.3).scale(1.8),c2:new C3(.5,.06,0),dur:rr(1,1.6),grow:0,vel:new V3(rr(-.8,.8),-rr(.5,1.5),rr(-.8,.8)),grav:4,ang:-Math.PI/2,w:1.5,h:1,fade:.6});
-      const sl=lead?2:(Math.random()<.4?1:0); for(let i=0;i<sl;i++) hullGlow(c.vt,p.add(rdir().scale(.7)),rr(1.8,2.8)*k,new C3(1,.6,.24).scale(1.9),new C3(.3,.035,0),rr(2.4,3.2),15);
-      if(lead||!G.mobile) smokePuff(p.add(back.scale(.6)),nq(lead?3:1),1.6,{col:new C3(.18,.16,.15),up:1.3,l0:1.8,l1:3});
-      if(lead&&typeof lightFlash==='function') lightFlash(p,col,2.4,30,.45); },
+    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), k=lead?1:.8, col=c.col, sat=col.scale(1.25), WH=new C3(1,.97,.85);
+      wfp(from,{cell:1,size:6*k,col:WH.scale(2.4),dur:.08,grow:.3}); wfp(from,{cell:0,size:8*k,col:sat,dur:.25,grow:.6}); wfp(from,{cell:6,size:6*k,col:sat.scale(1.2),dur:.25,grow:1.3,spin:6});
+      for(let i=0;i<nq(4);i++){ const v=coneDir(d,.8).scale(rr(5,11)); wfp(from,{cell:8,size:rr(.8,1.3),col:WH.scale(2),c2:sat.scale(.6),dur:rr(.25,.45),grow:0,vel:v,drag:1,grav:4}); }
+      const PB=new C3(.42,.72,1), body=C3.Lerp(PB,col,.35);
+      boltTo(from,to,h,lead,done,{speed:105*rr(.95,1.05),heat:lead?6:4,layers:[{cell:0,size:10*k,col:body.scale(.8)},{cell:6,size:6*k,col:col.scale(1.5),wob:.32,wf:19,spin:6},{cell:3,len:13*k,thick:3.4*k,col:body.scale(1.7),back:.3,wob:.12,wf:23},{cell:4,len:9*k,thick:1.5*k,col:WH.scale(3.2),back:.6},{cell:8,size:3.2*k,col:WH.scale(3),wob:.12,wf:47},{cell:6,size:4.2*k,col:PB.scale(1.6),wob:.25,wf:29,wp:1.7,spin:-8}],
+        trail(r,p,dd,dt){ r.acc+=dt; const st=(G.mobile?.07:.035)*(lead?1:2.2); while(r.acc>=st){ r.acc-=st; r.ti=(r.ti||0)+1; const v=dd.scale(-rr(2,6)).add(rdir().scale(rr(2,5)));
+          wfp(p.subtract(dd.scale(rr(1,4))),{cell:8,size:rr(.7,1.2),col:WH.scale(2.2),c2:body.scale(.6),dur:rr(.25,.45),grow:0,vel:v,drag:1.2,fade:.8}); // embers shed off the bolt
+          if(r.ti%2) wfp(p.subtract(dd.scale(rr(1,3))),{cell:3,size:rr(1,1.6),col:body.scale(2),dur:rr(.15,.3),grow:0,vel:v.scale(1.8),drag:2,ang:screenAng(p,v),w:1,h:.22,fade:1.1}); } }}); },
+    impact(c,p,from,lead){ const back=from.subtract(p).normalize(), col=c.col, k=lead?1:.6, OR=new C3(1,.55,.16), WH=new C3(1,.95,.8);
+      wfp(p,{cell:1,size:9*k,col:WH.scale(2.6),dur:.12,grow:.5}); wfp(p,{cell:0,size:13*k,col:OR.scale(2),dur:.42,grow:.7,fade:1.2}); wfp(p,{cell:6,size:9*k,col:col.scale(1.5),dur:.34,grow:1.6,spin:4,fade:1.5}); wfp(p,{cell:12,size:3*k,col:col.scale(1.3),dur:.3,grow:3,fade:1.5});
+      for(let i=0;i<nq(lead?16:6);i++){ const v=coneDir(back.add(rdir().scale(.6)).normalize(),.9).scale(rr(6,16)); wfp(p,{cell:5,size:rr(.8,1.6)*k+.3,col:new C3(1,.75,.35).scale(2),c2:new C3(.6,.08,.02),dur:rr(.5,1),grow:0,vel:v,drag:.8,grav:9,spin:rr(-6,6),fade:.7}); }
+      for(let i=0;i<nq(lead?6:2);i++) wfp(p.add(rdir().scale(.8)),{cell:11,size:rr(1.1,1.6),col:new C3(1,.7,.3).scale(2),c2:new C3(.5,.06,0),dur:rr(1.1,1.8),grow:0,vel:new V3(rr(-.8,.8),-rr(.5,1.5),rr(-.8,.8)),grav:4,ang:-Math.PI/2,w:1.5,h:1,fade:.6});
+      const sl=lead?2:(Math.random()<.4?1:0); for(let i=0;i<sl;i++) hullGlow(c.vt,p.add(rdir().scale(.8)),rr(3.2,4.6)*k*(G.fxK||1),new C3(1,.62,.22).scale(2.2),new C3(.35,.04,0),rr(3,4.2),15);
+      if(lead||!G.mobile) smokePuff(p.add(back.scale(.8)),nq(lead?3:1),2,{col:new C3(.18,.16,.15),up:1.3,l0:1.8,l1:3});
+      if(lead&&typeof lightFlash==='function') lightFlash(p,new C3(1,.6,.3),3.2,34,.5); },
     hitSfx(p){ SFX.play('hit_plasma',{pos:p}); }},
   tracer:{tier:'s',gap:40,vol:1.2,decal:.2,
-    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), n=lead?4:2;
+    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), n=lead?5:2;
       for(let i=0;i<n;i++) setTimeout(()=>{ try{ const jt=i?new V3(rr(-1.3,1.3),rr(-.7,.7),rr(-1.3,1.3)):V3.Zero(), tgt=to.add(jt), first=i===0;
-        wfp(from,{cell:1,size:rr(1.6,2.4),col:BRASS.scale(2),dur:.05,grow:.3});
-        wbFly(from,tgt,{speed:rr(250,290),overshoot:first&&h?0:22,layers:[{cell:3,len:2.8,thick:.4,col:BRASS.scale(2.1),flick:70},{cell:0,size:1.3,col:new C3(1,.7,.35).scale(.9)}],
+        wfp(from,{cell:1,size:rr(3,4),col:BRASS.scale(2.4),dur:.05,grow:.3}); wfp(from,{cell:0,size:2.6,col:new C3(1,.6,.25).scale(1.4),dur:.08,grow:.3});
+        wbFly(from,tgt,{speed:rr(240,280),overshoot:first&&h?0:22,layers:[{cell:3,len:7.5,thick:1.5,col:BRASS.scale(2.8),flick:70},{cell:4,len:5,thick:.6,col:new C3(1,.97,.85).scale(2.6)},{cell:8,size:2,col:new C3(1,.95,.8).scale(2.6)},{cell:0,size:3.6,col:new C3(1,.62,.25).scale(1.2),flick:55}],
           onArrive:first?done:(h&&Math.random()<.7?()=>WFX.tracer.ping(c,tgt,from):null),settle:first?done:null}); }catch(e){ if(i===0) done(); } },i*28*Math.max(.4,SPEED)); },
-    ping(c,p,from){ const back=from.subtract(p).normalize(); wfp(p,{cell:1,size:rr(1.4,2),col:new C3(1,.92,.7).scale(1.8),dur:.06,grow:.3}); sparkSpray(p,back,nq(3),[6,14],BRASS,1);
+    ping(c,p,from){ const back=from.subtract(p).normalize(); wfp(p,{cell:1,size:rr(2.8,3.8),col:new C3(1,.92,.7).scale(2.2),dur:.07,grow:.3}); wfp(p,{cell:0,size:2.6,col:new C3(1,.6,.25).scale(1.5),dur:.18,grow:.4}); sparkSpray(p,back,nq(4),[8,18],BRASS,1,{k:1.2});
       if(Math.random()<.35) wfp(p,{pool:'smoke',size:rr(.8,1.3),col:new C3(.42,.4,.38),alpha:.5,dur:rr(.6,1),grow:1.4,vel:back.scale(1.2),drag:.8}); },
     impact(c,p,from,lead){ this.ping(c,p,from); if(lead) for(let i=1;i<3;i++) setTimeout(()=>{ try{ this.ping(c,p.add(rdir().scale(rr(.6,1.6))),from); }catch(e){} },i*30); },
     hitSfx(p){ SFX.play('patter_hull',{pos:p,gain:2}); SFX.hit(p); }},
@@ -224,18 +228,22 @@ const WFX={
       boltTo(from,to,h,lead,done,{speed:150,layers:[{cell:3,len:3.4,thick:.75,col:c.col.scale(1.6)},{cell:0,size:2.2,col:c.col.scale(.8)}]}); },
     impact(c,p,from,lead){ blast(p,lead?1.25:.7,{light:lead&&Math.random()<.4,smoke:lead,sparks:true}); },
     hitSfx(p){ SFX.hit(p); }},
-  rail:{tier:'m',gap:90,vol:.5,decal:.4,
-    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), col=c.col, hot=hotOf(col,.7), k=lead?1:.7;
-      wfp(from,{cell:12,size:1.4*k,col:hot.scale(1.5),dur:.22,grow:4.5,fade:1.4}); wfp(from,{cell:1,size:4.6*k,col:hot.scale(2),dur:.08,grow:.4}); if(lead) wfp(from,{cell:2,size:2*k,col:col.scale(1.2),dur:.3,grow:3,fade:2});
-      lineSprite(from,to,.3*k,hot.scale(2.4),{dur:.2,fade:1.2}); lineSprite(from,to,1.05*k,col.scale(1.5),{dur:.32,fade:1.4}); lineSprite(from,to,2.8*k,col.scale(.42),{dur:.9,fade:.9,alpha:.55});
-      if(lead&&!G.mobile){ const len=V3.Distance(from,to), n=Math.min(16,Math.floor(len/4)), side=V3.Cross(d,V3.Up()).normalize(), up=V3.Cross(side,d); for(let i=1;i<n;i++){ const a=i*.95, q=from.add(d.scale(len*i/n)).add(side.scale(Math.cos(a)*.7)).add(up.scale(Math.sin(a)*.7)); wfp(q,{cell:0,size:1.6,col:col.scale(.8),dur:rr(.45,.7),grow:.6,fade:1.2}); } }
-      setTimeout(done,40); },
+  rail:{tier:'m',gap:170,vol:.4,decal:.4,
+    // a slug at a fifth of light: the shot is a white-hot head crossing the gap in a few frames, the green ionised wake it leaves fades after it
+    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), col=c.col, k=lead?1:.7, WH=new C3(.92,1,.95);
+      wfp(from,{cell:12,size:2.4*k,col:WH.scale(2),dur:.32,grow:5,fade:1.3}); wfp(from,{cell:2,size:3*k,col:col.scale(1.4),dur:.4,grow:3.5,fade:1.8}); wfp(from,{cell:1,size:8*k,col:WH.scale(2.6),dur:.08,grow:.35});
+      sparkSpray(from,d,nq(lead?8:3),[20,40],WH,.35,{grav:0,k:1.2});
+      const len=V3.Distance(from,to), RC=c.va.fac==='deathless'?FAC3D.deathless.bolt:(c.P.bolt||col), nr=lead?6:3;
+      for(let i=0;i<nr;i++) setTimeout(()=>{ try{ const q=from.add(d.scale(Math.min(len*.32,14)*(i+.6)/nr)); ringAround(q,d,(2.6+i*.25)*k,RC.scale(1.7),{dur:.32,grow:1.3}); }catch(e){} },i*14); // stylised magnetic accelerator rings (rule of cool)
+      wbFly(from,to,{speed:1500,overshoot:h?0:40,layers:[{cell:3,len:Math.min(len*.6,30)*k,thick:1.3*k,col:WH.scale(2.8)},{cell:8,size:2.6*k,col:WH.scale(3)},{cell:0,size:4*k,col:col.scale(1.4)}],
+        onArrive:()=>{ try{ lineSprite(from,to,.5*k,WH.scale(2),{dur:.12,fade:1.6}); lineSprite(from,to,2.4*k,col.scale(.6),{dur:.8,fade:.9,alpha:.6});
+          if(lead&&!G.mobile){ const n=Math.min(18,Math.floor(len/3.5)), side=V3.Cross(d,V3.Up()).normalize(), up=V3.Cross(side,d); for(let i=1;i<n;i++){ const a=i*.95, q=from.add(d.scale(len*i/n)).add(side.scale(Math.cos(a)*.9)).add(up.scale(Math.sin(a)*.9)); wfp(q,{cell:0,size:2,col:col.scale(.9),dur:rr(.5,.8),grow:.7,fade:1.2}); } } }catch(e){} done(); },settle:done}); },
     impact(c,p,from,lead){ const d=p.subtract(from).normalize(), back=d.scale(-1), col=c.col, hot=hotOf(col,.7);
-      wfp(p,{cell:1,size:lead?5.2:3,col:new C3(1,1,.95).scale(2),dur:.08,grow:.4}); wfp(p,{cell:0,size:lead?6:3.4,col:col.scale(1.3),dur:.25,grow:.6});
+      wfp(p,{cell:1,size:lead?9:5,col:new C3(1,1,.95).scale(2.6),dur:.09,grow:.4}); wfp(p,{cell:0,size:lead?7:4,col:col.scale(1.5),dur:.25,grow:.6});
       sparkSpray(p,back,nq(lead?10:4),[14,30],new C3(.9,1,.9),.6,{grav:1});
       if(lead&&!c.shielded){ const vt=c.vt, L=(vt&&vt.L)||10; setTimeout(()=>{ try{ if(!vt.root||vt.root.isDisposed()) return; const ex=p.add(d.scale(L*.42)); // punch-through: the slug exits the far side and drags the hull out with it
-        wfp(ex,{cell:1,size:3.6,col:hot.scale(1.8),dur:.08,grow:.4}); chunks(ex,d,nq(10,14),[14,32],{hot:.5,spread:.45}); sparkSpray(ex,d,nq(16),[20,42],new C3(.85,1,.85),.45,{grav:1,k:1.2});
-        flames(ex,nq(2),1.4,new C3(1,.5,.18),{life:.5,spread:.2}); smokePuff(ex,nq(2),1.4,{v:2,l0:1.4,l1:2.4}); SFX.play('hit_rail',{pos:ex,gain:.7}); }catch(e){} },90*Math.max(.4,SPEED)); } },
+        wfp(ex,{cell:1,size:7,col:hot.scale(2.2),dur:.1,grow:.4}); wfp(ex,{cell:0,size:6,col:new C3(1,.6,.25).scale(1.8),dur:.3,grow:.6}); chunks(ex,d,nq(14,18),[16,36],{hot:.6,spread:.4,k:1.5}); sparkSpray(ex,d,nq(26),[22,48],new C3(.9,1,.9),.4,{grav:1,k:1.6});
+        flames(ex,nq(2),1.4,new C3(1,.5,.18),{life:.5,spread:.2}); smokePuff(ex,nq(2),1.4,{v:2,l0:1.4,l1:2.4}); SFX.play('hit_rail',{pos:ex,gain:.7}); }catch(e){} },80*Math.max(.4,SPEED)); } },
     hitSfx(p){ SFX.play('hit_rail',{pos:p}); }},
   needle:{tier:'s',gap:55,vol:1,decal:.2,
     fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), hot=hotOf(c.col,.7); wfp(from,{cell:1,size:2.4,col:hot.scale(1.8),dur:.07,grow:.3}); wfp(from,{cell:1,size:1.4,col:PRISM[Math.floor(Math.random()*6)].scale(1.8),dur:.1,grow:.3,ang:Math.PI/4});
@@ -313,7 +321,7 @@ function lanceBeam(from,to,col,width,dur,o){ o=o||{}; const len=V3.Distance(from
   const t0=G.time, D=dur*Math.max(.3,SPEED), hot=hotOf(col,.55).scale(1.9); let nextArc=0;
   const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||m.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); e.release(); return; }
     mat.setFloat('t',G.time%100); mat.setFloat('fade',Math.pow(1-k,1.4)); mat.setVector3('camPos',G.cam.position); const s=width*1.15*(1-k*.55+Math.sin(G.time*80)*.06); m.scaling.x=m.scaling.y=s;
-    if(G.time>=nextArc&&k<.85){ nextArc=G.time+(G.mobile?.12:.055); const a=rr(.05,.85), b=Math.min(1,a+rr(.06,.16)); arcLine(V3.Lerp(from,to,a),V3.Lerp(from,to,b),hot,{n:4,jag:width*(o.dark?1.6:1.1),thick:o.dark?.26:.18,dur:.07}); } }); }
+    if(G.time>=nextArc&&k<.85){ nextArc=G.time+(G.mobile?.1:o.ion?.03:.05); for(let q=0;q<(o.ion?2:1);q++){ const a=rr(.05,.85), b=Math.min(1,a+rr(.06,.18)); arcLine(V3.Lerp(from,to,a),V3.Lerp(from,to,b),hot,{n:5,jag:width*(o.dark?1.6:o.ion?1.8:1.1),thick:o.dark||o.ion?.3:.2,dur:.08}); } } }); }
 function beam(from,to,col,width,dur){ lanceBeam(from,to,col,width,dur); }
 function lanceImpact(c,p,from,lead){ const ion=c.fam==='ion', col=c.col, hot=hotOf(col,.6), back=from.subtract(p).normalize(), k=lead?1:.6;
   wfp(p,{cell:1,size:9*k,col:hot.scale(1.9),dur:.18,grow:.5}); wfp(p,{cell:0,size:10*k,col:(ion?col:new C3(1,.72,.4)).scale(1.5),dur:.55,grow:.6,fade:1.2});
@@ -327,7 +335,7 @@ async function lanceRun(c,shots,mz){ const ion=c.fam==='ion', col=c.col, dark=c.
   for(let i=0;i<shots.length;i++){ const from=mz[i%mz.length], h=shots[i], to=h?hitPoint(c.vt,from,c.shielded):missPoint(c.vt,from);
     try{ SFX.play('charge',{pos:from,gain:.45,rate:ion?1.25:1.05}); }catch(e){} chargeUp(from,col,cT); await wait(cT*900);
     if(typeof lightFlash==='function') lightFlash(from,col,2.2,40,.5); wfp(from,{cell:12,size:2,col:hotOf(col,.5).scale(1.5),dur:.25,grow:3.5,fade:1.4});
-    lanceBeam(from,to,col,ion?1.1:dark?2:1.6,.7,{dark}); SFX.lance(ion,c.va.fac,from); addTrauma(.05);
+    lanceBeam(from,to,col,ion?1.3:dark?2:1.6,.7,{dark,ion}); SFX.lance(ion,c.va.fac,from); addTrauma(.05);
     if(h) landLead(c,to,from); else wfp(to,{cell:0,size:3,col:col.scale(.8),dur:.3,grow:.5});
     await wait(150); }
   await wait(150); }
@@ -343,7 +351,7 @@ function torpProto(fac,sac){ const key=fac+(sac?'s':''), P=G.torpProto=G.torpPro
   g.name='torpGlow_'+key; g.material=M.eng; g.isVisible=false; g.isPickable=false; g.position.y=-9000;
   return P[key]={body,glow:g,rigs:[]}; }
 function torpRig(fac,sac){ const p=torpProto(fac,sac); let r=p.rigs.find(x=>!x.busy&&!x.node.isDisposed()); if(!r){ const node=new BABYLON.TransformNode('torp',G.scene), b=p.body.createInstance('torpI'), g=p.glow.createInstance('torpG'); b.parent=node; g.parent=node; b.isPickable=g.isPickable=false; r={node,b,g,busy:false}; if(p.rigs.length<16) p.rigs.push(r); else r.temp=true; }
-  r.busy=true; r.node.setEnabled(true); r.node.scaling.setAll(sac?1.4:1.25); r.release=()=>{ if(r.temp){ r.node.dispose(); return; } r.node.setEnabled(false); r.busy=false; }; return r; }
+  r.busy=true; r.node.setEnabled(true); r.node.scaling.setAll((sac?2.4:2.2)*(G.fxK||1)*.75); r.release=()=>{ if(r.temp){ r.node.dispose(); return; } r.node.setEnabled(false); r.busy=false; }; return r; }
 async function torpRun(c,shots,mz){ const fac=c.va.fac, TF={corsair:{dur:.8,arc:2,wob:.9,curve:4},chorus:{dur:1.15,arc:5.5,sac:true,curve:2},ithar:{dur:.55,arc:.6,curve:1.5},voidsworn:{dur:.85,arc:3.2,curve:6}}[fac]||{dur:.75,arc:3,curve:5};
   const P=c.P, eng=(P.eng||c.col), hot=hotOf(eng,.6);
   const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ let rig=null; const fin=onceFn(()=>{ try{ if(rig) rig.release(); }catch(e){} res(); });
@@ -351,10 +359,10 @@ async function torpRun(c,shots,mz){ const fac=c.va.fac, TF={corsair:{dur:.8,arc:
       wfp(from,{cell:1,size:3.4,col:hot.scale(1.8),dur:.1,grow:.4}); smokePuff(from.add(d.scale(1)),nq(3),1.2,{l0:1.2,l1:2,v:2}); SFX.torp(fac,from);
       rig=torpRig(fac,TF.sac); const dist=V3.Distance(from,to);
       wbFly(from,to,{speed:dist/TF.dur,overshoot:0,arc:TF.arc,curve:(Math.random()<.5?-1:1)*TF.curve*rr(.6,1.2),wob:TF.wob,
-        layers:[{cell:0,size:3.2,col:eng.scale(1.4),back:1.5,wob:.15,wf:40},{cell:1,size:2.4,col:hot.scale(1.5),back:1.5,flick:38}],
+        layers:[{cell:0,size:5.5,col:eng.scale(1.5),back:2.6,wob:.15,wf:40},{cell:1,size:4.5,col:hot.scale(2),back:2.6,flick:38},{cell:3,len:6,thick:2,col:hot.scale(1.6),back:2.6}],
         trail(r,p,dd,dt){ if(rig){ rig.node.position.copyFrom(p); rig.node.lookAt(p.add(dd)); } r.acc+=dt; const st=G.mobile?.05:.022;
-          while(r.acc>=st){ r.acc-=st; const tail=p.subtract(dd.scale(1.6)); wfp(tail,{pool:'fire',size:rr(1,1.4),col:hot.scale(1.5),dur:rr(.18,.26),grow:.6,anim:[0,6],vel:dd.scale(-3),fade:.8});
-            wfp(tail.subtract(dd.scale(.4)),{pool:'smoke',size:rr(.9,1.3),col:new C3(.42,.39,.36),alpha:.5,dur:rr(1.2,2),grow:2.6,vel:rdir().scale(.6),drag:.5,fade:1.1}); }
+          while(r.acc>=st){ r.acc-=st; const tail=p.subtract(dd.scale(2.8)); wfp(tail,{pool:'fire',size:rr(2,2.8),col:hot.scale(1.5),dur:rr(.18,.26),grow:.6,anim:[0,6],vel:dd.scale(-3),fade:.8});
+            wfp(tail.subtract(dd.scale(.6)),{pool:'smoke',size:rr(1.8,2.6),col:new C3(.42,.39,.36),alpha:.55,dur:rr(1.4,2.4),grow:2.6,vel:rdir().scale(.6),drag:.5,fade:1.1}); }
           const k=r.go/Math.max(1,r.arriveAt); if(typeof pdFire==='function'&&k>.25&&k<.92) pdFire(c.vt,p); },
         onArrive:()=>{ try{ if(h) landLead(c,to,from); else blast(to,1.8,{light:false}); }finally{ fin(); } },settle:fin});
     }catch(e){ console.warn('torp',e); fin(); } },i*120*SPEED); }));
