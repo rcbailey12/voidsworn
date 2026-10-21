@@ -10,21 +10,33 @@ function uWorld(u){ const v=G.views.get(u.id); if(v&&v.root&&!v.arrive) return v
 function toWorld(v,local){ v.root.computeWorldMatrix(true); return V3.TransformCoordinates(local,v.root.getWorldMatrix()); }
 
 // ---------- views ----------
-// v53: ring tubes, the IFF circle and the prow chevron are built once per ring size and arc, then cloned per ship (clones share the geometry;
-// each ship still gets its own materials, because shield alpha and pulse are per facing)
+// v53: one draw per ring. The four shield arcs, the IFF circle and the prow chevron are merged once per ring size into a shared template
+// (uv.x carries the part), and each ship's ring is a clone with a small shader whose uniforms hold every part's colour, alpha and pulse scale.
+// segs[] keeps its old shape (s.mat.alpha, s.m.scaling, s.pulse) so the per-frame update and the shield hit effects are unchanged.
+// Was six meshes and six materials per ship: six draws, six sorts, six material binds.
 const RING_GEO={};
-function ringGeo(key,build){ let t=RING_GEO[key]; if(!t||t.isDisposed()){ t=build(); t.setEnabled(false); t.isPickable=false; RING_GEO[key]=t; } const m=t.clone(t.name,null); m.setEnabled(true); m.isPickable=false; return m; }
+const RING_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec2 uv; uniform mat4 worldViewProjection; uniform float sc[6]; varying float vP;
+void main(){ float s=1.0; for(int i=0;i<6;i++){ if(abs(uv.x-float(i))<0.5) s=sc[i]; } vP=uv.x; gl_Position=worldViewProjection*vec4(position*s,1.0); }`,
+  frag:`precision highp float; uniform vec3 col[6]; uniform float al[6]; varying float vP;
+void main(){ vec3 c=vec3(0.0); float a=0.0; for(int i=0;i<6;i++){ if(abs(vP-float(i))<0.5){ c=col[i]; a=al[i]; } } gl_FragColor=vec4(c,a); }`};
+function ringTemplate(kind,R){ const key=kind+'|'+R; let t=RING_GEO[key]; if(t&&!t.isDisposed()) return t; const parts=[], spans=[[-50,50],[50,130],[130,230],[230,310]];
+  const add=(m,part,twoSided)=>{ m.computeWorldMatrix(true); const vd=BABYLON.VertexData.ExtractFromMesh(m,true,true); vd.transform(m.getWorldMatrix()); const n=vd.positions.length/3, uv=new Float32Array(n*2); for(let i=0;i<n;i++) uv[i*2]=part; vd.uvs=uv; vd.normals=null; vd.colors=null;
+    if(twoSided){ const I=Array.from(vd.indices), J=I.slice(); for(let i=0;i<I.length;i+=3) J.push(I[i],I[i+2],I[i+1]); vd.indices=J; } parts.push(vd); m.dispose(false,false); };
+  if(kind==='S') for(let q=0;q<4;q++){ const pts=[]; for(let a=spans[q][0]+4;a<=spans[q][1]-4;a+=4){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R,0,-Math.sin(r)*R)); } add(MB.CreateTube('seg',{path:pts,radius:.09,tessellation:5,cap:BABYLON.Mesh.CAP_ALL},G.scene),q); }
+  if(kind==='B'){ const pts=[]; for(let a=0;a<=360;a+=6){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R,0,Math.sin(r)*R)); } add(MB.CreateTube('seg',{path:pts,radius:.08,tessellation:4},G.scene),0); }
+  { const pts=[]; for(let a=0;a<=360;a+=8){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R*.8,0,Math.sin(r)*R*.8)); } add(MB.CreateTube('iff',{path:pts,radius:.07,tessellation:4},G.scene),4); }
+  if(kind!=='Q'){ const d=MB.CreateDisc('prowMark',{radius:Math.max(1.1,R*.17),tessellation:3},G.scene); d.rotation.x=Math.PI/2; d.scaling.y=.75; d.position.set(R*1.08,.05,0); add(d,5,true); } // v52 prow chevron, both faces (it was unculled)
+  const vd=parts[0]; if(parts.length>1) vd.merge(parts.slice(1),true); t=new BABYLON.Mesh('ringT_'+key,G.scene); vd.applyToMesh(t); t.setEnabled(false); t.isPickable=false; t.refreshBoundingInfo(); RING_GEO[key]=t; return t; }
 function makeShieldRing(u,v){
   const node=new BABYLON.TransformNode('ring',G.scene); const R=Math.max(5.2,v.L*.56);
-  const col=((FAC3D[u.fac]||{}).shield)||SHIELD_C;
-  const spans=[[-50,50],[50,130],[130,230],[230,310]], segs=[];
-  if(u.shMax>0 && !u.isSq){ for(let q=0;q<4;q++){ const pts=[]; for(let a=spans[q][0]+4;a<=spans[q][1]-4;a+=4){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R,0,-Math.sin(r)*R)); }
-      const m=ringGeo('seg'+q+'|'+R,()=>MB.CreateTube('seg',{path:pts,radius:.09,tessellation:5,cap:BABYLON.Mesh.CAP_ALL},G.scene)); G.glow.addExcludedMesh(m); const mat=emMat('segM',col,.8); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; m.material=mat; m.parent=node; m.isPickable=false; segs.push({m,mat,pulse:0}); } }
-  else if(!u.isSq){ const pts=[]; for(let a=0;a<=360;a+=6){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R,0,Math.sin(r)*R)); } const m=ringGeo('bare|'+R,()=>MB.CreateTube('seg',{path:pts,radius:.08,tessellation:4},G.scene)); const mat=emMat('segM',new C3(.5,.3,.3),.35); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; m.material=mat; m.parent=node; m.isPickable=false; }
-  { const pts=[]; for(let a=0;a<=360;a+=8){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R*.8,0,Math.sin(r)*R*.8)); } const m=ringGeo('iff|'+R,()=>MB.CreateTube('iff',{path:pts,radius:.07,tessellation:4},G.scene)); const mat=emMat('iffM',u.side==='player'?FRIEND_C:FOE_C,.55); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; m.material=mat; m.parent=node; m.isPickable=false; G.glow.addExcludedMesh(m); }
-  if(!u.isSq){ const ch=ringGeo('prow|'+R,()=>{ const d=MB.CreateDisc('prowMark',{radius:Math.max(1.1,R*.17),tessellation:3},G.scene); d.rotation.x=Math.PI/2; d.scaling.y=.75; d.position.set(R*1.08,.05,0); d.bakeCurrentTransformIntoVertices(); return d; }); // v52: a bright chevron on the ring's prow, so facing reads at any zoom
-    const cm=emMat('prowM',(u.side==='player'?FRIEND_C:FOE_C).scale(1.5),.85); cm.alphaMode=BABYLON.Engine.ALPHA_ADD; cm.disableDepthWrite=true; cm.backFaceCulling=false; ch.material=cm; ch.parent=node; ch.isPickable=false; G.glow.addExcludedMesh(ch); }
-  return {node,segs,R};
+  const col=((FAC3D[u.fac]||{}).shield)||SHIELD_C, iff=u.side==='player'?FRIEND_C:FOE_C, segs=[], kind=u.isSq?'Q':u.shMax>0?'S':'B';
+  const S=BABYLON.Effect.ShadersStore; if(!S.vsRingVertexShader){ S.vsRingVertexShader=RING_GLSL.vert; S.vsRingFragmentShader=RING_GLSL.frag; }
+  const al=[0,0,0,0,.55,.85], sc=[1,1,1,1,1,1], cols=[]; for(let i=0;i<6;i++){ const c=i<4?(kind==='B'?new C3(.5,.3,.3):col):i===4?iff:iff.scale(1.5); cols.push(c.r,c.g,c.b); } if(kind==='B') al[0]=.35;
+  const mat=new BABYLON.ShaderMaterial('ringM',G.scene,{vertex:'vsRing',fragment:'vsRing'},{attributes:['position','uv'],uniforms:['worldViewProjection','sc','col','al'],needAlphaBlending:true});
+  mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.backFaceCulling=true; mat.setFloats('sc',sc); mat.setFloats('al',al); mat.setArray3('col',cols);
+  const m=ringTemplate(kind,R).clone('ring',null); m.setEnabled(true); m.isPickable=false; m.material=mat; m.parent=node; G.glow.addExcludedMesh(m);
+  if(kind==='S') for(let q=0;q<4;q++) segs.push({pulse:0,mat:{get alpha(){ return al[q]; },set alpha(x){ al[q]=x; }},m:{scaling:{get x(){ return sc[q]; },setAll(x){ sc[q]=x; }}}});
+  return {node,segs,R,mesh:m};
 }
 function makePlate(u){ const el=document.createElement('div'); el.className='plate '+(u.side==='player'?'friend':'foe'); el.innerHTML=`<div class="nm"></div>${u.shMax&&!u.isSq?'<div class="sp" title="Shields: port, prow, starboard, rear"><b></b><b></b><b></b><b></b></div>':''}<div class="hb" title="Hull"><i></i></div>`;
   el.querySelector('.nm').textContent=u.isSq?u.t.n:u.name; document.getElementById('plates').appendChild(el); return {el,hb:el.querySelector('.hb i'),sp:[...el.querySelectorAll('.sp b')],key:''}; }

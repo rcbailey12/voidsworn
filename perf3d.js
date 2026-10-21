@@ -102,6 +102,12 @@ function dietFreeze(a,b){ if(!a) return; const spin=new Set(DIET.spin); let n=0;
     let same=true; for(let i=0;i<16;i++) if(Math.abs(A[i]-B1[i])>1e-7){ same=false; break; } if(!same) continue;
     x.computeWorldMatrix(true); x.freezeWorldMatrix(); x.doNotSyncBoundingInfo=true; DIET.frozen.push({m:x,key:dietLocalKey(x)}); n++; }
   DIET.lastFrozen=n; }
-function dietEnv(){ try{ glowFastHasMesh(); dietRocks(); DIET.frozen=DIET.frozen.filter(e=>!e.m.isDisposed()); DIET.watch={f:0,a:null};
+// SSAO's geometry buffer (desktop High/Ultra) re-rendered every mesh in the scene, including the decorative rock field, belt and ring far
+// below the board, infinite-distance sky props and billboards, none of which sit inside the AO range in front of the board. It now takes
+// only what can receive or cast contact shadows near the board (and nothing at all while SSAO is off).
+function dietGBuffer(){ try{ const gb=G.scene&&G.scene.geometryBufferRenderer, rt=gb&&gb.getGBuffer&&gb.getGBuffer(); if(!rt||rt._dietPred) return; rt._dietPred=true; const far=/^(rockRing|belt|bank|bstar|bs|galaxy|sun|sunHalo|sky|stars|planet|atmo)/;
+    rt.renderListPredicate=m=>{ if(!G.ssaoOn||!m.isEnabled()||!m.isVisible||m.infiniteDistance||m.billboardMode||far.test(m.name)) return false; const bi=m.getBoundingInfo&&m.getBoundingInfo(); if(!bi) return true; const c=bi.boundingSphere.centerWorld;
+      return c.y>-40&&c.y<120&&Math.abs(c.x)<G.bx*1.6&&Math.abs(c.z)<G.bz*1.6; }; }catch(e){ console.warn('gbuffer diet',e); } }
+function dietEnv(){ try{ glowFastHasMesh(); dietGBuffer(); dietRocks(); DIET.frozen=DIET.frozen.filter(e=>!e.m.isDisposed()); DIET.watch={f:0,a:null};
     if(!DIET.obs&&G.scene) DIET.obs=G.scene.onBeforeRenderObservable.add(()=>{ try{ dietTick(); }catch(e){} }); }catch(e){ console.warn('diet',e); } }
 { const _b=buildBattleEnv; buildBattleEnv=function(){ const x=_b.apply(this,arguments); dietEnv(); return x; }; }
