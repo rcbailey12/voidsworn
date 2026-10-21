@@ -442,7 +442,7 @@ class RockLibPlugin extends BABYLON.MaterialPluginBase{
 #endif
 `}; } }
 function rockLibMat(d){ const k=d.code+'@'+d.dir; let m=ROCK_LIB.mats[k]; if(m&&G.scene.materials.includes(m)) return m; const set=d.code.slice(0,3), t=ROCK_TINT[set]||[.3,.3,.3], gl=ROCK_GLOW[set];
-  m=new BABYLON.StandardMaterial('rockLib_'+d.code,G.scene); m.diffuseColor=new C3(t[0]*2.2,t[1]*2.2,t[2]*2.2); m.specularColor=set==='RIC'?new C3(.1,.11,.13):new C3(.025,.025,.025); m.specularPower=set==='RIC'?24:8; /* rough, non-metallic, no sparkle */
+  m=new BABYLON.StandardMaterial('rockLib_'+d.code,G.scene); m.diffuseColor=new C3(t[0],t[1],t[2]); /* v53.6 lighting: the 2.2x lift blew stone out to cream */ m.specularColor=set==='RIC'?new C3(.1,.11,.13):new C3(.025,.025,.025); m.specularPower=set==='RIC'?24:8; /* rough, non-metallic, no sparkle */
   m.bumpTexture=new BABYLON.Texture(d.dir+d.code+'_n.webp',G.scene); const mt=new BABYLON.Texture(d.dir+d.code+'_m.webp',G.scene);
   try{ new RockLibPlugin(m,mt,gl?new C3(gl[0],gl[1],gl[2]):new C3(0,0,0)); }catch(e){ console.warn('rock lib shading',e); } return ROCK_LIB.mats[k]=m; } // cached across battles (not in G.env), so the maps load once
 // the eight rocks fill the seven board roles: the most elongated stand up as pillars, slab and shard (long axis turned vertical, squeezed toward
