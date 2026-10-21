@@ -3,7 +3,7 @@
 function sceneAnimating(){ try{
     if(G.tweens>0) return true;
     if(typeof B!=='undefined'&&B&&(B.busy||B.ending&&!document.getElementById('endcard'))) return true;
-    if(PROJ.length||TORPS.size) return true;
+    if(PROJ.length||TORPS.size) return true; if(typeof fxBusy==='function'&&fxBusy()) return true; /* v53-I: bolts in flight, shake, hit-stop */
     if(performance.now()-G.lastInput<700) return true; // a finger on the glass: camera drags stay smooth
     for(const h of G.hulks||[]) if(G.time-h.t0<8) return true;
     const c=G.cam, k=G.ctl; if(c&&k&&!k.attract&&(Math.abs(k.a-c.alpha)>.01||Math.abs(k.b-c.beta)>.01||Math.abs(k.r-c.radius)>1||V3.DistanceSquared(k.t,c.target)>.25)) return true;

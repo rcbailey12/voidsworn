@@ -17,16 +17,9 @@ function vfxLife(mesh,mat,dur,fn,release){ const t0=G.time, D=dur*Math.max(.3,SP
 function fxShPool(key,make){ const P=G.shPools||(G.shPools={}); const L=P[key]=(P[key]||[]).filter(e=>!e.mesh.isDisposed()); let e=L.find(x=>!x.busy); if(!e){ e=make(); e.busy=false; if(L.length<12) L.push(e); else e.temp=true; } e.busy=true; e.mesh.setEnabled(true);
   e.release=()=>{ if(e.temp){ e.mesh.dispose(); e.mat.dispose(); return; } e.mesh.setEnabled(false); e.busy=false; }; return e; }
 // a camera-facing sprite: stars, glows
-function fxSprite(pos,size,col,tex,dur,{grow=.9,spin=0,alpha=1}={}){ try{ if(G.fxReduced){ size*=.6; col=col.scale(.6); }
-    if((tex===G.tex.star||tex===G.tex.soft||tex===G.tex.flare)&&typeof fxp==='function'&&fxPool().mgr){ if(G.mobile) size*=.8; fxp(pos,{cell:tex===G.tex.star?1:0,size,col,dur,grow,spin:spin*60,alpha,fade:2}); return; }
-    const pl=MB.CreatePlane('fxs',{size:1},G.scene); pl.position.copyFrom(pos); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false; pl.rotation.z=Math.random()*6.28;
-    const m=vfxMat('fxsM',col,tex,alpha); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
-    vfxLife(pl,m,dur,k=>{ pl.scaling.setAll(size*(.45+k*grow)); m.alpha=alpha*(1-k)*(1-k); if(spin) pl.rotation.z+=spin*.016; }); }catch(e){} }
-// a quad stretched along a direction and turned to face the camera: muzzle flames, streaks
-function fxStreak(pos,dir,len,wid,col,tex,dur){ try{ const pl=MB.CreatePlane('fxk',{width:1,height:1,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.bakeTransformIntoVertices(BABYLON.Matrix.Translation(.5,0,0)); pl.isPickable=false; pl.position.copyFrom(pos);
-    const X=dir.normalize(), cd=G.cam.position.subtract(pos).normalize(); let Z=cd.subtract(X.scale(V3.Dot(cd,X))); if(Z.lengthSquared()<1e-4) Z=new V3(0,1,0); Z.normalize(); const Y=V3.Cross(Z,X).normalize();
-    pl.rotationQuaternion=BABYLON.Quaternion.RotationQuaternionFromAxis(X,Y,Z); const m=vfxMat('fxkM',col,tex,1); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
-    vfxLife(pl,m,dur,k=>{ const e=1-Math.pow(1-k,3); pl.scaling.set(len*(.55+.6*e),wid*(.7+.5*e),1); m.alpha=Math.pow(1-k,1.6); }); }catch(e){} }
+function fxSprite(pos,size,col,tex,dur,{grow=.9,spin=0,alpha=1}={}){ try{ if(G.fxReduced){ size*=.6; col=col.scale(.6); } if(G.mobile) size*=.8; fxp(pos,{cell:tex===G.tex.star?1:0,size,col,dur,grow,spin:spin*60,alpha,fade:2}); }catch(e){} }
+// a flame or streak stretched along a direction (pooled sprite; v53-I: was a plane and a material per call)
+function fxStreak(pos,dir,len,wid,col,tex,dur){ try{ const d=dir.clone().normalize(), e=fxp(pos,{cell:tex===G.tex.cone?10:3,size:1,col,dur,grow:.5,fade:1.6}); if(e){ alignSprite(e,pos,pos.add(d.scale(len)),wid); e.grow=.5; } }catch(e){} }
 
 // muzzle blast: a star, a flame tongue along the barrel, a puff of smoke and a few hot fragments
 function muzzleBlast(pos,out,col,big){ const s=big?1.5:1; fxSprite(pos,3.2*s,C3.Lerp(col,new C3(1,1,1),.35).scale(1.6),starTex(),.16,{grow:.6});
@@ -58,11 +51,7 @@ function shockRing(pos,size,col,{flat=true,dur=1.1,thick=.05,tilt=.25}={}){ try{
     m.setColor3('col',col); m.setFloat('seed',Math.random()*40); m.setFloat('thick',thick); m.setFloat('t',0); pl.scaling.setAll(size*.12);
     vfxLife(pl,m,dur,k=>{ m.setFloat('t',k); pl.scaling.setAll(size*(.12+Math.pow(k,.55))); },e.release); }catch(e){ console.warn('shock',e); } }
 
-// converging energy before a lance fires
-function chargeFx(pos,col,dur=.28){ try{ if(G.fxReduced) return; const ps=new BABYLON.ParticleSystem('charge',G.quality==='medium'?24:60,G.scene); ps.particleTexture=G.tex.soft; ps.emitter=pos.clone(); ps.createSphereEmitter(4.5,0);
-    ps.minEmitPower=-14; ps.maxEmitPower=-9; ps.minLifeTime=.22; ps.maxLifeTime=.32; ps.minSize=.15; ps.maxSize=.45; ps.color1=new C4(col.r,col.g,col.b,1); ps.color2=new C4(1,1,1,1); ps.colorDead=new C4(col.r,col.g,col.b,0);
-    ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_ONEONE; ps.emitRate=260; ps.targetStopDuration=dur; ps.disposeOnStop=true; ps.updateSpeed=.016/Math.max(.35,SPEED); ps.start();
-    fxSprite(pos,4,col.scale(1.4),G.tex.flare,dur+.1,{grow:-.3}); }catch(e){} }
+// converging energy before a lance fires: wfx3d chargeUp (pooled sprites)
 
 // debris that burns: a few chunks trail fire and smoke as they tumble away
 function debrisTrail(mesh,life){ try{
@@ -71,10 +60,7 @@ function debrisTrail(mesh,life){ try{
         while(st.acc>=1){ st.acc-=1; const p=mesh.getAbsolutePosition(); fxp(p,{smoke:true,size:.7+Math.random()*.6,col:new C3(.34,.28,.24),alpha:.55,dur:.7+Math.random()*.5,grow:1.8,drag:.5,fade:1.2});
           if(Math.random()<.5) fxp(p,{cell:0,size:.9,col:new C3(1,.55,.2).scale(1.4),dur:.3,grow:.3}); } });
       return {stop(){ st.on=false; },dispose(){ st.on=false; }}; }
-    const ps=new BABYLON.ParticleSystem('dtr',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=mesh; ps.minEmitBox=V3.Zero(); ps.maxEmitBox=V3.Zero();
-    ps.color1=new C4(1,.62,.25,.9); ps.color2=new C4(.9,.35,.12,.7); ps.colorDead=new C4(.08,.07,.07,0); ps.minSize=.35; ps.maxSize=.9; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,2.4);
-    ps.minLifeTime=.5; ps.maxLifeTime=1.1; ps.emitRate=45; ps.minEmitPower=.1; ps.maxEmitPower=.5; ps.direction1=new V3(-.2,-.2,-.2); ps.direction2=new V3(.2,.2,.2); ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start();
-    setTimeout(()=>{ try{ ps.stop(); setTimeout(()=>ps.dispose(),1400); }catch(e){} },life*1000); return ps; }catch(e){ return null; } }
+    return null; }catch(e){ return null; } }
 
 // engine plumes: white-hot core, faction-coloured sheath, shock diamonds near the nozzle, flicker
 const PLUME_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec3 normal; attribute vec2 uv; uniform mat4 world; uniform mat4 worldViewProjection; varying vec2 vUV; varying vec3 vN; varying vec3 vP;
@@ -123,37 +109,37 @@ function aimTurrets(v,worldTarget){ try{ const T=v&&v.model&&v.model.turrets; if
 function updateTurrets(v,dt){ const T=v&&v.model&&v.model.turrets; if(!T) return; for(const t of T){ let d=((t.target-t.yaw.rotation.y)%6.283+9.425)%6.283-3.1416; const st=Math.min(Math.abs(d),dt*2.6); t.yaw.rotation.y+=Math.sign(d)*st; } }
 
 // ---------- v44 GPU sprite pool: hundreds of flashes, sparks and streaks in a single draw call ----------
-// cells: 0 soft glow, 1 four-point star, 2 ring, 3 streak (along x)
-function fxPoolURL(){ const S=128, N=4, c=document.createElement('canvas'); c.width=S*N; c.height=S; const g=c.getContext('2d'), img=g.createImageData(S*N,S), d=img.data;
-  for(let cell=0;cell<N;cell++) for(let y=0;y<S;y++) for(let x=0;x<S;x++){ const dx=(x+.5-S/2)/(S/2), dy=(y+.5-S/2)/(S/2), r=Math.hypot(dx,dy); let v=0;
-    if(cell===0) v=Math.exp(-r*r*4.5)*clamp((1-r)*5,0,1);
-    else if(cell===1) v=(Math.exp(-r*r*16)*1.3+(Math.exp(-Math.abs(dy)*34)*Math.exp(-Math.abs(dx)*2.6)+Math.exp(-Math.abs(dx)*34)*Math.exp(-Math.abs(dy)*2.6))*.9+Math.exp(-r*r*3.2)*.22)*clamp((1-r)*3,0,1);
-    else if(cell===2) v=(Math.exp(-Math.pow((r-.74)*10,2))*.95+Math.exp(-r*r*5)*.1)*clamp((1-r)*6,0,1);
-    else v=Math.exp(-dy*dy*38)*Math.pow(Math.max(0,1-Math.abs(dx)),.7)*(dx>0?1:.75+.25*(1+dx));
-    const o=(y*S*N+cell*S+x)*4; d[o]=d[o+1]=d[o+2]=255; d[o+3]=Math.round(clamp(v,0,1)*255); }
-  g.putImageData(img,0,0); return c.toDataURL(); }
-// a second pool for smoke: soft alpha-blended puffs (not additive), so explosions and wrecks smoke without a particle system each
-function fxSmokeURL(){ const S=128, c=document.createElement('canvas'); c.width=S; c.height=S; const g=c.getContext('2d'), img=g.createImageData(S,S), d=img.data, r=seeded(77);
-  const blobs=[]; for(let i=0;i<9;i++) blobs.push([(r()-.5)*.6,(r()-.5)*.6,.25+r()*.3]);
-  for(let y=0;y<S;y++) for(let x=0;x<S;x++){ const dx=(x+.5-S/2)/(S/2), dy=(y+.5-S/2)/(S/2); let v=0; for(const [bx,by,br] of blobs){ const q=Math.hypot(dx-bx,dy-by)/br; v+=Math.exp(-q*q*2.2); }
-    v=clamp(v*.55,0,1)*clamp((1-Math.hypot(dx,dy))*2.5,0,1); const sh=.75+.25*(-dx-dy)*.5; const o=(y*S+x)*4; d[o]=d[o+1]=d[o+2]=Math.round(255*clamp(sh,0,1)); d[o+3]=Math.round(v*255); }
-  g.putImageData(img,0,0); return c.toDataURL(); }
-function mkPool(kind){ const smoke=kind==='smoke', cap=smoke?(G.mobile?220:600):(G.mobile?700:1800);
-  const mgr=new BABYLON.SpriteManager(smoke?'fxSmoke':'fxPool',smoke?fxSmokeURL():fxPoolURL(),cap,{width:128,height:128},G.scene);
-  mgr.blendMode=smoke?BABYLON.Constants.ALPHA_COMBINE:BABYLON.Constants.ALPHA_ADD; mgr.disableDepthWrite=true; mgr.isPickable=false; return {mgr,cap,live:[],free:[],smoke}; }
+// v53-I: four pools, each one SpriteManager (one draw), all textures generated once (cached in IndexedDB by TexCache):
+//   add   additive misc atlas, 4x4 cells (wfx3d fxAtlasCanvas): 0 glow, 1 star, 2 ring, 3 streak, 4 beam line, 5 molten core, 6 corona, 7 shard,
+//         8 ember, 9 arc, 10 flame tongue, 11 droplet, 12 shock ring, 13 hex static, 14 splash, 15 slag
+//   fire  additive flame flipbook (the R channel of an R=flame/G=smoke atlas), played over a sprite's life
+//   smoke alpha-blended smoke flipbook (the G channel, lit from its own gradient), so smoke darkens what is behind it
+//   chunk alpha-blended debris silhouettes (4 cells)
+// The flipbook comes from fxBookCanvas (procedural) until a rendered atlas is dropped in with fxBookLoad(url,cols,rows): same layout, same code path.
+function mkPool(kind,url,cell){ const caps={add:G.mobile?700:1800,fire:G.mobile?160:420,smoke:G.mobile?240:640,chunk:G.mobile?60:180}, cap=caps[kind];
+  const mgr=new BABYLON.SpriteManager('fx_'+kind,url,cap,{width:cell,height:cell},G.scene);
+  mgr.blendMode=(kind==='smoke'||kind==='chunk')?BABYLON.Constants.ALPHA_COMBINE:BABYLON.Constants.ALPHA_ADD; mgr.disableDepthWrite=true; mgr.isPickable=false; return {mgr,cap,live:[],free:[],kind,smoke:kind==='smoke'||kind==='chunk'}; }
 function fxPool(){ const P=G.fxPool; if(P&&P.scene===G.scene) return P;
-  try{ const add=mkPool('add'); let sm=null; try{ sm=mkPool('smoke'); }catch(e){}
-    G.fxPool={scene:G.scene,mgr:add.mgr,cap:add.cap,live:add.live,free:add.free,pools:[add].concat(sm?[sm]:[]),add,sm,last:G.time||0,amb:0}; return G.fxPool; }catch(e){ console.warn('fxPool',e); G.fxPool={scene:G.scene,mgr:null,live:[],free:[],pools:[]}; return G.fxPool; } }
-// spawn one pooled sprite. size is in world units; vel moves it (grav pulls it down); ang rotates in screen space; w/h stretch it; smoke:true uses the alpha-blended smoke pool
-function fxp(pos,{cell=0,size=1,col=WHITE3,dur=.3,grow=.8,vel=null,drag=0,spin=0,alpha=1,ang=null,w=1,h=1,fade=2,grav=0,smoke=false}={}){ const P0=fxPool(); const P=smoke?P0.sm:P0.add; if(!P||!P.mgr) return null;
+  try{ const A=fxAtlases(); const mk=(k,u,c)=>{ try{ return mkPool(k,u,c); }catch(e){ console.warn('fx pool '+k,e); return null; } };
+    const sm=mk('smoke',A.smoke,A.cell), ch=mk('chunk',A.chunk,64), fi=mk('fire',A.fire,A.cell), add=mk('add',A.add,128); // render order: smoke, chunks, then additive fire and glow on top
+    G.fxPool={scene:G.scene,mgr:add&&add.mgr,cap:add?add.cap:0,live:add?add.live:[],free:add?add.free:[],pools:[sm,ch,fi,add].filter(Boolean),add,sm,fire:fi,chunk:ch,nF:A.nF,last:G.time||0,amb:0}; return G.fxPool;
+  }catch(e){ console.warn('fxPool',e); G.fxPool={scene:G.scene,mgr:null,live:[],free:[],pools:[]}; return G.fxPool; } }
+// spawn one pooled sprite. size is in world units; vel moves it (grav pulls it down); ang rotates in screen space; w/h stretch it.
+// pool: 'add' (default), 'fire', 'smoke', 'chunk' (smoke:true = 'smoke'); anim:[a,b] plays cells a..b over the life (flipbook pools default to the whole book);
+// c2: colour at the end of life (cooling slag, embers); stick:{v,p}: rides a ship view at local point p (slag, burns, static on a hull)
+function fxp(pos,{cell=0,size=1,col=WHITE3,dur=.3,grow=.8,vel=null,drag=0,spin=0,alpha=1,ang=null,w=1,h=1,fade=2,grav=0,smoke=false,pool=null,anim=null,c2=null,stick=null}={}){ const P0=fxPool(); const pk=pool||(smoke?'smoke':'add'); const P=P0[pk==='add'?'add':pk==='smoke'?'sm':pk]; if(!P||!P.mgr) return null;
   let e; if(P.live.length>=P.cap-2){ e=P.live.shift(); } else if(P.free.length) e=P.free.pop(); else e={sp:new BABYLON.Sprite('fxp',P.mgr),vel:new V3(0,0,0),c:new C4(1,1,1,1)};
-  e.gen=(e.gen||0)+1; const sp=e.sp; sp.isVisible=true; sp.cellIndex=smoke?0:cell; sp.position.copyFrom(pos); sp.angle=ang==null?Math.random()*6.283:ang; e.c.set(col.r,col.g,col.b,alpha); sp.color=e.c;
-  e.t0=G.time; e.dur=Math.max(.02,dur)*Math.max(.3,SPEED); e.s0=size; e.grow=grow; e.mv=!!vel; if(vel) e.vel.copyFrom(vel); e.drag=drag; e.spin=spin; e.r=col.r; e.g=col.g; e.b=col.b; e.alpha=alpha; e.w=w; e.h=h; e.fade=fade; e.grav=grav; e.smoke=smoke;
+  e.gen=(e.gen||0)+1; const sp=e.sp; sp.isVisible=true; const book=pk==='fire'||pk==='smoke'; e.anim=anim||(book?(pk==='smoke'?[Math.min(2,P0.nF-1),P0.nF-1]:[0,P0.nF-1]):null); sp.cellIndex=e.anim?e.anim[0]:cell;
+  sp.position.copyFrom(pos); sp.angle=ang==null?Math.random()*6.283:ang; e.c.set(col.r,col.g,col.b,alpha); sp.color=e.c;
+  e.t0=G.time; e.dur=Math.max(.02,dur)*Math.max(.3,SPEED); e.s0=size; e.grow=grow; e.mv=!!vel; if(vel) e.vel.copyFrom(vel); e.drag=drag; e.spin=spin; e.r=col.r; e.g=col.g; e.b=col.b; e.alpha=alpha; e.w=w; e.h=h; e.fade=fade; e.grav=grav; e.smoke=P.kind==='smoke'?2:P.kind==='chunk'?1:0; e.c2=c2; e.stick=stick; e.hold=false;
   sp.width=size*w*.45; sp.height=size*h*.45; P.live.push(e); return e; }
 function fxPoolTick(){ const P=G.fxPool; if(!P||!P.mgr||P.scene!==G.scene) return; const now=G.time, dt=Math.min(.1,Math.max(0,now-P.last)); P.last=now; const sc=dt/Math.max(.3,SPEED);
-  for(const Q of P.pools){ const L=Q.live; for(let i=L.length-1;i>=0;i--){ const e=L[i], k=(now-e.t0)/e.dur, sp=e.sp; if(k>=1){ sp.isVisible=false; L.splice(i,1); Q.free.push(e); continue; }
-      const s=e.s0*(.45+k*e.grow); sp.width=s*e.w; sp.height=s*e.h; const a=e.alpha*Math.pow(1-k,e.fade); if(e.smoke){ e.c.r=e.r; e.c.g=e.g; e.c.b=e.b; e.c.a=a*Math.min(1,k*6); } else { e.c.r=e.r*a; e.c.g=e.g*a; e.c.b=e.b*a; e.c.a=a; }
-      if(e.mv){ const v=e.vel; if(e.grav) v.y-=e.grav*dt; sp.position.x+=v.x*sc; sp.position.y+=v.y*sc; sp.position.z+=v.z*sc; if(e.drag){ const f=Math.max(0,1-e.drag*dt); v.x*=f; v.y*=f; v.z*=f; } } if(e.spin) sp.angle+=e.spin*dt; } }
+  for(const Q of P.pools){ const L=Q.live; for(let i=L.length-1;i>=0;i--){ const e=L[i], sp=e.sp; if(e.hold) e.t0=now; const k=(now-e.t0)/e.dur; if(k>=1){ sp.isVisible=false; e.stick=null; L.splice(i,1); Q.free.push(e); continue; }
+      const s=e.s0*(.45+k*e.grow); sp.width=s*e.w; sp.height=s*e.h; const a=e.alpha*Math.pow(1-k,e.fade); let r=e.r,g=e.g,b=e.b; if(e.c2){ r+=(e.c2.r-r)*k; g+=(e.c2.g-g)*k; b+=(e.c2.b-b)*k; }
+      if(e.smoke){ e.c.r=r; e.c.g=g; e.c.b=b; e.c.a=e.smoke===2?a*Math.min(1,k*6):a; } else { e.c.r=r*a; e.c.g=g*a; e.c.b=b*a; e.c.a=a; }
+      if(e.anim){ const A=e.anim, n=A[1]-A[0]; sp.cellIndex=A[0]+Math.min(n,Math.floor(Math.pow(k,.8)*(n+1))); }
+      if(e.stick){ const st=e.stick, rt=st.v&&st.v.root; if(rt&&!rt.isDisposed()&&st.v.state==='alive') V3.TransformCoordinatesToRef(st.p,rt.getWorldMatrix(),sp.position); else e.stick=null; }
+      else if(e.mv){ const v=e.vel; if(e.grav) v.y-=e.grav*dt; sp.position.x+=v.x*sc; sp.position.y+=v.y*sc; sp.position.z+=v.z*sc; if(e.drag){ const f=Math.max(0,1-e.drag*dt); v.x*=f; v.y*=f; v.z*=f; } } if(e.spin) sp.angle+=e.spin*dt; } }
   if(G.views) for(const v of G.views.values()) navLights(v,P);
   ambientBattle(dt); }
 function navLights(v,P){ const md=v.model; if(!md||!md.nav||v.crafts) return; const dead=!v.root||v.root.isDisposed()||v.state!=='alive';
@@ -196,12 +182,12 @@ function pdFire(vt,p){ try{ if(!vt||!vt.root||vt.root.isDisposed()||G.fxReduced)
 
 // v44.1 warm-up: on battle start, a tiny blast far off on the skyline (it reads as the distant war) compiles the explosion, fireball, shock-ring
 // and beam shaders, and every faction's wreck materials are compiled against a real hull mesh, so the first kill doesn't stall
-function warmFx(){ try{ if(!G.scene||!G.cam||!B) return; fxMark('warmup'); fxPool(); flashLights(); fireSheet(); starTex(); coneTex(); scorchMat();
+function warmFx(){ try{ if(!G.scene||!G.cam||!B) return; fxMark('warmup'); fxPool(); flashLights(); starTex(); coneTex(); scorchMat(); try{ for(const f of new Set([...G.views.values()].map(v=>v.fac))) wreckInterior(facMats(f)); }catch(e){}
     let far; try{ const eng=G.engine, ray=G.scene.createPickingRay(eng.getRenderWidth()*.62,eng.getRenderHeight()*.12,BABYLON.Matrix.Identity(),G.cam); far=ray.origin.add(ray.direction.scale(520)); }catch(e){ far=null; } // on screen (near the top) so the shaders really draw and compile
     if(!far){ const tg=G.cam.getTarget(), fwd=tg.subtract(G.cam.position); fwd.normalize(); far=G.cam.position.add(fwd.scale(520)); }
     explode(far,3,{light:false}); if(typeof fireballFx==='function') fireballFx(far,6,1);
     try{ const dn=new BABYLON.TransformNode('warmDome',G.scene); dn.position.copyFrom(far); shieldDome({root:dn,L:10,H:3,fac:'hegemony'},new V3(0,0,1),new C3(.5,.8,1)); setTimeout(()=>{ try{ dn.dispose(); }catch(e){} },2500); }catch(e){ console.warn('warm dome',e); } /* v45: shield dome shader too */
-    shockRing(far,14,new C3(1,.7,.45),{flat:false,dur:.6}); beam(far,far.add(new V3(40,0,10)),new C3(.6,.8,1),.6,.3);
+    shockRing(far,14,new C3(1,.7,.45),{flat:false,dur:.6}); lanceBeam(far,far.add(new V3(40,0,10)),new C3(.6,.8,1),.6,.3);
     try{ if(typeof beamMaterial==='function'){ const cy=MB.CreateCylinder('warmBeam',{height:1,diameter:1,tessellation:14},G.scene); cy.position.set(0,-9000,0); const bm=beamMaterial(new C3(.6,.8,1)); cy.material=bm; bm.forceCompilation(cy,()=>{ cy.dispose(); bm.dispose(); }); } }catch(e){} // a short beam can expire before its first frame on a slow device
     try{ for(const m of G.scene.meshes){ const mt=m.material; if(mt&&/^(fireM|shRipM|shockM|beamM)/.test(mt.name)&&!m.isDisposed()) mt.forceCompilation(m); } }catch(e){} // compile even if the warm-up blast lands off screen
     // decal and streak materials (scorch, ember glow, flame tongue) on a throwaway plane
