@@ -41,8 +41,8 @@ with sync_playwright() as p:
     for name,vp,mob in SIZES:
         ctx=b.new_context(viewport=vp,is_mobile=mob,has_touch=mob,device_scale_factor=float(os.environ.get('DSF','2.625' if mob else '1'))); pg=ctx.new_page(); errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)[:200]))
         pg.on('console',lambda m: errs.append('console:'+m.text[:300]) if (m.type=='error' or (m.type=='warning' and ('AI hull' in m.text or 'hull maps' in m.text or 'seating' in m.text))) and len(errs)<12 else None)
-        pg.goto(PAGE, wait_until='commit'); pg.wait_for_function("!!document.querySelector('.title .menu')", timeout=150000, polling=1000)
-        pg.wait_for_function("Object.keys(AI_HULL_DATA).length>=25", timeout=150000, polling=1000)
+        pg.goto(PAGE, wait_until='commit'); pg.wait_for_function("!!document.querySelector('.title .menu')", timeout=400000, polling=1000)
+        pg.wait_for_function("Object.keys(AI_HULL_DATA).length>=25", timeout=400000, polling=1000)
         q=os.environ.get('Q') or ('medium' if mob else 'high')
         pg.evaluate("setQuality('%s'); ACT.c3skirmish(); setupBattle({obj:'rout',shape:'open',map:'storm',pf:'voidsworn',ef:'hegemony',small:true}); ACT.begin(); SPEED=.5; G.cine=false; G.camMinOff=%s; %s 0"%(q,'true' if os.environ.get('ZOOMFREE','1')=='1' else 'false',HIDE))
         try: pg.wait_for_function("!!B&&B.side==='player'&&!B.busy", timeout=300000, polling=500)

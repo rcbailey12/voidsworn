@@ -248,7 +248,7 @@ function gridFocus(c,R){ const g=G.grid; if(!g||g.isDisposed()||!G.gridHexes) re
   const cols=new Float32Array(G.gridHexes.length*28); let o=0;
   for(const h of G.gridHexes){ let a=.13; if(c){ const d=hdist(h,c); a=d<=R?.5-.34*(d/R):Math.max(.1,.16-.02*(d-R)); } /* v53: the grid never fades out (was .075 / .06) */ for(let i=0;i<7;i++){ cols[o++]=.5; cols[o++]=.82; cols[o++]=1; cols[o++]=a; } }
   try{ g.updateVerticesData(BABYLON.VertexBuffer.ColorKind,cols); }catch(e){ console.warn(e); } }
-function buildBattleEnv(){
+function buildBattleEnv(){ G.rockPending=false;
   clearEnv(); const texBefore=new Set(G.scene.textures); applyBiome(B&&B.cfg&&B.cfg.fac);
   const sc=G.scene;
   // holographic tactical layer: a faint cyan grid that lights up around the selected ship, and a glowing frame on the board edge
@@ -315,8 +315,9 @@ function buildBattleEnv(){
         const nm=addMat('nebM',rr()<.5?new C3(.42,.25,.62):new C3(.25,.35,.7),.34,G.tex.neb); pl.material=nm; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl,nm); } } }
   // distant decorative rocks below and around the table for depth
   fb.forEach((m,k)=>{ if(!fbuf[k].length) return; m.isVisible=true; m.thinInstanceAdd(fbuf[k]); m.thinInstanceRefreshBoundingInfo(false); }); /* one draw per shape for every blocker on the board */
-  if(!libReady){ const b0=B; loadRockSet(libSet).then(list=>{ if(B!==b0||!fb[0]||fb[0].isDisposed()) return; const lib=rockLibMeshes(list), tex=[]; lib.forEach(m=>m.material.getActiveTextures().forEach(t=>{ if(!tex.includes(t)) tex.push(t); }));
-      BABYLON.Texture.WhenAllReady(tex,()=>{ if(B!==b0||lib[0].isDisposed()) return; lib.forEach((m,k)=>{ if(!fbuf[k].length) return; m.isVisible=true; m.thinInstanceAdd(fbuf[k]); m.thinInstanceRefreshBoundingInfo(false); fb[k].setEnabled(false); }); }); }).catch(()=>{}); } // swap in place once the sculpted set and its maps have arrived
+  G.rockPending=!libReady; /* v53.8: the battle cover waits for the sculpted set too */
+  if(!libReady){ const b0=B; loadRockSet(libSet).then(list=>{ if(B!==b0||!fb||!fb[0]||fb[0].isDisposed()){ G.rockPending=false; return; } const lib=rockLibMeshes(list), tex=[]; lib.forEach(m=>m.material.getActiveTextures().forEach(t=>{ if(!tex.includes(t)) tex.push(t); }));
+      BABYLON.Texture.WhenAllReady(tex,()=>{ if(B!==b0||lib[0].isDisposed()){ G.rockPending=false; return; } lib.forEach((m,k)=>{ if(!fbuf[k].length) return; m.isVisible=true; m.thinInstanceAdd(fbuf[k]); m.thinInstanceRefreshBoundingInfo(false); fb[k].setEnabled(false); }); G.rockPending=false; }); }).catch(()=>{ G.rockPending=false; }); } // swap in place once the sculpted set and its maps have arrived
   { const dm=rockMatLike(rockMat,'dressRockM'); dm.diffuseColor=rockMat.diffuseColor.scale(.55); dm.specularColor=C3.Black(); dm.emissiveColor=rockMat.emissiveColor.scale(.4); G.env.push(dm); const buf=bases.map(()=>[]); /* v53: the deep field is thin instances (was 70 spinning instances) */
     for(let i=0;i<70;i++){ const a=rr()*Math.PI*2, d=G.bx*.9+rr()*380, s=2+rr()*12; buf[Math.floor(rr()*bases.length)].push(BABYLON.Matrix.Compose(new V3(s,s,s),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(Math.cos(a)*d*1.15,-50-rr()*200,Math.sin(a)*d*.8))); }
     bases.forEach((m,k)=>{ if(!buf[k].length) return; m.material=dm; m.isVisible=true; m.thinInstanceAdd(buf[k]); m.thinInstanceRefreshBoundingInfo(false); m.receiveShadows=false; try{ if(G.shadow) G.shadow.removeShadowCaster(m); }catch(e){} }); }
@@ -390,7 +391,7 @@ class CamCtl{
 // Every battle start goes through the establishing shot, so that is where the work moves: a dark "Entering battle" cover goes up, the ships
 // are built (first frame), every hull's baked maps load and upload, and the shaders compile with those maps in place; then the cover lifts
 // and the establishing shot plays. Before v53.8 the maps arrived a second or two into the battle and each one recompiled its hull material.
-// A 6 s cap means a slow network can never hold the battle (late maps then swap in as before).
+// A 4 s cap means a slow network can never hold the battle (late maps then swap in as before).
 const _establish=CamCtl.prototype.establish;
 CamCtl.prototype.establish=function(){ const self=this; if(!(typeof B!=='undefined'&&B&&!B.showcase)||G.noWarm) return _establish.call(self);
   const tok=G.warmTok={}; battleVeil(true); try{ _establish.call(self); }catch(e){}
@@ -399,19 +400,22 @@ function battleVeil(on){ let el=document.getElementById('bveil');
   if(on){ if(!el){ el=document.createElement('div'); el.id='bveil'; el.textContent='Entering battle…'; el.style.cssText='position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:#04060c;color:var(--bone2,#b3aa95);font-size:18px;font-family:var(--ui,sans-serif);letter-spacing:.04em;transition:opacity .35s;pointer-events:auto'; document.body.appendChild(el); } el.style.opacity='1'; el.style.pointerEvents='auto'; clearTimeout(G._veilT); G._veilT=setTimeout(()=>battleVeil(false),8000); } /* never traps input: lifts after 8 s regardless */
   else if(el){ clearTimeout(G._veilT); el.style.opacity='0'; el.style.pointerEvents='none'; setTimeout(()=>{ try{ if(el.style.opacity==='0') el.remove(); }catch(e){} },400); } }
 const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
-async function battleWarm(){ const t0=performance.now(), cap=t0+6000, out={ms:0,maps:0,late:0,build:0,compile:0};
+async function battleWarm(){ const t0=performance.now(), cap=t0+4000, out={ms:0,maps:0,late:0,build:0,compile:0};
   await nextFrame(); await nextFrame(); out.build=Math.round(performance.now()-t0); // updateWorld builds every ship view on the first frame
-  const used=new Set(); for(const v of G.views.values()) if(v&&v.model&&v.model.aiMat) used.add(v.model.aiMat); const ents=Object.values(AI_TEX).filter(e=>used.has(e.m)&&!e.failed); out.maps=ents.length; // the classes this battle's ships use (cached materials from earlier battles stay out)
-  for(const e of ents) aiTexTouch(e);
+  const live=new Set(), add=mt=>{ if(!mt) return; if(mt.subMaterials) mt.subMaterials.forEach(add); else if(mt._isAiHull) live.add(mt); }; for(const m of G.scene.meshes) if(m.isEnabled()) add(m.material); // merged live ships carry multi-materials
+  const ents=Object.values(AI_TEX).filter(e=>!e.failed&&(live.has(e.m)||e.loading)); out.maps=ents.length; for(const e of ents) if(live.has(e.m)) aiTexTouch(e); // every map still on its way counts too
   while(performance.now()<cap&&ents.some(e=>e.loading||!e.n||!e.t||!e.n.isReady()||!e.t.isReady())){ if(ents.every(e=>e.failed)) break; await new Promise(r=>setTimeout(r,40)); }
+  while(performance.now()<cap&&G.rockPending) await new Promise(r=>setTimeout(r,40)); out.rocks=!G.rockPending;
   out.late=ents.filter(e=>!(e.n&&e.t&&e.n.isReady()&&e.t.isReady())).length;
-  const t1=performance.now(); try{ await Promise.race([G.scene.whenReadyAsync(),new Promise(r=>setTimeout(r,Math.max(300,cap-performance.now())))]); }catch(e){} out.compile=Math.round(performance.now()-t1);
+  const t1=performance.now(); { const ms=[]; for(const v of G.views.values()) if(v&&v.root&&v.root.getChildMeshes) for(const m of v.root.getChildMeshes(false)) if(m.isEnabled()&&m.material) ms.push(m); // the ships' own shaders, compiled with their maps in place
+    while(performance.now()<cap){ let ok=true; for(const m of ms){ try{ if(!m.isDisposed()&&!m.isReady(true)){ ok=false; break; } }catch(e){} } if(ok) break; await new Promise(r=>setTimeout(r,40)); } out.notReady=ms.filter(m=>{ try{ return !m.isDisposed()&&!m.isReady(true); }catch(e){ return false; } }).length; } out.compile=Math.round(performance.now()-t1);
   await nextFrame(); await nextFrame(); out.ms=Math.round(performance.now()-t0); out.end=performance.now(); try{ if(typeof tel==='function') tel('battle_warm',out); }catch(e){} return out; }
 // on the sector map: start fetching the baked maps of your fleet and the sector's enemy roster (browser cache), so the battle cover is short
 function hullMapPrefetch(){ try{ if(!aiHullsOn()||G.noBake||typeof RUN==='undefined'||!RUN||!RUN.fleet) return; const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/', want=new Set(), seen=G._pref||(G._pref=new Set());
     const add=tpl=>{ const h=HULLS[tpl]; if(!h||h.sq) return; const k=(h.fac||'voidsworn')+'|'+h.cls, d=AI_HULL_DATA[k]; if(d&&d.tex&&AI_HULLS[k]) want.add(AI_HULLS[k]); };
     for(const s of RUN.fleet) add(s.tpl); const ef=RUN.foes&&RUN.foes[(RUN.sector||1)-1]; if(ef&&FACTIONS[ef]) for(const t of FACTIONS[ef].roster.concat([FACTIONS[ef].boss])) add(t);
-    let i=0; for(const c of want){ for(const s of ['_n.webp','_m.webp']){ const url=dir+c+s; if(seen.has(url)) continue; seen.add(url); setTimeout(()=>{ try{ fetch(url,{priority:'low'}).catch(()=>{}); }catch(e){} },400+120*(i++)); } } }catch(e){ console.warn('prefetch',e); } }
+    try{ for(const s of new Set(Object.values(ROCK_SET))) setTimeout(()=>loadRockSet(s).catch(()=>{}),900); }catch(e){} // the sculpted asteroid sets decode once per session
+    let i=0; for(const c of want){ const cd=dir==='hulls/'&&AI_HI_ON_PHONE.has(c)?'hulls_hi/':dir; for(const s of ['_n.webp','_m.webp']){ const url=cd+c+s; if(seen.has(url)) continue; seen.add(url); setTimeout(()=>{ try{ fetch(url,{priority:'low'}).catch(()=>{}); }catch(e){} },400+120*(i++)); } } }catch(e){ console.warn('prefetch',e); } }
 
 // ---------- battlefield features: debris, derelict station, planet edge, ion storms, graveyard wrecks ----------
 // a collapsed star fills the hole in the middle of a 'dead star' board: a black core, a hot photon ring and a slow accretion disc

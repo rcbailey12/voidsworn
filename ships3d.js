@@ -711,6 +711,9 @@ const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes 
   'craft|fighter':'S1_51','craft|bomber':'S2_23','craft|spore':'B23_51', // v53-G squadron craft, shared by every faction (tinted per faction); Chorus wings fly the spore
   'obj|station':'O1_37','obj|transport':'O2_37','obj|beacon':'O3_11'}, AI_HULL_DATA={}; // v53-G objective structures: the defend-objective station, the intercept transports, the hold-objective relay beacon. Deathless: round 10 B set (star dart, monolith half-disc, ring tomb-ark); the B sickle frigate meshed as a flat plaque, so D9b stays until a remesh
 function aiHullsOn(){ return G.aiHulls!==false; }
+// v53.8 (Ryan: "everything still feels pretty low poly"): on phones and Medium the twelve biggest hulls load the desktop mesh (38k triangles,
+// was 16k) and its 2K maps, so the ships you zoom in on keep a smooth outline; everything smaller keeps the light set
+const AI_HI_ON_PHONE=new Set(['B16_23','B22_11','C16s_23','C19_51','D22_23','H10_23','H4_11','I16_11','I8_37','V17_37','V18_51','V1b_r_23']);
 const AI_HULL_YAW={I14_23:1,I15_11:-1}; // v53: these two meshed side-on (spike prow along the mesh's z axis): +1 turns -z to the bow, -1 turns +z
 // v53 sail card test, one hull only: the Hunyuan fan sails (thick lumpy volumes) are cropped off at the root and replaced by thin, double-sided,
 // translucent fans with jade ribs and a glowing rim, oversized so they read top-down at phone zoom. Off: G.ithSails=false (or ITHAR_SAIL_TEST.on=false).
@@ -759,9 +762,9 @@ function hullPath(){ const S=HULLS_LOAD; return {path:!aiHullsOn()?'procedural (
 function loadAIHulls(){ const S=HULLS_LOAD; if(S.promise) return S.promise;
   if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'){ S.state='skipped'; return S.promise=Promise.resolve(S); }
   const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'; /* v49: desktop loads the denser exports (20k to 38k triangles) */ const ents=Object.entries(AI_HULLS), t0=performance.now(); S.state='loading'; S.dir=dir; S.total=ents.length;
-  const get=async id=>{ let r=null; try{ r=await fetch(dir+id+'.json'); }catch(e){} if((!r||!r.ok)&&dir!=='hulls/'){ S.fallback++; try{ r=await fetch('hulls/'+id+'.json'); }catch(e){} } if(!r||!r.ok) throw new Error('http '+(r?r.status:'network')); return r.json(); };
+  const get=async id=>{ const dd=dir==='hulls/'&&AI_HI_ON_PHONE.has(id)?'hulls_hi/':dir; let r=null; try{ r=await fetch(dd+id+'.json'); }catch(e){} if(r&&r.ok){ const j=await r.json(); j._dir=dd; return j; } if(dd!=='hulls/'){ S.fallback++; try{ r=await fetch('hulls/'+id+'.json'); }catch(e){} } if(!r||!r.ok) throw new Error('http '+(r?r.status:'network')); const j=await r.json(); j._dir='hulls/'; return j; };
   let q=Promise.resolve(), ly=performance.now(); const idle=()=>(document.hidden||performance.now()-ly<10)?Promise.resolve():new Promise(r=>setTimeout(()=>{ ly=performance.now(); r(); },0)); // decodes yield to the page every ~10 ms, so a burst of arrivals never stalls a frame for long
-  S.promise=Promise.all(ents.map(([k,id])=>get(id).then(j=>(q=q.then(idle).then(()=>{ try{ AI_HULL_DATA[k]=decodeAIHull(j); dropModel(k); /* ships built from now on use it */ S.loaded++; }catch(e){ S.failed++; S.bad.push(id); console.warn('AI hull not decoded',k,e); } })),e=>{ S.failed++; S.bad.push(id); console.warn('AI hull not loaded',k,e); }).then(()=>{ try{ S.onProgress&&S.onProgress(S); }catch(e){} })))
+  S.promise=Promise.all(ents.map(([k,id])=>get(id).then(j=>(q=q.then(idle).then(()=>{ try{ AI_HULL_DATA[k]=decodeAIHull(j); AI_HULL_DATA[k].dir=j._dir; dropModel(k); /* ships built from now on use it */ S.loaded++; }catch(e){ S.failed++; S.bad.push(id); console.warn('AI hull not decoded',k,e); } })),e=>{ S.failed++; S.bad.push(id); console.warn('AI hull not loaded',k,e); }).then(()=>{ try{ S.onProgress&&S.onProgress(S); }catch(e){} })))
     .then(()=>q).then(()=>{ S.ms=Math.round(performance.now()-t0); S.state='done'; const hp=hullPath(); console.info('[hulls] live path: '+hp.path+' ('+S.loaded+'/'+S.total+' loaded from '+dir+(S.failed?', '+S.failed+' failed: '+S.bad.slice(0,6).join(' '):'')+(S.fallback?', '+S.fallback+' fell back to hulls/':'')+') in '+S.ms+'ms');
       try{ if(typeof tel==='function') tel('hulls',hp); }catch(e){} return S; });
   return S.promise; }
@@ -879,9 +882,9 @@ function aiHullMatFor(fac,d){ const code=d&&d.tex&&d.uv2?aiHullCode(d):null; if(
     const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const opts=Object.assign(hfxOpts(o,fac),{ai:true,wcol:o&&o.wcol!==undefined?o.wcol:(fac==='chorus'?null:(FAC3D[fac]||FAC3D.hegemony).win.scale(AI_WIN_GAIN[fac]??1.4)),mtex:null});
     { const P=FAC3D[fac]||FAC3D.hegemony; m.albedoTexture=null; m.metallicTexture=null; m.albedoColor=hexC3(P.hull); // the bake carries the real panel detail: no tiled panel texture (it read as brickwork up close)
       m.metallic={voidsworn:.3,hegemony:.4,corsair:.35,chorus:.05,ithar:.25,deathless:.55}[fac]??.35; m.roughness={voidsworn:.55,hegemony:.48,corsair:.62,chorus:.38,ithar:.42,deathless:.5}[fac]??.5; m.useRoughnessFromMetallicTextureGreen=false; m.useMetallnessFromMetallicTextureBlue=false; m.useAmbientOcclusionFromMetallicTextureRed=false; }
-    if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(m,opts); m._hullFx=pl; m._isAiHull=true; e=AI_TEX[key]={m,code,dir:(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/',n:null,t:null,lastB:null}; }
+    if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(m,opts); m._hullFx=pl; m._isAiHull=true; e=AI_TEX[key]={m,code,dir:d.dir||((G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'),n:null,t:null,lastB:null}; } // maps come from the same set as the mesh (their UVs belong to it)
   aiTexTouch(e); return e.m; }
-function aiTexTouch(e){ if(e.n||e.loading) return; e.loading=true; const sc=G.scene, m=e.m, pl=m._hullFx, url=e.dir+e.code;
+function aiTexTouch(e){ try{ e.touchB=B; }catch(x){} if(e.n||e.loading) return; e.loading=true; const sc=G.scene, m=e.m, pl=m._hullFx, url=e.dir+e.code;
   const gen=e.gen||0; const done=()=>{ if(gen!==(e.gen||0)||!e.n||!e.t||!e.n.isReady()||!e.t.isReady()) return; e.loading=false; if(m.isDisposed&&m.isDisposed()) return; m.bumpTexture=e.n; m.bumpTexture.level=1; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } };
   const fail=(x)=>{ console.warn('hull maps not loaded',e.code,x||''); e.loading=false; e.n=e.t=null; e.failed=true; };
   if(e.failed) return; e.n=new BABYLON.Texture(url+'_n.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,()=>done(),fail); e.n.coordinatesIndex=1; e.n.anisotropicFilteringLevel=4;

@@ -515,3 +515,18 @@ Live main: https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH | Preview: https://
 - Fix: the instanceColor shader error on the board footprint marks.
 - Effect textures build in idle slices on the title screen, not at battle start.
 - Checks: PC fxshot ran 100 shots in 3 rounds with no console errors; rulecheck, fuzz 20 and full PC smoke pass.
+
+## v53.7 (Oct 21): Pixel feedback fixes (artifact Version 64)
+- The "broken station" was the old procedural spire station (floating windows, spikes, loose slabs), still built on Engagement fights on station maps. Every station map now uses the O1_37 mesh; the procedural spire/rig/ring are only the fallback when meshes fail to load.
+- Close-up camera floor: the closest view keeps the biggest ship on the board to about half the screen (CamCtl.minR = 1.5 x largest ship length, 26-55); scripted cinematics are exempt.
+- Board overlays fade as the camera closes in (ovFadeTick): move range, arcs, rings, aim lines, hex marks and the shield/side rings (ring shader 'fd' uniform). About 5% in the tightest view, full at board zoom.
+- closeshot.py: stkind:spire|rig|ring, SEL=1, EVAL=, ZOOMFREE=0 (respect the camera floor), DSF (phone pixel density), one structure at a time.
+- Checks: rulecheck, fuzz 20, PC closeshot (phone) and full PC smoke passed.
+
+## v53.8 (Oct 21): sculpted rocks, battle cover, denser big ships (in progress)
+- Merged v53-E: 32-rock sculpted library (rocks/ phone, rocks_hi/ desktop) and the Ithar jade sail glass.
+- Battle cover ("Entering battle"): every battle start goes through the establishing shot; a dark cover holds until the ships are built, this battle's hull maps are loaded and uploaded, the sculpted rock set has swapped in and the ships' shaders have compiled (4 s cap, 8 s failsafe). PC load probe (phone size, RTX 5080): before, 6-9 hitches of 100-230 ms in the first 3 s of the battle; after, 0 frames over 50 ms once the cover lifts (first try; final check pending).
+- Map-screen prefetch: the fleet's and the sector enemy's hull maps, and the four rock sets, are fetched in the background.
+- The twelve biggest hulls (AI_HI_ON_PHONE) load the desktop mesh (38k triangles) and 2K maps on phones and Medium.
+- Close-up plating on baked concept hulls (gfx3d HULLFX_AI): staggered panel seams, hatches, raised blocks, faded by pixel footprint so it never shimmers.
+- Owner verdict (Oct 21, Pixel and desktop): "everything still feels pretty low poly". Root cause is the Hunyuan image-to-3D shapes themselves (soft, lumpy, the station is not even round), not poly count or textures. Shape bake-off started (see NEXT).
