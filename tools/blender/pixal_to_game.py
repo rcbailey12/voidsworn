@@ -32,7 +32,7 @@ def img(tex):
     if tex is None: return None
     s = J['textures'][tex['index']]['source']; bv = J['bufferViews'][J['images'][s]['bufferView']]; o = bv.get('byteOffset', 0)
     return Image.open(io.BytesIO(BIN[o:o + bv['byteLength']]))
-alb = img(pbr.get('baseColorTexture')); nrm = img(mat.get('normalTexture')); occ = img(mat.get('occlusionTexture')); mr = img(pbr.get('metallicRoughnessTexture'))
+alb = Image.open(os.environ['ALB']) if os.environ.get('ALB') else img(pbr.get('baseColorTexture')); nrm = img(mat.get('normalTexture')); occ = img(mat.get('occlusionTexture')); mr = img(pbr.get('metallicRoughnessTexture'))
 res = texres or alb.width
 def save(im, name, mode='RGB'):
     if im is None: return False

@@ -713,7 +713,7 @@ const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes 
 function aiHullsOn(){ return G.aiHulls!==false; }
 // v53.8 (Ryan: "everything still feels pretty low poly"): on phones and Medium the twelve biggest hulls load the desktop mesh (38k triangles,
 // was 16k) and its 2K maps, so the ships you zoom in on keep a smooth outline; everything smaller keeps the light set
-const AI_HI_ON_PHONE=new Set(['B16_23','B22_11','C16s_23','C19_51','D22_23','H10_23','H4_11','I16_11','I8_37','V17_37','V18_51','V1b_r_23']);
+const AI_HI_ON_PHONE=new Set(['B16_23','B22_11','C16s_23','D22_23','H10_23','H4_11','I16_11','I8_37','V17_37','V18_51','V1b_r_23']);
 const AI_HULL_YAW={I14_23:1,I15_11:-1}; // v53: these two meshed side-on (spike prow along the mesh's z axis): +1 turns -z to the bow, -1 turns +z
 // v53 sail card test, one hull only: the Hunyuan fan sails (thick lumpy volumes) are cropped off at the root and replaced by thin, double-sided,
 // translucent fans with jade ribs and a glowing rim, oversized so they read top-down at phone zoom. Off: G.ithSails=false (or ITHAR_SAIL_TEST.on=false).
