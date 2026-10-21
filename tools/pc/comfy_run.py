@@ -112,7 +112,7 @@ def prune(api, outs):
         for v in api[k]['inputs'].values():
             if isinstance(v, list) and len(v) == 2 and isinstance(v[0], str): st.append(v[0])
     return {k: v for k, v in api.items() if k in keep}
-def pixal_api(code, views, cams=None, res=1536, tris=2000000, remesh=768, qef=True, tex=4096, tag='', fov=20.0, unet='pixal3d_multiview_bf16.safetensors'):
+def pixal_api(code, views, cams=None, res=1536, tris=2000000, remesh=768, qef=True, tex=4096, tag='', fov=20.0, unet='pixal3d_multiview_bf16.safetensors', lods=None, raw=True):
     """Pixal3D multi-view chain, written out from the official template (3d_pixal3d_multi_views.json) with its settings.
     views: list of names with images at mv{tag}/{code}_{name}.png; cams: None (built-in rig; names must be front/left/back/right) or list of (az, el)."""
     A = {}
@@ -141,17 +141,20 @@ def pixal_api(code, views, cams=None, res=1536, tris=2000000, remesh=768, qef=Tr
     n('info', 'GetMeshInfo', mesh=['shape', 0])
     n('rem', 'RemeshMesh', mesh=['info', 0], resolution=remesh, sign_mode='udf', **{'sign_mode.qef': qef, 'sign_mode.drop_inverted_components': False, 'sign_mode.drop_enclosed_components': False},
       band=1.0, project_back=0.0, fix_poles=False, smooth_iters=20, drop_small_components=0.01, precluster_max_verts=20000000)
-    n('dec', 'DecimateMesh', mesh=['rem', 0], target_face_count=tris, placement_mode='midpoint'); n('sm', 'MeshSmoothNormals', mesh=['dec', 0], crease_angle=180.0)
-    n('uv', 'UnwrapMesh', mesh=['sm', 0], segmenter='pec', resolution=tex, padding=1, weld_distance=0.0002)
-    n('bake', 'BakeTextureFromVoxel', mesh=['uv', 0], voxel_colors=['vox', 0], texture_size=tex, reference_mesh=['shape', 0])
-    n('ao', 'BakeAmbientOcclusion', low_poly=['uv', 0], high_poly=['rem', 0], resolution=1024, samples=64, max_distance=0.71, strength=1.0, bias=0.01)
-    n('nm', 'BakeNormalMapFromMesh', low_poly=['uv', 0], high_poly=['rem', 0], resolution=2048, cage_distance=0.05, ignore_backfaces=True)
-    n('apply', 'ApplyTextureToMesh', mesh=['uv', 0], base_color=['bake', 0], metallic=['bake', 1], roughness=['bake', 2], occlusion=['ao', 0], normal_map=['nm', 0])
-    n('sm2', 'MeshSmoothNormals', mesh=['apply', 0], crease_angle=180.0)
-    n('o_tex', 'SaveGLB', mesh=['sm2', 0], filename_prefix=f'mesh/{code}{tag}_pixal_tex')
+    for li, (lt, lres) in enumerate(lods or [(tris, tex)]):  # one decimate -> unwrap -> bake chain per level of detail, all from the same remeshed surface
+        s_ = '' if not lods else f'_lod{li}'
+        n('dec' + s_, 'DecimateMesh', mesh=['rem', 0], target_face_count=lt, placement_mode='midpoint'); n('sm' + s_, 'MeshSmoothNormals', mesh=['dec' + s_, 0], crease_angle=180.0)
+        n('uv' + s_, 'UnwrapMesh', mesh=['sm' + s_, 0], segmenter='pec', resolution=lres, padding=1 if lres >= 2048 else 2, weld_distance=0.0002)
+        n('bake' + s_, 'BakeTextureFromVoxel', mesh=['uv' + s_, 0], voxel_colors=['vox', 0], texture_size=lres, reference_mesh=['shape', 0])
+        n('ao' + s_, 'BakeAmbientOcclusion', low_poly=['uv' + s_, 0], high_poly=['rem', 0], resolution=min(lres, 2048), samples=64, max_distance=0.71, strength=1.0, bias=0.01)
+        n('nm' + s_, 'BakeNormalMapFromMesh', low_poly=['uv' + s_, 0], high_poly=['rem', 0], resolution=min(lres, 2048), cage_distance=0.05, ignore_backfaces=True)
+        n('apply' + s_, 'ApplyTextureToMesh', mesh=['uv' + s_, 0], base_color=['bake' + s_, 0], metallic=['bake' + s_, 1], roughness=['bake' + s_, 2], occlusion=['ao' + s_, 0], normal_map=['nm' + s_, 0])
+        n('sm2' + s_, 'MeshSmoothNormals', mesh=['apply' + s_, 0], crease_angle=180.0)
+        n('o_tex' + s_, 'SaveGLB', mesh=['sm2' + s_, 0], filename_prefix=f'mesh/{code}{tag}_pixal_tex{s_}')
+        for k, i in (('o_base', 0), ('o_met', 1), ('o_rough', 2)): n(k + s_, 'SaveImage', images=['bake' + s_, i], filename_prefix=f'mesh/{code}{tag}_{k[2:]}{s_}')
+        n('o_ao' + s_, 'SaveImage', images=['ao' + s_, 0], filename_prefix=f'mesh/{code}{tag}_ao{s_}'); n('o_nm' + s_, 'SaveImage', images=['nm' + s_, 0], filename_prefix=f'mesh/{code}{tag}_nm{s_}')
     n('o_rem', 'SaveGLB', mesh=['rem', 0], filename_prefix=f'mesh/{code}{tag}_pixal_remesh')
-    n('o_raw', 'SaveGLB', mesh=['shape', 0], filename_prefix=f'mesh/{code}{tag}_pixal_raw')
-    for k, i in (('o_base', 0), ('o_met', 1), ('o_rough', 2)): n(k, 'SaveImage', images=['bake', i], filename_prefix=f'mesh/{code}{tag}_{k[2:]}')
+    if raw: n('o_raw', 'SaveGLB', mesh=['shape', 0], filename_prefix=f'mesh/{code}{tag}_pixal_raw')
     return A
 def mesh(code, views, cams=None, tag='', **kw):
     d = os.path.join(IO_, code); p = start(d)
@@ -168,7 +171,9 @@ if __name__ == '__main__':
         elif a[0] == 'mesh':  # mesh CODE TAG views(front,left,..) [cams az,el;az,el|-] [res] [tris] [remesh] [qef 1|0]
             cams = [tuple(float(x) for x in c.split(',')) for c in a[4].split(';')] if len(a) > 4 and a[4] != '-' else None
             kw = {}
-            for k, v in zip(('res', 'tris', 'remesh', 'qef'), a[5:]): kw[k] = (v == '1') if k == 'qef' else int(v)
+            for k, v in zip(('res', 'tris', 'remesh', 'qef', 'lods'), a[5:]):
+                kw[k] = (v == '1') if k == 'qef' else [tuple(int(x) for x in l.split('@')) for l in v.split(',')] if k == 'lods' else int(v)  # lods: 2000000@4096,400000@4096,...
+            if 'lods' in kw: kw['raw'] = False
             mesh(a[1], a[3].split(','), cams, tag=a[2], **kw)
     except Exception as e:
         import traceback; log('FAILED', repr(e)); log(traceback.format_exc())
