@@ -776,8 +776,7 @@ function decodeKit(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bi
   return {pos,nor,col,idx,uv,tex:!!j.tex}; }
 function aiKitMat(fac,code,dir){ const k='kit_'+fac+(code||''); if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k]; const m=new BABYLON.PBRMaterial(k,G.scene);
   if(code){ const t=new BABYLON.Texture(dir+code+'_kit_a.webp',G.scene,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE); t.anisotropicFilteringLevel=8; t.level=G.paintGain??((G.mobile||G.quality==='medium')?.95:1.15); m.albedoTexture=t; } // painted parts: the concept's own paint, projected
-  m.albedoColor=C3.White(); m.metallic=code?(G.paintMetal??.08)+.1:.55; m.roughness=code?.55:.4; m.environmentIntensity=1.25; m.directIntensity=1.25*(G.paintLight??((G.mobile||G.quality==='medium')?1.35:1.8)); m.maxSimultaneousLights=6; m.backFaceCulling=false; m.twoSidedLighting=true; m.enableSpecularAntiAliasing=true;
-  try{ const h=aiHullMat(fac); if(h&&h.reflectionTexture) m.reflectionTexture=h.reflectionTexture; }catch(e){} // v54o: same sky light as the hull, so flat tops (bridge roof, plinth) stop reading black
+  m.albedoColor=C3.White(); m.metallic=code?(G.paintMetal??.08)+.1:.55; m.roughness=code?.68:.4; m.environmentIntensity=1.25; m.directIntensity=1.25*(G.paintLight??((G.mobile||G.quality==='medium')?1.35:1.8)); m.maxSimultaneousLights=6; m.backFaceCulling=false; m.twoSidedLighting=false; /* v54o: light by the stored normals; two-sided lighting flipped them on faces the mirror left back-facing, so roofs read black */ m.enableSpecularAntiAliasing=true;
   return AI_MATS[k]=m; }
 function loadAIHulls(){ const S=HULLS_LOAD; if(S.promise) return S.promise;
   if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'){ S.state='skipped'; return S.promise=Promise.resolve(S); }
