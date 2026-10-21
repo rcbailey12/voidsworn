@@ -718,7 +718,10 @@ const ITHAR_SAIL_TEST={on:true,hull:'I14_23',keep:.075,root:-.15,R:.6,lift:.3};
 function ithSailsOn(){ return ITHAR_SAIL_TEST.on&&G.ithSails!==false; }
 function aoCurve(d,fac){ const g={ithar:1.9}[fac]; if(!g) return d.col; if(d['_ao_'+fac]) return d['_ao_'+fac]; const c=Float32Array.from(d.col); for(let i=0;i<c.length;i+=4){ const k=Math.pow(c[i],g); c[i]=c[i+1]=c[i+2]=k; } return d['_ao_'+fac]=c; } // deeper cavities on the pale hull: seams and edges stop melting into the highlights
 function cropAISails(P,I,keep){ const out=[]; for(let t=0;t<I.length;t+=3){ const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3; if(Math.abs(P[a+2]+P[b+2]+P[c+2])/3>keep) continue; out.push(I[t],I[t+1],I[t+2]); } return out.length>I.length*.2?out:I; }
-function aiSailMat(){ if(AI_MATS.aisail_ithar) return AI_MATS.aisail_ithar; const m=new BABYLON.StandardMaterial('aisail_ithar',G.scene); m.diffuseColor=new C3(.6,.72,.68); m.specularColor=new C3(.04,.05,.05); m.emissiveColor=new C3(.05,.12,.1); m.alpha=.46; /* translucent, not a white kite under bloom */ m.backFaceCulling=false; m.twoSidedLighting=true; m.disableDepthWrite=true; return AI_MATS.aisail_ithar=m; }
+function aiSailMat(){ if(AI_MATS.aisail_ithar&&G.scene.materials.includes(AI_MATS.aisail_ithar)) return AI_MATS.aisail_ithar; // v53: glassy, iridescent and see-through (was a lit StandardMaterial on a mesh without normals: a flat grey sheet on real GPUs)
+  const m=new BABYLON.PBRMaterial('aisail_ithar',G.scene); m.albedoColor=new C3(.8,.95,.92); m.metallic=0; m.roughness=.1; m.alpha=.34; m.emissiveColor=new C3(.025,.08,.07); m.environmentIntensity=1.4; m.directIntensity=1.1;
+  m.iridescence.isEnabled=true; m.iridescence.intensity=1; m.iridescence.indexOfRefraction=1.3; m.iridescence.minimumThickness=180; m.iridescence.maximumThickness=520; m.useRadianceOverAlpha=true; m.useSpecularOverAlpha=true;
+  m.backFaceCulling=false; m.twoSidedLighting=true; m.disableDepthWrite=true; m.transparencyMode=BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND; return AI_MATS.aisail_ithar=m; }
 // v53 Ithar facing and sails, added after the concept hull is in place: a bright jade chevron on the prow and (one hull) the sail card test.
 // Both use the hull's trim material or the sail material, so the merged ship gains at most one draw (the sail panels).
 function ithAIExtras(p){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')), aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, hm=fore&&fore.getChildMeshes(true).find(m=>m.name==='hull_ai'); if(!hm) return;
@@ -727,17 +730,20 @@ function ithAIExtras(p){ const fore=p.root.getChildren().find(n=>n.name.endsWith
     const m=new BABYLON.Mesh(name,G.scene), d2=new BABYLON.VertexData(); d2.positions=pos; d2.indices=ind; d2.applyToMesh(m); m.material=mat; m.parent=half==='fore'?fore:aftN; if(half==='aft'&&aftN!==fore) m.position.copyFrom(fore.position.subtract(aftN.position)); m.isPickable=false; m.refreshBoundingInfo(true); };
   let mx=-1e9; for(let i=0;i<P.length;i+=3) mx=Math.max(mx,P[i]); const top=x=>{ let h=-1e9; for(let i=0;i<P.length;i+=3) if(Math.abs(P[i]-x)<.025*L&&Math.abs(P[i+2])<.04*L) h=Math.max(h,P[i+1]); return h>-1e8?h:0; };
   for(const sg of [1,-1]){ const x0=mx-.17*L, x1=mx-.05*L, y0=top(x0)+.012*L, y1=top(x1)+.012*L, w=.011*L, z0=sg*.05*L; bins.fore.e.push([x0-w,y0,z0-sg*w],[x1,y1,-sg*w*.5],[x1,y1,sg*w*.5],[x0+w,y0,z0+sg*w]); } // prow chevron: facing at phone zoom
-  if(p._sailHull) aiSails(P,L,split,(pts,half)=>bins[half].q.push(...pts),(pts,half)=>bins[half].e.push(...pts));
-  for(const h of ['fore','aft']){ mk(bins[h].q,aiSailMat(),h,'hull_aisail'); mk(bins[h].e,trimM,h,'hull_aiprow'); } }
+  const rimM=AI_MATS.aisailrim_ithar&&G.scene.materials.includes(AI_MATS.aisailrim_ithar)?AI_MATS.aisailrim_ithar:(AI_MATS.aisailrim_ithar=emMat('aisailrim_ithar',FAC3D.ithar.eng.scale(.5))); rimM.backFaceCulling=false; bins.fore.r=[]; bins.aft.r=[];
+  if(p._sailHull) aiSails(P,L,split,(g,half)=>bins[half].q.push(g),(pts,half)=>bins[half].r.push(...pts)); // ribs and rim: a softer jade than the trim, so bloom does not turn them white
+  for(const h of ['fore','aft']){ if(bins[h].q.length){ const pos=[],uv=[],ind=[]; for(const g of bins[h].q){ const b=pos.length/3; pos.push(...g.pos); uv.push(...g.uv); for(const i of g.ind) ind.push(i+b); } const nor=[]; BABYLON.VertexData.ComputeNormals(pos,ind,nor);
+      const m=new BABYLON.Mesh('hull_aisail',G.scene), d2=new BABYLON.VertexData(); d2.positions=pos; d2.indices=ind; d2.normals=nor; d2.uvs=uv; d2.applyToMesh(m); m.material=aiSailMat(); m.parent=h==='fore'?fore:aftN; if(h==='aft'&&aftN!==fore) m.position.copyFrom(fore.position.subtract(aftN.position)); m.isPickable=false; m.alphaIndex=50; m.refreshBoundingInfo(true); }
+    mk(bins[h].e,trimM,h,'hull_aiprow'); mk(bins[h].r,rimM,h,'hull_aisailrim'); } }
 function aiSails(P,L,split,panel,edge){ const S=ITHAR_SAIL_TEST, R=S.R*L, x0=S.root*L, to=(x,y,z)=>[x,y,z]; // built in the hull's fore-local space (P), like the ports and trim
   let y0=-1e9; for(let i=0;i<P.length;i+=3) if(Math.abs(P[i]-x0)<.04*L&&Math.abs(P[i+2])<.05*L) y0=Math.max(y0,P[i+1]); if(y0<-1e8) y0=0; y0-=.03*L;
   const NA=9, NR=4, a0=1.15, a1=2.75; // fan from just forward of abeam to well aft, like the concept's fans, only thinner and bigger
   for(const sg of [1,-1]){ const pt=(ai,rf)=>{ const a=a0+(a1-a0)*ai/NA, rr=R*(rf*(1-.07*Math.abs(Math.sin(ai/NA*Math.PI*4)))), bil=Math.sin(Math.PI*rf)*.05*L*Math.sin(Math.PI*ai/NA); return to(x0+Math.cos(a)*rr,y0+rr*S.lift+bil,sg*(.06*L+Math.sin(a)*rr)); };
-    const hx=x0>=split?'fore':'aft', quads=[], rim=[];
-    for(let i=0;i<NA;i++) for(let j=0;j<NR;j++){ const r0=.06+.94*j/NR, r1=.06+.94*(j+1)/NR; quads.push(pt(i,r0),pt(i+1,r0),pt(i+1,r1),pt(i,r1)); }
+    const hx=x0>=split?'fore':'aft', rim=[], GA=NA*3, GR=NR*3, grid={pos:[],uv:[],ind:[]}; // a smooth shared-vertex panel (normals for the glass and iridescence)
+    for(let i=0;i<=GA;i++) for(let j=0;j<=GR;j++){ grid.pos.push(...pt(i*NA/GA,.06+.94*j/GR)); grid.uv.push(i/GA,j/GR); if(i<GA&&j<GR){ const b=i*(GR+1)+j; grid.ind.push(b,b+1,b+GR+2,b,b+GR+2,b+GR+1); } }
     for(let i=0;i<NA;i++) rim.push(pt(i,.97),pt(i+1,.97),pt(i+1,1.01),pt(i,1.01)); // glowing rim
     for(let i=0;i<=NA;i+=3) for(let j=0;j<NR;j++){ const r0=.06+.94*j/NR, r1=.06+.94*(j+1)/NR, e=.012; rim.push(pt(i-e*NA,r0),pt(i+e*NA,r0),pt(i+e*NA,r1),pt(i-e*NA,r1)); } // ribs
-    panel(quads,hx); edge(rim,hx); } }
+    panel(grid,hx); edge(rim,hx); } }
 function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new T(u.buffer); };
   const qp=b64(j.p,Int16Array), qn=b64(j.q,Int8Array), idx=b64(j.i,j.i32?Uint32Array:Uint16Array), n=qp.length/3, pos=new Float32Array(qp.length), nor=new Float32Array(qp.length), uv=new Float32Array(n*2);
   for(let i=0;i<qp.length;i++){ pos[i]=qp[i]/32767*j.ext[i%3]; nor[i]=qn[i]/127; }
