@@ -6,8 +6,8 @@ let B=null;
 const BLOCKING={rock:1,hulk:1,planet:1,station:1};
 // one table for what every terrain type is and does: tints, tooltips and the legend all read from it
 const TERRAIN_INFO={
-  rock:{n:'Asteroids',col:'#ff6b5a',fx:'Blocks movement and line of fire.'},
-  hulk:{n:'Wreck',col:'#ff6b5a',fx:'A burning hulk. Blocks movement and line of fire.'},
+  rock:{n:'Asteroids',col:'#bda088',fx:'Blocks movement and line of fire.'},
+  hulk:{n:'Wreck',col:'#bda088',fx:'A burning hulk. Blocks movement and line of fire.'},
   station:{n:'Station',col:'#9a948a',fx:'Blocks movement and line of fire.'},
   planet:{n:'Planet',col:'#9a948a',fx:'Blocks movement and line of fire.'},
   neb:{n:'Nebula',col:'#b07cff',fx:'Ships inside are 15 points harder to hit.'},

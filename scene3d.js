@@ -268,8 +268,8 @@ function buildBattleEnv(){
   // asteroids
   const rockMat=new BABYLON.StandardMaterial('rockM',sc); const RK=(typeof ROCK_KINDS!=='undefined'&&B&&B.biome&&ROCK_KINDS[B.biome.rock])||null; // v47: the sector's asteroid type
   rockMat.diffuseTexture=dynTex('rockTex',256,256,(g,w)=>{ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
-  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.035,.035,.035); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=1.2; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
-  if(RK){ rockMat.diffuseColor=new C3(RK.col[0],RK.col[1],RK.col[2]); const sk=RK.spec>.3?.7:.35; /* v52: matte regolith, not wet coal (ice keeps some gloss) */ rockMat.specularColor=new C3(RK.spec*sk,RK.spec*sk,RK.spec*sk*1.05); rockMat.specularPower=RK.spec>.3?40:10; if(RK.em) rockMat.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); }
+  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.035,.035,.035); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=.7; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
+  if(RK){ rockMat.diffuseColor=new C3(RK.col[0],RK.col[1],RK.col[2]); const sk=RK.spec>.3?.3:.15; /* v52: matte regolith, not wet coal (ice keeps some gloss); v53: no sparkle at all on iron (was .7/.35) */ rockMat.specularColor=new C3(RK.spec*sk,RK.spec*sk,RK.spec*sk*1.05); rockMat.specularPower=RK.spec>.3?14:6; if(RK.em) rockMat.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); }
   // v44: rocks are smooth-shaded, multi-octave and cratered (were faceted 'crumpled paper' icospheres)
   // v49 asteroids: two sets of eight shapes (dense ones for the asteroids on the board, light ones for small chunks, the belt and the distance),
   // each a lumpy fBm body with ridges, boulder bumps and overlapping craters
@@ -287,17 +287,36 @@ function buildBattleEnv(){
       p[i]=x*n*sx; p[i+1]=y*n*sy; p[i+2]=z*n*sz; }
     m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); const nr=[]; BABYLON.VertexData.ComputeNormals(p,m.getIndices(),nr); m.setVerticesData(BABYLON.VertexBuffer.NormalKind,nr);
     m.material=rockMat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; };
-  const bases=[], hiBases=[]; for(let k=0;k<8;k++){ bases.push(mkBase(k,G.mobile?6:9,'lo')); hiBases.push(G.quality==='medium'?bases[k]:mkBase(k,G.quality==='ultra'?24:17,'hi')); } /* Babylon icospheres have 20*s^2 faces: about 1.6k for small rocks, 5.8k to 11.5k for the big ones */
+  const bases=[]; for(let k=0;k<4;k++) bases.push(mkBase(k,G.mobile?5:7,'lo')); /* v53: the soft noise shapes only dress the distance now (the board's rocks are faceted blockers, mkFacet), so four light ones and no hi set */
   const tinyB=[0,1,2].map(i=>mkBase([0,2,5][i],G.mobile?3:4,'tiny')); // the 2,500-rock background ring and belt stay light (thin instances)
   G.rocks=[];
   const rr=seeded(B.seed||42);
-  const addRock=(pos,s,big)=>{ const inst=(big?hiBases:bases)[Math.floor(rr()*8)].createInstance('rock'); inst.position=pos; inst.scaling.setAll(s); inst.rotation.set(rr()*6,rr()*6,rr()*6); inst.isPickable=false; inst.spin=new V3((rr()-.5)*.1,(rr()-.5)*.14,(rr()-.5)*.1); G.rocks.push(inst); G.env.push(inst); };
+  // v53 two-class rocks. An asteroid hex blocks movement and fire, so it gets tall, faceted, clearly solid rock (a tilted pillar or slab standing
+  // well above the hulls, or a cluster of mediums, or a boulder in a rubble drift) cut from icospheres by flat planes; the recipe is rolled per hex
+  // from B.seed. Dressing (rim fill, the deep field, the belt) stays soft, low, sparse and darker, and never sits on a playable hex.
+  const blockMat=rockMatLike(rockMat,'blockRockM'); blockMat.diffuseColor=rockMat.diffuseColor.scale(.6); blockMat.specularColor=rockMat.specularColor.scale(.25); blockMat.specularPower=6; blockMat.emissiveColor=rockMat.emissiveColor.scale(.6); blockMat.bumpTexture=rockMat.bumpTexture; G.env.push(blockMat); /* the clone carries the RockFx plugin, like rimRockM */
+  try{ loadRockLib(); }catch(e){} const fb=rockLibBases(B.biome&&B.biome.rock,RK)||[0,1,2,3,4,5,6].map(k=>mkFacet(k,blockMat)), fbuf=fb.map(()=>[]); /* a sculpted library, when present, replaces the procedural shapes */
+  const fput=(k,x,y,z,s,ax,az,yaw,tx,tz)=>fbuf[k].push(BABYLON.Matrix.Compose(new V3(s*ax,s,s*az),BABYLON.Quaternion.RotationYawPitchRoll(yaw,tx,tz),new V3(x,y,z)));
+  const tilt=()=>(rr()-.5)*.44, around=(c,rad,f)=>{ const a=rr()*6.28, d=rad*(.6+rr()*.4); f(c.x+Math.cos(a)*d,c.z+Math.sin(a)*d); };
+  const rockHex=(c,q,r)=>{ const pick=rr(), j=()=>(rr()-.5)*3;
+    if(pick<.36){ fput(rr()<.5?0:1,c.x+j(),2.1,c.z+j(),6.6+rr()*1.1,.9+rr()*.3,.9+rr()*.3,rr()*6.28,tilt(),tilt()); /* hero pillar: top ~7.5, about 1.5x a hull's height */
+      for(let i=0,n=2+Math.floor(rr()*2);i<n;i++) around(c,5.6,(x,z)=>fput(3+Math.floor(rr()*2)*3,x,.6+rr()*.8,z,1.8+rr()*1.2,1,1,rr()*6.28,rr()*6,rr()*6)); }
+    else if(pick<.6){ fput(2,c.x+j(),1.9,c.z+j(),6.2+rr()*1,1,1,rr()*6.28,tilt()*.7,tilt()); /* standing slab */
+      for(let i=0;i<2;i++) around(c,5.4,(x,z)=>fput(i?6:4,x,.5+rr(),z,1.9+rr()*1.1,1,1,rr()*6.28,rr()*6,rr()*6)); }
+    else if(pick<.85){ around(c,2.8,(x,z)=>fput(1,x,1.2,z,5.4+rr()*.8,1,1,rr()*6.28,tilt(),tilt())); around(c,3.6,(x,z)=>fput(3,x,1.4,z,3.1+rr()*.6,1,1,rr()*6.28,rr()*6,rr()*6)); /* a cluster of mediums */
+      around(c,3.8,(x,z)=>fput(5,x,1.6,z,4.4+rr()*.8,1,1,rr()*6.28,(rr()-.5)*.9,(rr()-.5)*.9)); around(c,5.8,(x,z)=>fput(4,x,.4,z,1.6+rr()*.8,1,1,rr()*6.28,rr()*6,rr()*6)); }
+    else { fput(6,c.x+j(),1.9,c.z+j(),5.4+rr()*.8,1.05,1,rr()*6.28,rr()*6,rr()*6); /* a boulder in a rubble drift */
+      for(let i=0;i<5;i++) around(c,6.2,(x,z)=>fput(3+Math.floor(rr()*2),x,-.4+rr()*1.2,z,.9+rr()*.9,1,1,rr()*6.28,rr()*6,rr()*6)); }
+    for(let i=0;i<3;i++){ const D=DIRS[i]; if(B.terrain[(q+D[0])+','+(r+D[1])]!=='rock') continue; const o=hexWorld(q+D[0],r+D[1]); fput(3+Math.floor(rr()*2)*3,(c.x+o.x)/2+(rr()-.5)*2,.6+rr(),(c.z+o.z)/2+(rr()-.5)*2,2+rr()*1.2,1,1,rr()*6.28,rr()*6,rr()*6); } }; // neighbouring rock hexes knit into a wall
   for(const [k,t] of Object.entries(B.terrain)){ const [q,r]=k.split(',').map(Number); const c=hexWorld(q,r);
-    if(t==='rock'){ addRock(c.add(new V3(0,1.5,0)),4+rr()*2.5,true); for(let i=0;i<4;i++) addRock(c.add(new V3((rr()-.5)*8,(rr()-.3)*5,(rr()-.5)*8)),1+rr()*2.2); }
+    if(t==='rock') rockHex(c,q,r);
     if(t==='neb'){ for(let i=0;i<(G.mobile?2:3);i++){ const pl=MB.CreatePlane('neb',{size:(22+rr()*14)*(G.mobile?1.15:1)},sc); pl.position=c.add(new V3((rr()-.5)*8,1+rr()*6,(rr()-.5)*8)); pl.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; pl.isPickable=false;
         const nm=addMat('nebM',rr()<.5?new C3(.42,.25,.62):new C3(.25,.35,.7),.34,G.tex.neb); pl.material=nm; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl,nm); } } }
   // distant decorative rocks below and around the table for depth
-  for(let i=0;i<70;i++){ const a=rr()*Math.PI*2, d=G.bx*.9+rr()*380; addRock(new V3(Math.cos(a)*d*1.15,-50-rr()*200,Math.sin(a)*d*.8),2+rr()*12); }
+  fb.forEach((m,k)=>{ if(!fbuf[k].length) return; m.isVisible=true; m.thinInstanceAdd(fbuf[k]); m.thinInstanceRefreshBoundingInfo(false); }); /* one draw per shape for every blocker on the board */
+  { const dm=rockMatLike(rockMat,'dressRockM'); dm.diffuseColor=rockMat.diffuseColor.scale(.55); dm.specularColor=C3.Black(); dm.emissiveColor=rockMat.emissiveColor.scale(.4); G.env.push(dm); const buf=bases.map(()=>[]); /* v53: the deep field is thin instances (was 70 spinning instances) */
+    for(let i=0;i<70;i++){ const a=rr()*Math.PI*2, d=G.bx*.9+rr()*380, s=2+rr()*12; buf[Math.floor(rr()*bases.length)].push(BABYLON.Matrix.Compose(new V3(s,s,s),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(Math.cos(a)*d*1.15,-50-rr()*200,Math.sin(a)*d*.8))); }
+    bases.forEach((m,k)=>{ if(!buf[k].length) return; m.material=dm; m.isVisible=true; m.thinInstanceAdd(buf[k]); m.thinInstanceRefreshBoundingInfo(false); m.receiveShadows=false; try{ if(G.shadow) G.shadow.removeShadowCaster(m); }catch(e){} }); }
   { const ring=tinyB[0].clone('rockRing'); ring.isVisible=true; ring.material=rockMat; ring.isPickable=false; G.glow.addExcludedMesh(ring); const node=new BABYLON.TransformNode('ringNode',sc); ring.parent=node; const mats=[];
     for(let i=0;i<2500;i++){ const a=rr()*Math.PI*2, d=G.bx*(1.15+rr()*.75), s=.4+Math.pow(rr(),3)*4; mats.push(BABYLON.Matrix.Compose(new V3(s,s*(.6+rr()*.6),s),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(Math.cos(a)*d,-70-rr()*170+Math.sin(a*3)*25,Math.sin(a)*d*.75))); }
     ring.thinInstanceAdd(mats); G.ringNode=node; G.env.push(ring,node); }
@@ -379,6 +398,56 @@ function lumpyRock(name,rr,sub){ const m=MB.CreateIcoSphere(name,{radius:1,subdi
     for(const [cx,cy,cz,cr,cd] of craters){ const d=Math.hypot(x-cx,y-cy,z-cz); if(d<cr) n-=cd*(1-d/cr)*(1-d/cr)*2; else if(d<cr*1.25) n+=cd*.25; }
     p[i]=x*n; p[i+1]=y*n; p[i+2]=z*n; }
   m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.convertToFlatShadedMesh(); m.isPickable=false; return m; }
+// v53 rock library hook (stopgap until it ships): sculpted rocks per asteroid kind replace the procedural board rocks when present.
+// Layout, served next to hulls/: rocks/index.json = {"stone":["stone_01",...],"carbon":[...],"crystal":[...],"ice":[...]}; rocks/<id>.json uses the
+// hull JSON format (p, q, i, i32, ext, optional a = baked AO) plus u = UVs as base64 Int16 (value/32767*uext, uext defaults to [1,1]);
+// with "maps":true, rocks/<id>_n.webp (tangent-space normal) and rocks/<id>_m.webp (R ambient occlusion, G roughness, B metalness) are loaded.
+// Loaded once, lazily, from the first battle (no boot cost); that battle stays procedural and later ones use the library. Kinds without a set
+// borrow one through ROCK_LIB_ALIAS. Each mesh is sorted into a role (tall: pillar/slab/shard; low: chunk) by its bounding box.
+const ROCK_LIB={tried:false,sets:{}}, ROCK_LIB_ALIAS={iron:'carbon'};
+async function loadRockLib(){ if(ROCK_LIB.tried) return; ROCK_LIB.tried=true; if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'||typeof decodeAIHull!=='function') return;
+  try{ const r=await fetch('rocks/index.json'); if(!r.ok) return; const idx=await r.json();
+    for(const [kind,ids] of Object.entries(idx)){ const list=[]; for(const id of ids||[]){ try{ const q=await fetch('rocks/'+id+'.json'); if(!q.ok) continue; const j=await q.json(), d=decodeAIHull(j);
+          if(j.u){ const bin=atob(j.u), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); const qu=new Int16Array(u8.buffer), ue=j.uext||[1,1]; d.uv=new Float32Array(qu.length); for(let i=0;i<qu.length;i++) d.uv[i]=qu[i]/32767*ue[i%2]; }
+          d.id=id; d.maps=!!j.maps; list.push(d); }catch(e){ console.warn('rock mesh',id,e); } }
+      if(list.length) ROCK_LIB.sets[kind]=list; }
+    console.debug('[rocks] library: '+Object.entries(ROCK_LIB.sets).map(([k,l])=>k+' '+l.length).join(', ')); }catch(e){ console.warn('rock library',e); } }
+function rockLibBases(kind,RK){ const set=ROCK_LIB.sets[kind]||ROCK_LIB.sets[ROCK_LIB_ALIAS[kind]]; if(!set||!set.length) return null; const sc=G.scene, tall=[], low=[];
+  for(const d of set){ let x=0,y=0,z=0; for(let i=0;i<d.pos.length;i+=3){ x=Math.max(x,Math.abs(d.pos[i])); y=Math.max(y,Math.abs(d.pos[i+1])); z=Math.max(z,Math.abs(d.pos[i+2])); } (y>1.4*Math.max(x,z)?tall:low).push({d,ext:[x,y,z]}); }
+  const pick=(arr,alt,i)=>{ const a=arr.length?arr:alt; return a[i%a.length]; }, col=RK?RK.col:[1,1,1];
+  return [0,1,2,3,4,5,6].map(k=>{ const isTall=k<3||k===5, e=pick(isTall?tall:low,isTall?low:tall,k), d=e.d, s=isTall?1/Math.max(1e-6,e.ext[1]):.9/Math.max(1e-6,...e.ext), pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*s;
+    const m=new BABYLON.Mesh('rockLib'+k,sc), vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=d.nor; vd.indices=d.idx; vd.uvs=d.uv; if(d.col) vd.colors=d.col; vd.applyToMesh(m);
+    const mt=new BABYLON.PBRMaterial('rockLibM_'+d.id+'_'+k,sc); mt.albedoColor=new C3(col[0]*.34,col[1]*.33,col[2]*.31); mt.metallic=0; mt.roughness=.92; mt.environmentIntensity=.6;
+    if(d.maps){ mt.bumpTexture=new BABYLON.Texture('rocks/'+d.id+'_n.webp',sc); mt.metallicTexture=new BABYLON.Texture('rocks/'+d.id+'_m.webp',sc); mt.useAmbientOcclusionFromMetallicTextureRed=true; mt.useRoughnessFromMetallicTextureGreen=true; mt.useMetallnessFromMetallicTextureBlue=true; mt.metallic=1; mt.roughness=1; }
+    if(RK&&RK.em) mt.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); G.env.push(mt); m.material=mt; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; }); }
+// v53: a fresh material sharing the rock textures. A clone of rockM tries to re-create the RockFx plugin from its serialized form, cannot find the
+// class, and the clone never becomes ready, so nothing using it drew (this is why the v51 rim fill rocks were invisible).
+function rockMatLike(b,name){ const m=new BABYLON.StandardMaterial(name,G.scene); m.diffuseTexture=b.diffuseTexture; m.bumpTexture=b.bumpTexture; m.diffuseColor=b.diffuseColor.clone(); m.specularColor=b.specularColor.clone(); m.specularPower=b.specularPower; m.emissiveColor=b.emissiveColor.clone(); if(typeof addRockFx==='function') addRockFx(m); return m; }
+// v53 board rock: a column, slab, chunk or shard whose silhouette comes from flat cleavage planes, but built as a dense radial surface: along each
+// direction the radius is a soft minimum over the planes (rounded edges, no tessellation steps), then fine multi-octave noise and shallow pits,
+// with smooth normals so it holds up at close zoom (no glittering facets). Vertex colour carries cavity darkening, darker bases and a faint
+// warm/cool variation, so the rock reads solid and matte without a triplanar shader.
+function mkFacet(k,mat){ const fr=seeded(700+k*13), kind=['pillar','pillar','slab','chunk','chunk','shard','chunk'][k], D={pillar:[.46,1,.42],slab:[.78,1,.26],chunk:[.9,.75,.8],shard:[.24,1,.2]}[kind];
+  const nrm=a=>{ const l=Math.hypot(a[0],a[1],a[2])||1; return [a[0]/l,a[1]/l,a[2]/l]; }, PL=[[1,0,0,D[0]],[-1,0,0,D[0]],[0,1,0,D[1]],[0,-1,0,D[1]],[0,0,1,D[2]],[0,0,-1,D[2]]], big=kind==='chunk'?11:9;
+  for(let c=0;c<big+5;c++){ let n=[fr()*2-1,fr()*2-1,fr()*2-1]; if(kind!=='chunk'&&c<4) n[1]*=.15; /* columns keep near-vertical flanks */ if(kind!=='chunk'&&c===4) n=[n[0]*.4,1,n[2]*.4]; /* a broken top */ n=nrm(n);
+    const sup=Math.hypot(n[0]*D[0],n[1]*D[1],n[2]*D[2]); PL.push([n[0],n[1],n[2],sup*(c<big?.68+fr()*.2:.86+fr()*.06)]); }
+  const h3=(i,j,l,sd)=>{ let n=(i*374761393+j*668265263+l*1440662683+sd*974711)|0; n=(n^(n>>>13))*1274126177|0; return ((n^(n>>>16))>>>0)/4294967296; };
+  const vn=(x,y,z,sd)=>{ const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z),xf=x-xi,yf=y-yi,zf=z-zi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf),w=zf*zf*(3-2*zf),L=(a,b,t)=>a+(b-a)*t;
+    return L(L(L(h3(xi,yi,zi,sd),h3(xi+1,yi,zi,sd),u),L(h3(xi,yi+1,zi,sd),h3(xi+1,yi+1,zi,sd),u),v),L(L(h3(xi,yi,zi+1,sd),h3(xi+1,yi,zi+1,sd),u),L(h3(xi,yi+1,zi+1,sd),h3(xi+1,yi+1,zi+1,sd),u),v),w)*2-1; };
+  const pits=[]; for(let i=0;i<5+Math.floor(fr()*5);i++) pits.push([...nrm([fr()*2-1,fr()*2-1,fr()*2-1]),.1+fr()*.16,.02+fr()*.03]);
+  const sub=G.mobile?9:G.quality==='medium'?12:G.quality==='ultra'?22:17, m=MB.CreateIcoSphere('rockFacet'+k,{radius:1,subdivisions:sub,flat:false},G.scene), p=m.getVerticesData(BABYLON.VertexBuffer.PositionKind), nv=p.length/3;
+  const sd=k*31+11, K=26/((D[0]+D[1]+D[2])/3), cav=new Float32Array(nv), tint=new Float32Array(nv);
+  for(let v=0;v<nv;v++){ const o=v*3, u=nrm([p[o],p[o+1],p[o+2]]); let acc=0, rmin=1e9; const rs=[];
+    for(const q of PL){ const c=u[0]*q[0]+u[1]*q[1]+u[2]*q[2]; if(c>1e-4){ const r=q[3]/c; rs.push(r); rmin=Math.min(rmin,r); } }
+    for(const r of rs) acc+=Math.exp(-K*(r-rmin)); let r=rmin-Math.log(acc)/K; // soft minimum: rounded edges where cleavage planes meet
+    const x=u[0]*r, y=u[1]*r, z=u[2]*r; let n=0, amp=.5, f=2.4; for(let oc=0;oc<5;oc++){ n+=amp*vn(x*f+oc*7.1,y*f-oc*3.3,z*f+oc*5.7,sd); amp*=.5; f*=2.05; }
+    let pit=0; for(const [cx,cy,cz,pr,pd] of pits){ const d=Math.hypot(u[0]-cx,u[1]-cy,u[2]-cz); if(d<pr) pit-=pd*(1-d/pr)*(1-d/pr)*3; }
+    const disp=n*.07+pit; r*=1+disp; cav[v]=disp; tint[v]=vn(x*1.3,y*1.3,z*1.3,sd+5); p[o]=u[0]*r; p[o+1]=u[1]*r; p[o+2]=u[2]*r; }
+  let y0=1e9,y1=-1e9; for(let v=0;v<nv;v++){ y0=Math.min(y0,p[v*3+1]); y1=Math.max(y1,p[v*3+1]); }
+  const col=new Float32Array(nv*4); for(let v=0;v<nv;v++){ const h=(p[v*3+1]-y0)/Math.max(1e-6,y1-y0), ao=Math.max(.35,Math.min(1,.86+cav[v]*3.2))*(.55+.45*Math.min(1,h*1.5)), t=tint[v]*.06;
+    col[v*4]=ao*(1+t); col[v*4+1]=ao; col[v*4+2]=ao*(1-t*1.2); col[v*4+3]=1; }
+  m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.setVerticesData(BABYLON.VertexBuffer.ColorKind,col,false,4); const nr=[]; BABYLON.VertexData.ComputeNormals(p,m.getIndices(),nr); m.setVerticesData(BABYLON.VertexBuffer.NormalKind,nr); m.refreshBoundingInfo();
+  m.material=mat; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; }
 // wrecks on the field come from the fleets in this fight, so they reuse materials already built (no new faction texture sets per battle)
 function battleFacs(){ const f=new Set(); try{ for(const u of (B&&B.units)||[]) if(u.fac) f.add(u.fac); }catch(e){} return f.size?[...f]:['hegemony','voidsworn','corsair','ithar','deathless','chorus']; }
 const HOLE_BUILD={
@@ -429,12 +498,14 @@ function buildRimFill(mkBase,rockMat,rr){ if(!B||!B.terrain) return; const sc=G.
   // one light rock base set shared by thin instances: one draw per shape
   const sub=mob?3:(G.quality==='medium'?4:5), shapes=[0,3,6].map(k=>mkBase(k,sub,'rim')); const bufs=shapes.map(()=>[]);
   const put=(c,w,s,y,squash)=>{ const m=BABYLON.Matrix.Compose(new V3(s,s*(squash||(.6+rr()*.5)),s*(.8+rr()*.4)),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(w.x,y,w.z)); bufs[Math.floor(rr()*shapes.length)].push(m); };
-  for(const c of R){ const w0=hexWorld(c.q,c.r), n=c.d===1?(debrisWall?2:mob?3:4):c.d===2?(mob?2:3):c.d<=4?2:1;
-    for(let i=0;i<n;i++){ const j=c.d===1?.42:.6, w=w0.add(new V3((rr()-.5)*HW*j,0,(rr()-.5)*HS*j*1.4));
-      const s=c.d===1?(2.2+rr()*3.4)*(debrisWall?.7:1):c.d===2?3.5+rr()*4.5:c.d<=4?5+rr()*7:7+rr()*10;
-      const y=c.d===1?(rr()-.4)*4:c.d===2?-2+(rr()-.5)*6:-6+(rr()-.5)*10; put(c,w,s,y,cloudWall?.5:null); }
-    if(c.d===1&&!mob) for(let i=0;i<3;i++){ const w=w0.add(new V3((rr()-.5)*HW*.8,0,(rr()-.5)*HS*.9)); put(c,w,.6+rr()*1.1,(rr()-.3)*6); } } // scree
-  const rimMat=rockMat.clone('rimRockM'); rimMat.diffuseColor=rockMat.diffuseColor.scale(.62); rimMat.specularColor=rockMat.specularColor.scale(.35); rimMat.emissiveColor=rockMat.emissiveColor.scale(.5); G.env.push(rimMat); // a shade darker than the board's own rocks, so the playfield stays the brightest thing
+  // v53: pulled back from the playable edge: the first ring is fewer, smaller, lower pieces pushed toward the outer side of the cut hex
+  const outward=c=>{ const w=hexWorld(c.q,c.r); let x=0,z=0; for(const D of DIRS){ if(!onBoard(c.q+D[0],c.r+D[1])) continue; const o=hexWorld(c.q+D[0],c.r+D[1]); x+=w.x-o.x; z+=w.z-o.z; } const l=Math.hypot(x,z)||1; return new V3(x/l,0,z/l); };
+  for(const c of R){ const w0=hexWorld(c.q,c.r), n=c.d===1?2:c.d===2?(mob?2:3):c.d<=4?2:1, ow=c.d===1?outward(c).scale(HW*.24):null;
+    for(let i=0;i<n;i++){ const j=c.d===1?.3:.6, w=w0.add(new V3((rr()-.5)*HW*j,0,(rr()-.5)*HS*j*1.4)); if(ow) w.addInPlace(ow);
+      const s=c.d===1?(1.6+rr()*2.4)*(debrisWall?.7:1):c.d===2?3.5+rr()*4.5:c.d<=4?5+rr()*7:7+rr()*10;
+      const y=c.d===1?-2.8+rr()*2:c.d===2?-3+(rr()-.5)*6:-6+(rr()-.5)*10; put(c,w,s,y,cloudWall?.5:null); }
+    if(c.d===1&&!mob){ const w=w0.add(new V3((rr()-.5)*HW*.5,0,(rr()-.5)*HS*.6)).add(ow); put(c,w,.6+rr()*.9,-1.6+rr()*1.4); } } // scree
+  const rimMat=rockMatLike(rockMat,'rimRockM'); rimMat.diffuseColor=rockMat.diffuseColor.scale(.5); rimMat.specularColor=rockMat.specularColor.scale(.35); rimMat.emissiveColor=rockMat.emissiveColor.scale(.5); G.env.push(rimMat); // a shade darker than the board's own rocks, so the playfield stays the brightest thing
   shapes.forEach((m,i)=>{ if(!bufs[i].length){ return; } m.material=rimMat; m.isVisible=true; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.thinInstanceAdd(bufs[i]); m.receiveShadows=false; try{ if(G.shadow) G.shadow.removeShadowCaster(m); }catch(e){} });
   if(debrisWall&&typeof debThinUpdate==='function'&&G.debThin&&G.debThin.length){ // add wreck plates and spars to the existing debris batches
     for(const c of R) if(c.d<=2) for(let i=0;i<(mob?2:4);i++){ const rec=G.debThin[Math.floor(rr()*G.debThin.length)], w=hexWorld(c.q,c.r).add(new V3((rr()-.5)*HW*.6,(rr()-.4)*5,(rr()-.5)*HS*.8)); rec.items.push({p:w,r:new V3(rr()*6,rr()*6,rr()*6),s:1+rr()*2.4,spin:new V3((rr()-.5)*.15,(rr()-.5)*.15,(rr()-.5)*.15)}); }

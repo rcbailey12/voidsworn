@@ -746,7 +746,12 @@ function tintHexes(name,hs,col,blk,fill){
 // rebuilt whenever a destroyed ship leaves a new wreck
 function refreshBlockTint(){ try{ (G.blockTint||[]).forEach(m=>{ try{ m.dispose(); }catch(e){} }); G.blockTint=[]; if(!B||!B.terrain||!G.scene) return;
   const hs=[]; for(const [k,t] of Object.entries(B.terrain)) if(t==='rock'||t==='hulk') hs.push(k.split(',').map(Number)); if(!hs.length) return;
-  const n0=G.env.length; tintHexes('blocked',hs,new C3(1,.32,.26),false,.11); const made=G.env.splice(n0); for(const m of made){ if(m instanceof BABYLON.LinesMesh){ m.alpha=.85; m.color=new C3(1,.42,.34); } } G.blockTint=made; }catch(e){ console.warn(e); } }
+  const n0=G.env.length; tintHexes('blocked',hs,new C3(.78,.66,.54),true,0); const made=G.env.splice(n0); for(const m of made){ if(m instanceof BABYLON.LinesMesh){ m.alpha=.55; m.color=new C3(.74,.62,.5); } }
+  /* v53: blocked hexes read as solid ground: a darker floor (alpha blended, not additive) inside a muted stone edge; the red they used to carry is
+     now the enemy footprint colour, so a rock hex no longer looks like an occupied enemy hex */
+  const discs=hs.map(([q,r])=>{ const d=MB.CreateDisc('bf',{radius:HS*.97,tessellation:6},G.scene); d.rotation.x=Math.PI/2; d.rotation.y=Math.PI/6; d.position=hexWorld(q,r,.12); d.bakeCurrentTransformIntoVertices(); return d; });
+  const fm=BABYLON.Mesh.MergeMeshes(discs,true,true); if(fm){ fm.name='blockFloor'; const mt=new BABYLON.StandardMaterial('blockFloorM',G.scene); mt.disableLighting=true; mt.diffuseColor=C3.Black(); mt.specularColor=C3.Black(); mt.emissiveColor=new C3(.02,.016,.012); mt.alpha=.55; mt.disableDepthWrite=true; fm.material=mt; fm.isPickable=false; fm.alphaIndex=-90; try{ G.glow.addExcludedMesh(fm); }catch(e){} made.push(fm,mt); }
+  G.blockTint=made; }catch(e){ console.warn(e); } }
 function buildTerrainTints(){ if(!B||!B.terrain) return; const byType={}; for(const [k,t] of Object.entries(B.terrain)){ if(!TERRAIN_INFO[t]) continue; (byType[t]=byType[t]||[]).push(k.split(',').map(Number)); }
   for(const [t,hs] of Object.entries(byType)){ if(t==='rock'||t==='hulk') continue; tintHexes(t,hs,C3.FromHexString(TERRAIN_INFO[t].col),!!BLOCKING[t],.045); }
   G.blockTint=null; refreshBlockTint();
