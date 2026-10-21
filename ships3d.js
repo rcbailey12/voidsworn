@@ -4,7 +4,7 @@ const FAC3D={ // v46 faction identity: every colour below feeds hulls, windows, 
   hegemony:{hull:'#c4ccd5',dark:'#5a6573',trim:'#3a78d0',win:new C3(.78,.9,1),eng:new C3(.45,.72,1),bolt:new C3(.5,.78,1),beam:new C3(.55,.82,1),shield:new C3(.38,.68,1),tip:new C3(.4,.7,1)}, // clean sci-fi navy: light grey, blue
   corsair:{hull:'#6a2c22',dark:'#28140f',trim:'#a3542c',win:new C3(1,.4,.2),eng:new C3(1,.38,.16),bolt:new C3(.95,.2,.1),beam:new C3(.95,.22,.1),shield:new C3(.85,.16,.1),tip:new C3(1,.15,.08)}, // blood and rust
   chorus:{hull:'#57364c',dark:'#211419',trim:'#a4913a',win:new C3(.85,.92,.25),eng:new C3(.8,.9,.28),bolt:new C3(.82,.92,.22),beam:new C3(.85,.9,.3),shield:new C3(.9,.82,.22),tip:new C3(.9,1,.3)}, // plague flesh, bile glow
-  ithar:{hull:'#eef3f1',dark:'#9fb7ae',trim:'#d7c88a',win:new C3(.6,1,.82),eng:new C3(.62,1,.84),bolt:new C3(.7,1,.86),beam:new C3(.75,1,.88),shield:new C3(.72,1,.86),tip:new C3(.8,1,.9)}, // pearl white, soft jade
+  ithar:{hull:'#e4ebe7',dark:'#6c8179',trim:'#d7c88a',win:new C3(.6,1,.82),eng:new C3(.62,1,.84),bolt:new C3(.7,1,.86),beam:new C3(.75,1,.88),shield:new C3(.72,1,.86),tip:new C3(.8,1,.9)}, // pearl white, soft jade (v53: a touch off-white with darker fittings, so edges and seams read)
   deathless:{hull:'#2c3431',dark:'#121715',trim:'#1fbf4a',win:new C3(.15,1,.35),eng:new C3(.15,1,.35),bolt:new C3(.2,1,.38),beam:new C3(.2,1,.38),shield:new C3(.18,1,.36),tip:new C3(.2,1,.4)}, // black, terminal green
 };
 // v46: how each faction moves. ta/td = share of the move spent speeding up / braking, per = ms per hex (x size), bank = roll into turns,
@@ -58,7 +58,7 @@ function facMats(fac){
   if(MATS[fac]) return MATS[fac];
   const P=FAC3D[fac]||FAC3D.hegemony, sc=G.scene;
   const ht=styleTex(fac,fac+'ht',P.hull,7), dt=styleTex(fac,fac+'dt',P.dark,13);
-  const metal={voidsworn:.28,hegemony:.4,corsair:.35,chorus:.05,ithar:.25,deathless:.6}[fac]??.35, rough={voidsworn:.52,hegemony:.46,corsair:.64,chorus:.32,ithar:.24,deathless:.5}[fac]??.5;
+  const metal={voidsworn:.28,hegemony:.4,corsair:.35,chorus:.05,ithar:.25,deathless:.6}[fac]??.35, rough={voidsworn:.52,hegemony:.46,corsair:.64,chorus:.32,ithar:.45,deathless:.5}[fac]??.5;
   const hm=mapsFromCanvas(fac+'hm',ht.getContext().canvas,{metal,rough,strength:fac==='ithar'?1.2:2.6}), dm=mapsFromCanvas(fac+'dm',dt.getContext().canvas,{metal:Math.min(.9,metal+.1),rough:rough+.08,strength:2.2});
   const tile=[1,1], wt=windowTex(fac);
   for(const t of [ht,hm.normal,hm.orm,wt]){ t.uScale=tile[0]; t.vScale=tile[1]; }
@@ -71,7 +71,7 @@ function facMats(fac){
   const M={P, hull:pbr('hull',ht,hm,null,0,0,wt), dark:pbr('dark',dt,dm), trim:pbr('trim',null,null,P.trim,.95,.26),
     win:emMat(fac+'win',P.win), eng:emMat(fac+'eng',P.eng.scale(1.4)), tip:emMat(fac+'tip',P.tip.scale(1.5)),
     wreck:pbr('wreck',null,null,'#17120f',.35,.85), ember:emMat(fac+'ember',new C3(.9,.32,.08))};
-  if(fac==='ithar'){ M.hull.iridescence.isEnabled=true; M.hull.iridescence.intensity=.9; M.hull.iridescence.indexOfRefraction=1.3; M.hull.iridescence.minimumThickness=120; M.hull.iridescence.maximumThickness=420; }
+  if(fac==='ithar'){ M.hull.iridescence.isEnabled=true; M.hull.iridescence.intensity=.3; /* v53: matte pearl (rough .45, was .24 with .9 iridescence): the gloss smoothed every edge away */ M.hull.iridescence.indexOfRefraction=1.3; M.hull.iridescence.minimumThickness=120; M.hull.iridescence.maximumThickness=420; }
   if(fac==='chorus'){ M.hull.clearCoat.isEnabled=true; M.hull.clearCoat.intensity=.7; M.hull.clearCoat.roughness=.12; M.hull.subSurface.isTranslucencyEnabled=true; M.hull.subSurface.translucencyIntensity=.55; M.hull.subSurface.tintColor=new C3(1,.35,.65); }
   if(fac==='voidsworn'||fac==='hegemony'){ M.hull.clearCoat.isEnabled=true; M.hull.clearCoat.intensity=.25; M.hull.clearCoat.roughness=.3; }
   M.steel=new BABYLON.PBRMaterial(fac+'steel',sc); M.steel.albedoColor=hexC3({voidsworn:'#3a3532',hegemony:'#a2abb5',corsair:'#4f2b21',chorus:'#3a2638',ithar:'#dfe8e4',deathless:'#1a1f1d'}[fac]||'#707070'); M.steel.metallic=.9; M.steel.roughness=.33; M.steel.bumpTexture=dm.normal; M.steel.environmentIntensity=1; M.steel.backFaceCulling=false; M.steel.twoSidedLighting=true;
@@ -705,6 +705,33 @@ const AI_HULLS={ // faction|class -> mesh from the concept rounds (Hangar codes 
   'craft|fighter':'S1_51','craft|bomber':'S2_23','craft|spore':'B23_51', // v53-G squadron craft, shared by every faction (tinted per faction); Chorus wings fly the spore
   'obj|station':'O1_37','obj|transport':'O2_37','obj|beacon':'O3_11'}, AI_HULL_DATA={}; // v53-G objective structures: the defend-objective station, the intercept transports, the hold-objective relay beacon. Deathless: round 10 B set (star dart, monolith half-disc, ring tomb-ark); the B sickle frigate meshed as a flat plaque, so D9b stays until a remesh
 function aiHullsOn(){ return G.aiHulls!==false; }
+const AI_HULL_YAW={I14_23:1,I15_11:-1}; // v53: these two meshed side-on (spike prow along the mesh's z axis): +1 turns -z to the bow, -1 turns +z
+// v53 sail card test, one hull only: the Hunyuan fan sails (thick lumpy volumes) are cropped off at the root and replaced by thin, double-sided,
+// translucent fans with jade ribs and a glowing rim, oversized so they read top-down at phone zoom. Off: G.ithSails=false (or ITHAR_SAIL_TEST.on=false).
+const ITHAR_SAIL_TEST={on:true,hull:'I14_23',keep:.075,root:-.15,R:.6,lift:.3};
+function ithSailsOn(){ return ITHAR_SAIL_TEST.on&&G.ithSails!==false; }
+function aoCurve(d,fac){ const g={ithar:1.9}[fac]; if(!g) return d.col; if(d['_ao_'+fac]) return d['_ao_'+fac]; const c=Float32Array.from(d.col); for(let i=0;i<c.length;i+=4){ const k=Math.pow(c[i],g); c[i]=c[i+1]=c[i+2]=k; } return d['_ao_'+fac]=c; } // deeper cavities on the pale hull: seams and edges stop melting into the highlights
+function cropAISails(P,I,keep){ const out=[]; for(let t=0;t<I.length;t+=3){ const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3; if(Math.abs(P[a+2]+P[b+2]+P[c+2])/3>keep) continue; out.push(I[t],I[t+1],I[t+2]); } return out.length>I.length*.2?out:I; }
+function aiSailMat(){ if(AI_MATS.aisail_ithar) return AI_MATS.aisail_ithar; const m=new BABYLON.StandardMaterial('aisail_ithar',G.scene); m.diffuseColor=new C3(.6,.72,.68); m.specularColor=new C3(.04,.05,.05); m.emissiveColor=new C3(.05,.12,.1); m.alpha=.46; /* translucent, not a white kite under bloom */ m.backFaceCulling=false; m.twoSidedLighting=true; m.disableDepthWrite=true; return AI_MATS.aisail_ithar=m; }
+// v53 Ithar facing and sails, added after the concept hull is in place: a bright jade chevron on the prow and (one hull) the sail card test.
+// Both use the hull's trim material or the sail material, so the merged ship gains at most one draw (the sail panels).
+function ithAIExtras(p){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')), aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, hm=fore&&fore.getChildMeshes(true).find(m=>m.name==='hull_ai'); if(!hm) return;
+  const P=hm.getVerticesData(BABYLON.VertexBuffer.PositionKind), L=p.L, split=(p.surf&&p.surf.split!=null)?p.surf.split:-.05*L, trimM=AI_MATS.aitrim_ithar; if(!P||!trimM) return; trimM.emissiveColor=FAC3D.ithar.eng.scale(1.5); // brighter jade trim on the pale hull
+  const bins={fore:{q:[],e:[]},aft:{q:[],e:[]}}, mk=(pts,mat,half,name)=>{ if(!pts.length) return; const pos=[],ind=[]; for(let i=0;i<pts.length;i+=4){ const b=pos.length/3; for(let j=0;j<4;j++) pos.push(...pts[i+j]); ind.push(b,b+1,b+2,b,b+2,b+3); }
+    const m=new BABYLON.Mesh(name,G.scene), d2=new BABYLON.VertexData(); d2.positions=pos; d2.indices=ind; d2.applyToMesh(m); m.material=mat; m.parent=half==='fore'?fore:aftN; if(half==='aft'&&aftN!==fore) m.position.copyFrom(fore.position.subtract(aftN.position)); m.isPickable=false; m.refreshBoundingInfo(true); };
+  let mx=-1e9; for(let i=0;i<P.length;i+=3) mx=Math.max(mx,P[i]); const top=x=>{ let h=-1e9; for(let i=0;i<P.length;i+=3) if(Math.abs(P[i]-x)<.025*L&&Math.abs(P[i+2])<.04*L) h=Math.max(h,P[i+1]); return h>-1e8?h:0; };
+  for(const sg of [1,-1]){ const x0=mx-.17*L, x1=mx-.05*L, y0=top(x0)+.012*L, y1=top(x1)+.012*L, w=.011*L, z0=sg*.05*L; bins.fore.e.push([x0-w,y0,z0-sg*w],[x1,y1,-sg*w*.5],[x1,y1,sg*w*.5],[x0+w,y0,z0+sg*w]); } // prow chevron: facing at phone zoom
+  if(p._sailHull) aiSails(P,L,split,(pts,half)=>bins[half].q.push(...pts),(pts,half)=>bins[half].e.push(...pts));
+  for(const h of ['fore','aft']){ mk(bins[h].q,aiSailMat(),h,'hull_aisail'); mk(bins[h].e,trimM,h,'hull_aiprow'); } }
+function aiSails(P,L,split,panel,edge){ const S=ITHAR_SAIL_TEST, R=S.R*L, x0=S.root*L, to=(x,y,z)=>[x,y,z]; // built in the hull's fore-local space (P), like the ports and trim
+  let y0=-1e9; for(let i=0;i<P.length;i+=3) if(Math.abs(P[i]-x0)<.04*L&&Math.abs(P[i+2])<.05*L) y0=Math.max(y0,P[i+1]); if(y0<-1e8) y0=0; y0-=.03*L;
+  const NA=9, NR=4, a0=1.15, a1=2.75; // fan from just forward of abeam to well aft, like the concept's fans, only thinner and bigger
+  for(const sg of [1,-1]){ const pt=(ai,rf)=>{ const a=a0+(a1-a0)*ai/NA, rr=R*(rf*(1-.07*Math.abs(Math.sin(ai/NA*Math.PI*4)))), bil=Math.sin(Math.PI*rf)*.05*L*Math.sin(Math.PI*ai/NA); return to(x0+Math.cos(a)*rr,y0+rr*S.lift+bil,sg*(.06*L+Math.sin(a)*rr)); };
+    const hx=x0>=split?'fore':'aft', quads=[], rim=[];
+    for(let i=0;i<NA;i++) for(let j=0;j<NR;j++){ const r0=.06+.94*j/NR, r1=.06+.94*(j+1)/NR; quads.push(pt(i,r0),pt(i+1,r0),pt(i+1,r1),pt(i,r1)); }
+    for(let i=0;i<NA;i++) rim.push(pt(i,.97),pt(i+1,.97),pt(i+1,1.01),pt(i,1.01)); // glowing rim
+    for(let i=0;i<=NA;i+=3) for(let j=0;j<NR;j++){ const r0=.06+.94*j/NR, r1=.06+.94*(j+1)/NR, e=.012; rim.push(pt(i-e*NA,r0),pt(i+e*NA,r0),pt(i+e*NA,r1),pt(i-e*NA,r1)); } // ribs
+    panel(quads,hx); edge(rim,hx); } }
 function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new T(u.buffer); };
   const qp=b64(j.p,Int16Array), qn=b64(j.q,Int8Array), idx=b64(j.i,j.i32?Uint32Array:Uint16Array), n=qp.length/3, pos=new Float32Array(qp.length), nor=new Float32Array(qp.length), uv=new Float32Array(n*2);
   for(let i=0;i<qp.length;i++){ pos[i]=qp[i]/32767*j.ext[i%3]; nor[i]=qn[i]/127; }
@@ -719,7 +746,10 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
   for(const m of p.root.getChildMeshes(false)) if(m.name.includes('hull_')||m.name.endsWith('emblem')) m.dispose(false,false);
   p.root.computeWorldMatrix(true); fore.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(fore.getWorldMatrix()).multiply(p.root.getWorldMatrix());
   const pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*L;
-  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.uv2) vd.uvs2=d.uv2; if(d.col&&!G.diagNoAO) vd.colors=d.col; vd.transform(inv);
+  const hid=AI_HULLS[Object.keys(AI_HULL_DATA).find(k=>AI_HULL_DATA[k]===d)], yaw=AI_HULL_YAW[hid]||0, nor=Float32Array.from(d.nor); let idx=d.idx;
+  if(yaw) for(const A of [pos,nor]) for(let i=0;i<A.length;i+=3){ const x=A[i], z=A[i+2]; A[i]=yaw>0?-z:z; A[i+2]=yaw>0?x:-x; } // v53: meshes that came out of Hunyuan side-on get turned to fly bow first
+  p._sailHull=fac==='ithar'&&hid===ITHAR_SAIL_TEST.hull&&ithSailsOn(); if(p._sailHull) idx=cropAISails(pos,idx,L*ITHAR_SAIL_TEST.keep);
+  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=nor; vd.indices=idx; vd.uvs=d.uv; if(d.uv2) vd.uvs2=d.uv2; if(d.col&&!G.diagNoAO) vd.colors=aoCurve(d,fac); vd.transform(inv);
   // split at the procedural break line so a dying ship still breaks in two
   const split=(p.surf&&p.surf.split!=null)?p.surf.split:-.05*L, aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, P=vd.positions, I=vd.indices, parts={fore:[],aft:[]};
   for(let t=0;t<I.length;t+=3){ const cx=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3; parts[cx>=split?'fore':'aft'].push(I[t],I[t+1],I[t+2]); }
@@ -833,6 +863,7 @@ const AI_WIN_GAIN={voidsworn:1.6,hegemony:1.25,corsair:1.5,chorus:1.1,ithar:.9,d
 function buildShipModelFresh(u){
   const p=buildShipModelProc(u), k=u.transport?'obj|transport':(u.fac||'voidsworn')+'|'+u.cls; if(u.transport) p.matOverride=objMat('transport');
   if(aiHullsOn()&&AI_HULL_DATA[k]) try{ applyAIHull(p,u.fac||'voidsworn',AI_HULL_DATA[k]); }catch(e){ console.warn('AI hull swap failed',e); }
+  if(p.aiHull&&u.fac==='ithar') try{ ithAIExtras(p); }catch(e){ console.warn('Ithar extras',e); }
   return p; }
 function buildShipModelProc(u){
   const fac=u.fac||'voidsworn';
