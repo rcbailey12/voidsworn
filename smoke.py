@@ -33,7 +33,7 @@ with sync_playwright() as p:
     check('skirmish plays an alternating round',not errs and st in ('r2','win','loss'),f'{st}; '+'; '.join(errs[:3]))
     t=[]; tex=[]
     for i in range(3):
-        if i==0: pg.evaluate("disposeAllViews(); for(const k in MODEL_CACHE){ MODEL_CACHE[k].root.dispose(); delete MODEL_CACHE[k]; }")
+        if i==0: pg.evaluate("disposeAllViews(); for(const k in MODEL_CACHE){ MODEL_CACHE[k].root.dispose(); delete MODEL_CACHE[k]; } for(const f of Object.keys(FAC3D)) facMats(f);") # v53-G: every faction's material set (a one-time cache; a rig station brings the corsair set) exists before counting, so only real growth shows
         ms=pg.evaluate("(()=>{ const t=performance.now(); setupBattle({pf:'voidsworn',ef:'hegemony',map:'station'}); return Math.round(performance.now()-t); })()"); t.append(ms); tex.append(pg.evaluate("G.scene.textures.length"))
     check('no texture leak across battles',max(tex)-min(tex)<=3,f'textures {tex}')
     check('ship cache speeds rebuilds',t[1]<t[0]*.8,f'build ms {t}')
