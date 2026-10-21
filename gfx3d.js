@@ -14,7 +14,7 @@ class HullFxPlugin extends BABYLON.MaterialPluginBase{
   getClassName(){ return 'HullFxPlugin'; }
   getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'},{name:'hfxW',size:4,type:'vec4'}],
     fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\nuniform vec4 hfxW;\n#endif\n'}; }
-  bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); const w=this.wcol; ubo.updateFloat4('hfxW',w?w.r:0,w?w.g:0,w?w.b:0,G.hullPorts==null?1:G.hullPorts); }
+  bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); const w=this.wcol; ubo.updateFloat4('hfxW',w?w.r:0,w?w.g:0,w?w.b:0,w?(G.hullPorts==null?1:G.hullPorts):0); }
   getCustomCode(type){
     if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\nvarying vec3 vHfxN;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\nvHfxN=normalUpdated;\n#endif\n'};
     if(type!=='fragment') return null;
@@ -119,9 +119,15 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
       float fl=0.7+0.3*sin(hfxK.y*9.0+vHfxL.x*1.7)*sin(hfxK.y*5.3+vHfxL.z*2.1);
       finalEmissive+=vec3(1.3,0.4,0.08)*(edge*0.75+crack*0.6)*fl*hfxD.x; }
     float st=hfxK.w, t=hfxK.y, w=0.05+hd*0.00045, en=hfxS.y*mix(1.0,hdk,0.7); vec3 lp=vHfxL;
-    if(st>0.5&&st<1.5){ vec3 q=lp*0.55+hfxS.x; vec3 c=floor(q); vec3 f=fract(q);
-      float lx=(1.0-smoothstep(0.0,w,abs(f.y-0.5)))*step(0.45,hfxH(c));
-      float lz=(1.0-smoothstep(0.0,w,abs(f.x-0.5)))*step(0.78,hfxH(c+3.1))*step(abs(f.y-0.5),0.5);
+    if(st>0.5&&st<1.5){
+#ifdef HULLFX_AI
+      const float CS=0.26, T1=0.72, T2=0.9, EB=0.45; // v53-G: concept hulls get sparse, thin circuit traces (they were a dense green cage)
+#else
+      const float CS=0.55, T1=0.45, T2=0.78, EB=1.0;
+#endif
+      vec3 q=lp*CS+hfxS.x; vec3 c=floor(q); vec3 f=fract(q); w*=CS/0.55; en*=EB;
+      float lx=(1.0-smoothstep(0.0,w,abs(f.y-0.5)))*step(T1,hfxH(c));
+      float lz=(1.0-smoothstep(0.0,w,abs(f.x-0.5)))*step(T2,hfxH(c+3.1))*step(abs(f.y-0.5),0.5);
       float pu=pow(fract(q.x*0.2-t*0.3+hfxH(c)*3.0),10.0);
       finalEmissive+=hfxE*max(lx,lz*0.8)*(0.22+2.6*pu)*en; }
     else if(st>1.5&&st<2.5){ float n=hfxN(lp*0.32+hfxS.x)+0.35*hfxN(lp*0.9);

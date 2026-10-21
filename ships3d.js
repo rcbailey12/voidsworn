@@ -627,20 +627,20 @@ function craftInstance(fac,kind){ const key=fac+'|'+kind; let p=CRAFT_CACHE[key]
     p=BABYLON.Mesh.MergeMeshes(solid,true,true,undefined,false,true); c.root.dispose(false,false); if(!p) return null;
     p.name='craft_'+key; p.refreshBoundingInfo(true); p.isVisible=false; p.isPickable=false; p.position.y=-9000; CRAFT_CACHE[key]=p; p._trail=craftTrailProto(fac,key,c.exhaust||[]); }
   const inst=p.createInstance('craft'); inst.isPickable=true; inst.position.set(0,0,0); let trail=null;
-  if(p._trail&&!p._trail.isDisposed()){ trail=p._trail.createInstance('ctrail'); trail.parent=inst; trail.isPickable=false; }
+  if(p._trail&&!p._trail.isDisposed()){ trail=p._trail.createInstance('ctrail'); trail.parent=inst; trail.position.set(0,0,0); trail.isPickable=false; } // instances copy the parked prototype's position
   return {root:inst,meshes:[inst],trail}; }
 function craftKey(fac,kind){ return fac==='chorus'?'craft|spore':kind==='bomber'?'craft|bomber':'craft|fighter'; }
 function craftMat(fac){ const k='craft_'+fac; if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k]; const P=FAC3D[fac]||FAC3D.hegemony, m=new BABYLON.PBRMaterial(k,G.scene);
   m.albedoColor=hexC3(fac==='deathless'?'#3a4440':fac==='voidsworn'?'#5c5550':P.hull); m.metallic=fac==='chorus'?.05:.55; m.roughness=fac==='chorus'?.4:.42; m.environmentIntensity=1.3; m.directIntensity=1.25; m.backFaceCulling=false; m.twoSidedLighting=true; m.enableSpecularAntiAliasing=true; m.maxSimultaneousLights=6;
   if(fac==='chorus'){ m.emissiveColor=P.win.scale(.06); } return AI_MATS[k]=m; }
 function craftFromMesh(fac,kind){ try{ const d=AI_HULL_DATA[craftKey(fac,kind)]; if(!d) return null; const L=CLS_LEN.Squadron, P=FAC3D[fac]||FAC3D.hegemony, pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*L;
-    const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; if(d.col) vd.colors=d.col; const hull=new BABYLON.Mesh('craftHull',G.scene); vd.applyToMesh(hull); hull.material=craftMat(fac);
+    const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; vd.colors=d.col||new Float32Array(pos.length/3*4).fill(1); const hull=new BABYLON.Mesh('craftHull',G.scene); vd.applyToMesh(hull); hull.material=craftMat(fac);
     // engine glows where the stern is: the rear-most vertices, split port and starboard when the engines sit wide apart
     let mnx=1e9; for(let i=0;i<pos.length;i+=3) mnx=Math.min(mnx,pos[i]); const rear=[]; for(let i=0;i<pos.length;i+=3) if(pos[i]<mnx+.07*L) rear.push([pos[i],pos[i+1],pos[i+2]]);
     const avg=a=>a.reduce((s,p)=>[s[0]+p[0]/a.length,s[1]+p[1]/a.length,s[2]+p[2]/a.length],[0,0,0]); let zs=rear.map(p=>p[2]); const spread=Math.max(...zs)-Math.min(...zs);
     const ex=(spread>.22*L&&fac!=='chorus')?[avg(rear.filter(p=>p[2]>0)),avg(rear.filter(p=>p[2]<=0))].filter(p=>!isNaN(p[0])):[avg(rear)];
-    const em=craftEngMat(fac), glows=ex.map(e=>{ const g=MB.CreateSphere('craftEng',{diameter:.13*L,segments:6},G.scene); g.scaling.set(.5,1,1); g.position.set(mnx-.004*L,e[1],e[2]); g.material=em; return g; });
-    const p=BABYLON.Mesh.MergeMeshes([hull,...glows],true,true,undefined,false,true); if(!p) return null; p.name='craft_'+fac+'|'+kind; p.refreshBoundingInfo(true); p.isVisible=false; p.isPickable=false; p.position.y=-9000;
+    const em=craftEngMat(fac), glows=ex.map(e=>{ const g=MB.CreateSphere('craftEng',{diameter:.13*L,segments:6},G.scene); g.scaling.set(.5,1,1); g.position.set(mnx-.004*L,e[1],e[2]); g.material=em; g.setVerticesData(BABYLON.VertexBuffer.ColorKind,new Float32Array(g.getTotalVertices()*4).fill(1)); return g; }); // same vertex layout as the hull, or the merge refuses
+    const p=BABYLON.Mesh.MergeMeshes([hull,...glows],true,true,undefined,false,true); if(!p){ hull.dispose(); glows.forEach(g=>g.dispose()); return null; } p.name='craft_'+fac+'|'+kind; p.refreshBoundingInfo(true); p.isVisible=false; p.isPickable=false; p.position.y=-9000;
     p._trail=craftTrailProto(fac,fac+'|'+kind+'|m',ex.map(e=>new V3(mnx-.01*L,e[1],e[2]))); return p; }catch(e){ console.warn('craft mesh',e); return null; } }
 function craftEngMat(fac){ const k='craftEng_'+fac; if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k]; return AI_MATS[k]=emMat(k,(FAC3D[fac]||FAC3D.hegemony).eng.scale(2.2)); }
 // v53-G engine trails: one thin additive ribbon pair per nozzle, built into a per-craft mesh and drawn as instances (one draw for every wing of that kind)
@@ -733,9 +733,10 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
 // v53-G: axis-aligned ray queries against a concept mesh. Triangles are binned on a 2D grid per axis, so each cast tests a few dozen triangles.
 class HullQ{
   constructor(P,N,I){ this.P=P; this.N=N; this.I=I; const mn=[1e9,1e9,1e9], mx=[-1e9,-1e9,-1e9]; for(let i=0;i<P.length;i+=3) for(let k=0;k<3;k++){ const v=P[i+k]; if(v<mn[k]) mn[k]=v; if(v>mx[k]) mx[k]=v; } this.mn=mn; this.mx=mx; this.g=[null,null,null]; }
-  grid(ax){ if(this.g[ax]) return this.g[ax]; const a=(ax+1)%3, b=(ax+2)%3, N=56, P=this.P, I=this.I, mn=this.mn, mx=this.mx, sa=N/((mx[a]-mn[a])||1), sb=N/((mx[b]-mn[b])||1), nt=I.length/3, box=new Int16Array(nt*4), cnt=new Int32Array(N*N+1);
-    for(let t=0,k=0;t<I.length;t+=3,k+=4){ let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9; for(let j=0;j<3;j++){ const v=I[t+j]*3, va=P[v+a], vb=P[v+b]; if(va<a0) a0=va; if(va>a1) a1=va; if(vb<b0) b0=vb; if(vb>b1) b1=vb; }
-      const i0=Math.max(0,Math.min(N-1,Math.floor((a0-mn[a])*sa))), i1=Math.max(0,Math.min(N-1,Math.floor((a1-mn[a])*sa))), j0=Math.max(0,Math.min(N-1,Math.floor((b0-mn[b])*sb))), j1=Math.max(0,Math.min(N-1,Math.floor((b1-mn[b])*sb)));
+  grid(ax){ if(this.g[ax]) return this.g[ax]; const a=(ax+1)%3, b=(ax+2)%3, N=56, P=this.P, I=this.I, mn=this.mn, mx=this.mx, sa=N/((mx[a]-mn[a])||1), sb=N/((mx[b]-mn[b])||1), nt=I.length/3, box=new Int16Array(nt*4), cnt=new Int32Array(N*N+1), m0=mn[a], m1=mn[b];
+    for(let t=0,k=0;t<I.length;t+=3,k+=4){ const v0=I[t]*3, v1=I[t+1]*3, v2=I[t+2]*3, x0=P[v0+a], x1=P[v1+a], x2=P[v2+a], y0=P[v0+b], y1=P[v1+b], y2=P[v2+b];
+      let a0=x0<x1?x0:x1; if(x2<a0) a0=x2; let a1=x0>x1?x0:x1; if(x2>a1) a1=x2; let b0=y0<y1?y0:y1; if(y2<b0) b0=y2; let b1=y0>y1?y0:y1; if(y2>b1) b1=y2;
+      let i0=((a0-m0)*sa)|0, i1=((a1-m0)*sa)|0, j0=((b0-m1)*sb)|0, j1=((b1-m1)*sb)|0; if(i0<0) i0=0; if(j0<0) j0=0; if(i1>N-1) i1=N-1; if(j1>N-1) j1=N-1;
       box[k]=i0; box[k+1]=i1; box[k+2]=j0; box[k+3]=j1; for(let i=i0;i<=i1;i++) for(let j=j0;j<=j1;j++) cnt[i*N+j+1]++; }
     for(let c=0;c<N*N;c++) cnt[c+1]+=cnt[c]; const fill=cnt.slice(0,N*N), list=new Int32Array(cnt[N*N]); // counting sort: cell c holds list[cnt[c]..cnt[c+1])
     for(let t=0,k=0;t<nt;t++,k+=4) for(let i=box[k];i<=box[k+1];i++) for(let j=box[k+2];j<=box[k+3];j++) list[fill[i*N+j]++]=t*3;
@@ -785,7 +786,7 @@ function aiHullMat(fac){ const M=facMats(fac); if(M.aiHull) return M.aiHull; con
   m.useParallax=false; m.enableSpecularAntiAliasing=true; if(m.bumpTexture) m.bumpTexture=src.bumpTexture; m.roughness=1; if(m.clearCoat&&m.clearCoat.isEnabled){ m.clearCoat.roughness=Math.max(m.clearCoat.roughness,.42); m.clearCoat.intensity=Math.min(m.clearCoat.intensity,.18); }
   const o=src._hullFx, P=FAC3D[fac]||FAC3D.hegemony; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx');
   const opts=o?{rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy}:{rim:new C3(.6,.7,.9),str:.8,style:HULLFX_STYLE[fac]||0,ecol:P.win,wear:.25,seed:3,energy:true};
-  opts.ai=true; opts.wcol=P.win.scale(AI_WIN_GAIN[fac]??1.4); if(pl) Object.assign(pl,opts); else if(typeof HullFxPlugin==='function') pl=new HullFxPlugin(m,opts); if(pl){ m._hullFx=pl; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); }
+  opts.ai=true; opts.wcol=fac==='chorus'?null:P.win.scale(AI_WIN_GAIN[fac]??1.4); // living Chorus hulls have no windows: their veins and sacs glow instead if(pl) Object.assign(pl,opts); else if(typeof HullFxPlugin==='function') pl=new HullFxPlugin(m,opts); if(pl){ m._hullFx=pl; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); }
   m._isAiHull=true; return M.aiHull=m; }
 // v53-G objective structures: the station in gunmetal with amber ports all round, the transport in pale grey with hazard-yellow collars
 function objMat(kind){ const k='obj_'+kind; if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k]; const st=kind==='station', m=new BABYLON.PBRMaterial(k,G.scene);
@@ -794,12 +795,13 @@ function objMat(kind){ const k='obj_'+kind; if(AI_MATS[k]&&G.scene.materials.inc
   if(typeof HullFxPlugin==='function'){ const pl=new HullFxPlugin(m,{rim:new C3(.55,.7,.95),str:.5,style:0,ecol:new C3(1,.7,.3),wear:.3,seed:st?4.1:6.3,energy:false,ai:true,ring:st,haz:!st,wcol:st?new C3(1,.62,.22).scale(1.7):new C3(1,.86,.6).scale(1.2)}); m._hullFx=pl; }
   m._isAiHull=true; return AI_MATS[k]=m; }
 // v53-G the relay beacon mast from its mesh (height H, base on the board); returns the mesh, or null for the procedural mast
-function beaconMesh(c,H){ const d=aiHullsOn()&&AI_HULL_DATA['obj|beacon']; if(!d) return null; const pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*H;
-  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.col) vd.colors=d.col; const m=new BABYLON.Mesh('hull_beacon',G.scene); vd.applyToMesh(m); m.material=objMat('station'); m.position=c.add(new V3(0,H*.5,0)); m.isPickable=false;
+function beaconMesh(c,H){ const pr=aiHullsOn()&&objProto('obj|beacon',H); if(!pr) return null; const m=pr.clone('hull_beacon',null); m.setEnabled(true); m.material=objMat('station'); m.position=c.add(new V3(0,H*.5,0)); m.isPickable=false;
   try{ castShadows(m); }catch(e){} try{ G.glow.addExcludedMesh(m); }catch(e){} m.refreshBoundingInfo(true); return m; }
 // the defend-objective station from its mesh; same anchor as the procedural stations (G.station, G.env)
-function buildMeshStation(c,rr){ const d=AI_HULL_DATA['obj|station']; if(!d) return false; const S=46, root=new BABYLON.TransformNode('station',G.scene), pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*S;
-  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.col) vd.colors=d.col; const m=new BABYLON.Mesh('hull_station',G.scene); vd.applyToMesh(m); m.material=objMat('station'); m.parent=root; m.isPickable=false;
+const OBJ_PROTO={};
+function objProto(key,S){ let p=OBJ_PROTO[key]; if(p&&!p.isDisposed()&&p.getScene()===G.scene) return p; const d=AI_HULL_DATA[key]; if(!d) return null; const pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*S;
+  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.col) vd.colors=d.col; p=new BABYLON.Mesh('objP_'+key,G.scene); vd.applyToMesh(p); p.setEnabled(false); p.isPickable=false; return OBJ_PROTO[key]=p; } // built once; battles take clones (shared geometry)
+function buildMeshStation(c,rr){ const pr=objProto('obj|station',46); if(!pr) return false; const root=new BABYLON.TransformNode('station',G.scene), m=pr.clone('hull_station',root); m.setEnabled(true); m.material=objMat('station'); m.isPickable=false;
   try{ castShadows(m); }catch(e){} try{ G.glow.addExcludedMesh(m); }catch(e){} root.position=c.add(new V3(0,3,0)); root.rotation.set(.06,rr()*6,.04); m.refreshBoundingInfo(true); m.freezeWorldMatrix&&setTimeout(()=>{ try{ if(!m.isDisposed()){ root.computeWorldMatrix(true); m.freezeWorldMatrix(); } }catch(e){} },0);
   G.env.push(root); G.station={root,meshes:[m]}; return true; }
 const AI_WIN_GAIN={voidsworn:1.6,hegemony:1.25,corsair:1.5,chorus:1.1,ithar:.9,deathless:1.3}; // port brightness per faction (pale hulls need less)
