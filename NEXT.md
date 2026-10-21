@@ -49,6 +49,11 @@ Bake-off on the Pyre-Barge (C19_51) and the station (O1_37), clay renders + in-g
 - [ ] Replace the box/T-shape wreck debris (debBases in buildTerrainFeatures) with real wreck chunks from the rebuilt hulls.
 - [ ] The bright gold selection ring on the owner's Pixel shot at close zoom (PC shots show it faded; re-check on the Pixel with v53.8).
 
+## Owner notes from desktop play on v53.8 (Oct 21, "for future")
+- [ ] Engine burn glows don't line up with the modelled engines (plume/flare seating in seatOnHull uses the procedural nozzle heights; on the concept hulls they land beside the real nozzles).
+- [ ] Ithar ships sometimes look oddly oriented, the big ones most (I16 carrier, I8 ark: check AI_HULL_YAW like I14/I15, and the sail card on side-on meshes).
+- [ ] Backdrop oddities: asteroids clipping into moons, two identical moons with rock rings, stray "distant traffic" ships hanging in the sky, the rim-fill rock wall reading as a slab the board sits on.
+
 ## v54: factions and rewards (parallel with v55)
 
 Doctrines (Ithar and Chorus first, then Corsair, Deathless, Hegemony, Voidsworn); boon decline + reroll; rule-changing boons; legendary per patron (Hades style, unlocked at boss/elite after 2-3 of that patron's boons); rarity changes effect; shared refit tracks per class; kill marks and sector chronicle; section consequences; fire damage-control choice; earned Admiral's Command; objectives that change priorities; faction AI behaviours; differentiated admirals.
