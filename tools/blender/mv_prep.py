@@ -35,5 +35,6 @@ for k, (im, m, (x0, y0, x1, y1)) in V.items():
     t = Image.fromarray(rgba, 'RGBA').resize((max(1, round((x1 - x0) * sx)), max(1, round((y1 - y0) * k_s))), Image.LANCZOS)
     c = Image.new('RGBA', (S, S), (0, 0, 0, 255)); c.alpha_composite(t, ((S - t.width) // 2, (S - t.height) // 2))
     c.convert('RGB').save(os.path.join(out, f'{code}_{k}.png'))
+    mk = Image.new('L', (S, S), 0); mk.paste(t.getchannel('A'), ((S - t.width) // 2, (S - t.height) // 2)); mk.save(os.path.join(out, f'{code}_{k}_mask.png'))  # for paint projection
 sheet = Image.new('RGB', (S * 2, S * 2)); [sheet.paste(Image.open(os.path.join(out, f'{code}_{k}.png')), ((i % 2) * S, (i // 2) * S)) for i, k in enumerate(['front', 'left', 'back', 'right']) if k in V]
 sheet.resize((S, S)).save(os.path.join(out, f'{code}_mv_sheet.png'))
