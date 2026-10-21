@@ -1,13 +1,16 @@
 # Project the source pictures (concept painting + generated views) back onto a Pixal3D mesh and bake them into its albedo, so the
 # paint is as sharp as the pictures wherever a picture sees the surface; elsewhere the mesh's own baked paint shows through.
 # Cameras follow Pixal3D's orbit rig (z up, az 0 = front, 90 = left, fov 20, unit cube spanning 1/1.1 of the frame).
-# usage: python3 project_paint.py in.glb out_albedo.png RES view.png:mask.png:az:el:weight [...]
+# usage: python3 project_paint.py in.glb out_albedo.png RES view.png|mask.png|az|el|weight [...]
 import sys, math, numpy as np, bpy, bmesh, mathutils
 from mathutils.bvhtree import BVHTree
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]  # works as `blender -b -P project_paint.py -- ...` or with the bpy module
 src, outp, RES = argv[0], argv[1], int(argv[2]); views = []
 for a in argv[3:]:
-    p = a.split(':'); views.append((p[0], p[1], float(p[2]), float(p[3]), float(p[4])))
+    p = a.split('|')
+    if p[2].startswith('@'):  # az/el from a fitcam_rig.py result
+        import json as _j; f = _j.load(open(p[2][1:])); p[2], p[3] = f['az'], f['el']
+    views.append((p[0], p[1], float(p[2]), float(p[3]), float(p[4])))
 bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=src)
 o = [x for x in bpy.context.scene.objects if x.type == 'MESH'][0]; me = o.data; sc = bpy.context.scene
 bpy.context.view_layer.objects.active = o; o.select_set(True)
