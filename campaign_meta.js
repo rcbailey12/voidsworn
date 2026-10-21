@@ -24,10 +24,9 @@ function pct(n){ return Math.round(n*100)+'%'; }
 function hpBar(hp,max){ const f=clamp(hp/max,0,1); return `<div class="bar${f<.35?' low':''}"><i style="width:${f*100}%"></i></div>`; }
 
 // ---------- title ----------
-let titleRaf=0;
 function titleScreen(){
   RUN=null; B=null;
-  show(`<div class="screen title"><canvas id="titlecv" aria-hidden="true"></canvas><div class="inner">
+  show(`<div class="screen title"><div class="inner">
     <h1>Voidsworn</h1>
     <p class="sub">Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain.</p>
     <div class="menu">
@@ -38,26 +37,6 @@ function titleScreen(){
     </div>
     <div class="renown num">${META.stats.best?`Best: sector ${roman(Math.min(3,META.stats.best))}${META.stats.wins?` \u00b7 ${META.stats.wins} full victor${META.stats.wins>1?'ies':'y'}`:''}`:''}</div>
   </div></div>`);
-  const cv=document.getElementById('titlecv'), g=cv.getContext('2d');
-  const stars=[...Array(260)].map(()=>({x:rnd(),y:rnd(),z:rnd()*.8+.2}));
-  const t0=performance.now();
-  cancelAnimationFrame(titleRaf);
-  const loop=now=>{ if(!document.body.contains(cv)) return;
-    const dpr=Math.min(2,devicePixelRatio||1), w=cv.clientWidth, h=cv.clientHeight;
-    if(cv.width!==Math.round(w*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
-    g.setTransform(dpr,0,0,dpr,0,0);
-    const bg=g.createRadialGradient(w*.7,h*.2,0,w*.7,h*.2,Math.max(w,h)); bg.addColorStop(0,'#17233d'); bg.addColorStop(1,'#070b15'); g.fillStyle=bg; g.fillRect(0,0,w,h);
-    const t=(now-t0)/1000;
-    for(const s of stars){ const x=((s.x*w - t*6*s.z)%w+w)%w; g.fillStyle=`rgba(230,220,196,${s.z*.8})`; g.fillRect(x,s.y*h,s.z*1.6,s.z*1.6); }
-    const L=Math.min(w*.5,h*.7), span=w+L*1.2;
-    const drift=(speed,start,len)=>{ const s=w+len*.6; return s-((t*speed+(s-start))%(w+len*1.2)); };
-    const x=drift(9,w*.74,L), y=h*.8;
-    g.save(); g.translate(x,y); g.rotate(Math.PI); g.globalAlpha=.92; drawShipShape(g,'gothic',L,FACTIONS.voidsworn,'player',null,false); g.restore();
-    const x2=drift(16,w*.2,L*.3); g.save(); g.translate(x2,h*.63); g.rotate(Math.PI); g.globalAlpha=.6; drawShipShape(g,'gothic',L*.3,FACTIONS.voidsworn,'player',null,false); g.restore();
-    const x3=drift(12,w*.9,L*.22); g.save(); g.translate(x3,h*.18); g.rotate(Math.PI); g.globalAlpha=.45; drawShipShape(g,'gothic',L*.22,FACTIONS.voidsworn,'player',null,false); g.restore();
-    const vg=g.createLinearGradient(0,0,0,h); vg.addColorStop(0,'rgba(15,22,38,0)'); vg.addColorStop(1,'rgba(15,22,38,.55)'); g.fillStyle=vg; g.fillRect(0,0,w,h);
-    titleRaf=requestAnimationFrame(loop); };
-  titleRaf=requestAnimationFrame(loop);
 }
 ACT.title=()=>titleScreen();
 ACT.continueRun=()=>{ RUN=JSON.parse(JSON.stringify(SAVED_RUN)); mapScreen(); };

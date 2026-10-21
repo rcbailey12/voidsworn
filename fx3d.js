@@ -59,7 +59,8 @@ function createView(u){
   const fac=u.fac||'voidsworn';
   const v={u,fac,bob:Math.random()*6.28,bank:0,lastA:null,fires:[],state:'alive'};
   if(u.isSq){ v.root=new BABYLON.TransformNode('sq',G.scene); v.crafts=[]; v.L=5; v.H=2;
-    for(let i=0;i<3;i++){ const c=craftInstance(fac,u.sqKind)||buildCraft(fac,u.sqKind); c.root.parent=v.root; c.root.scaling.setAll(1.35); c.meshes.forEach(m=>m.metadata={unit:u.id}); v.crafts.push({c,ph:i*2.09,rad:2+i*.7,h:(i-1)*.5}); }
+    const fm=typeof craftFormation==='function'?craftFormation(fac,u.sqKind):{s:1.35,pts:[[0,0,0],[-1.6,0,1.7],[-1.6,0,-1.7]]}; v.wing=new BABYLON.TransformNode('wing',G.scene); v.wing.parent=v.root; v.wingPh=Math.random()*6.28; // v53-G: the wing flies as one formation
+    fm.pts.forEach(([x,y,z],i)=>{ const c=craftInstance(fac,u.sqKind)||buildCraft(fac,u.sqKind); c.root.parent=v.wing; c.root.scaling.setAll(fm.s); c.root.position.set(x,y,z); c.meshes.forEach(m=>m.metadata={unit:u.id}); v.crafts.push({c,ph:i*1.7,y}); });
     if(typeof craftTrails==='function') craftTrails(v,fac);
     const pv=u.parent&&G.views.get(u.parent);
     if(pv&&pv.model&&!u.launched){ u.launched=true; const bay=pv.model.bays.length?pv.model.bays[Math.floor(Math.random()*pv.model.bays.length)]:new V3(0,0,0); v.launch={from:toWorld(pv,bay),t0:G.time}; SFX.launch(v.launch.from); }
@@ -157,7 +158,8 @@ function updateWorld(dt){
     if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1.35; /* v51: always under way, engines at cruise */ v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
       for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt; if(v.model.turrets&&typeof updateTurrets==='function') updateTurrets(v,dt);
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx){ v.stackFx=v.model.stacks.map(sp=>{ const n=new BABYLON.TransformNode('stk',G.scene); n.parent=v.root; n.position=sp.clone(); const ps=new BABYLON.ParticleSystem('stack',90,G.scene); ps.particleTexture=G.tex.smoke; ps.emitter=n; ps.direction1=new V3(-.2,1,-.2); ps.direction2=new V3(.2,1.5,.2); ps.color1=new C4(.32,.28,.25,.5); ps.color2=new C4(.2,.18,.17,.4); ps.colorDead=new C4(.1,.1,.1,0); ps.minSize=.3; ps.maxSize=.7; ps.addSizeGradient(0,.5); ps.addSizeGradient(1,3.2); ps.minLifeTime=1.5; ps.maxLifeTime=3; ps.emitRate=10; ps.minEmitPower=.6; ps.maxEmitPower=1.2; ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD; ps.start(); return ps; }); } }
-    if(v.crafts){ for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
+    if(v.crafts){ if(v.wing){ const ang=t*.95+v.wingPh, R=3.4; v.wing.position.set(Math.cos(ang)*R,Math.sin(t*.8+v.wingPh)*.4,-Math.sin(ang)*R); v.wing.rotation.set(.3,ang+Math.PI/2,0); for(const c of v.crafts) c.c.root.position.y=c.y+Math.sin(t*2.1+c.ph)*.16; }
+      else for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
     v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.07+.3*f:0)+s.pulse*.9; const sk=1+s.pulse*.08; if(s.m.scaling.x!==sk) s.m.scaling.setAll(sk); }); /* v53: an unchanged scale is not rewritten (a write forces a world matrix rebuild) */
     // damage fires
@@ -268,7 +270,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
 async function animMove(u,q,r,f){ return animPath(u,[{q,r,f}]); }
 async function animRotate(u,f){ return animPath(u,[{rot:true,f}]); }
 // engine wake: a ribbon that follows the stern and collapses once the ship stops
-function startTrail(v){ try{ if(G.quality==='low') return null; const P=FAC3D[v.fac]||FAC3D.hegemony, n=new BABYLON.TransformNode('wakeN',G.scene); n.parent=v.root; n.position.set(-v.L*.5,0,0);
+function startTrail(v){ try{ const P=FAC3D[v.fac]||FAC3D.hegemony, n=new BABYLON.TransformNode('wakeN',G.scene); n.parent=v.root; n.position.set(-v.L*.5,0,0);
     const tm=new BABYLON.TrailMesh('wake',n,G.scene,Math.max(.6,v.L*.07),48,true), m=emMat('wakeM',P.eng.scale(.9),.42); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; tm.material=m; tm.isPickable=false; try{ G.glow.addExcludedMesh(tm); }catch(e){}
     const tr={tm,n,m}; (G.trails=G.trails||new Set()).add(tr); return tr; }catch(e){ return null; } }
 function endTrail(tr){ const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/1.4; tr.m.alpha=.42*Math.max(0,1-k); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} if(G.trails) G.trails.delete(tr); } }); }
@@ -364,9 +366,6 @@ function fireSheet(){ if(G.tex.fire) return G.tex.fire; const N=8,S=128;
         const o=((oy+y)*S*N+ox+x)*4; d[o]=R; d[o+1]=Gc; d[o+2]=Bc; d[o+3]=m*(1-Math.pow(t,2.5))*255; } }
     g.putImageData(img,0,0); });
   return G.tex.fire; }
-function hexTex(){ if(G.tex.hex) return G.tex.hex; G.tex.hex=dynTex('hexT',512,512,(g,w)=>{ g.clearRect(0,0,w,w); g.strokeStyle='rgba(255,255,255,.9)'; g.lineWidth=3; const R=22, H=R*Math.sqrt(3);
-    for(let row=-1;row<w/H+1;row++) for(let col=-1;col<w/(R*1.5)+1;col++){ const cx=col*R*1.5, cy=row*H+(col%2?H/2:0); g.beginPath(); for(let i=0;i<=6;i++){ const a=i*Math.PI/3; g.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a)); } g.stroke(); } }); return G.tex.hex; }
-let LIGHTS=0;
 // v44.1: a fixed pool of flash lights, created once and kept at zero intensity, so blasts never change the scene's light count
 // (adding or removing a light marks every material dirty and stalls the frame); Medium has no flash lights at all
 function flashLights(){ const want=G.fxReduced?0:G.quality==='ultra'?3:G.quality==='high'?2:0; const pool=G.flPool=G.flPool||[];
@@ -405,6 +404,7 @@ function scorchMat(){ if(SCORCH) return SCORCH; const t=dynTex('scorchT',128,128
   const m=new BABYLON.StandardMaterial('scorchM',G.scene); m.diffuseTexture=t; m.diffuseTexture.hasAlpha=true; m.useAlphaFromDiffuseTexture=true; m.specularColor=C3.Black(); m.backFaceCulling=false; m.zOffset=-2; return SCORCH=m; }
 function surfAtModel(sf,x){ const st=sf.st; if(x<=st[0].x) return st[0]; for(let i=0;i<st.length-1;i++) if(x>=st[i].x&&x<=st[i+1].x) return interpStation(st[i],st[i+1],x); return st[st.length-1]; }
 function hullDecal(vt,from,big){ const md=vt&&vt.model; if(!md||!md.surf||!vt.root||vt.root.isDisposed()) return; const L=vt.L; vt.root.computeWorldMatrix(true);
+  if(md.skin&&md.skin.length) return skinDecal(vt,from,big);
   const lf=V3.TransformCoordinates(from,BABYLON.Matrix.Invert(vt.root.getWorldMatrix())), side=lf.z>=0?1:-1, x=(Math.random()-.5)*L*.75, st=surfAtModel(md.surf,x); if(!st||st.w<L*.02) return;
   const y=(st.y||0)+(Math.random()-.3)*st.t*.7, node=x>=md.surf.split?md.fore:md.aft; if(!node||node.isDisposed()) return; const sz=(big?2.2:1.1)*(.7+Math.random()*.6)*Math.max(1,L/14);
   const pl=MB.CreatePlane('scorch',{size:sz},G.scene); pl.material=scorchMat(); pl.isPickable=false; G.glow.addExcludedMesh(pl); pl.parent=node; pl.position.set(x,y,side*(st.w+L*.004)); pl.rotation.set(0,side>0?Math.PI:0,Math.random()*6);
@@ -412,12 +412,24 @@ function hullDecal(vt,from,big){ const md=vt&&vt.model; if(!md||!md.surf||!vt.ro
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/9; if(k>=1||em.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!em.isDisposed()) em.dispose(); eM.dispose(); return; } eM.alpha=(1-k)*(.7+.3*Math.sin(G.time*13+x)); });
   (vt.decals=vt.decals||[]).push(pl); if(vt.decals.length>28){ const old=vt.decals.shift(); if(!old.isDisposed()) old.dispose(); } }
 
+// v53-G: scorch marks on a concept hull lie flat on a sampled surface point, turned to its normal
+function skinDecal(vt,from,big){ const md=vt.model, L=vt.L, c=skinPoint(vt,from.subtract(vt.root.getAbsolutePosition())); if(!c) return; const node=c.p.x>=((md.surf&&md.surf.split)||0)?md.fore:md.aft; if(!node||node.isDisposed()) return;
+  const sz=(big?1.8:.9)*(.7+Math.random()*.6)*Math.max(1,L/14), q=BABYLON.Quaternion.FromLookDirectionLH(c.n,Math.abs(c.n.y)>.9?new V3(1,0,0):new V3(0,1,0)).multiply(BABYLON.Quaternion.RotationAxis(new V3(0,0,1),Math.random()*6.28));
+  const pl=MB.CreatePlane('scorch',{size:sz},G.scene); pl.material=scorchMat(); pl.isPickable=false; G.glow.addExcludedMesh(pl); pl.parent=node; pl.position=c.p.add(c.n.scale(L*.002)); pl.rotationQuaternion=q;
+  const em=MB.CreatePlane('ember',{size:sz*.4},G.scene), eM=emMat('emberM',new C3(1.4,.55,.15),1); eM.opacityTexture=G.tex.soft; eM.alphaMode=BABYLON.Engine.ALPHA_ADD; eM.disableDepthWrite=true; em.material=eM; em.parent=node; em.position=c.p.add(c.n.scale(L*.003)); em.rotationQuaternion=q.clone(); em.isPickable=false;
+  const t0=G.time, x=c.p.x; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/9; if(k>=1||em.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!em.isDisposed()) em.dispose(); eM.dispose(); return; } eM.alpha=(1-k)*(.7+.3*Math.sin(G.time*13+x)); });
+  (vt.decals=vt.decals||[]).push(pl); if(vt.decals.length>28){ const old=vt.decals.shift(); if(!old.isDisposed()) old.dispose(); } }
+
 // ---------- weapon fire (called by the rules engine before damage is applied) ----------
 function hitPoint(vt,att,shielded){
   const c=vt.root.getAbsolutePosition(); const toA=att.subtract(c); toA.y=0; toA.normalize();
   if(shielded) return c.add(toA.scale(Math.max(4.2,vt.L*.5)*.85)).add(new V3(0,1,0));
+  const sk=skinPoint(vt,toA); if(sk) return toWorld(vt,sk.p); // v53-G: concept hulls take hits on their real surface, on the side facing the shooter
   const local=new V3((Math.random()-.5)*vt.L*.55,Math.random()*vt.H*.6,(Math.random()-.5)*vt.L*.1); return toWorld(vt,local);
 }
+function skinPoint(vt,worldDir){ const sk=vt&&vt.model&&vt.model.skin; if(!sk||!sk.length||!vt.root) return null; let ld=null;
+  if(worldDir){ vt.root.computeWorldMatrix(true); ld=V3.TransformNormal(worldDir,BABYLON.Matrix.Invert(vt.root.getWorldMatrix())); ld.normalize(); }
+  let best=null,bs=-9; for(let i=0;i<6;i++){ const c=sk[Math.floor(Math.random()*sk.length)], sc=(ld?V3.Dot(c.n,ld):0)+Math.random()*.6; if(sc>bs){ bs=sc; best=c; } } return best; }
 function missPoint(vt,from){ const c=vt.root.getAbsolutePosition(); const d=c.subtract(from); d.y=0; d.normalize(); const perp=new V3(-d.z,0,d.x).scale((Math.random()<.5?-1:1)*(vt.L*.45+3+Math.random()*4)); return c.add(perp).add(d.scale(10+Math.random()*14)).add(new V3(0,(Math.random()-.3)*4,0)); }
 function muzzles(v,arc,tgtPos){
   if(v.crafts) return v.crafts.map(c=>c.c.root.getAbsolutePosition().clone());
@@ -685,13 +697,14 @@ function onCapture(t){ const v=G.views.get(t.id); if(v){ disposeView(v); G.views
 
 // ---------- objective markers ----------
 function buildBeacon(h){ const c=hexWorld(h.q,h.r,0), sc=G.scene, parts=[];
-  const base=MB.CreateCylinder('bcnBase',{height:1.2,diameterTop:5,diameterBottom:7,tessellation:6},sc); base.position=c.add(new V3(0,.6,0)); base.material=facMats('hegemony').dark; parts.push(base);
-  const mast=MB.CreateCylinder('bcnMast',{height:16,diameterTop:.4,diameterBottom:1.4,tessellation:6},sc); mast.position=c.add(new V3(0,8,0)); mast.material=facMats('hegemony').steel; parts.push(mast);
-  const coreM=emMat('bcnCoreM',new C3(1.4,1.2,.8)); const core=MB.CreateSphere('bcnCore',{diameter:2.2,segments:12},sc); core.position=c.add(new V3(0,16.5,0)); core.material=coreM; parts.push(core,coreM);
-  const rings=[0,1].map(i=>{ const r=MB.CreateTorus('bcnRing',{diameter:5+i*3,thickness:.18,tessellation:40},sc); r.position=c.add(new V3(0,12+i*2.5,0)); const m=emMat('bcnRingM',new C3(1,.85,.5)); r.material=m; parts.push(r,m); return {r,m}; });
+  const H=18, bm=typeof beaconMesh==='function'?beaconMesh(c,H):null, Y=bm?{core:H*.95,coreD:1.7,ring:[H*.6,H*.73],pip:H*.8,pipR:2.7}:{core:16.5,coreD:2.2,ring:[12,14.5],pip:14.5,pipR:2.4}; // v53-G: the concept mast, rings and pips re-seated on it
+  if(bm) parts.push(bm); else { const base=MB.CreateCylinder('bcnBase',{height:1.2,diameterTop:5,diameterBottom:7,tessellation:6},sc); base.position=c.add(new V3(0,.6,0)); base.material=facMats('hegemony').dark; parts.push(base);
+  const mast=MB.CreateCylinder('bcnMast',{height:16,diameterTop:.4,diameterBottom:1.4,tessellation:6},sc); mast.position=c.add(new V3(0,8,0)); mast.material=facMats('hegemony').steel; parts.push(mast); }
+  const coreM=emMat('bcnCoreM',new C3(1.4,1.2,.8)); const core=MB.CreateSphere('bcnCore',{diameter:Y.coreD,segments:12},sc); core.position=c.add(new V3(0,Y.core,0)); core.material=coreM; parts.push(core,coreM);
+  const rings=[0,1].map(i=>{ const r=MB.CreateTorus('bcnRing',{diameter:5+i*3,thickness:.18,tessellation:40},sc); r.position=c.add(new V3(0,Y.ring[i],0)); const m=emMat('bcnRingM',new C3(1,.85,.5)); r.material=m; parts.push(r,m); return {r,m}; });
   const zm=emMat('bcnZoneM',new C3(1,.85,.5),.5); zm.alphaMode=BABYLON.Engine.ALPHA_ADD; zm.disableDepthWrite=true; zm.backFaceCulling=false;
   const zone=MB.CreateTorus('bcnZone',{diameter:HW*3.1,thickness:.45,tessellation:6},sc); zone.rotation.y=Math.PI/6; zone.position=c.add(new V3(0,.2,0)); zone.material=zm; G.glow.addExcludedMesh(zone); parts.push(zone,zm);
-  const pips=[0,1,2].map(i=>{ const m=emMat('bcnPipM',new C3(.3,.3,.3)); const s=MB.CreateSphere('bcnPip',{diameter:.9,segments:8},sc); s.position=c.add(new V3(Math.cos(i*2.09)*2.4,14.5,Math.sin(i*2.09)*2.4)); s.material=m; parts.push(s,m); return m; });
+  const pips=[0,1,2].map(i=>{ const m=emMat('bcnPipM',new C3(.3,.3,.3)); const s=MB.CreateSphere('bcnPip',{diameter:.9,segments:8},sc); s.position=c.add(new V3(Math.cos(i*2.09)*Y.pipR,Y.pip,Math.sin(i*2.09)*Y.pipR)); s.material=m; parts.push(s,m); return m; });
   for(const p of parts) if(p.isPickable!==undefined) p.isPickable=false;
   G.env.push(...parts); G.beacon={rings,coreM,zm,pips};
 }
@@ -725,7 +738,12 @@ function tintHexes(name,hs,col,blk,fill){
 // rebuilt whenever a destroyed ship leaves a new wreck
 function refreshBlockTint(){ try{ (G.blockTint||[]).forEach(m=>{ try{ m.dispose(); }catch(e){} }); G.blockTint=[]; if(!B||!B.terrain||!G.scene) return;
   const hs=[]; for(const [k,t] of Object.entries(B.terrain)) if(t==='rock'||t==='hulk') hs.push(k.split(',').map(Number)); if(!hs.length) return;
-  const n0=G.env.length; tintHexes('blocked',hs,new C3(1,.32,.26),false,.11); const made=G.env.splice(n0); for(const m of made){ if(m instanceof BABYLON.LinesMesh){ m.alpha=.85; m.color=new C3(1,.42,.34); } } G.blockTint=made; }catch(e){ console.warn(e); } }
+  const n0=G.env.length; tintHexes('blocked',hs,new C3(.78,.66,.54),true,0); const made=G.env.splice(n0); for(const m of made){ if(m instanceof BABYLON.LinesMesh){ m.alpha=.55; m.color=new C3(.74,.62,.5); } }
+  /* v53: blocked hexes read as solid ground: a darker floor (alpha blended, not additive) inside a muted stone edge; the red they used to carry is
+     now the enemy footprint colour, so a rock hex no longer looks like an occupied enemy hex */
+  const discs=hs.map(([q,r])=>{ const d=MB.CreateDisc('bf',{radius:HS*.97,tessellation:6},G.scene); d.rotation.x=Math.PI/2; d.rotation.y=Math.PI/6; d.position=hexWorld(q,r,.12); d.bakeCurrentTransformIntoVertices(); return d; });
+  const fm=BABYLON.Mesh.MergeMeshes(discs,true,true); if(fm){ fm.name='blockFloor'; const mt=new BABYLON.StandardMaterial('blockFloorM',G.scene); mt.disableLighting=true; mt.diffuseColor=C3.Black(); mt.specularColor=C3.Black(); mt.emissiveColor=new C3(.02,.016,.012); mt.alpha=.55; mt.disableDepthWrite=true; fm.material=mt; fm.isPickable=false; fm.alphaIndex=-90; try{ G.glow.addExcludedMesh(fm); }catch(e){} made.push(fm,mt); }
+  G.blockTint=made; }catch(e){ console.warn(e); } }
 function buildTerrainTints(){ if(!B||!B.terrain) return; const byType={}; for(const [k,t] of Object.entries(B.terrain)){ if(!TERRAIN_INFO[t]) continue; (byType[t]=byType[t]||[]).push(k.split(',').map(Number)); }
   for(const [t,hs] of Object.entries(byType)){ if(t==='rock'||t==='hulk') continue; tintHexes(t,hs,C3.FromHexString(TERRAIN_INFO[t].col),!!BLOCKING[t],.045); }
   G.blockTint=null; refreshBlockTint();

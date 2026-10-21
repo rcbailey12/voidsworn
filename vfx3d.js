@@ -99,11 +99,11 @@ function vfxFadeDispose(mesh,mat,dur){ try{ const a0=mat.alpha; const t0=G.time;
 
 // damaged ships spit sparks and short electrical arcs from breached plating
 function damageSparks(v,hr,dt){ try{ if(hr>.55||G.fxReduced||!v.model||!v.root) return; const rate=(hr<.3?2.2:1.1)*(G.quality==='medium'?.5:1); if(Math.random()>rate*dt) return;
-    const L=v.L, p=toWorld(v,new V3((Math.random()-.5)*L*.7,Math.random()*v.H*.5,(Math.random()-.5)*L*.12));
+    const L=v.L, sk=typeof skinPoint==='function'?skinPoint(v,null):null, p=toWorld(v,sk?sk.p:new V3((Math.random()-.5)*L*.7,Math.random()*v.H*.5,(Math.random()-.5)*L*.12)); // v53-G: sparks leave the real hull surface
     sparks(p,G.quality==='medium'?8:16,5+Math.random()*5,new C4(1,.85,.55,1)); if(Math.random()<.45){ const q=p.add(new V3((Math.random()-.5)*3,(Math.random()-.2)*2,(Math.random()-.5)*3)); arcBolt(p,q,new C3(.6,.8,1.6)); }
     if(Math.random()<.5) fxSprite(p,2.2,new C3(1,.8,.55),starTex(),.18,{grow:.4}); }catch(e){} }
 // fighter wings leave short glowing trails as they wheel around their carrier (High and Ultra)
-function craftTrails(v,fac){ try{ if(G.quality==='medium'||!v.crafts) return; const P=FAC3D[fac]||FAC3D.hegemony; const m=emMat('ctrM',P.eng.scale(1.3),.5); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false;
+function craftTrails(v,fac){ try{ if(G.quality==='medium'||!v.crafts||v.crafts.some(c=>c.c.trail)) return; /* v53-G: craft carry instanced engine trails */ const P=FAC3D[fac]||FAC3D.hegemony; const m=emMat('ctrM',P.eng.scale(1.3),.5); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false;
     v.extras=v.extras||[]; for(const c of v.crafts){ const t=new BABYLON.TrailMesh('ctr',c.c.root,G.scene,.22,16,true); t.material=m; t.isPickable=false; try{ G.glow.addExcludedMesh(t); }catch(e){} v.extras.push(t); } v.extras.push({dispose:()=>m.dispose(),stop:()=>{}}); }catch(e){} }
 
 // ---------- turrets that track their targets (High and Ultra) ----------
@@ -154,7 +154,7 @@ function fxPoolTick(){ const P=G.fxPool; if(!P||!P.mgr||P.scene!==G.scene) retur
   for(const Q of P.pools){ const L=Q.live; for(let i=L.length-1;i>=0;i--){ const e=L[i], k=(now-e.t0)/e.dur, sp=e.sp; if(k>=1){ sp.isVisible=false; L.splice(i,1); Q.free.push(e); continue; }
       const s=e.s0*(.45+k*e.grow); sp.width=s*e.w; sp.height=s*e.h; const a=e.alpha*Math.pow(1-k,e.fade); if(e.smoke){ e.c.r=e.r; e.c.g=e.g; e.c.b=e.b; e.c.a=a*Math.min(1,k*6); } else { e.c.r=e.r*a; e.c.g=e.g*a; e.c.b=e.b*a; e.c.a=a; }
       if(e.mv){ const v=e.vel; if(e.grav) v.y-=e.grav*dt; sp.position.x+=v.x*sc; sp.position.y+=v.y*sc; sp.position.z+=v.z*sc; if(e.drag){ const f=Math.max(0,1-e.drag*dt); v.x*=f; v.y*=f; v.z*=f; } } if(e.spin) sp.angle+=e.spin*dt; } }
-  if(G.views&&G.quality!=='low') for(const v of G.views.values()) navLights(v,P);
+  if(G.views) for(const v of G.views.values()) navLights(v,P);
   ambientBattle(dt); }
 function navLights(v,P){ const md=v.model; if(!md||!md.nav||v.crafts) return; const dead=!v.root||v.root.isDisposed()||v.state!=='alive';
   if(!v.navSp){ if(dead) return; v.navSp=md.nav.map(n=>{ const sp=new BABYLON.Sprite('nav',P.mgr); sp.cellIndex=n.k?1:0; sp.angle=n.k?0:Math.random()*6; sp.color=new C4(0,0,0,0); return sp; }); }
@@ -177,7 +177,7 @@ function volleyImpact(p,col,shielded,from,sc){ const back=from?from.subtract(p).
     fxp(p,{cell:3,size:1.2+Math.random()*.8,col:new C3(1,.75+Math.random()*.2,.45).scale(1.6),dur:.35+Math.random()*.35,grow:0,vel:v,drag:2.2,ang:screenAng(p,v),w:1,h:.22,fade:1.2}); }
   if(!G.mobile&&Math.random()<.5) fxp(p.add(back.scale(.6)),{cell:0,size:3,col:new C3(.14,.12,.1),dur:1.4,grow:1.4,vel:back.scale(1.2),drag:.8,fade:1}); }
 // a far-off fleet action on the skyline: flashes, tracer streaks and the odd big detonation, so the battle feels like part of a war
-function ambientBattle(dt){ const P=G.fxPool; if(!P||G.quality==='low'||!B||B.over||G.fxReduced) return; P.amb-=dt; if(P.amb>0) return;
+function ambientBattle(dt){ const P=G.fxPool; if(!P||!B||B.over||G.fxReduced) return; P.amb-=dt; if(P.amb>0) return;
   P.amb=(G.mobile?1.6:.55)*(.4+Math.random()*1.2); if(!P.front||Math.random()<.04){ const a=Math.random()*6.283; P.front={a,y:(Math.random()-.4)*260,d:900+Math.random()*700}; }
   const f=P.front, c=G.ctl?G.ctl.t:V3.Zero(), aa=f.a+(Math.random()-.5)*.5, d=f.d*(.85+Math.random()*.3); const pos=new V3(c.x+Math.cos(aa)*d,f.y+(Math.random()-.5)*90,c.z+Math.sin(aa)*d);
   const pal=[new C3(1,.6,.3),new C3(.5,.8,1),new C3(.4,1,.5),new C3(1,.45,.85)], col=pal[Math.floor(Math.random()*pal.length)];

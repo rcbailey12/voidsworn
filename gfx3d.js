@@ -8,13 +8,14 @@
 //  - grime and exhaust streaks that break up the tiled panel texture
 //  - faction energy: Deathless circuit traces with pulses, Chorus veins with a heartbeat, Ithar light sweeping along the hull
 const HULLFX_STYLE={deathless:1,chorus:2,ithar:3,voidsworn:4,hegemony:4,corsair:5};
+const HFX_RIM0=new BABYLON.Color3(.6,.7,.9), HFX_E0=new BABYLON.Color3(1,.62,.3); // fallbacks: a missing colour must never break the bind (it hides the hull)
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
-  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3; } // organic Chorus and porcelain Ithar hulls get no riveted plating
+  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false}); Object.assign(this,o); this._enable(true); }
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); } // v53-G: ai = concept-mesh hull (shader ports, fine detail; its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
-  getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'}],
-    fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\n#endif\n'}; }
-  bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); }
+  getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'},{name:'hfxW',size:4,type:'vec4'}],
+    fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\nuniform vec4 hfxW;\n#endif\n'}; }
+  bindForSubMesh(ubo){ if(!this.rim) this.rim=HFX_RIM0; if(!this.ecol) this.ecol=HFX_E0; ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); const w=this.wcol; ubo.updateFloat4('hfxW',w?w.r:0,w?w.g:0,w?w.b:0,w?(G.hullPorts==null?1:G.hullPorts):0); }
   getCustomCode(type){
     if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\nvarying vec3 vHfxN;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\nvHfxN=normalUpdated;\n#endif\n'};
     if(type!=='fragment') return null;
@@ -36,6 +37,10 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
     gr+=smoothstep(0.5,0.95,hfxN(vec3(hl.x*0.03,hl.y*0.9,hl.z*0.9)))*0.4;
 #endif
     surfaceAlbedo*=1.0-gr*hfxK.z;
+#ifdef HULLFX_HAZ
+    { float cx=vHfxL.x; float col=max(max(1.0-smoothstep(0.55,0.65,abs(cx-3.6)),1.0-smoothstep(0.4,0.5,abs(cx+0.6))),1.0-smoothstep(0.4,0.5,abs(cx+4.3))); // v53-G transport: hazard collars fore, amidships and aft
+      float str=step(0.5,fract((vHfxL.x+vHfxL.y+vHfxL.z)*1.4)); surfaceAlbedo=mix(surfaceAlbedo,mix(vec3(0.05,0.045,0.04),vec3(0.95,0.7,0.08),str),col*0.92); }
+#endif
     { vec3 cq=floor(vHfxL*vec3(0.32,0.55,0.55)+hfxS.x*3.0); float tone=hfxH(cq); surfaceAlbedo*=0.88+0.22*tone; // plate-to-plate tone, visible at any distance
       float ny=normalize(vHfxN).y; surfaceAlbedo*=mix(0.72,1.0,smoothstep(-0.85,0.35,ny)); } // undersides sit in shadow
     if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3;
@@ -59,6 +64,23 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.9));
         surfaceAlbedo*=mix(1.0,(0.7+0.3*seam)*(0.93+0.14*id),pf); } }
 #endif
+#if defined(HULLFX_AI) && defined(HULLFX_D2)
+    // v53-G close-up detail on concept hulls: fine access hatches and dents (bump from a per-pixel height), gone by mid zoom so it never shimmers
+    { float hd0=length(vEyePosition.xyz-vPositionW); float pf=1.0-smoothstep(14.0,48.0,hd0);
+      if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy); pu*=vec2(3.4,4.6);
+        vec2 ci=floor(pu); vec2 fr=fract(pu); float id=hfxH(vec3(ci,2.7)); float e=min(min(fr.x,1.0-fr.x),min(fr.y,1.0-fr.y));
+        float hatch=step(0.86,id)*smoothstep(0.05,0.11,e); float seam=(1.0-smoothstep(0.0,0.035,e))*step(0.55,hfxH(vec3(ci.y,9.1,0.0)));
+        float ht=(-hatch*0.5-seam*0.35+(hfxN(vHfxL*7.0)-0.5)*0.35)*0.012;
+        vec3 dpx=dFdx(vPositionW), dpy=dFdy(vPositionW); float dhx=dFdx(ht), dhy=dFdy(ht);
+        vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
+        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.8)); surfaceAlbedo*=1.0-pf*(hatch*0.12+seam*0.18); } }
+#endif
+#endif
+`,
+CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS:`
+#ifdef HULLFX_AI
+  { float hdr=length(vEyePosition.xyz-vPositionW); float rn=hfxN(vHfxL*1.9+hfxS.x)*0.6+hfxN(vHfxL*5.3)*0.4; // v53-G: no mirror-smooth texels (glitter), and a broken-up sheen up close
+    metallicRoughness.g=clamp(max(metallicRoughness.g,0.42)+(rn-0.5)*0.24*(1.0-smoothstep(30.0,110.0,hdr)),0.32,1.0); }
 #endif
 `,
 CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
@@ -67,15 +89,46 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
     float hf=pow(1.0-clamp(abs(dot(normalW,hv)),0.0,1.0),2.6);
     float hdk=clamp(hd/110.0,1.0,2.4); // v52: rims and running lights grow with camera distance, so hulls keep their outline at fleet zoom
     finalEmissive+=hfxRim*hf*hfxK.x*hdk;
+#ifdef HULLFX_AI
+    // v53-G lit ports, part of the hull surface: short runs of small ports in deck rows on the flanks only (side-facing, open plating),
+    // laid out in ship units so they keep scale. Edges are anti-aliased from the pixel footprint; below a pixel they fade to a faint average, then out.
+    { vec3 wn=normalize(vHfxN);
+#ifdef HULLFX_RING
+      float side=1.0-smoothstep(0.3,0.55,abs(wn.y)); float ru=abs(wn.x)>abs(wn.z)?vHfxL.z:vHfxL.x; float sd=(abs(wn.x)>abs(wn.z)?(wn.x>0.0?1.7:5.3):(wn.z>0.0?2.9:7.1)); // all-round ports on a station
+#else
+      float side=smoothstep(0.42,0.75,abs(wn.z))*(1.0-smoothstep(0.35,0.6,abs(wn.y))); float ru=vHfxL.x; float sd=vHfxL.z>0.0?1.7:5.3;
+#endif
+      if(side>0.001&&hfxW.a>0.001){ vec2 wp=vec2(ru*2.6,vHfxL.y*1.55); vec2 wc=floor(wp); vec2 wf=fract(wp)-0.5;
+        float lit=step(0.34,hfxH(vec3(wc.y*0.37,sd,hfxS.x)))*step(0.26,hfxH(vec3(floor(wc.x/6.0)*0.53,wc.y*0.71,sd+hfxS.x)))*step(0.1,hfxH(vec3(wc*0.91,4.2)));
+#ifdef HULLFX_D2
+        vec2 fw=max(fwidth(wp),vec2(1e-4));
+#else
+        vec2 fw=vec2(2.6,1.55)*hd*0.0011;
+#endif
+        float fm=max(fw.x,fw.y); vec2 hs=vec2(0.22,0.085);
+        float bx=(1.0-smoothstep(hs.x-fw.x,hs.x+fw.x,abs(wf.x)))*(1.0-smoothstep(hs.y-fw.y,hs.y+fw.y,abs(wf.y)));
+        float port=mix(bx,0.06,smoothstep(0.3,0.8,fm))*(1.0-smoothstep(0.8,1.8,fm));
+        float cav=1.0;
+#ifdef VERTEXCOLOR
+        cav=smoothstep(0.38,0.62,vColor.r);
+#endif
+        finalEmissive+=hfxW.rgb*port*lit*side*cav*hfxW.a; } }
+#endif
     if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3; float th=1.0-hfxD.x*0.62;
-      float edge=smoothstep(th-0.014,th,dn)*(1.0-smoothstep(th+0.004,th+0.022,dn));
+      float edge=smoothstep(th-0.014,th,dn)*(1.0-smoothstep(th+0.004,th+0.022,dn))*smoothstep(0.48,0.72,hfxN(vHfxL*1.4+hfxD.y*5.0)); // v53-G: the burn front smoulders in short ember runs, not one continuous ribbon
       float crack=(1.0-smoothstep(0.0,0.035+hd*0.0003,abs(hfxN(vHfxL*0.9+hfxD.y*3.0)-0.5)))*smoothstep(th+0.04,th+0.12,dn);
       float fl=0.7+0.3*sin(hfxK.y*9.0+vHfxL.x*1.7)*sin(hfxK.y*5.3+vHfxL.z*2.1);
-      finalEmissive+=vec3(1.3,0.4,0.08)*(edge*1.1+crack*0.7)*fl*hfxD.x; }
+      finalEmissive+=vec3(1.3,0.4,0.08)*(edge*0.75+crack*0.6)*fl*hfxD.x; }
     float st=hfxK.w, t=hfxK.y, w=0.05+hd*0.00045, en=hfxS.y*mix(1.0,hdk,0.7); vec3 lp=vHfxL;
-    if(st>0.5&&st<1.5){ vec3 q=lp*0.55+hfxS.x; vec3 c=floor(q); vec3 f=fract(q);
-      float lx=(1.0-smoothstep(0.0,w,abs(f.y-0.5)))*step(0.45,hfxH(c));
-      float lz=(1.0-smoothstep(0.0,w,abs(f.x-0.5)))*step(0.78,hfxH(c+3.1))*step(abs(f.y-0.5),0.5);
+    if(st>0.5&&st<1.5){
+#ifdef HULLFX_AI
+      const float CS=0.26, T1=0.72, T2=0.9, EB=0.45; // v53-G: concept hulls get sparse, thin circuit traces (they were a dense green cage)
+#else
+      const float CS=0.55, T1=0.45, T2=0.78, EB=1.0;
+#endif
+      vec3 q=lp*CS+hfxS.x; vec3 c=floor(q); vec3 f=fract(q); w*=CS/0.55; en*=EB;
+      float lx=(1.0-smoothstep(0.0,w,abs(f.y-0.5)))*step(T1,hfxH(c));
+      float lz=(1.0-smoothstep(0.0,w,abs(f.x-0.5)))*step(T2,hfxH(c+3.1))*step(abs(f.y-0.5),0.5);
       float pu=pow(fract(q.x*0.2-t*0.3+hfxH(c)*3.0),10.0);
       finalEmissive+=hfxE*max(lx,lz*0.8)*(0.22+2.6*pu)*en; }
     else if(st>1.5&&st<2.5){ float n=hfxN(lp*0.32+hfxS.x)+0.35*hfxN(lp*0.9);
@@ -297,9 +350,10 @@ function shieldShatter(p,dir,col){ try{ if(!G.scene||G.fxReduced) return; const 
 function shipDamageFx(v,hr){ try{ if(!v||!v.model||v.state!=='alive') return; const amt=Math.max(0,Math.min(1,(.8-hr)/.72)); if(amt<=0&&!v.dmgMats) return;
     if(v.lastDmg!=null&&Math.abs(v.lastDmg-amt)<.01) return; v.lastDmg=amt;
     if(!v.dmgMats){ const M=facMats(v.fac), map=new Map(); v.dmgMats=[]; const seed=(v.u&&v.u.id?String(v.u.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0):Math.random()*100)%37;
-      for(const src of [M.hull,M.dark]){ if(!src||!src._hullFx) continue; const c=src.clone(src.name+'_dmg');
+      const srcs=[M.hull,M.dark,M.aiHull]; for(const m of v.model.meshes) if(m.material&&m.material._isAiHull&&!srcs.includes(m.material)) srcs.push(m.material);
+      for(const src of srcs){ if(!src||!src._hullFx) continue; const c=src.clone(src.name+'_dmg');
         for(const k of ['albedoTexture','bumpTexture','metallicTexture','emissiveTexture','ambientTexture','opacityTexture','microSurfaceTexture','reflectivityTexture','lightmapTexture','reflectionTexture']){ if(c[k]!==src[k]){ const blank=c[k]; c[k]=src[k]||null; try{ if(blank&&blank!==src[k]&&!Object.values(G.tex).includes(blank)) blank.dispose(); }catch(e){} } } // clones of generated textures come back blank: share the originals
-        const o=src._hullFx, opts={rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy}; let pl=c.pluginManager&&c.pluginManager.getPlugin&&c.pluginManager.getPlugin('HullFx');
+        const o=src._hullFx, opts={rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy,ai:o.ai,wcol:o.wcol,ring:o.ring,haz:o.haz}; let pl=c.pluginManager&&c.pluginManager.getPlugin&&c.pluginManager.getPlugin('HullFx');
         if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(c,opts); c._hullFx=pl; pl.dseed=seed; map.set(src,c); v.dmgMats.push(c); }
       for(const m of v.model.meshes) if(map.has(m.material)) m.material=map.get(m.material); }
     for(const c of v.dmgMats) if(c._hullFx) c._hullFx.dmg=amt; }catch(e){ console.warn('damage shading',e); } }

@@ -5,7 +5,6 @@ let AI_LEVEL='veteran';
 let ERRS=0; function reportError(msg,stack){ if(++ERRS>5) return; try{ tel('error',{msg:String(msg||'').slice(0,160),at:String(stack||'').split('\n').slice(1,3).join(' | ').trim().slice(0,240),round:B&&B.round,side:B&&B.side,busy:B&&B.busy}); Persist.saveLocal(); }catch(e){} /* v53: local only, no stamp: an error report must never win a cloud conflict */ try{ toast('Something went wrong. Your campaign is saved at the last node; reload if anything looks stuck.'); }catch(e){} }
 window.addEventListener('error',e=>{ if(e.message) reportError(e.message,e.error&&e.error.stack); });
 window.addEventListener('unhandledrejection',e=>reportError(e.reason&&(e.reason.message||e.reason),e.reason&&e.reason.stack));
-function drawShipShape(){} // the old 2D title animation is hidden behind the live 3D backdrop
 function showApp(){ appEl.classList.remove('hidden'); document.body.classList.add('app-on'); hideEnd(); const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); G.ctl.attract=true; }
 function hideApp(){ appEl.classList.add('hidden'); document.body.classList.remove('app-on'); }
 const _show=show; show=function(html){ showApp(); appEl.classList.remove('see3d'); _show(html); if(typeof html==='string'&&html.includes('mapmain')){ appEl.classList.add('see3d'); try{ setupFleetShowcase(); }catch(e){} } }; // every route to the map shows your fleet
@@ -121,25 +120,3 @@ function perfToggle(){ { if(PERF){ clearInterval(PERF.t); PERF.el.remove(); PERF
   const el=document.createElement('div'); el.className='hud'; el.style.cssText='position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:70;padding:6px 12px;font:13px monospace;color:#9fe2ff'; document.body.appendChild(el);
   const ins=new BABYLON.SceneInstrumentation(G.scene); PERF={el,t:setInterval(()=>{ el.textContent=`${G.engine.getFps().toFixed(0)} fps | ${(()=>{ const f=FRAMES.summary(); return 'p50 '+f.p50+' p90 '+f.p90+' ms'; })()} | ${ins.drawCallsCounter.current} draws | ${(G.scene.getTotalVertices()/1e6).toFixed(2)}M verts | ${G.quality} | ${G.engine.getRenderWidth()}x${G.engine.getRenderHeight()} | errors ${ERRS}`; },500)}; } }
 
-// preview builds only: a self-running, captioned visual test so screenshots need no input
-async function runDemo(){ if(!window.PREVIEW_DEMO) return; const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  const cap=document.createElement('div'); cap.className='hud'; cap.style.cssText='position:fixed;left:16px;bottom:16px;z-index:70;padding:8px 14px;font-size:15px;color:#e6dcc4'; document.body.appendChild(cap);
-  const say=t=>cap.textContent=t; const frame=(u,r,b,a)=>{ G.ctl.attract=false; G.ctl.t=uWorld(u); G.ctl.r=r; G.ctl.b=b; G.ctl.a=a; };
-  const battle=(pf,ef,map)=>{ hideApp(); setupBattle({pf,ef,map,dep:'line'}); const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); B.sel=null; B.showArcs=false; bRefresh(); G.cine=false; };
-  await sleep(4000); perfToggle(); battle('voidsworn','hegemony','belt'); const A=B.units.find(u=>u.tpl==='cathedral'), T=B.units.find(u=>u.tpl==='h_dominion');
-  say('Demo 1/11: Voidsworn battleship close-up'); frame(A,28,1.05,-2.25); await sleep(9000);
-  say('Demo 2/11: Hegemony star dreadnought close-up'); frame(T,30,1.05,-.9); await sleep(9000);
-  say('Demo 3/11: battlefield wide shot'); G.ctl.reset(); G.ctl.r=260; G.ctl.b=.95; G.ctl.a=-1.9; await sleep(9000);
-  for(const u of B.units){ if(u!==A&&u!==T&&(u.r===7||u.r===8)) u.r=u.side==='player'?14:1; } for(const k of ['9,8','12,8','10,8','11,8','9,7','10,7']) delete B.terrain[k];
-  A.q=9;A.r=8;A.facing=5; T.q=12;T.r=8;T.facing=3; say('Demo 4/11: broadside exchange'); G.ctl.t=hexWorld(10.5,7.8); G.ctl.r=80; G.ctl.b=1.05; G.ctl.a=-Math.PI/2;
-  (async()=>{ for(let k=0;k<2;k++){ for(const w of A.weapons){ const i=A.weapons.indexOf(w); w.fired=false; w.cdLeft=0; if(canFire(A,w,T)) await fireWeapon(A,i,T); } } })(); await sleep(9000);
-  say('Demo 5/11: shield ripple (shots into full shields)'); G.ctl.t=uWorld(T); G.ctl.r=46; G.ctl.b=1.0; G.ctl.a=-Math.PI/2; T.sh=[T.shMax,T.shMax,T.shMax,T.shMax];
-  (async()=>{ for(let k=0;k<3;k++){ T.sh=[T.shMax,T.shMax,T.shMax,T.shMax]; for(const w of A.weapons){ const i=A.weapons.indexOf(w); w.fired=false; w.cdLeft=0; if(w.k!=='lance'&&canFire(A,w,T)) await fireWeapon(A,i,T); } } })(); await sleep(9000);
-  say('Demo 6/11: action camera with depth of field (lance strike)'); setQuality('ultra'); G.cine=true; (async()=>{ for(let k=0;k<3;k++){ for(const w of A.weapons){ const i=A.weapons.indexOf(w); w.fired=false; w.cdLeft=0; if(w.k==='lance'&&canFire(A,w,T)) await fireWeapon(A,i,T); } await sleep(1200); } })(); await sleep(9000); G.cine=false; G.ctl.release();
-  say('Demo 7/11: capital ship death'); T.hp=0; T.dead=true; animExplode(T); await sleep(9000);
-  battle('corsair','chorus','station'); say('Demo 8/11: Corsair hulk-carrier close-up'); frame(B.units.find(u=>u.tpl==='c_hulk'),30,1.05,-2.2); await sleep(9000);
-  say('Demo 9/11: Chorus brood-ship close-up'); frame(B.units.find(u=>u.tpl==='b_brood'),32,1.05,-1.0); await sleep(9000);
-  battle('ithar','deathless','storm'); say('Demo 10/11: Ithar song-ship close-up'); frame(B.units.find(u=>u.tpl==='i_song')||alive('player')[0],30,1.05,-2.2); await sleep(9000);
-  say('Demo 11/11: Deathless harvester close-up'); frame(B.units.find(u=>u.tpl==='d_harvester')||alive('enemy')[0],26,1.05,-1.0); await sleep(9000);
-  say('Demo complete'); }
-setTimeout(()=>runDemo().catch(e=>reportError(e.message,e.stack)),0);
