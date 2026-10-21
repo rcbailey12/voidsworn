@@ -11,16 +11,31 @@ for a in argv[3:]:
     if p[2].startswith('@'):  # az/el from a fitcam_rig.py result
         import json as _j; f = _j.load(open(p[2][1:])); p[2], p[3] = f['az'], f['el']
     views.append((p[0], p[1], float(p[2]), float(p[3]), float(p[4])))
+import os
 bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=src)
 o = [x for x in bpy.context.scene.objects if x.type == 'MESH'][0]; me = o.data; sc = bpy.context.scene
 bpy.context.view_layer.objects.active = o; o.select_set(True)
-base_uv = me.uv_layers.active.name; mat = me.materials[0]; nt = mat.node_tree
-base_img = next(n.image for n in nt.nodes if n.type == 'TEX_IMAGE' and n.outputs[0].links and n.outputs[0].links[0].to_socket.name == 'Base Color')
-print('mesh', len(me.vertices), 'verts', len(me.polygons), 'tris, uv', base_uv, 'base', base_img.size[:])
+base_img = None
+if me.uv_layers and me.materials and me.materials[0] and me.materials[0].use_nodes:
+    nt = me.materials[0].node_tree; base_img = next((n.image for n in nt.nodes if n.type == 'TEX_IMAGE' and n.outputs[0].links and n.outputs[0].links[0].to_socket.name == 'Base Color'), None)
+if base_img is None:  # hand-built parts: vertex colours, no UVs yet; give them a UV atlas first
+    while me.uv_layers: me.uv_layers.remove(me.uv_layers[0])
+    me.uv_layers.new(name='UVMap'); bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=math.radians(55), island_margin=0.006); bpy.ops.object.mode_set(mode='OBJECT')
+base_uv = me.uv_layers.active.name
+print('mesh', len(me.vertices), 'verts', len(me.polygons), 'tris, uv', base_uv, 'base', base_img.size[:] if base_img else 'vertex colours')
+occ = None
+if os.environ.get('OCC'):  # other geometry that can hide this mesh from a camera (the hull, for the hand-built parts)
+    before = set(sc.objects); bpy.ops.import_scene.gltf(filepath=os.environ['OCC']); occ = [x for x in set(sc.objects) - before if x.type == 'MESH']
+    bpy.ops.object.select_all(action='DESELECT'); bpy.context.view_layer.objects.active = o; o.select_set(True)
 sc.render.resolution_x = sc.render.resolution_y = 1024
 FOV = math.radians(20); D = 1.1 * 0.5 / math.tan(FOV / 2)
 V = np.array([v.co[:] for v in me.vertices]); NV = np.array([v.normal[:] for v in me.vertices])
-bm = bmesh.new(); bm.from_mesh(me); bm.transform(o.matrix_world); bvh = BVHTree.FromBMesh(bm); bm.free()
+bm = bmesh.new(); bm.from_mesh(me); bm.transform(o.matrix_world)
+for x in occ or []:
+    t = bmesh.new(); t.from_mesh(x.data); t.transform(x.matrix_world); tm = bpy.data.meshes.new('occtmp'); t.to_mesh(tm); t.free(); bm.from_mesh(tm)
+bvh = BVHTree.FromBMesh(bm); bm.free()
+for x in occ or []: bpy.data.objects.remove(x)
 mw = np.array(o.matrix_world); VW = V @ mw[:3, :3].T + mw[:3, 3]; NW = NV @ mw[:3, :3].T; NW /= np.maximum(np.linalg.norm(NW, axis=1, keepdims=True), 1e-9)
 for k, (img, msk, az, el, wt) in enumerate(views):
     a, e = math.radians(az), math.radians(el); back = mathutils.Vector((math.sin(a) * math.cos(e), -math.cos(a) * math.cos(e), math.sin(e)))
@@ -42,7 +57,9 @@ me.uv_layers.active = me.uv_layers[base_uv]
 # bake material: weighted average of the projected pictures (masked), with the mesh's own paint as a weak fallback
 bm_ = bpy.data.materials.new('proj'); bm_.use_nodes = True; T = bm_.node_tree; T.nodes.clear(); L = T.links
 out = T.nodes.new('ShaderNodeOutputMaterial'); em = T.nodes.new('ShaderNodeEmission'); L.new(em.outputs[0], out.inputs[0])
-uvb = T.nodes.new('ShaderNodeUVMap'); uvb.uv_map = base_uv; tb = T.nodes.new('ShaderNodeTexImage'); tb.image = base_img; L.new(uvb.outputs[0], tb.inputs[0])
+if base_img is not None:
+    uvb = T.nodes.new('ShaderNodeUVMap'); uvb.uv_map = base_uv; tb = T.nodes.new('ShaderNodeTexImage'); tb.image = base_img; L.new(uvb.outputs[0], tb.inputs[0])
+else: tb = T.nodes.new('ShaderNodeVertexColor')
 def math_(op, a, b):
     n = T.nodes.new('ShaderNodeMath'); n.operation = op
     for i, x in enumerate((a, b)):
@@ -77,3 +94,9 @@ try:
 except Exception: pass
 sc.cycles.samples = 4; sc.render.bake.margin = 8; sc.render.bake.use_selected_to_active = False
 bpy.ops.object.bake(type='EMIT'); tgt.filepath_raw = outp; tgt.file_format = 'PNG'; tgt.save(); print('baked', outp)
+if os.environ.get('EXPORT'):  # write the mesh back out with the baked paint as its texture (hand-built parts)
+    for k in range(len(views)): me.uv_layers.remove(me.uv_layers[f'proj{k}'])
+    em_ = bpy.data.materials.new('painted'); em_.use_nodes = True; ti_ = em_.node_tree.nodes.new('ShaderNodeTexImage'); ti_.image = bpy.data.images.load(outp)
+    em_.node_tree.links.new(ti_.outputs[0], em_.node_tree.nodes['Principled BSDF'].inputs['Base Color']); me.materials.clear(); me.materials.append(em_)
+    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True); bpy.context.view_layer.objects.active = o
+    bpy.ops.export_scene.gltf(filepath=os.environ['EXPORT'], export_format='GLB', use_selection=True); print('exported', os.environ['EXPORT'])

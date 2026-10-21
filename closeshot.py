@@ -45,7 +45,7 @@ with sync_playwright() as p:
         pg.wait_for_function("Object.keys(AI_HULL_DATA).length>=25", timeout=400000, polling=1000)
         q=os.environ.get('Q') or ('medium' if mob else 'high')
         if os.environ.get('PRE'): pg.evaluate(os.environ['PRE'])  # e.g. PRE="G.paintGain=1.6" (look tuning before the battle is built)
-        pg.evaluate("G.noWarm=true; setQuality('%s'); ACT.c3skirmish(); setupBattle({obj:'rout',shape:'open',map:'storm',pf:'voidsworn',ef:'hegemony',small:true}); ACT.begin(); SPEED=.5; G.cine=false; G.camMinOff=%s; %s 0"%(q,'true' if os.environ.get('ZOOMFREE','1')=='1' else 'false',HIDE))
+        pg.evaluate("G.noWarm=true; setQuality('%s'); ACT.c3skirmish(); setupBattle({obj:'rout',shape:'open',map:'%s',pf:'voidsworn',ef:'hegemony',small:true}); ACT.begin(); SPEED=.5; G.cine=false; G.camMinOff=%s; %s 0"%(q,os.environ.get('MAP','storm'),'true' if os.environ.get('ZOOMFREE','1')=='1' else 'false',HIDE))
         try: pg.wait_for_function("!!B&&B.side==='player'&&!B.busy", timeout=300000, polling=500)
         except Exception as ex:
             print('BATTLE DID NOT START', errs[:8], pg.evaluate("JSON.stringify({side:B&&B.side,busy:B&&B.busy,round:B&&B.round,units:B&&B.units.length,views:G.views.size,errs:typeof ERRS!=='undefined'?ERRS:null,fps:G.engine.getFps()})")); sys.stdout.flush(); raise

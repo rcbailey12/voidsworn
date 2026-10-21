@@ -56,17 +56,26 @@ if os.environ.get('KIT'):  # hand-built parts in the same GLB frame: same axis c
         v = np.frombuffer(KBIN, CT[a['componentType']], a['count'] * NC[a['type']], o).reshape(a['count'], NC[a['type']]).astype(np.float64)
         if a.get('normalized'): v = v / {5121: 255., 5123: 65535.}[a['componentType']]
         return v
-    KP, KN, KC, KI = [], [], [], []; base = 0
+    KP, KN, KC, KI, KU = [], [], [], [], []; base = 0
     for mesh in KJ['meshes']:
         for kp in mesh['primitives']:
             ka = kp['attributes']; p_ = kacc(ka['POSITION']); n_ = kacc(ka['NORMAL']); c_ = kacc(ka['COLOR_0'])[:, :3] if 'COLOR_0' in ka else np.full((len(p_), 3), .2)
+            u_ = kacc(ka['TEXCOORD_0']) if 'TEXCOORD_0' in ka else None; KU.append(u_)
             i_ = kacc(kp['indices']).reshape(-1, 3).astype(np.int64) + base; base += len(p_); KP.append(p_); KN.append(n_); KC.append(c_); KI.append(i_)
     KP = np.concatenate(KP) @ M.T; KN = np.concatenate(KN) @ M.T; KC = np.concatenate(KC); KI = np.concatenate(KI)
+    KU = np.concatenate(KU) if all(u is not None for u in KU) else None
     if np.linalg.det(M) < 0: KI = KI[:, [0, 2, 1]]
     KP = (KP - (lo + hi) / 2) / (hi[0] - lo[0]); KN /= np.maximum(np.linalg.norm(KN, axis=1, keepdims=True), 1e-9)
     kit = {'n': len(KP), 't': len(KI), 'p': base64.b64encode(KP.astype(np.float32).tobytes()).decode(), 'q': base64.b64encode(np.round(KN * 127).astype(np.int8).tobytes()).decode(),
            'c': base64.b64encode(np.round(np.clip(KC, 0, 1) * 255).astype(np.uint8).tobytes()).decode(), 'i': base64.b64encode(KI.astype(np.uint32).tobytes()).decode()}
-    json.dump(kit, open(os.path.join(outd, code + '_kit.json'), 'w')); print('kit verts', len(KP), 'tris', len(KI))
+    if KU is not None:  # painted parts: UVs + their texture
+        KU[:, 1] = 1 - KU[:, 1]; kit['u'] = base64.b64encode(np.round(np.clip(KU, 0, 1) * 65535).astype(np.uint16).tobytes()).decode()
+        km = KJ['materials'][KJ['meshes'][0]['primitives'][0].get('material', 0)]; bt = km.get('pbrMetallicRoughness', {}).get('baseColorTexture')
+        if bt is not None:
+            bv = KJ['bufferViews'][KJ['images'][KJ['textures'][bt['index']]['source']]['bufferView']]; kimg = Image.open(io.BytesIO(KBIN[bv.get('byteOffset', 0):bv.get('byteOffset', 0) + bv['byteLength']])).convert('RGB')
+            kp_ = os.path.join(outd, code + '_kit_a.webp'); kimg.save(kp_, quality=90, method=6); kit['tex'] = 1
+            if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']): sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import paint_level; print('kit paint level', paint_level.level(kp_, os.environ['CONCEPT']))
+    json.dump(kit, open(os.path.join(outd, code + '_kit.json'), 'w')); print('kit verts', len(KP), 'tris', len(KI), 'painted', 'tex' in kit)
 hdr = {'v': 1, 'kit': kit is not None, 'fmt': 'vsm1', 'ext': ext.tolist(), 'n': int(n), 't': int(len(I)), 'src': 'pixal3d', 'front': front, 'alb': {'res': res}, 'tex': {'res': min(res, 2048)} if nrm is not None else None,
        'mr': [pbr.get('metallicFactor', 1), pbr.get('roughnessFactor', 1)]}
 json.dump(hdr, open(os.path.join(outd, code + '.hdr.json'), 'w'))

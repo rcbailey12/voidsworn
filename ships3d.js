@@ -772,9 +772,11 @@ function decodeVSM(buf){ const dv=new DataView(buf); if(dv.getUint32(0,true)!==0
 function decodeKit(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new T(u.buffer); };
   const pos=b64(j.p,Float32Array), qn=b64(j.q,Int8Array), qc=b64(j.c,Uint8Array), idx=b64(j.i,Uint32Array), n=pos.length/3, nor=new Float32Array(n*3), col=new Float32Array(n*4);
   for(let i=0;i<n*3;i++) nor[i]=qn[i]/127; for(let v=0;v<n;v++){ col[v*4]=qc[v*3]/255; col[v*4+1]=qc[v*3+1]/255; col[v*4+2]=qc[v*3+2]/255; col[v*4+3]=1; }
-  return {pos,nor,col,idx}; }
-function aiKitMat(fac){ const k='kit_'+fac; if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k]; const m=new BABYLON.PBRMaterial(k,G.scene);
-  m.albedoColor=C3.White(); m.metallic=.55; m.roughness=.4; m.environmentIntensity=1.3; m.directIntensity=1.25*(G.paintLight??1.8); m.maxSimultaneousLights=6; m.backFaceCulling=false; m.twoSidedLighting=true; m.enableSpecularAntiAliasing=true;
+  let uv=null; if(j.u){ const u=b64(j.u,Uint16Array); uv=new Float32Array(u.length); for(let i=0;i<u.length;i++) uv[i]=u[i]/65535; }
+  return {pos,nor,col,idx,uv,tex:!!j.tex}; }
+function aiKitMat(fac,code,dir){ const k='kit_'+fac+(code||''); if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k]; const m=new BABYLON.PBRMaterial(k,G.scene);
+  if(code){ const t=new BABYLON.Texture(dir+code+'_kit_a.webp',G.scene,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE); t.anisotropicFilteringLevel=8; t.level=G.paintGain??1.15; m.albedoTexture=t; } // painted parts: the concept's own paint, projected
+  m.albedoColor=C3.White(); m.metallic=code?(G.paintMetal??.08)+.1:.55; m.roughness=code?.55:.4; m.environmentIntensity=1.25; m.directIntensity=1.25*(G.paintLight??1.8); m.maxSimultaneousLights=6; m.backFaceCulling=false; m.twoSidedLighting=true; m.enableSpecularAntiAliasing=true;
   return AI_MATS[k]=m; }
 function loadAIHulls(){ const S=HULLS_LOAD; if(S.promise) return S.promise;
   if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'){ S.state='skipped'; return S.promise=Promise.resolve(S); }
@@ -810,8 +812,8 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
   { const AM=p.matOverride||aiHullMatFor(fac,d); p.aiMat=AM; for(const m of p.root.getChildMeshes(false)) if(m.name==='hull_ai') m.material=AM; }
   { const P0=FAC3D[fac]||FAC3D.hegemony; AI_MATS['aitrim_'+fac]=AI_MATS['aitrim_'+fac]||emMat('aitrim_'+fac,P0.eng.scale(.9)); AI_MATS['aitrim_'+fac].backFaceCulling=false; } // kept for faction extras that trim the mesh
   if(d.kit&&!G.noKit){ try{ const k=d.kit, kp=new Float32Array(k.pos.length); for(let i=0;i<kp.length;i++) kp[i]=k.pos[i]*L; // v54 hand-built parts, in the hull's frame
-      const kv=new BABYLON.VertexData(); kv.positions=kp; kv.normals=Float32Array.from(k.nor); kv.indices=k.idx; kv.colors=k.col; kv.transform(inv);
-      const km=new BABYLON.Mesh('hull_kit',G.scene); kv.applyToMesh(km); km.material=aiKitMat(fac); km.parent=fore; km.isPickable=false; km.refreshBoundingInfo(true); try{ castShadows(km); }catch(e){} }catch(e){ console.warn('hull kit',e); } }
+      const kv=new BABYLON.VertexData(); kv.positions=kp; kv.normals=Float32Array.from(k.nor); kv.indices=k.idx; if(k.uv&&k.tex) kv.uvs=k.uv; else kv.colors=k.col; kv.transform(inv);
+      const km=new BABYLON.Mesh('hull_kit',G.scene); kv.applyToMesh(km); km.material=k.tex?aiKitMat(fac,aiHullCode(d),d.dir||'hulls_hi/'):aiKitMat(fac); km.parent=fore; km.isPickable=false; km.refreshBoundingInfo(true); try{ castShadows(km); }catch(e){} }catch(e){ console.warn('hull kit',e); } }
   try{ seatOnHull(p,new HullQ(P,vd.normals,I),fore,aftN); }catch(e){ console.warn('AI hull seating',e); }
   p.aiHull=true; return p; }
 // v53-G: axis-aligned ray queries against a concept mesh. Triangles are binned on a 2D grid per axis, so each cast tests a few dozen triangles.
