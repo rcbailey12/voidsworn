@@ -1,4 +1,4 @@
-# Voidsworn: handoff (Oct 21, 2026)
+# Voidsworn: handoff (Oct 21, 2026, evening)
 
 ## What and where
 - Babylon.js 8.20 single-HTML hex fleet tactics roguelite. Ryan plays on a Pixel 10 XL and a PC (RTX 5080).
@@ -11,6 +11,7 @@
 - Live: **v53.7** (artifact Version 64): concept station on every station map (the "broken station" was the old procedural spire), camera floor (biggest ship about half the screen), board overlays fade when close.
 - Live since Version 65: **v53.8**: sculpted rock library (v53-E merged), "Entering battle" cover that holds until ships, this battle's hull maps, rocks and ship shaders are ready (4 s cap), map-screen prefetch, the 12 biggest hulls load the desktop mesh on phones, footprint-faded close-up plating. rocks/ and rocks_hi/ are uploaded artifact files. hulls/ is unchanged from v53.7. (Publishing warns the page references an undeclared `downloads` capability: the ?prof=1 CSV export, old debug code, left as is.)
 - Ryan's verdict on v53.7 (Pixel and desktop screenshots, Oct 21): "everything still feels pretty low poly". Cause: the Hunyuan shapes themselves. Shape bake-off running (NEXT.md "Ship shapes"): A Hunyuan 512/640 and B Blender clean-up show no gain; D Blender hard-surface rebuild (tools/blender/hs/) is crisp in-game on first pass and is my pick; C TRELLIS.2 downloading to Downloads\trellis2 (approved by Ryan, 736 MB zip, then its own installer).
+- **Ship shapes, new pipeline (Oct 21 evening, Pyre-Barge C19_51 only so far, not published):** Qwen-generated side/front views (Ryan approved the side) -> Pixal3D multi-view hull on the PC (ComfyUI, 2M tris) -> concept + views projected as paint -> hand-built parts (tools/blender/hs/c19_kit.py: rocket rack, funnels, mast, long guns, bridge tier, drums, roof tank) cut into the hull, snapped on, painted by projection -> meshopt .vsm (13.7 MB desktop, 3.6 MB phone) + C19_51_kit.json. Steps and file roles: NEXT.md "Ship shapes". Ryan: "definitely much better"; kit v3 rebuilt the soft bridge; bow guns may face forward. Kit material (aiKitMat): one-sided lighting by stored normals plus 0.3 paint self-light (G.kitFill), else roofs read black and sides lose their red.
 - Known: box/T-shape wreck debris looks crude; the bright gold ring on Ryan's Pixel close-up (PC shots show it faded, re-check on v53.8).
 
 ## Decisions (Ryan decided)
@@ -45,12 +46,13 @@
 - **Lag on loading into a battle**: hull JSON + webp map fetch/decode, plus the effect atlas build (v53-I moves it to idle slices on the title screen). Measure with perfprobe. Ideas: prefetch the next battle's hulls on the map screen, compressed GPU textures (KTX2), decode off the main thread.
 
 ## Next 3 tasks
-1. Ryan's Pixel battle on v53.8 (rocks, load cover, gold ring at close zoom).
-2. Finish the shape bake-off: TRELLIS.2 on the Pyre-Barge and station (Downloads\trellis2, API mode run-stableprojectorz.bat, see its INSTRUCTIONS), add it to bakeoff_round1.png, get Ryan's pick. If D: iterate C19 and O1 to concept density (tools/blender/hs/c19_hs.py, o1_hs.py; compare with render.py at az -50 el 34), then export_json.py -> uvprep -> hullbake -> closeshot, then the other capitals.
-3. Replace the box wreck debris with chunks of the rebuilt hulls; check v53.6 effects on the Pixel (old task 2).
+1. Ryan reviews the Pyre-Barge kit v3 (pyre_barge_kit_v3.png + in-game shots); then publish a test build so he can try it on the Pixel and desktop.
+2. LOD/streaming and a 20-ship stress test with a frame-rate counter; decide hosting if the hull set passes ~256 MB.
+3. Run the pipeline on the other capitals and the station (hand-built parts per CLAUDE.md placement rules; Corsair may stay junky).
 
 ## Gotchas
 - PC test runner: `Downloads\voidsworn_test` with `watcher.bat` running. Never write job.bat while a run is going (run_smoke deletes job.bat after it finishes). Hunyuan: C:\AI\HY3D2\Hunyuan3D2_WinPortable (python_standalone, cwd Hunyuan3D-2.1). PS 5.1 Invoke-WebRequest is slow for big files: set $ProgressPreference='SilentlyContinue'. Sandbox has Blender as a Python module (pip bpy 5.1.2) for scripted modelling and clay renders. Commit files with device_commit_files, then commit `run.request` **in a separate, later call** (parallel write+commit raced twice and shipped stale files). `build\job.bat` runs once instead of the smoke test; a job must `cd` back to `build` or it re-runs. Scripts are in `tools/pc/`.
+- closeshot's local server needs a big backlog (request_queue_size 256): with the default 5, desktop runs dropped hull/kit files (ERR_CONNECTION_REFUSED) and shots silently lacked the kit.
 - Full smoke on the PC takes about 4 min (25+ in the sandbox). Smoke does not catch invisible hulls: always add PC closeshot + console capture (`errprobe.py`).
 - Transfers are capped at about 25 MB per file and 100 MB per call: split zips. Artifact publishes cap at 64 MB: split sidecar uploads across publishes (files left out are kept).
 - `pcsync.sh <worktree>` stages sources for the PC; it now includes perf3d.js, wfx3d.js and fxshot.py.
