@@ -406,7 +406,7 @@ function lumpyRock(name,rr,sub){ const m=MB.CreateIcoSphere(name,{radius:1,subdi
 // normal map, CODE_m.webp R = ambient occlusion, G = curvature. Only the kind a battle needs is fetched, lazily: until it arrives (or if it fails,
 // or on file://) the board shows the procedural rocks, and the library meshes then take over the same thin-instance matrices in place.
 const ROCK_LIB={sets:{},loading:{},mats:{},index:{}}, ROCK_SET={stone:'RST',carbon:'RCA',iron:'RCA',crystal:'RCR',ice:'RIC'};
-const ROCK_TINT={RST:[.34,.31,.28],RCA:[.2,.19,.185],RCR:[.25,.27,.28],RIC:[.46,.53,.6]}, ROCK_GLOW={RCR:[.12,.5,.42]}; // dark albedo per kind; crystal spikes glow
+const ROCK_TINT={RST:[.34,.31,.28],RCA:[.2,.19,.185],RCR:[.25,.27,.28],RIC:[.34,.4,.47]}, ROCK_GLOW={RCR:[.12,.5,.42]}; // dark albedo per kind; crystal spikes glow
 function rockLibDir(){ return (G.mobile||G.quality==='medium')?'rocks/':'rocks_hi/'; }
 function loadRockSet(set){ if(ROCK_LIB.sets[set]) return Promise.resolve(ROCK_LIB.sets[set]); if(ROCK_LIB.loading[set]) return ROCK_LIB.loading[set];
   if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'||typeof decodeAIHull!=='function') return Promise.reject(new Error('no rock library here'));
