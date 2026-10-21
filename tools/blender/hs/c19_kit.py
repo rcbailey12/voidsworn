@@ -35,7 +35,7 @@ COL = {}
 def tag(rgb):  # colour every part made since the last tag
     for o in hs_lib.PARTS:
         if o.name not in COL: COL[o.name] = rgb
-GUN = (.20, .20, .21); STEEL = (.32, .32, .34); RED = (.42, .10, .07); DARK = (.07, .07, .08)
+GUN = (.085, .085, .09); STEEL = (.17, .17, .18); RED = (.36, .075, .05); DARK = (.02, .02, .022)  # linear colours, sampled by eye from the concept
 # rocket rack: two rows of seven launch tubes across the ship, on a column with a domed cap
 R = Matrix.Rotation(math.pi / 2, 3, 'Z')  # tubes() runs its tubes along its local X; turn them to run across the ship (y)
 for row, z in enumerate((.113, .091)):
@@ -68,7 +68,7 @@ for i, (a, b) in enumerate(GUNS):
     barrel(f'gun{i}', a, d / L, L, .0034)
 tag(GUN)
 for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
-    c = COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
+    c = DARK if o.name.startswith('bore') or 'band' in o.name else COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for d in a.data: d.color = (c[0], c[1], c[2], 1)
 kit = finish('C19_kit'); print('kit faces', len(kit.data.polygons))
 try: kit.data.color_attributes.active_color_name = 'Col'

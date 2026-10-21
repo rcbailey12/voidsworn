@@ -2,7 +2,7 @@
 # centred), raw little-endian arrays for vsm_pack.mjs (meshopt compression) + paint / normal / AO maps as webp.
 # usage: python3 pixal_to_game.py in.glb out_dir CODE FRONT [TEXRES]
 #   FRONT = which view the Pixal run posed as its front: 'front' (front view connected first) or 'left' (side view first).
-import sys, os, json, struct, io, numpy as np
+import sys, os, json, struct, io, base64, numpy as np
 from PIL import Image
 src, outd, code, front = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]; texres = int(sys.argv[5]) if len(sys.argv) > 5 else 0
 os.makedirs(outd, exist_ok=True)
@@ -48,7 +48,26 @@ if nrm is not None:
     save(Image.fromarray(a), 'n')
 if occ is not None:
     o = np.asarray(occ.convert('RGB'))[..., 0]; m = np.dstack([o, np.full_like(o, 128), np.full_like(o, 255)]); save(Image.fromarray(m), 'm')
-hdr = {'v': 1, 'fmt': 'vsm1', 'ext': ext.tolist(), 'n': int(n), 't': int(len(I)), 'src': 'pixal3d', 'front': front, 'alb': {'res': res}, 'tex': {'res': min(res, 2048)} if nrm is not None else None,
+kit = None
+if os.environ.get('KIT'):  # hand-built parts in the same GLB frame: same axis change and the same centring/scale as the hull
+    kb = open(os.environ['KIT'], 'rb').read(); kL = struct.unpack('<I', kb[12:16])[0]; KJ = json.loads(kb[20:20 + kL]); ko = 20 + kL; KBIN = kb[ko + 8:ko + 8 + struct.unpack('<I', kb[ko:ko + 4])[0]]
+    def kacc(i):
+        a = KJ['accessors'][i]; bv = KJ['bufferViews'][a['bufferView']]; o = bv.get('byteOffset', 0) + a.get('byteOffset', 0)
+        v = np.frombuffer(KBIN, CT[a['componentType']], a['count'] * NC[a['type']], o).reshape(a['count'], NC[a['type']]).astype(np.float64)
+        if a.get('normalized'): v = v / {5121: 255., 5123: 65535.}[a['componentType']]
+        return v
+    KP, KN, KC, KI = [], [], [], []; base = 0
+    for mesh in KJ['meshes']:
+        for kp in mesh['primitives']:
+            ka = kp['attributes']; p_ = kacc(ka['POSITION']); n_ = kacc(ka['NORMAL']); c_ = kacc(ka['COLOR_0'])[:, :3] if 'COLOR_0' in ka else np.full((len(p_), 3), .2)
+            i_ = kacc(kp['indices']).reshape(-1, 3).astype(np.int64) + base; base += len(p_); KP.append(p_); KN.append(n_); KC.append(c_); KI.append(i_)
+    KP = np.concatenate(KP) @ M.T; KN = np.concatenate(KN) @ M.T; KC = np.concatenate(KC); KI = np.concatenate(KI)
+    if np.linalg.det(M) < 0: KI = KI[:, [0, 2, 1]]
+    KP = (KP - (lo + hi) / 2) / (hi[0] - lo[0]); KN /= np.maximum(np.linalg.norm(KN, axis=1, keepdims=True), 1e-9)
+    kit = {'n': len(KP), 't': len(KI), 'p': base64.b64encode(KP.astype(np.float32).tobytes()).decode(), 'q': base64.b64encode(np.round(KN * 127).astype(np.int8).tobytes()).decode(),
+           'c': base64.b64encode(np.round(np.clip(KC, 0, 1) * 255).astype(np.uint8).tobytes()).decode(), 'i': base64.b64encode(KI.astype(np.uint32).tobytes()).decode()}
+    json.dump(kit, open(os.path.join(outd, code + '_kit.json'), 'w')); print('kit verts', len(KP), 'tris', len(KI))
+hdr = {'v': 1, 'kit': kit is not None, 'fmt': 'vsm1', 'ext': ext.tolist(), 'n': int(n), 't': int(len(I)), 'src': 'pixal3d', 'front': front, 'alb': {'res': res}, 'tex': {'res': min(res, 2048)} if nrm is not None else None,
        'mr': [pbr.get('metallicFactor', 1), pbr.get('roughnessFactor', 1)]}
 json.dump(hdr, open(os.path.join(outd, code + '.hdr.json'), 'w'))
 print(code, 'verts', n, 'tris', len(I), 'ext', ext.round(3).tolist(), 'maps', [x is not None for x in (alb, nrm, occ, mr)])
