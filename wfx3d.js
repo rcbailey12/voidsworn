@@ -7,10 +7,17 @@
 function fxNoise2(seed){ const hs=(x,y)=>{ const v=Math.sin(x*127.1+y*311.7+seed*17.13)*43758.5453; return v-Math.floor(v); };
   const ns=(x,y)=>{ const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf); return (hs(xi,yi)*(1-u)+hs(xi+1,yi)*u)*(1-v)+(hs(xi,yi+1)*(1-u)+hs(xi+1,yi+1)*u)*v; };
   const fb=(x,y,o)=>{ let a=.5,t=0,n=0; for(let i=0;i<(o||4);i++){ t+=a*ns(x,y); n+=a; x=x*2.03+1.7; y=y*2.03-.9; a*=.5; } return t/n; }; return {ns,fb}; }
-function fxCanvas(name,w,h,draw){ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); const hit=typeof TexCache!=='undefined'?TexCache.get(name,w,h):null;
-  if(hit&&hit!==true) g.drawImage(hit,0,0,w,h); else { draw(g,w,h); try{ TexCache.save(name,c); }catch(e){} } return c; }
+// generators draw one cell or frame per step: fxPrep steps them in idle slices on the title screen, a battle that starts first finishes them at once
+const FXJOBS={};
+function fxJob(name,w,h,gen){ let J=FXJOBS[name]; if(J) return J; const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); const hit=typeof TexCache!=='undefined'?TexCache.get(name,w,h):null;
+  J=FXJOBS[name]={c,done:false,step(){ return true; }}; if(hit&&hit!==true){ g.drawImage(hit,0,0,w,h); J.done=true; return J; }
+  const it=gen(g,w,h); J.step=()=>{ if(J.done) return true; if(it.next().done){ J.done=true; try{ TexCache.save(name,c); }catch(e){} } return J.done; }; return J; }
+function fxCanvas(name,w,h,gen){ const J=fxJob(name,w,h,gen); while(!J.done) J.step(); return J.c; }
+function fxPrep(){ try{ if(typeof document==='undefined') return; const jobs=[fxAtlasCanvas(true),fxBookCanvas(true),fxChunkCanvas(true)];
+    const tick=()=>{ const t0=performance.now(); for(const J of jobs) while(!J.done&&performance.now()-t0<10) J.step(); if(jobs.some(J=>!J.done)) setTimeout(tick,40); else setTimeout(()=>{ try{ fxAtlasURLs(); }catch(e){} },60); }; tick(); }catch(e){ console.warn('fx prep',e); } }
+if(typeof window!=='undefined') window.addEventListener('load',()=>setTimeout(fxPrep,4500)); // after the texture cache has opened
 // the misc additive atlas: 4x4 cells of 128 (cells 0-3 keep the v44 layout)
-function fxAtlasCanvas(){ return fxCanvas('fxAtlasI1',512,512,(g)=>{ const S=128, img=g.createImageData(512,512), d=img.data, N=fxNoise2(3), r=seeded(41);
+function fxAtlasCanvas(job){ return (job?fxJob:fxCanvas)('fxAtlasI1',512,512,function*(g){ const S=128, img=g.createImageData(512,512), d=img.data, N=fxNoise2(3), r=seeded(41);
   const arcY=[]; { let y=0; for(let i=0;i<=24;i++){ arcY.push(y); y=clamp(y+(r()-.5)*.34,-.32,.32); } }
   const spikes=[...Array(15)].map(()=>({a:r()*6.283,l:.45+r()*.5,w:.05+r()*.09,dr:r()<.6}));
   for(let cell=0;cell<16;cell++){ const ox=(cell%4)*S, oy=Math.floor(cell/4)*S;
@@ -34,21 +41,21 @@ function fxAtlasCanvas(){ return fxCanvas('fxAtlasI1',512,512,(g)=>{ const S=128
         case 14: { let s=Math.exp(-rr*rr*9)*1.1; for(const sp of spikes){ const da=Math.abs(((an-sp.a)%6.283+9.425)%6.283-3.1416); s+=Math.exp(-da*da/(sp.w*sp.w))*Math.max(0,1-rr/sp.l)*.9; if(sp.dr){ const tx=Math.cos(sp.a)*sp.l*1.1, ty=Math.sin(sp.a)*sp.l*1.1; s+=Math.exp(-(Math.pow(dx-tx,2)+Math.pow(dy-ty,2))*260)*.9; } } v=s*clamp((1-rr)*5,0,1); break; } // splash
         case 15: { const n=N.fb(dx*3+31,dy*3+7,4), c=N.fb(dx*9-4,dy*9+2,3); v=smoothstep01((.62+(n-.5)*.5-rr)/.2); lum=.35+.65*smoothstep01((c-.38)/.3); break; } // slag: lumpy blob, cracked crust
       }
-      const o=((oy+y)*512+ox+x)*4, L=Math.round(255*clamp(lum,0,1)); d[o]=d[o+1]=d[o+2]=L; d[o+3]=Math.round(clamp(v,0,1)*255); } }
+      const o=((oy+y)*512+ox+x)*4, L=Math.round(255*clamp(lum,0,1)); d[o]=d[o+1]=d[o+2]=L; d[o+3]=Math.round(clamp(v,0,1)*255); } yield; }
   g.putImageData(img,0,0); }); }
 function smoothstep01(x){ x=clamp(x,0,1); return x*x*(3-2*x); }
 // the explosion flipbook, as a Blender render would deliver it: R = flame emission, G = smoke density, frames left to right, top to bottom
-function fxBookCanvas(){ const C=G.mobile?64:128, cols=4, rows=4, W=C*cols;
-  return fxCanvas('fxBookRG3_'+C,W,W,(g)=>{ const img=g.createImageData(W,W), d=img.data, N=fxNoise2(9), bil=(x,y,o)=>{ let a=.5,t=0,n=0; for(let i=0;i<o;i++){ t+=a*(1-Math.abs(2*N.ns(x,y)-1)); n+=a; x=x*2.1+3.1; y=y*2.1-1.7; a*=.5; } return t/n; };
+function fxBookCanvas(job){ const C=G.mobile?64:128, cols=4, rows=4, W=C*cols;
+  return (job?fxJob:fxCanvas)('fxBookRG4_'+C,W,W,function*(g){ const img=g.createImageData(W,W), d=img.data, N=fxNoise2(9), bil=(x,y,o)=>{ let a=.5,t=0,n=0; for(let i=0;i<o;i++){ t+=a*(1-Math.abs(2*N.ns(x,y)-1)); n+=a; x=x*2.1+3.1; y=y*2.1-1.7; a*=.5; } return t/n; };
     for(let f=0;f<16;f++){ const t=f/15, ox=(f%cols)*C, oy=Math.floor(f/cols)*C, r0=.42+.4*Math.pow(t,.5), r1=.36+.5*Math.pow(t,.6);
       for(let y=0;y<C;y++) for(let x=0;x<C;x++){ const dx=(x+.5-C/2)/(C/2), dy=(y+.5-C/2)/(C/2), rr=Math.hypot(dx,dy);
-        const n=bil(dx*2.2+t*.9,dy*2.2-t*1.4,4), n2=N.fb(dx*4.5-t*2,dy*4.5+t*1.5,3), n3=bil(dx*1.6+7-t*.5,dy*1.6+2+t*.4,4);
+        const n=bil(dx*2.2+t*.9,dy*2.2-t*1.4,4), n2=N.fb(dx*4.5-t*2,dy*4.5+t*1.5,2), n3=bil(dx*1.6+7-t*.5,dy*1.6+2+t*.4,3);
         // flame: a billowing ball that cools from the edge inward and breaks into tongues as it ages
         const m=smoothstep01((r0+(n-.55)*.5-rr)/.22), heat=clamp(1.35-t*1.05-rr/r0*.75+(n2-.5)*.7,0,1), holes=smoothstep01((n2+.25-t*.75)/.3);
         const flame=m*Math.pow(heat,.85)*(.5+.5*n)*holes;
         // smoke: soft billows, dense and small early, wide and thin late
         const sm=smoothstep01(((r1-rr)/r1+(n3-.5)*.7)/.55)*(.45+.55*n3)*(1-t*.5);
-        const ed=smoothstep01((1-Math.max(Math.abs(dx),Math.abs(dy)))/.14), o=((oy+y)*W+ox+x)*4; d[o]=Math.round(clamp(flame*1.15*ed,0,1)*255); d[o+1]=Math.round(clamp(sm*ed,0,1)*255); d[o+2]=0; d[o+3]=255; } }
+        const ed=smoothstep01((1-Math.max(Math.abs(dx),Math.abs(dy)))/.14), o=((oy+y)*W+ox+x)*4; d[o]=Math.round(clamp(flame*1.15*ed,0,1)*255); d[o+1]=Math.round(clamp(sm*ed,0,1)*255); d[o+2]=0; d[o+3]=255; } yield; }
     g.putImageData(img,0,0); }); }
 // split an R/G flipbook into the two sprite atlases: fire (white, alpha = R) and smoke (shaded from the G gradient, alpha = G)
 function fxBookSplit(src,cols,rows){ const W=src.width, H=src.height, sg=src.getContext('2d'), s=sg.getImageData(0,0,W,H).data;
@@ -57,18 +64,20 @@ function fxBookSplit(src,cols,rows){ const W=src.width, H=src.height, sg=src.get
     const fl=Math.pow(R,.5); fd[o]=fd[o+1]=fd[o+2]=Math.round(255*fl); fd[o+3]=Math.round(255*R);
     const lit=clamp((.8+(-gx-gy)*.65)*(1-.2*Gc),.4,1); sd[o]=sd[o+1]=sd[o+2]=Math.round(255*lit); sd[o+3]=Math.round(255*Gc); }
   fc.getContext('2d').putImageData(fi,0,0); scv.getContext('2d').putImageData(si,0,0); return {fire:fc.toDataURL(),smoke:scv.toDataURL(),cell:W/cols,nF:cols*rows}; }
-function fxChunkCanvas(){ return fxCanvas('fxChunkI1',256,64,(g)=>{ const img=g.createImageData(256,64), d=img.data, r=seeded(5);
+function fxChunkCanvas(job){ return (job?fxJob:fxCanvas)('fxChunkI1',256,64,function*(g){ const img=g.createImageData(256,64), d=img.data, r=seeded(5);
   for(let c=0;c<4;c++){ const pts=[...Array(7)].map((_,i)=>{ const a=i/7*6.283+r()*.6; return [Math.cos(a)*(.45+r()*.5),Math.sin(a)*(.3+r()*.55)]; });
     for(let y=0;y<64;y++) for(let x=0;x<64;x++){ const dx=(x+.5-32)/32, dy=(y+.5-32)/32; let ins=true; for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; if((b[0]-a[0])*(dy-a[1])-(b[1]-a[1])*(dx-a[0])<0){ ins=false; break; } }
-      const o=(y*256+c*64+x)*4, lit=.45+.55*clamp(.5-dx*.4-dy*.5,0,1); d[o]=d[o+1]=d[o+2]=Math.round(255*lit); d[o+3]=ins?255:0; } }
+      const o=(y*256+c*64+x)*4, lit=.45+.55*clamp(.5-dx*.4-dy*.5,0,1); d[o]=d[o+1]=d[o+2]=Math.round(255*lit); d[o+3]=ins?255:0; } yield; }
   g.putImageData(img,0,0); }); }
 const FXBOOK={src:null,cols:4,rows:4}; // a rendered flipbook (fxBookLoad) replaces the procedural one
-function fxAtlases(){ if(G._fxA&&G._fxA.scene===G.scene) return G._fxA; const t0=performance.now();
-  const add=fxAtlasCanvas().toDataURL(), bk=fxBookSplit(FXBOOK.src||fxBookCanvas(),FXBOOK.cols,FXBOOK.rows), chunk=fxChunkCanvas().toDataURL();
-  G._fxA={scene:G.scene,add,fire:bk.fire,smoke:bk.smoke,chunk,cell:bk.cell,nF:bk.nF}; G.fxAtlasMs=Math.round(performance.now()-t0); return G._fxA; }
+let FXURL=null; // the atlases as data URLs, built once per page (not per scene) and ahead of time by fxPrep
+function fxAtlasURLs(){ if(FXURL&&FXURL.src===FXBOOK.src) return FXURL; const t0=performance.now(); const add=fxAtlasCanvas().toDataURL(), bk=fxBookSplit(FXBOOK.src||fxBookCanvas(),FXBOOK.cols,FXBOOK.rows), chunk=fxChunkCanvas().toDataURL();
+  FXURL={src:FXBOOK.src,add,fire:bk.fire,smoke:bk.smoke,chunk,cell:bk.cell,nF:bk.nF,ms:Math.round(performance.now()-t0)}; return FXURL; }
+function fxAtlases(){ if(G._fxA&&G._fxA.scene===G.scene) return G._fxA; const t0=performance.now(), U=fxAtlasURLs();
+  G._fxA=Object.assign({scene:G.scene},U); G.fxAtlasMs=Math.round(performance.now()-t0); return G._fxA; }
 // drop-in for the Blender explosion sims: an image whose R channel is flame and G channel smoke, cols x rows frames
 function fxBookLoad(url,cols,rows){ return new Promise((res,rej)=>{ const im=new Image(); im.crossOrigin='anonymous'; im.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=im.width; c.height=im.height; c.getContext('2d').drawImage(im,0,0);
-      FXBOOK.src=c; FXBOOK.cols=cols||8; FXBOOK.rows=rows||8; G._fxA=null; const P=G.fxPool; if(P&&P.mgr){ const bk=fxBookSplit(c,FXBOOK.cols,FXBOOK.rows);
+      FXBOOK.src=c; FXBOOK.cols=cols||8; FXBOOK.rows=rows||8; G._fxA=null; FXURL=null; const P=G.fxPool; if(P&&P.mgr){ const bk=fxBookSplit(c,FXBOOK.cols,FXBOOK.rows);
         for(const [Q,u] of [[P.fire,bk.fire],[P.sm,bk.smoke]]) if(Q&&Q.mgr){ const old=Q.mgr.texture; Q.mgr.texture=new BABYLON.Texture(u,G.scene,true,false,BABYLON.Texture.TRILINEAR_SAMPLINGMODE); Q.mgr.cellWidth=bk.cell; Q.mgr.cellHeight=bk.cell; try{ old&&old.dispose(); }catch(e){} }
         P.nF=bk.nF; } res(true); }catch(e){ rej(e); } }; im.onerror=rej; im.src=url; }); }
 
