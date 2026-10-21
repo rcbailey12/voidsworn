@@ -68,8 +68,8 @@ function makeSunAndSky(){
     const hexT=mk((g,w)=>{ g.fillStyle='rgba(255,255,255,.28)'; g.beginPath(); for(let i=0;i<6;i++){ const a=i*Math.PI/3; g.lineTo(w/2+Math.cos(a)*w*.45,w/2+Math.sin(a)*w*.45); } g.fill(); });
     const glowT=mk((g,w)=>{ const gr=g.createRadialGradient(w/2,w/2,0,w/2,w/2,w/2); gr.addColorStop(0,'rgba(255,255,255,.9)'); gr.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=gr; g.fillRect(0,0,w,w); });
     const lfs=new BABYLON.LensFlareSystem('lfs',emitter,sc);
-    new BABYLON.LensFlare(.35,0,new C3(1,.85,.6),glowT,lfs); new BABYLON.LensFlare(.08,.25,new C3(.6,.8,1),hexT,lfs); new BABYLON.LensFlare(.14,.45,new C3(1,.6,.3),hexT,lfs);
-    new BABYLON.LensFlare(.22,.7,new C3(.5,.7,1),ringT,lfs); new BABYLON.LensFlare(.05,.85,new C3(1,.9,.7),hexT,lfs); new BABYLON.LensFlare(.4,1.1,new C3(.35,.5,.9),ringT,lfs); G.lfs=lfs; }catch(e){ console.warn('lens flare unavailable',e); }
+    new BABYLON.LensFlare(.35,0,new C3(1,.85,.6),glowT,lfs); /* v53-G: the small hexagonal ghosts are gone: the orange one sat on the board like a stray glowing orb in every close-up */
+    new BABYLON.LensFlare(.22,.7,new C3(.5,.7,1).scale(.6),ringT,lfs); new BABYLON.LensFlare(.4,1.1,new C3(.35,.5,.9).scale(.6),ringT,lfs); G.lfs=lfs; }catch(e){ console.warn('lens flare unavailable',e); }
   const r=seeded(4), base=MB.CreatePlane('bstar',{size:1},sc); base.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL; base.material=addMat('bstarM',new C3(1.4,1.4,1.5),1,G.tex.flare); base.isVisible=false; base.infiniteDistance=true; G.glow.addExcludedMesh(base);
   for(let i=0;i<60;i++){ let x,y,z,l; do{ x=r()*2-1; y=r()*2-1; z=r()*2-1; l=Math.hypot(x,y,z); }while(l>1||l<.1); const inst=base.createInstance('bs'+i); inst.position=new V3(x/l*8500,y/l*8500,z/l*8500); inst.scaling.setAll(40+Math.pow(r(),3)*260); inst.isPickable=false; inst.infiniteDistance=true; }
   const gt=dynTex('galaxy',512,512,(g,w)=>{ const c=w/2, rr=seeded(8); for(let i=0;i<9000;i++){ const arm=i%2, t=rr()*4.2, rad=t/4.2*c*.95, ang=t*1.9+arm*Math.PI+(rr()-.5)*(.6-t*.1); const px=c+Math.cos(ang)*rad+(rr()-.5)*14, py=c+Math.sin(ang)*rad*.55+(rr()-.5)*9, b=1-t/4.6;
