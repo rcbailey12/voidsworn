@@ -786,7 +786,7 @@ function aiHullMat(fac){ const M=facMats(fac); if(M.aiHull) return M.aiHull; con
   m.useParallax=false; m.enableSpecularAntiAliasing=true; if(m.bumpTexture) m.bumpTexture=src.bumpTexture; m.roughness=1; if(m.clearCoat&&m.clearCoat.isEnabled){ m.clearCoat.roughness=Math.max(m.clearCoat.roughness,.42); m.clearCoat.intensity=Math.min(m.clearCoat.intensity,.18); }
   const o=src._hullFx, P=FAC3D[fac]||FAC3D.hegemony; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx');
   const opts=o?{rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy}:{rim:new C3(.6,.7,.9),str:.8,style:HULLFX_STYLE[fac]||0,ecol:P.win,wear:.25,seed:3,energy:true};
-  opts.ai=true; opts.wcol=fac==='chorus'?null:P.win.scale(AI_WIN_GAIN[fac]??1.4); // living Chorus hulls have no windows: their veins and sacs glow instead if(pl) Object.assign(pl,opts); else if(typeof HullFxPlugin==='function') pl=new HullFxPlugin(m,opts); if(pl){ m._hullFx=pl; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); }
+  opts.ai=true; opts.wcol=fac==='chorus'?null:P.win.scale(AI_WIN_GAIN[fac]??1.4); /* living Chorus hulls have no windows: their veins and sacs glow instead */ if(pl) Object.assign(pl,opts); else if(typeof HullFxPlugin==='function') pl=new HullFxPlugin(m,opts); if(pl){ m._hullFx=pl; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); }
   m._isAiHull=true; return M.aiHull=m; }
 // v53-G objective structures: the station in gunmetal with amber ports all round, the transport in pale grey with hazard-yellow collars
 function objMat(kind){ const k='obj_'+kind; if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k]; const st=kind==='station', m=new BABYLON.PBRMaterial(k,G.scene);
