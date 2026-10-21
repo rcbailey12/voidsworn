@@ -490,3 +490,14 @@ Live main: https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH | Preview: https://
 - 52 recorded clips embedded (sfx_data.js, ~470 KB Opus): Kenney CC0 sci-fi/interface and Sonniss GDC 2026 (booms, debris, metal hits, force fields, lasers, arcs, UI, turn cues, roomtone ambient), layered with synth and per-faction pitch.
 - Volume slider in Settings; ?sfx=1 audition panel / sfxTest(); menu and reward-pick clicks now play UI sounds.
 - Gates: rulecheck, fuzz 20; PC smoke passed 15:31.
+
+## v53.5 (Oct 21): ships up close, new meshes, performance
+- Concept-mesh hulls no longer carry leftover procedural parts or floating window quads; lit ports are drawn in the hull shader; engines, muzzles, nav lights and decals sit on the mesh surface.
+- Per-hull baked detail (Blender on the owner's RTX 5080 from the 400k-face Hunyuan originals): tangent normal + AO/curvature maps for all 36 hulls, xatlas UVs; desktop 2K/1K/512, phone half; loaded per class, released at battle end.
+- New concept meshes: Voidsworn Reliquary carrier (V18_51), Corsair Pyre-Barge (C19_51), squadron fighter/bomber/spore craft (S1_51, S2_23, B23_51) in formations, defend station (O1_37), intercept transport (O2_37), relay beacon (O3_11).
+- Faction fixes: no windows on Chorus, thinner Deathless circuits, Pyre-Barge burn edge as ember runs, hex fill fades on zoom-in, sun lens-flare ghosts removed. Ithar fly bow-first with a matte pearl material; asteroid blockers rebuilt.
+- Performance (workstream C): parallel hull loading before the title, one-draw shield rings, scene-graph diet (frozen statics, pruned glow list, throttled shadows), pooled text; phone draws 391 -> 294, phone CPU/frame 5.8 -> 5.0 ms; profiler CSV (?prof=1).
+- Cleanup: dead title canvas/preview demo/hexTex/low tier removed; 30 unused hull files deleted.
+- Bugs found on the real GPU and fixed: invisible then black hulls (NaN/undefined shader uniforms, GLSL comment breaking Babylon's preprocessor), single-threaded test server stalling parallel loads.
+- Gates: rulecheck, fuzz 20; PC closeshot (no console errors) and full smoke passed 07:44.
+- Known: a small orange glow still floats above some hulls; Ithar sail still a flat sheet; desktop CPU/frame higher than v53.1 (15 vs 10 ms) though frame pacing is smoother.
