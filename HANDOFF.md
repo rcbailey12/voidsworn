@@ -3,7 +3,7 @@
 ## What and where
 - Babylon.js 8.20 single-HTML hex fleet tactics roguelite. Ryan plays on a Pixel 10 XL and a PC (RTX 5080).
 - Live game (one link only): https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH (publish `voidsworn-3d.html` from `python3 build.py publish`; hull sidecars `hulls/`, `hulls_hi/` are uploaded as artifact files and kept on republish).
-- Repo: github.com/rcbailey12/voidsworn (private). `master` is pushed to `main`. Workstream branches (both pushed to GitHub): `v53-I` (effects, merged and published as v53.6), `v53-E` (rock library + Ithar sail; an agent was mid-work when this was written, so check its last commit). `v53-C` and `v53-G` are merged.
+- Repo: github.com/rcbailey12/voidsworn (private). `master` is pushed to `main`. Workstream branches (both pushed to GitHub): `v53-I` (effects, merged and published as v53.6), `v53-E` (rock library + Ithar sail glass, f93c137, master v53.6 merged in, sandbox-verified only). `v53-C` and `v53-G` are merged.
 - Plan and queue: `NEXT.md`. History: `PROGRESS.md`. Code audit and asset grades: `AUDIT_v53H.md`. Reference checklists: `docs/skills/`.
 - Master review doc (Claude Docs): https://claude.ai/code/artifact/aef64607-980c-49ce-977b-ff7b8a32868a
 
@@ -47,7 +47,16 @@
 ## Next 3 tasks
 1. Ryan's Pixel feedback above. Ask him 3-5 scope questions first (his saved preference), mainly about how far to push close-up detail. Fix the station first: it's a bug, not a quality question. Pass: Pixel close-ups of the station, the flagship and a hegemony hull look intact and crisp, and battle load has no visible hitch.
 2. Get Ryan's Pixel verdict on v53.6 effects (live, artifact Version 63). Plasma, laser, rail and tracer were approved on PC fxshot round 3; open items are plasma sprite counts (about 440-600 alive per volley on desktop) and swapping in Blender-rendered flipbooks via `fxBookLoad(url, cols, rows)`.
-3. Merge `v53-E` (rock library + Ithar sail). Pass: PC worldshot/closeshot show cracked, layered rocks and a glassy sail; draws stay under ~500 on desktop; upload `rocks/` + `rocks_hi/` as artifact files. Then hunt the floating orange glow (closeshot `PROBE=1 EXP=1`) and the desktop CPU regression.
+3. Check `v53-E` on the PC, then merge and publish it as v53.7.
+   - What it adds: the 32-rock library (desktop `rocks_hi/`, phone `rocks/`). It fails soft to procedural rocks until `index.json` lists the sets.
+   - The Ithar sail is now jade glass.
+   - PC checks:
+     - `worldshot MODE=rocks` over several runs so carbon, stone, crystal and ice all come up, at desktop and 412x915;
+     - `MODE=ithar` for the sail;
+     - normal direction: if highlights come from the wrong side, flip `invertNormalMapX`/`Y` in `rockLibMat`;
+     - whether the procedural-to-sculpted swap pops at battle start; if so, preload the rock set on the title screen.
+   - Upload `rocks/` (9.8 MB) and `rocks_hi/` (27.6 MB) as artifact files, with each folder's `index.json` last.
+   - Then hunt the floating orange glow (closeshot `PROBE=1 EXP=1`), the brown patches on the Ithar frigate's baked maps, and the desktop CPU regression.
 
 ## Gotchas
 - PC test runner: `Downloads\voidsworn_test` with `watcher.bat` running. Commit files with device_commit_files, then commit `run.request` **in a separate, later call** (parallel write+commit raced twice and shipped stale files). `build\job.bat` runs once instead of the smoke test; a job must `cd` back to `build` or it re-runs. Scripts are in `tools/pc/`.
