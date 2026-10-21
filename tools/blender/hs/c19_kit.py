@@ -1,0 +1,77 @@
+# Pyre-Barge (C19_51) hybrid: the Pixal3D hull keeps its shape and paint; its small parts (rocket rack, funnels, mast, long guns),
+# which the AI blurs together, are cut out and rebuilt as clean bevelled parts placed where the concept's side and front views put them.
+# Frame: the Pixal3D GLB as Blender imports it for a side-first run: x aft (bow at -x), z up, y lateral; 1 unit = 931 px in the
+# 1024 rig views (mvC2/C19_51_left.png and _front.png). Writes OUT_cut.glb (hull minus the cut parts) and OUT_kit.glb (vertex-coloured parts).
+# usage: blender -b -P c19_kit.py -- hull.glb out_prefix
+import sys, os, math, bpy, bmesh
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); from hs_lib import *
+import hs_lib
+from mathutils import Vector, Matrix
+argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
+src, pre = argv[0], argv[1]
+bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=src)
+hull = [o for o in bpy.context.scene.objects if o.type == 'MESH'][0]
+GUNS = []  # (base, tip)
+for x0, x1 in ((-.045, -.059), (.248, .250)):
+    for s in (1, -1): GUNS.append((Vector((x0, s * .100, .006)), Vector((x1, s * .145, .080))))
+BOXES = [  # (x0, x1, y0, y1, z0, z1): AI geometry to cut away (all above the deck or tower roof)
+    (.130, .300, -.065, .065, .076, .170),   # rocket rack
+    (.176, .228, -.030, .030, .062, .170),   # rack column and dome
+    (.054, .097, -.030, .030, .062, .172),   # funnels
+    (-.012, .062, -.040, .040, .110, .250),  # mast
+]
+def seg_d(p, a, b):
+    ab = b - a; t = max(0, min(1, (p - a).dot(ab) / ab.length_squared)); return (a + ab * t - p).length
+bm = bmesh.new(); bm.from_mesh(hull.data); kill = []
+for f in bm.faces:
+    c = f.calc_center_median()
+    if any(b[0] <= c.x <= b[1] and b[2] <= c.y <= b[3] and b[4] <= c.z <= b[5] for b in BOXES) or any(seg_d(c, a, b) < .012 and c.z > a.z + .012 for a, b in GUNS):
+        kill.append(f)
+bmesh.ops.delete(bm, geom=kill, context='FACES'); bm.to_mesh(hull.data); bm.free(); print('cut faces', len(kill))
+bpy.ops.object.select_all(action='DESELECT'); hull.select_set(True); bpy.context.view_layer.objects.active = hull
+bpy.ops.export_scene.gltf(filepath=pre + '_cut.glb', export_format='GLB', use_selection=True, export_image_format='JPEG', export_jpeg_quality=95)
+# ---------- clean parts ----------
+COL = {}
+def tag(rgb):  # colour every part made since the last tag
+    for o in hs_lib.PARTS:
+        if o.name not in COL: COL[o.name] = rgb
+GUN = (.20, .20, .21); STEEL = (.32, .32, .34); RED = (.42, .10, .07); DARK = (.07, .07, .08)
+# rocket rack: two rows of seven launch tubes across the ship, on a column with a domed cap
+R = Matrix.Rotation(math.pi / 2, 3, 'Z')  # tubes() runs its tubes along its local X; turn them to run across the ship (y)
+for row, z in enumerate((.113, .091)):
+    for k in range(7):
+        x = .217 + (k - 3) * .0202
+        cyl(f'tube{row}{k}', (x, 0, z), .0094, .085, axis='Y', seg=20, bevel=.0012)
+        for s in (1, -1): cyl(f'bore{row}{k}{s}', (x, s * .0428, z), .0068, .002, axis='Y', seg=20, bevel=0)
+tag(GUN)
+box('rackframe', (.217, 0, .102), (.150, .07, .006), bevel=.0015); box('rackcheek1', (.144, 0, .102), (.006, .088, .04), bevel=.0015); box('rackcheek2', (.290, 0, .102), (.006, .088, .04), bevel=.0015); tag(STEEL)
+cyl('column', (.202, 0, .072), .021, .05, seg=32, bevel=.002); cyl('collar', (.202, 0, .096), .025, .006, seg=32, bevel=.001); tag(STEEL)
+cyl('domebase', (.202, 0, .135), .011, .03, seg=24, bevel=.001); tag(RED)
+bm2 = bmesh.new(); bmesh.ops.create_uvsphere(bm2, u_segments=24, v_segments=10, radius=.011)
+for v in bm2.verts: v.co.z = max(v.co.z, 0) * .9
+bmesh.ops.translate(bm2, verts=bm2.verts, vec=(.202, 0, .150)); hs_lib._obj('dome', bm2, 0); tag(RED)
+# funnels: a slim one and a stout one, red with dark bands and caps
+for nm, x, y, r, z0, z1 in (('fun1', .0666, .010, .0064, .040, .163), ('fun2', .0827, -.012, .0118, .034, .156)):
+    cyl(nm, (x, y, (z0 + z1) / 2), r, z1 - z0, seg=24, bevel=.0012); tag(RED)
+    for k in range(int((z1 - z0) / .018)): cyl(f'{nm}band{k}', (x, y, z0 + .012 + k * .018), r * 1.06, .003, seg=24, bevel=0)
+    cyl(nm + 'cap', (x, y, z1 + .002), r * 1.12, .005, seg=24, bevel=.001); cyl(nm + 'bore', (x, y, z1 + .0047), r * .8, .001, seg=24, bevel=0); tag(DARK)
+# mast: main pole, a second pole, a yard arm, a brace and a lantern box
+cyl('mast', (.035, 0, .170), .0035, .136, seg=12, bevel=0); cyl('mast2', (.009, 0, .146), .0028, .088, seg=12, bevel=0)
+box('yard', (.008, 0, .176), (.026, .003, .003), bevel=0); box('yard2', (.040, 0, .214), (.016, .0025, .0025), bevel=0)
+barrel('brace', (-.032, 0, .123), (.98, 0, .30), .06, .0018)
+box('lantern', (.036, 0, .225), (.010, .009, .014), bevel=.001)
+for k in range(4): box(f'rung{k}', (.038, 0, .115 + k * .022), (.010, .004, .0016), bevel=0)
+tag(STEEL)
+# long guns: tapered barrels on ball mounts, leaning outboard
+for i, (a, b) in enumerate(GUNS):
+    d = (b - a); L = d.length; cyl(f'gunball{i}', a, .0085, .010, seg=20, bevel=.002)
+    barrel(f'gun{i}', a, d / L, L, .0034)
+tag(GUN)
+for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
+    c = COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
+    for d in a.data: d.color = (c[0], c[1], c[2], 1)
+kit = finish('C19_kit'); print('kit faces', len(kit.data.polygons))
+try: kit.data.color_attributes.active_color_name = 'Col'
+except Exception: kit.data.color_attributes.active_color = kit.data.color_attributes['Col']
+bpy.ops.object.select_all(action='DESELECT'); kit.select_set(True); bpy.context.view_layer.objects.active = kit
+bpy.ops.export_scene.gltf(filepath=pre + '_kit.glb', export_format='GLB', use_selection=True, export_vertex_color='ACTIVE', export_all_vertex_colors=True)

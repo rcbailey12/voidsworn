@@ -40,6 +40,8 @@ def save(im, name, mode='RGB'):
     if im.width != res: im = im.resize((res, res), Image.LANCZOS)
     im.save(os.path.join(outd, f'{code}_{name}.webp'), quality=90, method=6); return True
 save(alb, 'a')
+if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']):  # lift the paint to 0.8x the concept art's brightness (the bakes come out dark)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import paint_level; print('paint level', paint_level.level(os.path.join(outd, f'{code}_a.webp'), os.environ['CONCEPT']))
 if nrm is not None:
     a = np.asarray(nrm.convert('RGB')).copy()  # no change for the mirror: the shader rebuilds the tangent frame from the mirrored geometry and its UVs
     if os.environ.get('FLIPG'): a[..., 1] = 255 - a[..., 1]

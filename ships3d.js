@@ -890,7 +890,7 @@ function aiHullCode(d){ for(const [k,v] of Object.entries(AI_HULL_DATA)) if(v===
 // (the paint has its own), the faction still reads through the rim light, engine glow and shields. One material per hull, texture released at battle end.
 function aiPaintMatFor(fac,d){ const code=aiHullCode(d); if(!code) return aiHullMat(fac); const key='paint|'+fac+'|'+code; let e=AI_TEX[key];
   if(!e||!G.scene.materials.includes(e.m)){ const src=aiHullMat(fac), m=src.clone(fac+'aipaint_'+code); m.albedoColor=C3.White(); m.albedoTexture=null; m.bumpTexture=null; m.metallicTexture=null;
-    m.metallic=G.paintMetal??.12; m.roughness=.62; m.directIntensity=(src.directIntensity||1)*(G.paintLight??1.6); m.environmentIntensity=(src.environmentIntensity||1)*1.25; /* v54: the paint is the colour; a metal hull reflecting black space read near-black in game */ m.useRoughnessFromMetallicTextureGreen=false; m.useMetallnessFromMetallicTextureBlue=false; m.useAmbientOcclusionFromMetallicTextureRed=false;
+    m.metallic=G.paintMetal??.08; m.roughness=.62; m.directIntensity=(src.directIntensity||1)*(G.paintLight??1.8); m.environmentIntensity=(src.environmentIntensity||1)*1.25; /* v54: the paint is the colour; a metal hull reflecting black space read near-black in game */ m.useRoughnessFromMetallicTextureGreen=false; m.useMetallnessFromMetallicTextureBlue=false; m.useAmbientOcclusionFromMetallicTextureRed=false;
     const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const opts=Object.assign(hfxOpts(o,fac),{ai:true,paint:true,wear:0,wcol:null,mtex:null});
     if(pl) Object.assign(pl,opts); else if(typeof HullFxPlugin==='function') pl=new HullFxPlugin(m,opts); if(pl){ m._hullFx=pl; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); }
     m._isAiHull=true; e=AI_TEX[key]={m,code,paint:true,maps:!!(d.tex&&d.uv2&&!G.noBake),dir:d.dir||((G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'),n:null,t:null,a:null}; }
@@ -898,7 +898,7 @@ function aiPaintMatFor(fac,d){ const code=aiHullCode(d); if(!code) return aiHull
 function aiPaintTouch(e){ try{ e.touchB=B; }catch(x){} if(e.a||e.loading||e.failed) return; e.loading=true; const gen=e.gen||0, sc=G.scene, m=e.m, url=e.dir+e.code;
   // the paint, plus (baked hulls) the normal map and AO/curvature map from the full-detail TRELLIS mesh; all three swap in together
   const done=()=>{ if(gen!==(e.gen||0)||!e.a||!e.a.isReady()||(e.maps&&(!e.n||!e.t||!e.n.isReady()||!e.t.isReady()))) return; e.loading=false; if(m.isDisposed&&m.isDisposed()) return;
-    e.a.anisotropicFilteringLevel=8; e.a.level=G.paintGain??1.35; m.albedoTexture=e.a; if(e.maps){ m.bumpTexture=e.n; m.bumpTexture.level=1; const pl=m._hullFx; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } } };
+    e.a.anisotropicFilteringLevel=8; e.a.level=G.paintGain??1.15; m.albedoTexture=e.a; if(e.maps){ m.bumpTexture=e.n; m.bumpTexture.level=1; const pl=m._hullFx; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } } };
   const fail=()=>{ console.warn('hull paint not loaded',e.code); e.loading=false; e.a=e.n=e.t=null; e.failed=true; };
   e.a=new BABYLON.Texture(url+'_a.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail);
   if(e.maps){ e.n=new BABYLON.Texture(url+'_n.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail); e.n.coordinatesIndex=1; e.n.anisotropicFilteringLevel=4;

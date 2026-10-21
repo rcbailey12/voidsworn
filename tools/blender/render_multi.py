@@ -3,6 +3,12 @@ import sys, os, math, bpy, mathutils
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
 src, pre, angs = argv[0], argv[1], [tuple(map(float, a.split())) for a in argv[2].split(';')]
 bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=src)
+if os.environ.get('EXTRA'):  # a second GLB in the same frame (the hand-built parts), shown with its vertex colours
+    before = set(bpy.context.scene.objects); bpy.ops.import_scene.gltf(filepath=os.environ['EXTRA'])
+    km = bpy.data.materials.new('kit'); km.use_nodes = True; kn = km.node_tree; kb = kn.nodes['Principled BSDF']; at = kn.nodes.new('ShaderNodeVertexColor')
+    kn.links.new(at.outputs[0], kb.inputs['Base Color']); kb.inputs['Metallic'].default_value = .45; kb.inputs['Roughness'].default_value = .42
+    for o in set(bpy.context.scene.objects) - before:
+        if o.type == 'MESH': o.data.materials.clear(); o.data.materials.append(km)
 ms = [o for o in bpy.context.scene.objects if o.type == 'MESH']
 mn = mathutils.Vector((1e9,)*3); mx = mathutils.Vector((-1e9,)*3)
 if os.environ.get('ALB'):  # swap in a replacement albedo
