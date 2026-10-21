@@ -295,8 +295,9 @@ function buildBattleEnv(){
   // well above the hulls, or a cluster of mediums, or a boulder in a rubble drift) cut from icospheres by flat planes; the recipe is rolled per hex
   // from B.seed. Dressing (rim fill, the deep field, the belt) stays soft, low, sparse and darker, and never sits on a playable hex.
   const blockMat=rockMatLike(rockMat,'blockRockM'); blockMat.diffuseColor=rockMat.diffuseColor.scale(.6); blockMat.specularColor=rockMat.specularColor.scale(.25); blockMat.specularPower=6; blockMat.emissiveColor=rockMat.emissiveColor.scale(.6); blockMat.bumpTexture=rockMat.bumpTexture; G.env.push(blockMat); /* the clone carries the RockFx plugin, like rimRockM */
-  try{ loadRockLib(); }catch(e){} const fb=rockLibBases(B.biome&&B.biome.rock,RK)||[0,1,2,3,4,5,6].map(k=>mkFacet(k,blockMat)), fbuf=fb.map(()=>[]); /* a sculpted library, when present, replaces the procedural shapes */
-  const fput=(k,x,y,z,s,ax,az,yaw,tx,tz)=>fbuf[k].push(BABYLON.Matrix.Compose(new V3(s*ax,s,s*az),BABYLON.Quaternion.RotationYawPitchRoll(yaw,tx,tz),new V3(x,y,z)));
+  const libSet=ROCK_SET[B.biome&&B.biome.rock]||'RST', libReady=!!ROCK_LIB.sets[libSet]; let fb=null; if(libReady) try{ fb=rockLibMeshes(ROCK_LIB.sets[libSet]); }catch(e){ console.warn('rock library meshes',e); }
+  if(!fb) fb=[0,1,2,3,4,5,6].map(k=>mkFacet(k,blockMat)); const fbuf=fb.map(()=>[]); /* sculpted rocks when this kind is loaded, procedural until then */
+  const fput=(k,x,y,z,s,ax,az,yaw,tx,tz)=>fbuf[k].push(BABYLON.Matrix.Compose(new V3(s*ax*(.86+rr()*.28),s,s*az*(.86+rr()*.28)),BABYLON.Quaternion.RotationYawPitchRoll(yaw,tx,tz),new V3(x,y,z)));
   const tilt=()=>(rr()-.5)*.44, around=(c,rad,f)=>{ const a=rr()*6.28, d=rad*(.6+rr()*.4); f(c.x+Math.cos(a)*d,c.z+Math.sin(a)*d); };
   const rockHex=(c,q,r)=>{ const pick=rr(), j=()=>(rr()-.5)*3;
     if(pick<.36){ fput(rr()<.5?0:1,c.x+j(),2.1,c.z+j(),6.6+rr()*1.1,.9+rr()*.3,.9+rr()*.3,rr()*6.28,tilt(),tilt()); /* hero pillar: top ~7.5, about 1.5x a hull's height */
@@ -314,6 +315,8 @@ function buildBattleEnv(){
         const nm=addMat('nebM',rr()<.5?new C3(.42,.25,.62):new C3(.25,.35,.7),.34,G.tex.neb); pl.material=nm; pl.rotation.z=rr()*6; G.glow.addExcludedMesh(pl); G.env.push(pl,nm); } } }
   // distant decorative rocks below and around the table for depth
   fb.forEach((m,k)=>{ if(!fbuf[k].length) return; m.isVisible=true; m.thinInstanceAdd(fbuf[k]); m.thinInstanceRefreshBoundingInfo(false); }); /* one draw per shape for every blocker on the board */
+  if(!libReady){ const b0=B; loadRockSet(libSet).then(list=>{ if(B!==b0||!fb[0]||fb[0].isDisposed()) return; const lib=rockLibMeshes(list), tex=[]; lib.forEach(m=>m.material.getActiveTextures().forEach(t=>{ if(!tex.includes(t)) tex.push(t); }));
+      BABYLON.Texture.WhenAllReady(tex,()=>{ if(B!==b0||lib[0].isDisposed()) return; lib.forEach((m,k)=>{ if(!fbuf[k].length) return; m.isVisible=true; m.thinInstanceAdd(fbuf[k]); m.thinInstanceRefreshBoundingInfo(false); fb[k].setEnabled(false); }); }); }).catch(()=>{}); } // swap in place once the sculpted set and its maps have arrived
   { const dm=rockMatLike(rockMat,'dressRockM'); dm.diffuseColor=rockMat.diffuseColor.scale(.55); dm.specularColor=C3.Black(); dm.emissiveColor=rockMat.emissiveColor.scale(.4); G.env.push(dm); const buf=bases.map(()=>[]); /* v53: the deep field is thin instances (was 70 spinning instances) */
     for(let i=0;i<70;i++){ const a=rr()*Math.PI*2, d=G.bx*.9+rr()*380, s=2+rr()*12; buf[Math.floor(rr()*bases.length)].push(BABYLON.Matrix.Compose(new V3(s,s,s),BABYLON.Quaternion.RotationYawPitchRoll(rr()*6,rr()*6,rr()*6),new V3(Math.cos(a)*d*1.15,-50-rr()*200,Math.sin(a)*d*.8))); }
     bases.forEach((m,k)=>{ if(!buf[k].length) return; m.material=dm; m.isVisible=true; m.thinInstanceAdd(buf[k]); m.thinInstanceRefreshBoundingInfo(false); m.receiveShadows=false; try{ if(G.shadow) G.shadow.removeShadowCaster(m); }catch(e){} }); }
@@ -398,28 +401,62 @@ function lumpyRock(name,rr,sub){ const m=MB.CreateIcoSphere(name,{radius:1,subdi
     for(const [cx,cy,cz,cr,cd] of craters){ const d=Math.hypot(x-cx,y-cy,z-cz); if(d<cr) n-=cd*(1-d/cr)*(1-d/cr)*2; else if(d<cr*1.25) n+=cd*.25; }
     p[i]=x*n; p[i+1]=y*n; p[i+2]=z*n; }
   m.setVerticesData(BABYLON.VertexBuffer.PositionKind,p); m.convertToFlatShadedMesh(); m.isPickable=false; return m; }
-// v53 rock library hook (stopgap until it ships): sculpted rocks per asteroid kind replace the procedural board rocks when present.
-// Layout, served next to hulls/: rocks/index.json = {"stone":["stone_01",...],"carbon":[...],"crystal":[...],"ice":[...]}; rocks/<id>.json uses the
-// hull JSON format (p, q, i, i32, ext, optional a = baked AO) plus u = UVs as base64 Int16 (value/32767*uext, uext defaults to [1,1]);
-// with "maps":true, rocks/<id>_n.webp (tangent-space normal) and rocks/<id>_m.webp (R ambient occlusion, G roughness, B metalness) are loaded.
-// Loaded once, lazily, from the first battle (no boot cost); that battle stays procedural and later ones use the library. Kinds without a set
-// borrow one through ROCK_LIB_ALIAS. Each mesh is sorted into a role (tall: pillar/slab/shard; low: chunk) by its bounding box.
-const ROCK_LIB={tried:false,sets:{}}, ROCK_LIB_ALIAS={iron:'carbon'};
-async function loadRockLib(){ if(ROCK_LIB.tried) return; ROCK_LIB.tried=true; if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'||typeof decodeAIHull!=='function') return;
-  try{ const r=await fetch('rocks/index.json'); if(!r.ok) return; const idx=await r.json();
-    for(const [kind,ids] of Object.entries(idx)){ const list=[]; for(const id of ids||[]){ try{ const q=await fetch('rocks/'+id+'.json'); if(!q.ok) continue; const j=await q.json(), d=decodeAIHull(j);
-          if(j.u){ const bin=atob(j.u), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); const qu=new Int16Array(u8.buffer), ue=j.uext||[1,1]; d.uv=new Float32Array(qu.length); for(let i=0;i<qu.length;i++) d.uv[i]=qu[i]/32767*ue[i%2]; }
-          d.id=id; d.maps=!!j.maps; list.push(d); }catch(e){ console.warn('rock mesh',id,e); } }
-      if(list.length) ROCK_LIB.sets[kind]=list; }
-    console.debug('[rocks] library: '+Object.entries(ROCK_LIB.sets).map(([k,l])=>k+' '+l.length).join(', ')); }catch(e){ console.warn('rock library',e); } }
-function rockLibBases(kind,RK){ const set=ROCK_LIB.sets[kind]||ROCK_LIB.sets[ROCK_LIB_ALIAS[kind]]; if(!set||!set.length) return null; const sc=G.scene, tall=[], low=[];
-  for(const d of set){ let x=0,y=0,z=0; for(let i=0;i<d.pos.length;i+=3){ x=Math.max(x,Math.abs(d.pos[i])); y=Math.max(y,Math.abs(d.pos[i+1])); z=Math.max(z,Math.abs(d.pos[i+2])); } (y>1.4*Math.max(x,z)?tall:low).push({d,ext:[x,y,z]}); }
-  const pick=(arr,alt,i)=>{ const a=arr.length?arr:alt; return a[i%a.length]; }, col=RK?RK.col:[1,1,1];
-  return [0,1,2,3,4,5,6].map(k=>{ const isTall=k<3||k===5, e=pick(isTall?tall:low,isTall?low:tall,k), d=e.d, s=isTall?1/Math.max(1e-6,e.ext[1]):.9/Math.max(1e-6,...e.ext), pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*s;
-    const m=new BABYLON.Mesh('rockLib'+k,sc), vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=d.nor; vd.indices=d.idx; vd.uvs=d.uv; if(d.col) vd.colors=d.col; vd.applyToMesh(m);
-    const mt=new BABYLON.PBRMaterial('rockLibM_'+d.id+'_'+k,sc); mt.albedoColor=new C3(col[0]*.34,col[1]*.33,col[2]*.31); mt.metallic=0; mt.roughness=.92; mt.environmentIntensity=.6;
-    if(d.maps){ mt.bumpTexture=new BABYLON.Texture('rocks/'+d.id+'_n.webp',sc); mt.metallicTexture=new BABYLON.Texture('rocks/'+d.id+'_m.webp',sc); mt.useAmbientOcclusionFromMetallicTextureRed=true; mt.useRoughnessFromMetallicTextureGreen=true; mt.useMetallnessFromMetallicTextureBlue=true; mt.metallic=1; mt.roughness=1; }
-    if(RK&&RK.em) mt.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); G.env.push(mt); m.material=mt; m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; }); }
+// v53 sculpted asteroid library (Blender: rocks/ for phones and Medium, 512 maps; rocks_hi/ for desktop, 1024 maps). Eight rocks per kind:
+// RCA carbon (craggy, cratered), RST stone (planar fracture faces, strata), RCR crystal (rock with crystal spikes), RIC ice (smooth, crack lines).
+// CODE.json is the hull format (quantised p/q/i, 'u' UVs as Uint16/65535, normalised so x length = 1, centred), CODE_n.webp a tangent-space
+// normal map, CODE_m.webp R = ambient occlusion, G = curvature. Only the kind a battle needs is fetched, lazily: until it arrives (or if it fails,
+// or on file://) the board shows the procedural rocks, and the library meshes then take over the same thin-instance matrices in place.
+const ROCK_LIB={sets:{},loading:{},mats:{},index:{}}, ROCK_SET={stone:'RST',carbon:'RCA',iron:'RCA',crystal:'RCR',ice:'RIC'};
+const ROCK_TINT={RST:[.34,.31,.28],RCA:[.2,.19,.185],RCR:[.25,.27,.28],RIC:[.46,.53,.6]}, ROCK_GLOW={RCR:[.12,.5,.42]}; // dark albedo per kind; crystal spikes glow
+function rockLibDir(){ return (G.mobile||G.quality==='medium')?'rocks/':'rocks_hi/'; }
+function loadRockSet(set){ if(ROCK_LIB.sets[set]) return Promise.resolve(ROCK_LIB.sets[set]); if(ROCK_LIB.loading[set]) return ROCK_LIB.loading[set];
+  if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'||typeof decodeAIHull!=='function') return Promise.reject(new Error('no rock library here'));
+  const dir=rockLibDir(), t0=performance.now();
+  // dir/index.json lists the kinds that are present ({"RST":8,...}); the live build may ship {} until the files are uploaded, which keeps it procedural
+  const idx=ROCK_LIB.index[dir]||(ROCK_LIB.index[dir]=fetch(dir+'index.json').then(r=>r.ok?r.json():{}).catch(()=>({})));
+  return ROCK_LIB.loading[set]=idx.then(ix=>{ if(!ix||!ix[set]) throw new Error('rock set '+set+' not in '+dir+'index.json'); }).then(()=>Promise.all([0,1,2,3,4,5,6,7].map(async i=>{ const code=set+'0'+i, r=await fetch(dir+code+'.json'); if(!r.ok) throw new Error(code+' '+r.status); const j=await r.json(), d=decodeAIHull(j);
+      if(j.u){ const bin=atob(j.u), u8=new Uint8Array(bin.length); for(let k=0;k<bin.length;k++) u8[k]=bin.charCodeAt(k); const qu=new Uint16Array(u8.buffer); d.uv=new Float32Array(qu.length); for(let k=0;k<qu.length;k++) d.uv[k]=qu[k]/65535; }
+      d.code=code; d.dir=dir; d.size=j.size||[1,1,1]; return d; })))
+    .then(list=>{ ROCK_LIB.sets[set]=list; console.debug('[rocks] '+set+' library from '+dir+' in '+Math.round(performance.now()-t0)+'ms'); return list; })
+    .catch(e=>{ console.warn('rock library',set,e); delete ROCK_LIB.loading[set]; throw e; }); }
+// cavity darkening and edge highlights from the baked AO/curvature map, and (crystal) a glow on the convex spikes; no extra draws
+class RockLibPlugin extends BABYLON.MaterialPluginBase{
+  constructor(mat,tex,glow){ super(mat,'RockLib',201,{ROCKLIB:false}); this.tex=tex; this.glow=glow; this._enable(true); }
+  prepareDefines(d){ d.ROCKLIB=true; } getClassName(){ return 'RockLibPlugin'; }
+  isReadyForSubMesh(){ return !this.tex||this.tex.isReady(); }
+  getSamplers(s){ s.push('rlibM'); } getActiveTextures(a){ if(this.tex) a.push(this.tex); } hasTexture(t){ return t===this.tex; }
+  getUniforms(){ return {ubo:[{name:'rlibG',size:3,type:'vec3'}],fragment:'#ifdef ROCKLIB\nuniform vec3 rlibG;\n#endif\n'}; }
+  bindForSubMesh(ubo){ ubo.updateColor3('rlibG',this.glow); if(this.tex) ubo.setTexture('rlibM',this.tex); }
+  getCustomCode(type){ if(type!=='fragment') return null; return {CUSTOM_FRAGMENT_DEFINITIONS:'#ifdef ROCKLIB\nuniform sampler2D rlibM;\n#endif\n',
+    CUSTOM_FRAGMENT_UPDATE_DIFFUSE:`
+#ifdef ROCKLIB
+#ifdef MAINUV1
+  vec4 rlm=texture2D(rlibM,vMainUV1);
+#else
+  vec4 rlm=vec4(1.0,0.5,1.0,1.0);
+#endif
+  baseColor.rgb*=mix(0.32,1.0,rlm.r)*mix(1.0,0.62,smoothstep(0.5,0.18,rlm.g))*mix(1.0,1.45,smoothstep(0.56,0.9,rlm.g));
+#endif
+`,CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR:`
+#ifdef ROCKLIB
+  color.rgb+=rlibG*smoothstep(0.62,0.92,rlm.g);
+#endif
+`}; } }
+function rockLibMat(d){ const k=d.code+'@'+d.dir; let m=ROCK_LIB.mats[k]; if(m&&G.scene.materials.includes(m)) return m; const set=d.code.slice(0,3), t=ROCK_TINT[set]||[.3,.3,.3], gl=ROCK_GLOW[set];
+  m=new BABYLON.StandardMaterial('rockLib_'+d.code,G.scene); m.diffuseColor=new C3(t[0]*2.2,t[1]*2.2,t[2]*2.2); m.specularColor=set==='RIC'?new C3(.1,.11,.13):new C3(.025,.025,.025); m.specularPower=set==='RIC'?24:8; /* rough, non-metallic, no sparkle */
+  m.bumpTexture=new BABYLON.Texture(d.dir+d.code+'_n.webp',G.scene); const mt=new BABYLON.Texture(d.dir+d.code+'_m.webp',G.scene);
+  try{ new RockLibPlugin(m,mt,gl?new C3(gl[0],gl[1],gl[2]):new C3(0,0,0)); }catch(e){ console.warn('rock lib shading',e); } return ROCK_LIB.mats[k]=m; } // cached across battles (not in G.env), so the maps load once
+// the eight rocks fill the seven board roles: the most elongated stand up as pillars, slab and shard (long axis turned vertical, squeezed toward
+// a column), the rest are chunks; each bakes into a mesh shaped like the procedural role so the per-hex recipes and matrices carry over unchanged
+function rockLibMeshes(list){ const el=list.map(d=>({d,e:1/Math.max(.05,Math.max(d.size[1],d.size[2]))})).sort((a,b)=>b.e-a.e), order=[1,2,3,4,5,0,6]; // role k takes el[order[k]]
+  return [0,1,2,3,4,5,6].map(k=>{ const d=el[order[k]].d, tall=k<3||k===5, P=d.pos, N=d.nor, n=P.length/3, pos=new Float32Array(P.length), nor=new Float32Array(N.length);
+    let ex=[0,0,0]; for(let i=0;i<P.length;i+=3) for(let c=0;c<3;c++) ex[c]=Math.max(ex[c],Math.abs(P[i+c]));
+    const sx=tall?.5/Math.max(.05,ex[1]):.9/Math.max(...ex), sy=tall?1/Math.max(.05,ex[0]):sx, sz=tall?.45/Math.max(.05,ex[2]):sx; // tall: x (long) becomes y
+    for(let v=0;v<n;v++){ const o=v*3; if(tall){ pos[o]=P[o+1]*sx; pos[o+1]=P[o]*sy; pos[o+2]=P[o+2]*sz; let a=N[o+1]/sx, b=N[o]/sy, c=N[o+2]/sz; const l=Math.hypot(a,b,c)||1; nor[o]=a/l; nor[o+1]=b/l; nor[o+2]=c/l; }
+      else { pos[o]=P[o]*sx; pos[o+1]=P[o+1]*sy; pos[o+2]=P[o+2]*sz; nor[o]=N[o]; nor[o+1]=N[o+1]; nor[o+2]=N[o+2]; } }
+    const idx=tall?Uint32Array.from(d.idx):d.idx; if(tall) for(let t=0;t<idx.length;t+=3){ const x=idx[t+1]; idx[t+1]=idx[t+2]; idx[t+2]=x; } // swapping x and y mirrors the mesh: keep the winding
+    const m=new BABYLON.Mesh('rockLib'+k,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=nor; vd.indices=idx; vd.uvs=d.uv; vd.applyToMesh(m);
+    m.material=rockLibMat(d); m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; }); }
 // v53: a fresh material sharing the rock textures. A clone of rockM tries to re-create the RockFx plugin from its serialized form, cannot find the
 // class, and the clone never becomes ready, so nothing using it drew (this is why the v51 rim fill rocks were invisible).
 function rockMatLike(b,name){ const m=new BABYLON.StandardMaterial(name,G.scene); m.diffuseTexture=b.diffuseTexture; m.bumpTexture=b.bumpTexture; m.diffuseColor=b.diffuseColor.clone(); m.specularColor=b.specularColor.clone(); m.specularPower=b.specularPower; m.emissiveColor=b.emissiveColor.clone(); if(typeof addRockFx==='function') addRockFx(m); return m; }

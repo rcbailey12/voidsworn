@@ -14,7 +14,7 @@ PAGE='http://127.0.0.1:%d/'%srv.server_address[1]+os.environ.get('PAGEFILE','ind
 HIDE="try{ ACT.tipOff&&ACT.tipOff(); }catch(e){} const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); document.querySelectorAll('.tipcard').forEach(e=>e.remove());"
 def battle(pg,cfg,q='medium'):
     pg.evaluate("setQuality('%s'); ACT.c3skirmish(); setupBattle(%s); ACT.begin(); SPEED=.5; G.cine=false; %s 0"%(q,cfg,HIDE))
-    pg.wait_for_function("!!B&&B.side==='player'&&!B.busy", timeout=120000, polling=500)
+    pg.wait_for_function("!!B&&B.side==='player'&&!B.busy", timeout=300000, polling=500)
     pg.wait_for_timeout(1500); pg.evaluate(HIDE+"for(const v of G.views.values()){ v.arrive=null; if(v.ring) v.ring.node.setEnabled(true); if(v.root) v.root.setEnabled(true); if(v.plate) v.plate.el.style.visibility=''; } 0")
 SNAP="const c=G.cam, k=G.ctl; k.estab=null; k.slowUntil=0; c.target.copyFrom(k.t); c.radius=k.r; c.alpha=k.a; c.beta=k.b; 0"
 def cam(pg,js):
@@ -29,12 +29,15 @@ with sync_playwright() as p:
     for name,vp,mob in SIZES:
         ctx=b.new_context(viewport=vp,is_mobile=mob,has_touch=mob); pg=ctx.new_page(); errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)[:200])); pg.on('console',lambda m: errs.append('console: '+m.text[:200]) if m.type=='error' else None)
         pg.goto(PAGE, wait_until='commit'); pg.wait_for_function("!!document.querySelector('.title .menu')", timeout=150000, polling=1000)
-        pg.wait_for_function("Object.keys(AI_HULL_DATA).length>=25", timeout=150000, polling=1000)
-        pg.wait_for_function("!document.getElementById('loading')", timeout=60000, polling=500)
+        pg.wait_for_function("Object.keys(AI_HULL_DATA).length>=25||(typeof HULLS_LOAD!=='undefined'&&HULLS_LOAD.state==='done')", timeout=400000, polling=1000)
+        try: pg.wait_for_function("!document.getElementById('loading')", timeout=20000, polling=500)
+        except Exception: pg.evaluate("document.querySelectorAll('#loading,#hullwait').forEach(e=>e.remove()); 0")
         if 'rocks' in MODES:
             for shape in (os.environ.get('SHAPES') or 'dense,split').split(','):
                 battle(pg,"{obj:'rout',shape:'%s',map:'belt',pf:'ithar',ef:'hegemony'}"%shape)
-                print('facets',pg.evaluate("G.scene.meshes.filter(m=>/^rockFacet|^rockBaselo/.test(m.name)).map(m=>m.name+':'+m.thinInstanceCount+':'+m.isVisible+':'+(m.material&&m.material.isReady(m,true))).join(' ')"))
+                try: pg.wait_for_function("typeof ROCK_LIB==='undefined'||!!ROCK_LIB.sets[ROCK_SET[B.biome&&B.biome.rock]||'RST']", timeout=90000, polling=1000); pg.wait_for_timeout(1500)
+                except Exception as e: print('rock library not loaded',str(e)[:80])
+                print('facets',pg.evaluate("(B.biome&&B.biome.rock)+' '+G.scene.meshes.filter(m=>/^rockFacet|^rockBaselo|^rockLib/.test(m.name)&&m.isEnabled()).map(m=>m.name+':'+m.thinInstanceCount+':'+m.isVisible+':'+(m.material&&m.material.isReady(m,true))).join(' ')"))
                 cam(pg,"G.ctl.reset(); G.ctl.attract=false; G.ctl.estab=null; 0"); shot(pg,f'{name}_rocks_{shape}_wide')
                 print(pg.evaluate(ROCKCAM%(90 if not mob else 110,'.86'))); cam(pg,ROCKCAM%(90 if not mob else 110,'.86')); shot(pg,f'{name}_rocks_{shape}_close')
         if 'ithar' in MODES:
