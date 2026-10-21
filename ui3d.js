@@ -279,6 +279,7 @@ function boardMarks(){ if(!B||B.showcase||!G.views||!fpEnsure()) return;
   const U=B.units, hide=!!G.cineHidePlates; let h=hide?3:7, n=0;
   for(let i=0;i<U.length;i++){ const u=U[i], v=G.views.get(u.id); let k=0; if(!hide&&fpOn(u,v)){ k=1+(u.q+64)*997+(u.r+64)*31+(u.side==='player'?3:5)+fpLevel(u)*7+(u.isSq?11:0); n++; } h=(Math.imul(h,31)+k)|0; }
   if(h!==FP.hash){ FP.hash=h; fpRebuild(n); }
+  { const r=G.cam?G.cam.radius:300, k=Math.round(clamp((r-30)/120,.2,1)*20)/20, mt=FP.fill.material; if(mt&&mt.alpha!==k*.999) mt.alpha=k*.999; } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
   fpShadows(); }
 function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
   const M=FP.mbuf, F=FP.fcol, U=B.units; let i=0;
