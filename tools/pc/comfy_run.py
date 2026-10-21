@@ -76,7 +76,7 @@ def views(code, seeds=2, which=None, src=None, tag=''):
     log('VIEWS DONE', code)
 
 # ---------- mesh: Pixal3D multi-view, from the official template (UI json -> API) ----------
-def ui_to_api(wf, info, skip_types=('Note', 'MarkdownNote', 'PreviewImage', 'Preview3DAdvanced', 'Reroute')):
+def ui_to_api_unused(wf, info, skip_types=('Note', 'MarkdownNote', 'PreviewImage', 'Preview3DAdvanced', 'Reroute')):
     links = {}
     for l in wf.get('links', []):
         if isinstance(l, list): links[l[0]] = (str(l[1]), l[2])
@@ -112,47 +112,63 @@ def prune(api, outs):
         for v in api[k]['inputs'].values():
             if isinstance(v, list) and len(v) == 2 and isinstance(v[0], str): st.append(v[0])
     return {k: v for k, v in api.items() if k in keep}
-def mesh(code, res=1536, tris=2000000, fov=20.0, int8=False, cams=None, tag=''):
+def pixal_api(code, views, cams=None, res=1536, tris=2000000, remesh=768, qef=True, tex=4096, tag='', fov=20.0, unet='pixal3d_multiview_bf16.safetensors'):
+    """Pixal3D multi-view chain, written out from the official template (3d_pixal3d_multi_views.json) with its settings.
+    views: list of names with images at mv{tag}/{code}_{name}.png; cams: None (built-in rig; names must be front/left/back/right) or list of (az, el)."""
+    A = {}
+    def n(k, t, **i): A[k] = {'class_type': t, 'inputs': i}; return k
+    n('unet', 'UNETLoader', unet_name=unet, weight_dtype='default'); n('dino', 'CLIPVisionLoader', clip_name='dino_v3_L_naf_fp32.safetensors')
+    n('svae', 'VAELoader', vae_name='trellis_2_shape_vae_bf16.safetensors'); n('tvae', 'VAELoader', vae_name='trellis_2_texture_vae_bf16.safetensors')
+    for v in views: n('L_' + v, 'LoadImage', image=f'mv{tag}/{code}_{v}.png')
+    if cams: n('cond', 'VoidswornPixal3DViews', clip_vision_model=['dino', 0], fov=fov, cams=';'.join(f'{a},{e}' for a, e in cams), **{f'view{k + 1}': ['L_' + v, 0] for k, v in enumerate(views)})
+    else: n('cond', 'Pixal3DMultiViewConditioning', clip_vision_model=['dino', 0], fov=fov, **{v: ['L_' + v, 0] for v in views})
+    # sparse structure
+    n('cfgA', 'CFGOverride', model=['unet', 0], cfg=1.0, start_percent=0.667, end_percent=1.0); n('rsA', 'RescaleCFG', model=['cfgA', 0], multiplier=0.7); n('msA', 'ModelSamplingSD3', model=['rsA', 0], shift=5.0)
+    n('emp', 'EmptyTrellis2LatentStructure', batch_size=1)
+    n('ks1', 'KSampler', model=['msA', 0], seed=56, steps=12, cfg=7.5, sampler_name='euler', scheduler='normal', positive=['cond', 0], negative=['cond', 1], latent_image=['emp', 0], denoise=1.0)
+    n('struct', 'VaeDecodeStructureTrellis2', samples=['ks1', 0], vae=['svae', 0], resolution='32')
+    # shape 512 then cascade to res
+    n('cfgB', 'CFGOverride', model=['unet', 0], cfg=1.0, start_percent=0.769, end_percent=1.0); n('rsB', 'RescaleCFG', model=['cfgB', 0], multiplier=0.5)
+    n('ss', 'Trellis2ShapeStage', positive=['cond', 0], negative=['cond', 1], voxel=['struct', 0])
+    n('ks2', 'KSampler', model=['rsB', 0], seed=42, steps=20, cfg=7.5, sampler_name='euler', scheduler='normal', positive=['ss', 0], negative=['ss', 1], latent_image=['ss', 2], denoise=1.0)
+    n('up', 'Trellis2UpsampleStage', positive=['ss', 0], negative=['ss', 1], shape_latent=['ks2', 0], vae=['svae', 0], target_resolution=res)
+    n('ks3', 'KSampler', model=['rsB', 0], seed=42, steps=12, cfg=7.5, sampler_name='euler', scheduler='simple', positive=['up', 0], negative=['up', 1], latent_image=['up', 2], denoise=1.0)
+    # texture
+    n('ts', 'Trellis2TextureStage', positive=['up', 0], negative=['up', 1], shape_latent=['ks3', 0])
+    n('ks4', 'KSampler', model=['unet', 0], seed=43, steps=12, cfg=1.0, sampler_name='euler', scheduler='normal', positive=['ts', 0], negative=['ts', 1], latent_image=['ts', 2], denoise=1.0)
+    n('shape', 'VaeDecodeShapeTrellis', samples=['ks3', 0], vae=['svae', 0]); n('vox', 'VaeDecodeTextureTrellis', samples=['ks4', 0], vae=['tvae', 0], shape_subdivides=['shape', 1])
+    # clean surface (udf remesh; QEF keeps hard-surface edges sharp), decimate, unwrap, bake
+    n('info', 'GetMeshInfo', mesh=['shape', 0])
+    n('rem', 'RemeshMesh', mesh=['info', 0], resolution=remesh, sign_mode='udf', **{'sign_mode.qef': qef, 'sign_mode.drop_inverted_components': False, 'sign_mode.drop_enclosed_components': False},
+      band=1.0, project_back=0.0, fix_poles=False, smooth_iters=20, drop_small_components=0.01, precluster_max_verts=20000000)
+    n('dec', 'DecimateMesh', mesh=['rem', 0], target_face_count=tris, placement_mode='midpoint'); n('sm', 'MeshSmoothNormals', mesh=['dec', 0], crease_angle=180.0)
+    n('uv', 'UnwrapMesh', mesh=['sm', 0], segmenter='pec', resolution=tex, padding=1, weld_distance=0.0002)
+    n('bake', 'BakeTextureFromVoxel', mesh=['uv', 0], voxel_colors=['vox', 0], texture_size=tex, reference_mesh=['shape', 0])
+    n('ao', 'BakeAmbientOcclusion', low_poly=['uv', 0], high_poly=['rem', 0], resolution=1024, samples=64, max_distance=0.71, strength=1.0, bias=0.01)
+    n('nm', 'BakeNormalMapFromMesh', low_poly=['uv', 0], high_poly=['rem', 0], resolution=2048, cage_distance=0.05, ignore_backfaces=True)
+    n('apply', 'ApplyTextureToMesh', mesh=['uv', 0], base_color=['bake', 0], metallic=['bake', 1], roughness=['bake', 2], occlusion=['ao', 0], normal_map=['nm', 0])
+    n('sm2', 'MeshSmoothNormals', mesh=['apply', 0], crease_angle=180.0)
+    n('o_tex', 'SaveGLB', mesh=['sm2', 0], filename_prefix=f'mesh/{code}{tag}_pixal_tex')
+    n('o_rem', 'SaveGLB', mesh=['rem', 0], filename_prefix=f'mesh/{code}{tag}_pixal_remesh')
+    n('o_raw', 'SaveGLB', mesh=['shape', 0], filename_prefix=f'mesh/{code}{tag}_pixal_raw')
+    for k, i in (('o_base', 0), ('o_met', 1), ('o_rough', 2)): n(k, 'SaveImage', images=['bake', i], filename_prefix=f'mesh/{code}{tag}_{k[2:]}')
+    return A
+def mesh(code, views, cams=None, tag='', **kw):
     d = os.path.join(IO_, code); p = start(d)
     try:
-        info = get('/object_info'); wf = json.load(open(os.path.join(REF, '3d_pixal3d_multi_views.json'), encoding='utf-8'))
-        api = ui_to_api(wf, info)
-        api['319']['inputs']['unet_name'] = 'pixal3d_multiview_int8_convrot.safetensors' if int8 else 'pixal3d_multiview_bf16.safetensors'
-        if cams:  # free cameras: name:az,el;name:az,el;... -> custom node VoidswornPixal3DViews (views mv/CODE_name.png)
-            spec = [c.split(':') for c in cams.split(';') if c.strip()]
-            api['324'] = {'class_type': 'VoidswornPixal3DViews', 'inputs': {'clip_vision_model': api['324']['inputs']['clip_vision_model'], 'fov': fov, 'cams': ';'.join(c[1] for c in spec)}}
-            for i, (nm, _) in enumerate(spec):
-                api['L' + nm] = {'class_type': 'LoadImage', 'inputs': {'image': f'mv{tag}/{code}_{nm}.png'}}; api['324']['inputs'][f'view{i + 1}'] = ['L' + nm, 0]
-        else:
-            for v in ('front', 'left', 'back', 'right'):  # prepared views: square, black backdrop, one shared scale (made in the sandbox)
-                if os.path.exists(os.path.join(d, 'mv' + tag, f'{code}_{v}.png')):
-                    api['L' + v] = {'class_type': 'LoadImage', 'inputs': {'image': f'mv{tag}/{code}_{v}.png'}}; api['324']['inputs'][v] = ['L' + v, 0]
-                else: api['324']['inputs'].pop(v, None)
-            api['324']['inputs']['fov'] = fov
-        api['94']['inputs']['target_resolution'] = res
-        for k, v in list(api['186']['inputs'].items()):
-            if isinstance(v, int) and not isinstance(v, bool): api['186']['inputs'][k] = tris
-        log('decimate', api['186']['inputs'], 'remesh', api['241']['inputs'])
-        pk = next((k for k, v in api['372']['inputs'].items() if isinstance(v, str) and v.startswith('3d/')), 'filename_prefix')  # the save node's prefix widget
-        mk = next((k for k, v in api['372']['inputs'].items() if isinstance(v, list)), 'model_3d')
-        log('save inputs', api['372']['inputs'], 'mesh2file', api['285']['inputs'] if '285' in api else '')
-        api['372']['inputs'][pk] = f'mesh/{code}{tag}_pixal_tex'
-        api['M1'] = dict(api['285'], inputs=dict(api['285']['inputs'], mesh=['241', 0])) if '285' in api else {'class_type': 'MeshToFile3D', 'inputs': {'mesh': ['241', 0]}}
-        api['S1'] = {'class_type': 'Save3DAdvanced', 'inputs': dict(api['372']['inputs'], **{mk: ['M1', 0], pk: f'mesh/{code}{tag}_pixal_hi'})}
-        api['M2'] = dict(api['M1'], inputs=dict(api['M1']['inputs'], mesh=['92', 0]))
-        api['S2'] = {'class_type': 'Save3DAdvanced', 'inputs': dict(api['372']['inputs'], **{mk: ['M2', 0], pk: f'mesh/{code}{tag}_pixal_raw'})}
-        api = prune(api, ['372', 'S1', 'S2'])
-        json.dump(api, open(os.path.join(d, f'{code}{tag}_mesh_api.json'), 'w'), indent=1)
-        log('mesh api nodes', len(api))
-        run(api, f'{code} pixal3d mv res {res}', timeout=7200)
+        api = pixal_api(code, views, cams, tag=tag, **kw); json.dump(api, open(os.path.join(d, f'{code}{tag}_mesh_api.json'), 'w'), indent=1)
+        log('mesh', code, tag, views, cams, kw); run(api, f'{code}{tag} pixal3d', timeout=7200)
     finally: p.terminate(); p.wait(30)
-    log('MESH DONE', code)
+    log('MESH DONE', code, tag)
 
 if __name__ == '__main__':
     os.makedirs(IO_, exist_ok=True); a = sys.argv[1:]
     try:
         if a[0] == 'views': views(a[1], int(a[2]) if len(a) > 2 else 2, a[3].split(';') if len(a) > 3 else None, a[4] if len(a) > 4 else None, a[5] if len(a) > 5 else '')
-        elif a[0] == 'mesh':  # mesh CODE res tris [cams|-] [tag]
-            mesh(a[1], int(a[2]) if len(a) > 2 else 1536, int(a[3]) if len(a) > 3 else 2000000, cams=(a[4] if len(a) > 4 and a[4] != '-' else None), tag=(a[5] if len(a) > 5 else ''))
+        elif a[0] == 'mesh':  # mesh CODE TAG views(front,left,..) [cams az,el;az,el|-] [res] [tris] [remesh] [qef 1|0]
+            cams = [tuple(float(x) for x in c.split(',')) for c in a[4].split(';')] if len(a) > 4 and a[4] != '-' else None
+            kw = {}
+            for k, v in zip(('res', 'tris', 'remesh', 'qef'), a[5:]): kw[k] = (v == '1') if k == 'qef' else int(v)
+            mesh(a[1], a[3].split(','), cams, tag=a[2], **kw)
     except Exception as e:
         import traceback; log('FAILED', repr(e)); log(traceback.format_exc())
