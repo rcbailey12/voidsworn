@@ -16,11 +16,13 @@ GUNS = []  # (base, tip)
 for x0, x1 in ((-.045, -.059), (.248, .250)):
     for s in (1, -1): GUNS.append((Vector((x0, s * .100, .006)), Vector((x1, s * .145, .080))))
 BOXES = [  # (x0, x1, y0, y1, z0, z1): AI geometry to cut away (all above the deck or tower roof)
-    (.130, .300, -.065, .065, .076, .170),   # rocket rack
+    (.130, .300, -.088, .088, .056, .170),   # rocket rack (its AI ends ran wider than the tubes) and the crumpled AI base under it
     (.176, .228, -.030, .030, .062, .170),   # rack column and dome
     (.054, .097, -.030, .030, .062, .172),   # funnels
     (-.012, .062, -.040, .040, .110, .250),  # mast
     (-.100, .068, -.088, .088, .058, .140),  # bridge tier, its drums and roof tank (owner, Oct 21: soft and blobby near the bridge)
+    (.155, .310, .178, .4, -.165, -.088), (.155, .310, -.4, -.178, -.165, -.088),  # aft side casemates and long cannons (owner, Oct 21: big side guns blobby)
+    (.310, .450, .035, .120, -.066, 0.), (.310, .450, -.120, -.035, -.066, 0.),     # stern deck guns and their lamp row
     (-.60, XS, -.4, .4, -.4, .4),             # the whole bow forward of the superstructure (owner, Oct 21: wavy and messy), rebuilt as a clean loft below
 ]
 def seg_d(p, a, b):
@@ -96,7 +98,7 @@ tag(GUN)
 x0, x1, zb, zt = -.088, .059, .056, .102
 box('plinth', ((x0 + x1) / 2 + .004, 0, zb + .002), (x1 - x0 + .016, .170, .014), bevel=.002); tag(STEEL)
 frustum('tier', ((x0 + x1) / 2, 0, zb), ((x1 - x0) / 2, .056), ((x1 - x0) / 2 - .010, .050), zt - zb, shear=(.010, 0), bevel=.003); tag(RED)
-box('roof', ((x0 + x1) / 2 + .010, 0, zt + .002), (x1 - x0 - .018, .098, .004), bevel=.001); tag(STEEL)
+box('roof', ((x0 + x1) / 2 + .010, 0, zt + .002), (x1 - x0 - .018, .098, .004), bevel=.001); tag(RED)  # red like the concept (steel read as a pale slab in game)
 sl = math.atan2(.020, zt - zb)  # front slope
 box('winband', (x0 + .006, 0, zt - .010), (.004, .094, .012), rot=(0, -sl, 0), bevel=.001); tag(DARK)
 for k in range(8): box(f'light{k}', (x0 + .0035, -.040 + k * .0114, zt - .010), (.002, .006, .004), rot=(0, -sl, 0), bevel=0)
@@ -148,6 +150,40 @@ for s_ in (1, -1):
     for k in (0, 1):
         for e in (1, -1): cyl(f'deckdrumring{s_}{k}{e}', (-.278 + k * .024, s_ * .072 + e * .009, zdk + .010), .0101, .002, axis='Y', seg=24, bevel=0)
     tag(GUN)
+# aft side guns, one matched set per side (concept side view): an oval casemate on the flank with a long barrel aimed aft along the side,
+# a long cannon on brackets above it, and on the stern deck a gun housing with twin barrels aimed aft, an orange lamp, and a row of deck lamps
+def ellipsoid(name, c, r):
+    b_ = bmesh.new(); bmesh.ops.create_uvsphere(b_, u_segments=32, v_segments=16, radius=1)
+    for v in b_.verts: v.co = Vector((v.co.x * r[0], v.co.y * r[1], v.co.z * r[2]))
+    bmesh.ops.translate(b_, verts=b_.verts, vec=c); return hs_lib._obj(name, b_, 0)
+LAMP = (1.0, .30, .04)
+for s_ in (1, -1):
+    p_, _ = surf_in(.192, s_, -.130); yf = abs(p_.y) if p_ is not None else .165; yf = min(max(yf, .150), .180)
+    box(f'casemate{s_}', (.192, s_ * (yf + .006), -.130), (.096, .034, .054), bevel=.011); tag(STEEL)  # armoured casemate, heavily rounded
+    box(f'casematelid{s_}', (.196, s_ * (yf + .0235), -.122), (.070, .004, .022), bevel=.002); tag(GUN)
+    for k in range(5): box(f'casemateband{s_}{k}', (.170 + k * .011, s_ * (yf + .0258), -.137), (.004, .002, .014), bevel=0)
+    tag(DARK)
+    a_ = Vector((.226, s_ * (yf + .018), -.133)); barrel(f'casegun{s_}', a_, (1, s_ * .05, -.01), .095, .0055); tag(GUN)
+    p2, _ = surf_in(.240, s_, -.098); y2 = abs(p2.y) if p2 is not None else .170; y2 = min(max(y2, .160), .195) + .010
+    cyl(f'longgun{s_}', (.240, s_ * y2, -.098), .0065, .175, axis='X', seg=20, bevel=.0008); cyl(f'longgunm{s_}', (.333, s_ * y2, -.098), .0085, .012, axis='X', seg=20, bevel=.0008)
+    for k in range(4): cyl(f'longgunring{s_}{k}', (.175 + k * .045, s_ * y2, -.098), .0074, .004, axis='X', seg=20, bevel=0)
+    tag(GUN)
+    for xb in (.185, .290): box(f'longgunbracket{s_}{xb}', (xb, s_ * (y2 - .008), -.098), (.010, .012, .008), bevel=.001)
+    tag(STEEL)
+    # stern deck gun: housing on a pedestal, a heavy lower barrel and a lighter upper one, both aimed aft
+    hz, _ = surf_down(.365, s_ * .070, .0); zdk_ = hz.z if hz is not None else -.068
+    box(f'sternped{s_}', (.365, s_ * .070, (zdk_ + -.056) / 2), (.030, .022, max(.004, -.056 - zdk_ + .004)), bevel=.001); tag(STEEL)
+    cyl(f'sternhouse{s_}', (.368, s_ * .070, -.044), .0125, .075, axis='X', seg=28, bevel=.0015); cyl(f'sterncap{s_}', (.331, s_ * .070, -.044), .0105, .004, axis='X', seg=28, bevel=.001); tag(STEEL)
+    barrel(f'sternbig{s_}', (.404, s_ * .070, -.044), (1, 0, 0), .055, .0060); barrel(f'sternsmall{s_}', (.345, s_ * .070, -.027), (1, 0, 0), .100, .0040); tag(GUN)
+    box(f'sternstrut{s_}', (.372, s_ * .070, -.034), (.008, .005, .012), bevel=0); tag(GUN)
+    cyl(f'sternlamp{s_}', (.381, s_ * (.070 + .0125), -.041), .0055, .003, axis='Y', seg=20, bevel=0); tag(LAMP)
+    for k in range(5):
+        hz, _ = surf_down(.330 + k * .022, s_ * .100, .0); zl = hz.z if hz is not None else -.068
+        cyl(f'decklamp{s_}{k}', (.330 + k * .022, s_ * .100, zl + .002), .0045, .004, seg=16, bevel=0)
+        bm4 = bmesh.new(); bmesh.ops.create_uvsphere(bm4, u_segments=16, v_segments=8, radius=.0042)
+        for v in bm4.verts: v.co.z = max(v.co.z, 0) * .8
+        bmesh.ops.translate(bm4, verts=bm4.verts, vec=(.330 + k * .022, s_ * .100, zl + .004)); hs_lib._obj(f'decklampdome{s_}{k}', bm4, 0)
+    tag(LAMP)
 for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
     c = DARK if o.name.startswith('bore') or 'band' in o.name else COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for d in a.data: d.color = (c[0], c[1], c[2], 1)
