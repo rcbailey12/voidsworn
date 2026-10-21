@@ -1,0 +1,113 @@
+// ======================= LOADING AND PHONE PERFORMANCE (v53) =======================
+// is anything on screen moving? phones render every frame while it is, and skip frames only when the board is still
+function sceneAnimating(){ try{
+    if(G.tweens>0) return true;
+    if(typeof B!=='undefined'&&B&&(B.busy||B.ending&&!document.getElementById('endcard'))) return true;
+    if(PROJ.length||TORPS.size) return true;
+    if(performance.now()-G.lastInput<700) return true; // a finger on the glass: camera drags stay smooth
+    for(const h of G.hulks||[]) if(G.time-h.t0<8) return true;
+    const c=G.cam, k=G.ctl; if(c&&k&&!k.attract&&(Math.abs(k.a-c.alpha)>.01||Math.abs(k.b-c.beta)>.01||Math.abs(k.r-c.radius)>1||V3.DistanceSquared(k.t,c.target)>.25)) return true;
+    for(const v of G.views.values()){ if(v.arrive||v.launch||v.slide||v.jolt||v.state==='dying'||(v.u&&v.u.vis)) return true; const C=v.coast; if(C&&C.vc>.3) return true; const P=v.ph; if(P&&Math.abs(P.vx)+Math.abs(P.vz)>1.5) return true; /* above the hold-station sway */ }
+  }catch(e){} return false; }
+
+// ---------- hulls: the first battle waits for the fetch (started before the title), with a progress line ----------
+function hullTag(){ try{ const h=hullPath(); return h.path+' '+h.loaded+'/'+h.total+(h.failed?' ('+h.failed+' failed)':'')+(h.state==='loading'?' loading':''); }catch(e){ return null; } }
+function hullProgressUI(){ const S=HULLS_LOAD; let el=document.getElementById('hullprog');
+  if(S.state!=='loading'){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement('div'); el.id='hullprog'; el.setAttribute('aria-live','polite'); el.style.cssText='position:fixed;right:12px;bottom:10px;z-index:60;font-size:12px;opacity:.75;pointer-events:none;color:var(--bone,#ddd);font-variant-numeric:tabular-nums'; document.body.appendChild(el); }
+  el.textContent='Loading ship hulls '+(S.loaded+S.failed)+'/'+S.total; }
+function startHullLoad(){ try{ HULLS_LOAD.onProgress=()=>{ hullProgressUI(); const w=document.getElementById('hullwait'); if(w){ const b=w.querySelector('b'); if(b) b.textContent=(HULLS_LOAD.loaded+HULLS_LOAD.failed)+'/'+HULLS_LOAD.total; } };
+    const p=loadAIHulls(); hullProgressUI(); p.then(()=>hullProgressUI(),()=>hullProgressUI()); }catch(e){ console.warn('hull load',e); } }
+// a battle started while the fetch is still running shows a short wait (never more than 12 s, with a skip) instead of building procedural ships
+function whenHullsReady(go){ const S=HULLS_LOAD; if(S.state!=='loading'||!aiHullsOn()||!S.promise) return go();
+  if(document.getElementById('hullwait')) return; // a second tap while waiting does not queue a second battle
+  let done=false; const t0=performance.now();
+  const fin=why=>{ if(done) return; done=true; clearTimeout(to); const w=document.getElementById('hullwait'); if(w) w.remove(); try{ tel('hull_wait',{ms:Math.round(performance.now()-t0),why,hulls:hullTag()}); }catch(e){} go(); };
+  const to=setTimeout(()=>fin('timeout'),12000);
+  const w=document.createElement('div'); w.id='hullwait'; w.className='hud'; w.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:80;padding:16px 22px;text-align:center;background:rgba(6,10,18,.88);border:1px solid rgba(160,190,230,.25);border-radius:8px';
+  w.innerHTML='<div>Loading ship hulls <b class="num">'+(S.loaded+S.failed)+'/'+S.total+'</b></div><button style="margin-top:10px" data-hullskip="1">Start now</button>';
+  w.querySelector('button').addEventListener('click',()=>fin('skip')); document.body.appendChild(w);
+  S.promise.then(()=>fin('done'),()=>fin('error')); }
+{ const _bs=battleScreen; battleScreen=function(cfg){ return whenHullsReady(()=>_bs(cfg)); }; }
+{ const _sk=ACT.c3skirmish; ACT.c3skirmish=function(){ return whenHullsReady(()=>_sk.apply(this,arguments)); }; }
+// every battle's telemetry says which hull path it was built with
+{ const _tel=tel; tel=function(ev,d){ if(ev==='battle_start'||ev==='battle_end'||ev==='session') d=Object.assign({hulls:hullTag()},d||{}); if(ev==='battle_end'&&PERFCAP.on) d.prof=PERFCAP.summary||null; return _tel(ev,d); }; }
+
+// ---------- ?prof=1 (or Settings > Profiler): Babylon's performance collector for one battle, exported as CSV ----------
+const PERFCAP={on:false,added:false,col:null,summary:null,csv:null};
+function profWanted(){ try{ return /[?&]prof=1\b/.test(location.search)||!!(META.opts&&META.opts.prof); }catch(e){ return false; } }
+function profSetup(){ if(PERFCAP.added||!G.scene) return; const S=BABYLON.PerfCollectionStrategy; if(!S||!G.scene.getPerfCollector) return;
+  const col=G.scene.getPerfCollector(), list=[['FpsStrategy'],['FrameTotalStrategy'],['RenderStrategy'],['InterFrameStrategy'],['DrawCallsStrategy'],['ActiveMeshesStrategy'],['ActiveIndicesStrategy'],['TotalTexturesStrategy'],['ActiveParticlesStrategy'],['GpuFrameTimeStrategy']];
+  for(const [k] of list){ try{ if(typeof S[k]==='function') col.addCollectionStrategies({strategyCallback:S[k](),category:'voidsworn'}); }catch(e){ console.warn('perf strategy',k,e); } }
+  PERFCAP.col=col; PERFCAP.added=true; }
+function profStart(){ if(!PERFCAP.on) return; try{ profSetup(); if(!PERFCAP.col) return; if(PERFCAP.col.isStarted) PERFCAP.col.stop(); PERFCAP.col.start(false); PERFCAP.summary=null; PERFCAP.csv=null; PERFCAP.t0=performance.now(); }catch(e){ console.warn('profiler',e); } }
+function profSetOn(on){ PERFCAP.on=!!on; if(PERFCAP.on){ profStart(); } else if(PERFCAP.col&&PERFCAP.col.isStarted) PERFCAP.col.stop(); }
+// the collector writes its CSV through BABYLON.Tools.Download; borrow it for a moment to get the text instead
+function profCsv(){ if(!PERFCAP.col) return null; const T=BABYLON.Tools, keep=T.Download; let txt=null; T.Download=(blob)=>{ txt=blob; }; try{ PERFCAP.col.exportDataToCsv(); }finally{ T.Download=keep; } return txt; }
+function profSummarize(text){ const lines=text.split('\n').filter(Boolean); if(lines.length<2) return null; const head=lines[0].split(','), cols=head.slice(2).map(h=>h.replace(/@.*$/,'')), vals=cols.map(()=>[]);
+  for(let i=1;i<lines.length;i++){ const r=lines[i].split(','); for(let c=0;c<cols.length;c++){ const x=parseFloat(r[c+2]); if(isFinite(x)) vals[c].push(x); } }
+  const out={frames:lines.length-1,secs:Math.round((performance.now()-(PERFCAP.t0||0))/1000),q:G.quality,mob:!!G.mobile,rw:G.engine.getRenderWidth(),rh:G.engine.getRenderHeight(),hulls:hullTag()};
+  cols.forEach((n,c)=>{ const a=vals[c].sort((x,y)=>x-y); if(!a.length) return; const q=p=>Math.round(a[Math.min(a.length-1,Math.floor(a.length*p))]*100)/100; const key=n.replace(/[^A-Za-z]+/g,'_').replace(/^_|_$/g,'').toLowerCase(); out[key]={p50:q(.5),p90:q(.9),p99:q(.99),max:q(1)}; });
+  return out; }
+function profBattleEnd(){ if(!PERFCAP.on||!PERFCAP.col) return; try{ const blob=profCsv(); PERFCAP.col.stop(); if(!blob) return;
+    blob.text().then(t=>{ PERFCAP.csv=t; PERFCAP.summary=profSummarize(t); try{ tel('perf_prof',PERFCAP.summary||{}); }catch(e){} console.info('[prof] '+JSON.stringify(PERFCAP.summary)); profButton(); }); }catch(e){ console.warn('profiler export',e); } }
+function profButton(){ const card=document.getElementById('endcard'); if(!card||card.querySelector('[data-profcsv]')||!PERFCAP.csv) return; const row=document.createElement('div'); row.className='row'; row.style.cssText='justify-content:center;margin-top:10px';
+  const s=PERFCAP.summary||{}, ft=s.frame_total_time||s.frame_total||null; row.innerHTML='<button data-profcsv="1">Download perf CSV</button><button data-profcopy="1">Copy perf CSV</button>'+(ft?'<span class="muted num" style="margin-left:8px">frame p50 '+ft.p50+' ms, p90 '+ft.p90+' ms</span>':'');
+  row.querySelector('[data-profcsv]').addEventListener('click',profDownload); row.querySelector('[data-profcopy]').addEventListener('click',profCopy); card.appendChild(row); }
+async function profDownload(){ const csv=PERFCAP.csv; if(!csv) return; const name='voidsworn-perf-'+(typeof BUILD_ID!=='undefined'?BUILD_ID:'dev')+'-'+new Date().toISOString().replace(/[:.]/g,'-').slice(0,19)+'.csv';
+  try{ const dl=window.claude&&typeof window.claude.use==='function'?await window.claude.use('downloads'):null; // claude.ai artifact: the viewer confirms the save
+    if(dl){ try{ await dl.save({filename:name,data:new Blob([csv],{type:'text/csv'})}); toast('Perf CSV saved.'); return; }catch(e){ if(e&&e.code==='declined') return; console.warn('downloads',e); } } }catch(e){}
+  try{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000); toast('Perf CSV download started. If nothing appears, use Copy perf CSV.'); }catch(e){ profCopy(); } }
+function profCopy(){ const csv=PERFCAP.csv; if(!csv) return; const manual=()=>modal('<h2>Perf CSV</h2><p class="muted">Select all and copy:</p><textarea readonly style="width:100%;height:240px;font-size:11px" onclick="this.select()">'+esc(csv)+'</textarea><div class="row" style="margin-top:10px"><button class="primary" data-act="c3optClose">Done</button></div>');
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(csv).then(()=>toast('Perf CSV copied ('+Math.round(csv.length/1024)+' KB).'),manual); else manual(); }catch(e){ manual(); } }
+// one capture per battle: restart with each battle's frame counters, export when the end card appears
+{ const _r=FRAMES.reset; FRAMES.reset=function(){ const x=_r.apply(this,arguments); if(PERFCAP.on) profStart(); return x; }; }
+{ const _e=endBattleFlow; endBattleFlow=async function(){ const x=await _e.apply(this,arguments); try{ profBattleEnd(); }catch(e){} return x; }; }
+// Settings: a Profiler row under the others
+{ const _h=settingsHtml; settingsHtml=function(){ const h=_h(); const row=`<div class="row" style="margin:6px 0"><span style="flex:1">Profiler (perf CSV after each battle)</span><button data-act="c3opt" data-arg="prof">${PERFCAP.on?'On':'Off'}</button></div>`; const at=h.lastIndexOf('<div class="row" style="margin-top:14px">'); return at>0?h.slice(0,at)+row+h.slice(at):h+row; }; }
+{ const _o=ACT.c3opt; ACT.c3opt=function(k){ if(k==='prof'){ META.opts=META.opts||{}; META.opts.prof=!PERFCAP.on; profSetOn(META.opts.prof); toast(PERFCAP.on?'Profiler on: a perf CSV is offered at the end of each battle':'Profiler off'); } return _o.apply(this,arguments); }; }
+
+// ---------- scene-graph diet (v53): less per-frame Babylon bookkeeping, same pixels ----------
+// glow layer: Babylon 8 keeps the exclusion list on the thin layer, so disposeAllViews' prune never reached it and the list grew every battle;
+// hasMesh() ran indexOf over that list for every submesh every frame. Now: a Set lookup, and the list is pruned when views are cleared.
+function glowThin(){ return G.glow&&(G.glow._thinEffectLayer||G.glow); }
+function glowFastHasMesh(){ const L=glowThin(); if(!L||L._fastHas) return; L._fastHas=true; let arr=null,len=-1,set=null;
+  L.hasMesh=function(m){ if(this.renderingGroupId!==-1&&m.renderingGroupId!==this.renderingGroupId) return false; const inc=this._includedOnlyMeshes; if(inc&&inc.length) return inc.indexOf(m.uniqueId)!==-1;
+    const ex=this._excludedMeshes; if(!ex||!ex.length) return true; if(ex!==arr||ex.length!==len){ arr=ex; len=ex.length; set=new Set(ex); } return !set.has(m.uniqueId); }; }
+function prunePassLists(){ try{ const ids=new Set(G.scene.meshes.map(m=>m.uniqueId)), L=glowThin();
+    if(L&&L._excludedMeshes&&L._excludedMeshes.length){ const keep=L._excludedMeshes.filter(id=>ids.has(id)); L._excludedMeshes.length=0; L._excludedMeshes.push(...keep); }
+    if(L&&L._includedOnlyMeshes&&L._includedOnlyMeshes.length){ const keep=L._includedOnlyMeshes.filter(id=>ids.has(id)); L._includedOnlyMeshes.length=0; L._includedOnlyMeshes.push(...keep); }
+    if(G.vls&&G.vls.excludedMeshes) G.vls.excludedMeshes=G.vls.excludedMeshes.filter(m=>m&&!m.isDisposed()); }catch(e){ console.warn('prune',e); } }
+{ const _d=disposeAllViews; disposeAllViews=function(){ const x=_d.apply(this,arguments); prunePassLists(); return x; }; }
+// rocks: the decorative field far below the board stops spinning (nobody can see it turn) and its world matrices freeze;
+// rocks on and around the board keep turning, a quarter of them each frame with four frames of rotation (same speed, a quarter of the matrix work)
+const DIET={spin:[],k:0,frozen:[],watch:null,obs:null};
+function dietRocks(){ const all=G.rocks||[]; DIET.spin=[]; for(const r of all){ if(!r||r.isDisposed()) continue; if(!r.parent&&r.position.y<-30&&r instanceof BABYLON.InstancedMesh){ r.freezeWorldMatrix(); r.doNotSyncBoundingInfo=true; } else { r._st=G.time; DIET.spin.push(r); } } G.rocks=[]; }
+// shadows: the cascaded shadow map re-renders when a ship or wreck moves or turns, when the camera moves (the cascades follow it), and every
+// fourth frame otherwise (hold-station bob and sway); a still board no longer redraws every caster three times a frame
+function shipsMoving(){ for(const h of G.hulks||[]) if(G.time-h.t0<25&&!h.burnedOut) return true; for(const v of G.views.values()){ if(v.arrive||v.launch||v.slide||v.jolt||v.state==='dying'||(v.u&&v.u.vis)) return true; const C=v.coast; if(C&&C.vc>.05) return true; const P=v.ph; if(P&&(Math.abs(P.vx)+Math.abs(P.vz)>.6||Math.abs(P.va)>.01||Math.abs(P.vr)>.01)) return true; } return false; }
+function dietShadows(){ const sm=G.shadow&&G.sun&&G.sun.shadowEnabled&&G.shadow.getShadowMap&&G.shadow.getShadowMap(); if(!sm) return; const R=BABYLON.RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+  if(sm.refreshRate!==R){ sm.refreshRate=R; } const c=G.cam, t=c.target, key=c.alpha.toFixed(4)+','+c.beta.toFixed(4)+','+c.radius.toFixed(2)+','+t.x.toFixed(2)+','+t.z.toFixed(2)+','+(G.tacScale||1).toFixed(3);
+  const camMoved=key!==DIET.camKey; DIET.camKey=key; DIET.sf=(DIET.sf||0)+1; if(camMoved||DIET.sf%4===0||shipsMoving()) sm.resetRefreshCounter(); }
+function dietTick(){ try{ dietShadows(); }catch(e){} const S=DIET.spin, n=S.length; if(n){ const k=DIET.k++&3; for(let i=k;i<n;i+=4){ const r=S[i]; if(r.isDisposed()) continue; const d=G.time-r._st; r._st=G.time; r.rotation.x+=r.spin.x*d; r.rotation.y+=r.spin.y*d; r.rotation.z+=r.spin.z*d; } }
+  // static battlefield props: after the arrival settles, anything in the environment that has not moved freezes its world matrix; a slow sweep
+  // unfreezes any frozen prop whose transform (or a parent's) is changed later, so nothing that moves can get stuck
+  const W=DIET.watch; if(W){ W.f++; if(W.f===24) W.a=dietSnap(); else if(W.f===60){ dietFreeze(W.a,dietSnap()); DIET.watch=null; } }
+  const F=DIET.frozen; if(F.length){ const step=Math.max(1,Math.ceil(F.length/30)); for(let j=0;j<step;j++){ DIET.fi=((DIET.fi||0)+1)%F.length; const e=F[DIET.fi]; if(!e) continue; if(e.m.isDisposed()){ F.splice(DIET.fi,1); continue; } if(dietLocalKey(e.m)!==e.key){ e.m.unfreezeWorldMatrix(); e.m.doNotSyncBoundingInfo=false; F.splice(DIET.fi,1); } } } }
+function dietLocalKey(m){ let s='', n=m; for(let d=0;n&&d<6;d++,n=n.parent){ const p=n.position, r=n.rotationQuaternion||n.rotation, c=n.scaling; s+=(p?p.x+','+p.y+','+p.z:'')+'|'+(r?r.x+','+r.y+','+r.z+','+(r.w||0):'')+'|'+(c?c.x+','+c.y+','+c.z:'')+'|'+(n.billboardMode||0)+';'; } return s; }
+function dietEnvMeshes(){ const out=new Set(); for(const x of G.env||[]){ if(!x||!x.getClassName) continue; if(x instanceof BABYLON.AbstractMesh) out.add(x); if(x.getChildMeshes) for(const c of x.getChildMeshes(false)) out.add(c); } return [...out]; }
+function dietSnap(){ const m=new Map(); for(const x of dietEnvMeshes()){ if(x.isDisposed()||x.isWorldMatrixFrozen) continue; m.set(x,x.getWorldMatrix().m.slice()); } return m; }
+function dietFreeze(a,b){ if(!a) return; const spin=new Set(DIET.spin); let n=0;
+  for(const [x,A] of a){ const B1=b.get(x); if(!B1||x.isDisposed()||spin.has(x)||x.infiniteDistance||x.skeleton) continue; let bb=false; for(let p=x;p;p=p.parent) if(p.billboardMode){ bb=true; break; } if(bb) continue;
+    let same=true; for(let i=0;i<16;i++) if(Math.abs(A[i]-B1[i])>1e-7){ same=false; break; } if(!same) continue;
+    x.computeWorldMatrix(true); x.freezeWorldMatrix(); x.doNotSyncBoundingInfo=true; DIET.frozen.push({m:x,key:dietLocalKey(x)}); n++; }
+  DIET.lastFrozen=n; }
+// SSAO's geometry buffer (desktop High/Ultra) re-rendered every mesh in the scene, including the decorative rock field, belt and ring far
+// below the board, infinite-distance sky props and billboards, none of which sit inside the AO range in front of the board. It now takes
+// only what can receive or cast contact shadows near the board (and nothing at all while SSAO is off).
+function dietGBuffer(){ try{ const gb=G.scene&&G.scene.geometryBufferRenderer, rt=gb&&gb.getGBuffer&&gb.getGBuffer(); if(!rt||rt._dietPred) return; rt._dietPred=true; const far=/^(rockRing|belt|bank|bstar|bs|galaxy|sun|sunHalo|sky|stars|planet|atmo)/;
+    rt.renderListPredicate=m=>{ if(!G.ssaoOn||!m.isEnabled()||!m.isVisible||m.infiniteDistance||m.billboardMode||far.test(m.name)) return false; const bi=m.getBoundingInfo&&m.getBoundingInfo(); if(!bi) return true; const c=bi.boundingSphere.centerWorld;
+      return c.y>-40&&c.y<120&&Math.abs(c.x)<G.bx*1.6&&Math.abs(c.z)<G.bz*1.6; }; }catch(e){ console.warn('gbuffer diet',e); } }
+function dietEnv(){ try{ glowFastHasMesh(); dietGBuffer(); dietRocks(); DIET.frozen=DIET.frozen.filter(e=>!e.m.isDisposed()); DIET.watch={f:0,a:null};
+    if(!DIET.obs&&G.scene) DIET.obs=G.scene.onBeforeRenderObservable.add(()=>{ try{ dietTick(); }catch(e){} }); }catch(e){ console.warn('diet',e); } }
+{ const _b=buildBattleEnv; buildBattleEnv=function(){ const x=_b.apply(this,arguments); dietEnv(); return x; }; }

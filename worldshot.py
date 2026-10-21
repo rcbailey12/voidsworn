@@ -8,7 +8,8 @@ SIZES=[('desk',{'width':1280,'height':800},False),('phone',{'width':412,'height'
 if os.environ.get('ONLY'): SIZES=[s for s in SIZES if s[0]==os.environ['ONLY']]
 class Q(http.server.SimpleHTTPRequestHandler):
     def log_message(self,*a): pass
-srv=socketserver.TCPServer(('127.0.0.1',0),functools.partial(Q,directory=HERE)); threading.Thread(target=srv.serve_forever,daemon=True).start()
+socketserver.ThreadingTCPServer.daemon_threads=True
+srv=socketserver.ThreadingTCPServer(('127.0.0.1',0),functools.partial(Q,directory=HERE)); threading.Thread(target=srv.serve_forever,daemon=True).start()
 PAGE='http://127.0.0.1:%d/'%srv.server_address[1]+os.environ.get('PAGEFILE','index_test.html')
 HIDE="try{ ACT.tipOff&&ACT.tipOff(); }catch(e){} const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); document.querySelectorAll('.tipcard').forEach(e=>e.remove());"
 def battle(pg,cfg,q='medium'):

@@ -1,0 +1,76 @@
+{
+ "suffix": ", one ship centered and fully visible, three-quarter side view from slightly above, photoreal grimdark space opera concept art, highly detailed hard-surface 3D render, dramatic studio lighting, isolated on plain light grey background, no text",
+ "src": "",
+ "out": "flux11",
+ "done": "ALL DONE R11",
+ "seeds": [
+  11,
+  23,
+  37,
+  51
+ ],
+ "items": [
+  [
+   "V18",
+   "Voidsworn",
+   "Reliquary carrier",
+   "Concept art of a heavy armored carrier shaped like a fortified reliquary, a long low hull with two armored hangar decks along its flanks, glowing launch slits, a short cathedral spine of dark spikes amidships, a menacing grimdark gothic starship, sleek and razor-sharp, angular blackened steel hull with blade-like edges and serrated fins, a few small spike-like spires swept back along the spine, no windows, deep red-orange glow leaking from narrow armor slits, large engine nozzles at the stern glowing orange-red, sinister and predatory"
+  ],
+  [
+   "C19",
+   "Corsair",
+   "Warlord's Pyre-Barge",
+   "Concept art of a COLOSSAL pirate battle-barge flagship, a huge wide slab hull built from three gutted freighters welded side by side, a warlord's armored command fortress on top, racks of torpedo tubes at the prow, burning fuel vents and furnace glow along the flanks, a janky pirate warship cobbled together from scrap, dark blood-red and rust paint chipped and scratched, mismatched bolted-on armor plates, jagged welded seams, exposed pipes and cables, oversized salvaged guns and rocket pods bolted on at odd angles, crude engine clusters glowing orange-red, lopsided and asymmetric, worn and dangerous. No masts, no antenna towers, no ship deck, no keel, it does not look like a sea ship"
+  ],
+  [
+   "S1",
+   "Squadron",
+   "Strike fighter",
+   "Concept art of a single small strike fighter spacecraft, compact dart-shaped hull, short swept wings with two gun pods, one cockpit canopy, one bright engine at the stern, clean military hard-surface design, gunmetal grey with dark panels, simple readable silhouette"
+  ],
+  [
+   "S2",
+   "Squadron",
+   "Heavy bomber",
+   "Concept art of a single small heavy bomber spacecraft, chunky wedge-shaped hull, a large torpedo slung underneath, twin engines at the stern, stubby wings, armored cockpit, clean military hard-surface design, gunmetal grey with dark panels, simple readable silhouette"
+  ],
+  [
+   "B23",
+   "Chorus",
+   "Spore swarm",
+   "Concept art of a single small organic spore bio-craft, a teardrop-shaped fleshy pod with chitin armor plates and three trailing tendrils, translucent membrane with sickly yellow-green bile glowing inside, alien hive creature, simple readable silhouette, not a sea animal"
+  ],
+  [
+   "O1",
+   "Objective",
+   "Orbital station",
+   "Concept art of a military orbital defence station in space, a central armored hub with a ring of docking arms, gun turrets on the rim, antenna dishes, lit hangar openings, clean imposing hard-surface design, gunmetal and pale grey plating with amber lights"
+  ],
+  [
+   "O2",
+   "Objective",
+   "Transport freighter",
+   "Concept art of a slow armored cargo transport spacecraft, a long spine with stacked cargo containers clamped along it, a small command module at the bow, big engines at the stern, worn industrial hard-surface design, pale grey and hazard-yellow stripes"
+  ],
+  [
+   "O3",
+   "Objective",
+   "Relay beacon",
+   "Concept art of a tall space relay beacon structure, a slender armored mast on a hexagonal base, rotating antenna rings near the top, a glowing amber core sphere at the tip, clean industrial hard-surface design, gunmetal grey"
+  ]
+ ],
+ "img": [
+  [
+   "V18i",
+   "flux7/V17_37.png",
+   "V18",
+   0.8
+  ],
+  [
+   "C19i",
+   "flux8/C16_23.png",
+   "C19",
+   0.8
+  ]
+ ]
+}

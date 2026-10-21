@@ -46,9 +46,9 @@ function init3D(canvas){
   engine.onContextRestoredObservable.add(()=>{ G.ctxLost=0; notice(null); });
   let last=performance.now();
   scene.onBeforeRenderObservable.add(()=>{ const now=performance.now(); const raw=(now-last)/1000, dt=Math.min(.05,raw); last=now; try{ FRAMES.tick(raw); }catch(e){} G.time+=dt; try{ G.ctl.update(dt); updateWorld(dt); updateStorms(dt); if(G.planet) G.planet.rotation.y+=dt*.0065; if(G.npClouds) G.npClouds.rotation.y+=dt*.016; if(G.ringNode) G.ringNode.rotation.y+=dt*.003; /* v45: one update each (was two per frame) */ if(G.traffic) for(const t of G.traffic) if(!t.root.isDisposed()) t.root.position.addInPlace(t.vel.scale(dt)); if(G.gridFar) G.gridFar.alpha=clamp((G.cam.radius-260)/240,0,1)*.6; }catch(e){ frameError(e); } });
-  // phones: ~30 fps in play, ~15 fps when idle, to save battery and heat
+  // phones: full rate while anything animates, ~30 fps when still, ~15 fps when idle, to save battery and heat
   ['pointerdown','pointermove','keydown','wheel'].forEach(ev=>window.addEventListener(ev,()=>{ G.lastInput=performance.now(); },{passive:true}));
-  engine.runRenderLoop(()=>{ if(G.mobile){ G.fskip=(G.fskip||0)+1; const idle=performance.now()-G.lastInput>4000&&!(typeof PROJ!=='undefined'&&PROJ.length)&&!(B&&B.busy)&&scene.particleSystems.length<=1; if(G.fskip%(idle?4:2)) return; } try{ scene.render(); }catch(e){ frameError(e); } });
+  engine.runRenderLoop(()=>{ if(G.mobile){ G.fskip=(G.fskip||0)+1; const anim=typeof sceneAnimating==='function'&&sceneAnimating(); G.fullRate=anim; /* v53: every frame while anything moves; the skip only saves battery when the board is still */ const idle=!anim&&performance.now()-G.lastInput>4000&&!(typeof PROJ!=='undefined'&&PROJ.length)&&!(B&&B.busy)&&scene.particleSystems.length<=1; if(!anim&&G.fskip%(idle?4:2)) return; } try{ scene.render(); }catch(e){ frameError(e); } });
 }
 
 function noiseTex(name,size,seed,soft=.55){ return dynTex(name,size,size,(g,w)=>{ const img=g.createImageData(w,w), d=img.data;
@@ -267,8 +267,8 @@ function buildBattleEnv(){
       ul.material=um; ul.isPickable=false; ul.alphaIndex=-100; try{ G.glow.addExcludedMesh(ul); if(G.vls) G.vls.excludedMeshes.push(ul); }catch(e){} G.env.push(ul,um); G.boardUnder=ul; } }
   // asteroids
   const rockMat=new BABYLON.StandardMaterial('rockM',sc); const RK=(typeof ROCK_KINDS!=='undefined'&&B&&B.biome&&ROCK_KINDS[B.biome.rock])||null; // v47: the sector's asteroid type
-  rockMat.diffuseTexture=dynTex('rockTex',256,256,(g,w)=>{ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
-  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.035,.035,.035); { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=rm.normal; } rockMat.bumpTexture.level=.7; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
+  rockMat.diffuseTexture=(G.tex.rockTex&&!G.tex.rockTex._disposed&&G.tex.rockTex.getInternalTexture())?G.tex.rockTex:G.tex.rockTex=dynTex('rockTex',256,256,(g,w)=>{ /* v53: built once (it is seeded), not every battle */ const r=seeded(5); g.fillStyle='#5d544c'; g.fillRect(0,0,w,w); for(let i=0;i<900;i++){ const s=r()*6+1; g.fillStyle=`rgba(${r()<.5?'20,16,14':'150,140,125'},${r()*.35})`; g.fillRect(r()*w,r()*w,s,s);} });
+  rockMat.diffuseTexture.hasAlpha=false; rockMat.specularColor=new C3(.035,.035,.035); if(G.tex.rockNrm&&G.tex.rockNrm.getInternalTexture()) rockMat.bumpTexture=G.tex.rockNrm; else { const rm=mapsFromCanvas('rockMaps',rockMat.diffuseTexture.getContext().canvas,{strength:5}); rm.orm.dispose(); rockMat.bumpTexture=G.tex.rockNrm=rm.normal; } rockMat.bumpTexture.level=.7; if(typeof addRockFx==='function') addRockFx(rockMat); G.env.push(rockMat);
   if(RK){ rockMat.diffuseColor=new C3(RK.col[0],RK.col[1],RK.col[2]); const sk=RK.spec>.3?.3:.15; /* v52: matte regolith, not wet coal (ice keeps some gloss); v53: no sparkle at all on iron (was .7/.35) */ rockMat.specularColor=new C3(RK.spec*sk,RK.spec*sk,RK.spec*sk*1.05); rockMat.specularPower=RK.spec>.3?14:6; if(RK.em) rockMat.emissiveColor=new C3(RK.em[0],RK.em[1],RK.em[2]); }
   // v44: rocks are smooth-shaded, multi-octave and cratered (were faceted 'crumpled paper' icospheres)
   // v49 asteroids: two sets of eight shapes (dense ones for the asteroids on the board, light ones for small chunks, the belt and the distance),

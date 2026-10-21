@@ -657,8 +657,14 @@ function craftFormation(fac,kind){ const st=(FACTIONS[fac]||{}).style;
   return {s:1.1,pts:[[0,0,0],[-1.8,.1,2.1],[-1.8,.1,-2.1],[-3.6,.2,4.2],[-3.6,.2,-4.2]]}; }
 // each ship class is built once, then cloned (clones share geometry)
 const MODEL_CACHE={};
+// v53: a class prototype not used in the last three scene setups is freed when the views are cleared (fragments and split halves are clones
+// with their own geometry references, so freeing the prototype never breaks a wreck); a prototype replaced by a newly arrived hull is freed then too
+const MODEL_GEN={n:0,stale:[]};
+function dropModel(k){ const p=MODEL_CACHE[k]; if(p) MODEL_GEN.stale.push(p); delete MODEL_CACHE[k]; }
+function trimModelCache(){ try{ MODEL_GEN.n++; for(const [k,p] of Object.entries(MODEL_CACHE)) if((p.gen||0)<MODEL_GEN.n-3){ MODEL_GEN.stale.push(p); delete MODEL_CACHE[k]; }
+    for(const p of MODEL_GEN.stale.splice(0)){ try{ if(p.whole&&!p.whole.isDisposed()) p.whole.dispose(false,false); if(p.root&&!p.root.isDisposed()) p.root.dispose(false,false); }catch(e){} } }catch(e){ console.warn('model cache trim',e); } }
 function buildShipModel(u){ if(u.isSq) return null; const fac=u.fac||'voidsworn', key=fac+'|'+(u.transport?'Transport':u.cls); // v53-G: intercept transports fly the freighter mesh
-  let p=MODEL_CACHE[key]; if(!p){ p=buildShipModelFresh(u.transport?{fac,cls:'Transport',transport:true}:u); p.root.setEnabled(false); p.root.position.y=-9000; MODEL_CACHE[key]=p; }
+  let p=MODEL_CACHE[key]; if(!p){ p=buildShipModelFresh(u.transport?{fac,cls:'Transport',transport:true}:u); p.root.setEnabled(false); p.root.position.y=-9000; MODEL_CACHE[key]=p; } p.gen=MODEL_GEN.n;
   if(p.aiMat){ const e=Object.values(AI_TEX).find(x=>x.m===p.aiMat); if(e) aiTexTouch(e); }
   if(p.whole===undefined){ try{ p.whole=makeWholeProto(p.root); }catch(e){ console.warn('whole model failed',e); p.whole=null; } }
   const root=(p.whole||p.root).clone('ship',null); root.setEnabled(true); root.position.set(0,0,0);
@@ -740,8 +746,25 @@ function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array
   let col=null; if(j.a){ const a=b64(j.a,Uint8Array); col=new Float32Array(n*4); for(let v=0;v<n;v++){ const k=a[v]/255; col[v*4]=k; col[v*4+1]=k; col[v*4+2]=k; col[v*4+3]=1; } } // v52 baked ambient occlusion + cavity
   let uv2=null; if(j.u){ const u=b64(j.u,Uint16Array); uv2=new Float32Array(u.length); for(let i=0;i<u.length;i++) uv2[i]=u[i]/65535; } // v53-G per-hull bake: atlas UVs (Blender v-up matches Babylon's default invertY)
   return {pos,nor,idx,uv,uv2,tex:j.u?j.tex:null,col,tris:j.t}; }
-async function loadAIHulls(){ if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:') return;
-  const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'; /* v49: desktop loads the denser exports (20k to 38k triangles) */ for(const [k,id] of Object.entries(AI_HULLS)){ try{ let r=await fetch(dir+id+'.json'); if(!r.ok&&dir!=='hulls/') r=await fetch('hulls/'+id+'.json'); if(!r.ok) continue; AI_HULL_DATA[k]=decodeAIHull(await r.json()); delete MODEL_CACHE[k]; /* ships built from now on use it */ }catch(e){ console.warn('AI hull not loaded',k,e); } } }
+// v53: every hull file is fetched at once (was one after another), started before the title screen; the first battle waits for it (see main3d)
+// so it never races the fetch and falls back to the heavy procedural ships. HULLS_LOAD says which hull path is live.
+const HULLS_LOAD={state:'idle',total:0,loaded:0,failed:0,fallback:0,bad:[],dir:'',ms:0,promise:null,onProgress:null};
+function hullPath(){ const S=HULLS_LOAD; return {path:!aiHullsOn()?'procedural (off in settings)':S.loaded?'concept':'procedural',state:S.state,loaded:S.loaded,failed:S.failed,total:S.total,dir:S.dir,fallback:S.fallback,ms:S.ms}; }
+function loadAIHulls(){ const S=HULLS_LOAD; if(S.promise) return S.promise;
+  if(typeof fetch!=='function'||typeof location==='undefined'||location.protocol==='file:'){ S.state='skipped'; return S.promise=Promise.resolve(S); }
+  const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'; /* v49: desktop loads the denser exports (20k to 38k triangles) */ const ents=Object.entries(AI_HULLS), t0=performance.now(); S.state='loading'; S.dir=dir; S.total=ents.length;
+  const get=async id=>{ let r=null; try{ r=await fetch(dir+id+'.json'); }catch(e){} if((!r||!r.ok)&&dir!=='hulls/'){ S.fallback++; try{ r=await fetch('hulls/'+id+'.json'); }catch(e){} } if(!r||!r.ok) throw new Error('http '+(r?r.status:'network')); return r.json(); };
+  let q=Promise.resolve(), ly=performance.now(); const idle=()=>(document.hidden||performance.now()-ly<10)?Promise.resolve():new Promise(r=>setTimeout(()=>{ ly=performance.now(); r(); },0)); // decodes yield to the page every ~10 ms, so a burst of arrivals never stalls a frame for long
+  S.promise=Promise.all(ents.map(([k,id])=>get(id).then(j=>(q=q.then(idle).then(()=>{ try{ AI_HULL_DATA[k]=decodeAIHull(j); dropModel(k); /* ships built from now on use it */ S.loaded++; }catch(e){ S.failed++; S.bad.push(id); console.warn('AI hull not decoded',k,e); } })),e=>{ S.failed++; S.bad.push(id); console.warn('AI hull not loaded',k,e); }).then(()=>{ try{ S.onProgress&&S.onProgress(S); }catch(e){} })))
+    .then(()=>q).then(()=>{ S.ms=Math.round(performance.now()-t0); S.state='done'; const hp=hullPath(); console.info('[hulls] live path: '+hp.path+' ('+S.loaded+'/'+S.total+' loaded from '+dir+(S.failed?', '+S.failed+' failed: '+S.bad.slice(0,6).join(' '):'')+(S.fallback?', '+S.fallback+' fell back to hulls/':'')+') in '+S.ms+'ms');
+      try{ if(typeof tel==='function') tel('hulls',hp); }catch(e){} return S; });
+  return S.promise; }
+// v53: each half keeps only the vertices its triangles use (both halves used to carry the whole hull's vertex arrays, so the merged live mesh held every vertex twice)
+function compactHalf(vd,idx){ const P=vd.positions, N=vd.normals, U=vd.uvs, U2=vd.uvs2, C=vd.colors, map=new Int32Array(P.length/3).fill(-1); let n=0; const out=new Uint32Array(idx.length);
+  for(let i=0;i<idx.length;i++){ const v=idx[i]; if(map[v]<0) map[v]=n++; out[i]=map[v]; }
+  const pos=new Float32Array(n*3), nor=new Float32Array(n*3), uv=U?new Float32Array(n*2):null, uv2=U2?new Float32Array(n*2):null, col=C?new Float32Array(n*4):null;
+  for(let v=0;v<map.length;v++){ const m=map[v]; if(m<0) continue; for(let c=0;c<3;c++){ pos[m*3+c]=P[v*3+c]; nor[m*3+c]=N[v*3+c]; } if(uv){ uv[m*2]=U[v*2]; uv[m*2+1]=U[v*2+1]; } if(uv2){ uv2[m*2]=U2[v*2]; uv2[m*2+1]=U2[v*2+1]; } if(col) for(let c=0;c<4;c++) col[m*4+c]=C[v*4+c]; }
+  const sub=new BABYLON.VertexData(); sub.positions=pos; sub.normals=nor; if(uv) sub.uvs=uv; if(uv2) sub.uvs2=uv2; if(col) sub.colors=col; sub.indices=n<65536?Uint16Array.from(out):out; return sub; }
 function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')); if(!fore) return p; const M=facMats(fac), L=p.L;
   for(const m of p.root.getChildMeshes(false)) if(m.name.includes('hull_')||m.name.endsWith('emblem')) m.dispose(false,false);
   p.root.computeWorldMatrix(true); fore.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(fore.getWorldMatrix()).multiply(p.root.getWorldMatrix());
@@ -753,7 +776,7 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
   // split at the procedural break line so a dying ship still breaks in two
   const split=(p.surf&&p.surf.split!=null)?p.surf.split:-.05*L, aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, P=vd.positions, I=vd.indices, parts={fore:[],aft:[]};
   for(let t=0;t<I.length;t+=3){ const cx=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3; parts[cx>=split?'fore':'aft'].push(I[t],I[t+1],I[t+2]); }
-  for(const half of ['fore','aft']){ if(!parts[half].length) continue; const sub=new BABYLON.VertexData(); sub.positions=P; sub.normals=vd.normals; sub.uvs=vd.uvs; if(vd.uvs2) sub.uvs2=vd.uvs2; if(vd.colors) sub.colors=vd.colors; sub.indices=parts[half];
+  for(const half of ['fore','aft']){ if(!parts[half].length) continue; const sub=compactHalf(vd,parts[half]);
     const m=new BABYLON.Mesh('hull_ai',G.scene); sub.applyToMesh(m); m.material=M.hull; m.parent=half==='fore'?fore:aftN; if(half==='aft'&&aftN!==fore){ aftN.computeWorldMatrix(true); m.position.copyFrom(fore.position.subtract(aftN.position)); } m.refreshBoundingInfo(true); }
   // v53-G: the concept hull gets its own material (lit ports and close-up plating drawn in the shader, no texture windows), and every
   // procedural point that is still used (engine glows, muzzles, hard points, nav lights, smoke stacks, arcs, bays) is re-seated on the real
@@ -842,7 +865,7 @@ function buildMeshStation(c,rr){ const pr=objProto('obj|station',46); if(!pr) re
   try{ castShadows(m); }catch(e){} try{ G.glow.addExcludedMesh(m); }catch(e){} root.position=c.add(new V3(0,3,0)); root.rotation.set(.06,rr()*6,.04); m.refreshBoundingInfo(true); m.freezeWorldMatrix&&setTimeout(()=>{ try{ if(!m.isDisposed()){ root.computeWorldMatrix(true); m.freezeWorldMatrix(); } }catch(e){} },0);
   G.env.push(root); G.station={root,meshes:[m]}; return true; }
 // v53-G per-hull baked maps (tangent-space normal; AO + curvature): one material per baked hull, cloned from the faction's concept-hull material.
-// The maps load lazily with the class and swap in when ready (the faction material shows until then); classes unused for two battles drop theirs.
+// The maps load lazily with the class and swap in when ready (the faction material shows until then); all are released when the battle is torn down.
 const AI_TEX={};
 function aiHullCode(d){ for(const [k,v] of Object.entries(AI_HULL_DATA)) if(v===d) return AI_HULLS[k]; return null; }
 function aiHullMatFor(fac,d){ const code=d&&d.tex&&d.uv2?aiHullCode(d):null; if(!code||G.noBake) return aiHullMat(fac); const key=fac+'|'+code; let e=AI_TEX[key];
@@ -852,13 +875,13 @@ function aiHullMatFor(fac,d){ const code=d&&d.tex&&d.uv2?aiHullCode(d):null; if(
       m.metallic={voidsworn:.3,hegemony:.4,corsair:.35,chorus:.05,ithar:.25,deathless:.55}[fac]??.35; m.roughness={voidsworn:.55,hegemony:.48,corsair:.62,chorus:.38,ithar:.42,deathless:.5}[fac]??.5; m.useRoughnessFromMetallicTextureGreen=false; m.useMetallnessFromMetallicTextureBlue=false; m.useAmbientOcclusionFromMetallicTextureRed=false; }
     if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(m,opts); m._hullFx=pl; m._isAiHull=true; e=AI_TEX[key]={m,code,dir:(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/',n:null,t:null,lastB:null}; }
   aiTexTouch(e); return e.m; }
-function aiTexTouch(e){ const b=typeof B!=='undefined'?B:null; if(e.lastB!==b){ e.prevB=e.lastB; e.lastB=b; aiTexTrim(); } if(e.n||e.loading) return; e.loading=true; const sc=G.scene, m=e.m, pl=m._hullFx, url=e.dir+e.code;
-  const done=()=>{ if(!e.n||!e.t||!e.n.isReady()||!e.t.isReady()) return; e.loading=false; if(m.isDisposed&&m.isDisposed()) return; m.bumpTexture=e.n; m.bumpTexture.level=1; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } };
+function aiTexTouch(e){ if(e.n||e.loading) return; e.loading=true; const sc=G.scene, m=e.m, pl=m._hullFx, url=e.dir+e.code;
+  const gen=e.gen||0; const done=()=>{ if(gen!==(e.gen||0)||!e.n||!e.t||!e.n.isReady()||!e.t.isReady()) return; e.loading=false; if(m.isDisposed&&m.isDisposed()) return; m.bumpTexture=e.n; m.bumpTexture.level=1; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } };
   const fail=(x)=>{ console.warn('hull maps not loaded',e.code,x||''); e.loading=false; e.n=e.t=null; e.failed=true; };
   if(e.failed) return; e.n=new BABYLON.Texture(url+'_n.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,()=>done(),fail); e.n.coordinatesIndex=1; e.n.anisotropicFilteringLevel=4;
   e.t=new BABYLON.Texture(url+'_m.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,()=>done(),fail); e.t.coordinatesIndex=1; }
-function aiTexTrim(){ const b=typeof B!=='undefined'?B:null; for(const e of Object.values(AI_TEX)){ if(e.lastB===b||e.prevB===b||!e.n) continue; // not used this battle or the last one
-    const m=e.m, src=MATS[m.name.split('aihull_')[0]]; try{ if(m.bumpTexture===e.n) m.bumpTexture=(src&&src.aiHull&&src.aiHull.bumpTexture)||null; if(m._hullFx){ m._hullFx.mtex=null; m._hullFx.markAllDefinesAsDirty&&m._hullFx.markAllDefinesAsDirty(); } e.n.dispose(); e.t.dispose(); }catch(x){} e.n=e.t=null; e.loading=false; } }
+function aiTexReleaseAll(){ for(const e of Object.values(AI_TEX)){ if(!e.n&&!e.t) continue; // battle teardown: every class's maps go (they reload from the browser cache when the class is used again), so nothing accumulates across battles
+    const m=e.m, src=MATS[m.name.split('aihull_')[0]]; try{ if(m.bumpTexture===e.n) m.bumpTexture=(src&&src.aiHull&&src.aiHull.bumpTexture)||null; if(m._hullFx){ m._hullFx.mtex=null; m._hullFx.markAllDefinesAsDirty&&m._hullFx.markAllDefinesAsDirty(); } if(e.n) e.n.dispose(); if(e.t) e.t.dispose(); }catch(x){} e.n=e.t=null; e.loading=false; e.gen=(e.gen||0)+1; } }
 const AI_WIN_GAIN={voidsworn:1.6,hegemony:1.25,corsair:1.5,chorus:1.1,ithar:.9,deathless:1.3}; // port brightness per faction (pale hulls need less)
 function buildShipModelFresh(u){
   const p=buildShipModelProc(u), k=u.transport?'obj|transport':(u.fac||'voidsworn')+'|'+u.cls; if(u.transport) p.matOverride=objMat('transport');

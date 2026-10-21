@@ -4,23 +4,39 @@ function shCol(v){ const f=v&&(v.fac||(v.u&&v.u.fac)); return ((FAC3D[f]||{}).sh
 const SHIELD_C=new C3(.38,.82,1), SHIELD_HEX='#62ccff', HULL_HEX='#ffae42', HULL_LOW_HEX='#ff5a3c', FRIEND_C=new C3(.42,1,.55), FOE_C=new C3(1,.3,.28);
 const HOVER_Y=3.4;
 function unitVis(u){ return u.vis || {q:u.q, r:u.r, a:u.facing*60}; }
-function tween(dur,fn){ return new Promise(res=>{ const t0=performance.now(), D=Math.max(1,dur*SPEED); const step=now=>{ const p=Math.min(1,(now-t0)/D); fn(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2,p); if(p<1) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); }); }
+function tween(dur,fn){ return new Promise(res=>{ const t0=performance.now(), D=Math.max(1,dur*SPEED); G.tweens=(G.tweens||0)+1; /* v53: phones draw every frame while any tween runs */ const step=now=>{ const p=Math.min(1,(now-t0)/D); if(p>=1) G.tweens=Math.max(0,G.tweens-1); fn(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2,p); if(p<1) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); }); }
 function shortAng(a0,a1){ let d=((a1-a0)%360+540)%360-180; return a0+d; }
 function uWorld(u){ const v=G.views.get(u.id); if(v&&v.root&&!v.arrive) return v.root.getAbsolutePosition().clone(); const vis=unitVis(u); return hexWorld(vis.q,vis.r,HOVER_Y); }
 function toWorld(v,local){ v.root.computeWorldMatrix(true); return V3.TransformCoordinates(local,v.root.getWorldMatrix()); }
 
 // ---------- views ----------
+// v53: one draw per ring. The four shield arcs, the IFF circle and the prow chevron are merged once per ring size into a shared template
+// (uv.x carries the part), and each ship's ring is a clone with a small shader whose uniforms hold every part's colour, alpha and pulse scale.
+// segs[] keeps its old shape (s.mat.alpha, s.m.scaling, s.pulse) so the per-frame update and the shield hit effects are unchanged.
+// Was six meshes and six materials per ship: six draws, six sorts, six material binds.
+const RING_GEO={};
+const RING_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec2 uv; uniform mat4 worldViewProjection; uniform float sc[6]; varying float vP;
+void main(){ float s=1.0; for(int i=0;i<6;i++){ if(abs(uv.x-float(i))<0.5) s=sc[i]; } vP=uv.x; gl_Position=worldViewProjection*vec4(position*s,1.0); }`,
+  frag:`precision highp float; uniform vec3 col[6]; uniform float al[6]; varying float vP;
+void main(){ vec3 c=vec3(0.0); float a=0.0; for(int i=0;i<6;i++){ if(abs(vP-float(i))<0.5){ c=col[i]; a=al[i]; } } gl_FragColor=vec4(c,a); }`};
+function ringTemplate(kind,R){ const key=kind+'|'+R; let t=RING_GEO[key]; if(t&&!t.isDisposed()) return t; const parts=[], spans=[[-50,50],[50,130],[130,230],[230,310]];
+  const add=(m,part,twoSided)=>{ m.computeWorldMatrix(true); const vd=BABYLON.VertexData.ExtractFromMesh(m,true,true); vd.transform(m.getWorldMatrix()); const n=vd.positions.length/3, uv=new Float32Array(n*2); for(let i=0;i<n;i++) uv[i*2]=part; vd.uvs=uv; vd.normals=null; vd.colors=null;
+    if(twoSided){ const I=Array.from(vd.indices), J=I.slice(); for(let i=0;i<I.length;i+=3) J.push(I[i],I[i+2],I[i+1]); vd.indices=J; } parts.push(vd); m.dispose(false,false); };
+  if(kind==='S') for(let q=0;q<4;q++){ const pts=[]; for(let a=spans[q][0]+4;a<=spans[q][1]-4;a+=4){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R,0,-Math.sin(r)*R)); } add(MB.CreateTube('seg',{path:pts,radius:.09,tessellation:5,cap:BABYLON.Mesh.CAP_ALL},G.scene),q); }
+  if(kind==='B'){ const pts=[]; for(let a=0;a<=360;a+=6){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R,0,Math.sin(r)*R)); } add(MB.CreateTube('seg',{path:pts,radius:.08,tessellation:4},G.scene),0); }
+  { const pts=[]; for(let a=0;a<=360;a+=8){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R*.8,0,Math.sin(r)*R*.8)); } add(MB.CreateTube('iff',{path:pts,radius:.07,tessellation:4},G.scene),4); }
+  if(kind!=='Q'){ const d=MB.CreateDisc('prowMark',{radius:Math.max(1.1,R*.17),tessellation:3},G.scene); d.rotation.x=Math.PI/2; d.scaling.y=.75; d.position.set(R*1.08,.05,0); add(d,5,true); } // v52 prow chevron, both faces (it was unculled)
+  const vd=parts[0]; if(parts.length>1) vd.merge(parts.slice(1),true); t=new BABYLON.Mesh('ringT_'+key,G.scene); vd.applyToMesh(t); t.setEnabled(false); t.isPickable=false; t.refreshBoundingInfo(); RING_GEO[key]=t; return t; }
 function makeShieldRing(u,v){
   const node=new BABYLON.TransformNode('ring',G.scene); const R=Math.max(5.2,v.L*.56);
-  const col=((FAC3D[u.fac]||{}).shield)||SHIELD_C;
-  const spans=[[-50,50],[50,130],[130,230],[230,310]], segs=[];
-  if(u.shMax>0 && !u.isSq){ for(let q=0;q<4;q++){ const pts=[]; for(let a=spans[q][0]+4;a<=spans[q][1]-4;a+=4){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R,0,-Math.sin(r)*R)); }
-      const m=MB.CreateTube('seg',{path:pts,radius:.09,tessellation:5,cap:BABYLON.Mesh.CAP_ALL},G.scene); G.glow.addExcludedMesh(m); const mat=emMat('segM',col,.8); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; m.material=mat; m.parent=node; m.isPickable=false; segs.push({m,mat,pulse:0}); } }
-  else if(!u.isSq){ const pts=[]; for(let a=0;a<=360;a+=6){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R,0,Math.sin(r)*R)); } const m=MB.CreateTube('seg',{path:pts,radius:.08,tessellation:4},G.scene); const mat=emMat('segM',new C3(.5,.3,.3),.35); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; m.material=mat; m.parent=node; m.isPickable=false; }
-  { const pts=[]; for(let a=0;a<=360;a+=8){ const r=a*Math.PI/180; pts.push(new V3(Math.cos(r)*R*.8,0,Math.sin(r)*R*.8)); } const m=MB.CreateTube('iff',{path:pts,radius:.07,tessellation:4},G.scene); const mat=emMat('iffM',u.side==='player'?FRIEND_C:FOE_C,.55); mat.alphaMode=BABYLON.Engine.ALPHA_ADD; m.material=mat; m.parent=node; m.isPickable=false; G.glow.addExcludedMesh(m); }
-  if(!u.isSq){ const ch=MB.CreateDisc('prowMark',{radius:Math.max(1.1,R*.17),tessellation:3},G.scene); ch.rotation.x=Math.PI/2; ch.scaling.y=.75; ch.position.set(R*1.08,.05,0); ch.bakeCurrentTransformIntoVertices(); // v52: a bright chevron on the ring's prow, so facing reads at any zoom
-    const cm=emMat('prowM',(u.side==='player'?FRIEND_C:FOE_C).scale(1.5),.85); cm.alphaMode=BABYLON.Engine.ALPHA_ADD; cm.disableDepthWrite=true; cm.backFaceCulling=false; ch.material=cm; ch.parent=node; ch.isPickable=false; G.glow.addExcludedMesh(ch); }
-  return {node,segs,R};
+  const col=((FAC3D[u.fac]||{}).shield)||SHIELD_C, iff=u.side==='player'?FRIEND_C:FOE_C, segs=[], kind=u.isSq?'Q':u.shMax>0?'S':'B';
+  const S=BABYLON.Effect.ShadersStore; if(!S.vsRingVertexShader){ S.vsRingVertexShader=RING_GLSL.vert; S.vsRingFragmentShader=RING_GLSL.frag; }
+  const al=[0,0,0,0,.55,.85], sc=[1,1,1,1,1,1], cols=[]; for(let i=0;i<6;i++){ const c=i<4?(kind==='B'?new C3(.5,.3,.3):col):i===4?iff:iff.scale(1.5); cols.push(c.r,c.g,c.b); } if(kind==='B') al[0]=.35;
+  const mat=new BABYLON.ShaderMaterial('ringM',G.scene,{vertex:'vsRing',fragment:'vsRing'},{attributes:['position','uv'],uniforms:['worldViewProjection','sc','col','al'],needAlphaBlending:true});
+  mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.backFaceCulling=true; mat.setFloats('sc',sc); mat.setFloats('al',al); mat.setArray3('col',cols);
+  const m=ringTemplate(kind,R).clone('ring',null); m.setEnabled(true); m.isPickable=false; m.material=mat; m.parent=node; G.glow.addExcludedMesh(m);
+  if(kind==='S') for(let q=0;q<4;q++) segs.push({pulse:0,mat:{get alpha(){ return al[q]; },set alpha(x){ al[q]=x; }},m:{scaling:{get x(){ return sc[q]; },setAll(x){ sc[q]=x; }}}});
+  return {node,segs,R,mesh:m};
 }
 function makePlate(u){ const el=document.createElement('div'); el.className='plate '+(u.side==='player'?'friend':'foe'); el.innerHTML=`<div class="nm"></div>${u.shMax&&!u.isSq?'<div class="sp" title="Shields: port, prow, starboard, rear"><b></b><b></b><b></b><b></b></div>':''}<div class="hb" title="Hull"><i></i></div>`;
   el.querySelector('.nm').textContent=u.isSq?u.t.n:u.name; document.getElementById('plates').appendChild(el); return {el,hb:el.querySelector('.hb i'),sp:[...el.querySelectorAll('.sp b')],key:''}; }
@@ -57,7 +73,7 @@ function createView(u){
   G.views.set(u.id,v); return v;
 }
 function disposeView(v){ if(v.navSp){ try{ v.navSp.forEach(sp=>sp.dispose()); }catch(e){} v.navSp=null; } if(v.dmgMats&&typeof disposeDamageMats==='function') disposeDamageMats(v); if(v.arrive&&v.arrive.streak){ try{ v.arrive.streak.material.dispose(); v.arrive.streak.dispose(); }catch(e){} } (v.extras||[]).forEach(p=>p.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); if(v.flagRing&&v.flagRing.material){ try{ v.flagRing.material.dispose(); }catch(e){} } if(v.root) v.root.dispose(false,false); if(v.ring) v.ring.node.dispose(false,true); if(v.plate) v.plate.el.remove(); for(const f of v.fires) f.dispose(); v.fires=[]; }
-function disposeAllViews(){ try{ const ids=new Set(G.scene.meshes.map(m=>m.uniqueId)); if(G.glow&&G.glow._excludedMeshes) G.glow._excludedMeshes=G.glow._excludedMeshes.filter(id=>ids.has(id)); if(G.glow&&G.glow._includedOnlyMeshes&&G.glow._includedOnlyMeshes.length) G.glow._includedOnlyMeshes=G.glow._includedOnlyMeshes.filter(id=>ids.has(id)); }catch(e){} /* v49: the glow layer kept every excluded mesh id ever added */ if(G.trails){ for(const tr of G.trails) try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} G.trails.clear(); } /* v46.1: wakes from moves cut short by the battle ending */ (G.deadLights||[]).forEach(l=>{ try{ l.dispose(); }catch(e){} }); G.deadLights=[]; debrisClear(); for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; }
+function disposeAllViews(){ try{ if(typeof aiTexReleaseAll==='function') aiTexReleaseAll(); }catch(e){} try{ const ids=new Set(G.scene.meshes.map(m=>m.uniqueId)); if(G.glow&&G.glow._excludedMeshes) G.glow._excludedMeshes=G.glow._excludedMeshes.filter(id=>ids.has(id)); if(G.glow&&G.glow._includedOnlyMeshes&&G.glow._includedOnlyMeshes.length) G.glow._includedOnlyMeshes=G.glow._includedOnlyMeshes.filter(id=>ids.has(id)); }catch(e){} /* v49: the glow layer kept every excluded mesh id ever added */ if(G.trails){ for(const tr of G.trails) try{ tr.tm.dispose(); tr.n.dispose(); tr.m.dispose(); }catch(e){} G.trails.clear(); } /* v46.1: wakes from moves cut short by the battle ending */ (G.deadLights||[]).forEach(l=>{ try{ l.dispose(); }catch(e){} }); G.deadLights=[]; debrisClear(); for(const v of G.views.values()){ disposeView(v); } G.views.clear(); for(const h of G.hulks||[]) h.nodes.forEach(n=>{ if(n.ps) n.ps.dispose(); n.dispose(); }); G.hulks=[]; for(const p of PROJ){ p.m.dispose(); if(!p.arrived&&p.settle) p.settle(); } PROJ.length=0; for(const r of TORPS){ G.scene.onBeforeRenderObservable.remove(r.obs); r.tr.dispose(); r.m.dispose(); r.res(); } TORPS.clear(); document.getElementById('plates').innerHTML=''; trimModelCache(); }
 
 function addFire(v){
   const node=new BABYLON.TransformNode('fire',G.scene); node.parent=v.root; node.position=new V3((Math.random()-.5)*v.L*.6,v.H*.35,(Math.random()-.5)*v.L*.12);
@@ -99,8 +115,8 @@ function updateWorld(dt){
   if(!B) return;
   const t=G.time, hsl=G.engine.getHardwareScalingLevel(), cw=Math.round(G.engine.getRenderWidth()*hsl), ch=Math.round(G.engine.getRenderHeight()*hsl); // v53: from the engine, not clientWidth (a layout read every frame after the plate transforms were written)
   const tm=G.scene.getTransformMatrix(), vp=G.cam.viewport.toGlobal(cw,ch);
-  if(MATS.chorus){ const k=Math.sin(G.time*2.2); MATS.chorus.win.emissiveColor=MATS.chorus.P.win.scale(.8+.35*k); MATS.chorus.flesh.emissiveColor=MATS.chorus.P.win.scale(.32+.22*k); }
-  if(MATS.deathless) MATS.deathless.win.emissiveColor=MATS.deathless.P.win.scale(.72+.35*Math.sin(G.time*1.3));
+  if(MATS.chorus){ const k=Math.sin(G.time*2.2); MATS.chorus.P.win.scaleToRef(.8+.35*k,MATS.chorus.win.emissiveColor); MATS.chorus.P.win.scaleToRef(.32+.22*k,MATS.chorus.flesh.emissiveColor); } // v53: written in place; assigning a new colour went through the material setter and marked every submesh in the scene dirty each frame
+  if(MATS.deathless) MATS.deathless.P.win.scaleToRef(.72+.35*Math.sin(G.time*1.3),MATS.deathless.win.emissiveColor);
   if(MATS.ithar) MATS.ithar.sail.alpha=.26+.07*Math.sin(G.time*1.7);
   if(!B._warm&&G.views.size&&typeof warmFx==='function'){ B._warm=1; const b0=B; setTimeout(()=>{ if(B===b0&&!B.over) warmFx(); },50); } /* v45: never warms into a different battle */ // v44.1: build the explosion shaders while the fleets arrive
   try{ hullArcs(); }catch(e){ console.warn('hull arcs',e); }
@@ -145,7 +161,7 @@ function updateWorld(dt){
     if(v.crafts){ if(v.wing){ const ang=t*.95+v.wingPh, R=3.4; v.wing.position.set(Math.cos(ang)*R,Math.sin(t*.8+v.wingPh)*.4,-Math.sin(ang)*R); v.wing.rotation.set(.3,ang+Math.PI/2,0); for(const c of v.crafts) c.c.root.position.y=c.y+Math.sin(t*2.1+c.ph)*.16; }
       else for(const c of v.crafts){ const ang=t*1.4+c.ph; c.c.root.position.set(Math.cos(ang)*c.rad,c.h+Math.sin(t*2.2+c.ph)*.35,-Math.sin(ang)*c.rad); c.c.root.rotation.y=ang+Math.PI/2; c.c.root.rotation.x=.35; } }
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
-    v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.07+.3*f:0)+s.pulse*.9; s.m.scaling.setAll(1+s.pulse*.08); });
+    v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.07+.3*f:0)+s.pulse*.9; const sk=1+s.pulse*.08; if(s.m.scaling.x!==sk) s.m.scaling.setAll(sk); }); /* v53: an unchanged scale is not rewritten (a write forces a world matrix rebuild) */
     // damage fires
     if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); if(typeof damageSparks==='function') damageSparks(v,hr,dt); }
     // nameplate
@@ -523,8 +539,9 @@ function fxText(u,txt,color,dy=0){
   if(!G.scene) return; const p=uWorld(u); const v=G.views.get(u.id); p.y+=(v?v.H:3)+1;
   const cw=G.engine.getRenderingCanvas().clientWidth, ch=G.engine.getRenderingCanvas().clientHeight;
   const sp=V3.Project(p,BABYLON.Matrix.Identity(),G.scene.getTransformMatrix(),G.cam.viewport.toGlobal(cw,ch)); if(sp.z<0||sp.z>1) return;
-  const el=document.createElement('div'); el.className='ftxt'; el.textContent=txt; el.style.color=color; el.style.left=sp.x+'px'; el.style.top=(sp.y+dy)+'px'; document.getElementById('plates').appendChild(el); setTimeout(()=>el.remove(),1300);
+  const el=FTXT_POOL.pop()||Object.assign(document.createElement('div'),{className:'ftxt'}); el.textContent=txt; el.style.color=color; el.style.left=sp.x+'px'; el.style.top=(sp.y+dy)+'px'; document.getElementById('plates').appendChild(el); /* re-attaching restarts the rise animation */ setTimeout(()=>{ el.remove(); if(FTXT_POOL.length<32) FTXT_POOL.push(el); },1300);
 }
+const FTXT_POOL=[]; // v53: damage numbers reuse their nodes instead of creating one per hit
 function fxShield(u,quad){ const v=G.views.get(u.id); if(!v) return; v.ring.segs.forEach((s,i)=>{ if(quad<0||quad===i) s.pulse=1; }); if(quad<0){ const c=v.root.getAbsolutePosition(); shieldDome(v,new V3(0,1,0),shCol(v)); SFX.shield(v); } }
 function ripple(p,n){ const r=MB.CreateTorus('rip',{diameter:1,thickness:.08,tessellation:32},G.scene); r.position=p.clone(); r.rotationQuaternion=qFromUp(n); r.isPickable=false; const m=emMat('ripM',SHIELD_C.scale(1.6),1); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; r.material=m;
   const t0=G.time; const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/(.5*Math.max(.3,SPEED)); if(k>=1){ G.scene.onBeforeRenderObservable.remove(obs); r.dispose(); m.dispose(); return; } r.scaling.setAll(1+k*7); m.alpha=(1-k); }); }
@@ -597,9 +614,9 @@ async function animExplode(u){
   const M=facMats(v.fac); const dm=v.dmgMats; v.dmgMats=null; if(dm) setTimeout(()=>{ try{ dm.forEach(m=>m.dispose(false,false)); }catch(e){} },0);
   v.model.plumes.forEach(p=>p.dispose()); (v.model.flares||[]).forEach(p=>p.dispose()); (v.model.anim||[]).forEach(an=>an.node.dispose()); (v.stackFx||[]).forEach(ps=>ps.dispose()); v.stackFx=null; (v.fires||[]).forEach(p=>p.dispose()); v.fires=[];
   const persist=!!u.hulk; let nodes=null;
-  try{ nodes=fragmentHull(v,M,persist||CZ.dark,{K:CZ.K||0,cut:CZ.cut,speed:CZ.speed}); if(nodes&&CZ.dissolve) nodes.forEach(n=>{ n.dissolve={t0:G.time+.3+Math.random()*.5,dur:1.4+Math.random()*.8,col:P3.eng}; }); }catch(e){ console.warn('fragment',e); nodes=null; }
+  try{ nodes=G.quality==='medium'?null:fragmentHull(v,M,persist||CZ.dark,{K:CZ.K||0,cut:CZ.cut,speed:CZ.speed}); /* v53: Medium (phones) takes the two-piece split below: no per-triangle re-cut on the frame a ship dies */ if(nodes&&CZ.dissolve) nodes.forEach(n=>{ n.dissolve={t0:G.time+.3+Math.random()*.5,dur:1.4+Math.random()*.8,col:P3.eng}; }); }catch(e){ console.warn('fragment',e); nodes=null; }
   if(!nodes){ if(v.model.toSplit){ try{ v.model.toSplit(); }catch(e){ console.error(e); } }
-    for(const m of v.model.meshes){ m.material=(m.material===M.win||m.material===M.eng||m.material===M.tip)?M.ember:M.wreck; m.isPickable=false; }
+    for(const m of v.model.meshes){ m.material=(m.material===M.win||m.material===M.eng||m.material===M.tip||(m.material&&/aiwin|aitrim/.test(m.material.name)))?M.ember:M.wreck; m.isPickable=false; }
     const fwd=new V3(Math.cos(v.root.rotation.y),0,-Math.sin(v.root.rotation.y)); nodes=[v.model.fore,v.model.aft];
     for(const [n,sgn] of [[v.model.fore,1],[v.model.aft,-1]]){ const wp=n.getAbsolutePosition().clone(); const wr=v.root.rotation.clone(); n.parent=null; n.position=wp; n.rotation=wr.clone();
       n.vel=fwd.scale(sgn*(2.2+Math.random()*1.4)*(persist?.6:1)).add(new V3((Math.random()-.5)*1.2,persist?0:-.4-Math.random()*.4,(Math.random()-.5)*1.2)); n.spin=new V3((Math.random()-.5)*.45,(Math.random()-.5)*.35,sgn*(.2+Math.random()*.3)); } }
