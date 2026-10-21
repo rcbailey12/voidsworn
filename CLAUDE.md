@@ -4,3 +4,4 @@
 - How the PC runner works, and its pitfalls: see HANDOFF.md ("PC test runner").
 - ComfyUI portable: `Downloads\ComfyUI_windows_portable` (v0.42.1), driven headless by `tools/pc/comfy_run.py`; job I/O in `Downloads\voidsworn_test\comfy_io\CODE\`.
 - Ryan is not a coder: double-click .bat files for anything he runs himself, plain words, screenshots of results.
+- **Ship parts look like they belong (owner, Oct 21 2026).** Hand-built bolt-ons on the AI hulls (guns, racks, funnels, masts, drums, turrets) must make sense where they sit: snapped onto the real hull surface (never floating or sunk), on a visible mount (plate, ball, saddle, column), guns aimed out and away from the hull, and placed in matched, symmetric pairs at sensible hard points. Corsair is the exception: haphazard and junky is on-brand there. Soft or blobby AI areas near the bridge and superstructure get rebuilt by hand the same way (tools/blender/hs/c19_kit.py is the worked example).

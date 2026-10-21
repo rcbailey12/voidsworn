@@ -8,7 +8,7 @@ if os.environ.get('EXTRA'):  # a second GLB in the same frame (the hand-built pa
     km = bpy.data.materials.new('kit'); km.use_nodes = True; kn = km.node_tree; kb = kn.nodes['Principled BSDF']; at = kn.nodes.new('ShaderNodeVertexColor')
     kn.links.new(at.outputs[0], kb.inputs['Base Color']); kb.inputs['Metallic'].default_value = .45; kb.inputs['Roughness'].default_value = .42
     for o in set(bpy.context.scene.objects) - before:
-        if o.type == 'MESH': o.data.materials.clear(); o.data.materials.append(km)
+        if o.type == 'MESH' and not (o.data.materials and o.data.materials[0] and any(n.type == 'TEX_IMAGE' for n in o.data.materials[0].node_tree.nodes)): o.data.materials.clear(); o.data.materials.append(km)
 ms = [o for o in bpy.context.scene.objects if o.type == 'MESH']
 mn = mathutils.Vector((1e9,)*3); mx = mathutils.Vector((-1e9,)*3)
 if os.environ.get('ALB'):  # swap in a replacement albedo
