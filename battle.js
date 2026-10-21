@@ -607,7 +607,7 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
       const ar=ownerFx(u).arcShort; if(ar&&shBefore>.5&&!t.dead){ t.hp-=ar; res.hull+=ar; u.dealt+=ar; boonFx(t,'s_arc','\u2212'+ar,-56); } } }
   if(res.hull>0) fxText(t,'\u2212'+res.hull+' hull',res.crits?'#ffd27a':'#ffae42',0);
   if(res.hits===0) fxText(t,'Miss','#9a9384',0);
-  if(res.crits) fxText(t,'Critical','#f0b35a',18);
+  if(res.crits){ fxText(t,'Critical','#f0b35a',18); if(typeof fxCrit==='function') fxCrit(t); }
   const who = u.side==='player'?'p':'e';
   const parts=[];
   if(res.pd) parts.push(`${res.pd} shot down by point defense`);

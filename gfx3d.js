@@ -313,10 +313,10 @@ const FIRE_GLSL={
 };
 function fireballFx(pos,size,dur=1.1,tint){ try{ if(!G.scene) return; const S=BABYLON.Effect.ShadersStore; if(!S.vsFireVertexShader){ S.vsFireVertexShader=FIRE_GLSL.vert.replace('NOISE',PLANET_GLSL.noise); S.vsFireFragmentShader=FIRE_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
     if(!G.fireBase||G.fireBase.isDisposed()){ G.fireBase=MB.CreateSphere('fireBase',{diameter:2,segments:G.quality==='medium'?14:28},G.scene); G.fireBase.isVisible=false; G.fireBase.isPickable=false; }
-    const m=new BABYLON.ShaderMaterial('fireM',G.scene,{vertex:'vsFire',fragment:'vsFire'},{attributes:['position','normal'],uniforms:['world','worldViewProjection','t','seed','camPos','tint'],needAlphaBlending:true});
-    m.alphaMode=BABYLON.Engine.ALPHA_COMBINE; m.disableDepthWrite=true; m.backFaceCulling=true; const sd=Math.random()*40; m.setFloat('seed',sd); m.setColor3('tint',tint||new C3(1,1,1)); m.setFloat('t',0); m.setVector3('camPos',G.cam.position);
-    const sp=G.fireBase.clone('fire'); sp.isVisible=true; sp.material=m; sp.position.copyFrom(pos); sp.rotation.set(Math.random()*6,Math.random()*6,0); try{ G.glow.addExcludedMesh(sp); }catch(e){}
-    const t0=G.time, D=dur*Math.max(.3,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||sp.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!sp.isDisposed()) sp.dispose(); m.dispose(); return; }
+    const e=fxShPool('fireball',()=>{ const m=new BABYLON.ShaderMaterial('fireM',G.scene,{vertex:'vsFire',fragment:'vsFire'},{attributes:['position','normal'],uniforms:['world','worldViewProjection','t','seed','camPos','tint'],needAlphaBlending:true});
+      m.alphaMode=BABYLON.Engine.ALPHA_COMBINE; m.disableDepthWrite=true; m.backFaceCulling=true; const sp=G.fireBase.clone('fire'); sp.isVisible=true; sp.material=m; try{ G.glow.addExcludedMesh(sp); }catch(e){} return {mesh:sp,mat:m}; }); /* v53-I: pooled mesh and material */
+    const m=e.mat, sp=e.mesh; m.setFloat('seed',Math.random()*40); m.setColor3('tint',tint||new C3(1,1,1)); m.setFloat('t',0); m.setVector3('camPos',G.cam.position); sp.position.copyFrom(pos); sp.rotation.set(Math.random()*6,Math.random()*6,0); sp.scaling.setAll(size*.35);
+    const t0=G.time, D=dur*Math.max(.3,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||sp.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); e.release(); return; }
       m.setFloat('t',k); m.setVector3('camPos',G.cam.position); sp.scaling.setAll(size*(.35+.9*Math.pow(k,.45))); }); }catch(e){ console.warn('fireball',e); } }
 
 // ---------- shader beams: a white-hot core inside a coloured sheath, with energy crawling along it ----------
@@ -422,7 +422,8 @@ const RIFT_GLSL={vert:`precision highp float; attribute vec3 position; attribute
       float a=(ring*0.75+inner*0.3)*open; if(r>1.0) a=0.0;
       gl_FragColor=vec4(col*a*1.1+vec3(1.0)*ring*open*0.15,a*0.8); }`};
 function warpRift(pos,fwd,size,col){ try{ if(!G.scene||G.fxReduced) return; const S=BABYLON.Effect.ShadersStore; if(!S.vsRiftVertexShader){ S.vsRiftVertexShader=RIFT_GLSL.vert; S.vsRiftFragmentShader=RIFT_GLSL.frag.replace('NOISE',PLANET_GLSL.noise); }
-    const pl=MB.CreatePlane('rift',{size:1,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.isPickable=false; pl.position.copyFrom(pos); pl.lookAt(pos.add(fwd)); pl.scaling.setAll(size);
-    const m=new BABYLON.ShaderMaterial('riftM',G.scene,{vertex:'vsRift',fragment:'vsRift'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed'],needAlphaBlending:true});
-    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('seed',Math.random()*30); m.setFloat('t',0); pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){}
-    const t0=G.time, D=1.15*Math.max(.4,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||pl.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); if(!pl.isDisposed()) pl.dispose(); m.dispose(); return; } m.setFloat('t',k); }); }catch(e){ console.warn('rift',e); } }
+    const e=fxShPool('rift',()=>{ const pl=MB.CreatePlane('rift',{size:1,sideOrientation:BABYLON.Mesh.DOUBLESIDE},G.scene); pl.isPickable=false;
+      const m=new BABYLON.ShaderMaterial('riftM',G.scene,{vertex:'vsRift',fragment:'vsRift'},{attributes:['position','uv'],uniforms:['worldViewProjection','col','t','seed'],needAlphaBlending:true});
+      m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; pl.material=m; try{ G.glow.addExcludedMesh(pl); }catch(e){} return {mesh:pl,mat:m}; }); /* v53-I: pooled mesh and material */
+    const pl=e.mesh, m=e.mat; pl.position.copyFrom(pos); pl.rotation.set(0,0,0); pl.lookAt(pos.add(fwd)); pl.scaling.setAll(size); m.setColor3('col',col); m.setFloat('seed',Math.random()*30); m.setFloat('t',0);
+    const t0=G.time, D=1.15*Math.max(.4,SPEED); const obs=G.scene.onBeforeRenderObservable.add(()=>{ const k=(G.time-t0)/D; if(k>=1||pl.isDisposed()){ G.scene.onBeforeRenderObservable.remove(obs); e.release(); return; } m.setFloat('t',k); }); }catch(e){ console.warn('rift',e); } }

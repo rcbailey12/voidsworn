@@ -248,6 +248,17 @@ SFX.CUES={
     K.noise({k:'p',type:'bandpass',f0:2600,q:1,t,a:.001,dec:.03,pk:.42}); K.metal({f:K.rv(170,260),t,dec:.45,pk:.3}); K.osc({f0:95,f1:48,t,dec:.16,pk:.6}); K.noise({k:'k',type:'bandpass',f0:3000,q:.8,t:t+.02,a:.01,dec:.25,pk:.18}); }},
   hit_heavy:{bus:'impacts',g:.46,max:3,gap:.08,defer:.15,n:3,len:1.5,fn(K,t){ K.noise({k:'b',type:'bandpass',f0:K.rv(500,800),f1:180,q:.7,t,dec:.22,pk:.85}); K.noise({k:'p',type:'bandpass',f0:2200,q:1,t,a:.001,dec:.04,pk:.4});
     K.metal({f:K.rv(90,130),t,dec:.8,pk:.32}); K.osc({f0:72,f1:34,t,dec:.3,pk:.8}); K.noise({k:'k',type:'bandpass',f0:2400,q:.7,t:t+.03,a:.02,dec:.6,pk:.25}); }},
+  // v53-I: each weapon family lands with its own sound (the visuals call these at the moment of impact)
+  hit_las:{bus:'impacts',g:.36,max:4,gap:.05,defer:.1,n:3,len:.6,fn(K,t){ K.noise({k:'w',type:'bandpass',f0:6000,f1:2500,q:1,t,dec:.18,pk:.35}); K.osc({type:'triangle',f0:K.rv(1600,2000),f1:400,gl:.12,t,dec:.12,pk:.25});
+    K.osc({f0:110,f1:55,t,dec:.12,pk:.5}); K.noise({k:'p',type:'bandpass',f0:3200,q:1,t,a:.001,dec:.03,pk:.35}); }},
+  hit_plasma:{bus:'impacts',g:.5,max:4,gap:.06,defer:.12,n:3,len:1,fn(K,t){ K.osc({f0:K.rv(64,76),f1:32,gl:.25,t,dec:.35,pk:1}); K.noise({k:'b',f0:600,f1:120,t,dec:.3,pk:.7});
+    K.noise({k:'w',type:'bandpass',f0:4500,f1:2000,q:.8,t:t+.03,a:.02,dec:.45,pk:.22}); K.noise({k:'k',type:'bandpass',f0:1800,q:.8,t:t+.05,a:.02,dec:.4,pk:.18}); }},
+  hit_rail:{bus:'impacts',g:.48,max:4,gap:.06,defer:.12,n:3,len:1,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:3800,q:.8,t,a:.001,dec:.025,pk:.7}); K.metal({f:K.rv(300,380),t,dec:.6,pk:.3});
+    K.osc({f0:90,f1:40,t,dec:.25,pk:.7}); K.noise({k:'b',f0:900,f1:200,t,dec:.25,pk:.5}); }},
+  hit_wet:{bus:'impacts',g:.4,max:4,gap:.05,defer:.1,n:3,len:.7,fn(K,t){ K.noise({k:'p',type:'bandpass',f0:500,f1:1500,gl:.08,q:5,t,dec:.16,pk:.6}); K.osc({f0:K.rv(160,200),f1:60,t,dec:.18,pk:.6,vib:60,vibHz:30});
+    K.noise({k:'b',type:'bandpass',f0:2500,q:2,t:t+.08,a:.03,dec:.4,pk:.15}); }},
+  hit_glass:{bus:'impacts',g:.3,max:4,gap:.05,defer:.1,n:3,len:.6,fn(K,t){ for(let i=0;i<4;i++) K.osc({f0:K.rv(2800,4200),t:t+i*.018,dec:.25,pk:.18}); K.noise({k:'w',type:'bandpass',f0:8000,q:1,t,dec:.06,pk:.2}); K.osc({f0:200,f1:100,t,dec:.08,pk:.3}); }},
+  hit_ion:{bus:'impacts',g:.36,max:3,gap:.08,defer:.12,n:3,len:.9,fn(K,t){ K.noise({k:'k',type:'bandpass',f0:3000,q:1,t,a:.005,dec:.5,pk:.4}); K.osc({type:'sawtooth',f0:180,f1:120,lp:2000,t,dec:.35,pk:.25,vib:40,vibHz:30}); K.osc({f0:90,f1:50,t,dec:.2,pk:.5}); }},
   shield:{bus:'impacts',g:.24,max:4,gap:.06,defer:.12,n:3,len:1.1,first:1,fn(K,t){ const f=K.rv(780,940);
     [[1,.5,.24],[1.5,.42,.18],[2.32,.34,.13],[3.01,.24,.08]].forEach(([r,d,a])=>{ K.osc({f0:f*r,f1:f*r*.99,t,a:.002,dec:d,pk:a,det:-5}); K.osc({f0:f*r,f1:f*r*.99,t,a:.002,dec:d*.9,pk:a*.7,det:6}); });
     K.noise({k:'w',type:'bandpass',f0:4200,f1:2200,q:3,t,dec:.1,pk:.22}); K.osc({f0:240,f1:180,t,dec:.2,pk:.3}); K.noise({k:'k',type:'bandpass',f0:6000,q:1,t:t+.02,a:.01,dec:.3,pk:.1}); }},
@@ -313,7 +324,7 @@ SFX.MAP={
   lance:[{s:'laserLarge',g:.75,r:.55},{syn:1,g:.7}], lance_ion:[{s:'arc',g:.7},{syn:1,g:.6}], lance_dark:[{syn:1,g:.85},{s:'laserLarge',g:.35,r:.42}], lance_choir:[{syn:1,g:.8},{s:'laserSmall',g:.35,r:1.5}],
   torp:[{s:'whoosh',g:.75,r:1.1},{syn:1,g:.55}], torp_heavy:[{s:'whoosh',g:.7,r:.85},{syn:1,g:.7}], torp_star:[{s:'whoosh',g:.45,r:1.5},{syn:1,g:.7}],
   launch:[{s:'launch'}], phase:[{s:'whoosh',g:.6,r:1.2},{s:'arc',g:.4,d:.25}],
-  hit:[{s:'hullHit'},{syn:1,g:.3}], hit_heavy:[{s:'hullHitBig'},{s:'boomLow',g:.45}], shield:[{s:'shieldHit'},{syn:1,g:.35}], shield_break:[{s:'shieldBig'},{s:'shieldHit',g:.5,r:.8},{syn:1,g:.3}],
+  hit:[{s:'hullHit'},{syn:1,g:.3}], hit_las:[{s:'hullHit',g:.45,r:1.3},{syn:1,g:.8}], hit_plasma:[{s:'hullHitBig',g:.55,r:.78},{syn:1,g:.85}], hit_rail:[{s:'hullHitBig',g:.6,r:1.12},{syn:1,g:.75}], hit_glass:[{s:'shieldHit',g:.35,r:1.6},{syn:1,g:.8}], hit_ion:[{s:'arc',g:.6,r:1.2},{syn:1,g:.7}], hit_heavy:[{s:'hullHitBig'},{s:'boomLow',g:.45}], shield:[{s:'shieldHit'},{syn:1,g:.35}], shield_break:[{s:'shieldBig'},{s:'shieldHit',g:.5,r:.8},{syn:1,g:.3}],
   pop:[{s:'boomSmall',g:.8,r:1.35}], boom_s:[{s:'boomSmall'},{syn:1,g:.3}], boom_m:[{s:'boomSmall',r:.8},{s:'boomLow',g:.65},{s:'debris',g:.4,d:.15}], boom_l:[{s:'boomBig'},{s:'debris',g:.45,d:.3}],
   bass_drop:[{s:'bassDrop'}], charge:[{s:'ionCharge'}], wreck:[{s:'scrape'}],
   ui_click:[{s:'uiClick'}], ui_confirm:[{s:'uiConfirm'}], ui_cancel:[{s:'uiDeny'}], ui_select:[{s:'uiSelect'}], ui_panel:[{s:'uiPanel'}], ui_reward:[{s:'reward'}],
@@ -334,7 +345,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
     ['gun: flak',s=>s.gun('flak',false)],['gun: squadron',s=>s.gun('gun',true)],['broadside x12 (salvo aggregation)',s=>{ for(let i=0;i<12;i++) setTimeout(()=>s.gun('gun',false,'shell',{pan:(i/11-.5)*1.2}),i*28); }],
     ['lance',s=>s.lance(false,'hegemony')],['lance: ion',s=>s.lance(true,'voidsworn')],['lance: Deathless',s=>s.lance(false,'deathless')],['lance: Ithar',s=>s.lance(false,'ithar')],
     ['torpedo',s=>s.torp('hegemony')],['torpedo: Corsair rockets',s=>s.torp('corsair')],['torpedo: Chorus sac',s=>s.torp('chorus')],['torpedo: Ithar star',s=>s.torp('ithar')],['torpedo: Voidsworn heavy',s=>s.torp('voidsworn')],
-    ['hull hit',s=>s.hit()],['hull hit heavy',s=>s.hit(null,true)],['shield hit',s=>s.shield()],['shield facing collapses',s=>s.shield(null,true)],['patter hull',s=>s.patter(false)],['patter shield',s=>s.patter(true)],
+    ['hit: las',s=>s.play('hit_las')],['hit: plasma',s=>s.play('hit_plasma')],['hit: rail',s=>s.play('hit_rail')],['hit: wet (Chorus)',s=>s.play('hit_wet')],['hit: glass (Ithar)',s=>s.play('hit_glass')],['hit: ion',s=>s.play('hit_ion')],['hull hit',s=>s.hit()],['hull hit heavy',s=>s.hit(null,true)],['shield hit',s=>s.shield()],['shield facing collapses',s=>s.shield(null,true)],['patter hull',s=>s.patter(false)],['patter shield',s=>s.patter(true)],
     ['fighter destroyed (pop)',s=>s.pop()],['boom 0.12 (burning hull)',s=>s.boom(.12)],['boom 0.3 (frigate)',s=>s.boom(.3)],['boom 0.6',s=>s.boom(.6)],['boom 0.8 (torpedo)',s=>s.boom(.8)],['boom 1.2 (capital)',s=>s.boom(1.2)],['boom 1.5 (reactor)',s=>s.boom(1.5)],
     ['pan left to right',s=>{ [-1,-.5,0,.5,1].forEach((p,i)=>setTimeout(()=>s.hit({pan:p}),i*220)); }],
     ['phase jump',s=>s.phase()],['nova charge',s=>s.charge()],['launch',s=>s.launch()],['engine small',s=>s.engine(1)],['engine capital',s=>s.engine(4)],['engine cough',s=>s.cough()],['puff',s=>s.puff()],

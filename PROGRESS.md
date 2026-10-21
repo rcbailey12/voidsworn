@@ -501,3 +501,17 @@ Live main: https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH | Preview: https://
 - Bugs found on the real GPU and fixed: invisible then black hulls (NaN/undefined shader uniforms, GLSL comment breaking Babylon's preprocessor), single-threaded test server stalling parallel loads.
 - Gates: rulecheck, fuzz 20; PC closeshot (no console errors) and full smoke passed 07:44.
 - Known: a small orange glow still floats above some hulls; Ithar sail still a flat sheet; desktop CPU/frame higher than v53.1 (15 vs 10 ms) though frame pacing is smoother.
+
+## v53.6 (Oct 21): weapon effects, doubled down
+- Every weapon family has its own look and timing (wfx3d.js):
+  - plasma: tight electric-blue bolt with a white-hot core, crackle arcs and an orange-hot molten impact;
+  - laser: thick white core inside a coloured halo, with a muzzle flash and impact flare;
+  - rail: white-hot slug, fading green wake, accelerator rings and debris spraying out the far side;
+  - tracers: five long flickering brass tracers per shot;
+  - also lance, ion, needle, spine, flak, and torpedoes twice the old size.
+- Explosions use flame and smoke flipbooks. Capital deaths walk blasts along the hull and end in a flash, a fireball and one flat ring.
+- Game feel: hits are sized small to extra large, each with matching shake, hit-stop, flash and bloom. Settings has separate Reduce flashing and Reduce shake toggles.
+- Fix: effect sprites draw after the board plate, grid and rings, so the grid no longer paints over them. This was what made plasma look white with a dark line through it.
+- Fix: the instanceColor shader error on the board footprint marks.
+- Effect textures build in idle slices on the title screen, not at battle start.
+- Checks: PC fxshot ran 100 shots in 3 rounds with no console errors; rulecheck, fuzz 20 and full PC smoke pass.

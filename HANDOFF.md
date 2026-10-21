@@ -3,14 +3,14 @@
 ## What and where
 - Babylon.js 8.20 single-HTML hex fleet tactics roguelite. Ryan plays on a Pixel 10 XL and a PC (RTX 5080).
 - Live game (one link only): https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH (publish `voidsworn-3d.html` from `python3 build.py publish`; hull sidecars `hulls/`, `hulls_hi/` are uploaded as artifact files and kept on republish).
-- Repo: github.com/rcbailey12/voidsworn (private). `master` is pushed to `main`. Workstream branches: `v53-I` (effects, master merged in, under PC review), `v53-E` (rock library + Ithar sail). `v53-C` and `v53-G` are merged.
+- Repo: github.com/rcbailey12/voidsworn (private). `master` is pushed to `main`. Workstream branches (both pushed to GitHub): `v53-I` (effects, merged and published as v53.6), `v53-E` (rock library + Ithar sail; an agent was mid-work when this was written, so check its last commit). `v53-C` and `v53-G` are merged.
 - Plan and queue: `NEXT.md`. History: `PROGRESS.md`. Code audit and asset grades: `AUDIT_v53H.md`. Reference checklists: `docs/skills/`.
 - Master review doc (Claude Docs): https://claude.ai/code/artifact/aef64607-980c-49ce-977b-ff7b8a32868a
 
 ## Current state
 - Live: **v53.5** (Oct 21, artifact Version 62): concept meshes for the carrier (V18_51), Corsair boss (C19_51), squadron craft (S1_51, S2_23, B23_51), station (O1_37), transport (O2_37) and beacon (O3_11); baked normal + AO/curvature maps on all 36 hulls (desktop `hulls_hi/`, phone `hulls/`); leftover-code cleanup; asteroid rebuild; perf work. Hull sidecars are uploaded artifact files (about 110 MB, published in 3 batches because one publish caps at 64 MB). `rocks/index.json` ships as a `{}` placeholder.
 - Known issues: a small orange glow floats above some hulls (cathedral, h_vanguard, i_song); the Ithar sail is a flat grey sheet; Deathless lines are heavy; a few red/green bake errors in the normal maps; desktop CPU frame time went up (10 to 15 ms) while the phone got faster.
-- `v53-I` effects pass (blue-white plasma bolt, thicker lasers, rail with green wake + accelerator rings, visible tracers, flat shock rings, game-feel tiers, reduce flash/shake toggles) is merged with master and under PC fxshot review.
+- Live since Version 63: **v53.6** effects pass (blue plasma bolt, thicker lasers, rail with green wake + accelerator rings, visible tracers, flat shock rings, game-feel tiers, reduce flash/shake toggles), merged to master.
 - `v53-E`: 32-rock library (carbon, stone, crystal, ice) baked, being wired; Ithar sail material.
 - Explosion sims (Mantaflow, `tools/blender/fxsim.py`) run on the PC but look blobby at 64 res; not usable yet.
 
@@ -33,10 +33,21 @@
 - Music style for the adaptive score.
 - Whether he wants a Pixel check of v53.4 sound and status bars.
 
+## Ryan's Pixel feedback on v53.5 (Oct 21, screenshots in `docs/feedback/2026-10-21/`)
+- **Station looks broken** (`pixel_station_broken.png`, objective station `obj|station` → O1_37). It shows a spire with loose slabs, red spikes and orange lights floating around it. Suspects: procedural station parts and lights that `applyAIHull` never disposes (it only removes meshes named `hull_*` or `*emblem`), points that `seatOnHull` failed to seat, or a bad mesh/alignment. Check with a PC closeshot of `obj|station`, `obj|transport` and `obj|beacon`.
+- **Ships still don't look detailed when zoomed in** (`pixel_flagship_closeup.png`, `pixel_hull_melted.png`). The Hunyuan meshes read soft and "melted" at full zoom, and the phone loads the half-res maps. Options to put to Ryan:
+  - give capitals sharper maps on the phone;
+  - add a tiling detail normal (panel lines, greebles) in the hull shader;
+  - remesh and sharpen in Blender;
+  - regenerate at a higher Hunyuan octree resolution;
+  - limit how far the camera can zoom in.
+  Also at close zoom the hex highlight bands and the selection ring blow up and cover the view (yellow/green bands in the flagship shot), so overlays should fade when the camera is very close.
+- **Lag on loading into a battle**: hull JSON + webp map fetch/decode, plus the effect atlas build (v53-I moves it to idle slices on the title screen). Measure with perfprobe. Ideas: prefetch the next battle's hulls on the map screen, compressed GPU textures (KTX2), decode off the main thread.
+
 ## Next 3 tasks
-1. Finish `v53-I` effects: review PC fxshot sheets (`python3 build.py && python3 fxshot.py`, board + close views), fix what reads wrong, full smoke, merge, publish v53.6. Pass: Ryan says plasma vs laser vs rail vs tracer feel distinct and punchy on the Pixel.
-2. Merge `v53-E` (rock library + Ithar sail). Pass: PC worldshot/closeshot show cracked, strata'd rocks and a glassy sail; draws stay under ~500 desktop; upload `rocks/` + `rocks_hi/` as artifact files.
-3. Hunt the floating orange glow (closeshot `PROBE=1 EXP=1`), then the desktop CPU regression.
+1. Ryan's Pixel feedback above. Ask him 3-5 scope questions first (his saved preference), mainly about how far to push close-up detail. Fix the station first: it's a bug, not a quality question. Pass: Pixel close-ups of the station, the flagship and a hegemony hull look intact and crisp, and battle load has no visible hitch.
+2. Get Ryan's Pixel verdict on v53.6 effects (live, artifact Version 63). Plasma, laser, rail and tracer were approved on PC fxshot round 3; open items are plasma sprite counts (about 440-600 alive per volley on desktop) and swapping in Blender-rendered flipbooks via `fxBookLoad(url, cols, rows)`.
+3. Merge `v53-E` (rock library + Ithar sail). Pass: PC worldshot/closeshot show cracked, layered rocks and a glassy sail; draws stay under ~500 on desktop; upload `rocks/` + `rocks_hi/` as artifact files. Then hunt the floating orange glow (closeshot `PROBE=1 EXP=1`) and the desktop CPU regression.
 
 ## Gotchas
 - PC test runner: `Downloads\voidsworn_test` with `watcher.bat` running. Commit files with device_commit_files, then commit `run.request` **in a separate, later call** (parallel write+commit raced twice and shipped stale files). `build\job.bat` runs once instead of the smoke test; a job must `cd` back to `build` or it re-runs. Scripts are in `tools/pc/`.
@@ -50,5 +61,5 @@
 
 Starter line:
 ```
-Read HANDOFF.md, NEXT.md and PROGRESS.md in github.com/rcbailey12/voidsworn, then pick up task 1 (finish the v53-I effects pass from the PC fxshot review) and keep the PC test runner flow.
+Read HANDOFF.md, NEXT.md and PROGRESS.md in github.com/rcbailey12/voidsworn, then pick up task 1 (Ryan's Pixel feedback on v53.5: broken station, close-up detail, battle load lag; screenshots in docs/feedback/2026-10-21). Ask your scope questions first, and keep the PC test runner flow.
 ```
