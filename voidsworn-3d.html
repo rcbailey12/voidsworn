@@ -308,7 +308,7 @@ body #app .facpick.on{background:var(--gilt)!important;color:#1a1206!important;b
 <div class="loading" id="loading">Assembling the fleet&hellip;</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babylonjs/8.20.0/babylon.js"></script>
 <script>
-const BUILD_ID='20261021-1311-acb2b10';
+const BUILD_ID='20261021-1031-8772b2f';
 // ======================= DATA =======================
 const W = {
   autocannon:{n:'Autocannon',k:'battery',shots:3,dmg:5,r:4,opt:2,acc:80,fall:8,crit:5},
@@ -2546,10 +2546,13 @@ function buildBattleEnv(){
 class CamCtl{
   constructor(cam,canvas){ this.cam=cam; this.el=canvas; this.a=cam.alpha; this.b=cam.beta; this.r=cam.radius; this.t=cam.target.clone();
     this.keys=new Set(); this.drag=null; this.saved=null; this.follow=null; this.attract=true; this.topdown=false; this.prevBeta=.88;
-    canvas.addEventListener('wheel',e=>{ e.preventDefault(); this.attract=false; this.estab=null; const k=Math.exp(e.deltaY*.0011); this.r=clamp(this.r*k,22,900); },{passive:false});
+    canvas.addEventListener('wheel',e=>{ e.preventDefault(); this.attract=false; this.estab=null; const k=Math.exp(e.deltaY*.0011); this.r=clamp(this.r*k,this.minR(),900); },{passive:false});
     window.addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; this.keys.add(e.key.toLowerCase()); });
     window.addEventListener('keyup',e=>this.keys.delete(e.key.toLowerCase()));
     window.addEventListener('blur',()=>this.keys.clear()); }
+  // v53.7 (Ryan's pick: "a bit further out"): the closest view keeps the biggest ship on the board to about half the screen, where the hull still
+  // reads crisp; scripted cinematics (hold/release) and test shots (G.camMinOff) may go closer
+  minR(){ if(G.camMinOff||typeof B==='undefined'||!B||B.showcase||!G.views) return 22; let L=0; for(const v of G.views.values()) if(v&&v.L&&!v.wing&&(v.state==null||v.state==='alive')&&v.L>L) L=v.L; return clamp(L*1.5,26,55); }
   panBy(dx,dz){ this.estab=null; const s=this.r/340; const fwd=new V3(-Math.cos(this.a),0,-Math.sin(this.a)); const right=new V3(-Math.sin(this.a),0,Math.cos(this.a));
     this.t.addInPlace(right.scale(dx*s)).addInPlace(fwd.scale(dz*s)); this.t.x=clamp(this.t.x,-G.bx,G.bx); this.t.z=clamp(this.t.z,-G.bz,G.bz); this.attract=false; }
   orbit(dx,dy){ this.estab=null; this.a-=dx*.0055; this.b=clamp(this.b-dy*.0045,.05,1.36); this.topdown=false; }
@@ -2579,6 +2582,7 @@ class CamCtl{
     let px=0,pz=0; const k=this.keys;
     if(!document.querySelector('.intro')){ if(k.has('w')||k.has('arrowup')) pz+=1; if(k.has('s')||k.has('arrowdown')) pz-=1; if(k.has('a')||k.has('arrowleft')) px-=1; if(k.has('d')||k.has('arrowright')) px+=1; }
     if(px||pz){ this.panBy(px*dt*300,pz*dt*300); }
+    if(!this.saved){ const mr=this.minR(); if(this.r<mr) this.r=mr; }
     const f=1-Math.exp(-dt*((this.slowUntil&&G.time<this.slowUntil)?1.7:7));
     let da=this.a-c.alpha; c.alpha+=da*f; c.beta+=(this.b-c.beta)*f; c.radius+=(this.r-c.radius)*f;
     const tgt=c.target.clone(); tgt.addInPlace(this.t.subtract(tgt).scale(f));
@@ -2757,7 +2761,7 @@ function buildTerrainFeatures(rr){
     G._wreckMeshes=null; }
 }
 // v47: three station types, matched to the sector: an orbital ring hub, a scaffolded mining rig, or a dark derelict spire
-function buildStation(c,rr){ const kind=(B&&B.biome&&B.biome.station)||'ring'; if((kind==='ring'||(B&&B.enc==='defend'))&&typeof buildMeshStation==='function'&&aiHullsOn()&&buildMeshStation(c,rr)) return; /* v53-G: the concept station mesh */ if(kind==='rig') return buildRigStation(c,rr); if(kind==='spire') return buildSpireStation(c,rr); return buildRingStation(c,rr); }
+function buildStation(c,rr){ const kind=(B&&B.biome&&B.biome.station)||'ring'; if(typeof buildMeshStation==='function'&&aiHullsOn()&&buildMeshStation(c,rr)) return; /* v53.7: the concept station mesh on every station map (the old procedural spire and rig, with windows and spikes floating off the hull, showed on Engagement fights; Ryan's Pixel shot Oct 21). The builders below are only the fallback when the meshes did not load */ if(kind==='rig') return buildRigStation(c,rr); if(kind==='spire') return buildSpireStation(c,rr); return buildRingStation(c,rr); }
 function stationFinish(b,c,rr){ const m=b.finish(); m.root.position=c.add(new V3(0,4,0)); m.root.rotation.set(.12,rr()*6,.08); m.meshes.forEach(x=>x.isPickable=false); G.env.push(m.root); G.station=m; }
 function buildRigStation(c,rr){ const b=new SB('corsair',30), M=b.M;
   b.cylY(M.dark,0,-14,0,30,2.4,2.8,8); b.cylY(M.hull,0,9,0,7,6.5,6.5,12); b.cylY(M.steel,0,16,0,2,3,6.5,12); b.cylY(M.dark,0,-16,0,3,4.5,2.6,8);
@@ -3740,8 +3744,8 @@ function toWorld(v,local){ v.root.computeWorldMatrix(true); return V3.TransformC
 const RING_GEO={};
 const RING_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec2 uv; uniform mat4 worldViewProjection; uniform float sc[6]; varying float vP;
 void main(){ float s=1.0; for(int i=0;i<6;i++){ if(abs(uv.x-float(i))<0.5) s=sc[i]; } vP=uv.x; gl_Position=worldViewProjection*vec4(position*s,1.0); }`,
-  frag:`precision highp float; uniform vec3 col[6]; uniform float al[6]; varying float vP;
-void main(){ vec3 c=vec3(0.0); float a=0.0; for(int i=0;i<6;i++){ if(abs(vP-float(i))<0.5){ c=col[i]; a=al[i]; } } gl_FragColor=vec4(c,a); }`};
+  frag:`precision highp float; uniform vec3 col[6]; uniform float al[6]; uniform float fd; varying float vP;
+void main(){ vec3 c=vec3(0.0); float a=0.0; for(int i=0;i<6;i++){ if(abs(vP-float(i))<0.5){ c=col[i]; a=al[i]; } } gl_FragColor=vec4(c,a*fd); }`}; // fd: v53.7 close-up fade (ovFadeTick)
 function ringTemplate(kind,R){ const key=kind+'|'+R; let t=RING_GEO[key]; if(t&&!t.isDisposed()) return t; const parts=[], spans=[[-50,50],[50,130],[130,230],[230,310]];
   const add=(m,part,twoSided)=>{ m.computeWorldMatrix(true); const vd=BABYLON.VertexData.ExtractFromMesh(m,true,true); vd.transform(m.getWorldMatrix()); const n=vd.positions.length/3, uv=new Float32Array(n*2); for(let i=0;i<n;i++) uv[i*2]=part; vd.uvs=uv; vd.normals=null; vd.colors=null;
     if(twoSided){ const I=Array.from(vd.indices), J=I.slice(); for(let i=0;i<I.length;i+=3) J.push(I[i],I[i+2],I[i+1]); vd.indices=J; } parts.push(vd); m.dispose(false,false); };
@@ -3755,8 +3759,8 @@ function makeShieldRing(u,v){
   const col=((FAC3D[u.fac]||{}).shield)||SHIELD_C, iff=u.side==='player'?FRIEND_C:FOE_C, segs=[], kind=u.isSq?'Q':u.shMax>0?'S':'B';
   const S=BABYLON.Effect.ShadersStore; if(!S.vsRingVertexShader){ S.vsRingVertexShader=RING_GLSL.vert; S.vsRingFragmentShader=RING_GLSL.frag; }
   const al=[0,0,0,0,.55,.85], sc=[1,1,1,1,1,1], cols=[]; for(let i=0;i<6;i++){ const c=i<4?(kind==='B'?new C3(.5,.3,.3):col):i===4?iff:iff.scale(1.5); cols.push(c.r,c.g,c.b); } if(kind==='B') al[0]=.35;
-  const mat=new BABYLON.ShaderMaterial('ringM',G.scene,{vertex:'vsRing',fragment:'vsRing'},{attributes:['position','uv'],uniforms:['worldViewProjection','sc','col','al'],needAlphaBlending:true});
-  mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.backFaceCulling=true; mat.setFloats('sc',sc); mat.setFloats('al',al); mat.setArray3('col',cols);
+  const mat=new BABYLON.ShaderMaterial('ringM',G.scene,{vertex:'vsRing',fragment:'vsRing'},{attributes:['position','uv'],uniforms:['worldViewProjection','sc','col','al','fd'],needAlphaBlending:true});
+  mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.backFaceCulling=true; mat.setFloats('sc',sc); mat.setFloats('al',al); mat.setArray3('col',cols); mat.setFloat('fd',G.ovFade??1);
   const m=ringTemplate(kind,R).clone('ring',null); m.setEnabled(true); m.isPickable=false; m.material=mat; m.parent=node; G.glow.addExcludedMesh(m);
   if(kind==='S') for(let q=0;q<4;q++) segs.push({pulse:0,mat:{get alpha(){ return al[q]; },set alpha(x){ al[q]=x; }},m:{scaling:{get x(){ return sc[q]; },setAll(x){ sc[q]=x; }}}});
   return {node,segs,R,mesh:m};
@@ -6504,7 +6508,14 @@ function keysHelp(){ return `<div class="keys"><kbd>Tab</kbd> next ship <kbd>Q</
 
 // ---------- 3D overlays ----------
 const OV={items:[],hover:[],bases:{},fan:null,ghost:null,ghostFor:null,selRing:null,insRing:null,aiRing:null,targets:[]};
-function ovMat(name,col,alpha){ const m=emMat('ov_'+name,col,alpha); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.backFaceCulling=false; m.disableDepthWrite=true; m.zOffset=-2; return m; }
+function ovMat(name,col,alpha){ const m=emMat('ov_'+name,col,alpha); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.backFaceCulling=false; m.disableDepthWrite=true; m.zOffset=-2; return ovFadeReg(m); }
+// v53.7: board overlays (move range, arcs, rings, aim lines, shield/side rings) step back when the camera is close, so a close-up shows the ship, not giant
+// yellow and green bands (Ryan's Pixel shot Oct 21). G.ovFade is 1 at board zoom and falls to .15 in the tightest view; written only when the step changes.
+function ovLive(m){ return !!(G.scene&&G.scene.materials.indexOf(m)>=0); } // Babylon materials have no isDisposed()
+function ovFadeReg(m){ m._a0=m.alpha; const L=OV.fadeMats||(OV.fadeMats=[]); if(L.length>160) OV.fadeMats=L.filter(ovLive); OV.fadeMats.push(m); m.alpha=m._a0*(G.ovFade??1); return m; }
+function ovFadeK(){ const r=G.cam?G.cam.radius:300, x=clamp((r-28)/150,0,1); return Math.round(clamp(Math.pow(x,1.5),.04,1)*25)/25; } // additive marks under bloom still glare at 20%: the tightest view takes them to about 5%
+function ovFadeTick(){ const k=ovFadeK(); if(k===G.ovFade) return; G.ovFade=k; const keep=[]; for(const m of OV.fadeMats||[]){ if(!ovLive(m)) continue; m.alpha=m._a0*k; keep.push(m); } OV.fadeMats=keep;
+  if(G.views) for(const v of G.views.values()){ const mt=v.ring&&v.ring.mesh&&v.ring.mesh.material; if(mt&&mt.setFloat) mt.setFloat('fd',k); } }
 function tileBase(key,col,alpha,edge){
   if(OV.bases[key]) return OV.bases[key];
   let m; if(edge){ m=MB.CreateTorus('tb',{diameter:HS*2*.94,thickness:.35,tessellation:6},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationY(Math.PI/6)); }
@@ -6595,7 +6606,7 @@ function updateOverlays(){
   const place=(ring,u)=>{ if(u&&!u.dead&&G.views.get(u.id)){ const v=G.views.get(u.id); const p=v.root.getAbsolutePosition(); ring.setEnabled(true); ring.position.set(p.x,.2,p.z); const R=Math.max(5.5,v.L*.6)/6; ring.scaling.set(R,1,R); } else ring.setEnabled(false); };
   place(OV.selRing,B.sel); place(OV.insRing,B.inspect); place(OV.aiRing,B.side==='enemy'?B.aiActive:null); aiFocusMark();
   OV.selRing.rotation.y+=.01; const pulse=.45+.4*Math.sin(G.time*4.5);
-  for(const r of OV.targets){ const u=r.metadata.u, v=G.views.get(u.id); if(v){ const p=v.root.getAbsolutePosition(); r.position.set(p.x,.25,p.z); r.material.alpha=pulse; } }
+  for(const r of OV.targets){ const u=r.metadata.u, v=G.views.get(u.id); if(v){ const p=v.root.getAbsolutePosition(); r.position.set(p.x,.25,p.z); r.material.alpha=pulse*(G.ovFade??1); } }
   if(OV.fan){ const u=OV.fan.metadata.u, v=G.views.get(u.id);
     if(OV.ghost&&OV.ghost.isEnabled()&&OV.ghostFor===u.id&&!u.vis){ OV.fan.position.set(OV.ghost.position.x,0,OV.ghost.position.z); OV.fan.rotation.y=OV.ghost.rotation.y; }
     else if(v){ const p=v.root.getAbsolutePosition(); OV.fan.position.set(p.x,0,p.z); OV.fan.rotation.y=unitVis(u).a*Math.PI/180; } }
@@ -6626,8 +6637,8 @@ function boardMarks(){ if(!B||B.showcase||!G.views||!fpEnsure()) return;
   const U=B.units, hide=!!G.cineHidePlates; let h=hide?3:7, n=0;
   for(let i=0;i<U.length;i++){ const u=U[i], v=G.views.get(u.id); let k=0; if(!hide&&fpOn(u,v)){ k=1+(u.q+64)*997+(u.r+64)*31+(u.side==='player'?3:5)+fpLevel(u)*7+(u.isSq?11:0); n++; } h=(Math.imul(h,31)+k)|0; }
   if(h!==FP.hash){ FP.hash=h; fpRebuild(n); }
-  { const r=G.cam?G.cam.radius:300, k=Math.round(clamp((r-30)/120,.2,1)*20)/20, mt=FP.fill.material, m2=FP.fill2.material; if(mt&&mt.alpha!==k*.999){ mt.alpha=k*.999; if(m2) m2.alpha=k*.999*.17; } } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
-  fpShadows(); }
+  { const k=ovFadeK(), mt=FP.fill.material, m2=FP.fill2.material; if(mt&&mt.alpha!==k*.999){ mt.alpha=k*.999; if(m2) m2.alpha=k*.999*.17; } } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
+  try{ ovFadeTick(); }catch(e){} fpShadows(); }
 function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); FP.fill2.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
   const M=FP.mbuf, F=FP.fcol, U=B.units; let i=0;
   if(n) for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!fpOn(u,v)) continue; const lv=fpLevel(u), p=hexWorld(u.q,u.r,0), c=u.side==='player'?FRIEND_C:FOE_C, o=i*16, q=i*4;
@@ -6651,7 +6662,7 @@ function focusRetMesh(){ const R0=HS*.92, R1=HS*1.12, f=.34, pos=[], idx=[], C=i
   const mt=ovMat('aiFocusRet',new C3(1.25,.36,.3),.8); mt._keep=true; m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.alphaIndex=-55; try{ G.glow.addExcludedMesh(m); }catch(e){} m.setEnabled(false); if(G.env) G.env.push(m,mt); return m; }
 function aiFocusMark(){ const t=B&&!B.over&&!B.showcase&&B.aiFocus&&!B.aiFocus.dead&&B.aiFocus.side==='player'?B.aiFocus:null, v=t&&G.views?G.views.get(t.id):null, on=!!(v&&fpOn(t,v)&&!G.cineHidePlates);
   if(OV.focusRet&&OV.focusRet.isDisposed()) OV.focusRet=null; if(on&&!OV.focusRet&&G.scene) OV.focusRet=focusRetMesh(); const m=OV.focusRet;
-  if(m){ if(on){ if(m._q!==t.q||m._r!==t.r){ m._q=t.q; m._r=t.r; const p=hexWorld(t.q,t.r,.11); m.position.copyFrom(p); } m.material.alpha=.62+.25*Math.sin(G.time*3.2); if(!m.isEnabled()) m.setEnabled(true); } else if(m.isEnabled()) m.setEnabled(false); }
+  if(m){ if(on){ if(m._q!==t.q||m._r!==t.r){ m._q=t.q; m._r=t.r; const p=hexWorld(t.q,t.r,.11); m.position.copyFrom(p); } m.material.alpha=(.62+.25*Math.sin(G.time*3.2))*(G.ovFade??1); if(!m.isEnabled()) m.setEnabled(true); } else if(m.isEnabled()) m.setEnabled(false); }
   const el=on&&v.plate?v.plate.el:null; if(el!==OV.tgtEl){ if(OV.tgtEl) OV.tgtEl.classList.remove('tgt'); if(el) el.classList.add('tgt'); OV.tgtEl=el; } }
 function computeThreatAt(h){ if(!B.threatCache||B.threatCache.key!==B.log.length+'|'+B.round) B.threatCache={key:B.log.length+'|'+B.round,map:computeThreat()}; return B.threatCache.map.get(hkey(h.q,h.r))||0; }
 // v53-D: what one enemy ship threatens (tap an enemy): computeThreat on that ship alone, cached until the board changes
@@ -6682,7 +6693,7 @@ function bindInput(canvas){
     if(pts.size===2){ pinch=pinchState(); G.ptr=null; return; } G.ptr={b:e.button,x:e.clientX,y:e.clientY,lx:e.clientX,ly:e.clientY,moved:false,touch:e.pointerType==='touch'}; });
   canvas.addEventListener('pointercancel',e=>{ pts.delete(e.pointerId); if(pts.size<2) pinch=null; G.ptr=null; });
   canvas.addEventListener('pointermove',e=>{ if(pts.has(e.pointerId)) pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(pts.size===2&&pinch){ G.camMoved=performance.now(); const n=pinchState(); G.ctl.r=clamp(G.ctl.r*pinch.d/n.d,22,900); G.ctl.a-=(n.ang-pinch.ang); G.ctl.panBy(-(n.mx-pinch.mx)*.32,(n.my-pinch.my)*.32); pinch=n; hideTip(); return; }
+    if(pts.size===2&&pinch){ G.camMoved=performance.now(); const n=pinchState(); G.ctl.r=clamp(G.ctl.r*pinch.d/n.d,G.ctl.minR(),900); G.ctl.a-=(n.ang-pinch.ang); G.ctl.panBy(-(n.mx-pinch.mx)*.32,(n.my-pinch.my)*.32); pinch=n; hideTip(); return; }
     const p=G.ptr;
     if(p){ const dx=e.clientX-p.lx, dy=e.clientY-p.ly; p.lx=e.clientX; p.ly=e.clientY; if(Math.abs(e.clientX-p.x)+Math.abs(e.clientY-p.y)>5) p.moved=true;
       if(p.moved){ G.camMoved=performance.now(); if(p.b===2) G.ctl.orbit(dx,dy); else G.ctl.panBy(-dx*.32,dy*.32); hideTip(); return; } }
@@ -6754,7 +6765,7 @@ async function onBoardClick(){
 // enemies a ship's guns would reach from a hex if nothing were in the way, but asteroids or wrecks block the shot
 function blockedFrom(s,st){ try{ const v=stateView(s,st); return alive('enemy').filter(t=>!t.isSq&&s.weapons.some(w=>w.k!=='flak'&&hdist(v,t)<=w.r&&hdist(v,t)>=1&&inArc(v,t,w.arc))&&!los(v,t)); }catch(e){ return []; } }
 // aim line: gold when the shot is clear, red to an X where an asteroid or wreck blocks it
-function aimMat(key,col,a){ G.aimMats=G.aimMats||{}; let m=G.aimMats[key]; if(m&&!m.isDisposed?.()) return m; m=new BABYLON.StandardMaterial('aimM'+key,G.scene); m.disableLighting=true; m.emissiveColor=col; m.alpha=a; m.backFaceCulling=false; G.aimMats[key]=m; return m; }
+function aimMat(key,col,a){ G.aimMats=G.aimMats||{}; let m=G.aimMats[key]; if(m&&!m.isDisposed?.()) return m; m=new BABYLON.StandardMaterial('aimM'+key,G.scene); m.disableLighting=true; m.emissiveColor=col; m.alpha=a; m.backFaceCulling=false; G.aimMats[key]=m; return ovFadeReg(m); }
 function aimTube(name,pts,mat,rad){ const t=MB.CreateTube(name,{path:pts,radius:rad,tessellation:6,cap:BABYLON.Mesh.CAP_ALL},G.scene); t.material=mat; t.isPickable=false; t.renderingGroupId=2; OV.hover.push(t); return t; } /* v53-I: group 1 now holds the effect sprites (depth kept); the aim line stays on top in its own group */
 function aimLine(a,t){ try{ const line=hexLine(a,t); let cut=-1; for(let i=1;i<line.length-1;i++) if(sightBlocked(line[i].q,line[i].r)){ cut=i; break; }
     const R=HS*.07, from=hexWorld(a.q,a.r,1.6), to=hexWorld(t.q,t.r,1.6);
