@@ -28,7 +28,7 @@ ACT.copyReport=()=>{ let txt=''; try{ txt=JSON.stringify({build:typeof BUILD_ID!
 
 // renown earned so far this run, shown on the map
 function runRenown(){ if(!RUN) return 0; const s=RUN.stats; return s.battles*2+s.elites*4+s.bosses*15+Math.floor(s.kills/4)+(RUN.sector-1)*5; }
-const _map=mapScreen; mapScreen=function(){ _map(); appEl.classList.add('see3d'); setupFleetShowcase(); try{ const hp=[...appEl.querySelectorAll('.mapmain p')].find(p=>p.textContent.includes('Hostile presence')); if(hp&&RUN.foes&&RUN.foes.length>=5) hp.insertAdjacentHTML('beforeend',` <span class="dim">Rival raiders from the ${esc(FACTIONS[RUN.foes[3]].n.replace(/^The /,''))} and the ${esc(FACTIONS[RUN.foes[4]].n.replace(/^The /,''))} may also strike.</span>`); }catch(e){}  };
+const _map=mapScreen; mapScreen=function(){ _map(); appEl.classList.add('see3d'); setupFleetShowcase(); try{ hullMapPrefetch(); }catch(e){} try{ const hp=[...appEl.querySelectorAll('.mapmain p')].find(p=>p.textContent.includes('Hostile presence')); if(hp&&RUN.foes&&RUN.foes.length>=5) hp.insertAdjacentHTML('beforeend',` <span class="dim">Rival raiders from the ${esc(FACTIONS[RUN.foes[3]].n.replace(/^The /,''))} and the ${esc(FACTIONS[RUN.foes[4]].n.replace(/^The /,''))} may also strike.</span>`); }catch(e){}  };
 
 // title screen: live 3D showcase battle behind the menu, plus the skirmish mode
 const _title=titleScreen; titleScreen=function(){ disposeAllViews(); clearOverlays(); B=null; _title(); const menu=appEl.querySelector('.title .menu'); if(menu) menu.insertAdjacentHTML('beforeend','<button data-act="c3skirmish">3D skirmish</button><button data-act="c3settings">Settings</button>'); setupShowcase(); };

@@ -39,7 +39,7 @@ FAILED=False
 with sync_playwright() as p:
     b=p.chromium.launch(args=['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'])
     for name,vp,mob in SIZES:
-        ctx=b.new_context(viewport=vp,is_mobile=mob,has_touch=mob); pg=ctx.new_page(); errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)[:200]))
+        ctx=b.new_context(viewport=vp,is_mobile=mob,has_touch=mob,device_scale_factor=float(os.environ.get('DSF','2.625' if mob else '1'))); pg=ctx.new_page(); errs=[]; pg.on('pageerror',lambda e: errs.append(str(e)[:200]))
         pg.on('console',lambda m: errs.append('console:'+m.text[:300]) if (m.type=='error' or (m.type=='warning' and ('AI hull' in m.text or 'hull maps' in m.text or 'seating' in m.text))) and len(errs)<12 else None)
         pg.goto(PAGE, wait_until='commit'); pg.wait_for_function("!!document.querySelector('.title .menu')", timeout=150000, polling=1000)
         pg.wait_for_function("Object.keys(AI_HULL_DATA).length>=25", timeout=150000, polling=1000)

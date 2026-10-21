@@ -383,6 +383,32 @@ class CamCtl{
     if(typeof shakeOffset==='function'){ const s=shakeOffset(dt,c); if(s){ c.target.addInPlace(s.o); c.alpha+=s.a; c.beta+=s.b; this._sh=s; } } /* v53-I: trauma shake (wfx3d) */
   }
 }
+// v53.8 battle load (Ryan: "lag on loading into a battle"; his pick: a short loading moment is fine, no hitch once the battle shows).
+// Every battle start goes through the establishing shot, so that is where the work moves: a dark "Entering battle" cover goes up, the ships
+// are built (first frame), every hull's baked maps load and upload, and the shaders compile with those maps in place; then the cover lifts
+// and the establishing shot plays. Before v53.8 the maps arrived a second or two into the battle and each one recompiled its hull material.
+// A 6 s cap means a slow network can never hold the battle (late maps then swap in as before).
+const _establish=CamCtl.prototype.establish;
+CamCtl.prototype.establish=function(){ const self=this; if(!(typeof B!=='undefined'&&B&&!B.showcase)||G.noWarm) return _establish.call(self);
+  const tok=G.warmTok={}; battleVeil(true); try{ _establish.call(self); }catch(e){}
+  battleWarm().catch(e=>console.warn('battle warm',e)).then(r=>{ if(G.warmTok!==tok) return; G.lastWarm=r; try{ _establish.call(self); }catch(e){} battleVeil(false); try{ if(typeof FRAMES!=='undefined') FRAMES.reset(); }catch(e){} }); };
+function battleVeil(on){ let el=document.getElementById('bveil');
+  if(on){ if(!el){ el=document.createElement('div'); el.id='bveil'; el.textContent='Entering battle…'; el.style.cssText='position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:#04060c;color:var(--bone2,#b3aa95);font-size:18px;font-family:var(--ui,sans-serif);letter-spacing:.04em;transition:opacity .35s;pointer-events:auto'; document.body.appendChild(el); } el.style.opacity='1'; el.style.pointerEvents='auto'; clearTimeout(G._veilT); G._veilT=setTimeout(()=>battleVeil(false),8000); } /* never traps input: lifts after 8 s regardless */
+  else if(el){ clearTimeout(G._veilT); el.style.opacity='0'; el.style.pointerEvents='none'; setTimeout(()=>{ try{ if(el.style.opacity==='0') el.remove(); }catch(e){} },400); } }
+const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
+async function battleWarm(){ const t0=performance.now(), cap=t0+6000, out={ms:0,maps:0,late:0,build:0,compile:0};
+  await nextFrame(); await nextFrame(); out.build=Math.round(performance.now()-t0); // updateWorld builds every ship view on the first frame
+  const used=new Set(); for(const v of G.views.values()) if(v&&v.model&&v.model.aiMat) used.add(v.model.aiMat); const ents=Object.values(AI_TEX).filter(e=>used.has(e.m)&&!e.failed); out.maps=ents.length; // the classes this battle's ships use (cached materials from earlier battles stay out)
+  for(const e of ents) aiTexTouch(e);
+  while(performance.now()<cap&&ents.some(e=>e.loading||!e.n||!e.t||!e.n.isReady()||!e.t.isReady())){ if(ents.every(e=>e.failed)) break; await new Promise(r=>setTimeout(r,40)); }
+  out.late=ents.filter(e=>!(e.n&&e.t&&e.n.isReady()&&e.t.isReady())).length;
+  const t1=performance.now(); try{ await Promise.race([G.scene.whenReadyAsync(),new Promise(r=>setTimeout(r,Math.max(300,cap-performance.now())))]); }catch(e){} out.compile=Math.round(performance.now()-t1);
+  await nextFrame(); await nextFrame(); out.ms=Math.round(performance.now()-t0); out.end=performance.now(); try{ if(typeof tel==='function') tel('battle_warm',out); }catch(e){} return out; }
+// on the sector map: start fetching the baked maps of your fleet and the sector's enemy roster (browser cache), so the battle cover is short
+function hullMapPrefetch(){ try{ if(!aiHullsOn()||G.noBake||typeof RUN==='undefined'||!RUN||!RUN.fleet) return; const dir=(G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/', want=new Set(), seen=G._pref||(G._pref=new Set());
+    const add=tpl=>{ const h=HULLS[tpl]; if(!h||h.sq) return; const k=(h.fac||'voidsworn')+'|'+h.cls, d=AI_HULL_DATA[k]; if(d&&d.tex&&AI_HULLS[k]) want.add(AI_HULLS[k]); };
+    for(const s of RUN.fleet) add(s.tpl); const ef=RUN.foes&&RUN.foes[(RUN.sector||1)-1]; if(ef&&FACTIONS[ef]) for(const t of FACTIONS[ef].roster.concat([FACTIONS[ef].boss])) add(t);
+    let i=0; for(const c of want){ for(const s of ['_n.webp','_m.webp']){ const url=dir+c+s; if(seen.has(url)) continue; seen.add(url); setTimeout(()=>{ try{ fetch(url,{priority:'low'}).catch(()=>{}); }catch(e){} },400+120*(i++)); } } }catch(e){ console.warn('prefetch',e); } }
 
 // ---------- battlefield features: debris, derelict station, planet edge, ion storms, graveyard wrecks ----------
 // a collapsed star fills the hole in the middle of a 'dead star' board: a black core, a hot photon ring and a slow accretion disc

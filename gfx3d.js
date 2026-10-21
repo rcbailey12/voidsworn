@@ -82,16 +82,27 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.9));
         surfaceAlbedo*=mix(1.0,(0.7+0.3*seam)*(0.93+0.14*id),pf); } }
 #endif
-#if defined(HULLFX_AI) && defined(HULLFX_D2) && !defined(HULLFX_MAP)
-    // v53-G close-up detail on concept hulls: fine access hatches and dents (bump from a per-pixel height), gone by mid zoom so it never shimmers
-    { float hd0=length(vEyePosition.xyz-vPositionW); float pf=1.0-smoothstep(14.0,48.0,hd0);
-      if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy); pu*=vec2(3.4,4.6);
-        vec2 ci=floor(pu); vec2 fr=fract(pu); float id=hfxH(vec3(ci,2.7)); float e=min(min(fr.x,1.0-fr.x),min(fr.y,1.0-fr.y));
-        float hatch=step(0.86,id)*smoothstep(0.05,0.11,e); float seam=(1.0-smoothstep(0.0,0.035,e))*step(0.55,hfxH(vec3(ci.y,9.1,0.0)));
-        float ht=(-hatch*0.5-seam*0.35+(hfxN(vHfxL*7.0)-0.5)*0.35)*0.012;
+#if defined(HULLFX_AI) && defined(HULLFX_D2)
+    // v53.8 close-up plating on concept hulls (Ryan: "melted" up close): staggered panel seams, inset hatches, small raised blocks and dents,
+    // bump-mapped from a per-pixel height. Laid in ship units on the open plating only (the baked cavities and raised edges keep their own shape).
+    // Each layer fades out by its own pixel footprint, so it is crisp when there are pixels for it and never shimmers when there are not.
+    { float hd0=length(vEyePosition.xyz-vPositionW); float pf=1.0-smoothstep(60.0,120.0,hd0);
+#ifdef HULLFX_MAP
+      { vec3 mq=texture2D(hfxMap,vMainUV2).rgb; pf*=smoothstep(0.22,0.5,mq.r)*(1.0-smoothstep(0.1,0.28,abs(mq.g-0.5))); }
+#endif
+      if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy);
+        vec2 pp=pu*vec2(1.5,2.3); float row=floor(pp.y); float wd=1.0+hfxH(vec3(row,3.1,hfxS.x))*2.4; float off=hfxH(vec3(row,7.7,0.0))*wd; float cx=floor((pp.x+off)/wd);
+        vec2 fr=vec2(fract((pp.x+off)/wd)*wd,fract(pp.y)); float e=min(min(fr.x,wd-fr.x),min(fr.y,1.0-fr.y)); float pid=hfxH(vec3(cx,row,1.3));
+        float fp=max(fwidth(pp.x),fwidth(pp.y)); float pk=pf*(1.0-smoothstep(0.06,0.16,fp)); // plates: gone once a seam is under a pixel
+        float seam=(1.0-smoothstep(0.0,max(0.035,fp*1.2),e))*pk;
+        vec2 sp=pu*vec2(5.2,6.8); vec2 ci=floor(sp); vec2 sf=fract(sp); float id=hfxH(vec3(ci,2.7+hfxS.x)); float se=min(min(sf.x,1.0-sf.x),min(sf.y,1.0-sf.y));
+        float fs=max(fwidth(sp.x),fwidth(sp.y)); float sk=pf*(1.0-smoothstep(0.07,0.16,fs)); // small cells need about eight pixels, or they read as a screen-door grain
+        float hatch=step(0.87,id)*smoothstep(0.07,0.13,se)*sk; float greeb=step(id,0.07)*smoothstep(0.1,0.17,se)*sk;
+        float ht=(-seam*0.6+(pid-0.5)*0.22*pk-hatch*0.45+greeb*0.6+(hfxN(vHfxL*2.2)-0.5)*0.12*pk)*0.016;
         vec3 dpx=dFdx(vPositionW), dpy=dFdy(vPositionW); float dhx=dFdx(ht), dhy=dFdy(ht);
         vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
-        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.8)); surfaceAlbedo*=1.0-pf*(hatch*0.12+seam*0.18); } }
+        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,0.85));
+        surfaceAlbedo*=(1.0-seam*0.24-hatch*0.1+greeb*0.05)*(1.0+(pid-0.5)*0.12*pk); } }
 #endif
 #endif
 `,
