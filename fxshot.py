@@ -64,7 +64,7 @@ window.FXS=(()=>{ const S={};
     const [h]=S.pair(1), u=S.place(big.id,big.fac,h,'enemy'); S.face(u,0); S.settle(14); u.hp=Math.round(u.maxHp*.25); S.settle(4); window.__st={t:u.id}; const p=S.V(u.id).root.getAbsolutePosition(), L=S.V(u.id).L;
     S.cam(p,L*2.1+40,-Math.PI/2+.6,1.0); return {tpl:big.id,fac:big.fac,L:Math.round(L)}; };
   S.kill=()=>{ const u=S.U(window.__st.t); u.killCause='blast'; u.dead=true; window.__fx=(async()=>{ try{ await animExplode(u); }catch(e){ console.error('fxshot kill',e); } })(); return true; };
-  S.stats=()=>{ const P=G.fxPool||{pools:[]}; return {sprites:P.pools.map(q=>q.kind+':'+q.live.length).join(' '),meshes:G.scene.meshes.length,mats:G.scene.materials.length,ps:G.scene.particleSystems.length,atlasMs:G.fxAtlasMs}; };
+  S.stats=()=>{ const P=G.fxPool||{pools:[]}; return {sprites:P.pools.map(q=>q.kind+':'+q.live.length).join(' '),meshes:G.scene.meshes.length,mats:G.scene.materials.length,ps:G.scene.particleSystems.length,atlasMs:G.fxAtlasMs,top:(()=>{ const h={}; for(const m of G.scene.meshes){ const k=m.name.replace(/[0-9_.\-]+$/,''); h[k]=(h[k]||0)+1; } return Object.entries(h).sort((a,b)=>b[1]-a[1]).slice(0,6).map(e=>e.join(':')).join(' '); })()}; };
   return S; })();
 """
 

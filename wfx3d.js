@@ -39,22 +39,23 @@ function fxAtlasCanvas(){ return fxCanvas('fxAtlasI1',512,512,(g)=>{ const S=128
 function smoothstep01(x){ x=clamp(x,0,1); return x*x*(3-2*x); }
 // the explosion flipbook, as a Blender render would deliver it: R = flame emission, G = smoke density, frames left to right, top to bottom
 function fxBookCanvas(){ const C=G.mobile?64:128, cols=4, rows=4, W=C*cols;
-  return fxCanvas('fxBookRG'+C,W,W,(g)=>{ const img=g.createImageData(W,W), d=img.data, N=fxNoise2(9);
-    for(let f=0;f<16;f++){ const t=f/15, ox=(f%cols)*C, oy=Math.floor(f/cols)*C, r0=.3+.5*Math.pow(t,.55), r1=.42+.5*Math.pow(t,.7);
+  return fxCanvas('fxBookRG3_'+C,W,W,(g)=>{ const img=g.createImageData(W,W), d=img.data, N=fxNoise2(9), bil=(x,y,o)=>{ let a=.5,t=0,n=0; for(let i=0;i<o;i++){ t+=a*(1-Math.abs(2*N.ns(x,y)-1)); n+=a; x=x*2.1+3.1; y=y*2.1-1.7; a*=.5; } return t/n; };
+    for(let f=0;f<16;f++){ const t=f/15, ox=(f%cols)*C, oy=Math.floor(f/cols)*C, r0=.42+.4*Math.pow(t,.5), r1=.36+.5*Math.pow(t,.6);
       for(let y=0;y<C;y++) for(let x=0;x<C;x++){ const dx=(x+.5-C/2)/(C/2), dy=(y+.5-C/2)/(C/2), rr=Math.hypot(dx,dy);
-        const wx=N.fb(dx*1.6+4,dy*1.6+t*.8,2), wy=N.fb(dx*1.6-3,dy*1.6-t*.8+5,2), px=dx*2.6+(wx-.5)*1.4, py=dy*2.6+(wy-.5)*1.4;
-        const n=N.fb(px+t*1.3,py-t*1.9,4), n2=N.fb(px*2.3-t*2.5,py*2.3+t,3);
-        const m=smoothstep01((r0+(n-.5)*.5-rr)/.2), heat=clamp(1.25-t*1.35+(n-.5)*1.1+(n2-.5)*.5-rr/r0*.55,0,1);
-        const flame=m*Math.pow(heat,1.3)*smoothstep01((n2-.12-t*.42)/.25);
-        const sm=smoothstep01((r1+(n-.5)*.45-rr)/.26)*(.25+.75*smoothstep01((n+.15-t*.25)/.4))*(1-t*.45);
-        const o=((oy+y)*W+ox+x)*4; d[o]=Math.round(clamp(flame,0,1)*255); d[o+1]=Math.round(clamp(sm,0,1)*255); d[o+2]=0; d[o+3]=255; } }
+        const n=bil(dx*2.2+t*.9,dy*2.2-t*1.4,4), n2=N.fb(dx*4.5-t*2,dy*4.5+t*1.5,3), n3=bil(dx*1.6+7-t*.5,dy*1.6+2+t*.4,4);
+        // flame: a billowing ball that cools from the edge inward and breaks into tongues as it ages
+        const m=smoothstep01((r0+(n-.55)*.5-rr)/.22), heat=clamp(1.35-t*1.05-rr/r0*.75+(n2-.5)*.7,0,1), holes=smoothstep01((n2+.25-t*.75)/.3);
+        const flame=m*Math.pow(heat,.85)*(.5+.5*n)*holes;
+        // smoke: soft billows, dense and small early, wide and thin late
+        const sm=smoothstep01(((r1-rr)/r1+(n3-.5)*.7)/.55)*(.45+.55*n3)*(1-t*.5);
+        const ed=smoothstep01((1-Math.max(Math.abs(dx),Math.abs(dy)))/.14), o=((oy+y)*W+ox+x)*4; d[o]=Math.round(clamp(flame*1.15*ed,0,1)*255); d[o+1]=Math.round(clamp(sm*ed,0,1)*255); d[o+2]=0; d[o+3]=255; } }
     g.putImageData(img,0,0); }); }
 // split an R/G flipbook into the two sprite atlases: fire (white, alpha = R) and smoke (shaded from the G gradient, alpha = G)
 function fxBookSplit(src,cols,rows){ const W=src.width, H=src.height, sg=src.getContext('2d'), s=sg.getImageData(0,0,W,H).data;
   const mk=()=>{ const c=document.createElement('canvas'); c.width=W; c.height=H; return c; }, fc=mk(), scv=mk(), fi=fc.getContext('2d').createImageData(W,H), si=scv.getContext('2d').createImageData(W,H), fd=fi.data, sd=si.data;
-  for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const o=(y*W+x)*4, R=s[o]/255, Gc=s[o+1]/255, gx=(s[((y*W+Math.min(W-1,x+1))*4)+1]-s[((y*W+Math.max(0,x-1))*4)+1])/255, gy=(s[((Math.min(H-1,y+1)*W+x)*4)+1]-s[((Math.max(0,y-1)*W+x)*4)+1])/255;
+  const k=Math.max(3,Math.round(W/100)), Gat=(x,y)=>s[((clamp(y,0,H-1)*W+clamp(x,0,W-1))*4)+1]/255; for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const o=(y*W+x)*4, R=s[o]/255, Gc=s[o+1]/255, gx=(Gat(x+k,y)-Gat(x-k,y)+.5*(Gat(x+k,y+k)-Gat(x-k,y+k)+Gat(x+k,y-k)-Gat(x-k,y-k)))/2, gy=(Gat(x,y+k)-Gat(x,y-k)+.5*(Gat(x+k,y+k)-Gat(x+k,y-k)+Gat(x-k,y+k)-Gat(x-k,y-k)))/2;
     const fl=Math.pow(R,.5); fd[o]=fd[o+1]=fd[o+2]=Math.round(255*fl); fd[o+3]=Math.round(255*R);
-    const lit=clamp(.62+(-gx-gy)*1.6+Gc*.18,.25,1); sd[o]=sd[o+1]=sd[o+2]=Math.round(255*lit); sd[o+3]=Math.round(255*Gc); }
+    const lit=clamp((.8+(-gx-gy)*.65)*(1-.2*Gc),.4,1); sd[o]=sd[o+1]=sd[o+2]=Math.round(255*lit); sd[o+3]=Math.round(255*Gc); }
   fc.getContext('2d').putImageData(fi,0,0); scv.getContext('2d').putImageData(si,0,0); return {fire:fc.toDataURL(),smoke:scv.toDataURL(),cell:W/cols,nF:cols*rows}; }
 function fxChunkCanvas(){ return fxCanvas('fxChunkI1',256,64,(g)=>{ const img=g.createImageData(256,64), d=img.data, r=seeded(5);
   for(let c=0;c<4;c++){ const pts=[...Array(7)].map((_,i)=>{ const a=i/7*6.283+r()*.6; return [Math.cos(a)*(.45+r()*.5),Math.sin(a)*(.3+r()*.55)]; });
@@ -197,7 +198,7 @@ const WFX={
     fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), k=lead?1:.8, col=c.col, hot=hotOf(col,.6);
       wfp(from,{cell:0,size:5.5*k,col:col.scale(1.4),dur:.22,grow:.6}); wfp(from,{cell:6,size:4.5*k,col:col.scale(1.3),dur:.22,grow:1.3,spin:6});
       for(let i=0;i<nq(3);i++){ const v=coneDir(d,.8).scale(rr(4,9)); wfp(from,{cell:5,size:rr(.5,.9),col:hot.scale(1.8),c2:col.scale(.4),dur:rr(.25,.45),grow:0,vel:v,drag:1,grav:4}); }
-      boltTo(from,to,h,lead,done,{speed:110*rr(.95,1.05),layers:[{cell:0,size:6.2*k,col:col.scale(.55)},{cell:6,size:3.6*k,col:col.scale(1.35),wob:.24,wf:21,spin:5},{cell:5,size:1.8*k,col:hot.scale(2.1),spin:-9,wob:.1,wf:33},{cell:3,len:5.5*k,thick:1.4*k,col:col.scale(.85),back:.3}],
+      boltTo(from,to,h,lead,done,{speed:110*rr(.95,1.05),heat:lead?4.5:3,layers:[{cell:0,size:6.2*k,col:col.scale(.55)},{cell:6,size:3.6*k,col:col.scale(1.35),wob:.24,wf:21,spin:5},{cell:5,size:1.8*k,col:hot.scale(2.1),spin:-9,wob:.1,wf:33},{cell:3,len:5.5*k,thick:1.4*k,col:col.scale(.85),back:.3}],
         trail(r,p,dd,dt){ r.acc+=dt; const st=(G.mobile?.09:.05)*(lead?1:2.2); while(r.acc>=st){ r.acc-=st; r.ti=(r.ti||0)+1; wfp(p.subtract(dd.scale(1.2)),{cell:11,size:rr(.6,.95),col:hot.scale(1.8),c2:new C3(.55,.06,.02),dur:rr(.28,.45),grow:0,vel:dd.scale(-rr(2,5)).add(new V3(rr(-.8,.8),-rr(.5,2),rr(-.8,.8))),grav:6,ang:screenAng(p,dd.scale(-1)),w:1.4,h:1,fade:.8});
           if(!G.mobile&&lead&&r.ti%2) wfp(p.subtract(dd.scale(2)),{cell:0,size:rr(2.2,3),col:col.scale(.3),dur:.25,grow:.8,fade:1.4}); } }}); },
     impact(c,p,from,lead){ const back=from.subtract(p).normalize(), col=c.col, hot=hotOf(col,.6), k=lead?1:.6;
@@ -403,7 +404,7 @@ function addFire(v){ const sk=typeof skinPoint==='function'?skinPoint(v,null):nu
 function stackSmoke(v){ return (v.model.stacks||[]).map(sp=>emitter(v,sp.clone(),'stack',G.mobile?4:9)); }
 
 // ---------- per-frame: bolts, emitters; is anything still playing (phones keep full frame rate while it is) ----------
-function wfxTick(dt){ fxScaleTick(); try{ wbTick(dt); }catch(e){ console.warn('bolts',e); } try{ emitTick(dt); }catch(e){} }
+function wfxTick(dt){ fxScaleTick(); try{ wbTick(dt); }catch(e){ console.warn('bolts',e); } try{ heatTick(); }catch(e){} try{ emitTick(dt); }catch(e){} }
 function fxBusy(){ return WB.length>0||(G.trauma||0)>.01||!!(G.hitStop&&performance.now()<G.hitStop.end); }
 
 // ---------- staged deaths ----------
@@ -428,3 +429,17 @@ class WreckInPlugin extends BABYLON.MaterialPluginBase{
 #endif
 `}; } }
 function wreckInterior(M){ try{ for(const m of [M&&M.wreck]) if(m&&!m._wreckIn&&m.getClassName&&m.getClassName()==='PBRMaterial'){ m._wreckIn=new WreckInPlugin(m); m.backFaceCulling=false; } }catch(e){ console.warn('wreck interior',e); } }
+
+// ---------- heat shimmer: plasma bolts (and fresh slag) bend the picture behind them (desktop High/Ultra; a pass-through when nothing is hot) ----------
+const HEAT_FS=`precision highp float; varying vec2 vUV; uniform sampler2D textureSampler; uniform vec4 hp[8]; uniform float hn; uniform float t; uniform float aspect;
+void main(){ vec2 uv=vUV; vec2 off=vec2(0.0);
+  for(int i=0;i<8;i++){ if(float(i)>=hn) break; vec4 p=hp[i]; vec2 d=uv-p.xy; d.x*=aspect; float r=length(d); float f=smoothstep(p.z,0.0,r)*p.w;
+    off+=vec2(sin(uv.y*160.0+t*23.0+float(i)*2.1),cos(uv.x*150.0-t*19.0+float(i)*1.7))*f*0.0035; }
+  gl_FragColor=texture2D(textureSampler,uv+off); }`;
+function heatHazeOn(){ if(G.heatPP!==undefined) return G.heatPP; G.heatPP=null; if(G.mobile||G.quality==='medium'||!G.cam) return null;
+  try{ BABYLON.Effect.ShadersStore.heatHazeFragmentShader=HEAT_FS; const pp=new BABYLON.PostProcess('heatHaze','heatHaze',['hp','hn','t','aspect'],null,1.0,G.cam); const buf=new Float32Array(32); G.heatPts=[];
+    pp.onApply=e=>{ const n=Math.min(8,G.heatPts.length); for(let i=0;i<n;i++) buf.set(G.heatPts[i],i*4); e.setArray4('hp',buf); e.setFloat('hn',n); e.setFloat('t',(G.time||0)%100); e.setFloat('aspect',G.engine.getAspectRatio(G.cam)); };
+    G.heatPP=pp; }catch(e){ console.warn('heat haze off',e); G.heatPP=null; } return G.heatPP; }
+function heatTick(){ if(!G.heatPP) return; const pts=G.heatPts; pts.length=0; if(G.fxReduced) return; let tm=null, vp=null;
+  for(const r of WB){ if(!r.o.heat||pts.length>=8) continue; if(!tm){ tm=G.scene.getTransformMatrix(); vp=new BABYLON.Viewport(0,0,1,1); } const s=V3.Project(r.pos,BABYLON.Matrix.Identity(),tm,vp); if(s.z<0||s.z>1) continue;
+    const dist=Math.max(5,V3.Distance(G.cam.position,r.pos)), ru=r.o.heat*(G.fxK||1)/(dist*.85); pts.push([s.x,1-s.y,ru,1]); } }

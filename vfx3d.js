@@ -182,7 +182,7 @@ function pdFire(vt,p){ try{ if(!vt||!vt.root||vt.root.isDisposed()||G.fxReduced)
 
 // v44.1 warm-up: on battle start, a tiny blast far off on the skyline (it reads as the distant war) compiles the explosion, fireball, shock-ring
 // and beam shaders, and every faction's wreck materials are compiled against a real hull mesh, so the first kill doesn't stall
-function warmFx(){ try{ if(!G.scene||!G.cam||!B) return; fxMark('warmup'); fxPool(); flashLights(); starTex(); coneTex(); scorchMat(); try{ for(const f of new Set([...G.views.values()].map(v=>v.fac))) wreckInterior(facMats(f)); }catch(e){}
+function warmFx(){ try{ if(!G.scene||!G.cam||!B) return; fxMark('warmup'); fxPool(); try{ heatHazeOn(); }catch(e){} flashLights(); starTex(); coneTex(); scorchMat(); try{ for(const f of new Set([...G.views.values()].map(v=>v.fac))) wreckInterior(facMats(f)); }catch(e){}
     let far; try{ const eng=G.engine, ray=G.scene.createPickingRay(eng.getRenderWidth()*.62,eng.getRenderHeight()*.12,BABYLON.Matrix.Identity(),G.cam); far=ray.origin.add(ray.direction.scale(520)); }catch(e){ far=null; } // on screen (near the top) so the shaders really draw and compile
     if(!far){ const tg=G.cam.getTarget(), fwd=tg.subtract(G.cam.position); fwd.normalize(); far=G.cam.position.add(fwd.scale(520)); }
     explode(far,3,{light:false}); if(typeof fireballFx==='function') fireballFx(far,6,1);
