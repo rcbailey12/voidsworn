@@ -60,7 +60,7 @@ function buildHud(){
   st.insertAdjacentHTML('beforeend',`
   <div class="hud" id="btop"><span class="t">Voidsworn</span><span class="muted" id="scenName"></span><span class="num" id="roundlbl"></span><span class="gilt" id="turnlbl"></span><span class="num" id="resolvelbl" title="Admiral\u2019s Command: a fleet-wide signature move, once per battle, growing each round you hold it"></span><span class="spacer"></span>
     <span class="num" id="objlbl"></span><button data-act="threat" id="b_threat2" title="Where the enemy can hit next turn (R)">Threat</button><button data-act="fleetToggle" id="b_fleet">Fleet</button><button data-act="settings" id="b_set" title="Display, camera and sound options"><span class="sl">Settings</span><span class="si">\u2699</span></button><div class="hud setpanel hidden" id="setpanel"><div class="dim" style="font-size:12.5px;margin-bottom:6px">Battle view</div><button data-act="arcs" id="b_arcs" title="Toggle firing arcs (V)"></button><button data-act="threat" id="b_threat" title="Where the enemy can hit next turn (R)"></button><button data-act="cine" id="b_cine" title="Camera swings in on big attacks"></button><button data-act="aihull" id="b_aihull" title="Test hulls made from the concept art (Hegemony dreadnought for now)"></button><button data-act="top" id="b_top" title="Top-down planning view (T)"></button>
-    <button data-act="quality" id="b_quality" title="Ultra: supersampling, ambient occlusion, god rays, planet relief. High: shadows, live nebulae, full hull shading. Medium: tuned for phones"></button><button data-act="fxmode" id="b_fx" title="Reduce flashes, strobing lights and camera shake"></button><button data-act="follow" id="b_follow" title="Camera moves to each ship as it activates"></button><button data-act="aiLevel" id="b_ai" title="How cleverly the enemy fights"></button><button data-act="taa" id="b_taa" title="Temporal anti-aliasing: smoother fine detail, may ghost on fast effects (Ultra only)"></button><button data-act="sound" id="b_sound"></button><button data-act="speed" id="b_speed" title="Animation speed (Space)"></button><button data-act="logToggle" id="b_log" title="Show the battle log over the board (phones)">Battle log</button><button data-act="restart" id="b_restart">Restart battle</button><button data-act="reportProblem" title="Save a snapshot of the game state for debugging">Report a problem</button><button data-act="copyReport" title="Copy your recent play data to paste to Claude">Copy report</button><button data-act="diag" title="Render diagnostics (Shift+D)">Diagnostics</button></div><button data-act="c3retreat" id="b_retreat" title="Jump the fleet out. Every surviving ship loses 10% hull.">Retreat</button><button class="primary" data-act="endTurn" id="endbtn">End turn</button></div>
+    <button data-act="quality" id="b_quality" title="Ultra: supersampling, ambient occlusion, god rays, planet relief. High: shadows, live nebulae, full hull shading. Medium: tuned for phones"></button><button data-act="fxmode" id="b_fx" title="Reduce flashes and strobing lights"></button><button data-act="shakemode" id="b_shake" title="Reduce screen shake"></button><button data-act="follow" id="b_follow" title="Camera moves to each ship as it activates"></button><button data-act="aiLevel" id="b_ai" title="How cleverly the enemy fights"></button><button data-act="taa" id="b_taa" title="Temporal anti-aliasing: smoother fine detail, may ghost on fast effects (Ultra only)"></button><button data-act="sound" id="b_sound"></button><button data-act="speed" id="b_speed" title="Animation speed (Space)"></button><button data-act="logToggle" id="b_log" title="Show the battle log over the board (phones)">Battle log</button><button data-act="restart" id="b_restart">Restart battle</button><button data-act="reportProblem" title="Save a snapshot of the game state for debugging">Report a problem</button><button data-act="copyReport" title="Copy your recent play data to paste to Claude">Copy report</button><button data-act="diag" title="Render diagnostics (Shift+D)">Diagnostics</button></div><button data-act="c3retreat" id="b_retreat" title="Jump the fleet out. Every surviving ship loses 10% hull.">Retreat</button><button class="primary" data-act="endTurn" id="endbtn">End turn</button></div>
   <div class="hud" id="roster"></div><div class="hud" id="panel"></div><div class="hud" id="log" aria-live="polite"></div>
   <div class="hud" id="camhint"><span><kbd>Right-drag</kbd> orbit</span><span><kbd>Left-drag</kbd> or <kbd>WASD</kbd> pan</span><span><kbd>Wheel</kbd> zoom</span><span><kbd>F</kbd> focus ship</span><span><kbd>T</kbd> top-down</span></div>`);
 }
@@ -80,7 +80,7 @@ function refreshTop(){
   $('b_taa').textContent='Temporal AA: '+(G.taaOn?'on':'off'); $('b_taa').classList.toggle('on',!!G.taaOn);
   $('b_follow').textContent='Follow activations: '+(G.follow?'on':'off'); $('b_follow').classList.toggle('on',G.follow);
   $('b_ai').textContent='Enemy AI: '+(AI_LEVEL==='veteran'?'Veteran':'Standard'); $('b_ai').classList.toggle('on',AI_LEVEL==='veteran');
-  $('b_fx').textContent=G.fxReduced?'Flashes: reduced':'Flashes: full'; $('b_fx').classList.toggle('on',G.fxReduced);
+  $('b_fx').textContent=G.fxReduced?'Reduce flashing: on':'Reduce flashing: off'; $('b_fx').classList.toggle('on',G.fxReduced); if($('b_shake')){ $('b_shake').textContent=G.shakeRed?'Reduce screen shake: on':'Reduce screen shake: off'; $('b_shake').classList.toggle('on',!!G.shakeRed); }
   $('b_threat').textContent=B.showThreat?'Threat: on':'Threat: off'; $('b_threat').classList.toggle('on',B.showThreat); if($('b_threat2')) $('b_threat2').classList.toggle('on',!!B.showThreat);
   $('endbtn').textContent=B.alt?(B.activeUnit?'End activation':pendingP().length?'Pass':'Continue'):'End turn';
   $('turnlbl').textContent=B.over?'Battle over':B.side==='player'?(B.alt?(G.mobile?`Your move (${pendingP().length})`:`Your activation (${pendingP().length} ready)`):'Your turn'):(B.alt?(G.mobile?'Enemy move':'Enemy activation'):'Enemy turn');
@@ -264,13 +264,15 @@ function updateOverlays(){
 // the shadows are one thin-instanced mesh whose matrix buffer is rewritten in place each frame (no per-frame allocation).
 const FP={hash:0,cap:0,scap:0,fill:null,shadow:null,mbuf:null,fcol:null,sbuf:null,sNew:false,warned:0};
 // one mesh per mark: a faint fill (vertex alpha k) inside a crisp edge band (vertex alpha 1); the per-instance colour sets hue and edge strength
-function fpHexMesh(name,R0,R1,k){ const pos=[0,0,0], col=[1,1,1,k], idx=[]; for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30), c=Math.cos(a), sn=Math.sin(a); pos.push(c*R0,0,sn*R0, c*R0,0,sn*R0, c*R1,0,sn*R1); col.push(1,1,1,k, 1,1,1,1, 1,1,1,1); }
-  for(let i=0;i<6;i++){ const a=1+3*i, b=1+3*((i+1)%6); idx.push(0,a,b, a+1,a+2,b+2, a+1,b+2,b+1); }
-  const m=new BABYLON.Mesh(name,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.colors=col; vd.indices=idx; vd.applyToMesh(m); m.hasVertexAlpha=true; return m; }
-function fpEnsure(){ if(FP.fill&&!FP.fill.isDisposed()&&FP.shadow&&!FP.shadow.isDisposed()) return true; if(!G.scene||!G.tex||!G.tex.soft||!G.env) return false;
+// v53-I: the fill and the edge are two meshes sharing the instance buffers. Vertex colours plus thin-instance colours made Babylon compile a
+// variant that uses instanceColor without declaring it (a shader error on real GPUs, the marks went missing)
+function fpHexMesh(name,R0,R1,fill){ const pos=fill?[0,0,0]:[], idx=[]; for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30), c=Math.cos(a), sn=Math.sin(a); if(fill) pos.push(c*R0,0,sn*R0); else pos.push(c*R0,0,sn*R0, c*R1,0,sn*R1); }
+  for(let i=0;i<6;i++){ const j=(i+1)%6; if(fill) idx.push(0,1+i,1+j); else idx.push(2*i,2*i+1,2*j+1, 2*i,2*j+1,2*j); }
+  const m=new BABYLON.Mesh(name,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.indices=idx; vd.applyToMesh(m); return m; }
+function fpEnsure(){ if(FP.fill&&!FP.fill.isDisposed()&&FP.fill2&&!FP.fill2.isDisposed()&&FP.shadow&&!FP.shadow.isDisposed()) return true; if(!G.scene||!G.tex||!G.tex.soft||!G.env) return false;
   const mk=(m,name)=>{ const mt=new BABYLON.StandardMaterial(name,G.scene); mt.disableLighting=true; mt.diffuseColor=C3.Black(); mt.specularColor=C3.Black(); mt.emissiveColor=C3.White(); mt.alpha=.999; mt.alphaMode=BABYLON.Engine.ALPHA_ADD; mt.backFaceCulling=false; mt.disableDepthWrite=true; mt.zOffset=-1;
     m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.setEnabled(false); m.alphaIndex=-60; try{ G.glow.addExcludedMesh(m); }catch(e){} G.env.push(m,mt); return m; };
-  FP.fill=mk(fpHexMesh('fpMark',HS*.75,HS*.86,.17),'fpMarkM');
+  FP.fill=mk(fpHexMesh('fpMark',HS*.75,HS*.86,false),'fpMarkM'); FP.fill2=mk(fpHexMesh('fpMarkFill',HS*.75,HS*.86,true),'fpMarkFillM');
   const sh=MB.CreateGround('fpShadow',{width:1,height:1},G.scene), sm=new BABYLON.StandardMaterial('fpShadowM',G.scene); sm.disableLighting=true; sm.diffuseColor=C3.Black(); sm.specularColor=C3.Black(); sm.emissiveColor=C3.Black(); sm.opacityTexture=G.tex.soft; sm.alpha=.7; sm.backFaceCulling=false; sm.disableDepthWrite=true;
   sh.material=sm; sh.isPickable=false; sh.alwaysSelectAsActiveMesh=true; sh.alphaIndex=-50; sh.setEnabled(false); try{ G.glow.addExcludedMesh(sh); }catch(e){} G.env.push(sh,sm); FP.shadow=sh;
   FP.hash=NaN; FP.cap=0; FP.scap=0; return true; }
@@ -280,14 +282,14 @@ function boardMarks(){ if(!B||B.showcase||!G.views||!fpEnsure()) return;
   const U=B.units, hide=!!G.cineHidePlates; let h=hide?3:7, n=0;
   for(let i=0;i<U.length;i++){ const u=U[i], v=G.views.get(u.id); let k=0; if(!hide&&fpOn(u,v)){ k=1+(u.q+64)*997+(u.r+64)*31+(u.side==='player'?3:5)+fpLevel(u)*7+(u.isSq?11:0); n++; } h=(Math.imul(h,31)+k)|0; }
   if(h!==FP.hash){ FP.hash=h; fpRebuild(n); }
-  { const r=G.cam?G.cam.radius:300, k=Math.round(clamp((r-30)/120,.2,1)*20)/20, mt=FP.fill.material; if(mt&&mt.alpha!==k*.999) mt.alpha=k*.999; } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
+  { const r=G.cam?G.cam.radius:300, k=Math.round(clamp((r-30)/120,.2,1)*20)/20, mt=FP.fill.material, m2=FP.fill2.material; if(mt&&mt.alpha!==k*.999){ mt.alpha=k*.999; if(m2) m2.alpha=k*.999*.17; } } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
   fpShadows(); }
-function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
+function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); FP.fill2.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
   const M=FP.mbuf, F=FP.fcol, U=B.units; let i=0;
   if(n) for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!fpOn(u,v)) continue; const lv=fpLevel(u), p=hexWorld(u.q,u.r,0), c=u.side==='player'?FRIEND_C:FOE_C, o=i*16, q=i*4;
     M[o]=1; M[o+5]=1; M[o+10]=1; M[o+15]=1; M[o+12]=p.x; M[o+13]=.09; M[o+14]=p.z;
     const ea=u.isSq?.28:[.42,.8,1][lv]; F[q]=c.r; F[q+1]=c.g; F[q+2]=c.b; F[q+3]=ea; i++; } // fill reads at ~17% of the edge
-  const m=FP.fill; if(grow||!m.hasThinInstances){ m.thinInstanceSetBuffer('matrix',M,16,false); m.thinInstanceSetBuffer('color',F,4,false); } else { m.thinInstanceBufferUpdated('matrix'); m.thinInstanceBufferUpdated('color'); } m.thinInstanceCount=i; m.setEnabled(i>0); }
+  for(const m of [FP.fill,FP.fill2]){ if(grow||!m.hasThinInstances){ m.thinInstanceSetBuffer('matrix',M,16,false); m.thinInstanceSetBuffer('color',F,4,false); } else { m.thinInstanceBufferUpdated('matrix'); m.thinInstanceBufferUpdated('color'); } m.thinInstanceCount=i; m.setEnabled(i>0); } }
 function fpShadows(){ const U=B.units, ts=G.tacScale||1; let ns=0; for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!u.isSq&&v&&v.state==='alive'&&v.root&&v.root.isEnabled()) ns++; }
   if(ns>FP.scap){ FP.scap=Math.max(16,ns*2); FP.sbuf=new Float32Array(FP.scap*16); FP.sNew=true; }
   const b=FP.sbuf, m=FP.shadow; let i=0;
@@ -409,7 +411,7 @@ async function onBoardClick(){
 function blockedFrom(s,st){ try{ const v=stateView(s,st); return alive('enemy').filter(t=>!t.isSq&&s.weapons.some(w=>w.k!=='flak'&&hdist(v,t)<=w.r&&hdist(v,t)>=1&&inArc(v,t,w.arc))&&!los(v,t)); }catch(e){ return []; } }
 // aim line: gold when the shot is clear, red to an X where an asteroid or wreck blocks it
 function aimMat(key,col,a){ G.aimMats=G.aimMats||{}; let m=G.aimMats[key]; if(m&&!m.isDisposed?.()) return m; m=new BABYLON.StandardMaterial('aimM'+key,G.scene); m.disableLighting=true; m.emissiveColor=col; m.alpha=a; m.backFaceCulling=false; G.aimMats[key]=m; return m; }
-function aimTube(name,pts,mat,rad){ const t=MB.CreateTube(name,{path:pts,radius:rad,tessellation:6,cap:BABYLON.Mesh.CAP_ALL},G.scene); t.material=mat; t.isPickable=false; t.renderingGroupId=1; OV.hover.push(t); return t; }
+function aimTube(name,pts,mat,rad){ const t=MB.CreateTube(name,{path:pts,radius:rad,tessellation:6,cap:BABYLON.Mesh.CAP_ALL},G.scene); t.material=mat; t.isPickable=false; t.renderingGroupId=2; OV.hover.push(t); return t; } /* v53-I: group 1 now holds the effect sprites (depth kept); the aim line stays on top in its own group */
 function aimLine(a,t){ try{ const line=hexLine(a,t); let cut=-1; for(let i=1;i<line.length-1;i++) if(sightBlocked(line[i].q,line[i].r)){ cut=i; break; }
     const R=HS*.07, from=hexWorld(a.q,a.r,1.6), to=hexWorld(t.q,t.r,1.6);
     if(cut<0){ aimTube('aim',[from,to],aimMat('ok',new C3(1,.82,.4),.85),R); return; }
@@ -496,6 +498,7 @@ ACT.arm=i=>{ const s=B&&B.sel; if(!s||s.side!=='player'||B.busy) return; const w
 ACT.rot=d=>{ if(B&&B.sel&&guard(B.sel)) act(()=>rotateUnit(B.sel,+d)); };
 ACT.ram=()=>{ const s=B&&B.sel; if(!s||B.busy||!ramInfo(s)||!guard(s)) return; act(()=>ramUnit(s)); };
 ACT.board=()=>{ const s=B&&B.sel; if(!s||B.busy||!boardTargets(s).length||!canUse(s)) return; B.mode=B.mode==='board'?null:'board'; B.armed=null; bRefresh(); };
+ACT.shakemode=()=>{ G.shakeRed=!G.shakeRed; G.trauma=0; try{ META.opts=META.opts||{}; META.opts.shakeRed=G.shakeRed; Persist.saveLocal(); }catch(e){} try{ refreshTop(); }catch(e){} };
 ACT.fxmode=()=>{ G.fxReduced=!G.fxReduced; try{ META.opts=META.opts||{}; META.opts.fxReduced=G.fxReduced; META.opts.fxSet=true; Persist.saveLocal(); }catch(e){} setQuality(G.quality); refreshTop(); };
 ACT.quality=()=>{ const o=['ultra','high','medium']; setQuality(o[(o.indexOf(G.quality)+1)%3]); refreshTop(); saveOpts(); };
 ACT.threat=()=>{ B.showThreat=!B.showThreat; bRefresh(); };
@@ -510,7 +513,7 @@ ACT.aiLevel=()=>{ AI_LEVEL=AI_LEVEL==='veteran'?'standard':'veteran'; saveOpts()
 ACT.fleetToggle=()=>document.body.classList.toggle('showroster');
 ACT.logToggle=()=>{ const on=document.body.classList.toggle('showlog'); const b=document.getElementById('b_log'); if(b) b.classList.toggle('on',on); const el=document.getElementById('log'); if(el) el.scrollTop=el.scrollHeight; };
 ACT.settings=()=>{ document.getElementById('setpanel').classList.toggle('hidden'); };
-function saveOpts(){ try{ META.opts=Object.assign(META.opts||{},{aiHulls:G.aiHulls!==false,cineMode:G.cine?(G.cineMode||'key'):'off',cine2:G.cine,follow:G.follow,taa:!!G.taaOn,ai:AI_LEVEL,quality:G.quality,fxReduced:G.fxReduced,sfxOn:G.sfxOn,cine:G.cine,alt:SETUP.alt,fast:SPEED<1}); Persist.saveLocal(); }catch(e){} }
+function saveOpts(){ try{ META.opts=Object.assign(META.opts||{},{aiHulls:G.aiHulls!==false,cineMode:G.cine?(G.cineMode||'key'):'off',cine2:G.cine,follow:G.follow,taa:!!G.taaOn,ai:AI_LEVEL,quality:G.quality,fxReduced:G.fxReduced,shakeRed:!!G.shakeRed,sfxOn:G.sfxOn,cine:G.cine,alt:SETUP.alt,fast:SPEED<1}); Persist.saveLocal(); }catch(e){} }
 ACT.arcs=()=>{ B.showArcs=!B.showArcs; bRefresh(); };
 ACT.aihull=()=>{ G.aiHulls=G.aiHulls===false; for(const k of Object.keys(AI_HULL_DATA)) delete MODEL_CACHE[k]; refreshTop(); saveOpts(); toast(G.aiHulls?'Concept-art hulls on from the next battle':'Concept-art hulls off from the next battle'); };
 ACT.cine=()=>{ const order=['key','all','off'], m=G.cine?(G.cineMode||'key'):'off'; G.cineMode=order[(order.indexOf(m)+1)%3]; G.cine=G.cineMode!=='off'; if(!G.cine) G.ctl.release(); refreshTop(); saveOpts(); toast(G.cineMode==='off'?'Cut-ins off':G.cineMode==='all'?'Cut-ins on every attack (tap to skip)':'Cut-ins on key moments (tap to skip)'); };

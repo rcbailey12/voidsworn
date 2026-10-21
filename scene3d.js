@@ -45,7 +45,7 @@ function init3D(canvas){
   engine.onContextLostObservable.add(()=>{ G.ctxLost=performance.now(); notice('The graphics driver reset. Restoring the battlefield\u2026'); setTimeout(()=>{ if(G.ctxLost) notice('The graphics context could not be restored. Reload to continue; your campaign is saved at the last node.',true); },7000); });
   engine.onContextRestoredObservable.add(()=>{ G.ctxLost=0; notice(null); });
   let last=performance.now();
-  scene.onBeforeRenderObservable.add(()=>{ const now=performance.now(); const raw=(now-last)/1000, dt=Math.min(.05,raw); last=now; try{ FRAMES.tick(raw); }catch(e){} G.time+=dt; try{ G.ctl.update(dt); updateWorld(dt); updateStorms(dt); if(G.planet) G.planet.rotation.y+=dt*.0065; if(G.npClouds) G.npClouds.rotation.y+=dt*.016; if(G.ringNode) G.ringNode.rotation.y+=dt*.003; /* v45: one update each (was two per frame) */ if(G.traffic) for(const t of G.traffic) if(!t.root.isDisposed()) t.root.position.addInPlace(t.vel.scale(dt)); if(G.gridFar) G.gridFar.alpha=clamp((G.cam.radius-260)/240,0,1)*.6; }catch(e){ frameError(e); } });
+  scene.onBeforeRenderObservable.add(()=>{ const now=performance.now(); const raw=(now-last)/1000, dt=Math.min(.05,raw); last=now; try{ FRAMES.tick(raw); }catch(e){} const ts=typeof timeScaleNow==='function'?timeScaleNow():1, gdt=dt*ts; G.time+=gdt; /* v53-I hit-stop: game time slows for a few frames; the camera and input run on real time */ try{ G.ctl.update(dt); updateWorld(gdt); updateStorms(gdt); if(G.planet) G.planet.rotation.y+=dt*.0065; if(G.npClouds) G.npClouds.rotation.y+=dt*.016; if(G.ringNode) G.ringNode.rotation.y+=dt*.003; /* v45: one update each (was two per frame) */ if(G.traffic) for(const t of G.traffic) if(!t.root.isDisposed()) t.root.position.addInPlace(t.vel.scale(dt)); if(G.gridFar) G.gridFar.alpha=clamp((G.cam.radius-260)/240,0,1)*.6; }catch(e){ frameError(e); } });
   // phones: full rate while anything animates, ~30 fps when still, ~15 fps when idle, to save battery and heat
   ['pointerdown','pointermove','keydown','wheel'].forEach(ev=>window.addEventListener(ev,()=>{ G.lastInput=performance.now(); },{passive:true}));
   engine.runRenderLoop(()=>{ if(G.mobile){ G.fskip=(G.fskip||0)+1; const anim=typeof sceneAnimating==='function'&&sceneAnimating(); G.fullRate=anim; /* v53: every frame while anything moves; the skip only saves battery when the board is still */ const idle=!anim&&performance.now()-G.lastInput>4000&&!(typeof PROJ!=='undefined'&&PROJ.length)&&!(B&&B.busy)&&scene.particleSystems.length<=1; if(!anim&&G.fskip%(idle?4:2)) return; } try{ scene.render(); }catch(e){ frameError(e); } });
@@ -367,7 +367,7 @@ class CamCtl{
   hold(t,a,b,r){ if(!this.saved){ this.saved={a:this.a,b:this.b,r:this.r,t:this.t.clone()}; try{ cineBars(true); }catch(e){} } this.t=t; if(a!=null) this.a=a; if(b!=null) this.b=b; if(r!=null) this.r=r; }
   release(){ if(G.pipe&&G.pipe.depthOfFieldEnabled) G.pipe.depthOfFieldEnabled=false; try{ cineBars(false); }catch(e){} if(this.saved){ Object.assign(this,{a:this.saved.a,b:this.saved.b,r:this.saved.r,t:this.saved.t}); this.saved=null; } }
   update(dt){
-    const c=this.cam;
+    const c=this.cam; if(this._sh){ c.target.subtractInPlace(this._sh.o); c.alpha-=this._sh.a; c.beta-=this._sh.b; this._sh=null; } /* v53-I: last frame's shake never becomes camera state */
     if(this.attract){ this.a+=dt*.05; }
     let px=0,pz=0; const k=this.keys;
     if(!document.querySelector('.intro')){ if(k.has('w')||k.has('arrowup')) pz+=1; if(k.has('s')||k.has('arrowdown')) pz-=1; if(k.has('a')||k.has('arrowleft')) px-=1; if(k.has('d')||k.has('arrowright')) px+=1; }
@@ -375,9 +375,8 @@ class CamCtl{
     const f=1-Math.exp(-dt*((this.slowUntil&&G.time<this.slowUntil)?1.7:7));
     let da=this.a-c.alpha; c.alpha+=da*f; c.beta+=(this.b-c.beta)*f; c.radius+=(this.r-c.radius)*f;
     const tgt=c.target.clone(); tgt.addInPlace(this.t.subtract(tgt).scale(f));
-    if(G.fxReduced) G.shake=0;
-    if(G.shake>0){ G.shake=Math.max(0,G.shake-dt*2.2); const s=G.shake*G.shake*3.5; tgt.addInPlace(new V3((Math.random()-.5)*s,(Math.random()-.5)*s,(Math.random()-.5)*s)); }
     c.target.copyFrom(tgt);
+    if(typeof shakeOffset==='function'){ const s=shakeOffset(dt,c); if(s){ c.target.addInPlace(s.o); c.alpha+=s.a; c.beta+=s.b; this._sh=s; } } /* v53-I: trauma shake (wfx3d) */
   }
 }
 
@@ -594,8 +593,8 @@ function updateStorms(dt){
   if(!G.storms||!G.storms.length||G.fxReduced) return; G.lightT-=dt; if(G.lightT>0) return; G.lightT=.25+Math.random()*.7;
   const c=G.storms[Math.floor(Math.random()*G.storms.length)]; const pts=[]; let p=c.add(new V3((Math.random()-.5)*12,9+Math.random()*4,(Math.random()-.5)*12));
   for(let i=0;i<7;i++){ pts.push(p.clone()); p=p.add(new V3((Math.random()-.5)*4,-1.6-Math.random()*1.2,(Math.random()-.5)*4)); }
-  const t=MB.CreateTube('bolt',{path:pts,radius:.14,tessellation:4},G.scene); const m=emMat('boltL',new C3(1.4,1.6,2.2)); t.material=m; t.isPickable=false;
-  flash(pts[Math.floor(pts.length/2)],10,new C3(.6,.7,1),.25); setTimeout(()=>{ t.dispose(); m.dispose(); },140);
+  for(let i=0;i<pts.length-1;i++) lineSprite(pts[i],pts[i+1],.3,new C3(1.4,1.6,2.2),{dur:.14,fade:1.2}); /* v53-I: pooled sprite segments */
+  flash(pts[Math.floor(pts.length/2)],10,new C3(.6,.7,1),.25);
 }
 
 // ---------- background life: asteroid belt, distant traffic, colour grading ----------
