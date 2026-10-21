@@ -118,9 +118,9 @@ function updateTurrets(v,dt){ const T=v&&v.model&&v.model.turrets; if(!T) return
 // The flipbook comes from fxBookCanvas (procedural) until a rendered atlas is dropped in with fxBookLoad(url,cols,rows): same layout, same code path.
 function mkPool(kind,url,cell){ const caps={add:G.mobile?700:1800,fire:G.mobile?160:420,smoke:G.mobile?240:640,chunk:G.mobile?60:180}, cap=caps[kind];
   const mgr=new BABYLON.SpriteManager('fx_'+kind,url,cap,{width:cell,height:cell},G.scene);
-  mgr.blendMode=(kind==='smoke'||kind==='chunk')?BABYLON.Constants.ALPHA_COMBINE:BABYLON.Constants.ALPHA_ADD; mgr.disableDepthWrite=true; mgr.isPickable=false; return {mgr,cap,live:[],free:[],kind,smoke:kind==='smoke'||kind==='chunk'}; }
+  mgr.blendMode=(kind==='smoke'||kind==='chunk')?BABYLON.Constants.ALPHA_COMBINE:BABYLON.Constants.ALPHA_ADD; mgr.disableDepthWrite=true; mgr.isPickable=false; mgr.renderingGroupId=1; return {mgr,cap,live:[],free:[],kind,smoke:kind==='smoke'||kind==='chunk'}; }
 function fxPool(){ const P=G.fxPool; if(P&&P.scene===G.scene) return P;
-  try{ const A=fxAtlases(); const mk=(k,u,c)=>{ try{ return mkPool(k,u,c); }catch(e){ console.warn('fx pool '+k,e); return null; } };
+  try{ try{ G.scene.setRenderingAutoClearDepthStencil(1,false,false,false); }catch(e){} /* v53-I: effect sprites draw after every transparent mesh (board plate, grid lines, rings), still depth-tested against hulls */ const A=fxAtlases(); const mk=(k,u,c)=>{ try{ return mkPool(k,u,c); }catch(e){ console.warn('fx pool '+k,e); return null; } };
     const sm=mk('smoke',A.smoke,A.cell), ch=mk('chunk',A.chunk,64), fi=mk('fire',A.fire,A.cell), add=mk('add',A.add,128); // render order: smoke, chunks, then additive fire and glow on top
     G.fxPool={scene:G.scene,mgr:add&&add.mgr,cap:add?add.cap:0,live:add?add.live:[],free:add?add.free:[],pools:[sm,ch,fi,add].filter(Boolean),add,sm,fire:fi,chunk:ch,nF:A.nF,last:G.time||0,amb:0}; return G.fxPool;
   }catch(e){ console.warn('fxPool',e); G.fxPool={scene:G.scene,mgr:null,live:[],free:[],pools:[]}; return G.fxPool; } }

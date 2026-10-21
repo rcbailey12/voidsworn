@@ -49,6 +49,7 @@ window.FXS=(()=>{ const S={};
   S.free=h=>onBoard(h.q,h.r)&&!terr(h.q,h.r);
   S.pair=gap=>{ const hs=boardHexes().filter(S.free), mid=Math.round(BH/2); let best=null,bd=1e9; for(const a of hs){ const b=hs.find(h=>h.r===a.r&&h.q===a.q+gap); if(!b) continue; const d=Math.abs(a.r-mid)+Math.abs(a.q+gap/2-BW/2); if(d<bd){ bd=d; best=[a,b]; } } return best||[hs[0],hs[hs.length-1]]; };
   S.place=(tpl,fac,h,side)=>{ const u=makeUnit(side||'player',tpl,{fac}); if(fac) u.fac=fac; u.q=h.q; u.r=h.r; u.facing=0; B.units.push(u); G.jumpUntil=0; updateWorld(1/60); const v=G.views.get(u.id); if(v){ v.arrive=null; v.ph=null; v.coast=null; } return u; };
+  S.calm=()=>{ B.sel=null; B.inspect=null; B.hover=null; B.aiFocus=null; B.showThreat=false; B.mode=null; try{ clearOverlays(); refreshOverlays(); }catch(e){} }; // no aim lines, reach outlines or intent markers over the effects
   S.U=id=>B.units.find(u=>u.id===id); S.V=id=>G.views.get(id);
   S.face=(u,deg)=>{ u.facing=((Math.round(deg/60)%6)+6)%6; const v=G.views.get(u.id); if(v){ v.ph=null; v.lastA=null; } };
   S.angTo=(a,b)=>{ const p=hexWorld(a.q,a.r), q=hexWorld(b.q,b.r); return Math.atan2(-(q.z-p.z),q.x-p.x)*180/Math.PI; };
@@ -60,12 +61,12 @@ window.FXS=(()=>{ const S={};
     const w=a.weapons[f.wi], want=w.arc==='F'?0:w.arc==='P'?90:w.arc==='S'?-90:0; S.face(a,S.angTo(a,t)+want); S.face(t,S.angTo(t,a)+90); S.settle(14);
     t.sh=shield?[t.shMax,t.shMax,t.shMax,t.shMax]:[0,0,0,0]; a.hp=a.maxHp; t.hp=t.maxHp; window.__st={a:a.id,t:t.id,wi:f.wi};
     const pa=S.V(a.id).root.getAbsolutePosition(), pb=S.V(t.id).root.getAbsolutePosition(), m=pa.add(pb).scale(.5), d=V3.Distance(pa,pb), ang=Math.atan2(pb.z-pa.z,pb.x-pa.x);
-    if(view==='close') S.cam(m,d*.58+6,-ang-Math.PI/2+.5,1.08); else S.cam(m,d*1.0+22,-ang-Math.PI/2+.35,1.02); return {tpl:f.id,fac:f.fac,w:w.id,k:w.k,arc:w.arc,target:t.tpl,dist:Math.round(d)}; };
+    S.calm(); if(view==='close'){ const fov=G.cam.fov||.8, asp=G.engine.getAspectRatio(G.cam), half=(d/2+6)/.6, b=.95; S.cam(m,half/(Math.tan(fov/2)*asp),ang-Math.PI/2,b); } else S.cam(m,d*1.0+22,-ang-Math.PI/2+.35,1.02); return {tpl:f.id,fac:f.fac,w:w.id,k:w.k,arc:w.arc,target:t.tpl,dist:Math.round(d)}; };
   S.fire=()=>{ const st=window.__st, u=S.U(st.a), t=S.U(st.t), w=u.weapons[st.wi], n=Math.max(2,Math.min(3,w.shots||2)), shots=[]; for(let i=0;i<n;i++) shots.push(true);
     window.__fxErr=null; window.__fx=(async()=>{ try{ await animWeapon(u,w,t,shots); }catch(e){ window.__fxErr=String(e&&e.stack||e); console.error('fxshot fire',e); } })(); return true; };
   S.deathStage=view=>{ S.clear(); const big=Object.entries(HULLS).filter(([id,h])=>h.cls!=='Squadron'&&!h.boss).map(([id,h])=>({id,fac:h.fac||'voidsworn',L:CLS_LEN[h.cls]||14})).sort((a,b)=>b.L-a.L)[0];
     const [h]=S.pair(1), u=S.place(big.id,big.fac,h,'enemy'); S.face(u,0); S.settle(14); u.hp=Math.round(u.maxHp*.25); S.settle(4); window.__st={t:u.id}; const p=S.V(u.id).root.getAbsolutePosition(), L=S.V(u.id).L;
-    if(view==='close') S.cam(p,L*1.15+14,-Math.PI/2+.7,1.05); else S.cam(p,L*2.1+40,-Math.PI/2+.6,1.0); return {tpl:big.id,fac:big.fac,L:Math.round(L)}; };
+    S.calm(); if(view==='close') S.cam(p,L*1.15+14,-Math.PI/2+.7,1.05); else S.cam(p,L*2.1+40,-Math.PI/2+.6,1.0); return {tpl:big.id,fac:big.fac,L:Math.round(L)}; };
   S.kill=()=>{ const u=S.U(window.__st.t); u.killCause='blast'; u.dead=true; window.__fx=(async()=>{ try{ await animExplode(u); }catch(e){ console.error('fxshot kill',e); } })(); return true; };
   S.stats=()=>{ const P=G.fxPool||{pools:[]}; return {sprites:P.pools.map(q=>q.kind+':'+q.live.length).join(' '),meshes:G.scene.meshes.length,mats:G.scene.materials.length,ps:G.scene.particleSystems.length,atlasMs:G.fxAtlasMs,top:(()=>{ const h={}; for(const m of G.scene.meshes){ const k=m.name.replace(/[0-9_.\-]+$/,''); h[k]=(h[k]||0)+1; } return Object.entries(h).sort((a,b)=>b[1]-a[1]).slice(0,6).map(e=>e.join(':')).join(' '); })()}; };
   return S; })();
@@ -101,7 +102,7 @@ def main():
         pg.evaluate(LIB); pg.evaluate("FXS.css(); setQuality(%s); %s 0"%(json.dumps(Q),("G.engine.setHardwareScalingLevel(G.engine.getHardwareScalingLevel()*%g);"%SCALE) if SCALE!=1 else ''))
         info=pg.evaluate("FXS.battle(%s)"%json.dumps({'seed':SEED*101,'reduce':os.environ.get('REDUCE')=='1'}))
         pg.wait_for_function("!!B&&B.side==='player'",timeout=120000,polling=250); print('battle',info,'boot %.0fs'%(time.time()-T0)); sys.stdout.flush()
-        pg.wait_for_timeout(1500)
+        pg.wait_for_timeout(1500); pg.mouse.move(2,H-2) # keep the pointer off the board (no hover aim line)
         def step(ms):
             if clock is not None: clock.run_for(int(ms))
             else: pg.wait_for_timeout(int(ms))

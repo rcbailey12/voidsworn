@@ -128,7 +128,7 @@ function alignSprite(e,a,b,thick){ viewMats(); const A=V3.TransformCoordinates(a
   const za=Math.max(.5,A.z), zb=Math.max(.5,Bv.z), sax=A.x/za, say=A.y/za, sbx=Bv.x/zb, sby=Bv.y/zb, zm=(za+zb)/2, len=Math.max(thick*.5,Math.hypot(sbx-sax,sby-say)*zm);
   V3.TransformCoordinatesToRef(new V3((sax+sbx)/2*zm,(say+sby)/2*zm,zm),G._ivm,e.sp.position); e.sp.angle=Math.atan2(sby-say,sbx-sax); e.s0=thick/.45; e.w=len/thick; e.h=1; e.sp.width=len; e.sp.height=thick; return true; }
 // a thin ring around axis d at p, drawn as a sprite squashed to the ellipse it projects to
-function ringAround(p,d,R,col,o){ o=o||{}; const vd=p.subtract(G.cam.position).normalize(), ratio=Math.max(.14,Math.abs(V3.Dot(d,vd))); return wfp(p,{cell:12,size:R,col,dur:o.dur||.35,grow:o.grow==null?1.2:o.grow,ang:screenAng(p,d),w:ratio,h:1,fade:o.fade||1.4}); }
+function ringAround(p,d,R,col,o){ o=o||{}; const vd=p.subtract(G.cam.position).normalize(), ratio=Math.max(o.minRatio||.14,Math.abs(V3.Dot(d,vd))); return wfp(p,{cell:12,size:R,col,dur:o.dur||.35,grow:o.grow==null?1.2:o.grow,ang:screenAng(p,d),w:ratio,h:1,fade:o.fade||1.4}); }
 function lineSprite(a,b,thick,col,o){ o=o||{}; thick*=G.fxK||1; const e=fxp(a,{cell:o.cell==null?4:o.cell,size:thick/.45,col,dur:o.dur||.12,grow:0,fade:o.fade==null?1.5:o.fade,alpha:o.alpha==null?1:o.alpha,c2:o.c2||null}); if(e){ alignSprite(e,a,b,thick); e.grow=0; } return e; }
 function sparkSpray(p,dir,n,sp,col,spread,o){ o=o||{}; for(let i=0;i<n;i++){ const d=dir?coneDir(dir,spread==null?.8:spread):rdir(), v=d.scale(rr(sp[0],sp[1]));
     wfp(p,{cell:3,size:rr(.9,1.8)*(o.k||1),col:C3.Lerp(col,new C3(1,.5,.15),Math.random()*.6).scale(1.7),dur:rr(.25,.6)*(o.life||1),grow:0,vel:v,drag:o.drag==null?2:o.drag,grav:o.grav==null?3:o.grav,ang:screenAng(p,v),w:1,h:.2,fade:1.1}); } }
@@ -206,14 +206,14 @@ const WFX={
       if(lead&&Math.random()<.5) smokePuff(p.add(back.scale(.6)),1,1.3,{l0:1.2,l1:2}); },
     hitSfx(p){ SFX.play('hit_las',{pos:p}); }},
   plasma:{tier:'m',gap:150,vol:.55,decal:.5,
-    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), k=lead?1:.8, col=c.col, sat=col.scale(1.25), WH=new C3(1,.97,.85);
-      wfp(from,{cell:1,size:6*k,col:WH.scale(2.4),dur:.08,grow:.3}); wfp(from,{cell:0,size:8*k,col:sat,dur:.25,grow:.6}); wfp(from,{cell:6,size:6*k,col:sat.scale(1.2),dur:.25,grow:1.3,spin:6});
-      for(let i=0;i<nq(4);i++){ const v=coneDir(d,.8).scale(rr(5,11)); wfp(from,{cell:8,size:rr(.8,1.3),col:WH.scale(2),c2:sat.scale(.6),dur:rr(.25,.45),grow:0,vel:v,drag:1,grav:4}); }
-      const PB=new C3(.42,.72,1), body=C3.Lerp(PB,col,.35);
-      boltTo(from,to,h,lead,done,{speed:105*rr(.95,1.05),heat:lead?6:4,layers:[{cell:0,size:10*k,col:body.scale(.8)},{cell:6,size:6*k,col:col.scale(1.5),wob:.32,wf:19,spin:6},{cell:3,len:13*k,thick:3.4*k,col:body.scale(1.7),back:.3,wob:.12,wf:23},{cell:4,len:9*k,thick:1.5*k,col:WH.scale(3.2),back:.6},{cell:8,size:3.2*k,col:WH.scale(3),wob:.12,wf:47},{cell:6,size:4.2*k,col:PB.scale(1.6),wob:.25,wf:29,wp:1.7,spin:-8}],
-        trail(r,p,dd,dt){ r.acc+=dt; const st=(G.mobile?.07:.035)*(lead?1:2.2); while(r.acc>=st){ r.acc-=st; r.ti=(r.ti||0)+1; const v=dd.scale(-rr(2,6)).add(rdir().scale(rr(2,5)));
-          wfp(p.subtract(dd.scale(rr(1,4))),{cell:8,size:rr(.7,1.2),col:WH.scale(2.2),c2:body.scale(.6),dur:rr(.25,.45),grow:0,vel:v,drag:1.2,fade:.8}); // embers shed off the bolt
-          if(r.ti%2) wfp(p.subtract(dd.scale(rr(1,3))),{cell:3,size:rr(1,1.6),col:body.scale(2),dur:rr(.15,.3),grow:0,vel:v.scale(1.8),drag:2,ang:screenAng(p,v),w:1,h:.22,fade:1.1}); } }}); },
+    // a tight electric-blue bolt with a white-hot core line, small blue-violet crackle and sparse cyan embers; additive overlap kept low so it stays blue
+    fire(c,from,to,h,lead,done){ const d=to.subtract(from).normalize(), k=lead?1:.8, EB=new C3(.18,.48,1), VI=new C3(.5,.45,1), CY=new C3(.45,.9,1), WH=new C3(.85,.93,1);
+      wfp(from,{cell:1,size:4.5*k,col:WH.scale(1.8),dur:.07,grow:.3}); wfp(from,{cell:0,size:4.5*k,col:EB.scale(.9),dur:.2,grow:.6}); wfp(from,{cell:12,size:1.6*k,col:EB.scale(1.2),dur:.2,grow:2.5,fade:1.5});
+      for(let i=0;i<nq(3);i++){ const v=coneDir(d,.8).scale(rr(5,11)); wfp(from,{cell:8,size:rr(.5,.8),col:CY.scale(1.6),dur:rr(.2,.4),grow:0,vel:v,drag:1.2}); }
+      boltTo(from,to,h,lead,done,{speed:105*rr(.95,1.05),heat:lead?4:2.5,layers:[{cell:0,size:4.2*k,col:EB.scale(.55)},{cell:3,len:9*k,thick:1.5*k,col:EB.scale(1.05),back:.2,wob:.1,wf:23},{cell:4,len:6.5*k,thick:.45*k,col:WH.scale(1.9),back:.4},{cell:8,size:1.7*k,col:WH.scale(1.8),wob:.15,wf:47}],
+        trail(r,p,dd,dt){ r.acc+=dt; const st=(G.mobile?.09:.05)*(lead?1:2.2); while(r.acc>=st){ r.acc-=st; r.ti=(r.ti||0)+1;
+          if(r.ti%2===0) wfp(p.subtract(dd.scale(rr(1,3))),{cell:8,size:rr(.4,.7),col:CY.scale(1.5),dur:rr(.25,.45),grow:0,vel:dd.scale(-rr(1,3)).add(rdir().scale(rr(1.5,4))),drag:1.4,fade:.9}); // sparse cyan embers
+          if(lead&&r.ti%3===1){ const a=p.subtract(dd.scale(rr(.5,2.5))), q=a.add(rdir().scale(rr(1.2,2.4)*(G.fxK||1))); arcLine(a,q,VI.scale(1.4),{n:3,jag:.5,thick:.12,dur:.07}); } } }}); }, // blue-violet crackle
     impact(c,p,from,lead){ const back=from.subtract(p).normalize(), col=c.col, k=lead?1:.6, OR=new C3(1,.55,.16), WH=new C3(1,.95,.8);
       wfp(p,{cell:1,size:9*k,col:WH.scale(2.6),dur:.12,grow:.5}); wfp(p,{cell:0,size:13*k,col:OR.scale(2),dur:.42,grow:.7,fade:1.2}); wfp(p,{cell:6,size:9*k,col:col.scale(1.5),dur:.34,grow:1.6,spin:4,fade:1.5}); wfp(p,{cell:12,size:3*k,col:col.scale(1.3),dur:.3,grow:3,fade:1.5});
       for(let i=0;i<nq(lead?16:6);i++){ const v=coneDir(back.add(rdir().scale(.6)).normalize(),.9).scale(rr(6,16)); wfp(p,{cell:5,size:rr(.8,1.6)*k+.3,col:new C3(1,.75,.35).scale(2),c2:new C3(.6,.08,.02),dur:rr(.5,1),grow:0,vel:v,drag:.8,grav:9,spin:rr(-6,6),fade:.7}); }
@@ -243,8 +243,9 @@ const WFX={
       wfp(from,{cell:12,size:2.4*k,col:WH.scale(2),dur:.32,grow:5,fade:1.3}); wfp(from,{cell:2,size:3*k,col:col.scale(1.4),dur:.4,grow:3.5,fade:1.8}); wfp(from,{cell:1,size:8*k,col:WH.scale(2.6),dur:.08,grow:.35});
       sparkSpray(from,d,nq(lead?8:3),[20,40],WH,.35,{grav:0,k:1.2});
       const len=V3.Distance(from,to), RC=c.va.fac==='deathless'?FAC3D.deathless.bolt:(c.P.bolt||col), nr=lead?6:3;
-      for(let i=0;i<nr;i++) setTimeout(()=>{ try{ const q=from.add(d.scale(Math.min(len*.32,14)*(i+.6)/nr)); ringAround(q,d,(2.6+i*.25)*k,RC.scale(1.7),{dur:.32,grow:1.3}); }catch(e){} },i*14); // stylised magnetic accelerator rings (rule of cool)
-      wbFly(from,to,{speed:1500,overshoot:h?0:40,layers:[{cell:3,len:Math.min(len*.6,30)*k,thick:1.3*k,col:WH.scale(2.8)},{cell:8,size:2.6*k,col:WH.scale(3)},{cell:0,size:4*k,col:col.scale(1.4)}],
+      for(let i=0;i<nr;i++) setTimeout(()=>{ try{ const q=from.add(d.scale(Math.min(len*.3,16)*(i+.35)/nr)); ringAround(q,d,(5.2+i*.5)*k,RC.scale(2.4),{dur:.42,grow:1.1,minRatio:.5,fade:1.2}); }catch(e){} },i*16);
+      ringAround(from.add(d.scale(1)),d,7*k,RC.scale(2),{dur:.5,grow:1.6,minRatio:.55}); // stylised magnetic accelerator rings, facing the camera enough to read as rings // stylised magnetic accelerator rings (rule of cool)
+      wbFly(from,to,{speed:1500,overshoot:h?0:40,layers:[{cell:3,len:Math.min(len*.6,30)*k,thick:1.5*k,col:WH.scale(3)},{cell:8,size:4*k,col:WH.scale(3.5)},{cell:1,size:6*k,col:WH.scale(2.2)},{cell:0,size:5*k,col:col.scale(1.5)}],
         onArrive:()=>{ try{ lineSprite(from,to,.5*k,WH.scale(2),{dur:.12,fade:1.6}); lineSprite(from,to,2.4*k,col.scale(.6),{dur:.8,fade:.9,alpha:.6});
           if(lead&&!G.mobile){ const n=Math.min(18,Math.floor(len/3.5)), side=V3.Cross(d,V3.Up()).normalize(), up=V3.Cross(side,d); for(let i=1;i<n;i++){ const a=i*.95, q=from.add(d.scale(len*i/n)).add(side.scale(Math.cos(a)*.9)).add(up.scale(Math.sin(a)*.9)); wfp(q,{cell:0,size:2,col:col.scale(.9),dur:rr(.5,.8),grow:.7,fade:1.2}); } } }catch(e){} done(); },settle:done}); },
     impact(c,p,from,lead){ const d=p.subtract(from).normalize(), back=d.scale(-1), col=c.col, hot=hotOf(col,.7);

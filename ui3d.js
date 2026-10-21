@@ -411,7 +411,7 @@ async function onBoardClick(){
 function blockedFrom(s,st){ try{ const v=stateView(s,st); return alive('enemy').filter(t=>!t.isSq&&s.weapons.some(w=>w.k!=='flak'&&hdist(v,t)<=w.r&&hdist(v,t)>=1&&inArc(v,t,w.arc))&&!los(v,t)); }catch(e){ return []; } }
 // aim line: gold when the shot is clear, red to an X where an asteroid or wreck blocks it
 function aimMat(key,col,a){ G.aimMats=G.aimMats||{}; let m=G.aimMats[key]; if(m&&!m.isDisposed?.()) return m; m=new BABYLON.StandardMaterial('aimM'+key,G.scene); m.disableLighting=true; m.emissiveColor=col; m.alpha=a; m.backFaceCulling=false; G.aimMats[key]=m; return m; }
-function aimTube(name,pts,mat,rad){ const t=MB.CreateTube(name,{path:pts,radius:rad,tessellation:6,cap:BABYLON.Mesh.CAP_ALL},G.scene); t.material=mat; t.isPickable=false; t.renderingGroupId=1; OV.hover.push(t); return t; }
+function aimTube(name,pts,mat,rad){ const t=MB.CreateTube(name,{path:pts,radius:rad,tessellation:6,cap:BABYLON.Mesh.CAP_ALL},G.scene); t.material=mat; t.isPickable=false; t.renderingGroupId=2; OV.hover.push(t); return t; } /* v53-I: group 1 now holds the effect sprites (depth kept); the aim line stays on top in its own group */
 function aimLine(a,t){ try{ const line=hexLine(a,t); let cut=-1; for(let i=1;i<line.length-1;i++) if(sightBlocked(line[i].q,line[i].r)){ cut=i; break; }
     const R=HS*.07, from=hexWorld(a.q,a.r,1.6), to=hexWorld(t.q,t.r,1.6);
     if(cut<0){ aimTube('aim',[from,to],aimMat('ok',new C3(1,.82,.4),.85),R); return; }
