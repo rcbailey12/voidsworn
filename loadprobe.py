@@ -29,7 +29,7 @@ with sync_playwright() as p:
     cdp=pg.context.new_cdp_session(pg); cdp.send('Profiler.enable'); cdp.send('Profiler.setSamplingInterval',{'interval':250}); cdp.send('Profiler.start')
     pg.evaluate("window.__lp.t0=performance.now(); ACT.c3skirmish(); setupBattle({pf:'%s',ef:'%s'}); ACT.begin(); G.cine=false; 0"%(PF,EF))
     pg.wait_for_function("!!B&&B.side==='player'&&!B.busy",timeout=240000,polling=200); tv=pg.evaluate("Math.round(performance.now()-window.__lp.t0)")
-    try: pg.wait_for_function("!document.getElementById('bveil')||document.getElementById('bveil').style.opacity==='0'",timeout=20000,polling=100)
+    try: pg.wait_for_function("!document.getElementById('bveil')||document.getElementById('bveil').style.opacity==='0'",timeout=int(os.environ.get("VEILWAIT","20000")),polling=100)
     except Exception: pass
     lift=pg.evaluate("(()=>{ const w=G.lastWarm; return w&&w.end?Math.round(w.end-window.__lp.t0):0; })()"); warm=pg.evaluate("JSON.stringify(G.lastWarm||null)")
     time.sleep(8)

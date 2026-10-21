@@ -38,6 +38,17 @@ Full audit: AUDIT_v53H.md. Owner chose: full per-ship detail bake; desktop loads
 - [ ] Music (none today): adaptive score with vertical layers (calm map, tension, combat, boss) crossfaded by battle intensity, segments switching on bar lines (docs/skills/audio-design). Source: generate royalty-free stems on the PC GPU with an open music model (ACE-Step / Stable Audio Open class) or CC0 tracks; owner picks the style.
 - [ ] AI polish from docs/skills/ai-behavior-trees-utility-ai: normalised response curves for each consideration, hysteresis on target and move choices, a debug overlay of per-action scores for tuning.
 
+## Ship shapes (owner, Oct 21: "everything still feels pretty low poly", desktop and phone)
+Cause: the Hunyuan image-to-3D meshes are soft and lumpy at any triangle count (the station even split into a disc plus a separate ship). Not the engine, not the texture size.
+Bake-off on the Pyre-Barge (C19_51) and the station (O1_37), clay renders + in-game (tools/blender/hs/):
+- A Hunyuan at octree 512/640: no visible gain (tools/pc/hy_bakeoff.py). Dropped.
+- B Blender clean-up of the current mesh (planar dissolve + hard edges): no visible gain. Dropped.
+- C TRELLIS.2 (IgorAherne one-click Windows build, tools/pc/trellis_dl.ps1): downloading/untested.
+- D Blender hard-surface rebuild, scripted per hull from the concept art (hs_lib.py kit: lofted hulls, frustums, bevels, greebles, tube bundles): crisp in-game on first pass. Recommended.
+- [ ] Owner picks. If D: capitals and objectives first, then the rest; per hull: script -> export_json.py (game frame, split normals) -> uvprep -> hullbake (AO/curvature) -> closeshot; red/black paint and decals from the concept.
+- [ ] Replace the box/T-shape wreck debris (debBases in buildTerrainFeatures) with real wreck chunks from the rebuilt hulls.
+- [ ] The bright gold selection ring on the owner's Pixel shot at close zoom (PC shots show it faded; re-check on the Pixel with v53.8).
+
 ## v54: factions and rewards (parallel with v55)
 
 Doctrines (Ithar and Chorus first, then Corsair, Deathless, Hegemony, Voidsworn); boon decline + reroll; rule-changing boons; legendary per patron (Hades style, unlocked at boss/elite after 2-3 of that patron's boons); rarity changes effect; shared refit tracks per class; kill marks and sector chronicle; section consequences; fire damage-control choice; earned Admiral's Command; objectives that change priorities; faction AI behaviours; differentiated admirals.

@@ -62,6 +62,7 @@ def finish(name):
         bpy.context.view_layer.objects.active = o
         for m in list(o.modifiers): bpy.context.view_layer.objects.active = o; o.select_set(True); bpy.ops.object.modifier_apply(modifier=m.name); o.select_set(False)
     for o in bpy.context.scene.objects: o.select_set(o in PARTS)
+    bpy.context.view_layer.objects.active = PARTS[0]; bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     bpy.context.view_layer.objects.active = PARTS[0]; bpy.ops.object.join(); o = bpy.context.view_layer.objects.active; o.name = name
     for p in o.data.polygons: p.use_smooth = True
     return o
