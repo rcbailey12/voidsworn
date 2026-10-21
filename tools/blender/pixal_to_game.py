@@ -62,7 +62,10 @@ if os.environ.get('KIT'):  # hand-built parts in the same GLB frame: same axis c
             ka = kp['attributes']; p_ = kacc(ka['POSITION']); n_ = kacc(ka['NORMAL']); c_ = kacc(ka['COLOR_0'])[:, :3] if 'COLOR_0' in ka else np.full((len(p_), 3), .2)
             u_ = kacc(ka['TEXCOORD_0']) if 'TEXCOORD_0' in ka else None; KU.append(u_)
             i_ = kacc(kp['indices']).reshape(-1, 3).astype(np.int64) + base; base += len(p_); KP.append(p_); KN.append(n_); KC.append(c_); KI.append(i_)
-    KP = np.concatenate(KP) @ M.T; KN = np.concatenate(KN) @ M.T; KC = np.concatenate(KC); KI = np.concatenate(KI)
+    KP0 = np.concatenate(KP); KN0 = np.concatenate(KN); KI = np.concatenate(KI)
+    fn = np.cross(KP0[KI[:, 1]] - KP0[KI[:, 0]], KP0[KI[:, 2]] - KP0[KI[:, 0]]); bad = (fn * KN0[KI].sum(1)).sum(1) < 0  # winding that disagrees with the normals (two-sided in Blender, black in game)
+    KI[bad] = KI[bad][:, [0, 2, 1]]; print('kit winding fixed', int(bad.sum()), 'of', len(KI))
+    KP = KP0 @ M.T; KN = KN0 @ M.T; KC = np.concatenate(KC)
     KU = np.concatenate(KU) if all(u is not None for u in KU) else None
     if np.linalg.det(M) < 0: KI = KI[:, [0, 2, 1]]
     KP = (KP - (lo + hi) / 2) / (hi[0] - lo[0]); KN /= np.maximum(np.linalg.norm(KN, axis=1, keepdims=True), 1e-9)

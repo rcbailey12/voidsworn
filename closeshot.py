@@ -12,7 +12,7 @@ MISSING=[]
 class Q(http.server.SimpleHTTPRequestHandler):
     def log_message(self,fmt,*a):
         if len(a)>1 and str(a[1])=='404': print('  HTTP 404',a[0][:120]); MISSING.append(str(a[0]))
-socketserver.ThreadingTCPServer.daemon_threads=True; socketserver.ThreadingTCPServer.allow_reuse_address=True
+socketserver.ThreadingTCPServer.daemon_threads=True; socketserver.ThreadingTCPServer.allow_reuse_address=True; socketserver.ThreadingTCPServer.request_queue_size=256  # desktop loads ~40 hulls at once; the default backlog of 5 refused some (kit missing in shots)
 srv=socketserver.ThreadingTCPServer(('127.0.0.1',0),functools.partial(Q,directory=HERE)); threading.Thread(target=srv.serve_forever,daemon=True).start()
 PAGE='http://127.0.0.1:%d/'%srv.server_address[1]+os.environ.get('PAGEFILE','index_test.html')+'?shots'
 HIDE="try{ ACT.tipOff&&ACT.tipOff(); }catch(e){} const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); document.querySelectorAll('.tipcard,#panel,#roster,#log,#btop,.plate,#terrlegend').forEach(e=>e.style.visibility='hidden');"
