@@ -11,6 +11,7 @@ argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
 src, pre = argv[0], argv[1]
 bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=src)
 hull = [o for o in bpy.context.scene.objects if o.type == 'MESH'][0]
+XT, XS = -.490, -.245  # bow tip and the seam where the rebuilt bow meets the AI hull
 GUNS = []  # (base, tip)
 for x0, x1 in ((-.045, -.059), (.248, .250)):
     for s in (1, -1): GUNS.append((Vector((x0, s * .100, .006)), Vector((x1, s * .145, .080))))
@@ -20,6 +21,7 @@ BOXES = [  # (x0, x1, y0, y1, z0, z1): AI geometry to cut away (all above the de
     (.054, .097, -.030, .030, .062, .172),   # funnels
     (-.012, .062, -.040, .040, .110, .250),  # mast
     (-.100, .068, -.088, .088, .058, .140),  # bridge tier, its drums and roof tank (owner, Oct 21: soft and blobby near the bridge)
+    (-.60, XS, -.4, .4, -.4, .4),             # the whole bow forward of the superstructure (owner, Oct 21: wavy and messy), rebuilt as a clean loft below
 ]
 def seg_d(p, a, b):
     ab = b - a; t = max(0, min(1, (p - a).dot(ab) / ab.length_squared)); return (a + ab * t - p).length
@@ -45,15 +47,20 @@ def tag(rgb):  # colour every part made since the last tag
     for o in hs_lib.PARTS:
         if o.name not in COL: COL[o.name] = rgb
 GUN = (.085, .085, .09); STEEL = (.17, .17, .18); RED = (.36, .075, .05); DARK = (.02, .02, .022)  # linear colours, sampled by eye from the concept
-# rocket rack: two rows of seven launch tubes across the ship, on a column with a domed cap
-R = Matrix.Rotation(math.pi / 2, 3, 'Z')  # tubes() runs its tubes along its local X; turn them to run across the ship (y)
+# rocket rack: two rows of seven launch tubes across the ship, on a column with a domed cap. Painted by hand, not by projection
+# (owner, Oct 21: the projected rack came out a grey blob, like an unpainted tabletop model): gunmetal tubes, steel rims, dark bores, red frame.
+TUBE = (.05, .05, .055); RIM = (.14, .13, .12)
 for row, z in enumerate((.113, .091)):
     for k in range(7):
         x = .217 + (k - 3) * .0202
-        cyl(f'tube{row}{k}', (x, 0, z), .0094, .085, axis='Y', seg=20, bevel=.0012)
-        for s in (1, -1): cyl(f'bore{row}{k}{s}', (x, s * .0428, z), .0068, .002, axis='Y', seg=20, bevel=0)
-tag(GUN)
-box('rackframe', (.217, 0, .102), (.150, .07, .006), bevel=.0015); box('rackcheek1', (.144, 0, .102), (.006, .088, .04), bevel=.0015); box('rackcheek2', (.290, 0, .102), (.006, .088, .04), bevel=.0015); tag(STEEL)
+        cyl(f'tube{row}{k}', (x, 0, z), .0090, .085, axis='Y', seg=20, bevel=.0008); tag(TUBE)
+        for s in (1, -1): cyl(f'rim{row}{k}{s}', (x, s * .0405, z), .0100, .005, axis='Y', seg=20, bevel=.0006)
+        cyl(f'rimc{row}{k}', (x, 0, z), .0097, .004, axis='Y', seg=20, bevel=0); tag(RIM)
+        for s in (1, -1): cyl(f'bore{row}{k}{s}', (x, s * .0431, z), .0072, .002, axis='Y', seg=20, bevel=0)
+tag(DARK)
+box('rackframe', (.217, 0, .102), (.150, .07, .006), bevel=.0015); box('rackcheek1', (.144, 0, .102), (.006, .088, .04), bevel=.0015); box('rackcheek2', (.290, 0, .102), (.006, .088, .04), bevel=.0015); tag(RED)
+for s in (1, -1): box(f'rackstrap{s}', (.217, s * .028, .124), (.150, .004, .003), bevel=.0006)
+tag(STEEL)
 hz, _ = surf_down(.202, 0, .07); zc0 = (hz.z - .003) if hz is not None else .047; cyl('column', (.202, 0, (zc0 + .097) / 2), .021, .097 - zc0, seg=32, bevel=.002); cyl('collar', (.202, 0, .096), .025, .006, seg=32, bevel=.001); tag(STEEL)
 cyl('domebase', (.202, 0, .135), .011, .03, seg=24, bevel=.001); tag(RED)
 bm2 = bmesh.new(); bmesh.ops.create_uvsphere(bm2, u_segments=24, v_segments=10, radius=.011)
@@ -110,6 +117,37 @@ cyl('rooftank', (-.020, 0, zt + .015), .010, .022, seg=24, bevel=.0012); tag(RED
 bm3 = bmesh.new(); bmesh.ops.create_uvsphere(bm3, u_segments=24, v_segments=10, radius=.010)
 for v in bm3.verts: v.co.z = max(v.co.z, 0) * .8
 bmesh.ops.translate(bm3, verts=bm3.verts, vec=(-.020, 0, zt + .026)); hs_lib._obj('rooftankcap', bm3, 0); tag(RED)
+# bow: the AI bow was wavy and crumpled, so it is rebuilt as a faired loft that follows the AI hull's own sections (measured off the mesh:
+# a flat deck plate overhanging a V hull, raked stem, a step in the keel), symmetric about the centreline, overlapping 1 cm into the hull at the seam
+def bow_sec(x):
+    s_ = max(0., min(1., (x - XT) / (XS + .010 - XT)))
+    wd = max(.006, .124 * (1 - (1 - s_) ** 2.2)); wh = max(.004, min(wd - .008, .095 * s_ ** .9)); wk = max(.003, min(wh - .002, .05 * s_ * s_ + .006))
+    zd, t = -.085, .007
+    zk = -.102 - .098 * min(1., max(0., (s_ - .04) / .27)); zk += .014 * min(1., max(0., (x + .300) / .012))  # stem rake, then the keel step up
+    zh = zd - t - .003; zc = zk + min(.012, (zh - zk) * .5)
+    half = [(wd * .45, zd + .002), (wd * .97, zd), (wd, zd - .003), (wd, zd - t), (wh, zh), (min(wh, wk + .008), zc), (wk, zk)]
+    return [(0, zd + .003)] + half + [(0, zk)] + [(-y, z) for y, z in reversed(half)]
+import numpy as _np
+loft('bow', [(float(x), bow_sec(float(x))) for x in _np.concatenate([_np.linspace(XT, XT + .03, 4), _np.linspace(XT + .04, XS + .010, 22)])], bevel=.0015); tag(RED)
+# deck dressing from the concept: jackstaff with a spike at the tip, a forward-facing bow chaser (owner: bow guns may face forward),
+# hatches, bollards along the deck edges and a pair of drums on each side at the foot of the superstructure
+zdk = -.082
+cyl('jackstaff', (XT + .032, 0, zdk + .026), .0035, .052, seg=12, bevel=0); cyl('jackspike', (XT + .032, 0, zdk + .057), .0042, .012, seg=12, r2=.0004, bevel=0); tag(STEEL)
+cyl('chaserbase', (-.425, 0, zdk + .003), .016, .006, seg=24, bevel=.001); tag(STEEL)
+box('chaserhouse', (-.425, 0, zdk + .012), (.026, .020, .012), bevel=.002); tag(RED)
+for s_ in (1, -1): barrel(f'chaser{s_}', (-.436, s_ * .005, zdk + .013), (-1, 0, .04), .052, .0028)
+tag(GUN)
+box('hatch1', (-.370, 0, zdk + .0015), (.030, .026, .003), bevel=.0008); cyl('hatch2', (-.335, .045, zdk + .0015), .009, .003, seg=20, bevel=.0005); cyl('hatch3', (-.335, -.045, zdk + .0015), .009, .003, seg=20, bevel=.0005); tag(STEEL)
+for x_ in (-.400, -.345, -.290):
+    w_ = .124 * (1 - (1 - (x_ - XT) / (XS + .010 - XT)) ** 2.2)
+    for s_ in (1, -1): cyl(f'bollard{x_}{s_}', (x_, s_ * (w_ - .012), zdk + .004), .0035, .008, seg=12, bevel=.0006)
+tag(GUN)
+for s_ in (1, -1):
+    for k in (0, 1): cyl(f'deckdrum{s_}{k}', (-.278 + k * .024, s_ * .072, zdk + .010), .0095, .028, axis='Y', seg=24, bevel=.001)
+    tag(STEEL)
+    for k in (0, 1):
+        for e in (1, -1): cyl(f'deckdrumring{s_}{k}{e}', (-.278 + k * .024, s_ * .072 + e * .009, zdk + .010), .0101, .002, axis='Y', seg=24, bevel=0)
+    tag(GUN)
 for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
     c = DARK if o.name.startswith('bore') or 'band' in o.name else COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for d in a.data: d.color = (c[0], c[1], c[2], 1)

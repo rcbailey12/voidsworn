@@ -76,6 +76,7 @@ if os.environ.get('KIT'):  # hand-built parts in the same GLB frame: same axis c
         km = KJ['materials'][KJ['meshes'][0]['primitives'][0].get('material', 0)]; bt = km.get('pbrMetallicRoughness', {}).get('baseColorTexture')
         if bt is not None:
             bv = KJ['bufferViews'][KJ['images'][KJ['textures'][bt['index']]['source']]['bufferView']]; kimg = Image.open(io.BytesIO(KBIN[bv.get('byteOffset', 0):bv.get('byteOffset', 0) + bv['byteLength']])).convert('RGB')
+            if texres and kimg.width > texres: kimg = kimg.resize((texres, texres), Image.LANCZOS)  # phone set: the kit atlas at the phone's map size
             kp_ = os.path.join(outd, code + '_kit_a.webp'); kimg.save(kp_, quality=90, method=6); kit['tex'] = 1
             if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']): sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import paint_level; print('kit paint level', paint_level.level(kp_, os.environ['CONCEPT']))
     json.dump(kit, open(os.path.join(outd, code + '_kit.json'), 'w')); print('kit verts', len(KP), 'tris', len(KI), 'painted', 'tex' in kit)

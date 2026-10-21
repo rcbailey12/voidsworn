@@ -37,6 +37,12 @@ for x in occ or []:
 bvh = BVHTree.FromBMesh(bm); bm.free()
 for x in occ or []: bpy.data.objects.remove(x)
 mw = np.array(o.matrix_world); VW = V @ mw[:3, :3].T + mw[:3, 3]; NW = NV @ mw[:3, :3].T; NW /= np.maximum(np.linalg.norm(NW, axis=1, keepdims=True), 1e-9)
+KEEP = None
+if os.environ.get('KEEP'):  # boxes "x0,x1,y0,y1,z0,z1;..." in this mesh's frame: vertices inside keep their vertex colours, unprojected
+    KEEP = np.zeros(len(V), bool)
+    for b_ in os.environ['KEEP'].split(';'):
+        x0, x1, y0, y1, z0, z1 = map(float, b_.split(',')); KEEP |= (VW[:, 0] >= x0) & (VW[:, 0] <= x1) & (VW[:, 1] >= y0) & (VW[:, 1] <= y1) & (VW[:, 2] >= z0) & (VW[:, 2] <= z1)
+    print('keep own paint', int(KEEP.sum()), 'verts')
 for k, (img, msk, az, el, wt) in enumerate(views):
     a, e = math.radians(az), math.radians(el); back = mathutils.Vector((math.sin(a) * math.cos(e), -math.cos(a) * math.cos(e), math.sin(e)))
     cam = bpy.data.objects.new(f'cam{k}', bpy.data.cameras.new(f'cam{k}')); sc.collection.objects.link(cam); cam.data.angle = FOV; cam.data.sensor_fit = 'HORIZONTAL'
@@ -51,6 +57,7 @@ for k, (img, msk, az, el, wt) in enumerate(views):
         h = bvh.ray_cast(cpl, mathutils.Vector(dirs[i]), dist[i] + 0.02)
         vis[i] = h[0] is not None and h[3] > dist[i] - 0.012  # first surface hit is (near) this vertex
     w = vis * np.clip((face - 0.12) / 0.88, 0, 1) ** 1.5 * wt
+    if KEEP is not None: w[KEEP] = 0  # parts that keep their own (vertex) paint
     at = me.attributes.new(f'w{k}', 'FLOAT', 'POINT'); at.data.foreach_set('value', w.astype(np.float32))
     print('view', k, img.split('/')[-1], 'az', az, 'el', el, 'visible %.1f%%' % (100 * (w > 0).mean()))
 me.uv_layers.active = me.uv_layers[base_uv]
@@ -59,7 +66,11 @@ bm_ = bpy.data.materials.new('proj'); bm_.use_nodes = True; T = bm_.node_tree; T
 out = T.nodes.new('ShaderNodeOutputMaterial'); em = T.nodes.new('ShaderNodeEmission'); L.new(em.outputs[0], out.inputs[0])
 if base_img is not None:
     uvb = T.nodes.new('ShaderNodeUVMap'); uvb.uv_map = base_uv; tb = T.nodes.new('ShaderNodeTexImage'); tb.image = base_img; L.new(uvb.outputs[0], tb.inputs[0])
-else: tb = T.nodes.new('ShaderNodeVertexColor')
+else:  # vertex colours, broken up with grime so hand-painted parts don't read as flat plastic
+    vc = T.nodes.new('ShaderNodeVertexColor'); nz = T.nodes.new('ShaderNodeTexNoise'); nz.inputs['Scale'].default_value = 160; nz.inputs['Detail'].default_value = 8
+    tco = T.nodes.new('ShaderNodeTexCoord'); L.new(tco.outputs['Object'], nz.inputs['Vector'])
+    gm = T.nodes.new('ShaderNodeMapRange'); L.new(nz.outputs['Fac'], gm.inputs['Value']); gm.inputs['From Min'].default_value = .3; gm.inputs['From Max'].default_value = .7; gm.inputs['To Min'].default_value = .62; gm.inputs['To Max'].default_value = 1.18
+    tb = T.nodes.new('ShaderNodeVectorMath'); tb.operation = 'SCALE'; L.new(vc.outputs[0], tb.inputs[0]); L.new(gm.outputs[0], tb.inputs[3])
 def math_(op, a, b):
     n = T.nodes.new('ShaderNodeMath'); n.operation = op
     for i, x in enumerate((a, b)):
