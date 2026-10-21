@@ -14,8 +14,8 @@ const HFX_RIM0=new BABYLON.Color3(.6,.7,.9), HFX_E0=new BABYLON.Color3(1,.62,.3)
 function hfxSane(pl){ const c=x=>x&&typeof x.r==='number'&&isFinite(x.r)&&isFinite(x.g)&&isFinite(x.b), n=(x,d)=>typeof x==='number'&&isFinite(x)?x:d;
   if(!c(pl.rim)) pl.rim=HFX_RIM0; if(!c(pl.ecol)) pl.ecol=HFX_E0; if(pl.wcol&&!c(pl.wcol)) pl.wcol=null; pl.str=n(pl.str,.85); pl.wear=n(pl.wear,.25); pl.seed=n(pl.seed,3); pl.style=n(pl.style,0); pl.dmg=n(pl.dmg,0); pl.dseed=n(pl.dseed,0); } // a handful of type checks per bind: cheap
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
-  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false,HULLFX_MAP:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_MAP=!!(this.mtex&&this.mtex.isReady&&this.mtex.isReady()); defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); } // v53-G: ai = concept-mesh hull (shader ports, fine detail, its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
+  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false,HULLFX_MAP:false,HULLFX_PAINT:false}); Object.assign(this,o); this._enable(true); }
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_PAINT=!!this.paint; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_MAP=!!(this.mtex&&this.mtex.isReady&&this.mtex.isReady()); defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); } // v53-G: ai = concept-mesh hull (shader ports, fine detail, its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
   getSamplers(samplers){ samplers.push('hfxMap'); }
   getActiveTextures(a){ if(this.mtex) a.push(this.mtex); }
@@ -42,6 +42,7 @@ float hfxN(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
 CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
 #ifdef HULLFX
   { vec3 hl=vHfxL+hfxS.x;
+#ifndef HULLFX_PAINT
     float gr=smoothstep(0.42,0.92,hfxN(hl*vec3(0.05,0.16,0.16)))*0.6;
 #ifdef HULLFX_HI
     gr+=smoothstep(0.5,0.95,hfxN(vec3(hl.x*0.03,hl.y*0.9,hl.z*0.9)))*0.4;
@@ -53,6 +54,7 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
 #endif
     { vec3 cq=floor(vHfxL*vec3(0.32,0.55,0.55)+hfxS.x*3.0); float tone=hfxH(cq); surfaceAlbedo*=0.88+0.22*tone; // plate-to-plate tone, visible at any distance
       float ny=normalize(vHfxN).y; surfaceAlbedo*=mix(0.72,1.0,smoothstep(-0.85,0.35,ny)); } // undersides sit in shadow
+#endif
     if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3;
       float burn=smoothstep(1.0-hfxD.x*0.62,1.0-hfxD.x*0.62+0.07,dn);
       surfaceAlbedo=mix(surfaceAlbedo,surfaceAlbedo*vec3(0.09,0.075,0.065),burn); } }
@@ -82,7 +84,7 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.9));
         surfaceAlbedo*=mix(1.0,(0.7+0.3*seam)*(0.93+0.14*id),pf); } }
 #endif
-#if defined(HULLFX_AI) && defined(HULLFX_D2)
+#if defined(HULLFX_AI) && defined(HULLFX_D2) && !defined(HULLFX_PAINT)
     // v53.8 close-up plating on concept hulls (Ryan: "melted" up close): staggered panel seams, inset hatches, small raised blocks and dents,
     // bump-mapped from a per-pixel height. Laid in ship units on the open plating only (the baked cavities and raised edges keep their own shape).
     // Each layer fades out by its own pixel footprint, so it is crisp when there are pixels for it and never shimmers when there are not.

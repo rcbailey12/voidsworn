@@ -43,9 +43,11 @@ Cause: the Hunyuan image-to-3D meshes are soft and lumpy at any triangle count (
 Bake-off on the Pyre-Barge (C19_51) and the station (O1_37), clay renders + in-game (tools/blender/hs/):
 - A Hunyuan at octree 512/640: no visible gain (tools/pc/hy_bakeoff.py). Dropped.
 - B Blender clean-up of the current mesh (planar dissolve + hard edges): no visible gain. Dropped.
-- C TRELLIS.2 (IgorAherne one-click Windows build, tools/pc/trellis_dl.ps1): downloading/untested.
-- D Blender hard-surface rebuild, scripted per hull from the concept art (hs_lib.py kit: lofted hulls, frustums, bevels, greebles, tube bundles): crisp in-game on first pass. Recommended.
-- [ ] Owner picks. If D: capitals and objectives first, then the rest; per hull: script -> export_json.py (game frame, split normals) -> uvprep -> hullbake (AO/curvature) -> closeshot; red/black paint and decals from the concept.
+- C TRELLIS.2 (IgorAherne one-click Windows build, tools/pc/trellis_dl.ps1, tools/pc/trellis_bakeoff.py): sharp and faithful to the concept, with the concept's own paint. Owner pick (Oct 21: TRELLIS.2, concept paint, two test ships first).
+- D Blender hard-surface rebuild (hs_lib.py kit): owner: "sparser... a bit like the boxy issue". Dropped.
+- TRELLIS pipeline: tools/pc/trellis_fleet.py on the PC (GLB per hull, ~2 min each on the 5080) -> tools/blender/trellis_fleet_bake.sh in the sandbox (trellis_bake.py: weld UV seams, decimate 38k/16k, xatlas UVs, bake paint + normal + AO/curvature from the 600k mesh; paint_level.py lifts the paint to 0.8x the concept's brightness). Game: hull JSON 'alb' flag -> aiPaintMatFor (paint as albedo, no tiled plating or procedural grime/ports).
+- [ ] v53.9 test: Pyre-Barge (C19_51) + station (O1_37) painted, owner checks Pixel + desktop. Then the other 34 (GLBs already made on the PC).
+- [ ] Engine glow seats and turret mounts for the new shapes (TRELLIS hulls are taller/stubbier than the Hunyuan ones).
 - [ ] Replace the box/T-shape wreck debris (debBases in buildTerrainFeatures) with real wreck chunks from the rebuilt hulls.
 - [ ] The bright gold selection ring on the owner's Pixel shot at close zoom (PC shots show it faded; re-check on the Pixel with v53.8).
 

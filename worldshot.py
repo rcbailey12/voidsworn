@@ -13,7 +13,7 @@ srv=socketserver.ThreadingTCPServer(('127.0.0.1',0),functools.partial(Q,director
 PAGE='http://127.0.0.1:%d/'%srv.server_address[1]+os.environ.get('PAGEFILE','index_test.html')
 HIDE="try{ ACT.tipOff&&ACT.tipOff(); }catch(e){} const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); document.querySelectorAll('.tipcard').forEach(e=>e.remove());"
 def battle(pg,cfg,q='medium'):
-    pg.evaluate("setQuality('%s'); ACT.c3skirmish(); setupBattle(%s); ACT.begin(); SPEED=.5; G.cine=false; %s 0"%(q,cfg,HIDE))
+    pg.evaluate("G.noWarm=true; setQuality('%s'); ACT.c3skirmish(); setupBattle(%s); ACT.begin(); SPEED=.5; G.cine=false; %s 0"%(q,cfg,HIDE))
     pg.wait_for_function("!!B&&B.side==='player'&&!B.busy", timeout=300000, polling=500)
     pg.wait_for_timeout(1500); pg.evaluate(HIDE+"for(const v of G.views.values()){ v.arrive=null; if(v.ring) v.ring.node.setEnabled(true); if(v.root) v.root.setEnabled(true); if(v.plate) v.plate.el.style.visibility=''; } 0")
 SNAP="const c=G.cam, k=G.ctl; k.estab=null; k.slowUntil=0; c.target.copyFrom(k.t); c.radius=k.r; c.alpha=k.a; c.beta=k.b; 0"

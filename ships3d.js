@@ -665,7 +665,7 @@ function trimModelCache(){ try{ MODEL_GEN.n++; for(const [k,p] of Object.entries
     for(const p of MODEL_GEN.stale.splice(0)){ try{ if(p.whole&&!p.whole.isDisposed()) p.whole.dispose(false,false); if(p.root&&!p.root.isDisposed()) p.root.dispose(false,false); }catch(e){} } }catch(e){ console.warn('model cache trim',e); } }
 function buildShipModel(u){ if(u.isSq) return null; const fac=u.fac||'voidsworn', key=fac+'|'+(u.transport?'Transport':u.cls); // v53-G: intercept transports fly the freighter mesh
   let p=MODEL_CACHE[key]; if(!p){ p=buildShipModelFresh(u.transport?{fac,cls:'Transport',transport:true}:u); p.root.setEnabled(false); p.root.position.y=-9000; MODEL_CACHE[key]=p; } p.gen=MODEL_GEN.n;
-  if(p.aiMat){ const e=Object.values(AI_TEX).find(x=>x.m===p.aiMat); if(e) aiTexTouch(e); }
+  if(p.aiMat){ const e=Object.values(AI_TEX).find(x=>x.m===p.aiMat); if(e) (e.paint?aiPaintTouch(e):aiTexTouch(e)); }
   if(p.whole===undefined){ try{ p.whole=makeWholeProto(p.root); }catch(e){ console.warn('whole model failed',e); p.whole=null; } }
   const root=(p.whole||p.root).clone('ship',null); root.setEnabled(true); root.position.set(0,0,0);
   const kids=root.getChildren(), fore=kids.find(n=>n.name.endsWith('fore')), aft=kids.find(n=>n.name.endsWith('aft')), all=root.getChildMeshes(false), M=facMats(fac);
@@ -754,7 +754,8 @@ function decodeAIHull(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array
     if(ay>=ax&&ay>=az){ uv[v*2]=x*k; uv[v*2+1]=z*k; } else if(ax>=az){ uv[v*2]=z*k; uv[v*2+1]=y*k; } else { uv[v*2]=x*k; uv[v*2+1]=y*k; } }
   let col=null; if(j.a){ const a=b64(j.a,Uint8Array); col=new Float32Array(n*4); for(let v=0;v<n;v++){ const k=a[v]/255; col[v*4]=k; col[v*4+1]=k; col[v*4+2]=k; col[v*4+3]=1; } } // v52 baked ambient occlusion + cavity
   let uv2=null; if(j.u){ const u=b64(j.u,Uint16Array); uv2=new Float32Array(u.length); for(let i=0;i<u.length;i++) uv2[i]=u[i]/65535; } // v53-G per-hull bake: atlas UVs (Blender v-up matches Babylon's default invertY)
-  return {pos,nor,idx,uv,uv2,tex:j.u?j.tex:null,col,tris:j.t}; }
+  let alb=null; if(j.alb&&(j.u1||j.u)){ const u=b64(j.u1||j.u,Uint16Array); for(let i=0;i<u.length;i++) uv[i]=u[i]/65535; alb=j.alb; } // v53.9 TRELLIS.2 hulls: painted from the concept art (albedo on the first UV set; baked hulls share the atlas UVs)
+  return {pos,nor,idx,uv,uv2,tex:j.u?j.tex:null,col,tris:j.t,alb}; }
 // v53: every hull file is fetched at once (was one after another), started before the title screen; the first battle waits for it (see main3d)
 // so it never races the fetch and falls back to the heavy procedural ships. HULLS_LOAD says which hull path is live.
 const HULLS_LOAD={state:'idle',total:0,loaded:0,failed:0,fallback:0,bad:[],dir:'',ms:0,promise:null,onProgress:null};
@@ -869,15 +870,32 @@ function beaconMesh(c,H){ const pr=aiHullsOn()&&objProto('obj|beacon',H); if(!pr
 // the defend-objective station from its mesh; same anchor as the procedural stations (G.station, G.env)
 const OBJ_PROTO={};
 function objProto(key,S){ let p=OBJ_PROTO[key]; if(p&&!p.isDisposed()&&p.getScene()===G.scene) return p; const d=AI_HULL_DATA[key]; if(!d) return null; const pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*S;
-  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.col) vd.colors=d.col; p=new BABYLON.Mesh('objP_'+key,G.scene); vd.applyToMesh(p); p.setEnabled(false); p.isPickable=false; return OBJ_PROTO[key]=p; } // built once; battles take clones (shared geometry)
-function buildMeshStation(c,rr){ const pr=objProto('obj|station',46); if(!pr) return false; const root=new BABYLON.TransformNode('station',G.scene), m=pr.clone('hull_station',root); m.setEnabled(true); m.material=objMat('station'); m.isPickable=false;
+  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.uv2) vd.uvs2=d.uv2; if(d.col) vd.colors=d.col; p=new BABYLON.Mesh('objP_'+key,G.scene); vd.applyToMesh(p); p.setEnabled(false); p.isPickable=false; return OBJ_PROTO[key]=p; } // built once; battles take clones (shared geometry)
+function buildMeshStation(c,rr){ const pr=objProto('obj|station',46); if(!pr) return false; const root=new BABYLON.TransformNode('station',G.scene), m=pr.clone('hull_station',root), sd=AI_HULL_DATA['obj|station']; m.setEnabled(true); m.material=sd&&sd.alb&&!G.noPaint?aiPaintMatFor('hegemony',sd):objMat('station'); /* v53.9: painted station */ m.isPickable=false;
   try{ castShadows(m); }catch(e){} try{ G.glow.addExcludedMesh(m); }catch(e){} root.position=c.add(new V3(0,3,0)); root.rotation.set(.06,rr()*6,.04); m.refreshBoundingInfo(true); m.freezeWorldMatrix&&setTimeout(()=>{ try{ if(!m.isDisposed()){ root.computeWorldMatrix(true); m.freezeWorldMatrix(); } }catch(e){} },0);
   G.env.push(root); G.station={root,meshes:[m]}; return true; }
 // v53-G per-hull baked maps (tangent-space normal; AO + curvature): one material per baked hull, cloned from the faction's concept-hull material.
 // The maps load lazily with the class and swap in when ready (the faction material shows until then); all are released when the battle is torn down.
 const AI_TEX={};
 function aiHullCode(d){ for(const [k,v] of Object.entries(AI_HULL_DATA)) if(v===d) return AI_HULLS[k]; return null; }
-function aiHullMatFor(fac,d){ const code=d&&d.tex&&d.uv2?aiHullCode(d):null; if(!code||G.noBake) return aiHullMat(fac); const key=fac+'|'+code; let e=AI_TEX[key];
+// v53.9 painted hulls (TRELLIS.2, Ryan's pick Oct 21): the concept's own paint is the albedo; no tiled plating, no procedural grime or ports
+// (the paint has its own), the faction still reads through the rim light, engine glow and shields. One material per hull, texture released at battle end.
+function aiPaintMatFor(fac,d){ const code=aiHullCode(d); if(!code) return aiHullMat(fac); const key='paint|'+fac+'|'+code; let e=AI_TEX[key];
+  if(!e||!G.scene.materials.includes(e.m)){ const src=aiHullMat(fac), m=src.clone(fac+'aipaint_'+code); m.albedoColor=C3.White(); m.albedoTexture=null; m.bumpTexture=null; m.metallicTexture=null;
+    m.metallic={voidsworn:.35,hegemony:.4,corsair:.35,chorus:.05,ithar:.3,deathless:.55}[fac]??.35; m.roughness=.55; m.useRoughnessFromMetallicTextureGreen=false; m.useMetallnessFromMetallicTextureBlue=false; m.useAmbientOcclusionFromMetallicTextureRed=false;
+    const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const opts=Object.assign(hfxOpts(o,fac),{ai:true,paint:true,wear:0,wcol:null,mtex:null});
+    if(pl) Object.assign(pl,opts); else if(typeof HullFxPlugin==='function') pl=new HullFxPlugin(m,opts); if(pl){ m._hullFx=pl; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); }
+    m._isAiHull=true; e=AI_TEX[key]={m,code,paint:true,maps:!!(d.tex&&d.uv2&&!G.noBake),dir:d.dir||((G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'),n:null,t:null,a:null}; }
+  aiPaintTouch(e); return e.m; }
+function aiPaintTouch(e){ try{ e.touchB=B; }catch(x){} if(e.a||e.loading||e.failed) return; e.loading=true; const gen=e.gen||0, sc=G.scene, m=e.m, url=e.dir+e.code;
+  // the paint, plus (baked hulls) the normal map and AO/curvature map from the full-detail TRELLIS mesh; all three swap in together
+  const done=()=>{ if(gen!==(e.gen||0)||!e.a||!e.a.isReady()||(e.maps&&(!e.n||!e.t||!e.n.isReady()||!e.t.isReady()))) return; e.loading=false; if(m.isDisposed&&m.isDisposed()) return;
+    e.a.anisotropicFilteringLevel=8; m.albedoTexture=e.a; if(e.maps){ m.bumpTexture=e.n; m.bumpTexture.level=1; const pl=m._hullFx; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } } };
+  const fail=()=>{ console.warn('hull paint not loaded',e.code); e.loading=false; e.a=e.n=e.t=null; e.failed=true; };
+  e.a=new BABYLON.Texture(url+'_a.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail);
+  if(e.maps){ e.n=new BABYLON.Texture(url+'_n.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail); e.n.coordinatesIndex=1; e.n.anisotropicFilteringLevel=4;
+    e.t=new BABYLON.Texture(url+'_m.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail); e.t.coordinatesIndex=1; } }
+function aiHullMatFor(fac,d){ if(d&&d.alb&&!G.noPaint) return aiPaintMatFor(fac,d); const code=d&&d.tex&&d.uv2?aiHullCode(d):null; if(!code||G.noBake) return aiHullMat(fac); const key=fac+'|'+code; let e=AI_TEX[key];
   if(!e||!G.scene.materials.includes(e.m)){ const src=aiHullMat(fac), m=src.clone(fac+'aihull_'+code); for(const k of ['albedoTexture','bumpTexture','metallicTexture','reflectionTexture']){ if(m[k]!==src[k]){ const blank=m[k]; m[k]=src[k]||null; try{ if(blank&&blank!==src[k]) blank.dispose(); }catch(e2){} } }
     const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const opts=Object.assign(hfxOpts(o,fac),{ai:true,wcol:o&&o.wcol!==undefined?o.wcol:(fac==='chorus'?null:(FAC3D[fac]||FAC3D.hegemony).win.scale(AI_WIN_GAIN[fac]??1.4)),mtex:null});
     { const P=FAC3D[fac]||FAC3D.hegemony; m.albedoTexture=null; m.metallicTexture=null; m.albedoColor=hexC3(P.hull); // the bake carries the real panel detail: no tiled panel texture (it read as brickwork up close)
@@ -889,7 +907,7 @@ function aiTexTouch(e){ try{ e.touchB=B; }catch(x){} if(e.n||e.loading) return; 
   const fail=(x)=>{ console.warn('hull maps not loaded',e.code,x||''); e.loading=false; e.n=e.t=null; e.failed=true; };
   if(e.failed) return; e.n=new BABYLON.Texture(url+'_n.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,()=>done(),fail); e.n.coordinatesIndex=1; e.n.anisotropicFilteringLevel=4;
   e.t=new BABYLON.Texture(url+'_m.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,()=>done(),fail); e.t.coordinatesIndex=1; }
-function aiTexReleaseAll(){ for(const e of Object.values(AI_TEX)){ if(!e.n&&!e.t) continue; // battle teardown: every class's maps go (they reload from the browser cache when the class is used again), so nothing accumulates across battles
+function aiTexReleaseAll(){ for(const e of Object.values(AI_TEX)){ if(e.paint){ try{ const m=e.m; if(m.albedoTexture===e.a) m.albedoTexture=null; if(e.n&&m.bumpTexture===e.n) m.bumpTexture=null; if(m._hullFx&&e.t){ m._hullFx.mtex=null; m._hullFx.markAllDefinesAsDirty&&m._hullFx.markAllDefinesAsDirty(); } for(const t of [e.a,e.n,e.t]) if(t) t.dispose(); }catch(x){} e.a=e.n=e.t=null; e.loading=false; e.gen=(e.gen||0)+1; continue; } if(!e.n&&!e.t) continue; // battle teardown: every class's maps go (they reload from the browser cache when the class is used again), so nothing accumulates across battles
     const m=e.m, src=MATS[m.name.split('aihull_')[0]]; try{ if(m.bumpTexture===e.n) m.bumpTexture=(src&&src.aiHull&&src.aiHull.bumpTexture)||null; if(m._hullFx){ m._hullFx.mtex=null; m._hullFx.markAllDefinesAsDirty&&m._hullFx.markAllDefinesAsDirty(); } if(e.n) e.n.dispose(); if(e.t) e.t.dispose(); }catch(x){} e.n=e.t=null; e.loading=false; e.gen=(e.gen||0)+1; } }
 const AI_WIN_GAIN={voidsworn:1.6,hegemony:1.25,corsair:1.5,chorus:1.1,ithar:.9,deathless:1.3}; // port brightness per faction (pale hulls need less)
 function buildShipModelFresh(u){

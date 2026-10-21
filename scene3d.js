@@ -403,10 +403,11 @@ const nextFrame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
 async function battleWarm(){ const t0=performance.now(), cap=t0+4000, out={ms:0,maps:0,late:0,build:0,compile:0};
   await nextFrame(); await nextFrame(); out.build=Math.round(performance.now()-t0); // updateWorld builds every ship view on the first frame
   const live=new Set(), add=mt=>{ if(!mt) return; if(mt.subMaterials) mt.subMaterials.forEach(add); else if(mt._isAiHull) live.add(mt); }; for(const m of G.scene.meshes) if(m.isEnabled()) add(m.material); // merged live ships carry multi-materials
-  const ents=Object.values(AI_TEX).filter(e=>!e.failed&&(live.has(e.m)||e.loading)); out.maps=ents.length; for(const e of ents) if(live.has(e.m)) aiTexTouch(e); // every map still on its way counts too
-  while(performance.now()<cap&&ents.some(e=>e.loading||!e.n||!e.t||!e.n.isReady()||!e.t.isReady())){ if(ents.every(e=>e.failed)) break; await new Promise(r=>setTimeout(r,40)); }
+  const ents=Object.values(AI_TEX).filter(e=>!e.failed&&(live.has(e.m)||e.loading)); out.maps=ents.length; for(const e of ents) if(live.has(e.m)) (e.paint?aiPaintTouch(e):aiTexTouch(e)); // every map still on its way counts too
+  const rdy=e=>e.paint?!!(e.a&&e.a.isReady()&&(!e.maps||(e.n&&e.t&&e.n.isReady()&&e.t.isReady()))):!!(e.n&&e.t&&e.n.isReady()&&e.t.isReady());
+  while(performance.now()<cap&&ents.some(e=>e.loading||!rdy(e))){ if(ents.every(e=>e.failed)) break; await new Promise(r=>setTimeout(r,40)); }
   while(performance.now()<cap&&G.rockPending) await new Promise(r=>setTimeout(r,40)); out.rocks=!G.rockPending;
-  out.late=ents.filter(e=>!(e.n&&e.t&&e.n.isReady()&&e.t.isReady())).length;
+  out.late=ents.filter(e=>!rdy(e)).length;
   const t1=performance.now(); { const ms=[]; for(const v of G.views.values()) if(v&&v.root&&v.root.getChildMeshes) for(const m of v.root.getChildMeshes(false)) if(m.isEnabled()&&m.material) ms.push(m); // the ships' own shaders, compiled with their maps in place
     while(performance.now()<cap){ let ok=true; for(const m of ms){ try{ if(!m.isDisposed()&&!m.isReady(true)){ ok=false; break; } }catch(e){} } if(ok) break; await new Promise(r=>setTimeout(r,40)); } out.notReady=ms.filter(m=>{ try{ return !m.isDisposed()&&!m.isReady(true); }catch(e){ return false; } }).length; } out.compile=Math.round(performance.now()-t1);
   await nextFrame(); await nextFrame(); out.ms=Math.round(performance.now()-t0); out.end=performance.now(); try{ if(typeof tel==='function') tel('battle_warm',out); }catch(e){} return out; }
