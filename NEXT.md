@@ -28,10 +28,14 @@ Full audit: AUDIT_v53H.md. Owner chose: full per-ship detail bake; desktop loads
   - Lance/ion: thick charged beam with build-up, crackling arcs; ion leaves a blue static wash on the shield facing.
   - Needle (Ithar): fine glassy shards, prismatic glints. Spine/bio (Chorus): spat organic projectiles, wet bursts.
   - Torpedoes: textured bodies, exhaust trails that curve, big detonation with flipbook fire and shockwave.
+  - Game-feel rules (docs/skills/game-feel): importance tiers (small/medium/large presets for every event), trauma-based camera shake (trauma^2, smooth noise, decays; hits add trauma), real-time hit-stop that never blocks input, eased "pop" tweens, 5-8 stacked responses within ~100 ms for a big hit; Settings toggles "reduce screen shake" and "reduce flashing".
   - Punch for everything: hit-stop on big hits, scaled camera kick, flash, hull sparks/debris, shield ripples at the struck point, sound synced (sfx.js).
   - Explosions: Blender-rendered flipbooks (fireball, debris, smoke) on the PC GPU, broken hulls with closed cut faces, staged capital deaths.
 - [ ] Blender world pass (owner approved): asteroid libraries per rock type (20-30 sculpted rocks each, baked maps), wrecks and death pieces fractured from the concept hulls with solid interiors, volumetric nebula/backdrop cloud renders, accretion-disc texture for black holes. Stations/beacon/transport already in the hull bake.
 - [ ] Live-shader pass for what Blender can't do: black-hole gravitational lensing (screen-space distortion of the scene behind it) with an animated accretion disc; beams and shields with flowing energy textures (generated once, animated by flowmaps); shader-drawn anti-aliased hex grid; engine plumes as volumetric cones that read from the side; GPU particles for sparks, embers and debris.
+
+- [ ] Music (none today): adaptive score with vertical layers (calm map, tension, combat, boss) crossfaded by battle intensity, segments switching on bar lines (docs/skills/audio-design). Source: generate royalty-free stems on the PC GPU with an open music model (ACE-Step / Stable Audio Open class) or CC0 tracks; owner picks the style.
+- [ ] AI polish from docs/skills/ai-behavior-trees-utility-ai: normalised response curves for each consideration, hysteresis on target and move choices, a debug overlay of per-action scores for tuning.
 
 ## v54: factions and rewards (parallel with v55)
 
