@@ -17,9 +17,10 @@ srv=socketserver.ThreadingTCPServer(('127.0.0.1',0),functools.partial(Q,director
 PAGE='http://127.0.0.1:%d/'%srv.server_address[1]+os.environ.get('PAGEFILE','index_test.html')+'?shots'
 HIDE="try{ ACT.tipOff&&ACT.tipOff(); }catch(e){} const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); document.querySelectorAll('.tipcard,#panel,#roster,#log,#btop,.plate,#terrlegend').forEach(e=>e.style.visibility='hidden');"
 # put one hull (tpl, or 'sq:fac:kind' for a wing) alone near the board centre
-PLACE="""(tpl=>{ for(const u of B.units.slice()){ const v=G.views.get(u.id); if(v){ disposeView(v); G.views.delete(u.id); } } B.units.length=0;
+PLACE="""(tpl=>{ for(const u of B.units.slice()){ const v=G.views.get(u.id); if(v){ disposeView(v); G.views.delete(u.id); } } B.units.length=0; for(const m of G.scene.meshes.slice()) if(/^(bcn|hull_beacon)/.test(m.name)) m.dispose(); if(G.station&&G.station.root){ G.station.root.dispose(); G.station=null; } /* one structure at a time */
   const free=h=>onBoard(h.q,h.r)&&!blocks(terr(h.q,h.r)); const hs=boardHexes(), mid=hs.reduce((a,h)=>(a.q+=h.q/hs.length,a.r+=h.r/hs.length,a),{q:0,r:0}); let c=null,bd=1e9; for(const h of hs){ if(!free(h)) continue; const d=hdist(h,{q:Math.round(mid.q),r:Math.round(mid.r)}); if(d<bd){ bd=d; c=h; } }
   if(tpl==='beacon'){ buildBeacon(c); window.__v={root:{position:hexWorld(c.q,c.r,0)},L:22}; return 'beacon'; }
+  if(tpl.startsWith('stkind:')){ if(G.station&&G.station.root) G.station.root.dispose(); B.biome=Object.assign({},B.biome||{},{station:tpl.split(':')[1]}); buildStation(hexWorld(c.q,c.r),Math.random); window.__v={root:G.station.root,L:46}; return tpl; } /* the station a map of that biome builds (any encounter) */
   if(tpl==='station'){ buildMeshStation(hexWorld(c.q,c.r),Math.random); window.__v={root:G.station.root,L:46}; return 'station'; }
   let u; if(tpl.startsWith('tr:')){ const fac=tpl.split(':')[1]; u=makeUnit('enemy',FACTIONS[fac].roster[0]); u.transport=true; } else if(tpl.startsWith('sq:')){ const [,fac,kind]=tpl.split(':'); u=makeUnit('player',kind==='spore'?'spore':kind); u.fac=fac; u.launched=true; } else u=makeUnit('enemy',tpl);
   u.q=c.q; u.r=c.r; u.facing=0; if(window.__dmg) u.hp=Math.max(1,Math.round(u.maxHp*window.__dmg)); B.units.push(u); updateWorld(1/30); const v=G.views.get(u.id); v.arrive=null; if(v.root) v.root.setEnabled(true); if(v.ring) v.ring.node.setEnabled(true); if(v.plate) v.plate.el.style.visibility='hidden'; for(let k=0;k<20;k++) updateWorld(1/30); if(v.root) v.root.setEnabled(true); window.__v=v; return u.name+' L='+v.L; })"""
@@ -32,7 +33,7 @@ PROBE="""(()=>{ const v=window.__v, c=v.root.position, out=[]; const own=new Set
   for(const m of G.scene.meshes){ const mt=m.material; if(!mt||!m.isEnabled()||!m.isVisible) continue; const e=mt.emissiveColor||mt.albedoColor; if(e&&e.r>.6&&e.g<e.r*.75&&e.b<e.r*.45){ let p; try{ p=m.getBoundingInfo().boundingSphere.centerWorld; }catch(x){ continue; } out.push('ORANGE '+m.name+'|'+mt.name+'|'+V3.Distance(p,c).toFixed(1)+'|'+[p.x,p.y,p.z].map(x=>x.toFixed(1))); } }
   for(const sm of G.scene.spriteManagers||[]) for(const sp of sm.sprites){ if(sp.isVisible&&sp.color.r>.5&&sp.color.g<sp.color.r*.8&&sp.color.b<sp.color.r*.5) out.push('ORANGESPRITE '+sm.name+'|'+sp.name+'|'+V3.Distance(sp.position,c).toFixed(1)); }
   try{ out.push('MATS '+Object.entries(MATS).map(([f,M])=>{ const h=M.hull&&M.hull._hullFx, a=M.aiHull&&M.aiHull._hullFx, pm=M.hull&&M.hull.pluginManager&&M.hull.pluginManager.getPlugin('HullFx'); return f+':hull='+(h?[typeof h.rim,typeof h.str,pm===h].join('/'):'none')+':ai='+(a?[typeof a.rim,typeof a.str,a.ai].join('/'):'none'); }).join(' ')); }catch(x){ out.push('MATS err '+x); }
-  return out.filter(x=>!/^(neb|sky|stars)\|/.test(x)).slice(0,120).join('  ;  '); })()"""
+  return out.filter(x=>!/^(neb|sky|stars)\\|/.test(x)).slice(0,120).join('  ;  '); })()"""
 STATS="""(async()=>{ const ins=new BABYLON.SceneInstrumentation(G.scene); for(let i=0;i<4;i++){ G.scene.render(); await new Promise(r=>setTimeout(r,30)); } const r={act:G.scene.getActiveMeshes().length, draws:ins.drawCallsCounter.current, meshes:G.scene.meshes.length, mats:G.scene.materials.length}; ins.dispose(); return r; })()"""
 FAILED=False
 with sync_playwright() as p:
@@ -43,7 +44,7 @@ with sync_playwright() as p:
         pg.goto(PAGE, wait_until='commit'); pg.wait_for_function("!!document.querySelector('.title .menu')", timeout=150000, polling=1000)
         pg.wait_for_function("Object.keys(AI_HULL_DATA).length>=25", timeout=150000, polling=1000)
         q=os.environ.get('Q') or ('medium' if mob else 'high')
-        pg.evaluate("setQuality('%s'); ACT.c3skirmish(); setupBattle({obj:'rout',shape:'open',map:'storm',pf:'voidsworn',ef:'hegemony',small:true}); ACT.begin(); SPEED=.5; G.cine=false; %s 0"%(q,HIDE))
+        pg.evaluate("setQuality('%s'); ACT.c3skirmish(); setupBattle({obj:'rout',shape:'open',map:'storm',pf:'voidsworn',ef:'hegemony',small:true}); ACT.begin(); SPEED=.5; G.cine=false; G.camMinOff=%s; %s 0"%(q,'true' if os.environ.get('ZOOMFREE','1')=='1' else 'false',HIDE))
         try: pg.wait_for_function("!!B&&B.side==='player'&&!B.busy", timeout=300000, polling=500)
         except Exception as ex:
             print('BATTLE DID NOT START', errs[:8], pg.evaluate("JSON.stringify({side:B&&B.side,busy:B&&B.busy,round:B&&B.round,units:B&&B.units.length,views:G.views.size,errs:typeof ERRS!=='undefined'?ERRS:null,fps:G.engine.getFps()})")); sys.stdout.flush(); raise
@@ -52,10 +53,12 @@ with sync_playwright() as p:
         pg.evaluate(PLACE+"('%s')"%TPLS[0]); pg.evaluate(CAM+'(1.2,-1,.9)'); pg.wait_for_timeout(5000) # let the opening camera moves finish before the first shot
         for tpl in TPLS:
             print(tpl, pg.evaluate(PLACE+"('%s')"%tpl)); sys.stdout.flush()
+            if os.environ.get('SEL'): print('  select', pg.evaluate("(()=>{ const u=B.units[0]; if(!u) return 'none'; u.side='player'; u.done=false; u.moved=false; try{ selectUnit(u); }catch(e){ return 'err '+e; } return 'sel '+(B.sel&&B.sel.name); })()"))
             for zf in ZOOMS:
                 pg.evaluate(CAM+"(%s,%s,%s)"%(zf,os.environ.get('CA','-Math.PI/2+.75'),os.environ.get('CB','.95'))); pg.evaluate(HIDE+'0'); pg.wait_for_timeout(2500)
                 if os.environ.get('STATS'): print('  stats',pg.evaluate(STATS))
                 if tpl.startswith('sq:'): pg.evaluate(CAM+"(%s,%s,%s)"%(zf,os.environ.get('CA','-Math.PI/2+.75'),os.environ.get('CB','.95'))); pg.wait_for_timeout(200)
+                if os.environ.get('EVAL'): print('  eval', pg.evaluate(os.environ['EVAL']))
                 if os.environ.get('PROBE'): print('  probe',pg.evaluate(PROBE))
                 fn=f'{OUT}/{TAG}_{name}_{tpl.replace(":","-")}_{zf}.png'; pg.screenshot(path=fn, timeout=240000); print('  shot',fn); sys.stdout.flush()
                 if os.environ.get('EXP'):

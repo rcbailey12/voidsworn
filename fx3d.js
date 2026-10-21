@@ -17,8 +17,8 @@ function toWorld(v,local){ v.root.computeWorldMatrix(true); return V3.TransformC
 const RING_GEO={};
 const RING_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec2 uv; uniform mat4 worldViewProjection; uniform float sc[6]; varying float vP;
 void main(){ float s=1.0; for(int i=0;i<6;i++){ if(abs(uv.x-float(i))<0.5) s=sc[i]; } vP=uv.x; gl_Position=worldViewProjection*vec4(position*s,1.0); }`,
-  frag:`precision highp float; uniform vec3 col[6]; uniform float al[6]; varying float vP;
-void main(){ vec3 c=vec3(0.0); float a=0.0; for(int i=0;i<6;i++){ if(abs(vP-float(i))<0.5){ c=col[i]; a=al[i]; } } gl_FragColor=vec4(c,a); }`};
+  frag:`precision highp float; uniform vec3 col[6]; uniform float al[6]; uniform float fd; varying float vP;
+void main(){ vec3 c=vec3(0.0); float a=0.0; for(int i=0;i<6;i++){ if(abs(vP-float(i))<0.5){ c=col[i]; a=al[i]; } } gl_FragColor=vec4(c,a*fd); }`}; // fd: v53.7 close-up fade (ovFadeTick)
 function ringTemplate(kind,R){ const key=kind+'|'+R; let t=RING_GEO[key]; if(t&&!t.isDisposed()) return t; const parts=[], spans=[[-50,50],[50,130],[130,230],[230,310]];
   const add=(m,part,twoSided)=>{ m.computeWorldMatrix(true); const vd=BABYLON.VertexData.ExtractFromMesh(m,true,true); vd.transform(m.getWorldMatrix()); const n=vd.positions.length/3, uv=new Float32Array(n*2); for(let i=0;i<n;i++) uv[i*2]=part; vd.uvs=uv; vd.normals=null; vd.colors=null;
     if(twoSided){ const I=Array.from(vd.indices), J=I.slice(); for(let i=0;i<I.length;i+=3) J.push(I[i],I[i+2],I[i+1]); vd.indices=J; } parts.push(vd); m.dispose(false,false); };
@@ -32,8 +32,8 @@ function makeShieldRing(u,v){
   const col=((FAC3D[u.fac]||{}).shield)||SHIELD_C, iff=u.side==='player'?FRIEND_C:FOE_C, segs=[], kind=u.isSq?'Q':u.shMax>0?'S':'B';
   const S=BABYLON.Effect.ShadersStore; if(!S.vsRingVertexShader){ S.vsRingVertexShader=RING_GLSL.vert; S.vsRingFragmentShader=RING_GLSL.frag; }
   const al=[0,0,0,0,.55,.85], sc=[1,1,1,1,1,1], cols=[]; for(let i=0;i<6;i++){ const c=i<4?(kind==='B'?new C3(.5,.3,.3):col):i===4?iff:iff.scale(1.5); cols.push(c.r,c.g,c.b); } if(kind==='B') al[0]=.35;
-  const mat=new BABYLON.ShaderMaterial('ringM',G.scene,{vertex:'vsRing',fragment:'vsRing'},{attributes:['position','uv'],uniforms:['worldViewProjection','sc','col','al'],needAlphaBlending:true});
-  mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.backFaceCulling=true; mat.setFloats('sc',sc); mat.setFloats('al',al); mat.setArray3('col',cols);
+  const mat=new BABYLON.ShaderMaterial('ringM',G.scene,{vertex:'vsRing',fragment:'vsRing'},{attributes:['position','uv'],uniforms:['worldViewProjection','sc','col','al','fd'],needAlphaBlending:true});
+  mat.alphaMode=BABYLON.Engine.ALPHA_ADD; mat.backFaceCulling=true; mat.setFloats('sc',sc); mat.setFloats('al',al); mat.setArray3('col',cols); mat.setFloat('fd',G.ovFade??1);
   const m=ringTemplate(kind,R).clone('ring',null); m.setEnabled(true); m.isPickable=false; m.material=mat; m.parent=node; G.glow.addExcludedMesh(m);
   if(kind==='S') for(let q=0;q<4;q++) segs.push({pulse:0,mat:{get alpha(){ return al[q]; },set alpha(x){ al[q]=x; }},m:{scaling:{get x(){ return sc[q]; },setAll(x){ sc[q]=x; }}}});
   return {node,segs,R,mesh:m};

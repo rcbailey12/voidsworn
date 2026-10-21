@@ -339,10 +339,13 @@ function buildBattleEnv(){
 class CamCtl{
   constructor(cam,canvas){ this.cam=cam; this.el=canvas; this.a=cam.alpha; this.b=cam.beta; this.r=cam.radius; this.t=cam.target.clone();
     this.keys=new Set(); this.drag=null; this.saved=null; this.follow=null; this.attract=true; this.topdown=false; this.prevBeta=.88;
-    canvas.addEventListener('wheel',e=>{ e.preventDefault(); this.attract=false; this.estab=null; const k=Math.exp(e.deltaY*.0011); this.r=clamp(this.r*k,22,900); },{passive:false});
+    canvas.addEventListener('wheel',e=>{ e.preventDefault(); this.attract=false; this.estab=null; const k=Math.exp(e.deltaY*.0011); this.r=clamp(this.r*k,this.minR(),900); },{passive:false});
     window.addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return; this.keys.add(e.key.toLowerCase()); });
     window.addEventListener('keyup',e=>this.keys.delete(e.key.toLowerCase()));
     window.addEventListener('blur',()=>this.keys.clear()); }
+  // v53.7 (Ryan's pick: "a bit further out"): the closest view keeps the biggest ship on the board to about half the screen, where the hull still
+  // reads crisp; scripted cinematics (hold/release) and test shots (G.camMinOff) may go closer
+  minR(){ if(G.camMinOff||typeof B==='undefined'||!B||B.showcase||!G.views) return 22; let L=0; for(const v of G.views.values()) if(v&&v.L&&!v.wing&&(v.state==null||v.state==='alive')&&v.L>L) L=v.L; return clamp(L*1.5,26,55); }
   panBy(dx,dz){ this.estab=null; const s=this.r/340; const fwd=new V3(-Math.cos(this.a),0,-Math.sin(this.a)); const right=new V3(-Math.sin(this.a),0,Math.cos(this.a));
     this.t.addInPlace(right.scale(dx*s)).addInPlace(fwd.scale(dz*s)); this.t.x=clamp(this.t.x,-G.bx,G.bx); this.t.z=clamp(this.t.z,-G.bz,G.bz); this.attract=false; }
   orbit(dx,dy){ this.estab=null; this.a-=dx*.0055; this.b=clamp(this.b-dy*.0045,.05,1.36); this.topdown=false; }
@@ -372,6 +375,7 @@ class CamCtl{
     let px=0,pz=0; const k=this.keys;
     if(!document.querySelector('.intro')){ if(k.has('w')||k.has('arrowup')) pz+=1; if(k.has('s')||k.has('arrowdown')) pz-=1; if(k.has('a')||k.has('arrowleft')) px-=1; if(k.has('d')||k.has('arrowright')) px+=1; }
     if(px||pz){ this.panBy(px*dt*300,pz*dt*300); }
+    if(!this.saved){ const mr=this.minR(); if(this.r<mr) this.r=mr; }
     const f=1-Math.exp(-dt*((this.slowUntil&&G.time<this.slowUntil)?1.7:7));
     let da=this.a-c.alpha; c.alpha+=da*f; c.beta+=(this.b-c.beta)*f; c.radius+=(this.r-c.radius)*f;
     const tgt=c.target.clone(); tgt.addInPlace(this.t.subtract(tgt).scale(f));
@@ -550,7 +554,7 @@ function buildTerrainFeatures(rr){
     G._wreckMeshes=null; }
 }
 // v47: three station types, matched to the sector: an orbital ring hub, a scaffolded mining rig, or a dark derelict spire
-function buildStation(c,rr){ const kind=(B&&B.biome&&B.biome.station)||'ring'; if((kind==='ring'||(B&&B.enc==='defend'))&&typeof buildMeshStation==='function'&&aiHullsOn()&&buildMeshStation(c,rr)) return; /* v53-G: the concept station mesh */ if(kind==='rig') return buildRigStation(c,rr); if(kind==='spire') return buildSpireStation(c,rr); return buildRingStation(c,rr); }
+function buildStation(c,rr){ const kind=(B&&B.biome&&B.biome.station)||'ring'; if(typeof buildMeshStation==='function'&&aiHullsOn()&&buildMeshStation(c,rr)) return; /* v53.7: the concept station mesh on every station map (the old procedural spire and rig, with windows and spikes floating off the hull, showed on Engagement fights; Ryan's Pixel shot Oct 21). The builders below are only the fallback when the meshes did not load */ if(kind==='rig') return buildRigStation(c,rr); if(kind==='spire') return buildSpireStation(c,rr); return buildRingStation(c,rr); }
 function stationFinish(b,c,rr){ const m=b.finish(); m.root.position=c.add(new V3(0,4,0)); m.root.rotation.set(.12,rr()*6,.08); m.meshes.forEach(x=>x.isPickable=false); G.env.push(m.root); G.station=m; }
 function buildRigStation(c,rr){ const b=new SB('corsair',30), M=b.M;
   b.cylY(M.dark,0,-14,0,30,2.4,2.8,8); b.cylY(M.hull,0,9,0,7,6.5,6.5,12); b.cylY(M.steel,0,16,0,2,3,6.5,12); b.cylY(M.dark,0,-16,0,3,4.5,2.6,8);

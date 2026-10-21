@@ -160,7 +160,14 @@ function keysHelp(){ return `<div class="keys"><kbd>Tab</kbd> next ship <kbd>Q</
 
 // ---------- 3D overlays ----------
 const OV={items:[],hover:[],bases:{},fan:null,ghost:null,ghostFor:null,selRing:null,insRing:null,aiRing:null,targets:[]};
-function ovMat(name,col,alpha){ const m=emMat('ov_'+name,col,alpha); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.backFaceCulling=false; m.disableDepthWrite=true; m.zOffset=-2; return m; }
+function ovMat(name,col,alpha){ const m=emMat('ov_'+name,col,alpha); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.backFaceCulling=false; m.disableDepthWrite=true; m.zOffset=-2; return ovFadeReg(m); }
+// v53.7: board overlays (move range, arcs, rings, aim lines, shield/side rings) step back when the camera is close, so a close-up shows the ship, not giant
+// yellow and green bands (Ryan's Pixel shot Oct 21). G.ovFade is 1 at board zoom and falls to .15 in the tightest view; written only when the step changes.
+function ovLive(m){ return !!(G.scene&&G.scene.materials.indexOf(m)>=0); } // Babylon materials have no isDisposed()
+function ovFadeReg(m){ m._a0=m.alpha; const L=OV.fadeMats||(OV.fadeMats=[]); if(L.length>160) OV.fadeMats=L.filter(ovLive); OV.fadeMats.push(m); m.alpha=m._a0*(G.ovFade??1); return m; }
+function ovFadeK(){ const r=G.cam?G.cam.radius:300, x=clamp((r-28)/150,0,1); return Math.round(clamp(Math.pow(x,1.5),.04,1)*25)/25; } // additive marks under bloom still glare at 20%: the tightest view takes them to about 5%
+function ovFadeTick(){ const k=ovFadeK(); if(k===G.ovFade) return; G.ovFade=k; const keep=[]; for(const m of OV.fadeMats||[]){ if(!ovLive(m)) continue; m.alpha=m._a0*k; keep.push(m); } OV.fadeMats=keep;
+  if(G.views) for(const v of G.views.values()){ const mt=v.ring&&v.ring.mesh&&v.ring.mesh.material; if(mt&&mt.setFloat) mt.setFloat('fd',k); } }
 function tileBase(key,col,alpha,edge){
   if(OV.bases[key]) return OV.bases[key];
   let m; if(edge){ m=MB.CreateTorus('tb',{diameter:HS*2*.94,thickness:.35,tessellation:6},G.scene); m.bakeTransformIntoVertices(BABYLON.Matrix.RotationY(Math.PI/6)); }
@@ -251,7 +258,7 @@ function updateOverlays(){
   const place=(ring,u)=>{ if(u&&!u.dead&&G.views.get(u.id)){ const v=G.views.get(u.id); const p=v.root.getAbsolutePosition(); ring.setEnabled(true); ring.position.set(p.x,.2,p.z); const R=Math.max(5.5,v.L*.6)/6; ring.scaling.set(R,1,R); } else ring.setEnabled(false); };
   place(OV.selRing,B.sel); place(OV.insRing,B.inspect); place(OV.aiRing,B.side==='enemy'?B.aiActive:null); aiFocusMark();
   OV.selRing.rotation.y+=.01; const pulse=.45+.4*Math.sin(G.time*4.5);
-  for(const r of OV.targets){ const u=r.metadata.u, v=G.views.get(u.id); if(v){ const p=v.root.getAbsolutePosition(); r.position.set(p.x,.25,p.z); r.material.alpha=pulse; } }
+  for(const r of OV.targets){ const u=r.metadata.u, v=G.views.get(u.id); if(v){ const p=v.root.getAbsolutePosition(); r.position.set(p.x,.25,p.z); r.material.alpha=pulse*(G.ovFade??1); } }
   if(OV.fan){ const u=OV.fan.metadata.u, v=G.views.get(u.id);
     if(OV.ghost&&OV.ghost.isEnabled()&&OV.ghostFor===u.id&&!u.vis){ OV.fan.position.set(OV.ghost.position.x,0,OV.ghost.position.z); OV.fan.rotation.y=OV.ghost.rotation.y; }
     else if(v){ const p=v.root.getAbsolutePosition(); OV.fan.position.set(p.x,0,p.z); OV.fan.rotation.y=unitVis(u).a*Math.PI/180; } }
@@ -282,8 +289,8 @@ function boardMarks(){ if(!B||B.showcase||!G.views||!fpEnsure()) return;
   const U=B.units, hide=!!G.cineHidePlates; let h=hide?3:7, n=0;
   for(let i=0;i<U.length;i++){ const u=U[i], v=G.views.get(u.id); let k=0; if(!hide&&fpOn(u,v)){ k=1+(u.q+64)*997+(u.r+64)*31+(u.side==='player'?3:5)+fpLevel(u)*7+(u.isSq?11:0); n++; } h=(Math.imul(h,31)+k)|0; }
   if(h!==FP.hash){ FP.hash=h; fpRebuild(n); }
-  { const r=G.cam?G.cam.radius:300, k=Math.round(clamp((r-30)/120,.2,1)*20)/20, mt=FP.fill.material, m2=FP.fill2.material; if(mt&&mt.alpha!==k*.999){ mt.alpha=k*.999; if(m2) m2.alpha=k*.999*.17; } } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
-  fpShadows(); }
+  { const k=ovFadeK(), mt=FP.fill.material, m2=FP.fill2.material; if(mt&&mt.alpha!==k*.999){ mt.alpha=k*.999; if(m2) m2.alpha=k*.999*.17; } } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
+  try{ ovFadeTick(); }catch(e){} fpShadows(); }
 function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); FP.fill2.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
   const M=FP.mbuf, F=FP.fcol, U=B.units; let i=0;
   if(n) for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!fpOn(u,v)) continue; const lv=fpLevel(u), p=hexWorld(u.q,u.r,0), c=u.side==='player'?FRIEND_C:FOE_C, o=i*16, q=i*4;
@@ -307,7 +314,7 @@ function focusRetMesh(){ const R0=HS*.92, R1=HS*1.12, f=.34, pos=[], idx=[], C=i
   const mt=ovMat('aiFocusRet',new C3(1.25,.36,.3),.8); mt._keep=true; m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.alphaIndex=-55; try{ G.glow.addExcludedMesh(m); }catch(e){} m.setEnabled(false); if(G.env) G.env.push(m,mt); return m; }
 function aiFocusMark(){ const t=B&&!B.over&&!B.showcase&&B.aiFocus&&!B.aiFocus.dead&&B.aiFocus.side==='player'?B.aiFocus:null, v=t&&G.views?G.views.get(t.id):null, on=!!(v&&fpOn(t,v)&&!G.cineHidePlates);
   if(OV.focusRet&&OV.focusRet.isDisposed()) OV.focusRet=null; if(on&&!OV.focusRet&&G.scene) OV.focusRet=focusRetMesh(); const m=OV.focusRet;
-  if(m){ if(on){ if(m._q!==t.q||m._r!==t.r){ m._q=t.q; m._r=t.r; const p=hexWorld(t.q,t.r,.11); m.position.copyFrom(p); } m.material.alpha=.62+.25*Math.sin(G.time*3.2); if(!m.isEnabled()) m.setEnabled(true); } else if(m.isEnabled()) m.setEnabled(false); }
+  if(m){ if(on){ if(m._q!==t.q||m._r!==t.r){ m._q=t.q; m._r=t.r; const p=hexWorld(t.q,t.r,.11); m.position.copyFrom(p); } m.material.alpha=(.62+.25*Math.sin(G.time*3.2))*(G.ovFade??1); if(!m.isEnabled()) m.setEnabled(true); } else if(m.isEnabled()) m.setEnabled(false); }
   const el=on&&v.plate?v.plate.el:null; if(el!==OV.tgtEl){ if(OV.tgtEl) OV.tgtEl.classList.remove('tgt'); if(el) el.classList.add('tgt'); OV.tgtEl=el; } }
 function computeThreatAt(h){ if(!B.threatCache||B.threatCache.key!==B.log.length+'|'+B.round) B.threatCache={key:B.log.length+'|'+B.round,map:computeThreat()}; return B.threatCache.map.get(hkey(h.q,h.r))||0; }
 // v53-D: what one enemy ship threatens (tap an enemy): computeThreat on that ship alone, cached until the board changes
@@ -338,7 +345,7 @@ function bindInput(canvas){
     if(pts.size===2){ pinch=pinchState(); G.ptr=null; return; } G.ptr={b:e.button,x:e.clientX,y:e.clientY,lx:e.clientX,ly:e.clientY,moved:false,touch:e.pointerType==='touch'}; });
   canvas.addEventListener('pointercancel',e=>{ pts.delete(e.pointerId); if(pts.size<2) pinch=null; G.ptr=null; });
   canvas.addEventListener('pointermove',e=>{ if(pts.has(e.pointerId)) pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(pts.size===2&&pinch){ G.camMoved=performance.now(); const n=pinchState(); G.ctl.r=clamp(G.ctl.r*pinch.d/n.d,22,900); G.ctl.a-=(n.ang-pinch.ang); G.ctl.panBy(-(n.mx-pinch.mx)*.32,(n.my-pinch.my)*.32); pinch=n; hideTip(); return; }
+    if(pts.size===2&&pinch){ G.camMoved=performance.now(); const n=pinchState(); G.ctl.r=clamp(G.ctl.r*pinch.d/n.d,G.ctl.minR(),900); G.ctl.a-=(n.ang-pinch.ang); G.ctl.panBy(-(n.mx-pinch.mx)*.32,(n.my-pinch.my)*.32); pinch=n; hideTip(); return; }
     const p=G.ptr;
     if(p){ const dx=e.clientX-p.lx, dy=e.clientY-p.ly; p.lx=e.clientX; p.ly=e.clientY; if(Math.abs(e.clientX-p.x)+Math.abs(e.clientY-p.y)>5) p.moved=true;
       if(p.moved){ G.camMoved=performance.now(); if(p.b===2) G.ctl.orbit(dx,dy); else G.ctl.panBy(-dx*.32,dy*.32); hideTip(); return; } }
@@ -410,7 +417,7 @@ async function onBoardClick(){
 // enemies a ship's guns would reach from a hex if nothing were in the way, but asteroids or wrecks block the shot
 function blockedFrom(s,st){ try{ const v=stateView(s,st); return alive('enemy').filter(t=>!t.isSq&&s.weapons.some(w=>w.k!=='flak'&&hdist(v,t)<=w.r&&hdist(v,t)>=1&&inArc(v,t,w.arc))&&!los(v,t)); }catch(e){ return []; } }
 // aim line: gold when the shot is clear, red to an X where an asteroid or wreck blocks it
-function aimMat(key,col,a){ G.aimMats=G.aimMats||{}; let m=G.aimMats[key]; if(m&&!m.isDisposed?.()) return m; m=new BABYLON.StandardMaterial('aimM'+key,G.scene); m.disableLighting=true; m.emissiveColor=col; m.alpha=a; m.backFaceCulling=false; G.aimMats[key]=m; return m; }
+function aimMat(key,col,a){ G.aimMats=G.aimMats||{}; let m=G.aimMats[key]; if(m&&!m.isDisposed?.()) return m; m=new BABYLON.StandardMaterial('aimM'+key,G.scene); m.disableLighting=true; m.emissiveColor=col; m.alpha=a; m.backFaceCulling=false; G.aimMats[key]=m; return ovFadeReg(m); }
 function aimTube(name,pts,mat,rad){ const t=MB.CreateTube(name,{path:pts,radius:rad,tessellation:6,cap:BABYLON.Mesh.CAP_ALL},G.scene); t.material=mat; t.isPickable=false; t.renderingGroupId=2; OV.hover.push(t); return t; } /* v53-I: group 1 now holds the effect sprites (depth kept); the aim line stays on top in its own group */
 function aimLine(a,t){ try{ const line=hexLine(a,t); let cut=-1; for(let i=1;i<line.length-1;i++) if(sightBlocked(line[i].q,line[i].r)){ cut=i; break; }
     const R=HS*.07, from=hexWorld(a.q,a.r,1.6), to=hexWorld(t.q,t.r,1.6);
