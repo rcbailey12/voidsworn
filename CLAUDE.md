@@ -1,0 +1,6 @@
+# Voidsworn: working rules for Claude
+
+- **Ryan's PC first (owner, Oct 21 2026).** Anything heavy runs on Ryan's PC through the test watcher, not in the cloud sandbox: AI model runs (ComfyUI, Pixal3D, Qwen, TRELLIS, Hunyuan), Blender bakes and renders (`voidsworn_test\blender\blender-4.5.14-windows-x64\blender.exe`, GPU), closeshots, smoke tests, load probes. The PC has an RTX 5080 (16 GB), 32 GB RAM and 400+ GB free. The sandbox (about 8 GB RAM, CPU only) is for editing code, small conversions and looking at results; it runs out of memory on full-detail meshes.
+- How the PC runner works, and its pitfalls: see HANDOFF.md ("PC test runner").
+- ComfyUI portable: `Downloads\ComfyUI_windows_portable` (v0.42.1), driven headless by `tools/pc/comfy_run.py`; job I/O in `Downloads\voidsworn_test\comfy_io\CODE\`.
+- Ryan is not a coder: double-click .bat files for anything he runs himself, plain words, screenshots of results.
