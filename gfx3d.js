@@ -8,13 +8,14 @@
 //  - grime and exhaust streaks that break up the tiled panel texture
 //  - faction energy: Deathless circuit traces with pulses, Chorus veins with a heartbeat, Ithar light sweeping along the hull
 const HULLFX_STYLE={deathless:1,chorus:2,ithar:3,voidsworn:4,hegemony:4,corsair:5};
+const HFX_RIM0=new BABYLON.Color3(.6,.7,.9), HFX_E0=new BABYLON.Color3(1,.62,.3); // fallbacks: a missing colour must never break the bind (it hides the hull)
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
   constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false}); Object.assign(this,o); this._enable(true); }
   prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); } // v53-G: ai = concept-mesh hull (shader ports, fine detail; its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
   getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'},{name:'hfxW',size:4,type:'vec4'}],
     fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\nuniform vec4 hfxW;\n#endif\n'}; }
-  bindForSubMesh(ubo){ ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); const w=this.wcol; ubo.updateFloat4('hfxW',w?w.r:0,w?w.g:0,w?w.b:0,w?(G.hullPorts==null?1:G.hullPorts):0); }
+  bindForSubMesh(ubo){ if(!this.rim) this.rim=HFX_RIM0; if(!this.ecol) this.ecol=HFX_E0; ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); const w=this.wcol; ubo.updateFloat4('hfxW',w?w.r:0,w?w.g:0,w?w.b:0,w?(G.hullPorts==null?1:G.hullPorts):0); }
   getCustomCode(type){
     if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\nvarying vec3 vHfxN;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\nvHfxN=normalUpdated;\n#endif\n'};
     if(type!=='fragment') return null;
