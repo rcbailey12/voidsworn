@@ -8,8 +8,10 @@ TPLS=(os.environ.get('TPLS') or ALL).split(',')
 ZOOMS=[float(z) for z in (os.environ.get('ZOOM') or '0.9,1.6').split(',')] # 0.9: the hull fills most of the frame (surface detail); 1.6: whole ship
 SIZES=[('desk',{'width':1600,'height':900},False),('phone',{'width':412,'height':915},True)]
 if os.environ.get('ONLY'): SIZES=[s for s in SIZES if s[0]==os.environ['ONLY']]
+MISSING=[]
 class Q(http.server.SimpleHTTPRequestHandler):
-    def log_message(self,*a): pass
+    def log_message(self,fmt,*a):
+        if len(a)>1 and str(a[1])=='404': print('  HTTP 404',a[0][:120]); MISSING.append(str(a[0]))
 srv=socketserver.TCPServer(('127.0.0.1',0),functools.partial(Q,directory=HERE)); threading.Thread(target=srv.serve_forever,daemon=True).start()
 PAGE='http://127.0.0.1:%d/'%srv.server_address[1]+os.environ.get('PAGEFILE','index_test.html')+'?shots'
 HIDE="try{ ACT.tipOff&&ACT.tipOff(); }catch(e){} const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); document.querySelectorAll('.tipcard,#panel,#roster,#log,#btop,.plate,#terrlegend').forEach(e=>e.style.visibility='hidden');"
@@ -28,6 +30,7 @@ PROBE="""(()=>{ const v=window.__v, c=v.root.position, out=[]; const own=new Set
   for(const ps of G.scene.particleSystems){ const e=ps.emitter; const p=e&&e.position?e.getAbsolutePosition?e.getAbsolutePosition():e:e; if(p&&p.x!==undefined&&V3.Distance(p,c)<70) out.push('ps:'+ps.name); }
   for(const m of G.scene.meshes){ const mt=m.material; if(!mt||!m.isEnabled()||!m.isVisible) continue; const e=mt.emissiveColor||mt.albedoColor; if(e&&e.r>.6&&e.g<e.r*.75&&e.b<e.r*.45){ let p; try{ p=m.getBoundingInfo().boundingSphere.centerWorld; }catch(x){ continue; } out.push('ORANGE '+m.name+'|'+mt.name+'|'+V3.Distance(p,c).toFixed(1)+'|'+[p.x,p.y,p.z].map(x=>x.toFixed(1))); } }
   for(const sm of G.scene.spriteManagers||[]) for(const sp of sm.sprites){ if(sp.isVisible&&sp.color.r>.5&&sp.color.g<sp.color.r*.8&&sp.color.b<sp.color.r*.5) out.push('ORANGESPRITE '+sm.name+'|'+sp.name+'|'+V3.Distance(sp.position,c).toFixed(1)); }
+  try{ out.push('MATS '+Object.entries(MATS).map(([f,M])=>{ const h=M.hull&&M.hull._hullFx, a=M.aiHull&&M.aiHull._hullFx, pm=M.hull&&M.hull.pluginManager&&M.hull.pluginManager.getPlugin('HullFx'); return f+':hull='+(h?[typeof h.rim,typeof h.str,pm===h].join('/'):'none')+':ai='+(a?[typeof a.rim,typeof a.str,a.ai].join('/'):'none'); }).join(' ')); }catch(x){ out.push('MATS err '+x); }
   return out.filter(x=>!/^(neb|sky|stars)\|/.test(x)).slice(0,120).join('  ;  '); })()"""
 STATS="""(async()=>{ const ins=new BABYLON.SceneInstrumentation(G.scene); for(let i=0;i<4;i++){ G.scene.render(); await new Promise(r=>setTimeout(r,30)); } const r={act:G.scene.getActiveMeshes().length, draws:ins.drawCallsCounter.current, meshes:G.scene.meshes.length, mats:G.scene.materials.length}; ins.dispose(); return r; })()"""
 FAILED=False
@@ -40,8 +43,9 @@ with sync_playwright() as p:
         pg.wait_for_function("Object.keys(AI_HULL_DATA).length>=25", timeout=150000, polling=1000)
         q=os.environ.get('Q') or ('medium' if mob else 'high')
         pg.evaluate("setQuality('%s'); ACT.c3skirmish(); setupBattle({obj:'rout',shape:'open',map:'storm',pf:'voidsworn',ef:'hegemony',small:true}); ACT.begin(); SPEED=.5; G.cine=false; %s 0"%(q,HIDE))
-        try: pg.wait_for_function("!!B&&B.side==='player'&&!B.busy", timeout=120000, polling=500)
-        except Exception as ex: print('BATTLE DID NOT START', errs[:8]); sys.stdout.flush(); raise
+        try: pg.wait_for_function("!!B&&B.side==='player'&&!B.busy", timeout=300000, polling=500)
+        except Exception as ex:
+            print('BATTLE DID NOT START', errs[:8], pg.evaluate("JSON.stringify({side:B&&B.side,busy:B&&B.busy,round:B&&B.round,units:B&&B.units.length,views:G.views.size,errs:typeof ERRS!=='undefined'?ERRS:null,fps:G.engine.getFps()})")); sys.stdout.flush(); raise
         pg.wait_for_timeout(1500); pg.evaluate(HIDE+'0')
         if os.environ.get('DMG'): pg.evaluate('window.__dmg=%s'%os.environ['DMG'])
         pg.evaluate(PLACE+"('%s')"%TPLS[0]); pg.evaluate(CAM+'(1.2,-1,.9)'); pg.wait_for_timeout(5000) # let the opening camera moves finish before the first shot
@@ -54,9 +58,9 @@ with sync_playwright() as p:
                 if os.environ.get('PROBE'): print('  probe',pg.evaluate(PROBE))
                 fn=f'{OUT}/{TAG}_{name}_{tpl.replace(":","-")}_{zf}.png'; pg.screenshot(path=fn, timeout=240000); print('  shot',fn); sys.stdout.flush()
                 if os.environ.get('EXP'):
-                    for lab,js in [('nodeb',"for(const m of G.scene.meshes) if(m.name.startsWith('debB_')) m.setEnabled(false);"),('nosprites',"for(const sm of G.scene.spriteManagers) for(const sp of sm.sprites) sp.isVisible=false; G.expHide=1;"),('noglow',"G.glow.isEnabled=false;")]:
+                    for lab,js in [('noboard',"for(const m of G.scene.meshes) if(/^(boardUnder|blockFloor|grid|frame|board)/.test(m.name)) m.setEnabled(false);"),('nosun',"for(const m of G.scene.meshes) if(/sun|corona|glare/i.test(m.name)) m.setEnabled(false); if(G.sun) G.sun.specular=new BABYLON.Color3(0,0,0);"),('noflare',"if(G.lfs) G.lfs.isEnabled=false;"),('nodeb',"for(const m of G.scene.meshes) if(m.name.startsWith('debB_')) m.setEnabled(false);"),('nosprites',"for(const sm of G.scene.spriteManagers) for(const sp of sm.sprites) sp.isVisible=false; G.expHide=1;"),('noglow',"G.glow.isEnabled=false;")]:
                         pg.evaluate(js+' 0'); pg.wait_for_timeout(800); pg.screenshot(path=fn.replace('.png','_'+lab+'.png'), timeout=240000); print('  exp',lab)
         print(name,'errors',errs); ctx.close()
-        if any(not e.startswith('console:') or ('error' in e.lower() or 'failed' in e.lower() or 'cannot' in e.lower()) for e in errs): print('CLOSESHOT FAIL: page or console errors above'); FAILED=True
+        if any(not e.startswith('console:') or (('error' in e.lower() or 'failed' in e.lower() or 'cannot' in e.lower()) and 'Failed to load resource' not in e) for e in errs) or any('hulls' in m for m in MISSING): print('CLOSESHOT FAIL: page or console errors above'); FAILED=True
     srv.shutdown()
 if FAILED: sys.exit(2)

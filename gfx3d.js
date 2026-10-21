@@ -9,21 +9,28 @@
 //  - faction energy: Deathless circuit traces with pulses, Chorus veins with a heartbeat, Ithar light sweeping along the hull
 const HULLFX_STYLE={deathless:1,chorus:2,ithar:3,voidsworn:4,hegemony:4,corsair:5};
 const HFX_RIM0=new BABYLON.Color3(.6,.7,.9), HFX_E0=new BABYLON.Color3(1,.62,.3); // fallbacks: a missing colour must never break the bind (it hides the hull)
+// every field the bind writes must be a real number or colour: an undefined one throws (the hull never draws) or turns a uniform NaN (the hull
+// renders pitch black on D3D/ANGLE; SwiftShader hid it). Plugins that arrive through a material clone start with none of them.
+function hfxSane(pl){ const c=x=>x&&typeof x.r==='number'&&isFinite(x.r)&&isFinite(x.g)&&isFinite(x.b), n=(x,d)=>typeof x==='number'&&isFinite(x)?x:d;
+  if(!c(pl.rim)) pl.rim=HFX_RIM0; if(!c(pl.ecol)) pl.ecol=HFX_E0; if(pl.wcol&&!c(pl.wcol)) pl.wcol=null; pl.str=n(pl.str,.85); pl.wear=n(pl.wear,.25); pl.seed=n(pl.seed,3); pl.style=n(pl.style,0); pl.dmg=n(pl.dmg,0); pl.dseed=n(pl.dseed,0); } // a handful of type checks per bind: cheap
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
   constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false,HULLFX_MAP:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_MAP=!!(this.mtex&&this.mtex.isReady&&this.mtex.isReady()); defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); } // v53-G: ai = concept-mesh hull (shader ports, fine detail; its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_MAP=!!(this.mtex&&this.mtex.isReady&&this.mtex.isReady()); defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); } // v53-G: ai = concept-mesh hull (shader ports, fine detail, its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
   getSamplers(samplers){ samplers.push('hfxMap'); }
   getActiveTextures(a){ if(this.mtex) a.push(this.mtex); }
   hasTexture(t){ return t===this.mtex; }
   getUniforms(){ return {ubo:[{name:'hfxRim',size:3,type:'vec3'},{name:'hfxK',size:4,type:'vec4'},{name:'hfxE',size:3,type:'vec3'},{name:'hfxS',size:2,type:'vec2'},{name:'hfxD',size:2,type:'vec2'},{name:'hfxW',size:4,type:'vec4'}],
-    fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\nuniform vec4 hfxW;\n#endif\n#ifdef HULLFX_MAP\nuniform sampler2D hfxMap;\n#endif\n'}; }
-  bindForSubMesh(ubo){ if(!this.rim) this.rim=HFX_RIM0; if(!this.ecol) this.ecol=HFX_E0; ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); const w=this.wcol; ubo.updateFloat4('hfxW',w?w.r:0,w?w.g:0,w?w.b:0,w?(G.hullPorts==null?1:G.hullPorts):0); if(this.mtex) ubo.setTexture('hfxMap',this.mtex); }
+    fragment:'#ifdef HULLFX\nuniform vec3 hfxRim;\nuniform vec4 hfxK;\nuniform vec3 hfxE;\nuniform vec2 hfxS;\nuniform vec2 hfxD;\nuniform vec4 hfxW;\n#endif\n'}; } // the baked-map sampler is declared with the fragment definitions (it is read inside the reflectivity block, which comes before the uniforms)
+  bindForSubMesh(ubo){ hfxSane(this); ubo.updateColor3('hfxRim',this.rim); ubo.updateFloat4('hfxK',this.str*(G.rimBoost||1),(G.time||0)%600,this.wear,this.energy?this.style:0); ubo.updateColor3('hfxE',this.ecol); ubo.updateFloat2('hfxS',this.seed,G.hullEnergy==null?1:G.hullEnergy); ubo.updateFloat2('hfxD',this.dmg||0,this.dseed||0); const w=this.wcol; ubo.updateFloat4('hfxW',w?w.r:0,w?w.g:0,w?w.b:0,w?(G.hullPorts==null?1:G.hullPorts):0); if(this.mtex) ubo.setTexture('hfxMap',this.mtex); }
   getCustomCode(type){
     if(type==='vertex') return {CUSTOM_VERTEX_DEFINITIONS:'#ifdef HULLFX\nvarying vec3 vHfxL;\nvarying vec3 vHfxN;\n#endif\n',CUSTOM_VERTEX_MAIN_END:'#ifdef HULLFX\nvHfxL=positionUpdated;\nvHfxN=normalUpdated;\n#endif\n'};
     if(type!=='fragment') return null;
     return {
 CUSTOM_FRAGMENT_DEFINITIONS:`
+#ifdef HULLFX_MAP
+uniform sampler2D hfxMap;
+#endif
 #ifdef HULLFX
 varying vec3 vHfxL;
 varying vec3 vHfxN;
@@ -50,7 +57,7 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
       float burn=smoothstep(1.0-hfxD.x*0.62,1.0-hfxD.x*0.62+0.07,dn);
       surfaceAlbedo=mix(surfaceAlbedo,surfaceAlbedo*vec3(0.09,0.075,0.065),burn); } }
 #ifdef HULLFX_MAP
-  { vec3 mp=texture2D(hfxMap,vMainUV2).rgb; float vao=1.0; // v53-G baked maps: texel AO replaces the vertex AO; curvature wears the edges bright and fills the cavities with grime
+  { vec3 mp=texture2D(hfxMap,vMainUV2).rgb; float vao=1.0; // v53-G baked maps: texel AO replaces the vertex AO, curvature wears the edges bright and fills the cavities with grime
 #ifdef VERTEXCOLOR
     vao=max(vColor.r,0.25);
 #endif
@@ -106,7 +113,7 @@ CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION:`
     finalEmissive+=hfxRim*hf*hfxK.x*hdk;
 #ifdef HULLFX_AI
     // v53-G lit ports, part of the hull surface: short runs of small ports in deck rows on the flanks only (side-facing, open plating),
-    // laid out in ship units so they keep scale. Edges are anti-aliased from the pixel footprint; below a pixel they fade to a faint average, then out.
+    // laid out in ship units so they keep scale. Edges are anti-aliased from the pixel footprint, below a pixel they fade to a faint average, then out.
     { vec3 wn=normalize(vHfxN);
 #ifdef HULLFX_RING
       float side=1.0-smoothstep(0.3,0.55,abs(wn.y)); float ru=abs(wn.x)>abs(wn.z)?vHfxL.z:vHfxL.x; float sd=(abs(wn.x)>abs(wn.z)?(wn.x>0.0?1.7:5.3):(wn.z>0.0?2.9:7.1)); // all-round ports on a station
