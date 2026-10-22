@@ -162,7 +162,7 @@ def scatter_plates(S, tag, region, ray, accept, base_col, r, corsair, count, siz
         if edge is None: continue
         bc = base_col(p)
         if tint: col = tint(p, r)
-        elif corsair and r.random() < .14: col = r.choice(PAL['salvage'])
+        elif corsair and r.random() < .10: col = tuple(a * .65 + b * .35 for a, b in zip(r.choice(PAL['salvage']), bc))  # mismatched salvage, but not black holes
         elif r.random() < .08: col = PAL['bare']
         else: col = tuple(min(1., c * r.uniform(.74, 1.16)) for c in bc)
         tag(col)
@@ -202,12 +202,12 @@ def detail_pass(targets, parts, tag, base_col, bounds, corsair=False, seed=7, ce
     def rnd(*k): return random.Random(hash((seed,) + k) & 0xffffffff)
     BC = base_col if callable(base_col) else (lambda p: base_col)
     pipes_y = []
-    SZ = [(.25, (.034, .060), (.020, .034)), (.45, (.018, .034), (.012, .022)), (.30, (.009, .018), (.007, .013))]
+    SZ = [(.35, (.034, .060), (.020, .034)), (.45, (.018, .034), (.012, .022)), (.20, (.009, .018), (.007, .013))]  # v14c: bigger panels lead, fewer chips
     for s_ in (1, -1):
         r = rnd(1, s_ if corsair else 0)
         # ---- 1. flank plating: mixed shapes, scattered, bent onto the hull and trimmed at its edges ----
         made += scatter_plates(S, tag, lambda r_: Vector((r_.uniform(x0, x1), s_ * .6, r_.uniform(z0, z1))), Vector((0, -s_, 0)),
-                               lambda n: abs(n.y) > .3 and n.z > -.4, BC, r, corsair, 150, SZ, name=f'fp{s_}_')
+                               lambda n: abs(n.y) > .3 and n.z > -.4, BC, r, corsair, 115, SZ, name=f'fp{s_}_')
         made += accents(S, tag, lambda r_: Vector((r_.uniform(x0, x1), s_ * .6, r_.uniform(z0, z1))), Vector((0, -s_, 0)), lambda n: abs(n.y) > .45 and n.z > -.3, r, 26, name=f'fa{s_}_')
         # ---- 2. pipe runs along the flank, broken around parts, brackets every few metres, junction boxes at the ends ----
         r = rnd(99, s_ if corsair else 0)

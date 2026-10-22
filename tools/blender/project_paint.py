@@ -128,7 +128,7 @@ if PROC and base_img is None:
     dp = T.nodes.new('ShaderNodeVectorMath'); dp.operation = 'DOT_PRODUCT'; L.new(bv.outputs[0], dp.inputs[0]); L.new(geo.outputs['Normal'], dp.inputs[1])
     edge = math_('MULTIPLY', rng(dp.outputs['Value'], .985, .80, 0, 1), rng(noise(70, 3), .3, .6, .25, 1))  # worn edges, broken up
     base = mix(edge, base, (.26, .24, .22))
-    ao = T.nodes.new('ShaderNodeAmbientOcclusion'); ao.inputs['Distance'].default_value = .03; ao.samples = 16
+    ao = T.nodes.new('ShaderNodeAmbientOcclusion'); ao.inputs['Distance'].default_value = float(os.environ.get('AOD', '.03'));  # v14c: parts use a short reach (AOD) or stacked plates grime each other black; ao.samples = 16
     base = vmath('SCALE', base, s=rng(ao.outputs['AO'], 0, 1, .30, 1.0))                                  # grime in the cavities
     col_ = vmath('SCALE', base, s=rng(noise(500, 2), .3, .7, .85, 1.08))                                  # fine grit
     sc.cycles.samples = 16
