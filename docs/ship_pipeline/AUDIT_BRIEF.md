@@ -54,15 +54,15 @@ For outside models (ChatGPT, Gemini, Argon, Antigravity and others) asked to aud
    - v5: side casemates and stern guns.
    - v6: side blocks, front plates, thrusters, stern house, tanks.
    - v7: plates as a dark stack.
-   - v8 (draft, **not run on the PC**): bridge-top dressing, which looks better; plates as a 2x3 grid on a red skin, which looks like
-     stairs, with AI debris still sitting on top of it.
+   - v8 (draft, never run): bridge-top dressing, plus plates as a 2x3 grid.
+   - v9: a close look at the concept showed the "plates" are a column of four thick dark slabs climbing the front slope like stairs.
+     v9 builds that, clears the stick debris, and keeps the bridge-top dressing.
 
 Renders are in `c19_example/`. Compare them with `concepts/C19_51.webp`.
 
 ## Known open issues
 
-- Front armour plates on the forward slope: no design yet that matches the concept. AI debris (thin crossed sticks) still sits on the
-  slope above the plates. The v8 draft is in `tools/blender/hs/c19_kit.py`.
+- Front armour: v9 slab staircase awaiting the owner's verdict.
 - The hull's big flat panels are still the AI surface, so they are a little wavy up close.
 - Paint brightness: the kit paint is levelled separately from the hull. Gain is clamped at 0.5 for the kit and 2.35 for the hull, both
   "projected from the same pictures", so the matching rests on a 0.3 self-light fudge in the game material.

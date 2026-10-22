@@ -52,10 +52,9 @@
 ## Next 3 tasks
 1. Owner is pausing builds until the weekly reset and running audits from other models meanwhile: brief at
    docs/ship_pipeline/AUDIT_BRIEF.md, findings land in contrib/<model>/reviews/. Read and merge those first.
-2. Pyre-Barge kit v8 (draft in c19_kit.py, not run on the PC): bridge-top dressing done (crow's nest, radar, whips, searchlights,
-   rangefinder, vents); front armour plates still wrong (owner: "out of place... color and the size/placement"; the v8 2x3 grid looks
-   like stairs and AI stick debris sits above it). Redesign against concepts/C19_51.webp, add the bridge-top KEEP box
-   (x -0.1..0.07, |y|<0.06, z 0.104..0.25) to the job, run, show Ryan, then publish a test build.
+2. Pyre-Barge kit v9 (run Oct 21 ~20:05, job tools/pc/jobs/c19_4_kit_to_game.bat): the concept close-up shows the 'front plates' are a
+   column of four thick dark slabs climbing the front slope like stairs, so v9 builds exactly that (projected paint) and clears the stick
+   debris above the slope; bridge-top dressing is hand-painted (KEEP box). Check K9_* and shots_v54w, show Ryan, then publish a test build.
 3. Then the priority-1 ships in SHIP_QUEUE.md with the blob sweep; LOD/streaming and a 20-ship stress test.
 
 ## Gotchas

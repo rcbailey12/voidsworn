@@ -70,7 +70,7 @@ def cut_extra(c):
     for i, (x0, x1, z0, z1) in enumerate(SIDE):
         y_ = SIDEF[(i, 1 if c.y > 0 else -1)]
         if y_ is not None and x0 - .003 <= c.x <= x1 + .003 and z0 - .003 <= c.z <= z1 + .003 and abs(c.y) >= y_ - .03: return True
-    if -.245 <= c.x <= -.115 and abs(c.y) < .072 and prof(c.x) - .015 <= c.z <= prof(c.x) + .03: return True
+    if -.245 <= c.x <= -.11 and abs(c.y) < .072 and prof(c.x) - .015 <= c.z <= prof(c.x) + .06: return True  # slope skin and the stick debris above it
     if -.10 <= c.x <= .13 and c.z < -.191: return True  # loose barrels hanging under the hull
     if .285 <= c.x <= .36 and abs(c.y) < .062 and -.024 <= c.z <= .06: return True  # the open bay at the back of the superstructure
     if .295 <= c.x <= .46 and abs(c.y) < .045 and -.066 <= c.z <= (-.024 if c.x < .355 else .03): return True  # stern deckhouse (and the dark open box ahead of it)
@@ -244,19 +244,16 @@ for i, (x0, x1, z0, z1) in enumerate(SIDE):
         if i != 2:
             for k in range(6): box(f'sidevent{i}{s_}{k}', (x0 + .016 + k * .007, s_ * (y_ + .0012), z0 + .016), (.0035, .002, .014), bevel=0)
             tag(DARK)
-# front armour plates (v8, owner: v7 plates out of place in colour, size and placement): a smaller 2 x 3 grid of separate stepped plates
-# in the middle of the slope, red hull showing round them, painted by projection like the concept's plates
-xs_ = [-.236, -.198, -.160, -.122]
-for k in range(3):
-    xa, xb = xs_[k] + .003, xs_[k + 1] - .003; za, zb = prof(xa) + .005, prof(xb) + .005; a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
-    nx, nz = -math.sin(a_), math.cos(a_); off = .003 * k
-    for s_ in (1, -1):
-        w_ = .046 - .004 * k
-        box(f'frontplate{k}{s_}', ((xa + xb) / 2 + nx * (off + .004), s_ * (w_ / 2 + .004), (za + zb) / 2 + nz * (off + .004)), (L_, w_, .006), rot=(0, -a_, 0), bevel=.0012)
-    tag(STEEL)
-    box(f'frontbase{k}', ((xa + xb) / 2 + nx * (off - .001), 0, (za + zb) / 2 + nz * (off - .001)), (L_ + .008, .150, .006), rot=(0, -a_, 0), bevel=.0015); tag(RED)  # red slope skin under the plates (the AI slope is cut away)
-    for s_ in (1, -1): box(f'frontbolt{k}{s_}', ((xa + xb) / 2 + nx * (off + .0045), s_ * (.008 + .034 - .004 * k), (za + zb) / 2 + nz * (off + .0045)), (.004, .004, .002), rot=(0, -a_, 0), bevel=0)
-    tag(GUN)
+# front armour (v9, from the concept close-up): a single column of four thick dark slabs climbing the front slope like a staircase, each
+# with a rim at its lower edge and an embossed plaque, from the deck up to the drums at the bridge base. Painted by projection.
+SLATE = (.06, .06, .065)
+xs_ = [-.242, -.208, -.175, -.143, -.112]
+for k in range(4):
+    xa, xb = xs_[k] + .002, xs_[k + 1] - .002; za, zb = prof(xa), prof(xb); a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
+    nx, nz = -math.sin(a_), math.cos(a_); t_ = .016; w_ = .128 - .006 * k; cx, cz = (xa + xb) / 2 + nx * t_ / 2, (za + zb) / 2 + nz * t_ / 2
+    box(f'frontslab{k}', (cx, 0, cz), (L_ + .006, w_, t_), rot=(0, -a_, 0), bevel=.0025); tag(SLATE)
+    box(f'frontrim{k}', (xa + nx * t_ * .55 + .002, 0, za + nz * t_ * .55), (.005, w_ + .003, t_ * .9), rot=(0, -a_, 0), bevel=.001); tag(STEEL)
+    box(f'frontplaque{k}', (cx + nx * (t_ / 2 + .0006), 0, cz + nz * (t_ / 2 + .0006)), (L_ * .55, w_ * .5, .0014), rot=(0, -a_, 0), bevel=.0004); tag(GUN)
 # ventral thrusters (concept: three glowing nozzles under the midship), on a keel plate
 for k, x_ in enumerate((-.015, .017, .049)):
     h = BVH.ray_cast(Vector((x_, 0, -.5)), Vector((0, 0, 1)), 1.0); zb_ = h[0].z if h[0] is not None else -.19
