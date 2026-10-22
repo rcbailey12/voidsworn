@@ -11,7 +11,11 @@
 - Live: **v53.7** (artifact Version 64): concept station on every station map (the "broken station" was the old procedural spire), camera floor (biggest ship about half the screen), board overlays fade when close.
 - Live since Version 65: **v53.8**: sculpted rock library (v53-E merged), "Entering battle" cover that holds until ships, this battle's hull maps, rocks and ship shaders are ready (4 s cap), map-screen prefetch, the 12 biggest hulls load the desktop mesh on phones, footprint-faded close-up plating. rocks/ and rocks_hi/ are uploaded artifact files. hulls/ is unchanged from v53.7. (Publishing warns the page references an undeclared `downloads` capability: the ?prof=1 CSV export, old debug code, left as is.)
 - Ryan's verdict on v53.7 (Pixel and desktop screenshots, Oct 21): "everything still feels pretty low poly". Cause: the Hunyuan shapes themselves. Shape bake-off running (NEXT.md "Ship shapes"): A Hunyuan 512/640 and B Blender clean-up show no gain; D Blender hard-surface rebuild (tools/blender/hs/) is crisp in-game on first pass and is my pick; C TRELLIS.2 downloading to Downloads\trellis2 (approved by Ryan, 736 MB zip, then its own installer).
-- **Ship shapes, new pipeline (Oct 21 evening, Pyre-Barge C19_51 only so far, not published):** Qwen-generated side/front views (Ryan approved the side) -> Pixal3D multi-view hull on the PC (ComfyUI, 2M tris) -> concept + views projected as paint -> hand-built parts (tools/blender/hs/c19_kit.py: rocket rack, funnels, mast, long guns, bridge tier, drums, roof tank) cut into the hull, snapped on, painted by projection -> meshopt .vsm (13.7 MB desktop, 3.6 MB phone) + C19_51_kit.json. Steps and file roles: NEXT.md "Ship shapes". Ryan: "definitely much better"; kit v3 rebuilt the soft bridge; bow guns may face forward. Kit material (aiKitMat): one-sided lighting by stored normals plus 0.3 paint self-light (G.kitFill), else roofs read black and sides lose their red.
+- **Ship shapes, new pipeline (Oct 21 evening):** the Pyre-Barge (C19_51) is done to kit v6 and is the worked example. Everything is
+  written up for any agent in `docs/ship_pipeline/` (README = pipeline, BLOB_SWEEP = what "done" means, SHIP_QUEUE = all 36 hulls,
+  concepts/ = every concept painting, c19_example/ = views and renders) plus `AGENTS.md` and `contrib/` (contained folders for outside
+  agents such as Argon). Not published yet. Ryan's notes on it: bow, rocket rack and side guns fixed; the blob sweep rule came from his
+  "ensure we catch all of those for all other ships".
 - Known: box/T-shape wreck debris looks crude; the bright gold ring on Ryan's Pixel close-up (PC shots show it faded, re-check on v53.8).
 
 ## Decisions (Ryan decided)
@@ -46,9 +50,11 @@
 - **Lag on loading into a battle**: hull JSON + webp map fetch/decode, plus the effect atlas build (v53-I moves it to idle slices on the title screen). Measure with perfprobe. Ideas: prefetch the next battle's hulls on the map screen, compressed GPU textures (KTX2), decode off the main thread.
 
 ## Next 3 tasks
-1. Ryan reviews the Pyre-Barge kit v3 (pyre_barge_kit_v3.png + in-game shots); then publish a test build so he can try it on the Pixel and desktop.
-2. LOD/streaming and a 20-ship stress test with a frame-rate counter; decide hosting if the hull set passes ~256 MB.
-3. Run the pipeline on the other capitals and the station (hand-built parts per CLAUDE.md placement rules; Corsair may stay junky).
+1. Ryan reviews Pyre-Barge kit v6 (docs/ship_pipeline/c19_example/). Open point: the front armour plates read as one glossy grey slab in
+   game (maybe roughen the kit material or split the plates). Then publish a test build for his Pixel and desktop.
+2. Run the pipeline on the priority-1 ships in SHIP_QUEUE.md, with the blob sweep before showing each one. Merge anything good from
+   contrib/<agent>/ folders first.
+3. LOD/streaming plus a 20-ship stress test with a frame-rate counter; decide hosting if the hull set passes about 256 MB.
 
 ## Gotchas
 - PC test runner: `Downloads\voidsworn_test` with `watcher.bat` running. Never write job.bat while a run is going (run_smoke deletes job.bat after it finishes). Hunyuan: C:\AI\HY3D2\Hunyuan3D2_WinPortable (python_standalone, cwd Hunyuan3D-2.1). PS 5.1 Invoke-WebRequest is slow for big files: set $ProgressPreference='SilentlyContinue'. Sandbox has Blender as a Python module (pip bpy 5.1.2) for scripted modelling and clay renders. Commit files with device_commit_files, then commit `run.request` **in a separate, later call** (parallel write+commit raced twice and shipped stale files). `build\job.bat` runs once instead of the smoke test; a job must `cd` back to `build` or it re-runs. Scripts are in `tools/pc/`.
