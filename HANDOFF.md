@@ -54,7 +54,7 @@
    docs/ship_pipeline/AUDIT_BRIEF.md, findings land in contrib/<model>/reviews/. Read and merge those first.
 2. Pyre-Barge kit v9 (run Oct 21 ~20:05, job tools/pc/jobs/c19_4_kit_to_game.bat): the concept close-up shows the 'front plates' are a
    column of four thick dark slabs climbing the front slope like stairs, so v9 builds exactly that (projected paint) and clears the stick
-   debris above the slope; bridge-top dressing is hand-painted (KEEP box). Check K9_* and shots_v54w, show Ryan, then publish a test build.
+   debris above the slope; bridge-top dressing is hand-painted (KEEP box). Ran clean (no errors, desktop + phone); sheet in docs/ship_pipeline/c19_example/kit_v9_vs_concept.webp. Await Ryan's verdict, then publish a test build.
 3. Then the priority-1 ships in SHIP_QUEUE.md with the blob sweep; LOD/streaming and a 20-ship stress test.
 
 ## Gotchas
