@@ -70,6 +70,7 @@
 
 ## Gotchas
 - PC test runner: `Downloads\voidsworn_test` with `watcher.bat` running. Never write job.bat while a run is going (run_smoke deletes job.bat after it finishes). Hunyuan: C:\AI\HY3D2\Hunyuan3D2_WinPortable (python_standalone, cwd Hunyuan3D-2.1). PS 5.1 Invoke-WebRequest is slow for big files: set $ProgressPreference='SilentlyContinue'. Sandbox has Blender as a Python module (pip bpy 5.1.2) for scripted modelling and clay renders. Commit files with device_commit_files, then commit `run.request` **in a separate, later call** (parallel write+commit raced twice and shipped stale files). `build\job.bat` runs once instead of the smoke test; a job must `cd` back to `build` or it re-runs. Scripts are in `tools/pc/`.
+- Oct 22: re-committing the same staged path (`outputs/job.bat`) can deliver a stale copy, so an old job re-runs. Give every job its own staged name (`outputs/job_<tag>.bat`, `run_<tag>.request`), stage `build\job.bat` back to check it, then send run.request.
 - closeshot's local server needs a big backlog (request_queue_size 256): with the default 5, desktop runs dropped hull/kit files (ERR_CONNECTION_REFUSED) and shots silently lacked the kit.
 - Full smoke on the PC takes about 4 min (25+ in the sandbox). Smoke does not catch invisible hulls: always add PC closeshot + console capture (`errprobe.py`).
 - Transfers are capped at about 25 MB per file and 100 MB per call: split zips. Artifact publishes cap at 64 MB: split sidecar uploads across publishes (files left out are kept).
