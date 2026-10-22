@@ -47,11 +47,16 @@ everything below. The other 35 hulls are listed in `SHIP_QUEUE.md`. Rules for wh
    - Writes `<T>_cut.glb` (hull minus cut parts) and `<T>_kit.glb` / `<T>_kit_painted.glb`.
    - **Clean shell (SHELL=1, Oct 22)**: when the AI hull body is wavy, it becomes a measuring guide only. A section table (`ST` in
      `c19_kit.py`) is measured off it and lofted into a clean, subdivided hull (`<T>_shell.glb`).
-   - **Detail pass** (`tools/blender/hs/detail_lib.py`, reusable): flank plating cells (raised plates, inset panels, welded patches, vent
-     grilles, greebles), pipe runs with brackets, deck plating, mount flanges with bolts, dents; `corsair=True` adds spikes, scrap slabs,
-     girder lattices and hazard plates. Call `detail_pass(targets, parts, tag, base_col, bounds, corsair, seed)` before the colour loop.
+   - **Detail pass** (`tools/blender/hs/detail_lib.py`, reusable, v14): plates in mixed shapes (rectangle, cut corner, trapezoid, L,
+     slanted), scattered (no grid), bent onto the hull vertex by vertex and trimmed where the hull turns away (`conform_plate`), each
+     with its own edge (plain, weld bead, rivets, both); small fittings (vents, hatches, boxes) only where the ground is flat; pipe runs;
+     deck plating; fewer, bigger scorched slabs on the belly and under the prow; mount flanges; dents; `corsair=True` adds spikes, scrap
+     slabs, girders, hazard plates and more shape variety. A guard drops any part that ends up far off the hull.
    - **Procedural paint** (`PAINT=proc` in project_paint.py): weathered paint baked from each part's vertex colours (mottling, dirt,
      streaks, plate tone, scorch, rust, pits, edge wear, grime). Use it on a clean shell: projecting the pictures ghosts the AI layout.
+     It also bakes `<out>_orm.png` (occlusion, roughness, metal) and `<out>_nrm.png` (fine normals: dents, pitting, scratches, soft
+     edges). `AOD` sets the grime reach (use .01 for parts). `pixal_to_game` turns them into `CODE_f/_fn.webp` (env `FIN`) and
+     `CODE_kit_f/_kit_n.webp` (env `KFIN`); the game loads them when the header says `fin`.
 7. **Phone LOD**: `lod_make.py` (collapse decimate that keeps UVs) to 250k triangles.
 8. **To the game**: `pixal_to_game.py in.glb out_dir CODE left|front TEXRES` with `ALB` (projected albedo), `KIT` (painted kit) and
    `CONCEPT` (brightness levelling). Then `node vsm_pack.mjs dir CODE` packs the hull with meshoptimizer into `CODE.vsm`
