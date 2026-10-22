@@ -147,7 +147,10 @@ CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS:`
     metallicRoughness.g=clamp(max(metallicRoughness.g,0.42)+(rn-0.5)*0.24*(1.0-smoothstep(30.0,110.0,hdr)),0.32,1.0);
 #endif
 #ifdef HULLFX_MAP
-    { float cv=texture2D(hfxMap,vMainUV2).g-0.5; metallicRoughness.g=clamp(metallicRoughness.g-smoothstep(0.03,0.2,cv)*0.12+smoothstep(0.02,0.16,-cv)*0.18,0.34,1.0); } // polished edges, rough grimy recesses
+    { float cv=texture2D(hfxMap,vMainUV2).g-0.5; metallicRoughness.g=clamp(metallicRoughness.g-smoothstep(0.03,0.2,cv)*0.12+smoothstep(0.02,0.16,-cv)*0.18,0.34,1.0); // polished edges, rough grimy recesses
+      // v55 (owner, Oct 22: "clay feel"): worn raised edges read as bare metal, and the sheen breaks up in big weathered patches instead of one even coat
+      float bl=hfxN(vHfxL*0.35+hfxS.x*2.0); metallicRoughness.r=clamp(metallicRoughness.r+smoothstep(0.05,0.22,cv)*0.3-smoothstep(0.55,0.8,bl)*0.15,0.0,1.0);
+      metallicRoughness.g=clamp(metallicRoughness.g+(smoothstep(0.45,0.8,bl)-0.35)*0.22,0.3,1.0); }
 #endif
   }
 #endif
