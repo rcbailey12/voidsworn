@@ -2,7 +2,7 @@
 # does, fits a plane to each, and measures how far the surface wanders from it. Nothing is changed. Writes a heat-map render sheet
 # (grey = curved or small, blue = flat enough, yellow to red = wavy and worth flattening) and a text list placed in the 9-cell blob grid.
 # usage: blender -b -P wavy_report.py -- hull.glb out_prefix [angle_deg=14] [tol=0.006] [min_area=0.0015]
-import sys, math, collections, json, numpy as np, bpy, mathutils
+import sys, os, math, collections, json, numpy as np, bpy, mathutils
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
 src, pre = argv[0], argv[1]; ANG = math.radians(float(argv[2]) if len(argv) > 2 else 14); TOL = float(argv[3]) if len(argv) > 3 else .006; AMIN = float(argv[4]) if len(argv) > 4 else .0015
 RMS_BAD, P95_BAD = .0012, .0025  # in ship lengths; first guesses, to be tuned on C19 against the owner's own calls (side blocks wavy, bow wavy)
@@ -73,6 +73,12 @@ for p in P:
     bucket[p['faces']] = (2 if sev < 1.5 else 3 if sev < 2.2 else 4) if bad else 1
 pi = np.zeros(len(me.loop_triangles), np.int64); me.loop_triangles.foreach_get('polygon_index', pi)
 pm = np.zeros(len(me.polygons), np.int64); np.maximum.at(pm, pi, bucket); me.polygons.foreach_set('material_index', pm)
+if os.environ.get('KIT'):  # show the hand-built parts too (in plain white), so the cut edges where they attach don't read as damage
+    before = set(bpy.context.scene.objects); bpy.ops.import_scene.gltf(filepath=os.environ['KIT']); wm = bpy.data.materials.new('kitwhite'); wm.diffuse_color = (.85, .85, .85, 1)
+    try: wm.use_nodes = True; wm.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value = (.85, .85, .85, 1)
+    except Exception: pass
+    for ob in set(bpy.context.scene.objects) - before:
+        if ob.type == 'MESH': ob.data.materials.clear(); ob.data.materials.append(wm); [setattr(pl, 'material_index', 0) for pl in ob.data.polygons]
 sc = bpy.context.scene; sc.render.engine = 'CYCLES'; sc.cycles.samples = 12; sc.render.resolution_x, sc.render.resolution_y = 900, 600
 try:
     pr = bpy.context.preferences.addons['cycles'].preferences
