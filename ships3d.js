@@ -778,7 +778,7 @@ function decodeKit(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bi
 // v55 baked finish (owner, Oct 22: "still some of that clay feel"): R = occlusion, G = roughness, B = metal, plus a fine tangent-space normal
 // map (dents, pitting, scratches, soft-worn edges), both on the albedo's UVs. Swapped in when loaded; until then the flat finish shows.
 function finMaps(m,fu,nu){ const sc=G.scene; let f=null,n=null; const done=()=>{ if(!f||!n||!f.isReady()||!n.isReady()||(m.isDisposed&&m.isDisposed())) return;
-    m.metallicTexture=f; m.useRoughnessFromMetallicTextureGreen=true; m.useMetallnessFromMetallicTextureBlue=true; m.useAmbientOcclusionFromMetallicTextureRed=true; m.metallic=1; m.roughness=1;
+    m.metallicTexture=f; m.useRoughnessFromMetallicTextureGreen=true; m.useMetallnessFromMetallicTextureBlue=true; m.useAmbientOcclusionFromMetallicTextureRed=!!G.finAO; m.metallic=1; m.roughness=1; /* v14d: the paint already carries its grime; AO here darkened the shaded side twice (stacked plates read black) */
     m.bumpTexture=n; n.level=G.finBump??1; m.invertNormalMapX=!!G.finInvX; m.invertNormalMapY=!!G.finInvY; m._finTex=[f,n]; };
   const fail=()=>console.warn('finish maps not loaded',fu);
   f=new BABYLON.Texture(fu,sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail); n=new BABYLON.Texture(nu,sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail); n.anisotropicFilteringLevel=4; f.gammaSpace=false; n.gammaSpace=false; }
