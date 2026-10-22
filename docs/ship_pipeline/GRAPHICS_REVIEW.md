@@ -14,6 +14,7 @@ quality and detail?" Found by in-game probes on the PC (closeshot `EVAL`), not b
 | 7 | Baked (non-painted) AI hulls: one even sheen. | Uniform plastic look on the other 34 ships. | Improved: worn raised edges read as metal, sheen breaks up in weathered patches (shader, uses each hull's existing curvature map). |
 | 8 | Brightness was tuned while hulls were lit from inside. | Now that light comes from the right side, pale hulls (Dominion) can blow out to white in direct sun. | Open: re-tune `directIntensity` / exposure on a real GPU. |
 | 9 | All screenshots so far come from SwiftShader (software rendering). | Says nothing about speed, anti-aliasing or shadow quality on a real GPU or the Pixel. | Open: real-GPU and Pixel check before more ships. |
+| 11 | Two-sided lighting on the AI hull materials flipped the normals on faces Babylon counts as back faces (cull tests hide the hull with either winding, so the winding alone cannot be trusted). | Hull lit from inside again once it had a normal map; plates looked black against it. | Fixed (v14g): AI hull and paint materials light by their stored normals (`twoSidedLighting=false`, `G.hull2s` to test); the finish maps no longer apply occlusion a second time (`G.finAO`). |
 | 10 | A folded plate sliver with "even thickness" blew out to a 2 m spike. | Broke framing and darkened shots. | Fixed: plain solidify plus a stray-part guard in `detail_lib.detail_pass`. |
 
 ## How to probe

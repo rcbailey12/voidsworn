@@ -68,6 +68,13 @@
    their stored normals did the opposite. `faceOut()` in ships3d.js now flips the winding at load when it disagrees with the normals,
    for every AI hull and kit (`G.diagNoFaceOut=true` turns it off). All AI ships now light correctly: the Dominion went from near-black to
    lit silver (docs/ship_pipeline/c19_example/v13_winding_fix_dominion.webp). Station/object protos (objP) and craft hulls not checked yet.
+   v14 (Oct 22, owner picks: Corsair "mixed shapes", "finish + fine bumps", "heavy belly armour", finish fixes on all ships): detail_lib
+   plates are mixed shapes, scattered, bent onto the hull and trimmed at its edges, with varied edges (bead/rivets/plain); fewer, bigger
+   scorched belly slabs; uneven ledge/port/rivet rows (c19_kit); baked roughness/metal + fine normal maps for hull and kit (project_paint
+   FINISH, pixal_to_game FIN/KFIN, ships3d finMaps); finish read from the paint for painted hulls, worn-edge metal + sheen patches for the
+   baked hulls (gfx3d). AI hulls now light by stored normals (two-sided lighting had flipped them again). Full list of what the review
+   found: docs/ship_pipeline/GRAPHICS_REVIEW.md. Sheet: docs/ship_pipeline/c19_example/v14_pyre_barge.webp. Job: tools/pc/jobs/c19_14c.bat
+   (+ c19_14g.bat for game-only re-shots). Open: sides still busy, pale hulls blow out in full sun, real-GPU/Pixel check.
 1. Audits are in (Codex, Rey, Gemini). Claude's verified synthesis and picks: docs/ship_pipeline/AUDIT_SYNTHESIS.md. Gemini's drop-in code
    is NOT merged (built on false premises). Owner to answer the scope questions from Oct 22 before the next build.
 2. C19 verified fixes (list in AUDIT_SYNTHESIS.md), joint paint gain + no kit self-light, then the shared HullFx detail on hull and kit.
