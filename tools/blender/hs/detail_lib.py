@@ -100,13 +100,13 @@ def conform_plate(S, name, p, n, t, b, pts, lift, th, seg=.008, keep=.55, clear=
         v.co = Vector(h[0]) + hn * lift
     nf = len(bm.faces); dead = [f_ for f_ in bm.faces if any(v in bad for v in f_.verts)]
     if len(dead) > nf * (1 - keep): bm.free(); return None
-    bmesh.ops.delete(bm, geom=dead, context='FACES'); loose = [v for v in bm.verts if not v.link_faces]
+    bmesh.ops.delete(bm, geom=dead, context='FACES'); bmesh.ops.dissolve_degenerate(bm, dist=2e-5, edges=bm.edges[:]); loose = [v for v in bm.verts if not v.link_faces]
     if loose: bmesh.ops.delete(bm, geom=loose, context='VERTS')
     for f_ in bm.faces:
         if f_.normal.dot(n) < 0: f_.normal_flip()
     edge = [(e.verts[0].co.copy(), e.verts[1].co.copy()) for e in bm.edges if e.is_boundary]
     me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free(); o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)
-    sm = o.modifiers.new('sd', 'SOLIDIFY'); sm.thickness = th; sm.offset = -1; sm.use_even_offset = True; sm.use_rim = True
+    sm = o.modifiers.new('sd', 'SOLIDIFY'); sm.thickness = th; sm.offset = -1; sm.use_even_offset = False; sm.use_rim = True  # even offset blew a folded sliver out to 2 m (v14)
     bv = o.modifiers.new('bv', 'BEVEL'); bv.width = min(.0004, th * .3); bv.segments = 1; bv.limit_method = 'ANGLE'; bv.angle_limit = math.radians(40)
     hs_lib.PARTS.append(o); return edge
 
@@ -198,7 +198,7 @@ def accents(S, tag, region, ray, accept, r, count, name='ac'):
 def detail_pass(targets, parts, tag, base_col, bounds, corsair=False, seed=7, cell=(.034, .022), damage=1.0, flanges=()):
     """targets: hull objects to cover; parts: objects to keep clear of; tag(rgb) colours everything made since the last call;
     base_col: the hull's paint colour (plates vary around it); bounds: (x0, x1, z0, z1) of the hull; flanges: [(centre, size)] mount pads"""
-    S = Surface(targets, parts); x0, x1, z0, z1 = bounds; made = 0
+    S = Surface(targets, parts); x0, x1, z0, z1 = bounds; made = 0; pre_names = {o.name for o in hs_lib.PARTS}
     def rnd(*k): return random.Random(hash((seed,) + k) & 0xffffffff)
     BC = base_col if callable(base_col) else (lambda p: base_col)
     pipes_y = []
@@ -287,7 +287,16 @@ def detail_pass(targets, parts, tag, base_col, bounds, corsair=False, seed=7, ce
             if p is None: continue
             t, b, n = frame(n)
             for e in range(6): obox(f'haz{k}{e}', p + n * .0012 + t * (-.0125 + e * .005), t, b, n, (.005, .016, .0016), bevel=0, rot=math.radians(30)); tag(PAL['hazard'][e % 2])
-    print('detail pass:', made, 'cells dressed,', len(pipes_y), 'pipe runs')
+    # guard: nothing the pass made may reach far off the hull (a folded sliver once became a 2 m spike)
+    dg = bpy.context.evaluated_depsgraph_get(); X0, X1 = x0 - .08, x1 + .08; drop = 0
+    for o in list(hs_lib.PARTS):
+        if o.name in pre_names: continue
+        try: bb = [o.evaluated_get(dg).matrix_world @ Vector(c) for c in o.evaluated_get(dg).bound_box]
+        except Exception: continue
+        lo = Vector((min(c.x for c in bb), min(c.y for c in bb), min(c.z for c in bb))); hi = Vector((max(c.x for c in bb), max(c.y for c in bb), max(c.z for c in bb)))
+        if (hi - lo).length > .2 or lo.x < X0 or hi.x > X1 or abs(lo.y) > .4 or abs(hi.y) > .4 or lo.z < -.5 or hi.z > .5:
+            hs_lib.PARTS.remove(o); bpy.data.objects.remove(o); drop += 1
+    print('detail pass:', made, 'cells dressed,', len(pipes_y), 'pipe runs, dropped', drop, 'strays')
 
 def dents(obj, spots, seed=3):
     """push a few smooth dents into a dense hull mesh (moderate battle damage). spots: [(centre, radius, depth)]"""

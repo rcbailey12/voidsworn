@@ -24,8 +24,8 @@ if me.uv_layers and me.materials and me.materials[0] and me.materials[0].use_nod
 if base_img is None:  # hand-built parts: vertex colours, no UVs yet; give them a UV atlas first
     while me.uv_layers: me.uv_layers.remove(me.uv_layers[0])
     me.uv_layers.new(name='UVMap'); bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=math.radians(55), island_margin=0.0005)
-    try: bpy.ops.uv.pack_islands(rotate=True, margin_method='FRACTION', margin=0.0006, shape_method=os.environ.get('UVPACK', 'CONCAVE'))  # v55: CONCAVE packs tighter than AABB (the kit used 32% of its atlas)  # v13: the old pack left the kit at 1.7% of the atlas (parts read black in game); this fills ~60%
+    bpy.ops.uv.smart_project(angle_limit=math.radians(55), island_margin=0.0002)
+    try: bpy.ops.uv.pack_islands(rotate=True, margin_method='FRACTION', margin=0.00025, shape_method=os.environ.get('UVPACK', 'AABB'))  # v14b: thinner margins (the gap fill in pixal_to_game stops mip bleed); CONCAVE packed worse  # v13: the old pack left the kit at 1.7% of the atlas (parts read black in game); this fills ~60%
     except Exception as e: print('uv pack failed', e)
     bpy.ops.object.mode_set(mode='OBJECT')
 base_uv = me.uv_layers.active.name
@@ -148,7 +148,7 @@ if PROC and base_img is None:
     h = math_('ADD', math_('MULTIPLY', dents, .55), math_('MULTIPLY', hammer.outputs[0], .12))
     h = math_('ADD', h, math_('MULTIPLY', math_('MULTIPLY', rust, rb), .45)); h = math_('SUBTRACT', h, math_('MULTIPLY', pits, .6)); h = math_('SUBTRACT', h, math_('MULTIPLY', scr, .35))
     bvn = T.nodes.new('ShaderNodeBevel'); bvn.inputs['Radius'].default_value = .0005                          # soft-worn plate edges catch the light
-    bmp = T.nodes.new('ShaderNodeBump'); bmp.inputs['Strength'].default_value = .55; bmp.inputs['Distance'].default_value = .0004; L.new(h, bmp.inputs['Height']); L.new(bvn.outputs[0], bmp.inputs['Normal'])
+    bmp = T.nodes.new('ShaderNodeBump'); bmp.inputs['Strength'].default_value = 1.0; bmp.inputs['Distance'].default_value = .0025  # v14b: .0004 baked an almost flat map; L.new(h, bmp.inputs['Height']); L.new(bvn.outputs[0], bmp.inputs['Normal'])
     FIN_NRM = bmp.outputs[0]
 if base_img is None and os.environ.get('DETAIL', '0') == '1':  # v55: off by default; the shared in-game detail layer (HullFx DET) covers hull and parts alike
     # hand-built parts get the AI hull's level of surface detail (owner, Oct 21: "the level of texture and details seem to vary wildly"):
