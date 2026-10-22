@@ -116,6 +116,10 @@ if PROC and base_img is None:
     st = T.nodes.new('ShaderNodeVectorMath'); st.operation = 'MULTIPLY'; L.new(oc, st.inputs[0]); st.inputs[1].default_value = (90, 90, 5)
     streak = rng(noise(1, 6, st.outputs[0]), .40, .72, 0, 1)                                             # vertical run-off streaks
     base = vmath('SCALE', base, s=rng(streak, 0, 1, 1.0, .55))
+    vo = T.nodes.new('ShaderNodeTexVoronoi'); vo.inputs['Scale'].default_value = 26; L.new(oc, vo.inputs['Vector'])  # plate-to-plate repaint tone
+    base = vmath('SCALE', base, s=rng(vo.outputs['Distance'] if False else vo.outputs[1], 0, 1, .78, 1.15))
+    scorch = rng(noise(4, 4, rough=.5), .70, .80, 0, 1)                                                   # scorch marks from hits
+    base = vmath('SCALE', base, s=rng(scorch, 0, 1, 1.0, .22))
     rust = rng(noise(20, 10, rough=.7), .52, .64, 0, 1)                                                   # rust patches
     base = mix(math_('MULTIPLY', rust, .85), base, (.13, .045, .018))
     pits = rng(noise(140, 4), .62, .72, 0, 1)                                                             # small rust pits

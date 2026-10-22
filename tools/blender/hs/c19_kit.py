@@ -124,13 +124,7 @@ def surf_down(x, y, z_from=.3):  # deck height under (x, y)
 def surf_in(x, y_side, z):  # flank point at height z, cast inward from outside the hull on side sign(y_side)
     s_ = 1 if y_side > 0 else -1; h = BVH.ray_cast(Vector((x, s_ * .4, z)), Vector((0, -s_, 0)), 1.0); return (h[0], h[1]) if h[0] is not None else (None, None)
 if SHELL:
-    bpy.ops.object.select_all(action='DESELECT'); shell.select_set(True); bpy.context.view_layer.objects.active = shell
-    try: bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35), keep_sharp_edges=True)
-    except Exception: pass
-    try: shell.data.color_attributes.active_color_name = 'Col'
-    except Exception: pass
-    bpy.ops.export_scene.gltf(filepath=pre + '_shell.glb', export_format='GLB', use_selection=True, export_vertex_color='ACTIVE', export_all_vertex_colors=True)
-    bpy.data.objects.remove(hull)  # the AI hull is not exported at all
+    bpy.data.objects.remove(hull)  # the AI hull is not exported at all; the shell is exported at the end, after the detail pass dents it
 else:
     bpy.ops.object.select_all(action='DESELECT'); hull.select_set(True); bpy.context.view_layer.objects.active = hull
     bpy.ops.export_scene.gltf(filepath=pre + '_cut.glb', export_format='GLB', use_selection=True, export_image_format='JPEG', export_jpeg_quality=95)
@@ -523,9 +517,25 @@ if SHELL:
         for x in (.025, .175):  # vent grilles
             for k in range(6): plate(f'grille{s_}{x}{k}', x - .0125 + k * .005, -.075, s_, (.0025, .016, .002))
             tag(DARK)
-        for x in (-.03, .05, .14, .21, .27):  # vertical plate seams on the slope
+        for x in (() if os.environ.get('DETAIL_PASS', '1') == '1' else (-.03, .05, .14, .21, .27)):  # vertical plate seams (the detail pass's plating replaces them)
             for k in range(7): plate(f'seam{s_}{x}{k}', x, -.085 + k * .011, s_, (.0012, .0115, .0008), lift=.0004)
         tag(DARK)
+if SHELL and os.environ.get('DETAIL_PASS', '1') == '1':
+    # v13 detail and weathering pass (tools/blender/hs/detail_lib.py): plating, repairs, pipes, vents, greebles, mount flanges, dents,
+    # and for this Corsair ship the ork/Reaver jank (owner, Oct 22)
+    import detail_lib, random as _r
+    bow_o = next(o for o in hs_lib.PARTS if o.name == 'bow')
+    FLUSH = ('rivet', 'port', 'seam', 'ledge', 'hatch', 'grille', 'np', 'nameplate', 'rubrail', 'belly', 'bay', 'edgelight')  # flush hull dressing: plates may sit over it
+    others = [o for o in hs_lib.PARTS if o is not bow_o and not o.name.startswith(FLUSH)]
+    S0 = detail_lib.Surface([shell], others); rr = _r.Random(11); spots = []
+    for k in range(40):
+        if len(spots) >= 11: break
+        s_ = rr.choice((1, -1)); p_, n_ = S0.hit(Vector((rr.uniform(-.22, .46), s_ * .6, rr.uniform(-.17, .03))), Vector((0, -s_, 0)), .008)
+        if p_ is not None: spots.append((p_, rr.uniform(.010, .020), rr.uniform(.0025, .0045)))
+    detail_lib.dents(shell, spots); print('dents', len(spots))
+    FL = [(Vector(((x0_ + x1_) / 2, SIDEF[(i_, 1)] or .17, (z0_ + z1_) / 2)), (x1_ - x0_, z1_ - z0_)) for i_, (x0_, x1_, z0_, z1_) in enumerate(SIDE)]
+    FL += [(Vector((.202, 0, .05)), (.06, .06)), (Vector((.020, TANK[1][0] + .012, TANK[1][1])), (.09, .028))]
+    detail_lib.detail_pass([shell, bow_o], others, tag, lambda p: UPPER if p.z > -.094 else LOWER, (-.47, .48, -.20, .06), corsair=True, seed=19, flanges=FL)
 for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
     c = DARK if o.name.startswith('bore') or 'band' in o.name else COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for d in a.data: d.color = (c[0], c[1], c[2], 1)
@@ -534,3 +544,10 @@ try: kit.data.color_attributes.active_color_name = 'Col'
 except Exception: kit.data.color_attributes.active_color = kit.data.color_attributes['Col']
 bpy.ops.object.select_all(action='DESELECT'); kit.select_set(True); bpy.context.view_layer.objects.active = kit
 bpy.ops.export_scene.gltf(filepath=pre + '_kit.glb', export_format='GLB', use_selection=True, export_vertex_color='ACTIVE', export_all_vertex_colors=True)
+if SHELL:
+    bpy.ops.object.select_all(action='DESELECT'); shell.select_set(True); bpy.context.view_layer.objects.active = shell
+    try: bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35), keep_sharp_edges=True)
+    except Exception: pass
+    try: shell.data.color_attributes.active_color_name = 'Col'
+    except Exception: pass
+    bpy.ops.export_scene.gltf(filepath=pre + '_shell.glb', export_format='GLB', use_selection=True, export_vertex_color='ACTIVE', export_all_vertex_colors=True)
