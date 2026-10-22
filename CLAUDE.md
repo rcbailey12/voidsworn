@@ -5,3 +5,12 @@
 - ComfyUI portable: `Downloads\ComfyUI_windows_portable` (v0.42.1), driven headless by `tools/pc/comfy_run.py`; job I/O in `Downloads\voidsworn_test\comfy_io\CODE\`.
 - Ryan is not a coder: double-click .bat files for anything he runs himself, plain words, screenshots of results.
 - **Ship parts look like they belong (owner, Oct 21 2026).** Hand-built bolt-ons on the AI hulls (guns, racks, funnels, masts, drums, turrets) must make sense where they sit: snapped onto the real hull surface (never floating or sunk), on a visible mount (plate, ball, saddle, column), guns aimed out and away from the hull (bow guns may face forward along the prow, stern guns aft; never aimed back into the ship), and placed in matched, symmetric pairs at sensible hard points. Corsair is the exception: haphazard and junky is on-brand there. Soft or blobby AI areas near the bridge and superstructure get rebuilt by hand the same way (tools/blender/hs/c19_kit.py is the worked example).
+- **Blob sweep for every AI ship (owner, Oct 21 2026: "ensure we catch all of those for all other ships").** Before showing a ship, review it region by region against the concept: bow / midship / stern, each from the top, the side and below (9 cells, studio renders at the same angles as the concept views). Every cell gets a verdict: clean, or rebuild by hand. Things the AI reliably mangles and that get rebuilt by default:
+  - guns of any size (turrets, casemates, long cannons, bow chasers, stern guns), rocket racks and launchers
+  - bridge and superstructure tiers, masts, funnels, antennas, rails
+  - tanks, drums, torpedo/fuel cylinders, lamps and light rows
+  - the bow (usually wavy: rebuild as a faired loft from the AI hull's own sections)
+  - engine nozzles and ventral thrusters, armour plate stacks, side sponson blocks
+  - any thin spiky or crossed sticks (AI wire debris)
+  Parts the concept shows poorly (tops, undersides, racks seen end-on) keep their own hand paint (project_paint KEEP boxes) instead of projection, or they come out a grey blob.
+- **Pipeline gotchas (Oct 21 2026):** the game's ship size comes from hull + kit together (pixal_to_game reads the kit for bounds; cutting the AI bow without it stretched the ship 1.33x). Kit material lights by stored normals (no two-sided lighting) plus a 0.3 paint self-light. closeshot's server needs a big backlog or desktop shots silently drop the kit.

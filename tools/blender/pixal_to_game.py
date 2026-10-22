@@ -20,7 +20,15 @@ else:                  # 'left': the side view was posed as the front; bow on sc
     M = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 1]], float)
 G = P @ M.T; GN = N @ M.T
 if np.linalg.det(M) < 0: I = I[:, [0, 2, 1]]
-lo, hi = G.min(0), G.max(0); G = (G - (lo + hi) / 2) / (hi[0] - lo[0]); ext = np.abs(G).max(0)
+lo, hi = G.min(0), G.max(0)
+if os.environ.get('KIT'):  # the ship's size is hull + hand-built parts: a rebuilt bow is part of the length, or cutting the AI bow would stretch the ship
+    _b = open(os.environ['KIT'], 'rb').read(); _L = struct.unpack('<I', _b[12:16])[0]; _J = json.loads(_b[20:20 + _L]); _o = 20 + _L; _BIN = _b[_o + 8:_o + 8 + struct.unpack('<I', _b[_o:_o + 4])[0]]
+    for _m in _J['meshes']:
+        for _p in _m['primitives']:
+            _a = _J['accessors'][_p['attributes']['POSITION']]; _bv = _J['bufferViews'][_a['bufferView']]
+            _P = np.frombuffer(_BIN, np.float32, _a['count'] * 3, _bv.get('byteOffset', 0) + _a.get('byteOffset', 0)).reshape(-1, 3).astype(np.float64) @ M.T
+            lo, hi = np.minimum(lo, _P.min(0)), np.maximum(hi, _P.max(0))
+G = (G - (lo + hi) / 2) / (hi[0] - lo[0]); ext = np.abs(G).max(0)
 GN /= np.maximum(np.linalg.norm(GN, axis=1, keepdims=True), 1e-9)
 U[:, 1] = 1 - U[:, 1]  # glTF v runs down; the game's textures load with Babylon's default invertY (Blender-style v up)
 n = len(G); qp = np.round(G / ext * 32767).astype(np.int16); qn = np.round(GN * 127).astype(np.int8); qu = np.round(np.clip(U, 0, 1) * 65535).astype(np.uint16)

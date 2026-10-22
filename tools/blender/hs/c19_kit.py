@@ -27,13 +27,63 @@ BOXES = [  # (x0, x1, y0, y1, z0, z1): AI geometry to cut away (all above the de
 ]
 def seg_d(p, a, b):
     ab = b - a; t = max(0, min(1, (p - a).dot(ab) / ab.length_squared)); return (a + ab * t - p).length
-bm = bmesh.new(); bm.from_mesh(hull.data); kill = []
+bm = bmesh.new(); bm.from_mesh(hull.data)
+from mathutils.bvhtree import BVHTree
+import statistics
+BVH0 = BVHTree.FromBMesh(bm)  # the uncut AI hull, for measuring what gets rebuilt
+def face_y(x0, x1, z0, z1, s_, pct=50):  # outer face of the flank in a patch: a grid of inward rays, a percentile of the hit |y|
+    ys = []
+    for x in [x0 + (x1 - x0) * (i + .5) / 6 for i in range(6)]:
+        for z in [z0 + (z1 - z0) * (j + .5) / 4 for j in range(4)]:
+            h = BVH0.ray_cast(Vector((x, s_ * .5, z)), Vector((0, -s_, 0)), 1.0)
+            if h[0] is not None: ys.append(abs(h[0].y))
+    ys.sort(); return ys[min(len(ys) - 1, int(len(ys) * pct / 100))] if ys else None
+def deck0(x, y, zf=.3):
+    h = BVH0.ray_cast(Vector((x, y, zf)), Vector((0, 0, -1)), 1.0); return h[0].z if h[0] is not None else None
+# side armour blocks (owner, Oct 21: the big dark side blocks are wavy): measured off the AI hull, rebuilt as clean boxes
+SIDE = [(-.235, -.120, -.150, -.060), (-.045, .085, -.185, -.085), (.135, .265, -.185, -.085)]
+SIDEF = {}
+for i, (x0, x1, z0, z1) in enumerate(SIDE):
+    for s_ in (1, -1):
+        y_ = face_y(x0 + .01, x1 - .01, z0 + .01, z1 - .01, s_, 35); SIDEF[(i, s_)] = y_; print('side block', i, s_, y_)
+# front armour plates: the forward slope under the bridge, its centreline profile measured
+PX = [-.245 + k * .010 for k in range(14)]
+PZ = []
+for x in PX:
+    zs = [z for z in (deck0(x, -.05), deck0(x, 0), deck0(x, .05)) if z is not None]; PZ.append(statistics.median(zs) if zs else -.07)
+def prof(x):
+    if x <= PX[0]: return PZ[0]
+    for (xa, za), (xb, zb) in zip(zip(PX, PZ), zip(PX[1:], PZ[1:])):
+        if x <= xb: return za + (zb - za) * (x - xa) / (xb - xa)
+    return PZ[-1]
+print('front slope', [round(z, 3) for z in PZ])
+# midship side tanks: the AI's own tank axis, from the outermost hits in the patch
+TANK = {}
+for s_ in (1, -1):
+    best = None
+    for z in [-.025 + k * .005 for k in range(10)]:
+        for x in (.0, .02, .04):
+            h = BVH0.ray_cast(Vector((x, s_ * .5, z)), Vector((0, -s_, 0)), 1.0)
+            if h[0] is not None and (best is None or abs(h[0].y) > best[0]): best = (abs(h[0].y), z)
+    TANK[s_] = (best[0] - .011, best[1]) if best else (.10, -.005); print('tank', s_, TANK[s_])
+def cut_extra(c):
+    for i, (x0, x1, z0, z1) in enumerate(SIDE):
+        y_ = SIDEF[(i, 1 if c.y > 0 else -1)]
+        if y_ is not None and x0 - .003 <= c.x <= x1 + .003 and z0 - .003 <= c.z <= z1 + .003 and abs(c.y) >= y_ - .03: return True
+    if -.245 <= c.x <= -.115 and abs(c.y) < .072 and prof(c.x) - .015 <= c.z <= prof(c.x) + .03: return True
+    if -.10 <= c.x <= .13 and c.z < -.191: return True  # loose barrels hanging under the hull
+    if .285 <= c.x <= .36 and abs(c.y) < .062 and -.024 <= c.z <= .06: return True  # the open bay at the back of the superstructure
+    if .295 <= c.x <= .46 and abs(c.y) < .045 and -.066 <= c.z <= (-.024 if c.x < .355 else .03): return True  # stern deckhouse (and the dark open box ahead of it)
+    ty, tz = TANK[1 if c.y > 0 else -1]
+    if -.035 <= c.x <= .075 and abs(c.y) > ty - .006 and math.hypot(abs(c.y) - ty, c.z - tz) < .016: return True
+    if .20 <= c.x <= .32 and .105 <= abs(c.y) <= .175 and .012 <= c.z <= .10: return True  # the old AI aft long guns beside the new ones
+    return False
+kill = []
 for f in bm.faces:
     c = f.calc_center_median()
-    if any(b[0] <= c.x <= b[1] and b[2] <= c.y <= b[3] and b[4] <= c.z <= b[5] for b in BOXES) or any(seg_d(c, a, b) < .012 and c.z > a.z + .012 for a, b in GUNS):
+    if any(b[0] <= c.x <= b[1] and b[2] <= c.y <= b[3] and b[4] <= c.z <= b[5] for b in BOXES) or any(seg_d(c, a, b) < .022 and c.z > a.z + .010 for a, b in GUNS) or cut_extra(c):
         kill.append(f)
 bmesh.ops.delete(bm, geom=kill, context='FACES'); bm.to_mesh(hull.data); print('cut faces', len(kill))
-from mathutils.bvhtree import BVHTree
 BVH = BVHTree.FromBMesh(bm); bm.free()
 # placement rules (owner, Oct 21): every bolt-on sits on the real surface on a visible mount, guns point out and away from the hull,
 # and parts come in matched pairs at sensible hard points (Corsair excepted, which may stay junky)
@@ -158,13 +208,13 @@ def ellipsoid(name, c, r):
     bmesh.ops.translate(b_, verts=b_.verts, vec=c); return hs_lib._obj(name, b_, 0)
 LAMP = (1.0, .30, .04)
 for s_ in (1, -1):
-    p_, _ = surf_in(.192, s_, -.130); yf = abs(p_.y) if p_ is not None else .165; yf = min(max(yf, .150), .180)
+    yf = SIDEF[(2, s_)] or .165
     box(f'casemate{s_}', (.192, s_ * (yf + .006), -.130), (.096, .034, .054), bevel=.011); tag(STEEL)  # armoured casemate, heavily rounded
     box(f'casematelid{s_}', (.196, s_ * (yf + .0235), -.122), (.070, .004, .022), bevel=.002); tag(GUN)
     for k in range(5): box(f'casemateband{s_}{k}', (.170 + k * .011, s_ * (yf + .0258), -.137), (.004, .002, .014), bevel=0)
     tag(DARK)
     a_ = Vector((.226, s_ * (yf + .018), -.133)); barrel(f'casegun{s_}', a_, (1, s_ * .05, -.01), .095, .0055); tag(GUN)
-    p2, _ = surf_in(.240, s_, -.098); y2 = abs(p2.y) if p2 is not None else .170; y2 = min(max(y2, .160), .195) + .010
+    y2 = (SIDEF[(2, s_)] or .165) + .0085
     cyl(f'longgun{s_}', (.240, s_ * y2, -.098), .0065, .175, axis='X', seg=20, bevel=.0008); cyl(f'longgunm{s_}', (.333, s_ * y2, -.098), .0085, .012, axis='X', seg=20, bevel=.0008)
     for k in range(4): cyl(f'longgunring{s_}{k}', (.175 + k * .045, s_ * y2, -.098), .0074, .004, axis='X', seg=20, bevel=0)
     tag(GUN)
@@ -184,6 +234,60 @@ for s_ in (1, -1):
         for v in bm4.verts: v.co.z = max(v.co.z, 0) * .8
         bmesh.ops.translate(bm4, verts=bm4.verts, vec=(.330 + k * .022, s_ * .100, zl + .004)); hs_lib._obj(f'decklampdome{s_}{k}', bm4, 0)
     tag(LAMP)
+# side armour blocks: clean boxes on the measured faces, an inset panel and a vent row on each
+for i, (x0, x1, z0, z1) in enumerate(SIDE):
+    for s_ in (1, -1):
+        y_ = SIDEF[(i, s_)]
+        if y_ is None: continue
+        box(f'sideblock{i}{s_}', ((x0 + x1) / 2, s_ * (y_ - .015), (z0 + z1) / 2), (x1 - x0, .030, z1 - z0), bevel=.004); tag(STEEL)
+        box(f'sidepanel{i}{s_}', ((x0 + x1) / 2, s_ * (y_ + .001), (z0 + z1) / 2 + .006), (x1 - x0 - .022, .003, (z1 - z0) * .45), bevel=.001); tag(GUN)
+        if i != 2:
+            for k in range(6): box(f'sidevent{i}{s_}{k}', (x0 + .016 + k * .007, s_ * (y_ + .0012), z0 + .016), (.0035, .002, .014), bevel=0)
+            tag(DARK)
+# front armour plates: three shingled slabs down the slope under the bridge, with view slits on the top one
+xs_ = [-.245, -.200, -.158, -.115]
+for k in range(3):
+    xa, xb = xs_[k], xs_[k + 1]; za, zb = prof(xa) + .006, prof(xb) + .006; a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
+    nx, nz = -math.sin(a_), math.cos(a_); off = .002 * k
+    box(f'frontplate{k}', ((xa + xb) / 2 + nx * off, 0, (za + zb) / 2 + nz * off), (L_ + .008, .150 - .012 * k, .012), rot=(0, -a_, 0), bevel=.002); tag(STEEL)
+    box(f'frontlip{k}', (xa + nx * (off + .004), 0, za + nz * (off + .004)), (.006, .152 - .012 * k, .006), rot=(0, -a_, 0), bevel=.001); tag(GUN)
+    if k == 2:
+        for j in (-1, 0, 1): box(f'viewslit{j}', ((xa + xb) / 2 + nx * (off + .0065), j * .036, (za + zb) / 2 + nz * (off + .0065)), (.010, .024, .002), rot=(0, -a_, 0), bevel=0)
+        tag(DARK)
+# ventral thrusters (concept: three glowing nozzles under the midship), on a keel plate
+for k, x_ in enumerate((-.015, .017, .049)):
+    h = BVH.ray_cast(Vector((x_, 0, -.5)), Vector((0, 0, 1)), 1.0); zb_ = h[0].z if h[0] is not None else -.19
+    box(f'thrplate{k}', (x_, 0, zb_ - .001), (.028, .030, .004), bevel=.0008); tag(GUN)
+    cyl(f'thr{k}', (x_, 0, zb_ - .013), .0095, .022, seg=24, bevel=.001); cyl(f'thrbell{k}', (x_, 0, zb_ - .028), .0095, .010, r2=.0125, seg=24, bevel=0); tag(STEEL)
+    cyl(f'thrglow{k}', (x_, 0, zb_ - .0325), .0088, .0015, seg=24, bevel=0); tag(LAMP)
+# stern deckhouse: a clean low house with a door, vents and a roof hatch on the centreline
+hz, _ = surf_down(.400, 0, .02); zsd = hz.z if hz is not None else -.068
+box('sternhouse', (.373, 0, (zsd + -.022) / 2), (.135, .070, -.022 - zsd), bevel=.003); tag(RED)
+box('sternroof', (.373, 0, -.020), (.127, .062, .004), bevel=.001); cyl('sternhatch', (.412, 0, -.017), .010, .003, seg=20, bevel=.0005); tag(STEEL)
+box('sterndoor', (.4405, 0, (zsd + -.030) / 2), (.002, .022, -.030 - zsd - .006), bevel=0)
+for k in range(8): box(f'sternvent{k}', (.325 + k * .012, .0355, -.034), (.006, .002, .010), bevel=0)
+for k in range(8): box(f'sternventb{k}', (.325 + k * .012, -.0355, -.034), (.006, .002, .010), bevel=0)
+tag(DARK)
+# rear bulkhead closing the bay at the back of the superstructure: a sloped plate from the deckhouse roof up to the rack base, with a door
+hz, _ = surf_down(.280, 0, .2); ztop = min(hz.z, .06) if hz is not None else .045
+xa, za, xb, zb = .358, -.024, .282, ztop; a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
+box('bulkhead', ((xa + xb) / 2, 0, (za + zb) / 2), (L_ + .006, .128, .010), rot=(0, -a_, 0), bevel=.002); tag(RED)
+nx, nz = -math.sin(a_), math.cos(a_)
+if nz < 0: nx, nz = -nx, -nz
+box('bulkdoor', ((xa + xb) / 2 + nx * .0055 * (1 if nx > 0 else -1), 0, (za + zb) / 2 + abs(nz) * .0055), (L_ * .45, .030, .002), rot=(0, -a_, 0), bevel=0); tag(DARK)
+for s_ in (1, -1): box(f'bulkrib{s_}', ((xa + xb) / 2, s_ * .052, (za + zb) / 2 + .004), (L_, .006, .010), rot=(0, -a_, 0), bevel=.001)
+tag(STEEL)
+# midship side tanks: clean capsules on the AI tank's axis, with two straps each
+for s_ in (1, -1):
+    ty, tz = TANK[s_]
+    cyl(f'tank{s_}', (.020, s_ * ty, tz), .0125, .086, axis='X', seg=28, bevel=.0015); tag(STEEL)
+    for e in (1, -1):
+        b5 = bmesh.new(); bmesh.ops.create_uvsphere(b5, u_segments=28, v_segments=10, radius=.0125)
+        for v in b5.verts: v.co.x = max(e * v.co.x, 0) * .6 * e
+        bmesh.ops.translate(b5, verts=b5.verts, vec=(.020 + e * .043, s_ * ty, tz)); hs_lib._obj(f'tankend{s_}{e}', b5, 0)
+    tag(STEEL)
+    for e in (-1, 1): cyl(f'tankstrap{s_}{e}', (.020 + e * .024, s_ * ty, tz), .0133, .004, axis='X', seg=28, bevel=0)
+    tag(GUN)
 for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
     c = DARK if o.name.startswith('bore') or 'band' in o.name else COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for d in a.data: d.color = (c[0], c[1], c[2], 1)
