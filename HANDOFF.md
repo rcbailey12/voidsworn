@@ -53,8 +53,10 @@
 0. Oct 22 status: v11 (all verified audit fixes, joint paint gain, shared HullFx detail, bundled loader) ran clean in game. Flattening the AI
    panels (panel_flatten.py) made no visible difference: the waviness is baked into the AI hull's shape, normal map and paint. Owner picked
    "rebuild as clean shell": c19_kit.py with SHELL=1 lofts a clean hull body from the AI hull's measured sections (bare draft shown to
-   Ryan, docs/ship_pipeline/c19_example/ via pyre_barge_clean_shell.png). Next: on his OK, paint the shell by projection (concept + views),
-   turn on the shared detail, run in game.
+   Ryan, docs/ship_pipeline/c19_example/ via pyre_barge_clean_shell.png). Ryan OK'd the shape ("approach and shape is correct, needs refinements and extra detail"). v12
+   (job tools/pc/jobs/c19_6_shell_to_game.bat, SHELL=1 + PAINT=proc + PAINTK=1.0) adds the concept's gun sponsons and front armour, hull
+   detail, weathered procedural paint (projection ghosted the old AI layout onto the shell), space-not-naval fixes, all guns forward/broadside.
+   Renders: docs/ship_pipeline/c19_example/v12_*. Awaiting his verdict.
 1. Audits are in (Codex, Rey, Gemini). Claude's verified synthesis and picks: docs/ship_pipeline/AUDIT_SYNTHESIS.md. Gemini's drop-in code
    is NOT merged (built on false premises). Owner to answer the scope questions from Oct 22 before the next build.
 2. C19 verified fixes (list in AUDIT_SYNTHESIS.md), joint paint gain + no kit self-light, then the shared HullFx detail on hull and kit.
