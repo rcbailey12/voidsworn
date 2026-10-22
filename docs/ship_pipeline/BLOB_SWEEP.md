@@ -35,6 +35,10 @@ Each cell gets a verdict: **clean** or **rebuild by hand**, with the part named.
 - Matched, symmetric pairs at sensible hard points.
 - **Corsair exception:** haphazard and junky is on-brand, and paint mismatches between parts are fine there.
 
+## 3b. Space, not naval
+
+**Space ships, not naval ships (owner, Oct 22 2026: "careful that these don't stretch into obvious naval-looking ships. again, these are SPACE ships").** Keep the concept's look, but never add sea-ship tells: no boat keels or raked stems, jackstaffs, bollards, anchors, crow's nests, yardarms with rigging, mast ladders, lifeboats, portholes in rows along a waterline. Prefer the space versions: armoured flat bellies with chines, sensor housings and antenna arrays, equipment pods, recessed lights, main engine bells and thruster pods, docking hatches, heat radiators.
+
 ## 4. Paint
 
 - Parts the pictures show clearly are painted by projection.

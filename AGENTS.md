@@ -27,6 +27,7 @@ It holds the goal, the full history, every piece of owner feedback word for word
   - guns aimed out and away (bow guns may face forward, stern guns aft, never into the ship);
   - matched symmetric pairs;
   - Corsair is the exception and may be junky.
+- Space ships, not naval ships: no keels, jackstaffs, bollards, crow's nests, yardarms or mast ladders (owner, Oct 22). Guns never face backward.
 - Free tools only. No triangle limits: full detail is compressed (meshoptimizer `.vsm`), not decimated, on desktop.
 
 ## Owner preferences that apply to any agent

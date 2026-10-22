@@ -183,8 +183,7 @@ for zy, w_ in ((.205, .090), (.238, .066)):
     for s_ in (1, -1):
         bmy = bmesh.new(); bmesh.ops.create_uvsphere(bmy, u_segments=10, v_segments=6, radius=.003); bmesh.ops.translate(bmy, verts=bmy.verts, vec=(.035, s_ * w_ / 2, zy)); hs_lib._obj(f'yardcap{zy}{s_}', bmy, 0)
 cyl('mast2', (.009, 0, .151), .0028, .098, seg=12, bevel=0); box('mast2bar', (.009, 0, .185), (.0035, .060, .0035), bevel=0); cyl('mast2stub', (.009, 0, .210), .0012, .020, seg=6, bevel=0)
-for s_ in (1, -1): cyl(f'ladrail{s_}', (.0295, s_ * .006, .153), .0009, .094, seg=6, bevel=0)
-for k in range(8): box(f'ladrung{k}', (.0295, 0, .112 + k * .012), (.0016, .012, .0016), bevel=0)
+for k in range(3): box(f'mastpod{k}', (.0305, 0, .130 + k * .028), (.006, .010, .012), bevel=.0006)  # equipment pods on the mast (a ladder read naval)
 box('lantern', (.035, 0, .225), (.010, .009, .014), bevel=.001)
 pa, pb = Vector((.0318, -.002, .170)), Vector((-.030, -.020, .121)); barrel('mastpipe', pa, (pb - pa).normalized(), (pb - pa).length, .0028)
 tag(STEEL)
@@ -246,9 +245,10 @@ def bow_sec(x):
     s_ = max(0., min(1., (x - XT) / (XS + .010 - XT)))
     wd = max(.006, .124 * (1 - (1 - s_) ** 2.2)); wh = max(.004, min(wd - .008, .095 * s_ ** .9)); wk = max(.003, min(wh - .002, .05 * s_ * s_ + .006))
     zd, t = -.085, .007
-    zk = -.102 - .098 * min(1., max(0., (s_ - .04) / .27)); zk += .014 * min(1., max(0., (x + .300) / .012))  # stem rake, then the keel step up
-    zh = zd - t - .003; zc = zk + min(.012, (zh - zk) * .5)
-    half = [(wd * .45, zd + .002), (wd * .97, zd), (wd, zd - .003), (wd, zd - t), (wh, zh), (min(wh, wk + .008), zc), (wk, zk)]
+    # space hull, not a boat (owner, Oct 22): a flat armoured belly with hard chines, a blunt wedge nose, no V keel or raked stem
+    zk = -.100 - .085 * min(1., max(0., (s_ - .02) / .22)); zk += .012 * min(1., max(0., (x + .300) / .012))
+    zh = zd - t - .003; wb = max(.004, min(wh - .004, .80 * wh)); zc = zk + .006
+    half = [(wd * .45, zd + .002), (wd * .97, zd), (wd, zd - .003), (wd, zd - t), (wh, zh), (wh, zc + .004), (wb, zk)]
     return [(0, zd + .003)] + half + [(0, zk)] + [(-y, z) for y, z in reversed(half)]
 import numpy as _np
 loft('bow', [(float(x), bow_sec(float(x))) for x in _np.concatenate([_np.linspace(XT, XT + .03, 4), _np.linspace(XT + .04, XS + .010, 22)])], bevel=.0015); tag(RED)
@@ -260,7 +260,11 @@ def deckz(x, y):  # bow deck top at (x, |y|), from bow_sec (the deck falls from 
     for (y0_, z0_), (y1_, z1_) in zip(top, top[1:]):
         if ya <= y1_: return z0_ + (z1_ - z0_) * (ya - y0_) / max(1e-9, y1_ - y0_)
     return top[-1][1]
-cyl('jackstaff', (XT + .032, 0, deckz(XT + .032, 0) + .025), .0035, .052, seg=12, bevel=0); cyl('jackspike', (XT + .032, 0, deckz(XT + .032, 0) + .056), .0042, .012, seg=12, r2=.0004, bevel=0); tag(STEEL)
+zn = deckz(XT + .030, 0)  # prow sensor housing with a glowing lens (replaces a ship's jackstaff: space, not naval)
+box('prowsensor', (XT + .034, 0, zn + .006), (.022, .018, .010), bevel=.002); tag(STEEL)
+cyl('prowlens', (XT + .0225, 0, zn + .007), .0045, .002, axis='X', seg=20, bevel=0); tag((.3, .8, 1.0))
+for s_ in (1, -1): cyl(f'prowaerial{s_}', (XT + .040, s_ * .006, zn + .022), .0009, .024, seg=6, bevel=0)
+tag(STEEL)
 cyl('chaserbase', (-.425, 0, zdk + .003), .016, .006, seg=24, bevel=.001); tag(STEEL)
 box('chaserhouse', (-.425, 0, zdk + .012), (.026, .034, .012), bevel=.002); tag(RED)
 for s_ in (1, -1): barrel(f'chaser{s_}', (-.436, s_ * .012, zdk + .013), (-1, 0, .04), .050, .0028)  # .012 apart from the centreline: clear of the jackstaff (Codex audit)
@@ -268,7 +272,7 @@ tag(GUN)
 box('hatch1', (-.370, 0, zdk + .0015), (.030, .026, .003), bevel=.0008); cyl('hatch2', (-.335, .045, deckz(-.335, .045) + .001), .009, .003, seg=20, bevel=.0005); cyl('hatch3', (-.335, -.045, deckz(-.335, -.045) + .001), .009, .003, seg=20, bevel=.0005); tag(STEEL)
 for x_ in (-.400, -.345, -.290):
     w_ = .124 * (1 - (1 - (x_ - XT) / (XS + .010 - XT)) ** 2.2)
-    for s_ in (1, -1): cyl(f'bollard{x_}{s_}', (x_, s_ * (w_ - .012), deckz(x_, w_ - .012) + .0035), .0035, .008, seg=12, bevel=.0006)
+    for s_ in (1, -1): box(f'edgelight{x_}{s_}', (x_, s_ * (w_ - .006), deckz(x_, w_ - .006) + .0015), (.010, .004, .003), bevel=.0005)  # recessed edge lights (bollards read naval)
 tag(GUN)
 for s_ in (1, -1):
     for k in (0, 1): cyl(f'deckdrum{s_}{k}', (-.278 + k * .024, s_ * .072, deckz(-.278 + k * .024, .072) + .0088), .0095, .028, axis='Y', seg=24, bevel=.001)
@@ -440,9 +444,8 @@ for s_ in (1, -1):
 # and the junction box the mast pipe lands on. No radar dish, searchlights or rangefinder: the concept has none.
 ZR = zt + .004
 box('mastplate', (.012, 0, ZR + .002), (.090, .090, .004), bevel=.0008); tag(STEEL)
-ring('crowsnest', (.035, 0, .186), .014, .004); ring('crowrail', (.035, 0, .193), .014, .002)
-cyl('crowfloor', (.035, 0, .1845), .014, .0015, seg=24, bevel=0)
-for k in range(6): cyl(f'crowpost{k}', (.035 + .0135 * math.cos(k * math.pi / 3), .0135 * math.sin(k * math.pi / 3), .1895), .0007, .007, seg=6, bevel=0)
+cyl('sensorring', (.035, 0, .188), .012, .008, seg=24, bevel=.001)  # sensor ring on the mast (a crow's nest read naval)
+cyl('sensorband', (.035, 0, .188), .0128, .002, seg=24, bevel=0)
 tag(STEEL)
 box('junction', (-.030, -.020, ZR + .009), (.012, .012, .010), bevel=.0008); cyl('valve', (-.030, -.0138, ZR + .010), .006, .002, axis='Y', seg=16, bevel=0); tag(GUN)
 for s_ in (1, -1): cyl(f'whip{s_}', (.050, s_ * .040, ZR + .004 + .025), .0011, .050, seg=6, bevel=0); cyl(f'whipbase{s_}', (.050, s_ * .040, ZR + .005), .003, .002, seg=12, bevel=0)
@@ -454,6 +457,19 @@ for s_ in (1, -1):
 cyl('roofhatch', (-.008, .028, ZR + .007), .007, .006, seg=20, bevel=.0005); tag(STEEL)
 box('greeble', (.020, 0, ZR + .008), (.010, .008, .008), bevel=.0008); tag(GUN)
 if SHELL:
+    # main drives on the stern face (concept side view: a glowing engine at the stern), on an engine block, plus armoured belly plates
+    xs_e = ST[-1][0]; box('engblock', (xs_e - .010, 0, -.088), (.024, .120, .040), bevel=.003); tag((.07, .07, .075))
+    for y_ in (-.034, .034):
+        cyl(f'engbell{y_}', (xs_e + .014, y_, -.088), .016, .024, axis='X', seg=32, r2=.020, bevel=.001); tag(STEEL)
+        cyl(f'engthroat{y_}', (xs_e + .0265, y_, -.088), .0175, .002, axis='X', seg=32, bevel=0); tag(LAMP)
+    for y_ in (-.064, 0, .064):
+        cyl(f'engaux{y_}', (xs_e + .008, y_, -.068 if y_ == 0 else -.104), .007, .014, axis='X', seg=20, r2=.009, bevel=.0008); tag(STEEL)
+        cyl(f'engauxglow{y_}', (xs_e + .0152, y_, -.068 if y_ == 0 else -.104), .0078, .0012, axis='X', seg=20, bevel=0); tag(LAMP)
+    for k, (xa, xb) in enumerate(((-.23, -.12), (-.10, .06), (.18, .30))):  # belly armour plates
+        for y_ in (-.026, .026):
+            h = BVH.ray_cast(Vector(((xa + xb) / 2, y_, -.5)), Vector((0, 0, 1)), 1.0)
+            if h[0] is not None: box(f'belly{k}{y_}', ((xa + xb) / 2, y_, h[0].z - .002), (xb - xa, .046, .005), bevel=.0012)
+    tag((.07, .07, .075))
     # designed hull detail on the clean shell (concept side view): a rub rail along the deck shelf, two belt ledges on the superstructure
     # slope, a row of dark ports under the upper ledge, inset hatch panels and vent grilles between the guns, and plate seams. All flush to
     # the shell (snapped with rays, oriented to its surface normal), all in matched pairs.
