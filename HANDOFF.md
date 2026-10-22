@@ -4,7 +4,7 @@
 - Babylon.js 8.20 single-HTML hex fleet tactics roguelite. Ryan plays on a Pixel 10 XL and a PC (RTX 5080).
 - Live game (one link only): https://claude.ai/artifact/QZ7pVvYuupUHFZkFGwxsaH (publish `voidsworn-3d.html` from `python3 build.py publish`; hull sidecars `hulls/`, `hulls_hi/` are uploaded as artifact files and kept on republish).
 - Repo: github.com/rcbailey12/voidsworn (private). `master` is pushed to `main`. Workstream branches (both pushed to GitHub): `v53-I` (effects, merged and published as v53.6), `v53-E` (rock library + Ithar sail glass, 5cca697 (carbon lightened for phone, re-check on Pixel), master v53.6 merged in, sandbox-verified only). `v53-C` and `v53-G` are merged.
-- Plan and queue: `NEXT.md`. History: `PROGRESS.md`. Code audit and asset grades: `AUDIT_v53H.md`. Reference checklists: `docs/skills/`.
+- Full backlog (everything planned or discussed): `BACKLOG.md`. Plan and queue: `NEXT.md`. History: `PROGRESS.md`. Code audit and asset grades: `AUDIT_v53H.md`. Reference checklists: `docs/skills/`.
 - Master review doc (Claude Docs): https://claude.ai/code/artifact/aef64607-980c-49ce-977b-ff7b8a32868a
 
 ## Current state
@@ -96,5 +96,5 @@
 
 Starter line:
 ```
-Read HANDOFF.md, NEXT.md and docs/ship_pipeline/GRAPHICS_REVIEW.md in github.com/rcbailey12/voidsworn, then start the Pyre-Barge texture pass from NEXT.md ("FIRST next session": detail the big plain parts, add real CC0 material texture), keeping the PC runner flow. Ask your scope questions first.
+Read HANDOFF.md, BACKLOG.md and docs/ship_pipeline/TEXTURE_PASS.md in github.com/rcbailey12/voidsworn, then start the Pyre-Barge texture pass from NEXT.md ("FIRST next session": detail the big plain parts, add real CC0 material texture), keeping the PC runner flow. Ask your scope questions first.
 ```
