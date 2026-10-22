@@ -48,6 +48,9 @@ For outside models (ChatGPT, Gemini, Argon, Antigravity and others) asked to aud
      `BLOB_SWEEP.md`.
    - Latest (kit v7): "The front plates look a bit out of place. It's both the color and the size/placement of them. The top of the bridge
      with antennae also looks a bit plain and sparse."
+   - On v9 (front armour matched to the concept close-up): "Looks like the concept is stretching it. In theory but the level of texture
+     and details seem to vary wildly." Diagnosis: the hand-built parts were smooth and clean, the AI hull dense and gritty. v10 bakes
+     panel seams, fine grit and worn edges into every hand-built part (project_paint.py, DETAIL=1).
 7. **Kit versions:**
    - v3: bridge tier.
    - v4: rebuilt bow and hand-painted rack.
@@ -72,6 +75,9 @@ Renders are in `c19_example/`. Compare them with `concepts/C19_51.webp`.
 - Performance: no 20-ship stress test yet with 1-2M triangle hulls (desktop .vsm is about 8-14 MB each, phone about 3.5 MB).
 
 ## What we'd like audited
+
+0. Consistency of detail between AI hull and hand-built parts (the owner's latest complaint): is a baked detail layer enough, or should
+   the hull and parts share one in-game detail material (triplanar seams, grime, edge wear) instead?
 
 1. Is this pipeline the right one for 35 more ships, given free tools only and a non-coder owner? What would you change or replace?
 2. `c19_kit.py`: placement mistakes, rule breaks (`BLOB_SWEEP.md` section 3), parts that don't match the concept.

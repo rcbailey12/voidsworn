@@ -41,6 +41,12 @@ Each cell gets a verdict: **clean** or **rebuild by hand**, with the part named.
   seen end-on. On the Pyre-Barge the projected rocket rack came out "a grey blob, like an unpainted tabletop model".
 - Colours are sampled from the concept by eye, in linear values.
 
+## 4b. One level of detail across the ship
+
+Owner, Oct 21: "the level of texture and details seem to vary wildly". Hand-built parts must carry the same density of surface detail as
+the AI hull: panel seams, fine grit, worn edges (project_paint.py adds these to every kit part by default). Check the seam between a
+rebuilt part and the AI hull at close zoom: neither should look smoother or busier than the other.
+
 ## 5. In-game check
 
 - Shots on desktop and phone, at zoom 1.0 and 0.5, on at least two maps.

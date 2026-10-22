@@ -89,7 +89,22 @@ for k, (img, msk, az, el, wt) in enumerate(views):
     atn = T.nodes.new('ShaderNodeAttribute'); atn.attribute_name = f'w{k}'
     mk = math_('MULTIPLY', atn.outputs['Fac'], math_('GREATER_THAN', tm.outputs[0], 0.5))
     sumc = vmath('ADD', sumc, vmath('SCALE', ti.outputs[0], s=mk)); sumw = mk if sumw is None else math_('ADD', sumw, mk)
-sumw = math_('ADD', sumw, wb); L.new(vmath('SCALE', sumc, s=math_('DIVIDE', 1.0, sumw)), em.inputs[0])
+sumw = math_('ADD', sumw, wb); col_ = vmath('SCALE', sumc, s=math_('DIVIDE', 1.0, sumw))
+if base_img is None and os.environ.get('DETAIL', '1') == '1':
+    # hand-built parts get the AI hull's level of surface detail (owner, Oct 21: "the level of texture and details seem to vary wildly"):
+    # panel seams at a fixed ship-space scale, fine grit, and worn edges from the bevel normal, on top of whatever paint they carry
+    tc = T.nodes.new('ShaderNodeTexCoord')
+    br = T.nodes.new('ShaderNodeTexBrick'); br.inputs['Scale'].default_value = 38; br.inputs['Mortar Size'].default_value = .012; br.inputs['Color1'].default_value = (1, 1, 1, 1); br.inputs['Color2'].default_value = (.93, .93, .93, 1); br.inputs['Mortar'].default_value = (.45, .45, .45, 1); br.offset = .5
+    L.new(tc.outputs['Object'], br.inputs['Vector'])
+    gr = T.nodes.new('ShaderNodeTexNoise'); gr.inputs['Scale'].default_value = 900; gr.inputs['Detail'].default_value = 4; L.new(tc.outputs['Object'], gr.inputs['Vector'])
+    gm2 = T.nodes.new('ShaderNodeMapRange'); L.new(gr.outputs['Fac'], gm2.inputs['Value']); gm2.inputs['To Min'].default_value = .82; gm2.inputs['To Max'].default_value = 1.12
+    bv = T.nodes.new('ShaderNodeBevel'); bv.inputs['Radius'].default_value = .0015; geo = T.nodes.new('ShaderNodeNewGeometry')
+    dp = T.nodes.new('ShaderNodeVectorMath'); dp.operation = 'DOT_PRODUCT'; L.new(bv.outputs[0], dp.inputs[0]); L.new(geo.outputs['Normal'], dp.inputs[1])
+    ed = T.nodes.new('ShaderNodeMapRange'); L.new(dp.outputs['Value'], ed.inputs['Value']); ed.inputs['From Min'].default_value = .80; ed.inputs['From Max'].default_value = .99; ed.inputs['To Min'].default_value = 1.6; ed.inputs['To Max'].default_value = 1.0
+    bw = T.nodes.new('ShaderNodeRGBToBW'); L.new(br.outputs['Color'], bw.inputs[0])
+    f_ = math_('MULTIPLY', math_('MULTIPLY', bw.outputs[0], gm2.outputs[0]), ed.outputs[0])
+    col_ = vmath('SCALE', col_, s=f_)
+L.new(col_, em.inputs[0])
 me.materials.clear(); me.materials.append(bm_)
 tgt = bpy.data.images.new('albedo', RES, RES, alpha=False); tt = T.nodes.new('ShaderNodeTexImage'); tt.image = tgt; T.nodes.active = tt
 sc.render.engine = 'CYCLES'

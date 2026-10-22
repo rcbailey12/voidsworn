@@ -14,7 +14,7 @@ Steps: V = views approved, M = Pixal3D mesh, P = paint projected, K = hand-built
 | 1 | chorus | Carrier | B22_11 | not started |  |  |  |  |  |  |  |
 | 1 | chorus | Bio-titan | B16_23 | not started |  |  |  |  |  |  |  |
 | 1 | corsair | Carrier | C16s_23 | not started |  |  |  |  |  |  |  |
-| 1 | corsair | Battle-barge | C19_51 | kit v9 in game Oct 21 (c19_example/kit_v9_vs_concept.webp); awaiting Ryan's verdict, then test build | x | x | x | x | x |  | bow, rack, bridge, guns, side blocks, plates, thrusters, stern house, tanks rebuilt; big flat hull panels still AI |
+| 1 | corsair | Battle-barge | C19_51 | kit v10 running Oct 21 20:20: hand-built parts get hull-level surface detail (owner: detail level varies wildly) | x | x | x | x | x |  | bow, rack, bridge, guns, side blocks, plates, thrusters, stern house, tanks rebuilt; big flat hull panels still AI |
 | 1 | deathless | Tomb-ark | D22_23 | not started |  |  |  |  |  |  |  |
 | 1 | hegemony | Battleship | H10_23 | not started |  |  |  |  |  |  |  |
 | 1 | hegemony | Super-dreadnought | H4_11 | not started |  |  |  |  |  |  |  |

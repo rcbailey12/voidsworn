@@ -12,5 +12,6 @@
   - the bow (usually wavy: rebuild as a faired loft from the AI hull's own sections)
   - engine nozzles and ventral thrusters, armour plate stacks, side sponson blocks
   - any thin spiky or crossed sticks (AI wire debris)
+  Hand-built parts carry the AI hull's level of surface detail (seams, grit, worn edges; owner: "the level of texture and details seem to vary wildly").
   Parts the concept shows poorly (tops, undersides, racks seen end-on) keep their own hand paint (project_paint KEEP boxes) instead of projection, or they come out a grey blob.
 - **Pipeline gotchas (Oct 21 2026):** the game's ship size comes from hull + kit together (pixal_to_game reads the kit for bounds; cutting the AI bow without it stretched the ship 1.33x). Kit material lights by stored normals (no two-sided lighting) plus a 0.3 paint self-light. closeshot's server needs a big backlog or desktop shots silently drop the kit.
