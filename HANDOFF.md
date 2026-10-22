@@ -50,11 +50,13 @@
 - **Lag on loading into a battle**: hull JSON + webp map fetch/decode, plus the effect atlas build (v53-I moves it to idle slices on the title screen). Measure with perfprobe. Ideas: prefetch the next battle's hulls on the map screen, compressed GPU textures (KTX2), decode off the main thread.
 
 ## Next 3 tasks
-1. Ryan reviews Pyre-Barge kit v6 (docs/ship_pipeline/c19_example/). Kit v7 (Oct 21, 19:40, done and checked in game) made the front armour
-   plates a stepped, hand-painted dark stack; they now read as plates, not one glossy slab. Then publish a test build for his Pixel and desktop.
-2. Run the pipeline on the priority-1 ships in SHIP_QUEUE.md, with the blob sweep before showing each one. Merge anything good from
-   contrib/<agent>/ folders first.
-3. LOD/streaming plus a 20-ship stress test with a frame-rate counter; decide hosting if the hull set passes about 256 MB.
+1. Owner is pausing builds until the weekly reset and running audits from other models meanwhile: brief at
+   docs/ship_pipeline/AUDIT_BRIEF.md, findings land in contrib/<model>/reviews/. Read and merge those first.
+2. Pyre-Barge kit v8 (draft in c19_kit.py, not run on the PC): bridge-top dressing done (crow's nest, radar, whips, searchlights,
+   rangefinder, vents); front armour plates still wrong (owner: "out of place... color and the size/placement"; the v8 2x3 grid looks
+   like stairs and AI stick debris sits above it). Redesign against concepts/C19_51.webp, add the bridge-top KEEP box
+   (x -0.1..0.07, |y|<0.06, z 0.104..0.25) to the job, run, show Ryan, then publish a test build.
+3. Then the priority-1 ships in SHIP_QUEUE.md with the blob sweep; LOD/streaming and a 20-ship stress test.
 
 ## Gotchas
 - PC test runner: `Downloads\voidsworn_test` with `watcher.bat` running. Never write job.bat while a run is going (run_smoke deletes job.bat after it finishes). Hunyuan: C:\AI\HY3D2\Hunyuan3D2_WinPortable (python_standalone, cwd Hunyuan3D-2.1). PS 5.1 Invoke-WebRequest is slow for big files: set $ProgressPreference='SilentlyContinue'. Sandbox has Blender as a Python module (pip bpy 5.1.2) for scripted modelling and clay renders. Commit files with device_commit_files, then commit `run.request` **in a separate, later call** (parallel write+commit raced twice and shipped stale files). `build\job.bat` runs once instead of the smoke test; a job must `cd` back to `build` or it re-runs. Scripts are in `tools/pc/`.

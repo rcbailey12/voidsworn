@@ -244,19 +244,19 @@ for i, (x0, x1, z0, z1) in enumerate(SIDE):
         if i != 2:
             for k in range(6): box(f'sidevent{i}{s_}{k}', (x0 + .016 + k * .007, s_ * (y_ + .0012), z0 + .016), (.0035, .002, .014), bevel=0)
             tag(DARK)
-# front armour plates: three shingled slabs down the slope under the bridge, with view slits on the top one
-xs_ = [-.245, -.200, -.158, -.115]
+# front armour plates (v8, owner: v7 plates out of place in colour, size and placement): a smaller 2 x 3 grid of separate stepped plates
+# in the middle of the slope, red hull showing round them, painted by projection like the concept's plates
+xs_ = [-.236, -.198, -.160, -.122]
 for k in range(3):
-    xa, xb = xs_[k], xs_[k + 1]; za, zb = prof(xa) + .006, prof(xb) + .006; a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
-    nx, nz = -math.sin(a_), math.cos(a_); off = .002 * k
-    off = .004 * k  # v7: each plate stands proud of the one below, with a dark lip, so they read as a stack rather than one glossy slab
-    box(f'frontplate{k}', ((xa + xb) / 2 + nx * off, 0, (za + zb) / 2 + nz * off), (L_ - .004, .150 - .012 * k, .012), rot=(0, -a_, 0), bevel=.002); tag(GUN)
-    box(f'frontlip{k}', (xa + nx * (off + .004), 0, za + nz * (off + .004)), (.006, .152 - .012 * k, .008), rot=(0, -a_, 0), bevel=.001); tag(DARK)
-    for s_ in (1, -1): box(f'frontbolt{k}{s_}', ((xa + xb) / 2 + nx * (off + .0065), s_ * (.060 - .006 * k), (za + zb) / 2 + nz * (off + .0065)), (.012, .006, .002), rot=(0, -a_, 0), bevel=0)
+    xa, xb = xs_[k] + .003, xs_[k + 1] - .003; za, zb = prof(xa) + .005, prof(xb) + .005; a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
+    nx, nz = -math.sin(a_), math.cos(a_); off = .003 * k
+    for s_ in (1, -1):
+        w_ = .046 - .004 * k
+        box(f'frontplate{k}{s_}', ((xa + xb) / 2 + nx * (off + .004), s_ * (w_ / 2 + .004), (za + zb) / 2 + nz * (off + .004)), (L_, w_, .006), rot=(0, -a_, 0), bevel=.0012)
     tag(STEEL)
-    if k == 2:
-        for j in (-1, 0, 1): box(f'viewslit{j}', ((xa + xb) / 2 + nx * (off + .0065), j * .036, (za + zb) / 2 + nz * (off + .0065)), (.010, .024, .002), rot=(0, -a_, 0), bevel=0)
-        tag(DARK)
+    box(f'frontbase{k}', ((xa + xb) / 2 + nx * (off - .001), 0, (za + zb) / 2 + nz * (off - .001)), (L_ + .008, .150, .006), rot=(0, -a_, 0), bevel=.0015); tag(RED)  # red slope skin under the plates (the AI slope is cut away)
+    for s_ in (1, -1): box(f'frontbolt{k}{s_}', ((xa + xb) / 2 + nx * (off + .0045), s_ * (.008 + .034 - .004 * k), (za + zb) / 2 + nz * (off + .0045)), (.004, .004, .002), rot=(0, -a_, 0), bevel=0)
+    tag(GUN)
 # ventral thrusters (concept: three glowing nozzles under the midship), on a keel plate
 for k, x_ in enumerate((-.015, .017, .049)):
     h = BVH.ray_cast(Vector((x_, 0, -.5)), Vector((0, 0, 1)), 1.0); zb_ = h[0].z if h[0] is not None else -.19
@@ -291,6 +291,27 @@ for s_ in (1, -1):
     tag(STEEL)
     for e in (-1, 1): cyl(f'tankstrap{s_}{e}', (.020 + e * .024, s_ * ty, tz), .0133, .004, axis='X', seg=28, bevel=0)
     tag(GUN)
+# bridge top dressing (v8, owner: "top of the bridge with antennae looks plain and sparse"): crow's nest on the main mast, a radar dish on the
+# second mast, whip antennas, searchlights at the front corners, a rangefinder, roof vents and a hatch. Hand-painted (KEEP box in the job).
+ZR = zt + .004
+cyl('crowsnest', (.035, 0, .186), .012, .005, seg=24, bevel=.0008); cyl('crowrail', (.035, 0, .193), .0125, .002, seg=24, bevel=0)
+for k in range(6): cyl(f'crowpost{k}', (.035 + .0115 * math.cos(k * math.pi / 3), .0115 * math.sin(k * math.pi / 3), .1895), .0007, .007, seg=6, bevel=0)
+tag(STEEL)
+cyl('radardish', (.0035, 0, .196), .013, .005, axis='X', seg=28, r2=.004, bevel=0); cyl('radarhub', (.009, 0, .196), .004, .008, axis='X', seg=12, bevel=0); tag(STEEL)
+for x_, h_ in ((-.070, .060), (.050, .045)):
+    for s_ in (1, -1): cyl(f'whip{x_}{s_}', (x_, s_ * .040, ZR + h_ / 2), .0011, h_, seg=6, bevel=0); cyl(f'whipbase{x_}{s_}', (x_, s_ * .040, ZR + .002), .003, .004, seg=12, bevel=0)
+tag(STEEL)
+for s_ in (1, -1):
+    cyl(f'searchlight{s_}', (-.072, s_ * .036, ZR + .006), .0055, .010, axis='X', seg=20, bevel=.0008); box(f'searchyoke{s_}', (-.070, s_ * .036, ZR + .002), (.006, .008, .004), bevel=0); tag(GUN)
+    cyl(f'searchlens{s_}', (-.0775, s_ * .036, ZR + .006), .0045, .0012, axis='X', seg=20, bevel=0); tag((1.0, .85, .55))
+box('rfped', (-.045, 0, ZR + .003), (.008, .008, .006), bevel=0); cyl('rangefinder', (-.045, 0, ZR + .009), .0042, .056, axis='Y', seg=16, bevel=.0006); tag(GUN)
+for s_ in (1, -1): cyl(f'rflens{s_}', (-.045, s_ * .0285, ZR + .009), .0036, .0015, axis='Y', seg=16, bevel=0)
+tag(DARK)
+for s_ in (1, -1):
+    box(f'roofvent{s_}', (.016, s_ * .030, ZR + .004), (.018, .012, .008), bevel=.0008); tag(STEEL)
+    for k in range(4): box(f'roofslat{s_}{k}', (.009 + k * .0047, s_ * .030, ZR + .0083), (.002, .010, .0008), bevel=0)
+    tag(DARK)
+cyl('roofhatch', (-.008, -.028, ZR + .001), .007, .003, seg=20, bevel=.0005); tag(STEEL)
 for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
     c = DARK if o.name.startswith('bore') or 'band' in o.name else COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for d in a.data: d.color = (c[0], c[1], c[2], 1)
