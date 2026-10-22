@@ -106,8 +106,8 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         vec3 dpx=dFdx(vPositionW), dpy=dFdy(vPositionW); float dhx=dFdx(ht), dhy=dFdy(ht);
         vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
         float dk=1.0;
-#if defined(HULLFX_PAINT) && !defined(HULLFX_KIT)
-        dk=0.55;
+#if defined(HULLFX_PAINT)
+        dk=0.6; // v12: hull shell and parts are both clean geometry now, so they get the same strength
 #endif
         vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,0.85*dk));
         surfaceAlbedo*=(1.0-(seam*0.24+hatch*0.1-greeb*0.05)*dk)*(1.0+(pid-0.5)*0.12*pk*dk); } }

@@ -54,9 +54,10 @@ if SHELL:
     bpy.context.view_layer.objects.active = shell
     for m in list(shell.modifiers): shell.select_set(True); bpy.ops.object.modifier_apply(modifier=m.name)
     sd = shell.modifiers.new('sd', 'SUBSURF'); sd.subdivision_type = 'SIMPLE'; sd.levels = sd.render_levels = int(os.environ.get('SHELL_SUB', '4')); bpy.ops.object.modifier_apply(modifier='sd')  # dense enough to carry projected paint (same shape)
-    UPPER, LOWER = (.36, .075, .05), (.045, .045, .05)
+    UPPER, LOWER, BAND, BELLY = (.30, .065, .045), (.20, .048, .034), (.05, .05, .055), (.06, .06, .065)  # concept: red upper, darker red lower hull with a dark band, dark belly
     a = shell.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
-    for v, d in zip(shell.data.vertices, a.data): c = UPPER if v.co.z > -.094 else LOWER; d.color = (c[0], c[1], c[2], 1)
+    for v, d in zip(shell.data.vertices, a.data):
+        z = v.co.z; c = UPPER if z > -.094 else (BAND if -.128 < z < -.112 else (BELLY if z < -.185 else LOWER)); d.color = (c[0], c[1], c[2], 1)
     bmS = bmesh.new(); bmS.from_mesh(shell.data); BVH0 = BVHTree.FromBMesh(bmS); bmS.free()  # every measurement and snap now uses the shell
     print('shell faces', len(shell.data.polygons))
 def face_y(x0, x1, z0, z1, s_, pct=50):  # outer face of the flank in a patch: a grid of inward rays, a percentile of the hit |y|

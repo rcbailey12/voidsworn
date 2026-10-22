@@ -12,6 +12,9 @@ for a in argv[3:]:
         import json as _j; f = _j.load(open(p[2][1:])); p[2], p[3] = f['az'], f['el']
     views.append((p[0], p[1], float(p[2]), float(p[3]), float(p[4])))
 import os
+PROC = os.environ.get('PAINT') == 'proc'  # v12: weathered paint made from the parts' own colours, no picture projection (pictures carry
+# the AI's old part layout, which ghosts onto the clean shell)
+if PROC: views = []
 bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=src)
 o = [x for x in bpy.context.scene.objects if x.type == 'MESH'][0]; me = o.data; sc = bpy.context.scene
 bpy.context.view_layer.objects.active = o; o.select_set(True)
@@ -21,7 +24,10 @@ if me.uv_layers and me.materials and me.materials[0] and me.materials[0].use_nod
 if base_img is None:  # hand-built parts: vertex colours, no UVs yet; give them a UV atlas first
     while me.uv_layers: me.uv_layers.remove(me.uv_layers[0])
     me.uv_layers.new(name='UVMap'); bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=math.radians(55), island_margin=0.006); bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.uv.smart_project(angle_limit=math.radians(55), island_margin=0.004)
+    try: bpy.ops.uv.pack_islands(rotate=True, margin=0.003)
+    except Exception: pass
+    bpy.ops.object.mode_set(mode='OBJECT')
 base_uv = me.uv_layers.active.name
 print('mesh', len(me.vertices), 'verts', len(me.polygons), 'tris, uv', base_uv, 'base', base_img.size[:] if base_img else 'vertex colours')
 occ = None
@@ -89,7 +95,39 @@ for k, (img, msk, az, el, wt) in enumerate(views):
     atn = T.nodes.new('ShaderNodeAttribute'); atn.attribute_name = f'w{k}'
     mk = math_('MULTIPLY', atn.outputs['Fac'], math_('GREATER_THAN', tm.outputs[0], 0.5))
     sumc = vmath('ADD', sumc, vmath('SCALE', ti.outputs[0], s=mk)); sumw = mk if sumw is None else math_('ADD', sumw, mk)
-sumw = math_('ADD', sumw, wb); col_ = vmath('SCALE', sumc, s=math_('DIVIDE', 1.0, sumw))
+if sumw is None: col_ = tb.outputs[0]
+else: sumw = math_('ADD', sumw, wb); col_ = vmath('SCALE', sumc, s=math_('DIVIDE', 1.0, sumw))
+if PROC and base_img is None:
+    # weathered metal (owner, Oct 22: "less like shiny clay and more like rusted metal"): the part's own paint colour, mottled, with rust
+    # patches and vertical streaks, grime in the cavities, paint worn back to steel on the edges. All in ship space, same scale on every part.
+    vcol = T.nodes.new('ShaderNodeVertexColor'); tco = T.nodes.new('ShaderNodeTexCoord'); oc = tco.outputs['Object']
+    def noise(scale, detail, vec=None, rough=.55):
+        n = T.nodes.new('ShaderNodeTexNoise'); n.inputs['Scale'].default_value = scale; n.inputs['Detail'].default_value = detail; n.inputs['Roughness'].default_value = rough; L.new(vec or oc, n.inputs['Vector']); return n.outputs['Fac']
+    def rng(x, a, b, c, d):
+        m = T.nodes.new('ShaderNodeMapRange'); L.new(x, m.inputs['Value']); m.inputs['From Min'].default_value = a; m.inputs['From Max'].default_value = b; m.inputs['To Min'].default_value = c; m.inputs['To Max'].default_value = d; return m.outputs[0]
+    def mix(fac, a, b):  # vector lerp a->b by fac
+        mx = T.nodes.new('ShaderNodeMix'); mx.data_type = 'RGBA'; L.new(fac, mx.inputs['Factor'])
+        for sock, v in ((mx.inputs[6], a), (mx.inputs[7], b)):
+            if isinstance(v, tuple): sock.default_value = (*v, 1)
+            else: L.new(v, sock)
+        return mx.outputs[2]
+    base = vmath('SCALE', vcol.outputs[0], s=rng(noise(32, 7), .25, .75, .62, 1.18))                     # mottled, faded paint
+    base = vmath('SCALE', base, s=rng(noise(9, 6, rough=.6), .40, .70, .50, 1.0))                         # big dirt patches
+    st = T.nodes.new('ShaderNodeVectorMath'); st.operation = 'MULTIPLY'; L.new(oc, st.inputs[0]); st.inputs[1].default_value = (90, 90, 5)
+    streak = rng(noise(1, 6, st.outputs[0]), .40, .72, 0, 1)                                             # vertical run-off streaks
+    base = vmath('SCALE', base, s=rng(streak, 0, 1, 1.0, .55))
+    rust = rng(noise(20, 10, rough=.7), .52, .64, 0, 1)                                                   # rust patches
+    base = mix(math_('MULTIPLY', rust, .85), base, (.13, .045, .018))
+    pits = rng(noise(140, 4), .62, .72, 0, 1)                                                             # small rust pits
+    base = mix(math_('MULTIPLY', pits, .7), base, (.09, .035, .015))
+    bv = T.nodes.new('ShaderNodeBevel'); bv.inputs['Radius'].default_value = .0025; geo = T.nodes.new('ShaderNodeNewGeometry')
+    dp = T.nodes.new('ShaderNodeVectorMath'); dp.operation = 'DOT_PRODUCT'; L.new(bv.outputs[0], dp.inputs[0]); L.new(geo.outputs['Normal'], dp.inputs[1])
+    edge = math_('MULTIPLY', rng(dp.outputs['Value'], .985, .80, 0, 1), rng(noise(70, 3), .3, .6, .25, 1))  # worn edges, broken up
+    base = mix(edge, base, (.26, .24, .22))
+    ao = T.nodes.new('ShaderNodeAmbientOcclusion'); ao.inputs['Distance'].default_value = .03; ao.samples = 16
+    base = vmath('SCALE', base, s=rng(ao.outputs['AO'], 0, 1, .30, 1.0))                                  # grime in the cavities
+    col_ = vmath('SCALE', base, s=rng(noise(500, 2), .3, .7, .85, 1.08))                                  # fine grit
+    sc.cycles.samples = 16
 if base_img is None and os.environ.get('DETAIL', '0') == '1':  # v55: off by default; the shared in-game detail layer (HullFx DET) covers hull and parts alike
     # hand-built parts get the AI hull's level of surface detail (owner, Oct 21: "the level of texture and details seem to vary wildly"):
     # panel seams at a fixed ship-space scale, fine grit, and worn edges from the bevel normal, on top of whatever paint they carry
@@ -118,7 +156,7 @@ try:
                 sc.cycles.device = 'GPU'; print('device', t_); break
         except Exception: pass
 except Exception: pass
-sc.cycles.samples = 4; sc.render.bake.margin = 8; sc.render.bake.use_selected_to_active = False
+sc.cycles.samples = 16 if PROC else 4; sc.render.bake.margin = 8; sc.render.bake.use_selected_to_active = False
 bpy.ops.object.bake(type='EMIT'); tgt.filepath_raw = outp; tgt.file_format = 'PNG'; tgt.save(); print('baked', outp)
 if os.environ.get('EXPORT'):  # write the mesh back out with the baked paint as its texture (hand-built parts)
     for k in range(len(views)): me.uv_layers.remove(me.uv_layers[f'proj{k}'])
