@@ -63,6 +63,11 @@
    and fixed: the edge-wear bevel radius (.0025) was thicker than the new plates, so whole plates painted as bare steel (now .0008); and the
    kit atlas is only 32% painted, so distance mips averaged in black (kit read ~2.6x darker). pixal_to_game.py now push-pull fills the gaps
    of both atlases (v13d, job c19_7_infill.bat).
+   Third and real cause (v13j, Oct 22): every converted AI hull is wound inside-out for Babylon (probe: culling back faces made the
+   hull vanish). With two-sided lighting the hull was lit from the inside (shaded side bright, sunlit top dull), while kit parts lit by
+   their stored normals did the opposite. `faceOut()` in ships3d.js now flips the winding at load when it disagrees with the normals,
+   for every AI hull and kit (`G.diagNoFaceOut=true` turns it off). All AI ships now light correctly: the Dominion went from near-black to
+   lit silver (docs/ship_pipeline/c19_example/v13_winding_fix_dominion.webp). Station/object protos (objP) and craft hulls not checked yet.
 1. Audits are in (Codex, Rey, Gemini). Claude's verified synthesis and picks: docs/ship_pipeline/AUDIT_SYNTHESIS.md. Gemini's drop-in code
    is NOT merged (built on false premises). Owner to answer the scope questions from Oct 22 before the next build.
 2. C19 verified fixes (list in AUDIT_SYNTHESIS.md), joint paint gain + no kit self-light, then the shared HullFx detail on hull and kit.

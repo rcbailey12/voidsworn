@@ -72,5 +72,7 @@ everything below. The other 35 hulls are listed in `SHIP_QUEUE.md`. Rules for wh
 - In job.bat, never use `:` as an argument separator (Windows drive letters). The scripts use `|`.
 - Edge wear must stay thinner than the thinnest plate (bevel radius .0008), or whole plates paint as bare steel and read black.
 - Kit atlases are mostly empty space. `pixal_to_game` fills the gaps (push-pull) so far-away mips do not average in black.
+- Converted meshes come out inside-out for Babylon. The loader's `faceOut()` (ships3d.js) checks the winding against the stored normals
+  and flips it. Without it the hull is lit from inside and every add-on part looks black against it.
 - Kit material now matches the hull paint exactly (no self-light, `G.kitFill` 0) since the hull and kit share one HullFx material setup.
 - Game frame: bow +x, up +y, port +z. Babylon is left-handed, so conversions mirror and flip winding.
