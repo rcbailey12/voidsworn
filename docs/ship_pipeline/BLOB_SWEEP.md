@@ -30,7 +30,8 @@ Each cell gets a verdict: **clean** or **rebuild by hand**, with the part named.
 
 - Snapped onto the real hull surface: never floating, never sunk.
 - On a visible mount: plate, ball, saddle or column.
-- Guns aim out and away from the hull. Bow guns may face forward along the prow, stern guns aft. Never aimed back into the ship.
+- Guns aim forward or out to the side, never backward (owner, Oct 22: no ship fires backward). Bow guns may face forward along the prow.
+  Never aimed back into the ship.
 - Matched, symmetric pairs at sensible hard points.
 - **Corsair exception:** haphazard and junky is on-brand, and paint mismatches between parts are fine there.
 

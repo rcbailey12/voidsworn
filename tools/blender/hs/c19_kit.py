@@ -53,6 +53,7 @@ if SHELL:
     shell = loft('shell', [shell_sec(r) for r in ST], bevel=.0015); hs_lib.PARTS.remove(shell)
     bpy.context.view_layer.objects.active = shell
     for m in list(shell.modifiers): shell.select_set(True); bpy.ops.object.modifier_apply(modifier=m.name)
+    sd = shell.modifiers.new('sd', 'SUBSURF'); sd.subdivision_type = 'SIMPLE'; sd.levels = sd.render_levels = int(os.environ.get('SHELL_SUB', '4')); bpy.ops.object.modifier_apply(modifier='sd')  # dense enough to carry projected paint (same shape)
     UPPER, LOWER = (.36, .075, .05), (.045, .045, .05)
     a = shell.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for v, d in zip(shell.data.vertices, a.data): c = UPPER if v.co.z > -.094 else LOWER; d.color = (c[0], c[1], c[2], 1)
@@ -288,9 +289,9 @@ for s_ in (1, -1):
     box(f'casematelid{s_}', (.196, s_ * (yf + .0235), -.122), (.070, .004, .022), bevel=.002); tag(GUN)
     for k in range(5): box(f'casemateband{s_}{k}', (.170 + k * .011, s_ * (yf + .0258), -.137), (.004, .002, .014), bevel=0)
     tag(DARK)
-    a_ = Vector((.226, s_ * (yf + .018), -.133)); barrel(f'casegun{s_}', a_, (1, s_ * .05, -.01), .095, .0055); tag(GUN)
+    a_ = Vector((.150, s_ * (yf + .018), -.133)); barrel(f'casegun{s_}', a_, (-1, s_ * .12, -.01), .095, .0055); tag(GUN)  # forward and outboard (owner, Oct 22: no ship fires backward)
     y2 = (SIDEF[(2, s_)] or .165) + .0085
-    cyl(f'longgun{s_}', (.240, s_ * y2, -.098), .0065, .175, axis='X', seg=20, bevel=.0008); cyl(f'longgunm{s_}', (.333, s_ * y2, -.098), .0085, .012, axis='X', seg=20, bevel=.0008)
+    cyl(f'longgun{s_}', (.240, s_ * y2, -.098), .0065, .175, axis='X', seg=20, bevel=.0008); cyl(f'longgunm{s_}', (.147, s_ * y2, -.098), .0085, .012, axis='X', seg=20, bevel=.0008)  # muzzle forward
     for k in range(4): cyl(f'longgunring{s_}{k}', (.175 + k * .045, s_ * y2, -.098), .0074, .004, axis='X', seg=20, bevel=0)
     tag(GUN)
     for xb in (.185, .290): box(f'longgunbracket{s_}{xb}', (xb, s_ * (y2 - .008), -.098), (.010, .012, .008), bevel=.001)
@@ -298,10 +299,11 @@ for s_ in (1, -1):
     # stern deck gun: housing on a pedestal, a heavy lower barrel and a lighter upper one, both aimed aft
     hz, _ = surf_down(.365, s_ * .070, .0); zdk_ = hz.z if hz is not None else -.068
     box(f'sternped{s_}', (.365, s_ * .070, (zdk_ + -.056) / 2), (.030, .022, max(.004, -.056 - zdk_ + .004)), bevel=.001); tag(STEEL)
-    cyl(f'sternhouse{s_}', (.368, s_ * .070, -.044), .0125, .075, axis='X', seg=28, bevel=.0015); cyl(f'sterncap{s_}', (.331, s_ * .070, -.044), .0105, .004, axis='X', seg=28, bevel=.001); tag(STEEL)
-    barrel(f'sternbig{s_}', (.404, s_ * .070, -.044), (1, 0, 0), .055, .0060); barrel(f'sternsmall{s_}', (.345, s_ * .070, -.027), (1, 0, 0), .100, .0040); tag(GUN)
-    box(f'sternstrut{s_}', (.372, s_ * .070, -.034), (.008, .005, .012), bevel=0); tag(GUN)
-    cyl(f'sternlamp{s_}', (.381, s_ * (.070 + .0125), -.041), .0055, .003, axis='Y', seg=20, bevel=0); tag(LAMP)
+    # turned to fire outboard (broadside), not aft (owner, Oct 22)
+    cyl(f'sternhouse{s_}', (.365, s_ * .072, -.044), .0125, .040, axis='Y', seg=28, bevel=.0015); cyl(f'sterncap{s_}', (.365, s_ * .0515, -.044), .0105, .004, axis='Y', seg=28, bevel=.001); tag(STEEL)
+    barrel(f'sternbig{s_}', (.371, s_ * .092, -.044), (0, s_, .06), .050, .0060); barrel(f'sternsmall{s_}', (.357, s_ * .085, -.030), (0, s_, .10), .070, .0040); tag(GUN)
+    box(f'sternstrut{s_}', (.360, s_ * .080, -.034), (.005, .008, .012), bevel=0); tag(GUN)
+    cyl(f'sternlamp{s_}', (.379, s_ * .080, -.041), .0055, .003, axis='X', seg=20, bevel=0); tag(LAMP)
     for k in range(5):
         hz, _ = surf_down(.330 + k * .022, s_ * .100, .0); zl = hz.z if hz is not None else -.068
         cyl(f'decklamp{s_}{k}', (.330 + k * .022, s_ * .100, zl + .002), .0045, .004, seg=16, bevel=0)
@@ -314,43 +316,93 @@ for i, (x0, x1, z0, z1) in enumerate(SIDE):
     for s_ in (1, -1):
         y_ = SIDEF[(i, s_)]
         if y_ is None: continue
+        if SHELL and i > 0:  # gun sponson (concept side view): dark housing under a sloped red hood, an opening with a stacked drum magazine,
+            # three glowing thruster nozzles underneath; it reaches back into the hull so it is one piece with it
+            xc = (x0 + x1) / 2; wy = y_ - .135
+            box(f'spon{i}{s_}', (xc, s_ * (y_ - wy / 2), (z0 + z1) / 2), (x1 - x0, wy, z1 - z0), bevel=.003); tag((.07, .07, .075))
+            ha = math.radians(28); box(f'sponhood{i}{s_}', (xc, s_ * (y_ - .012), z1 + .006), (x1 - x0 + .008, .040, .006), rot=(-s_ * ha, 0, 0), bevel=.0015); tag(RED)
+            for k in range(6): box(f'sponhoodrib{i}{s_}{k}', (x0 + .012 + k * (x1 - x0 - .024) / 5, s_ * (y_ - .010), z1 + .0095), (.003, .036, .002), rot=(-s_ * ha, 0, 0), bevel=0)
+            tag(DARK)
+            box(f'sponopen{i}{s_}', (xc + .006, s_ * (y_ + .0006), (z0 + z1) / 2 + .004), (x1 - x0 - .040, .002, (z1 - z0) * .55), bevel=0); tag(DARK)
+            for zz in (-.006, .010):
+                cyl(f'spondrum{i}{s_}{zz}', (xc + .006, s_ * (y_ - .002), (z0 + z1) / 2 + .004 + zz), .0075, x1 - x0 - .048, axis='X', seg=24, bevel=.001)
+            tag((.11, .08, .06))
+            for k in (-1, 0, 1):
+                nx_ = xc + k * .024; ny_ = s_ * (y_ - .016)
+                cyl(f'sponthr{i}{s_}{k}', (nx_, ny_, z0 - .008), .0065, .016, seg=20, bevel=.0008); cyl(f'sponbell{i}{s_}{k}', (nx_, ny_, z0 - .020), .0065, .008, r2=.0090, seg=20, bevel=0); tag(STEEL)
+                cyl(f'sponglow{i}{s_}{k}', (nx_, ny_, z0 - .0242), .0082, .0012, seg=20, bevel=0); tag(LAMP)
+            continue
         box(f'sideblock{i}{s_}', ((x0 + x1) / 2, s_ * (y_ - .015), (z0 + z1) / 2), (x1 - x0, .030, z1 - z0), bevel=.004); tag(STEEL)
         box(f'sidepanel{i}{s_}', ((x0 + x1) / 2, s_ * (y_ + .001), (z0 + z1) / 2 + .006), (x1 - x0 - .022, .003, (z1 - z0) * .45), bevel=.001); tag(GUN)
         if i != 2:
             for k in range(6): box(f'sidevent{i}{s_}{k}', (x0 + .016 + k * .007, s_ * (y_ + .0012), z0 + .016), (.0035, .002, .014), bevel=0)
             tag(DARK)
-# front armour (v11, Rey audit + concept close-up): a stack of book-like steps climbing the front slope. Each step's tread tilts at half
-# the slope, its downhill face stands near vertical, widths shrink hard as they climb; steps 1 and 3 carry a raised rim with engraved
-# grooves, 2 and 4 are plain with one seam, step 5 is a laminate of three thin plates. Page-layer grooves on every front face.
-STEPS = [(-.242, .042, .152, .032), (-.205, .038, .140, .028), (-.172, .034, .126, .024), (-.143, .030, .108, .020)]
-SCOL = [(.055, .055, .060), (.030, .032, .040), (.060, .060, .065), (.045, .045, .050), (.065, .065, .070)]
-def slope_ang(x): return math.atan2(prof(x + .01) - prof(x - .01), .02)
-def step_frame(xf, ln):
-    b_ = slope_ang(xf + ln / 2) / 2; F = Vector((xf, 0, prof(xf) - .002)); u = Vector((math.cos(b_), 0, math.sin(b_))); v = Vector((-math.sin(b_), 0, math.cos(b_)))
-    return b_, F, u, v
-for k, (xf, ln, w_, h_) in enumerate(STEPS):
-    b_, F, u, v = step_frame(xf, ln)
-    box(f'step{k}', F + u * ln / 2 + v * h_ / 2, (ln + .005, w_, h_), rot=(0, -b_, 0), bevel=.0015); tag(SCOL[k])
-    for s_ in (1, -1): box(f'stepcheek{k}{s_}', F + u * ln / 2 + v * (h_ / 2 - .004) + Vector((0, s_ * (w_ / 2 - .004), 0)), (ln + .004, .008, h_ + .008), rot=(0, -b_, 0), bevel=.001)
-    tag(SCOL[k])
-    for f_ in (1 / 3, 2 / 3): box(f'steppage{k}{f_:.2f}', F - u * .0004 + v * h_ * f_, (.0012, w_ - .004, .0015), rot=(0, -b_, 0), bevel=0)
-    tag(DARK)
-    T_ = F + v * (h_ + .00125)
-    if k in (0, 2):  # raised perimeter rim, engraved grooves inside
-        for s_ in (1, -1): box(f'steprim{k}{s_}', T_ + u * ln / 2 + Vector((0, s_ * (w_ / 2 - .005), 0)), (ln, .010, .0025), rot=(0, -b_, 0), bevel=.0004)
-        for e_ in (.005, ln - .005): box(f'steprimx{k}{e_:.3f}', T_ + u * e_, (.010, w_, .0025), rot=(0, -b_, 0), bevel=.0004)
+if not SHELL:
+    # front armour (v11, Rey audit + concept close-up): a stack of book-like steps climbing the front slope. Each step's tread tilts at half
+    # the slope, its downhill face stands near vertical, widths shrink hard as they climb; steps 1 and 3 carry a raised rim with engraved
+    # grooves, 2 and 4 are plain with one seam, step 5 is a laminate of three thin plates. Page-layer grooves on every front face.
+    STEPS = [(-.242, .042, .152, .032), (-.205, .038, .140, .028), (-.172, .034, .126, .024), (-.143, .030, .108, .020)]
+    SCOL = [(.055, .055, .060), (.030, .032, .040), (.060, .060, .065), (.045, .045, .050), (.065, .065, .070)]
+    def slope_ang(x): return math.atan2(prof(x + .01) - prof(x - .01), .02)
+    def step_frame(xf, ln):
+        b_ = slope_ang(xf + ln / 2) / 2; F = Vector((xf, 0, prof(xf) - .002)); u = Vector((math.cos(b_), 0, math.sin(b_))); v = Vector((-math.sin(b_), 0, math.cos(b_)))
+        return b_, F, u, v
+    for k, (xf, ln, w_, h_) in enumerate(STEPS):
+        b_, F, u, v = step_frame(xf, ln)
+        box(f'step{k}', F + u * ln / 2 + v * h_ / 2, (ln + .005, w_, h_), rot=(0, -b_, 0), bevel=.0015); tag(SCOL[k])
+        for s_ in (1, -1): box(f'stepcheek{k}{s_}', F + u * ln / 2 + v * (h_ / 2 - .004) + Vector((0, s_ * (w_ / 2 - .004), 0)), (ln + .004, .008, h_ + .008), rot=(0, -b_, 0), bevel=.001)
         tag(SCOL[k])
-        for f_ in (.35, .5, .65): box(f'stepgroove{k}{f_}', F + v * (h_ + .0004) + u * ln * f_, (.0015, w_ * .55, .0008), rot=(0, -b_, 0), bevel=0)
-        for g_ in range(4): box(f'stepblock{k}{g_}', F + v * (h_ + .0004) + u * ln * .5 + Vector((0, -.012 + g_ * .008, 0)), (.006, .0015, .0008), rot=(0, -b_, 0), bevel=0)
+        for f_ in (1 / 3, 2 / 3): box(f'steppage{k}{f_:.2f}', F - u * .0004 + v * h_ * f_, (.0012, w_ - .004, .0015), rot=(0, -b_, 0), bevel=0)
         tag(DARK)
-    else:
-        box(f'stepseam{k}', F + v * (h_ + .0003) + u * ln * .5, (.0015, w_ - .01, .0007), rot=(0, -b_, 0), bevel=0); tag(DARK)
-b_, F, u, v = step_frame(-.118, .024)
-for q, (wq, xo) in enumerate(((.088, 0), (.082, .002), (.076, .004))):  # step 5: a laminate of three thin plates
-    box(f'lam{q}', F + u * (.012 + xo) + v * (.002 + .004 * q + .002), (.024 - xo, wq, .004), rot=(0, -b_, 0), bevel=.0008)
-tag(SCOL[4])
+        T_ = F + v * (h_ + .00125)
+        if k in (0, 2):  # raised perimeter rim, engraved grooves inside
+            for s_ in (1, -1): box(f'steprim{k}{s_}', T_ + u * ln / 2 + Vector((0, s_ * (w_ / 2 - .005), 0)), (ln, .010, .0025), rot=(0, -b_, 0), bevel=.0004)
+            for e_ in (.005, ln - .005): box(f'steprimx{k}{e_:.3f}', T_ + u * e_, (.010, w_, .0025), rot=(0, -b_, 0), bevel=.0004)
+            tag(SCOL[k])
+            for f_ in (.35, .5, .65): box(f'stepgroove{k}{f_}', F + v * (h_ + .0004) + u * ln * f_, (.0015, w_ * .55, .0008), rot=(0, -b_, 0), bevel=0)
+            for g_ in range(4): box(f'stepblock{k}{g_}', F + v * (h_ + .0004) + u * ln * .5 + Vector((0, -.012 + g_ * .008, 0)), (.006, .0015, .0008), rot=(0, -b_, 0), bevel=0)
+            tag(DARK)
+        else:
+            box(f'stepseam{k}', F + v * (h_ + .0003) + u * ln * .5, (.0015, w_ - .01, .0007), rot=(0, -b_, 0), bevel=0); tag(DARK)
+    b_, F, u, v = step_frame(-.118, .024)
+    for q, (wq, xo) in enumerate(((.088, 0), (.082, .002), (.076, .004))):  # step 5: a laminate of three thin plates
+        box(f'lam{q}', F + u * (.012 + xo) + v * (.002 + .004 * q + .002), (.024 - xo, wq, .004), rot=(0, -b_, 0), bevel=.0008)
+    tag(SCOL[4])
+else:
+    # front armour (v12, owner Oct 22 + concept close-up): four thick dark slabs lying along the front slope like books on a ramp, near
+    # constant width, each starting just above the one below so its thick front edge shows; slabs 1 and 3 carry a raised rim around a recessed
+    # engraved plaque, slab 2 is plain with two seams, the top one is small with a lip. Oval intakes either side, a hatch box at the foot.
+    SL = [(-.246, .042, .104), (-.202, .034, .100), (-.166, .034, .096), (-.130, .026, .086)]
+    for k, (xa, ln, w_) in enumerate(SL):
+        xb = xa + ln; za, zb = prof(xa), prof(xb); a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
+        u = Vector((math.cos(a_), 0, math.sin(a_))); v = Vector((-math.sin(a_), 0, math.cos(a_))); t_ = .017 - .002 * k
+        F = Vector((xa, 0, za)); cen = F + u * L_ / 2 + v * (t_ / 2 - .002)
+        box(f'fslab{k}', cen, (L_, w_, t_), rot=(0, -a_, 0), bevel=.0018); tag((.055, .055, .060))
+        for f_ in (.35, .7): box(f'fslabpage{k}{f_}', F + v * (t_ * f_ - .002) - u * .0004, (.0012, w_ - .006, .0012), rot=(0, -a_, 0), bevel=0)
+        tag(DARK)
+        T_ = F + v * (t_ - .002)
+        if k in (0, 2):
+            for s_ in (1, -1): box(f'fslabrim{k}{s_}', T_ + u * L_ / 2 + v * .0011 + Vector((0, s_ * (w_ / 2 - .006), 0)), (L_ - .004, .008, .0022), rot=(0, -a_, 0), bevel=.0004)
+            for e_ in (.006, L_ - .006): box(f'fslabrimx{k}{e_:.3f}', T_ + u * e_ + v * .0011, (.008, w_ - .004, .0022), rot=(0, -a_, 0), bevel=.0004)
+            tag((.075, .072, .070))
+            for g_ in range(5): box(f'fslabeng{k}{g_}', T_ + u * L_ * (.32 + g_ * .09) + v * .0003, (.0016, w_ * .45, .0007), rot=(0, -a_, 0), bevel=0)
+            tag(DARK)
+        elif k == 1:
+            for f_ in (.33, .66): box(f'fslabseam{k}{f_}', T_ + u * L_ * f_ + v * .0003, (.0016, w_ - .01, .0007), rot=(0, -a_, 0), bevel=0)
+            tag(DARK)
+        else:
+            box('fslablip', F + u * .003 + v * (t_ + .0005), (.006, w_ + .004, .004), rot=(0, -a_, 0), bevel=.0008); tag((.075, .072, .070))
+    for s_ in (1, -1):  # oval intake on each side of the front slope, and a hatch box at the foot of the column
+        p_, n_ = BVH.ray_cast(Vector((-.170, s_ * .5, -.020)), Vector((0, -s_, 0)), 1.0)[:2]
+        if p_ is not None:
+            n_ = Vector(n_).normalized(); n_ = n_ if n_.y * s_ > 0 else -n_; Rn = Vector((0, 0, 1)).rotation_difference(n_).to_matrix() @ Matrix.Diagonal((1.8, 1, 1))
+            cyl(f'intake{s_}', Vector(p_) + n_ * .003, .0065, .008, seg=24, rot=Rn, bevel=.001); tag(STEEL)
+            cyl(f'intakehole{s_}', Vector(p_) + n_ * .0072, .0050, .001, seg=24, rot=Rn, bevel=0); tag(DARK)
+        hb = deckz(-.258, .040) if 'deckz' in globals() else -.085
+        box(f'hatchbox{s_}', (-.262, s_ * .040, hb + .007), (.020, .022, .014), bevel=.0012); tag(STEEL)
+        box(f'hatchboxlid{s_}', (-.266, s_ * .040, hb + .0146), (.012, .018, .0012), bevel=0); tag(DARK)
 # ventral thrusters (concept: three glowing nozzles under the midship), on a keel plate
-for k, x_ in enumerate((-.015, .017, .049)):
+for k, x_ in enumerate(() if SHELL else (-.015, .017, .049)):
     h = BVH.ray_cast(Vector((x_, 0, -.5)), Vector((0, 0, 1)), 1.0); zb_ = h[0].z if h[0] is not None else -.19
     box(f'thrplate{k}', (x_, 0, zb_ - .001), (.028, .030, .004), bevel=.0008); tag(GUN)
     cyl(f'thr{k}', (x_, 0, zb_ - .013), .0095, .022, seg=24, bevel=.001); cyl(f'thrbell{k}', (x_, 0, zb_ - .028), .0095, .010, r2=.0125, seg=24, bevel=0); tag(STEEL)
@@ -426,11 +478,28 @@ if SHELL:
                 if x > .295: break
                 plate(f'ledge{s_}{zl}{k}', x, zl, s_, (.0145, .004, .004))
         tag(UPPER)
-        for k in range(24):  # row of dark ports under the upper ledge
-            x = -.095 + k * .016
-            if x > .29 or .07 < x < .10: continue
-            plate(f'port{s_}{k}', x, -.017, s_, (.008, .006, .0016))
+        for k in range(44):  # row of dark round-ish holes under the upper ledge (concept)
+            x = -.100 + k * .009
+            if x > .29 or .065 < x < .17: continue
+            plate(f'port{s_}{k}', x, -.020, s_, (.0042, .0042, .0014))
         tag(DARK)
+        for k in range(60):  # rivet line along the top edge of the superstructure side
+            x = -.105 + k * .0068
+            if x > .295: break
+            plate(f'rivet{s_}{k}', x, .030 if not (.065 < x < .17) else .012, s_, (.0022, .0022, .0018))
+        tag((.20, .07, .05))
+        plate(f'nameplate{s_}', -.165, -.050, s_, (.070, .030, .0030)); tag((.13, .13, .135))  # big riveted name plate (concept)
+        for k in range(12): plate(f'nprivet{s_}{k}', -.198 + k * .006, -.0375, s_, (.0018, .0018, .0040)); plate(f'nprivetb{s_}{k}', -.198 + k * .006, -.0625, s_, (.0018, .0018, .0040))
+        for k in range(3): plate(f'npline{s_}{k}', -.165, -.056 + k * .0055, s_, (.052, .0016, .0036))
+        tag(DARK)
+        p_, n_ = BVH.ray_cast(Vector((-.205, s_ * .5, -.030)), Vector((0, -s_, 0)), 1.0)[:2]  # round porthole near the front
+        if p_ is not None:
+            n_ = Vector(n_).normalized(); n_ = n_ if n_.y * s_ > 0 else -n_; Rn = Vector((0, 0, 1)).rotation_difference(n_).to_matrix()
+            cyl(f'porthole{s_}', Vector(p_) + n_ * .0008, .0065, .0025, seg=24, rot=Rn, bevel=.0004); tag(STEEL)
+            cyl(f'portglass{s_}', Vector(p_) + n_ * .0022, .0046, .001, seg=24, rot=Rn, bevel=0); tag(DARK)
+        plate(f'bayframe{s_}', .118, -.040, s_, (.060, .040, .0050)); tag(RED)  # framed bay in the middle dip (concept side view)
+        plate(f'bayopen{s_}', .118, -.042, s_, (.046, .026, .0062)); tag(DARK)
+        plate(f'baybox{s_}', .118, -.044, s_, (.020, .012, .0090)); tag(STEEL)
         for x in (-.085, .115, .235):  # inset hatch panels with a dark frame
             plate(f'hatchf{s_}{x}', x, -.072, s_, (.034, .024, .0012)); tag(DARK)
             plate(f'hatch{s_}{x}', x, -.072, s_, (.030, .020, .0024)); tag(STEEL)
