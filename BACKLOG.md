@@ -46,6 +46,7 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 - [ ] Scope questions for the owner before building (how long a story, how much text, voice or none, art style for portraits)
 
 ## 4c. Whole-game health pass (owner, Oct 22: "optimization, bug fixes like we found with the graphics but more globally")
+- [ ] FIRST: make the code reviewable by other AIs: split the giant files, break up the 1,000+ character one-line functions, a short map per system (what, which file, which lines), and per-system review bundles. Outside reviews keep half-reading the huge files.
 - [ ] Code-wide audit like the graphics review: every system (battle rules, AI, campaign, UI, save/load, audio, effects), looking for
       hidden bugs, dead code, leaks across battles, things that only work by accident
 - [ ] Performance on a real GPU and the Pixel: frame time per system, draw calls, texture memory, load time per battle, battery/heat
