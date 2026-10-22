@@ -6,7 +6,8 @@
 import sys, os, math, collections, numpy as np, bpy
 argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
 src, dst = argv[0], argv[1]; FLAT = float(os.environ.get('FLAT', '.6'))
-ANG, TOL, AMIN = math.radians(14), .006, .0015; RMS_BAD, P95_BAD = .0012, .0025  # same as wavy_report.py
+ANG, TOL, AMIN = math.radians(float(os.environ.get('ANG', '14'))), float(os.environ.get('TOL', '.006')), float(os.environ.get('AMIN', '.0015'))
+RMS_BAD, P95_BAD = (0., 0.) if os.environ.get('ALL') else (.0012, .0025)  # ALL=1: every big plate, not only the wavy ones
 bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.import_scene.gltf(filepath=src)
 o = [x for x in bpy.context.scene.objects if x.type == 'MESH'][0]; me = o.data; me.calc_loop_triangles()
 V = np.zeros(len(me.vertices) * 3); me.vertices.foreach_get('co', V); V = V.reshape(-1, 3)

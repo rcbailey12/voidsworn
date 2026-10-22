@@ -31,6 +31,33 @@ bm = bmesh.new(); bm.from_mesh(hull.data)
 from mathutils.bvhtree import BVHTree
 import statistics
 BVH0 = BVHTree.FromBMesh(bm)  # the uncut AI hull, for measuring what gets rebuilt
+SHELL = os.environ.get('SHELL', '0') == '1'
+if SHELL:
+    # v12 (owner, Oct 22: "the ship underneath looks mangled and wavy", picked "rebuild as clean shell"): the AI hull body becomes only a shape
+    # guide. Its measured sections (tools: secs/meas on the 250k LOD, Oct 22) define a clean lofted shell: a superstructure of true sloped
+    # planes on a deck shelf, a vertical chine band and a lower hull falling to the keel. The shell replaces the whole AI hull aft of the bow.
+    # columns: x, top z, top half-width, deck z, superstructure foot half-width, deck/chine half-width, half-width at z -.16, keel half-width, keel z
+    ST = [(-.240, -.074, .080, -.085, .095, .122, .056, .046, -.188), (-.220, -.030, .040, -.085, .110, .150, .060, .045, -.188),
+          (-.180, .016, .045, -.085, .135, .155, .072, .044, -.188), (-.140, .037, .046, -.085, .145, .162, .084, .045, -.200),
+          (-.110, .056, .050, -.085, .150, .165, .094, .050, -.212), (-.060, .056, .050, -.085, .150, .165, .100, .055, -.214),
+          (.000, .056, .052, -.085, .155, .165, .108, .080, -.207), (.060, .056, .052, -.080, .155, .165, .110, .080, -.210),
+          (.080, .033, .065, -.076, .155, .165, .095, .060, -.218), (.110, .030, .076, -.075, .152, .160, .125, .058, -.222),
+          (.165, .030, .076, -.075, .152, .160, .130, .058, -.218), (.190, .052, .066, -.075, .152, .160, .132, .060, -.214),
+          (.280, .056, .064, -.075, .152, .160, .132, .060, -.212), (.300, .048, .052, -.078, .150, .158, .130, .060, -.214),
+          (.345, -.064, .128, -.066, .134, .145, .118, .034, -.150), (.400, -.066, .110, -.068, .116, .122, .090, .030, -.130),
+          (.460, -.064, .094, -.066, .097, .100, .072, .030, -.116), (.492, -.066, .080, -.068, .082, .084, .060, .028, -.112)]
+    def shell_sec(r):
+        x, zt, wt, zf, wf, wc, wl, wk, zk = r; wt = min(wt, wf - .002)
+        half = [(wt, zt), (wf, zf), (wc, zf - .002), (wc, zf - .014), (wl, max(-.16, zk + .02)), (wk, zk)]
+        return (x, [(0, zt + .002)] + half + [(0, zk)] + [(-y, z) for y, z in reversed(half)])
+    shell = loft('shell', [shell_sec(r) for r in ST], bevel=.0015); hs_lib.PARTS.remove(shell)
+    bpy.context.view_layer.objects.active = shell
+    for m in list(shell.modifiers): shell.select_set(True); bpy.ops.object.modifier_apply(modifier=m.name)
+    UPPER, LOWER = (.36, .075, .05), (.045, .045, .05)
+    a = shell.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
+    for v, d in zip(shell.data.vertices, a.data): c = UPPER if v.co.z > -.094 else LOWER; d.color = (c[0], c[1], c[2], 1)
+    bmS = bmesh.new(); bmS.from_mesh(shell.data); BVH0 = BVHTree.FromBMesh(bmS); bmS.free()  # every measurement and snap now uses the shell
+    print('shell faces', len(shell.data.polygons))
 def face_y(x0, x1, z0, z1, s_, pct=50):  # outer face of the flank in a patch: a grid of inward rays, a percentile of the hit |y|
     ys = []
     for x in [x0 + (x1 - x0) * (i + .5) / 6 for i in range(6)]:
@@ -45,7 +72,7 @@ SIDE = [(-.235, -.120, -.150, -.060), (-.045, .085, -.185, -.085), (.135, .265, 
 SIDEF = {}
 for i, (x0, x1, z0, z1) in enumerate(SIDE):
     for s_ in (1, -1):
-        y_ = face_y(x0 + .01, x1 - .01, z0 + .01, z1 - .01, s_, 35); SIDEF[(i, s_)] = y_; print('side block', i, s_, y_)
+        y_ = face_y(x0 + .01, x1 - .01, z0 + .01, z1 - .01, s_, 35) if not SHELL else (face_y(x0 + .01, x1 - .01, z0 + .01, z1 - .01, s_, 100) or .16) + .026; SIDEF[(i, s_)] = y_; print('side block', i, s_, y_)
 # front armour plates: the forward slope under the bridge, its centreline profile measured
 PX = [-.245 + k * .010 for k in range(14)]
 PZ = []
@@ -65,7 +92,10 @@ for s_ in (1, -1):
         for x in (.0, .02, .04):
             h = BVH0.ray_cast(Vector((x, s_ * .5, z)), Vector((0, -s_, 0)), 1.0)
             if h[0] is not None and (best is None or abs(h[0].y) > best[0]): best = (abs(h[0].y), z)
-    TANK[s_] = (best[0] - .011, best[1]) if best else (.10, -.005); print('tank', s_, TANK[s_])
+    TANK[s_] = (best[0] - .011, best[1]) if best else (.10, -.005)
+    if SHELL:
+        h = BVH0.ray_cast(Vector((.02, s_ * .5, .005)), Vector((0, -s_, 0)), 1.0); TANK[s_] = ((abs(h[0].y) if h[0] is not None else .09) + .008, .005)
+    print('tank', s_, TANK[s_])
 def cut_extra(c):
     for i, (x0, x1, z0, z1) in enumerate(SIDE):
         y_ = SIDEF[(i, 1 if c.y > 0 else -1)]
@@ -79,20 +109,29 @@ def cut_extra(c):
     if .20 <= c.x <= .32 and .105 <= abs(c.y) <= .175 and .012 <= c.z <= .10: return True  # the old AI aft long guns beside the new ones
     return False
 kill = []
-for f in bm.faces:
+for f in ([] if SHELL else bm.faces):
     c = f.calc_center_median()
     if any(b[0] <= c.x <= b[1] and b[2] <= c.y <= b[3] and b[4] <= c.z <= b[5] for b in BOXES) or any(seg_d(c, a, b) < .022 and c.z > a.z + .010 or seg_d(c, a, b) < .015 and c.z > a.z - .004 for a, b in GUNS) or cut_extra(c):
         kill.append(f)
 bmesh.ops.delete(bm, geom=kill, context='FACES'); bm.to_mesh(hull.data); print('cut faces', len(kill))
-BVH = BVHTree.FromBMesh(bm); bm.free()
+BVH = BVH0 if SHELL else BVHTree.FromBMesh(bm); bm.free()
 # placement rules (owner, Oct 21): every bolt-on sits on the real surface on a visible mount, guns point out and away from the hull,
 # and parts come in matched pairs at sensible hard points (Corsair excepted, which may stay junky)
 def surf_down(x, y, z_from=.3):  # deck height under (x, y)
     h = BVH.ray_cast(Vector((x, y, z_from)), Vector((0, 0, -1)), 1.0); return (h[0], h[1]) if h[0] is not None else (None, None)
 def surf_in(x, y_side, z):  # flank point at height z, cast inward from outside the hull on side sign(y_side)
     s_ = 1 if y_side > 0 else -1; h = BVH.ray_cast(Vector((x, s_ * .4, z)), Vector((0, -s_, 0)), 1.0); return (h[0], h[1]) if h[0] is not None else (None, None)
-bpy.ops.object.select_all(action='DESELECT'); hull.select_set(True); bpy.context.view_layer.objects.active = hull
-bpy.ops.export_scene.gltf(filepath=pre + '_cut.glb', export_format='GLB', use_selection=True, export_image_format='JPEG', export_jpeg_quality=95)
+if SHELL:
+    bpy.ops.object.select_all(action='DESELECT'); shell.select_set(True); bpy.context.view_layer.objects.active = shell
+    try: bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35), keep_sharp_edges=True)
+    except Exception: pass
+    try: shell.data.color_attributes.active_color_name = 'Col'
+    except Exception: pass
+    bpy.ops.export_scene.gltf(filepath=pre + '_shell.glb', export_format='GLB', use_selection=True, export_vertex_color='ACTIVE', export_all_vertex_colors=True)
+    bpy.data.objects.remove(hull)  # the AI hull is not exported at all
+else:
+    bpy.ops.object.select_all(action='DESELECT'); hull.select_set(True); bpy.context.view_layer.objects.active = hull
+    bpy.ops.export_scene.gltf(filepath=pre + '_cut.glb', export_format='GLB', use_selection=True, export_image_format='JPEG', export_jpeg_quality=95)
 # ---------- clean parts ----------
 COL = {}
 def tag(rgb):  # colour every part made since the last tag
@@ -362,6 +401,45 @@ for s_ in (1, -1):
     tag(DARK)
 cyl('roofhatch', (-.008, .028, ZR + .007), .007, .006, seg=20, bevel=.0005); tag(STEEL)
 box('greeble', (.020, 0, ZR + .008), (.010, .008, .008), bevel=.0008); tag(GUN)
+if SHELL:
+    # designed hull detail on the clean shell (concept side view): a rub rail along the deck shelf, two belt ledges on the superstructure
+    # slope, a row of dark ports under the upper ledge, inset hatch panels and vent grilles between the guns, and plate seams. All flush to
+    # the shell (snapped with rays, oriented to its surface normal), all in matched pairs.
+    def flank(x, z, s_):
+        h = BVH.ray_cast(Vector((x, s_ * .5, z)), Vector((0, -s_, 0)), 1.0)
+        if h[0] is None: return None, None
+        n = Vector(h[1]).normalized(); n = n if n.y * s_ > 0 else -n; return Vector(h[0]), n
+    def plate(name, x, z, s_, size, lift=.0008):  # a thin box lying on the shell at (x, z), size = (length along x, height up the slope, thickness)
+        p_, n = flank(x, z, s_)
+        if p_ is None: return False
+        up = Vector((0, 0, 1)) - n * n.z; up.normalize(); fx = Vector((1, 0, 0)) - n * n.x; fx.normalize(); up = n.cross(fx) * (1 if n.cross(fx).z > 0 else -1)
+        M = Matrix((fx, up, n)).transposed(); bm_ = bmesh.new(); bmesh.ops.create_cube(bm_, size=1); bmesh.ops.scale(bm_, vec=size, verts=bm_.verts)
+        bmesh.ops.transform(bm_, matrix=M.to_4x4(), verts=bm_.verts); bmesh.ops.translate(bm_, verts=bm_.verts, vec=p_ + n * (size[2] / 2 - lift)); hs_lib._obj(name, bm_, .0006); return True
+    for s_ in (1, -1):
+        for i in range(0, len(ST) - 1):  # rub rail along the deck shelf edge, segment by segment
+            a_, b_ = ST[i], ST[i + 1]; pa = Vector((a_[0], s_ * (a_[5] + .002), a_[3] - .004)); pb = Vector((b_[0], s_ * (b_[5] + .002), b_[3] - .004))
+            if (pb - pa).length > .001: barrel(f'rubrail{s_}{i}', pa, (pb - pa).normalized(), (pb - pa).length, .0035)
+        tag(UPPER)
+        for zl in (-.050, -.005):  # belt ledges on the superstructure slope
+            for k in range(30):
+                x = -.105 + k * .0135
+                if x > .295: break
+                plate(f'ledge{s_}{zl}{k}', x, zl, s_, (.0145, .004, .004))
+        tag(UPPER)
+        for k in range(24):  # row of dark ports under the upper ledge
+            x = -.095 + k * .016
+            if x > .29 or .07 < x < .10: continue
+            plate(f'port{s_}{k}', x, -.017, s_, (.008, .006, .0016))
+        tag(DARK)
+        for x in (-.085, .115, .235):  # inset hatch panels with a dark frame
+            plate(f'hatchf{s_}{x}', x, -.072, s_, (.034, .024, .0012)); tag(DARK)
+            plate(f'hatch{s_}{x}', x, -.072, s_, (.030, .020, .0024)); tag(STEEL)
+        for x in (.025, .175):  # vent grilles
+            for k in range(6): plate(f'grille{s_}{x}{k}', x - .0125 + k * .005, -.075, s_, (.0025, .016, .002))
+            tag(DARK)
+        for x in (-.03, .05, .14, .21, .27):  # vertical plate seams on the slope
+            for k in range(7): plate(f'seam{s_}{x}{k}', x, -.085 + k * .011, s_, (.0012, .0115, .0008), lift=.0004)
+        tag(DARK)
 for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
     c = DARK if o.name.startswith('bore') or 'band' in o.name else COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for d in a.data: d.color = (c[0], c[1], c[2], 1)
