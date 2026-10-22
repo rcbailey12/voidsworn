@@ -14,8 +14,8 @@ const HFX_RIM0=new BABYLON.Color3(.6,.7,.9), HFX_E0=new BABYLON.Color3(1,.62,.3)
 function hfxSane(pl){ const c=x=>x&&typeof x.r==='number'&&isFinite(x.r)&&isFinite(x.g)&&isFinite(x.b), n=(x,d)=>typeof x==='number'&&isFinite(x)?x:d;
   if(!c(pl.rim)) pl.rim=HFX_RIM0; if(!c(pl.ecol)) pl.ecol=HFX_E0; if(pl.wcol&&!c(pl.wcol)) pl.wcol=null; pl.str=n(pl.str,.85); pl.wear=n(pl.wear,.25); pl.seed=n(pl.seed,3); pl.style=n(pl.style,0); pl.dmg=n(pl.dmg,0); pl.dseed=n(pl.dseed,0); } // a handful of type checks per bind: cheap
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
-  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false,HULLFX_MAP:false,HULLFX_PAINT:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_PAINT=!!this.paint; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_MAP=!!(this.mtex&&this.mtex.isReady&&this.mtex.isReady()); defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); } // v53-G: ai = concept-mesh hull (shader ports, fine detail, its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
+  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false,HULLFX_MAP:false,HULLFX_PAINT:false,HULLFX_DET:false,HULLFX_KIT:false}); Object.assign(this,o); this._enable(true); }
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_PAINT=!!this.paint; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_MAP=!!(this.mtex&&this.mtex.isReady&&this.mtex.isReady()); defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_DET=!!this.det&&G.shipDetail!==false; defines.HULLFX_KIT=!!this.kit; } // v53-G: ai = concept-mesh hull (shader ports, fine detail, its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
   getSamplers(samplers){ samplers.push('hfxMap'); }
   getActiveTextures(a){ if(this.mtex) a.push(this.mtex); }
@@ -84,7 +84,9 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.9));
         surfaceAlbedo*=mix(1.0,(0.7+0.3*seam)*(0.93+0.14*id),pf); } }
 #endif
-#if defined(HULLFX_AI) && defined(HULLFX_D2) && !defined(HULLFX_PAINT)
+#if defined(HULLFX_AI) && defined(HULLFX_D2) && (!defined(HULLFX_PAINT) || defined(HULLFX_DET))
+    // v55 (audits, Oct 22): with DET the painted hull and its hand-built parts share this one detail layer, in the same ship units, so the
+    // AI hull and the clean parts carry the same seams and grain. Painted hulls already have a baked normal map, so their relief is gentler.
     // v53.8 close-up plating on concept hulls (Ryan: "melted" up close): staggered panel seams, inset hatches, small raised blocks and dents,
     // bump-mapped from a per-pixel height. Laid in ship units on the open plating only (the baked cavities and raised edges keep their own shape).
     // Each layer fades out by its own pixel footprint, so it is crisp when there are pixels for it and never shimmers when there are not.
@@ -103,8 +105,12 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         float ht=(-seam*0.6+(pid-0.5)*0.22*pk-hatch*0.45+greeb*0.6+(hfxN(vHfxL*2.2)-0.5)*0.12*pk)*0.016;
         vec3 dpx=dFdx(vPositionW), dpy=dFdy(vPositionW); float dhx=dFdx(ht), dhy=dFdy(ht);
         vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
-        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,0.85));
-        surfaceAlbedo*=(1.0-seam*0.24-hatch*0.1+greeb*0.05)*(1.0+(pid-0.5)*0.12*pk); } }
+        float dk=1.0;
+#if defined(HULLFX_PAINT) && !defined(HULLFX_KIT)
+        dk=0.55;
+#endif
+        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,0.85*dk));
+        surfaceAlbedo*=(1.0-(seam*0.24+hatch*0.1-greeb*0.05)*dk)*(1.0+(pid-0.5)*0.12*pk*dk); } }
 #endif
 #endif
 `,

@@ -90,7 +90,7 @@ for k, (img, msk, az, el, wt) in enumerate(views):
     mk = math_('MULTIPLY', atn.outputs['Fac'], math_('GREATER_THAN', tm.outputs[0], 0.5))
     sumc = vmath('ADD', sumc, vmath('SCALE', ti.outputs[0], s=mk)); sumw = mk if sumw is None else math_('ADD', sumw, mk)
 sumw = math_('ADD', sumw, wb); col_ = vmath('SCALE', sumc, s=math_('DIVIDE', 1.0, sumw))
-if base_img is None and os.environ.get('DETAIL', '1') == '1':
+if base_img is None and os.environ.get('DETAIL', '0') == '1':  # v55: off by default; the shared in-game detail layer (HullFx DET) covers hull and parts alike
     # hand-built parts get the AI hull's level of surface detail (owner, Oct 21: "the level of texture and details seem to vary wildly"):
     # panel seams at a fixed ship-space scale, fine grit, and worn edges from the bevel normal, on top of whatever paint they carry
     tc = T.nodes.new('ShaderNodeTexCoord')

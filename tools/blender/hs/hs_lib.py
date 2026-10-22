@@ -33,11 +33,15 @@ def cyl(name, c, r, h, axis='Z', seg=24, r2=None, bevel=.003, rot=None):
     if rot is not None: R = rot @ R
     bmesh.ops.rotate(bm, verts=bm.verts, cent=(0, 0, 0), matrix=R); bmesh.ops.translate(bm, verts=bm.verts, vec=c); return _obj(name, bm, bevel, seg=1, ang=50)
 def tank(name, c, r, h):  # upright tank with domed ends
-    o = cyl(name, c, r, h, seg=28, bevel=0); bm = bmesh.new()
-    for s in (1, -1):
-        bmesh.ops.create_uvsphere(bm, u_segments=28, v_segments=10, radius=r)
-    for v in bm.verts: v.co.z *= .45
-    bmesh.ops.translate(bm, verts=[v for v in bm.verts], vec=(c[0], c[1], c[2] + h / 2)); _obj(name + 'cap', bm, 0); return o
+    o = cyl(name, c, r, h, seg=28, bevel=0)
+    for s in (1, -1):  # one dome per end (Rey audit: both used to land on the top end)
+        bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=28, v_segments=10, radius=r)
+        for v in bm.verts: v.co.z = max(s * v.co.z, 0) * .45 * s
+        bmesh.ops.translate(bm, verts=list(bm.verts), vec=(c[0], c[1], c[2] + s * h / 2)); _obj(f'{name}cap{s}', bm, 0)
+    return o
+def ring(name, c, r, h, seg=24):  # open band (a railing ring), no caps
+    bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=False, segments=seg, radius1=r, radius2=r, depth=h)
+    bmesh.ops.translate(bm, verts=bm.verts, vec=c); return _obj(name, bm, 0)
 def tubes(name, c, nx, ny, r, L, pitch, axis_rot):  # rocket pod: a bundle of tubes with dark bores
     for i in range(nx):
         for j in range(ny):
@@ -64,5 +68,13 @@ def finish(name):
     for o in bpy.context.scene.objects: o.select_set(o in PARTS)
     bpy.context.view_layer.objects.active = PARTS[0]; bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     bpy.context.view_layer.objects.active = PARTS[0]; bpy.ops.object.join(); o = bpy.context.view_layer.objects.active; o.name = name
-    for p in o.data.polygons: p.use_smooth = True
+    # flat panels must shade flat (audits, Oct 22: v9 slabs read pillowy): drop custom normals, smooth only across shallow angles
+    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True); bpy.context.view_layer.objects.active = o
+    try:
+        bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.mesh.customdata_custom_splitnormals_clear(); bpy.ops.object.mode_set(mode='OBJECT')
+    except Exception:
+        bpy.ops.object.mode_set(mode='OBJECT')
+    try: bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35), keep_sharp_edges=True)
+    except Exception:
+        for p in o.data.polygons: p.use_smooth = True
     return o

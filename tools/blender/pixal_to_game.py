@@ -47,9 +47,8 @@ def save(im, name, mode='RGB'):
     im = im.convert(mode)
     if im.width != res: im = im.resize((res, res), Image.LANCZOS)
     im.save(os.path.join(outd, f'{code}_{name}.webp'), quality=90, method=6); return True
-save(alb, 'a')
-if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']):  # lift the paint to 0.8x the concept art's brightness (the bakes come out dark)
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import paint_level; print('paint level', paint_level.level(os.path.join(outd, f'{code}_a.webp'), os.environ['CONCEPT']))
+_ai = alb.convert('RGB'); _ai = _ai.resize((res, res), Image.LANCZOS) if _ai.width != res else _ai
+PAINT = {f'{code}_a.webp': np.asarray(_ai).astype(np.float64) / 255}  # paint maps, levelled together and written once at the end
 if nrm is not None:
     a = np.asarray(nrm.convert('RGB')).copy()  # no change for the mirror: the shader rebuilds the tangent frame from the mirrored geometry and its UVs
     if os.environ.get('FLIPG'): a[..., 1] = 255 - a[..., 1]
@@ -85,9 +84,14 @@ if os.environ.get('KIT'):  # hand-built parts in the same GLB frame: same axis c
         if bt is not None:
             bv = KJ['bufferViews'][KJ['images'][KJ['textures'][bt['index']]['source']]['bufferView']]; kimg = Image.open(io.BytesIO(KBIN[bv.get('byteOffset', 0):bv.get('byteOffset', 0) + bv['byteLength']])).convert('RGB')
             if texres and kimg.width > texres: kimg = kimg.resize((texres, texres), Image.LANCZOS)  # phone set: the kit atlas at the phone's map size
-            kp_ = os.path.join(outd, code + '_kit_a.webp'); kimg.save(kp_, quality=90, method=6); kit['tex'] = 1
-            if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']): sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import paint_level; print('kit paint level', paint_level.level(kp_, os.environ['CONCEPT']))
+            PAINT[code + '_kit_a.webp'] = np.asarray(kimg).astype(np.float64) / 255; kit['tex'] = 1
     json.dump(kit, open(os.path.join(outd, code + '_kit.json'), 'w')); print('kit verts', len(KP), 'tris', len(KI), 'painted', 'tex' in kit)
+# one brightness transform for hull and kit together (audits, Oct 22): solved over both maps' painted texels, applied to both, saved once
+if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']):
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import paint_level
+    g_ = paint_level.solve(list(PAINT.values()), os.environ['CONCEPT']); print('joint paint gain %.3f' % g_)
+    for k_ in PAINT: m_ = PAINT[k_].sum(2) > 6 / 255; b_ = PAINT[k_][m_].mean(); PAINT[k_] = paint_level.apply(PAINT[k_], g_); print('  %s mean %.3f -> %.3f' % (k_, b_, PAINT[k_][m_].mean()))
+for k_, a_ in PAINT.items(): Image.fromarray((np.clip(a_, 0, 1) * 255 + .5).astype(np.uint8)).save(os.path.join(outd, k_), quality=90, method=6)
 hdr = {'v': 1, 'kit': kit is not None, 'fmt': 'vsm1', 'ext': ext.tolist(), 'n': int(n), 't': int(len(I)), 'src': 'pixal3d', 'front': front, 'alb': {'res': res}, 'tex': {'res': min(res, 2048)} if nrm is not None else None,
        'mr': [pbr.get('metallicFactor', 1), pbr.get('roughnessFactor', 1)]}
 json.dump(hdr, open(os.path.join(outd, code + '.hdr.json'), 'w'))

@@ -20,7 +20,7 @@ BOXES = [  # (x0, x1, y0, y1, z0, z1): AI geometry to cut away (all above the de
     (.176, .228, -.030, .030, .062, .170),   # rack column and dome
     (.054, .097, -.030, .030, .062, .172),   # funnels
     (-.012, .062, -.040, .040, .110, .250),  # mast
-    (-.100, .068, -.088, .088, .058, .140),  # bridge tier, its drums and roof tank (owner, Oct 21: soft and blobby near the bridge)
+    (-.114, .068, -.088, .088, .058, .140),  # bridge tier (to -.114: the AI lump at the bridge front, Rey audit), its drums and roof tank (owner, Oct 21: soft and blobby near the bridge)
     (.155, .310, .178, .4, -.165, -.088), (.155, .310, -.4, -.178, -.165, -.088),  # aft side casemates and long cannons (owner, Oct 21: big side guns blobby)
     (.310, .450, .035, .120, -.066, 0.), (.310, .450, -.120, -.035, -.066, 0.),     # stern deck guns and their lamp row
     (-.60, XS, -.4, .4, -.4, .4),             # the whole bow forward of the superstructure (owner, Oct 21: wavy and messy), rebuilt as a clean loft below
@@ -81,7 +81,7 @@ def cut_extra(c):
 kill = []
 for f in bm.faces:
     c = f.calc_center_median()
-    if any(b[0] <= c.x <= b[1] and b[2] <= c.y <= b[3] and b[4] <= c.z <= b[5] for b in BOXES) or any(seg_d(c, a, b) < .022 and c.z > a.z + .010 for a, b in GUNS) or cut_extra(c):
+    if any(b[0] <= c.x <= b[1] and b[2] <= c.y <= b[3] and b[4] <= c.z <= b[5] for b in BOXES) or any(seg_d(c, a, b) < .022 and c.z > a.z + .010 or seg_d(c, a, b) < .015 and c.z > a.z - .004 for a, b in GUNS) or cut_extra(c):
         kill.append(f)
 bmesh.ops.delete(bm, geom=kill, context='FACES'); bm.to_mesh(hull.data); print('cut faces', len(kill))
 BVH = BVHTree.FromBMesh(bm); bm.free()
@@ -113,25 +113,40 @@ tag(DARK)
 box('rackframe', (.217, 0, .102), (.150, .07, .006), bevel=.0015); box('rackcheek1', (.144, 0, .102), (.006, .088, .04), bevel=.0015); box('rackcheek2', (.290, 0, .102), (.006, .088, .04), bevel=.0015); tag(RED)
 for s in (1, -1): box(f'rackstrap{s}', (.217, s * .028, .124), (.150, .004, .003), bevel=.0006)
 tag(STEEL)
-hz, _ = surf_down(.202, 0, .07); zc0 = (hz.z - .003) if hz is not None else .047; cyl('column', (.202, 0, (zc0 + .097) / 2), .021, .097 - zc0, seg=32, bevel=.002); cyl('collar', (.202, 0, .096), .025, .006, seg=32, bevel=.001); tag(STEEL)
+hz, _ = surf_down(.202, 0, .07); zc0 = (hz.z - .003) if hz is not None else .047; cyl('column', (.202, 0, (zc0 + .097) / 2), .028, .097 - zc0, seg=32, bevel=.002); cyl('collar', (.202, 0, .096), .032, .006, seg=32, bevel=.001)
+for k in range(int((.090 - zc0) / .012)): cyl(f'colrib{k}', (.202, 0, zc0 + .010 + k * .012), .0295, .003, seg=32, bevel=0)
+for xe in (.150, .284):  # braces from the column collar out under each end of the frame (Rey audit: one off-centre post read wrong)
+    d_ = Vector((xe, 0, .098)) - Vector((.202 + (.030 if xe > .202 else -.030), 0, .090)); barrel(f'rackbrace{xe}', Vector((.202 + (.030 if xe > .202 else -.030), 0, .090)), d_.normalized(), d_.length, .003)
+tag(STEEL)
 cyl('domebase', (.202, 0, .135), .011, .03, seg=24, bevel=.001); tag(RED)
 bm2 = bmesh.new(); bmesh.ops.create_uvsphere(bm2, u_segments=24, v_segments=10, radius=.011)
 for v in bm2.verts: v.co.z = max(v.co.z, 0) * .9
 bmesh.ops.translate(bm2, verts=bm2.verts, vec=(.202, 0, .150)); hs_lib._obj('dome', bm2, 0); tag(RED)
 # funnels: a slim one and a stout one, red with dark bands and caps
-for nm, x, y, r, z0, z1 in (('fun1', .0666, .010, .0064, .040, .163), ('fun2', .0827, -.012, .0118, .034, .156)):
+for nm, x, y, r, z0, z1 in (('fun1', .062, 0, .0064, .040, .168), ('fun2', .085, 0, .0118, .034, .156)):  # on the centreline, slim forward, stout aft (side view)
     hz, _ = surf_down(x, y, .062)
     if hz is not None: z0 = hz.z - .003  # stands on the deck, slightly sunk
     cyl(nm + 'base', (x, y, z0 + .003), r * 1.35, .006, seg=24, bevel=.001); tag(STEEL)
     cyl(nm, (x, y, (z0 + z1) / 2), r, z1 - z0, seg=24, bevel=.0012); tag(RED)
     for k in range(int((z1 - z0) / .018)): cyl(f'{nm}band{k}', (x, y, z0 + .012 + k * .018), r * 1.06, .003, seg=24, bevel=0)
-    cyl(nm + 'cap', (x, y, z1 + .002), r * 1.12, .005, seg=24, bevel=.001); cyl(nm + 'bore', (x, y, z1 + .0047), r * .8, .001, seg=24, bevel=0); tag(DARK)
-# mast: main pole, a second pole, a yard arm, a brace and a lantern box
-cyl('mast', (.035, 0, .170), .0035, .136, seg=12, bevel=0); cyl('mast2', (.009, 0, .146), .0028, .088, seg=12, bevel=0)
-box('yard', (.008, 0, .176), (.026, .003, .003), bevel=0); box('yard2', (.040, 0, .214), (.016, .0025, .0025), bevel=0)
-barrel('brace', (-.032, 0, .123), (.98, 0, .30), .06, .0018)
-box('lantern', (.036, 0, .225), (.010, .009, .014), bevel=.001)
-for k in range(4): box(f'rung{k}', (.038, 0, .115 + k * .022), (.010, .004, .0016), bevel=0)
+    if nm == 'fun2':  # the stout stack has a domed cap in the concept
+        bmd = bmesh.new(); bmesh.ops.create_uvsphere(bmd, u_segments=24, v_segments=10, radius=r * 1.04)
+        for v in bmd.verts: v.co.z = max(v.co.z, 0) * .6
+        bmesh.ops.translate(bmd, verts=bmd.verts, vec=(x, y, z1)); hs_lib._obj(nm + 'dome', bmd, 0); tag(STEEL)
+    else:
+        cyl(nm + 'cap', (x, y, z1 + .002), r * 1.12, .005, seg=24, bevel=.001); cyl(nm + 'bore', (x, y, z1 + .0047), r * .8, .001, seg=24, bevel=0); tag(DARK)
+# mast (v11, audits): tall main mast with two yards spanning sideways and ball caps, a ladder facing the bow, a second mast with its own
+# crossbar, and an angled pipe from the main mast down to a junction box on the roof; every end lands on a part
+cyl('mast', (.035, 0, .181), .0035, .158, seg=12, bevel=0); cyl('mastspike', (.035, 0, .266), .0030, .012, seg=12, r2=.0004, bevel=0)
+for zy, w_ in ((.205, .090), (.238, .066)):
+    box(f'yard{zy}', (.035, 0, zy), (.004, w_, .004), bevel=0)
+    for s_ in (1, -1):
+        bmy = bmesh.new(); bmesh.ops.create_uvsphere(bmy, u_segments=10, v_segments=6, radius=.003); bmesh.ops.translate(bmy, verts=bmy.verts, vec=(.035, s_ * w_ / 2, zy)); hs_lib._obj(f'yardcap{zy}{s_}', bmy, 0)
+cyl('mast2', (.009, 0, .151), .0028, .098, seg=12, bevel=0); box('mast2bar', (.009, 0, .185), (.0035, .060, .0035), bevel=0); cyl('mast2stub', (.009, 0, .210), .0012, .020, seg=6, bevel=0)
+for s_ in (1, -1): cyl(f'ladrail{s_}', (.0295, s_ * .006, .153), .0009, .094, seg=6, bevel=0)
+for k in range(8): box(f'ladrung{k}', (.0295, 0, .112 + k * .012), (.0016, .012, .0016), bevel=0)
+box('lantern', (.035, 0, .225), (.010, .009, .014), bevel=.001)
+pa, pb = Vector((.0318, -.002, .170)), Vector((-.030, -.020, .121)); barrel('mastpipe', pa, (pb - pa).normalized(), (pb - pa).length, .0028)
 tag(STEEL)
 # long guns: tapered barrels on ball mounts, leaning outboard
 for i, (a, b) in enumerate(GUNS):
@@ -140,30 +155,46 @@ for i, (a, b) in enumerate(GUNS):
         n_ = Vector(n_).normalized()
         if n_.dot(Vector((0, 1 if a.y > 0 else -1, 0))) < 0: n_ = -n_  # outward
         a = p_ + n_ * .006; d = (d.normalized() + n_ * .5).normalized() * L  # never aimed back into the hull
-        Rn = Vector((0, 0, 1)).rotation_difference(n_).to_matrix(); cyl(f'gunplate{i}', p_ + n_ * .0012, .011, .003, seg=20, rot=Rn, bevel=.0008)
+        Rn = Vector((0, 0, 1)).rotation_difference(n_).to_matrix(); cyl(f'gunplate{i}', p_ + n_ * .0012, .018, .003, seg=24, rot=Rn, bevel=.0008)  # wide enough to cover the cut AI base
     cyl(f'gunball{i}', a, .0085, .010, seg=20, bevel=.002)
     barrel(f'gun{i}', a, d.normalized(), L, .0034)
 tag(GUN)
 # bridge tier: armoured block with a sloped front, window band with a row of lights, roof rail, shoulder drums on saddles, roof tank
 x0, x1, zb, zt = -.088, .059, .056, .102
-box('plinth', ((x0 + x1) / 2 + .004, 0, zb + .002), (x1 - x0 + .016, .170, .014), bevel=.002); tag(STEEL)
+box('plinth', ((x0 + x1) / 2 - .002, 0, zb + .002), (x1 - x0 + .028, .170, .014), bevel=.002); tag(STEEL)  # a little longer at the front, under the front drums
 frustum('tier', ((x0 + x1) / 2, 0, zb), ((x1 - x0) / 2, .056), ((x1 - x0) / 2 - .010, .050), zt - zb, shear=(.010, 0), bevel=.003); tag(RED)
 box('roof', ((x0 + x1) / 2 + .010, 0, zt + .002), (x1 - x0 - .018, .098, .004), bevel=.001); tag(RED)  # red like the concept (steel read as a pale slab in game)
-sl = math.atan2(.020, zt - zb)  # front slope
-box('winband', (x0 + .006, 0, zt - .010), (.004, .094, .012), rot=(0, -sl, 0), bevel=.001); tag(DARK)
-for k in range(8): box(f'light{k}', (x0 + .0035, -.040 + k * .0114, zt - .010), (.002, .006, .004), rot=(0, -sl, 0), bevel=0)
+sl = math.atan2(.020, zt - zb)  # front face leans back by this much
+def xface(z): return x0 + .020 * (z - zb) / (zt - zb)  # x of the tier's front face at height z
+nf = Vector((-math.cos(sl), 0, math.sin(sl)))  # its outward normal
+Rf = Vector((0, 0, 1)).rotation_difference(nf).to_matrix()
+for y_ in (.030, .006):  # two drums side by side at the foot of the front face, ends to the bow (concept)
+    cyl(f'fdrum{y_}', (xface(.0765) - .011, y_, .0765), .0125, .022, axis='X', seg=28, bevel=.0015)
+tag(STEEL)
+for y_ in (.030, .006):
+    cyl(f'fdrumring{y_}', (xface(.0765) - .016, y_, .0765), .0132, .003, axis='X', seg=28, bevel=0)
+tag(GUN)
+box('fwindow', (xface(.086) - .0006, -.022, .086), (.003, .016, .011), rot=(0, sl, 0), bevel=.0006); tag(GUN)
+box('fwinglass', (xface(.086) - .0022, -.022, .086), (.001, .012, .008), rot=(0, sl, 0), bevel=0); tag(DARK)
+cyl('fport', Vector((xface(.080), -.041, .080)) + nf * .001, .0055, .003, seg=20, rot=Rf, bevel=.0005); tag(GUN)
+cyl('fportglass', Vector((xface(.080), -.041, .080)) + nf * .0026, .0040, .001, seg=20, rot=Rf, bevel=0); tag(DARK)
+# light visor on the roof's front edge (replaces the band that floated off the face): a dark plate pitched nose-down on two feet, five lamps
+xr = (x0 + x1) / 2 + .010 - (x1 - x0 - .018) / 2; vz = zt + .009; vp = math.radians(-32)
+box('visor', (xr + .004, 0, vz), (.020, .072, .0025), rot=(0, vp, 0), bevel=.0005); tag(DARK)
+for s_ in (1, -1): box(f'visorfoot{s_}', (xr + .008, s_ * .028, zt + .0055), (.004, .004, .007), bevel=0)
+tag(GUN)
+nv = Vector((math.sin(vp), 0, math.cos(vp)))
+for k in range(5): box(f'vlamp{k}', Vector((xr + .004, -.026 + k * .013, vz)) + nv * .0016, (.008, .007, .0012), rot=(0, vp, 0), bevel=0)
 tag((1.0, .30, .04))
 for s_ in (1, -1):
     box(f'rail{s_}', ((x0 + x1) / 2 + .010, s_ * .047, zt + .009), (x1 - x0 - .024, .0016, .0016), bevel=0)
     for k in range(6): box(f'post{s_}{k}', (x0 + .016 + k * .024, s_ * .047, zt + .0065), (.0016, .0016, .007), bevel=0)
 tag(STEEL)
-for s_ in (1, -1):  # drums ride on saddles that sit on the tier shoulders
-    cyl(f'drum{s_}', (-.0075, s_ * .0625, .078), .0125, .053, axis='X', seg=28, bevel=.0015); tag(STEEL)
-    for k in (-1, 1): cyl(f'drumring{s_}{k}', (-.0075 + k * .018, s_ * .0625, .078), .0132, .003, axis='X', seg=28, bevel=0)
-    tag(GUN)
-    for k in (-1, 1):
-        hz, _ = surf_down(-.0075 + k * .016, s_ * .0625, .07); ztop = .066; zbot = min(ztop - .004, hz.z if hz is not None else ztop - .01)
-        box(f'saddle{s_}{k}', (-.0075 + k * .016, s_ * .0625, (ztop + zbot) / 2), (.008, .020, ztop - zbot), bevel=.0008)
+for s_ in (1, -1):  # netted drum lying against each side wall of the tier, held by two wall brackets (concept side view)
+    yw = .056 - .006 * (.078 - zb) / (zt - zb)  # tier half width at the drum's height
+    cyl(f'drum{s_}', (-.0075, s_ * (yw + .0115), .078), .0125, .053, axis='X', seg=28, bevel=.0015); tag(STEEL)
+    for k in (-1, 1): cyl(f'drumring{s_}{k}', (-.0075 + k * .018, s_ * (yw + .0115), .078), .0132, .003, axis='X', seg=28, bevel=0)
+    for k in (-1, 1): box(f'drumbracket{s_}{k}', (-.0075 + k * .016, s_ * (yw + .002), .078), (.005, .006, .010), bevel=0)
     tag(GUN)
 cyl('rooftank', (-.020, 0, zt + .015), .010, .022, seg=24, bevel=.0012); tag(RED)
 bm3 = bmesh.new(); bmesh.ops.create_uvsphere(bm3, u_segments=24, v_segments=10, radius=.010)
@@ -184,21 +215,26 @@ loft('bow', [(float(x), bow_sec(float(x))) for x in _np.concatenate([_np.linspac
 # deck dressing from the concept: jackstaff with a spike at the tip, a forward-facing bow chaser (owner: bow guns may face forward),
 # hatches, bollards along the deck edges and a pair of drums on each side at the foot of the superstructure
 zdk = -.082
-cyl('jackstaff', (XT + .032, 0, zdk + .026), .0035, .052, seg=12, bevel=0); cyl('jackspike', (XT + .032, 0, zdk + .057), .0042, .012, seg=12, r2=.0004, bevel=0); tag(STEEL)
+def deckz(x, y):  # bow deck top at (x, |y|), from bow_sec (the deck falls from the centreline toward the edge)
+    sec = bow_sec(x); top = sorted([p for p in sec[:4]], key=lambda p: p[0]); ya = abs(y)
+    for (y0_, z0_), (y1_, z1_) in zip(top, top[1:]):
+        if ya <= y1_: return z0_ + (z1_ - z0_) * (ya - y0_) / max(1e-9, y1_ - y0_)
+    return top[-1][1]
+cyl('jackstaff', (XT + .032, 0, deckz(XT + .032, 0) + .025), .0035, .052, seg=12, bevel=0); cyl('jackspike', (XT + .032, 0, deckz(XT + .032, 0) + .056), .0042, .012, seg=12, r2=.0004, bevel=0); tag(STEEL)
 cyl('chaserbase', (-.425, 0, zdk + .003), .016, .006, seg=24, bevel=.001); tag(STEEL)
-box('chaserhouse', (-.425, 0, zdk + .012), (.026, .020, .012), bevel=.002); tag(RED)
-for s_ in (1, -1): barrel(f'chaser{s_}', (-.436, s_ * .005, zdk + .013), (-1, 0, .04), .052, .0028)
+box('chaserhouse', (-.425, 0, zdk + .012), (.026, .034, .012), bevel=.002); tag(RED)
+for s_ in (1, -1): barrel(f'chaser{s_}', (-.436, s_ * .012, zdk + .013), (-1, 0, .04), .050, .0028)  # .012 apart from the centreline: clear of the jackstaff (Codex audit)
 tag(GUN)
-box('hatch1', (-.370, 0, zdk + .0015), (.030, .026, .003), bevel=.0008); cyl('hatch2', (-.335, .045, zdk + .0015), .009, .003, seg=20, bevel=.0005); cyl('hatch3', (-.335, -.045, zdk + .0015), .009, .003, seg=20, bevel=.0005); tag(STEEL)
+box('hatch1', (-.370, 0, zdk + .0015), (.030, .026, .003), bevel=.0008); cyl('hatch2', (-.335, .045, deckz(-.335, .045) + .001), .009, .003, seg=20, bevel=.0005); cyl('hatch3', (-.335, -.045, deckz(-.335, -.045) + .001), .009, .003, seg=20, bevel=.0005); tag(STEEL)
 for x_ in (-.400, -.345, -.290):
     w_ = .124 * (1 - (1 - (x_ - XT) / (XS + .010 - XT)) ** 2.2)
-    for s_ in (1, -1): cyl(f'bollard{x_}{s_}', (x_, s_ * (w_ - .012), zdk + .004), .0035, .008, seg=12, bevel=.0006)
+    for s_ in (1, -1): cyl(f'bollard{x_}{s_}', (x_, s_ * (w_ - .012), deckz(x_, w_ - .012) + .0035), .0035, .008, seg=12, bevel=.0006)
 tag(GUN)
 for s_ in (1, -1):
-    for k in (0, 1): cyl(f'deckdrum{s_}{k}', (-.278 + k * .024, s_ * .072, zdk + .010), .0095, .028, axis='Y', seg=24, bevel=.001)
+    for k in (0, 1): cyl(f'deckdrum{s_}{k}', (-.278 + k * .024, s_ * .072, deckz(-.278 + k * .024, .072) + .0088), .0095, .028, axis='Y', seg=24, bevel=.001)
     tag(STEEL)
     for k in (0, 1):
-        for e in (1, -1): cyl(f'deckdrumring{s_}{k}{e}', (-.278 + k * .024, s_ * .072 + e * .009, zdk + .010), .0101, .002, axis='Y', seg=24, bevel=0)
+        for e in (1, -1): cyl(f'deckdrumring{s_}{k}{e}', (-.278 + k * .024, s_ * .072 + e * .009, deckz(-.278 + k * .024, .072) + .0088), .0101, .002, axis='Y', seg=24, bevel=0)
     tag(GUN)
 # aft side guns, one matched set per side (concept side view): an oval casemate on the flank with a long barrel aimed aft along the side,
 # a long cannon on brackets above it, and on the stern deck a gun housing with twin barrels aimed aft, an orange lamp, and a row of deck lamps
@@ -244,16 +280,36 @@ for i, (x0, x1, z0, z1) in enumerate(SIDE):
         if i != 2:
             for k in range(6): box(f'sidevent{i}{s_}{k}', (x0 + .016 + k * .007, s_ * (y_ + .0012), z0 + .016), (.0035, .002, .014), bevel=0)
             tag(DARK)
-# front armour (v9, from the concept close-up): a single column of four thick dark slabs climbing the front slope like a staircase, each
-# with a rim at its lower edge and an embossed plaque, from the deck up to the drums at the bridge base. Painted by projection.
-SLATE = (.06, .06, .065)
-xs_ = [-.242, -.208, -.175, -.143, -.112]
-for k in range(4):
-    xa, xb = xs_[k] + .002, xs_[k + 1] - .002; za, zb = prof(xa), prof(xb); a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
-    nx, nz = -math.sin(a_), math.cos(a_); t_ = .016; w_ = .128 - .006 * k; cx, cz = (xa + xb) / 2 + nx * t_ / 2, (za + zb) / 2 + nz * t_ / 2
-    box(f'frontslab{k}', (cx, 0, cz), (L_ + .006, w_, t_), rot=(0, -a_, 0), bevel=.0025); tag(SLATE)
-    box(f'frontrim{k}', (xa + nx * t_ * .55 + .002, 0, za + nz * t_ * .55), (.005, w_ + .003, t_ * .9), rot=(0, -a_, 0), bevel=.001); tag(STEEL)
-    box(f'frontplaque{k}', (cx + nx * (t_ / 2 + .0006), 0, cz + nz * (t_ / 2 + .0006)), (L_ * .55, w_ * .5, .0014), rot=(0, -a_, 0), bevel=.0004); tag(GUN)
+# front armour (v11, Rey audit + concept close-up): a stack of book-like steps climbing the front slope. Each step's tread tilts at half
+# the slope, its downhill face stands near vertical, widths shrink hard as they climb; steps 1 and 3 carry a raised rim with engraved
+# grooves, 2 and 4 are plain with one seam, step 5 is a laminate of three thin plates. Page-layer grooves on every front face.
+STEPS = [(-.242, .042, .152, .032), (-.205, .038, .140, .028), (-.172, .034, .126, .024), (-.143, .030, .108, .020)]
+SCOL = [(.055, .055, .060), (.030, .032, .040), (.060, .060, .065), (.045, .045, .050), (.065, .065, .070)]
+def slope_ang(x): return math.atan2(prof(x + .01) - prof(x - .01), .02)
+def step_frame(xf, ln):
+    b_ = slope_ang(xf + ln / 2) / 2; F = Vector((xf, 0, prof(xf) - .002)); u = Vector((math.cos(b_), 0, math.sin(b_))); v = Vector((-math.sin(b_), 0, math.cos(b_)))
+    return b_, F, u, v
+for k, (xf, ln, w_, h_) in enumerate(STEPS):
+    b_, F, u, v = step_frame(xf, ln)
+    box(f'step{k}', F + u * ln / 2 + v * h_ / 2, (ln + .005, w_, h_), rot=(0, -b_, 0), bevel=.0015); tag(SCOL[k])
+    for s_ in (1, -1): box(f'stepcheek{k}{s_}', F + u * ln / 2 + v * (h_ / 2 - .004) + Vector((0, s_ * (w_ / 2 - .004), 0)), (ln + .004, .008, h_ + .008), rot=(0, -b_, 0), bevel=.001)
+    tag(SCOL[k])
+    for f_ in (1 / 3, 2 / 3): box(f'steppage{k}{f_:.2f}', F - u * .0004 + v * h_ * f_, (.0012, w_ - .004, .0015), rot=(0, -b_, 0), bevel=0)
+    tag(DARK)
+    T_ = F + v * (h_ + .00125)
+    if k in (0, 2):  # raised perimeter rim, engraved grooves inside
+        for s_ in (1, -1): box(f'steprim{k}{s_}', T_ + u * ln / 2 + Vector((0, s_ * (w_ / 2 - .005), 0)), (ln, .010, .0025), rot=(0, -b_, 0), bevel=.0004)
+        for e_ in (.005, ln - .005): box(f'steprimx{k}{e_:.3f}', T_ + u * e_, (.010, w_, .0025), rot=(0, -b_, 0), bevel=.0004)
+        tag(SCOL[k])
+        for f_ in (.35, .5, .65): box(f'stepgroove{k}{f_}', F + v * (h_ + .0004) + u * ln * f_, (.0015, w_ * .55, .0008), rot=(0, -b_, 0), bevel=0)
+        for g_ in range(4): box(f'stepblock{k}{g_}', F + v * (h_ + .0004) + u * ln * .5 + Vector((0, -.012 + g_ * .008, 0)), (.006, .0015, .0008), rot=(0, -b_, 0), bevel=0)
+        tag(DARK)
+    else:
+        box(f'stepseam{k}', F + v * (h_ + .0003) + u * ln * .5, (.0015, w_ - .01, .0007), rot=(0, -b_, 0), bevel=0); tag(DARK)
+b_, F, u, v = step_frame(-.118, .024)
+for q, (wq, xo) in enumerate(((.088, 0), (.082, .002), (.076, .004))):  # step 5: a laminate of three thin plates
+    box(f'lam{q}', F + u * (.012 + xo) + v * (.002 + .004 * q + .002), (.024 - xo, wq, .004), rot=(0, -b_, 0), bevel=.0008)
+tag(SCOL[4])
 # ventral thrusters (concept: three glowing nozzles under the midship), on a keel plate
 for k, x_ in enumerate((-.015, .017, .049)):
     h = BVH.ray_cast(Vector((x_, 0, -.5)), Vector((0, 0, 1)), 1.0); zb_ = h[0].z if h[0] is not None else -.19
@@ -288,27 +344,24 @@ for s_ in (1, -1):
     tag(STEEL)
     for e in (-1, 1): cyl(f'tankstrap{s_}{e}', (.020 + e * .024, s_ * ty, tz), .0133, .004, axis='X', seg=28, bevel=0)
     tag(GUN)
-# bridge top dressing (v8, owner: "top of the bridge with antennae looks plain and sparse"): crow's nest on the main mast, a radar dish on the
-# second mast, whip antennas, searchlights at the front corners, a rangefinder, roof vents and a hatch. Hand-painted (KEEP box in the job).
+# bridge top (v11, Rey audit + concept): the density is vertical. One base plate on the roof's rear half carries the mast cluster (built
+# above); the front half of the roof stays clean red behind the light visor. Two whips on the plate's rear corners, roof vents, a hatch,
+# and the junction box the mast pipe lands on. No radar dish, searchlights or rangefinder: the concept has none.
 ZR = zt + .004
-cyl('crowsnest', (.035, 0, .186), .012, .005, seg=24, bevel=.0008); cyl('crowrail', (.035, 0, .193), .0125, .002, seg=24, bevel=0)
-for k in range(6): cyl(f'crowpost{k}', (.035 + .0115 * math.cos(k * math.pi / 3), .0115 * math.sin(k * math.pi / 3), .1895), .0007, .007, seg=6, bevel=0)
+box('mastplate', (.012, 0, ZR + .002), (.090, .090, .004), bevel=.0008); tag(STEEL)
+ring('crowsnest', (.035, 0, .186), .014, .004); ring('crowrail', (.035, 0, .193), .014, .002)
+cyl('crowfloor', (.035, 0, .1845), .014, .0015, seg=24, bevel=0)
+for k in range(6): cyl(f'crowpost{k}', (.035 + .0135 * math.cos(k * math.pi / 3), .0135 * math.sin(k * math.pi / 3), .1895), .0007, .007, seg=6, bevel=0)
 tag(STEEL)
-cyl('radardish', (.0035, 0, .196), .013, .005, axis='X', seg=28, r2=.004, bevel=0); cyl('radarhub', (.009, 0, .196), .004, .008, axis='X', seg=12, bevel=0); tag(STEEL)
-for x_, h_ in ((-.070, .060), (.050, .045)):
-    for s_ in (1, -1): cyl(f'whip{x_}{s_}', (x_, s_ * .040, ZR + h_ / 2), .0011, h_, seg=6, bevel=0); cyl(f'whipbase{x_}{s_}', (x_, s_ * .040, ZR + .002), .003, .004, seg=12, bevel=0)
+box('junction', (-.030, -.020, ZR + .009), (.012, .012, .010), bevel=.0008); cyl('valve', (-.030, -.0138, ZR + .010), .006, .002, axis='Y', seg=16, bevel=0); tag(GUN)
+for s_ in (1, -1): cyl(f'whip{s_}', (.050, s_ * .040, ZR + .004 + .025), .0011, .050, seg=6, bevel=0); cyl(f'whipbase{s_}', (.050, s_ * .040, ZR + .005), .003, .002, seg=12, bevel=0)
 tag(STEEL)
 for s_ in (1, -1):
-    cyl(f'searchlight{s_}', (-.072, s_ * .036, ZR + .006), .0055, .010, axis='X', seg=20, bevel=.0008); box(f'searchyoke{s_}', (-.070, s_ * .036, ZR + .002), (.006, .008, .004), bevel=0); tag(GUN)
-    cyl(f'searchlens{s_}', (-.0775, s_ * .036, ZR + .006), .0045, .0012, axis='X', seg=20, bevel=0); tag((1.0, .85, .55))
-box('rfped', (-.045, 0, ZR + .003), (.008, .008, .006), bevel=0); cyl('rangefinder', (-.045, 0, ZR + .009), .0042, .056, axis='Y', seg=16, bevel=.0006); tag(GUN)
-for s_ in (1, -1): cyl(f'rflens{s_}', (-.045, s_ * .0285, ZR + .009), .0036, .0015, axis='Y', seg=16, bevel=0)
-tag(DARK)
-for s_ in (1, -1):
-    box(f'roofvent{s_}', (.016, s_ * .030, ZR + .004), (.018, .012, .008), bevel=.0008); tag(STEEL)
-    for k in range(4): box(f'roofslat{s_}{k}', (.009 + k * .0047, s_ * .030, ZR + .0083), (.002, .010, .0008), bevel=0)
+    box(f'roofvent{s_}', (.016, s_ * .030, ZR + .008), (.018, .012, .008), bevel=.0008); tag(STEEL)
+    for k in range(4): box(f'roofslat{s_}{k}', (.009 + k * .0047, s_ * .030, ZR + .0123), (.002, .010, .0008), bevel=0)
     tag(DARK)
-cyl('roofhatch', (-.008, -.028, ZR + .001), .007, .003, seg=20, bevel=.0005); tag(STEEL)
+cyl('roofhatch', (-.008, .028, ZR + .007), .007, .006, seg=20, bevel=.0005); tag(STEEL)
+box('greeble', (.020, 0, ZR + .008), (.010, .008, .008), bevel=.0008); tag(GUN)
 for o in hs_lib.PARTS:  # each part carries its colour as a vertex attribute, which survives the bevels and the join
     c = DARK if o.name.startswith('bore') or 'band' in o.name else COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
     for d in a.data: d.color = (c[0], c[1], c[2], 1)

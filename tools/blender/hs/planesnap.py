@@ -28,12 +28,12 @@ for a, b in pairs: adj[a].append(b); adj[b].append(a)
 C = V[F].mean(1); cosA = math.cos(ANG)
 region = -np.ones(nf, np.int64); planes = []; seeds = np.argsort(-A)
 for s in seeds:
-    if region[s] >= 0: continue
+    if region[s] != -1: continue  # visited (accepted >= 0, rejected <= -2): the old >= 0 test re-grew rejected regions (Codex audit)
     n0 = Ns[s]; d0 = n0 @ C[s]; rid = len(planes); members = [s]; region[s] = rid; q = collections.deque([s]); area = A[s]; nsum = Ns[s] * A[s]
     while q:
         f = q.popleft()
         for g in adj[f]:
-            if region[g] >= 0: continue
+            if region[g] != -1: continue
             if Ns[g] @ n0 < cosA or abs(n0 @ C[g] - d0) > TOL * 1.5: continue
             region[g] = rid; members.append(g); q.append(g); area += A[g]; nsum += Ns[g] * A[g]
             if len(members) % 200 == 0:  # refit the plane as the region grows
