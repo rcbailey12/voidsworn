@@ -803,6 +803,15 @@ function compactHalf(vd,idx){ const P=vd.positions, N=vd.normals, U=vd.uvs, U2=v
   const pos=new Float32Array(n*3), nor=new Float32Array(n*3), uv=U?new Float32Array(n*2):null, uv2=U2?new Float32Array(n*2):null, col=C?new Float32Array(n*4):null;
   for(let v=0;v<map.length;v++){ const m=map[v]; if(m<0) continue; for(let c=0;c<3;c++){ pos[m*3+c]=P[v*3+c]; nor[m*3+c]=N[v*3+c]; } if(uv){ uv[m*2]=U[v*2]; uv[m*2+1]=U[v*2+1]; } if(uv2){ uv2[m*2]=U2[v*2]; uv2[m*2+1]=U2[v*2+1]; } if(col) for(let c=0;c<4;c++) col[m*4+c]=C[v*4+c]; }
   const sub=new BABYLON.VertexData(); sub.positions=pos; sub.normals=nor; if(uv) sub.uvs=uv; if(uv2) sub.uvs2=uv2; if(col) sub.colors=col; sub.indices=n<65536?Uint16Array.from(out):out; return sub; }
+// v55 (Oct 22): the converted hulls and kits came out wound inside-out for Babylon (outward faces counted as back faces). With two-sided
+// lighting on, the hull was then lit as if from inside: its shaded side read bright and its sunny top read dull, while the kit (lit by its
+// stored normals) did the opposite, so kit plates looked black on a bright hull. Check the winding against the stored normals and flip it
+// when most faces disagree. Babylon's front face here has cross(b-a,c-a) pointing against the normal.
+function faceOut(vd){ const P=vd.positions, N=vd.normals, I=vd.indices; if(!P||!N||!I) return 0; let wrong=0, all=0;
+  for(let t=0;t<I.length;t+=3*7){ const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3, ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2], vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];
+    const d=(uy*vz-uz*vy)*(N[a]+N[b]+N[c])+(uz*vx-ux*vz)*(N[a+1]+N[b+1]+N[c+1])+(ux*vy-uy*vx)*(N[a+2]+N[b+2]+N[c+2]); if(d!==0){ all++; if(d>0) wrong++; } }
+  if(wrong*2<=all) return 0; const J=(I instanceof Uint16Array||I instanceof Uint32Array||I instanceof Int32Array)?new I.constructor(I):Uint32Array.from(I);
+  for(let t=0;t<J.length;t+=3){ const x=J[t+1]; J[t+1]=J[t+2]; J[t+2]=x; } vd.indices=J; return 1; }
 function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')); if(!fore) return p; const M=facMats(fac), L=p.L;
   for(const m of p.root.getChildMeshes(false)) if(m.name.includes('hull_')||m.name.endsWith('emblem')) m.dispose(false,false);
   p.root.computeWorldMatrix(true); fore.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(fore.getWorldMatrix()).multiply(p.root.getWorldMatrix());
@@ -810,7 +819,7 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
   const hid=AI_HULLS[Object.keys(AI_HULL_DATA).find(k=>AI_HULL_DATA[k]===d)], yaw=AI_HULL_YAW[hid]||0, nor=Float32Array.from(d.nor); let idx=d.idx;
   if(yaw) for(const A of [pos,nor]) for(let i=0;i<A.length;i+=3){ const x=A[i], z=A[i+2]; A[i]=yaw>0?-z:z; A[i+2]=yaw>0?x:-x; } // v53: meshes that came out of Hunyuan side-on get turned to fly bow first
   p._sailHull=fac==='ithar'&&hid===ITHAR_SAIL_TEST.hull&&ithSailsOn(); if(p._sailHull) idx=cropAISails(pos,idx,L*ITHAR_SAIL_TEST.keep);
-  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=nor; vd.indices=idx; vd.uvs=d.uv; if(d.uv2) vd.uvs2=d.uv2; if(d.col&&!G.diagNoAO) vd.colors=aoCurve(d,fac); vd.transform(inv);
+  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=nor; vd.indices=idx; vd.uvs=d.uv; if(d.uv2) vd.uvs2=d.uv2; if(d.col&&!G.diagNoAO) vd.colors=aoCurve(d,fac); vd.transform(inv); if(!G.diagNoFaceOut) faceOut(vd);
   // split at the procedural break line so a dying ship still breaks in two
   const split=(p.surf&&p.surf.split!=null)?p.surf.split:-.05*L, aftN=p.root.getChildren().find(n=>n.name.endsWith('aft'))||fore, P=vd.positions, I=vd.indices, parts={fore:[],aft:[]};
   for(let t=0;t<I.length;t+=3){ const cx=(P[I[t]*3]+P[I[t+1]*3]+P[I[t+2]*3])/3; parts[cx>=split?'fore':'aft'].push(I[t],I[t+1],I[t+2]); }
@@ -822,7 +831,7 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
   { const AM=p.matOverride||aiHullMatFor(fac,d); p.aiMat=AM; for(const m of p.root.getChildMeshes(false)) if(m.name==='hull_ai') m.material=AM; }
   { const P0=FAC3D[fac]||FAC3D.hegemony; AI_MATS['aitrim_'+fac]=AI_MATS['aitrim_'+fac]||emMat('aitrim_'+fac,P0.eng.scale(.9)); AI_MATS['aitrim_'+fac].backFaceCulling=false; } // kept for faction extras that trim the mesh
   if(d.kit&&!G.noKit){ try{ const k=d.kit, kp=new Float32Array(k.pos.length); for(let i=0;i<kp.length;i++) kp[i]=k.pos[i]*L; // v54 hand-built parts, in the hull's frame
-      const kv=new BABYLON.VertexData(); kv.positions=kp; kv.normals=Float32Array.from(k.nor); kv.indices=k.idx; if(k.uv&&k.tex) kv.uvs=k.uv; else kv.colors=k.col; kv.transform(inv);
+      const kv=new BABYLON.VertexData(); kv.positions=kp; kv.normals=Float32Array.from(k.nor); kv.indices=k.idx; if(k.uv&&k.tex) kv.uvs=k.uv; else kv.colors=k.col; kv.transform(inv); if(!G.diagNoFaceOut) faceOut(kv);
       const km=new BABYLON.Mesh('hull_kit',G.scene); kv.applyToMesh(km); km.material=k.tex?aiKitMat(fac,aiHullCode(d),d.dir||'hulls_hi/'):aiKitMat(fac); km.parent=fore; km.isPickable=false; km.refreshBoundingInfo(true); try{ castShadows(km); }catch(e){} }catch(e){ console.warn('hull kit',e); } }
   try{ seatOnHull(p,new HullQ(P,vd.normals,I),fore,aftN); }catch(e){ console.warn('AI hull seating',e); }
   p.aiHull=true; return p; }
