@@ -625,7 +625,7 @@ function craftInstance(fac,kind){ const key=fac+'|'+kind; let p=CRAFT_CACHE[key]
   if(!p||p.isDisposed()){ const c=buildCraft(fac,kind); const all=c.root.getChildMeshes(false); const solid=all.filter(m=>m.getTotalVertices()>0&&!m.billboardMode);
     all.filter(m=>!solid.includes(m)).forEach(m=>m.dispose(false,false));
     p=BABYLON.Mesh.MergeMeshes(solid,true,true,undefined,false,true); c.root.dispose(false,false); if(!p) return null;
-    p.name='craft_'+key; p.refreshBoundingInfo(true); p.isVisible=false; p.isPickable=false; p.position.y=-9000; CRAFT_CACHE[key]=p; p._trail=craftTrailProto(fac,key,c.exhaust||[]); }
+    p.name='craft_'+key; faceOutMesh(p); p.refreshBoundingInfo(true); p.isVisible=false; p.isPickable=false; p.position.y=-9000; CRAFT_CACHE[key]=p; p._trail=craftTrailProto(fac,key,c.exhaust||[]); }
   const inst=p.createInstance('craft'); inst.isPickable=true; inst.position.set(0,0,0); let trail=null;
   if(p._trail&&!p._trail.isDisposed()){ trail=p._trail.createInstance('ctrail'); trail.parent=inst; trail.position.set(0,0,0); trail.isPickable=false; } // instances copy the parked prototype's position
   return {root:inst,meshes:[inst],trail}; }
@@ -634,7 +634,7 @@ function craftMat(fac){ const k='craft_'+fac; if(AI_MATS[k]&&G.scene.materials.i
   m.albedoColor=hexC3(fac==='deathless'?'#3a4440':fac==='voidsworn'?'#5c5550':P.hull); m.metallic=fac==='chorus'?.05:.55; m.roughness=fac==='chorus'?.4:.42; m.environmentIntensity=1.3; m.directIntensity=1.25; m.backFaceCulling=false; m.twoSidedLighting=true; m.enableSpecularAntiAliasing=true; m.maxSimultaneousLights=6;
   if(fac==='chorus'){ m.emissiveColor=P.win.scale(.06); } return AI_MATS[k]=m; }
 function craftFromMesh(fac,kind){ try{ const d=AI_HULL_DATA[craftKey(fac,kind)]; if(!d) return null; const L=CLS_LEN.Squadron, P=FAC3D[fac]||FAC3D.hegemony, pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*L;
-    const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; vd.colors=d.col||new Float32Array(pos.length/3*4).fill(1); const hull=new BABYLON.Mesh('craftHull',G.scene); vd.applyToMesh(hull); hull.material=craftMat(fac);
+    const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; vd.colors=d.col||new Float32Array(pos.length/3*4).fill(1); if(!G.diagNoFaceOut) faceOut(vd); const hull=new BABYLON.Mesh('craftHull',G.scene); vd.applyToMesh(hull); hull.material=craftMat(fac);
     // engine glows where the stern is: the rear-most vertices, split port and starboard when the engines sit wide apart
     let mnx=1e9; for(let i=0;i<pos.length;i+=3) mnx=Math.min(mnx,pos[i]); const rear=[]; for(let i=0;i<pos.length;i+=3) if(pos[i]<mnx+.07*L) rear.push([pos[i],pos[i+1],pos[i+2]]);
     const avg=a=>a.reduce((s,p)=>[s[0]+p[0]/a.length,s[1]+p[1]/a.length,s[2]+p[2]/a.length],[0,0,0]); let zs=rear.map(p=>p[2]); const spread=Math.max(...zs)-Math.min(...zs);
@@ -767,24 +767,32 @@ function decodeVSM(buf){ const dv=new DataView(buf); if(dv.getUint32(0,true)!==0
   MeshoptDecoder.decodeVertexBuffer(vb,n,16,src); MeshoptDecoder.decodeIndexBuffer(new Uint8Array(idx.buffer),h.icount,4,isrc);
   const i16=new Int16Array(vb.buffer), i8=new Int8Array(vb.buffer), u16=new Uint16Array(vb.buffer), pos=new Float32Array(n*3), nor=new Float32Array(n*3), uv=new Float32Array(n*2), e=h.ext;
   for(let v=0;v<n;v++){ const o=v*8, b=v*16; pos[v*3]=i16[o]/32767*e[0]; pos[v*3+1]=i16[o+1]/32767*e[1]; pos[v*3+2]=i16[o+2]/32767*e[2]; nor[v*3]=i8[b+8]/127; nor[v*3+1]=i8[b+9]/127; nor[v*3+2]=i8[b+10]/127; uv[v*2]=u16[o+6]/65535; uv[v*2+1]=u16[o+7]/65535; }
-  return {pos,nor,idx,uv,uv2:h.tex?uv:null,tex:h.tex||null,col:null,tris:h.icount/3,alb:h.alb||null,vsm:true}; }
+  return {pos,nor,idx,uv,uv2:h.tex?uv:null,tex:h.tex||null,col:null,tris:h.icount/3,alb:h.alb||null,fin:h.fin||null,vsm:true}; }
 // v54 hand-built parts for a full-detail hull (rocket racks, funnels, masts, guns the AI blurs): CODE_kit.json, vertex-coloured, drawn with the hull
 function decodeKit(j){ const b64=(t,T)=>{ const bin=atob(t), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new T(u.buffer); };
   const pos=b64(j.p,Float32Array), qn=b64(j.q,Int8Array), qc=b64(j.c,Uint8Array), idx=b64(j.i,Uint32Array), n=pos.length/3, nor=new Float32Array(n*3), col=new Float32Array(n*4);
   for(let i=0;i<n*3;i++) nor[i]=qn[i]/127; for(let v=0;v<n;v++){ col[v*4]=qc[v*3]/255; col[v*4+1]=qc[v*3+1]/255; col[v*4+2]=qc[v*3+2]/255; col[v*4+3]=1; }
   let uv=null; if(j.u){ const u=b64(j.u,Uint16Array); uv=new Float32Array(u.length); for(let i=0;i<u.length;i++) uv[i]=u[i]/65535; }
   if(pos.length%3||nor.length!==pos.length||(uv&&uv.length!==n*2)||idx.length%3) throw new Error('kit arrays do not match'); for(let i=0;i<idx.length;i++) if(idx[i]>=n) throw new Error('kit index out of range'); // v55: validate before anything is installed
-  return {pos,nor,col,idx,uv,tex:!!j.tex}; }
-function aiKitMat(fac,code,dir){ const k='kit_'+fac+(code||''); if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k];
+  return {pos,nor,col,idx,uv,tex:!!j.tex,fin:!!j.fin}; }
+// v55 baked finish (owner, Oct 22: "still some of that clay feel"): R = occlusion, G = roughness, B = metal, plus a fine tangent-space normal
+// map (dents, pitting, scratches, soft-worn edges), both on the albedo's UVs. Swapped in when loaded; until then the flat finish shows.
+function finMaps(m,fu,nu){ const sc=G.scene; let f=null,n=null; const done=()=>{ if(!f||!n||!f.isReady()||!n.isReady()||(m.isDisposed&&m.isDisposed())) return;
+    m.metallicTexture=f; m.useRoughnessFromMetallicTextureGreen=true; m.useMetallnessFromMetallicTextureBlue=true; m.useAmbientOcclusionFromMetallicTextureRed=true; m.metallic=1; m.roughness=1;
+    m.bumpTexture=n; n.level=G.finBump??1; m.invertNormalMapX=!!G.finInvX; m.invertNormalMapY=!!G.finInvY; m._finTex=[f,n]; };
+  const fail=()=>console.warn('finish maps not loaded',fu);
+  f=new BABYLON.Texture(fu,sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail); n=new BABYLON.Texture(nu,sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail); n.anisotropicFilteringLevel=4; f.gammaSpace=false; n.gammaSpace=false; }
+function aiKitMat(fac,code,dir,fin){ const k='kit_'+fac+(code||''); if(AI_MATS[k]&&G.scene.materials.includes(AI_MATS[k])) return AI_MATS[k];
   // v55 (audits, Oct 22): painted parts use the hull paint's own material settings and its HullFx layer (rim light, roughness break-up and the
   // shared close-up detail), so hull and parts answer the light the same way. The old 0.3 self-light is gone (G.kitFill can bring it back to test).
   const src=aiHullMat(fac), m=src.clone(k); m.albedoColor=C3.White(); m.bumpTexture=null; m.metallicTexture=null; m.emissiveTexture=null; m.emissiveColor=C3.Black();
   if(code){ const t=new BABYLON.Texture(dir+code+'_kit_a.webp',G.scene,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,null,()=>console.warn('hull kit paint not loaded',code)); t.anisotropicFilteringLevel=8; t.level=G.paintGain??((G.mobile||G.quality==='medium')?.95:1.15); m.albedoTexture=t;
-    const f=G.kitFill||0; if(f>0){ m.emissiveTexture=t; m.emissiveColor=new C3(f,f,f); } } else m.albedoTexture=null;
+    const f=G.kitFill||0; if(f>0){ m.emissiveTexture=t; m.emissiveColor=new C3(f,f,f); }
+    if(fin&&!G.noFinish) finMaps(m,dir+code+'_kit_f.webp',dir+code+'_kit_n.webp'); } else m.albedoTexture=null;
   const ql=G.mobile||G.quality==='medium'; m.metallic=code?(G.paintMetal??.08):.55; m.roughness=code?.62:.4; m.directIntensity=(src.directIntensity||1)*(G.paintLight??(ql?1.35:1.8)); m.environmentIntensity=(src.environmentIntensity||1)*1.25;
   m.useRoughnessFromMetallicTextureGreen=false; m.useMetallnessFromMetallicTextureBlue=false; m.useAmbientOcclusionFromMetallicTextureRed=false;
   m.maxSimultaneousLights=6; m.backFaceCulling=false; m.twoSidedLighting=false; /* v54o: light by the stored normals */ m.enableSpecularAntiAliasing=true;
-  const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const opts=Object.assign(hfxOpts(o,fac),{ai:true,paint:!!code,det:true,kit:true,wear:0,wcol:null,mtex:null,haz:false,ring:false});
+  const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const opts=Object.assign(hfxOpts(o,fac),{ai:true,paint:!!code,det:!(fin&&!G.noFinish),fin:!!(fin&&!G.noFinish),kit:true,wear:0,wcol:null,mtex:null,haz:false,ring:false});
   if(pl) Object.assign(pl,opts); else if(typeof HullFxPlugin==='function') pl=new HullFxPlugin(m,opts); if(pl){ m._hullFx=pl; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); }
   m._isAiHull=true; m._kitTex=code?m.albedoTexture:null; return AI_MATS[k]=m; }
 function loadAIHulls(){ const S=HULLS_LOAD; if(S.promise) return S.promise;
@@ -807,11 +815,14 @@ function compactHalf(vd,idx){ const P=vd.positions, N=vd.normals, U=vd.uvs, U2=v
 // lighting on, the hull was then lit as if from inside: its shaded side read bright and its sunny top read dull, while the kit (lit by its
 // stored normals) did the opposite, so kit plates looked black on a bright hull. Check the winding against the stored normals and flip it
 // when most faces disagree. Babylon's front face here has cross(b-a,c-a) pointing against the normal.
-function faceOut(vd){ const P=vd.positions, N=vd.normals, I=vd.indices; if(!P||!N||!I) return 0; let wrong=0, all=0;
-  for(let t=0;t<I.length;t+=3*7){ const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3, ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2], vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];
-    const d=(uy*vz-uz*vy)*(N[a]+N[b]+N[c])+(uz*vx-ux*vz)*(N[a+1]+N[b+1]+N[c+1])+(ux*vy-uy*vx)*(N[a+2]+N[b+2]+N[c+2]); if(d!==0){ all++; if(d>0) wrong++; } }
-  if(wrong*2<=all) return 0; const J=(I instanceof Uint16Array||I instanceof Uint32Array||I instanceof Int32Array)?new I.constructor(I):Uint32Array.from(I);
-  for(let t=0;t<J.length;t+=3){ const x=J[t+1]; J[t+1]=J[t+2]; J[t+2]=x; } vd.indices=J; return 1; }
+function faceOut(vd){ const P=vd.positions, N=vd.normals, I=vd.indices; if(!P||!N||!I) return 0; let J=null, n=0; // v55: per triangle, so meshes with mixed winding come out right too
+  for(let t=0;t<I.length;t+=3){ const a=I[t]*3,b=I[t+1]*3,c=I[t+2]*3, ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2], vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];
+    const d=(uy*vz-uz*vy)*(N[a]+N[b]+N[c])+(uz*vx-ux*vz)*(N[a+1]+N[b+1]+N[c+1])+(ux*vy-uy*vx)*(N[a+2]+N[b+2]+N[c+2]);
+    if(d>0){ if(!J) J=(I instanceof Uint16Array||I instanceof Uint32Array||I instanceof Int32Array)?new I.constructor(I):Uint32Array.from(I); const x=J[t+1]; J[t+1]=J[t+2]; J[t+2]=x; n++; } }
+  if(J) vd.indices=J; return n; }
+// the same check on a finished mesh (procedural ship parts are merged from many builders and some come out mixed); shared geometry is fixed once
+function faceOutMesh(m){ try{ if(G.diagNoFaceOut||!m||!m.geometry||m.geometry._faceOut) return; const P=m.getVerticesData('position'), N=m.getVerticesData('normal'), I=m.getIndices(); if(!P||!N||!I) return;
+  const vd={positions:P,normals:N,indices:I}; if(faceOut(vd)){ const subs=(m.subMeshes||[]).map(q=>[q.materialIndex,q.verticesStart,q.verticesCount,q.indexStart,q.indexCount]); m.setIndices(vd.indices,null,false); if(subs.length>1){ m.subMeshes=[]; for(const q of subs) new BABYLON.SubMesh(q[0],q[1],q[2],q[3],q[4],m); } } m.geometry._faceOut=true; /* triangles keep their order, so the material ranges still hold */ }catch(e){ console.warn('faceOut',m&&m.name,e); } }
 function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.endsWith('fore')); if(!fore) return p; const M=facMats(fac), L=p.L;
   for(const m of p.root.getChildMeshes(false)) if(m.name.includes('hull_')||m.name.endsWith('emblem')) m.dispose(false,false);
   p.root.computeWorldMatrix(true); fore.computeWorldMatrix(true); const inv=BABYLON.Matrix.Invert(fore.getWorldMatrix()).multiply(p.root.getWorldMatrix());
@@ -832,7 +843,7 @@ function applyAIHull(p,fac,d){ const fore=p.root.getChildren().find(n=>n.name.en
   { const P0=FAC3D[fac]||FAC3D.hegemony; AI_MATS['aitrim_'+fac]=AI_MATS['aitrim_'+fac]||emMat('aitrim_'+fac,P0.eng.scale(.9)); AI_MATS['aitrim_'+fac].backFaceCulling=false; } // kept for faction extras that trim the mesh
   if(d.kit&&!G.noKit){ try{ const k=d.kit, kp=new Float32Array(k.pos.length); for(let i=0;i<kp.length;i++) kp[i]=k.pos[i]*L; // v54 hand-built parts, in the hull's frame
       const kv=new BABYLON.VertexData(); kv.positions=kp; kv.normals=Float32Array.from(k.nor); kv.indices=k.idx; if(k.uv&&k.tex) kv.uvs=k.uv; else kv.colors=k.col; kv.transform(inv); if(!G.diagNoFaceOut) faceOut(kv);
-      const km=new BABYLON.Mesh('hull_kit',G.scene); kv.applyToMesh(km); km.material=k.tex?aiKitMat(fac,aiHullCode(d),d.dir||'hulls_hi/'):aiKitMat(fac); km.parent=fore; km.isPickable=false; km.refreshBoundingInfo(true); try{ castShadows(km); }catch(e){} }catch(e){ console.warn('hull kit',e); } }
+      const km=new BABYLON.Mesh('hull_kit',G.scene); kv.applyToMesh(km); km.material=k.tex?aiKitMat(fac,aiHullCode(d),d.dir||'hulls_hi/',k.fin):aiKitMat(fac); km.parent=fore; km.isPickable=false; km.refreshBoundingInfo(true); try{ castShadows(km); }catch(e){} }catch(e){ console.warn('hull kit',e); } }
   try{ seatOnHull(p,new HullQ(P,vd.normals,I),fore,aftN); }catch(e){ console.warn('AI hull seating',e); }
   p.aiHull=true; return p; }
 // v53-G: axis-aligned ray queries against a concept mesh. Triangles are binned on a 2D grid per axis, so each cast tests a few dozen triangles.
@@ -910,7 +921,7 @@ function beaconMesh(c,H){ const pr=aiHullsOn()&&objProto('obj|beacon',H); if(!pr
 // the defend-objective station from its mesh; same anchor as the procedural stations (G.station, G.env)
 const OBJ_PROTO={};
 function objProto(key,S){ let p=OBJ_PROTO[key]; if(p&&!p.isDisposed()&&p.getScene()===G.scene) return p; const d=AI_HULL_DATA[key]; if(!d) return null; const pos=new Float32Array(d.pos.length); for(let i=0;i<pos.length;i++) pos[i]=d.pos[i]*S;
-  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.uv2) vd.uvs2=d.uv2; if(d.col) vd.colors=d.col; p=new BABYLON.Mesh('objP_'+key,G.scene); vd.applyToMesh(p); p.setEnabled(false); p.isPickable=false; return OBJ_PROTO[key]=p; } // built once; battles take clones (shared geometry)
+  const vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=Float32Array.from(d.nor); vd.indices=d.idx; vd.uvs=d.uv; if(d.uv2) vd.uvs2=d.uv2; if(d.col) vd.colors=d.col; if(!G.diagNoFaceOut) faceOut(vd); p=new BABYLON.Mesh('objP_'+key,G.scene); vd.applyToMesh(p); p.setEnabled(false); p.isPickable=false; return OBJ_PROTO[key]=p; } // built once; battles take clones (shared geometry)
 function buildMeshStation(c,rr){ const pr=objProto('obj|station',46); if(!pr) return false; const root=new BABYLON.TransformNode('station',G.scene), m=pr.clone('hull_station',root), sd=AI_HULL_DATA['obj|station']; m.setEnabled(true); m.material=sd&&sd.alb&&!G.noPaint?aiPaintMatFor('hegemony',sd):objMat('station'); /* v53.9: painted station */ m.isPickable=false;
   try{ castShadows(m); }catch(e){} try{ G.glow.addExcludedMesh(m); }catch(e){} root.position=c.add(new V3(0,3,0)); root.rotation.set(.06,rr()*6,.04); m.refreshBoundingInfo(true); m.freezeWorldMatrix&&setTimeout(()=>{ try{ if(!m.isDisposed()){ root.computeWorldMatrix(true); m.freezeWorldMatrix(); } }catch(e){} },0);
   G.env.push(root); G.station={root,meshes:[m]}; return true; }
@@ -923,14 +934,14 @@ function aiHullCode(d){ for(const [k,v] of Object.entries(AI_HULL_DATA)) if(v===
 function aiPaintMatFor(fac,d){ const code=aiHullCode(d); if(!code) return aiHullMat(fac); const key='paint|'+fac+'|'+code; let e=AI_TEX[key];
   if(!e||!G.scene.materials.includes(e.m)){ const src=aiHullMat(fac), m=src.clone(fac+'aipaint_'+code); m.albedoColor=C3.White(); m.albedoTexture=null; m.bumpTexture=null; m.metallicTexture=null;
     m.metallic=G.paintMetal??.08; m.roughness=.62; const ql=G.mobile||G.quality==='medium'; m.directIntensity=(src.directIntensity||1)*(G.paintLight??(ql?1.35:1.8)); /* phones lit the paint salmon-bright at the desktop gain */ m.environmentIntensity=(src.environmentIntensity||1)*1.25; /* v54: the paint is the colour; a metal hull reflecting black space read near-black in game */ m.useRoughnessFromMetallicTextureGreen=false; m.useMetallnessFromMetallicTextureBlue=false; m.useAmbientOcclusionFromMetallicTextureRed=false;
-    const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const opts=Object.assign(hfxOpts(o,fac),{ai:true,paint:true,det:!!d.kit,wear:0,wcol:null,mtex:null}); // v55: hulls with hand-built parts share the detail layer with them
+    const o=src._hullFx; let pl=m.pluginManager&&m.pluginManager.getPlugin&&m.pluginManager.getPlugin('HullFx'); const fin=!!(d.fin&&!G.noFinish), opts=Object.assign(hfxOpts(o,fac),{ai:true,paint:true,det:!!d.kit&&!fin,fin,wear:0,wcol:null,mtex:null}); // v55: hulls with hand-built parts share the detail layer with them
     if(pl) Object.assign(pl,opts); else if(typeof HullFxPlugin==='function') pl=new HullFxPlugin(m,opts); if(pl){ m._hullFx=pl; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); }
-    m._isAiHull=true; e=AI_TEX[key]={m,code,paint:true,maps:!!(d.tex&&d.uv2&&!G.noBake),dir:d.dir||((G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'),n:null,t:null,a:null}; }
+    m._isAiHull=true; e=AI_TEX[key]={m,code,paint:true,fin,maps:!!(d.tex&&d.uv2&&!G.noBake),dir:d.dir||((G.mobile||G.quality==='medium')?'hulls/':'hulls_hi/'),n:null,t:null,a:null}; }
   aiPaintTouch(e); return e.m; }
 function aiPaintTouch(e){ try{ e.touchB=B; }catch(x){} if(e.a||e.loading||e.failed) return; e.loading=true; const gen=e.gen||0, sc=G.scene, m=e.m, url=e.dir+e.code;
   // the paint, plus (baked hulls) the normal map and AO/curvature map from the full-detail TRELLIS mesh; all three swap in together
   const done=()=>{ if(gen!==(e.gen||0)||!e.a||!e.a.isReady()||(e.maps&&(!e.n||!e.t||!e.n.isReady()||!e.t.isReady()))) return; e.loading=false; if(m.isDisposed&&m.isDisposed()) return;
-    e.a.anisotropicFilteringLevel=8; e.a.level=G.paintGain??((G.mobile||G.quality==='medium')?.95:1.15); m.albedoTexture=e.a; if(e.maps){ m.bumpTexture=e.n; m.bumpTexture.level=1; const pl=m._hullFx; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } } };
+    e.a.anisotropicFilteringLevel=8; e.a.level=G.paintGain??((G.mobile||G.quality==='medium')?.95:1.15); m.albedoTexture=e.a; if(e.fin&&!e.finDone){ e.finDone=true; finMaps(m,url+'_f.webp',url+'_fn.webp'); } if(e.maps){ m.bumpTexture=e.n; m.bumpTexture.level=1; const pl=m._hullFx; if(pl){ pl.mtex=e.t; pl.markAllDefinesAsDirty&&pl.markAllDefinesAsDirty(); } } };
   const fail=()=>{ console.warn('hull paint not loaded',e.code); e.loading=false; e.a=e.n=e.t=null; e.failed=true; };
   e.a=new BABYLON.Texture(url+'_a.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail);
   if(e.maps){ e.n=new BABYLON.Texture(url+'_n.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,done,fail); e.n.coordinatesIndex=1; e.n.anisotropicFilteringLevel=4;
@@ -947,13 +958,14 @@ function aiTexTouch(e){ try{ e.touchB=B; }catch(x){} if(e.n||e.loading) return; 
   const fail=(x)=>{ console.warn('hull maps not loaded',e.code,x||''); e.loading=false; e.n=e.t=null; e.failed=true; };
   if(e.failed) return; e.n=new BABYLON.Texture(url+'_n.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,()=>done(),fail); e.n.coordinatesIndex=1; e.n.anisotropicFilteringLevel=4;
   e.t=new BABYLON.Texture(url+'_m.webp',sc,false,true,BABYLON.Texture.TRILINEAR_SAMPLINGMODE,()=>done(),fail); e.t.coordinatesIndex=1; }
-function aiTexReleaseAll(){ for(const e of Object.values(AI_TEX)){ if(e.paint){ try{ const m=e.m; if(m.albedoTexture===e.a) m.albedoTexture=null; if(e.n&&m.bumpTexture===e.n) m.bumpTexture=null; if(m._hullFx&&e.t){ m._hullFx.mtex=null; m._hullFx.markAllDefinesAsDirty&&m._hullFx.markAllDefinesAsDirty(); } for(const t of [e.a,e.n,e.t]) if(t) t.dispose(); }catch(x){} e.a=e.n=e.t=null; e.loading=false; e.gen=(e.gen||0)+1; continue; } if(!e.n&&!e.t) continue; // battle teardown: every class's maps go (they reload from the browser cache when the class is used again), so nothing accumulates across battles
+function aiTexReleaseAll(){ for(const e of Object.values(AI_TEX)){ if(e.paint){ try{ const m=e.m; if(m.albedoTexture===e.a) m.albedoTexture=null; if(e.n&&m.bumpTexture===e.n) m.bumpTexture=null; if(m._hullFx&&e.t){ m._hullFx.mtex=null; m._hullFx.markAllDefinesAsDirty&&m._hullFx.markAllDefinesAsDirty(); } for(const t of [e.a,e.n,e.t]) if(t) t.dispose(); if(m._finTex){ m.metallicTexture=null; m.bumpTexture=null; m.useRoughnessFromMetallicTextureGreen=m.useMetallnessFromMetallicTextureBlue=m.useAmbientOcclusionFromMetallicTextureRed=false; m.metallic=G.paintMetal??.08; m.roughness=.62; for(const t of m._finTex) t.dispose(); m._finTex=null; } e.finDone=false; }catch(x){} e.a=e.n=e.t=null; e.loading=false; e.gen=(e.gen||0)+1; continue; } if(!e.n&&!e.t) continue; // battle teardown: every class's maps go (they reload from the browser cache when the class is used again), so nothing accumulates across battles
     const m=e.m, src=MATS[m.name.split('aihull_')[0]]; try{ if(m.bumpTexture===e.n) m.bumpTexture=(src&&src.aiHull&&src.aiHull.bumpTexture)||null; if(m._hullFx){ m._hullFx.mtex=null; m._hullFx.markAllDefinesAsDirty&&m._hullFx.markAllDefinesAsDirty(); } if(e.n) e.n.dispose(); if(e.t) e.t.dispose(); }catch(x){} e.n=e.t=null; e.loading=false; e.gen=(e.gen||0)+1; } }
 const AI_WIN_GAIN={voidsworn:1.6,hegemony:1.25,corsair:1.5,chorus:1.1,ithar:.9,deathless:1.3}; // port brightness per faction (pale hulls need less)
 function buildShipModelFresh(u){
   const p=buildShipModelProc(u), k=u.transport?'obj|transport':(u.fac||'voidsworn')+'|'+u.cls; if(u.transport) p.matOverride=objMat('transport');
   if(aiHullsOn()&&AI_HULL_DATA[k]) try{ applyAIHull(p,u.fac||'voidsworn',AI_HULL_DATA[k]); }catch(e){ console.warn('AI hull swap failed',e); }
   if(p.aiHull&&u.fac==='ithar') try{ ithAIExtras(p); }catch(e){ console.warn('Ithar extras',e); }
+  for(const m of p.root.getChildMeshes(false)) faceOutMesh(m);
   return p; }
 function buildShipModelProc(u){
   const fac=u.fac||'voidsworn';

@@ -14,8 +14,8 @@ const HFX_RIM0=new BABYLON.Color3(.6,.7,.9), HFX_E0=new BABYLON.Color3(1,.62,.3)
 function hfxSane(pl){ const c=x=>x&&typeof x.r==='number'&&isFinite(x.r)&&isFinite(x.g)&&isFinite(x.b), n=(x,d)=>typeof x==='number'&&isFinite(x)?x:d;
   if(!c(pl.rim)) pl.rim=HFX_RIM0; if(!c(pl.ecol)) pl.ecol=HFX_E0; if(pl.wcol&&!c(pl.wcol)) pl.wcol=null; pl.str=n(pl.str,.85); pl.wear=n(pl.wear,.25); pl.seed=n(pl.seed,3); pl.style=n(pl.style,0); pl.dmg=n(pl.dmg,0); pl.dseed=n(pl.dseed,0); } // a handful of type checks per bind: cheap
 class HullFxPlugin extends BABYLON.MaterialPluginBase{
-  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false,HULLFX_MAP:false,HULLFX_PAINT:false,HULLFX_DET:false,HULLFX_KIT:false}); Object.assign(this,o); this._enable(true); }
-  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_PAINT=!!this.paint; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_MAP=!!(this.mtex&&this.mtex.isReady&&this.mtex.isReady()); defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_DET=!!this.det&&G.shipDetail!==false; defines.HULLFX_KIT=!!this.kit; } // v53-G: ai = concept-mesh hull (shader ports, fine detail, its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
+  constructor(material,o){ super(material,'HullFx',210,{HULLFX:false,HULLFX_HI:false,HULLFX_PLATE:false,HULLFX_AI:false,HULLFX_D2:false,HULLFX_RING:false,HULLFX_HAZ:false,HULLFX_MAP:false,HULLFX_PAINT:false,HULLFX_DET:false,HULLFX_KIT:false,HULLFX_FIN:false}); Object.assign(this,o); this._enable(true); }
+  prepareDefines(defines){ defines.HULLFX=true; defines.HULLFX_HI=G.quality!=='medium'&&!G.diagNoHullHi&&!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_PLATE=this.style!==2&&this.style!==3&&!this.ai; defines.HULLFX_AI=!!this.ai; defines.HULLFX_PAINT=!!this.paint; defines.HULLFX_RING=!!this.ring; defines.HULLFX_HAZ=!!this.haz; defines.HULLFX_MAP=!!(this.mtex&&this.mtex.isReady&&this.mtex.isReady()); defines.HULLFX_D2=!!(G.engine&&G.engine.webGLVersion>=2); defines.HULLFX_DET=!!this.det&&G.shipDetail!==false; defines.HULLFX_KIT=!!this.kit; defines.HULLFX_FIN=!!this.fin; } // v53-G: ai = concept-mesh hull (shader ports, fine detail, its plating is in the textures) // organic Chorus and porcelain Ithar hulls get no riveted plating
   getClassName(){ return 'HullFxPlugin'; }
   getSamplers(samplers){ samplers.push('hfxMap'); }
   getActiveTextures(a){ if(this.mtex) a.push(this.mtex); }
@@ -34,6 +34,7 @@ uniform sampler2D hfxMap;
 #ifdef HULLFX
 varying vec3 vHfxL;
 varying vec3 vHfxN;
+float hfxMet=0.0; float hfxRgh=0.0; float hfxLum=0.0; // v55 finish: derived from the paint in the albedo step, used by the reflectivity and bump steps
 float hfxH(vec3 p){ p=fract(p*0.3183099+vec3(0.71,0.113,0.419)); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float hfxN(vec3 x){ vec3 i=floor(x); vec3 f=fract(x); f=f*f*(3.0-2.0*f);
   return mix(mix(mix(hfxH(i),hfxH(i+vec3(1,0,0)),f.x),mix(hfxH(i+vec3(0,1,0)),hfxH(i+vec3(1,1,0)),f.x),f.y),mix(mix(hfxH(i+vec3(0,0,1)),hfxH(i+vec3(1,0,1)),f.x),mix(hfxH(i+vec3(0,1,1)),hfxH(i+vec3(1,1,1)),f.x),f.y),f.z); }
@@ -58,6 +59,14 @@ CUSTOM_FRAGMENT_UPDATE_ALBEDO:`
     if(hfxD.x>0.001){ float dn=hfxN(vHfxL*0.16+hfxD.y)*0.7+hfxN(vHfxL*0.55+hfxD.y*1.7)*0.3;
       float burn=smoothstep(1.0-hfxD.x*0.62,1.0-hfxD.x*0.62+0.07,dn);
       surfaceAlbedo=mix(surfaceAlbedo,surfaceAlbedo*vec3(0.09,0.075,0.065),burn); } }
+#if defined(HULLFX_PAINT) && !defined(HULLFX_FIN)
+  // v55 (owner, Oct 22: "still some of that clay feel"): paint, rust, grime and bare metal no longer share one dull finish. Read from the
+  // paint itself: bare, pale, unsaturated texels are worn steel (metal, glossy); orange-brown saturated ones are rust (matte); near-black is grime.
+  { vec3 a=surfaceAlbedo; float mx=max(a.r,max(a.g,a.b)), mn=min(a.r,min(a.g,a.b)); float sat=(mx-mn)/max(mx,1e-4); hfxLum=dot(a,vec3(0.2126,0.7152,0.0722));
+    float gr_=a.g/max(a.r,1e-4); float steel=(1.0-smoothstep(0.12,0.32,sat))*smoothstep(0.035,0.11,hfxLum);
+    float rust=smoothstep(0.45,0.7,sat)*smoothstep(0.22,0.4,gr_)*(1.0-smoothstep(0.6,0.85,gr_)); float grime=1.0-smoothstep(0.006,0.03,hfxLum);
+    hfxMet=mix(0.1,0.36,steel)*(1.0-rust*0.9); hfxRgh=clamp(0.5+rust*0.33+grime*0.3-steel*0.16,0.26,0.95); } // metal kept modest: grey-painted hulls are paint, not bare steel, and full metal reflects black space
+#endif
 #ifdef HULLFX_MAP
   { vec3 mp=texture2D(hfxMap,vMainUV2).rgb; float vao=1.0; // v53-G baked maps: texel AO replaces the vertex AO, curvature wears the edges bright and fills the cavities with grime
 #ifdef VERTEXCOLOR
@@ -84,7 +93,15 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,pf*0.9));
         surfaceAlbedo*=mix(1.0,(0.7+0.3*seam)*(0.93+0.14*id),pf); } }
 #endif
-#if defined(HULLFX_AI) && defined(HULLFX_D2) && (!defined(HULLFX_PAINT) || defined(HULLFX_DET))
+#if defined(HULLFX_PAINT) && !defined(HULLFX_FIN) && defined(HULLFX_D2)
+    // v55 fine relief from the paint: dark grime lines and pits sit low, pale worn plate edges sit high. Fades by distance and by how fast
+    // the paint changes per pixel, so it never shimmers.
+    { float hd1=length(vEyePosition.xyz-vPositionW); float rf=1.0-smoothstep(40.0,110.0,hd1);
+      if(rf>0.001){ float ht=sqrt(max(hfxLum,0.0))*0.05; vec3 dpx=dFdx(vPositionW), dpy=dFdy(vPositionW); float dhx=dFdx(ht), dhy=dFdy(ht);
+        float fz=1.0-smoothstep(0.004,0.02,abs(dhx)+abs(dhy)); vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
+        vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,0.7*rf*fz)); } }
+#endif
+#if defined(HULLFX_AI) && defined(HULLFX_D2) && (!defined(HULLFX_PAINT) || defined(HULLFX_DET)) && !defined(HULLFX_FIN)
     // v55 (audits, Oct 22): with DET the painted hull and its hand-built parts share this one detail layer, in the same ship units, so the
     // AI hull and the clean parts carry the same seams and grain. Painted hulls already have a baked normal map, so their relief is gentler.
     // v53.8 close-up plating on concept hulls (Ryan: "melted" up close): staggered panel seams, inset hatches, small raised blocks and dents,
@@ -121,7 +138,14 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
 CUSTOM_FRAGMENT_UPDATE_METALLICROUGHNESS:`
 #ifdef HULLFX_AI
   { float hdr=length(vEyePosition.xyz-vPositionW); float rn=hfxN(vHfxL*1.9+hfxS.x)*0.6+hfxN(vHfxL*5.3)*0.4; // v53-G: no mirror-smooth texels (glitter), and a broken-up sheen up close
+#if defined(HULLFX_PAINT) && !defined(HULLFX_FIN)
+    metallicRoughness.r=hfxMet; metallicRoughness.g=hfxRgh;
+#endif
+#ifdef HULLFX_PAINT
+    metallicRoughness.g=clamp(max(metallicRoughness.g,0.24)+(rn-0.5)*0.16*(1.0-smoothstep(30.0,110.0,hdr)),0.22,1.0); // v55: paint, rust and steel keep their own finish
+#else
     metallicRoughness.g=clamp(max(metallicRoughness.g,0.42)+(rn-0.5)*0.24*(1.0-smoothstep(30.0,110.0,hdr)),0.32,1.0);
+#endif
 #ifdef HULLFX_MAP
     { float cv=texture2D(hfxMap,vMainUV2).g-0.5; metallicRoughness.g=clamp(metallicRoughness.g-smoothstep(0.03,0.2,cv)*0.12+smoothstep(0.02,0.16,-cv)*0.18,0.34,1.0); } // polished edges, rough grimy recesses
 #endif

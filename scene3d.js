@@ -489,7 +489,7 @@ function rockLibMeshes(list){ const el=list.map(d=>({d,e:1/Math.max(.05,Math.max
     for(let v=0;v<n;v++){ const o=v*3; if(tall){ pos[o]=P[o+1]*sx; pos[o+1]=P[o]*sy; pos[o+2]=P[o+2]*sz; let a=N[o+1]/sx, b=N[o]/sy, c=N[o+2]/sz; const l=Math.hypot(a,b,c)||1; nor[o]=a/l; nor[o+1]=b/l; nor[o+2]=c/l; }
       else { pos[o]=P[o]*sx; pos[o+1]=P[o+1]*sy; pos[o+2]=P[o+2]*sz; nor[o]=N[o]; nor[o+1]=N[o+1]; nor[o+2]=N[o+2]; } }
     const idx=tall?Uint32Array.from(d.idx):d.idx; if(tall) for(let t=0;t<idx.length;t+=3){ const x=idx[t+1]; idx[t+1]=idx[t+2]; idx[t+2]=x; } // swapping x and y mirrors the mesh: keep the winding
-    const m=new BABYLON.Mesh('rockLib'+k,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=nor; vd.indices=idx; vd.uvs=d.uv; vd.applyToMesh(m);
+    const m=new BABYLON.Mesh('rockLib'+k,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.normals=nor; vd.indices=idx; vd.uvs=d.uv; if(typeof faceOut==='function'&&!G.diagNoFaceOut) faceOut(vd); vd.applyToMesh(m);
     m.material=rockLibMat(d); m.isVisible=false; m.isPickable=false; castShadows(m); G.glow.addExcludedMesh(m); G.env.push(m); return m; }); }
 // v53: a fresh material sharing the rock textures. A clone of rockM tries to re-create the RockFx plugin from its serialized form, cannot find the
 // class, and the clone never becomes ready, so nothing using it drew (this is why the v51 rim fill rocks were invisible).

@@ -25,7 +25,7 @@ if base_img is None:  # hand-built parts: vertex colours, no UVs yet; give them 
     while me.uv_layers: me.uv_layers.remove(me.uv_layers[0])
     me.uv_layers.new(name='UVMap'); bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=math.radians(55), island_margin=0.0005)
-    try: bpy.ops.uv.pack_islands(rotate=True, margin_method='FRACTION', margin=0.0006, shape_method='AABB')  # v13: the old pack left the kit at 1.7% of the atlas (parts read black in game); this fills ~60%
+    try: bpy.ops.uv.pack_islands(rotate=True, margin_method='FRACTION', margin=0.0006, shape_method=os.environ.get('UVPACK', 'CONCAVE'))  # v55: CONCAVE packs tighter than AABB (the kit used 32% of its atlas)  # v13: the old pack left the kit at 1.7% of the atlas (parts read black in game); this fills ~60%
     except Exception as e: print('uv pack failed', e)
     bpy.ops.object.mode_set(mode='OBJECT')
 base_uv = me.uv_layers.active.name
@@ -132,6 +132,24 @@ if PROC and base_img is None:
     base = vmath('SCALE', base, s=rng(ao.outputs['AO'], 0, 1, .30, 1.0))                                  # grime in the cavities
     col_ = vmath('SCALE', base, s=rng(noise(500, 2), .3, .7, .85, 1.08))                                  # fine grit
     sc.cycles.samples = 16
+    # v55 finish (owner, Oct 22: "still some of that clay feel"): the same masks drive a roughness/metal map and a fine normal map, so paint,
+    # rust, scorch and worn steel each answer the light differently, and the surface carries dents, pitting, scratches and soft-worn edges.
+    grit = rng(noise(500, 2), 0, 1, -.05, .05); dirt = rng(noise(9, 6, rough=.6), .40, .70, .12, 0)
+    aoi = rng(ao.outputs['AO'], 0, 1, .22, 0)
+    rough = math_('ADD', math_('ADD', math_('ADD', .52, math_('MULTIPLY', rust, .33)), math_('MULTIPLY', pits, .25)), math_('MULTIPLY', scorch, .22))
+    rough = math_('ADD', math_('ADD', math_('ADD', rough, math_('MULTIPLY', edge, -.26)), aoi), math_('ADD', grit, dirt))
+    metal = math_('ADD', math_('MULTIPLY', math_('SUBTRACT', 1.0, rust), .12), math_('MULTIPLY', edge, .55))
+    cc = T.nodes.new('ShaderNodeCombineColor'); L.new(rng(ao.outputs['AO'], 0, 1, .45, 1.0), cc.inputs[0]); L.new(rng(rough, 0, 1, 0, 1), cc.inputs[1]); L.new(rng(metal, 0, 1, 0, 1), cc.inputs[2])
+    FIN_ORM = cc.outputs[0]
+    dents = rng(noise(14, 2, rough=.4), .35, .65, 0, 1); hammer = T.nodes.new('ShaderNodeTexVoronoi'); hammer.inputs['Scale'].default_value = 90; L.new(oc, hammer.inputs['Vector'])
+    sv = T.nodes.new('ShaderNodeVectorMath'); sv.operation = 'MULTIPLY'; L.new(oc, sv.inputs[0]); sv.inputs[1].default_value = (6, 380, 380)
+    scr = math_('LESS_THAN', math_('ABSOLUTE', math_('SUBTRACT', noise(1, 3, sv.outputs[0]), .5), 0), .012)          # thin fore-aft scratches
+    rb = rng(noise(70, 12, rough=.75), .3, .7, 0, 1)
+    h = math_('ADD', math_('MULTIPLY', dents, .55), math_('MULTIPLY', hammer.outputs[0], .12))
+    h = math_('ADD', h, math_('MULTIPLY', math_('MULTIPLY', rust, rb), .45)); h = math_('SUBTRACT', h, math_('MULTIPLY', pits, .6)); h = math_('SUBTRACT', h, math_('MULTIPLY', scr, .35))
+    bvn = T.nodes.new('ShaderNodeBevel'); bvn.inputs['Radius'].default_value = .0005                          # soft-worn plate edges catch the light
+    bmp = T.nodes.new('ShaderNodeBump'); bmp.inputs['Strength'].default_value = .55; bmp.inputs['Distance'].default_value = .0004; L.new(h, bmp.inputs['Height']); L.new(bvn.outputs[0], bmp.inputs['Normal'])
+    FIN_NRM = bmp.outputs[0]
 if base_img is None and os.environ.get('DETAIL', '0') == '1':  # v55: off by default; the shared in-game detail layer (HullFx DET) covers hull and parts alike
     # hand-built parts get the AI hull's level of surface detail (owner, Oct 21: "the level of texture and details seem to vary wildly"):
     # panel seams at a fixed ship-space scale, fine grit, and worn edges from the bevel normal, on top of whatever paint they carry
@@ -162,6 +180,13 @@ try:
 except Exception: pass
 sc.cycles.samples = 16 if PROC else 4; sc.render.bake.margin = 3; sc.render.bake.use_selected_to_active = False
 bpy.ops.object.bake(type='EMIT'); tgt.filepath_raw = outp; tgt.file_format = 'PNG'; tgt.save(); print('baked', outp)
+if PROC and base_img is None and os.environ.get('FINISH', '1') == '1':
+    fo = bpy.data.images.new('orm', RES, RES, alpha=False, is_data=True); tt.image = fo; L.new(FIN_ORM, em.inputs[0])
+    bpy.ops.object.bake(type='EMIT'); fo.filepath_raw = outp[:-4] + '_orm.png'; fo.file_format = 'PNG'; fo.save(); print('baked', fo.filepath_raw)
+    fn = bpy.data.images.new('nrm', RES, RES, alpha=False, is_data=True); tt.image = fn
+    pb = T.nodes.new('ShaderNodeBsdfPrincipled'); L.new(FIN_NRM, pb.inputs['Normal']); L.new(pb.outputs[0], out.inputs[0])
+    sc.render.bake.normal_space = 'TANGENT'; bpy.ops.object.bake(type='NORMAL'); fn.filepath_raw = outp[:-4] + '_nrm.png'; fn.file_format = 'PNG'; fn.save(); print('baked', fn.filepath_raw)
+    L.new(em.outputs[0], out.inputs[0]); tt.image = tgt
 if os.environ.get('EXPORT'):  # write the mesh back out with the baked paint as its texture (hand-built parts)
     for k in range(len(views)): me.uv_layers.remove(me.uv_layers[f'proj{k}'])
     em_ = bpy.data.materials.new('painted'); em_.use_nodes = True; ti_ = em_.node_tree.nodes.new('ShaderNodeTexImage'); ti_.image = bpy.data.images.load(outp)

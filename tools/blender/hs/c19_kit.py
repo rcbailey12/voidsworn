@@ -460,7 +460,7 @@ if SHELL:
     for y_ in (-.064, 0, .064):
         cyl(f'engaux{y_}', (xs_e + .008, y_, -.068 if y_ == 0 else -.104), .007, .014, axis='X', seg=20, r2=.009, bevel=.0008); tag(STEEL)
         cyl(f'engauxglow{y_}', (xs_e + .0152, y_, -.068 if y_ == 0 else -.104), .0078, .0012, axis='X', seg=20, bevel=0); tag(LAMP)
-    for k, (xa, xb) in enumerate(((-.23, -.12), (-.10, .06), (.18, .30))):  # belly armour plates
+    for k, (xa, xb) in enumerate(() if os.environ.get('DETAIL_PASS', '1') == '1' else ((-.23, -.12), (-.10, .06), (.18, .30))):  # belly armour plates (v14: the detail pass lays scorched slabs instead)
         for y_ in (-.026, .026):
             h = BVH.ray_cast(Vector(((xa + xb) / 2, y_, -.5)), Vector((0, 0, 1)), 1.0)
             if h[0] is not None: box(f'belly{k}{y_}', ((xa + xb) / 2, y_, h[0].z - .002), (xb - xa, .046, .005), bevel=.0012)
@@ -483,21 +483,23 @@ if SHELL:
             a_, b_ = ST[i], ST[i + 1]; pa = Vector((a_[0], s_ * (a_[5] + .002), a_[3] - .004)); pb = Vector((b_[0], s_ * (b_[5] + .002), b_[3] - .004))
             if (pb - pa).length > .001: barrel(f'rubrail{s_}{i}', pa, (pb - pa).normalized(), (pb - pa).length, .0035)
         tag(UPPER)
+        JR = __import__('random').Random(31 + s_)  # v14 (owner, Oct 22: "the linework... is all the same"): Corsair rows are uneven, patched and broken
         for zl in (-.050, -.005):  # belt ledges on the superstructure slope
-            for k in range(30):
-                x = -.105 + k * .0135
-                if x > .295: break
-                plate(f'ledge{s_}{zl}{k}', x, zl, s_, (.0145, .004, .004))
+            x = -.105; k = 0
+            while x < .295:
+                ln = JR.uniform(.010, .030); 
+                if JR.random() > .12: plate(f'ledge{s_}{zl}{k}', x + ln / 2, zl + JR.uniform(-.0015, .0015), s_, (ln, JR.uniform(.0035, .0055), .004))
+                x += ln + JR.uniform(.0004, .004); k += 1
         tag(UPPER)
-        for k in range(44):  # row of dark round-ish holes under the upper ledge (concept)
-            x = -.100 + k * .009
-            if x > .29 or .065 < x < .17: continue
-            plate(f'port{s_}{k}', x, -.020, s_, (.0042, .0042, .0014))
+        x = -.100; k = 0
+        while x < .29:  # row of dark round-ish holes under the upper ledge (concept); uneven spacing, some plated over
+            if not (.065 < x < .17) and JR.random() > .15: plate(f'port{s_}{k}', x, -.020 + JR.uniform(-.001, .001), s_, (.0042, .0042, .0014))
+            x += JR.uniform(.007, .014); k += 1
         tag(DARK)
-        for k in range(60):  # rivet line along the top edge of the superstructure side
-            x = -.105 + k * .0068
-            if x > .295: break
-            plate(f'rivet{s_}{k}', x, .030 if not (.065 < x < .17) else .012, s_, (.0022, .0022, .0018))
+        x = -.105; k = 0
+        while x < .295:  # rivet line along the top edge of the superstructure side; uneven pitch, a few missing
+            if JR.random() > .1: plate(f'rivet{s_}{k}', x, (.030 if not (.065 < x < .17) else .012) + JR.uniform(-.0008, .0008), s_, (.0022, .0022, .0018))
+            x += JR.uniform(.004, .010); k += 1
         tag((.20, .07, .05))
         plate(f'nameplate{s_}', -.165, -.050, s_, (.070, .030, .0030)); tag((.13, .13, .135))  # big riveted name plate (concept)
         for k in range(12): plate(f'nprivet{s_}{k}', -.198 + k * .006, -.0375, s_, (.0018, .0018, .0040)); plate(f'nprivetb{s_}{k}', -.198 + k * .006, -.0625, s_, (.0018, .0018, .0040))

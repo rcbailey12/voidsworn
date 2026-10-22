@@ -58,44 +58,157 @@ class Surface:
 
 PAL = dict(steel=(.13, .13, .14), dark=(.03, .03, .033), gun=(.07, .07, .075), rust=(.14, .05, .02), weld=(.20, .17, .14),
            salvage=[(.33, .24, .03), (.11, .11, .12), (.06, .085, .05), (.16, .09, .05), (.08, .10, .13), (.30, .30, .28)],
-           hazard=((.40, .30, .02), (.02, .02, .02)))
+           hazard=((.40, .30, .02), (.02, .02, .02)), bare=(.17, .165, .16), belly=(.06, .06, .065))
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# v14 plating (owner, Oct 22: "it's always squares and some of the squares run over the ship edge instead of being cut to match... the
+# squares are all kind of in a pattern/orderly, especially on the underside of the prow... the linework through the plates is all the same").
+# Plates are now cut in mixed shapes (rectangles, cut corners, trapezoids, L-shapes, slanted sheets), scattered rather than gridded, bent to
+# follow the hull (every vertex is projected onto the surface) and trimmed where the hull turns away, so nothing overhangs an edge. Each plate
+# gets its own edge treatment: plain, a weld bead, a rivet row, or both. The belly gets fewer, bigger, scorched armour slabs.
+def outline(kind, w, h, r):
+    W, H = w / 2, h / 2
+    if kind == 'chamfer':
+        c = min(w, h) * r.uniform(.18, .38); pts = [(-W, -H), (W - c, -H), (W, -H + c), (W, H), (-W + c, H), (-W, H - c)]
+        if r.random() < .5: pts = [(-W, -H), (W - c, -H), (W, -H + c), (W, H), (-W, H)]
+        return pts
+    if kind == 'trap':
+        k = r.uniform(.55, .85); o = r.uniform(-.25, .25) * w; return [(-W, -H), (W, -H), (W * k + o, H), (-W * k + o, H)]
+    if kind == 'L':
+        nx, ny = w * r.uniform(.35, .55), h * r.uniform(.35, .55); sx, sy = r.choice((1, -1)), r.choice((1, -1))
+        pts = [(-W, -H), (W, -H), (W, H - ny), (W - nx, H - ny), (W - nx, H), (-W, H)]
+        return [(x * sx, y * sy) for x, y in pts] if sx * sy > 0 else [(x * sx, y * sy) for x, y in reversed(pts)]
+    if kind == 'slant':
+        sh = h * r.uniform(-.4, .4); return [(-W - sh / 2, -H), (W - sh / 2, -H), (W + sh / 2, H), (-W + sh / 2, H)]
+    return [(-W, -H), (W, -H), (W, H), (-W, H)]
+
+def conform_plate(S, name, p, n, t, b, pts, lift, th, seg=.008, keep=.55, clear=.0016):
+    """a plate cut to the outline pts (local t/b units), bent onto the target surface and trimmed where it would overhang. Returns the
+    trimmed outline as surface points (for beads and rivets) or None when too little of it sits on the hull."""
+    bm = bmesh.new(); vs = [bm.verts.new(p + t * u + b * v) for u, v in pts]
+    try: f = bm.faces.new(vs)
+    except Exception: bm.free(); return None
+    bmesh.ops.triangulate(bm, faces=[f]); L_ = max(max(u for u, v in pts) - min(u for u, v in pts), max(v for u, v in pts) - min(v for u, v in pts))
+    cuts = max(1, min(6, int(L_ / seg))); bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=cuts, use_grid_fill=True)
+    bmesh.ops.triangulate(bm, faces=bm.faces[:]); bad = set()
+    for v in bm.verts:
+        o = v.co + n * .03; h = S.T.ray_cast(o, -n, .07)
+        if h[0] is None: bad.add(v); continue
+        hn = Vector(h[1]).normalized(); hn = hn if hn.dot(n) > 0 else -hn
+        if hn.dot(n) < .62 or (Vector(h[0]) - v.co).length > .018: bad.add(v); continue
+        if S.P is not None and S.P.find_nearest(Vector(h[0]), clear)[0] is not None: bad.add(v); continue
+        v.co = Vector(h[0]) + hn * lift
+    nf = len(bm.faces); dead = [f_ for f_ in bm.faces if any(v in bad for v in f_.verts)]
+    if len(dead) > nf * (1 - keep): bm.free(); return None
+    bmesh.ops.delete(bm, geom=dead, context='FACES'); loose = [v for v in bm.verts if not v.link_faces]
+    if loose: bmesh.ops.delete(bm, geom=loose, context='VERTS')
+    for f_ in bm.faces:
+        if f_.normal.dot(n) < 0: f_.normal_flip()
+    edge = [(e.verts[0].co.copy(), e.verts[1].co.copy()) for e in bm.edges if e.is_boundary]
+    me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free(); o = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(o)
+    sm = o.modifiers.new('sd', 'SOLIDIFY'); sm.thickness = th; sm.offset = -1; sm.use_even_offset = True; sm.use_rim = True
+    bv = o.modifiers.new('bv', 'BEVEL'); bv.width = min(.0004, th * .3); bv.segments = 1; bv.limit_method = 'ANGLE'; bv.angle_limit = math.radians(40)
+    hs_lib.PARTS.append(o); return edge
+
+def edge_dress(name, edge, n, style, r, cen):
+    """weld bead and/or rivets along a plate's trimmed edge, built as one mesh per plate; style: 0 plain, 1 bead, 2 rivets, 3 both"""
+    if style == 0 or not edge: return 0
+    bm = bmesh.new(); k = 0; Rn = Vector((0, 0, 1)).rotation_difference(n).to_matrix().to_4x4()
+    if style in (1, 3):
+        for a, b_ in edge:
+            d = b_ - a; L_ = d.length
+            if L_ < 1e-5 or r.random() < .12: continue  # broken weld
+            M = Matrix.Translation((a + b_) / 2 + n * .0004) @ d.normalized().to_track_quat('Z', 'Y').to_matrix().to_4x4()
+            bmesh.ops.create_cone(bm, cap_ends=False, segments=5, radius1=.00065, radius2=.00065, depth=L_ * 1.05, matrix=M); k += 1
+    if style in (2, 3):
+        acc, step = 0., r.uniform(.0035, .006)
+        for a, b_ in edge:
+            d = (b_ - a); L_ = d.length
+            while acc < L_:
+                q = a + d * (acc / max(L_, 1e-9)); q = q + (cen - q).normalized() * .0016
+                if r.random() > .1: bmesh.ops.create_cone(bm, cap_ends=True, segments=6, radius1=.0007, radius2=.0006, depth=.001, matrix=Matrix.Translation(q + n * .0003) @ Rn); k += 1
+                acc += step
+            acc -= L_
+    if k: hs_lib._obj(name, bm, 0)
+    else: bm.free()
+    return k
+
+def scatter_plates(S, tag, region, ray, accept, base_col, r, corsair, count, sizes, th=.0018, kinds=None, slab=False, tint=None, name='sp'):
+    """region: callable(rnd)->ray origin; ray: direction; accept(n): bool. sizes: [(weight, (w0,w1), (h0,h1))]"""
+    kinds = kinds or ((('rect', .30), ('chamfer', .22), ('trap', .14), ('L', .16), ('slant', .18)) if corsair else (('rect', .55), ('chamfer', .3), ('trap', .15)))
+    placed = []; made = 0; tries = 0; tot = sum(w for w, _, _ in sizes)
+    while made < count and tries < count * 12:
+        tries += 1; u = r.uniform(0, tot)
+        for wgt, wr, hr in sizes:
+            if u <= wgt: break
+            u -= wgt
+        w, h = r.uniform(*wr), r.uniform(*hr); rad = math.hypot(w, h) * .42
+        o = region(r); p, n = S.hit(o, ray, .002)
+        if p is None or not accept(n): continue
+        lay = 0; ok = True
+        for q, rq, lq in placed:
+            d = (q - p).length
+            if d < (rad + rq) * (.55 if corsair else .8): ok = False; break   # too much on top of another plate
+            if d < (rad + rq) * .95: lay = max(lay, lq + 1)                  # partly overlapping: sits on top of it
+        if not ok or lay > 2: continue
+        t, b, n = frame(n, Vector((1, 0, 0)))
+        rot = math.radians(r.uniform(-14, 14) if corsair else r.uniform(-2, 2)); R = Matrix.Rotation(rot, 3, n); t, b = R @ t, R @ b
+        kw = r.uniform(0, sum(k[1] for k in kinds))
+        for kind, kp in kinds:
+            if kw <= kp: break
+            kw -= kp
+        lift = -.0003 + lay * th * .9  # the bottom sits just inside the hull: no light gap under the plate
+        edge = conform_plate(S, f'{name}{made}', p, n, t, b, outline(kind, w, h, r), lift + th, th)
+        if edge is None: continue
+        bc = base_col(p)
+        if tint: col = tint(p, r)
+        elif corsair and r.random() < .14: col = r.choice(PAL['salvage'])
+        elif r.random() < .08: col = PAL['bare']
+        else: col = tuple(min(1., c * r.uniform(.74, 1.16)) for c in bc)
+        tag(col)
+        st = r.choice((0, 0, 1, 2, 3)) if not slab else r.choice((2, 2, 3, 0))
+        if edge_dress(f'{name}{made}e', edge, n, st, r, p): tag(PAL['weld'] if st == 1 else PAL['steel'])
+        placed.append((p, rad, lay)); made += 1
+    return made
+
+def accents(S, tag, region, ray, accept, r, count, name='ac'):
+    """small fittings scattered on the plating: vent grilles, inset hatches, junction boxes. Each needs flat-enough ground at its corners."""
+    made = 0; tries = 0
+    while made < count and tries < count * 10:
+        tries += 1; p, n = S.hit(region(r), ray, .004)
+        if p is None or not accept(n): continue
+        t, b, n = frame(n); kind = r.random(); w, h = (r.uniform(.012, .022), r.uniform(.008, .014))
+        flat = True
+        for cu, cv in ((1, 1), (1, -1), (-1, 1), (-1, -1)):
+            q = S.T.ray_cast(p + t * cu * w / 2 + b * cv * h / 2 + n * .02, -n, .05)
+            if q[0] is None or Vector(q[1]).normalized().dot(n) * (1 if Vector(q[1]).dot(n) > 0 else -1) < .93: flat = False; break
+        if not flat: continue
+        if kind < .45:
+            obox(f'{name}v{made}', p + n * .0007, t, b, n, (w, h, .0016), bevel=.0003); tag(PAL['gun'])
+            for k in range(int(w / .004)): obox(f'{name}vs{made}_{k}', p + n * .0016 + t * (-w / 2 + .002 + k * .004), t, b, n, (.0015, h * .8, .001), bevel=0)
+            tag(PAL['dark'])
+        elif kind < .75:
+            obox(f'{name}h{made}', p - n * .0001, t, b, n, (w, h, .0012), bevel=0); tag(PAL['dark'])
+            obox(f'{name}hp{made}', p + n * .0003, t, b, n, (w - .002, h - .002, .0012), bevel=.0003); tag(PAL['steel'])
+        else:
+            obox(f'{name}j{made}', p + n * .0025, t, b, n, (w * .5, h * .6, .005), bevel=.0006); tag(PAL['steel'])
+        made += 1
+    return made
 
 def detail_pass(targets, parts, tag, base_col, bounds, corsair=False, seed=7, cell=(.034, .022), damage=1.0, flanges=()):
     """targets: hull objects to cover; parts: objects to keep clear of; tag(rgb) colours everything made since the last call;
     base_col: the hull's paint colour (plates vary around it); bounds: (x0, x1, z0, z1) of the hull; flanges: [(centre, size)] mount pads"""
-    S = Surface(targets, parts); x0, x1, z0, z1 = bounds; cx, cz = cell; made = 0
+    S = Surface(targets, parts); x0, x1, z0, z1 = bounds; made = 0
     def rnd(*k): return random.Random(hash((seed,) + k) & 0xffffffff)
-    def tone(c, f): return tuple(min(1., v * f) for v in c)
     BC = base_col if callable(base_col) else (lambda p: base_col)
-    sides = (1, -1)
-    # ---- 1. plating on the flanks: one cell at a time, mirrored unless Corsair ----
-    nx, nz = int((x1 - x0) / cx), int((z1 - z0) / cz)
     pipes_y = []
-    for s_ in sides:
-        for i in range(nx):
-            for j in range(nz):
-                x = x0 + (i + .5) * cx; z = z0 + (j + .5) * cz; r = rnd(i, j, s_ if corsair else 0)
-                p, n = S.hit(Vector((x, s_ * .6, z)), Vector((0, -s_, 0)), min(cx, cz) * .55)
-                if p is None or abs(n.y) < .3: continue
-                t, b, n = frame(n); u = r.random()
-                if u < .38:   # raised plate, a shade off the base paint
-                    obox(f'pl{s_}_{i}_{j}', p + n * .0006, t, b, n, (cx - .0028, cz - .0028, .0018), bevel=.0004); tag(tone(BC(p), r.uniform(.78, 1.14))); made += 1
-                elif u < .50:  # inset darker panel
-                    obox(f'pi{s_}_{i}_{j}', p - n * .0002, t, b, n, (cx * .7, cz * .6, .0010), bevel=0); tag(tone(BC(p), .55)); made += 1
-                elif u < .58 or (corsair and u < .68):  # welded repair patch
-                    sal = corsair and r.random() < .7; col = r.choice(PAL['salvage']) if sal else tone(BC(p), r.uniform(.7, 1.0))
-                    w_, h_ = cx * r.uniform(.55, 1.15), cz * r.uniform(.6, 1.3); rot = math.radians(r.uniform(-9, 9) if corsair else r.uniform(-2, 2))
-                    obox(f'pt{s_}_{i}_{j}', p + n * .0012, t, b, n, (w_, h_, .0024), bevel=.0006, rot=rot); tag(col)
-                    R = Matrix.Rotation(rot, 3, n); tt, bb = R @ t, R @ b
-                    for e, (o_, sz) in enumerate(((tt * w_ / 2, (.0012, h_, .0014)), (-tt * w_ / 2, (.0012, h_, .0014)), (bb * h_ / 2, (w_, .0012, .0014)), (-bb * h_ / 2, (w_, .0012, .0014)))):
-                        obox(f'pw{s_}_{i}_{j}_{e}', p + n * .0024 + o_, tt, bb, n, sz, bevel=0)
-                    tag(PAL['weld']); made += 1
-                elif u < .64:  # vent grille
-                    obox(f'vg{s_}_{i}_{j}', p + n * .0007, t, b, n, (cx * .55, cz * .55, .0016), bevel=.0003); tag(PAL['gun'])
-                    for k in range(4): obox(f'vs{s_}_{i}_{j}_{k}', p + n * .0016 + t * (-cx * .2 + k * cx * .133), t, b, n, (.0016, cz * .45, .0010), bevel=0)
-                    tag(PAL['dark']); made += 1
-                elif u < .68:  # small greeble box
-                    obox(f'gb{s_}_{i}_{j}', p + n * .003, t, b, n, (cx * r.uniform(.25, .45), cz * r.uniform(.3, .55), .006), bevel=.0006); tag(PAL['steel']); made += 1
+    SZ = [(.25, (.034, .060), (.020, .034)), (.45, (.018, .034), (.012, .022)), (.30, (.009, .018), (.007, .013))]
+    for s_ in (1, -1):
+        r = rnd(1, s_ if corsair else 0)
+        # ---- 1. flank plating: mixed shapes, scattered, bent onto the hull and trimmed at its edges ----
+        made += scatter_plates(S, tag, lambda r_: Vector((r_.uniform(x0, x1), s_ * .6, r_.uniform(z0, z1))), Vector((0, -s_, 0)),
+                               lambda n: abs(n.y) > .3 and n.z > -.4, BC, r, corsair, 150, SZ, name=f'fp{s_}_')
+        made += accents(S, tag, lambda r_: Vector((r_.uniform(x0, x1), s_ * .6, r_.uniform(z0, z1))), Vector((0, -s_, 0)), lambda n: abs(n.y) > .45 and n.z > -.3, r, 26, name=f'fa{s_}_')
         # ---- 2. pipe runs along the flank, broken around parts, brackets every few metres, junction boxes at the ends ----
         r = rnd(99, s_ if corsair else 0)
         for zr in (z0 + (z1 - z0) * f for f in (.30, .62)):
@@ -111,26 +224,24 @@ def detail_pass(targets, parts, tag, base_col, bounds, corsair=False, seed=7, ce
     for q, run in enumerate(pipes_y):
         for k in range(len(run) - 1): tube(f'pipe{q}_{k}', run[k], run[k + 1], .0022)
         tag(PAL['gun'])
-        for k in range(0, len(run), 4):
-            p = run[k]; obox(f'pbr{q}_{k}', p, Vector((1, 0, 0)), Vector((0, 0, 1)), Vector((0, 1 if p.y > 0 else -1, 0)), (.003, .006, .006), bevel=0)
+        for k in range(0, len(run), 4):  # brackets: each built in its own right-handed frame (a mirrored frame turned them inside out)
+            p = run[k]; nn = Vector((0, 1 if p.y > 0 else -1, 0)); t_, b_, nn = frame(nn); obox(f'pbr{q}_{k}', p, t_, b_, nn, (.003, .006, .006), bevel=0)
         for p in (run[0], run[-1]):
-            obox(f'pjb{q}_{id(p) % 9999}', p, Vector((1, 0, 0)), Vector((0, 0, 1)), Vector((0, 1 if p.y > 0 else -1, 0)), (.010, .009, .008), bevel=.0008)
+            nn = Vector((0, 1 if p.y > 0 else -1, 0)); t_, b_, nn = frame(nn); obox(f'pjb{q}_{id(p) % 9999}', p, t_, b_, nn, (.010, .009, .008), bevel=.0008)
         tag(PAL['steel']); made += 1
-    # ---- 3. plating on the decks and the superstructure top (rays down) ----
-    for i in range(nx):
-        for j in range(int(.30 / cx)):
-            y = -.15 + (j + .5) * cx; x = x0 + (i + .5) * cx
-            if not corsair and y < 0: continue
-            for yy in ((y,) if corsair else (y, -y)):
-                r = rnd(i, j, 7, yy if corsair else 0); p, n = S.hit(Vector((x, yy, .5)), Vector((0, 0, -1)), cx * .5)
-                if p is None or n.z < .45: continue
-                t, b, n = frame(n); u = r.random()
-                if u < .40: obox(f'dp{i}_{j}_{yy:.3f}', p + n * .0006, t, b, n, (cx - .003, cx - .003, .0016), bevel=.0004); tag(tone(BC(p), r.uniform(.75, 1.12)))
-                elif u < .48: obox(f'dh{i}_{j}_{yy:.3f}', p + n * .0008, t, b, n, (cx * .5, cx * .5, .0018), bevel=.0004); tag(PAL['steel'])
-                elif u < .55 or (corsair and u < .62):
-                    col = r.choice(PAL['salvage']) if corsair else tone(BC(p), .7)
-                    obox(f'dr{i}_{j}_{yy:.3f}', p + n * .0012, t, b, n, (cx * r.uniform(.5, 1.1), cx * r.uniform(.5, 1.1), .0022), bevel=.0005, rot=math.radians(r.uniform(-10, 10) if corsair else 0)); tag(col)
-                made += 1
+    # ---- 3. deck and superstructure tops (rays down): the same mixed plating ----
+    r = rnd(7)
+    made += scatter_plates(S, tag, lambda r_: Vector((r_.uniform(x0, x1), r_.uniform(-.15, .15), .5)), Vector((0, 0, -1)), lambda n: n.z > .45,
+                           BC, r, corsair, 110, SZ, name='dk')
+    made += accents(S, tag, lambda r_: Vector((r_.uniform(x0, x1), r_.uniform(-.15, .15), .5)), Vector((0, 0, -1)), lambda n: n.z > .6, r, 18, name='da')
+    # ---- 3b. belly and the underside of the prow (rays up): fewer, bigger, scorched armour slabs (owner pick, Oct 22) ----
+    r = rnd(8)
+    def belly_tint(p, r_):
+        if corsair and r_.random() < .12: return tuple(c * .8 for c in r_.choice(PAL['salvage']))
+        k = r_.uniform(.55, 1.1); return (PAL['belly'][0] * k * 1.25, PAL['belly'][1] * k, PAL['belly'][2] * k)
+    made += scatter_plates(S, tag, lambda r_: Vector((r_.uniform(x0, x1), r_.uniform(-.14, .14), -.6)), Vector((0, 0, 1)), lambda n: n.z < -.4,
+                           BC, r, corsair, 30, [(.6, (.055, .10), (.030, .055)), (.4, (.035, .055), (.022, .034))], th=.0035,
+                           kinds=(('rect', .45), ('chamfer', .35), ('trap', .2)), slab=True, tint=belly_tint, name='bs')
     # ---- 4. mount flanges: a thick pad with bolts where each big part meets the hull, so it reads built in ----
     for k, (c, sz) in enumerate(flanges):
         for s_ in ((1, -1) if c.y != 0 else (0,)):

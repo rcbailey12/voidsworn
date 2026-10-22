@@ -101,6 +101,13 @@ if os.environ.get('KIT'):  # hand-built parts in the same GLB frame: same axis c
             kimg = Image.fromarray(infill(np.asarray(kimg)))  # v13d: fill the black gaps between islands, or mips bleed black into thin plates in game
             if texres and kimg.width > texres: kimg = kimg.resize((texres, texres), Image.LANCZOS)  # phone set: the kit atlas at the phone's map size
             PAINT[code + '_kit_a.webp'] = np.asarray(kimg).astype(np.float64) / 255; kit['tex'] = 1
+    if os.environ.get('KFIN') and os.path.exists(os.environ['KFIN'] + '_orm.png'):  # v55 baked finish for the parts: roughness/metal + fine normal map
+        ksz = PAINT[code + '_kit_a.webp'].shape[0] if (code + '_kit_a.webp') in PAINT else texres or 2048
+        for suf, nm in (('_orm.png', '_kit_f.webp'), ('_nrm.png', '_kit_n.webp')):
+            im = Image.fromarray(infill(np.asarray(Image.open(os.environ['KFIN'] + suf).convert('RGB'))))
+            if im.width != ksz: im = im.resize((ksz, ksz), Image.LANCZOS)
+            im.save(os.path.join(outd, code + nm), quality=92, method=6)
+        kit['fin'] = 1; print('kit finish maps', ksz)
     json.dump(kit, open(os.path.join(outd, code + '_kit.json'), 'w')); print('kit verts', len(KP), 'tris', len(KI), 'painted', 'tex' in kit)
 # one brightness transform for hull and kit together (audits, Oct 22): solved over both maps' painted texels, applied to both, saved once
 if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']):
@@ -108,7 +115,14 @@ if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']):
     g_ = paint_level.solve(list(PAINT.values()), os.environ['CONCEPT'], float(os.environ.get('PAINTK', '.8'))); print('joint paint gain %.3f' % g_)
     for k_ in PAINT: m_ = PAINT[k_].sum(2) > 6 / 255; b_ = PAINT[k_][m_].mean(); PAINT[k_] = paint_level.apply(PAINT[k_], g_); print('  %s mean %.3f -> %.3f' % (k_, b_, PAINT[k_][m_].mean()))
 for k_, a_ in PAINT.items(): Image.fromarray((np.clip(a_, 0, 1) * 255 + .5).astype(np.uint8)).save(os.path.join(outd, k_), quality=90, method=6)
-hdr = {'v': 1, 'kit': kit is not None, 'fmt': 'vsm1', 'ext': ext.tolist(), 'n': int(n), 't': int(len(I)), 'src': 'pixal3d', 'front': front, 'alb': {'res': res}, 'tex': {'res': min(res, 2048)} if nrm is not None else None,
+fin = None
+if os.environ.get('FIN') and os.path.exists(os.environ['FIN'] + '_orm.png'):  # v55 baked finish for the hull: roughness/metal + fine normal map, on the albedo's UVs
+    for suf, nm in (('_orm.png', '_f.webp'), ('_nrm.png', '_fn.webp')):
+        im = Image.fromarray(infill(np.asarray(Image.open(os.environ['FIN'] + suf).convert('RGB'))))
+        if im.width != res: im = im.resize((res, res), Image.LANCZOS)
+        im.save(os.path.join(outd, code + nm), quality=92, method=6)
+    fin = 1; print('hull finish maps', res)
+hdr = {'v': 1, 'fin': fin, 'kit': kit is not None, 'fmt': 'vsm1', 'ext': ext.tolist(), 'n': int(n), 't': int(len(I)), 'src': 'pixal3d', 'front': front, 'alb': {'res': res}, 'tex': {'res': min(res, 2048)} if nrm is not None else None,
        'mr': [pbr.get('metallicFactor', 1), pbr.get('roughnessFactor', 1)]}
 json.dump(hdr, open(os.path.join(outd, code + '.hdr.json'), 'w'))
 print(code, 'verts', n, 'tris', len(I), 'ext', ext.round(3).tolist(), 'maps', [x is not None for x in (alb, nrm, occ, mr)])
