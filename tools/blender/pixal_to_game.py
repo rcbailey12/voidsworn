@@ -89,7 +89,7 @@ if os.environ.get('KIT'):  # hand-built parts in the same GLB frame: same axis c
 # one brightness transform for hull and kit together (audits, Oct 22): solved over both maps' painted texels, applied to both, saved once
 if os.environ.get('CONCEPT') and os.path.exists(os.environ['CONCEPT']):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import paint_level
-    g_ = paint_level.solve(list(PAINT.values()), os.environ['CONCEPT']); print('joint paint gain %.3f' % g_)
+    g_ = paint_level.solve(list(PAINT.values()), os.environ['CONCEPT'], float(os.environ.get('PAINTK', '.8'))); print('joint paint gain %.3f' % g_)
     for k_ in PAINT: m_ = PAINT[k_].sum(2) > 6 / 255; b_ = PAINT[k_][m_].mean(); PAINT[k_] = paint_level.apply(PAINT[k_], g_); print('  %s mean %.3f -> %.3f' % (k_, b_, PAINT[k_][m_].mean()))
 for k_, a_ in PAINT.items(): Image.fromarray((np.clip(a_, 0, 1) * 255 + .5).astype(np.uint8)).save(os.path.join(outd, k_), quality=90, method=6)
 hdr = {'v': 1, 'kit': kit is not None, 'fmt': 'vsm1', 'ext': ext.tolist(), 'n': int(n), 't': int(len(I)), 'src': 'pixal3d', 'front': front, 'alb': {'res': res}, 'tex': {'res': min(res, 2048)} if nrm is not None else None,

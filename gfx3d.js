@@ -95,7 +95,11 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
       { vec3 mq=texture2D(hfxMap,vMainUV2).rgb; pf*=smoothstep(0.22,0.5,mq.r)*(1.0-smoothstep(0.1,0.28,abs(mq.g-0.5))); }
 #endif
       if(pf>0.001){ vec3 an=abs(normalize(vHfxN)); vec2 pu=an.x>an.y&&an.x>an.z?vHfxL.zy:(an.y>an.z?vHfxL.xz:vHfxL.xy);
-        vec2 pp=pu*vec2(1.5,2.3); float row=floor(pp.y); float wd=1.0+hfxH(vec3(row,3.1,hfxS.x))*2.4; float off=hfxH(vec3(row,7.7,0.0))*wd; float cx=floor((pp.x+off)/wd);
+        vec2 pp=pu*vec2(1.5,2.3);
+#ifdef HULLFX_DET
+        pp=pu*vec2(0.75,1.15); // v12b: bigger panels on the clean ships (the dense grid read as bathroom tiles)
+#endif
+        float row=floor(pp.y); float wd=1.0+hfxH(vec3(row,3.1,hfxS.x))*2.4; float off=hfxH(vec3(row,7.7,0.0))*wd; float cx=floor((pp.x+off)/wd);
         vec2 fr=vec2(fract((pp.x+off)/wd)*wd,fract(pp.y)); float e=min(min(fr.x,wd-fr.x),min(fr.y,1.0-fr.y)); float pid=hfxH(vec3(cx,row,1.3));
         float fp=max(fwidth(pp.x),fwidth(pp.y)); float pk=pf*(1.0-smoothstep(0.06,0.16,fp)); // plates: gone once a seam is under a pixel
         float seam=(1.0-smoothstep(0.0,max(0.035,fp*1.2),e))*pk;
@@ -107,7 +111,7 @@ CUSTOM_FRAGMENT_BEFORE_LIGHTS:`
         vec3 r1=cross(dpy,normalW), r2=cross(normalW,dpx); float det=dot(dpx,r1); vec3 grd=sign(det)*(dhx*r1+dhy*r2);
         float dk=1.0;
 #if defined(HULLFX_PAINT)
-        dk=0.6; // v12: hull shell and parts are both clean geometry now, so they get the same strength
+        dk=0.45; // v12: hull shell and parts are both clean geometry now, so they get the same strength
 #endif
         vec3 nb=normalize(abs(det)*normalW-grd); normalW=normalize(mix(normalW,nb,0.85*dk));
         surfaceAlbedo*=(1.0-(seam*0.24+hatch*0.1-greeb*0.05)*dk)*(1.0+(pid-0.5)*0.12*pk*dk); } }
