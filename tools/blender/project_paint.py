@@ -124,7 +124,7 @@ if PROC and base_img is None:
     base = mix(math_('MULTIPLY', rust, .85), base, (.13, .045, .018))
     pits = rng(noise(140, 4), .62, .72, 0, 1)                                                             # small rust pits
     base = mix(math_('MULTIPLY', pits, .7), base, (.09, .035, .015))
-    bv = T.nodes.new('ShaderNodeBevel'); bv.inputs['Radius'].default_value = .0025; geo = T.nodes.new('ShaderNodeNewGeometry')
+    bv = T.nodes.new('ShaderNodeBevel'); bv.inputs['Radius'].default_value = .0008; geo = T.nodes.new('ShaderNodeNewGeometry')
     dp = T.nodes.new('ShaderNodeVectorMath'); dp.operation = 'DOT_PRODUCT'; L.new(bv.outputs[0], dp.inputs[0]); L.new(geo.outputs['Normal'], dp.inputs[1])
     edge = math_('MULTIPLY', rng(dp.outputs['Value'], .985, .80, 0, 1), rng(noise(70, 3), .3, .6, .25, 1))  # worn edges, broken up
     base = mix(edge, base, (.26, .24, .22))
