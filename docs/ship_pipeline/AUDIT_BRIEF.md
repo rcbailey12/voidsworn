@@ -1,3 +1,5 @@
+> **Current audit (Oct 22): the texture pass. Start with `docs/ship_pipeline/TEXTURE_PASS.md`.**
+
 # Audit brief: AI ship models for Voidsworn
 
 For outside models (ChatGPT, Gemini, Argon, Antigravity and others) asked to audit or revise this work. Read this first, then
