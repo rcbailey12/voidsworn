@@ -50,6 +50,11 @@
 - **Lag on loading into a battle**: hull JSON + webp map fetch/decode, plus the effect atlas build (v53-I moves it to idle slices on the title screen). Measure with perfprobe. Ideas: prefetch the next battle's hulls on the map screen, compressed GPU textures (KTX2), decode off the main thread.
 
 ## Next 3 tasks
+0. Oct 22 status: v11 (all verified audit fixes, joint paint gain, shared HullFx detail, bundled loader) ran clean in game. Flattening the AI
+   panels (panel_flatten.py) made no visible difference: the waviness is baked into the AI hull's shape, normal map and paint. Owner picked
+   "rebuild as clean shell": c19_kit.py with SHELL=1 lofts a clean hull body from the AI hull's measured sections (bare draft shown to
+   Ryan, docs/ship_pipeline/c19_example/ via pyre_barge_clean_shell.png). Next: on his OK, paint the shell by projection (concept + views),
+   turn on the shared detail, run in game.
 1. Audits are in (Codex, Rey, Gemini). Claude's verified synthesis and picks: docs/ship_pipeline/AUDIT_SYNTHESIS.md. Gemini's drop-in code
    is NOT merged (built on false premises). Owner to answer the scope questions from Oct 22 before the next build.
 2. C19 verified fixes (list in AUDIT_SYNTHESIS.md), joint paint gain + no kit self-light, then the shared HullFx detail on hull and kit.

@@ -14,7 +14,7 @@ Steps: V = views approved, M = Pixal3D mesh, P = paint projected, K = hand-built
 | 1 | chorus | Carrier | B22_11 | not started |  |  |  |  |  |  |  |
 | 1 | chorus | Bio-titan | B16_23 | not started |  |  |  |  |  |  |  |
 | 1 | corsair | Carrier | C16s_23 | not started |  |  |  |  |  |  |  |
-| 1 | corsair | Battle-barge | C19_51 | kit v10 in game Oct 21: baked seams/grit/edges help at mid zoom; up close the AI hull is still lumpier than the clean parts (open) | x | x | x | x | x |  | bow, rack, bridge, guns, side blocks, plates, thrusters, stern house, tanks rebuilt; big flat hull panels still AI |
+| 1 | corsair | Battle-barge | C19_51 | v11 in game Oct 22 (audit fixes); hull body being rebuilt as a clean shell (owner pick), bare draft awaiting OK | x | x | x | x | x |  | bow, rack, bridge, guns, side blocks, plates, thrusters, stern house, tanks rebuilt; big flat hull panels still AI |
 | 1 | deathless | Tomb-ark | D22_23 | not started |  |  |  |  |  |  |  |
 | 1 | hegemony | Battleship | H10_23 | not started |  |  |  |  |  |  |  |
 | 1 | hegemony | Super-dreadnought | H4_11 | not started |  |  |  |  |  |  |  |
