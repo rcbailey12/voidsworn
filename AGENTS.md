@@ -3,6 +3,10 @@
 Voidsworn is a Babylon.js hex fleet-tactics roguelite built into one HTML file (`python3 build.py`). The owner is Ryan. He is not a coder:
 he plays on a Pixel 10 XL and a Windows PC, and he judges work by screenshots.
 
+## Auditing? Start with `docs/ship_pipeline/AUDIT_BRIEF.md`
+
+It holds the goal, the full history, every piece of owner feedback word for word, the open issues and the questions we want answered.
+
 ## If you are not the main agent: work in your own folder
 
 - Put everything you make in `contrib/<your-agent-name>/` (for example `contrib/argon/`). Do not edit files outside it: no game
