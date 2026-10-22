@@ -59,7 +59,7 @@ with sync_playwright() as p:
                 pg.evaluate(CAM+"(%s,%s,%s)"%(zf,os.environ.get('CA','-Math.PI/2+.75'),os.environ.get('CB','.95'))); pg.evaluate(HIDE+'0'); pg.wait_for_timeout(2500)
                 if os.environ.get('STATS'): print('  stats',pg.evaluate(STATS))
                 if tpl.startswith('sq:'): pg.evaluate(CAM+"(%s,%s,%s)"%(zf,os.environ.get('CA','-Math.PI/2+.75'),os.environ.get('CB','.95'))); pg.wait_for_timeout(200)
-                if os.environ.get('EVAL'): print('  eval', pg.evaluate(os.environ['EVAL']))
+                if os.environ.get('EVAL'): print('  eval', pg.evaluate(os.environ['EVAL'])); pg.wait_for_timeout(int(os.environ.get('EVALWAIT','0')))
                 if os.environ.get('PROBE'): print('  probe',pg.evaluate(PROBE))
                 fn=f'{OUT}/{TAG}_{name}_{tpl.replace(":","-")}_{zf}.png'; pg.screenshot(path=fn, timeout=240000); print('  shot',fn); sys.stdout.flush()
                 if os.environ.get('EXP'):
