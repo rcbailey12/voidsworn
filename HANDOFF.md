@@ -75,6 +75,8 @@
    baked hulls (gfx3d). AI hulls now light by stored normals (two-sided lighting had flipped them again). Full list of what the review
    found: docs/ship_pipeline/GRAPHICS_REVIEW.md. Sheet: docs/ship_pipeline/c19_example/v14_pyre_barge.webp. Job: tools/pc/jobs/c19_14c.bat
    (+ c19_14g.bat for game-only re-shots). Open: sides still busy, pale hulls blow out in full sun, real-GPU/Pixel check.
+1. NEXT (Oct 22, end of week): owner verdict on v14 (docs/ship_pipeline/c19_example/v14_pyre_barge.webp); then flank busyness and brightness
+   tuning, real-GPU/Pixel check, publish a test build, ship 2 with the kit. Items 1-3 below are done.
 1. Audits are in (Codex, Rey, Gemini). Claude's verified synthesis and picks: docs/ship_pipeline/AUDIT_SYNTHESIS.md. Gemini's drop-in code
    is NOT merged (built on false premises). Owner to answer the scope questions from Oct 22 before the next build.
 2. C19 verified fixes (list in AUDIT_SYNTHESIS.md), joint paint gain + no kit self-light, then the shared HullFx detail on hull and kit.
@@ -94,5 +96,5 @@
 
 Starter line:
 ```
-Read HANDOFF.md, NEXT.md and PROGRESS.md in github.com/rcbailey12/voidsworn, then pick up task 1 (Ryan's Pixel feedback on v53.5: broken station, close-up detail, battle load lag; screenshots in docs/feedback/2026-10-21). Ask your scope questions first, and keep the PC test runner flow.
+Read HANDOFF.md, NEXT.md and docs/ship_pipeline/GRAPHICS_REVIEW.md in github.com/rcbailey12/voidsworn, then get my verdict on the Pyre-Barge v14 sheet and continue the polish (flank busyness, pale-hull brightness) and the real-GPU/Pixel check, keeping the PC runner flow.
 ```
