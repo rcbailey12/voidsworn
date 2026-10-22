@@ -249,8 +249,11 @@ xs_ = [-.245, -.200, -.158, -.115]
 for k in range(3):
     xa, xb = xs_[k], xs_[k + 1]; za, zb = prof(xa) + .006, prof(xb) + .006; a_ = math.atan2(zb - za, xb - xa); L_ = math.hypot(xb - xa, zb - za)
     nx, nz = -math.sin(a_), math.cos(a_); off = .002 * k
-    box(f'frontplate{k}', ((xa + xb) / 2 + nx * off, 0, (za + zb) / 2 + nz * off), (L_ + .008, .150 - .012 * k, .012), rot=(0, -a_, 0), bevel=.002); tag(STEEL)
-    box(f'frontlip{k}', (xa + nx * (off + .004), 0, za + nz * (off + .004)), (.006, .152 - .012 * k, .006), rot=(0, -a_, 0), bevel=.001); tag(GUN)
+    off = .004 * k  # v7: each plate stands proud of the one below, with a dark lip, so they read as a stack rather than one glossy slab
+    box(f'frontplate{k}', ((xa + xb) / 2 + nx * off, 0, (za + zb) / 2 + nz * off), (L_ - .004, .150 - .012 * k, .012), rot=(0, -a_, 0), bevel=.002); tag(GUN)
+    box(f'frontlip{k}', (xa + nx * (off + .004), 0, za + nz * (off + .004)), (.006, .152 - .012 * k, .008), rot=(0, -a_, 0), bevel=.001); tag(DARK)
+    for s_ in (1, -1): box(f'frontbolt{k}{s_}', ((xa + xb) / 2 + nx * (off + .0065), s_ * (.060 - .006 * k), (za + zb) / 2 + nz * (off + .0065)), (.012, .006, .002), rot=(0, -a_, 0), bevel=0)
+    tag(STEEL)
     if k == 2:
         for j in (-1, 0, 1): box(f'viewslit{j}', ((xa + xb) / 2 + nx * (off + .0065), j * .036, (za + zb) / 2 + nz * (off + .0065)), (.010, .024, .002), rot=(0, -a_, 0), bevel=0)
         tag(DARK)

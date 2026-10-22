@@ -50,8 +50,8 @@
 - **Lag on loading into a battle**: hull JSON + webp map fetch/decode, plus the effect atlas build (v53-I moves it to idle slices on the title screen). Measure with perfprobe. Ideas: prefetch the next battle's hulls on the map screen, compressed GPU textures (KTX2), decode off the main thread.
 
 ## Next 3 tasks
-1. Ryan reviews Pyre-Barge kit v6 (docs/ship_pipeline/c19_example/). Open point: the front armour plates read as one glossy grey slab in
-   game (maybe roughen the kit material or split the plates). Then publish a test build for his Pixel and desktop.
+1. Ryan reviews Pyre-Barge kit v6 (docs/ship_pipeline/c19_example/). Kit v7 (Oct 21, 19:30) makes the front armour plates a stepped,
+   hand-painted dark stack (they read as one glossy grey slab in v6); check its renders K7_* and shots_v54v on the PC. Then publish a test build for his Pixel and desktop.
 2. Run the pipeline on the priority-1 ships in SHIP_QUEUE.md, with the blob sweep before showing each one. Merge anything good from
    contrib/<agent>/ folders first.
 3. LOD/streaming plus a 20-ship stress test with a frame-rate counter; decide hosting if the hull set passes about 256 MB.
