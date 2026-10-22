@@ -14,7 +14,7 @@ Steps: V = views approved, M = Pixal3D mesh, P = paint projected, K = hand-built
 | 1 | chorus | Carrier | B22_11 | not started |  |  |  |  |  |  |  |
 | 1 | chorus | Bio-titan | B16_23 | not started |  |  |  |  |  |  |  |
 | 1 | corsair | Carrier | C16s_23 | not started |  |  |  |  |  |  |  |
-| 1 | corsair | Battle-barge | C19_51 | v12 in game Oct 22: clean shell hull (owner OK'd shape), concept sponsons + front armour, weathered paint, space-not-naval fixes, guns never backward; awaiting owner verdict | x | x | x | x | x |  | bow, rack, bridge, guns, side blocks, plates, thrusters, stern house, tanks rebuilt; big flat hull panels still AI |
+| 1 | corsair | Battle-barge | C19_51 | v13d Oct 22: clean shell hull (owner OK'd shape), sponsons + front armour, weathered paint, detail_lib pass (plating, patches, pipes, vents, dents, Corsair jank), atlas gap fill; awaiting owner verdict | x | x | x | x | x |  | bow, rack, bridge, guns, side blocks, plates, thrusters, stern house, tanks rebuilt; big flat hull panels still AI |
 | 1 | deathless | Tomb-ark | D22_23 | not started |  |  |  |  |  |  |  |
 | 1 | hegemony | Battleship | H10_23 | not started |  |  |  |  |  |  |  |
 | 1 | hegemony | Super-dreadnought | H4_11 | not started |  |  |  |  |  |  |  |

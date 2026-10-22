@@ -47,7 +47,22 @@ def save(im, name, mode='RGB'):
     im = im.convert(mode)
     if im.width != res: im = im.resize((res, res), Image.LANCZOS)
     im.save(os.path.join(outd, f'{code}_{name}.webp'), quality=90, method=6); return True
-_ai = alb.convert('RGB'); _ai = _ai.resize((res, res), Image.LANCZOS) if _ai.width != res else _ai
+def infill(u8):  # push-pull: every empty texel takes the colour of the nearest painted ones, so mip levels never average in black
+    a = u8.astype(np.float64); m = (a.sum(2) > 6).astype(np.float64)
+    h, w = m.shape; P = 1 << int(np.ceil(np.log2(max(h, w))))
+    A = np.zeros((P, P, 3)); W = np.zeros((P, P)); A[:h, :w] = a * m[..., None]; W[:h, :w] = m
+    pyr = [(A, W)]
+    while pyr[-1][1].shape[0] > 1:
+        A_, W_ = pyr[-1]; s = A_.shape[0] // 2
+        pyr.append((A_.reshape(s, 2, s, 2, 3).sum((1, 3)), W_.reshape(s, 2, s, 2).sum((1, 3))))
+    C = pyr[-1][0] / np.maximum(pyr[-1][1], 1e-9)[..., None]
+    for A_, W_ in reversed(pyr[:-1]):
+        C = C.repeat(2, 0).repeat(2, 1); own = A_ / np.maximum(W_, 1e-9)[..., None]
+        C = np.where((W_ > 0)[..., None], own, C)
+    out = np.where(m[..., None] > 0, a, C[:h, :w]); print('atlas infilled, %.0f%% painted' % (100 * m.mean()))
+    return np.clip(out + .5, 0, 255).astype(np.uint8)
+_ai = Image.fromarray(infill(np.asarray(alb.convert('RGB'))))  # same gap fill for the hull map
+_ai = _ai.resize((res, res), Image.LANCZOS) if _ai.width != res else _ai
 PAINT = {f'{code}_a.webp': np.asarray(_ai).astype(np.float64) / 255}  # paint maps, levelled together and written once at the end
 if nrm is not None:
     a = np.asarray(nrm.convert('RGB')).copy()  # no change for the mirror: the shader rebuilds the tangent frame from the mirrored geometry and its UVs
@@ -83,6 +98,7 @@ if os.environ.get('KIT'):  # hand-built parts in the same GLB frame: same axis c
         km = KJ['materials'][KJ['meshes'][0]['primitives'][0].get('material', 0)]; bt = km.get('pbrMetallicRoughness', {}).get('baseColorTexture')
         if bt is not None:
             bv = KJ['bufferViews'][KJ['images'][KJ['textures'][bt['index']]['source']]['bufferView']]; kimg = Image.open(io.BytesIO(KBIN[bv.get('byteOffset', 0):bv.get('byteOffset', 0) + bv['byteLength']])).convert('RGB')
+            kimg = Image.fromarray(infill(np.asarray(kimg)))  # v13d: fill the black gaps between islands, or mips bleed black into thin plates in game
             if texres and kimg.width > texres: kimg = kimg.resize((texres, texres), Image.LANCZOS)  # phone set: the kit atlas at the phone's map size
             PAINT[code + '_kit_a.webp'] = np.asarray(kimg).astype(np.float64) / 255; kit['tex'] = 1
     json.dump(kit, open(os.path.join(outd, code + '_kit.json'), 'w')); print('kit verts', len(KP), 'tris', len(KI), 'painted', 'tex' in kit)

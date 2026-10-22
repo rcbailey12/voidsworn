@@ -57,6 +57,12 @@
    (job tools/pc/jobs/c19_6_shell_to_game.bat, SHELL=1 + PAINT=proc + PAINTK=1.0) adds the concept's gun sponsons and front armour, hull
    detail, weathered procedural paint (projection ghosted the old AI layout onto the shell), space-not-naval fixes, all guns forward/broadside.
    Renders: docs/ship_pipeline/c19_example/v12_*. Awaiting his verdict.
+   v13 (Oct 22, after "a lot more detail... less like pieces bolted on... corsairs like ork ships or Reavers"; picks: heavy jank,
+   moderate damage, mix of 3D and painted detail, reusable kit): `tools/blender/hs/detail_lib.py` adds flank plating cells, inset panels,
+   welded salvage patches, vents, greebles, pipe runs, mount flanges, dents, Corsair spikes/scrap/girders. Two in-game darkness bugs found
+   and fixed: the edge-wear bevel radius (.0025) was thicker than the new plates, so whole plates painted as bare steel (now .0008); and the
+   kit atlas is only 32% painted, so distance mips averaged in black (kit read ~2.6x darker). pixal_to_game.py now push-pull fills the gaps
+   of both atlases (v13d, job c19_7_infill.bat).
 1. Audits are in (Codex, Rey, Gemini). Claude's verified synthesis and picks: docs/ship_pipeline/AUDIT_SYNTHESIS.md. Gemini's drop-in code
    is NOT merged (built on false premises). Owner to answer the scope questions from Oct 22 before the next build.
 2. C19 verified fixes (list in AUDIT_SYNTHESIS.md), joint paint gain + no kit self-light, then the shared HullFx detail on hull and kit.

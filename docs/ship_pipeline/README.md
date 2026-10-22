@@ -45,6 +45,13 @@ everything below. The other 35 hulls are listed in `SHIP_QUEUE.md`. Rules for wh
      own sections.
    - Paint them by projection with the hull as occluder (`OCC`). Parts the pictures barely show keep hand paint (`KEEP` boxes) with grime.
    - Writes `<T>_cut.glb` (hull minus cut parts) and `<T>_kit.glb` / `<T>_kit_painted.glb`.
+   - **Clean shell (SHELL=1, Oct 22)**: when the AI hull body is wavy, it becomes a measuring guide only. A section table (`ST` in
+     `c19_kit.py`) is measured off it and lofted into a clean, subdivided hull (`<T>_shell.glb`).
+   - **Detail pass** (`tools/blender/hs/detail_lib.py`, reusable): flank plating cells (raised plates, inset panels, welded patches, vent
+     grilles, greebles), pipe runs with brackets, deck plating, mount flanges with bolts, dents; `corsair=True` adds spikes, scrap slabs,
+     girder lattices and hazard plates. Call `detail_pass(targets, parts, tag, base_col, bounds, corsair, seed)` before the colour loop.
+   - **Procedural paint** (`PAINT=proc` in project_paint.py): weathered paint baked from each part's vertex colours (mottling, dirt,
+     streaks, plate tone, scorch, rust, pits, edge wear, grime). Use it on a clean shell: projecting the pictures ghosts the AI layout.
 7. **Phone LOD**: `lod_make.py` (collapse decimate that keeps UVs) to 250k triangles.
 8. **To the game**: `pixal_to_game.py in.glb out_dir CODE left|front TEXRES` with `ALB` (projected albedo), `KIT` (painted kit) and
    `CONCEPT` (brightness levelling). Then `node vsm_pack.mjs dir CODE` packs the hull with meshoptimizer into `CODE.vsm`
@@ -63,4 +70,7 @@ everything below. The other 35 hulls are listed in `SHIP_QUEUE.md`. Rules for wh
 - The sandbox (8 GB, CPU) runs out of memory on 2M-triangle meshes. Measure and prototype on the 250k LOD, run the real thing on the PC.
 - Blender on the PC has no PIL: image maths runs in ComfyUI's Python.
 - In job.bat, never use `:` as an argument separator (Windows drive letters). The scripts use `|`.
+- Edge wear must stay thinner than the thinnest plate (bevel radius .0008), or whole plates paint as bare steel and read black.
+- Kit atlases are mostly empty space. `pixal_to_game` fills the gaps (push-pull) so far-away mips do not average in black.
+- Kit material now matches the hull paint exactly (no self-light, `G.kitFill` 0) since the hull and kit share one HullFx material setup.
 - Game frame: bow +x, up +y, port +z. Babylon is left-handed, so conversions mirror and flip winding.
