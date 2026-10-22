@@ -50,12 +50,10 @@
 - **Lag on loading into a battle**: hull JSON + webp map fetch/decode, plus the effect atlas build (v53-I moves it to idle slices on the title screen). Measure with perfprobe. Ideas: prefetch the next battle's hulls on the map screen, compressed GPU textures (KTX2), decode off the main thread.
 
 ## Next 3 tasks
-1. Owner is pausing builds until the weekly reset and running audits from other models meanwhile: brief at
-   docs/ship_pipeline/AUDIT_BRIEF.md, findings land in contrib/<model>/reviews/. Read and merge those first.
-2. Pyre-Barge kit v9 (run Oct 21 ~20:05, job tools/pc/jobs/c19_4_kit_to_game.bat): the concept close-up shows the 'front plates' are a
-   column of four thick dark slabs climbing the front slope like stairs, so v9 builds exactly that (projected paint) and clears the stick
-   debris above the slope; bridge-top dressing is hand-painted (KEEP box). Ran clean (no errors, desktop + phone); sheet in docs/ship_pipeline/c19_example/kit_v9_vs_concept.webp. Ryan on v9: detail level varies wildly between AI hull and hand-built parts; v10 (ran clean ~20:30) bakes seams, grit and worn edges into all kit parts: better at mid zoom, but up close the mismatch is now mostly shape (lumpy AI hull vs clean parts). Next lever: clean the AI hull's big panels (planar snap of large flat regions) or one shared in-game detail material; logged as audit question 0.
-3. Then the priority-1 ships in SHIP_QUEUE.md with the blob sweep; LOD/streaming and a 20-ship stress test.
+1. Audits are in (Codex, Rey, Gemini). Claude's verified synthesis and picks: docs/ship_pipeline/AUDIT_SYNTHESIS.md. Gemini's drop-in code
+   is NOT merged (built on false premises). Owner to answer the scope questions from Oct 22 before the next build.
+2. C19 verified fixes (list in AUDIT_SYNTHESIS.md), joint paint gain + no kit self-light, then the shared HullFx detail on hull and kit.
+3. Loader bundle/fallback fixes, then a real-GPU (not SwiftShader) stress test on the PC and the Pixel before ship 2.
 
 ## Gotchas
 - PC test runner: `Downloads\voidsworn_test` with `watcher.bat` running. Never write job.bat while a run is going (run_smoke deletes job.bat after it finishes). Hunyuan: C:\AI\HY3D2\Hunyuan3D2_WinPortable (python_standalone, cwd Hunyuan3D-2.1). PS 5.1 Invoke-WebRequest is slow for big files: set $ProgressPreference='SilentlyContinue'. Sandbox has Blender as a Python module (pip bpy 5.1.2) for scripted modelling and clay renders. Commit files with device_commit_files, then commit `run.request` **in a separate, later call** (parallel write+commit raced twice and shipped stale files). `build\job.bat` runs once instead of the smoke test; a job must `cd` back to `build` or it re-runs. Scripts are in `tools/pc/`.
