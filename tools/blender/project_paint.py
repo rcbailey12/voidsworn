@@ -24,9 +24,9 @@ if me.uv_layers and me.materials and me.materials[0] and me.materials[0].use_nod
 if base_img is None:  # hand-built parts: vertex colours, no UVs yet; give them a UV atlas first
     while me.uv_layers: me.uv_layers.remove(me.uv_layers[0])
     me.uv_layers.new(name='UVMap'); bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.uv.smart_project(angle_limit=math.radians(55), island_margin=0.004)
-    try: bpy.ops.uv.pack_islands(rotate=True, margin=0.003)
-    except Exception: pass
+    bpy.ops.uv.smart_project(angle_limit=math.radians(55), island_margin=0.0005)
+    try: bpy.ops.uv.pack_islands(rotate=True, margin_method='FRACTION', margin=0.0006, shape_method='AABB')  # v13: the old pack left the kit at 1.7% of the atlas (parts read black in game); this fills ~60%
+    except Exception as e: print('uv pack failed', e)
     bpy.ops.object.mode_set(mode='OBJECT')
 base_uv = me.uv_layers.active.name
 print('mesh', len(me.vertices), 'verts', len(me.polygons), 'tris, uv', base_uv, 'base', base_img.size[:] if base_img else 'vertex colours')
@@ -160,7 +160,7 @@ try:
                 sc.cycles.device = 'GPU'; print('device', t_); break
         except Exception: pass
 except Exception: pass
-sc.cycles.samples = 16 if PROC else 4; sc.render.bake.margin = 8; sc.render.bake.use_selected_to_active = False
+sc.cycles.samples = 16 if PROC else 4; sc.render.bake.margin = 3; sc.render.bake.use_selected_to_active = False
 bpy.ops.object.bake(type='EMIT'); tgt.filepath_raw = outp; tgt.file_format = 'PNG'; tgt.save(); print('baked', outp)
 if os.environ.get('EXPORT'):  # write the mesh back out with the baked paint as its texture (hand-built parts)
     for k in range(len(views)): me.uv_layers.remove(me.uv_layers[f'proj{k}'])
