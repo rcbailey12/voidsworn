@@ -37,6 +37,21 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 - [ ] Sector 1 balance (owner won 4/4 with no losses on v53.2)
 - [ ] Music: adaptive layered score (style still to pick), recorded sound packs are OK
 
+## 4b. Career and story mode (owner, Oct 22: "make it into a mini-career and story mode")
+- [ ] Progression that feels rewarding: meta-unlocks between runs, ranks and medals, persistent upgrades, clearer reward moments after battles
+- [ ] Characters: an admiral per faction with a portrait, voice/personality lines, and their own goals; recurring rival admirals
+- [ ] Personalisation: name your admiral and flagship, ship paint/insignia, crest, title earned by playstyle
+- [ ] Story: a short campaign arc per faction (intro, a few key battles, ending), story beats between sectors, choices with consequences
+- [ ] Career: the admiral carries over between runs (record, renown, retired captains), with a career screen
+- [ ] Scope questions for the owner before building (how long a story, how much text, voice or none, art style for portraits)
+
+## 4c. Whole-game health pass (owner, Oct 22: "optimization, bug fixes like we found with the graphics but more globally")
+- [ ] Code-wide audit like the graphics review: every system (battle rules, AI, campaign, UI, save/load, audio, effects), looking for
+      hidden bugs, dead code, leaks across battles, things that only work by accident
+- [ ] Performance on a real GPU and the Pixel: frame time per system, draw calls, texture memory, load time per battle, battery/heat
+- [ ] Automated checks: extend smoke tests (softlocks, every faction and map, long runs), console-error capture on every run
+- [ ] Write findings to a review doc with a fixed/open table (same format as GRAPHICS_REVIEW.md)
+
 ## 5. Process and tooling
 - [ ] Outside audits: texture pass (`TEXTURE_PASS.md`), earlier audits merged (`AUDIT_SYNTHESIS.md`). Outside agents work in `contrib/<name>/`
 - [ ] Engine: stay on Babylon; revisit Godot after v55 (parking lot)
@@ -45,3 +60,4 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 ## Open questions for Ryan
 - Music style for the adaptive score.
 - Calm the Pyre-Barge flanks, or keep the busy ork look?
+- Career/story mode: how long a story, how much text, voice lines or none, portrait art style?
