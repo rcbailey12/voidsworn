@@ -65,6 +65,10 @@ Renders are in `c19_example/`. Compare them with `concepts/C19_51.webp`.
 
 ## Known open issues
 
+- Detail mismatch (owner's latest): after v10's baked detail, the remaining gap at close zoom is mostly shape. The AI hull's surfaces are
+  lumpy, with baked shadows, while the hand-built parts are clean geometry. Candidate fixes: snap the AI hull's large flat regions to true
+  planes, or one shared in-game detail material for hull and parts.
+
 - Front armour: v9 slab staircase awaiting the owner's verdict.
 - The hull's big flat panels are still the AI surface, so they are a little wavy up close.
 - Paint brightness: the kit paint is levelled separately from the hull. Gain is clamped at 0.5 for the kit and 2.35 for the hull, both

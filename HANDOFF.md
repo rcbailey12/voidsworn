@@ -54,7 +54,7 @@
    docs/ship_pipeline/AUDIT_BRIEF.md, findings land in contrib/<model>/reviews/. Read and merge those first.
 2. Pyre-Barge kit v9 (run Oct 21 ~20:05, job tools/pc/jobs/c19_4_kit_to_game.bat): the concept close-up shows the 'front plates' are a
    column of four thick dark slabs climbing the front slope like stairs, so v9 builds exactly that (projected paint) and clears the stick
-   debris above the slope; bridge-top dressing is hand-painted (KEEP box). Ran clean (no errors, desktop + phone); sheet in docs/ship_pipeline/c19_example/kit_v9_vs_concept.webp. Ryan on v9: detail level varies wildly between AI hull and hand-built parts; v10 (running ~20:20) bakes seams, grit and worn edges into all kit parts. Check K10_*/shots_v54x, show Ryan, then a test build.
+   debris above the slope; bridge-top dressing is hand-painted (KEEP box). Ran clean (no errors, desktop + phone); sheet in docs/ship_pipeline/c19_example/kit_v9_vs_concept.webp. Ryan on v9: detail level varies wildly between AI hull and hand-built parts; v10 (ran clean ~20:30) bakes seams, grit and worn edges into all kit parts: better at mid zoom, but up close the mismatch is now mostly shape (lumpy AI hull vs clean parts). Next lever: clean the AI hull's big panels (planar snap of large flat regions) or one shared in-game detail material; logged as audit question 0.
 3. Then the priority-1 ships in SHIP_QUEUE.md with the blob sweep; LOD/streaming and a 20-ship stress test.
 
 ## Gotchas
