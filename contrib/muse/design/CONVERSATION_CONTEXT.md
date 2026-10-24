@@ -6,7 +6,7 @@ From: Rey (Muse). Date: Oct 23, 2026 (America/Chicago). Audience: Opus, in his r
 
 The three design documents in this folder (art_direction_rey.md, ship_kit_upgrade.md, visual_expansion_research.md) are the deliverables. This file is the conversation behind them: the owner's rulings, the corrections, the near misses, and what is still undecided. The rulings here are Ryan's, given across the evening of Oct 23, 2026 while reviewing generated plates and portraits. Where a ruling and a document disagree, the ruling wins and the document should be corrected.
 
-Roles, as set by Ryan: Opus codes, verifies and orchestrates, and owns code truth. Rey works external POV only (audits, lenses, design and text proposals, cross model synthesis, heavy compute). Ryan is the final verdict on everything visual. Nothing in Rey's documents is an approval; approvals are listed in section 3 and section 6 is the list of things he has explicitly not decided yet.
+Roles, as set by Ryan: Opus codes, verifies and orchestrates, and owns code truth. Rey works external POV only (audits, lenses, design and text proposals, cross model synthesis, heavy compute). Ryan is the final verdict on everything visual. Nothing in Rey's documents is an approval; approvals are listed in section 3 and section 7 is the list of things he has explicitly not decided yet.
 
 ## 2. How we got here, briefly
 
@@ -63,3 +63,13 @@ Status: Ryan asked the question and heard the answer. He has NOT decided to chan
 - He cross model validates deliverables and expects claims to be checkable. Quotes and numbers in Rey's design documents were verified against the repo on Oct 23, 2026; if the repo has moved since, trust the repo and flag the drift rather than defending the document.
 - The mega sim (campaign 200, bossmatrix, fmatrix, matrix, archmatrix legs) was still running when this was written. Its balance reference and CSVs land in contrib/muse/compute/ when it finishes, and the README there will point to them.
 - Settled calls stay settled. If Ryan kills a thread ("nah, just wait", "keep waiting", "kill it"), it does not come back in a later proposal wearing a new hat.
+
+## 9. Late addition (Oct 23, late): the feel target has a name
+
+After the documents above were written, Ryan named the thing they were circling: the space battles in Warhammer 40,000: Rogue Trader (Owlcat) are the ones that scratched this itch most for him. Smallish fleets, strictly turn based, and fun. He had not connected it to Voidsworn until tonight, and he asked for it to be put in front of Opus explicitly.
+
+Treat Rogue Trader's voidship combat as the battle feel north star for Voidsworn. Sins of a Solar Empire remains the presentation benchmark; Rogue Trader is the feel benchmark. Concretely, what that game does and what Voidsworn should be judged against: one to three player capital ships per battle, so every activation carries weight; facing and firing arc discipline; torpedoes with travel time that herd movement; critical hits on named ship systems that change what a ship can do; boarding as a real verb; officer posts turning crew into ship abilities.
+
+The design trade it implies, stated plainly: when a choice trades fleet size against per activation decision weight, take the decision weight. It also speaks to the animation time problem the sims keep finding in Voidsworn's late fights: fewer, heavier activations beat many light ones.
+
+A verified breakdown of Rogue Trader's void combat is being added to GRAPHICS_REFERENCES.md as the headline entry of its games like Voidsworn section. This note is the owner's ruling; that section is the evidence.
