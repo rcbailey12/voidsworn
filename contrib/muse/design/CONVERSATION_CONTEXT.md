@@ -72,4 +72,4 @@ Treat Rogue Trader's voidship combat as the battle feel north star for Voidsworn
 
 The design trade it implies, stated plainly: when a choice trades fleet size against per activation decision weight, take the decision weight. It also speaks to the animation time problem the sims keep finding in Voidsworn's late fights: fewer, heavier activations beat many light ones.
 
-A verified breakdown of Rogue Trader's void combat is being added to GRAPHICS_REFERENCES.md as the headline entry of its games like Voidsworn section. This note is the owner's ruling; that section is the evidence.
+A verified breakdown of Rogue Trader's void combat is in GRAPHICS_REFERENCES.md, section 6, as the headline entry of its games like Voidsworn section. This note is the owner's ruling; that section is the evidence.
