@@ -210,9 +210,160 @@ Only one extra earns its place, for the purest version of the data driven lesson
 Study it:
 - Modding hub, Starsector Wiki: https://starsector.fandom.com/wiki/Modding
 - Flags: the game is still in development and sold direct, not on Steam, so the scene lives on the developer's forum and this wiki; the wiki itself warns its mod articles are not guaranteed current and points to the official forum as canonical. Community libraries (MagicLib, which includes data driven projectile trail definitions) carry their own licences; check before any reuse.
-- Skipped, deliberately: Homeworld Remastered, X4: Foundations and Cosmoteer were candidates for this slot and were not verified to the standard of the rest of this section in this pass, so they are left out rather than padded in.
+- Skipped in this pass: Homeworld Remastered, X4: Foundations and Cosmoteer were candidates for this slot and were not verified to the standard of the rest of this section at the time. They are covered properly in section 5.
 
-## Start here: the seven highest value items, in order
+## 5. Second top up: the three modding games skipped last time
+
+These three were left out of section 4 because no source had been verified to the standard of the rest of the pack. They have now been checked properly. All three are here for the same reason: each one proves a different way of making ships out of data, and each one built a mod scene that outlived the original design team.
+
+### Homeworld Remastered (Gearbox Software)
+
+The ship is one file. A Homeworld ship lives in a .hod file that bundles the hull mesh with its turret and hardpoint structure, the anchor points where effects fire from, animations, and team colour and stripe texture data. The format has three generations (HOD1 from Homeworld 2 Classic, HOD2 before the 1.30 patch, HOD3 since the 2.0 patch), and a separate .ship script file beside it carries stats, abilities and subsystem definitions, referencing weapon files that a community tool (the HW2 Reference Investigator) can check for broken links. Authoring runs through a converter round trip: HODOR turns a structured .dae model into a game ready .hod, RODOH converts back, and DAEnerys is a visual editor for the result. Gearbox shipped official mod tools and Steam Workshop support at launch, with written tutorials (getting a simple ship in game, turrets, dock paths and latch points, capital ship engines, team colours and stripes). The 2.0 patch added a mod patching system so base assets can be altered nondestructively, instanced ship turrets, and stance and formation behaviour modifiers stored as data.
+
+The mod scene is the lesson. The Complex mod was built by people who had worked on the Remastered core team, was scripted from scratch, and is still being updated a decade on; FX:Galaxy fits eight races into the same format and was publicly acknowledged by Gearbox. Total conversions survive that long only when the unit format is a real contract with tools that round trip.
+
+Steal:
+- The one file per hull contract. Mesh, hardpoints, effect anchors and paint channels in a single manifest is exactly the ship kit work order, proven at production scale.
+- The converter round trip. Author in a friendly format, compile to the game format, and always be able to convert back. A format you cannot inspect backwards becomes a trap.
+- Nondestructive patch overrides, so balance passes layer over base data instead of forking it.
+
+Study it:
+- KarosGraveyard wiki, the community's documentation mirror: Tool Reference (https://github-wiki-see.page/m/HWRM/KarosGraveyard/wiki/Tool-Reference) and the linked Tutorial Reference and Modding FAQ pages.
+- Gearbox's own modding support article: https://support.gearboxsoftware.com/hc/en-us/articles/205281760 ; the Complex mod page: https://www.moddb.com/mods/homeworld-complex
+- Licence and IP flags: Homeworld is Gearbox IP and the tools exist to mod that game. Read the format design, lift nothing else.
+
+### X4: Foundations (Egosoft)
+
+X4 is the opposite authoring bet: no compiled unit file at all. Everything is XML, mods live in an extensions folder and toggle in game, and a mod changes the game by patching it, using XPath style operations that add, replace or remove single nodes inside the game's own files. A rebalance mod therefore never copies a ship file; it states a diff. Above the data sits the Mission Director, an XML scripting system of cues, conditions and actions (shared with X Rebirth), and MD scripts carry versioned patch elements that are applied when an older save is loaded, so scripted content migrates forward instead of breaking.
+
+Ship feel is data, and the official wiki shows its working. Engines define thrust plus boost and travel drive multipliers. The ship macro's physics block sets acceleration factors per direction. A jerk block shapes how acceleration itself ramps, with a worked example of a "soapy" heavy freighter whose every input arrives late. Steering curves cut turn rate as speed rises, and faction flavour is expressed in these numbers (Teladi and Terran ships brake better, Paranid ships are faster but unwieldy at speed). Ships and stations are both modular: a hull macro plus separate engine, thruster, shield and turret components, and stations assembled from placed modules.
+
+The scene is huge and it feeds the studio. Steam Workshop is the main channel, shared infrastructure mods (SirNukes Mod Support APIs) exist purely so other mods can build on them, the VRO overhaul rewrites every ship and weapon behaviour in pure XML, and its author was later hired by Egosoft. When the data layer is fully exposed and patch based, the community becomes a second design team.
+
+Steal:
+- Diff based overrides for Voidsworn's data layer. State the change, never fork the file. This is the same discipline the save integrity findings ask for, applied to content.
+- Ship feel as one small named parameter block per hull (thrust, acceleration factors, jerk, steering curve), tuned per faction. It is the flight model version of the FAC3D single source rule.
+- Versioned patches applied on save load, so old runs migrate instead of bricking.
+
+Study it:
+- Egosoft's official wiki, Modding Support: the Mission Director Guide (https://wiki.egosoft.com/X%20Rebirth%20Wiki/Modding%20support/Mission%20Director%20Guide/) and the flight parameter guide, which is the jerk and steering material above (https://wiki.egosoft.com/X4%20Foundations%20Wiki/Modding%20Support/Assets%20Modding/Guides/JPMFlight/).
+- The community x4modding wiki for how the object and spawn data is organised in practice: https://github-wiki-see.page/m/enenra/x4modding/wiki/god
+- Licence and IP flags: X4 is Egosoft IP and the wiki documents modding that game. The patching pattern and the parameter blocks are ideas, free to adopt.
+
+### Cosmoteer (Walpole Interactive / Wiley Vent)
+
+Cosmoteer has had official mod packages since version 0.11.7 in 2017, with an in game Mods Manager for installing and enabling them, and the game ships with an Example Mod and an Example Translation as the starting point. There is no single official modding manual, and that is worth stating plainly: the living documentation is the changelog's Modding sections on cosmoteer.net, the developer blog, the shipped example, and the official forum. The format underneath is readable text throughout: each part is a folder holding a .txt definition in a custom text language, a mod is a mod.txt metadata file plus part folders, ship libraries and Strings language files. Numeric fields accept full mathematical equations with embedded references to other values, so a stat can be derived from another stat instead of duplicated. A Developer Mode inside the game adds a particle effect editor and a planet editor aimed at modders.
+
+Two systems matter most for Voidsworn. First, painting. A ship gets a base paint colour and a pattern, then two decal layers on top (letters, numbers, symbols, icons, tile pieces), one colour per layer. Paint is free, the design is remembered and restored when destroyed parts are repaired, and saved Paint Schemes record colours and base pattern only, not decal layouts, so a scheme is portable data that can be applied to any hull. Later updates made decals resizable, stretchable and invertible, including modded decals. Second, construction and destruction. Ships are built module by module on a grid, crew are individually simulated and walk to operate parts, haul ammunition and fight fires, and in the game's real time battles every module can be targeted and destroyed, with ships breaking apart into separate pieces, all wrapped in a Career mode across a procedurally generated galaxy.
+
+Steal:
+- Paint as layered data decoupled from the hull (base colour, pattern, two decal layers). This is FAC3D with a player facing editor, and the scheme portability rule is the part to copy exactly.
+- Part definitions in readable text with equations that reference other values. Balance that derives stays consistent when one number changes.
+- Ship one tiny complete Example Mod as the documentation. The cheapest way to teach a format is a working sample of it.
+
+Study it:
+- The official site and its changelog, whose Modding sections are the real reference: https://cosmoteer.net/history.html ; the developer blog on the tooling Cosmoteer itself added for modders: https://blog.cosmoteer.net/2018/01/cosmoteer-0132-miscellaneous.html
+- Licence and IP flags: Cosmoteer is its developer's IP; modding is officially encouraged for that game. The text format and paint scheme ideas are free to learn from, the assets are not.
+
+## 6. Games actually like Voidsworn
+
+Ryan's question, asked directly: is there anything remotely similar to this concept? Turn based or simultaneous turn space fleet tactics, a campaign or roguelike run wrapped around it, admiral and fleet progression, per ship damage that persists. The honest answer is that the pieces all exist and the combination almost does not. The entries below are precise about turn structure, because this corner of the genre blurs three different systems (alternating turns, simultaneous turns, pausable real time) and the difference is the whole design.
+
+### Headline: Warhammer 40,000: Rogue Trader (Owlcat Games)
+
+This is the benchmark because Ryan named it as one: asked which space battles scratched this itch most, he pointed here, to small fleets, strictly turn based, and fun. The voidship battles are a side system inside a large story CRPG, which makes the lesson sharper: a part time battle system with one ship still produced the feel, because every mechanic on that ship is a decision.
+
+How it actually works, verified against the game's wiki:
+- Strictly turn based on a cell grid. You command a single flagship (a frigate: Sword, Falchion or Firestorm class) against small enemy squadrons, usually outnumbered. Your flagship takes a full turn, then the enemy ships take theirs. There is no fleet campaign layer; progression is the flagship itself, which levels to 12, swaps looted components, and spends scrap won in battle on repairs and post upgrades.
+- Movement has momentum. The speed stat is movement points per turn, and manoeuvrability is defined as how many cells the ship must travel before it may turn 45 degrees. Big ships plan their lines; nothing pivots for free.
+- Facing is the game. Weapons sit in facing slots (prow, port, starboard), so the standard attack run is lance fire forward, close for the forward macro cannons, then swing past for a broadside. Shields enforce the same lesson: four sectors, one per side, each with an independent charge. Above half charge a sector absorbs all or half of incoming damage; below half, half or none; a depleted sector protects nothing until restarted.
+- Torpedoes have flight time. A launched salvo keeps travelling on later turns under its own movement with limited turning, so torpedoes are aimed at where the target will be in roughly two turns. They can be sidestepped precisely because they cannot turn tightly, and their target is only chosen on the turn they arrive, so a salvo herds enemy movement even when it misses. The Torpedo Control post ability hands you control of the nearest salvo launched on an earlier turn and grants it extra movement.
+- Six officer posts carry the tactics. Each post represents a major ship system, is staffed by a companion whose skills change what it can do, and holds up to two basic abilities on random cooldowns of one to three rounds (one usable per round) plus one ultimate that charges across rounds, with only one ultimate spendable per battle. Named examples: Reinforce Shields, Vulnerability Scan (marks a weak point that takes 30 percent extra damage), Shallow Jump five cells forward, and the Boarding Party ultimate, which starts fires and can cripple the target's engines for a round. System damage is tied to stations: the scan finds the weak point, the boarding party breaks the engines.
+
+Steal, mapped to Voidsworn:
+- Small fleet activation weight. One ship taking a full turn carries a whole battle when every system on it is a choice. Voidsworn activates several ships per round; each activation should feel this dense, and if it cannot, that is the argument for fewer, heavier ships per side.
+- Arc discipline with per facing shields. A shield that dies on one side only is what turns a facing diagram into a resource.
+- Torpedo flight time as moving terrain. Multi turn travel with a limited turn rate makes a weapon into a threat area the enemy must route around, not a dice roll with a missile picture.
+- System effects tied to posts. Let admirals and officers own the crits (this post can cripple engines, that one can mark a weak point), which is Voidsworn's admiral layer doing mechanical work instead of narrating.
+- Boarding as a verb. A post ability with range, cooldown and consequences, not a cutscene and not a separate minigame.
+
+Study it:
+- The Space Combat page of the Rogue Trader wiki, which lists every post ability, the shield sector rules and the component system: https://roguetrader.wiki.fextralife.com/Space+Combat
+- Licence and IP flags: Warhammer 40,000 is Games Workshop IP and Owlcat's game is a licensed product. Study the mechanics and import nothing: no names, terms or fiction. This matters doubly here, since the council audit already flagged borrowed 40k terms in Voidsworn's data.js for purge.
+
+### Battlestar Galactica Deadlock (Black Lab Games / Slitherine)
+
+Turn structure: WEGO, true simultaneous turns. Both sides issue orders to every ship, then End Turn resolves both fleets at once in real time. Fleets run to seven ships, with armour facings, subsystems, squadrons, and a per ship posture choice (attack or defence stance) set each turn. Between turns the battle can be replayed and scrubbed frame by frame. Campaign: a linear thirteen mission story campaign run from the Daidalos shipyard, with officers recruited and Quorum of Twelve politics between missions; skirmish and multiplayer use points budgets. Similarity: the closest structural relative for the battle layer, and no roguelike run or persistent fleet damage campaign behind it.
+
+Steal: the per ship posture toggle as a one click stance with real tradeoffs, and the between turn replay as both a learning tool and a cinematic device.
+
+Study it: the game manual (https://cdn-cms.f-static.net/uploads/4405929/normal_604ca81f0259c.pdf) and Slitherine's own description of the WEGO system (https://www6.slitherine.com/news/battlestar-galactica-deadlock-is-out-on-playstation-4-and-xbox-one-08-12-17). IP flag: Battlestar Galactica is NBCUniversal property. Study only.
+
+### Star Hammer: The Vanguard Prophecy (Black Lab Games)
+
+Deadlock's predecessor, and the same WEGO skeleton: at round start you plot a movement trajectory for every ship, the enemy does the same unseen, you press play and both fleets execute simultaneously in real time, then the game pauses for the next round. Its distinction is verticality: several horizontal planes, with ships changing planes at a rate set by their agility (fast ships shift planes easily, capitals barely), and ghosted trajectory projections that flash red where a collision is predicted. A shared energy core is routed between engines, weapons and shields per ship. Campaign: roughly 60 missions with branching paths and scarce reinforcements. Similarity: the plane system is the closest shipped relative of Voidsworn's three delta-v bands.
+
+Steal: trajectory ghosts with collision warnings (show the planned path, mark the danger on it), and energy routing as the per ship stance instead of a posture toggle.
+
+Study it: the Matrix Games manual (https://ftp.matrixgames.com/pub/StarHammer/SH-Manual-%5bPRINT-FRIENDLY%5d.pdf) and the GameWatcher review for the round structure in plain language (https://www.gamewatcher.com/reviews/star-hammer-the-vanguard-prophecy-review/12263).
+
+### Flotilla (Blendo Games, 2010)
+
+The purest simultaneous turn game on this list. Every 30 seconds you issue orders; both fleets then execute them simultaneously in real time for 30 seconds; the game freezes and you order again. Movement is fully three dimensional, ships rotate in any direction, and there are exactly three order types: attack move, flank move (faster, but weapons stay silent until the ship stops), and focus fire (higher fire rate, much slower movement). The single player adventure is a randomly generated run of about 30 minutes, upgrades and artifacts are bolted onto your fleet's ships between encounters, and your captain dies at the end of every adventure, so permadeath is built into the fiction. Hardcore mode removes the order timer. Similarity: the turn engine is a near twin of a WEGO mode for Voidsworn; everything around it is a sketch where Voidsworn has a campaign.
+
+Steal: proof that simultaneous turns need a small verb vocabulary, not more orders. Flank move's speed for silence trade is a complete tactic in one rule.
+
+Study it: the Wikipedia summary is accurate and sourced (https://en.wikipedia.org/wiki/Flotilla_(video_game)) and the Steam page carries the developer's own description.
+
+### Crying Suns (Alt Shift)
+
+Turn structure: pausable real time, not turn based, and the distinction matters. You command one battleship on a hex grid battlefield plus deployable squadrons with rock paper scissors matchups; you target the enemy's hull, weapons or squadron bays, damaged sections generate heat that stalls them until repaired, and officers assigned to ship systems improve those systems in combat. Run structure: a true roguelite. You play a clone of Admiral Ellys Idaho, and death grows a new clone back at Gehenna, so the run reset is fiction. Six chapters of three sectors each, mini bosses, a chapter boss, a fuel and scrap economy, and over 300 events, some offering extra options when you carry a particular Hero. Similarity: the run and the officer to system assignment are close cousins; the battle is a duel, not fleet tactics.
+
+Steal: officers slotted into systems during combat (the Rogue Trader post idea inside a roguelite frame), and a run reset the fiction explains, so permadeath needs no apology.
+
+Study it: the Kickstarter page, where the developers lay the design out themselves: https://www.kickstarter.com/projects/106952529/crying-suns/description
+
+### Halcyon 6: Starbase Commander (Massive Damage)
+
+Turn structure: turn based in the JRPG pattern, not simultaneous. Up to three ships a side, activation order within the round set by ship speed, each ship acting with three or more ship powers plus up to four officer powers, on cooldowns, with some powers costing the ship its next turn. The core system is statuses plus the Exploit rule: one ship applies a status effect, another ship's power exploits it for double damage and consumes it, so combination play is the entire battle. Campaign: a roguelite frame around a starbase you excavate and build up, colonies to defend, research trees, and officers whose class (Science, Engineering, Tactical) gates which ships they may pilot. Similarity: officers, ships and status combos are Voidsworn's admiral layer in miniature, at 3v3 scale with no facing or manoeuvre grid.
+
+Steal: the Exploit contract. A status that another ship cashes in is the cheapest mechanism on this list for making a fleet feel like a team instead of parallel shooters.
+
+Study it: the Rock Paper Shotgun review, which explains the Exploit loop clearly: https://www.rockpapershotgun.com/2016/09/16/halcyon-6-starbase-commander-review/
+
+### FTL: Faster Than Light (Subset Games)
+
+Turn structure: pausable real time, the benchmark the whole subgenre measures itself against. One ship, and the tactics are system management: target individual enemy systems (weapons, shields, engines, oxygen), route a finite reactor between your own systems, and send crew to repair damage, fight fires and repel boarders, because fire and hull breaches are damage that keeps happening until someone deals with it. Run structure: a node map across sectors with a pursuing rebel fleet as the clock, permadeath, scrap spent on upgrades, runs of about an hour. Similarity: no fleet and no turns, but it owns two things Voidsworn wants, system damage as the real target (hull is only the score) and a run with external time pressure.
+
+Steal: damage that creates work instead of only subtracting health, and pursuit pressure on the node map so route choice is a resource decision.
+
+Study it: the launch review at The Artifice walks the pause, targeting and permadeath loop in detail: https://the-artifice.com/ftl-faster-than-light-review/
+
+### Star Traders: Frontiers (Trese Brothers)
+
+Turn structure: turn based with simultaneous orders, verified in the official wiki. Each captain issues move, weapon and talent orders against a Reactor Point budget and both sides resolve together on End Turn. It is always a duel, one ship per side, and distance is a single range band from 5 (farthest) to 1 (boarding close). Weapons and talents are gated by range, crippling hits damage components and kill crew, and closing to boarding range opens a separate turn based crew battle. Campaign: not a bounded run but an open ended captain career, procedurally generated galaxy and characters, 33 captain jobs, 45 hulls, over 350 upgrades, individually recruited crew with jobs, talents, traits and gear, and faction politics with vendettas. Similarity: the scale is wrong for Voidsworn, but the crew layer is the deepest version in this niche of officers as RPG characters, and its order resolution is WEGO thinking at duel scale.
+
+Steal: talents gated by range band, so an ability that only exists at range 2 is itself an argument for a position; and persistent named crew whose talents are the ship's real build.
+
+Study it: the official wiki's Ship Combat page: https://startraders.fandom.com/wiki/Ship_Combat
+
+### Void War (Tundra Interactive, 2025)
+
+Verified and recent: released June 2, 2025 on Steam and itch.io. An FTL shaped roguelite in a techno gothic skin: one ancient starship, a sector and node map, hundreds of randomly generated encounters per run, a commander plus crew recruited from six factions with equippable wargear, weapons, modules and reactor power managed in pausable real time combat in the FTL pattern, upgrade combinations arranged to dismantle enemy ships system by system, and boarding actions fought by your crew. Similarity: the run structure and system damage are kin; it is a single ship game, not fleet tactics. It also carries the sharpest IP lesson in this document: in early 2026 the game was pulled from Steam after a Games Workshop DMCA claim that reportedly came down to a single shoulder pad image, per the developer's account reported by IGN. A game can be mechanically original and still be dragged down by borrowed visual vocabulary.
+
+Steal: combo building as a build language (upgrades arranged into combinations that dismantle specific systems), which gives a run's loot a grammar instead of a pile.
+
+Study it: the community wiki (https://void-war.fandom.com/wiki/Void_War) and the developer's itch.io page (http://tundra-interactive.itch.io/void-war). IP flag: the aesthetic deliberately courts Warhammer 40,000, which is Games Workshop IP; the DMCA episode is the cautionary tale, not a model.
+
+### Tabletop ancestors: Star Wars Armada and Dropfleet Commander
+
+One short entry for the two paper games, because Voidsworn's campaign layer has tabletop DNA. Star Wars Armada (Fantasy Flight, now Atomic Mass Games) is the planning ancestor: in the Command Phase every ship secretly stacks command dials, one per round, as many rounds ahead as its command value (capital ships plan three rounds out, small ships one). In the Ship Phase players alternate activating a single ship: reveal its dial, attack, manoeuvre. A revealed dial can instead be banked as a token giving a weaker version of the same command later. Steal: commitment depth scaled by ship size, and the dial or token choice, full effect now versus weak effect when needed. Dropfleet Commander (Hawk Wargames, now TTCombat) is the layers ancestor: battlegroups alternate activations with order set by strategy cards, ships fight across three orbital layers (Atmosphere, Low Orbit, High Orbit) with only rated ships allowed into the lowest, weapon range is your scan stat plus the target's signature, and acting spikes your signature (firing, launching, special orders), while Silent Running sheds spikes and can drop signature to zero at the cost of not shooting. Battles are usually about landing troops on surface sectors, not just kills. Steal: signature as the price of action, and layers that stay readable because each layer has a job tied to the objective; Dropfleet is the standing proof that three layers work when they are load bearing. Study Armada in the official Rules Reference (https://images-cdn.fantasyflightgames.com/filer_public/3a/13/3a13aa9c-7857-4b98-8a08-5ba9aaaedd89/swm_rules_reference_guide_150.pdf) and Dropfleet in its rulebook (https://www.scribd.com/document/553227712/Desktop-Dropfleet-Rulebook-1-2). IP flags: Star Wars is Lucasfilm and Disney IP; Dropfleet Commander is TTCombat's. Mechanics only.
+
+### The honest verdict on the niche
+
+Count the true simultaneous turn fleet tactics games: Deadlock, Star Hammer, Flotilla. Across roughly fifteen years that is close to the entire genre, and two of the three come from one small studio. Turn based fleet tactics with a run around it adds Halcyon 6 at 3v3 scale and Rogue Trader's single flagship inside a story CRPG, and then the shelf is bare. The crowded shelf nearby is single ship roguelikes (FTL, Crying Suns, Void War), where the fleet is one hull and the tactics are system management under pausable real time. So the exact Voidsworn combination, turn based or simultaneous fleet tactics plus a roguelike run plus admiral progression plus per ship persistent damage, has no famous direct occupant. That cuts both ways: there is no incumbent to be compared against shot for shot, and there is no proven template to copy, which is why this section loots neighbours instead (WEGO from Deadlock, posts and torpedo flight time from Rogue Trader, the Exploit contract from Halcyon 6, layers and signature from Dropfleet). The niche is not empty because the idea is bad; it is empty because each neighbouring genre took one piece of it and stopped.
+
+## Start here: the eight highest value items, in order
 
 1. Sins 2 mod tools repo and dev journals. Budgets, texture channel layout, and combat geometry, all from the closest reference game. Read first, before the next hull or texture pass.
 2. Babylon.js Playground examples via the engine repo README. Working beam, shield, particle, and post-processing code in the actual engine, Apache-2.0.
@@ -221,3 +372,4 @@ Study it:
 5. Kenney Space Kit plus Skyboxes Space. CC0 placeholders that unblock camera, effects, and background work in the first week, with zero licence risk.
 6. Endless Space 2 Battle Overview GDD (top up, section 4). One design document that hands over the Battle Director and the five phase battle structure: the cheapest route to battles that feel directed, not just rendered.
 7. Starsector modding hub (top up, section 4). The hull, variant, skin data split and the F8 live reload tuning loop, which is the closest model on this list for how Voidsworn's own data layer should behave.
+8. Rogue Trader wiki, Space Combat page (second top up, section 6). The feel benchmark Ryan named himself: six officer posts, per facing shield sectors, torpedoes with multi turn flight time, all on one page. Read it before the next battle rules pass.
