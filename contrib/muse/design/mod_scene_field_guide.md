@@ -35,7 +35,7 @@ Supporting evidence for all three is throughout Part 1 and Part 2. If Opus adopt
 
 ## Honesty notes
 
-Each part flags its own gaps in place; the load-bearing ones: REDmod specifics rest on the community wiki rather than a CD Projekt Red manual; the Skyrim entry leans on opened guides rather than the SKSE site; Rogue Trader's data internals are inferred from mod behaviour, with no Owlcat developer document found; Hyperspace's licence is not named in its source material; ESA audio terms went unverified and no terms are asserted for it; Materialize's licence rests on a third party walkthrough. Licences are stated in plain words per entry, and anything free to download but not free to ship is flagged where it sits.
+Each part flags its own gaps in place; the load-bearing ones: REDmod specifics are confirmed against CD Projekt Red's official modding support page (Oct 24, 2026 sweep); the Skyrim entry now rests on the opened SKSE site (AE build 2.3.1); Rogue Trader's data internals are inferred from mod behaviour, with no Owlcat developer document found; Hyperspace's licence is still not named in its source material (Oct 24, 2026 sweep: no licence file found); ESA audio terms went unverified and no terms are asserted for it; Materialize is GPLv3 with safe outputs (confirmed via the vendor FAQ, Oct 24, 2026 sweep). Licences are stated in plain words per entry, and anything free to download but not free to ship is flagged where it sits.
 
 The three parts run about 9,300 words between them.
 
@@ -103,7 +103,7 @@ Minecraft is the one game here where content layering is an official, documented
 
 Study it: the official Minecraft Wiki on the pack manifest at https://minecraft.wiki/w/Pack.mcmeta and its data pack tutorial at https://minecraft.wiki/w/Tutorial:Creating_a_data_pack , plus a practical overview of the Iris and OptiFine shader ecosystem at https://guide-minecraft.com/shaders/
 
-Licence and IP: Minecraft is Mojang and Microsoft property. Data packs and resource packs are officially supported for players' own content, and the wiki documents the formats. Iris is an open source community project. Minecraft assets and code stay theirs.
+Licence and IP: Minecraft is Mojang and Microsoft property. Data packs and resource packs are officially supported for players' own content, and the wiki documents the formats. Iris is an open source community project; its official site is irisshaders.dev (irisshaders.org and iris-shaders.com are copycat domains, not the project). Minecraft assets and code stay theirs.
 
 ### Total War: Warhammer: the game is its database
 
@@ -201,7 +201,7 @@ The detail to steal is in the wiki's own words: content ids are prefixed with th
 
 Study: the BaseMod wiki at https://github-wiki-see.page/m/daviscook477/BaseMod/wiki/Custom-Cards and the BasicMod walkthrough at https://github-wiki-see.page/m/Alchyr/BasicMod/wiki/Adding-Content.
 
-Licence in plain words: the game is commercial and closed. BaseMod and ModTheSpire are free open source community projects on GitHub. Patterns travel freely, game assets and code do not.
+Licence in plain words: the game is commercial and closed. BaseMod is MIT licensed; ModTheSpire is a free open source community project on GitHub. Patterns travel freely, game assets and code do not.
 
 ### Darkest Dungeon: data files all the way down, with load order as the API
 
@@ -389,4 +389,4 @@ Voidsworn use: a matched UI sound set is the difference between a prototype menu
 Strongest three finds: (1) Sonniss GDC bundles, production grade SFX under a lifetime royalty free, no attribution licence; the sound gap closes fastest here. (2) ZzFX plus JFXR, a complete UI and weapon sound layer generated in code or exported free, with zero shipped assets and zero licence friction; the native fit for a web game. (3) Effekseer, MIT particle authoring that bakes exactly the flipbooks the effects work needs.
 Close fourth: the Material Maker community library, which turns a known tool into a per faction paneling pipeline.
 
-Check before you ship: Shadertoy default licence (non-commercial, study only). Skorpio construction kit (share-alike and GPL). Freesound CC BY-NC and Sampling Plus tags. godotshaders GPL v3 posts, and the images inside any post. ESA audio (terms unverified). Materialize (licence page unverified). PanksCreations Galactic Invaders free tier (partial content, custom licence).
+Check before you ship: Shadertoy default licence (non-commercial, study only). Skorpio construction kit (share-alike and GPL). Freesound CC BY-NC and Sampling Plus tags. godotshaders GPL v3 posts, and the images inside any post. ESA audio (terms unverified). Materialize (GPLv3, outputs safe to ship). PanksCreations Galactic Invaders free tier (partial content, custom licence).
