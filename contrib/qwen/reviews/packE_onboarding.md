@@ -1,6 +1,6 @@
 # Qwen Pack E audit: first-run onboarding
 
-Model: Qwen (confirmed by the owner, Oct 23, 2026). Raw output as pasted by the owner, lightly formatted by Rey. Unverified; screened in contrib/muse/reviews/packDE_screening_round2.md.
+Model: Qwen (confirmed by the owner, Oct 23, 2026). Condensed by Rey from the owner's paste of the raw output (the full text is in the owner's chat transcript). Unverified; screened in contrib/muse/reviews/packDE_screening_round2.md.
 
 ## Onboarding audit (Pack E, second run)
 

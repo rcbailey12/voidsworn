@@ -1,6 +1,6 @@
 # Qwen Pack D audit: campaign economy
 
-Model: Qwen (confirmed by the owner, Oct 23, 2026). Raw output as pasted by the owner, lightly formatted by Rey. WARNING: findings 1 and 6 were disproven at screening (runRenown is defined at campaign3d.js:30; Heat is applied in battle.js). See contrib/muse/reviews/packDE_screening_round2.md before citing.
+Model: Qwen (confirmed by the owner, Oct 23, 2026). Condensed by Rey from the owner's paste of the raw output (the full text is in the owner's chat transcript). WARNING: findings 1 and 6 were disproven at screening (runRenown is defined at campaign3d.js:30; Heat is applied in battle.js). See contrib/muse/reviews/packDE_screening_round2.md before citing.
 
 ## Economy audit (Pack D, second run)
 
