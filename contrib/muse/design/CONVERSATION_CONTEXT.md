@@ -37,7 +37,7 @@ Ryan reviewed the background and ship plates and approved them ("those are all a
 
 The GitHub connector route Rey pushes through accepts UTF-8 text only, so the binary WebP images could not be committed with the documents. Ryan chose docs plus manifest now rather than holding the whole pack. The curated staging pack with the 40 final images, renamed to the manifest's paths, sits on Rey's side; if you need a specific plate or portrait, ask Ryan to relay it or Rey to supply it another way, and verify it against the manifest hash when it arrives.
 
-## 6. The desktop and full app conversation (no decision taken)
+## 6. Platform ruling: PC-only in Babylon (decided Oct 24, 2026)
 
 Late in the evening Ryan asked two hypotheticals: what if the game went desktop only instead of phone, and what if it became a full app, what is biggest there. Rey's analysis, delivered and not yet ruled on:
 
@@ -46,7 +46,7 @@ Late in the evening Ryan asked two hypotheticals: what if the game went desktop 
 - Godot native is the strongest true native route (Forward+ renderer) but is a full rewrite. Unreal has the highest ceiling and remains the least proportionate. Full reasoning is in Section 6 of the research memo, with the phone assumptions still attached to the earlier sections.
 - Recommendation given: desktop first in Babylon, Electron prototype only if an installable app is wanted, Godot only on a conscious PC first rewrite decision.
 
-Status: Ryan asked the question and heard the answer. He has NOT decided to change the target. Until he says so, the Pixel remains the reference device and the phone budgets in the ship kit work order and the research memo still govern.
+Ruling, Oct 24, 2026: Ryan decided PC-only in Babylon. The phone target is dropped entirely. The desktop GPU budget is the design floor. There is no phone tier, no phone pass, and no phone acceptance gate. The engine stays Babylon: this ruling is not a native-app decision and not a Godot decision. An installable wrapper (Electron or Tauri) and any engine migration remain separate, undecided questions. Ryan first picked PC-first with phone secondary and then, minutes later, replaced it with PC-only on the grounds that dropping phone changes Opus's decisions meaningfully (single asset tier, desktop-first UI, no Pixel testing).
 
 ## 7. What Ryan has not decided (do not treat as approved)
 
@@ -54,7 +54,6 @@ Status: Ryan asked the question and heard the answer. He has NOT decided to chan
 - The career and story pick (Rey's recommendation was Option B, faction arcs, with admiral voices first). Filed at contrib/muse/reviews/career_story.md.
 - The five owner decisions on the asymmetry decision page. Filed at contrib/muse/reviews/asymmetry_decision.md.
 - Pyre-Barge sign off, which gates ship 2 in the queue.
-- The desktop versus phone target question in section 6 above.
 - The remaining 15 admiral portraits: approved in principle as a system, not yet commissioned as a batch.
 
 ## 8. Practical notes

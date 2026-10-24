@@ -29,7 +29,7 @@ The audit math has not moved: C19_51 took 8 revisions of hand-measured coordinat
 ## Budgets and gates (non-negotiable)
 
 - Per-class vertex and triangle ceilings for phone, enforced at build time in the same spirit as the check pack: a hull that exceeds its class budget fails the build, loudly, before it reaches a device.
-- The Pixel stress gate from the pipeline audit stands: no hull 6 until a fully loaded battle passes on Ryan's actual phone. Kit-generated hulls make this easier, not optional: budgets plus lazy loading or eviction for off-screen factions if the stress test demands it.
+- The Pixel stress gate from the pipeline audit is superseded by the Oct 24, 2026 platform ruling (PC-only in Babylon): no hull 6 until a fully loaded battle passes on desktop. There is no phone pass. Budgets plus lazy loading or eviction for off-screen factions still apply if the desktop stress test demands it.
 - Screenshot acceptance per hull, two shots at battle zoom on a phone-width frame: (a) lit, against its home plate; the hull must read as its faction at a glance; (b) the silhouette sheet: every hull of a faction rendered flat black, small, in a grid; any two hulls a viewer cannot tell apart, or any hull a viewer assigns to the wrong faction, sends the manifest back. The six hero plates in the art pack are the reference targets for the first six kit hulls.
 
 ## Rollout

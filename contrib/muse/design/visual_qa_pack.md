@@ -7,8 +7,8 @@ Rules this pack enforces come from the existing design documents, not from new i
 - Colour law (art direction): cyan means shields, nothing else is cyan, and shields are nothing else. Gold is rationed to patrons and Command UI only. Selection ring is white. Flagship marker is a faction-coloured chevron. FAC3D is the single colour source.
 - Silhouette grammars (art direction): Voidsworn vertical cathedral, Hegemony pure wedge, Corsair mandatory asymmetry, Chorus radial knot with no straight edges, Ithar dart plus vertical fins (never horizontal wings), Deathless ribcage and spine.
 - Background cap (art direction): no background pixel inside the board area may exceed 40 percent of the luminance of an unlit hull facet.
-- Kit acceptance (ship kit work order): two shots per hull at battle zoom on a phone-width frame, one lit against its home plate, one flat-black silhouette sheet. A hull that cannot be told apart from another hull of its faction, or that a viewer assigns to the wrong faction, sends the manifest back.
-- Craft rules (graphics craft): fixed exposure per region, never auto-adapted; bloom threshold raised until background plates stop glowing; MSAA on desktop, FXAA or low samples on phone, never both; trails deliberate, never accidental; screen shake short with a reduce toggle; photosensitivity cap of three flashes per second; a reduce-flash setting.
+- Kit acceptance (ship kit work order): two shots per hull at battle zoom on a desktop frame, one lit against its home plate, one flat-black silhouette sheet. A hull that cannot be told apart from another hull of its faction, or that a viewer assigns to the wrong faction, sends the manifest back.
+- Craft rules (graphics craft): fixed exposure per region, never auto-adapted; bloom threshold raised until background plates stop glowing; MSAA on desktop; trails deliberate, never accidental; screen shake short with a reduce toggle; photosensitivity cap of three flashes per second; a reduce-flash setting.
 
 ## 1. Capture setup: identical conditions, every batch
 
@@ -16,8 +16,8 @@ A screenshot that cannot be compared to the last batch is decoration. Before any
 
 - Wait for shader compilation to finish. Force synchronous compilation before a screenshot, or wait on scene readiness, so no shot catches a half-compiled material.
 - Fix exposure per region. Never capture with auto exposure enabled: an exposure shift that changes which ships read is a gameplay bug, and it also makes two batches incomparable.
-- Use the production pipeline settings for the tier being shot: ACES tone mapping on, bloom at the shipped threshold and weight, the tier's anti-aliasing mode (MSAA samples on desktop, FXAA or samples 2 on phone).
-- Capture both frames for every subject: a phone-width frame (412 pixel class width, the owner's device class) and a desktop frame. The phone frame is the acceptance frame. A shot that passes on desktop and fails on phone fails.
+- Use the production pipeline settings for the tier being shot: ACES tone mapping on, bloom at the shipped threshold and weight, the desktop anti-aliasing mode (MSAA samples).
+- Capture the desktop frame for every subject. Under the Oct 24, 2026 PC-only ruling there is no phone frame and no phone acceptance check. A shot passes or fails on desktop alone.
 - Capture in game, never in Blender. A Blender render is not proof. The in-game screenshot and the flat-black silhouette sheet are the acceptance tests.
 - Record the build identifier and the tier with the batch. A shot without a build tag cannot be re-checked.
 
@@ -47,7 +47,7 @@ A screenshot that cannot be compared to the last batch is decoration. Before any
 1. Plate alone: the full plate with no ships and no UI, so the four layers read cleanly.
 2. Plate with ships: the same plate with one fleet of each of two factions on the board, at fighting zoom, for the luminance cap check.
 3. Plate with UI: the same plate with the full HUD visible, for the legibility check.
-4. Plate at phone width: the plate with ships shot is repeated on the phone frame if the batch was captured on desktop first. The phone frame is the acceptance frame.
+4. Plate at phone width: dropped. Under the Oct 24, 2026 PC-only ruling there is no phone frame; the plate with ships shot is captured on desktop only.
 
 ### 2d. Full battle (one battle per batch, both tiers)
 
@@ -75,7 +75,7 @@ Check every applicable item on every shot. A check is either observed or it is n
 - Colour law: no cyan anywhere except shields, shield hits and shield UI pips. No gold anywhere except patrons and Command UI. Selection ring is white. Flagship marker is a faction-coloured chevron.
 - Grammar: the hull obeys its faction grammar (Voidsworn vertical, Hegemony wedge line unbroken, Corsair asymmetrical, Chorus no straight edge longer than a plate, Ithar fins vertical, Deathless ribs exposed). Guns face forward or sideways, never backward.
 - Damage language: the damage state shown matches the faction's specified language, and damage is readable at fighting zoom, not only at hero zoom.
-- Shield shape: the ripple shape matches the faction, and the ripple reads at phone width, not only on desktop.
+- Shield shape: the ripple shape matches the faction, and the ripple reads at battle zoom.
 
 ### Effect shots
 
@@ -88,7 +88,7 @@ Check every applicable item on every shot. A check is either observed or it is n
 ### Background plate shots
 
 - Luminance cap: no background pixel inside the board area exceeds 40 percent of the luminance of an unlit hull facet. Check by sampling, not by eye alone: sample the brightest board-area pixel against an unlit facet in the same shot.
-- Ship separation: the faintest ship colour in the shot still reads against the brightest background pixel in its region, on the phone frame.
+- Ship separation: the faintest ship colour in the shot still reads against the brightest background pixel in its region, on the desktop frame.
 - Layer discipline: the four layers read (far gradient, one mid feature, near particulate, starfield), and the mid feature does not compete with the ships for attention.
 - Region seasoning: where a plate is seasoned for a home faction, the tint is a whisper, not a repaint. A Hegemony belt and a Deathless belt are cousins, not clones.
 - UI legibility: with the HUD visible, every HUD element reads against the plate. If any element needs a scrim or a colour change, that is a finding, not a styling preference.
@@ -106,7 +106,7 @@ Check every applicable item on every shot. A check is either observed or it is n
 These are open contradictions in the design documents. A batch must report on them rather than assume them resolved:
 
 - Gold-adjacent trims (Chorus dull gold, Ithar pale gold, epic rarity) must not read as Command gold. If a viewer confuses a trim for a Command marker, that is a finding against the rationing rule, not against the viewer.
-- Shield identity is carried by ripple shape, while the same documents admit glow is the first thing lost at phone size. The ripple shape check must therefore be done on the phone frame, and a ripple that only reads on desktop fails.
+- Shield identity is carried by ripple shape, while the same documents admit glow is the first thing lost at small size. The ripple shape check must therefore be done at battle zoom.
 - Plate to terrain mapping is unmapped (18 plates against five terrain kinds). Until a mapping exists, every plate shot must record which terrain kind it is claimed for, so the mapping can be built from evidence rather than asserted.
 
 ## 4. Scoring rubric
@@ -115,7 +115,7 @@ Every shot in a batch gets one grade. Grades apply to shots, not to batches: a b
 
 - **Pass.** Every applicable check observed. The shot goes to the owner verdict loop as approved material.
 - **Pass with notes.** Every load-bearing check observed (silhouette, faction at a glance, colour law, luminance cap, flash count), with one or more minor notes attached (a bloom weight to tune, a UI element that wants a scrim, a trail that wants shortening). Notes do not block the owner verdict, but they travel with the shot and must be answered in the next batch that touches the same subject.
-- **Fail.** Any load-bearing check not observed, or any known-tension check that reports a confusion (gold mistaken for Command, ripple unreadable on phone, a ship misassigned to a faction). A failed shot does not go to the owner as approved material.
+- **Fail.** Any load-bearing check not observed, or any known-tension check that reports a confusion (gold mistaken for Command, ripple unreadable at battle zoom, a ship misassigned to a faction). A failed shot does not go to the owner as approved material.
 
 On a fail, what gets sent back:
 
@@ -130,9 +130,9 @@ External models (DeepSeek and Qwen web chats, as used elsewhere in this project)
 
 ### Packaging (owner's manual-effort budget: upload plus one sentence)
 
-- One screenshot per message, plus one sentence of context naming the subject, the tier, and the check being asked about. Example: "Voidsworn Basilica, phone tier, silhouette readability check."
+- One screenshot per message, plus one sentence of context naming the subject, the tier, and the check being asked about. Example: "Voidsworn Basilica, desktop tier, silhouette readability check."
 - Never batch ten screenshots into one message and ask for general impressions. One shot, one question, one check.
-- Send the phone frame. If the model is also asked about a desktop frame, send it as a second message with its own sentence.
+- Send the desktop frame.
 
 ### Reviewer prompt template
 
@@ -169,7 +169,7 @@ A verdict is one of three, per shot, recorded in the verdict log:
 
 - **Approve.** The shot stands. The subject may proceed.
 - **Approve with notes.** The shot stands, with named notes that must be answered in a later batch touching the same subject. Notes do not reopen the verdict.
-- **Reject, with reason.** The shot does not stand, and the reason names the failed check or the confusion (for example: "reads as Hegemony at phone width" or "gold trim reads as Command"). A rejection names what must change for a re-check.
+- **Reject, with reason.** The shot does not stand, and the reason names the failed check or the confusion (for example: "reads as Hegemony at battle zoom" or "gold trim reads as Command"). A rejection names what must change for a re-check.
 
 A verdict on a batch is not a verdict on the subject forever: a later batch with new evidence can supersede it, but only by naming the earlier verdict and the new evidence. Silence is not a verdict. A shot with no recorded verdict is unjudged, not approved.
 
@@ -199,7 +199,7 @@ Naming rules:
 
 - `subject`: the hull code, effect family, plate name, or battle identifier, in lowercase, words separated by underscores (for example: `basilica`, `beam_voidsworn_lance`, `bg_belt`, `battle_sector2_elite`).
 - `shot`: the shot type from section 2 (for example: `lit_hero`, `silhouette_sheet`, `shield_hit`, `plate_with_ships`, `capital_kill`).
-- `tier`: `phone` or `desktop`. No other values.
+- `tier`: `desktop`.
 - `version`: `v1`, `v2`, and so on, incremented on every re-check of the same shot. Never overwrite a version. The verdict log points at versions, so overwriting destroys the evidence chain.
 - `notes.md` in each batch folder: the batch summary (subject, tier, build tag, grades, known-tension reports, and any external model findings that survived checking, with the model named).
 
@@ -209,7 +209,7 @@ File format: PNG. No JPEG for acceptance shots: compression artifacts are not a 
 
 If a batch is short on time, run these three first. Each one has caught a real class of defect in this project's history:
 
-1. **Silhouette sheet at phone width.** A hull that reads on desktop and not on phone is the most common failure mode in the whole pack, and it is also the cheapest to test: flat black, small, in a grid, no colour to hide behind.
+1. **Silhouette sheet at battle zoom.** A hull that reads in hero framing and not at battle zoom is the most common failure mode in the whole pack, and it is also the cheapest to test: flat black, small, in a grid, no colour to hide behind.
 2. **Cyan and gold audit on a battle shot.** One frame of a real battle, checked pixel by pixel for off-law colour, catches palette drift, rarity colour collisions, and trim mistakes that hero shots hide.
 3. **Luminance cap sample on a plate with ships.** A beautiful plate that eats the ships is a failed plate, and the eye alone will forgive it. Sample the brightest board-area pixel against an unlit facet; the number decides, not the impression.
 
@@ -218,3 +218,7 @@ If a batch is short on time, run these three first. Each one has caught a real c
 Score the render against the reference instead of eyeballing it alone. For each screenshot batch, score the render programmatically against the matching concept plate: palette and histogram match, light and contrast match, and the background luminance cap measurement from section 3. Record the score in the batch notes.md.
 
 The score is a tone and lighting gate only. It cannot pass a shot on its own: silhouette readability, faction identification at a glance, and the owner's verdict are separate gates, and a high score on a wrong-looking ship is still a fail. The loop discipline that goes with it: change one thing per iteration, keep a side-by-side of render versus reference for each change, and auto-fitting a color grade (LUT) to the reference plate as a final step is a legitimate tool, not a cheat, provided the grade is recorded with the shot.
+
+## 10. Platform note (Oct 24, 2026 ruling: PC-only)
+
+This pack was first written phone-first and was re-tiered under Ryan's Oct 24, 2026 platform ruling: PC-only in Babylon, phone target dropped entirely. The desktop frame is the only frame. Phone frames, phone acceptance checks, and phone tier values in earlier drafts are struck. Verdicts are recorded against desktop shots only. The engine stays Babylon; a wrapper or engine migration is a separate, undecided question.

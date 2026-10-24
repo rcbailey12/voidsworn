@@ -2,7 +2,7 @@
 
 Status: specification, not a task order and not a schedule. Opus may use this scene, change it, or set it aside. Its purpose is narrow: prove one of each thing at target frame rate, in a scene separate from the game, before that thing is integrated into the game. Nothing in this spec assigns implementation sequence or dates.
 
-Basis: art_direction_rey.md (colour laws, silhouette grammars, hero concepts, plate system, effects language), ship_kit_upgrade.md (kit pieces, budgets, gates, acceptance tests), visual_expansion_research.md (cinematic recipes, pipeline settings, phone budget), tool_guides.md (Blender export, Babylon performance, gltfpack tiers, KTX2, Spector.js), graphics_craft.md (tonemapping, bloom discipline, anti-aliasing, VFX timing, readability, overdraw, accessibility). Where those documents disagree, section 7 flags it instead of picking a winner.
+Basis: art_direction_rey.md (colour laws, silhouette grammars, hero concepts, plate system, effects language), ship_kit_upgrade.md (kit pieces, budgets, gates, acceptance tests), visual_expansion_research.md (cinematic recipes, pipeline settings), tool_guides.md (Blender export, Babylon performance, gltfpack tiers, KTX2, Spector.js), graphics_craft.md (tonemapping, bloom discipline, anti-aliasing, VFX timing, readability, overdraw, accessibility). Where those documents disagree, section 7 flags it instead of picking a winner.
 
 ## 1. Scene contents
 
@@ -56,14 +56,9 @@ Each effect is proven separately, in isolation, before any combined shot. An eff
 
 All figures below come from the design documents. Where a document gives an observed range rather than a ceiling, the gate is marked provisional and the corner's job includes turning it into a measured ceiling.
 
-### Phone tier (reference device: the Pixel)
+### Phone tier
 
-- Frame rate: sustained 60 fps over a 60 second scripted run covering every shot in section 1 and every effect in section 2. Fail if the average drops below 50 fps, or if any 5 second window drops below 40 fps.
-- Draw calls: under 300 for the full corner scene at fleet view. Source: community guidance in tool_guides.md (roughly 100 to 300 on mobile browsers at 60 fps), flagged there as community practice, not an engine guarantee. The corner measures it with the Inspector rather than trusting it.
-- Hull triangles: per hull within the observed phone range of 1,200 to 16,000 triangles. Provisional scene ceiling: the 6 hero hulls plus background geometry under 200,000 triangles in the corner scene. The full game figure behind this gate: all 36 phone hulls total 512,892 triangles, and all hulls load at boot with no eviction.
-- Texture memory: the corner scene under 350 MB of VRAM with KTX2 compression. Derivation: the kit doc puts a 20-ship battle at about 1.32 GB of texture memory uncompressed, and the tool guides put the KTX2 reduction at about 75 percent (one forum case: 286 MB to 73 MB). 350 MB is the provisional ceiling the corner must confirm or correct. Uncompressed textures fail the gate outright: KTX2 is mandatory on the phone tier, not optional.
-- Particle systems: 6 to 10 small concurrent systems maximum, per the research memo's working phone budget. Overdraw ratio consistently above about 2.0 (every pixel shaded twice) fails the gate.
-- Pipeline on phone: DefaultRenderingPipeline with HDR, ACES grade, bloom at reduced scale, FXAA or MSAA 2, no depth of field, no motion blur, no SSAO. LUT grade, skybox stack and camera easing are never cut: they are nearly free and they are the feel.
+Dropped under the Oct 24, 2026 PC-only ruling. There is no phone tier, no phone gate, and no phone shot in this spec. The desktop tier below is the only tier.
 
 ### Desktop tier
 
@@ -79,7 +74,7 @@ When the target frame rate cannot be held, cut in this order: fighter trails at 
 
 ### What fails the gate
 
-Any of: average frame rate below the tier target; a background pixel inside the board area above the 40 percent luminance cap; a hull that fails the silhouette sheet test; a shield effect that uses any colour other than ice cyan; an effect that only works in isolation and collapses in the combined shot; a per-hull triangle count above its tier range; an uncompressed texture on the phone tier. A conditional pass (gate met only after a cut from the cut order) is recorded as conditional, with the cut named.
+Any of: average frame rate below the tier target; a background pixel inside the board area above the 40 percent luminance cap; a hull that fails the silhouette sheet test; a shield effect that uses any colour other than ice cyan; an effect that only works in isolation and collapses in the combined shot; a per-hull triangle count above its tier range; an uncompressed texture. A conditional pass (gate met only after a cut from the cut order) is recorded as conditional, with the cut named.
 
 ## 4. Measurement procedure
 
@@ -95,7 +90,7 @@ Comparability is the whole point. Two runs that cannot be compared are two anecd
 
 - **Screenshot comparisons.** Every lit hull shot is compared side by side with its concept plate (same angle and lighting where the plate allows it). Pass is judged by eye against the plate: silhouette grammar present, faction palette present, no flat single-colour read. The comparison screenshots are kept with the run record.
 - **Readability checks.** At fleet view, each hull must be identifiable as its faction by silhouette and icon without relying on colour. Test method: the fleet view screenshot in grayscale; if two factions merge in grayscale, the pair fails and the distinguishing feature (geometry, icon, trim pattern) must be strengthened. Colour is never the only channel carrying faction identity.
-- **Silhouette sheet test (from the kit doc).** All six heroes rendered flat black, small, in a grid. Any two hulls a viewer cannot tell apart, or any hull a viewer assigns to the wrong faction, sends the hull back. This test is run per tier, since phone-size silhouettes are the binding case.
+- **Silhouette sheet test (from the kit doc).** All six heroes rendered flat black, small, in a grid. Any two hulls a viewer cannot tell apart, or any hull a viewer assigns to the wrong faction, sends the hull back. This test is run at desktop size. Phone-size testing is dropped with the phone target.
 - **40 percent background luminance cap check.** Method: render one unlit hull facet as a reference swatch, measure its luminance, then sample background pixels inside the board area across all six anchor plates. No sampled pixel may exceed 40 percent of the reference luminance. Procedure: sample at least 20 points per plate (corners, centre, brightest visible feature, plate edges), record the maximum per plate, and fail any plate over the cap regardless of beauty. Region tinting (a whisper of home faction glow in the far gradient) is allowed only inside the cap.
 - **Shield colour check.** Sample the shield ripple pixels in the targeting close-up: ice cyan family only, all factions. Any faction-coloured shield pixel fails.
 - **Gold check.** Sample gold pixels in the lit shots: gold may appear only on patrons and Command UI. Gold or gold-adjacent trim on a hull fails, subject to the open gold question in section 7.
@@ -107,14 +102,14 @@ The corner is a harness, not a branch of the game. It shares the game's material
 
 What copies over when an item passes: the validated material and pipeline settings, the effect parameters (timings, thresholds, caps), the LOD thresholds, the measured budgets, and the reference screenshots. What stays in the corner: the scripted camera paths, the reference swatches, the measurement rig, the run records, and any test-only geometry (the silhouette sheet grid, the unlit facet swatch).
 
-The corner does not replace the kit doc's Pixel stress gate: no hull 6 until a fully loaded battle passes on the actual phone. The corner is the step before that gate, where individual items are proven cheap enough to deserve a place in the battle that the gate measures.
+The corner does not replace the kit doc's desktop stress gate: no hull 6 until a fully loaded battle passes on desktop. The corner is the step before that gate, where individual items are proven cheap enough to deserve a place in the battle that the gate measures.
 
 ## 7. Disagreements flagged, not resolved
 
-- **MSAA samples on phone.** The research memo's phone budget lists DefaultRenderingPipeline with samples 4 always on; the tool guides and graphics_craft put the phone at FXAA or MSAA 2, with MSAA 4 reserved for desktop. The corner tests both and records which one holds 60 fps on the Pixel. Do not assume samples 4 on phone.
+- **MSAA samples on phone.** Moot under the Oct 24, 2026 PC-only ruling: phone settings no longer apply. Desktop acceptance uses MSAA 4.
 - **Bloom threshold.** The research memo uses a bloom threshold around 0.85 for beams; graphics_craft starts at threshold 0.7 and weight 0.5. The corner starts at 0.7 and 0.5 and raises the threshold until the background plates stop glowing, recording the chosen pair per tier.
 - **Gold on hulls.** The art direction rations gold to patrons and Command only, but Chorus trim is dull gold, Ithar trim is pale gold, and epic rarity stays gold-adjacent. The gold check in section 5 will fail hulls that follow the art direction's own trim values. This is an open design question (raised by the design council audit), not a corner failure: record the failing pixels, do not silently recolour the hulls to pass.
-- **Ripple shape as the only shield channel.** The art direction carries shield identity in ripple shape only, while the same document set admits glow is the first thing lost at phone size. The fleet view readability check in section 5 is the test that decides whether shape alone survives; if it does not, the shield language needs a second channel, and that is a design decision, not a corner fix.
+- **Ripple shape as the only shield channel.** The art direction carries shield identity in ripple shape only, while the same document set admits glow is the first thing lost at small size. The fleet view readability check in section 5 is the test that decides whether shape alone survives; if it does not, the shield language needs a second channel, and that is a design decision, not a corner fix.
 - **Plate mapping.** 18 plates exist against five terrain kinds with no mapping in any document. The corner proves the six anchor plates; it does not invent the mapping. Until a mapping exists, the corner's plate shots are labelled by plate name, not by terrain kind.
 - **Kit economics.** The kit doc's 69-session figure was the hand-built kit rate. The corner measures dressing, paint and format conversion of existing meshes (see the reading plan errata), not hull creation from nothing. Any cost claim from the corner must state which of those it measured.
 
@@ -125,3 +120,7 @@ Score the render against the reference instead of eyeballing it alone. For every
 The score is a tone and lighting gate only. It cannot pass a shot on its own. Silhouette readability, faction identification at fleet zoom, and the owner's screenshot verdict are separate gates, and a high score on a wrong-looking ship is still a fail. The loop discipline that goes with it: change one thing per iteration, keep a side-by-side of render versus reference for each change, and record the change note with the run record.
 
 Auto-fitting a color grade (LUT) to the reference plate as a final step is a legitimate tool, not a cheat, provided the fitted grade is recorded with the shot and the per-region LUT set stays a versioned artifact, not a silent tweak.
+
+## 9. Platform note (Oct 24, 2026 ruling: PC-only)
+
+This spec was first written phone-first and was re-tiered under Ryan's Oct 24, 2026 platform ruling: PC-only in Babylon, phone target dropped entirely. The desktop tier is the only tier. The phone tier section, phone gates, phone shots, and phone settings in earlier drafts are struck; where this file still mentions phone figures, they are historical context, not gates. The desktop battle pass is the gate: no hull 6 until a fully loaded battle passes on desktop. The engine stays Babylon; a wrapper or engine migration is a separate, undecided question.
