@@ -68,7 +68,7 @@ Dropped under the Oct 24, 2026 PC-only ruling. There is no phone tier, no phone 
 - Texture memory: KTX2 throughout; the desktop ceiling is set by measurement in the corner, not by this spec, because the documents give no desktop VRAM ceiling. Record it; do not guess it.
 - Pipeline on desktop: MSAA 4, full bloom, depth of field allowed on the capital event shot only, LUT grade, skybox stack, camera easing.
 
-### Cut order (both tiers, from the research memo)
+### Cut order (desktop only; the research memo's two-tier cut order is superseded by the Oct 24, 2026 PC-only ruling)
 
 When the target frame rate cannot be held, cut in this order: fighter trails at distance, shell layers on beams, GlowLayer, bloom weight, then MSAA samples. Never cut the LUT grade, the skybox stack, or camera easing. The corner records which cut was needed, if any, per effect: a gate passed only by cutting is a conditional pass, not a pass.
 

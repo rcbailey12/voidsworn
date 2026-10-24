@@ -5,6 +5,7 @@ Status: specification Opus may use or set aside. It is not a task order and it s
 Rules this pack enforces come from the existing design documents, not from new invention:
 
 - Colour law (art direction): cyan means shields, nothing else is cyan, and shields are nothing else. Gold is rationed to patrons and Command UI only. Selection ring is white. Flagship marker is a faction-coloured chevron. FAC3D is the single colour source.
+- Colourblind shield check (added Oct 24, 2026 from the Qwen 3.8-Max audit): on every shield-hit shot, run a deuteranopia and protanopia simulation and confirm shield state is still readable without hue alone (ripple shape, pattern, or brightness must carry it). A shield that only reads in full colour fails this check.
 - Silhouette grammars (art direction): Voidsworn vertical cathedral, Hegemony pure wedge, Corsair mandatory asymmetry, Chorus radial knot with no straight edges, Ithar dart plus vertical fins (never horizontal wings), Deathless ribcage and spine.
 - Background cap (art direction): no background pixel inside the board area may exceed 40 percent of the luminance of an unlit hull facet.
 - Kit acceptance (ship kit work order): two shots per hull at battle zoom on a desktop frame, one lit against its home plate, one flat-black silhouette sheet. A hull that cannot be told apart from another hull of its faction, or that a viewer assigns to the wrong faction, sends the manifest back.
@@ -33,7 +34,7 @@ A screenshot that cannot be compared to the last batch is decoration. Before any
 6. Weapon fire: the hull firing its signature weapon, showing muzzle character and projectile or beam colour.
 7. Engine view: stern view, engines running, showing plume character (Corsair dirty flicker versus Hegemony clean, as specified).
 
-### 2b. Per effect (every effect family, both tiers)
+### 2b. Per effect (every effect family, desktop only)
 
 1. Beam: full travel from muzzle to impact, one frame mid-flight and one frame at impact.
 2. Shield hit: per faction, as in 2a.5, plus one frame showing the ripple after the hit fades.
@@ -42,14 +43,14 @@ A screenshot that cannot be compared to the last batch is decoration. Before any
 5. Muzzle flash and charge: a Voidsworn lance charging (rising ember flare) and a Hegemony ion shot firing instantly, side by side in the batch, so the timing contrast is visible.
 6. Simultaneous effects: a frame with at least three effect families active at once, for the overdraw and flash checks.
 
-### 2c. Per background plate (every plate, both tiers)
+### 2c. Per background plate (every plate, desktop only)
 
 1. Plate alone: the full plate with no ships and no UI, so the four layers read cleanly.
 2. Plate with ships: the same plate with one fleet of each of two factions on the board, at fighting zoom, for the luminance cap check.
 3. Plate with UI: the same plate with the full HUD visible, for the legibility check.
 4. Plate at phone width: dropped. Under the Oct 24, 2026 PC-only ruling there is no phone frame; the plate with ships shot is captured on desktop only.
 
-### 2d. Full battle (one battle per batch, both tiers)
+### 2d. Full battle (one battle per batch, desktop only)
 
 1. Turn start: the board at rest, both fleets visible, HUD visible.
 2. Mid-volley: at least three ships firing, shields hit, damage numbers visible.
@@ -159,7 +160,7 @@ The owner (Ryan) judges by screenshots and his verdict is final. Batches go to h
 
 ### Batching
 
-- A batch is one subject (one hull, one effect family, one plate, or one battle) across both tiers, with all its shots and grades attached.
+- A batch is one subject (one hull, one effect family, one plate, or one battle) at the desktop tier only, with all its shots and grades attached. (The two-tier batching is superseded by the Oct 24, 2026 PC-only ruling.)
 - A batch is sent only when every shot in it is graded. Ungraded shots do not travel.
 - A batch carries a one-line summary: subject, tier, build tag, grades (how many pass, pass with notes, fail), and any known-tension reports.
 

@@ -4,7 +4,7 @@ From Rey (Muse), Oct 24, 2026. Commissioned by Ryan as the wide pass: all the mo
 
 ## The one pattern (read this even if you read nothing else)
 
-Three independent research passes across very different scenes converged on the same three rules, because every durable mod ecosystem learned them the hard way:
+Three research passes across very different scenes converged on the same three rules, because every durable mod ecosystem learned them the hard way. (Caveat, per the READING_PLAN errata: the three passes were briefed with the same problems, so their agreement is weaker evidence than three independent discoveries would be.)
 
 1. **Stable string ids are forever.** RimWorld's rule is that a defName is patched and extended but never renamed. Slay the Spire mods prefix their ids for the same reason. Total War's database keys carry the same discipline. Voidsworn's save bricking id class (chair item 1) is exactly the failure these rules exist to prevent.
 2. **Changes ship as deltas merged in a declared order, never as copied files.** Mass Effect's ConfigDelta files, FTL's .append convention, Skyrim's plugin load order, Darkest Dungeon's load order as API, Total War's partial tables: the mechanism differs, the shape is identical. Hull variants and balance patches want to be deltas over one base definition.
