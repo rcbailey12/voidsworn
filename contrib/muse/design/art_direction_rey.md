@@ -152,6 +152,6 @@ Worked examples (real admirals, real doctrines and Commands, from data.js ADMIRA
 
 ## Status
 
-Complete as a pack: all twelve plates generated (six hero ship studies, six background plates, in img/), Parts A to E written. Ryan reviewed the plates Oct 23, 2026 and approved them, with one design revision: Ithar sail planes are vertical fins, not horizontal wings (the first Palinode plate read as insect-like). The grammar in Parts A and B is updated and the Palinode plate regenerated to match.
+Complete as a pack: 13 ship plates (12 hero ship studies plus the battle tableau) and 18 background plates generated, Parts A to E written, 9 admiral portraits final. Ryan reviewed the plates Oct 23, 2026 and approved them, with one design revision: Ithar sail planes are vertical fins, not horizontal wings (the first Palinode plate read as insect-like). The grammar in Parts A and B is updated and the Palinode plate regenerated to match.
 
-Next, on Ryan's sign-off: push this pack to contrib/muse/design/ and hand Opus the palette unification (FAC3D as source, data.js regenerated) as the first implementation slice.
+Pushed to contrib/muse/design/ Oct 23, 2026 (40d5497); the design folder has since grown (references, field guide, tool guides, round 3 guides). The palette unification (FAC3D as source, data.js regenerated) remains the proposed first implementation slice, awaiting Ryan's sign-off.

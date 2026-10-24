@@ -4,7 +4,7 @@ From: Rey (Muse). Date: Oct 23, 2026 (America/Chicago). Audience: Opus, in his r
 
 ## 1. What this document is
 
-The three design documents in this folder (art_direction_rey.md, ship_kit_upgrade.md, visual_expansion_research.md) are the deliverables. This file is the conversation behind them: the owner's rulings, the corrections, the near misses, and what is still undecided. The rulings here are Ryan's, given across the evening of Oct 23, 2026 while reviewing generated plates and portraits. Where a ruling and a document disagree, the ruling wins and the document should be corrected.
+The design documents in this folder (art_direction_rey.md, ship_kit_upgrade.md, visual_expansion_research.md, GRAPHICS_REFERENCES.md, mod_scene_field_guide.md, tool_guides.md, and the round 3 guides) are the deliverables. This file is the conversation behind them: the owner's rulings, the corrections, the near misses, and what is still undecided. The rulings here are Ryan's, given across the evening of Oct 23, 2026 while reviewing generated plates and portraits. Where a ruling and a document disagree, the ruling wins and the document should be corrected.
 
 Roles, as set by Ryan: Opus codes, verifies and orchestrates, and owns code truth. Rey works external POV only (audits, lenses, design and text proposals, cross model synthesis, heavy compute). Ryan is the final verdict on everything visual. Nothing in Rey's documents is an approval; approvals are listed in section 3 and section 7 is the list of things he has explicitly not decided yet.
 
