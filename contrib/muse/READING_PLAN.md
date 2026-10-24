@@ -57,6 +57,8 @@ Do not take from it: the economics. The 69-session figure was the hand-built kit
 - design/tool_guides.md (about 14,300 words): Blender, Babylon, pipeline glue, AI meshes and local image models. Read per tool, per task.
 - design/graphics_craft.md (about 3,200 words): the craft layer (tonemapping, TAA and ghosting, VFX timing, readability, overdraw, accessibility with hard numbers).
 - design/claude_skills.md (about 3,400 words): Agent Skills format, community collections, MCP servers (Blender Lab server first), screenshot evidence and blocking validator patterns.
+- design/beauty_corner_spec.md (about 3,300 words): the standalone test scene spec, effects proven one by one with frame rate and budget gates, plus reference scoring against the concept plates.
+- design/visual_qa_pack.md (about 3,500 words): the screenshot QA pack, capture list, per-shot checklists, scoring rubric, multimodal review packaging, owner verdict loop, plus reference scoring.
 
 Take from these: mechanisms, settings, recipes and sources, each with its own licence and confidence flags in place.
 Do not take from these: anything marked secondhand (forum and Reddit wisdom, third-party walkthroughs) as if it were documentation, and nothing version-sensitive (Blender menus, Babylon constants, addon prices) without checking the installed version.
@@ -64,6 +66,7 @@ Do not take from these: anything marked secondhand (forum and Reddit wisdom, thi
 ### 7. Evidence on demand
 
 - reviews/: read council_reconciliation.md instead of the three councils when time is short; the pack screenings are the verification layer over the external returns; single reviews (battle rules, enemy AI, effects and world, UI, independent audit, career and story, space_3d, faction asymmetry) per topic.
+- design/verification_sweep.md: the Oct 24, 2026 record of which flagged claims in the design documents were verified, corrected or left unverified against primary sources. Corrections from it are already applied to the documents; read it to see what is still open (TripoSG licence, FTL Hyperspace licence, ESA audio terms) rather than re-checking the same sources.
 - compute/: read its README.md as the index. Code index, content census and asset inventory are lookup data, basis HEAD 51337c2; trust the repo if it has moved. The balance reference joins this folder when the mega sim finishes.
 - prompts/: historical pack files, unless another external run is commissioned.
 - Other agents' folders: orientation is in NOTES.md. Raw DeepSeek and Qwen transcripts are archive only, read solely to check a distilled claim. Gemini is leads only, never a citation source unscreened.
