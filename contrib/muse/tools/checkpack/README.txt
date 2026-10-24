@@ -1,1 +1,47 @@
-Vk9JRFNXT1JOIENIRUNLIFBBQ0sKPT09PT09PT09PT09PT09PT09PT0KCldoYXQgdGhpcyBpczogbWVjaGFuaWNhbCBjaGVja3MgZm9yIHRoZSBnYW1lIGNvZGUgdGhhdCBuZWVkIG5vIEFJIGFuZCBubwpqdWRnZW1lbnQgY2FsbHMuIENyb3NzLXJlZmVyZW5jZXMsIGR1cGxpY2F0ZSBuYW1lcywgZGVhZCBjb250ZW50LCBhbmQgZHJpZnQKYmV0d2VlbiB0aGUgYnVpbGQgYW5kIHRoZSBzbW9rZSB0ZXN0LiBSdW4gaXQgYWZ0ZXIgYW55IGNvbnRlbnQgY2hhbmdlCihyZW5hbWluZyBhIGh1bGwsIGFkZGluZyBhIGJvb24sIHRvdWNoaW5nIGEgcmVza2luIHRhYmxlKSBhbmQgYmVmb3JlIHlvdQpwdWJsaXNoIGEgYnVpbGQuCgpIb3cgdG8gcnVuIGl0OgoxLiBQdXQgUlVOX0NIRUNLUy5iYXQgYW5kIGNoZWNrcy5qcyBpbiB0aGUgdm9pZHN3b3JuIGZvbGRlciwgdGhlIHNhbWUgZm9sZGVyCiAgIHRoYXQgaG9sZHMgZGF0YS5qcywgY29yZS5qcyBhbmQgYnVpbGQucHkuCjIuIERvdWJsZS1jbGljayBSVU5fQ0hFQ0tTLmJhdC4KMy4gUmVhZCB0aGUgd2luZG93LiBUaGUgZnVsbCByZXBvcnQgaXMgYWxzbyBzYXZlZCBhcyBjaGVja3NfcmVwb3J0LnR4dCBpbgogICB0aGUgc2FtZSBmb2xkZXIuCgpIb3cgdG8gcmVhZCB0aGUgcmVwb3J0OgotIEZBSUwgbWVhbnMgYWxtb3N0IGNlcnRhaW5seSBhIHJlYWwgcHJvYmxlbTogYSBicm9rZW4gcmVmZXJlbmNlLCBhIGR1cGxpY2F0ZQogIG5hbWUgdGhhdCBzaWxlbnRseSBvdmVycmlkZXMgYW5vdGhlciwgYSBib29uIHdob3NlIG93biB0ZXh0IGZ1bmN0aW9uIHRocm93cy4KICBGaXggdGhlc2UgYmVmb3JlIHB1Ymxpc2hpbmcuCi0gQ0hFQ0sgbWVhbnMgZXllYmFsbCBpdC4gU29tZSBhcmUgcmVhbCAoYSByZXNraW4gdGhhdCByZW5hbWVzIG5vdGhpbmcpLCBzb21lCiAgYXJlIGtub3duIG5vaXNlICh0aGUgdW5kZWNsYXJlZC1jYWxsIGxpc3QgaW5jbHVkZXMgQ1NTIHdvcmRzIGNhdWdodCBpbnNpZGUKICB0ZXh0IHRlbXBsYXRlcykuCi0gb2sgbWVhbnMgdGhhdCBzZWN0aW9uIHBhc3NlZCBjbGVhbi4KCldoYXQgaXQgY2hlY2tzIHRvZGF5OgotIEFsbCAxOCBidWlsZCBmaWxlcyBwcmVzZW50LgotIER1cGxpY2F0ZSB0b3AtbGV2ZWwgbmFtZXMgYWNyb3NzIHRoZSBidWlsZCBmaWxlcyAoYnVpbGQucHkgb25seSBjaGVja3MKICBmdW5jdGlvbiBuYW1lczsgdGhpcyBvbmUgYWxzbyBjYXRjaGVzIGNvbnN0LCBsZXQsIHZhciBhbmQgY2xhc3MpLgotIEVtIGRhc2hlcyBpbiB0aGUgZ2FtZSBmaWxlcyAoeW91ciBob3VzZSBydWxlOiBub25lLCBldmVyKS4KLSBzbW9rZS5weSB2ZXJzdXMgYnVpbGQucHkgZmlsZSBsaXN0cyAoZHJpZnQgbWVhbnMgdGhlIHNtb2tlIHRlc3Qgc2lsZW50bHkKICBza2lwcyBmaWxlcykuCi0gRGF0YSBpbnRlZ3JpdHksIGJ5IGxvYWRpbmcgdGhlIHJlYWwgdGFibGVzIHRoZSBzYW1lIHdheSB0aGUgc2ltIGhhcm5lc3MKICBkb2VzOiBldmVyeSBodWxsJ3MgZmFjdGlvbiwgd2VhcG9ucyBhbmQgYWJpbGl0eSBleGlzdDsgZXZlcnkgdmFyaWFudCdzIGJhc2UKICBodWxsIGV4aXN0czsgZXZlcnkgYWRtaXJhbCdzIHN0YXJ0aW5nIGZsZWV0IGV4aXN0czsgZXZlcnkgYm9vbiBleGVjdXRlcyBpdHMKICBvd24gdGV4dCBhbmQgZWZmZWN0IGZ1bmN0aW9ucyB3aXRob3V0IHRocm93aW5nOyBldmVyeSBldmVudCdzIG5hbWVkIG91dGNvbWUKICBoYXMgYSBoYW5kbGVyOyByZXNraW4gdGFibGVzIHBvaW50IGF0IHJlYWwgaXRlbXMgYW5kIGFjdHVhbGx5IHJlbmFtZSB0aGVtLgotIENhbGwgc2l0ZXMgd2hvc2UgbmFtZSBoYXMgbm8gdmlzaWJsZSBkZWNsYXJhdGlvbiAoY2FuZGlkYXRlcyBvbmx5LCBmb3IKICBzcG90dGluZyB0eXBvcykuCgpGaXJzdCBydW4gb24gdGhlIE9jdCAyMywgMjAyNiBjb2RlIChyZXBvIGNvbW1pdCBlY2E0ODllKTogMCBGQUlMLCAxNSBDSEVDSy4KVGhlIENIRUNLcyB3ZXJlIHRoZSBzbW9rZS5weSBkcmlmdCAoNCBidWlsZCBmaWxlcyB1bnRlc3RlZDogbWVzaG9wdDNkLmpzLApnZngzZC5qcywgdmZ4M2QuanMsIHdmeDNkLmpzKSwgMTMgcmVza2lucyB0aGF0IHJlbmFtZSBub3RoaW5nLCBhbmQgdGhlCnVuZGVjbGFyZWQtY2FsbCBjYW5kaWRhdGUgbGlzdC4KCmNoZWNrcy5qcyBpcyBwbGFpbiBOb2RlIHdpdGggbm8gZGVwZW5kZW5jaWVzLiBJZiB5b3Ugd2FudCBhbm90aGVyIGNoZWNrCmFkZGVkIChhIG5ldyB0YWJsZSBjcm9zcy1yZWZlcmVuY2VkLCBhIG5ldyBydWxlKSwgYXNrIFJleSBhbmQgaXQgZ29lcyBpbi4K
+VOIDSWORN CHECK PACK
+====================
+
+What this is: mechanical checks for the game code that need no AI and no
+judgement calls. Cross-references, duplicate names, dead content, and drift
+between the build and the smoke test. Run it after any content change
+(renaming a hull, adding a boon, touching a reskin table) and before you
+publish a build.
+
+How to run it:
+1. Put RUN_CHECKS.bat and checks.js in the voidsworn folder, the same folder
+   that holds data.js, core.js and build.py.
+2. Double-click RUN_CHECKS.bat.
+3. Read the window. The full report is also saved as checks_report.txt in
+   the same folder.
+
+How to read the report:
+- FAIL means almost certainly a real problem: a broken reference, a duplicate
+  name that silently overrides another, a boon whose own text function throws.
+  Fix these before publishing.
+- CHECK means eyeball it. Some are real (a reskin that renames nothing), some
+  are known noise (the undeclared-call list includes CSS words caught inside
+  text templates).
+- ok means that section passed clean.
+
+What it checks today:
+- All 18 build files present.
+- Duplicate top-level names across the build files (build.py only checks
+  function names; this one also catches const, let, var and class).
+- Em dashes in the game files (your house rule: none, ever).
+- smoke.py versus build.py file lists (drift means the smoke test silently
+  skips files).
+- Data integrity, by loading the real tables the same way the sim harness
+  does: every hull's faction, weapons and ability exist; every variant's base
+  hull exists; every admiral's starting fleet exists; every boon executes its
+  own text and effect functions without throwing; every event's named outcome
+  has a handler; reskin tables point at real items and actually rename them.
+- Call sites whose name has no visible declaration (candidates only, for
+  spotting typos).
+
+First run on the Oct 23, 2026 code (repo commit eca489e): 0 FAIL, 15 CHECK.
+The CHECKs were the smoke.py drift (4 build files untested: meshopt3d.js,
+gfx3d.js, vfx3d.js, wfx3d.js), 13 reskins that rename nothing, and the
+undeclared-call candidate list.
+
+checks.js is plain Node with no dependencies. If you want another check
+added (a new table cross-referenced, a new rule), ask Rey and it goes in.
