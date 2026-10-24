@@ -8,7 +8,7 @@ Author: Rey (Muse). Status: proposal for Ryan's verdict, then Opus's to implemen
 
 fx3d.js currently argues with itself (one comment says cyan is always shields, another colours shields by faction), and rarity Rare sits on the same #62ccff as shields (data.js:386). One law ends all three fights:
 
-- Shields, shield hits and shield UI pips: ice cyan, one hue family for all six factions. A player learns it once and reads every battle instantly, on a phone, at arm's length.
+- Shields, shield hits and shield UI pips: ice cyan, one hue family for all six factions. A player learns it once and reads every battle instantly, at battle zoom, at a glance.
 - Faction colour lives where identity belongs: engines, bolts, beams, windows, trim, emblems. FAC3D already routes all of those by faction; shields are the only channel that stops being factional.
 - Rare rarity colour moves from #62ccff to soft violet #b78cff (epic stays gold-adjacent only if gold is freed up, see below).
 - Gold is rationed: patrons and Command UI only. The selection ring goes white, the flagship marker becomes a faction-coloured chevron. Gold currently means five things; after this it means one.
@@ -27,7 +27,7 @@ Single source of truth ruling: **FAC3D (ships3d.js) wins for anything rendered i
 
 **The Ithar.** Hull #e4ebe7 pearl (FAC3D value wins; it was deliberately taken off-white in v53 so seams read), dark #6c8179 sage, trim #d7c88a pale gold, glow soft jade (win .6, 1, .82). Material: ceramic pearl with gold filigree inlay, solar sail membranes (translucent, jade-lit from behind) mounted vertically, as tall fins on the dorsal and ventral line, never as horizontal wings (horizontal reads as insect; owner's call, Oct 23). Bright like Hegemony but warm and organic-curved where Hegemony is cool and angular: the two bright fleets separate on temperature and geometry.
 
-**The Deathless Dynasty** (collision fix 2: away from Voidsworn). Both hulls are near-black; only the green glow separates them today, and glow is the first thing lost at phone size. Fix: Deathless hull goes colder and harder, #232a28 with a mineral, slate-and-bone quality: pale bone-white structural ribs and face-like prow plates as the faction's second colour (new trim direction: bone #cfd4c8 used structurally, not as paint), trim stays terminal green #1fbf4a, glow #3dff6a. Voidsworn is warm black with fire inside; Deathless is cold black with bone on the outside and green light in the cracks. At silhouette distance Deathless reads by its ribcage geometry (Part B).
+**The Deathless Dynasty** (collision fix 2: away from Voidsworn). Both hulls are near-black; only the green glow separates them today, and glow is the first thing lost at small size. Fix: Deathless hull goes colder and harder, #232a28 with a mineral, slate-and-bone quality: pale bone-white structural ribs and face-like prow plates as the faction's second colour (new trim direction: bone #cfd4c8 used structurally, not as paint), trim stays terminal green #1fbf4a, glow #3dff6a. Voidsworn is warm black with fire inside; Deathless is cold black with bone on the outside and green light in the cracks. At silhouette distance Deathless reads by its ribcage geometry (Part B).
 
 ## Part B: Silhouette rules and hero hulls
 
