@@ -22,12 +22,13 @@ Authority ladder when documents disagree: owner rulings (CONVERSATION_CONTEXT se
 - faction_asymmetry.md (evidence) and asymmetry_decision.md (the five owner decisions it reduces to, unanswered).
 - Screenings of the external pack returns: packDE_screening.md and packDE_screening_round2.md, packFGHI_screening.md and packFGHI_screening_round2.md. These are the verification layer over contrib/deepseek/ and contrib/qwen/.
 
-**design/** The graphics pack (about 37,700 words total). Division of labour:
+**design/** The graphics pack (about 52,000 words total). Division of labour:
 - art_direction_rey.md: what it should look like. Colour laws, silhouette grammars, hero hull concepts, background plates, admiral portrait system.
 - ship_kit_upgrade.md: the work order for rebuilding the ship kit.
 - visual_expansion_research.md (about 11,900 words): techniques, tools and asset sources for expanding the in-game visuals, plus engine verdicts and the cinematic (Sins) section.
 - GRAPHICS_REFERENCES.md (about 8,700 words): external reading. Reference games, modding masterclasses (EVE, BattleTech and MechWarrior, Stellaris, Empire at War, Endless Space 2, Homeworld Remastered, X4, Cosmoteer), repos, kick-off assets, and section 6, games actually like Voidsworn, headlined by Rogue Trader.
 - mod_scene_field_guide.md (about 10,300 words): the wider mod scene and open content, indexed by problem (save integrity, content as data, tuning loops, paint, effects, sound). Read for mechanisms and grabbable assets; GRAPHICS_REFERENCES.md stays the games and repos list. Its front section names the pattern all three research passes converged on: stable ids forever, deltas merged in a declared order, a checker in the build.
+- tool_guides.md (about 14,300 words): how to run the toolchain. Blender (glTF export survival rules, headless batch pipeline, decimation and LOD, baking, weighted normals, pre-export checklist), Babylon (rendering pipeline traps, PBR defaults, instancing, KTX2, debugging, WebGPU), pipeline glue (gltfpack two-tier recipe, texture compression, Effekseer routes, Windows batch scripting, AJV and reference checkers), and AI meshes plus local image models (seven-step AI mesh cleanup, kit parts as the fix for fused detail, 16 GB model table, local PBR estimation chains). Its front section states the merged chain: AI mesh and AI texture enter separately and join only at the bake.
 - CONVERSATION_CONTEXT.md: rulings and conversation behind the pack. Section 9 is the Rogue Trader feel benchmark ruling.
 - IMAGE_MANIFEST.md: the 40 final images (18 backgrounds, 13 ship plates, 9 portraits) with SHA-256 hashes. The images are local only; the push route accepts text only. Ask Ryan to relay one, or Rey to supply it, and verify against the hash.
 
