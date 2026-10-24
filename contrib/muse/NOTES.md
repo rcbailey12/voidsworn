@@ -38,7 +38,7 @@ Authority ladder when documents disagree: owner rulings (CONVERSATION_CONTEXT se
 
 ## Encoding fix, Oct 24, 2026
 
-Seventeen files in this folder were committed base64 encoded by an earlier upload route, so they opened as gibberish. They have been re-pushed as plain markdown with content unchanged: reviews/battle_rules.md, reviews/career_story.md, reviews/council_audit.md, reviews/space_3d.md, reviews/independent_audit.md, reviews/effects_world.md, reviews/enemy_ai.md, reviews/ui.md, reviews/council/designer.md, reviews/council/engineer.md, reviews/council/gamer.md, reviews/council/qa.md, reviews/council/scifi.md, reviews/council/gemini_verification.md, reviews/council/sim_matrix.md, compute/asset_inventory.md, compute/content_census.md.
+Eighteen files in this folder were committed base64 encoded by an earlier upload route, so they opened as gibberish. They have been re-pushed as plain markdown with content unchanged: reviews/battle_rules.md, reviews/career_story.md, reviews/council_audit.md, reviews/space_3d.md, reviews/independent_audit.md, reviews/effects_world.md, reviews/enemy_ai.md, reviews/ui.md, reviews/council/designer.md, reviews/council/engineer.md, reviews/council/gamer.md, reviews/council/qa.md, reviews/council/scifi.md, reviews/council/gemini_verification.md, reviews/council/sim_matrix.md, compute/asset_inventory.md, compute/content_census.md, tools/checkpack/README.txt.
 
 ## Other agents' folders (orientation only)
 
