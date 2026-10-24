@@ -1,1 +1,62 @@
-IyBDb250ZW50IGNlbnN1cyBhbmQgc3RyaW5ncyBjb3JwdXMKCkdlbmVyYXRlZCBPY3QgMjMsIDIwMjYgZnJvbSByZXBvIEhFQUQgNTEzMzdjMi4gTWV0aG9kOiBkYXRhLmpzLCBjb3JlLmpzIGFuZCBiYXR0bGUuanMgbG9hZGVkIHVuZGVyIE5vZGUgd2l0aCB0aGUgc2FtZSBicm93c2VyLWdsb2JhbCBzdHVicyBzaW0zZC5qcyB1c2VzLCB0YWJsZXMgcmVhZCBkaXJlY3RseSBmcm9tIHRoZSBldmFsdWF0ZWQgc291cmNlLiBTdHJpbmdzIGNvcnB1czogYSBsaXRlcmFsIHNjYW5uZXIgb3ZlciB0aGUgMTggYnVpbGQgZmlsZXMgcGx1cyBoZWFkLmh0bWwsIGZpbHRlcmVkIGJ5IHRoZSBoZXVyaXN0aWMgYmVsb3cuIFNjcmlwdHM6IGNlbnN1cy5qcyBhbmQgc3RyaW5ncy5qcyBpbiB0aGUgY29tcHV0ZSB3b3JraW5nIGZvbGRlci4KCiMjIENlbnN1cyB0YWJsZXMgKENTVnMgaW4gdGhpcyBmb2xkZXIpCgp8IEZpbGUgfCBTb3VyY2UgdGFibGUgfCBSb3dzIHwKfC0tLXwtLS18LS0tfAp8IGNlbnN1c19odWxscy5jc3YgfCBIVUxMUyAoZGF0YS5qcykgfCA0NSB8CnwgY2Vuc3VzX3dlYXBvbnMuY3N2IHwgVyAoZGF0YS5qcykgfCAyNSB8CnwgY2Vuc3VzX2Jvb25zLmNzdiB8IEJPT05TIChkYXRhLmpzKSB8IDM2IHwKfCBjZW5zdXNfcmVsaWNzLmNzdiB8IFJFTElDUyAoZGF0YS5qcykgfCAxMiB8CnwgY2Vuc3VzX21vZHVsZXMuY3N2IHwgTU9EVUxFUyAoZGF0YS5qcykgfCAxMyB8CnwgY2Vuc3VzX2FkbWlyYWxzLmNzdiB8IEFETUlSQUxTIChkYXRhLmpzKSB8IDI0IHwKfCBjZW5zdXNfZW5jb3VudGVycy5jc3YgfCBFTkNPVU5URVJTIChiYXR0bGUuanMpIHwgOCB8CnwgY2Vuc3VzX2ZhY3Rpb25zLmNzdiB8IEZBQ1RJT05TIChkYXRhLmpzKSB8IDYgfAoKQWxsIGVpZ2h0IHJlcXVlc3RlZCB0YWJsZXMgZXh0cmFjdGVkLiBObyBleHRyYWN0aW9uIGZhaWx1cmVzLgoKTm90ZXMgb24gc2hhcGU6IGJvb24gZGVzY3JpcHRpb24gKGQpIGFuZCBlZmZlY3QgKGZ4KSBmaWVsZHMgYXJlIGZ1bmN0aW9ucyBvZiBhIG1hZ25pdHVkZSBhcmd1bWVudCBpbiB0aGUgc291cmNlLCBzbyBjZW5zdXNfYm9vbnMuY3N2IGV4cG9ydHMgdGhlbSBhcyB0aGVpciBmdW5jdGlvbiBzb3VyY2UgdGV4dC4gUmVsaWMgYW5kIG1vZHVsZSBlZmZlY3RzIGV4cG9ydCBhcyBKU09OIG9mIHRoZWlyIHJ1biBvciBmeCBvYmplY3RzLiBIdWxsIHdlYXBvbnMgZXhwb3J0IGFzIHdlYXBvbi1pZDphcmMgcGFpcnMgam9pbmVkIGJ5IHNlbWljb2xvbnMuCgojIyBCcmVha2Rvd25zCgpIdWxscyBieSBmYWN0aW9uOiB2b2lkc3dvcm4gOCwgY2hvcnVzIDgsIGhlZ2Vtb255IDcsIGNvcnNhaXIgNywgaXRoYXIgNywgZGVhdGhsZXNzIDYsIG5vIGZhY3Rpb24gZmllbGQgMiAodGhlIHNxdWFkcm9uIGNyYWZ0KS4KCkh1bGxzIGJ5IGNsYXNzOiBDcnVpc2VyIDExLCBGcmlnYXRlIDksIERlc3Ryb3llciA5LCBDYXJyaWVyIDUsIFNxdWFkcm9uIDMsIEJhdHRsZXNoaXAgMiwgRHJlYWRub3VnaHQgMSwgU3VwZXItZHJlYWRub3VnaHQgMSwgQmF0dGxlLWJhcmdlIDEsIEJpby10aXRhbiAxLCBBcmsgMSwgVG9tYi1hcmsgMS4KCldlYXBvbnMgYnkga2luZDogYmF0dGVyeSA5LCBsYW5jZSA0LCBmbGFrIDMsIHRvcnAgMywgc3EgMywgYmlvIDIsIGdhdXNzIDEuCgpCb29ucyBieSBwYXRyb246IGlyb24gNSwgc3Rvcm0gNSwgaHVuZ2VyIDUsIHN0YXIgNSwgcm9vayA1LCBlbWJlciA1LCBubyBwYXRyb24gZmllbGQgNiAodGhvc2Ugc2l4IGNhcnJ5IGEgZHVvIGZpZWxkIGluc3RlYWQpLgoKQWRtaXJhbHMgYnkgZmFjdGlvbjogNCBlYWNoIGFjcm9zcyBhbGwgc2l4IGZhY3Rpb25zLCAyNCB0b3RhbC4KCk90aGVyIGNvbnRlbnQgdGFibGVzIGNvdW50ZWQsIG5vIENTViByZXF1ZXN0ZWQ6IHBhdHJvbnMgNiwgZXZlbnRzIDExLCBhYmlsaXRpZXMgMTMsIHBlcmtzIDE0LCBhc3BlY3RzIDYsIGxlZ2FjeSBlbnRyaWVzIDEyLCBjYXB0YWlucyA2LCBhcmNoZXR5cGVzIDMuCgojIyBTdHJpbmdzIGNvcnB1cwoKc3RyaW5nc19jb3JwdXMuY3N2OiAxLDUwNyByb3dzLCBjb2x1bW5zIGZpbGUsIGxpbmUsIHN0cmluZy4gSGV1cmlzdGljOiBhIGxpdGVyYWwgcXVhbGlmaWVzIGlmIGl0IGNvbnRhaW5zIGEgc3BhY2UgYW5kIGEgY2FwaXRhbCBsZXR0ZXIsIG9yIGlzIGxvbmdlciB0aGFuIDEyIGNoYXJhY3RlcnMgd2l0aCBsZXR0ZXJzLiBFeGNsdWRlZDogVVJMcywgZmlsZSBwYXRocywgY29sb3VyIGNvZGVzLCBDU1MgYmxvY2tzLCBkeW5hbWljIHRlbXBsYXRlIGZyYWdtZW50cywgc2hhZGVyIGNvZGUgbWFya2VycywgYmFyZSBpZGVudGlmaWVycywgZXNjYXBlLWhlYXZ5IGJsb2JzLCBhbmQgbG9uZyBzcGFjZS1mcmVlIGVuY29kZWQgZGF0YSAodGhlIG1lc2hvcHQgYW5kIHNvdW5kLWRhdGEgcGF5bG9hZHMpLiBUaGUgY29ycHVzIGlzIGEgd29ya2luZyBzd2VlcCwgbm90IGEgcHJvb2Y6IGEgc21hbGwgbnVtYmVyIG9mIGNvZGUtYWRqYWNlbnQgc3RyaW5ncyAoc2VsZWN0b3JzLCBkZWNvZGVyIGZpbHRlciBuYW1lcywgZGVidWcgbGFiZWxzKSBwYXNzIHRoZSBoZXVyaXN0aWMgYW5kIHJlbWFpbiBpbiB0aGUgZmlsZS4KClJvd3MgcGVyIGZpbGU6Cgp8IEZpbGUgfCBTdHJpbmdzIHwKfC0tLXwtLS18CnwgZGF0YS5qcyB8IDc5OCB8CnwgdWkzZC5qcyB8IDIwNSB8CnwgYmF0dGxlLmpzIHwgMTEyIHwKfCBzaGlwczNkLmpzIHwgODYgfAp8IHNjZW5lM2QuanMgfCA2MCB8CnwgY2FtcGFpZ25fcnVuLmpzIHwgNTggfAp8IGNhbXBhaWduX21ldGEuanMgfCA0OSB8Cnwgc2Z4LmpzIHwgMzkgfAp8IHBlcmYzZC5qcyB8IDI5IHwKfCBnZngzZC5qcyB8IDIxIHwKfCBtZXNob3B0M2QuanMgfCAxMSB8CnwgY2FtcGFpZ24zZC5qcyB8IDkgfAp8IGhlYWQuaHRtbCB8IDggfAp8IGZ4M2QuanMgfCA3IHwKfCBjb3JlLmpzIHwgNiB8CnwgbWFpbjNkLmpzIHwgNCB8Cnwgd2Z4M2QuanMgfCAzIHwKfCB2ZngzZC5qcyB8IDIgfAp8IHNmeF9kYXRhLmpzIHwgMCB8Cg==
+# Content census and strings corpus
+
+Generated Oct 23, 2026 from repo HEAD 51337c2. Method: data.js, core.js and battle.js loaded under Node with the same browser-global stubs sim3d.js uses, tables read directly from the evaluated source. Strings corpus: a literal scanner over the 18 build files plus head.html, filtered by the heuristic below. Scripts: census.js and strings.js in the compute working folder.
+
+## Census tables (CSVs in this folder)
+
+| File | Source table | Rows |
+|---|---|---|
+| census_hulls.csv | HULLS (data.js) | 45 |
+| census_weapons.csv | W (data.js) | 25 |
+| census_boons.csv | BOONS (data.js) | 36 |
+| census_relics.csv | RELICS (data.js) | 12 |
+| census_modules.csv | MODULES (data.js) | 13 |
+| census_admirals.csv | ADMIRALS (data.js) | 24 |
+| census_encounters.csv | ENCOUNTERS (battle.js) | 8 |
+| census_factions.csv | FACTIONS (data.js) | 6 |
+
+All eight requested tables extracted. No extraction failures.
+
+Notes on shape: boon description (d) and effect (fx) fields are functions of a magnitude argument in the source, so census_boons.csv exports them as their function source text. Relic and module effects export as JSON of their run or fx objects. Hull weapons export as weapon-id:arc pairs joined by semicolons.
+
+## Breakdowns
+
+Hulls by faction: voidsworn 8, chorus 8, hegemony 7, corsair 7, ithar 7, deathless 6, no faction field 2 (the squadron craft).
+
+Hulls by class: Cruiser 11, Frigate 9, Destroyer 9, Carrier 5, Squadron 3, Battleship 2, Dreadnought 1, Super-dreadnought 1, Battle-barge 1, Bio-titan 1, Ark 1, Tomb-ark 1.
+
+Weapons by kind: battery 9, lance 4, flak 3, torp 3, sq 3, bio 2, gauss 1.
+
+Boons by patron: iron 5, storm 5, hunger 5, star 5, rook 5, ember 5, no patron field 6 (those six carry a duo field instead).
+
+Admirals by faction: 4 each across all six factions, 24 total.
+
+Other content tables counted, no CSV requested: patrons 6, events 11, abilities 13, perks 14, aspects 6, legacy entries 12, captains 6, archetypes 3.
+
+## Strings corpus
+
+strings_corpus.csv: 1,507 rows, columns file, line, string. Heuristic: a literal qualifies if it contains a space and a capital letter, or is longer than 12 characters with letters. Excluded: URLs, file paths, colour codes, CSS blocks, dynamic template fragments, shader code markers, bare identifiers, escape-heavy blobs, and long space-free encoded data (the meshopt and sound-data payloads). The corpus is a working sweep, not a proof: a small number of code-adjacent strings (selectors, decoder filter names, debug labels) pass the heuristic and remain in the file.
+
+Rows per file:
+
+| File | Strings |
+|---|---|
+| data.js | 798 |
+| ui3d.js | 205 |
+| battle.js | 112 |
+| ships3d.js | 86 |
+| scene3d.js | 60 |
+| campaign_run.js | 58 |
+| campaign_meta.js | 49 |
+| sfx.js | 39 |
+| perf3d.js | 29 |
+| gfx3d.js | 21 |
+| meshopt3d.js | 11 |
+| campaign3d.js | 9 |
+| head.html | 8 |
+| fx3d.js | 7 |
+| core.js | 6 |
+| main3d.js | 4 |
+| wfx3d.js | 3 |
+| vfx3d.js | 2 |
+| sfx_data.js | 0 |

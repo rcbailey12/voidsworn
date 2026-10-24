@@ -1,1 +1,166 @@
-IyBTaGlwIHBpcGVsaW5lIGFzc2V0IGludmVudG9yeSAoQ29tcHV0ZSBSdW4gNCkKClJlcG86IHJjYmFpbGV5MTIvdm9pZHN3b3JuIGF0IEhFQUQgNTEzMzdjMiwgcmVhZCBvbmx5LiBHZW5lcmF0ZWQgYnkgaGlkZGVuX2ZpbGVzL2NvbXB1dGUvcnVuNF9hc3NldF9pbnZlbnRvcnkucHkuIEZ1bGwgcGVyLWZpbGUgZGF0YTogYXNzZXRfaW52ZW50b3J5LmNzdi4KCiMjIFRvdGFscwoKLSBBc3NldCBmaWxlcyBjb3VudGVkOiA1NTMgKDE1Ny41IE1CIHRvdGFsKS4KLSBodWxsIGpzb246IDcyIGZpbGVzLCAzMS42IE1CLgotIHRleHR1cmU6IDI3MiBmaWxlcywgMTE4LjIgTUIuCi0gc2NyaXB0OiA4MyBmaWxlcywgMC40IE1CLgotIGRvYzogOCBmaWxlcywgMC4wIE1CLgotIG90aGVyOiAxMTggZmlsZXMsIDcuNCBNQi4KCkJ5IGFyZWE6Ci0gY29udHJpYi9nZW1pbmk6IDQgZmlsZXMsIDAuMCBNQi4KLSBkb2NzL3NoaXBfcGlwZWxpbmU6IDU4IGZpbGVzLCA0LjMgTUIuCi0gaHVsbHM6IDEwOCBmaWxlcywgMzEuNSBNQi4KLSBodWxsc19oaTogMTA4IGZpbGVzLCA4Mi4xIE1CLgotIHJvY2tzOiA5NyBmaWxlcywgMTAuMyBNQi4KLSByb2Nrc19oaTogOTcgZmlsZXMsIDI5LjAgTUIuCi0gdG9vbHMvYmxlbmRlcjogMzIgZmlsZXMsIDAuMiBNQi4KLSB0b29scy9idWlsZF9jbGlwcy5weTogMSBmaWxlcywgMC4wIE1CLgotIHRvb2xzL3BjOiA0OCBmaWxlcywgMC4xIE1CLgoKIyMgSHVsbCBtZXNoZXMgYW5kIHRyaWFuZ2xlIGNvdW50cwoKTWV0aG9kOiBldmVyeSBtZXNoIEpTT04gaXMgYSB2c20tcGFjayBmaWxlIHRoYXQgc3RvcmVzIGl0cyBvd24gdHJpYW5nbGUgY291bnQgaW4gdGhlIGZpZWxkIGB0YC4gVGhlIGNvdW50cyBiZWxvdyBhcmUgdGhhdCBmaWVsZCwgYW5kIHRoZSBpbnZlbnRvcnkgc2NyaXB0IHZlcmlmaWVkIGZvciBldmVyeSBtZXNoIGZpbGUgdGhhdCBgdGAgZXF1YWxzIHRoZSBkZWNvZGVkIGluZGV4IGNvdW50IGRpdmlkZWQgYnkgMyAobm8gbWlzbWF0Y2hlcykuIGBodWxscy9gIGlzIHRoZSBwaG9uZSBhbmQgbWVkaXVtIHNldCwgYGh1bGxzX2hpL2AgdGhlIGRlc2t0b3Agc2V0IChwZXIgZG9jcy9zaGlwX3BpcGVsaW5lL1JFQURNRS5tZCBzdGVwIDkpLiBUaGUgZmlsZSBsaXN0aW5ncyBvZiBodWxscy8gYW5kIGh1bGxzX2hpLyBhcmUgaWRlbnRpY2FsLCBhcyBhcmUgcm9ja3MvIGFuZCByb2Nrc19oaS8uCgotIFVuaXF1ZSBodWxsIGNvZGVzIHdpdGggYSBtZXNoOiAzNiAoZWFjaCBwcmVzZW50IGluIGJvdGggaHVsbHMvIGFuZCBodWxsc19oaS8sIHdpdGggYSBfbSBtYXRlcmlhbCBtYXAgYW5kIGEgX24gbm9ybWFsIG1hcCBpbiBlYWNoKS4KLSBEZXNrdG9wIChodWxsc19oaSkgdHJpYW5nbGVzIHBlciBodWxsOiBtaW4gMiw0MDAsIG1heCAzOCwwMDAsIHRvdGFsIDkzMCwxNjYgYWNyb3NzIDM2IGh1bGxzLgotIFBob25lIChodWxscykgdHJpYW5nbGVzIHBlciBodWxsOiBtaW4gMSwyMDAsIG1heCAxNiwwMDAsIHRvdGFsIDUxMiw4OTIgYWNyb3NzIDM2IGh1bGxzLgotIFJvY2sgbWVzaGVzIChub3QgaW4gdGhlIHNoaXAgcXVldWUpOiAzMiB1bmlxdWUgcm9ja3MsIGVhY2ggaW4gcm9ja3MvIGFuZCByb2Nrc19oaS8gd2l0aCBtYXRlcmlhbCBhbmQgbm9ybWFsIG1hcHMsIHBsdXMgYW4gaW5kZXguanNvbiBpbiBlYWNoIHJvY2sgZm9sZGVyIChjb3VudHMgcGVyIHJvY2sgZmFtaWx5OiBSQ0EgOCwgUlNUIDgsIFJDUiA4LCBSSUMgOCkuCgpQZXIgaHVsbCAoZGVza3RvcCB0cmlhbmdsZXMgLyBwaG9uZSB0cmlhbmdsZXMpLCBncm91cGVkIGJ5IHF1ZXVlIGZhY3Rpb24gYW5kIGNsYXNzOgoKfCBDb2RlIHwgRmFjdGlvbiB8IENsYXNzIHwgaHVsbHNfaGkgdHJpcyB8IGh1bGxzIHRyaXMgfAp8LS0tfC0tLXwtLS18LS0tfC0tLXwKfCBCMTZfMjMgfCBjaG9ydXMgfCBCaW8tdGl0YW4gfCAzODAwMCB8IDE1OTk4IHwKfCBCMjJfMTEgfCBjaG9ydXMgfCBDYXJyaWVyIHwgMzgwMDAgfCAxNjAwMCB8CnwgQjIxXzExIHwgY2hvcnVzIHwgQ3J1aXNlciB8IDI4MDAwIHwgMTYwMDAgfAp8IEIyMF8xMSB8IGNob3J1cyB8IERlc3Ryb3llciB8IDIwMDAwIHwgMTYwMDAgfAp8IEIxOV8xMSB8IGNob3J1cyB8IEZyaWdhdGUgfCAyMDAwMCB8IDE2MDAwIHwKfCBDMTlfNTEgfCBjb3JzYWlyIHwgQmF0dGxlLWJhcmdlIHwgMzgwMDAgfCAxNTk5OCB8CnwgQzE2c18yMyB8IGNvcnNhaXIgfCBDYXJyaWVyIHwgMzgwMDAgfCAxNjAwMCB8CnwgQzE1c18yMyB8IGNvcnNhaXIgfCBDcnVpc2VyIHwgMjgwMDAgfCAxNjAwMCB8CnwgQzE0c18yMyB8IGNvcnNhaXIgfCBEZXN0cm95ZXIgfCAyMDAwMCB8IDE2MDAwIHwKfCBDMTNzXzIzIHwgY29yc2FpciB8IEZyaWdhdGUgfCAyMDAwMCB8IDE2MDAwIHwKfCBTMl8yMyB8IGNyYWZ0IHwgYm9tYmVyIHwgMjQwMCB8IDEyMDAgfAp8IFMxXzUxIHwgY3JhZnQgfCBmaWdodGVyIHwgMjQwMCB8IDEyMDAgfAp8IEIyM181MSB8IGNyYWZ0IHwgc3BvcmUgfCAyNDAwIHwgMTIwMCB8CnwgRDIxXzIzIHwgZGVhdGhsZXNzIHwgQ3J1aXNlciB8IDI4MDAwIHwgMTYwMDAgfAp8IEQyMF8yMyB8IGRlYXRobGVzcyB8IERlc3Ryb3llciB8IDIwMDAwIHwgMTYwMDAgfAp8IEQ5XzIzIHwgZGVhdGhsZXNzIHwgRnJpZ2F0ZSB8IDIwMDAwIHwgMTYwMDAgfAp8IEQyMl8yMyB8IGRlYXRobGVzcyB8IFRvbWItYXJrIHwgMzgwMDAgfCAxNjAwMCB8CnwgSDEwXzIzIHwgaGVnZW1vbnkgfCBCYXR0bGVzaGlwIHwgMzgwMDAgfCAxNjAwMCB8CnwgSDlfMjMgfCBoZWdlbW9ueSB8IENydWlzZXIgfCAyODAwMCB8IDE2MDAwIHwKfCBIOF8yMyB8IGhlZ2Vtb255IHwgRGVzdHJveWVyIHwgMjAwMDAgfCAxNjAwMCB8CnwgSDdfMjMgfCBoZWdlbW9ueSB8IEZyaWdhdGUgfCAyMDAwMCB8IDE2MDAwIHwKfCBINF8xMSB8IGhlZ2Vtb255IHwgU3VwZXItZHJlYWRub3VnaHQgfCAzODAwMCB8IDE2MDAwIHwKfCBJOF8zNyB8IGl0aGFyIHwgQXJrIHwgMzgwMDAgfCAxNjAwMCB8CnwgSTE2XzExIHwgaXRoYXIgfCBDYXJyaWVyIHwgMzgwMDAgfCAxNjAwMCB8CnwgSTE1XzExIHwgaXRoYXIgfCBDcnVpc2VyIHwgMjgwMDAgfCAxNjAwMCB8CnwgSTExXzM3IHwgaXRoYXIgfCBEZXN0cm95ZXIgfCAyMDAwMCB8IDE2MDAwIHwKfCBJMTRfMjMgfCBpdGhhciB8IEZyaWdhdGUgfCAyMDAwMCB8IDE2MDAwIHwKfCBPM18xMSB8IG9iaiB8IGJlYWNvbiB8IDg4NjYgfCA0MzY4IHwKfCBPMV8zNyB8IG9iaiB8IHN0YXRpb24gfCAyMjEwMCB8IDEwOTI4IHwKfCBPMl8zNyB8IG9iaiB8IHRyYW5zcG9ydCB8IDI4MDAwIHwgMTQwMDAgfAp8IFYxN18zNyB8IHZvaWRzd29ybiB8IEJhdHRsZXNoaXAgfCAzODAwMCB8IDE2MDAwIHwKfCBWMThfNTEgfCB2b2lkc3dvcm4gfCBDYXJyaWVyIHwgMzgwMDAgfCAxNjAwMCB8CnwgVjE2XzM3IHwgdm9pZHN3b3JuIHwgQ3J1aXNlciB8IDI4MDAwIHwgMTYwMDAgfAp8IFYxNV8zNyB8IHZvaWRzd29ybiB8IERlc3Ryb3llciB8IDIwMDAwIHwgMTYwMDAgfAp8IFYxYl9yXzIzIHwgdm9pZHN3b3JuIHwgRHJlYWRub3VnaHQgfCAzODAwMCB8IDE2MDAwIHwKfCBWMTRfMjMgfCB2b2lkc3dvcm4gfCBGcmlnYXRlIHwgMjAwMDAgfCAxNjAwMCB8CgojIyBTSElQX1FVRVVFIHJlY29uY2lsaWF0aW9uCgpRdWV1ZSBlbnRyaWVzIHBhcnNlZCBmcm9tIGRvY3Mvc2hpcF9waXBlbGluZS9TSElQX1FVRVVFLm1kOiAzNi4KCnwgQ29kZSB8IEZhY3Rpb24gfCBDbGFzcyB8IFF1ZXVlIHN0YXR1cyAoc2hvcnQpIHwgTWVzaCBvbiBkaXNrIHwgQ29uY2VwdCBwYWludGluZyBpbiBkb2NzL3NoaXBfcGlwZWxpbmUvY29uY2VwdHMgfAp8LS0tfC0tLXwtLS18LS0tfC0tLXwtLS18CnwgQjIyXzExIHwgY2hvcnVzIHwgQ2FycmllciB8IG5vdCBzdGFydGVkIHwgeWVzIHwgeWVzIHwKfCBCMTZfMjMgfCBjaG9ydXMgfCBCaW8tdGl0YW4gfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgQzE2c18yMyB8IGNvcnNhaXIgfCBDYXJyaWVyIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IEMxOV81MSB8IGNvcnNhaXIgfCBCYXR0bGUtYmFyZ2UgfCBpbiBwcm9ncmVzcywgc3RlcHMgVk1QS0cgbWFya2VkLCBhd2FpdGluZyBvd25lciB2ZXJkaWN0IChmdWxsIHRleHQgaW4gU0hJUF9RVUVVRS5tZCkgfCB5ZXMgfCB5ZXMgfAp8IEQyMl8yMyB8IGRlYXRobGVzcyB8IFRvbWItYXJrIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IEgxMF8yMyB8IGhlZ2Vtb255IHwgQmF0dGxlc2hpcCB8IG5vdCBzdGFydGVkIHwgeWVzIHwgeWVzIHwKfCBINF8xMSB8IGhlZ2Vtb255IHwgU3VwZXItZHJlYWRub3VnaHQgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgSTE2XzExIHwgaXRoYXIgfCBDYXJyaWVyIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IEk4XzM3IHwgaXRoYXIgfCBBcmsgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgTzFfMzcgfCBvYmogfCBzdGF0aW9uIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IFYxN18zNyB8IHZvaWRzd29ybiB8IEJhdHRsZXNoaXAgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgVjFiX3JfMjMgfCB2b2lkc3dvcm4gfCBEcmVhZG5vdWdodCB8IG5vdCBzdGFydGVkIHwgeWVzIHwgeWVzIHwKfCBWMThfNTEgfCB2b2lkc3dvcm4gfCBDYXJyaWVyIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IEIxOV8xMSB8IGNob3J1cyB8IEZyaWdhdGUgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgQjIwXzExIHwgY2hvcnVzIHwgRGVzdHJveWVyIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IEIyMV8xMSB8IGNob3J1cyB8IENydWlzZXIgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgQzEzc18yMyB8IGNvcnNhaXIgfCBGcmlnYXRlIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IEMxNHNfMjMgfCBjb3JzYWlyIHwgRGVzdHJveWVyIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IEMxNXNfMjMgfCBjb3JzYWlyIHwgQ3J1aXNlciB8IG5vdCBzdGFydGVkIHwgeWVzIHwgeWVzIHwKfCBEOV8yMyB8IGRlYXRobGVzcyB8IEZyaWdhdGUgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgRDIwXzIzIHwgZGVhdGhsZXNzIHwgRGVzdHJveWVyIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IEQyMV8yMyB8IGRlYXRobGVzcyB8IENydWlzZXIgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgSDdfMjMgfCBoZWdlbW9ueSB8IEZyaWdhdGUgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgSDhfMjMgfCBoZWdlbW9ueSB8IERlc3Ryb3llciB8IG5vdCBzdGFydGVkIHwgeWVzIHwgeWVzIHwKfCBIOV8yMyB8IGhlZ2Vtb255IHwgQ3J1aXNlciB8IG5vdCBzdGFydGVkIHwgeWVzIHwgeWVzIHwKfCBJMTRfMjMgfCBpdGhhciB8IEZyaWdhdGUgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgSTExXzM3IHwgaXRoYXIgfCBEZXN0cm95ZXIgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgSTE1XzExIHwgaXRoYXIgfCBDcnVpc2VyIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IE8yXzM3IHwgb2JqIHwgdHJhbnNwb3J0IHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IE8zXzExIHwgb2JqIHwgYmVhY29uIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IFYxNF8yMyB8IHZvaWRzd29ybiB8IEZyaWdhdGUgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgVjE1XzM3IHwgdm9pZHN3b3JuIHwgRGVzdHJveWVyIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAp8IFYxNl8zNyB8IHZvaWRzd29ybiB8IENydWlzZXIgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgUzFfNTEgfCBjcmFmdCB8IGZpZ2h0ZXIgfCBub3Qgc3RhcnRlZCB8IHllcyB8IHllcyB8CnwgUzJfMjMgfCBjcmFmdCB8IGJvbWJlciB8IG5vdCBzdGFydGVkIHwgeWVzIHwgeWVzIHwKfCBCMjNfNTEgfCBjcmFmdCB8IHNwb3JlIHwgbm90IHN0YXJ0ZWQgfCB5ZXMgfCB5ZXMgfAoKRGlzY3JlcGFuY2llczoKCi0gUXVldWUgZW50cmllcyB3aXRoIG5vIG1lc2ggZmlsZSBvbiBkaXNrOiAwLgotIFF1ZXVlIGVudHJpZXMgd2l0aCBubyBjb25jZXB0IHBhaW50aW5nIGluIGRvY3Mvc2hpcF9waXBlbGluZS9jb25jZXB0czogMC4KLSBIdWxsIG1lc2ggZmlsZXMgd2l0aCBubyBxdWV1ZSBlbnRyeTogMC4KLSBDb25jZXB0IHBhaW50aW5ncyB3aXRoIG5vIHF1ZXVlIGVudHJ5OiAwLgotIFN0YXR1cyB2ZXJzdXMgZGlzayBtaXNtYXRjaDogMzUgb2YgdGhlIDM2IHF1ZXVlIGVudHJpZXMgY2FycnkgdGhlIHN0YXR1cyAnbm90IHN0YXJ0ZWQnIHdpdGggbm8gcGlwZWxpbmUgc3RlcHMgbWFya2VkLCB5ZXQgYSBtZXNoIEpTT04gcGx1cyBtYXRlcmlhbCBhbmQgbm9ybWFsIG1hcHMgaW4gYm90aCBodWxscy8gYW5kIGh1bGxzX2hpLyBhbmQgYSBjb25jZXB0IHBhaW50aW5nIGFscmVhZHkgZXhpc3Qgb24gZGlzayBmb3IgZXZlcnkgb25lIG9mIHRoZW0uIFRoZSBxdWV1ZSdzIHN0ZXBzIChWLCBNLCBQLCBLLCBHLCBTIHBlciBpdHMgb3duIGhlYWRlcikgdHJhY2sgdGhlIGhhbmQtYnVpbGQgYW5kIGJsb2Igc3dlZXAgc3RhZ2VzLCBzbyB0aGUgYmFzZSBBSSBtZXNoIGFzc2V0cyBleGlzdCBhaGVhZCBvZiB0aGUgcXVldWUncyBzdGF0dXMgY29sdW1uLiBPbmx5IEMxOV81MSBoYXMgc3RlcHMgbWFya2VkIChWLCBNLCBQLCBLLCBHKS4KLSBGb3JtYXQgbm90ZTogZG9jcy9zaGlwX3BpcGVsaW5lL1JFQURNRS5tZCBzdGVwIDkgc2F5cyB0aGUgZ2FtZSBsb2FkcyBodWxsc19oaS9DT0RFLnZzbSAoZGVza3RvcCkgb3IgaHVsbHMvQ09ERS52c20gKHBob25lKSBwbHVzIGEgQ09ERV9raXQuanNvbi4gVGhlIHJlcG8gY29udGFpbnMgMCAudnNtIGZpbGVzIGFuZCAwIF9raXQuanNvbiBmaWxlczsgd2hhdCBpcyBvbiBkaXNrIGlzIHRoZSAuanNvbiBtZXNoIGZvcm1hdCBpbnZlbnRvcmllZCBoZXJlLgotIEFzc2V0cyBvdXRzaWRlIHRoZSBxdWV1ZSBieSBkZXNpZ246IDMyIHJvY2sgbWVzaGVzIChhc3Rlcm9pZCBsaWJyYXJ5LCBpbiByb2Nrcy8gYW5kIHJvY2tzX2hpLykgYW5kIHRoZSAxNSBwcm9jZXNzIGltYWdlcyBpbiBkb2NzL3NoaXBfcGlwZWxpbmUvYzE5X2V4YW1wbGUvIChDMTlfNTEgYnVpbGQgc3RhZ2VzKS4gVGhlIHF1ZXVlIGNvdmVycyBzaGlwcyBvbmx5LgoKIyMgUGlwZWxpbmUgc2NyaXB0cwoKT25lIGxpbmUgZWFjaCwgZnJvbSB0aGUgc2NyaXB0J3Mgb3duIGhlYWRlciBjb21tZW50LiBGdWxsIGxpc3Qgb2Ygc2NyaXB0IGZpbGVzIChpbmNsdWRpbmcgV2luZG93cyBqb2IgZmlsZXMpIGlzIGluIHRoZSBDU1YuCgp8IFNjcmlwdCB8IFB1cnBvc2UgKGZyb20gaXRzIGhlYWRlcikgfAp8LS0tfC0tLXwKfCB0b29scy9ibGVuZGVyL2Jha2VfYWxsLnB5IHwgVm9pZHN3b3JuOiBiYWtlIGV2ZXJ5IGdhbWUgaHVsbCBvbiB0aGlzIFBDJ3MgR1BVLiBXcml0ZXMgRG93bmxvYWRzXHZvaWRzd29ybl90ZXN0XGJha2Vce0NPREUuanNvbixDT0RFX24ud2VicCxDT0RFX20ud2VicCwqX2xvLndlYnB9IHwKfCB0b29scy9ibGVuZGVyL2ZpdGNhbV9maXQucHkgfCBTdGVwIDIgb2YgY29uY2VwdCByZWdpc3RyYXRpb246IHBpY2sgdGhlIHJpZyBjYW1lcmEgd2hvc2Ugc2lsaG91ZXR0ZSBiZXN0IG1hdGNoZXMgdGhlIGNvbmNlcHQgY3V0LW91dCwgZml0IHNjYWxlL29mZnNldCBpbiAyRCwgfAp8IHRvb2xzL2JsZW5kZXIvZml0Y2FtX3JlbmRlci5weSB8IFN0ZXAgMSBvZiBjb25jZXB0IHJlZ2lzdHJhdGlvbiAoQmxlbmRlcik6IHNpbGhvdWV0dGVzIG9mIGEgUGl4YWwzRCBtZXNoIG92ZXIgYSBncmlkIG9mIHJpZyBjYW1lcmFzIChmb3YgMjAsIHogdXAsIGF6IDAgPSB0aGUgcnVuJ3MgfAp8IHRvb2xzL2JsZW5kZXIvZml4X2h1bGwucHkgfCBwb3N0LWZpeCBleHBvcnRlZCBodWxsIEpTT046IGtlZXAgbWFpbiBib2R5LCBjcm9wIHRoaW4gb3V0bGllcnMsIHJlb3JpZW50LiB1c2FnZTogZml4LnB5IGZpbGUuanNvbiBvcHMuLi4gfAp8IHRvb2xzL2JsZW5kZXIvZnhzaW0ucHkgfCBWb2lkc3dvcm4gZXhwbG9zaW9uIGZsaXBib29rczogTWFudGFmbG93IGZpcmUrc21va2Ugc2ltcyByZW5kZXJlZCBhcyB0aW50YWJsZSBjaGFubmVsIGZyYW1lcy4gfAp8IHRvb2xzL2JsZW5kZXIvaHMvYzE5X2hzLnB5IHwgQmFrZS1vZmYgZW50cnkgRDogV2FybG9yZCdzIFB5cmUtQmFyZ2UgKEMxOV81MSkgcmVidWlsdCBhcyBhIHNjcmlwdGVkIGhhcmQtc3VyZmFjZSBtb2RlbCBmcm9tIFJ5YW4ncyBjb25jZXB0IGFydC4gfAp8IHRvb2xzL2JsZW5kZXIvaHMvYzE5X2tpdC5weSB8IFB5cmUtQmFyZ2UgKEMxOV81MSkgaHlicmlkOiB0aGUgUGl4YWwzRCBodWxsIGtlZXBzIGl0cyBzaGFwZSBhbmQgcGFpbnQ7IGl0cyBzbWFsbCBwYXJ0cyAocm9ja2V0IHJhY2ssIGZ1bm5lbHMsIG1hc3QsIGxvbmcgZ3VucyksIHwKfCB0b29scy9ibGVuZGVyL2hzL2NsZWFudXAucHkgfCBCYWtlLW9mZiBlbnRyeSBCOiBjbGVhbiB1cCB0aGUgY3VycmVudCBIdW55dWFuIG1lc2ggaW4gQmxlbmRlci4gUGxhbmFyIGRpc3NvbHZlIGZsYXR0ZW5zIHRoZSBsdW1weSBwYW5lbHMgaW50byBmbGF0IGZhY2VzLCB8CnwgdG9vbHMvYmxlbmRlci9ocy9kZXRhaWxfbGliLnB5IHwgUmV1c2FibGUgc3VyZmFjZS1kZXRhaWwgYW5kIHdlYXRoZXJpbmcgcGFzcyBmb3IgdGhlIGNsZWFuIGhhbmQtYnVpbHQgc2hpcHMgKG93bmVyLCBPY3QgMjIgMjAyNjogIndlIGRvIG5lZWQgdG8gYWRkIGEgbG90IG1vcmUgZGV0YWlsIHwKfCB0b29scy9ibGVuZGVyL2hzL2V4cG9ydF9qc29uLnB5IHwgQmxlbmRlciBtb2RlbCAoWCB0byB0aGUgYm93LCBaIHVwKSAtPiBnYW1lIGh1bGwgSlNPTiAoeCB0byB0aGUgYm93LCB5IHVwLCBsZW5ndGggMSwgY2VudHJlZCksIGhhcmQgZWRnZXMga2VwdCBhcyBzcGxpdCB2ZXJ0aWNlcy4gfAp8IHRvb2xzL2JsZW5kZXIvaHMvaHNfbGliLnB5IHwgSGFyZC1zdXJmYWNlIGtpdCBmb3Igc2NyaXB0ZWQgQmxlbmRlciBzaGlwczogZXZlcnkgcGFydCBpcyBhIGNsb3NlZCBtZXNoIHdpdGggYmV2ZWxsZWQgZWRnZXMgKGNyaXNwIGhpZ2hsaWdodHMpLCBidWlsdCBpbiBzaGlwIHNwYWNlIHwKfCB0b29scy9ibGVuZGVyL2hzL2pzb24yb2JqLnB5IHwgZ2FtZSBodWxsIEpTT04gLT4gT0JKIChmb3IgY2xheSByZW5kZXJzIG9mIHdoYXQgdGhlIGdhbWUgYWN0dWFsbHkgZHJhd3MpIHwKfCB0b29scy9ibGVuZGVyL2hzL28xX2hzLnB5IHwgQmFrZS1vZmYgZW50cnkgRDogdGhlIGRlZmVuZC1vYmplY3RpdmUgc3RhdGlvbiAoTzFfMzcpIGFzIGEgc2NyaXB0ZWQgaGFyZC1zdXJmYWNlIG1vZGVsIGZyb20gdGhlIGNvbmNlcHQ6IHN0ZXBwZWQgZGlzYywgaGFuZ2FycywgZG9ja2VkIHNwaXJlLiB8CnwgdG9vbHMvYmxlbmRlci9ocy9wYW5lbF9mbGF0dGVuLnB5IHwgR2VudGxlIGZsYXR0ZW5pbmcgb2YgdGhlIEFJIGh1bGwncyB3YXZ5IHBsYXRlcyAob3duZXIsIE9jdCAyMjogIm1heWJlIGZsYXR0ZW4gdGhlbSBhIGJpdD8iKS4gRmluZHMgdGhlIGJpZyBuZWFyLWZsYXQgcGxhdGVzIGV4YWN0bHkgYXMgfAp8IHRvb2xzL2JsZW5kZXIvaHMvcGxhbmVzbmFwLnB5IHwgQmFrZS1vZmYgZW50cnkgRToga2VlcCBldmVyeSBIdW55dWFuIGRldGFpbCwgYnV0IGZpbmQgdGhlIGJpZyBuZWFyLWZsYXQgcGxhdGVzIChodWxsIHNpZGVzLCBkZWNrLCB0b3dlciBmYWNlcyksIGZpdCBhIHRydWUgcGxhbmUgdG8gZWFjaCB8CnwgdG9vbHMvYmxlbmRlci9ocy9yZW5kZXIucHkgfCBDbGF5IHJlbmRlciBvZiBhIG1lc2ggZm9yIHRoZSBzaGFwZSBiYWtlLW9mZjogc2FtZSBsaWdodCwgY2FtZXJhIGFuZCBncmV5IG1hdGVyaWFsIGZvciBldmVyeSBlbnRyeS4gfAp8IHRvb2xzL2JsZW5kZXIvaHMvdG9fZ2FtZS5weSB8IEh1bnl1YW4tZnJhbWUgQmxlbmRlciBtb2RlbCAobGVuZ3RoIGFsb25nIFkpIC0+IGRlY2ltYXRlZCBnYW1lIEpTT04sIG9yaWVudGVkIHRvIG1hdGNoIHRoZSBjdXJyZW50IGdhbWUgaHVsbCAoY2hhbWZlciBmaXQgb3ZlciA0IHlhdyBjaG9pY2VzKS4gfAp8IHRvb2xzL2JsZW5kZXIvaHMvd2F2eV9yZXBvcnQucHkgfCBXYXZ5LXBhbmVsIHJlcG9ydCAoZGV0ZWN0aW9uIG9ubHksIG93bmVyIE9jdCAyMjogInNob3cgbWUgZmlyc3QiKTogZmluZHMgdGhlIGJpZyBuZWFyLWZsYXQgcGxhdGVzIG9uIGFuIEFJIGh1bGwgdGhlIHNhbWUgd2F5IHBsYW5lc25hcC5weSB8CnwgdG9vbHMvYmxlbmRlci9odWxsYmFrZS5weSB8IFZvaWRzd29ybiBwZXItaHVsbCBiYWtlOiBnYW1lIG1lc2ggKyBoaWdoLXBvbHkgSHVueXVhbiBHTEIgLT4gVVYnZCBnYW1lIEpTT04gKyBub3JtYWwgbWFwICsgQU8vY3VydmF0dXJlIG1hcC4gfAp8IHRvb2xzL2JsZW5kZXIvbG9kX21ha2UucHkgfCBMZXZlbHMgb2YgZGV0YWlsIGZyb20gYSBmdWxsLWRldGFpbCB0ZXh0dXJlZCBHTEIsIGtlZXBpbmcgaXRzIFVWcyAoYW5kIHNvIGl0cyBwYWludGVkIHRleHR1cmVzKTogd2VsZCBvbiBpbXBvcnQsIGNvbGxhcHNlLWRlY2ltYXRlLiB8CnwgdG9vbHMvYmxlbmRlci9tdl9wcmVwLnB5IHwgUHJlcGFyZSBmb3VyIGdlbmVyYXRlZCB2aWV3cyAoZnJvbnQvbGVmdC9iYWNrL3JpZ2h0KSBmb3IgUGl4YWwzRCBtdWx0aS12aWV3OiBjdXQgdGhlIHNoaXAgb2ZmIGl0cyBwbGFpbiBiYWNrZHJvcCwgcHV0IGV2ZXJ5IHZpZXcgfAp8IHRvb2xzL2JsZW5kZXIvcGFpbnRfbGV2ZWwucHkgfCBCcmlnaHRlbiBhIFRSRUxMSVMgcGFpbnQgbWFwIHRvd2FyZCB0aGUgY29uY2VwdCBhcnQ6IFRSRUxMSVMgZGUtbGlnaHRzIHRoZSBpbWFnZSBhbmQgY29tZXMgb3V0IGFib3V0IDIuNXggdG9vIGRhcmsuIHwKfCB0b29scy9ibGVuZGVyL3BpeGFsX3RvX2dhbWUucHkgfCBQaXhhbDNEIHRleHR1cmVkIEdMQiAoQ29tZnlVSSBTYXZlR0xCKSAtPiBnYW1lIGh1bGw6IHBvc2l0aW9ucy9ub3JtYWxzL1VWcyBpbiB0aGUgZ2FtZSBmcmFtZSAoYm93ICt4LCB1cCAreSwgcG9ydCAreiwgbGVuZ3RoIDEsIHwKfCB0b29scy9ibGVuZGVyL3Byb2plY3RfcGFpbnQucHkgfCBQcm9qZWN0IHRoZSBzb3VyY2UgcGljdHVyZXMgKGNvbmNlcHQgcGFpbnRpbmcgKyBnZW5lcmF0ZWQgdmlld3MpIGJhY2sgb250byBhIFBpeGFsM0QgbWVzaCBhbmQgYmFrZSB0aGVtIGludG8gaXRzIGFsYmVkbywgc28gdGhlIHwKfCB0b29scy9ibGVuZGVyL3JlbmRlcl9tdWx0aS5weSB8IE9uZSBsb2FkLCBzZXZlcmFsIHRleHR1cmVkIHZpZXdzLiB1c2FnZTogcHl0aG9uMyByZW5kZXJfbXVsdGkucHkgaW4uZ2xiIG91dF9wcmVmaXggImF6IGVsO2F6IGVsOy4uLiIgIChlbnYgRElTVCwgUkVTKSB8CnwgdG9vbHMvYmxlbmRlci9yb2NrZ2VuLnB5IHwgVm9pZHN3b3JuIGFzdGVyb2lkIGxpYnJhcnk6IHNjdWxwdGVkIGhpZ2gtcG9seSByb2NrcyAoR0xCKSArIGdhbWUgbG93LXBvbHkgKGh1bGwgSlNPTiBmb3JtYXQpIHBlciByb2NrIHR5cGUuIHwKfCB0b29scy9ibGVuZGVyL3JvY2tzX2Jha2UucHkgfCBiYWtlIHRoZSBhc3Rlcm9pZCBsaWJyYXJ5OiByb2Nrc191di8qLmpzb24gKGRlc2t0b3AgMTAyNCkgYW5kIHJvY2tzX3V2X2xvIChwaG9uZSA1MTIpIGFnYWluc3Qgcm9ja3NfaGkvKl9oaS5nbGIgfAp8IHRvb2xzL2JsZW5kZXIvdHJlbGxpc19iYWtlLnB5IHwgVFJFTExJUy4yIHBhaW50ZWQgR0xCIC0+IGdhbWUgaHVsbDogd2VsZGVkICsgZGVjaW1hdGVkIGxvdyBtZXNoLCBmcmVzaCBVVnMsIGJha2VkIGNvbmNlcHQgcGFpbnQgKGFsYmVkbyksIHRhbmdlbnQgbm9ybWFsIG1hcCB8CnwgdG9vbHMvYmxlbmRlci90cmVsbGlzX2ZsZWV0X2Jha2Uuc2ggfCBCYWtlIGV2ZXJ5IFRSRUxMSVMuMiBHTEIgaW4gJDEgaW50byBnYW1lIGh1bGxzOiAkMi9odWxsc19oaSAoMzhrIHRyaXMsIDIwNDggbWFwcykgYW5kICQyL2h1bGxzICgxNmsgdHJpcywgMTAyNCBtYXBzKS4gfAp8IHRvb2xzL2JsZW5kZXIvdXZwcmVwLnB5IHwgYWRkIHhhdGxhcyBVViBjaGFydHMgKCd1JykgdG8gZ2FtZSBodWxsIEpTT05zLiB1c2FnZTogdXZwcmVwLnB5IDxpbl9kaXI+IDxvdXRfZGlyPiA8cmVmX2hpX2Rpcj4gfAp8IHRvb2xzL2JsZW5kZXIvdnNtX3BhY2subWpzIHwgUGFjayBhIGNvbnZlcnRlZCBodWxsIChDT0RFLnZiIDE2LWJ5dGUgdmVydGljZXMsIENPREUuaWIgdWludDMyIHRyaWFuZ2xlcywgQ09ERS5oZHIuanNvbikgaW50byBDT0RFLnZzbSB3aXRoIG1lc2hvcHQgY29tcHJlc3Npb24uIHwKCkFsc28gcHJlc2VudDogMjQgV2luZG93cyBqb2IgZmlsZXMgdW5kZXIgdG9vbHMvcGMvam9icy8gKG1vc3RseSBDMTkgc3RlcCBydW5uZXJzKSwgb3RoZXIgUEMgaGVscGVyIHNjcmlwdHMgdW5kZXIgdG9vbHMvcGMvLCBhbmQgNCBmaWxlcyB1bmRlciBjb250cmliL2dlbWluaS90b29scy8gKGEgY29udHJpYnV0ZWQgY29weSBvZiBwYXJ0cyBvZiB0aGUgYmxlbmRlciB0b29sY2hhaW4sIGluY2x1ZGluZyBpdHMgb3duIGMxOV9raXQucHkpLgo=
+# Ship pipeline asset inventory (Compute Run 4)
+
+Repo: rcbailey12/voidsworn at HEAD 51337c2, read only. Generated by hidden_files/compute/run4_asset_inventory.py. Full per-file data: asset_inventory.csv.
+
+## Totals
+
+- Asset files counted: 553 (157.5 MB total).
+- hull json: 72 files, 31.6 MB.
+- texture: 272 files, 118.2 MB.
+- script: 83 files, 0.4 MB.
+- doc: 8 files, 0.0 MB.
+- other: 118 files, 7.4 MB.
+
+By area:
+- contrib/gemini: 4 files, 0.0 MB.
+- docs/ship_pipeline: 58 files, 4.3 MB.
+- hulls: 108 files, 31.5 MB.
+- hulls_hi: 108 files, 82.1 MB.
+- rocks: 97 files, 10.3 MB.
+- rocks_hi: 97 files, 29.0 MB.
+- tools/blender: 32 files, 0.2 MB.
+- tools/build_clips.py: 1 files, 0.0 MB.
+- tools/pc: 48 files, 0.1 MB.
+
+## Hull meshes and triangle counts
+
+Method: every mesh JSON is a vsm-pack file that stores its own triangle count in the field `t`. The counts below are that field, and the inventory script verified for every mesh file that `t` equals the decoded index count divided by 3 (no mismatches). `hulls/` is the phone and medium set, `hulls_hi/` the desktop set (per docs/ship_pipeline/README.md step 9). The file listings of hulls/ and hulls_hi/ are identical, as are rocks/ and rocks_hi/.
+
+- Unique hull codes with a mesh: 36 (each present in both hulls/ and hulls_hi/, with a _m material map and a _n normal map in each).
+- Desktop (hulls_hi) triangles per hull: min 2,400, max 38,000, total 930,166 across 36 hulls.
+- Phone (hulls) triangles per hull: min 1,200, max 16,000, total 512,892 across 36 hulls.
+- Rock meshes (not in the ship queue): 32 unique rocks, each in rocks/ and rocks_hi/ with material and normal maps, plus an index.json in each rock folder (counts per rock family: RCA 8, RST 8, RCR 8, RIC 8).
+
+Per hull (desktop triangles / phone triangles), grouped by queue faction and class:
+
+| Code | Faction | Class | hulls_hi tris | hulls tris |
+|---|---|---|---|---|
+| B16_23 | chorus | Bio-titan | 38000 | 15998 |
+| B22_11 | chorus | Carrier | 38000 | 16000 |
+| B21_11 | chorus | Cruiser | 28000 | 16000 |
+| B20_11 | chorus | Destroyer | 20000 | 16000 |
+| B19_11 | chorus | Frigate | 20000 | 16000 |
+| C19_51 | corsair | Battle-barge | 38000 | 15998 |
+| C16s_23 | corsair | Carrier | 38000 | 16000 |
+| C15s_23 | corsair | Cruiser | 28000 | 16000 |
+| C14s_23 | corsair | Destroyer | 20000 | 16000 |
+| C13s_23 | corsair | Frigate | 20000 | 16000 |
+| S2_23 | craft | bomber | 2400 | 1200 |
+| S1_51 | craft | fighter | 2400 | 1200 |
+| B23_51 | craft | spore | 2400 | 1200 |
+| D21_23 | deathless | Cruiser | 28000 | 16000 |
+| D20_23 | deathless | Destroyer | 20000 | 16000 |
+| D9_23 | deathless | Frigate | 20000 | 16000 |
+| D22_23 | deathless | Tomb-ark | 38000 | 16000 |
+| H10_23 | hegemony | Battleship | 38000 | 16000 |
+| H9_23 | hegemony | Cruiser | 28000 | 16000 |
+| H8_23 | hegemony | Destroyer | 20000 | 16000 |
+| H7_23 | hegemony | Frigate | 20000 | 16000 |
+| H4_11 | hegemony | Super-dreadnought | 38000 | 16000 |
+| I8_37 | ithar | Ark | 38000 | 16000 |
+| I16_11 | ithar | Carrier | 38000 | 16000 |
+| I15_11 | ithar | Cruiser | 28000 | 16000 |
+| I11_37 | ithar | Destroyer | 20000 | 16000 |
+| I14_23 | ithar | Frigate | 20000 | 16000 |
+| O3_11 | obj | beacon | 8866 | 4368 |
+| O1_37 | obj | station | 22100 | 10928 |
+| O2_37 | obj | transport | 28000 | 14000 |
+| V17_37 | voidsworn | Battleship | 38000 | 16000 |
+| V18_51 | voidsworn | Carrier | 38000 | 16000 |
+| V16_37 | voidsworn | Cruiser | 28000 | 16000 |
+| V15_37 | voidsworn | Destroyer | 20000 | 16000 |
+| V1b_r_23 | voidsworn | Dreadnought | 38000 | 16000 |
+| V14_23 | voidsworn | Frigate | 20000 | 16000 |
+
+## SHIP_QUEUE reconciliation
+
+Queue entries parsed from docs/ship_pipeline/SHIP_QUEUE.md: 36.
+
+| Code | Faction | Class | Queue status (short) | Mesh on disk | Concept painting in docs/ship_pipeline/concepts |
+|---|---|---|---|---|---|
+| B22_11 | chorus | Carrier | not started | yes | yes |
+| B16_23 | chorus | Bio-titan | not started | yes | yes |
+| C16s_23 | corsair | Carrier | not started | yes | yes |
+| C19_51 | corsair | Battle-barge | in progress, steps VMPKG marked, awaiting owner verdict (full text in SHIP_QUEUE.md) | yes | yes |
+| D22_23 | deathless | Tomb-ark | not started | yes | yes |
+| H10_23 | hegemony | Battleship | not started | yes | yes |
+| H4_11 | hegemony | Super-dreadnought | not started | yes | yes |
+| I16_11 | ithar | Carrier | not started | yes | yes |
+| I8_37 | ithar | Ark | not started | yes | yes |
+| O1_37 | obj | station | not started | yes | yes |
+| V17_37 | voidsworn | Battleship | not started | yes | yes |
+| V1b_r_23 | voidsworn | Dreadnought | not started | yes | yes |
+| V18_51 | voidsworn | Carrier | not started | yes | yes |
+| B19_11 | chorus | Frigate | not started | yes | yes |
+| B20_11 | chorus | Destroyer | not started | yes | yes |
+| B21_11 | chorus | Cruiser | not started | yes | yes |
+| C13s_23 | corsair | Frigate | not started | yes | yes |
+| C14s_23 | corsair | Destroyer | not started | yes | yes |
+| C15s_23 | corsair | Cruiser | not started | yes | yes |
+| D9_23 | deathless | Frigate | not started | yes | yes |
+| D20_23 | deathless | Destroyer | not started | yes | yes |
+| D21_23 | deathless | Cruiser | not started | yes | yes |
+| H7_23 | hegemony | Frigate | not started | yes | yes |
+| H8_23 | hegemony | Destroyer | not started | yes | yes |
+| H9_23 | hegemony | Cruiser | not started | yes | yes |
+| I14_23 | ithar | Frigate | not started | yes | yes |
+| I11_37 | ithar | Destroyer | not started | yes | yes |
+| I15_11 | ithar | Cruiser | not started | yes | yes |
+| O2_37 | obj | transport | not started | yes | yes |
+| O3_11 | obj | beacon | not started | yes | yes |
+| V14_23 | voidsworn | Frigate | not started | yes | yes |
+| V15_37 | voidsworn | Destroyer | not started | yes | yes |
+| V16_37 | voidsworn | Cruiser | not started | yes | yes |
+| S1_51 | craft | fighter | not started | yes | yes |
+| S2_23 | craft | bomber | not started | yes | yes |
+| B23_51 | craft | spore | not started | yes | yes |
+
+Discrepancies:
+
+- Queue entries with no mesh file on disk: 0.
+- Queue entries with no concept painting in docs/ship_pipeline/concepts: 0.
+- Hull mesh files with no queue entry: 0.
+- Concept paintings with no queue entry: 0.
+- Status versus disk mismatch: 35 of the 36 queue entries carry the status 'not started' with no pipeline steps marked, yet a mesh JSON plus material and normal maps in both hulls/ and hulls_hi/ and a concept painting already exist on disk for every one of them. The queue's steps (V, M, P, K, G, S per its own header) track the hand-build and blob sweep stages, so the base AI mesh assets exist ahead of the queue's status column. Only C19_51 has steps marked (V, M, P, K, G).
+- Format note: docs/ship_pipeline/README.md step 9 says the game loads hulls_hi/CODE.vsm (desktop) or hulls/CODE.vsm (phone) plus a CODE_kit.json. The repo contains 0 .vsm files and 0 _kit.json files; what is on disk is the .json mesh format inventoried here.
+- Assets outside the queue by design: 32 rock meshes (asteroid library, in rocks/ and rocks_hi/) and the 15 process images in docs/ship_pipeline/c19_example/ (C19_51 build stages). The queue covers ships only.
+
+## Pipeline scripts
+
+One line each, from the script's own header comment. Full list of script files (including Windows job files) is in the CSV.
+
+| Script | Purpose (from its header) |
+|---|---|
+| tools/blender/bake_all.py | Voidsworn: bake every game hull on this PC's GPU. Writes Downloads\voidsworn_test\bake\{CODE.json,CODE_n.webp,CODE_m.webp,*_lo.webp} |
+| tools/blender/fitcam_fit.py | Step 2 of concept registration: pick the rig camera whose silhouette best matches the concept cut-out, fit scale/offset in 2D, |
+| tools/blender/fitcam_render.py | Step 1 of concept registration (Blender): silhouettes of a Pixal3D mesh over a grid of rig cameras (fov 20, z up, az 0 = the run's |
+| tools/blender/fix_hull.py | post-fix exported hull JSON: keep main body, crop thin outliers, reorient. usage: fix.py file.json ops... |
+| tools/blender/fxsim.py | Voidsworn explosion flipbooks: Mantaflow fire+smoke sims rendered as tintable channel frames. |
+| tools/blender/hs/c19_hs.py | Bake-off entry D: Warlord's Pyre-Barge (C19_51) rebuilt as a scripted hard-surface model from Ryan's concept art. |
+| tools/blender/hs/c19_kit.py | Pyre-Barge (C19_51) hybrid: the Pixal3D hull keeps its shape and paint; its small parts (rocket rack, funnels, mast, long guns), |
+| tools/blender/hs/cleanup.py | Bake-off entry B: clean up the current Hunyuan mesh in Blender. Planar dissolve flattens the lumpy panels into flat faces, |
+| tools/blender/hs/detail_lib.py | Reusable surface-detail and weathering pass for the clean hand-built ships (owner, Oct 22 2026: "we do need to add a lot more detail |
+| tools/blender/hs/export_json.py | Blender model (X to the bow, Z up) -> game hull JSON (x to the bow, y up, length 1, centred), hard edges kept as split vertices. |
+| tools/blender/hs/hs_lib.py | Hard-surface kit for scripted Blender ships: every part is a closed mesh with bevelled edges (crisp highlights), built in ship space |
+| tools/blender/hs/json2obj.py | game hull JSON -> OBJ (for clay renders of what the game actually draws) |
+| tools/blender/hs/o1_hs.py | Bake-off entry D: the defend-objective station (O1_37) as a scripted hard-surface model from the concept: stepped disc, hangars, docked spire. |
+| tools/blender/hs/panel_flatten.py | Gentle flattening of the AI hull's wavy plates (owner, Oct 22: "maybe flatten them a bit?"). Finds the big near-flat plates exactly as |
+| tools/blender/hs/planesnap.py | Bake-off entry E: keep every Hunyuan detail, but find the big near-flat plates (hull sides, deck, tower faces), fit a true plane to each |
+| tools/blender/hs/render.py | Clay render of a mesh for the shape bake-off: same light, camera and grey material for every entry. |
+| tools/blender/hs/to_game.py | Hunyuan-frame Blender model (length along Y) -> decimated game JSON, oriented to match the current game hull (chamfer fit over 4 yaw choices). |
+| tools/blender/hs/wavy_report.py | Wavy-panel report (detection only, owner Oct 22: "show me first"): finds the big near-flat plates on an AI hull the same way planesnap.py |
+| tools/blender/hullbake.py | Voidsworn per-hull bake: game mesh + high-poly Hunyuan GLB -> UV'd game JSON + normal map + AO/curvature map. |
+| tools/blender/lod_make.py | Levels of detail from a full-detail textured GLB, keeping its UVs (and so its painted textures): weld on import, collapse-decimate. |
+| tools/blender/mv_prep.py | Prepare four generated views (front/left/back/right) for Pixal3D multi-view: cut the ship off its plain backdrop, put every view |
+| tools/blender/paint_level.py | Brighten a TRELLIS paint map toward the concept art: TRELLIS de-lights the image and comes out about 2.5x too dark. |
+| tools/blender/pixal_to_game.py | Pixal3D textured GLB (ComfyUI SaveGLB) -> game hull: positions/normals/UVs in the game frame (bow +x, up +y, port +z, length 1, |
+| tools/blender/project_paint.py | Project the source pictures (concept painting + generated views) back onto a Pixal3D mesh and bake them into its albedo, so the |
+| tools/blender/render_multi.py | One load, several textured views. usage: python3 render_multi.py in.glb out_prefix "az el;az el;..."  (env DIST, RES) |
+| tools/blender/rockgen.py | Voidsworn asteroid library: sculpted high-poly rocks (GLB) + game low-poly (hull JSON format) per rock type. |
+| tools/blender/rocks_bake.py | bake the asteroid library: rocks_uv/*.json (desktop 1024) and rocks_uv_lo (phone 512) against rocks_hi/*_hi.glb |
+| tools/blender/trellis_bake.py | TRELLIS.2 painted GLB -> game hull: welded + decimated low mesh, fresh UVs, baked concept paint (albedo), tangent normal map |
+| tools/blender/trellis_fleet_bake.sh | Bake every TRELLIS.2 GLB in $1 into game hulls: $2/hulls_hi (38k tris, 2048 maps) and $2/hulls (16k tris, 1024 maps). |
+| tools/blender/uvprep.py | add xatlas UV charts ('u') to game hull JSONs. usage: uvprep.py <in_dir> <out_dir> <ref_hi_dir> |
+| tools/blender/vsm_pack.mjs | Pack a converted hull (CODE.vb 16-byte vertices, CODE.ib uint32 triangles, CODE.hdr.json) into CODE.vsm with meshopt compression. |
+
+Also present: 24 Windows job files under tools/pc/jobs/ (mostly C19 step runners), other PC helper scripts under tools/pc/, and 4 files under contrib/gemini/tools/ (a contributed copy of parts of the blender toolchain, including its own c19_kit.py).
