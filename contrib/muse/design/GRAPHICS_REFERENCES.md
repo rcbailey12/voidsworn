@@ -133,10 +133,91 @@ Study it:
 
 Also already in hand: the visual expansion research memo (contrib/muse/design/visual_expansion_research.md) covers CC0 texture libraries (ambientCG, Poly Haven), Kenney particle sprites, and KTX2 compression. This document deliberately does not repeat that list.
 
-## Start here: the five highest value items, in order
+## 4. Top up (added 24 October 2026): the three omissions, EVE, and the BattleTech and MechWarrior masterclass
+
+Added after the first pass. This section covers the three games the original list missed, Ryan's EVE question, the BattleTech and MechWarrior pair, and one extra that earned its place. Every game below was checked against a live source page during this pass. Where a source is a community wiki, a forum thread, or a pre-release document, that is flagged in place, because the sourcing tier matters.
+
+### Stellaris (Paradox Interactive)
+
+Steal:
+- Graphical culture as a pure skin layer. A ship's function is composed once (a ship size, section templates that mount on it, component templates that fill the sections), and its look is a named graphical entity per culture and ship size. The empire picks its graphical culture independently of its stats, and the naming convention has a fallback: if the exact culture entity is missing, the game degrades through culture prefixes to a default. Six Voidsworn factions could share hull function while wearing completely different entity sets, and a missing faction variant degrades gracefully instead of breaking.
+- Locator discipline. Sections declare named slots, components attach at locators on the model, and a weapon entity needs a turret_muzzle_01 locator that defines where projectiles spawn. That is the contract the ship kit needs: named hardpoint and muzzle locators on every hull, recorded in the hull manifest.
+- Ship sets as a modding genre. The Steam Workshop carries large numbers of community ship sets, which is what a clean data contract produces over a decade.
+
+Study it:
+- Ship modding page, Stellaris Wiki (community wiki on Fandom): https://stellaris.fandom.com/wiki/Ship_modding
+- Stale source flag: parts of that page were last verified against game version 3.0, so use it as a map of the system, not as current gospel. The official Paradox wiki modding pages would not load during this pass. Many Workshop ship sets port other franchises' fleets (Amarr, Ferengi, Vaygr and similar); those are other studios' IP, study only.
+
+### Star Wars: Empire at War (Petroglyph, 2006) and Forces of Corruption
+
+Steal:
+- XML-driven units, completely. Ships, weapons, costs and ranges live in plain XML files, and hardpoints are defined per ship as their own health pools, destroyed independently of the hull. The mod scene is still receiving new work nearly twenty years after launch (the Forces of Corruption ModDB page took new mods and updates in October 2026), and that longevity is what a fully data-driven unit format buys.
+- The Empire at War Remake mod as the presentation benchmark. Its changelog reads like a Voidsworn wishlist: remodelled ships with individually lit windows, weapon batteries that visibly track targets and can engage several at once, ships that catch fire as they take damage so damage state reads at a glance, destroyed ships persisting as wreck states (the mod calls them deathclones), and a pass that re-optimised almost all particle effects for smoothness. Reviewers single out the turbolaser particles, the moving batteries, and steam venting from overheated barrels.
+
+Study it:
+- Beginner modding guide for the XML format and hardpoint basics: https://gamefaqs.gamespot.com/pc/932730-star-wars-empire-at-war-forces-of-corruption/faqs/45886
+- The Remake mod's own pages on ModDB: https://www.moddb.com/mods/empire-at-war-re/images/victory and the Forces of Corruption mods index for the scene itself: https://www.moddb.com/games/star-wars-empire-at-war-forces-of-corruption/mods
+- IP flag: this is Star Wars. Ships, names and factions are Lucasfilm IP. Study the systems, reuse nothing.
+
+### Endless Space 2 (Amplitude Studios)
+
+Steal:
+- The Battle Director. Amplitude's own design document describes battles built as cinema from the ground up: a Battle Director analyses what is happening and selects what to show, inside a five phase structure (cinematic arrival, three battle phases, cinematic resolution). Voidsworn battles are already simulated, so a director layer that picks camera beats from the event log is the cheapest cinematic upgrade anywhere in this document.
+- Visible, destructible weapon modules. Modules sit on the hull, traverse, fire, take damage and can be destroyed, and the post-battle report shows fleet movement plus which sections and modules each ship lost. Damage you can see, then damage you can review.
+- Scale and arena discipline. Ship size classes step up by roughly 3x, so class reads from size alone, and the arena is generated from the system being fought over (planet, anomalies, star type), including localised hazards. The backdrop does gameplay work.
+
+Study it:
+- Community GDD 4: Battle Overview, on Amplitude's official community site: https://community.amplitude-studios.com/amplitude-studios/endless-space-2/forums/66-game-design/threads/20675-community-gdd-4-update-battle-overview?page=1
+- Flag: this is a pre-release design document, so it describes intent. The shipped game kept the broad shape, but check any single mechanic against footage before treating it as fact. Modding tools ship behind the --enablemoddingtools launch flag, documented on the same community forums.
+
+### EVE Online (CCP, now Fenris Creations)
+
+Steal:
+- Layered paint: SKIN and SKINR. The older SKIN system (2015) is licence based: buy a licence, apply it to your character, permanent even if the ship dies. SKINR (Equinox expansion, June 2024) is a design tool. Each design has five slots: four nanocoatings plus one pattern, and the pattern carries a nested nanocoating slot of its own. Elements are Basic and Metallic nanocoatings and Patterns, each in Unlimited or Limited form, bought, sold and earned in game, and even the finish is a number (gloss materials 0.75, satin 0.60, matt 0.40). Finished designs are saveable and tradable. For Voidsworn this maps straight onto the FAC3D single colour source: a faction scheme as a small fixed set of data slots (base coat, accent, pattern, finish, glow) gives every hull a family look at tiny asset cost.
+- Graceful degradation of the picture. In space, every object wears a bracket (an icon), and the overview, a sortable and filterable list, is the primary interface in a big fight. EVE University's overview guidance is blunt: in very large fleet fights, turn brackets off and fly from the list. The lesson is the layering: full 3D up close, icons at range, a clean list when the field gets huge, and every layer stays playable. Same conclusion as the Sins zoom icons in section 1, reached independently by a live game under real load.
+- Time dilation as a performance tool. When a system overloads, the simulation itself slows down (automated, to as low as 10 percent speed) rather than dropping commands. CCP's design rule, as reported from CCP Veritas's dev blog: timers a player would check on a watch do not dilate, combat flow timers do. A turn based game does not need TiDi itself; the stealable principle is to slow the presentation clock before cutting simulation fidelity when a late battle gets heavy.
+- Sky as place. The Crucible expansion replaced generic backdrops with per-region nebulae so location reads from the sky alone, realigned stargates to point at their actual destinations, and drew star fields from real neighbouring systems. Voidsworn's 18 plate background catalogue can do the same job: one recognisable sky per campaign region.
+- Open source: the Carbon engine. In July 2026 Fenris Creations (CCP's new name after its 2026 independence buyback) open sourced the Carbon framework on GitHub (github.com/carbonengine): more than two dozen modules, most under the MIT licence, two under Apache 2.0 and the Python Software Foundation licence. Trinity is the renderer behind EVE's look, Destiny the simulation and pathfinding core, and there is a Wwise spatial audio clustering plugin worth reading for fleet audio. Caveats, flagged in place: it is a framework, not a turnkey engine, there is no editor, launch coverage noted that some Destiny dependencies were not included and an example project was still only planned. Read it for architecture, not as a build target.
+
+Study it:
+- SKINR: EVE University Wiki, Ship SKINR: https://wiki.eveuniversity.org/Ship_SKINR
+- Overview and brackets: EVE University Wiki, Overview article (the wiki's canonical guide to overview setup, bracket filters, tab presets and tagging).
+- Time Dilation dev blog by CCP Veritas: https://www.eveonline.com/news/view/introducing-time-dilation-tidi and the Crucible patch notes, which shipped TiDi and the new nebulae together: https://www.eveonline.com/article/patch-notes-for-crucible-1
+- Carbon coverage with the module list: https://www.gamedeveloper.com/production/eve-online-s-cross-platform-game-engine-framework-is-now-fully-open-source
+- Honesty flag: no CCP document found in this pass describes automatic client side effect culling or scaling in fleet battles. The documented scaling is TiDi on the server, bracket and overview discipline on the client, and player controlled graphics settings. Anything stronger is folklore.
+
+### BattleTech (Harebrained Schemes, 2018) and MechWarrior (Piranha Games: MechWarrior 5 and MechWarrior Online)
+
+This pair is the masterclass for Voidsworn's open problem: telling weapons and damage states apart at a glance, in the middle of a fight.
+
+Steal:
+- Colour is calibre. The series convention, stated plainly on the official MechWarrior Online forums: small, medium and large lasers are red, green and blue respectively, while PPCs are lightning blue. One colour per weapon class, held across decades of games, learnable once and readable at any range. Voidsworn's weapon set needs the same ruthlessness, and it extends the colour law already in the art direction pack: cyan means shields, so weapon colours get their own fixed assignments and no colour is ever reused across classes.
+- Shape and rhythm separate what colour cannot. Lasers are sustained beams whose duration is the signature. PPCs are a single crackling bolt with travel time. Autocannons are discrete tracer shells with recoil and a cadence you can count. Gauss is near invisible in flight and enormous on impact. Missile racks fire physical swarms whose visible count is the rack size, so an LRM 20 reads as twenty missiles because it is twenty missiles. A MechWarrior Online mod, BattleTech Feel: Weapon Visuals, catalogues the next level down: Clan versus Inner Sphere PPC trail widths and plasma ball sizes, distinct gauss trail colours, laser brightness scaling by class, missile smoke colours, and volley desync so a salvo ripples instead of firing as one blob. Five cheap axes (colour, trail, count, smoke, timing) differentiate a whole arsenal before a single new model is built.
+- The paper doll. BattleTech gives every mech eight separate locations (head, both arms, all three torso sections, both legs), each with armour first and structure underneath, drawn on a front and rear doll. Destroy a location and its remaining damage transfers inward toward the centre torso, so a mech dies from the outside in and the readout tells that story. Floating bars over the mech repeat the code at range: white squares for armour (first half front, second half rear), orange for structure, a red bar for heat, yellow for stability. For Voidsworn capitals, steal it whole: a per-section doll on the ship card, section state mirrored on the model (darkened plating, venting, turrets gone silent), and segmented bars over the hull in the same colour order. It converges with Empire at War's hardpoints and Endless Space 2's module damage, from the UI side.
+- Heat as visible pressure. The heat bar sits beside the damage bars, a full bar shuts the mech down, and structure damage prints in orange, so weapon choice is visibly a heat budget. Whatever Voidsworn's equivalent resource is (heat, flux, capacitor), it belongs in the same readout, not in a tooltip.
+- Weight framing. Mechs read heavy through low angles, kicked up dust and debris, and recoil scaled to weapon class. The translation for Voidsworn is impact flash, shake and debris scaled by weapon class and budgeted, so the biggest guns stay special instead of everything maxing out.
+
+Modding setups:
+- BattleTech has no official mod support and no Steam Workshop, and it scarcely mattered. The community stack is BTML (a Harmony based injector) plus ModTek, and content is JSON: mechs and chassis are JSON definition files, and each mod ships a mod.json whose only required field is a Name and whose Manifest lists typed entries (MechDef, ChassisDef and friends) pointing at the definition files the loader merges into the game data. Distribution is Nexus Mods and GitHub. Format doc: MOD_JSON_FORMAT.md in the ModTek repo: https://github.com/BattletechModders/ModTek
+- MechWarrior 5 takes the opposite route: an official Unreal Engine 4 mod editor, downloaded through the Epic Launcher under its own mod editor EULA. The documented workflow is substitution: open a game asset (the editor guide's worked example is a level 5 Gauss Rifle), Save To Mod to duplicate it into the mod's override folder, edit stats in the copy, and the editor loads the override automatically. Mods distribute through Steam Workshop, Epic and Nexus. Start at Piranha's modding resources page: https://mw5mercs.com/resources/2020/01/29-modding-resources
+- More study: the comprehensive BattleTech guide on Steam Community, for the paper doll, the eight location pools and damage transfer: https://steamcommunity.com/sharedfiles/filedetails/?id=1376736707 ; the laser and PPC colour thread on the official MWO forums: https://mwomercs.com/forums/topic/148045-different-color-for-er-versions-of-large-laser-and-ppc/ (a 2014 thread, but the convention it states is the one the games still ship); the Weapon Visuals mod page: https://www.nexusmods.com/mechwarrioronline/mods/63?tab=description
+- Licence and IP flags: ModTek and BTML are community tools, check each repo's licence before reusing code. The MW5 editor is free to download but governed by its EULA. BattleTech and MechWarrior are licensed IP (Microsoft and licensors): adopt the visual language, do not reuse names, designs or fiction.
+
+### One more: Starsector (Fractal Softworks, in development)
+
+Only one extra earns its place, for the purest version of the data driven lesson. Starsector's whole content layer is editable text: a ship is a CSV row plus three small files (.ship for the hull, .variant for the loadout, .skin for a reskin), a weapon is a CSV row plus .wpn and .proj files, hullmods and ship systems follow the same pattern, hull and engine styles are JSON, and even damage decals are a data sheet. The hull, variant, skin split is the same three layer separation Stellaris uses, proven at two person team scale, and the mod library runs to thousands of entries because of it. The tuning loop matters as much as the format: dev mode lets modders reload JSON and CSV live in the simulator (F8), so weapon feel can be iterated without a restart.
+
+Study it:
+- Modding hub, Starsector Wiki: https://starsector.fandom.com/wiki/Modding
+- Flags: the game is still in development and sold direct, not on Steam, so the scene lives on the developer's forum and this wiki; the wiki itself warns its mod articles are not guaranteed current and points to the official forum as canonical. Community libraries (MagicLib, which includes data driven projectile trail definitions) carry their own licences; check before any reuse.
+- Skipped, deliberately: Homeworld Remastered, X4: Foundations and Cosmoteer were candidates for this slot and were not verified to the standard of the rest of this section in this pass, so they are left out rather than padded in.
+
+## Start here: the seven highest value items, in order
 
 1. Sins 2 mod tools repo and dev journals. Budgets, texture channel layout, and combat geometry, all from the closest reference game. Read first, before the next hull or texture pass.
 2. Babylon.js Playground examples via the engine repo README. Working beam, shield, particle, and post-processing code in the actual engine, Apache-2.0.
 3. Homeworld 3 art director interview. One sitting, and it hands you the hull striping class code, the cheapest readability system on this list.
 4. webgl-noise. One MIT library that unlocks shield shimmer and nebula work in ShaderMaterial and Node Material alike.
 5. Kenney Space Kit plus Skyboxes Space. CC0 placeholders that unblock camera, effects, and background work in the first week, with zero licence risk.
+6. Endless Space 2 Battle Overview GDD (top up, section 4). One design document that hands over the Battle Director and the five phase battle structure: the cheapest route to battles that feel directed, not just rendered.
+7. Starsector modding hub (top up, section 4). The hull, variant, skin data split and the F8 live reload tuning loop, which is the closest model on this list for how Voidsworn's own data layer should behave.
