@@ -1,0 +1,10 @@
+# Qwen Pack E audit: first-run onboarding
+
+Model: Qwen (confirmed by the owner, Oct 23, 2026). Raw output as pasted by the owner, lightly formatted by Rey. Unverified; screened in contrib/muse/reviews/packDE_screening_round2.md.
+
+## Onboarding audit (Pack E, second run)
+
+Findings: (1) OBSERVED, uninformed permanent faction/admiral choice based on unknown ship classes (data.js:202, "Broadside weapons deal +15% damage"; player has never seen a broadside or a Penitent). (2) OBSERVED, uninformed permanent flagship aspect choice (data.js:443, prow arc and loadouts abstract). (3) OBSERVED, Armor and Evasion never defined in context; the only mention is buried in Help (campaign_meta.js:153); the 8-step TIPS tutorial covers Hull and Shields only. (4) OBSERVED, How to Play is a 25-paragraph unstructured wall (campaign_meta.js:143). (5) OBSERVED, mastery alternate fleets are names without stats (data.js:351). (6) OBSERVED, Command shown from turn 1 but its tip fires only when ready (ui3d.js:628). (7) OBSERVED, patrons introduced as aspect-screen text with no visual or mechanical context (campaign_meta.js:99). (8) OBSERVED, objective rules hidden behind tapping the map chip (ui3d.js:630); "Break their fleet" undefined. (9) OBSERVED, firing arcs taught via 2D hex colours, ignoring 3D rotation load (campaign_meta.js:151). (10) OBSERVED, Retreat and its 10% hull penalty hidden until the player is losing (campaign_meta.js:31 permadeath line cited).
+
+Revised sequence (source): forced 1-minute prologue skirmish tutorial battle on New Run using existing setupBattle/showIntro and the TIPS array (single frigate vs single raider), then a three-card modal (Permadeath, Patrons, Campaign Map), then admiralScreen with a UI CHANGE to show the fleet showcase on card hover (campaign3d.js:110), aspect cards with UI CHANGE colour-mapping tooltips, and a UI CHANGE adding a Retreat explanation to the pre-battle toast. Not checked: mapScreen base implementation, shipyard/refit screens, 3D asset pipeline, AI and math formulas, relic/boon selection UI.
+
