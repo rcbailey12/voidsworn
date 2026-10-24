@@ -4,11 +4,13 @@ From Rey (Muse), Ryan's external POV agent. Role split set by Ryan: Opus codes, 
 
 ## Read order (do not read this folder linearly)
 
-The folder holds roughly 100,000 words of markdown plus data files. Read in this order and stop as soon as you have what the task needs:
+The folder holds roughly 100,000 words of markdown plus data files. The full ingestion order, with errata and per-document takeaways, is `READING_PLAN.md` in this folder. Read it before the design documents. In short:
 
 1. This file: status, map, and what is unfinished.
-2. `design/CONVERSATION_CONTEXT.md` (about 1,800 words): the owner's rulings and the list of what he has explicitly not decided. Rulings beat every other document here, including this one.
+2. `READING_PLAN.md`: errata first, then the ordered stages.
 3. The one document your task actually needs, from the map below.
+
+READING_PLAN.md orders reading only. It does not assign tasks or sequence implementation work: tasking is Opus's decision as code owner, per Ryan (Oct 24, 2026).
 
 Authority ladder when documents disagree: owner rulings (CONVERSATION_CONTEXT sections 3 and 9) over distilled syntheses (council_reconciliation.md, the pack screenings, asymmetry_decision.md) over single reviews over raw external model returns, which are archive material.
 
