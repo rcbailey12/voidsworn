@@ -52,7 +52,7 @@ Do not take from it: the economics. The 69-session figure was the hand-built kit
 ### 6. The reference shelf (read per need, never linearly)
 
 - design/visual_expansion_research.md (about 11,900 words): techniques, tools, engine verdicts, the cinematic section.
-- design/GRAPHICS_REFERENCES.md (about 8,700 words): reference games, modding masterclasses, repos, kick-off assets, games actually like Voidsworn.
+- design/GRAPHICS_REFERENCES.md (about 11,200 words): reference games, modding masterclasses, repos, kick-off assets, games actually like Voidsworn, plus the Star Citizen and Squadron 42 graphics-and-effects top-up.
 - design/mod_scene_field_guide.md (about 10,300 words): wider mod scene mechanisms and grabbable assets, indexed by problem. Read its front section for the shared pattern; read the rest per problem.
 - design/tool_guides.md (about 14,300 words): Blender, Babylon, pipeline glue, AI meshes and local image models. Read per tool, per task.
 - design/graphics_craft.md (about 3,200 words): the craft layer (tonemapping, TAA and ghosting, VFX timing, readability, overdraw, accessibility with hard numbers).
