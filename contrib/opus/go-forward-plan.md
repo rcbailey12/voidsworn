@@ -35,8 +35,8 @@ Updated by the build session as phases move. A phase is done when its exit check
 | A0 Barge files into git | DONE Oct 24 | v14 files in hulls_hi/ and hulls/ (95f01b6, a687ef5). Side-by-side: docs/ship_pipeline/c19_example/a0_repo_vs_pc.webp. |
 | B0 Ground truth | DONE Oct 25 | Guard and check pack (0 FAIL). Mega sim: all legs exit 0, no exceptions; baseline in contrib/opus/compute/balance_reference.md; FINDINGS S1 to S7. |
 | A1 Barge upgrade | STEP 1 DONE, step 2 next | Ryan picked C plus some of B's junk (FINDINGS R12). Options in docs/ship_pipeline/c19_example/a1_options/, builder tools/blender/a1/barge_shapes.py (option_C is the base for step 2). |
-| B1 Fix what can eat a win | IN PROGRESS | Every listed fix done with a scripted check (contrib/opus/tools/b1_tests.js, 35 ok), onboarding 1 to 5 and enemy markers included. Left: PC smoke test and Ryan's playtest run. |
-| A1 step 2 | IN PROGRESS | v15 dressed barge (tools/blender/a1/barge_v15.py), studio renders and blob sweep. |
+| B1 Fix what can eat a win | IN PROGRESS | Every listed fix done with a scripted check (contrib/opus/tools/b1_tests.js, 35 ok), onboarding 1 to 5 and enemy markers included. PC smoke test PASSED (Oct 25, 0 errors; board shot docs/ship_pipeline/c19_example/v15/b1_enemy_markers_board.webp). Left: Ryan's playtest run. |
+| A1 step 2 | AT WEIGH-IN | v15 dressed barge (tools/blender/a1/barge_v15.py): studio sheet, 12-cell blob sweep (all clean) and in-game shots in docs/ship_pipeline/c19_example/v15/. In the game on Ryan's PC with 0 errors (not in git yet: waits for his yes). |
 | A2 to A5, B2 to B5 | NOT STARTED | |
 
 ## 1. What is decided
