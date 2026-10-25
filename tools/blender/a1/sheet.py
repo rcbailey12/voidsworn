@@ -12,7 +12,7 @@ try:
     F = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 30); f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 21)
 except Exception:
     F = f = ImageFont.load_default()
-W, H, LW, TH = 520, 300, 300, 46
+W, H, LW, TH = 520, 300, 400, 46
 img = Image.new('RGB', (LW + W * len(COLS), TH + H * len(ROWS)), (18, 18, 22)); d = ImageDraw.Draw(img)
 for c, (_, lab) in enumerate(COLS): d.text((LW + c * W + 12, 10), lab, fill=(220, 215, 205), font=f)
 for r, (key, name, note) in enumerate(ROWS):
@@ -27,7 +27,7 @@ for r, (key, name, note) in enumerate(ROWS):
         if os.path.exists(p): img.paste(Image.open(p).convert('RGB').resize((W, H)), (LW + c * W, y))
 img.save(os.path.join(out, 'a1_options_overview.webp'), quality=90)
 # silhouette test: side and top views as solid black shapes on white, the way they read at battle zoom
-SW, SH = 560, 320; sil = Image.new('RGB', (LW + SW * 2, TH + SH * len(ROWS)), (255, 255, 255)); d = ImageDraw.Draw(sil)
+SW, SH = 560, 320; LW = 400; sil = Image.new('RGB', (LW + SW * 2, TH + SH * len(ROWS)), (255, 255, 255)); d = ImageDraw.Draw(sil)
 for c, lab in enumerate(('Side silhouette', 'Top silhouette')): d.text((LW + c * SW + 12, 10), lab, fill=(30, 30, 30), font=f)
 for r, (key, name, _) in enumerate(ROWS):
     y = TH + r * SH; d.text((14, y + 20), name, fill=(20, 20, 20), font=F)

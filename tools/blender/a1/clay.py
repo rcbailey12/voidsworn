@@ -1,7 +1,7 @@
 # Clay renders for the A1 silhouette pick: one grey material, four views (3/4 above, side, front, 3/4 below).
 # usage: python3 clay.py out_prefix model1.obj [model2.obj ...]   (OBJ in the game frame: x length with the bow at -x, y up, z lateral)
 #    or: imported from a builder that has already filled the scene: clay.render_views(prefix)
-import sys, math, bpy
+import sys, os, math, bpy
 from mathutils import Vector
 
 def setup_scene():
@@ -39,7 +39,7 @@ def render_views(prefix, views=('q', 'side', 'front', 'below')):
     for o in sc.objects:
         if o.type == 'MESH':
             o.data.materials.clear(); o.data.materials.append(m)
-    mn, mx = bounds(); c = (mn + mx) / 2; L = max((mx - mn).x, (mx - mn).y, (mx - mn).z)
+    bpy.context.view_layer.update(); mn, mx = bounds(); c = (mn + mx) / 2; L = max((mx - mn).x, (mx - mn).y, (mx - mn).z)
     cam = bpy.data.objects.get('cam')
     if not cam:
         cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); sc.collection.objects.link(cam)
@@ -50,7 +50,10 @@ def render_views(prefix, views=('q', 'side', 'front', 'below')):
     for v in views:
         d, kind = V[v]; d = d.normalized(); cam.data.type = kind
         if kind == 'ORTHO':
-            cam.data.ortho_scale = L * (1.12 if v != 'front' else 0.75); cam.location = c + d * L * 3
+            ext = mx - mn
+            if v == 'front': cam.data.ortho_scale = max(ext.y * 1.25, ext.z * 1.25 * sc.render.resolution_x / sc.render.resolution_y)  # fit width and height
+            else: cam.data.ortho_scale = L * 1.12
+            cam.location = c + d * L * 3
         else:
             cam.data.lens = 50; cam.location = c + d * L * 2.05
         if v == 'top': cam.rotation_euler = (0, 0, 0)  # looking straight down: bow left, port up
@@ -62,5 +65,7 @@ def render_views(prefix, views=('q', 'side', 'front', 'below')):
 if __name__ == '__main__':
     a = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
     bpy.ops.wm.read_factory_settings(use_empty=True); setup_scene()
-    for p in a[1:]: import_obj(p)
+    for p in a[1:]:
+        for o in import_obj(p):
+            if os.environ.get('FLIP') == '1': o.rotation_euler.z += math.pi  # game files store the bow at +x; turn it to -x like the options
     print(render_views(a[0], views=('q', 'side', 'front', 'below', 'top')))
