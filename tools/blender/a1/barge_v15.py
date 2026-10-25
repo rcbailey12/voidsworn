@@ -36,10 +36,10 @@ def shell_shapes():
     for x, zt, wt, wb in ((-.200, ZC + .085, .050, .100), (-.130, .040, .050, .120), (.120, .046, .055, .125), (.300, .046, .055, .115), (.340, ZC + .085, .060, .090)):
         sup.append((x, B.mirror([(wt, zt), (wb, ZC + .078), (wb, ZC + .070)], zt + .002, ZC + .070)))
     sups = loft('superstructure', sup, bevel=0)
-    keel = []
+    belly = []
     for x, zb, wb_, wt_ in ((-.120, ZC - .140, .045, .095), (-.070, ZC - .155, .055, .110), (.180, ZC - .155, .055, .110), (.250, ZC - .130, .050, .090)):
-        keel.append((x, B.mirror([(wt_, ZC - .070), (wt_, ZC - .078), (wb_, zb)], ZC - .070, zb)))
-    ven = loft('ventral', keel, bevel=0)
+        belly.append((x, B.mirror([(wt_, ZC - .070), (wt_, ZC - .078), (wb_, zb)], ZC - .070, zb)))
+    ven = loft("ventral", belly, bevel=0)
     out = []
     for o, col in ((hull, None), (sups, RUST), (ven, RUST_DK)):
         hs_lib.PARTS.remove(o)  # the shell is kept apart from the kit (it is the surface the detail pass dresses)

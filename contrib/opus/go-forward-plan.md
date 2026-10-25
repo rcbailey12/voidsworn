@@ -34,7 +34,7 @@ Updated by the build session as phases move. A phase is done when its exit check
 |---|---|---|
 | A0 Barge files into git | DONE Oct 24 | v14 files in hulls_hi/ and hulls/ (95f01b6, a687ef5). Side-by-side: docs/ship_pipeline/c19_example/a0_repo_vs_pc.webp. |
 | B0 Ground truth | DONE Oct 25 | Guard and check pack (0 FAIL). Mega sim: all legs exit 0, no exceptions; baseline in contrib/opus/compute/balance_reference.md; FINDINGS S1 to S7. |
-| A1 Barge upgrade | DONE (shape and paint signed off, R16) | Final barge effects moved to A5 per R16. |
+| A1 Barge upgrade | DONE (shape and paint approved as steps, R13 and R14; final sign-off with its effects in A5, R16) | Final barge effects moved to A5 per R16. |
 | B1 Fix what can eat a win | IN PROGRESS | Every listed fix done with a scripted check (contrib/opus/tools/b1_tests.js, 35 ok), onboarding 1 to 5 and enemy markers included. PC smoke test PASSED (Oct 25, 0 errors; board shot docs/ship_pipeline/c19_example/v15/b1_enemy_markers_board.webp). Left: Ryan's playtest run. |
 | A1 step 2 | DONE Oct 25 | v15 dressed barge approved (FINDINGS R13). Builder tools/blender/a1/barge_v15.py; sheets in docs/ship_pipeline/c19_example/v15/; v15 game files in hulls_hi/ and hulls/. |
 | A1 step 3 | DONE Oct 25 | Paint approved (FINDINGS R14). Sheet docs/ship_pipeline/c19_example/v15/v15_paint_pass.webp; game files in git. |
@@ -95,7 +95,7 @@ Muse's work is the toolbox for both tracks. This is the map: what gets used wher
 
 | What | From | How it is used |
 |---|---|---|
-| Ship template as data: one file per ship listing parts, hardpoints, damage looks and detail levels, checked by a schema tool (AJV) in the .bat build | kit spec synthesis; batch 8 (D7, D12); tool guides part 3 | The core of the kit. Hardpoints carry a forward arc, so a backward gun cannot be built. Kept simpler than the full spec: no TypeScript codegen. |
+| Ship template as data: one file per ship listing parts, hardpoints, damage looks and detail levels, checked by a schema tool (AJV) in the .bat build (planned for A4, not built yet; the barge used its builder's automatic audit instead) | kit spec synthesis; batch 8 (D7, D12); tool guides part 3 | The core of the kit. Hardpoints carry a forward arc, so a backward gun cannot be built. Kept simpler than the full spec: no TypeScript codegen. |
 | Smooth hull lofting from cross-sections (loft v2) | ship_kit_upgrade.md; kit spec synthesis | Rebuilding the barge's hull wherever it reads as a boat, then other hulls. |
 | Faction silhouette grammars and the Corsair look | art_direction_rey.md | The brief for the barge's shape options and for every later ship. |
 | Approved-part protection: a read-only Blender parts library, linked into ship files, one change at a time, same-angle before/after renders | batch 6; batch 8 (D3, D4, D10) | Stops approved parts drifting between versions. The before/after renders double as your screenshots. |
@@ -138,7 +138,7 @@ Already in the game, so nothing new to add: thin instances for debris (fx3d.js:5
 | What | From | How it is used |
 |---|---|---|
 | Stable ids forever, renames handled by an alias table, the check pack run in every build | mod_scene_field_guide.md front section; the check pack | The save-brick fix in B1. The build stops on a hard FAIL. |
-| Three project skills: ship kit, screenshot verdict, playtest and balance | claude_skills.md | Written in B0, so every future session works the same way. |
+| Three project skills: ship kit, screenshot verdict, playtest and balance | claude_skills.md | Written Oct 25 in .claude/skills/ (late: the plan said B0, and Muse's audit caught that they were missing, FINDINGS X15). |
 | Onboarding fixes 1 to 5 | onboarding synthesis | B1. Fix 10 is already in the game. |
 | Sim calibration method (step-by-step tuning with sim logging) | difficulty dial synthesis | Tuning the battle-size ramp in B2. The 5-notch dial itself waits. |
 | Pacing fixes: no dead air, faster enemy turns, coast and thrust ghost previews, fading hulks | batch 5 | B2. |
@@ -257,7 +257,7 @@ If Babylon stays, the question closes for this project phase.
 
 ### A4. Kit rollout (ship 2 onward)
 
-- **Entry:** A1 signed off and A3 decided.
+- **Entry:** A1 signed off and A3 decided; the kit decisions in FINDINGS K1 recorded.
 - **Order:**
   1. Corsairs first, reusing the barge's grammar right away: C13s, C14s, C15s, C16s.
   2. Then one faction at a time, flagship first (it proves that faction's look), then its line from frigate up:

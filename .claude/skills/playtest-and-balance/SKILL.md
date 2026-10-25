@@ -1,0 +1,29 @@
+---
+name: playtest-and-balance
+description: Use after any Voidsworn rules, balance, pacing or content change (battle.js, core.js, data.js, campaign files, sim3d.js). Runs the check pack, the unit checks and the sims, compares against the balance baseline, and reports only the deltas with the mode that produced them. Also covers running heavy jobs on Ryan's PC.
+---
+
+# Playtest and balance
+
+## Fast checks (cloud, every change)
+1. `node contrib/opus/tools/checkpack/checks.js` (or `RUN_CHECKS.bat` on the PC): must stay 0 FAIL.
+2. `node contrib/opus/tools/b1_tests.js`: all ok (save repair, reward chain, capture, retreat and more).
+3. `python3 build.py test` builds; `grep -c` for em dashes is 0 in what you wrote.
+
+## Sims (`node sim3d.js <mode>`)
+- `campaign`: win rate, rounds, hull left, ships lost and waits per sector and kind. Use the `real` timing model for waits (FINDINGS S8); `PACE_OLD=1` re-measures the old pace.
+- `bossmatrix N` (sector 1 unless `BS=2` or `BS=3`), `archmatrix`, `fmatrix`, `matrix`, `shipcount`, `fuzz N` (crash test; must show 0 exceptions).
+- Long runs crawl in the cloud when helpers share the machine: run `fuzz 2000` and big matrices on the PC (below).
+- Baseline: `contrib/opus/compute/balance_reference.md` and its CSVs (rebuild CSVs with `python3 contrib/opus/tools/mega_report.py`).
+
+## Report
+Only deltas against the baseline, in a table: cell, before, after, the mode and sample size. Flag exit criteria: no admiral below 50% or above 90% against a sector 1 flagship; waits under 15 s per round (target 12); no crashes. Update FINDINGS rows (evidence, status) and the plan's phase status. Rules and outcomes must not change when only presentation time changes.
+
+## Playtest
+Ryan's own run is the exit for B1 and B2. Give him a short list of what to feel for, and record what he says in FINDINGS.
+
+## PC runner (heavy jobs)
+- `Downloads\voidsworn_test` with `watcher.bat` running (if it is not, start it with computer control: Explorer, Downloads, voidsworn_test, double-click watcher.bat).
+- Copy changed game files into `voidsworn_test\build\` with device_commit_files. Write the job as `build\job.bat` (CRLF, written by Python; it runs once from `build\`, logs to `..\smoke_log.txt`; `PYEXE` comes from python_path.txt; node is `voidsworn_test\node\node.exe`).
+- Never write job.bat while a run is going. Stage every file from a fresh staging folder (re-using a staged path can commit a stale copy), stage `build\job.bat` back and compare byte for byte, then send `run.request` in a separate, later call.
+- Read results by staging `smoke_log.txt` and the output files back.
