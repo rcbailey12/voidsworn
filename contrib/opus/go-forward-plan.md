@@ -38,7 +38,7 @@ Updated by the build session as phases move. A phase is done when its exit check
 | B1 Fix what can eat a win | IN PROGRESS | Every listed fix done with a scripted check (contrib/opus/tools/b1_tests.js, 35 ok), onboarding 1 to 5 and enemy markers included. PC smoke test PASSED (Oct 25, 0 errors; board shot docs/ship_pipeline/c19_example/v15/b1_enemy_markers_board.webp). Left: Ryan's playtest run. |
 | A1 step 2 | DONE Oct 25 | v15 dressed barge approved (FINDINGS R13). Builder tools/blender/a1/barge_v15.py; sheets in docs/ship_pipeline/c19_example/v15/; v15 game files in hulls_hi/ and hulls/. |
 | A1 step 3 | DONE Oct 25 | Paint approved (FINDINGS R14). Sheet docs/ship_pipeline/c19_example/v15/v15_paint_pass.webp; game files in git. |
-| A1 step 4 | IN PROGRESS | Corsair effects in code (2485748, 2891037: dirty engines, ragged muzzles, rust and donor panels on damage and death); PC capture with corsairfx.py running. |
+| A1 step 4 | AT WEIGH-IN | Corsair effects in (dirty engines, ragged muzzles, rust and stolen panels on damage, donor sections on death). Found and fixed B-16 on the way (ships vanished on first damage). Sheet docs/ship_pipeline/c19_example/v15/v15_effects.webp. Smoke test passes. |
 | A1 step 5 | DONE Oct 25 | Source of truth: tools/blender/a1/barge_v15.py plus glTF exports in assets/ships/C19_51/ (README has the chain). Automatic checks in the build: no floating parts, no backward guns, exports reimport clean (all PASS). |
 | A2 Six-ship engine test | IN PROGRESS | Godot OK given (R15). Portable Godot install job queued on the PC. |
 | A3 to A5, B2 to B5 | NOT STARTED | |
