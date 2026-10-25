@@ -38,6 +38,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | R13 | Barge v15 shape and kit approved (A1 step 2, Oct 25 morning): "Yes, go to paint". Step 3 (paint and material texture) is next; the plating reading faint and the plain top surface in-game are its targets. |
 | R14 | Barge paint approved (A1 step 3, Oct 25): bolted stolen panels in rust, Hegemony grey, bare steel and bone; "Yes, on to effects". Painted patch cells were tried and dropped (they read as warship dazzle camouflage, a naval tell). |
 | R15 | Oct 25, 09:06: Ryan OK'd installing Godot (portable) for the A2 engine test, which starts alongside the end of A1. Ryan, 09:07: follow the entire plan from the handoff and the GitHub plans, stopping only at the weigh-in points. |
+| R16 | Oct 25: barge shape and paint signed off; barge effects "need work": damage should be holes with streaming parts, fire and other damage, not orange lines; weapons and engine trails look basic next to BattleTech, Sins of a Solar Empire and Rogue Trader; "more realistic and cinematic". Ryan picked: put that bar into the A2 engine test (both engines, same cinematic spec), and do the barge's final effects in the effects pass (A5) in the winning engine. Today's barge effects stay in the game until then. |
 
 ## Premises and rulings checked against the game
 

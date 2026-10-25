@@ -35,23 +35,38 @@ The barge's painted files come from Blender, whose glTF export already turns z-u
 - Tone mapping ACES in both. Exposure 1.0. Bloom: on, threshold about 0.8, moderate.
 - Shadows: the key light casts shadows in both, one cascade set covering the formation, comparable resolution (2048 or 4096).
 
-## Effects (built fresh, same spec, equal time box of about the same effort in each engine)
+## Effects (cinematic bar, built fresh, same spec, equal time box in each engine)
 
-A loop every 2.0 seconds. Each ship, staggered by 0.3 s in the order above:
-1. **Main weapon fire:** three bolts from the bow toward a point 60 units ahead and 10 units out to the side, faction colour (table below), each bolt a bright glowing streak about 6 units long, travelling 120 units per second, with a muzzle flash at the bow (0.1 s).
-2. **Shield hit:** at 0.6 s into the ship's slot, a hit on the ship's port side. Voidsworn, Hegemony, Corsair and Ithar show a shield: a partial ellipsoid bubble around the ship flashing in the faction shield colour, fading over 0.5 s, brightest at the impact point. Chorus and Deathless have no shields: they show a hull hit instead (orange sparks and a small fire puff on the hull, 0.6 s).
-3. **Explosion:** at 1.2 s into the slot, a fireball 8 units across at a point 12 units off the ship's starboard side: a bright core, rolling flame, 20 to 40 sparks, a smoke puff that outlives it (about 1.5 s total).
+Ryan, Oct 25, on the first barge effects: "The cracks in the ship don't make sense, it's just orange lines... It'd be like holes with streaming parts, fire, other damage. Not like someone just welded it. The weapon effects look pretty basic still, especially compared to our references of BattleTech, Sins of a Solar Empire and Rogue Trader. Same with engine trail. It should feel more realistic and cinematic." So the effect set in this test is built to that bar in both engines, and the result shows which engine gets closer. Grammar to follow (from contrib/muse/design/GRAPHICS_REFERENCES.md, sections on Sins of a Solar Empire II, BattleTech and MechWarrior, Rogue Trader and the Star Citizen damage notes):
+- weapons read by rate, trail, count, smoke and timing, not only colour; volleys ripple (desynced), never fire as one blob;
+- impact flash, debris and shake scale with weapon weight; the big guns stay special;
+- damage is staged on the hull (scorch, then torn holes) with venting, sparks and fire at the breach, and parts that come off leave torn edges with squibs, never a clean swap;
+- destroyed ships leave a drifting wreck with fires and debris, not a vanishing act;
+- one key light, fixed exposure; effects add light (bloom, emissive, light flashes on the hull), they do not change exposure.
+
+The ships drift forward slowly (along +x at 3 units per second, looping over 40 units with a 2-second fade at the loop point) so engine trails have something to trail behind.
+
+Per ship, a 4-second loop staggered by 0.5 s in the layout order:
+
+1. **Engines (always on).** A hot core at each nozzle (white-yellow centre, faction-tinted edge), a turbulent plume about 1.5 ship-widths long that flickers, and a long fading exhaust trail behind the ship (about 60 units, thinning and cooling in colour as it fades, slightly wavering). Corsair: sputters, coughs soot, uneven.
+2. **Broadside macro-cannons (Rogue Trader style), at 0.0 s:** four guns along the port side ripple-fire 80 ms apart. Each: a big muzzle blast (flash, a flame tongue, a smoke ring that drifts and lingers about 2 s), a bright shell tracer travelling 160 units per second toward a point 70 units off the port side, and at impact a flash, sparks and a small debris spray. Faction tint on flash and tracer.
+3. **Lance or beam (Sins style), at 1.5 s:** a thick beam from the bow to a point 80 units ahead, 0.7 s: white-hot core, faction-coloured glow, a charge-up flare at the emitter (0.25 s before), a heat shimmer or flicker along it, and at the far end a bright impact flare with a spark fountain.
+4. **Shield or hull hit, at 2.4 s:** the ship is struck on the starboard side by an incoming shell (draw the shell arriving). Shielded factions (Voidsworn, Hegemony, Corsair, Ithar): a partial shield bubble ripples out from the hit point in the faction shield colour with a bright impact core, fading over 0.6 s; Corsair's shield flickers and is patchy. Chorus and Deathless: a hull hit, a flash, sparks and a burst of debris.
+5. **Hull breach (persistent, from the start):** every ship carries one breach on its upper port flank, about 1/10 of the ship's length across: a dark scorched, torn hole (a decal plus a dark recess) with jagged glowing-hot edges (not lines across the hull), venting gas streaming out (a pale jet that wavers and puffs), small debris tumbling out of it, licking fire, intermittent spark showers, and a small secondary explosion every few seconds.
+6. **Destruction event (once per 12 s, scene-wide, not per ship):** a seventh ship, a copy of the Hegemony hull at 0.6 scale placed at (0, 25, 0) above the formation, explodes: a blinding flash (lights the nearby hulls for a moment), an expanding shockwave ring, a rolling fireball with dark smoke, 3 to 5 large hull chunks (pieces of its own mesh, cut with simple planes, or prepared chunk meshes) tumbling apart with burning edges and squibs along the break, a spray of small debris and embers, and a burning wreck chunk that drifts on. It reappears whole 2 s before the next event (fade in).
 
 Faction colours (linear RGB), from the game's ships3d.js FAC3D:
 
-| Faction | Weapon bolt | Shield |
-|---|---|---|
-| Voidsworn | (1.0, 0.45, 0.15) | (1.0, 0.46, 0.16) |
-| Hegemony | (0.55, 0.82, 1.0) | (0.38, 0.68, 1.0) |
-| Corsair | (0.95, 0.22, 0.10) | (0.85, 0.16, 0.10) |
-| Chorus | (0.85, 0.90, 0.30) | none (hull hit) |
-| Ithar | (0.75, 1.0, 0.88) | (0.72, 1.0, 0.86) |
-| Deathless | (0.20, 1.0, 0.38) | none (hull hit) |
+| Faction | Weapon (bolt, beam, flash tint) | Shield | Engine |
+|---|---|---|---|
+| Voidsworn | (1.0, 0.45, 0.15) | (1.0, 0.46, 0.16) | (1.0, 0.50, 0.16) |
+| Hegemony | (0.55, 0.82, 1.0) | (0.38, 0.68, 1.0) | (0.45, 0.72, 1.0) |
+| Corsair | (0.95, 0.22, 0.10) | (0.85, 0.16, 0.10) | (1.0, 0.38, 0.16) |
+| Chorus | (0.85, 0.90, 0.30) | none (hull hit) | (0.80, 0.90, 0.28) |
+| Ithar | (0.75, 1.0, 0.88) | (0.72, 1.0, 0.86) | (0.62, 1.0, 0.84) |
+| Deathless | (0.20, 1.0, 0.38) | none (hull hit) | (0.15, 1.0, 0.35) |
+
+Equal time box: each engine's build gets the same effort for effects. Stop polishing when the list above is covered at a good level; the comparison is the point, not perfection in one engine.
 
 ## Cameras (identical poses in both, so screenshots line up for the blind pick)
 
@@ -60,7 +75,7 @@ Vertical field of view 40 degrees in both.
 - **Battle camera path** (benchmark): a 20-second orbit around the formation centre (0, 0, 0). Radius 150, height 70, starting at azimuth 200 degrees (measured from +x toward +z), turning 120 degrees over the 20 s at an even speed, always looking at (0, -5, 0).
 - **Close-up** (stills only): camera at (+20, 14, +58) looking at the Corsair barge centre (+45, 0, +30).
 
-Screenshots: battle camera at t = 5.0 s and t = 12.0 s, the close-up after 1.3 s of the effect loop (mid-explosion). Use the same frame times in both engines, driven by a fixed clock (not wall time) for the stills.
+Screenshots (fixed clock, all effects on, t = 0 when the scene starts): battle camera at t = 5.0 s and t = 12.0 s (the destruction event peaks at about 12.4 s, so t = 12.0 catches its flash starting); the barge close-up at t = 2.0 s (its broadside smoke and tracers, and its breach); a breach close-up of the Hegemony ship from (12, 10, 52) looking at (0, 2, 30) at t = 3.0 s; and the destruction event from the battle camera pose at t = 12.6 s. Use the same frame times in both engines, driven by a fixed clock (not wall time) for the stills.
 
 ## What each build must measure and write
 

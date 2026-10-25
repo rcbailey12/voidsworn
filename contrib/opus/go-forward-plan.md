@@ -34,11 +34,11 @@ Updated by the build session as phases move. A phase is done when its exit check
 |---|---|---|
 | A0 Barge files into git | DONE Oct 24 | v14 files in hulls_hi/ and hulls/ (95f01b6, a687ef5). Side-by-side: docs/ship_pipeline/c19_example/a0_repo_vs_pc.webp. |
 | B0 Ground truth | DONE Oct 25 | Guard and check pack (0 FAIL). Mega sim: all legs exit 0, no exceptions; baseline in contrib/opus/compute/balance_reference.md; FINDINGS S1 to S7. |
-| A1 Barge upgrade | STEPS 1 TO 3 AND 5 DONE | Shape C plus B junk (R12), dressing (R13), paint (R14), source of truth. Step 4 (effects) in progress; then Ryan's sign-off ends A1. |
+| A1 Barge upgrade | DONE (shape and paint signed off, R16) | Final barge effects moved to A5 per R16. |
 | B1 Fix what can eat a win | IN PROGRESS | Every listed fix done with a scripted check (contrib/opus/tools/b1_tests.js, 35 ok), onboarding 1 to 5 and enemy markers included. PC smoke test PASSED (Oct 25, 0 errors; board shot docs/ship_pipeline/c19_example/v15/b1_enemy_markers_board.webp). Left: Ryan's playtest run. |
 | A1 step 2 | DONE Oct 25 | v15 dressed barge approved (FINDINGS R13). Builder tools/blender/a1/barge_v15.py; sheets in docs/ship_pipeline/c19_example/v15/; v15 game files in hulls_hi/ and hulls/. |
 | A1 step 3 | DONE Oct 25 | Paint approved (FINDINGS R14). Sheet docs/ship_pipeline/c19_example/v15/v15_paint_pass.webp; game files in git. |
-| A1 step 4 | AT WEIGH-IN | Corsair effects in (dirty engines, ragged muzzles, rust and stolen panels on damage, donor sections on death). Found and fixed B-16 on the way (ships vanished on first damage). Sheet docs/ship_pipeline/c19_example/v15/v15_effects.webp. Smoke test passes. |
+| A1 step 4 | PARTLY DONE, REST MOVED TO A5 | Interim Corsair effects stay in the game (and B-16 fixed). Ryan's bar (R16): cinematic damage, weapons and trails like BattleTech, Sins and Rogue Trader. That bar goes into the A2 test now and into A5 in the winning engine. |
 | A1 step 5 | DONE Oct 25 | Source of truth: tools/blender/a1/barge_v15.py plus glTF exports in assets/ships/C19_51/ (README has the chain). Automatic checks in the build: no floating parts, no backward guns, exports reimport clean (all PASS). |
 | A2 Six-ship engine test | IN PROGRESS | Godot OK given (R15). Portable Godot install job queued on the PC. |
 | A3 to A5, B2 to B5 | NOT STARTED | |
