@@ -39,7 +39,14 @@ function titleScreen(){
   </div></div>`);
 }
 ACT.title=()=>titleScreen();
-ACT.continueRun=()=>{ RUN=JSON.parse(JSON.stringify(SAVED_RUN)); mapScreen(); };
+ACT.continueRun=()=>{ RUN=JSON.parse(JSON.stringify(SAVED_RUN));
+  try{ ensureFlagship(); mapScreen(); }catch(e){ console.error('Continue failed',e); RUN=null; // B1: a save the game can no longer open gets a way out instead of a dead title screen
+    modal(`<h2>This run could not be opened</h2><p class="muted">Something in the save no longer matches this version of the game. A copy of the save is kept on this device. Your progression and unlocks are safe either way.</p>
+    <div class="row"><button class="primary" data-act="discardBrokenRun">Start fresh (keep a copy)</button><button data-act="closeModal">Back</button></div>`); return; }
+  const rep=(RUN._repairs||[]).length, lost=RUN._shipsDropped||0;
+  if(rep){ toast(`Your save came from an older version: ${lost?`${lost} ship${lost>1?'s':''} and `:''}${rep-lost>0?`${rep-lost} item${rep-lost>1?'s':''} `:''}no longer in the game ${lost||rep>1?'were':'was'} removed. A copy of the old save is kept.`);
+    delete RUN._repairs; delete RUN._shipsDropped; saveRun(); } };
+ACT.discardBrokenRun=()=>{ try{ localStorage.setItem(STORE_KEY+'.repaired',JSON.stringify({meta:META,run:SAVED_RUN})); }catch(e){} SAVED_RUN=null; RUN=null; closeModal(); Persist.save(); titleScreen(); };
 ACT.newRunScreen=()=>{
   if(SAVED_RUN){ modal(`<h2>Abandon the current run?</h2><p class="muted">Starting over ends your saved run. Your best result so far is kept either way.</p>
     <div class="row"><button class="primary" data-act="abandonRun">Abandon and start over</button><button data-act="closeModal">Keep it</button></div>`); return; }

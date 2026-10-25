@@ -45,7 +45,8 @@ const STORE_KEY='voidsworn.v1';
 const SAVE_VERSION=2;
 function defaultMeta(){return {v:SAVE_VERSION,renown:0,unlocked:{},admirals:{vex:true},fallen:[],stats:{runs:0,best:0,wins:0},opts:{},tel:[],updated:0,mastery:{},favour:{},variants:{},heatBest:{}};}
 // older saves get the fields newer code expects
-function migrateMeta(m){ if(!m.v||m.v<2){ m.opts=m.opts||{}; m.tel=m.tel||[]; m.v=2; } m.mastery=m.mastery||{}; m.favour=m.favour||{}; m.variants=m.variants||{}; m.heatBest=m.heatBest||{};
+function migrateMeta(m){ { const d=defaultMeta(); for(const k in d) if(k!=='v'&&m[k]==null) m[k]=d[k]; if(typeof m.stats!=='object'||Array.isArray(m.stats)) m.stats=d.stats; for(const k in d.stats) if(typeof m.stats[k]!=='number') m.stats[k]=d.stats[k]||0; } // B1: a null stats or opts in an old save crashed the title screen
+  if(!m.v||m.v<2){ m.opts=m.opts||{}; m.tel=m.tel||[]; m.v=2; } m.mastery=m.mastery||{}; m.favour=m.favour||{}; m.variants=m.variants||{}; m.heatBest=m.heatBest||{};
   // first load after progression arrived: credit the runs already played (from the run log) to mastery and favour
   if(!m.backfilled){ m.backfilled=1; try{ let adm=null; for(const e of (m.tel||[])){
       if(e.ev==='run_start'&&e.admiral) adm=e.admiral;
@@ -64,6 +65,27 @@ function normalizeRun(r){ if(!r||typeof r!=='object') return r; const d=runDefau
   for(const k of ['relics','inventory','fleet','fallen','boons','patrons','heat','reserve','seenEvents','regionsUsed','condsUsed']) if(!Array.isArray(r[k])) r[k]=[];
   if(typeof r.stats!=='object'||Array.isArray(r.stats)) r.stats={}; for(const k in d.stats) if(typeof r.stats[k]!=='number') r.stats[k]=0;
   r.fleet=r.fleet.filter(s=>s&&typeof s==='object'); for(const s of r.fleet){ if(!Array.isArray(s.mods)) s.mods=[]; if(!s.mk) s.mk=1; if(!s.cap||typeof s.cap!=='object') s.cap={fac:r.fac,name:'Captain',xp:0,rank:0,perks:[],pending:0}; if(!Array.isArray(s.cap.perks)) s.cap.perks=[]; }
+  return repairRunIds(r); }
+// B1 (save-brick class): every id a saved run points at is checked against today's tables. A renamed or removed id is dropped
+// or reset to a safe default instead of crashing the map, the fleet screen or the run summary. Each repair is listed in r._repairs
+// so the player is told on Continue, and a dropped ship keeps a raw copy of the old save (STORE_KEY+'.repaired').
+function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const rep=[], has=(T,k)=>typeof T!=='undefined'&&k!=null&&Object.prototype.hasOwnProperty.call(T,k);
+  const keep=(arr,T,kind,get)=>arr.filter(x=>{ const id=get?get(x):x; if(has(T,id)) return true; unknownId(kind,id); rep.push(kind+' '+String(id).slice(0,40)); return false; });
+  if(!has(FACTIONS,r.fac)){ rep.push('faction '+r.fac); r.fac='voidsworn'; }
+  if(!has(ADMIRALS,r.admiral)){ const a=Object.keys(ADMIRALS).find(k=>(ADMIRALS[k].fac||'voidsworn')===r.fac)||'vex'; rep.push('admiral '+String(r.admiral).slice(0,40)); unknownId('admiral',r.admiral); r.admiral=a; }
+  if(r.foes!=null&&!Array.isArray(r.foes)) r.foes=null; if(Array.isArray(r.foes)&&r.foes.some(f=>!has(FACTIONS,f))){ rep.push('sector foes'); r.foes=null; }
+  r.relics=keep(r.relics,RELICS,'relic'); r.inventory=keep(r.inventory,MODULES,'refit'); r.heat=keep(r.heat,HEAT,'heat');
+  r.boons=keep(r.boons.filter(b=>b&&typeof b==='object'),BOONS,'boon',b=>b.id); r.patrons=keep(r.patrons,PATRONS,'patron');
+  if(r.aspect!=null&&!has(ASPECTS,r.aspect)){ rep.push('aspect '+r.aspect); unknownId('aspect',r.aspect); r.aspect=null; }
+  if(r.giftBoon!=null&&!has(BOONS,r.giftBoon)){ unknownId('boon',r.giftBoon); r.giftBoon=null; }
+  const capFix=c=>{ if(!c||typeof c!=='object') return {fac:r.fac,name:'Captain',xp:0,rank:0,perks:[],pending:0}; if(typeof c.name!=='string'||!c.name.trim()) c.name='Captain';
+    if(!Array.isArray(c.perks)) c.perks=[]; c.perks=keep(c.perks,PERKS,'perk'); if(typeof c.xp!=='number') c.xp=0; if(typeof c.rank!=='number') c.rank=0; if(typeof c.pending!=='number') c.pending=0; if(!c.fac) c.fac=r.fac; return c; };
+  const before=r.fleet.length; r.fleet=keep(r.fleet,HULLS,'ship hull',s=>s.tpl);
+  for(const s of r.fleet){ s.cap=capFix(s.cap); s.mods=keep(s.mods,MODULES,'refit'); if(typeof s.name!=='string') s.name=HULLS[s.tpl].n; if(typeof s.hp!=='number'||!(s.hp>0)) s.hp=1; }
+  r.reserve=r.reserve.filter(x=>x&&typeof x==='object').map(x=>(x.cap=capFix(x.cap),x)); r.fallen=r.fallen.filter(f=>f&&typeof f==='object'&&typeof f.name==='string');
+  if(r.flagUid!=null&&!r.fleet.some(s=>s.uid===r.flagUid)) r.flagUid=null;
+  if(r.fleet.length<before) r._shipsDropped=(r._shipsDropped||0)+(before-r.fleet.length);
+  if(rep.length) r._repairs=(Array.isArray(r._repairs)?r._repairs:[]).concat(rep).slice(-20);
   return r; }
 // v53: a save is only trusted when its run has a fleet array and a map, and its meta is a plain object with the expected containers
 function saneMeta(m){ if(!m||typeof m!=='object'||Array.isArray(m)) return false; for(const k of ['unlocked','admirals','stats','opts','mastery','favour','variants','heatBest']) if(m[k]!=null&&(typeof m[k]!=='object'||Array.isArray(m[k]))) return false; for(const k of ['tel','fallen']) if(m[k]!=null&&!Array.isArray(m[k])) return false; return m.renown==null||typeof m.renown==='number'; }
@@ -80,7 +102,8 @@ const Persist = {
     if(s&&!saneSave(o)){ try{ const b=localStorage.getItem(STORE_KEY+'.bak'), ob=b?JSON.parse(b):null; if(saneSave(ob)){ o=ob; this.recovered=true; } }catch(e){} } // v53: a save that parses but is malformed (fleet not an array, broken meta) also falls back
     if(o&&typeof o==='object'&&!saneSave(o)){ if(!saneRun(o.run)) o.run=null; if(o.meta!=null&&!saneMeta(o.meta)) o.meta=null; } // no good backup either: keep whichever half is sound
     try{ if(o&&typeof o==='object'){
-      if(o.meta){ META=migrateMeta(Object.assign(defaultMeta(),o.meta)); if(typeof mergeLocalTel==='function') mergeLocalTel(); } SAVED_RUN=migrateRun((o.run&&!o.run.none)?o.run:null); } }catch(e){} },
+      if(o.meta){ META=migrateMeta(Object.assign(defaultMeta(),o.meta)); if(typeof mergeLocalTel==='function') mergeLocalTel(); } SAVED_RUN=migrateRun((o.run&&!o.run.none)?o.run:null);
+      if(SAVED_RUN&&SAVED_RUN._repairs&&s){ try{ if(!localStorage.getItem(STORE_KEY+'.repaired')) localStorage.setItem(STORE_KEY+'.repaired',s); }catch(e){} } } }catch(e){ try{ if(s&&!localStorage.getItem(STORE_KEY+'.repaired')) localStorage.setItem(STORE_KEY+'.repaired',s); }catch(_){} console.warn('Save could not be loaded; raw copy kept as '+STORE_KEY+'.repaired',e); } }, // B1: an old save that needed repairs, or failed to load, is kept raw, never silently lost
   saveLocal(){ const data=JSON.stringify({meta:META, run:SAVED_RUN});
     try{ const prev=localStorage.getItem(STORE_KEY); if(prev&&prev!==data){ try{ JSON.parse(prev); localStorage.setItem(STORE_KEY+'.bak',prev); }catch(e){} } }catch(e){} // v41: keep the last good save one step behind
     try{ localStorage.setItem(STORE_KEY, data); this.failed=false; }
