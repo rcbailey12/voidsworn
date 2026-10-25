@@ -102,6 +102,18 @@ The six-ship benchmark is a light scene, so each build also has a stress mode (`
 - Report avg, p99 and max frame time; the worst 1% matters more than the average (it is the stutter you feel).
 Runs on the PC at 2560x1440 and 3840x2160 for each renderer.
 
+## Ceiling round (added Oct 25, Ryan: "should we do anything to scale up now, especially as we compare engines")
+
+At 24 ships both engines have room to spare, so the differences show at the top end. Two extra modes, measured like the stress run (JSON `"mode"` as named):
+- **Ship sweep (`--ships N`, modes `ships48`, `ships96`):** the stress layout extended with more rows of 0.6-scale copies (rows every 30 units in z, alternating sides of the formation, six per row, same x positions), all running the full loop and breach, destruction every 4 s. Orbit radius grows with the formation (radius = 150 + 40 per extra row pair, height = radius x 0.45). Report where each renderer stays under 16.7 ms for the worst 1%.
+- **Rich effects (`--rich`, mode `rich`, on the 24-ship stress layout):** what extra headroom would buy:
+  - real dynamic lights from every muzzle flash, impact, breach fire, beam and explosion, lighting nearby hulls (aim for 40+ moving lights at once; if the engine cannot, say how many it manages and how);
+  - volumetric smoke or gas for breach venting, smoke rings and the destruction fireball (true volume, or the engine's closest built-in);
+  - soft particles (effects fade where they meet hull geometry instead of hard-clipping);
+  - breach holes with real depth (geometry or parallax, not only a decal).
+  Stills in rich mode at the same five times and poses, written as `rich_<name>.png`, so Ryan gets a second "max quality" side-by-side.
+Equal time box again. Note in the README what each feature needed (built-in, plugin, hand-written) and anything the engine could not do.
+
 ## Folders
 
 - `contrib/opus/enginetest/godot/`: the Godot project (project.godot, scene, scripts). Run line: `Godot_..._console.exe --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench out.json --seconds 20` (plus `--shots dir` for stills).
