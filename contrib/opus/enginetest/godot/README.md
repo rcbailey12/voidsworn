@@ -8,12 +8,15 @@ The scene from `../SPEC.md`, built in Godot 4.7.2 (GDScript only, no C#): six fa
 - `main.gd`: loads the ships at runtime, finds where the effects sit on each hull, sets up the sky, lights and cameras, the scene options, the shader warm-up, and the benchmark and stills modes.
 - `fx.gd`: every effect (engines, broadside, beam, incoming shell and hit, hull breach, the destruction event), the ship drift, the rich-mode extras and the shake.
 - `physics.gd`: Jolt rigid bodies for debris and destruction chunks (max mode).
-- `board.gd`: the game slice (`--board`, in progress).
+- `board.gd`: the game slice (`--board`).
+- `env.gd`: the asteroid field, big rocks and dust haze (max and board modes).
+- `export_presets.cfg`, `pc/export_windows.ps1`: the standalone Windows build.
 
 ## What it reads
 
 - Ships from `../assets/` (the enginetest folder's `assets`): `V1b_r_23.glb`, `H4_11.glb`, `C19_51_shell.glb` plus `C19_51_kit.glb`, `B16_23.glb`, `I8_37.glb`, `D22_23.glb`. On the PC these sit in `Downloads\voidsworn_test\enginetest\assets\` (the barge as the painted pair, copied under those two names).
 - The sky from `../starfield_4k.png`; in max and board modes `../assets/env/sky_deadstar_8k.png` when it exists.
+- In max and board modes, `../assets/env/asteroids.json` and `env/rocks/*.glb` (seed 7 placements shared with Babylon): 200 field rocks instanced in one MultiMesh per rock mesh and 6 big rocks, each tumbling about its own axis, with sphere colliders so the debris bounces off them; a thin dust haze in Godot's volumetric fog (lit by every light in it; plain distance fog in Compatibility). Missing files: no rocks, no haze.
 - `--assets dir` points somewhere else if needed.
 
 ## Running it
@@ -33,7 +36,7 @@ User options go after the lone `--`:
 | `--max` | The six-ship scene at its best: rich effects (below), SSAO, SSIL, SSR, SDFGI, TAA, a tiling detail normal layer on the hulls, soft (PCSS) key shadows in an 8192 atlas, Jolt rigid-body debris and chunks, depth of field on the close-up cameras, weight-scaled shake on the battle camera, and colour grading. Stills are `max_<name>.png` plus one hero close-up per ship (`hero_<code>.png`). JSON `"mode": "max"`. |
 | `--rich` | The rich effects alone (no lighting extras, no physics): a light per gun and per impact, volumetric fog for the breach gas, smoke rings and fireball, soft particles, parallax breach holes. |
 | `--physics` | The Jolt debris and chunks alone. |
-| `--board` | The game slice (in progress). |
+| `--board` | The game slice: top-down camera at 55 degrees over a 20 by 14 board of flat-topped hexes 20 units across (game scale, `--hex 20` changes it) in the plane y = -6, a movement-range highlight (3 hexes) on the selected ship, a gold rim outline on the ship under the pointer, a selection ring on click, name labels with hull and shield bars (native Control UI drawn inside the render target, sized from the render height, so sharp at 4K and 1440p), with the ships, effects, debris physics and the environment running. Scripted pointer in bench and stills: hover over the Hegemony from 0.5 s, click the barge at 2.0 s. Stills `board_t03.0.png`, `board_t12.6.png`; the JSON adds `click_to_ring_frames`. |
 | `--vsync` | Capped run: vsync on (leave out `--disable-vsync`); the JSON adds `vsync`, `refresh_hz` and `dropped_frames`. |
 | `--key 2.0` | Key light energy (fill and ambient are each 25% of it). |
 | none | Free viewing: 1 battle orbit, 2 barge close-up, 3 breach close-up, Esc quits. |
@@ -57,6 +60,10 @@ rem main, stress, 40 ships, max; each at 4K and 1440p, each renderer (gl_compati
 rem capped (vsync on) run, to match Babylon's --vsync
 %G% --path godot --rendering-method forward_plus --resolution 2560x1440 -- --bench ../results/godot_fp_1440_main_vsync.json --seconds 20 --res 2560x1440 --vsync
 
+rem board slice (bench and stills)
+%G% --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench ../results/godot_fp_2160_board.json --seconds 20 --res 3840x2160 --board
+%G% --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots ../shots/godot_fp_board --res 3840x2160 --board
+
 rem stills (main, then max)
 %G% --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots ../shots/godot_fp --res 3840x2160
 %G% --path godot --rendering-method forward_plus --resolution 3840x2160 --fixed-fps 60 -- --shots ../shots/godot_fp_max --res 3840x2160 --max
@@ -76,13 +83,14 @@ As the spec has it: `engine`, `renderer` (from `RenderingServer.get_current_rend
 
 ## How the effects run (why the script is cheap)
 
-One global shader parameter, `scene_t`, carries the clock. Every glow sprite, ribbon (engine plumes and trails, beams, flame tongues, tracers, the incoming shell) and the shield computes its own position, drift, size and brightness from `scene_t` and constants set once at load. Per frame the script only:
-- moves the 6 to 40 ship roots (which carry the particle emitters, the breach and the shield),
-- shows or hides whole groups as a ship enters or leaves a phase (so idle effects are not drawn),
-- restarts one-shot particle systems when their start time passes,
-- sets the few lights that are on.
+One global shader parameter, `scene_t`, carries the clock.
+- Every glow sprite and ribbon of one kind (engine cores, plumes, trails, muzzle flashes, flame tongues, tracers, impact flashes, beam charge, core, glow and end flare, the incoming shell, hit cores, breach pops), for all ships, is one MultiMesh, so one draw: 14 draws for all effect sprites and ribbons whatever the ship count. Each instance's data (start point, direction, widths, colours, start time) rides in its instance transform, colour and custom data, and the shader computes its position, drift, size and brightness from `scene_t`.
+- The shields compute their ripple from `scene_t` too (one per shielded ship, shown only during its 0.6 s).
+- Particles are `GPUParticles3D` (simulated on the GPU). The breach gas, fire and tumbling debris of every ship are three shared systems emitting from all the breaches at once (emission points); each ship's four guns share one smoke-ring, one impact-spark and one impact-debris system (emission points again).
+- Per frame the script only moves the ship roots and the shared emitters, shows a shield while it can be seen, restarts one-shot particle systems when their start time passes, and sets the lights that are on.
+- Scenes with no physics turn the physics server off.
 
-That is about 0.35 ms per frame for six ships and 1.1 ms for 24 on the sandbox's slow CPU (the JSON notes report it on the PC). Particles are `GPUParticles3D` (simulated on the GPU).
+The JSON notes give the effect script's time and a frame breakdown on the PC: the whole process step, the physics step and physics ticks per frame, the render server's frame setup (particle updates, culling and sync before the viewports draw), draw calls, objects and the node count, next to the engine's own GPU and render-CPU time for the 3D view.
 
 ### Shader warm-up
 
@@ -123,7 +131,7 @@ Per ship, a 4 s loop, staggered 0.5 s in layout order:
 | TAA | max (Forward+) | built-in (on top of MSAA 4x) |
 | Detail normals | max | built-in StandardMaterial3D detail layer, triplanar, with a generated NoiseTexture2D normal map |
 | Contact shadows | max | Godot has no screen-space contact shadows; soft PCSS key shadows (light angular distance) in an 8192 atlas instead |
-| Rigid-body debris and chunks | max | built-in Jolt: debris plates and the four chunks (convex hulls of their own vertices) are RigidBody3D; each ship has a convex collider on an AnimatableBody3D riding with it; zero gravity; the blast pushes the chunks apart |
+| Rigid-body debris and chunks | max, board | built-in Jolt: irregular debris shards (random convex polygons, extruded thin, with matching convex colliders) and the four chunks (convex hulls of their own vertices) are RigidBody3D; each ship has a convex collider on an AnimatableBody3D riding with it, the asteroids sphere colliders; zero gravity; the blast pushes the chunks apart. The shards are dark hull metal whose torn rims glow and cool over a few seconds (a per-body spawn time in an instance uniform). |
 | Depth of field on the close-ups | max (Forward+) | built-in CameraAttributesPractical, focused on the target |
 | Weight-scaled shake | max | hand-written: every big event (broadside, beam, hit, pop, destruction) adds a decaying impulse scaled by weight and distance |
 | Colour grading | max (Forward+) | built-in Environment adjustments (contrast, saturation, a cool-shadow warm-highlight curve) |
@@ -137,6 +145,15 @@ Per ship, a 4 s loop, staggered 0.5 s in layout order:
 - **40 ships:** 40 is not a multiple of six rows, so the last row holds four.
 - **Shader safety:** every effect shader guards against NaN (no `pow` of a possibly negative base, safe normalise, final colour clamped to 0 to 512), the lesson from the Babylon half on Ryan's GPU.
 - **Lights:** in the main scene each ship has its gun, beam emitter, beam impact, hit and breach-fire lights, and the destruction one big light. The Babylon half uses one effect light per ship that follows its brightest effect, because Babylon materials take 4 lights; Godot's Forward+ is clustered and has no such limit, so this is an engine difference, not a build choice. Compatibility pays for each light per object it touches; its on-screen light limit is raised to 256 in `project.godot` (8 per object stays the default).
+
+## Standalone build
+
+`pc/export_windows.ps1` downloads the official 4.7.2 export templates once (`Godot_v4.7.2-stable_export_templates.tpz` from https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/, about 1.3 GB), installs them in `%APPDATA%\Godot\export_templates\4.7.2.stable\`, exports the "Windows Desktop" preset to `enginetest\build\VoidswornEngineTest.exe` (one file with the game packed in, plus `VoidswornEngineTest.console.exe`, a small wrapper that shows its console output), writes the sizes to `build\export_log.txt`, then runs it twice with a 5 s bench (cold and warm; `load_s` in `results\godot_exe_cold.json` and `godot_exe_warm.json`). The exe reads the ships from `..\assets` next to its folder, as the project does. In the sandbox the export of this project came out at 109 MB (the exe) plus 0.2 MB (the wrapper); the exe takes the same options as the project runs, after `--`.
+
+```
+powershell -ExecutionPolicy Bypass -File %USERPROFILE%\Downloads\voidsworn_test\enginetest\godot\pc\export_windows.ps1
+build\VoidswornEngineTest.console.exe --rendering-method forward_plus --resolution 2560x1440 --disable-vsync -- --bench ../results/godot_exe_1440_main.json --seconds 20 --res 2560x1440
+```
 
 ## Authoring throughput: one ship from Blender into Godot
 

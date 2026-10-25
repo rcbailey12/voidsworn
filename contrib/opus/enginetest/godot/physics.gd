@@ -6,12 +6,40 @@ extends Node3D
 const HULL_LAYER := 1
 const DEBRIS_LAYER := 2
 
+const FX := preload("res://fx.gd")
+const DEBRIS_BODY := """
+shader_type spatial;
+render_mode cull_disabled;
+global uniform float scene_t;
+instance uniform float spawn_t = -100.0;
+void fragment() {
+	float heat = exp(-max(scene_t - spawn_t, 0.0) / 2.5);
+	float e = smoothstep(0.55, 1.0, UV.x);
+	ALBEDO = vec3(0.11, 0.105, 0.10);
+	METALLIC = 0.65;
+	ROUGHNESS = 0.5;
+	EMISSION = clamp(vec3(1.0, 0.4, 0.08) * e * e * heat * 4.0, 0.0, 64.0);
+}
+"""
+const DEBRIS_BODY_COMPAT := """
+shader_type spatial;
+render_mode cull_disabled;
+void fragment() {
+	float e = smoothstep(0.55, 1.0, UV.x);
+	ALBEDO = vec3(0.11, 0.105, 0.10);
+	METALLIC = 0.65;
+	ROUGHNESS = 0.5;
+	EMISSION = vec3(1.0, 0.4, 0.08) * e * e * 0.8;
+}
+"""
+
+var now := 0.0
 var pool: Array = []
 var next := 0
 var cap := 600
 var _shapes: Array = []
 var _meshes: Array = []
-var _mat: StandardMaterial3D
+var _mat: ShaderMaterial
 var _bounce: PhysicsMaterial
 var _rng := RandomNumberGenerator.new()
 
@@ -22,20 +50,19 @@ func setup(ships: Array, max_bodies: int) -> void:
 	_bounce = PhysicsMaterial.new()
 	_bounce.bounce = 0.45
 	_bounce.friction = 0.4
-	_mat = StandardMaterial3D.new()
-	_mat.albedo_color = Color(0.13, 0.12, 0.11)
-	_mat.metallic = 0.55
-	_mat.roughness = 0.55
-	_mat.emission_enabled = true
-	_mat.emission = Color(1.0, 0.35, 0.06)
-	_mat.emission_energy_multiplier = 0.35
-	for sz in [0.25, 0.45, 0.8]:
-		var bs := BoxShape3D.new()
-		bs.size = Vector3(1.0, 0.18, 0.6) * sz
-		_shapes.append(bs)
-		var bm := BoxMesh.new()
-		bm.size = bs.size
-		_meshes.append(bm)
+	# dark hull metal with hot torn edges that cool over a few seconds after the piece is thrown (per-body spawn time)
+	var sh := Shader.new()
+	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
+	sh.code = DEBRIS_BODY_COMPAT if compat else DEBRIS_BODY
+	_mat = ShaderMaterial.new()
+	_mat.shader = sh
+	# irregular shards (see fx.gd shard_mesh) in three sizes, each with a convex collider from its own corners
+	for sz in [0.5, 0.9, 1.6]:
+		var sm: Array = FX.shard_mesh(_rng, sz)
+		var cs := ConvexPolygonShape3D.new()
+		cs.points = sm[1]
+		_shapes.append(cs)
+		_meshes.append(sm[0])
 	for s in ships:
 		add_hull(s)
 
@@ -62,6 +89,25 @@ func add_hull(s: Dictionary) -> void:
 	(s["root"] as Node3D).add_child(body)
 
 
+# Asteroids: sphere colliders on one static body (a rock's tumble does not change a sphere).
+var _rock_body: StaticBody3D = null
+
+
+func add_rock(pos: Vector3, radius: float) -> void:
+	if _rock_body == null:
+		_rock_body = StaticBody3D.new()
+		_rock_body.collision_layer = HULL_LAYER
+		_rock_body.collision_mask = 0
+		_rock_body.physics_material_override = _bounce
+		add_child(_rock_body)
+	var sh := SphereShape3D.new()
+	sh.radius = radius
+	var cs := CollisionShape3D.new()
+	cs.shape = sh
+	cs.position = pos
+	_rock_body.add_child(cs)
+
+
 func _new_body(size_class: int) -> RigidBody3D:
 	var b := RigidBody3D.new()
 	b.gravity_scale = 0.0
@@ -76,6 +122,7 @@ func _new_body(size_class: int) -> RigidBody3D:
 	cs.shape = _shapes[size_class]
 	b.add_child(cs)
 	var mi := MeshInstance3D.new()
+	mi.name = "mesh"
 	mi.mesh = _meshes[size_class]
 	mi.material_override = _mat
 	b.add_child(mi)
@@ -99,6 +146,9 @@ func spawn(pos: Vector3, vel: Vector3, count: int, size: float, spread := 5.0) -
 		b.linear_velocity = vel + d * spread * _rng.randf_range(0.4, 1.0)
 		b.angular_velocity = Vector3(_rng.randf_range(-6, 6), _rng.randf_range(-6, 6), _rng.randf_range(-6, 6))
 		b.visible = true
+		var mi := b.get_node("mesh") as GeometryInstance3D
+		if _mat.shader.code.contains("instance uniform"):
+			mi.set_instance_shader_parameter("spawn_t", now)
 
 
 func live_bodies() -> int:

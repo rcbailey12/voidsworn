@@ -32,6 +32,7 @@ const STRESS_H := 85.0
 const HERO_CODES := ["V1b_r_23", "H4_11", "C19_51", "B16_23", "I8_37", "D22_23"]
 const PHYS := preload("res://physics.gd")
 const BOARD := preload("res://board.gd")
+const ENV := preload("res://env.gd")
 const AZ0 := 200.0
 const AZ_SPAN := 120.0
 const ORBIT_T := 20.0
@@ -88,6 +89,7 @@ var hi_dir := ""
 var all_ships: Array = []
 var phys: Node3D = null
 var board: Node = null
+var env_node: Node3D = null
 var key_light: DirectionalLight3D
 var light_n := 0
 var light_sum := 0.0
@@ -136,6 +138,9 @@ var shots_pending := 0
 
 func _ready() -> void:
 	project_dir = ProjectSettings.globalize_path("res://").trim_suffix("/")
+	if OS.has_feature("template"):
+		# exported build: the .exe sits in enginetest/build, so the ships are in ../assets as for the project
+		project_dir = OS.get_executable_path().get_base_dir()
 	_parse_args()
 	if args.has("bench"):
 		mode = "bench"
@@ -184,6 +189,8 @@ func _ready() -> void:
 	fx = FX.new()
 	fx.name = "FX"
 	world.add_child(fx)
+	if not opt_physics:
+		PhysicsServer3D.set_active(false)  # nothing in these scenes uses physics, so the server does not step
 	if opt_physics:
 		phys = PHYS.new()
 		phys.name = "Physics"
@@ -197,6 +204,13 @@ func _ready() -> void:
 	print("[enginetest] effects built in %.0f ms" % ((Time.get_ticks_usec() - t0) / 1000.0))
 	if opt_max:
 		_apply_presentation()
+	if (opt_max or opt_board) and DirAccess.dir_exists_absolute(assets_dir.path_join("env")):
+		env_node = ENV.new()
+		env_node.name = "Environment"
+		world.add_child(env_node)
+		env_node.setup(assets_dir.path_join("env"), env, phys, RenderingServer.get_current_rendering_method() == "gl_compatibility")
+		for n in env_node.notes:
+			notes.append(n)
 	if opt_board:
 		board = BOARD.new()
 		board.name = "Board"
@@ -230,6 +244,8 @@ func _process(delta: float) -> void:
 	else:
 		clock += delta
 		fx.update(clock)
+		if env_node != null:
+			env_node.update(clock)
 		_set_cam(view_cam if not opt_board else _default_cam(), fmod(clock, ORBIT_T))
 		if board != null:
 			board.update(clock, board.mouse_from_window(get_viewport().get_mouse_position(), get_window().size))
@@ -263,6 +279,8 @@ func _process_bench(delta: float) -> void:
 			return
 	var su := Time.get_ticks_usec()
 	fx.update(clock)
+	if env_node != null:
+		env_node.update(clock)
 	last_script_ms = (Time.get_ticks_usec() - su) / 1000.0
 	if clock >= WARMUP:
 		# the orbit always spans the measured run (20 s by default, as the spec has it)
@@ -283,6 +301,8 @@ func _process_shots() -> void:
 		return
 	var s: Dictionary = shot_queue[0]
 	fx.update(clock)
+	if env_node != null:
+		env_node.update(clock)
 	_set_cam(s["cam"], minf(clock, ORBIT_T))
 	if board != null:
 		board.update(clock, board.scripted_mouse(clock))
@@ -338,6 +358,11 @@ func _finish_bench() -> void:
 	notes.append("effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) %.3f ms average" % (ptot / maxf(proc_ms.size(), 1)))
 	if gpu_ms_n > 0:
 		notes.append("engine-measured 3D render time per frame: GPU %.2f ms, render CPU %.2f ms" % [gpu_ms_sum / gpu_ms_n, cpu_ms_sum / gpu_ms_n])
+	if int(_bd["n"]) > 0:
+		var nb: float = _bd["n"]
+		notes.append("frame breakdown (averages): process step %.2f ms, physics step %.2f ms at %.2f ticks per frame, render-server frame setup %.2f ms, %.0f draw calls, %.0f objects, %d nodes in the tree" % [
+			_bd["process"] / nb, _bd["physics"] / nb, _bd["ticks"] / nb, _bd["setup"] / nb, _bd["draws"] / nb, _bd["objects"] / nb,
+			get_tree().get_node_count()])
 	notes.append("shader warm-up after load took %.1f s (every effect, fade and chunk state drawn once, until pipeline compiles stop)" % prewarm_s)
 	notes.append("adapter %s, driver %s %s" % [RenderingServer.get_video_adapter_name(), RenderingServer.get_current_rendering_driver_name(),
 		RenderingServer.get_video_adapter_api_version()])
@@ -827,7 +852,22 @@ func _shot_list() -> Array:
 	return out
 
 
+var _bd := {"process": 0.0, "physics": 0.0, "setup": 0.0, "draws": 0.0, "objects": 0.0, "ticks": 0.0, "n": 0}
+var _last_phys_frames := 0
+
+
 func _sample_stats() -> void:
+	# frame-time breakdown: whole process step, physics step, render-server frame setup (particle updates, culling and
+	# sync before the viewports draw), draw calls and objects in the 3D view, physics ticks this frame
+	_bd["process"] += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
+	_bd["physics"] += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
+	_bd["setup"] += RenderingServer.get_frame_setup_time_cpu()
+	_bd["draws"] += Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
+	_bd["objects"] += Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME)
+	var pf := Engine.get_physics_frames()
+	_bd["ticks"] += pf - _last_phys_frames
+	_last_phys_frames = pf
+	_bd["n"] += 1
 	if fx.has_method("active_lights"):
 		var n: int = fx.active_lights()
 		light_n += 1
@@ -1055,6 +1095,8 @@ func _place_camera(t: float) -> void:
 
 
 func _unhandled_input(e: InputEvent) -> void:
+	if board != null and e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
+		board.click(board.mouse_from_window(e.position, get_window().size))
 	if e is InputEventKey and e.pressed and not e.echo:
 		match e.keycode:
 			KEY_1:
@@ -1110,9 +1152,10 @@ func _abs_path(p: String) -> String:
 # --shots needs a fixed clock for the particles too, which only the engine's --fixed-fps gives. If it was left off,
 # run again with it (same renderer, size and user options) and wait, so a job that waits on this process still gets its stills.
 func _relaunch_with_fixed_fps(fps: int) -> void:
-	var a: PackedStringArray = ["--path", project_dir, "--rendering-method", RenderingServer.get_current_rendering_method(),
+	var a: PackedStringArray = [] if OS.has_feature("template") else ["--path", project_dir]
+	a.append_array(["--rendering-method", RenderingServer.get_current_rendering_method(),
 		"--rendering-driver", RenderingServer.get_current_rendering_driver_name(),
-		"--resolution", "%dx%d" % [get_window().size.x, get_window().size.y], "--fixed-fps", str(fps)]
+		"--resolution", "%dx%d" % [get_window().size.x, get_window().size.y], "--fixed-fps", str(fps)])
 	if DisplayServer.get_name() == "headless":
 		a.append("--headless")
 	a.append("--")
