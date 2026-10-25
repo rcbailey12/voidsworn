@@ -32,7 +32,7 @@ const SHIELD_T := 0.6
 const INCOMING_LEN := 60.0
 const TRAIL_LEN := 60.0
 const BOOM_EVERY := 12.0
-const BREAK_AT := 12.4  # first break of the destruction event, then every 12 s
+const BREAK_OFFSET := 0.4  # the destruction event breaks 0.4 s after each multiple of its period (12.4 s, 24.4 s, ...)
 const SPARKS_EVERY := 2.3
 const POP_EVERY := 3.7
 const WRECK_POS := Vector3(0, 25, 0)
@@ -48,6 +48,7 @@ float vnoise(vec2 p) {
 	return mix(mix(hash12(i), hash12(i + vec2(1.0, 0.0)), f.x), mix(hash12(i + vec2(0.0, 1.0)), hash12(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 float fbm(vec2 p) { return vnoise(p) * 0.55 + vnoise(p * 2.1 + 3.7) * 0.3 + vnoise(p * 4.3 + 7.1) * 0.15; }
+vec3 safe_norm(vec3 v, vec3 fallback) { float l = length(v); return l > 1e-6 ? v / l : fallback; }
 """
 
 const BILLBOARD := """
@@ -93,10 +94,10 @@ void vertex() {
 	float s = VERTEX.x + 0.5;
 	vec3 p = o + ax * s;
 	vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-	vec3 b1 = normalize(cross(dir, up));
+	vec3 b1 = safe_norm(cross(dir, up), vec3(0.0, 0.0, 1.0));
 	vec3 b2 = cross(b1, dir);
 	p += (b1 * sin(s * len * 0.11 - TIME * 1.9 + seed) + b2 * sin(s * len * 0.07 - TIME * 1.3 + seed * 1.7)) * waver * s * s;
-	vec3 side = normalize(cross(dir, INV_VIEW_MATRIX[3].xyz - p));
+	vec3 side = safe_norm(cross(dir, INV_VIEW_MATRIX[3].xyz - p), b1);
 	p += side * VERTEX.y * mix(width_a, width_b, s);
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * vec4(p, 1.0);
 	vlen = len;
@@ -113,7 +114,7 @@ void fragment() {
 	float f = smoothstep(0.0, fade_in, s) * (1.0 - smoothstep(fade_out, 1.0, s));
 	float fl = 1.0 - flicker * vnoise(vec2(TIME * 23.0, seed * 3.1));
 	vec3 col = mix(mix(tint_a, tint_b, s), vec3(1.0), clamp(hot, 0.0, 1.0));
-	ALBEDO = col * energy * (prof + hot) * n * f * fl * alpha * exp(-s * decay);
+	ALBEDO = clamp(col * energy * (prof + hot) * n * f * fl * alpha * exp(-s * decay), 0.0, 512.0);
 	ALPHA = 1.0;
 }
 """
@@ -133,7 +134,7 @@ void fragment() {
 	float m = exp(-r * r * 5.0) * (1.0 - smoothstep(0.8, 1.0, r));
 	float h = exp(-r * r * 18.0) * hot;
 	float sp = spikes * (exp(-abs(p.x) * 30.0) + exp(-abs(p.y) * 30.0)) * (1.0 - smoothstep(0.0, 1.0, r));
-	ALBEDO = mix(tint, vec3(1.0), clamp(h, 0.0, 1.0)) * energy * alpha * (m + h + sp);
+	ALBEDO = clamp(mix(tint, vec3(1.0), clamp(h, 0.0, 1.0)) * energy * alpha * (m + h + sp), 0.0, 512.0);
 	ALPHA = 1.0;
 }
 """
@@ -149,7 +150,7 @@ void fragment() {
 	float r = length(p);
 	float n = fbm(p * 2.2 + vec2(seed * 3.0, seed * 1.3));
 	float m = clamp(1.0 - r / (0.55 + 0.45 * n), 0.0, 1.0);
-	ALBEDO = COLOR.rgb * energy * m * m * COLOR.a * (0.6 + 0.8 * n);
+	ALBEDO = clamp(COLOR.rgb * energy * m * m * COLOR.a * (0.6 + 0.8 * n), 0.0, 512.0);
 	ALPHA = 1.0;
 }
 """
@@ -166,7 +167,7 @@ void fragment() {
 	float n = fbm(p * 1.8 + vec2(seed * 2.0, seed));
 	float m = 1.0 - smoothstep(0.2, 1.0, r / (0.6 + 0.4 * n));
 	NORMAL = normalize(vec3(p.x, -p.y, sqrt(max(0.0, 1.0 - r * r)) + 0.3));
-	ALBEDO = COLOR.rgb;
+	ALBEDO = clamp(COLOR.rgb, 0.0, 1.0);
 	ROUGHNESS = 1.0;
 	ALPHA = clamp(COLOR.a * m * (0.55 + 0.6 * n), 0.0, 1.0);
 }
@@ -177,7 +178,7 @@ shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
 uniform float energy = 6.0;
 void fragment() {
-	ALBEDO = COLOR.rgb * energy * COLOR.a;
+	ALBEDO = clamp(COLOR.rgb * energy * COLOR.a, 0.0, 512.0);
 	ALPHA = 1.0;
 }
 """
@@ -197,13 +198,15 @@ void vertex() {
 	lp = VERTEX;
 }
 void fragment() {
-	vec3 d3 = normalize(lp);
+	vec3 d3 = safe_norm(lp, hit_dir);
 	float d = acos(clamp(dot(d3, hit_dir), -1.0, 1.0));
 	float partial = 1.0 - smoothstep(1.0, 1.7, d);
 	float impact = exp(-d * d * 10.0);
-	float ring = exp(-pow((d - age * 3.0) * 6.0, 2.0));
-	float ring2 = exp(-pow((d - age * 1.7) * 9.0, 2.0)) * 0.5;
-	float fres = pow(1.0 - abs(dot(NORMAL, VIEW)), 3.0);
+	float q1 = (d - age * 3.0) * 6.0;
+	float q2 = (d - age * 1.7) * 9.0;
+	float ring = exp(-q1 * q1);
+	float ring2 = exp(-q2 * q2) * 0.5;
+	float fres = pow(max(1.0 - abs(dot(NORMAL, VIEW)), 0.0), 3.0);
 	float cells = 0.75 + 0.25 * vnoise(vec2(atan(d3.z, d3.x) * 9.0, d3.y * 14.0));
 	float a = strength * partial * (0.05 + fres * 0.45 + impact * 1.6 + (ring * 0.9 + ring2) * cells);
 	if (patchy > 0.0) {
@@ -211,7 +214,7 @@ void fragment() {
 		float flick = step(0.32, vnoise(vec2(TIME * 24.0, 1.7)));
 		a *= mix(1.0, smoothstep(0.38, 0.62, pn) * flick, patchy);
 	}
-	ALBEDO = mix(tint, vec3(1.0), impact * 0.35 * strength) * energy * a;
+	ALBEDO = clamp(mix(tint, vec3(1.0), impact * 0.35 * strength) * energy * a, 0.0, 512.0);
 	ALPHA = 1.0;
 }
 """
@@ -228,7 +231,7 @@ void vertex() {
 	lp = VERTEX;
 }
 void fragment() {
-	float n = fbm(vec2(atan(lp.z, lp.x) * 2.5 + seed, lp.y * 4.0 + seed * 2.0));
+	float n = fbm(vec2(atan(lp.z, lp.x + 1e-5) * 2.5 + seed, lp.y * 4.0 + seed * 2.0));
 	float soft = pow(abs(dot(NORMAL, VIEW)), 2.0);
 	ALBEDO = col;
 	ROUGHNESS = 1.0;
@@ -246,10 +249,12 @@ uniform float energy = 1.5;
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float r = length(p);
-	float ring = exp(-pow((r - 0.92) / 0.03, 2.0));
-	float haze = exp(-pow((r - 0.82) / 0.14, 2.0)) * 0.35;
-	float n = vnoise(vec2(atan(p.y, p.x) * 9.0, r * 6.0));
-	ALBEDO = tint * energy * alpha * (ring + haze) * (0.6 + 0.8 * n) * (1.0 - step(1.0, r));
+	float q1 = (r - 0.92) / 0.03;
+	float q2 = (r - 0.82) / 0.14;
+	float ring = exp(-q1 * q1);
+	float haze = exp(-q2 * q2) * 0.35;
+	float n = vnoise(vec2(atan(p.y, p.x + 1e-5) * 9.0, r * 6.0));
+	ALBEDO = clamp(tint * energy * alpha * (ring + haze) * (0.6 + 0.8 * n) * (1.0 - step(1.0, r)), 0.0, 512.0);
 	ALPHA = 1.0;
 }
 """
@@ -268,7 +273,7 @@ void fragment() {
 	ALBEDO = vec3(0.10, 0.095, 0.09);
 	METALLIC = 0.6;
 	ROUGHNESS = 0.55;
-	EMISSION = vec3(1.0, 0.42, 0.08) * h * h * 5.0 * heat;
+	EMISSION = vec3(1.0, 0.42, 0.08) * h * h * 5.0 * clamp(heat, 0.0, 4.0);
 }
 """
 
@@ -284,12 +289,14 @@ void fragment() {
 	vec4 a = texture(alb, UV);
 	ALBEDO = a.rgb;
 	ROUGHNESS = 0.9;
-	EMISSION = texture(emi, UV).rgb * emission_energy;
-	ALPHA = a.a * fade;
+	EMISSION = texture(emi, UV).rgb * clamp(emission_energy, 0.0, 64.0);
+	ALPHA = clamp(a.a * fade, 0.0, 1.0);
 }
 """
 
 var notes: PackedStringArray = []
+var stagger := STAGGER
+var boom_every := BOOM_EVERY
 var fixed_seed := false
 var compat := false
 var ships: Array = []
@@ -307,7 +314,9 @@ var _seed := 1
 var _rng := RandomNumberGenerator.new()
 
 
-func setup(list: Array, wreck_src: Dictionary, deterministic: bool, is_compat: bool) -> void:
+func setup(list: Array, wreck_src: Dictionary, deterministic: bool, is_compat: bool, opts := {}) -> void:
+	stagger = float(opts.get("stagger", STAGGER))
+	boom_every = float(opts.get("boom_every", BOOM_EVERY))
 	fixed_seed = deterministic
 	compat = is_compat
 	_rng.seed = 2610
@@ -359,7 +368,7 @@ func setup(list: Array, wreck_src: Dictionary, deterministic: bool, is_compat: b
 
 func update(t: float) -> void:
 	for i in ships.size():
-		_update_ship(ships[i], t, t - STAGGER * i)
+		_update_ship(ships[i], t, t - stagger * i)
 	_update_wreck(t)
 
 
@@ -428,7 +437,7 @@ func _update_ship(e: Dictionary, t: float, u: float) -> void:
 			var thick := 0.6 + 1.6 * grow
 			ring.transform = Transform3D(_basis_y(nn) * Basis.from_scale(Vector3(r, thick, r)),
 				p0 + nn * (1.0 + 4.0 * grow) + Vector3(0, 0.6 * ak, 0))
-			(ring.material_override as ShaderMaterial).set_shader_parameter("alpha", 0.4 * pow(1.0 - ak / RING_LIFE, 1.3))
+			(ring.material_override as ShaderMaterial).set_shader_parameter("alpha", 0.4 * pow(maxf(1.0 - ak / RING_LIFE, 0.0), 1.3))
 		var target: Vector3 = p0 + g["aim"]
 		var dist := p0.distance_to(target)
 		var dir := (target - p0) / dist
@@ -514,7 +523,7 @@ func _update_ship(e: Dictionary, t: float, u: float) -> void:
 		sh.visible = ah >= 0.0 and ah < SHIELD_T and fade > 0.0
 		if sh.visible:
 			var sm: ShaderMaterial = sh.material_override
-			sm.set_shader_parameter("strength", pow(1.0 - ah / SHIELD_T, 1.5) * fade)
+			sm.set_shader_parameter("strength", pow(maxf(1.0 - ah / SHIELD_T, 0.0), 1.5) * fade)
 			sm.set_shader_parameter("age", ah)
 		var core: MeshInstance3D = e["hit_core"]
 		core.visible = ah >= 0.0 and ah < 0.25 and fade > 0.0
@@ -552,7 +561,7 @@ func _update_ship(e: Dictionary, t: float, u: float) -> void:
 	(br["fire"] as GPUParticles3D).amount_ratio = maxf(fade, 0.001)
 	(br["debris"] as GPUParticles3D).amount_ratio = maxf(fade, 0.001)
 	# fixed timers, staggered like the loop: a spark shower every 2.3 s, a secondary pop every 3.7 s
-	var pt := t - STAGGER * idx
+	var pt := t - stagger * idx
 	var sc := _cycle_n(pt, SPARKS_EVERY)
 	if sc > int(br["last_sparks"]):
 		br["last_sparks"] = sc
@@ -582,33 +591,34 @@ func _update_ship(e: Dictionary, t: float, u: float) -> void:
 		var dm: ShaderMaterial = br["disc_m"]
 		dm.set_shader_parameter("emission_energy", 2.6 * flick + 4.0 * pop)
 		dm.set_shader_parameter("fade", fade)
-	for sm2 in br["shard_m"]:
-		(sm2 as ShaderMaterial).set_shader_parameter("heat", (0.8 + 0.4 * flick) * fade)
-	for sh2 in br["shards"]:
-		(sh2 as GeometryInstance3D).transparency = 1.0 - fade
+	(br["shard_m"] as ShaderMaterial).set_shader_parameter("heat", (0.8 + 0.4 * flick) * fade)
+	if fade != float(br["fade"]):
+		br["fade"] = fade
+		for sh2 in br["shards"]:
+			(sh2 as GeometryInstance3D).transparency = 1.0 - fade
 
 
 func _update_wreck(t: float) -> void:
 	if wreck.is_empty():
 		return
 	var whole: MeshInstance3D = wreck["whole"]
-	var tt := t - (BREAK_AT - BOOM_EVERY)  # breaks when tt crosses 12, 24, ...
+	var tt := t - BREAK_OFFSET  # breaks when tt crosses a multiple of the period
 	var since := -1.0  # time since the last break (none yet before t = 12.4)
 	var p := tt
-	if tt >= BOOM_EVERY:
-		since = fmod(tt, BOOM_EVERY)
+	if tt >= boom_every:
+		since = fmod(tt, boom_every)
 		p = since
-	var to_next := BOOM_EVERY - p
+	var to_next := boom_every - p
 	# the whole ship: hidden after a break, fading back in 2 s before the next one
 	var vis := 1.0
-	if since >= 0.0 and since < BOOM_EVERY - 2.0:
+	if since >= 0.0 and since < boom_every - 2.0:
 		vis = 0.0
 	elif since >= 0.0:
-		vis = clampf(since - (BOOM_EVERY - 2.0), 0.0, 1.0)
+		vis = clampf(since - (boom_every - 2.0), 0.0, 1.0)
 	whole.visible = vis > 0.0
 	whole.transparency = 1.0 - vis
 	# squibs on the hull from 0.6 s before the break; the flash builds from 0.5 s before and peaks at the break
-	var squib_c := int(floorf((tt + 0.6) / BOOM_EVERY))
+	var squib_c := int(floorf((tt + 0.6) / boom_every))
 	if squib_c > int(wreck["last_squib"]):
 		wreck["last_squib"] = squib_c
 		_fire(wreck["pre_squibs"])
@@ -631,20 +641,20 @@ func _update_wreck(t: float) -> void:
 	core.visible = a >= 0.0 and a < 0.9
 	if core.visible:
 		core.scale = Vector3.ONE * 26.0 * (0.3 + 0.7 * smoothstep(0.0, 0.4, a))
-		(core.material_override as ShaderMaterial).set_shader_parameter("alpha", pow(1.0 - a / 0.9, 1.5))
+		(core.material_override as ShaderMaterial).set_shader_parameter("alpha", pow(maxf(1.0 - a / 0.9, 0.0), 1.5))
 	var sw: MeshInstance3D = wreck["shock"]
 	sw.visible = a >= 0.0 and a < 2.0
 	if sw.visible:
 		var r := 4.0 + 75.0 * (1.0 - exp(-a * 1.8))
 		sw.scale = Vector3(r * 2.0, 1.0, r * 2.0)
-		(sw.material_override as ShaderMaterial).set_shader_parameter("alpha", pow(1.0 - a / 2.0, 3.0))
+		(sw.material_override as ShaderMaterial).set_shader_parameter("alpha", pow(maxf(1.0 - a / 2.0, 0.0), 3.0))
 	var bc := _cycle12(tt)
 	if bc > int(wreck["last_boom"]):
 		wreck["last_boom"] = bc
 		for key in ["fireball", "smoke", "embers", "debris"]:
 			_fire(wreck[key])
 	# chunks
-	var show_chunks := a >= 0.0 and a < BOOM_EVERY - 2.0
+	var show_chunks := a >= 0.0 and a < boom_every - 2.0
 	for c in wreck["chunks"]:
 		var node: Node3D = c["node"]
 		node.visible = show_chunks
@@ -658,7 +668,7 @@ func _update_wreck(t: float) -> void:
 				squibs.emitting = false
 			continue
 		node.transform = Transform3D(Basis(c["axis"], c["spin"] * a), WRECK_POS + c["start"] + c["vel"] * a)
-		var cfade := clampf((BOOM_EVERY - 2.0 - a) / 0.6, 0.0, 1.0)
+		var cfade := clampf((boom_every - 2.0 - a) / 0.6, 0.0, 1.0)
 		(c["mesh"] as GeometryInstance3D).transparency = 1.0 - cfade
 		var burning: bool = a < c["burn_t"]
 		if fire.emitting != burning:
@@ -810,10 +820,10 @@ func _build_ship(i: int, s: Dictionary, tex: Dictionary) -> Dictionary:
 
 
 func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
-	var br := {"last_sparks": -1, "last_pop": -1}
+	var br := {"last_sparks": -1, "last_pop": -1, "fade": 1.0}
 	var p: Vector3 = s["breach"]
 	var n: Vector3 = s["breach_n"]
-	var hole := 2.4  # about 1/10 of the ship's length
+	var hole := 2.4 * float(s.get("scale", 1.0))  # about 1/10 of the ship's length
 	var frame := Node3D.new()
 	frame.name = "breach"
 	frame.position = p
@@ -858,7 +868,7 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
 			near_p.append(pts[j])
 			near_n.append(nrms[j])
 	var fb := frame.basis
-	var shard_m: Array = []
+	var shard_m := _mat(_sh["shard"])
 	var shards: Array = []
 	var count := 11
 	for k in count:
@@ -885,13 +895,11 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
 		var xa := (outw * cos(tilt) + nq * sin(tilt)).normalized()
 		var za := xa.cross(nq).normalized()
 		var ya := za.cross(xa).normalized()
-		var sm := _mat(_sh["shard"])
 		var mi := MeshInstance3D.new()
 		mi.mesh = _box
-		mi.material_override = sm
+		mi.material_override = shard_m
 		mi.transform = Transform3D(Basis(xa * plen, ya * 0.05, za * pw), q + xa * plen * 0.5 - nq * 0.04)
 		root.add_child(mi)
-		shard_m.append(sm)
 		shards.append(mi)
 	br["shard_m"] = shard_m
 	br["shards"] = shards
@@ -1069,7 +1077,7 @@ func _cut_chunks(src: Dictionary, k: float, root: Node3D) -> Array:
 			"start": (cc - c0) * k, "vel": dir * (1.5 if is_wreck else _rng.randf_range(5.0, 9.0)),
 			"axis": Vector3(_rng.randf_range(-1, 1), _rng.randf_range(-1, 1), _rng.randf_range(-1, 1)).normalized(),
 			"spin": 0.15 if is_wreck else _rng.randf_range(0.5, 1.4),
-			"burn_t": BOOM_EVERY - 2.5 if is_wreck else _rng.randf_range(3.0, 6.0)})
+			"burn_t": maxf(boom_every - 2.5, 1.0) if is_wreck else minf(_rng.randf_range(3.0, 6.0), boom_every - 2.0)})
 	return chunks
 
 
@@ -1084,7 +1092,7 @@ func _cycle_n(x: float, period: float) -> int:
 
 
 func _cycle12(t: float) -> int:
-	return -1 if t < BOOM_EVERY else int(floorf(t / BOOM_EVERY))
+	return -1 if t < boom_every else int(floorf(t / boom_every))
 
 
 func _hash(x: float) -> float:
@@ -1410,7 +1418,8 @@ func _breach_textures() -> Dictionary:
 			var a := clampf(hole + scorch * 0.95, 0.0, 1.0)
 			var base := Color(0.02, 0.015, 0.012).lerp(Color(0.10, 0.075, 0.06), clampf((r - jag) * 2.0 + n2 * 0.3, 0.0, 1.0))
 			alb.set_pixel(x, y, Color(base.r, base.g, base.b, a))
-			var edge := exp(-pow((r - jag) / 0.03, 2.0))
+			var eq := (r - jag) / 0.03
+			var edge := exp(-eq * eq)
 			var crack := 0.0
 			var cr := absf(sin(ang * 7.0 + n2 * 3.0))
 			if r > jag and r < jag + 0.22:

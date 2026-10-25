@@ -14,6 +14,13 @@ const SHIP_LEN := 24.0
 const FOV := 40.0
 const ORBIT_R := 150.0
 const ORBIT_H := 70.0
+# --stress (SPEC.md "Stress run"): 18 more ships at 0.6 scale in rows z = +60, 0, -60, loops staggered 0.17 s,
+# the destruction event every 4 s, a wider orbit
+const STRESS_ROWS := [60.0, 0.0, -60.0]
+const STRESS_X := [-60.0, -36.0, -12.0, 12.0, 36.0, 60.0]
+const STRESS_SCALE := 0.6
+const STRESS_R := 190.0
+const STRESS_H := 85.0
 const AZ0 := 200.0
 const AZ_SPAN := 120.0
 const ORBIT_T := 20.0
@@ -56,6 +63,9 @@ var SHIPS := [
 
 var args := {}
 var mode := "view"
+var stress := false
+var orbit_r := ORBIT_R
+var orbit_h := ORBIT_H
 var notes: PackedStringArray = []
 var res := Vector2i(1920, 1080)
 var project_dir := ""
@@ -99,6 +109,10 @@ func _ready() -> void:
 		mode = "bench"
 	elif args.has("shots"):
 		mode = "shots"
+	stress = args.has("stress")
+	if stress:
+		orbit_r = STRESS_R
+		orbit_h = STRESS_H
 	res = _resolve_res()
 	if mode == "shots" and not args.has("no-relaunch"):
 		# Godot consumes its own options, so --fixed-fps cannot be read back; a fixed clock shows as an exact frame delta.
@@ -119,11 +133,17 @@ func _ready() -> void:
 	_build_viewport()
 	_build_environment()
 	_build_ships()
+	var list: Array = SHIPS
+	var opts := {}
+	if stress:
+		list = SHIPS + _stress_copies()
+		opts = {"stagger": 0.17, "boom_every": 4.0}
+		notes.append("stress run: 24 ships (18 at 0.6 scale), loops staggered 0.17 s, destruction every 4 s, orbit radius 190 height 85")
 	fx = FX.new()
 	fx.name = "FX"
 	world.add_child(fx)
 	var t0 := Time.get_ticks_usec()
-	fx.setup(SHIPS, wreck_src, mode == "shots", RenderingServer.get_current_rendering_method() == "gl_compatibility")
+	fx.setup(list, wreck_src, mode == "shots", RenderingServer.get_current_rendering_method() == "gl_compatibility", opts)
 	for n in fx.notes:
 		notes.append(n)
 	print("[enginetest] effects built in %.0f ms" % ((Time.get_ticks_usec() - t0) / 1000.0))
@@ -255,6 +275,13 @@ func _finish_bench() -> void:
 		"gpu_mem_mb": snappedf(mem_now / 1048576.0, 0.1),
 		"notes": "; ".join(notes),
 	}
+	if stress:
+		var tagged := {}
+		for key in out:
+			tagged[key] = out[key]
+			if key == "renderer":
+				tagged["mode"] = "stress"
+		out = tagged
 	var path := _abs_path(args["bench"])
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var f := FileAccess.open(path, FileAccess.WRITE)
@@ -391,6 +418,7 @@ func _build_ships() -> void:
 		pivot.add_child(model)
 		world.add_child(root)
 		s["root"] = root
+		s["model"] = model
 		s["meshes"] = _mesh_instances(model)
 		var box := _subtree_aabb(model, Transform3D.IDENTITY)
 		if parts == 0 or box.size.x <= 0.0:
@@ -404,6 +432,7 @@ func _build_ships() -> void:
 		var rot := Basis(Vector3.UP, deg_to_rad(s["rot_y"]))
 		model.position = -box.get_center()
 		pivot.basis = rot.scaled(Vector3(k, k, k))
+		s["pivot_basis"] = pivot.basis
 		s["half"] = box.size * k * 0.5
 		if s["name"] == "Hegemony":
 			wreck_src["center"] = box.get_center()
@@ -501,6 +530,44 @@ func _hull_points(s: Dictionary, p: PackedVector3Array, n: PackedVector3Array) -
 			if hi < 0 or p[j].z < p[hi].z:
 				hi = j
 	s["hit"] = p[hi] if hi >= 0 else Vector3(2, 0, -h.z)
+
+
+# The stress run's 18 extra ships: copies of the loaded flagships (the meshes are shared, not loaded again) at 0.6 scale.
+func _stress_copies() -> Array:
+	var out: Array = []
+	for z in STRESS_ROWS:
+		for j in STRESS_X.size():
+			var src: Dictionary = SHIPS[j]
+			var c := {"name": src["name"], "files": src["files"], "weapon": src["weapon"], "shield": src["shield"],
+				"engine": src["engine"], "pos": Vector3(STRESS_X[j], 0, z), "rot_y": src["rot_y"], "scale": STRESS_SCALE}
+			var root := Node3D.new()
+			root.name = "%s_copy_%d" % [src["name"], out.size()]
+			root.position = c["pos"]
+			var pivot := Node3D.new()
+			root.add_child(pivot)
+			world.add_child(root)
+			c["root"] = root
+			if not src.has("model") or not src.has("pivot_basis"):
+				c["half"] = Vector3(12, 3, 3) * STRESS_SCALE
+				c["meshes"] = []
+				_default_points(c)
+				out.append(c)
+				continue
+			var model: Node3D = (src["model"] as Node3D).duplicate()
+			pivot.add_child(model)
+			pivot.basis = (src["pivot_basis"] as Basis).scaled(Vector3.ONE * STRESS_SCALE)
+			c["meshes"] = _mesh_instances(model)
+			c["half"] = (src["half"] as Vector3) * STRESS_SCALE
+			var lp := PackedVector3Array()
+			var sp: PackedVector3Array = src["pts"]
+			lp.resize(sp.size())
+			for i in sp.size():
+				lp[i] = sp[i] * STRESS_SCALE
+			c["pts"] = lp
+			c["nrm"] = src["nrm"]
+			_hull_points(c, lp, src["nrm"])
+			out.append(c)
+	return out
 
 
 func _default_points(s: Dictionary) -> void:
@@ -669,7 +736,7 @@ func _set_cam(which: String, t: float) -> void:
 
 func _place_camera(t: float) -> void:
 	var az := deg_to_rad(AZ0 + AZ_SPAN * clampf(t / ORBIT_T, 0.0, 1.0))
-	var p := Vector3(ORBIT_R * cos(az), ORBIT_H, ORBIT_R * sin(az))
+	var p := Vector3(orbit_r * cos(az), orbit_h, orbit_r * sin(az))
 	cam.transform = Transform3D(Basis.looking_at(LOOK - p, Vector3.UP), p)
 
 
