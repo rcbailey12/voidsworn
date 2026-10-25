@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A2 Engine Test (Babylon)</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+  canvas { display: block; outline: none; }
+  #msg { position: fixed; left: 8px; top: 8px; color: #8a8; font: 12px monospace; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="msg">loading</div>
+<script>
+// A2 engine test, Babylon.js half. Follows contrib/opus/enginetest/SPEC.md. Nothing here comes from the game's
+// fx3d/vfx3d/wfx3d/gfx3d/ships3d code: the effects are built fresh for the test.
+//
+// Query string:
+//   mode=bench|shots   bench: warm-up then the 20 s battle orbit, result JSON on window.__result (shots still
+//                      callable afterwards). shots: no bench, window.__shot(name) only.
+//   res=WxH            render size in pixels (default: the window size)
+//   seconds=20 warmup=3 msaa=4 gputime=1
+//
+// Library: Babylon.js 8.20.0 and the matching loaders, from ./vendor/ if present (run.py fills it, so load time
+// does not include a CDN download), otherwise from jsDelivr.
+(function () {
+  var V = '8.20.0';
+  var libs = [
+    ['vendor/babylon.js', 'https://cdn.jsdelivr.net/npm/babylonjs@' + V + '/babylon.js'],
+    ['vendor/babylonjs.loaders.min.js', 'https://cdn.jsdelivr.net/npm/babylonjs-loaders@' + V + '/babylonjs.loaders.min.js']
+  ];
+  window.__libSource = [];
+  function load(i) {
+    if (i >= libs.length) { window.__start(); return; }
+    var tryOne = function (k) {
+      var s = document.createElement('script');
+      s.src = libs[i][k];
+      s.onload = function () { window.__libSource.push(libs[i][k]); load(i + 1); };
+      s.onerror = function () {
+        if (k === 0) tryOne(1);
+        else { window.__error = 'could not load ' + libs[i][1]; console.error(window.__error); }
+      };
+      document.head.appendChild(s);
+    };
+    tryOne(0);
+  }
+  window.addEventListener('DOMContentLoaded', function () { load(0); });
+})();
+</script>
+<script>
+window.__start = async function () {
+'use strict';
+var B = BABYLON;
+var Q = new URLSearchParams(location.search);
+var MODE = Q.get('mode') || 'bench';
+var SECONDS = parseFloat(Q.get('seconds') || '20');
+var WARMUP = parseFloat(Q.get('warmup') || '3');
+var MSAA = parseInt(Q.get('msaa') || '4', 10);
+var GPUTIME = Q.get('gputime') !== '0';
+var msg = document.getElementById('msg');
+var say = function (s) { msg.textContent = s; };
+
+// ---------- canvas and engine ----------
+var canvas = document.getElementById('c');
+var RW = window.innerWidth, RH = window.innerHeight;
+if (Q.get('res')) { var r = Q.get('res').toLowerCase().split('x'); RW = parseInt(r[0], 10); RH = parseInt(r[1], 10); }
+canvas.style.width = RW + 'px'; canvas.style.height = RH + 'px';
+canvas.width = RW; canvas.height = RH;
+var engine = new B.Engine(canvas, false, {
+  preserveDrawingBuffer: false, stencil: false, powerPreference: 'high-performance', premultipliedAlpha: false
+}, false);
+engine.setHardwareScalingLevel(1);
+engine.setSize(RW, RH);
+engine.enableOfflineSupport = false;
+
+var scene = new B.Scene(engine);
+scene.useRightHandedSystem = true;          // same handedness as glTF and Godot: x bow, y up, z port, no flips
+scene.clearColor = new B.Color4(0, 0, 0, 1);
+scene.skipPointerMovePicking = true;
+scene.autoClear = true;
+
+// ---------- spec constants ----------
+var SHIP_LEN = 24;
+var SHIPS = [ // order = effect stagger order
+  { fac: 'voidsworn', files: ['V1b_r_23.glb'], x: -45, z: 30, bolt: [1.0, 0.45, 0.15], shield: [1.0, 0.46, 0.16] },
+  { fac: 'hegemony', files: ['H4_11.glb'], x: 0, z: 30, bolt: [0.55, 0.82, 1.0], shield: [0.38, 0.68, 1.0] },
+  { fac: 'corsair', files: ['C19_51_shell.glb', 'C19_51_kit.glb'], x: 45, z: 30, rotY: Math.PI, bolt: [0.95, 0.22, 0.10], shield: [0.85, 0.16, 0.10] },
+  { fac: 'chorus', files: ['B16_23.glb'], x: -45, z: -30, bolt: [0.85, 0.90, 0.30], shield: null },
+  { fac: 'ithar', files: ['I8_37.glb'], x: 0, z: -30, bolt: [0.75, 1.0, 0.88], shield: [0.72, 1.0, 0.86] },
+  { fac: 'deathless', files: ['D22_23.glb'], x: 45, z: -30, bolt: [0.20, 1.0, 0.38], shield: null }
+];
+var LOOP = 2.0, STAGGER = 0.3;
+// Key light intensity: tuned so the light grey Hegemony hull reads near-white without clipping.
+var KEY = 3.2;
+var KEY_DIR = new B.Vector3(-0.45, -0.70, -0.55).normalize();
+var FILL_DIR = new B.Vector3(0.6, -0.2, 0.75).normalize();
+
+// ---------- camera ----------
+var cam = new B.FreeCamera('cam', new B.Vector3(0, 70, 150), scene);
+cam.fov = 40 * Math.PI / 180;               // vertical
+cam.fovMode = B.Camera.FOVMODE_VERTICAL_FIXED;
+cam.minZ = 0.5; cam.maxZ = 2000;
+scene.activeCamera = cam;
+function battlePose(t) {                    // t = seconds into the 20 s orbit
+  var az = (200 + 120 * Math.min(Math.max(t, 0), 20) / 20) * Math.PI / 180;
+  cam.position.set(150 * Math.cos(az), 70, 150 * Math.sin(az));
+  cam.setTarget(new B.Vector3(0, -5, 0));
+}
+function closePose() {
+  cam.position.set(20, 14, 58);
+  cam.setTarget(new B.Vector3(45, 0, 30));
+}
+
+// ---------- lights ----------
+var key = new B.DirectionalLight('key', KEY_DIR, scene);
+key.diffuse = new B.Color3(1.0, 0.96, 0.90); key.specular = key.diffuse.clone(); key.intensity = KEY;
+key.position = KEY_DIR.scale(-200);
+var fill = new B.DirectionalLight('fill', FILL_DIR, scene);
+fill.diffuse = new B.Color3(0.55, 0.65, 0.85); fill.specular = fill.diffuse.clone(); fill.intensity = 0.25 * KEY;
+fill.shadowEnabled = false;
+// Ambient: neutral, 0.25 of the key. PBR adds ambientColor x albedo x AO, the same shape as Godot's colour ambient.
+scene.ambientColor = new B.Color3(0.25 * KEY, 0.25 * KEY, 0.25 * KEY);
+
+// ---------- shadows: one cascade set over the formation ----------
+var csm = new B.CascadedShadowGenerator(2048, key);
+csm.numCascades = 4;
+csm.lambda = 0.75;
+csm.shadowMaxZ = 320;
+csm.stabilizeCascades = true;
+csm.autoCalcDepthBounds = false;
+csm.depthClamp = true;
+csm.usePercentageCloserFiltering = true;
+csm.filteringQuality = B.ShadowGenerator.QUALITY_MEDIUM;
+csm.bias = 0.003;
+csm.normalBias = 0.02;
+if (Q.get('shadows') === '0') key.shadowEnabled = false;   // diagnostics only
+
+// ---------- post: HDR, MSAA, bloom, ACES ----------
+var pipe = new B.DefaultRenderingPipeline('post', true, scene, [cam]);
+pipe.samples = MSAA;
+pipe.fxaaEnabled = false;
+pipe.bloomEnabled = true;
+pipe.bloomThreshold = 0.8;
+pipe.bloomWeight = 0.35;
+// Babylon's blur kernel is in pixels, so scale it with the height to keep the same glow size at every resolution
+// (64 at 1440p, 96 at 2160p), the way Godot's mip-based glow behaves.
+pipe.bloomKernel = Math.max(16, Math.round(64 * RH / 1440));
+pipe.bloomScale = 0.5;
+pipe.imageProcessingEnabled = true;
+pipe.imageProcessing.toneMappingEnabled = true;
+pipe.imageProcessing.toneMappingType = B.ImageProcessingConfiguration.TONEMAPPING_ACES;
+pipe.imageProcessing.exposure = 1.0;
+pipe.imageProcessing.contrast = 1.0;
+pipe.imageProcessing.vignetteEnabled = false;
+
+// ---------- shared shader bits ----------
+var NOISE = [
+  'float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }',
+  'float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+  '  return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y); }',
+  'float fbm(vec2 p){ float a = 0.5, s = 0.0; for (int k = 0; k < 4; k++) { s += a * vnoise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return s; }'
+].join('\n');
+var HIDE = 'gl_Position = vec4(2.0, 2.0, 2.0, 1.0);';
+
+// ---------- sky: equirectangular starfield ----------
+// Mapping matches Godot's PanoramaSkyMaterial: u = atan(x, -z) / 2pi (wrapped to 0..1), v = acos(y) / pi, v = 0 is the
+// top row of the PNG. The PNG is sRGB; it is decoded to linear here and tone mapped with the rest of the frame.
+B.Effect.ShadersStore.skyVertexShader = [
+  'precision highp float; attribute vec3 position; uniform mat4 world; uniform mat4 viewProjection; varying vec3 vDir;',
+  'void main(){ vDir = position; gl_Position = viewProjection * world * vec4(position, 1.0); }'].join('\n');
+B.Effect.ShadersStore.skyFragmentShader = [
+  'precision highp float; varying vec3 vDir; uniform sampler2D sky;',
+  'vec3 lin(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }',
+  'void main(){ vec3 d = normalize(vDir); float u = atan(d.x, -d.z) / 6.2831853; u = u < 0.0 ? u + 1.0 : u;',
+  '  float v = acos(clamp(d.y, -1.0, 1.0)) / 3.1415927; gl_FragColor = vec4(lin(texture2D(sky, vec2(u, v)).rgb), 1.0); }'].join('\n');
+var skyTex = new B.Texture('../starfield_4k.png', scene, true, false, B.Texture.BILINEAR_SAMPLINGMODE);
+skyTex.wrapU = B.Texture.WRAP_ADDRESSMODE; skyTex.wrapV = B.Texture.CLAMP_ADDRESSMODE;
+var skyMat = new B.ShaderMaterial('skyMat', scene, { vertex: 'sky', fragment: 'sky' },
+  { attributes: ['position'], uniforms: ['world', 'viewProjection'], samplers: ['sky'] });
+skyMat.setTexture('sky', skyTex);
+skyMat.backFaceCulling = false; skyMat.disableDepthWrite = true;
+var skyBox = B.MeshBuilder.CreateBox('sky', { size: 1000 }, scene);
+skyBox.material = skyMat; skyBox.infiniteDistance = true; skyBox.renderingGroupId = 0; skyBox.isPickable = false;
+
+// ---------- load the ships ----------
+say('loading ships');
+var skyReady = new Promise(function (res) { if (skyTex.isReady()) res(); else skyTex.onLoadObservable.addOnce(function () { res(); }); });
+var shipMeshes = [];
+async function loadShip(def, i) {
+  var conts = await Promise.all(def.files.map(function (f) {
+    return B.SceneLoader.LoadAssetContainerAsync('../assets/', f, scene);
+  }));
+  var pivot = new B.TransformNode('ship_' + def.fac, scene);
+  var spin = new B.TransformNode('spin_' + def.fac, scene); spin.parent = pivot;
+  var off = new B.TransformNode('off_' + def.fac, scene); off.parent = spin;
+  var meshes = [];
+  conts.forEach(function (c) {
+    c.addAllToScene();
+    c.meshes.forEach(function (m) { if (!m.parent) m.parent = off; if (m.getTotalVertices() > 0) meshes.push(m); });
+    c.materials.forEach(function (mat) {
+      if (!(mat instanceof B.PBRMaterial)) return;
+      mat.ambientColor = new B.Color3(1, 1, 1);
+      // Only the unpainted barge test exports have no material; glTF's default (metal 1, rough 1) would render
+      // them black without an environment map. The painted PC files carry their own materials.
+      if (mat.name === '__GLTFLoader._default') { mat.metallic = 0.0; mat.roughness = 0.75; }
+    });
+  });
+  // bounds in the file's own frame (everything is identity at this point)
+  pivot.computeWorldMatrix(true);
+  var lo = new B.Vector3(1e9, 1e9, 1e9), hi = lo.scale(-1);
+  meshes.forEach(function (m) {
+    m.computeWorldMatrix(true); m.refreshBoundingInfo(); var bb = m.getBoundingInfo().boundingBox;
+    lo = B.Vector3.Minimize(lo, bb.minimumWorld); hi = B.Vector3.Maximize(hi, bb.maximumWorld);
+  });
+  var c = lo.add(hi).scale(0.5), size = hi.subtract(lo);
+  var s = SHIP_LEN / size.x;
+  off.position = c.scale(-1);
+  spin.rotation.y = def.rotY || 0;
+  pivot.scaling.setAll(s);
+  pivot.position.set(def.x, 0, def.z);
+  meshes.forEach(function (m) {
+    m.computeWorldMatrix(true); m.refreshBoundingInfo();
+    m.receiveShadows = true; csm.addShadowCaster(m, false); m.isPickable = true; m.renderingGroupId = 1;
+    shipMeshes.push(m);
+  });
+  def.meshes = meshes; def.pivot = pivot; def.scale = s;
+}
+await Promise.all(SHIPS.map(loadShip).concat([skyReady]));
+
+// ---------- ship anchor points for the effects (world space) ----------
+SHIPS.forEach(function (d) {
+  var lo = new B.Vector3(1e9, 1e9, 1e9), hi = lo.scale(-1), tmp = new B.Vector3();
+  var pts = [];
+  d.meshes.forEach(function (m) {
+    var wm = m.getWorldMatrix(), p = m.getVerticesData(B.VertexBuffer.PositionKind);
+    for (var k = 0; k < p.length; k += 3) {
+      B.Vector3.TransformCoordinatesFromFloatsToRef(p[k], p[k + 1], p[k + 2], wm, tmp);
+      lo.minimizeInPlace(tmp); hi.maximizeInPlace(tmp); pts.push(tmp.x, tmp.y, tmp.z);
+    }
+  });
+  // bow: the mean of the vertices in the front 2% of the length, nudged just ahead of the tip
+  var cut = hi.x - 0.02 * SHIP_LEN, sy = 0, sz = 0, n = 0;
+  for (var k = 0; k < pts.length; k += 3) if (pts[k] >= cut) { sy += pts[k + 1]; sz += pts[k + 2]; n++; }
+  d.lo = lo; d.hi = hi;
+  d.bow = new B.Vector3(hi.x + 0.4, n ? sy / n : 0, n ? sz / n : d.z);
+  // port hull point: a ray from the port side (+z) at midship
+  d.port = null;
+  var tries = [0, 0.15, -0.15, 0.3, -0.3];
+  for (var t = 0; t < tries.length && !d.port; t++) {
+    var y0 = tries[t] * (hi.y - lo.y);
+    var ray = new B.Ray(new B.Vector3(d.x, y0, hi.z + 20), new B.Vector3(0, 0, -1), 200);
+    var pk = scene.pickWithRay(ray, function (m) { return d.meshes.indexOf(m) >= 0; });
+    if (pk && pk.hit) d.port = pk.pickedPoint.add(new B.Vector3(0, 0, 0.15));
+  }
+  if (!d.port) d.port = new B.Vector3(d.x, 0, hi.z);
+  d.target = d.bow.add(new B.Vector3(60, 0, -10));      // 60 ahead, 10 out to starboard
+  d.boom = new B.Vector3(d.x, 0, d.z - 12);             // 12 off the starboard side (from the centre line)
+});
+
+// ---------- effects: all driven by one clock uniform, built from static per-particle data ----------
+// Each particle stores its start time inside the 2 s loop; the shaders work out age = mod(t - start, 2) and draw
+// it while age < life. So the whole loop is a pure function of the clock: the stills are exact and repeatable,
+// and the CPU does nothing per frame beyond setting a few uniforms.
+var rng = (function (a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })(20261025);
+function rdir() { var z = rng() * 2 - 1, a = rng() * 6.2831853, r = Math.sqrt(1 - z * z); return new B.Vector3(r * Math.cos(a), r * Math.sin(a), z); }
+
+function QuadBatch(name) { this.name = name; this.a = [[], [], [], []]; this.n = 0; }
+QuadBatch.prototype.add = function (a0, a1, a2, a3) {
+  var src = [a0, a1, a2, a3];
+  for (var v = 0; v < 4; v++) for (var k = 0; k < 4; k++) Array.prototype.push.apply(this.a[k], src[k]);
+  this.n++;
+};
+QuadBatch.prototype.build = function (corners, mat) {
+  var pos = [], idx = [];
+  for (var q = 0; q < this.n; q++) {
+    for (var v = 0; v < 4; v++) pos.push(corners[v][0], corners[v][1], 0);
+    var b = q * 4; idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
+  }
+  var m = new B.Mesh(this.name, scene), vd = new B.VertexData();
+  vd.positions = pos; vd.indices = idx; vd.applyToMesh(m, false);
+  for (var k = 0; k < 4; k++) m.setVerticesData('a' + k, new Float32Array(this.a[k]), false, 4);
+  m.material = mat; m.alwaysSelectAsActiveMesh = true; m.isPickable = false; m.renderingGroupId = 1;
+  return m;
+};
+
+var COMMON_V = 'precision highp float; attribute vec3 position; attribute vec4 a0; attribute vec4 a1; attribute vec4 a2; attribute vec4 a3; uniform float uTime;';
+// Streaks: bolts (no drag, fixed length, stop at the target) and sparks (drag, length from speed, fade out).
+// a0 = start pos, start time; a1 = velocity, life; a2 = colour, intensity; a3 = length (bolt) or blur seconds (spark), width, drag, unused
+B.Effect.ShadersStore.streakVertexShader = COMMON_V + [
+  'uniform mat4 viewProjection; uniform vec3 uCam; varying vec2 vUv; varying vec3 vCol;',
+  'void main(){ float a = uTime - a0.w; float age = mod(a, ' + LOOP.toFixed(1) + '); float life = a1.w;',
+  '  if (a < 0.0 || age >= life) { ' + HIDE + ' vUv = vec2(0.0); vCol = vec3(0.0); return; }',
+  '  vec3 v = a1.xyz; float sp = max(length(v), 1e-4); vec3 dir = v / sp; float drag = a3.z; vec3 head; float L; float fade = 1.0;',
+  '  if (drag > 0.0) { float e = exp(-drag * age); head = a0.xyz + v * (1.0 - e) / drag; L = max(a3.x * sp * e, 0.12); float u = age / life; fade = (1.0 - u) * (1.0 - u); }',
+  '  else { float tr = sp * age; head = a0.xyz + dir * tr; L = min(a3.x, tr); }',
+  '  vec3 tail = head - dir * L; vec3 mid = 0.5 * (head + tail);',
+  '  vec3 side = normalize(cross(dir, uCam - mid));',
+  '  vec3 p = mix(tail, head, position.x) + side * position.y * a3.y;',
+  '  vUv = position.xy; vCol = a2.rgb * a2.a * fade; gl_Position = viewProjection * vec4(p, 1.0); }'].join('\n');
+B.Effect.ShadersStore.streakFragmentShader = [
+  'precision highp float; varying vec2 vUv; varying vec3 vCol;',
+  'void main(){ float x = abs(vUv.y) * 2.0; float core = exp(-x * x * 22.0); float glow = exp(-x * x * 4.0) * 0.45;',
+  '  float along = smoothstep(0.0, 0.45, vUv.x) * (1.0 - smoothstep(0.9, 1.0, vUv.x) * 0.7);',
+  '  vec3 c = vCol * (glow + core) * along + vec3(core * core) * length(vCol) * 0.25 * along;',
+  '  gl_FragColor = vec4(c, 1.0); }'].join('\n');
+
+// Sprites: camera-facing quads. kind 0 muzzle flash, 1 flame, 2 fireball core, 3 smoke (alpha blended mesh).
+// a0 = centre, start time; a1 = size0, size1, life, kind; a2 = colour, intensity; a3 = drift velocity, seed
+B.Effect.ShadersStore.spriteVertexShader = COMMON_V + [
+  'uniform mat4 view; uniform mat4 projection; varying vec2 vUv; varying vec4 vCol; varying vec3 vInfo;',
+  'void main(){ float a = uTime - a0.w; float age = mod(a, ' + LOOP.toFixed(1) + '); float life = a1.z;',
+  '  if (a < 0.0 || age >= life) { ' + HIDE + ' vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec3(0.0); return; }',
+  '  float t = age / life; float kind = a1.w; float g;',
+  '  if (kind < 0.5) g = t; else if (kind < 1.5) g = 1.0 - pow(1.0 - t, 2.2); else if (kind < 2.5) g = sqrt(t); else g = 1.0 - pow(1.0 - t, 1.6);',
+  '  float size = mix(a1.x, a1.y, g);',
+  '  vec3 c = a0.xyz + a3.xyz * (1.0 - exp(-2.0 * age)) / 2.0;',
+  '  float ang = a3.w * 6.2831853 + age * (fract(a3.w * 7.31) - 0.5) * 2.4; float cs = cos(ang), sn = sin(ang);',
+  '  vec2 q = vec2(cs * position.x - sn * position.y, sn * position.x + cs * position.y);',
+  '  vec4 vp = view * vec4(c, 1.0); vp.xy += q * size; gl_Position = projection * vp;',
+  '  vUv = position.xy * 2.0; vCol = a2; vInfo = vec3(t, kind, a3.w + age * 0.35); }'].join('\n');
+B.Effect.ShadersStore.spriteFragmentShader = 'precision highp float; varying vec2 vUv; varying vec4 vCol; varying vec3 vInfo;\n' + NOISE + [
+  'void main(){ float t = vInfo.x; float kind = vInfo.y; float r = length(vUv); vec3 c = vec3(0.0); float alpha = 1.0;',
+  '  if (r > 1.0) discard;',
+  '  if (kind < 0.5) {',                              // muzzle flash
+  '    float f = (1.0 - t) * (1.0 - t) * vCol.a;',
+  '    c = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8;',
+  '    c += vCol.rgb * f * 0.5 * (exp(-abs(vUv.x) * 40.0) * exp(-abs(vUv.y) * 3.0) + exp(-abs(vUv.y) * 40.0) * exp(-abs(vUv.x) * 3.0));',
+  '  } else if (kind < 1.5) {',                       // rolling flame
+  '    float n = fbm(vUv * 1.7 + vec2(vInfo.z * 13.1, vInfo.z * 7.7) + vec2(0.0, -t * 1.2));',
+  '    float dens = (1.0 - r) * 1.4 + (n - 0.5) * 1.15; float thr = t * 1.1;',
+  '    float m = smoothstep(thr, thr + 0.35, dens); float heat = clamp(dens - thr, 0.0, 1.0) * (1.0 - t * 0.6);',
+  '    vec3 col = mix(vec3(0.45, 0.04, 0.01), vec3(1.0, 0.32, 0.04), smoothstep(0.0, 0.3, heat));',
+  '    col = mix(col, vec3(1.0, 0.75, 0.35), smoothstep(0.3, 0.65, heat)); col = mix(col, vec3(1.0, 0.96, 0.85), smoothstep(0.65, 1.0, heat));',
+  '    c = col * mix(vec3(1.0), vCol.rgb * 1.6, 0.25) * vCol.a * (0.5 + 2.6 * heat * heat) * m * smoothstep(0.0, 0.05, t);',
+  '  } else if (kind < 2.5) {',                       // fireball core
+  '    float f = pow(1.0 - t, 1.5) * vCol.a;',
+  '    c = vCol.rgb * exp(-r * r * 3.0) * f + vec3(exp(-r * r * 10.0)) * f;',
+  '  } else {',                                       // smoke
+  '    float n = fbm(vUv * 1.3 + vec2(vInfo.z * 11.3, vInfo.z * 5.1) + vec2(t * 0.4, 0.0));',
+  '    float dens = (1.0 - r) * 1.25 + (n - 0.5) * 0.95; float m = smoothstep(0.05, 0.55, dens);',
+  '    alpha = m * vCol.a * smoothstep(0.0, 0.12, t) * pow(1.0 - t, 1.3);',
+  '    c = vCol.rgb * (0.7 + 0.6 * n) + vec3(1.0, 0.4, 0.1) * pow(1.0 - t, 6.0) * 0.9;',
+  '  }',
+  '  gl_FragColor = vec4(c, alpha); }'].join('\n');
+
+// Shield: an ellipsoid shell per shielded ship. Brightest at the hit, a ring running out from it, a rim, and a mask
+// that keeps it to the struck side (a partial bubble). Fades over 0.5 s.
+B.Effect.ShadersStore.shieldVertexShader = [
+  'precision highp float; attribute vec3 position; attribute vec3 normal; uniform mat4 world; uniform mat4 viewProjection; uniform vec3 uRad;',
+  'varying vec3 vW; varying vec3 vN;',
+  'void main(){ vec4 w = world * vec4(position, 1.0); vW = w.xyz; vN = normalize(normal / uRad); gl_Position = viewProjection * w; }'].join('\n');
+B.Effect.ShadersStore.shieldFragmentShader = 'precision highp float; varying vec3 vW; varying vec3 vN; uniform float uTime; uniform float uT0; uniform vec3 uHit; uniform vec3 uCol; uniform vec3 uCam;\n' + NOISE + [
+  'void main(){ float a = uTime - uT0; float age = mod(a, ' + LOOP.toFixed(1) + ');',
+  '  if (a < 0.0 || age > 0.5) discard;',
+  '  float f = age / 0.5; float fade = (1.0 - f) * (1.0 - f) * smoothstep(0.0, 0.03, age);',
+  '  float d = length(vW - uHit);',
+  '  float mask = 1.0 - smoothstep(6.0, 15.0, d);',
+  '  float hd = d / 1.8; float hit = exp(-hd * hd) * 6.0;',
+  '  float rd = (d - (1.0 + f * 11.0)) / 0.8; float ring = exp(-rd * rd) * 1.8 * (1.0 - f);',
+  '  vec3 V = normalize(uCam - vW); float fres = pow(1.0 - abs(dot(normalize(vN), V)), 5.0);',
+  '  float cells = 0.75 + 0.5 * fbm(vW.xy * 0.9 + vW.zx * 0.6);',
+  '  float I = (hit + ring + (0.004 + 1.4 * fres) * cells * mask) * fade;',
+  '  if (I < 0.002) discard;',
+  '  gl_FragColor = vec4(uCol * I, 1.0); }'].join('\n');
+
+function fxMat(name, v, f, extra, alphaMode) {
+  var m = new B.ShaderMaterial(name, scene, { vertex: v, fragment: f }, {
+    attributes: extra.attributes, uniforms: extra.uniforms, samplers: [], needAlphaBlending: true
+  });
+  m.alphaMode = alphaMode; m.backFaceCulling = false; m.disableDepthWrite = true;
+  return m;
+}
+var QUAD_ATTR = ['position', 'a0', 'a1', 'a2', 'a3'];
+var matStreak = fxMat('fxStreak', 'streak', 'streak', { attributes: QUAD_ATTR, uniforms: ['viewProjection', 'uTime', 'uCam'] }, B.Constants.ALPHA_ADD);
+var matAdd = fxMat('fxAdd', 'sprite', 'sprite', { attributes: QUAD_ATTR, uniforms: ['view', 'projection', 'uTime'] }, B.Constants.ALPHA_ADD);
+var matSmoke = fxMat('fxSmoke', 'sprite', 'sprite', { attributes: QUAD_ATTR, uniforms: ['view', 'projection', 'uTime'] }, B.Constants.ALPHA_COMBINE);
+
+var streaks = new QuadBatch('fx_streaks'), adds = new QuadBatch('fx_sprites'), smokes = new QuadBatch('fx_smoke');
+var shields = [];
+SHIPS.forEach(function (d, i) {
+  var T0 = i * STAGGER;
+  // 1. main weapon: three bolts 0.12 s apart, each with a 0.1 s muzzle flash
+  var dv = d.target.subtract(d.bow), dist = dv.length(), dir = dv.scale(1 / dist);
+  for (var s = 0; s < 3; s++) {
+    var ts = T0 + s * 0.12;
+    streaks.add([d.bow.x, d.bow.y, d.bow.z, ts], [dir.x * 120, dir.y * 120, dir.z * 120, dist / 120], d.bolt.concat([9.0]), [6.0, 0.9, 0.0, 0]);
+    adds.add([d.bow.x, d.bow.y, d.bow.z, ts], [2.6, 3.4, 0.1, 0], d.bolt.concat([7.0]), [0, 0, 0, rng()]);
+  }
+  // 2. shield hit (or hull hit) on the port side at 0.6 s
+  var tHit = T0 + 0.6;
+  if (d.shield) {
+    var rad = new B.Vector3((d.hi.x - d.lo.x) * 0.5 * 1.12 + 1.0, (d.hi.y - d.lo.y) * 0.5 * 1.3 + 1.2, (d.hi.z - d.lo.z) * 0.5 * 1.3 + 1.2);
+    var ctr = d.lo.add(d.hi).scale(0.5);
+    var sh = B.MeshBuilder.CreateSphere('shield_' + d.fac, { diameter: 2, segments: 48 }, scene);
+    sh.position.copyFrom(ctr); sh.scaling.copyFrom(rad); sh.isPickable = false; sh.renderingGroupId = 1;
+    sh.alwaysSelectAsActiveMesh = true;
+    var m = fxMat('fxShield_' + d.fac, 'shield', 'shield', { attributes: ['position', 'normal'],
+      uniforms: ['world', 'viewProjection', 'uRad', 'uTime', 'uT0', 'uHit', 'uCol', 'uCam'] }, B.Constants.ALPHA_ADD);
+    m.backFaceCulling = true;
+    m.setVector3('uRad', rad); m.setFloat('uT0', tHit);
+    m.setVector3('uHit', new B.Vector3(ctr.x, ctr.y, ctr.z + rad.z));
+    m.setColor3('uCol', new B.Color3(d.shield[0] * 2.2, d.shield[1] * 2.2, d.shield[2] * 2.2));
+    sh.material = m; sh.alphaIndex = 2; shields.push(m);
+  } else {
+    var p = d.port;
+    for (var k = 0; k < 18; k++) {
+      var sd = rdir(); sd.z = Math.abs(sd.z) * 1.6 + 0.4; sd.normalize();
+      var sp = 10 + rng() * 14;
+      streaks.add([p.x, p.y, p.z, tHit + rng() * 0.08], [sd.x * sp, sd.y * sp, sd.z * sp, 0.25 + rng() * 0.3], [1.0, 0.55, 0.15, 8.0], [0.035, 0.13, 2.5, 0]);
+    }
+    for (var k = 0; k < 3; k++) {
+      var o = rdir().scale(0.35);
+      adds.add([p.x + o.x, p.y + o.y, p.z + Math.abs(o.z), tHit + k * 0.05], [0.9, 2.6, 0.55 - k * 0.05, 1], [1.0, 0.5, 0.15, 3.0], [0, 0.4, 1.4 + rng(), rng()]);
+    }
+  }
+  // 3. explosion at 1.2 s, 12 units off the starboard side: core, rolling flame, sparks, smoke (1.5 s total)
+  var tB = T0 + 1.2, e = d.boom;
+  adds.add([e.x, e.y, e.z, tB], [1.5, 6.5, 0.35, 2], [1.0, 0.85, 0.6, 10.0], [0, 0, 0, rng()]);
+  for (var k = 0; k < 7; k++) {
+    var o = rdir().scale(rng() * 1.2), v = rdir().scale(1.5 + rng() * 2.0);
+    adds.add([e.x + o.x, e.y + o.y, e.z + o.z, tB + rng() * 0.06], [2.0 + rng(), 4.6 + rng() * 1.4, 0.75 + rng() * 0.3, 1], [1.0, 0.55, 0.2, 3.5], [v.x, v.y, v.z, rng()]);
+  }
+  for (var k = 0; k < 30; k++) {
+    var sd = rdir(), sp = 18 + rng() * 22, o = sd.scale(0.8);
+    streaks.add([e.x + o.x, e.y + o.y, e.z + o.z, tB + rng() * 0.05], [sd.x * sp, sd.y * sp, sd.z * sp, 0.6 + rng() * 0.45], [1.0, 0.62, 0.25, 6.0], [0.05, 0.18, 1.8, 0]);
+  }
+  for (var k = 0; k < 6; k++) {
+    var o = rdir().scale(rng() * 1.5), v = rdir().scale(1.5 + rng() * 1.5), dl = 0.12 + rng() * 0.1;
+    smokes.add([e.x + o.x, e.y + o.y, e.z + o.z, tB + dl], [3.5, 10.0 + rng() * 2.0, 1.5 - dl, 3], [0.10, 0.095, 0.09, 0.6], [v.x, v.y, v.z, rng()]);
+  }
+});
+var CORNERS = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]];
+var STREAK_CORNERS = [[0, -0.5], [1, -0.5], [1, 0.5], [0, 0.5]];
+var mSmoke = smokes.build(CORNERS, matSmoke); mSmoke.alphaIndex = 0;
+var mAdd = adds.build(CORNERS, matAdd); mAdd.alphaIndex = 1;
+var mStreak = streaks.build(STREAK_CORNERS, matStreak); mStreak.alphaIndex = 1;
+var fxMats = [matStreak, matAdd, matSmoke].concat(shields);
+
+function setClock(t) {
+  for (var k = 0; k < fxMats.length; k++) { fxMats[k].setFloat('uTime', t); fxMats[k].setVector3('uCam', cam.position); }
+}
+
+// ---------- ready, first frame, load time ----------
+say('compiling');
+battlePose(0); setClock(0);
+await new Promise(function (res) { scene.executeWhenReady(function () { res(); }); });
+scene.render();
+var loadS = await new Promise(function (res) { requestAnimationFrame(function () { res(performance.now() / 1000); }); });
+msg.style.display = 'none';
+
+var gl = engine._gl, glInfo = {};
+try {
+  var dbg = gl.getExtension('WEBGL_debug_renderer_info');
+  glInfo.renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+  glInfo.vendor = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+} catch (e) { glInfo.renderer = 'unknown'; }
+var tris = 0; shipMeshes.forEach(function (m) { tris += m.getTotalIndices() / 3; });
+window.__info = { load_s: loadS, gl: glInfo, webgl: engine.webGLVersion, width: engine.getRenderWidth(), height: engine.getRenderHeight(),
+  ship_tris: tris, lib: window.__libSource, ships: SHIPS.map(function (d) {
+    return { fac: d.fac, scale: +d.scale.toFixed(3), bow: [d.bow.x, d.bow.y, d.bow.z].map(function (v) { return +v.toFixed(2); }),
+      size: [d.hi.x - d.lo.x, d.hi.y - d.lo.y, d.hi.z - d.lo.z].map(function (v) { return +v.toFixed(2); }) };
+  }) };
+
+// ---------- fixed-clock stills ----------
+// battle_05 and battle_12: the orbit at t = 5.0 and 12.0 s, with the effect loop at the same t.
+// close_13: the close-up with the effect loop at t = 1.3 s. The loop starts at t = 0 (nothing before it).
+var SHOTS = { battle_05: [5.0, 'battle'], battle_12: [12.0, 'battle'], close_13: [1.3, 'close'] };
+// debug views (not part of the spec's stills): top-down to check the bows, a close look at the Hegemony for the key light
+var DEBUG = { debug_top: [[0, 190, 0.01], [0, 0, 0], 0.5], debug_heg: [[-25, 14, 58], [0, 0, 30], 0.0],
+  debug_boom: [[-14, 6, 0], [0, 0, 18], 1.85], debug_hull: [[-30, 8, 5], [-45, 0, -20], 1.62] };
+var benchRunning = false;
+window.__shot = function (name) {
+  var s = SHOTS[name], dbg = DEBUG[name]; if ((!s && !dbg) || benchRunning) return null;
+  engine.stopRenderLoop();
+  if (dbg) { cam.position.fromArray(dbg[0]); cam.setTarget(B.Vector3.FromArray(dbg[1])); setClock(dbg[2]); }
+  else { if (s[1] === 'battle') battlePose(s[0]); else closePose(); setClock(s[0]); }
+  scene.render(); scene.render();
+  return canvas.toDataURL('image/png');
+};
+window.__shotNames = Object.keys(SHOTS);
+
+// ---------- benchmark ----------
+function runBench() {
+  benchRunning = true;
+  var inst = null;
+  if (GPUTIME) { try { inst = new B.EngineInstrumentation(engine); inst.captureGPUFrameTime = true; } catch (e) { inst = null; } }
+  var t0 = -1, last = -1, times = [], gpu = [];
+  engine.runRenderLoop(function () {
+    var now = performance.now();
+    if (t0 < 0) t0 = now;
+    var t = (now - t0) / 1000;
+    if (last >= 0 && t > WARMUP && t <= WARMUP + SECONDS) {
+      times.push(now - last);
+      if (inst && inst.gpuFrameTimeCounter && inst.gpuFrameTimeCounter.lastSecAverage > 0) gpu.push(inst.gpuFrameTimeCounter.current * 1e-6);
+    }
+    last = now;
+    if (t > WARMUP + SECONDS) {
+      engine.stopRenderLoop(); benchRunning = false;
+      var sorted = times.slice().sort(function (a, b) { return b - a; });
+      var k = Math.max(1, Math.round(sorted.length * 0.01)), worst = 0;
+      for (var j = 0; j < k; j++) worst += sorted[j];
+      var sum = times.reduce(function (a, b) { return a + b; }, 0);
+      var med = times.slice().sort(function (a, b) { return a - b; })[Math.floor(times.length / 2)];
+      var gpuAvg = gpu.length ? gpu.reduce(function (a, b) { return a + b; }, 0) / gpu.length : null;
+      var r3 = function (v) { return Math.round(v * 1000) / 1000; };
+      window.__result = {
+        engine: 'babylon', renderer: engine.webGLVersion >= 2 ? 'webgl2' : 'webgl1',
+        width: engine.getRenderWidth(), height: engine.getRenderHeight(), seconds: SECONDS, frames: times.length,
+        avg_ms: r3(sum / times.length), p99_ms: r3(worst / k), max_ms: r3(sorted[0]), fps_avg: r3(times.length / (sum / 1000)),
+        load_s: r3(loadS), gpu_mem_mb: null,
+        notes: '',
+        _extra: { median_ms: r3(med), gpu_frame_ms_avg: gpuAvg === null ? null : r3(gpuAvg), gl: glInfo, msaa: MSAA,
+          ship_tris: tris, warmup_s: WARMUP, lib: window.__libSource }
+      };
+      return;
+    }
+    if (t < WARMUP) battlePose(0); else battlePose(t - WARMUP);
+    setClock(t);
+    scene.render();
+  });
+}
+window.__ready = true;
+if (MODE === 'bench') runBench();
+};
+</script>
+</body>
+</html>
