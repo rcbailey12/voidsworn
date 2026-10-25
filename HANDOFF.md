@@ -1,4 +1,4 @@
-# Voidsworn: handoff (Oct 25, 2026, early morning)
+# Voidsworn: handoff (Oct 25, 2026, afternoon)
 
 ## 1. What and where
 
@@ -27,19 +27,23 @@
 
 ## 2. Current state
 
-- **Last recorded publish:** v53.8 (artifact Version 65, Oct 21). The later barge work (v12 to v14) is not published.
-- **Game code** last changed Oct 22 (b6c4b93). It runs, and the sims run clean since the B-14 harness guard (Oct 24).
-- **Phases done:** A0 (barge files in git), B0 (ground truth and sim baseline), A1 step 1 (shape pick). Status table at the top of the plan.
-- **Pyre-Barge (C19_51):** v14 is in git (hulls_hi/ and hulls/) and the repo build matches Ryan's PC. Ryan picked the new shape (FINDINGS R12): option C, the double-sided hulk, plus some of option B's salvage junk. Clay builder: `tools/blender/a1/barge_shapes.py` (option_C). Renders: `docs/ship_pipeline/c19_example/a1_options/`.
-  - The v14 kit script (`tools/blender/hs/c19_kit.py`) still adds naval parts; step 2 replaces it with the C shape.
-- **Sim baseline:** `contrib/opus/compute/balance_reference.md` (FINDINGS S1 to S7). Stable (0 crashes in about 19,500 sim battles). Elites are the wall in sectors 2 and 3, and waits reach about 130 s per battle in sector 3.
-- **Known open bugs** (all in FINDINGS.md "Bugs"):
-  - the save-brick class;
-  - the retreat dialog hole;
-  - reload during the reward screens;
-  - a captured flagship joining the fleet;
-  - several smaller ones.
-- **Battles today:** about 7 ships on board in sector 1 up to about 12 in sector 3. Enemy fleets are capped at 8. Waits are about 11 to 15 s of animation per round.
+- **Phase status** (top of the plan): A0, B0, A1 DONE. B1 waits only on Ryan's playtest. B2 items 1 to 3 built; PC checks running. A2 in progress. A3 to A5 and B3 to B5 not started.
+- **Last recorded publish:** v53.8 (artifact Version 65, Oct 21). Nothing since is published; the playtest build is `index_test.html` from `build.py test`.
+- **Barge (C19_51) v15:** shape and paint approved as steps (R13, R14); final sign-off with its effects in A5 (R16). Source of truth: `tools/blender/a1/barge_v15.py` plus `assets/ships/C19_51/`.
+- **B1 (fix what can eat a win):** every listed fix in main with scripted checks (`contrib/opus/tools/b1_tests.js`, 39 ok), onboarding 1 to 5, enemy markers, and B-16 (AI hulls vanished on first damage) fixed. PC smoke passed.
+- **B2 (faster, then bigger battles):** in main (1908387, f86f04a, 09f4439, c747220):
+  - one PACE table (core.js) read by game and sim; enemy turns and follow-up shots faster; Enter or Space hurries an enemy turn;
+  - the size ramp (battle.js RAMP): about 9 / 13 / 18 ships on board by sector (soft ceiling 10 / 14 / 20), leaner escorts, budgets scaled by the player's fleet power;
+  - capture: add, strip or ransom on ONE batched prize screen with defaults (R23); ransom pays less with repeats; full fleet auto-scraps with a toast; flagships blocked;
+  - sim `real` timing model (FINDINGS S8): 7.3 to 14.2 s per round at the new sizes (limit 15, target 12; sector 3 slightly over target).
+  - **Running on the PC now** (job in `voidsworn_test\build`, outputs `b2_fuzz.txt`, `b2_boss.txt`, `b2_pace.txt`, tails in smoke_log.txt): `fuzz 2000`, `bossmatrix 32` (sector 1, escorts at 0.3), `pacecheck.py`. Read them, update FINDINGS F2, S5 and S6, then Ryan's playtest of B1 plus B2 is the exit.
+- **A2 engine test** (contrib/opus/enginetest/; SPEC.md is the brief; scope trimmed by Ryan, R20; environment added, R21; Babylon moved to 9.30.0 for fairness, R22):
+  - Babylon (8.20 build) ran on the PC: 6 ships 1.0 ms a frame at 4K, 24 ships 1.9 ms. Black squares on the real GPU fixed (NaN guards). Its builder is moving to 9.30, then max mode, 40 ships, physics, presentation, board slice, environment.
+  - Godot 4.7.2 (v2) ran on the PC: 6 ships 2.2 ms at 4K, 24 ships 6.8 ms and 40 ships 14.4 ms (about 4 ms per frame unexplained, being profiled), max mode 5.2 ms but it loses hull albedo (bug). Its builder is fixing that list, then board, environment and the .exe.
+  - Shared max-detail six ships (8K PBR, emissive, more geometry) plus env assets (dead-star sky, asteroids) are being built by a third helper (tools/blender/a2detail/, PC job tools/pc/jobs/a2_detail.bat).
+  - Raw PC results: `contrib/opus/enginetest/results/run_2026-10-25/`. RESULTS.md and the blind reveal come after all three land. Hold pictures from Ryan until then (one combined blind reveal, R18).
+- **Outside models:** Muse runs DeepSeek and Qwen from briefs in `contrib/opus/briefs/`. Done: engine choice and B2 syntheses (picked up, X13), Muse's audit of Opus (accepted, X15). Running: `muse_2026-10-25b_while_opus_paused.md` (A5 effects sheets, B3 admiral levers, port plan, FINDINGS follow-up pass).
+- **Project skills** now exist in `.claude/skills/` (ship-kit, screenshot-verdict, playtest-and-balance). Use them.
 
 ## 3. Decisions
 
@@ -69,21 +73,16 @@
 
 ## 4. Open questions for Ryan
 
-None blocking. The barge shape is picked. He weighs in next at:
-- the dressed barge (A1 step 2 screenshots, then A1 sign-off);
-- his OK before Godot is installed (A2);
-- the engine call (A3);
-- visual sign-offs and playtests (plan section 9).
+None blocking. He weighs in next at:
+- the B1 plus B2 playtest run (what to feel: quicker enemy turns, Enter or Space to hurry, bigger fleets with fragile escorts, the one-screen prize choice; plus the B1 list: reward-screen reloads, the retreat dialog, boarding a flagship, a full Corsair fleet, Standard AI on a fresh profile);
+- the engine call (A3) after the blind reveal and RESULTS.md;
+- visual sign-offs (plan section 9).
 
-## 5. Next 3 tasks
+## 5. Next tasks
 
-1. **A1 step 2: dress the picked shape.**
-   - Start from `option_C` in `tools/blender/a1/barge_shapes.py`. Add B's junk: one stolen block (B's hammerhead or cargo section, cut down) and mismatched engine pods (one oversized, like B's donor engine).
-   - Then the plan's step 2 list: stolen-panel plating with bolts, salvage asymmetry, bolted belly slabs, antenna arrays and radiators (already in the clay), guns forward or to the side only. Run the 9-cell blob sweep before Ryan sees it.
-   - Build on the PC Blender (4.5.14) through the watcher for the full-detail version. The cloud can run clay checks (pip bpy 5.2, see Gotchas).
-   - **Pass:** Ryan says yes on studio renders, then in-game shots at battle zoom and close-up.
-2. **B1: fix what can eat a win** (save-brick class, retreat dialog, reward-screen reload, captured flagship, the smaller ones). FINDINGS "Bugs" lists them; re-run the check pack and fuzz after, and compare against the baseline.
-3. **A2: six-ship engine test.** Needs Ryan's OK to install Godot on his PC (plan section 9, item 3).
+1. **B2 checks:** read the PC results (fuzz must show 0 exceptions; sector 1 boss matrix against the 50 to 90% band; pace check), update FINDINGS and the plan, sync c747220 (campaign_run.js, head.html) to the PC build, then ask Ryan for the playtest.
+2. **A2:** run each helper's milestone on the PC as it lands (fresh staging folder per job; verify job.bat; separate run.request). When Babylon 9.30, Godot fixes and the max-detail assets are all in: run main, stress, 40 and max at 1440p and 4K for both, collect matching stills, write RESULTS.md (numbers, the Muse engine synthesis points, X12 Steam overlay, port cost), build the blind side-by-side (A and B labels), then A3 with Ryan.
+3. **Muse returns:** check the four syntheses from the afternoon brief and fold them into A5, B3 and the A3 page; apply the follow-up registry edits.
 
 ## 6. Gotchas
 
@@ -119,6 +118,12 @@ None blocking. The barge shape is picked. He weighs in next at:
 - xatlas crashes inside Blender on Windows: prepare UVs in the sandbox (`tools/blender/uvprep.py`), then bake with `hullbake.py`.
 - download.blender.org blocks scripted downloads; the Berkeley mirror works.
 
+**Oct 25 lessons:**
+- Re-using a staged path with device_commit_files can write a stale earlier copy: stage every job from a fresh folder and compare `build\job.bat` byte for byte before sending run.request.
+- `pkill -f <pattern>` or `pgrep -f` inside a Bash call matches that call's own command line and kills the shell (exit 144). Find node PIDs with `ps` and filter instead.
+- Bigger B2 battles make `fuzz 2000` take about an hour on the PC.
+- Effects that look fine in software rendering can show black squares on the real GPU (NaN); guard shaders (screenshot-verdict skill).
+
 **Checks and the game:**
 - closeshot's local server needs a big backlog (request_queue_size 256), or desktop shots silently lack the kit.
 - Full smoke takes about 4 min on the PC. Smoke does not catch invisible hulls: add a PC closeshot plus console capture (`errprobe.py`).
@@ -133,5 +138,5 @@ None blocking. The barge shape is picked. He weighs in next at:
 
 Starter line:
 ```
-Read HANDOFF.md, then contrib/opus/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). You own the approved plan: continue with A1 step 2 (dress the picked barge shape) and B1, keeping the PC runner flow.
+Read HANDOFF.md, then contrib/opus/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). You own the approved plan: read the B2 PC check results and get Ryan's B1 plus B2 playtest, keep A2 moving (run each engine milestone on the PC, then RESULTS.md and the blind reveal for A3), and fold in Muse's afternoon syntheses.
 ```
