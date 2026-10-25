@@ -25,13 +25,14 @@
 //   res=WxH            render size in pixels (default: the window size)
 //   seconds=20 warmup=3 msaa=4 gputime=1
 //
-// Library: Babylon.js 8.20.0 and the matching loaders, from ./vendor/ if present (run.py fills it, so load time
-// does not include a CDN download), otherwise from jsDelivr.
+// Library: Babylon.js 9.30.0 and the matching loaders (bjs=8.20.0 picks the older release for comparison), from
+// ./vendor/bjs-<version>/ if present (run.py fills it, so load time does not include a CDN download), otherwise jsDelivr.
 (function () {
-  var V = '8.20.0';
+  var V = new URLSearchParams(location.search).get('bjs') || '9.30.0';
+  window.__bjsVersion = V;
   var libs = [
-    ['vendor/babylon.js', 'https://cdn.jsdelivr.net/npm/babylonjs@' + V + '/babylon.js'],
-    ['vendor/babylonjs.loaders.min.js', 'https://cdn.jsdelivr.net/npm/babylonjs-loaders@' + V + '/babylonjs.loaders.min.js']
+    ['vendor/bjs-' + V + '/babylon.js', 'https://cdn.jsdelivr.net/npm/babylonjs@' + V + '/babylon.js'],
+    ['vendor/bjs-' + V + '/babylonjs.loaders.min.js', 'https://cdn.jsdelivr.net/npm/babylonjs-loaders@' + V + '/babylonjs.loaders.min.js']
   ];
   window.__libSource = [];
   function load(i) {
@@ -85,9 +86,17 @@ var RW = window.innerWidth, RH = window.innerHeight;
 if (Q.get('res')) { var r = Q.get('res').toLowerCase().split('x'); RW = parseInt(r[0], 10); RH = parseInt(r[1], 10); }
 canvas.style.width = RW + 'px'; canvas.style.height = RH + 'px';
 canvas.width = RW; canvas.height = RH;
-var engine = new B.Engine(canvas, false, {
+// webgpu=1: Babylon's WebGPU engine (it turns the GLSL shaders here into WGSL at run time, loading its glslang and twgsl
+// helpers from cdn.babylonjs.com). Otherwise WebGL2.
+var WEBGPU = Q.get('webgpu') === '1', engine = null;
+if (WEBGPU && B.WebGPUEngine) {
+  try { if (await B.WebGPUEngine.IsSupportedAsync) { engine = new B.WebGPUEngine(canvas, { antialias: false, stencil: true, powerPreference: 'high-performance' }); await engine.initAsync(); } }
+  catch (e) { console.warn('webgpu unavailable, falling back to webgl2', e); engine = null; }
+}
+if (!engine) engine = new B.Engine(canvas, false, {
   preserveDrawingBuffer: false, stencil: true, powerPreference: 'high-performance', premultipliedAlpha: false
 }, false);
+var IS_WEBGPU = !!engine.isWebGPU;
 engine.setHardwareScalingLevel(1);
 engine.setSize(RW, RH);
 engine.enableOfflineSupport = false;
@@ -162,10 +171,11 @@ var depthR = null, depthTex = null, DEPTH_VALS = new B.Vector2(cam.minZ, cam.min
 if (RICH) { depthR = scene.enableDepthRenderer(cam, false, true); depthTex = depthR.getDepthMap(); depthTex.renderList = []; }
 var ssao = null, ssr = null, taa = null, contactPP = null, hazePP = null, LIGHT_V = new B.Vector3(), TMPV = new B.Vector3();
 var HAZE_N = 8, HAZE_L = new Float32Array(HAZE_N * 4), HAZE_C = new Float32Array(HAZE_N * 4);
+var OFF = (Q.get('off') || '').split(',');   // diagnostics: off=ssao,ssr,contact,haze,taa,dof
 if (MAXM) {
-  try { ssao = new B.SSAO2RenderingPipeline('ssao', scene, { ssaoRatio: 0.5, blurRatio: 0.5 }, [cam], true);
+  if (OFF.indexOf('ssao') < 0) try { ssao = new B.SSAO2RenderingPipeline('ssao', scene, { ssaoRatio: 0.5, blurRatio: 0.5 }, [cam], true);
     ssao.radius = 2.0; ssao.totalStrength = 1.1; ssao.samples = 16; ssao.maxZ = 400; ssao.expensiveBlur = true; ssao.base = 0.15; } catch (e) { console.warn('ssao2', e); }
-  try { ssr = new B.SSRRenderingPipeline('ssr', scene, [cam], true, B.Constants.TEXTURETYPE_HALF_FLOAT);
+  if (OFF.indexOf('ssr') < 0) try { ssr = new B.SSRRenderingPipeline('ssr', scene, [cam], true, B.Constants.TEXTURETYPE_HALF_FLOAT);
     ssr.strength = 0.8; ssr.reflectivityThreshold = 0.05; ssr.maxDistance = 150; ssr.maxSteps = 120; ssr.step = 1.0; ssr.thickness = 0.8;
     ssr.blurDispersionStrength = 0.02; ssr.roughnessFactor = 0.25; } catch (e) { console.warn('ssr', e); }
   // contact shadows: not built in; a screen-space march toward the key light over the hull depth pass, darkening creases
@@ -179,8 +189,8 @@ if (MAXM) {
     '    vec2 uq = vec2(q.x / (dq * uTanH * uAspect), q.y / (dq * uTanH)) * 0.5 + 0.5; if (uq.x < 0.0 || uq.x > 1.0 || uq.y < 0.0 || uq.y > 1.0) break;',
     '    float df = dq - vd(uq); if (df > 0.03 && df < 0.8) { occ = 1.0 - float(i) / 15.0; break; } }',
     '  gl_FragColor = vec4(c.rgb * (1.0 - 0.45 * occ), c.a); }'].join('\n');
-  contactPP = new B.PostProcess('contact', 'contact', ['uDepthVals', 'uLightV', 'uTanH', 'uAspect'], ['depthMap'], 1.0, cam);
-  contactPP.onApply = function (e) { e.setTexture('depthMap', depthTex); e.setVector2('uDepthVals', DEPTH_VALS); e.setVector3('uLightV', LIGHT_V);
+  if (OFF.indexOf('contact') < 0) contactPP = new B.PostProcess('contact', 'contact', ['uDepthVals', 'uLightV', 'uTanH', 'uAspect'], ['depthMap'], 1.0, cam);
+  if (contactPP) contactPP.onApply = function (e) { e.setTexture('depthMap', depthTex); e.setVector2('uDepthVals', DEPTH_VALS); e.setVector3('uLightV', LIGHT_V);
     e.setFloat('uTanH', Math.tan(cam.fov / 2)); e.setFloat('uAspect', RW / RH); };
   // dust haze: depth-based thin haze plus analytic in-scattering from the 8 brightest event lights (explosions, flashes, engines)
   B.Effect.ShadersStore.hazeFragmentShader = [
@@ -194,12 +204,12 @@ if (MAXM) {
     '  for (int i = 0; i < 8; i++) { if (uL[i].w <= 0.0) continue; vec3 P = uL[i].xyz - ro; float t0 = dot(P, rd); float h2 = max(dot(P, P) - t0 * t0, 0.5); float h = sqrt(h2);',
     '    float sc = (atan((L - t0) / h) - atan(-t0 / h)) / max(h, 2.0); hz += uC[i].rgb * uL[i].w * sc * 0.012; }',
     '  gl_FragColor = vec4(c.rgb + hz, c.a); }'].join('\n');
-  hazePP = new B.PostProcess('haze', 'haze', ['uDepthVals', 'uTanH', 'uAspect', 'uCamWorld', 'uL', 'uC', 'uOn'], ['depthMap'], 1.0, cam);
-  hazePP.onApply = function (e) { e.setTexture('depthMap', depthTex); e.setVector2('uDepthVals', DEPTH_VALS); e.setFloat('uTanH', Math.tan(cam.fov / 2));
+  if (OFF.indexOf('haze') < 0) hazePP = new B.PostProcess('haze', 'haze', ['uDepthVals', 'uTanH', 'uAspect', 'uCamWorld', 'uL', 'uC', 'uOn'], ['depthMap'], 1.0, cam);
+  if (hazePP) hazePP.onApply = function (e) { e.setTexture('depthMap', depthTex); e.setVector2('uDepthVals', DEPTH_VALS); e.setFloat('uTanH', Math.tan(cam.fov / 2));
     e.setFloat('uAspect', RW / RH); e.setMatrix('uCamWorld', cam.getWorldMatrix()); e.setFloatArray4('uL', HAZE_L); e.setFloatArray4('uC', HAZE_C); e.setFloat('uOn', ENV.ok ? 1 : 0); };
   // TAA: Babylon's reprojection needs the prepass renderer, which the custom effect shaders do not write, so it stays off:
   // TAA accumulates while the camera holds still (the stills) and switches itself off while the camera moves.
-  try { taa = new B.TAARenderingPipeline('taa', scene, [cam]); taa.samples = 8; taa.disableOnCameraMove = true; taa.clampHistory = true; } catch (e) { console.warn('taa', e); }
+  if (OFF.indexOf('taa') < 0) try { taa = new B.TAARenderingPipeline('taa', scene, [cam]); taa.samples = 8; taa.disableOnCameraMove = true; taa.clampHistory = true; } catch (e) { console.warn('taa', e); }
 }
 var pipe = new B.DefaultRenderingPipeline('post', true, scene, [cam]);
 pipe.samples = MAXM ? 1 : MSAA;
@@ -217,6 +227,10 @@ pipe.imageProcessing.toneMappingType = B.ImageProcessingConfiguration.TONEMAPPIN
 pipe.imageProcessing.exposure = 1.0;
 pipe.imageProcessing.contrast = 1.0;
 pipe.imageProcessing.vignetteEnabled = false;
+function dofNeutral() { if (!pipe.depthOfFieldEnabled) return; pipe.depthOfField.fStop = 32; pipe.depthOfField.focalLength = 20; pipe.depthOfField.focusDistance = 150000; }
+if (MAXM && !BOARD && OFF.indexOf('dof') < 0) {   // DoF is switched on once here (toggling it later rebuilds the chain); battle shots keep it neutral
+  pipe.depthOfFieldEnabled = true; pipe.depthOfFieldBlurLevel = B.DepthOfFieldEffectBlurLevel.Medium; dofNeutral();
+}
 if (MAXM) {   // presentation: colour grading with Babylon's built-in curves (cool shadows, warm highlights, a little saturation)
   var curves = new B.ColorCurves(); curves.globalSaturation = 12; curves.shadowsHue = 205; curves.shadowsDensity = 25; curves.shadowsSaturation = 30;
   curves.highlightsHue = 35; curves.highlightsDensity = 20; curves.highlightsSaturation = 25; curves.midtonesSaturation = 5;
@@ -773,7 +787,7 @@ if (MAXM) {
 var ROCKS = [], ROCK_SETS = [];
 if (ENV.rocks) {
   var rlist = Array.isArray(ENV.rocks) ? ENV.rocks : (ENV.rocks.rocks || ENV.rocks.asteroids || []), rfiles = {};
-  rlist.forEach(function (r) { var f = String(r.mesh || r.file); if (!/\.glb$/i.test(f)) f += '.glb'; r._f = f; rfiles[f] = 1; });
+  rlist.forEach(function (r) { var f = r.file ? String(r.file) : 'rocks/' + r.mesh; if (!/\.glb$/i.test(f)) f += '.glb'; r._f = f; rfiles[f] = 1; });
   var rconts = {};
   await Promise.all(Object.keys(rfiles).map(function (f) { return B.SceneLoader.LoadAssetContainerAsync('../assets/env/', f, scene).then(function (c) { rconts[f] = c; }, function (e) { console.warn('rock', f, e); }); }));
   Object.keys(rconts).forEach(function (f) {
@@ -784,7 +798,8 @@ if (ENV.rocks) {
     var mine = rlist.filter(function (r) { return r._f === f; });
     var set = { mesh: src, buf: new Float32Array(mine.length * 16), rocks: [] };
     mine.forEach(function (r) {
-      var P = r.position || r.pos || [0, 0, 0], R = r.rotation || r.rot || [0, 0, 0], S = r.scale === undefined ? 1 : r.scale, sp = r.spin || 0;
+      var P = r.position || r.pos || [0, 0, 0], R = r.rotation || r.rot || [0, 0, 0], S = r.scale === undefined ? 1 : r.scale, sp = r.spin_rate !== undefined ? r.spin_rate : (r.spin || 0);
+      if (r.spin_axis && !r.axis) r.axis = r.spin_axis;
       var q0 = R.length === 4 ? new B.Quaternion(R[0], R[1], R[2], R[3]) : B.Quaternion.RotationYawPitchRoll(R[1], R[0], R[2]);
       var ax, rate; if (Array.isArray(sp)) { ax = V3(sp[0], sp[1], sp[2]); rate = ax.length(); ax = rate > 0 ? ax.scale(1 / rate) : V3(0, 1, 0); }
       else { rate = +sp || 0; ax = r.axis ? V3(r.axis[0], r.axis[1], r.axis[2]).normalize() : rdir(); }
@@ -1098,12 +1113,13 @@ var mShd = SHD.build(matShard);
 // the scene clock, so the stills replay it from t = 0 and come out the same every time.
 var PH = null;
 if (PHYS) {
-  await new Promise(function (res) { var sc = document.createElement('script'); sc.src = 'vendor/HavokPhysics_umd.js'; sc.onload = res;
-    sc.onerror = function () { var s2 = document.createElement('script'); s2.src = 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@1.3.10/lib/umd/HavokPhysics_umd.js'; s2.onload = res; s2.onerror = res; document.head.appendChild(s2); };
+  var HKV = window.__bjsVersion === '8.20.0' ? '1.3.10' : '1.3.14';   // the Havok release that goes with each Babylon release
+  await new Promise(function (res) { var sc = document.createElement('script'); sc.src = 'vendor/havok-' + HKV + '/HavokPhysics_umd.js'; sc.onload = res;
+    sc.onerror = function () { var s2 = document.createElement('script'); s2.src = 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@' + HKV + '/lib/umd/HavokPhysics_umd.js'; s2.onload = res; s2.onerror = res; document.head.appendChild(s2); };
     document.head.appendChild(sc); });
   var hk = null;
-  try { hk = await HavokPhysics({ locateFile: function () { return window.__havokWasm || 'vendor/HavokPhysics.wasm'; } }); }
-  catch (e) { try { hk = await HavokPhysics({ locateFile: function () { return 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@1.3.10/lib/umd/HavokPhysics.wasm'; } }); } catch (e2) { console.error('havok', e2); } }
+  try { hk = await HavokPhysics({ locateFile: function () { return 'vendor/havok-' + HKV + '/HavokPhysics.wasm'; } }); }
+  catch (e) { try { hk = await HavokPhysics({ locateFile: function () { return 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@' + HKV + '/lib/umd/HavokPhysics.wasm'; } }); } catch (e2) { console.error('havok', e2); } }
   if (hk) {
     scene.enablePhysics(V3(0, 0, 0), new B.HavokPlugin(false, hk)); scene.physicsEnabled = false;   // stepped by hand on the scene clock
     var phE = scene.getPhysicsEngine(), MT = B.PhysicsMotionType;
@@ -1134,11 +1150,11 @@ if (PHYS) {
     });
     // debris pools: chips in three sizes, instanced, sharing one shape per size
     var chipMat = new B.PBRMaterial('chipMat', scene); chipMat.albedoColor = new B.Color3(0.05, 0.05, 0.055); chipMat.metallic = 0.6; chipMat.roughness = 0.45;
-    chipMat.emissiveColor = new B.Color3(0.25, 0.07, 0.01); chipMat.ambientColor = new B.Color3(1, 1, 1);
+    chipMat.emissiveColor = new B.Color3(0.12, 0.03, 0.005); chipMat.ambientColor = new B.Color3(1, 1, 1);
     [[0.22, 90], [0.45, 50], [0.9, 24]].forEach(function (sz, si) {
-      var src = B.MeshBuilder.CreatePolyhedron('chip' + si, { type: 1, size: sz[0], sizeX: 1.3, sizeY: 0.45, sizeZ: 1.0, flat: true }, scene);
+      var src = B.MeshBuilder.CreatePolyhedron('chip' + si, { type: 1, sizeX: sz[0] * 0.65, sizeY: sz[0] * 0.22, sizeZ: sz[0] * 0.5, flat: true }, scene);
       src.material = chipMat; src.position.y = -5000; src.isPickable = false; src.renderingGroupId = 1;
-      var shape = new B.PhysicsShapeBox(V3(0, 0, 0), B.Quaternion.Identity(), V3(sz[0] * 1.6, sz[0] * 0.55, sz[0] * 1.3), scene); shape.material = { friction: 0.3, restitution: 0.4 };
+      var shape = new B.PhysicsShapeBox(V3(0, 0, 0), B.Quaternion.Identity(), V3(sz[0] * 1.0, sz[0] * 0.35, sz[0] * 0.8), scene); shape.material = { friction: 0.3, restitution: 0.4 };
       var pool = { list: [], next: 0 };
       for (var k = 0; k < sz[1]; k++) { var inst = src.createInstance('chip' + si + '_' + k); inst.position.set(k * 4, -3000 - si * 50, 0); inst.rotationQuaternion = B.Quaternion.Identity();
         var b = new B.PhysicsBody(inst, MT.DYNAMIC, false, scene); b.shape = shape; b.setMassProperties({ mass: sz[0] * 2 }); b.setLinearDamping(0.02); b.setAngularDamping(0.02);
@@ -1215,7 +1231,21 @@ if (!RICH) SHIPS.forEach(function (d) {
 // most (intensity times range falloff from any ship, so a neighbour's impact lights this hull too) are put into its pool.
 var POOL_K = 8, POOL_R = 32, EVMAX = 4096, EV = new Float32Array(EVMAX * 7), evN = 0, EVU = new Uint8Array(EVMAX);
 var LSTAT = { sum: 0, n: 0, max: 0, cur: 0 }, topS = new Float32Array(POOL_K), topI = new Int32Array(POOL_K);
-if (RICH) {
+// Babylon 9: ClusteredLightContainer (WebGL2 and WebGPU) shades many point lights through screen tiles and depth slices,
+// and every material sees the container as one light. When it is there, the event lights go into one container of
+// CL_N lights (the brightest CL_N events each frame, lighting every hull in range) instead of the per-ship pools.
+var CL = null, CL_N = 64, CL_L = [], CL_GAIN = 20;
+if (RICH && B.ClusteredLightContainer) {
+  try {
+    // clustered lights must use the default (physical, inverse square) falloff, so their intensities get CL_GAIN to match
+    // the linear-falloff lights of the other modes at a few units from the hull
+    for (var k = 0; k < CL_N; k++) { var Lc = new B.PointLight('cl_' + k, new B.Vector3(0, -999, 0), scene); Lc.range = POOL_R; Lc.intensity = 0; Lc.shadowEnabled = false; CL_L.push(Lc); }
+    CL = new B.ClusteredLightContainer('clustered', CL_L, scene);
+    if (!CL.isSupported) { CL.dispose(); CL = null; CL_L.forEach(function (l) { l.dispose(); }); CL_L = []; }
+    else CL.maxRange = POOL_R + 8;
+  } catch (e) { console.warn('clustered lights unavailable', e); CL = null; }
+}
+if (RICH && !CL) {
   SHIPS.forEach(function (d, i) {
     d.pool = [];
     for (var k = 0; k < POOL_K; k++) { var L = new B.PointLight('pl_' + i + '_' + k, new B.Vector3(0, -999, 0), scene);
@@ -1246,7 +1276,18 @@ function buildEvents(t, dx, tau, gate) {
   }
   if (gate > 0) for (var c = 0; c < chunks.length; c++) { P = chunks[c].node.position; addEv(P.x, P.y, P.z, 1.6 * gate, LC_FIRE); }
 }
+var CL_TOP = new Int32Array(CL_N), CL_S = new Float32Array(CL_N);
+function assignClustered(fade) {   // the CL_N brightest events this frame
+  var k, e, n = 0;
+  for (k = 0; k < CL_N; k++) { CL_S[k] = 0; CL_TOP[k] = -1; }
+  for (e = 0; e < evN; e++) { var I = EV[e * 7 + 3]; if (I <= CL_S[CL_N - 1]) continue;
+    for (k = CL_N - 1; k > 0 && CL_S[k - 1] < I; k--) { CL_S[k] = CL_S[k - 1]; CL_TOP[k] = CL_TOP[k - 1]; } CL_S[k] = I; CL_TOP[k] = e; }
+  for (k = 0; k < CL_N; k++) { var L = CL_L[k], ei = CL_TOP[k]; if (ei < 0) { L.intensity = 0; continue; }
+    var o = ei * 7; L.position.set(EV[o], EV[o + 1], EV[o + 2]); L.intensity = EV[o + 3] * fade * CL_GAIN; L.diffuse.set(EV[o + 4], EV[o + 5], EV[o + 6]); L.specular.copyFrom(L.diffuse); n++; }
+  LSTAT.cur = n;
+}
 function assignPool(dx, fade) {
+  if (CL) return assignClustered(fade);
   var used = 0; EVU.fill(0, 0, evN);
   for (var i = 0; i < SHIPS.length; i++) {
     var d = SHIPS[i], cx = d.c.x + dx, cy = d.c.y, cz = d.c.z, half = d.L * 0.5, k, e;
@@ -1439,7 +1480,7 @@ if (BOARD) {
     var cx = q, cz = r, cy = -q - r, rx = Math.round(cx), ry = Math.round(cy), rz = Math.round(cz), dx = Math.abs(rx - cx), dy = Math.abs(ry - cy), dz = Math.abs(rz - cz);
     if (dx > dy && dx > dz) rx = -ry - rz; else if (dy > dz) ry = -rx - rz; else rz = -rx - ry; out.x = rx; out.y = rz; return out; };
   // selection ring, hover outline, GUI labels and bars (Babylon GUI, rendered at the canvas resolution, so sharp at 4K)
-  await loadScript('vendor/babylon.gui.min.js', 'https://cdn.jsdelivr.net/npm/babylonjs-gui@8.20.0/babylon.gui.min.js');
+  await loadScript('vendor/bjs-' + window.__bjsVersion + '/babylon.gui.min.js', 'https://cdn.jsdelivr.net/npm/babylonjs-gui@' + window.__bjsVersion + '/babylon.gui.min.js');
   var ringM = new B.StandardMaterial('ringMat', scene); ringM.disableLighting = true; ringM.emissiveColor = new B.Color3(0.45, 0.95, 1.0);
   var ring = B.MeshBuilder.CreateTorus('selRing', { diameter: 26, thickness: 0.7, tessellation: 96 }, scene); ring.material = ringM; ring.isVisible = false; ring.isPickable = false; ring.renderingGroupId = 1;
   BRD = { sel: -1, hover: -1, ring: ring, frame: 0, click: null, clickResult: null, axial: new B.Vector2(), sel2: new B.Vector2() };
@@ -1471,6 +1512,7 @@ if (BOARD) {
   BRD.setHover = setHover; BRD.select = select;
   window.__shipScreen = function (i) { var d = SHIPS[i], p = B.Vector3.Project(V3(d.x + drift(BRD.t || 0), 0, d.z), B.Matrix.Identity(), scene.getTransformMatrix(), cam.viewport.toGlobal(RW, RH)); return [p.x, p.y]; };
   window.__clickToVisible = function () { return BRD.clickResult; };
+  window.BRD_DBG = function () { return { hover: BRD.hover, sel: BRD.sel, frame: BRD.frame, click: BRD.click, px: [scene.pointerX, scene.pointerY] }; };
 }
 function boardUpdate(t) {   // ring and movement range follow the selected ship as it drifts across the hexes
   if (!BRD) return; BRD.t = t; var dx = drift(t);
@@ -1511,13 +1553,14 @@ update(0);
 msg.style.display = 'none';
 
 var gl = engine._gl, glInfo = {};
-try {
+if (IS_WEBGPU) { try { var gi = engine.getGlInfo(); glInfo.renderer = 'WebGPU: ' + (gi.renderer || '') + ' ' + (gi.vendor || ''); } catch (e) { glInfo.renderer = 'WebGPU'; } }
+else try {
   var dbg = gl.getExtension('WEBGL_debug_renderer_info');
   glInfo.renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
   glInfo.vendor = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
 } catch (e) { glInfo.renderer = 'unknown'; }
 var tris = 0; shipMeshes.forEach(function (m) { tris += m.getTotalIndices() / 3; });
-window.__info = { load_s: loadS, prewarm_s: warmS, stress: STRESS, ships_n: SHIPS.length, gl: glInfo, webgl: engine.webGLVersion, width: engine.getRenderWidth(), height: engine.getRenderHeight(),
+window.__info = { bjs: B.Engine.Version, renderer: IS_WEBGPU ? 'webgpu' : 'webgl2', load_s: loadS, prewarm_s: warmS, stress: STRESS, ships_n: SHIPS.length, gl: glInfo, webgl: engine.webGLVersion, width: engine.getRenderWidth(), height: engine.getRenderHeight(),
   ship_tris: tris, lib: window.__libSource, fx: fxStats, ships: SHIPS.map(function (d) {
     return { fac: d.fac, scale: +d.scale.toFixed(3), nozzles: d.nozzles.length, size: [d.L, d.H, d.W].map(function (v) { return +v.toFixed(2); }) };
   }) };
@@ -1542,21 +1585,22 @@ var benchRunning = false;
 window.__shot = function (name) {
   var base = PREFIX && name.indexOf(PREFIX) === 0 ? name.slice(PREFIX.length) : name;
   var s = SHOTS[base], dbgv = DEBUG[base] || HEROES[name]; if ((!s && !dbgv) || benchRunning) return null;
-  engine.stopRenderLoop();
+  engine.stopRenderLoop(); idleOn = false;
   var t; STILL_POSE = true;
   if (dbgv) { cam.position.fromArray(dbgv[0]); cam.setTarget(B.Vector3.FromArray(dbgv[1])); t = dbgv[2]; }
   else { t = s[0]; if (s[1] === 'battle') battlePose(t); else if (s[1] === 'close') closePose(); else if (s[1] === 'board') boardPose(); else breachPose(); }
   STILL_POSE = false;
   if (BOARD) { BRD.select(1); BRD.click = null; BRD.setHover(2); }
   if (MAXM && !BOARD) {   // presentation: depth of field on the close-ups, focused on the look-at point
-    var dof = (s && (s[1] === 'close' || s[1] === 'breach')) || !!HEROES[name];
-    pipe.depthOfFieldEnabled = dof;
-    if (dof) { pipe.depthOfFieldBlurLevel = B.DepthOfFieldEffectBlurLevel.Medium; pipe.depthOfField.focalLength = 80; pipe.depthOfField.fStop = 2.0;
-      pipe.depthOfField.focusDistance = B.Vector3.Distance(cam.position, cam.getTarget()) * 1000; }
+    var dof = ((s && (s[1] === 'close' || s[1] === 'breach')) || !!HEROES[name]) && pipe.depthOfFieldEnabled;
+    if (dof) { pipe.depthOfField.focalLength = 80; pipe.depthOfField.fStop = 2.0; pipe.depthOfField.focusDistance = B.Vector3.Distance(cam.position, cam.getTarget()) * 1000; }
+    else dofNeutral();
   }
   if (PH) physTo(t, 1e6);   // replay the physics from t = 0 on the fixed clock
   update(t);
-  for (var f = 0; f < (taa ? 16 : 2); f++) scene.render();   // TAA accumulates its jittered samples while the camera holds
+  if (taa) { taa.factor = 1; scene.render(); taa.factor = 0.1; for (var f = 0; f < 15; f++) scene.render(); }   // TAA: start fresh, then
+  else { scene.render(); scene.render(); }                                                                   // accumulate jittered samples
+  if (IS_WEBGPU) return 'canvas';   // run.py screenshots the canvas element (a WebGPU canvas is not readable after the frame)
   return canvas.toDataURL('image/png');
 };
 window.__shotNames = Object.keys(SHOTS).map(function (n) { return PREFIX + n; }).concat(Object.keys(HEROES));
@@ -1625,7 +1669,7 @@ function runBench() {
       vs = { refresh_hz: r3(hz), dropped_frames: drop, dropped_pct: r3(100 * drop / (n + drop)) }; }
     var pArr = Array.prototype.slice.call(fp, 0, n), pSum = pArr.reduce(function (a, b) { return a + b; }, 0), pMax = pArr.reduce(function (a, b) { return Math.max(a, b); }, 0);
     window.__result = {
-      engine: 'babylon', renderer: engine.webGLVersion >= 2 ? 'webgl2' : 'webgl1', mode: MODE_NAME,
+      engine: 'babylon', renderer: IS_WEBGPU ? 'webgpu' : engine.webGLVersion >= 2 ? 'webgl2' : 'webgl1', mode: MODE_NAME,
       width: engine.getRenderWidth(), height: engine.getRenderHeight(), seconds: SECONDS, frames: n,
       avg_ms: r3(sum / n), p99_ms: r3(worst / k), max_ms: r3(sorted[0]), fps_avg: r3(n / (sum / 1000)),
       load_s: r3(loadS), gpu_mem_mb: null,
@@ -1635,7 +1679,8 @@ function runBench() {
       _extra: { median_ms: r3(med), gpu_frame_ms_avg: gn ? r3(gsum / gn) : null, gl: glInfo, msaa: MSAA, ships: SHIPS.length,
         ship_tris: tris, warmup_s: WARMUP, prewarm_s: r3(warmS), lib: window.__libSource, fx: fxStats,
         work_p99_ms: r3(wk / k), work_max_ms: r3(wsorted[0]),
-        rich_lights_avg: RICH && LSTAT.n ? r3(LSTAT.sum / LSTAT.n) : null, rich_lights_max: RICH ? LSTAT.max : null, point_lights: scene.lights.length,
+        rich_lights_avg: RICH && LSTAT.n ? r3(LSTAT.sum / LSTAT.n) : null, rich_lights_max: RICH ? LSTAT.max : null, point_lights: scene.lights.length + CL_L.length,
+        light_route: !RICH ? 'one light per ship' : CL ? 'ClusteredLightContainer, ' + CL_N + ' lights' : 'per-ship pools of ' + POOL_K + ' (12 lights per material)', bjs: B.Engine.Version,
         env: ENV.ok ? { sky: ENV.sky, rocks: ROCKS.length } : null, physics_bodies: PH ? PH.bodies : null,
         trace: { columns: ['second', 'frames', 'avg_ms', 'p99_ms', 'max_ms', 'frames_over_16.7ms', 'max_js_work_ms'], per_second: per,
           worst_frames: { columns: ['scene_t_s', 'frame_ms', 'js_work_ms'], rows: spikes },
@@ -1643,8 +1688,9 @@ function runBench() {
     };
   }
 }
-function idleLoop() { var t0 = performance.now(); engine.runRenderLoop(function () { var t = (performance.now() - t0) / 1000;
-  boardPose(); if (PH) physTo(t, 6); update(t); scene.render(); }); }
+var idleOn = false;
+function idleLoop() { if (idleOn) return; idleOn = true; engine.stopRenderLoop(); var t0 = performance.now();
+  engine.runRenderLoop(function () { var t = (performance.now() - t0) / 1000; boardPose(); if (PH) physTo(t, 6); update(t); scene.render(); }); }
 window.__idle = function () { if (BOARD) idleLoop(); return !!BOARD; };
 window.__ready = true;
 if (MODE === 'bench') runBench(); else if (BOARD) idleLoop();

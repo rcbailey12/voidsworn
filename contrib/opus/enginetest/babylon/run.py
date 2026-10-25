@@ -10,16 +10,12 @@ import argparse, base64, functools, http.server, json, os, shutil, subprocess, s
 HERE = os.path.dirname(os.path.abspath(__file__))
 ENGTEST = os.path.dirname(HERE)
 VENDOR = os.path.join(HERE, 'vendor')
-BJS = '8.20.0'
-LIBS = {'babylon.js': 'https://cdn.jsdelivr.net/npm/babylonjs@%s/babylon.js' % BJS,
-        'babylonjs.loaders.min.js': 'https://cdn.jsdelivr.net/npm/babylonjs-loaders@%s/babylonjs.loaders.min.js' % BJS,
-        'babylon.gui.min.js': 'https://cdn.jsdelivr.net/npm/babylonjs-gui@%s/babylon.gui.min.js' % BJS,
-        'HavokPhysics_umd.js': 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@1.3.10/lib/umd/HavokPhysics_umd.js',
-        'HavokPhysics.wasm': 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@1.3.10/lib/umd/HavokPhysics.wasm'}
 ASSETS = ['V1b_r_23.glb', 'H4_11.glb', 'C19_51_shell.glb', 'C19_51_kit.glb', 'B16_23.glb', 'I8_37.glb', 'D22_23.glb']
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--res', default='2560x1440')
+ap.add_argument('--bjs', default='9.30.0', help='Babylon.js release (9.30.0, or 8.20.0 to compare with the first runs)')
+ap.add_argument('--webgpu', action='store_true', help='WebGPU engine instead of WebGL2 (renderer "webgpu")')
 ap.add_argument('--out', default=None, help='result JSON (runs the benchmark)')
 ap.add_argument('--shots', default=None, help='folder for the five stills (battle_05, battle_12, battle_126, close_20, breach_30 .png)')
 ap.add_argument('--seconds', type=float, default=20)
@@ -30,6 +26,7 @@ ap.add_argument('--ships', type=int, default=0, help='ceiling round ship sweep: 
 ap.add_argument('--rich', action='store_true', help='ceiling round rich effects (24-ship layout unless --ships)')
 ap.add_argument('--max', action='store_true', help='max-detail round: rich effects, hi assets when present, detail features')
 ap.add_argument('--board', action='store_true', help='game slice: max mode from the tactical camera over a hex board, with UI; measures click to visible ring')
+ap.add_argument('--noenv', action='store_true', help='ignore assets/env/ (diagnostics)')
 ap.add_argument('--vsync', action='store_true', help='leave vsync and the frame limiter on; reports dropped frames against the display rate')
 ap.add_argument('--soft', action='store_true', help='software WebGL (SwiftShader), sandbox validation only')
 ap.add_argument('--headed', action='store_true', help='show the browser window instead of headless')
@@ -42,10 +39,16 @@ a = ap.parse_args()
 W, H = [int(v) for v in a.res.lower().split('x')]
 if not a.out and not a.shots: ap.error('give --out and/or --shots')
 
-# ---- local copy of Babylon, so the load time does not include a CDN download ----
-os.makedirs(VENDOR, exist_ok=True)
-for name, url in LIBS.items():
-    p = os.path.join(VENDOR, name)
+# ---- local copy of Babylon (per release), so the load time does not include a CDN download ----
+HKV = '1.3.10' if a.bjs == '8.20.0' else '1.3.14'
+LIBS = {('bjs-' + a.bjs, 'babylon.js'): 'https://cdn.jsdelivr.net/npm/babylonjs@%s/babylon.js' % a.bjs,
+        ('bjs-' + a.bjs, 'babylonjs.loaders.min.js'): 'https://cdn.jsdelivr.net/npm/babylonjs-loaders@%s/babylonjs.loaders.min.js' % a.bjs,
+        ('bjs-' + a.bjs, 'babylon.gui.min.js'): 'https://cdn.jsdelivr.net/npm/babylonjs-gui@%s/babylon.gui.min.js' % a.bjs,
+        ('havok-' + HKV, 'HavokPhysics_umd.js'): 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@%s/lib/umd/HavokPhysics_umd.js' % HKV,
+        ('havok-' + HKV, 'HavokPhysics.wasm'): 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@%s/lib/umd/HavokPhysics.wasm' % HKV}
+for (sub, name), url in LIBS.items():
+    os.makedirs(os.path.join(VENDOR, sub), exist_ok=True)
+    p = os.path.join(VENDOR, sub, name)
     if not os.path.exists(p) or os.path.getsize(p) < 1000:
         try:
             print('fetching', url); urllib.request.urlretrieve(url, p + '.part'); os.replace(p + '.part', p)
@@ -97,10 +100,11 @@ else:
     angle = a.angle or ('d3d11' if sys.platform == 'win32' else 'default')
     args = ['--use-angle=' + angle, '--enable-gpu-rasterization', '--ignore-gpu-blocklist']
     if not a.vsync: args += ['--disable-gpu-vsync', '--disable-frame-rate-limit']
+if a.webgpu: args += ['--enable-unsafe-webgpu']
 args += ['--enable-precise-memory-info', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows']
 
 mode = 'bench' if a.out else 'shots'
-url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + ('&stress=1' if a.stress else '') + ('&ships=%d' % a.ships if a.ships else '') + ('&rich=1' if a.rich else '') + ('&max=1' if a.max else '') + ('&board=1' if a.board else '') + ('&envsky=1' if os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'sky_deadstar_8k.png')) else '') + ('&envrocks=1' if os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'asteroids.json')) else '') + ('&vsync=1' if a.vsync else '') + ('&' + a.extra if a.extra else '')
+url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + '&bjs=' + a.bjs + ('&webgpu=1' if a.webgpu else '') + ('&stress=1' if a.stress else '') + ('&ships=%d' % a.ships if a.ships else '') + ('&rich=1' if a.rich else '') + ('&max=1' if a.max else '') + ('&board=1' if a.board else '') + ('&envsky=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'sky_deadstar_8k.png')) else '') + ('&envrocks=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'asteroids.json')) else '') + ('&vsync=1' if a.vsync else '') + ('&' + a.extra if a.extra else '')
 errors = []
 with sync_playwright() as p:
     T0 = time.time(); b = None
@@ -123,6 +127,7 @@ with sync_playwright() as p:
         for e in errors: print('  ', e)
         sys.exit('page error: ' + pg.evaluate('window.__error'))
     info = pg.evaluate('window.__info')
+    print('Babylon %s, %s' % (info.get('bjs'), info.get('renderer')))
     print('loaded in %.2f s (page), pre-warm %.2f s, %d ships, GL: %s, %dx%d, ship tris %d' % (info['load_s'], info['prewarm_s'], info['ships_n'], info['gl'].get('renderer'), info['width'], info['height'], info['ship_tris']))
     soft = 'swiftshader' in str(info['gl']).lower()
     if soft and not a.soft: print('WARNING: the page is on SwiftShader (software), not the GPU; these numbers are not valid')
@@ -139,13 +144,16 @@ with sync_playwright() as p:
             pg.wait_for_timeout(250); click = pg.evaluate('window.__clickToVisible()')
             if click: break
         print('click to visible ring:', click)
+        if not click: print('  board state:', pg.evaluate('window.BRD_DBG ? JSON.stringify(BRD_DBG()) : null'))
     if a.shots:
         os.makedirs(a.shots, exist_ok=True)
         names = pg.evaluate('window.__shotNames') + (pg.evaluate('window.__debugNames') if a.debug_shots or a.only else [])
         if a.only: names = [n for n in names if n in a.only.split(',')]
         for name in names:
             data = pg.evaluate('window.__shot(%s)' % json.dumps(name))
-            with open(os.path.join(a.shots, name + '.png'), 'wb') as f: f.write(base64.b64decode(data.split(',', 1)[1]))
+            if data == 'canvas': pg.wait_for_timeout(300); pg.locator('#c').screenshot(path=os.path.join(a.shots, name + '.png'))
+            else:
+                with open(os.path.join(a.shots, name + '.png'), 'wb') as f: f.write(base64.b64decode(data.split(',', 1)[1]))
             print('shot', name)
     b.close()
 smi['run'] = False
@@ -173,6 +181,8 @@ if res is not None:
     notes.append('%d ships; shaders pre-warmed for %.2f s after load_s, before the warm-up' % (ex['ships'], ex['prewarm_s']))
     notes.append('JS work per frame (update plus render calls): worst 1%% %s ms, max %s ms' % (ex['work_p99_ms'], ex['work_max_ms']))
     notes.append('worst frames (scene t s: frame ms / JS work ms): ' + ', '.join('%.2f: %.1f/%.1f' % (r[0], r[1], r[2]) for r in worst[:8]))
+    notes.insert(0, 'Babylon %s' % ex.get('bjs'))
+    if ex.get('light_route'): notes.append('event lights: ' + ex['light_route'])
     if ex.get('rich_lights_avg') is not None: notes.append('rich lights: %s point lights in the scene, %s distinct event lights lit at once on average, %s at most' % (ex['point_lights'], ex['rich_lights_avg'], ex['rich_lights_max']))
     notes.append('environment: %s' % (('dead-star sky' if ex['env']['sky'] else 'starfield sky') + ', %d rocks' % ex['env']['rocks'] if ex.get('env') else 'none (assets/env/ missing or not this mode)'))
     notes.append('%d shader compiles and %d heap drops (GC) during the bench, listed in the trace' % (len(trace['shader_compiles']['rows']), len(trace['heap_drops']['rows'])))
