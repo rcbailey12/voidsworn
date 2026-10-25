@@ -45,7 +45,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | F3 | Density draft: "6 to 8 activations per round at 20 ships" | WRONG | Every ship activates every round (battle.js:359-362), so 20 ships means about 20 activations | INFO |
 | F4 | Density "12 vs 15 wait inconsistency" (OPUS_HANDOFF.md:60) | WRONG | Draft table: 12 s is the target, 15 s the hard gate | DECIDED (12 target, 15 limit) |
 | F5 | Dead Star "not a gravity well mechanic, no new engine work" | WRONG premise | Well ships today: battle.js:272-277, 305, 343, 374. Board shape in 6 of 8 fight types (battle.js:58-65). | DECIDED (R2) |
-| F6 | "Cyan means shields" as current state (Argon packs, barge draft) | WRONG as current state | Shields are faction-coloured (fx3d.js:3, :32). The tutorial says "Cyan is shields" (ui3d.js:625). The hex grid is cyan (scene3d.js:254). Rare is #62ccff (data.js:386). | DECIDED (R3). Tutorial line and enemy markers in B1. |
+| F6 | "Cyan means shields" as current state (Argon packs, barge draft) | WRONG as current state | Shields are faction-coloured (fx3d.js:3, :32). The tutorial says "Cyan is shields" (ui3d.js:625). The hex grid is cyan (scene3d.js:254). Rare is #62ccff (data.js:386). | DECIDED (R3). Tutorial line FIXED (0fe88b8: points at the cyan shield bars, bubble in faction colour). Enemy markers OPEN (B1). |
 | F7 | Amber shield-state ramp | Conflict | Amber already means hull (fx3d.js:2, HULL_HEX #ffae42 at :4) | DECIDED: low shields shown as gaps in the faction colour |
 | F8 | Six factions get shield effects (art_direction_rey.md:96; QA and beauty specs) | WRONG | Chorus (0 of 8 hulls) and Deathless (0 of 6) have no shields | INFO |
 | F9 | "The motion rule rewards staying still" (OPUS_HANDOFF.md:62) | WRONG | Base rule: +10 to hit a still ship (battle.js:390, 458, 469). Only boon i_still (data.js:398) rewards stillness. | DECIDED: sync does not stack with i_still |
@@ -56,7 +56,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | F14 | Corsair glow #e0402c, Voidsworn trim #c8501f as "observed" | Mixed sources | Those are data.js FACTIONS values (data.js:115, 111). FAC3D, the agreed single source, differs: Corsair engine C3(1,.38,.16), Voidsworn trim #9c3a1c (ships3d.js:3, 5). | OPEN (palette unification) |
 | F15 | Torpedoes travel and herd movement | WRONG for today | Hit is rolled at launch (battle.js:589); 0.55 to 1.15 s flight visual (wfx3d.js:365-380); damage after the visual (battle.js:597-604), all in one activation. Range 6 (5 Star torpedo), cooldown 2 (data.js:8, 15, 20). | DECIDED: next-turn impact with a lane, in B3 |
 | F16 | Crits are 2-round effects (handoff paraphrase) | WRONG on engine | Engine crit is -1 speed, stacking, for the rest of the battle (battle.js:561; reset only on repair, :541). Shield crit stops regen 2 turns; weapon crit is 2 turns; fire is 2 ticks of 6. Nothing persists past the battle. | INFO (fits "soft and current") |
-| F17 | Crit revives destroyed systems | VERIFIED bug | A weapon or shield crit sets off=2 or shieldOff=2 over a section-destroyed 999 (battle.js:562-563 against 547-548) | OPEN (B1) |
+| F17 | Crit revives destroyed systems | VERIFIED bug | A weapon or shield crit sets off=2 or shieldOff=2 over a section-destroyed 999 (battle.js:562-563 against 547-548) | FIXED (B1: battle.js `systemDamage` turns a crit on a destroyed system into a fire; b1_tests F17; 0fe88b8) |
 | F18 | 1.32 GB texture figure "asserted without derivation" | WRONG | Derived as the phone figure (contrib/rey/reviews/ship-pipeline-audit.md:435-439). Real hulls_hi maps: worst 20 different hulls about 0.82 GB uncompressed, about 0.2 GB compressed. | DECIDED: figure retired |
 | F19 | Tonemapper test with AgX | WRONG for Babylon | Babylon 8.20 offers Standard, ACES, KHR PBR Neutral. The game uses ACES (scene3d.js:29), bloom threshold 0.5 (:27). | DECIDED: ACES vs Neutral in Babylon; AgX only in Godot |
 | F20 | The game shows admiral portraits | WRONG | No portrait code in any build file | INFO (portraits on backlog) |
@@ -64,7 +64,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | F22 | Voidsworn carrier ban (price ladder) | Conflict | Breaks Commodore Ashgrove, carrier doctrine, starts with a Reliquary (data.js:204) | DECIDED: carriers stay, priced up |
 | F23 | Corsair gate "missile or bombard kind" | WRONG premise | Kinds are only battery, flak, lance, torp, bio, gauss, sq | DECIDED: "no lance-kind weapons" |
 | F24 | A threat budget or fleet power must be invented (difficulty dial) | WRONG | fleetPower (battle.js:122), per-sector budget (battle.js:133), BOSS_SCALE and BOSS_FAC exist. Runs end at sector 3 (campaign_run.js:311). | INFO (the B2 ramp builds on these) |
-| F25 | AI default comes from aiVet() | WRONG | `let AI_LEVEL='veteran'` (campaign3d.js:3) | OPEN (onboarding fix 1, B1) |
+| F25 | AI default comes from aiVet() | WRONG | `let AI_LEVEL='veteran'` (campaign3d.js:3) | FIXED (B1: campaign3d.js defaults to Standard; main3d.js keeps Veteran for players with runs played and no saved choice; 0fe88b8) |
 | F26 | "No enemy-turn signal" | WRONG | The top bar shows "Enemy activation" (ui3d.js:86) | INFO (B1 makes it clearer) |
 | F27 | Onboarding fix 10 (single-weapon keys) | Already done | ui3d.js:626 | FIXED |
 
@@ -86,17 +86,17 @@ Full tables: `compute/balance_reference.md` and the CSVs beside it. Every later 
 
 | ID | Bug | Verdict | Evidence | Status |
 |---|---|---|---|---|
-| B-1 | Save-brick class | VERIFIED | renamed hull: core.js:180, :164; unknown relic: campaign_run.js:46; nameless captain: core.js:126; stale admiral: campaign_meta.js:196; `stats:null` crashes the title (campaign_meta.js:38) | OPEN (B1) |
-| B-2 | Retreat dialog lets the keyboard play on; "Jump out" turns a finished win into a retreat | VERIFIED | ui3d.js:484 (no dialog check); campaign3d.js:95 (no live-battle re-check) | OPEN (B1) |
-| B-3 | Reload bug 1: mid-battle reload eats the node | Looks FIXED | Nothing saves in battle; continue replays the seeded node (campaign_meta.js:42) | Confirm in a browser test (B1) |
-| B-4 | Reload bug 2: reload during reward screens loses boon, refit, relic | VERIFIED | Salvage pick saves (campaign_run.js:274) before the node completes (:309). Event fights skip seeding (campaign3d.js:50). | OPEN (B1) |
-| B-5 | Captured flagship joins the fleet past the cap; selling it makes credits NaN | VERIFIED | campaign3d.js:81; campaign_run.js:181 | OPEN (R4 removes it) |
-| B-6 | Free blink teleport after a stalled animation | VERIFIED | battle.js:944 | OPEN (B1) |
-| B-7 | Nova cooldown spent by an abandoned cast | VERIFIED | battle.js:953 | OPEN (B1) |
-| B-8 | Towing ignores the command point cap | VERIFIED | campaign_run.js:272 | OPEN (B1) |
-| B-9 | Zero-fleet win recorded as a loss | VERIFIED | battle.js:771; campaign3d.js:88 | OPEN (B1) |
-| B-10 | Reserve captain overwrites a hired veteran | VERIFIED | campaign3d.js:99 | OPEN (B1) |
-| B-11 | Alternating-mode fire check ignores its return | Latent | ui3d.js:410, inside the same check. Not exploitable today. | OPEN (one-line fix) |
+| B-1 | Save-brick class | VERIFIED | `repairRunIds` (core.js, from `normalizeRun`) checks every saved id; `migrateMeta` refills null containers; raw save kept as `voidsworn.v1.repaired`; Continue falls back to "Start fresh (keep a copy)" (campaign_meta.js). b1_tests B-1a to B-1f. bf0fc0b | FIXED (B1) |
+| B-2 | Retreat dialog lets the keyboard play on; "Jump out" turns a finished win into a retreat | VERIFIED | ui3d.js `onKey` ignores battle keys under a dialog; campaign3d.js `c3retreatYes` checks over, busy, finished and ending; `endBattleFlow` closes an open retreat question. b1_tests B-2. 258ce02 | FIXED (B1) |
+| B-3 | Reload bug 1: mid-battle reload eats the node | Looks FIXED | Scripted: no run save in battle.js or ui3d.js; the only save there is meta-only. b1_tests B-3. d35f702 | FIXED (confirmed) |
+| B-4 | Reload bug 2: reload during reward screens loses boon, refit, relic | VERIFIED | campaign_run.js marks the node done when rewards are banked and keeps pending picks as `RUN.reward` with fixed offers; `resumeReward` after reload; event fights seeded (campaign3d.js). b1_tests B-4, reload at every step. d35f702 | FIXED (B1) |
+| B-5 | Captured flagship joins the fleet past the cap; selling it makes credits NaN | VERIFIED | battle.js `captureChance` 0 for sector flagships, boarding cripples but never flips them; campaign3d.js scraps prizes past the cap; core.js `shipValue`/`prizeScrap`; NaN credits repaired on load. b1_tests B-5. 0fe88b8 | FIXED for B1 (add, strip or ransom still B2) |
+| B-6 | Free blink teleport after a stalled animation | VERIFIED | battle.js blink sets the cooldown even when its animation stalls. b1_tests B-6. 0fe88b8 | FIXED (B1) |
+| B-7 | Nova cooldown spent by an abandoned cast | VERIFIED | battle.js Nova cooldown set only after the blast lands. b1_tests B-7. 0fe88b8 | FIXED (B1) |
+| B-8 | Towing ignores the command point cap | VERIFIED | campaign_run.js tow offered only under the command cap, checked again on pick. b1_tests B-8. 0fe88b8 | FIXED (B1) |
+| B-9 | Zero-fleet win recorded as a loss | VERIFIED | campaign3d.js `finishBattle`: a win with an empty fleet gets a garrison ship and goes to rewards. b1_tests B-9. 0fe88b8 | FIXED (B1) |
+| B-10 | Reserve captain overwrites a hired veteran | VERIFIED | campaign3d.js: a reserve captain skips hired veterans; hull re-derived for the new captain. b1_tests B-10. 0fe88b8 | FIXED (B1) |
+| B-11 | Alternating-mode fire check ignores its return | Latent | ui3d.js direct fire: `if(!guard(s)) return;`. b1_tests B-11. 0fe88b8 | FIXED (B1) |
 | B-12 | Watchdog leaves B.activeUnit set | Latent | ui3d.js:667; no softlock in practice | INFO |
 | B-13 | Legacy shop has no buttons | Dead UI | main3d.js:11 unlocks every legacy upgrade and admiral free on boot (matches Ryan's no-grind wish) | INFO |
 | B-14 | Sim harness crash | VERIFIED | sim3d.js:112 `OBJS_SEEN[B.obj.type].w++` on an unseen type | FIXED (d88035a, guard as in the plan section 10) |
