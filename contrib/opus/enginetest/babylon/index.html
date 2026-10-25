@@ -642,9 +642,9 @@ B.Effect.ShadersStore.volFragmentShader = GL_COMMON + NOISE3 + [
   '  c = mix(c, vec3(1.0, 0.75, 0.35), smoothstep(0.3, 0.65, h)); return mix(c, vec3(1.0, 0.96, 0.85), smoothstep(0.65, 1.0, h)); }',
   'vec3 gEm; vec3 gAlb;',
   'float ring(vec3 pw, vec3 G, float k){ float a = uTime - (uP.x + k * 0.08 + 0.02); float age = mod(a, 4.0); if (a < 0.0 || age > 2.0) return 0.0;',
-  '  vec3 c = G + vec3(uDx, 0.0, 0.0) + uDir * (5.0 * (1.0 - exp(-1.4 * age)) / 1.4); float R = 0.5 + 2.6 * (1.0 - exp(-age * 2.0)); float w = 0.35 + 0.45 * age;',
-  '  vec3 q = pw - c; float h = dot(q, uDir); float rr = length(q - uDir * h); float dd = (rr - R) * (rr - R) + h * h;',
-  '  float dk = exp(-dd / (w * w)) * spow(1.0 - age / 2.0, 1.3); gEm += vec3(1.0, 0.45, 0.1) * dk * max(0.0, 1.0 - age / 0.12) * 6.0; return dk; }',
+  '  vec3 c = G + vec3(uDx, 0.0, 0.0) + uDir * (4.0 * (1.0 - exp(-1.6 * age)) / 1.6); float R = 0.3 + 1.4 * (1.0 - exp(-age * 2.5)); float w = 0.7 + 1.5 * sqrt(age);',
+  '  vec3 q = pw - c; float h = dot(q, uDir); float rr = length(q - uDir * h); float dd = (rr - R) * (rr - R) * 0.6 + h * h * 1.4;',   // a torus that swells into a soft puff
+  '  float dk = exp(-dd / (w * w)) * spow(1.0 - age / 2.0, 1.6) / (1.0 + age); gEm += vec3(1.0, 0.45, 0.1) * dk * max(0.0, 1.0 - age / 0.12) * 6.0; return dk; }',
   'float field(vec3 pw, vec3 pl){ gEm = vec3(0.0);',
   '  if (uType < 0.5) { float age = uP.x; float r = length(pl) * 2.0; float rs = 0.25 + 0.6 * (1.0 - exp(-age * 1.6));',
   '    float n = fbm3(pl * 5.0 + vec3(0.0, -age * 0.6, age * 0.3)); float d = clamp((rs - r) / rs * 1.6 + (n - 0.5) * 1.4, 0.0, 1.0);',
@@ -655,7 +655,7 @@ B.Effect.ShadersStore.volFragmentShader = GL_COMMON + NOISE3 + [
   '    gEm = vec3(1.0, 0.45, 0.12) * exp(-y * 9.0) * 1.5; gAlb = vec3(0.55, 0.6, 0.7);',
   '    return max(0.0, (1.0 - q) * 1.5 + (n - 0.5) * 1.6 - 0.3) * (1.0 - smoothstep(0.6, 1.0, y)) * puff * uP.x; }',
   '  float d = ring(pw, uG0, 0.0) + ring(pw, uG1, 1.0) + ring(pw, uG2, 2.0) + ring(pw, uG3, 3.0);',
-  '  gAlb = vec3(0.25, 0.24, 0.23); return d * (0.4 + 1.2 * fbm3(pw * 1.2 + uTime * 0.2)) * 1.6 * uP.y; }',
+  '  float nz = fbm3(pw * 0.8 + vec3(0.0, uTime * 0.35, 0.0)); gAlb = vec3(0.25, 0.24, 0.23); return d * smoothstep(0.2, 0.75, nz + 0.2 * d) * 2.2 * uP.y; }',
   'void main(){ vec3 rd = normalize(vW - uCam); vec3 roL = (uInvWorld * vec4(uCam, 1.0)).xyz; vec3 rdL = (uInvWorld * vec4(rd, 0.0)).xyz;',
   '  vec3 inv = 1.0 / (abs(rdL) + 1e-6) * sign(rdL + 1e-12); vec3 ta = (vec3(-0.5) - roL) * inv, tb = (vec3(0.5) - roL) * inv;',
   '  vec3 tmn = min(ta, tb), tmx = max(ta, tb); float t0 = max(max(max(tmn.x, tmn.y), tmn.z), 0.0); float t1 = min(min(tmx.x, tmx.y), tmx.z);',
@@ -764,7 +764,9 @@ if (MAXM) {
   // IBL from the sky: Babylon turns the equirectangular PNG into a mipmapped cube (CPU side, at load)
   var envTex = await new Promise(function (res) {
     var tx = new B.EquiRectangularCubeTexture(ENV.sky ? '../assets/env/sky_deadstar_8k.png' : '../starfield_4k.png', scene, 256, false, true, function () { res(tx); }, function () { res(null); }); });
-  if (envTex) { scene.environmentTexture = envTex; scene.environmentIntensity = 1.0; }
+  // reflections only: zero the sky's irradiance, since the flat 0.25-of-key ambient already lights the diffuse (both on top
+  // washed the rocks and hulls flat)
+  if (envTex) { envTex.sphericalPolynomial = new B.SphericalPolynomial(); scene.environmentTexture = envTex; scene.environmentIntensity = 1.0; }
   // micro-detail: a procedural 256 px tile (panel seams, grain) in Babylon's detail-map layout (R albedo, G normal y, B roughness, A normal x)
   var DN = 256, hgt = new Float32Array(DN * DN), dpx = new Uint8Array(DN * DN * 4), hs = function (x, y) { return hgt[((y + DN) % DN) * DN + (x + DN) % DN]; };
   for (var y = 0; y < DN; y++) for (var x = 0; x < DN; x++) {
@@ -1484,15 +1486,31 @@ if (BOARD) {
   var ringM = new B.StandardMaterial('ringMat', scene); ringM.disableLighting = true; ringM.emissiveColor = new B.Color3(0.45, 0.95, 1.0);
   var ring = B.MeshBuilder.CreateTorus('selRing', { diameter: 26, thickness: 0.7, tessellation: 96 }, scene); ring.material = ringM; ring.isVisible = false; ring.isPickable = false; ring.renderingGroupId = 1;
   BRD = { sel: -1, hover: -1, ring: ring, frame: 0, click: null, clickResult: null, axial: new B.Vector2(), sel2: new B.Vector2() };
-  var GUI = BABYLON.GUI, ui = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui', true, scene); ui.idealHeight = 1440; ui.useSmallestIdeal = false;
   var NAMES = ['Ascendant', 'Super-dreadnought', 'Pyre-Barge', 'Bio-titan', 'Ark', 'Tomb-ark'], HULLV = [0.82, 0.64, 0.47, 0.9, 0.73, 0.58], SHV = [0.7, 0.35, 0.2, 0, 0.85, 0];
-  SHIPS.slice(0, 6).forEach(function (d, i) {
-    var box = new GUI.Rectangle('lab' + i); box.width = '190px'; box.height = '58px'; box.cornerRadius = 4; box.thickness = 1; box.color = 'rgba(150,200,255,0.55)'; box.background = 'rgba(6,10,18,0.62)';
-    ui.addControl(box); box.linkWithMesh(d.pivot); box.linkOffsetY = -80;
-    var name = new GUI.TextBlock('nm' + i, NAMES[i]); name.fontFamily = 'Segoe UI, Arial, sans-serif'; name.fontSize = 17; name.color = '#e8f0ff'; name.top = '-14px'; name.height = '22px'; box.addControl(name);
-    var bar = function (y, v, colr) { var bg = new GUI.Rectangle(); bg.width = '160px'; bg.height = '7px'; bg.top = y; bg.thickness = 0; bg.background = 'rgba(255,255,255,0.12)'; box.addControl(bg);
-      var fg = new GUI.Rectangle(); fg.width = (160 * v) + 'px'; fg.height = '7px'; fg.thickness = 0; fg.background = colr; fg.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT; bg.addControl(fg); };
-    bar('8px', HULLV[i], '#7fd46b'); if (d.shield) bar('19px', SHV[i], '#5aa8ff');
+  // ui=html: the labels as HTML over the canvas (the browser compositor draws them) instead of Babylon GUI, whose full-screen
+  // texture is redrawn and re-uploaded (33 MB at 4K) every frame while the labels follow the drifting ships
+  var UIHTML = Q.get('ui') === 'html', HTML_LABS = [];
+  if (UIHTML) {
+    var sc = RH / 1440, layer = document.createElement('div');
+    layer.style.cssText = 'position:fixed;left:0;top:0;width:' + RW + 'px;height:' + RH + 'px;pointer-events:none;overflow:hidden;font-family:Segoe UI,Arial,sans-serif;';
+    document.body.appendChild(layer);
+    SHIPS.slice(0, 6).forEach(function (d, i) {
+      var el = document.createElement('div');
+      el.style.cssText = 'position:absolute;left:0;top:0;width:' + 250 * sc + 'px;height:' + 80 * sc + 'px;margin-left:' + (-125 * sc) + 'px;margin-top:' + (-40 * sc - 110 * sc) + 'px;' +
+        'background:rgba(6,10,18,0.62);border:' + Math.max(1, sc) + 'px solid rgba(150,200,255,0.55);border-radius:' + 4 * sc + 'px;box-sizing:border-box;will-change:transform;';
+      var bar = function (v, colr) { return '<div style="margin:' + 5 * sc + 'px auto 0;width:' + 215 * sc + 'px;height:' + 10 * sc + 'px;background:rgba(255,255,255,0.12)"><div style="width:' + 215 * sc * v + 'px;height:100%;background:' + colr + '"></div></div>'; };
+      el.innerHTML = '<div style="text-align:center;color:#e8f0ff;font-weight:600;font-size:' + 25 * sc + 'px;line-height:' + 34 * sc + 'px">' + NAMES[i] + '</div>' + bar(HULLV[i], '#7fd46b') + (d.shield ? bar(SHV[i], '#5aa8ff') : '');
+      layer.appendChild(el); HTML_LABS.push({ el: el, d: d });
+    });
+  }
+  var GUI = BABYLON.GUI, ui = UIHTML ? null : GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui', true, scene); if (ui) { ui.idealHeight = 1440; ui.useSmallestIdeal = false; }
+  if (ui) SHIPS.slice(0, 6).forEach(function (d, i) {
+    var box = new GUI.Rectangle('lab' + i); box.width = '250px'; box.height = '80px'; box.cornerRadius = 4; box.thickness = 1; box.color = 'rgba(150,200,255,0.55)'; box.background = 'rgba(6,10,18,0.62)';
+    ui.addControl(box); box.linkWithMesh(d.pivot); box.linkOffsetY = -110;
+    var name = new GUI.TextBlock('nm' + i, NAMES[i]); name.fontFamily = 'Segoe UI, Arial, sans-serif'; name.fontSize = 25; name.fontWeight = '600'; name.color = '#e8f0ff'; name.top = '-20px'; name.height = '36px'; box.addControl(name);
+    var bar = function (y, v, colr) { var bg = new GUI.Rectangle(); bg.width = '215px'; bg.height = '10px'; bg.top = y; bg.thickness = 0; bg.background = 'rgba(255,255,255,0.12)'; box.addControl(bg);
+      var fg = new GUI.Rectangle(); fg.width = (215 * v) + 'px'; fg.height = '10px'; fg.thickness = 0; fg.background = colr; fg.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT; bg.addControl(fg); };
+    bar('12px', HULLV[i], '#7fd46b'); if (d.shield) bar('29px', SHV[i], '#5aa8ff');
   });
   var setHover = function (i) { if (BRD.hover === i) return; if (BRD.hover >= 0) SHIPS[BRD.hover].meshes.forEach(function (m) { m.renderOutline = false; });
     BRD.hover = i; if (i >= 0) SHIPS[i].meshes.forEach(function (m) { m.renderOutline = true; m.outlineColor = new B.Color3(0.5, 0.9, 1.0); m.outlineWidth = 0.012; }); };
@@ -1514,8 +1532,11 @@ if (BOARD) {
   window.__clickToVisible = function () { return BRD.clickResult; };
   window.BRD_DBG = function () { return { hover: BRD.hover, sel: BRD.sel, frame: BRD.frame, click: BRD.click, px: [scene.pointerX, scene.pointerY] }; };
 }
+var LBL_P = new B.Vector3(), LBL_O = new B.Vector3(), LBL_VP = new B.Viewport(0, 0, RW, RH), LBL_ID = B.Matrix.Identity();
 function boardUpdate(t) {   // ring and movement range follow the selected ship as it drifts across the hexes
   if (!BRD) return; BRD.t = t; var dx = drift(t);
+  for (var li = 0; li < HTML_LABS.length; li++) { var lb = HTML_LABS[li]; LBL_P.set(lb.d.x + dx, 0, lb.d.z);
+    B.Vector3.ProjectToRef(LBL_P, LBL_ID, scene.getTransformMatrix(), LBL_VP, LBL_O); lb.el.style.transform = 'translate(' + LBL_O.x.toFixed(1) + 'px,' + LBL_O.y.toFixed(1) + 'px)'; }
   if (BRD.sel >= 0) { var d = SHIPS[BRD.sel]; BRD.ring.position.set(d.x + dx, -5.6, d.z); axialOf(d.x + dx, d.z, BRD.sel2); bmat.setVector2('uSel', BRD.sel2); bmat.setFloat('uRange', 3); }
   else bmat.setFloat('uRange', -1);
 }
@@ -1600,6 +1621,7 @@ window.__shot = function (name) {
   update(t);
   if (taa) { taa.factor = 1; scene.render(); taa.factor = 0.1; for (var f = 0; f < 15; f++) scene.render(); }   // TAA: start fresh, then
   else { scene.render(); scene.render(); }                                                                   // accumulate jittered samples
+  if (BOARD && HTML_LABS.length) { boardUpdate(t); return 'page'; }   // HTML labels: run.py screenshots the page
   if (IS_WEBGPU) return 'canvas';   // run.py screenshots the canvas element (a WebGPU canvas is not readable after the frame)
   return canvas.toDataURL('image/png');
 };

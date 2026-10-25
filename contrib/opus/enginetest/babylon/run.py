@@ -26,6 +26,7 @@ ap.add_argument('--ships', type=int, default=0, help='ceiling round ship sweep: 
 ap.add_argument('--rich', action='store_true', help='ceiling round rich effects (24-ship layout unless --ships)')
 ap.add_argument('--max', action='store_true', help='max-detail round: rich effects, hi assets when present, detail features')
 ap.add_argument('--board', action='store_true', help='game slice: max mode from the tactical camera over a hex board, with UI; measures click to visible ring')
+ap.add_argument('--ui', default='gui', choices=['gui', 'html'], help='board labels: Babylon GUI (default) or HTML over the canvas')
 ap.add_argument('--noenv', action='store_true', help='ignore assets/env/ (diagnostics)')
 ap.add_argument('--vsync', action='store_true', help='leave vsync and the frame limiter on; reports dropped frames against the display rate')
 ap.add_argument('--soft', action='store_true', help='software WebGL (SwiftShader), sandbox validation only')
@@ -104,7 +105,7 @@ if a.webgpu: args += ['--enable-unsafe-webgpu']
 args += ['--enable-precise-memory-info', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows']
 
 mode = 'bench' if a.out else 'shots'
-url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + '&bjs=' + a.bjs + ('&webgpu=1' if a.webgpu else '') + ('&stress=1' if a.stress else '') + ('&ships=%d' % a.ships if a.ships else '') + ('&rich=1' if a.rich else '') + ('&max=1' if a.max else '') + ('&board=1' if a.board else '') + ('&envsky=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'sky_deadstar_8k.png')) else '') + ('&envrocks=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'asteroids.json')) else '') + ('&vsync=1' if a.vsync else '') + ('&' + a.extra if a.extra else '')
+url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + '&bjs=' + a.bjs + ('&webgpu=1' if a.webgpu else '') + ('&stress=1' if a.stress else '') + ('&ships=%d' % a.ships if a.ships else '') + ('&rich=1' if a.rich else '') + ('&max=1' if a.max else '') + ('&board=1' if a.board else '') + ('&ui=html' if a.ui == 'html' else '') + ('&envsky=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'sky_deadstar_8k.png')) else '') + ('&envrocks=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'asteroids.json')) else '') + ('&vsync=1' if a.vsync else '') + ('&' + a.extra if a.extra else '')
 errors = []
 with sync_playwright() as p:
     T0 = time.time(); b = None
@@ -151,7 +152,8 @@ with sync_playwright() as p:
         if a.only: names = [n for n in names if n in a.only.split(',')]
         for name in names:
             data = pg.evaluate('window.__shot(%s)' % json.dumps(name))
-            if data == 'canvas': pg.wait_for_timeout(300); pg.locator('#c').screenshot(path=os.path.join(a.shots, name + '.png'))
+            if data == 'canvas': pg.wait_for_timeout(300); pg.locator('#c').screenshot(path=os.path.join(a.shots, name + '.png'), timeout=300000)
+            elif data == 'page': pg.wait_for_timeout(300); pg.screenshot(path=os.path.join(a.shots, name + '.png'), timeout=300000)
             else:
                 with open(os.path.join(a.shots, name + '.png'), 'wb') as f: f.write(base64.b64decode(data.split(',', 1)[1]))
             print('shot', name)
