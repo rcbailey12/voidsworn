@@ -125,8 +125,26 @@ def build(seed=19):
         if p_ is not None: spots.append((p_, rr.uniform(.010, .020), rr.uniform(.0025, .0045)))
     for sh in shells: detail_lib.dents(sh, spots)
     FL = [(Vector((.090, .175, ZC)), (.12, .03)), (Vector((.140, -.150, ZC - .01)), (.13, .04)), (Vector((.202, 0, .03)), (.06, .06)), (Vector((.215, 0, ZC - .132)), (.05, .05))]
-    def base(p): return RUST if p.z > ZC + .004 else RUST_DK
+    # step 3 (Oct 25): Corsair patchwork (art direction: "large patches of stolen Hegemony grey and bare metal, the patchwork is the
+    # identity"). Each plate picks its paint from a weighted list keyed by its position, so the pick is stable between builds.
+    RUST_LT = (.16, .055, .022)
+    PATCH = [(RUST, .44), (RUST_LT, .14), (RUST_DK, .10), (HEG, .14), (BARE, .09), (BONE, .06), (OCHRE, .03)]
+    def base(p):
+        k = random.Random(hash((round(p.x, 3), round(p.y, 3), round(p.z, 3))) & 0xffffffff).random(); acc = 0
+        for c, w in PATCH:
+            acc += w
+            if k <= acc: return c if c not in (RUST, RUST_LT) or p.z > ZC + .004 else RUST_DK
+        return RUST
     detail_lib.detail_pass(shells, others, tag, base, (-.42, .46, ZC - .075, ZC + .075), corsair=True, seed=seed, flanges=FL)
+    # big stolen panels on the wide plain surfaces (the superstructure top and the upper flanks read plain in game, Oct 25)
+    S1 = detail_lib.Surface(shells, others); r1 = random.Random(seed + 5)
+    def salvage(p, r_): return r_.choice((HEG, HEG, BARE, BONE, (.11, .11, .12)))
+    big = [(.6, (.07, .11), (.04, .065)), (.4, (.05, .07), (.03, .045))]
+    detail_lib.scatter_plates(S1, tag, lambda r_: Vector((r_.uniform(-.20, .33), r_.uniform(-.11, .11), .5)), Vector((0, 0, -1)), lambda n: n.z > .5,
+                              base, r1, True, 9, big, th=.0028, kinds=(('rect', .4), ('chamfer', .35), ('trap', .25)), tint=salvage, name='bigtop')
+    for s_ in (1, -1):
+        detail_lib.scatter_plates(S1, tag, lambda r_: Vector((r_.uniform(-.30, .30), s_ * .6, r_.uniform(ZC - .01, ZC + .06))), Vector((0, -s_, 0)),
+                                  lambda n: abs(n.y) > .35, base, r1, True, 4, big, th=.0028, kinds=(('rect', .5), ('slant', .5)), tint=salvage, name=f'bigfl{s_}_')
     for o in hs_lib.PARTS:
         c = COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
         for d in a.data: d.color = (c[0], c[1], c[2], 1)

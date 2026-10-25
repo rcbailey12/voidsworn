@@ -120,6 +120,11 @@ if PROC and base_img is None:
     base = vmath('SCALE', base, s=rng(vo.outputs['Distance'] if False else vo.outputs[1], 0, 1, .78, 1.15))
     scorch = rng(noise(4, 4, rough=.5), .70, .80, 0, 1)                                                   # scorch marks from hits
     base = vmath('SCALE', base, s=rng(scorch, 0, 1, 1.0, .22))
+    if os.environ.get('PATCH'):  # v15 Corsair patchwork (off by default): big cells repainted stolen Hegemony grey or left bare metal
+        pv = T.nodes.new('ShaderNodeTexVoronoi'); pv.inputs['Scale'].default_value = float(os.environ.get('PATCH_SCALE', '7')); L.new(oc, pv.inputs['Vector'])
+        pr_ = T.nodes.new('ShaderNodeSeparateColor'); L.new(pv.outputs['Color'], pr_.inputs[0]); pk = pr_.outputs[0]; amt = float(os.environ['PATCH'])
+        base = mix(math_('MULTIPLY', rng(pk, .80, .81, 0, 1), amt), base, (.17, .18, .19))                 # grey cells
+        base = mix(math_('MULTIPLY', rng(pk, .70, .71, 0, 1), math_('MULTIPLY', rng(pk, .80, .79, 0, 1), amt)), base, (.15, .145, .14))  # bare cells
     rust = rng(noise(20, 10, rough=.7), .52, .64, 0, 1)                                                   # rust patches
     base = mix(math_('MULTIPLY', rust, .85), base, (.13, .045, .018))
     pits = rng(noise(140, 4), .62, .72, 0, 1)                                                             # small rust pits
