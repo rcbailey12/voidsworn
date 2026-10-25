@@ -1,0 +1,169 @@
+# A1 step 2: Pyre-Barge v15, the dressed version of Ryan's pick (Oct 24, FINDINGS R12): shape C (double-sided hulk) plus some of
+# shape B's salvage junk, in the Corsair rust-and-bone palette, with the v14 detail pass (plating, repairs, pipes, vents, dents, jank).
+# Frame: x aft (bow at -x), y to port, z up, length about 1.0, the same as c19_kit.py and barge_shapes.py.
+# usage: python3 barge_v15.py out_prefix [--export]    (bpy module or Blender -P; --export also writes OUT_shell.glb and OUT_kit.glb)
+# Space, not naval (CLAUDE.md): no keel, stem, sheer, crossbar mast or funnels. Guns face forward or out, never back.
+import sys, os, math, random
+HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.join(HERE, '..', 'hs')); sys.path.insert(0, HERE)
+import bpy, bmesh
+from mathutils import Vector, Matrix
+import hs_lib
+from hs_lib import loft, frustum, box, cyl, barrel
+import barge_shapes as B
+
+# ---- palette (linear RGB). Art direction (art_direction_rey.md): Corsair base desaturated rust brown #59331f, trim ochre #a3542c,
+# big patches of stolen Hegemony grey and bare metal, hot red glow #e0402c with dirty engines. "Bone" is the pale salvaged plating.
+RUST = (.100, .034, .014); RUST_DK = (.060, .022, .010); OCHRE = (.366, .089, .025); BONE = (.50, .45, .35); HEG = (.20, .21, .22)
+BARE = (.17, .165, .16); HEG = (.13, .135, .145); GUN = (.07, .07, .075); STEEL = (.13, .13, .14); DARK = (.025, .025, .028); GLOW = (.75, .05, .025)
+COL = {}
+def tag(rgb):
+    for o in hs_lib.PARTS:
+        if o.name not in COL: COL[o.name] = rgb
+
+ZC = -.070
+def shell_shapes():
+    """the three lofted masses of shape C: the hexagon hull, the red superstructure on top and the ordnance block underneath"""
+    def hexs(x, w, h, top_w=.50):
+        half = [(w * top_w, ZC + h), (w, ZC), (w * top_w, ZC - h)]; return (x, B.mirror(half, ZC + h, ZC - h))
+    st = [(-.490, .006, .006), (-.380, .085, .040), (-.250, .140, .068), (-.100, .165, .080), (.200, .165, .080), (.380, .140, .070), (.470, .110, .060)]
+    hull = loft('hull', [hexs(*s) for s in st], bevel=0)
+    sup = []
+    for x, zt, wt, wb in ((-.200, ZC + .085, .050, .100), (-.130, .040, .050, .120), (.120, .046, .055, .125), (.300, .046, .055, .115), (.340, ZC + .085, .060, .090)):
+        sup.append((x, B.mirror([(wt, zt), (wb, ZC + .078), (wb, ZC + .070)], zt + .002, ZC + .070)))
+    sups = loft('superstructure', sup, bevel=0)
+    keel = []
+    for x, zb, wb_, wt_ in ((-.120, ZC - .140, .045, .095), (-.070, ZC - .155, .055, .110), (.180, ZC - .155, .055, .110), (.250, ZC - .130, .050, .090)):
+        keel.append((x, B.mirror([(wt_, ZC - .070), (wt_, ZC - .078), (wb_, zb)], ZC - .070, zb)))
+    ven = loft('ventral', keel, bevel=0)
+    out = []
+    for o, col in ((hull, None), (sups, RUST), (ven, RUST_DK)):
+        hs_lib.PARTS.remove(o)  # the shell is kept apart from the kit (it is the surface the detail pass dresses)
+        bpy.context.view_layer.objects.active = o; o.select_set(True)
+        m = o.modifiers.new('bv', 'BEVEL'); m.width = .0025; m.segments = 2; m.limit_method = 'ANGLE'; m.angle_limit = math.radians(30)
+        bpy.ops.object.modifier_apply(modifier='bv')
+        sd = o.modifiers.new('sd', 'SUBSURF'); sd.subdivision_type = 'SIMPLE'; sd.levels = sd.render_levels = 3; bpy.ops.object.modifier_apply(modifier='sd')
+        o.select_set(False)
+        a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
+        for v, d in zip(o.data.vertices, a.data):
+            c = col or (RUST if v.co.z > ZC + .004 else RUST_DK)  # upper hull rust, lower hull darker: no single "waterline" band (both halves carry hardware)
+            d.color = (*c, 1)
+        out.append(o)
+    return out
+
+def dressing():
+    # top: the concept's signature masses, kept where the concept has them
+    B.bridge_and_rack(z_off=-.012); tag(OCHRE)
+    for nm in list(COL):  # rust body, bone roof, ochre only as trim (the all-ochre tier read as orange plastic)
+        if nm.startswith('tier'): COL[nm] = RUST
+        elif nm.startswith('roof'): COL[nm] = BONE
+        elif nm.startswith(('plinth', 'rackcolumn')): COL[nm] = STEEL
+        elif nm.startswith('windows'): COL[nm] = DARK
+        elif nm.startswith(('drum', 'tube')): COL[nm] = GUN
+    B.antenna_array(.032, 0, .092, h=.14); tag(STEEL)
+    for o in hs_lib.PARTS:
+        if o.name.startswith('dish') and o.name not in ('dishstrut0', 'dishstrut1'): COL[o.name] = BONE
+    # underside: bay doors and the ventral sensor array (the answer to the top array)
+    for k in range(5): box(f'bayslat{k}', (-.050 + k * .045, 0, ZC - .158), (.030, .080, .006), bevel=.001)
+    tag(DARK)
+    B.antenna_array(.215, 0, ZC - .132, h=.10, flip=True); tag(STEEL)
+    # engine pods, deliberately mismatched (shape B's junk): port is the standard pod, starboard a stolen oversized donor engine
+    box('pylonP', (.090, .175, ZC), (.140, .040, .022), bevel=.002); tag(STEEL)
+    cyl('nacelleP', (.110, .215, ZC), .040, .300, axis='X', seg=28, bevel=.004); tag(RUST)
+    for k in range(4): cyl(f'nacbandP{k}', (-.010 + k * .075, .215, ZC), .0415, .008, axis='X', seg=28, bevel=0)
+    tag(OCHRE)
+    B.engine_bell((.270, .215, ZC), .045, .055); tag(GUN)
+    box('nacelleplateP', (.020, .215, ZC + .036), (.100, .040, .010), bevel=.002); tag(BONE)
+    DY, DZ, DR = -.226, ZC - .016, .049  # stolen Hegemony engine: bigger than the port pod, never repainted, held on with straps
+    box('pylonS', (.140, -.150, ZC - .012), (.150, .060, .030), rot=(0, 0, .04), bevel=.003); tag(BARE)
+    cyl('donorpod', (.150, DY, DZ), DR, .330, axis='X', seg=36, bevel=.004); tag(HEG)
+    for k in range(7): cyl(f'donorrib{k}', (.005 + k * .048, DY, DZ), DR + .0025, .006, axis='X', seg=36, bevel=.0008)  # structural rings
+    tag(GUN)
+    for a_ in (35, 145, 215, 325):  # lengthwise rails between the rings
+        r_ = math.radians(a_); box(f'donorrail{a_}', (.150, DY + math.cos(r_) * (DR + .002), DZ + math.sin(r_) * (DR + .002)), (.300, .006, .006), rot=(r_, 0, 0), bevel=.0006)
+    tag(STEEL)
+    box('donorhatch', (.120, DY - DR * .55, DZ + DR * .80), (.060, .030, .006), rot=(-.6, 0, 0), bevel=.001); tag(BARE)
+    box('donorpatch', (.215, DY - DR * .30, DZ + DR * .95), (.050, .040, .005), rot=(-.3, .05, .1), bevel=.001); tag(RUST)  # a Corsair repair patch
+    cyl('donorintake', (-.017, DY, DZ), DR * .86, .014, axis='X', seg=36, bevel=.002); tag(DARK)
+    for k in range(5): box(f'donorgrille{k}', (-.025, DY, DZ - DR * .6 + k * DR * .3), (.004, DR * 1.5, .004), bevel=0)
+    tag(STEEL)
+    for k in range(3): box(f'donorstrap{k}', (.050 + k * .090, -.200, ZC + .036), (.010, .070, .006), rot=(-.45, 0, 0), bevel=0)  # crude straps over the pylon
+    tag(RUST)
+    B.engine_bell((.330, DY, DZ), .062, .065); tag(GUN)
+    # stolen block (shape B's cargo section, cut down) hung under the port side, a few degrees off true
+    B.loft('cargo', [(x, B.mirror([(.050, ZC - .110), (.055, ZC - .135), (.050, ZC - .170)], ZC - .105, ZC - .175)) for x in (-.180, -.150, .020, .050)], bevel=.003)
+    o = bpy.data.objects['cargo']; o.location = (0, .085, 0); o.rotation_euler = (0, .035, .03); tag(BONE)
+    for x in (-.120, -.010): box(f'cargopylon{x}', (x, .085, ZC - .098), (.018, .026, .026), bevel=.002)
+    tag(STEEL)
+    for k in range(3): box(f'cargoband{k}', (-.150 + k * .080, .085, ZC - .140), (.008, .114, .072), bevel=.001)
+    tag(RUST)
+    # radiators (no funnels) and the stern engines
+    B.radiator_pair(.390, 0, ZC + .060, splay=12, n=2, L=.080, H=.075); tag(BARE)
+    B.radiator_pair(.390, 0, ZC - .060, flip=True, splay=14, n=2, L=.080, H=.060); tag(BARE)
+    B.engine_bell((.480, 0, ZC + .022), .032, .050); B.engine_bell((.480, 0, ZC - .030), .036, .050); tag(GUN)
+    # guns: forward along the prow, and forward-and-out on the flanks, never back
+    B.bow_guns(-.380, (.050, -.050), ZC, L=.055); tag(GUN)
+    B.side_guns([(-.140, .120, ZC + .045), (.235, .120, ZC + .048)], up=.25); tag(GUN)
+    # salvage: a stolen Hegemony armour plate on the port bow, a bone plate on the starboard bow, hazard bar on the ventral nose
+    box('donorplate', (-.180, .089, ZC + .040), (.090, .008, .046), rot=(.55, 0, .05), bevel=.002); tag(HEG)
+    box('boneplate', (-.230, -.077, ZC + .030), (.070, .008, .040), rot=(-.6, .05, -.08), bevel=.002); tag(BONE)
+    for k in range(6): box(f'navhaz{k}', (-.135 + k * .006, 0, ZC - .143), (.004, .060, .003), rot=(0, 0, .5)); tag(((.40, .30, .02), (.02, .02, .02))[k % 2])
+    # engine glow discs, so the engines read lit in studio renders (the game draws its own plumes)
+    for nm, c, r in (('glowP', (.299, .215, ZC), .036), ('glowS', (.367, -.226, ZC - .016), .050), ('glowT', (.512, 0, ZC + .022), .026), ('glowB', (.512, 0, ZC - .030), .029)):
+        cyl(nm, c, r, .002, axis='X', seg=24, bevel=0)
+    tag(GLOW)
+
+def build(seed=19):
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    shells = shell_shapes()
+    dressing()
+    import detail_lib
+    others = [o for o in hs_lib.PARTS if not o.name.startswith(('glow', 'navhaz'))]
+    S0 = detail_lib.Surface(shells, others); rr = random.Random(11); spots = []
+    for k in range(60):
+        if len(spots) >= 12: break
+        s_ = rr.choice((1, -1)); p_, n_ = S0.hit(Vector((rr.uniform(-.30, .44), s_ * .6, rr.uniform(ZC - .07, ZC + .07))), Vector((0, -s_, 0)), .008)
+        if p_ is not None: spots.append((p_, rr.uniform(.010, .020), rr.uniform(.0025, .0045)))
+    for sh in shells: detail_lib.dents(sh, spots)
+    FL = [(Vector((.090, .175, ZC)), (.12, .03)), (Vector((.140, -.150, ZC - .01)), (.13, .04)), (Vector((.202, 0, .03)), (.06, .06)), (Vector((.215, 0, ZC - .132)), (.05, .05))]
+    def base(p): return RUST if p.z > ZC + .004 else RUST_DK
+    detail_lib.detail_pass(shells, others, tag, base, (-.42, .46, ZC - .075, ZC + .075), corsair=True, seed=seed, flanges=FL)
+    for o in hs_lib.PARTS:
+        c = COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
+        for d in a.data: d.color = (c[0], c[1], c[2], 1)
+    kit = hs_lib.finish('C19v15_kit')
+    return shells, kit
+
+def color_material():
+    m = bpy.data.materials.new('vcol'); m.use_nodes = True; nt = m.node_tree; b = nt.nodes['Principled BSDF']
+    at = nt.nodes.new('ShaderNodeAttribute'); at.attribute_name = 'Col'; nt.links.new(at.outputs['Color'], b.inputs['Base Color'])
+    b.inputs['Roughness'].default_value = .62; b.inputs['Metallic'].default_value = .35
+    # engine glow: emission where the vertex colour is the glow red
+    sep = nt.nodes.new('ShaderNodeSeparateColor'); nt.links.new(at.outputs['Color'], sep.inputs[0])
+    gt = nt.nodes.new('ShaderNodeMath'); gt.operation = 'GREATER_THAN'; gt.inputs[1].default_value = .6; nt.links.new(sep.outputs[0], gt.inputs[0])
+    em = nt.nodes.new('ShaderNodeMath'); em.operation = 'MULTIPLY'; em.inputs[1].default_value = 12.0; nt.links.new(gt.outputs[0], em.inputs[0])
+    nt.links.new(at.outputs['Color'], b.inputs['Emission Color']); nt.links.new(em.outputs[0], b.inputs['Emission Strength'])
+    return m
+
+def export(shells, kit, pre):
+    """the game converter (pixal_to_game.py) reads one mesh per file, so the three shell masses are joined first"""
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in shells: o.select_set(True)
+    bpy.context.view_layer.objects.active = shells[0]; bpy.ops.object.join(); shell = bpy.context.view_layer.objects.active; shell.name = 'C19v15_shell'
+    try: bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35), keep_sharp_edges=True)
+    except Exception: pass
+    for objs, nm in (([shell], pre + '_shell.glb'), ([kit], pre + '_kit.glb')):
+        bpy.ops.object.select_all(action='DESELECT')
+        for o in objs:
+            o.select_set(True)
+            try: o.data.color_attributes.active_color_name = 'Col'
+            except Exception: pass
+        bpy.context.view_layer.objects.active = objs[0]
+        bpy.ops.export_scene.gltf(filepath=nm, export_format='GLB', use_selection=True, export_vertex_color='ACTIVE', export_all_vertex_colors=True)
+
+if __name__ == '__main__':
+    a = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
+    pre = a[0]
+    shells, kit = build()
+    tris = sum(len(p.vertices) - 2 for o in shells + [kit] for p in o.data.polygons); print('tris', tris)
+    bpy.ops.wm.save_as_mainfile(filepath=pre + '.blend')
+    if '--export' in a: export(shells, kit, pre)

@@ -34,8 +34,8 @@ def bounds():
             w = o.matrix_world @ Vector(c); mn = Vector(map(min, mn, w)); mx = Vector(map(max, mx, w))
     return mn, mx
 
-def render_views(prefix, views=('q', 'side', 'front', 'below')):
-    sc = bpy.context.scene; m = clay_mat()
+def render_views(prefix, views=('q', 'side', 'front', 'below'), mat=None):
+    sc = bpy.context.scene; m = mat or clay_mat()
     for o in sc.objects:
         if o.type == 'MESH':
             o.data.materials.clear(); o.data.materials.append(m)
@@ -46,7 +46,7 @@ def render_views(prefix, views=('q', 'side', 'front', 'below')):
     sc.camera = cam; outs = []
     # bow is at -x; the 3/4 views look from the bow quarter, port side
     V = {'q': (Vector((-0.9, -1.1, 0.75)), 'PERSP'), 'side': (Vector((0, -1, 0)), 'ORTHO'), 'front': (Vector((-1, 0, 0)), 'ORTHO'),
-         'below': (Vector((-0.8, -1.1, -0.5)), 'PERSP'), 'top': (Vector((0, 0, 1)), 'ORTHO')}
+         'below': (Vector((-0.8, -1.1, -0.5)), 'PERSP'), 'qp': (Vector((-0.9, 1.1, 0.75)), 'PERSP'), 'belowp': (Vector((-0.6, 1.1, -0.6)), 'PERSP'), 'top': (Vector((0, 0, 1)), 'ORTHO')}
     for v in views:
         d, kind = V[v]; d = d.normalized(); cam.data.type = kind
         if kind == 'ORTHO':
