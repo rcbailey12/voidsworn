@@ -559,8 +559,9 @@ function systemDamage(t,forced){
   if(r==='weapon'&&!t.weapons.length) r='fire';
   if(r==='weapon'&&forced){ const live=t.weapons.filter(w=>w.off===0).sort((a,b)=>b.dmg*b.shots-a.dmg*a.shots); if(live.length){ live[0].off=2; return live[0].n+' knocked out'; } }
   if(r==='engine'){ t.st.engine=Math.min(t.speed-1,t.st.engine+1); return 'Engines hit'; }
-  if(r==='shields'&&t.shMax>0){ t.st.shieldOff=2; return 'Shield generator down'; }
-  if(r==='weapon'){ const w=pick(t.weapons); w.off=2; return w.n+' knocked out'; }
+  if(r==='shields'&&t.shMax>0&&(t.st.shieldOff||0)<99){ t.st.shieldOff=Math.max(t.st.shieldOff||0,2); return 'Shield generator down'; }
+  if(r==='weapon'){ const ws=t.weapons.filter(w=>(w.off||0)<99); if(ws.length){ const w=pick(ws); w.off=Math.max(w.off||0,2); return w.n+' knocked out'; } } // B1 (F17): a crit never brings back a system a destroyed section already took out
+  if(r==='shields'&&(t.st.shieldOff||0)>=99){ t.st.fire=2; return 'Fire on deck'; }
   t.st.fire=2; return 'Fire on deck';
 }
 
@@ -654,7 +655,7 @@ function boardTargets(u){ if(!u||u.isSq||u.braced||u.boarded||u.dead||!u.crewMax
 // chance that a boarding action captures the target, from the same dice as boardUnit
 // one capture model everywhere: boardUnit rolls r in [0.75,1.25); capture when round(crew*mult*r*.38) >= defenders.
 // The shown chance is that roll's exact probability, so the number on the button is the real odds.
-function captureChance(u,t){ const s=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0))*.38; if(s<=0) return 0; const x=(t.crew-.5)/s; return Math.round(100*Math.max(0,Math.min(1,(1.25-x)/.5))); }
+function captureChance(u,t){ if(t&&t.boss) return 0; /* B1 (R4): sector flagships cannot be captured */ const s=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0))*.38; if(s<=0) return 0; const x=(t.crew-.5)/s; return Math.round(100*Math.max(0,Math.min(1,(1.25-x)/.5))); }
 // why a selected ship can't shoot a target, in plain words
 function cantFireReason(s,t){ if(s.braced) return 'This ship is braced, so it holds fire this turn.';
   const ready=s.weapons.filter(w=>weaponReady(w)); if(!ready.length) return 'Every weapon on this ship has already fired this turn.';
@@ -671,8 +672,8 @@ async function boardUnit(u,t){
   const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0))*(.75+rnd()*.5), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5)*(.75+rnd()*.5);
   const kill=Math.round(a*.38), loss=Math.min(u.crew-1,Math.round(d*.3)); t.crew=Math.max(0,t.crew-kill); u.crew=Math.max(1,u.crew-loss);
   const who=u.side==='player'?'p':'e';
-  if(t.crew<=0&&t.side==='player'&&!t.captured){ t.crew=Math.max(2,Math.round(t.crewMax*.15)); const s1=systemDamage(t), s2=systemDamage(t); fxText(t,'Holds the bridge','#f0b35a',-30);
-    log(`${u.name}'s boarders overrun ${t.name}, but the last of its crew hold the bridge.${s1?' Saboteurs: '+s1.toLowerCase():''}${s2?', '+s2.toLowerCase():''}.`, 'e'); if(B.usage) B.usage.overrun=(B.usage.overrun||0)+1; return true; } // your ships are never captured: boarders cripple, they don't steal
+  if(t.crew<=0&&(t.side==='player'||t.boss)&&!t.captured){ t.crew=Math.max(2,Math.round(t.crewMax*.15)); const s1=systemDamage(t), s2=systemDamage(t); fxText(t,'Holds the bridge','#f0b35a',-30);
+    log(`${u.name}'s boarders overrun ${t.name}, but the last of its crew hold the bridge.${s1?' Saboteurs: '+s1.toLowerCase():''}${s2?', '+s2.toLowerCase():''}.`, who); if(B.usage&&t.side==='player') B.usage.overrun=(B.usage.overrun||0)+1; return true; } // your ships and sector flagships (B1, R4) are never captured: boarders cripple, they don't steal
   if(t.crew<=0){ if(B.usage&&u.side==='player') B.usage.cap=(B.usage.cap||0)+1; const old=t.side; t.side=u.side; t.crew=Math.max(3,Math.round(t.crewMax*.4)); t.captured=true; t.activated=true; t.mp=0; t.turnsLeft=0; t.braced=false; t.weapons.forEach(w=>w.fired=true);
     gainResolve(u.side,2); fxText(t,'Captured','#f0b35a',-30); log(`Boarding parties from ${u.name} take ${t.name}. It now fights for ${u.side==='player'?'you':'the enemy'}.`, who);
     if(typeof onCapture==='function') onCapture(t,old); checkEnd(); return true; }
@@ -941,7 +942,7 @@ async function useAbility(u,arg){
   if(a==='regrow'){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*.25)); u.hp+=h; fxText(u,'+'+h+' hull','#8ff0a0',-24); }
   if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; fxText(t,'+'+h+' hull','#7dff9b',-24); log(u.name+' reanimates '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
   if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); for(const t of foes){ if(t.sh) t.sh=t.sh.map(x=>Math.floor(x*.5)); try{ fxShield(t,-1); }catch(e){} } fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+foes.length+' enemy ship'+(foes.length===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
-  if(a==='blink'){ const h=arg&&arg.hex?arg.hex:autoBlink(u); if(!h||!blinkHexes(u).some(x=>x.q===h.q&&x.r===h.r)) return false; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()) return false; fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
+  if(a==='blink'){ const h=arg&&arg.hex?arg.hex:autoBlink(u); if(!h||!blinkHexes(u).some(x=>x.q===h.q&&x.r===h.r)) return false; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()){ u.abCd=abilityCd(u); return false; } /* B1 (B-6): a jump whose animation stalled still lands, so it still costs the cooldown */ fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
   if(a==='surge'){ for(let i=0;i<4;i++) u.sh[i]=u.shMax; if(u.st.shieldOff<99) u.st.shieldOff=0; fxShield(u,-1); fxText(u,'Shields surge','#7fd6c8',-24); }
   if(a==='launch'){
     const h=arg&&arg.hex ? arg.hex : pick(launchHexes(u));
@@ -950,9 +951,10 @@ async function useAbility(u,arg){
     log(`${u.name} launches a ${HULLS[kind].n.toLowerCase()}.`, u.side==='player'?'p':'e');
   }
   if(a==='nova'){
-    const c=arg.hex; u.abCd=abilityCd(u);
+    const c=arg.hex;
     log(`${u.name} fires its nova cannon.`, u.side==='player'?'p':'e');
-    const live=liveFrom(u); await animNova(u,c); if(!live()) return false; // abandoned after a stall: the blast never lands
+    const live=liveFrom(u); await animNova(u,c); if(!live()) return false; // abandoned after a stall: the blast never lands, and (B1, B-7) the cooldown is not spent
+    u.abCd=abilityCd(u);
     const hitList=alive().filter(x=>hdist(x,c)<=1);
     for(const x of hitList){
       const dmg=(hdist(x,c)===0?40:20)*u.dmg*(x.isSq?1.5:1);

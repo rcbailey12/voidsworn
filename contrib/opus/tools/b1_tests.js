@@ -15,8 +15,9 @@ let pass = 0, fail = 0;
 function check(name, fn) { try { const r = fn(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.message)); } }
 eval(src + `
 function log(){} function fxText(){} function fxShield(){} function fxFlash(){} function tel(){} function nodeSeeds(){ return 0; }
+var STALL=false; async function animNova(){ if(STALL) B.epoch=(B.epoch||0)+1; } async function animBlink(){ if(STALL) B.epoch=(B.epoch||0)+1; } async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get META(){ return META; }, get SAVED_RUN(){ return SAVED_RUN; }, set SAVED_RUN(v){ SAVED_RUN=v; }, Persist, migrateRun, migrateMeta, defaultMeta, fleetCP, derive, newShip, ensureFlagship,
-  RELICS, ADMIRALS, HULLS, BOONS, MODULES, PATRONS, STORE_KEY, ACT, rewardFlow, resumeReward, genSector, findNode, saveRun, get modalHtml(){ return LAST_MODAL; }, get modalOpen(){ return !!IDS.modal; } };
+  RELICS, ADMIRALS, HULLS, BOONS, MODULES, PATRONS, STORE_KEY, ACT, rewardFlow, resumeReward, genSector, findNode, saveRun, get modalHtml(){ return LAST_MODAL; }, set STALL(v){ STALL=v; }, get B(){ return B; }, startBattle, useAbility, boardUnit, hdist, novaTargets, blinkHexes, systemDamage, captureChance, prizeScrap, salvageYield, PATRONS2: null, get modalOpen(){ return !!IDS.modal; } };
 `);
 const base = () => ({ fac: 'voidsworn', admiral: 'vex', credits: 50, cpCap: 10, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] },
   fleet: [{ uid: 1, tpl: 'warden', name: 'Warden', hp: 50, mods: [], mk: 1, cap: { fac: 'voidsworn', name: 'Ada Vey', xp: 0, rank: 0, perks: [], pending: 0 } }] });
@@ -110,5 +111,61 @@ check('B-4 a reload right after the battle does not replay the node (it is alrea
   const { node, summary } = rewardSetup(); T.rewardFlow(summary); const n = T.SAVED_RUN.map.cols.flat().find(x => x.id === node.id); return n.done === true;
 });
 
+// ---- B-5 captured flagship ----
+check('B-5 a sector flagship can never be captured (capture chance 0)', () => T.captureChance({ crew: 400, fac: 'corsair', fx: {} }, { boss: true, crew: 0 }) === 0);
+check('B-5 every hull has a finite sell and scrap value (no NaN credits)', () => Object.keys(T.HULLS).every(k => Number.isFinite(T.prizeScrap(k))));
+check('B-5 a save with NaN credits is repaired to 0', () => { const r = base(); r.credits = NaN; return T.migrateRun(r).credits === 0; });
+check('B-5 prize code skips boss hulls and scraps prizes past the command cap', () => {
+  const t = fs.readFileSync(path.join(ROOT, 'campaign3d.js'), 'utf8'); return /if\(!H\|\|H\.boss\|\|u\.boss\) continue;/.test(t) && /fleetCP\(\)\+\(H\.cp\|\|1\)>RUN\.cpCap/.test(t);
+});
+// ---- B-8 towing ----
+check('B-8 towing is only offered within the command cap', () => {
+  T.RUN = T.migrateRun(Object.assign(base(), { fac: 'corsair' })); const w = { tpl: 'c_raider', cp: 1, cause: 'gun', wk: [] };
+  T.RUN.cpCap = 999; const ok = T.salvageYield(w).tow === true; T.RUN.cpCap = T.fleetCP(); return ok && T.salvageYield(w).tow === false;
+});
+// ---- B-10 reserve captain ----
+check('B-10 a hired veteran keeps his ship; a plain new ship gets the reserve captain', () => {
+  const code = grab('campaign3d.js', 'const _newShip=newShip;', /\n/); const R = { reserve: [{ cap: { name: 'Old Hand', perks: [], xp: 0, rank: 1 } }] };
+  const wrapped = new Function('newShip', 'B', 'RUN', 'derive', 'setTimeout', 'toast', code.replace('const _newShip=newShip; newShip=function', 'const _newShip=newShip; return function'))(
+    (t, vet) => ({ tpl: t, hp: 100, cap: { name: vet ? 'Hired Vet' : 'Green' } }), null, R, () => ({ maxHp: 100 }), () => {}, () => {});
+  const a = wrapped('warden', true); const b = wrapped('warden', false); return a.cap.name === 'Hired Vet' && R.reserve.length === 0 && b.cap.name === 'Old Hand';
+});
+// ---- B-9 zero-fleet win ----
+check('B-9 a win that cost every ship continues the run with a garrison ship', () => {
+  const code = grab('campaign3d.js', "  if(result==='win'&&RUN.fleet.length===0){", /\n/); const R = { fleet: [], fac: 'voidsworn' };
+  new Function('result', 'RUN', 'newShip', 'cheapHull', 'ensureFlagship', 'setTimeout', 'toast', 'tel', code)('win', R, t => ({ tpl: t, name: 'Garrison' }), () => 'warden', () => {}, () => {}, () => {}, () => {});
+  return R.fleet.length === 1;
+});
+// ---- B-11, F25, F6: small text and guard changes ----
+check('B-11 the direct-fire path respects the alternating guard', () => /if\(set\.length\)\{ if\(!guard\(s\)\) return;/.test(fs.readFileSync(path.join(ROOT, 'ui3d.js'), 'utf8')));
+check('F25 fresh profiles start on Standard AI; returning players keep Veteran', () => /let AI_LEVEL='standard';/.test(fs.readFileSync(path.join(ROOT, 'campaign3d.js'), 'utf8')) && /else if\(\(META\.stats&&META\.stats\.runs\)>0\) AI_LEVEL='veteran'/.test(fs.readFileSync(path.join(ROOT, 'main3d.js'), 'utf8')));
+check('F6 tutorial no longer says "Cyan is shields" as a world rule', () => !/'Cyan is shields/.test(fs.readFileSync(path.join(ROOT, 'ui3d.js'), 'utf8')));
+// ---- F17 crits ----
+check('F17 a crit never revives a weapon or shield generator a destroyed section took out', () => {
+  T.RUN = T.migrateRun(base()); T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, enemies: [{ tpl: 'h_vanguard' }] });
+  const t = T.B.units.find(u => u.side === 'enemy' && !u.isSq); t.weapons.forEach(w => { w.off = 999; }); t.st.shieldOff = 999;
+  for (let i = 0; i < 200; i++) T.systemDamage(t, ['weapons', 'shields', 'prow', 'mid', null][i % 5]);
+  return t.weapons.every(w => w.off === 999) && t.st.shieldOff === 999;
+});
+// ---- B-6, B-7 abilities after a stalled animation (async) ----
+const ASYNC = [];
+ASYNC.push(['B-7 a Nova cast abandoned by a stall does not spend the cooldown; a landed one does', async () => {
+  T.RUN = T.migrateRun(Object.assign(base(), { fleet: [T.newShip('ascendant')] })); T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, enemies: [{ tpl: 'h_picket' }] });
+  const u = T.B.units.find(x => x.side === 'player' && x.ab === 'nova'); u.abCd = 0; const hex = T.novaTargets(u)[0]; if (!hex) throw new Error('no nova target');
+  T.STALL = true; const r1 = await T.useAbility(u, { hex }); const cd1 = u.abCd; T.STALL = false; await T.useAbility(u, { hex });
+  return r1 === false && cd1 === 0 && u.abCd > 0;
+}]);
+ASYNC.push(['B-6 a blink whose animation stalled still costs the cooldown (no free repeat jump)', async () => {
+  T.RUN = T.migrateRun(Object.assign(base(), { fac: 'ithar', fleet: [T.newShip('i_blade')] })); T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, enemies: [{ tpl: 'h_picket' }] });
+  const u = T.B.units.find(x => x.side === 'player' && x.ab === 'blink'); u.abCd = 0; const hex = T.blinkHexes(u)[0]; if (!hex) throw new Error('no blink hex');
+  T.STALL = true; await T.useAbility(u, { hex }); T.STALL = false; return u.abCd > 0 && u.q === hex.q && u.r === hex.r;
+}]);
+
+ASYNC.push(['B-5 boarding a sector flagship down to its last crew cripples it but never flips it', async () => {
+  T.RUN = T.migrateRun(Object.assign(base(), { fac: 'corsair', fleet: [T.newShip('c_hulk')] })); T.startBattle({ kind: 'boss', fac: 'hegemony', col: 6 });
+  const u = T.B.units.find(x => x.side === 'player' && !x.isSq), t = T.B.units.find(x => x.side === 'enemy' && x.boss); if (!t) throw new Error('no boss');
+  t.q = u.q + 1; t.r = u.r; if (T.hdist(u, t) !== 1) throw new Error('not adjacent'); u.crew = u.crewMax = 999; t.crew = 1; u.weapons.forEach(w => { w.fired = false; }); u.boarded = false; u.braced = false;
+  const r = await T.boardUnit(u, t); return r === true && t.side === 'enemy' && !t.captured;
+}]);
 module.exports = { check, T: global.T, STORE };
-if (require.main === module) process.on('exit', () => { console.log(`\nB1 tests: ${pass} ok, ${fail} FAIL`); if (fail) process.exitCode = 1; });
+if (require.main === module) (async () => { for (const [n, f] of ASYNC) { try { const r = await f(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + n); } catch (e) { fail++; console.log('FAIL  ' + n + ': ' + (e && e.message)); } } })().then(() => { console.log(`\nB1 tests: ${pass} ok, ${fail} FAIL`); if (fail) process.exitCode = 1; });
