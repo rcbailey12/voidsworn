@@ -15,6 +15,15 @@ function realLen(u){ return (u.t&&CLS_L[u.t.cls])||(6+(u.size||.6)*14); }
 async function animMove(u,q,r,f){ u.q=q; u.r=r; u.facing=f; CLOCK.old+=u.isSq?.11:u.size>.8?.3:.22; CLOCK.neu+=ESC*u.isSq?.07:u.size>.8?.19:.15; } async function animRotate(u,f){ u.facing=f; CLOCK.old+=u.size>.8?.42:.28; CLOCK.neu+=ESC*u.size>.8?.26:.19; }
 async function animWeapon(u,w,t,shots){ const n=shots.length, vk=!u.isSq&&u.weapons.some(x=>x!==w&&x.fired)?PACE.volley:1; addR('fire',vk*(w.k==='lance'?.32+.32+n*.25+.15:w.k==='torp'?.32+.32+n*.12+.84:n*.07+.49+(w.arc==='T'&&!u.isSq?.16:0))*SIMSPD,u); if(w.k==='lance'){ CLOCK.old+=.48+n*.34+.22; CLOCK.neu+=ESC*.32+n*.25+.15; } else if(w.k==='torp'){ CLOCK.old+=.48+n*.17+1.07; CLOCK.neu+=ESC*.32+n*.12+.84; } else { CLOCK.old+=(u.isSq?0:.48)+n*.095+.59; CLOCK.neu+=ESC*n*.07+.49; } } async function animExplode(u){ const dk=u.side==='enemy'&&!u.isSq&&!(u.t&&u.t.boss)?enemyPaceK():1, sp=SIMSPD*dk; addR('explode',u.isSq?.25*sp:(.7+.014*realLen(u))*Math.max(.4,sp)+.35*sp,u); CLOCK.old+=u.isSq?.25:1.2; CLOCK.neu+=ESC*u.isSq?.25:.68; } async function animNova(){} async function fxRam(){ STATS.rams++; } async function fxBoard(){ STATS.boards++; } function onCapture(){ STATS.caps++; } function fxShieldBreak(){} function fxWithdraw(){}
 SPEED=0; if(process.env.SEED) rndSeed(+process.env.SEED);
+/* B2 admiral ladder (Oct 25): PATCH tries perk numbers without editing data.js, e.g. PATCH='mending.hullRegenPct=.05;voice.dmgPct=.12;kassar.start=h_vanguard,h_picket'.
+   A key under fx is set as a number; 'start' takes a comma list of hulls. Anything it cannot apply stops the run, so a typo never passes for a result.
+   ADMS=mending,voice limits bossmatrix to those admirals. */
+if(process.env.PATCH){ for(const part of process.env.PATCH.split(';').map(x=>x.trim()).filter(Boolean)){ const m=part.match(/^(\\w+)\\.(\\w+)=(.+)$/), A=m&&ADMIRALS[m[1]];
+    if(!A) throw new Error('PATCH: cannot read "'+part+'" (format admiral.key=value, admiral must exist)');
+    if(m[2]==='start'){ const l=m[3].split(',').map(x=>x.trim()); if(l.some(h=>!HULLS[h])) throw new Error('PATCH: unknown hull in "'+part+'"'); A.start=l; }
+    else { const v=Number(m[3]); if(!Number.isFinite(v)) throw new Error('PATCH: "'+m[3]+'" is not a number in "'+part+'"'); const known=new Set([].concat(...Object.values(ADMIRALS).concat(Object.values(MODULES)).map(o=>Object.keys(o.fx||{})))); if(!known.has(m[2])) throw new Error('PATCH: "'+m[2]+'" is not a perk key any admiral or refit uses'); A.fx=Object.assign({},A.fx,{[m[2]]:v}); }
+    console.log('PATCH applied: '+m[1]+'.'+m[2]+' = '+m[3]); } }
+var ADMS=process.env.ADMS?process.env.ADMS.split(',').map(x=>x.trim()).filter(Boolean):null; if(ADMS&&ADMS.some(a=>!ADMIRALS[a])) throw new Error('ADMS: unknown admiral in '+ADMS.join(','));
 var AI_LEVEL=process.env.AI||'veteran'; var NO_CAP=process.env.CAP==='0';
 function botObj(v){ const o=B.obj; if(!o) return 0; const col=h=>h.q+Math.floor(h.r/2);
   if(o.type==='hold') return hdist(v,o.hex)*1.6;
@@ -340,7 +349,7 @@ function shapeCheck(n){ const rows=[]; for(const [enc,E] of Object.entries(ENCOU
     rows.push(enc.padEnd(10)+sh.padEnd(12)+' fallback '+fb+'/'+n+' badDeploy '+bad+' objChanged '+objFail+' hexes '+Math.round(hexes/n)+' cut '+Math.round(cut/n)); }
   console.log(rows.join('\\n')); }
 async function bossMatrix(n){ const S=+(process.env.BS||1), res={}, byBoss={}, byCar={car:[0,0],gun:[0,0]};
-  for(const [adm,A] of Object.entries(ADMIRALS)){ const fac=A.fac||'voidsworn'; let w=0,t=0,rd=0;
+  for(const [adm,A] of Object.entries(ADMIRALS).filter(([k])=>!ADMS||ADMS.includes(k))){ const fac=A.fac||'voidsworn'; let w=0,t=0,rd=0;
     for(const bf of RUN_FACTIONS.filter(f=>f!==fac)){ for(let i=0;i<n;i++){
       RUN={admiral:adm,fac,credits:0,cpCap:40,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:(process.env.BOONS||'').split(',').filter(Boolean).map(x=>({id:x,r:0})),patrons:[]};
       for(const tp of A.start) RUN.fleet.push(newShip(equivHull(tp,fac),false)); RUN.flagUid=RUN.fleet[0].uid;
