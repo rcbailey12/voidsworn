@@ -106,5 +106,5 @@ def render_sweep(objs, prefix, mat=None, res=(512, 320)):
         for v, d, rot in (('top', Vector((0, 0, 1)), (0, 0, 0)), ('side', Vector((0, -1, 0)), (math.pi / 2, 0, 0)), ('below', Vector((0, 0, -1)), (math.pi, 0, 0))):
             c = Vector((cx, (mn.y + mx.y) / 2, (mn.z + mx.z) / 2))
             span = ext.y if v != 'side' else ext.z
-            outs[(reg, v)] = _shoot(sc, cam, c + d * Lm * 3, c, ortho=max(seg, span * 1.1 * asp), path=f'{prefix}_{reg}_{v}.png', rot=rot)
+            outs[(reg, v)] = _shoot(sc, cam, c + d * Lm * 3, c, ortho=seg if span * asp > ext.x * .9 else max(seg, span * 1.1 * asp), path=f'{prefix}_{reg}_{v}.png', rot=rot)  # wide hulls: crop to the third
     return outs

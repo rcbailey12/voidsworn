@@ -150,7 +150,7 @@ def build(o, fac, nmap, mmap, info):
         ang = g.math('ARCTAN2', Z, g.math('SUBTRACT', X, 0.0)); rad_l = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.math('FRACT', g.mul(ang, 22)), .5)), .04)
         sail = g.smooth(g.math('SQRT', g.add(g.mul(Y, Y), g.mul(Z, Z))), info['needle'], info['needle'] * 1.6)
         base = g.mix(g.mul(g.mul(rad_l, sail), .5), base, (.75, .86, .82))
-        base = g.mix(g.mul(sail, .25), base, (.80, .95, .90))  # the membrane reads faintly jade
+        base = g.mix(g.mul(sail, .10), base, (.80, .95, .90))  # the membrane reads faintly jade
     albedo = base
     # ---------------- roughness / metal / occlusion ----------------
     rg = g.add(g.mul(hull, F['rgh']), g.mul(part, prg))

@@ -392,13 +392,13 @@ def dress_chorus(H, S, seed, P):
         for s_, path in enumerate(walk_pair(p, n, mir, .007, int(rng.integers(7, 16)), .25, rng)):
             if tube_path(f'ridge{n_r}{"ab"[s_]}', path, .0055, .0020, -.0030, seg=10): tag(mul(flesh, 1.15), rgh=.45, met=.02)
         n_r += 1
-    for p, n, mir, rad in H.pairs(rng, 90, body, .02, k=.4):  # veins: thin, long, wandering; a third carry bile light
+    for p, n, mir, rad in H.pairs(rng, 64, body, .02, k=.4):  # veins: thin, long, wandering; a third carry bile light
         lit = rng.random() < .33
         for s_, path in enumerate(walk_pair(p, n, mir, .006, int(rng.integers(12, 30)), .45, rng)):
             if tube_path(f'vein{n_v}{"ab"[s_]}', path, .0019, .0006, -.0009, seg=6):
                 tag(mul(glow, .5) if lit else mul(dark, 1.8), emit=.35 if lit else 0, rgh=.3, met=0)
         n_v += 1
-    for p, n, mir, rad in H.pairs(rng, 44, lambda i: H.ao[i] > .45, .012, k=1.0):  # pore clusters
+    for p, n, mir, rad in H.pairs(rng, 32, lambda i: H.ao[i] > .45, .012, k=1.0):  # pore clusters
         k = int(rng.integers(3, 6))
         for s_, (q0, n0) in enumerate([(p, n)] + ([mir] if mir else [])):
             t, b, nn = frame_for(n0)
@@ -421,32 +421,45 @@ def dress_chorus(H, S, seed, P):
 
 
 def dress_ithar(H, S, seed, P):
-    """pearl ceramic with gold filigree inlay (flat raised ribbons, flowing curves), jade lenses, smooth inset seams (in the normal map)"""
+    """pearl ceramic with gold filigree inlay: long, smooth double lines that flow fore and aft with the dart's lines (gently curving,
+    never wandering), jade lenses in gold rings, running lights; seams stay in the normal map"""
     rng = np.random.default_rng(seed); pearl, gold, jade, dark = P['base'], P['trim'], P['lens'], P['dark']
+    gp = dict(rgh=.32, met=.6)  # gold inlay: metallic but not a mirror (a full-metal gold reads black against space)
     n_f = n_l = 0
-    for p, n, mir, rad in H.pairs(rng, 110, lambda i: H.ao[i] > .4, .035, k=.55):
-        d0 = Vector((1, 0, 0)); d0 = (d0 - n * d0.dot(n))
-        if d0.length < .2: d0 = Vector(rng.normal(0, 1, 3).tolist()); d0 = d0 - n * d0.dot(n)
-        d0.normalize(); d0 = (d0 + n.cross(d0) * rng.uniform(-.8, .8)).normalized()
-        a = surface_walk(H, p, d0, .006, int(rng.integers(10, 26)), .18, np.random.default_rng(int(rng.integers(1 << 30))))
-        paths = [a]
-        if mir:
-            b = []
-            for q, qn in a:
-                q2, n2 = H.nearest(H.mirror_p(q), .008)
-                if q2 is None: break
-                b.append((q2, n2 if n2.dot(H.mirror_v(qn)) > 0 else -n2))
-            if len(b) == len(a): paths.append(b)
+    def mirror_path(a):
+        b = []
+        for q, qn in a:
+            q2, n2 = H.nearest(H.mirror_p(q), .012)
+            if q2 is None: return None
+            b.append((q2, n2 if n2.dot(H.mirror_v(qn)) > 0 else -n2))
+        return b
+    for p, n, mir, rad in H.pairs(rng, 60, lambda i: H.ao[i] > .35, .05, k=.6):
+        d0 = Vector((1, 0, 0)); d0 = d0 - n * d0.dot(n)
+        if d0.length < .3: continue
+        d0.normalize(); bend = rng.uniform(-.06, .06)
+        a = surface_walk(H, p, d0, .006, int(rng.integers(25, 50)), 0.0)
+        if len(a) < 8: continue
+        # gentle constant bend: rotate each step's offset a little about the local normal (a calm curve, not a random walk)
+        a = [(q + qn.cross((a[min(k + 1, len(a) - 1)][0] - a[max(k - 1, 0)][0]).normalized()) * bend * (k / len(a)) ** 2 * .05, qn) for k, (q, qn) in enumerate(a)]
+        a = [H.nearest(q, .01) for q, _ in a]; a = [(q, qn) for q, qn in a if q is not None]
+        if len(a) < 8: continue
+        twin = []  # the second line of the pair, a fixed step to one side
+        for k, (q, qn) in enumerate(a):
+            tvec = (a[min(k + 1, len(a) - 1)][0] - a[max(k - 1, 0)][0]); s_ = qn.cross(tvec.normalized() if tvec.length > 1e-7 else Vector((1, 0, 0)))
+            r_ = H.nearest(q + s_ * .0055, .01)
+            if r_[0] is None: twin = None; break
+            twin.append(r_)
+        paths = [a] + ([twin] if twin else [])
+        if mir: paths += [m for m in (mirror_path(x) for x in list(paths)) if m]
         for s_, pth in enumerate(paths):
-            if ribbon_path(f'fil{n_f}{"ab"[s_]}', pth, .0042, .0010, -.0002): tag(gold, rgh=.28, met=.95)
+            if ribbon_path(f'fil{n_f}_{s_}', pth, .0030, .0009, -.0002): tag(gold, **gp)
         n_f += 1
-    for p, n, mir, rad in H.pairs(rng, 16, lambda i: H.ao[i] > .4 and abs(H.cv[i]) < .06, .008, k=2.0):
+    for p, n, mir, rad in H.pairs(rng, 16, lambda i: H.ao[i] > .3 and abs(H.cv[i]) < .06, .008, k=2.0):
         for s_, (q, qn) in enumerate([(p, n)] + ([mir] if mir else [])):
-            t, b, nn = frame_for(qn)
-            torus(f'lensr{n_l}{"ab"[s_]}', q - qn * .0003, qn, .0042, .0011, seg=14, ring=6); tag(gold, rgh=.28, met=.95)
+            torus(f'lensr{n_l}{"ab"[s_]}', q - qn * .0003, qn, .0042, .0011, seg=14, ring=6); tag(gold, **gp)
             blister(f'lens{n_l}{"ab"[s_]}', q - qn * .0006, qn, .0036, .0036, .0022); tag(jade, emit=1.0, rgh=.1, met=0)
         n_l += 1
-    lights(H, rng, jade, mul(gold, .8), dict(rgh=.3, met=.9), n_pairs=2)
+    lights(H, rng, jade, mul(gold, .8), gp, n_pairs=2)
     print(f'dress ithar: {n_f} filigree pairs, {n_l} lens pairs')
 
 
@@ -457,7 +470,7 @@ def dress_deathless(H, S, seed, P, ring_axis=None):
     ax = Vector(ring_axis or (0, 0, 1)).normalized()
     n_r = n_g = n_k = 0
     open_ok = lambda i: H.ao[i] > .5 and abs(H.cv[i]) < .1
-    for p, n, mir, rad in H.pairs(rng, 50, open_ok, .032, k=.75):
+    for p, n, mir, rad in H.pairs(rng, 42, open_ok, .032, k=.75):
         # rib plane: across the structure. Around the ring's axis the structure runs tangentially, so ribs lie in the plane normal to that
         rad_v = (p - H.c) - ax * (p - H.c).dot(ax)
         tang = ax.cross(rad_v).normalized() if rad_v.length > .05 else Vector((1, 0, 0))
@@ -497,14 +510,17 @@ def dress_deathless(H, S, seed, P, ring_axis=None):
             rr = random.Random(n_g * 31)
             for e in range(5):
                 u = rr.uniform(-w * .35, w * .35); v = rr.uniform(-h * .3, h * .3) * (-1 if fl else 1); horiz = rr.random() < .5
-                detail_lib.obox(f'glys{n_g}{s_}{e}', q + tt * u + bb * v + nn * .0004, tt, bb, nn, ((w * .3, .0012, .0010) if horiz else (.0012, h * .35, .0010)), bevel=0)
+                sq, sn = H.nearest(q + tt * u + bb * v, .01)  # each stroke sits on the panel where it is (the panel is bent to the hull)
+                if sq is None: continue
+                sn = sn if sn.dot(nn) > 0 else -sn
+                detail_lib.obox(f'glys{n_g}{s_}{e}', sq + sn * .0006, tt, bb, sn, ((w * .3, .0012, .0010) if horiz else (.0012, h * .35, .0010)), bevel=0)
             tag(mul(bone, .7), rgh=.6, met=.05)
         n_g += 1
     for p, n, mir, rad in H.pairs(rng, 30, lambda i: H.ao[i] > .55, .009, k=1.4):  # vertebra knobs
         for s_, (q, qn) in enumerate([(p, n)] + ([mir] if mir else [])):
             t, b, nn = frame_for(qn)
             detail_lib.obox(f'knobm{n_k}{"ab"[s_]}', q + nn * .0004, t, b, nn, (.012, .009, .0016), bevel=.0004); tag(mul(slate, .8), rgh=.65, met=.45)
-            blister(f'knob{n_k}{"ab"[s_]}', q + nn * .0008, qn, .0045, .0035, .0040); tag(bone, rgh=.6, met=.05)
+            blister(f'knob{n_k}{"ab"[s_]}', q + nn * .0008, qn, .0045, .0035, .0040, seg=10, vseg=6); tag(bone, rgh=.6, met=.05)
         n_k += 1
     lights(H, rng, green, mul(dark, 1.5), dict(rgh=.5, met=.5), n_pairs=3)
     print(f'dress deathless: {n_r} rib sets, {n_g} glyph panels, {n_k} knobs')

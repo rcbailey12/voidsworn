@@ -146,7 +146,8 @@ def main():
         for o, alb in ((shell, 'shell_albproj'), (kit, 'kit_albproj')):
             base = os.path.join(src, alb); uvn = o.data.uv_layers.active.name
             o.data.materials.clear(); o.data.materials.append(C.painted_mat(dict(base=base + '.png', orm=base + '_orm.png', normal=base + '_nrm.png', emissive=base + '_emit.png'), uv=uvn))
-        for ob in (shell, kit): ob.rotation_euler.z = math.pi  # bow to +x like the other ships' check views
+        from mathutils import Matrix
+        for ob in (shell, kit): ob.data.transform(Matrix.Rotation(math.pi, 4, 'Z')); ob.data.update()  # bow to +x like the other ships' check views (after export)
         bpy.context.view_layer.update()
         C.render_views([shell, kit], os.path.join(tmp, 'paint'))
         sc.world.node_tree.nodes['Background'].inputs[1].default_value = .05

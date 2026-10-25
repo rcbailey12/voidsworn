@@ -8,8 +8,19 @@ import numpy as np
 import hullio
 
 
+def fix_tangents(nor, tg):
+    """corners on degenerate UV triangles come back with a zero tangent; give them any unit tangent perpendicular to the normal (glTF needs
+    unit tangents; those corners have no texture detail to orient anyway)"""
+    tg = tg.copy(); t = tg[:, :3]; t -= nor * (t * nor).sum(1, keepdims=True); L = np.linalg.norm(t, axis=1); bad = L < 1e-4
+    if bad.any():
+        a = np.where(np.abs(nor[bad, 0:1]) < .9, np.array([[1., 0, 0]]), np.array([[0., 1, 0]])); a = a - nor[bad] * (a * nor[bad]).sum(1, keepdims=True)
+        t[bad] = a; L[bad] = np.linalg.norm(a, axis=1)
+    tg[:, :3] = t / L[:, None]; tg[:, 3] = np.where(tg[:, 3] < 0, -1., 1.); return tg.astype(np.float32)
+
+
 def pack(meta_path):
-    m = json.load(open(meta_path)); d = np.load(meta_path.replace('_meta.json', '_mesh.npz')); mp = m['maps']
+    m = json.load(open(meta_path)); d = dict(np.load(meta_path.replace('_meta.json', '_mesh.npz'))); mp = m['maps']
+    d['tan'] = fix_tangents(d['nor'], d['tan'])
     imgs = dict(base=(mp['albedo'], 'jpg_hq'), orm=(mp['orm'], 'jpg_hq'), normal=(mp['normal'], 'png'), emissive=(mp['emit'], 'jpg_hq'))
     hullio.write_glb(m['glb'], m['name'], d['pos'], d['nor'], d['idx'], d['uv'], tangent=d['tan'], images=imgs,
                      mat=dict(metallicFactor=1.0, roughnessFactor=1.0, emissiveFactor=[1, 1, 1], occlusionStrength=1.0), extras=m.get('extras'))

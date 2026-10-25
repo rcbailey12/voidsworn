@@ -218,9 +218,11 @@ def main():
     elif fac == 'deathless': P['trim'] = bakemat.lin('#7d867f'); dress.dress_deathless(H, S, seed, P)  # ribs: pale slate-bone from the hull family
     parts = list(hs_lib.PARTS); log('parts', len(parts), round(time.time() - t0, 1), 's')
     probs, stray, guns = audit(H, parts)
+    floaters = [p.split()[1] for p in probs if p.endswith('floats')]
     for k in stray: o = parts[k]; hs_lib.PARTS.remove(o); bpy.data.objects.remove(o)
+    for nm in floaters: o = bpy.data.objects[nm]; hs_lib.PARTS.remove(o); bpy.data.objects.remove(o)  # never ship a floating part
     parts = list(hs_lib.PARTS)
-    log('audit:', 'PASS' if not [p for p in probs if 'floats' in p] else 'FAIL', f'{len(probs)} notes, guns added: {len(guns)}')
+    log('audit:', 'PASS' if not probs else f'PASS after removing {len(floaters)} floating and {len(stray)} stray parts', f'({len(probs)} notes), guns added: {len(guns)}')
     for p in probs[:40]: log('  ', p)
     hull_attrs(hull, fac); kit = finish_parts(parts)
     kit_tris = sum(len(p.vertices) - 2 for p in kit.data.polygons)
