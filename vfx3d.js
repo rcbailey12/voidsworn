@@ -65,16 +65,18 @@ function debrisTrail(mesh,life){ try{
 // engine plumes: white-hot core, faction-coloured sheath, shock diamonds near the nozzle, flicker
 const PLUME_GLSL={vert:`precision highp float; attribute vec3 position; attribute vec3 normal; attribute vec2 uv; uniform mat4 world; uniform mat4 worldViewProjection; varying vec2 vUV; varying vec3 vN; varying vec3 vP;
     void main(){ vUV=uv; vN=normalize((world*vec4(normal,0.0)).xyz); vP=(world*vec4(position,1.0)).xyz; gl_Position=worldViewProjection*vec4(position,1.0); }`,
-  frag:`precision highp float; varying vec2 vUV; varying vec3 vN; varying vec3 vP; uniform vec3 col; uniform vec3 camPos; uniform float t; uniform float flip;
+  frag:`precision highp float; varying vec2 vUV; varying vec3 vN; varying vec3 vP; uniform vec3 col; uniform vec3 camPos; uniform float t; uniform float flip; uniform float dirty;
     void main(){ float v=mix(vUV.y,1.0-vUV.y,flip); vec3 V=normalize(camPos-vP); float f=abs(dot(normalize(vN),V)); float core=pow(f,2.6);
       float along=pow(v,1.5); float dia=0.5+0.5*cos((1.0-v)*34.0-t*6.0); dia=mix(1.0,0.55+0.45*dia,smoothstep(0.45,0.96,v));
       float fl=0.86+0.14*sin(t*41.0+vUV.x*25.0)*sin(t*17.0+vUV.x*9.0);
       vec3 c=mix(col,vec3(1.0,0.97,0.93),core*smoothstep(0.55,1.0,v)*0.85);
       float a=along*(0.2+0.8*core)*dia*fl;
+      if(dirty>0.0){ float sd=dot(vP.xz,vec2(0.071,0.053)); float sp=sin(t*9.0+sd*13.0)*sin(t*23.0+sd*7.0)*sin(t*3.7+sd*3.0);
+        a*=0.35+0.65*smoothstep(-0.35,0.15,sp); a*=0.72+0.28*sin(vUV.x*18.85+t*5.0+sd*9.0); c=mix(c,c*vec3(0.55,0.33,0.28),smoothstep(0.45,0.0,v)); } // B1 A1 step 4: Corsair engines burn dirty: sputter, uneven lobes, a sooty tail
       gl_FragColor=vec4(c*a*1.9,a); }`};
 function plumeShaderMat(fac,col){ try{ const S=BABYLON.Effect.ShadersStore; if(!S.vsPlumeVertexShader){ S.vsPlumeVertexShader=PLUME_GLSL.vert; S.vsPlumeFragmentShader=PLUME_GLSL.frag; }
-    const m=new BABYLON.ShaderMaterial(fac+'plumeS',G.scene,{vertex:'vsPlume',fragment:'vsPlume'},{attributes:['position','normal','uv'],uniforms:['world','worldViewProjection','col','camPos','t','flip'],needAlphaBlending:true});
-    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('t',0); m.setFloat('flip',0); m.setVector3('camPos',V3.Zero()); (G.plumeMats=G.plumeMats||[]).push(m); return m; }catch(e){ console.warn('plume shader',e); return null; } }
+    const m=new BABYLON.ShaderMaterial(fac+'plumeS',G.scene,{vertex:'vsPlume',fragment:'vsPlume'},{attributes:['position','normal','uv'],uniforms:['world','worldViewProjection','col','camPos','t','flip','dirty'],needAlphaBlending:true});
+    m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false; m.setColor3('col',col); m.setFloat('t',0); m.setFloat('flip',0); m.setFloat('dirty',fac==='corsair'?1:0); m.setVector3('camPos',V3.Zero()); (G.plumeMats=G.plumeMats||[]).push(m); return m; }catch(e){ console.warn('plume shader',e); return null; } }
 function vfxTick(){ try{ fxPoolTick(); }catch(e){} if(G.plumeMats&&G.cam) for(const m of G.plumeMats){ m.setFloat('t',(G.time||0)%100); m.setVector3('camPos',G.cam.position); } }
 
 // wrecks keep cooking off: small secondary explosions on fresh hulks
@@ -88,6 +90,19 @@ function damageSparks(v,hr,dt){ try{ if(hr>.55||G.fxReduced||!v.model||!v.root) 
     const L=v.L, sk=typeof skinPoint==='function'?skinPoint(v,null):null, p=toWorld(v,sk?sk.p:new V3((Math.random()-.5)*L*.7,Math.random()*v.H*.5,(Math.random()-.5)*L*.12)); // v53-G: sparks leave the real hull surface
     sparks(p,G.quality==='medium'?8:16,5+Math.random()*5,new C4(1,.85,.55,1)); if(Math.random()<.45){ const q=p.add(new V3((Math.random()-.5)*3,(Math.random()-.2)*2,(Math.random()-.5)*3)); arcBolt(p,q,new C3(.6,.8,1.6)); }
     if(Math.random()<.5) fxSprite(p,2.2,new C3(1,.8,.55),starTex(),.18,{grow:.4}); }catch(e){} }
+// A1 step 4 (Corsair damage looks, art direction: "Corsairs shed rust and a donor panel"): on top of the shared scorch, fires and sparks,
+// a Corsair hull sheds rust flakes and a panel glint below 66% hull, and a whole donor panel drifts off below 33%. One-shot bursts plus a low
+// pooled trickle, so nothing builds up; panels are items in the shared debris batch (capped, gone after 9 s).
+const RUST=[new C3(.42,.2,.1),new C3(.55,.3,.16),new C3(.3,.16,.1)];
+function rustShed(v,n,big){ try{ const L=v.L; for(let i=0;i<n;i++){ const sk=typeof skinPoint==='function'?skinPoint(v,null):null, p=toWorld(v,sk?sk.p:new V3((Math.random()-.5)*L*.6,v.H*.3,(Math.random()-.5)*L*.12));
+    fxp(p,{smoke:true,size:(big?.9:.5)+Math.random()*.5,col:RUST[i%3],alpha:.7,dur:1.2+Math.random()*1.2,grow:.6,vel:new V3((Math.random()-.5)*1.6,-.4-Math.random()*1.2,(Math.random()-.5)*1.6),drag:.4,spin:(Math.random()-.5)*3,fade:1.4}); } }catch(e){} }
+function donorPanel(v,size,sp){ try{ if(typeof debBatch!=='function') return; const b=debBatch(v.fac,'wreck'); if(b.items.length>=b.cap) b.items.shift(); const sk=typeof skinPoint==='function'?skinPoint(v,null):null, c=toWorld(v,sk?sk.p:new V3(0,v.H*.3,0)), out=c.subtract(v.root.getAbsolutePosition()); out.y=Math.abs(out.y)+.3;
+    b.items.push({pos:c,vel:out.normalize().scale(sp||(1.5+Math.random()*2)),rot:new V3(Math.random()*6,Math.random()*6,Math.random()*6),spin:new V3((Math.random()-.5)*1.4,(Math.random()-.5)*1.4,(Math.random()-.5)*1.4),s:size,sc:1,age:0});
+    if(typeof fxSprite==='function'&&!G.fxReduced) fxSprite(c,2.4,new C3(1,.85,.6),starTex(),.22,{grow:.4}); }catch(e){} }
+function corsairWear(v,hr,dt){ try{ if(!v||v.fac!=='corsair'||!v.model||!v.root||v.state!=='alive') return; if(hr>.8) v.cwStage=0; const st=hr<.33?2:hr<.66?1:0; v.cwStage=v.cwStage||0;
+    if(st>v.cwStage){ v.cwStage=st; if(st===1){ rustShed(v,G.quality==='medium'?6:12,false); donorPanel(v,.25+v.L*.025,1.2); } else { rustShed(v,G.quality==='medium'?10:20,true); donorPanel(v,.5+v.L*.06,1+Math.random()); try{ SFX.hit(v.root.getAbsolutePosition(),false); }catch(e){} } }
+    if(st>0&&Math.random()<(st===2?.9:.4)*dt) rustShed(v,1,st===2); }catch(e){} }
+function corsairBreakup(v,c,L){ try{ if(v.fac!=='corsair') return; const n=G.mobile?2:3; for(let i=0;i<n;i++) donorPanel(v,.6+L*(.1+Math.random()*.06),2+Math.random()*3); rustShed(v,G.quality==='medium'?10:24,true); }catch(e){} } // "come apart at the welds, donor sections spinning away intact"
 // fighter wings leave short glowing trails as they wheel around their carrier (High and Ultra)
 function craftTrails(v,fac){ try{ if(G.quality==='medium'||!v.crafts||v.crafts.some(c=>c.c.trail)) return; /* v53-G: craft carry instanced engine trails */ const P=FAC3D[fac]||FAC3D.hegemony; const m=emMat('ctrM',P.eng.scale(1.3),.5); m.alphaMode=BABYLON.Engine.ALPHA_ADD; m.disableDepthWrite=true; m.backFaceCulling=false;
     v.extras=v.extras||[]; for(const c of v.crafts){ const t=new BABYLON.TrailMesh('ctr',c.c.root,G.scene,.22,16,true); t.material=m; t.isPickable=false; try{ G.glow.addExcludedMesh(t); }catch(e){} v.extras.push(t); } v.extras.push({dispose:()=>m.dispose(),stop:()=>{}}); }catch(e){} }

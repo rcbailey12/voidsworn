@@ -190,6 +190,13 @@ const PRISM=[new C3(1,.55,.62),new C3(1,.86,.5),new C3(.68,1,.6),new C3(.5,.95,1
 const BILE=new C3(.32,.38,.08), BRASS=new C3(1,.83,.48);
 function wMuzzle(p,d,col,k,o){ o=o||{}; wfp(p,{cell:1,size:(o.star||2.8)*k,col:hotOf(col,.6).scale(2),dur:o.sd||.07,grow:.35}); wfp(p.add(d.scale(.4)),{cell:0,size:(o.glow||3.4)*k,col:col.scale(1.5),dur:o.gd||.12,grow:.45});
   if(o.tongue) wfp(p.add(d.scale(o.tongue*k*.45)),{cell:10,size:1.6*k,col:C3.Lerp(col,new C3(1,.85,.6),.4).scale(1.7),dur:.1,grow:.5,ang:screenAng(p,d),w:o.tongue/1.6,h:1,fade:1.4}); }
+// A1 step 4: Corsair guns fire ragged: on top of the gun family's own flash (so the kind still reads), a flame lick or two off the axis,
+// a late second flare, and dirty smoke that hangs. All pooled sprites. Shots also go off a little late and uneven (animWeapon).
+function raggedMuzzle(p,d,col,lead){ try{ const k=lead?1:.7, n=Math.random()<.5?1:2;
+    for(let i=0;i<n;i++){ const a=rr(-.55,.55), cs=Math.cos(a), sn=Math.sin(a), d2=new V3(d.x*cs-d.z*sn,d.y+rr(-.18,.18),d.x*sn+d.z*cs).normalize();
+      wfp(p.add(d2.scale(rr(.8,1.6)*k)),{cell:10,size:rr(1,1.6)*k,col:C3.Lerp(col,new C3(1,.62,.25),.5).scale(1.5),dur:rr(.06,.13),grow:.6,ang:screenAng(p,d2),w:rr(1.3,2.4),h:1,fade:1.6}); }
+    if(!G.fxReduced) setTimeout(()=>{ try{ wfp(p.add(d.scale(rr(.5,1.1))),{cell:0,size:rr(1.6,2.6)*k,col:new C3(1,.45,.2).scale(1.2),dur:.09,grow:.5}); }catch(e){} },rr(40,110)*SPEED);
+    for(let i=0;i<(lead?3:1);i++) wfp(p.add(d.scale(rr(.4,1.5))),{pool:'smoke',size:rr(.6,1.1)*k,col:new C3(.2,.17,.15),alpha:.5,dur:rr(.7,1.3),grow:2.2,vel:d.scale(rr(1,3)).add(new V3(rr(-.4,.4),rr(.2,.8),rr(-.4,.4))),drag:.7,spin:rr(-1,1)}); }catch(e){} }
 function boltTo(from,to,h,lead,done,o){ return wbFly(from,to,Object.assign({overshoot:h?0:30,onArrive:lead?done:(h?done:null),settle:done},o)); }
 const WFX={
   las:{tier:'s',gap:60,vol:1,decal:.3,
@@ -384,7 +391,8 @@ async function animWeapon(u,w,t,shots){
   if(w.k==='lance'||w.k==='torp') await cineFrame(u,t,w.k); else if(!u.isSq) await cineFrame(u,t,'volley');
   if(!vt.root||vt.root.isDisposed()||!va.root) return;
   fxMark(w.k==='lance'?'lance':w.k==='torp'?'torp':'volley');
-  const fam=wFamily(u,w,va.fac), F=WFX[fam]||WFX.shell, c=wCtx(u,w,t,va,vt,fam), tp=c.tp;
+  const fam=wFamily(u,w,va.fac), F0=WFX[fam]||WFX.shell, c=wCtx(u,w,t,va,vt,fam), tp=c.tp, dirty=va.fac==='corsair'&&!u.isSq&&!F0.lance&&!F0.torp&&fam!=='flak';
+  const F=dirty?Object.assign({},F0,{fire(cc,from,to,h,lead,done){ if(lead||Math.random()<.45) raggedMuzzle(from,to.subtract(from).normalize(),cc.col,lead); return F0.fire(cc,from,to,h,lead,done); }}):F0; // A1 step 4: ragged Corsair muzzles
   const mz=muzzles(va,w.arc,tp).sort((p1,p2)=>V3.Distance(p1,tp)-V3.Distance(p2,tp)); if(!mz.length) mz.push(va.root.getAbsolutePosition());
   if(!u.isSq&&fam!=='flak'){ const d=va.root.getAbsolutePosition().subtract(tp); const rk=fam==='lance'?3.2:fam==='torp'?1.6:fam==='plasma'||fam==='rail'?2.8:(w.arc==='P'||w.arc==='S')?2.4:1.2; setTimeout(()=>{ try{ physKick(u,d,rk*(G.fxReduced?.6:1),(w.arc==='P'?1:w.arc==='S'?-1:0)*rk*.05); }catch(e){} },fam==='lance'?300:110); } // recoil
   if(w.arc==='T'&&typeof aimTurrets==='function'&&va.model&&va.model.turrets){ aimTurrets(va,tp); await wait(160); }
@@ -400,7 +408,7 @@ async function animWeapon(u,w,t,shots){
   const arrivals=shots.map((h,i)=>new Promise(res=>{ setTimeout(()=>{ const done=onceFn(()=>{ try{ if(h){ if(fam==='flak'&&t.isSq){} else landLead(c,to,from); } }finally{ res(); } });
     let from=null,to=null; try{ from=mz[i%mz.length]; to=h?hitPoint(vt,from,c.shielded):missPoint(vt,from);
       SFX.gun(w.k,u.isSq,fam==='sq'?null:fam==='spine'||fam==='glob'||fam==='plasma'||fam==='las'||fam==='tracer'||fam==='needle'||fam==='rail'?fam:'shell',from);
-      F.fire(c,from,to,h,true,done); }catch(e){ console.warn('fire',e); done(); } },i*gap*SPEED); }));
+      F.fire(c,from,to,h,true,done); }catch(e){ console.warn('fire',e); done(); } },(i*gap+(dirty?rr(0,45):0))*SPEED); })); // Corsair shots go off a little late and uneven
   await Promise.all(arrivals); await wait(90); }
 function fxCrit(t){ try{ const v=G.views.get(t.id); if(!v||!v.root) return; const p=v.root.getAbsolutePosition(); juice('m',p,{sfx:()=>SFX.hit(p,true)}); sparkSpray(p.add(new V3(0,1,0)),null,nq(14),[10,24],new C3(1,.85,.5),1); }catch(e){} }
 

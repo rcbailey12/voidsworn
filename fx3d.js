@@ -7,6 +7,11 @@ function unitVis(u){ return u.vis || {q:u.q, r:u.r, a:u.facing*60}; }
 function tween(dur,fn){ return new Promise(res=>{ const t0=performance.now(), D=Math.max(1,dur*SPEED); G.tweens=(G.tweens||0)+1; /* v53: phones draw every frame while any tween runs */ const step=now=>{ const p=Math.min(1,(now-t0)/D); if(p>=1) G.tweens=Math.max(0,G.tweens-1); fn(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2,p); if(p<1) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); }); }
 function shortAng(a0,a1){ let d=((a1-a0)%360+540)%360-180; return a0+d; }
 function uWorld(u){ const v=G.views.get(u.id); if(v&&v.root&&!v.arrive) return v.root.getAbsolutePosition().clone(); const vis=unitVis(u); return hexWorld(vis.q,vis.r,HOVER_Y); }
+// A1 step 4: Corsair engines cough: the plume drops to a stub for a moment and spits a puff of soot. Per ship, so a fleet never coughs in step; the barge (c_boss) coughs most.
+function corsairCough(v,u,dt){ const cg=v.cough||(v.cough={until:0,k:1}); if(G.time<cg.until) return cg.k;
+  if(Math.random()<(u.tpl==='c_boss'?.7:.3)*dt){ cg.until=G.time+.07+Math.random()*.16; cg.k=.18+Math.random()*.3; try{ const pl=v.model.plumes[Math.floor(Math.random()*v.model.plumes.length)]; if(pl&&!pl.isDisposed()&&typeof fxp==='function'){ const bb=pl.getBoundingInfo().boundingBox, p=bb.centerWorld.add(new V3((Math.random()-.5)*bb.extendSizeWorld.x,(Math.random()-.5)*bb.extendSizeWorld.y,(Math.random()-.5)*bb.extendSizeWorld.z));
+      for(let i=0;i<(G.quality==='medium'?1:2);i++) fxp(p,{smoke:true,size:.8+Math.random()*.9,col:new C3(.14,.12,.11),alpha:.6,dur:.9+Math.random()*.8,grow:2.2,vel:new V3((Math.random()-.5)*1.2,.3+Math.random()*.8,(Math.random()-.5)*1.2),drag:.6,spin:(Math.random()-.5)*2,fade:1.2}); } }catch(e){} return cg.k; }
+  return 1; }
 function toWorld(v,local){ v.root.computeWorldMatrix(true); return V3.TransformCoordinates(local,v.root.getWorldMatrix()); }
 
 // ---------- views ----------
@@ -144,7 +149,7 @@ function updateWorld(dt){
         physPitch=clamp(-af*sm,-.14,.14); physRoll=clamp(-al*sm*1.4,-.32,.32)+P.r; physYaw=P.a-a; px=P.x; pz=P.z; } }
     if(v.jolt){ const k=(G.time-v.jolt.t0)/.6; if(k>=1) v.jolt=null; else { const e=Math.sin(k*Math.PI)*(1-k); px+=v.jolt.d.x*e; pz+=v.jolt.d.z*e; } }
     const uv=u.vis; v.root.position.set(px,y,pz); v.root.rotation.set(v.bank+((uv&&uv.roll)||0)+physRoll,a+physYaw,((uv&&uv.pitch)||0)+physPitch); { const ts=u.isSq?1+((G.tacScale||1)-1)*.6:(G.tacScale||1), sc=uv&&uv.sc; if(sc||stretch!==1||v.stretched||ts!==1||v.tsc!==ts){ v.root.scaling.set(stretch*ts*(sc?sc[0]:1),ts/Math.sqrt(stretch)*(sc?sc[1]:1),ts/Math.sqrt(stretch)*(sc?sc[2]:1)); v.stretched=stretch!==1||!!sc; v.tsc=ts; } } // v46.1: roll, pitch and squash from the faction's movement // v42: ships grow a little as the camera pulls back
-    if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1.35; /* v51: always under way, engines at cruise */ v.model.plumes.forEach((pl,i)=>{ const f=thr*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
+    if(v.model){ const moving=!!u.vis, thr=moving?1+((u.vis.thr==null?.7:u.vis.thr))*1.4:1.35; /* v51: always under way, engines at cruise */ const ck=v.fac==='corsair'&&!u.isSq?corsairCough(v,u,dt):1; v.model.plumes.forEach((pl,i)=>{ const f=thr*ck*(.82+.18*Math.sin(t*31+i*1.7)+.06*Math.sin(t*7.3+i)); pl.scaling.x=f; }); (v.model.flares||[]).forEach((fl,i)=>{ fl.scaling.setAll((moving?1.35:1)*(.85+.15*Math.sin(t*23+i*2.1))); });
       for(const an of (v.model.anim||[])) an.node.rotation[an.axis]+=an.speed*dt; if(v.model.turrets&&typeof updateTurrets==='function') updateTurrets(v,dt);
       if(v.model.stacks&&v.model.stacks.length&&!v.stackFx) v.stackFx=stackSmoke(v); }
     if(v.crafts){ if(v.wing){ const ang=t*.95+v.wingPh, R=3.4; v.wing.position.set(Math.cos(ang)*R,Math.sin(t*.8+v.wingPh)*.4,-Math.sin(ang)*R); v.wing.rotation.set(.3,ang+Math.PI/2,0); for(const c of v.crafts) c.c.root.position.y=c.y+Math.sin(t*2.1+c.ph)*.16; }
@@ -152,7 +157,7 @@ function updateWorld(dt){
     v.ring.node.position.set(px,.3,pz); v.ring.node.rotation.y=a;
     v.ring.segs.forEach((s,q)=>{ const f=u.shMax?u.sh[q]/u.shMax:0; s.pulse=Math.max(0,s.pulse-dt*2.2); s.mat.alpha=(f>.01?.07+.3*f:0)+s.pulse*.9; const sk=1+s.pulse*.08; if(s.m.scaling.x!==sk) s.m.scaling.setAll(sk); }); /* v53: an unchanged scale is not rewritten (a write forces a world matrix rebuild) */
     // damage fires
-    if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); if(typeof damageSparks==='function') damageSparks(v,hr,dt); }
+    if(!u.isSq){ const hr=u.hp/u.maxHp, want=hr<.3?2:hr<.6?1:0; while(v.fires.length<want) addFire(v); while(v.fires.length>want){ v.fires.pop().stop(); } if(typeof shipDamageFx==='function') shipDamageFx(v,hr); if(v.fac==='corsair'&&typeof corsairWear==='function') corsairWear(v,hr,dt); if(typeof damageSparks==='function') damageSparks(v,hr,dt); }
     // nameplate
     // v53: shown only for the ship in hand (selected, hovered, inspected; hovering a target shows it), above that ship's own hull (v52 hung every plate under the ring, which with the angled camera
     // put it over the neighbouring hex toward the camera, so adjacent ships seemed to own each other's bars)
@@ -474,7 +479,7 @@ async function animExplode(u){
   fireball(c.add(new V3(0,1,0)),L*.35*bs,10,1.8,.6); lightFlash(c,new C3(1,.7,.4),10,L*14,1.2); sparks(c,160,30); embers(c,nq(10+L*.6,50),VB,{v0:4,v1:10+L*.3,l0:1.5,l1:3.2});
   burst(c,{n:G.mobile?30:50,tex:G.tex.smoke,c1:new C4(.5,.42,.36,.8),c2:new C4(.2,.18,.16,.6),size:[2,5],life:[1.2,2.6],power:[2,7],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true});
   shockwave(c,L*2*CZ.reactor); SFX.boom(CZ.reactor*(.25+L/24),c); /* frigates crack, capitals rumble */
-  debris(c,L*Math.max(.5,CZ.reactor),v.fac); }
+  debris(c,L*Math.max(.5,CZ.reactor),v.fac); if(v.fac==='corsair'&&typeof corsairBreakup==='function') corsairBreakup(v,c,L); }
   else { // quiet deaths: no reactor fireball
     if(CZ.dissolve){ juice('m',c,{col:P3.eng}); flash(c,L*.8,P3.eng.scale(1.3),.4); shockRing(c,L*1.6,P3.eng.scale(1.2),{flat:true,dur:1,thick:.02,tilt:.4}); sparks(c,G.mobile?40:90,18); SFX.phase(c); }
     else if(CZ.sag){ juice('s',c); burst(c,{n:G.mobile?24:46,tex:G.tex.smoke,c1:new C4(.6,.7,.25,.8),c2:new C4(.25,.3,.1,.55),size:[2,5],life:[1.4,2.8],power:[1,5],blend:BABYLON.ParticleSystem.BLENDMODE_STANDARD,sizeGrow:true}); SFX.boom(.4,c); }
