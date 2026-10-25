@@ -84,14 +84,14 @@ This is the single list of what is true, wrong or open about the game and the de
 | B-11 | Alternating-mode fire check ignores its return | Latent | ui3d.js:410, inside the same check. Not exploitable today. | OPEN (one-line fix) |
 | B-12 | Watchdog leaves B.activeUnit set | Latent | ui3d.js:667; no softlock in practice | INFO |
 | B-13 | Legacy shop has no buttons | Dead UI | main3d.js:11 unlocks every legacy upgrade and admiral free on boot (matches Ryan's no-grind wish) | INFO |
-| B-14 | Sim harness crash | VERIFIED | sim3d.js:112 `OBJS_SEEN[B.obj.type].w++` on an unseen type | OPEN (B0, one-line guard) |
+| B-14 | Sim harness crash | VERIFIED | sim3d.js:112 `OBJS_SEEN[B.obj.type].w++` on an unseen type | FIXED (d88035a, guard as in the plan section 10) |
 | B-15 | Council chair's top 10 | None done in code | evidence/bugs_at_d5d0227.md | OPEN (B1 covers 1 and 2; others in later phases) |
 
 ## The record: documents and data
 
 | ID | Claim (source) | Verdict | Evidence | Status |
 |---|---|---|---|---|
-| D1 | Barge v14 files in the repo (READING_PLAN.md:9; pipeline README:58, :64) | WRONG | No .vsm or _kit.json anywhere in git history. Files are on Ryan's PC (`Downloads\voidsworn_test\build\hulls_hi\`). | OPEN (A0) |
+| D1 | Barge v14 files in the repo (READING_PLAN.md:9; pipeline README:58, :64) | WRONG at d5d0227 | No .vsm or _kit.json was in git. Oct 24: all 9 v14 files committed to hulls_hi/ (95f01b6) and the medium-quality set to hulls/ (a687ef5; ships3d.js:800 loads hulls/ on medium). The PC's 21 build inputs and the barge files match git byte for byte; side-by-side in docs/ship_pipeline/c19_example/a0_repo_vs_pc.webp, PC console errors: none. | FIXED (A0) |
 | D2 | Barge "done end to end" (pipeline README:6) or "awaiting verdict" (SHIP_QUEUE.md:17) | STALE | v14 verdict "it's pretty close" (NEXT.md:56): clean blocky parts, add real material texture | INFO (A1) |
 | D3 | Kit script builds space-only parts | WRONG | c19_kit.py:173 mast with yards, :160 funnels, :38 keel line, :403 keel plate. AUDIT_SYNTHESIS.md:208-218 prescribes bollards, yards, crow rail, ladder. :163 allows stern guns. | OPEN (A1 removes them) |
 | D4 | Cyan-only shield hard-fail tests | STALE (R3) | beauty_corner_spec.md:77, :95; visual_qa_pack.md:7, :76, :145, :214 | DECIDED: ignore |
@@ -105,7 +105,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | D12 | Official Blender Lab MCP as the standard | Blocked | Needs Blender 5.1+; the PC runs 4.5.14 | DECIDED: community blender-mcp trial |
 | D13 | Code index "1,016 definitions" | WRONG | 1,021 (5 missed on shared lines); zero duplicates VERIFIED | INFO |
 | D14 | Content census, asset inventory (553 files, 157.5 MB), 36 hulls in both tiers | VERIFIED | evidence/compute_and_review_citations.md | INFO |
-| D15 | Check pack and compute CSVs are runnable | WRONG as committed | Stored as base64. Decoded checks.js: 0 FAIL, 15 CHECK at d5d0227. | OPEN (B0 decodes and adopts) |
+| D15 | Check pack and compute CSVs are runnable | WRONG as committed | Stored as base64. Decoded and adopted at contrib/opus/tools/checkpack (d88035a); checks.js now finds the repo root from that folder. 0 FAIL, 15 CHECK. Muse's compute CSVs stay base64 (reference only). | FIXED (check pack) |
 | D16 | Independent audit counts and the finishBattle claim | WRONG on 3 | Hulls are 33 plus 12 variants; boons 36; finishBattle sets B.finished itself (campaign3d.js:66). The retreat hole is still real. | INFO |
 | D17 | Rey's ship pipeline audit claims | STALE on 7 | Fixed since: kit self-light 0 (ships3d.js:790), kit material cloned (:788), error callback (:789), joint paint solve, procedural hull disposed (:827) | INFO |
 | D18 | CLAUDE.md "0.3 paint self-light" | STALE | Default is now 0 (ships3d.js:790) | FIXED in CLAUDE.md, Oct 24 |

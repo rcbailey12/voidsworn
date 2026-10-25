@@ -26,6 +26,17 @@ Two tracks run side by side.
 
 **First steps:** Phase A0 (barge v14 files into git) and Phase B0 (registry, check pack, sim baseline) run in parallel. Then A1 step 1 (barge silhouette options) and B1 (bug fixes).
 
+## Phase status
+
+Updated by the build session as phases move. A phase is done when its exit check in sections 4 and 5 passes.
+
+| Phase | Status | Where it stands |
+|---|---|---|
+| A0 Barge files into git | DONE Oct 24 | v14 files in hulls_hi/ and hulls/ (95f01b6, a687ef5). Side-by-side: docs/ship_pipeline/c19_example/a0_repo_vs_pc.webp. |
+| B0 Ground truth | IN PROGRESS | Guard and check pack done (d88035a, 0 FAIL). Mega sim running in the cloud. |
+| A1 Barge upgrade | STEP 1 IN PROGRESS | Clay silhouette options being rendered for Ryan's pick. |
+| A2 to A5, B1 to B5 | NOT STARTED | |
+
 ## 1. What is decided
 
 Ryan decided (Oct 24 answers):
