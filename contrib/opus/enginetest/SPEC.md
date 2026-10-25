@@ -127,6 +127,30 @@ Equal time box again. Note in the README what each feature needed (built-in, plu
 
 **Benchmark:** max mode on 24 ships at 1440p and 4K, and the ship sweep (48, 96) in max mode, same JSON. The blind side-by-side shows today's mode and max mode together.
 
+## Push round: physics, presentation and the game slice (added Oct 25, Ryan: "truly push what's possible for each engine now given the intent of the game to compare. Level of detail, how it handles the effects, anything graphical, physics, presentation, etc")
+
+The test is no longer a fair minimum: each build shows the best its engine can do for this game, inside an equal time box. Use the engine's strongest native tools (Godot: Jolt physics, GPU particles, FogVolume, SDFGI, Control UI, compositor effects; Babylon: Havok plugin, node materials, GPU particles, its post-process pipelines, GUI or HTML overlay). Note what was native, what was a plugin and what was hand-written.
+
+**Physics (in max mode):**
+- every debris piece, hull chunk and wreck from impacts, breaches and the destruction is a real rigid body that tumbles, collides with ship hulls (simplified or convex colliders) and with other debris, and keeps drifting;
+- the destruction's chunks are pushed apart by the blast (an impulse from the centre), spin and strike nearby hulls;
+- in the 96-ship sweep, aim for 1,000 or more live debris bodies; report the physics step time per frame alongside the frame time.
+
+**Presentation (in max mode):**
+- camera work: a "cinematic" path option (`--cine`) with smooth dolly moves, a focus pull with depth of field onto the barge, a short slow-motion kill-cam on the destruction (0.3 times speed for 1.5 s), screen shake on big hits scaled by weapon weight;
+- lens and grade: motion blur if the engine has it, lens flare or lens dirt on the brightest flashes, colour grading (a LUT or curves), vignette, subtle film grain, light shafts from the destruction flash if possible;
+- one key light and fixed exposure still apply (effects add light; they do not change exposure).
+
+**Game slice (`--board`, the game's own view):** the battle seen the way Voidsworn plays: a top-down tactical camera (pitch about 55 degrees) over a hex board (flat-topped hexes, about 2.4 units across, 20 by 14) under the formation, with:
+- crisp grid lines, a movement-range highlight on one ship, a firing arc wedge, and the enemy reach shading as soft fills;
+- hover outline on the ship under the mouse and a selection ring on click (record the frames from click to visible ring);
+- the engine's native UI: ship name labels, hull and shield bars, a small top bar and a tooltip, sharp at 4K and at 1440p;
+- the ships, effects and physics running underneath. Stills `board_<name>.png` at t = 3 and 12.6.
+
+**Shipping it:** export a standalone Windows build (Godot: an exported .exe; Babylon: an Electron package, or a browser page if Electron is out of the time box) and report its size on disk and its cold start time to the first frame.
+
+All of this is measured and shown with the rest: one combined blind reveal (R18).
+
 ## Folders
 
 - `contrib/opus/enginetest/godot/`: the Godot project (project.godot, scene, scripts). Run line: `Godot_..._console.exe --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench out.json --seconds 20` (plus `--shots dir` for stills).
