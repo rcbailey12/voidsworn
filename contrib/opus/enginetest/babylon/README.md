@@ -15,6 +15,17 @@ From `Downloads\voidsworn_test\enginetest\babylon`:
 "%PYEXE%" run.py --stress --res 2560x1440 --out ..\results\babylon_webgl2_stress_2560x1440.json
 ```
 
+Ceiling and max runs (SPEC.md "Trimmed scope": main, stress 24, 40 ships and max, each at 1440p and 4K):
+
+```
+"%PYEXE%" run.py --ships 40 --res 3840x2160 --out ..\results\babylon_webgl2_ships40_3840x2160.json
+"%PYEXE%" run.py --ships 40 --res 2560x1440 --out ..\results\babylon_webgl2_ships40_2560x1440.json
+"%PYEXE%" run.py --max --res 3840x2160 --out ..\results\babylon_webgl2_max_3840x2160.json --shots ..\results\shots_babylon_max_3840x2160
+"%PYEXE%" run.py --max --res 2560x1440 --out ..\results\babylon_webgl2_max_2560x1440.json --shots ..\results\shots_babylon_max_2560x1440
+```
+
+Add `--vsync` to any run for a capped number: the uncapping flags are left off, and the JSON gets `vsync`, `refresh_hz` (read from the median frame gap, snapped to a common rate) and `dropped_frames` / `dropped_pct` against it. Headless Chromium paces vsync at its own 60 Hz; add `--headed` to pace to the real monitor.
+
 `--stress` is SPEC.md's stress run: the six flagships plus 18 clones at 0.6 scale in rows z = +60, 0, -60 (x = -60 to +60, factions in the main order), every ship on the full loop with a breach, 0.17 s stagger in layout order (flagships first, then the rows from +z to -z, left to right), destruction every 4 s from t = 4, orbit radius 190 and height 85. The JSON says `"mode": "stress"` (the normal run says `"mode": "main"`). The clones share the flagships' geometry and materials.
 
 Each run: about 10 s to load, 3 s warm-up, 20 s measured, then the five stills (`battle_05.png`, `battle_12.png`, `battle_126.png`, `close_20.png` for the barge, `breach_30.png` for the Hegemony breach). Nothing to click; the browser is headless.
@@ -39,6 +50,50 @@ How it measures:
 - Frame time is the gap between two requestAnimationFrame callbacks. The warm-up holds the camera at the orbit start with the effects running; the counted 20 s is the orbit itself. A gap counts only if it starts after the warm-up.
 - Before the warm-up (and after load_s is taken) the page steps through the moments that bring in a new shader variant (each loop phase, a drift fade half way, which turns the hull materials transparent, the destruction break, the chunk fade out and the fade in), waits for every shader to compile, then waits for the GPU to finish. So no shader compiles on first use during the measured 20 s. The chunk edge and fire batches stay active all the time (switched off by uniforms), so they compile up front too. The per-frame update allocates nothing.
 - load_s runs from navigation start to the first presented frame with all six ships, the sky, shaders and shadows ready.
+
+## Ceiling and max modes: what each feature took in Babylon
+
+- **40 ships (`--ships 40`):** the stress layout plus more rows of copies every 30 units in z, alternating sides (+90, -90, +120), with a partial last row (34 copies). The orbit radius is 150 + 40 per extra row pair (243, height 0.45 of the radius). The stagger is 0.17 s per ship, wrapped inside the 4 s loop, so every ship fires from the start.
+- **Max mode (`--max`, mode `max`):** the six flagships in the main layout with every rich effect and the detail features below. The stills are written as `max_<name>.png`, plus one `hero_<code>.png` close-up per flagship at t = 3.0. Every still is taken from the main camera poses so it lines up with today's stills.
+- **Dynamic lights, 40+ at once:** hand-written on top of Babylon's lights. Babylon's standard PBR material takes a fixed number of lights per mesh (4 by default; the shader is compiled for that count). Raising it to 12 is built in. Each ship then gets a pool of 8 point lights. Every frame, JS gathers every event light (muzzle flashes, impacts, the lance emitter and its impact, hits, breach fire, pops, engines, burning chunks). It puts into each ship's pool the 8 that light that hull most (intensity times range falloff, from any ship, so a neighbour's impact lights this hull too). The notes report how many distinct event lights were lit at once (average and maximum).
+- **Soft particles:** built-in depth pass (`enableDepthRenderer`, hulls, chunks, plates and rocks only) plus about 5 hand-written lines in the sprite shader. Sprites fade over 1.5 units where they meet a hull.
+- **Volumetric smoke:** hand-written; Babylon has no built-in volume. Raymarched density fields (24 steps, 3D value-noise fbm, one shadow tap toward the key light) draw inside proxy boxes: one for the destruction fireball and smoke, one breach vent per ship, one box per ship for its four broadside smoke rings. Each stops at the hull depth, so hulls cut into the smoke. They replace the sprite versions in this mode.
+- **Deep breaches:** hand-written parallax occlusion mapping in the decal shader. The cavity is a height field with steep jagged walls, a rough floor and broken frames, marched 28 steps along the view ray in tangent space (a cotangent frame from screen derivatives). It is lit by embers that deepen toward the floor.
+- **SSAO:** built in (`SSAO2RenderingPipeline`, geometry buffer forced so the custom effect shaders stay out of it).
+- **Reflections:** built in (`SSRRenderingPipeline`, same geometry buffer).
+- **GI:** Babylon has no real-time GI. Image-based lighting from the sky stands in: `EquiRectangularCubeTexture` from the sky image, mipmapped, as the scene environment. The neutral ambient term stays as in the main mode.
+- **Micro-detail normals:** built in (PBR `detailMap`). A procedural 256 px tile of panel seams and grain is made at load and tiled 6 times over the hull's box-projected UVs.
+- **Contact shadows:** not built in. A small hand-written post-process marches 14 steps toward the key light over the hull depth pass and darkens creases. It darkens all light at those pixels, not only the key light.
+- **TAA:** built in (`TAARenderingPipeline`, 8 samples). Its history reprojection needs Babylon's prepass renderer, which the custom effect shaders do not write, so it runs without reprojection: it accumulates while the camera holds still (the stills render 16 frames at the same time) and switches itself off while the camera moves (the benchmark orbit). MSAA is off in max mode.
+- **Environment (SPEC.md "Environment"):** in max mode the page looks for `assets/env/`. If `sky_deadstar_8k.png` is there it is the sky and the IBL source. If `asteroids.json` is there, each rock mesh it names (`env/<mesh>.glb`) is drawn once with thin instances, tumbling about its own axis. Keys read per rock: `mesh` or `file`; `position` or `pos`; `rotation` or `rot` (Euler radians or a quaternion); `scale` (number or 3); `spin` (rate with `axis`, or an axis-times-rate vector). Rocks of 15 units and up cast shadows. The dust haze is a hand-written post-process: a thin depth-based haze plus analytic in-scattering from the destruction flash and the 7 brightest event lights (engines included). With no `env/`, the starfield, no rocks and no haze.
+
+## Push round, trimmed: physics, presentation, the game slice
+
+- **Physics (max and board modes):** the Havok plugin (`@babylonjs/havok` 1.3.10, the last release before Babylon 8.20's date, vendored as `HavokPhysics_umd.js` plus `.wasm`). The setup is hand-written:
+  - each hull is an animated convex hull (from a thinned copy of its vertices) that follows the drift;
+  - rocks are static spheres;
+  - the destruction's 4 chunks are dynamic convex hulls (mass 300) pushed apart at the break, spinning;
+  - debris comes from three pools of instanced chips (164 bodies) that bounce off hulls, rocks and each other and drift until they are reused. Chips come from the destruction (40), hull hits on Chorus and Deathless (8 each) and every breach (one every 0.7 s).
+  - There is no gravity. The world steps at a fixed 1/60 s on the scene clock, so a still replays it from t = 0 and always comes out the same.
+  - The JSON gets `physics_step_avg_ms` and `physics_step_max_ms` (the step time inside each frame) and the notes give the body count. In this mode the GPU debris shards for those sources and the analytic chunk smoke trails are switched off.
+- **Presentation (max mode):**
+  - depth of field on the close-ups and heroes, built in (DefaultRenderingPipeline, focused on the look-at point, f/2, 80 mm);
+  - screen shake scaled by weapon weight (broadside 0.25 per gun, lance 0.5, hit 0.6, destruction 2.5) and by distance. It is a deterministic function of t, so the stills shake the same each time;
+  - colour grading with built-in curves (cool shadows, warm highlights).
+  - Dropped per the trimmed scope: kill-cam, motion blur, lens effects, light shafts.
+- **Game slice (`--board`, mode `board`):** max mode seen from a tactical camera pitched 55 degrees, over a hex board of flat-topped hexes 20 units corner to corner, 20 by 14, at y = -6. One shader draws it: anti-aliased grid lines (screen-space derivatives, so 1 to 2 px at any resolution) and the movement range (3 hexes) of the selected ship, which follows it as it drifts. Also:
+  - hover outline: built-in `renderOutline`, picked under the mouse;
+  - selection ring on click: the page counts rendered frames from the click to the first frame that drew the ring, plus one animation frame to reach the screen. run.py hovers and clicks the Corsair and writes `click_to_visible_frames` and `click_to_visible_ms`;
+  - labels with hull and shield bars: Babylon GUI (`babylon.gui.min.js`, vendored) with an ideal height of 1440, so text renders at the real canvas size and stays sharp at 4K.
+  - Stills: `board_03.png` and `board_126.png`, with the Hegemony selected and the Corsair hovered.
+- **Standalone:** none; Babylon stays a browser page (trimmed scope).
+
+PC lines for the board slice:
+
+```
+"%PYEXE%" run.py --board --res 3840x2160 --out ..\results\babylon_webgl2_board_3840x2160.json --shots ..\results\shots_babylon_board_3840x2160
+"%PYEXE%" run.py --board --res 2560x1440 --out ..\results\babylon_webgl2_board_2560x1440.json --shots ..\results\shots_babylon_board_2560x1440
+```
 
 ## Choices made where SPEC.md leaves room (the Godot half should match these)
 

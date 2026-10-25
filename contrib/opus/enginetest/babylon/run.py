@@ -12,7 +12,10 @@ ENGTEST = os.path.dirname(HERE)
 VENDOR = os.path.join(HERE, 'vendor')
 BJS = '8.20.0'
 LIBS = {'babylon.js': 'https://cdn.jsdelivr.net/npm/babylonjs@%s/babylon.js' % BJS,
-        'babylonjs.loaders.min.js': 'https://cdn.jsdelivr.net/npm/babylonjs-loaders@%s/babylonjs.loaders.min.js' % BJS}
+        'babylonjs.loaders.min.js': 'https://cdn.jsdelivr.net/npm/babylonjs-loaders@%s/babylonjs.loaders.min.js' % BJS,
+        'babylon.gui.min.js': 'https://cdn.jsdelivr.net/npm/babylonjs-gui@%s/babylon.gui.min.js' % BJS,
+        'HavokPhysics_umd.js': 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@1.3.10/lib/umd/HavokPhysics_umd.js',
+        'HavokPhysics.wasm': 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@1.3.10/lib/umd/HavokPhysics.wasm'}
 ASSETS = ['V1b_r_23.glb', 'H4_11.glb', 'C19_51_shell.glb', 'C19_51_kit.glb', 'B16_23.glb', 'I8_37.glb', 'D22_23.glb']
 
 ap = argparse.ArgumentParser()
@@ -23,6 +26,11 @@ ap.add_argument('--seconds', type=float, default=20)
 ap.add_argument('--warmup', type=float, default=3)
 ap.add_argument('--msaa', type=int, default=4)
 ap.add_argument('--stress', action='store_true', help='SPEC.md stress run: 24 ships, 0.17 s stagger, destruction every 4 s')
+ap.add_argument('--ships', type=int, default=0, help='ceiling round ship sweep: 48 or 96 (24 = the stress run)')
+ap.add_argument('--rich', action='store_true', help='ceiling round rich effects (24-ship layout unless --ships)')
+ap.add_argument('--max', action='store_true', help='max-detail round: rich effects, hi assets when present, detail features')
+ap.add_argument('--board', action='store_true', help='game slice: max mode from the tactical camera over a hex board, with UI; measures click to visible ring')
+ap.add_argument('--vsync', action='store_true', help='leave vsync and the frame limiter on; reports dropped frames against the display rate')
 ap.add_argument('--soft', action='store_true', help='software WebGL (SwiftShader), sandbox validation only')
 ap.add_argument('--headed', action='store_true', help='show the browser window instead of headless')
 ap.add_argument('--angle', default=None, help='ANGLE backend (default d3d11 on Windows, default elsewhere)')
@@ -51,7 +59,7 @@ class Srv(http.server.ThreadingHTTPServer):
     request_queue_size = 256
     daemon_threads = True
 class Quiet(http.server.SimpleHTTPRequestHandler):
-    extensions_map = dict(http.server.SimpleHTTPRequestHandler.extensions_map, **{'.glb': 'model/gltf-binary', '.js': 'text/javascript'})
+    extensions_map = dict(http.server.SimpleHTTPRequestHandler.extensions_map, **{'.glb': 'model/gltf-binary', '.js': 'text/javascript', '.wasm': 'application/wasm'})
     def log_message(self, *x): pass
     def end_headers(self):
         self.send_header('Cache-Control', 'no-store'); super().end_headers()
@@ -87,12 +95,12 @@ if a.soft:
     args = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']
 else:
     angle = a.angle or ('d3d11' if sys.platform == 'win32' else 'default')
-    args = ['--use-angle=' + angle, '--enable-gpu-rasterization', '--ignore-gpu-blocklist',
-            '--disable-gpu-vsync', '--disable-frame-rate-limit']
-args += ['--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows']
+    args = ['--use-angle=' + angle, '--enable-gpu-rasterization', '--ignore-gpu-blocklist']
+    if not a.vsync: args += ['--disable-gpu-vsync', '--disable-frame-rate-limit']
+args += ['--enable-precise-memory-info', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows']
 
 mode = 'bench' if a.out else 'shots'
-url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + ('&stress=1' if a.stress else '') + ('&' + a.extra if a.extra else '')
+url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + ('&stress=1' if a.stress else '') + ('&ships=%d' % a.ships if a.ships else '') + ('&rich=1' if a.rich else '') + ('&max=1' if a.max else '') + ('&board=1' if a.board else '') + ('&envsky=1' if os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'sky_deadstar_8k.png')) else '') + ('&envrocks=1' if os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'asteroids.json')) else '') + ('&vsync=1' if a.vsync else '') + ('&' + a.extra if a.extra else '')
 errors = []
 with sync_playwright() as p:
     T0 = time.time(); b = None
@@ -122,6 +130,15 @@ with sync_playwright() as p:
     if a.out:
         pg.wait_for_function('window.__result', timeout=a.timeout * 1000, polling=1000)
         res = pg.evaluate('window.__result')
+    click = None
+    if a.board:   # hover a ship, click it, read how many frames until the selection ring was on screen
+        pg.evaluate('window.__idle()'); pg.wait_for_timeout(1500)
+        x, y = pg.evaluate('window.__shipScreen(2)')
+        pg.mouse.move(x, y); pg.wait_for_timeout(400); pg.mouse.click(x, y)
+        for _ in range(240):
+            pg.wait_for_timeout(250); click = pg.evaluate('window.__clickToVisible()')
+            if click: break
+        print('click to visible ring:', click)
     if a.shots:
         os.makedirs(a.shots, exist_ok=True)
         names = pg.evaluate('window.__shotNames') + (pg.evaluate('window.__debugNames') if a.debug_shots or a.only else [])
@@ -156,7 +173,13 @@ if res is not None:
     notes.append('%d ships; shaders pre-warmed for %.2f s after load_s, before the warm-up' % (ex['ships'], ex['prewarm_s']))
     notes.append('JS work per frame (update plus render calls): worst 1%% %s ms, max %s ms' % (ex['work_p99_ms'], ex['work_max_ms']))
     notes.append('worst frames (scene t s: frame ms / JS work ms): ' + ', '.join('%.2f: %.1f/%.1f' % (r[0], r[1], r[2]) for r in worst[:8]))
+    if ex.get('rich_lights_avg') is not None: notes.append('rich lights: %s point lights in the scene, %s distinct event lights lit at once on average, %s at most' % (ex['point_lights'], ex['rich_lights_avg'], ex['rich_lights_max']))
+    notes.append('environment: %s' % (('dead-star sky' if ex['env']['sky'] else 'starfield sky') + ', %d rocks' % ex['env']['rocks'] if ex.get('env') else 'none (assets/env/ missing or not this mode)'))
+    notes.append('%d shader compiles and %d heap drops (GC) during the bench, listed in the trace' % (len(trace['shader_compiles']['rows']), len(trace['heap_drops']['rows'])))
+    if res.get('physics_step_avg_ms') is not None: notes.append('physics: %s Havok bodies, step %s ms per frame on average, %s ms at most' % (ex.get('physics_bodies'), res['physics_step_avg_ms'], res['physics_step_max_ms']))
+    if res.get('vsync'): notes.append('vsync on: %s Hz, %s frames dropped (%s%%)' % (res['refresh_hz'], res['dropped_frames'], res['dropped_pct']))
     notes.append('per-second trace in ' + os.path.basename(trace_path))
+    if click: res['click_to_visible_frames'] = click['frames']; res['click_to_visible_ms'] = click['ms']; notes.append('click to visible selection ring: %s frames, %s ms' % (click['frames'], click['ms']))
     res['notes'] = '; '.join(notes)
     if os.path.dirname(os.path.abspath(a.out)): os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, 'w') as f: json.dump(res, f, indent=1)

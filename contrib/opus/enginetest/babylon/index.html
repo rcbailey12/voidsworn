@@ -61,10 +61,21 @@ var SECONDS = parseFloat(Q.get('seconds') || '20');
 var WARMUP = parseFloat(Q.get('warmup') || '3');
 var MSAA = parseInt(Q.get('msaa') || '4', 10);
 var GPUTIME = Q.get('gputime') !== '0';
-// stress=1: SPEC.md "Stress run": 24 ships (the six flagships plus 18 cruiser-size copies), 0.17 s stagger, destruction
-// every 4 s, battle orbit radius 190 and height 85
-var STRESS = Q.get('stress') === '1';
-var ORBIT_R = STRESS ? 190 : 150, ORBIT_H = STRESS ? 85 : 70;
+// SPEC.md "Trimmed scope" (overrides the earlier rounds): stress=1 is the 24-ship run (six flagships plus 0.6-scale copies,
+// 0.17 s stagger, destruction every 4 s, orbit 190 / 85); ships=40 the headroom crowd (more rows of copies). max=1: the six
+// flagships with rich effects (event light pool, soft particles, parallax breaches, raymarched volumes) and Babylon's best
+// lighting features (SSAO2, SSR, sky IBL, micro-detail normals, contact shadows, TAA). rich=1: the rich effects alone on the
+// 24-ship layout (kept from the ceiling round). vsync=1: the runner left vsync on.
+var BOARD = Q.get('board') === '1';   // the game slice: max mode seen from the tactical camera over a hex board, with UI
+var MAXM = Q.get('max') === '1' || BOARD, RICH = MAXM || Q.get('rich') === '1', VSYNC = Q.get('vsync') === '1';
+var NSHIPS = parseInt(Q.get('ships') || '0', 10);
+var STRESS = Q.get('stress') === '1' || (RICH && !MAXM) || NSHIPS >= 24;
+NSHIPS = STRESS ? Math.max(24, NSHIPS) : 6;
+var ORBIT_R = !STRESS ? 150 : NSHIPS === 24 ? 190 : 150 + 40 * (1 + (NSHIPS - 24) / 12);
+var ORBIT_H = !STRESS ? 70 : NSHIPS === 24 ? 85 : ORBIT_R * 0.45;
+var PHYS = MAXM;   // push round, trimmed: chunks and debris are Havok rigid bodies in max mode
+var MODE_NAME = BOARD ? 'board' : (MAXM ? 'max' : RICH ? 'rich' : '') + (NSHIPS > 24 ? ((MAXM || RICH) ? '_' : '') + 'ships' + NSHIPS : (MAXM && STRESS ? '_stress' : ''));
+if (!MODE_NAME) MODE_NAME = STRESS ? 'stress' : 'main';
 var msg = document.getElementById('msg');
 var say = function (s) { msg.textContent = s; };
 
@@ -75,7 +86,7 @@ if (Q.get('res')) { var r = Q.get('res').toLowerCase().split('x'); RW = parseInt
 canvas.style.width = RW + 'px'; canvas.style.height = RH + 'px';
 canvas.width = RW; canvas.height = RH;
 var engine = new B.Engine(canvas, false, {
-  preserveDrawingBuffer: false, stencil: false, powerPreference: 'high-performance', premultipliedAlpha: false
+  preserveDrawingBuffer: false, stencil: true, powerPreference: 'high-performance', premultipliedAlpha: false
 }, false);
 engine.setHardwareScalingLevel(1);
 engine.setSize(RW, RH);
@@ -108,10 +119,11 @@ cam.fov = 40 * Math.PI / 180;               // vertical
 cam.fovMode = B.Camera.FOVMODE_VERTICAL_FIXED;
 cam.minZ = 0.5; cam.maxZ = 2000;
 scene.activeCamera = cam;
-var ORBIT_LOOK = new B.Vector3(0, -5, 0);
+var ORBIT_LOOK = new B.Vector3(0, -5, 0), STILL_POSE = false;   // stills always use the main orbit (150 / 70) so they line up
 function battlePose(t) {                    // t = seconds into the 20 s orbit
   var az = (200 + 120 * Math.min(Math.max(t, 0), 20) / 20) * Math.PI / 180;
-  cam.position.set(ORBIT_R * Math.cos(az), ORBIT_H, ORBIT_R * Math.sin(az));
+  var R = STILL_POSE ? 150 : ORBIT_R, Hh = STILL_POSE ? 70 : ORBIT_H;
+  cam.position.set(R * Math.cos(az), Hh, R * Math.sin(az));
   cam.setTarget(ORBIT_LOOK);
 }
 function closePose() {
@@ -144,8 +156,53 @@ csm.normalBias = 0.02;
 if (Q.get('shadows') === '0') key.shadowEnabled = false;   // diagnostics only
 
 // ---------- post: HDR, MSAA, bloom, ACES ----------
+// The post chain runs in creation order, so max mode's passes are created first: SSAO2, SSR, contact shadows, dust haze,
+// TAA, then the default pipeline (bloom, tone mapping). The rich modes' hull depth pass is created here too.
+var depthR = null, depthTex = null, DEPTH_VALS = new B.Vector2(cam.minZ, cam.minZ + cam.maxZ), RES2 = new B.Vector2(RW, RH);
+if (RICH) { depthR = scene.enableDepthRenderer(cam, false, true); depthTex = depthR.getDepthMap(); depthTex.renderList = []; }
+var ssao = null, ssr = null, taa = null, contactPP = null, hazePP = null, LIGHT_V = new B.Vector3(), TMPV = new B.Vector3();
+var HAZE_N = 8, HAZE_L = new Float32Array(HAZE_N * 4), HAZE_C = new Float32Array(HAZE_N * 4);
+if (MAXM) {
+  try { ssao = new B.SSAO2RenderingPipeline('ssao', scene, { ssaoRatio: 0.5, blurRatio: 0.5 }, [cam], true);
+    ssao.radius = 2.0; ssao.totalStrength = 1.1; ssao.samples = 16; ssao.maxZ = 400; ssao.expensiveBlur = true; ssao.base = 0.15; } catch (e) { console.warn('ssao2', e); }
+  try { ssr = new B.SSRRenderingPipeline('ssr', scene, [cam], true, B.Constants.TEXTURETYPE_HALF_FLOAT);
+    ssr.strength = 0.8; ssr.reflectivityThreshold = 0.05; ssr.maxDistance = 150; ssr.maxSteps = 120; ssr.step = 1.0; ssr.thickness = 0.8;
+    ssr.blurDispersionStrength = 0.02; ssr.roughnessFactor = 0.25; } catch (e) { console.warn('ssr', e); }
+  // contact shadows: not built in; a screen-space march toward the key light over the hull depth pass, darkening creases
+  B.Effect.ShadersStore.contactFragmentShader = [
+    'precision highp float; varying vec2 vUV; uniform sampler2D textureSampler; uniform sampler2D depthMap; uniform vec2 uDepthVals;',
+    'uniform vec3 uLightV; uniform float uTanH; uniform float uAspect;',
+    'float vd(vec2 uv){ return texture2D(depthMap, uv).r * uDepthVals.y + uDepthVals.x; }',
+    'void main(){ vec4 c = texture2D(textureSampler, vUV); float m = texture2D(depthMap, vUV).r; if (m >= 0.999) { gl_FragColor = c; return; }',
+    '  float d = vd(vUV); vec2 nd = vUV * 2.0 - 1.0; vec3 p = vec3(nd.x * uTanH * uAspect * d, nd.y * uTanH * d, -d); float occ = 0.0;',
+    '  for (int i = 1; i <= 14; i++) { vec3 q = p + uLightV * 0.14 * float(i); float dq = -q.z; if (dq <= 0.1) break;',
+    '    vec2 uq = vec2(q.x / (dq * uTanH * uAspect), q.y / (dq * uTanH)) * 0.5 + 0.5; if (uq.x < 0.0 || uq.x > 1.0 || uq.y < 0.0 || uq.y > 1.0) break;',
+    '    float df = dq - vd(uq); if (df > 0.03 && df < 0.8) { occ = 1.0 - float(i) / 15.0; break; } }',
+    '  gl_FragColor = vec4(c.rgb * (1.0 - 0.45 * occ), c.a); }'].join('\n');
+  contactPP = new B.PostProcess('contact', 'contact', ['uDepthVals', 'uLightV', 'uTanH', 'uAspect'], ['depthMap'], 1.0, cam);
+  contactPP.onApply = function (e) { e.setTexture('depthMap', depthTex); e.setVector2('uDepthVals', DEPTH_VALS); e.setVector3('uLightV', LIGHT_V);
+    e.setFloat('uTanH', Math.tan(cam.fov / 2)); e.setFloat('uAspect', RW / RH); };
+  // dust haze: depth-based thin haze plus analytic in-scattering from the 8 brightest event lights (explosions, flashes, engines)
+  B.Effect.ShadersStore.hazeFragmentShader = [
+    'precision highp float; varying vec2 vUV; uniform sampler2D textureSampler; uniform sampler2D depthMap; uniform vec2 uDepthVals;',
+    'uniform float uTanH; uniform float uAspect; uniform mat4 uCamWorld; uniform vec4 uL[8]; uniform vec4 uC[8]; uniform float uOn;',
+    'void main(){ vec4 c = texture2D(textureSampler, vUV); if (uOn < 0.5) { gl_FragColor = c; return; }',
+    '  float m = texture2D(depthMap, vUV).r; float d = m >= 0.999 ? 400.0 : m * uDepthVals.y + uDepthVals.x;',
+    '  vec2 nd = vUV * 2.0 - 1.0; vec3 dirV = normalize(vec3(nd.x * uTanH * uAspect, nd.y * uTanH, -1.0)); float L = d / max(-dirV.z, 1e-3); L = min(L, 260.0);',
+    '  vec3 ro = (uCamWorld * vec4(0.0, 0.0, 0.0, 1.0)).xyz; vec3 rd = normalize((uCamWorld * vec4(dirV, 0.0)).xyz);',
+    '  float thick = 1.0 - exp(-L * 0.0012); vec3 hz = vec3(0.30, 0.24, 0.22) * 0.012 * thick;',
+    '  for (int i = 0; i < 8; i++) { if (uL[i].w <= 0.0) continue; vec3 P = uL[i].xyz - ro; float t0 = dot(P, rd); float h2 = max(dot(P, P) - t0 * t0, 0.5); float h = sqrt(h2);',
+    '    float sc = (atan((L - t0) / h) - atan(-t0 / h)) / max(h, 2.0); hz += uC[i].rgb * uL[i].w * sc * 0.012; }',
+    '  gl_FragColor = vec4(c.rgb + hz, c.a); }'].join('\n');
+  hazePP = new B.PostProcess('haze', 'haze', ['uDepthVals', 'uTanH', 'uAspect', 'uCamWorld', 'uL', 'uC', 'uOn'], ['depthMap'], 1.0, cam);
+  hazePP.onApply = function (e) { e.setTexture('depthMap', depthTex); e.setVector2('uDepthVals', DEPTH_VALS); e.setFloat('uTanH', Math.tan(cam.fov / 2));
+    e.setFloat('uAspect', RW / RH); e.setMatrix('uCamWorld', cam.getWorldMatrix()); e.setFloatArray4('uL', HAZE_L); e.setFloatArray4('uC', HAZE_C); e.setFloat('uOn', ENV.ok ? 1 : 0); };
+  // TAA: Babylon's reprojection needs the prepass renderer, which the custom effect shaders do not write, so it stays off:
+  // TAA accumulates while the camera holds still (the stills) and switches itself off while the camera moves.
+  try { taa = new B.TAARenderingPipeline('taa', scene, [cam]); taa.samples = 8; taa.disableOnCameraMove = true; taa.clampHistory = true; } catch (e) { console.warn('taa', e); }
+}
 var pipe = new B.DefaultRenderingPipeline('post', true, scene, [cam]);
-pipe.samples = MSAA;
+pipe.samples = MAXM ? 1 : MSAA;
 pipe.fxaaEnabled = false;
 pipe.bloomEnabled = true;
 pipe.bloomThreshold = 0.8;
@@ -160,6 +217,11 @@ pipe.imageProcessing.toneMappingType = B.ImageProcessingConfiguration.TONEMAPPIN
 pipe.imageProcessing.exposure = 1.0;
 pipe.imageProcessing.contrast = 1.0;
 pipe.imageProcessing.vignetteEnabled = false;
+if (MAXM) {   // presentation: colour grading with Babylon's built-in curves (cool shadows, warm highlights, a little saturation)
+  var curves = new B.ColorCurves(); curves.globalSaturation = 12; curves.shadowsHue = 205; curves.shadowsDensity = 25; curves.shadowsSaturation = 30;
+  curves.highlightsHue = 35; curves.highlightsDensity = 20; curves.highlightsSaturation = 25; curves.midtonesSaturation = 5;
+  pipe.imageProcessing.colorCurvesEnabled = true; pipe.imageProcessing.colorCurves = curves;
+}
 
 // ---------- shared shader bits ----------
 var NOISE = [
@@ -181,7 +243,16 @@ B.Effect.ShadersStore.skyFragmentShader = [
   'vec3 lin(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c)); }',
   'void main(){ vec3 d = normalize(vDir); float u = atan(d.x, -d.z) / 6.2831853; u = u < 0.0 ? u + 1.0 : u;',
   '  float v = acos(clamp(d.y, -1.0, 1.0)) / 3.1415927; gl_FragColor = vec4(lin(texture2D(sky, vec2(u, v)).rgb), 1.0); }'].join('\n');
-var skyTex = new B.Texture('../starfield_4k.png', scene, true, false, B.Texture.BILINEAR_SAMPLINGMODE);
+// SPEC.md "Environment": max and board modes use assets/env/ when it is there (dead-star sky, asteroid field, dust haze),
+// otherwise they fall back to the plain starfield and no rocks.
+var ENV = { ok: false, sky: false, rocks: null };
+async function exists(u) { try { var r = await fetch(u, { method: 'HEAD', cache: 'no-store' }); return r.ok; } catch (e) { return false; } }
+if (MAXM) {   // run.py says which env files are on disk (envsky=1, envrocks=1), so the page never asks for a missing file
+  ENV.sky = Q.get('envsky') === '1';
+  if (Q.get('envrocks') === '1') { try { ENV.rocks = await (await fetch('../assets/env/asteroids.json', { cache: 'no-store' })).json(); } catch (e) { console.warn('asteroids.json', e); } }
+  ENV.ok = ENV.sky || !!ENV.rocks;
+}
+var skyTex = new B.Texture(ENV.sky ? '../assets/env/sky_deadstar_8k.png' : '../starfield_4k.png', scene, true, false, B.Texture.BILINEAR_SAMPLINGMODE);
 skyTex.wrapU = B.Texture.WRAP_ADDRESSMODE; skyTex.wrapV = B.Texture.CLAMP_ADDRESSMODE;
 var skyMat = new B.ShaderMaterial('skyMat', scene, { vertex: 'sky', fragment: 'sky' },
   { attributes: ['position'], uniforms: ['world', 'viewProjection'], samplers: ['sky'] });
@@ -234,8 +305,12 @@ async function loadShip(def, i) {
   def.meshes = meshes; def.pivot = pivot; def.scale = s; def.c0 = c;
 }
 await Promise.all(SHIPS.map(loadShip).concat([skyReady]));
-if (STRESS) {   // 18 copies at 0.6 scale: rows z = +60, 0, -60; x = -60 .. +60; factions in the main order along each row
-  [60, 0, -60].forEach(function (z, ri) { [-60, -36, -12, 12, 36, 60].forEach(function (x, j) {
+if (STRESS) {   // copies at 0.6 scale: rows z = +60, 0, -60, then every 30 units alternating sides (+90, -90, +120, ...);
+  // x = -60 .. +60; factions in the main order along each row
+  var ROWS = [60, 0, -60]; for (var rk = 1; ROWS.length < Math.ceil((NSHIPS - 6) / 6); rk++) { ROWS.push(60 + 30 * rk); ROWS.push(-60 - 30 * rk); }
+  var made = 6;   // the last row may be partial (40 ships = 34 copies: five full rows and four)
+  ROWS.forEach(function (z, ri) { [-60, -36, -12, 12, 36, 60].forEach(function (x, j) {
+    if (made >= NSHIPS) return; made++;
     var base = SHIPS[j], pv = base.pivot.clone('ship_' + base.fac + '_r' + ri, null, false);
     pv.scaling.setAll(base.scale * 0.6); pv.position.set(x, 0, z);
     var ms = pv.getChildMeshes(false).filter(function (m) { return m.getTotalVertices() > 0; });
@@ -301,7 +376,9 @@ B.Effect.ShadersStore.spriteVertexShader = GL_COMMON + [
   'attribute vec3 position; attribute vec4 a0; attribute vec4 a1; attribute vec4 a2; attribute vec4 a3; attribute vec4 a4;',
   'uniform mat4 world; uniform mat4 view; uniform mat4 projection; uniform float uGate;',
   'varying vec2 vUv; varying vec4 vCol; varying vec4 vInfo;',
+  '#ifdef SOFT', 'uniform vec2 uDepthVals; varying float vDM;', '#endif',
   'void main(){ float a = uTime - a0.w; float age = mod(a, a4.x); float life = a1.w;',
+  '#ifdef SOFT', '  vDM = 0.0;', '#endif',
   '  if (a < 0.0 || age >= life || uGate <= 0.0) { ' + HIDE + ' vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec4(0.0); return; }',
   '  float t = age / life; int k = int(a3.z + 0.5); float g = t;',
   '  if (k == 1) g = 1.0 - spow(1.0 - t, 2.2); else if (k == 2 || k == 5) g = sqrt(t); else if (k == 3 || k == 7 || k == 8) g = 1.0 - spow(1.0 - t, 1.6);',
@@ -312,9 +389,11 @@ B.Effect.ShadersStore.spriteVertexShader = GL_COMMON + [
   '  float ang = a3.w * 6.2831853 + age * a4.w; float cs = cos(ang), sn = sin(ang);',
   '  vec2 q = vec2(cs * position.x - sn * position.y, sn * position.x + cs * position.y);',
   '  vec4 vp = view * vec4(c, 1.0); vp.xy += q * size; gl_Position = projection * vp;',
+  '#ifdef SOFT', '  vDM = (gl_Position.z + uDepthVals.x) / uDepthVals.y;', '#endif',
   '  vUv = position.xy * 2.0; vCol = vec4(a2.rgb, a2.a * uGate * mix(1.0, shipFade(uTime), a4.y)); vInfo = vec4(t, a3.z, a3.w, age); }'].join('\n');
 B.Effect.ShadersStore.spriteFragmentShader = GL_COMMON + [
   'varying vec2 vUv; varying vec4 vCol; varying vec4 vInfo;',
+  '#ifdef SOFT', 'uniform sampler2D depthMap; uniform vec2 uDepthVals; uniform vec2 uRes; varying float vDM;', '#endif',
   'vec3 heatRamp(float h){ vec3 c = mix(vec3(0.45, 0.04, 0.01), vec3(1.0, 0.32, 0.04), smoothstep(0.0, 0.3, h));',
   '  c = mix(c, vec3(1.0, 0.75, 0.35), smoothstep(0.3, 0.65, h)); return mix(c, vec3(1.0, 0.96, 0.85), smoothstep(0.65, 1.0, h)); }',
   'void main(){ float t = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z; float age = vInfo.w; float I = vCol.a;',
@@ -342,7 +421,11 @@ B.Effect.ShadersStore.spriteFragmentShader = GL_COMMON + [
   '  else if (k == 13) { float fl = 0.8 + 0.2 * vnoise(vec2(uTime * 40.0, seed)); float life = age / max(t, 1e-3);',
   '    float env = smoothstep(0.0, 0.05, age) * (1.0 - smoothstep(life - 0.15, life, age));',
   '    add = (vCol.rgb * exp(-r * r * 3.0) + vec3(exp(-r * r * 12.0)) * 1.5 + vCol.rgb * star * 0.7) * I * fl * env; }',
-  '  float win = 1.0 - r * r; add *= win * win; gl_FragColor = vec4(clamp(base * alpha + add, 0.0, 512.0), clamp(alpha, 0.0, 1.0)); }'].join('\n');
+  '  float win = 1.0 - r * r; add *= win * win;',
+  '#ifdef SOFT',   // soft particles: fade where the sprite meets hull depth (1.5 units)
+  '  float sd = (texture2D(depthMap, gl_FragCoord.xy / uRes).r - vDM) * uDepthVals.y; float soft = clamp(sd / 1.5, 0.0, 1.0); add *= soft; alpha *= soft;',
+  '#endif',
+  '  gl_FragColor = vec4(clamp(base * alpha + add, 0.0, 512.0), clamp(alpha, 0.0, 1.0)); }'].join('\n');
 
 // ---------- streaks: tracers, flame tongues, sparks and embers (additive) ----------
 // a0 = pos, tStart; a1 = vel, life; a2 = colour, intensity; a3 = length (or blur seconds), width, drag, kind; a4 = period, drift, 0, 0
@@ -485,11 +568,34 @@ B.Effect.ShadersStore.decalVertexShader = [
   'void main(){ vec4 w = world * vec4(position, 1.0); vW = w.xyz; vUv = uv; gl_Position = viewProjection * w; }'].join('\n');
 B.Effect.ShadersStore.decalFragmentShader = GL_COMMON + [
   'varying vec2 vUv; varying vec3 vW; uniform vec3 uCam; uniform vec3 uN; uniform float uSeed; uniform float uFade;',
-  'void main(){ vec2 p = vUv * 2.0 - 1.0; float r = length(p); float ang = atan(p.y, p.x);',
-  '  float R = 0.36 + 0.16 * (fbm(vec2(cos(ang), sin(ang)) * 2.2 + uSeed * 5.0) - 0.5) * 2.0 + 0.035 * sin(ang * 11.0 + uSeed);',
-  '  float e = r - R; vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;',
+  'float holeR(float ang){ return 0.36 + 0.16 * (fbm(vec2(cos(ang), sin(ang)) * 2.2 + uSeed * 5.0) - 0.5) * 2.0 + 0.035 * sin(ang * 11.0 + uSeed); }',
+  '#ifdef POM',   // the cavity as a height field: steep jagged walls, a rough floor, broken frames across it (uv units)
+  'const float DEP = 0.22;',
+  'float cav(vec2 uv){ vec2 p = uv * 2.0 - 1.0; float r = length(p); float R = holeR(atan(p.y, p.x));',
+  '  float wall = smoothstep(R + 0.005, R - 0.05, r); float inner = smoothstep(R - 0.04, R - 0.14, r);',
+  '  float rib = smoothstep(0.86, 1.0, abs(sin(p.x * 7.0 + uSeed))) * 0.55 + smoothstep(0.9, 1.0, abs(sin(p.y * 5.0 + uSeed * 2.0))) * 0.4;',
+  '  return wall * DEP * (0.72 + 0.28 * fbm(p * 5.0 + uSeed) - rib * inner * 0.7); }',
+  '#endif',
+  'void main(){',
   '  float fl = 0.8 + 0.2 * vnoise(vec2(uTime * 9.0, uSeed)) * vnoise(vec2(uTime * 23.0, uSeed + 2.0)) * 2.0;',
-  '  vec3 V = normalize(uCam - vW); vec3 tv = V - uN * dot(V, uN); vec2 par = vec2(tv.x + tv.z * 0.5, tv.y) * 0.35;',
+  '  vec2 uvh = vUv; float dh = 0.0;',
+  '#ifdef POM',
+  '  vec3 dp1 = dFdx(vW), dp2 = dFdy(vW); vec2 du1 = dFdx(vUv), du2 = dFdy(vUv); vec3 N = normalize(uN);',
+  '  vec3 q2 = cross(dp2, N), q1 = cross(N, dp1); vec3 T = q2 * du1.x + q1 * du2.x; vec3 Bt = q2 * du1.y + q1 * du2.y;',
+  '  T = snorm(T); Bt = snorm(Bt); vec3 V = normalize(uCam - vW); vec3 Vt = vec3(dot(V, T), dot(V, Bt), dot(V, N));',
+  '  vec2 stepUv = -Vt.xy / max(Vt.z, 0.2) * (DEP / 28.0); float c = cav(uvh);',
+  '  for (int i = 0; i < 28; i++) { if (dh >= c) break; uvh += stepUv; dh += DEP / 28.0; c = cav(uvh); }',
+  '#endif',
+  '  vec2 p = uvh * 2.0 - 1.0; float r = length(p); float ang = atan(p.y, p.x); float R = holeR(ang);',
+  '  float e = r - R; vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;',
+  '  vec3 V2 = normalize(uCam - vW); vec3 tv = V2 - uN * dot(V2, uN); vec2 par = vec2(tv.x + tv.z * 0.5, tv.y) * 0.35;',
+  '#ifdef POM',
+  '  if (dh > 0.004) { float dn = clamp(dh / DEP, 0.0, 1.0);',   // inside the cavity: charred walls, embers deepening to a glowing floor
+  '    float emb = spow(fbm(p * 6.0 + uSeed + vec2(0.0, uTime * 0.2)), 3.0);',
+  '    base = vec3(0.025, 0.022, 0.02) * (0.5 + 0.9 * fbm(p * 11.0)) * (1.0 - 0.6 * dn); alpha = 1.0;',
+  '    add = (vec3(1.0, 0.25, 0.04) * (emb * 2.6 * dn + 0.12 * dn * dn) + vec3(1.0, 0.5, 0.15) * exp(-dn * 12.0) * 0.6) * fl; }',
+  '  else',
+  '#endif',
   '  if (e < 0.0) {',
   '    vec2 q = p - par; float deep = smoothstep(0.0, -0.25, e);',
   '    float emb = spow(fbm(q * 5.0 + uSeed + vec2(0.0, uTime * 0.2)), 4.0); float struts = smoothstep(0.92, 1.0, abs(sin(q.x * 9.0 + uSeed)));',
@@ -503,8 +609,51 @@ B.Effect.ShadersStore.decalFragmentShader = GL_COMMON + [
   '    float soot = (1.0 - smoothstep(0.08, 0.62, e)) * (0.7 + 0.6 * n);',
   '    alpha = clamp(max(charred, soot * 0.9), 0.0, 1.0); base = mix(vec3(0.03, 0.022, 0.018), vec3(0.015, 0.012, 0.01), charred);',
   '    add = vec3(1.0, 0.3, 0.05) * crack * 0.8 * fl; }',
-  '  float edgeFade = 1.0 - smoothstep(0.85, 1.0, r); alpha *= edgeFade * uFade; add *= edgeFade * uFade;',
+  '  float rv = length(vUv * 2.0 - 1.0); float edgeFade = 1.0 - smoothstep(0.85, 1.0, rv); alpha *= edgeFade * uFade; add *= edgeFade * uFade;',
   '  gl_FragColor = vec4(clamp(base * alpha + add, 0.0, 512.0), clamp(alpha, 0.0, 1.0)); }'].join('\n');
+
+// ---------- raymarched volumes (rich mode): destruction fireball and smoke, breach venting, broadside smoke rings ----------
+var NOISE3 = [
+  'float h31(vec3 p){ p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }',
+  'float vn3(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);',
+  '  return mix(mix(mix(h31(i), h31(i + vec3(1.0, 0.0, 0.0)), f.x), mix(h31(i + vec3(0.0, 1.0, 0.0)), h31(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),',
+  '             mix(mix(h31(i + vec3(0.0, 0.0, 1.0)), h31(i + vec3(1.0, 0.0, 1.0)), f.x), mix(h31(i + vec3(0.0, 1.0, 1.0)), h31(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z); }',
+  'float fbm3(vec3 p){ return 0.5 * vn3(p) + 0.25 * vn3(p * 2.03 + 3.1) + 0.125 * vn3(p * 4.07 + 7.7); }'].join('\n') + '\n';
+B.Effect.ShadersStore.volVertexShader = 'precision highp float; attribute vec3 position; uniform mat4 world; uniform mat4 viewProjection; varying vec3 vW;\nvoid main(){ vec4 w = world * vec4(position, 1.0); vW = w.xyz; gl_Position = viewProjection * w; }';
+B.Effect.ShadersStore.volFragmentShader = GL_COMMON + NOISE3 + [
+  'varying vec3 vW; uniform vec3 uCam; uniform mat4 uInvWorld; uniform float uType; uniform vec4 uP; uniform vec3 uDir; uniform float uDx;',
+  'uniform vec3 uG0; uniform vec3 uG1; uniform vec3 uG2; uniform vec3 uG3; uniform vec3 uKeyDir; uniform vec3 uKeyCol; uniform vec3 uAmb;',
+  'uniform sampler2D depthMap; uniform vec2 uDepthVals; uniform vec2 uRes; uniform vec3 uCamFwd;',
+  'vec3 heatRamp(float h){ vec3 c = mix(vec3(0.45, 0.04, 0.01), vec3(1.0, 0.32, 0.04), smoothstep(0.0, 0.3, h));',
+  '  c = mix(c, vec3(1.0, 0.75, 0.35), smoothstep(0.3, 0.65, h)); return mix(c, vec3(1.0, 0.96, 0.85), smoothstep(0.65, 1.0, h)); }',
+  'vec3 gEm; vec3 gAlb;',
+  'float ring(vec3 pw, vec3 G, float k){ float a = uTime - (uP.x + k * 0.08 + 0.02); float age = mod(a, 4.0); if (a < 0.0 || age > 2.0) return 0.0;',
+  '  vec3 c = G + vec3(uDx, 0.0, 0.0) + uDir * (5.0 * (1.0 - exp(-1.4 * age)) / 1.4); float R = 0.5 + 2.6 * (1.0 - exp(-age * 2.0)); float w = 0.35 + 0.45 * age;',
+  '  vec3 q = pw - c; float h = dot(q, uDir); float rr = length(q - uDir * h); float dd = (rr - R) * (rr - R) + h * h;',
+  '  float dk = exp(-dd / (w * w)) * spow(1.0 - age / 2.0, 1.3); gEm += vec3(1.0, 0.45, 0.1) * dk * max(0.0, 1.0 - age / 0.12) * 6.0; return dk; }',
+  'float field(vec3 pw, vec3 pl){ gEm = vec3(0.0);',
+  '  if (uType < 0.5) { float age = uP.x; float r = length(pl) * 2.0; float rs = 0.25 + 0.6 * (1.0 - exp(-age * 1.6));',
+  '    float n = fbm3(pl * 5.0 + vec3(0.0, -age * 0.6, age * 0.3)); float d = clamp((rs - r) / rs * 1.6 + (n - 0.5) * 1.4, 0.0, 1.0);',
+  '    float temp = clamp((1.0 - r / rs) * 1.4 + (n - 0.5), 0.0, 1.0) * exp(-age * 1.1); gEm = heatRamp(temp) * temp * temp * 14.0;',
+  '    gAlb = vec3(0.05, 0.045, 0.04); return d * d * 3.0 * uP.y; }',
+  '  if (uType < 1.5) { float y = pl.y + 0.5; float rad = 0.12 + 0.38 * y; float q = length(pl.xz) / rad;',
+  '    float n = fbm3(vec3(pl.x * 4.0, pl.y * 6.0 - uTime * 2.4, pl.z * 4.0) + uP.z); float puff = 0.65 + 0.35 * sin(uTime * 5.0 - y * 10.0 + uP.z);',
+  '    gEm = vec3(1.0, 0.45, 0.12) * exp(-y * 9.0) * 1.5; gAlb = vec3(0.55, 0.6, 0.7);',
+  '    return max(0.0, (1.0 - q) * 1.5 + (n - 0.5) * 1.6 - 0.3) * (1.0 - smoothstep(0.6, 1.0, y)) * puff * uP.x; }',
+  '  float d = ring(pw, uG0, 0.0) + ring(pw, uG1, 1.0) + ring(pw, uG2, 2.0) + ring(pw, uG3, 3.0);',
+  '  gAlb = vec3(0.25, 0.24, 0.23); return d * (0.4 + 1.2 * fbm3(pw * 1.2 + uTime * 0.2)) * 1.6 * uP.y; }',
+  'void main(){ vec3 rd = normalize(vW - uCam); vec3 roL = (uInvWorld * vec4(uCam, 1.0)).xyz; vec3 rdL = (uInvWorld * vec4(rd, 0.0)).xyz;',
+  '  vec3 inv = 1.0 / (abs(rdL) + 1e-6) * sign(rdL + 1e-12); vec3 ta = (vec3(-0.5) - roL) * inv, tb = (vec3(0.5) - roL) * inv;',
+  '  vec3 tmn = min(ta, tb), tmx = max(ta, tb); float t0 = max(max(max(tmn.x, tmn.y), tmn.z), 0.0); float t1 = min(min(tmx.x, tmx.y), tmx.z);',
+  '  float dS = texture2D(depthMap, gl_FragCoord.xy / uRes).r * uDepthVals.y + uDepthVals.x; t1 = min(t1, dS / max(dot(rd, uCamFwd), 1e-3));',
+  '  if (t1 <= t0) discard;',
+  '  float dt = (t1 - t0) / 24.0; float t = t0 + dt * h21(gl_FragCoord.xy + fract(uTime * 7.0)); vec3 lkL = (uInvWorld * vec4(-uKeyDir, 0.0)).xyz;',
+  '  vec3 col = vec3(0.0); float T = 1.0; float sl = 1.5;',
+  '  for (int i = 0; i < 24; i++) { vec3 pw = uCam + rd * t; vec3 pl = roL + rdL * t; float de = field(pw, pl);',
+  '    if (de > 0.002) { vec3 em = gEm, al = gAlb; float ds = field(pw - uKeyDir * sl, pl + lkL * sl); float lit = 0.3 + 0.7 * exp(-ds * 2.5);',
+  '      float a = 1.0 - exp(-de * uP.w * dt); col += T * a * (al * (uKeyCol * lit * 0.55 + uAmb * 0.6) + em); T *= 1.0 - a; if (T < 0.02) break; }',
+  '    t += dt; }',
+  '  gl_FragColor = vec4(clamp(col, 0.0, 512.0), 1.0 - T); }'].join('\n');
 
 // ---------- torn petals (bent plates around the hole) and the destruction chunks' burning edges ----------
 B.Effect.ShadersStore.petalVertexShader = [
@@ -532,14 +681,17 @@ B.Effect.ShadersStore.edgeFragmentShader = GL_COMMON + [
 function mkMat(name, sh, attributes, uniforms, alphaMode, opts) {
   opts = opts || {};
   var m = new B.ShaderMaterial(name, scene, { vertex: sh, fragment: sh }, {
-    attributes: attributes, uniforms: uniforms, samplers: [], needAlphaBlending: alphaMode !== null
+    attributes: attributes, uniforms: uniforms, samplers: opts.samplers || [], defines: opts.defines || [], needAlphaBlending: alphaMode !== null
   });
   if (alphaMode !== null) { m.alphaMode = alphaMode; m.disableDepthWrite = true; }
   m.backFaceCulling = !!opts.cull;
   return m;
 }
 var LIGHT_U = ['uKeyDir', 'uKeyCol', 'uFillDir', 'uFillCol', 'uAmb'];
-var matSprite = mkMat('fxSprite', 'sprite', A5, ['world', 'view', 'projection', 'uTime', 'uGate'], B.Constants.ALPHA_PREMULTIPLIED);
+// rich mode: a depth pass of the hulls (Babylon's DepthRenderer) feeds soft particles and lets the volumes stop at the hull
+function softify(m) { if (!RICH) return m; m.setTexture('depthMap', depthTex); m.setVector2('uDepthVals', DEPTH_VALS); m.setVector2('uRes', RES2); return m; }
+var SOFT_OPTS = RICH ? { samplers: ['depthMap'], defines: ['#define SOFT'] } : {};
+var matSprite = softify(mkMat('fxSprite', 'sprite', A5, ['world', 'view', 'projection', 'uTime', 'uGate', 'uDepthVals', 'uRes'], B.Constants.ALPHA_PREMULTIPLIED, SOFT_OPTS));
 var matStreak = mkMat('fxStreak', 'streak', A5, ['viewProjection', 'uTime', 'uCam'], B.Constants.ALPHA_ADD);
 var matRing = mkMat('fxRing', 'ring', A5, ['viewProjection', 'uTime'], B.Constants.ALPHA_PREMULTIPLIED);
 var matRibbon = mkMat('fxRibbon', 'ribbon', A5, ['viewProjection', 'uTime', 'uCam'], B.Constants.ALPHA_ADD);
@@ -591,6 +743,65 @@ function shard(o) {
     var i0 = SHD.v([a.x, a.y, a.z], attrs, [n.x, n.y, n.z]); SHD.v([b.x, b.y, b.z], attrs, [n.x, n.y, n.z]); SHD.v([c.x, c.y, c.z], attrs, [n.x, n.y, n.z]);
     SHD.idx.push(i0, i0 + 2, i0 + 1);
   });
+}
+
+// ---------- max mode: sky image-based lighting, micro-detail normals, the asteroid field ----------
+if (MAXM) {
+  // IBL from the sky: Babylon turns the equirectangular PNG into a mipmapped cube (CPU side, at load)
+  var envTex = await new Promise(function (res) {
+    var tx = new B.EquiRectangularCubeTexture(ENV.sky ? '../assets/env/sky_deadstar_8k.png' : '../starfield_4k.png', scene, 256, false, true, function () { res(tx); }, function () { res(null); }); });
+  if (envTex) { scene.environmentTexture = envTex; scene.environmentIntensity = 1.0; }
+  // micro-detail: a procedural 256 px tile (panel seams, grain) in Babylon's detail-map layout (R albedo, G normal y, B roughness, A normal x)
+  var DN = 256, hgt = new Float32Array(DN * DN), dpx = new Uint8Array(DN * DN * 4), hs = function (x, y) { return hgt[((y + DN) % DN) * DN + (x + DN) % DN]; };
+  for (var y = 0; y < DN; y++) for (var x = 0; x < DN; x++) {
+    var sx = x % 64, sy = (y + (Math.floor(x / 64) % 2) * 32) % 64, seam = (sx < 2 || sy < 2) ? 1 : 0, rv = rng();
+    hgt[y * DN + x] = 0.5 - seam * 0.4 + (rv - 0.5) * 0.06 + ((x * 7 + y * 13) % 29 === 0 ? 0.12 : 0);
+  }
+  for (var y = 0; y < DN; y++) for (var x = 0; x < DN; x++) {
+    var nx = (hs(x - 1, y) - hs(x + 1, y)) * 2.5, ny = (hs(x, y - 1) - hs(x, y + 1)) * 2.5, nl = Math.sqrt(nx * nx + ny * ny + 1), o = (y * DN + x) * 4, h0 = hs(x, y);
+    dpx[o] = Math.max(0, Math.min(255, 128 + (h0 - 0.5) * 120)); dpx[o + 1] = 128 + ny / nl * 127; dpx[o + 2] = 128 + (rng() - 0.5) * 50; dpx[o + 3] = 128 + nx / nl * 127;
+  }
+  var detailTex = new B.RawTexture(dpx, DN, DN, B.Constants.TEXTUREFORMAT_RGBA, scene, true, false, B.Texture.TRILINEAR_SAMPLINGMODE);
+  detailTex.wrapU = detailTex.wrapV = B.Texture.WRAP_ADDRESSMODE; detailTex.uScale = detailTex.vScale = 6;
+  var shipMats = {}; shipMeshes.forEach(function (m) { if (m.material instanceof B.PBRMaterial) shipMats[m.material.uniqueId] = m.material; });
+  Object.keys(shipMats).forEach(function (k) { var mt = shipMats[k]; mt.detailMap.texture = detailTex; mt.detailMap.isEnabled = true;
+    mt.detailMap.diffuseBlendLevel = 0.2; mt.detailMap.roughnessBlendLevel = 0.3; mt.detailMap.bumpLevel = 1.0; });
+}
+// asteroid field (max mode with env/asteroids.json): thin instances per rock mesh, each tumbling about its own axis.
+// Accepted keys per rock: mesh or file; position or pos; rotation or rot (Euler radians, or a quaternion); scale (number or
+// [x, y, z]); spin (radians per second, with axis), or spin as [x, y, z] (axis times rate).
+var ROCKS = [], ROCK_SETS = [];
+if (ENV.rocks) {
+  var rlist = Array.isArray(ENV.rocks) ? ENV.rocks : (ENV.rocks.rocks || ENV.rocks.asteroids || []), rfiles = {};
+  rlist.forEach(function (r) { var f = String(r.mesh || r.file); if (!/\.glb$/i.test(f)) f += '.glb'; r._f = f; rfiles[f] = 1; });
+  var rconts = {};
+  await Promise.all(Object.keys(rfiles).map(function (f) { return B.SceneLoader.LoadAssetContainerAsync('../assets/env/', f, scene).then(function (c) { rconts[f] = c; }, function (e) { console.warn('rock', f, e); }); }));
+  Object.keys(rconts).forEach(function (f) {
+    var c = rconts[f]; c.addAllToScene();
+    var src = c.meshes.filter(function (m) { return m.getTotalVertices() > 0; })[0]; if (!src) return;
+    src.setParent(null); src.position.setAll(0); src.rotationQuaternion = null; src.rotation.setAll(0); src.scaling.setAll(1);
+    c.materials.forEach(function (mt) { if (mt instanceof B.PBRMaterial) mt.ambientColor = new B.Color3(1, 1, 1); });
+    var mine = rlist.filter(function (r) { return r._f === f; });
+    var set = { mesh: src, buf: new Float32Array(mine.length * 16), rocks: [] };
+    mine.forEach(function (r) {
+      var P = r.position || r.pos || [0, 0, 0], R = r.rotation || r.rot || [0, 0, 0], S = r.scale === undefined ? 1 : r.scale, sp = r.spin || 0;
+      var q0 = R.length === 4 ? new B.Quaternion(R[0], R[1], R[2], R[3]) : B.Quaternion.RotationYawPitchRoll(R[1], R[0], R[2]);
+      var ax, rate; if (Array.isArray(sp)) { ax = V3(sp[0], sp[1], sp[2]); rate = ax.length(); ax = rate > 0 ? ax.scale(1 / rate) : V3(0, 1, 0); }
+      else { rate = +sp || 0; ax = r.axis ? V3(r.axis[0], r.axis[1], r.axis[2]).normalize() : rdir(); }
+      var rk = { set: set, i: set.rocks.length, pos: V3(P[0], P[1], P[2]), q0: q0, scale: Array.isArray(S) ? V3(S[0], S[1], S[2]) : V3(S, S, S), axis: ax, rate: rate };
+      set.rocks.push(rk); ROCKS.push(rk);
+    });
+    src.thinInstanceSetBuffer('matrix', set.buf, 16, false); src.alwaysSelectAsActiveMesh = true; src.receiveShadows = true; src.renderingGroupId = 1;
+    ROCK_SETS.push(set);
+  });
+  ROCKS.forEach(function (rk) { if (Math.max(rk.scale.x, rk.scale.y, rk.scale.z) >= 15) csm.addShadowCaster(rk.set.mesh, false); });
+}
+var RQ = new B.Quaternion(), RQ2 = new B.Quaternion(), RM = new B.Matrix();
+function updateRocks(t) {
+  for (var i = 0; i < ROCKS.length; i++) { var rk = ROCKS[i];
+    B.Quaternion.RotationAxisToRef(rk.axis, rk.rate * t, RQ); RQ.multiplyToRef(rk.q0, RQ2);
+    B.Matrix.ComposeToRef(rk.scale, RQ2, rk.pos, RM); RM.copyToArray(rk.set.buf, rk.i * 16); }
+  for (var j = 0; j < ROCK_SETS.length; j++) ROCK_SETS[j].mesh.thinInstanceBufferUpdated('matrix');
 }
 
 // ---------- ship anchors (world space at drift 0) ----------
@@ -654,10 +865,11 @@ SHIPS.forEach(function (d, i) {
 
 // ---------- per-ship effects ----------
 var STAG = STRESS ? 0.17 : 0.5, PER = 4.0;
+function stagOf(i) { return (i * STAG) % PER; }   // past 23 ships the stagger wraps inside the 4 s loop
 var ENEMY = [1.0, 0.72, 0.42];
 var shields = [], decals = [], petals = [];
 SHIPS.forEach(function (d, i) {
-  var T0 = i * STAG, wc = d.weapon, tint = function (k) { return mix3(wc, [1, 1, 1], k); };
+  var T0 = stagOf(i), wc = d.weapon, tint = function (k) { return mix3(wc, [1, 1, 1], k); };
   // 1. engines: hot core, flickering plume (about 1.5 ship widths), long cooling trail (60)
   var sput = d.fac === 'corsair';
   d.nozzles.forEach(function (nz) {
@@ -678,7 +890,8 @@ SHIPS.forEach(function (d, i) {
     sprite({ p: g.p.add(dir.scale(0.6)), t: tg, life: 0.09, per: PER, col: tint(0.25), i: 11, s0: 3.2, s1: 5.0, kind: 0 });
     sprite({ p: g.p.add(dir.scale(1.2)), t: tg, life: 0.16, per: PER, col: [1, 0.7, 0.4], i: 5, s0: 1.6, s1: 3.2, kind: 2 });
     streak({ p: g.p, t: tg, vel: dir, life: 0.13, per: PER, col: tint(0.35), i: 5, len: 4.5, w: 1.5, kind: 3 });
-    ring({ p: g.p.add(dir.scale(1.0)), n: dir, t: tg + 0.02, life: 2.0, per: PER, col: [0.24, 0.23, 0.22], i: 0.55, s0: 1.0, s1: 5.5, kind: 0, speed: 5, drag: 1.4 });
+    if (!RICH) ring({ p: g.p.add(dir.scale(1.0)), n: dir, t: tg + 0.02, life: 2.0, per: PER, col: [0.24, 0.23, 0.22], i: 0.55, s0: 1.0, s1: 5.5, kind: 0, speed: 5, drag: 1.4 });
+    d._tgt = d._tgt || []; d._ti = d._ti || []; d._tgt[gi] = tgt; d._ti[gi] = gi * 0.08 + dist / 160; d._fireDir = dir;
     for (var k = 0; k < 3; k++) sprite({ p: g.p.add(dir.scale(1.0 + k)), t: tg + 0.03 + k * 0.03, life: 1.6 + rng() * 0.4, per: PER, vel: rcone(dir, 0.5).scale(2 + rng() * 2), drag: 1.0,
       col: [0.20, 0.19, 0.18], i: 0.4, s0: 1.2, s1: 4.0 + rng() * 2, kind: 3 });
     streak({ p: g.p, t: tg, vel: dir.scale(160), life: dist / 160, per: PER, col: tint(0.3), i: 16, len: 9, w: 0.6, kind: 0 });
@@ -689,7 +902,7 @@ SHIPS.forEach(function (d, i) {
     sprite({ p: tgt, t: ti + 0.04, life: 1.1, per: PER, vel: rdir().scale(1.5), drag: 1, col: [0.18, 0.17, 0.16], i: 0.35, s0: 1.2, s1: 3.5, kind: 3 });
   });
   // 3. lance at 1.5 for 0.7 s, charge flare from 1.25
-  var tb = T0 + 1.5, end = d.bow.add(V3(80, 0, 0));
+  var tb = T0 + 1.5, end = d.bow.add(V3(80, 0, 0)); d._pEnd = end;
   sprite({ p: d.bow, t: tb - 0.25, life: 0.25, per: PER, col: tint(0.2), i: 9, s0: 0.6, s1: 5.0, kind: 12 });
   sprite({ p: d.bow, t: tb, life: 0.7, per: PER, col: tint(0.3), i: 7, s0: 4.5, s1: 4.5, kind: 13 });
   ribbon({ p: d.bow, dir: V3(1, 0, 0), len: 80, segs: 24, kind: 2, col: wc, i: 2.4, w0: 2.4, w1: 2.0, t: tb, life: 0.7, per: PER });
@@ -719,7 +932,7 @@ SHIPS.forEach(function (d, i) {
     sprite({ p: hp.add(hn.scale(0.3)), t: th, life: 0.12, per: PER, col: [1, 0.75, 0.45], i: 12, s0: 3, s1: 5.5, kind: 0 });
     sprite({ p: hp.add(hn.scale(0.4)), t: th, life: 0.3, per: PER, col: [1, 0.7, 0.4], i: 6, s0: 1.2, s1: 3.6, kind: 2 });
     for (var k = 0; k < 22; k++) streak({ p: hp, t: th + rng() * 0.05, vel: rcone(hn, 0.9).scale(9 + rng() * 18), life: 0.3 + rng() * 0.45, per: PER, col: [1, 0.55, 0.15], i: 8, len: 0.04, w: 0.13, drag: 2.2, kind: 1 });
-    for (var k = 0; k < 12; k++) shard({ p: hp.add(hn.scale(0.2)), t: th, life: 2.6, per: PER, vel: rcone(hn, 0.8).scale(3 + rng() * 7), drag: 0.3, spin: 2 + rng() * 6, size: 0.15 + rng() * 0.25, heat: 1.0 });
+    for (var k = 0; k < (PHYS ? 0 : 12); k++) shard({ p: hp.add(hn.scale(0.2)), t: th, life: 2.6, per: PER, vel: rcone(hn, 0.8).scale(3 + rng() * 7), drag: 0.3, spin: 2 + rng() * 6, size: 0.15 + rng() * 0.25, heat: 1.0 });
     for (var k = 0; k < 3; k++) sprite({ p: hp.add(hn.scale(0.5)), t: th + 0.03 * k, life: 0.6, per: PER, vel: hn.scale(2).add(rdir().scale(0.6)), col: [1, 0.5, 0.15], i: 3, s0: 1, s1: 2.8, kind: 1 });
     sprite({ p: hp.add(hn.scale(0.6)), t: th + 0.1, life: 1.6, per: PER, vel: hn.scale(2), drag: 0.6, col: [0.12, 0.11, 0.1], i: 0.5, s0: 1.5, s1: 5, kind: 3 });
     d.hitPt = hp;
@@ -727,7 +940,7 @@ SHIPS.forEach(function (d, i) {
   // 5. persistent breach on the upper port flank (about 1/10 of the length across)
   var br = d.breach, bn = br.n, hole = d.L / 10;
   var dec = B.MeshBuilder.CreateDecal('breach_' + d.fac, br.mesh, { position: br.p, normal: bn, size: V3(hole * 2.6, hole * 2.6, hole * 1.5), angle: rng() * 6.28, localMode: true });
-  var dm = mkMat('fxDecal_' + d.fac, 'decal', ['position', 'normal', 'uv'], ['world', 'viewProjection', 'uTime', 'uCam', 'uN', 'uSeed', 'uFade'], B.Constants.ALPHA_PREMULTIPLIED);
+  var dm = mkMat('fxDecal_' + d.fac, 'decal', ['position', 'normal', 'uv'], ['world', 'viewProjection', 'uTime', 'uCam', 'uN', 'uSeed', 'uFade'], B.Constants.ALPHA_PREMULTIPLIED, RICH ? { defines: ['#define POM'] } : {});
   dm.zOffset = -3; dm.setVector3('uN', bn); dm.setFloat('uSeed', rng() * 10); dm.setFloat('uFade', 1);
   dec.material = dm; dec.renderingGroupId = 1; dec.isPickable = false; dec.alphaIndex = 0; allFx.push(dm); decals.push(dm);
   // torn plates bent outward around the rim
@@ -750,13 +963,13 @@ SHIPS.forEach(function (d, i) {
   pm.setParent(d.pivot); petals.push(pm);
   // venting gas: a pale wavering jet that puffs
   var P = br.p.add(bn.scale(0.2)), up = V3(0, 1, 0);
-  for (var k = 0; k < 40; k++) {
+  for (var k = 0; k < (RICH ? 0 : 40); k++) {   // rich mode: the raymarched vent volume replaces these
     var tk = -20 + k * 0.045, wav = Math.sin(k * 0.45) * 0.25, puff = 0.7 + 0.3 * Math.sin(k * 0.9);
     var vd = bn.add(t1.scale(wav)).add(up.scale(0.25)).normalize().scale((9 + rng() * 3) * puff);
     sprite({ p: P, t: tk, life: 1.8, per: 1.8, vel: vd, drag: 0.7, col: [0.62, 0.68, 0.78], i: 0.3 * puff, s0: hole * 0.2, s1: hole * 1.1, kind: 7, spin: (rng() - 0.5) });
   }
   // debris tumbling out
-  for (var k = 0; k < 9; k++) shard({ p: P, t: -20 + k * 0.37, life: 3.3, per: 3.3, vel: rcone(bn.add(up.scale(0.2)), 0.6).scale(2.5 + rng() * 3), spin: 1 + rng() * 4, size: hole * (0.05 + rng() * 0.07), heat: 0.7 });
+  for (var k = 0; k < (PHYS ? 0 : 9); k++) shard({ p: P, t: -20 + k * 0.37, life: 3.3, per: 3.3, vel: rcone(bn.add(up.scale(0.2)), 0.6).scale(2.5 + rng() * 3), spin: 1 + rng() * 4, size: hole * (0.05 + rng() * 0.07), heat: 0.7 });
   // licking fire
   for (var k = 0; k < 14; k++) {
     var fa = rng() * 6.283, off = t1.scale(Math.cos(fa) * hole * 0.42).add(t2.scale(Math.sin(fa) * hole * 0.42));
@@ -808,10 +1021,10 @@ for (var ci = 0; ci < NCH; ci++) {
   tris.forEach(function (f) { for (var j = 0; j < 3; j++) { var v = hIdx[f + j];
     P.push(hPos[v * 3] - cHeg.x - cen.x, hPos[v * 3 + 1] - cHeg.y - cen.y, hPos[v * 3 + 2] - cHeg.z - cen.z);
     N.push(hNor[v * 3], hNor[v * 3 + 1], hNor[v * 3 + 2]); U.push(hUV[v * 2], hUV[v * 2 + 1]); U2.push(hUV2[v * 2], hUV2[v * 2 + 1]); I.push(I.length); } });
-  var node = new B.TransformNode('chunk_' + ci, scene); node.rotationQuaternion = B.Quaternion.Identity(); node.scaling.setAll(dScale);
+  var node = new B.TransformNode('chunk_' + ci, scene); node.rotationQuaternion = B.Quaternion.Identity();   // unscaled, so a physics body can own it
   var cm = new B.Mesh('chunkMesh_' + ci, scene), vd = new B.VertexData();
   vd.positions = P; vd.normals = N; vd.uvs = U; vd.uvs2 = U2; vd.indices = I; vd.applyToMesh(cm);
-  cm.material = hegMat; cm.parent = node; cm.receiveShadows = true; cm.renderingGroupId = 1; cm.isPickable = false; csm.addShadowCaster(cm, false);
+  cm.material = hegMat; cm.parent = node; cm.scaling.setAll(dScale); cm.receiveShadows = true; cm.renderingGroupId = 1; cm.isPickable = false; csm.addShadowCaster(cm, false);
   // burning break edges
   var E = new Batch('chunkEdge_' + ci, 2), mids = [];
   Object.keys(edgeMap).forEach(function (k) { var e = edgeMap[k]; if (e.ch.indexOf(ci) < 0 || e.ch.every(function (c) { return c === ci; })) return;
@@ -823,7 +1036,7 @@ for (var ci = 0; ci < NCH; ci++) {
   });
   var em = mkMat('fxEdge_' + ci, 'edge', ['position', 'a0', 'a1'], ['world', 'viewProjection', 'uTime', 'uCam', 'uWidth', 'uHeat'], B.Constants.ALPHA_ADD);
   em.setFloat('uWidth', 0.22); em.setFloat('uHeat', 0); allFx.push(em);
-  var edgeMesh = E.build(em, node);
+  var edgeMesh = E.build(em, node); edgeMesh.scaling.setAll(dScale);
   // fire and squibs along the break, in the chunk's own frame (they ride with it)
   var CS = new Batch('chunkFire_' + ci, 5), cmat = matSprite.clone('fxChunkFire_' + ci); cmat.setFloat('uGate', 0); allFx.push(cmat);
   var invS = 1 / dScale;
@@ -831,7 +1044,7 @@ for (var ci = 0; ci < NCH; ci++) {
     sprite({ batch: CS, p: m0, t: k * 0.05, life: 0.5 + rng() * 0.3, per: 0.8, vel: rdir().scale(1.2 * invS), col: [1, 0.5, 0.15], i: 2.8, s0: 0.6, s1: 2.0, kind: 1, drift: 0 }); }
   for (var k = 0; k < 10 && mids.length; k++) { var m0 = mids[Math.floor(rng() * mids.length)];
     sprite({ batch: CS, p: m0, t: DT0 + BREAK + 0.1 + rng() * (D_OUT - 1.0), life: 0.2, per: DPER, col: [1, 0.7, 0.4], i: 7, s0: 0.6, s1: 2.6, kind: 5, drift: 0 }); }
-  var fireMesh = CS.build(cmat, node);
+  var fireMesh = CS.build(cmat, node); fireMesh.scaling.setAll(dScale);
   // motion: the aft-mid piece becomes the slow burning wreck; the others tumble away
   var wc0 = DC.add(cen.scale(dScale)), out = cen.scale(dScale).add(rdir().scale(1.5)).normalize();
   var wreck = ci === 2;
@@ -850,16 +1063,16 @@ sprite({ p: DC, t: TB, life: 0.3, per: DPER, col: [1, 0.9, 0.75], i: 26, s0: 22,
 sprite({ p: DC, t: TB, life: 0.6, per: DPER, col: [1, 0.8, 0.55], i: 10, s0: 6, s1: 18, kind: 2, drift: 0 });
 ring({ p: DC, n: V3(0.12, 1, 0.08), t: TB, life: 1.8, per: DPER, col: [0.45, 0.6, 1.0], i: 0.8, s0: 2, s1: 110, kind: 1, drift: 0 });
 ring({ p: DC, n: V3(0.6, 0.5, -0.4), t: TB + 0.05, life: 1.1, per: DPER, col: [1.0, 0.6, 0.3], i: 0.45, s0: 2, s1: 55, kind: 1, drift: 0 });
-for (var k = 0; k < 12; k++) sprite({ p: DC.add(rdir().scale(rng() * 3)), t: TB + 0.25 + rng() * 0.5, life: DL(3.8 + rng() * 1.2) - 0.75, per: DPER, vel: rdir().scale(2 + rng() * 3), drag: 0.35,
+for (var k = 0; k < (RICH ? 0 : 12); k++) sprite({ p: DC.add(rdir().scale(rng() * 3)), t: TB + 0.25 + rng() * 0.5, life: DL(3.8 + rng() * 1.2) - 0.75, per: DPER, vel: rdir().scale(2 + rng() * 3), drag: 0.35,
   col: [0.07, 0.065, 0.06], i: 0.75, s0: 7, s1: 24 + rng() * 8, kind: 3, drift: 0 });
 for (var k = 0; k < 18; k++) sprite({ p: DC.add(rdir().scale(rng() * 3.5)), t: TB + rng() * 0.15, life: 1.5 + rng() * 1.0, per: DPER, vel: rdir().scale(3 + rng() * 5), drag: 0.6,
   col: [1, 0.55, 0.2], i: 2.4, s0: 5 + rng() * 3, s1: 13 + rng() * 5, kind: 1, drift: 0, spin: (rng() - 0.5) * 1.5 });
 for (var k = 0; k < 110; k++) streak({ p: DC.add(rdir().scale(rng() * 2)), t: TB + rng() * 0.2, vel: rdir().scale(15 + rng() * 35), life: DL(1.2 + rng() * 2.2) - 0.6, per: DPER,
   col: [1, 0.55 + rng() * 0.15, 0.22], i: 6, len: 0.05, w: 0.16, drag: 0.5, kind: 1, drift: 0 });
-for (var k = 0; k < 60; k++) shard({ p: DC.add(rdir().scale(rng() * 3)), t: TB + rng() * 0.1, life: DL(7) - 0.5, per: DPER, vel: rdir().scale(4 + rng() * 14), drag: 0.15, spin: 1 + rng() * 5,
+for (var k = 0; k < (PHYS ? 0 : 60); k++) shard({ p: DC.add(rdir().scale(rng() * 3)), t: TB + rng() * 0.1, life: DL(7) - 0.5, per: DPER, vel: rdir().scale(4 + rng() * 14), drag: 0.15, spin: 1 + rng() * 5,
   size: 0.2 + rng() * 0.9, heat: 1.0, drift: 0 });
 // smoke trails left by the tumbling chunks (positions follow the chunks' motion law)
-chunks.forEach(function (c, ci) {
+if (!PHYS) chunks.forEach(function (c, ci) {   // (with physics the chunks fly their own paths, so these analytic trails are skipped)
   for (var k = 0; k < (ci === 2 ? 26 : 14); k++) {
     var dt = 0.15 + k * 0.28, p = c.rest.add(c.vel.scale(dt)); if (BREAK + dt + 2.6 > DPER - 0.1) break;
     sprite({ p: p, t: TB + dt, life: 2.6, per: DPER, vel: rdir().scale(0.6), col: [0.09, 0.085, 0.08], i: 0.5, s0: 2, s1: 6, kind: 3, drift: 0 });
@@ -878,14 +1091,214 @@ var mRib = RIB.build(matRibbon); mRib.alphaIndex = 1;
 var mShd = SHD.build(matShard);
 (Q.get('hide') || '').split(',').forEach(function (k) {   // diagnostics only: hide=ribbons,sprites,smoke,streaks,rings,shards
   var m = { ribbons: mRib, sprites: mSpr, smoke: mSmk, streaks: mStk, rings: mRing, shards: mShd }[k]; if (m) m.setEnabled(false); });
+// ---------- physics (max mode): Havok rigid bodies ----------
+// Hulls are animated convex hulls that follow the drift, rocks are static spheres, the destruction's chunks are dynamic convex
+// hulls pushed apart by the blast, and debris (hull hits, breaches, the destruction) comes from three pools of instanced chips
+// that tumble, bounce off hulls, rocks and each other, and drift until reused. No gravity. The world steps at a fixed 1/60 s on
+// the scene clock, so the stills replay it from t = 0 and come out the same every time.
+var PH = null;
+if (PHYS) {
+  await new Promise(function (res) { var sc = document.createElement('script'); sc.src = 'vendor/HavokPhysics_umd.js'; sc.onload = res;
+    sc.onerror = function () { var s2 = document.createElement('script'); s2.src = 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@1.3.10/lib/umd/HavokPhysics_umd.js'; s2.onload = res; s2.onerror = res; document.head.appendChild(s2); };
+    document.head.appendChild(sc); });
+  var hk = null;
+  try { hk = await HavokPhysics({ locateFile: function () { return window.__havokWasm || 'vendor/HavokPhysics.wasm'; } }); }
+  catch (e) { try { hk = await HavokPhysics({ locateFile: function () { return 'https://cdn.jsdelivr.net/npm/@babylonjs/havok@1.3.10/lib/umd/HavokPhysics.wasm'; } }); } catch (e2) { console.error('havok', e2); } }
+  if (hk) {
+    scene.enablePhysics(V3(0, 0, 0), new B.HavokPlugin(false, hk)); scene.physicsEnabled = false;   // stepped by hand on the scene clock
+    var phE = scene.getPhysicsEngine(), MT = B.PhysicsMotionType;
+    PH = { engine: phE, t: 0, hulls: [], debris: [], spawned: [], step: 1 / 60, bodies: 0 };
+    var hullMat = { friction: 0.4, restitution: 0.35 };
+    // hull colliders: convex hull of a thinned copy of each ship's vertices (relative to its layout centre)
+    SHIPS.forEach(function (d) {
+      var P = [], tmp = new B.Vector3(), cnt = 0;
+      d.meshes.forEach(function (m) { var wm = m.getWorldMatrix(), vp = m.getVerticesData(B.VertexBuffer.PositionKind);
+        var stride = Math.max(1, Math.floor(vp.length / 3 / 1500));
+        for (var k = 0; k < vp.length; k += 3 * stride) { B.Vector3.TransformCoordinatesFromFloatsToRef(vp[k], vp[k + 1], vp[k + 2], wm, tmp); P.push(tmp.x - d.x, tmp.y, tmp.z - d.z); cnt++; } });
+      var tm = new B.Mesh('colsrc', scene), vd = new B.VertexData(); vd.positions = P; vd.indices = []; for (var k = 0; k + 2 < cnt; k += 3) vd.indices.push(k, k + 1, k + 2); vd.applyToMesh(tm);
+      var node = new B.TransformNode('col_' + d.fac, scene); node.position.set(d.x, 0, d.z);
+      var body = new B.PhysicsBody(node, MT.ANIMATED, false, scene); body.shape = new B.PhysicsShapeConvexHull(tm, scene); body.shape.material = hullMat; body.disablePreStep = false;
+      tm.dispose(); PH.hulls.push({ node: node, d: d });
+    });
+    // rocks: static spheres
+    ROCKS.forEach(function (rk) { var node = new B.TransformNode('rockcol', scene); node.position.copyFrom(rk.pos);
+      var body = new B.PhysicsBody(node, MT.STATIC, false, scene); body.shape = new B.PhysicsShapeSphere(V3(0, 0, 0), 0.45 * Math.max(rk.scale.x, rk.scale.y, rk.scale.z), scene); body.shape.material = hullMat; });
+    // destruction chunks: convex hulls in world scale (the node is unscaled), animated until the break
+    chunks.forEach(function (c) {
+      var vp = c.mesh.getVerticesData(B.VertexBuffer.PositionKind), P = [], stride = Math.max(1, Math.floor(vp.length / 3 / 800)), cnt = 0;
+      for (var k = 0; k < vp.length; k += 3 * stride) { P.push(vp[k] * dScale, vp[k + 1] * dScale, vp[k + 2] * dScale); cnt++; }
+      var tm = new B.Mesh('chsrc', scene), vd = new B.VertexData(); vd.positions = P; vd.indices = []; for (var k = 0; k + 2 < cnt; k += 3) vd.indices.push(k, k + 1, k + 2); vd.applyToMesh(tm);
+      c.node.position.copyFrom(c.rest);
+      c.body = new B.PhysicsBody(c.node, MT.ANIMATED, false, scene); c.body.shape = new B.PhysicsShapeConvexHull(tm, scene); c.body.shape.material = hullMat;
+      c.body.setMassProperties({ mass: 300 }); c.body.disablePreStep = false; tm.dispose();
+    });
+    // debris pools: chips in three sizes, instanced, sharing one shape per size
+    var chipMat = new B.PBRMaterial('chipMat', scene); chipMat.albedoColor = new B.Color3(0.05, 0.05, 0.055); chipMat.metallic = 0.6; chipMat.roughness = 0.45;
+    chipMat.emissiveColor = new B.Color3(0.25, 0.07, 0.01); chipMat.ambientColor = new B.Color3(1, 1, 1);
+    [[0.22, 90], [0.45, 50], [0.9, 24]].forEach(function (sz, si) {
+      var src = B.MeshBuilder.CreatePolyhedron('chip' + si, { type: 1, size: sz[0], sizeX: 1.3, sizeY: 0.45, sizeZ: 1.0, flat: true }, scene);
+      src.material = chipMat; src.position.y = -5000; src.isPickable = false; src.renderingGroupId = 1;
+      var shape = new B.PhysicsShapeBox(V3(0, 0, 0), B.Quaternion.Identity(), V3(sz[0] * 1.6, sz[0] * 0.55, sz[0] * 1.3), scene); shape.material = { friction: 0.3, restitution: 0.4 };
+      var pool = { list: [], next: 0 };
+      for (var k = 0; k < sz[1]; k++) { var inst = src.createInstance('chip' + si + '_' + k); inst.position.set(k * 4, -3000 - si * 50, 0); inst.rotationQuaternion = B.Quaternion.Identity();
+        var b = new B.PhysicsBody(inst, MT.DYNAMIC, false, scene); b.shape = shape; b.setMassProperties({ mass: sz[0] * 2 }); b.setLinearDamping(0.02); b.setAngularDamping(0.02);
+        pool.list.push({ node: inst, body: b, park: inst.position.clone() }); }
+      PH.debris.push(pool);
+    });
+    PH.bodies = phE.getBodies().length;
+    if (scene.geometryBufferRenderer || depthTex) PH.chipSrc = PH.debris.map(function (pl) { return pl.list[0].node.sourceMesh; });
+  }
+}
+var PV = new B.Vector3(), PW = new B.Vector3();
+function spawnChip(sizeIdx, x, y, z, vx, vy, vz) {
+  var pool = PH.debris[sizeIdx], c = pool.list[pool.next]; pool.next = (pool.next + 1) % pool.list.length;
+  c.node.position.set(x, y, z); c.body.disablePreStep = false; PH.spawned.push(c);
+  PV.set(vx, vy, vz); c.body.setLinearVelocity(PV); PW.set((rng() - 0.5) * 8, (rng() - 0.5) * 8, (rng() - 0.5) * 8); c.body.setAngularVelocity(PW);
+}
+function crossed(t0, t1, start, per) { if (t1 < start) return false; var k = Math.floor((t1 - start) / per); var tk = start + k * per; return tk > t0 && tk <= t1; }
+var PRNG_SAVE = 0;
+function physTick(ta, tb) {   // one fixed step from ta to tb: events, kinematic targets, then the Havok step
+  var dx = drift(tb), i, k;
+  for (i = 0; i < PH.hulls.length; i++) { var h = PH.hulls[i]; h.node.position.x = h.d.x + dx; }
+  // the destruction: break, blast impulse, chips; reset to rest before the next event
+  if (crossed(ta, tb, DT0 + BREAK, DPER)) {
+    for (k = 0; k < chunks.length; k++) { var c = chunks[k]; c.body.setMotionType(B.PhysicsMotionType.DYNAMIC); c.body.disablePreStep = true;
+      PV.copyFrom(c.vel).scaleInPlace(1.4); c.body.setLinearVelocity(PV); PW.copyFrom(c.axis).scaleInPlace(c.w * 2.0); c.body.setAngularVelocity(PW); }
+    for (k = 0; k < 40; k++) { var dd = rdir(), sp = 4 + rng() * 14; spawnChip(k % 3 === 2 ? 2 : k % 2, DC.x + dd.x * 2, DC.y + dd.y * 2, DC.z + dd.z * 2, dd.x * sp, dd.y * sp, dd.z * sp); }
+  }
+  if (crossed(ta, tb, DT0 + D_IN, DPER)) for (k = 0; k < chunks.length; k++) { var c2 = chunks[k];
+    c2.body.setMotionType(B.PhysicsMotionType.ANIMATED); c2.node.position.copyFrom(c2.rest); c2.node.rotationQuaternion.copyFromFloats(0, 0, 0, 1); c2.body.disablePreStep = false;
+    PV.set(0, 0, 0); c2.body.setLinearVelocity(PV); c2.body.setAngularVelocity(PV); }
+  for (i = 0; i < SHIPS.length; i++) {
+    var d = SHIPS[i];
+    // hull hits on the unshielded ships throw 8 chips off the starboard side
+    if (!d.shield && crossed(ta, tb, stagOf(i) + 2.4, PER)) { var hp = d.stb.p, hn = d.stb.n;
+      for (k = 0; k < 8; k++) { var v = rcone(hn, 0.8).scale(3 + rng() * 7); spawnChip(k % 2, hp.x + dx + hn.x * 0.6, hp.y + hn.y * 0.6, hp.z + hn.z * 0.6, v.x + 3, v.y, v.z); } }
+    // each breach sheds a chip every 0.7 s
+    if (crossed(ta, tb, 0.1 + i * 0.11, 0.7)) { var br = d.breach, bn = br.n, v2 = rcone(bn, 0.5).scale(2.5 + rng() * 2.5);
+      spawnChip(0, br.p.x + dx + bn.x * 0.8, br.p.y + bn.y * 0.8, br.p.z + bn.z * 0.8, v2.x + 3, v2.y, v2.z); }
+  }
+  PH.engine._step(tb - ta);
+  for (k = 0; k < PH.spawned.length; k++) PH.spawned[k].body.disablePreStep = true;   // teleports read the node once, then the body drives
+  PH.spawned.length = 0;
+  PH.t = tb;
+}
+function physReset() {   // back to t = 0 (the stills replay from the start)
+  PH.debris.forEach(function (pool) { pool.next = 0; pool.list.forEach(function (c) { c.node.position.copyFrom(c.park); c.node.rotationQuaternion.copyFromFloats(0, 0, 0, 1);
+    c.body.disablePreStep = false; PV.set(0, 0, 0); c.body.setLinearVelocity(PV); c.body.setAngularVelocity(PV); PH.spawned.push(c); }); });
+  chunks.forEach(function (c) { c.body.setMotionType(B.PhysicsMotionType.ANIMATED); c.node.position.copyFrom(c.rest); c.node.rotationQuaternion.copyFromFloats(0, 0, 0, 1); c.body.disablePreStep = false; });
+  PH.engine._step(1 / 60); PH.spawned.forEach(function (c) { c.body.disablePreStep = true; }); PH.spawned.length = 0; PH.t = 0;
+}
+function physTo(t, maxSteps) {   // advance the world to scene time t in fixed steps; returns the ms spent
+  if (!PH) return 0;
+  var t0 = performance.now(), n = 0;
+  if (t < PH.t - 1e-6) physReset();
+  while (PH.t + PH.step <= t + 1e-6 && n < maxSteps) { physTick(PH.t, PH.t + PH.step); n++; }
+  if (n >= maxSteps) PH.t = Math.max(PH.t, t - PH.step);   // too far behind (a stall): skip ahead rather than spiral
+  return performance.now() - t0;
+}
+if (scene.geometryBufferRenderer)   // SSAO2 and SSR: hulls, chunks, plates and rocks only (the effects draw with custom shaders)
+  scene.geometryBufferRenderer.renderList = shipMeshes.concat(chunks.map(function (c) { return c.mesh; })).concat(petals).concat(ROCK_SETS.map(function (r) { return r.mesh; })).concat(PH && PH.chipSrc ? PH.chipSrc : []);
+if (depthTex && ROCK_SETS.length) depthTex.renderList = depthTex.renderList.concat(ROCK_SETS.map(function (r) { return r.mesh; }));
+if (depthTex && PH && PH.chipSrc) depthTex.renderList = depthTex.renderList.concat(PH.chipSrc);
 var fxStats = { sprites: (SPR.pos.length + SMK.pos.length) / 12, streaks: STK.pos.length / 12, rings: RNG.pos.length / 12, ribbon_verts: RIB.pos.length / 3, shards: SHD.pos.length / 72 };
 
 // ---------- one point light per ship for weapon, hit and breach light on its own hull ----------
-SHIPS.forEach(function (d) {
+if (!RICH) SHIPS.forEach(function (d) {
   var L = new B.PointLight('fx_' + d.fac, d.breach.p.clone(), scene);
   L.range = 26; L.falloffType = B.Light.FALLOFF_STANDARD; L.intensity = 0; L.includedOnlyMeshes = d.meshes.slice();
   d.fxLight = L;
 });
+// Rich mode lighting: every muzzle flash, impact, lance, hit, breach fire, pop and burning chunk is an event light. Babylon's
+// standard materials take a fixed number of lights per mesh, so each ship gets a pool of POOL_K point lights (its materials
+// raised to 12 lights: key, fill, destruction flash and the pool), and every frame the POOL_K events that light that hull
+// most (intensity times range falloff from any ship, so a neighbour's impact lights this hull too) are put into its pool.
+var POOL_K = 8, POOL_R = 32, EVMAX = 4096, EV = new Float32Array(EVMAX * 7), evN = 0, EVU = new Uint8Array(EVMAX);
+var LSTAT = { sum: 0, n: 0, max: 0, cur: 0 }, topS = new Float32Array(POOL_K), topI = new Int32Array(POOL_K);
+if (RICH) {
+  SHIPS.forEach(function (d, i) {
+    d.pool = [];
+    for (var k = 0; k < POOL_K; k++) { var L = new B.PointLight('pl_' + i + '_' + k, new B.Vector3(0, -999, 0), scene);
+      L.range = POOL_R; L.falloffType = B.Light.FALLOFF_STANDARD; L.intensity = 0; L.includedOnlyMeshes = d.meshes.slice(); d.pool.push(L); }
+  });
+  shipMeshes.forEach(function (m) { if (m.material) m.material.maxSimultaneousLights = 12; });
+  hegMat.maxSimultaneousLights = 12;
+}
+function addEv(x, y, z, I, c) { if (I <= 0.03 || evN >= EVMAX) return; var o = evN * 7; EV[o] = x; EV[o + 1] = y; EV[o + 2] = z; EV[o + 3] = I; EV[o + 4] = c[0]; EV[o + 5] = c[1]; EV[o + 6] = c[2]; evN++; }
+var LC_FIRE = [1, 0.5, 0.15], KEY_TO_LIGHT = KEY_DIR.scale(-1), HAZE_IDX = new Int32Array(HAZE_N);
+function buildEvents(t, dx, tau, gate) {
+  evN = 0;
+  for (var i = 0; i < SHIPS.length; i++) {
+    var d = SHIPS[i], lt = t - stagOf(i), P;
+    P = d._pBreach; addEv(P.x + dx, P.y, P.z, 0.7 + 0.3 * Math.sin(t * 23 + i) * Math.sin(t * 7.1 + i * 2), LC_BREACH);
+    var dp = ((t - d.popOff) % 3.7 + 3.7) % 3.7;
+    if (t >= d.popOff && dp < 0.3) { P = d._pPop; addEv(P.x + dx, P.y, P.z, 6 * Math.pow(1 - dp / 0.3, 2), LC_POP); }
+    if (d.nozzles.length) { P = d.nozzles[0].p; addEv(P.x + dx - 1.5, P.y, P.z, 0.8 * (0.9 + 0.1 * Math.sin(t * 31 + i)), d.engine); }
+    if (lt < 0) continue;
+    var tu = lt % PER;
+    for (var g = 0; g < 4; g++) {
+      var dt = tu - g * 0.08; if (dt >= 0 && dt < 0.14) { P = d._pGun[g]; addEv(P.x + dx, P.y, P.z, 7 * Math.pow(1 - dt / 0.14, 2), d._cGun); }
+      var di = tu - d._ti[g]; if (di >= 0 && di < 0.2) { P = d._tgt[g]; addEv(P.x + dx, P.y, P.z, 6 * Math.pow(1 - di / 0.2, 2), d._cGun); }
+    }
+    if (tu >= 1.25 && tu < 1.5) { P = d._pCharge; addEv(P.x + dx, P.y, P.z, 3 * Math.pow((tu - 1.25) / 0.25, 2), d.weapon); }
+    if (tu >= 1.5 && tu < 2.2) { var bI = 4 * (0.85 + 0.15 * Math.sin(t * 60)); P = d._pBeam; addEv(P.x + dx, P.y, P.z, bI, d.weapon); P = d._pEnd; addEv(P.x + dx, P.y, P.z, bI * 1.2, d.weapon); }
+    if (tu >= 2.4 && tu < 2.75) { P = d._pHit; addEv(P.x + dx, P.y, P.z, 6 * Math.pow(1 - (tu - 2.4) / 0.35, 2), d._cHit); }
+  }
+  if (gate > 0) for (var c = 0; c < chunks.length; c++) { P = chunks[c].node.position; addEv(P.x, P.y, P.z, 1.6 * gate, LC_FIRE); }
+}
+function assignPool(dx, fade) {
+  var used = 0; EVU.fill(0, 0, evN);
+  for (var i = 0; i < SHIPS.length; i++) {
+    var d = SHIPS[i], cx = d.c.x + dx, cy = d.c.y, cz = d.c.z, half = d.L * 0.5, k, e;
+    for (k = 0; k < POOL_K; k++) { topS[k] = 0; topI[k] = -1; }
+    for (e = 0; e < evN; e++) {
+      var o = e * 7, ex = EV[o] - cx, ey = EV[o + 1] - cy, ez = EV[o + 2] - cz, dist = Math.sqrt(ex * ex + ey * ey + ez * ez) - half;
+      if (dist > POOL_R) continue;
+      var sc = EV[o + 3] * (1 - Math.max(dist, 0) / POOL_R);
+      if (sc <= topS[POOL_K - 1]) continue;
+      for (k = POOL_K - 1; k > 0 && topS[k - 1] < sc; k--) { topS[k] = topS[k - 1]; topI[k] = topI[k - 1]; }
+      topS[k] = sc; topI[k] = e;
+    }
+    for (k = 0; k < POOL_K; k++) {
+      var L = d.pool[k], ei = topI[k];
+      if (ei < 0) { L.intensity = 0; continue; }
+      var o2 = ei * 7; L.position.set(EV[o2], EV[o2 + 1], EV[o2 + 2]); L.intensity = EV[o2 + 3] * fade;
+      L.diffuse.set(EV[o2 + 4], EV[o2 + 5], EV[o2 + 6]); L.specular.copyFrom(L.diffuse);
+      if (!EVU[ei]) { EVU[ei] = 1; used++; }
+    }
+  }
+  LSTAT.cur = used;
+}
+// volumes: one fireball for the destruction, one vent plume per breach, one smoke-ring box per broadside
+var vols = [], VOL_U = ['world', 'viewProjection', 'uTime', 'uCam', 'uInvWorld', 'uType', 'uP', 'uDir', 'uDx', 'uG0', 'uG1', 'uG2', 'uG3', 'uKeyDir', 'uKeyCol', 'uAmb', 'uDepthVals', 'uRes', 'uCamFwd'];
+var CAM_FWD = new B.Vector3();
+function mkVol(name, type, parent) {
+  var box = B.MeshBuilder.CreateBox(name, { size: 1 }, scene), m = mkMat('vm_' + name, 'vol', ['position'], VOL_U, B.Constants.ALPHA_PREMULTIPLIED, { samplers: ['depthMap'] });
+  m.setTexture('depthMap', depthTex); m.setVector2('uDepthVals', DEPTH_VALS); m.setVector2('uRes', RES2); m.setFloat('uType', type);
+  m.setVector3('uKeyDir', KEY_DIR); m.setColor3('uKeyCol', key.diffuse.scale(KEY)); m.setColor3('uAmb', new B.Color3(0.25 * KEY, 0.25 * KEY, 0.25 * KEY));
+  m.setVector3('uCamFwd', CAM_FWD); m.setFloat('uDx', 0); m.setVector3('uDir', V3(0, 0, 1));
+  ['uG0', 'uG1', 'uG2', 'uG3'].forEach(function (u) { m.setVector3(u, V3(0, 0, 0)); });
+  m.depthFunction = B.Constants.ALWAYS; m.backFaceCulling = true; m.cullBackFaces = false;   // draw the back faces, test depth in the shader
+  box.material = m; box.isPickable = false; box.renderingGroupId = 1; box.alwaysSelectAsActiveMesh = true; box.alphaIndex = 1;
+  var v = { mesh: box, mat: m, inv: new B.Matrix(), P: new B.Vector4(0, 0, 0, 0) }; vols.push(v); allFx.push(m);
+  return v;
+}
+var volBoom = null;
+if (RICH) {
+  volBoom = mkVol('vol_boom', 0); volBoom.mesh.position.copyFrom(DC); volBoom.mesh.scaling.setAll(44); volBoom.P.w = 0.16;
+  SHIPS.forEach(function (d, i) {
+    var br = d.breach, hole = d.L / 10, v = mkVol('vol_vent_' + i, 1);
+    v.mesh.scaling.set(hole * 2.4, hole * 6, hole * 2.4); v.mesh.rotationQuaternion = new B.Quaternion();
+    B.Quaternion.FromUnitVectorsToRef(V3(0, 1, 0), br.n.normalizeToNew(), v.mesh.rotationQuaternion);
+    v.mesh.position.copyFrom(br.p.add(br.n.scale(hole * 3 - 0.1))); v.mesh.setParent(d.pivot); v.P.set(0.6, 0, i * 1.7, 0.3); v.ship = d;
+    var gmin = d.guns[0].p.clone(), gmax = d.guns[0].p.clone(); d.guns.forEach(function (g) { gmin.minimizeInPlace(g.p); gmax.maximizeInPlace(g.p); });
+    var dir = d._fireDir || V3(0, 0, 1), r = mkVol('vol_rings_' + i, 2), mid = gmin.add(gmax).scale(0.5).add(dir.scale(5.5));
+    r.mesh.position.copyFrom(mid); r.mesh.scaling.set(gmax.x - gmin.x + 14, 14, 14); r.P.set(stagOf(i), 1, 0, 0.35); r.ship = d; r.base = mid.clone();
+    r.mat.setVector3('uDir', dir); ['uG0', 'uG1', 'uG2', 'uG3'].forEach(function (u, k) { r.mat.setVector3(u, d.guns[k].p.add(dir.scale(1.0))); });
+  });
+  // the depth pass sees the hulls, chunks and torn plates only (effects are transparent, the sky is far)
+  depthTex.renderList = shipMeshes.concat(chunks.map(function (c) { return c.mesh; })).concat(petals);
+}
 
 // ---------- per-frame state for clock t (no allocation per frame: everything below writes into preallocated objects) ----------
 var LC_BREACH = [1, 0.45, 0.12], LC_POP = [1, 0.6, 0.3], LC_HULL = [1, 0.6, 0.3];
@@ -898,7 +1311,7 @@ SHIPS.forEach(function (d) {
 });
 shields.forEach(function (sh) { sh.hitW = sh.hit.clone(); });
 function shipLight(d, i, t) {
-  var lt = t - i * STAG, best = 0.7 + 0.3 * Math.sin(t * 23 + i) * Math.sin(t * 7.1 + i * 2), p = d._pBreach, c = LC_BREACH, I;
+  var lt = t - stagOf(i), best = 0.7 + 0.3 * Math.sin(t * 23 + i) * Math.sin(t * 7.1 + i * 2), p = d._pBreach, c = LC_BREACH, I;
   var dp = ((t - d.popOff) % 3.7 + 3.7) % 3.7;
   if (t >= d.popOff && dp < 0.3) { I = 6 * Math.pow(1 - dp / 0.3, 2); if (I > best) { best = I; p = d._pPop; c = LC_POP; } }
   if (lt >= 0) {
@@ -916,6 +1329,7 @@ function update(t) {
     var d = SHIPS[i];
     d.pivot.position.x = d.x + dx;
     for (j = 0; j < d.meshes.length; j++) d.meshes[j].visibility = fade;
+    if (RICH) continue;
     shipLight(d, i, t);
     var L = d.fxLight; L.position.copyFrom(d._lp); L.position.x += dx; L.intensity = d._lI * fade;
     L.diffuse.set(d._lc[0], d._lc[1], d._lc[2]); L.specular.copyFrom(L.diffuse);
@@ -931,7 +1345,8 @@ function update(t) {
   if (broke) { heat = 0.35 + 0.65 * Math.exp(-bdt * 0.8); gate = Math.min(1, Math.max(0, (D_OUT - tau) / 0.8)); }
   for (i = 0; i < chunks.length; i++) {
     var c = chunks[i];
-    if (broke) { c.node.position.copyFrom(c.vel).scaleInPlace(bdt).addInPlace(c.rest); B.Quaternion.RotationAxisToRef(c.axis, c.w * bdt, c.node.rotationQuaternion); }
+    if (PHYS) { /* physics owns the chunk transforms (physStep) */ }
+    else if (broke) { c.node.position.copyFrom(c.vel).scaleInPlace(bdt).addInPlace(c.rest); B.Quaternion.RotationAxisToRef(c.axis, c.w * bdt, c.node.rotationQuaternion); }
     else { c.node.position.copyFrom(c.rest); c.node.rotationQuaternion.copyFromFloats(0, 0, 0, 1); }
     c.mesh.visibility = vis; c.mesh.isVisible = vis > 0.01;
     // the edge and fire batches stay active all the time (compiled up front) and are switched off by their uniforms
@@ -941,13 +1356,132 @@ function update(t) {
   if (tau >= 0 && tau < BREAK) fl = 1.2 * Math.abs(Math.sin(tau * 40)) * (tau / BREAK);
   else if (tau >= BREAK) fl = 9 * Math.exp(-bdt * 5) + 1.6 * Math.exp(-bdt * 0.9);
   flash.intensity = fl;
+  boardUpdate(t);
+  if (MAXM) cam.position.addInPlace(shakeAt(t));
+  if (RICH) {
+    buildEvents(t, dx, tau, gate); assignPool(dx, fade);
+    if (MAXM) {
+      B.Vector3.TransformNormalToRef(KEY_TO_LIGHT, cam.getViewMatrix(), LIGHT_V); LIGHT_V.normalize();
+      updateRocks(t);
+      // the haze's 8 lights: the destruction flash plus the 7 brightest events
+      HAZE_L.fill(0); HAZE_L[0] = DC.x; HAZE_L[1] = DC.y; HAZE_L[2] = DC.z; HAZE_L[3] = fl; HAZE_C[0] = 1; HAZE_C[1] = 0.85; HAZE_C[2] = 0.62;
+      for (var hk = 1; hk < HAZE_N; hk++) { var bi = -1, bI = 0;
+        for (var e = 0; e < evN; e++) { var I = EV[e * 7 + 3]; if (I > bI) { var dup = false; for (var q = 1; q < hk; q++) if (HAZE_IDX[q] === e) dup = true; if (!dup) { bI = I; bi = e; } } }
+        HAZE_IDX[hk] = bi; if (bi < 0) continue; var o = bi * 7;
+        HAZE_L[hk * 4] = EV[o]; HAZE_L[hk * 4 + 1] = EV[o + 1]; HAZE_L[hk * 4 + 2] = EV[o + 2]; HAZE_L[hk * 4 + 3] = EV[o + 3] * fade;
+        HAZE_C[hk * 4] = EV[o + 4]; HAZE_C[hk * 4 + 1] = EV[o + 5]; HAZE_C[hk * 4 + 2] = EV[o + 6]; }
+    }
+    CAM_FWD.copyFrom(cam.getTarget()).subtractInPlace(cam.position).normalize();
+    var bAge = tau >= BREAK ? tau - BREAK : -1;
+    volBoom.P.x = bAge; volBoom.P.y = bAge < 0 ? 0 : Math.min(1, bAge / 0.15) * Math.max(0, Math.min(1, (D_OUT - 0.5 - bAge) / 1.0));
+    volBoom.mesh.isVisible = bAge >= 0 && volBoom.P.y > 0;
+    for (k = 0; k < vols.length; k++) {
+      var v = vols[k];
+      if (v.base) { v.mesh.position.x = v.base.x + dx; v.mat.setFloat('uDx', dx); v.P.y = fade; }
+      else if (v.ship) v.P.x = 0.6 * fade;
+      v.mesh.computeWorldMatrix(true); v.mesh.getWorldMatrix().invertToRef(v.inv);
+      v.mat.setMatrix('uInvWorld', v.inv); v.mat.setVector4('uP', v.P);
+    }
+  }
   for (k = 0; k < allFx.length; k++) { allFx[k].setFloat('uTime', t); allFx[k].setVector3('uCam', cam.position); }
 }
 function breachPose() { cam.position.set(12, 10, 52); cam.setTarget(V3(0, 2, 30)); }
+// presentation: screen shake scaled by weapon weight (broadside 0.25 per gun, lance 0.5, hit 0.6, destruction 2.5) and by
+// distance to the camera; a deterministic function of t, so the stills shake the same way every time
+var SHAKE = new B.Vector3();
+function shakeAt(t) {
+  var S = 0, cp = cam.position;
+  for (var i = 0; i < Math.min(SHIPS.length, 24); i++) {
+    var d = SHIPS[i], lt = t - stagOf(i); if (lt < 0) continue; var tu = lt % PER, w = 0;
+    for (var g = 0; g < 4; g++) { var dt = tu - g * 0.08; if (dt >= 0 && dt < 0.25) w += 0.25 * (1 - dt / 0.25); }
+    if (tu >= 1.5 && tu < 1.8) w += 0.5 * (1 - (tu - 1.5) / 0.3);
+    if (tu >= 2.4 && tu < 2.8) w += 0.6 * (1 - (tu - 2.4) / 0.4);
+    if (w > 0) { var ddx = d.x + drift(t) - cp.x, ddz = d.z - cp.z; S += w / (1 + Math.sqrt(ddx * ddx + cp.y * cp.y + ddz * ddz) / 50); }
+  }
+  var tau = t >= DT0 ? (t - DT0) % DPER : -1;
+  if (tau >= BREAK && tau < BREAK + 1.2) { var q = 1 - (tau - BREAK) / 1.2, ex = DC.x - cp.x, ey = DC.y - cp.y, ez = DC.z - cp.z; S += 2.5 * q * q / (1 + Math.sqrt(ex * ex + ey * ey + ez * ez) / 50); }
+  var A = Math.min(S, 3) * (BOARD ? 0.5 : 0.35);
+  SHAKE.set(A * (Math.sin(t * 37) * 0.6 + Math.sin(t * 61 + 1) * 0.4), A * (Math.sin(t * 43 + 2) * 0.6 + Math.sin(t * 71) * 0.4), A * Math.sin(t * 53 + 3) * 0.5);
+  return SHAKE;
+}
+
+// ---------- the game slice (board=1): tactical camera over a hex board, movement range, hover outline, selection ring, UI ----------
+// Flat-topped hexes 20 units corner to corner (circumradius 10), 20 x 14, centred on the formation at y = -6.
+function loadScript(a, b) { return new Promise(function (res) { var sc = document.createElement('script'); sc.src = a; sc.onload = res;
+  sc.onerror = function () { var s2 = document.createElement('script'); s2.src = b; s2.onload = res; s2.onerror = res; document.head.appendChild(s2); }; document.head.appendChild(sc); }); }
+var BRD = null, BOARD_DIST = 300, BOARD_PITCH = 55 * Math.PI / 180, BOARD_LOOK = new B.Vector3(0, -6, 0);
+function boardPose() { cam.position.set(0, -6 + BOARD_DIST * Math.sin(BOARD_PITCH), -BOARD_DIST * Math.cos(BOARD_PITCH)); cam.setTarget(BOARD_LOOK); }
+if (BOARD) {
+  var HR = 10, HCOLS = 20, HROWS = 14, HW = 1.5 * HR, HHt = Math.sqrt(3) * HR;
+  var HOX = -(HCOLS - 1) * HW / 2, HOZ = -((HROWS - 1) * HHt + HHt / 2) / 2;   // world position of cell (0, 0)'s centre
+  B.Effect.ShadersStore.boardVertexShader = 'precision highp float; attribute vec3 position; uniform mat4 world; uniform mat4 viewProjection; varying vec2 vXZ;\nvoid main(){ vec4 w = world * vec4(position, 1.0); vXZ = w.xz; gl_Position = viewProjection * w; }';
+  B.Effect.ShadersStore.boardFragmentShader = [
+    'precision highp float; varying vec2 vXZ; uniform vec2 uO; uniform float uR; uniform vec2 uSel; uniform float uRange; uniform float uTime;',
+    'vec2 cubeRound(vec2 qr){ vec3 c = vec3(qr.x, qr.y, -qr.x - qr.y); vec3 r = floor(c + 0.5); vec3 d = abs(r - c);',
+    '  if (d.x > d.y && d.x > d.z) r.x = -r.y - r.z; else if (d.y > d.z) r.y = -r.x - r.z; return r.xy; }',
+    'void main(){ vec2 p = vXZ - uO; vec2 qr = vec2(2.0 / 3.0 * p.x, -1.0 / 3.0 * p.x + 0.57735027 * p.y) / uR; vec2 cell = cubeRound(qr);',
+    '  float col = cell.x, row = cell.y + (cell.x - mod(cell.x, 2.0)) * 0.5;',
+    '  if (col < -0.5 || col > 19.5 || row < -0.5 || row > 13.5) discard;',
+    '  vec2 ctr = vec2(1.5 * uR * cell.x, 1.7320508 * uR * (cell.y + cell.x * 0.5)); vec2 lp = abs(p - ctr);',
+    '  float sd = max(lp.y, lp.x * 0.8660254 + lp.y * 0.5) - 0.8660254 * uR;',   // flat-topped hexagon, negative inside
+    '  float aa = fwidth(sd); float line = 1.0 - smoothstep(aa * 0.6, aa * 1.8, -sd);',
+    '  vec2 dd = cell - uSel; float hd = (abs(dd.x) + abs(dd.y) + abs(dd.x + dd.y)) * 0.5; float inR = step(hd, uRange + 0.1);',
+    '  float edgeR = inR * (1.0 - smoothstep(aa * 2.0, aa * 6.0, -sd)) * step(uRange - 0.1, hd);',
+    '  vec3 c = vec3(0.04, 0.06, 0.09) * 0.4; float a = 0.22;',
+    '  c = mix(c, vec3(0.20, 0.45, 0.85) * 0.35, inR * 0.85); a = mix(a, 0.42, inR);',
+    '  c += vec3(0.45, 0.65, 1.0) * line * 0.55 + vec3(0.4, 0.8, 1.0) * edgeR * 1.2; a = max(a, line * 0.7);',
+    '  gl_FragColor = vec4(c * a, a); }'].join('\n');
+  var bmat = mkMat('boardMat', 'board', ['position'], ['world', 'viewProjection', 'uO', 'uR', 'uSel', 'uRange', 'uTime'], B.Constants.ALPHA_PREMULTIPLIED);
+  bmat.setVector2('uO', new B.Vector2(HOX, HOZ)); bmat.setFloat('uR', HR); bmat.setFloat('uRange', 3); bmat.setVector2('uSel', new B.Vector2(0, 0)); allFx.push(bmat);
+  var bplane = B.MeshBuilder.CreateGround('board', { width: HCOLS * HW + HR * 2, height: (HROWS + 1) * HHt + HR }, scene);
+  bplane.position.y = -6; bplane.material = bmat; bplane.renderingGroupId = 1; bplane.alphaIndex = -1; bplane.isPickable = false; bplane.alwaysSelectAsActiveMesh = true;
+  var axialOf = function (x, z, out) { var px = x - HOX, pz = z - HOZ, q = 2 / 3 * px / HR, r = (-px / 3 + 0.57735027 * pz) / HR;
+    var cx = q, cz = r, cy = -q - r, rx = Math.round(cx), ry = Math.round(cy), rz = Math.round(cz), dx = Math.abs(rx - cx), dy = Math.abs(ry - cy), dz = Math.abs(rz - cz);
+    if (dx > dy && dx > dz) rx = -ry - rz; else if (dy > dz) ry = -rx - rz; else rz = -rx - ry; out.x = rx; out.y = rz; return out; };
+  // selection ring, hover outline, GUI labels and bars (Babylon GUI, rendered at the canvas resolution, so sharp at 4K)
+  await loadScript('vendor/babylon.gui.min.js', 'https://cdn.jsdelivr.net/npm/babylonjs-gui@8.20.0/babylon.gui.min.js');
+  var ringM = new B.StandardMaterial('ringMat', scene); ringM.disableLighting = true; ringM.emissiveColor = new B.Color3(0.45, 0.95, 1.0);
+  var ring = B.MeshBuilder.CreateTorus('selRing', { diameter: 26, thickness: 0.7, tessellation: 96 }, scene); ring.material = ringM; ring.isVisible = false; ring.isPickable = false; ring.renderingGroupId = 1;
+  BRD = { sel: -1, hover: -1, ring: ring, frame: 0, click: null, clickResult: null, axial: new B.Vector2(), sel2: new B.Vector2() };
+  var GUI = BABYLON.GUI, ui = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui', true, scene); ui.idealHeight = 1440; ui.useSmallestIdeal = false;
+  var NAMES = ['Ascendant', 'Super-dreadnought', 'Pyre-Barge', 'Bio-titan', 'Ark', 'Tomb-ark'], HULLV = [0.82, 0.64, 0.47, 0.9, 0.73, 0.58], SHV = [0.7, 0.35, 0.2, 0, 0.85, 0];
+  SHIPS.slice(0, 6).forEach(function (d, i) {
+    var box = new GUI.Rectangle('lab' + i); box.width = '190px'; box.height = '58px'; box.cornerRadius = 4; box.thickness = 1; box.color = 'rgba(150,200,255,0.55)'; box.background = 'rgba(6,10,18,0.62)';
+    ui.addControl(box); box.linkWithMesh(d.pivot); box.linkOffsetY = -80;
+    var name = new GUI.TextBlock('nm' + i, NAMES[i]); name.fontFamily = 'Segoe UI, Arial, sans-serif'; name.fontSize = 17; name.color = '#e8f0ff'; name.top = '-14px'; name.height = '22px'; box.addControl(name);
+    var bar = function (y, v, colr) { var bg = new GUI.Rectangle(); bg.width = '160px'; bg.height = '7px'; bg.top = y; bg.thickness = 0; bg.background = 'rgba(255,255,255,0.12)'; box.addControl(bg);
+      var fg = new GUI.Rectangle(); fg.width = (160 * v) + 'px'; fg.height = '7px'; fg.thickness = 0; fg.background = colr; fg.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT; bg.addControl(fg); };
+    bar('8px', HULLV[i], '#7fd46b'); if (d.shield) bar('19px', SHV[i], '#5aa8ff');
+  });
+  var setHover = function (i) { if (BRD.hover === i) return; if (BRD.hover >= 0) SHIPS[BRD.hover].meshes.forEach(function (m) { m.renderOutline = false; });
+    BRD.hover = i; if (i >= 0) SHIPS[i].meshes.forEach(function (m) { m.renderOutline = true; m.outlineColor = new B.Color3(0.5, 0.9, 1.0); m.outlineWidth = 0.012; }); };
+  var shipAt = function (x, y) { var pk = scene.pick(x, y, function (m) { for (var i = 0; i < 6; i++) if (SHIPS[i].meshes.indexOf(m) >= 0) return true; return false; });
+    if (!pk || !pk.hit) return -1; for (var i = 0; i < 6; i++) if (SHIPS[i].meshes.indexOf(pk.pickedMesh) >= 0) return i; return -1; };
+  var select = function (i) { BRD.sel = i; ring.isVisible = i >= 0; BRD.click = { frame: BRD.frame, t: performance.now(), i: i }; BRD.clickResult = null; };
+  scene.attachControl();
+  scene.onPointerObservable.add(function (pi) {
+    if (pi.type === B.PointerEventTypes.POINTERMOVE) setHover(shipAt(scene.pointerX, scene.pointerY));
+    else if (pi.type === B.PointerEventTypes.POINTERDOWN) select(shipAt(scene.pointerX, scene.pointerY));
+  });
+  // click to visible ring: count rendered frames from the click until a frame that drew the ring, then wait one more
+  // animation frame for it to reach the screen
+  scene.onAfterRenderObservable.add(function () { BRD.frame++;
+    if (BRD.click && !BRD.clickResult && ring.isVisible && scene.getActiveMeshes().indexOf(ring) >= 0) {
+      var c = BRD.click, fr = BRD.frame - c.frame; requestAnimationFrame(function () { BRD.clickResult = { frames: fr + 1, ms: Math.round((performance.now() - c.t) * 10) / 10, ship: c.i }; }); BRD.click = null; } });
+  BRD.setHover = setHover; BRD.select = select;
+  window.__shipScreen = function (i) { var d = SHIPS[i], p = B.Vector3.Project(V3(d.x + drift(BRD.t || 0), 0, d.z), B.Matrix.Identity(), scene.getTransformMatrix(), cam.viewport.toGlobal(RW, RH)); return [p.x, p.y]; };
+  window.__clickToVisible = function () { return BRD.clickResult; };
+}
+function boardUpdate(t) {   // ring and movement range follow the selected ship as it drifts across the hexes
+  if (!BRD) return; BRD.t = t; var dx = drift(t);
+  if (BRD.sel >= 0) { var d = SHIPS[BRD.sel]; BRD.ring.position.set(d.x + dx, -5.6, d.z); axialOf(d.x + dx, d.z, BRD.sel2); bmat.setVector2('uSel', BRD.sel2); bmat.setFloat('uRange', 3); }
+  else bmat.setFloat('uRange', -1);
+}
 
 // ---------- ready, first frame, load time ----------
 say('compiling');
-battlePose(0); update(0);
+if (BOARD) { boardPose(); BRD.select(1); BRD.click = null; } else battlePose(0);
+update(0);
 var readyGuard = setTimeout(function () {
   var bad = scene.meshes.filter(function (m) { return m.isEnabled() && m.material && !m.material.isReady(m); }).map(function (m) { return m.name; });
   window.__error = 'scene not ready after 240 s (shader compile error?): ' + bad.slice(0, 8).join(', ');
@@ -968,9 +1502,12 @@ for (var wi = 0; wi < WARM_TIMES.length; wi++) {
   await new Promise(function (res) { scene.executeWhenReady(function () { res(); }); });
   scene.render();
 }
+if (PH) { for (var ci2 = 0; ci2 < PH.chipSrc.length; ci2++) await new Promise(function (res) { chipMat.forceCompilation(PH.chipSrc[ci2], function () { res(); }, { useInstances: true }); });
+  physReset(); }
 try { engine._gl.finish(); } catch (e) {}   // let the GPU work off the pre-warm frames before anything is timed
 var warmS = (performance.now() - warmT0) / 1000;
-battlePose(0); update(0);
+if (BOARD) boardPose(); else battlePose(0);
+update(0);
 msg.style.display = 'none';
 
 var gl = engine._gl, glInfo = {};
@@ -995,39 +1532,66 @@ var DEBUG = { debug_top: [[0, 190, 0.01], [0, 0, 0], 0.5], debug_heg: [[-25, 14,
 (function () { var bp = SHIPS[1].breach.p, n = SHIPS[1].breach.n, dx = drift(3.0);
   DEBUG.debug_breach = [[bp.x + dx + n.x * 9 + 2, bp.y + n.y * 9 + 3, bp.z + n.z * 9], [bp.x + dx, bp.y, bp.z], 3.0];
   DEBUG.debug_breach2 = [[bp.x + dx + n.x * 9 + 2, bp.y + n.y * 9 + 3, bp.z + n.z * 9], [bp.x + dx, bp.y, bp.z], 2.2]; })();
+// max mode: one hero close-up per flagship at t = 3.0, camera (x - 8, 6, z +- 20) by row, looking at the drifted centre
+var HEROES = {};
+if (MAXM) SHIPS.slice(0, 6).forEach(function (d) { var code = d.files[0].replace(/(_shell)?\.glb$/, ''), dx3 = drift(3.0);
+  HEROES['hero_' + code] = [[d.x + dx3 - 8, 6, d.z + (d.z > 0 ? 20 : -20)], [d.x + dx3, 0, d.z], 3.0]; });
+var PREFIX = BOARD ? 'board_' : MAXM ? 'max_' : RICH ? 'rich_' : '';
+if (BOARD) { SHOTS = { '03': [3.0, 'board'], '126': [12.6, 'board'] }; HEROES = {}; }
 var benchRunning = false;
 window.__shot = function (name) {
-  var s = SHOTS[name], dbgv = DEBUG[name]; if ((!s && !dbgv) || benchRunning) return null;
+  var base = PREFIX && name.indexOf(PREFIX) === 0 ? name.slice(PREFIX.length) : name;
+  var s = SHOTS[base], dbgv = DEBUG[base] || HEROES[name]; if ((!s && !dbgv) || benchRunning) return null;
   engine.stopRenderLoop();
-  var t;
+  var t; STILL_POSE = true;
   if (dbgv) { cam.position.fromArray(dbgv[0]); cam.setTarget(B.Vector3.FromArray(dbgv[1])); t = dbgv[2]; }
-  else { t = s[0]; if (s[1] === 'battle') battlePose(t); else if (s[1] === 'close') closePose(); else breachPose(); }
+  else { t = s[0]; if (s[1] === 'battle') battlePose(t); else if (s[1] === 'close') closePose(); else if (s[1] === 'board') boardPose(); else breachPose(); }
+  STILL_POSE = false;
+  if (BOARD) { BRD.select(1); BRD.click = null; BRD.setHover(2); }
+  if (MAXM && !BOARD) {   // presentation: depth of field on the close-ups, focused on the look-at point
+    var dof = (s && (s[1] === 'close' || s[1] === 'breach')) || !!HEROES[name];
+    pipe.depthOfFieldEnabled = dof;
+    if (dof) { pipe.depthOfFieldBlurLevel = B.DepthOfFieldEffectBlurLevel.Medium; pipe.depthOfField.focalLength = 80; pipe.depthOfField.fStop = 2.0;
+      pipe.depthOfField.focusDistance = B.Vector3.Distance(cam.position, cam.getTarget()) * 1000; }
+  }
+  if (PH) physTo(t, 1e6);   // replay the physics from t = 0 on the fixed clock
   update(t);
-  scene.render(); scene.render();
+  for (var f = 0; f < (taa ? 16 : 2); f++) scene.render();   // TAA accumulates its jittered samples while the camera holds
   return canvas.toDataURL('image/png');
 };
-window.__shotNames = Object.keys(SHOTS);
+window.__shotNames = Object.keys(SHOTS).map(function (n) { return PREFIX + n; }).concat(Object.keys(HEROES));
 window.__debugNames = Object.keys(DEBUG);
 
 // ---------- benchmark ----------
+// hitch forensics: every shader compile and every JS heap drop (a garbage collection) during the bench, with its time
+var COMPILES = [], GCS = [], benchT0 = -1;
+(function () { var orig = engine.createEffect.bind(engine);
+  engine.createEffect = function () { var before = Object.keys(engine._compiledEffects || {}).length; var e = orig.apply(null, arguments);
+    if (benchT0 >= 0 && Object.keys(engine._compiledEffects || {}).length > before && COMPILES.length < 200) {
+      var nm = arguments[0]; COMPILES.push([Math.round((performance.now() - benchT0)) / 1000, String(nm && (nm.vertex || nm.vertexElement || nm) || '').slice(0, 40)]); }
+    return e; }; })();
+var PHYS_STEP_MS = 0;   // set by the physics step when it runs (push round)
 function runBench() {
   benchRunning = true;
-  var inst = null;
+  var inst = null, heapLast = 0, pm = performance.memory;
   if (GPUTIME) { try { inst = new B.EngineInstrumentation(engine); inst.captureGPUFrameTime = true; } catch (e) { inst = null; } }
-  var CAP = 2000000, ft = new Float32Array(CAP), fs = new Float32Array(CAP), fw = new Float32Array(CAP), n = 0, gsum = 0, gn = 0, lastWork = 0;
+  var CAP = 2000000, ft = new Float32Array(CAP), fs = new Float32Array(CAP), fw = new Float32Array(CAP), fp = new Float32Array(CAP), n = 0, gsum = 0, gn = 0, lastWork = 0;
   var t0 = -1, last = -1;
   engine.runRenderLoop(function () {
     var now = performance.now();
-    if (t0 < 0) t0 = now;
+    if (t0 < 0) { t0 = now; benchT0 = now; }
     var t = (now - t0) / 1000;
+    if (pm) { var hp = pm.usedJSHeapSize; if (heapLast && hp < heapLast - 524288 && GCS.length < 500) GCS.push([Math.round(t * 1000) / 1000, Math.round((heapLast - hp) / 1048576 * 10) / 10]); heapLast = hp; }
     // count a frame only if the gap it closes started after the warm-up (so a stall inside the warm-up is not counted)
     if (last >= 0 && (last - t0) / 1000 > WARMUP && t <= WARMUP + SECONDS && n < CAP) {
-      ft[n] = now - last; fs[n] = t - WARMUP; fw[n] = lastWork; n++;
+      ft[n] = now - last; fs[n] = t - WARMUP; fw[n] = lastWork; fp[n] = PHYS_STEP_MS; n++;
+      if (RICH) { LSTAT.sum += LSTAT.cur; LSTAT.n++; if (LSTAT.cur > LSTAT.max) LSTAT.max = LSTAT.cur; }
       if (inst && inst.gpuFrameTimeCounter && inst.gpuFrameTimeCounter.lastSecAverage > 0) { gsum += inst.gpuFrameTimeCounter.current * 1e-6; gn++; }
     }
     last = now;
     if (t > WARMUP + SECONDS) { engine.stopRenderLoop(); benchRunning = false; finish(); return; }
-    if (t < WARMUP) battlePose(0); else battlePose(t - WARMUP);
+    if (BOARD) boardPose(); else if (t < WARMUP) battlePose(0); else battlePose(t - WARMUP);
+    if (PH) PHYS_STEP_MS = physTo(t, 6);
     update(t);
     scene.render();
     lastWork = performance.now() - now;   // JS time spent in this frame's update and render calls (CPU side)
@@ -1053,22 +1617,37 @@ function runBench() {
     // fw is the JS work of the frame before the gap: a spike with small work was spent waiting in the browser's frame pipeline
     var spikes = idx.slice(0, 15).map(function (q4) { return [r3(fs[q4] + WARMUP), r3(ft[q4]), r3(fw[q4])]; });
     var wsorted = Array.prototype.slice.call(fw, 0, n).sort(function (a, b) { return b - a; }), wk = 0; for (var j2 = 0; j2 < k; j2++) wk += wsorted[j2] || 0;
+    // vsync runs: the display period from the median gap (snapped to a common rate), and frames dropped against it
+    var vs = null;
+    if (VSYNC && n) { var rates = [30, 50, 60, 75, 90, 100, 120, 144, 165, 240], hz = 1000 / med;
+      rates.forEach(function (r) { if (Math.abs(r - hz) / r < 0.08) hz = r; });
+      var per0 = 1000 / hz, drop = 0; for (var q5 = 0; q5 < n; q5++) drop += Math.max(0, Math.round(ft[q5] / per0) - 1);
+      vs = { refresh_hz: r3(hz), dropped_frames: drop, dropped_pct: r3(100 * drop / (n + drop)) }; }
+    var pArr = Array.prototype.slice.call(fp, 0, n), pSum = pArr.reduce(function (a, b) { return a + b; }, 0), pMax = pArr.reduce(function (a, b) { return Math.max(a, b); }, 0);
     window.__result = {
-      engine: 'babylon', renderer: engine.webGLVersion >= 2 ? 'webgl2' : 'webgl1', mode: STRESS ? 'stress' : 'main',
+      engine: 'babylon', renderer: engine.webGLVersion >= 2 ? 'webgl2' : 'webgl1', mode: MODE_NAME,
       width: engine.getRenderWidth(), height: engine.getRenderHeight(), seconds: SECONDS, frames: n,
       avg_ms: r3(sum / n), p99_ms: r3(worst / k), max_ms: r3(sorted[0]), fps_avg: r3(n / (sum / 1000)),
       load_s: r3(loadS), gpu_mem_mb: null,
       notes: '',
+      vsync: VSYNC, refresh_hz: vs ? vs.refresh_hz : null, dropped_frames: vs ? vs.dropped_frames : null, dropped_pct: vs ? vs.dropped_pct : null,
+      physics_step_avg_ms: pMax > 0 ? r3(pSum / n) : null, physics_step_max_ms: pMax > 0 ? r3(pMax) : null,
       _extra: { median_ms: r3(med), gpu_frame_ms_avg: gn ? r3(gsum / gn) : null, gl: glInfo, msaa: MSAA, ships: SHIPS.length,
         ship_tris: tris, warmup_s: WARMUP, prewarm_s: r3(warmS), lib: window.__libSource, fx: fxStats,
         work_p99_ms: r3(wk / k), work_max_ms: r3(wsorted[0]),
+        rich_lights_avg: RICH && LSTAT.n ? r3(LSTAT.sum / LSTAT.n) : null, rich_lights_max: RICH ? LSTAT.max : null, point_lights: scene.lights.length,
+        env: ENV.ok ? { sky: ENV.sky, rocks: ROCKS.length } : null, physics_bodies: PH ? PH.bodies : null,
         trace: { columns: ['second', 'frames', 'avg_ms', 'p99_ms', 'max_ms', 'frames_over_16.7ms', 'max_js_work_ms'], per_second: per,
-          worst_frames: { columns: ['scene_t_s', 'frame_ms', 'js_work_ms'], rows: spikes } } }
+          worst_frames: { columns: ['scene_t_s', 'frame_ms', 'js_work_ms'], rows: spikes },
+          shader_compiles: { columns: ['bench_t_s', 'effect'], rows: COMPILES }, heap_drops: { columns: ['bench_t_s', 'MB'], rows: GCS } } }
     };
   }
 }
+function idleLoop() { var t0 = performance.now(); engine.runRenderLoop(function () { var t = (performance.now() - t0) / 1000;
+  boardPose(); if (PH) physTo(t, 6); update(t); scene.render(); }); }
+window.__idle = function () { if (BOARD) idleLoop(); return !!BOARD; };
 window.__ready = true;
-if (MODE === 'bench') runBench();
+if (MODE === 'bench') runBench(); else if (BOARD) idleLoop();
 };
 </script>
 </body>
