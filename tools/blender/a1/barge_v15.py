@@ -128,7 +128,8 @@ def build(seed=19):
     # step 3 (Oct 25): Corsair patchwork (art direction: "large patches of stolen Hegemony grey and bare metal, the patchwork is the
     # identity"). Each plate picks its paint from a weighted list keyed by its position, so the pick is stable between builds.
     RUST_LT = (.16, .055, .022)
-    PATCH = [(RUST, .44), (RUST_LT, .14), (RUST_DK, .10), (HEG, .14), (BARE, .09), (BONE, .06), (OCHRE, .03)]
+    HEG_LT, BARE_LT = (.24, .25, .26), (.23, .22, .21)  # lighter than the parts' grey: plates must show in the game's darker light
+    PATCH = [(RUST, .42), (RUST_LT, .14), (RUST_DK, .10), (HEG_LT, .15), (BARE_LT, .10), (BONE, .06), (OCHRE, .03)]
     def base(p):
         k = random.Random(hash((round(p.x, 3), round(p.y, 3), round(p.z, 3))) & 0xffffffff).random(); acc = 0
         for c, w in PATCH:
@@ -138,13 +139,15 @@ def build(seed=19):
     detail_lib.detail_pass(shells, others, tag, base, (-.42, .46, ZC - .075, ZC + .075), corsair=True, seed=seed, flanges=FL)
     # big stolen panels on the wide plain surfaces (the superstructure top and the upper flanks read plain in game, Oct 25)
     S1 = detail_lib.Surface(shells, others); r1 = random.Random(seed + 5)
-    def salvage(p, r_): return r_.choice((HEG, HEG, BARE, BONE, (.11, .11, .12)))
+    def salvage(p, r_): return r_.choice((HEG_LT, HEG_LT, BARE_LT, BONE, (.15, .15, .16)))
     big = [(.6, (.07, .11), (.04, .065)), (.4, (.05, .07), (.03, .045))]
     detail_lib.scatter_plates(S1, tag, lambda r_: Vector((r_.uniform(-.20, .33), r_.uniform(-.11, .11), .5)), Vector((0, 0, -1)), lambda n: n.z > .5,
-                              base, r1, True, 9, big, th=.0028, kinds=(('rect', .4), ('chamfer', .35), ('trap', .25)), tint=salvage, name='bigtop')
+                              base, r1, True, 16, big, th=.0028, kinds=(('rect', .4), ('chamfer', .35), ('trap', .25)), tint=salvage, name='bigtop')
     for s_ in (1, -1):
         detail_lib.scatter_plates(S1, tag, lambda r_: Vector((r_.uniform(-.30, .30), s_ * .6, r_.uniform(ZC - .01, ZC + .06))), Vector((0, -s_, 0)),
-                                  lambda n: abs(n.y) > .35, base, r1, True, 4, big, th=.0028, kinds=(('rect', .5), ('slant', .5)), tint=salvage, name=f'bigfl{s_}_')
+                                  lambda n: abs(n.y) > .35, base, r1, True, 8, big, th=.0028, kinds=(('rect', .5), ('slant', .5)), tint=salvage, name=f'bigfl{s_}_')
+    detail_lib.scatter_plates(S1, tag, lambda r_: Vector((r_.uniform(-.30, .30), r_.uniform(-.10, .10), -.6)), Vector((0, 0, 1)), lambda n: n.z < -.5,
+                              base, r1, True, 6, big, th=.0030, kinds=(('rect', .5), ('chamfer', .5)), tint=salvage, name='bigbelly')
     for o in hs_lib.PARTS:
         c = COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
         for d in a.data: d.color = (c[0], c[1], c[2], 1)
