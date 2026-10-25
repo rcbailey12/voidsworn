@@ -1,0 +1,19 @@
+{
+  "engine": "godot",
+  "renderer": "gl_compatibility",
+  "mode": "stress",
+  "ships": 24,
+  "width": 2560,
+  "height": 1440,
+  "seconds": 20.0,
+  "frames": 5139,
+  "avg_ms": 3.892,
+  "p99_ms": 6.537,
+  "max_ms": 8.602,
+  "fps_avg": 256.95,
+  "load_s": 3.48,
+  "gpu_mem_mb": 556.0,
+  "notes": "24 ships (18 at 0.6 scale), loops staggered 0.17 s, destruction every 4 s, orbit radius 190 height 85; breach scorch drawn as a disc on the hull (no Decal in Compatibility); effects: 14 instanced kinds (one draw each) for 24 ships; Compatibility renderer: same scene and settings as Forward+ (glow, ACES, 4-split shadows, GPUParticles3D, omni lights); the breach scorch is a projected disc instead of a Decal; effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) 0.322 ms average; engine-measured 3D render time per frame: GPU 1.42 ms, render CPU 1.26 ms; frame breakdown (averages): process step 6.24 ms, physics step 0.21 ms at 0.27 ticks per frame, render-server frame setup 0.59 ms, 282 draw calls, 282 objects, 574 nodes in the tree; shader warm-up after load took 0.3 s (every effect, fade and chunk state drawn once, until pipeline compiles stop); adapter NVIDIA GeForce RTX 5080, driver opengl3 3.3.0 NVIDIA 617.42; render target 2560x1440 (from --res) in a SubViewport with MSAA 4x, shown in a 2560x1440 window; vsync mode 0 (0 = off); gpu_mem_mb is Performance RENDER_VIDEO_MEM_USED at the end (peak during run 556 MB); textures loaded uncompressed (RGB8 with mipmaps), as GLTFDocument gives them at runtime",
+  "lights_active_avg": 37.4,
+  "lights_active_max": 40
+}
