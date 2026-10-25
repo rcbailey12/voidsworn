@@ -40,8 +40,9 @@ Updated by the build session as phases move. A phase is done when its exit check
 | A1 step 3 | DONE Oct 25 | Paint approved (FINDINGS R14). Sheet docs/ship_pipeline/c19_example/v15/v15_paint_pass.webp; game files in git. |
 | A1 step 4 | PARTLY DONE, REST MOVED TO A5 | Interim Corsair effects stay in the game (and B-16 fixed). Ryan's bar (R16): cinematic damage, weapons and trails like BattleTech, Sins and Rogue Trader. That bar goes into the A2 test now and into A5 in the winning engine. |
 | A1 step 5 | DONE Oct 25 | Source of truth: tools/blender/a1/barge_v15.py plus glTF exports in assets/ships/C19_51/ (README has the chain). Automatic checks in the build: no floating parts, no backward guns, exports reimport clean (all PASS). |
-| A2 Six-ship engine test | IN PROGRESS | Godot OK given (R15). Portable Godot install job queued on the PC. |
-| A3 to A5, B2 to B5 | NOT STARTED | |
+| A2 Six-ship engine test | IN PROGRESS | Godot 4.7.2 installed on the PC (R15). Spec raised to Ryan's cinematic effects bar (R16). Godot and Babylon scenes being built; then the PC benchmark and a blind side-by-side for A3. |
+| B2 Faster, then bigger battles | IN PROGRESS | Started Oct 25 while A2 builds: items 1 to 3 (faster, the size ramp, capture rework). Item 4 (Dead Star backdrop) waits. |
+| A3 to A5, B3 to B5 | NOT STARTED | |
 
 ## 1. What is decided
 
