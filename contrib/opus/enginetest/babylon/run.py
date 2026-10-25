@@ -22,6 +22,7 @@ ap.add_argument('--shots', default=None, help='folder for the five stills (battl
 ap.add_argument('--seconds', type=float, default=20)
 ap.add_argument('--warmup', type=float, default=3)
 ap.add_argument('--msaa', type=int, default=4)
+ap.add_argument('--stress', action='store_true', help='SPEC.md stress run: 24 ships, 0.17 s stagger, destruction every 4 s')
 ap.add_argument('--soft', action='store_true', help='software WebGL (SwiftShader), sandbox validation only')
 ap.add_argument('--headed', action='store_true', help='show the browser window instead of headless')
 ap.add_argument('--angle', default=None, help='ANGLE backend (default d3d11 on Windows, default elsewhere)')
@@ -91,7 +92,7 @@ else:
 args += ['--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows']
 
 mode = 'bench' if a.out else 'shots'
-url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + ('&' + a.extra if a.extra else '')
+url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + ('&stress=1' if a.stress else '') + ('&' + a.extra if a.extra else '')
 errors = []
 with sync_playwright() as p:
     T0 = time.time(); b = None
@@ -114,7 +115,7 @@ with sync_playwright() as p:
         for e in errors: print('  ', e)
         sys.exit('page error: ' + pg.evaluate('window.__error'))
     info = pg.evaluate('window.__info')
-    print('loaded in %.2f s (page), GL: %s, %dx%d, ship tris %d' % (info['load_s'], info['gl'].get('renderer'), info['width'], info['height'], info['ship_tris']))
+    print('loaded in %.2f s (page), pre-warm %.2f s, %d ships, GL: %s, %dx%d, ship tris %d' % (info['load_s'], info['prewarm_s'], info['ships_n'], info['gl'].get('renderer'), info['width'], info['height'], info['ship_tris']))
     soft = 'swiftshader' in str(info['gl']).lower()
     if soft and not a.soft: print('WARNING: the page is on SwiftShader (software), not the GPU; these numbers are not valid')
     res = None
@@ -134,7 +135,9 @@ smi['run'] = False
 srv.shutdown()
 
 if res is not None:
+    trace_path = os.path.splitext(a.out)[0] + '_trace.json'
     ex = res.pop('_extra')
+    trace = ex.pop('trace')
     notes = ['Chromium via Playwright, GL renderer: %s' % ex['gl'].get('renderer'),
              'MSAA %dx, HDR, bloom, ACES, 4 shadow cascades of 2048' % ex['msaa'],
              'frame time = time between requestAnimationFrame callbacks; median %s ms' % ex['median_ms']]
@@ -149,8 +152,14 @@ if res is not None:
     if soft: notes.append('SOFTWARE RENDERER (SwiftShader): validation only, not a real measurement')
     errs = [e for e in errors if e.startswith('pageerror') or e.startswith('console.error')]
     if errs: notes.append('%d console errors (first: %s)' % (len(errs), errs[0][:160]))
+    worst = trace['worst_frames']['rows']
+    notes.append('%d ships; shaders pre-warmed for %.2f s after load_s, before the warm-up' % (ex['ships'], ex['prewarm_s']))
+    notes.append('JS work per frame (update plus render calls): worst 1%% %s ms, max %s ms' % (ex['work_p99_ms'], ex['work_max_ms']))
+    notes.append('worst frames (scene t s: frame ms / JS work ms): ' + ', '.join('%.2f: %.1f/%.1f' % (r[0], r[1], r[2]) for r in worst[:8]))
+    notes.append('per-second trace in ' + os.path.basename(trace_path))
     res['notes'] = '; '.join(notes)
     if os.path.dirname(os.path.abspath(a.out)): os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, 'w') as f: json.dump(res, f, indent=1)
+    with open(trace_path, 'w') as f: json.dump(dict(trace, warmup_s=ex['warmup_s'], note='second = second of the counted window; scene t = that + warmup_s'), f, indent=1)
     print(json.dumps(res, indent=1))
 for e in errors: print('  ', e)

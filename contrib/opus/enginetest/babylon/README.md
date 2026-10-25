@@ -11,7 +11,11 @@ From `Downloads\voidsworn_test\enginetest\babylon`:
 ```
 "%PYEXE%" run.py --res 3840x2160 --out ..\results\babylon_webgl2_3840x2160.json --shots ..\results\shots_babylon_3840x2160
 "%PYEXE%" run.py --res 2560x1440 --out ..\results\babylon_webgl2_2560x1440.json --shots ..\results\shots_babylon_2560x1440
+"%PYEXE%" run.py --stress --res 3840x2160 --out ..\results\babylon_webgl2_stress_3840x2160.json
+"%PYEXE%" run.py --stress --res 2560x1440 --out ..\results\babylon_webgl2_stress_2560x1440.json
 ```
+
+`--stress` is SPEC.md's stress run: the six flagships plus 18 clones at 0.6 scale in rows z = +60, 0, -60 (x = -60 to +60, factions in the main order), every ship on the full loop with a breach, 0.17 s stagger in layout order (flagships first, then the rows from +z to -z, left to right), destruction every 4 s from t = 4, orbit radius 190 and height 85. The JSON says `"mode": "stress"` (the normal run says `"mode": "main"`). The clones share the flagships' geometry and materials.
 
 Each run: about 10 s to load, 3 s warm-up, 20 s measured, then the five stills (`battle_05.png`, `battle_12.png`, `battle_126.png`, `close_20.png` for the barge, `breach_30.png` for the Hegemony breach). Nothing to click; the browser is headless.
 
@@ -26,10 +30,14 @@ The SPEC.md format: engine `babylon`, renderer `webgl2`, width, height, seconds,
 - the median frame time, and the GPU's own time per frame from a timer query when Chromium offers one;
 - the nvidia-smi total memory before launch and at peak (WebGL has no memory counter of its own);
 - a warning if the median frame time sits on a display refresh rate (vsync still on);
-- how long the browser launch took (load_s itself starts at navigation).
+- how long the browser launch took (load_s itself starts at navigation);
+- the JS work per frame (time inside the update and render calls) at its worst 1% and maximum, and the 8 worst frames as scene time: frame ms / JS work ms.
+
+Each run also writes `<out>_trace.json` with a per-second trace of the counted 20 s (frames, avg, worst 1%, max, frames over 16.7 ms, max JS work) and the 15 worst frames. A long frame with small JS work was spent waiting in Chromium's frame pipeline (GPU process, compositor, presentation), not in this page's code.
 
 How it measures:
-- Frame time is the gap between two requestAnimationFrame callbacks. The warm-up holds the camera at the orbit start with the effects running; the counted 20 s is the orbit itself.
+- Frame time is the gap between two requestAnimationFrame callbacks. The warm-up holds the camera at the orbit start with the effects running; the counted 20 s is the orbit itself. A gap counts only if it starts after the warm-up.
+- Before the warm-up (and after load_s is taken) the page steps through the moments that bring in a new shader variant (each loop phase, a drift fade half way, which turns the hull materials transparent, the destruction break, the chunk fade out and the fade in), waits for every shader to compile, then waits for the GPU to finish. So no shader compiles on first use during the measured 20 s. The chunk edge and fire batches stay active all the time (switched off by uniforms), so they compile up front too. The per-frame update allocates nothing.
 - load_s runs from navigation start to the first presented frame with all six ships, the sky, shaders and shadows ready.
 
 ## Choices made where SPEC.md leaves room (the Godot half should match these)
