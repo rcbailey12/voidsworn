@@ -2,3 +2,4 @@ node_modules/
 index_test.html
 node_modules
 tools/blender/a1/__pycache__/
+__pycache__/
