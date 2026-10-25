@@ -50,8 +50,8 @@ This is the single list of what is true, wrong or open about the game and the de
 
 | ID | Claim (source) | Verdict | Evidence | Status |
 |---|---|---|---|---|
-| F1 | "Current scale around 20 ships" (CONVERSATION_CONTEXT.md:49; council audit; density draft) | WRONG | Measured: sector 1 about 7 (max 10), sector 2 about 9 to 10 (max 12), sector 3 about 9 to 12 (max 13). Enemy list capped at 8 (battle.js:147). Enemies never outgrow the player (battle.js:136). | DECIDED (R1), work in B2 |
-| F2 | Late-fight waits 95 to 120 s | VERIFIED, refined | Campaign sim "new" model: 46 to 132 s per battle, about 11 to 15 s per round at today's sizes | OPEN (B2: speed first) |
+| F1 | "Current scale around 20 ships" (CONVERSATION_CONTEXT.md:49; council audit; density draft) | WRONG | Measured: sector 1 about 7 (max 10), sector 2 about 9 to 10 (max 12), sector 3 about 9 to 12 (max 13). Enemy list capped at 8 (battle.js:147). Enemies never outgrow the player (battle.js:136). | FIXED (B2, 1908387): ramp gives about 8.6 / 9.1 / 8.2 ships on board in sector 1 (battle, elite, boss), 12.5 / 13.2 / 11.4 in sector 2, 17.9 / 18.7 / 17.1 in sector 3 (soft ceiling 10 / 14 / 20) |
+| F2 | Late-fight waits 95 to 120 s | VERIFIED, refined | Campaign sim "new" model: 46 to 132 s per battle, about 11 to 15 s per round at today's sizes | PARTLY FIXED (B2): new `real` timing model (from the game's own durations): 7.3 to 14.2 s per round at the new sizes, against 10.2 to 20.6 s at the old pace and old sizes; all under the 15 s limit, sector 3 battles and elites (12.5 to 14.2 s) above the 12 s target; longest rounds 21 to 33 s (opening round). Real-browser pacecheck pending on the PC |
 | F3 | Density draft: "6 to 8 activations per round at 20 ships" | WRONG | Every ship activates every round (battle.js:359-362), so 20 ships means about 20 activations | INFO |
 | F4 | Density "12 vs 15 wait inconsistency" (OPUS_HANDOFF.md:60) | WRONG | Draft table: 12 s is the target, 15 s the hard gate | DECIDED (12 target, 15 limit) |
 | F5 | Dead Star "not a gravity well mechanic, no new engine work" | WRONG premise | Well ships today: battle.js:272-277, 305, 343, 374. Board shape in 6 of 8 fight types (battle.js:58-65). | DECIDED (R2) |
@@ -59,7 +59,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | F7 | Amber shield-state ramp | Conflict | Amber already means hull (fx3d.js:2, HULL_HEX #ffae42 at :4) | DECIDED: low shields shown as gaps in the faction colour |
 | F8 | Six factions get shield effects (art_direction_rey.md:96; QA and beauty specs) | WRONG | Chorus (0 of 8 hulls) and Deathless (0 of 6) have no shields | INFO |
 | F9 | "The motion rule rewards staying still" (OPUS_HANDOFF.md:62) | WRONG | Base rule: +10 to hit a still ship (battle.js:390, 458, 469). Only boon i_still (data.js:398) rewards stillness. | DECIDED: sync does not stack with i_still |
-| F10 | Capture rules | VERIFIED gap | Prizes always join after a win with no command point check (campaign3d.js:81). Player ships cannot be captured (battle.js:674-675). "Strip" and "ransom" were undefined. | DECIDED (R4), work in B2 |
+| F10 | Capture rules | VERIFIED gap | Prizes always join after a win with no command point check (campaign3d.js:81). Player ships cannot be captured (battle.js:674-675). "Strip" and "ransom" were undefined. | FIXED (B2, R4; 1908387, 09f4439): add (command points permitting), strip (a refit from the prize's weapons plus 15% of value), ransom (55% of value scaled by hull left, 15% less per earlier ransom, floor 40%); full fleet auto-scraps for 35% with a toast; flagships blocked (B1) |
 | F11 | Reanimate exists (DeepSeek), or is an engine ask (Rey) | DeepSeek VERIFIED | battle.js:702: once per battle, 20% enemy / 35% player, back at 30% hull. All Deathless hulls have reanimate (data.js:96-98). Heat h_undying (battle.js:314). Deathless do have crew (battle.js:81). | INFO (report gate satisfied) |
 | F12 | Epic rarity is "gold-adjacent" (gold law; art direction) | WRONG | Only 3 tiers: Common #cfc6b0, Rare #62ccff, Epic #c58bff, which is already violet (data.js:386) | DECIDED: Rare moves off cyan; Epic stays |
 | F13 | Gold law assumes a white selection ring and a faction chevron flagship marker | WRONG | Ring is gold (ui3d.js:238). Flagship ring is a gold torus (fx3d.js:70). 64 uses of the gilt class (#d0a64b) in UI code. | OPEN (gold-law work, screenshots for Ryan) |
@@ -85,12 +85,13 @@ Full tables: `compute/balance_reference.md` and the CSVs beside it. Every later 
 | ID | Finding | Evidence | Status |
 |---|---|---|---|
 | S1 | The game is stable in the sim | fuzz 2000: 0 exceptions, 0 rule breaks; about 19,500 sim battles in all, 0 crashes, 3 timeouts in the campaign's 2,400 | INFO |
-| S2 | Elites are the difficulty wall, not bosses | Campaign sim: elite wins 84% (s1), 52% (s2), 64% (s3); bosses 82%, 79%, 98% | OPEN (B2 ramp) |
-| S3 | Waits already reach about 130 s per battle at today's sizes | Campaign sim "new" timing: 40 s (s1 battle) to 130 s (s3 elite) | OPEN (B2: speed before size) |
+| S2 | Elites are the difficulty wall, not bosses | Campaign sim: elite wins 84% (s1), 52% (s2), 64% (s3); bosses 82%, 79%, 98% | INFO (B2): elites now 91% (s1), 72% (s2), 64% (s3) |
+| S3 | Waits already reach about 130 s per battle at today's sizes | Campaign sim "new" timing: 40 s (s1 battle) to 130 s (s3 elite) | PARTLY FIXED (B2): see F2 |
 | S4 | Wide faction spread in skirmish | matrix 50: Corsair 98 avg, Chorus 93, Ithar 90, Voidsworn 69, Deathless 62, Hegemony 59; Deathless vs Corsair 14%. Player bot edge is large in this mode (mirrors 78 to 100%). fmatrix spread is moderate (57 to 68). | OPEN (B3) |
-| S5 | Starting fleets cannot beat sector 2 or 3 bosses | bossmatrix with start fleets only: 71% (s1), 24% (s2), 3% (s3). Growth over a run carries the whole difficulty curve. | INFO (B2 ramp input) |
+| S5 | Starting fleets cannot beat sector 2 or 3 bosses | bossmatrix with start fleets only: 71% (s1), 24% (s2), 3% (s3). Growth over a run carries the whole difficulty curve. | OPEN (B3): B2 sector 1 boss matrix before the escort fix fell about 20 points (23 to 76%); escort budget cut 0.5 to 0.3 (f86f04a); rerun pending on the PC |
 | S6 | Hegemony boss is the hardest opener; Grax the weakest start | bossmatrix s1: vs Hegemony 47%; Grax 36%, Vex 54%; Voice and Vesh 94% | OPEN (B3) |
 | S7 | The bossmatrix harness only covers sector 1 by default | Sector comes from env BS (sim3d.js:325); sectors 2 and 3 were run with BS=2 and BS=3 | INFO |
+| S8 | sim3d.js's "new" timing model under-counted moves (a flat 0.15 to 0.19 s per hex) and never sped up enemy moves (operator precedence) | B2 helper, Oct 25: added a `real` model built from the game's own durations; baseline re-measured with PACE_OLD=1 | INFO: use `real` for timing from now on |
 
 ## Bugs at d5d0227
 
@@ -100,7 +101,7 @@ Full tables: `compute/balance_reference.md` and the CSVs beside it. Every later 
 | B-2 | Retreat dialog lets the keyboard play on; "Jump out" turns a finished win into a retreat | VERIFIED | ui3d.js `onKey` ignores battle keys under a dialog; campaign3d.js `c3retreatYes` checks over, busy, finished and ending; `endBattleFlow` closes an open retreat question. b1_tests B-2. 258ce02 | FIXED (B1) |
 | B-3 | Reload bug 1: mid-battle reload eats the node | Looks FIXED | Scripted: no run save in battle.js or ui3d.js; the only save there is meta-only. b1_tests B-3. d35f702 | FIXED (confirmed) |
 | B-4 | Reload bug 2: reload during reward screens loses boon, refit, relic | VERIFIED | campaign_run.js marks the node done when rewards are banked and keeps pending picks as `RUN.reward` with fixed offers; `resumeReward` after reload; event fights seeded (campaign3d.js). b1_tests B-4, reload at every step. d35f702 | FIXED (B1) |
-| B-5 | Captured flagship joins the fleet past the cap; selling it makes credits NaN | VERIFIED | battle.js `captureChance` 0 for sector flagships, boarding cripples but never flips them; campaign3d.js scraps prizes past the cap; core.js `shipValue`/`prizeScrap`; NaN credits repaired on load. b1_tests B-5. 0fe88b8 | FIXED for B1 (add, strip or ransom still B2) |
+| B-5 | Captured flagship joins the fleet past the cap; selling it makes credits NaN | VERIFIED | battle.js `captureChance` 0 for sector flagships, boarding cripples but never flips them; campaign3d.js scraps prizes past the cap; core.js `shipValue`/`prizeScrap`; NaN credits repaired on load. b1_tests B-5. 0fe88b8 | FIXED (B1 flagship block; B2 capture rework) |
 | B-6 | Free blink teleport after a stalled animation | VERIFIED | battle.js blink sets the cooldown even when its animation stalls. b1_tests B-6. 0fe88b8 | FIXED (B1) |
 | B-7 | Nova cooldown spent by an abandoned cast | VERIFIED | battle.js Nova cooldown set only after the blast lands. b1_tests B-7. 0fe88b8 | FIXED (B1) |
 | B-8 | Towing ignores the command point cap | VERIFIED | campaign_run.js tow offered only under the command cap, checked again on pick. b1_tests B-8. 0fe88b8 | FIXED (B1) |
