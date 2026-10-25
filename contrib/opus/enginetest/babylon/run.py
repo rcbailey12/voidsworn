@@ -18,7 +18,7 @@ ASSETS = ['V1b_r_23.glb', 'H4_11.glb', 'C19_51_shell.glb', 'C19_51_kit.glb', 'B1
 ap = argparse.ArgumentParser()
 ap.add_argument('--res', default='2560x1440')
 ap.add_argument('--out', default=None, help='result JSON (runs the benchmark)')
-ap.add_argument('--shots', default=None, help='folder for battle_05.png, battle_12.png, close_13.png')
+ap.add_argument('--shots', default=None, help='folder for the five stills (battle_05, battle_12, battle_126, close_20, breach_30 .png)')
 ap.add_argument('--seconds', type=float, default=20)
 ap.add_argument('--warmup', type=float, default=3)
 ap.add_argument('--msaa', type=int, default=4)
@@ -26,6 +26,7 @@ ap.add_argument('--soft', action='store_true', help='software WebGL (SwiftShader
 ap.add_argument('--headed', action='store_true', help='show the browser window instead of headless')
 ap.add_argument('--angle', default=None, help='ANGLE backend (default d3d11 on Windows, default elsewhere)')
 ap.add_argument('--debug-shots', action='store_true', help='also write the debug views (top-down, Hegemony close)')
+ap.add_argument('--only', default='', help='comma list: render only these stills or debug views')
 ap.add_argument('--extra', default='', help='extra query string for diagnostics, e.g. shadows=0')
 ap.add_argument('--timeout', type=float, default=900, help='seconds to wait for load plus benchmark')
 a = ap.parse_args()
@@ -103,8 +104,15 @@ with sync_playwright() as p:
     pg.on('pageerror', lambda e: errors.append('pageerror: ' + str(e)[:300]))
     pg.on('console', lambda m: errors.append('console.%s: %s %s' % (m.type, m.text[:300], (m.location or {}).get('url', ''))) if m.type in ('error', 'warning') else None)
     pg.goto(url, wait_until='commit')
-    pg.wait_for_function('window.__ready || window.__error', timeout=a.timeout * 1000, polling=500)
-    if pg.evaluate('window.__error || null'): sys.exit('page error: ' + pg.evaluate('window.__error'))
+    T1 = time.time()
+    while not pg.evaluate('!!(window.__ready || window.__error)'):
+        if any(e.startswith('pageerror') or 'Error compiling effect' in e for e in errors) or time.time() - T1 > a.timeout:
+            for e in errors: print('  ', e)
+            sys.exit('page failed to start')
+        time.sleep(0.5)
+    if pg.evaluate('window.__error || null'):
+        for e in errors: print('  ', e)
+        sys.exit('page error: ' + pg.evaluate('window.__error'))
     info = pg.evaluate('window.__info')
     print('loaded in %.2f s (page), GL: %s, %dx%d, ship tris %d' % (info['load_s'], info['gl'].get('renderer'), info['width'], info['height'], info['ship_tris']))
     soft = 'swiftshader' in str(info['gl']).lower()
@@ -115,7 +123,9 @@ with sync_playwright() as p:
         res = pg.evaluate('window.__result')
     if a.shots:
         os.makedirs(a.shots, exist_ok=True)
-        for name in pg.evaluate('window.__shotNames') + (['debug_top', 'debug_heg', 'debug_boom', 'debug_hull'] if a.debug_shots else []):
+        names = pg.evaluate('window.__shotNames') + (pg.evaluate('window.__debugNames') if a.debug_shots or a.only else [])
+        if a.only: names = [n for n in names if n in a.only.split(',')]
+        for name in names:
             data = pg.evaluate('window.__shot(%s)' % json.dumps(name))
             with open(os.path.join(a.shots, name + '.png'), 'wb') as f: f.write(base64.b64decode(data.split(',', 1)[1]))
             print('shot', name)
@@ -127,14 +137,14 @@ if res is not None:
     ex = res.pop('_extra')
     notes = ['Chromium via Playwright, GL renderer: %s' % ex['gl'].get('renderer'),
              'MSAA %dx, HDR, bloom, ACES, 4 shadow cascades of 2048' % ex['msaa'],
-             'frame time = time between requestAnimationFrame callbacks; median %.3f ms' % ex['median_ms']]
+             'frame time = time between requestAnimationFrame callbacks; median %s ms' % ex['median_ms']]
     if ex.get('gpu_frame_ms_avg') is not None: notes.append('GPU timer query average %.3f ms per frame' % ex['gpu_frame_ms_avg'])
     notes.append('load_s from navigation start to the first presented frame with all six ships and the sky; browser launch took %.2f s more' % launch_s)
     notes.append('gpu_mem_mb: WebGL has no GPU memory counter')
     if smi['base'] is not None and smi['peak'] is not None:
         notes.append('nvidia-smi total memory used: %d MB before launch, %d MB peak (%+d MB)' % (smi['base'], smi['peak'], smi['peak'] - smi['base']))
     rates = [1000.0 / hz for hz in (60, 75, 120, 144, 165, 240)]
-    if any(abs(ex['median_ms'] - r) / r < 0.03 for r in rates):
+    if ex['median_ms'] and any(abs(ex['median_ms'] - r) / r < 0.03 for r in rates):
         notes.append('WARNING: median frame time matches a display refresh rate; vsync or the frame limiter may still be on')
     if soft: notes.append('SOFTWARE RENDERER (SwiftShader): validation only, not a real measurement')
     errs = [e for e in errors if e.startswith('pageerror') or e.startswith('console.error')]

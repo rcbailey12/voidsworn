@@ -21,6 +21,7 @@
 // Query string:
 //   mode=bench|shots   bench: warm-up then the 20 s battle orbit, result JSON on window.__result (shots still
 //                      callable afterwards). shots: no bench, window.__shot(name) only.
+//   (stills: battle_05, battle_12, battle_126, close_20, breach_30; debug views in window.__debugNames)
 //   res=WxH            render size in pixels (default: the window size)
 //   seconds=20 warmup=3 msaa=4 gputime=1
 //
@@ -34,7 +35,7 @@
   ];
   window.__libSource = [];
   function load(i) {
-    if (i >= libs.length) { window.__start(); return; }
+    if (i >= libs.length) { Promise.resolve().then(window.__start).catch(function (e) { window.__error = String(e && e.stack || e); console.error(window.__error); }); return; }
     var tryOne = function (k) {
       var s = document.createElement('script');
       s.src = libs[i][k];
@@ -85,14 +86,13 @@ scene.autoClear = true;
 // ---------- spec constants ----------
 var SHIP_LEN = 24;
 var SHIPS = [ // order = effect stagger order
-  { fac: 'voidsworn', files: ['V1b_r_23.glb'], x: -45, z: 30, bolt: [1.0, 0.45, 0.15], shield: [1.0, 0.46, 0.16] },
-  { fac: 'hegemony', files: ['H4_11.glb'], x: 0, z: 30, bolt: [0.55, 0.82, 1.0], shield: [0.38, 0.68, 1.0] },
-  { fac: 'corsair', files: ['C19_51_shell.glb', 'C19_51_kit.glb'], x: 45, z: 30, rotY: Math.PI, bolt: [0.95, 0.22, 0.10], shield: [0.85, 0.16, 0.10] },
-  { fac: 'chorus', files: ['B16_23.glb'], x: -45, z: -30, bolt: [0.85, 0.90, 0.30], shield: null },
-  { fac: 'ithar', files: ['I8_37.glb'], x: 0, z: -30, bolt: [0.75, 1.0, 0.88], shield: [0.72, 1.0, 0.86] },
-  { fac: 'deathless', files: ['D22_23.glb'], x: 45, z: -30, bolt: [0.20, 1.0, 0.38], shield: null }
+  { fac: 'voidsworn', files: ['V1b_r_23.glb'], x: -45, z: 30, weapon: [1.0, 0.45, 0.15], shield: [1.0, 0.46, 0.16], engine: [1.0, 0.50, 0.16] },
+  { fac: 'hegemony', files: ['H4_11.glb'], x: 0, z: 30, weapon: [0.55, 0.82, 1.0], shield: [0.38, 0.68, 1.0], engine: [0.45, 0.72, 1.0] },
+  { fac: 'corsair', files: ['C19_51_shell.glb', 'C19_51_kit.glb'], x: 45, z: 30, rotY: Math.PI, weapon: [0.95, 0.22, 0.10], shield: [0.85, 0.16, 0.10], engine: [1.0, 0.38, 0.16] },
+  { fac: 'chorus', files: ['B16_23.glb'], x: -45, z: -30, weapon: [0.85, 0.90, 0.30], shield: null, engine: [0.80, 0.90, 0.28] },
+  { fac: 'ithar', files: ['I8_37.glb'], x: 0, z: -30, weapon: [0.75, 1.0, 0.88], shield: [0.72, 1.0, 0.86], engine: [0.62, 1.0, 0.84] },
+  { fac: 'deathless', files: ['D22_23.glb'], x: 45, z: -30, weapon: [0.20, 1.0, 0.38], shield: null, engine: [0.15, 1.0, 0.35] }
 ];
-var LOOP = 2.0, STAGGER = 0.3;
 // Key light intensity: tuned so the light grey Hegemony hull reads near-white without clipping.
 var KEY = 3.2;
 var KEY_DIR = new B.Vector3(-0.45, -0.70, -0.55).normalize();
@@ -226,14 +226,376 @@ async function loadShip(def, i) {
     m.receiveShadows = true; csm.addShadowCaster(m, false); m.isPickable = true; m.renderingGroupId = 1;
     shipMeshes.push(m);
   });
-  def.meshes = meshes; def.pivot = pivot; def.scale = s;
+  def.meshes = meshes; def.pivot = pivot; def.scale = s; def.c0 = c;
 }
 await Promise.all(SHIPS.map(loadShip).concat([skyReady]));
+// =====================================================================================================================
+// Effects. One scene clock t (seconds, t = 0 at scene start) drives everything. Particles are static data on the GPU:
+// each stores its start time, loop period and motion, and the shaders work out age = mod(t - start, period). So any
+// frame is a pure function of t (the stills are exact and repeatable) and the CPU only sets uniforms, moves the ships,
+// the 4 destruction chunks and the 7 point lights each frame.
+// =====================================================================================================================
+var rng = (function (a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })(20261025);
+var V3 = function (x, y, z) { return new B.Vector3(x, y, z); };
+function rdir() { var z = rng() * 2 - 1, a = rng() * 6.2831853, r = Math.sqrt(1 - z * z); return V3(r * Math.cos(a), r * Math.sin(a), z); }
+function rcone(axis, spread) { var d = axis.normalizeToNew().add(rdir().scale(spread)); return d.normalize(); }
+function mix3(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+// drift: ships move +x at 3 u/s over a 40 unit loop centred on the layout position (t = 0 is the layout), fading out and
+// in over the 2 s around each wrap (wraps at t = 6.67, 20, 33.3, ...)
+function drift(t) { return ((3 * t + 20) % 40 + 40) % 40 - 20; }
+function shipFade(t) { var ph = (((3 * t + 20) % 40) + 40) % 40 / 3; return Math.min(1, Math.max(0, Math.min(ph, 40 / 3 - ph))); }
 
-// ---------- ship anchor points for the effects (world space) ----------
-SHIPS.forEach(function (d) {
-  var lo = new B.Vector3(1e9, 1e9, 1e9), hi = lo.scale(-1), tmp = new B.Vector3();
-  var pts = [];
+var GL_COMMON = [
+  'precision highp float;',
+  'uniform float uTime;',
+  'float drift(float t){ return mod(3.0 * t + 20.0, 40.0) - 20.0; }',
+  'float shipFade(float t){ float ph = mod(3.0 * t + 20.0, 40.0) / 3.0; return clamp(min(ph, 13.333333 - ph), 0.0, 1.0); }',
+  NOISE,
+  'float cough(float t, float s){ float c = 0.6 + 0.4 * vnoise(vec2(t * 6.0, s * 13.0)); if (h21(vec2(floor(t * 5.0), s)) < 0.22) c *= 0.12; return c; }'
+].join('\n') + '\n';
+
+// ---------- generic static batch: vertices with a position plus N vec4 attributes ----------
+function Batch(name, nA, withNormal) { this.name = name; this.nA = nA; this.pos = []; this.nor = withNormal ? [] : null; this.idx = []; this.a = []; for (var k = 0; k < nA; k++) this.a.push([]); }
+Batch.prototype.v = function (p, attrs, n) {
+  this.pos.push(p[0], p[1], p[2] || 0); if (this.nor) this.nor.push(n[0], n[1], n[2]);
+  for (var k = 0; k < this.nA; k++) { var s = attrs[k]; this.a[k].push(s[0], s[1], s[2], s[3]); }
+  return this.pos.length / 3 - 1;
+};
+Batch.prototype.quad = function (corners, attrs) { var b = this.pos.length / 3; for (var i = 0; i < 4; i++) this.v(corners[i], attrs); this.idx.push(b, b + 1, b + 2, b, b + 2, b + 3); };
+Batch.prototype.build = function (mat, parent) {
+  var m = new B.Mesh(this.name, scene), vd = new B.VertexData();
+  vd.positions = this.pos; vd.indices = this.idx; if (this.nor) vd.normals = this.nor;
+  vd.applyToMesh(m, false);
+  for (var k = 0; k < this.nA; k++) m.setVerticesData('a' + k, new Float32Array(this.a[k]), false, 4);
+  m.material = mat; m.alwaysSelectAsActiveMesh = true; m.isPickable = false; m.renderingGroupId = 1;
+  if (parent) m.parent = parent;
+  return m;
+};
+var CORNERS = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]];
+var STREAK_CORNERS = [[0, -0.5], [1, -0.5], [1, 0.5], [0, 0.5]];
+var A5 = ['position', 'a0', 'a1', 'a2', 'a3', 'a4'];
+
+// ---------- sprites: camera-facing quads, premultiplied alpha (additive glow and alpha smoke in one pass) ----------
+// a0 = pos, tStart; a1 = vel, life; a2 = colour, intensity (or opacity); a3 = size0, size1, kind, seed;
+// a4 = period, drift (1 = rides with the ships), drag, spin
+// kinds: 0 flash, 1 flame, 2 fireball core, 3 smoke, 4 engine core, 5 squib, 7 vent gas, 8 soot, 11 sputtering core,
+//        12 beam charge, 13 beam impact flare
+B.Effect.ShadersStore.spriteVertexShader = GL_COMMON + [
+  'attribute vec3 position; attribute vec4 a0; attribute vec4 a1; attribute vec4 a2; attribute vec4 a3; attribute vec4 a4;',
+  'uniform mat4 world; uniform mat4 view; uniform mat4 projection; uniform float uGate;',
+  'varying vec2 vUv; varying vec4 vCol; varying vec4 vInfo;',
+  'void main(){ float a = uTime - a0.w; float age = mod(a, a4.x); float life = a1.w;',
+  '  if (a < 0.0 || age >= life || uGate <= 0.0) { ' + HIDE + ' vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec4(0.0); return; }',
+  '  float t = age / life; int k = int(a3.z + 0.5); float g = t;',
+  '  if (k == 1) g = 1.0 - pow(1.0 - t, 2.2); else if (k == 2 || k == 5) g = sqrt(t); else if (k == 3 || k == 7 || k == 8) g = 1.0 - pow(1.0 - t, 1.6);',
+  '  else if (k == 4 || k == 11 || k == 13) g = 0.0; else if (k == 12) g = t * t;',
+  '  float size = mix(a3.x, a3.y, g);',
+  '  float dr = a4.z; vec3 disp = dr > 0.0 ? a1.xyz * (1.0 - exp(-dr * age)) / dr : a1.xyz * age;',
+  '  vec3 c = (world * vec4(a0.xyz + disp, 1.0)).xyz; c.x += a4.y * (drift(uTime - age) + 3.0 * age);',
+  '  float ang = a3.w * 6.2831853 + age * a4.w; float cs = cos(ang), sn = sin(ang);',
+  '  vec2 q = vec2(cs * position.x - sn * position.y, sn * position.x + cs * position.y);',
+  '  vec4 vp = view * vec4(c, 1.0); vp.xy += q * size; gl_Position = projection * vp;',
+  '  vUv = position.xy * 2.0; vCol = vec4(a2.rgb, a2.a * uGate * mix(1.0, shipFade(uTime), a4.y)); vInfo = vec4(t, a3.z, a3.w, age); }'].join('\n');
+B.Effect.ShadersStore.spriteFragmentShader = GL_COMMON + [
+  'varying vec2 vUv; varying vec4 vCol; varying vec4 vInfo;',
+  'vec3 heatRamp(float h){ vec3 c = mix(vec3(0.45, 0.04, 0.01), vec3(1.0, 0.32, 0.04), smoothstep(0.0, 0.3, h));',
+  '  c = mix(c, vec3(1.0, 0.75, 0.35), smoothstep(0.3, 0.65, h)); return mix(c, vec3(1.0, 0.96, 0.85), smoothstep(0.65, 1.0, h)); }',
+  'void main(){ float t = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z; float age = vInfo.w; float I = vCol.a;',
+  '  vec2 p = vUv; float r = length(p); if (r > 1.0) discard;',
+  '  vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;',
+  '  float star = exp(-abs(p.x) * 40.0) * exp(-abs(p.y) * 3.0) + exp(-abs(p.y) * 40.0) * exp(-abs(p.x) * 3.0);',
+  '  if (k == 0) { float f = (1.0 - t) * (1.0 - t) * I; add = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8 + vCol.rgb * f * 0.5 * star; }',
+  '  else if (k == 1) { float n = fbm(p * 1.7 + vec2(seed * 13.1, seed * 7.7) + vec2(0.0, -t * 1.2));',
+  '    float dens = (1.0 - r) * 1.4 + (n - 0.5) * 1.15; float thr = t * 1.1; float m = smoothstep(thr, thr + 0.35, dens);',
+  '    float heat = clamp(dens - thr, 0.0, 1.0) * (1.0 - t * 0.6);',
+  '    add = heatRamp(heat) * mix(vec3(1.0), vCol.rgb * 1.6, 0.25) * I * (0.5 + 2.6 * heat * heat) * m * smoothstep(0.0, 0.05, t); }',
+  '  else if (k == 2) { float f = pow(1.0 - t, 1.5) * I; add = vCol.rgb * exp(-r * r * 3.0) * f + vec3(exp(-r * r * 10.0)) * f; }',
+  '  else if (k == 3 || k == 8) { float n = fbm(p * 1.3 + vec2(seed * 11.3, seed * 5.1) + vec2(t * 0.4, 0.0));',
+  '    float dens = (1.0 - r) * 1.25 + (n - 0.5) * 0.95; float m = smoothstep(0.05, 0.55, dens);',
+  '    alpha = m * I * smoothstep(0.0, 0.12, t) * pow(1.0 - t, 1.3); base = vCol.rgb * (0.7 + 0.6 * n);',
+  '    if (k == 3) add = vec3(1.0, 0.4, 0.1) * pow(1.0 - t, 6.0) * 0.9 * alpha; }',
+  '  else if (k == 7) { float n = fbm(p * 1.6 + vec2(seed * 9.1, seed * 4.3) + vec2(0.0, -age * 1.4));',
+  '    float dens = (1.0 - r) * 1.1 + (n - 0.5) * 1.3; float m = smoothstep(0.1, 0.75, dens);',
+  '    alpha = m * I * smoothstep(0.0, 0.08, t) * pow(1.0 - t, 1.5); base = vCol.rgb * (0.8 + 0.4 * n); }',
+  '  else if (k == 4 || k == 11) { float fl = 0.85 + 0.15 * vnoise(vec2(uTime * 31.0, seed * 9.0)); if (k == 11) fl *= cough(uTime, seed);',
+  '    add = (vCol.rgb * exp(-r * r * 4.0) + vec3(1.0, 0.95, 0.8) * exp(-r * r * 14.0) * 1.6) * I * fl; }',
+  '  else if (k == 5) { float f = (1.0 - t) * (1.0 - t) * I; add = vec3(1.0, 0.6, 0.25) * exp(-r * r * 6.0) * f + vec3(exp(-r * r * 30.0)) * f + vec3(1.0, 0.7, 0.4) * star * f * 0.6; }',
+  '  else if (k == 12) { float f = t * t * I; float ray = pow(abs(cos(atan(p.y, p.x) * 3.0 + age * 9.0)), 24.0) * (1.0 - r);',
+  '    add = vCol.rgb * exp(-r * r * 4.0) * f + vec3(exp(-r * r * 25.0)) * f * 1.5 + vCol.rgb * f * 0.8 * ray; }',
+  '  else if (k == 13) { float fl = 0.8 + 0.2 * vnoise(vec2(uTime * 40.0, seed)); float life = age / max(t, 1e-3);',
+  '    float env = smoothstep(0.0, 0.05, age) * (1.0 - smoothstep(life - 0.15, life, age));',
+  '    add = (vCol.rgb * exp(-r * r * 3.0) + vec3(exp(-r * r * 12.0)) * 1.5 + vCol.rgb * star * 0.7) * I * fl * env; }',
+  '  float win = 1.0 - r * r; add *= win * win; gl_FragColor = vec4(base * alpha + add, alpha); }'].join('\n');
+
+// ---------- streaks: tracers, flame tongues, sparks and embers (additive) ----------
+// a0 = pos, tStart; a1 = vel, life; a2 = colour, intensity; a3 = length (or blur seconds), width, drag, kind; a4 = period, drift, 0, 0
+// kinds: 0 tracer (fixed length, bright head), 1 spark (drag, length from speed, fades), 3 flame tongue (grows from the muzzle)
+B.Effect.ShadersStore.streakVertexShader = GL_COMMON + [
+  'attribute vec3 position; attribute vec4 a0; attribute vec4 a1; attribute vec4 a2; attribute vec4 a3; attribute vec4 a4;',
+  'uniform mat4 viewProjection; uniform vec3 uCam; varying vec2 vUv; varying vec3 vCol; varying float vK;',
+  'void main(){ float a = uTime - a0.w; float age = mod(a, a4.x); float life = a1.w;',
+  '  if (a < 0.0 || age >= life) { ' + HIDE + ' vUv = vec2(0.0); vCol = vec3(0.0); vK = 0.0; return; }',
+  '  vec3 v = a1.xyz; float sp = max(length(v), 1e-4); vec3 dir = v / sp; float dr = a3.z; int k = int(a3.w + 0.5);',
+  '  vec3 head; vec3 tail; float fade = 1.0; float u = age / life;',
+  '  if (k == 1) { float e = exp(-dr * age); head = a0.xyz + v * (1.0 - e) / dr; float L = max(a3.x * sp * e, 0.1); tail = head - dir * L; fade = (1.0 - u) * (1.0 - u); }',
+  '  else if (k == 3) { tail = a0.xyz; head = a0.xyz + dir * a3.x * (0.35 + 0.65 * sqrt(u)); fade = pow(1.0 - u, 1.5); }',
+  '  else { float tr = sp * age; head = a0.xyz + dir * tr; tail = head - dir * min(a3.x, tr); }',
+  '  float off = a4.y * (drift(uTime - age) + 3.0 * age); head.x += off; tail.x += off;',
+  '  vec3 mid = 0.5 * (head + tail); vec3 side = normalize(cross(dir, uCam - mid));',
+  '  vec3 p = mix(tail, head, position.x) + side * position.y * a3.y;',
+  '  vUv = position.xy; vK = a3.w; vCol = a2.rgb * a2.a * fade * mix(1.0, shipFade(uTime), a4.y); gl_Position = viewProjection * vec4(p, 1.0); }'].join('\n');
+B.Effect.ShadersStore.streakFragmentShader = [
+  'precision highp float; varying vec2 vUv; varying vec3 vCol; varying float vK;',
+  'void main(){ float x = abs(vUv.y) * 2.0; float core = exp(-x * x * 22.0); float glow = exp(-x * x * 4.0) * 0.45; int k = int(vK + 0.5);',
+  '  float along; vec3 c;',
+  '  if (k == 0) { along = pow(vUv.x, 2.5) * (1.0 - smoothstep(0.95, 1.0, vUv.x) * 0.5); float headB = exp(-pow((1.0 - vUv.x) * 9.0, 2.0)) * 2.0;',
+  '    c = vCol * (glow + core) * (along + headB) + vec3(core) * length(vCol) * 0.35 * (along + headB); }',
+  '  else if (k == 3) { along = (1.0 - vUv.x) * smoothstep(0.0, 0.08, vUv.x) + 0.15; float w = 1.0 - vUv.x * 0.6; float cc = exp(-x * x * 6.0 / (w * w));',
+  '    c = mix(vCol, vec3(length(vCol)) * vec3(1.0, 0.9, 0.75), (1.0 - vUv.x) * 0.6) * cc * along; }',
+  '  else { along = smoothstep(0.0, 0.45, vUv.x) * (1.0 - smoothstep(0.9, 1.0, vUv.x) * 0.7);',
+  '    c = vCol * (glow + core) * along + vec3(core * core) * length(vCol) * 0.25 * along; }',
+  '  gl_FragColor = vec4(c, 1.0); }'].join('\n');
+
+// ---------- oriented rings: smoke rings (alpha) and shockwaves (additive), premultiplied ----------
+// a0 = pos, tStart; a1 = normal, life; a2 = colour, intensity; a3 = size0, size1, kind, seed; a4 = period, drift, speed, drag
+B.Effect.ShadersStore.ringVertexShader = GL_COMMON + [
+  'attribute vec3 position; attribute vec4 a0; attribute vec4 a1; attribute vec4 a2; attribute vec4 a3; attribute vec4 a4;',
+  'uniform mat4 viewProjection; varying vec2 vUv; varying vec4 vCol; varying vec4 vInfo;',
+  'void main(){ float a = uTime - a0.w; float age = mod(a, a4.x); float life = a1.w;',
+  '  if (a < 0.0 || age >= life) { ' + HIDE + ' vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec4(0.0); return; }',
+  '  float t = age / life; vec3 n = normalize(a1.xyz); float dr = a4.w; float tr = dr > 0.0 ? a4.z * (1.0 - exp(-dr * age)) / dr : a4.z * age;',
+  '  vec3 c = a0.xyz + n * tr; c.x += a4.y * (drift(uTime - age) + 3.0 * age);',
+  '  vec3 up = abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0); vec3 t1 = normalize(cross(n, up)); vec3 t2 = cross(n, t1);',
+  '  float g = a3.z < 0.5 ? 1.0 - pow(1.0 - t, 2.0) : 1.0 - pow(1.0 - t, 3.0); float size = mix(a3.x, a3.y, g);',
+  '  vec3 p = c + (t1 * position.x + t2 * position.y) * size; gl_Position = viewProjection * vec4(p, 1.0);',
+  '  vUv = position.xy * 2.0; vCol = vec4(a2.rgb, a2.a * mix(1.0, shipFade(uTime), a4.y)); vInfo = vec4(t, a3.z, a3.w, age); }'].join('\n');
+B.Effect.ShadersStore.ringFragmentShader = GL_COMMON + [
+  'varying vec2 vUv; varying vec4 vCol; varying vec4 vInfo;',
+  'void main(){ float t = vInfo.x; float seed = vInfo.z; float age = vInfo.w; vec2 p = vUv; float r = length(p); if (r > 1.0) discard;',
+  '  float ang = atan(p.y, p.x); vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;',
+  '  if (vInfo.y < 0.5) { float n = fbm(vec2(ang * 1.6 + seed * 7.0, r * 3.0 + age * 0.3));',
+  '    float w = 0.15 + 0.12 * t; float rq = (r - 0.62) / w; float ring = exp(-rq * rq); float dens = ring * (0.55 + 0.9 * n);',
+  '    alpha = clamp(dens, 0.0, 1.0) * vCol.a * smoothstep(0.0, 0.05, t) * pow(1.0 - t, 1.4); base = vCol.rgb * (0.75 + 0.5 * n);',
+  '    add = vec3(1.0, 0.45, 0.1) * pow(1.0 - t, 10.0) * alpha * 2.0; }',
+  '  else { float d1 = (r - 0.95) / 0.018; float d2 = (r - 0.88) / 0.06; float ring = exp(-d1 * d1) * 1.6 + exp(-d2 * d2) * 0.2;',
+  '    float n = 0.4 + 1.0 * fbm(vec2(ang * 5.0 + seed, t * 3.0)); vec3 col = mix(vec3(1.0, 0.85, 0.65), vCol.rgb, sqrt(t));',
+  '    add = col * ring * n * pow(1.0 - t, 1.5) * vCol.a; }',
+  '  gl_FragColor = vec4(base * alpha + add, alpha); }'].join('\n');
+
+// ---------- ribbons: engine plumes, exhaust trails and beams (additive), segment strips ----------
+// position = (s along 0..1, side -0.5..0.5); a0 = origin, kind; a1 = dir, length; a2 = colour, intensity;
+// a3 = width0, width1, seed, 0; a4 = tStart, life, period, 0. kinds: 0 plume, 1 trail, 2 beam, 3 sputter plume, 4 sputter trail
+B.Effect.ShadersStore.ribbonVertexShader = GL_COMMON + [
+  'attribute vec3 position; attribute vec4 a0; attribute vec4 a1; attribute vec4 a2; attribute vec4 a3; attribute vec4 a4;',
+  'uniform mat4 viewProjection; uniform vec3 uCam; varying vec4 vCol; varying vec4 vInfo; varying vec2 vInfo2; varying float vSide;',
+  'void main(){ float a = uTime - a4.x; float age = mod(a, a4.z);',
+  '  if (a < 0.0 || age >= a4.y) { ' + HIDE + ' vCol = vec4(0.0); vInfo = vec4(0.0); vInfo2 = vec2(0.0); vSide = 0.0; return; }',
+  '  float s = position.x; int k = int(a0.w + 0.5); vec3 dir = a1.xyz; float seed = a3.z;',
+  '  vec3 p = a0.xyz + dir * s * a1.w; p.x += drift(uTime);',
+  '  vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0); vec3 n1 = normalize(cross(dir, up)); vec3 n2 = cross(n1, dir);',
+  '  if (k == 1 || k == 4) p += (n1 * sin(s * 7.0 - uTime * 1.3 + seed * 6.0) * 0.9 + n2 * sin(s * 5.0 - uTime * 0.9 + seed * 3.0) * 0.7) * s * s * 2.2;',
+  '  if (k == 0 || k == 3) p += (n1 * (vnoise(vec2(s * 6.0 - uTime * 18.0, seed)) - 0.5) + n2 * (vnoise(vec2(s * 6.0 - uTime * 17.0, seed + 3.0)) - 0.5)) * s * a3.x * 0.5;',
+  '  float w = mix(a3.x, a3.y, s);',
+  '  if (k == 2) w *= 0.92 + 0.08 * sin(uTime * 90.0 + s * 40.0);',
+  '  vec3 side = normalize(cross(dir, uCam - p)); p += side * position.y * w; vInfo2 = vec2(a1.w, w);',
+  '  gl_Position = viewProjection * vec4(p, 1.0); vSide = position.y * 2.0;',
+  '  vCol = vec4(a2.rgb, a2.a * shipFade(uTime)); vInfo = vec4(s, a0.w, seed, age); vInfo.w = age + 100.0 * floor(a4.y * 100.0); }'].join('\n');
+B.Effect.ShadersStore.ribbonFragmentShader = GL_COMMON + [
+  'varying vec4 vCol; varying vec4 vInfo; varying vec2 vInfo2; varying float vSide;',
+  'void main(){ float s = vInfo.x; int k = int(vInfo.y + 0.5); float seed = vInfo.z; float life = floor(vInfo.w / 100.0) / 100.0; float age = vInfo.w - floor(vInfo.w / 100.0) * 100.0;',
+  '  float x = abs(vSide); vec3 c = vec3(0.0);',
+  '  if (k == 0 || k == 3) { float n = fbm(vec2(s * 5.0 - uTime * 9.0, vSide * 1.5 + seed * 7.0));',
+  '    float core = exp(-x * x * (5.0 + s * 9.0)); float shape = pow(1.0 - s, 2.4); float br = smoothstep(0.2, 0.7, n + 0.25 * (1.0 - s));',
+  '    float fl = 0.85 + 0.15 * vnoise(vec2(uTime * 27.0, seed * 5.0)); if (k == 3) fl *= cough(uTime, seed);',
+  '    vec3 hot = mix(vec3(1.0, 0.95, 0.82), vCol.rgb, smoothstep(0.0, 0.3, s));',
+  '    c = hot * core * shape * (0.3 + 1.1 * br) * fl * vCol.a; }',
+  '  else if (k == 1 || k == 4) { float n = fbm(vec2(s * 14.0 - uTime * 0.6, vSide * 1.2 + seed * 3.0));',
+  '    float n2 = fbm(vec2(s * vInfo2.x * 0.18 - uTime * 0.5, vSide * vInfo2.y * 0.25 + seed * 3.0)); n = 0.5 * n + 0.5 * n2;',
+  '    float across = exp(-x * x * 2.2); float fade = pow(1.0 - s, 1.8) * smoothstep(0.0, 0.05, s);',
+  '    vec3 col = mix(vCol.rgb, vec3(0.30, 0.38, 0.60), smoothstep(0.0, 0.55, s));',
+  '    if (k == 4) col = mix(col, vec3(0.35, 0.25, 0.18), 0.5) * (0.5 + 0.5 * cough(uTime - s * 3.0, seed));',
+  '    c = col * across * fade * smoothstep(0.25, 0.75, n + 0.15) * 1.4 * vCol.a; }',
+  '  else { float env = smoothstep(0.0, 0.05, age) * (1.0 - smoothstep(life - 0.12, life, age));',
+  '    float sh = 0.7 + 0.3 * vnoise(vec2(s * 120.0 - uTime * 70.0, 0.0));',
+  '    float core = exp(-x * x * 60.0) * 5.0; float glow = exp(-x * x * 6.0) * 1.0 * sh + exp(-x * x * 1.6) * 0.15;',
+  '    float ends = smoothstep(0.0, 0.01, s) * (1.0 - smoothstep(0.985, 1.0, s));',
+  '    c = (vec3(1.0, 0.97, 0.92) * core + vCol.rgb * glow) * env * ends * vCol.a; }',
+  '  gl_FragColor = vec4(c, 1.0); }'].join('\n');
+
+// ---------- debris shards: real tumbling 3D chips, opaque, lit by the key, fill and ambient, glowing hot at first ----------
+// a0 = origin, tStart; a1 = vel, life; a2 = spin axis, spin rate; a3 = size, period, drift, drag; a4 = heat, seed, 0, 0
+B.Effect.ShadersStore.shardVertexShader = GL_COMMON + [
+  'attribute vec3 position; attribute vec3 normal; attribute vec4 a0; attribute vec4 a1; attribute vec4 a2; attribute vec4 a3; attribute vec4 a4;',
+  'uniform mat4 viewProjection; varying vec3 vN; varying float vHeat; varying float vSeed;',
+  'vec3 rotA(vec3 v, vec3 k, float an){ float c = cos(an), s = sin(an); return v * c + cross(k, v) * s + k * dot(k, v) * (1.0 - c); }',
+  'void main(){ float a = uTime - a0.w; float age = mod(a, a3.y); float life = a1.w;',
+  '  if (a < 0.0 || age >= life) { ' + HIDE + ' vN = vec3(0.0); vHeat = 0.0; vSeed = 0.0; return; }',
+  '  float t = age / life; float sc = a3.x * (1.0 - smoothstep(0.85, 1.0, t)) * mix(1.0, shipFade(uTime), a3.z);',
+  '  vec3 k = normalize(a2.xyz); float an = age * a2.w + a4.y * 6.2831853;',
+  '  float dr = a3.w; vec3 disp = dr > 0.0 ? a1.xyz * (1.0 - exp(-dr * age)) / dr : a1.xyz * age;',
+  '  vec3 p = a0.xyz + disp + rotA(position, k, an) * sc; p.x += a3.z * (drift(uTime - age) + 3.0 * age);',
+  '  vN = rotA(normal, k, an); vHeat = a4.x * exp(-age * 6.0); vSeed = a4.y; gl_Position = viewProjection * vec4(p, 1.0); }'].join('\n');
+B.Effect.ShadersStore.shardFragmentShader = [
+  'precision highp float; varying vec3 vN; varying float vHeat; varying float vSeed;',
+  'uniform vec3 uKeyDir; uniform vec3 uKeyCol; uniform vec3 uFillDir; uniform vec3 uFillCol; uniform vec3 uAmb;',
+  'void main(){ vec3 n = normalize(vN); vec3 base = vec3(0.032, 0.032, 0.036) * (0.6 + 0.9 * fract(vSeed * 17.3));',
+  '  float nl = max(dot(n, -uKeyDir), 0.0); vec3 lit = base * (uKeyCol * nl + uFillCol * max(dot(n, -uFillDir), 0.0) + uAmb) + uKeyCol * 0.08 * pow(nl, 16.0);',
+  '  gl_FragColor = vec4(lit + vec3(1.0, 0.33, 0.06) * vHeat * 2.0, 1.0); }'].join('\n');
+
+// ---------- shields (per shielded ship) ----------
+B.Effect.ShadersStore.shieldVertexShader = [
+  'precision highp float; attribute vec3 position; attribute vec3 normal; uniform mat4 world; uniform mat4 viewProjection; uniform vec3 uRad;',
+  'varying vec3 vW; varying vec3 vN;',
+  'void main(){ vec4 w = world * vec4(position, 1.0); vW = w.xyz; vN = normalize(normal / uRad); gl_Position = viewProjection * w; }'].join('\n');
+B.Effect.ShadersStore.shieldFragmentShader = GL_COMMON + [
+  'varying vec3 vW; varying vec3 vN; uniform float uT0; uniform float uPatchy; uniform vec3 uHit; uniform vec3 uCol; uniform vec3 uCam;',
+  'void main(){ float a = uTime - uT0; float age = mod(a, 4.0); if (a < 0.0 || age > 0.6) discard;',
+  '  float f = age / 0.6; float fade = (1.0 - f) * (1.0 - f) * smoothstep(0.0, 0.025, age);',
+  '  float d = length(vW - uHit); float mask = 1.0 - smoothstep(5.0, 15.0, d);',
+  '  float hd = d / 1.1; float hit = exp(-hd * hd) * 4.0 * (1.0 - f);',
+  '  float ring = 0.0; for (int i = 0; i < 3; i++) { float ai = age - float(i) * 0.08; if (ai > 0.0) { float rd = (d - ai * 22.0) / (0.6 + ai * 2.0); ring += exp(-rd * rd) * (i == 0 ? 1.7 : 0.8); } }',
+  '  vec3 V = normalize(uCam - vW); float fres = pow(1.0 - abs(dot(normalize(vN), V)), 5.0);',
+  '  float cells = 0.7 + 0.6 * fbm(vW.xy * 0.9 + vW.zx * 0.6);',
+  '  float I = (hit + ring * cells * mask + (0.004 + 1.4 * fres) * cells * mask) * fade;',
+  '  if (uPatchy > 0.5) { float fl = step(0.3, vnoise(vec2(uTime * 28.0, 3.0))); float pa = smoothstep(0.35, 0.65, fbm(vW.xz * 0.35 + vW.y * 0.2 + uTime * 0.7));',
+  '    I *= mix(0.25, 1.0, fl) * mix(0.1, 1.0, pa); }',
+  '  if (I < 0.002) discard; gl_FragColor = vec4(uCol * I, 1.0); }'].join('\n');
+
+// ---------- breach decal: torn hole, glowing jagged edge, charred ring, soot (premultiplied, on the hull) ----------
+B.Effect.ShadersStore.decalVertexShader = [
+  'precision highp float; attribute vec3 position; attribute vec3 normal; attribute vec2 uv; uniform mat4 world; uniform mat4 viewProjection;',
+  'varying vec2 vUv; varying vec3 vW;',
+  'void main(){ vec4 w = world * vec4(position, 1.0); vW = w.xyz; vUv = uv; gl_Position = viewProjection * w; }'].join('\n');
+B.Effect.ShadersStore.decalFragmentShader = GL_COMMON + [
+  'varying vec2 vUv; varying vec3 vW; uniform vec3 uCam; uniform vec3 uN; uniform float uSeed; uniform float uFade;',
+  'void main(){ vec2 p = vUv * 2.0 - 1.0; float r = length(p); float ang = atan(p.y, p.x);',
+  '  float R = 0.36 + 0.16 * (fbm(vec2(cos(ang), sin(ang)) * 2.2 + uSeed * 5.0) - 0.5) * 2.0 + 0.035 * sin(ang * 11.0 + uSeed);',
+  '  float e = r - R; vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;',
+  '  float fl = 0.8 + 0.2 * vnoise(vec2(uTime * 9.0, uSeed)) * vnoise(vec2(uTime * 23.0, uSeed + 2.0)) * 2.0;',
+  '  vec3 V = normalize(uCam - vW); vec3 tv = V - uN * dot(V, uN); vec2 par = vec2(tv.x + tv.z * 0.5, tv.y) * 0.35;',
+  '  if (e < 0.0) {',
+  '    vec2 q = p - par; float deep = smoothstep(0.0, -0.25, e);',
+  '    float emb = pow(fbm(q * 5.0 + uSeed + vec2(0.0, uTime * 0.2)), 4.0); float struts = smoothstep(0.92, 1.0, abs(sin(q.x * 9.0 + uSeed)));',
+  '    base = vec3(0.012, 0.010, 0.010) * (1.0 - deep * 0.6); alpha = 1.0;',
+  '    add = (vec3(1.0, 0.22, 0.03) * emb * 1.2 * fl + vec3(1.0, 0.4, 0.08) * struts * 0.12 * (1.0 - deep)) * deep; }',
+  '  else if (e < 0.05) { float h = 1.0 - e / 0.05; base = vec3(0.02); alpha = 1.0;',
+  '    add = mix(vec3(1.0, 0.3, 0.04) * 2.0, vec3(1.0, 0.8, 0.55) * 4.5, h * h) * h * fl; }',
+  '  else { float n = fbm(p * 4.0 + uSeed * 3.0);',
+  '    float charred = 1.0 - smoothstep(0.05, 0.2 + 0.1 * n, e);',
+  '    float crack = smoothstep(0.9, 0.98, 1.0 - abs(fbm(p * 7.0 + uSeed) * 2.0 - 1.0)) * (1.0 - smoothstep(0.05, 0.12, e));',
+  '    float soot = (1.0 - smoothstep(0.08, 0.62, e)) * (0.7 + 0.6 * n);',
+  '    alpha = clamp(max(charred, soot * 0.9), 0.0, 1.0); base = mix(vec3(0.03, 0.022, 0.018), vec3(0.015, 0.012, 0.01), charred);',
+  '    add = vec3(1.0, 0.3, 0.05) * crack * 0.8 * fl; }',
+  '  float edgeFade = 1.0 - smoothstep(0.85, 1.0, r); alpha *= edgeFade * uFade; add *= edgeFade * uFade;',
+  '  gl_FragColor = vec4(base * alpha + add, alpha); }'].join('\n');
+
+// ---------- torn petals (bent plates around the hole) and the destruction chunks' burning edges ----------
+B.Effect.ShadersStore.petalVertexShader = [
+  'precision highp float; attribute vec3 position; attribute vec3 normal; attribute vec2 uv; uniform mat4 world; uniform mat4 viewProjection;',
+  'varying vec3 vN; varying vec2 vUv;',
+  'void main(){ vN = normalize(mat3(world) * normal); vUv = uv; gl_Position = viewProjection * world * vec4(position, 1.0); }'].join('\n');
+B.Effect.ShadersStore.petalFragmentShader = GL_COMMON + [
+  'varying vec3 vN; varying vec2 vUv; uniform vec3 uKeyDir; uniform vec3 uKeyCol; uniform vec3 uFillDir; uniform vec3 uFillCol; uniform vec3 uAmb; uniform float uSeed;',
+  'void main(){ vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n; vec3 base = vec3(0.03, 0.028, 0.026);',
+  '  vec3 lit = base * (uKeyCol * max(dot(n, -uKeyDir), 0.0) + uFillCol * max(dot(n, -uFillDir), 0.0) + uAmb);',
+  '  float fl = 0.75 + 0.25 * vnoise(vec2(uTime * 11.0, uSeed + vUv.x * 3.0));',
+  '  gl_FragColor = vec4(lit + vec3(1.0, 0.35, 0.06) * pow(1.0 - vUv.y, 6.0) * 4.0 * fl, 1.0); }'].join('\n');
+B.Effect.ShadersStore.edgeVertexShader = GL_COMMON + [
+  'attribute vec3 position; attribute vec4 a0; attribute vec4 a1; uniform mat4 world; uniform mat4 viewProjection; uniform vec3 uCam; uniform float uWidth;',
+  'varying vec2 vUv; varying float vSeed;',
+  'void main(){ vec3 A = (world * vec4(position, 1.0)).xyz; vec3 Bp = (world * vec4(a0.xyz, 1.0)).xyz; vec3 P = mix(A, Bp, a1.x);',
+  '  vec3 dir = normalize(Bp - A + 1e-5); vec3 side = normalize(cross(dir, uCam - P)); P += side * a1.y * uWidth;',
+  '  vUv = a1.xy; vSeed = a1.z; gl_Position = viewProjection * vec4(P, 1.0); }'].join('\n');
+B.Effect.ShadersStore.edgeFragmentShader = GL_COMMON + [
+  'varying vec2 vUv; varying float vSeed; uniform float uHeat;',
+  'void main(){ float x = abs(vUv.y) * 2.0; float fl = 0.55 + 0.9 * vnoise(vec2(vSeed * 7.0 + vUv.x * 2.0, uTime * 3.0));',
+  '  vec3 col = mix(vec3(0.9, 0.12, 0.02), vec3(1.0, 0.65, 0.25), clamp(uHeat * fl - 0.2, 0.0, 1.0));',
+  '  gl_FragColor = vec4(col * exp(-x * x * 5.0) * fl * uHeat * 3.0, 1.0); }'].join('\n');
+
+function mkMat(name, sh, attributes, uniforms, alphaMode, opts) {
+  opts = opts || {};
+  var m = new B.ShaderMaterial(name, scene, { vertex: sh, fragment: sh }, {
+    attributes: attributes, uniforms: uniforms, samplers: [], needAlphaBlending: alphaMode !== null
+  });
+  if (alphaMode !== null) { m.alphaMode = alphaMode; m.disableDepthWrite = true; }
+  m.backFaceCulling = !!opts.cull;
+  return m;
+}
+var LIGHT_U = ['uKeyDir', 'uKeyCol', 'uFillDir', 'uFillCol', 'uAmb'];
+var matSprite = mkMat('fxSprite', 'sprite', A5, ['world', 'view', 'projection', 'uTime', 'uGate'], B.Constants.ALPHA_PREMULTIPLIED);
+var matStreak = mkMat('fxStreak', 'streak', A5, ['viewProjection', 'uTime', 'uCam'], B.Constants.ALPHA_ADD);
+var matRing = mkMat('fxRing', 'ring', A5, ['viewProjection', 'uTime'], B.Constants.ALPHA_PREMULTIPLIED);
+var matRibbon = mkMat('fxRibbon', 'ribbon', A5, ['viewProjection', 'uTime', 'uCam'], B.Constants.ALPHA_ADD);
+var matShard = mkMat('fxShard', 'shard', ['position', 'normal', 'a0', 'a1', 'a2', 'a3', 'a4'], ['viewProjection', 'uTime'].concat(LIGHT_U), null, { cull: true });
+matSprite.setFloat('uGate', 1);
+var allFx = [matSprite, matStreak, matRing, matRibbon, matShard];
+function setLightU(m) {
+  m.setVector3('uKeyDir', KEY_DIR); m.setVector3('uFillDir', FILL_DIR);
+  m.setColor3('uKeyCol', key.diffuse.scale(KEY)); m.setColor3('uFillCol', fill.diffuse.scale(0.25 * KEY));
+  m.setColor3('uAmb', new B.Color3(0.25 * KEY, 0.25 * KEY, 0.25 * KEY));
+}
+setLightU(matShard);
+
+// ---------- particle writers ----------
+var SPR = new Batch('fx_sprites', 5), SMK = new Batch('fx_smoke', 5), STK = new Batch('fx_streaks', 5);
+var RNG = new Batch('fx_rings', 5), RIB = new Batch('fx_ribbons', 5), SHD = new Batch('fx_shards', 5, true);
+// sprite: smoke kinds go to SMK (drawn first), glow kinds to SPR, so glow sits on top of smoke
+function sprite(o) {
+  var smoky = o.kind === 3 || o.kind === 7 || o.kind === 8, b = o.batch || (smoky ? SMK : SPR), v = o.vel || V3(0, 0, 0);
+  b.quad(CORNERS, [[o.p.x, o.p.y, o.p.z, o.t], [v.x, v.y, v.z, o.life], [o.col[0], o.col[1], o.col[2], o.i],
+    [o.s0, o.s1, o.kind, o.seed === undefined ? rng() : o.seed], [o.per, o.drift === undefined ? 1 : o.drift, o.drag || 0, o.spin || 0]]);
+}
+function streak(o) {
+  var v = o.vel;
+  STK.quad(STREAK_CORNERS, [[o.p.x, o.p.y, o.p.z, o.t], [v.x, v.y, v.z, o.life], [o.col[0], o.col[1], o.col[2], o.i],
+    [o.len, o.w, o.drag || 0, o.kind], [o.per, o.drift === undefined ? 1 : o.drift, 0, 0]]);
+}
+function ring(o) {
+  RNG.quad(CORNERS, [[o.p.x, o.p.y, o.p.z, o.t], [o.n.x, o.n.y, o.n.z, o.life], [o.col[0], o.col[1], o.col[2], o.i],
+    [o.s0, o.s1, o.kind, rng()], [o.per, o.drift === undefined ? 1 : o.drift, o.speed || 0, o.drag || 0]]);
+}
+function ribbon(o) {
+  var S = o.segs, base = RIB.pos.length / 3;
+  for (var j = 0; j <= S; j++) for (var sd = 0; sd < 2; sd++)
+    RIB.v([j / S, sd ? 0.5 : -0.5, 0], [[o.p.x, o.p.y, o.p.z, o.kind], [o.dir.x, o.dir.y, o.dir.z, o.len], [o.col[0], o.col[1], o.col[2], o.i],
+      [o.w0, o.w1, rng(), 0], [o.t, o.life, o.per, 0]]);
+  for (var j = 0; j < S; j++) { var b = base + j * 2; RIB.idx.push(b, b + 1, b + 3, b, b + 3, b + 2); }
+}
+// one shard = a jittered octahedron, flat shaded (24 vertices)
+function shard(o) {
+  var P = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].map(function (q) {
+    var j = 0.5 + rng() * 0.5; return [q[0] * j * (0.5 + rng() * 0.6), q[1] * j * 0.35, q[2] * j * (0.5 + rng() * 0.6)]; });
+  var F = [[0, 2, 4], [4, 2, 1], [1, 2, 5], [5, 2, 0], [4, 3, 0], [1, 3, 4], [5, 3, 1], [0, 3, 5]];
+  var ax = rdir(), v = o.vel, seed = rng();
+  var attrs = [[o.p.x, o.p.y, o.p.z, o.t], [v.x, v.y, v.z, o.life], [ax.x, ax.y, ax.z, o.spin], [o.size, o.per, o.drift === undefined ? 1 : o.drift, o.drag || 0], [o.heat, seed, 0, 0]];
+  F.forEach(function (f) {
+    var a = V3.apply(null, P[f[0]]), b = V3.apply(null, P[f[1]]), c = V3.apply(null, P[f[2]]);
+    var n = B.Vector3.Cross(b.subtract(a), c.subtract(a)).normalize();
+    var i0 = SHD.v([a.x, a.y, a.z], attrs, [n.x, n.y, n.z]); SHD.v([b.x, b.y, b.z], attrs, [n.x, n.y, n.z]); SHD.v([c.x, c.y, c.z], attrs, [n.x, n.y, n.z]);
+    SHD.idx.push(i0, i0 + 2, i0 + 1);
+  });
+}
+
+// ---------- ship anchors (world space at drift 0) ----------
+function castOnto(d, from, dir) {
+  var pk = scene.pickWithRay(new B.Ray(from, dir, 400), function (m) { return d.meshes.indexOf(m) >= 0; });
+  if (!pk || !pk.hit) return null;
+  var n = pk.getNormal(true, true) || dir.scale(-1);
+  if (B.Vector3.Dot(n, dir) > 0) n = n.scale(-1);
+  return { p: pk.pickedPoint, n: n.normalize(), mesh: pk.pickedMesh };
+}
+function sideHit(d, x, yFrac, side) {     // side +1 = port (+z), -1 = starboard (-z)
+  var h = d.hi.y - d.lo.y, tries = [yFrac, yFrac - 0.1, yFrac + 0.1, yFrac - 0.2, 0];
+  for (var i = 0; i < tries.length; i++) {
+    var y = (d.lo.y + d.hi.y) / 2 + tries[i] * h;
+    var r = castOnto(d, V3(x, y, side > 0 ? d.hi.z + 20 : d.lo.z - 20), V3(0, 0, -side));
+    if (r) return r;
+  }
+  return { p: V3(x, 0, side > 0 ? d.hi.z : d.lo.z), n: V3(0, 0, side), mesh: d.meshes[0] };
+}
+SHIPS.forEach(function (d, i) {
+  var lo = V3(1e9, 1e9, 1e9), hi = lo.scale(-1), tmp = new B.Vector3(), pts = [];
   d.meshes.forEach(function (m) {
     var wm = m.getWorldMatrix(), p = m.getVerticesData(B.VertexBuffer.PositionKind);
     for (var k = 0; k < p.length; k += 3) {
@@ -241,213 +603,330 @@ SHIPS.forEach(function (d) {
       lo.minimizeInPlace(tmp); hi.maximizeInPlace(tmp); pts.push(tmp.x, tmp.y, tmp.z);
     }
   });
-  // bow: the mean of the vertices in the front 2% of the length, nudged just ahead of the tip
-  var cut = hi.x - 0.02 * SHIP_LEN, sy = 0, sz = 0, n = 0;
+  d.lo = lo; d.hi = hi; d.L = hi.x - lo.x; d.W = hi.z - lo.z; d.H = hi.y - lo.y; d.c = lo.add(hi).scale(0.5);
+  // bow: mean of the vertices in the front 2% of the length
+  var cut = hi.x - 0.02 * d.L, sy = 0, sz = 0, n = 0;
   for (var k = 0; k < pts.length; k += 3) if (pts[k] >= cut) { sy += pts[k + 1]; sz += pts[k + 2]; n++; }
-  d.lo = lo; d.hi = hi;
-  d.bow = new B.Vector3(hi.x + 0.4, n ? sy / n : 0, n ? sz / n : d.z);
-  // port hull point: a ray from the port side (+z) at midship
-  d.port = null;
-  var tries = [0, 0.15, -0.15, 0.3, -0.3];
-  for (var t = 0; t < tries.length && !d.port; t++) {
-    var y0 = tries[t] * (hi.y - lo.y);
-    var ray = new B.Ray(new B.Vector3(d.x, y0, hi.z + 20), new B.Vector3(0, 0, -1), 200);
-    var pk = scene.pickWithRay(ray, function (m) { return d.meshes.indexOf(m) >= 0; });
-    if (pk && pk.hit) d.port = pk.pickedPoint.add(new B.Vector3(0, 0, 0.15));
+  d.bow = V3(hi.x + 0.4, n ? sy / n : 0, n ? sz / n : d.z);
+  // engines: k-means on the (y, z) of the aft 5% of the vertices; 2 nozzles for slim hulls, 3 for wide ones
+  var aft = []; for (var k = 0; k < pts.length; k += 3) if (pts[k] <= lo.x + 0.05 * d.L) aft.push([pts[k], pts[k + 1], pts[k + 2]]);
+  var K = d.W > 0.45 * d.L ? 3 : 2, cen = [];
+  aft.sort(function (a, b) { return a[2] - b[2]; });
+  for (var c = 0; c < K; c++) { var q = aft[Math.floor((c + 0.5) / K * aft.length)]; cen.push([q[1], q[2]]); }
+  var asg = new Array(aft.length);
+  for (var it = 0; it < 12; it++) {
+    for (var a = 0; a < aft.length; a++) { var best = 0, bd = 1e9; for (var c = 0; c < K; c++) { var dy = aft[a][1] - cen[c][0], dz = aft[a][2] - cen[c][1], dd = dy * dy + dz * dz; if (dd < bd) { bd = dd; best = c; } } asg[a] = best; }
+    for (var c = 0; c < K; c++) { var my = 0, mz = 0, cnt = 0; for (var a = 0; a < aft.length; a++) if (asg[a] === c) { my += aft[a][1]; mz += aft[a][2]; cnt++; } if (cnt) cen[c] = [my / cnt, mz / cnt]; }
   }
-  if (!d.port) d.port = new B.Vector3(d.x, 0, hi.z);
-  d.target = d.bow.add(new B.Vector3(60, 0, -10));      // 60 ahead, 10 out to starboard
-  d.boom = new B.Vector3(d.x, 0, d.z - 12);             // 12 off the starboard side (from the centre line)
-});
-
-// ---------- effects: all driven by one clock uniform, built from static per-particle data ----------
-// Each particle stores its start time inside the 2 s loop; the shaders work out age = mod(t - start, 2) and draw
-// it while age < life. So the whole loop is a pure function of the clock: the stills are exact and repeatable,
-// and the CPU does nothing per frame beyond setting a few uniforms.
-var rng = (function (a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a);
-  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })(20261025);
-function rdir() { var z = rng() * 2 - 1, a = rng() * 6.2831853, r = Math.sqrt(1 - z * z); return new B.Vector3(r * Math.cos(a), r * Math.sin(a), z); }
-
-function QuadBatch(name) { this.name = name; this.a = [[], [], [], []]; this.n = 0; }
-QuadBatch.prototype.add = function (a0, a1, a2, a3) {
-  var src = [a0, a1, a2, a3];
-  for (var v = 0; v < 4; v++) for (var k = 0; k < 4; k++) Array.prototype.push.apply(this.a[k], src[k]);
-  this.n++;
-};
-QuadBatch.prototype.build = function (corners, mat) {
-  var pos = [], idx = [];
-  for (var q = 0; q < this.n; q++) {
-    for (var v = 0; v < 4; v++) pos.push(corners[v][0], corners[v][1], 0);
-    var b = q * 4; idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
+  d.nozzles = [];
+  for (var c = 0; c < K; c++) {
+    var mx = 1e9, s2 = 0, cnt = 0;
+    for (var a = 0; a < aft.length; a++) if (asg[a] === c) { mx = Math.min(mx, aft[a][0]); var dy = aft[a][1] - cen[c][0], dz = aft[a][2] - cen[c][1]; s2 += dy * dy + dz * dz; cnt++; }
+    if (!cnt) continue;
+    d.nozzles.push({ p: V3(mx - 0.15, cen[c][0], cen[c][1]), r: Math.min(2.4, Math.max(0.45, 0.55 * Math.sqrt(s2 / cnt))) });
   }
-  var m = new B.Mesh(this.name, scene), vd = new B.VertexData();
-  vd.positions = pos; vd.indices = idx; vd.applyToMesh(m, false);
-  for (var k = 0; k < 4; k++) m.setVerticesData('a' + k, new Float32Array(this.a[k]), false, 4);
-  m.material = mat; m.alwaysSelectAsActiveMesh = true; m.isPickable = false; m.renderingGroupId = 1;
-  return m;
-};
-
-var COMMON_V = 'precision highp float; attribute vec3 position; attribute vec4 a0; attribute vec4 a1; attribute vec4 a2; attribute vec4 a3; uniform float uTime;';
-// Streaks: bolts (no drag, fixed length, stop at the target) and sparks (drag, length from speed, fade out).
-// a0 = start pos, start time; a1 = velocity, life; a2 = colour, intensity; a3 = length (bolt) or blur seconds (spark), width, drag, unused
-B.Effect.ShadersStore.streakVertexShader = COMMON_V + [
-  'uniform mat4 viewProjection; uniform vec3 uCam; varying vec2 vUv; varying vec3 vCol;',
-  'void main(){ float a = uTime - a0.w; float age = mod(a, ' + LOOP.toFixed(1) + '); float life = a1.w;',
-  '  if (a < 0.0 || age >= life) { ' + HIDE + ' vUv = vec2(0.0); vCol = vec3(0.0); return; }',
-  '  vec3 v = a1.xyz; float sp = max(length(v), 1e-4); vec3 dir = v / sp; float drag = a3.z; vec3 head; float L; float fade = 1.0;',
-  '  if (drag > 0.0) { float e = exp(-drag * age); head = a0.xyz + v * (1.0 - e) / drag; L = max(a3.x * sp * e, 0.12); float u = age / life; fade = (1.0 - u) * (1.0 - u); }',
-  '  else { float tr = sp * age; head = a0.xyz + dir * tr; L = min(a3.x, tr); }',
-  '  vec3 tail = head - dir * L; vec3 mid = 0.5 * (head + tail);',
-  '  vec3 side = normalize(cross(dir, uCam - mid));',
-  '  vec3 p = mix(tail, head, position.x) + side * position.y * a3.y;',
-  '  vUv = position.xy; vCol = a2.rgb * a2.a * fade; gl_Position = viewProjection * vec4(p, 1.0); }'].join('\n');
-B.Effect.ShadersStore.streakFragmentShader = [
-  'precision highp float; varying vec2 vUv; varying vec3 vCol;',
-  'void main(){ float x = abs(vUv.y) * 2.0; float core = exp(-x * x * 22.0); float glow = exp(-x * x * 4.0) * 0.45;',
-  '  float along = smoothstep(0.0, 0.45, vUv.x) * (1.0 - smoothstep(0.9, 1.0, vUv.x) * 0.7);',
-  '  vec3 c = vCol * (glow + core) * along + vec3(core * core) * length(vCol) * 0.25 * along;',
-  '  gl_FragColor = vec4(c, 1.0); }'].join('\n');
-
-// Sprites: camera-facing quads. kind 0 muzzle flash, 1 flame, 2 fireball core, 3 smoke (alpha blended mesh).
-// a0 = centre, start time; a1 = size0, size1, life, kind; a2 = colour, intensity; a3 = drift velocity, seed
-B.Effect.ShadersStore.spriteVertexShader = COMMON_V + [
-  'uniform mat4 view; uniform mat4 projection; varying vec2 vUv; varying vec4 vCol; varying vec3 vInfo;',
-  'void main(){ float a = uTime - a0.w; float age = mod(a, ' + LOOP.toFixed(1) + '); float life = a1.z;',
-  '  if (a < 0.0 || age >= life) { ' + HIDE + ' vUv = vec2(0.0); vCol = vec4(0.0); vInfo = vec3(0.0); return; }',
-  '  float t = age / life; float kind = a1.w; float g;',
-  '  if (kind < 0.5) g = t; else if (kind < 1.5) g = 1.0 - pow(1.0 - t, 2.2); else if (kind < 2.5) g = sqrt(t); else g = 1.0 - pow(1.0 - t, 1.6);',
-  '  float size = mix(a1.x, a1.y, g);',
-  '  vec3 c = a0.xyz + a3.xyz * (1.0 - exp(-2.0 * age)) / 2.0;',
-  '  float ang = a3.w * 6.2831853 + age * (fract(a3.w * 7.31) - 0.5) * 2.4; float cs = cos(ang), sn = sin(ang);',
-  '  vec2 q = vec2(cs * position.x - sn * position.y, sn * position.x + cs * position.y);',
-  '  vec4 vp = view * vec4(c, 1.0); vp.xy += q * size; gl_Position = projection * vp;',
-  '  vUv = position.xy * 2.0; vCol = a2; vInfo = vec3(t, kind, a3.w + age * 0.35); }'].join('\n');
-B.Effect.ShadersStore.spriteFragmentShader = 'precision highp float; varying vec2 vUv; varying vec4 vCol; varying vec3 vInfo;\n' + NOISE + [
-  'void main(){ float t = vInfo.x; float kind = vInfo.y; float r = length(vUv); vec3 c = vec3(0.0); float alpha = 1.0;',
-  '  if (r > 1.0) discard;',
-  '  if (kind < 0.5) {',                              // muzzle flash
-  '    float f = (1.0 - t) * (1.0 - t) * vCol.a;',
-  '    c = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8;',
-  '    c += vCol.rgb * f * 0.5 * (exp(-abs(vUv.x) * 40.0) * exp(-abs(vUv.y) * 3.0) + exp(-abs(vUv.y) * 40.0) * exp(-abs(vUv.x) * 3.0));',
-  '  } else if (kind < 1.5) {',                       // rolling flame
-  '    float n = fbm(vUv * 1.7 + vec2(vInfo.z * 13.1, vInfo.z * 7.7) + vec2(0.0, -t * 1.2));',
-  '    float dens = (1.0 - r) * 1.4 + (n - 0.5) * 1.15; float thr = t * 1.1;',
-  '    float m = smoothstep(thr, thr + 0.35, dens); float heat = clamp(dens - thr, 0.0, 1.0) * (1.0 - t * 0.6);',
-  '    vec3 col = mix(vec3(0.45, 0.04, 0.01), vec3(1.0, 0.32, 0.04), smoothstep(0.0, 0.3, heat));',
-  '    col = mix(col, vec3(1.0, 0.75, 0.35), smoothstep(0.3, 0.65, heat)); col = mix(col, vec3(1.0, 0.96, 0.85), smoothstep(0.65, 1.0, heat));',
-  '    c = col * mix(vec3(1.0), vCol.rgb * 1.6, 0.25) * vCol.a * (0.5 + 2.6 * heat * heat) * m * smoothstep(0.0, 0.05, t);',
-  '  } else if (kind < 2.5) {',                       // fireball core
-  '    float f = pow(1.0 - t, 1.5) * vCol.a;',
-  '    c = vCol.rgb * exp(-r * r * 3.0) * f + vec3(exp(-r * r * 10.0)) * f;',
-  '  } else {',                                       // smoke
-  '    float n = fbm(vUv * 1.3 + vec2(vInfo.z * 11.3, vInfo.z * 5.1) + vec2(t * 0.4, 0.0));',
-  '    float dens = (1.0 - r) * 1.25 + (n - 0.5) * 0.95; float m = smoothstep(0.05, 0.55, dens);',
-  '    alpha = m * vCol.a * smoothstep(0.0, 0.12, t) * pow(1.0 - t, 1.3);',
-  '    c = vCol.rgb * (0.7 + 0.6 * n) + vec3(1.0, 0.4, 0.1) * pow(1.0 - t, 6.0) * 0.9;',
-  '  }',
-  '  gl_FragColor = vec4(c, alpha); }'].join('\n');
-
-// Shield: an ellipsoid shell per shielded ship. Brightest at the hit, a ring running out from it, a rim, and a mask
-// that keeps it to the struck side (a partial bubble). Fades over 0.5 s.
-B.Effect.ShadersStore.shieldVertexShader = [
-  'precision highp float; attribute vec3 position; attribute vec3 normal; uniform mat4 world; uniform mat4 viewProjection; uniform vec3 uRad;',
-  'varying vec3 vW; varying vec3 vN;',
-  'void main(){ vec4 w = world * vec4(position, 1.0); vW = w.xyz; vN = normalize(normal / uRad); gl_Position = viewProjection * w; }'].join('\n');
-B.Effect.ShadersStore.shieldFragmentShader = 'precision highp float; varying vec3 vW; varying vec3 vN; uniform float uTime; uniform float uT0; uniform vec3 uHit; uniform vec3 uCol; uniform vec3 uCam;\n' + NOISE + [
-  'void main(){ float a = uTime - uT0; float age = mod(a, ' + LOOP.toFixed(1) + ');',
-  '  if (a < 0.0 || age > 0.5) discard;',
-  '  float f = age / 0.5; float fade = (1.0 - f) * (1.0 - f) * smoothstep(0.0, 0.03, age);',
-  '  float d = length(vW - uHit);',
-  '  float mask = 1.0 - smoothstep(6.0, 15.0, d);',
-  '  float hd = d / 1.8; float hit = exp(-hd * hd) * 6.0;',
-  '  float rd = (d - (1.0 + f * 11.0)) / 0.8; float ring = exp(-rd * rd) * 1.8 * (1.0 - f);',
-  '  vec3 V = normalize(uCam - vW); float fres = pow(1.0 - abs(dot(normalize(vN), V)), 5.0);',
-  '  float cells = 0.75 + 0.5 * fbm(vW.xy * 0.9 + vW.zx * 0.6);',
-  '  float I = (hit + ring + (0.004 + 1.4 * fres) * cells * mask) * fade;',
-  '  if (I < 0.002) discard;',
-  '  gl_FragColor = vec4(uCol * I, 1.0); }'].join('\n');
-
-function fxMat(name, v, f, extra, alphaMode) {
-  var m = new B.ShaderMaterial(name, scene, { vertex: v, fragment: f }, {
-    attributes: extra.attributes, uniforms: extra.uniforms, samplers: [], needAlphaBlending: true
+  // four broadside guns along the upper port flank, bow to stern
+  d.guns = [0.28, 0.1, -0.08, -0.26].map(function (f) {
+    var h = sideHit(d, d.c.x + f * d.L, 0.15, 1); return { p: h.p.add(h.n.scale(0.5)), n: h.n };
   });
-  m.alphaMode = alphaMode; m.backFaceCulling = false; m.disableDepthWrite = true;
-  return m;
-}
-var QUAD_ATTR = ['position', 'a0', 'a1', 'a2', 'a3'];
-var matStreak = fxMat('fxStreak', 'streak', 'streak', { attributes: QUAD_ATTR, uniforms: ['viewProjection', 'uTime', 'uCam'] }, B.Constants.ALPHA_ADD);
-var matAdd = fxMat('fxAdd', 'sprite', 'sprite', { attributes: QUAD_ATTR, uniforms: ['view', 'projection', 'uTime'] }, B.Constants.ALPHA_ADD);
-var matSmoke = fxMat('fxSmoke', 'sprite', 'sprite', { attributes: QUAD_ATTR, uniforms: ['view', 'projection', 'uTime'] }, B.Constants.ALPHA_COMBINE);
+  // breach: upper port flank, a little aft of midship
+  var bh = sideHit(d, d.c.x - 0.17 * d.L, 0.08, 1);
+  d.breach = { p: bh.p, n: bh.n, mesh: bh.mesh };
+  // starboard hit point (incoming shell)
+  d.stb = sideHit(d, d.c.x + 0.05 * d.L, 0.05, -1);
+});
 
-var streaks = new QuadBatch('fx_streaks'), adds = new QuadBatch('fx_sprites'), smokes = new QuadBatch('fx_smoke');
-var shields = [];
+// ---------- per-ship effects ----------
+var STAG = 0.5, PER = 4.0;
+var ENEMY = [1.0, 0.72, 0.42];
+var shields = [], decals = [], petals = [];
 SHIPS.forEach(function (d, i) {
-  var T0 = i * STAGGER;
-  // 1. main weapon: three bolts 0.12 s apart, each with a 0.1 s muzzle flash
-  var dv = d.target.subtract(d.bow), dist = dv.length(), dir = dv.scale(1 / dist);
-  for (var s = 0; s < 3; s++) {
-    var ts = T0 + s * 0.12;
-    streaks.add([d.bow.x, d.bow.y, d.bow.z, ts], [dir.x * 120, dir.y * 120, dir.z * 120, dist / 120], d.bolt.concat([9.0]), [6.0, 0.9, 0.0, 0]);
-    adds.add([d.bow.x, d.bow.y, d.bow.z, ts], [2.6, 3.4, 0.1, 0], d.bolt.concat([7.0]), [0, 0, 0, rng()]);
-  }
-  // 2. shield hit (or hull hit) on the port side at 0.6 s
-  var tHit = T0 + 0.6;
+  var T0 = i * STAG, wc = d.weapon, tint = function (k) { return mix3(wc, [1, 1, 1], k); };
+  // 1. engines: hot core, flickering plume (about 1.5 ship widths), long cooling trail (60)
+  var sput = d.fac === 'corsair';
+  d.nozzles.forEach(function (nz) {
+    var plumeL = Math.min(32, Math.max(6, 1.5 * d.W));
+    sprite({ p: nz.p, t: -20, life: 1, per: 1, col: d.engine, i: 2.0, s0: nz.r * 2.8, s1: nz.r * 2.8, kind: sput ? 11 : 4 });
+    ribbon({ p: nz.p, dir: V3(-1, 0, 0), len: plumeL, segs: 14, kind: sput ? 3 : 0, col: d.engine, i: 0.9, w0: nz.r * 1.3, w1: nz.r * 0.5, t: -20, life: 1, per: 1 });
+    ribbon({ p: nz.p.add(V3(-0.3 * plumeL, 0, 0)), dir: V3(-1, 0, 0), len: 60, segs: 40, kind: sput ? 4 : 1, col: d.engine, i: 0.22, w0: nz.r * 1.1, w1: nz.r * 2.4, t: -20, life: 1, per: 1 });
+    if (sput) for (var k = 0; k < 9; k++) {   // soot coughs
+      var tk = -20 + k * 0.23 + (k % 3) * 0.05;
+      sprite({ p: nz.p.add(rdir().scale(0.3)), t: tk, life: 1.8, per: 2.1, vel: V3(-5 - rng() * 3, rng() - 0.3, rng() - 0.5), drag: 0.8,
+        col: [0.06, 0.05, 0.045], i: 0.55, s0: nz.r * 1.2, s1: nz.r * 4.5, kind: 8 });
+    }
+  });
+  // 2. broadside at 0.0: four guns ripple 80 ms apart, bow to stern
+  d.guns.forEach(function (g, gi) {
+    var tg = T0 + gi * 0.08, tgt = g.p.add(V3(4 - gi * 2, 3 + rng() * 2, 70 + rng() * 4));
+    var dv = tgt.subtract(g.p), dist = dv.length(), dir = dv.scale(1 / dist);
+    sprite({ p: g.p.add(dir.scale(0.6)), t: tg, life: 0.09, per: PER, col: tint(0.25), i: 11, s0: 3.2, s1: 5.0, kind: 0 });
+    sprite({ p: g.p.add(dir.scale(1.2)), t: tg, life: 0.16, per: PER, col: [1, 0.7, 0.4], i: 5, s0: 1.6, s1: 3.2, kind: 2 });
+    streak({ p: g.p, t: tg, vel: dir, life: 0.13, per: PER, col: tint(0.35), i: 5, len: 4.5, w: 1.5, kind: 3 });
+    ring({ p: g.p.add(dir.scale(1.0)), n: dir, t: tg + 0.02, life: 2.0, per: PER, col: [0.24, 0.23, 0.22], i: 0.55, s0: 1.0, s1: 5.5, kind: 0, speed: 5, drag: 1.4 });
+    for (var k = 0; k < 3; k++) sprite({ p: g.p.add(dir.scale(1.0 + k)), t: tg + 0.03 + k * 0.03, life: 1.6 + rng() * 0.4, per: PER, vel: rcone(dir, 0.5).scale(2 + rng() * 2), drag: 1.0,
+      col: [0.20, 0.19, 0.18], i: 0.4, s0: 1.2, s1: 4.0 + rng() * 2, kind: 3 });
+    streak({ p: g.p, t: tg, vel: dir.scale(160), life: dist / 160, per: PER, col: tint(0.3), i: 16, len: 9, w: 0.6, kind: 0 });
+    var ti = tg + dist / 160;
+    sprite({ p: tgt, t: ti, life: 0.14, per: PER, col: tint(0.4), i: 9, s0: 2.5, s1: 4.5, kind: 0 });
+    for (var k = 0; k < 12; k++) { var sd = rcone(dir.scale(-0.4), 1.0); streak({ p: tgt, t: ti + rng() * 0.03, vel: sd.scale(14 + rng() * 18), life: 0.3 + rng() * 0.35, per: PER, col: [1, 0.62, 0.28], i: 7, len: 0.04, w: 0.13, drag: 2.2, kind: 1 }); }
+    for (var k = 0; k < 6; k++) shard({ p: tgt, t: ti, life: 2.2, per: PER, vel: rcone(dir.scale(-0.3), 1.0).scale(4 + rng() * 6), drag: 0.4, spin: 3 + rng() * 6, size: 0.08 + rng() * 0.12, heat: 0.8 });
+    sprite({ p: tgt, t: ti + 0.04, life: 1.1, per: PER, vel: rdir().scale(1.5), drag: 1, col: [0.18, 0.17, 0.16], i: 0.35, s0: 1.2, s1: 3.5, kind: 3 });
+  });
+  // 3. lance at 1.5 for 0.7 s, charge flare from 1.25
+  var tb = T0 + 1.5, end = d.bow.add(V3(80, 0, 0));
+  sprite({ p: d.bow, t: tb - 0.25, life: 0.25, per: PER, col: tint(0.2), i: 9, s0: 0.6, s1: 5.0, kind: 12 });
+  sprite({ p: d.bow, t: tb, life: 0.7, per: PER, col: tint(0.3), i: 7, s0: 4.5, s1: 4.5, kind: 13 });
+  ribbon({ p: d.bow, dir: V3(1, 0, 0), len: 80, segs: 24, kind: 2, col: wc, i: 2.4, w0: 2.4, w1: 2.0, t: tb, life: 0.7, per: PER });
+  sprite({ p: end, t: tb + 0.03, life: 0.67, per: PER, col: tint(0.4), i: 9, s0: 7, s1: 7, kind: 13 });
+  for (var k = 0; k < 44; k++) { var sd = rcone(V3(-0.6, 0.2, 0), 1.1); streak({ p: end, t: tb + 0.04 + k * 0.015, vel: sd.scale(14 + rng() * 22), life: 0.35 + rng() * 0.5, per: PER, col: mix3(wc, [1, 0.8, 0.5], 0.5), i: 7, len: 0.05, w: 0.14, drag: 1.6, kind: 1 }); }
+  for (var k = 0; k < 4; k++) sprite({ p: end, t: tb + 0.1 + k * 0.15, life: 1.2, per: PER, vel: rdir().scale(2.5), drag: 0.8, col: [0.2, 0.19, 0.18], i: 0.35, s0: 2, s1: 6, kind: 3 });
+  // 4. incoming shell, then a shield ripple (or a hull hit) on the starboard side at 2.4
+  var th = T0 + 2.4, hp = d.stb.p, inDir = V3(-0.25, 0.22, -1).normalize();
+  var shellFrom = hp.add(inDir.scale(80));
   if (d.shield) {
-    var rad = new B.Vector3((d.hi.x - d.lo.x) * 0.5 * 1.12 + 1.0, (d.hi.y - d.lo.y) * 0.5 * 1.3 + 1.2, (d.hi.z - d.lo.z) * 0.5 * 1.3 + 1.2);
-    var ctr = d.lo.add(d.hi).scale(0.5);
+    var rad = V3(d.L * 0.5 * 1.12 + 1.0, d.H * 0.5 * 1.3 + 1.2, d.W * 0.5 * 1.3 + 1.2), ctr = d.c.clone();
+    var hitPt = V3(hp.x, ctr.y + (hp.y - ctr.y) * 0.5, ctr.z - rad.z);
+    streak({ p: hitPt.add(inDir.scale(80)), t: th - 0.5, vel: inDir.scale(-160), life: 0.5, per: PER, col: ENEMY, i: 14, len: 9, w: 0.55, kind: 0 });
     var sh = B.MeshBuilder.CreateSphere('shield_' + d.fac, { diameter: 2, segments: 48 }, scene);
-    sh.position.copyFrom(ctr); sh.scaling.copyFrom(rad); sh.isPickable = false; sh.renderingGroupId = 1;
-    sh.alwaysSelectAsActiveMesh = true;
-    var m = fxMat('fxShield_' + d.fac, 'shield', 'shield', { attributes: ['position', 'normal'],
-      uniforms: ['world', 'viewProjection', 'uRad', 'uTime', 'uT0', 'uHit', 'uCol', 'uCam'] }, B.Constants.ALPHA_ADD);
-    m.backFaceCulling = true;
-    m.setVector3('uRad', rad); m.setFloat('uT0', tHit);
-    m.setVector3('uHit', new B.Vector3(ctr.x, ctr.y, ctr.z + rad.z));
+    sh.position.copyFrom(ctr); sh.scaling.copyFrom(rad); sh.isPickable = false; sh.renderingGroupId = 1; sh.alwaysSelectAsActiveMesh = true;
+    var m = mkMat('fxShield_' + d.fac, 'shield', ['position', 'normal'], ['world', 'viewProjection', 'uRad', 'uTime', 'uT0', 'uHit', 'uCol', 'uCam', 'uPatchy'], B.Constants.ALPHA_ADD, { cull: true });
+    m.setVector3('uRad', rad); m.setFloat('uT0', th); m.setFloat('uPatchy', d.fac === 'corsair' ? 1 : 0);
     m.setColor3('uCol', new B.Color3(d.shield[0] * 2.2, d.shield[1] * 2.2, d.shield[2] * 2.2));
-    sh.material = m; sh.alphaIndex = 2; shields.push(m);
+    sh.material = m; sh.alphaIndex = 2; allFx.push(m);
+    shields.push({ mesh: sh, mat: m, ctr: ctr, hit: hitPt });
+    sprite({ p: hitPt, t: th, life: 0.16, per: PER, col: mix3(d.shield, [1, 1, 1], 0.4), i: 7, s0: 2.5, s1: 4.5, kind: 0 });
+    for (var k = 0; k < 10; k++) streak({ p: hitPt, t: th + rng() * 0.03, vel: rcone(V3(0, 0, -1), 0.9).scale(10 + rng() * 14), life: 0.25 + rng() * 0.3, per: PER, col: mix3(d.shield, [1, 1, 1], 0.5), i: 6, len: 0.04, w: 0.12, drag: 2.5, kind: 1 });
+    d.hitPt = hitPt;
   } else {
-    var p = d.port;
-    for (var k = 0; k < 18; k++) {
-      var sd = rdir(); sd.z = Math.abs(sd.z) * 1.6 + 0.4; sd.normalize();
-      var sp = 10 + rng() * 14;
-      streaks.add([p.x, p.y, p.z, tHit + rng() * 0.08], [sd.x * sp, sd.y * sp, sd.z * sp, 0.25 + rng() * 0.3], [1.0, 0.55, 0.15, 8.0], [0.035, 0.13, 2.5, 0]);
-    }
-    for (var k = 0; k < 3; k++) {
-      var o = rdir().scale(0.35);
-      adds.add([p.x + o.x, p.y + o.y, p.z + Math.abs(o.z), tHit + k * 0.05], [0.9, 2.6, 0.55 - k * 0.05, 1], [1.0, 0.5, 0.15, 3.0], [0, 0.4, 1.4 + rng(), rng()]);
-    }
+    streak({ p: hp.add(inDir.scale(80)), t: th - 0.5, vel: inDir.scale(-160), life: 0.5, per: PER, col: ENEMY, i: 14, len: 9, w: 0.55, kind: 0 });
+    var hn = d.stb.n;
+    sprite({ p: hp.add(hn.scale(0.3)), t: th, life: 0.12, per: PER, col: [1, 0.75, 0.45], i: 12, s0: 3, s1: 5.5, kind: 0 });
+    sprite({ p: hp.add(hn.scale(0.4)), t: th, life: 0.3, per: PER, col: [1, 0.7, 0.4], i: 6, s0: 1.2, s1: 3.6, kind: 2 });
+    for (var k = 0; k < 22; k++) streak({ p: hp, t: th + rng() * 0.05, vel: rcone(hn, 0.9).scale(9 + rng() * 18), life: 0.3 + rng() * 0.45, per: PER, col: [1, 0.55, 0.15], i: 8, len: 0.04, w: 0.13, drag: 2.2, kind: 1 });
+    for (var k = 0; k < 12; k++) shard({ p: hp.add(hn.scale(0.2)), t: th, life: 2.6, per: PER, vel: rcone(hn, 0.8).scale(3 + rng() * 7), drag: 0.3, spin: 2 + rng() * 6, size: 0.15 + rng() * 0.25, heat: 1.0 });
+    for (var k = 0; k < 3; k++) sprite({ p: hp.add(hn.scale(0.5)), t: th + 0.03 * k, life: 0.6, per: PER, vel: hn.scale(2).add(rdir().scale(0.6)), col: [1, 0.5, 0.15], i: 3, s0: 1, s1: 2.8, kind: 1 });
+    sprite({ p: hp.add(hn.scale(0.6)), t: th + 0.1, life: 1.6, per: PER, vel: hn.scale(2), drag: 0.6, col: [0.12, 0.11, 0.1], i: 0.5, s0: 1.5, s1: 5, kind: 3 });
+    d.hitPt = hp;
   }
-  // 3. explosion at 1.2 s, 12 units off the starboard side: core, rolling flame, sparks, smoke (1.5 s total)
-  var tB = T0 + 1.2, e = d.boom;
-  adds.add([e.x, e.y, e.z, tB], [1.5, 6.5, 0.35, 2], [1.0, 0.85, 0.6, 10.0], [0, 0, 0, rng()]);
-  for (var k = 0; k < 7; k++) {
-    var o = rdir().scale(rng() * 1.2), v = rdir().scale(1.5 + rng() * 2.0);
-    adds.add([e.x + o.x, e.y + o.y, e.z + o.z, tB + rng() * 0.06], [2.0 + rng(), 4.6 + rng() * 1.4, 0.75 + rng() * 0.3, 1], [1.0, 0.55, 0.2, 3.5], [v.x, v.y, v.z, rng()]);
+  // 5. persistent breach on the upper port flank (about 1/10 of the length across)
+  var br = d.breach, bn = br.n, hole = d.L / 10;
+  var dec = B.MeshBuilder.CreateDecal('breach_' + d.fac, br.mesh, { position: br.p, normal: bn, size: V3(hole * 2.6, hole * 2.6, hole * 1.5), angle: rng() * 6.28, localMode: true });
+  var dm = mkMat('fxDecal_' + d.fac, 'decal', ['position', 'normal', 'uv'], ['world', 'viewProjection', 'uTime', 'uCam', 'uN', 'uSeed', 'uFade'], B.Constants.ALPHA_PREMULTIPLIED);
+  dm.zOffset = -3; dm.setVector3('uN', bn); dm.setFloat('uSeed', rng() * 10); dm.setFloat('uFade', 1);
+  dec.material = dm; dec.renderingGroupId = 1; dec.isPickable = false; dec.alphaIndex = 0; allFx.push(dm); decals.push(dm);
+  // torn plates bent outward around the rim
+  var t1 = B.Vector3.Cross(bn, Math.abs(bn.y) < 0.9 ? V3(0, 1, 0) : V3(1, 0, 0)).normalize(), t2 = B.Vector3.Cross(bn, t1);
+  var pp = [], pn = [], pu = [], pi = [];
+  for (var k = 0; k < 13; k++) {
+    var an = k / 13 * 6.283 + rng() * 0.4, rr = hole * (0.4 + rng() * 0.08), radial = t1.scale(Math.cos(an)).add(t2.scale(Math.sin(an)));
+    var tang = t1.scale(-Math.sin(an)).add(t2.scale(Math.cos(an))), bw = hole * (0.03 + rng() * 0.05), len = hole * (0.1 + rng() * 0.18);
+    var base = br.p.add(radial.scale(rr)).add(bn.scale(-0.03));
+    var outD = radial.scale(0.9).add(bn.scale(0.25 + rng() * 0.45)).normalize();
+    var a = base.add(tang.scale(bw)), b = base.subtract(tang.scale(bw)), tip = base.add(outD.scale(len)).add(tang.scale((rng() - 0.5) * bw));
+    var nn = B.Vector3.Cross(b.subtract(a), tip.subtract(a)).normalize(), o = pp.length / 3;
+    [a, b, tip].forEach(function (q) { pp.push(q.x, q.y, q.z); pn.push(nn.x, nn.y, nn.z); });
+    pu.push(0, 0, 1, 0, 0.5, 1); pi.push(o, o + 1, o + 2);
   }
-  for (var k = 0; k < 30; k++) {
-    var sd = rdir(), sp = 18 + rng() * 22, o = sd.scale(0.8);
-    streaks.add([e.x + o.x, e.y + o.y, e.z + o.z, tB + rng() * 0.05], [sd.x * sp, sd.y * sp, sd.z * sp, 0.6 + rng() * 0.45], [1.0, 0.62, 0.25, 6.0], [0.05, 0.18, 1.8, 0]);
+  var pm = new B.Mesh('petals_' + d.fac, scene), pvd = new B.VertexData();
+  pvd.positions = pp; pvd.normals = pn; pvd.uvs = pu; pvd.indices = pi; pvd.applyToMesh(pm);
+  var petM = mkMat('fxPetal_' + d.fac, 'petal', ['position', 'normal', 'uv'], ['world', 'viewProjection', 'uTime', 'uSeed'].concat(LIGHT_U), null);
+  setLightU(petM); petM.setFloat('uSeed', rng() * 10); pm.material = petM; pm.renderingGroupId = 1; allFx.push(petM);
+  pm.setParent(d.pivot); petals.push(pm);
+  // venting gas: a pale wavering jet that puffs
+  var P = br.p.add(bn.scale(0.2)), up = V3(0, 1, 0);
+  for (var k = 0; k < 40; k++) {
+    var tk = -20 + k * 0.045, wav = Math.sin(k * 0.45) * 0.25, puff = 0.7 + 0.3 * Math.sin(k * 0.9);
+    var vd = bn.add(t1.scale(wav)).add(up.scale(0.25)).normalize().scale((9 + rng() * 3) * puff);
+    sprite({ p: P, t: tk, life: 1.8, per: 1.8, vel: vd, drag: 0.7, col: [0.62, 0.68, 0.78], i: 0.3 * puff, s0: hole * 0.2, s1: hole * 1.1, kind: 7, spin: (rng() - 0.5) });
   }
-  for (var k = 0; k < 6; k++) {
-    var o = rdir().scale(rng() * 1.5), v = rdir().scale(1.5 + rng() * 1.5), dl = 0.12 + rng() * 0.1;
-    smokes.add([e.x + o.x, e.y + o.y, e.z + o.z, tB + dl], [3.5, 10.0 + rng() * 2.0, 1.5 - dl, 3], [0.10, 0.095, 0.09, 0.6], [v.x, v.y, v.z, rng()]);
+  // debris tumbling out
+  for (var k = 0; k < 9; k++) shard({ p: P, t: -20 + k * 0.37, life: 3.3, per: 3.3, vel: rcone(bn.add(up.scale(0.2)), 0.6).scale(2.5 + rng() * 3), spin: 1 + rng() * 4, size: hole * (0.05 + rng() * 0.07), heat: 0.7 });
+  // licking fire
+  for (var k = 0; k < 14; k++) {
+    var fa = rng() * 6.283, off = t1.scale(Math.cos(fa) * hole * 0.42).add(t2.scale(Math.sin(fa) * hole * 0.42));
+    sprite({ p: br.p.add(off).add(bn.scale(0.1)), t: -20 + k * 0.064, life: 0.45 + rng() * 0.3, per: 0.9, vel: bn.scale(1.2 + rng()).add(up.scale(1.2)).add(off.scale(0.6)), col: [1, 0.5, 0.15], i: 2.4, s0: hole * 0.15, s1: hole * 0.5, kind: 1 });
+  }
+  // intermittent spark showers (every 2.3 s) and a secondary pop (every 3.7 s)
+  var sOff = 0.3 + 0.37 * i, pOff = 0.6 + 0.55 * i;   // fixed offsets (the Hegemony pops at 1.15 and 4.85, so the 3.0 still shows the open hole)
+  for (var k = 0; k < 18; k++) streak({ p: P, t: sOff + rng() * 0.12, vel: rcone(bn.add(up.scale(0.3)), 0.8).scale(6 + rng() * 12), life: 0.35 + rng() * 0.5, per: 2.3, col: [1, 0.62, 0.25], i: 8, len: 0.05, w: 0.12, drag: 1.5, kind: 1 });
+  var Pp = P.add(bn.scale(0.5));
+  sprite({ p: Pp, t: pOff, life: 0.12, per: 3.7, col: [1, 0.75, 0.45], i: 10, s0: hole * 0.8, s1: hole * 1.6, kind: 0 });
+  sprite({ p: Pp, t: pOff, life: 0.35, per: 3.7, col: [1, 0.7, 0.4], i: 6, s0: hole * 0.3, s1: hole * 1.3, kind: 2 });
+  for (var k = 0; k < 5; k++) sprite({ p: Pp.add(rdir().scale(hole * 0.2)), t: pOff + rng() * 0.05, life: 0.6 + rng() * 0.3, per: 3.7, vel: rcone(bn, 0.7).scale(2 + rng() * 2), col: [1, 0.55, 0.2], i: 3.2, s0: hole * 0.4, s1: hole * 1.1, kind: 1 });
+  for (var k = 0; k < 12; k++) streak({ p: Pp, t: pOff + rng() * 0.04, vel: rcone(bn, 1.0).scale(8 + rng() * 14), life: 0.3 + rng() * 0.4, per: 3.7, col: [1, 0.6, 0.25], i: 7, len: 0.04, w: 0.12, drag: 2, kind: 1 });
+  for (var k = 0; k < 3; k++) sprite({ p: Pp, t: pOff + 0.1, life: 1.5, per: 3.7, vel: rcone(bn, 0.6).scale(2.5), drag: 0.7, col: [0.12, 0.11, 0.1], i: 0.45, s0: hole * 0.5, s1: hole * 2.0, kind: 3 });
+  d.popOff = pOff;
+});
+
+// ---------- destruction event: a 0.6 scale Hegemony at (0, 25, 0) breaks up every 12 s (first at t = 12) ----------
+var DPER = 12, DT0 = 12, BREAK = 0.4, DC = V3(0, 25, 0);
+var heg = SHIPS[1], hm = heg.meshes[0], dScale = heg.scale * 0.6;
+var cHeg = heg.c0;   // the glTF-frame centre the ship was centred on
+var hPos = hm.getVerticesData(B.VertexBuffer.PositionKind), hNor = hm.getVerticesData(B.VertexBuffer.NormalKind);
+var hUV = hm.getVerticesData(B.VertexBuffer.UVKind), hUV2 = hm.getVerticesData(B.VertexBuffer.UV2Kind), hIdx = hm.getIndices();
+var CUTS = [function (x, y, z) { return x - (0.22 + 0.25 * y); }, function (x, y, z) { return x - (0.0 - 0.3 * z + 0.1 * y); }, function (x, y, z) { return x - (-0.24 - 0.2 * y + 0.15 * z); }];
+var NCH = 4, chTris = [[], [], [], []];
+for (var f = 0; f < hIdx.length; f += 3) {
+  var cx = 0, cy = 0, cz = 0;
+  for (var j = 0; j < 3; j++) { var v = hIdx[f + j]; cx += hPos[v * 3] - cHeg.x; cy += hPos[v * 3 + 1] - cHeg.y; cz += hPos[v * 3 + 2] - cHeg.z; }
+  cx /= 3; cy /= 3; cz /= 3;
+  var ci = 3; for (var j = 0; j < 3; j++) if (CUTS[j](cx, cy, cz) > 0) { ci = j; break; }
+  chTris[ci].push(f);
+}
+// welded edges, to find the edges each chunk shares with another (the break line)
+var keyOf = function (v) { return Math.round(hPos[v * 3] * 2e4) + ',' + Math.round(hPos[v * 3 + 1] * 2e4) + ',' + Math.round(hPos[v * 3 + 2] * 2e4); };
+var edgeMap = {};
+chTris.forEach(function (tris, ci) { tris.forEach(function (f) { for (var j = 0; j < 3; j++) {
+  var a = hIdx[f + j], b = hIdx[f + (j + 1) % 3], ka = keyOf(a), kb = keyOf(b), k = ka < kb ? ka + '|' + kb : kb + '|' + ka;
+  (edgeMap[k] = edgeMap[k] || { a: a, b: b, ch: [] }).ch.push(ci);
+} }); });
+var hegMat = hm.material.clone('hegChunkMat'); hegMat.backFaceCulling = false; hegMat.twoSidedLighting = true;
+var chunks = [], whole = [];
+for (var ci = 0; ci < NCH; ci++) {
+  var tris = chTris[ci], cen = V3(0, 0, 0), cnt = 0;
+  tris.forEach(function (f) { for (var j = 0; j < 3; j++) { var v = hIdx[f + j]; cen.addInPlaceFromFloats(hPos[v * 3] - cHeg.x, hPos[v * 3 + 1] - cHeg.y, hPos[v * 3 + 2] - cHeg.z); cnt++; } });
+  cen.scaleInPlace(1 / cnt);
+  var P = [], N = [], U = [], U2 = [], I = [];
+  tris.forEach(function (f) { for (var j = 0; j < 3; j++) { var v = hIdx[f + j];
+    P.push(hPos[v * 3] - cHeg.x - cen.x, hPos[v * 3 + 1] - cHeg.y - cen.y, hPos[v * 3 + 2] - cHeg.z - cen.z);
+    N.push(hNor[v * 3], hNor[v * 3 + 1], hNor[v * 3 + 2]); U.push(hUV[v * 2], hUV[v * 2 + 1]); U2.push(hUV2[v * 2], hUV2[v * 2 + 1]); I.push(I.length); } });
+  var node = new B.TransformNode('chunk_' + ci, scene); node.rotationQuaternion = B.Quaternion.Identity(); node.scaling.setAll(dScale);
+  var cm = new B.Mesh('chunkMesh_' + ci, scene), vd = new B.VertexData();
+  vd.positions = P; vd.normals = N; vd.uvs = U; vd.uvs2 = U2; vd.indices = I; vd.applyToMesh(cm);
+  cm.material = hegMat; cm.parent = node; cm.receiveShadows = true; cm.renderingGroupId = 1; cm.isPickable = false; csm.addShadowCaster(cm, false);
+  // burning break edges
+  var E = new Batch('chunkEdge_' + ci, 2), mids = [];
+  Object.keys(edgeMap).forEach(function (k) { var e = edgeMap[k]; if (e.ch.indexOf(ci) < 0 || e.ch.every(function (c) { return c === ci; })) return;
+    var A = [hPos[e.a * 3] - cHeg.x - cen.x, hPos[e.a * 3 + 1] - cHeg.y - cen.y, hPos[e.a * 3 + 2] - cHeg.z - cen.z];
+    var Bq = [hPos[e.b * 3] - cHeg.x - cen.x, hPos[e.b * 3 + 1] - cHeg.y - cen.y, hPos[e.b * 3 + 2] - cHeg.z - cen.z], sd = rng();
+    E.quad([A, A, A, A], [[Bq[0], Bq[1], Bq[2], 0], [0, -0.5, sd, 0]]);
+    var q = E.a[1].length - 16; E.a[1][q + 4] = 1; E.a[1][q + 8] = 1; E.a[1][q + 9] = 0.5; E.a[1][q + 13] = 0.5;   // corners: (0,-),(1,-),(1,+),(0,+)
+    mids.push(V3((A[0] + Bq[0]) / 2, (A[1] + Bq[1]) / 2, (A[2] + Bq[2]) / 2));
+  });
+  var em = mkMat('fxEdge_' + ci, 'edge', ['position', 'a0', 'a1'], ['world', 'viewProjection', 'uTime', 'uCam', 'uWidth', 'uHeat'], B.Constants.ALPHA_ADD);
+  em.setFloat('uWidth', 0.22); em.setFloat('uHeat', 0); allFx.push(em);
+  var edgeMesh = E.build(em, node);
+  // fire and squibs along the break, in the chunk's own frame (they ride with it)
+  var CS = new Batch('chunkFire_' + ci, 5), cmat = matSprite.clone('fxChunkFire_' + ci); cmat.setFloat('uGate', 0); allFx.push(cmat);
+  var invS = 1 / dScale;
+  for (var k = 0; k < 16 && mids.length; k++) { var m0 = mids[Math.floor(rng() * mids.length)];
+    sprite({ batch: CS, p: m0, t: k * 0.05, life: 0.5 + rng() * 0.3, per: 0.8, vel: rdir().scale(1.2 * invS), col: [1, 0.5, 0.15], i: 2.8, s0: 0.6, s1: 2.0, kind: 1, drift: 0 }); }
+  for (var k = 0; k < 10 && mids.length; k++) { var m0 = mids[Math.floor(rng() * mids.length)];
+    sprite({ batch: CS, p: m0, t: DT0 + BREAK + 0.1 + rng() * 3, life: 0.2, per: DPER, col: [1, 0.7, 0.4], i: 7, s0: 0.6, s1: 2.6, kind: 5, drift: 0 }); }
+  var fireMesh = CS.build(cmat, node);
+  // motion: the aft-mid piece becomes the slow burning wreck; the others tumble away
+  var wc0 = DC.add(cen.scale(dScale)), out = cen.scale(dScale).add(rdir().scale(1.5)).normalize();
+  var wreck = ci === 2;
+  chunks.push({ node: node, mesh: cm, rest: wc0, vel: out.scale(wreck ? 1.2 : 4 + rng() * 3).add(V3(0, wreck ? -0.3 : rng() * 1.5, 0)),
+    axis: rdir(), w: wreck ? 0.22 : 0.5 + rng() * 0.7, edgeMat: em, fireMat: cmat, edge: edgeMesh, fire: fireMesh });
+}
+// precursor squibs on the hull, the flash, shockwaves, fireball, smoke, embers and debris (world space, no drift)
+var restVerts = [];
+for (var k = 0; k < 6; k++) { var v = hIdx[Math.floor(rng() * hIdx.length)]; restVerts.push(DC.add(V3(hPos[v * 3] - cHeg.x, hPos[v * 3 + 1] - cHeg.y, hPos[v * 3 + 2] - cHeg.z).scale(dScale))); }
+[0.05, 0.13, 0.22, 0.3, 0.36].forEach(function (ts, k) {
+  var p = restVerts[k]; sprite({ p: p, t: DT0 + ts, life: 0.18, per: DPER, col: [1, 0.7, 0.4], i: 9, s0: 1, s1: 4, kind: 5, drift: 0 });
+  for (var j = 0; j < 8; j++) streak({ p: p, t: DT0 + ts, vel: rdir().scale(10 + rng() * 15), life: 0.3 + rng() * 0.3, per: DPER, col: [1, 0.6, 0.25], i: 7, len: 0.04, w: 0.12, drag: 2, kind: 1, drift: 0 });
+});
+var TB = DT0 + BREAK;
+sprite({ p: DC, t: TB, life: 0.3, per: DPER, col: [1, 0.9, 0.75], i: 26, s0: 22, s1: 60, kind: 0, drift: 0 });
+sprite({ p: DC, t: TB, life: 0.6, per: DPER, col: [1, 0.8, 0.55], i: 10, s0: 6, s1: 18, kind: 2, drift: 0 });
+ring({ p: DC, n: V3(0.12, 1, 0.08), t: TB, life: 1.8, per: DPER, col: [0.45, 0.6, 1.0], i: 0.8, s0: 2, s1: 110, kind: 1, drift: 0 });
+ring({ p: DC, n: V3(0.6, 0.5, -0.4), t: TB + 0.05, life: 1.1, per: DPER, col: [1.0, 0.6, 0.3], i: 0.45, s0: 2, s1: 55, kind: 1, drift: 0 });
+for (var k = 0; k < 12; k++) sprite({ p: DC.add(rdir().scale(rng() * 3)), t: TB + 0.25 + rng() * 0.5, life: 3.8 + rng() * 1.2, per: DPER, vel: rdir().scale(2 + rng() * 3), drag: 0.35,
+  col: [0.07, 0.065, 0.06], i: 0.75, s0: 7, s1: 24 + rng() * 8, kind: 3, drift: 0 });
+for (var k = 0; k < 18; k++) sprite({ p: DC.add(rdir().scale(rng() * 3.5)), t: TB + rng() * 0.15, life: 1.5 + rng() * 1.0, per: DPER, vel: rdir().scale(3 + rng() * 5), drag: 0.6,
+  col: [1, 0.55, 0.2], i: 2.4, s0: 5 + rng() * 3, s1: 13 + rng() * 5, kind: 1, drift: 0, spin: (rng() - 0.5) * 1.5 });
+for (var k = 0; k < 110; k++) streak({ p: DC.add(rdir().scale(rng() * 2)), t: TB + rng() * 0.2, vel: rdir().scale(15 + rng() * 35), life: 1.2 + rng() * 2.2, per: DPER,
+  col: [1, 0.55 + rng() * 0.15, 0.22], i: 6, len: 0.05, w: 0.16, drag: 0.5, kind: 1, drift: 0 });
+for (var k = 0; k < 60; k++) shard({ p: DC.add(rdir().scale(rng() * 3)), t: TB + rng() * 0.1, life: 7, per: DPER, vel: rdir().scale(4 + rng() * 14), drag: 0.15, spin: 1 + rng() * 5,
+  size: 0.2 + rng() * 0.9, heat: 1.0, drift: 0 });
+// smoke trails left by the tumbling chunks (positions follow the chunks' motion law)
+chunks.forEach(function (c, ci) {
+  for (var k = 0; k < (ci === 2 ? 26 : 14); k++) {
+    var dt = 0.15 + k * 0.28, p = c.rest.add(c.vel.scale(dt));
+    sprite({ p: p, t: TB + dt, life: 2.6, per: DPER, vel: rdir().scale(0.6), col: [0.09, 0.085, 0.08], i: 0.5, s0: 2, s1: 6, kind: 3, drift: 0 });
   }
 });
-var CORNERS = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]];
-var STREAK_CORNERS = [[0, -0.5], [1, -0.5], [1, 0.5], [0, 0.5]];
-var mSmoke = smokes.build(CORNERS, matSmoke); mSmoke.alphaIndex = 0;
-var mAdd = adds.build(CORNERS, matAdd); mAdd.alphaIndex = 1;
-var mStreak = streaks.build(STREAK_CORNERS, matStreak); mStreak.alphaIndex = 1;
-var fxMats = [matStreak, matAdd, matSmoke].concat(shields);
+var flash = new B.PointLight('flash', DC.clone(), scene);
+flash.diffuse = new B.Color3(1.0, 0.85, 0.62); flash.specular = flash.diffuse.clone(); flash.intensity = 0; flash.range = 140;
+flash.falloffType = B.Light.FALLOFF_STANDARD;
 
-function setClock(t) {
-  for (var k = 0; k < fxMats.length; k++) { fxMats[k].setFloat('uTime', t); fxMats[k].setVector3('uCam', cam.position); }
+// ---------- build the batches ----------
+var mSmk = SMK.build(matSprite); mSmk.alphaIndex = 0;
+var mRing = RNG.build(matRing); mRing.alphaIndex = 0;
+var mSpr = SPR.build(matSprite); mSpr.alphaIndex = 1;
+var mStk = STK.build(matStreak); mStk.alphaIndex = 1;
+var mRib = RIB.build(matRibbon); mRib.alphaIndex = 1;
+var mShd = SHD.build(matShard);
+(Q.get('hide') || '').split(',').forEach(function (k) {   // diagnostics only: hide=ribbons,sprites,smoke,streaks,rings,shards
+  var m = { ribbons: mRib, sprites: mSpr, smoke: mSmk, streaks: mStk, rings: mRing, shards: mShd }[k]; if (m) m.setEnabled(false); });
+var fxStats = { sprites: (SPR.pos.length + SMK.pos.length) / 12, streaks: STK.pos.length / 12, rings: RNG.pos.length / 12, ribbon_verts: RIB.pos.length / 3, shards: SHD.pos.length / 72 };
+
+// ---------- one point light per ship for weapon, hit and breach light on its own hull ----------
+SHIPS.forEach(function (d) {
+  var L = new B.PointLight('fx_' + d.fac, d.breach.p.clone(), scene);
+  L.range = 26; L.falloffType = B.Light.FALLOFF_STANDARD; L.intensity = 0; L.includedOnlyMeshes = d.meshes.slice();
+  d.fxLight = L;
+});
+
+// ---------- per-frame state for clock t ----------
+function shipLight(d, i, t) {
+  var best = { I: 0, p: null, c: null }, lt = t - i * STAG, br = d.breach;
+  var bf = 1.0 * (0.7 + 0.3 * Math.sin(t * 23 + i) * Math.sin(t * 7.1 + i * 2));
+  best = { I: bf, p: br.p.add(br.n.scale(1.5)), c: [1, 0.45, 0.12] };
+  var dp = ((t - d.popOff) % 3.7 + 3.7) % 3.7;
+  if (t >= d.popOff && dp < 0.3) { var I = 6 * Math.pow(1 - dp / 0.3, 2); if (I > best.I) best = { I: I, p: br.p.add(br.n.scale(2)), c: [1, 0.6, 0.3] }; }
+  if (lt >= 0) {
+    var tau = lt % PER;
+    for (var g = 0; g < 4; g++) { var dt = tau - g * 0.08; if (dt >= 0 && dt < 0.14) { var I = 7 * Math.pow(1 - dt / 0.14, 2); if (I > best.I) best = { I: I, p: d.guns[g].p.add(d.guns[g].n.scale(1.5)), c: mix3(d.weapon, [1, 1, 1], 0.4) }; } }
+    if (tau >= 1.25 && tau < 1.5) { var I = 3 * Math.pow((tau - 1.25) / 0.25, 2); if (I > best.I) best = { I: I, p: d.bow.add(V3(1, 0, 0)), c: d.weapon }; }
+    if (tau >= 1.5 && tau < 2.2) { var I = 4 * (0.85 + 0.15 * Math.sin(t * 60)); if (I > best.I) best = { I: I, p: d.bow.add(V3(1.5, 0, 0)), c: d.weapon }; }
+    if (tau >= 2.4 && tau < 2.75) { var I = 6 * Math.pow(1 - (tau - 2.4) / 0.35, 2); if (I > best.I) best = { I: I, p: d.hitPt.add(V3(0, 0, -1.5)), c: d.shield ? d.shield : [1, 0.6, 0.3] }; }
+  }
+  return best;
 }
+function update(t) {
+  var dx = drift(t), fade = shipFade(t);
+  SHIPS.forEach(function (d, i) {
+    d.pivot.position.x = d.x + dx;
+    d.meshes.forEach(function (m) { m.visibility = fade; });
+    var s = shipLight(d, i, t);
+    d.fxLight.position.set(s.p.x + dx, s.p.y, s.p.z); d.fxLight.intensity = s.I * fade; d.fxLight.diffuse.set(s.c[0], s.c[1], s.c[2]);
+    d.fxLight.specular.copyFrom(d.fxLight.diffuse);
+  });
+  petals.forEach(function (m) { m.isVisible = fade > 0.5; });
+  decals.forEach(function (m) { m.setFloat('uFade', fade); });
+  shields.forEach(function (s) { s.mesh.position.x = s.ctr.x + dx; s.mat.setVector3('uHit', V3(s.hit.x + dx, s.hit.y, s.hit.z)); });
+  // destruction
+  var tau = t >= DT0 ? (t - DT0) % DPER : -1, broke = tau >= BREAK && tau < 10, vis = 1;
+  if (tau >= 9 && tau < 10) vis = 1 - (tau - 9);
+  else if (tau >= 10) vis = (tau - 10) / 2;
+  var heat = 0, gate = 0;
+  if (broke) { var dt = tau - BREAK; heat = 0.35 + 0.65 * Math.exp(-dt * 0.8); gate = Math.min(1, Math.max(0, (9 - tau) / 0.8)); }
+  chunks.forEach(function (c) {
+    if (broke) { var dt = tau - BREAK; c.node.position.copyFrom(c.rest.add(c.vel.scale(dt))); B.Quaternion.RotationAxisToRef(c.axis, c.w * dt, c.node.rotationQuaternion); }
+    else { c.node.position.copyFrom(c.rest); c.node.rotationQuaternion.copyFromFloats(0, 0, 0, 1); }
+    c.mesh.visibility = vis; c.mesh.isVisible = vis > 0.01;
+    c.edgeMat.setFloat('uHeat', heat * vis); c.fireMat.setFloat('uGate', gate * vis);
+    c.edge.isVisible = c.fire.isVisible = broke;
+  });
+  var fl = 0;
+  if (tau >= 0 && tau < BREAK) fl = 1.2 * Math.abs(Math.sin(tau * 40)) * (tau / BREAK);
+  else if (tau >= BREAK) { var dt = tau - BREAK; fl = 9 * Math.exp(-dt * 5) + 1.6 * Math.exp(-dt * 0.9); }
+  flash.intensity = fl;
+  for (var k = 0; k < allFx.length; k++) { allFx[k].setFloat('uTime', t); allFx[k].setVector3('uCam', cam.position); }
+}
+function breachPose() { cam.position.set(12, 10, 52); cam.setTarget(V3(0, 2, 30)); }
 
 // ---------- ready, first frame, load time ----------
 say('compiling');
-battlePose(0); setClock(0);
+battlePose(0); update(0);
+var readyGuard = setTimeout(function () {
+  var bad = scene.meshes.filter(function (m) { return m.isEnabled() && m.material && !m.material.isReady(m); }).map(function (m) { return m.name; });
+  window.__error = 'scene not ready after 240 s (shader compile error?): ' + bad.slice(0, 8).join(', ');
+}, 240000);
 await new Promise(function (res) { scene.executeWhenReady(function () { res(); }); });
+clearTimeout(readyGuard);
 scene.render();
 var loadS = await new Promise(function (res) { requestAnimationFrame(function () { res(performance.now() / 1000); }); });
 msg.style.display = 'none';
@@ -460,28 +939,33 @@ try {
 } catch (e) { glInfo.renderer = 'unknown'; }
 var tris = 0; shipMeshes.forEach(function (m) { tris += m.getTotalIndices() / 3; });
 window.__info = { load_s: loadS, gl: glInfo, webgl: engine.webGLVersion, width: engine.getRenderWidth(), height: engine.getRenderHeight(),
-  ship_tris: tris, lib: window.__libSource, ships: SHIPS.map(function (d) {
-    return { fac: d.fac, scale: +d.scale.toFixed(3), bow: [d.bow.x, d.bow.y, d.bow.z].map(function (v) { return +v.toFixed(2); }),
-      size: [d.hi.x - d.lo.x, d.hi.y - d.lo.y, d.hi.z - d.lo.z].map(function (v) { return +v.toFixed(2); }) };
+  ship_tris: tris, lib: window.__libSource, fx: fxStats, ships: SHIPS.map(function (d) {
+    return { fac: d.fac, scale: +d.scale.toFixed(3), nozzles: d.nozzles.length, size: [d.L, d.H, d.W].map(function (v) { return +v.toFixed(2); }) };
   }) };
 
 // ---------- fixed-clock stills ----------
-// battle_05 and battle_12: the orbit at t = 5.0 and 12.0 s, with the effect loop at the same t.
-// close_13: the close-up with the effect loop at t = 1.3 s. The loop starts at t = 0 (nothing before it).
-var SHOTS = { battle_05: [5.0, 'battle'], battle_12: [12.0, 'battle'], close_13: [1.3, 'close'] };
-// debug views (not part of the spec's stills): top-down to check the bows, a close look at the Hegemony for the key light
+// t = 0 at scene start. Battle camera at orbit time = t. The barge close-up at 2.0, the Hegemony breach close-up at 3.0.
+var SHOTS = { battle_05: [5.0, 'battle'], battle_12: [12.0, 'battle'], battle_126: [12.6, 'battle'], close_20: [2.0, 'close'], breach_30: [3.0, 'breach'] };
+// debug views (not part of the spec's stills)
 var DEBUG = { debug_top: [[0, 190, 0.01], [0, 0, 0], 0.5], debug_heg: [[-25, 14, 58], [0, 0, 30], 0.0],
-  debug_boom: [[-14, 6, 0], [0, 0, 18], 1.85], debug_hull: [[-30, 8, 5], [-45, 0, -20], 1.62] };
+  debug_beam: [[30, 20, 75], [40, 0, 30], 3.3], debug_hull: [[-25, 10, -60], [-36, 0, -36], 4.35],
+  debug_boom: [[0, 45, 70], [0, 22, 0], 12.9], debug_wreck: [[-20, 40, 55], [0, 22, 0], 15.0], debug_engine: [[-90, 18, 40], [-50, 0, 30], 6.0] };
+(function () { var bp = SHIPS[1].breach.p, n = SHIPS[1].breach.n, dx = drift(3.0);
+  DEBUG.debug_breach = [[bp.x + dx + n.x * 9 + 2, bp.y + n.y * 9 + 3, bp.z + n.z * 9], [bp.x + dx, bp.y, bp.z], 3.0];
+  DEBUG.debug_breach2 = [[bp.x + dx + n.x * 9 + 2, bp.y + n.y * 9 + 3, bp.z + n.z * 9], [bp.x + dx, bp.y, bp.z], 2.2]; })();
 var benchRunning = false;
 window.__shot = function (name) {
-  var s = SHOTS[name], dbg = DEBUG[name]; if ((!s && !dbg) || benchRunning) return null;
+  var s = SHOTS[name], dbgv = DEBUG[name]; if ((!s && !dbgv) || benchRunning) return null;
   engine.stopRenderLoop();
-  if (dbg) { cam.position.fromArray(dbg[0]); cam.setTarget(B.Vector3.FromArray(dbg[1])); setClock(dbg[2]); }
-  else { if (s[1] === 'battle') battlePose(s[0]); else closePose(); setClock(s[0]); }
+  var t;
+  if (dbgv) { cam.position.fromArray(dbgv[0]); cam.setTarget(B.Vector3.FromArray(dbgv[1])); t = dbgv[2]; }
+  else { t = s[0]; if (s[1] === 'battle') battlePose(t); else if (s[1] === 'close') closePose(); else breachPose(); }
+  update(t);
   scene.render(); scene.render();
   return canvas.toDataURL('image/png');
 };
 window.__shotNames = Object.keys(SHOTS);
+window.__debugNames = Object.keys(DEBUG);
 
 // ---------- benchmark ----------
 function runBench() {
@@ -506,7 +990,8 @@ function runBench() {
       var sum = times.reduce(function (a, b) { return a + b; }, 0);
       var med = times.slice().sort(function (a, b) { return a - b; })[Math.floor(times.length / 2)];
       var gpuAvg = gpu.length ? gpu.reduce(function (a, b) { return a + b; }, 0) / gpu.length : null;
-      var r3 = function (v) { return Math.round(v * 1000) / 1000; };
+      var r3 = function (v) { return isFinite(v) ? Math.round(v * 1000) / 1000 : null; };
+      if (!times.length) sorted = [NaN];
       window.__result = {
         engine: 'babylon', renderer: engine.webGLVersion >= 2 ? 'webgl2' : 'webgl1',
         width: engine.getRenderWidth(), height: engine.getRenderHeight(), seconds: SECONDS, frames: times.length,
@@ -514,12 +999,12 @@ function runBench() {
         load_s: r3(loadS), gpu_mem_mb: null,
         notes: '',
         _extra: { median_ms: r3(med), gpu_frame_ms_avg: gpuAvg === null ? null : r3(gpuAvg), gl: glInfo, msaa: MSAA,
-          ship_tris: tris, warmup_s: WARMUP, lib: window.__libSource }
+          ship_tris: tris, warmup_s: WARMUP, lib: window.__libSource, fx: fxStats }
       };
       return;
     }
     if (t < WARMUP) battlePose(0); else battlePose(t - WARMUP);
-    setClock(t);
+    update(t);
     scene.render();
   });
 }
