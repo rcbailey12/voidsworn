@@ -127,15 +127,22 @@ function playerStrength(){ return fleetPower(); }
 const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.95,chorus:1.10,deathless:1,ithar:.80}; // per-flagship tuning from the boss matrix (v40, retuned v45 at n=12)
 let BOSS_SCALE=[0,.5,.55,.7], BOSS_DMG=[0,.85,.88,.95];
 try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE')); if(process_env('BOSS_DMG')) BOSS_DMG=JSON.parse(process_env('BOSS_DMG')); }catch(e){}
+// B2 battle-size ramp (R1): enemy fleets grow by sector toward about 10, 14 and 20 ships on board with a small elite player fleet (4 to 7, wings
+// not counted). More ships come mostly from lighter hulls (light: weight on 1 to 2 cp hulls) and a bigger budget (grow); per-ship toughness eases
+// a little as numbers rise (thin) so total threat follows the old difficulty curve. Your fleet's power scales the budget both ways (refP), so a
+// strong fleet meets more and a battered one less (this replaces the old 'never outgrow the player' floor). ceil is a soft ceiling for
+// performance, not a design cap. AI difficulty: Standard meets 10% less. Sims can override any field with RAMP='{...}'.
+let RAMP={grow:[0,1.2,1.25,1.35], light:[0,4,4,5], thin:[0,.73,.68,.64], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.5,.55,.65], escort:.78, std:.9}; // tuned Oct 25 against the B0 baseline (campaign sim)
+try{ if(process_env('RAMP')) Object.assign(RAMP,JSON.parse(process_env('RAMP'))); }catch(e){ console.warn('RAMP override ignored (not valid JSON):',e.message); }
 function effArch(arch,fac){ if(arch==='carrier'){ const F=FACTIONS[fac]; if(!F||!F.roster.some(id=>HULLS[id]&&HULLS[id].ab==='launch')) return 'heavy'; } return arch||null; }
 function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
   // each map column has a fixed difficulty, so a fleet that grows can outgrow it (the point of buying that cruiser)
-  const F=FACTIONS[fac]; let budget=[0,4.2,9.5,14][s]+col*(s===1?0.9:s===2?1:1.1); if(kind==='elite') budget*=1.05;
+  const F=FACTIONS[fac]; let budget=([0,4.2,9.5,14][s]+col*(s===1?0.9:s===2?1:1.1))*RAMP.grow[s]; if(kind==='elite') budget*=1.05;
   const list=[];
-  if(kind==='boss'){ list.push({tpl:F.boss}); budget*=s===1?.28:.33; }
-  // a soft floor only: a battered fleet meets up to 25% less, but a strong fleet never meets more
-  if(typeof RUN!=='undefined'&&RUN&&RUN.fleet&&!(typeof NO_CAP!=='undefined'&&NO_CAP)){ const target=fleetPower()*(kind==='elite'?1:kind==='boss'?.5:.85)+.3;
-    if(target<budget) budget=Math.max(target,budget*.75); }
+  if(kind==='boss'){ list.push({tpl:F.boss}); budget*=RAMP.boss[s]; }
+  // B2: your fleet's power scales the budget both ways around the sector's reference fleet (was: a battered fleet met less, a strong one never more)
+  if(typeof RUN!=='undefined'&&RUN&&RUN.fleet&&!(typeof NO_CAP!=='undefined'&&NO_CAP)){ budget*=Math.max(RAMP.pwMin,Math.min(RAMP.pwMax,Math.pow(Math.max(.5,fleetPower())/RAMP.refP[s],RAMP.pw))); }
+  if(typeof AI_LEVEL!=='undefined'&&AI_LEVEL==='standard') budget*=RAMP.std;
   if(heatOn('h_hunted')) budget*=1.15;
   if(mod==='bounty') budget*=1.1;
   let roster=F.roster.map(id=>({id,cp:HULLS[id].cp,car:HULLS[id].ab==='launch'}));
@@ -144,9 +151,10 @@ function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
   if(arch==='heavy'){ const big=roster.filter(x=>x.cp>=2&&(!x.car||!roster.some(y=>y.cp>=3&&!y.car))); if(big.length&&budget>=Math.min(...big.map(x=>x.cp))){ const top=big.filter(x=>x.cp<=budget+.3).sort((a,b)=>b.cp-a.cp)[0]; if(top){ list.push({tpl:top.id}); budget-=top.cp; } roster=big.concat(roster.filter(x=>x.cp<2&&!x.car).slice(0,1)); } }
   if(arch==='carrier'&&kind!=='boss'){ const cr=roster.filter(x=>x.car&&x.cp<=budget+.3).sort((a,b)=>b.cp-a.cp)[0]; if(cr){ list.push({tpl:cr.id}); budget-=cr.cp; roster=roster.filter(x=>!x.car); } }
   let g=0;
-  while(budget>=1 && list.length<8 && g++<60){
+  const ceil=RAMP.ceil[s]-((typeof RUN!=='undefined'&&RUN&&RUN.fleet)?Math.min(7,RUN.fleet.filter(sh=>sh.hp>0).length):4); // soft ceiling on ships on board, both sides
+  while(budget>=1 && list.length<Math.max(4,ceil) && g++<80){
     const opts=roster.filter(x=>x.cp<=budget+.3); if(!opts.length) break;
-    const wts=opts.map(x=> arch==='heavy'?Math.pow(x.cp,1.6):x.cp===1?1.1:Math.min(2,budget/(x.cp*2))+.35);
+    const wts=opts.map(x=> arch==='heavy'?Math.pow(x.cp,1.6):(x.cp===1?1.1:Math.min(2,budget/(x.cp*2))+.35)*(x.cp<=2&&arch!=='swarm'?RAMP.light[s]:1));
     let r=rnd()*wts.reduce((a,b)=>a+b,0), ch=opts[0];
     for(let i=0;i<opts.length;i++){ r-=wts[i]; if(r<=0){ch=opts[i];break;} }
     list.push({tpl:ch.id}); budget-=ch.cp;
@@ -310,7 +318,8 @@ function startBattle(cfg){
   const sc=1+.12*(s-1), dm=1+.08*(s-1);
   const bossFit=Math.max(.55,Math.min(1,playerStrength()/([0,6,9,12][s]||12))); // a battered fleet faces a weakened flagship
   const eliteIdx=cfg.kind==='elite'?new Set(eList.map((e,i)=>[i,HULLS[e.tpl].cp||1]).sort((x,y)=>y[1]-x[1]).slice(0,Math.ceil(eList.length/2)).map(x=>x[0])):null; // elite fights: the bigger half of their fleet are elites
-  eList.forEach((e,ei)=>B.units.push(makeUnit('enemy', e.tpl, {scale:sc*(HULLS[e.tpl].boss?BOSS_SCALE[s]*bossFit*(BOSS_FAC[cfg.fac]||1)*(heatOn('h_flag')?1.2:1):1), dmg:dm*(HULLS[e.tpl].boss?BOSS_DMG[s]:1), elite:!!(eliteIdx&&eliteIdx.has(ei))||cfg.kind==='boss'&&!HULLS[e.tpl].boss&&rnd()<.3||heatOn('h_elite')&&ei===(HULLS[eList[0].tpl].boss&&eList.length>1?1:0)||cfg.mod==='veteran'&&ei===eList.map((x,i)=>[i,HULLS[x.tpl].cp||1]).sort((x,y)=>y[1]-x[1])[0][0], fac:cfg.fac})));
+  const thin=cfg.enemies?1:(RAMP.thin[s]||1)*(cfg.kind==='boss'?RAMP.escort:1); // boss fights: the escorts are leaner still, the flagship is the fight // B2: generated fleets are bigger, so each ship is a little less tough (set fleets from sims or events are not)
+  eList.forEach((e,ei)=>B.units.push(makeUnit('enemy', e.tpl, {scale:sc*(HULLS[e.tpl].boss?BOSS_SCALE[s]*bossFit*(BOSS_FAC[cfg.fac]||1)*(heatOn('h_flag')?1.2:1):thin), dmg:dm*(HULLS[e.tpl].boss?BOSS_DMG[s]:thin), elite:!!(eliteIdx&&eliteIdx.has(ei))||cfg.kind==='boss'&&!HULLS[e.tpl].boss&&rnd()<.3||heatOn('h_elite')&&ei===(HULLS[eList[0].tpl].boss&&eList.length>1?1:0)||cfg.mod==='veteran'&&ei===eList.map((x,i)=>[i,HULLS[x.tpl].cp||1]).sort((x,y)=>y[1]-x[1])[0][0], fac:cfg.fac})));
   if(heatOn('h_undying')) for(const u of B.units) if(u.side==='enemy'&&!u.isSq&&!u.t.boss) u.reanimate=true;
   // enemies adapt to carrier-heavy fleets: escorts bolt on point defense
   { const nCar0=RUN.fleet.filter(sh=>sh.hp>0&&HULLS[sh.tpl]&&HULLS[sh.tpl].hangar).length, carDoc=(ADMIRALS[RUN.admiral]&&ADMIRALS[RUN.admiral].cmd&&ADMIRALS[RUN.admiral].cmd.id==='scramble')||RUN.aspect==='hive';
@@ -591,7 +600,7 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   if(w.rockets&&!t.isSq){ let shot=0; for(const d of alive(t.side)){ if(d.isSq||d.intercepts<=0||d.braced) continue; const fw=d.weapons.find(x=>x.k==='flak'&&!(x.off>0)); if(!fw||hdist(d,t)>fw.r) continue; // point defense near the target picks off rockets
       for(let i=0;i<shots.length&&d.intercepts>0;i++) if(shots[i]&&rnd()<.55){ shots[i]=false; d.intercepts--; shot++; } }
     if(shot){ res.pd=shot; fxText(t,shot+' rocket'+(shot>1?'s':'')+' shot down','#bfe3ff',30); } }
-  await animWeapon(u,w,t,shots);
+  { const fol=!u.isSq&&u.weapons.some(x=>x!==w&&x.fired); if(fol) SPEED*=PACE.volley; try{ await animWeapon(u,w,t,shots); } finally{ if(fol) SPEED/=PACE.volley; } } // B2: follow-up weapons in a volley play quicker (presentation only)
   if(B) B.prog=(B.prog||0)+1;
   if(!live()){ if(!opts.intercept&&B===b0){ w.fired=keep[0]; w.cdLeft=keep[1]; u.sureUsed=keep[2]; } return false; } // abandoned after a stall: the shot never lands, and the gun is not spent
   if(called){ u.crit+=15; t._calledSec=called; } // v45: applied only once the shot is known to land, so a stall can never leave it behind
@@ -708,7 +717,7 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   if(by&&!t.isSq) gainResolve(by.side,1);
   if(by){ by.kills++; if(by.parent){ const p=B.units.find(x=>x.id===by.parent); if(p) p.kills+=0; } }
   if(by&&by.isSq){ const p=B.units.find(x=>x.id===by.parent&&!x.dead); if(p&&p.fx&&p.fx.feast){ p.spare=(p.spare||0)+1; const h=Math.round(p.maxHp*p.fx.feast); p.hp=Math.min(p.maxHp,p.hp+h); boonFx(p,'h_feast','+'+h+' hull, +1 wing',-30); } }
-  const b0=B, live=liveFrom(null); await animExplode(t); if(!live()){ if(B===b0&&!B.over) try{ checkEnd(); }catch(e){} return; } // v45: epoch check like every other await, so a stalled battle never sees this explosion's aftermath
+  const b0=B, live=liveFrom(null); { const dk=t.side==='enemy'&&!t.isSq&&!(t.t&&t.t.boss)?enemyPaceK():1; SPEED*=dk; try{ await animExplode(t); } finally{ SPEED/=dk; } } // B2: in big fights an escort's death plays quicker; flagships keep the full show if(!live()){ if(B===b0&&!B.over) try{ checkEnd(); }catch(e){} return; } // v45: epoch check like every other await, so a stalled battle never sees this explosion's aftermath
   { const cb=by&&!t.isSq&&by.side!==t.side?ownerFx(by).chainBoom:0; if(cb){ const near=B.units.filter(x=>!x.dead&&x.side===t.side&&x!==t&&hdist(x,t)<=2); if(near.length) log(`${t.name}'s reactor goes up, scorching ${near.length} nearby ship${near.length>1?'s':''}.`,by.side==='player'?'p':'e');
       for(const x of near){ if(x.dead) continue; x.hp-=cb; boonFx(x,'e_chain','\u2212'+cb,-12); if(x.hp<=0) await killUnit(x,by); } } }
   log(`${t.name} ${t.isSq?'is shot down':'is destroyed'}.`, t.side==='player'?'e':'p');
@@ -1090,12 +1099,13 @@ async function aiAbilities(u,live,mode){ const foes=alive('player'); if(!foes.le
     return live(); }
 // after the volley: a ram the move lined up, then the escape jump
 async function aiAfterFire(u,live,runner){ if(!u.isSq&&!runner&&!u.dead) await tacticRam(u); if(B.over||u.dead||!live()) return false; return await aiAbilities(u,live,'escape')&&!B.over; }
+function enemyPaceK(){ const n=B?B.units.filter(x=>x.side==='enemy'&&!x.isSq&&!x.dead).length:1; return Math.min(1,Math.max(PACE.bigMin,Math.sqrt(PACE.bigRef/Math.max(1,n)))); } // B2: bigger enemy fleets play their phase quicker
 async function aiUnit(u){
   if(u.isSq){ if(!B.over&&!u.dead&&u.side==='enemy') await sqAct(u); return; } // squadrons follow the swarm rules
   if(u.side==='enemy'&&!B.cmdEUsed&&B.cmdENext!=null){ await bossCmdFire(); if(B.over||u.dead) return; }
   const live=liveFrom(u);
     if(B.over||u.dead||u.side!=='enemy') return; u._calledUsed=false;
-    B.aiActive=u; await wait(60); if(!live()) return;
+    B.aiActive=u; await wait(PACE.aiGap); if(!live()) return;
     const foes=alive('player');
     if(!foes.length) return;
     if(!await aiAbilities(u,live,'pre')) return; // abilities before moving (v53-D: one helper, re-run after the move)

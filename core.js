@@ -10,6 +10,10 @@ const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i
 const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let SPEED = 1;
+// B2 (faster battles): one table for presentation pace, read by the game and by sim3d.js's timing model, so the model cannot drift from the game.
+// Only animation time changes; rules order and outcomes do not. Lower is faster (a multiplier on SPEED-scaled durations).
+const PACE={move:.66, rot:.6, enemy:.5, tail:.38, swarm:.5, skip:.18, banner:380, aiGap:60, aiEnd:90, volley:.5, bigRef:4.5, bigMin:.5};
+// volley: a ship's second and later weapons in the same activation play quicker; bigRef/bigMin: enemy pace scales by sqrt(bigRef / enemy ships on board), never below bigMin, so 20-ship fights keep a readable but bounded enemy phase
 const wait = ms => new Promise(r=>setTimeout(r, ms*SPEED));
 let UID = 1;
 const newId = () => 'x'+Date.now().toString(36)+(UID++);
@@ -86,7 +90,7 @@ function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const re
   if(r.flagUid!=null&&!r.fleet.some(s=>s.uid===r.flagUid)) r.flagUid=null;
   if(!Number.isFinite(r.credits)){ rep.push('credits'); r.credits=0; } // B1 (B-5): a save whose credits went NaN from selling a captured flagship
   if(r.reward!=null){ const R=r.reward; if(typeof R!=='object'||Array.isArray(R)) r.reward=null; else { // B1: a pending reward chain from an older save is checked like the rest
-    if(!['salvage','pick','relic','promo'].includes(R.stage)) R.stage='promo'; if(!R.rw||typeof R.rw!=='object') R.rw={};
+    if(!['prize','salvage','pick','relic','promo'].includes(R.stage)) R.stage='promo'; R.prizes=Array.isArray(R.prizes)?R.prizes.filter(p=>p&&typeof p==='object'&&has(HULLS,p.tpl)):[]; if(!R.rw||typeof R.rw!=='object') R.rw={};
     R.relics=Array.isArray(R.relics)?keep(R.relics,RELICS,'relic'):[]; R.wrecks=Array.isArray(R.wrecks)?R.wrecks.filter(w=>w&&typeof w==='object'&&w.yield&&typeof w.yield==='object'):[];
     for(const w of R.wrecks){ if(w.yield.mod!=null&&!has(MODULES,w.yield.mod)) w.yield.mod=null; if(!has(HULLS,w.tpl)) w.yield.tow=false; }
     if(R.boonOffer!=null&&(!Array.isArray(R.boonOffer)||R.boonOffer.some(o=>!o||!has(BOONS,o.id)))) R.boonOffer=null;

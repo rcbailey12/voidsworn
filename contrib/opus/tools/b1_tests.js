@@ -185,6 +185,21 @@ check('Onboarding 5: the acting enemy gets a pulsing ring and an "Enemy acting" 
   const u = UI(); return /function aiChip\(\)/.test(u) && /'Enemy acting: '/.test(u) && /OV\.aiRing\.isEnabled\(\)\)\{ const k=1\+/.test(u) && /function clearOverlays\(\)\{ G\.aiChipTxt='';/.test(u);
 });
 
+// ---- B2 capture rework (R4): add, strip or ransom ----
+check('B2 capture: a prize gets add, strip or ransom; ransom pays, the chain moves on, a reload resumes at the prize', () => {
+  const { summary } = rewardSetup(); summary.wrecks = []; summary.prizes = [{ tpl: 'h_picket', name: 'Prize One', hpf: .5, fac: 'hegemony', wk: ['battery'], cp: 1 }, { tpl: 'h_picket', name: 'Prize Two', hpf: 1, fac: 'hegemony', wk: ['battery'], cp: 1 }];
+  T.RUN.cpCap = T.fleetCP() + 1; T.rewardFlow(summary); if (T.SAVED_RUN.reward.stage !== 'prize') throw new Error('stage ' + T.SAVED_RUN.reward.stage);
+  reload(); if (!/Prize: the Prize One/.test(T.modalHtml) || !/Add it to the fleet/.test(T.modalHtml)) throw new Error('prize screen not shown');
+  const c0 = T.RUN.credits, f0 = T.RUN.fleet.length; T.ACT.prizePick('add'); if (T.RUN.fleet.length !== f0 + 1) throw new Error('add failed');
+  if (!/Prize: the Prize Two/.test(T.modalHtml) || !/disabled/.test(T.modalHtml)) throw new Error('second prize should not fit');
+  T.ACT.prizePick('add'); if (T.RUN.fleet.length !== f0 + 1) throw new Error('add past the cap went through');
+  T.ACT.prizePick('ransom'); return T.RUN.credits > c0 && T.SAVED_RUN.reward.prizes.length === 0 && T.SAVED_RUN.reward.stage !== 'prize';
+});
+check('B2 capture: strip gives a refit and scrap credits', () => {
+  const { summary } = rewardSetup(); summary.wrecks = []; summary.prizes = [{ tpl: 'h_vanguard', name: 'Strip Me', hpf: .8, fac: 'hegemony', wk: ['battery', 'lance'], cp: 4 }];
+  T.rewardFlow(summary); const inv = T.RUN.inventory.length, c0 = T.RUN.credits; T.ACT.prizeStep(); T.ACT.prizePick('strip'); return T.RUN.inventory.length === inv + 1 && T.RUN.credits > c0;
+});
+
 const ASYNC = [];
 ASYNC.push(['B-7 a Nova cast abandoned by a stall does not spend the cooldown; a landed one does', async () => {
   T.RUN = T.migrateRun(Object.assign(base(), { fleet: [T.newShip('ascendant')] })); T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, enemies: [{ tpl: 'h_picket' }] });

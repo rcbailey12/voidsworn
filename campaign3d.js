@@ -80,7 +80,7 @@ function finishBattle(result){
   if(result==='win'){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp; sh.hp=Math.min(mx,sh.hp+Math.round(mx*.15)); } summary.patched=true; }
   if(result==='win') for(const u of B.units) if(u.captured&&u.side==='player'&&(!u.dead||u.exited)&&!u.ship&&!u.isSq){ const H=HULLS[u.tpl]; if(!H||H.boss||u.boss) continue; // B1 (B-5): no sector flagship ever joins the fleet
     if(fleetCP()+(H.cp||1)>RUN.cpCap){ const v=prizeScrap(u.tpl); RUN.credits+=v; (summary.scrapped=summary.scrapped||[]).push({name:u.name,cred:v}); continue; } // full fleet: the prize is scrapped for credits (R4)
-    const sh=newShip(u.tpl); sh.name=u.name; sh.hp=clamp(Math.round(u.hp),1,derive(sh).maxHp); RUN.fleet.push(sh); summary.prizes.push(u.name); }
+    summary.prizes.push({tpl:u.tpl,name:u.name,hpf:clamp(u.hp/Math.max(1,u.maxHp),.05,1),fac:u.fac,wk:[...new Set(u.weapons.map(w=>w.k))],ab:u.ab||null,regen:!!(u.hullRegen||u.regen&&!u.shMax),sh:u.shMax||0,cp:H.cp||1}); } // B2 (R4): add, strip or ransom is chosen on the reward screens
   // v52 salvage: the field remembers what died and how, and the best wrecks are offered as salvage (Starsector / Pirates! style)
   if(result==='win') summary.wrecks=B.units.filter(u=>u.side==='enemy'&&u.dead&&!u.fled&&!u.isSq&&!u.ship&&!u.captured).sort((a,b)=>(b.t.cp||0)-(a.t.cp||0)).slice(0,3).map(u=>({name:u.name,tpl:u.tpl,cls:u.t.cls,fac:u.fac,cp:u.t.cp||1,wk:[...new Set(u.weapons.map(w=>w.k))],ab:u.ab||null,regen:!!(u.hullRegen||u.regen&&!u.shMax),sh:u.shMax||0,cause:u.killCause||'blast',by:u.killedBy||null}));
   if(summary.escaped) setTimeout(()=>toast(`${summary.escaped.join(' and ')} escaped in a lifepod, wounded, and will take command of your next hull.`),1800);
@@ -91,7 +91,7 @@ function finishBattle(result){
   if(result==='loss' || RUN.fleet.length===0){ endRun(false); return; }
   if(result==='retreat'){ completeNode(); mapScreen(); toast('The fleet jumps clear.'); return; }
   rewardFlow(summary);
-  const gained=runRenown()-r0; if(summary.prizes.length) setTimeout(()=>toast(`Prize ship${summary.prizes.length>1?'s':''} join the fleet: ${summary.prizes.join(', ')}.`),300); if(summary.scrapped&&summary.scrapped.length) setTimeout(()=>toast(`No command points to crew ${summary.scrapped.map(x=>x.name).join(', ')}: scrapped for ${summary.scrapped.reduce((t,x)=>t+x.cred,0)} credits.`),700);
+  const gained=runRenown()-r0; if(summary.scrapped&&summary.scrapped.length) setTimeout(()=>toast(`No command points to crew ${summary.scrapped.map(x=>x.name).join(', ')}: scrapped for ${summary.scrapped.reduce((t,x)=>t+x.cred,0)} credits.`),700);
 }
 ACT.c3continue=()=>{ if(!B||B.busy||!B.over||!B.campaign||B.finished) return; finishBattle(B.over); }; // v53: same gate as c3retreat
 ACT.c3retreat=()=>{ if(!B||B.busy||B.over||!B.campaign||B.cfg.kind==='boss') return; modal(`<h2 id="retreatAsk">Retreat?</h2><p>The fleet jumps out. Every surviving ship loses 10% of its hull, and this node counts as passed.</p><div class="row" style="margin-top:14px"><button class="primary" data-act="c3retreatYes">Jump out</button><button data-act="c3retreatNo">Stay and fight</button></div>`); };

@@ -257,8 +257,9 @@ function rewardFlow(summary){
   window._wrecks=(summary.wrecks||[]).map(w=>Object.assign(w,{yield:salvageYield(w)}));
   // B1 (reload during rewards): the node completes the moment the rewards are banked, and the picks still to make (with their offers fixed) ride in the save.
   // A reload then resumes the chain (resumeReward) instead of losing the boon, refit or relic, or replaying the node for double pay.
-  RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,stage:window._wrecks.length?'salvage':'pick',boonOffer:null,modOffer:null}; completeNode();
-  const next=window._wrecks.length?'<button class="primary" data-act="salvageStep">Salvage the field</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a boon</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
+  const prizes=(summary.prizes||[]).filter(p=>p&&HULLS[p.tpl]);
+  RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'pick',boonOffer:null,modOffer:null}; completeNode();
+  const next=RUN.reward.prizes.length?`<button class="primary" data-act="prizeStep">Decide on the prize ship${RUN.reward.prizes.length>1?'s':''}</button>`:window._wrecks.length?'<button class="primary" data-act="salvageStep">Salvage the field</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a boon</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
   modal(`<h2>${cfg.kind==='boss'?'Flagship destroyed':'Victory'}</h2>
     <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra}
     ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Boons in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No boon triggered this battle. Check the Fleet boons section on a ship to see what sets each one off.</p>':''; })()}
@@ -273,6 +274,25 @@ function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODU
   const intact=!(KILL_CAUSES[w.cause]&&KILL_CAUSES[w.cause].scrap), m=intact&&pickM.length?pickM[0]:null, cred=Math.round((10+9*w.cp)*(intact?1:1.3));
   const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'&&!!HULLS[w.tpl]&&fleetCP()+(HULLS[w.tpl].cp||1)<=RUN.cpCap?true:false; // B1 (B-8): only offered when the command points are there
   return {mod:m,cred,tow}; }
+// B2 capture rework (R4): each prize ship that survives a win gets one choice. Add it (only if command points allow), strip it for a refit
+// plus scrap (its weapons decide which refit, as in salvage), or ransom it for credits. A prize that cannot fit at all was already scrapped
+// at the end of the battle (campaign3d.js). Values: ship value = shop price (or 40 per command point for hulls with no price, shipValue);
+// ransom = 55% of that, scaled 60 to 100% by the hull left; strip = the refit plus 15%; scrap (full fleet) = 35%.
+function prizeOffer(p){ const v=shipValue(p.tpl), fits=fleetCP()+(p.cp||1)<=RUN.cpCap, y=salvageYield({wk:p.wk||[],ab:p.ab,regen:p.regen,sh:p.sh,cp:p.cp,tpl:p.tpl,cause:'board'});
+  const pool=modulePool(), mod=y.mod||(pool.length?pool[Math.floor((v*7+(p.cp||1)*13)%pool.length)]:null);
+  return {fits,ransom:Math.round(v*.55*(.6+.4*(p.hpf||1))),strip:{mod,cred:Math.round(v*.15)}}; }
+ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward, p=R&&R.prizes&&R.prizes[0]; if(!p){ if(R) R.stage=(window._wrecks||[]).length?'salvage':'pick'; return (window._wrecks||[]).length?ACT.salvageStep():ACT.rewardNext(); }
+  const o=prizeOffer(p), H=HULLS[p.tpl], left=R.prizes.length-1;
+  modal(`<h2>Prize: the ${esc(p.name)}</h2><p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">A prize is an enemy ship your boarders took. Keep it, strip it, or sell it back.</p>
+    <p class="muted">${esc(H.n)}, ${esc(H.cls||'')}, ${H.cp||1} command point${(H.cp||1)>1?'s':''}, ${Math.round((p.hpf||1)*100)}% hull.${left?` ${left} more prize${left>1?'s':''} after this one.`:''}</p>
+    <button class="choice" data-act="prizePick" data-arg="add" ${o.fits?'':'disabled'}><b>Add it to the fleet</b><small>${o.fits?`Joins at ${Math.round((p.hpf||1)*100)}% hull with a green captain.`:`Not enough command points (${fleetCP()} of ${RUN.cpCap} used).`}</small></button>
+    <button class="choice" data-act="prizePick" data-arg="strip"><b>Strip it</b><small>${o.strip.mod?`${esc(modName(o.strip.mod))} for the hold, plus `:''}${o.strip.cred} credits in scrap.</small></button>
+    <button class="choice" data-act="prizePick" data-arg="ransom"><b>Ransom it</b><small>${o.ransom} credits from its owners.</small></button>`); };
+ACT.prizePick=k=>{ const R=RUN.reward, p=R&&R.prizes&&R.prizes[0]; if(!p) return ACT.prizeStep(); const o=prizeOffer(p);
+  if(k==='add'){ if(!o.fits) return; const sh=newShip(p.tpl); sh.name=p.name; sh.hp=clamp(Math.round(derive(sh).maxHp*(p.hpf||1)),1,derive(sh).maxHp); RUN.fleet.push(sh); toast(`The ${p.name} joins the fleet.`); }
+  else if(k==='strip'){ if(o.strip.mod) RUN.inventory.push(o.strip.mod); RUN.credits+=o.strip.cred; toast(`The ${p.name} is stripped${o.strip.mod?`: ${modName(o.strip.mod)} stowed`:''}, +${o.strip.cred} credits.`); }
+  else { RUN.credits+=o.ransom; toast(`The ${p.name} is ransomed for ${o.ransom} credits.`); }
+  try{ tel('prize_pick',{k,tpl:p.tpl}); }catch(e){} R.prizes.shift(); saveRun(); ACT.prizeStep(); };
 ACT.salvageStep=()=>{ closeModal(); const ws=window._wrecks||[];
   modal(`<h2>Salvage the field</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${rewardDef('salvage')}${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
     return `<div class="choice" style="cursor:default"><b>${esc(w.name)}</b> <span class="dim">${esc(w.cls||'')}${F?', '+esc(F.n):''}</span><small>${esc(CAUSE_WORD[w.cause]||'destroyed')}${w.by?` by the ${esc(w.by)}`:''}.</small>
@@ -320,6 +340,7 @@ function promotionsStep(){
 function resumeReward(){ const R=RUN&&RUN.reward; if(!R) return false; // B1: pick up the reward chain where a reload left it
   window._rewardCfg={kind:R.kind,node:R.node}; window._rw=R.rw||{}; window._relicChoice=R.relics||[]; window._wrecks=R.wrecks||[]; window._boonOffer=R.boonOffer||null; window._modOffer=R.modOffer||null;
   toast('Picking up your rewards where you left off.');
+  if(R.stage==='prize'&&(R.prizes||[]).length){ ACT.prizeStep(); return true; }
   if(R.stage==='salvage'&&window._wrecks.length){ ACT.salvageStep(); return true; } if(R.stage==='pick'){ ACT.rewardNext(); return true; } if(R.stage==='relic'){ relicStep(); return true; } promotionsStep(); return true; }
 function afterBattle(){
   const cfg=window._rewardCfg||{kind:RUN.reward&&RUN.reward.kind}; RUN.reward=null;

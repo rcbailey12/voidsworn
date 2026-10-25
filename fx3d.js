@@ -183,7 +183,7 @@ function updateWorld(dt){
 // with the nose easing round on turns (the view banks from the turn rate) and the engines flaring with thrust
 function fwdOf(a){ const r=a*Math.PI/180; return new V3(Math.cos(r),0,-Math.sin(r)); }
 async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return; const v0=unitVis(u);
-  const pk=[{q:v0.q,r:v0.r,s:0}], ak=[{a:v0.a,s:0}], rotS=[]; let s=0, la=v0.a; const rc=u.isSq?.3:.75;
+  const pk=[{q:v0.q,r:v0.r,s:0}], ak=[{a:v0.a,s:0}], rotS=[]; let s=0, la=v0.a; const rc=u.isSq?.3:PACE.rot; /* B2: turns are quicker */
   const altK=[{s:0,y:0}], thrS=[]; // v50: altitude keys for climbing over rocks / diving under ships, and thruster hops
   for(const st of path){ const a=shortAng(la,st.f*60); if(st.rot){ rotS.push({s,dir:Math.sign(a-la)}); s+=rc; ak.push({a,s}); } else { if(st.slip||st.rev) thrS.push({s,slip:st.slip?st.side||1:0,rev:!!st.rev}); s+=1; pk.push({q:st.q,r:st.r,s}); ak.push({a,s}); altK.push({s,y:st.over?(st.over>0?9:-7.5)*(u.isSq?.5:1):0}); } la=a; }
   const S=Math.max(s,.001);
@@ -204,7 +204,7 @@ async function animPath(u,path,opt){ opt=opt||{}; if(!path||!path.length) return
   const slipAt=x=>{ for(const h of thrS) if(h.slip&&x>=h.s&&x<h.s+1) return h.slip*Math.sin(Math.PI*(x-h.s)); return 0; };
   // a trapezoid speed profile: spool up, cruise, brake; big hulls take longer to get going
   const FE=(!u.isSq&&typeof MOVE_FEEL!=='undefined'&&MOVE_FEEL[u.fac])||{};
-  const per=(u.isSq?110:u.size>.8?430:u.size>.6?350:280)*(FE.per||1), dur=Math.min((per*S+(u.isSq?60:260))*(opt.charge?.72:1), u.isSq?900:3600);
+  const per=(u.isSq?110:u.size>.8?430:u.size>.6?350:280)*(FE.per||1), dur=Math.min((per*S+(u.isSq?60:260))*(opt.charge?.72:1)*(u.isSq?1:PACE.move), u.isSq?900:3600); /* B2: shorter moves */
   const ta=u.isSq?.12:opt.charge?.45:(FE.ta!=null?FE.ta*(u.size>.8?1.15:1):u.size>.8?.32:.25), td=opt.charge?.05:u.isSq?.15:(FE.td!=null?FE.td:.3);
   // v51 underway: hulls never come to a dead stop. A burn starts from the cruise the ship was already holding and eases back to cruise,
   // then the ship coasts on (see coastTick), so the next order picks up a moving ship instead of a parked one.

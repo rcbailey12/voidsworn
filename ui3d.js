@@ -257,7 +257,7 @@ function aiChip(){ const u=B&&!B.over&&B.side==='enemy'?B.aiActive:null, txt=u&&
   let el=document.getElementById('aichip'); if(!el){ const st=document.getElementById('stage'); if(!st) return; el=document.createElement('div'); el.id='aichip'; el.setAttribute('role','status');
     el.style.cssText='position:absolute;left:50%;top:62px;transform:translateX(-50%);padding:5px 14px 5px 12px;border-radius:14px;background:rgba(22,10,40,.88);border:1px solid #a64dff;color:#e2d2ff;font-size:15px;pointer-events:none;z-index:30;white-space:nowrap;transition:opacity .15s';
     st.appendChild(el); }
-  el.innerHTML=txt?'<span style="color:#a64dff">\u25bc</span> '+esc(txt):''; el.style.opacity=txt?'1':'0'; }
+  el.innerHTML=txt?'<span style="color:#a64dff">\u25bc</span> '+esc(txt)+(G.skipTurn?'':' <span style="opacity:.65;font-size:13px">(Enter to hurry)</span>'):''; el.style.opacity=txt?'1':'0'; }
 function updateOverlays(){
   try{ boardMarks(); }catch(e){ if(!FP.warned){ FP.warned=1; console.warn('boardMarks',e); } }
   if(!B||!OV.selRing) return;
@@ -494,6 +494,7 @@ function attackTip(a,t){
 function onKey(e){
   if(!B||e.target.tagName==='INPUT'||document.body.classList.contains('app-on')) return; const k=e.key.toLowerCase();
   if(document.querySelector('.intro')) return;
+  if(B.busy&&B.side==='enemy'&&(k==='enter'||k===' ')){ e.preventDefault&&e.preventDefault(); if(!G.skipTurn){ G.skipTurn=true; SPEED=Math.min(SPEED,PACE.skip); } return; } // B2: Enter or Space hurries the rest of the enemy's turn (presentation only)
   if(document.getElementById('modal')){ if(k==='escape'){ if(document.getElementById('retreatAsk')) ACT.c3retreatNo(); else closeModal(); } return; } // B1: no battle keys while a dialog is open (the retreat question let the fight play on behind it)
   if(k==='v'){ B.showArcs=!B.showArcs; bRefresh(); return; }
   if(k==='r'){ ACT.threat(); return; }
@@ -543,12 +544,12 @@ ACT.endTurn=()=>{ if(B&&B.alt) endActivation(true); else endTurn(); };
 ACT.restart=()=>{ if(B&&B.busy&&!B.over) return; hideEnd(); setupBattle(); G.ctl.reset(); const f=caps('player')[0]; if(f) selectUnit(f); banner(B.alt?'Round 1':'Your turn'); };
 
 // ---------- turn flow ----------
-async function banner(text,color){ try{ SFX.banner(text,color); }catch(e){} const el=document.getElementById('banner'); el.textContent=text; el.style.color=color||'var(--bone)'; el.classList.add('show'); await wait(520); el.classList.remove('show'); await wait(140); }
+async function banner(text,color){ try{ SFX.banner(text,color); }catch(e){} const el=document.getElementById('banner'); el.textContent=text; el.style.color=color||'var(--bone)'; el.classList.add('show'); await wait(PACE.banner); el.classList.remove('show'); await wait(140); }
 async function endTurn(){
   if(!B||B.busy||B.side!=='player'||B.over) return;
   B.busy=true; B.sel=null; B.armed=null; B.mode=null; B.inspect=null; B.reach=null; hideTip(); G.playerView={a:G.ctl.a,b:G.ctl.b,r:G.ctl.r,t:G.ctl.t.clone(),at:performance.now()};
   B.side='enemy'; const dq=startSideTurn('enemy'); bRefresh(); await Promise.all([dq,banner('Enemy turn','#e07a70')]); // v53: burn-outs and other tick deaths finish before the AI moves
-  { const sp=SPEED; SPEED=Math.min(SPEED,.65); try{ if(await stallGuard(aiTurn(),90000,'enemy_turn',{})==='stall') log('Enemy orders lost in interference.','x'); }catch(e){ console.error(e); } SPEED=sp; } // v41: Classic mode gets the same stall net as Alternating
+  { const sp=SPEED; SPEED=Math.min(SPEED,G.skipTurn?PACE.skip:PACE.enemy*enemyPaceK()); try{ if(await stallGuard(aiTurn(),90000,'enemy_turn',{})==='stall') log('Enemy orders lost in interference.','x'); }catch(e){ console.error(e); } SPEED=sp; G.skipTurn=false; } // v41: Classic mode gets the same stall net as Alternating
   if(!B) return; B.aiActive=null; G.lastAi=null;
   await wait(150); G.ctl.release();
   if(B.over){ B.busy=false; await endBattleFlow(); return; }
@@ -572,10 +573,10 @@ async function aiStep(){
     try{ camKeep(); bRefresh(); // v41: a failed refresh here used to leave the enemy side active with nothing to run it
       const sqs=alive('enemy').filter(u=>u.isSq&&!u.activated);
       const batch=pp.length?[aiPickActivation(pe.sort((a,b)=>b.speed-a.speed))]:pe;
-      SPEED=Math.min(SPEED,.65);
+      SPEED=Math.min(SPEED,G.skipTurn?PACE.skip:(pp.length?PACE.enemy:PACE.tail)*enemyPaceK()); /* B2: quicker enemy activations, and the tail (every enemy left once you have acted) quicker still; Enter or Space skips */
       for(const u of [...sqs,...batch]){ if(B!==b||B.over) break; if(await stallGuard(aiUnit(u),30000,'enemy',{name:u.name,isSq:!!u.isSq})==='stall'&&B===b) log(`${u.isSq?u.t.n:u.name}: orders lost in interference.`,'x'); u.activated=true; } }catch(e){ console.error(e); }
-    finally{ SPEED=sp; }
-    if(B!==b) return; B.aiActive=null; G.lastAi=null; await wait(120); if(B!==b) return; G.ctl.release(); camRestore(); B.side='player'; B.busy=false;
+    finally{ SPEED=sp; G.skipTurn=false; }
+    if(B!==b) return; B.aiActive=null; G.lastAi=null; await wait(PACE.aiEnd); if(B!==b) return; G.ctl.release(); camRestore(); B.side='player'; B.busy=false;
     if(B.over){ bRefresh(); await endBattleFlow(); return; }
   }
   if(B!==b) return;
@@ -589,7 +590,7 @@ async function nextRound(){
   if(!B||B.over) return; const b=B;
   B.round++; for(const x of B.units) x.activated=false; B.activeUnit=null;
   B.busy=true; const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2; if(B!==b) return; if(B.over){ B.busy=false; bRefresh(); return; } // the relay can be decided right here; v53: tick deaths finish first, under busy
-  log(`Round ${B.round}.`,'x'); B.busy=true; bRefresh(); try{ await swarmGuard('player'); if(B===b&&!B.over) await swarmGuard('enemy'); }catch(e){ console.error(e); } finally{ if(B===b) B.busy=false; } if(B!==b||B.over) return; bRefresh();
+  log(`Round ${B.round}.`,'x'); B.busy=true; bRefresh(); const sp0=SPEED; SPEED=Math.min(SPEED,PACE.swarm*enemyPaceK()); /* B2: wings fly their round-start phase quicker */ try{ await swarmGuard('player'); if(B===b&&!B.over) await swarmGuard('enemy'); }catch(e){ console.error(e); } finally{ SPEED=sp0; if(B===b) B.busy=false; } if(B!==b||B.over) return; bRefresh();
   await banner(`Round ${B.round}`); if(B!==b||B.over) return; const f=pendingP()[0]; if(f) selectUnit(f);
 }
 async function endBattleFlow(){
