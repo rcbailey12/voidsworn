@@ -1,7 +1,7 @@
 // ======================= VIEWS, ANIMATION, EFFECTS, SOUND =======================
-// one visual language: cyan is always shields, amber is always hull; green/red only marks friend or foe
+// one visual language: cyan bars are shields, amber is hull; green marks your ships and violet marks the enemy (B1: violet is the colour furthest from all six faction shield colours and the gold selection ring, in normal and colour-blind vision; enemy marks also differ by shape)
 function shCol(v){ const f=v&&(v.fac||(v.u&&v.u.fac)); return ((FAC3D[f]||{}).shield)||SHIELD_C; } // v45: shields wear their faction's colour
-const SHIELD_C=new C3(.38,.82,1), SHIELD_HEX='#62ccff', HULL_HEX='#ffae42', HULL_LOW_HEX='#ff5a3c', FRIEND_C=new C3(.42,1,.55), FOE_C=new C3(1,.3,.28);
+const SHIELD_C=new C3(.38,.82,1), SHIELD_HEX='#62ccff', HULL_HEX='#ffae42', HULL_LOW_HEX='#ff5a3c', FRIEND_C=new C3(.42,1,.55), FOE_C=new C3(.62,.22,1);
 const HOVER_Y=3.4;
 function unitVis(u){ return u.vis || {q:u.q, r:u.r, a:u.facing*60}; }
 function tween(dur,fn){ return new Promise(res=>{ const t0=performance.now(), D=Math.max(1,dur*SPEED); G.tweens=(G.tweens||0)+1; /* v53: phones draw every frame while any tween runs */ const step=now=>{ const p=Math.min(1,(now-t0)/D); if(p>=1) G.tweens=Math.max(0,G.tweens-1); fn(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2,p); if(p<1) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); }); }

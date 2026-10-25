@@ -72,7 +72,7 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--iron3);border-bott
 #resolvelbl{font-size:14px;letter-spacing:.05em}
 .shv{color:var(--shield)} .hlv{color:var(--hull)}
 .legend{font-size:12px;color:var(--bone3);margin-top:6px;line-height:1.35}
-.plate.friend .nm{color:#8ff0a0} .plate.foe .nm{color:#ff8a80} .plate.flag .nm::before{content:'\2605  ';color:var(--gilt)}
+.plate.friend .nm{color:#8ff0a0} .plate.foe .nm{color:#c9a2ff} .plate.flag .nm::before{content:'\2605  ';color:var(--gilt)}
 .setpanel{position:absolute;top:58px;right:0;width:290px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px;z-index:5} .setpanel .dim{grid-column:1/-1} .setpanel.hidden{display:none}
 #btop{position:absolute;z-index:12}
 .keys{font-size:12px;color:var(--bone3);margin-top:12px;line-height:1.9}
@@ -88,12 +88,12 @@ kbd{font-family:inherit;font-size:12px;border:1px solid var(--iron3);border-bott
 .tgtTag{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#ff7466;border:1px solid rgba(255,96,80,.6);border-radius:3px;padding:0 4px;margin-left:6px;line-height:15px}
 .plate.elite .nm::after{content:' \00b7  elite';color:var(--gilt);font-weight:500}
 .plate .hb{order:2;width:var(--bw);height:4px;background:rgba(8,12,20,.85);border-radius:2px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 0 2px var(--iff)}
-.plate.friend{--iff:rgba(110,245,140,.5)} .plate.foe{--iff:rgba(255,92,80,.6)} .plate.flag .hb{box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 0 2px var(--gilt)}
+.plate.friend{--iff:rgba(110,245,140,.5)} .plate.foe{--iff:rgba(160,70,255,.65)} .plate.flag .hb{box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 0 2px var(--gilt)}
 .plate .hb i{display:block;height:100%}
 .plate .sp{order:1;display:flex;gap:2px} .plate .sp b{width:calc((var(--bw) - 6px)/4);height:3px;border-radius:1px;background:rgba(45,58,86,.9)}
 .plate.done{opacity:.55}
 /* enemies carry a shape, not just a colour: a red diamond beside the hull bar */
-.plate.foe::before{content:'';position:absolute;right:100%;bottom:-2px;margin-right:4px;width:7px;height:7px;transform:rotate(45deg);background:#ff6b5e;box-shadow:0 0 0 1.5px rgba(0,0,0,.8)} /* v53: the diamond sits beside the bars, so a foe's plate is no taller than a friend's */
+.plate.foe::before{content:'';position:absolute;right:100%;bottom:-2px;margin-right:4px;width:7px;height:7px;transform:rotate(45deg);background:#a64dff;box-shadow:0 0 0 1.5px rgba(0,0,0,.8)} /* v53: the diamond sits beside the bars, so a foe's plate is no taller than a friend's */
 .ftxt{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:19px;white-space:nowrap;text-shadow:0 0 3px #000,0 2px 8px #000;animation:rise 1.25s linear forwards;pointer-events:none}
 @keyframes rise{0%{opacity:0;transform:translate(-50%,-50%) scale(.35);animation-timing-function:cubic-bezier(.2,1.6,.4,1)}10%{opacity:1;transform:translate(-50%,-50%) scale(1.3);animation-timing-function:ease-out}22%{transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),calc(-50% - 50px)) scale(.92)}}
 .intro{position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,6,12,.94) 0%,rgba(4,6,12,.82) 38%,rgba(4,6,12,0) 68%);display:flex;align-items:center;z-index:20}

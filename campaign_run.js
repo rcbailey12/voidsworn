@@ -126,7 +126,7 @@ function promoteModal(uid, after){
   const s=RUN.fleet.find(x=>x.uid===uid); if(!s||!s.cap.pending){ after(); return; }
   if(!s.cap.offer) s.cap.offer=shuffle(Object.keys(PERKS).filter(p=>!s.cap.perks.includes(p) && (p!=='wing'||HULLS[s.tpl].ab==='launch'))).slice(0,2);
   window._promoteAfter=after;
-  modal(`<h2>Promotion</h2><p>${esc(s.cap.name)} of the <i>${esc(s.name)}</i> is now ${rankName(s.cap)}. Choose one perk.</p>
+  modal(`<h2>Promotion</h2><p>${esc(s.cap.name)} of the <i>${esc(s.name)}</i> is now ${rankName(s.cap)}. Choose one perk.</p>${rewardDef('promotion')}
     ${s.cap.offer.map(p=>`<button class="choice" data-act="takePerk" data-arg="${uid}:${p}"><b>${esc(PERKS[p].n)}</b><small>${esc(PERKS[p].d)}</small></button>`).join('')}`);
 }
 ACT.takePerk=arg=>{ const [uid,p]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return;
@@ -230,6 +230,13 @@ ACT.eventChoice=i=>{
 };
 
 // ---------- rewards ----------
+// B1 onboarding fix 4: one plain line on each reward screen saying what the reward is
+const REWARD_DEF={salvage:'Salvage: work one wreck from this fight. Strip it for a refit, scrap it for credits, or (Corsairs) tow a small hull home.',
+  boon:'A boon is a bonus from a patron that lasts for the rest of this run. Rarity sets how strong it is.',
+  refit:'A refit is a module you fit to one ship for a lasting upgrade. It waits in the hold until you fit it.',
+  relic:'A relic is a fleet-wide effect that lasts for the rest of this run.',
+  promotion:'A promotion lets a captain with enough experience pick a perk. Perks stay with the captain, even on a new ship.'};
+function rewardDef(k){ return REWARD_DEF[k]?`<p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">${REWARD_DEF[k]}</p>`:''; }
 function rewardFlow(summary){
   const cfg=summary.cfg, s=RUN.sector, rf=runFx();
   RUN.stats.battles++; if(cfg.kind==='elite') RUN.stats.elites++; if(cfg.kind==='boss') RUN.stats.bosses++;
@@ -267,7 +274,7 @@ function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODU
   const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'&&!!HULLS[w.tpl]&&fleetCP()+(HULLS[w.tpl].cp||1)<=RUN.cpCap?true:false; // B1 (B-8): only offered when the command points are there
   return {mod:m,cred,tow}; }
 ACT.salvageStep=()=>{ closeModal(); const ws=window._wrecks||[];
-  modal(`<h2>Salvage the field</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
+  modal(`<h2>Salvage the field</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${rewardDef('salvage')}${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
     return `<div class="choice" style="cursor:default"><b>${esc(w.name)}</b> <span class="dim">${esc(w.cls||'')}${F?', '+esc(F.n):''}</span><small>${esc(CAUSE_WORD[w.cause]||'destroyed')}${w.by?` by the ${esc(w.by)}`:''}.</small>
       <div class="orders" style="margin-top:6px">${y.mod?`<button data-act="takeSalvage" data-arg="${i}:mod">Strip it: <b>${esc(modName(y.mod))}</b><small>${esc(MODULES[y.mod].d)}</small></button>`:''}<button data-act="takeSalvage" data-arg="${i}:cred">Scrap it<small>+${y.cred} credits</small></button>${y.tow?`<button data-act="takeSalvage" data-arg="${i}:tow">Tow it home<small>Joins your fleet at 35% hull</small></button>`:''}</div></div>`; }).join('')}`); };
 ACT.takeSalvage=a=>{ const [i,k]=String(a).split(':'), w=(window._wrecks||[])[+i]; if(!w){ closeModal(); if(RUN.reward) RUN.reward.stage='pick'; return ACT.rewardNext(); } const y=w.yield;
@@ -279,14 +286,14 @@ ACT.takeSalvage=a=>{ const [i,k]=String(a).split(':'), w=(window._wrecks||[])[+i
 ACT.rewardNext=()=>{ const rw=window._rw||{}; closeModal();
   if(rw.k==='boon') return boonStep(rw.p,rw.min||0);
   if(rw.k==='mod'){ const opts=(RUN.reward&&RUN.reward.modOffer)||shuffle(modulePool()).slice(0,3); window._modOffer=opts; if(RUN.reward&&!RUN.reward.modOffer){ RUN.reward.modOffer=opts; saveRun(); }
-    modal(`<h2>Salvaged refits</h2><p>Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.</p>${opts.map(m=>`<button class="choice" data-act="takeMod" data-arg="${m}"><b>${esc(modName(m))}</b><small>${esc(MODULES[m].d)}</small></button>`).join('')}`); return; }
+    modal(`<h2>Salvaged refits</h2>${rewardDef('refit')}<p>Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.</p>${opts.map(m=>`<button class="choice" data-act="takeMod" data-arg="${m}"><b>${esc(modName(m))}</b><small>${esc(MODULES[m].d)}</small></button>`).join('')}`); return; }
   relicStep(); };
 ACT.takeMod=m=>{ RUN.inventory.push(m); try{ tel('reward_pick',{k:'mod',id:m,offered:window._modOffer}); }catch(e){} toast(`${modName(m)} stowed in the hold.`); closeModal(); relicStep(); };
 // a patron offers three boons; rarity shows how strong each one is
 function boonStep(p,minR){ const P=PATRONS[p]; if(!P){ relicStep(); return; } const offer=(RUN.reward&&RUN.reward.boonOffer)||rollBoonOffer(p,minR); window._boonOffer=offer; if(RUN.reward&&!RUN.reward.boonOffer){ RUN.reward.boonOffer=offer; saveRun(); }
   if(!offer.length){ RUN.credits+=60; toast('Nothing left to offer. +60 credits.'); relicStep(); return; }
   modal(`<div class="boonhead" style="border-color:${P.col}"><span class="sigil" style="background:${P.col}">${P.glyph}</span><div><h2 style="margin:0;color:${P.col}">${esc(P.n)}</h2><div class="muted" style="font-size:14px">${esc(P.theme)}</div></div></div>
-    <p class="muted" style="font-style:italic;margin:8px 0 12px">“${esc(P.quote)}”</p>
+    <p class="muted" style="font-style:italic;margin:8px 0 12px">“${esc(P.quote)}”</p>${rewardDef('boon')}
     ${offer.map((o,i)=>{ const b=BOONS[o.id], R=RARITY[o.r||0], duo=b.duo; return `<button class="choice boon" data-act="takeBoon" data-arg="${i}" style="border-left:4px solid ${duo?PATRONS[duo[0]].col:P.col}">
       <span class="rar" style="color:${duo?'#ffd27a':R.col}">${duo?'Duo: '+duo.map(q=>esc(PATRONS[q].short)).join(' + '):R.n}</span><b>${esc(b.n)}</b><small>${esc(b.d(R.m))}</small></button>`; }).join('')}`); }
 ACT.takeBoon=i=>{ const o=(window._boonOffer||[])[+i]; if(!o) return; changeFleet(()=>{ RUN.boons=RUN.boons||[]; RUN.boons.push({id:o.id,r:o.r||0}); });
@@ -297,7 +304,7 @@ function relicStep(){
   if(RUN.reward&&RUN.reward.stage!=='relic'&&RUN.reward.stage!=='promo'){ RUN.reward.stage='relic'; RUN.reward.boonOffer=RUN.reward.modOffer=null; saveRun(); }
   const rc=window._relicChoice;
   if(rc && rc.length){
-    modal(`<h2>${window._rewardCfg.kind==='boss'?'The flagship\u2019s vault':'Spoils of the elite'}</h2><p>Choose a relic. Relics last for the rest of the run.</p>
+    modal(`<h2>${window._rewardCfg.kind==='boss'?'The flagship\u2019s vault':'Spoils of the elite'}</h2>${rewardDef('relic')}<p>Choose one.</p>
       ${rc.map(r=>`<button class="choice" data-act="takeRelic" data-arg="${r}"><b>${esc(relicName(r))}</b><small>${esc(RELICS[r].d)}</small></button>`).join('')}`);
     return;
   }

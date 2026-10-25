@@ -202,7 +202,7 @@ function ramLane(u,ri){ try{ const a=hexWorld(u.q,u.r,.9), b=hexWorld(ri.t.q,ri.
     const v=G.views.get(ri.t.id), rm=ringMesh(new C3(1.3,.35,.25),.9,v?Math.max(6,v.L*.66):6.5,.45); rm.position=hexWorld(ri.t.q,ri.t.r,.3); OV.items.push(rm); }catch(e){ console.warn(e); } }
 // v49: overlay meshes own their materials (rings, fans, lines), so free those too; the shared tile templates keep theirs
 function ovDispose(m){ if(!m||m.isDisposed&&m.isDisposed()) return; const mats=new Set(); const grab=x=>{ const mt=x&&x.material; if(mt&&!mt._keep&&!(G.aimMats&&Object.values(G.aimMats).includes(mt))) mats.add(mt); }; grab(m); if(m.getChildMeshes) m.getChildMeshes(false).forEach(grab); m.dispose(); mats.forEach(mt=>{ try{ mt.dispose(); }catch(e){} }); }
-function clearOverlays(){ for(const m of OV.items) ovDispose(m); OV.items=[]; for(const m of OV.hover) ovDispose(m); OV.hover=[]; if(OV.fan){ ovDispose(OV.fan); OV.fan=null; } if(OV.ghost){ OV.ghost.dispose(); OV.ghost=null; OV.ghostFor=null; } OV.targets=[]; }
+function clearOverlays(){ G.aiChipTxt=''; { const ac=document.getElementById('aichip'); if(ac){ ac.style.opacity='0'; ac.innerHTML=''; } } for(const m of OV.items) ovDispose(m); OV.items=[]; for(const m of OV.hover) ovDispose(m); OV.hover=[]; if(OV.fan){ ovDispose(OV.fan); OV.fan=null; } if(OV.ghost){ OV.ghost.dispose(); OV.ghost=null; OV.ghostFor=null; } OV.targets=[]; }
 function refreshOverlays(){
   for(const m of OV.items) ovDispose(m); OV.items=[]; OV.targets=[];
   if(OV.fan){ ovDispose(OV.fan); OV.fan=null; }
@@ -216,13 +216,13 @@ function refreshOverlays(){
     const byArc={}; for(const w of ws){ if(w.k==='flak'&&ws.length>1) continue; byArc[w.arc]=Math.max(byArc[w.arc]||0,w.r); }
     const spans={F:[-60,60],S:[30,150],P:[-150,-30],R:[120,240]};
     for(const [arc,r] of Object.entries(byArc)){ const R=r*HW+HS*.4;
-      if(arc==='T'){ const rm=ringMesh(enemy?new C3(1,.35,.3):new C3(.9,.85,.7),.18,R,.25); rm.parent=node; rm.position.y=.1; continue; }
-      const col=enemy?new C3(1,.3,.25):arc==='F'||arc==='R'?new C3(1,.62,.22):new C3(.3,.85,.72);
+      if(arc==='T'){ const rm=ringMesh(enemy?FOE_C:new C3(.9,.85,.7),.18,R,.25); rm.parent=node; rm.position.y=.1; continue; }
+      const col=enemy?FOE_C:arc==='F'||arc==='R'?new C3(1,.62,.22):new C3(.3,.85,.72);
       const fm=fanMesh(spans[arc][0],spans[arc][1],R,col,enemy?.05:.06); /* holo: outline the arc, barely fill it */ fm.parent=node; fm.position.y=.08; }
   }
   if(B.inspect&&B.inspect.side==='enemy'&&!B.inspect.dead&&!B.inspect.isSq&&!B.showThreat&&!B.mode){ const th=inspThreat(B.inspect); // v53-D: the tapped enemy's reach, faint, and a thin ring on each of your ships inside it
     for(const k of th.keys()){ const [q,r]=k.split(',').map(Number); tile('ithr',new C3(1,.2,.14),.011,{q,r},OV.items); }
-    for(const p of alive('player')){ if(p.isSq||!th.has(hkey(p.q,p.r))) continue; const v=G.views.get(p.id), rm=ringMesh(new C3(1,.32,.25),.6,v?Math.max(5.5,v.L*.62):6,.2); rm.position=hexWorld(p.q,p.r,.25); OV.items.push(rm); } }
+    for(const p of alive('player')){ if(p.isSq||!th.has(hkey(p.q,p.r))) continue; const v=G.views.get(p.id), rm=ringMesh(FOE_C,.6,v?Math.max(5.5,v.L*.62):6,.2); rm.position=hexWorld(p.q,p.r,.25); OV.items.push(rm); } }
   if(B.showThreat){ const th=computeThreat(); for(const [k,v] of th){ const [q,r]=k.split(',').map(Number); const lv=v>=45?3:v>=20?2:1; tile('thr'+lv,new C3(1,.18,.12),[0,.08,.16,.28][lv],{q,r},OV.items); } }
   if(sel&&playerTurn&&sel.side==='player'&&B.reach&&!B.mode&&!B.wingSel){ for(const s of B.reach.map.values()){ const g=s.guns>0; if(g) tile('reachG4',new C3(.95,.7,.28),.03,s,OV.items); tile(g?'reachGE3':'reachE2',g?new C3(1,.92,.62):new C3(1,.8,.4),g?.8:.36,s,OV.items,true); /* v53: outline only, so hulls stay readable; a hex your guns can fire from gets a brighter edge and a whisper of fill (additive reads ~3x brighter on screen) */ if(s.ram) tile('ramSpot',new C3(1,.32,.25),.75,s,OV.items,true); }
     const per=reachOutline(sel,B.reach); if(per) OV.items.push(per); }
@@ -234,8 +234,8 @@ function refreshOverlays(){
   if(B.mode==='board'&&sel) for(const t of boardTargets(sel)) tile('boardT',new C3(1,.55,.2),.4,t,OV.items);
   if(B.mode==='launch'&&sel) for(const h of launchHexes(sel)) tile('launch',new C3(1,.7,.3),.35,h,OV.items);
   if(sel&&playerTurn&&sel.side==='player'&&!B.mode){ for(const t of alive('enemy')){ const ws=B.armed!=null?[sel.weapons[B.armed]]:sel.weapons; if(!ws.some(w=>canFire(sel,w,t))) continue;
-      const v=G.views.get(t.id); const R=v?Math.max(5.5,v.L*.62):6; const rm=ringMesh(new C3(1,.3,.25),.8,R,.3); rm.metadata={u:t}; OV.items.push(rm); OV.targets.push(rm); } }
-  if(!OV.selRing){ OV.selRing=ringMesh(new C3(1,.75,.3),.75,6,.34); OV.insRing=ringMesh(new C3(1,.3,.25),.7,6,.34); OV.aiRing=ringMesh(new C3(1,.3,.25),.8,6,.34); }
+      const v=G.views.get(t.id); const R=v?Math.max(5.5,v.L*.62):6; const rm=ringMesh(FOE_C,.8,R,.3); rm.metadata={u:t}; OV.items.push(rm); OV.targets.push(rm); } }
+  if(!OV.selRing){ OV.selRing=ringMesh(new C3(1,.75,.3),.75,6,.34); OV.insRing=ringMesh(FOE_C,.7,6,.34); OV.aiRing=ringMesh(FOE_C,.8,6,.34); }
   refreshHover();
 }
 function refreshHover(){
@@ -252,11 +252,18 @@ function refreshHover(){
       if(v&&v.model){ if(OV.ghostFor!==sel.id){ if(OV.ghost) OV.ghost.dispose(); OV.ghost=v.model.root.clone('ghost'); const gm=OV.bases.ghostMat||(OV.bases.ghostMat=(()=>{ const g=emMat('ov_ghost2',new C3(1,.8,.48),.4); g.needDepthPrePass=true; g.backFaceCulling=false; g._keep=true; return g; })()); /* v53: a clean translucent silhouette (depth pre-pass, no glow) instead of an additive blob */ OV.ghost.getChildMeshes().forEach(m=>{ m.material=gm; m.isPickable=false; try{ G.glow.addExcludedMesh(m); }catch(e){} }); OV.ghostFor=sel.id; }
         OV.ghost.setEnabled(true); const p=hexWorld(st.q,st.r,HOVER_Y); OV.ghost.position=p; OV.ghost.rotation.set(0,st.f*Math.PI/3,0); } } }
 }
+// B1 onboarding fix 5: a clear signal while the enemy acts, beyond the top-bar text: a chip under the top bar naming the enemy ship that is moving
+function aiChip(){ const u=B&&!B.over&&B.side==='enemy'?B.aiActive:null, txt=u&&!u.dead?'Enemy acting: '+(u.isSq?u.t.n:u.name):''; if(txt===G.aiChipTxt) return; G.aiChipTxt=txt;
+  let el=document.getElementById('aichip'); if(!el){ const st=document.getElementById('stage'); if(!st) return; el=document.createElement('div'); el.id='aichip'; el.setAttribute('role','status');
+    el.style.cssText='position:absolute;left:50%;top:62px;transform:translateX(-50%);padding:5px 14px 5px 12px;border-radius:14px;background:rgba(22,10,40,.88);border:1px solid #a64dff;color:#e2d2ff;font-size:15px;pointer-events:none;z-index:30;white-space:nowrap;transition:opacity .15s';
+    st.appendChild(el); }
+  el.innerHTML=txt?'<span style="color:#a64dff">\u25bc</span> '+esc(txt):''; el.style.opacity=txt?'1':'0'; }
 function updateOverlays(){
   try{ boardMarks(); }catch(e){ if(!FP.warned){ FP.warned=1; console.warn('boardMarks',e); } }
   if(!B||!OV.selRing) return;
   const place=(ring,u)=>{ if(u&&!u.dead&&G.views.get(u.id)){ const v=G.views.get(u.id); const p=v.root.getAbsolutePosition(); ring.setEnabled(true); ring.position.set(p.x,.2,p.z); const R=Math.max(5.5,v.L*.6)/6; ring.scaling.set(R,1,R); } else ring.setEnabled(false); };
   place(OV.selRing,B.sel); place(OV.insRing,B.inspect); place(OV.aiRing,B.side==='enemy'?B.aiActive:null); aiFocusMark();
+  if(OV.aiRing.isEnabled()){ const k=1+.14*(.5+.5*Math.sin(G.time*6)); OV.aiRing.scaling.x*=k; OV.aiRing.scaling.z*=k; } aiChip(); // B1 onboarding fix 5: the acting enemy's ring breathes, and a chip names it
   OV.selRing.rotation.y+=.01; const pulse=.45+.4*Math.sin(G.time*4.5);
   for(const r of OV.targets){ const u=r.metadata.u, v=G.views.get(u.id); if(v){ const p=v.root.getAbsolutePosition(); r.position.set(p.x,.25,p.z); r.material.alpha=pulse*(G.ovFade??1); } }
   if(OV.fan){ const u=OV.fan.metadata.u, v=G.views.get(u.id);
@@ -276,10 +283,14 @@ const FP={hash:0,cap:0,scap:0,fill:null,shadow:null,mbuf:null,fcol:null,sbuf:nul
 function fpHexMesh(name,R0,R1,fill){ const pos=fill?[0,0,0]:[], idx=[]; for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i-30), c=Math.cos(a), sn=Math.sin(a); if(fill) pos.push(c*R0,0,sn*R0); else pos.push(c*R0,0,sn*R0, c*R1,0,sn*R1); }
   for(let i=0;i<6;i++){ const j=(i+1)%6; if(fill) idx.push(0,1+i,1+j); else idx.push(2*i,2*i+1,2*j+1, 2*i,2*j+1,2*j); }
   const m=new BABYLON.Mesh(name,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.indices=idx; vd.applyToMesh(m); return m; }
-function fpEnsure(){ if(FP.fill&&!FP.fill.isDisposed()&&FP.fill2&&!FP.fill2.isDisposed()&&FP.shadow&&!FP.shadow.isDisposed()) return true; if(!G.scene||!G.tex||!G.tex.soft||!G.env) return false;
+// B1 (enemy markers): enemies get a broken hex outline (gaps at the corners), so friend and foe differ by shape as well as colour
+function fpHexMeshBroken(name,R0,R1){ const pos=[], idx=[], C=k=>{ const a=Math.PI/180*(60*k-30); return [Math.cos(a),Math.sin(a)]; };
+  for(let i=0;i<6;i++){ const [ax,az]=C(i), [bx,bz]=C(i+1), b=pos.length/3; for(const t of [.2,.8]){ const x=ax+(bx-ax)*t, z=az+(bz-az)*t; pos.push(x*R0,0,z*R0, x*R1,0,z*R1); } idx.push(b,b+1,b+3, b,b+3,b+2); }
+  const m=new BABYLON.Mesh(name,G.scene), vd=new BABYLON.VertexData(); vd.positions=pos; vd.indices=idx; vd.applyToMesh(m); return m; }
+function fpEnsure(){ if(FP.fill&&!FP.fill.isDisposed()&&FP.fill2&&!FP.fill2.isDisposed()&&FP.foe&&!FP.foe.isDisposed()&&FP.shadow&&!FP.shadow.isDisposed()) return true; if(!G.scene||!G.tex||!G.tex.soft||!G.env) return false;
   const mk=(m,name)=>{ const mt=new BABYLON.StandardMaterial(name,G.scene); mt.disableLighting=true; mt.diffuseColor=C3.Black(); mt.specularColor=C3.Black(); mt.emissiveColor=C3.White(); mt.alpha=.999; mt.alphaMode=BABYLON.Engine.ALPHA_ADD; mt.backFaceCulling=false; mt.disableDepthWrite=true; mt.zOffset=-1;
     m.material=mt; m.isPickable=false; m.alwaysSelectAsActiveMesh=true; m.setEnabled(false); m.alphaIndex=-60; try{ G.glow.addExcludedMesh(m); }catch(e){} G.env.push(m,mt); return m; };
-  FP.fill=mk(fpHexMesh('fpMark',HS*.75,HS*.86,false),'fpMarkM'); FP.fill2=mk(fpHexMesh('fpMarkFill',HS*.75,HS*.86,true),'fpMarkFillM');
+  FP.fill=mk(fpHexMesh('fpMark',HS*.75,HS*.86,false),'fpMarkM'); FP.fill2=mk(fpHexMesh('fpMarkFill',HS*.75,HS*.86,true),'fpMarkFillM'); FP.foe=mk(fpHexMeshBroken('fpMarkFoe',HS*.72,HS*.89),'fpMarkFoeM');
   const sh=MB.CreateGround('fpShadow',{width:1,height:1},G.scene), sm=new BABYLON.StandardMaterial('fpShadowM',G.scene); sm.disableLighting=true; sm.diffuseColor=C3.Black(); sm.specularColor=C3.Black(); sm.emissiveColor=C3.Black(); sm.opacityTexture=G.tex.soft; sm.alpha=.7; sm.backFaceCulling=false; sm.disableDepthWrite=true;
   sh.material=sm; sh.isPickable=false; sh.alwaysSelectAsActiveMesh=true; sh.alphaIndex=-50; sh.setEnabled(false); try{ G.glow.addExcludedMesh(sh); }catch(e){} G.env.push(sh,sm); FP.shadow=sh;
   FP.hash=NaN; FP.cap=0; FP.scap=0; return true; }
@@ -289,14 +300,14 @@ function boardMarks(){ if(!B||B.showcase||!G.views||!fpEnsure()) return;
   const U=B.units, hide=!!G.cineHidePlates; let h=hide?3:7, n=0;
   for(let i=0;i<U.length;i++){ const u=U[i], v=G.views.get(u.id); let k=0; if(!hide&&fpOn(u,v)){ k=1+(u.q+64)*997+(u.r+64)*31+(u.side==='player'?3:5)+fpLevel(u)*7+(u.isSq?11:0); n++; } h=(Math.imul(h,31)+k)|0; }
   if(h!==FP.hash){ FP.hash=h; fpRebuild(n); }
-  { const k=ovFadeK(), mt=FP.fill.material, m2=FP.fill2.material; if(mt&&mt.alpha!==k*.999){ mt.alpha=k*.999; if(m2) m2.alpha=k*.999*.17; } } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
+  { const k=ovFadeK(), mt=FP.fill.material, m2=FP.fill2.material; if(mt&&mt.alpha!==k*.999){ mt.alpha=k*.999; if(m2) m2.alpha=k*.999*.17; if(FP.foe&&FP.foe.material) FP.foe.material.alpha=k*.999; } } // v53-G: the hex marks step back in close-ups (board view unchanged); written only when the step changes
   try{ ovFadeTick(); }catch(e){} fpShadows(); }
-function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); FP.fill2.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); }
-  const M=FP.mbuf, F=FP.fcol, U=B.units; let i=0;
+function fpRebuild(n){ if(!n&&!FP.mbuf){ FP.fill.setEnabled(false); FP.fill2.setEnabled(false); FP.foe.setEnabled(false); return; } const grow=n>FP.cap; if(grow){ FP.cap=Math.max(16,n*2); FP.mbuf=new Float32Array(FP.cap*16); FP.fcol=new Float32Array(FP.cap*4); FP.fcolF=new Float32Array(FP.cap*4); FP.fcolE=new Float32Array(FP.cap*4); }
+  const M=FP.mbuf, F=FP.fcol, FF=FP.fcolF, FE=FP.fcolE, U=B.units; let i=0;
   if(n) for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!fpOn(u,v)) continue; const lv=fpLevel(u), p=hexWorld(u.q,u.r,0), c=u.side==='player'?FRIEND_C:FOE_C, o=i*16, q=i*4;
     M[o]=1; M[o+5]=1; M[o+10]=1; M[o+15]=1; M[o+12]=p.x; M[o+13]=.09; M[o+14]=p.z;
-    const ea=u.isSq?.28:[.42,.8,1][lv]; F[q]=c.r; F[q+1]=c.g; F[q+2]=c.b; F[q+3]=ea; i++; } // fill reads at ~17% of the edge
-  for(const m of [FP.fill,FP.fill2]){ if(grow||!m.hasThinInstances){ m.thinInstanceSetBuffer('matrix',M,16,false); m.thinInstanceSetBuffer('color',F,4,false); } else { m.thinInstanceBufferUpdated('matrix'); m.thinInstanceBufferUpdated('color'); } m.thinInstanceCount=i; m.setEnabled(i>0); } }
+    const ea=u.isSq?.28:[.42,.8,1][lv], foe=u.side!=='player'; F[q]=c.r; F[q+1]=c.g; F[q+2]=c.b; F[q+3]=ea; for(const [B2,on] of [[FF,!foe],[FE,foe]]){ B2[q]=c.r; B2[q+1]=c.g; B2[q+2]=c.b; B2[q+3]=on?ea:0; } i++; } // fill reads at ~17% of the edge; outlines: solid for yours, broken for theirs
+  for(const [m,CB] of [[FP.fill,FF],[FP.fill2,F],[FP.foe,FE]]){ if(grow||!m.hasThinInstances){ m.thinInstanceSetBuffer('matrix',M,16,false); m.thinInstanceSetBuffer('color',CB,4,false); } else { m.thinInstanceBufferUpdated('matrix'); m.thinInstanceBufferUpdated('color'); } m.thinInstanceCount=i; m.setEnabled(i>0); } }
 function fpShadows(){ const U=B.units, ts=G.tacScale||1; let ns=0; for(let j=0;j<U.length;j++){ const u=U[j], v=G.views.get(u.id); if(!u.isSq&&v&&v.state==='alive'&&v.root&&v.root.isEnabled()) ns++; }
   if(ns>FP.scap){ FP.scap=Math.max(16,ns*2); FP.sbuf=new Float32Array(FP.scap*16); FP.sNew=true; }
   const b=FP.sbuf, m=FP.shadow; let i=0;
@@ -622,17 +633,19 @@ ACT.begin=()=>{ SFX.init(); { const it=document.querySelector('.intro'); if(it) 
 // ---------- onboarding: one tip at a time, each shown once ----------
 const TIPS=[
   ['start','Your fleet','Select one of your ships: it has a green ring underneath. Gold hexes show where it can move, and the fans show its firing arcs.'],
-  ['select','Moving and facing','Hover a gold hex to preview the move: the ghost shows where you will end up and which way you will face. Q and E turn in place.'],
+  ['turns','Turns alternate','You and the enemy take turns one ship at a time: activate one of yours, then the enemy activates one of theirs, until every ship has acted. Then a new round starts.'],
+  ['select','Moving and facing','Hover a gold hex to preview the move: the ghost shows where you will end up and which way you will face. Q and E turn in place. Moving matters: a ship that ends its activation in the same hex is easier to hit (enemies get +10), and turning in place does not count. Moving 3 or more hexes makes it harder to hit (\u22125). Bracing cancels the sitting-still penalty. Some factions bend these numbers; the ship panel shows each ship\'s own.'],
   ['move','Shields and hull','The cyan bars on the ship panel are its shields: four facings that soak hits and recharge each turn. The shield bubble itself glows in its faction\'s colour. Amber is hull: damage that stays. Keep your strongest shield facing the enemy.'],
   ['target','Firing','Enemies you can hit have a pulsing red ring. Hover one for hit odds and expected damage, then click to fire every weapon that bears. Keys 1 to 6 pick a single weapon.'],
   ['fired','Alternating activations','Each ship acts once per round. When this ship is done, press End activation (Enter) and the enemy moves one of theirs.'],
   ['resolve','Admiral\'s Command','Your admiral\'s signature move is ready: it glows gold on the strip. You get it once per battle. It grows each round you wait and when you lose a ship, so pick your moment.'],
   ['close','Close action','Ramming speed (X) charges the first enemy dead ahead. Boarding (G) sends crews into an adjacent enemy; win and the ship is yours.'],
+  ['threat','Threat map','Before you end a move, check where the enemy can reach. Press R, or Threat in the top bar, to shade every hex their guns can hit next turn: the darker the hex, the more damage is waiting there.'],
   ['objective','Objectives','Not every fight is a slugging match. The top bar shows this fight\u2019s goal; tap the map chip under it for the full rules and what the coloured hexes mean.'],
 ];
 function tutorialCheck(){ try{ if(!B||B.showcase||B.over||document.body.classList.contains('app-on')||document.querySelector('.intro')) return; const o=META.opts=META.opts||{}; if(o.tipsOff) return; o.tips=o.tips||{};
   if(document.getElementById('tipcard')) return; const s=B.sel, me=alive('player');
-  const cond={start:true, select:!!s, move:me.some(x=>!x.isSq&&x.mp<x.speed), target:OV.targets&&OV.targets.length>0, fired:me.some(x=>x.weapons.some(w=>w.fired)),
+  const cond={start:true, turns:true, threat:(B.round||1)>=2, select:!!s, move:me.some(x=>!x.isSq&&x.mp<x.speed), target:OV.targets&&OV.targets.length>0, fired:me.some(x=>x.weapons.some(w=>w.fired)),
     resolve:canCommand('player'), close:!!s&&!s.isSq&&(!!ramInfo(s)||boardTargets(s).length>0), objective:B.obj&&B.obj.type!=='rout'};
   const t=TIPS.find(([id])=>!o.tips[id]&&cond[id]); if(!t) return;
   const el=document.createElement('div'); el.id='tipcard'; el.className='hud tipcard'; el.innerHTML=touchWords(`<h4>${t[1]}</h4><p>${t[2]}</p><div class="row"><button class="primary" data-act="tipOk" data-arg="${t[0]}">Got it</button><button data-act="tipOff">Hide tips</button></div>`);

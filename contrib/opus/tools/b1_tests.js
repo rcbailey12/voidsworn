@@ -17,7 +17,7 @@ eval(src + `
 function log(){} function fxText(){} function fxShield(){} function fxFlash(){} function tel(){} function nodeSeeds(){ return 0; }
 var STALL=false; async function animNova(){ if(STALL) B.epoch=(B.epoch||0)+1; } async function animBlink(){ if(STALL) B.epoch=(B.epoch||0)+1; } async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get META(){ return META; }, get SAVED_RUN(){ return SAVED_RUN; }, set SAVED_RUN(v){ SAVED_RUN=v; }, Persist, migrateRun, migrateMeta, defaultMeta, fleetCP, derive, newShip, ensureFlagship,
-  RELICS, ADMIRALS, HULLS, BOONS, MODULES, PATRONS, STORE_KEY, ACT, rewardFlow, resumeReward, genSector, findNode, saveRun, get modalHtml(){ return LAST_MODAL; }, set STALL(v){ STALL=v; }, get B(){ return B; }, startBattle, useAbility, boardUnit, hdist, novaTargets, blinkHexes, systemDamage, captureChance, prizeScrap, salvageYield, PATRONS2: null, get modalOpen(){ return !!IDS.modal; } };
+  RELICS, ADMIRALS, HULLS, BOONS, MODULES, PATRONS, STORE_KEY, ACT, rewardFlow, resumeReward, genSector, findNode, saveRun, get modalHtml(){ return LAST_MODAL; }, set STALL(v){ STALL=v; }, get B(){ return B; }, startBattle, useAbility, boardUnit, hdist, MOVE_BASE, MOVE_RULES, novaTargets, blinkHexes, systemDamage, captureChance, prizeScrap, salvageYield, PATRONS2: null, get modalOpen(){ return !!IDS.modal; } };
 `);
 const base = () => ({ fac: 'voidsworn', admiral: 'vex', credits: 50, cpCap: 10, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] },
   fleet: [{ uid: 1, tpl: 'warden', name: 'Warden', hp: 50, mods: [], mk: 1, cap: { fac: 'voidsworn', name: 'Ada Vey', xp: 0, rank: 0, perks: [], pending: 0 } }] });
@@ -148,6 +148,43 @@ check('F17 a crit never revives a weapon or shield generator a destroyed section
   return t.weapons.every(w => w.off === 999) && t.st.shieldOff === 999;
 });
 // ---- B-6, B-7 abilities after a stalled animation (async) ----
+// ---- Onboarding 2 to 4 ----
+const UI = () => fs.readFileSync(path.join(ROOT, 'ui3d.js'), 'utf8');
+const tipText = id => { const m = new RegExp("\\['" + id + "','([^']*)','((?:[^'\\\\]|\\\\.)*)'\\]").exec(UI()); return m ? m[2] : null; };
+check('Onboarding 2: the move tip states the real motion rule (numbers from MOVE_BASE)', () => {
+  const t = tipText('select'), R = T.MOVE_BASE; if (!t) throw new Error('no select tip');
+  return t.includes('+' + R.still) && t.includes(R.evadeAt + ' or more hexes') && t.includes('\\u2212' + R.evade) && /turning in place does not count/.test(t) && /Bracing cancels/.test(t);
+});
+check('Onboarding 3: a "Turns alternate" tip shows at battle start, once per profile', () => {
+  const u = UI(); return !!tipText('turns') && /\['start',[^\n]*\n  \['turns',/.test(u) && /const cond=\{start:true, turns:true,/.test(u);
+});
+check('Onboarding 5: a Threat tip points at the real Threat toggle (R and the top-bar button)', () => {
+  const t = tipText('threat'), u = UI(); return !!t && /Press R/.test(t) && /if\(k==='r'\)\{ ACT\.threat\(\); return; \}/.test(u) && /id="b_threat2"/.test(u) && /threat:\(B\.round\|\|1\)>=2/.test(u);
+});
+check('Onboarding 4: every reward screen carries its one-line definition', () => {
+  const { summary } = rewardSetup(); T.rewardFlow(summary); T.ACT.salvageStep(); const sal = T.modalHtml; T.ACT.takeSalvage('0:cred'); const boon = T.modalHtml; T.ACT.takeBoon('0'); const relic = T.modalHtml;
+  const cr = fs.readFileSync(path.join(ROOT, 'campaign_run.js'), 'utf8');
+  return /class="dim rdef"[^>]*>Salvage:/.test(sal) && /A boon is/.test(boon) && /A relic is/.test(relic) && /<h2>Salvaged refits<\/h2>\$\{rewardDef\('refit'\)\}/.test(cr) && /Choose one perk\.<\/p>\$\{rewardDef\('promotion'\)\}/.test(cr);
+});
+// ---- Enemy markers: colour clear of every faction shield and the gold ring, plus a shape cue ----
+check('Markers: the enemy colour is far from all six shield colours, the gold ring and friend green, in normal and colour-blind vision', () => {
+  const fx = fs.readFileSync(path.join(ROOT, 'fx3d.js'), 'utf8'), sh = fs.readFileSync(path.join(ROOT, 'ships3d.js'), 'utf8'), ui = UI();
+  const c3 = str => str.split(',').map(Number); const foe = c3(/FOE_C=new C3\(([^)]*)\)/.exec(fx)[1]), friend = c3(/FRIEND_C=new C3\(([^)]*)\)/.exec(fx)[1]);
+  const shields = [...sh.matchAll(/shield:new C3\(([^)]*)\)/g)].map(m => c3(m[1])); if (shields.length !== 6) throw new Error('found ' + shields.length + ' shield colours');
+  const gold = c3(/OV\.selRing=ringMesh\(new C3\(([^)]*)\)/.exec(ui)[1]);
+  const M = [[[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[0.367, 0.861, -0.228], [0.280, 0.673, 0.047], [-0.012, 0.043, 0.969]], [[0.152, 1.053, -0.205], [0.115, 0.786, 0.099], [-0.004, -0.048, 1.052]], [[1.256, -0.077, -0.179], [-0.078, 0.931, 0.148], [0.005, 0.691, 0.304]]];
+  const sim = (c, m) => m.map(r => Math.max(0, Math.min(1, r[0] * c[0] + r[1] * c[1] + r[2] * c[2]))); const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  const worst = Math.min(...[...shields, gold, friend].map(k => Math.min(...M.map(m => dist(sim(foe, m), sim(k, m))))));
+  if (worst < 0.35) throw new Error('closest colour distance ' + worst.toFixed(2)); return true;
+});
+check('Markers: enemy board marks are a broken hex (shape cue), friends keep the solid one', () => {
+  const u = UI(); return /function fpHexMeshBroken\(/.test(u) && /FP\.foe=mk\(fpHexMeshBroken\(/.test(u) && /\[\[FP\.fill,FF\],\[FP\.fill2,F\],\[FP\.foe,FE\]\]/.test(u) && /\[\[FF,!foe\],\[FE,foe\]\]/.test(u);
+});
+check('Markers: no enemy ring still uses the old red', () => { const u = UI(); return !/(insRing|aiRing)=ringMesh\(new C3\(1,\.3,\.25\)/.test(u) && !/rm=ringMesh\(new C3\(1,\.3,\.25\),\.8,R,\.3\); rm\.metadata=\{u:t\}/.test(u); });
+check('Onboarding 5: the acting enemy gets a pulsing ring and an "Enemy acting" chip that clears with the battle', () => {
+  const u = UI(); return /function aiChip\(\)/.test(u) && /'Enemy acting: '/.test(u) && /OV\.aiRing\.isEnabled\(\)\)\{ const k=1\+/.test(u) && /function clearOverlays\(\)\{ G\.aiChipTxt='';/.test(u);
+});
+
 const ASYNC = [];
 ASYNC.push(['B-7 a Nova cast abandoned by a stall does not spend the cooldown; a landed one does', async () => {
   T.RUN = T.migrateRun(Object.assign(base(), { fleet: [T.newShip('ascendant')] })); T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, enemies: [{ tpl: 'h_picket' }] });
