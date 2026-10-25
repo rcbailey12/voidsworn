@@ -424,7 +424,7 @@ def dress_ithar(H, S, seed, P):
     """pearl ceramic with gold filigree inlay (flat raised ribbons, flowing curves), jade lenses, smooth inset seams (in the normal map)"""
     rng = np.random.default_rng(seed); pearl, gold, jade, dark = P['base'], P['trim'], P['lens'], P['dark']
     n_f = n_l = 0
-    for p, n, mir, rad in H.pairs(rng, 110, lambda i: H.ao[i] > .55, .035, k=.55):
+    for p, n, mir, rad in H.pairs(rng, 110, lambda i: H.ao[i] > .4, .035, k=.55):
         d0 = Vector((1, 0, 0)); d0 = (d0 - n * d0.dot(n))
         if d0.length < .2: d0 = Vector(rng.normal(0, 1, 3).tolist()); d0 = d0 - n * d0.dot(n)
         d0.normalize(); d0 = (d0 + n.cross(d0) * rng.uniform(-.8, .8)).normalized()
@@ -438,9 +438,9 @@ def dress_ithar(H, S, seed, P):
                 b.append((q2, n2 if n2.dot(H.mirror_v(qn)) > 0 else -n2))
             if len(b) == len(a): paths.append(b)
         for s_, pth in enumerate(paths):
-            if ribbon_path(f'fil{n_f}{"ab"[s_]}', pth, .0026, .0007, -.0002): tag(gold, rgh=.28, met=.95)
+            if ribbon_path(f'fil{n_f}{"ab"[s_]}', pth, .0042, .0010, -.0002): tag(gold, rgh=.28, met=.95)
         n_f += 1
-    for p, n, mir, rad in H.pairs(rng, 16, lambda i: H.ao[i] > .6 and abs(H.cv[i]) < .06, .008, k=2.0):
+    for p, n, mir, rad in H.pairs(rng, 16, lambda i: H.ao[i] > .4 and abs(H.cv[i]) < .06, .008, k=2.0):
         for s_, (q, qn) in enumerate([(p, n)] + ([mir] if mir else [])):
             t, b, nn = frame_for(qn)
             torus(f'lensr{n_l}{"ab"[s_]}', q - qn * .0003, qn, .0042, .0011, seg=14, ring=6); tag(gold, rgh=.28, met=.95)
@@ -457,7 +457,7 @@ def dress_deathless(H, S, seed, P, ring_axis=None):
     ax = Vector(ring_axis or (0, 0, 1)).normalized()
     n_r = n_g = n_k = 0
     open_ok = lambda i: H.ao[i] > .5 and abs(H.cv[i]) < .1
-    for p, n, mir, rad in H.pairs(rng, 34, open_ok, .035, k=.8):
+    for p, n, mir, rad in H.pairs(rng, 50, open_ok, .032, k=.75):
         # rib plane: across the structure. Around the ring's axis the structure runs tangentially, so ribs lie in the plane normal to that
         rad_v = (p - H.c) - ax * (p - H.c).dot(ax)
         tang = ax.cross(rad_v).normalized() if rad_v.length > .05 else Vector((1, 0, 0))
@@ -485,7 +485,7 @@ def dress_deathless(H, S, seed, P, ring_axis=None):
             mid = [((a_[0] + b_[0]) / 2, a_[1]) for a_, b_ in zip(sets[0], sets[1])][1:-1]
             if len(mid) > 2 and ribbon_path(f'slit{n_r}a', mid, .0018, .0003, -.0005): tag(green, emit=1.0, rgh=.2, met=0)
         n_r += 1
-    for p, n, mir, rad in H.pairs(rng, 60, open_ok, lambda g: g.uniform(.014, .024), k=1.0):  # carved glyph panels
+    for p, n, mir, rad in H.pairs(rng, 85, open_ok, lambda g: g.uniform(.014, .024), k=.95):  # carved glyph panels
         t, b, n1 = frame_for(n); w, h = rad * 1.4, rad * .9
         pts = detail_lib.outline('chamfer', w, h, r); col = mul(slate, r.uniform(.6, .8))
         if not plate(H, S, f'gly{n_g}a', p, n1, t, b, pts, .0012, -.0009, col, dict(rgh=.7, met=.4), 0): continue
@@ -511,16 +511,19 @@ def dress_deathless(H, S, seed, P, ring_axis=None):
 
 
 def build_spires(fingers, style, col, dark, props):
-    """the hand-built replacements for the AI's melted fingers (spires.py): a mount plate over the cut, then a crisp tapered spire.
-    style 'gothic' (Voidsworn pinnacles: octagonal, banded, pointed, with a finial) or 'mast' (Hegemony antenna masts: slimmer taper,
-    collars, a sensor bulb on top)"""
+    """the hand-built replacements for the AI's melted fingers (spires.py): a mount plate over the cut hole (sized from the hole's rim, so
+    it covers it and sits on the hull), then a crisp tapered spire. style 'gothic' (Voidsworn pinnacles: octagonal, banded, pointed, with a
+    finial) or 'mast' (Hegemony antenna masts: slimmer taper, collars, a sensor bulb on top)"""
     n = 0; done = set()
     for f in fingers:
-        x, y = float(f['c'][0]), float(f['c'][1]); z0, z1, r = f['z0'], f['z1'], f['r']; h = z1 - z0
-        if f['group'] not in done:  # one mount plate per cluster, over the whole cut
-            done.add(f['group']); lo, hi = f['plate_lo'], f['plate_hi']
-            if abs(lo[1] + hi[1]) < .006: e = max(abs(lo[1]), abs(hi[1])); lo, hi = (lo[0], -e), (hi[0], e)  # centreline mounts stay symmetric
-            hs_lib.box(f'spm{n}', ((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, z0 - .0025), (max(hi[0] - lo[0], .006), max(hi[1] - lo[1], .006), .006), bevel=.0006); tag(mul(col, .8), **props)
+        x, y = float(f['c'][0]), float(f['c'][1]); z1, r = f['z1'], f['r']; lo, hi = f['rim_lo'], f['rim_hi']
+        zb = float(hi[2]); z0 = zb; h = z1 - z0
+        if h < .006: continue
+        if f['group'] not in done:  # one mount per cluster: covers the rim, top just above its highest point, bottom below its lowest
+            done.add(f['group']); x0, x1, y0, y1 = lo[0] - .0025, hi[0] + .0025, lo[1] - .0025, hi[1] + .0025
+            if abs(y0 + y1) < .006: e = max(abs(y0), abs(y1)); y0, y1 = -e, e  # centreline mounts stay symmetric
+            zt, zbm = float(hi[2]) + .0012, float(lo[2]) - .004
+            hs_lib.box(f'spm{n}', ((x0 + x1) / 2, (y0 + y1) / 2, (zt + zbm) / 2), (max(x1 - x0, .006), max(y1 - y0, .006), zt - zbm), bevel=.0006); tag(mul(col, .8), **props)
         if style == 'gothic':
             hs_lib.cyl(f'spi{n}', (x, y, z0 + h * .5), r, h, axis='Z', seg=8, r2=r * .12, bevel=0); tag(col, **props)
             for k, fz in enumerate((.18, .46)):

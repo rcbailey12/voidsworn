@@ -55,9 +55,19 @@ def symmetrize(fingers, tol=.005):
 
 
 def cut(p, idx, fingers):
-    """remove the finger triangles; returns the new index array"""
+    """remove the finger triangles; returns the new index array. Each cluster also gets its hole's rim (the edge between cut and kept
+    triangles, min and max corner in 3D) so its mount plate covers the hole and sits on the hull."""
     if not fingers: return idx
-    dead = np.concatenate([f['tris'] for f in fingers]).astype(np.int64); keep = np.ones(len(idx), bool); keep[dead] = False; return idx[keep]
+    dead = np.concatenate([f['tris'] for f in fingers]).astype(np.int64); keep = np.ones(len(idx), bool); keep[dead] = False
+    if p is not None:
+        w = hullio.weld_ids(p); kv = np.zeros(w.max() + 1, bool); kv[w[idx[keep]].ravel()] = True
+        for f in fingers:
+            if not len(f['tris']): continue
+            vs = idx[f['tris']].ravel(); rim = vs[kv[w[vs]]]
+            pts = p[rim] if len(rim) else p[vs][p[vs][:, 2] < f['z0'] + .006]
+            for g in fingers:
+                if g['group'] == f['group']: g['rim_lo'] = pts.min(0); g['rim_hi'] = pts.max(0)
+    return idx[keep]
 
 
 def scan(p, idx, zmin, box=None, exclude_x=None, levels=40):

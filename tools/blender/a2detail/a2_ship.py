@@ -40,7 +40,7 @@ def build_hull(root, code, spc=None):
     if spc:  # cut the melted fingers before refining (their replacements are built in main)
         import spires
         fingers = spires.scan(hullio.game_to_bl(h['pos']), idx, spc['zmin'], spc.get('box'), spc.get('exclude_x'))
-        idx = spires.cut(None, idx, fingers)
+        idx = spires.cut(hullio.game_to_bl(h['pos']), idx, fingers)
     h['fingers'] = fingers
     p, n, i, u = hullio.pn_refine(h['pos'], h['nor'], idx, [h['uv2']])
     uv = u[0].copy(); uv[:, 1] = 1 - uv[:, 1]  # back to Blender's v-up for the atlas
@@ -71,6 +71,9 @@ def audit(H, parts):
             if q[0] is not None: dmin = min(dmin, q[3])
             if dmin <= tol: break
         grounded[k] = dmin <= tol
+        if not grounded[k]:  # crossing the hull surface counts as mounted (sunk-in mounts, plates that straddle a bump)
+            o = parts[k]; me = o.evaluated_get(dg).to_mesh(); t = bmesh.new(); t.from_mesh(me); t.transform(o.matrix_world); P = BVHTree.FromBMesh(t); t.free(); o.evaluated_get(dg).to_mesh_clear()
+            grounded[k] = bool(H.T.overlap(P))
     # parts that do not touch the hull must overlap a grounded part (edge beads on plates, slats in vents, lenses in housings)
     pend = [k for k in range(len(parts)) if not grounded[k] and k not in stray]
     for _ in range(4):
@@ -208,7 +211,7 @@ def main():
     P = dict(base=bakemat.lin(F['hull']), dark=bakemat.lin(F['dark']), trim=bakemat.lin(F['trim']), lens=tuple(F['win']))
     seed = sum(map(ord, code))
     if h['fingers']: dress.build_spires(h['fingers'], cfg['spires']['style'], P['base'], P['dark'], dict(rgh=F['rgh'], met=F['met']))
-    for f in h['fingers']: H.placed.append((Vector((float(f['c'][0]), float(f['c'][1]), f['z0'])), float(max(f['plate_hi'] - f['plate_lo'])) / 2 + .003))
+    for f in h['fingers']: H.placed.append((Vector(((f['rim_lo'] + f['rim_hi']) / 2).tolist()), float(max(f['rim_hi'][:2] - f['rim_lo'][:2])) / 2 + .004))
     if fac in ('voidsworn', 'hegemony'): dress.dress_armour(H, S, fac, seed, P)
     elif fac == 'chorus': dress.dress_chorus(H, S, seed, P)
     elif fac == 'ithar': P['trim'] = bakemat.lin('#c9a44a'); dress.dress_ithar(H, S, seed, P)  # filigree gold a step richer than the trim tint

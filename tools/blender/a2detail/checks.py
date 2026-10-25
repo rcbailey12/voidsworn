@@ -34,7 +34,7 @@ def clay_mat():
     return m
 
 
-def painted_mat(maps, uv='UV0', emit_gain=6.0):
+def painted_mat(maps, uv='UV0', emit_gain=2.5):
     """maps: dict base, orm, normal, emissive -> image path"""
     m = bpy.data.materials.new('painted'); m.use_nodes = True; T = m.node_tree; L = T.links; b = T.nodes['Principled BSDF']
     uvn = T.nodes.new('ShaderNodeUVMap'); uvn.uv_map = uv

@@ -83,7 +83,7 @@ def seams(g, obj, scale, stretch, metric, width):
 
 LOOK = {  # how weathered each faction is (art direction: Hegemony parade finish, Voidsworn soot and worn black steel, Ithar clean pearl)
     'voidsworn': dict(rnoise=.06, grit=.10, wear_met=.30), 'hegemony': dict(rnoise=.025, grit=.05, wear_met=.12),
-    'chorus': dict(rnoise=.05, grit=.08, wear_met=0), 'ithar': dict(rnoise=.02, grit=.03, wear_met=.10), 'deathless': dict(rnoise=.05, grit=.08, wear_met=.25)}
+    'chorus': dict(rnoise=.05, grit=.08, wear_met=0), 'ithar': dict(rnoise=.02, grit=.03, wear_met=.10, ao_floor=.6), 'deathless': dict(rnoise=.05, grit=.08, wear_met=.25)}  # Ithar's sail is a thin double sheet: its baked AO came out dark everywhere, hence the floor
 
 
 def build(o, fac, nmap, mmap, info):
@@ -102,7 +102,7 @@ def build(o, fac, nmap, mmap, info):
     X, Y, Z = g.sep(obj); NX, NY, NZ = g.sep(gn)
     # occlusion: hull = baked AO from the full-detail mesh; everything also gets Cycles AO (parts sitting on the hull, plates on plates)
     ao_node = g.n('ShaderNodeAmbientOcclusion'); ao_node.inputs['Distance'].default_value = .012; ao_node.samples = 16
-    ao_h = g.add(g.mul(hull, sm.outputs[0]), part)  # 1 on parts
+    ao_h = g.add(g.mul(hull, g.rng(sm.outputs[0], 0, 1, LOOK[fac].get('ao_floor', 0.0), 1)), part)  # 1 on parts
     ao = g.mul(ao_h, g.rng(ao_node.outputs['AO'], 0, 1, .35, 1.0))
     # curvature: hull from the map (G - .5); parts from the bevel normal (worn plate edges)
     bv = g.n('ShaderNodeBevel'); bv.inputs['Radius'].default_value = .0006; bv.samples = 8
@@ -125,10 +125,10 @@ def build(o, fac, nmap, mmap, info):
     dark = lin(F['dark']); trim = lin(F['trim']); hc = lin(F['hull'])
     if fac == 'chorus':
         mott = g.noise(obj, 14, 6, .62); vein = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.noise(obj, 7, 3, .5), .5)), .018)
-        base = g.mix(g.rng(mott, .3, .7, 0, .55), base, tuple(min(1, c * 1.7) for c in hc))         # paler flesh patches
+        base = g.mix(g.rng(mott, .3, .7, 0, .35), base, (min(1, hc[0] * 1.8), hc[1] * 1.3, min(1, hc[2] * 1.6)))  # paler, pinker flesh patches
         base = g.mix(g.mul(vein, .55), base, tuple(c * .35 for c in dark))                          # dark vein lines
         base = g.mix(g.mul(cavity, .8), base, (.12, .015, .02))                                     # deep red in the folds
-        base = g.mix(g.mul(g.smooth(curv, .04, .2), .4), base, tuple(min(1, c * 1.5) for c in lin(F['trim'])))  # bile-yellow on the ridges
+        base = g.mix(g.mul(g.smooth(curv, .08, .25), .12), base, tuple(min(1, c * 1.2) for c in lin(F['trim'])))  # a little bile-yellow on the sharpest ridges
     else:
         worn = {'voidsworn': (.16, .15, .14), 'hegemony': (.80, .82, .84), 'deathless': (.30, .32, .31), 'ithar': (.95, .93, .86)}[fac]
         wk = {'voidsworn': .8, 'hegemony': .25, 'deathless': .6, 'ithar': .2}[fac]
