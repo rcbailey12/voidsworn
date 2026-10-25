@@ -12,24 +12,25 @@ shader_type spatial;
 render_mode cull_disabled;
 global uniform float scene_t;
 instance uniform float spawn_t = -100.0;
+varying vec3 lp;
+""" + FX.EMBER + """
+void vertex() {
+	lp = VERTEX;
+}
 void fragment() {
-	float heat = exp(-max(scene_t - spawn_t, 0.0) / 2.5);
-	float e = smoothstep(0.55, 1.0, UV.x);
 	ALBEDO = vec3(0.11, 0.105, 0.10);
 	METALLIC = 0.65;
 	ROUGHNESS = 0.5;
-	EMISSION = clamp(vec3(1.0, 0.4, 0.08) * e * e * heat * 4.0, 0.0, 64.0);
+	EMISSION = ember(lp, exp(-max(scene_t - spawn_t, 0.0) / 0.9));
 }
 """
 const DEBRIS_BODY_COMPAT := """
 shader_type spatial;
 render_mode cull_disabled;
 void fragment() {
-	float e = smoothstep(0.55, 1.0, UV.x);
 	ALBEDO = vec3(0.11, 0.105, 0.10);
 	METALLIC = 0.65;
 	ROUGHNESS = 0.5;
-	EMISSION = vec3(1.0, 0.4, 0.08) * e * e * 0.8;
 }
 """
 
@@ -50,14 +51,14 @@ func setup(ships: Array, max_bodies: int) -> void:
 	_bounce = PhysicsMaterial.new()
 	_bounce.bounce = 0.45
 	_bounce.friction = 0.4
-	# dark hull metal with hot torn edges that cool over a few seconds after the piece is thrown (per-body spawn time)
+	# dark hull metal with a few dim glowing specks that cool within a second or two of the throw (per-body spawn time)
 	var sh := Shader.new()
 	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
 	sh.code = DEBRIS_BODY_COMPAT if compat else DEBRIS_BODY
 	_mat = ShaderMaterial.new()
 	_mat.shader = sh
 	# irregular shards (see fx.gd shard_mesh) in three sizes, each with a convex collider from its own corners
-	for sz in [0.5, 0.9, 1.6]:
+	for sz in [0.45, 0.8, 1.2]:
 		var sm: Array = FX.shard_mesh(_rng, sz)
 		var cs := ConvexPolygonShape3D.new()
 		cs.points = sm[1]

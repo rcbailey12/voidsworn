@@ -148,6 +148,8 @@ func _ready() -> void:
 		mode = "shots"
 	_read_scene_options()
 	res = _resolve_res()
+	if mode == "bench":
+		_add_probes()
 	if mode == "shots" and not args.has("no-relaunch"):
 		# Godot consumes its own options, so --fixed-fps cannot be read back; a fixed clock shows as an exact frame delta.
 		await get_tree().process_frame
@@ -358,11 +360,19 @@ func _finish_bench() -> void:
 	notes.append("effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) %.3f ms average" % (ptot / maxf(proc_ms.size(), 1)))
 	if gpu_ms_n > 0:
 		notes.append("engine-measured 3D render time per frame: GPU %.2f ms, render CPU %.2f ms" % [gpu_ms_sum / gpu_ms_n, cpu_ms_sum / gpu_ms_n])
-	if int(_bd["n"]) > 0:
+	if int(_bd["n"]) > 0 and int(_bd["frames"]) > 0:
 		var nb: float = _bd["n"]
-		notes.append("frame breakdown (averages): process step %.2f ms, physics step %.2f ms at %.2f ticks per frame, render-server frame setup %.2f ms, %.0f draw calls, %.0f objects, %d nodes in the tree" % [
-			_bd["process"] / nb, _bd["physics"] / nb, _bd["ticks"] / nb, _bd["setup"] / nb, _bd["draws"] / nb, _bd["objects"] / nb,
-			get_tree().get_node_count()])
+		var nf: float = _bd["frames"]
+		var setup: float = _bd["setup"] / nb
+		var rcpu := cpu_ms_sum / maxf(gpu_ms_n, 1)
+		var draw: float = _bd["draw"] / nf
+		notes.append(("frame breakdown (CPU wall time per frame, averages over the run): physics steps %.2f ms (%.2f ticks per frame); " +
+			"node processing %.2f ms (every _process and particle node, effect script %.2f ms of it); tree flush and render sync %.2f ms; " +
+			"render-server draw %.2f ms (scene update %.2f, 3D view render CPU %.2f, rest %.2f: GPU frame wait, particle update, 2D, present); " +
+			"between frames %.2f ms (OS events, input); %.0f draw calls, %.0f objects, %d nodes in the tree") % [
+			_bd["phys"] / nf, _bd["ticks"] / nb, _bd["proc"] / nf, ptot / maxf(proc_ms.size(), 1), _bd["tail"] / nf,
+			draw, setup, rcpu, maxf(draw - setup - rcpu, 0.0), _bd["gap"] / nf,
+			_bd["draws"] / nb, _bd["objects"] / nb, get_tree().get_node_count()])
 	notes.append("shader warm-up after load took %.1f s (every effect, fade and chunk state drawn once, until pipeline compiles stop)" % prewarm_s)
 	notes.append("adapter %s, driver %s %s" % [RenderingServer.get_video_adapter_name(), RenderingServer.get_current_rendering_driver_name(),
 		RenderingServer.get_video_adapter_api_version()])
@@ -852,15 +862,67 @@ func _shot_list() -> Array:
 	return out
 
 
-var _bd := {"process": 0.0, "physics": 0.0, "setup": 0.0, "draws": 0.0, "objects": 0.0, "ticks": 0.0, "n": 0}
+var _bd := {"setup": 0.0, "draws": 0.0, "objects": 0.0, "ticks": 0.0, "n": 0,
+	"phys": 0.0, "proc": 0.0, "tail": 0.0, "draw": 0.0, "gap": 0.0, "frames": 0}
 var _last_phys_frames := 0
+# Timestamps for the per-phase CPU breakdown of each main-loop iteration (Godot's TIME_PROCESS monitor is the peak over
+# the last second of process plus draw, so it cannot be used as an average). Order in one iteration:
+#   physics steps -> nodes' _process (first probe .. last probe) -> transform flush, timers, render sync -> draw
+#   (frame_pre_draw .. frame_post_draw: GPU fence wait, scene update, particles, viewports, present) -> next iteration
+var _ts := {"phys0": 0, "phys1": 0, "proc0": 0, "proc1": 0, "pre": 0, "post": 0}
+var _phys_acc := 0
+
+
+class Probe extends Node:
+	var on_process: Callable
+	var on_physics: Callable
+	func _process(_d: float) -> void:
+		if on_process.is_valid():
+			on_process.call()
+	func _physics_process(_d: float) -> void:
+		if on_physics.is_valid():
+			on_physics.call()
+
+
+func _add_probes() -> void:
+	var first := Probe.new()
+	first.name = "ProbeFirst"
+	first.process_priority = -1000000
+	first.process_physics_priority = -1000000
+	first.on_process = func() -> void:
+		var now := Time.get_ticks_usec()
+		if int(_ts["post"]) < int(_ts["proc1"]):
+			# no draw signals (headless): count everything after the last probe as "between frames"
+			_ts["pre"] = _ts["proc1"]
+			_ts["post"] = _ts["proc1"]
+		if bench_on and int(_ts["proc1"]) > 0:
+			_bd["gap"] += (now - int(_ts["post"])) / 1000.0 - _phys_acc / 1000.0
+			_bd["phys"] += _phys_acc / 1000.0
+			_bd["tail"] += (int(_ts["pre"]) - int(_ts["proc1"])) / 1000.0
+			_bd["draw"] += (int(_ts["post"]) - int(_ts["pre"])) / 1000.0
+			_bd["proc"] += (int(_ts["proc1"]) - int(_ts["proc0"])) / 1000.0
+			_bd["frames"] += 1
+		_phys_acc = 0
+		_ts["proc0"] = now
+	first.on_physics = func() -> void:
+		_ts["phys0"] = Time.get_ticks_usec()
+	var last := Probe.new()
+	last.name = "ProbeLast"
+	last.process_priority = 1000000
+	last.process_physics_priority = 1000000
+	last.on_process = func() -> void:
+		_ts["proc1"] = Time.get_ticks_usec()
+	last.on_physics = func() -> void:
+		_phys_acc += Time.get_ticks_usec() - int(_ts["phys0"])
+	add_child(first)
+	add_child(last)
+	RenderingServer.frame_pre_draw.connect(func() -> void: _ts["pre"] = Time.get_ticks_usec())
+	RenderingServer.frame_post_draw.connect(func() -> void: _ts["post"] = Time.get_ticks_usec())
 
 
 func _sample_stats() -> void:
 	# frame-time breakdown: whole process step, physics step, render-server frame setup (particle updates, culling and
 	# sync before the viewports draw), draw calls and objects in the 3D view, physics ticks this frame
-	_bd["process"] += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
-	_bd["physics"] += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 	_bd["setup"] += RenderingServer.get_frame_setup_time_cpu()
 	_bd["draws"] += Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
 	_bd["objects"] += Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME)

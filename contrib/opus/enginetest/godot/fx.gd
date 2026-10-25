@@ -270,20 +270,40 @@ void fragment() {
 """
 
 # Debris shards (particles): dark hull metal whose torn rim (UV.x near 1) glows and cools over the particle's life.
+# Glowing specks on torn metal (debris particles and the physics bodies): soft-edged spots scattered over the piece
+# from a 3D noise in its own space, so nothing traces the piece's outline, dim and cooling fast.
+const EMBER := """
+float ember_h(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+float ember_n(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(mix(ember_h(i), ember_h(i + vec3(1.0, 0.0, 0.0)), f.x), mix(ember_h(i + vec3(0.0, 1.0, 0.0)), ember_h(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+		mix(mix(ember_h(i + vec3(0.0, 0.0, 1.0)), ember_h(i + vec3(1.0, 0.0, 1.0)), f.x), mix(ember_h(i + vec3(0.0, 1.0, 1.0)), ember_h(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+}
+vec3 ember(vec3 pos, float warm) {
+	float speck = smoothstep(0.6, 0.88, ember_n(pos * 6.0));
+	return clamp(vec3(1.0, 0.34, 0.05) * speck * max(warm, 0.0) * 1.4, 0.0, 16.0);
+}
+"""
+
 const DEBRIS_SHADER := """
 shader_type spatial;
 render_mode cull_disabled;
 uniform float hot = 1.0;
 varying float heat;
+varying vec3 lp;
+""" + EMBER + """
 void vertex() {
-	heat = clamp(1.0 - INSTANCE_CUSTOM.y, 0.0, 1.0);
+	float k = clamp(1.0 - INSTANCE_CUSTOM.y * 2.5, 0.0, 1.0);
+	heat = k * k * hot;
+	lp = VERTEX;
 }
 void fragment() {
-	float e = smoothstep(0.55, 1.0, UV.x);
 	ALBEDO = vec3(0.11, 0.105, 0.10);
 	METALLIC = 0.65;
 	ROUGHNESS = 0.5;
-	EMISSION = clamp(vec3(1.0, 0.4, 0.08) * e * e * heat * heat * 4.0 * hot, 0.0, 64.0);
+	EMISSION = ember(lp, heat);
 }
 """
 
@@ -355,7 +375,9 @@ void fragment() {
 }
 """
 
-# Clock-driven shield: a partial ellipsoid on the struck side, ripple rings running out from the hit, 0.6 s.
+# Clock-driven shield: on the bubble, close to the hit, two thin ripple rings run out from the impact point and fade
+# within a few units; a small soft glow marks the impact. Distances are measured in world units on the bubble (the
+# ellipsoid's own radii), so a long ship gets the same small ripple as a short one. Additive and mostly transparent.
 const SHIELD_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
@@ -365,6 +387,8 @@ uniform float t0 = 0.0;
 uniform float period = 4.0;
 uniform float patchy = 0.0;
 uniform vec3 hit_dir = vec3(0.0, 0.0, -1.0);
+uniform vec3 radii = vec3(1.0);
+uniform float reach = 6.0;
 varying vec3 lp;
 varying float age;
 varying float strength;
@@ -378,22 +402,26 @@ void vertex() {
 }
 void fragment() {
 	vec3 d3 = safe_norm(lp, hit_dir);
-	float d = acos(clamp(dot(d3, hit_dir), -1.0, 1.0));
-	float partial = 1.0 - smoothstep(0.6, 1.2, d);
-	float impact = exp(-d * d * 70.0);
-	float q1 = (d - age * 2.6) * 16.0;
-	float q2 = (d - age * 1.7) * 20.0;
-	float q3 = (d - age * 0.9) * 24.0;
-	float rings = exp(-q1 * q1) + exp(-q2 * q2) * 0.6 + exp(-q3 * q3) * 0.35;
-	float fres = pow(max(1.0 - abs(dot(NORMAL, VIEW)), 0.0), 4.0);
-	float cells = 0.7 + 0.3 * vnoise(vec2(atan(d3.z, d3.x + 1e-5) * 9.0, d3.y * 14.0));
-	float a = strength * partial * (fres * 0.05 + impact * 1.2 + rings * 0.7 * cells);
+	float dist = length((d3 - hit_dir) * radii);
+	if (dot(d3, hit_dir) < 0.0) { discard; }
+	float partial = 1.0 - smoothstep(reach * 0.35, reach, dist);
+	float r1 = (dist - (0.4 + age * 9.0)) / 0.09;
+	float r2 = (dist - age * 5.5) / 0.07;
+	float rings = exp(-r1 * r1) + exp(-r2 * r2) * 0.5;
+	// the rings break into arcs: an angular noise around the impact point (no seam: sampled on a circle)
+	vec3 tu = safe_norm(cross(hit_dir, abs(hit_dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)), vec3(1.0, 0.0, 0.0));
+	vec3 tv = cross(hit_dir, tu);
+	vec2 around = safe_norm(vec3(dot(d3, tu), dot(d3, tv), 0.0), vec3(1.0, 0.0, 0.0)).xy;
+	float arcs = smoothstep(0.3, 0.7, vnoise(around * 2.2 + vec2(t0 * 3.1, age * 2.0)));
+	float spot = exp(-dist * dist / 0.25);
+	float cells = 0.65 + 0.35 * vnoise(vec2(atan(d3.z, d3.x + 1e-5) * 18.0, d3.y * 26.0));
+	float a = strength * partial * (rings * 0.26 * cells * (0.15 + 0.85 * arcs) + spot * 0.08);
 	if (patchy > 0.0) {
 		float pn = vnoise(d3.xy * 7.0 + vec2(TIME * 3.0, d3.z * 5.0));
 		float flick = step(0.32, vnoise(vec2(TIME * 24.0, 1.7)));
 		a *= mix(1.0, smoothstep(0.38, 0.62, pn) * flick, patchy);
 	}
-	ALBEDO = clamp(mix(tint, vec3(1.0), impact * 0.35 * strength) * energy * a, 0.0, 512.0);
+	ALBEDO = clamp(tint * energy * a, 0.0, 512.0);
 	ALPHA = 1.0;
 }
 """
@@ -570,6 +598,10 @@ var compat := false
 var ships: Array = []
 var wreck := {}
 var prewarm := false
+var _now := 0.0
+# One-shot particle systems are hidden once their burst is over (fired time + lifetime), so idle systems leave the
+# render server's particle update list and its instance updates instead of idling there for 1.2 lifetimes.
+var _live := {}
 
 var _lights: Array = []
 var _shake: Array = []
@@ -730,6 +762,7 @@ func shake_offset(t: float, cam_pos: Vector3) -> Vector3:
 
 func update(t: float) -> void:
 	RenderingServer.global_shader_parameter_set(&"scene_t", t)
+	_now = t
 	if prewarm:
 		return
 	# every ship drifts by the same offset, so the shared breach emitters ride along with one move
@@ -750,6 +783,7 @@ func update(t: float) -> void:
 	for i in ships.size():
 		_update_ship(ships[i], t, t - stagger * i, q, fade)
 	_update_wreck(t)
+	_reap()
 
 
 # Load-time warm-up (main.gd): every effect drawn, every particle system fired, the hulls half transparent, so each
@@ -765,6 +799,7 @@ func show_everything(on: bool) -> void:
 		for p in e["oneshots"]:
 			_fire(p)
 		(e["beam_sparks"] as GPUParticles3D).emitting = on
+		(e["beam_sparks"] as GPUParticles3D).visible = on
 		for l in e["lights"]:
 			(l as OmniLight3D).visible = on
 			(l as OmniLight3D).light_energy = 1.0
@@ -866,6 +901,11 @@ func _update_ship(e: Dictionary, t: float, u: float, q: float, fade: float) -> v
 	var bs: GPUParticles3D = e["beam_sparks"]
 	if on != bs.emitting:
 		bs.emitting = on
+		if on:
+			bs.visible = true
+			_live.erase(bs)
+		else:
+			_live[bs] = _now + bs.lifetime + 0.1
 		if on:
 			_kick(t, root.position + e["bow_at"], 0.25)
 	var cf := 0.0
@@ -1248,6 +1288,7 @@ func _build_ship(i: int, s: Dictionary, tex: Dictionary) -> Dictionary:
 	var end := bow + Vector3(BEAM_LEN, 0, 0)
 	_sprite_row("beam_end", base + end, 6.0, wcol.lerp(Color.WHITE, 0.3), bt0)
 	e["beam_sparks"] = _particles(root, _pm["fountain"], 60, 0.7, _spark_mesh, _mats["spark"], end, false)
+	(e["beam_sparks"] as GPUParticles3D).visible = false
 	e["beam_light"] = _omni(root, wcol.lerp(Color.WHITE, 0.3), 18.0)
 	(e["beam_light"] as OmniLight3D).position = bow
 	e["beam_hit_light"] = _omni(root, wcol.lerp(Color.WHITE, 0.3), 20.0)
@@ -1267,15 +1308,13 @@ func _build_ship(i: int, s: Dictionary, tex: Dictionary) -> Dictionary:
 		var shm := MeshInstance3D.new()
 		shm.mesh = sphere
 		shm.material_override = _ship_mat(_sh["shield"], {"tint": _v3(s["shield"]), "hit_dir": hd, "t0": off + HIT_AT,
-			"patchy": 1.0 if e["corsair"] else 0.0})
+			"patchy": 1.0 if e["corsair"] else 0.0, "radii": radii, "reach": clampf(minf(radii.x, radii.y) * 0.9, 4.0, 7.0)})
 		shm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		shm.scale = radii
 		shm.visible = false
 		root.add_child(shm)
 		e["shield"] = shm
 		e["hit_at"] = hd * radii
-		var scol: Color = s["shield"]
-		_sprite_row("hit_core", base + e["hit_at"], 1.4, scol.lerp(Color.WHITE, 0.4), off + HIT_AT)
 	else:
 		var hp2: Vector3 = s["hit"]
 		e["hit_at"] = hp2
@@ -1679,8 +1718,20 @@ func _sputter(t: float) -> float:
 
 
 func _fire(p: GPUParticles3D) -> void:
+	p.visible = true
 	p.restart(fixed_seed)
 	p.emitting = true
+	if p.one_shot:
+		_live[p] = _now + p.lifetime + 0.1
+
+
+func _reap() -> void:
+	if prewarm:
+		return
+	for p in _live.keys():
+		if _now >= float(_live[p]) or _now < float(_live[p]) - 30.0:
+			(p as GPUParticles3D).visible = false
+			_live.erase(p)
 
 
 func _fire_at(p: GPUParticles3D, at: Vector3) -> void:
@@ -1762,6 +1813,7 @@ func _particles(parent: Node, pmat: ParticleProcessMaterial, amount: int, life: 
 	p.seed = _seed
 	_seed += 7919
 	p.position = at
+	p.visible = not one_shot  # shown when fired (see _fire and _reap)
 	parent.add_child(p)
 	return p
 

@@ -60,19 +60,22 @@ func setup(env_dir: String, env: Environment, phys: Node, compat: bool) -> bool:
 	update(0.0)
 	if not compat:
 		# a thin dust haze through the battle area: Godot's volumetric fog, lit by every light in it
+		# Kept faint: about 3% extinction across the battle (density 0.0001 over 320 units), a cool grey albedo, little
+		# ambient lift and little fog over the sky, so the ships stay crisp and the background stays dark. What shows is
+		# mostly the forward-scattered glow around the key light, the guns and the fires.
 		env.volumetric_fog_enabled = true
-		env.volumetric_fog_density = 0.0009
-		env.volumetric_fog_albedo = Color(0.75, 0.72, 0.7)
+		env.volumetric_fog_density = 0.0001
+		env.volumetric_fog_albedo = Color(0.42, 0.44, 0.5)
 		env.volumetric_fog_length = maxf(env.volumetric_fog_length, 320.0)
-		env.volumetric_fog_anisotropy = 0.3
-		env.volumetric_fog_ambient_inject = 0.3
+		env.volumetric_fog_anisotropy = 0.6
+		env.volumetric_fog_sky_affect = 0.15  # 0 would also hide the vent and ring fog wherever it sits against the sky
 		notes.append("env: %d asteroids (%d instanced in %d MultiMeshes, %d big rocks), dust haze in volumetric fog" % [
 			data["rocks"].size(), data["rocks"].size() - big, _mm.size(), big])
 	else:
 		env.fog_enabled = true
-		env.fog_density = 0.0003
+		env.fog_density = 0.0001
 		env.fog_sky_affect = 0.0
-		env.fog_light_color = Color(0.35, 0.33, 0.32)
+		env.fog_light_color = Color(0.1, 0.105, 0.12)
 		notes.append("env: %d asteroids, dust haze as plain distance fog (no volumetric fog in Compatibility)" % data["rocks"].size())
 	return true
 
