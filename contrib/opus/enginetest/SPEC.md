@@ -1,6 +1,6 @@
 # A2 engine test: the shared spec
 
-Plan: `contrib/opus/go-forward-plan.md`, phase A2. One scene, built twice: once in Babylon.js 8.20 (today's engine), once in Godot 4.7.2 (installed portable on Ryan's PC, `Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe`). Both builds follow this file exactly, so the comparison is fair. Neither build reuses the game's existing effects or shaders: Babylon gets no head start.
+Plan: `contrib/opus/go-forward-plan.md`, phase A2. One scene, built twice: once in Babylon.js (today's game runs 8.20; the test moved to the current 9.30.0 on Oct 25 so both engines are on their latest stable), once in Godot 4.7.2 (installed portable on Ryan's PC, `Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe`). Both builds follow this file exactly, so the comparison is fair. Neither build reuses the game's existing effects or shaders: Babylon gets no head start.
 
 ## Ships (six faction flagships)
 
