@@ -34,7 +34,7 @@ Updated by the build session as phases move. A phase is done when its exit check
 |---|---|---|
 | A0 Barge files into git | DONE Oct 24 | v14 files in hulls_hi/ and hulls/ (95f01b6, a687ef5). Side-by-side: docs/ship_pipeline/c19_example/a0_repo_vs_pc.webp. |
 | B0 Ground truth | IN PROGRESS | Guard and check pack done (d88035a, 0 FAIL). Mega sim running in the cloud. |
-| A1 Barge upgrade | STEP 1 IN PROGRESS | Clay silhouette options being rendered for Ryan's pick. |
+| A1 Barge upgrade | STEP 1 AT WEIGH-IN | Three clay options (A slab, B salvage spine, C double-sided hulk) in docs/ship_pipeline/c19_example/a1_options/, built by tools/blender/a1/barge_shapes.py. Waiting on Ryan's pick. |
 | A2 to A5, B1 to B5 | NOT STARTED | |
 
 ## 1. What is decided
