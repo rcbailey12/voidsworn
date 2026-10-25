@@ -232,7 +232,8 @@ func click(mouse: Vector2) -> void:
 		await get_tree().process_frame
 	else:
 		await RenderingServer.frame_post_draw
-	click_frames = Engine.get_frames_drawn() - f0
+	# the frame that has just been drawn is the first with the ring (frames_drawn counts it after this signal)
+	click_frames = Engine.get_frames_drawn() - f0 + 1
 	print("[enginetest] board: click to visible ring %d frame(s)" % click_frames)
 
 
