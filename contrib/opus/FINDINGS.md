@@ -104,7 +104,7 @@ Full tables: `compute/balance_reference.md` and the CSVs beside it. Every later 
 | B-13 | Legacy shop has no buttons | Dead UI | main3d.js:11 unlocks every legacy upgrade and admiral free on boot (matches Ryan's no-grind wish) | INFO |
 | B-14 | Sim harness crash | VERIFIED | sim3d.js:112 `OBJS_SEEN[B.obj.type].w++` on an unseen type | FIXED (d88035a, guard as in the plan section 10) |
 | B-15 | Council chair's top 10 | None done in code | evidence/bugs_at_d5d0227.md | OPEN (B1 covers 1 and 2; others in later phases) |
-| B-16 | Every AI hull vanished on its first damage below 80% hull, until the cloned damage material's shader compiled (seconds on software GL, likely a blink on GPU) | VERIFIED Oct 25 (closeshot probe on Ryan's PC: barge and hulk-carrier invisible at 0.7 s and 1.8 s after damage, visible again at 12 s) | gfx3d.js `shipDamageFx` swapped materials before they were ready. Fix 334adbd: the intact material stays until the damaged one is ready. | FIXED (334adbd), PC re-check pending |
+| B-16 | Every AI hull vanished on its first damage below 80% hull (until the cloned damage shader compiled), and once it came back a damaged painted hull drew as generic plating | VERIFIED Oct 25 (closeshot probes on Ryan's PC: barge and hulk-carrier invisible at 0.7 s and 1.8 s, back at 12 s with a plain panel grid) | gfx3d.js `shipDamageFx`: the clone dropped the paint, kit, finish and detail flags (new shader) and was swapped in before it compiled. Fix d234ed3 and the v3 commit: all flags copied, clone compiled on a scratch submesh, then swapped. Re-probe: clones ready at 0.7 s, barge visible with its own paint. | FIXED |
 
 ## The record: documents and data
 
