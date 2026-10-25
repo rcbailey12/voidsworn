@@ -72,7 +72,7 @@ const PLUME_GLSL={vert:`precision highp float; attribute vec3 position; attribut
       vec3 c=mix(col,vec3(1.0,0.97,0.93),core*smoothstep(0.55,1.0,v)*0.85);
       float a=along*(0.2+0.8*core)*dia*fl;
       if(dirty>0.0){ float sd=dot(vP.xz,vec2(0.071,0.053)); float sp=sin(t*9.0+sd*13.0)*sin(t*23.0+sd*7.0)*sin(t*3.7+sd*3.0);
-        a*=0.35+0.65*smoothstep(-0.35,0.15,sp); a*=0.72+0.28*sin(vUV.x*18.85+t*5.0+sd*9.0); c=mix(c,c*vec3(0.55,0.33,0.28),smoothstep(0.45,0.0,v)); } // B1 A1 step 4: Corsair engines burn dirty: sputter, uneven lobes, a sooty tail
+        a*=0.35+0.65*smoothstep(-0.35,0.15,sp); a*=0.72+0.28*sin(vUV.x*18.85+t*5.0+sd*9.0); c=mix(c,c*vec3(0.55,0.33,0.28),1.0-smoothstep(0.0,0.45,v)); } // B1 A1 step 4: Corsair engines burn dirty: sputter, uneven lobes, a sooty tail
       gl_FragColor=vec4(c*a*1.9,a); }`};
 function plumeShaderMat(fac,col){ try{ const S=BABYLON.Effect.ShadersStore; if(!S.vsPlumeVertexShader){ S.vsPlumeVertexShader=PLUME_GLSL.vert; S.vsPlumeFragmentShader=PLUME_GLSL.frag; }
     const m=new BABYLON.ShaderMaterial(fac+'plumeS',G.scene,{vertex:'vsPlume',fragment:'vsPlume'},{attributes:['position','normal','uv'],uniforms:['world','worldViewProjection','col','camPos','t','flip','dirty'],needAlphaBlending:true});
