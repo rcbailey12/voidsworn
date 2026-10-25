@@ -3,3 +3,5 @@ bossmatrix rc=0 secs=1374 args=bossmatrix 32
 archmatrix rc=0 secs=838 args=archmatrix 2
 campaign rc=0 secs=1479 args=campaign 200
 matrix rc=0 secs=2713 args=matrix 50 sk
+fuzz rc=0 secs=1786 args=fuzz 2000
+ALLDONE
