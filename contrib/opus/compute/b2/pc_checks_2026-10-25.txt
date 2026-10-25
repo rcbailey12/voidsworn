@@ -1,0 +1,16 @@
+Run started Sun 10/25/2026 13:46:06.21 
+--- B2 checks: build, fuzz 2000, bossmatrix 32, pacecheck --- 
+index_test.html 1535213
+fuzz 2000 battles: exceptions 0, invariant breaks 0 (0 distinct), avg rounds 7.0
+bossmatrix s1 {"vex":"68% r9.9","malek":"68% r9.4","ashgrove":"71% r10.6 (carrier)","thale":"72% r13.7","kassar":"95% r8.6 (carrier)","vorn":"77% r10.0","reyes":"83% r10.8 (carrier)","maren":"89% r15.1 (carrier)","grax":"57% r8.8","sable":"69% r8.2","mott":"72% r8.6 (carrier)","vesh":"90% r10.7 (carrier)","matriarch":"71% r11.4 (carrier)","razormaw":"77% r8.6","mending":"98% r9.2","voice":"97% r7.1","aelith":"76% r10.9 (carrier)","vaelen":"78% r9.5","thorne":"69% r11.5","mirelle":"66% r11.1","nekhet":"81% r14.1","sekhmar":"60% r11.8","anuket":"88% r9.6","khepra":"79% r11.4"}
+by boss {"hegemony":"54%","corsair":"85%","chorus":"78%","ithar":"72%","deathless":"86%","voidsworn":"85%"}
+carrier fleets 81% gun fleets 75%
+sector 1 new ships 4+4  enemy-side wait per round: avg 4.1s  max 5.8s  [3.06, 2.62, 5.75, 5.06]
+sector 1 old ships 4+4  enemy-side wait per round: avg 7.3s  max 8.7s  [4.76, 8.18, 8.72, 7.63]
+sector 2 new ships 5+9  enemy-side wait per round: avg 6.5s  max 7.8s  [5.95, 7.8, 6.38, 6.07]
+sector 2 old ships 5+9  enemy-side wait per round: avg 12.1s  max 18.0s  [9.18, 9.48, 11.76, 18.0]
+sector 3 new ships 5+13  enemy-side wait per round: avg 8.0s  max 10.4s  [5.79, 6.16, 9.79, 10.41]
+sector 3 old ships 5+12  enemy-side wait per round: avg 21.8s  max 25.4s  [17.15, 25.39, 20.45, 24.2]
+B2_CHECKS_DONE 
+EXIT 0 
+Run finished Sun 10/25/2026 15:24:27.15 
