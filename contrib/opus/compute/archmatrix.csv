@@ -1,0 +1,5 @@
+sector,column,enemy_archetype,win_pct,rounds,ships_left
+2,3,none,90,6.3,4.2
+2,3,swarm,86,5.5,6.0
+2,3,heavy,88,6.6,3.4
+2,3,carrier,90,6.7,3.5
