@@ -141,7 +141,7 @@ The test is no longer a fair minimum: each build shows the best its engine can d
 - lens and grade: motion blur if the engine has it, lens flare or lens dirt on the brightest flashes, colour grading (a LUT or curves), vignette, subtle film grain, light shafts from the destruction flash if possible;
 - one key light and fixed exposure still apply (effects add light; they do not change exposure).
 
-**Game slice (`--board`, the game's own view):** the battle seen the way Voidsworn plays: a top-down tactical camera (pitch about 55 degrees) over a hex board (flat-topped hexes, about 2.4 units across, 20 by 14) under the formation, with:
+**Game slice (`--board`, the game's own view):** the battle seen the way Voidsworn plays: a top-down tactical camera (pitch about 55 degrees) over a hex board at the game's scale (flat-topped hexes 20 units across corner to corner, about one hex per ship as in scene3d.js HS=10 with its larger flagships; 20 by 14 hexes, about 360 by 240 units, centred on the formation, in the plane y = -6 just under the ships) under the formation, with:
 - crisp grid lines, a movement-range highlight on one ship, a firing arc wedge, and the enemy reach shading as soft fills;
 - hover outline on the ship under the mouse and a selection ring on click (record the frames from click to visible ring);
 - the engine's native UI: ship name labels, hull and shield bars, a small top bar and a tooltip, sharp at 4K and at 1440p;
