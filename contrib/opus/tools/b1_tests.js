@@ -48,5 +48,24 @@ check('B-1 a clean save is left alone (no repairs listed)', () => {
   const r = T.migrateRun(base()); return !r._repairs && r.fleet.length === 1;
 });
 
+// helpers: pull one function or one ACT line out of a UI file so it can run against stubs
+function grab(file, start, endRe) { const t = fs.readFileSync(path.join(ROOT, file), 'utf8'); const i = t.indexOf(start); if (i < 0) throw new Error('not found: ' + start); const rest = t.slice(i); const m = endRe.exec(rest); return m ? rest.slice(0, m.index + m[0].length) : rest; }
+
+// ---- B-2 retreat dialog ----
+check('B-2 "Jump out" after the battle ended does not turn a win into a retreat', () => {
+  const code = grab('campaign3d.js', 'ACT.c3retreatYes=', /\n/); let called = null;
+  const f = new Function('ACT', 'B', 'closeModal', 'finishBattle', code + '; return ACT.c3retreatYes;');
+  const ACT = {}; let B = { campaign: true, over: 'win' }; f(ACT, B, () => {}, r => { called = r; })();
+  if (called !== null) return false;
+  B = { campaign: true, over: null }; const ACT2 = {}; f(ACT2, B, () => {}, r => { called = r; })(); return called === 'retreat';
+});
+check('B-2 battle keys do nothing while a dialog is open; Escape answers the retreat question with Stay', () => {
+  const code = grab('ui3d.js', 'function onKey(e){', /\n}\n/); let fired = [];
+  const doc = open => ({ querySelector: () => null, body: { classList: { contains: () => false } }, getElementById: id => (open && (id === 'modal' || id === 'retreatAsk') ? {} : null) });
+  const ACT = { threat: () => fired.push('threat'), c3retreatNo: () => fired.push('stay') };
+  const run = (key, open) => new Function('e', 'B', 'document', 'ACT', 'closeModal', 'bRefresh', code + '; return onKey(e);')({ key, target: { tagName: 'DIV' }, preventDefault() {} }, {}, doc(open), ACT, () => fired.push('close'), () => {});
+  run('r', true); run('Escape', true); const blocked = fired.join(',') === 'stay'; fired = []; run('r', false); return blocked && fired[0] === 'threat';
+});
+
 module.exports = { check, T: global.T, STORE };
 if (require.main === module) process.on('exit', () => { console.log(`\nB1 tests: ${pass} ok, ${fail} FAIL`); if (fail) process.exitCode = 1; });

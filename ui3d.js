@@ -483,6 +483,7 @@ function attackTip(a,t){
 function onKey(e){
   if(!B||e.target.tagName==='INPUT'||document.body.classList.contains('app-on')) return; const k=e.key.toLowerCase();
   if(document.querySelector('.intro')) return;
+  if(document.getElementById('modal')){ if(k==='escape'){ if(document.getElementById('retreatAsk')) ACT.c3retreatNo(); else closeModal(); } return; } // B1: no battle keys while a dialog is open (the retreat question let the fight play on behind it)
   if(k==='v'){ B.showArcs=!B.showArcs; bRefresh(); return; }
   if(k==='r'){ ACT.threat(); return; }
   if(k==='t'){ G.ctl.toggleTop(); refreshTop(); return; }
@@ -581,7 +582,7 @@ async function nextRound(){
   await banner(`Round ${B.round}`); if(B!==b||B.over) return; const f=pendingP()[0]; if(f) selectUnit(f);
 }
 async function endBattleFlow(){
-  if(!B||B.ending) return; const b=B; B.ending=true; const win=B.over==='win'; clearTimeout(G.cineTimer); G.ctl.release(); bRefresh();
+  if(!B||B.ending) return; const b=B; B.ending=true; if(document.getElementById('retreatAsk')) closeModal(); /* B1: a retreat question left open when the battle ends is closed, so it cannot turn the result into a retreat */ const win=B.over==='win'; clearTimeout(G.cineTimer); G.ctl.release(); bRefresh();
   const ttl=B.partial?'They got away':win?'Victory':B.withdraw&&survivorsP()?'Withdrawal':'Defeat';
   SFX.sting(win); await banner(ttl,win?'#d0a64b':'#e07a70'); if(B!==b) return;
   const caps=B.units.filter(u=>u.captured&&u.side==='player'&&!u.dead).length;

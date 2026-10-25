@@ -91,8 +91,8 @@ function finishBattle(result){
   const gained=runRenown()-r0; if(summary.prizes.length) setTimeout(()=>toast(`Prize ship${summary.prizes.length>1?'s':''} join the fleet: ${summary.prizes.join(', ')}.`),300);
 }
 ACT.c3continue=()=>{ if(!B||B.busy||!B.over||!B.campaign||B.finished) return; finishBattle(B.over); }; // v53: same gate as c3retreat
-ACT.c3retreat=()=>{ if(!B||B.busy||B.over||!B.campaign||B.cfg.kind==='boss') return; modal(`<h2>Retreat?</h2><p>The fleet jumps out. Every surviving ship loses 10% of its hull, and this node counts as passed.</p><div class="row" style="margin-top:14px"><button class="primary" data-act="c3retreatYes">Jump out</button><button data-act="c3retreatNo">Stay and fight</button></div>`); };
-ACT.c3retreatYes=()=>{ closeModal(); if(B&&B.campaign) finishBattle('retreat'); };
+ACT.c3retreat=()=>{ if(!B||B.busy||B.over||!B.campaign||B.cfg.kind==='boss') return; modal(`<h2 id="retreatAsk">Retreat?</h2><p>The fleet jumps out. Every surviving ship loses 10% of its hull, and this node counts as passed.</p><div class="row" style="margin-top:14px"><button class="primary" data-act="c3retreatYes">Jump out</button><button data-act="c3retreatNo">Stay and fight</button></div>`); };
+ACT.c3retreatYes=()=>{ closeModal(); if(B&&B.campaign&&!B.over&&!B.busy&&!B.finished&&!B.ending) finishBattle('retreat'); }; // B1: a battle that already ended (or is mid-animation) is never turned into a retreat
 ACT.c3retreatNo=()=>closeModal();
 
 // wounded captains take the next hull bought at a shipyard
