@@ -10,6 +10,11 @@ from mathutils import Vector, Matrix
 import hs_lib
 from hs_lib import loft, frustum, box, cyl, barrel
 import barge_shapes as B
+GUN_DIRS = []  # (name, direction) for every barrel, for the no-backward-guns check
+_barrel = B.barrel
+def _rec_barrel(name, base, d, L, r):
+    GUN_DIRS.append((name, Vector(d).normalized())); return _barrel(name, base, d, L, r)
+B.barrel = _rec_barrel
 
 # ---- palette (linear RGB). Art direction (art_direction_rey.md): Corsair base desaturated rust brown #59331f, trim ochre #a3542c,
 # big patches of stolen Hegemony grey and bare metal, hot red glow #e0402c with dirty engines. "Bone" is the pale salvaged plating.
@@ -112,10 +117,38 @@ def dressing():
         cyl(nm, c, r, .002, axis='X', seg=24, bevel=0)
     tag(GLOW)
 
+def audit(shells, hardware):
+    """A1 automatic checks (plan section 4): every hand-built part touches the hull or another part (no floating parts) and no gun
+    points backward (bow is -x, so a barrel's x must not be positive). Returns a list of problems; empty means pass."""
+    from mathutils.bvhtree import BVHTree
+    probs = []
+    for nm, d in GUN_DIRS:
+        if d.x > .05: probs.append(f'gun {nm} points backward (x {d.x:+.2f})')
+    dg = bpy.context.evaluated_depsgraph_get()
+    def bvh(objs):
+        bm = bmesh.new()
+        for o in objs:
+            m = o.evaluated_get(dg).to_mesh(); m.transform(o.matrix_world); bm.from_mesh(m); o.evaluated_get(dg).to_mesh_clear()
+        t = BVHTree.FromBMesh(bm); bm.free(); return t
+    for o in hardware:
+        if o.name.startswith('glow'): continue
+        others = [x for x in shells + hs_lib.PARTS if x is not o and not x.name.startswith('glow')]
+        # one BVH per part would be slow; group by nearby objects only
+        c = o.matrix_world @ (sum((Vector(b) for b in o.bound_box), Vector()) / 8); near = [x for x in others if (x.matrix_world @ (sum((Vector(b) for b in x.bound_box), Vector()) / 8) - c).length < .35]
+        T = bvh(near) if near else None
+        verts = o.data.vertices; step = max(1, len(verts) // 40); dmin = 9
+        for v in list(verts)[::step]:
+            if T is None: break
+            h = T.find_nearest(o.matrix_world @ v.co)
+            if h[0] is not None: dmin = min(dmin, h[3])
+        if dmin > .004: probs.append(f'part {o.name} floats ({dmin:.4f} from the nearest surface)')
+    return probs
+
 def build(seed=19):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     shells = shell_shapes()
     dressing()
+    hardware = list(hs_lib.PARTS)
     import detail_lib
     others = [o for o in hs_lib.PARTS if not o.name.startswith(('glow', 'navhaz'))]
     S0 = detail_lib.Surface(shells, others); rr = random.Random(11); spots = []
@@ -148,6 +181,7 @@ def build(seed=19):
                                   lambda n: abs(n.y) > .35, base, r1, True, 8, big, th=.0028, kinds=(('rect', .5), ('slant', .5)), tint=salvage, name=f'bigfl{s_}_')
     detail_lib.scatter_plates(S1, tag, lambda r_: Vector((r_.uniform(-.30, .30), r_.uniform(-.10, .10), -.6)), Vector((0, 0, 1)), lambda n: n.z < -.5,
                               base, r1, True, 6, big, th=.0030, kinds=(('rect', .5), ('chamfer', .5)), tint=salvage, name='bigbelly')
+    probs = audit(shells, hardware); print('audit:', 'PASS' if not probs else 'FAIL'); [print('  ', p_) for p_ in probs]
     for o in hs_lib.PARTS:
         c = COL.get(o.name, STEEL); a = o.data.color_attributes.new('Col', 'FLOAT_COLOR', 'POINT')
         for d in a.data: d.color = (c[0], c[1], c[2], 1)
@@ -180,6 +214,13 @@ def export(shells, kit, pre):
             except Exception: pass
         bpy.context.view_layer.objects.active = objs[0]
         bpy.ops.export_scene.gltf(filepath=nm, export_format='GLB', use_selection=True, export_vertex_color='ACTIVE', export_all_vertex_colors=True)
+    # reimport check: each file must come back with the same triangle count and finite positions
+    for objs, nm in (([shell], pre + '_shell.glb'), ([kit], pre + '_kit.glb')):
+        want = sum(len(p.vertices) - 2 for o in objs for p in o.data.polygons)
+        before = set(bpy.context.scene.objects); bpy.ops.import_scene.gltf(filepath=nm); new = [o for o in set(bpy.context.scene.objects) - before if o.type == 'MESH']
+        got = sum(len(p.vertices) - 2 for o in new for p in o.data.polygons); fin = all(all(math.isfinite(c) for c in v.co) for o in new for v in o.data.vertices)
+        print('reimport', os.path.basename(nm), 'PASS' if got == want and fin else 'FAIL', want, got)
+        for o in new: bpy.data.objects.remove(o)
 
 if __name__ == '__main__':
     a = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
