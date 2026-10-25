@@ -161,6 +161,18 @@ All of this is measured and shown with the rest: one combined blind reveal (R18)
 - Standalone build: Godot exported .exe; Babylon stays a browser page (no Electron).
 - Runs on the PC: main, stress (24), 40 ships and max, each at 1440p and 4K.
 
+## Environment (added Oct 25, Ryan: "It should also handle the backgrounds and other material like asteroids too")
+
+Shared assets (built once, same files in both engines, in `enginetest\assets\env\`):
+- **Backdrop:** `sky_deadstar_8k.png`, an equirectangular sky: the existing starfield plus faint nebula clouds and a dead star (a dim, dark-red disc with a thin corona) placed in the direction the key light comes from (opposite of the key light direction), so the light has a visible source. Shown as the sky in max and board modes (the plain starfield stays for main and stress, so the earlier numbers stay comparable).
+- **Asteroids:** the game's own rock meshes (`rocks_hi/RCA*`, same JSON plus _m and _n format as the hulls) converted to glTF with a rock material (grey-brown, rough, normal plus AO maps).
+
+In max and board modes each engine adds:
+- an asteroid field of about 200 rocks (instanced where the engine allows), 1 to 15 units across, in a loose band behind and below the formation (y from -45 to -10, out to 150 units from the centre), each tumbling slowly; plus 6 large rocks (20 to 30 units) near the formation, clear of the ships and the beam and broadside lines;
+- debris and chunks from the physics collide with the rocks too;
+- a thin dust haze through the battle area (the engine's volumetric fog or a shader), subtle enough that ships stay crisp, lit by explosions and engine glow where the engine can.
+Seeded placement (seed 7) so both engines use the same rocks in the same spots: the asset helper writes `env/asteroids.json` with each rock's mesh, position, rotation, scale and spin.
+
 ## Folders
 
 - `contrib/opus/enginetest/godot/`: the Godot project (project.godot, scene, scripts). Run line: `Godot_..._console.exe --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench out.json --seconds 20` (plus `--shots dir` for stills).
