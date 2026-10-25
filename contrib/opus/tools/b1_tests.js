@@ -200,6 +200,12 @@ check('B2 capture: strip gives a refit and scrap credits', () => {
   T.rewardFlow(summary); const inv = T.RUN.inventory.length, c0 = T.RUN.credits; T.ACT.prizeStep(); T.ACT.prizePick('strip'); return T.RUN.inventory.length === inv + 1 && T.RUN.credits > c0;
 });
 
+check('B2 capture: ransom pays 15% less for each ransom already taken this run, never below 40%', () => {
+  const { summary } = rewardSetup(); summary.wrecks = []; const pz = n => ({ tpl: 'h_vanguard', name: 'R' + n, hpf: 1, fac: 'hegemony', wk: ['battery'], cp: 4 });
+  summary.prizes = [pz(1), pz(2)]; T.RUN.cpCap = 0; T.rewardFlow(summary); const c0 = T.RUN.credits; T.ACT.prizePick('ransom'); const r1 = T.RUN.credits - c0; T.ACT.prizePick('ransom'); const r2 = T.RUN.credits - c0 - r1;
+  return r1 > 0 && Math.abs(r2 - r1 * .85) <= 1;
+});
+
 const ASYNC = [];
 ASYNC.push(['B-7 a Nova cast abandoned by a stall does not spend the cooldown; a landed one does', async () => {
   T.RUN = T.migrateRun(Object.assign(base(), { fleet: [T.newShip('ascendant')] })); T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, enemies: [{ tpl: 'h_picket' }] });

@@ -277,21 +277,22 @@ function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODU
 // B2 capture rework (R4): each prize ship that survives a win gets one choice. Add it (only if command points allow), strip it for a refit
 // plus scrap (its weapons decide which refit, as in salvage), or ransom it for credits. A prize that cannot fit at all was already scrapped
 // at the end of the battle (campaign3d.js). Values: ship value = shop price (or 40 per command point for hulls with no price, shipValue);
-// ransom = 55% of that, scaled 60 to 100% by the hull left; strip = the refit plus 15%; scrap (full fleet) = 35%.
+// ransom = 55% of that, scaled 60 to 100% by the hull left, and 15% less for each ransom already taken this run (never below 40%: owners
+// learn; outside review, Oct 25); strip = the refit plus 15%; scrap (full fleet) = 35%.
 function prizeOffer(p){ const v=shipValue(p.tpl), fits=fleetCP()+(p.cp||1)<=RUN.cpCap, y=salvageYield({wk:p.wk||[],ab:p.ab,regen:p.regen,sh:p.sh,cp:p.cp,tpl:p.tpl,cause:'board'});
   const pool=modulePool(), mod=y.mod||(pool.length?pool[Math.floor((v*7+(p.cp||1)*13)%pool.length)]:null);
-  return {fits,ransom:Math.round(v*.55*(.6+.4*(p.hpf||1))),strip:{mod,cred:Math.round(v*.15)}}; }
+  return {fits,ransom:Math.round(v*.55*(.6+.4*(p.hpf||1))*Math.max(.4,Math.pow(.85,RUN.ransoms||0))),strip:{mod,cred:Math.round(v*.15)}}; }
 ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward, p=R&&R.prizes&&R.prizes[0]; if(!p){ if(R) R.stage=(window._wrecks||[]).length?'salvage':'pick'; return (window._wrecks||[]).length?ACT.salvageStep():ACT.rewardNext(); }
   const o=prizeOffer(p), H=HULLS[p.tpl], left=R.prizes.length-1;
   modal(`<h2>Prize: the ${esc(p.name)}</h2><p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">A prize is an enemy ship your boarders took. Keep it, strip it, or sell it back.</p>
     <p class="muted">${esc(H.n)}, ${esc(H.cls||'')}, ${H.cp||1} command point${(H.cp||1)>1?'s':''}, ${Math.round((p.hpf||1)*100)}% hull.${left?` ${left} more prize${left>1?'s':''} after this one.`:''}</p>
     <button class="choice" data-act="prizePick" data-arg="add" ${o.fits?'':'disabled'}><b>Add it to the fleet</b><small>${o.fits?`Joins at ${Math.round((p.hpf||1)*100)}% hull with a green captain.`:`Not enough command points (${fleetCP()} of ${RUN.cpCap} used).`}</small></button>
     <button class="choice" data-act="prizePick" data-arg="strip"><b>Strip it</b><small>${o.strip.mod?`${esc(modName(o.strip.mod))} for the hold, plus `:''}${o.strip.cred} credits in scrap.</small></button>
-    <button class="choice" data-act="prizePick" data-arg="ransom"><b>Ransom it</b><small>${o.ransom} credits from its owners.</small></button>`); };
+    <button class="choice" data-act="prizePick" data-arg="ransom"><b>Ransom it</b><small>${o.ransom} credits from its owners.${RUN.ransoms?' They pay less each time you sell them their own ships.':''}</small></button>`); };
 ACT.prizePick=k=>{ const R=RUN.reward, p=R&&R.prizes&&R.prizes[0]; if(!p) return ACT.prizeStep(); const o=prizeOffer(p);
   if(k==='add'){ if(!o.fits) return; const sh=newShip(p.tpl); sh.name=p.name; sh.hp=clamp(Math.round(derive(sh).maxHp*(p.hpf||1)),1,derive(sh).maxHp); RUN.fleet.push(sh); toast(`The ${p.name} joins the fleet.`); }
   else if(k==='strip'){ if(o.strip.mod) RUN.inventory.push(o.strip.mod); RUN.credits+=o.strip.cred; toast(`The ${p.name} is stripped${o.strip.mod?`: ${modName(o.strip.mod)} stowed`:''}, +${o.strip.cred} credits.`); }
-  else { RUN.credits+=o.ransom; toast(`The ${p.name} is ransomed for ${o.ransom} credits.`); }
+  else { RUN.credits+=o.ransom; RUN.ransoms=(RUN.ransoms||0)+1; toast(`The ${p.name} is ransomed for ${o.ransom} credits.`); }
   try{ tel('prize_pick',{k,tpl:p.tpl}); }catch(e){} R.prizes.shift(); saveRun(); ACT.prizeStep(); };
 ACT.salvageStep=()=>{ closeModal(); const ws=window._wrecks||[];
   modal(`<h2>Salvage the field</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${rewardDef('salvage')}${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
