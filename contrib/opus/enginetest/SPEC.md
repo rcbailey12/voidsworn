@@ -96,7 +96,7 @@ Babylon runs in Chromium through Playwright with the real GPU (the PC is an RTX 
 ## Stress run (added Oct 25, Ryan: "makes me wonder if we have a ton more room to scale things")
 
 The six-ship benchmark is a light scene, so each build also has a stress mode (`--stress`), measured the same way (3 s warm-up, 20 s battle orbit, JSON with `"mode": "stress"`):
-- 24 ships: the six flagships plus 18 copies (three more of each faction's flagship, scaled to 0.6, the size of a cruiser), in four rows of six at z = +45, +15, -15, -45, x = -60, -36, -12, 12, 36, 60 (the flagships stay in their faction's column of rows 2 and 3). Same orbit, radius 190, height 85.
+- 24 ships: the six flagships stay exactly where the main layout puts them. Add 18 copies of the flagships scaled to 0.6 (cruiser size) in three extra rows at z = +60, 0 and -60, six per row at x = -60, -36, -12, +12, +36, +60, factions in the order Voidsworn, Hegemony, Corsair, Chorus, Ithar, Deathless along each row. Same orbit centre, radius 190, height 85.
 - Every ship runs the full 4-second effect loop and its breach, staggered by 0.17 s in layout order so effects overlap all the time.
 - The destruction event fires every 4 s instead of every 12.
 - Report avg, p99 and max frame time; the worst 1% matters more than the average (it is the stutter you feel).
