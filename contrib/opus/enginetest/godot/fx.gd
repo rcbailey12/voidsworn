@@ -1,18 +1,22 @@
 extends Node3D
 # Effects for the A2 engine test, built fresh to ../SPEC.md (the cinematic bar, R16). Nothing reused from the game.
 #
-# Per ship, a 4 s loop staggered 0.5 s in layout order:
+# Per ship, a 4 s loop staggered 0.5 s in layout order (0.17 s in the crowd runs):
 #   engines always on (hot core, flickering plume, long cooling trail; the Corsair sputters and coughs soot)
 #   0.0 s  broadside: four port guns ripple 80 ms apart (blast, flame tongue, smoke ring, tracer at 160 u/s, impact)
 #   1.25 s beam charge flare, 1.5 s to 2.2 s beam 80 units ahead (white core, faction glow, shimmer, impact flare and sparks)
 #   2.4 s  incoming shell hits the starboard side: shield ripple (Corsair patchy), or a hull hit for Chorus and Deathless
 #   always a hull breach on the upper port flank (scorched torn hole, hot torn plates, venting gas, debris, fire,
-#          spark showers, a secondary pop every 3 s)
-# Scene-wide, every 12 s: the Hegemony copy above the formation is destroyed (squibs from 11.6 s, pre-flash from 11.9 s,
-#   flash, shockwave, fireball, four chunks of its own mesh with burning edges and squibs, debris and embers, a drifting
-#   burning wreck), and it fades back in whole 2 s before the next one.
-# Everything with a fixed lifetime follows the clock directly; particle systems are restarted when the clock crosses
-# their start time, and the continuous ones run all the time.
+#          spark showers every 2.3 s, a secondary pop every 3.7 s)
+# Scene-wide, every 12 s (4 s in the crowd runs): the Hegemony copy above the formation breaks at 12.4 s (flash,
+#   shockwave, fireball, four chunks of its own mesh with burning edges and squibs, debris and embers, a drifting
+#   burning wreck), and fades back in whole 2 s before the next one.
+#
+# How it runs: one global shader clock (scene_t). Every sprite, ribbon, tracer and shield computes its own position,
+# drift, size and brightness from scene_t and fixed per-material constants, so the script does not animate them.
+# Per frame the script only moves the ship roots (which carry the particle emitters, the breach and the shield),
+# shows or hides whole groups when a ship enters or leaves a phase, restarts one-shot particle systems when their
+# start time passes, and sets the few lights that are on.
 
 const LOOP := 4.0
 const STAGGER := 0.5
@@ -29,7 +33,7 @@ const CHARGE_T := 0.25
 const BEAM_LEN := 80.0
 const HIT_AT := 2.4
 const SHIELD_T := 0.6
-const INCOMING_LEN := 60.0
+const INCOMING_T := 60.0 / 160.0
 const TRAIL_LEN := 60.0
 const BOOM_EVERY := 12.0
 const BREAK_OFFSET := 0.4  # the destruction event breaks 0.4 s after each multiple of its period (12.4 s, 24.4 s, ...)
@@ -38,6 +42,7 @@ const POP_EVERY := 3.7
 const WRECK_POS := Vector3(0, 25, 0)
 const WRECK_SCALE := 0.6
 const BIG_AABB := AABB(Vector3(-60, -60, -60), Vector3(120, 120, 120))
+const WORLD_AABB := AABB(Vector3(-2000, -2000, -2000), Vector3(4000, 4000, 4000))
 
 const NOISE := """
 float hash12(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -49,6 +54,34 @@ float vnoise(vec2 p) {
 }
 float fbm(vec2 p) { return vnoise(p) * 0.55 + vnoise(p * 2.1 + 3.7) * 0.3 + vnoise(p * 4.3 + 7.1) * 0.15; }
 vec3 safe_norm(vec3 v, vec3 fallback) { float l = length(v); return l > 1e-6 ? v / l : fallback; }
+"""
+
+# The shared clock and the drift every ship follows (3 u/s, looping over 40 units, 1 s fade either side of the jump).
+const TIMING := """
+global uniform float scene_t;
+float drift_x(float t) { return mod(3.0 * t + 20.0, 40.0) - 20.0; }
+float drift_fade(float t) { float q = mod(3.0 * t + 20.0, 40.0); return clamp(min(q, 40.0 - q) / 3.0, 0.0, 1.0); }
+float loop_age(float tt, float st, float per) { float x = tt - st; return x < 0.0 ? -1.0 : mod(x, per); }
+float hash11(float x) { return fract(sin(x * 12.9898) * 43758.5453); }
+float sputter(float t) {
+	float s = 0.6 + 0.4 * mix(hash11(floor(t * 5.0)), hash11(floor(t * 5.0) + 1.0), smoothstep(0.0, 1.0, fract(t * 5.0)));
+	return hash11(floor(t * 6.0)) < 0.18 ? s * 0.2 : s;
+}
+"""
+
+const SOFT := """
+#ifdef SOFT
+uniform sampler2D depth_tex : hint_depth_texture, filter_nearest, repeat_disable;
+float soft_fade(vec2 suv, vec3 vtx, mat4 inv_proj, float dist) {
+	float d = texture(depth_tex, suv).r;
+	vec4 v = inv_proj * vec4(suv * 2.0 - 1.0, d, 1.0);
+	float scene = -v.z / v.w;
+	return clamp((scene + vtx.z) / dist, 0.0, 1.0);
+}
+#define SOFTF soft_fade(SCREEN_UV, VERTEX, INV_PROJECTION_MATRIX, 1.5)
+#else
+#define SOFTF 1.0
+#endif
 """
 
 const BILLBOARD := """
@@ -64,14 +97,27 @@ const PARTICLE_ROTATE := """mw = mw * mat4(vec4(cos(INSTANCE_CUSTOM.x), -sin(INS
 		vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
 	seed = INSTANCE_CUSTOM.x;"""
 
-# A camera-facing ribbon from the node origin along its x axis (whose length is the ribbon length), on a subdivided quad.
+# Clock-driven ribbon: a camera-facing strip on a subdivided quad. kind 0 = fixed to a ship (engine plume and trail,
+# beam), 1 = flame tongue (grows), 2 = tracer (flies from where the gun was when it fired), 3 = incoming shell.
 const RIBBON_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
+uniform int kind = 0;
+uniform vec3 base;
+uniform vec3 lpos;
+uniform vec3 ldir = vec3(1.0, 0.0, 0.0);
+uniform float len = 1.0;
+uniform vec3 aim;
+uniform float t0 = -1000.0;
+uniform float period = 4.0;
+uniform float dur = 1e9;
+uniform float env_in = 0.0;
+uniform float env_out = 0.0;
+uniform int decay_env = 0;
+uniform float use_sputter = 0.0;
 uniform vec3 tint_a = vec3(1.0);
 uniform vec3 tint_b = vec3(1.0);
 uniform float energy = 4.0;
-uniform float alpha = 1.0;
 uniform float width_a = 1.0;
 uniform float width_b = 1.0;
 uniform float core = 0.0;
@@ -85,22 +131,53 @@ uniform float seed = 0.0;
 uniform float flicker = 0.0;
 uniform float decay = 0.0;
 varying float vlen;
-""" + NOISE + """
+varying float valpha;
+""" + NOISE + TIMING + """
 void vertex() {
-	vec3 o = MODEL_MATRIX[3].xyz;
-	vec3 ax = MODEL_MATRIX[0].xyz;
-	float len = max(length(ax), 1e-4);
-	vec3 dir = ax / len;
+	float t = scene_t;
+	float a = loop_age(t, t0, period);
+	float al = (a >= 0.0 && a < dur) ? 1.0 : 0.0;
+	if (env_in > 0.0) { al *= smoothstep(0.0, env_in, a); }
+	if (env_out > 0.0) { al *= 1.0 - smoothstep(dur - env_out, dur, a); }
+	if (decay_env == 1) { al *= clamp(1.0 - a / dur, 0.0, 1.0); }
+	vec3 o;
+	vec3 ax;
+	if (kind == 2) {
+		vec3 p0 = base + lpos + vec3(drift_x(t - a), 0.0, 0.0);
+		float dist = max(length(aim), 1e-3);
+		vec3 d = aim / dist;
+		float run = max(a, 0.0) * 160.0;
+		float head = min(run, dist);
+		float tail = clamp(run - 7.0, 0.0, dist);
+		al *= run < dist + 1.0 ? 1.0 : 0.0;
+		o = p0 + d * tail;
+		ax = d * max(head - tail, 0.05);
+	} else if (kind == 3) {
+		al = (a >= dur - 0.375 && a < dur) ? 1.0 : 0.0;
+		float togo = (dur - a) * 160.0;
+		o = base + lpos + vec3(drift_x(t), 0.0, 0.0) + ldir * (togo + 7.0);
+		ax = -ldir * 7.0;
+	} else {
+		float l = len;
+		if (kind == 1) { l = 3.0 + 5.0 * smoothstep(0.0, 0.05, a); }
+		o = base + lpos + vec3(drift_x(t), 0.0, 0.0);
+		ax = ldir * l;
+	}
+	al *= drift_fade(t);
+	if (use_sputter > 0.0) { al *= sputter(t); }
+	valpha = al;
+	float l2 = max(length(ax), 1e-4);
+	vec3 dir = ax / l2;
 	float s = VERTEX.x + 0.5;
 	vec3 p = o + ax * s;
 	vec3 up = abs(dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
 	vec3 b1 = safe_norm(cross(dir, up), vec3(0.0, 0.0, 1.0));
 	vec3 b2 = cross(b1, dir);
-	p += (b1 * sin(s * len * 0.11 - TIME * 1.9 + seed) + b2 * sin(s * len * 0.07 - TIME * 1.3 + seed * 1.7)) * waver * s * s;
+	p += (b1 * sin(s * l2 * 0.11 - TIME * 1.9 + seed) + b2 * sin(s * l2 * 0.07 - TIME * 1.3 + seed * 1.7)) * waver * s * s;
 	vec3 side = safe_norm(cross(dir, INV_VIEW_MATRIX[3].xyz - p), b1);
 	p += side * VERTEX.y * mix(width_a, width_b, s);
-	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * vec4(p, 1.0);
-	vlen = len;
+	POSITION = al > 0.0 ? PROJECTION_MATRIX * VIEW_MATRIX * vec4(p, 1.0) : vec4(0.0, 0.0, 2.0, 1.0);
+	vlen = l2;
 }
 void fragment() {
 	float s = UV.x;
@@ -114,12 +191,83 @@ void fragment() {
 	float f = smoothstep(0.0, fade_in, s) * (1.0 - smoothstep(fade_out, 1.0, s));
 	float fl = 1.0 - flicker * vnoise(vec2(TIME * 23.0, seed * 3.1));
 	vec3 col = mix(mix(tint_a, tint_b, s), vec3(1.0), clamp(hot, 0.0, 1.0));
-	ALBEDO = clamp(col * energy * (prof + hot) * n * f * fl * alpha * exp(-s * decay), 0.0, 512.0);
+	ALBEDO = clamp(col * energy * (prof + hot) * n * f * fl * valpha * exp(-s * decay), 0.0, 512.0);
 	ALPHA = 1.0;
 }
 """
 
+# Clock-driven glow sprite (billboard). shape 0 = flash that fades over dur, 1 = held with a flicker (beam end),
+# 2 = charge then hold (beam emitter), 3 = always on (engine core). at_impact = place at the broadside impact point.
 const SPRITE_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
+uniform vec3 tint = vec3(1.0);
+uniform float energy = 8.0;
+uniform float spikes = 0.0;
+uniform float hot = 1.0;
+uniform vec3 base;
+uniform vec3 lpos;
+uniform vec3 aim;
+uniform int at_impact = 0;
+uniform int shape = 0;
+uniform float t0 = -1000.0;
+uniform float period = 4.0;
+uniform float dur = 0.1;
+uniform float size = 1.0;
+uniform float grow = 0.0;
+uniform float use_drift = 1.0;
+uniform float use_sputter = 0.0;
+uniform float seed = 0.0;
+varying float valpha;
+""" + SOFT + TIMING + """
+void vertex() {
+	float t = scene_t;
+	float a = loop_age(t, t0, period);
+	float al = 0.0;
+	float sc = size;
+	vec3 o = base + lpos + vec3(drift_x(t) * use_drift, 0.0, 0.0);
+	if (shape == 3) {
+		al = 0.9 + 0.1 * sin(t * 41.0 + seed);
+	} else if (a >= 0.0 && a < dur) {
+		if (shape == 0) {
+			al = 1.0 - a / dur;
+			sc = size * (1.0 + grow * a / dur);
+		} else if (shape == 1) {
+			al = smoothstep(0.0, 0.05, a) * (1.0 - smoothstep(dur - 0.15, dur, a));
+			sc = size * (1.0 + 0.25 * sin(t * 47.0)) * max(al, 0.05);
+		} else {
+			al = a < 0.25 ? smoothstep(0.0, 0.25, a) : 0.6 + 0.2 * sin(t * 60.0);
+			sc = size * (0.5 + 1.5 * al);
+		}
+	}
+	if (at_impact == 1) {
+		float flight = length(aim) / 160.0;
+		float ai = a - flight;
+		vec3 p0 = base + lpos + vec3(drift_x(t - a), 0.0, 0.0);
+		o = p0 + aim;
+		al = (ai >= 0.0 && ai < dur) ? 1.0 - ai / dur : 0.0;
+	}
+	if (use_drift > 0.5 && at_impact == 0) { al *= drift_fade(t); }
+	if (use_sputter > 0.0) { al *= sputter(t); }
+	valpha = al;
+	mat4 mw = mat4(normalize(INV_VIEW_MATRIX[0]), normalize(INV_VIEW_MATRIX[1]), normalize(INV_VIEW_MATRIX[2]), vec4(o, 1.0));
+	MODELVIEW_MATRIX = VIEW_MATRIX * mw * mat4(vec4(sc, 0.0, 0.0, 0.0), vec4(0.0, sc, 0.0, 0.0), vec4(0.0, 0.0, sc, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
+	if (al <= 0.0) { POSITION = vec4(0.0, 0.0, 2.0, 1.0); } else { POSITION = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0); }
+}
+void fragment() {
+	vec2 p = UV * 2.0 - 1.0;
+	float r = length(p);
+	float m = exp(-r * r * 5.0) * (1.0 - smoothstep(0.8, 1.0, r));
+	float h = exp(-r * r * 18.0) * hot;
+	float sp = spikes * (exp(-abs(p.x) * 30.0) + exp(-abs(p.y) * 30.0)) * (1.0 - smoothstep(0.0, 1.0, r));
+	ALBEDO = clamp(mix(tint, vec3(1.0), clamp(h, 0.0, 1.0)) * energy * valpha * (m + h + sp), 0.0, 512.0) * SOFTF;
+	ALPHA = 1.0;
+}
+"""
+
+# A script-placed glow sprite (the destruction flash and core), brightness set by the script.
+const GLOW_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
 uniform vec3 tint = vec3(1.0);
@@ -127,14 +275,15 @@ uniform float energy = 8.0;
 uniform float alpha = 0.0;
 uniform float spikes = 0.0;
 uniform float hot = 1.0;
-""" + BILLBOARD + """
+varying float seed;
+""" + SOFT + BILLBOARD + """
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float r = length(p);
 	float m = exp(-r * r * 5.0) * (1.0 - smoothstep(0.8, 1.0, r));
 	float h = exp(-r * r * 18.0) * hot;
 	float sp = spikes * (exp(-abs(p.x) * 30.0) + exp(-abs(p.y) * 30.0)) * (1.0 - smoothstep(0.0, 1.0, r));
-	ALBEDO = clamp(mix(tint, vec3(1.0), clamp(h, 0.0, 1.0)) * energy * alpha * (m + h + sp), 0.0, 512.0);
+	ALBEDO = clamp(mix(tint, vec3(1.0), clamp(h, 0.0, 1.0)) * energy * alpha * (m + h + sp), 0.0, 512.0) * SOFTF;
 	ALPHA = 1.0;
 }
 """
@@ -144,32 +293,34 @@ shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
 uniform float energy = 3.5;
 varying float seed;
-""" + NOISE + BILLBOARD + """
+""" + NOISE + SOFT + BILLBOARD + """
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float r = length(p);
 	float n = fbm(p * 2.2 + vec2(seed * 3.0, seed * 1.3));
 	float m = clamp(1.0 - r / (0.55 + 0.45 * n), 0.0, 1.0);
-	ALBEDO = clamp(COLOR.rgb * energy * m * m * COLOR.a * (0.6 + 0.8 * n), 0.0, 512.0);
+	ALBEDO = clamp(COLOR.rgb * energy * m * m * COLOR.a * (0.6 + 0.8 * n), 0.0, 512.0) * SOFTF;
 	ALPHA = 1.0;
 }
 """
 
-# Lit smoke puffs: a billboard with a sphere-like normal so the key light shades it like a volume.
+# Lit smoke: wispy, eroded by two octaves of noise, lit with a gently domed normal.
 const SMOKE_SHADER := """
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, cull_disabled, shadows_disabled, specular_disabled;
 varying float seed;
-""" + NOISE + BILLBOARD + """
+""" + NOISE + SOFT + BILLBOARD + """
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float r = length(p);
-	float n = fbm(p * 1.8 + vec2(seed * 2.0, seed));
-	float m = 1.0 - smoothstep(0.2, 1.0, r / (0.6 + 0.4 * n));
-	NORMAL = normalize(vec3(p.x, -p.y, sqrt(max(0.0, 1.0 - r * r)) + 0.3));
+	float n = fbm(p * 2.4 + vec2(seed * 2.0, seed));
+	float n2 = fbm(p * 5.0 + vec2(seed * 5.0, 3.0));
+	float body = 1.0 - smoothstep(0.1, 0.95, r);
+	float m = smoothstep(0.25, 0.75, body * (0.55 + 0.9 * n) - n2 * 0.25);
+	NORMAL = normalize(vec3(p.x * 0.6, -p.y * 0.6, 1.0));
 	ALBEDO = clamp(COLOR.rgb, 0.0, 1.0);
 	ROUGHNESS = 1.0;
-	ALPHA = clamp(COLOR.a * m * (0.55 + 0.6 * n), 0.0, 1.0);
+	ALPHA = clamp(COLOR.a * m * 0.8, 0.0, 1.0) * SOFTF;
 }
 """
 
@@ -183,32 +334,39 @@ void fragment() {
 }
 """
 
+# Clock-driven shield: a partial ellipsoid on the struck side, ripple rings running out from the hit, 0.6 s.
 const SHIELD_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled;
 uniform vec3 tint = vec3(1.0);
-uniform float energy = 1.4;
-uniform float strength = 0.0;
-uniform float age = 0.0;
+uniform float energy = 1.0;
+uniform float t0 = 0.0;
+uniform float period = 4.0;
 uniform float patchy = 0.0;
 uniform vec3 hit_dir = vec3(0.0, 0.0, -1.0);
 varying vec3 lp;
-""" + NOISE + """
+varying float age;
+varying float strength;
+""" + NOISE + TIMING + """
 void vertex() {
 	lp = VERTEX;
+	float a = loop_age(scene_t, t0, period);
+	age = a;
+	strength = (a >= 0.0 && a < 0.6) ? pow(max(1.0 - a / 0.6, 0.0), 1.5) * drift_fade(scene_t) : 0.0;
+	if (strength <= 0.0) { POSITION = vec4(0.0, 0.0, 2.0, 1.0); } else { POSITION = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0); }
 }
 void fragment() {
 	vec3 d3 = safe_norm(lp, hit_dir);
 	float d = acos(clamp(dot(d3, hit_dir), -1.0, 1.0));
-	float partial = 1.0 - smoothstep(1.0, 1.7, d);
-	float impact = exp(-d * d * 10.0);
-	float q1 = (d - age * 3.0) * 6.0;
-	float q2 = (d - age * 1.7) * 9.0;
-	float ring = exp(-q1 * q1);
-	float ring2 = exp(-q2 * q2) * 0.5;
-	float fres = pow(max(1.0 - abs(dot(NORMAL, VIEW)), 0.0), 3.0);
-	float cells = 0.75 + 0.25 * vnoise(vec2(atan(d3.z, d3.x) * 9.0, d3.y * 14.0));
-	float a = strength * partial * (0.05 + fres * 0.45 + impact * 1.6 + (ring * 0.9 + ring2) * cells);
+	float partial = 1.0 - smoothstep(0.8, 1.45, d);
+	float impact = exp(-d * d * 14.0);
+	float q1 = (d - age * 3.2) * 7.0;
+	float q2 = (d - age * 2.0) * 9.0;
+	float q3 = (d - age * 1.1) * 11.0;
+	float rings = exp(-q1 * q1) + exp(-q2 * q2) * 0.6 + exp(-q3 * q3) * 0.35;
+	float fres = pow(max(1.0 - abs(dot(NORMAL, VIEW)), 0.0), 4.0);
+	float cells = 0.7 + 0.3 * vnoise(vec2(atan(d3.z, d3.x + 1e-5) * 9.0, d3.y * 14.0));
+	float a = strength * partial * (fres * 0.12 + impact * 0.9 + rings * 0.8 * cells);
 	if (patchy > 0.0) {
 		float pn = vnoise(d3.xy * 7.0 + vec2(TIME * 3.0, d3.z * 5.0));
 		float flick = step(0.32, vnoise(vec2(TIME * 24.0, 1.7)));
@@ -216,26 +374,6 @@ void fragment() {
 	}
 	ALBEDO = clamp(mix(tint, vec3(1.0), impact * 0.35 * strength) * energy * a, 0.0, 512.0);
 	ALPHA = 1.0;
-}
-"""
-
-const RING_SHADER := """
-shader_type spatial;
-render_mode blend_mix, depth_draw_never, cull_back, specular_disabled;
-uniform float alpha = 0.0;
-uniform vec3 col = vec3(0.30, 0.29, 0.28);
-uniform float seed = 0.0;
-varying vec3 lp;
-""" + NOISE + """
-void vertex() {
-	lp = VERTEX;
-}
-void fragment() {
-	float n = fbm(vec2(atan(lp.z, lp.x + 1e-5) * 2.5 + seed, lp.y * 4.0 + seed * 2.0));
-	float soft = pow(abs(dot(NORMAL, VIEW)), 2.0);
-	ALBEDO = col;
-	ROUGHNESS = 1.0;
-	ALPHA = clamp(alpha * soft * smoothstep(0.2, 0.75, n) * 1.6, 0.0, 1.0);
 }
 """
 
@@ -259,21 +397,18 @@ void fragment() {
 }
 """
 
-# Torn hull plates around the breach: dark metal, glowing hot at the torn (free) end.
+# Torn hull plates around the breach (one merged mesh per ship): dark metal, glowing hot at the torn ends (UV.x).
 const SHARD_SHADER := """
 shader_type spatial;
 render_mode cull_disabled;
-uniform float heat = 1.0;
-varying float lx;
-void vertex() {
-	lx = VERTEX.x;
-}
+uniform float seed = 0.0;
 void fragment() {
-	float h = smoothstep(-0.05, 0.5, lx);
+	float h = smoothstep(0.45, 1.0, UV2.x);
+	float flick = 0.8 + 0.2 * sin(TIME * 9.0 + seed) * sin(TIME * 5.3 + seed * 2.0);
 	ALBEDO = vec3(0.10, 0.095, 0.09);
 	METALLIC = 0.6;
 	ROUGHNESS = 0.55;
-	EMISSION = vec3(1.0, 0.42, 0.08) * h * h * 5.0 * clamp(heat, 0.0, 4.0);
+	EMISSION = vec3(1.0, 0.42, 0.08) * h * h * 5.0 * flick;
 }
 """
 
@@ -284,24 +419,139 @@ render_mode blend_mix, depth_draw_never, cull_back;
 uniform sampler2D alb : source_color, filter_linear_mipmap;
 uniform sampler2D emi : source_color, filter_linear_mipmap;
 uniform float emission_energy = 3.0;
-uniform float fade = 1.0;
 void fragment() {
 	vec4 a = texture(alb, UV);
 	ALBEDO = a.rgb;
 	ROUGHNESS = 0.9;
-	EMISSION = texture(emi, UV).rgb * clamp(emission_energy, 0.0, 64.0);
-	ALPHA = clamp(a.a * fade, 0.0, 1.0);
+	EMISSION = texture(emi, UV).rgb * clamp(emission_energy * (0.85 + 0.15 * sin(TIME * 9.0)), 0.0, 64.0);
+	ALPHA = clamp(a.a, 0.0, 1.0);
+}
+"""
+
+# Rich: the breach hole with real depth, by parallax occlusion mapping on a disc lying on the hull (the hull itself is not
+# cut). A jagged crater height field is ray-marched in tangent space; its floor glows like molten metal.
+const HOLE_SHADER := """
+shader_type spatial;
+render_mode cull_back;
+uniform float depth = 0.9;
+""" + NOISE + """
+float crater(vec2 uv) {
+	float r = length(uv);
+	float a = atan(uv.y, uv.x + 1e-5);
+	float jag = 0.82 + 0.1 * sin(a * 7.0) + 0.08 * vnoise(vec2(a * 3.0, 1.0));
+	return smoothstep(jag, jag - 0.25, r) * (0.75 + 0.25 * vnoise(uv * 6.0));
+}
+void fragment() {
+	vec2 uv = UV * 2.0 - 1.0;
+	float r0 = length(uv);
+	float a0 = atan(uv.y, uv.x + 1e-5);
+	if (r0 > 0.82 + 0.1 * sin(a0 * 7.0) + 0.08 * vnoise(vec2(a0 * 3.0, 1.0))) {
+		discard;
+	}
+	vec3 vt = safe_norm(vec3(dot(VIEW, TANGENT), dot(VIEW, -BINORMAL), dot(VIEW, NORMAL)), vec3(0.0, 0.0, 1.0));
+	vec2 stepv = -vt.xy / max(vt.z, 0.25) * depth / 24.0;
+	float layer = 0.0;
+	vec2 p = uv;
+	for (int i = 0; i < 24; i++) {
+		if (crater(p) <= layer) { break; }
+		p += stepv;
+		layer += 1.0 / 24.0;
+	}
+	float d = clamp(layer, 0.0, 1.0);
+	ALBEDO = vec3(0.06, 0.05, 0.045) * (1.0 - d * 0.7);
+	ROUGHNESS = 0.8;
+	METALLIC = 0.5;
+	float glow = smoothstep(0.55, 1.0, d) * (0.6 + 0.4 * vnoise(p * 9.0 + TIME * 0.7));
+	EMISSION = clamp(vec3(1.0, 0.38, 0.07) * glow * 6.0 * (0.85 + 0.15 * sin(TIME * 9.0)), 0.0, 512.0);
+}
+"""
+
+const NOISE3 := """
+float h31(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+float n3(vec3 p) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = mix(mix(h31(i), h31(i + vec3(1, 0, 0)), f.x), mix(h31(i + vec3(0, 1, 0)), h31(i + vec3(1, 1, 0)), f.x), f.y);
+	float b = mix(mix(h31(i + vec3(0, 0, 1)), h31(i + vec3(1, 0, 1)), f.x), mix(h31(i + vec3(0, 1, 1)), h31(i + vec3(1, 1, 1)), f.x), f.y);
+	return mix(a, b, f.z);
+}
+"""
+
+# Rich, Forward+: true volumetric gas in Godot's froxel fog, shaped by fog shaders inside FogVolumes.
+const VENT_FOG := """
+shader_type fog;
+uniform float density = 3.0;
+""" + NOISE3 + """
+void fog() {
+	float along = UVW.y;
+	float r = length(UVW.xz - 0.5) * 2.0;
+	float width = mix(0.3, 1.0, along);
+	float puff = 0.45 + 0.55 * n3(vec3(TIME * 2.2, 0.0, 0.0));
+	float n = n3(WORLD_POSITION * 0.7 - vec3(0.0, TIME * 3.0, 0.0)) * 0.7 + n3(WORLD_POSITION * 1.9 + TIME) * 0.3;
+	DENSITY = max((1.0 - smoothstep(width * 0.5, width, r)) * (1.0 - along) * n * density * puff, 0.0);
+	ALBEDO = vec3(0.82, 0.84, 0.88);
+}
+"""
+# The four smoke rings of a ship's broadside, as torus distance fields computed from the clock (no script updates).
+const RING_FOG := """
+shader_type fog;
+uniform vec3 base;
+uniform vec3 guns[4];
+uniform vec3 n = vec3(0.0, 0.15, 1.0);
+uniform float t0 = 0.0;
+""" + NOISE3 + TIMING + """
+void fog() {
+	float d = 0.0;
+	for (int i = 0; i < 4; i++) {
+		float a = loop_age(scene_t, t0 + 0.08 * float(i), 4.0);
+		if (a < 0.0 || a > 2.2) { continue; }
+		float grow = 1.0 - exp(-a * 2.5);
+		vec3 c = base + guns[i] + vec3(drift_x(scene_t - a), 0.0, 0.0) + n * (1.0 + 4.0 * grow) + vec3(0.0, 0.6 * a, 0.0);
+		float R = 0.8 + 3.2 * grow;
+		vec3 q = WORLD_POSITION - c;
+		float h = dot(q, n);
+		float rad = length(q - n * h);
+		float tube = R * 0.32;
+		float sd = length(vec2(rad - R, h)) - tube;
+		d += pow(max(1.0 - a / 2.2, 0.0), 1.3) * (1.0 - smoothstep(-tube, tube * 0.3, sd));
+	}
+	float nn = n3(WORLD_POSITION * 0.9) * 0.6 + 0.4;
+	DENSITY = max(d * nn * 2.0, 0.0);
+	ALBEDO = vec3(0.35, 0.34, 0.33);
+}
+"""
+const FIREBALL_FOG := """
+shader_type fog;
+uniform float age = -1.0;
+""" + NOISE3 + """
+void fog() {
+	if (age < 0.0) { DENSITY = 0.0; } else {
+		float r = length(UVW - 0.5) * 2.0;
+		float n = n3(WORLD_POSITION * 0.25 + vec3(0.0, -age * 2.0, 0.0)) * 0.65 + n3(WORLD_POSITION * 0.8) * 0.35;
+		float body = (1.0 - smoothstep(0.35, 1.0, r + (n - 0.5) * 0.5)) * smoothstep(5.0, 1.5, age);
+		float heat = clamp(1.0 - age / 1.2, 0.0, 1.0);
+		DENSITY = max(body * 0.9, 0.0);
+		ALBEDO = mix(vec3(0.12, 0.11, 0.10), vec3(0.4, 0.2, 0.1), heat);
+		EMISSION = clamp(vec3(1.0, 0.45, 0.12) * heat * heat * 6.0 * (1.0 - r), 0.0, 64.0);
+	}
 }
 """
 
 var notes: PackedStringArray = []
+var phys = null
+var rich := false
+var maxm := false
 var stagger := STAGGER
 var boom_every := BOOM_EVERY
 var fixed_seed := false
 var compat := false
 var ships: Array = []
 var wreck := {}
+var prewarm := false
 
+var _lights: Array = []
+var _shake: Array = []
 var _quad: QuadMesh
 var _strip: QuadMesh
 var _box: BoxMesh
@@ -314,7 +564,15 @@ var _seed := 1
 var _rng := RandomNumberGenerator.new()
 
 
+static func register_clock() -> void:
+	if not RenderingServer.global_shader_parameter_get_list().has(&"scene_t"):
+		RenderingServer.global_shader_parameter_add(&"scene_t", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
+
+
 func setup(list: Array, wreck_src: Dictionary, deterministic: bool, is_compat: bool, opts := {}) -> void:
+	register_clock()
+	rich = bool(opts.get("rich", false))
+	maxm = bool(opts.get("max", false))
 	stagger = float(opts.get("stagger", STAGGER))
 	boom_every = float(opts.get("boom_every", BOOM_EVERY))
 	fixed_seed = deterministic
@@ -331,16 +589,27 @@ func setup(list: Array, wreck_src: Dictionary, deterministic: bool, is_compat: b
 	_spark_mesh.size = Vector3(0.06, 1.0, 0.06)
 	_plate = BoxMesh.new()
 	_plate.size = Vector3(1.0, 0.18, 0.6)
+	var soft := rich and not compat
 	_sh["ribbon"] = _shader(RIBBON_SHADER)
-	_sh["sprite"] = _shader(SPRITE_SHADER.replace("ROTATE", ""))
+	_sh["sprite"] = _shader(_soft(SPRITE_SHADER, soft))
+	_sh["glow"] = _shader(_soft(GLOW_SHADER.replace("ROTATE", ""), soft))
 	_sh["shield"] = _shader(SHIELD_SHADER)
-	_sh["ring"] = _shader(RING_SHADER)
 	_sh["shock"] = _shader(SHOCK_SHADER)
 	_sh["shard"] = _shader(SHARD_SHADER)
 	_sh["disc"] = _shader(SCORCH_DISC_SHADER)
-	_mats["flame"] = _mat(_shader(FLAME_SHADER.replace("ROTATE", PARTICLE_ROTATE)))
-	_mats["smoke"] = _mat(_shader(SMOKE_SHADER.replace("ROTATE", PARTICLE_ROTATE)))
+	_mats["flame"] = _mat(_shader(_soft(FLAME_SHADER.replace("ROTATE", PARTICLE_ROTATE), soft)))
+	_mats["smoke"] = _mat(_shader(_soft(SMOKE_SHADER.replace("ROTATE", PARTICLE_ROTATE), soft)))
 	_mats["spark"] = _mat(_shader(SPARK_SHADER))
+	if soft:
+		notes.append("rich: soft particles (flame, smoke and glow sprites fade into hull depth; hand-written, reads the depth texture)")
+	if rich:
+		_sh["hole"] = _shader(HOLE_SHADER)
+		if not compat:
+			_sh["vent_fog"] = _shader(VENT_FOG)
+			_sh["ring_fog"] = _shader(RING_FOG)
+			_sh["fire_fog"] = _shader(FIREBALL_FOG)
+			notes.append("rich: volumetric fog (FogVolume with fog shaders) for breach venting, smoke rings and the fireball")
+		notes.append("rich: breach holes with depth by parallax occlusion mapping (hand-written), a light per gun and per impact")
 	var deb := StandardMaterial3D.new()
 	deb.albedo_color = Color(0.16, 0.15, 0.14)
 	deb.metallic = 0.6
@@ -356,28 +625,148 @@ func setup(list: Array, wreck_src: Dictionary, deterministic: bool, is_compat: b
 	_mats["hot_debris"] = hot_deb
 	_build_process_materials()
 	for key in ["gas", "breach_fire", "breach_debris", "breach_sparks", "pop", "soot", "hit_sparks", "hit_debris", "puff",
-			"muzzle_smoke", "fountain", "edge_fire", "edge_smoke", "edge_squib"]:
+			"fountain", "edge_fire", "edge_smoke", "edge_squib"]:
 		(_pm[key] as ParticleProcessMaterial).inherit_velocity_ratio = 1.0
+	if maxm:
+		_detail_normals(list)
 	var tex := _breach_textures()
 	for i in list.size():
 		ships.append(_build_ship(i, list[i], tex))
 	_build_wreck(wreck_src)
 
 
+func _soft(code: String, on: bool) -> String:
+	return code.replace("shader_type spatial;", "shader_type spatial;\n#define SOFT") if on else code
+
+
+# Max: a tiling micro-detail normal layer on every hull material (built-in StandardMaterial3D detail, triplanar so the
+# barge without a second UV set gets it too; the noise normal map is generated by Godot's NoiseTexture2D).
+func _detail_normals(list: Array) -> void:
+	var nt := NoiseTexture2D.new()
+	nt.width = 512
+	nt.height = 512
+	nt.seamless = true
+	nt.as_normal_map = true
+	nt.bump_strength = 6.0
+	var fn := FastNoiseLite.new()
+	fn.frequency = 0.05
+	fn.fractal_octaves = 4
+	nt.noise = fn
+	var done := {}
+	for s in list:
+		for m in s.get("meshes", []):
+			var mesh: Mesh = (m as MeshInstance3D).mesh
+			for si in mesh.get_surface_count():
+				var mat := mesh.surface_get_material(si) as StandardMaterial3D
+				if mat == null or done.has(mat):
+					continue
+				done[mat] = true
+				mat.detail_enabled = true
+				mat.detail_normal = nt
+				mat.detail_uv_layer = BaseMaterial3D.DETAIL_UV_2
+				mat.uv2_triplanar = true
+				mat.uv2_scale = Vector3(30, 30, 30)
+	notes.append("max: detail normal layer on %d hull materials" % done.size())
+
+
+func active_lights() -> int:
+	var n := 0
+	for l in _lights:
+		var o := l as OmniLight3D
+		if o.visible and o.light_energy > 0.05 and o.is_visible_in_tree():
+			n += 1
+	return n
+
+
+# Weight-scaled screen shake (max mode): every big event pushes an impulse that decays and falls off with distance.
+func _kick(t: float, at: Vector3, weight: float) -> void:
+	if not maxm:
+		return
+	_shake.append([t, at, weight])
+	if _shake.size() > 48:
+		_shake.pop_front()
+
+
+func shake_offset(t: float, cam_pos: Vector3) -> Vector3:
+	var amp := 0.0
+	for k in _shake:
+		var age: float = t - float(k[0])
+		if age < 0.0 or age > 1.5:
+			continue
+		var dist := cam_pos.distance_to(k[1])
+		amp += float(k[2]) * exp(-age * 6.0) / (1.0 + dist / 40.0)
+	amp = minf(amp, 3.0)
+	return Vector3(sin(t * 61.0) + sin(t * 23.0) * 0.5, sin(t * 53.0 + 1.3) + sin(t * 31.0) * 0.5, sin(t * 47.0 + 2.1)) * amp * 0.5
+
+
 # ---------------------------------------------------------------- per frame
 
 func update(t: float) -> void:
+	RenderingServer.global_shader_parameter_set(&"scene_t", t)
+	if prewarm:
+		return
 	for i in ships.size():
 		_update_ship(ships[i], t, t - stagger * i)
 	_update_wreck(t)
 
 
-func _drift_x(t: float) -> float:
-	return fposmod(DRIFT_SPEED * t + DRIFT_SPAN * 0.5, DRIFT_SPAN) - DRIFT_SPAN * 0.5
+# Load-time warm-up (main.gd): every group shown, every particle system fired, the hulls half transparent, so each
+# material and pipeline variant is compiled before the measured window.
+func show_everything(on: bool) -> void:
+	prewarm = on
+	for e in ships:
+		for g in e["groups"].values():
+			for n in g:
+				(n as Node3D).visible = on
+		e["vis"] = {}
+		for m in e["meshes"]:
+			(m as GeometryInstance3D).transparency = 0.5 if on else 0.0
+		e["fade"] = -1.0
+		for key in e["oneshots"]:
+			_fire(key)
+		for l in e["lights"]:
+			(l as OmniLight3D).visible = on
+			(l as OmniLight3D).light_energy = 1.0
+	if not wreck.is_empty():
+		for c in wreck["chunks"]:
+			(c["node"] as Node3D).visible = on
+			(c["mesh"] as GeometryInstance3D).transparency = 0.5 if on else 0.0
+			for key in ["fire", "smoke", "squibs"]:
+				(c[key] as GPUParticles3D).emitting = on
+		for key in ["fireball", "smoke", "embers", "debris", "pre_squibs"]:
+			_fire(wreck[key])
+		(wreck["whole"] as GeometryInstance3D).transparency = 0.5 if on else 0.0
+		for key in ["flash", "core", "shock"]:
+			(wreck[key] as Node3D).visible = on
+	if not on:
+		reset_triggers()
+
+
+func reset_triggers() -> void:
+	for e in ships:
+		e["last_hit"] = -1
+		e["last_beam"] = -1
+		e["last_kick_hit"] = -1
+		for g in e["guns"]:
+			g["last"] = -1
+			g["last_fire"] = -1
+		e["breach"]["last_sparks"] = -1
+		e["breach"]["last_pop"] = -1
+	if not wreck.is_empty():
+		wreck["last_squib"] = 0
+		wreck["last_boom"] = -1
+	_shake.clear()
+
+
+func _group(e: Dictionary, name: String, on: bool) -> void:
+	if e["vis"].get(name, not on) == on:
+		return
+	e["vis"][name] = on
+	for n in e["groups"][name]:
+		(n as Node3D).visible = on
 
 
 func _update_ship(e: Dictionary, t: float, u: float) -> void:
-	# drift along +x at 3 u/s, looping over 40 units (x offset -20 to +20, 0 at t = 0) with a 2 s fade at the loop point
 	var q := fposmod(DRIFT_SPEED * t + DRIFT_SPAN * 0.5, DRIFT_SPAN)
 	var root: Node3D = e["root"]
 	root.position = e["base"] + Vector3(q - DRIFT_SPAN * 0.5, 0, 0)
@@ -386,181 +775,117 @@ func _update_ship(e: Dictionary, t: float, u: float) -> void:
 		e["fade"] = fade
 		for m in e["meshes"]:
 			(m as GeometryInstance3D).transparency = 1.0 - fade
+		var br0: Dictionary = e["breach"]
+		if br0.has("decal"):
+			(br0["decal"] as Decal).modulate = Color(1, 1, 1, fade)
+		(br0["shards"] as GeometryInstance3D).transparency = 1.0 - fade
+		var live := fade > 0.02
+		for cp in e["continuous"]:
+			(cp as GPUParticles3D).emitting = live
 	var a := -1.0 if u < 0.0 else fmod(u, LOOP)
-	var cyc := -1 if u < 0.0 else int(floorf(u / LOOP))
-
-	# 1. engines
-	var sput := 1.0
+	# phase groups: the shaders animate, the script only shows a group while its phase can be on screen
+	_group(e, "guns", a >= 0.0 and a < 0.8)
+	_group(e, "beam", a >= BEAM_AT - CHARGE_T and a < BEAM_AT + BEAM_T)
+	_group(e, "hit", a >= HIT_AT - INCOMING_T and a < HIT_AT + SHIELD_T)
 	if e["corsair"]:
-		sput = _sputter(t)
-		(e["soot"] as GPUParticles3D).amount_ratio = clampf((1.2 - sput) * fade, 0.05, 1.0)
-	for en in e["engines"]:
-		(en["core_m"] as ShaderMaterial).set_shader_parameter("alpha", fade * sput * (0.9 + 0.1 * sin(t * 41.0 + en["seed"])))
-		(en["plume_m"] as ShaderMaterial).set_shader_parameter("alpha", fade * sput)
-		(en["trail_m"] as ShaderMaterial).set_shader_parameter("alpha", fade * (0.6 + 0.4 * sput))
+		(e["soot"] as GPUParticles3D).amount_ratio = clampf((1.2 - _sputter(t)) * fade, 0.05, 1.0)
+	var lights_on := false
 
-	# 2. broadside
-	var gun_light := 0.0
-	var gun_light_at := Vector3.ZERO
-	for k in e["guns"].size():
-		var g: Dictionary = e["guns"][k]
-		var ak: float = a - GUN_GAP * k
-		if ak < 0.0 and cyc > 0:
-			ak += LOOP  # the previous volley's smoke rings are still drifting
-		var fc := _cycle(u - GUN_GAP * k)
-		if fc > int(g["last_fire"]):
-			g["last_fire"] = fc
-			_fire(g["smoke"])
-		var fl: MeshInstance3D = g["flash"]
-		fl.visible = ak >= 0.0 and ak < 0.1
-		if fl.visible:
-			var f: float = 1.0 - ak / 0.1
-			fl.scale = Vector3.ONE * 5.0 * (0.7 + 0.3 * f)
-			(fl.material_override as ShaderMaterial).set_shader_parameter("alpha", f * fade)
-			if f > gun_light:
-				gun_light = f
-				gun_light_at = g["pos"] + g["n"] * 1.5
-		var tg: MeshInstance3D = g["tongue"]
-		tg.visible = ak >= 0.0 and ak < 0.16
-		if tg.visible:
-			var tl := 3.0 + 5.0 * smoothstep(0.0, 0.05, ak)
-			tg.transform = _ribbon_xf(g["pos"], g["n"], tl)
-			(tg.material_override as ShaderMaterial).set_shader_parameter("alpha", (1.0 - ak / 0.16) * fade)
-		# world-space parts start where the gun was when it fired
-		var p0: Vector3 = e["base"] + Vector3(_drift_x(t - ak), 0, 0) + g["pos"]
-		var nn: Vector3 = g["n"]
-		var ring: MeshInstance3D = g["ring"]
-		ring.visible = ak >= 0.0 and ak < RING_LIFE
-		if ring.visible:
-			var grow := 1.0 - exp(-ak * 2.5)
-			var r := 0.8 + 3.2 * grow
-			var thick := 0.6 + 1.6 * grow
-			ring.transform = Transform3D(_basis_y(nn) * Basis.from_scale(Vector3(r, thick, r)),
-				p0 + nn * (1.0 + 4.0 * grow) + Vector3(0, 0.6 * ak, 0))
-			(ring.material_override as ShaderMaterial).set_shader_parameter("alpha", 0.4 * pow(maxf(1.0 - ak / RING_LIFE, 0.0), 1.3))
-		var target: Vector3 = p0 + g["aim"]
-		var dist := p0.distance_to(target)
-		var dir := (target - p0) / dist
-		var run: float = ak * SHELL_SPEED
-		var tr: MeshInstance3D = g["tracer"]
-		tr.visible = ak >= 0.0 and run < dist + 1.0
-		if tr.visible:
-			var head := minf(run, dist)
-			var tail := clampf(run - 7.0, 0.0, dist)
-			tr.transform = _ribbon_xf(p0 + dir * tail, dir, maxf(head - tail, 0.05))
-		var flight := dist / SHELL_SPEED
-		var ai: float = ak - flight
-		var imp: MeshInstance3D = g["impact"]
-		imp.visible = ai >= 0.0 and ai < 0.15
-		if imp.visible:
-			imp.position = target
-			imp.scale = Vector3.ONE * 4.0
-			(imp.material_override as ShaderMaterial).set_shader_parameter("alpha", 1.0 - ai / 0.15)
-		var ic := _cycle(u - GUN_GAP * k - flight)
-		if ic > int(g["last"]):
-			g["last"] = ic
-			_fire_at(g["sparks"], target)
-			_fire_at(g["debris"], target)
-	var gl: OmniLight3D = e["gun_light"]
-	gl.visible = gun_light > 0.0
-	if gl.visible:
-		gl.position = gun_light_at
-		gl.light_energy = 6.0 * gun_light * fade
+	# 2. broadside: particle triggers, the gun flash light, physics debris
+	if a >= 0.0 and a < 1.0:
+		var gun_light := 0.0
+		var gun_at := Vector3.ZERO
+		for k in e["guns"].size():
+			var g: Dictionary = e["guns"][k]
+			var ak: float = a - GUN_GAP * k
+			var fc := _cycle(u - GUN_GAP * k)
+			if fc > int(g["last_fire"]):
+				g["last_fire"] = fc
+				var p0: Vector3 = root.position + g["pos"]
+				_fire_at(g["ring_smoke"], p0 + g["n"] * 0.8)
+				_kick(t, p0, 0.12)
+			if ak >= 0.0 and ak < 0.1 and 1.0 - ak / 0.1 > gun_light:
+				gun_light = 1.0 - ak / 0.1
+				gun_at = g["pos"] + g["n"] * 1.5
+			if g.has("light"):
+				var gl2: OmniLight3D = g["light"]
+				gl2.visible = ak >= 0.0 and ak < 0.1
+				if gl2.visible:
+					gl2.light_energy = 6.0 * (1.0 - ak / 0.1) * fade
+			var flight: float = g["flight"]
+			var ai: float = ak - flight
+			if g.has("imp_light"):
+				var il: OmniLight3D = g["imp_light"]
+				il.visible = ai >= 0.0 and ai < 0.3
+				if il.visible:
+					il.position = e["base"] + Vector3(_drift_x(t - ak), 0, 0) + g["pos"] + g["aim"]
+					il.light_energy = 5.0 * (1.0 - ai / 0.3)
+			var ic := _cycle(u - GUN_GAP * k - flight)
+			if ic > int(g["last"]):
+				g["last"] = ic
+				var target: Vector3 = e["base"] + Vector3(_drift_x(t - ak), 0, 0) + g["pos"] + g["aim"]
+				_fire_at(g["sparks"], target)
+				_fire_at(g["debris"], target)
+				if phys != null:
+					phys.spawn(target, (g["aim"] as Vector3).normalized() * 6.0, 3, 0.25)
+		if e.has("gun_light"):
+			var gl: OmniLight3D = e["gun_light"]
+			gl.visible = gun_light > 0.0
+			if gl.visible:
+				gl.position = gun_at
+				gl.light_energy = 6.0 * gun_light * fade
+				lights_on = true
+	elif e.has("gun_light") and (e["gun_light"] as OmniLight3D).visible:
+		(e["gun_light"] as OmniLight3D).visible = false
 
-	# 3. beam
+	# 3. beam: sparks on and off, the two lights
 	var ab := a - BEAM_AT
-	var charge: MeshInstance3D = e["charge"]
-	var cf := 0.0
-	if ab >= -CHARGE_T and ab < 0.0:
-		cf = smoothstep(-CHARGE_T, 0.0, ab)
-	elif ab >= 0.0 and ab < BEAM_T:
-		cf = 0.6 + 0.2 * sin(t * 60.0)
-	cf *= fade
-	charge.visible = cf > 0.0
-	if charge.visible:
-		charge.scale = Vector3.ONE * (1.5 + 4.5 * cf)
-		(charge.material_override as ShaderMaterial).set_shader_parameter("alpha", cf)
 	var on := ab >= 0.0 and ab < BEAM_T and fade > 0.0
-	var benv := 0.0
-	if on:
-		benv = smoothstep(0.0, 0.05, ab) * (1.0 - smoothstep(BEAM_T - 0.15, BEAM_T, ab)) * fade
-	for key in ["beam_core", "beam_glow"]:
-		var bm: MeshInstance3D = e[key]
-		bm.visible = on
-		if on:
-			(bm.material_override as ShaderMaterial).set_shader_parameter("alpha", benv)
-	var bh: MeshInstance3D = e["beam_hit"]
-	bh.visible = on
-	if on:
-		bh.scale = Vector3.ONE * (6.0 + 1.5 * sin(t * 47.0)) * maxf(benv, 0.05)
-		(bh.material_override as ShaderMaterial).set_shader_parameter("alpha", benv)
 	var bs: GPUParticles3D = e["beam_sparks"]
 	if on != bs.emitting:
 		bs.emitting = on
+		if on:
+			_kick(t, root.position + e["bow_at"], 0.25)
+	var cf := 0.0
+	if ab >= -CHARGE_T and ab < 0.0:
+		cf = smoothstep(-CHARGE_T, 0.0, ab)
+	elif on:
+		cf = 0.7
+	var benv := 0.0
+	if on:
+		benv = smoothstep(0.0, 0.05, ab) * (1.0 - smoothstep(BEAM_T - 0.15, BEAM_T, ab)) * fade
 	var bl: OmniLight3D = e["beam_light"]
 	bl.visible = cf > 0.0 or on
 	if bl.visible:
-		bl.light_energy = 3.0 * cf + 5.0 * benv
+		bl.light_energy = 3.0 * cf * fade + 5.0 * benv
 	var bl2: OmniLight3D = e["beam_hit_light"]
 	bl2.visible = on
 	if on:
 		bl2.light_energy = 4.0 * benv
 
-	# 4. incoming shell and the hit
+	# 4. the hit
 	var ah := a - HIT_AT
-	var inc: MeshInstance3D = e["incoming"]
-	var inc_t := INCOMING_LEN / SHELL_SPEED
-	inc.visible = ah >= -inc_t and ah < 0.0 and fade > 0.0
-	if inc.visible:
-		var hp: Vector3 = e["hit_at"]
-		var from: Vector3 = e["incoming_dir"]
-		var togo := -ah * SHELL_SPEED
-		inc.transform = _ribbon_xf(hp + from * (togo + 7.0), -from, 7.0)
-	var hl: OmniLight3D = e["hit_light"]
 	var hf := 0.0
-	if e["shielded"]:
-		var sh: MeshInstance3D = e["shield"]
-		sh.visible = ah >= 0.0 and ah < SHIELD_T and fade > 0.0
-		if sh.visible:
-			var sm: ShaderMaterial = sh.material_override
-			sm.set_shader_parameter("strength", pow(maxf(1.0 - ah / SHIELD_T, 0.0), 1.5) * fade)
-			sm.set_shader_parameter("age", ah)
-		var core: MeshInstance3D = e["hit_core"]
-		core.visible = ah >= 0.0 and ah < 0.25 and fade > 0.0
-		if core.visible:
-			hf = (1.0 - ah / 0.25) * fade
-			core.scale = Vector3.ONE * (3.0 + 3.0 * (1.0 - hf))
-			(core.material_override as ShaderMaterial).set_shader_parameter("alpha", hf)
-	else:
-		var hfl: MeshInstance3D = e["hit_flash"]
-		hfl.visible = ah >= 0.0 and ah < 0.2 and fade > 0.0
-		if hfl.visible:
-			hf = (1.0 - ah / 0.2) * fade
-			hfl.scale = Vector3.ONE * (4.0 + 2.0 * (1.0 - hf))
-			(hfl.material_override as ShaderMaterial).set_shader_parameter("alpha", hf)
-		var hc := _cycle(u - HIT_AT)
-		if hc > int(e["last_hit"]):
-			e["last_hit"] = hc
+	if ah >= 0.0 and ah < 0.25:
+		hf = (1.0 - ah / 0.25) * fade
+	var hcy := _cycle(u - HIT_AT)
+	if hcy > int(e["last_hit"]):
+		e["last_hit"] = hcy
+		_kick(t, root.position + e["hit_at"], 0.35)
+		if not e["shielded"]:
 			for key in ["hit_sparks", "hit_debris", "hit_fire"]:
 				_fire(e[key])
+			if phys != null:
+				phys.spawn(root.position + e["hit_at"], Vector3(DRIFT_SPEED, 2, -8), 4, 0.3)
+	var hl: OmniLight3D = e["hit_light"]
 	hl.visible = hf > 0.0
 	if hl.visible:
 		hl.light_energy = 5.0 * hf
 
-	# 5. breach (persistent)
+	# 5. breach: fixed timers, staggered like the loop: a spark shower every 2.3 s, a secondary pop every 3.7 s
 	var br: Dictionary = e["breach"]
 	var idx: int = e["idx"]
-	var puff := clampf(0.35 + 0.65 * _smooth_noise(t * 2.2 + idx * 7.0), 0.15, 1.0)
-	var live := fade > 0.02
-	for cp in [br["gas"], br["fire"], br["debris"]]:
-		if (cp as GPUParticles3D).emitting != live:
-			(cp as GPUParticles3D).emitting = live
-	if e["corsair"] and (e["soot"] as GPUParticles3D).emitting != live:
-		(e["soot"] as GPUParticles3D).emitting = live
-	(br["gas"] as GPUParticles3D).amount_ratio = maxf(puff * fade, 0.001)
-	(br["fire"] as GPUParticles3D).amount_ratio = maxf(fade, 0.001)
-	(br["debris"] as GPUParticles3D).amount_ratio = maxf(fade, 0.001)
-	# fixed timers, staggered like the loop: a spark shower every 2.3 s, a secondary pop every 3.7 s
+	(br["gas"] as GPUParticles3D).amount_ratio = maxf(clampf(0.35 + 0.65 * _smooth_noise(t * 2.2 + idx * 7.0), 0.15, 1.0) * fade, 0.001)
 	var pt := t - stagger * idx
 	var sc := _cycle_n(pt, SPARKS_EVERY)
 	if sc > int(br["last_sparks"]):
@@ -576,26 +901,14 @@ func _update_ship(e: Dictionary, t: float, u: float) -> void:
 		br["last_pop"] = pc
 		_fire(br["pop_fire"])
 		_fire(br["sparks"])
-	var pf: MeshInstance3D = br["pop_flash"]
-	pf.visible = pop > 0.0 and fade > 0.0
-	if pf.visible:
-		pf.scale = Vector3.ONE * (2.5 + 2.0 * (1.0 - pop))
-		(pf.material_override as ShaderMaterial).set_shader_parameter("alpha", pop * fade)
+		var bf: Node3D = br["frame"]
+		_kick(t, bf.global_position, 0.15)
+		if phys != null:
+			phys.spawn(bf.global_position, bf.global_transform.basis.y * 5.0 + Vector3(DRIFT_SPEED, 0, 0), 2, 0.2)
 	var flick := 0.75 + 0.25 * _smooth_noise(t * 9.0 + idx * 3.3)
 	(br["light"] as OmniLight3D).light_energy = (1.4 * flick + 7.0 * pop) * fade
 	if br.has("decal"):
-		var dc: Decal = br["decal"]
-		dc.emission_energy = 2.6 * flick + 4.0 * pop
-		dc.modulate = Color(1, 1, 1, fade)
-	else:
-		var dm: ShaderMaterial = br["disc_m"]
-		dm.set_shader_parameter("emission_energy", 2.6 * flick + 4.0 * pop)
-		dm.set_shader_parameter("fade", fade)
-	(br["shard_m"] as ShaderMaterial).set_shader_parameter("heat", (0.8 + 0.4 * flick) * fade)
-	if fade != float(br["fade"]):
-		br["fade"] = fade
-		for sh2 in br["shards"]:
-			(sh2 as GeometryInstance3D).transparency = 1.0 - fade
+		(br["decal"] as Decal).emission_energy = 2.6 * flick + 4.0 * pop
 
 
 func _update_wreck(t: float) -> void:
@@ -603,7 +916,7 @@ func _update_wreck(t: float) -> void:
 		return
 	var whole: MeshInstance3D = wreck["whole"]
 	var tt := t - BREAK_OFFSET  # breaks when tt crosses a multiple of the period
-	var since := -1.0  # time since the last break (none yet before t = 12.4)
+	var since := -1.0  # time since the last break (none yet before the first)
 	var p := tt
 	if tt >= boom_every:
 		since = fmod(tt, boom_every)
@@ -648,11 +961,27 @@ func _update_wreck(t: float) -> void:
 		var r := 4.0 + 75.0 * (1.0 - exp(-a * 1.8))
 		sw.scale = Vector3(r * 2.0, 1.0, r * 2.0)
 		(sw.material_override as ShaderMaterial).set_shader_parameter("alpha", pow(maxf(1.0 - a / 2.0, 0.0), 3.0))
-	var bc := _cycle12(tt)
+	var bc := _cycle_n(tt - boom_every, boom_every)
 	if bc > int(wreck["last_boom"]):
 		wreck["last_boom"] = bc
 		for key in ["fireball", "smoke", "embers", "debris"]:
 			_fire(wreck[key])
+		_kick(t, WRECK_POS, 2.5)
+		if phys != null:
+			phys.spawn(WRECK_POS, Vector3.ZERO, 30, 0.6, 14.0)
+			for c in wreck["chunks"]:
+				phys.launch(c["node"], Transform3D(Basis(), WRECK_POS + c["start"]), c["vel"] * 1.6, c["axis"] * c["spin"] * 2.0)
+	if wreck.has("fire_light"):
+		var fl3: OmniLight3D = wreck["fire_light"]
+		fl3.visible = a >= 0.0 and a < 2.5
+		if fl3.visible:
+			fl3.light_energy = 25.0 * exp(-a * 1.6)
+	if wreck.has("fire_fog"):
+		var fv2: FogVolume = wreck["fire_fog"]
+		fv2.visible = a >= 0.0 and a < 5.0
+		if fv2.visible:
+			fv2.size = Vector3.ONE * (14.0 + 26.0 * (1.0 - exp(-a * 1.5)))
+			(fv2.material as ShaderMaterial).set_shader_parameter("age", a)
 	# chunks
 	var show_chunks := a >= 0.0 and a < boom_every - 2.0
 	for c in wreck["chunks"]:
@@ -661,13 +990,21 @@ func _update_wreck(t: float) -> void:
 		var fire: GPUParticles3D = c["fire"]
 		var smoke: GPUParticles3D = c["smoke"]
 		var squibs: GPUParticles3D = c["squibs"]
+		if c.has("light"):
+			var cl: OmniLight3D = c["light"]
+			cl.visible = show_chunks and a < c["burn_t"]
+			if cl.visible:
+				cl.light_energy = 3.0 * (0.75 + 0.25 * _smooth_noise(t * 8.0 + float(c["burn_t"])))
 		if not show_chunks:
 			if fire.emitting or squibs.emitting:
 				fire.emitting = false
 				smoke.emitting = false
 				squibs.emitting = false
+			if phys != null and node is RigidBody3D:
+				phys.park(node)
 			continue
-		node.transform = Transform3D(Basis(c["axis"], c["spin"] * a), WRECK_POS + c["start"] + c["vel"] * a)
+		if not (phys != null and node is RigidBody3D):
+			node.transform = Transform3D(Basis(c["axis"], c["spin"] * a), WRECK_POS + c["start"] + c["vel"] * a)
 		var cfade := clampf((boom_every - 2.0 - a) / 0.6, 0.0, 1.0)
 		(c["mesh"] as GeometryInstance3D).transparency = 1.0 - cfade
 		var burning: bool = a < c["burn_t"]
@@ -682,108 +1019,134 @@ func _update_wreck(t: float) -> void:
 
 # ---------------------------------------------------------------- build: ships
 
+func _ship_mat(shader: Shader, params: Dictionary) -> ShaderMaterial:
+	var m := _mat(shader)
+	for key in params:
+		m.set_shader_parameter(key, params[key])
+	return m
+
+
+# A clock-driven node: always at the origin, drawn wherever its shader puts it (never culled; hidden by phase groups).
+func _driven(mesh: Mesh, mat: Material, visible_now := false) -> MeshInstance3D:
+	var n := MeshInstance3D.new()
+	n.mesh = mesh
+	n.material_override = mat
+	n.custom_aabb = WORLD_AABB
+	n.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	n.visible = visible_now
+	add_child(n)
+	return n
+
+
 func _build_ship(i: int, s: Dictionary, tex: Dictionary) -> Dictionary:
-	var e := {"idx": i, "root": s["root"], "base": s["pos"], "meshes": s["meshes"], "fade": 1.0,
-		"corsair": s["name"] == "Corsair", "shielded": s["shield"] != null, "last_hit": -1}
+	var off := stagger * i
+	var base: Vector3 = s["pos"]
+	var e := {"idx": i, "root": s["root"], "base": base, "meshes": s["meshes"], "fade": 1.0, "vis": {},
+		"corsair": s["name"] == "Corsair", "shielded": s["shield"] != null, "last_hit": -1,
+		"groups": {"guns": [], "beam": [], "hit": []}, "oneshots": [], "continuous": [], "lights": []}
 	var root: Node3D = s["root"]
 	var half: Vector3 = s["half"]
 	var wcol: Color = s["weapon"]
 	var ecol: Color = s["engine"]
-	# 1. engines
-	var engines: Array = []
+	var sput := 1.0 if e["corsair"] else 0.0
+	# 1. engines (always on)
 	var w: float = s["noz_size"]
 	var plume_len := clampf(3.0 * half.z, 7.0, 18.0)
 	for nz in s["nozzles"]:
-		var en := {"seed": _rng.randf() * 10.0}
-		var core := _sprite(root, ecol, 6.0, nz, w * 2.2)
-		core.visible = true
-		en["core_m"] = core.material_override
-		var plume := _ribbon(root, {"tint_a": _v3(ecol.lerp(Color.WHITE, 0.35)), "tint_b": _v3(ecol), "energy": 2.4,
-			"width_a": w * 1.2, "width_b": w * 0.5, "core": 1.0, "noise_amt": 0.85, "noise_scale": 0.6, "scroll": 14.0,
-			"fade_in": 0.03, "fade_out": 0.35, "flicker": 0.35, "decay": 3.0, "seed": en["seed"]}, 25.0)
-		plume.transform = _ribbon_xf(nz, Vector3(-1, 0, 0), plume_len)
-		plume.visible = true
-		en["plume_m"] = plume.material_override
-		var trail := _ribbon(root, {"tint_a": _v3(ecol) * 0.8, "tint_b": Vector3(0.30, 0.10, 0.05), "energy": 0.35,
-			"width_a": w * 0.9, "width_b": w * 0.3, "core": 0.15, "noise_amt": 0.75, "noise_scale": 0.12, "scroll": 4.0,
-			"waver": 2.2, "fade_in": 0.02, "fade_out": 0.25, "decay": 1.2, "seed": en["seed"] + 3.0}, 30.0)
-		trail.transform = _ribbon_xf(nz, Vector3(-1, 0, 0), TRAIL_LEN)
-		trail.visible = true
-		en["trail_m"] = trail.material_override
-		engines.append(en)
-	e["engines"] = engines
+		var sd := _rng.randf() * 10.0
+		_driven(_quad, _ship_mat(_sh["sprite"], {"tint": _v3(ecol), "energy": 6.0, "base": base, "lpos": nz, "shape": 3,
+			"size": w * 2.2, "seed": sd, "use_sputter": sput}), true)
+		_driven(_strip, _ship_mat(_sh["ribbon"], {"base": base, "lpos": nz, "ldir": Vector3(-1, 0, 0), "len": plume_len,
+			"tint_a": _v3(ecol.lerp(Color.WHITE, 0.35)), "tint_b": _v3(ecol), "energy": 2.4, "width_a": w * 1.2, "width_b": w * 0.5,
+			"core": 1.0, "noise_amt": 0.85, "noise_scale": 0.6, "scroll": 14.0, "fade_in": 0.03, "fade_out": 0.35, "flicker": 0.35,
+			"decay": 3.0, "seed": sd, "use_sputter": sput}), true)
+		_driven(_strip, _ship_mat(_sh["ribbon"], {"base": base, "lpos": nz, "ldir": Vector3(-1, 0, 0), "len": TRAIL_LEN,
+			"tint_a": _v3(ecol) * 0.8, "tint_b": Vector3(0.30, 0.10, 0.05), "energy": 0.35, "width_a": w * 0.9, "width_b": w * 0.3,
+			"core": 0.15, "noise_amt": 0.75, "noise_scale": 0.12, "scroll": 4.0, "waver": 2.2, "fade_in": 0.02, "fade_out": 0.25,
+			"decay": 1.2, "seed": sd + 3.0}), true)
 	if e["corsair"]:
 		var stern := Vector3(-half.x - 0.5, s["nozzles"][0].y, 0)
 		var soot := _particles(root, _pm["soot"], 40, 2.5, _quad, _mats["smoke"], stern, false)
 		soot.emitting = true
 		e["soot"] = soot
+		e["continuous"].append(soot)
 	# 2. broadside
 	var guns: Array = []
 	for k in s["guns"].size():
 		var gp: Vector3 = s["guns"][k]
 		var gn: Vector3 = s["gun_n"][k]
-		var g := {"pos": gp, "n": gn, "last": -1, "last_fire": -1, "aim": Vector3(8.0 + 4.0 * k, 3.0 + _rng.randf() * 4.0, BROADSIDE_RANGE)}
-		g["flash"] = _sprite(root, wcol.lerp(Color.WHITE, 0.3), 12.0, gp + gn * 0.8, 5.0, 1.0)
-		g["tongue"] = _ribbon(root, {"tint_a": Vector3(1.0, 0.9, 0.7), "tint_b": _v3(wcol), "energy": 6.0, "width_a": 1.6,
+		var aim := Vector3(8.0 + 4.0 * k, 3.0 + _rng.randf() * 4.0, BROADSIDE_RANGE)
+		var gt0: float = off + GUN_GAP * k
+		var g := {"pos": gp, "n": gn, "last": -1, "last_fire": -1, "aim": aim, "flight": aim.length() / SHELL_SPEED}
+		var grp: Array = e["groups"]["guns"]
+		grp.append(_driven(_quad, _ship_mat(_sh["sprite"], {"tint": _v3(wcol.lerp(Color.WHITE, 0.3)), "energy": 12.0,
+			"base": base, "lpos": gp + gn * 0.8, "shape": 0, "t0": gt0, "dur": 0.1, "size": 5.0, "grow": -0.3})))
+		grp.append(_driven(_strip, _ship_mat(_sh["ribbon"], {"kind": 1, "base": base, "lpos": gp, "ldir": gn, "t0": gt0,
+			"dur": 0.16, "decay_env": 1, "tint_a": Vector3(1.0, 0.9, 0.7), "tint_b": _v3(wcol), "energy": 6.0, "width_a": 1.6,
 			"width_b": 0.2, "core": 1.0, "noise_amt": 0.5, "noise_scale": 1.5, "scroll": 30.0, "fade_in": 0.05, "fade_out": 0.5,
-			"seed": float(k) * 2.1 + i}, 10.0)
-		var rm := _mat(_sh["ring"])
-		rm.set_shader_parameter("seed", _rng.randf() * 10.0)
-		var torus := TorusMesh.new()
-		torus.inner_radius = 0.45
-		torus.outer_radius = 1.0
-		torus.rings = 32
-		torus.ring_segments = 10
-		var ring := MeshInstance3D.new()
-		ring.mesh = torus
-		ring.material_override = rm
-		ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		ring.visible = false
-		add_child(ring)
-		g["ring"] = ring
-		g["tracer"] = _ribbon(self, {"tint_a": Vector3(1.0, 0.95, 0.85), "tint_b": _v3(wcol), "energy": 7.0, "width_a": 0.35,
-			"width_b": 0.9, "core": 1.0, "fade_in": 0.6, "fade_out": 0.97}, 5.0)
-		var ms := Node3D.new()
-		ms.basis = _basis_y(gn)
-		ms.position = gp + gn * 0.8
-		root.add_child(ms)
-		g["smoke"] = _particles(ms, _pm["muzzle_smoke"], 8, 2.0, _quad, _mats["smoke"], Vector3.ZERO)
-		g["impact"] = _sprite(self, wcol.lerp(Color.WHITE, 0.4), 9.0, Vector3.ZERO, 4.0, 1.0)
+			"seed": float(k) * 2.1 + i})))
+		grp.append(_driven(_strip, _ship_mat(_sh["ribbon"], {"kind": 2, "base": base, "lpos": gp, "aim": aim, "t0": gt0,
+			"dur": 0.8, "tint_a": Vector3(1.0, 0.95, 0.85), "tint_b": _v3(wcol), "energy": 7.0, "width_a": 0.35, "width_b": 0.9,
+			"core": 1.0, "fade_in": 0.6, "fade_out": 0.97})))
+		grp.append(_driven(_quad, _ship_mat(_sh["sprite"], {"tint": _v3(wcol.lerp(Color.WHITE, 0.4)), "energy": 9.0,
+			"base": base, "lpos": gp, "aim": aim, "at_impact": 1, "shape": 0, "t0": gt0, "dur": 0.15, "size": 4.0})))
+		g["ring_smoke"] = _particles(self, _pm["ring_smoke"], 26, 2.2, _quad, _mats["smoke"], Vector3.ZERO)
 		g["sparks"] = _particles(self, _pm["impact_sparks"], 20, 0.6, _spark_mesh, _mats["spark"], Vector3.ZERO)
 		g["debris"] = _particles(self, _pm["impact_debris"], 10, 1.6, _plate, _mats["hot_debris"], Vector3.ZERO)
+		e["oneshots"].append_array([g["ring_smoke"], g["sparks"], g["debris"]])
 		guns.append(g)
 	e["guns"] = guns
-	e["gun_light"] = _omni(root, wcol.lerp(Color.WHITE, 0.3), 16.0)
+	if rich:
+		for g in guns:
+			g["light"] = _omni(root, wcol.lerp(Color.WHITE, 0.3), 14.0)
+			(g["light"] as OmniLight3D).position = g["pos"] + g["n"] * 1.5
+			g["imp_light"] = _omni(self, wcol.lerp(Color.WHITE, 0.4), 18.0)
+			e["lights"].append_array([g["light"], g["imp_light"]])
+		if not compat:
+			var gps: Array = []
+			for g in guns:
+				gps.append(g["pos"])
+			var fv := FogVolume.new()
+			fv.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX
+			fv.size = Vector3(DRIFT_SPAN + 30.0, 22.0, 20.0)
+			fv.position = base + Vector3(0, 2.0, (guns[0]["pos"] as Vector3).z + 7.0)
+			fv.material = _ship_mat(_sh["ring_fog"], {"base": base, "guns": gps, "t0": off})
+			add_child(fv)
+	else:
+		e["gun_light"] = _omni(root, wcol.lerp(Color.WHITE, 0.3), 16.0)
+		e["lights"].append(e["gun_light"])
 	# 3. beam
 	var bow: Vector3 = s["bow"]
-	e["charge"] = _sprite(root, wcol.lerp(Color.WHITE, 0.25), 10.0, bow, 3.0, 1.0)
-	var bc := _ribbon(root, {"tint_a": Vector3(1, 1, 1), "tint_b": Vector3(1, 1, 1), "energy": 9.0, "width_a": 0.9, "width_b": 0.7,
-		"core": 1.0, "noise_amt": 0.25, "noise_scale": 0.6, "scroll": 25.0, "fade_in": 0.01, "fade_out": 0.985, "flicker": 0.15}, 6.0)
-	bc.transform = _ribbon_xf(bow, Vector3(1, 0, 0), BEAM_LEN)
-	e["beam_core"] = bc
-	var bg := _ribbon(root, {"tint_a": _v3(wcol), "tint_b": _v3(wcol), "energy": 3.5, "width_a": 4.0, "width_b": 3.2,
-		"noise_amt": 0.65, "noise_scale": 0.25, "scroll": 18.0, "fade_in": 0.01, "fade_out": 0.97, "flicker": 0.3, "seed": i * 1.3}, 8.0)
-	bg.transform = _ribbon_xf(bow, Vector3(1, 0, 0), BEAM_LEN)
-	e["beam_glow"] = bg
+	e["bow_at"] = bow
+	var bt0 := off + BEAM_AT
+	var bgrp: Array = e["groups"]["beam"]
+	bgrp.append(_driven(_quad, _ship_mat(_sh["sprite"], {"tint": _v3(wcol.lerp(Color.WHITE, 0.25)), "energy": 10.0, "base": base,
+		"lpos": bow, "shape": 2, "t0": bt0 - CHARGE_T, "dur": CHARGE_T + BEAM_T, "size": 3.0})))
+	bgrp.append(_driven(_strip, _ship_mat(_sh["ribbon"], {"base": base, "lpos": bow, "ldir": Vector3(1, 0, 0), "len": BEAM_LEN,
+		"t0": bt0, "dur": BEAM_T, "env_in": 0.05, "env_out": 0.15, "tint_a": Vector3(1, 1, 1), "tint_b": Vector3(1, 1, 1),
+		"energy": 9.0, "width_a": 0.9, "width_b": 0.7, "core": 1.0, "noise_amt": 0.25, "noise_scale": 0.6, "scroll": 25.0,
+		"fade_in": 0.01, "fade_out": 0.985, "flicker": 0.15})))
+	bgrp.append(_driven(_strip, _ship_mat(_sh["ribbon"], {"base": base, "lpos": bow, "ldir": Vector3(1, 0, 0), "len": BEAM_LEN,
+		"t0": bt0, "dur": BEAM_T, "env_in": 0.05, "env_out": 0.15, "tint_a": _v3(wcol), "tint_b": _v3(wcol), "energy": 3.5,
+		"width_a": 4.0, "width_b": 3.2, "noise_amt": 0.65, "noise_scale": 0.25, "scroll": 18.0, "fade_in": 0.01, "fade_out": 0.97,
+		"flicker": 0.3, "seed": i * 1.3})))
 	var end := bow + Vector3(BEAM_LEN, 0, 0)
-	e["beam_hit"] = _sprite(root, wcol.lerp(Color.WHITE, 0.3), 10.0, end, 6.0, 1.0)
+	bgrp.append(_driven(_quad, _ship_mat(_sh["sprite"], {"tint": _v3(wcol.lerp(Color.WHITE, 0.3)), "energy": 10.0, "base": base,
+		"lpos": end, "shape": 1, "t0": bt0, "dur": BEAM_T, "size": 6.0})))
 	e["beam_sparks"] = _particles(root, _pm["fountain"], 60, 0.7, _spark_mesh, _mats["spark"], end, false)
 	e["beam_light"] = _omni(root, wcol.lerp(Color.WHITE, 0.3), 18.0)
 	(e["beam_light"] as OmniLight3D).position = bow
 	e["beam_hit_light"] = _omni(root, wcol.lerp(Color.WHITE, 0.3), 20.0)
 	(e["beam_hit_light"] as OmniLight3D).position = end
+	e["lights"].append_array([e["beam_light"], e["beam_hit_light"]])
 	# 4. incoming shell and the hit
+	var ht0 := off
+	var hgrp: Array = e["groups"]["hit"]
 	var shell_col := Color(1.0, 0.75, 0.45)
-	e["incoming_dir"] = Vector3(0.35, 0.25, -1.0).normalized()
-	e["incoming"] = _ribbon(root, {"tint_a": Vector3(1.0, 0.7, 0.4), "tint_b": Vector3(1.0, 0.95, 0.85), "energy": 7.0,
-		"width_a": 0.9, "width_b": 0.35, "core": 1.0, "fade_in": 0.6, "fade_out": 0.98}, 5.0)
+	var from := Vector3(0.35, 0.25, -1.0).normalized()
 	if e["shielded"]:
 		var radii := half * 1.15 + Vector3(1.5, 1.5, 1.5)
 		var hd := Vector3(0.15, 0.2, -1.0).normalized()
-		var sm := _mat(_sh["shield"])
-		sm.set_shader_parameter("tint", _v3(s["shield"]))
-		sm.set_shader_parameter("hit_dir", hd)
-		sm.set_shader_parameter("patchy", 1.0 if e["corsair"] else 0.0)
 		var sphere := SphereMesh.new()
 		sphere.radius = 1.0
 		sphere.height = 2.0
@@ -791,20 +1154,22 @@ func _build_ship(i: int, s: Dictionary, tex: Dictionary) -> Dictionary:
 		sphere.rings = 24
 		var shm := MeshInstance3D.new()
 		shm.mesh = sphere
-		shm.material_override = sm
+		shm.material_override = _ship_mat(_sh["shield"], {"tint": _v3(s["shield"]), "hit_dir": hd, "t0": off + HIT_AT,
+			"patchy": 1.0 if e["corsair"] else 0.0})
 		shm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		shm.scale = radii
 		shm.visible = false
 		root.add_child(shm)
-		e["shield"] = shm
-		var hp := hd * radii
-		e["hit_at"] = hp
+		hgrp.append(shm)
+		e["hit_at"] = hd * radii
 		var scol: Color = s["shield"]
-		e["hit_core"] = _sprite(root, scol.lerp(Color.WHITE, 0.4), 10.0, hp, 3.0, 1.0)
+		hgrp.append(_driven(_quad, _ship_mat(_sh["sprite"], {"tint": _v3(scol.lerp(Color.WHITE, 0.4)), "energy": 10.0, "base": base,
+			"lpos": e["hit_at"], "shape": 0, "t0": off + HIT_AT, "dur": 0.25, "size": 3.0, "grow": 1.0})))
 	else:
 		var hp2: Vector3 = s["hit"]
 		e["hit_at"] = hp2
-		e["hit_flash"] = _sprite(root, shell_col, 10.0, hp2 + Vector3(0, 0, -0.5), 4.0, 1.0)
+		hgrp.append(_driven(_quad, _ship_mat(_sh["sprite"], {"tint": _v3(shell_col), "energy": 10.0, "base": base,
+			"lpos": hp2 + Vector3(0, 0, -0.5), "shape": 0, "t0": off + HIT_AT, "dur": 0.2, "size": 4.0, "grow": 0.5})))
 		var holder := Node3D.new()
 		holder.position = hp2
 		holder.basis = _basis_y(Vector3(0, 0.2, -1).normalized())
@@ -812,15 +1177,20 @@ func _build_ship(i: int, s: Dictionary, tex: Dictionary) -> Dictionary:
 		e["hit_sparks"] = _particles(holder, _pm["hit_sparks"], 36, 0.8, _spark_mesh, _mats["spark"], Vector3.ZERO)
 		e["hit_debris"] = _particles(holder, _pm["hit_debris"], 16, 2.0, _plate, _mats["hot_debris"], Vector3.ZERO)
 		e["hit_fire"] = _particles(holder, _pm["puff"], 12, 0.7, _quad, _mats["flame"], Vector3.ZERO)
+		e["oneshots"].append_array([e["hit_sparks"], e["hit_debris"], e["hit_fire"]])
+	hgrp.append(_driven(_strip, _ship_mat(_sh["ribbon"], {"kind": 3, "base": base, "lpos": e["hit_at"], "ldir": from,
+		"t0": ht0, "dur": HIT_AT, "tint_a": Vector3(1.0, 0.7, 0.4), "tint_b": Vector3(1.0, 0.95, 0.85), "energy": 7.0,
+		"width_a": 0.9, "width_b": 0.35, "core": 1.0, "fade_in": 0.6, "fade_out": 0.98})))
 	e["hit_light"] = _omni(root, shell_col, 16.0)
 	(e["hit_light"] as OmniLight3D).position = e["hit_at"]
+	e["lights"].append(e["hit_light"])
 	# 5. breach
-	e["breach"] = _build_breach(root, s, tex)
+	e["breach"] = _build_breach(root, s, tex, e)
 	return e
 
 
-func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
-	var br := {"last_sparks": -1, "last_pop": -1, "fade": 1.0}
+func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary, e: Dictionary) -> Dictionary:
+	var br := {"last_sparks": -1, "last_pop": -1}
 	var p: Vector3 = s["breach"]
 	var n: Vector3 = s["breach_n"]
 	var hole := 2.4 * float(s.get("scale", 1.0))  # about 1/10 of the ship's length
@@ -829,6 +1199,7 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
 	frame.position = p
 	frame.basis = _basis_y(n)
 	root.add_child(frame)
+	br["frame"] = frame
 	if not compat:
 		var d := Decal.new()
 		d.size = Vector3(hole * 2.2, 2.5, hole * 2.2)
@@ -854,11 +1225,10 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
 		disc.position = Vector3(0, 0.06, 0)
 		disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		frame.add_child(disc)
-		br["disc_m"] = dm
 		if not notes.has("breach scorch drawn as a disc on the hull (no Decal in Compatibility)"):
 			notes.append("breach scorch drawn as a disc on the hull (no Decal in Compatibility)")
 	# torn plates peeled outward around the hole, hot at their torn ends, each snapped onto the hull point nearest its
-	# place on the rim (so none float or sink)
+	# place on the rim (so none float or sink); merged into one mesh
 	var near_p := PackedVector3Array()
 	var near_n := PackedVector3Array()
 	var pts: PackedVector3Array = s.get("pts", PackedVector3Array())
@@ -868,8 +1238,8 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
 			near_p.append(pts[j])
 			near_n.append(nrms[j])
 	var fb := frame.basis
-	var shard_m := _mat(_sh["shard"])
-	var shards: Array = []
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var count := 11
 	for k in count:
 		var th := TAU * k / count + _rng.randf_range(-0.2, 0.2)
@@ -882,9 +1252,9 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
 		var nq := n
 		var best := 1e9
 		for j in near_p.size():
-			var d := near_p[j].distance_squared_to(want)
-			if d < best:
-				best = d
+			var dd := near_p[j].distance_squared_to(want)
+			if dd < best:
+				best = dd
 				q = near_p[j]
 				nq = near_n[j]
 		var outw := q - p
@@ -895,13 +1265,13 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
 		var xa := (outw * cos(tilt) + nq * sin(tilt)).normalized()
 		var za := xa.cross(nq).normalized()
 		var ya := za.cross(xa).normalized()
-		var mi := MeshInstance3D.new()
-		mi.mesh = _box
-		mi.material_override = shard_m
-		mi.transform = Transform3D(Basis(xa * plen, ya * 0.05, za * pw), q + xa * plen * 0.5 - nq * 0.04)
-		root.add_child(mi)
-		shards.append(mi)
-	br["shard_m"] = shard_m
+		var xf := Transform3D(Basis(xa * plen, ya * 0.05, za * pw), q + xa * plen * 0.5 - nq * 0.04)
+		_box_into(st, Transform3D(fb.inverse(), Vector3.ZERO) * Transform3D(Basis(), -p) * xf)
+	st.generate_normals()
+	var shards := MeshInstance3D.new()
+	shards.mesh = st.commit()
+	shards.material_override = _ship_mat(_sh["shard"], {"seed": float(e["idx"]) * 1.7})
+	frame.add_child(shards)
 	br["shards"] = shards
 	var gas := _particles(frame, _pm["gas"], 48, 1.4, _quad, _mats["smoke"], Vector3(0, 0.2, 0), false)
 	gas.emitting = true
@@ -912,14 +1282,47 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary) -> Dictionary:
 	var deb := _particles(frame, _pm["breach_debris"], 10, 3.0, _plate, _mats["debris"], Vector3.ZERO, false)
 	deb.emitting = true
 	br["debris"] = deb
+	e["continuous"].append_array([gas, fire, deb])
 	br["sparks"] = _particles(frame, _pm["breach_sparks"], 30, 0.8, _spark_mesh, _mats["spark"], Vector3(0, 0.1, 0))
 	br["pop_fire"] = _particles(frame, _pm["pop"], 16, 0.6, _quad, _mats["flame"], Vector3(0, 0.3, 0))
-	br["pop_flash"] = _sprite(frame, Color(1.0, 0.55, 0.2), 5.0, Vector3(0, 0.6, 0), 3.0, 0.6)
+	e["oneshots"].append_array([br["sparks"], br["pop_fire"]])
+	_driven(_quad, _ship_mat(_sh["sprite"], {"tint": Vector3(1.0, 0.55, 0.2), "energy": 5.0, "hot": 0.6, "base": s["pos"],
+		"lpos": p + n * 0.6, "shape": 0, "t0": stagger * float(e["idx"]), "period": POP_EVERY, "dur": 0.18, "size": 2.5,
+		"grow": 0.8}), true)
 	var lt := _omni(frame, Color(1.0, 0.5, 0.15), 7.0)
 	lt.position = Vector3(0, 1.4, 0)
 	lt.visible = true
 	br["light"] = lt
+	if rich:
+		var hp := PlaneMesh.new()
+		hp.size = Vector2(hole * 0.75, hole * 0.75)
+		var hmi := MeshInstance3D.new()
+		hmi.mesh = hp
+		hmi.material_override = _mat(_sh["hole"])
+		hmi.position = Vector3(0, 0.05, 0)
+		hmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		frame.add_child(hmi)
+		if not compat:
+			var fv := FogVolume.new()
+			fv.shape = RenderingServer.FOG_VOLUME_SHAPE_BOX
+			fv.size = Vector3(3.0, 9.0, 3.0) * float(s.get("scale", 1.0))
+			fv.position = Vector3(0, fv.size.y * 0.5, 0)
+			fv.material = _mat(_sh["vent_fog"])
+			frame.add_child(fv)
 	return br
+
+
+# Adds a unit box (x from -0.5 to 0.5) under xf to the surface tool, with UV2.x = 0 at the -x end and 1 at the +x end.
+func _box_into(st: SurfaceTool, xf: Transform3D) -> void:
+	var c := [Vector3(-0.5, -0.5, -0.5), Vector3(0.5, -0.5, -0.5), Vector3(0.5, 0.5, -0.5), Vector3(-0.5, 0.5, -0.5),
+		Vector3(-0.5, -0.5, 0.5), Vector3(0.5, -0.5, 0.5), Vector3(0.5, 0.5, 0.5), Vector3(-0.5, 0.5, 0.5)]
+	var faces := [[0, 1, 2, 3], [5, 4, 7, 6], [4, 0, 3, 7], [1, 5, 6, 2], [3, 2, 6, 7], [4, 5, 1, 0]]
+	for f in faces:
+		for tri in [[f[0], f[1], f[2]], [f[0], f[2], f[3]]]:
+			for vi in tri:
+				var v: Vector3 = c[vi]
+				st.set_uv2(Vector2(v.x + 0.5, 0.0))
+				st.add_vertex(xf * v)
 
 
 # ---------------------------------------------------------------- build: destruction event
@@ -939,19 +1342,18 @@ func _build_wreck(src: Dictionary) -> void:
 	root.add_child(whole)
 	wreck = {"whole": whole, "last_squib": 0, "last_boom": -1}
 	var white := Color(1.0, 0.88, 0.7)
-	wreck["flash"] = _sprite(self, white, 10.0, WRECK_POS, 40.0, 1.0)
+	wreck["flash"] = _glow(self, white, 10.0, WRECK_POS, 40.0, 1.0)
 	(wreck["flash"].material_override as ShaderMaterial).set_shader_parameter("spikes", 0.6)
-	wreck["core"] = _sprite(self, Color(1.0, 0.6, 0.25), 8.0, WRECK_POS, 20.0, 0.7)
+	wreck["core"] = _glow(self, Color(1.0, 0.6, 0.25), 8.0, WRECK_POS, 20.0, 0.7)
 	var lt := _omni(self, white, 140.0)
 	lt.position = WRECK_POS
 	lt.omni_attenuation = 1.2
 	wreck["light"] = lt
-	var sm := _mat(_sh["shock"])
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(1, 1)
 	var shock := MeshInstance3D.new()
 	shock.mesh = plane
-	shock.material_override = sm
+	shock.material_override = _mat(_sh["shock"])
 	shock.position = WRECK_POS
 	shock.custom_aabb = AABB(Vector3(-0.6, -0.1, -0.6), Vector3(1.2, 0.2, 1.2))
 	shock.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -969,6 +1371,18 @@ func _build_wreck(src: Dictionary) -> void:
 	pre.explosiveness = 0.6
 	wreck["pre_squibs"] = pre
 	wreck["chunks"] = _cut_chunks(src, k, root)
+	if rich:
+		var fl2 := _omni(self, Color(1.0, 0.55, 0.2), 90.0)
+		fl2.position = WRECK_POS
+		wreck["fire_light"] = fl2
+		if not compat:
+			var fv := FogVolume.new()
+			fv.shape = RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID
+			fv.size = Vector3(30, 30, 30)
+			fv.position = WRECK_POS
+			fv.material = _mat(_sh["fire_fog"])
+			add_child(fv)
+			wreck["fire_fog"] = fv
 
 
 # Cuts the Hegemony mesh into four chunks with three tilted planes (triangles go by their centroid), and puts fire, smoke
@@ -1041,7 +1455,12 @@ func _cut_chunks(src: Dictionary, k: float, root: Node3D) -> Array:
 			cc += v[bk[j]]
 			cn += 1
 		cc /= float(cn)
-		var node := Node3D.new()
+		var node: Node3D = Node3D.new()
+		if phys != null:
+			var hull_pts := PackedVector3Array()
+			for j in range(0, bk.size(), 7):
+				hull_pts.append((v[bk[j]] - cc) * k)
+			node = phys.make_chunk(hull_pts)
 		node.name = "chunk%d" % bi
 		node.visible = false
 		root.add_child(node)
@@ -1073,7 +1492,13 @@ func _cut_chunks(src: Dictionary, k: float, root: Node3D) -> Array:
 		var smoke := _particles(node, smoke_pm, 30 if is_wreck else 14, 3.0, _quad, _mats["smoke"], at, false)
 		var squibs := _particles(node, squib_pm, 8, 0.15, _quad, _mats["flame"], at, false)
 		var dir := ((cc - c0) * k + Vector3(0, 1.5, 0)).normalized()
-		chunks.append({"node": node, "mesh": mi, "fire": fire, "smoke": smoke, "squibs": squibs,
+		var cdict := {}
+		if rich:
+			var cl := _omni(node, Color(1.0, 0.5, 0.15), 14.0)
+			cl.position = at
+			cdict["light"] = cl
+		chunks.append(cdict)
+		cdict.merge({"node": node, "mesh": mi, "fire": fire, "smoke": smoke, "squibs": squibs,
 			"start": (cc - c0) * k, "vel": dir * (1.5 if is_wreck else _rng.randf_range(5.0, 9.0)),
 			"axis": Vector3(_rng.randf_range(-1, 1), _rng.randf_range(-1, 1), _rng.randf_range(-1, 1)).normalized(),
 			"spin": 0.15 if is_wreck else _rng.randf_range(0.5, 1.4),
@@ -1081,7 +1506,12 @@ func _cut_chunks(src: Dictionary, k: float, root: Node3D) -> Array:
 	return chunks
 
 
+
 # ---------------------------------------------------------------- helpers
+
+func _drift_x(t: float) -> float:
+	return fposmod(DRIFT_SPEED * t + DRIFT_SPAN * 0.5, DRIFT_SPAN) - DRIFT_SPAN * 0.5
+
 
 func _cycle(x: float) -> int:
 	return -1 if x < 0.0 else int(floorf(x / LOOP))
@@ -1089,10 +1519,6 @@ func _cycle(x: float) -> int:
 
 func _cycle_n(x: float, period: float) -> int:
 	return -1 if x < 0.0 else int(floorf(x / period))
-
-
-func _cycle12(t: float) -> int:
-	return -1 if t < boom_every else int(floorf(t / boom_every))
 
 
 func _hash(x: float) -> float:
@@ -1107,9 +1533,9 @@ func _smooth_noise(x: float) -> float:
 	return lerpf(_hash(i), _hash(i + 1.0), f)
 
 
-# Corsair engines: uneven, with coughs where they nearly cut out.
+# Corsair engines (the soot follows the same cough pattern as the engine shaders' sputter()).
 func _sputter(t: float) -> float:
-	var s := 0.6 + 0.4 * _smooth_noise(t * 5.0)
+	var s := 0.6 + 0.4 * lerpf(_hash(floorf(t * 5.0)), _hash(floorf(t * 5.0) + 1.0), smoothstep(0.0, 1.0, t * 5.0 - floorf(t * 5.0)))
 	if _hash(floorf(t * 6.0)) < 0.18:
 		s *= 0.2
 	return s
@@ -1137,13 +1563,6 @@ func _basis_y(n: Vector3) -> Basis:
 	return Basis(x, y, z)
 
 
-func _ribbon_xf(origin: Vector3, dir: Vector3, length: float) -> Transform3D:
-	var d := dir.normalized()
-	var ref := Vector3.UP if absf(d.y) < 0.95 else Vector3(1, 0, 0)
-	var y := (ref - d * ref.dot(d)).normalized()
-	return Transform3D(Basis(d * length, y, d.cross(y)), origin)
-
-
 func _shader(code: String) -> Shader:
 	var s := Shader.new()
 	s.code = code
@@ -1156,22 +1575,8 @@ func _mat(s: Shader) -> ShaderMaterial:
 	return m
 
 
-func _ribbon(parent: Node, params: Dictionary, reach: float) -> MeshInstance3D:
-	var m := _mat(_sh["ribbon"])
-	for key in params:
-		m.set_shader_parameter(key, params[key])
-	var n := MeshInstance3D.new()
-	n.mesh = _strip
-	n.material_override = m
-	n.custom_aabb = AABB(Vector3(-0.1, -reach, -reach), Vector3(1.2, reach * 2.0, reach * 2.0))
-	n.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	n.visible = false
-	parent.add_child(n)
-	return n
-
-
-func _sprite(parent: Node, col: Color, energy: float, at: Vector3, size: float, hot := 1.0) -> MeshInstance3D:
-	var m := _mat(_sh["sprite"])
+func _glow(parent: Node, col: Color, energy: float, at: Vector3, size: float, hot := 1.0) -> MeshInstance3D:
+	var m := _mat(_sh["glow"])
 	m.set_shader_parameter("tint", _v3(col))
 	m.set_shader_parameter("energy", energy)
 	m.set_shader_parameter("hot", hot)
@@ -1196,6 +1601,7 @@ func _omni(parent: Node, col: Color, rng: float) -> OmniLight3D:
 	l.shadow_enabled = false
 	l.visible = false
 	parent.add_child(l)
+	_lights.append(l)
 	return l
 
 
@@ -1285,8 +1691,8 @@ func _build_process_materials() -> void:
 	var fire_ramp := [[0.0, Color(1.0, 0.92, 0.7, 1.0)], [0.2, Color(1.0, 0.55, 0.15, 1.0)],
 		[0.6, Color(0.7, 0.18, 0.04, 0.7)], [1.0, Color(0.2, 0.05, 0.02, 0.0)]]
 	var spark_ramp := [[0.0, Color(1.0, 0.95, 0.8, 1.0)], [0.4, Color(1.0, 0.6, 0.2, 1.0)], [1.0, Color(0.8, 0.2, 0.05, 0.0)]]
-	var smoke_ramp := [[0.0, Color(0.20, 0.19, 0.18, 0.0)], [0.12, Color(0.22, 0.21, 0.20, 0.75)],
-		[0.6, Color(0.16, 0.155, 0.15, 0.5)], [1.0, Color(0.12, 0.12, 0.12, 0.0)]]
+	var smoke_ramp := [[0.0, Color(0.20, 0.19, 0.18, 0.0)], [0.12, Color(0.22, 0.21, 0.20, 0.5)],
+		[0.6, Color(0.16, 0.155, 0.15, 0.3)], [1.0, Color(0.12, 0.12, 0.12, 0.0)]]
 	# broadside impact
 	var isp := _ppm(Vector3(0, 0, -1), 70.0, 12.0, 28.0, 20.0, 0.6, 1.1, 0.3, 0.4)
 	isp.particle_flag_align_y = true
@@ -1296,12 +1702,20 @@ func _build_process_materials() -> void:
 	_tumble(idb)
 	idb.scale_curve = _curve([[0.0, 1.0], [0.8, 1.0], [1.0, 0.0]], 1.0)
 	_pm["impact_debris"] = idb
-	# muzzle smoke (local +y is out of the gun)
-	var msm := _ppm(Vector3.UP, 25.0, 2.0, 5.0, 2.5, 1.0, 1.8, 0.3, 0.25)
-	_billboard_spin(msm)
-	msm.scale_curve = _curve([[0.0, 0.5], [1.0, 2.2]], 3.0)
-	msm.color_ramp = _ramp(smoke_ramp)
-	_pm["muzzle_smoke"] = msm
+	# smoke ring: puffs born on a ring around the muzzle, expanding and drifting out (world space, stays where fired)
+	var rs := _ppm(Vector3(0, 0.15, 1).normalized(), 6.0, 2.0, 3.5, 1.4, 0.9, 1.5, 0.9, 0.2)
+	rs.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+	rs.emission_ring_axis = Vector3(0, 0.15, 1).normalized()
+	rs.emission_ring_radius = 0.9
+	rs.emission_ring_inner_radius = 0.75
+	rs.emission_ring_height = 0.1
+	rs.radial_velocity_min = 1.6
+	rs.radial_velocity_max = 2.2
+	_billboard_spin(rs)
+	rs.scale_curve = _curve([[0.0, 0.6], [1.0, 2.4]], 3.0)
+	rs.color_ramp = _ramp([[0.0, Color(0.30, 0.29, 0.28, 0.0)], [0.08, Color(0.32, 0.31, 0.30, 0.5)],
+		[0.5, Color(0.26, 0.25, 0.24, 0.3)], [1.0, Color(0.2, 0.2, 0.2, 0.0)]])
+	_pm["ring_smoke"] = rs
 	# beam impact fountain
 	var fnt := _ppm(Vector3(-1, 0.3, 0), 55.0, 10.0, 24.0, 8.0, 0.5, 1.0, 0.6, 0.4)
 	fnt.particle_flag_align_y = true
@@ -1395,6 +1809,7 @@ func _build_process_materials() -> void:
 	_pm["edge_squib"] = eq
 
 
+# Breach decal textures, made once at start (128 x 128): a jagged black hole in a scorched ring, a glowing torn edge
 # Breach decal textures, made once at start (128 x 128): a jagged black hole in a scorched ring, a glowing torn edge
 # with short hot cracks, and a bowl normal map so the hole reads as a recess.
 func _breach_textures() -> Dictionary:
