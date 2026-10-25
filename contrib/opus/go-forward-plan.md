@@ -37,7 +37,8 @@ Updated by the build session as phases move. A phase is done when its exit check
 | A1 Barge upgrade | STEP 1 DONE, step 2 next | Ryan picked C plus some of B's junk (FINDINGS R12). Options in docs/ship_pipeline/c19_example/a1_options/, builder tools/blender/a1/barge_shapes.py (option_C is the base for step 2). |
 | B1 Fix what can eat a win | IN PROGRESS | Every listed fix done with a scripted check (contrib/opus/tools/b1_tests.js, 35 ok), onboarding 1 to 5 and enemy markers included. PC smoke test PASSED (Oct 25, 0 errors; board shot docs/ship_pipeline/c19_example/v15/b1_enemy_markers_board.webp). Left: Ryan's playtest run. |
 | A1 step 2 | DONE Oct 25 | v15 dressed barge approved (FINDINGS R13). Builder tools/blender/a1/barge_v15.py; sheets in docs/ship_pipeline/c19_example/v15/; v15 game files in hulls_hi/ and hulls/. |
-| A1 step 3 | IN PROGRESS | Paint and material texture on v15. |
+| A1 step 3 | DONE Oct 25 | Paint approved (FINDINGS R14). Sheet docs/ship_pipeline/c19_example/v15/v15_paint_pass.webp; game files in git. |
+| A1 step 4 | IN PROGRESS | Barge effects: dirty engines, ragged muzzle flashes, staged damage looks. |
 | A2 to A5, B2 to B5 | NOT STARTED | |
 
 ## 1. What is decided
