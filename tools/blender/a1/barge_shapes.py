@@ -31,7 +31,7 @@ def bridge_and_rack(x_off=0.0, y_off=0.0, z_off=0.0):
     box('plinth', ((x0 + x1) / 2, y_off, zb + .002), (x1 - x0 + .028, .170, .014), bevel=.002)
     frustum('tier', ((x0 + x1) / 2, y_off, zb), ((x1 - x0) / 2, .056), ((x1 - x0) / 2 - .010, .050), zt - zb, shear=(.010, 0), bevel=.003)
     box('roof', ((x0 + x1) / 2 + .010, y_off, zt + .002), (x1 - x0 - .018, .098, .004), bevel=.001)
-    box('windows', (x0 - .002, y_off, zb + .030), (.004, .090, .008), bevel=.001)
+    box('windows', (x0 + .012, y_off, zb + .030), (.007, .090, .008), bevel=.001)  # sits in the sloped tier front (it floated in front of it)
     for s in (1, -1): cyl(f'drum{s}', (x0 + .010, y_off + s * .066, zb + .016), .012, .040, axis='X', seg=20)
     rx = .217 + x_off
     for row, z in enumerate((.113, .091)):

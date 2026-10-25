@@ -76,7 +76,7 @@ def dressing():
     cyl('nacelleP', (.110, .215, ZC), .040, .300, axis='X', seg=28, bevel=.004); tag(RUST)
     for k in range(4): cyl(f'nacbandP{k}', (-.010 + k * .075, .215, ZC), .0415, .008, axis='X', seg=28, bevel=0)
     tag(OCHRE)
-    B.engine_bell((.270, .215, ZC), .045, .055); tag(GUN)
+    B.engine_bell((.263, .215, ZC), .045, .055); tag(GUN)
     box('nacelleplateP', (.020, .215, ZC + .036), (.100, .040, .010), bevel=.002); tag(BONE)
     DY, DZ, DR = -.226, ZC - .016, .049  # stolen Hegemony engine: bigger than the port pod, never repainted, held on with straps
     box('pylonS', (.140, -.150, ZC - .012), (.150, .060, .030), rot=(0, 0, .04), bevel=.003); tag(BARE)
@@ -91,9 +91,9 @@ def dressing():
     cyl('donorintake', (-.017, DY, DZ), DR * .86, .014, axis='X', seg=36, bevel=.002); tag(DARK)
     for k in range(5): box(f'donorgrille{k}', (-.025, DY, DZ - DR * .6 + k * DR * .3), (.004, DR * 1.5, .004), bevel=0)
     tag(STEEL)
-    for k in range(3): box(f'donorstrap{k}', (.050 + k * .090, -.200, ZC + .036), (.010, .070, .006), rot=(-.45, 0, 0), bevel=0)  # crude straps over the pylon
+    for k in range(3): box(f'donorstrap{k}', (.050 + k * .090, DY + .016, DZ + DR - .002), (.010, .062, .006), rot=(-.40, 0, 0), bevel=0)  # crude straps over the pod, sunk into it
     tag(RUST)
-    B.engine_bell((.330, DY, DZ), .062, .065); tag(GUN)
+    B.engine_bell((.318, DY, DZ), .062, .065); tag(GUN)
     # stolen block (shape B's cargo section, cut down) hung under the port side, a few degrees off true
     B.loft('cargo', [(x, B.mirror([(.050, ZC - .110), (.055, ZC - .135), (.050, ZC - .170)], ZC - .105, ZC - .175)) for x in (-.180, -.150, .020, .050)], bevel=.003)
     o = bpy.data.objects['cargo']; o.location = (0, .085, 0); o.rotation_euler = (0, .035, .03); tag(BONE)
@@ -104,16 +104,21 @@ def dressing():
     # radiators (no funnels) and the stern engines
     B.radiator_pair(.390, 0, ZC + .060, splay=12, n=2, L=.080, H=.075); tag(BARE)
     B.radiator_pair(.390, 0, ZC - .060, flip=True, splay=14, n=2, L=.080, H=.060); tag(BARE)
-    B.engine_bell((.480, 0, ZC + .022), .032, .050); B.engine_bell((.480, 0, ZC - .030), .036, .050); tag(GUN)
+    B.engine_bell((.473, 0, ZC + .022), .032, .050); B.engine_bell((.473, 0, ZC - .030), .036, .050); tag(GUN)
     # guns: forward along the prow, and forward-and-out on the flanks, never back
     B.bow_guns(-.380, (.050, -.050), ZC, L=.055); tag(GUN)
     B.side_guns([(-.140, .120, ZC + .045), (.235, .120, ZC + .048)], up=.25); tag(GUN)
     # salvage: a stolen Hegemony armour plate on the port bow, a bone plate on the starboard bow, hazard bar on the ventral nose
-    box('donorplate', (-.180, .089, ZC + .040), (.090, .008, .046), rot=(.55, 0, .05), bevel=.002); tag(HEG)
-    box('boneplate', (-.230, -.077, ZC + .030), (.070, .008, .040), rot=(-.6, .05, -.08), bevel=.002); tag(BONE)
+    import detail_lib
+    from mathutils.bvhtree import BVHTree
+    HB = BVHTree.FromObject(bpy.data.objects['hull'], bpy.context.evaluated_depsgraph_get())
+    for nm, x, z, side, sz, tw, col in (('donorplate', -.180, ZC + .038, 1, (.090, .046, .010), .05, HEG), ('boneplate', -.230, ZC + .026, -1, (.070, .040, .010), -.08, BONE)):
+        h = HB.ray_cast(Vector((x, side * .6, z)), Vector((0, -side, 0)), 1.0)  # sit on the real flank, a little sunk, never floating
+        n = Vector(h[1]).normalized(); n = n if n.y * side > 0 else -n; t_, b_, n = detail_lib.frame(n)
+        detail_lib.obox(nm, Vector(h[0]) + n * .002, t_, b_, n, sz, bevel=.002, rot=tw); tag(col)
     for k in range(6): box(f'navhaz{k}', (-.135 + k * .006, 0, ZC - .143), (.004, .060, .003), rot=(0, 0, .5)); tag(((.40, .30, .02), (.02, .02, .02))[k % 2])
     # engine glow discs, so the engines read lit in studio renders (the game draws its own plumes)
-    for nm, c, r in (('glowP', (.299, .215, ZC), .036), ('glowS', (.367, -.226, ZC - .016), .050), ('glowT', (.512, 0, ZC + .022), .026), ('glowB', (.512, 0, ZC - .030), .029)):
+    for nm, c, r in (('glowP', (.299, .215, ZC), .036), ('glowS', (.355, -.226, ZC - .016), .050), ('glowT', (.512, 0, ZC + .022), .026), ('glowB', (.512, 0, ZC - .030), .029)):
         cyl(nm, c, r, .002, axis='X', seg=24, bevel=0)
     tag(GLOW)
 
@@ -134,14 +139,20 @@ def audit(shells, hardware):
         if o.name.startswith('glow'): continue
         others = [x for x in shells + hs_lib.PARTS if x is not o and not x.name.startswith('glow')]
         # one BVH per part would be slow; group by nearby objects only
-        c = o.matrix_world @ (sum((Vector(b) for b in o.bound_box), Vector()) / 8); near = [x for x in others if (x.matrix_world @ (sum((Vector(b) for b in x.bound_box), Vector()) / 8) - c).length < .35]
+        def box_of(x, m=0.):
+            w = [x.matrix_world @ Vector(b) for b in x.bound_box]
+            return Vector((min(v.x for v in w) - m, min(v.y for v in w) - m, min(v.z for v in w) - m)), Vector((max(v.x for v in w) + m, max(v.y for v in w) + m, max(v.z for v in w) + m))
+        lo, hi = box_of(o, .02)
+        near = [x for x in others if (lambda a, b: all(a[i] <= hi[i] and b[i] >= lo[i] for i in range(3)))(*box_of(x))]  # bounding boxes overlap
         T = bvh(near) if near else None
-        verts = o.data.vertices; step = max(1, len(verts) // 40); dmin = 9
+        if T is None: probs.append(f'part {o.name} has nothing near it'); continue
+        P = bvh([o])
+        if T.overlap(P): continue  # its surface crosses the hull or another part: mounted (sunk-in counts)
+        verts = o.data.vertices; step = max(1, len(verts) // 200); dmin = 9  # no crossing: then it must at least touch
         for v in list(verts)[::step]:
-            if T is None: break
             h = T.find_nearest(o.matrix_world @ v.co)
             if h[0] is not None: dmin = min(dmin, h[3])
-        if dmin > .004: probs.append(f'part {o.name} floats ({dmin:.4f} from the nearest surface)')
+        if dmin > .0015: probs.append(f'part {o.name} floats ({dmin * 1000:.1f} mm in ship units from the nearest surface)')
     return probs
 
 def build(seed=19):
