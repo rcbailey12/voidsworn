@@ -114,6 +114,19 @@ At 24 ships both engines have room to spare, so the differences show at the top 
   Stills in rich mode at the same five times and poses, written as `rich_<name>.png`, so Ryan gets a second "max quality" side-by-side.
 Equal time box again. Note in the README what each feature needed (built-in, plugin, hand-written) and anything the engine could not do.
 
+## Max-detail round (added Oct 25, Ryan: "scale up the ships' graphic detail and effects now in the comparison between engines. Not just amount of ships but level of detail in them." Picks: everything at maximum; today's faction looks, richer; one combined reveal)
+
+**Shared assets (built once, the same files in both engines, so the comparison stays fair):** each of the six flagships gets a max-detail version in `enginetest\assets\hi\`:
+- geometry raised well past today's (2 to 4 times the triangles): subdivision where it sharpens the shape, plus hand-style surface detail in the barge's manner (tools/blender/a1/detail_lib.py), following the CLAUDE.md ship rules (space not naval, matched pairs, snapped on, nothing floating; Chorus organic, not panels);
+- 8K PBR textures: albedo (today's faction colours with panel variation, wear, grime, markings), normal, occlusion/roughness/metal, emissive (windows, running lights, engine glow);
+- the barge keeps its signed-off look, re-baked at 8K with emissive running lights added.
+
+**Max mode (`--max`, mode `max`):** the rich-effects mode on the hi assets, plus each engine's best detail features within the same time box: ambient occlusion (SSAO or better), reflections (SSR or probes), global illumination if the engine has it (Godot SDFGI or VoxelGI; Babylon image-based lighting from the sky), a tiling micro-detail normal layer for close cameras, contact shadows, temporal anti-aliasing. Note in the README what each needed and what the engine could not do.
+
+**Hero stills (max mode only, fixed clock t = 3.0):** one close-up per ship, camera at (ship x - 8, 6, ship z + 20) for row 1 and (ship x - 8, 6, ship z - 20) for row 2, looking at the ship centre (with the drift offset at t = 3.0), vertical field of view 40. Files `hero_<code>.png`. Plus the five standard stills as `max_<name>.png`.
+
+**Benchmark:** max mode on 24 ships at 1440p and 4K, and the ship sweep (48, 96) in max mode, same JSON. The blind side-by-side shows today's mode and max mode together.
+
 ## Folders
 
 - `contrib/opus/enginetest/godot/`: the Godot project (project.godot, scene, scripts). Run line: `Godot_..._console.exe --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench out.json --seconds 20` (plus `--shots dir` for stills).
