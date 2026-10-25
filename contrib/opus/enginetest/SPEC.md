@@ -151,6 +151,16 @@ The test is no longer a fair minimum: each build shows the best its engine can d
 
 All of this is measured and shown with the rest: one combined blind reveal (R18).
 
+## Trimmed scope (Oct 25, Ryan: "don't overcomplicate or overengineer here when we're just trying to identify Godot vs Babylon"). This section overrides the rounds above where they differ.
+
+- Ships: the same six flagships everywhere; crowd runs reuse them as copies. Crowd sizes: 24 (the stress run, about the game's target battle) and 40 (`--ships 40`, headroom). Drop 48 and 96.
+- Max mode stays: the six max-detail ships, rich effects and each engine's best lighting features. No separate 4K-texture asset set.
+- Physics: destruction chunks and impact debris are rigid bodies that bounce off hulls and drift. No body-count target.
+- Presentation: depth of field on the close-ups, weight-scaled screen shake, colour grading. Drop the slow-motion kill-cam, motion blur, lens dirt or flare and light shafts (add only if nearly free).
+- Game slice: hex board at game scale with one movement highlight, hover outline, click selection ring and a few labels and bars. Drop the firing arc, reach shading, tooltip and top bar.
+- Standalone build: Godot exported .exe; Babylon stays a browser page (no Electron).
+- Runs on the PC: main, stress (24), 40 ships and max, each at 1440p and 4K.
+
 ## Folders
 
 - `contrib/opus/enginetest/godot/`: the Godot project (project.godot, scene, scripts). Run line: `Godot_..._console.exe --path godot --rendering-method forward_plus --resolution 3840x2160 --disable-vsync -- --bench out.json --seconds 20` (plus `--shots dir` for stills).
