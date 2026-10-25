@@ -34,6 +34,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | R9 | Portraits go on the near backlog. Three height bands for 3D space go on the near backlog. Neither is part of this pass. |
 | R10 | The repo stays public. Sound stays as is, Sonniss clips included. |
 | R11 | Plan approved (contrib/opus/go-forward-plan.md). The old two-helper limit is retired. |
+| R12 | Barge shape (A1 step 1, Oct 24 late): option C, the double-sided hulk (diamond bow, matching blocks top and bottom, side engine pods, fins up and down), with some of option B's salvage junk bolted on (a stolen block, mismatched engine pods) so it reads Corsair. Renders: docs/ship_pipeline/c19_example/a1_options/. |
 
 ## Premises and rulings checked against the game
 
