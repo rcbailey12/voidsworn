@@ -1,15 +1,22 @@
 // B1 checks: each fixed bug gets a scripted proof. Run from the repo root: node contrib/opus/tools/b1_tests.js
-// Loads the rules files the way sim3d.js does (data.js, core.js, battle.js), with a fake localStorage.
-global.window = {}; global.document = undefined; global.performance = { now: () => Date.now() };
+// Loads data.js, core.js, battle.js, campaign_meta.js and campaign_run.js with a fake page and a fake localStorage.
+global.window = {}; global.performance = { now: () => Date.now() };
 const STORE = {}; global.localStorage = { getItem: k => (k in STORE ? STORE[k] : null), setItem: (k, v) => { STORE[k] = String(v); }, removeItem: k => { delete STORE[k]; } };
+const IDS = {}; let LAST_MODAL = '';
+const el = tag => ({ tag, style: {}, dataset: {}, children: [], innerHTML: '', classList: { add() {}, remove() {}, contains() { return false; }, toggle() {} },
+  appendChild(c) { if (c.id) IDS[c.id] = c; if (c.id === 'modal') LAST_MODAL = c.innerHTML; this.children.push(c); return c; }, remove() { if (this.id && IDS[this.id] === this) delete IDS[this.id]; },
+  querySelector() { return null; }, querySelectorAll() { return []; }, addEventListener() {}, setAttribute() {}, focus() {} });
+global.document = { createElement: el, getElementById: id => IDS[id] || (id === 'modal' ? null : el()), querySelector: () => null, querySelectorAll: () => [], body: el('body'), addEventListener() {}, documentElement: el() };
+global.addEventListener = () => {}; global.requestAnimationFrame = () => 0; global.innerWidth = 1600; global.innerHeight = 900; const realTimeout = setTimeout; global.setTimeout = () => 0;
 const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..', '..');
-const src = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
+const src = ['data.js', 'core.js', 'battle.js', 'campaign_meta.js', 'campaign_run.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
 let pass = 0, fail = 0;
 function check(name, fn) { try { const r = fn(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.message)); } }
 eval(src + `
-function log(){} function fxText(){} function fxShield(){} function fxFlash(){}
-global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get META(){ return META; }, get SAVED_RUN(){ return SAVED_RUN; }, Persist, migrateRun, migrateMeta, defaultMeta, fleetCP, derive, newShip, ensureFlagship, RELICS, ADMIRALS, HULLS, STORE_KEY };
+function log(){} function fxText(){} function fxShield(){} function fxFlash(){} function tel(){} function nodeSeeds(){ return 0; }
+global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get META(){ return META; }, get SAVED_RUN(){ return SAVED_RUN; }, set SAVED_RUN(v){ SAVED_RUN=v; }, Persist, migrateRun, migrateMeta, defaultMeta, fleetCP, derive, newShip, ensureFlagship,
+  RELICS, ADMIRALS, HULLS, BOONS, MODULES, PATRONS, STORE_KEY, ACT, rewardFlow, resumeReward, genSector, findNode, saveRun, get modalHtml(){ return LAST_MODAL; }, get modalOpen(){ return !!IDS.modal; } };
 `);
 const base = () => ({ fac: 'voidsworn', admiral: 'vex', credits: 50, cpCap: 10, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] },
   fleet: [{ uid: 1, tpl: 'warden', name: 'Warden', hp: 50, mods: [], mk: 1, cap: { fac: 'voidsworn', name: 'Ada Vey', xp: 0, rank: 0, perks: [], pending: 0 } }] });
@@ -65,6 +72,42 @@ check('B-2 battle keys do nothing while a dialog is open; Escape answers the ret
   const ACT = { threat: () => fired.push('threat'), c3retreatNo: () => fired.push('stay') };
   const run = (key, open) => new Function('e', 'B', 'document', 'ACT', 'closeModal', 'bRefresh', code + '; return onKey(e);')({ key, target: { tagName: 'DIV' }, preventDefault() {} }, {}, doc(open), ACT, () => fired.push('close'), () => {});
   run('r', true); run('Escape', true); const blocked = fired.join(',') === 'stay'; fired = []; run('r', false); return blocked && fired[0] === 'threat';
+});
+
+// ---- B-3 reload bug 1: nothing in the battle code saves the run, so a mid-battle reload restores the pre-node save and replays the seeded node ----
+check('B-3 no run save or full save from battle-time code (battle.js, ui3d.js, campaign3d.js battle flow)', () => {
+  const bad = [];
+  for (const f of ['battle.js', 'ui3d.js']) { const t = fs.readFileSync(path.join(ROOT, f), 'utf8'); if (/saveRun\s*\(/.test(t)) bad.push(f + ' saveRun'); }
+  const ui = fs.readFileSync(path.join(ROOT, 'ui3d.js'), 'utf8'); for (const m of ui.matchAll(/Persist\.save\(([^)]*)\)/g)) if (!/meta:true/.test(m[1])) bad.push('ui3d.js full Persist.save');
+  if (bad.length) throw new Error(bad.join(', ')); return true;
+});
+
+// ---- B-4 reload during the reward screens ----
+function rewardSetup() {
+  T.RUN = T.migrateRun({ fac: 'voidsworn', admiral: 'vex', credits: 100, cpCap: 10, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] },
+    fleet: [{ uid: 1, tpl: 'warden', name: 'Warden', hp: 50, mods: [], mk: 1, cap: { fac: 'voidsworn', name: 'Ada Vey', xp: 0, rank: 0, perks: [], pending: 0 } }] });
+  const R = T.RUN; R.map = T.genSector(1); const node = R.map.cols[1][0]; node.type = 'elite'; node.rw = { k: 'boon', p: Object.keys(T.PATRONS)[0] }; R.patrons = [node.rw.p];
+  R.curNode = node.id; R.pos = node.id; T.saveRun();
+  return { node, summary: { cfg: { kind: 'elite', node: node.id, col: node.col }, xp: [], lost: [], kills: 3, rounds: 4, boonStats: {},
+    wrecks: [{ tpl: 'h_picket', name: 'Wreck', cls: 'Picket', fac: 'hegemony', cp: 1, cause: 'gun', wk: ['battery'] }] } };
+}
+function reload() { for (const k of ['_rw', '_rewardCfg', '_relicChoice', '_wrecks', '_boonOffer', '_modOffer']) delete window[k]; T.RUN = T.migrateRun(JSON.parse(JSON.stringify(T.SAVED_RUN))); T.resumeReward(); }
+check('B-4 rewards survive a reload at every step: node done once, same offers, no double pay', () => {
+  const { node, summary } = rewardSetup(); T.rewardFlow(summary);
+  const s0 = T.SAVED_RUN; if (!s0.reward || s0.reward.stage !== 'salvage' || !T.findNode.call(null, node.id)) throw new Error('reward not saved at start');
+  const banked = s0.credits; if (!(banked > 100)) throw new Error('credits not banked');
+  reload(); if (!/Salvage the field/.test(T.modalHtml)) throw new Error('salvage not resumed');
+  T.ACT.takeSalvage('0:cred'); const afterSalvage = T.SAVED_RUN.credits; if (T.SAVED_RUN.reward.stage !== 'pick') throw new Error('stage after salvage ' + T.SAVED_RUN.reward.stage);
+  const offer = JSON.stringify(T.SAVED_RUN.reward.boonOffer); if (!offer || offer === 'null') throw new Error('boon offer not saved');
+  reload(); if (JSON.stringify(T.SAVED_RUN.reward.boonOffer) !== offer) throw new Error('boon offer changed on reload');
+  T.ACT.takeBoon('0'); if (T.SAVED_RUN.boons.length !== 1 || T.SAVED_RUN.reward.stage !== 'relic') throw new Error('boon not saved');
+  const relics = JSON.stringify(T.SAVED_RUN.reward.relics); reload(); if (JSON.stringify(T.SAVED_RUN.reward.relics) !== relics) throw new Error('relic choice changed');
+  const pickR = T.SAVED_RUN.reward.relics[0]; T.ACT.takeRelic(pickR);
+  const f = T.SAVED_RUN, n = f.map.cols.flat().find(x => x.id === node.id);
+  return f.reward === null && f.boons.length === 1 && f.relics.length === 1 && f.relics[0] === pickR && f.credits === afterSalvage && n.done === true && f.curNode === null;
+});
+check('B-4 a reload right after the battle does not replay the node (it is already done)', () => {
+  const { node, summary } = rewardSetup(); T.rewardFlow(summary); const n = T.SAVED_RUN.map.cols.flat().find(x => x.id === node.id); return n.done === true;
 });
 
 module.exports = { check, T: global.T, STORE };

@@ -40,7 +40,7 @@ function titleScreen(){
 }
 ACT.title=()=>titleScreen();
 ACT.continueRun=()=>{ RUN=JSON.parse(JSON.stringify(SAVED_RUN));
-  try{ ensureFlagship(); mapScreen(); }catch(e){ console.error('Continue failed',e); RUN=null; // B1: a save the game can no longer open gets a way out instead of a dead title screen
+  try{ ensureFlagship(); mapScreen(); if(RUN.reward) resumeReward(); }catch(e){ console.error('Continue failed',e); RUN=null; // B1: a save the game can no longer open gets a way out instead of a dead title screen
     modal(`<h2>This run could not be opened</h2><p class="muted">Something in the save no longer matches this version of the game. A copy of the save is kept on this device. Your progression and unlocks are safe either way.</p>
     <div class="row"><button class="primary" data-act="discardBrokenRun">Start fresh (keep a copy)</button><button data-act="closeModal">Back</button></div>`); return; }
   const rep=(RUN._repairs||[]).length, lost=RUN._shipsDropped||0;

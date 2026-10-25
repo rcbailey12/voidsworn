@@ -43,11 +43,11 @@ function fieldRepairs(n){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp;
 // campaign battles run in the 3D engine
 // v53: owner's rule, a reload replays the same node and enemy fleet. Every fight node gets a seed when the map first shows it (saved with the run);
 // battleScreen seeds the pre-battle rolls from it and hands it to startBattle, so the same saved run always rebuilds the same battle
-function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss')){ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
+function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss'||nd.type==='event')){ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
 function battleScreen(cfg){
   closeModal(); hideTip(); hideApp(); hideEnd(); const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on');
   disposeAllViews(); clearOverlays();
-  { const sn=cfg.node&&findNode(cfg.node); if(sn&&!cfg.eventRelic){ nodeSeeds([sn]); if(sn.seed!=null&&cfg.seed==null){ cfg=Object.assign({},cfg,{seed:sn.seed}); rndSeed((sn.seed^0x5bd1e995)>>>0); } } } // v53: seeded before any pre-battle roll
+  { const sn=cfg.node&&findNode(cfg.node); if(sn){ nodeSeeds([sn]); if(sn.seed!=null&&cfg.seed==null){ const sd=cfg.eventRelic?((sn.seed^0x27d4eb2f)>>>0):sn.seed; cfg=Object.assign({},cfg,{seed:sd}); rndSeed((sd^0x5bd1e995)>>>0); } } } // v53: seeded before any pre-battle roll; B1: event fights are seeded too (own salt), so a reload replays the same fight // v53: seeded before any pre-battle roll
   if(RUN.fleet.length<=1&&(RUN.reinf||0)<RUN.sector){ RUN.reinf=RUN.sector; const sh=newShip('warden'); RUN.fleet.push(sh); setTimeout(()=>toast(`The sector garrison sends the ${sh.name} to reinforce you.`),600); tel('reinforced',{}); }
   const nd=cfg.node&&findNode(cfg.node); if(nd&&!nd.enc&&cfg.kind!=='boss'){ Object.assign(nd,rollEncounter(nd.type,nd.col)); if(!nd.map&&RUN.map&&RUN.map.region) nd.map=regionMap(RUN.map.region,nd.col,7); fitEncounter(nd); }
   const ro=cfg.kind==='boss'?bossEncounter():nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);

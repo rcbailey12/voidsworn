@@ -84,6 +84,12 @@ function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const re
   for(const s of r.fleet){ s.cap=capFix(s.cap); s.mods=keep(s.mods,MODULES,'refit'); if(typeof s.name!=='string') s.name=HULLS[s.tpl].n; if(typeof s.hp!=='number'||!(s.hp>0)) s.hp=1; }
   r.reserve=r.reserve.filter(x=>x&&typeof x==='object').map(x=>(x.cap=capFix(x.cap),x)); r.fallen=r.fallen.filter(f=>f&&typeof f==='object'&&typeof f.name==='string');
   if(r.flagUid!=null&&!r.fleet.some(s=>s.uid===r.flagUid)) r.flagUid=null;
+  if(r.reward!=null){ const R=r.reward; if(typeof R!=='object'||Array.isArray(R)) r.reward=null; else { // B1: a pending reward chain from an older save is checked like the rest
+    if(!['salvage','pick','relic','promo'].includes(R.stage)) R.stage='promo'; if(!R.rw||typeof R.rw!=='object') R.rw={};
+    R.relics=Array.isArray(R.relics)?keep(R.relics,RELICS,'relic'):[]; R.wrecks=Array.isArray(R.wrecks)?R.wrecks.filter(w=>w&&typeof w==='object'&&w.yield&&typeof w.yield==='object'):[];
+    for(const w of R.wrecks){ if(w.yield.mod!=null&&!has(MODULES,w.yield.mod)) w.yield.mod=null; if(!has(HULLS,w.tpl)) w.yield.tow=false; }
+    if(R.boonOffer!=null&&(!Array.isArray(R.boonOffer)||R.boonOffer.some(o=>!o||!has(BOONS,o.id)))) R.boonOffer=null;
+    if(R.modOffer!=null&&(!Array.isArray(R.modOffer)||R.modOffer.some(m=>!has(MODULES,m)))) R.modOffer=null; } }
   if(r.fleet.length<before) r._shipsDropped=(r._shipsDropped||0)+(before-r.fleet.length);
   if(rep.length) r._repairs=(Array.isArray(r._repairs)?r._repairs:[]).concat(rep).slice(-20);
   return r; }
