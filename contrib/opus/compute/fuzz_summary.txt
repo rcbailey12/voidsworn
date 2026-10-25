@@ -1,1 +1,1 @@
-
+fuzz 2000 battles: exceptions 0, invariant breaks 0 (0 distinct), avg rounds 6.9

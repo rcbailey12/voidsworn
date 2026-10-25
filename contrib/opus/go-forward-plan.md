@@ -33,7 +33,7 @@ Updated by the build session as phases move. A phase is done when its exit check
 | Phase | Status | Where it stands |
 |---|---|---|
 | A0 Barge files into git | DONE Oct 24 | v14 files in hulls_hi/ and hulls/ (95f01b6, a687ef5). Side-by-side: docs/ship_pipeline/c19_example/a0_repo_vs_pc.webp. |
-| B0 Ground truth | IN PROGRESS | Guard and check pack done (d88035a, 0 FAIL). Mega sim running in the cloud. |
+| B0 Ground truth | DONE Oct 25 | Guard and check pack (0 FAIL). Mega sim: all legs exit 0, no exceptions; baseline in contrib/opus/compute/balance_reference.md; FINDINGS S1 to S7. |
 | A1 Barge upgrade | STEP 1 DONE, step 2 next | Ryan picked C plus some of B's junk (FINDINGS R12). Options in docs/ship_pipeline/c19_example/a1_options/, builder tools/blender/a1/barge_shapes.py (option_C is the base for step 2). |
 | A2 to A5, B1 to B5 | NOT STARTED | |
 

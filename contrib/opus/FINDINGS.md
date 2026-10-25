@@ -68,6 +68,20 @@ This is the single list of what is true, wrong or open about the game and the de
 | F26 | "No enemy-turn signal" | WRONG | The top bar shows "Enemy activation" (ui3d.js:86) | INFO (B1 makes it clearer) |
 | F27 | Onboarding fix 10 (single-weapon keys) | Already done | ui3d.js:626 | FIXED |
 
+## Baseline numbers (B0, Oct 25, game code at d5d0227)
+
+Full tables: `compute/balance_reference.md` and the CSVs beside it. Every later balance change is compared against these.
+
+| ID | Finding | Evidence | Status |
+|---|---|---|---|
+| S1 | The game is stable in the sim | fuzz 2000: 0 exceptions, 0 rule breaks; about 19,500 sim battles in all, 0 crashes, 3 timeouts in the campaign's 2,400 | INFO |
+| S2 | Elites are the difficulty wall, not bosses | Campaign sim: elite wins 84% (s1), 52% (s2), 64% (s3); bosses 82%, 79%, 98% | OPEN (B2 ramp) |
+| S3 | Waits already reach about 130 s per battle at today's sizes | Campaign sim "new" timing: 40 s (s1 battle) to 130 s (s3 elite) | OPEN (B2: speed before size) |
+| S4 | Wide faction spread in skirmish | matrix 50: Corsair 98 avg, Chorus 93, Ithar 90, Voidsworn 69, Deathless 62, Hegemony 59; Deathless vs Corsair 14%. Player bot edge is large in this mode (mirrors 78 to 100%). fmatrix spread is moderate (57 to 68). | OPEN (B3) |
+| S5 | Starting fleets cannot beat sector 2 or 3 bosses | bossmatrix with start fleets only: 71% (s1), 24% (s2), 3% (s3). Growth over a run carries the whole difficulty curve. | INFO (B2 ramp input) |
+| S6 | Hegemony boss is the hardest opener; Grax the weakest start | bossmatrix s1: vs Hegemony 47%; Grax 36%, Vex 54%; Voice and Vesh 94% | OPEN (B3) |
+| S7 | The bossmatrix harness only covers sector 1 by default | Sector comes from env BS (sim3d.js:325); sectors 2 and 3 were run with BS=2 and BS=3 | INFO |
+
 ## Bugs at d5d0227
 
 | ID | Bug | Verdict | Evidence | Status |

@@ -5,3 +5,6 @@ campaign rc=0 secs=1479 args=campaign 200
 matrix rc=0 secs=2713 args=matrix 50 sk
 fuzz rc=0 secs=1786 args=fuzz 2000
 ALLDONE
+bossmatrix_s2 rc=0 secs=1218 args=BS=2 bossmatrix 32
+bossmatrix_s3 rc=0 secs=1245 args=BS=3 bossmatrix 32
+BOSS23DONE

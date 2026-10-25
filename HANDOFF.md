@@ -1,4 +1,4 @@
-# Voidsworn: handoff (Oct 24, 2026, late evening)
+# Voidsworn: handoff (Oct 25, 2026, early morning)
 
 ## 1. What and where
 
@@ -28,10 +28,11 @@
 ## 2. Current state
 
 - **Last recorded publish:** v53.8 (artifact Version 65, Oct 21). The later barge work (v12 to v14) is not published.
-- **Game code** last changed Oct 22 (b6c4b93). It runs and the sims run, with one harness crash (FINDINGS B-14).
-- **Pyre-Barge (C19_51):** v14, which Ryan called "pretty close" (Oct 22). Not signed off.
-  - Its v14 game files are only on Ryan's PC, in `Downloads\voidsworn_test\build\hulls_hi\`, not in git. A repo build falls back to the old hull.
-  - Its build script still adds naval parts (mast with yards, funnels, keel).
+- **Game code** last changed Oct 22 (b6c4b93). It runs, and the sims run clean since the B-14 harness guard (Oct 24).
+- **Phases done:** A0 (barge files in git), B0 (ground truth and sim baseline), A1 step 1 (shape pick). Status table at the top of the plan.
+- **Pyre-Barge (C19_51):** v14 is in git (hulls_hi/ and hulls/) and the repo build matches Ryan's PC. Ryan picked the new shape (FINDINGS R12): option C, the double-sided hulk, plus some of option B's salvage junk. Clay builder: `tools/blender/a1/barge_shapes.py` (option_C). Renders: `docs/ship_pipeline/c19_example/a1_options/`.
+  - The v14 kit script (`tools/blender/hs/c19_kit.py`) still adds naval parts; step 2 replaces it with the C shape.
+- **Sim baseline:** `contrib/opus/compute/balance_reference.md` (FINDINGS S1 to S7). Stable (0 crashes in about 19,500 sim battles). Elites are the wall in sectors 2 and 3, and waits reach about 130 s per battle in sector 3.
 - **Known open bugs** (all in FINDINGS.md "Bugs"):
   - the save-brick class;
   - the retreat dialog hole;
@@ -68,28 +69,21 @@
 
 ## 4. Open questions for Ryan
 
-None blocking. He weighs in at these points:
-- the barge silhouette pick (A1);
+None blocking. The barge shape is picked. He weighs in next at:
+- the dressed barge (A1 step 2 screenshots, then A1 sign-off);
 - his OK before Godot is installed (A2);
 - the engine call (A3);
 - visual sign-offs and playtests (plan section 9).
 
 ## 5. Next 3 tasks
 
-1. **A0: barge files into git.**
-   - Stage the v14 files from Ryan's PC and commit them under `hulls_hi/` and `hulls/`. Files: `C19_51.vsm`, `C19_51_kit.json`, the kit and finish maps, `C19_51.hdr.json`.
-   - **Pass:** a repo build shows the same barge as the PC build, confirmed by one side-by-side screenshot.
-2. **B0: ground truth.**
-   - Add the sim3d.js:112 guard.
-   - Decode the check pack into `contrib/opus/tools/`.
-   - Run the missing mega sim legs in the cloud (bossmatrix, fmatrix, matrix, archmatrix). File `contrib/opus/compute/balance_reference.md` plus CSVs.
-   - Add the numbers to FINDINGS.md.
-   - **Pass:** check pack 0 FAIL, and every mega sim leg completes with no exceptions.
-3. **A1 step 1: barge shape options.**
-   - 2 or 3 clay silhouettes with the naval reads removed (bow profile, keel line, deck line, mast and funnels become antenna arrays and heat radiators).
-   - **Pass:** Ryan picks one.
-
-Then B1 (bug fixes) and A2 (engine test) per the plan.
+1. **A1 step 2: dress the picked shape.**
+   - Start from `option_C` in `tools/blender/a1/barge_shapes.py`. Add B's junk: one stolen block (B's hammerhead or cargo section, cut down) and mismatched engine pods (one oversized, like B's donor engine).
+   - Then the plan's step 2 list: stolen-panel plating with bolts, salvage asymmetry, bolted belly slabs, antenna arrays and radiators (already in the clay), guns forward or to the side only. Run the 9-cell blob sweep before Ryan sees it.
+   - Build on the PC Blender (4.5.14) through the watcher for the full-detail version. The cloud can run clay checks (pip bpy 5.2, see Gotchas).
+   - **Pass:** Ryan says yes on studio renders, then in-game shots at battle zoom and close-up.
+2. **B1: fix what can eat a win** (save-brick class, retreat dialog, reward-screen reload, captured flagship, the smaller ones). FINDINGS "Bugs" lists them; re-run the check pack and fuzz after, and compare against the baseline.
+3. **A2: six-ship engine test.** Needs Ryan's OK to install Godot on his PC (plan section 9, item 3).
 
 ## 6. Gotchas
 
@@ -108,6 +102,16 @@ Then B1 (bug fixes) and A2 (engine test) per the plan.
 - Give every job its own staged name (`outputs/job_<tag>.bat`, `run_<tag>.request`), and stage `build\job.bat` back to check it before sending run.request.
 - `build\job.bat` runs once instead of the smoke test, and a job must `cd` back to `build` or it re-runs.
 - Scripts are in `tools/pc/`.
+
+**Driving the PC (Oct 25):**
+- Ryan wants Claude to click things itself when the PC is linked (for example starting watcher.bat), not ask him.
+- Computer control works: File Explorer and Command Prompt are click-only (no typing). Path: Explorer, Downloads, voidsworn_test, double-click watcher.bat. Explorer opens on the second monitor (27GL850).
+- The remote shell still fails ("Workspace unavailable"). Staging, commits and the watcher jobs work.
+- Cloud closeshot times out loading the game (no GPU). Take game screenshots on the PC.
+
+**Cloud Blender (Oct 25):** `pip install --break-system-packages bpy` (5.2, about 400 MB) runs Blender headless in the sandbox, good for clay renders and shape work (`tools/blender/a1/clay.py`). The game's .vsm hull stores the bow at +x; the kit scripts and the a1 builder use bow at -x, so clay.py turns imported game hulls with FLIP=1.
+
+**Sims (Oct 25):** `bossmatrix` covers sector 1 only unless `BS=2` or `BS=3` is set. Rebuild the baseline CSVs with `python3 contrib/opus/tools/mega_report.py`. Running sims rewrite their logs constantly; commit them when they finish.
 
 **PC tools:**
 - PS 5.1 Invoke-WebRequest is slow for big files: set `$ProgressPreference='SilentlyContinue'`.
@@ -129,5 +133,5 @@ Then B1 (bug fixes) and A2 (engine test) per the plan.
 
 Starter line:
 ```
-Read HANDOFF.md, then contrib/opus/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). You own the approved plan: start A0 and B0 in parallel, then A1 step 1, keeping the PC runner flow.
+Read HANDOFF.md, then contrib/opus/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). You own the approved plan: continue with A1 step 2 (dress the picked barge shape) and B1, keeping the PC runner flow.
 ```
