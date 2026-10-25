@@ -45,7 +45,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | F3 | Density draft: "6 to 8 activations per round at 20 ships" | WRONG | Every ship activates every round (battle.js:359-362), so 20 ships means about 20 activations | INFO |
 | F4 | Density "12 vs 15 wait inconsistency" (OPUS_HANDOFF.md:60) | WRONG | Draft table: 12 s is the target, 15 s the hard gate | DECIDED (12 target, 15 limit) |
 | F5 | Dead Star "not a gravity well mechanic, no new engine work" | WRONG premise | Well ships today: battle.js:272-277, 305, 343, 374. Board shape in 6 of 8 fight types (battle.js:58-65). | DECIDED (R2) |
-| F6 | "Cyan means shields" as current state (Argon packs, barge draft) | WRONG as current state | Shields are faction-coloured (fx3d.js:3, :32). The tutorial says "Cyan is shields" (ui3d.js:625). The hex grid is cyan (scene3d.js:254). Rare is #62ccff (data.js:386). | DECIDED (R3). Tutorial line FIXED (0fe88b8: points at the cyan shield bars, bubble in faction colour). Enemy markers OPEN (B1). |
+| F6 | "Cyan means shields" as current state (Argon packs, barge draft) | WRONG as current state | Shields are faction-coloured (fx3d.js:3, :32). The tutorial says "Cyan is shields" (ui3d.js:625). The hex grid is cyan (scene3d.js:254). Rare is #62ccff (data.js:386). | DECIDED (R3). Tutorial line FIXED (0fe88b8: points at the cyan shield bars, bubble in faction colour). Enemy markers FIXED (7f03908: fx3d.js `FOE_C` violet, worst-case colour-blind distance 0.42 from all six shield colours, the gold ring and friend green; broken hex outline for enemies, ui3d.js `fpHexMeshBroken`; nameplates in head.html). Note: Epic rarity is also violet (#c58bff). |
 | F7 | Amber shield-state ramp | Conflict | Amber already means hull (fx3d.js:2, HULL_HEX #ffae42 at :4) | DECIDED: low shields shown as gaps in the faction colour |
 | F8 | Six factions get shield effects (art_direction_rey.md:96; QA and beauty specs) | WRONG | Chorus (0 of 8 hulls) and Deathless (0 of 6) have no shields | INFO |
 | F9 | "The motion rule rewards staying still" (OPUS_HANDOFF.md:62) | WRONG | Base rule: +10 to hit a still ship (battle.js:390, 458, 469). Only boon i_still (data.js:398) rewards stillness. | DECIDED: sync does not stack with i_still |
@@ -65,7 +65,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | F23 | Corsair gate "missile or bombard kind" | WRONG premise | Kinds are only battery, flak, lance, torp, bio, gauss, sq | DECIDED: "no lance-kind weapons" |
 | F24 | A threat budget or fleet power must be invented (difficulty dial) | WRONG | fleetPower (battle.js:122), per-sector budget (battle.js:133), BOSS_SCALE and BOSS_FAC exist. Runs end at sector 3 (campaign_run.js:311). | INFO (the B2 ramp builds on these) |
 | F25 | AI default comes from aiVet() | WRONG | `let AI_LEVEL='veteran'` (campaign3d.js:3) | FIXED (B1: campaign3d.js defaults to Standard; main3d.js keeps Veteran for players with runs played and no saved choice; 0fe88b8) |
-| F26 | "No enemy-turn signal" | WRONG | The top bar shows "Enemy activation" (ui3d.js:86) | INFO (B1 makes it clearer) |
+| F26 | "No enemy-turn signal" | WRONG | The top bar shows "Enemy activation" (ui3d.js:86) | FIXED (B1, 7f03908: ui3d.js `aiChip` \"Enemy acting\" chip, the acting ring breathes, Threat tip from round 2) |
 | F27 | Onboarding fix 10 (single-weapon keys) | Already done | ui3d.js:626 | FIXED |
 
 ## Baseline numbers (B0, Oct 25, game code at d5d0227)
