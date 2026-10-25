@@ -1,0 +1,22 @@
+{
+  "engine": "godot",
+  "renderer": "forward_plus",
+  "mode": "max",
+  "ships": 6,
+  "width": 2560,
+  "height": 1440,
+  "seconds": 20.0,
+  "frames": 6197,
+  "avg_ms": 3.228,
+  "p99_ms": 4.91,
+  "max_ms": 6.845,
+  "fps_avg": 309.82,
+  "load_s": 4.518,
+  "gpu_mem_mb": 2195.3,
+  "notes": "max mode: assets/hi not found, today's assets used; max: SSAO, SSIL, SSR, SDFGI (6 cascades), TAA on top of MSAA 4x, 8192 shadow atlas with soft (PCSS) key shadows, tiling detail normals on the hulls; no screen-space contact shadows in Godot; rich: soft particles (flame, smoke and glow sprites fade into hull depth; hand-written, reads the depth texture); rich: volumetric fog (FogVolume with fog shaders) for breach venting, smoke rings and the fireball; rich: breach holes with depth by parallax occlusion mapping (hand-written), a light per gun and per impact; max: detail normal layer on 7 hull materials; max: colour grading with Environment adjustments (contrast, saturation, a cool-shadow warm-highlight curve); effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) 0.170 ms average; engine-measured 3D render time per frame: GPU 2.53 ms, render CPU 0.59 ms; shader warm-up after load took 0.2 s (every effect, fade and chunk state drawn once, until pipeline compiles stop); adapter NVIDIA GeForce RTX 5080, driver vulkan 1.4.351; render target 2560x1440 (from --res) in a SubViewport with MSAA 4x, shown in a 2560x1440 window; vsync mode 0 (0 = off); gpu_mem_mb is Performance RENDER_VIDEO_MEM_USED at the end (peak during run 2195 MB); textures loaded uncompressed (RGB8 with mipmaps), as GLTFDocument gives them at runtime",
+  "lights_active_avg": 12.5,
+  "lights_active_max": 20,
+  "physics_ms_avg": 0.985,
+  "physics_ms_p99": 1.498,
+  "bodies_max": 571
+}
