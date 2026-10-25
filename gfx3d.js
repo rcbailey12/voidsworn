@@ -429,7 +429,9 @@ function shipDamageFx(v,hr){ try{ if(!v||!v.model||v.state!=='alive') return; co
         for(const k of ['albedoTexture','bumpTexture','metallicTexture','emissiveTexture','ambientTexture','opacityTexture','microSurfaceTexture','reflectivityTexture','lightmapTexture','reflectionTexture']){ if(c[k]!==src[k]){ const blank=c[k]; c[k]=src[k]||null; try{ if(blank&&blank!==src[k]&&!Object.values(G.tex).includes(blank)) blank.dispose(); }catch(e){} } } // clones of generated textures come back blank: share the originals
         const o=src._hullFx, opts=Object.assign(typeof hfxOpts==='function'?hfxOpts(o,v.fac):{rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy},{ai:o.ai,wcol:o.wcol,ring:o.ring,haz:o.haz,mtex:o.mtex}); let pl=c.pluginManager&&c.pluginManager.getPlugin&&c.pluginManager.getPlugin('HullFx');
         if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(c,opts); c._hullFx=pl; pl.dseed=seed; map.set(src,c); v.dmgMats.push(c); }
-      for(const m of v.model.meshes) if(map.has(m.material)) m.material=map.get(m.material); }
+      for(const m of v.model.meshes) if(map.has(m.material)){ const src=m.material, c=map.get(src); // Oct 25: the ship vanished until the damaged shader compiled (a blink on GPU, seconds on software GL): keep the intact material on screen and swap once the damaged one is ready
+        const swap=()=>{ if(v.state==='alive'&&m.material===src&&!c.isDisposed) m.material=c; };
+        if(c.isReady&&c.isReady(m)) swap(); else if(c.forceCompilationAsync) c.forceCompilationAsync(m).then(swap,swap); else swap(); } }
     for(const c of v.dmgMats) if(c._hullFx) c._hullFx.dmg=amt; }catch(e){ console.warn('damage shading',e); } }
 function disposeDamageMats(v){ try{ (v.dmgMats||[]).forEach(m=>m.dispose(false,false)); }catch(e){} v.dmgMats=null; }
 

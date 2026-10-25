@@ -103,7 +103,7 @@ function donorPanel(v,size,sp,stolen){ try{ if(typeof debBatch!=='function') ret
     b.items.push({pos:c,vel:out.normalize().scale(sp||(1.5+Math.random()*2)),rot:new V3(Math.random()*6,Math.random()*6,Math.random()*6),spin:new V3((Math.random()-.5)*1.4,(Math.random()-.5)*1.4,(Math.random()-.5)*1.4),s:size,sc:1,age:0});
     if(typeof fxSprite==='function'&&!G.fxReduced) fxSprite(c,2.4,new C3(1,.85,.6),starTex(),.22,{grow:.4}); }catch(e){} }
 function corsairWear(v,hr,dt){ try{ if(!v||v.fac!=='corsair'||!v.model||!v.root||v.state!=='alive') return; if(hr>.8) v.cwStage=0; const st=hr<.33?2:hr<.66?1:0; v.cwStage=v.cwStage||0;
-    if(st>v.cwStage){ v.cwStage=st; if(st===1){ rustShed(v,G.quality==='medium'?8:16,false); donorPanel(v,.6+v.L*.05,1.4); } else { rustShed(v,G.quality==='medium'?12:24,true); donorPanel(v,1+v.L*.11,1.2+Math.random(),true); donorPanel(v,.6+v.L*.05,2); try{ SFX.hit(v.root.getAbsolutePosition(),false); }catch(e){} } }
+    if(st>v.cwStage){ v.cwStage=st; if(st===1){ rustShed(v,G.quality==='medium'?8:16,false); donorPanel(v,.4+v.L*.03,1.4); } else { rustShed(v,G.quality==='medium'?12:24,true); donorPanel(v,.5+v.L*.055,1.2+Math.random(),true); donorPanel(v,.4+v.L*.03,2); try{ SFX.hit(v.root.getAbsolutePosition(),false); }catch(e){} } }
     if(st>0&&Math.random()<(st===2?.9:.4)*dt) rustShed(v,1,st===2); }catch(e){} }
 function corsairBreakup(v,c,L){ try{ if(v.fac!=='corsair') return; const n=G.mobile?2:3; for(let i=0;i<n;i++) donorPanel(v,.8+L*(.12+Math.random()*.06),2+Math.random()*3,i%2===0); rustShed(v,G.quality==='medium'?10:24,true); }catch(e){} } // "come apart at the welds, donor sections spinning away intact"
 // fighter wings leave short glowing trails as they wheel around their carrier (High and Ultra)
