@@ -2,17 +2,21 @@
 
 From Rey (Muse), Oct 24, 2026. Commissioned by Ryan as the how-to companion to the field guide: concrete settings, flags, commands and workflows for the tools Opus actually runs, drawn from official docs, repos, forums and community threads. Companion to mod_scene_field_guide.md in this folder: that document is mechanisms and assets to steal; this one is how to run the toolchain that turns them into shipped hulls, effects and sounds.
 
+## Framing note, Oct 24, 2026: desktop first, PC-only
+
+Ryan's Oct 24 ruling is PC-only: the phone target is dropped entirely, and the desktop GPU budget is the design floor. There is no phone tier, no phone pass, and no phone acceptance gate. This document was written phone-first; the framing pass on Oct 24 re-tiers it to desktop-first. Read every remaining 'phone' mention as history or as a source attribution, not as a target: the techniques (decimation, LOD chains, KTX2, draw-call discipline) still apply, but they now serve desktop hero and simplified tiers, not a phone build. The old phone budgets, phone gates, and phone-versus-desktop splits are retired. Specific replacement numbers, flags, and values (the D1-D9 items in the tool-guides retier draft, including budgets, WebGL fallback policy, Blender version check, and LOD scope) are Opus's to set, not decided by this framing pass. The retier draft itself is a single-leg proposal, not adopted guidance.
+
 ## The merged chain (the whole document in one paragraph)
 
-An AI mesh and an AI texture enter the pipeline separately and join only at the bake. The mesh goes through a seven-step cleanup (audit, remesh and retopology, silhouette-safe decimation, UV unwrap, kit parts attached at manifest landmarks, high-to-low bake, phone-tier compression gate) and the texture goes through a local estimation chain (CHORD or Hunyuan paint or UltraTex from one flat-lit image, ControlNet for structure, IPAdapter for look, a style LoRA trained on the final plates for consistency). The cleaned hull and the estimated maps meet in Blender, bake to the game tiers, and ship through gltfpack plus KTX2 into Babylon, where thin instances, frozen materials and a self-hosted KTX2 transcoder keep the phone tier alive. Every part below is one link of that chain, and the checker pattern (AJV schema validation, a reference checker for dangling ids, a golden-save compatibility test) guards the joints.
+An AI mesh and an AI texture enter the pipeline separately and join only at the bake. The mesh goes through a seven-step cleanup (audit, remesh and retopology, silhouette-safe decimation, UV unwrap, kit parts attached at manifest landmarks, high-to-low bake, simplified-tier compression gate) and the texture goes through a local estimation chain (CHORD or Hunyuan paint or UltraTex from one flat-lit image, ControlNet for structure, IPAdapter for look, a style LoRA trained on the final plates for consistency). The cleaned hull and the estimated maps meet in Blender, bake to the desktop tiers, and ship through gltfpack plus KTX2 into Babylon, where thin instances, frozen materials and a self-hosted KTX2 transcoder keep the desktop build fast. Every part below is one link of that chain, and the checker pattern (AJV schema validation, a reference checker for dangling ids, a golden-save compatibility test) guards the joints.
 
 ## Top finds
 
 - **The glTF occlusion hook** (Part 1): glTF occlusion only exports through a custom node group literally named `glTF Settings` with an `Occlusion` input. This is the exact mechanism the game's ORM-packed painted materials need, and it is invisible if you only look at the shader graph.
 - **Compression is not simplification** (Part 1): KTX2 fixes memory, only triangle cuts fix framerate. The guide puts the budget gate in the .bat chain so it cannot be skipped.
-- **The HDR and AA trap** (Part 2): with DefaultRenderingPipeline hdr=true, the scene renders to an offscreen texture and canvas anti-aliasing silently stops applying until `pipeline.samples` is set. The single most likely cause of a "cinematic pipeline looks worse" regression on the phone tier.
+- **The HDR and AA trap** (Part 2): with DefaultRenderingPipeline hdr=true, the scene renders to an offscreen texture and canvas anti-aliasing silently stops applying until `pipeline.samples` is set. The single most likely cause of a "cinematic pipeline looks worse" regression on the simplified tier.
 - **Thin instances versus solid particles, with numbers** (Part 2): a verified forum thread measured the same asteroid field at 15 fps with a solid particle system and 60 fps with thin instances. That settles the debris and asteroid architecture directly.
-- **The gltfpack two-tier recipe** (Part 3): one tool covers geometry, quantization, instancing, simplification and texture conversion, with `-kn` keeping named hardpoint nodes the game addresses by name, and `-si` and `-ts` flags added for the phone tier.
+- **The gltfpack two-level recipe** (Part 3): one tool covers geometry, quantization, instancing, simplification and texture conversion, with `-kn` keeping named hardpoint nodes the game addresses by name, and `-si` and `-ts` flags added for the simplified tier.
 - **The checker pattern, made concrete** (Part 3): AJV schema validation per data file runnable as a .bat step, a custom reference checker modeled on RPFM's broken-key diagnostics, and a golden-save compatibility test per shipped version, which is the Endless Sky deprecated-ships answer turned into automation.
 - **Kit parts are the AI mesh fix** (Part 4): hand-built kit parts are not decoration on an AI mesh, they are the fix for its worst property, fused and unreadable detail. The AI hull supplies the big form, the kit supplies readable guns, tanks and slabs at manifest landmarks, and the bake makes the cleaned hull read like the dense original.
 - **Safe local image bases on 16 GB** (Part 4): Qwen-Image under Apache 2.0 (quantized builds fit 16 GB) and FLUX.1 schnell or klein 4B (both Apache 2.0). Self-hosted FLUX.1 dev is the trap: its licence text is internally in tension (v1.1.1 clauses 2(d) and 4(a)(i) on commercial use of outputs), and a LoRA trained on a dev base inherits the restriction either way.
@@ -26,7 +30,7 @@ The four parts run about 13,500 words between them.
 
 ## Part 1: Blender for a real time game asset pipeline
 
-For Opus, building ship hulls for a Babylon.js hex fleet tactics game. The game ships one HTML build with two asset tiers (phone meshes and desktop meshes), compresses with meshoptimizer tooling, and uses painted materials with vertex colour AO and gradients. Documentation is cited as documentation; forum and Reddit wisdom is marked secondhand community practice.
+For Opus, building ship hulls for a Babylon.js hex fleet tactics game. The game ships one HTML build with two asset tiers (hero and simplified desktop meshes), compresses with meshoptimizer tooling, and uses painted materials with vertex colour AO and gradients. Documentation is cited as documentation; forum and Reddit wisdom is marked secondhand community practice.
 
 ### 1. glTF export: what actually survives
 
@@ -82,7 +86,7 @@ Rules that make this reliable:
 - **One .bat per step, on Ryan's PC.** The owner runs double-click .bat files (Windows 10, PowerShell 5.1). A hull pipeline .bat should call the Blender executable by full path, then the export script, then the optimizer, so the whole chain is one double-click. Print triangle counts and output sizes at each step; a silent pipeline hides regressions.
 - **export_apply=True is load-bearing.** It exports the evaluated mesh, modifiers included. Without it, an unapplied Mirror or Decimate silently exports half a hull or the unreduced mesh. Source: https://github-wiki-see.page/m/gree/hubs-docs-jp/wiki/creators-using-the-blender-gltf-exporter
 - **Keep the .blend as source, never the .glb.** Re-export from source on every change; rebuilding must be cheap enough to do for all 36 hulls at once.
-- **Deterministic naming.** Name outputs `<hull_code>_hi.glb` and `<hull_code>.glb` for the two tiers, from the same source, so the game loader never has to guess which file is which tier.
+- **Deterministic naming.** Name outputs `<hull_code>_hi.glb` and `<hull_code>.glb` for the hero and simplified tiers, from the same source, so the game loader never has to guess which file is which tier.
 - **CI shape.** The standard pipeline shape is: artist saves .blend, a script detects the change, Blender headless exports glTF, glTF-Transform or gltfpack optimizes, output is committed or pushed. For this project the "CI" is the .bat chain on the PC, but the stage order is identical. Source: https://franrivalbigprojects.github.io/cross-pipeline-tools-functional/
 
 ### 3. Post-export optimization: gltfpack and glTF-Transform
@@ -91,8 +95,8 @@ Two free tools do the work Blender's exporter does not:
 
 - **gltfpack** (ships with the meshoptimizer library, MIT) optimizes meshes for vertex fetch and transform cache, quantizes geometry, merges meshes to cut draw calls, prunes redundant nodes, and can simplify meshes on request. Key flags, verified in the man page: `-c` / `-cc` for compressed output, `-tc` for KTX2 textures, `-si R` to simplify to a fraction of the original size, `-sa` to simplify aggressively, `-kn` to keep named nodes (use this: named nodes are how the game finds hardpoints). Source: https://manpages.debian.org/testing/gltfpack/gltfpack.1
 - **glTF-Transform** (CLI) offers one-command optimize (`gltf-transform optimize input.glb output.glb --texture-compress webp --texture-resize 1024`) plus separate `draco`, `resize`, dedupe and prune commands. Draco cuts geometry buffers by 90 percent or more, at the cost of a WASM decoder at runtime.
-- **Compression is not simplification.** An A-Frame documentation page states this plainly: compression does not particularly affect framerate; if the model has too many triangles or draw calls, compression will not change that, and the model should be simplified instead. For the phone tier, triangle budget comes first and compression second. Source: https://aframe.io/docs/master/components/gltf-model.html
-- **KTX2 is the phone memory win.** WebP shrinks transmission size; KTX2 shrinks GPU memory, the actual phone bottleneck. gltfpack `-tc` is the one-flag route to it.
+- **Compression is not simplification.** An A-Frame documentation page states this plainly: compression does not particularly affect framerate; if the model has too many triangles or draw calls, compression will not change that, and the model should be simplified instead. For the simplified tier, triangle budget comes first and compression second. Source: https://aframe.io/docs/master/components/gltf-model.html
+- **KTX2 is the GPU memory win.** WebP shrinks transmission size; KTX2 shrinks GPU memory, the actual GPU memory bottleneck. gltfpack `-tc` is the one-flag route to it.
 
 ### 4. Decimation and LOD: cut triangles, keep the silhouette
 
@@ -106,9 +110,9 @@ Source: https://docs.blender.org/manual/de/2.80/modeling/modifiers/generate/deci
 
 Community practice (secondhand, from tutorials and forum threads):
 
-- **The silhouette rule.** Pull Ratio down until the silhouette starts to break, then back off one step. That is the phone tier. Bake the removed detail into the normal map (section 5).
-- **Delete tiny greebles first.** A BlenderArtists thread on simplifying a complex ship reports the biggest early win came from deleting tiny greebles and flattening over-beveled small cylinders, 20k to 30k faces, before any Decimate pass. Detail that reads at desktop distance is noise at phone distance. Source: https://blenderartists.org/t/simplifying-a-complex-model/1377921
-- **Build the LOD chain from one source.** Desktop tier at full detail, phone tier as the same mesh with a Decimate pass (or gltfpack `-si` at export). Two separately modeled hulls drift; one model with two ratios does not.
+- **The silhouette rule.** Pull Ratio down until the silhouette starts to break, then back off one step. That is the simplified tier. Bake the removed detail into the normal map (section 5).
+- **Delete tiny greebles first.** A BlenderArtists thread on simplifying a complex ship reports the biggest early win came from deleting tiny greebles and flattening over-beveled small cylinders, 20k to 30k faces, before any Decimate pass. Detail that reads at desktop distance is noise at battle distance. Source: https://blenderartists.org/t/simplifying-a-complex-model/1377921
+- **Build the LOD chain from one source.** Desktop tier at full detail, simplified tier as the same mesh with a Decimate pass (or gltfpack `-si` at export). Two separately modeled hulls drift; one model with two ratios does not.
 ### 5. Baking: Cycles only, and the settings that matter
 
 Baking is a Cycles feature; Eevee cannot bake. The manual's setup rules: the mesh needs a UV map, and the active (last selected) image texture node is the bake target. Selected to Active casts rays from the low-poly object inward toward the high-poly object; Ray Distance or Cage Extrusion controls where those rays start, and a manual cage object gives the most control. Margin extends the bake past UV island borders to soften seams. Source: https://docs.blender.org/manual/ja/2.80/render/cycles/baking.html
@@ -160,7 +164,7 @@ These techniques come from BlenderArtists tutorials and a beginner spaceship tut
 - **Bevel everything, slightly.** The bevel tool (Ctrl+B) with small segments softens edges just enough to catch light. A perfectly sharp edge reads as unfinished in real time lighting. Nothing excessive: one or two segments on most hull edges.
 - **Booleans with discipline.** Position the cutter, apply the Boolean modifier set to Difference, delete the cutter object. Leaving cutters in the scene is how mystery geometry appears months later. After any boolean, run the section 9 checks; booleans are the top source of non-manifold edges.
 - **Paneling by separation.** A classic hull paneling tutorial: select the faces that form a plate, separate them, extrude slightly, move back to the hull surface, then bevel the plate edges by extruding once more a tiny amount and scaling the new faces inward. The result reads as armor plating without texture work. Save before separating; there is no undoing it cleanly. Source: https://blenderartists.org/t/tutorial-spaceship-hull-paneling/335444
-- **Greebles suggest scale.** Small attached shapes make the ship read as large. A fast method from an old tutorial: duplicate the subdivided hull, convert the copy to a mesh, select small faces, copy them into a separate object, extrude. Keep greebles on their own object so the simplification pass (section 4) can delete them for the phone tier without touching the hull. Source: https://blenderartists.org/t/tut-spaceship-modeling-with-smooth-surfaces/340232
+- **Greebles suggest scale.** Small attached shapes make the ship read as large. A fast method from an old tutorial: duplicate the subdivided hull, convert the copy to a mesh, select small faces, copy them into a separate object, extrude. Keep greebles on their own object so the simplification pass (section 4) can delete them for the simplified tier without touching the hull. Source: https://blenderartists.org/t/tut-spaceship-modeling-with-smooth-surfaces/340232
 - **Model one side, mirror the rest.** Symmetrical hulls: model half, Mirror modifier, apply at export. The Decimate modifier's Symmetry option keeps the mirrored halves consistent during reduction.
 - **Purpose-built beats random greebles.** Give every structure a job (radiators, sensor clusters, point defense mounts) rather than scattering random boxes. A mount that exists in the model can become a hardpoint in the manifest.
 
@@ -175,7 +179,7 @@ Run these before any hull reaches the game, in this order. Every item below is e
 5. **No degenerate faces.** Mesh, Clean Up, Degenerate Dissolve. A Khronos forum thread traces a glTF validation error (ACCESSOR_VECTOR3_NON_UNIT, a zero-length normal) to exactly this: degenerate faces produce zero normals. Source: https://community.khronos.org/t/gltf-2-0-validation-error-accessor-vector3-non-unit/105517
 6. **Manifold.** Select, Select All by Trait, Non Manifold, and work the categories one at a time: wire edges (Delete Loose), boundaries (fill or bridge), multiple faces (delete internal and duplicate faces), non-contiguous (Recalculate Outside). The 3D Print Toolbox Check All button flags non-manifold geometry, intersecting faces and thin walls in one pass. Sources: https://3dx.info/how-to-fix-non-manifold-edges-in-stl-files-for-flawless-3d-prints/ and https://dev.to/ankurbhardwaj/before-you-print-a-checklist-for-turning-an-obj-into-a-good-stl-5d91
 7. **UVs present and sane.** Every material needs a UV map; bakes need non-overlapping UVs on the bake target. Run a checker texture pass: stretched UVs show as elongated rectangles, bad seams as discontinuities, overlaps as identical patterns on two parts.
-8. **Triangle budget per tier.** Print the triangle count after export, per hull, per tier, and fail the build if a hull exceeds its budget. The game's own numbers give the shape of it: desktop hulls run roughly 2,400 to 38,000 triangles, phone roughly 1,200 to 16,000, and all hulls load at boot, so the budget is a fleet total, not a per-hull wish.
+8. **Triangle budget per tier.** Print the triangle count after export, per hull, per tier, and fail the build if a hull exceeds its budget. The game's own numbers give the shape of it: desktop hulls run roughly 2,400 to 38,000 triangles, and all hulls load at boot. The old phone figures (roughly 1,200 to 16,000) are retired with the phone target; the simplified-tier budget is Opus's to set (see framing note), so the budget is a fleet total, not a per-hull wish.
 9. **Validate the file, then load it in the target.** Run the Khronos glTF Validator (CLI or web) on every export; it catches spec violations such as zero-length normals and broken accessors. Then load the .glb in the Babylon.js Sandbox: a validator pass is not a render pass, and a file can be spec-legal and still look wrong.
 10. **Screenshot the hull in game.** A render in Blender is not proof. The flat-black silhouette sheet and the in-game screenshot are the acceptance tests, and they belong in the same folder as the .blend file.
 
@@ -185,7 +189,7 @@ Documentation (Blender manual, man pages, addon home pages) is stated as fact. F
 
 ## Part 2: Babylon.js engine guidance
 
-For Opus, building Voidsworn: a Babylon.js hex fleet tactics game shipped as one HTML build, phone first with a desktop tier, many ships on screen, faction readable effects, beams, shields, particles, background plates and cinematic camera work. Each entry gives the concrete setting, API or pattern, a source URL, and the phone versus desktop note where it matters. Forum wisdom is marked as community practice, and third party walkthroughs are labeled as such.
+For Opus, building Voidsworn: a Babylon.js hex fleet tactics game shipped as one HTML build, desktop first, PC-only, many ships on screen, faction readable effects, beams, shields, particles, background plates and cinematic camera work. Each entry gives the concrete setting, API or pattern, a source URL, and the hero versus simplified note where it matters. Forum wisdom is marked as community practice, and third party walkthroughs are labeled as such.
 
 ### 1. Rendering pipeline
 
@@ -202,21 +206,21 @@ The default pipeline constructor is `new BABYLON.DefaultRenderingPipeline(name, 
 
 Practical settings, from forum threads and a third party walkthrough:
 
-- `pipeline.fxaaEnabled = true` is the cheap AA alternative on phones. FXAA softens edges slightly; MSAA 4 is sharper but costs fill rate.
+- `pipeline.fxaaEnabled = true` is the cheap AA alternative on the simplified tier. FXAA softens edges slightly; MSAA 4 is sharper but costs fill rate.
 - `pipeline.bloomEnabled = true`, `bloomThreshold` around 0.7, `bloomWeight` around 0.5, `bloomScale` around 0.5.
 - `pipeline.imageProcessing.toneMappingEnabled = true` with `toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES`, plus contrast and vignette, is the cinematic grade in one place.
-- Depth of field, motion blur and SSAO2 all cost performance every frame; treat them as desktop tier only.
+- Depth of field, motion blur and SSAO2 all cost performance every frame; treat them as hero tier only.
 
-Phone versus desktop: phone gets FXAA (or MSAA 2), bloom at reduced scale, ACES grade, no depth of field, no motion blur, no SSAO. Desktop gets MSAA 4, full bloom, and the depth effects. Every enabled pipeline effect adds full screen passes and draw calls.
+Simplified versus hero: simplified gets FXAA (or MSAA 2), bloom at reduced scale, ACES grade, no depth of field, no motion blur, no SSAO. Hero gets MSAA 4, full bloom, and the depth effects. Every enabled pipeline effect adds full screen passes and draw calls.
 
 - https://forum.babylonjs.com/t/default-rendering-pipeline-drawcall/58546
 - https://forum.babylonjs.com/t/controlling-the-render-pipeline-with-typescript/4733
 
 #### GlowLayer: selective bloom, and its occlusion catch
 
-GlowLayer renders chosen meshes' emissive color into its own blurred texture and composites it over the frame. Cheaper than full pipeline bloom because it is selective, it is the right tool for shields, engine glow, beam cores and faction accents on a phone.
+GlowLayer renders chosen meshes' emissive color into its own blurred texture and composites it over the frame. Cheaper than full pipeline bloom because it is selective, it is the right tool for shields, engine glow, beam cores and faction accents on the simplified tier.
 
-- `new BABYLON.GlowLayer(name, scene)`, `glow.intensity`, `glow.blurKernelSize`, `glow.mainTextureSamples` (2 is a common phone friendly value).
+- `new BABYLON.GlowLayer(name, scene)`, `glow.intensity`, `glow.blurKernelSize`, `glow.mainTextureSamples` (2 is a common performance-friendly value).
 - `glow.addIncludedOnlyMesh(mesh)` limits the layer to exactly the meshes that should glow; `addExcludedMesh(mesh)` removes meshes from it.
 - `glow.customEmissiveColorSelector` lets you override what color a mesh glows with, and `glow.setMaterialForRendering(mesh, tempMaterial)` swaps in a temporary material just for the glow pass, useful when a mesh's real material is too dim or too hot to glow well.
 - `glow.neutralColor` sets the color that produces no glow.
@@ -240,7 +244,7 @@ PBRMaterial implements a Cook-Torrance model with image based lighting. Two defa
 - `metallic` and `roughness` start as null. Until you set one of them (or a metallicTexture), the material runs in specular glossiness mode, not metallic roughness mode. Always set both explicitly on hull materials.
 - `albedoColor` is linear, like glTF baseColorFactor. Convert hex colors with `Color3.FromHexString(...).toLinearSpace()` or your faction palette will render washed out.
 
-Channel packing for the metallic texture: `useRoughnessFromMetallicTextureGreen = true` with `useRoughnessFromMetallicTextureAlpha = false` reads roughness from green, `useMetallnessFromMetallicTextureBlue = true` reads metalness from blue, `useAmbientOcclusionFromMetallicTextureRed = true` reads occlusion from red. This is the texture budget trick that lets one map carry three material channels, which matters when the phone texture budget is the hard limit.
+Channel packing for the metallic texture: `useRoughnessFromMetallicTextureGreen = true` with `useRoughnessFromMetallicTextureAlpha = false` reads roughness from green, `useMetallnessFromMetallicTextureBlue = true` reads metalness from blue, `useAmbientOcclusionFromMetallicTextureRed = true` reads occlusion from red. This is the texture budget trick that lets one map carry three material channels, which matters when the texture budget is the hard limit.
 
 Environment lighting: assign `scene.environmentTexture` once with `CubeTexture.CreateFromPrefilteredData(url, scene)` using a .env file; every PBR material uses it for diffuse and specular. `scene.environmentIntensity` scales both; `material.environmentIntensity` scales one material. StandardMaterial ignores the scene environment and needs a `reflectionTexture` spelled out. IBL has no occlusion, so keep environmentIntensity low in enclosed scenes and bake occlusion into textures.
 
@@ -261,9 +265,9 @@ The Node Material Editor (nme.babylonjs.com) builds shader graphs visually. The 
 - https://forum.babylonjs.com/t/node-material-from-external-file/37536/5
 - https://forum.babylonjs.com/t/the-problem-with-instances-and-nodematerial-load-from-nme-json/46537
 
-#### KTX2 and Basis: the phone memory win
+#### KTX2 and Basis: the GPU memory win
 
-A 1K JPEG expands to about 5.6 MB of VRAM uncompressed; forum estimates put 2K at about 22 MB and 4K at about 90 MB per texture. Basis Universal inside a KTX2 container transcodes at load time to whatever the GPU supports (BC7 on desktop, ASTC or ETC2 on mobile). One forum case cut a scene from 286 MB of VRAM to 73 MB by compressing, and a third party walkthrough measured an 86 KB PNG becoming 12 KB as ETC1S and 37 KB as UASTC.
+A 1K JPEG expands to about 5.6 MB of VRAM uncompressed; forum estimates put 2K at about 22 MB and 4K at about 90 MB per texture. Basis Universal inside a KTX2 container transcodes at load time to whatever the GPU supports (BC7 on desktop; mobile transcodes are no longer targeted). One forum case cut a scene from 286 MB of VRAM to 73 MB by compressing, and a third party walkthrough measured an 86 KB PNG becoming 12 KB as ETC1S and 37 KB as UASTC.
 
 - `new BABYLON.Texture(url, scene)` accepts .ktx2 URLs directly, and glTF uses them through KHR_texture_basisu.
 - ETC1S is tiny but blocky: use it for color textures. UASTC is larger and near lossless: use it for normal maps and data textures. The glTF Transform commands are `gltf-transform etc1s in.glb out.glb --slots "baseColorTexture"` and `gltf-transform uastc in.glb out.glb --slots "!baseColorTexture"`, with `--zstd` controlling the supercompression level.
@@ -279,7 +283,7 @@ A 1K JPEG expands to about 5.6 MB of VRAM uncompressed; forum estimates put 2K a
 
 #### Draw call budget and batching
 
-Community guidance from a mobile Babylon guide puts the practical budget at roughly 500 to 1000 draw calls at 60 fps on desktop browsers and roughly 100 to 300 on mobile browsers. Treat that as community practice, not an engine guarantee, and measure with the Inspector.
+Community guidance from a mobile Babylon guide puts the practical budget at roughly 500 to 1000 draw calls at 60 fps on desktop browsers  (the mobile figure in the same guide, roughly 100 to 300, is retired with the phone target). Treat that as community practice, not an engine guarantee, and measure with the Inspector.
 
 - Merge static geometry with `BABYLON.Mesh.MergeMeshes(meshes, true)` and dispose the originals. Background plates, terrain and static station geometry are merge candidates.
 - `mesh.createInstance(name)` shares geometry and material across copies, one draw call per material group.
@@ -309,7 +313,7 @@ From the official forum's optimization megathread and community guides:
 - `mesh.isPickable = false` by default; set true only on ships and UI targets. `mesh.cullingStrategy = BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY` is cheaper than the default box test.
 - `scene.skipFrustumClipping = true` only if you have measured that frustum tests cost more than the overdraw they save. `scene.skipPointerMovePicking = true`, `scene.autoClear = false` when the scene fills the viewport, and clear the pointer predicates you do not use.
 - Never allocate in the render loop; reuse vectors with `TmpVectors` and the `xxxToRef` variants.
-- `engine.setHardwareScalingLevel(1.5)` when fill rate limits the phone; values below 1 render above native resolution and cost performance.
+- `engine.setHardwareScalingLevel(1.5)` when fill rate limits the frame; values below 1 render above native resolution and cost performance.
 
 - https://forum.babylonjs.com/t/ideas-for-rendering-and-optimizing-complex-scenes/47511?page=2
 - https://forum.babylonjs.com/t/best-practices-for-optimizing-babylon-js-scenes-not-just-on-lower-end-devices/58688
@@ -328,7 +332,7 @@ SceneOptimizer watches the frame rate and, while it stays below a target, applie
 - The preset's first step merges similar meshes, which breaks per mesh picking. If ships must stay pickable, exclude the merge step.
 - `RenderTargetsOptimization` disables render targets, and GlowLayer uses render targets, so a stock optimizer will silently kill the glow. A forum thread on exactly this failure recommends removing that step from the list when glow matters.
 
-`scene.performancePriority` is the blunt version of the same idea: `BackwardCompatible`, `Intermediate`, `Aggressive`. Intermediate freezes materials when ready (so later changes need `markDirty`), sets `alwaysSelectAsActiveMesh` on new meshes, sets `isPickable` false on new meshes, turns on `skipPointerMovePicking` and turns off `autoClear`. Aggressive is the community recommendation for mobile, but verify ship picking still works after enabling it, because Intermediate's picking changes already bite.
+`scene.performancePriority` is the blunt version of the same idea: `BackwardCompatible`, `Intermediate`, `Aggressive`. Intermediate freezes materials when ready (so later changes need `markDirty`), sets `alwaysSelectAsActiveMesh` on new meshes, sets `isPickable` false on new meshes, turns on `skipPointerMovePicking` and turns off `autoClear`. Aggressive is the community recommendation for constrained targets, but verify ship picking still works after enabling it, because Intermediate's picking changes already bite.
 
 - https://www.webcodingcenter.com/babylon-js/rendering-many-objects-efficiently--the-scene-optimizer-and-automatic-degradation.html
 - https://forum.babylonjs.com/t/i-am-using-scene-optimizer-for-performance-improvement-but-it-reduces-the-glow-layer-intensity-from-the-scene/52101
@@ -368,7 +372,7 @@ No dedicated beam primitive surfaced in this pass, so the construction pattern i
 - Beam core: a thin stretched cylinder or box between muzzle and target, additive blending, emissive material, inside the GlowLayer for the halo. Fade by scaling alpha and length over a few frames, then dispose. Pool beam meshes and reuse them.
 - Shield hit: a short lived particle burst at the impact point plus a flash on the shield bubble mesh (a fresnel rim Node Material or a scaled emissive pulse), with the bubble itself as a separate mesh so the GlowLayer can include it without glowing the whole hull.
 - Explosion: a ParticleSystem burst with a sub-emitter puff on particle death, exactly the pattern in the sub-emitter walkthrough, plus one SPS debris chunk set for capital kills.
-- Particle capacity is fixed at construction, so size systems for the biggest battle. On phones, halve capacities and drop sub-emitters first; the optimizer's ParticlesOptimization step does this automatically if enabled.
+- Particle capacity is fixed at construction, so size systems for the biggest battle. On the simplified tier, halve capacities and drop sub-emitters first; the optimizer's ParticlesOptimization step does this automatically if enabled.
 
 The Node Particle Editor (npe.babylonjs.com) authors particle systems as graphs and saves them as JSON or snippet, the same self hosting rule as Node Materials.
 
@@ -406,7 +410,7 @@ This is the most repeated forum topic after performance, and it maps directly on
 - Feature detect properly: `navigator.gpu` can exist with no adapter behind it, so use `await BABYLON.WebGPUEngine.IsSupportedAsync`, falling back to `new BABYLON.Engine(canvas, true)` in a try catch around init.
 - Guard backend specific choices with `engine.isWebGPU`. Core engine shaders exist in WGSL; a Node Material generates GLSL unless its `shaderLanguage` is set to WGSL, and custom GLSL is translated by WebAssembly glslang and TWGSL fetched from Babylon's CDN on first use (self hostable through the glslang and twgsl options).
 - WebGPU only features worth knowing: `ComputeShader` for GPU compute work, and snapshot rendering (`engine.snapshotRendering = true`), which records one frame's draw calls and replays them. Snapshot rendering saves JavaScript submission time, not GPU time, so it helps CPU bound scenes and does nothing for a GPU bound battle.
-- Phone note: WebGPU availability on mobile browsers is uneven, so the WebGL fallback must stay tested, not just present. Do not ship a WebGPU only build while the phone is the reference device.
+- Desktop note: WebGPU availability varies, so the WebGL fallback must stay tested, not just present. Do not ship a WebGPU-only build while the fallback decision is open (see framing note).
 
 - https://www.webcodingcenter.com/babylon-js/the-engine-the-scene-and-the-render-loop--feature-detecting-and-falling-back-from-webgpu-to-webgl.html
 - https://www.webcodingcenter.com/babylon-js/the-engine-the-scene-and-the-render-loop--webgpuengine-versus-engine.html
@@ -435,7 +439,7 @@ This is the most repeated forum topic after performance, and it maps directly on
 
 ## Part 3: Pipeline glue tooling
 
-The boring half of the asset pipeline: the commands that turn Blender output into files a browser game can actually ship, and the checks that stop bad data reaching the player. Written for a Windows PC build (PowerShell 5.1, double click .bat launchers) feeding a Babylon.js game with phone and desktop asset tiers.
+The boring half of the asset pipeline: the commands that turn Blender output into files a browser game can actually ship, and the checks that stop bad data reaching the player. Written for a Windows PC build (PowerShell 5.1, double click .bat launchers) feeding a Babylon.js game with hero and simplified desktop asset tiers.
 
 ### 1. gltfpack and meshoptimizer
 
@@ -456,14 +460,14 @@ The flags that matter for this pipeline:
 - `-r report.json`: write a JSON report of what changed. Wire this into the build log so a bad optimization is visible before it ships.
 - `-noq`: disable quantization entirely. Useful as a debug escape hatch, not a shipping setting.
 
-A sensible starting recipe for a hull, run twice with different simplification and texture scale for the two tiers:
+A sensible starting recipe for a hull, run twice with different simplification and texture scale for the hero and simplified tiers:
 
 ```
 gltfpack -i hull.gltf -o hull_hi.glb -cc -mi -kn -ke -r hull_hi.json
 gltfpack -i hull.gltf -o hull.glb -cc -mi -kn -ke -si 0.6 -ts 0.5 -r hull.json
 ```
 
-Draco versus meshopt, the honest tradeoff: Draco (KHR_draco_mesh_compression) often produces the smallest geometry files but decodes more slowly, and at least one Babylon forum user reported iPhone problems with Draco that made them switch. Meshopt decodes much faster, and its size is close to Draco once gzip is applied on top. Meshopt is also lossy: repeatedly compressing and decompressing a model loses precision, so compression must be the last stage of the pipeline and uncompressed originals must be kept. Babylon.js supports KHR_mesh_quantization from 4.1 and EXT_meshopt_compression from 5.0 without extra setup. Note that gltfpack does not support Draco at all and discards unknown extensions, so a Draco workflow means gltf-transform or the Blender exporter instead, not gltfpack.
+Draco versus meshopt, the honest tradeoff: Draco (KHR_draco_mesh_compression) often produces the smallest geometry files but decodes more slowly, and at least one Babylon forum user reported iPhone problems with Draco that made them switch (a mobile-only report; desktop decode behavior is what matters now). Meshopt decodes much faster, and its size is close to Draco once gzip is applied on top. Meshopt is also lossy: repeatedly compressing and decompressing a model loses precision, so compression must be the last stage of the pipeline and uncompressed originals must be kept. Babylon.js supports KHR_mesh_quantization from 4.1 and EXT_meshopt_compression from 5.0 without extra setup. Note that gltfpack does not support Draco at all and discards unknown extensions, so a Draco workflow means gltf-transform or the Blender exporter instead, not gltfpack.
 
 Sources: https://meshoptimizer.org/gltf/ , https://manpages.debian.org/testing/gltfpack/gltfpack.1 , https://gltf-transform.dev/modules/extensions/classes/EXTMeshoptCompression , https://forum.babylonjs.com/t/simplify-reorder-quantize-and-compress-meshoptimizer-babylon-sandbox/52034
 
@@ -675,7 +679,7 @@ This is the core workflow. It is the same sequence in every cleanup guide found,
 4. **UVs.** After any retopology or decimation, re-unwrap. Smart UV Project is acceptable for simple forms; complex hulls need hand-marked seams. Check for overlap in the UV Editor and check UV coverage: a hull whose UVs cover only part of the texture space will show stretched or missing paint.
 5. **Bake high to low.** Keep the original dense mesh as the bake source and the cleaned mesh as the target. Bake normal, ambient occlusion, and roughness from high to low so the cleaned hull keeps the surface detail the decimation removed. This is the step that makes a 2,000 triangle hull read like a 200,000 triangle one at game distance.
 6. **Attach kit parts at landmarks, not coordinates.** Hand-built guns, tanks, and slabs mount onto the cleaned hull at named landmarks (bow mount, dorsal spine, flank hardpoint) recorded in the hull manifest, never at hand-measured coordinates per hull. The landmark set is what makes the kit reusable across all 36 hulls. After attachment, bake again so the kit parts share the hull's maps.
-7. **Compress and ship.** Run the existing gltfpack and KTX2 step from the glue section of this guide set, with separate phone and desktop tiers. The phone tier is the gate: if a hull fails the phone budget, it goes back to step 3, not forward with a warning.
+7. **Compress and ship.** Run the existing gltfpack and KTX2 step from the glue section of this guide set, with separate hero and simplified tiers. The simplified tier is the gate: if a hull fails the simplified budget, it goes back to step 3, not forward with a warning.
 
 MeshLab is a free, open source alternative for the repair steps (Repair non-manifold edges and vertices, then Close Holes), useful for batching the audit across all 36 hulls without opening Blender by hand each time.
 
@@ -688,8 +692,8 @@ Run these gates on every hull before it is accepted. A hull that fails a gate go
 - **Silhouette readability.** Render the hull flat black against white at the size it appears in game. If the faction and class do not read from the silhouette alone, the hull fails, regardless of texture quality. This is the game's own silhouette-sheet test, and it is the cheapest gate in the list.
 - **Manifold and solid.** Zero non-manifold edges, zero holes, zero zero-area faces after step 2. The 3D Print Toolbox Solid check must pass.
 - **No floaters.** No disconnected components except deliberately separate kit parts. Nested internal shells get deleted; they cost triangles and break baking.
-- **Triangle budget.** Two numbers per hull, phone tier and desktop tier, set by the project. A hull over its phone budget fails; decimation is not optional polish.
-- **UV coverage and overlap.** UV islands must cover the texture space without overlap, and the texture resolution must match the tier (a 4K map on a phone tier hull is waste, and it is the texture budget problem the asset inventory already flagged).
+- **Triangle budget.** Two numbers per hull, simplified tier and hero tier, set by the project (values are Opus's to set; see framing note). A hull over its simplified budget fails; decimation is not optional polish.
+- **UV coverage and overlap.** UV islands must cover the texture space without overlap, and the texture resolution must match the tier (a 4K map on a simplified tier hull is waste, and it is the texture budget problem the asset inventory already flagged).
 - **Baked lighting check.** The colour map must be flat-lit. If shadows are painted into the albedo, the hull will look wrong under every game light. Reject or re-texture (section 6) rather than compensating with material settings.
 - **Reject on sight.** Melted or fused detail where a gun should be a separate readable part; mirrored or smeared text and insignia; asymmetric geometry on a hull that is supposed to be symmetric; texture seams running across the most visible face.
 
@@ -738,7 +742,7 @@ Img2img is the iteration loop for a plate: keep the composition, change the prom
 
 #### Chain A: AI hull to game hull
 
-AI mesh (any generator in section 2 or 3) to audit (3D Print Toolbox, rollback export) to manifold repair on a copy to decimation or retopology with silhouette checks to UV unwrap to high-to-low bake to kit parts attached at manifest landmarks to a second bake to the gltfpack and KTX2 step from the glue section, phone tier first. The hand-built kit is not decoration on top of the AI mesh; it is the mechanism that fixes the AI mesh's worst property (fused, unreadable detail) by replacing the detail areas with named, reusable parts.
+AI mesh (any generator in section 2 or 3) to audit (3D Print Toolbox, rollback export) to manifold repair on a copy to decimation or retopology with silhouette checks to UV unwrap to high-to-low bake to kit parts attached at manifest landmarks to a second bake to the gltfpack and KTX2 step from the glue section, simplified tier first. The hand-built kit is not decoration on top of the AI mesh; it is the mechanism that fixes the AI mesh's worst property (fused, unreadable detail) by replacing the detail areas with named, reusable parts.
 
 #### Chain B: AI image to game texture
 
