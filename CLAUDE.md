@@ -1,11 +1,22 @@
 # Voidsworn: working rules for Claude
 
+**Start here (Oct 24 2026):**
+- Read HANDOFF.md first.
+- The approved build plan is `contrib/opus/go-forward-plan.md`.
+- The findings registry is `contrib/opus/FINDINGS.md`: check it before trusting any claim in an older doc.
+- Owner rulings of Oct 24 that override older docs:
+  - PC-only;
+  - shields keep faction colours (the cyan-only rule is retired);
+  - battles grow over a run toward about 20 ships (a guide, not a cap);
+  - the dead-star gravity-well board stays;
+  - capture is add, strip or ransom.
+
 - **Ryan's PC first (owner, Oct 21 2026).** Anything heavy runs on Ryan's PC through the test watcher, not in the cloud sandbox: AI model runs (ComfyUI, Pixal3D, Qwen, TRELLIS, Hunyuan), Blender bakes and renders (`voidsworn_test\blender\blender-4.5.14-windows-x64\blender.exe`, GPU), closeshots, smoke tests, load probes. The PC has an RTX 5080 (16 GB), 32 GB RAM and 400+ GB free. The sandbox (about 8 GB RAM, CPU only) is for editing code, small conversions and looking at results; it runs out of memory on full-detail meshes.
 - How the PC runner works, and its pitfalls: see HANDOFF.md ("PC test runner").
 - ComfyUI portable: `Downloads\ComfyUI_windows_portable` (v0.42.1), driven headless by `tools/pc/comfy_run.py`; job I/O in `Downloads\voidsworn_test\comfy_io\CODE\`.
 - Ryan is not a coder: double-click .bat files for anything he runs himself, plain words, screenshots of results.
 - **Ship parts look like they belong (owner, Oct 21 2026).** Hand-built bolt-ons on the AI hulls (guns, racks, funnels, masts, drums, turrets) must make sense where they sit: snapped onto the real hull surface (never floating or sunk), on a visible mount (plate, ball, saddle, column), guns aimed forward or out to the side, never backward (owner, Oct 22: no ship in the game fires backward; bow guns may face forward along the prow, never aimed back into the ship), and placed in matched, symmetric pairs at sensible hard points. Corsair is the exception: haphazard and junky is on-brand there. Soft or blobby AI areas near the bridge and superstructure get rebuilt by hand the same way (tools/blender/hs/c19_kit.py is the worked example).
-- **Space ships, not naval ships (owner, Oct 22 2026: "careful that these don't stretch into obvious naval-looking ships. again, these are SPACE ships").** Keep the concept's look, but never add sea-ship tells: no boat keels or raked stems, jackstaffs, bollards, anchors, crow's nests, yardarms with rigging, mast ladders, lifeboats, portholes in rows along a waterline. Prefer the space versions: armoured flat bellies with chines, sensor housings and antenna arrays, equipment pods, recessed lights, main engine bells and thruster pods, docking hatches, heat radiators.
+- **Space ships, not naval ships (owner, Oct 22 2026: "careful that these don't stretch into obvious naval-looking ships. again, these are SPACE ships").** Keep the concept's look, but never add sea-ship tells: no boat keels or raked stems, jackstaffs, bollards, anchors, crow's nests, yardarms with rigging, mast ladders, lifeboats, portholes in rows along a waterline. Prefer the space versions: armoured flat bellies with chines, sensor housings and antenna arrays, equipment pods, recessed lights, main engine bells and thruster pods, docking hatches, heat radiators. Owner, Oct 24 2026: this covers the whole hull shape (bow profile, keel line, deck line), not only bolted-on parts; crossbar masts and smokestack funnels count as naval tells and become antenna arrays and heat radiators.
 - **Blob sweep for every AI ship (owner, Oct 21 2026: "ensure we catch all of those for all other ships").** Before showing a ship, review it region by region against the concept: bow / midship / stern, each from the top, the side and below (9 cells, studio renders at the same angles as the concept views). Every cell gets a verdict: clean, or rebuild by hand. Things the AI reliably mangles and that get rebuilt by default:
   - guns of any size (turrets, casemates, long cannons, bow chasers, stern guns), rocket racks and launchers
   - bridge and superstructure tiers, masts, funnels, antennas, rails
@@ -15,4 +26,4 @@
   - any thin spiky or crossed sticks (AI wire debris)
   Hand-built parts carry the AI hull's level of surface detail (seams, grit, worn edges; owner: "the level of texture and details seem to vary wildly").
   Parts the concept shows poorly (tops, undersides, racks seen end-on) keep their own hand paint (project_paint KEEP boxes) instead of projection, or they come out a grey blob.
-- **Pipeline gotchas (Oct 21 2026):** the game's ship size comes from hull + kit together (pixal_to_game reads the kit for bounds; cutting the AI bow without it stretched the ship 1.33x). Kit material lights by stored normals (no two-sided lighting) plus a 0.3 paint self-light. closeshot's server needs a big backlog or desktop shots silently drop the kit.
+- **Pipeline gotchas (Oct 21 2026):** the game's ship size comes from hull + kit together (pixal_to_game reads the kit for bounds; cutting the AI bow without it stretched the ship 1.33x). Kit material lights by stored normals (no two-sided lighting); the old 0.3 paint self-light now defaults to 0 (ships3d.js:790). closeshot's server needs a big backlog or desktop shots silently drop the kit.

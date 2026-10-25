@@ -1,5 +1,7 @@
 # NEXT: the build queue
 
+> **Superseded Oct 24 2026.** The build queue is now `contrib/opus/go-forward-plan.md` (approved by Ryan). This file is kept for history and for the per-weapon effects brief under "Effects, doubled down", which the plan's effects pass (A5) uses. Phone and Pixel gates below are retired (PC-only).
+
 Build in this order. Anything not listed here goes to the parking lot at the bottom, not into the current version. Full reasoning: the master review doc (claude.ai artifact aef64607-980c-49ce-977b-ff7b8a32868a).
 
 ## v53: solid and readable (publish each workstream as it lands: v53.1, v53.2, ...)
