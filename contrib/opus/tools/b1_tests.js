@@ -186,24 +186,36 @@ check('Onboarding 5: the acting enemy gets a pulsing ring and an "Enemy acting" 
 });
 
 // ---- B2 capture rework (R4): add, strip or ransom ----
-check('B2 capture: a prize gets add, strip or ransom; ransom pays, the chain moves on, a reload resumes at the prize', () => {
+check('R23 batched prizes: one screen lists every prize with add, strip and ransom side by side, and sensible defaults', () => {
   const { summary } = rewardSetup(); summary.wrecks = []; summary.prizes = [{ tpl: 'h_picket', name: 'Prize One', hpf: .5, fac: 'hegemony', wk: ['battery'], cp: 1 }, { tpl: 'h_picket', name: 'Prize Two', hpf: 1, fac: 'hegemony', wk: ['battery'], cp: 1 }];
   T.RUN.cpCap = T.fleetCP() + 1; T.rewardFlow(summary); if (T.SAVED_RUN.reward.stage !== 'prize') throw new Error('stage ' + T.SAVED_RUN.reward.stage);
-  reload(); if (!/Prize: the Prize One/.test(T.modalHtml) || !/Add it to the fleet/.test(T.modalHtml)) throw new Error('prize screen not shown');
-  const c0 = T.RUN.credits, f0 = T.RUN.fleet.length; T.ACT.prizePick('add'); if (T.RUN.fleet.length !== f0 + 1) throw new Error('add failed');
-  if (!/Prize: the Prize Two/.test(T.modalHtml) || !/disabled/.test(T.modalHtml)) throw new Error('second prize should not fit');
-  T.ACT.prizePick('add'); if (T.RUN.fleet.length !== f0 + 1) throw new Error('add past the cap went through');
-  T.ACT.prizePick('ransom'); return T.RUN.credits > c0 && T.SAVED_RUN.reward.prizes.length === 0 && T.SAVED_RUN.reward.stage !== 'prize';
+  T.ACT.prizeStep(); const h = T.modalHtml;
+  if (!/Prize One/.test(h) || !/Prize Two/.test(h) || (h.match(/data-act="prizeSet"/g) || []).length !== 6 || (h.match(/data-act="prizeConfirm"/g) || []).length !== 1) throw new Error('not one screen with 3 choices per prize');
+  /* default: the first fits and is added; the second has no room left, so its Add is disabled and it falls to strip or ransom */
+  if (!/class="sel" data-act="prizeSet" data-arg="0:add"/.test(h)) throw new Error('first prize should default to add');
+  if (!/data-arg="1:add" disabled/.test(h) || /class="sel" data-act="prizeSet" data-arg="1:add"/.test(h)) throw new Error('second prize add should be disabled');
+  const c0 = T.RUN.credits, f0 = T.RUN.fleet.length; T.ACT.prizeConfirm();
+  return T.RUN.fleet.length === f0 + 1 && T.RUN.credits > c0 && T.SAVED_RUN.reward.prizes.length === 0 && T.SAVED_RUN.reward.stage !== 'prize';
 });
-check('B2 capture: strip gives a refit and scrap credits', () => {
+check('R23 batched prizes: picks survive a reload, an Add past the command cap cannot go through, one confirm applies all', () => {
+  const { summary } = rewardSetup(); summary.wrecks = []; summary.prizes = [{ tpl: 'h_picket', name: 'Keep A', hpf: 1, fac: 'hegemony', wk: ['battery'], cp: 1 }, { tpl: 'h_picket', name: 'Keep B', hpf: 1, fac: 'hegemony', wk: ['battery'], cp: 1 }];
+  T.RUN.cpCap = T.fleetCP() + 1; T.rewardFlow(summary); T.ACT.prizeStep();
+  T.ACT.prizeSet('0:ransom'); T.ACT.prizeSet('1:add'); reload();
+  const h = T.modalHtml; if (!/class="sel" data-act="prizeSet" data-arg="0:ransom"/.test(h) || !/class="sel" data-act="prizeSet" data-arg="1:add"/.test(h)) throw new Error('picks lost on reload');
+  T.ACT.prizeSet('0:add'); /* now A takes the last point, so B must drop off Add */
+  const h2 = T.modalHtml; if (!/data-arg="1:add" disabled/.test(h2)) throw new Error('second add still allowed past the cap');
+  const f0 = T.RUN.fleet.length, inv = T.RUN.inventory.length, c0 = T.RUN.credits; T.ACT.prizeSet('1:strip'); T.ACT.prizeConfirm();
+  return T.RUN.fleet.length === f0 + 1 && T.RUN.inventory.length === inv + 1 && T.RUN.credits > c0 && T.RUN.fleet.some(s => s.name === 'Keep A');
+});
+check('R23 batched prizes: strip gives a refit and scrap credits', () => {
   const { summary } = rewardSetup(); summary.wrecks = []; summary.prizes = [{ tpl: 'h_vanguard', name: 'Strip Me', hpf: .8, fac: 'hegemony', wk: ['battery', 'lance'], cp: 4 }];
-  T.rewardFlow(summary); const inv = T.RUN.inventory.length, c0 = T.RUN.credits; T.ACT.prizeStep(); T.ACT.prizePick('strip'); return T.RUN.inventory.length === inv + 1 && T.RUN.credits > c0;
+  T.rewardFlow(summary); const inv = T.RUN.inventory.length, c0 = T.RUN.credits; T.ACT.prizeStep(); T.ACT.prizeSet('0:strip'); T.ACT.prizeConfirm(); return T.RUN.inventory.length === inv + 1 && T.RUN.credits > c0;
 });
-
-check('B2 capture: ransom pays 15% less for each ransom already taken this run, never below 40%', () => {
+check('B2 capture: ransom pays 15% less for each ransom already taken this run, never below 40%, inside one batch too', () => {
   const { summary } = rewardSetup(); summary.wrecks = []; const pz = n => ({ tpl: 'h_vanguard', name: 'R' + n, hpf: 1, fac: 'hegemony', wk: ['battery'], cp: 4 });
-  summary.prizes = [pz(1), pz(2)]; T.RUN.cpCap = 0; T.rewardFlow(summary); const c0 = T.RUN.credits; T.ACT.prizePick('ransom'); const r1 = T.RUN.credits - c0; T.ACT.prizePick('ransom'); const r2 = T.RUN.credits - c0 - r1;
-  return r1 > 0 && Math.abs(r2 - r1 * .85) <= 1;
+  summary.prizes = [pz(1), pz(2)]; T.RUN.cpCap = 0; T.rewardFlow(summary); T.ACT.prizeStep(); T.ACT.prizeSet('0:ransom'); T.ACT.prizeSet('1:ransom');
+  const v = [...T.modalHtml.matchAll(/<b>Ransom<\/b><small>(\d+) credits/g)].map(m => +m[1]); const c0 = T.RUN.credits; T.ACT.prizeConfirm();
+  return v.length === 2 && v[0] > 0 && Math.abs(v[1] - v[0] * .85) <= 1 && T.RUN.credits - c0 === v[0] + v[1] && T.RUN.ransoms === 2;
 });
 
 const ASYNC = [];

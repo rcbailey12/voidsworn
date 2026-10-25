@@ -278,22 +278,40 @@ function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODU
 // plus scrap (its weapons decide which refit, as in salvage), or ransom it for credits. A prize that cannot fit at all was already scrapped
 // at the end of the battle (campaign3d.js). Values: ship value = shop price (or 40 per command point for hulls with no price, shipValue);
 // ransom = 55% of that, scaled 60 to 100% by the hull left, and 15% less for each ransom already taken this run (never below 40%: owners
-// learn; outside review, Oct 25); strip = the refit plus 15%; scrap (full fleet) = 35%.
-function prizeOffer(p){ const v=shipValue(p.tpl), fits=fleetCP()+(p.cp||1)<=RUN.cpCap, y=salvageYield({wk:p.wk||[],ab:p.ab,regen:p.regen,sh:p.sh,cp:p.cp,tpl:p.tpl,cause:'board'});
+// learn; outside review, Oct 25); strip = the refit plus 15%; scrap (full fleet) = 35%. No upkeep for kept prizes (Ryan, R23).
+// R23 (Oct 25): ONE screen for every prize of the battle, values side by side, a default per prize, one confirm. Only the player's own
+// picks are saved (RUN.reward.prizeSel), so a reload shows the same screen with the same picks; defaults are worked out fresh each time.
+function prizeRansom(p,n){ return Math.round(shipValue(p.tpl)*.55*(.6+.4*(p.hpf||1))*Math.max(.4,Math.pow(.85,n||0))); }
+function prizeOffer(p,nR){ const v=shipValue(p.tpl), y=salvageYield({wk:p.wk||[],ab:p.ab,regen:p.regen,sh:p.sh,cp:p.cp,tpl:p.tpl,cause:'board'});
   const pool=modulePool(), mod=y.mod||(pool.length?pool[Math.floor((v*7+(p.cp||1)*13)%pool.length)]:null);
-  return {fits,ransom:Math.round(v*.55*(.6+.4*(p.hpf||1))*Math.max(.4,Math.pow(.85,RUN.ransoms||0))),strip:{mod,cred:Math.round(v*.15)}}; }
-ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward, p=R&&R.prizes&&R.prizes[0]; if(!p){ if(R) R.stage=(window._wrecks||[]).length?'salvage':'pick'; return (window._wrecks||[]).length?ACT.salvageStep():ACT.rewardNext(); }
-  const o=prizeOffer(p), H=HULLS[p.tpl], left=R.prizes.length-1;
-  modal(`<h2>Prize: the ${esc(p.name)}</h2><p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">A prize is an enemy ship your boarders took. Keep it, strip it, or sell it back.</p>
-    <p class="muted">${esc(H.n)}, ${esc(H.cls||'')}, ${H.cp||1} command point${(H.cp||1)>1?'s':''}, ${Math.round((p.hpf||1)*100)}% hull.${left?` ${left} more prize${left>1?'s':''} after this one.`:''}</p>
-    <button class="choice" data-act="prizePick" data-arg="add" ${o.fits?'':'disabled'}><b>Add it to the fleet</b><small>${o.fits?`Joins at ${Math.round((p.hpf||1)*100)}% hull with a green captain.`:`Not enough command points (${fleetCP()} of ${RUN.cpCap} used).`}</small></button>
-    <button class="choice" data-act="prizePick" data-arg="strip"><b>Strip it</b><small>${o.strip.mod?`${esc(modName(o.strip.mod))} for the hold, plus `:''}${o.strip.cred} credits in scrap.</small></button>
-    <button class="choice" data-act="prizePick" data-arg="ransom"><b>Ransom it</b><small>${o.ransom} credits from its owners.${RUN.ransoms?' They pay less each time you sell them their own ships.':''}</small></button>`); };
-ACT.prizePick=k=>{ const R=RUN.reward, p=R&&R.prizes&&R.prizes[0]; if(!p) return ACT.prizeStep(); const o=prizeOffer(p);
-  if(k==='add'){ if(!o.fits) return; const sh=newShip(p.tpl); sh.name=p.name; sh.hp=clamp(Math.round(derive(sh).maxHp*(p.hpf||1)),1,derive(sh).maxHp); RUN.fleet.push(sh); toast(`The ${p.name} joins the fleet.`); }
-  else if(k==='strip'){ if(o.strip.mod) RUN.inventory.push(o.strip.mod); RUN.credits+=o.strip.cred; toast(`The ${p.name} is stripped${o.strip.mod?`: ${modName(o.strip.mod)} stowed`:''}, +${o.strip.cred} credits.`); }
-  else { RUN.credits+=o.ransom; RUN.ransoms=(RUN.ransoms||0)+1; toast(`The ${p.name} is ransomed for ${o.ransom} credits.`); }
-  try{ tel('prize_pick',{k,tpl:p.tpl}); }catch(e){} R.prizes.shift(); saveRun(); ACT.prizeStep(); };
+  return {fits:fleetCP()+(p.cp||1)<=RUN.cpCap,ransom:prizeRansom(p,nR==null?RUN.ransoms:nR),strip:{mod,cred:Math.round(v*.15)}}; }
+// Walks the prizes in battle order: an Add only counts if the command points left after the earlier Adds still hold it, and each Ransom
+// lowers the next one. Default: Add a ship that fits with at least 40% hull, otherwise whichever of Strip or Ransom is worth more (a refit
+// counted at half its shop price).
+function prizePlan(R){ const sel=R.prizeSel||[]; let cp=fleetCP(), nR=RUN.ransoms||0;
+  return R.prizes.map((p,i)=>{ const o=prizeOffer(p,nR), c=p.cp||1, room=cp+c<=RUN.cpCap;
+    const sv=o.strip.cred+(o.strip.mod?Math.round(MODULES[o.strip.mod].cost*.5):0), dk=room&&(p.hpf||1)>=.4?'add':sv>=o.ransom?'strip':'ransom';
+    let k=sel[i]||dk; if(k==='add'&&!room) k=dk==='add'?(sv>=o.ransom?'strip':'ransom'):dk;
+    if(k==='add') cp+=c; if(k==='ransom') nR++; return {p,o,room,k,mine:!!sel[i]&&sel[i]===k}; }); }
+ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward; if(!R||!(R.prizes||[]).length){ if(R) R.stage=(window._wrecks||[]).length?'salvage':'pick'; return (window._wrecks||[]).length?ACT.salvageStep():ACT.rewardNext(); }
+  const rows=prizePlan(R), n=rows.length, cpAfter=fleetCP()+rows.reduce((t,r)=>t+(r.k==='add'?(r.p.cp||1):0),0);
+  const cred=rows.reduce((t,r)=>t+(r.k==='ransom'?r.o.ransom:r.k==='strip'?r.o.strip.cred:0),0), refits=rows.filter(r=>r.k==='strip'&&r.o.strip.mod).length, joins=rows.filter(r=>r.k==='add').length;
+  const sum=[joins?`${joins} ship${joins>1?'s':''} join${joins>1?'':'s'}`:'',refits?`${refits} refit${refits>1?'s':''} for the hold`:'',cred?`+${cred} credits`:''].filter(Boolean).join(', ')||'Nothing';
+  modal(`<h2>Prize ship${n>1?'s':''}</h2><p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">Your boarders took ${n>1?`${n} enemy ships`:'an enemy ship'}. Keep, strip or sell back each one, then confirm once.</p>
+    <p class="muted">Command points: ${fleetCP()} of ${RUN.cpCap} used${joins?`, ${cpAfter} after these join`:''}.${RUN.ransoms||rows.some(r=>r.k==='ransom')?' Owners pay less for each ship you sell back to them.':''}</p>
+    ${rows.map((r,i)=>{ const H=HULLS[r.p.tpl], hp=Math.round((r.p.hpf||1)*100), b=(k,t,sm,dis)=>`<button class="${r.k===k?'sel':''}" data-act="prizeSet" data-arg="${i}:${k}" ${dis?'disabled':''}><b>${t}</b><small>${sm}</small></button>`;
+      return `<div class="choice" style="cursor:default;margin:6px 0 12px"><b>${esc(r.p.name)}</b> <span class="dim">${esc(H.n)}, ${H.cp||1} command point${(H.cp||1)>1?'s':''}, ${hp}% hull</span>
+      <div class="orders" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">${b('add','Add',r.room?`Joins at ${hp}% hull`:'No command points left',!r.room)}${b('strip','Strip',`${r.o.strip.mod?esc(modName(r.o.strip.mod))+' + ':''}${r.o.strip.cred} credits`)}${b('ransom','Ransom',`${r.o.ransom} credits`)}</div></div>`; }).join('')}
+    <p class="muted" style="margin-top:10px">You get: ${sum}.</p><button class="primary" data-act="prizeConfirm">Confirm</button>`); };
+ACT.prizeSet=a=>{ const R=RUN.reward; if(!R||!(R.prizes||[]).length) return; const [i,k]=String(a).split(':'); if(!R.prizes[+i]||!['add','strip','ransom'].includes(k)) return;
+  R.prizeSel=R.prizeSel||[]; R.prizeSel[+i]=k; saveRun(); ACT.prizeStep(); };
+ACT.prizeConfirm=()=>{ const R=RUN.reward; if(!R||!(R.prizes||[]).length) return ACT.prizeStep(); const rows=prizePlan(R), got=[];
+  for(const r of rows){ const p=r.p, o=r.o;
+    if(r.k==='add'){ const sh=newShip(p.tpl); sh.name=p.name; sh.hp=clamp(Math.round(derive(sh).maxHp*(p.hpf||1)),1,derive(sh).maxHp); RUN.fleet.push(sh); got.push(`the ${p.name} joins`); }
+    else if(r.k==='strip'){ if(o.strip.mod) RUN.inventory.push(o.strip.mod); RUN.credits+=o.strip.cred; got.push(`the ${p.name} is stripped (+${o.strip.cred})`); }
+    else { RUN.credits+=o.ransom; RUN.ransoms=(RUN.ransoms||0)+1; got.push(`the ${p.name} is ransomed (+${o.ransom})`); }
+    try{ tel('prize_pick',{k:r.k,tpl:p.tpl,def:!r.mine}); }catch(e){} }
+  R.prizes=[]; R.prizeSel=null; saveRun(); const t=got.join(', '); toast(t.charAt(0).toUpperCase()+t.slice(1)+'.'); ACT.prizeStep(); };
 ACT.salvageStep=()=>{ closeModal(); const ws=window._wrecks||[];
   modal(`<h2>Salvage the field</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${rewardDef('salvage')}${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
     return `<div class="choice" style="cursor:default"><b>${esc(w.name)}</b> <span class="dim">${esc(w.cls||'')}${F?', '+esc(F.n):''}</span><small>${esc(CAUSE_WORD[w.cause]||'destroyed')}${w.by?` by the ${esc(w.by)}`:''}.</small>
