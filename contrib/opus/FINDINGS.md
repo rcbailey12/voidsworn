@@ -37,6 +37,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | R12 | Barge shape (A1 step 1, Oct 24 late): option C, the double-sided hulk (diamond bow, matching blocks top and bottom, side engine pods, fins up and down), with some of option B's salvage junk bolted on (a stolen block, mismatched engine pods) so it reads Corsair. Renders: docs/ship_pipeline/c19_example/a1_options/. |
 | R13 | Barge v15 shape and kit approved (A1 step 2, Oct 25 morning): "Yes, go to paint". Step 3 (paint and material texture) is next; the plating reading faint and the plain top surface in-game are its targets. |
 | R14 | Barge paint approved (A1 step 3, Oct 25): bolted stolen panels in rust, Hegemony grey, bare steel and bone; "Yes, on to effects". Painted patch cells were tried and dropped (they read as warship dazzle camouflage, a naval tell). |
+| R15 | Oct 25, 09:06: Ryan OK'd installing Godot (portable) for the A2 engine test, which starts alongside the end of A1. Ryan, 09:07: follow the entire plan from the handoff and the GitHub plans, stopping only at the weigh-in points. |
 
 ## Premises and rulings checked against the game
 
