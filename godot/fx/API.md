@@ -16,6 +16,7 @@ fx.setup({
     "reduce_flashing": false,          # settings toggle, can change any time (see 8)
     "shake": 1.0,                      # settings slider 0..1 ("reduce screen shake" = 0.5, off = 0)
     "unit": 1.0,                       # world units per game unit; 1.0 = the game's scale (HEX_S = 10, hexes 17.3 across)
+    "starboard_z": 1,                  # +1: root +Z is starboard (G2's mirrored roots); -1: root +Z is port
 })
 ```
 
@@ -31,7 +32,7 @@ fx.remove_ship(id)                     # removes the ship and its effects at onc
 ```
 
 - `id`: the rules unit id (String) from `view()`.
-- `root`: the ship's Node3D. **Ship frame:** bow along local +X, up +Y, port +Z (the enginetest and .vsm convention). G2 turns the root for facing and moves it along paths; fx effects attached to the ship follow it.
+- `root`: the ship's Node3D. **Ship frame:** bow along local +X, up +Y. G2 mirrors each hull in z under the root (main 680c6ea), so root +Z is **starboard** on screen and -Z is port; fx follows that by default (`setup({"starboard_z": 1})`, the default; pass -1 for an unmirrored root where +Z is port). fx finds every hull point from the real, transformed triangles, so mirroring never puts an effect off the hull; only the facing quads (0 prow, 1 starboard, 2 rear, 3 port) use this setting. G2 turns the root for facing and moves it along paths; fx effects attached to the ship follow it.
 - `info` (all optional except `faction`):
   - `faction`: `"voidsworn"`, `"hegemony"`, `"corsair"`, `"chorus"`, `"ithar"`, `"deathless"`;
   - `meshes`: Array of the hull MeshInstance3Ds (default: every MeshInstance3D under `root`). fx reads their triangles once (hit points, breach placement, death pieces), never changes their materials, and hides them at the break-up of a death;
@@ -131,7 +132,7 @@ w.update(delta)                        # or let it run its own _process (default
 - Backdrop per battle: sky with nebula tinted per enemy faction (the game's BIOMES colours), one planet or moon at most (no twin moons), no stray traffic ships, no rocks over moons.
 - The dead-star board (`view().map.deadstar`): the black hole at that hex with gravitational lensing of the scene behind it, a photon ring and a turning accretion disc (R2, R24). The gravity-well rules stay as they are; this is only the picture.
 - Terrain from `view().terrain`: faceted asteroid blockers on `rock` hexes (tall, sharp, varied per biome rock kind: stone, ice, iron, carbon, crystal), sparse dressing off the playable hexes, debris fields, hulks and wrecks.
-- `w.hex_world` is the same hex-centre function G2 uses (`x = HEX_W * (q + r/2)`, `z = -1.5 * HEX_S * r`).
+- Pass G2's own hex-centre function as `hex_world` (G2 uses `x = HEX_W * (q + r/2)`, `z = +1.5 * HEX_S * r`, which keeps the board the same way round as the browser game); the world never computes hex centres itself.
 
 ## 10. Look (`godot/render/look.gd`)
 
