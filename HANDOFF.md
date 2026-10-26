@@ -1,4 +1,4 @@
-# Voidsworn: handoff (Oct 25, 2026, afternoon)
+# Voidsworn: handoff (Oct 25, 2026, night)
 
 ## 1. What and where
 
@@ -27,22 +27,18 @@
 
 ## 2. Current state
 
-- **Phase status** (top of the plan): A0, B0, A1 DONE. B1 waits only on Ryan's playtest. B2 items 1 to 3 built; PC checks running. A2 in progress. A3 to A5 and B3 to B5 not started.
-- **Last recorded publish:** v53.8 (artifact Version 65, Oct 21). Nothing since is published; the playtest build is `index_test.html` from `build.py test`.
+- **Phase status** (top of the plan): A0, B0, A1, A2 DONE. B1 and B2 wait only on Ryan's fuller playtest. A3 DECIDED with a proof running (R28). A4, A5 and B3 to B5 not started.
+- **Last recorded publish:** v53.8 (artifact Version 65, Oct 21). Nothing since is published; the playtest build is `index_test.html` from `build.py test`, run on the PC with `voidsworn_test\play.bat` (opens Edge).
 - **Barge (C19_51) v15:** shape and paint approved as steps (R13, R14); final sign-off with its effects in A5 (R16). Source of truth: `tools/blender/a1/barge_v15.py` plus `assets/ships/C19_51/`.
-- **B1 (fix what can eat a win):** every listed fix in main with scripted checks (`contrib/opus/tools/b1_tests.js`, 39 ok), onboarding 1 to 5, enemy markers, and B-16 (AI hulls vanished on first damage) fixed. PC smoke passed.
-- **B2 (faster, then bigger battles):** in main (1908387, f86f04a, 09f4439, c747220):
-  - one PACE table (core.js) read by game and sim; enemy turns and follow-up shots faster; Enter or Space hurries an enemy turn;
-  - the size ramp (battle.js RAMP): about 9 / 13 / 18 ships on board by sector (soft ceiling 10 / 14 / 20), leaner escorts, budgets scaled by the player's fleet power;
-  - capture: add, strip or ransom on ONE batched prize screen with defaults (R23); ransom pays less with repeats; full fleet auto-scraps with a toast; flagships blocked;
-  - sim `real` timing model (FINDINGS S8): 7.3 to 14.2 s per round at the new sizes (limit 15, target 12; sector 3 slightly over target).
-  - **Running on the PC now** (job in `voidsworn_test\build`, outputs `b2_fuzz.txt`, `b2_boss.txt`, `b2_pace.txt`, tails in smoke_log.txt): `fuzz 2000`, `bossmatrix 32` (sector 1, escorts at 0.3), `pacecheck.py`. Read them, update FINDINGS F2, S5 and S6, then Ryan's playtest of B1 plus B2 is the exit.
-- **A2 engine test** (contrib/opus/enginetest/; SPEC.md is the brief; scope trimmed by Ryan, R20; environment added, R21; Babylon moved to 9.30.0 for fairness, R22):
-  - Babylon (8.20 build) ran on the PC: 6 ships 1.0 ms a frame at 4K, 24 ships 1.9 ms. Black squares on the real GPU fixed (NaN guards). Its builder is moving to 9.30, then max mode, 40 ships, physics, presentation, board slice, environment.
-  - Godot 4.7.2 (v2) ran on the PC: 6 ships 2.2 ms at 4K, 24 ships 6.8 ms and 40 ships 14.4 ms (about 4 ms per frame unexplained, being profiled), max mode 5.2 ms but it loses hull albedo (bug). Its builder is fixing that list, then board, environment and the .exe.
-  - Shared max-detail six ships (8K PBR, emissive, more geometry) plus env assets (dead-star sky, asteroids) are being built by a third helper (tools/blender/a2detail/, PC job tools/pc/jobs/a2_detail.bat).
-  - Raw PC results: `contrib/opus/enginetest/results/run_2026-10-25/`. RESULTS.md and the blind reveal come after all three land. Hold pictures from Ryan until then (one combined blind reveal, R18).
-- **Outside models:** Muse runs DeepSeek and Qwen from briefs in `contrib/opus/briefs/`. Done: engine choice and B2 syntheses (picked up, X13), Muse's audit of Opus (accepted, X15). Running: `muse_2026-10-25b_while_opus_paused.md` (A5 effects sheets, B3 admiral levers, port plan, FINDINGS follow-up pass).
+- **B1:** every listed fix in main with scripted checks (`contrib/opus/tools/b1_tests.js`, 39 ok). PC smoke passed.
+- **B2:** built and PC-checked (contrib/opus/compute/b2/pc_checks_2026-10-25.txt): one PACE table, faster enemy turns, Enter or Space to hurry, the size ramp (about 9 / 13 / 18 ships by sector), capture on one batched prize screen (R23), admiral fixes in data.js (sector 1 boss spread 57 to 89%, inside the 50 to 90 band, S6 FIXED; 96 runs per admiral for admiral calls, S10). Ryan's first short playtest (2 encounters, in Edge): turns a bit quicker, bigger enemies fine, occasional hitches (B-17; `hitchprobe.py` is ready for a PC run, lower priority now that the game may move to Godot).
+- **Slow-play fix:** Ryan's Chrome had fallen back to software rendering. play.bat now opens Edge, and the game shows a red banner when the browser is not using the graphics card (scene3d.js, 6dd31d4).
+- **A2 engine test DONE:** `contrib/opus/enginetest/RESULTS.md` (numbers, blind reads, port cost). Blind page: https://claude.ai/artifact/LtFoz3Fyatn2bVGLSL9FjE (A = Babylon, B = Godot). Godot won lighting, detail and asteroids; Babylon won effects clearly; Godot's shield is not visible; Chorus and Deathless too dark in Godot; Ithar broken in both (asset).
+- **A3 engine call (R28): Godot, after a short proof.** Two helpers are on it:
+  - effects parity: the Godot builder (agent ad36c07a1a9f9cf41) rebuilds Babylon's breach, venting and smoke, explosions, trails, shield ripple and board laser in `contrib/opus/enginetest/godot/`, plus the dark-hull fix; then Opus runs the shots on the PC and shows Ryan side by side;
+  - rules parity: the B2 helper (agent a373165be9bedd0f7) ports one seeded battle to GDScript in `contrib/opus/enginetest/godot_rules/` with an exact PRNG port and a per-turn state hash against the Node sim; `tools/pc/parity.bat` prints PASS or FAIL.
+  - Both pass: the game moves to Godot (port plan: contrib/muse/reviews/engine_port_plan_synthesis.md; the Node sim stays the golden oracle; voidsworn-3d.html stays the fallback during the port). Either struggles: Babylon 9.30 stays.
+- **Outside models:** Muse runs DeepSeek and Qwen from briefs in `contrib/opus/briefs/`. Done: engine choice and B2 syntheses (picked up, X13), Muse's audit of Opus (accepted, X15). Also done: `muse_2026-10-25b_while_opus_paused.md` (A5 effects sheets, B3 admiral levers, port plan, FINDINGS follow-up pass; registry edits applied).
 - **Project skills** now exist in `.claude/skills/` (ship-kit, screenshot-verdict, playtest-and-balance). Use them.
 
 ## 3. Decisions
@@ -74,15 +70,15 @@
 ## 4. Open questions for Ryan
 
 None blocking. He weighs in next at:
-- the B1 plus B2 playtest run (what to feel: quicker enemy turns, Enter or Space to hurry, bigger fleets with fragile escorts, the one-screen prize choice; plus the B1 list: reward-screen reloads, the retreat dialog, boarding a flagship, a full Corsair fleet, Standard AI on a fresh profile);
-- the engine call (A3) after the blind reveal and RESULTS.md;
+- the proof results (side-by-side effects sheets plus parity PASS or FAIL), then the final switch;
+- a fuller B1 plus B2 playtest when convenient (reward-screen reloads, the retreat dialog, boarding a flagship, a full Corsair fleet, the one-screen prize choice);
 - visual sign-offs (plan section 9).
 
 ## 5. Next tasks
 
-1. **B2 checks:** read the PC results (fuzz must show 0 exceptions; sector 1 boss matrix against the 50 to 90% band; pace check), update FINDINGS and the plan, sync c747220 (campaign_run.js, head.html) to the PC build, then ask Ryan for the playtest.
-2. **A2:** run each helper's milestone on the PC as it lands (fresh staging folder per job; verify job.bat; separate run.request). When Babylon 9.30, Godot fixes and the max-detail assets are all in: run main, stress, 40 and max at 1440p and 4K for both, collect matching stills, write RESULTS.md (numbers, the Muse engine synthesis points, X12 Steam overlay, port cost), build the blind side-by-side (A and B labels), then A3 with Ryan.
-3. **Muse returns:** check the four syntheses from the afternoon brief and fold them into A5, B3 and the A3 page; apply the follow-up registry edits.
+1. **A3 proof:** when each helper reports, run its job on the PC (fresh staging folder; verify job.bat; separate run.request; restart watcher.bat by computer control if needed). Build A/B sheets of the effects (reuse `contrib/opus/enginetest/blind/blind.py`; labels can be open now), run `parity.bat`, record the result in FINDINGS and the plan, then give Ryan the switch call.
+2. **If Godot:** turn the port plan into plan phases (A4 then builds in Godot); K1 still comes before A4. **If Babylon:** move the game to 9.30 (X16) and fold the effects lessons into A5.
+3. **Later:** B-17 hitch probe (only if Babylon stays), B3 notes (Hegemony boss 54%, Deathless 96%, Chorus 59% in the subset), fix the Ithar source mesh, A5 using Muse's effects sheets.
 
 ## 6. Gotchas
 
@@ -124,6 +120,12 @@ None blocking. He weighs in next at:
 - Bigger B2 battles make `fuzz 2000` take about an hour on the PC.
 - Effects that look fine in software rendering can show black squares on the real GPU (NaN); guard shaders (screenshot-verdict skill).
 
+**Oct 25 night lessons:**
+- The watcher window gets closed sometimes; if a job does not start in a minute, restart it by computer control (grants expire after 30 minutes idle: resolve_access, then request_access again).
+- A slow game on Ryan's PC: check the WebGL renderer first (Claude in Chrome javascript_tool). "Microsoft Basic Render Driver" means software rendering.
+- Depth of field in test stills made Ryan think the ship detail was blurry; keep it off except mild on hero shots.
+- Messaging a finished helper by its agent id resumes it with its context.
+
 **Checks and the game:**
 - closeshot's local server needs a big backlog (request_queue_size 256), or desktop shots silently lack the kit.
 - Full smoke takes about 4 min on the PC. Smoke does not catch invisible hulls: add a PC closeshot plus console capture (`errprobe.py`).
@@ -138,5 +140,5 @@ None blocking. He weighs in next at:
 
 Starter line:
 ```
-Read HANDOFF.md, then contrib/opus/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). You own the approved plan: read the B2 PC check results and get Ryan's B1 plus B2 playtest, keep A2 moving (run each engine milestone on the PC, then RESULTS.md and the blind reveal for A3), and fold in Muse's afternoon syntheses.
+Read HANDOFF.md, then contrib/opus/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). You own the approved plan. The engine call is Godot after a short proof (R28): collect the effects-parity and rules-parity helper results, run both on Ryan's PC, show him side-by-side effects sheets and the parity PASS or FAIL, then plan the port or stay on Babylon 9.30.
 ```
