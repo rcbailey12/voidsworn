@@ -30,7 +30,7 @@ function mapScreen(){
   const byId={}; for(const c of m.cols) for(const n of c) byId[n.id]=n;
   for(const n of Object.values(byId)) if(!n.done&&!n.enc&&(n.type==='battle'||n.type==='elite')) Object.assign(n,rollEncounter(n.type,n.col)); // older saves
   if(!m.region&&typeof pickRegion==='function'){ try{ m.region=pickRegion(m.fac); m.biome=rollBiome(m.region); for(const n of Object.values(byId)) if(!n.done){ n.map=regionMap(m.region,n.col,m.cols.length); fitEncounter(n); } saveRun(); }catch(e){} } // v47: runs started before regions
-  ensurePatrons(); for(const n of Object.values(byId)) if(!n.done&&!n.rw&&(n.type==='battle'||n.type==='elite'||n.type==='boss')) n.rw=rollNodeReward(n.type);
+  ensureNemesis(); ensurePatrons(); for(const n of Object.values(byId)) if(!n.done&&!n.rw&&(n.type==='battle'||n.type==='elite'||n.type==='boss')) n.rw=rollNodeReward(n.type);
   if(nodeSeeds(Object.values(byId))) saveRun(); // v53: each fight node carries its battle seed in the save, so a mid-battle reload replays the same fight
   const edges=m.edges.map(([a,b])=>{ const A=byId[a],Bn=byId[b]; const trav=A.done&&(Bn.done||RUN.pos===b);
     return `<line x1="${PX(A)}" y1="${PY(A)}" x2="${PX(Bn)}" y2="${PY(Bn)}" stroke="${trav?'#d0a64b':RUN.pos===a&&avail.has(b)?'rgba(208,166,75,.55)':'rgba(230,220,196,.13)'}" stroke-width="${trav?3:2}" ${RUN.pos===a&&avail.has(b)?'stroke-dasharray="6 5"':''}/>`; }).join('');
@@ -40,7 +40,7 @@ function mapScreen(){
       <title>${NODE_INFO[n.type].n}${n.map&&MAP_NAME[n.map]&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?' ('+MAP_NAME[n.map]+')':''}: ${n.enc&&ENCOUNTERS[n.enc]?ENCOUNTERS[n.enc].n+'. '+ENCOUNTERS[n.enc].d:NODE_INFO[n.type].d}${archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))?' '+archLabel(n,(typeof nodeFaction==="function"?nodeFaction(n):m.fac))+'.':''}${n.mod&&NODE_MODS[n.mod]?' '+NODE_MODS[n.mod].n+': '+NODE_MODS[n.mod].d:''}</title>
       <circle cx="${x}" cy="${y}" r="${r}" fill="${n.done?'#1b2436':'#182133'}" class="ring" stroke="${cur?'#d0a64b':av?'rgba(208,166,75,.8)':'rgba(230,220,196,.18)'}" stroke-width="${cur||av?2.5:1.5}"/>
       ${av?`<circle cx="${x}" cy="${y}" r="${r+6}" fill="none" stroke="rgba(208,166,75,.35)" stroke-width="1"><animate attributeName="r" values="${r+3};${r+9};${r+3}" dur="2.4s" repeatCount="indefinite"/></circle>`:''}
-      ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${n.map&&MAP_NAME[n.map]&&!n.done&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?`<text x="${x}" y="${y-r-7}" text-anchor="middle" font-size="10.5" fill="#7f8fa6" font-family="var(--ui)">${MAP_NAME[n.map]}</text>`:''}${rewardBadge(n,x,y,r,av)}</g>`; }).join('');
+      ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${n.map&&MAP_NAME[n.map]&&!n.done&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?`<text x="${x}" y="${y-r-7}" text-anchor="middle" font-size="10.5" fill="#7f8fa6" font-family="var(--ui)">${MAP_NAME[n.map]}</text>`:''}${rewardBadge(n,x,y,r,av)}${!n.done&&nemNodeIs(n)?`<text x="${x}" y="${y-r-20}" text-anchor="middle" font-size="12" font-weight="700" fill="#ff6b5a" font-family="var(--ui)">Nemesis</text>`:''}</g>`; }).join('');
   const fleet=RUN.fleet.map(s=>{ const d=derive(s); return `<div class="shiprow"><span>${esc(s.name)}</span><span class="dim num">${s.hp}/${d.maxHp}</span>
     <span class="dim" style="grid-column:1/-1;font-size:13px">${HULLS[s.tpl].cls} Mk ${roman(s.mk)}, ${rankName(s.cap)} ${esc(s.cap.name)}${s.cap.pending?' <span class="gilt">(promotion ready)</span>':''}</span>${hpBar(s.hp,d.maxHp)}</div>`; }).join('');
   const relics=RUN.relics.length?RUN.relics.map(r=>`<div style="margin-bottom:6px"><b>${esc(relicName(r))}</b><div class="muted" style="font-size:14px">${esc(RELICS[r].d)}</div></div>`).join(''):'<p class="dim">None yet. Elite fleets and flagships carry them.</p>';
@@ -58,6 +58,7 @@ function mapScreen(){
       <div class="row"><div><div class="dim" style="font-size:13px">Credits</div><div class="gilt num" style="font-size:24px">${RUN.credits}</div></div><span class="spacer"></span>
       <div style="text-align:right"><div class="dim" style="font-size:13px">Command points</div><div class="num" style="font-size:24px">${fleetCP()}<span class="dim">/${RUN.cpCap}</span></div></div></div>
       <p class="dim" style="font-size:14px;margin:6px 0 0">Admiral: ${esc(ADMIRALS[RUN.admiral].n)}, ${esc(ADMIRALS[RUN.admiral].doc.toLowerCase())}</p>
+      ${nemPanel()}${verbPanel()}
       <h3>Fleet</h3>${fleet}
       <button class="${pend?'primary':''}" style="width:100%;margin-top:12px" data-act="fleetScreen">${pend?'Promote captains and refit':'Manage fleet and refits'}</button>
       ${RUN.inventory.length?`<p class="dim" style="font-size:14px">${RUN.inventory.length} refit${RUN.inventory.length>1?'s':''} in the hold.</p>`:''}
@@ -67,6 +68,18 @@ function mapScreen(){
       <h3>Relics</h3>${relics}
     </aside></div>`);
 }
+// B4: the Nemesis card on the map (clock, known weaknesses, adaptations) and the faction verb button
+function nemPanel(){ const N=RUN.nem; if(!N) return ''; const F=FACTIONS[N.fac];
+  if(N.dead) return `<h3>Nemesis</h3><p class="muted" style="font-size:14px">${esc(nemFull())} is dead.</p>`;
+  const dots='●'.repeat(N.clock)+'○'.repeat(Math.max(0,NEM_CLOCK-N.clock)), met=N.met>=RUN.sector;
+  return `<h3>Nemesis</h3><p style="margin:0 0 4px"><b class="blood">${esc(nemFull())}</b> <span class="dim">${esc(F?F.n:'')}${N.scars?`, scarred ${N.scars}x`:''}</span></p>
+    <p class="num" style="margin:0;font-size:14px">Hunting you: <span class="blood">${dots}</span>${N.strike?' <b class="blood">His fleet is coming: your next fight is his.</b>':met?' <span class="dim">(met this sector)</span>':''}</p>
+    <p class="muted" style="font-size:13px;margin:4px 0 0">Every fight you win moves the clock on; when it fills, your next fight is against him. You meet him once each sector at the latest before the rest stop.</p>
+    <div style="font-size:13.5px;margin-top:4px">Weaknesses: ${N.weak.map(w=>N.revealed.includes(w)?`<span class="gilt" title="${esc(NEM_WEAK[w].d)}">${esc(NEM_WEAK[w].n)}</span>`:'<span class="dim">unknown</span>').join(', ')}</div>
+    ${N.adapt.length?`<div style="font-size:13.5px;margin-top:2px">Adapted: ${N.adapt.map(a=>`<span class="blood" title="${esc(NEM_ADAPT[a].d)}">${esc(NEM_ADAPT[a].n)}</span>`).join(', ')}</div>`:''}`; }
+function verbPanel(){ const V=verbFor(); if(!V) return ''; const used=(RUN.verbUsed||0)>=RUN.sector, ok=verbCanUse();
+  return `<h3>Faction action</h3><button style="width:100%" ${ok?'':'disabled'} data-act="factionVerb"><b>${esc(V.n)}</b><small style="display:block">${esc(V.d)}</small><small style="display:block" class="dim">${used?'Used this sector':esc(verbCostText(V))}</small></button>${RUN.verbNext?'<p class="gilt" style="font-size:13px;margin:4px 0 0">Ready for your next battle.</p>':''}`; }
+ACT.factionVerb=()=>{ const lines=useVerb(); if(!lines) return; saveRun(); mapScreen(); toast(lines.join(' ')); };
 ACT.saveQuit=()=>{ saveRun(); titleScreen(); };
 ACT.enterNode=id=>{
   if(!availableNodes().includes(id)) return;
@@ -74,6 +87,7 @@ ACT.enterNode=id=>{
   tel('node',{type:n.type,col:n.col});
   if(n.type==='battle'||n.type==='elite'||n.type==='boss'){
     let kind=n.type, fac=nodeFaction(n);
+    if(nemNodeIs(n)){ ensureNemesis(); battleScreen({kind:'elite',fac:RUN.nem.fac,col:n.col,node:id,nemesis:nemBattleCfg()}); return; } // B4: the Nemesis fight (marked on the map beforehand)
     if(RUN.ambush && kind==='battle'){ kind='elite'; fac=RUN.fac==='hegemony'?RUN.map.fac:'hegemony'; RUN.ambush=false; toast('The Hegemony escort you robbed has found you.'); }
     battleScreen({kind,fac,col:n.col,node:id});
   }
@@ -166,8 +180,11 @@ function shipyardScreen(n){
     <div class="cards">${ships}</div>
     <h3 style="margin:26px 0 10px">Hulls for sale</h3><div class="cards">${hulls}</div>
     <h3 style="margin:26px 0 10px">Refits for sale</h3><div class="cards">${mods}</div>
+    <h3 style="margin:26px 0 10px">Class refits</h3><p class="muted" style="margin:0 0 8px">A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to ${CLASS_TRACK_MAX}.</p>
+    <div class="row wrap">${[...new Set(RUN.fleet.map(s=>HULLS[s.tpl].cls))].map(cls=>{ const lv=classTrack(cls), c=classTrackCost(cls), max=lv>=CLASS_TRACK_MAX; return `<button ${!max&&RUN.credits>=c?'':'disabled'} data-act="buyTrack" data-arg="${esc(cls)}">${esc(cls)} ${'●'.repeat(lv)}${'○'.repeat(CLASS_TRACK_MAX-lv)} ${max?'(full)':`for ${c}`}</button>`; }).join('')}</div>
   </div></div>`);
 }
+ACT.buyTrack=cls=>{ if(!buyClassTrack(cls)) return; try{ tel('shop',{k:'track',id:cls,lv:classTrack(cls)}); }catch(e){} toast(`${cls} refit level ${classTrack(cls)}: every ${cls.toLowerCase()} gains.`); shipyardScreen(yardNode); };
 ACT.yardFleet=()=>fleetScreen('shipyard');
 ACT.backShipyard=()=>shipyardScreen(yardNode);
 ACT.leaveYard=()=>{ completeNode(); mapScreen(); };
@@ -191,14 +208,80 @@ ACT.fleetFromModal=()=>{ closeModal(); fleetScreen('map'); };
 
 // ---------- events ----------
 let curEvent=null;
+// B4: blue options. needMet says whether the fleet meets a requirement; needText says it in plain words (shown on the option either way)
+const KIND_WORD={torp:'torpedoes',lance:'lances',flak:'point defense',batt:'batteries'};
+function needMet(nd){ if(!nd) return true; const kit=fleetKit();
+  if(nd.fac&&!(Array.isArray(nd.fac)?nd.fac.includes(RUN.fac):nd.fac===RUN.fac)) return false;
+  if(nd.kind&&!kit[nd.kind]) return false; if(nd.carrier&&!kit.carrier) return false; if(nd.shields&&!kit.shields) return false;
+  if(nd.relic&&!(nd.relic===1?RUN.relics.length>0:RUN.relics.includes(nd.relic))) return false; if(nd.mod&&!RUN.inventory.length) return false;
+  if(nd.cred&&RUN.credits<nd.cred) return false; if(nd.vet&&!RUN.fleet.some(s=>(s.cap.rank||0)>=nd.vet)) return false;
+  if(nd.flag&&!(RUN.flags&&RUN.flags[nd.flag]!=null)) return false; if(nd.intel&&((RUN.nem&&RUN.nem.revealed)||[]).length<nd.intel) return false; return true; }
+function needText(nd){ if(!nd) return ''; const p=[];
+  if(nd.fac){ const fs=Array.isArray(nd.fac)?nd.fac:[nd.fac]; p.push(fs.map(f=>FACTIONS[f]?FACTIONS[f].n:f).join(' or ')); }
+  if(nd.kind) p.push((KIND_WORD[nd.kind]||nd.kind)+' in the fleet'); if(nd.carrier) p.push('a carrier'); if(nd.shields) p.push('a shielded ship'); if(nd.relic) p.push(nd.relic===1?'a relic':relicName(nd.relic));
+  if(nd.mod) p.push('a refit in the hold'); if(nd.cred) p.push(nd.cred+' credits'); if(nd.vet) p.push('a '+RANKS[nd.vet]+' or better'); if(nd.flag) p.push('an earlier choice'); if(nd.intel) p.push(nd.intel+' Nemesis weakness'+(nd.intel>1?'es':'')+' known');
+  return 'Needs '+p.join(', '); }
+// the next event at an event node: never one already seen this run (B4), never one barred for your faction; a quiet stretch once all are seen
+function nextEvent(){ RUN.seenEvents=RUN.seenEvents||[]; const fits=e=>!(e.not&&e.not.includes(RUN.fac))&&e.id!==EVENT_FALLBACK;
+  const pool=EVENTS.filter(e=>fits(e)&&!RUN.seenEvents.includes(e.id)); const ev=pool.length?pick(pool):EVENTS.find(e=>e.id===EVENT_FALLBACK); RUN.seenEvents.push(ev.id); return ev; }
+function eventOptOk(o){ const cost=o.r&&o.r.cost; return (!cost||RUN.credits>=cost)&&needMet(o.need); }
 function eventScreen(n){
-  RUN.seenEvents=RUN.seenEvents||[];
-  const fits=e=>!(e.not&&e.not.includes(RUN.fac)); let pool=EVENTS.filter(e=>fits(e)&&!RUN.seenEvents.includes(e.id)); if(!pool.length){ RUN.seenEvents=[]; pool=EVENTS.filter(fits); }
-  const ev=pick(pool); RUN.seenEvents.push(ev.id); curEvent=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{}); /* each faction tells it in its own words */
+  const ev=nextEvent(); curEvent=Object.assign({},ev,(ev.v&&ev.v[RUN.fac])||{}); /* each faction tells it in its own words */
   mapScreen();
-  modal(`<h2>${esc(curEvent.t)}</h2><p>${esc(curEvent.b)}</p>${curEvent.o.map((o,i)=>{ const cost=o.r&&o.r.cost; const ok=!cost||RUN.credits>=cost;
-    return `<button class="choice" ${ok?'':'disabled'} data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b><small>${esc(o.s)}${!ok?' (not enough credits)':''}</small></button>`; }).join('')}`);
+  modal(`<h2>${esc(curEvent.t)}</h2><p>${esc(curEvent.b)}</p>${curEvent.o.map((o,i)=>{ const cost=o.r&&o.r.cost, ok=eventOptOk(o), blue=!!o.need;
+    return `<button class="choice" ${ok?'':'disabled'} ${blue?'style="border-color:#62a8ff;color:#9fcbff"':''} data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b><small>${blue?`<span style="color:#62a8ff">[${esc(needText(o.need))}]</span> `:''}${esc(o.s)}${cost&&RUN.credits<cost?' (not enough credits)':''}</small></button>`; }).join('')}`);
 }
+// B4: every event choice writes a flag later systems read (faction verbs, the Nemesis): RUN.flags[event id] = the option's key, plus any counters
+function eventFlags(ev,o,i){ RUN.flags=RUN.flags||{}; RUN.flags[ev.id]=o.k||String(i); for(const [k,v] of Object.entries(o.fl||{})) RUN.flags[k]=(RUN.flags[k]||0)+v; }
+// ---------- B4 the Nemesis (campaign rules; battle.js applyNemesis applies his weaknesses and adaptations in the fight) ----------
+// He commands a rival faction that is not your own (the first of the two sector-outsiders, RUN.foes[3]). One meeting per sector: when the
+// clock fills, or at the latest at the fight before the rest stop. Beaten in sectors 1 and 2 he escapes; in sector 3 his flagship's death ends him.
+function newNemesis(){ const fac=(RUN.foes&&RUN.foes[3])||pick(RUN_FACTIONS.filter(f=>f!==RUN.fac)), C=CAPTAINS[fac]||CAPTAINS.voidsworn;
+  const name=C.names?pick(C.names)+(C.epithets?' '+pick(C.epithets):''):pick(C.first)+' '+pick(C.last), title=C.ranks[C.ranks.length-1];
+  const weak=shuffle(Object.keys(NEM_WEAK)).slice(0,2); return {fac,name,title,weak,revealed:[],adapt:[],clock:0,met:0,beaten:0,scars:0,dead:false,strike:false,seen:{}}; }
+function ensureNemesis(){ if(RUN&&!RUN.nem&&RUN.fleet) RUN.nem=newNemesis(); return RUN&&RUN.nem; }
+function nemFull(){ const N=RUN&&RUN.nem; return N?`${N.title} ${N.name}`:''; }
+function nemReveal(){ const N=ensureNemesis(); if(!N) return null; const w=N.weak.find(x=>!N.revealed.includes(x)); if(w) N.revealed.push(w); return w||null; }
+// the clock: returns a line to show when it fills (the next fight becomes his)
+function nemClockAdd(n){ const N=ensureNemesis(); if(!N||N.dead) return ''; N.clock=clamp(N.clock+n,0,NEM_CLOCK);
+  if(N.clock>=NEM_CLOCK&&N.met<RUN.sector&&!N.strike){ N.strike=true; return `${nemFull()} has found your trail. Your next fight will be against his fleet.`; } return ''; }
+// is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
+function nemNodeIs(n){ const N=RUN&&RUN.nem; if(!N||N.dead||N.met>=RUN.sector||!n||(n.type!=='battle'&&n.type!=='elite')) return false; return N.strike||n.col>=(RUN.map.cols.length-3); }
+function nemBattleCfg(){ const N=RUN.nem; return {name:N.name,title:N.title,fac:N.fac,weak:N.weak.slice(),revealed:N.revealed.slice(),adapt:N.adapt.slice(),scars:N.scars}; }
+// one capped adaptation per sector: read from how you fought the sector just finished (RUN.nem.seen, kept by finishBattle)
+function nemAdapt(){ const N=RUN&&RUN.nem; if(!N||N.dead||N.adapt.length>=Math.max(0,RUN.sector-1)) return null; const s=N.seen||{};
+  const score={shields:(s.lance||0)*2+(s.ion||0)*2,pd:(s.torp||0)*2+(s.sq||0),armor:(s.ram||0)*4+(s.board||0)*4,evasion:(s.battery||0)+(s.broad||0),aim:(s.evaded||0)};
+  const pickA=Object.keys(score).filter(k=>!N.adapt.includes(k)).sort((a,b)=>score[b]-score[a])[0]; if(!pickA) return null; N.adapt.push(pickA); N.seen={}; return pickA; }
+// after his battle: returns plain lines for the reward summary
+function nemAfterBattle(result,flagDead){ const N=RUN.nem; if(!N) return []; const out=[]; N.met=RUN.sector; N.strike=false; N.clock=0;
+  if(result==='win'){ N.beaten++; const w=nemReveal(); if(w) out.push(`His captured logs reveal a weakness: ${NEM_WEAK[w].n}.`);
+    if(flagDead&&RUN.sector>=3){ N.dead=true; out.push(`${nemFull()} is dead. The feud is over.`); }
+    else if(flagDead){ N.scars++; out.push(`${nemFull()}'s flagship breaks apart, but he escapes in a lifeboat, scarred and furious. He will be back.`); }
+    else out.push(`${nemFull()} withdraws to fight another day.`); }
+  else { N.clock=1; out.push(`${nemFull()} drove you off. He will remember this.`); }
+  return out; }
+// what a finished battle teaches him (counted into RUN.nem.seen; read at the next sector)
+function nemLearn(usage,evadedShare){ const N=RUN&&RUN.nem; if(!N||!usage) return; const s=N.seen=N.seen||{}; const k=usage.kind||{};
+  for(const x of ['lance','torp','battery']) s[x]=(s[x]||0)+(k[x]||0); s.ion=(s.ion||0)+(usage.ion||0); s.sq=(s.sq||0)+(k.sq||0); s.ram=(s.ram||0)+(usage.ram||0); s.board=(s.board||0)+(usage.board||0);
+  s.broad=(s.broad||0)+((usage.fire&&((usage.fire['Port broadside']||0)+(usage.fire['Starboard broadside']||0)))||0); s.evaded=(s.evaded||0)+(evadedShare||0); }
+// ---------- B4 faction campaign verbs ----------
+function verbFor(){ return RUN&&FAC_VERBS[RUN.fac]||null; }
+function verbFree(V){ return !!(V&&V.free&&RUN.flags&&RUN.flags[V.free]!=null); }
+function verbCanUse(){ const V=verbFor(); if(!V||(RUN.verbUsed||0)>=RUN.sector) return false; if(verbFree(V)) return true; const c=V.cost||{};
+  if(c.cred&&RUN.credits<c.cred) return false; if(c.mod&&!RUN.inventory.length) return false; if(c.xp){ const f=flagshipOf()||RUN.fleet[0]; if(!f||f.cap.xp<c.xp) return false; } return true; }
+function verbCostText(V){ if(verbFree(V)) return 'Free ('+V.freeD+')'; const c=V.cost||{}, p=[]; if(c.cred) p.push(c.cred+' credits'); if(c.mod) p.push('a refit from the hold'); if(c.xp) p.push(c.xp+' experience from your flagship captain'); return p.length?'Costs '+p.join(', '):'No cost'; }
+// apply the verb now; next-battle verbs wait in RUN.verbNext until battleScreen hands them to the fight
+function useVerb(){ const V=verbFor(); if(!verbCanUse()) return null; const free=verbFree(V), c=V.cost||{}, out=[];
+  if(!free){ if(c.cred) RUN.credits-=c.cred; if(c.mod) out.push(`The ${modName(RUN.inventory.splice(0,1)[0])} is consumed.`); if(c.xp){ const f=flagshipOf()||RUN.fleet[0]; f.cap.xp=Math.max(RANK_XP[f.cap.rank]||0,f.cap.xp-c.xp); } }
+  RUN.verbUsed=RUN.sector; RUN.flags=RUN.flags||{}; RUN.flags['verb_'+V.id]=(RUN.flags['verb_'+V.id]||0)+1;
+  if(V.next){ RUN.verbNext=V.id; out.push(`${V.n}: ${V.d}`); }
+  if(V.id==='shake'){ const g=30+10*((RUN.flags&&RUN.flags.greed)||0); RUN.credits+=g; out.push(`+${g} credits.`); const m=nemClockAdd(1); if(m) out.push(m); RUN.flags.greed=(RUN.flags.greed||0)+1; }
+  if(V.id==='gorge'){ const f=RUN.flags&&RUN.flags.spawn==='feed'?.3:.2; RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*f)); }); out.push(`Every ship regrows ${pct(f)} of its hull.`); }
+  return out; }
+// ---------- B4 wing veterancy (kept on the carrier ship between battles) ----------
+function wingPerkGrant(ship,id){ const v=ship.wingVet=ship.wingVet||{kills:0,perks:[]}; if(v.perks.length>=3) return null; const pool=Object.keys(WING_PERKS).filter(k=>!v.perks.includes(k)); const got=id&&pool.includes(id)?id:pick(pool); v.perks.push(got); return got; }
+// wing kills earn perks at WING_XP thresholds; returns the perks gained
+function wingVetAfter(ship,kills){ const v=ship.wingVet=ship.wingVet||{kills:0,perks:[]}; v.kills+=kills; const out=[]; while(v.perks.length<3&&v.kills>=WING_XP[v.perks.length]){ const g=wingPerkGrant(ship); if(!g) break; out.push(g); } return out; }
 function randShip(){ return pick(RUN.fleet); }
 function applyOutcome(r){
   const out=[];
@@ -214,15 +297,27 @@ function applyOutcome(r){
   if(r.dmgAll){ RUN.fleet.forEach(s=>{ s.hp=Math.max(1,s.hp-Math.round(derive(s).maxHp*r.dmgAll)); }); out.push(`Every ship takes ${pct(r.dmgAll)} hull damage.`); }
   if(r.ship){ const tp=equivHull(r.ship,RUN.fac); if(fleetCP()+HULLS[tp].cp<=RUN.cpCap){ const s=newShip(tp,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=r.cost||0; out.push('You don\u2019t have the command points to take her on. Your credits are returned.'); } }
   if(r.upgradeOne){ const s=[...RUN.fleet].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; changeShip(s,sh=>{ if(sh.mk<3) sh.mk++; }); s.hp=derive(s).maxHp; out.push(`The ${s.name} leaves the forge fully repaired at Mk ${roman(s.mk)}.`); }
-  if(r.healAll){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*r.healAll)); }); out.push(`Every ship repairs ${pct(r.healAll)} of its hull.`); }
+  if(r.healAll){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*r.healAll)); }); out.push(r.healAll>=1?'Every ship is fully repaired.':`Every ship repairs ${pct(r.healAll)} of its hull.`); }
   if(r.gamble){ if(rnd()<.5){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.3)); }); out.push('The saint answers. Every ship repairs 30% of its hull.'); } else out.push('Silence. The void keeps its own counsel.'); }
   if(r.mod){ const m=randomModule(); RUN.inventory.push(m); out.push(`Found: ${modName(m)}. It\u2019s in the hold.`); }
   if(r.ambush){ RUN.ambush=true; }
+  // B4 outcome kinds: more currencies and the Nemesis
+  if(r.payMod){ if(RUN.inventory.length){ const m=RUN.inventory.splice(0,1)[0]; out.push(`The ${modName(m)} from the hold is used up.`); } }
+  if(r.payXp){ const f=flagshipOf()||RUN.fleet[0]; if(f){ f.cap.xp=Math.max(RANK_XP[f.cap.rank]||0,f.cap.xp-r.payXp); out.push(`${f.cap.name} loses ${r.payXp} experience.`); } }
+  if(r.payRelic){ if(RUN.relics.length){ const rl=RUN.relics.splice(RUN.relics.length-1,1)[0]; changeFleet(()=>{}); out.push(`You give up ${relicName(rl)}.`); } }
+  if(r.repairOne){ const s=[...RUN.fleet].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[r.upgradeOne&&RUN.fleet.length>1?1:0]; if(s){ s.hp=derive(s).maxHp; out.push(`The ${s.name} is fully repaired.`); } }
+  if(r.dmgBig){ const s=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1))[0]; if(s){ const dm=Math.round(derive(s).maxHp*r.dmgBig); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); } }
+  if(r.xpTop){ const s=[...RUN.fleet].sort((a,b)=>b.cap.xp-a.cap.xp)[0]; if(s){ addXp(s,r.xpTop); out.push(`${s.cap.name} of the ${s.name} gains ${r.xpTop} experience.`); } }
+  if(r.modId&&MODULES[r.modId]){ RUN.inventory.push(r.modId); out.push(`Found: ${modName(r.modId)}. It’s in the hold.`); }
+  if(r.shipRaw&&HULLS[r.shipRaw]){ if(fleetCP()+(HULLS[r.shipRaw].cp||1)<=RUN.cpCap){ const s=newShip(r.shipRaw,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=40; out.push('No command points to crew her. You sell the berth for 40 credits.'); } }
+  if(r.wingPerk){ const c=[...RUN.fleet].filter(s=>HULLS[s.tpl].hangar).sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1))[0]; if(c){ const got=wingPerkGrant(c); out.push(got?`The ${c.name}’s wings gain a veteran perk: ${WING_PERKS[got].n}.`:`The ${c.name}’s wings already hold every perk they can.`); } }
+  if(r.nemIntel){ const w=nemReveal(); out.push(w?`Nemesis weakness revealed: ${NEM_WEAK[w].n}. ${NEM_WEAK[w].d}`:'You learn nothing new about the enemy commander.'); }
+  if(r.nemClock){ const m=nemClockAdd(r.nemClock); if(m) out.push(m); }
   if(!out.length && !r.fight) out.push('You move on.');
   return out;
 }
 ACT.eventChoice=i=>{
-  const o=curEvent.o[+i]; if(o.r&&o.r.cost&&RUN.credits<o.r.cost) return;
+  const o=curEvent.o[+i]; if(!o||!eventOptOk(o)) return; eventFlags(curEvent,o,+i);
   if(o.r&&o.r.fight){ closeModal(); battleScreen({kind:'elite',fac:o.r.fight,col:findNode(RUN.curNode).col+1,node:RUN.curNode,eventRelic:true}); return; }
   const lines=applyOutcome(o.r);
   completeNode(); mapScreen();
@@ -272,7 +367,7 @@ function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODU
   const pickM=[wk.includes('lance')&&'crystal',(wk.includes('torp')||wk.includes('htorp')||wk.includes('startorp'))&&'magazine',(wk.includes('battery')||wk.includes('hbattery'))&&'loaders',wk.includes('flak')&&'flakplus',w.ab==='launch'&&'hangar',(wk.includes('gauss')||wk.includes('needle')||wk.includes('shard'))&&'cogitator',w.regen&&'damcon',w.sh>=20&&'capacitor',(wk.includes('turret')||wk.includes('autocannon'))&&'auspex'].filter(Boolean).filter(has);
   // a wreck that was flayed or dissolved has little left to strip
   const intact=!(KILL_CAUSES[w.cause]&&KILL_CAUSES[w.cause].scrap), m=intact&&pickM.length?pickM[0]:null, cred=Math.round((10+9*w.cp)*(intact?1:1.3));
-  const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'&&!!HULLS[w.tpl]&&fleetCP()+(HULLS[w.tpl].cp||1)<=RUN.cpCap?true:false; // B1 (B-8): only offered when the command points are there
+  const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'&&!!HULLS[w.tpl]&&!factionGate(RUN.fac,w.tpl)&&fleetCP()+(HULLS[w.tpl].cp||1)<=RUN.cpCap?true:false; // B1 (B-8): only offered when the command points are there
   return {mod:m,cred,tow}; }
 // B2 capture rework (R4): each prize ship that survives a win gets one choice. Add it (only if command points allow), strip it for a refit
 // plus scrap (its weapons decide which refit, as in salvage), or ransom it for credits. A prize that cannot fit at all was already scrapped
@@ -289,10 +384,10 @@ function prizeOffer(p,nR){ const v=shipValue(p.tpl), y=salvageYield({wk:p.wk||[]
 // lowers the next one. Default: Add a ship that fits with at least 40% hull, otherwise whichever of Strip or Ransom is worth more (a refit
 // counted at half its shop price).
 function prizePlan(R){ const sel=R.prizeSel||[]; let cp=fleetCP(), nR=RUN.ransoms||0;
-  return R.prizes.map((p,i)=>{ const o=prizeOffer(p,nR), c=p.cp||1, room=cp+c<=RUN.cpCap;
+  return R.prizes.map((p,i)=>{ const o=prizeOffer(p,nR), c=p.cp||1, gate=factionGate(RUN.fac,p.tpl), room=cp+c<=RUN.cpCap&&!gate; // B3: a prize your faction cannot field (Corsairs and lances) can only be stripped or ransomed
     const sv=o.strip.cred+(o.strip.mod?Math.round(MODULES[o.strip.mod].cost*.5):0), dk=room&&(p.hpf||1)>=.4?'add':sv>=o.ransom?'strip':'ransom';
     let k=sel[i]||dk; if(k==='add'&&!room) k=dk==='add'?(sv>=o.ransom?'strip':'ransom'):dk;
-    if(k==='add') cp+=c; if(k==='ransom') nR++; return {p,o,room,k,mine:!!sel[i]&&sel[i]===k}; }); }
+    if(k==='add') cp+=c; if(k==='ransom') nR++; return {p,o,room,gate,k,mine:!!sel[i]&&sel[i]===k}; }); }
 ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward; if(!R||!(R.prizes||[]).length){ if(R) R.stage=(window._wrecks||[]).length?'salvage':'pick'; return (window._wrecks||[]).length?ACT.salvageStep():ACT.rewardNext(); }
   const rows=prizePlan(R), n=rows.length, cpAfter=fleetCP()+rows.reduce((t,r)=>t+(r.k==='add'?(r.p.cp||1):0),0);
   const cred=rows.reduce((t,r)=>t+(r.k==='ransom'?r.o.ransom:r.k==='strip'?r.o.strip.cred:0),0), refits=rows.filter(r=>r.k==='strip'&&r.o.strip.mod).length, joins=rows.filter(r=>r.k==='add').length;
@@ -301,7 +396,7 @@ ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward; if(!R||!(R.prizes||[]).len
     <p class="muted">Command points: ${fleetCP()} of ${RUN.cpCap} used${joins?`, ${cpAfter} after these join`:''}.${RUN.ransoms||rows.some(r=>r.k==='ransom')?' Owners pay less for each ship you sell back to them.':''}</p>
     ${rows.map((r,i)=>{ const H=HULLS[r.p.tpl], hp=Math.round((r.p.hpf||1)*100), b=(k,t,sm,dis)=>`<button class="${r.k===k?'sel':''}" data-act="prizeSet" data-arg="${i}:${k}" ${dis?'disabled':''}><b>${t}</b><small>${sm}</small></button>`;
       return `<div class="choice" style="cursor:default;margin:6px 0 12px"><b>${esc(r.p.name)}</b> <span class="dim">${esc(H.n)}, ${H.cp||1} command point${(H.cp||1)>1?'s':''}, ${hp}% hull</span>
-      <div class="orders" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">${b('add','Add',r.room?`Joins at ${hp}% hull`:'No command points left',!r.room)}${b('strip','Strip',`${r.o.strip.mod?esc(modName(r.o.strip.mod))+' + ':''}${r.o.strip.cred} credits`)}${b('ransom','Ransom',`${r.o.ransom} credits`)}</div></div>`; }).join('')}
+      <div class="orders" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">${b('add','Add',r.room?`Joins at ${hp}% hull`:r.gate?'Your faction cannot field it':'No command points left',!r.room)}${b('strip','Strip',`${r.o.strip.mod?esc(modName(r.o.strip.mod))+' + ':''}${r.o.strip.cred} credits`)}${b('ransom','Ransom',`${r.o.ransom} credits`)}</div></div>`; }).join('')}
     <p class="muted" style="margin-top:10px">You get: ${sum}.</p><button class="primary" data-act="prizeConfirm">Confirm</button>`); };
 ACT.prizeSet=a=>{ const R=RUN.reward; if(!R||!(R.prizes||[]).length) return; const [i,k]=String(a).split(':'); if(!R.prizes[+i]||!['add','strip','ransom'].includes(k)) return;
   R.prizeSel=R.prizeSel||[]; R.prizeSel[+i]=k; saveRun(); ACT.prizeStep(); };
@@ -334,7 +429,17 @@ function boonStep(p,minR){ const P=PATRONS[p]; if(!P){ relicStep(); return; } co
   modal(`<div class="boonhead" style="border-color:${P.col}"><span class="sigil" style="background:${P.col}">${P.glyph}</span><div><h2 style="margin:0;color:${P.col}">${esc(P.n)}</h2><div class="muted" style="font-size:14px">${esc(P.theme)}</div></div></div>
     <p class="muted" style="font-style:italic;margin:8px 0 12px">“${esc(P.quote)}”</p>${rewardDef('boon')}
     ${offer.map((o,i)=>{ const b=BOONS[o.id], R=RARITY[o.r||0], duo=b.duo; return `<button class="choice boon" data-act="takeBoon" data-arg="${i}" style="border-left:4px solid ${duo?PATRONS[duo[0]].col:P.col}">
-      <span class="rar" style="color:${duo?'#ffd27a':R.col}">${duo?'Duo: '+duo.map(q=>esc(PATRONS[q].short)).join(' + '):R.n}</span><b>${esc(b.n)}</b><small>${esc(b.d(R.m))}</small></button>`; }).join('')}`); }
+      <span class="rar" style="color:${duo?'#ffd27a':R.col}">${duo?'Duo: '+duo.map(q=>esc(PATRONS[q].short)).join(' + '):R.n}</span><b>${esc(b.n)}</b><small>${esc(b.d(R.m))}</small></button>`; }).join('')}
+    <div class="row" style="margin-top:10px"><button ${boonRerollOk()?'':'disabled'} data-act="boonReroll" data-arg="${p}:${minR||0}">Reroll the offer (${boonRerollCost()} credits, once)</button><button data-act="boonDecline">Decline: take ${boonDeclineCred()} credits</button></div>`); }
+// B4 step 3 (v54): decline a boon offer for credits, or reroll it once per reward for a price that grows each time you reroll in a run
+function boonDeclineCred(){ return 30+10*((RUN&&RUN.sector)||1); }
+function boonRerollCost(){ return 25+15*((RUN&&RUN.boonRerolls)||0); }
+function boonRerollOk(){ return !!(RUN&&RUN.reward&&!RUN.reward.rerolled&&RUN.credits>=boonRerollCost()); }
+function boonReroll(p,minR){ if(!boonRerollOk()) return null; RUN.credits-=boonRerollCost(); RUN.boonRerolls=(RUN.boonRerolls||0)+1; RUN.reward.rerolled=true; const old=(RUN.reward.boonOffer||[]).map(o=>o.id);
+  let off=rollBoonOffer(p,minR); for(let k=0;k<4&&off.length&&off.every(o=>old.includes(o.id));k++) off=rollBoonOffer(p,minR); RUN.reward.boonOffer=off; return off; }
+function boonDecline(){ const c=boonDeclineCred(); RUN.credits+=c; return c; }
+ACT.boonReroll=a=>{ const [p,m]=String(a).split(':'); if(!boonReroll(p,+m||0)) return; saveRun(); closeModal(); boonStep(p,+m||0); };
+ACT.boonDecline=()=>{ const c=boonDecline(); try{ tel('boon_decline',{cred:c}); }catch(e){} toast(`You decline. +${c} credits.`); closeModal(); relicStep(); };
 ACT.takeBoon=i=>{ const o=(window._boonOffer||[])[+i]; if(!o) return; changeFleet(()=>{ RUN.boons=RUN.boons||[]; RUN.boons.push({id:o.id,r:o.r||0}); });
   { const ps=BOONS[o.id].p?[BOONS[o.id].p]:(BOONS[o.id].duo||[]); META.favour=META.favour||{}; for(const p of ps){ const t0=favourTier(p); META.favour[p]=(META.favour[p]||0)+1+(o.r||0); const t1=favourTier(p); if(t1>t0) setTimeout(()=>toast(`${PATRONS[p].n} now counts you ${FAVOUR_TIERS[t1].n}: ${FAVOUR_TIERS[t1].d}`),900); } }
   try{ tel('boon_pick',{id:o.id,r:o.r||0,p:BOONS[o.id].p||'duo',offered:(window._boonOffer||[]).map(x=>x.id+':'+(x.r||0)),sector:RUN.sector}); }catch(e){}
@@ -366,12 +471,12 @@ function afterBattle(){
   completeNode();
   if(cfg.kind==='boss'){
     if(RUN.sector>=3){ endRun(true); return; }
-    RUN.sector++; RUN.cpCap+=3; RUN.map=genSector(RUN.sector); RUN.pos=null;
+    RUN.sector++; RUN.cpCap+=3; RUN.map=genSector(RUN.sector); RUN.pos=null; const na=nemAdapt(); // B4: the Nemesis adapts once per sector
     RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.4*repairMult())); });
     saveRun(); mapScreen();
     const F=FACTIONS[RUN.map.fac];
     modal(`<h2>Sector ${roman(RUN.sector)}${RUN.map.region&&REGIONS[RUN.map.region]?`: ${esc(REGIONS[RUN.map.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
-      <p>Auspex confirms <b>${esc(F.n)}</b> ahead.</p>${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
+      <p>Auspex confirms <b>${esc(F.n)}</b> ahead.</p>${na&&RUN.nem?`<p class="blood">Intelligence: ${esc(nemFull())} has adapted to you: <b>${esc(NEM_ADAPT[na].n)}</b> (${esc(NEM_ADAPT[na].why)}). ${esc(NEM_ADAPT[na].d)}</p>`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
     return;
   }
   mapScreen();

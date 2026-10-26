@@ -2,9 +2,9 @@
 
 These are the game's JS files, copied unchanged, that the campaign parity test runs against:
 
-- `data.js`, `core.js`, `battle.js`: from commit b71c8d7 (Oct 25 2026), the same commit G1 pinned in `godot/rules/test/oracle/`. They were still identical at 29d431c.
-- `campaign_run.js`, `campaign_meta.js`, `campaign3d.js`: from commit 29d431c (Oct 26 2026). These had not changed since b71c8d7 either.
-- `ui3d.js`: from commit 29d431c. It is presentation; only two of its tables are evaluated: `FNAMES` (ship names for non-Voidsworn fleets, which the browser's `shipName` uses) and `TIPS` (the battle onboarding tips, exported for the battle UI).
+- All seven files from commit c7b1a78 (Oct 26 2026: stream B steps 0 to 3, see `contrib/opus/compute/port_notes.md`), the same commit G1 pinned in `godot/rules/test/oracle/`: `data.js`, `core.js`, `battle.js`, `campaign_run.js`, `campaign_meta.js`, `campaign3d.js` and `ui3d.js`.
+- `ui3d.js` is presentation; only two of its tables are evaluated: `FNAMES` (ship names for non-Voidsworn fleets, which the browser's `shipName` uses) and `TIPS` (the battle onboarding tips, exported for the battle UI).
+- History: b71c8d7 / 29d431c (the first port) until the re-pin to c7b1a78.
 
 The parity harness and the campaign table exporter read these files, not the live ones at the repo root, so stream B can change the JS rules during the sprint without breaking the campaign port's golden test.
 

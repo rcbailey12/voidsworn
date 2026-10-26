@@ -25,6 +25,7 @@ var MOD_NEED; var MOD_NAMES; var RELIC_NAMES; var RUN_WORD; var ENCOUNTERS; var 
 var REGION_BIOME; var ROCK_KINDS; var DEEP_MAPS; var FAC_MAP; var BEVENTS; var KILL_CAUSES; var FAC_WNAMES; var FAC_WTRAIT; var WTRAITS
 var ABILITIES; var ARC_NAME; var NODE_INFO; var NODE_MODS; var ARCHETYPES; var SHAPES; var REWARD_DEF; var MAP_NAME; var WIN_TITLE
 var LEGACY; var CMD_TEXT; var CAUSE_WORD; var RUN_FACTIONS
+var NEM_WEAK; var NEM_ADAPT; var NEM_CLOCK; var FAC_VERBS; var WING_PERKS; var WING_XP; var EVENT_FALLBACK; var FAC_GATES; var CLASS_TRACK_MAX; var KIND_WORD
 
 # ---------------- state ----------------
 var META: Dictionary = {}
@@ -70,6 +71,8 @@ func load_tables(path: String = TABLES_PATH) -> String:
 	ABILITIES = TB.ABILITIES; ARC_NAME = TB.ARC_NAME; NODE_INFO = TB.NODE_INFO; NODE_MODS = TB.NODE_MODS; ARCHETYPES = TB.ARCHETYPES; SHAPES = TB.SHAPES
 	REWARD_DEF = TB.REWARD_DEF; MAP_NAME = TB.MAP_NAME; WIN_TITLE = TB.WIN_TITLE; LEGACY = TB.LEGACY; CMD_TEXT = TB.CMD_TEXT; CAUSE_WORD = TB.CAUSE_WORD
 	RUN_FACTIONS = TB.RUN_FACTIONS
+	NEM_WEAK = TB.NEM_WEAK; NEM_ADAPT = TB.NEM_ADAPT; NEM_CLOCK = TB.NEM_CLOCK; FAC_VERBS = TB.FAC_VERBS; WING_PERKS = TB.WING_PERKS; WING_XP = TB.WING_XP
+	EVENT_FALLBACK = TB.EVENT_FALLBACK; FAC_GATES = TB.FAC_GATES; CLASS_TRACK_MAX = TB.CLASS_TRACK_MAX; KIND_WORD = TB.KIND_WORD
 	META = defaultMeta(); META["backfilled"] = 1; META["wonFix41"] = 1   # a fresh Godot profile has no browser history to back-fill
 	return ""
 func _dec(v):
@@ -152,6 +155,14 @@ func wName(fac, id) -> Variant:
 	if fw != null and jt(fw.get(id)): return fw[id]
 	if W_.has(id) and jt(W_[id].get("n")): return W_[id]["n"]
 	return id
+# B3 roster gates: what a faction cannot field (Corsairs and lance weapons). Returns the reason, or null.
+func factionGate(fac, tpl) -> Variant:
+	var G = FAC_GATES.get(fac) if fac != null else null; var h = HULLS.get(tpl) if tpl != null else null
+	if G == null or h == null: return null
+	if jt(G.get("noKind")):
+		for e in h["w"]:
+			if W_.has(e[0]) and G["noKind"].has(W_[e[0]].get("k")): return G["d"]
+	return null
 func trait_fx(tk: String, w: Dictionary) -> void: # copied from godot/rules/rules.gd (G1), the weapon trait effects
 	match tk:
 		"las": w["fall"] = ceil(float(w["fall"]) / 2.0); w["acc"] = w["acc"] + 4
@@ -202,7 +213,7 @@ func runDefaults() -> Dictionary:
 	return {"fac": "voidsworn", "foes": null, "admiral": "vex", "credits": 0, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
 		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": 0, "fallen": [], "ambush": false, "over": false, "boons": [], "patrons": [],
 		"aspect": null, "flagUid": null, "heat": [], "mastery": 0, "ransoms": 0, "altFleet": false, "cmdOverride": null, "giftBoon": null, "reserve": [], "seenEvents": [],
-		"regionsUsed": [], "condsUsed": [], "curNode": null, "reinf": 0}
+		"regionsUsed": [], "condsUsed": [], "curNode": null, "reinf": 0, "flags": {}, "nem": null, "verbUsed": 0, "verbNext": null, "classTrack": {}, "boonRerolls": 0}
 func normalizeRun(r) -> Variant:
 	if not (r is Dictionary): return r
 	var d = runDefaults()
@@ -503,7 +514,7 @@ func rollBoonOffer(p, minR) -> Array:
 	var have = boonPatrons(); var kit = fleetKit()
 	var pool = []
 	for id in BOONS.keys():
-		if BOONS[id].get("p") == p and not hasBoon(id): pool.append(id)
+		if BOONS[id].get("p") == p and not jt(BOONS[id].get("leg")) and not hasBoon(id): pool.append(id)
 	pool = shuffle(pool)
 	var junk = []; var good = []
 	for id in pool:
@@ -529,7 +540,7 @@ func rollBoonOffer(p, minR) -> Array:
 		var extra0 = []
 		for id in BOONS.keys():
 			var bp = BOONS[id].get("p")
-			if not jt(bp) or bp == p or not RUN["patrons"].has(bp) or hasBoon(id) or not boonUseful(id, kit): continue
+			if not jt(bp) or jt(BOONS[id].get("leg")) or bp == p or not RUN["patrons"].has(bp) or hasBoon(id) or not boonUseful(id, kit): continue
 			var dup = false
 			for o in out:
 				if o["id"] == id: dup = true
@@ -537,7 +548,22 @@ func rollBoonOffer(p, minR) -> Array:
 		var extra = shuffle(extra0)
 		while out.size() < 3 and extra.size() > 0: out.append({"id": extra.pop_back(), "r": rollRarity(minR, s)})
 		while out.size() < 3 and junk.size() > 0: out.append({"id": junk.pop_back(), "r": rollRarity(minR, s)})
+	var L = legendaryFor(p, minR)   # B4 step 3: the patron's legendary, at elite and flagship rewards, once you hold two of its boons
+	if L != null:
+		if out.size() >= 3: out[2] = {"id": L, "r": 3}
+		else: out.append({"id": L, "r": 3})
 	return out
+func legendaryFor(p, minR) -> Variant:
+	if not (float(z0(minR)) >= 1): return null
+	var L = null
+	for id in BOONS.keys():
+		if jt(BOONS[id].get("leg")) and BOONS[id].get("p") == p:
+			L = id; break
+	if L == null or hasBoon(L) or not boonUseful(L, fleetKit()): return null
+	var n = 0
+	for b in or_(RUN.get("boons"), []):
+		if BOONS.has(b["id"]) and BOONS[b["id"]].get("p") == p and not jt(BOONS[b["id"]].get("leg")): n += 1
+	return L if n >= 2 else null
 func rollNodeReward(type) -> Dictionary:
 	ensurePatrons()
 	var p = pick(RUN["patrons"])
@@ -584,6 +610,8 @@ func mkWeapon(id, arc, fx) -> Dictionary:
 	if b.get("k") == "torp" and jt(fx.get("torpCd")): w["cd"] = max(1, w["cd"] - fx["torpCd"])
 	if arc == "F" and jt(fx.get("prowRange")):
 		w["r"] = w["r"] + fx["prowRange"]; w["opt"] = w["opt"] + fx["prowRange"]
+	if b.get("k") == "lance" and jt(fx.get("lanceRange")):   # Long Silence, Epic
+		w["r"] = w["r"] + fx["lanceRange"]; w["opt"] = w["opt"] + fx["lanceRange"]
 	return w
 func derive(ship: Dictionary) -> Dictionary:
 	var t: Dictionary = HULLS[ship["tpl"]]
@@ -597,18 +625,31 @@ func derive(ship: Dictionary) -> Dictionary:
 	lst += asp
 	var fx = sumFx(lst)
 	var mk = float(ship["mk"]) if jt(ship.get("mk")) else 1.0
-	var mm = 1.0 + 0.2 * (mk - 1.0)
-	var maxHp = jsround(float(t["hp"]) * mm * (1.0 + float(z0(fx.get("hpPct")))))
+	var mm = 1.0 + 0.2 * (mk - 1.0); var tr = classTrack(t.get("cls"))   # B4 step 3: the class refit track adds 6% hull and 6% damage per level
+	var maxHp = jsround(float(t["hp"]) * mm * (1.0 + float(z0(fx.get("hpPct"))) + 0.06 * tr))
 	var ws = []
 	for e in t["w"]: ws.append(mkWeapon(e[0], e[1], fx))
 	return {
 		"maxHp": maxHp, "shMax": jsround(float(t["sh"]) * mm * (1.0 + float(z0(fx.get("shPct"))))), "regen": jsround(float(t["rg"]) * mm * (1.0 + float(z0(fx.get("regenPct"))))),
 		"armor": min(0.6, float(t["ar"]) + float(z0(fx.get("armor")))), "speed": float(t["sp"]) + float(z0(fx.get("speed"))), "turns": float(t["tn"]) + float(z0(fx.get("turns"))), "ev": float(t["ev"]) + float(z0(fx.get("ev"))),
-		"aim": z0(fx.get("aim")), "crit": z0(fx.get("crit")), "dmg": 1.0 + 0.15 * (mk - 1.0) + float(z0(fx.get("dmgPct"))), "fx": fx,
+		"aim": z0(fx.get("aim")), "crit": z0(fx.get("crit")), "dmg": 1.0 + 0.15 * (mk - 1.0) + float(z0(fx.get("dmgPct"))) + 0.06 * tr, "fx": fx,
 		"hangar": (float(t["hangar"]) + float(z0(fx.get("hangar"))) + float(z0(fx.get("hive")))) if jt(t.get("hangar")) else z0(fx.get("hive")),
 		"hullRegen": float(z0(fx.get("hullRegen"))) + jsround(float(z0(fx.get("hullRegenPct"))) * maxHp) + jsround(float(z0(t.get("regen"))) * mm),
 		"weapons": nameWeapons(t.get("fac"), ws),
 	}
+# B4 step 3: shared refit tracks per class, bought at shipyards (RUN.classTrack[cls] 0..3)
+func classTrack(cls) -> float:
+	if RUN == null or not (RUN.get("classTrack") is Dictionary) or cls == null: return 0.0
+	return float(z0(RUN["classTrack"].get(cls)))
+func classTrackCost(cls) -> float: return jsround((60.0 + 50.0 * classTrack(cls)) * priceMult())
+func _track_up(cls) -> void:
+	if not (RUN.get("classTrack") is Dictionary): RUN["classTrack"] = {}
+	RUN["classTrack"][cls] = classTrack(cls) + 1
+func buyClassTrack(cls) -> bool:
+	if RUN == null or classTrack(cls) >= float(CLASS_TRACK_MAX): return false
+	var c = classTrackCost(cls)
+	if float(RUN["credits"]) < c: return false
+	RUN["credits"] = float(RUN["credits"]) - c; changeFleet(_track_up.bind(cls)); return true
 func changeShip(ship: Dictionary, fn: Callable) -> void:
 	var before = derive(ship)["maxHp"]; fn.call(ship); var after = derive(ship)["maxHp"]
 	ship["hp"] = clampv(float(ship["hp"]) + (after - before), 1, after)
@@ -940,10 +981,11 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	for p in RUN["patrons"]:
 		if favourTier(p) >= 2: dev = p; break
 	if dev != null:
-		var pool = BOONS.keys().filter(func(id): return BOONS[id].get("p") == dev and boonUseful(id, fleetKit()))
+		var pool = BOONS.keys().filter(func(id): return BOONS[id].get("p") == dev and not jt(BOONS[id].get("leg")) and boonUseful(id, fleetKit()))
 		if pool.size() > 0:
 			var id = pick(pool); RUN["boons"].append({"id": id, "r": 1 if favourTier(dev) >= 3 else 0}); RUN["giftBoon"] = id
 	RUN["map"] = genSector(1)
+	RUN["flags"] = {}; RUN["nem"] = newNemesis()   # B4: one named enemy commander per run
 	META["stats"]["runs"] = float(META["stats"]["runs"]) + 1
 	saveRun()
 func saveRun() -> void:
@@ -1040,6 +1082,10 @@ func act(name: String, arg = "") -> void:
 		"takeMod": ACT_takeMod(a)
 		"takeBoon": ACT_takeBoon(a)
 		"takeRelic": ACT_takeRelic(a)
+		"factionVerb": ACT_factionVerb()
+		"boonReroll": ACT_boonReroll(a)
+		"boonDecline": ACT_boonDecline()
+		"buyTrack": ACT_buyTrack(a)
 		_: push_warning("campaign: unknown action " + name)
 
 # ======================= campaign_meta.js: title, admiral, aspect, progression, help, run end =======================
@@ -1196,7 +1242,7 @@ func mapScreen() -> void:
 			if not jt(n.get("done")):
 				n["map"] = regionMap(m["region"], n["col"], m["cols"].size()); fitEncounter(n)
 		saveRun()
-	ensurePatrons()
+	ensureNemesis(); ensurePatrons()
 	for n in all:
 		if not jt(n.get("done")) and not jt(n.get("rw")) and _is(n, ["battle", "elite", "boss"]): n["rw"] = rollNodeReward(n["type"])
 	if nodeSeeds(all) > 0: saveRun()
@@ -1204,6 +1250,7 @@ func mapScreen() -> void:
 	A(acts, "saveQuit")
 	for n in all:
 		if avail.has(n["id"]): A(acts, "enterNode", n["id"])
+	if verbFor() != null: A(acts, "factionVerb", "", verbCanUse())
 	A(acts, "fleetScreen")
 	show_page("map", {"avail": avail}, acts)
 func ACT_enterNode(id: String) -> void:
@@ -1212,6 +1259,8 @@ func ACT_enterNode(id: String) -> void:
 	tel("node", {"type": n["type"], "col": n["col"]})
 	if _is(n, ["battle", "elite", "boss"]):
 		var kind = n["type"]; var fac = nodeFaction(n)
+		if nemNodeIs(n):   # B4: the Nemesis fight (marked on the map beforehand)
+			ensureNemesis(); battleScreen({"kind": "elite", "fac": RUN["nem"]["fac"], "col": n["col"], "node": id, "nemesis": nemBattleCfg()}); return
 		if jt(RUN.get("ambush")) and kind == "battle":
 			kind = "elite"; fac = RUN["map"]["fac"] if RUN["fac"] == "hegemony" else "hegemony"; RUN["ambush"] = false
 			toast("The Hegemony escort you robbed has found you.")
@@ -1318,7 +1367,19 @@ func shipyardScreen(n) -> void:
 		A(acts, "buyHull", h, float(RUN["credits"]) >= cost and fits and not uniq)
 	for i in range(st["mods"].size()):
 		if not _has_num(st["sold"], i): A(acts, "buyMod", i, float(RUN["credits"]) >= jsround(float(MODULES[st["mods"][i]]["cost"]) * pm))
+	for cls in fleetClasses():
+		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and float(RUN["credits"]) >= classTrackCost(cls))
 	show_page("shipyard", {"node": n, "pm": pm}, acts)
+func fleetClasses() -> Array:
+	var out = []
+	for s in RUN["fleet"]:
+		var c = HULLS[s["tpl"]].get("cls")
+		if not out.has(c): out.append(c)
+	return out
+func ACT_buyTrack(cls: String) -> void:
+	if not buyClassTrack(cls): return
+	tel("shop", {"k": "track", "id": cls, "lv": classTrack(cls)})
+	toast(cls + " refit level " + numstr(classTrack(cls)) + ": every " + cls.to_lower() + " gains."); shipyardScreen(yard_node)
 func ACT_buyHull(h: String) -> void:
 	var t = HULLS[h]; var cost = jsround(float(t["cost"]) * priceMult())
 	if float(RUN["credits"]) < cost or fleetCP() + float(t["cp"]) > float(RUN["cpCap"]): return
@@ -1381,21 +1442,229 @@ func fieldRepairs(_n) -> void:
 		var mx = float(derive(sh)["maxHp"]); sh["hp"] = min(mx, float(sh["hp"]) + jsround(mx * 0.2 * repairMult()))
 	tel("field_repairs", {})
 	completeNode(); mapScreen(); toast("Field repairs: every ship recovers 20% of its hull.")
-func _ev_fits(e) -> bool: return not (jt(e.get("not")) and e["not"].has(RUN["fac"]))
-func eventScreen(_n) -> void:
+func _ev_fits(e) -> bool: return not (jt(e.get("not")) and e["not"].has(RUN["fac"])) and e["id"] != EVENT_FALLBACK
+# B4: blue options. needMet says whether the fleet meets a requirement; needText says it in plain words (shown on the option either way)
+func needMet(nd) -> bool:
+	if not jt(nd): return true
+	var kit = fleetKit()
+	if jt(nd.get("fac")):
+		if nd["fac"] is Array:
+			if not nd["fac"].has(RUN["fac"]): return false
+		elif nd["fac"] != RUN["fac"]: return false
+	if jt(nd.get("kind")) and not jt(kit.get(nd["kind"])): return false
+	if jt(nd.get("carrier")) and not jt(kit.get("carrier")): return false
+	if jt(nd.get("shields")) and not jt(kit.get("shields")): return false
+	if jt(nd.get("relic")):
+		if (nd["relic"] is float or nd["relic"] is int) and float(nd["relic"]) == 1.0:
+			if RUN["relics"].size() == 0: return false
+		elif not RUN["relics"].has(nd["relic"]): return false
+	if jt(nd.get("mod")) and RUN["inventory"].size() == 0: return false
+	if jt(nd.get("cred")) and float(RUN["credits"]) < float(nd["cred"]): return false
+	if jt(nd.get("vet")) and not RUN["fleet"].any(func(s): return float(z0(s["cap"].get("rank"))) >= float(nd["vet"])): return false
+	if jt(nd.get("flag")) and not (RUN.get("flags") is Dictionary and RUN["flags"].get(nd["flag"]) != null): return false
+	if jt(nd.get("intel")):
+		var rv = RUN["nem"]["revealed"] if (RUN.get("nem") is Dictionary and RUN["nem"].get("revealed") is Array) else []
+		if rv.size() < float(nd["intel"]): return false
+	return true
+func needText(nd) -> String:
+	if not jt(nd): return ""
+	var p = []
+	if jt(nd.get("fac")):
+		var fs = nd["fac"] if nd["fac"] is Array else [nd["fac"]]; var nm = []
+		for f in fs: nm.append(FACTIONS[f]["n"] if FACTIONS.has(f) else str(f))
+		p.append(" or ".join(PackedStringArray(nm)))
+	if jt(nd.get("kind")): p.append(str(or_(KIND_WORD.get(nd["kind"]), nd["kind"])) + " in the fleet")
+	if jt(nd.get("carrier")): p.append("a carrier")
+	if jt(nd.get("shields")): p.append("a shielded ship")
+	if jt(nd.get("relic")): p.append("a relic" if ((nd["relic"] is float or nd["relic"] is int) and float(nd["relic"]) == 1.0) else relicName(nd["relic"]))
+	if jt(nd.get("mod")): p.append("a refit in the hold")
+	if jt(nd.get("cred")): p.append(numstr(nd["cred"]) + " credits")
+	if jt(nd.get("vet")): p.append("a " + str(RANKS[int(nd["vet"])]) + " or better")
+	if jt(nd.get("flag")): p.append("an earlier choice")
+	if jt(nd.get("intel")): p.append(numstr(nd["intel"]) + " Nemesis weakness" + ("es" if float(nd["intel"]) > 1 else "") + " known")
+	return "Needs " + ", ".join(PackedStringArray(p))
+# the next event at an event node: never one already seen this run (B4), never one barred for your faction; a quiet stretch once all are seen
+func nextEvent() -> Dictionary:
 	RUN["seenEvents"] = or_(RUN.get("seenEvents"), [])
 	var pool = EVENTS.filter(func(e): return _ev_fits(e) and not RUN["seenEvents"].has(e["id"]))
-	if pool.size() == 0:
-		RUN["seenEvents"] = []; pool = EVENTS.filter(func(e): return _ev_fits(e))
-	var ev = pick(pool); RUN["seenEvents"].append(ev["id"])
+	var ev = null
+	if pool.size() > 0: ev = pick(pool)
+	else:
+		for e in EVENTS:
+			if e["id"] == EVENT_FALLBACK:
+				ev = e; break
+	RUN["seenEvents"].append(ev["id"]); return ev
+func eventOptOk(o) -> bool:
+	var cost = o["r"].get("cost") if o.get("r") is Dictionary else null
+	return (not jt(cost) or float(RUN["credits"]) >= float(cost)) and needMet(o.get("need"))
+func eventScreen(_n) -> void:
+	var ev = nextEvent()
 	cur_event = ev.duplicate(false)
 	if jt(ev.get("v")) and jt(ev["v"].get(RUN["fac"])): cur_event.merge(ev["v"][RUN["fac"]], true)
 	mapScreen()
 	var acts = []
 	for i in range(cur_event["o"].size()):
-		var o = cur_event["o"][i]; var cost = o["r"].get("cost") if o["r"] is Dictionary else null
-		A(acts, "eventChoice", i, not jt(cost) or float(RUN["credits"]) >= float(cost))
+		A(acts, "eventChoice", i, eventOptOk(cur_event["o"][i]))
 	show_modal("event", {"ev": cur_event}, acts)
+# B4: every event choice writes a flag later systems read (faction verbs, the Nemesis): RUN.flags[event id] = the option's key, plus any counters
+func eventFlags(ev, o, i: int) -> void:
+	if not (RUN.get("flags") is Dictionary): RUN["flags"] = {}
+	RUN["flags"][ev["id"]] = o["k"] if jt(o.get("k")) else str(i)
+	var fl = o.get("fl") if o.get("fl") is Dictionary else {}
+	for k in fl.keys(): RUN["flags"][k] = float(z0(RUN["flags"].get(k))) + float(fl[k])
+# ---------- B4 the Nemesis (campaign rules; the battle rules apply his weaknesses and adaptations in the fight) ----------
+func newNemesis() -> Dictionary:
+	var fac = RUN["foes"][3] if (RUN.get("foes") is Array and RUN["foes"].size() > 3 and jt(RUN["foes"][3])) else pick(RUN_FACTIONS.filter(func(f): return f != RUN["fac"]))
+	var C = CAPTAINS[fac] if CAPTAINS.has(fac) else CAPTAINS["voidsworn"]
+	var name = ""
+	if jt(C.get("names")): name = str(pick(C["names"])) + ((" " + str(pick(C["epithets"]))) if jt(C.get("epithets")) else "")
+	else:
+		var f1 = str(pick(C["first"])); name = f1 + " " + str(pick(C["last"]))
+	var title = C["ranks"][C["ranks"].size() - 1]
+	var weak = shuffle(NEM_WEAK.keys()).slice(0, 2)
+	return {"fac": fac, "name": name, "title": title, "weak": weak, "revealed": [], "adapt": [], "clock": 0, "met": 0, "beaten": 0, "scars": 0, "dead": false, "strike": false, "seen": {}}
+func ensureNemesis() -> Variant:
+	if RUN != null and not jt(RUN.get("nem")) and RUN.get("fleet") != null: RUN["nem"] = newNemesis()
+	return RUN.get("nem") if RUN != null else null
+func nemFull() -> String:
+	var N = RUN.get("nem") if RUN != null else null
+	return (str(N["title"]) + " " + str(N["name"])) if jt(N) else ""
+func nemReveal() -> Variant:
+	var N = ensureNemesis()
+	if not jt(N): return null
+	var w = null
+	for x in N["weak"]:
+		if not N["revealed"].has(x):
+			w = x; break
+	if w != null: N["revealed"].append(w)
+	return w
+# the clock: returns a line to show when it fills (the next fight becomes his)
+func nemClockAdd(n) -> String:
+	var N = ensureNemesis()
+	if not jt(N) or jt(N.get("dead")): return ""
+	N["clock"] = clampv(float(N["clock"]) + float(n), 0, NEM_CLOCK)
+	if float(N["clock"]) >= float(NEM_CLOCK) and float(N["met"]) < float(RUN["sector"]) and not jt(N.get("strike")):
+		N["strike"] = true; return nemFull() + " has found your trail. Your next fight will be against his fleet."
+	return ""
+# is this battle node his? (strike pending, or the last fight before the rest stop when he has not been met this sector)
+func nemNodeIs(n) -> bool:
+	var N = RUN.get("nem") if RUN != null else null
+	if not jt(N) or jt(N.get("dead")) or float(N["met"]) >= float(RUN["sector"]) or n == null or (n["type"] != "battle" and n["type"] != "elite"): return false
+	return jt(N.get("strike")) or float(n["col"]) >= float(RUN["map"]["cols"].size() - 3)
+func nemBattleCfg() -> Dictionary:
+	var N = RUN["nem"]
+	return {"name": N["name"], "title": N["title"], "fac": N["fac"], "weak": N["weak"].duplicate(), "revealed": N["revealed"].duplicate(), "adapt": N["adapt"].duplicate(), "scars": N["scars"]}
+# one capped adaptation per sector: read from how you fought the sector just finished (RUN.nem.seen, kept by finishBattle)
+func nemAdapt() -> Variant:
+	var N = RUN.get("nem") if RUN != null else null
+	if not jt(N) or jt(N.get("dead")) or N["adapt"].size() >= max(0.0, float(RUN["sector"]) - 1.0): return null
+	var s = N["seen"] if N.get("seen") is Dictionary else {}
+	var score = {"shields": float(z0(s.get("lance"))) * 2 + float(z0(s.get("ion"))) * 2, "pd": float(z0(s.get("torp"))) * 2 + float(z0(s.get("sq"))), "armor": float(z0(s.get("ram"))) * 4 + float(z0(s.get("board"))) * 4,
+		"evasion": float(z0(s.get("battery"))) + float(z0(s.get("broad"))), "aim": float(z0(s.get("evaded")))}
+	var ks = ssort(score.keys().filter(func(k): return not N["adapt"].has(k)), func(a, b): return score[b] - score[a])
+	if ks.size() == 0: return null
+	var pickA = ks[0]; N["adapt"].append(pickA); N["seen"] = {}; return pickA
+# after his battle: returns plain lines for the reward summary
+func nemAfterBattle(result: String, flagDead: bool) -> Array:
+	var N = RUN.get("nem")
+	if not jt(N): return []
+	var out = []; N["met"] = RUN["sector"]; N["strike"] = false; N["clock"] = 0
+	if result == "win":
+		N["beaten"] = float(N["beaten"]) + 1; var w = nemReveal()
+		if w != null: out.append("His captured logs reveal a weakness: " + str(NEM_WEAK[w]["n"]) + ".")
+		if flagDead and float(RUN["sector"]) >= 3:
+			N["dead"] = true; out.append(nemFull() + " is dead. The feud is over.")
+		elif flagDead:
+			N["scars"] = float(N["scars"]) + 1; out.append(nemFull() + "'s flagship breaks apart, but he escapes in a lifeboat, scarred and furious. He will be back.")
+		else: out.append(nemFull() + " withdraws to fight another day.")
+	else:
+		N["clock"] = 1; out.append(nemFull() + " drove you off. He will remember this.")
+	return out
+# what a finished battle teaches him (counted into RUN.nem.seen; read at the next sector)
+func nemLearn(usage, evadedShare) -> void:
+	var N = RUN.get("nem") if RUN != null else null
+	if not jt(N) or not jt(usage): return
+	if not (N.get("seen") is Dictionary): N["seen"] = {}
+	var s = N["seen"]; var k = usage["kind"] if usage.get("kind") is Dictionary else {}
+	for x in ["lance", "torp", "battery"]: s[x] = float(z0(s.get(x))) + float(z0(k.get(x)))
+	s["ion"] = float(z0(s.get("ion"))) + float(z0(usage.get("ion"))); s["sq"] = float(z0(s.get("sq"))) + float(z0(k.get("sq")))
+	s["ram"] = float(z0(s.get("ram"))) + float(z0(usage.get("ram"))); s["board"] = float(z0(s.get("board"))) + float(z0(usage.get("board")))
+	var fire = usage.get("fire") if usage.get("fire") is Dictionary else null
+	var br = (float(z0(fire.get("Port broadside"))) + float(z0(fire.get("Starboard broadside")))) if jt(fire) else 0.0
+	s["broad"] = float(z0(s.get("broad"))) + br; s["evaded"] = float(z0(s.get("evaded"))) + float(z0(evadedShare))
+# ---------- B4 faction campaign verbs ----------
+func verbFor() -> Variant:
+	if RUN == null: return null
+	return FAC_VERBS[RUN["fac"]] if FAC_VERBS.has(RUN["fac"]) else null
+func verbFree(V) -> bool: return jt(V) and jt(V.get("free")) and RUN.get("flags") is Dictionary and RUN["flags"].get(V["free"]) != null
+func verbCanUse() -> bool:
+	var V = verbFor()
+	if not jt(V) or float(z0(RUN.get("verbUsed"))) >= float(RUN["sector"]): return false
+	if verbFree(V): return true
+	var c = V["cost"] if V.get("cost") is Dictionary else {}
+	if jt(c.get("cred")) and float(RUN["credits"]) < float(c["cred"]): return false
+	if jt(c.get("mod")) and RUN["inventory"].size() == 0: return false
+	if jt(c.get("xp")):
+		var f = flagshipOf()
+		if f == null and RUN["fleet"].size() > 0: f = RUN["fleet"][0]
+		if f == null or float(f["cap"]["xp"]) < float(c["xp"]): return false
+	return true
+func verbCostText(V) -> String:
+	if verbFree(V): return "Free (" + str(V["freeD"]) + ")"
+	var c = V["cost"] if V.get("cost") is Dictionary else {}; var p = []
+	if jt(c.get("cred")): p.append(numstr(c["cred"]) + " credits")
+	if jt(c.get("mod")): p.append("a refit from the hold")
+	if jt(c.get("xp")): p.append(numstr(c["xp"]) + " experience from your flagship captain")
+	return ("Costs " + ", ".join(PackedStringArray(p))) if p.size() > 0 else "No cost"
+# apply the verb now; next-battle verbs wait in RUN.verbNext until battleScreen hands them to the fight
+func useVerb() -> Variant:
+	var V = verbFor()
+	if not verbCanUse(): return null
+	var free = verbFree(V); var c = V["cost"] if V.get("cost") is Dictionary else {}; var out = []
+	if not free:
+		if jt(c.get("cred")): RUN["credits"] = float(RUN["credits"]) - float(c["cred"])
+		if jt(c.get("mod")): out.append("The " + modName(RUN["inventory"].pop_at(0)) + " is consumed.")
+		if jt(c.get("xp")):
+			var f = flagshipOf()
+			if f == null: f = RUN["fleet"][0]
+			f["cap"]["xp"] = max(float(z0(RANK_XP[int(f["cap"]["rank"])])), float(f["cap"]["xp"]) - float(c["xp"]))
+	RUN["verbUsed"] = RUN["sector"]
+	if not (RUN.get("flags") is Dictionary): RUN["flags"] = {}
+	RUN["flags"]["verb_" + str(V["id"])] = float(z0(RUN["flags"].get("verb_" + str(V["id"])))) + 1
+	if jt(V.get("next")):
+		RUN["verbNext"] = V["id"]; out.append(str(V["n"]) + ": " + str(V["d"]))
+	if V["id"] == "shake":
+		var g = 30.0 + 10.0 * float(z0(RUN["flags"].get("greed"))); RUN["credits"] = float(RUN["credits"]) + g; out.append("+" + numstr(g) + " credits.")
+		var m = nemClockAdd(1)
+		if m != "": out.append(m)
+		RUN["flags"]["greed"] = float(z0(RUN["flags"].get("greed"))) + 1
+	if V["id"] == "gorge":
+		var fr = 0.3 if RUN["flags"].get("spawn") == "feed" else 0.2
+		for s in RUN["fleet"]:
+			var d = derive(s); s["hp"] = min(float(d["maxHp"]), float(s["hp"]) + jsround(float(d["maxHp"]) * fr))
+		out.append("Every ship regrows " + pct(fr) + " of its hull.")
+	return out
+func ACT_factionVerb() -> void:
+	var lines = useVerb()
+	if lines == null: return
+	saveRun(); mapScreen(); toast(" ".join(PackedStringArray(lines)))
+# ---------- B4 wing veterancy (kept on the carrier ship between battles) ----------
+func wingPerkGrant(ship, id = null) -> Variant:
+	if not (ship.get("wingVet") is Dictionary): ship["wingVet"] = {"kills": 0, "perks": []}
+	var v = ship["wingVet"]
+	if v["perks"].size() >= 3: return null
+	var pool = WING_PERKS.keys().filter(func(k): return not v["perks"].has(k))
+	var got = id if (jt(id) and pool.has(id)) else pick(pool)
+	v["perks"].append(got); return got
+# wing kills earn perks at WING_XP thresholds; returns the perks gained
+func wingVetAfter(ship, kills) -> Array:
+	if not (ship.get("wingVet") is Dictionary): ship["wingVet"] = {"kills": 0, "perks": []}
+	var v = ship["wingVet"]; v["kills"] = float(v["kills"]) + float(kills); var out = []
+	while v["perks"].size() < 3 and float(v["kills"]) >= float(WING_XP[v["perks"].size()]):
+		var g = wingPerkGrant(ship)
+		if g == null: break
+		out.append(g)
+	return out
 func randShip() -> Variant: return pick(RUN["fleet"])
 func _noop() -> void: pass
 func _pop_rand_mod(sh, got: Array) -> void: got.append(sh["mods"].pop_at(int(floor(rnd() * sh["mods"].size()))))
@@ -1454,7 +1723,7 @@ func applyOutcome(r) -> Array:
 	if jt(r.get("healAll")):
 		for s in RUN["fleet"]:
 			var d = derive(s); s["hp"] = min(float(d["maxHp"]), float(s["hp"]) + jsround(float(d["maxHp"]) * float(r["healAll"])))
-		out.append("Every ship repairs " + pct(r["healAll"]) + " of its hull.")
+		out.append("Every ship is fully repaired." if float(r["healAll"]) >= 1 else "Every ship repairs " + pct(r["healAll"]) + " of its hull.")
 	if jt(r.get("gamble")):
 		if rnd() < 0.5:
 			for s in RUN["fleet"]:
@@ -1464,11 +1733,60 @@ func applyOutcome(r) -> Array:
 	if jt(r.get("mod")):
 		var m = randomModule(); RUN["inventory"].append(m); out.append("Found: " + modName(m) + ". It’s in the hold.")
 	if jt(r.get("ambush")): RUN["ambush"] = true
+	# B4 outcome kinds: more currencies and the Nemesis
+	if jt(r.get("payMod")):
+		if RUN["inventory"].size() > 0:
+			var m = RUN["inventory"].pop_at(0); out.append("The " + modName(m) + " from the hold is used up.")
+	if jt(r.get("payXp")):
+		var f = flagshipOf()
+		if f == null and RUN["fleet"].size() > 0: f = RUN["fleet"][0]
+		if f != null:
+			f["cap"]["xp"] = max(float(z0(RANK_XP[int(f["cap"]["rank"])])), float(f["cap"]["xp"]) - float(r["payXp"])); out.append(str(f["cap"]["name"]) + " loses " + numstr(r["payXp"]) + " experience.")
+	if jt(r.get("payRelic")):
+		if RUN["relics"].size() > 0:
+			var rl = RUN["relics"].pop_back(); changeFleet(_noop); out.append("You give up " + relicName(rl) + ".")
+	if jt(r.get("repairOne")):
+		var srt = ssort(RUN["fleet"].duplicate(), func(a, b): return float(a["hp"]) / float(derive(a)["maxHp"]) - float(b["hp"]) / float(derive(b)["maxHp"]))
+		var ix = 1 if (jt(r.get("upgradeOne")) and RUN["fleet"].size() > 1) else 0
+		var s = srt[ix] if ix < srt.size() else null
+		if s != null:
+			s["hp"] = derive(s)["maxHp"]; out.append("The " + str(s["name"]) + " is fully repaired.")
+	if jt(r.get("dmgBig")):
+		var srt = ssort(RUN["fleet"].duplicate(), func(a, b): return float(or_(HULLS[b["tpl"]].get("cp"), 1)) - float(or_(HULLS[a["tpl"]].get("cp"), 1)))
+		if srt.size() > 0:
+			var s = srt[0]; var dm = jsround(float(derive(s)["maxHp"]) * float(r["dmgBig"])); s["hp"] = max(1.0, float(s["hp"]) - dm)
+			out.append("The " + str(s["name"]) + " takes " + numstr(dm) + " hull damage.")
+	if jt(r.get("xpTop")):
+		var srt = ssort(RUN["fleet"].duplicate(), func(a, b): return float(b["cap"]["xp"]) - float(a["cap"]["xp"]))
+		if srt.size() > 0:
+			var s = srt[0]; addXp(s, r["xpTop"]); out.append(str(s["cap"]["name"]) + " of the " + str(s["name"]) + " gains " + numstr(r["xpTop"]) + " experience.")
+	if jt(r.get("modId")) and MODULES.has(r["modId"]):
+		RUN["inventory"].append(r["modId"]); out.append("Found: " + modName(r["modId"]) + ". It’s in the hold.")
+	if jt(r.get("shipRaw")) and HULLS.has(r["shipRaw"]):
+		if fleetCP() + float(or_(HULLS[r["shipRaw"]].get("cp"), 1)) <= float(RUN["cpCap"]):
+			var s = newShip(r["shipRaw"], r.get("vet")); RUN["fleet"].append(s)
+			out.append("The " + str(s["name"]) + " joins the fleet under " + rankName(s["cap"]) + " " + str(s["cap"]["name"]) + ".")
+		else:
+			RUN["credits"] = float(RUN["credits"]) + 40; out.append("No command points to crew her. You sell the berth for 40 credits.")
+	if jt(r.get("wingPerk")):
+		var cs = ssort(RUN["fleet"].filter(func(s): return jt(HULLS[s["tpl"]].get("hangar"))), func(a, b): return float(or_(HULLS[b["tpl"]].get("cp"), 1)) - float(or_(HULLS[a["tpl"]].get("cp"), 1)))
+		if cs.size() > 0:
+			var c = cs[0]; var got = wingPerkGrant(c)
+			out.append(("The " + str(c["name"]) + "’s wings gain a veteran perk: " + str(WING_PERKS[got]["n"]) + ".") if got != null else ("The " + str(c["name"]) + "’s wings already hold every perk they can."))
+	if jt(r.get("nemIntel")):
+		var w = nemReveal()
+		out.append(("Nemesis weakness revealed: " + str(NEM_WEAK[w]["n"]) + ". " + str(NEM_WEAK[w]["d"])) if w != null else "You learn nothing new about the enemy commander.")
+	if jt(r.get("nemClock")):
+		var m2 = nemClockAdd(r["nemClock"])
+		if m2 != "": out.append(m2)
 	if out.size() == 0 and not jt(r.get("fight")): out.append("You move on.")
 	return out
 func ACT_eventChoice(a: String) -> void:
-	var o = cur_event["o"][int(a)]; var r = o["r"]
-	if r is Dictionary and jt(r.get("cost")) and float(RUN["credits"]) < float(r["cost"]): return
+	var i = int(a)
+	var o = cur_event["o"][i] if (i >= 0 and i < cur_event["o"].size()) else null
+	if o == null or not eventOptOk(o): return
+	eventFlags(cur_event, o, i)
+	var r = o["r"]
 	if r is Dictionary and jt(r.get("fight")):
 		close_modal(); battleScreen({"kind": "elite", "fac": r["fight"], "col": float(findNode(RUN["curNode"])["col"]) + 1, "node": RUN["curNode"], "eventRelic": true}); return
 	var lines = applyOutcome(r)
@@ -1541,7 +1859,7 @@ func salvageYield(w: Dictionary) -> Dictionary:
 	var intact = not (kc != null and jt(kc.get("scrap")))
 	var m = pickM[0] if (intact and pickM.size() > 0) else null
 	var cred = jsround((10.0 + 9.0 * float(w["cp"])) * (1.0 if intact else 1.3))
-	var tow = RUN != null and RUN["fac"] == "corsair" and float(w["cp"]) <= 2 and intact and w.get("cause") != "dark" and HULLS.has(w.get("tpl")) and fleetCP() + float(or_(HULLS[w["tpl"]].get("cp"), 1)) <= float(RUN["cpCap"])
+	var tow = RUN != null and RUN["fac"] == "corsair" and float(w["cp"]) <= 2 and intact and w.get("cause") != "dark" and HULLS.has(w.get("tpl")) and factionGate(RUN["fac"], w["tpl"]) == null and fleetCP() + float(or_(HULLS[w["tpl"]].get("cp"), 1)) <= float(RUN["cpCap"])
 	return {"mod": m, "cred": cred, "tow": tow}
 func prizeRansom(p: Dictionary, n) -> float:
 	return jsround(shipValue(p["tpl"]) * 0.55 * (0.6 + 0.4 * float(or_(p.get("hpf"), 1))) * max(0.4, pow(0.85, float(z0(n)))))
@@ -1556,7 +1874,7 @@ func prizePlan(R: Dictionary) -> Array:
 	var sel = or_(R.get("prizeSel"), []); var cp = fleetCP(); var nR = float(z0(RUN.get("ransoms")))
 	var rows = []
 	for i in range(R["prizes"].size()):
-		var p = R["prizes"][i]; var o = prizeOffer(p, nR); var c = float(or_(p.get("cp"), 1)); var room = cp + c <= float(RUN["cpCap"])
+		var p = R["prizes"][i]; var o = prizeOffer(p, nR); var c = float(or_(p.get("cp"), 1)); var gate = factionGate(RUN["fac"], p["tpl"]); var room = cp + c <= float(RUN["cpCap"]) and gate == null   # B3: a prize your faction cannot field can only be stripped or ransomed
 		var sv = float(o["strip"]["cred"]) + (jsround(float(MODULES[o["strip"]["mod"]]["cost"]) * 0.5) if jt(o["strip"]["mod"]) else 0.0)
 		var dk = "add" if (room and float(or_(p.get("hpf"), 1)) >= 0.4) else ("strip" if sv >= float(o["ransom"]) else "ransom")
 		var s_i = sel[i] if i < sel.size() else null
@@ -1564,7 +1882,7 @@ func prizePlan(R: Dictionary) -> Array:
 		if k == "add" and not room: k = ("strip" if sv >= float(o["ransom"]) else "ransom") if dk == "add" else dk
 		if k == "add": cp += c
 		if k == "ransom": nR += 1
-		rows.append({"p": p, "o": o, "room": room, "k": k, "mine": jt(s_i) and s_i == k})
+		rows.append({"p": p, "o": o, "room": room, "gate": gate, "k": k, "mine": jt(s_i) and s_i == k})
 	return rows
 func ACT_prizeStep() -> void:
 	close_modal()
@@ -1667,7 +1985,37 @@ func boonStep(p, minR) -> void:
 		RUN["credits"] = float(RUN["credits"]) + 60; toast("Nothing left to offer. +60 credits."); relicStep(); return
 	var acts = []
 	for i in range(offer.size()): A(acts, "takeBoon", i)
-	show_modal("boon", {"patron": p, "offer": offer}, acts)
+	A(acts, "boonReroll", str(p) + ":" + numstr(z0(minR)), boonRerollOk()); A(acts, "boonDecline")
+	show_modal("boon", {"patron": p, "offer": offer, "rerollCost": boonRerollCost(), "declineCred": boonDeclineCred()}, acts)
+# B4 step 3 (v54): decline a boon offer for credits, or reroll it once per reward for a price that grows each time you reroll in a run
+func boonDeclineCred() -> float: return 30.0 + 10.0 * float(or_(RUN.get("sector") if RUN != null else null, 1))
+func boonRerollCost() -> float: return 25.0 + 15.0 * float(z0(RUN.get("boonRerolls") if RUN != null else null))
+func boonRerollOk() -> bool: return RUN != null and RUN.get("reward") != null and not jt(RUN["reward"].get("rerolled")) and float(RUN["credits"]) >= boonRerollCost()
+func _offer_ids(off: Array) -> Array:
+	var o = []
+	for x in off: o.append(x["id"])
+	return o
+func _all_old(off: Array, old: Array) -> bool:
+	for x in off:
+		if not old.has(x["id"]): return false
+	return true
+func boonReroll(p, minR) -> Variant:
+	if not boonRerollOk(): return null
+	RUN["credits"] = float(RUN["credits"]) - boonRerollCost(); RUN["boonRerolls"] = float(z0(RUN.get("boonRerolls"))) + 1; RUN["reward"]["rerolled"] = true
+	var old = _offer_ids(or_(RUN["reward"].get("boonOffer"), []))
+	var off = rollBoonOffer(p, minR)
+	var k = 0
+	while k < 4 and off.size() > 0 and _all_old(off, old):
+		off = rollBoonOffer(p, minR); k += 1
+	RUN["reward"]["boonOffer"] = off; return off
+func boonDecline() -> float:
+	var c = boonDeclineCred(); RUN["credits"] = float(RUN["credits"]) + c; return c
+func ACT_boonReroll(a: String) -> void:
+	var parts = a.split(":"); var p = parts[0]; var m = (float(parts[1]) if parts.size() > 1 and parts[1].is_valid_float() else 0.0)
+	if boonReroll(p, m) == null: return
+	saveRun(); close_modal(); boonStep(p, m)
+func ACT_boonDecline() -> void:
+	var c = boonDecline(); tel("boon_decline", {"cred": c}); toast("You decline. +" + numstr(c) + " credits."); close_modal(); relicStep()
 func _add_boon(o) -> void:
 	RUN["boons"] = or_(RUN.get("boons"), []); RUN["boons"].append({"id": o["id"], "r": z0(o.get("r"))})
 func ACT_takeBoon(a: String) -> void:
@@ -1730,11 +2078,12 @@ func afterBattle() -> void:
 		if float(RUN["sector"]) >= 3:
 			endRun(true); return
 		RUN["sector"] = float(RUN["sector"]) + 1; RUN["cpCap"] = float(RUN["cpCap"]) + 3; RUN["map"] = genSector(int(RUN["sector"])); RUN["pos"] = null
+		var na = nemAdapt()   # B4: the Nemesis adapts once per sector
 		for s in RUN["fleet"]:
 			var d = derive(s); s["hp"] = min(float(d["maxHp"]), float(s["hp"]) + jsround(float(d["maxHp"]) * 0.4 * repairMult()))
 		saveRun(); mapScreen()
 		var acts = []; A(acts, "closeModal")
-		show_modal("sector", {"fac": RUN["map"]["fac"], "cond": sectorCond(), "region": RUN["map"].get("region")}, acts)
+		show_modal("sector", {"fac": RUN["map"]["fac"], "cond": sectorCond(), "region": RUN["map"].get("region"), "adapt": na if jt(RUN.get("nem")) else null}, acts)
 		return
 	mapScreen()
 
@@ -1772,6 +2121,7 @@ func battleScreen(cfg: Dictionary) -> void:
 	var c = {"map": mp, "dep": "line" if cfg["kind"] == "boss" else pick(["line", "line", "flank"]), "obj": ro["enc"], "shape": ro.get("shape"),
 		"arch": nd.get("arch") if (cfg["kind"] != "boss" and nd != null) else null, "mod": nd.get("mod") if (cfg["kind"] != "boss" and nd != null) else null}
 	c.merge(cfg, true)
+	if jt(RUN.get("verbNext")) and not jt(c.get("verb")): c["verb"] = RUN["verbNext"]   # B4: a next-battle faction verb
 	var ext = battle_mode == "external" and battle_setup.is_valid()
 	start_battle(c)
 	B["campaign"] = true
@@ -1828,11 +2178,35 @@ func finishBattle(result: String) -> void:
 	if result == "loss" and jt(B.get("withdraw")) and B["units"].any(func(u): return u["side"] == "player" and not jt(u.get("dead")) and not jt(u.get("isSq"))): result = "retreat"
 	var cfg = B["cfg"]
 	var summary = {"cfg": cfg, "xp": [], "lost": [], "kills": 0, "rounds": B["round"], "prizes": [], "partial": jt(B.get("partial")), "boonStats": or_(B.get("boonStats"), {}).duplicate()}
+	var wingK = {}
 	for u in B["units"]:
 		if jt(u.get("parent")):
 			for p in B["units"]:
 				if p["id"] == u["parent"]:
-					p["dealt"] = float(z0(p.get("dealt"))) + float(z0(u.get("dealt"))); p["kills"] = float(z0(p.get("kills"))) + float(z0(u.get("kills"))); break
+					p["dealt"] = float(z0(p.get("dealt"))) + float(z0(u.get("dealt"))); p["kills"] = float(z0(p.get("kills"))) + float(z0(u.get("kills")))
+					if p.get("ship") != null: wingK[p["ship"]["uid"]] = float(z0(wingK.get(p["ship"]["uid"]))) + float(z0(u.get("kills")))
+					break
+	# B4: the Nemesis learns from how you fought; a used faction verb is spent; his own fight settles here
+	var pl = B["units"].filter(func(u): return u["side"] == "player" and not jt(u.get("isSq")))
+	var evs = 0.0
+	for u in pl: evs += float(z0(u.get("ev")))
+	nemLearn(B.get("usage"), 1 if evs / max(1.0, float(pl.size())) >= 20 else 0)
+	if B.get("cfg") is Dictionary and jt(B["cfg"].get("verb")): RUN["verbNext"] = null
+	if jt(cfg.get("nemesis")):
+		var fl = null
+		for u in B["units"]:
+			if jt(u.get("nemFlag")):
+				fl = u; break
+		summary["nem"] = nemAfterBattle(result, fl != null and jt(fl.get("dead")) and not jt(fl.get("fled")))
+	elif result == "win" and jt(RUN.get("nem")):
+		var m = nemClockAdd(1)
+		if m != "": summary["nemWarn"] = m
+	for sh in RUN["fleet"]:
+		var wk = wingK.get(sh["uid"])
+		if jt(wk):
+			var g = wingVetAfter(sh, wk)
+			if g.size() > 0:
+				summary["wingPerks"] = or_(summary.get("wingPerks"), []); summary["wingPerks"].append({"ship": sh["name"], "perks": g})
 	var kills = 0
 	for u in B["units"]:
 		if u["side"] == "enemy" and jt(u.get("dead")) and not jt(u.get("fled")) and not jt(u.get("isSq")) and u.get("ship") == null: kills += 1
@@ -1872,6 +2246,12 @@ func finishBattle(result: String) -> void:
 				summary["scrapped"] = or_(summary.get("scrapped"), []); summary["scrapped"].append({"name": u["name"], "cred": v}); continue
 			summary["prizes"].append({"tpl": u["tpl"], "name": u["name"], "hpf": clampv(float(u["hp"]) / max(1.0, float(u["maxHp"])), 0.05, 1), "fac": u.get("fac"), "wk": _kinds(u["weapons"]),
 				"ab": u.get("ab") if jt(u.get("ab")) else null, "regen": jt(u.get("hullRegen")) or (jt(u.get("regen")) and not jt(u.get("shMax"))), "sh": z0(u.get("shMax")), "cp": or_(H.get("cp"), 1)})
+	# v54 doctrine: a Corsair capture pays a bonus refit and 20 credits on top of the normal rewards, for one prize per battle
+	if result == "win" and RUN["fac"] == "corsair" and summary["prizes"].size() > 0:
+		var p0 = summary["prizes"][0].duplicate(); p0["cause"] = "board"
+		var y0 = salvageYield(p0); var m0 = y0["mod"] if jt(y0.get("mod")) else randomModule()
+		RUN["inventory"].append(m0); RUN["credits"] = float(RUN["credits"]) + 20; summary["corsairBonus"] = m0
+		toast("Prize money: the crews strip a " + modName(m0) + " and 20 credits from the " + str(summary["prizes"][0]["name"]) + " before anyone signs for her.")
 	if result == "win":
 		var dead = B["units"].filter(func(u): return u["side"] == "enemy" and jt(u.get("dead")) and not jt(u.get("fled")) and not jt(u.get("isSq")) and u.get("ship") == null and not jt(u.get("captured")))
 		dead = ssort(dead, func(a, b): return float(z0(b["t"].get("cp"))) - float(z0(a["t"].get("cp"))))
@@ -1881,6 +2261,14 @@ func finishBattle(result: String) -> void:
 				"regen": jt(u.get("hullRegen")) or (jt(u.get("regen")) and not jt(u.get("shMax"))), "sh": z0(u.get("shMax")), "cause": or_(u.get("killCause"), "blast"), "by": u.get("killedBy") if jt(u.get("killedBy")) else null})
 		summary["wrecks"] = wr
 	if summary.get("escaped") != null: toast(" and ".join(PackedStringArray(summary["escaped"])) + " escaped in a lifepod, wounded, and will take command of your next hull.")
+	var msg = []
+	for x in or_(summary.get("nem"), []): msg.append(x)
+	if jt(summary.get("nemWarn")): msg.append(summary["nemWarn"])
+	for w in or_(summary.get("wingPerks"), []):
+		var pn = []
+		for p in w["perks"]: pn.append(str(WING_PERKS[p]["n"]))
+		msg.append("The " + str(w["ship"]) + "'s wings earn " + " and ".join(PackedStringArray(pn)) + ".")
+	if msg.size() > 0: toast(" ".join(PackedStringArray(msg)))
 	tel("battle_end", {"result": result, "kind": cfg.get("kind"), "fac": cfg.get("fac"), "rounds": B["round"], "kills": kills, "lost": summary["lost"].size()})
 	B = null
 	if result == "win" and RUN["fleet"].size() == 0:
@@ -1923,6 +2311,10 @@ func stub_start(cfg: Dictionary) -> void:
 		for e in H["w"]: ws2.append({"k": W_[e[0]]["k"]})
 		B["units"].append({"id": "s" + str(n), "side": "enemy", "tpl": tpl, "t": H, "name": H["n"], "fac": cfg["fac"], "hp": H["hp"], "maxHp": H["hp"], "dealt": 0, "kills": 0, "dead": false,
 			"boss": jt(H.get("boss")), "weapons": ws2, "ab": H.get("ab") if jt(H.get("ab")) else null, "shMax": z0(H.get("sh")), "regen": z0(H.get("regen"))})
+	if jt(cfg.get("nemesis")):
+		for u in B["units"]:
+			if u["side"] == "enemy":
+				u["nemFlag"] = true; break
 func stub_resolve(o: String) -> void:
 	var P = B["units"].filter(func(u): return u["side"] == "player"); var E = B["units"].filter(func(u): return u["side"] == "enemy"); var loss = o == "loss"
 	B["round"] = ri(3, 7)
@@ -1944,6 +2336,9 @@ func stub_resolve(o: String) -> void:
 		if live.size() > 0:
 			var k = pick(live); k["kills"] = float(k["kills"]) + 1; e["killedBy"] = k["name"]
 	if o == "partial": B["partial"] = true
+	B["usage"] = {"kind": {}, "ion": 0, "ram": 0, "board": 0, "fire": {}}
+	for u in P:
+		for w in u["weapons"]: B["usage"]["kind"][w["k"]] = float(z0(B["usage"]["kind"].get(w["k"]))) + 1
 	B["over"] = "loss" if loss else "win"
 
 # The browser's "Copy report for Claude" (campaign3d.js copyReport): settings, the run in short and the last 200 run-log events,

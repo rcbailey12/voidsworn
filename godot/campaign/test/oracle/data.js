@@ -308,6 +308,157 @@ const EVENTS = [
       {l:'Take the fuel and credits',s:'+45 credits.',r:{cred:45}}]},
 ];
 
+// ---------- B4 events: blue options, new events, flags (Oct 26, Claude's text and numbers, vetoable) ----------
+// Blue options (need:{...}) are shown in blue with their requirement in plain words, and only work when the fleet meets it. Requirement kinds:
+// fac (your faction, or a list), kind (a weapon kind somewhere in the fleet: torp, lance, flak, batt), carrier, shields, relic (1 = any relic),
+// mod (a refit in the hold), cred (credits on hand), vet (a captain of that rank or higher), flag (an earlier event's flag), intel (Nemesis intel).
+// Costs come in different currencies: credits (cost), hull (dmgOne, dmgAll), a refit from the hold (payMod), the flagship captain's experience
+// (payXp), a relic (payRelic) and the Nemesis clock (nemClock: they notice you). No event repeats within a run, and every choice writes a flag:
+// RUN.flags[event id] = the option's key (k, or its number), plus any fl:{name:n} counters later systems read (faction verbs, the Nemesis).
+// Blue options added to the first eleven events:
+EVENTS.find(e=>e.id==='derelict').o.splice(2,0,{k:'cut',l:'Cut out its core with lances',s:'A clean cut: archeotech and salvage, nothing wakes.',need:{kind:'lance'},r:{mod:1,cred:40}});
+EVENTS.find(e=>e.id==='storm').o.splice(1,0,{k:'shields',l:'Angle every shield into the front',s:'No damage, and your captains learn from it: +10 experience each.',need:{shields:1},r:{xp:10}});
+EVENTS.find(e=>e.id==='beacon').o.splice(1,0,{k:'tow',l:'Tow them home with a carrier',s:'Their captain pays well and owes you a favour: +70 credits, a Nemesis weakness revealed.',need:{carrier:1},r:{cred:70,nemIntel:1},fl:{mercy:1}});
+EVENTS.find(e=>e.id==='beacon').o.find(o=>o.l==='Seize the cargo').fl={greed:1}; EVENTS.find(e=>e.id==='beacon').o.find(o=>o.l==='Seize the cargo').r.nemClock=1;
+EVENTS.find(e=>e.id==='astropath').o.splice(1,0,{k:'shield',l:'Shield the route with a spare refit',s:'Gain a relic. A refit from the hold burns out instead of a hull.',need:{mod:1},r:{relic:1,payMod:1}});
+EVENTS.find(e=>e.id==='seer').o.splice(1,0,{k:'song',l:'Sing back to her',s:'She trades a relic for a song. No refit lost.',need:{fac:'ithar'},r:{relic:1}});
+EVENTS.find(e=>e.id==='wright').o.splice(1,0,{k:'pay',l:'Pay him in refits too (one from the hold)',s:'Your most damaged ship is repaired and upgraded, and a second ship is fully repaired.',need:{mod:1},r:{upgradeOne:1,repairOne:1,payMod:1}});
+EVENTS.find(e=>e.id==='moon').o.splice(1,0,{k:'flak',l:'Sweep the shafts with point defense',s:'Rescue the survivors before the brood hatches: +60 credits, +15 experience for every captain.',need:{kind:'flak'},r:{cred:60,xp:15},fl:{mercy:1}});
+EVENTS.find(e=>e.id==='shrine').o.splice(2,0,{k:'relic',l:'Leave one of your relics as an offering',s:'Every ship is fully repaired and every captain gains 20 experience.',need:{relic:1},r:{payRelic:1,healAll:1,xp:20}});
+EVENTS.find(e=>e.id==='deserters').o.splice(1,0,{k:'question',l:'Question them about the enemy commander',s:'Your least experienced captain gains 30 experience and a Nemesis weakness is revealed.',need:{vet:2},r:{xpLow:30,nemIntel:1}});
+EVENTS.find(e=>e.id==='cache').o.splice(1,0,{k:'both',l:'Crack it with a torpedo, then strip the fuel',s:'A refit and the credits.',need:{kind:'torp'},r:{mod:1,cred:45}});
+EVENTS.find(e=>e.id==='merc').o.splice(1,0,{k:'oath',l:'Offer her a place in the line, no pay',s:'She takes the oath. A destroyer of your own kind joins with a veteran captain.',need:{fac:'voidsworn'},r:{ship:'harrow',vet:1}});
+EVENTS.push(
+  {id:'tithe',t:'The tithe vault',b:'An abandoned tithe station turns slowly in the dark, its vault still sealed. The alarm circuits look old, but alive.',
+   o:[{k:'crack',l:'Blow the vault',s:'+70 credits. The alarm will reach someone: the Nemesis clock moves on.',r:{cred:70,nemClock:1},fl:{greed:1,loud:1}},
+      {k:'lance',l:'Cut the vault open with a lance',s:'+70 credits, quietly.',need:{kind:'lance'},r:{cred:70},fl:{greed:1}},
+      {k:'leave',l:'Leave it sealed',s:'Nothing happens.',r:{}}]},
+  {id:'pilot',t:'A stranded pilot',b:'A lone life pod drifts across your course. Inside, a fighter pilot clutches the logbook of a wing that no longer exists.',
+   o:[{k:'take',l:'Take her aboard',s:'Your least experienced captain gains 40 experience from her stories.',r:{xpLow:40},fl:{mercy:1}},
+      {k:'wing',l:'Give her a wing on your carrier',s:'Your best carrier’s wings gain a veteran perk.',need:{carrier:1},r:{wingPerk:1},fl:{mercy:1}},
+      {k:'leave',l:'Leave her to the rescue buoys',s:'Nothing happens.',r:{}}]},
+  {id:'reactor',t:'A cracked reactor',b:'Engineers report a hairline crack in a reactor housing. It will hold for a battle, perhaps two.',
+   o:[{k:'vent',l:'Vent and patch it',s:'Your largest ship takes 20% hull damage.',r:{dmgBig:.2}},
+      {k:'refit',l:'Rebuild it around a spare refit',s:'A refit from the hold is used up. No damage.',need:{mod:1},r:{payMod:1}},
+      {k:'metal',l:'Let the living metal knit it',s:'No cost.',need:{fac:'deathless'},r:{}},
+      {k:'pay',l:'Buy parts from a passing hauler (45 credits)',s:'No damage.',r:{cost:45}}]},
+  {id:'squall',t:'Ion squall',b:'A wall of ion static rolls toward the fleet. It will scour paint, sensors and anything not shielded.',
+   o:[{k:'ride',l:'Ride it out',s:'Every ship takes 8% hull damage.',r:{dmgAll:.08}},
+      {k:'shield',l:'Bring the shields up and push through',s:'No damage; captains learn from it: +10 experience each.',need:{shields:1},r:{xp:10}},
+      {k:'round',l:'Go around (35 credits of fuel)',s:'No damage.',r:{cost:35}}]},
+  {id:'broker',t:'An information broker',b:'A soft-spoken broker hails you from a cloaked yacht. She claims to know the enemy commander who has been shadowing your fleet.',
+   o:[{k:'buy',l:'Buy what she knows (60 credits)',s:'A Nemesis weakness is revealed.',r:{cost:60,nemIntel:1},fl:{intel:1}},
+      {k:'debt',l:'Remind her of an old debt',s:'She pays it in secrets: a Nemesis weakness, free.',need:{fac:'corsair'},r:{nemIntel:1},fl:{intel:1}},
+      {k:'leave',l:'Send her away',s:'Nothing happens.',r:{}}]},
+  {id:'bait',t:'A distress call that sounds wrong',b:'A freighter screams for help on every band. Your signals officer thinks the voice is a recording.',
+   o:[{k:'loud',l:'Go in loud and take the cargo',s:'+80 credits, but your next fight starts as an ambush.',r:{cred:80,ambush:true},fl:{greed:1,loud:1}},
+      {k:'sweep',l:'Sweep it with point defense first',s:'You find the mines and take the cargo: +80 credits.',need:{kind:'flak'},r:{cred:80},fl:{greed:1}},
+      {k:'ignore',l:'Ignore it',s:'Nothing happens.',r:{}}]},
+  {id:'spawn',t:'A spawning field',b:'Thousands of translucent egg-sacs drift between two moons, pulsing in time with something far away.',
+   o:[{k:'burn',l:'Burn them',s:'+20 experience for every captain.',r:{xp:20},fl:{purge:1}},
+      {k:'harvest',l:'Harvest the membranes',s:'Gain a damage control refit.',r:{modId:'damcon'}},
+      {k:'feed',l:'Let the fleet feed',s:'Every ship regrows 30% of its hull.',need:{fac:'chorus'},r:{healAll:.3},fl:{fed:1}}]},
+  {id:'lament',t:'A song in the dark',b:'A dying Ithar songship is singing its own lament. The melody carries old star charts in it, for those who can hear.',
+   o:[{k:'listen',l:'Listen',s:'Every captain gains 15 experience.',r:{xp:15}},
+      {k:'join',l:'Join the song',s:'Gain a relic, and the charts show you the enemy commander’s routes: Nemesis clock back one.',need:{fac:'ithar'},r:{relic:1,nemClock:-1}},
+      {k:'archive',l:'Trade a relic for its archive',s:'Lose a relic. Reveal a Nemesis weakness and gain 120 credits.',need:{relic:1},r:{payRelic:1,nemIntel:1,cred:120},fl:{intel:1}}]},
+  {id:'tomb',not:['deathless'],t:'A sealed tomb-world',b:'A planet of black glass hums under your keels. Deep below, something counts the seconds until it wakes.',
+   o:[{k:'wake',l:'Wake it and take what it guards',s:'Fight an elite Deathless battle. Win a relic.',r:{fight:'deathless'},fl:{loud:1}},
+      {k:'map',l:'Map it from orbit and leave',s:'+30 credits for the charts.',r:{cred:30}}]},
+  {id:'tombhome',not:['hegemony','voidsworn','corsair','chorus','ithar'],t:'A sleeping tomb-world',b:'A tomb-world of your own dynasty, its legions dormant. A word from you would wake one of them.',
+   o:[{k:'wake',l:'Wake one scythe',s:'A Deathless scythe joins the fleet at full hull.',need:{fac:'deathless'},r:{shipRaw:'d_scythe'}},
+      {k:'tithe',l:'Take its tithe instead',s:'+60 credits.',r:{cred:60}}]},
+  {id:'mutiny',t:'Mutters below decks',b:'The crew of one of your ships has gone quiet in the wrong way. Their captain asks for orders.',
+   o:[{k:'pay',l:'Pay a bonus (50 credits)',s:'The mood lifts.',r:{cost:50}},
+      {k:'discipline',l:'Make an example',s:'Your flagship captain loses 20 experience; the fleet falls in line.',r:{payXp:20}},
+      {k:'talk',l:'Send your most senior captain to talk',s:'Free, and that captain gains 15 experience.',need:{vet:2},r:{xpTop:15},fl:{mercy:1}}]},
+  {id:'convoy',t:'A merchant convoy',b:'A slow convoy of ore haulers asks for safe passage through the next system.',
+   o:[{k:'escort',l:'Escort them',s:'+45 credits from the grateful masters.',r:{cred:45},fl:{mercy:1}},
+      {k:'trade',l:'Trade with them (60 credits)',s:'Gain a random refit.',r:{cost:60,mod:1}},
+      {k:'shake',l:'Shake them down',s:'+100 credits. Word spreads: the Nemesis clock moves on.',need:{fac:'corsair'},r:{cred:100,nemClock:1},fl:{greed:1,loud:1}}]},
+  {id:'battlefield',t:'The old battlefield',b:'Hulls from a war nobody remembers drift in a slow ring, still bristling with unexploded ordnance.',
+   o:[{k:'salvage',l:'Salvage carefully',s:'Gain a random refit. One ship takes 12% hull damage from old mines.',r:{mod:1,dmgOne:.12}},
+      {k:'wings',l:'Send the wings in first',s:'They find the mines: a random refit, no damage.',need:{carrier:1},r:{mod:1}},
+      {k:'leave',l:'Leave it to the dead',s:'Nothing happens.',r:{}}]},
+  {id:'scout',t:'A scout in your wake',b:'Long-range scans show a small, fast ship holding exactly at the edge of your sensor range. It carries the enemy commander’s colours.',
+   o:[{k:'hunt',l:'Turn and hunt it down',s:'Every ship takes 5% hull damage in the chase. Nemesis clock back one, and a weakness revealed.',r:{dmgAll:.05,nemClock:-1,nemIntel:1}},
+      {k:'torp',l:'Torpedo it from range',s:'Nemesis clock back one, and a weakness revealed. No damage.',need:{kind:'torp'},r:{nemClock:-1,nemIntel:1}},
+      {k:'ignore',l:'Let it watch',s:'The Nemesis clock moves on.',r:{nemClock:1}}]},
+  {id:'defector',t:'A defector',b:'An officer from the enemy commander’s own fleet surrenders his shuttle to you. He wants asylum and he wants revenge.',
+   o:[{k:'question',l:'Interrogate him',s:'A Nemesis weakness is revealed.',r:{nemIntel:1},fl:{intel:1}},
+      {k:'ransom',l:'Sell him back',s:'+70 credits. The Nemesis clock moves on.',r:{cred:70,nemClock:1},fl:{greed:1}},
+      {k:'enlist',l:'Give him a commission',s:'Your least experienced captain gains 50 experience and a weakness is revealed.',need:{fac:'hegemony'},r:{xpLow:50,nemIntel:1},fl:{intel:1}}]},
+  {id:'dock',t:'A drifting drydock',b:'An automated drydock still runs on its last power cells. Its arms twitch as your fleet comes alongside.',
+   o:[{k:'use',l:'Use it (30 credits)',s:'Your most damaged ship is fully repaired.',r:{cost:30,repairOne:1}},
+      {k:'frame',l:'Buy its last frame (100 credits)',s:'Your most damaged ship is repaired and upgraded one Mark.',need:{cred:100},r:{cost:100,upgradeOne:1}},
+      {k:'leave',l:'Leave it running',s:'Nothing happens.',r:{}}]},
+  {id:'well',t:'A gravity slingshot',b:'A dead star bends the route ahead. A tight slingshot would save fuel, if the hulls can take the stress.',
+   o:[{k:'sling',l:'Take the slingshot',s:'Every ship takes 5% hull damage; you save 35 credits of fuel.',r:{dmgAll:.05,cred:35}},
+      {k:'sails',l:'Ride the solar wind instead',s:'No damage, and you save the fuel: +35 credits.',need:{fac:'ithar'},r:{cred:35}},
+      {k:'round',l:'Go the long way',s:'Nothing happens.',r:{}}]},
+  {id:'auction',t:'A relic auction',b:'A neutral station is auctioning relics recovered from a dead crusade. The bidding is slow and the buyers are armed.',
+   o:[{k:'bid',l:'Bid 120 credits',s:'Gain a relic.',r:{cost:120,relic:1}},
+      {k:'swap',l:'Trade one of your relics for one of theirs',s:'Lose a relic, gain a different one and 40 credits.',need:{relic:1},r:{payRelic:1,relic:1,cred:40}},
+      {k:'leave',l:'Watch and leave',s:'Nothing happens.',r:{}}]},
+  {id:'saboteur',t:'A saboteur aboard',b:'Small failures keep happening on one of your ships. Someone aboard is working for the enemy commander.',
+   o:[{k:'search',l:'Search the ship',s:'A firefight: that ship takes 10% hull damage. A weakness is revealed from his notes.',r:{dmgOne:.1,nemIntel:1}},
+      {k:'face',l:'You know his face',s:'The defector you questioned named him. Caught quietly: Nemesis clock back one, and a weakness revealed.',need:{flag:'defector'},r:{nemClock:-1,nemIntel:1}},
+      {k:'ignore',l:'Ignore it',s:'The Nemesis clock moves on twice.',r:{nemClock:2}}]},
+  {id:'veterans',t:'A retired admiral',b:'An old admiral in a ruined hab offers to teach your captains everything she learned, for a price.',
+   o:[{k:'pay',l:'Pay her (50 credits)',s:'Every captain gains 25 experience.',r:{cost:50,xp:25}},
+      {k:'oath',l:'Swear her old oath',s:'She teaches for free: every captain gains 25 experience.',need:{fac:'voidsworn'},r:{xp:25}},
+      {k:'leave',l:'Thank her and leave',s:'Nothing happens.',r:{}}]},
+  {id:'haven',t:'A pirate haven',b:'A rock riddled with docking tunnels and gun ports. Half the sector’s stolen goods pass through here.',
+   o:[{k:'raid',l:'Raid it',s:'Fight an elite Corsair battle. Win a relic.',r:{fight:'corsair'},fl:{loud:1}},
+      {k:'tribute',l:'Pay them to hide your trail (40 credits)',s:'Nemesis clock back one.',r:{cost:40,nemClock:-1}},
+      {k:'recruit',l:'Recruit a crew there',s:'A Corsair raider joins with a veteran captain.',need:{fac:'corsair'},r:{shipRaw:'c_raider',vet:1}}]},
+  {id:'quiet',t:'Quiet void',b:'Nothing on the scopes for light-hours in every direction. The crews sleep for the first time in weeks.',
+   o:[{k:'rest',l:'Rest',s:'Every ship repairs 10% of its hull.',r:{healAll:.1}},
+      {k:'drill',l:'Drill the crews',s:'Every captain gains 10 experience.',r:{xp:10}}]});
+// the tithe vault and the tomb-world fights already reward a relic through the elite battle; 'tombhome' is the Deathless-only twin of 'tomb'
+const EVENT_FALLBACK='quiet'; // shown when a run has seen every other event
+// ---------- B4 the Nemesis: one named enemy commander per run (also the story rival, R7) ----------
+// Two fixed weaknesses rolled at run start (true from the first meeting; intel reveals them to you), a visible clock, and one capped
+// adaptation per sector, read from how you fought the sector before. He never takes control of your ships, and his fights are always
+// marked on the map before you commit (no ship loss without warning).
+const NEM_CLOCK=4; // the clock fills with every fight you win and every loud choice; when full, your next fight is his
+const NEM_WEAK={
+  flank:{n:'Thin stern plating',d:'His ships take 25% more damage on rear-arc hits.'},
+  ion:{n:'Brittle shield emitters',d:'Ion and lance hits strip 50% more shield from his ships.'},
+  torp:{n:'Poor point defense',d:'Torpedoes are 15 easier to land on his ships.'},
+  board:{n:'Green boarding crews',d:'His ships carry 30% fewer crew to repel boarders.'},
+  brawl:{n:'Long-gun doctrine',d:'His ships aim 10 worse at targets 2 hexes away or closer.'},
+  anchor:{n:'A proud flagship',d:'His escorts break and flee once his flagship falls below 60% hull.'},
+  slow:{n:'Worn engines',d:'His ships have 1 less movement.'}};
+const NEM_ADAPT={
+  shields:{n:'Reinforced shields',d:'His ships have 20% more shields.',why:'you leaned on lances and ion fire'},
+  pd:{n:'Extra point defense',d:'Two of his ships bolt on point defense.',why:'you leaned on torpedoes and wings'},
+  armor:{n:'Ram plating',d:'His ships have 10% more armor.',why:'you rammed and boarded'},
+  evasion:{n:'Evasive drills',d:'His ships have 8 more evasion.',why:'you leaned on broadsides and batteries'},
+  aim:{n:'Gunnery drills',d:'His ships aim 8 better.',why:'you won by staying hard to hit'}};
+// ---------- B4 faction campaign verbs: one small action per faction, once per sector, from the map ----------
+// cost: cred (credits), mod (a refit from the hold), xp (flagship captain experience). free: an earlier event flag that waives the cost.
+// next: an effect on your next battle (battle.js applyVerb). Each use writes the flag verb_<id>.
+const FAC_VERBS={
+  voidsworn:{id:'vigil',n:'Hold a vigil',d:'Next battle, ships next to an ally take 15% less hull damage.',cost:{cred:40},free:'shrine',freeD:'free after an offering at a void-shrine',next:1},
+  hegemony:{id:'drill',n:'Fleet drill',d:'Next battle, synchronized fire reaches 4 hexes from the flagship and its bonus rises to +20%.',cost:{cred:35},free:'defector',freeD:'free once a defector has briefed you',next:1},
+  corsair:{id:'shake',n:'Shake down the lanes',d:'Gain 30 credits, plus 10 for every greedy choice this run. The Nemesis clock moves on.',cost:{},next:0},
+  chorus:{id:'gorge',n:'Gorge',d:'Consume a refit from the hold: every ship regrows 20% of its hull (30% if the fleet has fed at a spawning field).',cost:{mod:1},next:0},
+  ithar:{id:'attune',n:'Prism attunement',d:'Next battle, every shield is 25% stronger.',cost:{xp:25},free:'lament',freeD:'free once you have joined the song',next:1},
+  deathless:{id:'waken',n:'Waken the legion',d:'Next battle, the endless legion has one more return.',cost:{cred:45},free:'tombhome',freeD:'free once a tomb-world has woken for you',next:1}};
+// ---------- B4 wing doctrines: a stance per carrier, one free switch per round; up to three veteran perks per carrier's wings ----------
+const WING_STANCES={
+  strike:{n:'Strike',d:'Default. Wings hit the best target in reach, ships first for bombers.'},
+  screen:{n:'Screen',d:'Wings stay within 2 hexes of their carrier, hunt enemy craft first, and shoot down torpedoes aimed at ships beside them.'},
+  hunt:{n:'Hunt',d:'Wings range 4 hexes further and go for crippled ships (+20% damage below half hull), but fly exposed (10 easier to hit).'}};
+const WING_PERKS={
+  aces:{n:'Aces',d:'Wings aim 10 better.'},
+  armored:{n:'Armored cockpits',d:'Wings have 25% more hull.'},
+  reserve:{n:'Deep reserves',d:'The carrier holds one more spare wing.'},
+  killers:{n:'Ship killers',d:'Wings deal 15% more damage to ships.'},
+  pickets:{n:'Picket pilots',d:'Screening wings shoot down torpedoes more often.'},
+  jinkers:{n:'Jinkers',d:'Wings are 8 harder to hit.'}};
+const WING_XP=[3,8,15]; // wing kills a carrier's wings need for their first, second and third perk
 // ---------- captains and ship names by faction ----------
 const CAPTAINS={
   voidsworn:{ranks:RANKS,first:CAP_FIRST,last:CAP_LAST},
@@ -324,9 +475,19 @@ const MORE_SHIP_NAMES={
   deathless:['Tomb of Nine Kings','Ankh of Ash','Silent Procession','Dust Eternal','The Unsleeping','Obelisk of Night','Crypt of Teeth','Sunless Barge','Pale Sovereign','Ever-Watch']};
 // every faction's hulls get a shipyard price, refit slots and their boss flag (only the Voidsworn set had them;
 // other factions showed 'Buy for NaN', had no refit slots, and the Voidsworn dreadnought wasn't marked as a boss)
+// B3 price ladder (Oct 26, Claude's numbers, vetoable): each faction prices its own classes. Hegemony is the 1.0 baseline; Chorus swarms cheap and
+// prices its big hulls up; Corsairs go cheap small and dear heavy; Ithar tax everything (elite glass); Deathless pay most for few, durable hulls;
+// Voidsworn keep their carriers (Ashgrove's whole kit) at a 25% premium. Shipyard prices, ransom, strip and scrap values all follow h.cost.
+// Enemy fleets are still built by command points, so battle difficulty does not move with this table.
+const FAC_PRICE={hegemony:{},voidsworn:{Carrier:1.25},corsair:{Frigate:.8,Destroyer:.85,Cruiser:1.05,Carrier:1.15},chorus:{Frigate:.65,Destroyer:.75,Cruiser:1,Carrier:1.2},
+  ithar:{Frigate:1.3,Destroyer:1.3,Cruiser:1.15,Carrier:1.1},deathless:{Frigate:1.45,Destroyer:1.5,Cruiser:1.55}};
+// B3 roster gates and prohibitions: what each faction cannot field or do. Checked by canOrder (brace), the prize screen and towing (weapon kinds).
+const FAC_GATES={corsair:{noKind:['lance'],d:'Corsairs field no lance weapons (no long-range beams): they win up close.'},ithar:{noBrace:1,d:'Ithar hulls cannot Brace for impact: they live by shields and speed.'}};
+function factionGate(fac,tpl){ const G=FAC_GATES[fac], h=HULLS[tpl]; if(!G||!h) return null; if(G.noKind&&h.w.some(([id])=>W[id]&&G.noKind.includes(W[id].k))) return G.d; return null; }
 for(const [fid,F] of Object.entries(FACTIONS)){ if(F.boss&&HULLS[F.boss]) HULLS[F.boss].boss=true;
   for(const id of F.roster){ const h=HULLS[id]; if(!h||h.sq) continue; const cp=h.cp||1;
-    if(h.cost==null) h.cost=Math.round((60*cp+10)/5)*5; if(h.slots==null) h.slots=cp<=2?1:cp<=4?2:3; } }
+    if(h.cost==null) h.cost=Math.round((60*cp+10)/5)*5; if(h.slots==null) h.slots=cp<=2?1:cp<=4?2:3;
+    const pm=(FAC_PRICE[fid]||{})[h.cls]||1; if(pm!==1&&h.cost0==null){ h.cost0=h.cost; h.cost=Math.round(h.cost*pm/5)*5; } } }
 
 // ---------- progression between runs ----------
 // Hull variants: bought once with renown, then sold in your faction's shipyards beside the standard hull
@@ -383,7 +544,7 @@ const HEAT={
 // ---------- Patrons, boons and flagship aspects ----------
 // Each run four of six patrons watch the crusade. Battles on the map carry a patron's sigil; win there and that patron offers three boons, take one.
 // Boons change rules, not just numbers; rarity scales their strength (Common x1, Rare x1.5, Epic x2). Two patrons' boons together unlock duo boons.
-const RARITY=[{n:'Common',m:1,col:'#cfc6b0'},{n:'Rare',m:1.5,col:'#62ccff'},{n:'Epic',m:2,col:'#c58bff'}];
+const RARITY=[{n:'Common',m:1,col:'#cfc6b0'},{n:'Rare',m:1.5,col:'#62ccff'},{n:'Epic',m:2,col:'#c58bff'},{n:'Legendary',m:1,col:'#ff8a3d'}]; // B4 step 3: Legendary (index 3) is only ever a patron's legendary boon
 const PATRONS={
   iron:{n:'Kharon, the Iron Saint',short:'Kharon',col:'#e0b04a',glyph:'K',theme:'Broadsides, armor and holding the line',quote:'Stand. Fire. Stand again.'},
   storm:{n:'Vyre, the Storm Queen',short:'Vyre',col:'#5fd4ff',glyph:'V',theme:'Shields, ion fire and lightning',quote:'Every shield is a promise. Break theirs.'},
@@ -398,7 +559,7 @@ const BOONS={
   i_still:{p:'iron',n:'Anchored Volley',d:m=>`A ship that hasn't moved this activation deals +${boonPct(.25*m)} damage with broadsides and batteries.`,fx:m=>({stillPct:.25*m})},
   i_plate:{p:'iron',n:"Saint's Plating",d:m=>`+${boonPct(.08*m)} armor across the fleet.`,fx:m=>({armor:.08*m})},
   i_brace:{p:'iron',n:'Iron Discipline',d:m=>`Bracing blocks an extra ${boonPct(.1*m)}, and braced ships strike back: every enemy attack that hits one takes ${Math.round(18*m)} damage in return.`,fx:m=>({riposte:Math.round(18*m),bracePlus:.1*m})},
-  i_line:{p:'iron',n:'Unbroken Line',d:m=>`Ships next to another of your ships take ${boonPct(.12*m)} less hull damage.`,fx:m=>({lineGuard:.12*m})},
+  i_line:{p:'iron',n:'Unbroken Line',d:m=>`Ships next to another of your ships take ${boonPct(.12*m)} less hull damage.${m>=2?' Epic: they are also 5 harder to hit.':''}`,fx:m=>({lineGuard:.12*m,lineEv:m>=2?5:0})},
   // Vyre
   s_cap:{p:'storm',n:'Capacitor Surge',d:m=>`Shields +${boonPct(.2*m)} across the fleet.`,fx:m=>({shPct:.2*m})},
   s_arc:{p:'storm',n:'Arc Discharge',d:m=>`When your fire knocks out an enemy shield facing, its generator shorts for ${Math.round(9*m)} hull damage.`,fx:m=>({arcShort:Math.round(9*m)})},
@@ -415,7 +576,7 @@ const BOONS={
   a_lance:{p:'star',n:'Starlight Lances',d:m=>`Lances deal +${boonPct(.35*m)} damage.`,fx:m=>({lancePct:.35*m})},
   a_aim:{p:'star',n:'Silent Aim',d:m=>`+${Math.round(5*m)} aim for every weapon.`,fx:m=>({aim:Math.round(5*m)})},
   a_crit:{p:'star',n:'Killing Light',d:m=>`+${Math.round(6*m)}% critical chance, criticals deal x${+(1.5+.25*m).toFixed(2)}, and every critical hit wrecks a ship system.`,fx:m=>({crit:Math.round(6*m),critMul:.25*m,critSys:1})},
-  a_long:{p:'star',n:'Long Silence',d:m=>`Ignore the first ${Math.floor(m*1.5)} hex${Math.floor(m*1.5)>1?'es':''} of long-range penalty.`,fx:m=>({longAim:Math.floor(m*1.5)})},
+  a_long:{p:'star',n:'Long Silence',d:m=>`Ignore the first ${Math.floor(m*1.5)} hex${Math.floor(m*1.5)>1?'es':''} of long-range penalty.${m>=2?' Epic: lances reach 1 hex further.':''}`,fx:m=>({longAim:Math.floor(m*1.5),lanceRange:m>=2?1:0})},
   a_rear:{p:'star',n:'Blind Spot',d:m=>`Hits on an enemy's rear arc deal +${boonPct(.25*m)} damage.`,fx:m=>({rearPct:.25*m})},
   // Rook
   r_burn:{p:'rook',n:'Afterburners',d:m=>`+${m>=2?2:1} speed across the fleet${m>=1.5?`, and +${m>=2?10:6} evasion`:''}.`,fx:m=>({speed:m>=2?2:1,ev:m>=2?10:m>=1.5?6:0})},
@@ -427,7 +588,7 @@ const BOONS={
   e_war:{p:'ember',n:'Choir Warheads',d:m=>`Torpedoes deal +${boonPct(.25*m)} damage.`,fx:m=>({torpPct:.25*m})},
   e_reload:{p:'ember',n:'Hymn of Reloading',d:m=>`Torpedoes reload ${m>=1.5?2:1} turn${m>=1.5?'s':''} faster.`,fx:m=>({torpCd:m>=1.5?2:1})},
   e_kindle:{p:'ember',n:'Kindling',d:m=>`Hull hits have a ${boonPct(.12*m)} chance to start a fire (fires burn ${6+Math.round(4*m)} a turn for 2 turns).`,fx:m=>({igniteCh:.12*m,fireDmg:Math.round(4*m)})},
-  e_chain:{p:'ember',n:'Chain Reaction',d:m=>`Enemy ships you destroy explode, dealing ${Math.round(20*m)} damage to every enemy within 2 hexes.`,fx:m=>({chainBoom:Math.round(20*m)})},
+  e_chain:{p:'ember',n:'Chain Reaction',d:m=>`Enemy ships you destroy explode, dealing ${Math.round(20*m)} damage to every enemy within 2 hexes.${m>=2?' Epic: the blast sets them burning.':''}`,fx:m=>({chainBoom:Math.round(20*m),chainFire:m>=2?1:0})},
   e_hunt:{p:'ember',n:'Funeral Pyre',d:m=>`+${boonPct(.2*m)} damage against ships below half hull, and ships you hit while below half can no longer regrow hull or reanimate.`,fx:m=>({huntPct:.2*m,pyre:1})},
   // Duo boons: need a boon from each of two patrons
   d_jugg:{duo:['iron','rook'],n:'Juggernaut',d:()=>'Rams deal +50% damage and the rammer takes no recoil.',fx:()=>({ramPct:.5,ramGuard:1})},
@@ -437,7 +598,22 @@ const BOONS={
   d_hunter:{duo:['star','rook'],n:"Hunter's Line",d:()=>'Ships that moved 3+ hexes gain +25% critical chance.',fx:()=>({momCrit:25})},
   d_inferno:{duo:['ember','iron'],n:'Broadside Inferno',d:()=>'Broadside hits have a 40% chance to start a fire, and your fires burn hotter (10 a turn) and a turn longer.',fx:()=>({broadIgnite:.4,fireLong:1,fireDmg:4})}};
 // boons that only matter if the fleet has the right kit; offers skip them when it doesn't
-const BOON_NEED={i_still:'still',s_cap:'shields',s_regen:'shields',d_bastion:'shields',i_broad:'broad',d_inferno:'broad',e_war:'torp',e_reload:'torp',a_lance:'lance',d_ionlance:'lance',h_hatch:'carrier',h_wings:'sq',h_chitin:'sq',h_feast:'sq',d_burnswarm:'sq'};
+// B4 step 3: rule-changing boons (one per patron) and a legendary per patron. A legendary is offered at an elite or flagship reward once you
+// hold two boons from that patron (Hades style), always in the third slot; it never rolls otherwise (leg:true keeps it out of every normal pool).
+Object.assign(BOONS,{
+  i_wall:{p:'iron',n:'Shield Wall',d:()=>'Bracing covers every ship next to the braced ship too: they take the brace’s hull cut until its next turn.',fx:()=>({wallBrace:1})},
+  s_chain:{p:'storm',n:'Chain Lightning',d:()=>'When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength.',fx:()=>({chainSh:1})},
+  h_brood:{p:'hunger',n:'Brood Tithe',d:()=>'Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it.',fx:()=>({broodTithe:1})},
+  a_mark:{p:'star',n:'Marked for Death',d:()=>'Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends.',fx:()=>({markLance:1})},
+  r_slip:{p:'rook',n:'Slip the Net',d:()=>'Your ships may move after firing, up to half the movement they had left (without climbing over or diving under).',fx:()=>({fade:1})},
+  e_spread:{p:'ember',n:'Spread Pattern',d:()=>'Torpedoes that run wide still burst: every enemy within 1 hex of the aim hex takes 30% of one torpedo’s damage.',fx:()=>({spread:.3})},
+  L_iron:{p:'iron',leg:1,n:'Unbreakable',d:()=>'Legendary. Every ship survives its first killing blow each battle at 1 hull.',fx:()=>({lastStand:1})},
+  L_storm:{p:'storm',leg:1,n:'Eye of the Storm',d:()=>'Legendary. Every shield facing on every ship refills completely at the start of each of your turns.',fx:()=>({stormRegen:1})},
+  L_hunger:{p:'hunger',leg:1,n:'The Endless Swarm',d:()=>'Legendary. Carriers field two more wings and never run out of spares.',fx:()=>({hangar:2,endless:1})},
+  L_star:{p:'star',leg:1,n:'One Clean Line',d:()=>'Legendary. Lances always hit (95%) and pass straight through shields.',fx:()=>({lanceSure:1})},
+  L_rook:{p:'rook',leg:1,n:'Unstoppable',d:()=>'Legendary. Rams deal 50% more, can take 70% of a ship’s hull, and the rammer takes no recoil.',fx:()=>({ramPct:.5,ramCap:.3,ramGuard:1})},
+  L_ember:{p:'ember',leg:1,n:'Pyre of Stars',d:()=>'Legendary. Every enemy ship you destroy explodes for 40 damage to every enemy within 2 hexes.',fx:()=>({chainBoom:40})}});
+const BOON_NEED={h_brood:'carrier',a_mark:'lance',e_spread:'torp',L_hunger:'carrier',L_star:'lance',i_still:'still',s_cap:'shields',s_regen:'shields',d_bastion:'shields',i_broad:'broad',d_inferno:'broad',e_war:'torp',e_reload:'torp',a_lance:'lance',d_ionlance:'lance',h_hatch:'carrier',h_wings:'sq',h_chitin:'sq',h_feast:'sq',d_burnswarm:'sq'};
 // the flagship's aspect is picked at the start of a run, from three offered at random
 const ASPECTS={
   lancer:{n:'Aspect of the Spear',d:'Your flagship’s forward guns deal +50% damage and reach 1 hex further, and it can turn once more each round to bring them to bear.',fx:{prowPct:.5,prowRange:1,turns:1}},
