@@ -81,7 +81,7 @@ var reach_alt := {}        # "q,r" -> [states] (all facings, for Q/E on a hovere
 var hover := Vector2i(99999, 99999)
 var hover_pick := {}       # "q,r" -> chosen facing index into reach_alt
 var threat_on := false
-var arcs_on := false
+var arcs_on := true
 var floats: Array = []
 var ended := false
 var fired_in_act := {}     # unit id -> weapons fired this activation (volley pace)
@@ -392,8 +392,9 @@ func _begin(a) -> void:
 		if env.sky != null and env.sky.sky_material is ShaderMaterial:
 			pano = (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano")
 		var vb: Dictionary = api.view()
-		world.build(vb, {"biome": R.B.get("biome", {}), "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
-			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(R.B.get("seed", 1))})
+		var wi: Dictionary = api.world_info()
+		world.build(vb, {"biome": wi.get("biome", {}) if wi.get("biome") is Dictionary else {}, "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
+			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1})
 		for c in backdrop.get_children():
 			c.queue_free()
 	else:
@@ -430,7 +431,7 @@ func _begin(a) -> void:
 		if u["side"] == "enemy" and not u["squadron"]:
 			ne += 1
 	_log("Contact: %s. %d ship%s on the auspex." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
-	if R.jt(R.B.get("well")):
+	if api.world_info().get("well") != null and api.world_info().get("well") != false:
 		_log("A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	sfx.ambient_start()
@@ -1164,6 +1165,40 @@ func _end_flow() -> void:
 
 # ---------------------------------------------------------------- selection, overlays, tips
 
+# the rules' read-only UI facts for one ship (G1 ui_info: orders, ram, boarding, ability target hexes, every gun against
+# every enemy), cached until the picture changes
+var _ui_cache := {}
+
+
+func _ui(id: String) -> Dictionary:
+	if id == "" or api == null:
+		return {}
+	var k := "%s|%d|%d" % [id, batches.size(), hud.log_text.get_line_count()]
+	if not _ui_cache.has(k):
+		if _ui_cache.size() > 16:
+			_ui_cache.clear()
+		_ui_cache[k] = api.ui_info(id) if api.has_method("ui_info") else {}
+	return _ui_cache[k]
+
+
+func _wtarget(id: String, wi: int, tid: String) -> Dictionary:
+	var ui := _ui(id)
+	for w in ui.get("weapons", []):
+		if int(w["i"]) == wi:
+			for t in w["targets"]:
+				if t["id"] == tid:
+					return t
+	return {}
+
+
+func _vweapon_ready(id: String, wi: int) -> bool:
+	var u: Dictionary = VU.get(id, {})
+	for w in u.get("weapons", []):
+		if int(w["i"]) == wi:
+			return bool(w["ready"])
+	return false
+
+
 func _sel_unit() -> Dictionary:
 	return VU.get(sel, {})
 
@@ -1212,10 +1247,9 @@ func _best_facing(u: Dictionary) -> void:
 		if t["side"] == "enemy" and not t["dead"]:
 			foes.append(t["id"])
 	var ready: Array = []
-	for i in range(ru["weapons"].size()):
-		var w = ru["weapons"][i]
-		if R.weaponReady(w) and w["k"] != "flak":
-			ready.append(i)
+	for w in VU[sel]["weapons"]:
+		if w["ready"] and w["kind"] != "flak":
+			ready.append(int(w["i"]))
 	var best := {}
 	for st in reach_states:
 		var k: String = board.key(st.q, st.r)
@@ -1259,7 +1293,75 @@ func _attack_move(t_id: String):
 	return {"st": am["state"], "n": int(am["guns"]), "of": int(am["of"])}
 
 
+# firing arcs as fans on the board under the selected ship (the game's arc fans): one per ready gun, its range and arc
+var fan_root: Node3D
+var fan_for := ""
+var fan_key := ""
+const ARC_SPAN := {"F": [-60.5, 60.5], "R": [119.5, 240.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
+
+
+func _fans(id: String) -> void:
+	var ru = VU.get(id) if id != "" else null
+	var k := ""
+	if ru != null:
+		k = "%s|%d|%d|%d" % [id, int(ru["q"]), int(ru["r"]), int(ru["facing"])]
+		for w in ru["weapons"]:
+			k += "1" if w["ready"] else "0"
+	if k == fan_key:
+		return
+	fan_key = k
+	if fan_root != null:
+		fan_root.queue_free()
+		fan_root = null
+	if ru == null or not views.has(id):
+		return
+	fan_root = Node3D.new()
+	views[id].add_child(fan_root)
+	fan_root.position.y = -0.35
+	var done := {}
+	for w in ru["weapons"]:
+		var arc := str(w["arc"])
+		if not w["ready"] or w["kind"] == "flak" or not ARC_SPAN.has(arc):
+			continue
+		var rad: float = float(w["range"]) * board.HW + board.HS * 0.5
+		var dk := "%s%d" % [arc, int(rad)]
+		if done.has(dk):
+			continue
+		done[dk] = true
+		var col: Color = {"lance": Color(1.0, 0.45, 0.3), "torp": Color(1.0, 0.75, 0.3), "gauss": Color(0.5, 1.0, 0.6)}.get(str(w["kind"]), Color(1.0, 0.62, 0.3))
+		fan_root.add_child(_fan_mesh(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col))
+
+
+func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var n := 28
+	for i in n:
+		var t0 := deg_to_rad(lerpf(a0, a1, float(i) / n))
+		var t1 := deg_to_rad(lerpf(a0, a1, float(i + 1) / n))
+		# ship frame: bow +X, starboard +Z (relAng > 0 is starboard)
+		var p0 := Vector3(cos(t0), 0, sin(t0)) * rad
+		var p1 := Vector3(cos(t1), 0, sin(t1)) * rad
+		st.set_color(Color(col.r, col.g, col.b, 0.0))
+		st.add_vertex(Vector3.ZERO)
+		st.set_color(Color(col.r, col.g, col.b, 0.16))
+		st.add_vertex(p0)
+		st.add_vertex(p1)
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.vertex_color_use_as_albedo = true
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	m.no_depth_test = false
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mi
+
+
 func _clear_overlay() -> void:
+	_fans("")
 	board.set_overlay({}, {})
 	arrow.visible = false
 	path_dots.multimesh.instance_count = 0
@@ -1284,18 +1386,16 @@ func _overlay() -> void:
 		for e in V["units"]:
 			if e["side"] == "enemy" and not e["dead"] and not _firing_set(e["id"]).is_empty():
 				rings[board.key(e["q"], e["r"])] = TARGET_RING
-	if arcs_on and _usable(u):
-		var ar := _arc_rings()
-		for k in ar:
-			if not rings.has(k):
-				rings[k] = ar[k]
+	_fans(sel if (arcs_on and _usable(u)) else "")
 	if mode in ["nova", "blink", "launch"]:
 		for h in _ability_hexes():
-			fills[board.key(h.q, h.r)] = Color(0.55, 0.8, 1.0, 0.3)
-			rings[board.key(h.q, h.r)] = Color(0.6, 0.85, 1.0, 0.8)
+			fills[board.key(h["q"], h["r"])] = Color(0.55, 0.8, 1.0, 0.3)
+			rings[board.key(h["q"], h["r"])] = Color(0.6, 0.85, 1.0, 0.8)
 	if mode == "board" and not u.is_empty():
-		for t in R.boardTargets(api.unit(sel)):
-			rings[board.key(t["q"], t["r"])] = Color(1, 0.75, 0.3, 1)
+		for b in _ui(sel).get("board", []):
+			var tu: Dictionary = VU.get(b["target"], {})
+			if not tu.is_empty():
+				rings[board.key(tu["q"], tu["r"])] = Color(1, 0.75, 0.3, 1)
 	var hk: String = board.key(hover.x, hover.y)
 	arrow.visible = false
 	path_dots.multimesh.instance_count = 0
@@ -1405,37 +1505,14 @@ func _compute_threat() -> Dictionary:
 	return map
 
 
-# the selected ship's firing arcs (V): every hex a ready gun reaches from where it stands
-func _arc_rings() -> Dictionary:
-	var out := {}
-	var ru = api.unit(sel) if sel != "" else null
-	if ru == null:
-		return out
-	for h in board.cells:
-		var hh := {"q": h.q, "r": h.r}
-		var d: int = R.hdist(ru, hh)
-		if d < 1:
-			continue
-		for w in ru["weapons"]:
-			if w["k"] != "flak" and R.weaponReady(w) and d <= int(w["r"]) and R.inArc(ru, hh, w["arc"]):
-				out[board.key(h.q, h.r)] = Color(1.0, 0.55, 0.25, 0.35)
-				break
-	return out
-
-
 # target hexes for nova, blink and launch
 func _ability_hexes() -> Array:
-	var ru = api.unit(sel) if sel != "" else null
-	if ru == null:
+	if sel == "" or not (mode in ["nova", "blink", "launch"]):
 		return []
-	match mode:
-		"nova":
-			return R.novaTargets(ru)
-		"blink":
-			return R.blinkHexes(ru)
-		"launch":
-			return R.launchHexes(ru)
-	return []
+	var out: Array = []
+	for h in _ui(sel).get("ability", {}).get("hexes", []):
+		out.append({"q": int(h["q"]), "r": int(h["r"])})
+	return out
 
 
 func _unit_at(q: int, r: int) -> Dictionary:
@@ -1571,7 +1648,7 @@ func _order(o: String) -> void:
 	if sel == "" or not _can_act():
 		return
 	var id := sel
-	if not R.canOrder(api.unit(id), o):
+	if not bool(_ui(id).get("orders", {}).get(o, false)):
 		hud.toast("Can't brace after firing.")
 		return
 	_cmd(func(): return api.order(id, o))
@@ -1643,7 +1720,7 @@ func _on_click() -> void:
 		mode = ""
 		var ok := false
 		for h in _ability_hexes():
-			if int(h.q) == hover.x and int(h.r) == hover.y:
+			if int(h["q"]) == hover.x and int(h["r"]) == hover.y:
 				ok = true
 		if ok:
 			var id := sel
@@ -1721,23 +1798,22 @@ func _on_click() -> void:
 
 
 func _cant_fire_reason(t_id: String) -> String:
-	var ru = api.unit(sel)
-	var tu = api.unit(t_id)
-	if ru == null or tu == null:
+	var u: Dictionary = VU.get(sel, {})
+	if u.is_empty():
 		return ""
-	if R.jt(ru.get("braced")):
+	if u["braced"]:
 		return "This ship is braced and can't fire."
-	var d: int = R.hdist(ru, tu)
 	var any_ready := false
 	var in_range := false
 	var in_arc := false
-	for w in ru["weapons"]:
-		if w["k"] == "flak" or not R.weaponReady(w):
+	for w in u["weapons"]:
+		if w["kind"] == "flak" or not w["ready"]:
 			continue
 		any_ready = true
-		if d <= int(w["r"]):
+		var t := _wtarget(sel, int(w["i"]), t_id)
+		if t.get("inRange", false):
 			in_range = true
-			if R.inArc(ru, tu, w["arc"]):
+			if t.get("inArc", false):
 				in_arc = true
 	if not any_ready:
 		return "Every gun has already fired or is reloading."
@@ -1795,41 +1871,43 @@ func _ship_tip(u: Dictionary) -> String:
 func _attack_tip(t_id: String) -> String:
 	var ru = api.unit(sel)
 	var tu = api.unit(t_id)
+	var su: Dictionary = VU[sel]
 	var tv: Dictionary = VU[t_id]
-	var quad: int = R.shieldQuad(tu, ru)
-	var rear := quad == 2
+	var quad := 0
+	var rear := false
 	var rows := ""
 	var hull := 0.0
 	var sh := 0.0
 	var n := 0
-	var idx: Array = [armed] if armed >= 0 else range(ru["weapons"].size())
+	var idx: Array = [armed] if armed >= 0 else range(su["weapons"].size())
 	for i in idx:
+		var vw: Dictionary = su["weapons"][i]
 		var w = ru["weapons"][i]
+		var tg := _wtarget(sel, i, t_id)
+		quad = int(tg.get("quad", quad))
+		rear = bool(tg.get("rear", rear))
 		var right := ""
-		if R.z0(w.get("off")) > 0:
+		if float(_z0(vw.get("off"))) > 0:
 			right = "[color=#e27f74]offline[/color]"
-		elif R.z0(w.get("cdLeft")) > 0:
+		elif float(_z0(vw.get("cd"))) > 0:
 			right = "[color=#7d7768]reloading[/color]"
-		elif R.jt(w.get("fired")):
+		elif not vw["ready"]:
 			right = "[color=#7d7768]fired[/color]"
-		elif R.jt(ru.get("braced")):
+		elif su["braced"]:
 			right = "[color=#7d7768]braced[/color]"
+		elif not tg.get("inRange", false):
+			right = "[color=#7d7768]out of range (%d/%d)[/color]" % [int(tg.get("range", 0)), int(vw["range"])]
+		elif not tg.get("inArc", false):
+			right = "[color=#7d7768]out of arc[/color]"
+		elif not tg.get("los", false):
+			right = "[color=#7d7768]blocked[/color]"
 		else:
-			var d: int = R.hdist(ru, tu)
-			if d > int(w["r"]):
-				right = "[color=#7d7768]out of range (%d/%d)[/color]" % [d, int(w["r"])]
-			elif not R.inArc(ru, tu, w["arc"]):
-				right = "[color=#7d7768]out of arc[/color]"
-			elif not R.los(ru, tu):
-				right = "[color=#7d7768]blocked[/color]"
-			else:
-				var pv: Dictionary = api.preview_fire(sel, i, t_id)
-				hull += float(pv["hull"])
-				sh += float(pv["shield"])
-				n += 1
-				right = "[b][color=#f0b35a]%d%%[/color][/b] [color=#7d7768]%d×%d[/color]" % [int(pv["hit"]), int(w["shots"]), int(round(R.dmgMult(ru, w, tu, rear)))]
-		rows += "%s  %s\n" % [str(w["n"]), right]
-	var t := "[b][color=#e27f74]%s[/color][/b]\n[color=#b3aa95]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(R.z0(tu.get("ev"))) + int(R.z0(tu.get("evBuff")))]
+			hull += float(tg.get("hull", 0))
+			sh += float(tg.get("shield", 0))
+			n += 1
+			right = "[b][color=#f0b35a]%d%%[/color][/b] [color=#7d7768]%d\u00d7%d[/color]" % [int(tg.get("hit", 0)), int(w["shots"]), int(round(float(tg.get("dmgMult", 0))))]
+		rows += "%s  %s\n" % [str(vw["name"]), right]
+	var t := "[b][color=#e27f74]%s[/color][/b]\n[color=#b3aa95]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
 	if float(tv["shMax"]) > 0:
 		t += "Hits the [color=#62ccff][b]%s shield[/b] (%d/%d)[/color]%s." % [QUAD_NAME[quad], int(tv["sh"][quad]), int(tv["shMax"]), " [color=#ffae42]down, straight to hull[/color]" if float(tv["sh"][quad]) < 1 else ""]
 	else:
@@ -2095,12 +2173,13 @@ func _panel_info() -> Dictionary:
 	if u["side"] == "player" and not u["dead"]:
 		var can := _can_act() and _usable(u)
 		var orders: Array = []
-		orders.append({"text": "Brace (B)", "act": "brace", "on": can and R.canOrder(ru, "brace"), "tip": str(R.ORDERS["brace"]["d"])})
+		var ui := _ui(id)
+		orders.append({"text": "Brace (B)", "act": "brace", "on": can and bool(ui.get("orders", {}).get("brace", false)), "tip": str(R.ORDERS["brace"]["d"])})
 		if u.get("ab") != null:
 			var A = R.ABILITIES.get(str(u["ab"]), {})
 			orders.append({"text": str(A.get("n", u["ab"])) + ("" if u["abReady"] else " (%d)" % int(u["abCd"])), "act": "ability", "on": can and u["abReady"], "tip": str(A.get("d", ""))})
-		orders.append({"text": "Ram (X)", "act": "ram", "on": can and R.ramInfo(ru) != null, "tip": "Charge the first enemy dead ahead (needs a run-up)."})
-		orders.append({"text": "Board (G)", "act": "board", "on": can and not R.boardTargets(ru).is_empty(), "tip": "Send boarding crews into an adjacent enemy."})
+		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "tip": "Charge the first enemy dead ahead (needs a run-up)."})
+		orders.append({"text": "Board (G)", "act": "board", "on": can and not (ui.get("board", []) as Array).is_empty(), "tip": "Send boarding crews into an adjacent enemy."})
 		orders.append({"text": "Turn left (Q)", "act": "rotl", "on": can})
 		orders.append({"text": "Turn right (E)", "act": "rotr", "on": can})
 		info["orders"] = orders
@@ -2195,7 +2274,8 @@ func _tutorial() -> void:
 				targets = true
 	var close := false
 	if not s.is_empty() and api.unit(sel) != null:
-		close = R.ramInfo(api.unit(sel)) != null or not R.boardTargets(api.unit(sel)).is_empty()
+		var cu := _ui(sel)
+		close = cu.get("ram") != null or not (cu.get("board", []) as Array).is_empty()
 	var cond := {"start": true, "turns": true, "threat": int(V["round"]) >= 2, "select": not s.is_empty(), "move": moved, "target": targets, "fired": fired, "close": close,
 		"objective": V.get("obj") != null and str(V["obj"].get("type", "rout")) != "rout"}
 	for t in TIPS:
@@ -2253,112 +2333,22 @@ func _bot_step() -> void:
 				api.end_activation()
 			return true)
 		return
-	# the Admiral's Command once the fight is joined
-	if api.has_method("can_command") and int(V["round"]) >= 2 and api.can_command() and not bot_cmd_used:
-		bot_cmd_used = true
-		_cmd(func(): return api.command())
-		return
-	# fire first if anything bears
-	var tgt := _bot_target(ru)
-	# a damage or reload ability just before a volley, a shield surge when a facing is down, evasion when hurt
-	var ab := str(ru.get("ab", "")) if ru.get("ab") != null else ""
-	if ab != "" and R.canAbility(ru) and bot_ab.get(u_id, -1) != int(V["round"]):
-		var use := false
-		if tgt != "" and ab in ["focus", "frenzy"]:
-			use = true
-		elif ab == "reload" and _any_fired(ru) == false and tgt != "":
-			use = false
-		elif ab == "surge" and float(ru["shMax"]) > 0 and (ru["sh"] as Array).min() < float(ru["shMax"]) * 0.3:
-			use = true
-		elif ab in ["evasive", "phase"] and float(ru["hp"]) < float(ru["maxHp"]) * 0.6:
-			use = true
-		elif ab in ["regrow", "reclaim"] and float(ru["hp"]) < float(ru["maxHp"]) * 0.7:
-			use = true
-		elif ab in ["ionpulse", "overburn"] and tgt != "":
-			use = true
-		if use:
-			bot_ab[u_id] = int(V["round"])
-			var aid := u_id
-			if _cmd(func(): return api.ability(aid)):
-				return
-	if tgt != "":
-		var id := u_id
-		_cmd(func():
-			var any := false
-			for i in range(api.unit(id)["weapons"].size()):
-				if api.can_fire(id, i, tgt) and api.fire(id, i, tgt):
-					any = true
-				var tu = api.unit(tgt)
-				if tu == null or R.jt(tu.get("dead")) or api.phase != "player":
-					break
-			return any)
-		return
-	if float(ru["mp"]) > 0 and bot_moved.get(u_id, -1) != int(V["round"]):
-		# the move that deals the most expected damage from where it ends, minus what the enemy can send back there;
-		# with nothing in reach, close on the nearest enemy
-		var states: Array = api.reach(u_id)
-		var best = null
-		var bs := -1e9
-		var foes: Array = R.alive("enemy")
-		for st in states:
-			var v = R.stateView(ru, st)
-			var out := 0.0
-			for w in ru["weapons"]:
-				if w["k"] == "flak" or not R.weaponReady(w):
-					continue
-				var bw := 0.0
-				for t in foes:
-					if R.inReach(v, w, t):
-						var ev = R.expectedVs(v, w, t)
-						bw = maxf(bw, float(ev.hull) + float(ev.shield) * 0.4)
-				out += bw
-			var threat := 0.0
-			var near := 1e9
-			for t in foes:
-				near = minf(near, float(R.hdist(v, t)))
-				for w in t["weapons"]:
-					if w["k"] != "flak" and R.inReach(t, w, v):
-						threat += float(w["dmg"]) * float(w["shots"]) * 0.5
-			var sc := out * 3.0 - threat * 0.6 - (near * 4.0 if out <= 0.0 else 0.0) - float(st.cost) * 0.2
-			if sc > bs:
-				bs = sc
-				best = st
-		bot_moved[u_id] = int(V["round"])
-		if best != null and not (int(best.q) == int(ru["q"]) and int(best.r) == int(ru["r"]) and int(best.f) == int(ru["facing"])):
-			var id := u_id
-			if _cmd(func(): return api.move(id, best)):
-				return
-	var id2 := u_id
-	if R.canOrder(ru, "brace") and not _any_fired(ru):
-		_cmd(func(): return api.order(id2, "brace"))
-		return
+	# (rules without ai_activate: just end the activation)
 	_cmd(func(): api.end_activation(); return true)
 
 
+static func _z0(x) -> Variant:
+	if x == null or (x is bool and not x) or ((x is int or x is float) and x == 0):
+		return 0
+	return x
+
+
 func _alive_active(id: String) -> bool:
-	var a = R.B.get("activeUnit")
-	return a != null and str(a.get("id")) == id
-
-
-func _any_fired(ru) -> bool:
-	for w in ru["weapons"]:
-		if R.jt(w.get("fired")):
-			return true
+	var v: Dictionary = api.view()
+	for u in v["units"]:
+		if u["id"] == id:
+			return bool(u["active"])
 	return false
-
-
-func _bot_target(ru) -> String:
-	var best := ""
-	var bs := -1.0
-	for i in range(ru["weapons"].size()):
-		for t in R.alive("enemy"):
-			if api.can_fire(ru["id"], i, t["id"]):
-				var pv: Dictionary = api.preview_fire(ru["id"], i, t["id"])
-				var sc := float(pv["hull"]) + float(pv["shield"]) * 0.5 + (50.0 if float(pv["hull"]) >= float(t["hp"]) else 0.0)
-				if sc > bs:
-					bs = sc
-					best = t["id"]
-	return best
 
 
 # ---------------------------------------------------------------- screenshot job (--shots <folder>)
