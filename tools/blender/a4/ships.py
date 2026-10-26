@@ -241,3 +241,29 @@ SHIPS['H10_23'] = dict(
          ('engine_at', 'eP', 0, .03, -.04, 'stern', dict(r=.022, L=.032, pair=True)),
          ('engine_at', 'eN', 0, .09, -.03, 'stern', dict(r=.016, L=.026, pair=True))],
     notes='first pass')
+
+SHIPS['H7_23'] = dict(
+    fac='hegemony', cls='Frigate', name='Picket-class frigate', sym='bilateral',
+    spires=dict(zmin=.08, style='mast'),
+    kit=[('spinal', 'las', .30, 0, 0, 'top', dict(size='M', slot=0, wkind='laser', arc='F', length=3.0)),
+         ('turret', 'fl', -.05, .075, 0, 'top', dict(size='S', barrels=2, slot=1, wkind='flak', arc='T', pair=True)),
+         ('engine_at', 'eP', 0, .06, -.04, 'stern', dict(r=.026, L=.034, pair=True))],
+    notes='first pass')
+
+SHIPS['H8_23'] = dict(
+    fac='hegemony', cls='Destroyer', name='Interdictor-class destroyer', sym='bilateral',
+    spires=dict(zmin=.10, style='mast'),
+    cuts=[dict(name='aftgun', box=(-.52, -.235, -.045, .045, .0, .12))],          # AI turret whose long barrel aimed aft (no ship fires backward)
+    kit=[('turret', 'tb', -.29, 0, 0, 'top', dict(size='M', barrels=2, slot=1, wkind='turbo', arc='T', lift=.004)),
+         ('spinal', 'ion', .30, 0, 0, 'top', dict(size='M', slot=0, wkind='ion', arc='F', length=3.5)),
+         ('engine_at', 'eP', 0, .04, -.05, 'stern', dict(r=.022, L=.032, pair=True))],
+    notes='first pass')
+
+SHIPS['H9_23'] = dict(
+    fac='hegemony', cls='Cruiser', name='Vanguard-class cruiser', sym='bilateral',
+    cuts=[dict(name='aftguns', box=(-.43, -.235, -.05, .05, .03, .20))],          # AI twin-gun block aimed aft (no ship fires backward)
+    kit=[('turret', 'tb', -.31, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='turbo', arc='T', lift=.004)),
+         ('turret', 'tb2', .20, 0, 0, 'top', dict(size='M', barrels=2, slot=1, wkind='turbo', arc='T', lift=.004)),
+         ('spinal', 'ion', .36, 0, 0, 'top', dict(size='M', slot=2, wkind='ion', arc='F', length=3.5)),
+         ('engine_at', 'eP', 0, .06, -.03, 'stern', dict(r=.024, L=.034, pair=True))],
+    notes='first pass')
