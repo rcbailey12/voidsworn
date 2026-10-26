@@ -1,0 +1,75 @@
+# Builds the portrait batch files (tools/portraits/batches/*.json) from one shared style template.
+# Run: python3 tools/portraits/make_batches.py   (sandbox), then queue portrait_run.py gen <batch> on the PC.
+# Template rules (art_direction_rey.md Part E, sprint_decision_packs.md Sheet 3): three-quarter bust, lit from the left in the
+# faction glow, dark faction plate behind, painterly finish, no text or insignia lettering, and every portrait reflects its Command.
+# The thin faction-trim frame is added in post (tools/portraits/post.py), not by the model, so it is identical on every portrait.
+import json, os
+HERE = os.path.dirname(os.path.abspath(__file__))
+STYLE = ("Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, "
+ "dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by {glow}, "
+ "deep soft shadow on the right side, a dark painterly {plate} background softly out of focus, muted desaturated palette with one strong glow colour, "
+ "museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.")
+F = {
+ 'chorus': dict(glow='sickly yellow-green bioluminescent light', plate='wet purple-black organic cavern of membrane and spore haze'),
+ 'voidsworn': dict(glow='warm orange candlelight and furnace glow', plate='gothic warship bridge interior with candles and reliquaries'),
+ 'hegemony': dict(glow='cool clinical blue-white light', plate='clean pale command deck with blue holographic displays'),
+ 'corsair': dict(glow='harsh red emergency light and sparks', plate='cramped rusty salvage-ship cockpit full of smoke'),
+ 'ithar': dict(glow='pale mint-green and soft gold radiance', plate='deep starfield with faint aurora light'),
+ 'deathless': dict(glow='cold emerald-green core light', plate='black tomb-like machine vault with faint green circuitry'),
+}
+CH = ("It is an alien grown organism, not a person and not an animal: no face, no eyes, no mouth with teeth, no limbs, no human features; "
+      "no buildings, no machines, no instruments, no architecture. Glistening wet flesh, membrane, chitin, bile, gross deep-sea biology.")
+SUBJECT = {
+ # Chorus set (finish first). Mending: the Living Suture-Hive (Argon, chair lean). Matriarch: alternates to v3 from the DeepSeek 1.3 brief.
+ # Voice v4 and Razormaw are final in Muse's local set; these two are style-matched alternates only.
+ 'chorus_mending': ('chorus',
+  "Portrait of The Mending Choir, a Chorus bio-swarm admiral in the form of a Living Suture-Hive: a pulsing biological cocoon-graft, "
+  "clusters of translucent amber nursing sacs glowing from within, curved pale chitin bone-needles growing out of the flesh and stitching "
+  "glowing pink membrane webbing across a shattered dark carapace, fresh pink scar tissue knitting the cracks closed, new flesh visibly regrowing over old wounds. " + CH),
+ 'chorus_matriarch': ('chorus',
+  "Portrait of The Matriarch of Nine Throats, a Chorus brood-mother organism: nine uneven fleshy throat-tubes of very different lengths and thicknesses, "
+  "bent and leaning at odd angles, fused at the base into one swollen leaking brood mass, split wet openings at their tips exhaling clouds of tiny glowing spore swarms, "
+  "translucent brood sacs bulging with swarming larvae shadows, purple-black flesh with ochre chitin ridges, an irregular organic silhouette. " + CH),
+ 'chorus_voice': ('chorus',
+  "Portrait of Voice of the Deep, a Chorus organism shaped like a hollow dome of opaque abyssal membrane, its rim a ragged lip of regrowing flesh "
+  "shedding strips into the dark, irregular fleshy ridges, acid-green spittle and droplets spraying outward as if singing. " + CH),
+ 'chorus_razormaw': ('chorus',
+  "Portrait of Razormaw, a Chorus hunter-pack organism: a ring of curved chitin blades grown from purple-black flesh, arranged as a hunting formation "
+  "that reads as a hungry maw around an empty dark centre where a single small lure light glows, strands of bile and torn membrane trailing behind it as if surging forward. " + CH),
+ # One painted poster admiral per remaining faction: each faction's starting admiral (cost 0 in data.js).
+ 'voidsworn_vex': ('voidsworn',
+  "Portrait of Admiral Castellan Vex of the Voidsworn Crusade, a stern weathered human fleet admiral in his late fifties, shaved scarred head with ritual oath scars, "
+  "grey stubble, hard tired eyes, a high-collared dark armoured space-fleet greatcoat with ornate ceramite shoulder plates, red wax votive seals and parchment oath strips pinned to the chest, "
+  "a small brass reliquary on a chain, behind him through a tall gothic viewport a distant line of battleships firing a broadside of orange lance beams into the void."),
+ 'hegemony_kassar': ('hegemony',
+  "Portrait of Grand Admiral Ilsa Kassar of the Hegemony Navy, a composed precise human woman in her early fifties, silver hair in a severe short cut, cold grey eyes, "
+  "a pale grey high-collared space-fleet dress uniform with rows of flat blue enamel rank bars and clean geometric shoulder boards, gloved hands clasped behind her back, "
+  "faint blue targeting grids reflected on her face, behind her a pale clinical bridge where many identical firing-solution displays glow in perfect rows."),
+ 'corsair_grax': ('corsair',
+  "Portrait of Warlord Grax Ironjaw of the Ashfall Corsairs, a hulking scarred human space pirate warlord, a crude riveted iron prosthetic lower jaw, "
+  "a grin of steel, one cybernetic red eye, a shaved head with old burn scars, patchwork armour welded together from three different fleets' salvaged plates in clashing colours, "
+  "mismatched stolen medals and torn insignia, grease and rust, a heavy boarding axe resting on his shoulder, sparks raining behind him in a cramped junk-built space-ship cockpit."),
+ 'ithar_aelith': ('ithar',
+  "Portrait of Aelith Dawnsail of the Ithar, an ancient dying elder alien race, a statuesque luminous alien being, clearly not human: an elongated skull and very long slender neck, "
+  "huge wide-set solid black eyes, pale translucent porcelain skin with glowing gold light channels running beneath it, long seven-fingered hands raised gracefully, "
+  "behind her a radiant fan of near-geometric light sails like stained glass made of light, a flight of tiny glowing star-craft wheeling around her like a murmuration. "
+  "Nothing aquatic: no fins, no gills, no scales."),
+ 'deathless_nekhet': ('deathless',
+  "Portrait of Overlord Nekhet the Undying of the Deathless Dynasty, a machine intelligence with no humanoid body: a monumental broken ring of bone-white ceramic computation plates "
+  "and black metal around a blazing green core, cracked segments floating apart and being reassembled by small attending service drones with thin green beams, "
+  "ancient worn surfaces engraved with circuit patterns, sensor lights instead of a face, an ominous patient presence."),
+}
+def item(i, model, seeds):
+    fac, p = SUBJECT[i]
+    return {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F[fac]), 'nosuffix': True, 'seeds': seeds}
+S4 = [11, 23, 37, 51]
+BATCHES = {
+ 'b1': [item('chorus_mending', 'zit', S4), item('chorus_mending', 'qie', S4), item('chorus_matriarch', 'zit', S4),
+        item('chorus_voice', 'zit', S4[:3]), item('chorus_razormaw', 'zit', S4[:3])]
+       + [item(k, m, S4) for k in ('voidsworn_vex', 'hegemony_kassar', 'corsair_grax', 'ithar_aelith', 'deathless_nekhet') for m in ('zit', 'qie')],
+}
+if __name__ == '__main__':
+    os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
+    for k, items in BATCHES.items():
+        json.dump({'out': k, 'budget_s': 960, 'items': items}, open(os.path.join(HERE, 'batches', k + '.json'), 'w'), indent=1)
+        print(k, len(items), 'items', sum(len(i['seeds']) for i in items), 'images')
