@@ -284,8 +284,17 @@ func _bot_runs() -> void:
 	errlog = ErrCount.new()
 	OS.add_logger(errlog)
 	var seed0 := int(args.get("seed", 1000))
+	# hang guard: a run that takes longer than --run-timeout real seconds (default 600) is reported with where it
+	# stood, then the process stops (a stuck rules thread cannot be recovered in place; tmo.bat is the last resort)
+	var guard := Timer.new()
+	guard.wait_time = 5.0
+	add_child(guard)
+	guard.timeout.connect(_hang_check.bind(report))
+	guard.start()
 	for i in n:
 		var t0 := Time.get_ticks_msec()
+		hang_t0 = t0
+		hang_seed = seed0 + i
 		var rec = {}
 		if has_campaign():
 			rec = await _bot_campaign(seed0 + i)
@@ -325,6 +334,36 @@ func _bot_runs() -> void:
 	quit_clean(0 if report["errors"] == 0 and report["softlocks"] == 0 else 1)
 
 
+var hang_t0 := 0
+var hang_seed := 0
+
+func _hang_check(report: Dictionary) -> void:
+	var lim := float(args.get("run-timeout", 600))
+	if (Time.get_ticks_msec() - hang_t0) / 1000.0 < lim:
+		return
+	var where := {"seed": hang_seed, "real_s": (Time.get_ticks_msec() - hang_t0) / 1000.0}
+	if campaign != null and campaign.get("C") != null:
+		var C = campaign.C
+		where["page"] = str(C.page.get("kind", "?"))
+		where["modal"] = str(C.modal_d.get("kind", "?")) if C.modal_d != null else "none"
+		where["battles"] = campaign.get("battles")
+		where["in_battle"] = campaign.get("in_battle")
+	var b = battle if is_instance_valid(battle) else get_node_or_null("Battle")
+	if b != null and b.get("api") != null:
+		where["battle"] = {"phase": str(b.api.get("phase")), "round": b.get("V").get("round") if b.get("V") is Dictionary else "?", "busy": b.get("busy"),
+			"thinking": b.get("thinking"), "warming": b.get("warming"), "ended": b.get("ended"), "idle_s": Time.get_ticks_msec() / 1000.0 - float(b.get("last_progress"))}
+	print("[botrun] HANG ", JSON.stringify(where))
+	report["errors"] += 1
+	print("[botrun] SUMMARY %d runs finished before a hang at seed %d" % [(report["runs"] as Array).size(), hang_seed])
+	if args.has("report"):
+		report["hang"] = where
+		var f := FileAccess.open(str(args["report"]), FileAccess.WRITE)
+		if f != null:
+			f.store_string(JSON.stringify(report, "  "))
+			f.close()
+	get_tree().quit(2)
+
+
 func _bot_battle(seed: int) -> Dictionary:
 	var b = BattleScene.instantiate()
 	b.external = true
@@ -345,7 +384,7 @@ func _bot_battle(seed: int) -> Dictionary:
 func _bot_campaign(seed: int) -> Dictionary:
 	campaign = Host.new()
 	add_child(campaign)
-	campaign.start(self, {"bot": true, "seed": seed})
+	campaign.start(self, {"bot": true, "seed": seed, "policy": str(args.get("bot-policy", "smart"))})
 	var summary = await campaign.run_over
 	campaign.queue_free()
 	campaign = null

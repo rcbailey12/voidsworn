@@ -27,6 +27,10 @@ var opts := {}
 var api_now = null          # the rules API of the battle being set up or played
 var errors: Array = []
 var battles := 0
+var log_b: Array = []        # one line per battle for bot runs: sector, kind, result, rounds, ships
+var cfg_now := {}
+var acts_n := {}            # bot runs: how often each button was pressed
+var seen_n := {}            # bot runs: how often each button was offered and enabled
 var rng := RandomNumberGenerator.new()
 var streak := 0
 var in_battle := false
@@ -37,6 +41,7 @@ func start(m: Node, o: Dictionary) -> void:
 	main = m
 	opts = o
 	bot = bool(o.get("bot", false))
+	policy = str(o.get("policy", "smart"))
 	t0 = Time.get_ticks_msec() / 1000.0
 	C = load(CAMPAIGN).new()
 	var err: String = C.load_tables()
@@ -102,6 +107,15 @@ func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 	if e != "":
 		errors.append("rules: " + e)
 	api_now.new_battle(run, cfg)
+	cfg_now = cfg
+	if bot:
+		var fl: Array = run.get("fleet", [])
+		var hp := 0.0; var mh := 0.0
+		for sh in fl:
+			if sh is Dictionary:
+				hp += float(sh.get("hp", 0)); mh += float(sh.get("maxHp", sh.get("hp", 0)))
+		cfg_now = cfg.duplicate()
+		cfg_now["_fleet"] = "%d ships %s, hull %d%%, credits %s" % [fl.size(), str(fl.map(func(x): return str(x.get("tpl", x.get("t", "?"))) if x is Dictionary else "?")), int(100.0 * hp / max(1.0, mh)), str(run.get("credits", "?"))]
 	return api_now.R.B
 
 
@@ -126,13 +140,122 @@ func _play_battle() -> void:
 	if ui != null:
 		ui.visible = true
 	in_battle = false
+	if bot:
+		log_b.append(_battle_line(a, res, r))
 	C.finish_battle(res if res in ["win", "loss", "retreat"] else "loss", a.R.B)
+
+
+# one battle's outcome for the bot-run report (to compare with sim3d campaign: contrib/opus/compute/balance_reference.md section 2)
+func _battle_line(a, res: String, r: Dictionary) -> Dictionary:
+	var B: Dictionary = a.R.B
+	var ps := 0; var pa := 0; var es := 0; var ea := 0; var hp := 0.0; var mh := 0.0
+	for u in B.get("units", []):
+		if a.R.jt(u.get("isSq")) or not a.R.jt(u.get("ship")) and u.get("side") == "player":
+			continue
+		var dead: bool = a.R.jt(u.get("dead")) or a.R.jt(u.get("fled"))
+		if u.get("side") == "player":
+			ps += 1; pa += 0 if dead else 1
+			mh += float(u.get("maxHp", 0)); hp += 0.0 if dead else max(0.0, float(u.get("hp", 0)))
+		elif u.get("side") == "enemy":
+			es += 1; ea += 0 if dead else 1
+	var o = B.get("obj")
+	return {"sector": int(C.RUN.get("sector", 0)) if C.RUN != null else 0, "kind": str(cfg_now.get("kind", "?")), "fac": str(cfg_now.get("fac", "?")),
+		"obj": str(o.get("type")) if o is Dictionary else "?", "result": res, "raw": str(r.get("result", "")), "rounds": int(B.get("round", 0)),
+		"fleet_in": str(cfg_now.get("_fleet", "")), "player": "%d/%d" % [pa, ps], "enemy": "%d/%d" % [ea, es], "hull": snappedf(hp / max(1.0, mh), 0.01)}
 
 
 # ---------------------------------------------------------------- the full-run bot
 
-func _choose(list: Array):
+# The default bot spends like a sensible player, so bot runs say something about balance: at a shipyard it repairs,
+# replaces and adds hulls, then upgrades, then fits modules; on the map it heads for a yard when the fleet is short
+# or the purse is full; it tows ships home and keeps captured prizes when there is room. "--bot-policy random" keeps
+# the old G3 parity weights (every enabled button picked by weight).
+var policy := "smart"
+var yard_steps := 0
+var pressed := {}           # prize and salvage rows already set on the current screen (so a set row is not set again)
+var last_kind := ""
+
+func _pick(on: Array, k: String, pref := ""):
+	var best = null
+	for x in on:
+		if x[0] == k and (pref == "" or str(x[1]).ends_with(pref)):
+			best = x
+	return best
+
+
+func _hull_cost(x) -> float:
+	var h = C.HULLS.get(str(x[1]))
+	return float(h.get("cost", 0)) if h is Dictionary else 0.0
+
+
+func _smart(list: Array):
 	var on: Array = list.filter(func(x): return int(x[2]) == 1 and x[0] != "battle" and x[0] != "c3retreat")
+	var kind := str(C.page.get("kind", "")) if C.modal_d == null else str(C.modal_d.get("kind", "modal"))
+	if kind != last_kind:
+		pressed.clear()
+		last_kind = kind
+	if kind != "shipyard":
+		yard_steps = 0
+	if kind == "shipyard":
+		yard_steps += 1
+		if yard_steps > 40:
+			return _pick(on, "leaveYard")
+		for k in ["repairAll"]:
+			var x = _pick(on, k)
+			if x != null: return x
+		var hulls: Array = on.filter(func(x): return x[0] == "buyHull")
+		if hulls.size() > 0:
+			hulls.sort_custom(func(a, b): return _hull_cost(a) > _hull_cost(b))
+			return hulls[0]
+		for k in ["upgradeMk", "buyMod", "equip", "promote"]:
+			var x = _pick(on, k)
+			if x != null: return x
+		return _pick(on, "leaveYard")
+	if C.modal_d == null and kind == "map":
+		var nodes: Array = on.filter(func(x): return x[0] == "enterNode")
+		if nodes.size() > 1 and C.RUN != null:
+			var short: bool = C.RUN.get("fleet", []).size() < 4 or float(C.RUN.get("credits", 0)) >= 300
+			var ws: Array = []
+			var tot := 0.0
+			for x in nodes:
+				var n = C.findNode(x[1])
+				var t := str(n.get("type", "")) if n is Dictionary else ""
+				var w := 1.0
+				if t == "shipyard": w = 6.0 if short else 1.0
+				elif t == "drydock": w = 2.0
+				elif t == "elite": w = 0.6 if short else 1.0
+				ws.append(w); tot += w
+			var r := rng.randf() * tot
+			for i in nodes.size():
+				if r < ws[i]: return nodes[i]
+				r -= ws[i]
+			return nodes[nodes.size() - 1]
+	# prizes: keep a ship when there is room, else ransom it; salvage: tow a hull home when offered
+	var rows := {}
+	for x in on:
+		if x[0] == "prizeSet" or x[0] == "takeSalvage":
+			var row := str(x[1]).get_slice(":", 0)
+			if not pressed.has(x[0] + row):
+				rows[x[0] + row] = rows.get(x[0] + row, []) + [x]
+	for key in rows:
+		for pref in [":tow", ":add", ":ransom", ":mod", ":cred"]:
+			for x in rows[key]:
+				if str(x[1]).ends_with(pref):
+					pressed[key] = true
+					return x
+	var cf = _pick(on, "prizeConfirm")
+	if cf != null: return cf
+	return _weighted(on)
+
+
+func _choose(list: Array):
+	if policy != "random":
+		return _smart(list)
+	var on0: Array = list.filter(func(x): return int(x[2]) == 1 and x[0] != "battle" and x[0] != "c3retreat")
+	return _weighted(on0)
+
+
+func _weighted(on: Array):
 	var ws: Array = []
 	var tot := 0
 	for x in on:
@@ -169,7 +292,13 @@ func _bot_loop() -> void:
 			await get_tree().process_frame
 			continue
 		steps += 1
-		var a = _choose(C.screen_acts())
+		var sa: Array = C.screen_acts()
+		for x in sa:
+			if int(x[2]) == 1:
+				seen_n[x[0]] = int(seen_n.get(x[0], 0)) + 1
+		var a = _choose(sa)
+		if a != null:
+			acts_n[a[0]] = int(acts_n.get(a[0], 0)) + 1
 		if a == null:
 			errors.append("stuck on page %s (modal %s) with no button to press" % [str(C.page.get("kind")), str(C.modal_d.get("kind") if C.modal_d != null else "none")])
 			break
@@ -183,4 +312,4 @@ func _bot_loop() -> void:
 	var pd: Dictionary = C.page.get("data", {}) if C.page.get("data") is Dictionary else {}
 	if pd.has("victory"):
 		won = bool(pd["victory"])
-	run_over.emit({"result": "win" if won else ("loss" if C.ended else "unfinished"), "sector": sector, "battles": battles, "clicks": steps, "errors": errors, "game_s": Time.get_ticks_msec() / 1000.0 - t0})
+	run_over.emit({"result": "win" if won else ("loss" if C.ended else "unfinished"), "sector": sector, "battles": battles, "clicks": steps, "errors": errors, "log": log_b, "pressed": acts_n, "offered": seen_n, "game_s": Time.get_ticks_msec() / 1000.0 - t0})
