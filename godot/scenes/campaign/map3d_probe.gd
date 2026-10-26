@@ -18,7 +18,8 @@ func _ready() -> void:
 	var a = OS.get_cmdline_user_args()
 	if a.size() > 0: get_viewport().get_texture().get_image().save_png(a[0])
 	var mid = C.RUN["map"]["cols"][3][0]["id"]
-	get_viewport().warp_mouse(m._screen(m._nodes[mid]["pos"]) + Vector2(10, 10))
+	get_viewport().warp_mouse(m._screen(m._nodes[mid]["pos"]))   # exactly on the node, so the motion event keeps it hot
+	for i in 3: await get_tree().process_frame
 	m._set_hot(mid)
 	for i in 8: await get_tree().process_frame
 	await RenderingServer.frame_post_draw

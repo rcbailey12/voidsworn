@@ -38,6 +38,12 @@ G2's `godot/main/campaign_host.gd` hosts the campaign (contract: `godot/main/REA
 Events with blue options (`needMet`, `needText`, `eventFlags`, no event repeats, 'quiet' once all are seen) and the new outcome kinds; the Nemesis (`newNemesis`, clock, `nemNodeIs` marks his fight on the map, `nemAfterBattle`, `nemLearn`, `nemAdapt` at each new sector); faction actions on the map (`factionVerb`); wing veterancy; legendary boons; boon reroll and decline; class refit tracks at shipyards (`buyTrack`); Corsair prize money; faction gates on prizes and towing. New buttons: `factionVerb`, `boonReroll` (arg `patron:minRarity`), `boonDecline`, `buyTrack` (arg the class name).
 - `can_retreat()` says whether the battle may offer Retreat (never against a sector flagship).
 
+## Stream B R42 Nemesis v2 and R41 arc variants (port_notes.md "R42 Nemesis v2", oracle c88567c)
+
+A new identity every run from the faction's own pools (`nemName`, `nemGender`, title, persona, two strength traits, a stored portrait id `nem_<faction>_<1..6>`), faction behaviour (`nemBeh`: clock pace, raid or tithe strikes on the map, flee, revive, feed, fast adaptation, reinforcements, duel, challenge), each logged in `RUN.nem.signatures` (`nemSignature`), scars with their cause (`scarKinds`) and an epithet each (`nemScar`), faction-named adaptations plus a faction special (`nemAdaptName`, `nemAdaptDesc`, `nemAdaptWhy`), what beat him last (`nemBeatOf`, `last_beat`), the Chorus feeding on your losses (`nemFeedLosses`), and the R41 arc hull unlock when he dies for good in sector III (`arcComplete`; arc variants cannot be bought). `cfg.nemesis` now also carries persona, traits, fed, riches, last_beat, g and met for the rules. In external battles the campaign records the Hegemony reinforcement signature; the rules force the round 3 reinforcements.
+
+The war-room Nemesis card shows all of it in words (persona, strengths with their effect, his faction's behaviour line, the clock with half steps and its pace, fed, riches, the Deathless comeback, weaknesses and adaptations with their effects, what he remembers), and his face from the stored portrait id with one overlay per scar. The map's danger estimate counts his scars, adaptations, strengths, fed and riches, and the hover card lists what moved the number.
+
 ## The story layer (godot/story/README.md)
 
 - Screens: the admiral page, the sector I intro and sector change dialogs and the end page draw `story.campaign_line()`; the admiral card and the war-room panel show `story.titled_name()`; the fleet screen has "Rename flagship" (`story.open_rename()`); Progression has a "Career" tab button (`story.open_career()`); the admiral card shows the face from `godot/portraits/` (painting or crest). All guarded: without `godot/story/` or `godot/portraits/` nothing shows.
@@ -50,7 +56,7 @@ Events with blue options (`needMet`, `needText`, `eventFlags`, no event repeats,
 
 ## Saves
 
-A fresh Godot save (browser saves are not carried over, R33): `user://voidsworn_campaign.json` plus a backup one save behind (`.bak`). It holds the profile (`meta`), the saved run and a slim run log. Every non-integer number is written as its exact IEEE hex, because Godot's JSON reader can land one unit in the last place off. A damaged save falls back to the backup; the half that is sound is kept. Set `persist_on = true` and call `persist_load()` at start (the parity harness keeps saves in memory).
+A fresh Godot save (browser saves are not carried over, R33): `user://voidsworn_campaign.json` plus a backup one save behind (`.bak`). Both are written atomically: whole to a `.tmp` file, flushed and size-checked, then renamed over the old file, so a crash mid-write leaves the old save or the new one, never half a file (`test/save_test.gd`). It holds the profile (`meta`), the saved run and a slim run log. Every non-integer number is written as its exact IEEE hex, because Godot's JSON reader can land one unit in the last place off. A damaged save falls back to the backup; the half that is sound is kept. Set `persist_on = true` and call `persist_load()` at start (the parity harness keeps saves in memory).
 
 ## Parity test
 

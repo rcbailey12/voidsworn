@@ -131,6 +131,9 @@ func rich(bb: String, size: float = 17) -> RichTextLabel:
 	r.add_theme_font_size_override("normal_font_size", px(size)); r.add_theme_font_size_override("bold_font_size", px(size))
 	r.mouse_filter = Control.MOUSE_FILTER_PASS; r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return r
+func rich_inline(bb: String, size: float = 15) -> RichTextLabel:   # one line, as wide as its text (for flow rows)
+	var r = rich(bb, size); r.autowrap_mode = TextServer.AUTOWRAP_OFF; r.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return r
 func c(text: String, col: Color) -> String: return "[color=" + hexs(col) + "]" + text + "[/color]"
 func gothic(text: String, size: float = 52) -> Label: return lbl(text, size, BONE, font_goth, true)
 func vbox(sep: float = 8) -> VBoxContainer:
@@ -406,7 +409,7 @@ func _map() -> Control:
 	var head = hbox()
 	head.add_child(lbl("Sector " + C.roman(R["sector"]) + ((": " + str(C.REGIONS[m["region"]]["n"])) if C.jt(m.get("region")) and C.REGIONS.has(m["region"]) else ""), 44, BONE, font_goth, false))
 	head.add_child(spacer()); add(head, abtn("Save and quit", "saveQuit")); main.add_child(head)
-	main.add_child(_intel_strip())
+	_map_strip = _intel_strip(); main.add_child(_map_strip)
 	if use_3d_map:
 		var gap = Control.new(); gap.size_flags_vertical = Control.SIZE_EXPAND_FILL; gap.mouse_filter = Control.MOUSE_FILTER_IGNORE; main.add_child(gap)
 		for ctl in [hb, mm, main, head]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -414,8 +417,14 @@ func _map() -> Control:
 		var mv = MapView.new(); mv.ui = self; mv.size_flags_vertical = Control.SIZE_EXPAND_FILL; mv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		mv.custom_minimum_size = Vector2(px(600), px(320)); main.add_child(mv)
 	var legend = flow(14); legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for kk in C.NODE_INFO.keys(): legend.add_child(lbl("● " + str(C.NODE_INFO[kk]["n"]), 14, BLOOD if kk == "elite" or kk == "boss" else BONE2, null, false))
-	main.add_child(legend)
+	# the key: what each kind of stop gives, and the danger bands the chart prints on every fight (map_intel.gd)
+	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops a relic", "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
+	for kk in C.NODE_INFO.keys():
+		legend.add_child(rich_inline("[b]" + c(esc(C.NODE_INFO[kk]["n"]), BLOOD if kk == "elite" or kk == "boss" else BONE) + "[/b] " + c(LEG.get(kk, ""), BONE3), 13))
+	var bands = []
+	for b in [["Easy", "#7ddc6a"], ["Even", "#d0a64b"], ["Hard", "#f0883a"], ["Deadly", "#e2453a"]]: bands.append("[b]" + c(b[0], Color(b[1])) + "[/b]")
+	legend.add_child(rich_inline(c("Danger against your fleet now: ", BONE3) + " ".join(PackedStringArray(bands)) + c(" · hover a stop for its routes", BONE3), 13))
+	main.add_child(legend); _map_legend = legend
 	# what the reachable fights are (the browser's encounter previews)
 	var seen = {}; var prev = flow(8); prev.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for id in C.page["data"]["avail"]:
@@ -441,6 +450,13 @@ func _map() -> Control:
 	main.add_child(lbl("Choose a pulsing node to jump there. You can only move forward along the lines.", 15, BONE3))
 	hb.add_child(_side())
 	return hb
+# The 3D map frames itself between the intel strip and the legend (map3d.gd _free_rect)
+var _map_strip: Control = null
+var _map_legend: Control = null
+func map_free_y() -> Vector2:
+	var t = _map_strip.get_global_rect().end.y if is_instance_valid(_map_strip) and _map_strip.is_inside_tree() else -1.0
+	var b = _map_legend.get_global_rect().position.y if is_instance_valid(_map_legend) and _map_legend.is_inside_tree() else -1.0
+	return Vector2(t, b)
 # The sector intel strip: who is here and what is different about this sector (room kept for the Nemesis clock, stream B)
 func _intel_strip() -> Control:
 	var R = C.RUN; var m = R["map"]; var F = C.FACTIONS[m["fac"]]
@@ -456,13 +472,20 @@ func _intel_strip() -> Control:
 		row.add_child(box.call("Rival raiders", c(esc(str(a["n"]).trim_prefix("The ")), Color(a.get("glow", "#ffffff"))) + ", " + c(esc(str(b["n"]).trim_prefix("The ")), Color(b.get("glow", "#ffffff"))), BONE3,
 			"About one ordinary fight in five comes from a rival outside the sector's main enemy. Their nodes carry a ring in their colour, and their patrols drift nearby."))
 	var cond = C.sectorCond()
-	if cond != null: row.add_child(box.call("Sector condition", "[b]" + c(esc(cond["n"]), GILT) + "[/b]", GILT, str(cond["d"])))
+	if cond != null:   # the effect in words on the strip itself, not only in a tooltip
+		var cb = box.call("Sector condition", "[b]" + c(esc(cond["n"]), GILT) + "[/b] " + c(esc(cond["d"]), BONE2), GILT); cb.custom_minimum_size.x = px(330); row.add_child(cb)
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
 	row.add_child(box.call("Patrons watching", ", ".join(PackedStringArray(ps)), Color(0.7, 0.6, 1.0), "Win at a node with a patron's sigil and that patron offers a boon."))
-	if C.jt(R.get("nem")) and not C.jt(R["nem"].get("dead")):   # B4: the Nemesis and his clock
-		var nm = R["nem"]; var dots = "\u25cf".repeat(int(nm["clock"])) + "\u25cb".repeat(max(0, int(C.NEM_CLOCK) - int(nm["clock"])))
-		row.add_child(box.call("Nemesis", "[b]" + c(esc(nm["name"]), BLOOD) + "[/b] " + c(dots, BLOOD), BLOOD, "Every fight you win moves his clock on; when it fills, your next fight is against him. You meet him once each sector at the latest before the rest stop."))
+	# where you are in the run (the Nemesis has his own card in the side panel)
+	var cols = m["cols"].size(); var here = C.findNode(R["pos"]) if R.get("pos") != null else null
+	var step = (int(here["col"]) + 1) if here != null else 0
+	row.add_child(box.call("Progress", "[b]" + c("Sector " + C.roman(R["sector"]) + " of III", BONE) + "[/b] " + c("· jump " + str(step) + " of " + str(cols) + " · " + C.numstr(C.z0(R["stats"].get("battles"))) + " fights so far", BONE2), BONE3))
+	if R.get("heat") is Array and R["heat"].size() > 0:   # the run's Heat rules, which also feed the danger estimate
+		var hs = []
+		for kk in R["heat"]:
+			if C.HEAT.has(kk): hs.append("[b]" + c(esc(C.HEAT[kk]["n"]), BLOOD) + "[/b] " + c(esc(str(C.HEAT[kk]["d"]).trim_suffix(".")), BONE2))
+		var hb2 = box.call("Heat " + C.numstr(C.heatLevel(R["heat"])), "; ".join(PackedStringArray(hs)), BLOOD); hb2.custom_minimum_size.x = px(330); row.add_child(hb2)
 	return row
 func _reward_label(rw) -> String:
 	if rw == null or not (rw is Dictionary): return ""
@@ -496,7 +519,7 @@ func _brackets(c: Control) -> void:
 		for i in range(0, int(s.y), 4): c.draw_line(Vector2(0, i), Vector2(s.x, i), Color(1, 1, 1, 0.012), 1.0))
 func _side() -> Control:
 	var R = C.RUN
-	var p = panel(Color(GILT, 0.22), Color(0.025, 0.04, 0.07, 0.86), 18); p.custom_minimum_size.x = px(380); _brackets(p)
+	var p = panel(Color(GILT, 0.22), Color(0.025, 0.04, 0.07, 1.0), 18); p.custom_minimum_size.x = px(380); _brackets(p)   # opaque: the 3D map must not show through
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var v = vbox(7); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(v); p.add_child(sc)
 	v.add_child(lbl("FLEET COMMAND · SECTOR " + C.roman(R["sector"]), 12, BONE3, font_semi, false))
@@ -551,48 +574,84 @@ func _side() -> Control:
 func _nem_panel(v: VBoxContainer) -> void:
 	var N = C.RUN.get("nem")
 	if not C.jt(N): return
-	var F = C.FACTIONS.get(N["fac"])
+	var F = C.FACTIONS.get(N["fac"]); var NF = C.NEM_FAC.get(N["fac"], {}); var beh = NF.get("beh", {})
 	v.add_child(_wr_head("Nemesis"))
 	if C.jt(N.get("dead")):
 		v.add_child(lbl(C.nemFull() + " is dead.", 14, BONE3)); return
 	var who = rich("[b]" + c(esc(C.nemFull()), BLOOD) + "[/b] " + c(esc(F["n"] if F != null else "") + ((", scarred %dx" % int(N["scars"])) if C.jt(N.get("scars")) else ""), BONE3), 15)
+	var P = C.NEM_PERSONA.get(N.get("persona")) if N.get("persona") != null else null
+	var head = vbox(2); head.size_flags_horizontal = Control.SIZE_EXPAND_FILL; head.add_child(who)
+	if P != null: head.add_child(rich(c(esc(P["n"]) + ":", GILT) + " " + c(esc(P["d"]), BONE2), 13))
 	var tex = nem_portrait()
 	if tex != null:
 		var row = hbox(10); var tr = TextureRect.new(); tr.texture = tex; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tr.custom_minimum_size = Vector2(px(76), px(76)); row.add_child(tr); who.size_flags_vertical = Control.SIZE_SHRINK_CENTER; row.add_child(who); v.add_child(row)
-	else: v.add_child(who)
-	var dots = "●".repeat(int(N["clock"])) + "○".repeat(max(0, int(C.NEM_CLOCK) - int(N["clock"])))
+		tr.custom_minimum_size = Vector2(px(76), px(76)); row.add_child(tr); head.size_flags_vertical = Control.SIZE_SHRINK_CENTER; row.add_child(head); v.add_child(row)
+	else: v.add_child(head)
+	# what he is good at, with the effect in words (not only in a tooltip)
+	if N.get("traits") is Array and N["traits"].size() > 0:
+		var ts = []
+		for t in N["traits"]:
+			if C.NEM_TRAITS.has(t): ts.append(c("[b]" + esc(C.NEM_TRAITS[t]["n"]) + "[/b]", BLOOD) + c(" (" + esc(str(C.NEM_TRAITS[t]["d"]).trim_suffix(".")) + ")", BONE2))
+		v.add_child(rich(c("Strengths: ", BONE2) + "; ".join(PackedStringArray(ts)), 13))
+	# how his faction hunts you: what a full clock does, how fast it fills, whether he runs or comes back
+	if beh.get("d") != null: v.add_child(lbl(str(beh["d"]), 13, BONE2))
+	var ck = float(N["clock"]); var dots = "●".repeat(int(floor(ck))) + ("◐" if fmod(ck, 1.0) != 0.0 else "") + "○".repeat(max(0, int(C.NEM_CLOCK) - int(ceil(ck))))
 	var met = float(N["met"]) >= float(C.RUN["sector"])
 	var tail = (" " + c("[b]His fleet is coming: your next fight is his.[/b]", BLOOD)) if C.jt(N.get("strike")) else ((" " + c("(met this sector)", BONE3)) if met else "")
-	v.add_child(rich(c("Hunting you: ", BONE2) + c(dots, BLOOD) + tail, 14))
-	v.add_child(lbl("Every fight you win moves the clock on; when it fills, your next fight is against him. You meet him once each sector at the latest before the rest stop.", 13, BONE3))
+	var pace = float(beh.get("clock", 1))
+	v.add_child(rich(c("Hunting you: ", BONE2) + c(dots, BLOOD) + c(" " + C.numstr(ck) + " of " + C.numstr(C.NEM_CLOCK), BONE3) + tail, 14))
+	v.add_child(lbl("Each fight you win moves the clock " + (C.numstr(pace) + " steps" if pace != 1.0 else "one step") + "; when it fills, your next fight is against him. You meet him once each sector at the latest, at one of the last fights before the rest stop.", 13, BONE3))
+	# what grows him between fights (only the factions that have it)
+	if C.jt(beh.get("feeds")):
+		var fd = int(C.z0(N.get("fed"))); v.add_child(rich(c("Fed: ", BONE2) + c(str(fd) + " of 8", BLOOD) + c(" (his fleet has " + str(min(32, 4 * fd)) + "% more hull; every ship you lose feeds him)", BONE3), 13))
+	if beh.get("strike") == "raid" or C.jt(N.get("riches")):
+		var rc = int(C.z0(N.get("riches"))); v.add_child(rich(c("Riches: ", BONE2) + c(str(rc), BLOOD) + c(" (" + ("no extra ships yet" if rc == 0 else str(rc) + " extra ship" + ("s" if rc > 1 else "") + " in his fleet") + "; each escape or raid adds one)", BONE3), 13))
+	if C.jt(beh.get("revive")):
+		v.add_child(rich(c("Comeback: ", BONE2) + (c("spent, the next kill is final", GILT) if C.jt(N.get("revived")) else c("ready, he reassembles once when his flagship falls", BLOOD)), 13))
+	# weaknesses with what they do; adaptations in his faction's words with what they do
 	var ws = []
-	for w in N["weak"]: ws.append(c(esc(C.NEM_WEAK[w]["n"]), GILT) if N["revealed"].has(w) else c("unknown", BONE3))
-	v.add_child(rich(c("Weaknesses: ", BONE2) + ", ".join(PackedStringArray(ws)), 14))
+	for w in N["weak"]:
+		if N["revealed"].has(w): ws.append(c("[b]" + esc(C.NEM_WEAK[w]["n"]) + "[/b]", GILT) + c(" (" + esc(str(C.NEM_WEAK[w].get("d", "")).trim_suffix(".")) + ")", BONE2))
+		else: ws.append(c("unknown (win against him to learn it)", BONE3))
+	v.add_child(rich(c("Weaknesses: ", BONE2) + "; ".join(PackedStringArray(ws)), 13))
 	if N["adapt"].size() > 0:
 		var ad = []
-		for a in N["adapt"]: ad.append(c(esc(C.NEM_ADAPT[a]["n"]), BLOOD))
-		v.add_child(rich(c("Adapted: ", BONE2) + ", ".join(PackedStringArray(ad)), 14))
-# The Nemesis face (godot/portraits, R42): nem_<faction>_<1..6> with one scar per scar he carries, framed red-black.
-# The run does not store a portrait number or scar kinds, so both come from his name (presentation only, no random draws).
+		for a in N["adapt"]: ad.append(c("[b]" + esc(C.nemAdaptName(a, N["fac"])) + "[/b]", BLOOD) + c(" (" + esc(C.nemAdaptDesc(a, N["fac"]).trim_suffix(".")) + ")", BONE2))
+		v.add_child(rich(c("Adapted: ", BONE2) + "; ".join(PackedStringArray(ad)), 13))
+	if C.jt(N.get("last_beat")):
+		v.add_child(lbl(C.nemPr(N)["He"] + " remembers losing to your " + str(C.NEM_BEAT_WORD.get(N["last_beat"], N["last_beat"])) + ".", 13, BONE3))
+# The Nemesis face (godot/portraits, R42): his stored portrait id (nem_<faction>_<1..6>) with one overlay per scar he carries, framed red-black.
+# The run stores how each scar was made (scarKinds: fled, big, cut, flay, melt, dark, blast, tidal); this maps them onto the portrait set's
+# overlays his faction can take (burn for blasts and melts, the faction's own kinds for the rest). Presentation only, no random draws.
+const SCAR_BURN := ["big", "melt", "blast", "fled"]
 var _nem_key := ""
 var _nem_tex: Texture2D = null
 func nem_portrait() -> Texture2D:
 	var N = C.RUN.get("nem") if C != null and C.RUN != null else null
 	if not C.jt(N) or not ResourceLoader.exists("res://portraits/portraits.gd"): return null
-	var h = 0
-	for ch in str(N["name"]).to_utf8_buffer(): h = (h * 31 + ch) % 1000003
-	var idx = 1 + h % 6
-	var kinds = []
-	var P = load("res://portraits/portraits.gd")
-	var sc = P._scars().get("kinds", {})
-	for k in ["burn", "eye", "cyber", "carapace", "porcelain", "machine"]:
-		if sc.get(k, []).has(N["fac"]): kinds.append(k)
-	var scars = []
-	for i in range(min(int(C.z0(N.get("scars"))), kinds.size())): scars.append(kinds[(h + i) % kinds.size()])
+	var idx = 1
+	var pid = str(N.get("portrait", ""))
+	if pid.begins_with("nem_") and pid.get_slice("_", pid.get_slice_count("_") - 1).is_valid_int(): idx = int(pid.get_slice("_", pid.get_slice_count("_") - 1))
+	else:   # an older run without a stored portrait: one picked from his name
+		var h = 0
+		for ch in str(N["name"]).to_utf8_buffer(): h = (h * 31 + ch) % 1000003
+		idx = 1 + h % 6
+	var Pt = load("res://portraits/portraits.gd")
+	var sc = Pt._scars().get("kinds", {})
+	var own = []
+	for k in ["eye", "cyber", "carapace", "porcelain", "machine"]:
+		if sc.get(k, []).has(N["fac"]): own.append(k)
+	var causes = N.get("scarKinds") if N.get("scarKinds") is Array else []
+	if causes.is_empty():
+		for i in range(int(C.z0(N.get("scars")))): causes.append("blast")
+	var scars = []; var j = 0
+	for cs in causes:
+		if cs in SCAR_BURN or own.is_empty(): scars.append("burn")
+		else:
+			scars.append(own[j % own.size()]); j += 1
 	var key = str(N["fac"]) + ":" + str(idx) + ":" + ",".join(PackedStringArray(scars))
 	if key != _nem_key:
-		_nem_key = key; _nem_tex = P.nemesis(str(N["fac"]), idx, scars)
+		_nem_key = key; _nem_tex = Pt.nemesis(str(N["fac"]), idx, scars)
 	return _nem_tex
 func _verb_panel(v: VBoxContainer) -> void:
 	var V = C.verbFor()
@@ -779,6 +838,7 @@ func _legacy() -> Control:
 					for e in t["w"]: ws.append(str(C.W_[e[0]]["n"]) + " (" + ("turret" if e[1] == "T" else str(C.ARC_NAME.get(e[1], e[1])).to_lower()) + ")")
 					cv[1].add_child(lbl(C.numstr(t["cp"]) + " CP. Hull " + C.numstr(t["hp"]) + ", shields " + C.numstr(t["sh"]) + ", speed " + C.numstr(t["sp"]) + ". " + ", ".join(PackedStringArray(ws)) + ".", 14, BONE2))
 					if own: cv[1].add_child(lbl("In your shipyards", 16, VERD))
+					elif C.jt(hv.get("arc")): cv[1].add_child(lbl("Finish the " + str(C.FACTIONS[hv["arc"]]["n"]) + " story to unlock", 15, BONE3))
 					else: add(cv[1], abtn("Unlock for " + C.numstr(hv["cost"]) + " renown", "buyVariant", vid))
 					cards.add_child(cv[0])
 				v.add_child(cards)
@@ -938,9 +998,9 @@ func _modal(md: Dictionary) -> void:
 				v.add_child(rich("With the flagship broken, the fleet jumps deeper. Fleet command expands: [b]" + c("+3 command points", GILT) + "[/b], and crews patch 40% of every hull during the transit.", 17))
 				v.add_child(rich("Auspex confirms [b]" + esc(F["n"]) + "[/b] ahead.", 17))
 			if md["kind"] == "intro": p.call(F.get("blurb", ""), BONE2)
-			if md["kind"] == "sector" and d.get("adapt") != null and C.NEM_ADAPT.has(d["adapt"]):
-				var NA = C.NEM_ADAPT[d["adapt"]]
-				v.add_child(rich(c("Intelligence: " + esc(C.nemFull()) + " has adapted to you: [b]" + esc(NA["n"]) + "[/b] (" + esc(NA["why"]) + "). " + esc(NA["d"]), BLOOD), 17))
+			if md["kind"] == "sector" and d.get("adapt") != null and C.jt(R.get("nem")):
+				var na = d["adapt"]; var nf = R["nem"]["fac"]
+				v.add_child(rich(c("Intelligence: " + esc(C.nemFull()) + " has adapted to you: [b]" + esc(C.nemAdaptName(na, nf)) + "[/b] (" + esc(C.nemAdaptWhy(na, nf)) + "). " + esc(C.nemAdaptDesc(na, nf)), BLOOD), 17))
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", GILT) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)
 			if md["kind"] == "intro": p.call("Pick a route across the sector map. Battles marked with a patron’s sigil pay out that patron’s boons, so the route you choose shapes your build. The flagship of the sector waits at the far end.", BONE2)

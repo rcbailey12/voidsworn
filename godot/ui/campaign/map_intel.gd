@@ -43,19 +43,40 @@ func danger(n: Dictionary) -> Dictionary:
 		var fit = max(0.55, min(1.0, P / [0.0, 6.0, 9.0, 12.0][s]))
 		boss_part = bcp * float(C.TB["BOSS_SCALE"][s]) * fit * float(C.TB["BOSS_FAC"].get(fac, 1.0)) * float(C.TB["BOSS_DMG"][s]) * (1.2 if C.heatOn("h_flag") else 1.0) * 1.6
 	budget *= max(float(R["pwMin"]), min(float(R["pwMax"]), pow(max(0.5, P) / float(R["refP"][s]), float(R["pw"]))))
-	if ai_level == "standard": budget *= float(R["std"])
-	if C.heatOn("h_hunted"): budget *= 1.15
-	if n.get("mod") == "bounty": budget *= 1.1
+	var why = []   # what moved the number, for the hover card: [label, factor]
+	if ai_level == "standard": budget *= float(R["std"]); why.append(["Standard AI", float(R["std"])])
+	if C.heatOn("h_hunted"): budget *= 1.15; why.append(["Heat: Hunted", 1.15])
+	if n.get("mod") == "bounty": budget *= 1.1; why.append(["bounty", 1.1])
 	var tough = (1.0 + 0.12 * (s - 1)) * (1.0 + 0.08 * (s - 1)) * float(R["thin"][s]) * (float(R["escort"]) if kind == "boss" else 1.0)
 	var threat = budget * tough + boss_part
 	if kind == "elite": threat *= 1.25            # the bigger half of an elite fleet are elites
-	if n.get("mod") == "veteran": threat *= 1.08
-	if C.heatOn("h_elite"): threat *= 1.08
-	if nem: threat *= (1.0 + 0.1 * float(C.RUN["nem"]["scars"])) * (1.0 + 0.06 * C.RUN["nem"]["adapt"].size())
+	if n.get("mod") == "veteran": threat *= 1.08; why.append(["veteran crews", 1.08])
+	if C.heatOn("h_elite"): threat *= 1.08; why.append(["Heat: Veteran escorts", 1.08])
+	if nem: threat = _nem_threat(threat, tough, why)
 	var ratio = threat / max(0.5, P)
 	for b in BANDS:
-		if ratio < b[0]: return {"ratio": ratio, "band": b[1], "col": b[2], "threat": threat, "power": P}
+		if ratio < b[0]: return {"ratio": ratio, "band": b[1], "col": b[2], "threat": threat, "power": P, "why": why}
 	return {}
+# The Nemesis's own growth (battle.js applyNemesis): damage per scar, each adaptation, his strength traits, the Chorus feeding on your
+# losses (hull), Corsair riches (one cheap hull each) and the Ithar duel fleet (fewer ships, all elite: about even).
+func _nem_threat(threat: float, tough: float, why: Array) -> float:
+	var N = C.RUN["nem"]; var t = threat
+	var sc = float(C.z0(N.get("scars")))
+	if sc > 0: t *= 1.0 + 0.1 * sc; why.append(["his scars", 1.0 + 0.1 * sc])
+	var ad = N["adapt"].size()
+	if ad > 0: t *= 1.0 + 0.06 * ad; why.append(["his adaptations", 1.0 + 0.06 * ad])
+	var tr = N.get("traits") if N.get("traits") is Array else []
+	if tr.size() > 0:
+		var k = 1.0
+		for x in tr: k *= 1.12 if x == "veterans" else 1.05
+		t *= k; why.append(["his strengths", k])
+	var fed = min(0.32, 0.04 * float(C.z0(N.get("fed"))))
+	if fed > 0: t *= 1.0 + fed; why.append(["fed on your losses", 1.0 + fed])
+	var rich = float(C.z0(N.get("riches"))) + (1.0 if N["adapt"].has("riches") else 0.0)
+	if rich > 0:
+		var add = rich * 1.2 * tough   # a cheap hull is about 1.2 command points, at this sector's toughness
+		why.append(["riches: %d extra ship%s" % [int(rich), "s" if rich > 1 else ""], (t + add) / max(0.01, t)]); t += add
+	return t
 
 func band_index(name: String) -> int:
 	for i in BANDS.size():

@@ -216,7 +216,7 @@ func _build(sig: String) -> void:
 		for n in col: _add_node(n)
 	for e in m["edges"]: _add_lane(e[0], e[1])
 	_add_patrols()
-	token = _make_token(); root3.add_child(token)
+	token = _make_token(); root3.add_child(token); _token_sig = _fleet_sig()
 	token.position = _token_home()
 	_focus = 0
 
@@ -373,17 +373,23 @@ func _patrol(fac: String, c: Vector3, r: float, sp: float) -> void:
 	var lt = OmniLight3D.new(); lt.light_color = Color(_C().FACTIONS[fac].get("glow", "#e07a70")) if _C().FACTIONS.has(fac) else Color.RED; lt.light_energy = 0.7; lt.omni_range = 2.5; node.add_child(lt)
 	root3.add_child(node)
 	_patrols.append([node, c + Vector3(0, 2.2, 0), r, sp, _rng.randf() * TAU])
-func _make_token() -> Node3D:   # your flagship, at map scale
+func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real hull (A4's kit ship when it is in the build) and up to two escorts
 	var C = _C(); var t = Node3D.new()
 	var fs = C.flagshipOf()
 	var h = null
-	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), 3.0)
+	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), 5.5)
 	if h != null: t.add_child(h)
 	else:
-		var hull = PrismMesh.new(); hull.size = Vector3(0.9, 2.2, 0.35)
+		var hull = PrismMesh.new(); hull.size = Vector3(1.4, 3.4, 0.5)
 		var hm = _mi(hull, _mat(Color(0.82, 0.74, 0.58), 0.4, 0.8, 0.3)); hm.rotation_degrees = Vector3(0, 0, -90); t.add_child(hm)
-	var eng = _mi(_sphere(0.22), _mat(Color("#ffa24a"), 4.0), Vector3(-1.6, 0, 0)); t.add_child(eng)
-	var l = OmniLight3D.new(); l.light_color = Color("#ffb060"); l.light_energy = 1.4; l.omni_range = 4.0; l.position = Vector3(-1.6, 0, 0); t.add_child(l)
+	var esc = C.RUN["fleet"].filter(func(x): return fs == null or x["uid"] != fs["uid"])
+	esc = C.ssort(esc, func(a, b): return float(C.or_(C.HULLS[b["tpl"]].get("cp"), 1)) - float(C.or_(C.HULLS[a["tpl"]].get("cp"), 1)))
+	for i in range(min(2, esc.size())):
+		var e = _hull(C.RUN["fac"], str(C.HULLS[esc[i]["tpl"]].get("cls", "Frigate")), 3.0)
+		if e != null:
+			e.position = Vector3(-2.6, -0.3, 2.2 if i == 0 else -2.2); t.add_child(e)
+	var eng = _mi(_sphere(0.3), _mat(Color("#ffa24a"), 4.0), Vector3(-2.9, 0, 0)); t.add_child(eng)
+	var l = OmniLight3D.new(); l.light_color = Color("#ffb060"); l.light_energy = 1.8; l.omni_range = 6.0; l.position = Vector3(-2.9, 0, 0); t.add_child(l)
 	return t
 func _token_home() -> Vector3:
 	var C = _C(); var pos = C.RUN.get("pos")
@@ -406,8 +412,13 @@ func _refresh() -> void:
 		if not done: _danger[id] = intel.danger(n)
 	if _hot != "": _routes = intel.routes_through(_hot)
 	_paint_lanes()
+	var fsig = _fleet_sig()
+	if token != null and fsig != _token_sig and not _flying:   # the fleet changed (a hull bought, sold or lost): redraw the token
+		_token_sig = fsig; var p0 = token.position; token.queue_free(); token = _make_token(); root3.add_child(token); token.position = p0
 	if not _flying and token != null: token.position = _token_home()
 	overlay.queue_redraw()
+var _token_sig := ""
+func _fleet_sig() -> String: return str(_C().RUN["fleet"].map(func(x): return str(x["uid"]) + str(x["tpl"]))) + str(_C().RUN.get("flagUid"))
 func _route_lanes() -> Dictionary:   # lane key -> route colour (the first route wins a shared lane)
 	var out = {}
 	for r in _routes:
@@ -440,12 +451,12 @@ func _process(delta: float) -> void:
 	if not visible or _C() == null or _C().RUN == null or root3 == null: return
 	_t += delta
 	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
-	var aspect = size.x / max(1.0, size.y); var free = clamp((size.x - ui.px(_side_w)) / max(1.0, size.x), 0.4, 1.0)
-	var tanh = tan(deg_to_rad(cam.fov * 0.5)); var dist = max(60.0, 80.0 / free / (2.0 * tanh * aspect)) * _cam_zoom
-	var shift = (1.0 - free) * 0.5 * (2.0 * dist * tanh * aspect)
-	var drift = Vector3(sin(_t * 0.05) * 2.5, sin(_t * 0.037) * 0.8, cos(_t * 0.043) * 1.5)
-	var target = Vector3(shift, 0, 0.5).lerp(_cam_focus + Vector3(shift, 0, 0), clamp((1.0 - _cam_zoom) / 0.4, 0.0, 1.0))
-	cam.position = target + Vector3(0, dist * 0.62, dist * 0.78) + drift * _cam_zoom + Vector3(mp.x * 2.5, -mp.y * 1.5, 0)
+	var fr = _free_rect(); var fk = str(size) + "|" + _sig + "|" + str(fr.position.round()) + str(fr.size.round())
+	if fk != _fit_key: _fit_key = fk; _fit(fr)
+	var dist = _fit_dist * _cam_zoom
+	var drift = Vector3(sin(_t * 0.05) * 1.2, sin(_t * 0.037) * 0.5, cos(_t * 0.043) * 0.8)   # small: the fitted frame must hold
+	var target = _fit_target.lerp(_cam_focus, clamp((1.0 - _cam_zoom) / 0.4, 0.0, 1.0)) if _cam_focus != Vector3.ZERO else _fit_target
+	cam.position = target + Vector3(0, dist * 0.62, dist * 0.78) + drift * _cam_zoom + Vector3(mp.x * 1.2, -mp.y * 0.8, 0)
 	cam.look_at(target, Vector3.UP)
 	for id in _nodes:
 		var o = _nodes[id]["obj"]
@@ -470,6 +481,39 @@ func _process(delta: float) -> void:
 
 # ---------------- labels, intel chips, route totals and the hover card ----------------
 func _screen(p: Vector3) -> Vector2: return cam.unproject_position(p)
+# ---------------- framing: every node, its scene and its labels inside the part of the screen the map really has ----------------
+var _fit_key := ""
+var _fit_target := Vector3(0, 0, 0.5)
+var _fit_dist := 100.0
+func _free_rect() -> Rect2:   # left of the side panel, below the title and intel strip, above the legend and the fight previews
+	var L = float(ui.px(28)); var Rr = size.x - float(ui.px(_side_w)) - float(ui.px(28)); var T = float(ui.px(170)); var Bt = size.y - float(ui.px(170))
+	if ui.has_method("map_free_y"):
+		var fy: Vector2 = ui.map_free_y()
+		if fy.x > 0.0: T = fy.x + float(ui.px(12))
+		if fy.y > 0.0: Bt = fy.y - float(ui.px(8))
+	return Rect2(L, T, max(100.0, Rr - L), max(100.0, Bt - T))
+func _ground(sp: Vector2) -> Vector3:
+	var o = cam.project_ray_origin(sp); var d = cam.project_ray_normal(sp)
+	return o + d * (-o.y / d.y) if abs(d.y) > 0.0001 else o
+func _fit(fr: Rect2) -> void:
+	if _nodes.is_empty(): return
+	var pts = []
+	for id in _nodes:   # the node's scene and its labels: a little wider than the ring, up to the region name, down to the chips
+		var p = _nodes[id]["pos"]
+		for d in [Vector3(-5.5, 0, 0), Vector3(5.5, 0, 0), Vector3(0, 7.5, -2.0), Vector3(0, 0, 5.5)]: pts.append(p + d)
+	var lo = Vector3(INF, 0, INF); var hi = Vector3(-INF, 0, -INF)
+	for id in _nodes:
+		var p = _nodes[id]["pos"]; lo = Vector3(min(lo.x, p.x), 0, min(lo.z, p.z)); hi = Vector3(max(hi.x, p.x), 0, max(hi.z, p.z))
+	var tgt = (lo + hi) * 0.5; var dist = 100.0
+	for it in 10:
+		cam.position = tgt + Vector3(0, dist * 0.62, dist * 0.78); cam.look_at(tgt, Vector3.UP)
+		var a = Vector2(INF, INF); var b = Vector2(-INF, -INF)
+		for q in pts:
+			var sp = cam.unproject_position(q); a = Vector2(min(a.x, sp.x), min(a.y, sp.y)); b = Vector2(max(b.x, sp.x), max(b.y, sp.y))
+		var k = max((b.x - a.x) / fr.size.x, (b.y - a.y) / fr.size.y)
+		var off = _ground((a + b) * 0.5) - _ground(fr.get_center())
+		tgt += Vector3(off.x, 0, off.z); dist *= clamp(lerp(1.0, k, 0.8), 0.6, 1.6)
+	_fit_target = tgt; _fit_dist = dist
 func _draw_overlay() -> void:
 	var C = _C()
 	if C == null or C.RUN == null or root3 == null: return
@@ -578,6 +622,11 @@ func _card_bb(n: Dictionary) -> String:
 		var dg = _danger.get(n["id"], {})
 		if not dg.is_empty():
 			t += "\n[b]" + _cc("Danger: " + dg["band"], dg["col"]) + "[/b] " + _cc("(their strength about %d%% of your fleet's)" % int(round(dg["ratio"] * 100.0)), ui.BONE3)
+			var wy = dg.get("why", [])
+			if not wy.is_empty():   # what moved the number
+				var ps = []
+				for w in wy: ps.append("%s %s%d%%" % [w[0], "+" if w[1] >= 1.0 else "", int(round((w[1] - 1.0) * 100.0))])
+				t += "\n   " + _cc("Includes: " + ", ".join(PackedStringArray(ps)) + ".", ui.BONE3)
 	if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]):
 		var E = C.ENCOUNTERS[n["enc"]]
 		t += "\n[b]" + ui.esc(E["n"]) + "[/b]" + ((" " + _cc("· " + str(C.SHAPES[n["shape"]]).to_lower(), ui.BONE3)) if C.jt(n.get("shape")) and n["shape"] != "open" and C.SHAPES.has(n["shape"]) else "")
@@ -595,11 +644,12 @@ func _card_bb(n: Dictionary) -> String:
 	# the routes through this node to the flagship
 	if not _routes.is_empty() and not C.jt(n.get("done")):
 		t += "\n\n[b]" + _cc("ROUTES TO THE FLAGSHIP", ui.GILT) + "[/b]"
+		t += "\n" + _cc("Safest: the mildest worst fight, then the least danger in all (repair stops count in its favour). Richest: the most rewards (relic 4, boon 3, refit 2, shipyard 2, credits 1, event 1).", ui.BONE3)
 		var fc = intel.fleet_condition()
 		for r in _routes:
 			var st = r["st"]
 			t += "\n[b]" + _cc(r["name"], r["col"]) + "[/b]  " + "%d fight%s%s, %d repair stop%s, %d shipyard%s" % [st["fights"], "" if st["fights"] == 1 else "s", (" (%d elite)" % st["elites"]) if st["elites"] > 0 else "", st["repairs"], "" if st["repairs"] == 1 else "s", st["shops"], "" if st["shops"] == 1 else "s"]
-			t += "\n   " + _cc("%d boon%s, %d refit%s, %d relic%s · worst fight: " % [st["boons"], "" if st["boons"] == 1 else "s", st["refits"], "" if st["refits"] == 1 else "s", st["relics"], "" if st["relics"] == 1 else "s"], ui.BONE3) + _cc(st["worst_name"], Intel.BANDS[st["worst"]][2])
+			t += "\n   " + _cc("%d boon%s, %d refit%s, %d relic%s, %d credit reward%s, %d event%s · worst fight: " % [st["boons"], "" if st["boons"] == 1 else "s", st["refits"], "" if st["refits"] == 1 else "s", st["relics"], "" if st["relics"] == 1 else "s", st["credits"], "" if st["credits"] == 1 else "s", st["events"], "" if st["events"] == 1 else "s"], ui.BONE3) + _cc(st["worst_name"], Intel.BANDS[st["worst"]][2])
 			if fc["hurt"] and not st["repair_before_boss"]: t += "\n   " + _cc("Your fleet is hurt and this route has no repair stop before the flagship.", ui.BLOOD)
 	if _avail().has(n["id"]): t += "\n" + _cc("Click to jump here.", ui.BONE3)
 	return t
