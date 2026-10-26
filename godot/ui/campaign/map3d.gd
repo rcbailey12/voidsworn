@@ -491,6 +491,11 @@ func _draw_overlay() -> void:
 		elif n["type"] == "boss": name = "Sector flagship"
 		if name != "": _text(name, Vector2(base.x, y), int(15 * s), col, ui.font_semi); y += 17.0 * s
 		if fight and not done and C.nemNodeIs(n):   # B4: his fight is marked before you commit
+			var nt = ui.nem_portrait()   # his framed face beside his fight's tags (godot/portraits, R42), when the painting exists
+			if nt != null:
+				var ps = 38.0 * s; var pr = Rect2(base.x - 42.0 * s - ps, y - 12.0 * s, ps, ps)
+				overlay.draw_rect(pr.grow(2.0 * s), Color(0.02, 0.02, 0.03, 0.9)); overlay.draw_texture_rect(nt, pr, false)
+				overlay.draw_rect(pr.grow(2.0 * s), Color("#ff6b5a"), false, 1.5 * s)
 			_chip("NEMESIS", Vector2(base.x, y + 2.0 * s), int(12 * s), Color("#ff6b5a"), true); y += 18.0 * s
 		# intel line: danger band chip, board shape, reward
 		if fight and not done and _danger.has(id) and not _danger[id].is_empty():

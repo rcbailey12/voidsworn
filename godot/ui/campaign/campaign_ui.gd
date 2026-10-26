@@ -520,7 +520,12 @@ func _nem_panel(v: VBoxContainer) -> void:
 	v.add_child(_wr_head("Nemesis"))
 	if C.jt(N.get("dead")):
 		v.add_child(lbl(C.nemFull() + " is dead.", 14, BONE3)); return
-	v.add_child(rich("[b]" + c(esc(C.nemFull()), BLOOD) + "[/b] " + c(esc(F["n"] if F != null else "") + ((", scarred %dx" % int(N["scars"])) if C.jt(N.get("scars")) else ""), BONE3), 15))
+	var who = rich("[b]" + c(esc(C.nemFull()), BLOOD) + "[/b] " + c(esc(F["n"] if F != null else "") + ((", scarred %dx" % int(N["scars"])) if C.jt(N.get("scars")) else ""), BONE3), 15)
+	var tex = nem_portrait()
+	if tex != null:
+		var row = hbox(10); var tr = TextureRect.new(); tr.texture = tex; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.custom_minimum_size = Vector2(px(76), px(76)); row.add_child(tr); who.size_flags_vertical = Control.SIZE_SHRINK_CENTER; row.add_child(who); v.add_child(row)
+	else: v.add_child(who)
 	var dots = "●".repeat(int(N["clock"])) + "○".repeat(max(0, int(C.NEM_CLOCK) - int(N["clock"])))
 	var met = float(N["met"]) >= float(C.RUN["sector"])
 	var tail = (" " + c("[b]His fleet is coming: your next fight is his.[/b]", BLOOD)) if C.jt(N.get("strike")) else ((" " + c("(met this sector)", BONE3)) if met else "")
@@ -533,6 +538,27 @@ func _nem_panel(v: VBoxContainer) -> void:
 		var ad = []
 		for a in N["adapt"]: ad.append(c(esc(C.NEM_ADAPT[a]["n"]), BLOOD))
 		v.add_child(rich(c("Adapted: ", BONE2) + ", ".join(PackedStringArray(ad)), 14))
+# The Nemesis face (godot/portraits, R42): nem_<faction>_<1..6> with one scar per scar he carries, framed red-black.
+# The run does not store a portrait number or scar kinds, so both come from his name (presentation only, no random draws).
+var _nem_key := ""
+var _nem_tex: Texture2D = null
+func nem_portrait() -> Texture2D:
+	var N = C.RUN.get("nem") if C != null and C.RUN != null else null
+	if not C.jt(N) or not ResourceLoader.exists("res://portraits/portraits.gd"): return null
+	var h = 0
+	for ch in str(N["name"]).to_utf8_buffer(): h = (h * 31 + ch) % 1000003
+	var idx = 1 + h % 6
+	var kinds = []
+	var P = load("res://portraits/portraits.gd")
+	var sc = P._scars().get("kinds", {})
+	for k in ["burn", "eye", "cyber", "carapace", "porcelain", "machine"]:
+		if sc.get(k, []).has(N["fac"]): kinds.append(k)
+	var scars = []
+	for i in range(min(int(C.z0(N.get("scars"))), kinds.size())): scars.append(kinds[(h + i) % kinds.size()])
+	var key = str(N["fac"]) + ":" + str(idx) + ":" + ",".join(PackedStringArray(scars))
+	if key != _nem_key:
+		_nem_key = key; _nem_tex = P.nemesis(str(N["fac"]), idx, scars)
+	return _nem_tex
 func _verb_panel(v: VBoxContainer) -> void:
 	var V = C.verbFor()
 	if V == null: return
