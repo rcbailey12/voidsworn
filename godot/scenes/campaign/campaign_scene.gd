@@ -36,6 +36,7 @@ func _frames(n: int = 3) -> void:
 	for i in range(n): await get_tree().process_frame
 func _shot(dir: String, name: String) -> void:
 	await _frames(4)
+	if C.page.get("kind") == "map" and ui.use_3d_map: await get_tree().create_timer(2.2).timeout   # the 3D map's arrival camera settles first
 	await RenderingServer.frame_post_draw
 	var img = get_viewport().get_texture().get_image()
 	img.save_png(dir.path_join(name + ".png")); print("shot ", name)
@@ -55,6 +56,10 @@ func _shots(dir: String) -> void:
 	C.act("optHeat", "h_flag"); C.act("startRun"); await _shot(dir, "05_aspect")
 	C.act("pickAspect", C.W["aspOffer"][0]); await _shot(dir, "06_intro")
 	C.act("closeModal"); await _shot(dir, "07_map")
+	if ui.use_3d_map:   # the hover card over a fight in the middle of the sector (danger, what moved it, the routes through it)
+		var m = ui.map3d; var mid = C.RUN["map"]["cols"][min(3, C.RUN["map"]["cols"].size() - 2)][0]["id"]
+		get_viewport().warp_mouse(m._screen(m._nodes[mid]["pos"])); await _frames(3); m._set_hot(mid); await _frames(6)
+		await _shot(dir, "07b_map_hover"); m._set_hot("")
 	var seen = {}; var steps = 0
 	while not C.ended and steps < 400:
 		steps += 1

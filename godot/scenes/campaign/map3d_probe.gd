@@ -11,6 +11,7 @@ func _ready() -> void:
 	var ui = UIScript.new(); add_child(ui); ui.bind(C)
 	JSM.rnd_seed(4242); C.titleScreen(); C.act("newRunScreen"); C.act("startRun"); C.act("pickAspect", C.W["aspOffer"][0]); C.act("closeModal")
 	for i in 30: await get_tree().process_frame
+	await get_tree().create_timer(2.2).timeout   # the arrival camera settles over the whole chart
 	var m = ui.map3d
 	print("map3d size ", m.size, " vp ", m.vp.size, " cam ", m.cam.global_position, " current ", m.cam.current, " nodes ", m._nodes.size())
 	for id in m._nodes.keys().slice(0, 3): print("  node ", id, " world ", m._nodes[id]["pos"], " screen ", m.cam.unproject_position(m._nodes[id]["pos"]))
