@@ -272,7 +272,7 @@ function salvageYield(w){ const pool=modulePool(), has=m=>pool.includes(m)&&MODU
   const pickM=[wk.includes('lance')&&'crystal',(wk.includes('torp')||wk.includes('htorp')||wk.includes('startorp'))&&'magazine',(wk.includes('battery')||wk.includes('hbattery'))&&'loaders',wk.includes('flak')&&'flakplus',w.ab==='launch'&&'hangar',(wk.includes('gauss')||wk.includes('needle')||wk.includes('shard'))&&'cogitator',w.regen&&'damcon',w.sh>=20&&'capacitor',(wk.includes('turret')||wk.includes('autocannon'))&&'auspex'].filter(Boolean).filter(has);
   // a wreck that was flayed or dissolved has little left to strip
   const intact=!(KILL_CAUSES[w.cause]&&KILL_CAUSES[w.cause].scrap), m=intact&&pickM.length?pickM[0]:null, cred=Math.round((10+9*w.cp)*(intact?1:1.3));
-  const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'&&!!HULLS[w.tpl]&&fleetCP()+(HULLS[w.tpl].cp||1)<=RUN.cpCap?true:false; // B1 (B-8): only offered when the command points are there
+  const tow=RUN&&RUN.fac==='corsair'&&w.cp<=2&&intact&&w.cause!=='dark'&&!!HULLS[w.tpl]&&!factionGate(RUN.fac,w.tpl)&&fleetCP()+(HULLS[w.tpl].cp||1)<=RUN.cpCap?true:false; // B1 (B-8): only offered when the command points are there
   return {mod:m,cred,tow}; }
 // B2 capture rework (R4): each prize ship that survives a win gets one choice. Add it (only if command points allow), strip it for a refit
 // plus scrap (its weapons decide which refit, as in salvage), or ransom it for credits. A prize that cannot fit at all was already scrapped
@@ -289,10 +289,10 @@ function prizeOffer(p,nR){ const v=shipValue(p.tpl), y=salvageYield({wk:p.wk||[]
 // lowers the next one. Default: Add a ship that fits with at least 40% hull, otherwise whichever of Strip or Ransom is worth more (a refit
 // counted at half its shop price).
 function prizePlan(R){ const sel=R.prizeSel||[]; let cp=fleetCP(), nR=RUN.ransoms||0;
-  return R.prizes.map((p,i)=>{ const o=prizeOffer(p,nR), c=p.cp||1, room=cp+c<=RUN.cpCap;
+  return R.prizes.map((p,i)=>{ const o=prizeOffer(p,nR), c=p.cp||1, gate=factionGate(RUN.fac,p.tpl), room=cp+c<=RUN.cpCap&&!gate; // B3: a prize your faction cannot field (Corsairs and lances) can only be stripped or ransomed
     const sv=o.strip.cred+(o.strip.mod?Math.round(MODULES[o.strip.mod].cost*.5):0), dk=room&&(p.hpf||1)>=.4?'add':sv>=o.ransom?'strip':'ransom';
     let k=sel[i]||dk; if(k==='add'&&!room) k=dk==='add'?(sv>=o.ransom?'strip':'ransom'):dk;
-    if(k==='add') cp+=c; if(k==='ransom') nR++; return {p,o,room,k,mine:!!sel[i]&&sel[i]===k}; }); }
+    if(k==='add') cp+=c; if(k==='ransom') nR++; return {p,o,room,gate,k,mine:!!sel[i]&&sel[i]===k}; }); }
 ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward; if(!R||!(R.prizes||[]).length){ if(R) R.stage=(window._wrecks||[]).length?'salvage':'pick'; return (window._wrecks||[]).length?ACT.salvageStep():ACT.rewardNext(); }
   const rows=prizePlan(R), n=rows.length, cpAfter=fleetCP()+rows.reduce((t,r)=>t+(r.k==='add'?(r.p.cp||1):0),0);
   const cred=rows.reduce((t,r)=>t+(r.k==='ransom'?r.o.ransom:r.k==='strip'?r.o.strip.cred:0),0), refits=rows.filter(r=>r.k==='strip'&&r.o.strip.mod).length, joins=rows.filter(r=>r.k==='add').length;
@@ -301,7 +301,7 @@ ACT.prizeStep=()=>{ closeModal(); const R=RUN.reward; if(!R||!(R.prizes||[]).len
     <p class="muted">Command points: ${fleetCP()} of ${RUN.cpCap} used${joins?`, ${cpAfter} after these join`:''}.${RUN.ransoms||rows.some(r=>r.k==='ransom')?' Owners pay less for each ship you sell back to them.':''}</p>
     ${rows.map((r,i)=>{ const H=HULLS[r.p.tpl], hp=Math.round((r.p.hpf||1)*100), b=(k,t,sm,dis)=>`<button class="${r.k===k?'sel':''}" data-act="prizeSet" data-arg="${i}:${k}" ${dis?'disabled':''}><b>${t}</b><small>${sm}</small></button>`;
       return `<div class="choice" style="cursor:default;margin:6px 0 12px"><b>${esc(r.p.name)}</b> <span class="dim">${esc(H.n)}, ${H.cp||1} command point${(H.cp||1)>1?'s':''}, ${hp}% hull</span>
-      <div class="orders" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">${b('add','Add',r.room?`Joins at ${hp}% hull`:'No command points left',!r.room)}${b('strip','Strip',`${r.o.strip.mod?esc(modName(r.o.strip.mod))+' + ':''}${r.o.strip.cred} credits`)}${b('ransom','Ransom',`${r.o.ransom} credits`)}</div></div>`; }).join('')}
+      <div class="orders" style="grid-template-columns:1fr 1fr 1fr;margin-top:6px">${b('add','Add',r.room?`Joins at ${hp}% hull`:r.gate?'Your faction cannot field it':'No command points left',!r.room)}${b('strip','Strip',`${r.o.strip.mod?esc(modName(r.o.strip.mod))+' + ':''}${r.o.strip.cred} credits`)}${b('ransom','Ransom',`${r.o.ransom} credits`)}</div></div>`; }).join('')}
     <p class="muted" style="margin-top:10px">You get: ${sum}.</p><button class="primary" data-act="prizeConfirm">Confirm</button>`); };
 ACT.prizeSet=a=>{ const R=RUN.reward; if(!R||!(R.prizes||[]).length) return; const [i,k]=String(a).split(':'); if(!R.prizes[+i]||!['add','strip','ransom'].includes(k)) return;
   R.prizeSel=R.prizeSel||[]; R.prizeSel[+i]=k; saveRun(); ACT.prizeStep(); };

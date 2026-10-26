@@ -324,9 +324,19 @@ const MORE_SHIP_NAMES={
   deathless:['Tomb of Nine Kings','Ankh of Ash','Silent Procession','Dust Eternal','The Unsleeping','Obelisk of Night','Crypt of Teeth','Sunless Barge','Pale Sovereign','Ever-Watch']};
 // every faction's hulls get a shipyard price, refit slots and their boss flag (only the Voidsworn set had them;
 // other factions showed 'Buy for NaN', had no refit slots, and the Voidsworn dreadnought wasn't marked as a boss)
+// B3 price ladder (Oct 26, Claude's numbers, vetoable): each faction prices its own classes. Hegemony is the 1.0 baseline; Chorus swarms cheap and
+// prices its big hulls up; Corsairs go cheap small and dear heavy; Ithar tax everything (elite glass); Deathless pay most for few, durable hulls;
+// Voidsworn keep their carriers (Ashgrove's whole kit) at a 25% premium. Shipyard prices, ransom, strip and scrap values all follow h.cost.
+// Enemy fleets are still built by command points, so battle difficulty does not move with this table.
+const FAC_PRICE={hegemony:{},voidsworn:{Carrier:1.25},corsair:{Frigate:.8,Destroyer:.85,Cruiser:1.05,Carrier:1.15},chorus:{Frigate:.65,Destroyer:.75,Cruiser:1,Carrier:1.2},
+  ithar:{Frigate:1.3,Destroyer:1.3,Cruiser:1.15,Carrier:1.1},deathless:{Frigate:1.45,Destroyer:1.5,Cruiser:1.55}};
+// B3 roster gates and prohibitions: what each faction cannot field or do. Checked by canOrder (brace), the prize screen and towing (weapon kinds).
+const FAC_GATES={corsair:{noKind:['lance'],d:'Corsairs field no lance weapons (no long-range beams): they win up close.'},ithar:{noBrace:1,d:'Ithar hulls cannot Brace for impact: they live by shields and speed.'}};
+function factionGate(fac,tpl){ const G=FAC_GATES[fac], h=HULLS[tpl]; if(!G||!h) return null; if(G.noKind&&h.w.some(([id])=>W[id]&&G.noKind.includes(W[id].k))) return G.d; return null; }
 for(const [fid,F] of Object.entries(FACTIONS)){ if(F.boss&&HULLS[F.boss]) HULLS[F.boss].boss=true;
   for(const id of F.roster){ const h=HULLS[id]; if(!h||h.sq) continue; const cp=h.cp||1;
-    if(h.cost==null) h.cost=Math.round((60*cp+10)/5)*5; if(h.slots==null) h.slots=cp<=2?1:cp<=4?2:3; } }
+    if(h.cost==null) h.cost=Math.round((60*cp+10)/5)*5; if(h.slots==null) h.slots=cp<=2?1:cp<=4?2:3;
+    const pm=(FAC_PRICE[fid]||{})[h.cls]||1; if(pm!==1&&h.cost0==null){ h.cost0=h.cost; h.cost=Math.round(h.cost*pm/5)*5; } } }
 
 // ---------- progression between runs ----------
 // Hull variants: bought once with renown, then sold in your faction's shipyards beside the standard hull
