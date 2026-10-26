@@ -1,0 +1,95 @@
+# Addendum validation synthesis, 2026-10-26
+
+Chair synthesis of the three blind validation legs on the Oct 26 Opus addendum (20 tooling and workflow items), judged only on the feel and fun lens Ryan set: high quality space battles and ships, balanced against being a fun game; cinematic like Sins of a Solar Empire 2, a Star Wars movie, and EVE Online; loved references BattleTech, Rogue Trader voidship battles, Star Wars Zero Company.
+
+Legs, all blind, all filed and verified on main:
+- DeepSeek (DeepThink and Search verified ON, three pack files attached). contrib/deepseek/reviews/addendum_validation_deepseek_2026_10_26.md, commit 8011a0b5. Ran 3:13-3:18 PM MDT.
+- Argon (Gemini 4 Argon, Thinking High, verified in two places, three pack files attached). contrib/gemini/reviews/addendum_validation_gemini_2026_10_26.md, commit f481aaf7. Ran 3:13-3:22 PM MDT.
+- Qwen (Qwen3.8-Max, both gates passed, pack pasted in three parts, submitted once). contrib/qwen/reviews/addendum_validation_qwen_2026_10_26.md, commit 625968e5. Ran 3:14-3:26 PM MDT.
+Screening notes for each leg sit in the goal workspace hidden files. Rey did not run a fourth leg on this one; the chair synthesis is the fourth voice, and it verifies the checkable claims the legs made (section 6).
+
+## Verdict: VALIDATED, with one addition and one ordering rule
+
+The addendum stands. No leg found an item that should be dropped outright, and the two items the chair called the addendum (1 repo hygiene, 2 screenshot suite) were rated the most feel protective items in the set by Qwen, kept by DeepSeek, and kept in scoped form by Argon. The validation changes three things:
+
+1. ONE ADDITION, unanimous: a battle camera direction system, blocked in before cutover (new item 21, section 2). All three legs independently named a camera system as their single insisted change, from three different angles. That is the strongest blind convergence this review process has produced.
+2. ONE ORDERING RULE, from Qwen, adopted by the chair: the before cutover list is sequenced against the "full battle plays in Godot" milestone. Preconditions and guards (items 1, 2, 3, 4, 5, 13, and new item 21) go first; enablers (items 6, 7, 8, 9, 10, 11) batch after the first playable battle instead of interleaving with it. This answers the crowding out risk all three legs raised, without dropping or deferring anything the addendum put before cutover.
+3. OPERATING AMENDMENTS to items 2, 13, and 20 (section 3), each merged from at least two legs.
+
+Argon proposed the deepest cuts (drop GdUnit4 and gdlint entirely, move items 4, 5, and the CREDITS half of 7 to before Steam, localisation to later). The chair does not adopt the cuts, for reasons itemised in section 3, but adopts Argon's guardrails almost everywhere. DeepSeek sits in the middle (a defined keep list before cutover, the rest later). Qwen keeps 19 of 20 items at their written timing and reorders only item 12. Where the chair lands is closest to Qwen on scope and closest to Argon on operating mode.
+
+## 2. The one thing, merged: a cinematic camera and event direction block-in (new item 21)
+
+The three legs' versions:
+- DeepSeek: a cinematic event director, one data driven system that triggers camera moves, sound stings, and battle log lines on defined battle events, with an owner tuning panel.
+- Argon: a dynamic action cam director (camera state machine, staggered salvo firing over 1.2 to 1.8 seconds, intensity slider), proven by a 15 second scripted Movie Maker video slice of one flagship salvo exchange, backed by feel_config.json timing sliders.
+- Qwen: a scripted battle camera direction system: wide establishing shot at turn start, push in to the firing ship, hold on the impact point, pull back to wide as the turn resolves; authored beats, a state machine over the existing turn resolution order, no new rendering work.
+
+Merged chair spec for item 21, before cutover, block-in scope only:
+- A camera state machine over the existing turn resolution order with one authored beat set at block-in: establishing wide, push in on fire, hold on impact, pull back to wide. Battle cut-ins (already on the FEATURES.md missing list) ride this system when they land in the effects pass.
+- Battle events emitted from the battle code from the start (salvo fired, torpedo launch and impact, critical, ship death, Nemesis arrival), so the sound stings and battle log drama lines DeepSeek wants have something to subscribe to. This is the hook level work; the content (camera tracks, stingers, lines) is effects pass work.
+- Owner facing tuning from day one: camera hold duration, salvo stagger, and takeover intensity as feel_config values with a small tuning surface (Argon's overlay or DeepSeek's panel; Opus's technical call which), because all three legs agree the owner's playtest is the tuning loop and he should not tune by editing code.
+- One 15 second Movie Maker rendered slice of a flagship salvo exchange, with audio, produced when the block-in lands. Stills prove a mesh loaded; a short clip is the only artifact Ryan can judge for camera weight and salvo rhythm while travelling. The screenshot suite (item 2) gains this as a companion artifact, not a gate.
+
+Why before cutover and not in the effects pass: the camera is the multiplier on everything the effects pass will build (Qwen's argument, endorsed by the chair). Retrofitting event emission into finished battle code is the expensive version. The block-in is medium effort, no new rendering technology, no simulation changes.
+
+## 3. Item by item, merged verdicts
+
+1. Repo hygiene suite. KEEP, before cutover, first in sequence. Argon's scoping (constant diff, seed check, feature table first; .pck and oracle hash assertions can follow) is adopted as build order inside the item, not as a cut.
+2. Golden image screenshot suite. KEEP, with the operating mode amendment all three legs converged on: until the effects pass is blessed, the suite runs in sanity and contact sheet mode. Automated runs fail on structural regressions only (BoxMesh fallbacks, missing geometry, blank frames, broken UI). Safe goldens (title, settings, choice card) may be blessed strictly now. Battle damage and flagship close up goldens are DRAFT, excluded from failure, until the per weapon damage marks and the plasma light blue ruling are at reference quality and Ryan blesses the post effects look. Then strict pixel diffing turns on.
+3. Generate gen/ in build, inputs only, provenance, LOD. KEEP, before cutover. Argon's split (LOD distance testing early, generator rewrite later) is noted as build order flexibility for Opus, but provenance stays before cutover: it is cheap, and the A4 licence residual (check the licence inside the bundled version) already sits in this area. LOD guardrail from Argon adopted: LOD distances are verified visually in item 2 screenshots at close, medium, and far zoom on torpedo scarred hulls before they are enabled, so LOD cannot silently erase silhouette damage.
+4. Headless export and version stamping. KEEP, before cutover. Argon would move it to before Steam; the chair keeps it because it is cheap, kills the FEATURES.md path disagreement, and item 14's CI inspect job depends on a canonical export existing.
+5. Save and settings hygiene (atomic saves, settings split). KEEP, before cutover. Argon's move to before Steam is REJECTED by the chair: DeepSeek and Qwen both keep it, the addendum already records that item 14's Auto-Cloud depends on it, and the travel sprint is producing real playtest saves now. A torn save is a fun killer, not a shipping nicety.
+6. GdUnit4 scoped decision. KEEP as a decision, before cutover. Argon's DROP is not adopted: the decision itself is cheap, and Qwen's point stands, the scene runner's input simulation is one of the two realistic ways to drive the screenshot suite into combat states (the other being Argon's homegrown scene script, which is the correct fallback if the decision is no). Installation stays optional; the parity harness stays the rules authority.
+7. Music CREDITS.md schema and loudnorm. KEEP as written, template now, completed before Steam. Argon's split (loudnorm now, credits later) is REJECTED on the credits half: the file's absence is the whole blocker on Job 5 (music licences), and the template costs almost nothing. All legs agree the loudnorm target (-14 LUFS, -1 dBTP) is the feel half and applies as audio assets land.
+8. Exact source Godot API lookup. KEEP, batched with the enablers after the first playable battle per the ordering rule. Unanimous keep.
+9. Verification before completion checklist. KEEP, plain text. Unanimous.
+10. Path scoped rules, /doctor audits, worktree isolation, Lychee. KEEP, batched after the first playable battle. Argon's triggers adopted: worktree isolation when parallel helpers actually collide; Lychee and /doctor are the lowest priority pieces and may slip without ceremony.
+11. gdlint gate, gdformat check only. KEEP, report first, batched after the first playable battle. Argon's DROP is not adopted: the gate as written is check only and never touches parity mirrored files, so its friction is near zero; but it is the first item to cut if the enabler batch ever needs trimming.
+12. Single threaded scene differential. REORDER to later, after the effects pass or when a desync actually appears. The only unanimous reorder in the set.
+13. Frame budget benchmark. KEEP, before cutover, with the measurement amendment merged from all three legs: run at three fidelity tiers (placeholder, current art, target art) and report all three; the committed figure is the target art tier; treat the result as a ceiling and a spending plan (Argon's 16.6 ms during a 20 ship salvo is a fair statement of the ceiling on target hardware), never as a per commit monotonic diff that punishes adding effects inside budget.
+14. Steam integration, Auto-Cloud, deploy, CI inspect. KEEP, before Steam. Chair note on sourcing: Argon said GodotSteam's GitHub repository archived on October 20, 2026 after primary hosting moved to Codeberg. The Codeberg move is CONFIRMED by the chair's own earlier X18 verification (the current Codeberg repos carry the MIT licence text; the shipped GDExtension remains MIT, and the licence glance inside the exact bundled version at build time still stands). The specific October 20 archive date is leg stated only. Practical effect: pull GodotSteam from Codeberg at adoption time.
+15. Localisation scaffolding. KEEP, before Steam, as written (scaffolding and tr() habit, no translation work). Argon's move to later is not adopted; Qwen's point stands that retrofitting 1,500 plus strings is miserable, and the pseudolocalisation overflow pass catches real UI paper cuts.
+16. Captions routed to the battle log. KEEP, before Steam, and pull the audio cue inventory forward into the audio work around item 21's event system (Argon's suggestion), since the event list and the caption inventory are the same list seen from two sides.
+17. Steam capsule checklist, codesigning later. KEEP, before Steam. Unanimous.
+18. MCP bridge. KEEP at evaluate later with its trigger. Unanimous in substance (DeepSeek phrases it as drop before cutover, which is the same place).
+19. Generated repo map. KEEP at later, sequenced behind item 1's regeneration being mechanised. Unanimous.
+20. Godot 4.7 features in their own passes. AMENDED, merging Argon's promotion with Qwen's trigger: DrawableTexture2D investigation begins no later than the start of the big effects pass (it is the leading candidate mechanism for per weapon signature marks, per the fx implementation audit), and AreaLight3D and Control offset transforms are scheduled inside that pass rather than left as an open later. The pass itself stays after a full battle plays.
+21. NEW: cinematic camera and event direction block-in, as specced in section 2. Before cutover, in the precondition group.
+
+## 4. Missing for cinematic feel, merged ranking
+
+Beyond item 21, the legs' feel additions merge into five, in the order the chair would schedule them:
+
+1. Sound design as a battle system, plus a small content slice. Layered impact signatures (shield snap, armour thud, hull and crit groans), weapon family sounds, a silence beat before a capital ship death, distance scaled audio, and a three layer dynamic music slice for one battle. DeepSeek rank 4, Qwen rank 2, Argon rank 2; the strongest three way overlap after the camera. Hooks ride item 21's events; the slice belongs before the effects pass so vision and sound are blocked together (Qwen).
+2. Destruction spectacle with persistent aftermath. Staged break up (two to three phases), reactor vent, listing drift, and a wreck that persists for the rest of the battle as a visual record and salvage object (EVE). All three legs, ranks 2, 3, and 3. The persistence model is decided before the effects pass; the VFX is the pass itself.
+3. Ship presence at rest. Live turret tracking inside firing arcs, running lights, engine glow, subtle drift. DeepSeek rank 5, Argon rank 4. Small effort, kills the frozen chess piece look, and it is the resting state the camera system will frame.
+4. Bookends: fleet arrival, Nemesis showcase intro, post battle debrief. All three legs. Minimal versions before cutover (a short warp in and a result hold), full versions before Steam. This is also where the Nemesis memory finally gets spoken (see section 5).
+5. Battle log as a drama surface. Damage report language for critical events, routed through the same event system as item 16's captions. DeepSeek only, but cheap and it compounds item 21.
+
+## 5. Missing for fun and balance, merged
+
+1. Decision telemetry, before cutover (all three legs, rank 1 for DeepSeek and Qwen). Log decisions, options offered and declined, decision time, and reversals, in human playtests and in the sim. From it, three named metrics with the thresholds the legs proposed: Decision Density per turn; Mop-Up Drag (rounds between a side losing half its fleet power and the battle ending; Argon's trigger: over 3 rounds in late sector fights means a rout or warp out mechanic gets designed); Verb Share (boarding, ramming, torpedoes, crits as the deciding verb versus battery attrition; under 5 percent for a verb means retune its range or cooldown). Plus Qwen's pacing histograms: turn count distribution, damage per turn curve, first death and first capital critical turns, meaningful turns ratio, per admiral, per faction, per sector.
+2. Owner tuning surface (all three legs). The same feel_config values item 21 exposes, extended to pacing (salvo stagger, movement duration, hit stop and shake strength, camera hold), with logging of which settings the owner actually plays on, so repeated choices become defaults without a code cycle. DeepSeek frames it as a tuning dashboard over existing levers; Argon as an F10 overlay; Qwen as hot reload in a live battle. One surface, Opus's call on form.
+3. Difficulty telegraphing (DeepSeek rank 5, Argon rank 2). Surface the admiral doctrine and a matchup threat read before battle, building on what the campaign screen already shows (danger bands, the Nemesis card), so the hidden admiral variable (boss win rates once measured 38 to 98 percent) reads as tactical stakes instead of a blind ambush. And a standing rule from DeepSeek's risk section, adopted: tuning views show per admiral distributions, never means alone.
+4. Replay and outlier bookmarks (all three legs in some form). The sim flags outlier seeds (fastest wipe, longest battle, biggest upset, highest crit chain) and a scrubber or spectator mode replays them through the cinematic camera. Before Steam for the tool; the seed bookmarking itself is cheap enough to ride the telemetry item.
+5. Nemesis bark coverage auditor (Argon only, adopted). Cross reference tracked Nemesis memory and scar states against authored lines; log bark repeat rate and player weapon switch rate. It aims directly at the Job 2 finding (memory tracked richly, spoken through one template line) and tells the story work which memories are mute.
+
+## 6. Chair corrections to the legs
+
+- Qwen names the Sins 2 soundtrack composer as "Paul Shuey". WRONG. The Sins of a Solar Empire II soundtrack is composed by Paul Schuegraf (official soundtrack page; the Steam store page carries a spelling variant). The claim the name supported does not depend on it. The slip is preserved verbatim in the filed leg and corrected here.
+- Argon names "Dan Malone" as the ai-gamedev-kit author. CORRECT, confirmed against the chair's own addendum research stream (engine tooling report section 3.1: ai-gamedev-kit by Danm72, write up at dan-malone.com). The screening caveat on this point is withdrawn.
+- Argon's GodotSteam Codeberg claim: hosting move CONFIRMED by prior chair verification (see item 14); the October 20, 2026 archive date remains leg stated.
+- DeepSeek refers to "the settled larger fleet size". The ruling is density leaning 20 total with difficulty ramping by more ships; nothing larger is settled. Wording drift only.
+- Argon and Qwen both import Rogue Trader "officer posts" into Voidsworn metrics. Voidsworn has admirals and Commands, not officer posts; read those metrics as special ability usage. Lens import, noted in both screenings.
+- Leg stated and not chair verified, carried as colour only: EVE's August 2025 Smoke, Fire and Smart Lights fire counts (Argon), BattleTech's 13 camera toggles and six volume sliders (Argon), Slay the Spire's metric server details and 17 minute average run (DeepSeek), Sins 2 reviewer turret tracking praise (DeepSeek, citations without a URL list). None of these carries a verdict; every adopted item above stands on at least two legs or on project evidence.
+
+## 7. What this changes in the addendum
+
+The revised addendum (opus-addendum-prompt.md, revised Oct 26 after validation) carries: the ordering rule as an explicit sequence against the playable battle milestone; item 21 specced as in section 2; the item 2 operating mode (sanity and contact sheet, DRAFT damage goldens); the item 3 LOD visual verification guardrail; the item 13 three tier measurement and ceiling rule; the item 20 trigger sharpening (DrawableTexture2D at the start of the effects pass); item 14's Codeberg sourcing note; item 16's inventory pulled toward the audio work; and a short new section listing the merged feel and fun additions in sections 4 and 5 as named future work with their gates, so they are on Opus's horizon without becoming pre cutover scope beyond items 21 and the telemetry hooks.
+
+## Not checked
+
+- No leg re-audited code, and neither did the chair for this synthesis; repo state claims rest on the evidence pack and the Oct 26 audits.
+- Whether the Godot shell already has camera interpolation (Argon flags this UNSURE) is for Opus to confirm when scoping item 21; the block-in spec survives either answer.
+- The 15 second Movie Maker slice's audio muxing path (PNG frames plus WAV via ffmpeg) is Argon stated and plausible given item 2's capture route, but not chair tested.
