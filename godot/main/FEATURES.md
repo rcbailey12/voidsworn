@@ -2,7 +2,7 @@
 
 Status words: **done** (works in Godot), **partial** (works, with a gap named), **missing**, and the owner when another stream builds it (G1 rules, G3 campaign, G4 look, A4 ships). Updated by G2 with each commit that changes a row.
 
-Last update: Oct 26 2026, G2.
+Last update: Oct 26 2026 (dd58851), G2.
 
 ## The program
 
@@ -10,12 +10,14 @@ Last update: Oct 26 2026, G2.
 |---|---|
 | One program: title, campaign, battles, back to title (godot/main) | done |
 | Title screen: Continue run, New run, Progression, How to play, wording as the browser | done (title.gd); Quick battle and Settings added |
-| Settings: sound on or off, volume, speed, enemy AI (Veteran or Standard), reduce flashing, screen shake, battle tips, full screen, graphics quality | done (saved to user://settings.json). Reduce flashing and shake reach G4 fx once it lands. Graphics quality is stored but does nothing yet |
+| Settings: sound on or off, volume, speed, enemy AI (Veteran or Standard), reduce flashing, screen shake, follow enemy activations, battle tips, full screen, graphics quality | done (saved to user://settings.json; the in-battle menu changes them too). Graphics quality is stored but does nothing yet |
 | Saves: run and profile | done in G3 rules (user://voidsworn_campaign.json with a backup) |
-| Windows build (.exe) | partial: tools/pc/jobs/g2_export.bat written, first PC run pending |
+| Windows build (.exe) | done on the PC (build\export\Voidsworn.exe); smoke test of the exe pending |
 | Double-click start for Ryan | done: tools/pc/play_godot.bat (runs the exported .exe when present) |
-| Headless full runs with both sides on AI (errors, softlocks, time) | done: --bot-runs N. 1 full campaign run in the sandbox: 2 battles, 1084 clicks, 0 errors. 50+ on the PC pending |
+| Headless full runs with both sides on AI (errors, softlocks, time) | done: --bot-runs N (the game's own AI on your side, G3's choices); errors counted with a Logger. PC: 10-run batches in the queue |
 | Report a problem (browser: copy report) | missing |
+| Shader warm-up on the loading screen, pipeline compiles counted in play | done (0 in sandbox runs) |
+| Compatibility renderer launcher (play_godot_safe.bat) | done |
 
 ## Campaign screens (rules: G3, done with parity; drawing: G3's ui/campaign, until then the G2 fallback)
 
@@ -47,27 +49,27 @@ Last update: Oct 26 2026, G2.
 | Nameplates with hull and shield bars, gold star on flagships | done |
 | Camera: right-drag orbit, left-drag or WASD pan, wheel zoom, T top-down, Home reset, F focus | done |
 | Select (click or Tab), move range in gold, best facing per hex, facing arrow and path preview, Q/E to pick the facing | done |
-| Turn in place (Q/E on the ship's own hex) | partial: through reach states (rules rotate is not ported yet, G1) |
+| Turn in place (Q/E on the ship's own hex) | done (rules rotate) |
 | Fire: every gun that bears with one click, 1-6 picks one gun, hit chance and expected damage in the tip | done |
-| Attack-move (click an enemy out of reach: burn into position and fire) | partial: fires after the burn, not during it (needs the rules' late-fire hook in the API, G1) |
+| Attack-move (click an enemy out of reach: burn into position and fire) | done: fires during the burn (rules attack_move) |
 | Why you can't fire (out of range, arc, sight, braced, spent) | done (toast) |
 | Brace (B), ram (X), board (G) | done |
 | Abilities without a target (evasive, reload, focus, surge, ion pulse, overburn, frenzy, regrow, reclaim, phase) | done |
-| Abilities with a target hex (nova, blink, launch) | done for nova and blink (pick the hex); launch waits for squadrons (G1) |
-| Admiral's Command (player) | missing (rules: G1 not ported; button: G2 after) |
+| Abilities with a target hex (nova, blink, launch) | done (pick the hex) |
+| Admiral's Command (player) | done: top-bar button when ready, two clicks to confirm as the game asks |
 | End activation, Pass, Continue (Enter) | done |
-| Enemy turns at B2 pace, Enter or Space hurries, enemy-acting chip, camera follow | done; camera follow is a highlight ring only |
+| Enemy turns at B2 pace, Enter or Space hurries, enemy-acting chip, camera follow | done |
 | Threat map (R) | done: the browser's computeThreat (every end state of every enemy, guns summed per hex, line of sight); about 0.8 s to build in the sandbox, cached per change |
 | Firing arcs (V, the fans) | partial: the hexes a ready gun reaches, outlined; no fan meshes |
 | Hull and shield bars that change as hits land, floating numbers (shield, hull, Miss, Critical, Shields down) | done |
-| Battle log with the browser's lines and colours | done (built from the event stream until G1's log event lands) |
+| Battle log with the browser's lines and colours | done: the rules' own log lines, word for word |
 | Round banner, Victory and Defeat card | done |
 | Retreat button in campaign battles | done |
 | Objective in the top bar (rout, flagship, hunt, defend, intercept, break, hold) | done; objective zones on the board missing |
 | Speed: normal or fast | done |
 | Onboarding tips one at a time, Got it, Hide tips (B1) | done (9 of the 10 browser tips; the Command tip waits for the Command) |
-| Squadrons and carriers | missing (rules: G1) |
-| Mid-battle events (reinforcements, warnings) | partial: rules run them; no banner or toast yet |
+| Squadrons and carriers | done: wings drawn as craft formations, wing orders (click your wing, then a target); stances wait for stream B |
+| Mid-battle events (reinforcements, warnings) | done: the rules log them; reinforcements appear with the next view |
 | Cut-ins (cinematic camera), follow activations toggle, concept-art hulls toggle, temporal AA toggle | missing |
 | Legend and command strip help | missing |
 | Ship sheet (full stats) | partial: the side panel |
@@ -76,10 +78,10 @@ Last update: Oct 26 2026, G2.
 
 | Feature | Status |
 |---|---|
-| Weapon families, impacts, shields per faction, staged damage, deaths, wrecks, trails, shake, hit pause | G4 (godot/fx/API.md); G2 calls it when fx.gd lands, placeholder effects until then |
-| Dead-star sky, asteroid field, dust haze | done as interim (render/backdrop.gd); G4 world replaces it |
+| Weapon families, impacts, shields per faction, staged damage, deaths, wrecks, trails, shake, hit pause | done through G4's fx (G2 calls it per event) |
+| Sky, nebula, planet, dead star, asteroid blockers, dressing | done through G4's world |
 | Black-hole lensing and accretion disc on the dead-star board | G4 |
-| Reduce flashing (WCAG) | G4, the setting is wired |
+| Reduce flashing (WCAG) | done (G4; the setting reaches fx) |
 
 ## Sound (G2)
 
