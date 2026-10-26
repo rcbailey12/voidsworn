@@ -38,6 +38,7 @@ var end_btn: Button
 var speed_btn: Button
 var threat_btn: Button
 var retreat_btn: Button
+var cmd_btn: Button
 var roster: PanelContainer
 var roster_box: VBoxContainer
 var roster_sc: ScrollContainer
@@ -248,6 +249,9 @@ func _build_top() -> void:
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(sp)
+	cmd_btn = _button("Command", "command")
+	cmd_btn.visible = false
+	row.add_child(cmd_btn)
 	retreat_btn = _button("Retreat", "retreat")
 	retreat_btn.visible = false
 	row.add_child(retreat_btn)
@@ -259,6 +263,12 @@ func _build_top() -> void:
 	row.add_child(speed_btn)
 	end_btn = _button("End activation", "end", null, true)
 	row.add_child(end_btn)
+
+
+func set_command(label: String, ready: bool) -> void:
+	cmd_btn.visible = ready
+	cmd_btn.text = "Command: " + label
+	cmd_btn.add_theme_color_override("font_color", GILT)
 
 
 func set_top(round_n: int, turn: String, objective: String, end_text: String, end_on: bool, speed_fast: bool, threat_on: bool) -> void:
@@ -501,7 +511,7 @@ func _build_log() -> void:
 	log_panel.add_child(log_text)
 
 
-const LOG_COL := {"p": "#5fb3a6", "e": "#e27f74", "s": "#d0a64b", "x": "#7d7768"}
+const LOG_COL := {"p": "#5fb3a6", "e": "#e27f74", "s": "#d0a64b", "x": "#7d7768", "ember": "#f0b35a"}
 
 
 func add_log(m: String, c: String) -> void:

@@ -16,6 +16,7 @@ extends Node3D
 signal finished(result: Dictionary)
 
 const API := preload("res://rules/battle_api.gd")
+const RulesRef := preload("res://rules/rules.gd")
 const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
@@ -89,6 +90,8 @@ var tips_off := false
 var bot := false
 var bot_t := 0.0
 var bot_moved := {}
+var wing_sel := ""          # one of your squadrons picked for a standing order
+var cmd_armed_t := -9.0
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
 var shots_dir := ""
@@ -284,8 +287,12 @@ func start_default() -> void:
 		"corsair": [["c_marauder", "c_raider", "c_raider"], ["c_reaver", "c_reaver", "c_raider"], ["c_reaver", "c_raider", "c_raider", "c_raider"]]}
 	var maps := ["open", "belt", "station", "planet", "storm", "graveyard"]
 	var g: Array = groups.get(fac, groups["hegemony"])[rng.randi() % 3]
-	start_scenario({"seed": seed, "sector": 1, "admiral": "vex", "fleet": ["penitent", "harrow", "warden"], "fac": fac, "enemies": g,
-		"obj": "rout", "shape": "open", "map": str(args.get("map", maps[rng.randi() % maps.size()])), "dep": "line", "kind": "battle"})
+	var sc := {"seed": seed, "sector": 1, "admiral": "vex", "fleet": ["penitent", "harrow", "warden"], "fac": fac,
+		"obj": "rout", "shape": "open", "map": str(args.get("map", maps[rng.randi() % maps.size()])), "dep": "line", "kind": "battle"}
+	# the game's own sector 1 fleet generation when the rules have it, else a fixed sector 1 group
+	if not RulesRef.new().has_method("genEnemyFleet"):
+		sc["enemies"] = g
+	start_scenario(sc)
 
 
 func start_scenario(sc: Dictionary) -> void:
@@ -317,6 +324,7 @@ func begin_with(a) -> void:
 func _begin(a) -> void:
 	api = a
 	R = a.R
+	rules_log = R.has_method("logm")
 	if ai_level != "":
 		R.AI_LEVEL = ai_level
 	PACE = R.PACE
@@ -383,14 +391,14 @@ func _begin(a) -> void:
 	cam.r = cam.home_r
 	cam.snap()
 	hud.log_text.clear()
-	var F = R.FACTIONS.get(_enemy_fac(), {})
+	var F = R.FACTIONS.get(_enemy_fac(), {}) if not rules_log else {}
 	var ne := 0
 	for u in V["units"]:
 		if u["side"] == "enemy" and not u["squadron"]:
 			ne += 1
-	hud.add_log("Contact: %s. %d ship%s on the auspex." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
+	_log("Contact: %s. %d ship%s on the auspex." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
 	if R.jt(R.B.get("well")):
-		hud.add_log("A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
+		_log("A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	sfx.ambient_start()
 	_refresh_ui()
@@ -596,12 +604,37 @@ func _who(id) -> String:
 func _play_event(e: Dictionary) -> void:
 	match e["t"]:
 		"round":
-			hud.add_log("Round %d." % int(e["round"]), "x")
+			_log("Round %d." % int(e["round"]), "x")
 			fired_in_act.clear()
 			if int(e["round"]) > 1 or not bot:
 				sfx.turn("round")
 				hud.banner("Round %d" % int(e["round"]))
 				await wait(float(PACE["banner"]) + 140.0)
+		"log":
+			hud.add_log(str(e.get("text", "")), str(e.get("kind", "")) if e.get("kind") != null else "")
+		"wing":
+			# a squadron appears beside its carrier: draw it now (the view after the batch fills in the rest)
+			if not views.has(e["unit"]):
+				var par: Dictionary = VU.get(e.get("parent"), {})
+				var wu := {"id": e["unit"], "side": par.get("side", "enemy"), "fac": par.get("fac", "hegemony"), "cls": "Squadron", "tpl": str(e.get("kind", "fighter")),
+					"q": int(e["q"]), "r": int(e["r"]), "facing": int(par.get("facing", 0)), "hp": 1, "maxHp": 1, "sh": [0, 0, 0, 0], "shMax": 0, "size": 0.2, "squadron": true, "flagship": false, "name": ""}
+				_make_view(wu)
+				if gfx != null and gfx.has_method("launch") and e.get("parent") != null:
+					gfx.launch(str(e["parent"]), str(e["unit"]))
+				else:
+					fx.flash(board.hex_world(int(e["q"]), int(e["r"]), 2.0), 10.0, Color(1, 0.8, 0.5), 0.4)
+				sfx.play("launch", {"pos": board.hex_world(int(e["q"]), int(e["r"]))})
+			await wait(220.0)
+		"blink":
+			var sv = views.get(e["unit"])
+			if sv != null:
+				var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "ithar")), HT.FAC3D["ithar"])["eng"]
+				fx.flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+				sfx.play("phase", {"pos": sv.position})
+				await wait(250.0)
+				sv.position = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
+				fx.flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+				await wait(250.0)
 		"side":
 			if e["side"] == "player":
 				hud.set_chip("")
@@ -638,9 +671,9 @@ func _play_event(e: Dictionary) -> void:
 			sfx.shield(_pos(e["unit"]), true)
 		"section_down":
 			var sec := str(e["section"])
-			hud.add_log("%s: %s destroyed. %s" % [_name(e["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Broadsides and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(e["unit"]) == "player" else "p")
+			_log("%s: %s destroyed. %s" % [_name(e["unit"]), SEC_NAME.get(sec, sec), "Forward weapons silenced." if sec == "prow" else "Broadsides and shield generator gone." if sec == "mid" else "Engines crippled."], "e" if _side(e["unit"]) == "player" else "p")
 		"system":
-			hud.add_log("%s: %s." % [_name(e["unit"]), str(e["text"])], "e" if _side(e["unit"]) == "player" else "p")
+			_log("%s: %s." % [_name(e["unit"]), str(e["text"])], "e" if _side(e["unit"]) == "player" else "p")
 		"burning":
 			_float(e["unit"], "Fire on deck", Color("#f08a4b"), -24)
 		"tick":
@@ -656,7 +689,7 @@ func _play_event(e: Dictionary) -> void:
 			var ab := str(e["ab"])
 			var A = R.ABILITIES.get(ab, {})
 			if ab != "launch":
-				hud.add_log("%s: %s." % [_name(e["unit"]), str(A.get("n", ab))], _who(e["unit"]))
+				_log("%s: %s." % [_name(e["unit"]), str(A.get("n", ab))], _who(e["unit"]))
 			var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "hegemony")), HT.FAC3D["hegemony"])["eng"]
 			if gfx != null and gfx.has_method("ability"):
 				gfx.ability(str(e["unit"]), ab)
@@ -679,7 +712,7 @@ func _play_event(e: Dictionary) -> void:
 			await wait(300.0)
 		"order":
 			var O = R.ORDERS.get(str(e["order"]), {})
-			hud.add_log("%s: %s." % [_name(e["unit"]), str(O.get("n", e["order"]))], _who(e["unit"]))
+			_log("%s: %s." % [_name(e["unit"]), str(O.get("n", e["order"]))], _who(e["unit"]))
 			if e["order"] == "brace":
 				_float(e["unit"], "Braced", Color("#9fd4ff"), -24)
 			await wait(200.0)
@@ -687,7 +720,7 @@ func _play_event(e: Dictionary) -> void:
 			await _play_move(e["unit"], e["path"], true)
 			sfx.boom(0.8, _pos(e["target"]))
 			fx.flash(_pos(e["target"]) + Vector3(0, 2, 0), 30.0, Color(1, 0.7, 0.4), 0.6)
-			hud.add_log("%s rams %s at full speed: %d to its %s, %d back to the ram." % [_name(e["unit"]), _name(e["target"]), int(e["dmg"]), SEC_NAME.get(str(e["section"]), str(e["section"])), int(e["recoil"])], _who(e["unit"]))
+			_log("%s rams %s at full speed: %d to its %s, %d back to the ram." % [_name(e["unit"]), _name(e["target"]), int(e["dmg"]), SEC_NAME.get(str(e["section"]), str(e["section"])), int(e["recoil"])], _who(e["unit"]))
 			var d: Dictionary = disp.get(e["target"], {})
 			if d.has("hp"):
 				d["hp"] = float(d["hp"]) - float(e["dmg"])
@@ -699,28 +732,28 @@ func _play_event(e: Dictionary) -> void:
 			var res := str(e["result"])
 			var who := _who(e["unit"])
 			if res == "capture":
-				hud.add_log("Boarding parties from %s take %s. It now fights for %s." % [_name(e["unit"]), _name(e["target"]), "you" if _side(e["unit"]) == "player" else "the enemy"], who)
+				_log("Boarding parties from %s take %s. It now fights for %s." % [_name(e["unit"]), _name(e["target"]), "you" if _side(e["unit"]) == "player" else "the enemy"], who)
 				_float(e["target"], "Captured", Color("#f0b35a"), -30)
 			elif res == "overrun":
-				hud.add_log("%s's boarders overrun %s, but the last of its crew hold the bridge." % [_name(e["unit"]), _name(e["target"])], who)
+				_log("%s's boarders overrun %s, but the last of its crew hold the bridge." % [_name(e["unit"]), _name(e["target"])], who)
 			else:
-				hud.add_log("%s boards %s: %d defenders killed, %d boarders lost." % [_name(e["unit"]), _name(e["target"]), int(e["kill"]), int(e["loss"])], who)
+				_log("%s boards %s: %d defenders killed, %d boarders lost." % [_name(e["unit"]), _name(e["target"]), int(e["kill"]), int(e["loss"])], who)
 			fx.flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
 			await wait(600.0)
 		"command_warning":
 			var C = _command(str(e["id"]))
-			hud.add_log("%s is preparing %s. It strikes next round." % [_name(e["unit"]), str(C.get("n", e["id"]))], "e")
+			_log("%s is preparing %s. It strikes next round." % [_name(e["unit"]), str(C.get("n", e["id"]))], "e")
 			hud.banner("%s next round" % str(C.get("n", e["id"])), Color("#ff8a6a"))
 			sfx.play("ui_alert")
 			await wait(float(PACE["banner"]) + 140.0)
 		"command":
 			var C = _command(str(e["id"]))
-			hud.add_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
+			_log("%s: %s!" % [_name(e["unit"]), str(C.get("n", e["id"]))], "e" if e["side"] == "enemy" else "p")
 			hud.banner(str(C.get("n", e["id"])), Color("#ff8a6a") if e["side"] == "enemy" else Color("#d0a64b"))
 			await wait(float(PACE["banner"]) + 140.0)
 		"wreck":
 			wrecked[e["unit"]] = true
-			hud.add_log("The wreck of %s drifts in place, blocking movement and fire." % _name(e["unit"]), "x")
+			_log("The wreck of %s drifts in place, blocking movement and fire." % _name(e["unit"]), "x")
 		"death":
 			await _play_death(e)
 		"fled":
@@ -731,10 +764,20 @@ func _play_event(e: Dictionary) -> void:
 					sv.dead = true
 			elif sv != null:
 				sv.flee()
-			hud.add_log("%s leaves the battle." % _name(e["unit"]), "e" if _side(e["unit"]) == "player" else "s")
+			_log("%s leaves the battle." % _name(e["unit"]), "e" if _side(e["unit"]) == "player" else "s")
 			await wait(300.0)
 		"end":
 			pass
+
+
+# the battle log: the rules' own log lines (G1 log events, word for word as the game) when the rules write them; the
+# scene's own lines only as a fallback for rules builds without them
+var rules_log := false
+
+
+func _log(m: String, c: String) -> void:
+	if not rules_log:
+		hud.add_log(m, c)
 
 
 func _command(id: String) -> Dictionary:
@@ -918,7 +961,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		_float_hit(t_id, sh_sum, hull_sum, crits > 0)
 	if crits > 0:
 		parts.append("%d criticals" % crits if crits > 1 else "critical")
-	hud.add_log("%s fires %s at %s: %s.%s" % [_name(a_id), str(e["name"]), _name(t_id), ", ".join(parts), " " + sys_txt + "!" if sys_txt != "" else ""], _who(a_id))
+	_log("%s fires %s at %s: %s.%s" % [_name(a_id), str(e["name"]), _name(t_id), ", ".join(parts), " " + sys_txt + "!" if sys_txt != "" else ""], _who(a_id))
 	for g in grp:
 		if g["t"] == "shield_down":
 			var d: Dictionary = disp.get(g["unit"], {})
@@ -981,7 +1024,7 @@ func _play_death(e: Dictionary) -> void:
 	var cause := str(e.get("cause", "blast"))
 	var friend := _side(id) == "player"
 	var sq := bool(VU.get(id, {}).get("squadron", false))
-	hud.add_log("%s %s." % [_name(id), "is shot down" if sq else "is destroyed"], "e" if friend else "p")
+	_log("%s %s." % [_name(id), "is shot down" if sq else "is destroyed"], "e" if friend else "p")
 	if sv == null:
 		return
 	var L: float = sv.L
@@ -1045,7 +1088,7 @@ func _can_act() -> bool:
 
 func _usable(u: Dictionary) -> bool:
 	# ui3d.js canUse: a ship that has not acted, while no other ship is mid-activation
-	if u.is_empty() or u["side"] != "player" or u["dead"] or u["activated"]:
+	if u.is_empty() or u["side"] != "player" or u["dead"] or u["activated"] or u.get("squadron", false):
 		return false
 	for x in V["units"]:
 		if x["active"] and x["id"] != u["id"]:
@@ -1437,7 +1480,12 @@ func _rotate(d: int) -> void:
 		hover_pick[hk] = int(hover_pick.get(hk, _alt_index(hk))) + (1 if d > 0 else -1 + reach_alt[hk].size())
 		_overlay()
 		return
-	# turning in place: the reach state on the ship's own hex with the next facing (rotate in place is not in the rules API yet)
+	# turning in place: the rules' own rotate (G1) when present
+	if api.has_method("rotate") and R.has_method("rotateUnit"):
+		var rid := sel
+		if not _cmd(func(): return api.rotate(rid, d)):
+			hud.toast("No turn left this activation.")
+		return
 	var want := posmod(int(u["facing"]) + d, 6)
 	var best = null
 	for st in reach_states:
@@ -1487,13 +1535,19 @@ func _end_activation() -> void:
 		if u["active"]:
 			active = u["id"]
 	var id := sel
-	if active == "" and sel != "" and _usable(_sel_unit()):
+	if _classic():
+		_cmd(func(): api.end_turn(); return true)
+	elif active == "" and sel != "" and _usable(_sel_unit()):
 		_cmd(func(): api.end_activation(id); return true)
 	else:
 		_cmd(func(): api.end_activation(); return true)
 	sfx.play("ui_confirm")
 	sel = ""
 	armed = -1
+
+
+func _classic() -> bool:
+	return api != null and api.get("_alt") == false
 
 
 func _ray_hex(p: Vector2) -> Vector2i:
@@ -1543,6 +1597,20 @@ func _on_click() -> void:
 			var tid: String = u["id"]
 			_cmd(func(): return api.board(id, tid))
 		_refresh_ui()
+		return
+	if wing_sel != "":
+		var w := wing_sel
+		wing_sel = ""
+		if not u.is_empty() and u["id"] != w and not (u["side"] == "player" and u.get("squadron", false)):
+			var tid: String = u["id"]
+			if api.wing_order(w, tid):
+				hud.toast(("%s will strike %s until it is destroyed." if u["side"] == "enemy" else "%s will guard %s, hitting anything that comes near it.") % [_name(w), _name(tid)])
+		_refresh_ui()
+		return
+	if not u.is_empty() and u["side"] == "player" and u.get("squadron", false):
+		if api.has_method("wing_order"):
+			wing_sel = u["id"]
+			hud.toast("Wing selected. Click an enemy ship to strike it, or one of your ships to guard it.")
 		return
 	if not u.is_empty() and u["side"] == "player":
 		select(u["id"])
@@ -1779,6 +1847,15 @@ func _on_action(name: String, arg) -> void:
 			tips_off = true
 			hud.hide_tipcard()
 			_save_opts()
+		"command":
+			# the game asks for a second tap to confirm the once-per-battle Command
+			var now := Time.get_ticks_msec() / 1000.0
+			if now - cmd_armed_t > 3.0:
+				cmd_armed_t = now
+				hud.toast("Click Command again to give the order: %s" % _command_label())
+			else:
+				cmd_armed_t = -9.0
+				_cmd(func(): return api.command())
 		"menu":
 			_open_menu()
 		"menu_close":
@@ -1870,6 +1947,10 @@ func _refresh_ui() -> void:
 	var mine: bool = api.phase == "player" and not ended
 	var turn := "Battle over" if ended or api.phase == "over" else ("Your activation (%d ready)" % pend if mine else "Enemy activation")
 	var end_text := "End activation" if active != "" else ("Pass" if pend > 0 else "Continue")
+	if _classic():
+		end_text = "End turn"
+		turn = "Battle over" if ended or api.phase == "over" else ("Your turn" if mine else "Enemy turn")
+	hud.set_command(_command_label(), api.has_method("can_command") and mine and not busy and api.can_command())
 	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
 	hud.retreat_btn.visible = can_retreat and not ended
 	hud.retreat_btn.disabled = not (mine and not busy)
@@ -1887,6 +1968,14 @@ func _refresh_ui() -> void:
 		sv.set_selected(id == sel, Color(0.82, 0.65, 0.29))
 	_overlay()
 	_tutorial()
+
+
+func _command_label() -> String:
+	if R == null or R.RUN == null:
+		return "Command"
+	var A = R.ADMIRALS.get(str(R.RUN.get("admiral", "")), {})
+	var c = A.get("cmd") if A is Dictionary else null
+	return str(c.get("n", "Command")) if c is Dictionary else "Command"
 
 
 func _objective() -> String:

@@ -44,6 +44,11 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	var cls := str(u.get("cls", "Frigate")) if u.get("cls") != null else "Frigate"
 	L = HT.CLS_LEN.get(cls, 10.0) * HT.SHIP_K
 	code = HT.code_for(fac, cls)
+	var squad := cls == "Squadron" or bool(u.get("squadron", false))
+	if squad:
+		# a strike-craft wing: the game's craft hull for its kind (fighter, bomber, spore), drawn as a small formation
+		code = HT.AI_HULLS.get("craft|" + str(u.get("tpl", "fighter")), "S1_51")
+		L = HT.CLS_LEN["Squadron"] * HT.SHIP_K * 1.5
 	if u.has("code"):
 		code = str(u["code"])
 		L = float(u.get("L", L))
@@ -75,6 +80,12 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	_collect(hull)
 	_look()
 	_fit()
+	if squad:
+		for off in [Vector3(-L * 1.3, 0.3, L * 1.1), Vector3(-L * 1.3, -0.3, -L * 1.1), Vector3(-L * 2.5, 0.0, 0.0)]:
+			var wing: Node3D = hull.duplicate()
+			wing.position = hull.position + off
+			add_child(wing)
+			_collect(wing)
 	_engines()
 	_ring()
 	position = world_pos
