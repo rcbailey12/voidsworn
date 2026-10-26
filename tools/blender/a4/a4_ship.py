@@ -28,6 +28,11 @@ def build_hull(root, code, cfg):
     h = frame.load(root, code, cfg.get('yaw', 0))
     idx, rims, rep = cuts.apply(h['pos'], h['idx'], cfg.get('cuts', []), keep_islands=cfg.get('keep_islands', False))
     for r in rep: log(r)
+    h['fingers'] = []
+    if cfg.get('spires'):  # the A2 blob-sweep rebuild of melted thin spires (a2detail/spires.py): cut here, rebuilt crisp in main()
+        import spires
+        sp = cfg['spires']; h['fingers'] = spires.scan(h['pos'], idx, sp['zmin'], sp.get('box'), sp.get('exclude_x'))
+        idx = spires.cut(h['pos'], idx, h['fingers']); log('spires cut', len(h['fingers']))
     p, n, i, u = hullio.pn_refine(h['pos'], h['nor'], idx, [h['uv2']])
     uv = u[0].copy(); uv[:, 1] = 1 - uv[:, 1]
     o = blmesh.mesh_from_arrays('hull', p, i, nor=n, uvs={'atlas': uv})
@@ -228,6 +233,8 @@ def main():
     blmesh.reset(); hs_lib.PARTS.clear(); dress.PROPS.clear(); dress._mark[0] = 0
     hull, h, rims, tri0, tri1 = build_hull(root, code, cfg); log(code, fac, cls, 'hull tris', tri0, '->', tri1, 'chirality flip' if h['flipped'] else '')
     seed = sum(map(ord, code)); kit.setup([hull], cls, fac, seed)
+    if h['fingers']:
+        F_ = bakemat4.FAC[fac]; dress.build_spires(h['fingers'], cfg['spires'].get('style', 'gothic'), bakemat4.lin(F_['hull']), bakemat4.lin(F_['dark']), dict(rgh=F_['rgh'], met=F_['met']))
     covers = fill_holes(hull, cfg, fac); made, missed = run_kit(cfg, rims, covers); kit_parts = list(hs_lib.PARTS); log('kit parts', len(kit_parts), 'placements', made, 'missed', missed)
     mmap = blmesh.load_image_np(h['tex'][1])
     H = dress.Hull(hull, mmap, (0, 1, 0), (0, 0, 0)); H.asym = cfg.get('sym', 'bilateral') != 'bilateral'; H.snap = cfg.get('snap', .006)

@@ -10,6 +10,7 @@
 #                  or dict(name, dir='up'|'down'|'aft'|'fore'|'port'|'stbd', level, max_w, min_ratio, box)
 #   kit            hand-built parts, in order: (function, name, x, y, z, side, {kwargs}); kwargs: pair, aim, size, slot, wkind, arc, ...
 #                  functions: turret casemate spinal launcher emitter engine_at thruster_pod radiators antenna sensor_dome bridge tank bay
+#   spires         dict(zmin, box, exclude_x, style='gothic'|'mast'): melted thin spires found and rebuilt crisp (a2detail/spires.py)
 #   dress          surface-detail amount (0 off, 1 normal)
 #   breach, wreck  counts (default by size band)
 #   notes          the blob-sweep verdicts and taste calls, for the report
@@ -35,7 +36,7 @@ WEAPONS = {
     'craft|fighter': [('guns', 'T')], 'craft|bomber': [('bombs', 'T')], 'craft|spore': [('sporeb', 'T')],
     'obj|station': [], 'obj|transport': [], 'obj|beacon': [],
 }
-KEYS = {'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
+KEYS = {'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
        'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail'}
 SIZES = {'S', 'M', 'L', 'XL'}
