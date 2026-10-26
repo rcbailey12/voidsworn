@@ -10,7 +10,7 @@ hard point sizes and texture size. No invented ladder.
 
 | Band | Classes | Game length (CLS_LEN, world units) | Texture in the repo | Wreck chunks |
 |---|---|---|---|---|
-| S | Frigate, Squadron craft, relay beacon | 1.6 to 6.5 | 2048 (craft 1024) | 4 (craft 3) |
+| S | Frigate, Squadron craft, relay beacon | 1.6 to 6.5 | 1024 (craft 512) | 4 (craft 3) |
 | M | Destroyer, Cruiser, transport | 9.5 to 14.5 | 2048 | 6 |
 | L | Battleship, Carrier, Battle-barge | 16.5 to 26 | 2048 | 8 |
 | XL | Dreadnought, Super-dreadnought, Ark, Bio-titan, Tomb-ark, station | 26 to 31 | 2048 | 10 |
@@ -126,8 +126,9 @@ sails upright and read oddly in the game (BACKLOG section 2): the A4 Ithar pass 
 `tools/blender/a4/README.md`). The beacon O3_11 is taller than long (by design: a mast structure).
 
 **Budgets (no hard triangle caps, R and D5):** A4 ships land at about 2.5 to 4 times the source triangles (the A2 flagships were 4.1x),
-plus wreck chunks. Textures: one 2048 atlas per ship in the repo (base, ORM, normal, emissive; about 4 to 7 MB a ship), and a 4096 set on
-the PC for a max-detail option. Godot compresses them to VRAM formats on import.
+plus wreck chunks. Textures: one atlas per ship in the repo (base, ORM, normal, emissive as JPEG; 1024 for frigates and the beacon, 512 for craft,
+2048 for everything bigger), and a 4096 set on the PC for a max-detail option. Repo cost measured on the first frigate: ship glb 7.3 MB,
+wreck glb 4.3 MB, maps 2 to 7 MB. Godot compresses them to VRAM formats on import.
 
 ## 9. The cyan baked-result gate
 

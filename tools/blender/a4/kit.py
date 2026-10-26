@@ -308,6 +308,18 @@ def engine_at(name, p, n, r, L=None, axis=(-1, 0, 0), sink=.004):
     return engine(name, p - d * sink, r, L, axis=d)
 
 
+def orifice(name, p, n, r, axis=(-1, 0, 0)):
+    """Chorus propulsion: a muscular ring vent grown from the body with a glowing throat (no metal bells on a living ship). hp_eng at the
+    throat, pointing out along the vent (aft by default)"""
+    P = CTX['pal']; d = Vector(axis).normalized()
+    dress.blister(name + 'b', p - n * r * .25, n, r * 1.25, r * 1.25, r * .7, seg=18, vseg=8); tag(mul(P['base'], 1.1), rgh=.42, met=.02)
+    dress.torus(name + 'r', p + n * r * .35, n, r * .62, r * .2, seg=18, ring=8); tag(mul(P['base'], .75), rgh=.45, met=.02)
+    dress.blister(name + 'g', p + n * r * .3, n, r * .48, r * .48, r * .12, seg=14, vseg=6); tag(P['eng'], emit=1.0, rgh=.2, met=0)
+    up = Vector((0, 0, 1)); up = (up - d * up.dot(d)).normalized() if abs(d.z) < .9 else Vector((1, 0, 0))
+    add_hp(f'eng{len([h for h in HP if h["kind"] == "engine"])}', 'engine', p + n * r * .4, d, up, radius=r * .55, size='-', arc='-', slot=None, wkind='engine')
+    return p
+
+
 def thruster_pod(name, p, n, r):
     """small manoeuvring thruster on the hull (bellies, flanks): a block with a short nozzle pointing aft"""
     P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0)))

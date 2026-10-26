@@ -36,10 +36,10 @@ def setup(color='MATERIAL'):
     return sc
 
 
-def load_code(root, code, yaw=0):
+def load_code(root, code, yaw=0, roll=0):
     """the raw hull in the A4 working frame (frame.py: x bow, y port, z up, true chirality)"""
     import frame, blmesh
-    h = frame.load(root, code, yaw)
+    h = frame.load(root, code, yaw, roll=roll)
     return [blmesh.mesh_from_arrays(code, h['pos'], h['idx'], nor=h['nor'])]
 
 
@@ -165,7 +165,8 @@ def main():
             try:
                 import ships; yaw = ships.SHIPS.get(it, {}).get('yaw', ships.YAWS.get(it, 0))
             except Exception: pass
-        objs = load_glb(it) if glb else load_code(root, it, yaw)
+        roll = int(os.environ.get('ROLL', '0'))
+        objs = load_glb(it) if glb else load_code(root, it, yaw, roll)
         nm = os.path.splitext(os.path.basename(it))[0]
         render(objs, os.path.join(out, nm + '_look'), nm, 'glb' if glb else f'hulls_hi{" yaw " + str(yaw) if yaw else ""}')
         if '--close' in os.environ.get('LOOKOPT', ''): closeups(objs, os.path.join(out, nm + '_close'), nm)

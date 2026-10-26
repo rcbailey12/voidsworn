@@ -25,7 +25,7 @@ def log(*a): print('[a4]', *a, flush=True)
 
 
 def build_hull(root, code, cfg):
-    h = frame.load(root, code, cfg.get('yaw', 0))
+    h = frame.load(root, code, cfg.get('yaw', 0), roll=cfg.get('roll', 0))
     idx, rims, rep = cuts.apply(h['pos'], h['idx'], cfg.get('cuts', []), keep_islands=cfg.get('keep_islands', False))
     for r in rep: log(r)
     h['fingers'] = []

@@ -5,7 +5,8 @@
 #   fac, cls       faction and data.js class (the class sets part sizes through kit.CLS_LEN, and the weapon slots below)
 #   name           display name
 #   sym            'bilateral' (mirrored pairs) | 'corsair' (lopsided on purpose) | 'organic' (pairs where the body allows)
-#   yaw            the game's AI_HULL_YAW for side-on meshes
+#   yaw            the game's AI_HULL_YAW for side-on meshes (A4 adds 2: turned half round)
+#   roll           quarter turns about the bow axis (A4: hulls meshed lying on their side)
 #   cuts           AI parts taken out before refining (cuts.py): dict(name, box=(x0, x1, y0, y1, z0, z1), mirror, cover, pad, raise)
 #                  or dict(name, dir='up'|'down'|'aft'|'fore'|'port'|'stbd', level, max_w, min_ratio, box)
 #   kit            hand-built parts, in order: (function, name, x, y, z, side, {kwargs}); kwargs: pair, aim, size, slot, wkind, arc, ...
@@ -36,9 +37,9 @@ WEAPONS = {
     'craft|fighter': [('guns', 'T')], 'craft|bomber': [('bombs', 'T')], 'craft|spore': [('sporeb', 'T')],
     'obj|station': [], 'obj|transport': [], 'obj|beacon': [],
 }
-KEYS = {'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
+KEYS = {'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
-       'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail'}
+       'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice'}
 SIZES = {'S', 'M', 'L', 'XL'}
 
 

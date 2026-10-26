@@ -22,6 +22,14 @@ def yaw_game(p, yaw):
     return p
 
 
+def roll_game(p, roll):
+    """A4 addition: roll about the bow axis in quarter turns (game frame: y up, z port); +1 brings port (+z) up to +y"""
+    if not roll: return p
+    p = p.copy(); y = p[:, 1].copy(); z = p[:, 2].copy()
+    for _ in range(roll % 4): y, z = z, -y
+    p[:, 1] = y; p[:, 2] = z; return p
+
+
 def game_to_bl(p):
     p = np.asarray(p, np.float32); return np.stack([p[:, 0], p[:, 2], p[:, 1]], 1)
 
@@ -39,10 +47,10 @@ def signed_volume(p, idx):
     return float(np.einsum('ij,ij->i', a, np.cross(b, c)).sum() / 6.0)
 
 
-def load(root, code, yaw=0, folder='hulls_hi'):
+def load(root, code, yaw=0, folder='hulls_hi', roll=0):
     """hull in the Blender working frame with outward winding: dict(pos, nor, idx, uv2 (v-down), tex, flipped)"""
     h = hullio.load_hull(root, code, folder)
-    pos = game_to_bl(yaw_game(h['pos'], yaw)); nor = game_to_bl(yaw_game(h['nor'], yaw)); idx = h['idx'][:, ::-1].copy()
+    pos = game_to_bl(roll_game(yaw_game(h['pos'], yaw), roll)); nor = game_to_bl(roll_game(yaw_game(h['nor'], yaw), roll)); idx = h['idx'][:, ::-1].copy()
     flipped = False
     if signed_volume(pos, idx) < 0: idx = idx[:, ::-1].copy(); flipped = True  # open AI meshes: trust the volume sign, not the convention
     return dict(pos=pos, nor=nor, idx=idx, uv2=h['uv2'], tex=h['tex'], flipped=flipped)
