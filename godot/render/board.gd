@@ -7,7 +7,9 @@ const HT := preload("res://render/hull_table.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 
-var R = null                 # the rules (rules_bridge)
+var api = null               # the rules API (godot/rules/battle_api.gd): read through view() and world_info()
+var VW := {}                 # the view the board was built from
+var WI := {}                 # world_info()
 var ox := 0.0
 var oz := 0.0
 var cells: Array = []        # [{q, r}]
@@ -78,10 +80,14 @@ func key(q, r) -> String:
 
 
 func build(rules) -> void:
-	R = rules
+	api = rules
+	VW = api.view()
+	WI = api.world_info() if api.has_method("world_info") else {}
 	for c in get_children():
 		c.queue_free()
-	cells = R.boardHexes()
+	cells = []
+	for h in VW.get("hexes", []):
+		cells.append({"q": int(h["q"]) if h is Dictionary else int(h.q), "r": int(h["r"]) if h is Dictionary else int(h.r)})
 	# centre the board on the world origin (the game offsets by G.ox, G.oz the same way)
 	var lo := Vector2(1e9, 1e9)
 	var hi := Vector2(-1e9, -1e9)
@@ -173,15 +179,16 @@ var zone_of := {}
 
 func _zones() -> void:
 	zone_of.clear()
-	if not R.has_method("objZone"):
-		return
+	var zones: Dictionary = VW.get("zones", {}) if VW.get("zones") is Dictionary else {}
 	for h in cells:
-		var z = R.objZone(h.q, h.r)
+		var z = zones.get(key(h.q, h.r))
+		if zones.is_empty() and api.R != null and api.R.has_method("objZone"):
+			z = api.R.objZone(h.q, h.r)   # until view() carries the zones (asked of G1)
 		if z != null and ZONE_C.has(str(z)):
 			var k := key(h.q, h.r)
 			zone_of[k] = str(z)
 			base_fill[k] = ZONE_C[str(z)]
-	var o = R.B.get("obj")
+	var o = VW.get("obj")
 	if o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary:
 		base_fill[key(o["hex"]["q"], o["hex"]["r"])] = Color(0.82, 0.65, 0.29, 0.3)
 
@@ -221,7 +228,7 @@ func on_board(q: int, r: int) -> bool:
 func _rock_lib() -> Array:
 	var man = JSON.parse_string(FileAccess.get_file_as_string("res://gen/manifest.json")) if FileAccess.file_exists("res://gen/manifest.json") else null
 	var set_name := "RST"
-	var biome = R.B.get("biome")
+	var biome = WI.get("biome")
 	if biome is Dictionary and HT.ROCK_SET.has(biome.get("rock", "")):
 		set_name = HT.ROCK_SET[biome["rock"]]
 	var out: Array = []
@@ -236,8 +243,8 @@ func _terrain() -> void:
 	base_fill.clear()
 	rock_meshes = _rock_lib()
 	var rng := RandomNumberGenerator.new()
-	rng.seed = int(R.B.get("seed", 1))
-	var T: Dictionary = R.B["terrain"]
+	rng.seed = int(WI.get("seed", 1)) if WI.get("seed") != null else 1
+	var T: Dictionary = VW.get("terrain", {})
 	for k in T:
 		var typ: String = T[k]
 		var qr: PackedStringArray = k.split(",")
@@ -337,13 +344,14 @@ func _station(c: Vector3, rng: RandomNumberGenerator, size := 46.0) -> void:
 
 
 func _planet() -> void:
-	var meta = R.B.get("map")
+	var meta = VW.get("map")
 	if not (meta is Dictionary) or not meta.has("planet"):
 		return
 	var pl = meta["planet"]
 	if not (pl is Dictionary) or not pl.has("q"):
 		return
-	var rad: float = R.planetEdge(pl.get("R", 3)) if pl.has("R") else 40.0
+	# battle.js planetEdge: R * 1.5 * HEX_S + HEX_S / 2
+	var rad: float = float(pl.get("R", 3)) * 1.5 * HS + HS * 0.5 if pl.has("R") else 40.0
 	var sp := SphereMesh.new()
 	sp.radius = rad
 	sp.height = rad * 2.0

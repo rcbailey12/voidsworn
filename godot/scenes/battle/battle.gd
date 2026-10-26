@@ -377,7 +377,7 @@ func _begin(a) -> void:
 	inspect = ""
 	armed = -1
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
-	board.build(R)
+	board.build(api)
 	cam.bounds = board.bounds()
 	_post_quality(str(args.get("quality", "max")))
 	if world != null:
