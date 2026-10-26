@@ -164,6 +164,8 @@ function factionOfTpl(tpl){ const h=HULLS[tpl]; if(h&&h.fac) return h.fac; for(c
 function shipName(fac){ const used=new Set((RUN?RUN.fleet:[]).map(s=>s.name)); const base=!fac||fac==='voidsworn'?SHIP_NAMES:[...((typeof FNAMES!=='undefined'&&FNAMES[fac])||[]),...(MORE_SHIP_NAMES[fac]||[])]; const pool=(base.length?base:SHIP_NAMES).filter(n=>!used.has(n)); return pick(pool.length?pool:SHIP_NAMES); }
 function newCaptain(vet,fac){ const c={fac:fac||'voidsworn',name:capName(fac), xp:0, rank:0, perks:[], pending:0};
   if(vet){ c.xp=RANK_XP[1]; c.rank=1; c.perks=[pick(Object.keys(PERKS))]; } return c; }
+// reserved (customization, schema only): a ship's fit, {pod, module, trim} or null; nothing applies it yet
+function shipFit(ship){ return (ship&&ship.fit)||null; }
 function newShip(tpl, vet){ const fac=factionOfTpl(tpl); const s={uid:newId(), tpl, name:shipName(fac), mk:1, hp:0, mods:[], cap:newCaptain(vet,fac)}; s.hp=derive(s).maxHp; return s; }
 
 function sumFx(list){const o={}; for(const fx of list){ if(!fx) continue; for(const k in fx) o[k]=(o[k]||0)+fx[k]; } return o;}

@@ -61,7 +61,7 @@ async function botTurn(){ await swarmPhase('player');
 async function sim(S,sector){
   RUN={admiral:'vex',credits:0,cpCap:40,sector,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
   for(const t of S.player) RUN.fleet.push(newShip(t,true));
-  RUN.boons=(S.boons||process.env.BOONS||'').split(',').filter(Boolean).map(x=>({id:x.split(':')[0],r:+(x.split(':')[1]||0)})); RUN.aspect=S.aspect||process.env.ASPECT||null; RUN.flagUid=RUN.fleet[0].uid;
+  RUN.boons=(S.boons||process.env.BOONS||'').split(',').filter(Boolean).map(x=>({id:x.split(':')[0],r:+(x.split(':')[1]||0)})); RUN.aspect=S.aspect||process.env.ASPECT||null; RUN.flagUid=RUN.fleet[0].uid; simFit();
   startBattle({kind:S.kind,fac:S.fac||'hegemony',col:3,enemies:S.enemy.map(tpl=>({tpl}))});
   let r=0;
   if(process.env.ALT==='1'){ B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy'); // alternating activations, as the game plays by default
@@ -225,7 +225,7 @@ async function boonSim(n){ const S0=JSON.parse(process.env.FLEET||'{"tag":"base"
 // v41: each rule fix from the October 17 audits, checked directly
 async function ruleCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS ':'FAIL ')+n+(note?': '+note:''));
   const setup=(fleet,fac,enemies)=>{ RUN={fac:fac||'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:[],aspect:null};
-    for(const t of (fleet||['penitent','harrow','warden'])) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
+    for(const t of (fleet||['penitent','harrow','warden'])) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid; simFit();
     startBattle({kind:'battle',fac:'hegemony',col:3,dep:'line',obj:'rout',enemies:(enemies||['h_interdictor','h_picket','h_picket']).map(tpl=>({tpl}))}); for(const x of B.units) x.activated=false; return {P:alive('player').filter(u=>!u.isSq),E:alive('enemy').filter(u=>!u.isSq)}; };
   { const {E}=setup(); const t=E[1]; t.reanimate=false; t.hp=5; t.st.fire=2; t.st.fireDmg=10; startSideTurn('enemy'); await new Promise(r=>setTimeout(r,0)); ok('fire can destroy a ship',t.dead,'hp '+t.hp+' dead '+t.dead); }
   { const {P}=setup(); const u=P[0]; damageSection(u,'prow',9999,null); const off=u.weapons.filter(w=>w.arc==='F').every(w=>w.off>=99); damageSection(u,'eng',9999,null); const sp=u.st.engine; await runCommand('player',{id:'restore',n:'Restore'},0);
@@ -259,7 +259,7 @@ async function ruleCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
   const at=(u,q,r,f)=>{ u.q=q; u.r=r; if(f!=null) u.facing=f; }, clearT=()=>{ for(const k of Object.keys(B.terrain)) delete B.terrain[k]; };
   // seed replay: the same seed and the same scripted moves give the same opening rounds (and a different seed does not)
   { const fp=async seed=>{ RUN={fac:'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:[],aspect:null}; rndSeed(99);
-      for(const t of ['penitent','harrow','warden']) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
+      for(const t of ['penitent','harrow','warden']) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid; simFit();
       startBattle({kind:'battle',fac:'hegemony',col:3,obj:'rout',seed}); const s0=B.seed; for(let r=0;r<3&&!B.over;r++){ await botTurn(); if(B.over) break; B.side='enemy'; await turnStart('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await turnStart('player'); }
       return JSON.stringify([s0,B.shape,Object.keys(B.terrain).sort().join(';'),B.units.map(u=>[u.tpl,u.q,u.r,u.facing,Math.round(u.hp*10),u.dead?1:0,u.weapons.map(w=>w.fired?1:0).join('')]),B.log.map(x=>x.m)]); };
     const a=await fp(12345), b=await fp(12345), c=await fp(54321); ok('seed replay: same seed and moves give the same opening rounds',a===b&&a!==c,'fingerprint '+a.length+' chars'+(a===b?'':' (replay diverged)')+(a===c?' (different seed matched too)':'')); }
@@ -312,7 +312,7 @@ async function ruleCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
   console.log(out.join('\\n')); console.log(out.some(x=>x.startsWith('FAIL'))?'RULECHECK FAILED':'RULECHECK PASSED'); if(out.some(x=>x.startsWith('FAIL'))) process.exitCode=1; }
 async function boonCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS ':'FAIL ')+n+(note?': '+note:''));
   const setup=(boons,aspect,fleet,fac)=>{ RUN={fac:'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:boons.map(id=>({id,r:0})),aspect:aspect||null};
-    for(const t of (fleet||['penitent','harrow','warden'])) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
+    for(const t of (fleet||['penitent','harrow','warden'])) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid; simFit();
     startBattle({kind:'battle',fac:fac||'hegemony',col:3,dep:'line',obj:'rout',enemies:[{tpl:'h_interdictor'},{tpl:'h_picket'},{tpl:'h_picket'}]}); for(const x of B.units) x.activated=false; return {P:alive('player').filter(u=>!u.isSq),E:alive('enemy').filter(u=>!u.isSq)}; };
   const place=(u,q,r,f)=>{ u.q=q; u.r=r; if(f!=null) u.facing=f; };
   // ion lash
@@ -366,7 +366,7 @@ async function bossMatrix(n){ const S=+(process.env.BS||1), res={}, byBoss={}, b
   for(const [adm,A] of Object.entries(ADMIRALS).filter(([k])=>!ADMS||ADMS.includes(k))){ const fac=A.fac||'voidsworn'; let w=0,t=0,rd=0;
     for(const bf of RUN_FACTIONS.filter(f=>f!==fac)){ for(let i=0;i<n;i++){
       RUN={admiral:adm,fac,credits:0,cpCap:40,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:(process.env.BOONS||'').split(',').filter(Boolean).map(x=>({id:x,r:0})),patrons:[]};
-      for(const tp of A.start) RUN.fleet.push(newShip(equivHull(tp,fac),false)); RUN.flagUid=RUN.fleet[0].uid;
+      for(const tp of A.start) RUN.fleet.push(newShip(equivHull(tp,fac),false)); RUN.flagUid=RUN.fleet[0].uid; simFit();
       { const G2=+(process.env.GROW||0), ros=FACTIONS[fac].roster.filter(id=>!HULLS[id].unique&&(HULLS[id].cp||1)<=(S>=3?4:3)); let g=0; while(G2&&fleetCP()<G2&&g++<20){ const pk=pick(ros); if(fleetCP()+(HULLS[pk].cp||1)>G2+1) continue; RUN.fleet.push(newShip(pk,false)); } if(process.env.MK) RUN.fleet.forEach(sh=>{ sh.mk=+process.env.MK; sh.hp=derive(sh).maxHp; }); }
       startBattle({kind:'boss',fac:bf,col:6,dep:'line',obj:'rout',shape:pick(['ring','open','hourglass']),map:'random'}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
       while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
@@ -381,7 +381,7 @@ async function archMatrix(n){ const S=2, out={}, cnt={};
     for(const [adm,A] of Object.entries(ADMIRALS)){ const fac=A.fac||'voidsworn';
       for(const bf of RUN_FACTIONS.filter(f=>f!==fac)){ for(let i=0;i<n;i++){
         RUN={admiral:adm,fac,credits:0,cpCap:40,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
-        for(const tp of A.start) RUN.fleet.push(newShip(equivHull(tp,fac),false)); RUN.flagUid=RUN.fleet[0].uid;
+        for(const tp of A.start) RUN.fleet.push(newShip(equivHull(tp,fac),false)); RUN.flagUid=RUN.fleet[0].uid; simFit();
         { const ros=FACTIONS[fac].roster.filter(id=>!HULLS[id].unique&&(HULLS[id].cp||1)<=3); let g=0; while(fleetCP()<10&&g++<20){ const pk=pick(ros); if(fleetCP()+(HULLS[pk].cp||1)>11) continue; RUN.fleet.push(newShip(pk,false)); } }
         startBattle({kind:'battle',fac:bf,col:3,dep:'line',obj:'rout',shape:'open',map:'random',arch:arch==='none'?null:arch}); ships+=B.units.filter(x=>x.side==='enemy'&&!x.isSq).length; let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
         while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
@@ -398,7 +398,7 @@ async function fMatrix(n){ fidInstall(); const F=RUN_FACTIONS, T=+(process.env.C
   for(const pf of F){ out[pf]={}; for(const ef of F){ let w=0;
     for(let i=0;i<n;i++){ const adms=Object.keys(ADMIRALS).filter(a=>(ADMIRALS[a].fac||'voidsworn')===pf);
       RUN={admiral:process.env.NOADM?'none':pick(adms),fac:pf,credits:0,cpCap:60,sector:2,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
-      const pl=rf(pf), en=rf(ef); for(const t of pl) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
+      const pl=rf(pf), en=rf(ef); for(const t of pl) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid; simFit();
       startBattle({kind:'battle',fac:ef,col:3,enemies:en.map(tpl=>({tpl})),dep:'line',obj:'rout',shape:pick(Object.keys(SHAPES)),map:'random'}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
       while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
         while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
@@ -417,7 +417,7 @@ async function nemMatrix(n){ const out={}; const G=[0,7,12,18]; let fl=0;
   for(const S of [1,2,3]) for(const arm of ['plain','nem','nemNoWeak']){ let w=0,t=0,rd=0;
     for(let i=0;i<n;i++){ const fac=RUN_FACTIONS[i%6], adms=Object.keys(ADMIRALS).filter(a=>(ADMIRALS[a].fac||'voidsworn')===fac), adm=adms[(i/6|0)%adms.length];
       RUN={admiral:adm,fac,credits:0,cpCap:60,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
-      for(const tp of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(tp,fac),true)); RUN.flagUid=RUN.fleet[0].uid;
+      for(const tp of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(tp,fac),true)); RUN.flagUid=RUN.fleet[0].uid; simFit();
       { const ros=FACTIONS[fac].roster.filter(id=>!HULLS[id].unique&&(HULLS[id].cp||1)<=4); let g=0; while(fleetCP()<G[S]&&g++<30){ const pk=pick(ros); if(fleetCP()+(HULLS[pk].cp||1)>G[S]+1) continue; RUN.fleet.push(newShip(pk,true)); } }
       const ef=pick(RUN_FACTIONS.filter(f=>f!==fac)), keys=Object.keys(NEM_WEAK), ad=Object.keys(NEM_ADAPT);
       const NF=NEM_FAC[ef], bh=NF.beh, wk=keys.filter(k=>!(k==='anchor'&&(bh.noFlee||bh.revive))), sp=NEM_ADAPT_FAC[ef].special.id; // R42: a generated rival of that faction, as the campaign builds him
@@ -432,13 +432,15 @@ async function nemMatrix(n){ const out={}; const G=[0,7,12,18]; let fl=0;
   console.log('nemmatrix '+n+' per cell', JSON.stringify(out)); }
 // R41 arc unlocks: each arc hull variant against its base hull, paired seeds (the same battle with the base hull, then with the variant).
 // Fleet: the faction's first admiral's start fleet plus the test hull, as a second ship. VK=battle (sector 2 generated fleets, default) or boss (sector 1 flagships).
+// customization reserve: FIT='{"pod":"lance","module":null,"trim":"prow"}' puts that fit on the flagship of every sim run (inert until a fit resolver exists)
+function simFit(){ if(!process.env.FIT||!RUN||!RUN.fleet||!RUN.fleet[0]) return; try{ RUN.fleet[0].fit=JSON.parse(process.env.FIT); }catch(e){ console.log('bad FIT json'); } }
 async function varMatrix(n){ const kind=process.env.VK||'battle', S=kind==='boss'?1:2, out={};
   const ids=(process.env.VARS?process.env.VARS.split(','):Object.keys(HULL_VARIANTS).filter(id=>HULL_VARIANTS[id].arc));
   for(const vid of ids){ const V=HULL_VARIANTS[vid], fac=HULLS[V.base].fac, adm=Object.keys(ADMIRALS).find(a=>(ADMIRALS[a].fac||'voidsworn')===fac), foes=RUN_FACTIONS.filter(f=>f!==fac); const res={};
     for(const tpl of [V.base,vid]){ let w=0,hp=0,lost=0,rd=0,dealt=0,died=0;
       for(let i=0;i<n;i++){ const ef=foes[i%foes.length];
         RUN={admiral:adm,fac,credits:0,cpCap:60,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
-        for(const tp of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(tp,fac),true)); RUN.fleet.splice(1,0,newShip(tpl,true)); RUN.flagUid=RUN.fleet[0].uid;
+        for(const tp of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(tp,fac),true)); RUN.fleet.splice(1,0,newShip(tpl,true)); RUN.flagUid=RUN.fleet[0].uid; simFit();
         startBattle({kind:kind==='boss'?'boss':'battle',fac:ef,col:kind==='boss'?6:3,obj:'rout',shape:['open','ring','dense'][i%3],map:'random',dep:'line',seed:7000+i}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
         while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
           while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
@@ -469,7 +471,7 @@ async function runSim(n){ const agg={}, reach={1:0,2:0,3:0,won:0}; const add=(k,
   const facs=(process.env.FACS||'voidsworn,hegemony,corsair,chorus,ithar,deathless').split(',');
   for(let i=0;i<n;i++){ const fac=facs[i%facs.length], adms=Object.keys(ADMIRALS).filter(a=>(ADMIRALS[a].fac||'voidsworn')===fac), adm=process.env.ADM||adms[(i/facs.length|0)%adms.length];
     RUN={fac,foes:shuffle(RUN_FACTIONS.filter(f=>f!==fac)),admiral:adm,credits:345,cpCap:14,sector:1,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},fallen:[],boons:[],patrons:shuffle(Object.keys(PATRONS)).slice(0,4),aspect:pick(Object.keys(ASPECTS)),flagUid:null};
-    for(const t of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(t,fac),true)); RUN.cpCap=Math.max(RUN.cpCap,fleetCP()+3); RUN.flagUid=RUN.fleet[0].uid;
+    for(const t of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(t,fac),true)); RUN.cpCap=Math.max(RUN.cpCap,fleetCP()+3); RUN.flagUid=RUN.fleet[0].uid; simFit();
     let alive1=true;
     for(let s=1;s<=3&&alive1;s++){ RUN.sector=s; reach[s]++; const map=genSector(s); RUN.map=map;
       for(const col of map.cols){ if(!RUN.fleet.length){ alive1=false; break; } const nd=pick(col);
@@ -505,7 +507,7 @@ async function scenSim(n){ const SC={
   const hpf=+(process.env.HPF||.75), facs=(process.env.EF||'corsair').split(','), out={};
   for(const [name,S] of Object.entries(SC)){ let w=0,t=0,lost=0,rd=0,ecp=0;
     for(const ef of facs) for(let i=0;i<n;i++){ RUN={fac:'deathless',admiral:'sekhmar',credits:0,cpCap:17,sector:2,relics:['martyr','banner'],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},fallen:[],boons:[{id:'s_cap',r:0},{id:'d_bastion',r:0},{id:'s_ev',r:1}],patrons:['storm','rook','iron','ember'],aspect:'lancer',flagUid:null};
-      S.fleet.forEach((tp,j)=>{ const s=newShip(tp,true); s.mk=S.mk[j]||1; RUN.fleet.push(s); }); RUN.flagUid=RUN.fleet[0].uid; RUN.fleet.forEach(s=>{ s.hp=Math.round(derive(s).maxHp*hpf); });
+      S.fleet.forEach((tp,j)=>{ const s=newShip(tp,true); s.mk=S.mk[j]||1; RUN.fleet.push(s); }); RUN.flagUid=RUN.fleet[0].uid; simFit(); RUN.fleet.forEach(s=>{ s.hp=Math.round(derive(s).maxHp*hpf); });
       const f=await rsFight({kind:'battle',fac:ef,col:0,obj:'rout',shape:process.env.SHAPE||'rift',map:'belt',dep:'flank'}); w+=f.win?1:0; t++; lost+=f.lost; rd+=f.rounds; ecp+=f.ecp; }
     out[name]='win '+Math.round(w/t*100)+'%, ships lost '+(lost/t).toFixed(1)+', rounds '+(rd/t).toFixed(1)+', enemy cp '+(ecp/t).toFixed(1); }
   console.log('SCEN '+JSON.stringify(out,null,1)); }
@@ -535,7 +537,7 @@ async function accCheck(n){ const acc={}, dmg={}; let cur=null;
   const _a=applyHit; applyHit=function(att,w,t,d,q){ const r=_a(att,w,t,d,q); if(!t.isSq){ const k=t.fac+' hull hit by '+(att.isSq?'craft':w.k); dmg[k]=(dmg[k]||0)+r.hull; } return r; };
   const fleets={deathless:['d_harvester','d_harvester_t','d_scythe','d_scythe'],voidsworn:['penitent','harrow','harrow','warden'],hegemony:['h_vanguard','h_interdictor','h_picket','h_picket'],ithar:['i_song','i_blade','i_wisp','i_wisp'],chorus:['b_razor','b_spitter','b_drone','b_drone'],corsair:['c_marauder','c_reaver','c_raider','c_raider']};
   const res={}; for(const [pf,fl] of Object.entries(fleets)){ let w=0;
-    for(let i=0;i<n;i++){ RUN={fac:pf,admiral:'vex',credits:0,cpCap:20,sector:1,relics:[],inventory:[],fleet:fl.map(t=>newShip(t,true)),stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},fallen:[],boons:[],patrons:[],flagUid:null}; RUN.flagUid=RUN.fleet[0].uid;
+    for(let i=0;i<n;i++){ RUN={fac:pf,admiral:'vex',credits:0,cpCap:20,sector:1,relics:[],inventory:[],fleet:fl.map(t=>newShip(t,true)),stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},fallen:[],boons:[],patrons:[],flagUid:null}; RUN.flagUid=RUN.fleet[0].uid; simFit();
       const ef=process.env.EF||'corsair'; if(ef===pf) continue; const f=await rsFight({kind:'elite',fac:ef,col:4,obj:'rout',shape:'open',map:'belt'}); w+=f.win?1:0; }
     res[pf]=Math.round(w/n*100)+'%'; }
   console.log('WIN vs '+(process.env.EF||'corsair')+' elite: '+JSON.stringify(res));
@@ -548,7 +550,7 @@ async function scen2(n){ const SC={
   'Harvester + tomb-turret (no Mk) + Scythe':{fleet:['d_harvester','d_harvester_t','d_scythe'],mk:[1,1,1]}};
   const out={}; for(const [name,S] of Object.entries(SC)){ for(const asp of ['lancer','bulwark','ram']){ let w=0,lost=0,rd=0,ecp=0;
     for(let i=0;i<n;i++){ RUN={fac:'deathless',admiral:'sekhmar',credits:0,cpCap:14,sector:1,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},fallen:[],boons:[{id:'e_kindle',r:1},{id:'a_long',r:2}],patrons:['iron','rook','star','ember'],aspect:asp,flagUid:null};
-      S.fleet.forEach((tp,j)=>{ const s=newShip(tp,true); s.mk=S.mk[j]||1; RUN.fleet.push(s); }); RUN.flagUid=RUN.fleet[0].uid; RUN.fleet.forEach(s=>{ s.hp=Math.round(derive(s).maxHp*.85); });
+      S.fleet.forEach((tp,j)=>{ const s=newShip(tp,true); s.mk=S.mk[j]||1; RUN.fleet.push(s); }); RUN.flagUid=RUN.fleet[0].uid; simFit(); RUN.fleet.forEach(s=>{ s.hp=Math.round(derive(s).maxHp*.85); });
       const f=await rsFight({kind:'elite',fac:'corsair',col:4,obj:'intercept',shape:'dense',map:'storm'}); w+=f.win?1:0; lost+=f.lost; rd+=f.rounds; ecp+=f.ecp; }
     out[name+' / '+asp]='win '+Math.round(w/n*100)+'%, lost '+(lost/n).toFixed(1)+', rounds '+(rd/n).toFixed(1)+', enemy cp '+(ecp/n).toFixed(1); } }
   console.log('SCEN2 '+JSON.stringify(out,null,1)); }

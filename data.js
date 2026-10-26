@@ -567,7 +567,14 @@ Object.assign(HULL_VARIANTS,{
   i_carrier_a:{base:'i_carrier',arc:'ithar',n:'Archive wraithcarrier',d:'Three wings and a flak turret instead of its lance.',w:[['turret','T'],['flak','T']],mod:{hangar:3,sh:30},cost:0},
   d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Jackal court guard',d:'Both gauss guns on turrets, a gauss sentry, 10 more hull.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],mod:{hp:120},cost:0}});
 const ARC_VARIANT=Object.fromEntries(Object.entries(HULL_VARIANTS).filter(([,v])=>v.arc).map(([id,v])=>[v.arc,id]));
+// Customization reserve (Oct 26, customization brainstorm section 6; schema only, nothing reads these for rules yet).
+// Variant rows: base (parent hull id: the variant inherits its model, sections and sounds), cost (renown; 0 with arc = earned by finishing that story arc), arc.
+// Ship instance fit (reserved field on a RUN.fleet ship, absent until used): ship.fit = {pod: weapon id or null, module: module id or null, trim: trim id or null}.
+// A ship's weapons and numbers still come only from HULLS[ship.tpl] through derive(); a future fit resolver applies ship.fit on top, flagship only.
+const FIT_SLOTS={pod:'one swappable weapon pod (flagship only; its spinal weapon stays)',module:'one module slot (flagship only)',trim:'one of four zero-sum section trims (flagship only)'};
 for(const [id,v] of Object.entries(HULL_VARIANTS)){ const b=HULLS[v.base]; HULLS[id]=Object.assign({},b,{n:v.n,w:v.w,variant:id,base:v.base},v.mod||{}); if(HULLS[id].ab===null) delete HULLS[id].ab; }
+// Faction weapon pool tags: every weapon id a faction's own hulls carry (variants included), so a pod pool can be filtered by faction from day one.
+const FAC_WPOOL=Object.fromEntries(Object.keys(FACTIONS).map(f=>[f,[...new Set(Object.values(HULLS).filter(h=>h.fac===f).flatMap(h=>(h.w||[]).map(x=>x[0])))].sort()]));
 // Admiral mastery: every admiral levels up as you fly with them, in any faction
 const MASTERY_XP=[0,6,16,30,50];
 const MASTERY_PERKS=[
