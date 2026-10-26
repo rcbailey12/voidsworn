@@ -35,6 +35,11 @@ var events_on := true
 func emit(e: Dictionary) -> void:
 	if events_on: events.append(e)
 func _uid(u): return u["id"] if u is Dictionary and u.get("id") != null else null
+# Per-action hash points for the parity test: called exactly where the JS game calls a presentation hook (animPath, animWeapon,
+# animExplode, fxRam, fxBoard, animNova) and after each ability, order and turn-start tick. The game leaves hook_cb null.
+var hook_cb = null
+func hook(kind: String, u = null) -> void:
+	if hook_cb != null: hook_cb.call(kind, u)
 
 # ======================= loading =======================
 func load_tables(path: String) -> String:
@@ -1125,6 +1130,7 @@ func startSideTurn(side) -> int:
 		for u in B["units"]:
 			if not jt(u.get("dead")) and u["side"] == side and u["shMax"] > 0: u["sh"] = [0, 0, 0, 0]
 	if burned: checkEnd()
+	hook("tick " + String(side))
 	return deaths.size()
 func queueDeath(u, dq) -> void:
 	killUnit(u, null, true)
@@ -1229,7 +1235,7 @@ func _commit(u, state, ctx: Dictionary) -> void:
 func moveUnit(u, state, opts = null) -> void:
 	if not inThisBattle(u): return
 	var live = liveFrom(null); var ctx = {"committed": false}
-	emit({"t": "move", "unit": u["id"], "path": state.path.duplicate(true), "late_fire": opts != null and opts.get("onLate") != null})
+	emit({"t": "move", "unit": u["id"], "path": state.path.duplicate(true), "late_fire": opts != null and opts.get("onLate") != null}); hook("move", u)
 	if opts != null and opts.get("onLate") != null:
 		if live.call():
 			_commit(u, state, ctx); opts["onLate"].call()
@@ -1489,7 +1495,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 					shots[i] = false; d["intercepts"] = d["intercepts"] - 1; shot += 1
 				i += 1
 		if shot != 0: res["pd"] = shot
-	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "quad": quad})
+	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "quad": quad}); hook("fire", u)
 	if B != null: B["prog"] = z0(B.get("prog")) + 1
 	if not live.call():
 		if not jt(opts.get("intercept")) and is_same(B, b0):
@@ -1551,6 +1557,7 @@ func ramUnit(u) -> bool:
 	var info = ramInfo(u)
 	if info == null: return false
 	var t = info.t; var live = liveFrom(u)
+	hook("move", u)
 	if not live.call(): return false
 	for p in info.path:
 		u["q"] = p.q; u["r"] = p.r
@@ -1558,7 +1565,7 @@ func ramUnit(u) -> bool:
 	u["mp"] = 0; u["turnsLeft"] = 0; u["rammed"] = true
 	if jt(B.get("usage")) and u["side"] == "player": np("player ram usage")
 	var e = ramEstimate(u, t, info.path.size())
-	emit({"t": "ram", "unit": u["id"], "target": t["id"], "path": info.path.duplicate(true), "dmg": e.dmg, "recoil": e.recoil, "soak": e.soak, "section": e.sec})
+	emit({"t": "ram", "unit": u["id"], "target": t["id"], "path": info.path.duplicate(true), "dmg": e.dmg, "recoil": e.recoil, "soak": e.soak, "section": e.sec}); hook("ram", u)
 	if not live.call() or jt(t.get("dead")): return false
 	var qd = shieldQuad(t, u)
 	if jt(e.soak) and t.get("sh") != null: t["sh"][qd] = max(0, t["sh"][qd] - e.soak * 1.5)
@@ -1595,6 +1602,7 @@ func boardUnit(u, t) -> bool:
 	u["boarded"] = true; u["repel"] = true; u["mp"] = 0
 	for w in u["weapons"]: w["fired"] = true
 	var live = liveFrom(u)
+	hook("board", u)
 	if not live.call() or jt(t.get("dead")): return false
 	var a = u["crew"] * (BOARD_MULT[u["fac"]] if jt(BOARD_MULT.get(u["fac"])) else 1.0) * (1.0 + z0(g(u.get("fx"), "boardPct"))) * (0.75 + rnd() * 0.5)
 	var d = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5) * (0.75 + rnd() * 0.5)
@@ -1662,7 +1670,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		by["kills"] = by["kills"] + 1
 		if jt(by.get("parent")): pass   # p.kills += 0
 	if by != null and jt(by.get("isSq")): np("feast boon")
-	emit({"t": "death", "unit": t["id"], "cause": t.get("killCause") if t.get("killCause") != null else "blast", "by": _uid(by)})
+	emit({"t": "death", "unit": t["id"], "cause": t.get("killCause") if t.get("killCause") != null else "blast", "by": _uid(by)}); hook("death", t)
 	var tail = func():
 		var cb = ownerFx(by).get("chainBoom") if (by != null and not jt(t.get("isSq")) and by["side"] != t["side"]) else 0
 		if jt(cb): np("chainBoom boon")
@@ -1761,6 +1769,8 @@ func canOrder(u, o) -> bool:
 		return true
 	return false
 func giveOrder(u, o) -> void:
+	_giveOrder_raw(u, o); hook("order", u)
+func _giveOrder_raw(u, o) -> void:
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ord"][o] = z0(B["usage"]["ord"].get(o)) + 1
 	if not canOrder(u, o): return
 	u["order"] = o
@@ -1907,6 +1917,8 @@ func launchHexes(u) -> Array:
 		if onBoard(h.q, h.r) and not blocks(terr(h.q, h.r)) and not occ.has(hkey(h.q, h.r)): o.append(h)
 	return o
 func useAbility(u, arg = null) -> bool:
+	var r = _useAbility_raw(u, arg); hook("ability", u); return r
+func _useAbility_raw(u, arg = null) -> bool:
 	if not inThisBattle(u) or not canAbility(u): return false
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ab"][u["ab"]] = z0(B["usage"]["ab"].get(u["ab"])) + 1
 	var a = u["ab"]
@@ -1946,6 +1958,7 @@ func useAbility(u, arg = null) -> bool:
 	if a == "nova":
 		var c = arg["hex"]
 		var live = liveFrom(u)
+		hook("nova", u)
 		if not live.call(): return false
 		u["abCd"] = abilityCd(u)
 		var hitList = []

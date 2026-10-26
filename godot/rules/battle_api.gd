@@ -26,15 +26,19 @@ func new_battle_scenario(sc, seed_override: int = -1) -> void:
 	R.RUN = run
 	for t in S.fleet: run["fleet"].append(R.newShip(t, false))
 	run["flagUid"] = run["fleet"][0]["uid"]
-	var en := []
-	for tpl in S.enemies: en.append({"tpl": tpl})
-	new_battle(run, {"kind": S.kind, "fac": S.fac, "col": 3, "seed": seed, "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep, "enemies": en})
+	var cfg := {"kind": S.kind, "fac": S.fac, "col": 3, "seed": seed, "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep}
+	if S.get("enemies") != null:
+		var en := []
+		for tpl in S.enemies: en.append({"tpl": tpl})
+		cfg["enemies"] = en
+	new_battle(run, cfg)
 
 # A battle from a campaign run (the RUN dictionary: admiral, fac, sector, fleet of ships, relics, boons, ...) and a battle config
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	R.RUN = run; R.events.clear(); _queue.clear()
 	R.startBattle(cfg)
+	R.hook("start")
 	_prep()
 
 func _prep() -> void: # ui3d.js prepBattle, alternating mode
@@ -154,6 +158,7 @@ func end_activation(id = null) -> void:
 		var u = unit(id)
 		if u != null and u["side"] == "player" and not R.jt(u.get("isSq")) and not R.jt(u.get("activated")): u["activated"] = true
 	B["sel"] = null; B["reach"] = null; B["armed"] = null; B["mode"] = null
+	R.hook("end activation")
 	_ai_step_begin()
 
 # ---------------- the enemy side ----------------
@@ -170,7 +175,7 @@ func step() -> Array:
 		else:
 			R.emit({"t": "activation", "unit": u["id"], "side": "enemy"})
 			if R.jt(u.get("isSq")): R.np("enemy squadron activation")
-			R.aiUnit(u); u["activated"] = true
+			R.aiUnit(u); u["activated"] = true; R.hook("activation", u)
 		if _queue.size() == 0: _end_batch()
 	var e = take_events()
 	_mutex.unlock()
@@ -226,6 +231,7 @@ func _next_round() -> void: # ui3d.js nextRound
 	for u in R.alive():
 		if R.jt(u.get("isSq")): R.np("squadron round-start phase")
 	B["busy"] = false; phase = "player"
+	R.hook("round")
 	R.emit({"t": "side", "side": "player"})
 func _finish() -> void:
 	phase = "over"; _queue.clear(); R.emit({"t": "end", "result": R.B["over"]})

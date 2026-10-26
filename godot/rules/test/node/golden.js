@@ -19,25 +19,55 @@ global.require = require; global.Buffer = Buffer;
 global.window = {}; global.document = undefined; global.performance = { now: () => 0 };
 
 const HARNESS = String.raw`
+// ---- presentation stubs (as sim3d.js), each one a per-action hash point ----
+var HOOK=null; function hook(kind,u){ if(HOOK) HOOK(kind,u); }
 function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){}
-async function animPath(u,path,opt){ if(opt&&opt.onLate) await opt.onLate(); }
+async function animPath(u,path,opt){ hook('move',u); if(opt&&opt.onLate) await opt.onLate(); }
 async function animMove(u,q,r,f){ u.q=q; u.r=r; u.facing=f; } async function animRotate(u,f){ u.facing=f; }
-async function animWeapon(){} async function animExplode(){} async function animNova(){} async function fxRam(){} async function fxBoard(){}
+async function animWeapon(u){ hook('fire',u); } async function animExplode(t){ hook('death',t); } async function animNova(u){ hook('nova',u); } async function animBlink(u){ hook('blink',u); }
+async function fxRam(u){ hook('ram',u); } async function fxBoard(u){ hook('board',u); }
 function onCapture(){} function fxShieldBreak(){} function fxWithdraw(){}
 SPEED=0;
+// actions with no presentation hook of their own get one after they finish
+{ const _ua=useAbility; useAbility=async function(u,a){ const r=await _ua(u,a); hook('ability',u); return r; };
+  const _go=giveOrder; giveOrder=function(u,o){ const r=_go(u,o); hook('order',u); return r; };
+  const _st=startSideTurn; startSideTurn=function(side){ const r=_st(side); hook('tick '+side,null); return r; }; }
 
-// ---- the bot both scenarios use for your side: sim3d.js botUnit without commands, abilities or tactics (kept small on purpose) ----
-async function pBot(u){
+// ---- the game's turn flow (ui3d.js guard, act, endActivation, aiStep, nextRound), alternating activations, no UI ----
+function pendingP(){ return alive('player').filter(u=>!u.isSq&&!u.activated&&u!==B.activeUnit); }
+function pendingE(){ return alive('enemy').filter(u=>!u.isSq&&!u.activated); }
+function canUseF(u){ if(!B.alt||u.isSq) return true; if(u.activated) return false; return !B.activeUnit||B.activeUnit===u; }
+function guardF(u){ if(!u||u.side!=='player') return false; if(canUseF(u)){ if(B.alt&&!u.isSq&&!B.activeUnit) B.activeUnit=u; return true; } return false; }
+function isDoneRawF(u){ if(u.dead||u.braced) return true; return !(u.mp>0) && !u.weapons.some(w=>weaponReady(w)&&alive('enemy').some(t=>canFire(u,w,t))); }
+async function actF(fn){ if(!B||B.busy) return; B.busy=true; await fn(); B.busy=false; if(B.over) return; if(B.alt&&B.activeUnit&&(B.activeUnit.dead||isDoneRawF(B.activeUnit))) await endActivationF(); }
+async function endActivationF(manual,sel){ if(!B||B.over||B.side!=='player'||(B.busy&&manual)) return;
+  if(B.activeUnit){ B.activeUnit.activated=true; B.activeUnit=null; } else if(manual&&sel&&sel.side==='player'&&!sel.isSq&&!sel.activated){ sel.activated=true; }
+  B.sel=null; B.reach=null; B.armed=null; B.mode=null; hook('end activation',null); await aiStepF(); }
+var TM=null, SNAPMS=0;
+async function aiStepF(){ if(!B||B.over) return; const pe=pendingE(), pp=pendingP();
+  if(pe.length){ B.busy=true; B.side='enemy'; const sqs=alive('enemy').filter(u=>u.isSq&&!u.activated); const batch=pp.length?[aiPickActivation(pe.sort((a,b)=>b.speed-a.speed))]:pe;
+    for(const u of [...sqs,...batch]){ if(B.over) break; const s0=SNAPMS, t0=process.hrtime.bigint(); await aiUnit(u); const ms=Number(process.hrtime.bigint()-t0)/1e6-(SNAPMS-s0); if(!u.isSq&&TM){ TM.acts.push({round:B.round,ms}); TM.rounds[B.round]=(TM.rounds[B.round]||0)+ms; } u.activated=true; hook('activation',u); }
+    B.aiActive=null; B.side='player'; B.busy=false; if(B.over) return; }
+  if(!pendingP().length&&!pendingE().length){ await nextRoundF(); return; }
+  if(!pendingP().length){ await aiStepF(); return; } }
+async function nextRoundF(){ if(!B||B.over) return; B.round++; for(const x of B.units) x.activated=false; B.activeUnit=null;
+  B.busy=true; const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2; if(B.over){ B.busy=false; return; }
+  B.busy=true; await swarmPhase('player'); if(!B.over) await swarmPhase('enemy'); B.busy=false; hook('round',null); }
+
+// ---- your side's bot: sim3d.js botUnit without commands, abilities or tactics, through the game's command path ----
+async function pBotF(u){
   if(B.over||u.dead) return;
   const foes=alive('enemy'); if(!foes.length) return;
   const {states}=computeReach(u); let best=null,bs=-1e9;
   for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3); if(sc>bs){bs=sc;best=s;} }
-  if(best&&best.path.length) await moveUnit(u,best);
-  for(let i=0;i<u.weapons.length;i++){ let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt) await fireWeapon(u,i,bt); if(B.over) return; }
+  if(best&&best.path.length&&guardF(u)) await actF(()=>moveUnit(u,best));
+  for(let i=0;i<u.weapons.length;i++){ if(B.over||B.side!=='player'||u.activated) break; let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt&&guardF(u)) await actF(()=>fireWeapon(u,i,bt)); }
+  if(!B.over&&B.side==='player'&&!u.activated) await endActivationF(true,u);
 }
 
 // ---- canonical state ----
-const SKIP_U={t:1,ship:1}, SKIP_B={units:1,log:1,cfg:1};
+// B.prog is the UI's busy-watchdog step counter: no rule reads it, and its increments interleave with JS microtasks around fire-on-the-move, so it stays out of the hash
+const SKIP_U={t:1,ship:1}, SKIP_B={units:1,log:1,cfg:1,prog:1};
 function canon(v,top){
   if(v===null||v===undefined) return 'null';
   if(typeof v==='boolean') return v?'true':'false';
@@ -49,27 +79,22 @@ function canon(v,top){
   const ks=Object.keys(v).filter(k=>v[k]!==null&&v[k]!==undefined&&typeof v[k]!=='function'&&!(top==='u'&&SKIP_U[k])&&!(top==='b'&&SKIP_B[k])).sort();
   return '{'+ks.map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}';
 }
-function snap(turn,actor){ const units=B.units.map(u=>canon(u,'u')).join(','), s='{"b":'+canon(B,'b')+',"units":['+units+']}';
-  return {turn,round:B.round,actor:actor||'',rng:RNG_S>>>0,hash:require('crypto').createHash('sha256').update(s).digest('hex'),state:s}; }
+function snap(turn,actor){ const t0=process.hrtime.bigint(); const units=B.units.map(u=>canon(u,'u')).join(','), s='{"b":'+canon(B,'b')+',"units":['+units+']}';
+  const r={turn,round:B.round,actor:actor||'',rng:RNG_S>>>0,hash:require('crypto').createHash('sha256').update(s).digest('hex'),state:s}; SNAPMS+=Number(process.hrtime.bigint()-t0)/1e6; return r; }
 
-// ---- scenarios (data/scenarios.json, read by both sides) ----
+// ---- scenarios (scenarios.json, read by both sides); a record after every action, activation and round ----
 async function runScenario(S){
   UID=1; rndSeed(S.seed);
   RUN={admiral:S.admiral,fac:'voidsworn',credits:0,cpCap:40,sector:S.sector,relics:[],inventory:[],fleet:[],boons:[],patrons:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
   for(const t of S.fleet) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
-  startBattle({kind:S.kind,fac:S.fac,col:3,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies.map(tpl=>({tpl}))});
-  const rec=[snap(0,'start')]; let turn=0; const TM={acts:[],rounds:{}}; // enemy think time per activation (aiUnit only: no snapshot, no startup)
-  B.alt=true; for(const x of B.units) x.activated=false; { const d=startSideTurn('enemy'); if(d) await d; } rec.push(snap(++turn,'round 1'));
-  for(let r=0;!B.over&&r<S.rounds;r++){ let g=0;
-    while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
-      if(pp.length){ await pBot(pp[0]); pp[0].activated=true; rec.push(snap(++turn,pp[0].id)); }
-      const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe;
-      for(const u of batch){ if(B.over) break; const t0=process.hrtime.bigint(); await aiUnit(u); const ms=Number(process.hrtime.bigint()-t0)/1e6; TM.acts.push({turn:turn+1,round:B.round,ms}); TM.rounds[B.round]=(TM.rounds[B.round]||0)+ms; u.activated=true; rec.push(snap(++turn,u.id)); } }
-    if(B.over) break; B.round++; for(const x of B.units) x.activated=false;
-    // the game's round start (ui3d.js nextRound): both sides tick, then the deaths those ticks caused are awaited
-    const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2;
-    rec.push(snap(++turn,'round '+B.round)); }
-  rec.push(snap(++turn,'end '+(B.over||'none'))); rec.timing=TM; return rec; }
+  const rec=[]; let turn=0; TM={acts:[],rounds:{}}; SNAPMS=0;
+  HOOK=(kind,u)=>{ if(B) rec.push(snap(turn++,kind+(u?' '+u.id:''))); };
+  startBattle({kind:S.kind,fac:S.fac,col:3,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies?S.enemies.map(tpl=>({tpl})):undefined});
+  hook('start',null);
+  B.alt=true; for(const x of B.units) x.activated=false; { const d=startSideTurn('enemy'); if(d) await d; }
+  let g=0;
+  while(!B.over&&B.round<=S.rounds&&g++<2000){ const u=pendingP()[0]; if(u) await pBotF(u); else await endActivationF(true,null); }
+  hook('end '+(B.over||'none'),null); HOOK=null; rec.timing=TM; return rec; }
 `;
 
 const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));

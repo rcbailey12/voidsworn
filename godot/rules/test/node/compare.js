@@ -39,5 +39,5 @@ for (let i = 0; i < Math.max(N.length, G.length); i++) {
   }
 }
 const last = N[N.length - 1];
-console.log(`${N.length} turn records identical (hash and PRNG state at every activation), result: ${last.actor}`);
+console.log(`${N.length} records identical (state hash and PRNG state after every action, activation and round), result: ${last.actor}`);
 console.log('PASS');

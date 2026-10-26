@@ -6,6 +6,7 @@
 extends SceneTree
 const JSM = preload("res://rules/jsm.gd")
 const RulesScript = preload("res://rules/rules.gd")
+const APIScript = preload("res://rules/battle_api.gd")
 var R
 
 func _init() -> void:
@@ -44,7 +45,7 @@ func math(path: String) -> int:
 # ---------------- scenario harness (golden.js) ----------------
 var stopped := false
 const SKIP_U := {"t": 1, "ship": 1}
-const SKIP_B := {"units": 1, "log": 1, "cfg": 1}
+const SKIP_B := {"units": 1, "log": 1, "cfg": 1, "prog": 1}   # B.prog: the UI busy-watchdog counter, not a rule (see golden.js)
 func snap(turn: int, actor: String) -> Dictionary:
 	if R.not_ported != "" and not stopped:
 		stopped = true; printerr("NOT PORTED: this battle reached a rule the port does not carry yet: ", R.not_ported)
@@ -53,6 +54,8 @@ func snap(turn: int, actor: String) -> Dictionary:
 	var s := "{\"b\":" + JSM.canon(B, "b", SKIP_B) + ",\"units\":[" + ",".join(parts) + "]}"
 	return {"turn": turn, "round": int(B["round"]), "actor": actor, "rng": JSM.rng_u32(), "hash": JSM.sha256(s), "state": s}
 
+# your side's bot, through the same API calls the scene uses (golden.js pBotF)
+var api
 func pBot(u) -> void:
 	var B = R.B
 	if R.jt(B.get("over")) or R.jt(u.get("dead")): return
@@ -68,72 +71,58 @@ func pBot(u) -> void:
 		if sc > bs:
 			bs = sc; best = s
 	R.eval_end()
-	if best != null and best.path.size() > 0: R.moveUnit(u, best)
+	if best != null and best.path.size() > 0: api.move(u["id"], best)
+	run_enemy()
 	for i in range(u["weapons"].size()):
-		var bt: Variant = null; var bv = 0.0
+		if R.jt(R.B.get("over")) or R.B["side"] != "player" or R.jt(u.get("activated")): break
+		var bt = null; var bv = 0.0
 		for t in R.alive("enemy"):
 			if R.canFire(u, u["weapons"][i], t):
 				var e = R.expectedVs(u, u["weapons"][i], t); var v = e.hull + e.shield * 0.3 + (20.0 if e.hull >= t["hp"] else 0.0)
 				if v > bv:
 					bv = v; bt = t
-		if bt != null: R.fireWeapon(u, i, bt)
-		if R.jt(R.B.get("over")): return
+		if bt != null: api.fire(u["id"], i, bt["id"])
+		run_enemy()
+	if not R.jt(R.B.get("over")) and R.B["side"] == "player" and not R.jt(u.get("activated")): api.end_activation(u["id"])
+	run_enemy()
+
+var tm_acts := []; var tm_rounds := {}; var snap_us := 0
+func run_enemy() -> void: # the enemy side's steps, timed without the hash records
+	while api.phase == "enemy":
+		var s0 := snap_us; var t0 := Time.get_ticks_usec(); var r = int(R.B["round"])
+		var q = api._queue[0] if api._queue.size() > 0 else null
+		api.step()
+		var ms := (Time.get_ticks_usec() - t0 - (snap_us - s0)) / 1000.0
+		if q != null and not R.jt(q.get("isSq")):
+			tm_acts.append({"round": r, "ms": ms}); tm_rounds[str(r)] = float(tm_rounds.get(str(r), 0.0)) + ms
 
 func scenario(name: String, out: String, seed_override: int = -1) -> int:
-	R = RulesScript.new()
-	var err = R.load_tables("res://rules/data/tables.json")
+	api = APIScript.new()
+	var err = api.load_rules()
 	if err != "":
 		printerr(err); return 1
+	R = api.R
 	var all = JSON.parse_string(FileAccess.get_file_as_string("res://rules/test/scenarios.json"))
 	if not all.has(name):
 		printerr("unknown scenario ", name); return 1
-	var S = all[name]
+	var S = all[name].duplicate(true)
 	if seed_override >= 0: S.seed = seed_override
-	R.UID = 1; JSM.rnd_seed(int(S.seed))
-	R.RUN = {"admiral": S.admiral, "fac": "voidsworn", "credits": 0, "cpCap": 40, "sector": int(S.sector), "relics": [], "inventory": [], "fleet": [], "boons": [], "patrons": [], "stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0}, "fallen": []}
-	for t in S.fleet: R.RUN["fleet"].append(R.newShip(t, false))
-	R.RUN["flagUid"] = R.RUN["fleet"][0]["uid"]
-	var en := []
-	for tpl in S.enemies: en.append({"tpl": tpl})
-	R.startBattle({"kind": S.kind, "fac": S.fac, "col": 3, "seed": int(S.seed), "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep, "enemies": en})
-	var rec := [snap(0, "start")]; var turn := 0
-	var tm_acts := []; var tm_rounds := {}   # enemy think time per activation (aiUnit only: no snapshot, no startup)
-	var B = R.B
-	B["alt"] = true
-	for x in B["units"]: x["activated"] = false
-	R.startSideTurn("enemy"); R.flush_deferred(); turn += 1; rec.append(snap(turn, "round 1"))
-	var r := 0
-	while not R.jt(R.B.get("over")) and r < int(S.rounds):
-		var g := 0
-		while not R.jt(R.B.get("over")):
-			g += 1
-			if g > 40: break
-			var pp := []; var pe := []
-			for x in R.alive("player"):
-				if not R.jt(x.get("isSq")) and not R.jt(x.get("activated")): pp.append(x)
-			for x in R.alive("enemy"):
-				if not R.jt(x.get("isSq")) and not R.jt(x.get("activated")): pe.append(x)
-			if pp.size() == 0 and pe.size() == 0: break
-			if pp.size() > 0:
-				pBot(pp[0]); pp[0]["activated"] = true; turn += 1; rec.append(snap(turn, pp[0]["id"]))
-			var more := false
-			for x in R.alive("player"):
-				if not R.jt(x.get("isSq")) and not R.jt(x.get("activated")): more = true
-			var batch: Array = ([R.aiPickActivation(pe)] if pe.size() > 0 else []) if more else pe
-			for u in batch:
-				if R.jt(R.B.get("over")): break
-				var t0 := Time.get_ticks_usec(); R.aiUnit(u); var ms := (Time.get_ticks_usec() - t0) / 1000.0
-				tm_acts.append({"turn": turn + 1, "round": int(R.B["round"]), "ms": ms}); tm_rounds[str(int(R.B["round"]))] = float(tm_rounds.get(str(int(R.B["round"])), 0.0)) + ms
-				u["activated"] = true; turn += 1; rec.append(snap(turn, u["id"]))
-		if R.jt(R.B.get("over")): break
-		R.B["round"] = R.B["round"] + 1
-		for x in R.B["units"]: x["activated"] = false
-		R.startSideTurn("player")
-		if not R.jt(R.B.get("over")): R.startSideTurn("enemy")
-		R.flush_deferred()
-		turn += 1; rec.append(snap(turn, "round " + str(int(R.B["round"]))))
-		r += 1
-	turn += 1; rec.append(snap(turn, "end " + (str(R.B["over"]) if R.jt(R.B.get("over")) else "none")))
+	var rec := []; var turn := [0]
+	R.hook_cb = func(kind, u):
+		if R.B != null:
+			var t0 := Time.get_ticks_usec()
+			rec.append(snap(turn[0], kind + (" " + String(u["id"]) if u != null else ""))); turn[0] += 1
+			snap_us += Time.get_ticks_usec() - t0
+	api.new_battle_scenario(S, -1)
+	var g := 0
+	while not R.jt(R.B.get("over")) and R.B["round"] <= int(S.rounds) and g < 2000:
+		g += 1
+		var pp = api._pendingP()
+		if pp.size() > 0: pBot(pp[0])
+		else:
+			api.end_activation(null); run_enemy()
+	R.hook("end " + (str(R.B["over"]) if R.jt(R.B.get("over")) else "none"))
+	R.hook_cb = null
 	var f := FileAccess.open(out, FileAccess.WRITE)
 	for x in rec: f.store_line(JSON.stringify(x))
 	f.close()
