@@ -19,6 +19,7 @@ var bob_seed := 0.0
 var meshes: Array = []
 var fade := 1.0
 var hull_base := Vector3.ZERO
+var a4 := false              # an A4 kit ship (not mirrored)
 
 static var _manifest = null
 
@@ -66,7 +67,15 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	add_child(hull)
 	var man := manifest()
 	var made := false
-	if use_hi and man.has("hi") and man["hi"].has(code):
+	# A4's kit ship when it is built (true chirality: no mirror; keeps skin_<n> patches and hp_* hard points for fx)
+	if man.has("ships") and man["ships"].has(code):
+		var ps0 = load(man["ships"][code]["res"])
+		if ps0 is PackedScene:
+			var inst0: Node3D = (ps0 as PackedScene).instantiate()
+			hull.add_child(inst0)
+			made = true
+			a4 = true
+	if not made and use_hi and man.has("hi") and man["hi"].has(code):
 		var ps = load(man["hi"][code]["res"])
 		if ps is PackedScene:
 			var inst: Node3D = (ps as PackedScene).instantiate()
@@ -142,10 +151,10 @@ func _fit() -> void:
 		first = false
 	var k := L / maxf(box.size.x, 1e-3)
 	var yaw_fix := 0.0
-	if HT.AI_HULL_YAW.has(code):
+	if HT.AI_HULL_YAW.has(code) and not a4:
 		yaw_fix = -PI / 2.0 * float(HT.AI_HULL_YAW[code])
 	var c := box.get_center()
-	hull.transform = Transform3D(Basis(Vector3.UP, yaw_fix).scaled(Vector3(k, k, -k)), Vector3.ZERO)
+	hull.transform = Transform3D(Basis(Vector3.UP, yaw_fix).scaled(Vector3(k, k, k if a4 else -k)), Vector3.ZERO)
 	hull.position = -(hull.transform.basis * c)
 	hull_base = hull.position
 

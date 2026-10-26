@@ -15,7 +15,7 @@ var repo := ""
 var hi_dir := ""
 var env_dir := ""
 var force := false
-var manifest := {"hulls": {}, "hi": {}, "rocks": {}, "sky": ""}
+var manifest := {"hulls": {}, "hi": {}, "rocks": {}, "sky": "", "ships": {}}
 
 
 func _init() -> void:
@@ -46,6 +46,7 @@ func _init() -> void:
 	if hi_dir != "":
 		for code in HT.HI_FILES:
 			_build_hi(code)
+	_build_a4_ships()
 	_build_rocks()
 	_build_sky()
 	# the A3 asteroid field placements (seed 7), used as backdrop dressing round the board (render/backdrop.gd)
@@ -275,6 +276,58 @@ func _build_hi(code: String) -> void:
 	root.free()
 	manifest["hi"][code] = {"res": out}
 	print("[assets] max-detail %s" % code)
+
+
+# ---------------------------------------------------------------- A4 kit ships (godot/assets/ships/<CODE>/)
+
+# A4's ships: the ship scene with every child kept by name (skin_<n> and skin_<n>_heavy hull patches that a breach hole
+# replaces, hp_* hard points with their metadata), plus the breach parts (<CODE>_damage.glb, for G4) and the wreck chunks.
+# True chirality (+Z starboard), so the battle does not mirror these. fx/API.md section 14; godot/assets/ships/README.md.
+func _build_a4_ships() -> void:
+	if not manifest.has("ships"):
+		manifest["ships"] = {}
+	for d in ["res://gen/ships", "res://gen/damage", "res://gen/wreck"]:
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(d))
+	var base := "res://assets/ships"
+	var da := DirAccess.open(base)
+	if da == null:
+		return
+	for code in da.get_directories():
+		var src := base.path_join(code).path_join(code + ".glb")
+		if not FileAccess.file_exists(src):
+			continue
+		var out := "res://gen/ships/%s.scn" % code
+		if not force and manifest["ships"].has(code) and FileAccess.file_exists(out):
+			continue
+		var e := {"res": out, "mirror": false}
+		if _glb_to_scene(src, out, code):
+			for extra in [["_damage", "res://gen/damage/%s_damage.scn"], ["_wreck", "res://gen/wreck/%s_wreck.scn"]]:
+				var sp := base.path_join(code).path_join(code + extra[0] + ".glb")
+				if FileAccess.file_exists(sp) and _glb_to_scene(sp, extra[1] % code, code + extra[0]):
+					e[extra[0].substr(1)] = extra[1] % code
+			manifest["ships"][code] = e
+			print("[assets] A4 ship %s%s" % [code, " (+ breach parts)" if e.has("damage") else ""])
+
+
+func _glb_to_scene(path: String, out: String, name: String) -> bool:
+	var doc := GLTFDocument.new()
+	var st := GLTFState.new()
+	st.handle_binary_image_mode = GLTFState.HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED
+	st.base_path = path.get_base_dir()
+	if doc.append_from_file(path, st) != OK:
+		push_warning("glTF not loaded: " + path)
+		return false
+	for m in st.get_materials():
+		if m is BaseMaterial3D:
+			_compress_material(m as BaseMaterial3D)
+	var scene := doc.generate_scene(st)
+	scene.name = name
+	_own(scene, scene)
+	var ps := PackedScene.new()
+	ps.pack(scene)
+	var ok := ResourceSaver.save(ps, out, ResourceSaver.FLAG_COMPRESS) == OK
+	scene.free()
+	return ok
 
 
 func _compress_material(bm: BaseMaterial3D) -> void:

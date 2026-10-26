@@ -182,8 +182,6 @@ func _zones() -> void:
 	var zones: Dictionary = VW.get("zones", {}) if VW.get("zones") is Dictionary else {}
 	for h in cells:
 		var z = zones.get(key(h.q, h.r))
-		if zones.is_empty() and api.R != null and api.R.has_method("objZone"):
-			z = api.R.objZone(h.q, h.r)   # until view() carries the zones (asked of G1)
 		if z != null and ZONE_C.has(str(z)):
 			var k := key(h.q, h.r)
 			zone_of[k] = str(z)

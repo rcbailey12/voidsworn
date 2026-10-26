@@ -68,6 +68,7 @@ var batches: Array = []
 var busy := false
 var think_task := -1
 var think_out = null
+var thinking := false
 var speed := 1.0           # the game's SPEED (duration multiplier)
 var user_speed := 1.0      # Speed: normal (1) or fast (0.45)
 var skip := false
@@ -523,7 +524,10 @@ func _make_view(u: Dictionary) -> void:
 	views[u["id"]] = sv
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
 	if gfx != null and gfx.has_method("add_ship"):
-		gfx.add_ship(str(u["id"]), sv, {"faction": str(u["fac"]), "meshes": sv.meshes, "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"])})
+		var info := {"faction": str(u["fac"]), "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"]), "code": sv.code}
+		if not sv.a4:
+			info["meshes"] = sv.meshes   # A4 ships: fx finds the hull and its skin_<n> patches itself
+		gfx.add_ship(str(u["id"]), sv, info)
 
 
 func _sync(v: Dictionary) -> void:
@@ -572,6 +576,8 @@ func _runner() -> void:
 			return
 		if batches.is_empty():
 			if api.phase == "enemy" and not ended:
+				while _threat_busy:
+					await get_tree().process_frame
 				var b = await _think()
 				if b != null:
 					batches.append(b)
@@ -591,12 +597,14 @@ func _runner() -> void:
 func _think():
 	# the enemy's activation runs on a worker thread, so the frame never stalls while it decides
 	think_out = null
+	thinking = true
 	var tid := WorkerThreadPool.add_task(func() -> void:
 		var ev = api.step()
 		think_out = {"events": ev, "view": api.view()})
 	while not WorkerThreadPool.is_task_completed(tid):
 		await get_tree().process_frame
 	WorkerThreadPool.wait_for_task_completion(tid)
+	thinking = false
 	if R.not_ported != "":
 		_error("NOT PORTED: " + R.not_ported)
 		R.not_ported = ""
@@ -1301,7 +1309,7 @@ func _sel_unit() -> Dictionary:
 
 
 func _can_act() -> bool:
-	return not busy and not warming and not ended and api != null and api.phase == "player"
+	return not busy and not warming and not _threat_busy and not ended and api != null and api.phase == "player"
 
 
 func _usable(u: Dictionary) -> bool:
@@ -1534,72 +1542,38 @@ var _threat_key := ""
 # on each hex (range, arc, line of sight); the best end state counts per enemy, summed over enemies. Darker = more damage.
 func _threat_fills() -> Dictionary:
 	var key := "%d|%d|%d" % [int(V.get("round", 0)), batches.size(), hud.log_text.get_line_count()]
-	if key != _threat_key:
+	if key != _threat_key and not _threat_busy and not busy and not thinking and api.phase == "player":
 		_threat_key = key
-		var t0 := Time.get_ticks_msec()
-		_threat_cache = _compute_threat()
-		print("[battle] threat map %d ms" % (Time.get_ticks_msec() - t0))
+		_threat_busy = true
+		if api.has_method("threat_map"):
+			# the rules' computeThreat (G1), off the main thread: nothing else calls the API while the player phase is idle
+			var tid := WorkerThreadPool.add_task(func() -> void:
+				_threat_next = api.threat_map())
+			_threat_wait(tid)
+		else:
+			_threat_busy = false
 	var out := {}
 	var mx := 1.0
 	for k in _threat_cache:
 		mx = maxf(mx, float(_threat_cache[k]))
 	for k in _threat_cache:
 		var f := float(_threat_cache[k]) / mx
-		out[k] = Color(0.95, 0.18, 0.12, 0.08 + 0.4 * f)
+		if f > 0.0:
+			out[k] = Color(0.95, 0.18, 0.12, 0.08 + 0.4 * f)
 	return out
 
 
-func _compute_threat() -> Dictionary:
-	var map := {}
-	var hexes: Array = board.cells
-	for e in R.alive("enemy"):
-		var ws: Array = []
-		for w in e["weapons"]:
-			if float(R.z0(w.get("off"))) <= 1 and float(R.z0(w.get("cdLeft"))) <= 1 and w["k"] != "flak":
-				ws.append(w)
-		if ws.is_empty():
-			continue
-		var seen := {}
-		var states: Array = [{"q": e["q"], "r": e["r"], "f": e["facing"], "cost": 0, "path": []}]
-		if not R.jt(e.get("isSq")):
-			states.append_array(api.compute_reach(e["id"]).states)
-		var maxr := 0
-		for w in ws:
-			maxr = maxi(maxr, int(w["r"]))
-		var mul := float(e.get("dmg", 1)) if e.get("dmg") != null else 1.0
-		var per := {}
-		var near_c := {}
-		for st in states:
-			var sk := "%d,%d,%d" % [int(st["q"]), int(st["r"]), int(st["f"])]
-			if seen.has(sk):
-				continue
-			seen[sk] = true
-			var v = api.state_view(e["id"], st)
-			var pk := "%d,%d" % [int(st["q"]), int(st["r"])]
-			if not near_c.has(pk):
-				var nl: Array = []
-				for h in hexes:
-					var hh0 := {"q": h.q, "r": h.r}
-					var d0: int = R.hdist(v, hh0)
-					if d0 <= maxr:
-						nl.append([hh0, d0])
-				near_c[pk] = nl
-			for nd in near_c[pk]:
-				var hh: Dictionary = nd[0]
-				var d: int = nd[1]
-				var h := hh
-				var val := 0.0
-				for w in ws:
-					if d <= int(w["r"]) and R.inArc(v, hh, w["arc"]):
-						val += float(w["shots"]) * float(w["dmg"]) * mul
-				if val <= 0.0:
-					continue
-				var k: String = board.key(h.q, h.r)
-				if val > float(per.get(k, 0.0)) and R.los(v, hh):
-					per[k] = val
-		for k in per:
-			map[k] = float(map.get(k, 0.0)) + float(per[k])
-	return map
+var _threat_busy := false
+var _threat_next := {}
+
+
+func _threat_wait(tid: int) -> void:
+	while not WorkerThreadPool.is_task_completed(tid):
+		await get_tree().process_frame
+	WorkerThreadPool.wait_for_task_completion(tid)
+	_threat_cache = _threat_next
+	_threat_busy = false
+	_overlay()
 
 
 # target hexes for nova, blink and launch
@@ -2328,7 +2302,7 @@ func _process(dt: float) -> void:
 		if f.t > 1.6:
 			lbl.queue_free()
 			floats.remove_at(i)
-	if bot and not busy and not warming and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
+	if bot and not busy and not warming and not _threat_busy and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
 		bot_t += dt
 		if bot_t > 0.05:
 			bot_t = 0.0
