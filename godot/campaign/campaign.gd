@@ -1,4 +1,4 @@
-extends Node
+extends RefCounted
 # Voidsworn campaign (G3): the rules of a run and its screen flow, a GDScript port of the browser game's core.js (run parts),
 # campaign_run.js, campaign_meta.js and campaign3d.js (pinned copies in test/oracle/). Same names, same order, same maths as the JS.
 #
@@ -11,7 +11,6 @@ extends Node
 # after every click. Battles go through one function, start_battle(), which uses the stub battle until real battles are hooked in.
 
 signal changed            # the page or the modal changed
-signal run_over(summary: Dictionary)   # the game shell (godot/main/main.gd) takes over again: the player went back to the title
 signal battle_requested   # a battle page is up (external mode): the battle side reads pending_battle and calls finish_battle()
 
 const JSM = preload("res://rules/jsm.gd")
@@ -1773,29 +1772,30 @@ func battleScreen(cfg: Dictionary) -> void:
 	var c = {"map": mp, "dep": "line" if cfg["kind"] == "boss" else pick(["line", "line", "flank"]), "obj": ro["enc"], "shape": ro.get("shape"),
 		"arch": nd.get("arch") if (cfg["kind"] != "boss" and nd != null) else null, "mod": nd.get("mod") if (cfg["kind"] != "boss" and nd != null) else null}
 	c.merge(cfg, true)
-	if battle_mode == "external" and main_ref != null:
-		tel("battle_start", {"obj": c["obj"], "kind": c["kind"], "fac": c["fac"]})
-		var acts0 = []
-		A(acts0, "battle", "win"); A(acts0, "battle", "partial"); A(acts0, "battle", "loss")
-		if c["kind"] != "boss": A(acts0, "c3retreat")
-		show_page("battle", {"cfg": c}, acts0)
-		_external_battle(c); return
+	var ext = battle_mode == "external" and battle_setup.is_valid()
 	start_battle(c)
 	B["campaign"] = true
-	var sc = sectorCond()
-	var force = null
-	if sc != null and jt(sc.get("war")) and c["kind"] != "boss": force = "reinf_enemy" if rnd() < 0.6 else "reinf_ally"
-	B["event"] = rollBattleEvent(c, force)
+	if not ext:   # external battles: the rules roll the mid-battle event themselves (rules/API.md, cfg.campaign), in the game's order
+		var sc = sectorCond()
+		var force = null
+		if sc != null and jt(sc.get("war")) and c["kind"] != "boss": force = "reinf_enemy" if rnd() < 0.6 else "reinf_ally"
+		B["event"] = rollBattleEvent(c, force)
 	tel("battle_start", {"seed": B.get("seed"), "obj": c["obj"], "kind": c["kind"], "fac": c["fac"]})
 	var acts = []
 	A(acts, "battle", "win"); A(acts, "battle", "partial"); A(acts, "battle", "loss")
 	if c["kind"] != "boss": A(acts, "c3retreat")
 	show_page("battle", {"cfg": c}, acts)
+	if ext:
+		pending_battle = c; battle_requested.emit()
 # The one place a battle starts. External mode: battle_setup(run, cfg) builds the real battle (the rules' startBattle, which reseeds
 # the shared PRNG from cfg.seed) and returns its B; the battle scene then plays it and calls finish_battle(result).
 var battle_setup: Callable = Callable()
 func start_battle(c: Dictionary) -> void:
-	if battle_mode == "external" and battle_setup.is_valid(): B = battle_setup.call(RUN, c)
+	if battle_mode == "external" and battle_setup.is_valid():
+		var c2 = c.duplicate(); c2["campaign"] = true   # the rules roll the mid-battle event right after setup, as campaign3d.js does
+		var sc = sectorCond()
+		if sc != null and jt(sc.get("war")) and c["kind"] != "boss": c2["event_war"] = true   # sectors at war force reinforcements (G1: draw it after setup)
+		B = battle_setup.call(RUN, c2)
 	else: stub_start(c)
 # External mode: the battle scene reports the end. result is "win", "loss" or "retreat"; battle is the rules' B (units with the JS field names).
 func finish_battle(result: String, battle = null) -> void:
@@ -1945,78 +1945,3 @@ func stub_resolve(o: String) -> void:
 			var k = pick(live); k["kills"] = float(k["kills"]) + 1; e["killedBy"] = k["name"]
 	if o == "partial": B["partial"] = true
 	B["over"] = "loss" if loss else "win"
-
-
-# ======================= the game shell hand-off (godot/main/main.gd, see README.md) =======================
-# main.gd loads this script, adds it as a child and calls start(main, opts); a battle goes through main.start_battle(run, cfg, opts),
-# which plays it in the battle scene and returns {result, api, ...}; run_over fires when the player is back at the title.
-var main_ref = null
-var ui_node = null
-var bot_run := false
-var _over_sent := false
-const DEFAULT_SAVE := "user://voidsworn_campaign.json"
-static func has_save() -> bool:
-	if not FileAccess.file_exists(DEFAULT_SAVE): return false
-	var o = JSON.parse_string(FileAccess.get_file_as_string(DEFAULT_SAVE))
-	return o is Dictionary and o.get("run") is Dictionary and not bool(o["run"].get("none", false))
-func start(main, opts: Dictionary = {}) -> void:
-	main_ref = main; bot_run = bool(opts.get("bot", false))
-	var err = load_tables()
-	if err != "":
-		push_error(err); run_over.emit({"result": "error", "errors": [err]}); return
-	battle_mode = "external"
-	JSM.rnd_seed(int(opts["seed"]) if opts.has("seed") else (int(Time.get_unix_time_from_system() * 1000.0) & 0xFFFFFFFF))   # the browser seeds at random on load
-	if bot_run: save_path = "user://campaign_bot_save.json"
-	else:
-		persist_on = true; persist_load()
-		ui_node = load("res://ui/campaign/campaign_ui.gd").new(); ui_node.hide_on_battle = true; add_child(ui_node); ui_node.bind(self)
-	changed.connect(_watch_title)
-	if bool(opts.get("continue", false)) and SAVED_RUN != null: ACT_continueRun()
-	elif opts.get("screen") == "legacy": legacyScreen()
-	elif opts.get("screen") == "help": helpScreen()
-	else: ACT_newRunScreen()
-	if bot_run: _bot_play.call_deferred(int(opts.get("seed", 1)))
-func _watch_title() -> void:
-	if main_ref != null and page["kind"] == "title" and not _over_sent:
-		_over_sent = true; run_over.emit.call_deferred({"result": "quit"})
-func _external_battle(c: Dictionary) -> void:
-	var c2 = c.duplicate(); c2["campaign"] = true   # rules/API.md: the rules roll the mid-battle event as campaign3d.js does
-	var sc = sectorCond()
-	if sc != null and jt(sc.get("war")) and c["kind"] != "boss": c2["event_war"] = true   # sectors at war force reinforcements (asked of G1: roll it after setup)
-	pending_battle = c2; battle_requested.emit()
-	var r: Dictionary = await main_ref.start_battle(RUN, c2, {"bot": bot_run})
-	var api = r.get("api")
-	B = api.R.B if (api != null and api.get("R") != null) else null
-	if B == null:
-		push_error("campaign: the battle returned no state"); return
-	B["campaign"] = true
-	var res = str(r.get("result", ""))
-	if bot_run: print("[campaign] sector %s %s battle against %s: %s" % [numstr(RUN["sector"]), c["kind"], c["fac"], res])
-	if res == "softlock" or not (res in ["win", "loss", "retreat"]):   # a stuck battle never costs the run: the fleet jumps clear (a flagship counts as beaten)
-		_errors.append("battle " + res + " at sector " + numstr(RUN["sector"])); res = "win" if c["kind"] == "boss" else "retreat"
-	if res == "retreat": finishBattle("retreat")
-	else: finish_battle(res)
-var _errors: Array = []
-# A whole run played by the campaign's own scripted player (main.gd --bot-runs): the battles are played by the battle scene's bot.
-func _bot_play(seed: int) -> void:
-	var s = seed; var streak = 0; var steps = 0
-	const STAY = ["closeModal", "buyHull", "buyMod", "repair", "repairAll", "upgradeMk", "sellShip", "sellConfirm", "yardFleet", "equip", "unequip", "promote", "fleetScreen", "pickFaction", "pickAdmiral", "optAlt", "optCmd", "optHeat", "progTab", "buyVariant"]
-	while not ended and steps < 4000:
-		steps += 1
-		if page["kind"] == "battle" and modal_d == null:
-			await get_tree().process_frame
-			continue
-		var acts = screen_acts().filter(func(x): return x[2] == 1 and not (x[0] in ["legacy", "help", "saveQuit", "title", "abandonRun", "battle", "c3retreat"]))
-		if streak >= 8:
-			var go = acts.filter(func(x): return not (x[0] in STAY))
-			if go.size() > 0: acts = go
-		if acts.is_empty():
-			_errors.append("no button to press on " + str(page["kind"])); break
-		s = (s * 1103515245 + 12345) % 2147483648
-		var x = acts[(s >> 16) % acts.size()]
-		streak = streak + 1 if x[0] in STAY else 0
-		act(x[0], x[1])
-		if steps % 10 == 0: await get_tree().process_frame
-	var st = META["stats"]
-	var won = page["kind"] == "end" and bool(page["data"].get("victory", false))
-	run_over.emit({"result": "win" if won else ("loss" if ended else "softlock"), "steps": steps, "sector": page["data"]["run"]["sector"] if page["kind"] == "end" else (RUN["sector"] if RUN != null else 0), "errors": _errors})

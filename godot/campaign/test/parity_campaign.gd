@@ -33,7 +33,6 @@ func _init() -> void:
 		var f := FileAccess.open(a[0].path_join("c%d.jsonl" % seed), FileAccess.WRITE); f.store_string("\n".join(lines) + "\n"); f.close()
 		print("seed %d: %s" % [seed, (str(n) + " steps") if n > 0 else ("FAILED at step " + str(-n))])
 		if n <= 0: bad += 1
-	C.free()
 	quit(1 if bad > 0 else 0)
 
 func bot_next() -> int:
