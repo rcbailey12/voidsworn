@@ -5,6 +5,12 @@ Node runs the pinned JS game files (`oracle/`, unchanged) and Godot runs `campai
 - PC: `tools\pc\parity_campaign.bat` (30 runs). Linux: `GODOT=... sh godot/campaign/test/run_parity_campaign.sh [first] [last]`.
 - Files: `node/env.js` (loads the oracle headless), `node/golden_campaign.js` (the JS side), `parity_campaign.gd` (the Godot side), `node/compare_campaign.js`, `node/export_campaign.js` (the tables), `node/coverage.js` (what the runs exercised).
 
+## Other campaign checks
+
+- `run_nem_scenarios.sh`: the Nemesis scenarios (Deathless comeback, Corsair loot and towed ship, Ithar honed, Chorus feeding and gloat, beat-teaching, weaknesses found in battle, pronouns, every faction's warning line) in the JS game and in Godot, compared record by record.
+- `arc_hook_test.gd`: the story arc hook (off, on with no arc file, on with a test card).
+- `save_test.gd`: atomic saves, the backup, a damaged save loading the backup.
+
 ## When a record is written
 
 - Once at the start (the title screen), then after every click the scripted player makes, and after every simulated page reload.

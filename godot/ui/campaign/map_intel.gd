@@ -72,7 +72,10 @@ func _nem_threat(threat: float, tough: float, why: Array) -> float:
 		t *= k; why.append(["his strengths", k])
 	var fed = min(0.32, 0.04 * float(C.z0(N.get("fed"))))
 	if fed > 0: t *= 1.0 + fed; why.append(["fed on your losses", 1.0 + fed])
-	var rich = float(C.z0(N.get("riches"))) + (1.0 if N["adapt"].has("riches") else 0.0)
+	var hn = min(3.0, float(C.z0(N.get("honed"))))
+	if hn > 0: t *= 1.0 + 0.06 * hn; why.append(["honed", 1.0 + 0.06 * hn])
+	var raid = C.NEM_FAC.get(N["fac"], {}).get("beh", {}).get("strike") == "raid"   # R49: only a raider brings extra ships
+	var rich = (float(C.z0(N.get("riches"))) if raid else 0.0) + (1.0 if N["adapt"].has("riches") else 0.0)
 	if rich > 0:
 		var add = rich * 1.2 * tough   # a cheap hull is about 1.2 command points, at this sector's toughness
 		why.append(["riches: %d extra ship%s" % [int(rich), "s" if rich > 1 else ""], (t + add) / max(0.01, t)]); t += add

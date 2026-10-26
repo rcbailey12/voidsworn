@@ -594,20 +594,29 @@ func _nem_panel(v: VBoxContainer) -> void:
 			if C.NEM_TRAITS.has(t): ts.append(c("[b]" + esc(C.NEM_TRAITS[t]["n"]) + "[/b]", BLOOD) + c(" (" + esc(str(C.NEM_TRAITS[t]["d"]).trim_suffix(".")) + ")", BONE2))
 		v.add_child(rich(c("Strengths: ", BONE2) + "; ".join(PackedStringArray(ts)), 13))
 	# how his faction hunts you: what a full clock does, how fast it fills, whether he runs or comes back
-	if beh.get("d") != null: v.add_child(lbl(str(beh["d"]), 13, BONE2))
+	if beh.get("d") != null: v.add_child(lbl(C.nemSay(str(beh["d"]), N), 13, BONE2))
+	var warn = C.nemWarnLine(N)   # what the next win will do when it fills his clock
+	if warn != "": v.add_child(lbl(warn, 13, BLOOD))
 	var ck = float(N["clock"]); var dots = "●".repeat(int(floor(ck))) + ("◐" if fmod(ck, 1.0) != 0.0 else "") + "○".repeat(max(0, int(C.NEM_CLOCK) - int(ceil(ck))))
 	var met = float(N["met"]) >= float(C.RUN["sector"])
 	var tail = (" " + c("[b]His fleet is coming: your next fight is his.[/b]", BLOOD)) if C.jt(N.get("strike")) else ((" " + c("(met this sector)", BONE3)) if met else "")
 	var pace = float(beh.get("clock", 1))
 	v.add_child(rich(c("Hunting you: ", BONE2) + c(dots, BLOOD) + c(" " + C.numstr(ck) + " of " + C.numstr(C.NEM_CLOCK), BONE3) + tail, 14))
-	v.add_child(lbl("Each fight you win moves the clock " + (C.numstr(pace) + " steps" if pace != 1.0 else "one step") + "; when it fills, your next fight is against him. You meet him once each sector at the latest, at one of the last fights before the rest stop.", 13, BONE3))
+	v.add_child(lbl(C.nemSay("Each fight you win moves the clock " + (C.numstr(pace) + " steps" if pace != 1.0 else "one step") + "; when it fills, your next fight is against him. You meet him once each sector at the latest, at one of the last fights before the rest stop.", N), 13, BONE3))
 	# what grows him between fights (only the factions that have it)
 	if C.jt(beh.get("feeds")):
 		var fd = int(C.z0(N.get("fed"))); v.add_child(rich(c("Fed: ", BONE2) + c(str(fd) + " of 8", BLOOD) + c(" (his fleet has " + str(min(32, 4 * fd)) + "% more hull; every ship you lose feeds him)", BONE3), 13))
-	if beh.get("strike") == "raid" or C.jt(N.get("riches")):
-		var rc = int(C.z0(N.get("riches"))); v.add_child(rich(c("Riches: ", BONE2) + c(str(rc), BLOOD) + c(" (" + ("no extra ships yet" if rc == 0 else str(rc) + " extra ship" + ("s" if rc > 1 else "") + " in his fleet") + "; each escape or raid adds one)", BONE3), 13))
-	if C.jt(beh.get("revive")):
-		v.add_child(rich(c("Comeback: ", BONE2) + (c("spent, the next kill is final", GILT) if C.jt(N.get("revived")) else c("ready, he reassembles once when his flagship falls", BLOOD)), 13))
+	if beh.get("strike") == "raid":
+		var rc = int(C.z0(N.get("riches"))); v.add_child(rich(c("Riches: ", BONE2) + c(str(rc), BLOOD) + c(" (" + ("no extra ships yet" if rc == 0 else str(rc) + " extra ship" + ("s" if rc > 1 else "") + " in his fleet") + "; each escape or ship he tows adds one)", BONE3), 13))
+	if C.jt(N.get("loot")) or C.jt(N.get("held")):   # R49: what a raid took comes back when he dies
+		var hs = []
+		if C.jt(N.get("loot")): hs.append(C.numstr(N["loot"]) + " of your credits")
+		if C.jt(N.get("held")): hs.append("the " + str(N["held"]["name"]))
+		v.add_child(rich(c(C.nemPr(N)["He"] + " holds ", BONE2) + c(" and ".join(PackedStringArray(hs)), GILT) + c(": it all comes back when " + C.nemPr(N)["he"] + " dies.", BONE2), 13))
+	if beh.get("strike") == "duel" and C.jt(N.get("honed")):
+		var hn = min(3, int(N["honed"])); v.add_child(rich(c("Honed: ", BONE2) + c(str(hn) + " of 3", BLOOD) + c(" (his few ships aim " + str(3 * hn) + " better and carry " + str(10 * hn) + "% stronger shields)", BONE3), 13))
+	if C.jt(beh.get("revive")):   # R49: only in the last sector
+		v.add_child(rich(c("Comeback: ", BONE2) + (c("spent, the next kill is final", GILT) if C.jt(N.get("revived")) else c("in sector III his flagship rises once more after it falls; before that he withdraws like any rival", BLOOD)), 13))
 	# weaknesses with what they do; adaptations in his faction's words with what they do
 	var ws = []
 	for w in N["weak"]:

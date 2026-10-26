@@ -31,6 +31,7 @@ function eventTick(){ const e=B.event; if(!e||e.done||B.over) return; const E=BE
   if(B.round>=e.warnR&&!e.warned){ e.warned=true; const m=E.warn.replace('{r}',e.r); log(m,'x'); try{ if(typeof toast==='function') toast(m); }catch(x){} }
   if(B.round<e.r) return; e.done=true;
   if(e.k==='reinf_enemy'||e.k==='reinf_ally'){ const side=e.k==='reinf_enemy'?'enemy':'player', h=edgeHex(side); if(!h){ log('The reinforcements could not find a clear lane and turn back.','x'); return; }
+    if(side==='enemy'&&B.nem) nemSig('reinforce'); // R42: a Hegemony Nemesis's reinforcements
     const fac=side==='enemy'?B.cfg.fac:((typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'), s=B.sector||1, u=makeUnit(side,cheapHull(fac),{scale:side==='enemy'?1+.12*(s-1):1,dmg:side==='enemy'?1+.08*(s-1):1,fac});
     u.q=h.q; u.r=h.r; u.facing=side==='player'?0:3; u.reinf=true; if(side==='player') u.name='Garrison '+u.name; B.units.push(u); if(B.cp0) B.cp0[side]+=(u.t.cp||1); }
   log(E.go,e.k==='reinf_ally'?'p':'e'); try{ if(typeof toast==='function') toast(E.go); }catch(x){} }
@@ -365,7 +366,7 @@ function startSideTurn(side){
   const deaths=[]; // v53: ships killed by the turn's ticks; the caller awaits the returned promise so their deaths finish in order
   if(side==='player'&&B.round>1){ eventTick(); objectiveTick(deaths); }
   if(side==='enemy'){ try{ aiRefreshFocus(); }catch(e){} try{ bossCmdTick(); }catch(e){} } // v53-D: the fleet focus is kept (sticky) and re-checked, not wiped, each enemy turn
-  escortsBreak(); nemBreak(); if(side==='enemy') nemFleeCheck(); // B4: a proud Nemesis flagship's escorts flee; R42: a Corsair or Ithar Nemesis withdraws from a lost fight
+  escortsBreak(); nemBreak(); if(side==='enemy'){ nemFleeCheck(); if(B.round>=2&&B.nem) nemTrip('slow'); } // B4: a proud Nemesis flagship's escorts flee; R42: a Corsair or Ithar Nemesis withdraws from a lost fight
   if(side==='enemy') for(const u of B.units) if(u.side==='enemy'&&!u.dead&&!u.isSq) aiStance(u); // B4 wing doctrines: the enemy picks its stances
   gainResolve(side,1); let burned=false;
   const risen=legionTurn(side); // B3 Deathless: ships reassembling since last round stand up now
@@ -548,9 +549,11 @@ function applyNemesis(N){ B.nem=N; let es=B.units.filter(u=>u.side==='enemy'&&!u
   // R42 duelist (Ithar): a small elite fleet, at most four hulls, every one elite
   if(beh.strike==='duel'&&es.length>4){ const keep=new Set([fl,...es.filter(u=>u!==fl).sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)).slice(0,3)]); B.units=B.units.filter(u=>u.side!=='enemy'||u.isSq||u.transport||keep.has(u)||(u.parent&&keep.has(B.units.find(x=>x.id===u.parent)))); es=es.filter(u=>keep.has(u)); }
   if(beh.strike==='duel') for(const u of es) if(!u.elite){ u.elite=true; u.aim+=6; u.crit+=5; }
+  if(beh.strike==='duel'&&N.honed){ const h=Math.min(3,N.honed); for(const u of es){ u.aim+=3*h; if(u.shMax>0){ u.shMax=Math.round(u.shMax*(1+.1*h)); u.sh=u.sh.map(()=>u.shMax); } } } // R49: an Ithar who fled comes back with the same small fleet, honed (shields +10% and aim +3 per escape, up to 3)
   // R42 Corsair riches: each escape brings one more ship
-  for(let i=0;i<(N.riches||0)+(ad.includes('riches')?1:0);i++){ const h=edgeHex('enemy'); if(!h) break; const x=makeUnit('enemy',cheapHull(fl.fac),{scale:1+.12*((B.sector||1)-1),dmg:1+.08*((B.sector||1)-1),fac:fl.fac}); x.q=h.q; x.r=h.r; x.facing=3; B.units.push(x); es.push(x); }
+  for(let i=0;i<(beh.strike==='raid'?(N.riches||0):0)+(ad.includes('riches')?1:0);i++){ /* R49: only a Corsair comes back with extra ships */ const h=edgeHex('enemy'); if(!h) break; const x=makeUnit('enemy',cheapHull(fl.fac),{scale:1+.12*((B.sector||1)-1),dmg:1+.08*((B.sector||1)-1),fac:fl.fac}); x.q=h.q; x.r=h.r; x.facing=3; B.units.push(x); es.push(x); }
   if(fl.fac==='hegemony'){ for(const u of es) u.anchor=false; fl.anchor=true; }
+  if(beh.line) for(const u of es) if(u!==fl) for(const w of u.weapons) if(w.k!=='flak'&&w.k!=='sq') w.opt+=1; // R42 Hegemony artillery line: his escorts' guns lose less aim at range
   const fed=Math.min(.32,.04*(N.fed||0));
   for(const u of es){ u.nem=true;
     if(nemWeak('board')){ u.crewMax=Math.max(4,Math.round(u.crewMax*.7)); u.crew=Math.min(u.crew,u.crewMax); }
@@ -565,24 +568,35 @@ function applyNemesis(N){ B.nem=N; let es=B.units.filter(u=>u.side==='enemy'&&!u
   if(tr.includes('undying')&&B.legion) B.legion.enemy.max+=1; if(ad.includes('legion')&&B.legion) B.legion.enemy.max+=1;
   if(ad.includes('formation')){ B.syncR=Object.assign({},B.syncR||{},{enemy:SYNC_R+1}); }
   if(ad.includes('pd')){ const pd=fl.fac==='chorus'?'spores':'flak'; for(const u of es.filter(x=>!x.weapons.some(w=>w.k==='flak')).slice(0,2)){ u.weapons.push(Object.assign(nameWeapons(u.fac,[mkWeapon(pd,'T',u.fx||{})])[0],{fired:false,cdLeft:0,off:0})); } }
-  B.nemFlee=beh.flee||null; B.nemNoRout=!!(beh.noFlee||beh.revive); B.nemChallenge=beh.strike==='challenge'; B.nemPersona=(typeof NEM_PERSONA!=='undefined'&&NEM_PERSONA[N.persona])||null; if(B.cp0) B.cp0.enemy=sideCP('enemy');
+  B.nemFlee=beh.flee||null; B.nemAi=beh.ai||null; B.nemLine=!!beh.line; B.nemNoRout=!!(beh.noFlee||beh.revive); B.nemChallenge=beh.strike==='challenge'; B.nemPersona=(typeof NEM_PERSONA!=='undefined'&&NEM_PERSONA[N.persona])||null; if(B.cp0) B.cp0.enemy=sideCP('enemy');
   const an=a=>(typeof nemAdaptName==='function'?nemAdaptName(a,N.fac):(NEM_ADAPT[a]?NEM_ADAPT[a].n:a)).toLowerCase(), L=typeof NEM_LINES!=='undefined'?NEM_LINES:null;
   log(`${fl.name} commands this fleet: your Nemesis.${ad.length?' '+(N.g==='n'?'It':N.g==='f'?'She':'He')+' has adapted: '+ad.map(an).join(', ')+'.':''}`,'e');
-  if(L){ const line=N.met&&N.last_beat&&typeof NEM_BEAT_WORD!=='undefined'?L.again.replace('{beat}',NEM_BEAT_WORD[N.last_beat]||N.last_beat):(L.meet[N.persona]||''); if(line) log(`${fl.name}: "${line}"`,'e'); }
-  if(B.nemChallenge&&typeof nemSignature==='function') nemSignature('challenge'); if(beh.strike==='duel'&&typeof nemSignature==='function') nemSignature('duel');
-  if(B.nemChallenge) log(`${fl.name} challenges your flagship to a duel: the two flagships deal 20% more damage to each other.`,'e'); }
+  if(L){ const bw=N.last_beat&&typeof NEM_BEAT_WORD!=='undefined'?(NEM_BEAT_WORD[N.last_beat]||N.last_beat):null, cnt=NEM_BEAT_COUNTER[N.last_beat];
+    const line=N.gloat&&L.gloat?L.gloat[N.gloat]:N.met&&bw?(ad.includes(cnt)?L.again:(L.remember||L.again)).replace('{beat}',bw):(L.meet[N.persona]||''); if(line) log(`${fl.name}: "${line}"`,'e'); }
+  if(B.nemChallenge) nemSig('challenge'); if(beh.strike==='duel') nemSig('duel'); if(beh.line) nemSig('line');
+  if(B.nemChallenge){ const d=nemDuelTarget(); if(d) log(`${fl.name} challenges ${d.pflag?'your flagship':d.name} to single combat and comes for it: the two ships deal 20% more damage to each other.`,'e'); } }
+// R49 Voidsworn challenge: his flagship seeks your flagship, or your strongest ship once it is gone, and both deal 20% more damage to each other
+function nemDuelTarget(){ if(!B||!B.nemChallenge) return null; let d=B.nemDuel!=null?B.units.find(u=>u.id===B.nemDuel&&!u.dead&&u.side==='player'):null;
+  if(!d){ d=B.units.find(u=>u.pflag&&!u.dead&&u.side==='player')||B.units.filter(u=>u.side==='player'&&!u.dead&&!u.isSq&&!u.reinf).sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)||b.maxHp-a.maxHp||(a.id<b.id?-1:1))[0]||null; if(d){ const first=B.nemDuel==null; B.nemDuel=d.id; if(!first){ const f=B.units.find(u=>u.nemFlag&&!u.dead); if(f) log(`${f.name} turns to ${d.name}: the duel goes on.`,'e'); } } } return d; }
 // R42: a Nemesis who withdraws from a lost fight (Corsair: flagship under 35% hull; Ithar: every flagship shield down and hull under 60%). He and
 // his escorts jump out; you win the field, he escapes to come back (richer, for a Corsair). Checked at each enemy turn start.
 function nemFleeCheck(){ if(!B||!B.nem||!B.nemFlee||B.nemFled||B.over) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f) return; const R=B.nemFlee;
   const low=f.hp<=f.maxHp*(R.hull||0)&&(!R.shields||!(f.shMax>0)||f.sh.every(x=>x<=.5)); if(!low) return;
-  B.nemFled=true; if(typeof nemSignature==='function') nemSignature('flee_battle'); for(const e of alive('enemy').filter(u=>!u.isSq&&!u.transport)){ e.dead=true; e.fled=true; try{ fxWithdraw(e); }catch(x){} }
+  B.nemFled=true; nemSig('flee_battle'); for(const e of alive('enemy').filter(u=>!u.isSq&&!u.transport)){ e.dead=true; e.fled=true; try{ fxWithdraw(e); }catch(x){} }
   log(`${f.name} breaks off and jumps out with what is left of his fleet. He will be back.`,'s'); checkEnd(); }
 // R42 personality weights for his ships in the AI's move scoring and target choice
-function nemProf(u,prof){ const P=B&&B.nemPersona; if(!u||!u.nem||!P||!P.ai) return prof; const a=P.ai, o=Object.assign({},prof); if(a.tw) o.tw=prof.tw*a.tw; if(a.range!=null) o.range=a.range; if(a.flagFront&&u.nemFlag) o.tw=prof.tw*.6; return o; }
-function nemTargetBonus(u,t){ const P=B&&B.nemPersona; if(!u||!u.nem||!P||!P.ai||!t) return 0; let v=0; if(P.ai.focusWeak) v+=20*(1-t.hp/t.maxHp); if(P.ai.focusFlag&&t.pflag) v+=25; return v; }
+function nemProf(u,prof){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||((!P||!P.ai)&&!F)) return prof; const a=(P&&P.ai)||{}, o=Object.assign({},prof); if(a.tw) o.tw=prof.tw*a.tw; if(a.range!=null) o.range=a.range; if(a.flagFront&&u.nemFlag) o.tw=prof.tw*.6;
+  if(F){ if(F.range!=null) o.range=Math.max(o.range||0,F.range); if(F.charge&&u.nemFlag) o.tw=o.tw*.7; } return o; } // R42 faction weights on top of his personality: Ithar keep range, a Voidsworn flagship charges
+function nemTargetBonus(u,t){ const P=B&&B.nemPersona, F=B&&B.nemAi; if(!u||!u.nem||!t) return 0; const a=(P&&P.ai)||{}; let v=0; if(a.focusWeak||(F&&F.focusWeak)) v+=20*(1-t.hp/t.maxHp); if(a.focusFlag&&t.pflag) v+=25; if(F&&F.hunt&&u.nemFlag&&t===nemDuelTarget()) v+=30; return v; } // Ithar pick off the weakest; a Voidsworn flagship hunts yours
+// R42 signatures: his faction behaviour firing, for the battle voice (G1: emit {t:'nem_signature', kind}) and the campaign record
+function nemSig(kind){ if(!B||!B.nem) return; (B.nemSigs=B.nemSigs||[]).push({kind,r:B.round}); if(typeof nemSignature==='function') nemSignature(kind); }
+// R42 weaknesses found by triggering them: logged once, known for the rest of the run (finishBattle merges B.nemFound). No random draws.
+const NEM_BEAT_COUNTER={lance:'shields',torp:'pd',sq:'pd',ram:'armor',board:'armor',battery:'evasion',evasive:'aim'};
+function nemTrip(k){ if(!B||!B.nem||!nemWeak(k)) return; B.nemFound=B.nemFound||[]; if(B.nemFound.includes(k)||(B.nem.revealed||[]).includes(k)) return; B.nemFound.push(k); (B.nem.revealed=B.nem.revealed||[]).push(k);
+  log(`Weakness found: ${NEM_WEAK[k].n}. ${NEM_WEAK[k].d}`,'s'); }
 // a proud flagship (weakness): once it falls below 60% hull, his escorts break and flee
 function nemBreak(){ if(!B||!B.nem||B.nemBroken||!nemWeak('anchor')) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f||f.hp>f.maxHp*.6) return;
-  B.nemBroken=true; const esc=alive('enemy').filter(u=>u!==f&&!u.isSq&&!u.transport); for(const e of esc){ e.dead=true; e.fled=true; try{ fxWithdraw(e); }catch(x){} }
+  B.nemBroken=true; nemTrip('anchor'); const esc=alive('enemy').filter(u=>u!==f&&!u.isSq&&!u.transport); for(const e of esc){ e.dead=true; e.fled=true; try{ fxWithdraw(e); }catch(x){} }
   log(`${f.name}'s flagship is burning. ${esc.length?'His escorts lose their nerve and flee.':''}`,'s'); }
 // ion hits strip more shield from a Nemesis with brittle emitters
 function ionVs(att,w,t){ return ionOf(att,w)*(t&&t.nem&&nemWeak('ion')&&(w.ion||w.k==='lance')?1.5:1); }
@@ -652,7 +666,7 @@ function dmgMult(u,w,t,rear){
   if(u.isSq) m+=u.sqPct||0;
   if(rear) m+=u.fx.rearPct||0;
   if(rear&&t.nem&&nemWeak('flank')) m+=.25; // B4 Nemesis weakness: thin stern plating
-  if(B&&B.nemChallenge&&((u.nemFlag&&t.pflag)||(u.pflag&&t.nemFlag))) m+=.2; // R42 Voidsworn Nemesis: the flagship duel
+  if(B&&B.nemChallenge&&((u.nemFlag&&t.id===B.nemDuel)||(u.id===B.nemDuel&&t.nemFlag))) m+=.2; // R42 Voidsworn Nemesis: the flagship duel
   if(u.nem&&B&&B.nem&&(B.nem.traits||[]).includes('zeal')&&hdist(u,t)===1) m+=.12; // R42 trait: zealots up close
   if(u.isSq&&!t.isSq){ if(wingStance(u)==='hunt'&&t.hp<t.maxHp/2) m+=.2; if(wingPerks(B&&B.units.find(x=>x.id===u.parent)).includes('killers')) m+=.15; } // B4 wing doctrine and perk
   if(t.hp<t.maxHp/2) m+=u.fx.huntPct||0;
@@ -787,6 +801,7 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
     res.shield+=r.shield; res.hull+=r.hull; if(r.crit){ res.crits++; const cs=ownerFx(u).critSys; if(!res.sys && (called||cs||rnd()<.4)){ res.sys=systemDamage(t,called); if(cs&&res.sys) boonFx(t,'a_crit',res.sys,-48); } }
   }
   if(called){ u.crit-=15; t._calledSec=null; }
+  if(res.hits&&B.nem){ if(t.nem&&u.side==='player'){ if(quad===2) nemTrip('flank'); if((w.ion||w.k==='lance')&&res.shield>0) nemTrip('ion'); if(o.torp) nemTrip('torp'); } if(u.nem&&t.side==='player'&&!u.isSq&&hdist(u,t)<=2) nemTrip('brawl'); } // R42
   if(res.shield>0){ fxShield(t,quad); fxText(t,'−'+res.shield+' shield','#62ccff',-18); if(t.shMax>0&&t.sh[quad]<=.5){ fxShieldBreak(t,quad); fxText(t,'Shields down','#9fe2ff',-40);
       if(ownerFx(u).chainSh&&o.shBefore>.5&&!t.dead&&t.sh){ for(const qq of [(quad+1)%4,(quad+3)%4]) t.sh[qq]=Math.round(t.sh[qq]*2/3); boonFx(t,'s_chain','chain lightning',-62); } // Chain Lightning
       const ar=ownerFx(u).arcShort; if(ar&&o.shBefore>.5&&!t.dead){ t.hp-=ar; res.hull+=ar; u.dealt+=ar; boonFx(t,'s_arc','−'+ar,-56); } } }
@@ -887,6 +902,7 @@ async function boardUnit(u,t){
   if(!boardTargets(u).includes(t)) return false;
   if(B.usage&&u.side==='player') B.usage.board=(B.usage.board||0)+1; u.boarded=true; u.repel=true; u.mp=0; u.weapons.forEach(w=>w.fired=true);
   const live=liveFrom(u); await fxBoard(u,t); if(!live()||t.dead) return false; // abandoned after a stall: the boarders never land
+  if(t.nem&&u.side==='player') nemTrip('board'); // R42: his thin crews show once you board
   const a=u.crew*(BOARD_MULT[u.fac]||1)*(1+((u.fx&&u.fx.boardPct)||0))*(.75+rnd()*.5), d=t.crew*(BOARD_MULT[t.fac]||1)*(t.repel?2.25:1.5)*(.75+rnd()*.5);
   const kill=Math.round(a*.38), loss=Math.min(u.crew-1,Math.round(d*.3)); t.crew=Math.max(0,t.crew-kill); u.crew=Math.max(1,u.crew-loss);
   const who=u.side==='player'?'p':'e';
@@ -1360,7 +1376,7 @@ async function aiUnit(u){
       if(vet&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq){ const fl=flE; if(fl){ const dv=hdist(v,fl); score-=Math.max(0,dv-3)*(escIn>=2?.6:2); if(dv<=3) for(const x of escO) if(hdist(x,v)===1) score-=1; } } // two escorts in the ring cap the pull, and escorts spread out instead of stacking
       if(off<=0){ const hd=Math.min(...foes.filter(f=>!f.isSq||u.isSq).map(f=>hdist(v,f)).concat([99])), nd=Math.max(hd,fieldDist(PF,v,hd)); score-=Math.max(0,nd-minR)*4; } // travel distance, so a hole or a rock wall between us is not a shortcut
       score-=s.cost*.05;
-      if(!u.isSq){ score-=torpThreat(u,v)*.9; score-=syncPull(u,v)*(vet?2:1.2); } // B3: step out of incoming torpedo lanes; Hegemony keeps formation on its anchor
+      if(!u.isSq){ score-=torpThreat(u,v)*.9; score-=syncPull(u,v)*(vet?2:1.2)*(u.nem&&B.nemLine?2:1); } // B3: step out of incoming torpedo lanes; Hegemony keeps formation on its anchor
       if(B.obj&&B.obj.type==='hold'&&!u.isSq&&!vet) score-=hdist(v,B.obj.hex)*1.6; // veterans: aiObjScore (two nearest, urgency)
       score+=aiObjScore(u,v); score+=aiWellScore(u,v);
       if(score>bestScore){ bestScore=score; best=s; }
