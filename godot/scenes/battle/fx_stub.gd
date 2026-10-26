@@ -8,6 +8,10 @@ var items: Array = []        # [{node, t, dur, kind, a, b, ...}]
 static var _glow: Texture2D = null
 
 
+static func clear_static() -> void:
+	_glow = null
+
+
 static func glow_tex() -> Texture2D:
 	if _glow != null:
 		return _glow

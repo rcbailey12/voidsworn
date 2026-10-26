@@ -87,10 +87,24 @@ func _ready() -> void:
 	_build_hint()
 
 
+# true when the project has been imported (or exported) and the imported data for this file is really there; a project
+# copied without its .godot folder keeps the .import files but not the data, and load() would fail
+static func imported_ok(p: String) -> bool:
+	var ip := p + ".import"
+	if not FileAccess.file_exists(ip):
+		return false
+	for line in FileAccess.get_file_as_string(ip).split("\n"):
+		if line.begins_with("path=") or line.begins_with("path."):
+			var q := line.substr(line.find("\"") + 1)
+			q = q.substr(0, q.find("\""))
+			return q != "" and FileAccess.file_exists(q)
+	return false
+
+
 func _font(name: String) -> FontFile:
 	# the imported font when the project has been imported or exported, else the raw file
 	var p := "res://ui/battle/fonts/" + name
-	if FileAccess.file_exists(p + ".import"):
+	if imported_ok(p):
 		var r = load(p)
 		if r is FontFile:
 			return r

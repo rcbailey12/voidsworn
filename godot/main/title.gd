@@ -17,7 +17,7 @@ var _toast_t := 0.0
 func _font(n: String) -> FontFile:
 	# the imported font when the project has been imported or exported, else the raw file
 	var p := "res://ui/battle/fonts/" + n
-	if FileAccess.file_exists(p + ".import"):
+	if HUD.imported_ok(p):
 		var r = load(p)
 		if r is FontFile:
 			return r
@@ -82,7 +82,7 @@ func _ready() -> void:
 		menu.add_child(_button("How to play", func() -> void: main.new_run({"screen": "help"})))
 	menu.add_child(_button("Quick battle", func() -> void: main.quick_battle()))
 	menu.add_child(_button("Settings", func() -> void: _settings()))
-	menu.add_child(_button("Quit", func() -> void: get_tree().quit()))
+	menu.add_child(_button("Quit", func() -> void: main.quit_clean()))
 	toast_lbl = _label("", 17, HUD.EMBER, font_semi)
 	toast_lbl.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

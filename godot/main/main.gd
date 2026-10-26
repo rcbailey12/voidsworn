@@ -10,6 +10,7 @@ extends Node
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Title := preload("res://main/title.gd")
+const Host := preload("res://main/campaign_host.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
 
@@ -23,6 +24,48 @@ var campaign: Node
 var bot_mode := false
 
 
+# every quit goes through here: free what statics hold first, then quit (see ShipView.clear_static)
+func quit_clean(code := 0) -> void:
+	if battle != null and is_instance_valid(battle):
+		battle.queue_free()
+	if campaign != null and is_instance_valid(campaign):
+		campaign.queue_free()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	load("res://render/ship_view.gd").clear_static()
+	load("res://scenes/battle/fx_stub.gd").clear_static()
+	get_tree().quit(code)
+
+
+# bot runs: count every engine and script error per run (Godot 4.5+ Logger), since a script error never reaches the run's
+# own result
+class ErrCount extends Logger:
+	var n := 0
+	var first: Array = []
+	var mutex := Mutex.new()
+
+	func _log_error(function: String, file: String, line: int, code: String, rationale: String, editor_notify: bool, error_type: int, script_backtraces: Array) -> void:
+		mutex.lock()
+		n += 1
+		if first.size() < 5:
+			first.append("%s (%s:%d) %s" % [rationale if rationale != "" else code, file.get_file(), line, function])
+		mutex.unlock()
+
+	func _log_message(message: String, error: bool) -> void:
+		pass
+
+	func take() -> Array:
+		mutex.lock()
+		var out := [n, first.duplicate()]
+		n = 0
+		first.clear()
+		mutex.unlock()
+		return out
+
+
+var errlog: ErrCount
+
+
 func _ready() -> void:
 	name = "Main"
 	_args()
@@ -34,7 +77,7 @@ func _ready() -> void:
 		var lim := float(args["quit-after"])
 		get_tree().create_timer(lim, true, false, true).timeout.connect(func() -> void:
 			print("[main] quit-after %d s reached, quitting" % int(lim))
-			get_tree().quit(3))
+			quit_clean(3))
 	if bot_mode:
 		_bot_runs.call_deferred()
 	elif args.has("battle") or args.has("scenario") or args.has("shots") or args.has("bot") or args.has("seed"):
@@ -130,8 +173,8 @@ func new_run(opts := {}) -> void:
 		title.toast("The campaign is not in this build yet. Try a quick battle.")
 		return
 	_clear()
-	# G3's campaign (res://campaign/campaign.gd): a Node with start(main, opts) and run_over; it draws its own screens
-	campaign = load(CAMPAIGN_SCRIPT).new()
+	# campaign_host.gd runs G3's campaign (rules and screens as data) with real battles; README.md is the contract
+	campaign = Host.new()
 	add_child(campaign)
 	campaign.run_over.connect(func(_summary) -> void:
 		campaign.queue_free()
@@ -141,10 +184,7 @@ func new_run(opts := {}) -> void:
 
 
 static func campaign_has_save() -> bool:
-	if not ResourceLoader.exists(CAMPAIGN_SCRIPT):
-		return false
-	var c = load(CAMPAIGN_SCRIPT)
-	return c != null and c.has_method("has_save") and bool(c.has_save())
+	return Host.has_save()
 
 
 func quick_battle() -> void:
@@ -192,6 +232,23 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	return r
 
 
+# A battle already set up by the campaign host (its rules API, built in battle_setup).
+func play_api(a, opts := {}) -> Dictionary:
+	var b = BattleScene.instantiate()
+	b.external = true
+	b.bot = bot_mode or bool(opts.get("bot", false))
+	b.can_retreat = bool(opts.get("can_retreat", false))
+	b.in_campaign = true
+	add_child(b)
+	_settings_to_battle(b)
+	battle = b
+	b.begin_with(a)
+	var r: Dictionary = await b.finished
+	battle = null
+	b.queue_free()
+	return r
+
+
 # ---------------------------------------------------------------- bot runs (headless test of whole runs)
 
 func _bot_runs() -> void:
@@ -199,6 +256,8 @@ func _bot_runs() -> void:
 	Engine.time_scale = float(args.get("fast", 40.0))
 	Engine.max_fps = 0
 	var report := {"runs": [], "errors": 0, "softlocks": 0, "started": Time.get_datetime_string_from_system()}
+	errlog = ErrCount.new()
+	OS.add_logger(errlog)
 	var seed0 := int(args.get("seed", 1000))
 	for i in n:
 		var t0 := Time.get_ticks_msec()
@@ -209,6 +268,11 @@ func _bot_runs() -> void:
 			rec = await _bot_battle(seed0 + i)
 		if not (rec is Dictionary):
 			rec = {}
+		var ec: Array = errlog.take()
+		if int(ec[0]) > 0:
+			var el: Array = rec.get("errors", []).duplicate()
+			el.append("%d engine or script errors, first: %s" % [int(ec[0]), " | ".join(ec[1])])
+			rec["errors"] = el
 		if not rec.has("result"):
 			rec["result"] = "crashed"
 			rec["errors"] = ["the run stopped without a result (script error, see the log)"]
@@ -232,7 +296,8 @@ func _bot_runs() -> void:
 		var f := FileAccess.open(str(args["report"]), FileAccess.WRITE)
 		if f != null:
 			f.store_string(JSON.stringify(report, "  "))
-	get_tree().quit(0 if report["errors"] == 0 and report["softlocks"] == 0 else 1)
+	OS.remove_logger(errlog)
+	quit_clean(0 if report["errors"] == 0 and report["softlocks"] == 0 else 1)
 
 
 func _bot_battle(seed: int) -> Dictionary:
@@ -253,7 +318,7 @@ func _bot_battle(seed: int) -> Dictionary:
 
 
 func _bot_campaign(seed: int) -> Dictionary:
-	campaign = load(CAMPAIGN_SCRIPT).new()
+	campaign = Host.new()
 	add_child(campaign)
 	campaign.start(self, {"bot": true, "seed": seed})
 	var summary = await campaign.run_over

@@ -31,6 +31,14 @@ static func manifest() -> Dictionary:
 	return _manifest
 
 
+# drop the static caches before the engine shuts down (resources held in statics outlive the RenderingServer and crash
+# the exit on Windows: PC bot runs ended with an access violation after the summary)
+static func clear_static() -> void:
+	_manifest = null
+	_look_cache.clear()
+	_gt = null
+
+
 static func yaw_of(f) -> float:
 	return -deg_to_rad(60.0 * float(f))
 

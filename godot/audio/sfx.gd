@@ -1,4 +1,5 @@
 extends Node
+const HUDRes := preload("res://ui/battle/hud.gd")
 # The game's sound (sfx.js) in Godot: the same cue table (cues.json, rendered from sfx.js by build/render_synth.js), the
 # same recorded clips (clips/, converted from sfx_data.js) and the same synth takes (synth/, rendered offline from the
 # game's own synth code). A cue plays its recorded layers (round robin, pitch jitter, rate and delay per layer) plus its
@@ -51,7 +52,7 @@ func _ready() -> void:
 
 func _load(p: String) -> AudioStream:
 	# the imported stream when the project has been imported or exported, else the raw Ogg file
-	if FileAccess.file_exists(p + ".import"):
+	if HUDRes.imported_ok(p):
 		var r = load(p)
 		if r is AudioStream:
 			return r

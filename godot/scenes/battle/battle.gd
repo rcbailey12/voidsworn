@@ -1881,7 +1881,7 @@ func _on_action(name: String, arg) -> void:
 			args.erase("seed")
 			start_default()
 		"quit":
-			get_tree().quit()
+			_quit()
 
 
 # ---------------------------------------------------------------- in-battle menu (the browser's settings menu in the top bar)
@@ -2340,4 +2340,19 @@ func _shots() -> void:
 
 func _quit_report() -> void:
 	print("[battle] report: ", JSON.stringify({"result": result.get("result", "unfinished"), "round": V.get("round"), "errors": errors, "secs": Time.get_ticks_msec() / 1000.0 - t_start}))
-	get_tree().quit()
+	_quit()
+
+
+func _quit(code := 0) -> void:
+	var m = get_node_or_null("/root/Main")
+	if m != null and m.has_method("quit_clean"):
+		m.quit_clean(code)
+		return
+	set_process(false)
+	for c in get_children():
+		c.queue_free()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	ShipView.clear_static()
+	Fx.clear_static()
+	get_tree().quit(code)

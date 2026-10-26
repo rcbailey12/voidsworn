@@ -126,4 +126,8 @@ func _ready() -> void:
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(out.path_join("lineup_%s.png" % view))
 		print("[lineup] ", out.path_join("lineup_%s.png" % view))
+	for c in get_children():
+		c.queue_free()
+	await get_tree().process_frame
+	ShipView.clear_static()
 	get_tree().quit()
