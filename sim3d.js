@@ -106,6 +106,7 @@ async function botUnit(u){
   if(!u.isSq && await tacticBoard(u)){ u.activated=true; return; }
   for(let i=0;i<u.weapons.length;i++){ let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt) await fireWeapon(u,i,bt); if(B.over) return; }
   if(process.env.BOTBRACE!=='0'&&!u.isSq&&!u.dead&&!B.over&&!u.weapons.some(w=>w.fired)&&u.hp<u.maxHp*.5&&canOrder(u,'brace')&&evalThreat(u,alive('enemy'))>10) giveOrder(u,'brace');
+  if(!u.isSq&&!u.dead&&!B.over&&canFade(u)) await fadeMove(u); // the bot uses the Ithar fade too
   u.activated=true;
 }
 async function match(pf,ef,mode,alt){
