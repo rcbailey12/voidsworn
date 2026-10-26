@@ -16,7 +16,6 @@ extends Node3D
 signal finished(result: Dictionary)
 
 const API := preload("res://rules/battle_api.gd")
-const RulesRef := preload("res://rules/rules.gd")
 const Board := preload("res://render/board.gd")
 const ShipView := preload("res://render/ship_view.gd")
 const CamRig := preload("res://render/camera_rig.gd")
@@ -51,7 +50,7 @@ const TIPS := [
 
 var args := {}
 var api
-var R                      # api.R, read only (previews and tips)
+var TBL := {}               # the rules tables (FACTIONS, ADMIRALS, ABILITIES, ORDERS, COMMANDS, ARC_NAME, PACE ...), read only
 var PACE := {}
 var V := {}                # the view the picture is synced to
 var VU := {}               # id -> unit in V
@@ -323,8 +322,6 @@ func start_default() -> void:
 	var sc := {"seed": seed, "sector": 1, "admiral": "vex", "fleet": ["penitent", "harrow", "warden"], "fac": fac,
 		"obj": "rout", "shape": "open", "map": str(args.get("map", maps[rng.randi() % maps.size()])), "dep": "line", "kind": "battle"}
 	# the game's own sector 1 fleet generation when the rules have it, else a fixed sector 1 group
-	if not RulesRef.new().has_method("genEnemyFleet"):
-		sc["enemies"] = g
 	start_scenario(sc)
 
 
@@ -356,11 +353,10 @@ func begin_with(a) -> void:
 
 func _begin(a) -> void:
 	api = a
-	R = a.R
-	rules_log = R.has_method("logm")
+	TBL = _api_tables()
 	if ai_level != "":
-		R.AI_LEVEL = ai_level
-	PACE = R.PACE
+		_api_set_ai(ai_level)
+	PACE = TBL.get("PACE", {})
 	ended = false
 	result = {}
 	errors.clear()
@@ -429,7 +425,7 @@ func _begin(a) -> void:
 	cam.r = cam.home_r
 	cam.snap()
 	hud.log_text.clear()
-	var F = R.FACTIONS.get(_enemy_fac(), {}) if not rules_log else {}
+	var F = {}
 	var ne := 0
 	for u in V["units"]:
 		if u["side"] == "enemy" and not u["squadron"]:
@@ -445,12 +441,15 @@ func _begin(a) -> void:
 	voice = null
 	if not bot and ResourceLoader.exists("res://story/battle_voice.gd"):
 		voice = load("res://story/battle_voice.gd").new()
-		voice.setup_from_rules(R, V)
+		if voice.has_method("setup_from_api"):
+			voice.setup_from_api(api, V)
+		else:
+			voice.setup_from_rules(api.R, V)  # until the story layer reads battle_api.gd (setup_from_api)
 		for l in voice.opening():
 			hud.add_log(l["text"], l["kind"])
-	if ResourceLoader.exists("res://portraits/portraits.gd") and R.RUN != null:
-		var adm := str(R.RUN.get("admiral", ""))
-		var A = R.ADMIRALS.get(adm, {})
+	var adm := _api_admiral()
+	if ResourceLoader.exists("res://portraits/portraits.gd") and adm != "":
+		var A = TBL.get("ADMIRALS", {}).get(adm, {})
 		hud.set_crest(load("res://portraits/portraits.gd").crest(adm), str(A.get("n", adm)) if A is Dictionary else adm)
 	await _warmup()
 	if music != null:
@@ -654,31 +653,103 @@ func _think():
 	var tid := WorkerThreadPool.add_task(func() -> void:
 		var ev = api.step()
 		think_out = {"events": ev, "view": api.view()})
+	_think_tid = tid
 	while not WorkerThreadPool.is_task_completed(tid):
 		await get_tree().process_frame
-	WorkerThreadPool.wait_for_task_completion(tid)
+	if _think_tid == tid:
+		WorkerThreadPool.wait_for_task_completion(tid)
+		_think_tid = -1
 	thinking = false
-	if R.not_ported != "":
-		_error("NOT PORTED: " + R.not_ported)
-		R.not_ported = ""
+	var np := _api_not_ported()
+	if np != "":
+		_error("NOT PORTED: " + np)
 	return think_out
 
 
 func _cmd(f: Callable) -> bool:
 	# a player command: the rules act at once, the picture follows
-	if busy or ended or api.phase != "player":
+	if not _api_join() or busy or ended or api.phase != "player":
 		return false
 	var ok = f.call()
 	var ev: Array = api.take_events()
-	if R.not_ported != "":
-		_error("NOT PORTED: " + R.not_ported)
-		R.not_ported = ""
+	var np := _api_not_ported()
+	if np != "":
+		_error("NOT PORTED: " + np)
 	if ev.is_empty() and not ok:
 		return false
 	batches.append({"events": ev, "view": api.view()})
 	_clear_overlay()
 	_runner()
 	return bool(ok)
+
+
+# Threads (the scene enforces this; the rules API locks only step()): the rules are never used by two threads at once.
+# The enemy's step() and the threat map run on worker threads. Every main-thread path that reads or changes the rules
+# first calls _api_join(): it finishes a running threat map at once (its result is kept) and answers false while the enemy
+# is thinking, so the caller skips the rules and draws from the last view instead. _exit_tree drains both tasks.
+var _think_tid := -1
+var _threat_tid := -1
+
+
+# The rules only through battle_api.gd (the verifier's rule, Oct 26): the wrappers below are the API's; until each lands
+# in battle_api.gd the marked fallback reads api.R in this one place only.
+func _api_tables() -> Dictionary:
+	if api.has_method("tables"):
+		return api.tables()
+	return api.R.TB  # fallback until battle_api.tables() lands
+
+
+func _api_admiral() -> String:
+	if api == null:
+		return ""
+	if api.has_method("run_info"):
+		return str(api.run_info().get("admiral", ""))
+	return str(api.R.RUN.get("admiral", "")) if api.R.RUN is Dictionary else ""  # fallback until battle_api.run_info() lands
+
+
+func _api_set_ai(level: String) -> void:
+	if api.has_method("set_ai_level"):
+		api.set_ai_level(level)
+	else:
+		api.R.AI_LEVEL = level  # fallback until battle_api.set_ai_level() lands
+
+
+func _api_not_ported() -> String:
+	if api.has_method("take_not_ported"):
+		return api.take_not_ported()
+	var np: String = api.R.not_ported  # fallback until battle_api.take_not_ported() lands
+	api.R.not_ported = ""
+	return np
+
+
+static func _jt(x) -> bool:  # JS truthiness, as the rules' jt
+	if x == null:
+		return false
+	match typeof(x):
+		TYPE_BOOL: return x
+		TYPE_INT: return x != 0
+		TYPE_FLOAT: return x != 0.0 and not is_nan(x)
+		TYPE_STRING: return x != ""
+	return true
+
+
+func _api_join() -> bool:
+	if api == null:
+		return false
+	if _threat_tid >= 0:
+		WorkerThreadPool.wait_for_task_completion(_threat_tid)
+		_threat_tid = -1
+		_threat_done()
+	return not thinking
+
+
+func _exit_tree() -> void:
+	if _threat_tid >= 0:
+		WorkerThreadPool.wait_for_task_completion(_threat_tid)
+		_threat_tid = -1
+	if _think_tid >= 0:
+		WorkerThreadPool.wait_for_task_completion(_think_tid)
+		_think_tid = -1
 
 
 func _error(m: String) -> void:
@@ -884,7 +955,7 @@ func _play_event(e: Dictionary) -> void:
 			await wait(120.0)
 		"ability":
 			var ab := str(e["ab"])
-			var A = R.ABILITIES.get(ab, {})
+			var A = TBL.get("ABILITIES", {}).get(ab, {})
 			if ab != "launch":
 				_log("%s: %s." % [_name(e["unit"]), str(A.get("n", ab))], _who(e["unit"]))
 			var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "hegemony")), HT.FAC3D["hegemony"])["eng"]
@@ -908,7 +979,7 @@ func _play_event(e: Dictionary) -> void:
 				sfx.boom(1.0, p)
 			await wait(300.0)
 		"order":
-			var O = R.ORDERS.get(str(e["order"]), {})
+			var O = TBL.get("ORDERS", {}).get(str(e["order"]), {})
 			_log("%s: %s." % [_name(e["unit"]), str(O.get("n", e["order"]))], _who(e["unit"]))
 			if e["order"] == "brace":
 				_float(e["unit"], "Braced", Color("#9fd4ff"), -24)
@@ -967,9 +1038,9 @@ func _play_event(e: Dictionary) -> void:
 			pass
 
 
-# the battle log: the rules' own log lines (G1 log events, word for word as the game) when the rules write them; the
-# scene's own lines only as a fallback for rules builds without them
-var rules_log := false
+# the battle log: the rules' own log lines (G1 log events, word for word as the game); the scene's own lines are kept
+# only as a fallback for a rules build without log events
+var rules_log := true
 
 
 func _log(m: String, c: String) -> void:
@@ -978,7 +1049,7 @@ func _log(m: String, c: String) -> void:
 
 
 func _command(id: String) -> Dictionary:
-	for c in R.COMMANDS.values() if R.COMMANDS is Dictionary else R.COMMANDS:
+	for c in (TBL.get("COMMANDS", {}).values() if TBL.get("COMMANDS") is Dictionary else TBL.get("COMMANDS", [])):
 		if c is Dictionary and str(c.get("id", "")) == id:
 			return c
 	return {"n": id}
@@ -997,7 +1068,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	var la: float = sv.cur_yaw
 	for st in path:
 		var a: float = la + angle_difference(la, ShipView.yaw_of(st["f"]))
-		if R.jt(st.get("rot")):
+		if _jt(st.get("rot")):
 			s += float(PACE["rot"])
 			yaws.append({"s": s, "yaw": a})
 		else:
@@ -1410,7 +1481,7 @@ var _ui_cache := {}
 
 
 func _ui(id: String) -> Dictionary:
-	if id == "" or api == null:
+	if id == "" or not _api_join():
 		return {}
 	var k := "%s|%d|%d" % [id, batches.size(), hud.log_text.get_line_count()]
 	if not _ui_cache.has(k):
@@ -1513,8 +1584,10 @@ func _best_facing(u: Dictionary) -> void:
 
 
 func _firing_set(t_id: String) -> Array:
-	var ru = api.unit(sel)
 	var out: Array = []
+	if not _api_join():
+		return out
+	var ru = api.unit(sel)
 	if ru == null:
 		return out
 	var idx: Array = [armed] if armed >= 0 else range(ru["weapons"].size())
@@ -1526,6 +1599,8 @@ func _firing_set(t_id: String) -> Array:
 
 func _attack_move(t_id: String):
 	# v51 attack-move (the rules' attack_plan): an enemy your guns can't reach yet; burn to the best hex and fire on the way
+	if not _api_join():
+		return null
 	var am = api.attack_plan(sel, t_id, [armed] if armed >= 0 else null)
 	if am == null:
 		return null
@@ -1647,7 +1722,7 @@ func _overlay() -> void:
 		var pts: Array = []
 		var prev: Vector3 = board.hex_world(u["q"], u["r"], 0.5)
 		for p in st.path:
-			if R.jt(p.get("rot")):
+			if _jt(p.get("rot")):
 				continue
 			var c: Vector3 = board.hex_world(p["q"], p["r"], 0.5)
 			for j in 3:
@@ -1683,6 +1758,7 @@ func _threat_fills() -> Dictionary:
 			# the rules' computeThreat (G1), off the main thread: nothing else calls the API while the player phase is idle
 			var tid := WorkerThreadPool.add_task(func() -> void:
 				_threat_next = api.threat_map())
+			_threat_tid = tid
 			_threat_wait(tid)
 		else:
 			_threat_busy = false
@@ -1702,12 +1778,19 @@ var _threat_next := {}
 
 
 func _threat_wait(tid: int) -> void:
-	while not WorkerThreadPool.is_task_completed(tid):
+	while _threat_tid == tid and not WorkerThreadPool.is_task_completed(tid):
 		await get_tree().process_frame
+	if _threat_tid != tid:
+		return  # _api_join already finished it
 	WorkerThreadPool.wait_for_task_completion(tid)
+	_threat_tid = -1
+	_threat_done()
+
+
+func _threat_done() -> void:
 	_threat_cache = _threat_next
 	_threat_busy = false
-	_overlay()
+	_overlay.call_deferred()
 
 
 # target hexes for nova, blink and launch
@@ -1825,7 +1908,7 @@ func _rotate(d: int) -> void:
 		_overlay()
 		return
 	# turning in place: the rules' own rotate (G1) when present
-	if api.has_method("rotate") and R.has_method("rotateUnit"):
+	if api.has_method("rotate"):
 		var rid := sel
 		if not _cmd(func(): return api.rotate(rid, d)):
 			hud.toast("No turn left this activation.")
@@ -1916,7 +1999,7 @@ func _on_hover(p: Vector2) -> void:
 
 
 func _on_click() -> void:
-	if not _can_act() or hover.x == 99999:
+	if not _can_act() or hover.x == 99999 or not _api_join():
 		return
 	var u := _unit_at(hover.x, hover.y)
 	var s := _sel_unit()
@@ -1971,7 +2054,7 @@ func _on_click() -> void:
 						if api.fire(id, i, tid):
 							any = true
 						var tu = api.unit(tid)
-						if tu == null or R.jt(tu.get("dead")) or api.phase != "player":
+						if tu == null or _jt(tu.get("dead")) or api.phase != "player":
 							break
 					return any)
 				armed = -1
@@ -2030,7 +2113,7 @@ func _cant_fire_reason(t_id: String) -> String:
 
 
 func _tip() -> String:
-	if hover.x == 99999 or busy or api == null or api.phase != "player":
+	if hover.x == 99999 or busy or not _api_join() or api.phase != "player":
 		return ""
 	var u := _unit_at(hover.x, hover.y)
 	var s := _sel_unit()
@@ -2052,7 +2135,7 @@ func _tip() -> String:
 		return "[b]%s[/b]\n%s" % [zi[0], zi[1]]
 	var terr := str(V["terrain"].get(hk, ""))
 	if terr != "":
-		var info = R.TB.get("TERRAIN_INFO", {}).get(terr, {}) if R.TB is Dictionary else {}
+		var info = TBL.get("TERRAIN_INFO", {}).get(terr, {})
 		if info is Dictionary and not info.is_empty():
 			return "[b]%s[/b]\n%s" % [str(info.get("n", terr)), str(info.get("fx", info.get("d", "")))]
 		return "[b]%s[/b]" % terr.capitalize()
@@ -2325,9 +2408,9 @@ func _refresh_ui() -> void:
 
 
 func _command_label() -> String:
-	if R == null or R.RUN == null:
+	if api == null or _api_admiral() == "":
 		return "Command"
-	var A = R.ADMIRALS.get(str(R.RUN.get("admiral", "")), {})
+	var A = TBL.get("ADMIRALS", {}).get(_api_admiral(), {})
 	var c = A.get("cmd") if A is Dictionary else null
 	return str(c.get("n", "Command")) if c is Dictionary else "Command"
 
@@ -2359,6 +2442,8 @@ func _panel_info() -> Dictionary:
 	if id == "" or not VU.has(id):
 		return {}
 	var u: Dictionary = VU[id]
+	if not _api_join():
+		return {}
 	var ru = api.unit(id)
 	var d: Dictionary = disp.get(id, {"hp": u["hp"], "sh": u["sh"]})
 	var info := {"name": u["name"], "cls": u["cls"], "side": u["side"], "flag": u["flagship"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"]}
@@ -2381,9 +2466,9 @@ func _panel_info() -> Dictionary:
 	for w in u["weapons"]:
 		var rw = ru["weapons"][int(w["i"])]
 		var right := ""
-		if float(R.z0(w["off"])) > 0:
+		if float(_z0(w["off"])) > 0:
 			right = "offline"
-		elif float(R.z0(w["cd"])) > 0:
+		elif float(_z0(w["cd"])) > 0:
 			right = "reloading %d" % int(w["cd"])
 		elif not w["ready"]:
 			right = "fired"
@@ -2391,16 +2476,16 @@ func _panel_info() -> Dictionary:
 			right = "%d%%" % int(api.preview_fire(id, int(w["i"]), tgt)["hit"])
 		else:
 			right = "ready"
-		var arc_name = R.ARC_NAME.get(str(w["arc"]), str(w["arc"])) if R.ARC_NAME is Dictionary else str(w["arc"])
+		var arc_name = TBL.get("ARC_NAME", {}).get(str(w["arc"]), str(w["arc"]))
 		ws.append({"i": w["i"], "name": str(w["name"]), "desc": "%s, range %d, %d×%d" % [str(arc_name), int(w["range"]), int(rw["shots"]), int(round(float(rw["dmg"])))], "right": right, "ready": w["ready"], "armed": int(w["i"]) == armed and id == sel})
 	info["weapons"] = ws
 	if u["side"] == "player" and not u["dead"]:
 		var can := _can_act() and _usable(u)
 		var orders: Array = []
 		var ui := _ui(id)
-		orders.append({"text": "Brace (B)", "act": "brace", "on": can and bool(ui.get("orders", {}).get("brace", false)), "tip": str(R.ORDERS["brace"]["d"])})
+		orders.append({"text": "Brace (B)", "act": "brace", "on": can and bool(ui.get("orders", {}).get("brace", false)), "tip": str(TBL.get("ORDERS", {}).get("brace", {}).get("d", ""))})
 		if u.get("ab") != null:
-			var A = R.ABILITIES.get(str(u["ab"]), {})
+			var A = TBL.get("ABILITIES", {}).get(str(u["ab"]), {})
 			orders.append({"text": str(A.get("n", u["ab"])) + ("" if u["abReady"] else " (%d)" % int(u["abCd"])), "act": "ability", "on": can and u["abReady"], "tip": str(A.get("d", ""))})
 		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "tip": "Charge the first enemy dead ahead (needs a run-up)."})
 		orders.append({"text": "Board (G)", "act": "board", "on": can and not (ui.get("board", []) as Array).is_empty(), "tip": "Send boarding crews into an adjacent enemy."})
@@ -2482,7 +2567,7 @@ func _float_hit(id, sh: float, hull: float, crit) -> void:
 # ---------------------------------------------------------------- onboarding (ui3d.js tutorialCheck)
 
 func _tutorial() -> void:
-	if tips_off or bot or ended or hud.tipcard != null or api == null or V.is_empty():
+	if tips_off or bot or ended or hud.tipcard != null or V.is_empty() or not _api_join():
 		return
 	var s := _sel_unit()
 	var moved := false
@@ -2491,10 +2576,10 @@ func _tutorial() -> void:
 	for u in V["units"]:
 		if u["side"] == "player" and not u["dead"]:
 			var ru = api.unit(u["id"])
-			if ru != null and float(ru["mp"]) < float(R.z0(ru.get("speed"))):
+			if ru != null and float(ru["mp"]) < float(_z0(ru.get("speed"))):
 				moved = true
 			for w in ru["weapons"]:
-				if R.jt(w.get("fired")):
+				if _jt(w.get("fired")):
 					fired = true
 	if not s.is_empty() and _usable(s):
 		for e in V["units"]:
@@ -2557,7 +2642,7 @@ func _bot_step() -> void:
 		var aid := u_id
 		_cmd(func():
 			api.ai_activate(aid)
-			if api.phase == "player" and api.unit(aid) != null and R.jt(api.unit(aid).get("activated")) == false and _alive_active(aid):
+			if api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false and _alive_active(aid):
 				api.end_activation()
 			return true)
 		return

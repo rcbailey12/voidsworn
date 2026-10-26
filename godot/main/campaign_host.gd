@@ -51,6 +51,9 @@ func start(m: Node, o: Dictionary) -> void:
 	C.battle_mode = "external"
 	C.battle_setup = _setup_battle
 	C.battle_requested.connect(_on_battle)
+	# the campaign's random stream: the browser seeds it at random on every load (core.js RNG_S, nothing saved), so a new
+	# or continued run gets fresh draws each launch; bot runs seed it from --seed so each run differs and repeats exactly
+	_seed_campaign(int(o.get("seed", 1)) if bot else randi())
 	if bot:
 		rng.seed = int(o.get("seed", 1))
 		C.persist_on = false
@@ -85,6 +88,13 @@ func start(m: Node, o: Dictionary) -> void:
 	ui.bind(C)
 	C.changed.connect(_on_changed)
 	_on_changed()
+
+
+func _seed_campaign(s: int) -> void:
+	if C.has_method("seed_rng"):
+		C.seed_rng(s & 0xFFFFFFFF)
+	else:
+		load("res://rules/jsm.gd").rnd_seed(s & 0xFFFFFFFF)  # fallback until campaign.seed_rng() lands (G3)
 
 
 static func has_save() -> bool:
@@ -124,7 +134,7 @@ func _setup_battle(run: Dictionary, cfg: Dictionary) -> Dictionary:
 				hp += float(sh.get("hp", 0)); mh += float(sh.get("maxHp", sh.get("hp", 0)))
 		cfg_now = cfg.duplicate()
 		cfg_now["_fleet"] = "%d ships %s, hull %d%%, credits %s" % [fl.size(), str(fl.map(func(x): return str(x.get("tpl", x.get("t", "?"))) if x is Dictionary else "?")), int(100.0 * hp / max(1.0, mh)), str(run.get("credits", "?"))]
-	return api_now.R.B
+	return _bstate(api_now)
 
 
 func _on_battle() -> void:
@@ -150,17 +160,33 @@ func _play_battle() -> void:
 	in_battle = false
 	if bot:
 		log_b.append(_battle_line(a, res, r))
-	C.finish_battle(res if res in ["win", "loss", "retreat"] else "loss", a.R.B)
+	C.finish_battle(res if res in ["win", "loss", "retreat"] else "loss", _bstate(a))
+
+
+# the battle's rules state for the campaign's after-battle rules, through battle_api.gd (fallback until battle_state() lands)
+static func _bstate(a) -> Dictionary:
+	return a.battle_state() if a.has_method("battle_state") else a.R.B
+
+
+static func _jt(x) -> bool:  # JS truthiness, as the rules' jt
+	if x == null:
+		return false
+	match typeof(x):
+		TYPE_BOOL: return x
+		TYPE_INT: return x != 0
+		TYPE_FLOAT: return x != 0.0 and not is_nan(x)
+		TYPE_STRING: return x != ""
+	return true
 
 
 # one battle's outcome for the bot-run report (to compare with sim3d campaign: contrib/opus/compute/balance_reference.md section 2)
 func _battle_line(a, res: String, r: Dictionary) -> Dictionary:
-	var B: Dictionary = a.R.B
+	var B: Dictionary = _bstate(a)
 	var ps := 0; var pa := 0; var es := 0; var ea := 0; var hp := 0.0; var mh := 0.0
 	for u in B.get("units", []):
-		if a.R.jt(u.get("isSq")) or not a.R.jt(u.get("ship")) and u.get("side") == "player":
+		if _jt(u.get("isSq")) or not _jt(u.get("ship")) and u.get("side") == "player":
 			continue
-		var dead: bool = a.R.jt(u.get("dead")) or a.R.jt(u.get("fled"))
+		var dead: bool = _jt(u.get("dead")) or _jt(u.get("fled"))
 		if u.get("side") == "player":
 			ps += 1; pa += 0 if dead else 1
 			mh += float(u.get("maxHp", 0)); hp += 0.0 if dead else max(0.0, float(u.get("hp", 0)))
