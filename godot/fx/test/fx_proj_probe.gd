@@ -31,7 +31,7 @@ func _run() -> void:
 	world.add_child(cam)
 	cam.current = true
 	cam.fov = 44.0
-	cam.look_at_from_position(Vector3(0, 28, 78), Vector3(0, 4, 30))
+	cam.look_at_from_position(Vector3(10, 22, 70), Vector3(10, 4, 30))
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.02, 0.02, 0.03)
@@ -47,14 +47,14 @@ func _run() -> void:
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"quality": "high"})
-	fx.add_ship("A", a, {"faction": "corsair", "size": 1.3})
+	fx.add_ship("A", a, {"faction": OS.get_environment("PFAC") if OS.get_environment("PFAC") != "" else "corsair", "size": 1.3})
 	fx.add_ship("B", b, {"faction": "voidsworn", "size": 1.3})
 	var r: Dictionary = fx.volley("A", "torp", "B", {"weapon_id": "torp", "shots": [true, true], "hits": [{"shield": 5, "hull": 0}, {"shield": 5, "hull": 0}], "pd": 1})
 	print("volley ", r)
 	for i in 150:
 		fx.step(1.0 / 60.0)
 		await RenderingServer.frame_post_draw
-		if i == 60 and OS.get_environment("PROBE_OUT") != "":
+		if i == int(OS.get_environment("PROBE_I") if OS.get_environment("PROBE_I") != "" else "60") and OS.get_environment("PROBE_OUT") != "":
 			vp.get_texture().get_image().save_png(OS.get_environment("PROBE_OUT"))
 		if i % 15 == 0:
 			var list: Array = fx.dstate.get("proj", [])

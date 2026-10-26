@@ -181,8 +181,8 @@ void fragment() {
 		float n2 = fbm(p * 4.5 + vec2(age * 9.0, seed * 3.0));
 		float core = smoothstep(0.55, 0.0, r + (n - 0.5) * 0.35);
 		float corona = exp(-r * r * 2.2) * (0.55 + 0.6 * n2) * smoothstep(1.0, 0.6, r + (n2 - 0.5) * 0.4);
-		vec3 hot = mix(vCol.rgb, vec3(1.0, 0.97, 0.9), core * core);
-		add = (hot * core * 2.2 + vCol.rgb * corona * 0.9) * I;
+		vec3 hot = mix(vCol.rgb, vec3(1.0, 0.97, 0.9), core * core * 0.6);
+		add = (hot * core * 1.8 + vCol.rgb * corona * 1.1) * I;
 	} else if (k == 15) {
 		// bio glob: a wet, dark-skinned body with a bioluminescent heart and a wobbling rim
 		float n = fbm(p * 2.0 + vec2(seed * 5.0, age * 2.0));
@@ -696,8 +696,13 @@ void fragment() {
 		float cr = spow(1.0 - abs(fbm(lp.xy * 0.6 + lp.zx * 0.4 + scene_t * 0.4) * 2.0 - 1.0), 8.0);
 		pat = 0.6 + 1.4 * cr;
 	} else if (style == 1) {
-		float hc = hexcell(vec2(atan(vL.z, vL.y) * 2.2, vL.x * 6.0) * 1.0);
-		pat = 0.35 + 1.8 * smoothstep(0.38, 0.48, hc);
+		vec2 hp = vec2(atan(lp.z, lp.y) * 0.5 * (rad.y + rad.z), lp.x) / 1.5;
+		const vec2 hs = vec2(1.0, 1.7320508);
+		vec4 hcc = floor(vec4(hp, hp - vec2(0.5, 1.0)) / hs.xyxy) + 0.5;
+		vec4 hh = vec4(hp - hcc.xy * hs, hp - (hcc.zw + 0.5) * hs);
+		vec2 hq = abs(dot(hh.xy, hh.xy) < dot(hh.zw, hh.zw) ? hh.xy : hh.zw);
+		float hd = 0.5 - max(dot(hq, hs * 0.5), hq.x);
+		pat = 0.45 + 1.7 * smoothstep(0.07, 0.0, hd);
 	} else if (style == 2) {
 		float fl = mix(step(0.3, vnoise(vec2(scene_t * 28.0, 3.0))), 0.8, fx_calm);
 		float pa = smoothstep(0.35, 0.65, fbm(lp.xz * 0.35 + lp.y * 0.2 + scene_t * 0.7));
@@ -847,7 +852,7 @@ void fragment() {
 # charred interior with embers, so the pieces read as solid. heat cools from 1 to 0 over the wreck's life.
 const CHUNK := """
 shader_type spatial;
-render_mode unshaded, blend_mix, depth_draw_never, depth_test_disabled, cull_disabled, shadows_disabled, fog_disabled;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + COMMON + """
 uniform vec4 seeds[8];
 uniform int n_seeds = 2;
@@ -874,7 +879,7 @@ void fragment() {
 	if (!FRONT_FACING) {
 		float n = fbm(vL.xy * 1.3 + vL.zx * 0.9);
 		float emb = smoothstep(0.62, 0.8, n) * heat;
-		ALBEDO = vec3(0.012, 0.010, 0.009) * (0.6 + n) + (glow * emb * 2.0 * fl + glow * exp(-x * 0.8) * heat * 1.5) * fx_gain;
+		ALBEDO = vec3(0.012, 0.010, 0.009) * (0.6 + n) + (glow * emb * 1.6 * fl + glow * exp(-x * 2.5) * heat * 1.2) * fx_gain;
 		ALPHA = 1.0;
 	} else {
 		if (x > 3.0 || heat <= 0.01) { discard; }
@@ -883,6 +888,35 @@ void fragment() {
 		ALBEDO = clamp(c * 3.0 * heat * fl * fx_gain, 0.0, 64.0);
 		ALPHA = clamp(g * (0.4 + 0.6 * heat), 0.0, 1.0);
 	}
+}
+"""
+
+const CRACKS := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_back, shadows_disabled, fog_disabled;
+""" + COMMON + """
+uniform float t0 = 0.0;
+uniform float dur = 1.5;
+uniform float scale = 0.5;
+uniform vec3 glow = vec3(1.0, 0.45, 0.1);
+varying vec3 vL;
+float h3(vec3 p) { p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float n3(vec3 x) {
+	vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(mix(h3(i), h3(i + vec3(1.0, 0.0, 0.0)), f.x), mix(h3(i + vec3(0.0, 1.0, 0.0)), h3(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+		mix(mix(h3(i + vec3(0.0, 0.0, 1.0)), h3(i + vec3(1.0, 0.0, 1.0)), f.x), mix(h3(i + vec3(0.0, 1.0, 1.0)), h3(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
+}
+void vertex() { vL = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	float u = clamp((scene_t - t0) / dur, 0.0, 1.0);
+	if (u <= 0.0) { discard; }
+	vec3 p = vL * scale;
+	float r = 1.0 - abs(n3(p) * 2.0 - 1.0);
+	float r2 = 1.0 - abs(n3(p * 2.3 + 4.0) * 2.0 - 1.0);
+	float crack = smoothstep(1.0 - 0.05 * u, 1.0, r) + smoothstep(1.0 - 0.03 * u, 1.0, r2) * 0.7;
+	float fl = flick(0.7 + 0.3 * n3(p * 3.0 + scene_t * 4.0), scene_t, 2.0);
+	vec3 c = mix(glow, vec3(1.0, 0.85, 0.6), smoothstep(0.5, 1.0, crack));
+	ALBEDO = clamp(c * crack * (1.5 + 4.0 * u) * fl * fx_gain, 0.0, 64.0);
 }
 """
 
@@ -926,13 +960,19 @@ float field(vec3 pl, float age, inout vec3 em, inout vec3 alb) {
 		return d * d * 3.0 * vis;
 	}
 	float y = pl.y + 0.5;
-	float rad = 0.12 + 0.38 * y;
-	float q = length(pl.xz) / rad;
-	float n = fbm3(vec3(pl.x * 4.0, pl.y * 6.0 - scene_t * 2.4, pl.z * 4.0) + P.z);
-	float puff = 0.65 + 0.35 * sin(scene_t * 5.0 - y * 10.0 + P.z);
-	em = vec3(1.0, 0.45, 0.12) * exp(-y * 9.0) * 1.5;
-	alb = vec3(0.55, 0.6, 0.7);
-	return max(0.0, (1.0 - q) * 1.5 + (n - 0.5) * 1.6 - 0.3) * (1.0 - smoothstep(0.6, 1.0, y)) * puff * P.x;
+	// curl the column: the plume wanders and twists as it rises
+	vec2 sway = vec2(fbm3(vec3(y * 2.0 - scene_t * 0.7, P.z, 1.0)) - 0.5, fbm3(vec3(y * 2.0 - scene_t * 0.6, P.z, 7.0)) - 0.5) * y * 0.5;
+	vec2 xz = pl.xz - sway;
+	float rad = 0.05 + 0.42 * y;
+	float q = length(xz) / rad;
+	float n = fbm3(vec3(xz.x * 5.0, pl.y * 7.0 - scene_t * 2.8, xz.y * 5.0) + P.z);
+	float n2 = fbm3(vec3(xz.x * 11.0, pl.y * 13.0 - scene_t * 4.0, xz.y * 11.0) + P.z * 2.0);
+	float puff = 0.6 + 0.4 * sin(scene_t * 4.0 - y * 9.0 + P.z);
+	em = vec3(1.0, 0.45, 0.12) * exp(-y * 14.0) * 2.0;
+	alb = mix(vec3(0.42, 0.38, 0.34), vec3(0.3, 0.33, 0.38), smoothstep(0.0, 0.5, y));
+	float body = (1.0 - q) * 1.3 + (n - 0.5) * 1.8 + (n2 - 0.5) * 0.9 - 0.35;
+	float fade = (1.0 - smoothstep(0.35, 1.0, y)) * smoothstep(0.0, 0.04, y);
+	return max(0.0, body) * fade * puff * P.x * mix(1.0, 0.45, y);
 }
 varying vec3 vW;
 void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }

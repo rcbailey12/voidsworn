@@ -537,3 +537,63 @@ func particles_emitted() -> int:
 	for k in pools:
 		n += (pools[k] as POOLS.Pool).emitted
 	return n
+
+
+# ---------------------------------------------------------------- shader warm-up (API.md 1)
+
+# Draws every effect material once in front of the camera, in the battle's own environment and lights, so no shader
+# pipeline compiles for the first time in the middle of a fight (the first lance, shield ripple or death). Await it on
+# the loading screen after the ships, lights and world are built: `await fx.warmup(cam)`. Takes a few frames.
+func warmup(cam: Camera3D, frames := 4) -> void:
+	if cam == null:
+		return
+	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
+	var T = now
+	var c = Color(1, 0.6, 0.3)
+	for k in [0, 1, 2, 3, 4, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]:
+		spr(at + rdir(), T, 0.5, c, 0.02, 0.5, 0.5, k)
+	for k in [0, 1, 3, 4, 5, 6, 7]:
+		stk(at, T, 0.5, c, 0.02, 1.0, 0.1, k, Vector3(1, 0, 0))
+	for k in [0, 1, 2, 3, 4]:
+		ring(at, Vector3.UP, T, 0.5, c, 0.02, 0.5, 1.0, k)
+	for k in [0, 1, 2, 3, 5, 6, 7, 8, 9]:
+		rib(at, Vector3(1, 0, 0), 2.0, T, 0.5, c, 0.02, 0.2, 0.2, k)
+	shd(at, T, 0.5, Vector3.ZERO, 0.2, 1.0)
+	dst(at, T, 0.5, 0.5, 1.0, 0, 0.1)
+	dst(at, T, 0.5, 0.5, 1.0, 1, 0.1)
+	var tmp = Node3D.new()
+	tmp.name = "fx_warmup"
+	add_child(tmp)
+	tmp.global_position = at
+	var box = BoxMesh.new()
+	box.size = Vector3.ONE * 2.0
+	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.DECAL, -2, "#define POM\n"), mat(SH.DECAL, -2), mat(SH.PETAL, 0),
+		mat(SH.VOL, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.SPRITE, 1, "#define SOFT\n"), mat(SH.STREAK, 1),
+		mat(SH.RIBBON, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1)]
+	for i in mats.size():
+		var mi = MeshInstance3D.new()
+		mi.mesh = box
+		mi.material_override = mats[i]
+		mi.position = Vector3((i % 4 - 1.5) * 2.5, (i / 4 - 1.0) * 2.5, 0) * unit
+		tmp.add_child(mi)
+	# overlays (death pieces and cracks) over a plain lit material, a Decal, and a debris body
+	var base = StandardMaterial3D.new()
+	for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1)]:
+		var mi = MeshInstance3D.new()
+		mi.mesh = box
+		mi.material_override = base
+		mi.material_overlay = ov
+		tmp.add_child(mi)
+	var d = Decal.new()
+	d.size = Vector3(2, 2, 2) * unit
+	d.texture_albedo = dstate["tex"]["scorch"][0]
+	d.texture_emission = dstate["tex"]["ember"]
+	tmp.add_child(d)
+	if dstate.has("debris_meshes"):
+		var db = MeshInstance3D.new()
+		db.mesh = dstate["debris_meshes"][0]
+		db.material_override = dstate["debris_mat"]
+		tmp.add_child(db)
+	for i in frames:
+		await RenderingServer.frame_post_draw
+	tmp.queue_free()

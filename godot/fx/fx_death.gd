@@ -547,11 +547,25 @@ static func death(fx, s, cause: String) -> float:
 			var pj: Vector3 = s.to_world((a["p"] as Vector3) + Vector3(0, 0, (j / 23.0 - 0.5) * h.W * 1.1))
 			fx.spr(pj, T + hold + j * cook / 24.0, cook + 0.6 - j * cook / 24.0, Color(1, 0.75, 0.4), 4.0, 0.5 * k, 0.9 * k, 21)
 	fx.later(T + hold, func() -> void: s.engine_level = 0.0)
+	_cracks(fx, s, T + hold, cook, tint)
 	# 3. break-up
 	if not s.has_meta("cut_task"):
 		precompute(fx, s, cause)
 	fx.later(TB, func() -> void: _break_up(fx, s, cause, tint))
 	return TB - T + 0.6
+
+
+# Glowing fissures spreading over the hull while it cooks off (an overlay on the ship's own meshes; the ship is dying,
+# so nothing else needs the overlay slot now).
+static func _cracks(fx, s, t0: float, dur: float, tint: Color) -> void:
+	var m: ShaderMaterial = fx.mat(SH.CRACKS, 1)
+	m.set_shader_parameter("t0", t0)
+	m.set_shader_parameter("dur", maxf(dur, 0.3))
+	m.set_shader_parameter("scale", 3.5 / maxf(s.hull.L, 1.0))
+	m.set_shader_parameter("glow", Vector3(tint.r, tint.g, tint.b))
+	for mm in s.meshes:
+		if is_instance_valid(mm):
+			(mm as GeometryInstance3D).material_overlay = m
 
 
 static func _cook_burst(fx, s, lp: Vector3, ln: Vector3, k: float, tint: Color, cause: String) -> void:
@@ -632,6 +646,9 @@ static func _break_up(fx, s, cause: String, tint: Color) -> void:
 		fx.ring(center, s.dir_world(Vector3(0.6, 0.5, -0.4)), T + 0.05, 1.1, Color(1.0, 0.6, 0.3), 0.45 * big, R * 0.1, R * 2.2, 1)
 		fx.dst(center, T, 0.9, R * 0.3, R * 4.0, 0, 1.0 * big)
 	fireball(fx, center, R * 2.2, T, 4.0 + w * 0.5, tint)
+	# a rolling fireball of flame sprites too (reads at any zoom, and on high quality without volumes)
+	for i in 10 + w * 3:
+		fx.spr(center + fx.rdir() * R * 0.35, T + fx.rng.randf() * 0.25, 1.4 + fx.rng.randf() * 0.8, tint, 3.0, R * 0.4, R * 1.2, 1, fx.rdir() * (2.0 + fx.rng.randf() * 4.0) * k, 0.5)
 	if fx.quality != "max":
 		for i in 10:
 			fx.spr(center + fx.rdir() * R * 0.3, T + 0.2 + fx.rng.randf() * 0.4, 3.0 + fx.rng.randf(), Color(0.07, 0.065, 0.06), 0.75, R * 0.4, R * 1.4, 3, fx.rdir() * 2.0 * k, 0.35)
@@ -718,7 +735,7 @@ static func _break_up(fx, s, cause: String, tint: Color) -> void:
 		wreck["nodes"].append(node)
 		# motion: away from the centre, the main hulk barely moves (it stays on its hex as terrain)
 		var out = (cen - h.c).normalized() if (cen - h.c).length() > 0.01 else fx.rdir()
-		var spd: float = (0.25 if is_main else [0.0, 1.6, 2.2, 2.6, 3.0][w]) * k * (1.7 if cause == "big" else (0.6 if cause == "cut" or cause == "dark" else 1.0))
+		var spd: float = (0.4 if is_main else [0.0, 2.6, 3.4, 4.0, 4.6][w]) * k * (1.7 if cause == "big" else (0.6 if cause == "cut" or cause == "dark" else 1.0))
 		var vel: Vector3 = xf.basis * (out * spd) + fx.rdir() * 0.3 * k
 		if cause == "tidal" and fx.well != Vector3.INF:
 			vel += (fx.well - center).normalized() * 3.0 * k

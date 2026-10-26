@@ -191,9 +191,9 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 		"plasma":
 			tf = T0 + 0.12 + i * 0.16
 			var spd = SHELL_SPEED * 0.55 * fx.unit
-			var sz = (2.6 if w >= 3 else 2.0) * ka
+			var sz = (1.9 if w >= 3 else 1.5) * ka
 			fx.spr(from + dir * 0.6 * ka, tf, 0.18, col.lerp(Color.WHITE, 0.3), 4.0, sz * 1.2, sz * 2.4, 2)
-			fx.spr(from, tf, dist / spd, col, 3.0, sz * 1.6, sz * 1.6, 14, dir * spd)
+			fx.spr(from, tf, dist / spd, col, 2.0, sz * 1.6, sz * 1.6, 14, dir * spd)
 			fx.stk(from, tf, dist / spd, col, 3.0, 4.0 * ka, sz * 0.7, 0, dir * spd)
 			# heat shimmer trailing the bolt
 			for s in 3:
@@ -474,13 +474,18 @@ static func update(fx, dt: float) -> void:
 					fx.spr(ps, tt, 0.14, eng, 5.0 if lk == "torp" else 4.0, (2.2 if lk == "torp" else 1.6) * k, 0.6 * k, 2)
 					if lk == "torp":
 						# the long persistent plume: the signature that keeps every torpedo trackable
-						fx.spr(ps, tt, 3.6, Color(0.62, 0.64, 0.7), 0.12, 1.0 * k, 3.8 * k, 7, fx.rdir() * 0.5 * k, 0.6, 0.3)
-						fx.spr(ps, tt, 0.9, eng, 0.7, 1.2 * k, 2.4 * k, 18)
+						fx.spr(ps, tt, 3.6, Color(0.62, 0.64, 0.7), 0.22, 1.0 * k, 4.2 * k, 7, fx.rdir() * 0.5 * k, 0.6, 0.3)
 					else:
 						# rattle-rockets: a hot streak and a dirty grey smoke trail each, so the swarm reads at a glance
 						fx.spr(ps, tt, 1.8, Color(0.34, 0.31, 0.28), 0.45, 0.6 * k, 2.8 * k, 8, fx.rdir() * 0.8 * k, 0.8, 0.5)
 						if s == nemit - 1:
 							fx.stk(pos, tt, 0.08, eng.lerp(Color(1, 0.85, 0.5), 0.4), 6.0, 0.06, 0.35 * k, 1, -d * 40.0 * k, 0.0)
+		if lk == "torp" and p.has("prev"):
+			var pv: Vector3 = p["prev"]
+			var seg = pos - pv
+			if seg.length() > 0.01:
+				fx.stk(pv - d * 1.0 * k, now, 1.4, eng, 2.2, seg.length(), 0.5 * k, 5, seg.normalized())
+		p["prev"] = pos
 		if lk != "star":
 			fx.light(pos - d * k, now, 0.05, 1.5 if lk == "torp" else 0.8, eng, 1)
 		else:
@@ -508,7 +513,7 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 			"pflak":
 				fx.stk(from, tb, ft, col.lerp(Color.WHITE, 0.4), 7.0, 3.0 * ka, 0.25 * ka, 4, (bp - from).normalized() * spd)
 			"gflak":
-				fx.stk(from, tb, 0.25, col.lerp(Color.WHITE, 0.5), 5.0, from.distance_to(bp), 0.1 * ka, 5, (bp - from).normalized())
+				fx.stk(from, tb, 0.15, col.lerp(Color.WHITE, 0.3), 2.0, from.distance_to(bp), 0.06 * ka, 5, (bp - from).normalized())
 				ft = 0.02
 			"spores":
 				ft *= 2.2
@@ -696,11 +701,11 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 		fx.spr(p, T, 0.08, Color(1, 0.95, 0.85), 9.0, 2.0 * k, 4.0 * k, 0)
 	# the molten trench: a white-hot contact point dragging across the plate, cooling white to orange to char
 	var tang = n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
-	var steps = 8
+	var steps = 22
 	for s in steps:
 		var u = float(s) / steps
-		var pp = p + tang * (u - 0.5) * 2.2 * k
-		fx.spr(pp + n * 0.05, T + u * dur, 2.5 + fx.rng.randf(), Color(1, 0.6, 0.2), 1.6, 0.9 * k, 0.6 * k, 21)
+		var pp = p + tang * (u - 0.5) * 2.6 * k
+		fx.spr(pp + n * 0.05, T + u * dur, 2.0 + fx.rng.randf() * 0.8, Color(1, 0.6, 0.2), 0.9, 0.5 * k, 0.35 * k, 21)
 	for s in int(44 * dur):
 		var ts = T + fx.rng.randf() * dur
 		var sd = fx.rcone(n + Vector3(0, 0.2, 0), 1.1)

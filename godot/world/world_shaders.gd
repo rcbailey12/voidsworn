@@ -228,7 +228,7 @@ const SKY := """
 shader_type sky;
 render_mode use_quarter_res_pass;
 """ + NOISE + """
-uniform sampler2D pano : source_color, filter_linear, repeat_enable;
+uniform sampler2D pano : source_color, filter_linear_mipmap, repeat_enable;
 uniform float has_pano = 0.0;
 uniform float pano_k = 0.75;
 uniform vec3 c1 = vec3(0.13, 0.26, 0.6);
@@ -250,7 +250,11 @@ void sky() {
 	vec3 d = EYEDIR;
 	vec3 col = vec3(0.0);
 	if (has_pano > 0.5) {
-		col = min(texture(pano, SKY_COORDS).rgb, vec3(0.78)) * pano_k;
+		// a contrast curve: faint stars (the "snow") drop away, bright ones stay; the sky between goes darker
+		vec3 pc = texture(pano, SKY_COORDS).rgb;
+		float lum = max(pc.r, max(pc.g, pc.b));
+		float keep = smoothstep(0.12, 0.55, lum);
+		col = min(pc * keep * keep, vec3(0.78)) * pano_k + pc * 0.04;
 	} else {
 		col += vec3(stars(d, 220.0, 0.985)) * 1.2 + vec3(stars(d, 520.0, 0.993)) * 0.7;
 	}

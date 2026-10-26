@@ -55,6 +55,9 @@ var bench_last := 0
 var warm := 2.0
 var notes: PackedStringArray = []
 var quality := "max"
+var pc0 := {}
+var worst_t := 0.0
+var worst_ms := 0.0
 var holding := false
 var moments := {}
 var waiting: Array = []      # stills waiting for their moment: [name, file, eye, look, fov, offset]
@@ -100,6 +103,10 @@ func _ready() -> void:
 		RenderingServer.get_current_rendering_method(), RenderingServer.get_video_adapter_name()])
 	await _frame_drawn()
 	await _frame_drawn()
+	if fx != null and not args.has("no-warmup"):
+		var w0 := Time.get_ticks_msec()
+		await fx.warmup(cam)
+		notes.append("shader warm-up %d ms" % (Time.get_ticks_msec() - w0))
 	started = true
 	if mode == "shots":
 		shots_dir = _abs(String(args["shots"]))
@@ -274,7 +281,10 @@ func _events() -> void:
 		fx.shield_break("I", 1)
 		_mark("break_I", fx.now))
 	# deaths: the real hulls break apart and drift as burning wrecks
-	_ev(12.5, func(): _mark("death_big", fx.now + fx.death("B", "big") - 0.6))
+	_ev(12.5, func():
+		var td: float = fx.death("B", "big")
+		_mark("death_big_cook", fx.now + td * 0.55)
+		_mark("death_big", fx.now + td - 0.6))
 	_ev(14.5, func(): _mark("death_flay", fx.now + fx.death("D", "flay") - 0.6))
 	_ev(16.5, func(): _mark("death_cut", fx.now + fx.death("H", "cut") - 0.6))
 	events.sort_custom(func(a, b): return float(a[0]) < float(b[0]))
@@ -325,15 +335,16 @@ func _shot_list() -> Array:
 	L.append(["prism", "g04_prism_on_shield.png", H + Vector3(-18, 16, -44), H + Vector3(0, 0, -6), 40.0, 0.06])
 	L.append(["plasma", "g05_plasma_bolts.png", (H + D) * 0.5 + Vector3(-36, 24, 10), (H + D) * 0.5, 44.0, -0.3])
 	L.append(["plasma", "g05b_plasma_on_hull.png", D + Vector3(-26, 18, 26), D, 38.0, 0.08])
-	L.append(["rockets_fire", "g06_rockets_inbound.png", (C + V) * 0.5 + Vector3(0, 28, 48), (C + V) * 0.5 + Vector3(0, 4, 0), 44.0, 1.0])
-	L.append(["lance", "g07_lance_burn.png", B + Vector3(-34, 16, 30), B + Vector3(0, 0, 4), 36.0, 0.35])
+	L.append(["rockets", "g06_rockets_inbound.png", (C + V) * 0.5 + Vector3(-6, 20, 40), (C + V) * 0.5 + Vector3(-14, 6, 0), 40.0, -0.55])
+	L.append(["lance", "g07_lance_burn.png", (V + B) * 0.5 + Vector3(-62, 18, 0), (V + B) * 0.5 + Vector3(0, 0, -6), 46.0, 0.3])
+	L.append(["lance", "g07b_lance_trench.png", B + Vector3(-22, 12, 26), B + Vector3(0, 0, 6), 34.0, 0.6])
 	L.append(["ion", "g08_ion_on_shield.png", I + Vector3(30, 18, 34), I + Vector3(0, 0, 6), 40.0, 0.25])
 	L.append(["gauss", "g09_gauss_punch.png", H + Vector3(30, 14, -36), H, 38.0, 0.06])
 	L.append(["spine", "g10_bio_spines.png", C + Vector3(-30, 20, -34), C + Vector3(-4, 0, -4), 40.0, -0.25])
 	L.append(["spine", "g10b_bio_splash.png", C + Vector3(-24, 16, -30), C, 38.0, 0.25])
 	L.append(["doom", "g11_doom_arc.png", (D + I) * 0.5 + Vector3(0, 20, -50), (D + I) * 0.5, 44.0, 0.15])
 	L.append(["flak", "g12_flak.png", B + Vector3(10, 30, 44), B + Vector3(4, 0, 0), 40.0, 0.1])
-	L.append(["torp_fire", "g13a_torpedo_flight.png", (V + D) * 0.5 + Vector3(0, 30, 50), (V + D) * 0.5, 46.0, 1.0])
+	L.append(["torp", "g13a_torpedo_flight.png", (V + D) * 0.5 + Vector3(-10, 34, 36), (V + D) * 0.5 + Vector3(18, 4, -10), 46.0, -0.5])
 	L.append(["torp", "g13_torpedo_hit.png", D + Vector3(-36, 20, 30), D, 38.0, 0.12])
 	L.append(["craft", "g14_strike_craft.png", I + Vector3(-34, 22, 40), I + Vector3(0, 2, 6), 42.0, -0.15])
 	L.append(["stage4", "g15_breach_barge.png", C + Vector3(-8, 22, 24), C + Vector3(-2, 0, 0), 36.0, 0.4])
@@ -343,10 +354,11 @@ func _shot_list() -> Array:
 	L.append(["break_C", "g18_shield_break_corsair.png", C + Vector3(-10, 14, 42), C, 40.0, 0.25])
 	L.append(["break_I", "g19_shield_break_ithar.png", I + Vector3(-10, 22, 56), I, 40.0, 0.2])
 	L.append(["star", "g20_star_torpedo.png", B + Vector3(10, 26, -46), B, 42.0, -0.4])
-	L.append(["death_big", "g21_death_big.png", B + Vector3(-40, 30, -50), B, 46.0, 0.25])
+	L.append(["death_big_cook", "g21a_death_cookoff.png", B + Vector3(-40, 30, -50), B, 46.0, 0.0])
+	L.append(["death_big", "g21_death_big.png", B + Vector3(-40, 30, -50), B, 46.0, 1.0])
 	L.append(["death_big", "g21b_death_big_after.png", B + Vector3(-40, 30, -50), B, 46.0, 3.0])
-	L.append(["death_flay", "g22_death_flay.png", D + Vector3(40, 26, -50), D, 46.0, 0.25])
-	L.append(["death_cut", "g23_death_cut.png", H + Vector3(0, 40, 60), H, 46.0, 0.25])
+	L.append(["death_flay", "g22_death_flay.png", D + Vector3(40, 26, -50), D, 46.0, 1.0])
+	L.append(["death_cut", "g23_death_cut.png", H + Vector3(0, 40, 60), H, 46.0, 1.0])
 	L.append([26.0, "g24_wrecks_drifting.png", Vector3(0, 70, 140), Vector3(0, -6, -10), 42.0, 0.0])
 	var only := String(args.get("only", ""))
 	if only != "":
@@ -446,7 +458,13 @@ func _process_bench() -> void:
 		return
 	if bench_ms.is_empty() and gpu_n == 0:
 		RenderingServer.viewport_set_measure_render_time(vp.get_viewport_rid(), true)
-	bench_ms.append((now - bench_last) / 1000.0)
+		for m in ["DRAW", "SURFACE", "SPECIALIZATION", "MESH"]:
+			pc0[m] = Performance.get_monitor(Performance.get("PIPELINE_COMPILATIONS_" + m))
+	var fms := (now - bench_last) / 1000.0
+	if fms > worst_ms:
+		worst_ms = fms
+		worst_t = clock
+	bench_ms.append(fms)
 	bench_last = now
 	var g := RenderingServer.viewport_get_measured_render_time_gpu(vp.get_viewport_rid())
 	if g > 0.0:
@@ -473,7 +491,9 @@ func _finish_bench() -> void:
 		"tonemap": String(args.get("tonemap", LOOK.TONEMAP)), "width": res.x, "height": res.y, "frames": n,
 		"avg_ms": snappedf(tot / maxf(n, 1), 0.001), "p99_ms": snappedf(worst, 0.001), "max_ms": snappedf(s[n - 1] if n > 0 else 0.0, 0.001),
 		"gpu_ms": snappedf(gpu_sum / maxf(gpu_n, 1), 0.001), "particles": fx.particles_emitted() if fx != null else 0,
-		"adapter": RenderingServer.get_video_adapter_name(), "notes": "; ".join(notes)}
+		"adapter": RenderingServer.get_video_adapter_name(), "worst_frame_at": snappedf(worst_t, 0.01), "notes": "; ".join(notes)}
+	for m in pc0:
+		out["pipeline_compiles_" + String(m).to_lower()] = Performance.get_monitor(Performance.get("PIPELINE_COMPILATIONS_" + m)) - float(pc0[m])
 	var path := _abs(String(args["bench"]))
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var f := FileAccess.open(path, FileAccess.WRITE)
