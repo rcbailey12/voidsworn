@@ -14,8 +14,22 @@ rem other streams' jobs re-extract parts of build\godot (render\ among them), so
 if exist "%CD%\..\g4\src\godot" xcopy /e /y /i /q "%CD%\..\g4\src\godot" "%P%" >nul
 rem 1. the stills at 4K, max detail, AgX (the look.gd default)
 call tools\pc\tmo.bat 900 "%G%" --path "%P%" --fixed-fps 60 --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --shots "%OUT%\shots" --res 3840x2160 --quality max > "%OUT%\shots_log.txt" 2>&1
+rem 1b. breach close-ups on two 8K flagships at stage 4 (prints the hull rebuild time for the big meshes)
+set "PROBE_W=1920"
+set "PROBE_H=1080"
+set "PROBE_STAGE=4"
+set "PROBE_FAC=corsair"
+set "PROBE_CLS=Battle-barge"
+set "PROBE_OUT=%OUT%\breach_corsair"
+if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
+call tools\pc\tmo.bat 600 "%G%" --path "%P%" --resolution 1920x1080 --script res://fx/test/fx_breach_probe.gd > "%OUT%\breach_corsair_log.txt" 2>&1
+set "PROBE_FAC=hegemony"
+set "PROBE_CLS=Super-dreadnought"
+set "PROBE_OUT=%OUT%\breach_hegemony"
+if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
+call tools\pc\tmo.bat 600 "%G%" --path "%P%" --resolution 1920x1080 --script res://fx/test/fx_breach_probe.gd > "%OUT%\breach_hegemony_log.txt" 2>&1
 rem 2. tonemapper comparison: the same moments under ACES
-call tools\pc\tmo.bat 900 "%G%" --path "%P%" --fixed-fps 60 --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --shots "%OUT%\shots_aces" --res 3840x2160 --quality max --tonemap aces --only g01,g03,g05b,g07,g15_,g16,g18,g21_ > "%OUT%\shots_aces_log.txt" 2>&1
+call tools\pc\tmo.bat 900 "%G%" --path "%P%" --fixed-fps 60 --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --shots "%OUT%\shots_aces" --res 3840x2160 --quality max --tonemap aces --only g01,g03,g05b,g07,g15_,g15c,g16,g18,g21_ > "%OUT%\shots_aces_log.txt" 2>&1
 rem 3. reduce flashing: the same moments with the option on
 call tools\pc\tmo.bat 900 "%G%" --path "%P%" --fixed-fps 60 --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --shots "%OUT%\shots_calm" --res 3840x2160 --quality max --reduce-flashing --only g03,g09,g13_,g21_ > "%OUT%\shots_calm_log.txt" 2>&1
 rem 4. frame times at 4K: everything, then without each feature (the difference is its cost)

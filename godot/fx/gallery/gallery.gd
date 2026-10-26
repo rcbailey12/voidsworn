@@ -330,6 +330,23 @@ func _side(a: Vector3, b: Vector3, frac: float, dist: float, h: float) -> Array:
 	return [look + perp * dist + Vector3(0, h, 0), look]
 
 
+# A camera on one of a ship's damage anchors ("C:a1:front" or "C:b1:side"): straight on, or from the side and a little above.
+func _anchor_cam(spec: String) -> Array:
+	var parts := spec.split(":")
+	var s = fx.ship(parts[0]) if fx != null else null
+	if s == null or not s._anchors.has(parts[1]):
+		var c := _ship_c(parts[0])
+		return [c + Vector3(-8, 22, 24), c]
+	var A: Dictionary = s._anchors[parts[1]]
+	var p: Vector3 = s.to_world(A["p"])
+	var n: Vector3 = s.dir_world(A["n"]).normalized()
+	var t1 := n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
+	var R: float = s.hull.L * 0.05
+	if parts[2] == "side":
+		return [p + n * R * 3.2 + t1 * R * 4.5 + Vector3(0, R * 1.5, 0), p]
+	return [p + n * R * 6.5 + t1 * R * 1.5 + Vector3(0, R, 0), p]
+
+
 # Stills: [time or moment name, file, eye, look, fov, offset]. A moment is when an effect really lands (marked by the
 # reel on the effect clock), so every still catches its effect at the same instant on every run and machine.
 func _shot_list() -> Array:
@@ -372,6 +389,12 @@ func _shot_list() -> Array:
 	L.append(["craft", "g14_strike_craft.png", s_g14[0], s_g14[1], 42.0, -0.15])
 	L.append(["stage4", "g15_breach_barge.png", C + Vector3(-8, 22, 24), C + Vector3(-2, 0, 0), 36.0, 0.4])
 	L.append(["stage2", "g15a_dented_barge.png", C + Vector3(-8, 22, 24), C + Vector3(-2, 0, 0), 36.0, 0.5])
+	# close on the barge's holes: the eye is worked out at the moment from where fx put each hole
+	L.append(["stage3", "g15b_hole_close.png", "C:a1:front", "", 34.0, 1.2])
+	L.append(["stage4", "g15c_breach_close.png", "C:a1:front", "", 34.0, 1.4])
+	L.append(["stage4", "g15d_breach_side.png", "C:a1:side", "", 34.0, 1.4])
+	L.append(["stage4", "g15e_bow_breach.png", "C:a2:front", "", 34.0, 1.4])
+	L.append(["stage4", "g15f_edge_bite.png", "C:b1:side", "", 34.0, 1.4])
 	L.append(["break_V", "g16_shield_break_voidsworn.png", V + Vector3(-10, 14, 42), V, 40.0, 0.12])
 	L.append(["break_H", "g17_shield_break_hegemony.png", H + Vector3(-10, 14, 42), H, 40.0, 0.12])
 	L.append(["break_C", "g18_shield_break_corsair.png", C + Vector3(-10, 14, 42), C, 40.0, 0.25])
@@ -457,7 +480,14 @@ func _process_shots() -> void:
 		holding = true
 		while not shot_queue.is_empty() and float(shot_queue[0][0]) <= clock + 1e-4:
 			var q: Array = shot_queue.pop_front()
-			_cam_at(q[2], q[3], q[4])
+			if fx != null:
+				for sid in fx.ships:
+					fx.ships[sid].flush_damage(fx)
+			if q[2] is String:
+				var ec: Array = _anchor_cam(q[2])
+				_cam_at(ec[0], ec[1], q[4])
+			else:
+				_cam_at(q[2], q[3], q[4])
 			await _capture(shots_dir.path_join(q[1]))
 		holding = false
 

@@ -14,7 +14,9 @@ godot --path . --disable-vsync res://fx/gallery/gallery.tscn -- --bench OUT.json
 
 Options after `--`: `--quality max|high|low`, `--tonemap agx|aces`, `--reduce-flashing`, `--no-fx`, `--no-world`, `--no-physics`, `--only a,b` (stills whose names contain a or b), `--seconds S`, `--lo` (game-detail hulls even where the 8K flagships exist).
 
-On Ryan's PC: `pc/g4_gallery.bat` runs as a queue job (copied to `Downloads\voidsworn_test\g4\`); it restores G4's files into `build\godot` first (other streams' jobs re-extract parts of that folder), then writes `Downloads\voidsworn_test\g4\<run>\`: `shots\` (4K, AgX), `shots_aces\` (the same moments under ACES), `shots_calm\` (reduce flashing on), and the bench JSONs.
+Breach close-ups on one ship, outside the reel: `godot --path . --script res://fx/test/fx_breach_probe.gd` with PROBE_FAC, PROBE_CLS, PROBE_STAGE (2 to 4), PROBE_OUT (a folder), PROBE_W and PROBE_H; it prints the hull rebuild time.
+
+On Ryan's PC: `pc/g4_gallery.bat` runs as a queue job (copied to `Downloads\voidsworn_test\g4\`); it restores G4's files into `build\godot` first (other streams' jobs re-extract parts of that folder), then writes `Downloads\voidsworn_test\g4\<run>\`: `shots\` (4K, AgX), `breach_corsair\` and `breach_hegemony\` (breach close-ups on the 8K barge and super-dreadnought), `shots_aces\` (the same moments under ACES), `shots_calm\` (reduce flashing on), and the bench JSONs.
 
 ## The stills
 
@@ -35,7 +37,10 @@ Each still is keyed to the moment its effect really lands on the effect clock (t
 | g12 | Hegemony picket-laser flak bursting round the Chorus |
 | g13a, g13 | Voidsworn torpedo in flight (trackable plume), then the heaviest impact (fireball, shockwave, debris) |
 | g14 | Voidsworn strike craft on a run at the Ithar |
-| g15a, g15 | The barge at stage 2 (dented, sparking, venting) and stage 4 (hull breach, fires, streaming debris) |
+| g15a, g15 | The barge at stage 2 (the hull dented and blackened, sparking) and stage 4 (holes cut in the hull, fires, streaming debris) |
+| g15b | Close on the barge's mid hole at stage 3: torn edge, plates bent back, buckled skin, the cavity lit from inside |
+| g15c, g15d | The same hole grown to a breach at stage 4, straight on and from the side (frames, decks, conduits, cables, gas, sparks) |
+| g15e, g15f | The bow breach, and the bite out of an upper edge that changes the silhouette |
 | g16 to g19 | Shield breaks: Voidsworn gold veil tears, Hegemony lattice shatters, Corsair sputters out, Ithar veil sheets away |
 | g20 | Ithar star torpedo |
 | g21, g21b | Chorus death by torpedo: break-up into its own hull pieces, then 3 s later the burning wreck |
@@ -46,6 +51,7 @@ Each still is keyed to the moment its effect really lands on the effect clock (t
 
 - **Tonemapper: AgX** (`tonemap_check.py` replicates Godot 4.7.2's ACES and AgX exactly and scores the game's colours). ACES pushes the Corsair red 17 degrees toward orange at the brightness effects use, so Corsair and Voidsworn effects drift toward each other; AgX keeps faction hues within 8 degrees and hull colours neutral (chroma kept 0.97). Khronos PBR Neutral was the most faithful for effects (1 degree mean drift) but over-saturates hulls by about half and is not built into Godot 4.7; it would need a custom post pass, so it stays a later option. `shots_aces\` shows the same moments under ACES for Ryan's eye.
 - **Dark hulls:** a Fresnel rim in the faction tint plus a small albedo lift for Chorus and Deathless (look.gd HULL_FIX), not more key light.
+- **Breaches change the hull (R39):** the hole is cut out of the real mesh with its plates bent back and a lit cavity behind it; the generic cut stands in until A4's pre-cut parts arrive (API.md 14). Sizes (3% of length at stage 3, 4.6% at stage 4, a 3.2% edge bite), the four or five petals and the fire level inside are Claude's picks.
 - **Flashes:** large flashes (impacts, explosions, shield breaks, gauss muzzle) go through the 3-a-second budget; small muzzle flashes are below the area that counts and become smoke-forward in reduce-flashing mode. The smoke test fails if any rolling second holds more than 3 counted flashes.
 
 ## Cost

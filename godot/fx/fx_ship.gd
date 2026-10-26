@@ -600,7 +600,7 @@ func _dmg_request(fx) -> void:
 		_orig = BREACH.gather(self)
 		if _orig.is_empty():
 			return
-	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "out": {}}
+	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "cell": hull.L / 16.0, "out": {}}
 	_dmg_job = job
 	_dmg_task = WorkerThreadPool.add_task(func() -> void: job["out"] = BREACH.compute(job))
 	fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))
@@ -611,6 +611,14 @@ func _dmg_poll(fx) -> void:
 		return
 	if not WorkerThreadPool.is_task_completed(_dmg_task):
 		fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))
+		return
+	flush_damage(fx)
+
+
+# Finish a pending hull rebuild now (waits for the worker): the gallery calls it before a still, so the still shows the
+# damage the moment says.
+func flush_damage(fx) -> void:
+	if _dmg_task < 0:
 		return
 	WorkerThreadPool.wait_for_task_completion(_dmg_task)
 	_dmg_task = -1

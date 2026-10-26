@@ -884,7 +884,7 @@ void fragment() {
 	vec3 base = vec3(0.04, 0.038, 0.036) * (0.6 + 0.8 * vC.g) * (0.7 + 0.6 * n1);
 	float rough = 0.72;
 	float metal = 0.25;
-	if (part > 0.9) { base = vec3(0.09, 0.085, 0.08) * (0.8 + 0.4 * n2); rough = 0.45; metal = 0.6; ao = 1.0; }
+	if (part > 0.9) { base = vec3(0.06, 0.057, 0.054) * (0.8 + 0.4 * n2); rough = 0.55; metal = 0.5; ao = 0.8; }
 	else if (part > 0.6) { base = mix(vec3(0.05, 0.042, 0.034), vec3(0.03, 0.03, 0.034), vC.g) * (0.8 + 0.4 * n2); rough = 0.5; }
 	else if (part > 0.4) { float seam = smoothstep(0.9, 1.0, abs(sin(dot(vL, vec3(1.0, 1.3, 0.7)) * 9.0 / R))); base *= 1.15 - 0.4 * seam; }
 	vec3 toF = fire - vL;
@@ -902,7 +902,8 @@ void fragment() {
 	float emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
 	vec3 em = glow * (lam * fall * 0.6 * fl * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)) + emb * 0.8 * (0.6 + 0.4 * fl) * smoothstep(1.4, 0.3, dist)) * hot;
 	if (part > 0.9) {
-		em += mix(glow, vec3(1.0, 0.82, 0.6), exp(-age * 1.5)) * exp(-age / 1.5) * 1.0 * heat * (0.7 + 0.3 * fl);
+		// the cut edge is hot for a moment after the blast, then just dark metal (no glowing outline)
+		em += glow * exp(-age / 0.7) * 0.35 * heat * (0.7 + 0.3 * fl);
 	}
 	EMISSION = em * fx_gain;
 }

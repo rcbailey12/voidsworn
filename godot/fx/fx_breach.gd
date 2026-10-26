@@ -312,7 +312,7 @@ static func compute(job: Dictionary) -> Dictionary:
 		if not hit:
 			out_s.append(null)
 			continue
-		out_s.append(_surface(sd, ents, parts, edges, q))
+		out_s.append(_surface(sd, ents, parts, edges, q, float(job.get("cell", 1.0))))
 	# the torn edge: the skin's thickness along every edge between a kept and a removed triangle
 	for key in edges:
 		var ed: Dictionary = edges[key]
@@ -340,7 +340,10 @@ static func compute(job: Dictionary) -> Dictionary:
 	return {"surfs": out_s, "parts": parts, "ms": Time.get_ticks_msec() - t_ms}
 
 
-static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionary, q: float):
+# One surface: displace the skin near the damage, mark removed triangles degenerate, collect the cavity pieces. Only the
+# triangles in grid cells near the damage are visited (the grid and the ship-frame positions are built once per surface
+# and kept in sd), so an 8K hull costs about what a game hull does.
+static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionary, q: float, cell: float):
 	var arr: Array = sd["arrays"]
 	var xf: Transform3D = sd["xf"]
 	var V: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
@@ -348,12 +351,59 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 	if arr[Mesh.ARRAY_NORMAL] != null:
 		N = arr[Mesh.ARRAY_NORMAL]
 	var has_n := N.size() == V.size()
-	var P: PackedVector3Array = xf * V
+	var nv := V.size()
+	if not sd.has("P"):
+		sd["P"] = xf * V
+	var P: PackedVector3Array = sd["P"]
+	var idx := PackedInt32Array()
+	if arr[Mesh.ARRAY_INDEX] != null:
+		idx = arr[Mesh.ARRAY_INDEX]
+	if idx.is_empty():
+		if not sd.has("ident"):
+			var ident := PackedInt32Array()
+			ident.resize(nv)
+			for i in nv:
+				ident[i] = i
+			sd["ident"] = ident
+		idx = sd["ident"]
+	var nt := idx.size() / 3
+	if not sd.has("grid"):
+		var grid := {}
+		for t in nt:
+			var cq := (P[idx[t * 3]] + P[idx[t * 3 + 1]] + P[idx[t * 3 + 2]]) / (3.0 * cell)
+			var key := Vector3i(floori(cq.x), floori(cq.y), floori(cq.z))
+			if not grid.has(key):
+				grid[key] = []
+			(grid[key] as Array).append(t)
+		sd["grid"] = grid
+	var grid: Dictionary = sd["grid"]
+	# the triangles near any damage, and their vertices
+	var tmark := PackedByteArray()
+	tmark.resize(nt)
+	var cand := PackedInt32Array()
+	for x in ents:
+		var E: Ent = x
+		var rr := sqrt(E.inf2) + cell
+		var lo := (E.c - Vector3.ONE * rr) / cell
+		var hi := (E.c + Vector3.ONE * rr) / cell
+		for cx in range(floori(lo.x), floori(hi.x) + 1):
+			for cy in range(floori(lo.y), floori(hi.y) + 1):
+				for cz in range(floori(lo.z), floori(hi.z) + 1):
+					var lst = grid.get(Vector3i(cx, cy, cz))
+					if lst == null:
+						continue
+					for t in lst:
+						if tmark[t] == 0:
+							tmark[t] = 1
+							cand.append(t)
+	if cand.is_empty():
+		return null
 	var nb: Basis = xf.basis.inverse().transposed()
 	var back: Basis = xf.basis.transposed()
-	var nv := P.size()
 	var near := PackedByteArray()
 	near.resize(nv)
+	var seen := PackedByteArray()
+	seen.resize(nv)
 	var Dp := P.duplicate()
 	var NR := PackedVector3Array()
 	NR.resize(nv)
@@ -365,70 +415,72 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 	for x in ents:
 		eps_r = minf(eps_r, (x as Ent).R)
 	var eps := eps_r * 0.04
-	for i in nv:
-		var p := P[i]
-		var lvl := 0
-		for x in ents:
-			var E: Ent = x
-			var d2 := (p - E.c).length_squared()
-			if d2 < E.inf2:
-				if lvl == 0:
-					lvl = 1
-				if E.kind == 1 and d2 < E.cutr2:
-					lvl = 2
-		if lvl == 0:
-			continue
-		near[i] = lvl
-		var nr := (nb * N[i]).normalized() if has_n else Vector3.UP
-		var pv := peel_at(p, ents)
-		var dv := pv + buckle_at(p, ents)
-		pm[i] = pv.length()
-		NR[i] = nr
-		if dv.length_squared() < 1e-12:
-			continue
-		changed = true
-		var dp := p + dv
-		Dp[i] = dp
-		var ta := nr.cross(Vector3.UP if absf(nr.y) < 0.9 else Vector3.RIGHT).normalized()
-		var tb := nr.cross(ta)
-		var pa := p + ta * eps
-		pa += peel_at(pa, ents) + buckle_at(pa, ents)
-		var pb := p + tb * eps
-		pb += peel_at(pb, ents) + buckle_at(pb, ents)
-		var nn := (pa - dp).cross(pb - dp)
-		if nn.length_squared() > 1e-20:
-			nn = nn.normalized()
-			NR[i] = nn
-			if has_n:
-				N2[i] = (back * nn).normalized()
-	var idx := PackedInt32Array()
-	if arr[Mesh.ARRAY_INDEX] != null:
-		idx = arr[Mesh.ARRAY_INDEX]
-	var indexed := idx.size() > 0
-	var nt := (idx.size() if indexed else nv) / 3
-	var keep := PackedInt32Array()
+	for t in cand:
+		for j in 3:
+			var i := idx[t * 3 + j]
+			if seen[i] == 1:
+				continue
+			seen[i] = 1
+			var p := P[i]
+			var lvl := 0
+			for x in ents:
+				var E: Ent = x
+				var d2 := (p - E.c).length_squared()
+				if d2 < E.inf2:
+					if lvl == 0:
+						lvl = 1
+					if E.kind == 1 and d2 < E.cutr2:
+						lvl = 2
+			if lvl == 0:
+				continue
+			near[i] = lvl
+			var nr := (nb * N[i]).normalized() if has_n else Vector3.UP
+			var pv := peel_at(p, ents)
+			var dv := pv + buckle_at(p, ents)
+			pm[i] = pv.length()
+			NR[i] = nr
+			if dv.length_squared() < 1e-12:
+				continue
+			changed = true
+			var dp := p + dv
+			Dp[i] = dp
+			var ta := nr.cross(Vector3.UP if absf(nr.y) < 0.9 else Vector3.RIGHT).normalized()
+			var tb := nr.cross(ta)
+			var pa := p + ta * eps
+			pa += peel_at(pa, ents) + buckle_at(pa, ents)
+			var pb := p + tb * eps
+			pb += peel_at(pb, ents) + buckle_at(pb, ents)
+			var nn := (pa - dp).cross(pb - dp)
+			if nn.length_squared() > 1e-20:
+				nn = nn.normalized()
+				NR[i] = nn
+				if has_n:
+					N2[i] = (back * nn).normalized()
+	var nidx := idx.duplicate()
 	var removed_any := false
 	var tri_i := PackedInt32Array([0, 0, 0])
-	for t in nt:
-		var i0 := idx[t * 3] if indexed else t * 3
-		var i1 := idx[t * 3 + 1] if indexed else t * 3 + 1
-		var i2 := idx[t * 3 + 2] if indexed else t * 3 + 2
+	for t in cand:
+		var i0 := idx[t * 3]
+		var i1 := idx[t * 3 + 1]
+		var i2 := idx[t * 3 + 2]
 		var l0 := near[i0]
 		var l1 := near[i1]
 		var l2 := near[i2]
 		if l0 == 0 and l1 == 0 and l2 == 0:
-			keep.append(i0)
-			keep.append(i1)
-			keep.append(i2)
 			continue
 		var cz := l0 == 2 or l1 == 2 or l2 == 2
+		if not cz:
+			continue
 		var a := P[i0]
 		var b := P[i1]
 		var c := P[i2]
 		var Q := (a + b + c) / 3.0
-		var ri := removed_by(Q, ents) if cz else -1
+		var ri := removed_by(Q, ents)
 		if ri >= 0:
 			removed_any = true
+			# a removed triangle stays in the buffer as a zero-area one (no index rebuild)
+			nidx[t * 3 + 1] = i0
+			nidx[t * 3 + 2] = i0
 			var E: Ent = ents[ri]
 			for pr in [[a, b], [b, c], [c, a]]:
 				var key := _edge_key(pr[0], pr[1], q)
@@ -438,11 +490,6 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 				edges[key] = ed
 			if not E.through:
 				_cup_tri(parts[ri], E, ents, a, b, c, _nrm_of(NR, N, nb, has_n, i0) + _nrm_of(NR, N, nb, has_n, i1) + _nrm_of(NR, N, nb, has_n, i2))
-			continue
-		keep.append(i0)
-		keep.append(i1)
-		keep.append(i2)
-		if not cz:
 			continue
 		tri_i[0] = i0
 		tri_i[1] = i1
@@ -480,7 +527,7 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 	na[Mesh.ARRAY_VERTEX] = xf.affine_inverse() * Dp
 	if has_n:
 		na[Mesh.ARRAY_NORMAL] = N2
-	na[Mesh.ARRAY_INDEX] = keep
+	na[Mesh.ARRAY_INDEX] = nidx
 	return na
 
 
