@@ -23,6 +23,8 @@ Only deltas against the baseline, in a table: cell, before, after, the mode and 
 Ryan's own run is the exit for B1 and B2. Give him a short list of what to feel for, and record what he says in FINDINGS.
 
 ## PC runner (heavy jobs)
+- **Job queue (Oct 26, preferred):** drop a uniquely named job file into `Downloads\voidsworn_test\queue\` (for example `g1_parity_0426.bat`). The watcher runs queued jobs one at a time, oldest first, from `build\`; output lands in `queue\logs\<name>.log` and the file moves to `queue\done\`. Jobs must end with `exit /b` (never plain `exit`) and must not touch `build\job.bat`. Copy any files the job needs first, from a fresh staging folder. Several helpers can queue jobs safely; never edit a job after it is queued.
+- The running watcher is `watcher_q.bat` (window title "VS job queue"); `watcher.bat` is the same script and is what autostart launches. Never edit a watcher script while it runs (cmd reads it line by line).
 - `Downloads\voidsworn_test` with `watcher.bat` running (if it is not, start it with computer control: Explorer, Downloads, voidsworn_test, double-click watcher.bat).
 - Copy changed game files into `voidsworn_test\build\` with device_commit_files. Write the job as `build\job.bat` (CRLF, written by Python; it runs once from `build\`, logs to `..\smoke_log.txt`; `PYEXE` comes from python_path.txt; node is `voidsworn_test\node\node.exe`).
 - Never write job.bat while a run is going. Stage every file from a fresh staging folder (re-using a staged path can commit a stale copy), stage `build\job.bat` back and compare byte for byte, then send `run.request` in a separate, later call.
