@@ -410,6 +410,12 @@ func _refresh() -> void:
 			m.albedo_color = c0.lerp(Color(0.28, 0.28, 0.3), 0.75) if done else c0
 			if m.emission_enabled: m.emission_energy_multiplier = e0 * (0.08 if done else 1.0)
 		if not done: _danger[id] = intel.danger(n)
+		# the ring says what you can do with the node: gilt where you can jump now, bright where the fleet is, faint ahead, grey behind
+		var rc = Color(1, 1, 1, 0.2)
+		if done: rc = Color(0.55, 0.55, 0.58, 0.12)
+		if av.has(id): rc = Color(0.95, 0.76, 0.36, 0.85)
+		if C.RUN.get("pos") == id: rc = Color(1.0, 0.86, 0.5, 0.95)
+		d["rmat"].albedo_color = rc
 	if _hot != "": _routes = intel.routes_through(_hot)
 	_paint_lanes()
 	var fsig = _fleet_sig()
