@@ -145,3 +145,33 @@ SHIPS['C16s_23'] = dict(
          ('sensor_dome', 'sd', .40, 0, 0, 'below', dict(r=.02)),
          ('tank', 'tk', -.05, .07, 0, 'top', dict(r=.012, length=.08))],
     notes='first pass')
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# Voidsworn (grimdark black steel, ember glow; bilateral). Flagship first: V1b_r_23 is the K1 "Basilica" proof manifest.
+SHIPS['V1b_r_23'] = dict(
+    fac='voidsworn', cls='Dreadnought', name='Ascendant-class dreadnought', sym='bilateral',
+    spires=dict(zmin=-.03, exclude_x=.40, style='gothic'),                     # the A2 rebuild: melted AI pinnacles cut and rebuilt crisp
+    cuts=[dict(name='domes', box=(-.215, .035, -.042, .042, -.046, .12))],       # AI dome turrets along the spine
+    kit=[('casemate', 'hb', -.085, 0, -.09, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('casemate', 'hb2', .045, 0, -.09, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('turret', 'tt', -.03, 0, 0, 'top', dict(size='L', barrels=3, slot=2, wkind='turret', arc='T', lift=.006)),
+         ('turret', 'tt2', -.15, 0, 0, 'top', dict(size='L', barrels=3, slot=2, wkind='turret', arc='T', lift=.006)),
+         ('turret', 'fl', -.40, .05, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', pair=True)),
+         ('engine_at', 'eC', 0, 0, -.10, 'stern', dict(r=.032, L=.045)),
+         ('engine_at', 'eP', 0, .066, -.10, 'stern', dict(r=.029, L=.042, pair=True)),
+         ('sensor_dome', 'sd', .30, 0, 0, 'top', dict(r=.014))],
+    notes='first pass; the bow keeps the concept ram profile (vetoable: a naval-reading lower bow line)')
+
+SHIPS['V17_37'] = dict(
+    fac='voidsworn', cls='Battleship', name='Cathedral-class battleship', sym='bilateral',
+    cuts=[dict(name='horns', dir='aft', level=.36, max_w=.035, min_ratio=1.5),   # thin curved AI horns trailing off the stern
+          dict(name='hornsup', dir='up', level=.03, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03),
+          dict(name='hornsdn', dir='down', level=.05, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03)],
+    kit=[('casemate', 'hb', -.11, 0, -.03, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('casemate', 'hb2', .10, 0, -.03, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('spinal', 'lance', .30, 0, 0, 'top', dict(size='L', slot=2, wkind='lance', arc='F', length=4.5)),
+         ('turret', 'fl', -.21, .035, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', pair=True)),
+         ('engine_at', 'eC', 0, 0, -.015, 'stern', dict(r=.026, L=.04)),
+         ('engine_at', 'eP', 0, .046, -.03, 'stern', dict(r=.020, L=.032, pair=True)),
+         ('sensor_dome', 'sd', .38, 0, 0, 'top', dict(r=.010))],
+    notes='first pass')
