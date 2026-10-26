@@ -23,7 +23,7 @@ for (let i = 0; i < n; i++) {
     kind, col: kind === 'boss' ? 6 : Math.floor(r() * 6), rounds: 10, bot: chance(0.85) ? 'full' : 'basic' };
   const arch = pick([null, null, 'swarm', 'heavy', 'carrier']); if (arch) S.arch = arch;
   const mod = pick([null, null, null, 'bounty', 'veteran']); if (mod) S.mod = mod;
-  if (chance(0.6)) S.boons = some(Object.keys(T.BOONS), Math.floor(r() * 7)).map(id => ({ id, r: Math.floor(r() * 3) }));
+  if (chance(0.6)) S.boons = some(Object.keys(T.BOONS), Math.floor(r() * 7)).map(id => ({ id, r: T.BOONS[id].leg ? 3 : Math.floor(r() * 3) }));
   if (chance(0.5)) S.relics = some(Object.keys(T.RELICS), 1 + Math.floor(r() * 4));
   if (chance(0.3)) S.aspect = pick(Object.keys(T.ASPECTS));
   if (chance(0.3)) S.heat = some(Object.keys(T.HEAT), 1 + Math.floor(r() * 3));
@@ -31,6 +31,9 @@ for (let i = 0; i < n; i++) {
   if (chance(0.25)) S.ai = 'standard';
   if (chance(0.15)) S.alt = false;
   if (chance(0.4)) S.attack_move = true;
+  if (kind === 'elite' && chance(0.4)) S.nemesis = { name: 'Nemesis', title: 'Admiral', fac: S.fac, weak: some(Object.keys(T.NEM_WEAK), 2), adapt: some(Object.keys(T.NEM_ADAPT), Math.floor(r() * 4)), scars: Math.floor(r() * 3) };
+  if (chance(0.3) && T.FAC_VERBS[pf] && T.FAC_VERBS[pf].next) S.verb = T.FAC_VERBS[pf].id;
+  if (chance(0.25)) { const cls = ['Frigate', 'Destroyer', 'Cruiser', 'Carrier']; S.class_track = {}; for (const c of some(cls, 2)) S.class_track[c] = 1 + Math.floor(r() * 3); }
   if (chance(0.5)) { S.campaign = true; if (chance(0.3)) S.event_force = pick(Object.keys(T.BEVENTS)); else if (chance(0.3)) S.event_war = true; }
   res['w' + (i + 1)] = S;
 }

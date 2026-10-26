@@ -52,16 +52,16 @@ async function aiStepF(){ if(!B||B.over) return; const pe=pendingE(), pp=pending
   if(!pendingP().length&&!pendingE().length){ await nextRoundF(); return; }
   if(!pendingP().length){ await aiStepF(); return; } }
 async function nextRoundF(){ if(!B||B.over) return; B.round++; for(const x of B.units) x.activated=false; B.activeUnit=null;
-  B.busy=true; const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2; if(B.over){ B.busy=false; return; }
+  B.busy=true; await roundStartBoth(); if(B.over){ B.busy=false; return; } // battle.js owns the round start: ticks, then travelling torpedoes
   B.busy=true; await swarmPhase('player'); if(!B.over) await swarmPhase('enemy'); B.busy=false; hook('round',null); }
 
 // ---- Classic mode (B.alt false): ui3d.js endTurn. The whole enemy turn is the game's own aiTurn ----
 async function endTurnF(){ if(!B||B.busy||B.side!=='player'||B.over) return;
   B.busy=true; B.sel=null; B.armed=null; B.mode=null; B.inspect=null; B.reach=null;
-  B.side='enemy'; { const dq=startSideTurn('enemy'); if(dq) await dq; } hook('end turn',null);
+  B.side='enemy'; await turnStart('enemy'); hook('end turn',null);
   await aiTurn();
   B.aiActive=null; if(B.over){ B.busy=false; return; }
-  B.round++; B.side='player'; { const dq2=startSideTurn('player'); if(dq2) await dq2; } if(B.over){ B.busy=false; return; }
+  B.round++; B.side='player'; await turnStart('player'); if(B.over){ B.busy=false; return; }
   await swarmPhase('player'); B.busy=false; hook('round',null); }
 
 // ---- your side's bot: sim3d.js botUnit without commands, abilities or tactics, through the game's command path ----
@@ -100,6 +100,7 @@ function botObjF(v){ const o=B.obj; if(!o) return 0; const col=h=>h.q+Math.floor
 async function pBotFull(u){
   const r0=B.round, gone=()=>B.over||u.dead||u.activated||B.side!=='player'||B.round!==r0; // stops when the activation ends or the round changes (as api.ai_activate)
   if(gone()) return;
+  if(canStance(u)) aiStance(u); // the bot picks wing stances like the enemy does (ACT.stance: no action wrapper)
   if(canCommand('player')&&!B.busy){ const c=commandFor('player'); const pl=alive('player').filter(x=>!x.isSq), en=alive('enemy').filter(x=>!x.isSq);
     if(c&&pl.length&&en.length){ const near=en.filter(e=>pl.some(p=>hdist(p,e)<=8)).length, hpR=pl.reduce((a,p)=>a+p.hp,0)/pl.reduce((a,p)=>a+p.maxHp,0), hurt=pl.some(p=>p.hp<p.maxHp*.5);
       const id=c.id, off=['barrage','hunt','scramble','surge'].includes(id);
@@ -114,7 +115,7 @@ async function pBotFull(u){
   if(gone()) return;
   const foes=alive('enemy'); if(!foes.length) return;
   const {states}=computeReach(u); let best=null,bs=-1e9;
-  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObjF(v); if(sc>bs){bs=sc;best=s;} }
+  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObjF(v)-torpThreat(u,v)*.9-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
   if(best&&best.path.length&&guardF(u)) await actF(()=>moveUnit(u,best));
   if(gone()) return;
   if(!u.weapons.some(w=>weaponReady(w)&&alive('enemy').some(t=>canFire(u,w,t)))&&canRotate(u)&&guardF(u)) await actF(()=>rotateUnit(u,1));
@@ -123,6 +124,7 @@ async function pBotFull(u){
   for(let i=0;i<u.weapons.length;i++){ if(gone()) return; let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt&&guardF(u)) await actF(()=>fireWeapon(u,i,bt)); }
   if(gone()) return;
   if(!u.isSq&&!u.weapons.some(w=>w.fired)&&u.hp<u.maxHp*.5&&canOrder(u,'brace')&&evalThreat(u,alive('enemy'))>10&&guardF(u)) await actF(()=>giveOrder(u,'brace'));
+  if(!gone()&&!u.isSq&&canFade(u)&&guardF(u)) await actF(()=>fadeMove(u)); // the Ithar fade after firing
   if(!gone()&&B.alt) await endActivationF(true,u);
 }
 
@@ -140,19 +142,19 @@ function canon(v,top){
   const ks=Object.keys(v).filter(k=>v[k]!==null&&v[k]!==undefined&&typeof v[k]!=='function'&&!(top==='u'&&SKIP_U[k])&&!(top==='b'&&SKIP_B[k])).sort();
   return '{'+ks.map(k=>JSON.stringify(k)+':'+canon(v[k])).join(',')+'}';
 }
-function snap(turn,actor){ const t0=process.hrtime.bigint(); const units=B.units.map(u=>canon(u,'u')).join(','), s='{"b":'+canon(B,'b')+',"units":['+units+']}';
+function snap(turn,actor){ const t0=process.hrtime.bigint(); const units=B.units.map(u=>canon(u,'u')).join(','), gl={cut:CUT?[...CUT].sort():null,solid:SOLID?[...SOLID].sort():null,uid:UID}, s='{"b":'+canon(B,'b')+',"g":'+canon(gl,'g')+',"units":['+units+']}'; // g: rules state kept outside B (the board cut-outs, the set-piece hexes that block sight, the id counter)
   const r={turn,round:B.round,actor:actor||'',rng:RNG_S>>>0,hash:require('crypto').createHash('sha256').update(s).digest('hex'),state:s}; SNAPMS+=Number(process.hrtime.bigint()-t0)/1e6; return r; }
 
 // ---- scenarios (scenarios.json, read by both sides); a record after every action, activation and round ----
 async function runScenario(S){
   UID=1; rndSeed(S.seed); AI_LEVEL=S.ai||'veteran';
   RUN={admiral:S.admiral,fac:S.fac_player||'voidsworn',credits:0,cpCap:40,sector:S.sector,relics:(S.relics||[]).slice(),inventory:[],fleet:[],boons:(S.boons||[]).map(b=>Object.assign({},b)),patrons:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
-  if(S.aspect) RUN.aspect=S.aspect; if(S.heat) RUN.heat=S.heat.slice();
+  if(S.aspect) RUN.aspect=S.aspect; if(S.heat) RUN.heat=S.heat.slice(); if(S.class_track) RUN.classTrack=Object.assign({},S.class_track);
   for(const t of S.fleet) RUN.fleet.push(newShip(t,!!S.vet)); RUN.flagUid=RUN.fleet[0].uid;
   const rec=[]; let turn=0; TM={acts:[],rounds:{}}; SNAPMS=0;
   HOOK=(kind,u)=>{ if(B) rec.push(snap(turn++,kind+(u?' '+u.id:''))); };
   const cfg={kind:S.kind,fac:S.fac,col:S.col==null?3:S.col,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies?S.enemies.map(tpl=>({tpl})):undefined};
-  if(S.arch) cfg.arch=S.arch; if(S.mod) cfg.mod=S.mod;
+  if(S.arch) cfg.arch=S.arch; if(S.mod) cfg.mod=S.mod; if(S.nemesis) cfg.nemesis=JSON.parse(JSON.stringify(S.nemesis)); if(S.verb) cfg.verb=S.verb;
   startBattle(cfg);
   if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_war?(cfg.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null):(S.event_force||null)); } // campaign3d.js battleScreen (event_war: the sector at war)
   hook('start',null);

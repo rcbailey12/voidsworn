@@ -26,7 +26,12 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
    - **s21, s22:** Classic mode (whole turns, `aiTurn`).
    - **s23:** carrier-heavy 10 against 10, the think-time worst case.
 
-   Node runs the game's own `data.js`, `core.js` and `battle.js` unchanged (`node/golden.js`, from the pinned copy in `oracle/`). After every action (each move, shot, ram, boarding, ability, order, Command, turn-start tick, activation and round) it writes the whole battle state in canonical form, including the battle log, a SHA-256 of that state, and the PRNG state. Godot writes the same record, and `node/compare.js` stops at the first turn and field that differ.
+   Node runs the game's own `data.js`, `core.js` and `battle.js` unchanged (`node/golden.js`, from the pinned copy in `oracle/`). It writes a record at every one of these points, the same on both sides:
+   - `start` (after setup), `move` (each burn, at the point the game draws it), `rotate`, `fire` (each weapon's volley, and each torpedo impact), `death`, `ram`, `board` (before the boarding rolls), `nova`, `blink`;
+   - `ability`, `order`, `command <side>` and `wing order` after each of those actions;
+   - `tick <side>` after each side's turn-start ticks, `end turn` (Classic mode), `end activation`, `activation` (after each enemy activation), `round` (after the round start and swarm phases), and `end <result>`.
+
+   Each record holds the whole battle state in canonical form (B, every unit, and the rules state kept outside B: the board cut-outs, the hexes that block sight, the id counter), including the battle log, a SHA-256 of that state, and the PRNG state. Godot writes the same record, and `node/compare.js` stops at the first turn and field that differ.
    - Integers must match exactly.
    - Every other number is compared as its exact 64-bit double. There is no tolerance anywhere.
    - The player's side is played by a bot through the same API calls the scene uses: `bot: "full"` is the sim's `botUnit` (Command, abilities, rams, boarding, brace, objective pull, plus one turn in place when nothing bears); otherwise a simpler move-and-shoot bot.

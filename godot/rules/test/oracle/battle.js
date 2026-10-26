@@ -124,7 +124,7 @@ function fleetPower(){ if(typeof RUN==='undefined'||!RUN||!RUN.fleet) return 99;
   const boons=(RUN.boons||[]).reduce((a,b)=>a+((RARITY[b.r||0]||RARITY[0]).m),0); return p*(1+.035*boons+.025*((RUN.relics||[]).length)); }
 function playerStrength(){ return fleetPower(); }
 // sector flagship hull/shield scale and damage, by sector (sims can override with BOSS_SCALE / BOSS_DMG)
-const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.95,chorus:1.10,deathless:1,ithar:.80}; // per-flagship tuning from the boss matrix (v40, retuned v45 at n=12)
+const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.85,chorus:1.10,deathless:1,ithar:.80}; // per-flagship tuning from the boss matrix (v40, retuned v45 at n=12)
 let BOSS_SCALE=[0,.5,.55,.7], BOSS_DMG=[0,.85,.88,.95];
 try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE')); if(process_env('BOSS_DMG')) BOSS_DMG=JSON.parse(process_env('BOSS_DMG')); }catch(e){}
 // B2 battle-size ramp (R1): enemy fleets grow by sector toward about 10, 14 and 20 ships on board with a small elite player fleet (4 to 7, wings
@@ -344,6 +344,8 @@ function startBattle(cfg){
   B.cp0={player:sideCP('player'),enemy:sideCP('enemy')};
   B.usage={fire:{},aim:0,ab:{},ord:{},cmd:0,moves:0,cant:{}}; // what the player actually uses, for telemetry
   setupObjective(cfg.obj);
+  setupFactionRules(); // B3: Hegemony anchors, the Deathless legion count, the torpedo list
+  if(cfg.nemesis) applyNemesis(cfg.nemesis); if(cfg.verb) applyVerb(cfg.verb); // B4: the Nemesis's own fleet; a faction verb readied on the map
   if(B.adapt||B.adaptWings) log(`Scouts report your carriers. The enemy ${B.adapt?`bolted extra point defense onto ${B.adapt>1?B.adapt+' ships':'one ship'}`:''}${B.adapt&&B.adaptWings?' and ':''}${B.adaptWings?`launched ${B.adaptWings>1?'two fighter wings':'a fighter wing'} to hunt your craft`:''}.`,'ember');
   startSideTurn('player');
   for(const u of alive('enemy')) u.intercepts=u.weapons.some(w=>w.k==='flak')?2:0;
@@ -363,15 +365,18 @@ function startSideTurn(side){
   const deaths=[]; // v53: ships killed by the turn's ticks; the caller awaits the returned promise so their deaths finish in order
   if(side==='player'&&B.round>1){ eventTick(); objectiveTick(deaths); }
   if(side==='enemy'){ try{ aiRefreshFocus(); }catch(e){} try{ bossCmdTick(); }catch(e){} } // v53-D: the fleet focus is kept (sticky) and re-checked, not wiped, each enemy turn
-  escortsBreak();
+  escortsBreak(); nemBreak(); // B4: a proud Nemesis flagship's escorts flee
+  if(side==='enemy') for(const u of B.units) if(u.side==='enemy'&&!u.dead&&!u.isSq) aiStance(u); // B4 wing doctrines: the enemy picks its stances
   gainResolve(side,1); let burned=false;
+  const risen=legionTurn(side); // B3 Deathless: ships reassembling since last round stand up now
   for(const u of B.units){
     if(u.dead||u.side!==side) continue;
-    u.braced=false; u.pivotUsed=false; u.lockOn=false; u.focus=false; u.fullAhead=false; u.noTurn=false; u.evBuff=0; u.order=null; u.ramBoost=0;
+    u.braced=false; u.coverBy=null; u.postFire=false; u.postMp=0; u.pivotUsed=false; u.lockOn=false; u.focus=false; u.fullAhead=false; u.noTurn=false; u.evBuff=0; u.order=null; u.ramBoost=0;
     u.mp=Math.max(1,u.speed-u.st.engine); u.turnsLeft=u.turns;
     for(const w of u.weapons){ w.fired=false; if(w.cdLeft>0) w.cdLeft--; if(w.off>0) w.off--; }
     if(u.abCd>0) u.abCd--;
-    if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)); for(let i=0;i<4;i++) u.sh[i]=Math.min(u.shMax,u.sh[i]+rg); }
+    if(u.st.shieldOff>0) u.st.shieldOff--; else if(u.shMax>0){ const rg=u.regen*(((typeof B!=='undefined'&&B&&B.condRegen)||1)); for(let i=0;i<4;i++) if(!(u.regenLock&&u.regenLock[i])) u.sh[i]=Math.min(u.shMax,u.sh[i]+rg); }
+    ithChargeTurn(u); u.regenLock=null; // B3 Ithar prism charge (after the normal regen); an ion lock lasts one turn start
     if(u.hullRegen && u.hp<u.maxHp && !u.pyre) u.hp=Math.min(u.maxHp,u.hp+u.hullRegen);
     if(u.st.acid>0&&!u.isSq){ u.st.acid--; u.hp-=4; fxText(u,'Acid \u22124','#c8e04a',-12); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} dissolves.`, u.side==='player'?'e':'p'); u.killCause='melt'; queueDeath(u,deaths); } }
     if(u.st.fire>0&&!u.dead){ const fd=u.st.fireDmg||6; u.st.fire--; u.hp-=fd; fxText(u,'Fire \u2212'+fd,'#f08a4b'); if(u.hp<=0){ u.hp=0; burned=true; log(`${u.name} burns out.`, u.side==='player'?'e':'p'); u.killCause='dark'; queueDeath(u,deaths); } if(!u.st.fire) u.st.fireDmg=0; }
@@ -383,6 +388,7 @@ function startSideTurn(side){
     if(B.well&&wellTick(u,deaths)==='dead') burned=true;
   }
   if(B.event&&B.event.k==='flare'&&B.round===B.event.r&&B.event.done) for(const u of B.units){ if(!u.dead&&u.side===side&&u.shMax>0) u.sh=[0,0,0,0]; }
+  for(const u of risen) for(const w of u.weapons) w.fired=true; // a reassembled ship cannot fire the round it rises
   if(burned) checkEnd(); // a ship that burned out can decide the battle at the turn boundary
   return deaths.length?settleDeaths(deaths):null;
 }
@@ -401,14 +407,14 @@ function moveRules(u){ return Object.assign({},MOVE_BASE,(u&&!u.isSq&&MOVE_RULES
 function canEnd(u,q,r,occ){ if(!onBoard(q,r)||blocks(terr(q,r))) return false; const o=occ.get(hkey(q,r)); return !o||o===u; }
 function computeReach(u){
   const map=new Map(), states=[];
-  const occ=occMap(), R=moveRules(u);
+  const occ=occMap(), R=moveRules(u), MP=postFireMp(u), noOver=!!u.postFire; // B4 step 3: after firing only the Ithar (or Slip the Net) may move, half what was left, no climbing or diving
   const sk=s=>s.q+','+s.r+','+s.f+','+s.t;
   const start={q:u.q,r:u.r,f:u.facing,t:0,cost:0,path:[]};
   const seen=new Map([[sk(start),0]]); const queue=[start]; let qi=0;
   const pivotFree=R.pivot&&!u.pivotUsed;
   while(qi<queue.length){
     const s=queue[qi++]; if(seen.get(sk(s))<s.cost) continue; states.push(s);
-    if(s.cost>=u.mp) continue;
+    if(s.cost>=MP) continue;
     const nexts=[];
     if(u.isSq){ for(let f=0;f<6;f++){ const d=DIRS[f]; const nq=s.q+d[0], nr=s.r+d[1];
       if(passable(u,nq,nr,occ)) nexts.push({q:nq,r:nr,f,t:s.t,cost:s.cost+1,path:[...s.path,{q:nq,r:nr,f}]}); } }
@@ -416,16 +422,16 @@ function computeReach(u){
       const opts=[[s.f,1,null],[(s.f+1)%6,R.slip,'slip'],[(s.f+5)%6,R.slip,'slip'],[(s.f+3)%6,R.rev,'rev']];
       for(const [df,c0,kind] of opts){ const d=DIRS[df], nq=s.q+d[0], nr=s.r+d[1]; if(!onBoard(nq,nr)) continue;
         // a heavy hull with too little movement can still spend all of it on one thruster hop
-        let c=kind&&s.cost===0?Math.min(c0,u.mp):c0; let over=0; const tt=terr(nq,nr);
+        let c=kind&&s.cost===0?Math.min(c0,MP):c0; let over=0; const tt=terr(nq,nr);
         if(blocks(tt)){ if(tt!=='rock'&&tt!=='hulk') continue; over=1; }
         const o=occ.get(hkey(nq,nr)); if(o&&o.side!==u.side) over=over||-1; // climb over terrain, dive under ships
-        if(over) c+=R.over;
-        if(s.cost+c>u.mp) continue;
+        if(over){ if(noOver) continue; c+=R.over; }
+        if(s.cost+c>MP) continue;
         const st={q:nq,r:nr,f:s.f}; if(kind) st[kind]=1; if(kind==='slip') st.side=df===(s.f+1)%6?1:-1; if(over) st.over=over;
         nexts.push({q:nq,r:nr,f:s.f,t:s.t,cost:s.cost+c,path:[...s.path,st],slips:(s.slips||0)+(kind==='slip'?1:0),revs:(s.revs||0)+(kind==='rev'?1:0),overs:(s.overs||0)+(over?1:0)}); }
     }
     if(!u.isSq && !u.noTurn && s.t<u.turnsLeft){
-      const tc=pivotFree&&s.t===0?0:1; if(s.cost+tc<=u.mp||tc===0)
+      const tc=pivotFree&&s.t===0?0:1; if(s.cost+tc<=MP||tc===0)
       for(const dd of [1,-1]){ const f=(s.f+dd+6)%6; nexts.push({q:s.q,r:s.r,f,t:s.t+1,cost:s.cost+tc,path:[...s.path,{q:s.q,r:s.r,f,rot:true}],slips:s.slips,revs:s.revs,overs:s.overs}); }
     }
     for(const n of nexts){ const k=sk(n); if(seen.has(k)&&seen.get(k)<=n.cost) continue; seen.set(k,n.cost); queue.push(n); }
@@ -441,7 +447,7 @@ async function moveUnit(u, state, opts){
   if(!inThisBattle(u)) return; const live=liveFrom(null);
   const path=state.path; let committed=false;
   const commit=()=>{ if(committed) return; committed=true; for(const st of path) if(!st.rot){ u.q=st.q; u.r=st.r; } u.facing=path.at(-1).f;
-    u.mp=Math.max(0,u.mp-state.cost); u.turnsLeft-=state.t; if(state.t>0&&moveRules(u).pivot) u.pivotUsed=true; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++; };
+    u.mp=Math.max(0,u.mp-state.cost); if(u.postFire) u.postMp=Math.max(0,(u.postMp||0)-state.cost); u.turnsLeft-=state.t; if(state.t>0&&moveRules(u).pivot) u.pivotUsed=true; u.moved=true; u.hexMoved=(u.hexMoved||0)+path.filter(p=>!p.rot).length; if(B.usage&&u.side==='player'&&!u.isSq) B.usage.moves++; };
   let lateP=null; const onLate=opts&&opts.onLate?()=>{ if(!live()) return; commit(); try{ lateP=Promise.resolve(opts.onLate()).catch(e=>console.error(e)); }catch(e){ console.error(e); } }:null;
   if(typeof animPath==='function'){ await animPath(u,path,onLate?{onLate}:undefined); if(B) B.prog=(B.prog||0)+1; if(lateP) await lateP; if(!live()) return; if(committed){ objAfterMove(u); return; } } // one continuous burn
   else for(const st of path){
@@ -453,10 +459,126 @@ async function moveUnit(u, state, opts){
   commit();
   objAfterMove(u);
 }
+// v54 doctrine (decided): ships move, then fire; the Ithar may still move after firing, up to half the movement they had left, with no climb or dive.
+// The Slip the Net boon gives every ship that. u.postFire is set by the first shot of an activation (fireWeapon) and cleared at turn start.
+function canFade(u){ return u.fac==='ithar'||!!(u.fx&&u.fx.fade); }
+function postFireMp(u){ return u.postFire?Math.min(u.mp,u.postMp||0):u.mp; }
 function freePivot(u){ return !!(moveRules(u).pivot&&!u.pivotUsed); }
 function canRotate(u){ return !u.dead && !u.isSq && !u.noTurn && u.turnsLeft>0 && (u.mp>0||freePivot(u)) && !u.braced; }
 async function rotateUnit(u,dir){ if(!canRotate(u)||!inThisBattle(u)) return; const live=liveFrom(u), f=(u.facing+dir+6)%6; if(freePivot(u)) u.pivotUsed=true; else u.mp--; u.turnsLeft--; u.moved=true; await animRotate(u,f); if(!live()) return; u.facing=f; } // v53: facing commits after the live check, like moveUnit
 
+// ---------- B3 faction identity (Oct 26; numbers are Claude's calls, vetoable) ----------
+// One rule per faction on top of the drives (MOVE_RULES) and gates (FAC_GATES in data.js). Every rule keys off the hull's own faction (u.fac).
+const SYNC_R=3, SYNC_DMG=.15, SYNC_AIM=8; // Hegemony: radius around the anchor, bonus on a target a synced ally already fired at this round
+const FEED_KILL=.12, FEED_NEAR=.06, FEED_R=2, FEED_CAP=.2; // tuned Oct 26 after the first PC pass (enemy Chorus rose from 41 to 51 enemy-side wins in fmatrix) // Chorus: hull share regrown by the killer, by others within FEED_R of the kill, cap per ship per round
+const LEGION_HP=.35; // Deathless: hull a reassembled ship comes back with
+const FAC_RULES={
+  hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their flagship fire as one: a target another synced ship already fired on this round is ${SYNC_AIM} easier to hit and takes +${Math.round(SYNC_DMG*100)}% damage. Lose the flagship and sync is gone for the rest of the battle. Does not stack with Anchored Volley.`},
+  ithar:{n:'Prism charge',d:'At the start of its turn, a shield facing that was not hit since its last turn recharges to full, and a facing that was hit recharges twice. Ithar hulls cannot Brace.'},
+  chorus:{n:'Feed',d:`When an enemy ship dies, the Chorus ship that killed it regrows ${Math.round(FEED_KILL*100)}% of its hull and every other Chorus ship within ${FEED_R} hexes regrows ${Math.round(FEED_NEAR*100)}%, up to ${Math.round(FEED_CAP*100)}% per ship each round.`},
+  deathless:{n:'Endless legion',d:`The first Deathless ship to fall each battle (never the flagship) reassembles at the start of the next round with ${Math.round(LEGION_HP*100)}% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it.`},
+  corsair:{n:'Close in',d:'Corsairs field no lance weapons, and their rocket pods fire salvos that point defense can thin.'},
+  voidsworn:{n:'Line of battle',d:'Broadsides hit harder after a hard burn (drive rule); carriers cost 25% more.'}};
+// telemetry for the sims: per-faction counters in B.fstat (never read by rules)
+function fstat(fac,k,n){ if(!B||!fac) return; const F=(B.fstat=B.fstat||{})[fac]||(B.fstat[fac]={}); F[k]=(F[k]||0)+(n==null?1:n); }
+// Hegemony anchor: the player's flagship (or the biggest Hegemony hull when the flagship is not Hegemony); for the enemy a sector flagship, the
+// objective flagship, or the biggest Hegemony hull. Set once at battle start; when it dies or is captured, sync is lost for that side.
+function setupFactionRules(){ B.syncMark={player:{},enemy:{}}; B.syncLost={player:false,enemy:false}; B.legion={player:{max:0,used:0},enemy:{max:0,used:0}}; B.torps=[];
+  for(const side of ['player','enemy']){ const heg=B.units.filter(u=>u.side===side&&!u.isSq&&!u.transport&&u.fac==='hegemony');
+    if(heg.length){ const a=heg.find(u=>u.pflag)||heg.find(u=>u.boss)||heg.find(u=>u.flagship)||heg.slice().sort((x,y)=>(y.t.cp||1)-(x.t.cp||1)||y.maxHp-x.maxHp)[0]; a.anchor=true; }
+    const dl=B.units.filter(u=>u.side===side&&!u.isSq&&u.fac==='deathless'&&u.t&&u.t.reanimate).length; B.legion[side].max=dl>=6?2:dl>=1?1:0; } }
+function syncAnchor(side){ if(!B||!B.syncMark||(B.syncLost&&B.syncLost[side])) return null; return B.units.find(u=>u.anchor&&u.side===side&&!u.dead)||null; }
+function syncR(side){ return (B&&B.syncR&&B.syncR[side])||SYNC_R; } function syncDmg(side){ return (B&&B.syncDmg&&B.syncDmg[side])||SYNC_DMG; }
+function inSync(u){ if(!u||u.isSq||u.fac!=='hegemony'||u.dead) return false; const a=syncAnchor(u.side); return !!a&&hdist(u,a)<=syncR(u.side); }
+function syncOn(u,t){ if(!inSync(u)||!t) return false; const m=B.syncMark[u.side][t.id]; return !!m&&m.r===B.round&&m.ids.some(id=>id!==u.id); }
+function syncMarkShot(u,t){ if(!inSync(u)||!t) return; const M=B.syncMark[u.side]; let m=M[t.id]; if(!m||m.r!==B.round) m=M[t.id]={r:B.round,ids:[]}; if(!m.ids.includes(u.id)) m.ids.push(u.id); }
+function syncLose(t){ if(!B||!t||!t.anchor||!B.syncLost||B.syncLost[t.side]) return; B.syncLost[t.side]=true; t.anchor=false; if(B.units.some(u=>u.side===t.side&&!u.dead&&!u.isSq&&u.fac==='hegemony')){ log(`${t.name} is lost: the ${t.side==='player'?'fleet':'enemy line'} loses its synchronized fire.`,t.side==='player'?'e':'p'); } }
+// AI and bot: how far a Hegemony ship would stray from its anchor (0 inside the radius)
+function syncPull(u,v){ if(!u||u.isSq||u.fac!=='hegemony'||u.anchor) return 0; const a=syncAnchor(u.side); if(!a) return 0; return Math.max(0,hdist(v,a)-syncR(u.side)); }
+// Ithar prism charge: facings hit since the ship's last turn (applyHit marks them); unmarked facings refill at turn start
+function ithChargeTurn(u){ if(u.fac!=='ithar'||!(u.shMax>0)||u.isSq) return; const hit=u.shHit||[0,0,0,0];
+  if(!(u.st.shieldOff>0)){ let g=0; const rg=Math.round(u.regen*((B&&B.condRegen)||1)); for(let i=0;i<4;i++){ if(u.regenLock&&u.regenLock[i]) continue; const add=!hit[i]?u.shMax-u.sh[i]:Math.min(rg,u.shMax-u.sh[i]); if(add>0){ g+=add; u.sh[i]+=add; } } if(g>0) fstat('ithar','charge',g); } u.shHit=[0,0,0,0]; } // tuned Oct 26: struck facings also regenerate a second time (Ithar fell to 50 in fmatrix)
+// Chorus feed: an enemy capital ship dies; the killing side's Chorus ships nearby regrow hull, capped per round
+function chorusFeed(t,by){ if(!B||!t||t.isSq) return; const side=by?by.side:(t.side==='player'?'enemy':'player'); if(side===t.side) return; const killer=by?(by.isSq?B.units.find(x=>x.id===by.parent):by):null;
+  for(const u of B.units){ if(u.dead||u.side!==side||u.isSq||u.fac!=='chorus'||u.pyre||u.hp>=u.maxHp) continue; const share=u===killer?FEED_KILL:hdist(u,t)<=FEED_R?FEED_NEAR:0; if(!share) continue;
+    chorusRegrow(u,Math.round(u.maxHp*share),'Feeds'); } }
+// one cap for everything a Chorus hull regrows from feeding and biting (FEED_CAP of max hull per round)
+function chorusRegrow(u,amt,label){ if(!u||u.dead||u.pyre||amt<=0) return 0; if(u.fedR!==B.round){ u.fedR=B.round; u.fed=0; } const room=Math.max(0,Math.round(u.maxHp*FEED_CAP)-u.fed), h=Math.min(room,u.maxHp-u.hp,amt); if(h<=0) return 0;
+  u.hp+=h; u.fed+=h; fstat('chorus','feed',h); try{ fxText(u,(label||'Feeds')+' +'+h,'#d6d24a',-26); }catch(e){} return h; }
+// v54 doctrine (decided): a Chorus hull that deals hull damage at 1 to 2 hexes regrows CHORUS_BITE of it, inside the same per-round cap
+const CHORUS_BITE=.2;
+function chorusBiteEst(u,t,hull){ return u&&t&&u.fac==='chorus'&&!u.isSq&&hdist(u,t)<=2?Math.round(hull*CHORUS_BITE):0; }
+// Deathless endless legion: a fallen Deathless ship lies reassembling and rises at its side's next turn start
+function legionCan(t){ if(!B||!B.legion||t.isSq||t.fac!=='deathless'||!t.t||!t.t.reanimate||t.reanimated||t.pyre||t.boss||t.pflag||t.flagship||t.transport) return false; const L=B.legion[t.side]; return !!L&&L.used<L.max; }
+function legionRiseHex(u){ const occ=occMap(), ok=h=>onBoard(h.q,h.r)&&!blocks(terr(h.q,h.r))&&!occ.has(hkey(h.q,h.r)); if(ok(u)) return {q:u.q,r:u.r};
+  let best=null,bd=9; for(const h of boardHexes()){ const d=hdist(h,u); if(d<=2&&d<bd&&ok(h)){ bd=d; best=h; } } return best; }
+function legionRise(u,quiet){ const h=legionRiseHex(u); if(!h){ u.riseAt=null; if(!quiet) log(`${u.name} cannot find room to reassemble and stays dark.`,'x'); return false; }
+  u.q=h.q; u.r=h.r; u.dead=false; u.riseAt=null; u.hp=Math.max(1,Math.round(u.maxHp*LEGION_HP)); u.st={fire:0,shieldOff:0,engine:0}; u.shredded=0;
+  if(u.sec) for(const k of Object.keys(u.sec)){ repairSection(u,k,LEGION_HP); u.sec[k].hp=Math.max(1,Math.round(u.sec[k].max*LEGION_HP)); }
+  u.risen=B.round; fstat('deathless','revive'); if(!quiet){ log(`${u.name} reassembles from its wreck with ${u.hp} hull. It cannot fire this round.`,u.side==='player'?'p':'e'); try{ fxText(u,'Reassembled','#7dff9b',-30); }catch(e){} } return true; }
+function legionTurn(side){ if(!B||B.over) return []; const out=[]; for(const u of B.units) if(u.dead&&u.side===side&&u.riseAt!=null&&B.round>=u.riseAt&&!u.fled&&legionRise(u)) out.push(u); return out; }
+// plain-words lines for the ship panel
+function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=[];
+  if(u.fac==='hegemony'){ const a=syncAnchor(u.side); out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); }
+  if(u.fac==='ithar'&&u.shMax>0) out.push('Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.');
+  if(u.fac==='chorus') out.push(`Feeds on kills nearby (up to ${Math.round(FEED_CAP*100)}% hull a round).`);
+  if(u.fac==='deathless'&&u.t&&u.t.reanimate){ const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Endless legion: the first to fall reassembles next round.':'Endless legion spent.'); }
+  for(const s of (B.torps||[])) if(s.tid===u.id&&s.side!==u.side) out.push('<span class="blood">Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.</span>');
+  if(u.ab==='launch'||(u.fx&&u.fx.hive)){ const st=WING_STANCES[u.stance||'strike']; out.push(`Wing stance: ${st.n}. ${st.d}${u.side==='player'?(canStance(u)?' One free change this round.':' Changed this round.'):''}`); const pk=wingPerks(u); if(pk.length) out.push('Wing veterans: '+pk.map(k=>WING_PERKS[k].n+' ('+WING_PERKS[k].d.replace(/\.$/,'')+')').join(', ')+'.'); }
+  if(u.nem&&B.nem){ if(u.nemFlag) out.push('<span class="blood">Your Nemesis commands from this ship.</span>'); const kn=(B.nem.revealed||[]).filter(w=>B.nem.weak.includes(w)); if(kn.length&&u.nemFlag) out.push('Known weaknesses: '+kn.map(w=>NEM_WEAK[w].n+' ('+NEM_WEAK[w].d.replace(/\.$/,'')+')').join('; ')+'.'); }
+  return out; }
+// ---------- B3 travelling torpedoes ----------
+// A torpedo-kind weapon (not squadron bombs) launches now and strikes at the start of the firing side's next turn. Its lane runs from the launch hex
+// to the target's hex at launch (the aim hex). At impact: the original target is hit if it is still within 2 hexes of the aim hex (10 harder 1 hex off,
+// 25 harder 2 hexes off); otherwise an enemy hull sitting on the aim hex is hit (10 harder); otherwise the salvo runs wide. Range 6 and the cooldown stay.
+// Damage multipliers are taken at launch (what the preview showed); accuracy, shields, armor and point defense at impact.
+const TORP_RING=[0,5,15], TORP_STRAY=10, TORP_WARHEAD=1.2; // tuned Oct 26: torpedoes that can be dodged carry 20% heavier warheads (torpedo admirals fell out of the 50 to 90 band) // to-hit penalty by hexes the target got from the aim hex (3+ is a clean dodge), and for a stray hull on the aim hex
+function torpTravels(w,u){ return !!w&&w.k==='torp'&&!(u&&u.isSq)&&process_env('TORP_INSTANT')!=='1'; }
+function torpGhost(u,sure){ const g=Object.assign({},u); g.sureUsed=sure; g.ghost=true; return g; }
+// expected torpedo damage aimed at u if it ends at v (AI and bot dodge with this)
+function torpThreat(u,v){ if(!B||!B.torps||!B.torps.length||u.isSq) return 0; let tot=0; for(const s of B.torps){ if(s.side===u.side) continue; const d=hdist(v,s.aim);
+    if(s.tid===u.id){ if(d<=2) tot+=s.w.dmg*s.w.shots*[.62,.52,.38][d]; } else if(d===0) tot+=s.w.dmg*s.w.shots*.5; } return tot; }
+// ---------- B4 the Nemesis in battle ----------
+// cfg.nemesis = {name,title,fac,weak:[...],adapt:[...],scars}. Every enemy hull is his (u.nem); the biggest is his flagship (u.nemFlag). His fixed
+// weaknesses always apply (intel only tells you about them); adaptations and scars make him harder. Never touches your ships.
+function nemWeak(k){ return !!(B&&B.nem&&B.nem.weak&&B.nem.weak.includes(k)); }
+function applyNemesis(N){ B.nem=N; const es=B.units.filter(u=>u.side==='enemy'&&!u.isSq&&!u.transport); if(!es.length) return;
+  const fl=es.slice().sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)||b.maxHp-a.maxHp)[0]; fl.nemFlag=true; fl.elite=true; fl.name=`${N.title} ${N.name}`; fl.dmg*=1+.1*(N.scars||0); // each scar makes him angrier: +10% damage on his flagship
+  if(fl.fac==='hegemony'){ for(const u of es) u.anchor=false; fl.anchor=true; }
+  for(const u of es){ u.nem=true;
+    if(nemWeak('board')){ u.crewMax=Math.max(4,Math.round(u.crewMax*.7)); u.crew=Math.min(u.crew,u.crewMax); }
+    if(nemWeak('slow')){ u.speed=Math.max(1,u.speed-1); }
+    for(const a of N.adapt||[]){ if(a==='shields'&&u.shMax>0){ u.shMax=Math.round(u.shMax*1.2); u.sh=u.sh.map(()=>u.shMax); } if(a==='armor') u.armor=Math.min(.6,u.armor+.1); if(a==='evasion') u.ev+=8; if(a==='aim') u.aim+=8; } }
+  if((N.adapt||[]).includes('pd')){ const pd=fl.fac==='chorus'?'spores':'flak'; for(const u of es.filter(x=>!x.weapons.some(w=>w.k==='flak')).slice(0,2)){ u.weapons.push(Object.assign(mkWeapon(pd,'T',u.fx||{}),{fired:false,cdLeft:0,off:0})); } }
+  log(`${fl.name} commands this fleet: your Nemesis.${(N.adapt||[]).length?' He has adapted: '+N.adapt.map(a=>NEM_ADAPT[a].n.toLowerCase()).join(', ')+'.':''}`,'e'); }
+// a proud flagship (weakness): once it falls below 60% hull, his escorts break and flee
+function nemBreak(){ if(!B||!B.nem||B.nemBroken||!nemWeak('anchor')) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f||f.hp>f.maxHp*.6) return;
+  B.nemBroken=true; const esc=alive('enemy').filter(u=>u!==f&&!u.isSq&&!u.transport); for(const e of esc){ e.dead=true; e.fled=true; try{ fxWithdraw(e); }catch(x){} }
+  log(`${f.name}'s flagship is burning. ${esc.length?'His escorts lose their nerve and flee.':''}`,'s'); }
+// ion hits strip more shield from a Nemesis with brittle emitters
+function ionVs(att,w,t){ return ionOf(att,w)*(t&&t.nem&&nemWeak('ion')&&(w.ion||w.k==='lance')?1.5:1); }
+// ---------- B4 faction verbs in battle (readied on the map, RUN.verbNext, handed in as cfg.verb) ----------
+function applyVerb(id){ const P=B.units.filter(u=>u.side==='player'&&!u.isSq); B.verb=id;
+  if(id==='vigil') for(const u of P) u.fx=Object.assign({},u.fx,{lineGuard:(u.fx.lineGuard||0)+.15});
+  if(id==='drill'){ B.syncR={player:SYNC_R+1}; B.syncDmg={player:.2}; }
+  if(id==='attune') for(const u of P) if(u.shMax>0){ u.shMax=Math.round(u.shMax*1.25); u.sh=u.sh.map(()=>u.shMax); }
+  if(id==='waken'&&B.legion) B.legion.player.max+=1;
+  const V=Object.values(FAC_VERBS).find(v=>v.id===id); if(V) log(`${V.n}: ${V.d.replace(/^Next battle, /,'')}`,'p'); }
+// ---------- B4 wing doctrines ----------
+// Each carrier has a stance for its wings (u.stance, default strike), changed at most once per round for free. Explicit wing orders still win.
+const WING_SCREEN_R=2, WING_HUNT_LEASH=4, WING_SCREEN_TORP=.45;
+function wingStance(s){ const p=s&&s.isSq?B.units.find(x=>x.id===s.parent):s; return (p&&p.stance)||'strike'; }
+function canStance(u){ return !!(B&&u&&!u.dead&&!u.isSq&&(u.ab==='launch'||(u.fx&&u.fx.hive))&&u.stanceRound!==B.round); }
+function setStance(u,st){ if(!WING_STANCES[st]||!canStance(u)||u.stance===st) return false; u.stance=st; u.stanceRound=B.round; log(`${u.name}'s wings: ${WING_STANCES[st].n}.`,u.side==='player'?'p':'e'); return true; }
+// the enemy (and the sim bot) pick a stance at their turn start: screen against torpedoes or many craft, hunt a crippled ship, else strike
+function aiStance(u){ if(!canStance(u)) return; const foe=u.side==='player'?'enemy':'player', mineSq=alive(u.side).filter(x=>x.isSq).length, foeSq=alive(foe).filter(x=>x.isSq).length;
+  const torps=(B.torps||[]).some(s=>s.side===foe), weak=alive(foe).some(x=>!x.isSq&&x.hp<x.maxHp*.5);
+  const st=torps||foeSq>mineSq+1?'screen':weak?'hunt':'strike'; if(st!==(u.stance||'strike')) setStance(u,st); }
+function wingPerks(p){ return (p&&p.ship&&p.ship.wingVet&&p.ship.wingVet.perks)||[]; }
+// screening wings near a torpedo's target shoot down part of the salvo (at impact, after point defense)
+function screenTorps(t,shots,res){ let shot=0; for(const s of alive(t.side)){ if(!s.isSq||wingStance(s)!=='screen'||hdist(s,t)>WING_SCREEN_R) continue; const p=B.units.find(x=>x.id===s.parent), ch=WING_SCREEN_TORP+(wingPerks(p).includes('pickets')?.2:0);
+    for(let i=0;i<shots.length;i++) if(shots[i]){ if(rnd()<ch){ shots[i]=false; shot++; } break; } }
+  if(shot){ res.pd=(res.pd||0)+shot; try{ fxText(t,shot+' torpedo'+(shot>1?'es':'')+' shot down by wings','#bfe3ff',30); }catch(e){} } }
 // ---------- combat math ----------
 function sightBlocked(q,r){ return blocks(terr(q,r))||!!(SOLID&&SOLID.has(q+','+r)); }
 function los(a,b){ const line=hexLine(a,b); for(let i=1;i<line.length-1;i++){ if(sightBlocked(line[i].q,line[i].r)) return false; } return true; }
@@ -476,7 +598,13 @@ function hitChance(u,w,t){
   if(u.crewMax){ if(u.crew<u.crewMax*.5) c-=10; if(u.crew<u.crewMax*.25) c-=10; }
   if(t.fx&&t.fx.burnEv&&(t.hexMoved||0)>=3) c-=t.fx.burnEv;
   c+=motionHit(t);
+  if(syncOn(u,t)) c+=SYNC_AIM; // B3 Hegemony synchronized fire
+  if(u.nem&&nemWeak('brawl')&&d<=2) c-=10; // B4 Nemesis weakness: long-gun doctrine
+  if(t.isSq&&wingStance(t)==='hunt') c+=10; // B4 hunting wings fly exposed
+  if(t.fx&&t.fx.lineEv&&B&&B.units.some(x=>!x.dead&&x!==t&&x.side===t.side&&!x.isSq&&hdist(x,t)===1)) c-=t.fx.lineEv; // Unbroken Line, Epic
+  if(B&&B.mark&&B.mark[u.side]&&B.mark[u.side].r===B.round&&B.mark[u.side].id===t.id) c+=10; // Marked for Death
   const surge=cmdActive(t.side,'surge'); // v53: the enemy's Surge Command (was a wrapper patched on below)
+  if(w.k==='lance'&&u.fx&&u.fx.lanceSure) return surge?75:95; // One Clean Line (legendary)
   if(u.side==='player'&&!u.isSq&&!(u.sureUsed>0)&&runFx().firstSure) return surge?75:95; // the rangefinder relic: every ship's first attack of the battle
   const h=clamp(Math.round(c),5,95); return surge?Math.max(5,h-20):h;
 }
@@ -494,9 +622,11 @@ function dmgMult(u,w,t,rear){
   if(w.k==='torp') m+=u.fx.torpPct||0;
   if(u.isSq) m+=u.sqPct||0;
   if(rear) m+=u.fx.rearPct||0;
+  if(rear&&t.nem&&nemWeak('flank')) m+=.25; // B4 Nemesis weakness: thin stern plating
+  if(u.isSq&&!t.isSq){ if(wingStance(u)==='hunt'&&t.hp<t.maxHp/2) m+=.2; if(wingPerks(B&&B.units.find(x=>x.id===u.parent)).includes('killers')) m+=.15; } // B4 wing doctrine and perk
   if(t.hp<t.maxHp/2) m+=u.fx.huntPct||0;
   if(u.focus) m+=.3;
-  if(u.fx.stillPct&&!u.hexMoved&&(w.arc==='P'||w.arc==='S'||w.k==='battery')) m+=u.fx.stillPct;
+  { const still=u.fx.stillPct&&!u.hexMoved&&(w.arc==='P'||w.arc==='S'||w.k==='battery')?u.fx.stillPct:0, sy=syncOn(u,t)?syncDmg(u.side):0; m+=Math.max(still,sy); } // B3: synchronized fire does not stack with Anchored Volley (the larger applies)
   if(u.fx.momPct) m+=Math.min(4,u.hexMoved||0)*u.fx.momPct;
   if(u.fx.prowPct&&w.arc==='F') m+=u.fx.prowPct;
   m+=rakeBonus(u,w);
@@ -511,21 +641,23 @@ function expectedVs(u,w,t){
   const quad=shieldQuad(t,u), rear=quad===2;
   const hit=hitChance(u,w,t)/100, per=dmgMult(u,w,t,rear);
   const raw=per*w.shots*hit;
-  const pierce=w.pierce||0, ion=ionOf(u,w);
+  const pierce=w.k==='lance'&&ownerFx(u).lanceSure?1:(w.pierce||0), ion=ionVs(u,w,t);
   const shieldable=raw*(1-pierce);
   const absorbed=Math.min(shieldable,(t.sh[quad]||0)/ion);
   let hull=(raw-absorbed)*(1-(rear?t.armor*.5:t.armor));
-  if(t.braced) hull*=Math.max(.15,1-.4-(t.fx.bracePlus||0));
+  hull*=braceMul(t); // braced, or covered by a bracing Voidsworn neighbour
   hull*=cmdTaken(t)*guardMul(t);
   return {hit, raw, hull, shield:absorbed*ion, quad, rear};
 }
 function applyHit(att,w,t,dmg,quad){
-  const rear=quad===2, pierce=w.pierce||0, ion=ionOf(att,w), of=ownerFx(att);
+  const of=ownerFx(att), rear=quad===2, pierce=w.k==='lance'&&of.lanceSure?1:(w.pierce||0), ion=ionVs(att,w,t);
+  if(!t.isSq&&quad!=null) (t.shHit=t.shHit||[0,0,0,0])[quad]=1; // B3 Ithar prism charge: this facing was hit since the ship's last turn
+  if(!t.isSq&&quad!=null&&w.ion&&att&&att.fac==='hegemony'&&t.shMax>0) (t.regenLock=t.regenLock||[0,0,0,0])[quad]=1; // v54 doctrine (decided): Hegemony ion stops that facing's regen for a turn
   let shieldable=dmg*(1-pierce), through=dmg-shieldable;
   const s=t.sh[quad]||0; const absorbed=Math.min(shieldable,s/ion);
   t.sh[quad]=Math.max(0,s-absorbed*ion); shieldable-=absorbed;
   const arm=Math.max(0,t.armor-(t.shredded||0))*(1-(w.armorPierce||0)); let hull=(through+shieldable)*(1-(rear?arm*.5:arm)); // v48: spines strip armor, gauss ignores half of it
-  if(t.braced) hull*=Math.max(.15,1-.4-(t.fx.bracePlus||0));
+  hull*=braceMul(t); // braced, or covered by a bracing Voidsworn neighbour
   hull*=cmdTaken(t)*guardMul(t);
   let crit=false;
   if(hull>0.5 && rnd()*100 < (w.crit||0)+att.crit+(att.lockOn?10:0)+(rear?15:0)+((att.hexMoved||0)>=3?(of.momCrit||0):0)){ hull*=1.5+(of.critMul||0); crit=true; }
@@ -577,9 +709,12 @@ function systemDamage(t,forced){
 async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; const live=liveFrom(null);
   const w=u.weapons[wi];
   if(!opts.intercept && !canFire(u,w,t)) return false;
-  const keep=[w.fired,w.cdLeft,u.sureUsed], b0=B; // v53: an abandoned shot gives the gun back (see the live check below)
+  const keep=[w.fired,w.cdLeft,u.sureUsed,u.postFire,u.postMp], b0=B; // v53: an abandoned shot gives the gun back (see the live check below)
   if(!opts.intercept){ w.fired=true; if(w.cd) w.cdLeft=w.cd; if(u.side==='player'&&!u.isSq) u.sureUsed=(u.sureUsed||0)+1; }
   if(B.usage&&u.side==='player'&&!opts.intercept&&!u.isSq){ const k=(ARC_NAME&&ARC_NAME[w.arc])||String(w.arc); B.usage.fire[k]=(B.usage.fire[k]||0)+1; if(opts.called) B.usage.aim++; }
+  if(B.usage&&u.side==='player'&&!opts.intercept){ const K=B.usage.kind=B.usage.kind||{}, kk=u.isSq?'sq':w.k; K[kk]=(K[kk]||0)+1; if(w.ion) B.usage.ion=(B.usage.ion||0)+1; } // B4: what the Nemesis learns from
+  if(!opts.intercept&&!u.isSq&&w.k!=='flak'&&!u.postFire){ u.postFire=true; u.postMp=canFade(u)?Math.floor(u.mp/2):0; } // v54: firing ends normal movement
+  if(!opts.intercept&&torpTravels(w,u)) return launchTorp(u,w,t,opts,live,keep,b0); // B3: torpedoes travel and strike next turn
   // squadrons attacking capital ships run the flak gauntlet first
   if(u.isSq && !t.isSq && !opts.intercept){
     for(const d of alive(t.side)){
@@ -594,28 +729,37 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   const quad=shieldQuad(t,u), shBefore=(t.sh&&t.sh[quad])||0;
   const res={shield:0,hull:0,crits:0,hits:0,misses:0,sys:null};
   const called=opts.called&&!t.isSq&&!opts.intercept?opts.called:null;
-  const hc=hitChance(u,w,t);
+  const su=u.sureUsed; if(!opts.intercept) u.sureUsed=keep[2]; const hc=hitChance(u,w,t); u.sureUsed=su; // B3 (B-20): the rangefinder relic reads the count from before this shot (it never applied before)
+  if(!opts.intercept&&!u.isSq){ fstat(u.fac,'shots'); if(syncOn(u,t)) fstat(u.fac,'syncShots'); } // telemetry: synced share of Hegemony fire
   const shots=[];
   for(let i=0;i<w.shots;i++) shots.push(rnd()*100<hc);
-  if(w.rockets&&!t.isSq){ let shot=0; for(const d of alive(t.side)){ if(d.isSq||d.intercepts<=0||d.braced) continue; const fw=d.weapons.find(x=>x.k==='flak'&&!(x.off>0)); if(!fw||hdist(d,t)>fw.r) continue; // point defense near the target picks off rockets
-      for(let i=0;i<shots.length&&d.intercepts>0;i++) if(shots[i]&&rnd()<.55){ shots[i]=false; d.intercepts--; shot++; } }
-    if(shot){ res.pd=shot; fxText(t,shot+' rocket'+(shot>1?'s':'')+' shot down','#bfe3ff',30); } }
+  rocketDefense(w,t,shots,res);
   { const fol=!u.isSq&&u.weapons.some(x=>x!==w&&x.fired); if(fol) SPEED*=PACE.volley; try{ await animWeapon(u,w,t,shots); } finally{ if(fol) SPEED/=PACE.volley; } } // B2: follow-up weapons in a volley play quicker (presentation only)
   if(B) B.prog=(B.prog||0)+1;
-  if(!live()){ if(!opts.intercept&&B===b0){ w.fired=keep[0]; w.cdLeft=keep[1]; u.sureUsed=keep[2]; } return false; } // abandoned after a stall: the shot never lands, and the gun is not spent
+  if(!live()){ if(!opts.intercept&&B===b0){ w.fired=keep[0]; w.cdLeft=keep[1]; u.sureUsed=keep[2]; u.postFire=keep[3]; u.postMp=keep[4]; } return false; } // abandoned after a stall: the shot never lands, and the gun is not spent
+  if(!opts.intercept) syncMarkShot(u,t); // B3: later synced ships get the bonus on this target this round
+  return landVolley(u,w,t,{quad,shBefore,shots,called,res,intercept:!!opts.intercept});
+}
+// point defense near the target picks off rockets (Corsair rocket trait); at fire time, or at impact for a travelling salvo
+function rocketDefense(w,t,shots,res){ if(!w.rockets||t.isSq) return; let shot=0; for(const d of alive(t.side)){ if(d.isSq||d.intercepts<=0||d.braced) continue; const fw=d.weapons.find(x=>x.k==='flak'&&!(x.off>0)); if(!fw||hdist(d,t)>fw.r) continue;
+    for(let i=0;i<shots.length&&d.intercepts>0;i++) if(shots[i]&&rnd()<.55){ shots[i]=false; d.intercepts--; shot++; } }
+  if(shot){ res.pd=shot; fxText(t,shot+' rocket'+(shot>1?'s':'')+' shot down','#bfe3ff',30); } }
+// the shots of one weapon land: damage, shields, criticals, callouts, the log line and a kill (shared by direct fire and torpedo impact)
+async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.called, res=o.res;
   if(called){ u.crit+=15; t._calledSec=called; } // v45: applied only once the shot is known to land, so a stall can never leave it behind
   for(const h of shots){
     if(t.dead) break;
     if(!h){ res.misses++; continue; }
     res.hits++;
-    const d=dmgMult(u,w,t,quad===2)*(0.85+rnd()*.3);
+    const d=(o.per?o.per(quad===2):dmgMult(u,w,t,quad===2))*(0.85+rnd()*.3);
     const r=applyHit(u,w,t,d,quad);
     res.shield+=r.shield; res.hull+=r.hull; if(r.crit){ res.crits++; const cs=ownerFx(u).critSys; if(!res.sys && (called||cs||rnd()<.4)){ res.sys=systemDamage(t,called); if(cs&&res.sys) boonFx(t,'a_crit',res.sys,-48); } }
   }
   if(called){ u.crit-=15; t._calledSec=null; }
-  if(res.shield>0){ fxShield(t,quad); fxText(t,'\u2212'+res.shield+' shield','#62ccff',-18); if(t.shMax>0&&t.sh[quad]<=.5){ fxShieldBreak(t,quad); fxText(t,'Shields down','#9fe2ff',-40);
-      const ar=ownerFx(u).arcShort; if(ar&&shBefore>.5&&!t.dead){ t.hp-=ar; res.hull+=ar; u.dealt+=ar; boonFx(t,'s_arc','\u2212'+ar,-56); } } }
-  if(res.hull>0) fxText(t,'\u2212'+res.hull+' hull',res.crits?'#ffd27a':'#ffae42',0);
+  if(res.shield>0){ fxShield(t,quad); fxText(t,'−'+res.shield+' shield','#62ccff',-18); if(t.shMax>0&&t.sh[quad]<=.5){ fxShieldBreak(t,quad); fxText(t,'Shields down','#9fe2ff',-40);
+      if(ownerFx(u).chainSh&&o.shBefore>.5&&!t.dead&&t.sh){ for(const qq of [(quad+1)%4,(quad+3)%4]) t.sh[qq]=Math.round(t.sh[qq]*2/3); boonFx(t,'s_chain','chain lightning',-62); } // Chain Lightning
+      const ar=ownerFx(u).arcShort; if(ar&&o.shBefore>.5&&!t.dead){ t.hp-=ar; res.hull+=ar; u.dealt+=ar; boonFx(t,'s_arc','−'+ar,-56); } } }
+  if(res.hull>0) fxText(t,'−'+res.hull+' hull',res.crits?'#ffd27a':'#ffae42',0);
   if(res.hits===0) fxText(t,'Miss','#9a9384',0);
   if(res.crits){ fxText(t,'Critical','#f0b35a',18); if(typeof fxCrit==='function') fxCrit(t); }
   const who = u.side==='player'?'p':'e';
@@ -624,11 +768,45 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   if(res.hits===0) parts.push('all shots miss');
   else { if(res.shield) parts.push(`${res.shield} to ${QUAD_NAME[quad]} shields`); if(res.hull) parts.push(`${res.hull} hull`); if(!res.shield&&!res.hull) parts.push('no damage'); }
   if(res.crits) parts.push(res.crits>1?`${res.crits} criticals`:'critical');
-  log(`${u.name} ${opts.intercept?'intercepts with':'fires'} ${w.n} at ${t.name}: ${parts.join(', ')}.${res.sys?' '+res.sys+'!':''}`, who);
-  if(res.hits>0&&t.braced&&!t.dead&&!u.dead&&!opts.intercept&&t.side!==u.side){ const rp=ownerFx(t).riposte; if(rp){ u.hp-=rp; t.dealt=(t.dealt||0)+rp; boonFx(u,'i_brace','\u2212'+rp,-40); if(u.hp<=0) await killUnit(u,t); } } // Iron Discipline: braced ships strike back
-  if(t.hp<=0){ t.killCause=killCauseOf(w,t); await killUnit(t,u); }
+  if(!o.torp&&!o.intercept&&res.hull>0&&t.side!==u.side){ const bite=chorusBiteEst(u,t,res.hull); if(bite) chorusRegrow(u,bite,'Bites'); } // v54 Chorus doctrine
+  if(res.hits>0&&w.k==='lance'&&!o.intercept&&ownerFx(u).markLance&&B&&(!(B.mark=B.mark||{})[u.side]||B.mark[u.side].r!==B.round)&&!t.dead){ B.mark[u.side]={id:t.id,r:B.round}; boonFx(t,'a_mark','marked',-62); } // Marked for Death
+  log(o.torp?`Torpedoes from ${u.name} reach ${t.name}${o.stray?' (a stray hit in the lane)':''}: ${parts.join(', ')}.${res.sys?' '+res.sys+'!':''}`:`${u.name} ${o.intercept?'intercepts with':'fires'} ${w.n} at ${t.name}: ${parts.join(', ')}.${res.sys?' '+res.sys+'!':''}`, who);
+  if(!o.torp&&res.hits>0&&t.braced&&!t.dead&&!u.dead&&!o.intercept&&t.side!==u.side){ const rp=ownerFx(t).riposte; if(rp){ u.hp-=rp; t.dealt=(t.dealt||0)+rp; boonFx(u,'i_brace','−'+rp,-40); if(u.hp<=0) await killUnit(u,t); } } // Iron Discipline: braced ships strike back
+  if(t.hp<=0){ t.killCause=killCauseOf(w,t); await killUnit(t,o.by||u); }
   return true;
 }
+// B3 torpedo launch: the gun is spent and the salvo is placed in flight with its lane; nothing is rolled yet
+async function launchTorp(u,w,t,opts,live,keep,b0){
+  const S={id:(B.torpSeq=(B.torpSeq||0)+1), side:u.side, by:u.id, fac:u.fac, w:Object.assign({},w), tid:t.id, aim:{q:t.q,r:t.r}, from:{q:u.q,r:u.r}, r:B.round, called:opts.called&&!t.isSq?opts.called:null};
+  fstat(u.fac,'shots'); if(syncOn(u,t)) fstat(u.fac,'syncShots');
+  S.base=dmgMult(u,w,t,false)*TORP_WARHEAD; S.rearAdd=dmgMult(u,w,t,true)*TORP_WARHEAD-S.base; S.ghost=torpGhost(u,keep[2]); // multipliers as the preview showed them at launch
+  if(typeof animTorpLaunch==='function'){ try{ await animTorpLaunch(u,S); }catch(e){ console.warn(e); } if(!live()){ if(B===b0){ w.fired=keep[0]; w.cdLeft=keep[1]; u.sureUsed=keep[2]; u.postFire=keep[3]; u.postMp=keep[4]; } return false; } }
+  syncMarkShot(u,t); B.torps.push(S); fstat(u.fac,'torpLaunch'); if(B) B.prog=(B.prog||0)+1;
+  log(`${u.name} launches ${w.n} at ${t.name}. They strike its marked hex next turn.`, u.side==='player'?'p':'e'); try{ fxText(t,'Torpedo lane: impact next turn','#ff9f3a',-44); }catch(e){}
+  return true; }
+// B3 torpedo impact, at the start of the firing side's next turn (after that side's turn ticks)
+async function torpImpact(S){ const live=liveFrom(null), w=S.w, g=S.ghost; g.q=S.from.q; g.r=S.from.r;
+  const real=B.units.find(x=>x.id===S.by)||null, orig=B.units.find(x=>x.id===S.tid);
+  let t=null, pen=0;
+  if(orig&&!orig.dead&&orig.side!==S.side&&hdist(orig,S.aim)<=2){ t=orig; pen=TORP_RING[hdist(orig,S.aim)]; }
+  else { const foes=B.units.filter(o=>!o.dead&&!o.isSq&&o.side!==S.side&&hdist(o,S.aim)<=((orig&&!orig.dead)?0:1)).sort((a,b)=>hdist(a,S.aim)-hdist(b,S.aim)||(a.id<b.id?-1:1)); if(foes.length){ t=foes[0]; pen=TORP_STRAY; } } // a stray hull on the aim hex; if the target is already gone, the nearest enemy within 1 hex
+  if(!t&&g.fx&&g.fx.spread){ const near=alive(S.side==='player'?'enemy':'player').filter(x=>!x.isSq&&hdist(x,S.aim)<=1); if(near.length){ log(`${w.n} from ${g.name} burst in the lane, catching ${near.length} ship${near.length>1?'s':''}.`,S.side==='player'?'p':'e');
+    for(const x of near){ if(x.dead) continue; const r=applyHit(g,w,x,S.base*g.fx.spread,shieldQuad(x,g)); boonFx(x,'e_spread','\u2212'+r.hull,-20); if(x.hp<=0){ x.killCause='big'; await killUnit(x,real||g); } } } } // Spread Pattern
+  if(!t){ fstat(S.fac,orig&&!orig.dead?'torpDodge':'torpGone'); log(`${w.n} from ${g.name} run wide: ${orig&&!orig.dead?orig.name+' slipped out of the lane':'nothing left in the lane'}.`,'x'); try{ if(typeof fxFlash==='function') fxFlash(S.aim,'#ff9f3a'); }catch(e){} return; }
+  const quad=shieldQuad(t,g), shBefore=(t.sh&&t.sh[quad])||0, res={shield:0,hull:0,crits:0,hits:0,misses:0,sys:null};
+  const hc=clamp(hitChance(g,w,t)-pen+(t.nem&&nemWeak('torp')?15:0),5,95), shots=[]; for(let i=0;i<w.shots;i++) shots.push(rnd()*100<hc);
+  rocketDefense(w,t,shots,res); screenTorps(t,shots,res); // B4: screening wings beside the target thin the salvo
+  try{ await animWeapon(g,w,t,shots); }catch(e){ console.warn(e); }
+  if(!live()||t.dead) return;
+  const d0=g.dealt||0, same=t===orig;
+  await landVolley(g,w,t,{quad,shBefore,shots,called:same?S.called:null,res,torp:true,stray:!same,per:same?(rear=>S.base+(rear?S.rearAdd:0)):null,by:real||g});
+  if(res.hits) fstat(S.fac,'torpHit'); if(real) real.dealt=(real.dealt||0)+(g.dealt||0)-d0; }
+async function resolveTorps(side){ if(!B||!B.torps||!B.torps.length) return; const b0=B, due=B.torps.filter(s=>s.side===side&&s.r<B.round); if(!due.length) return; B.torps=B.torps.filter(s=>!due.includes(s));
+  for(const S of due){ if(B!==b0||B.over) return; await torpImpact(S); } if(B===b0) checkEnd(); }
+// one side's turn start: ticks (and their deaths), then that side's torpedoes land. The game and the sims both use these, so the order cannot drift.
+async function turnStart(side){ const d=startSideTurn(side); if(d) await d; if(B&&!B.over) await resolveTorps(side); }
+// alternating round start: player ticks, enemy ticks (unless the battle ended), then player torpedoes, then enemy torpedoes
+async function roundStartBoth(){ const b0=B, d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2; if(B!==b0||B.over) return; await resolveTorps('player'); if(B!==b0||B.over) return; await resolveTorps('enemy'); }
 // a ram: any enemy ship dead ahead of the bow, with at least one clear hex of run-up and movement left to cover the gap
 function ramInfo(u){
   if(!u||u.isSq||u.braced||u.dead||u.rammed||(u.crewMax&&u.crew<=0)) return null; const left=Math.min(u.mp,Math.max(1,u.speed-u.st.engine)); if(left<1) return null;
@@ -683,7 +861,7 @@ async function boardUnit(u,t){
   const who=u.side==='player'?'p':'e';
   if(t.crew<=0&&(t.side==='player'||t.boss)&&!t.captured){ t.crew=Math.max(2,Math.round(t.crewMax*.15)); const s1=systemDamage(t), s2=systemDamage(t); fxText(t,'Holds the bridge','#f0b35a',-30);
     log(`${u.name}'s boarders overrun ${t.name}, but the last of its crew hold the bridge.${s1?' Saboteurs: '+s1.toLowerCase():''}${s2?', '+s2.toLowerCase():''}.`, who); if(B.usage&&t.side==='player') B.usage.overrun=(B.usage.overrun||0)+1; return true; } // your ships and sector flagships (B1, R4) are never captured: boarders cripple, they don't steal
-  if(t.crew<=0){ if(B.usage&&u.side==='player') B.usage.cap=(B.usage.cap||0)+1; const old=t.side; t.side=u.side; t.crew=Math.max(3,Math.round(t.crewMax*.4)); t.captured=true; t.activated=true; t.mp=0; t.turnsLeft=0; t.braced=false; t.weapons.forEach(w=>w.fired=true);
+  if(t.crew<=0){ if(B.usage&&u.side==='player') B.usage.cap=(B.usage.cap||0)+1; if(t.anchor) syncLose(t); const old=t.side; t.side=u.side; t.crew=Math.max(3,Math.round(t.crewMax*.4)); t.captured=true; t.activated=true; t.mp=0; t.turnsLeft=0; t.braced=false; t.weapons.forEach(w=>w.fired=true);
     gainResolve(u.side,2); fxText(t,'Captured','#f0b35a',-30); log(`Boarding parties from ${u.name} take ${t.name}. It now fights for ${u.side==='player'?'you':'the enemy'}.`, who);
     if(typeof onCapture==='function') onCapture(t,old); checkEnd(); return true; }
   fxText(t,'\u2212'+kill+' crew','#f0b35a',-18); fxText(u,'\u2212'+loss+' crew','#ff7a6e',-18);
@@ -709,17 +887,22 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   if(t.dead) return;
   if(t.fx.lastStand && !t.usedLastStand){ t.usedLastStand=true; t.hp=1; fxText(t,'Last stand','#f0b35a',-30); log(`${t.name} refuses to die! (Last stand)`,'s'); return; }
   if(t.side==='player' && !t.isSq && runFx().revive && !B.reviveUsed){ B.reviveUsed=true; t.hp=Math.round(t.maxHp*.25); fxText(t,'Reawakens','#7dff9b',-30); log(`The phylactery hums. ${t.name} reawakens at 25% hull.`,'s'); return; }
-  if(t.reanimate && !t.reanimated && !t.pyre && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); fxText(t,'Reanimating','#7dff9b',-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
+  const legion=legionCan(t); // B3 Deathless endless legion replaces the random reanimate for Deathless hulls; other reanimating hulls (Undying foes heat) keep the old roll
+  if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); fxText(t,'Reanimating','#7dff9b',-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
   t.dead=true; t.hp=0;
+  if(legion){ t.reanimated=true; t.riseAt=B.round+1; B.legion[t.side].used++; log(`${t.name} falls, but its wreck is already reassembling. It rises next round.`,t.side==='player'?'p':'e'); try{ fxText(t,'Reassembling: rises next round','#7dff9b',-30); }catch(e){} }
+  syncLose(t); chorusFeed(t,by); // B3: a dead anchor collapses Hegemony sync; Chorus feed on the kill
+  if(by&&!t.isSq&&by.side!==t.side&&ownerFx(by).broodTithe){ const cs=alive(by.side).filter(x=>!x.isSq&&(x.ab==='launch'||(x.fx&&x.fx.hive))&&launchHexes(x).length).sort((a,b)=>hdist(a,t)-hdist(b,t)); if(cs.length){ const c=cs[0], h=launchHexes(c)[0], sq=makeWing(c,h,wingKind(c)); sq.mp=0; sq.weapons.forEach(w=>w.fired=true); boonFx(c,'h_brood','free wing',-30); } } // Brood Tithe
   if(t.side==='player'&&!t.isSq&&!t.transport){ const av=runFx().avenge; if(av){ for(const x of alive('player')) if(!x.isSq&&x.hp<x.maxHp){ const h=Math.min(x.maxHp-x.hp,Math.round(x.maxHp*av)); x.hp+=h; fxText(x,'+'+h+' hull','#8ff0a0',-20); } log(`The fleet rallies around the loss of ${t.name}.`,'s'); } }
   if(by&&by.side==='player'&&!t.isSq&&runFx().bloodied){ const k=by.isSq?B.units.find(x=>x.id===by.parent):by; if(k&&!k.dead){ k.bloodied=Math.min(3,(k.bloodied||0)+1); fxText(k,'Bloodied +'+Math.round(15*k.bloodied)+'%','#ff9f3a',-36); } }
-  if(!t.isSq && t.size>=.7 && !blocks(B.terrain[hkey(t.q,t.r)])){ B.terrain[hkey(t.q,t.r)]='hulk'; t.hulk=true; log(`The wreck of ${t.name} drifts in place, blocking movement and fire.`,'x'); if(typeof refreshBlockTint==='function') setTimeout(()=>refreshBlockTint(),1200); }
+  if(!t.isSq && t.size>=.7 && !legion && !blocks(B.terrain[hkey(t.q,t.r)])){ B.terrain[hkey(t.q,t.r)]='hulk'; t.hulk=true; log(`The wreck of ${t.name} drifts in place, blocking movement and fire.`,'x'); if(typeof refreshBlockTint==='function') setTimeout(()=>refreshBlockTint(),1200); }
   if(by&&!t.isSq) gainResolve(by.side,1);
   if(by){ by.kills++; if(by.parent){ const p=B.units.find(x=>x.id===by.parent); if(p) p.kills+=0; } }
   if(by&&by.isSq){ const p=B.units.find(x=>x.id===by.parent&&!x.dead); if(p&&p.fx&&p.fx.feast){ p.spare=(p.spare||0)+1; const h=Math.round(p.maxHp*p.fx.feast); p.hp=Math.min(p.maxHp,p.hp+h); boonFx(p,'h_feast','+'+h+' hull, +1 wing',-30); } }
-  const b0=B, live=liveFrom(null); { const dk=t.side==='enemy'&&!t.isSq&&!(t.t&&t.t.boss)?enemyPaceK():1; SPEED*=dk; try{ await animExplode(t); } finally{ SPEED/=dk; } } // B2: in big fights an escort's death plays quicker; flagships keep the full show if(!live()){ if(B===b0&&!B.over) try{ checkEnd(); }catch(e){} return; } // v45: epoch check like every other await, so a stalled battle never sees this explosion's aftermath
+  const b0=B, live=liveFrom(null); { const dk=t.side==='enemy'&&!t.isSq&&!(t.t&&t.t.boss)?enemyPaceK():1; SPEED*=dk; try{ await animExplode(t); } finally{ SPEED/=dk; } } // B2: in big fights an escort's death plays quicker; flagships keep the full show
+  if(!live()){ if(B===b0&&!B.over) try{ checkEnd(); }catch(e){} return; } // v45: epoch check like every other await, so a stalled battle never sees this explosion's aftermath (B-18, Oct 26: this line was swallowed by the comment above and never ran)
   { const cb=by&&!t.isSq&&by.side!==t.side?ownerFx(by).chainBoom:0; if(cb){ const near=B.units.filter(x=>!x.dead&&x.side===t.side&&x!==t&&hdist(x,t)<=2); if(near.length) log(`${t.name}'s reactor goes up, scorching ${near.length} nearby ship${near.length>1?'s':''}.`,by.side==='player'?'p':'e');
-      for(const x of near){ if(x.dead) continue; x.hp-=cb; boonFx(x,'e_chain','\u2212'+cb,-12); if(x.hp<=0) await killUnit(x,by); } } }
+      const cf=ownerFx(by).chainFire; for(const x of near){ if(x.dead) continue; x.hp-=cb; if(cf&&!x.isSq){ x.st.fire=Math.max(x.st.fire||0,2); x.st.fireDmg=Math.max(x.st.fireDmg||6,6); } boonFx(x,'e_chain','\u2212'+cb,-12); if(x.hp<=0) await killUnit(x,by); } } }
   log(`${t.name} ${t.isSq?'is shot down':'is destroyed'}.`, t.side==='player'?'e':'p');
   checkEnd();
 }
@@ -774,7 +957,7 @@ function objectiveTick(dq){ const o=B.obj; if(!o||B.over) return;
 // (emergency shields removed: Admiral's Command and ship abilities cover shield refills)
 // one owner for "the battle ended": the first time a battle becomes over, its end screen is scheduled once,
 // whichever rule (a kill, the relay score, a squadron strike at round start, a Command) caused it
-function checkEnd(){ const was=!!(B&&B.over); checkEndRules(); if(B&&!was&&B.over) scheduleBattleEnd(); }
+function checkEnd(){ const was=!!(B&&B.over); checkEndRules(); if(B&&!was&&B.over){ if(B.over==='win') for(const u of B.units) if(u.dead&&u.side==='player'&&u.riseAt!=null&&!u.fled) legionRise(u,true); /* B3: your reassembling Deathless ship stands up after a win */ scheduleBattleEnd(); } }
 function scheduleBattleEnd(){ const b=B; if(!b||b.showcase) return; Promise.resolve().then(()=>{ if(B===b&&b.over&&!b.ending&&typeof endBattleFlow==='function'){ b.busy=false; endBattleFlow(); } }); }
 function checkEndRules(){
   if(B.over) return;
@@ -802,18 +985,22 @@ function canOrder(u,o){
   if(o==='full') return !u.moved && !u.isSq;
   if(o==='lock') return true;
   if(o==='helm') return !u.isSq && !u.noTurn;
-  if(o==='brace') return !u.isSq && !u.weapons.some(w=>w.fired&&w.k!=='flak'); // brace instead of firing: not after this ship has fired
+  if(o==='brace') return !u.isSq && !(FAC_GATES[u.fac]&&FAC_GATES[u.fac].noBrace) && !u.weapons.some(w=>w.fired&&w.k!=='flak'); // brace instead of firing: not after this ship has fired; B3: Ithar cannot brace
   return false;
 }
 function giveOrder(u,o){ if(B.usage&&u.side==='player') B.usage.ord[o]=(B.usage.ord[o]||0)+1;
   if(!canOrder(u,o)) return;
   u.order=o;
-  if(o==='brace'){ u.braced=true; u.mp=0; for(const w of u.weapons) w.fired=true; fxText(u,'Braced','#7fd6c8',-24); if(u.fx.bastion&&u.shMax>0){ u.sh=u.sh.map(()=>u.shMax); boonFx(u,'d_bastion','shields full',-44); } }
+  if(o==='brace'){ fstat(u.fac,'braces'); u.braced=true; u.mp=0; for(const w of u.weapons) w.fired=true; fxText(u,'Braced','#7fd6c8',-24); braceCover(u); if(u.fx.bastion&&u.shMax>0){ u.sh=u.sh.map(()=>u.shMax); boonFx(u,'d_bastion','shields full',-44); } }
   if(o==='full'){ u.fullAhead=true; u.noTurn=true; u.mp+=Math.ceil(u.mp*.5); }
   if(o==='lock'){ u.lockOn=true; u.mp=0; }
   if(o==='helm'){ u.turnsLeft++; }
   log(`${u.name}: ${ORDERS[o].n}.`, u.side==='player'?'p':'e');
 }
+// v54 doctrine (decided): a Voidsworn hull that braces also covers one adjacent ally facing the same way (the most damaged); the Shield Wall boon covers every neighbour
+function braceCover(u){ const wall=!!(u.fx&&u.fx.wallBrace); if(u.fac!=='voidsworn'&&!wall) return []; let near=B.units.filter(x=>!x.dead&&x!==u&&x.side===u.side&&!x.isSq&&hdist(x,u)===1&&(wall||x.facing===u.facing));
+  if(!wall) near=near.sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp).slice(0,1); for(const x of near){ x.coverBy=u.id; try{ fxText(x,'Covered','#7fd6c8',-24); }catch(e){} } return near; }
+function braceMul(t){ if(t.braced) return Math.max(.15,1-.4-((t.fx&&t.fx.bracePlus)||0)); if(t.coverBy&&B){ const c=B.units.find(x=>x.id===t.coverBy); if(c&&!c.dead&&c.braced) return Math.max(.15,1-.4-((c.fx&&c.fx.bracePlus)||0)); } return 1; }
 function abilityCd(u){ return Math.max(1, ABILITIES[u.ab].cd-(u.fx.cdMod||0)); }
 // ---------- squadrons fight on their own: swarm weapons that persist until shot down ----------
 // nothing may wait forever: if an action outlives its limit, record what was running, save, and carry on
@@ -860,9 +1047,9 @@ async function useCommand(side){ if(!canCommand(side)) return false; const c=com
   return runCommand(side,c,tier); }
 async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'player', bStart=B;
   for(const u of alive(side)) if(!u.isSq) fxText(u,c.n,side==='player'?'#e8c66a':'#ff8a6a',-44);
-  if(c.id==='barrage'){ const b0=B, live=liveFrom(null); B.volleyMul={side,m:1+cmdPow('barrage',tier)}; try{ for(const u of alive(side).filter(x=>!x.isSq)){ if(B.over||!live()) break; const keep=u.weapons.map(w=>[w.fired,w.cdLeft]); u.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; });
+  if(c.id==='barrage'){ const b0=B, live=liveFrom(null); B.volleyMul={side,m:1+cmdPow('barrage',tier)}; try{ for(const u of alive(side).filter(x=>!x.isSq)){ if(B.over||!live()) break; const keep=u.weapons.map(w=>[w.fired,w.cdLeft]), pf=[u.postFire,u.postMp]; u.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; });
       for(let i=0;i<u.weapons.length;i++){ if(B.over||!live()||u.dead) break; const w=u.weapons[i]; const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue; const val=t=>{ const e=expectedVs(u,w,t); return e.hull+e.shield*.3+(e.hull>=t.hp?25:0); }; ts.sort((a,b2)=>val(b2)-val(a)); await fireWeapon(u,i,ts[0]); }
-      u.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); } } finally{ if(B===b0) B.volleyMul=null; } }
+      u.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); u.postFire=pf[0]; u.postMp=pf[1]; } } finally{ if(B===b0) B.volleyMul=null; } } // the free volley leaves movement as it was
   if(c.id==='hunt') for(const u of alive(side)) for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; }
   if(c.id==='iron') for(const u of alive(side)) if(u.shMax) u.sh=u.sh.map(()=>u.shMax);
   if(c.id==='restore') for(const u of alive(side).filter(x=>!x.isSq)){ const rp=cmdPow('restore',tier); u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*rp)); if(u.sec){ let fixed=0; for(const k of Object.keys(u.sec)) if(repairSection(u,k,rp)) fixed++; if(fixed) fxText(u,fixed>1?fixed+' sections restored':'Section restored','#8ff0a0',-34); } fxText(u,'+'+Math.round(u.maxHp*rp)+' hull','#8ff0a0',-20); }
@@ -891,11 +1078,12 @@ function sqObjNear(t){ const o=B&&B.obj; if(!o) return false; if(o.type==='defen
 function sqOrder(s){ const o=s.wingOrder; if(!o) return null; const t=B.units.find(x=>x.id===o.id); if(!t||t.dead||t.side===s.side){ s.wingOrder=null; return null; } return {kind:o.kind,t}; }
 function sqPlan(s){ const ord=sqOrder(s); let foes=alive(s.side==='player'?'enemy':'player').filter(t=>sqWants(s,t)||(ord&&ord.kind==='strike'&&ord.t===t)); if(!foes.length) return null;
   const carrier=B.units.find(x=>x.id===s.parent&&!x.dead), ready=s.weapons.filter(weaponReady), {states}=computeReach(s), here={q:s.q,r:s.r,f:s.facing,cost:0,stay:true};
-  const guard=ord&&ord.kind==='guard'?ord.t:null;
-  const lim=SQ_LEASH+(ord&&ord.kind==='strike'?2:0), leashOK=v=>guard?hdist(v,guard)<=3:(!carrier||hdist(v,carrier)<=lim); let best=null;
+  const stc=ord?null:wingStance(s), guard=ord&&ord.kind==='guard'?ord.t:stc==='screen'&&carrier?carrier:null; // B4: a screening wing guards its carrier (an explicit order still wins)
+  const lim=SQ_LEASH+(ord&&ord.kind==='strike'?2:0)+(stc==='hunt'?WING_HUNT_LEASH:0), leashOK=v=>guard?hdist(v,guard)<=(stc==='screen'?WING_SCREEN_R+1:3):(!carrier||hdist(v,carrier)<=lim); let best=null;
   for(const st of [here,...states]){ const v=stateView(s,st); if(!leashOK(v)) continue;
     for(const t of foes) for(const w of ready){ if(!inReach(v,w,t)) continue; let val=sqValue(t,expectedVs(v,w,t),s)-(st.cost||0)*.01;
       if(ord&&ord.kind==='strike'&&ord.t===t) val=val*3+60; if(guard&&hdist(t,guard)<=3) val=val*2+20;
+      if(stc==='screen'&&t.isSq) val*=2; if(stc==='hunt'&&!t.isSq&&t.hp<t.maxHp/2) val*=1.6;
       if(!best||val>best.val) best={st,t,val,attack:true}; } }
   if(best) return best;
   if(guard){ let hm=null,hd=hdist(s,guard); for(const st of states){ const d=hdist(stateView(s,st),guard); if(d<hd||(d===hd&&!hm)){hd=d;hm=st;} } return hm&&hd<hdist(s,guard)?{st:hm,t:null,attack:false}:null; }
@@ -910,10 +1098,11 @@ async function sqAct(s){ const live=liveFrom(s); const p=sqPlan(s); if(!p) retur
 async function swarmPhase(side){ const b0=B; for(const s of alive(side).filter(x=>x.isSq&&!x.activated)){ if(B!==b0||B.over) return; const t0=(typeof performance!=='undefined'?performance.now():0); if(await stallGuard(sqAct(s),15000,'squadron',{name:s.name,sq:s.t.sq,q:s.q,r:s.r})==='stall'&&B===b0) log(`${s.t&&s.t.n||s.name}: orders lost in interference.`,'x'); s.activated=true; if(typeof console!=='undefined'&&console.debug) console.debug('[swarm] '+side+' '+s.id+' '+Math.round((typeof performance!=='undefined'?performance.now():0)-t0)+'ms'); } }
 function makeWing(u,h,kind){ const fx=u.side==='player'?sumFx(fleetFxList()):{};
   const sq=makeUnit(u.side, kind, {parent:u.id, fac:u.fac, sqPct:(u.fx.sqPct||0), sqHp:fx.sqHp||0, scale:u.side==='enemy'?1+.1*(B.sector-1):1});
+  { const pk=wingPerks(u); if(pk.includes('aces')) sq.aim+=10; if(pk.includes('jinkers')) sq.ev+=8; if(pk.includes('armored')){ sq.maxHp=Math.round(sq.maxHp*1.25); sq.hp=sq.maxHp; } } // B4 wing veteran perks
   sq.fac=u.fac; sq.q=h.q; sq.r=h.r; sq.facing=u.facing; sq.name=`${HULLS[kind].n} (${u.side==='player'?u.name:u.t.n.split(' ').slice(-1)[0]})`; B.units.push(sq); return sq; }
 // carriers open the battle with their wings already in flight; launching only replaces losses
 function deployWings(){ for(const u of B.units.filter(x=>(x.ab==='launch'||(x.fx&&x.fx.hive))&&!x.dead&&!x.isSq)){ const foes=alive(u.side==='player'?'enemy':'player'), sec=B.sector||1, bossWings=u.side==='enemy'&&u.t.boss;
-  u.spare=bossWings?Math.max(0,sec-1):(u.hangar||0); /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // v41: one spare wing per hangar slot (was two): carriers keep their opening wings, but losses end sooner
+  u.spare=bossWings?Math.max(0,sec-1):(u.fx&&u.fx.endless)?99:(u.hangar||0)+(wingPerks(u).includes('reserve')?1:0); /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // v41: one spare wing per hangar slot (was two): carriers keep their opening wings, but losses end sooner
   for(let i=0;i<(bossWings?Math.min(u.hangar||0,sec):(u.hangar||0));i++){ const hs=launchHexes(u); if(!hs.length) break; hs.sort((a,b)=>Math.min(99,...foes.map(f=>hdist(a,f)))-Math.min(99,...foes.map(f=>hdist(b,f))));
     makeWing(u,hs[0],wingKind(u,i)); } }
   /* fighter screen against carrier-heavy fleets, flown off the biggest escorts */
@@ -1017,7 +1206,7 @@ function ramSetup(v,u){ const d=DIRS[v.facing]; let q=v.q,r=v.r; for(let i=0;i<=
 function aiFocusTarget(){ const sh=aiShooters(); let best=null,bv=0; for(const t of alive('player')){ if(t.isSq) continue; const v=aiFocusVal(t,sh); if(v>bv){bv=v;best=t;} } return best; }
 // v53-D: value over effective hull, priced the way expectedVs will price it (brace, guard aura, Iron Command), and worth less when few of our guns can reach it this turn
 function aiShooters(){ return caps('enemy').filter(u=>!u.transport&&u.weapons.length); }
-function aiFocusVal(t,shooters){ if(!t||t.dead||t.isSq) return 0; const br=t.braced?Math.max(.15,1-.4-((t.fx&&t.fx.bracePlus)||0)):1, take=Math.max(.15,br*guardMul(t)*cmdTaken(t));
+function aiFocusVal(t,shooters){ if(!t||t.dead||t.isSq) return 0; const br=braceMul(t), take=Math.max(.15,br*guardMul(t)*cmdTaken(t));
   const ehp=t.hp/take+t.sh.reduce((a,x)=>a+x,0)*.3; let n=0;
   for(const u of shooters){ let rr=0; for(const w of u.weapons) if(w.cdLeft<=1&&w.off<=1&&w.k!=='flak'&&w.r>rr) rr=w.r; if(rr&&hdist(u,t)<=rr+(u.speed||2)) n++; }
   return ((t.t.cp||1)*12+(t.flagship||t.pflag?20:0))/Math.max(20,ehp)*(n>=2?1:n===1?.8:.4); }
@@ -1043,10 +1232,12 @@ function evalThreat(v, foes){
 }
 // v53-D: the volley primary is re-picked before every gun from current hull and shields, with damage counted only up to the hull a target has left
 // (a 2-hull wreck is not worth a full broadside); a heavy gun leaves a kill that a lighter ready gun can make to that gun and fires elsewhere
-function aiPickPrimary(u,ws,focus){ let pv=0,primary=null;
+// AI polish (v54 backlog): target hysteresis. A ship keeps last activation's primary while it is still worth 85% of the best, so volleys stop hopping between near-equal targets
+const AI_STICK=.85;
+function aiPickPrimary(u,ws,focus){ let pv=0,primary=null,lastV=0; const last=u.aiLastT&&!u.aiLastT.dead&&u.aiLastT.side!==u.side?u.aiLastT:null;
   for(const t of alive('player')){ let sh=0,hull=0; for(const w of ws){ if(!canFire(u,w,t)) continue; const e=expectedVs(u,w,t); sh+=e.shield*.3; hull+=e.hull; } if(!sh&&!hull) continue;
-    const val=(Math.min(hull,t.hp)+sh)*(t.isSq?.6:1.1)+(hull>=t.hp?25+t.maxHp*.15:0)+(t===focus?10:0)+(1-t.hp/t.maxHp)*15; if(val>pv){pv=val;primary=t;} }
-  return primary; }
+    const val=(Math.min(hull,t.hp)+sh)*(t.isSq?.6:1.1)+(hull>=t.hp?25+t.maxHp*.15:0)+(t===focus?10:0)+(1-t.hp/t.maxHp)*15; if(t===last) lastV=val; if(val>pv){pv=val;primary=t;} }
+  if(last&&lastV>0&&lastV>=pv*AI_STICK) primary=last; if(primary) u.aiLastT=primary; return primary; }
 // shield strippers first: the order key is the share of a gun's fire that comes off shields (ion strips more than it deals), then raw weight
 function aiGunOrder(u,ws,t){ const k=new Map(); for(const w of ws){ let v=-1; if(t&&canFire(u,w,t)){ const e=expectedVs(u,w,t); v=e.raw>0?Math.round(e.shield/e.raw*4):0; } k.set(w,v); }
   return ws.slice().sort((a,b)=>k.get(b)-k.get(a)||(b.dmg*b.shots)-(a.dmg*a.shots)); }
@@ -1098,7 +1289,14 @@ async function aiAbilities(u,live,mode){ const foes=alive('player'); if(!foes.le
     if(u.ab==='blink' && canAbility(u) && nearF && (pre?(u.hp<u.maxHp*.35&&evalThreat(u,foes)>u.hp*.3 || !u.weapons.some(w=>weaponReady(w)&&foes.some(f=>hdist(u,f)<=w.r+(u.speed||2)))):mode==='escape'&&u.hp<u.maxHp*.35&&evalThreat(u,foes)>u.hp*.3)) { await useAbility(u); if(!live()) return false; }
     return live(); }
 // after the volley: a ram the move lined up, then the escape jump
-async function aiAfterFire(u,live,runner){ if(!u.isSq&&!runner&&!u.dead) await tacticRam(u); if(B.over||u.dead||!live()) return false; return await aiAbilities(u,live,'escape')&&!B.over; }
+async function aiAfterFire(u,live,runner){ if(!u.isSq&&!runner&&!u.dead) await tacticRam(u); if(B.over||u.dead||!live()) return false; if(!u.isSq&&!runner&&canFade(u)){ await fadeMove(u); if(B.over||u.dead||!live()) return false; } return await aiAbilities(u,live,'escape')&&!B.over; }
+// AI polish (v54 backlog): a smooth response curve for caution as hull drops (0.32 when healthy up to 0.6 x the faction's hurt weight when crippled),
+// with hysteresis: a ship that drops under 30% stays cautious until it is back above 45%, so it does not flip between charging and fleeing
+function aiHurtW(u,prof){ const f=u.hp/Math.max(1,u.maxHp); if(f<.3) u.aiHurt=true; else if(f>.45) u.aiHurt=false; const k=u.aiHurt?1:clamp((.6-f)/.3,0,1), x=k*k*(3-2*k); return .32+(.6*prof.hurt-.32)*x; }
+// the Ithar fade (and Slip the Net): after firing, step to the reachable hex with the least incoming fire if it cuts the threat by a quarter
+async function fadeMove(u){ if(!u||u.dead||u.isSq||!u.postFire||postFireMp(u)<1) return false; const foes=alive(u.side==='player'?'enemy':'player'); if(!foes.length) return false;
+  const here=evalThreat(u,foes)+torpThreat(u,u); if(here<5) return false; let best=null,bv=here; for(const s of computeReach(u).states){ if(s.q===u.q&&s.r===u.r) continue; const v=stateView(u,s), th=evalThreat(v,foes)+torpThreat(u,v); if(th<bv){ bv=th; best=s; } }
+  if(!best||bv>here*.75) return false; await moveUnit(u,best); fstat(u.fac,'fade'); return true; }
 function enemyPaceK(){ const n=B?B.units.filter(x=>x.side==='enemy'&&!x.isSq&&!x.dead).length:1; return Math.min(1,Math.max(PACE.bigMin,Math.sqrt(PACE.bigRef/Math.max(1,n)))); } // B2: bigger enemy fleets play their phase quicker
 async function aiUnit(u){
   if(u.isSq){ if(!B.over&&!u.dead&&u.side==='enemy') await sqAct(u); return; } // squadrons follow the swarm rules
@@ -1123,13 +1321,14 @@ async function aiUnit(u){
       const vet=vet0, focus=focus0;
       const off=vet?evalOffenseVet(v,ready,foes,focus):evalOffense(v,ready,foes);
       const threat=vet?evalThreatVet(v,foes):evalThreat(v,foes);
-      const prof=(!u.isSq&&FACTION_AI[u.fac])||FACTION_AI.voidsworn, tw=(u.isSq?.15:!vet?.3:u.flagship?.65:u.hp<u.maxHp*.3?.6*prof.hurt:.32)*prof.tw;
+      const prof=(!u.isSq&&FACTION_AI[u.fac])||FACTION_AI.voidsworn, tw=(u.isSq?.15:!vet?.3:u.flagship?.65:aiHurtW(u,prof))*prof.tw; // AI polish: smooth caution curve with hysteresis
       let score=off-threat*tw; if(vet&&!u.isSq&&threat>=u.hp) score-=25; // v53-D death cliff: a hex where the expected fire could finish us
       if(vet&&!u.isSq&&prof.range){ const nd2=Math.min(99,...foes.filter(f=>!f.isSq).map(f=>hdist(v,f))); if(prof.range>0) score-=Math.max(0,prof.range-nd2)*prof.rw; else score-=Math.max(0,nd2+prof.range)*prof.rw; }
       if(vet&&!u.isSq&&RAM_FAC[u.fac]) score+=ramSetup(v,u)*.35;
       if(vet&&B.obj&&B.obj.type==='flagship'&&!u.flagship&&!u.isSq){ const fl=flE; if(fl){ const dv=hdist(v,fl); score-=Math.max(0,dv-3)*(escIn>=2?.6:2); if(dv<=3) for(const x of escO) if(hdist(x,v)===1) score-=1; } } // two escorts in the ring cap the pull, and escorts spread out instead of stacking
       if(off<=0){ const hd=Math.min(...foes.filter(f=>!f.isSq||u.isSq).map(f=>hdist(v,f)).concat([99])), nd=Math.max(hd,fieldDist(PF,v,hd)); score-=Math.max(0,nd-minR)*4; } // travel distance, so a hole or a rock wall between us is not a shortcut
       score-=s.cost*.05;
+      if(!u.isSq){ score-=torpThreat(u,v)*.9; score-=syncPull(u,v)*(vet?2:1.2); } // B3: step out of incoming torpedo lanes; Hegemony keeps formation on its anchor
       if(B.obj&&B.obj.type==='hold'&&!u.isSq&&!vet) score-=hdist(v,B.obj.hex)*1.6; // veterans: aiObjScore (two nearest, urgency)
       score+=aiObjScore(u,v); score+=aiWellScore(u,v);
       if(score>bestScore){ bestScore=score; best=s; }

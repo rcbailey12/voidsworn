@@ -33,12 +33,15 @@ func new_battle_scenario(sc, seed_override: int = -1) -> void:
 	var run := {"admiral": S.admiral, "fac": S.get("fac_player") if S.get("fac_player") != null else "voidsworn", "credits": 0, "cpCap": 40, "sector": int(S.sector), "relics": S.get("relics", []).duplicate(), "inventory": [], "fleet": [], "boons": boons, "patrons": [], "stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0}, "fallen": []}
 	if R.jt(S.get("aspect")): run["aspect"] = S.aspect
 	if S.get("heat") != null: run["heat"] = S.heat.duplicate()
+	if S.get("class_track") != null: run["classTrack"] = S.class_track.duplicate()
 	R.RUN = run
 	for t in S.fleet: run["fleet"].append(R.newShip(t, R.jt(S.get("vet"))))
 	run["flagUid"] = run["fleet"][0]["uid"]
 	var cfg := {"kind": S.kind, "fac": S.fac, "col": 3 if S.get("col") == null else S.col, "seed": seed, "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep}
 	if R.jt(S.get("arch")): cfg["arch"] = S.arch
 	if R.jt(S.get("mod")): cfg["mod"] = S.mod
+	if S.get("nemesis") != null: cfg["nemesis"] = S.nemesis.duplicate(true)
+	if R.jt(S.get("verb")): cfg["verb"] = S.verb
 	if S.get("alt") == false: cfg["alt"] = false
 	if R.jt(S.get("campaign")):
 		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force"); cfg["event_war"] = S.get("event_war")
@@ -91,9 +94,16 @@ func view() -> Dictionary:
 			"q": int(u["q"]), "r": int(u["r"]), "facing": int(u["facing"]), "hp": u["hp"], "maxHp": u["maxHp"], "sh": u["sh"].duplicate(), "shMax": u["shMax"],
 			"sec": u.get("sec").duplicate(true) if u.get("sec") != null else null, "crew": u.get("crew"), "crewMax": u.get("crewMax"), "dead": R.jt(u.get("dead")), "fled": R.jt(u.get("fled")),
 			"activated": R.jt(u.get("activated")), "active": B.get("activeUnit") != null and is_same(B["activeUnit"], u), "braced": R.jt(u.get("braced")), "mp": u["mp"], "turnsLeft": u["turnsLeft"],
-			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws})
+			"ab": u.get("ab"), "abCd": u["abCd"], "abReady": R.canAbility(u) if not R.jt(u.get("dead")) else false, "burning": R.z0(u["st"].get("fire")) > 0, "flagship": R.jt(u.get("flagship")) or R.jt(u.get("boss")), "weapons": ws,
+			"moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
+			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy")})
 	return {"round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
-		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes}
+		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps()}
+func _torps() -> Array: # torpedo salvos in flight: they strike at the start of the firing side's next turn
+	var o := []
+	for s in (R.B["torps"] if R.B.get("torps") != null else []):
+		o.append({"id": s["id"], "side": s["side"], "by": s["by"], "target": s["tid"], "aim": {"q": int(s["aim"]["q"]), "r": int(s["aim"]["r"])}, "from": {"q": int(s["from"]["q"]), "r": int(s["from"]["r"])}, "round": int(s["r"])})
+	return o
 
 # Everything that happened since the last call, in order (API.md lists the event types).
 func take_events() -> Array:
@@ -227,6 +237,11 @@ func wing_order(wing_id: String, target_id: String) -> bool:
 	w["wingOrder"] = {"kind": "strike" if u["side"] == "enemy" else "guard", "id": u["id"]}
 	if R.jt(R.B.get("usage")): R.B["usage"]["wingOrders"] = R.z0(R.B["usage"].get("wingOrders")) + 1
 	R.hook("wing order", w); return true
+# B4 wing doctrines: a carrier's stance for its wings ("strike", "screen" or "hunt"), one free change per round (ACT.stance)
+func stance(id: String, st: String) -> bool:
+	var u = unit(id)
+	if phase != "player" or u == null or u["side"] != "player" or R.jt(R.B.get("busy")) or R.jt(R.B.get("over")) or not R.canStance(u): return false
+	return R.setStance(u, st)
 func can_command() -> bool: return phase == "player" and R.canCommand("player")
 func command() -> bool:                             # the Admiral's Command (once per battle, from round 1)
 	if not can_command() or R.jt(R.B.get("busy")): return false
@@ -279,6 +294,7 @@ func _ai_activate(u) -> void:
 	var r0 = R.B["round"]
 	var gone = func(): return R.jt(R.B.get("over")) or R.jt(u.get("dead")) or R.jt(u.get("activated")) or R.B["side"] != "player" or phase != "player" or R.B["round"] != r0
 	if gone.call(): return
+	if R.canStance(u): R.aiStance(u)
 	if R.canCommand("player") and not R.jt(R.B.get("busy")):
 		var c = R.commandFor("player"); var pl = []; var en = []
 		for x in R.alive("player"):
@@ -325,7 +341,7 @@ func _ai_activate(u) -> void:
 	R.eval_begin()
 	for s in states:
 		var v = R.stateView(u, s); var off2 = R.evalOffense(v, R.readyList(u), foes); var th = R.evalThreat(v, foes)
-		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v)
+		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - _botObj(v) - R.torpThreat(u, v) * 0.9 - R.syncPull(u, v) * 1.5
 		if sc > bs:
 			bs = sc; best = s
 	R.eval_end()
@@ -360,6 +376,7 @@ func _ai_activate(u) -> void:
 	for w in u["weapons"]:
 		if R.jt(w.get("fired")): anyFired = true
 	if not R.jt(u.get("isSq")) and not anyFired and u["hp"] < u["maxHp"] * 0.5 and R.canOrder(u, "brace") and R.evalThreat(u, R.alive("enemy")) > 10: order(u["id"], "brace")
+	if not gone.call() and not R.jt(u.get("isSq")) and R.canFade(u): _bot_act(u, func(): return R.fadeMove(u))
 	if not gone.call(): end_activation(u["id"])
 
 # A rules call run as one player action, with the same guard and auto end as the commands (ai_activate's rams and boarding).
@@ -410,7 +427,7 @@ func end_turn() -> void:
 	if _alt or phase != "player" or R.jt(B.get("over")) or R.jt(B.get("busy")): return
 	B["busy"] = true; B["sel"] = null; B["armed"] = null; B["mode"] = null; B["inspect"] = null; B["reach"] = null
 	B["side"] = "enemy"; R.emit({"t": "side", "side": "enemy"})
-	R.startSideTurn("enemy"); R.flush_deferred()
+	R.turnStart("enemy")
 	R.hook("end turn")
 	_c_order = R.alive("enemy")
 	JSM.ssort(_c_order, func(a, b):
@@ -447,7 +464,7 @@ func _c_end() -> void:
 	if R.jt(B.get("over")):
 		B["busy"] = false; _finish(); return
 	B["round"] = B["round"] + 1; B["side"] = "player"; R.emit({"t": "round", "round": int(B["round"])})
-	R.startSideTurn("player"); R.flush_deferred()
+	R.turnStart("player")
 	if R.jt(B.get("over")):
 		B["busy"] = false; _finish(); return
 	R.swarmPhase("player"); R.flush_deferred()
@@ -498,9 +515,7 @@ func _next_round() -> void: # ui3d.js nextRound
 	for x in B["units"]: x["activated"] = false
 	B["activeUnit"] = null; B["busy"] = true
 	R.emit({"t": "round", "round": int(B["round"])})
-	R.startSideTurn("player")
-	if not R.jt(B.get("over")): R.startSideTurn("enemy")
-	R.flush_deferred()
+	R.roundStartBoth()   # battle.js owns the round start: ticks for both sides, then travelling torpedoes
 	if R.jt(B.get("over")):
 		B["busy"] = false; _finish(); return
 	B["busy"] = true; R.swarmPhase("player")

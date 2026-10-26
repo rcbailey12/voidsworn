@@ -55,7 +55,12 @@ func snap(turn: int, actor: String) -> Dictionary:
 		stopped = true; printerr("NOT PORTED: this battle reached a rule the port does not carry yet: ", R.not_ported)
 	var B = R.B; var parts := PackedStringArray()
 	for u in B["units"]: parts.append(JSM.canon(u, "u", SKIP_U))
-	var s := "{\"b\":" + JSM.canon(B, "b", SKIP_B) + ",\"units\":[" + ",".join(parts) + "]}"
+	var gl := {"uid": R.UID}   # rules state kept outside B, as golden.js: the board cut-outs, the set-piece hexes that block sight, the id counter
+	if R.CUT != null:
+		var c = R.CUT.keys(); c.sort(); gl["cut"] = c
+	if R.SOLID != null:
+		var so = R.SOLID.keys(); so.sort(); gl["solid"] = so
+	var s := "{\"b\":" + JSM.canon(B, "b", SKIP_B) + ",\"g\":" + JSM.canon(gl, "g") + ",\"units\":[" + ",".join(parts) + "]}"
 	return {"turn": turn, "round": int(B["round"]), "actor": actor, "rng": JSM.rng_u32(), "hash": JSM.sha256(s), "state": s}
 
 # your side's bot, through the same API calls the scene uses (golden.js pBotF)

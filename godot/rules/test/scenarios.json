@@ -857,5 +857,274 @@
   "campaign": true,
   "event_war": true,
   "alt": false
+ },
+ "s26": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "note": "Stream B step 1: Hegemony synchronized fire on both sides (anchors, the sync mark, losing the anchor), Hegemony ion locking shield regen, the drill verb (sync radius 4, +20%), class refit track",
+  "seed": 26026,
+  "sector": 2,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion",
+   "h_interdictor",
+   "h_picket",
+   "h_picket",
+   "h_picket"
+  ],
+  "verb": "drill",
+  "class_track": {
+   "Destroyer": 2,
+   "Frigate": 1
+  }
+ },
+ "s27": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "storm",
+  "note": "Ithar prism charge, Ithar cannot brace, the Ithar fade after firing (AI and bot), against Chorus feed and bite regrowth; the attune verb",
+  "seed": 27027,
+  "sector": 2,
+  "admiral": "aelith",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_song",
+   "i_blade",
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "chorus",
+  "enemies": [
+   "b_brood",
+   "b_razor",
+   "b_spitter",
+   "b_drone",
+   "b_drone"
+  ],
+  "verb": "attune"
+ },
+ "s28": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "note": "Deathless endless legion on both sides (6+ hulls: two returns, the waken verb adds one), travelling torpedoes against a Deathless line, Corsair rockets into point defense",
+  "seed": 28028,
+  "sector": 3,
+  "admiral": "nekhet",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_scythe",
+   "d_scythe",
+   "d_scythe"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_harvester",
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_scythe",
+   "d_scythe",
+   "d_scythe"
+  ],
+  "verb": "waken"
+ },
+ "s29": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "note": "The Nemesis (stream B step 2): a Hegemony elite fleet with weaknesses flank and anchor (escorts flee under 60%), adaptations armor and point defense, one scar; torpedoes, lances and the new boons (Slip the Net, Spread Pattern, Marked for Death, Shield Wall, Chain Lightning, One Clean Line)",
+  "seed": 29029,
+  "sector": 2,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "nemesis": {
+   "name": "Varro",
+   "title": "Admiral",
+   "fac": "hegemony",
+   "weak": [
+    "flank",
+    "anchor"
+   ],
+   "adapt": [
+    "armor",
+    "pd"
+   ],
+   "scars": 1
+  },
+  "boons": [
+   {
+    "id": "r_slip",
+    "r": 0
+   },
+   {
+    "id": "e_spread",
+    "r": 0
+   },
+   {
+    "id": "a_mark",
+    "r": 0
+   },
+   {
+    "id": "i_wall",
+    "r": 0
+   },
+   {
+    "id": "s_chain",
+    "r": 0
+   },
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "i_line",
+    "r": 2
+   },
+   {
+    "id": "e_chain",
+    "r": 2
+   },
+   {
+    "id": "a_long",
+    "r": 2
+   }
+  ]
+ },
+ "s30": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "note": "The Nemesis with the other weaknesses (ion, torp, board, slow, brawl) and adaptations (shields, evasion, aim) on a Chorus fleet; Ashgrove carriers with wing stances (strike, screen, hunt), Brood Tithe, The Endless Swarm, screening wings against torpedoes",
+  "seed": 30030,
+  "sector": 3,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "reliquary",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "chorus",
+  "enemies": [
+   "b_brood",
+   "b_razor",
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "nemesis": {
+   "name": "Skrell",
+   "title": "Hive-lord",
+   "fac": "chorus",
+   "weak": [
+    "ion",
+    "torp",
+    "board",
+    "slow",
+    "brawl"
+   ],
+   "adapt": [
+    "shields",
+    "evasion",
+    "aim"
+   ],
+   "scars": 0
+  },
+  "boons": [
+   {
+    "id": "h_brood",
+    "r": 0
+   },
+   {
+    "id": "L_hunger",
+    "r": 3
+   },
+   {
+    "id": "L_ember",
+    "r": 3
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   }
+  ]
+ },
+ "s31": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "note": "Classic mode with travelling torpedoes on both sides (turnStart order), Hegemony sync for the enemy, the Voidsworn brace cover",
+  "seed": 31031,
+  "sector": 2,
+  "admiral": "malek",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "alt": false
  }
 }

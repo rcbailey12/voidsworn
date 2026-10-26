@@ -35,6 +35,7 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
 - `"over"`: the battle has ended.
 
 1. **Player phase.** The player picks one of their ships that has not yet acted this round. The first command a ship receives makes it the active ship.
+   - Ships move, then fire (the game's v54 doctrine): once a ship has fired it cannot move, except Ithar hulls (and any ship with the Slip the Net boon), which may still use half the movement they had left, without climbing over or diving under. `reach()` and `view().units[].moveLeft` already account for it.
    - The active ship can move, fire each ready gun, use its ability and give an order until it is done.
    - The activation ends by itself when the ship has no movement left and no gun that can fire, or when it dies. Otherwise call `end_activation()` ("End activation").
    - With no ship active, `end_activation(id)` passes that ship ("holds position"). `end_activation()` with no id passes the turn when nothing is pending.
@@ -80,6 +81,7 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | `end_activation(id = null)` | End the active ship's activation, or pass ship `id`. Starts the enemy phase. (Alternating mode only.) |
 | `end_turn()` | Classic mode only: end your whole turn. |
 | `rotate(id, dir)` | Turn in place one step (`dir` = +1 or -1), costing one movement point and one turn (free for ships that pivot). As in the game, the ship becomes the active one even when it cannot turn; returns whether it turned. |
+| `stance(id, st)` | A carrier's wing stance: `"strike"` (default), `"screen"` (wings stay within 2 hexes of the carrier, hunt craft first, shoot down torpedoes aimed at ships beside them) or `"hunt"` (4 hexes more leash, +20% against crippled ships, easier to hit). One free change per round; `view()` shows `stance` and `canStance`. |
 | `can_command() -> bool`, `command()` | The Admiral's Command: once per battle, from round 1, during your phase, no ship needed. The game asks for a confirming second tap; that is UI only. |
 | `ai_activate(id)` | The game's own player-side AI plays this ship's activation (the battle sim's `botUnit`: Command when it pays, ability, ram, the best move for its guns and the objective, boarding, every gun at its best target, brace when hurt; plus one turn in place when no gun bears), through these same commands. Use it for auto-play or a full-run bot. It stops when the activation ends; in alternating mode the enemy phase then starts as usual. (The enemy AI, `aiUnit`, only ever plays the enemy side in the game, so it is not offered for your ships.) |
 | `wing_order(wing_id, target_id)` | A standing order for one of your squadrons: an enemy ship means strike it until it dies, one of your ships means guard it. Works any time before the end. The wing acts on it in its next swarm phase. |
@@ -97,11 +99,15 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 {round, side, phase, over, arena, terrain: {"q,r": "rock"|"hulk"|"station"|"planet"|"neb"|"debris"|"storm"},
  cut: ["q,r", ...] (hexes cut away from the board), map: {map, shape, station?, planet?, wrecks?, deadstar?, holes?},
  obj: {type, score, escore, ...}, focus: id of the enemy fleet's current focus target or null,
+ torps: [{id, side, by, target, aim: {q, r}, from: {q, r}, round}] (torpedo salvos in flight: they land on `aim` at the start of `side`'s next turn),
  hexes: [{q, r}, ...] (every playable hex of the board; the same read-only array every call, fixed at setup),
  units: [{id, side, tpl, name, cls, fac, size, squadron, q, r, facing, hp, maxHp, sh: [prow, starboard, rear, port], shMax,
           sec: {prow: {hp, max, broken}, mid: {...}, eng: {...}}, crew, crewMax, dead, fled, activated, active, braced,
           mp, turnsLeft, ab, abCd, abReady, burning, flagship,
-          weapons: [{i, id, name, kind, arc, range, ready, cd, off}]}]}
+          weapons: [{i, id, name, kind, arc, range, ready, cd, off}],
+          moveLeft (movement still usable: after a ship fires only the Ithar fade allows half), fired, stance, canStance (carriers),
+          anchor, inSync (Hegemony synchronized fire), rising (a Deathless wreck reassembling: the round it stands up, or null),
+          nemesis (the Nemesis flagship), covered (id of the bracing Voidsworn neighbour covering it)}]}
 ```
 
 - **Hexes** are axial `(q, r)`, pointy-top.
@@ -139,6 +145,10 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `fled` | `unit` | The ship left the battle (escorts fleeing, a breakthrough, a convoy getting through). |
 | `log` | `text, kind` | A battle log line, word for word as the game writes it. `kind` is the game's colour class: `p` (good for you), `e` (bad for you), `s` (a success), `x` (neutral), `ember` (warnings), or null. |
 | `float` | `unit, text, color, dy` | A floating callout over a ship, word for word and in the game's colour ("\u221212 hull", "Shields down", "Critical", "Braced", ability names, boon names). `dy` is the game's vertical offset in pixels (negative is higher; null means 0). |
+| `torpedo` | `unit, target, id, aim, name` | A torpedo salvo launches (no shots are rolled yet); draw its lane to `aim`. |
+| `torpedo_miss` | `id, aim` | A salvo runs wide at impact. A salvo that hits plays as a `fire` event with `torpedo` and `from` fields, at the start of the firing side's next turn. |
+| `risen` | `unit, q, r` | A Deathless wreck reassembles (the endless legion). |
+| `stance` | `unit, stance` | A carrier's wing stance changed. |
 | `end` | `result` | The battle is over. |
 
 Presentation events (no rules meaning; draw them or not):
