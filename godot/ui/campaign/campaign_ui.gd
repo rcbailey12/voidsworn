@@ -469,14 +469,14 @@ func _intel_strip() -> Control:
 	row.add_child(box.call("Hostile presence", "[b]" + c(esc(F["n"]), Color(F.get("glow", "#e07a70"))) + "[/b]", Color(F.get("glow", "#e07a70")), str(F.get("blurb", ""))))
 	if R.get("foes") is Array and R["foes"].size() >= 5:
 		var a = C.FACTIONS[R["foes"][3]]; var b = C.FACTIONS[R["foes"][4]]
-		row.add_child(box.call("Rival raiders", c(esc(str(a["n"]).trim_prefix("The ")), Color(a.get("glow", "#ffffff"))) + ", " + c(esc(str(b["n"]).trim_prefix("The ")), Color(b.get("glow", "#ffffff"))), BONE3,
+		row.add_child(box.call("Rival raiders", c(esc(str(a["n"]).trim_prefix("The ")), Color(a.get("glow", "#ffffff"))) + ", " + c(esc(str(b["n"]).trim_prefix("The ")), Color(b.get("glow", "#ffffff"))) + c(" · about 1 fight in 5", BONE3), BONE3,
 			"About one ordinary fight in five comes from a rival outside the sector's main enemy. Their nodes carry a ring in their colour, and their patrols drift nearby."))
 	var cond = C.sectorCond()
 	if cond != null:   # the effect in words on the strip itself, not only in a tooltip
 		var cb = box.call("Sector condition", "[b]" + c(esc(cond["n"]), GILT) + "[/b] " + c(esc(cond["d"]), BONE2), GILT); cb.custom_minimum_size.x = px(330); row.add_child(cb)
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
-	row.add_child(box.call("Patrons watching", ", ".join(PackedStringArray(ps)), Color(0.7, 0.6, 1.0), "Win at a node with a patron's sigil and that patron offers a boon."))
+	row.add_child(box.call("Patrons watching", ", ".join(PackedStringArray(ps)) + c(" · win at a sigil for a boon", BONE3), Color(0.7, 0.6, 1.0), "Win at a node with a patron's sigil and that patron offers a boon."))
 	# where you are in the run (the Nemesis has his own card in the side panel)
 	var cols = m["cols"].size(); var here = C.findNode(R["pos"]) if R.get("pos") != null else null
 	var step = (int(here["col"]) + 1) if here != null else 0
