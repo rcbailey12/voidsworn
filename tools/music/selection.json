@@ -1,0 +1,505 @@
+{
+ "note": "Music selection (R37, R40). process.py build reads this and writes godot/music/tracks/, music.json and CREDITS.md.",
+ "tracks": {
+  "title_war": {
+   "src": "war_theme_v2.ogg",
+   "role": "title screen (brass, strings, timpani)",
+   "start": 0.0,
+   "lufs": -17,
+   "loop": true,
+   "credit": {
+    "title": "War Theme (ver 2)",
+    "author": "Spring Spring",
+    "url": "https://opengameart.org/content/war-theme",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+   },
+   "search": [
+    200,
+    268
+   ],
+   "xfade": 1.5
+  },
+  "map_sector": {
+   "src": "srg774_dark_scifi_ogg/ogg/sector.ogg",
+   "role": "campaign map, sector 1 (synth drone)",
+   "start": 2.0,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Sector (Dark Sci-Fi Audio Pack)",
+    "author": "SRG774",
+    "url": "https://opengameart.org/content/dark-sci-fi-audio-pack",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "courtesy": "Credit not required; the author appreciates a mention of SRG774."
+   },
+   "search": [
+    40,
+    52
+   ],
+   "xfade": 1.0
+  },
+  "map_outer": {
+   "src": "outer_space_loop.mp3",
+   "role": "campaign map, sector 1 (synth)",
+   "start": 0.0,
+   "lufs": -19,
+   "loop": true,
+   "credit": {
+    "title": "Outer Space Loop",
+    "author": "wipics",
+    "url": "https://opengameart.org/content/outer-space-loop",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+   },
+   "search": [
+    55,
+    67
+   ],
+   "xfade": 0.5
+  },
+  "map_drone": {
+   "src": "dark_ambient_drone_loop.flac",
+   "role": "campaign map, sector 2 (dark drone)",
+   "start": 0.0,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Dark Ambient Drone (loop)",
+    "author": "Tsorthan Grove",
+    "url": "https://opengameart.org/content/dark-ambient-drone",
+    "licence": "CC-BY 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+    "notice": "Dark Ambient Drone by Tsorthan Grove - CC BY 4.0 - https://opengameart.org/content/dark-ambient-drone"
+   },
+   "search": null,
+   "xfade": 0.02
+  },
+  "map_echo": {
+   "src": "space_echo.ogg",
+   "role": "campaign map, sector 2 (slow spacesynth)",
+   "start": 2.0,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Space Echo",
+    "author": "Centurion_of_war",
+    "url": "https://opengameart.org/content/space-echo",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+   },
+   "search": [
+    26,
+    34
+   ],
+   "xfade": 0.5
+  },
+  "map_signal": {
+   "src": "srg774_dark_scifi_ogg/ogg/title.ogg",
+   "role": "campaign map, sector 3 (synth drone)",
+   "start": 0.0,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Title (Dark Sci-Fi Audio Pack)",
+    "author": "SRG774",
+    "url": "https://opengameart.org/content/dark-sci-fi-audio-pack",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "courtesy": "Credit not required; the author appreciates a mention of SRG774."
+   },
+   "search": [
+    150,
+    200
+   ],
+   "xfade": 2.0
+  },
+  "map_transmission": {
+   "src": "srg774_dark_scifi_ogg/ogg/transmission.ogg",
+   "role": "campaign map, sector 3 (synth drone)",
+   "start": 0.0,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Transmission (Dark Sci-Fi Audio Pack)",
+    "author": "SRG774",
+    "url": "https://opengameart.org/content/dark-sci-fi-audio-pack",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "courtesy": "Credit not required; the author appreciates a mention of SRG774."
+   },
+   "search": [
+    75,
+    90
+   ],
+   "xfade": 1.0
+  },
+  "calm_tactical": {
+   "src": "nfm_tactical_thinking.wav",
+   "role": "battle calm layer (tactical percussion)",
+   "start": 0.0,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Tactical Thinking (from Intense Percussions)",
+    "author": "NorthFantasyMusic",
+    "url": "https://opengameart.org/content/intense-percussions",
+    "licence": "CC-BY 3.0",
+    "licence_url": "https://creativecommons.org/licenses/by/3.0/"
+   },
+   "search": null,
+   "xfade": 0.02
+  },
+  "calm_darktimes": {
+   "src": "nfm_dark_times.wav",
+   "role": "battle calm layer (tactical percussion)",
+   "start": 0.0,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Dark Times (from Intense Percussions)",
+    "author": "NorthFantasyMusic",
+    "url": "https://opengameart.org/content/intense-percussions",
+    "licence": "CC-BY 3.0",
+    "licence_url": "https://creativecommons.org/licenses/by/3.0/"
+   },
+   "search": null,
+   "xfade": 0.02
+  },
+  "hot_pursuit": {
+   "src": "determined_pursuit_loop.wav",
+   "role": "battle intense layer (horns, strings, drums)",
+   "start": 0.0,
+   "lufs": -17,
+   "loop": true,
+   "credit": {
+    "title": "Determined Pursuit (epic orchestra loop)",
+    "author": "Emma_MA",
+    "url": "https://opengameart.org/content/determined-pursuit-epic-orchestra-loop",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+   },
+   "search": null,
+   "xfade": 0.02
+  },
+  "hot_qazi": {
+   "src": "qazijamjam.wav",
+   "role": "battle intense layer (brass, strings, drums)",
+   "start": 27.0,
+   "lufs": -17,
+   "loop": true,
+   "credit": {
+    "title": "QaziJamJam (orchestral battle theme)",
+    "author": "Emma_MA",
+    "url": "https://opengameart.org/content/qazijamjam-orchestral-battle-theme",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+   },
+   "search": [
+    185,
+    200
+   ],
+   "xfade": 1.0
+  },
+  "hot_theme_a": {
+   "src": "battle_theme_a.mp3",
+   "role": "battle intense layer (horns and strings)",
+   "start": 0.5,
+   "lufs": -17,
+   "loop": true,
+   "credit": {
+    "title": "Battle Theme A",
+    "author": "cynicmusic (cynicmusic.com, pixelsphere.org)",
+    "url": "https://opengameart.org/content/battle-theme-a",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+   },
+   "search": [
+    75,
+    82
+   ],
+   "xfade": 1.0
+  },
+  "hot_heat": {
+   "src": "nfm_heat_of_the_battle.wav",
+   "role": "Corsair intense layer (war drums)",
+   "start": 0.0,
+   "lufs": -17,
+   "loop": true,
+   "credit": {
+    "title": "Heat of the Battle (from Intense Percussions)",
+    "author": "NorthFantasyMusic",
+    "url": "https://opengameart.org/content/intense-percussions",
+    "licence": "CC-BY 3.0",
+    "licence_url": "https://creativecommons.org/licenses/by/3.0/"
+   },
+   "search": null,
+   "xfade": 0.02
+  },
+  "boss_final": {
+   "src": "the_final_battle.ogg",
+   "role": "boss battle intense layer",
+   "start": 48.0,
+   "lufs": -16,
+   "loop": true,
+   "credit": {
+    "title": "The Final Battle",
+    "author": "skrjablin",
+    "url": "https://opengameart.org/node/73591",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "courtesy": "The author appreciates credit as \"skrjablin\"."
+   },
+   "search": [
+    108,
+    120
+   ],
+   "xfade": 1.0
+  },
+  "fac_voidsworn": {
+   "src": "chapel_of_hate.mp3",
+   "role": "Voidsworn flavour, intense layer (organ, drums)",
+   "start": 0.0,
+   "lufs": -17,
+   "loop": true,
+   "credit": {
+    "title": "Chapel of Hate",
+    "author": "FoxSynergy",
+    "url": "https://opengameart.org/content/chapel-of-hate",
+    "licence": "CC-BY 3.0",
+    "licence_url": "https://creativecommons.org/licenses/by/3.0/",
+    "notice": "The author asks: \"Please credit me as FoxSynergy.\""
+   },
+   "search": [
+    180,
+    246
+   ],
+   "xfade": 1.5
+  },
+  "fac_hegemony": {
+   "src": "some_militaristic_tune.ogg",
+   "role": "Hegemony flavour, calm layer (brass march, snare)",
+   "start": 0.0,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Some Militaristic Tune",
+    "author": "Spring Spring",
+    "url": "https://opengameart.org/content/some-militaristic-tune",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+   },
+   "search": null,
+   "xfade": 0.02
+  },
+  "fac_corsair": {
+   "src": "heavy_battle_battle1.mp3",
+   "role": "Corsair flavour, intense layer (heavy battle loop)",
+   "start": 0.0,
+   "lufs": -17,
+   "loop": true,
+   "credit": {
+    "title": "Heavy battle music",
+    "author": "Davieplier",
+    "url": "https://opengameart.org/content/heavy-battle-music",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "courtesy": "The author asks to be credited by name."
+   },
+   "search": [
+    14,
+    18.6
+   ],
+   "xfade": 0.2
+  },
+  "fac_chorus": {
+   "src": "menacing_otherworld.mp3",
+   "role": "Chorus flavour, bed under both layers (hostile organic ambience)",
+   "start": 0.3,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Menacing Otherworld",
+    "author": "Ruskerdax",
+    "url": "https://opengameart.org/content/menacing-otherworld",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/"
+   },
+   "search": [
+    150,
+    226
+   ],
+   "xfade": 3.0
+  },
+  "fac_ithar": {
+   "src": "srg774_dark_scifi_ogg/ogg/airy.ogg",
+   "role": "Ithar flavour, bed under both layers (airy pad)",
+   "start": 0.6,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Airy (Dark Sci-Fi Audio Pack)",
+    "author": "SRG774",
+    "url": "https://opengameart.org/content/dark-sci-fi-audio-pack",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "courtesy": "Credit not required; the author appreciates a mention of SRG774."
+   },
+   "search": [
+    45,
+    62
+   ],
+   "xfade": 2.0
+  },
+  "fac_deathless": {
+   "src": "claimed_by_the_void_mix.ogg",
+   "role": "Deathless flavour, calm layer (industrial machine pulse)",
+   "start": 3.4,
+   "lufs": -18,
+   "loop": true,
+   "credit": {
+    "title": "Claimed by the void, new factory, AI fight and simulation unknown (vitalezzz vs Tricksntraps)",
+    "author": "vitalezzz, tricksntraps (mix by glitchart)",
+    "url": "https://opengameart.org/content/claimed-by-the-void-new-factory-ai-fight-and-simulation-unknown-vitalezzz-vs-tricksntraps",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "courtesy": "Mix by glitchart of \"Claimed by the Void\" by vitalezzz and \"new factory\", \"AI fight\", \"Simulation unknown\" by tricksntraps, all CC0."
+   },
+   "search": [
+    178,
+    188
+   ],
+   "xfade": 4.0
+  },
+  "sting_victory": {
+   "src": "ss_VICTORY.ogg",
+   "role": "victory sting",
+   "start": 0.0,
+   "lufs": -16,
+   "loop": false,
+   "credit": {
+    "title": "VICTORY (Fanfares)",
+    "author": "Spring Spring",
+    "url": "https://opengameart.org/content/fanfares",
+    "licence": "CC-BY 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+    "notice": "Copyright notice on the page: Spring/Spring Enterprises. The page offers CC-BY 4.0, CC-BY 3.0, CC-BY-SA 4.0 and CC-BY-SA 3.0; used under CC-BY 4.0."
+   },
+   "end": null,
+   "fade_out": 0.4
+  },
+  "sting_fanfare": {
+   "src": "fanfare_random.ogg",
+   "role": "victory sting",
+   "start": 0.0,
+   "lufs": -16,
+   "loop": false,
+   "credit": {
+    "title": "Just a random fanfare",
+    "author": "Spring Spring (Julie Damsgaard)",
+    "url": "https://opengameart.org/content/just-a-random-fanfare",
+    "licence": "CC0 1.0",
+    "licence_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "courtesy": "Produced by Julie Damsgaard/Spring Spring/Spring Enterprises."
+   },
+   "end": 10.4,
+   "fade_out": 1.2
+  },
+  "sting_champion": {
+   "src": "ss_WIN_AGAINST_CHAMPION.ogg",
+   "role": "boss victory sting",
+   "start": 0.0,
+   "lufs": -16,
+   "loop": false,
+   "credit": {
+    "title": "WIN AGAINST CHAMPION (Fanfares)",
+    "author": "Spring Spring",
+    "url": "https://opengameart.org/content/fanfares",
+    "licence": "CC-BY 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+    "notice": "Copyright notice on the page: Spring/Spring Enterprises. The page offers CC-BY 4.0, CC-BY 3.0, CC-BY-SA 4.0 and CC-BY-SA 3.0; used under CC-BY 4.0."
+   },
+   "end": null,
+   "fade_out": 0.6
+  },
+  "sting_lose": {
+   "src": "ss_LOSE.ogg",
+   "role": "defeat sting",
+   "start": 0.0,
+   "lufs": -16,
+   "loop": false,
+   "credit": {
+    "title": "LOSE (Fanfares)",
+    "author": "Spring Spring",
+    "url": "https://opengameart.org/content/fanfares",
+    "licence": "CC-BY 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+    "notice": "Copyright notice on the page: Spring/Spring Enterprises. The page offers CC-BY 4.0, CC-BY 3.0, CC-BY-SA 4.0 and CC-BY-SA 3.0; used under CC-BY 4.0."
+   },
+   "end": null,
+   "fade_out": 0.4
+  }
+ },
+ "title": "title_war",
+ "map": {
+  "1": [
+   "map_sector",
+   "map_outer"
+  ],
+  "2": [
+   "map_drone",
+   "map_echo"
+  ],
+  "3": [
+   "map_signal",
+   "map_transmission"
+  ],
+  "default": "map_sector"
+ },
+ "battle": {
+  "calm": [
+   "calm_tactical",
+   "calm_darktimes"
+  ],
+  "intense": [
+   "hot_pursuit",
+   "hot_qazi",
+   "hot_theme_a"
+  ],
+  "boss": "boss_final"
+ },
+ "stings": {
+  "victory": [
+   "sting_victory",
+   "sting_fanfare"
+  ],
+  "victory_boss": "sting_champion",
+  "defeat": "sting_lose"
+ },
+ "factions": {
+  "voidsworn": {
+   "intense": "fac_voidsworn"
+  },
+  "hegemony": {
+   "calm": "fac_hegemony"
+  },
+  "corsair": {
+   "intense": [
+    "fac_corsair",
+    "hot_heat"
+   ]
+  },
+  "chorus": {
+   "bed": "fac_chorus",
+   "bed_db": -9.0
+  },
+  "ithar": {
+   "bed": "fac_ithar",
+   "bed_db": -11.0
+  },
+  "deathless": {
+   "calm": "fac_deathless"
+  }
+ }
+}

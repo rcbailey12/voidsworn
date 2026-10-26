@@ -46,6 +46,7 @@ var _single_db := 0.0
 var _calm_db := 0.0
 var _hot_db := 0.0
 var _after_sting := ""
+var _boss := false
 var _rng := RandomNumberGenerator.new()
 
 
@@ -210,7 +211,7 @@ func _fade_out_single(dur: float) -> void:
 
 # ---------- battle ----------
 
-func play_battle(player_fac := "", enemy_fac := "") -> void:
+func play_battle(player_fac := "", enemy_fac := "", boss := false) -> void:
 	_fade_out_single(FADE_IN)
 	_mode = "battle"
 	intensity = 0.0
@@ -225,6 +226,9 @@ func play_battle(player_fac := "", enemy_fac := "") -> void:
 	var hot_id := _pick(fl.get("intense")) if fl.has("intense") else ""
 	if hot_id == "":
 		hot_id = _slot(["battle", "intense"])
+	if boss and _slot(["battle", "boss"]) != "":
+		hot_id = _slot(["battle", "boss"])      # sector flagship and finale fights: the boss theme is the intense layer
+	_boss = boss
 	var bed_id := _pick(fl.get("bed")) if fl.has("bed") else ""
 	_bed_db = float(fl.get("bed_db", -14.0))
 	_start(_calm, calm_id)
@@ -281,19 +285,21 @@ func feed(d: Dictionary) -> float:
 
 # ---------- stings ----------
 
-func victory() -> void:
-	_sting_play("victory")
+func victory(boss := false) -> void:
+	# a boss win (or any win in a battle started with boss = true) gets the champion fanfare when one is listed
+	# (sting_finished still reports "victory")
+	_sting_play("victory", "victory_boss" if (boss or _boss) and _slot(["stings", "victory_boss"]) != "" else "victory")
 
 
 func defeat() -> void:
 	_sting_play("defeat")
 
 
-func _sting_play(kind: String) -> void:
+func _sting_play(kind: String, slot := "") -> void:
 	_battle_target = 0.0
 	_fade_out_single(1.2)
 	_mode = "sting"
-	var id := _slot(["stings", kind])
+	var id := _slot(["stings", slot if slot != "" else kind])
 	var s := _stream(id, false)
 	if s == null:
 		sting_finished.emit(kind)

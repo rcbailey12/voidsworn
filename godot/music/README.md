@@ -20,9 +20,11 @@ music.set_on(settings.get("music", true))           # new setting: music on or o
 music.play_title()                                  # title screen
 music.play_map(sector)                              # campaign map, sector 1..3
 music.play_battle(player_faction, enemy_faction)    # battle start
+music.play_battle(player_faction, enemy_faction, true)  # sector flagship or finale fight: the boss theme becomes the intense layer
 music.feed({"close": n, "shots": n, "hull": f, "flagship": f, "mine": n, "enemy": n, "boss": b})  # once per activation or round
 # or music.set_intensity(x) with your own 0..1 value
 music.victory() / music.defeat()                    # battle end; signal sting_finished(kind) when the sting ends
+                                                    # (a battle started with boss = true wins with the champion fanfare)
 ```
 
 - The player makes its own `music` bus sending to Master, so your master volume and compressor still apply on top.
@@ -30,6 +32,31 @@ music.victory() / music.defeat()                    # battle end; signal sting_f
 - The intensity follower rises in about 2 s and falls in about 4 s, with the hand-over between 0.38 and 0.62, so one big hit does not flip the music back and forth.
 - Missing track files are skipped quietly: the game runs with no music if `tracks/` is empty.
 - Free statics on quit: none (the player holds its streams as instance data).
+
+## What plays where (Oct 26 picks, 24 tracks, 32 MB)
+
+Picked by measurement (loudness, tempo, percussive share, spectrograms in `tools/music/process.py analyse`) against R37. Full credits in `CREDITS.md`.
+
+| Slot | Tracks (one picked at random when two or more) |
+|---|---|
+| Title | War Theme v2 (Spring Spring): brass, strings, timpani |
+| Map, sector 1 | Sector (SRG774), Outer Space Loop (wipics): synth drone and pads |
+| Map, sector 2 | Dark Ambient Drone (Tsorthan Grove), Space Echo (Centurion_of_war) |
+| Map, sector 3 | Title and Transmission (SRG774): darker synth drones |
+| Battle, calm layer | Tactical Thinking, Dark Times (NorthFantasyMusic): tactical percussion |
+| Battle, intense layer | Determined Pursuit, QaziJamJam (Emma_MA), Battle Theme A (cynicmusic): horns, brass, drums |
+| Boss, intense layer | The Final Battle (skrjablin), from its full-orchestra section |
+| Voidsworn | intense layer: Chapel of Hate (FoxSynergy), organ and drums |
+| Hegemony | calm layer: Some Militaristic Tune (Spring Spring), brass march and snare |
+| Corsair | intense layer: Heavy battle music (Davieplier) or Heat of the Battle (NorthFantasyMusic) |
+| Chorus | bed under both layers: Menacing Otherworld (Ruskerdax), hostile organic ambience |
+| Ithar | bed under both layers: Airy (SRG774), a light pad |
+| Deathless | calm layer: Claimed by the Void mix (vitalezzz, tricksntraps), industrial machine pulse |
+| Stings | victory: VICTORY (Spring Spring) or Just a random fanfare; boss victory: WIN AGAINST CHAMPION; defeat: LOSE |
+
+Organ and machine sounds appear only as Voidsworn and Deathless flavour (R37). Loops: six tracks use the author's own loop (whole file, 20 ms click guard); the rest are cut where the music after the loop point best matches the loop start (`process.py loopfind`, score in `music.json` per track, all 0.55 or better, most above 0.75) and crossfaded 0.5 to 4 s. Levels: loops about -18 LUFS (intense -17, boss -16), stings -16, true peak under -1 dBFS.
+
+Rebuild: copy the raw pool from the PC (`Downloads\voidsworn_test\music\raw\`), then `python3 tools/music/process.py prep <raw>` and `python3 tools/music/process.py build <raw>`. Change picks in `tools/music/selection.json`. `tools/music/seamcheck.py` measures the jump at a loop's wrap.
 
 ## How the layers work
 
