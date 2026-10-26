@@ -8,6 +8,7 @@ import sys, os, shutil, subprocess
 args = sys.argv[1:]; rev = None
 if args and args[0] == '--rev': rev = args[1]; args = args[2:]
 tag = args[0]; jobs = args[1:]
+TMO = int(os.environ.get('TMO', '14400'))  # seconds each sim may run before the watchdog kills it
 src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 out = f'/mnt/user-data/outputs/sb_{tag}'
 if os.path.exists(out): sys.exit('staging folder exists, pick a new tag')
@@ -22,7 +23,8 @@ for j in jobs:
     if '::' in cmd:
         env, cmd = cmd.split('::', 1)
         env = ' '.join(f'set "{e}" &&' for e in env.split(';') if e) + ' '
-    L.append(f'start "sb {tag} {name}" /min cmd /c "{env}..\\..\\..\\node\\node.exe sim3d.js {cmd} > {name}.txt 2>&1 & echo done> {name}.done"')
+    # every launch goes through the PC watchdog (build\tools\pc\tmo.bat): the process tree is killed on overrun (exit 124, queue\logs\timeouts.log)
+    L.append(f'start "sb {tag} {name}" /min cmd /c "{env}call ..\\..\\tools\\pc\\tmo.bat {TMO} ..\\..\\..\\node\\node.exe sim3d.js {cmd} > {name}.txt 2>&1 & echo done> {name}.done"')
 L += ['echo launched', 'exit /b']
 open(f'{out}/sb_{tag}.bat', 'w', newline='\r\n').write('\n'.join(L) + '\n')
 print(open(f'{out}/sb_{tag}.bat').read())
