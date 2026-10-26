@@ -70,7 +70,7 @@
 
 ## Ryan traveling (Oct 26 to about Oct 30)
 
-Ryan is away from his PC for about 4 days and works from his phone at the usual pace; he won't play builds. His PC stays on with watcher.bat running; `voidsworn_test\autostart_on.bat` (tools/pc/) restarts the watcher at login. Send screenshots to his phone; playtests and visual sign-offs wait for his return. G3 (campaign) may start once G1's API is stable (Ryan, Oct 26).
+Ryan is away from his PC for about 4 days and works from his phone at the usual pace; he won't play builds. His PC stays on with watcher.bat running; `voidsworn_test\autostart_on.bat` (tools/pc/) restarts the watcher at login. Send screenshots to his phone; playtests and visual sign-offs wait for his return. Travel sprint (R34, plan section 4 "Travel sprint"): six streams, one helper each, folder ownership in the plan. Agent ids: G1 rules a373165be9bedd0f7; G2 battle ad36c07a1a9f9cf41; G3 campaign afc62733250375a78; G4 look a14fc7490a5891d07; A4 ships a1f68bd171c2ba2e5; B game rules ad1eaee32cef42f07. PC jobs go through the queue (`voidsworn_test\queue\`, watcher window "VS job queue"). Opus check-ins every 6 hours via send_later.
 
 ## 4. Open questions for Ryan
 
