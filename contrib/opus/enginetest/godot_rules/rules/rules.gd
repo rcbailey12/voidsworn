@@ -1534,8 +1534,27 @@ func boardOdds(u, t) -> Dictionary:
 	var d: float = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5)
 	var p = captureChance(u, t)
 	return {"kill": JSM.jsround(a * 0.38), "loss": JSM.jsround(d * 0.3), "chance": p, "capture": p >= 50}
-func boardUnit(_u, _t) -> bool:
-	np("boarding action"); return false
+func boardUnit(u, t) -> bool:
+	if not JSM.has_same(boardTargets(u), t): return false
+	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["board"] = z0(B["usage"].get("board")) + 1
+	u["boarded"] = true; u["repel"] = true; u["mp"] = 0
+	for w in u["weapons"]: w["fired"] = true
+	var live = liveFrom(u)
+	if not live.call() or jt(t.get("dead")): return false
+	var a = u["crew"] * (BOARD_MULT[u["fac"]] if jt(BOARD_MULT.get(u["fac"])) else 1.0) * (1.0 + z0(g(u.get("fx"), "boardPct"))) * (0.75 + rnd() * 0.5)
+	var d = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5) * (0.75 + rnd() * 0.5)
+	var kill = JSM.jsround(a * 0.38); var loss = min(u["crew"] - 1, JSM.jsround(d * 0.3)); t["crew"] = max(0, t["crew"] - kill); u["crew"] = max(1, u["crew"] - loss)
+	if t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured")):
+		t["crew"] = max(2, JSM.jsround(t["crewMax"] * 0.15)); systemDamage(t); systemDamage(t)
+		if jt(B.get("usage")) and t["side"] == "player": B["usage"]["overrun"] = z0(B["usage"].get("overrun")) + 1
+		return true
+	if t["crew"] <= 0:
+		if jt(B.get("usage")) and u["side"] == "player": B["usage"]["cap"] = z0(B["usage"].get("cap")) + 1
+		t["side"] = u["side"]; t["crew"] = max(3, JSM.jsround(t["crewMax"] * 0.4)); t["captured"] = true; t["activated"] = true; t["mp"] = 0; t["turnsLeft"] = 0; t["braced"] = false
+		for w in t["weapons"]: w["fired"] = true
+		gainResolve(u["side"], 2); checkEnd(); return true
+	if rnd() < 0.5 or jt(g(u.get("fx"), "boardPct")): systemDamage(t)
+	return true
 func tacticRam(u) -> bool:
 	var info = ramInfo(u)
 	if info == null or info.path.size() < 2: return false
