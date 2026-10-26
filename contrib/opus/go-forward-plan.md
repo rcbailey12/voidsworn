@@ -45,7 +45,8 @@ Updated by the build session as phases move. A phase is done when its exit check
 | B2 Faster, then bigger battles | BUILT, waiting on Ryan's playtest | Faster (enemy waits about halved: sector 3 21.8 to 8.0 s per round in the real browser), the size ramp (about 9 / 13 / 18 ships), one batched prize screen with add, strip or ransom (R23). Checks: fuzz 2000 0 exceptions (S9), check pack 0 FAIL, b1_tests 39 ok. Sector 1 boss spread now 57 to 89% (S6 fixed: Mending, Voice, Vesh start fleets trimmed, Kassar guns 5% lighter). Play build: double-click Downloads\\voidsworn_test\\play.bat. Item 4 (Dead Star backdrop): the paintings are inspiration, not a spec (R25); use one only if it fits. |
 | G1 Battle rules complete | IN PROGRESS Oct 26 | Section 4, G. Slice already matches (R29, R30). |
 | G2 First playable battle | IN PROGRESS Oct 26 | Built in parallel with G1 from the A3 test scene. |
-| G3 to G5, A4, A5, B3 to B5 | NOT STARTED | A5 becomes G4. Balance work (B3 to B5) lands in data.js and flows to Godot. Today's browser version is frozen (R33). |
+| G3 campaign, G4 look, A4 ships, B3 and B4 | IN PROGRESS Oct 26 (travel sprint, R34) | One helper per stream, section 4 "Travel sprint". A5 is G4. |
+| G5, B5 | NOT STARTED | B5 and career mode wait on Ryan's scope answers. |
 
 ## 1. What is decided
 
@@ -276,6 +277,21 @@ If Babylon stays, the question closes for this project phase.
 - **G4 Effects pass.** A5 done in Godot with real battles on screen.
 - **G5 Switch over.** Everything today's game does works in Godot; Ryan stops opening the old one; Windows build from a .bat. Then Steam (X12, X18).
 - A4 (kit rollout) builds ships for Godot; K1 still comes first.
+
+### Travel sprint (Oct 26 to about Oct 30, R34)
+
+Ryan, Oct 26: use his 4 days away to do all the graphics, effects and physics upgrades, the Godot move and the backlog, so he comes back to test and refine rather than wait for builds. He works from his phone; his PC stays on (job queue, below). Claude decides open technical questions and records them as vetoable calls; playtests and look sign-offs wait for his return.
+
+**Streams, one helper each, with folder ownership (nobody edits another stream's folders):**
+- **G1 rules** (`godot/rules/`, parity tooling): rest of battle.js in GDScript, per-action parity. Reads a pinned oracle snapshot (`godot/rules/test/oracle/`) so JS rule work in stream B does not break it mid-port; catches up each B change with a new golden scenario.
+- **G2 battle** (`godot/scenes/battle/`, `godot/render/`, `godot/ui/battle/`, `godot/audio/`, `project.godot`): the first playable battle.
+- **G3 campaign** (`godot/campaign/`, `godot/ui/campaign/`, `godot/scenes/campaign/`): campaign_run.js and campaign_meta.js rules with campaign parity, then the map, shop, rewards, prize screen, capture, retreat, saves, meta progression and onboarding screens.
+- **G4 look** (`godot/fx/`, `godot/world/`, `godot/render/look.gd`): the effects pass now, in an effects gallery scene and then in battle: every weapon family distinct (Muse A5 sheets), staged damage, per-faction shield hit and break, ship death and drifting wrecks from the real hulls, physics debris, engine trails, black-hole lensing with an accretion disc on the dead-star board, lighting and tonemap tuning, the reduce-flashing option; plus the world backlog (asteroid rebuild, backdrop oddities). Takes over the ported Babylon effects from G2.
+- **A4 ships** (`tools/blender/a4/`, `assets/ships/<code>/`, `godot/assets/ships/`): K1 decided by Claude (vetoable), then the kit rollout, Corsairs first, with the blob sweep and the space-not-naval check per ship; Ithar source mesh fixed. Heavy runs on the PC.
+- **B game** (the JS game files and sims, the oracle): B3 faction identity, then B4 (events with blue options, faction verbs, the Nemesis, wing doctrines) and the game backlog (doctrines, boon decline and reroll, rule-changing boons, AI polish), each sim-checked (playtest-and-balance skill). Today's browser version stays frozen for players; these changes exist to be ported.
+- Not started without Ryan: B5 story and the career mode (his scope questions), music style, admiral portraits.
+
+**PC job queue:** `Downloads\voidsworn_test\queue\<unique>.bat`, one job at a time, logs in `queue\logs\` (playtest-and-balance skill). Helpers with the PC tools queue their own jobs; otherwise Opus does.
 
 ### A4. Kit rollout (ship 2 onward)
 
