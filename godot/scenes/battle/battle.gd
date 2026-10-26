@@ -203,6 +203,7 @@ func _build_world() -> void:
 	fill.light_color = FILL_COL
 	fill.light_energy = 0.5
 	add_child(fill)
+	_apply_quality(str(args.get("quality", "max")))
 	# G4's look (tonemap, exposure, glow, ambient, key and fill) when it is in the build
 	if ResourceLoader.exists("res://render/look.gd"):
 		load("res://render/look.gd").apply(env, key, fill, {"quality": str(args.get("quality", "max"))})
@@ -231,6 +232,32 @@ func _build_world() -> void:
 	if gfx != null and gfx.has_method("setup"):
 		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": false, "shake": 1.0, "unit": 1.0})
 	_build_arrow()
+
+
+# the Graphics setting: max (everything), high (no SSIL, smaller shadows), low (no MSAA, SSAO or volumetric haze)
+func _apply_quality(q: String) -> void:
+	var vp := get_viewport()
+	match q:
+		"low":
+			vp.msaa_3d = Viewport.MSAA_DISABLED
+			vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA
+			RenderingServer.directional_shadow_atlas_set_size(2048, true)
+		"high":
+			vp.msaa_3d = Viewport.MSAA_2X
+			RenderingServer.directional_shadow_atlas_set_size(4096, true)
+		_:
+			vp.msaa_3d = Viewport.MSAA_4X
+			RenderingServer.directional_shadow_atlas_set_size(4096, true)
+
+
+func _post_quality(q: String) -> void:
+	if q == "low":
+		env.ssao_enabled = false
+		env.ssil_enabled = false
+		env.volumetric_fog_enabled = false
+		env.glow_enabled = true
+	elif q == "high":
+		env.ssil_enabled = false
 
 
 func _build_arrow() -> void:
@@ -352,6 +379,7 @@ func _begin(a) -> void:
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
 	board.build(R)
 	cam.bounds = board.bounds()
+	_post_quality(str(args.get("quality", "max")))
 	if world != null:
 		world.queue_free()
 		world = null
@@ -1737,6 +1765,10 @@ func _tip() -> String:
 			t += "\n%d of %d guns bear on an enemy from here." % [int(st.get("guns", 0)), int(st.get("gunsOf", 0))]
 		t += "\n[color=#7d7768]Q/E change the facing. Click to move.[/color]"
 		return t
+	if board.zone_of.has(hk):
+		var zi := {"exit": ["Exit", "A ship that ends its move here jumps clear of the battle."], "texit": ["Transport exit", "An enemy transport that reaches this edge gets through."],
+			"guard": ["Station perimeter", "Every enemy ship this close to the station at the start of a round knocks out 1 integrity."]}.get(board.zone_of[hk], ["", ""])
+		return "[b]%s[/b]\n%s" % [zi[0], zi[1]]
 	var terr := str(V["terrain"].get(hk, ""))
 	if terr != "":
 		var info = R.TB.get("TERRAIN_INFO", {}).get(terr, {}) if R.TB is Dictionary else {}

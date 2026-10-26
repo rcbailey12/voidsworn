@@ -100,6 +100,7 @@ func build(rules) -> void:
 	props.name = "Terrain"
 	add_child(props)
 	_terrain()
+	_zones()
 	refresh()
 
 
@@ -162,6 +163,27 @@ func _hex_mesh(rad: float, ring: bool) -> ArrayMesh:
 const ZONE_TINT := {"neb": Color(0.69, 0.49, 1.0, 0.16), "debris": Color(0.83, 0.75, 0.53, 0.12), "storm": Color(1.0, 0.91, 0.4, 0.13)}
 const BASE_FILL := Color(0.04, 0.06, 0.09, 0.18)
 const BASE_RING := Color(0.45, 0.65, 1.0, 0.07)
+
+
+# objective zones (ui3d.js ZONE_INFO): the exit edge green, the transports' exit and the station perimeter red; the relay
+# hex for hold gold
+const ZONE_C := {"exit": Color(0.49, 1.0, 0.61, 0.16), "texit": Color(0.88, 0.48, 0.44, 0.16), "guard": Color(0.88, 0.48, 0.44, 0.14)}
+var zone_of := {}
+
+
+func _zones() -> void:
+	zone_of.clear()
+	if not R.has_method("objZone"):
+		return
+	for h in cells:
+		var z = R.objZone(h.q, h.r)
+		if z != null and ZONE_C.has(str(z)):
+			var k := key(h.q, h.r)
+			zone_of[k] = str(z)
+			base_fill[k] = ZONE_C[str(z)]
+	var o = R.B.get("obj")
+	if o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary:
+		base_fill[key(o["hex"]["q"], o["hex"]["r"])] = Color(0.82, 0.65, 0.29, 0.3)
 
 
 func refresh() -> void:
