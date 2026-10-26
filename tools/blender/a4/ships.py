@@ -37,7 +37,7 @@ WEAPONS = {
     'craft|fighter': [('guns', 'T')], 'craft|bomber': [('bombs', 'T')], 'craft|spore': [('sporeb', 'T')],
     'obj|station': [], 'obj|transport': [], 'obj|beacon': [],
 }
-KEYS = {'loft', 'pitch', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
+KEYS = {'loft', 'pitch', 'roll_deg', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
        'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
 SIZES = {'S', 'M', 'L', 'XL'}
@@ -73,7 +73,7 @@ def check_entry(code, cfg):
 
 SHIPS = {}
 # orientation fixes known before a ship file exists: the game's AI_HULL_YAW (ships3d.js) plus A4 finds (2 = turned half round)
-YAWS = {'I14_23': 1, 'I15_11': -1, 'I11_37': 2, 'C15s_23': 2, 'V14_23': 2, 'V16_37': 2, 'B19_11': 2, 'B21_11': 2, 'B22_11': 2}
+YAWS = {'I14_23': 1, 'I15_11': -1, 'I11_37': 2, 'D20_23': -1, 'D9_23': 2, 'C15s_23': 2, 'V14_23': 2, 'V16_37': 2, 'B19_11': 2, 'B21_11': 2, 'B22_11': 2}
 
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Corsair (barge grammar: rust-and-bone salvage, lopsided, junk bolted on; space parts only)
@@ -385,3 +385,37 @@ SHIPS['I8_37'] = dict(
          ('turret', 'fl', .16, 0, 0, 'top', dict(size='M', barrels=2, slot=4, wkind='flak', arc='T', lift=.003)),
          ('engine_at', 'eC', 0, .001, .001, 'stern', dict(r=.011, L=.015))],
     notes='pass 1: hand-lofted spindle and leaf sail (the AI mesh was unusable)')
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# Deathless (black tomb-stone, bone-grey trim, sickly green light; gothic, bilateral). Gauss turrets in the hex style with a green slit.
+SHIPS['D22_23'] = dict(
+    fac='deathless', cls='Tomb-ark', name='Necropolis tomb-ark', sym='bilateral', pitch=2.4, roll_deg=-25.9,   # the AI meshed the ring rolled 26 degrees (plane fit of the ring)
+    kit=[('turret', 'gs', 0, .38, 0, 'top', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='gauss', arc='T', pair=True, lift=.003)),
+         ('spinal', 'doom', .36, 0, 0, 'top', dict(size='L', slot=2, wkind='doom', arc='F', length=3.0)),
+         ('turret', 'fl', -.36, 0, 0, 'top', dict(size='M', barrels=2, slot=3, wkind='flak', arc='T', lift=.003)),
+         ('engine_at', 'eP', 0, .16, .06, 'stern', dict(r=.024, L=.034, pair=True))],
+    notes='pass 1: ring levelled; the downward spire stays (vetoable: the concept shows a small ship on a green beam there)')
+
+SHIPS['D9_23'] = dict(
+    fac='deathless', cls='Frigate', name='Ossuary frigate', sym='bilateral', yaw=2,   # meshed back to front: the skull and claws sat aft
+    cuts=[dict(name='gun', box=(.05, .22, -.025, .025, .105, .2))],                   # the AI deck gun (rebuilt: gauss turret)
+    kit=[('turret', 'gs', .13, 0, 0, 'top', dict(size='S', barrels=2, slot=0, wkind='gauss', arc='T', lift=.003)),
+         ('engine_at', 'eC', 0, 0, .02, 'stern', dict(r=.022, L=.03))],
+    notes='pass 1: the ribcage is the design and stays')
+
+SHIPS['D20_23'] = dict(
+    fac='deathless', cls='Destroyer', name='Revenant destroyer', sym='bilateral', yaw=-1,  # meshed side-on: the long axis lay port to starboard
+    cuts=[dict(name='dome', box=(.20, .31, -.035, .035, .066, .16))],                       # the AI turret blob on the spine
+    kit=[('turret', 'gs', .25, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='gauss', arc='T', lift=.003)),
+         ('spinal', 'gf', .31, 0, 0, 'top', dict(size='S', slot=1, wkind='gauss', arc='F', length=3.0)),
+         ('engine_at', 'eP', 0, .10, -.078, 'stern', dict(r=.011, L=.016, pair=True)),
+         ('engine_at', 'eQ', 0, .14, -.078, 'stern', dict(r=.011, L=.016, pair=True))],
+    notes='pass 1')
+
+SHIPS['D21_23'] = dict(
+    fac='deathless', cls='Cruiser', name='Monolith cruiser', sym='bilateral',
+    kit=[('turret', 'gs', -.20, .09, 0, 'top', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='gauss', arc='T', pair=True, lift=.003)),
+         ('spinal', 'doom', .30, 0, 0, 'top', dict(size='L', slot=2, wkind='doom', arc='F', length=2.5)),
+         ('turret', 'sn', -.36, 0, 0, 'top', dict(size='M', barrels=2, slot=3, wkind='gsentry', arc='T', lift=.003)),
+         ('engine_at', 'eP', 0, .06, -.20, 'stern', dict(r=.02, L=.028, pair=True))],
+    notes='pass 1: flies long side first as in the game today (vetoable: the curved edge could lead)')

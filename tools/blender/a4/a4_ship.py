@@ -31,10 +31,8 @@ def build_hull(root, code, cfg):
         o = blmesh.mesh_from_arrays('hull', h['pos'], h['idx'], nor=h['nor'], uvs={'atlas': h['uv']})
         h['fingers'] = []; return o, h, {}, len(h['idx']), len(h['idx'])
     h = frame.load(root, code, cfg.get('yaw', 0), roll=cfg.get('roll', 0))
-    if cfg.get('pitch'):  # the AI tilted the spindle (I15: bow up); level it by turning about the port axis (degrees, + = bow down)
-        a = math.radians(cfg['pitch']); c_, s_ = math.cos(a), math.sin(a)
-        for k in ('pos', 'nor'):
-            q = h[k].copy(); h[k][:, 0] = c_ * q[:, 0] + s_ * q[:, 2]; h[k][:, 2] = -s_ * q[:, 0] + c_ * q[:, 2]
+    if cfg.get('pitch') or cfg.get('roll_deg'):  # the AI meshed it at a slant (I15 bow up, D22's ring rolled): level it
+        frame.tilt(h, cfg.get('pitch', 0.), cfg.get('roll_deg', 0.))
     idx, rims, rep = cuts.apply(h['pos'], h['idx'], cfg.get('cuts', []), keep_islands=cfg.get('keep_islands', False))
     for r in rep: log(r)
     h['fingers'] = []

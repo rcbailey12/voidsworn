@@ -12,9 +12,9 @@ from mathutils.bvhtree import BVHTree
 import frame
 
 
-def bvh(code, root=None, yaw=0):
+def bvh(code, root=None, yaw=0, tilt=(0., 0.)):
     root = root or os.environ.get('A4_ROOT') or os.path.abspath(os.path.join(HERE, '..', '..', '..'))
-    h = frame.load(root, code, yaw)
+    h = frame.load(root, code, yaw); frame.tilt(h, *tilt)
     return BVHTree.FromPolygons([tuple(map(float, v)) for v in h['pos']], [tuple(map(int, f)) for f in h['idx']]), h
 
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     cs = [float(v) for v in a[5:]] or [0.0]
     import ships
     yaw = ships.SHIPS.get(code, {}).get('yaw', ships.YAWS.get(code, 0))
-    T, h = bvh(code, yaw=yaw)
+    T, h = bvh(code, yaw=yaw, tilt=(ships.SHIPS.get(code, {}).get('pitch', 0.), ships.SHIPS.get(code, {}).get('roll_deg', 0.)))
     xs = np.arange(x0, x1 + 1e-9, dx)
     print(f'{code} {side}: first hit {"z" if side in ("top", "below") else "y"} per x (columns), rows at {"y" if side in ("top", "below") else "z"} =', cs)
     print('      x ' + ' '.join(f'{x:+6.3f}' for x in xs))

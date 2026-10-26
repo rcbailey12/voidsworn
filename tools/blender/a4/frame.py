@@ -54,3 +54,17 @@ def load(root, code, yaw=0, folder='hulls_hi', roll=0):
     flipped = False
     if signed_volume(pos, idx) < 0: idx = idx[:, ::-1].copy(); flipped = True  # open AI meshes: trust the volume sign, not the convention
     return dict(pos=pos, nor=nor, idx=idx, uv2=h['uv2'], tex=h['tex'], flipped=flipped)
+
+
+def tilt(h, pitch=0., roll_deg=0.):
+    """level a hull the AI meshed at a slant (in place on h['pos'] and h['nor'], Blender frame): pitch turns about the port axis (degrees,
+    + = bow down), roll_deg about the bow axis (degrees; + lifts the starboard side)"""
+    import math
+    for k in ('pos', 'nor'):
+        if pitch:
+            a = math.radians(pitch); c_, s_ = math.cos(a), math.sin(a); q = h[k].copy()
+            h[k][:, 0] = c_ * q[:, 0] + s_ * q[:, 2]; h[k][:, 2] = -s_ * q[:, 0] + c_ * q[:, 2]
+        if roll_deg:
+            a = math.radians(roll_deg); c_, s_ = math.cos(a), math.sin(a); q = h[k].copy()
+            h[k][:, 1] = c_ * q[:, 1] - s_ * q[:, 2]; h[k][:, 2] = s_ * q[:, 1] + c_ * q[:, 2]
+    return h
