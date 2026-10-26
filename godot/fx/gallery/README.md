@@ -50,4 +50,15 @@ Each still is keyed to the moment its effect really lands on the effect clock (t
 
 ## Cost
 
-Filled in from the PC run (RTX 5080, 4K, max detail): see the latest `godot/fx/gallery/results/` note.
+Ryan's PC (RTX 5080), the full 26 s reel with an orbiting camera, run r1b (Oct 26). Each feature's cost is the difference from the full run.
+
+| Run | Frame avg | p99 | GPU | Feature cost |
+|---|---|---|---|---|
+| 4K max, everything | 5.78 ms | 11.84 ms | 5.09 ms | (the A3 bar: about 6 ms) |
+| 4K max, no effects | 4.18 ms | 5.53 ms | 3.49 ms | the whole effects layer: 1.60 ms |
+| 4K max, no world | 5.30 ms | 11.06 ms | 4.59 ms | dead star (lens, disc), asteroids, sky: 0.48 ms |
+| 4K max, no physics | 5.75 ms | 11.43 ms | 5.06 ms | Jolt debris and wreck pieces: 0.03 ms |
+| 4K high | 4.03 ms | 11.36 ms | 3.29 ms | max-only extras (raymarched fire and vents, distortion, soft particles, parallax holes, 64 lights, SSAO and SSIL): 1.75 ms |
+| 1440p max | 3.40 ms | 7.16 ms | 2.71 ms | |
+
+The p99 and the 47 ms worst frames were first-use shader compiles; round 2 adds `fx.warmup()` and records pipeline compiles during the run (target 0).

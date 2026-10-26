@@ -37,6 +37,7 @@ var reduce_flashing = false:
 var shake_scale = 1.0
 var unit = 1.0
 var starboard_z = 1
+var compat := false
 var well = Vector3.INF     # the dead star, when the board has one (world.gd sets it): tidal deaths fall toward it
 var dstate = {}
 var manual = false
@@ -92,6 +93,11 @@ func setup(opts := {}) -> void:
 	register_globals()
 	rng.seed = int(opts.get("seed", 20261026))
 	quality = String(opts.get("quality", "max"))
+	# safe mode (G2's play_godot_safe.bat, the Compatibility renderer): no Decals, volumes, distortion or depth-reading
+	# shaders; effects still play, plainer, and never error
+	compat = RenderingServer.get_current_rendering_method() == "gl_compatibility"
+	if compat:
+		quality = "low"
 	camera = opts.get("camera", null)
 	apply_shake = camera != null
 	shake_scale = float(opts.get("shake", 1.0))
@@ -567,9 +573,10 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	tmp.global_position = at
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
-	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.DECAL, -2, "#define POM\n"), mat(SH.DECAL, -2), mat(SH.PETAL, 0),
-		mat(SH.VOL, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.SPRITE, 1, "#define SOFT\n"), mat(SH.STREAK, 1),
+	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.PETAL, 0), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1)]
+	if not compat:
+		mats.append_array([mat(SH.DECAL, -2, "#define POM\n"), mat(SH.DECAL, -2), mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
 	for i in mats.size():
 		var mi = MeshInstance3D.new()
 		mi.mesh = box
@@ -584,11 +591,12 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = base
 		mi.material_overlay = ov
 		tmp.add_child(mi)
-	var d = Decal.new()
-	d.size = Vector3(2, 2, 2) * unit
-	d.texture_albedo = dstate["tex"]["scorch"][0]
-	d.texture_emission = dstate["tex"]["ember"]
-	tmp.add_child(d)
+	if not compat:
+		var d = Decal.new()
+		d.size = Vector3(2, 2, 2) * unit
+		d.texture_albedo = dstate["tex"]["scorch"][0]
+		d.texture_emission = dstate["tex"]["ember"]
+		tmp.add_child(d)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0]

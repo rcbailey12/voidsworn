@@ -64,6 +64,8 @@ func step(dt: float) -> void:
 
 func build(view: Dictionary, opts: Dictionary) -> void:
 	quality = String(opts.get("quality", "max"))
+	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
+		quality = "low"
 	var biome: Dictionary = opts.get("biome", {})
 	var fac := String(opts.get("fac", "voidsworn"))
 	var hw: Callable = opts["hex_world"]
@@ -109,6 +111,8 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 
 func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 	quality = String(opts.get("quality", "max"))
+	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
+		quality = "low"
 	_rng.seed = 7
 	sky(env, "corsair", null, 3)
 	disc_tilt = -24.0

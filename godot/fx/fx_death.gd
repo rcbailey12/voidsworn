@@ -129,6 +129,10 @@ static func _frame(n: Vector3, spin: float) -> Basis:
 
 # A lit scorch mark (Godot's clustered Decal: albedo plus glowing embers or cracks), in the parent's frame.
 static func scorch_decal(fx, parent: Node3D, p: Vector3, n: Vector3, size: float, cracked: bool, r: RandomNumberGenerator) -> Node3D:
+	if fx.compat:
+		var none = Node3D.new()
+		parent.add_child(none)
+		return none
 	var tex: Dictionary = fx.dstate["tex"]
 	var d = Decal.new()
 	d.name = "fx_scorch"
@@ -148,6 +152,10 @@ static func scorch_decal(fx, parent: Node3D, p: Vector3, n: Vector3, size: float
 
 # A projected hole (the A3 breach decal, with parallax depth in max): open 1 = breach, about 0.5 = exposed structure.
 static func hole_decal(fx, parent: Node3D, p: Vector3, n: Vector3, hole: float, open: float, heat: float, r: RandomNumberGenerator, bio := false) -> Node3D:
+	if fx.compat:
+		var none = Node3D.new()
+		parent.add_child(none)
+		return none
 	var box = MeshInstance3D.new()
 	box.name = "fx_hole"
 	var bm = BoxMesh.new()
