@@ -57,6 +57,7 @@ func _draw() -> void:
 			_text(t, Vector2(p.x, below), fs, ui.BONE if av else Color("#8a8474")); below += 14.0 * s
 		if C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done and (n["type"] == "battle" or n["type"] == "elite" or n["type"] == "boss"):
 			_text(str(C.MAP_NAME[n["map"]]), Vector2(p.x, p.y - r - 7.0 * s), int(10.5 * s), Color("#7f8fa6"))
+		if not done and C.nemNodeIs(n): _text("Nemesis", Vector2(p.x, p.y - r - 20.0 * s), int(12 * s), Color("#ff6b5a"))   # B4
 		var rw = n.get("rw")
 		if rw is Dictionary and not done:
 			if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")):

@@ -22,6 +22,7 @@ const GILT2 := Color("#8c6d2c")
 const VERD := Color("#5fb3a6")
 const BLOOD := Color("#e27f74")
 const GLASS := Color(0.047, 0.07, 0.12, 0.80)
+const BLUE := Color("#62a8ff")   # B4 blue event options
 
 var C                      # the campaign (campaign.gd)
 var k := 1.0
@@ -149,6 +150,10 @@ func _find(list: Array, act: String, arg) -> Array:
 	for x in list:
 		if x[0] == act and x[1] == a: return x
 	return []
+func _arg_of(list: Array, act: String) -> String:   # the arg of the first button with this action ("" when none)
+	for x in list:
+		if x[0] == act: return x[1]
+	return ""
 func abtn(text: String, act: String, arg = "", primary: bool = false, small: bool = false, list = null) -> Button:
 	var found = _find(list if list != null else _acts, act, arg)
 	if found.is_empty(): return null
@@ -420,8 +425,9 @@ func _intel_strip() -> Control:
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
 	row.add_child(box.call("Patrons watching", ", ".join(PackedStringArray(ps)), Color(0.7, 0.6, 1.0), "Win at a node with a patron's sigil and that patron offers a boon."))
-	if R.get("nemesis") != null:   # stream B's Nemesis: shown when the run carries one
-		var nm = R["nemesis"]; row.add_child(box.call("Nemesis", esc(str(nm.get("name", nm.get("n", "The Nemesis")))) + ((" " + c("\u00b7 " + str(nm.get("clock")), BLOOD)) if nm.get("clock") != null else ""), BLOOD))
+	if C.jt(R.get("nem")) and not C.jt(R["nem"].get("dead")):   # B4: the Nemesis and his clock
+		var nm = R["nem"]; var dots = "\u25cf".repeat(int(nm["clock"])) + "\u25cb".repeat(max(0, int(C.NEM_CLOCK) - int(nm["clock"])))
+		row.add_child(box.call("Nemesis", "[b]" + c(esc(nm["name"]), BLOOD) + "[/b] " + c(dots, BLOOD), BLOOD, "Every fight you win moves his clock on; when it fills, your next fight is against him. You meet him once each sector at the latest before the rest stop."))
 	return row
 func _reward_label(rw) -> String:
 	if rw == null or not (rw is Dictionary): return ""
@@ -463,6 +469,7 @@ func _side() -> Control:
 	top.add_child(_readout("Command points", C.numstr(C.fleetCP()) + " / " + C.numstr(R["cpCap"]), BONE, true)); v.add_child(top)
 	var A = C.ADMIRALS[R["admiral"]]
 	v.add_child(lbl("Admiral: " + str(A["n"]) + ", " + str(A["doc"]).to_lower(), 14, BONE3))
+	_nem_panel(v); _verb_panel(v)
 	v.add_child(_wr_head("Fleet"))
 	var fs = C.flagshipOf()
 	for s in R["fleet"]:
@@ -505,6 +512,34 @@ func _side() -> Control:
 		for r in R["relics"]: v.add_child(rich("[b]" + esc(C.relicName(r)) + "[/b]\n" + c(esc(C.RELICS[r]["d"]), BONE2), 14))
 	else: v.add_child(lbl("None yet. Elite fleets and flagships carry them.", 14, BONE3))
 	return p
+# B4: the Nemesis card (clock, known weaknesses, adaptations) and the faction action button, as campaign_run.js nemPanel / verbPanel
+func _nem_panel(v: VBoxContainer) -> void:
+	var N = C.RUN.get("nem")
+	if not C.jt(N): return
+	var F = C.FACTIONS.get(N["fac"])
+	v.add_child(_wr_head("Nemesis"))
+	if C.jt(N.get("dead")):
+		v.add_child(lbl(C.nemFull() + " is dead.", 14, BONE3)); return
+	v.add_child(rich("[b]" + c(esc(C.nemFull()), BLOOD) + "[/b] " + c(esc(F["n"] if F != null else "") + ((", scarred %dx" % int(N["scars"])) if C.jt(N.get("scars")) else ""), BONE3), 15))
+	var dots = "●".repeat(int(N["clock"])) + "○".repeat(max(0, int(C.NEM_CLOCK) - int(N["clock"])))
+	var met = float(N["met"]) >= float(C.RUN["sector"])
+	var tail = (" " + c("[b]His fleet is coming: your next fight is his.[/b]", BLOOD)) if C.jt(N.get("strike")) else ((" " + c("(met this sector)", BONE3)) if met else "")
+	v.add_child(rich(c("Hunting you: ", BONE2) + c(dots, BLOOD) + tail, 14))
+	v.add_child(lbl("Every fight you win moves the clock on; when it fills, your next fight is against him. You meet him once each sector at the latest before the rest stop.", 13, BONE3))
+	var ws = []
+	for w in N["weak"]: ws.append(c(esc(C.NEM_WEAK[w]["n"]), GILT) if N["revealed"].has(w) else c("unknown", BONE3))
+	v.add_child(rich(c("Weaknesses: ", BONE2) + ", ".join(PackedStringArray(ws)), 14))
+	if N["adapt"].size() > 0:
+		var ad = []
+		for a in N["adapt"]: ad.append(c(esc(C.NEM_ADAPT[a]["n"]), BLOOD))
+		v.add_child(rich(c("Adapted: ", BONE2) + ", ".join(PackedStringArray(ad)), 14))
+func _verb_panel(v: VBoxContainer) -> void:
+	var V = C.verbFor()
+	if V == null: return
+	var used = float(C.z0(C.RUN.get("verbUsed"))) >= float(C.RUN["sector"])
+	v.add_child(_wr_head("Faction action"))
+	add(v, choice(str(V["n"]), str(V["d"]) + "\n" + ("Used this sector" if used else C.verbCostText(V)), "factionVerb"))
+	if C.jt(C.RUN.get("verbNext")): v.add_child(lbl("Ready for your next battle.", 13, GILT))
 func _seg_bar(f: float) -> Control:
 	var h = HBoxContainer.new(); h.add_theme_constant_override("separation", px(2))
 	var n = 20; var on = int(round(clamp(f, 0.0, 1.0) * n))
@@ -629,6 +664,13 @@ func _shipyard() -> Control:
 		else: add(cv2[1], abtn("Buy for " + C.numstr(C.jsround(float(C.MODULES[m]["cost"]) * pm)), "buyMod", i))
 		ms.add_child(cv2[0])
 	v.add_child(ms)
+	v.add_child(lbl("Class refits", 20, BONE, font_semi))
+	v.add_child(lbl("A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to " + C.numstr(C.CLASS_TRACK_MAX) + ".", 15, BONE3))
+	var tr = flow(8)
+	for cls in C.fleetClasses():
+		var lv = int(C.classTrack(cls)); var mx = lv >= int(C.CLASS_TRACK_MAX)
+		add(tr, abtn(str(cls) + " " + "●".repeat(lv) + "○".repeat(int(C.CLASS_TRACK_MAX) - lv) + " " + ("(full)" if mx else "for " + C.numstr(C.classTrackCost(cls))), "buyTrack", cls))
+	v.add_child(tr)
 	return v
 
 # ---------------- the battle page (stub battles; the game shell replaces it with the real battle) ----------------
@@ -826,6 +868,9 @@ func _modal(md: Dictionary) -> void:
 				v.add_child(rich("With the flagship broken, the fleet jumps deeper. Fleet command expands: [b]" + c("+3 command points", GILT) + "[/b], and crews patch 40% of every hull during the transit.", 17))
 				v.add_child(rich("Auspex confirms [b]" + esc(F["n"]) + "[/b] ahead.", 17))
 			if md["kind"] == "intro": p.call(F.get("blurb", ""), BONE2)
+			if md["kind"] == "sector" and d.get("adapt") != null and C.NEM_ADAPT.has(d["adapt"]):
+				var NA = C.NEM_ADAPT[d["adapt"]]
+				v.add_child(rich(c("Intelligence: " + esc(C.nemFull()) + " has adapted to you: [b]" + esc(NA["n"]) + "[/b] (" + esc(NA["why"]) + "). " + esc(NA["d"]), BLOOD), 17))
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", GILT) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)
 			if md["kind"] == "intro": p.call("Pick a route across the sector map. Battles marked with a patron’s sigil pay out that patron’s boons, so the route you choose shapes your build. The flagship of the sector waits at the far end.", BONE2)
@@ -846,7 +891,8 @@ func _modal(md: Dictionary) -> void:
 			var ev = d["ev"]; h2.call(ev["t"]); p.call(ev["b"])
 			for i in range(ev["o"].size()):
 				var o = ev["o"][i]; var cost = o["r"].get("cost") if o["r"] is Dictionary else null; var ok = not C.jt(cost) or float(R["credits"]) >= float(cost)
-				add(v, choice(o["l"], str(o["s"]) + ("" if ok else " (not enough credits)"), "eventChoice", i, acts))
+				var blue = C.jt(o.get("need"))   # B4 blue options: the requirement in plain words, shown either way
+				add(v, choice(o["l"], str(o["s"]) + ("" if ok else " (not enough credits)"), "eventChoice", i, acts, BLUE if blue else null, ("[" + C.needText(o["need"]) + "]") if blue else "", BLUE))
 		"event_result":
 			h2.call(d["ev"]["t"])
 			for l in d["lines"]: p.call(l)
@@ -887,7 +933,7 @@ func _modal(md: Dictionary) -> void:
 				pv.add_child(rich("[b]" + esc(r["p"]["name"]) + "[/b] " + c(esc(H["n"]) + ", " + C.numstr(C.or_(H.get("cp"), 1)) + " command point" + ("s" if float(C.or_(H.get("cp"), 1)) > 1 else "") + ", " + str(hp) + "% hull", BONE3), 16))
 				var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
 				var sm2 = (C.modName(r["o"]["strip"]["mod"]) + " + ") if C.jt(r["o"]["strip"]["mod"]) else ""
-				for opt in [["add", "Add", ("Joins at " + str(hp) + "% hull") if r["room"] else "No command points left"], ["strip", "Strip", sm2 + C.numstr(r["o"]["strip"]["cred"]) + " credits"], ["ransom", "Ransom", C.numstr(r["o"]["ransom"]) + " credits"]]:
+				for opt in [["add", "Add", ("Joins at " + str(hp) + "% hull") if r["room"] else ("Your faction cannot field it" if r.get("gate") != null else "No command points left")], ["strip", "Strip", sm2 + C.numstr(r["o"]["strip"]["cred"]) + " credits"], ["ransom", "Ransom", C.numstr(r["o"]["ransom"]) + " credits"]]:
 					var b = choice(opt[1], opt[2], "prizeSet", str(i) + ":" + opt[0], acts, null, "", BONE2, r["k"] == opt[0])
 					if b != null: b.custom_minimum_size.x = px(210); g.add_child(b)
 				pv.add_child(g); v.add_child(pp)
@@ -922,6 +968,8 @@ func _modal(md: Dictionary) -> void:
 				var o = offer[i]; var b = C.BOONS[o["id"]]; var r = int(C.z0(o.get("r"))); var R0 = C.RARITY[r]; var duo = b.get("duo")
 				var tag = ("Duo: " + " + ".join(PackedStringArray(duo.map(func(q): return str(C.PATRONS[q]["short"]))))) if C.jt(duo) else str(R0["n"])
 				add(v, choice(b["n"], C.BOON_D[o["id"]][r], "takeBoon", i, acts, Color(C.PATRONS[duo[0]]["col"]) if C.jt(duo) else pc, tag, Color("#ffd27a") if C.jt(duo) else Color(R0["col"])))
+			var rr = hbox(); add(rr, abtn("Reroll the offer (" + C.numstr(d.get("rerollCost", 0)) + " credits, once)", "boonReroll", _arg_of(acts, "boonReroll"), false, false, acts))
+			add(rr, abtn("Decline: take " + C.numstr(d.get("declineCred", 0)) + " credits", "boonDecline", "", false, false, acts)); v.add_child(rr)
 		"relic":
 			h2.call("The flagship’s vault" if d["boss"] else "Spoils of the elite"); p.call(str(C.REWARD_DEF["relic"]), BONE3); p.call("Choose one.")
 			for r in d["opts"]: add(v, choice(C.relicName(r), C.RELICS[r]["d"], "takeRelic", r, acts))

@@ -490,6 +490,8 @@ func _draw_overlay() -> void:
 		elif not fight: name = str(C.NODE_INFO[n["type"]]["n"])
 		elif n["type"] == "boss": name = "Sector flagship"
 		if name != "": _text(name, Vector2(base.x, y), int(15 * s), col, ui.font_semi); y += 17.0 * s
+		if fight and not done and C.nemNodeIs(n):   # B4: his fight is marked before you commit
+			_chip("NEMESIS", Vector2(base.x, y + 2.0 * s), int(12 * s), Color("#ff6b5a"), true); y += 18.0 * s
 		# intel line: danger band chip, board shape, reward
 		if fight and not done and _danger.has(id) and not _danger[id].is_empty():
 			var dg = _danger[id]; var sub = ""
@@ -508,6 +510,7 @@ func _draw_overlay() -> void:
 				var lab = ui._reward_label(rw)
 				if lab != "": _text(lab, Vector2(base.x, y), int(12 * s), Color("#bfb6a0") if av.has(id) else Color("#7f7a6e"))
 		if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done: _text(str(C.MAP_NAME[n["map"]]).to_upper(), top + Vector2(0, -20.0 * s), int(10 * s), Color(0.55, 0.62, 0.72))
+
 		# running totals along the lit routes
 		if on_route.has(id):
 			var rr = on_route[id]; var st = rr[1]
@@ -559,9 +562,14 @@ func _card_bb(n: Dictionary) -> String:
 	var t = "[b]" + _cc(str(I["n"]).to_upper(), ui.BLOOD if n["type"] in ["elite", "boss"] else ui.GILT) + "[/b]"
 	if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]): t += "  " + _cc(str(C.MAP_NAME[n["map"]]), ui.BONE3)
 	if C.jt(n.get("done")): t += "  " + _cc("(passed)", ui.BONE3)
-	if fight:
+	var nem = fight and not C.jt(n.get("done")) and C.nemNodeIs(n)
+	if nem:
+		var N = C.RUN["nem"]
+		t += "\n[b]" + _cc("Nemesis: " + ui.esc(C.nemFull()) + "'s fleet", Color("#ff6b5a")) + "[/b] " + _cc("(" + ui.esc(C.FACTIONS[N["fac"]]["n"]) + ", an elite fight)", ui.BONE3)
+	elif fight:
 		var fac = C.nodeFaction(n)
 		if C.FACTIONS.has(fac): t += "\n" + _cc(ui.esc(C.FACTIONS[fac]["n"]), Color(C.FACTIONS[fac].get("glow", "#e07a70"))) + ((" " + _cc("(rival raiders)", ui.BONE3)) if fac != C.RUN["map"]["fac"] else "")
+	if fight:
 		var dg = _danger.get(n["id"], {})
 		if not dg.is_empty():
 			t += "\n[b]" + _cc("Danger: " + dg["band"], dg["col"]) + "[/b] " + _cc("(their strength about %d%% of your fleet's)" % int(round(dg["ratio"] * 100.0)), ui.BONE3)

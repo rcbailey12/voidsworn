@@ -30,6 +30,8 @@ func danger(n: Dictionary) -> Dictionary:
 	var t = n["type"]
 	if not (t in ["battle", "elite", "boss"]): return {}
 	var R = C.TB["RAMP"]; var s = int(C.RUN["sector"]); var col = float(n["col"]); var kind = t
+	var nem = not C.jt(n.get("done")) and C.nemNodeIs(n)   # B4: the Nemesis fight is an elite fight, stronger for each scar and adaptation
+	if nem: kind = "elite"
 	var budget = ([0.0, 4.2, 9.5, 14.0][s] + col * (0.9 if s == 1 else (1.0 if s == 2 else 1.1))) * float(R["grow"][s])
 	if kind == "elite": budget *= 1.05
 	var P = fleet_power()
@@ -49,6 +51,7 @@ func danger(n: Dictionary) -> Dictionary:
 	if kind == "elite": threat *= 1.25            # the bigger half of an elite fleet are elites
 	if n.get("mod") == "veteran": threat *= 1.08
 	if C.heatOn("h_elite"): threat *= 1.08
+	if nem: threat *= (1.0 + 0.1 * float(C.RUN["nem"]["scars"])) * (1.0 + 0.06 * C.RUN["nem"]["adapt"].size())
 	var ratio = threat / max(0.5, P)
 	for b in BANDS:
 		if ratio < b[0]: return {"ratio": ratio, "band": b[1], "col": b[2], "threat": threat, "power": P}
