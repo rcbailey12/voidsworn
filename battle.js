@@ -345,6 +345,7 @@ function startBattle(cfg){
   B.usage={fire:{},aim:0,ab:{},ord:{},cmd:0,moves:0,cant:{}}; // what the player actually uses, for telemetry
   setupObjective(cfg.obj);
   setupFactionRules(); // B3: Hegemony anchors, the Deathless legion count, the torpedo list
+  if(cfg.nemesis) applyNemesis(cfg.nemesis); if(cfg.verb) applyVerb(cfg.verb); // B4: the Nemesis's own fleet; a faction verb readied on the map
   if(B.adapt||B.adaptWings) log(`Scouts report your carriers. The enemy ${B.adapt?`bolted extra point defense onto ${B.adapt>1?B.adapt+' ships':'one ship'}`:''}${B.adapt&&B.adaptWings?' and ':''}${B.adaptWings?`launched ${B.adaptWings>1?'two fighter wings':'a fighter wing'} to hunt your craft`:''}.`,'ember');
   startSideTurn('player');
   for(const u of alive('enemy')) u.intercepts=u.weapons.some(w=>w.k==='flak')?2:0;
@@ -364,7 +365,8 @@ function startSideTurn(side){
   const deaths=[]; // v53: ships killed by the turn's ticks; the caller awaits the returned promise so their deaths finish in order
   if(side==='player'&&B.round>1){ eventTick(); objectiveTick(deaths); }
   if(side==='enemy'){ try{ aiRefreshFocus(); }catch(e){} try{ bossCmdTick(); }catch(e){} } // v53-D: the fleet focus is kept (sticky) and re-checked, not wiped, each enemy turn
-  escortsBreak();
+  escortsBreak(); nemBreak(); // B4: a proud Nemesis flagship's escorts flee
+  if(side==='enemy') for(const u of B.units) if(u.side==='enemy'&&!u.dead&&!u.isSq) aiStance(u); // B4 wing doctrines: the enemy picks its stances
   gainResolve(side,1); let burned=false;
   const risen=legionTurn(side); // B3 Deathless: ships reassembling since last round stand up now
   for(const u of B.units){
@@ -482,12 +484,13 @@ function setupFactionRules(){ B.syncMark={player:{},enemy:{}}; B.syncLost={playe
     if(heg.length){ const a=heg.find(u=>u.pflag)||heg.find(u=>u.boss)||heg.find(u=>u.flagship)||heg.slice().sort((x,y)=>(y.t.cp||1)-(x.t.cp||1)||y.maxHp-x.maxHp)[0]; a.anchor=true; }
     const dl=B.units.filter(u=>u.side===side&&!u.isSq&&u.fac==='deathless'&&u.t&&u.t.reanimate).length; B.legion[side].max=dl>=6?2:dl>=1?1:0; } }
 function syncAnchor(side){ if(!B||!B.syncMark||(B.syncLost&&B.syncLost[side])) return null; return B.units.find(u=>u.anchor&&u.side===side&&!u.dead)||null; }
-function inSync(u){ if(!u||u.isSq||u.fac!=='hegemony'||u.dead) return false; const a=syncAnchor(u.side); return !!a&&hdist(u,a)<=SYNC_R; }
+function syncR(side){ return (B&&B.syncR&&B.syncR[side])||SYNC_R; } function syncDmg(side){ return (B&&B.syncDmg&&B.syncDmg[side])||SYNC_DMG; }
+function inSync(u){ if(!u||u.isSq||u.fac!=='hegemony'||u.dead) return false; const a=syncAnchor(u.side); return !!a&&hdist(u,a)<=syncR(u.side); }
 function syncOn(u,t){ if(!inSync(u)||!t) return false; const m=B.syncMark[u.side][t.id]; return !!m&&m.r===B.round&&m.ids.some(id=>id!==u.id); }
 function syncMarkShot(u,t){ if(!inSync(u)||!t) return; const M=B.syncMark[u.side]; let m=M[t.id]; if(!m||m.r!==B.round) m=M[t.id]={r:B.round,ids:[]}; if(!m.ids.includes(u.id)) m.ids.push(u.id); }
 function syncLose(t){ if(!B||!t||!t.anchor||!B.syncLost||B.syncLost[t.side]) return; B.syncLost[t.side]=true; t.anchor=false; if(B.units.some(u=>u.side===t.side&&!u.dead&&!u.isSq&&u.fac==='hegemony')){ log(`${t.name} is lost: the ${t.side==='player'?'fleet':'enemy line'} loses its synchronized fire.`,t.side==='player'?'e':'p'); } }
 // AI and bot: how far a Hegemony ship would stray from its anchor (0 inside the radius)
-function syncPull(u,v){ if(!u||u.isSq||u.fac!=='hegemony'||u.anchor) return 0; const a=syncAnchor(u.side); if(!a) return 0; return Math.max(0,hdist(v,a)-SYNC_R); }
+function syncPull(u,v){ if(!u||u.isSq||u.fac!=='hegemony'||u.anchor) return 0; const a=syncAnchor(u.side); if(!a) return 0; return Math.max(0,hdist(v,a)-syncR(u.side)); }
 // Ithar prism charge: facings hit since the ship's last turn (applyHit marks them); unmarked facings refill at turn start
 function ithChargeTurn(u){ if(u.fac!=='ithar'||!(u.shMax>0)||u.isSq) return; const hit=u.shHit||[0,0,0,0];
   if(!(u.st.shieldOff>0)){ let g=0; for(let i=0;i<4;i++) if(!hit[i]&&u.sh[i]<u.shMax){ g+=u.shMax-u.sh[i]; u.sh[i]=u.shMax; } if(g>0) fstat('ithar','charge',g); } u.shHit=[0,0,0,0]; }
@@ -512,6 +515,8 @@ function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=[];
   if(u.fac==='chorus') out.push(`Feeds on kills nearby (up to ${Math.round(FEED_CAP*100)}% hull a round).`);
   if(u.fac==='deathless'&&u.t&&u.t.reanimate){ const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Endless legion: the first to fall reassembles next round.':'Endless legion spent.'); }
   for(const s of (B.torps||[])) if(s.tid===u.id&&s.side!==u.side) out.push('<span class="blood">Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.</span>');
+  if(u.ab==='launch'||(u.fx&&u.fx.hive)){ const st=WING_STANCES[u.stance||'strike']; out.push(`Wing stance: ${st.n}. ${st.d}${u.side==='player'?(canStance(u)?' One free change this round.':' Changed this round.'):''}`); const pk=wingPerks(u); if(pk.length) out.push('Wing veterans: '+pk.map(k=>WING_PERKS[k].n+' ('+WING_PERKS[k].d.replace(/\.$/,'')+')').join(', ')+'.'); }
+  if(u.nem&&B.nem){ if(u.nemFlag) out.push('<span class="blood">Your Nemesis commands from this ship.</span>'); const kn=(B.nem.revealed||[]).filter(w=>B.nem.weak.includes(w)); if(kn.length&&u.nemFlag) out.push('Known weaknesses: '+kn.map(w=>NEM_WEAK[w].n+' ('+NEM_WEAK[w].d.replace(/\.$/,'')+')').join('; ')+'.'); }
   return out; }
 // ---------- B3 travelling torpedoes ----------
 // A torpedo-kind weapon (not squadron bombs) launches now and strikes at the start of the firing side's next turn. Its lane runs from the launch hex
@@ -524,6 +529,47 @@ function torpGhost(u,sure){ const g=Object.assign({},u); g.sureUsed=sure; g.ghos
 // expected torpedo damage aimed at u if it ends at v (AI and bot dodge with this)
 function torpThreat(u,v){ if(!B||!B.torps||!B.torps.length||u.isSq) return 0; let tot=0; for(const s of B.torps){ if(s.side===u.side) continue; const d=hdist(v,s.aim);
     if(s.tid===u.id){ if(d<=2) tot+=s.w.dmg*s.w.shots*[.62,.52,.38][d]; } else if(d===0) tot+=s.w.dmg*s.w.shots*.5; } return tot; }
+// ---------- B4 the Nemesis in battle ----------
+// cfg.nemesis = {name,title,fac,weak:[...],adapt:[...],scars}. Every enemy hull is his (u.nem); the biggest is his flagship (u.nemFlag). His fixed
+// weaknesses always apply (intel only tells you about them); adaptations and scars make him harder. Never touches your ships.
+function nemWeak(k){ return !!(B&&B.nem&&B.nem.weak&&B.nem.weak.includes(k)); }
+function applyNemesis(N){ B.nem=N; const es=B.units.filter(u=>u.side==='enemy'&&!u.isSq&&!u.transport); if(!es.length) return;
+  const fl=es.slice().sort((a,b)=>(b.t.cp||1)-(a.t.cp||1)||b.maxHp-a.maxHp)[0]; fl.nemFlag=true; fl.elite=true; fl.name=`${N.title} ${N.name}`; fl.dmg*=1+.1*(N.scars||0); // each scar makes him angrier: +10% damage on his flagship
+  if(fl.fac==='hegemony'){ for(const u of es) u.anchor=false; fl.anchor=true; }
+  for(const u of es){ u.nem=true;
+    if(nemWeak('board')){ u.crewMax=Math.max(4,Math.round(u.crewMax*.7)); u.crew=Math.min(u.crew,u.crewMax); }
+    if(nemWeak('slow')){ u.speed=Math.max(1,u.speed-1); }
+    for(const a of N.adapt||[]){ if(a==='shields'&&u.shMax>0){ u.shMax=Math.round(u.shMax*1.2); u.sh=u.sh.map(()=>u.shMax); } if(a==='armor') u.armor=Math.min(.6,u.armor+.1); if(a==='evasion') u.ev+=8; if(a==='aim') u.aim+=8; } }
+  if((N.adapt||[]).includes('pd')){ const pd=fl.fac==='chorus'?'spores':'flak'; for(const u of es.filter(x=>!x.weapons.some(w=>w.k==='flak')).slice(0,2)){ u.weapons.push(Object.assign(mkWeapon(pd,'T',u.fx||{}),{fired:false,cdLeft:0,off:0})); } }
+  log(`${fl.name} commands this fleet: your Nemesis.${(N.adapt||[]).length?' He has adapted: '+N.adapt.map(a=>NEM_ADAPT[a].n.toLowerCase()).join(', ')+'.':''}`,'e'); }
+// a proud flagship (weakness): once it falls below 60% hull, his escorts break and flee
+function nemBreak(){ if(!B||!B.nem||B.nemBroken||!nemWeak('anchor')) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f||f.hp>f.maxHp*.6) return;
+  B.nemBroken=true; const esc=alive('enemy').filter(u=>u!==f&&!u.isSq&&!u.transport); for(const e of esc){ e.dead=true; e.fled=true; try{ fxWithdraw(e); }catch(x){} }
+  log(`${f.name}'s flagship is burning. ${esc.length?'His escorts lose their nerve and flee.':''}`,'s'); }
+// ion hits strip more shield from a Nemesis with brittle emitters
+function ionVs(att,w,t){ return ionOf(att,w)*(t&&t.nem&&nemWeak('ion')&&(w.ion||w.k==='lance')?1.5:1); }
+// ---------- B4 faction verbs in battle (readied on the map, RUN.verbNext, handed in as cfg.verb) ----------
+function applyVerb(id){ const P=B.units.filter(u=>u.side==='player'&&!u.isSq); B.verb=id;
+  if(id==='vigil') for(const u of P) u.fx=Object.assign({},u.fx,{lineGuard:(u.fx.lineGuard||0)+.15});
+  if(id==='drill'){ B.syncR={player:SYNC_R+1}; B.syncDmg={player:.2}; }
+  if(id==='attune') for(const u of P) if(u.shMax>0){ u.shMax=Math.round(u.shMax*1.25); u.sh=u.sh.map(()=>u.shMax); }
+  if(id==='waken'&&B.legion) B.legion.player.max+=1;
+  const V=Object.values(FAC_VERBS).find(v=>v.id===id); if(V) log(`${V.n}: ${V.d.replace(/^Next battle, /,'')}`,'p'); }
+// ---------- B4 wing doctrines ----------
+// Each carrier has a stance for its wings (u.stance, default strike), changed at most once per round for free. Explicit wing orders still win.
+const WING_SCREEN_R=2, WING_HUNT_LEASH=4, WING_SCREEN_TORP=.45;
+function wingStance(s){ const p=s&&s.isSq?B.units.find(x=>x.id===s.parent):s; return (p&&p.stance)||'strike'; }
+function canStance(u){ return !!(B&&u&&!u.dead&&!u.isSq&&(u.ab==='launch'||(u.fx&&u.fx.hive))&&u.stanceRound!==B.round); }
+function setStance(u,st){ if(!WING_STANCES[st]||!canStance(u)||u.stance===st) return false; u.stance=st; u.stanceRound=B.round; log(`${u.name}'s wings: ${WING_STANCES[st].n}.`,u.side==='player'?'p':'e'); return true; }
+// the enemy (and the sim bot) pick a stance at their turn start: screen against torpedoes or many craft, hunt a crippled ship, else strike
+function aiStance(u){ if(!canStance(u)) return; const foe=u.side==='player'?'enemy':'player', mineSq=alive(u.side).filter(x=>x.isSq).length, foeSq=alive(foe).filter(x=>x.isSq).length;
+  const torps=(B.torps||[]).some(s=>s.side===foe), weak=alive(foe).some(x=>!x.isSq&&x.hp<x.maxHp*.5);
+  const st=torps||foeSq>mineSq+1?'screen':weak?'hunt':'strike'; if(st!==(u.stance||'strike')) setStance(u,st); }
+function wingPerks(p){ return (p&&p.ship&&p.ship.wingVet&&p.ship.wingVet.perks)||[]; }
+// screening wings near a torpedo's target shoot down part of the salvo (at impact, after point defense)
+function screenTorps(t,shots,res){ let shot=0; for(const s of alive(t.side)){ if(!s.isSq||wingStance(s)!=='screen'||hdist(s,t)>WING_SCREEN_R) continue; const p=B.units.find(x=>x.id===s.parent), ch=WING_SCREEN_TORP+(wingPerks(p).includes('pickets')?.2:0);
+    for(let i=0;i<shots.length;i++) if(shots[i]){ if(rnd()<ch){ shots[i]=false; shot++; } break; } }
+  if(shot){ res.pd=(res.pd||0)+shot; try{ fxText(t,shot+' torpedo'+(shot>1?'es':'')+' shot down by wings','#bfe3ff',30); }catch(e){} } }
 // ---------- combat math ----------
 function sightBlocked(q,r){ return blocks(terr(q,r))||!!(SOLID&&SOLID.has(q+','+r)); }
 function los(a,b){ const line=hexLine(a,b); for(let i=1;i<line.length-1;i++){ if(sightBlocked(line[i].q,line[i].r)) return false; } return true; }
@@ -544,6 +590,8 @@ function hitChance(u,w,t){
   if(t.fx&&t.fx.burnEv&&(t.hexMoved||0)>=3) c-=t.fx.burnEv;
   c+=motionHit(t);
   if(syncOn(u,t)) c+=SYNC_AIM; // B3 Hegemony synchronized fire
+  if(u.nem&&nemWeak('brawl')&&d<=2) c-=10; // B4 Nemesis weakness: long-gun doctrine
+  if(t.isSq&&wingStance(t)==='hunt') c+=10; // B4 hunting wings fly exposed
   const surge=cmdActive(t.side,'surge'); // v53: the enemy's Surge Command (was a wrapper patched on below)
   if(u.side==='player'&&!u.isSq&&!(u.sureUsed>0)&&runFx().firstSure) return surge?75:95; // the rangefinder relic: every ship's first attack of the battle
   const h=clamp(Math.round(c),5,95); return surge?Math.max(5,h-20):h;
@@ -562,9 +610,11 @@ function dmgMult(u,w,t,rear){
   if(w.k==='torp') m+=u.fx.torpPct||0;
   if(u.isSq) m+=u.sqPct||0;
   if(rear) m+=u.fx.rearPct||0;
+  if(rear&&t.nem&&nemWeak('flank')) m+=.25; // B4 Nemesis weakness: thin stern plating
+  if(u.isSq&&!t.isSq){ if(wingStance(u)==='hunt'&&t.hp<t.maxHp/2) m+=.2; if(wingPerks(B&&B.units.find(x=>x.id===u.parent)).includes('killers')) m+=.15; } // B4 wing doctrine and perk
   if(t.hp<t.maxHp/2) m+=u.fx.huntPct||0;
   if(u.focus) m+=.3;
-  { const still=u.fx.stillPct&&!u.hexMoved&&(w.arc==='P'||w.arc==='S'||w.k==='battery')?u.fx.stillPct:0, sy=syncOn(u,t)?SYNC_DMG:0; m+=Math.max(still,sy); } // B3: synchronized fire does not stack with Anchored Volley (the larger applies)
+  { const still=u.fx.stillPct&&!u.hexMoved&&(w.arc==='P'||w.arc==='S'||w.k==='battery')?u.fx.stillPct:0, sy=syncOn(u,t)?syncDmg(u.side):0; m+=Math.max(still,sy); } // B3: synchronized fire does not stack with Anchored Volley (the larger applies)
   if(u.fx.momPct) m+=Math.min(4,u.hexMoved||0)*u.fx.momPct;
   if(u.fx.prowPct&&w.arc==='F') m+=u.fx.prowPct;
   m+=rakeBonus(u,w);
@@ -579,7 +629,7 @@ function expectedVs(u,w,t){
   const quad=shieldQuad(t,u), rear=quad===2;
   const hit=hitChance(u,w,t)/100, per=dmgMult(u,w,t,rear);
   const raw=per*w.shots*hit;
-  const pierce=w.pierce||0, ion=ionOf(u,w);
+  const pierce=w.pierce||0, ion=ionVs(u,w,t);
   const shieldable=raw*(1-pierce);
   const absorbed=Math.min(shieldable,(t.sh[quad]||0)/ion);
   let hull=(raw-absorbed)*(1-(rear?t.armor*.5:t.armor));
@@ -588,7 +638,7 @@ function expectedVs(u,w,t){
   return {hit, raw, hull, shield:absorbed*ion, quad, rear};
 }
 function applyHit(att,w,t,dmg,quad){
-  const rear=quad===2, pierce=w.pierce||0, ion=ionOf(att,w), of=ownerFx(att);
+  const rear=quad===2, pierce=w.pierce||0, ion=ionVs(att,w,t), of=ownerFx(att);
   if(!t.isSq&&quad!=null) (t.shHit=t.shHit||[0,0,0,0])[quad]=1; // B3 Ithar prism charge: this facing was hit since the ship's last turn
   let shieldable=dmg*(1-pierce), through=dmg-shieldable;
   const s=t.sh[quad]||0; const absorbed=Math.min(shieldable,s/ion);
@@ -649,6 +699,7 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   const keep=[w.fired,w.cdLeft,u.sureUsed], b0=B; // v53: an abandoned shot gives the gun back (see the live check below)
   if(!opts.intercept){ w.fired=true; if(w.cd) w.cdLeft=w.cd; if(u.side==='player'&&!u.isSq) u.sureUsed=(u.sureUsed||0)+1; }
   if(B.usage&&u.side==='player'&&!opts.intercept&&!u.isSq){ const k=(ARC_NAME&&ARC_NAME[w.arc])||String(w.arc); B.usage.fire[k]=(B.usage.fire[k]||0)+1; if(opts.called) B.usage.aim++; }
+  if(B.usage&&u.side==='player'&&!opts.intercept){ const K=B.usage.kind=B.usage.kind||{}, kk=u.isSq?'sq':w.k; K[kk]=(K[kk]||0)+1; if(w.ion) B.usage.ion=(B.usage.ion||0)+1; } // B4: what the Nemesis learns from
   if(!opts.intercept&&torpTravels(w,u)) return launchTorp(u,w,t,opts,live,keep,b0); // B3: torpedoes travel and strike next turn
   // squadrons attacking capital ships run the flak gauntlet first
   if(u.isSq && !t.isSq && !opts.intercept){
@@ -724,8 +775,8 @@ async function torpImpact(S){ const live=liveFrom(null), w=S.w, g=S.ghost; g.q=S
   else { const o=unitAt(S.aim.q,S.aim.r); if(o&&!o.isSq&&!o.dead&&o.side!==S.side){ t=o; pen=TORP_STRAY; } }
   if(!t){ fstat(S.fac,orig&&!orig.dead?'torpDodge':'torpGone'); log(`${w.n} from ${g.name} run wide: ${orig&&!orig.dead?orig.name+' slipped out of the lane':'nothing left in the lane'}.`,'x'); try{ if(typeof fxFlash==='function') fxFlash(S.aim,'#ff9f3a'); }catch(e){} return; }
   const quad=shieldQuad(t,g), shBefore=(t.sh&&t.sh[quad])||0, res={shield:0,hull:0,crits:0,hits:0,misses:0,sys:null};
-  const hc=clamp(hitChance(g,w,t)-pen,5,95), shots=[]; for(let i=0;i<w.shots;i++) shots.push(rnd()*100<hc);
-  rocketDefense(w,t,shots,res);
+  const hc=clamp(hitChance(g,w,t)-pen+(t.nem&&nemWeak('torp')?15:0),5,95), shots=[]; for(let i=0;i<w.shots;i++) shots.push(rnd()*100<hc);
+  rocketDefense(w,t,shots,res); screenTorps(t,shots,res); // B4: screening wings beside the target thin the salvo
   try{ await animWeapon(g,w,t,shots); }catch(e){ console.warn(e); }
   if(!live()||t.dead) return;
   const d0=g.dealt||0, same=t===orig;
@@ -1003,11 +1054,12 @@ function sqObjNear(t){ const o=B&&B.obj; if(!o) return false; if(o.type==='defen
 function sqOrder(s){ const o=s.wingOrder; if(!o) return null; const t=B.units.find(x=>x.id===o.id); if(!t||t.dead||t.side===s.side){ s.wingOrder=null; return null; } return {kind:o.kind,t}; }
 function sqPlan(s){ const ord=sqOrder(s); let foes=alive(s.side==='player'?'enemy':'player').filter(t=>sqWants(s,t)||(ord&&ord.kind==='strike'&&ord.t===t)); if(!foes.length) return null;
   const carrier=B.units.find(x=>x.id===s.parent&&!x.dead), ready=s.weapons.filter(weaponReady), {states}=computeReach(s), here={q:s.q,r:s.r,f:s.facing,cost:0,stay:true};
-  const guard=ord&&ord.kind==='guard'?ord.t:null;
-  const lim=SQ_LEASH+(ord&&ord.kind==='strike'?2:0), leashOK=v=>guard?hdist(v,guard)<=3:(!carrier||hdist(v,carrier)<=lim); let best=null;
+  const stc=ord?null:wingStance(s), guard=ord&&ord.kind==='guard'?ord.t:stc==='screen'&&carrier?carrier:null; // B4: a screening wing guards its carrier (an explicit order still wins)
+  const lim=SQ_LEASH+(ord&&ord.kind==='strike'?2:0)+(stc==='hunt'?WING_HUNT_LEASH:0), leashOK=v=>guard?hdist(v,guard)<=(stc==='screen'?WING_SCREEN_R+1:3):(!carrier||hdist(v,carrier)<=lim); let best=null;
   for(const st of [here,...states]){ const v=stateView(s,st); if(!leashOK(v)) continue;
     for(const t of foes) for(const w of ready){ if(!inReach(v,w,t)) continue; let val=sqValue(t,expectedVs(v,w,t),s)-(st.cost||0)*.01;
       if(ord&&ord.kind==='strike'&&ord.t===t) val=val*3+60; if(guard&&hdist(t,guard)<=3) val=val*2+20;
+      if(stc==='screen'&&t.isSq) val*=2; if(stc==='hunt'&&!t.isSq&&t.hp<t.maxHp/2) val*=1.6;
       if(!best||val>best.val) best={st,t,val,attack:true}; } }
   if(best) return best;
   if(guard){ let hm=null,hd=hdist(s,guard); for(const st of states){ const d=hdist(stateView(s,st),guard); if(d<hd||(d===hd&&!hm)){hd=d;hm=st;} } return hm&&hd<hdist(s,guard)?{st:hm,t:null,attack:false}:null; }
@@ -1022,10 +1074,11 @@ async function sqAct(s){ const live=liveFrom(s); const p=sqPlan(s); if(!p) retur
 async function swarmPhase(side){ const b0=B; for(const s of alive(side).filter(x=>x.isSq&&!x.activated)){ if(B!==b0||B.over) return; const t0=(typeof performance!=='undefined'?performance.now():0); if(await stallGuard(sqAct(s),15000,'squadron',{name:s.name,sq:s.t.sq,q:s.q,r:s.r})==='stall'&&B===b0) log(`${s.t&&s.t.n||s.name}: orders lost in interference.`,'x'); s.activated=true; if(typeof console!=='undefined'&&console.debug) console.debug('[swarm] '+side+' '+s.id+' '+Math.round((typeof performance!=='undefined'?performance.now():0)-t0)+'ms'); } }
 function makeWing(u,h,kind){ const fx=u.side==='player'?sumFx(fleetFxList()):{};
   const sq=makeUnit(u.side, kind, {parent:u.id, fac:u.fac, sqPct:(u.fx.sqPct||0), sqHp:fx.sqHp||0, scale:u.side==='enemy'?1+.1*(B.sector-1):1});
+  { const pk=wingPerks(u); if(pk.includes('aces')) sq.aim+=10; if(pk.includes('jinkers')) sq.ev+=8; if(pk.includes('armored')){ sq.maxHp=Math.round(sq.maxHp*1.25); sq.hp=sq.maxHp; } } // B4 wing veteran perks
   sq.fac=u.fac; sq.q=h.q; sq.r=h.r; sq.facing=u.facing; sq.name=`${HULLS[kind].n} (${u.side==='player'?u.name:u.t.n.split(' ').slice(-1)[0]})`; B.units.push(sq); return sq; }
 // carriers open the battle with their wings already in flight; launching only replaces losses
 function deployWings(){ for(const u of B.units.filter(x=>(x.ab==='launch'||(x.fx&&x.fx.hive))&&!x.dead&&!x.isSq)){ const foes=alive(u.side==='player'?'enemy':'player'), sec=B.sector||1, bossWings=u.side==='enemy'&&u.t.boss;
-  u.spare=bossWings?Math.max(0,sec-1):(u.hangar||0); /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // v41: one spare wing per hangar slot (was two): carriers keep their opening wings, but losses end sooner
+  u.spare=bossWings?Math.max(0,sec-1):(u.hangar||0)+(wingPerks(u).includes('reserve')?1:0); /* a sector flagship's air wing grows with the sector: 1 wing in sector I, 2 in II, 3 in III */ // v41: one spare wing per hangar slot (was two): carriers keep their opening wings, but losses end sooner
   for(let i=0;i<(bossWings?Math.min(u.hangar||0,sec):(u.hangar||0));i++){ const hs=launchHexes(u); if(!hs.length) break; hs.sort((a,b)=>Math.min(99,...foes.map(f=>hdist(a,f)))-Math.min(99,...foes.map(f=>hdist(b,f))));
     makeWing(u,hs[0],wingKind(u,i)); } }
   /* fighter screen against carrier-heavy fleets, flown off the biggest escorts */

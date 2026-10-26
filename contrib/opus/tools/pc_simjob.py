@@ -3,13 +3,18 @@
 # Writes /mnt/user-data/outputs/sb_TAG/ (game rule files plus sb_TAG.bat). Commit the files to
 # Downloads\voidsworn_test\build\streamb\TAG\ and the .bat to Downloads\voidsworn_test\queue\.
 # The job starts one minimized window per sim and returns at once; each sim writes NAME.txt and then NAME.done in its folder.
-import sys, os, shutil
-tag = sys.argv[1]; jobs = sys.argv[2:]
+# Optional first argument --rev REV takes the game files from that revision (a 'before' run) instead of the working tree.
+import sys, os, shutil, subprocess
+args = sys.argv[1:]; rev = None
+if args and args[0] == '--rev': rev = args[1]; args = args[2:]
+tag = args[0]; jobs = args[1:]
 src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 out = f'/mnt/user-data/outputs/sb_{tag}'
 if os.path.exists(out): sys.exit('staging folder exists, pick a new tag')
 os.makedirs(out)
-for f in ['data.js', 'core.js', 'battle.js', 'sim3d.js', 'campaign_run.js', 'campaign_meta.js']: shutil.copy(os.path.join(src, f), out)
+for f in ['data.js', 'core.js', 'battle.js', 'sim3d.js', 'campaign_run.js', 'campaign_meta.js']:
+    if rev: open(os.path.join(out, f), 'wb').write(subprocess.run(['git', 'show', f'{rev}:{f}'], cwd=src, capture_output=True, check=True).stdout)
+    else: shutil.copy(os.path.join(src, f), out)
 L = ['@echo off', 'cd streamb\\' + tag, 'echo stream B job %cd%']
 for j in jobs:
     name, cmd = j.split('|', 1)
