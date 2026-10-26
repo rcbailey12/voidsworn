@@ -286,6 +286,25 @@ func die(as_wreck: bool) -> void:
 			gi.material_override = mat
 
 
+# a Deathless wreck standing up again: back to its own materials, lights and markers
+func revive() -> void:
+	dead = false
+	wreck = false
+	sink = 0.0
+	visible = true
+	hull.rotation = Vector3.ZERO
+	position.y = 0.0
+	for m in meshes:
+		var gi := m as GeometryInstance3D
+		gi.material_override = null
+		gi.transparency = 0.0
+		gi.visible = true
+	for e in engines:
+		(e as Sprite3D).visible = true
+	if marker != null:
+		marker.visible = true
+
+
 var fleeing := 0.0
 
 

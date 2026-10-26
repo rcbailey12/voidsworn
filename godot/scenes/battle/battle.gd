@@ -529,6 +529,17 @@ func _make_view(u: Dictionary) -> void:
 func _sync(v: Dictionary) -> void:
 	V = v
 	_index_view()
+	if gfx == null or not gfx.has_method("torp_lane"):
+		var live := {}
+		for tp in V.get("torps", []):
+			live[str(tp["id"])] = true
+			if not torp_marks.has(str(tp["id"])):
+				var by: Dictionary = VU.get(tp.get("by"), {})
+				var a: Vector3 = board.hex_world(int(tp["from"]["q"]), int(tp["from"]["r"]), 1.5) if tp.get("from") != null else Vector3.ZERO
+				_torp_marker(str(tp["id"]), a, board.hex_world(int(tp["aim"]["q"]), int(tp["aim"]["r"]), 1.5), str(by.get("fac", "hegemony")))
+		for k in torp_marks.keys():
+			if not live.has(k):
+				_torp_clear(k)
 	for u in V["units"]:
 		if not views.has(u["id"]):
 			_make_view(u)
@@ -711,6 +722,39 @@ func _play_event(e: Dictionary) -> void:
 					fx.flash(board.hex_world(int(e["q"]), int(e["r"]), 2.0), 10.0, Color(1, 0.8, 0.5), 0.4)
 				sfx.play("launch", {"pos": board.hex_world(int(e["q"]), int(e["r"]))})
 			await wait(220.0)
+		"torpedo":
+			# a salvo launches into its lane and parks short of the aim hex until the firing side's next turn
+			var aim: Vector3 = board.hex_world(int(e["aim"]["q"]), int(e["aim"]["r"]), 1.5)
+			var fac := str(VU.get(e["unit"], {}).get("fac", "hegemony"))
+			sfx.torp(fac, _pos(e["unit"]))
+			if gfx != null and gfx.has_method("torp_lane"):
+				gfx.torp_lane(str(e["id"]), str(e["unit"]), aim, 1)
+				gfx.torp_launch(str(e["id"]))
+			else:
+				_torp_marker(str(e["id"]), _pos(e["unit"]), aim, fac)
+			_float(e["unit"], "Torpedoes away", Color("#f0b35a"), -24)
+			await wait(700.0)
+		"torpedo_miss":
+			if gfx != null and gfx.has_method("torp_lane_clear"):
+				gfx.torp_lane_clear(str(e["id"]))
+			_torp_clear(str(e["id"]))
+			await wait(300.0)
+		"risen":
+			# a Deathless wreck reassembles: the ship stands up again where it lay
+			var sv = views.get(e["unit"])
+			if sv != null:
+				sv.revive()
+				sv.position = board.hex_world(int(e["q"]), int(e["r"]))
+				if gfx != null and gfx.has_method("remove_ship"):
+					gfx.remove_ship(str(e["unit"]))
+					var ru: Dictionary = VU.get(e["unit"], {})
+					gfx.add_ship(str(e["unit"]), sv, {"faction": str(ru.get("fac", "deathless")), "meshes": sv.meshes, "cls": str(ru.get("cls", "")), "size": float(ru.get("size", 0.5)), "squadron": false, "flagship": bool(ru.get("flagship", false))})
+				wrecked.erase(e["unit"])
+				fx.flash(sv.position + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
+			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
+			await wait(600.0)
+		"stance":
+			_float(e["unit"], "Wings: %s" % str(e["stance"]), Color("#9fd4ff"), -24)
 		"blink":
 			var sv = views.get(e["unit"])
 			if sv != null:
@@ -960,7 +1004,23 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var shield_col: Color = HT.FAC3D.get(str(VU.get(t_id, {}).get("fac", "hegemony")), P)["shield"]
 	var total := 0.0
 	var hi := 0
-	if gfx != null and gfx.has_method("volley"):
+	if e.has("torpedo") and e.get("from") != null:
+		from = board.hex_world(int(e["from"]["q"]), int(e["from"]["r"]), 1.5)
+		_torp_clear(str(e["torpedo"]))
+	if e.has("torpedo") and gfx != null and gfx.has_method("torp_strike"):
+		var hit0 := {}
+		if not hits.is_empty():
+			hit0 = {"shield": hits[0]["shield"], "hull": hits[0]["hull"], "section": hits[0].get("section", ""), "crit": hits[0]["crit"]}
+		var r: Dictionary = gfx.torp_strike(str(e["torpedo"]), str(t_id), hit0)
+		var imp: Array = r.get("impacts", [])
+		for k in hits.size():
+			var at: float = float(imp[mini(k, imp.size() - 1)]) if not imp.is_empty() else 0.8
+			var h: Dictionary = hits[k]
+			get_tree().create_timer(maxf(at, 0.001)).timeout.connect(func() -> void:
+				_apply_hit(h)
+				sfx.boom(0.8, _pos(t_id)))
+		total = float(r.get("done", 1.2)) / maxf(sp, 0.01)
+	elif gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:
 			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
@@ -1062,6 +1122,43 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		elif g["t"] == "burning":
 			_float(g["unit"], "Fire on deck", Color("#f08a4b"), -24)
 	await wait(80.0)
+
+
+var torp_marks := {}      # salvo id -> placeholder marker (when G4's lanes are not in the build)
+
+
+func _torp_marker(id: String, a: Vector3, aim: Vector3, fac: String) -> void:
+	var col: Color = HT.FAC3D.get(fac, HT.FAC3D["hegemony"])["bolt"]
+	var root := Node3D.new()
+	add_child(root)
+	var dir := (aim - a)
+	var park := a + dir * 0.75
+	var dot := Sprite3D.new()
+	dot.texture = Fx.glow_tex()
+	dot.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dot.modulate = Color(col.r * 3, col.g * 3, col.b * 3)
+	dot.pixel_size = 4.0 / 64.0
+	dot.position = park
+	root.add_child(dot)
+	var ring := MeshInstance3D.new()
+	var tm := TorusMesh.new()
+	tm.inner_radius = 5.0
+	tm.outer_radius = 5.6
+	ring.mesh = tm
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.albedo_color = Color(col.r, col.g, col.b, 0.8)
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring.material_override = m
+	ring.position = Vector3(aim.x, 0.2, aim.z)
+	root.add_child(ring)
+	torp_marks[id] = root
+
+
+func _torp_clear(id: String) -> void:
+	if torp_marks.has(id):
+		(torp_marks[id] as Node).queue_free()
+		torp_marks.erase(id)
 
 
 func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: Color, fam: String) -> void:
@@ -1989,6 +2086,10 @@ func _on_action(name: String, arg) -> void:
 			else:
 				cmd_armed_t = -9.0
 				_cmd(func(): return api.command())
+		"stance":
+			var sid := sel
+			var stn := str(arg)
+			_cmd(func(): return api.stance(sid, stn))
 		"menu":
 			_open_menu()
 		"menu_close":
@@ -2141,7 +2242,10 @@ func _panel_info() -> Dictionary:
 	var ru = api.unit(id)
 	var d: Dictionary = disp.get(id, {"hp": u["hp"], "sh": u["sh"]})
 	var info := {"name": u["name"], "cls": u["cls"], "side": u["side"], "flag": u["flagship"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"]}
-	var stats := "Hull [color=#ffae42]%d/%d[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [int(d["hp"]), int(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(R.z0(ru.get("ev"))), int(u["mp"]), int(R.z0(ru.get("speed"))), int(u["turnsLeft"])]
+	var mleft := int(u.get("moveLeft", u["mp"])) if u.get("moveLeft") != null else int(u["mp"])
+	var stats := "Hull [color=#ffae42]%d/%d[/color]   Armor %d%%   Evasion %d\nMovement %d of %d   Turns %d" % [int(d["hp"]), int(u["maxHp"]), int(round(float(ru.get("armor", 0)) * 100.0)), int(_z0(ru.get("ev"))), mleft, int(_z0(ru.get("speed"))), int(u["turnsLeft"])]
+	if u.get("fired", false) and mleft < int(u["mp"]):
+		stats += "\n[color=#7d7768]Fired: ships move, then fire.%s[/color]" % (" Half the movement left to slip away." if mleft > 0 else "")
 	if u.get("crew") != null:
 		stats += "   Crew %d/%d" % [int(u["crew"]), int(u["crewMax"])]
 	if u["braced"]:
@@ -2180,6 +2284,10 @@ func _panel_info() -> Dictionary:
 			orders.append({"text": str(A.get("n", u["ab"])) + ("" if u["abReady"] else " (%d)" % int(u["abCd"])), "act": "ability", "on": can and u["abReady"], "tip": str(A.get("d", ""))})
 		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "tip": "Charge the first enemy dead ahead (needs a run-up)."})
 		orders.append({"text": "Board (G)", "act": "board", "on": can and not (ui.get("board", []) as Array).is_empty(), "tip": "Send boarding crews into an adjacent enemy."})
+		if u.get("canStance") != null and str(u.get("stance", "")) != "":
+			for stn in ["strike", "screen", "hunt"]:
+				orders.append({"text": "Wings: %s%s" % [stn, " (now)" if str(u.get("stance")) == stn else ""], "act": "stance", "arg": stn, "on": bool(u.get("canStance")) and str(u.get("stance")) != stn and _can_act(),
+					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 2 hexes, hunt craft first and shoot down torpedoes aimed at ships beside them.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
 		orders.append({"text": "Turn left (Q)", "act": "rotl", "on": can})
 		orders.append({"text": "Turn right (E)", "act": "rotr", "on": can})
 		info["orders"] = orders
