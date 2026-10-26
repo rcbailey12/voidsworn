@@ -32,7 +32,8 @@ func _ready() -> void:
 	bot_mode = args.has("bot-runs")
 	if bot_mode:
 		_bot_runs.call_deferred()
-	elif args.has("battle"):
+	elif args.has("battle") or args.has("scenario") or args.has("shots") or args.has("bot") or args.has("seed"):
+		# straight into a battle (test jobs, screenshot jobs): the battle reads the same arguments
 		quick_battle()
 	else:
 		show_title()
