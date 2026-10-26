@@ -9,6 +9,8 @@ var R                       # the rules (rules.gd); read-only for the game side,
 var phase := "none"         # "player" | "enemy" | "over" | "none"
 var _queue: Array = []      # enemy units still to act in the current enemy step
 var _mutex := Mutex.new()
+var _alt := true              # alternating activations (the game's default) or Classic mode (whole turns)
+var _c_order: Array = []; var _c_i := 0; var _c_g := 0; var _c_done: Array = []   # Classic mode: the enemy turn in progress (battle.js aiTurn)
 
 # ---------------- setup ----------------
 func load_rules(tables_path: String = "res://rules/data/tables.json") -> String:
@@ -34,6 +36,7 @@ func new_battle_scenario(sc, seed_override: int = -1) -> void:
 	var cfg := {"kind": S.kind, "fac": S.fac, "col": 3 if S.get("col") == null else S.col, "seed": seed, "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep}
 	if R.jt(S.get("arch")): cfg["arch"] = S.arch
 	if R.jt(S.get("mod")): cfg["mod"] = S.mod
+	if S.get("alt") == false: cfg["alt"] = false
 	if R.jt(S.get("campaign")):
 		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force")
 	if S.get("enemies") != null:
@@ -46,19 +49,20 @@ func new_battle_scenario(sc, seed_override: int = -1) -> void:
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	R.RUN = run; R.events.clear(); _queue.clear()
-	var campaign = R.jt(cfg.get("campaign")); var force = cfg.get("event_force")
-	cfg = cfg.duplicate(); cfg.erase("campaign"); cfg.erase("event_force")
+	var campaign = R.jt(cfg.get("campaign")); var force = cfg.get("event_force"); _alt = cfg.get("alt") != false
+	cfg = cfg.duplicate(); cfg.erase("campaign"); cfg.erase("event_force"); cfg.erase("alt")
 	R.startBattle(cfg)
 	if campaign: # campaign3d.js battleScreen: a campaign battle may roll a mid-battle event
 		R.B["campaign"] = true; R.B["event"] = R.rollBattleEvent(cfg, force)
 	R.hook("start")
 	_prep()
 
-func _prep() -> void: # ui3d.js prepBattle, alternating mode
+func _prep() -> void: # ui3d.js prepBattle
 	var B = R.B
-	B["alt"] = true
+	B["alt"] = _alt
 	for x in B["units"]: x["activated"] = false
-	R.startSideTurn("enemy"); R.flush_deferred()
+	if _alt:
+		R.startSideTurn("enemy"); R.flush_deferred()
 	phase = "over" if R.jt(B.get("over")) else "player"
 	R.emit({"t": "round", "round": int(B["round"])}); R.emit({"t": "side", "side": "player"})
 
@@ -182,7 +186,7 @@ func hurry() -> void:                               # Enter or Space: presentati
 # ui3d.js endActivation: the acting ship (or the given one, as "Pass") is done, then the enemy side takes its step
 func end_activation(id = null) -> void:
 	var B = R.B
-	if phase != "player" or R.jt(B.get("over")): return
+	if not _alt or phase != "player" or R.jt(B.get("over")): return
 	if B.get("activeUnit") != null:
 		B["activeUnit"]["activated"] = true; B["activeUnit"] = null
 	elif id != null:
@@ -199,7 +203,8 @@ func end_activation(id = null) -> void:
 func step() -> Array:
 	_mutex.lock()
 	var B = R.B
-	if phase == "enemy" and _queue.size() > 0:
+	if phase == "enemy" and not _alt: _c_step()
+	elif phase == "enemy" and _queue.size() > 0:
 		var u = _queue.pop_front()
 		if R.jt(B.get("over")):
 			_queue.clear()
@@ -210,6 +215,60 @@ func step() -> Array:
 	var e = take_events()
 	_mutex.unlock()
 	return e
+
+# ---------------- Classic mode (cfg.alt = false): whole turns, ui3d.js endTurn ----------------
+# The player moves and fires with any ships in any order, then calls end_turn(). The enemy turn is then stepped one ship per
+# step() call, exactly as battle.js aiTurn orders it: its squadrons first, then each next ship picked by opportunity.
+func end_turn() -> void:
+	var B = R.B
+	if _alt or phase != "player" or R.jt(B.get("over")) or R.jt(B.get("busy")): return
+	B["busy"] = true; B["sel"] = null; B["armed"] = null; B["mode"] = null; B["inspect"] = null; B["reach"] = null
+	B["side"] = "enemy"; R.emit({"t": "side", "side": "enemy"})
+	R.startSideTurn("enemy"); R.flush_deferred()
+	R.hook("end turn")
+	_c_order = R.alive("enemy")
+	JSM.ssort(_c_order, func(a, b):
+		var d = (0 if R.jt(a.get("isSq")) else 1) - (0 if R.jt(b.get("isSq")) else 1)
+		return d if d != 0 else b["speed"] - a["speed"])
+	_c_i = 0; _c_g = 0; _c_done = []
+	phase = "enemy"
+	if R.jt(B.get("over")) or not _c_more(): _c_end()
+func _c_left() -> Array:
+	var l := []
+	for u in _c_order:
+		if not R.jt(u.get("isSq")) and not R.jt(u.get("dead")) and not JSM.has_same(_c_done, u): l.append(u)
+	return l
+func _c_more() -> bool: # is there another enemy activation this turn (aiTurn's loops, looked ahead without side effects)
+	for k in range(_c_i, _c_order.size()):
+		var u = _c_order[k]
+		if not R.jt(u.get("dead")) and R.jt(u.get("isSq")): return true
+	return _c_g < _c_order.size() and _c_left().size() > 0
+func _c_step() -> void:
+	var B = R.B
+	var u = null
+	while _c_i < _c_order.size():
+		var x = _c_order[_c_i]; _c_i += 1
+		if not R.jt(x.get("dead")) and R.jt(x.get("isSq")):
+			u = x; break
+	if u == null:
+		_c_g += 1; u = R.aiPickActivation(_c_left()); _c_done.append(u)
+	R.emit({"t": "activation", "unit": u["id"], "side": "enemy"})
+	R.aiUnit(u)
+	if R.jt(B.get("over")) or not _c_more(): _c_end()
+func _c_end() -> void:
+	var B = R.B
+	B["aiActive"] = null; _c_order = []; _c_done = []
+	if R.jt(B.get("over")):
+		B["busy"] = false; _finish(); return
+	B["round"] = B["round"] + 1; B["side"] = "player"; R.emit({"t": "round", "round": int(B["round"])})
+	R.startSideTurn("player"); R.flush_deferred()
+	if R.jt(B.get("over")):
+		B["busy"] = false; _finish(); return
+	R.swarmPhase("player"); R.flush_deferred()
+	B["busy"] = false; R.hook("round")
+	if R.jt(B.get("over")):
+		_finish(); return
+	phase = "player"; R.emit({"t": "side", "side": "player"})
 
 func _pendingP() -> Array:
 	var o := []

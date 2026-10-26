@@ -14,7 +14,7 @@ var WPN; var ARC_NAME; var FAC_WNAMES; var FAC_WTRAIT; var HULLS; var MOVE_RULES
 var RANK_XP; var RELICS; var ADMIRALS; var SHIP_NAMES; var CAPTAINS; var MORE_SHIP_NAMES; var SECTOR_CONDS; var RARITY; var ASPECTS
 var DIRS; var PACE; var BLOCKING; var SHAPES; var BEVENTS; var ENC_ARENA; var FAC_MAP; var ENCOUNTERS; var CREW_MULT; var BOARD_MULT; var RAM_FAC
 var BOSS_FAC; var BOSS_SCALE; var BOSS_DMG; var RAMP; var ARENAS; var AXIS_SHAPES; var MOVE_BASE; var SEC_OF_QUAD; var CMD_POW; var BOSS_CMD; var FACTION_AI
-var ROCK_KINDS; var REGION_BIOME; var COMMANDS
+var ROCK_KINDS; var REGION_BIOME; var COMMANDS; var SEC_NAME; var QUAD_NAME
 var BW = 30; var BH = 22; var CX = 2; var HEX_S = 10.0; var HEX_W = 0.0; var ENC_ROUNDS = 6
 var WELL_RIM = 3; var WELL_PULL = 5; var WELL_ASSIST = 6; var WELL_DMG = 7
 
@@ -35,6 +35,17 @@ var events_on := true
 func emit(e: Dictionary) -> void:
 	if events_on: events.append(e)
 func _uid(u): return u["id"] if u is Dictionary and u.get("id") != null else null
+# The battle log (battle.js log(m, c)): B.log gets {m, c} exactly as the game writes it (hashed by the parity test), and a log event.
+func logm(m: String, c = null) -> void:
+	if B == null or B.get("log") == null: return
+	var e = {"m": m}
+	if c != null: e["c"] = c
+	B["log"].append(e)
+	emit({"t": "log", "text": m, "kind": c})
+func ns(x) -> String: return JSM.numstr(x)   # a number as JS prints it in a template string
+func tv(x) -> String: return "undefined" if x == null else (ns(x) if (x is float or x is int) else String(x))   # any value in a template string
+func pe(u) -> String: return "e" if u["side"] == "player" else "p"   # log colour for a loss on u's side
+func pp(u) -> String: return "p" if u["side"] == "player" else "e"
 # Per-action hash points for the parity test: called exactly where the JS game calls a presentation hook (animPath, animWeapon,
 # animExplode, fxRam, fxBoard, animNova) and after each ability, order and turn-start tick. The game leaves hook_cb null.
 var hook_cb = null
@@ -56,7 +67,7 @@ func load_tables(path: String) -> String:
 	ENC_ARENA = TB.ENC_ARENA; FAC_MAP = TB.FAC_MAP; ENCOUNTERS = TB.ENCOUNTERS; CREW_MULT = TB.CREW_MULT; BOARD_MULT = TB.BOARD_MULT; RAM_FAC = TB.RAM_FAC
 	BOSS_FAC = TB.BOSS_FAC; BOSS_SCALE = TB.BOSS_SCALE; BOSS_DMG = TB.BOSS_DMG; RAMP = TB.RAMP; ARENAS = TB.ARENAS; AXIS_SHAPES = TB.AXIS_SHAPES
 	MOVE_BASE = TB.MOVE_BASE; SEC_OF_QUAD = TB.SEC_OF_QUAD; CMD_POW = TB.CMD_POW; BOSS_CMD = TB.BOSS_CMD; FACTION_AI = TB.FACTION_AI
-	ROCK_KINDS = TB.ROCK_KINDS; REGION_BIOME = TB.REGION_BIOME; COMMANDS = TB.COMMANDS
+	ROCK_KINDS = TB.ROCK_KINDS; REGION_BIOME = TB.REGION_BIOME; COMMANDS = TB.COMMANDS; SEC_NAME = TB.SEC_NAME; QUAD_NAME = TB.QUAD_NAME
 	BW = int(TB.BW); BH = int(TB.BH); CX = int(TB.CX); HEX_S = float(TB.HEX_S); HEX_W = float(TB.HEX_W); ENC_ROUNDS = int(TB.ENC_ROUNDS)
 	WELL_RIM = int(TB.WELL_RIM); WELL_PULL = int(TB.WELL_PULL); WELL_ASSIST = int(TB.WELL_ASSIST); WELL_DMG = int(TB.WELL_DMG)
 	META = TB.META.duplicate(true)
@@ -421,12 +432,15 @@ func edgeHex(side) -> Variant:
 func eventTick() -> void:
 	var e = B.get("event")
 	if not jt(e) or jt(e.get("done")) or jt(B.get("over")): return
-	if B["round"] >= e["warnR"] and not jt(e.get("warned")): e["warned"] = true
+	var E = BEVENTS[e["k"]]
+	if B["round"] >= e["warnR"] and not jt(e.get("warned")):
+		e["warned"] = true; logm(JSM.rep1(String(E["warn"]), "{r}", ns(e["r"])), "x")
 	if B["round"] < e["r"]: return
 	e["done"] = true
 	if e["k"] == "reinf_enemy" or e["k"] == "reinf_ally":
 		var side = "enemy" if e["k"] == "reinf_enemy" else "player"; var h = edgeHex(side)
-		if h == null: return
+		if h == null:
+			logm("The reinforcements could not find a clear lane and turn back.", "x"); return
 		var fac = B["cfg"]["fac"] if side == "enemy" else (RUN["fac"] if RUN != null and jt(RUN.get("fac")) else "voidsworn")
 		var s = B["sector"] if jt(B.get("sector")) else 1
 		var u = makeUnit(side, cheapHull(fac), {"scale": (1.0 + 0.12 * (s - 1)) if side == "enemy" else 1, "dmg": (1.0 + 0.08 * (s - 1)) if side == "enemy" else 1, "fac": fac})
@@ -434,6 +448,7 @@ func eventTick() -> void:
 		if side == "player": u["name"] = "Garrison " + String(u["name"])
 		B["units"].append(u)
 		if jt(B.get("cp0")): B["cp0"][side] = B["cp0"][side] + (u["t"]["cp"] if jt(u["t"].get("cp")) else 1)
+	logm(String(E["go"]), "p" if e["k"] == "reinf_ally" else "e")
 func rollBiome(region) -> Dictionary:
 	var R = REGION_BIOME.get(region) if region != null else null
 	if R == null: R = {"rock": ROCK_KINDS.keys(), "planet": [0, 1, 2, 3, 4, 5, 6, 7], "station": ["ring", "rig", "spire"]}
@@ -879,7 +894,7 @@ func wellTick(u, dq) -> Variant:
 	if d <= WELL_RIM:
 		u["hp"] = u["hp"] - WELL_DMG; emit({"t": "tick", "unit": u["id"], "kind": "tidal", "hull": WELL_DMG})
 		if u["hp"] <= 0:
-			u["hp"] = 0; u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
+			u["hp"] = 0; logm(String(u["name"]) + " is torn apart by the dead star's gravity.", pe(u)); u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
 	elif d <= WELL_PULL:
 		var occ = occMap(); var best: Variant = null
 		for dd in DIRS:
@@ -1087,9 +1102,47 @@ func startBattle(cfg: Dictionary) -> void:
 			var u = cand[i]; u["weapons"].append(mkWeapon(pd, "T", u["fx"] if jt(u.get("fx")) else {})); u["pdRefit"] = true
 		if n != 0: B["adapt"] = n
 		if FACTIONS.has(cfg["fac"]) and jt(FACTIONS[cfg["fac"]].get("sq")): B["adaptWings"] = 2 if nCar >= 3 else 1
-	if enc == "intercept": np("intercept transports")
-	if enc == "break": np("breakthrough deploy")
-	elif enc == "hunt": np("hunt deploy")
+	if enc == "intercept":
+		var nT = 3 if eList.size() >= 3 else 2; var ros = []
+		for id in FACTIONS[cfg["fac"]]["roster"]:
+			if HULLS.has(id) and not jt(HULLS[id].get("boss")) and HULLS[id].get("ab") != "launch": ros.append(id)
+		JSM.ssort(ros, func(a, b):
+			var d = (HULLS[a]["cp"] if jt(HULLS[a].get("cp")) else 1) - (HULLS[b]["cp"] if jt(HULLS[b].get("cp")) else 1)
+			return d if d != 0 else HULLS[a]["hp"] - HULLS[b]["hp"])
+		for i in range(nT):
+			var u = makeUnit("enemy", ros[0] if ros.size() > 0 else FACTIONS[cfg["fac"]]["roster"][0], {"scale": sc * 1.3, "dmg": dm, "fac": cfg["fac"]})
+			u["transport"] = true; u["weapons"] = []; u["ab"] = null; u["speed"] = min(u["speed"], 3); u["hp"] = JSM.jsround(u["maxHp"] * 1.5); u["maxHp"] = u["hp"]
+			u["name"] = "Transport " + ["Aurum", "Bastion", "Cinder"][i]; B["units"].append(u)
+	if enc == "break":
+		var bb0 = boardBounds(); var mr = floori((bb0.r0 + bb0.r1) / 2.0)
+		var pl0 = []
+		for u in B["units"]:
+			if u["side"] == "player": pl0.append(u)
+		deploy(pl0, "player", func(h): return h.c >= 8 + CX and h.c <= 10 + CX and absf(h.r - mr) <= 4)
+		var es = []
+		for u in B["units"]:
+			if u["side"] == "enemy" and not jt(u.get("isSq")): es.append(u)
+		JSM.ssort(es, func(a, b): return b["size"] - a["size"])
+		var back = []; var front = []
+		for i in range(es.size()):
+			if i % 3 == 2: back.append(es[i])
+		for u in es:
+			if not JSM.has_same(back, u): front.append(u)
+		deploy(front, "enemy", func(h): return h.c >= 16 + CX and h.c <= 20 + CX and absf(h.r - mr) <= 6)
+		if back.size() > 0: deploy(back, "enemy", func(h): return h.c >= bb0.c0 and h.c <= bb0.c0 + 3 and absf(h.r - mr) <= 5)
+	elif enc == "hunt":
+		var bb0 = boardBounds(); var mr = floori((bb0.r0 + bb0.r1) / 2.0); var es = []
+		for u in B["units"]:
+			if u["side"] == "enemy" and not jt(u.get("isSq")) and not jt(u.get("transport")): es.append(u)
+		JSM.ssort(es, func(a, c):
+			var d = (c["t"]["cp"] if jt(c["t"].get("cp")) else 1) - (a["t"]["cp"] if jt(a["t"].get("cp")) else 1)
+			return d if d != 0 else c["maxHp"] - a["maxHp"])
+		var pl0 = []
+		for u in B["units"]:
+			if u["side"] == "player": pl0.append(u)
+		deploy(pl0, "player", func(h): return h.c >= 5 + CX and h.c <= 8 + CX and absf(h.r - mr) <= 5)
+		deploy(es.slice(0, 1), "enemy", func(h): return h.c >= 12 + CX and h.c <= 14 + CX and absf(h.r - mr) <= 3)
+		if es.size() > 1: deploy(es.slice(1), "enemy")
 	elif B.get("approach") != null: approachDeploy()
 	else:
 		var pl = []
@@ -1108,13 +1161,26 @@ func startBattle(cfg: Dictionary) -> void:
 			for u in B["units"]:
 				if u["side"] == "enemy" and not jt(u.get("transport")): el.append(u)
 			deploy(el, "enemy")
+	if enc == "intercept":
+		var bb = boardBounds(); var tr = []
+		for u in B["units"]:
+			if jt(u.get("transport")): tr.append(u)
+		deploy(tr, "enemy", func(h): return h.r <= bb.r0 + 1 and h.c >= 13 + CX and h.c <= 18 + CX)
 	clearSpawns()
 	deployWings()
 	B["cp0"] = {"player": sideCP("player"), "enemy": sideCP("enemy")}
 	B["usage"] = {"fire": {}, "aim": 0, "ab": {}, "ord": {}, "cmd": 0, "moves": 0, "cant": {}}
 	setupObjective(cfg.get("obj"))
+	if jt(B.get("adapt")) or jt(B.get("adaptWings")):
+		var ad = B.get("adapt"); var aw = B.get("adaptWings")
+		logm("Scouts report your carriers. The enemy " + (("bolted extra point defense onto " + (ns(ad) + " ships" if ad > 1 else "one ship")) if jt(ad) else "") + (" and " if (jt(ad) and jt(aw)) else "") + (("launched " + ("two fighter wings" if aw > 1 else "a fighter wing") + " to hunt your craft") if jt(aw) else "") + ".", "ember")
 	startSideTurn("player")
 	for u in alive("enemy"): u["intercepts"] = 2 if _has_flak(u) else 0
+	var F = FACTIONS[cfg["fac"]]
+	logm("Contact: " + String(F["n"]) + ". " + ns(eList.size()) + " ship" + ("s" if eList.size() > 1 else "") + " on the auspex.", "s")
+	if jt(B.get("well")): logm("A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
+	if cfg.get("kind") == "elite": logm("Elite captains command this fleet.", "e")
+	if cfg.get("kind") == "boss": logm(String(HULLS[F["boss"]]["n"]) + " is here. Everything else is escort.", "e")
 func _has_flak(u) -> bool:
 	for w in u["weapons"]:
 		if w["k"] == "flak": return true
@@ -1227,6 +1293,7 @@ func escortsBreak() -> void:
 	var nsh = []
 	for v in boss["sh"]: nsh.append(JSM.jsround(v * 0.5))
 	boss["sh"] = nsh; boss["burning"] = true
+	logm(String(boss["name"]) + " is burning. " + ("Its escorts break off and flee. " if esc.size() > 0 else "") + "Its shields falter and it can no longer repair itself.", "s")
 func startSideTurn(side) -> int:
 	var deaths = []
 	if side == "player" and B["round"] > 1:
@@ -1252,12 +1319,12 @@ func startSideTurn(side) -> int:
 		if z0(u["st"].get("acid")) > 0 and not jt(u.get("isSq")):
 			u["st"]["acid"] = u["st"]["acid"] - 1; u["hp"] = u["hp"] - 4; emit({"t": "tick", "unit": u["id"], "kind": "acid", "hull": 4})
 			if u["hp"] <= 0:
-				u["hp"] = 0; burned = true; u["killCause"] = "melt"; queueDeath(u, deaths)
+				u["hp"] = 0; burned = true; logm(String(u["name"]) + " dissolves.", pe(u)); u["killCause"] = "melt"; queueDeath(u, deaths)
 		if u["st"]["fire"] > 0 and not jt(u.get("dead")):
 			var fd = u["st"]["fireDmg"] if jt(u["st"].get("fireDmg")) else 6
 			u["st"]["fire"] = u["st"]["fire"] - 1; u["hp"] = u["hp"] - fd; emit({"t": "tick", "unit": u["id"], "kind": "fire", "hull": fd})
 			if u["hp"] <= 0:
-				u["hp"] = 0; burned = true; u["killCause"] = "dark"; queueDeath(u, deaths)
+				u["hp"] = 0; burned = true; logm(String(u["name"]) + " burns out.", pe(u)); u["killCause"] = "dark"; queueDeath(u, deaths)
 			if not jt(u["st"]["fire"]): u["st"]["fireDmg"] = 0
 		u["hexMoved"] = 0
 		if jt(u.get("fx")) and jt(u["fx"].get("stormRegen")) and u["shMax"] > 0 and not (z0(u["st"].get("shieldOff")) > 0):
@@ -1598,6 +1665,7 @@ func damageSection(t, sec, dmg, by) -> void:
 			t["st"]["shieldOff"] = 999; t["sh"] = [0, 0, 0, 0]
 	if sec == "eng":
 		t["secSave"] = {"turns": t["turns"], "ev": t["ev"]}; t["st"]["engine"] = max(0, t["speed"] - 1); t["turns"] = min(t["turns"], 1); t["ev"] = 0
+	logm(String(t["name"]) + ": " + String(SEC_NAME[sec]) + " destroyed. " + ("Forward weapons silenced." if sec == "prow" else ("Broadsides and shield generator gone." if sec == "mid" else "Engines crippled.")), pe(t))
 	if by != null and not jt(by.get("dead")): gainResolve(by["side"], 1)
 func systemDamage(t, forced = null) -> Variant:
 	if jt(t.get("isSq")) or jt(t.get("dead")): return null
@@ -1702,6 +1770,15 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			var ar = ownerFx(u).get("arcShort")
 			if jt(ar) and shBefore > 0.5 and not jt(t.get("dead")):
 				t["hp"] = t["hp"] - ar; res.hull += ar; u["dealt"] = u["dealt"] + ar; boonFx(t, "s_arc")
+	var parts = []
+	if jt(res.get("pd")): parts.append(ns(res.pd) + " shot down by point defense")
+	if res.hits == 0: parts.append("all shots miss")
+	else:
+		if jt(res.shield): parts.append(ns(res.shield) + " to " + String(QUAD_NAME[quad]) + " shields")
+		if jt(res.hull): parts.append(ns(res.hull) + " hull")
+		if not jt(res.shield) and not jt(res.hull): parts.append("no damage")
+	if jt(res.crits): parts.append((ns(res.crits) + " criticals") if res.crits > 1 else "critical")
+	logm(String(u["name"]) + " " + ("intercepts with" if jt(opts.get("intercept")) else "fires") + " " + tv(w.get("n")) + " at " + String(t["name"]) + ": " + ", ".join(parts) + "." + ((" " + String(res.sys) + "!") if jt(res.sys) else ""), pp(u))
 	if res.hits > 0 and jt(t.get("braced")) and not jt(t.get("dead")) and not jt(u.get("dead")) and not jt(opts.get("intercept")) and t["side"] != u["side"]:
 		var rp = ownerFx(t).get("riposte")
 		if jt(rp):
@@ -1755,7 +1832,10 @@ func ramUnit(u) -> bool:
 	var qd = shieldQuad(t, u)
 	if jt(e.soak) and t.get("sh") != null: t["sh"][qd] = max(0, t["sh"][qd] - e.soak * 1.5)
 	t["hp"] = t["hp"] - e.dmg; u["dealt"] = u["dealt"] + e.dmg; damageSection(t, e.sec, e.dmg, u); u["hp"] = u["hp"] - e.recoil; damageSection(u, "prow", e.recoil, t)
-	if rnd() < 0.35: systemDamage(t, e.sec)
+	logm(String(u["name"]) + " rams " + String(t["name"]) + " at full speed: " + ns(e.dmg) + " to its " + String(SEC_NAME[e.sec]) + ", " + ns(e.recoil) + " back to the ram.", pp(u))
+	if rnd() < 0.35:
+		var sy = systemDamage(t, e.sec)
+		if jt(sy): logm(String(t["name"]) + ": " + String(sy) + ".", pp(u))
 	if jt(u.get("fx")) and jt(u["fx"].get("ramSplash")):
 		var sd = JSM.jsround(e.dmg * u["fx"]["ramSplash"])
 		var hitl = []
@@ -1802,15 +1882,21 @@ func boardUnit(u, t) -> bool:
 	var outcome = "overrun" if (t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured"))) else ("capture" if t["crew"] <= 0 else "raid")
 	emit({"t": "board", "unit": u["id"], "target": t["id"], "result": outcome, "kill": kill, "loss": loss})
 	if t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured")):
-		t["crew"] = max(2, JSM.jsround(t["crewMax"] * 0.15)); systemDamage(t); systemDamage(t)
+		t["crew"] = max(2, JSM.jsround(t["crewMax"] * 0.15)); var s1 = systemDamage(t); var s2 = systemDamage(t)
+		logm(String(u["name"]) + "'s boarders overrun " + String(t["name"]) + ", but the last of its crew hold the bridge." + ((" Saboteurs: " + String(s1).to_lower()) if jt(s1) else "") + ((", " + String(s2).to_lower()) if jt(s2) else "") + ".", pp(u))
 		if jt(B.get("usage")) and t["side"] == "player": B["usage"]["overrun"] = z0(B["usage"].get("overrun")) + 1
 		return true
 	if t["crew"] <= 0:
 		if jt(B.get("usage")) and u["side"] == "player": B["usage"]["cap"] = z0(B["usage"].get("cap")) + 1
 		t["side"] = u["side"]; t["crew"] = max(3, JSM.jsround(t["crewMax"] * 0.4)); t["captured"] = true; t["activated"] = true; t["mp"] = 0; t["turnsLeft"] = 0; t["braced"] = false
 		for w in t["weapons"]: w["fired"] = true
-		gainResolve(u["side"], 2); checkEnd(); return true
-	if rnd() < 0.5 or jt(g(u.get("fx"), "boardPct")): systemDamage(t)
+		gainResolve(u["side"], 2); logm("Boarding parties from " + String(u["name"]) + " take " + String(t["name"]) + ". It now fights for " + ("you" if u["side"] == "player" else "the enemy") + ".", pp(u))
+		checkEnd(); return true
+	var extra = ""
+	if rnd() < 0.5 or jt(g(u.get("fx"), "boardPct")):
+		var sy = systemDamage(t)
+		if jt(sy): extra = " Saboteurs: " + String(sy).to_lower() + "."
+	logm(String(u["name"]) + " boards " + String(t["name"]) + ": " + ns(kill) + " defenders killed, " + ns(loss) + " boarders lost." + extra, pp(u))
 	return true
 func tacticRam(u) -> bool:
 	var info = ramInfo(u)
@@ -1850,11 +1936,11 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		else: t["killedBy"] = by["name"]
 	if jt(t.get("dead")): return
 	if jt(t["fx"].get("lastStand")) and not jt(t.get("usedLastStand")):
-		t["usedLastStand"] = true; t["hp"] = 1; return
+		t["usedLastStand"] = true; t["hp"] = 1; logm(String(t["name"]) + " refuses to die! (Last stand)", "s"); return
 	if t["side"] == "player" and not jt(t.get("isSq")) and jt(runFx().get("revive")) and not jt(B.get("reviveUsed")):
-		B["reviveUsed"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.25); return
+		B["reviveUsed"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.25); logm("The phylactery hums. " + String(t["name"]) + " reawakens at 25% hull.", "s"); return
 	if jt(t.get("reanimate")) and not jt(t.get("reanimated")) and not jt(t.get("pyre")) and rnd() < (0.2 if t["side"] == "enemy" else 0.35):
-		t["reanimated"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.3); return
+		t["reanimated"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.3); logm(String(t["name"]) + " reassembles itself from the wreckage.", "e"); return
 	t["dead"] = true; t["hp"] = 0
 	if t["side"] == "player" and not jt(t.get("isSq")) and not jt(t.get("transport")):
 		var av = runFx().get("avenge")
@@ -1862,6 +1948,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 			for x in alive("player"):
 				if not jt(x.get("isSq")) and x["hp"] < x["maxHp"]:
 					var h = min(x["maxHp"] - x["hp"], JSM.jsround(x["maxHp"] * av)); x["hp"] = x["hp"] + h
+			logm("The fleet rallies around the loss of " + String(t["name"]) + ".", "s")
 	if by != null and by["side"] == "player" and not jt(t.get("isSq")) and jt(runFx().get("bloodied")):
 		var k = by
 		if jt(by.get("isSq")):
@@ -1871,6 +1958,7 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		if k != null and not jt(k.get("dead")): k["bloodied"] = min(3, z0(k.get("bloodied")) + 1)
 	if not jt(t.get("isSq")) and t["size"] >= 0.7 and not blocks(B["terrain"].get(hkey(t["q"], t["r"]))):
 		B["terrain"][hkey(t["q"], t["r"])] = "hulk"; t["hulk"] = true; emit({"t": "wreck", "unit": t["id"], "q": t["q"], "r": t["r"]})
+		logm("The wreck of " + String(t["name"]) + " drifts in place, blocking movement and fire.", "x")
 	if by != null and not jt(t.get("isSq")): gainResolve(by["side"], 1)
 	if by != null:
 		by["kills"] = by["kills"] + 1
@@ -1888,10 +1976,12 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 			var near = []
 			for x in B["units"]:
 				if not jt(x.get("dead")) and x["side"] == t["side"] and not is_same(x, t) and hdist(x, t) <= 2: near.append(x)
+			if near.size() > 0: logm(String(t["name"]) + "'s reactor goes up, scorching " + ns(near.size()) + " nearby ship" + ("s" if near.size() > 1 else "") + ".", pp(by))
 			for x in near:
 				if jt(x.get("dead")): continue
 				x["hp"] = x["hp"] - cb; boonFx(x, "e_chain")
 				if x["hp"] <= 0: killUnit(x, by)
+		logm(String(t["name"]) + " " + ("is shot down" if jt(t.get("isSq")) else "is destroyed") + ".", pe(t))
 		checkEnd()
 	if defer_tail: deferred.append(tail)
 	else: tail.call()
@@ -1911,10 +2001,24 @@ func setupObjective(type) -> void:
 			if jt(g(u.get("t"), "boss")): hasb = true
 		o.type = "rout" if hasb else "hunt"
 	if o.type == "defend" and not jt(B["map"].get("station")): o.type = "hold"
-	if o.type == "hunt": np("hunt objective")
-	if o.type == "defend": np("defend objective")
-	if o.type == "intercept": np("intercept objective")
-	if o.type == "break": np("breakthrough objective")
+	if o.type == "hunt":
+		var l = []
+		for u in alive("enemy"):
+			if not jt(u.get("isSq")): l.append(u)
+		JSM.ssort(l, func(a, c): return _byCpHp(a, c))
+		if l.size() > 0:
+			l[0]["flagship"] = true; o["rounds"] = ENC_ROUNDS
+		else: o.type = "rout"
+	if o.type == "defend":
+		o["hex"] = {"q": B["map"]["station"]["q"], "r": B["map"]["station"]["r"]}; o["hp"] = 5; o["hpMax"] = 5; o["rounds"] = ENC_ROUNDS
+	if o.type == "intercept":
+		var tr = []
+		for u in B["units"]:
+			if jt(u.get("transport")): tr.append(u)
+		o["total"] = tr.size(); o["need"] = max(1, tr.size() - 1); o["exitR"] = boardBounds().r1; o["kill"] = 0; o["esc"] = 0
+		if tr.size() == 0: o.type = "rout"
+	if o.type == "break":
+		var n = caps("player").size(); o["need"] = max(1, int(ceil(n / 2.0))); o["exitC"] = boardBounds().c1 - 1; o["out"] = 0
 	if o.type == "flagship":
 		var l = []
 		for u in alive("enemy"):
@@ -1922,20 +2026,93 @@ func setupObjective(type) -> void:
 		JSM.ssort(l, func(a, c): return _byCpHp(a, c))
 		if l.size() > 0: l[0]["flagship"] = true
 		else: o.type = "rout"
-	if o.type == "hold": np("relay objective")
+	if o.type == "hold":
+		var c = offToAx(floori(BW / 2.0), floori(BH / 2.0)); var best = null; var bd = 1e9
+		for h in boardHexes():
+			if blocks(terr(h.q, h.r)) or unitAt(h.q, h.r) != null: continue
+			var d = hdist(h, c)
+			if d < bd:
+				bd = d; best = h
+		o["hex"] = {"q": best.q, "r": best.r}
+		for h in boardHexes():
+			if hdist(h, o.hex) <= 1 and blocks(terr(h.q, h.r)): B["terrain"].erase(hkey(h.q, h.r))
 	B["obj"] = o
+func survivorsP() -> int:
+	var n = 0
+	for u in B["units"]:
+		if u["side"] == "player" and not jt(u.get("isSq")) and (not jt(u.get("dead")) or jt(u.get("exited"))): n += 1
+	return n
+func objZone(q, r):
+	var o = B.get("obj") if B != null else null
+	if o == null or not onBoard(q, r): return null
+	if o.type == "break" and q + floor(r / 2.0) >= o.exitC: return "exit"
+	if o.type == "intercept" and r >= o.exitR: return "texit"
+	if o.type == "defend" and hdist({"q": q, "r": r}, o.hex) == 2: return "guard"
+	return null
+func stationFire(dq) -> void:
+	var o = B.get("obj")
+	if o == null or o.type != "defend": return
+	var src = {"q": o.hex.q, "r": o.hex.r, "facing": 0}; var ts = []
+	for u in caps("enemy"):
+		if hdist(u, o.hex) <= 5: ts.append(u)
+	JSM.ssort(ts, func(a, b): return hdist(a, o.hex) - hdist(b, o.hex))
+	ts = ts.slice(0, 2)
+	var att = {"side": "player", "dealt": 0, "kills": 0, "crit": 0, "lockOn": false, "fx": {}}
+	for t in ts:
+		var r = applyHit(att, {"crit": 0, "pierce": 0.2}, t, 12, shieldQuad(t, src))
+		logm("Station batteries hit " + String(t["name"]) + ": " + ns(r.shield) + " shield, " + ns(r.hull) + " hull.", "p")
+		if t["hp"] <= 0 and not jt(t.get("dead")):
+			t["hp"] = 0; queueDeath(t, dq)
 func objAfterMove(u) -> void:
 	var o = B.get("obj") if B != null else null
 	if o == null or u == null or jt(u.get("dead")) or jt(u.get("isSq")): return
-	if o.type == "break" or o.type == "intercept": np("objective exits")
+	if o.type == "break" and u["side"] == "player" and objZone(u["q"], u["r"]) == "exit":
+		u["exited"] = true; u["dead"] = true; u["fled"] = true
+		emit({"t": "fled", "unit": u["id"], "why": "exit"}); logm(String(u["name"]) + " breaks through and jumps clear.", "s"); checkEnd()
+	elif o.type == "intercept" and jt(u.get("transport")) and objZone(u["q"], u["r"]) == "texit":
+		u["dead"] = true; u["fled"] = true
+		emit({"t": "fled", "unit": u["id"], "why": "exit"}); logm(String(u["name"]) + " gets through.", "e"); checkEnd()
 func aiObjScore(u, v) -> float:
 	var o = B.get("obj")
 	if o == null or jt(u.get("isSq")): return 0.0
-	if jt(u.get("transport")): np("transport scoring")
-	if o.type == "hunt" and jt(u.get("flagship")): np("hunt scoring")
-	var vet = aiVet(); var _urg = aiObjUrgency(o) if vet else 1
-	if o.type == "defend" or o.type == "break" or o.type == "hold": np("objective scoring " + String(o.type))
-	if vet and o.type == "intercept": np("intercept scoring")
+	if jt(u.get("transport")): return -(o.exitR - v.r) * 14.0
+	if o.type == "hunt" and jt(u.get("flagship")):
+		var d = _mind(v, caps("player"), 30); return min(d, 9) * 3.0
+	var vet = aiVet(); var urg = aiObjUrgency(o) if vet else 1.0
+	if o.type == "defend": return -max(0, hdist(v, o.hex) - 2) * 3.0 * urg
+	if o.type == "break":
+		var pl = caps("player")
+		if pl.size() == 0: return 0.0
+		var cols = []
+		for p in pl: cols.append(p["q"] + floor(p["r"] / 2.0))
+		var lead = JSM.amax(cols); var c = v.q + floor(v.r / 2.0)
+		if not vet: return -max(0, lead + 1 - c) * 1.2
+		var L = null
+		for p in pl:
+			if p["q"] + floor(p["r"] / 2.0) == lead:
+				L = p; break
+		if o.get("c0") == null: o["c0"] = boardBounds().c0
+		var c0 = o.c0; var prog = clamp_((lead - c0) / max(1, o.exitC - c0), 0, 1)
+		return -(max(0, lead + 1 - c) * 1.2 + max(0, absf(v.r - L["r"]) - 2) * 0.5) * (1 + 1.5 * prog)
+	if vet and o.type == "intercept":
+		var d = 99.0
+		for x in B["units"]:
+			if jt(x.get("transport")) and not jt(x.get("dead")): d = min(d, hdist(v, x))
+		return -max(0, d - 3) * 1.5 if d < 99 else 0.0
+	if vet and o.type == "hold":
+		var mine = []
+		for x in caps("enemy"):
+			if not jt(x.get("transport")): mine.append(x)
+		JSM.ssort(mine, func(a, b):
+			var dd = hdist(a, o.hex) - hdist(b, o.hex)
+			return dd if dd != 0 else (-1 if String(a["id"]) < String(b["id"]) else 1))
+		var k = JSM.index_same(mine, u); var d = hdist(v, o.hex)
+		if k < 0 or k > 1: return -max(0, d - 5) * 0.4
+		var contested = false
+		for p in caps("player"):
+			if hdist(p, o.hex) <= 1: contested = true
+		var held = hdist(u, o.hex) <= 1 and not contested
+		return -d * 1.6 * urg + (4.0 if (held and d <= 1) else 0.0)
 	return 0.0
 func aiObjUrgency(o) -> float:
 	var done: float = clamp_((float(B["round"] if jt(B.get("round")) else 1) - 1.0) / float(o["rounds"] if jt(o.get("rounds")) else ENC_ROUNDS), 0.0, 1.0)
@@ -1945,9 +2122,36 @@ func aiObjUrgency(o) -> float:
 func objectiveTick(_dq) -> void:
 	var o = B.get("obj")
 	if o == null or jt(B.get("over")): return
-	if o.type == "defend" or o.type == "hunt": np("objective tick " + String(o.type))
+	if o.type == "defend":
+		var near = []
+		for u in caps("enemy"):
+			if hdist(u, o.hex) <= 2: near.append(u)
+		if near.size() > 0:
+			o["hp"] = max(0, o["hp"] - near.size()); logm(ns(near.size()) + " enemy ship" + ("s" if near.size() > 1 else "") + " at the station. Integrity " + ns(o["hp"]) + "/" + ns(o["hpMax"]) + ".", "e")
+		if o["hp"] > 0 and B["round"] <= o["rounds"]: stationFire(_dq)
+		checkEnd(); return
+	if o.type == "hunt":
+		if B["round"] > o["rounds"]:
+			var f = null
+			for u in B["units"]:
+				if jt(u.get("flagship")) and u["side"] == "enemy" and not jt(u.get("dead")):
+					f = u; break
+			if f != null:
+				f["dead"] = true; f["fled"] = true; o["escaped"] = true
+				emit({"t": "fled", "unit": f["id"], "why": "escape"}); logm(String(f["name"]) + " jumps out. Its escorts follow.", "e")
+		checkEnd(); return
 	if o.type != "hold": return
-	np("relay tick")
+	var p = false; var e = false
+	for u in alive("player"):
+		if not jt(u.get("isSq")) and hdist(u, o.hex) <= 1: p = true
+	for u in alive("enemy"):
+		if not jt(u.get("isSq")) and hdist(u, o.hex) <= 1: e = true
+	if p and not e:
+		o["score"] = o["score"] + 1; logm("You hold the relay (" + ns(o["score"]) + "/3).", "p")
+	elif e and not p:
+		o["escore"] = o["escore"] + 1; logm("The enemy holds the relay (" + ns(o["escore"]) + "/3).", "e")
+	elif p and e: logm("The relay is contested.", "x")
+	checkEnd()
 func checkEnd() -> void:
 	checkEndRules()   # scheduleBattleEnd: the end screen is presentation
 func checkEndRules() -> void:
@@ -1955,24 +2159,64 @@ func checkEndRules() -> void:
 	if caps("enemy").size() == 0:
 		B["over"] = "win"; return
 	var o = B.get("obj")
-	if o != null and o.type == "break": np("breakthrough end")
+	if o != null and o.type == "break":
+		var out = 0
+		for u in B["units"]:
+			if jt(u.get("exited")): out += 1
+		o["out"] = out
+		if out >= o.need:
+			B["over"] = "win"; logm(ns(out) + " ship" + ("s" if out > 1 else "") + " broke through. The fleet jumps clear.", "s"); return
+		if out > 0 and caps("player").size() + out < o.need:
+			B["over"] = "loss"; B["withdraw"] = true; logm("Too few ships can still get through. The survivors jump clear.", "e"); return
 	if caps("player").size() == 0:
 		B["over"] = "loss"; return
-	if o != null and (o.type == "intercept" or o.type == "defend" or o.type == "hunt" or o.type == "hold"): np("objective end " + String(o.type))
+	if o != null and o.type == "intercept":
+		var kill = 0; var esc = 0
+		for u in B["units"]:
+			if not jt(u.get("transport")): continue
+			if jt(u.get("dead")) and not jt(u.get("fled")): kill += 1
+			if jt(u.get("fled")): esc += 1
+		o["kill"] = kill; o["esc"] = esc
+		if kill >= o.need:
+			B["over"] = "win"; B["routed"] = true; logm("The convoy is broken. The escorts break off.", "s"); return
+		if esc > o.total - o.need:
+			B["over"] = "win"; B["partial"] = true; logm("Enough transports got through. The escorts break off.", "e"); return
+	if o != null and o.type == "defend":
+		if o["hp"] <= 0:
+			B["over"] = "loss"; B["withdraw"] = true; logm("The station falls. Your fleet is forced to withdraw.", "e"); return
+		if B["round"] > o["rounds"]:
+			B["over"] = "win"; logm("The station holds. The enemy withdraws.", "s"); return
+	if o != null and o.type == "hunt":
+		var f = null
+		for u in B["units"]:
+			if jt(u.get("flagship")) and u["side"] == "enemy":
+				f = u; break
+		if f != null and jt(f.get("dead")):
+			B["over"] = "win"
+			if jt(o.get("escaped")):
+				B["partial"] = true; logm("The flagship got away. Its escorts withdraw.", "e")
+			else:
+				B["routed"] = true; logm("The flagship is destroyed. Its escorts scatter.", "s")
+			return
 	if jt(B.get("obj")) and B["obj"].type == "flagship":
 		var any = false
 		for u in B["units"]:
 			if jt(u.get("flagship")) and u["side"] == "enemy" and not jt(u.get("dead")): any = true
 		if not any:
-			B["over"] = "win"; B["routed"] = true; return
-	if not jt(B.get("cp0")): return
+			B["over"] = "win"; B["routed"] = true; logm("The enemy flagship is gone. The rest of their fleet scatters.", "s"); return
+	if jt(B.get("obj")) and B["obj"].type == "hold":
+		if B["obj"]["score"] >= 3:
+			B["over"] = "win"; logm("The relay is yours. The enemy withdraws.", "s"); return
+		if B["obj"]["escore"] >= 3:
+			B["over"] = "loss"; B["withdraw"] = true; logm("The enemy secures the relay. Your fleet is forced to withdraw.", "e"); return
+	if not jt(B.get("cp0")) or (o != null and (o.type == "intercept" or o.type == "hunt")): return
 	var bossDown = false
 	if jt(B.get("cfg")) and B["cfg"].get("kind") == "boss":
 		bossDown = true
 		for u in B["units"]:
 			if jt(u.get("boss")) and u["side"] == "enemy" and not jt(u.get("dead")): bossDown = false
 	if bossDown or sideCP("enemy") <= B["cp0"]["enemy"] * 0.35:
-		B["over"] = "win"; B["routed"] = true
+		B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee." if bossDown else "The enemy fleet breaks and flees.", "s")
 
 # ======================= orders, commands, abilities =======================
 func canOrder(u, o) -> bool:
@@ -2005,10 +2249,24 @@ func _giveOrder_raw(u, o) -> void:
 	if o == "lock":
 		u["lockOn"] = true; u["mp"] = 0
 	if o == "helm": u["turnsLeft"] = u["turnsLeft"] + 1
+	logm(String(u["name"]) + ": " + String(ORDERS[o]["n"]) + ".", pp(u))
 func abilityCd(u) -> float: return max(1, ABILITIES[u["ab"]]["cd"] - z0(u["fx"].get("cdMod")))
 func liveFrom(u) -> Callable:
 	var b0 = B; var ep = z0(B.get("epoch")) if B != null else 0
 	return func(): return is_same(B, b0) and (z0(B.get("epoch")) if B != null else 0) == ep and (u == null or not jt(u.get("dead")))
+func cmdDesc(c, tier, fac) -> String:
+	if c == null: return ""
+	var v = cmdPow(c["id"], tier); var car = "brood" if fac == "chorus" else "carrier"; var sq = "swarm" if fac == "chorus" else "squadron"
+	var pct = func(x): return ns(JSM.jsround(x * 100.0)) + "%"
+	match c["id"]:
+		"barrage": return "Every ship fires a free extra volley right now at the best target in range" + ((", with +" + pct.call(v) + " damage") if jt(v) else "") + ". Its normal shots this round still happen."
+		"hunt": return "Torpedoes reload at once and every ship deals +" + pct.call(v) + " damage for the rest of this round."
+		"scramble": return "Every " + car + " launches " + ("two extra wings" if tier >= 2 else "an extra wing") + " right now, even past its limit. Then every " + sq + " you have makes a bonus attack immediately, with +" + pct.call(v) + " damage."
+		"iron": return ("Your ships take " + pct.call(v + 0.1) + " less hull damage for the rest of this round.") if (fac == "chorus" or fac == "deathless") else ("All shields refill and your ships take " + pct.call(v) + " less hull damage for the rest of this round.")
+		"restore": return "Every ship repairs " + pct.call(v) + " of its hull right now."
+		"surge": return "Every ship gains +" + ns(v) + " movement and " + ("+2 turns" if tier >= 2 else "+1 turn") + " this round, and enemy fire loses 20 accuracy against you."
+	return String(c.get("d")) if jt(c.get("d")) else ""
+func bossCmdText(c, fac) -> String: return cmdDesc(c, 1, fac).replace("your ships", "its ships").replace("against you", "against them").replace("Every ship", "Every enemy ship")
 func cmdTier() -> float:
 	if B == null or B["round"] < 1: return 0.0
 	var bonus = 0; var lost = 0
@@ -2027,6 +2285,7 @@ func useCommand(side) -> bool:
 	if not canCommand(side): return false
 	var c = commandFor(side); var tier = cmdTier(); B["cmdUsed"] = true; B["cmd"] = {"id": c["id"], "side": side, "round": B["round"], "tier": tier}
 	if jt(B.get("usage")) and side == "player": B["usage"]["cmd"] = B["usage"]["cmd"] + 1
+	logm("Admiral's Command" + ((" at power " + ns(tier + 1) + " of 3") if jt(tier) else "") + ": " + String(c["n"]) + ". " + cmdDesc(c, tier, RUN["fac"] if (RUN != null and jt(RUN.get("fac"))) else "voidsworn"), "p" if side == "player" else "e")
 	emit({"t": "command", "side": side, "id": c["id"], "tier": tier, "unit": null})
 	var ok = runCommand(side, c, tier); hook("command " + side); return ok
 func cmdRec(side) -> Variant:
@@ -2054,7 +2313,8 @@ func bossCmdTick() -> void:
 	if c == null: return
 	if B.get("cmdENext") == null:
 		if B["round"] >= 2 or boss["hp"] < boss["maxHp"] * 0.6:
-			B["cmdENext"] = B["round"] + 1; emit({"t": "command_warning", "side": "enemy", "id": c["id"], "round": B["cmdENext"], "unit": boss["id"]})
+			B["cmdENext"] = B["round"] + 1; logm(String(boss["name"]) + " is preparing " + String(c["n"]) + ". " + bossCmdText(c, boss["fac"]) + " It strikes next round.", "e")
+			emit({"t": "command_warning", "side": "enemy", "id": c["id"], "round": B["cmdENext"], "unit": boss["id"]})
 func bossCmdFire() -> void:
 	if B == null or jt(B.get("over")) or jt(B.get("cmdEUsed")) or B.get("cmdENext") == null or B["round"] < B["cmdENext"]: return
 	var boss: Variant = null
@@ -2063,7 +2323,7 @@ func bossCmdFire() -> void:
 	if boss == null:
 		B["cmdEUsed"] = true; return
 	var c = BOSS_CMD[boss["fac"]]
-	B["cmdEUsed"] = true; B["cmdE"] = {"id": c["id"], "side": "enemy", "round": B["round"], "tier": 1}
+	B["cmdEUsed"] = true; B["cmdE"] = {"id": c["id"], "side": "enemy", "round": B["round"], "tier": 1}; logm(String(boss["name"]) + ": " + String(c["n"]) + "!", "e")
 	emit({"t": "command", "side": "enemy", "id": c["id"], "tier": 1, "unit": boss["id"]})
 	runCommand("enemy", c, 1)
 func runCommand(side, c, tier) -> bool:
@@ -2378,12 +2638,17 @@ func _useAbility_raw(u, arg = null) -> bool:
 		JSM.ssort(ts, func(p, q): return float(p["hp"]) / p["maxHp"] - float(q["hp"]) / q["maxHp"])
 		if ts.size() > 0:
 			var t = ts[0]; var h = min(t["maxHp"] - t["hp"], JSM.jsround(t["maxHp"] * 0.2)); t["hp"] = t["hp"] + h
+			logm(String(u["name"]) + " reanimates " + ("its own hull" if is_same(t, u) else String(t["name"])) + " for " + ns(h) + ".", pp(u))
 	if a == "ionpulse":
+		var nf = 0
 		for t in alive("enemy" if u["side"] == "player" else "player"):
-			if not jt(t.get("isSq")) and hdist(t, u) <= 4 and t.get("sh") != null:
-				var ns = []
-				for x in t["sh"]: ns.append(floor(x * 0.5))
-				t["sh"] = ns
+			if not jt(t.get("isSq")) and hdist(t, u) <= 4:
+				nf += 1
+				if t.get("sh") != null:
+					var nsh = []
+					for x in t["sh"]: nsh.append(floor(x * 0.5))
+					t["sh"] = nsh
+		logm(String(u["name"]) + " fires an ion pulse: " + ns(nf) + " enemy ship" + ("" if nf == 1 else "s") + " lose half their shields.", pp(u))
 	if a == "blink":
 		var h = arg["hex"] if (arg is Dictionary and jt(arg.get("hex"))) else autoBlink(u)
 		var okh = false
@@ -2407,8 +2672,10 @@ func _useAbility_raw(u, arg = null) -> bool:
 		if u.get("spare") != null: u["spare"] = max(0, u["spare"] - 1)
 		var sq = makeWing(u, h, kind); sq["mp"] = 0
 		for w in sq["weapons"]: w["fired"] = true
+		logm(String(u["name"]) + " launches a " + String(HULLS[kind]["n"]).to_lower() + ".", pp(u))
 	if a == "nova":
 		var c = arg["hex"]
+		logm(String(u["name"]) + " fires its nova cannon.", pp(u))
 		var live = liveFrom(u)
 		hook("nova", u)
 		if not live.call(): return false
@@ -2419,10 +2686,12 @@ func _useAbility_raw(u, arg = null) -> bool:
 		for x in hitList:
 			var dmg = (40.0 if hdist(x, c) == 0 else 20.0) * u["dmg"] * (1.5 if jt(x.get("isSq")) else 1.0)
 			var quad = shieldQuad(x, u)
-			applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad)
+			var r = applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad)
+			logm("Nova blast hits " + String(x["name"]) + " for " + ns(r.hull) + " hull" + ((" and " + ns(r.shield) + " shields") if jt(r.shield) else "") + ".", pe(x))
 			if x["hp"] <= 0: killUnit(x, u)
 		return true
 	u["abCd"] = abilityCd(u)
+	if a != "launch": logm(String(u["name"]) + ": " + String(ABILITIES[a]["n"]) + ".", pp(u))
 	return true
 
 # ======================= enemy AI =======================
@@ -2798,7 +3067,7 @@ func aiUnit(u) -> void:
 			hds.append(99)
 			var hd = JSM.amin(hds); var nd: float = max(hd, fieldDist(PF, v, hd)); score -= max(0, nd - minR) * 4.0
 		score -= s.cost * 0.05
-		if jt(B.get("obj")) and B["obj"].type == "hold" and not jt(u.get("isSq")) and not vet: np("relay pull (standard AI)")
+		if jt(B.get("obj")) and B["obj"].type == "hold" and not jt(u.get("isSq")) and not vet: score -= hdist(v, B["obj"].hex) * 1.6
 		score += aiObjScore(u, v); score += aiWellScore(u, v)
 		if score > bestScore:
 			bestScore = score; best = s

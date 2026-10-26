@@ -52,6 +52,8 @@ type "%T%out\math.txt" >> "%LOG%"
 
 echo [4/5] Seeded battles, every activation compared ^(state hash, PRNG state^): !SCEN!
 for %%B in (!SCEN!) do (
+  if exist "%T%golden\%%B.jsonl" del "%T%golden\%%B.jsonl"
+  if exist "%T%out\%%B.jsonl" del "%T%out\%%B.jsonl"
   "%NODE%" "%T%node\golden.js" scenario %%B "%T%golden\%%B.jsonl" >> "%LOG%" 2>&1
   !GD! scenario %%B "%T%out\%%B.jsonl" >> "%LOG%" 2>&1
   "%NODE%" "%T%node\compare.js" scenario "%T%golden\%%B.jsonl" "%T%out\%%B.jsonl" > "%T%out\cmp.txt" 2>&1

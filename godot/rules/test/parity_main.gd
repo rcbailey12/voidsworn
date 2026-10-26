@@ -14,8 +14,9 @@ func _init() -> void:
 	var code := 2
 	if a.size() >= 4 and a[0] == "prng": code = prng(int(a[1]), int(a[2]), a[3])
 	elif a.size() >= 2 and a[0] == "math": code = math(a[1])
-	elif a.size() >= 3 and a[0] == "scenario": code = scenario(a[1], a[2], int(a[3]) if a.size() >= 4 else -1)
-	else: printerr("usage: -- prng <seed> <count> <out> | math <file> | scenario <name> <out>")
+	elif a.size() >= 3 and a[0] == "scenario": code = scenario(a[1], a[2], int(a[3]) if a.size() >= 4 else -1, a[4] if a.size() >= 5 else "")
+	elif a.size() >= 3 and a[0] == "batch": code = batch(a[1], a[2])
+	else: printerr("usage: -- prng <seed> <count> <out> | math <file> | scenario <name> <out> [seed|-1] [file.json] | batch <file.json> <outdir>")
 	quit(code)
 
 func prng(seed: int, n: int, out: String) -> int:
@@ -46,7 +47,7 @@ func math(path: String) -> int:
 # ---------------- scenario harness (golden.js) ----------------
 var stopped := false
 const SKIP_U := {"t": 1, "ship": 1}
-const SKIP_B := {"units": 1, "log": 1, "cfg": 1, "prog": 1}   # B.prog: the UI busy-watchdog counter, not a rule (see golden.js)
+const SKIP_B := {"units": 1, "cfg": 1, "prog": 1}   # B.prog: the UI busy-watchdog counter, not a rule (see golden.js); the battle log is in the hash
 func snap(turn: int, actor: String) -> Dictionary:
 	if R.not_ported != "" and not stopped:
 		stopped = true; printerr("NOT PORTED: this battle reached a rule the port does not carry yet: ", R.not_ported)
@@ -202,13 +203,21 @@ func run_enemy() -> void: # the enemy side's steps, timed without the hash recor
 		if q != null and not R.jt(q.get("isSq")):
 			tm_acts.append({"round": r, "ms": ms}); tm_rounds[str(r)] = float(tm_rounds.get(str(r), 0.0)) + ms
 
-func scenario(name: String, out: String, seed_override: int = -1) -> int:
+# every battle in a scenario file (the sweep), one record file each; exit code 3 if any hit something not ported
+func batch(file: String, outdir: String) -> int:
+	var all = JSON.parse_string(FileAccess.get_file_as_string(file)); var worst := 0; var k := 0
+	for name in all.keys():
+		var c := scenario(name, outdir.path_join(name + ".jsonl"), -1, file); worst = max(worst, c); k += 1
+	print("batch ", k, " battles -> ", outdir)
+	return worst
+func scenario(name: String, out: String, seed_override: int = -1, file: String = "") -> int:
+	tm_acts = []; tm_rounds = {}; snap_us = 0; stopped = false
 	api = APIScript.new()
 	var err = api.load_rules()
 	if err != "":
 		printerr(err); return 1
 	R = api.R
-	var all = JSON.parse_string(FileAccess.get_file_as_string("res://rules/test/scenarios.json"))
+	var all = JSON.parse_string(FileAccess.get_file_as_string(file if file != "" else "res://rules/test/scenarios.json"))
 	if not all.has(name):
 		printerr("unknown scenario ", name); return 1
 	var S = all[name].duplicate(true)
@@ -221,14 +230,28 @@ func scenario(name: String, out: String, seed_override: int = -1) -> int:
 			snap_us += Time.get_ticks_usec() - t0
 	api.new_battle_scenario(S, -1)
 	var g := 0
-	while not R.jt(R.B.get("over")) and R.B["round"] <= int(S.rounds) and g < 2000:
-		g += 1
-		var pp = api._pendingP()
-		if pp.size() > 0:
-			if S.get("bot") == "full": pBotFull(pp[0])
-			else: pBot(pp[0])
-		else:
-			api.end_activation(null); run_enemy()
+	var full: bool = S.get("bot") == "full"
+	if R.jt(R.B.get("alt")):
+		while not R.jt(R.B.get("over")) and R.B["round"] <= int(S.rounds) and g < 2000:
+			g += 1
+			var pp = api._pendingP()
+			if pp.size() > 0:
+				if full: pBotFull(pp[0])
+				else: pBot(pp[0])
+			else:
+				api.end_activation(null); run_enemy()
+	else: # Classic mode: every ship acts, then the turn ends
+		while not R.jt(R.B.get("over")) and R.B["round"] <= int(S.rounds) and g < 200:
+			g += 1
+			var mine = []
+			for x in R.alive("player"):
+				if not R.jt(x.get("isSq")): mine.append(x)
+			for u in mine:
+				if R.jt(R.B.get("over")): break
+				if full: pBotFull(u)
+				else: pBot(u)
+			if not R.jt(R.B.get("over")):
+				api.end_turn(); run_enemy()
 	R.hook("end " + (str(R.B["over"]) if R.jt(R.B.get("over")) else "none"))
 	R.hook_cb = null
 	var f := FileAccess.open(out, FileAccess.WRITE)

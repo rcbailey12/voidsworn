@@ -451,5 +451,356 @@
   "relics": [
    "spore"
   ]
+ },
+ "s11": {
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "vex",
+  "note": "Fight type: Hold the station (defend). Station integrity, station batteries, the guard ring; Hegemony attackers with a carrier",
+  "seed": 11011,
+  "sector": 2,
+  "obj": "defend",
+  "map": "station",
+  "fac": "hegemony",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "s12": {
+  "shape": "corridor",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "malek",
+  "note": "Fight type: Hunt. The running flagship deploys short of its escorts and jumps out after round 6; corridor field",
+  "seed": 12012,
+  "sector": 2,
+  "obj": "hunt",
+  "map": "belt",
+  "fac": "corsair",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "harrow",
+   "warden"
+  ],
+  "enemies": [
+   "c_hulk",
+   "c_marauder",
+   "c_reaver",
+   "c_raider",
+   "c_raider"
+  ]
+ },
+ "s13": {
+  "shape": "ring",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "thale",
+  "note": "Fight type: Intercept. Transports cross to the far edge under escort (veteran escorts screen the convoy); Chorus spores",
+  "seed": 13013,
+  "sector": 2,
+  "obj": "intercept",
+  "map": "storm",
+  "fac": "chorus",
+  "fleet": [
+   "reliquary",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "b_razor",
+   "b_spitter",
+   "b_drone",
+   "b_drone"
+  ]
+ },
+ "s14": {
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 14,
+  "bot": "full",
+  "admiral": "vex",
+  "note": "Fight type: Breakthrough. Get half the fleet off the far edge past an Ithar blocking line (veterans block the lead ship's lane)",
+  "seed": 14014,
+  "sector": 2,
+  "obj": "break",
+  "map": "open",
+  "fac": "ithar",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "i_song",
+   "i_blade",
+   "i_blade",
+   "i_wisp",
+   "i_wisp"
+  ]
+ },
+ "s15": {
+  "shape": "dense",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "mending",
+  "note": "Fight type: Relay (hold), Standard AI (the flat relay pull); Deathless on a dense field",
+  "seed": 15015,
+  "sector": 2,
+  "obj": "hold",
+  "map": "graveyard",
+  "fac": "deathless",
+  "ai": "standard",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_scythe"
+  ]
+ },
+ "s16": {
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "ashgrove",
+  "note": "Fight type: Relay (hold), veteran AI (the two nearest enemy ships contest it, urgency); round or square arena with an angled approach",
+  "seed": 16016,
+  "sector": 3,
+  "obj": "hold",
+  "map": "planet",
+  "fac": "hegemony",
+  "fleet": [
+   "cathedral",
+   "reliquary",
+   "harrow",
+   "warden"
+  ],
+  "enemies": [
+   "h_dominion",
+   "h_interdictor",
+   "h_picket",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "s17": {
+  "shape": "ring",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "vex",
+  "note": "Fight type: Ambush. Two enemy groups close in from both sides",
+  "seed": 17017,
+  "sector": 1,
+  "obj": "ambush",
+  "map": "belt",
+  "fac": "corsair",
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider",
+   "c_raider"
+  ]
+ },
+ "s18": {
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "thale",
+  "note": "Fight type: Decapitation (flagship). Killing the flagship scatters the fleet",
+  "seed": 18018,
+  "sector": 2,
+  "obj": "flagship",
+  "map": "station",
+  "fac": "hegemony",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ]
+ },
+ "s19": {
+  "shape": "deadstar",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "grax",
+  "note": "Dead-star gravity well (owner ruling Oct 24): pulls, tidal damage and the AI steering around the well; a storm field, Deathless phasing ships",
+  "seed": 19019,
+  "sector": 3,
+  "obj": "rout",
+  "map": "storm",
+  "fac": "deathless",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "enemies": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_scythe",
+   "d_scythe"
+  ]
+ },
+ "s20": {
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "vex",
+  "note": "Fight type: Engagement (rout) on a generated fleet, sector 1 column 0 (B0small: compact field), the sector 1 opener",
+  "seed": 20020,
+  "sector": 1,
+  "obj": "rout",
+  "map": "open",
+  "fac": "hegemony",
+  "col": 0,
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden"
+  ]
+ },
+ "s21": {
+  "note": "Classic mode (whole turns, battle.js aiTurn: squadrons first, then each ship picked by opportunity) with the full bot; carriers on both sides",
+  "seed": 21021,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "bot": "full",
+  "alt": false
+ },
+ "s22": {
+  "note": "Classic mode with the Standard AI and the basic bot; Corsair raiders",
+  "seed": 22022,
+  "sector": 1,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider",
+   "c_raider"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 10,
+  "ai": "standard",
+  "alt": false
+ },
+ "s23": {
+  "note": "Timing: carrier-heavy 10 against 10 in sector 3 (three Reliquary carriers and Ashgrove against a Hegemony fleet with three launch hulls): the worst case for enemy think time, squadrons on both sides",
+  "seed": 23023,
+  "sector": 3,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "reliquary",
+   "reliquary",
+   "cathedral",
+   "penitent",
+   "harrow",
+   "harrow",
+   "warden",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_dominion",
+   "h_vanguard",
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "timing": true
  }
 }

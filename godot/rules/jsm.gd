@@ -452,3 +452,20 @@ static func canon(v, top: String = "", skip: Dictionary = {}, plain: bool = fals
 static func sha256(s: String) -> String:
 	var h := HashingContext.new(); h.start(HashingContext.HASH_SHA256); h.update(s.to_utf8_buffer())
 	return h.finish().hex_encode()
+# Number to string as JS prints it in a template literal (Number.prototype.toString): integers without ".0",
+# other values as the shortest decimal that reads back to the same double (fixed notation; the log never needs exponents).
+static func numstr(x) -> String:
+	if x is int: return str(x)
+	if x is bool: return "true" if x else "false"
+	var f := float(x)
+	if is_nan(f): return "NaN"
+	if is_inf(f): return "Infinity" if f > 0 else "-Infinity"
+	if f == floor(f) and absf(f) < 9.0e18: return str(int(f))
+	for d in range(1, 18):
+		var s := String.num(f, d)
+		if float(s) == f: return s
+	return String.num(f, 17)
+# String.prototype.replace with a string pattern: the first occurrence only
+static func rep1(s: String, a: String, b: String) -> String:
+	var i := s.find(a)
+	return s if i < 0 else s.substr(0, i) + b + s.substr(i + a.length())

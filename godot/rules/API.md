@@ -18,11 +18,12 @@ var err = api.load_rules()            # loads res://rules/data/tables.json (the 
 api.new_battle_scenario("s1")         # a test battle from rules/test/scenarios.json (s1 to s5 today), or a dict with the same fields
 # or, from the campaign (G3):
 api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fac, sector, fleet of ships, relics, boons, flagUid ...)
-                                      # cfg = {kind, fac, col, seed, obj, shape, map, dep, arch, mod, enemies?, campaign?, event_force?}
+                                      # cfg = {kind, fac, col, seed, obj, shape, map, dep, arch, mod, enemies?, campaign?, event_force?, alt?}
 ```
 
 - **Fleet:** without `cfg.enemies`, the enemy fleet is generated exactly as the game does (`genEnemyFleet`: archetype `arch` = swarm, heavy or carrier, `mod` = bounty, the sector ramp, your fleet's power, the AI level and heat). Two or more carriers on your side (a carrier admiral or the hive aspect counts as one more) draw point-defence refits and a fighter screen.
 - **Campaign battles:** pass `cfg.campaign = true` as campaign3d.js does. The rules then roll the mid-battle event (reinforcements for either side, or a solar flare) from the seeded generator; `cfg.event_force` forces one (`"reinf_enemy"`, `"reinf_ally"`, `"flare"`), as the campaign does in sectors at war. Both keys are removed from `cfg` before the battle starts.
+- **Classic mode:** `cfg.alt = false` plays whole turns instead of alternating activations (the game's setup option). See "Classic mode" below.
 - **AI level:** `api.R.AI_LEVEL` is `"veteran"` (the game's default) or `"standard"`. Set it before `new_battle`.
 - **Opening state:** after setup, `api.phase` is `"player"`, and the event stream holds `round 1` and `side player`.
 
@@ -49,6 +50,13 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
 - The rules run ahead of the picture; the scene plays the events at its own pace.
 - That hides enemy think time behind the previous ship's animation. Worst think measured so far: 0.35 to 0.69 s per activation in the cloud on 10-against-10 battles; PC numbers come from `parity.bat` step 5.
 
+## Classic mode (whole turns)
+
+With `cfg.alt = false`:
+- In the player phase every ship can move, fire, use its ability and take orders in any order; nothing ends by itself and `end_activation` does nothing.
+- `end_turn()` ("End turn") ends your turn. `phase` becomes `"enemy"`: the enemy turn-start ticks happen, then call `step()` once per enemy activation, as in alternating mode. The game's `aiTurn` order is kept: the enemy's squadrons first, then each next ship picked by opportunity.
+- The step that finishes the enemy turn also runs the new round: `round`, your turn-start ticks, your squadrons' swarm phase, then `side player`.
+
 ## Commands (player side, the same path the game UI uses)
 
 All return `true` when the action happened. They do nothing (return `false`) when it is not the player phase, the ship is not the player's, it has already acted, or another ship is the active one.
@@ -64,7 +72,8 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | `order(id, kind)` | `"brace"`, `"full"` (full ahead), `"lock"` (lock on) or `"helm"` (an extra turn). |
 | `ram(id)` | Ram the enemy ship dead ahead (needs a run-up). |
 | `board(id, target_id)` | Board an adjacent enemy. |
-| `end_activation(id = null)` | End the active ship's activation, or pass ship `id`. Starts the enemy phase. |
+| `end_activation(id = null)` | End the active ship's activation, or pass ship `id`. Starts the enemy phase. (Alternating mode only.) |
+| `end_turn()` | Classic mode only: end your whole turn. |
 | `rotate(id, dir)` | Turn in place one step (`dir` = +1 or -1), costing one movement point and one turn (free for ships that pivot). As in the game, the ship becomes the active one even when it cannot turn; returns whether it turned. |
 | `can_command() -> bool`, `command()` | The Admiral's Command: once per battle, from round 1, during your phase, no ship needed. The game asks for a confirming second tap; that is UI only. |
 | `wing_order(wing_id, target_id)` | A standing order for one of your squadrons: an enemy ship means strike it until it dies, one of your ships means guard it. Works any time before the end. The wing acts on it in its next swarm phase. |
@@ -121,12 +130,10 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `death` | `unit, cause, by` | Play the death; `cause` picks the look: `cut` (lance), `big` (torpedo, ram), `flay` (gauss), `melt` (acid, spines), `dark` (burn-out, lucky battery hit), `tidal`, `blast`. |
 | `wreck` | `unit, q, r` | The hulk stays on the board as blocking terrain. |
 | `fled` | `unit` | The ship left the battle (escorts fleeing, a breakthrough, a convoy getting through). |
+| `log` | `text, kind` | A battle log line, word for word as the game writes it. `kind` is the game's colour class: `p` (good for you), `e` (bad for you), `s` (a success), `x` (neutral), `ember` (warnings), or null. |
 | `end` | `result` | The battle is over. |
 
-**Coming in G1:**
-- `log` (`text, kind`): the battle log lines.
-- `float` (`unit, text, color`): the floating callouts.
-- (Squadrons are in: `wing` above; their moves and strikes use `move` and `fire`.)
+**Not events:** the game's floating callouts (`fxText`: "-12 hull", "Shields down", "Critical") are presentation only and carry no rules information beyond the `hit`, `shield_down`, `system` and `log` events, so the scene draws its own from those.
 
 ## Determinism (audit items, Oct 26)
 

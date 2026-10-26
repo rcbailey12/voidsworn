@@ -21,7 +21,7 @@ global.window = {}; global.document = undefined; global.performance = { now: () 
 const HARNESS = String.raw`
 // ---- presentation stubs (as sim3d.js), each one a per-action hash point ----
 var HOOK=null; function hook(kind,u){ if(HOOK) HOOK(kind,u); }
-function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){}
+function log(m,c){ if(B&&B.log) B.log.push({m,c}); } function fxText(){} function fxShield(){} function fxFlash(){}
 async function animPath(u,path,opt){ hook('move',u); if(opt&&opt.onLate) await opt.onLate(); }
 async function animMove(u,q,r,f){ u.q=q; u.r=r; u.facing=f; } async function animRotate(u,f){ hook('rotate',u); }
 async function animWeapon(u){ hook('fire',u); } async function animExplode(t){ hook('death',t); } async function animNova(u){ hook('nova',u); } async function animBlink(u){ hook('blink',u); }
@@ -55,6 +55,15 @@ async function nextRoundF(){ if(!B||B.over) return; B.round++; for(const x of B.
   B.busy=true; const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2; if(B.over){ B.busy=false; return; }
   B.busy=true; await swarmPhase('player'); if(!B.over) await swarmPhase('enemy'); B.busy=false; hook('round',null); }
 
+// ---- Classic mode (B.alt false): ui3d.js endTurn. The whole enemy turn is the game's own aiTurn ----
+async function endTurnF(){ if(!B||B.busy||B.side!=='player'||B.over) return;
+  B.busy=true; B.sel=null; B.armed=null; B.mode=null; B.inspect=null; B.reach=null;
+  B.side='enemy'; { const dq=startSideTurn('enemy'); if(dq) await dq; } hook('end turn',null);
+  await aiTurn();
+  B.aiActive=null; if(B.over){ B.busy=false; return; }
+  B.round++; B.side='player'; { const dq2=startSideTurn('player'); if(dq2) await dq2; } if(B.over){ B.busy=false; return; }
+  await swarmPhase('player'); B.busy=false; hook('round',null); }
+
 // ---- your side's bot: sim3d.js botUnit without commands, abilities or tactics, through the game's command path ----
 async function pBotF(u){
   if(B.over||u.dead) return;
@@ -63,7 +72,7 @@ async function pBotF(u){
   for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3); if(sc>bs){bs=sc;best=s;} }
   if(best&&best.path.length&&guardF(u)) await actF(()=>moveUnit(u,best));
   for(let i=0;i<u.weapons.length;i++){ if(B.over||B.side!=='player'||u.activated) break; let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt&&guardF(u)) await actF(()=>fireWeapon(u,i,bt)); }
-  if(!B.over&&B.side==='player'&&!u.activated) await endActivationF(true,u);
+  if(!B.over&&B.side==='player'&&!u.activated&&B.alt) await endActivationF(true,u);
 }
 
 // ---- the full bot: sim3d.js botUnit (Command, abilities, rams, boarding, brace, objective pull), through the game's command path.
@@ -97,16 +106,16 @@ async function pBotFull(u){
   if(gone()) return;
   if(!u.weapons.some(w=>weaponReady(w)&&alive('enemy').some(t=>canFire(u,w,t)))&&canRotate(u)&&guardF(u)) await actF(()=>rotateUnit(u,1));
   if(gone()) return;
-  if(!u.isSq&&boardTargets(u).length&&guardF(u)){ let b=false; await actF(async()=>{ b=await tacticBoard(u); }); if(b){ if(!gone()) await endActivationF(true,u); return; } }
+  if(!u.isSq&&boardTargets(u).length&&guardF(u)){ let b=false; await actF(async()=>{ b=await tacticBoard(u); }); if(b){ if(!gone()&&B.alt) await endActivationF(true,u); return; } }
   for(let i=0;i<u.weapons.length;i++){ if(gone()) return; let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt&&guardF(u)) await actF(()=>fireWeapon(u,i,bt)); }
   if(gone()) return;
   if(!u.isSq&&!u.weapons.some(w=>w.fired)&&u.hp<u.maxHp*.5&&canOrder(u,'brace')&&evalThreat(u,alive('enemy'))>10&&guardF(u)) await actF(()=>giveOrder(u,'brace'));
-  if(!gone()) await endActivationF(true,u);
+  if(!gone()&&B.alt) await endActivationF(true,u);
 }
 
 // ---- canonical state ----
 // B.prog is the UI's busy-watchdog step counter: no rule reads it, and its increments interleave with JS microtasks around fire-on-the-move, so it stays out of the hash
-const SKIP_U={t:1,ship:1}, SKIP_B={units:1,log:1,cfg:1,prog:1};
+const SKIP_U={t:1,ship:1}, SKIP_B={units:1,cfg:1,prog:1}; // the battle log is in the hash
 function canon(v,top){
   if(v===null||v===undefined) return 'null';
   if(typeof v==='boolean') return v?'true':'false';
@@ -134,13 +143,15 @@ async function runScenario(S){
   startBattle(cfg);
   if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_force||null); } // campaign3d.js battleScreen
   hook('start',null);
-  B.alt=true; for(const x of B.units) x.activated=false; { const d=startSideTurn('enemy'); if(d) await d; }
+  B.alt=S.alt!==false; for(const x of B.units) x.activated=false; if(B.alt){ const d=startSideTurn('enemy'); if(d) await d; } // ui3d.js prepBattle
   let g=0;
   const bot=S.bot==='full'?pBotFull:pBotF;
-  while(!B.over&&B.round<=S.rounds&&g++<2000){ const u=pendingP()[0]; if(u) await bot(u); else await endActivationF(true,null); }
+  if(B.alt) while(!B.over&&B.round<=S.rounds&&g++<2000){ const u=pendingP()[0]; if(u) await bot(u); else await endActivationF(true,null); }
+  else while(!B.over&&B.round<=S.rounds&&g++<200){ for(const u of alive('player').filter(x=>!x.isSq)){ if(B.over) break; await bot(u); } if(!B.over) await endTurnF(); }
   hook('end '+(B.over||'none'),null); HOOK=null; rec.timing=TM; return rec; }
 `;
 
+console.debug = () => {}; // the game's swarm timing chatter
 const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
 vm.runInThisContext(files.join('\n') + '\n' + HARNESS + '\nglobalThis.__G={runScenario,rndSeed,rnd,get S(){ return RNG_S; }};', { filename: 'rules_bundle.js' });
 // COVER=1: count calls to the rules functions each scenario reaches (a coverage check for the golden scenarios; printed to stderr)
@@ -153,7 +164,7 @@ const SCEN = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'scenarios.js
 const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toString('hex'); };
 
 (async () => {
-  const [mode, a, b, c] = process.argv.slice(2);
+  const [mode, a, b, c, d] = process.argv.slice(2);
   if (mode === 'prng') {
     const seed = +a, n = +b, out = []; __G.rndSeed(seed);
     for (let i = 0; i < n; i++) { const d = __G.rnd(); const bf = Buffer.alloc(8); bf.writeDoubleBE(d); out.push((__G.S >>> 0) + ' ' + bf.toString('hex')); }
@@ -168,12 +179,18 @@ const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toStr
     for (let q = -30; q <= 30; q++) for (let rr = -30; rr <= 30; rr++) { const x = Math.sqrt(3) * (q + rr / 2), y = 1.5 * rr; out.push('atan2 ' + hex(y) + ' ' + hex(x) + ' ' + hex(Math.atan2(y, x))); }
     fs.writeFileSync(a, out.join('\n') + '\n'); console.log('math', out.length, 'values ->', a); return;
   }
+  if (mode === 'batch') { // every battle in a scenario file (the sweep), one golden file each: batch <file.json> <outdir>
+    const L = JSON.parse(fs.readFileSync(a, 'utf8')); let k = 0;
+    for (const name of Object.keys(L)) { const rec = await __G.runScenario(Object.assign({}, L[name])); fs.writeFileSync(path.join(b, name + '.jsonl'), rec.map(r => JSON.stringify(r)).join('\n') + '\n'); k++; }
+    console.log('batch', k, 'battles ->', b); return;
+  }
   if (mode === 'scenario') {
-    if (!SCEN[a]) throw new Error('unknown scenario ' + a);
-    const S = Object.assign({}, SCEN[a]); if (c) S.seed = +c; // optional seed override, for sweeps
+    const SC = d ? JSON.parse(fs.readFileSync(d, 'utf8')) : SCEN; // optional scenario file (default scenarios.json)
+    if (!SC[a]) throw new Error('unknown scenario ' + a);
+    const S = Object.assign({}, SC[a]); if (c && +c >= 0) S.seed = +c; // optional seed override, for sweeps
     const rec = await __G.runScenario(S); fs.writeFileSync(b, rec.map(r => JSON.stringify(r)).join('\n') + '\n');
     fs.writeFileSync(b + '.timing.json', JSON.stringify(rec.timing));
     const last = rec[rec.length - 1]; console.log('scenario', a, rec.length, 'records', last.actor, '->', b); return;
   }
-  console.log('usage: node golden.js scenario <name> <out.jsonl> | prng <seed> <count> <out.txt> | math <out.txt>'); process.exit(2);
+  console.log('usage: node golden.js scenario <name> <out.jsonl> [seed|-1] [file.json] | batch <file.json> <outdir> | prng <seed> <count> <out.txt> | math <out.txt>'); process.exit(2);
 })().catch(e => { console.error(e); process.exit(1); });
