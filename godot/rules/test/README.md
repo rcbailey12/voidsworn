@@ -18,7 +18,7 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
    - Non-integer numbers are written as exact IEEE hex.
    - The Godot loader recomputes a SHA-256 of the tables and refuses to run if it differs.
 2. **Random numbers.** The game's PRNG (mulberry32), ported exactly. The check compares the first 10,000 draws from seeds 1001, 7 and 4242424242.
-3. **Math.** V8 computes `sin`, `cos`, `atan2` and `exp` with fdlibm and `hypot` with its own scaled sum. These are ported line for line in `rules/jsm.gd`, along with V8's `Math.round`. The check covers 243,721 inputs against Node.
+3. **Math.** V8 computes `sin`, `cos`, `atan2` and `exp` with fdlibm and `hypot` with its own scaled sum. These are ported line for line in `rules/jsm.gd`, along with V8's `Math.round` and V8 12.4's `Math.pow` (the enemy fleet budget and the heavy-fleet weights use it). The check covers 283,730 inputs against Node.
 4. **Battles.** `scenarios.json` holds the seeded fights:
    - **s1:** a sector 1 engagement at a station.
    - **s2:** the sector 1 Hegemony flagship and two escorts.

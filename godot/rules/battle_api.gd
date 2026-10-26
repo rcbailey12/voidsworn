@@ -22,11 +22,20 @@ func new_battle_scenario(sc, seed_override: int = -1) -> void:
 		S = JSON.parse_string(FileAccess.get_file_as_string("res://rules/test/scenarios.json"))[sc]
 	var seed := int(S.seed) if seed_override < 0 else seed_override
 	R.UID = 1; JSM.rnd_seed(seed)
-	var run := {"admiral": S.admiral, "fac": "voidsworn", "credits": 0, "cpCap": 40, "sector": int(S.sector), "relics": [], "inventory": [], "fleet": [], "boons": [], "patrons": [], "stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0}, "fallen": []}
+	R.AI_LEVEL = S.get("ai") if S.get("ai") != null else "veteran"
+	var boons := []
+	for x in S.get("boons", []): boons.append(x.duplicate())
+	var run := {"admiral": S.admiral, "fac": S.get("fac_player") if S.get("fac_player") != null else "voidsworn", "credits": 0, "cpCap": 40, "sector": int(S.sector), "relics": S.get("relics", []).duplicate(), "inventory": [], "fleet": [], "boons": boons, "patrons": [], "stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0}, "fallen": []}
+	if R.jt(S.get("aspect")): run["aspect"] = S.aspect
+	if S.get("heat") != null: run["heat"] = S.heat.duplicate()
 	R.RUN = run
-	for t in S.fleet: run["fleet"].append(R.newShip(t, false))
+	for t in S.fleet: run["fleet"].append(R.newShip(t, R.jt(S.get("vet"))))
 	run["flagUid"] = run["fleet"][0]["uid"]
-	var cfg := {"kind": S.kind, "fac": S.fac, "col": 3, "seed": seed, "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep}
+	var cfg := {"kind": S.kind, "fac": S.fac, "col": 3 if S.get("col") == null else S.col, "seed": seed, "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep}
+	if R.jt(S.get("arch")): cfg["arch"] = S.arch
+	if R.jt(S.get("mod")): cfg["mod"] = S.mod
+	if R.jt(S.get("campaign")):
+		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force")
 	if S.get("enemies") != null:
 		var en := []
 		for tpl in S.enemies: en.append({"tpl": tpl})
@@ -37,7 +46,11 @@ func new_battle_scenario(sc, seed_override: int = -1) -> void:
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
 	R.RUN = run; R.events.clear(); _queue.clear()
+	var campaign = R.jt(cfg.get("campaign")); var force = cfg.get("event_force")
+	cfg = cfg.duplicate(); cfg.erase("campaign"); cfg.erase("event_force")
 	R.startBattle(cfg)
+	if campaign: # campaign3d.js battleScreen: a campaign battle may roll a mid-battle event
+		R.B["campaign"] = true; R.B["event"] = R.rollBattleEvent(cfg, force)
 	R.hook("start")
 	_prep()
 
@@ -132,7 +145,7 @@ func ability(id: String, arg = null) -> bool:       # arg: {hex: {q, r}} for nov
 func order(id: String, kind: String) -> bool:       # "brace" | "full" | "lock" | "helm"
 	var u = unit(id)
 	if not _guard(u) or not R.canOrder(u, kind): return false
-	R.giveOrder(u, kind); _after_act(); return true
+	R.B["busy"] = true; R.giveOrder(u, kind); _after_act(); return true
 func ram(id: String) -> bool:
 	var u = unit(id)
 	if not _guard(u): return false
@@ -142,9 +155,27 @@ func board(id: String, target_id: String) -> bool:
 	if t == null or not _guard(u): return false
 	R.B["busy"] = true; var ok = R.boardUnit(u, t); _after_act(); return ok
 func rotate(id: String, dir: int) -> bool:          # +1 or -1: turn in place
-	R.np("rotate in place"); return false
-func command() -> bool:                             # the Admiral's Command
-	R.np("Admiral's Command (player)"); return false
+	var u = unit(id)
+	if not _guard(u): return false                  # as the game: the ship becomes the active one even if it cannot turn
+	var ok = R.canRotate(u)
+	R.B["busy"] = true; R.rotateUnit(u, dir); _after_act(); return ok
+# A standing order for one of your wings (ui3d.js wing select then tap): an enemy ship = strike it until it dies,
+# one of your own ships = guard it. Pass target_id = null to do nothing. Orders take effect in the wing's next swarm phase.
+func wing_order(wing_id: String, target_id: String) -> bool:
+	var w = unit(wing_id); var u = unit(target_id)
+	if phase == "over" or w == null or u == null or w["side"] != "player" or not R.jt(w.get("isSq")) or R.jt(w.get("dead")): return false
+	if is_same(u, w) or (u["side"] == "player" and R.jt(u.get("isSq"))): return false
+	w["wingOrder"] = {"kind": "strike" if u["side"] == "enemy" else "guard", "id": u["id"]}
+	if R.jt(R.B.get("usage")): R.B["usage"]["wingOrders"] = R.z0(R.B["usage"].get("wingOrders")) + 1
+	R.hook("wing order", w); return true
+func can_command() -> bool: return phase == "player" and R.canCommand("player")
+func command() -> bool:                             # the Admiral's Command (once per battle, from round 1)
+	if not can_command() or R.jt(R.B.get("busy")): return false
+	R.B["busy"] = true; var ok = R.useCommand("player"); _after_act(); return ok
+# Test harness only (the parity bot): run a rules call as one player action, with the same guard and auto end as the commands.
+func _bot_act(u, fn: Callable) -> Variant:
+	if not _guard(u): return null
+	R.B["busy"] = true; var r = fn.call(); _after_act(); return r
 func hurry() -> void:                               # Enter or Space: presentation only, the rules do not change
 	pass
 
@@ -174,7 +205,6 @@ func step() -> Array:
 			_queue.clear()
 		else:
 			R.emit({"t": "activation", "unit": u["id"], "side": "enemy"})
-			if R.jt(u.get("isSq")): R.np("enemy squadron activation")
 			R.aiUnit(u); u["activated"] = true; R.hook("activation", u)
 		if _queue.size() == 0: _end_batch()
 	var e = take_events()
@@ -228,10 +258,14 @@ func _next_round() -> void: # ui3d.js nextRound
 	R.flush_deferred()
 	if R.jt(B.get("over")):
 		B["busy"] = false; _finish(); return
-	for u in R.alive():
-		if R.jt(u.get("isSq")): R.np("squadron round-start phase")
-	B["busy"] = false; phase = "player"
+	B["busy"] = true; R.swarmPhase("player")
+	if not R.jt(B.get("over")): R.swarmPhase("enemy")
+	R.flush_deferred()
+	B["busy"] = false
 	R.hook("round")
+	if R.jt(B.get("over")):
+		_finish(); return
+	phase = "player"
 	R.emit({"t": "side", "side": "player"})
 func _finish() -> void:
 	phase = "over"; _queue.clear(); R.emit({"t": "end", "result": R.B["over"]})

@@ -37,6 +37,7 @@ func math(path: String) -> int:
 			"exp": got = JSM.exp(x)
 			"hypot": got = JSM.hypot([x, y])
 			"round": got = JSM.jsround(x)
+			"pow": got = JSM.pow(x, y)
 		n += 1
 		if JSM.hex64(got) != want: bad[fn] = int(bad.get(fn, 0)) + 1
 	print("math ", n, " values, differences from Node: ", bad if bad.size() > 0 else "none")
@@ -86,6 +87,111 @@ func pBot(u) -> void:
 	if not R.jt(R.B.get("over")) and R.B["side"] == "player" and not R.jt(u.get("activated")): api.end_activation(u["id"])
 	run_enemy()
 
+# the full bot (golden.js pBotFull, sim3d.js botUnit), through the same API calls the scene uses
+func botObj(v) -> float:
+	var o = R.B.get("obj")
+	if o == null: return 0.0
+	if o.type == "hold": return R.hdist(v, o.hex) * 1.6
+	if o.type == "break": return max(0.0, o.exitC - (v.q + floor(v.r / 2.0))) * 6.0
+	if o.type == "defend": return max(0.0, R.hdist(v, o.hex) - 3) * 1.2
+	if o.type == "intercept":
+		var tr = []
+		for x in R.alive("enemy"):
+			if R.jt(x.get("transport")): tr.append(x)
+		return R._mind(v, tr) * 2.5 if tr.size() > 0 else 0.0
+	if o.type == "hunt":
+		for x in R.alive("enemy"):
+			if R.jt(x.get("flagship")): return R.hdist(v, x) * 2.5
+		return 0.0
+	return 0.0
+func pBotFull(u) -> void:
+	var gone = func(): return R.jt(R.B.get("over")) or R.jt(u.get("dead")) or R.jt(u.get("activated")) or R.B["side"] != "player"
+	if gone.call(): return
+	if R.canCommand("player") and not R.jt(R.B.get("busy")):
+		var c = R.commandFor("player"); var pl = []; var en = []
+		for x in R.alive("player"):
+			if not R.jt(x.get("isSq")): pl.append(x)
+		for x in R.alive("enemy"):
+			if not R.jt(x.get("isSq")): en.append(x)
+		if c != null and pl.size() > 0 and en.size() > 0:
+			var near = 0
+			for e in en:
+				for p in pl:
+					if R.hdist(p, e) <= 8:
+						near += 1; break
+			var hp = 0.0; var mx = 0.0; var hurt = false
+			for p in pl:
+				hp += p["hp"]; mx += p["maxHp"]
+				if p["hp"] < p["maxHp"] * 0.5: hurt = true
+			var hpR = hp / mx; var id = c["id"]; var off = id in ["barrage", "hunt", "scramble", "surge"]
+			if (off and (near >= 2 or R.B["round"] >= 4)) or (id == "restore" and hpR < 0.6) or (id == "iron" and (hurt or near >= 2)) or R.B["round"] >= 6:
+				api.command(); run_enemy()
+	if gone.call(): return
+	if R.jt(u.get("ab")) and R.canAbility(u) and api._can_use(u):
+		var arg = null; var skip = false
+		if u["ab"] == "launch":
+			var hs = R.launchHexes(u)
+			if hs.size() > 0: arg = {"hex": hs[0], "kind": ("fighter" if R.rnd() < 0.5 else "bomber") if u["fac"] == "voidsworn" else R.wingKind(u)}
+			else: skip = true
+		elif u["ab"] == "nova":
+			skip = true
+			for h in R.novaTargets(u):
+				var e1 = false; var p1 = false
+				for e in R.alive("enemy"):
+					if R.hdist(e, h) <= 1: e1 = true
+				for p in R.alive("player"):
+					if R.hdist(p, h) <= 1: p1 = true
+				if e1 and not p1:
+					arg = {"hex": h}; skip = false; break
+		if not skip: api.ability(u["id"], arg); run_enemy()
+	if gone.call(): return
+	if not R.jt(u.get("isSq")) and R.ramInfo(u) != null: api._bot_act(u, func(): return R.tacticRam(u)); run_enemy()
+	if gone.call(): return
+	var foes = R.alive("enemy")
+	if foes.size() == 0: return
+	var states = R.computeReach(u).states; var best: Variant = null; var bs = -1e9
+	R.eval_begin()
+	for s in states:
+		var v = R.stateView(u, s); var off2 = R.evalOffense(v, R.readyList(u), foes); var th = R.evalThreat(v, foes)
+		var nd = R._mind(v, foes); var sc = off2 - th * 0.3 - (0.0 if off2 > 0 else nd * 3.0) - botObj(v)
+		if sc > bs:
+			bs = sc; best = s
+	R.eval_end()
+	if best != null and best.path.size() > 0: api.move(u["id"], best)
+	run_enemy()
+	if gone.call(): return
+	var canAny = false
+	for w in u["weapons"]:
+		if not R.weaponReady(w): continue
+		for t in R.alive("enemy"):
+			if R.canFire(u, w, t):
+				canAny = true; break
+		if canAny: break
+	if not canAny and R.canRotate(u): api.rotate(u["id"], 1); run_enemy()
+	if gone.call(): return
+	if not R.jt(u.get("isSq")) and R.boardTargets(u).size() > 0:
+		var b = api._bot_act(u, func(): return R.tacticBoard(u)); run_enemy()
+		if R.jt(b):
+			if not gone.call(): api.end_activation(u["id"])
+			run_enemy(); return
+	for i in range(u["weapons"].size()):
+		if gone.call(): return
+		var bt = null; var bv = 0.0
+		for t in R.alive("enemy"):
+			if R.canFire(u, u["weapons"][i], t):
+				var e = R.expectedVs(u, u["weapons"][i], t); var v = e.hull + e.shield * 0.3 + (20.0 if e.hull >= t["hp"] else 0.0)
+				if v > bv:
+					bv = v; bt = t
+		if bt != null: api.fire(u["id"], i, bt["id"])
+		run_enemy()
+	if gone.call(): return
+	var anyFired = false
+	for w in u["weapons"]:
+		if R.jt(w.get("fired")): anyFired = true
+	if not R.jt(u.get("isSq")) and not anyFired and u["hp"] < u["maxHp"] * 0.5 and R.canOrder(u, "brace") and R.evalThreat(u, R.alive("enemy")) > 10: api.order(u["id"], "brace"); run_enemy()
+	if not gone.call(): api.end_activation(u["id"])
+	run_enemy()
+
 var tm_acts := []; var tm_rounds := {}; var snap_us := 0
 func run_enemy() -> void: # the enemy side's steps, timed without the hash records
 	while api.phase == "enemy":
@@ -118,7 +224,9 @@ func scenario(name: String, out: String, seed_override: int = -1) -> int:
 	while not R.jt(R.B.get("over")) and R.B["round"] <= int(S.rounds) and g < 2000:
 		g += 1
 		var pp = api._pendingP()
-		if pp.size() > 0: pBot(pp[0])
+		if pp.size() > 0:
+			if S.get("bot") == "full": pBotFull(pp[0])
+			else: pBot(pp[0])
 		else:
 			api.end_activation(null); run_enemy()
 	R.hook("end " + (str(R.B["over"]) if R.jt(R.B.get("over")) else "none"))

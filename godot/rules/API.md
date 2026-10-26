@@ -18,10 +18,12 @@ var err = api.load_rules()            # loads res://rules/data/tables.json (the 
 api.new_battle_scenario("s1")         # a test battle from rules/test/scenarios.json (s1 to s5 today), or a dict with the same fields
 # or, from the campaign (G3):
 api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fac, sector, fleet of ships, relics, boons, flagUid ...)
-                                      # cfg = {kind, fac, col, seed, obj, shape, map, dep, arch, mod, enemies?}
+                                      # cfg = {kind, fac, col, seed, obj, shape, map, dep, arch, mod, enemies?, campaign?, event_force?}
 ```
 
-- **Fleet:** without `cfg.enemies`, the enemy fleet is generated exactly as the game does (G1 work in progress; today pass `enemies`).
+- **Fleet:** without `cfg.enemies`, the enemy fleet is generated exactly as the game does (`genEnemyFleet`: archetype `arch` = swarm, heavy or carrier, `mod` = bounty, the sector ramp, your fleet's power, the AI level and heat). Two or more carriers on your side (a carrier admiral or the hive aspect counts as one more) draw point-defence refits and a fighter screen.
+- **Campaign battles:** pass `cfg.campaign = true` as campaign3d.js does. The rules then roll the mid-battle event (reinforcements for either side, or a solar flare) from the seeded generator; `cfg.event_force` forces one (`"reinf_enemy"`, `"reinf_ally"`, `"flare"`), as the campaign does in sectors at war. Both keys are removed from `cfg` before the battle starts.
+- **AI level:** `api.R.AI_LEVEL` is `"veteran"` (the game's default) or `"standard"`. Set it before `new_battle`.
 - **Opening state:** after setup, `api.phase` is `"player"`, and the event stream holds `round 1` and `side player`.
 
 ## The turn flow (alternating activations, as the game plays by default)
@@ -63,10 +65,14 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | `ram(id)` | Ram the enemy ship dead ahead (needs a run-up). |
 | `board(id, target_id)` | Board an adjacent enemy. |
 | `end_activation(id = null)` | End the active ship's activation, or pass ship `id`. Starts the enemy phase. |
+| `rotate(id, dir)` | Turn in place one step (`dir` = +1 or -1), costing one movement point and one turn (free for ships that pivot). As in the game, the ship becomes the active one even when it cannot turn; returns whether it turned. |
+| `can_command() -> bool`, `command()` | The Admiral's Command: once per battle, from round 1, during your phase, no ship needed. The game asks for a confirming second tap; that is UI only. |
+| `wing_order(wing_id, target_id)` | A standing order for one of your squadrons: an enemy ship means strike it until it dies, one of your ships means guard it. Works any time before the end. The wing acts on it in its next swarm phase. |
 | `hurry()` | Enter or Space. Presentation only: the rules do not change. Play the queued events faster. |
-| `rotate(id, dir)`, `command()` | Turn in place, and the Admiral's Command. Coming in G1 (today they stop with NOT PORTED). |
 
 **Selection** is UI state only: there is no rules call for it.
+
+**Squadrons** (`squadron: true` in `view()`) are never activated by the player. Both sides' wings fly in the swarm phases at the start of each round (yours first), and the enemy's also act just before an enemy ship in `step()`. The Scramble Command gives every wing an extra strike at once. Launching a replacement wing is the carrier's `ability` (with `{hex, kind}`, kind `"fighter"` or `"bomber"`).
 
 ## Reading state: `view()`
 
@@ -94,8 +100,8 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 |---|---|---|
 | `round` | `round` | A new round begins (turn-start ticks follow as `tick`, `burning`, `death` ...). |
 | `side` | `side` | `"player"` or `"enemy"` is now acting. |
-| `activation` | `unit, side` | This ship starts its activation. |
-| `move` | `unit, path, late_fire` | Animate the burn along `path` (steps `{q, r, f, rot?, slip?, rev?, over?}`). With `late_fire`, the ship's shots that follow are fired on the move (start them about two-thirds of the way through the burn). |
+| `activation` | `unit, side` | This ship (or squadron, in a swarm phase) starts its activation. |
+| `move` | `unit, path, late_fire` | Animate the burn along `path` (steps `{q, r, f, rot?, slip?, rev?, over?}`). With `late_fire`, the ship's shots that follow are fired on the move (start them about two-thirds of the way through the burn). A turn in place is a one-step path with `rot: true`. |
 | `fire` | `unit, weapon, weapon_id, kind, arc, name, target, shots: [bool], pd, quad` | One weapon's volley: one entry per shot (hit or miss). `pd` is rockets shot down by point defence; `quad` is the target facing hit. |
 | `hit` | `unit, target, quad, section, shield, hull, crit` | One landed shot: shield damage absorbed, hull damage taken, which section, whether it was a critical. `unit` can be null for station guns. |
 | `shield_down` | `unit, quad` | That facing's shield is gone. |
@@ -105,6 +111,8 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `tick` | `unit, kind, hull` | Turn-start damage: `"fire"`, `"acid"`, `"tidal"` (dead star), `"storm"` (ion storm, shields only). |
 | `pulled` | `unit, from, to` | The dead star's gravity dragged the ship one hex. |
 | `ability` | `unit, ab, hex` | An ability fired (evasive, reload, focus, phase, frenzy, overburn, regrow, reclaim, ionpulse, blink, surge, launch, nova). |
+| `wing` | `unit, parent, kind, q, r` | A squadron appears next to its carrier (opening wings, a launch, Scramble, the enemy's fighter screen). `kind` is the hull id: fighter, bomber or spore. |
+| `blink` | `unit, from, to` | An Ithar phase jump: the ship vanishes at `from` and appears at `to` (no path). |
 | `order` | `unit, order` | brace, full, lock or helm. |
 | `ram` | `unit, target, path, dmg, recoil, soak, section` | The ram run-up and impact. |
 | `board` | `unit, target, result, kill, loss` | `result`: `"capture"` (the ship changes side), `"overrun"` (flagships and your ships hold the bridge), or `"raid"`. |
@@ -118,7 +126,7 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 **Coming in G1:**
 - `log` (`text, kind`): the battle log lines.
 - `float` (`unit, text, color`): the floating callouts.
-- Squadron events (`launch`, wing moves and strikes use `move` and `fire`).
+- (Squadrons are in: `wing` above; their moves and strikes use `move` and `fire`.)
 
 ## Determinism (audit items, Oct 26)
 

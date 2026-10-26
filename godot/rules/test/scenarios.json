@@ -144,5 +144,312 @@
   "kind": "battle",
   "rounds": 12,
   "timing": true
+ },
+ "s6": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "note": "Carriers: Ashgrove (Scramble Command, squadron damage) with a Reliquary carrier against a Corsair hulk-carrier fleet; opening wings, launches, bombers and the flak gauntlet, enemy wings, full bot (Command, abilities, rams, boarding, brace, turning in place); a campaign battle with a random mid-battle event",
+  "seed": 6006,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_hulk",
+   "c_marauder",
+   "c_reaver",
+   "c_raider",
+   "c_raider"
+  ],
+  "map": "belt",
+  "campaign": true
+ },
+ "s7": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "flank",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "note": "Generated enemy fleet (carrier archetype, exact V8 pow in the budget) against two Voidsworn carriers: carrier adaptation (point-defence refits, B-20, and the adaptive fighter screen), Hegemony fighters, flank deployment",
+  "seed": 7007,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "reliquary",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "arch": "carrier",
+  "col": 4,
+  "map": "station"
+ },
+ "s8": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "note": "Boons, relics, aspect and heat: twelve boons at all three rarities, five relics, the bulwark aspect, veteran captains, Veteran escorts, Undying foes and Slow orders against an Ithar elite fleet (phase jumps, a wraithcarrier); Thale (Iron Command)",
+  "seed": 8008,
+  "sector": 2,
+  "admiral": "thale",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "ithar",
+  "enemies": [
+   "i_carrier",
+   "i_blade",
+   "i_blade",
+   "i_wisp",
+   "i_wisp"
+  ],
+  "map": "open",
+  "vet": true,
+  "aspect": "bulwark",
+  "boons": [
+   {
+    "id": "i_broad",
+    "r": 0
+   },
+   {
+    "id": "i_brace",
+    "r": 1
+   },
+   {
+    "id": "s_regen",
+    "r": 2
+   },
+   {
+    "id": "s_arc",
+    "r": 1
+   },
+   {
+    "id": "h_wings",
+    "r": 0
+   },
+   {
+    "id": "h_feast",
+    "r": 2
+   },
+   {
+    "id": "a_crit",
+    "r": 1
+   },
+   {
+    "id": "r_burn",
+    "r": 2
+   },
+   {
+    "id": "r_mom",
+    "r": 0
+   },
+   {
+    "id": "e_chain",
+    "r": 1
+   },
+   {
+    "id": "e_kindle",
+    "r": 0
+   },
+   {
+    "id": "d_bastion",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "martyr",
+   "cogitator",
+   "lattice",
+   "coils",
+   "armourweave"
+  ],
+  "heat": [
+   "h_elite",
+   "h_undying",
+   "h_cmd"
+  ]
+ },
+ "s9": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "note": "Campaign battle with enemy reinforcements (forced event), generated heavy Deathless fleet with a bounty, the Standard AI, Hunted heat; Malek (Hunt Command) with the Ascendant (nova) in sector 3; more boons and relics",
+  "seed": 9009,
+  "sector": 3,
+  "admiral": "malek",
+  "fleet": [
+   "ascendant",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "deathless",
+  "arch": "heavy",
+  "mod": "bounty",
+  "col": 3,
+  "map": "belt",
+  "campaign": true,
+  "event_force": "reinf_enemy",
+  "ai": "standard",
+  "heat": [
+   "h_hunted"
+  ],
+  "boons": [
+   {
+    "id": "i_still",
+    "r": 2
+   },
+   {
+    "id": "i_plate",
+    "r": 0
+   },
+   {
+    "id": "i_line",
+    "r": 1
+   },
+   {
+    "id": "s_cap",
+    "r": 0
+   },
+   {
+    "id": "s_ion",
+    "r": 1
+   },
+   {
+    "id": "s_ev",
+    "r": 2
+   },
+   {
+    "id": "h_hatch",
+    "r": 0
+   },
+   {
+    "id": "h_chitin",
+    "r": 1
+   },
+   {
+    "id": "h_board",
+    "r": 2
+   },
+   {
+    "id": "a_lance",
+    "r": 0
+   },
+   {
+    "id": "a_aim",
+    "r": 1
+   },
+   {
+    "id": "a_long",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "phylactery",
+   "ledger",
+   "compass",
+   "banner",
+   "salvage",
+   "logbook"
+  ]
+ },
+ "s10": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "note": "Campaign battle with a solar flare (forced event), generated Chorus swarm fleet against the hive aspect (counts as a second carrier: spore refits), Vex (Barrage Command); the last twelve boons",
+  "seed": 10010,
+  "sector": 2,
+  "admiral": "vex",
+  "fleet": [
+   "reliquary",
+   "penitent",
+   "warden",
+   "warden"
+  ],
+  "fac": "chorus",
+  "arch": "swarm",
+  "col": 2,
+  "map": "open",
+  "campaign": true,
+  "event_force": "flare",
+  "aspect": "hive",
+  "boons": [
+   {
+    "id": "a_rear",
+    "r": 0
+   },
+   {
+    "id": "r_prow",
+    "r": 1
+   },
+   {
+    "id": "r_jink",
+    "r": 2
+   },
+   {
+    "id": "r_shock",
+    "r": 0
+   },
+   {
+    "id": "e_war",
+    "r": 1
+   },
+   {
+    "id": "e_reload",
+    "r": 2
+   },
+   {
+    "id": "e_hunt",
+    "r": 0
+   },
+   {
+    "id": "d_jugg",
+    "r": 1
+   },
+   {
+    "id": "d_ionlance",
+    "r": 2
+   },
+   {
+    "id": "d_burnswarm",
+    "r": 0
+   },
+   {
+    "id": "d_hunter",
+    "r": 1
+   },
+   {
+    "id": "d_inferno",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "spore"
+  ]
  }
 }

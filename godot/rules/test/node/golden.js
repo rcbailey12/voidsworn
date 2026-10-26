@@ -4,7 +4,7 @@
 //
 //   node golden.js scenario <name> <out.jsonl> [seed]   one scenario from data/scenarios.json (seed overrides its own, for sweeps)
 //   node golden.js prng <seed> <count> <out.txt>   the first <count> PRNG draws from <seed>, one per line, as raw 32-bit state and draw
-//   node golden.js math <out.txt>                 V8's results for sin, cos, atan2, exp, hypot and round on 240,000 inputs (Godot checks its port)
+//   node golden.js math <out.txt>                 V8's results for sin, cos, atan2, exp, hypot, round and pow on about 280,000 inputs (Godot checks its port)
 //
 // Canonical form (identical on both sides): objects with keys sorted, keys whose value is null or undefined left out, integers printed as
 // integers, any other number printed as 'd:' + the 16 hex digits of its IEEE 754 double, references to another ship printed as '@' + its id.
@@ -23,7 +23,7 @@ const HARNESS = String.raw`
 var HOOK=null; function hook(kind,u){ if(HOOK) HOOK(kind,u); }
 function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){}
 async function animPath(u,path,opt){ hook('move',u); if(opt&&opt.onLate) await opt.onLate(); }
-async function animMove(u,q,r,f){ u.q=q; u.r=r; u.facing=f; } async function animRotate(u,f){ u.facing=f; }
+async function animMove(u,q,r,f){ u.q=q; u.r=r; u.facing=f; } async function animRotate(u,f){ hook('rotate',u); }
 async function animWeapon(u){ hook('fire',u); } async function animExplode(t){ hook('death',t); } async function animNova(u){ hook('nova',u); } async function animBlink(u){ hook('blink',u); }
 async function fxRam(u){ hook('ram',u); } async function fxBoard(u){ hook('board',u); }
 function onCapture(){} function fxShieldBreak(){} function fxWithdraw(){}
@@ -31,7 +31,8 @@ SPEED=0;
 // actions with no presentation hook of their own get one after they finish
 { const _ua=useAbility; useAbility=async function(u,a){ const r=await _ua(u,a); hook('ability',u); return r; };
   const _go=giveOrder; giveOrder=function(u,o){ const r=_go(u,o); hook('order',u); return r; };
-  const _st=startSideTurn; startSideTurn=function(side){ const r=_st(side); hook('tick '+side,null); return r; }; }
+  const _st=startSideTurn; startSideTurn=function(side){ const r=_st(side); hook('tick '+side,null); return r; };
+  const _uc=useCommand; useCommand=async function(side){ const r=await _uc(side); hook('command '+side,null); return r; }; }
 
 // ---- the game's turn flow (ui3d.js guard, act, endActivation, aiStep, nextRound), alternating activations, no UI ----
 function pendingP(){ return alive('player').filter(u=>!u.isSq&&!u.activated&&u!==B.activeUnit); }
@@ -65,6 +66,44 @@ async function pBotF(u){
   if(!B.over&&B.side==='player'&&!u.activated) await endActivationF(true,u);
 }
 
+// ---- the full bot: sim3d.js botUnit (Command, abilities, rams, boarding, brace, objective pull), through the game's command path.
+// One addition for coverage: a ship with nothing to shoot turns in place once. Each step stops when the activation has ended.
+function botObjF(v){ const o=B.obj; if(!o) return 0; const col=h=>h.q+Math.floor(h.r/2);
+  if(o.type==='hold') return hdist(v,o.hex)*1.6;
+  if(o.type==='break') return Math.max(0,o.exitC-col(v))*6;
+  if(o.type==='defend') return Math.max(0,hdist(v,o.hex)-3)*1.2;
+  if(o.type==='intercept'){ const tr=alive('enemy').filter(x=>x.transport); return tr.length?Math.min(...tr.map(t=>hdist(v,t)))*2.5:0; }
+  if(o.type==='hunt'){ const f=alive('enemy').find(x=>x.flagship); return f?hdist(v,f)*2.5:0; }
+  return 0; }
+async function pBotFull(u){
+  const gone=()=>B.over||u.dead||u.activated||B.side!=='player';
+  if(gone()) return;
+  if(canCommand('player')&&!B.busy){ const c=commandFor('player'); const pl=alive('player').filter(x=>!x.isSq), en=alive('enemy').filter(x=>!x.isSq);
+    if(c&&pl.length&&en.length){ const near=en.filter(e=>pl.some(p=>hdist(p,e)<=8)).length, hpR=pl.reduce((a,p)=>a+p.hp,0)/pl.reduce((a,p)=>a+p.maxHp,0), hurt=pl.some(p=>p.hp<p.maxHp*.5);
+      const id=c.id, off=['barrage','hunt','scramble','surge'].includes(id);
+      if((off&&(near>=2||B.round>=4))||(id==='restore'&&hpR<.6)||(id==='iron'&&(hurt||near>=2))||B.round>=6) await actF(()=>useCommand('player')); } }
+  if(gone()) return;
+  if(u.ab&&canAbility(u)&&canUseF(u)){ let arg;
+    if(u.ab==='launch'){ const hs=launchHexes(u); arg=hs.length?{hex:hs[0],kind:u.fac==='voidsworn'?(rnd()<.5?'fighter':'bomber'):wingKind(u)}:null; }
+    else if(u.ab==='nova'){ const t=novaTargets(u).find(h=>alive('enemy').some(e=>hdist(e,h)<=1)&&!alive('player').some(p=>hdist(p,h)<=1)); arg=t?{hex:t}:null; }
+    if(arg!==null&&guardF(u)) await actF(()=>useAbility(u,arg)); }
+  if(gone()) return;
+  if(!u.isSq&&ramInfo(u)&&guardF(u)) await actF(()=>tacticRam(u));
+  if(gone()) return;
+  const foes=alive('enemy'); if(!foes.length) return;
+  const {states}=computeReach(u); let best=null,bs=-1e9;
+  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObjF(v); if(sc>bs){bs=sc;best=s;} }
+  if(best&&best.path.length&&guardF(u)) await actF(()=>moveUnit(u,best));
+  if(gone()) return;
+  if(!u.weapons.some(w=>weaponReady(w)&&alive('enemy').some(t=>canFire(u,w,t)))&&canRotate(u)&&guardF(u)) await actF(()=>rotateUnit(u,1));
+  if(gone()) return;
+  if(!u.isSq&&boardTargets(u).length&&guardF(u)){ let b=false; await actF(async()=>{ b=await tacticBoard(u); }); if(b){ if(!gone()) await endActivationF(true,u); return; } }
+  for(let i=0;i<u.weapons.length;i++){ if(gone()) return; let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt&&guardF(u)) await actF(()=>fireWeapon(u,i,bt)); }
+  if(gone()) return;
+  if(!u.isSq&&!u.weapons.some(w=>w.fired)&&u.hp<u.maxHp*.5&&canOrder(u,'brace')&&evalThreat(u,alive('enemy'))>10&&guardF(u)) await actF(()=>giveOrder(u,'brace'));
+  if(!gone()) await endActivationF(true,u);
+}
+
 // ---- canonical state ----
 // B.prog is the UI's busy-watchdog step counter: no rule reads it, and its increments interleave with JS microtasks around fire-on-the-move, so it stays out of the hash
 const SKIP_U={t:1,ship:1}, SKIP_B={units:1,log:1,cfg:1,prog:1};
@@ -84,21 +123,32 @@ function snap(turn,actor){ const t0=process.hrtime.bigint(); const units=B.units
 
 // ---- scenarios (scenarios.json, read by both sides); a record after every action, activation and round ----
 async function runScenario(S){
-  UID=1; rndSeed(S.seed);
-  RUN={admiral:S.admiral,fac:'voidsworn',credits:0,cpCap:40,sector:S.sector,relics:[],inventory:[],fleet:[],boons:[],patrons:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
-  for(const t of S.fleet) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
+  UID=1; rndSeed(S.seed); AI_LEVEL=S.ai||'veteran';
+  RUN={admiral:S.admiral,fac:S.fac_player||'voidsworn',credits:0,cpCap:40,sector:S.sector,relics:(S.relics||[]).slice(),inventory:[],fleet:[],boons:(S.boons||[]).map(b=>Object.assign({},b)),patrons:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
+  if(S.aspect) RUN.aspect=S.aspect; if(S.heat) RUN.heat=S.heat.slice();
+  for(const t of S.fleet) RUN.fleet.push(newShip(t,!!S.vet)); RUN.flagUid=RUN.fleet[0].uid;
   const rec=[]; let turn=0; TM={acts:[],rounds:{}}; SNAPMS=0;
   HOOK=(kind,u)=>{ if(B) rec.push(snap(turn++,kind+(u?' '+u.id:''))); };
-  startBattle({kind:S.kind,fac:S.fac,col:3,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies?S.enemies.map(tpl=>({tpl})):undefined});
+  const cfg={kind:S.kind,fac:S.fac,col:S.col==null?3:S.col,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies?S.enemies.map(tpl=>({tpl})):undefined};
+  if(S.arch) cfg.arch=S.arch; if(S.mod) cfg.mod=S.mod;
+  startBattle(cfg);
+  if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_force||null); } // campaign3d.js battleScreen
   hook('start',null);
   B.alt=true; for(const x of B.units) x.activated=false; { const d=startSideTurn('enemy'); if(d) await d; }
   let g=0;
-  while(!B.over&&B.round<=S.rounds&&g++<2000){ const u=pendingP()[0]; if(u) await pBotF(u); else await endActivationF(true,null); }
+  const bot=S.bot==='full'?pBotFull:pBotF;
+  while(!B.over&&B.round<=S.rounds&&g++<2000){ const u=pendingP()[0]; if(u) await bot(u); else await endActivationF(true,null); }
   hook('end '+(B.over||'none'),null); HOOK=null; rec.timing=TM; return rec; }
 `;
 
 const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
 vm.runInThisContext(files.join('\n') + '\n' + HARNESS + '\nglobalThis.__G={runScenario,rndSeed,rnd,get S(){ return RNG_S; }};', { filename: 'rules_bundle.js' });
+// COVER=1: count calls to the rules functions each scenario reaches (a coverage check for the golden scenarios; printed to stderr)
+const COVER = process.env.COVER ? {} : null;
+if (COVER) for (const k of Object.getOwnPropertyNames(globalThis)) { const f = globalThis[k];
+  if (typeof f === 'function' && /^[a-z]/.test(k) && !['setTimeout','setInterval','clearTimeout','clearInterval','require','queueMicrotask','structuredClone','fetch','atob','btoa','hook','rnd','rndSeed','canon','snap','pick','ri','hdist','alive'].includes(k) && f.toString().length < 200000 && !/native code/.test(f.toString())) {
+    try { globalThis[k] = function (...a) { COVER[k] = (COVER[k] || 0) + 1; return f.apply(this, a); }; } catch (e) {} } }
+process.on('exit', () => { if (COVER) process.stderr.write('COVER ' + JSON.stringify(COVER) + '\n'); });
 const SCEN = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'scenarios.json'), 'utf8'));
 const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toString('hex'); };
 
@@ -113,7 +163,8 @@ const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toStr
     let s = 4242; const r = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; }; const out = [];
     for (let i = 0; i < 40000; i++) { const x = r() * 60 - 30, y = r() * 80 - 40, z = r() * 80 - 40, e = r() * 40 - 20, q = (r() * 200 - 100) / (1 + Math.floor(r() * 7));
       out.push('sin ' + hex(x) + ' ' + hex(0) + ' ' + hex(Math.sin(x)), 'cos ' + hex(x) + ' ' + hex(0) + ' ' + hex(Math.cos(x)), 'atan2 ' + hex(y) + ' ' + hex(z) + ' ' + hex(Math.atan2(y, z)),
-        'exp ' + hex(e) + ' ' + hex(0) + ' ' + hex(Math.exp(e)), 'hypot ' + hex(y) + ' ' + hex(z) + ' ' + hex(Math.hypot(y, z)), 'round ' + hex(q) + ' ' + hex(0) + ' ' + hex(Math.round(q))); }
+        'exp ' + hex(e) + ' ' + hex(0) + ' ' + hex(Math.exp(e)), 'hypot ' + hex(y) + ' ' + hex(z) + ' ' + hex(Math.hypot(y, z)), 'round ' + hex(q) + ' ' + hex(0) + ' ' + hex(Math.round(q))); const px = r() * 40, py = r() * 6 - 3; out.push('pow ' + hex(px) + ' ' + hex(py) + ' ' + hex(Math.pow(px, py))); }
+    for (const cp of [1, 2, 3, 4, 5, 6, 8, 10, 12]) out.push('pow ' + hex(cp) + ' ' + hex(1.6) + ' ' + hex(Math.pow(cp, 1.6)));
     for (let q = -30; q <= 30; q++) for (let rr = -30; rr <= 30; rr++) { const x = Math.sqrt(3) * (q + rr / 2), y = 1.5 * rr; out.push('atan2 ' + hex(y) + ' ' + hex(x) + ' ' + hex(Math.atan2(y, x))); }
     fs.writeFileSync(a, out.join('\n') + '\n'); console.log('math', out.length, 'values ->', a); return;
   }

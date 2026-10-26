@@ -250,6 +250,106 @@ static func exp(x: float) -> float:
 	y = 1.0 - ((lo_ - (x * c) / (2.0 - c)) - hi_)
 	if k >= -1021: return words(hi(y) + (k << 20), lo(y))
 	return words(hi(y) + ((k + 1000) << 20), lo(y)) * TWOM1000
+# ---- Math.pow: V8 12.4 (the V8 in Node 22, the oracle) src/base/ieee754.cc pow, line for line; checked against Node ----
+static var PW_DPH1: float = words(0x3FE2B803, 0x40000000)
+static var PW_DPL1: float = words(0x3E4CFDEB, 0x43CFD006)
+static var PW_L1: float = words(0x3FE33333, 0x33333303)
+static var PW_L2: float = words(0x3FDB6DB6, 0xDB6FABFF)
+static var PW_L3: float = words(0x3FD55555, 0x518F264D)
+static var PW_L4: float = words(0x3FD17460, 0xA91D4101)
+static var PW_L5: float = words(0x3FCD864A, 0x93C9DB65)
+static var PW_L6: float = words(0x3FCA7E28, 0x4A454EEF)
+static var PW_LG2: float = words(0x3FE62E42, 0xFEFA39EF)
+static var PW_LG2H: float = words(0x3FE62E43, 0x00000000)
+static var PW_LG2L: float = words(0xBE205C61, 0x0CA86C39)
+static var PW_OVT: float = words(0x3C971547, 0x652B82FE)
+static var PW_CP: float = words(0x3FEEC709, 0xDC3A03FD)
+static var PW_CPH: float = words(0x3FEEC709, 0xE0000000)
+static var PW_CPL: float = words(0xBE3E2FE0, 0x145B01F5)
+static var PW_IVLN2: float = words(0x3FF71547, 0x652B82FE)
+static var PW_IVLN2H: float = words(0x3FF71547, 0x60000000)
+static var PW_IVLN2L: float = words(0x3E54AE0B, 0xF85DDF44)
+static var PW_HUGE: float = words(0x7E37E43C, 0x8800759C)
+static var PW_TINY: float = words(0x01A56E1F, 0xC2F8F359)
+static func _sl(x: float, l: int) -> float: return words(hi(x), l)
+static func _sh(x: float, h: int) -> float: return words(h, lo(x))
+static func pow(x: float, y: float) -> float:
+	var hx := hi(x); var lx := lo(x); var hy := hi(y); var ly := lo(y); var ix := hx & 0x7fffffff; var iy := hy & 0x7fffffff
+	var z: float; var ax: float; var z_h: float; var z_l: float; var p_h: float; var p_l: float; var y1: float; var t1: float; var t2: float
+	var r: float; var s: float; var t: float; var u: float; var v: float; var w: float; var i: int; var j: int; var k: int; var yisint: int; var n: int
+	if (iy | ly) == 0: return 1.0
+	if ix > 0x7ff00000 or (ix == 0x7ff00000 and lx != 0) or iy > 0x7ff00000 or (iy == 0x7ff00000 and ly != 0): return x + y
+	yisint = 0
+	if hx < 0:
+		if iy >= 0x43400000: yisint = 2
+		elif iy >= 0x3ff00000:
+			k = (iy >> 20) - 0x3ff
+			if k > 20:
+				j = ly >> (52 - k)
+				if ((j << (52 - k)) & 0xFFFFFFFF) == ly: yisint = 2 - (j & 1)
+			elif ly == 0:
+				j = iy >> (20 - k)
+				if (j << (20 - k)) == iy: yisint = 2 - (j & 1)
+	if ly == 0:
+		if iy == 0x7ff00000:
+			if ((ix - 0x3ff00000) | lx) == 0: return y - y
+			elif ix >= 0x3ff00000: return y if hy >= 0 else 0.0
+			else: return -y if hy < 0 else 0.0
+		if iy == 0x3ff00000:
+			return 1.0 / x if hy < 0 else x
+		if hy == 0x40000000: return x * x
+		if hy == 0x3fe00000 and hx >= 0: return sqrt(x)
+	ax = absf(x)
+	if lx == 0 and (ix == 0x7ff00000 or ix == 0 or ix == 0x3ff00000):
+		z = ax
+		if hy < 0: z = 1.0 / z
+		if hx < 0:
+			if ((ix - 0x3ff00000) | yisint) == 0: z = NAN
+			elif yisint == 1: z = -z
+		return z
+	n = (hx >> 31) + 1
+	if (n | yisint) == 0: return NAN
+	s = 1.0
+	if (n | (yisint - 1)) == 0: s = -1.0
+	if iy > 0x41e00000:
+		push_error("JSM: pow with |y| > 2^31 not ported"); return 0.0
+	n = 0
+	if ix < 0x00100000:
+		ax *= 9007199254740992.0; n -= 53; ix = hi(ax)
+	n += (ix >> 20) - 0x3ff; j = ix & 0x000fffff; ix = j | 0x3ff00000
+	if j <= 0x3988E: k = 0
+	elif j < 0xBB67A: k = 1
+	else:
+		k = 0; n += 1; ix -= 0x00100000
+	ax = _sh(ax, ix)
+	var bpk := 1.5 if k == 1 else 1.0; var dph := PW_DPH1 if k == 1 else 0.0; var dpl := PW_DPL1 if k == 1 else 0.0
+	u = ax - bpk; v = 1.0 / (ax + bpk); var ss := u * v; var s_h := _sl(ss, 0)
+	var t_h := _sh(0.0, ((ix >> 1) | 0x20000000) + 0x00080000 + (k << 18)); var t_l := ax - (t_h - bpk); var s_l := v * ((u - s_h * t_h) - s_h * t_l)
+	var s2 := ss * ss; r = s2 * s2 * (PW_L1 + s2 * (PW_L2 + s2 * (PW_L3 + s2 * (PW_L4 + s2 * (PW_L5 + s2 * PW_L6))))); r += s_l * (s_h + ss)
+	s2 = s_h * s_h; t_h = _sl(3.0 + s2 + r, 0); t_l = r - ((t_h - 3.0) - s2)
+	u = s_h * t_h; v = s_l * t_h + t_l * ss; p_h = _sl(u + v, 0); p_l = v - (p_h - u)
+	z_h = PW_CPH * p_h; z_l = PW_CPL * p_h + p_l * PW_CP + dpl
+	t = float(n); t1 = _sl((((z_h + z_l) + dph) + t), 0); t2 = z_l - (((t1 - t) - dph) - z_h)
+	y1 = _sl(y, 0); p_l = (y - y1) * t1 + y * t2; p_h = y1 * t1; z = p_l + p_h; j = hi(z); i = lo(z)
+	if j >= 0x40900000:
+		if ((j - 0x40900000) | i) != 0: return s * PW_HUGE * PW_HUGE
+		elif p_l + PW_OVT > z - p_h: return s * PW_HUGE * PW_HUGE
+	elif (j & 0x7fffffff) >= 0x4090cc00:
+		if ((j - to_i32(0xc090cc00)) | i) != 0: return s * PW_TINY * PW_TINY
+		elif p_l <= z - p_h: return s * PW_TINY * PW_TINY
+	i = j & 0x7fffffff; k = (i >> 20) - 0x3ff; n = 0
+	if i > 0x3fe00000:
+		n = j + (0x00100000 >> (k + 1)); k = ((n & 0x7fffffff) >> 20) - 0x3ff
+		t = _sh(0.0, n & ~(0x000fffff >> k)); n = ((n & 0x000fffff) | 0x00100000) >> (20 - k)
+		if j < 0: n = -n
+		p_h -= t
+	t = _sl(p_l + p_h, 0); u = t * PW_LG2H; v = (p_l - (t - p_h)) * PW_LG2 + t * PW_LG2L; z = u + v; w = v - (z - u)
+	t = z * z; t1 = z - t * (P1 + t * (P2 + t * (P3 + t * (P4 + t * P5)))); r = (z * t1) / ((t1 - 2.0) - (w + z * w)); z = 1.0 - (r - z)
+	j = hi(z) + (n << 20)
+	if (j >> 20) <= 0:
+		push_error("JSM: pow subnormal result not ported"); return 0.0
+	z = _sh(z, hi(z) + (n << 20))
+	return s * z
 static func hypot(a: Array) -> float: # V8 Math.hypot
 	var mx := 0.0; var ab := []
 	for v in a:
