@@ -19,7 +19,7 @@ def main():
                 if f.endswith(pat): shutil.copy(os.path.join(src, f), d)
         d = os.path.join(out, 'a4tools', 'hs'); os.makedirs(d)
         for f in ('hs_lib.py', 'detail_lib.py'): shutil.copy(os.path.join(REPO, 'tools/blender/hs', f), d)
-        for b in ('a4_ship.bat', 'a4_looks.bat', 'a4_lineup.bat'):
+        for b in ('a4_ship.bat', 'a4_looks.bat', 'a4_lineup.bat', 'a4_barge.bat'):
             if os.path.exists(os.path.join(REPO, 'tools/pc/jobs', b)):
                 open(os.path.join(out, 'a4tools', b), 'w', newline='').write(crlf(open(os.path.join(REPO, 'tools/pc/jobs', b)).read()))
     if '--looks' in a:
