@@ -123,7 +123,7 @@ func _build(sig: String) -> void:
 	world.dead_star(Vector3(-40.0, -125.0, -310.0), 1.1)
 	# faction territory: a soft tint over the far end of the sector, round the flagship
 	var glow = Color(C.FACTIONS[fac].get("glow", "#e07a70")) if C.FACTIONS.has(fac) else Color("#e07a70")
-	var terr = _mi(_plane(110, 60), _shader_mat(_terr_shader, {"col": Color(glow, 0.55), "focus": Vector2(0.86, 0.5)}), Vector3(0, -0.6, 0))
+	var terr = _mi(_plane(110, 60), _shader_mat(_terr_shader, {"col": Color(glow, 0.3), "focus": Vector2(0.86, 0.5)}), Vector3(0, -0.6, 0))
 	root3.add_child(terr)
 	# a faint chart grid under the lanes
 	var grid = _mi(_plane(110, 60), _grid_mat(), Vector3(0, -0.7, 0)); root3.add_child(grid)
@@ -315,7 +315,8 @@ func _draw_overlay() -> void:
 func _text(t: String, at: Vector2, size: int, col: Color, fnt: Font = null) -> void:
 	var f = fnt if fnt != null else ui.font
 	var w = f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-	overlay.draw_string(f, Vector2(at.x - w * 0.5 + 1, at.y + 1), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, Color(0, 0, 0, 0.7))
+	for o in [Vector2(1, 1), Vector2(-1, 1), Vector2(1, -1), Vector2(-1, -1), Vector2(0, 2)]:   # a dark halo keeps labels legible over the grid and the glow
+		overlay.draw_string(f, Vector2(at.x - w * 0.5, at.y) + o * max(1.0, size / 14.0), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, Color(0, 0, 0, 0.75))
 	overlay.draw_string(f, Vector2(at.x - w * 0.5, at.y), t, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
 func _node_at(sp: Vector2) -> String:
 	var best = ""; var bd = 1e9
