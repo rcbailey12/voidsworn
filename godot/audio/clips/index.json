@@ -1,0 +1,108 @@
+{
+"boomBig": [
+"boomBig_0.ogg",
+"boomBig_1.ogg",
+"boomBig_2.ogg"
+],
+"boomSmall": [
+"boomSmall_0.ogg",
+"boomSmall_1.ogg",
+"boomSmall_2.ogg",
+"boomSmall_3.ogg"
+],
+"boomLow": [
+"boomLow_0.ogg",
+"boomLow_1.ogg"
+],
+"debris": [
+"debris_0.ogg",
+"debris_1.ogg"
+],
+"bassDrop": [
+"bassDrop_0.ogg"
+],
+"hullHit": [
+"hullHit_0.ogg",
+"hullHit_1.ogg",
+"hullHit_2.ogg",
+"hullHit_3.ogg",
+"hullHit_4.ogg",
+"hullHit_5.ogg"
+],
+"hullHitBig": [
+"hullHitBig_0.ogg",
+"hullHitBig_1.ogg"
+],
+"shieldHit": [
+"shieldHit_0.ogg",
+"shieldHit_1.ogg",
+"shieldHit_2.ogg",
+"shieldHit_3.ogg",
+"shieldHit_4.ogg"
+],
+"shieldBig": [
+"shieldBig_0.ogg"
+],
+"laserLarge": [
+"laserLarge_0.ogg",
+"laserLarge_1.ogg",
+"laserLarge_2.ogg",
+"laserLarge_3.ogg",
+"laserLarge_4.ogg"
+],
+"laserSmall": [
+"laserSmall_0.ogg",
+"laserSmall_1.ogg",
+"laserSmall_2.ogg",
+"laserSmall_3.ogg",
+"laserSmall_4.ogg"
+],
+"arc": [
+"arc_0.ogg"
+],
+"ionCharge": [
+"ionCharge_0.ogg"
+],
+"whoosh": [
+"whoosh_0.ogg"
+],
+"launch": [
+"launch_0.ogg"
+],
+"scrape": [
+"scrape_0.ogg"
+],
+"uiClick": [
+"uiClick_0.ogg"
+],
+"uiConfirm": [
+"uiConfirm_0.ogg"
+],
+"uiDeny": [
+"uiDeny_0.ogg"
+],
+"uiSelect": [
+"uiSelect_0.ogg"
+],
+"uiPanel": [
+"uiPanel_0.ogg"
+],
+"yourTurn": [
+"yourTurn_0.ogg"
+],
+"reward": [
+"reward_0.ogg"
+],
+"victory": [
+"victory_0.ogg"
+],
+"enemyTurn": [
+"enemyTurn_0.ogg"
+],
+"impactChord": [
+"impactChord_0.ogg"
+],
+"ambient": [
+"ambient_0.ogg"
+]
+}
