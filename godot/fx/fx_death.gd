@@ -369,7 +369,7 @@ static func seeds_for(s, cause: String, r: RandomNumberGenerator) -> PackedVecto
 
 # Gather the hull's surfaces on the main thread (mesh arrays come from the rendering server), then cut on a worker.
 static func precompute(fx, s, cause := "blast") -> void:
-	if s.weight <= 0 or s.has_meta("cut_task"):
+	if s.weight <= 0 or s.has_meta("cut_task") or s.has_meta("cut_job"):
 		return
 	var r = RandomNumberGenerator.new()
 	r.seed = hash(s.id) + 3
@@ -388,6 +388,35 @@ static func precompute(fx, s, cause := "blast") -> void:
 	s.set_meta("cut_job", job)
 	var tid = WorkerThreadPool.add_task(func() -> void: job["out"] = _cut(job))
 	s.set_meta("cut_task", tid)
+	fx.later(fx.now + 0.5, func() -> void: _prebuild(fx, s))
+
+
+# When the cut is done, upload the pieces' meshes while the battle is quiet, so the break-up itself only shows them
+# (the first break-up cost a 35 ms frame when it built them on the spot).
+static func _prebuild(fx, s) -> void:
+	if not s.has_meta("cut_task") or s.dead:
+		return
+	var tid: int = s.get_meta("cut_task")
+	if not WorkerThreadPool.is_task_completed(tid):
+		fx.later(fx.now + 0.5, func() -> void: _prebuild(fx, s))
+		return
+	WorkerThreadPool.wait_for_task_completion(tid)
+	s.remove_meta("cut_task")
+	var job: Dictionary = s.get_meta("cut_job", {})
+	var meshes: Array = []
+	for pc in job.get("out", []) if job.get("out") != null else []:
+		meshes.append(_piece_mesh(pc))
+	job["meshes"] = meshes
+
+
+# A piece's mesh with the hull's own materials (no copies: a copy with other settings would be a new shader pipeline to
+# compile mid-fight); the death overlay draws the piece's inside faces itself.
+static func _piece_mesh(pc: Dictionary) -> ArrayMesh:
+	var am = ArrayMesh.new()
+	for sd in pc["surfs"]:
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"])
+		am.surface_set_material(am.get_surface_count() - 1, sd["mat"])
+	return am
 
 
 static func _cut(job: Dictionary) -> Array:
@@ -557,7 +586,7 @@ static func death(fx, s, cause: String) -> float:
 	fx.later(T + hold, func() -> void: s.engine_level = 0.0)
 	_cracks(fx, s, T + hold, cook, tint)
 	# 3. break-up
-	if not s.has_meta("cut_task"):
+	if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 		precompute(fx, s, cause)
 	fx.later(TB, func() -> void: _break_up(fx, s, cause, tint))
 	return TB - T + 0.6
@@ -686,15 +715,8 @@ static func _break_up(fx, s, cause: String, tint: Color) -> void:
 		var pc: Dictionary = pieces[i]
 		if (pc["surfs"] as Array).is_empty():
 			continue
-		var am = ArrayMesh.new()
-		for sd in pc["surfs"]:
-			am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"])
-			var m: Material = sd["mat"]
-			if m != null:
-				m = m.duplicate()
-				if m is BaseMaterial3D:
-					(m as BaseMaterial3D).cull_mode = BaseMaterial3D.CULL_DISABLED
-			am.surface_set_material(am.get_surface_count() - 1, m)
+		var pre: Array = job.get("meshes", [])
+		var am: ArrayMesh = pre[i] if i < pre.size() else _piece_mesh(pc)
 		var cen = Vector3.ZERO
 		for p in (pc["pts"] as PackedVector3Array):
 			cen += p

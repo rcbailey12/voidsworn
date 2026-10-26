@@ -233,7 +233,7 @@ func dead_star(c: Vector3, s: float) -> void:
 		var half := Rsh * 5.0
 		lm.set_shader_parameter("r_shadow", Rsh * 1.0 / half)
 		lm.set_shader_parameter("r_einstein", Rsh * 1.6 / half)
-		lm.render_priority = 4
+		lm.render_priority = -30   # drawn first among the see-through things: it copies the opaque picture, so later effects (beams, trails in front of it) draw over it, not under it
 		lens.material_override = lm
 		lens.scale = Vector3.ONE * half
 		lens.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
