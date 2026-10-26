@@ -64,26 +64,33 @@ func _shots(dir: String) -> void:
 	await _shot(dir, "99_end")
 	get_tree().quit(0)
 func _shots_pick(kind: String, acts: Array, seen: Dictionary):
-	for x in acts:
-		if kind == "map":
-			if not seen.has("fleet") and x[0] == "fleetScreen": return x
-			if x[0] == "enterNode": return x
-		elif kind == "fleet":
-			if x[0] == "equip": return x
-			if x[0] == "backMap" or x[0] == "backShipyard": return x
-		elif kind == "shipyard":
-			if x[0] == "buyMod" or x[0] == "repairAll": return x
-			if x[0] == "leaveYard": return x
-		elif kind == "battle":
-			if not seen.has("retreat") and x[0] == "c3retreat": return x
-			var sec = int(C.RUN["sector"])
-			if x[0] == "battle" and x[1] == ("loss" if (sec >= 2 and seen.has("sector")) else "win"): return x
-		elif kind == "retreat":
-			if x[0] == "c3retreatNo": return x
-		elif kind == "prize":
-			if x[0] == "prizeConfirm": return x
-		else:
-			return x
+	var want = {"event": "event", "drydock": "drydock", "shipyard": "shipyard", "field": "field"}
+	var has = func(name, arg = null):
+		for x in acts:
+			if x[0] == name and (arg == null or x[1] == arg): return x
+		return null
+	match kind:
+		"map":
+			if not seen.has("fleet") and has.call("fleetScreen") != null: return has.call("fleetScreen")
+			for x in acts:   # prefer a node of a kind not pictured yet
+				if x[0] == "enterNode":
+					var t = C.findNode(x[1])["type"]
+					if want.has(t) and not seen.has(want[t]): return x
+			return has.call("enterNode")
+		"fleet":
+			return has.call("equip") if has.call("equip") != null else (has.call("backMap") if has.call("backMap") != null else has.call("backShipyard"))
+		"shipyard":
+			if not seen.has("sell") and has.call("sellShip") != null: return has.call("sellShip")
+			for n in ["buyMod", "repairAll", "buyHull"]:
+				if has.call(n) != null and randi() % 3 > 0: return has.call(n)
+			return has.call("leaveYard")
+		"sell": return has.call("closeModal")
+		"battle":
+			if not seen.has("retreat") and has.call("c3retreat") != null: return has.call("c3retreat")
+			var lose = int(C.RUN["sector"]) >= 3 and C.RUN["fleet"].size() > 0 and seen.has("sector")
+			return has.call("battle", "loss" if lose else "win")
+		"retreat": return has.call("c3retreatNo")
+		"prize": return has.call("prizeConfirm")
 	return acts[0] if acts.size() > 0 else null
 
 # Whole runs through the screens with the parity bot (the UI renders every step), for script errors and dead ends.
