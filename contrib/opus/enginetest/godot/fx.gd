@@ -405,8 +405,8 @@ void fragment() {
 	float dist = length((d3 - hit_dir) * radii);
 	if (dot(d3, hit_dir) < 0.0) { discard; }
 	float partial = 1.0 - smoothstep(reach * 0.35, reach, dist);
-	float r1 = (dist - (0.4 + age * 9.0)) / 0.09;
-	float r2 = (dist - age * 5.5) / 0.07;
+	float r1 = (dist - (0.4 + age * 9.0)) / 0.11;
+	float r2 = (dist - age * 5.5) / 0.08;
 	float rings = exp(-r1 * r1) + exp(-r2 * r2) * 0.5;
 	// the rings break into arcs: an angular noise around the impact point (no seam: sampled on a circle)
 	vec3 tu = safe_norm(cross(hit_dir, abs(hit_dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)), vec3(1.0, 0.0, 0.0));
@@ -415,7 +415,7 @@ void fragment() {
 	float arcs = smoothstep(0.3, 0.7, vnoise(around * 2.2 + vec2(t0 * 3.1, age * 2.0)));
 	float spot = exp(-dist * dist / 0.25);
 	float cells = 0.65 + 0.35 * vnoise(vec2(atan(d3.z, d3.x + 1e-5) * 18.0, d3.y * 26.0));
-	float a = strength * partial * (rings * 0.26 * cells * (0.15 + 0.85 * arcs) + spot * 0.08);
+	float a = strength * partial * (rings * 0.42 * cells * (0.3 + 0.7 * arcs) + spot * 0.12);
 	if (patchy > 0.0) {
 		float pn = vnoise(d3.xy * 7.0 + vec2(TIME * 3.0, d3.z * 5.0));
 		float flick = step(0.32, vnoise(vec2(TIME * 24.0, 1.7)));
@@ -947,14 +947,15 @@ func _update_ship(e: Dictionary, t: float, u: float, q: float, fade: float) -> v
 	if hl.visible:
 		hl.light_energy = 5.0 * hf
 
-	# 5. breach: fixed timers, staggered like the loop: a spark shower every 2.3 s, a secondary pop every 3.7 s
+	# 5. breach: fixed timers with per-ship offsets: a spark shower every 2.3 s (see _spark_off), a secondary pop every
+	# 3.7 s from 0.6 + 0.55 i as in the Babylon half (the Hegemony pops at 1.15 and 4.85, so the 3.0 still shows the hole)
 	var br: Dictionary = e["breach"]
 	var idx: int = e["idx"]
-	var pt := t - stagger * idx
-	var sc := _cycle_n(pt, SPARKS_EVERY)
+	var sc := _cycle_n(t - _spark_off(idx), SPARKS_EVERY)
 	if sc > int(br["last_sparks"]):
 		br["last_sparks"] = sc
 		_fire(br["sparks"])
+	var pt := t - _pop_off(idx)
 	var pc := _cycle_n(pt, POP_EVERY)
 	var pop := 0.0
 	if pt >= 0.0:
@@ -1423,7 +1424,7 @@ func _build_breach(root: Node3D, s: Dictionary, tex: Dictionary, e: Dictionary) 
 	br["sparks"] = _particles(frame, _pm["breach_sparks"], 30, 0.8, _spark_mesh, _mats["spark"], Vector3(0, 0.1, 0))
 	br["pop_fire"] = _particles(frame, _pm["pop"], 16, 0.6, _quad, _mats["flame"], Vector3(0, 0.3, 0))
 	e["oneshots"].append_array([br["sparks"], br["pop_fire"]])
-	_sprite_row("pop", s["pos"] + p + n * 0.6, 2.5, Color(1.0, 0.55, 0.2), stagger * float(e["idx"]))
+	_sprite_row("pop", s["pos"] + p + n * 0.6, 2.5, Color(1.0, 0.55, 0.2), _pop_off(int(e["idx"])))
 	var lt := _omni(frame, Color(1.0, 0.5, 0.15), 7.0)
 	lt.position = Vector3(0, 1.4, 0)
 	lt.visible = true
@@ -1691,6 +1692,16 @@ func _drift_x(t: float) -> float:
 
 func _cycle(x: float) -> int:
 	return -1 if x < 0.0 else int(floorf(x / LOOP))
+
+
+func _spark_off(idx: int) -> float:
+	# Babylon's spacing (0.37 s per ship) moved 1.2 s later: Babylon's 0.3 + 0.37 i puts the Hegemony's shower at 2.97,
+	# right over the hole in the 3.0 close-up; here it is at 1.87 and 4.17, so the 3.0 still shows the hole clear
+	return fposmod(1.5 + 0.37 * idx, SPARKS_EVERY)
+
+
+func _pop_off(idx: int) -> float:
+	return fposmod(0.6 + 0.55 * idx, POP_EVERY)  # the six heroes are below one period, so this only wraps the copies
 
 
 func _cycle_n(x: float, period: float) -> int:

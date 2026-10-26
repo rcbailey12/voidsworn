@@ -644,12 +644,26 @@ func _hull_points(s: Dictionary, p: PackedVector3Array, n: PackedVector3Array) -
 			gun_n.append(Vector3(0, 0.15, 1).normalized())
 	s["guns"] = guns
 	s["gun_n"] = gun_n
-	# breach: upper port flank of the main hull (not the superstructure), a little forward of midships
+	# breach: upper port flank of the main hull (not the superstructure), a little forward of midships. The flank is the
+	# port-facing surface near the hull's widest z there (the superstructure sits inboard, so it is left out even when
+	# it is taller than the hull); on it, the point at 65% of the flank's height range, outermost first.
 	var bi := -1
-	var bscore := -1e9
+	var fz := -1e9
 	for j in p.size():
-		if p[j].x > -3.0 and p[j].x < 5.0 and p[j].y > h.y * 0.05 and p[j].y < h.y * 0.5 and n[j].z > 0.55:
-			var sc := p[j].z + p[j].y * 0.3
+		if p[j].x > -3.0 and p[j].x < 5.0 and n[j].z > 0.55:
+			fz = maxf(fz, p[j].z)
+	var flank: Array = []
+	var ys := PackedFloat32Array()
+	for j in p.size():
+		if p[j].x > -3.0 and p[j].x < 5.0 and n[j].z > 0.55 and p[j].z > fz - 0.25 * h.z:
+			flank.append(j)
+			ys.append(p[j].y)
+	if flank.size() > 0:
+		ys.sort()
+		var ty := ys[int(ys.size() * 0.65)]
+		var bscore := -1e9
+		for j in flank:
+			var sc: float = p[j].z - absf(p[j].y - ty) * 2.0
 			if sc > bscore:
 				bscore = sc
 				bi = j
@@ -810,14 +824,16 @@ func _apply_quality() -> void:
 	env.sdfgi_cascades = 6
 	env.sdfgi_min_cell_size = 0.5
 	env.sdfgi_use_occlusion = true
-	vp.use_taa = true
+	# TAA in the bench runs only: the stills change camera on held frames (several stills at one moment), where TAA's
+	# history from the previous view ghosts and softens; MSAA 4x still smooths the stills' edges.
+	vp.use_taa = mode != "shots"
 	key_light.light_angular_distance = 0.5  # soft (PCSS) key shadows; Godot has no screen-space contact shadows
 	key_light.shadow_blur = 1.0
 	RenderingServer.directional_shadow_atlas_set_size(8192, true)
-	notes.append("max: SSAO, SSIL, SSR, SDFGI (6 cascades), TAA on top of MSAA 4x, 8192 shadow atlas with soft (PCSS) key shadows, tiling detail normals on the hulls; no screen-space contact shadows in Godot")
+	notes.append("max: SSAO, SSIL, SSR, SDFGI (6 cascades), TAA on top of MSAA 4x (bench only, not in the stills), 8192 shadow atlas with soft (PCSS) key shadows, tiling detail normals on the hulls; no screen-space contact shadows in Godot")
 
 
-# Max mode presentation: colour grading (built-in adjustments), depth of field on the close-up cameras, shake from fx.
+# Max mode presentation: colour grading (built-in adjustments), a mild depth of field on the hero shots, shake from fx.
 func _apply_presentation() -> void:
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		return
@@ -837,17 +853,17 @@ func _cam_attributes(focus: float) -> void:
 	if focus < 0.0 or not opt_max or RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		cam.attributes = null
 		return
+	# Mild, on the hero shots only: the whole ship sharp front to back, only the far background softened (blur starts
+	# 40 units behind the focus, well past the far end of a 24-unit ship, and ramps in over 80 units, small amount).
 	if cam.attributes == null:
 		var ca := CameraAttributesPractical.new()
 		ca.dof_blur_far_enabled = true
-		ca.dof_blur_near_enabled = true
-		ca.dof_blur_amount = 0.08
+		ca.dof_blur_near_enabled = false
+		ca.dof_blur_amount = 0.04
 		cam.attributes = ca
 	var a := cam.attributes as CameraAttributesPractical
-	a.dof_blur_far_distance = focus + 8.0
-	a.dof_blur_far_transition = 25.0
-	a.dof_blur_near_distance = maxf(focus - 10.0, 1.0)
-	a.dof_blur_near_transition = 6.0
+	a.dof_blur_far_distance = focus + 40.0
+	a.dof_blur_far_transition = 80.0
 
 
 func _shot_list() -> Array:
@@ -1165,7 +1181,7 @@ func _set_cam(which: String, t: float) -> void:
 	if CAMS.has(which):
 		var c: Array = CAMS[which]
 		cam.transform = Transform3D(Basis.looking_at(c[1] - c[0], Vector3.UP), c[0])
-		_cam_attributes((c[1] - c[0]).length())
+		_cam_attributes(-1.0)  # no depth of field on the close-ups (only the hero shots get a mild one)
 	else:
 		_place_camera(t)
 		_cam_attributes(-1.0)
