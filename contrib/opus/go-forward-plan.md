@@ -40,9 +40,10 @@ Updated by the build session as phases move. A phase is done when its exit check
 | A1 step 3 | DONE Oct 25 | Paint approved (FINDINGS R14). Sheet docs/ship_pipeline/c19_example/v15/v15_paint_pass.webp; game files in git. |
 | A1 step 4 | PARTLY DONE, REST MOVED TO A5 | Interim Corsair effects stay in the game (and B-16 fixed). Ryan's bar (R16): cinematic damage, weapons and trails like BattleTech, Sins and Rogue Trader. That bar goes into the A2 test now and into A5 in the winning engine. |
 | A1 step 5 | DONE Oct 25 | Source of truth: tools/blender/a1/barge_v15.py plus glTF exports in assets/ships/C19_51/ (README has the chain). Automatic checks in the build: no floating parts, no backward guns, exports reimport clean (all PASS). |
-| A2 Six-ship engine test | IN PROGRESS (widened R17 to R19, trimmed R20) | Babylon main and stress run on the PC; Godot main and stress running there now. Remaining: max-detail six ships (shared), max mode, 40-ship run, simple physics, depth of field and shake, the hex-board slice, Godot .exe. One combined blind reveal for A3. |
+| A2 Six-ship engine test | DONE Oct 25 | contrib/opus/enginetest/RESULTS.md: blind read, numbers both engines (capped and uncapped), Godot .exe, max-detail 8K ships. |
+| A3 Engine call | DECIDED, PROOF RUNNING (R28) | Godot, if a short proof passes: Babylon-level effects in Godot, and a battle-rules slice with per-turn parity against the Node sim. |
 | B2 Faster, then bigger battles | BUILT, waiting on Ryan's playtest | Faster (enemy waits about halved: sector 3 21.8 to 8.0 s per round in the real browser), the size ramp (about 9 / 13 / 18 ships), one batched prize screen with add, strip or ransom (R23). Checks: fuzz 2000 0 exceptions (S9), check pack 0 FAIL, b1_tests 39 ok. Sector 1 boss spread now 57 to 89% (S6 fixed: Mending, Voice, Vesh start fleets trimmed, Kassar guns 5% lighter). Play build: double-click Downloads\\voidsworn_test\\play.bat. Item 4 (Dead Star backdrop): the paintings are inspiration, not a spec (R25); use one only if it fits. |
-| A3 to A5, B3 to B5 | NOT STARTED | |
+| A4, A5, B3 to B5 | NOT STARTED | A4 and A5 build in the engine the proof confirms. |
 
 ## 1. What is decided
 
