@@ -43,7 +43,9 @@ Updated by the build session as phases move. A phase is done when its exit check
 | A2 Six-ship engine test | DONE Oct 25 | contrib/opus/enginetest/RESULTS.md: blind read, numbers both engines (capped and uncapped), Godot .exe, max-detail 8K ships. |
 | A3 Engine call | DONE Oct 26: GODOT (R32) | Rules parity (R29), speed (R30) and effects parity (R31) passed; Ryan picked Godot on the open sheets. Port phases next. |
 | B2 Faster, then bigger battles | BUILT, waiting on Ryan's playtest | Faster (enemy waits about halved: sector 3 21.8 to 8.0 s per round in the real browser), the size ramp (about 9 / 13 / 18 ships), one batched prize screen with add, strip or ransom (R23). Checks: fuzz 2000 0 exceptions (S9), check pack 0 FAIL, b1_tests 39 ok. Sector 1 boss spread now 57 to 89% (S6 fixed: Mending, Voice, Vesh start fleets trimmed, Kassar guns 5% lighter). Play build: double-click Downloads\\voidsworn_test\\play.bat. Item 4 (Dead Star backdrop): the paintings are inspiration, not a spec (R25); use one only if it fits. |
-| A4, A5, B3 to B5 | NOT STARTED | A4 and A5 build in the engine the proof confirms. |
+| G1 Battle rules complete | IN PROGRESS Oct 26 | Section 4, G. Slice already matches (R29, R30). |
+| G2 First playable battle | IN PROGRESS Oct 26 | Built in parallel with G1 from the A3 test scene. |
+| G3 to G5, A4, A5, B3 to B5 | NOT STARTED | A5 becomes G4. Balance work (B3 to B5) lands in data.js and flows to Godot. Today's browser version is frozen (R33). |
 
 ## 1. What is decided
 
@@ -255,6 +257,25 @@ If Babylon stays, the question closes for this project phase.
 
 **Entry:** A2 result.
 **Exit:** a written decision in this file.
+
+### G. The move to Godot (decided Oct 26, R32 and R33)
+
+**Ryan's calls (Oct 26):** the first playable Godot build is one full battle; today's browser version is frozen (only fixes for things that break); the big effects pass comes after a battle plays; done means the Godot version does everything today's game does and Ryan stops opening the old one. Steam comes after that.
+
+**How it runs (Claude's technical calls, vetoable):**
+- One Godot 4.7 project at `godot/` in the repo. Rules in GDScript under `godot/rules/` (grown from `contrib/opus/enginetest/godot_rules/`); scenes, rendering, UI and audio beside it (grown from the A2/A3 test scene and its ported Babylon effects).
+- The JS game stays the rules oracle. `data.js` tables reach Godot through the JSON exporter, so balance changes (B3 to B5) land once in data.js and the sims keep working. A rules change lands in JS first, then in GDScript with a new golden scenario.
+- `parity.bat` grows with every ported feature (per-activation state and PRNG hash against the Node sim), and must print PASS before any Godot phase is called done. Enemy think stays under 0.5 s (plan: think during the previous animation).
+- Ships import as compressed Godot assets (not runtime glTF), so the 8K ships load fast.
+- Ryan runs every Godot build from a double-click .bat; screenshots through the screenshot-verdict skill.
+
+**Phases:**
+- **G1 Battle rules complete.** Port the rest of battle.js: squadrons and carriers, the hunt, defend, intercept, breakthrough and relay objectives, mid-battle events, boon and relic effects, enemy fleet generation, Classic mode and the Standard AI. Exit: parity PASS on a scenario per feature plus a 200-seed sweep; fuzz with 0 errors.
+- **G2 First playable battle.** Board, camera, ships, effects, selection, move, fire, hurry, end of battle, sound, on Ryan's PC from a .bat. Built in parallel with G1 against the rules API. Exit: Ryan plays a full battle and signs off on how it feels.
+- **G3 The whole run.** Campaign map, shop, rewards and the prize screen, capture, retreat, saves (a fresh Godot save; old browser saves are not carried over unless Ryan asks), meta progression, onboarding. Exit: Ryan plays a full run; check pack equivalents pass.
+- **G4 Effects pass.** A5 done in Godot with real battles on screen.
+- **G5 Switch over.** Everything today's game does works in Godot; Ryan stops opening the old one; Windows build from a .bat. Then Steam (X12, X18).
+- A4 (kit rollout) builds ships for Godot; K1 still comes first.
 
 ### A4. Kit rollout (ship 2 onward)
 
