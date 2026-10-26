@@ -1,0 +1,805 @@
+extends RefCounted
+# One ship's effects: engines (hot cores, plumes, the long cooling trail that bends behind a moving ship), the shield
+# bubble (faction colour and style, hits, breaks, regen), and the staged damage ladder per section (A5 sheets 5):
+#   0 intact, 1 scorched, 2 dented, 3 exposed structure, 4 hull breach (5 wreck is fx_death.gd).
+# Everything attached to the ship is a child of its root, so it follows G2's moves and turns.
+
+const SH := preload("res://fx/fx_shaders.gd")
+const POOLS := preload("res://fx/fx_pool.gd")
+const HULL := preload("res://fx/fx_hull.gd")
+const DEATH := preload("res://fx/fx_death.gd")
+
+const TRAIL_PTS := 40
+const TRAIL_LEN := 60.0
+const TRAIL_RELAX := Vector2(1.6, 3.2)   # history older than this relaxes back into the straight idle trail
+
+var id = ""
+var root: Node3D
+var meshes: Array = []
+var faction = "voidsworn"
+var fac: Dictionary
+var weight = 2            # 0 craft, 1 light, 2 medium, 3 heavy, 4 capital
+var squadron = false
+var shielded = true
+var flagship = false
+var hull: HULL
+var dead = false
+var gone = false
+var busy_until = -1.0
+var engine_level = 1.0
+var _eng_cur = 1.0
+var _eng_node: MeshInstance3D = null
+var _eng_mat: ShaderMaterial
+var _eng_rib_mat: ShaderMaterial
+var _eng_sputter = false
+var _trails: Array = []    # per nozzle: {mi, hist: Array of [pos, t], seed, r}
+var _last_pos = Vector3.INF
+var _moving = 0.0
+var _shield_mi: MeshInstance3D = null
+var _shield_mat: ShaderMaterial = null
+var _hit_i = 0
+var _hits = PackedVector4Array()
+var _hitw = PackedVector4Array()
+var _shield_until = -1.0
+var _last_sh = -1.0
+var stage = [0, 0, 0]     # eng, mid, prow
+var _sec_nodes = [[], [], []]
+var _sec_lights = [[], [], []]
+var _burn_nodes: Array = []
+var _burning = false
+var _hit_decals: Array = []
+var _dmg_root: Node3D
+var _seed = 0
+
+
+func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
+	id = sid
+	root = r
+	faction = String(info.get("faction", "voidsworn")).to_lower()
+	fac = fx.faction_info(faction)
+	squadron = bool(info.get("squadron", false)) or String(info.get("cls", "")) == "Squadron"
+	shielded = bool(info.get("shielded", fac["shielded"])) and not squadron
+	flagship = bool(info.get("flagship", false))
+	var sz = float(info.get("size", 0.8))
+	weight = 0 if squadron else (1 if sz < 0.65 else (2 if sz < 0.9 else (3 if sz < 1.1 else 4)))
+	if flagship:
+		weight = maxi(weight, 3)
+	meshes = info.get("meshes", [])
+	if meshes.is_empty():
+		meshes = _find_meshes(root)
+	_seed = hash(sid)
+	hull = HULL.new()
+	hull.stb_z = float(fx.starboard_z)
+	hull.analyse(root, meshes, _seed)
+	_dmg_root = Node3D.new()
+	_dmg_root.name = "fx_damage"
+	root.add_child(_dmg_root)
+	_build_engines(fx)
+	_build_trails(fx)
+	if shielded:
+		_build_shield(fx)
+	_last_pos = root.global_position
+
+
+func teardown(fx) -> void:
+	for t in _trails:
+		if is_instance_valid(t["mi"]):
+			(t["mi"] as Node).queue_free()
+	if is_instance_valid(_dmg_root):
+		_dmg_root.queue_free()
+	if is_instance_valid(_eng_node):
+		_eng_node.queue_free()
+	if is_instance_valid(_shield_mi):
+		_shield_mi.queue_free()
+	for sec in 3:
+		_clear_lights(sec)
+	for n in _burn_nodes:
+		if n is Dictionary:
+			n["on"] = false
+
+
+static func _find_meshes(n: Node) -> Array:
+	var out: Array = []
+	var stack: Array = [n]
+	while not stack.is_empty():
+		var c: Node = stack.pop_back()
+		if c is MeshInstance3D and not String(c.name).begins_with("fx_"):
+			out.append(c)
+		for ch in c.get_children():
+			if not String(ch.name).begins_with("fx_"):
+				stack.append(ch)
+	return out
+
+
+func xf() -> Transform3D:
+	return root.global_transform
+
+
+func to_world(p: Vector3) -> Vector3:
+	return root.global_transform * p
+
+
+func dir_world(d: Vector3) -> Vector3:
+	return (root.global_transform.basis * d).normalized()
+
+
+func scale_k() -> float:
+	return clampf(hull.L / 24.0, 0.25, 2.5)
+
+
+# ---------------------------------------------------------------- engines
+
+func _build_engines(fx) -> void:
+	if is_instance_valid(_eng_node):
+		_eng_node.queue_free()
+	var b = POOLS.Batch.new()
+	var rb = POOLS.Batch.new()
+	var eng: Color = fac["engine"]
+	var corsair = faction == "corsair" or _eng_sputter
+	var q = POOLS.quad_shape()
+	var rs = POOLS.ribbon_shape(14)
+	for nz in hull.nozzles:
+		var np: Vector3 = nz["p"]
+		var r: float = nz["r"]
+		var plume = clampf(1.5 * hull.W, 2.0, 32.0)
+		b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(eng.r, eng.g, eng.b, 2.0),
+			Vector4(r * 2.8, r * 2.8, 11 if corsair else 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
+		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(-1, 0, 0, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
+			Vector4(r * 1.3, r * 0.5, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
+		if corsair:
+			# soot coughs (the Corsair exception: haphazard, junky)
+			for k in 9:
+				var tk = -20.0 + k * 0.23 + (k % 3) * 0.05
+				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, tk), Vector4(-5 - fx.rng.randf() * 3, fx.rng.randf() - 0.3, fx.rng.randf() - 0.5, 1.8),
+					Vector4(0.06, 0.05, 0.045, 0.55), Vector4(r * 1.2, r * 4.5, 8, fx.rng.randf()), Vector4(2.1, 0, 0.8, 0)))
+		elif faction == "chorus":
+			for k in 4:
+				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 0.6), Vector4(-3, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5, 2.0),
+					Vector4(eng.r * 0.4, eng.g * 0.4, eng.b * 0.3, 0.35), Vector4(r * 0.8, r * 3.0, 20, fx.rng.randf()), Vector4(2.4, 0, 0.6, 0)))
+		elif faction == "deathless":
+			for k in 3:
+				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 1.3), Vector4(-6, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5, 0.9),
+					Vector4(1.0, 0.5, 0.15, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
+	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
+	var holder = MeshInstance3D.new()
+	holder.name = "fx_engines"
+	root.add_child(holder)
+	_eng_node = holder
+	b.build(_eng_mat, holder, "fx_eng_cores")
+	rb.build(_eng_rib_mat, holder, "fx_eng_plumes")
+
+
+func _build_trails(fx) -> void:
+	for nz in hull.nozzles:
+		var mi = MeshInstance3D.new()
+		mi.name = "fx_trail_%s" % id
+		mi.top_level = true
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.material_override = fx.mat(SH.TRAIL, 1)
+		mi.extra_cull_margin = 16384.0
+		fx.add_child(mi)
+		mi.global_transform = Transform3D.IDENTITY
+		_trails.append({"mi": mi, "hist": [], "seed": fx.rng.randf(), "r": nz["r"], "p": nz["p"], "dirty": true})
+
+
+func update(fx, dt: float) -> void:
+	if gone or not is_instance_valid(root):
+		return
+	var pos = root.global_position
+	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
+	_last_pos = pos
+	_moving = maxf(_moving - dt, 0.0)
+	if moved > 1e-4:
+		_moving = 0.4
+	var want = 0.0 if dead else (engine_level if _moving <= 0.0 else maxf(engine_level, 1.6))
+	_eng_cur = lerpf(_eng_cur, want, clampf(dt * 4.0, 0.0, 1.0))
+	if _eng_mat != null:
+		_eng_mat.set_shader_parameter("gate", clampf(_eng_cur, 0.0, 2.0))
+		_eng_rib_mat.set_shader_parameter("gate", clampf(_eng_cur, 0.0, 2.0))
+		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
+	_update_trails(fx, moved > 1e-4)
+	if _shield_mi != null:
+		_shield_mi.visible = fx.now < _shield_until
+
+
+func _update_trails(fx, moved: bool) -> void:
+	var xfm = root.global_transform
+	var back = -(xfm.basis.x).normalized()
+	var eng: Color = fac["engine"]
+	var lvl = clampf(_eng_cur, 0.0, 2.0)
+	for t in _trails:
+		var np = xfm * (t["p"] as Vector3)
+		var hist: Array = t["hist"]
+		var plume = clampf(1.5 * hull.W, 2.0, 32.0)
+		var start = np + back * (0.3 * plume)
+		if moved:
+			if hist.is_empty() or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit:
+				hist.push_front([start, fx.now])
+				t["dirty"] = true
+		while hist.size() > TRAIL_PTS:
+			hist.pop_back()
+		var relaxing = false
+		for h in hist:
+			var a = fx.now - float(h[1])
+			if a > TRAIL_RELAX.x and a < TRAIL_RELAX.y + 0.5:
+				relaxing = true
+		# idle ships rebuild rarely: only while turning (the trail swings with the stern) or relaxing
+		if not (moved or relaxing or t["dirty"] or absf(float(t.get("lvl", -1.0)) - lvl) > 0.02):
+			continue
+		t["dirty"] = false
+		t["lvl"] = lvl
+		_trail_mesh(fx, t, start, back, eng, lvl)
+
+
+func _trail_mesh(fx, t: Dictionary, start: Vector3, back: Vector3, eng: Color, lvl: float) -> void:
+	var hist: Array = t["hist"]
+	var total = TRAIL_LEN * fx.unit * clampf(0.4 + 0.6 * lvl, 0.0, 1.4) * clampf(scale_k() * 1.2, 0.5, 1.4)
+	if total < 0.5:
+		(t["mi"] as MeshInstance3D).visible = false
+		return
+	(t["mi"] as MeshInstance3D).visible = true
+	# the centre line: from the nozzle through the (relaxing) history, then straight on to the full length
+	var pts = PackedVector3Array([start])
+	var acc = 0.0
+	for h in hist:
+		var hp: Vector3 = h[0]
+		var a = fx.now - float(h[1])
+		var s_here = acc + pts[pts.size() - 1].distance_to(hp)
+		var straight = start + back * s_here
+		var k = smoothstep(TRAIL_RELAX.x, TRAIL_RELAX.y, a)
+		var p = hp.lerp(straight, k)
+		acc += pts[pts.size() - 1].distance_to(p)
+		pts.append(p)
+		if acc >= total:
+			break
+	var last = pts[pts.size() - 1]
+	var ldir = back
+	if pts.size() >= 2:
+		ldir = (last - pts[pts.size() - 2]).normalized()
+		if ldir.length() < 0.5:
+			ldir = back
+	var steps = 0
+	while acc < total and steps < 64:
+		var segl = minf(total / 24.0, total - acc)
+		last = last + ldir * segl
+		ldir = ldir.lerp(back, 0.15).normalized()
+		pts.append(last)
+		acc += segl
+		steps += 1
+	var n = pts.size()
+	if n < 2:
+		return
+	var verts = PackedVector3Array()
+	var nrm = PackedVector3Array()
+	var uv = PackedVector2Array()
+	var c0 = PackedFloat32Array()
+	var c1 = PackedFloat32Array()
+	var idx = PackedInt32Array()
+	var r: float = t["r"]
+	var style: int = 1 if (faction == "corsair" or _eng_sputter) else int(fac["trail"])
+	var s = 0.0
+	var w0 = r * 1.1
+	var w1 = r * 2.4 * clampf(scale_k(), 0.6, 1.6)
+	for i in n:
+		if i > 0:
+			s += pts[i].distance_to(pts[i - 1])
+		var d = (pts[mini(i + 1, n - 1)] - pts[maxi(i - 1, 0)]).normalized()
+		for sd in [-0.5, 0.5]:
+			verts.append(pts[i])
+			nrm.append(d)
+			uv.append(Vector2(s / acc, sd))
+			c0.append_array([eng.r, eng.g, eng.b, 0.22 * clampf(lvl, 0.0, 1.5)])
+			c1.append_array([w0, w1, float(t["seed"]), float(style)])
+	for i in n - 1:
+		var q = i * 2
+		idx.append_array(PackedInt32Array([q, q + 1, q + 3, q, q + 3, q + 2]))
+	var arr = []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = verts
+	arr[Mesh.ARRAY_NORMAL] = nrm
+	arr[Mesh.ARRAY_TEX_UV] = uv
+	arr[Mesh.ARRAY_CUSTOM0] = c0
+	arr[Mesh.ARRAY_CUSTOM1] = c1
+	arr[Mesh.ARRAY_INDEX] = idx
+	var fl = (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) | (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT)
+	var am: ArrayMesh = (t["mi"] as MeshInstance3D).mesh
+	if am == null:
+		am = ArrayMesh.new()
+		(t["mi"] as MeshInstance3D).mesh = am
+	am.clear_surfaces()
+	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, fl)
+	am.custom_aabb = POOLS.BIG
+
+
+# ---------------------------------------------------------------- shields
+
+func _build_shield(fx) -> void:
+	var sph = SphereMesh.new()
+	sph.radius = 1.0
+	sph.height = 2.0
+	sph.radial_segments = 64
+	sph.rings = 32
+	_shield_mat = fx.mat(SH.SHIELD, 2)
+	var sc: Color = fac["shield"]
+	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
+	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
+	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
+	var hits = PackedVector4Array()
+	var hw = PackedVector4Array()
+	for i in 6:
+		hits.append(Vector4(0, 0, 0, -100))
+		hw.append(Vector4(0, 1, 1, 0))
+	_hits = hits
+	_hitw = hw
+	_shield_mat.set_shader_parameter("hits", hits)
+	_shield_mat.set_shader_parameter("hitw", hw)
+	_shield_mi = MeshInstance3D.new()
+	_shield_mi.name = "fx_shield"
+	_shield_mi.mesh = sph
+	_shield_mi.material_override = _shield_mat
+	_shield_mi.position = hull.c
+	_shield_mi.scale = hull.shield_radii()
+	_shield_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_shield_mi.visible = false
+	root.add_child(_shield_mi)
+
+
+# Where a shot from `from_world` meets the bubble (world point and outward normal).
+func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
+	var inv = root.global_transform.affine_inverse()
+	var rad = hull.shield_radii()
+	var o = (inv * from_world) - hull.c
+	var tgt = (aim_local - hull.c) if aim_local != Vector3.INF else Vector3.ZERO
+	var d = (tgt - o).normalized()
+	# ray against the unit sphere in scaled space
+	var os = o / rad
+	var ds = (d / rad)
+	var a = ds.dot(ds)
+	var b = 2.0 * os.dot(ds)
+	var cc = os.dot(os) - 1.0
+	var disc = b * b - 4.0 * a * cc
+	var lp: Vector3
+	if disc < 0.0:
+		lp = (-d) * rad
+	else:
+		var tt = (-b - sqrt(disc)) / (2.0 * a)
+		lp = o + d * tt
+	var n = (lp / (rad * rad)).normalized()
+	return {"p": root.global_transform * (lp + hull.c), "n": (root.global_transform.basis * n).normalized(), "local": lp}
+
+
+func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6) -> void:
+	if _shield_mat == null:
+		return
+	_hits[_hit_i] = Vector4(local_p.x, local_p.y, local_p.z, T)
+	_hitw[_hit_i] = Vector4(strength, life, spread * fx.unit, 0)
+	_hit_i = (_hit_i + 1) % 6
+	_shield_mat.set_shader_parameter("hits", _hits)
+	_shield_mat.set_shader_parameter("hitw", _hitw)
+	_shield_until = maxf(_shield_until, T + life + 0.05)
+
+
+func shield_break(fx, quad: int) -> void:
+	if _shield_mat == null:
+		return
+	var qd: Vector3 = hull.quad_dir(quad)
+	var T: float = fx.now
+	_shield_mat.set_shader_parameter("brk_t", T)
+	_shield_mat.set_shader_parameter("brk_dir", qd)
+	_shield_until = maxf(_shield_until, T + 1.45)
+	var rad = hull.shield_radii()
+	var lp = qd * rad
+	var wp = to_world(lp + hull.c)
+	var wn = dir_world(qd)
+	var sc: Color = fac["shield"]
+	var st: int = fac["shield_style"]
+	var k = scale_k()
+	fx.pop(wp, T, sc.lerp(Color.WHITE, 0.4), 9.0 * k, 8.0, wn, 0.2)
+	fx.light(wp + wn * 2.0, T, 0.6, 7.0, sc, 0)
+	fx.shake(T, 0.18, wp)
+	match st:
+		0:
+			# Voidsworn: the gold veil tears with crackling arcs running over the surface
+			for i in 40:
+				var tang = fx.rcone(wn, 1.4)
+				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.4, 0.3 + fx.rng.randf() * 0.4, sc.lerp(Color(1, 0.9, 0.6), 0.5), 6.0,
+					0.08, 0.14, 1, tang * (8 + fx.rng.randf() * 16) * k, 1.8)
+			for i in 24:
+				fx.spr(wp + fx.rdir() * 4.0 * k, T + fx.rng.randf() * 0.5, 0.9 + fx.rng.randf() * 0.6, sc, 2.0, 0.25 * k, 0.1 * k, 19, fx.rcone(wn, 1.0) * 3.0 * k, 0.5)
+			fx.ring(wp, wn, T, 0.9, sc, 1.0, 2.0 * k, 16.0 * k, 1)
+		1:
+			# Hegemony: the hex lattice shatters into cells that fly apart
+			fx.ring(wp, wn, T, 0.8, sc.lerp(Color.WHITE, 0.3), 1.4, 2.0 * k, 18.0 * k, 3)
+			for i in 36:
+				fx.spr(wp + fx.rdir() * 5.0 * k, T + fx.rng.randf() * 0.15, 0.6 + fx.rng.randf() * 0.5, sc, 3.0, 0.5 * k, 0.3 * k, 16,
+					fx.rcone(wn, 0.9) * (6 + fx.rng.randf() * 10) * k, 0.8)
+			fx.ring(wp, wn, T + 0.03, 0.7, sc, 0.8, 1.0 * k, 12.0 * k, 3)
+		2:
+			# Corsair: it sputters, flickers and dies in patches, with sparks and a dirty puff
+			for j in 5:
+				var tj = T + j * 0.12 + fx.rng.randf() * 0.05
+				var pj = wp + fx.rdir() * 4.0 * k
+				fx.pop(pj, tj, sc.lerp(Color(1, 0.6, 0.3), 0.4), 3.0 * k, 4.0, wn, 0.1)
+				for i in 8:
+					fx.stk(pj, tj, 0.3 + fx.rng.randf() * 0.3, Color(1, 0.6, 0.25), 6.0, 0.05, 0.12, 1, fx.rcone(wn, 1.0) * (8 + fx.rng.randf() * 12) * k, 2.0)
+			for i in 4:
+				fx.spr(wp + fx.rdir() * 3.0 * k, T + 0.1 + i * 0.1, 2.0, Color(0.1, 0.08, 0.07), 0.5, 2.0 * k, 7.0 * k, 3, fx.rcone(wn, 0.6) * 2.0, 0.6)
+		_:
+			# Ithar: the mint veil folds and sheets away in prismatic glints
+			for i in 30:
+				fx.spr(wp + fx.rdir() * 5.0 * k, T + fx.rng.randf() * 0.5, 1.2 + fx.rng.randf() * 0.8, sc, 2.2, 0.7 * k, 0.2 * k, 16,
+					fx.rcone(wn, 1.2) * (2 + fx.rng.randf() * 4) * k, 0.4, 1.5)
+			fx.ring(wp, wn, T, 1.3, sc, 1.0, 2.0 * k, 20.0 * k, 3)
+			fx.spr(wp, T, 1.0, sc, 1.6, 6.0 * k, 14.0 * k, 18)
+
+
+func _regen(fx) -> void:
+	if _shield_mat == null:
+		return
+	_shield_mat.set_shader_parameter("regen_t", fx.now)
+	_shield_until = maxf(_shield_until, fx.now + 1.05)
+
+
+# ---------------------------------------------------------------- staged damage (API.md 2)
+
+func sync(fx, u: Dictionary) -> void:
+	if dead or gone:
+		return
+	var sec: Dictionary = u.get("sec", {})
+	var maxhp = maxf(float(u.get("maxHp", 1.0)), 1.0)
+	var hpf = float(u.get("hp", maxhp)) / maxhp
+	var want = [0, 0, 0]
+	var names = ["eng", "mid", "prow"]
+	for i in 3:
+		var f = hpf
+		var broken = false
+		if sec.has(names[i]):
+			var s: Dictionary = sec[names[i]]
+			f = float(s.get("hp", 1.0)) / maxf(float(s.get("max", 1.0)), 1.0)
+			broken = bool(s.get("broken", false))
+		var st = 0 if f > 0.8 else (1 if f > 0.6 else (2 if f > 0.4 else (3 if f > 0.2 else 4)))
+		if broken:
+			st = 4
+		# the whole ship's state lifts every section a little (a nearly dead ship looks it everywhere)
+		if hpf < 0.35:
+			st = maxi(st, 2)
+		want[i] = st
+	if squadron:
+		want = [0, 0, 0]
+	if fx.now < busy_until:
+		var w = want.duplicate()
+		fx.later(busy_until + 0.05, func() -> void: _apply_stages(fx, w))
+	else:
+		_apply_stages(fx, want)
+	# shields: a rise means regen
+	var shs = 0.0
+	for v in u.get("sh", []):
+		shs += float(v)
+	if _last_sh >= 0.0 and shs > _last_sh + 0.5:
+		_regen(fx)
+	_last_sh = shs
+	var burn = bool(u.get("burning", false))
+	if burn != _burning:
+		_burning = burn
+		_set_burning(fx, burn)
+
+
+func set_stages(fx, st: Array) -> void:
+	_apply_stages(fx, st)
+
+
+func _apply_stages(fx, want: Array) -> void:
+	if dead or gone:
+		return
+	for i in 3:
+		if int(want[i]) != int(stage[i]):
+			var up: bool = int(want[i]) > int(stage[i])
+			stage[i] = int(want[i])
+			_build_section(fx, i, up)
+	var sp: bool = int(stage[0]) >= 3
+	if sp != _eng_sputter:
+		_eng_sputter = sp
+		_build_engines(fx)
+		for t in _trails:
+			t["dirty"] = true
+
+
+func _clear_section(i: int) -> void:
+	for n in _sec_nodes[i]:
+		if is_instance_valid(n):
+			(n as Node).queue_free()
+	_sec_nodes[i] = []
+	_clear_lights(i)
+
+
+func _clear_lights(i: int) -> void:
+	for s in _sec_lights[i]:
+		s["on"] = false
+	_sec_lights[i] = []
+
+
+func _build_section(fx, i: int, up: bool) -> void:
+	_clear_section(i)
+	var st: int = stage[i]
+	if st <= 0:
+		return
+	var r = RandomNumberGenerator.new()
+	r.seed = _seed + i * 7919
+	var k = scale_k()
+	var T: float = fx.now
+	var b = POOLS.Batch.new()
+	var bs = POOLS.Batch.new()
+	var bshard = POOLS.Batch.new()
+	var q = POOLS.quad_shape()
+	var qs = POOLS.streak_shape()
+	var picks: Array = []
+	for j in 8:
+		picks.append(hull.random_sample(i, 2.5))
+	# 1+: scorch marks and smoke wisps
+	var n_scorch = [0, 2, 4, 5, 6][st]
+	for j in n_scorch:
+		var h: Dictionary = picks[j % picks.size()]
+		_sec_nodes[i].append(DEATH.scorch_decal(fx, _dmg_root, h["p"], h["n"], hull.L * (0.05 + 0.03 * r.randf()) * (1.0 + 0.2 * st), st >= 2, r))
+	for j in mini(st, 3):
+		var h: Dictionary = picks[(j + 3) % picks.size()]
+		var p: Vector3 = (h["p"] as Vector3) + (h["n"] as Vector3) * 0.2
+		for kk in 4:
+			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 1.1 + r.randf()), Vector4(h["n"].x * 1.5, h["n"].y * 1.5 + 0.4, h["n"].z * 1.5, 4.0),
+				Vector4(0.16, 0.15, 0.14, 0.32), Vector4(0.6 * k, 3.2 * k, 3, r.randf()), Vector4(4.4, 0, 0.6, 0.3)))
+	# 2+: sparking wire bursts and thin gas jets
+	if st >= 2:
+		for j in (1 if st == 2 else 2):
+			var h: Dictionary = picks[(j + 5) % picks.size()]
+			var p: Vector3 = h["p"]
+			var n: Vector3 = h["n"]
+			var per = 1.6 + r.randf() * 1.4
+			var off = r.randf() * per
+			for kk in 10:
+				var v = (n + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (5 + r.randf() * 9) * k
+				bs.add(qs, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + off + r.randf() * 0.08), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.3),
+					Vector4(1.0, 0.7, 0.35, 5.0), Vector4(0.05, 0.1 * k, 2.2, 1), Vector4(per, 0, 0, 0)))
+			var hj: Dictionary = picks[(j + 1) % picks.size()]
+			var pj: Vector3 = (hj["p"] as Vector3) + (hj["n"] as Vector3) * 0.1
+			for kk in 14:
+				var tk = -20.0 + kk * 0.09
+				var v: Vector3 = (hj["n"] as Vector3) * (5.0 + r.randf() * 2.0) * k
+				b.add(q, POOLS.pack(Vector4(pj.x, pj.y, pj.z, tk), Vector4(v.x, v.y, v.z, 1.0), Vector4(0.62, 0.68, 0.78, 0.18),
+					Vector4(0.15 * k, 1.1 * k, 7, r.randf()), Vector4(1.26, 0, 0.8, 0.5)))
+	# 3+: exposed structure, first small fires, debris shedding
+	if st >= 3:
+		var he: Dictionary = picks[0]
+		_sec_nodes[i].append(DEATH.hole_decal(fx, _dmg_root, he["p"], he["n"], hull.L * 0.07 * (1.0 + 0.3 * (st - 3)), 0.55, 0.45, r, faction == "chorus"))
+		var nf = 1 + (1 if hull.L > 18.0 else 0) + (st - 3)
+		for j in nf:
+			var h: Dictionary = picks[(j * 2 + 1) % picks.size()]
+			var p: Vector3 = (h["p"] as Vector3) + (h["n"] as Vector3) * 0.15
+			var hole = hull.L * 0.05
+			for kk in 10:
+				var off = (h["n"] as Vector3).cross(Vector3.UP if absf((h["n"] as Vector3).y) < 0.9 else Vector3.RIGHT).normalized() * (r.randf() - 0.5) * hole
+				var v: Vector3 = (h["n"] as Vector3) * (1.0 + r.randf()) + Vector3(0, 1.0, 0)
+				b.add(q, POOLS.pack(Vector4(p.x + off.x, p.y + off.y, p.z + off.z, -20.0 + kk * 0.08), Vector4(v.x, v.y, v.z, 0.5 + r.randf() * 0.3),
+					Vector4(1.0, 0.5, 0.15, 2.2), Vector4(hole * 0.3, hole * 0.9, 1, r.randf()), Vector4(0.8, 0, 0, 0)))
+			for kk in 3:
+				b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.8), Vector4(h["n"].x * 2.0, h["n"].y * 2.0 + 0.5, h["n"].z * 2.0, 2.4),
+					Vector4(0.1, 0.09, 0.085, 0.45), Vector4(hole * 0.6, hole * 3.0, 3, r.randf()), Vector4(2.4, 0, 0.6, 0.3)))
+			var holder = Node3D.new()
+			holder.position = p + (h["n"] as Vector3) * 1.0
+			_dmg_root.add_child(holder)
+			_sec_nodes[i].append(holder)
+			_sec_lights[i].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.5, 0.15), 1.6 + 0.4 * (st - 3), 0.45))
+		var hd: Dictionary = picks[2]
+		var pd: Vector3 = (hd["p"] as Vector3) + (hd["n"] as Vector3) * 0.2
+		for kk in 3:
+			var v = ((hd["n"] as Vector3) + Vector3(r.randf() - 0.5, r.randf() * 0.4, r.randf() - 0.5)).normalized() * (1.5 + r.randf() * 2.0) * k
+			var ax = Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5).normalized()
+			bshard.add(POOLS.shard_shape(r), POOLS.pack(Vector4(pd.x, pd.y, pd.z, -20.0 + kk * 1.3), Vector4(v.x, v.y, v.z, 3.6),
+				Vector4(ax.x, ax.y, ax.z, 2.0 + r.randf() * 3.0), Vector4(hull.L * 0.012, 3.9, 0.0, 0.0), Vector4(0.6, r.randf(), 0, 0)))
+	# 4: the hull breach
+	if st >= 4:
+		_build_breach(fx, i, b, bs, bshard, r, up)
+	var holder2 = Node3D.new()
+	holder2.name = "fx_sec%d" % i
+	_dmg_root.add_child(holder2)
+	_sec_nodes[i].append(holder2)
+	var spm: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
+	b.build(spm, holder2, "fx_sec_sprites")
+	bs.build(fx.mat(SH.STREAK, 1), holder2, "fx_sec_sparks")
+	bshard.build(fx.mat(SH.SHARD, 0), holder2, "fx_sec_debris")
+	# the moment a stage goes up: a burst at the struck section
+	if up and st >= 2:
+		var h0: Dictionary = picks[0]
+		var wp = to_world(h0["p"])
+		var wn = dir_world(h0["n"])
+		fx.pop(wp + wn * 0.3, T, Color(1, 0.7, 0.4), (2.0 + st) * k, 6.0, wn, 0.12)
+		for kk in 8 + st * 4:
+			fx.stk(wp, T + fx.rng.randf() * 0.05, 0.3 + fx.rng.randf() * 0.4, Color(1, 0.6, 0.25), 7.0, 0.05, 0.12, 1, fx.rcone(wn, 0.9) * (8 + fx.rng.randf() * 14) * k, 2.0)
+		for kk in st * 2:
+			fx.shd(wp, T, 2.5, fx.rcone(wn, 0.8) * (3 + fx.rng.randf() * 6) * k, hull.L * (0.008 + fx.rng.randf() * 0.012), 1.0)
+		DEATH.spawn_debris(fx, wp + wn * 0.6, wn * 4.0 * k, st - 1, hull.L * 0.02)
+
+
+func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Batch, r: RandomNumberGenerator, up: bool) -> void:
+	var h: Dictionary = hull.random_sample(i, 2.5)
+	var brp: Vector3 = h["p"]
+	var bn: Vector3 = h["n"]
+	var hole = hull.L / 10.0
+	var k = scale_k()
+	var t1 = bn.cross(Vector3(0, 1, 0) if absf(bn.y) < 0.9 else Vector3(1, 0, 0)).normalized()
+	var t2 = bn.cross(t1)
+	var q = POOLS.quad_shape()
+	var qs = POOLS.streak_shape()
+	var T0: float = fx.now
+	_sec_nodes[i].append(DEATH.hole_decal(fx, _dmg_root, brp, bn, hole, 1.0, 1.0, r, faction == "chorus"))
+	_sec_nodes[i].append(DEATH.petals(fx, _dmg_root, brp, bn, t1, t2, hole, r))
+	var P = brp + bn * 0.2
+	var upv = Vector3(0, 1, 0)
+	# venting gas: a raymarched plume in max, puffing sprites otherwise
+	if fx.quality == "max":
+		_sec_nodes[i].append(DEATH.vent_volume(fx, _dmg_root, brp, bn, hole, r.randf() * 10.0))
+	else:
+		for kk in 40:
+			var tk = -20.0 + kk * 0.045
+			var wav = sin(kk * 0.45) * 0.25
+			var puff = 0.7 + 0.3 * sin(kk * 0.9)
+			var vd = (bn + t1 * wav + upv * 0.25).normalized() * ((9 + r.randf() * 3) * puff) * k
+			b.add(q, POOLS.pack(Vector4(P.x, P.y, P.z, tk), Vector4(vd.x, vd.y, vd.z, 1.8), Vector4(0.62, 0.68, 0.78, 0.3 * puff),
+				Vector4(hole * 0.2, hole * 1.1, 7, r.randf()), Vector4(1.8, 0, 0.7, r.randf() - 0.5)))
+	# debris streaming out
+	for kk in 9:
+		var v = (bn + upv * 0.2 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.6).normalized() * (2.5 + r.randf() * 3) * k
+		var ax = Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5).normalized()
+		bshard.add(POOLS.shard_shape(r), POOLS.pack(Vector4(P.x, P.y, P.z, -20.0 + kk * 0.37), Vector4(v.x, v.y, v.z, 3.3),
+			Vector4(ax.x, ax.y, ax.z, 1 + r.randf() * 4), Vector4(hole * (0.05 + r.randf() * 0.07), 3.3, 0.0, 0.0), Vector4(0.7, r.randf(), 0, 0)))
+	# licking fire round the rim
+	for kk in 14:
+		var fa = r.randf() * TAU
+		var off = t1 * (cos(fa) * hole * 0.42) + t2 * (sin(fa) * hole * 0.42)
+		var v = bn * (1.2 + r.randf()) + upv * 1.2 + off * 0.6
+		b.add(q, POOLS.pack(Vector4(brp.x + off.x + bn.x * 0.1, brp.y + off.y + bn.y * 0.1, brp.z + off.z + bn.z * 0.1, -20.0 + kk * 0.064),
+			Vector4(v.x, v.y, v.z, 0.45 + r.randf() * 0.3), Vector4(1, 0.5, 0.15, 2.4), Vector4(hole * 0.15, hole * 0.5, 1, r.randf()), Vector4(0.9, 0, 0, 0)))
+	# spark showers: the first one lands the moment the hole opens (the A3 sparks were 1.2 s late), then every 2.3 s
+	var spark_per = 2.3
+	var s_off = fposmod(T0, spark_per)
+	for kk in 18:
+		var v = (bn + upv * 0.3 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.8).normalized() * (6 + r.randf() * 12) * k
+		bs.add(qs, POOLS.pack(Vector4(P.x, P.y, P.z, s_off + r.randf() * 0.12), Vector4(v.x, v.y, v.z, 0.35 + r.randf() * 0.5),
+			Vector4(1, 0.62, 0.25, 8.0), Vector4(0.05, 0.12 * k, 1.5, 1), Vector4(spark_per, 0, 0, 0)))
+	# secondary pops every 3.7 s (sub-flash: kept dim enough not to count against the flash budget)
+	var pop_per = 3.7
+	var p_off = fposmod(T0 + 1.3, pop_per)
+	var Pp = P + bn * 0.5
+	b.add(q, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off), Vector4(0, 0, 0, 0.35), Vector4(1, 0.7, 0.4, 3.5), Vector4(hole * 0.3, hole * 1.3, 2, r.randf()), Vector4(pop_per, 0, 0, 0)))
+	for kk in 5:
+		var v = (bn + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.7).normalized() * (2 + r.randf() * 2) * k
+		b.add(q, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off + r.randf() * 0.05), Vector4(v.x, v.y, v.z, 0.6 + r.randf() * 0.3),
+			Vector4(1, 0.55, 0.2, 3.2), Vector4(hole * 0.4, hole * 1.1, 1, r.randf()), Vector4(pop_per, 0, 0, 0)))
+	for kk in 12:
+		var v = (bn + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (8 + r.randf() * 14) * k
+		bs.add(qs, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off + r.randf() * 0.04), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.4),
+			Vector4(1, 0.6, 0.25, 7.0), Vector4(0.04, 0.12 * k, 2.0, 1), Vector4(pop_per, 0, 0, 0)))
+	for kk in 3:
+		var v = bn * 2.5 * k
+		b.add(q, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off + 0.1), Vector4(v.x, v.y, v.z, 1.5), Vector4(0.12, 0.11, 0.1, 0.45),
+			Vector4(hole * 0.5, hole * 2.0, 3, r.randf()), Vector4(pop_per, 0, 0.7, 0)))
+	var holder = Node3D.new()
+	holder.position = brp + bn * 1.5
+	_dmg_root.add_child(holder)
+	_sec_nodes[i].append(holder)
+	_sec_lights[i].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.45, 0.12), 2.2, 0.35))
+	if up:
+		# the hole opening: a blast, a burst of plates and chips, a shove of the camera
+		var wp = to_world(brp)
+		var wn = dir_world(bn)
+		fx.pop(wp + wn * 0.5, T0, Color(1, 0.75, 0.45), hole * 2.2, 10.0, wn, 0.16)
+		fx.spr(wp + wn * 0.6, T0, 0.5, Color(1, 0.7, 0.4), 6.0, hole * 0.4, hole * 1.8, 2)
+		for kk in 30:
+			fx.stk(wp, T0 + fx.rng.randf() * 0.05, 0.35 + fx.rng.randf() * 0.5, Color(1, 0.6, 0.25), 8.0, 0.05, 0.13, 1, fx.rcone(wn, 1.0) * (10 + fx.rng.randf() * 18) * k, 1.8)
+		for kk in 10:
+			fx.shd(wp, T0, 3.0, fx.rcone(wn, 0.8) * (3 + fx.rng.randf() * 7) * k, hole * (0.08 + fx.rng.randf() * 0.12), 1.0)
+		for kk in 3:
+			fx.spr(wp + wn * 1.0, T0 + 0.05 + kk * 0.08, 2.2, Color(0.1, 0.09, 0.085), 0.6, hole * 0.8, hole * 3.0, 3, wn * 2.5 * k, 0.6)
+		fx.light(wp + wn * 2.0, T0, 0.5, 8.0, Color(1, 0.65, 0.3), 0)
+		fx.shake(T0, 0.22, wp)
+		DEATH.spawn_debris(fx, wp + wn * 0.8, wn * 5.0 * k, 4, hole * 0.25)
+
+
+func _set_burning(fx, on: bool) -> void:
+	for n in _burn_nodes:
+		if n is Dictionary:
+			n["on"] = false
+		elif is_instance_valid(n):
+			(n as Node).queue_free()
+	_burn_nodes = []
+	if not on:
+		return
+	var r = RandomNumberGenerator.new()
+	r.seed = _seed + 4242
+	var b = POOLS.Batch.new()
+	var q = POOLS.quad_shape()
+	for j in (2 if hull.L < 18.0 else 3):
+		var h: Dictionary = hull.random_sample(-1, 2.0)
+		var p: Vector3 = (h["p"] as Vector3) + (h["n"] as Vector3) * 0.1
+		var s = hull.L * 0.035
+		for kk in 12:
+			var v: Vector3 = (h["n"] as Vector3) * 1.2 + Vector3(r.randf() - 0.5, 1.4, r.randf() - 0.5)
+			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.07), Vector4(v.x, v.y, v.z, 0.6 + r.randf() * 0.3), Vector4(1.0, 0.5, 0.15, 2.6),
+				Vector4(s * 0.4, s * 1.3, 1, r.randf()), Vector4(0.85, 0, 0, 0)))
+		for kk in 3:
+			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.7), Vector4(0, 2.0, 0, 2.1), Vector4(0.1, 0.09, 0.08, 0.45),
+				Vector4(s * 0.8, s * 3.5, 3, r.randf()), Vector4(2.1, 0, 0.5, 0.2)))
+		var holder = Node3D.new()
+		holder.position = p + (h["n"] as Vector3) * 1.0
+		_dmg_root.add_child(holder)
+		_burn_nodes.append(holder)
+		_burn_nodes.append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.5, 0.15), 1.5, 0.5))
+	var holder2 = Node3D.new()
+	_dmg_root.add_child(holder2)
+	_burn_nodes.append(holder2)
+	b.build(fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else ""), holder2, "fx_burn")
+
+
+func add_hit_scorch(fx, local_p: Vector3, local_n: Vector3, size: float) -> void:
+	var r = RandomNumberGenerator.new()
+	r.seed = int(fx.now * 1000.0) + _seed
+	var d: Node = DEATH.scorch_decal(fx, _dmg_root, local_p, local_n, size, false, r)
+	_hit_decals.append(d)
+	while _hit_decals.size() > 10:
+		var o = _hit_decals.pop_front()
+		if is_instance_valid(o):
+			(o as Node).queue_free()
+
+
+# ---------------------------------------------------------------- small events
+
+func pulse(fx, strength: float) -> void:
+	var c: Color = fac["weapon"]
+	var p = to_world(hull.c)
+	var k = scale_k()
+	fx.ring(p, dir_world(Vector3.UP), fx.now, 0.9, c, 1.2 * strength, hull.L * 0.3, hull.L * 0.9, 2)
+	fx.spr(p, fx.now, 0.8, c, 1.0 * strength, hull.L * 0.4, hull.L * 0.8, 18)
+	fx.light(p, fx.now, 0.7, 3.0 * strength, c, 1)
+
+
+func tick_flare(fx, kind: String) -> void:
+	var h: Dictionary = hull.random_sample(-1, 0.5)
+	var wp = to_world(h["p"])
+	var wn = dir_world(h["n"])
+	var k = scale_k()
+	var T: float = fx.now
+	match kind:
+		"acid":
+			for i in 6:
+				fx.spr(wp + fx.rdir() * 1.5 * k, T + i * 0.05, 1.6, Color(0.5, 0.9, 0.2), 0.6, 1.0 * k, 4.0 * k, 20, wn * 1.5, 0.5)
+		"tidal":
+			for i in 20:
+				fx.stk(wp + fx.rdir() * 3.0 * k, T + fx.rng.randf() * 0.3, 0.5, Color(0.7, 0.8, 1.0), 4.0, 0.15, 0.1, 1, fx.rdir() * 6.0, 0.5)
+		"storm":
+			if _shield_mat != null:
+				shield_hit(fx, shield_point(wp + wn * 30.0)["local"], T, 0.6, 14.0, 0.8)
+		_:
+			for i in 8:
+				fx.spr(wp, T + i * 0.05, 0.7, Color(1, 0.5, 0.15), 2.4, 0.8 * k, 2.4 * k, 1, wn * 2.0 + fx.rdir(), 0.0)
+			fx.light(wp + wn, T, 0.6, 3.0, Color(1, 0.5, 0.15), 1)
+
+
+func jump_out(fx) -> void:
+	var T: float = fx.now
+	var bow = dir_world(Vector3(1, 0, 0))
+	var c: Color = fac["engine"]
+	var p = to_world(hull.c)
+	for t in hull.nozzles:
+		var np = to_world(t["p"])
+		fx.spr(np, T, 0.5, c, 6.0, 2.0, 8.0, 2)
+	fx.light(p, T, 0.6, 6.0, c, 0)
+	fx.stk(p, T + 0.35, 0.4, c.lerp(Color.WHITE, 0.5), 10.0, hull.L * 3.0, hull.W * 0.4, 0, bow * hull.L * 20.0)
+	fx.ring(p, bow, T + 0.35, 0.6, c, 1.5, hull.L * 0.2, hull.L * 1.2, 1)
+	fx.later(T + 0.4, func() -> void:
+		gone = true
+		for m in meshes:
+			if is_instance_valid(m):
+				(m as Node3D).visible = false
+		if is_instance_valid(_eng_node):
+			_eng_node.visible = false
+		for tr in _trails:
+			(tr["mi"] as Node3D).visible = false)
