@@ -456,37 +456,37 @@ const NEM_PERSONA={
   methodical:{n:'Methodical',d:'Holds his line and advances only in formation.',ai:{tw:1.2}}, ravenous:{n:'Ravenous',d:'Swarms whatever is closest.',ai:{tw:.5,range:-1}}};
 const NEM_FAC={
   corsair:{pre:['Krag','Vash','Rusk','Gor','Snag','Black','Red','Mad','Skarn','Jagg'],post:['Tooth','Maw','Gut','Vane','Hook','Knuckle','Rot','Grin','Spur','Wreck'],titles:['Reaver-king','Warlord','Scrap-baron','Pirate prince'],
-    personas:['cunning','greedy','proud','cruel'],traits:['boarders','swift','rockets','deadeye','gunnery','veterans'],scars:['the Burned','Ironjaw','Half-Face','the Unsunk','Patchwork','One-Eye'],
+    personas:['cunning','greedy','proud','cruel'],g:null,fem:[],traits:['boarders','swift','rockets','deadeye','gunnery','veterans'],scars:['the Burned','Ironjaw','Half-Face','the Unsunk','Patchwork','One-Eye'],
     beh:{clock:1,flee:{hull:.35},strike:'raid',fleet:'swarm',d:'Raids your path. When his clock fills he takes 25% of your credits (or, if you have under 30 credits, a ship under 25% hull from a fleet of three or more). He flees a fight he is losing and comes back richer, with an extra ship each time.'}},
-  deathless:{pre:['Ankh','Sekh','Neph','Amen','Thut','Osir','Ptah','Kher','Mer','Seth'],post:['amun','ekhet','ophis','arkh','enmet','ankh','esut','hotep','umet','akh'],titles:['Phaeron','Dynast','Tomb-lord','Overlord'],
-    personas:['patient','proud','cruel','methodical'],traits:['undying','armored','veterans','regrowth','gunnery','deadeye'],scars:['the Twice-Dead','the Rebuilt','Cracked-Crown','the Unfinished','Hollow-Eye','the Patient'],
+  deathless:{pre:['Ald','Cor','Esm','Hal','Ord','Gyr','Wulf','Sig','Mor','Ed'],post:['ric','mar','wyn','gar','wine','mund','red','ith','helm','wold'],titles:['Ash-king','Regent','Barrow-king','Dust-sovereign'],
+    personas:['patient','proud','cruel','methodical'],g:null,fem:['Esm','Ed','Sig'],traits:['undying','armored','veterans','regrowth','gunnery','deadeye'],scars:['the Twice-Dead','the Rebuilt','Cracked-Crown','the Unfinished','Hollow-Eye','the Patient'],
     beh:{clock:.5,revive:1,strike:'tithe',fleet:'heavy',d:'Patient: his clock moves at half speed. He never retreats. Killed once, he reassembles and comes back scarred. When his clock fills, the hunt drains 6% hull from every ship you have.'}},
   ithar:{pre:['Ael','Ith','Sae','Ny','Cael','Lir','Tal','Fae','Ely','Ors'],post:['wyn','riel','thas','lune','vael','dris','eth','nor','iel','ane'],titles:['Seraph','Starwarden','Duelist','Wing-lord'],
-    personas:['cunning','proud','patient','cruel'],traits:['veil','shielded','swift','deadeye','gunnery','artillery'],scars:['the Cracked Prism','Dimmed','the Scarred Sail','Thornwing','the Unbowed','Ashwake'],
+    personas:['cunning','proud','patient','cruel'],g:null,fem:['Ael','Sae','Fae','Ely','Lir'],traits:['veil','shielded','swift','deadeye','gunnery','artillery'],scars:['the Cracked Prism','Dimmed','the Scarred Sail','Thornwing','the Unbowed','Ashwake'],
     beh:{clock:1,flee:{shields:1,hull:.6},strike:'duel',fleet:'duel',d:'A duelist: he keeps his range, picks off your weakest ship, and withdraws to fight again once his flagship’s shields are all down and its hull is under 60%. His fleet is small and elite.'}},
-  chorus:{pre:['Seventh','Hollow','Wet','Grieving','Ninefold','Brine','Pale','Deep','Thrumming','Gnawing'],post:['Mouth','Hymn','Tide','Coil','Throat','Bloom','Choir','Murmur','Maw','Psalm'],titles:['Matriarch','Elder Throat','Hive-mind','Brood-queen'],
-    personas:['ravenous','cruel','cunning','patient'],traits:['regrowth','brood','veterans','swift','boarders','deadeye'],scars:['the Scarred Choir','Half-Sung','the Burned Throat','Rotflesh','the Gnawed','Scabsong'],
+  chorus:{pre:['Seventh','Hollow','Wet','Grieving','Ninefold','Brine','Pale','Deep','Thrumming','Gnawing'],post:['Mouth','Gullet','Tide','Coil','Throat','Bloom','Rasp','Murmur','Maw','Spawn'],titles:['Spawn-mother','Elder Throat','Gorge-mind','Brood-queen'],
+    personas:['ravenous','cruel','cunning','patient'],g:'n',fem:[],traits:['regrowth','brood','veterans','swift','boarders','deadeye'],scars:['the Scarred Maw','Half-Eaten','the Burned Throat','Rotflesh','the Gnawed','Scabhide'],
     beh:{clock:1,feeds:1,adaptFast:1,strike:'swarm',fleet:'swarm',d:'Grows from your losses: every ship you lose anywhere makes his fleet 4% tougher (up to 32%). He swarms, and adapts after every meeting, not just every sector.'}},
-  hegemony:{pre:['Konrad','Ilsa','Viktor','Aldric','Petra','Halvar','Ruprecht','Katrin','Sanne','Gerold'],post:['Steiner','Valk','Morgan','Hale','Draxen','Kolb','Reiter','Vos','Brandt','Lindqvist'],titles:['Grand Admiral','Fleet Marshal','Line Admiral','High Commodore'],
-    personas:['methodical','proud','patient','cunning'],traits:['artillery','shielded','gunnery','armored','veterans','deadeye'],scars:['the Burned Admiral','Ironside','One-Arm','the Unbroken','Scarface','the Survivor'],
+  hegemony:{pre:['Konrad','Ilsa','Viktor','Aldric','Petra','Halvar','Ruprecht','Katrin','Sanne','Gerold'],post:['Steiner','Valk','Morgan','Hale','Draxen','Kolb','Reiter','Vos','Brandt','Ostrander'],titles:['Grand Admiral','Fleet Marshal','Line Admiral','High Commodore'],
+    personas:['methodical','proud','patient','cunning'],g:null,fem:['Ilsa','Petra','Katrin','Sanne'],traits:['artillery','shielded','gunnery','armored','veterans','deadeye'],scars:['the Burned Admiral','Ironside','One-Arm','the Unbroken','Scarface','the Survivor'],
     beh:{clock:1,strike:'reinforce',fleet:'heavy',formation:1,d:'Methodical: an artillery line around his flagship, and his fights always bring reinforcements in round 3. He adapts by drilling his formation tighter.'}},
-  voidsworn:{pre:['Saint','Brother','Inquisitor','Castellan','Confessor','Templar','Arch-deacon','Chaplain','Penitent','Lector'],post:['Varrow','Ashdown','Quell','Harrowgate','Vane','Stroud','Draeger','Holloway','Blackwood','Corvane'],titles:['Crusade-master','High Templar','Lord Inquisitor','Arch-confessor'],
-    personas:['zealous','proud','cruel','methodical'],traits:['zeal','boarders','armored','veterans','gunnery','artillery'],scars:['the Branded','Ironhand','the Martyr-Scarred','Burnt-Psalm','the Unrepentant','Ashface'],
+  voidsworn:{pre:['Saint','Brother','Censor','Provost','Shriver','Votary','Arch-deacon','Cantor','Sister','Lector'],post:['Varrow','Ashdown','Quell','Harrowgate','Vane','Stroud','Draeger','Holloway','Blackwood','Corvane'],titles:['Crusade-master','High Votary','Lord Censor','Arch-shriver'],
+    personas:['zealous','proud','cruel','methodical'],g:null,fem:['Sister'],masc:['Brother'],traits:['zeal','boarders','armored','veterans','gunnery','artillery'],scars:['the Branded','Ironhand','the Martyr-Scarred','Burnt-Psalm','the Unrepentant','Ashface'],
     beh:{clock:1.5,noFlee:1,strike:'challenge',fleet:'line',d:'A zealot: his clock moves fast, he charges and boards, never flees, and challenges your flagship to a duel (his flagship and yours deal 20% more damage to each other).'}}};
 // faction-specific adaptations: the same counters as NEM_ADAPT, in each faction's own words, plus one faction-only adaptation (special) that he
 // takes when nothing in particular stood out in how you fought
 const NEM_ADAPT_FAC={
   corsair:{shields:'Stolen shield cells',pd:'Chaff launchers',armor:'Scrap ram plating',evasion:'Overbored burners',aim:'Stolen gun sights',special:{id:'riches',n:'Bigger crew',d:'One more ship joins his fleet.'}},
-  deathless:{shields:'Quantum ward',pd:'Gauss pylons',armor:'Living-metal shell',evasion:'Phase drift',aim:'Tomb sight',special:{id:'legion',n:'Wider legion',d:'One more of his ships reassembles.'}},
-  ithar:{shields:'Prism lattice',pd:'Mirror veil',armor:'Wraithbone keel',evasion:'Starwind vanes',aim:'Farsight crystals',special:{id:'veil',n:'Deeper veil',d:'His ships are 6 more harder to hit.'}},
+  deathless:{shields:'Quantum ward',pd:'Gauss pylons',armor:'Grave-alloy shell',evasion:'Phase drift',aim:'Barrow sight',special:{id:'legion',n:'Wider legion',d:'One more of his ships reassembles.'}},
+  ithar:{shields:'Prism lattice',pd:'Mirror veil',armor:'Dawnglass spine',evasion:'Starwind vanes',aim:'Farsight crystals',special:{id:'veil',n:'Deeper veil',d:'His ships are 6 more harder to hit.'}},
   chorus:{shields:'Membrane bloom',pd:'Spore curtains',armor:'Chitin layers',evasion:'Fin clusters',aim:'Hunting eyes',special:{id:'hunger',n:'Hunger',d:'His ships regrow 3 more hull each turn.'}},
   hegemony:{shields:'Deflector drills',pd:'Picket screens',armor:'Bow plating',evasion:'Attitude drills',aim:'Fire-control drills',special:{id:'formation',n:'Tight formation',d:'His synchronized fire reaches one hex further.'}},
-  voidsworn:{shields:'Void shield rites',pd:'Censer flak',armor:'Blessed plate',evasion:'Litany of speed',aim:'Auspex rites',special:{id:'zeal',n:'Fervour',d:'His ships deal 8% more damage.'}}};
+  voidsworn:{shields:'Ward rites',pd:'Censer flak',armor:'Blessed plate',evasion:'Litany of speed',aim:'Augury rites',special:{id:'zeal',n:'Fervour',d:'His ships deal 8% more damage.'}}};
 // what he says when you meet again (placeholders until the story helper's rival line pools arrive; {beat} is how you beat him last time)
 const NEM_LINES={
-  meet:{cunning:'I have watched you. I know where you are thin.',zealous:'Face me, heretic, and be judged.',cruel:'I will take your fleet apart one ship at a time.',patient:'I have waited longer than your kind has lived.',proud:'You are not worthy of my guns. You will have them anyway.',greedy:'Your flagship will look fine in my yards.',methodical:'Every move you can make, I have already drilled against.',ravenous:'More. Always more.'},
+  meet:{cunning:'I have watched you. I know where you are thin.',zealous:'Face me and be judged.',cruel:'I will take your fleet apart one ship at a time.',patient:'I have waited longer than your kind has lived.',proud:'You are not worthy of my guns. You will have them anyway.',greedy:'Your flagship will look fine in my yards.',methodical:'Every move you can make, I have already drilled against.',ravenous:'More. Always more.'},
   again:'Last time you beat me with {beat}. It will not work twice.'};
-const NEM_BEAT_WORD={lance:'lances',torp:'torpedoes',sq:'your wings',ram:'rams',board:'boarding parties',battery:'massed batteries',broad:'broadsides',ion:'ion fire',evaded:'speed'};
+const NEM_BEAT_WORD={lance:'lances',torp:'torpedoes',sq:'your wings',ram:'rams',board:'boarding parties',battery:'massed batteries',evasive:'speed and evasion'}; // last_beat ids match the story helper's pools
 // ---------- B4 faction campaign verbs: one small action per faction, once per sector, from the map ----------
 // cost: cred (credits), mod (a refit from the hold), xp (flagship captain experience). free: an earlier event flag that waives the cost.
 // next: an effect on your next battle (battle.js applyVerb). Each use writes the flag verb_<id>.
@@ -555,6 +555,16 @@ const HULL_VARIANTS={
   i_song_w:{base:'i_song',n:'Songship warden',d:'One lance on a turret, 30% more shields.',w:[['pulsar','T'],['turret','T']],mod:{sh:34},cost:25},
   d_scythe_s:{base:'d_scythe',n:'Scythe sentinel',d:'Adds gauss sentries: shoots down squadrons and boarders’ craft.',w:[['gauss','T'],['gsentry','T']],cost:15},
   d_harvester_t:{base:'d_harvester',n:'Harvester tomb-turret',d:'Its doom arc sits on a turret: it no longer has to turn to fire.',w:[['gauss','T'],['doom','T'],['gsentry','T']],cost:30}};
+// R41 arc unlocks (story helper draft godot/story/unlocks.md, Oct 26): one sidegrade per faction, earned by finishing that faction's story arc
+// (its Nemesis's last fight), never sold for renown (cost 0, arc field). Numbers sim-checked against the base hulls in stream B.
+Object.assign(HULL_VARIANTS,{
+  vs_penitent_l:{base:'penitent',arc:'voidsworn',n:'Penitent lantern-cruiser',d:'Two prow lances and a flak turret instead of the broadsides: all its punch points one way.',w:[['lance','F'],['lance','F'],['flak','T']],cost:0},
+  h_interdictor_e:{base:'h_interdictor',arc:'hegemony',n:'Interdictor column escort',d:'Adds a flak turret and heavier shields; one hex slower.',w:[['ion','F'],['turbo','T'],['flak','T']],mod:{sh:24,sp:3},cost:0},
+  c_marauder_g:{base:'c_marauder',arc:'corsair',n:'Gilded marauder',d:'A second prow torpedo instead of flak, 20 more hull, one hex slower.',w:[['scatter','P'],['scatter','S'],['torp','F'],['torp','F']],mod:{hp:140,sp:3},cost:0},
+  b_razor_e:{base:'b_razor',arc:'chorus',n:'Sun-eater razorfiend',d:'Regrows 13 a round and spits a second bio-plasma volley forward; one hex slower.',w:[['tendril','T'],['bioplasma','F'],['bioplasma','F']],mod:{regen:13,sp:3},cost:0},
+  i_carrier_a:{base:'i_carrier',arc:'ithar',n:'Archive wraithcarrier',d:'Three wings and a flak turret instead of its lance.',w:[['turret','T'],['flak','T']],mod:{hangar:3,sh:30},cost:0},
+  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Jackal court guard',d:'Both gauss guns on turrets, a gauss sentry, 10 more hull.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],mod:{hp:120},cost:0}});
+const ARC_VARIANT=Object.fromEntries(Object.entries(HULL_VARIANTS).filter(([,v])=>v.arc).map(([id,v])=>[v.arc,id]));
 for(const [id,v] of Object.entries(HULL_VARIANTS)){ const b=HULLS[v.base]; HULLS[id]=Object.assign({},b,{n:v.n,w:v.w,variant:id,base:v.base},v.mod||{}); if(HULLS[id].ab===null) delete HULLS[id].ab; }
 // Admiral mastery: every admiral levels up as you fly with them, in any faction
 const MASTERY_XP=[0,6,16,30,50];

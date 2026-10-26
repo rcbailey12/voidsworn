@@ -567,14 +567,15 @@ function applyNemesis(N){ B.nem=N; let es=B.units.filter(u=>u.side==='enemy'&&!u
   if(ad.includes('pd')){ const pd=fl.fac==='chorus'?'spores':'flak'; for(const u of es.filter(x=>!x.weapons.some(w=>w.k==='flak')).slice(0,2)){ u.weapons.push(Object.assign(nameWeapons(u.fac,[mkWeapon(pd,'T',u.fx||{})])[0],{fired:false,cdLeft:0,off:0})); } }
   B.nemFlee=beh.flee||null; B.nemNoRout=!!(beh.noFlee||beh.revive); B.nemChallenge=beh.strike==='challenge'; B.nemPersona=(typeof NEM_PERSONA!=='undefined'&&NEM_PERSONA[N.persona])||null; if(B.cp0) B.cp0.enemy=sideCP('enemy');
   const an=a=>(typeof nemAdaptName==='function'?nemAdaptName(a,N.fac):(NEM_ADAPT[a]?NEM_ADAPT[a].n:a)).toLowerCase(), L=typeof NEM_LINES!=='undefined'?NEM_LINES:null;
-  log(`${fl.name} commands this fleet: your Nemesis.${ad.length?' He has adapted: '+ad.map(an).join(', ')+'.':''}`,'e');
-  if(L){ const line=N.met&&N.beat&&typeof NEM_BEAT_WORD!=='undefined'?L.again.replace('{beat}',NEM_BEAT_WORD[N.beat]||N.beat):(L.meet[N.persona]||''); if(line) log(`${fl.name}: "${line}"`,'e'); }
+  log(`${fl.name} commands this fleet: your Nemesis.${ad.length?' '+(N.g==='n'?'It':N.g==='f'?'She':'He')+' has adapted: '+ad.map(an).join(', ')+'.':''}`,'e');
+  if(L){ const line=N.met&&N.last_beat&&typeof NEM_BEAT_WORD!=='undefined'?L.again.replace('{beat}',NEM_BEAT_WORD[N.last_beat]||N.last_beat):(L.meet[N.persona]||''); if(line) log(`${fl.name}: "${line}"`,'e'); }
+  if(B.nemChallenge&&typeof nemSignature==='function') nemSignature('challenge'); if(beh.strike==='duel'&&typeof nemSignature==='function') nemSignature('duel');
   if(B.nemChallenge) log(`${fl.name} challenges your flagship to a duel: the two flagships deal 20% more damage to each other.`,'e'); }
 // R42: a Nemesis who withdraws from a lost fight (Corsair: flagship under 35% hull; Ithar: every flagship shield down and hull under 60%). He and
 // his escorts jump out; you win the field, he escapes to come back (richer, for a Corsair). Checked at each enemy turn start.
 function nemFleeCheck(){ if(!B||!B.nem||!B.nemFlee||B.nemFled||B.over) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f) return; const R=B.nemFlee;
   const low=f.hp<=f.maxHp*(R.hull||0)&&(!R.shields||!(f.shMax>0)||f.sh.every(x=>x<=.5)); if(!low) return;
-  B.nemFled=true; for(const e of alive('enemy').filter(u=>!u.isSq&&!u.transport)){ e.dead=true; e.fled=true; try{ fxWithdraw(e); }catch(x){} }
+  B.nemFled=true; if(typeof nemSignature==='function') nemSignature('flee_battle'); for(const e of alive('enemy').filter(u=>!u.isSq&&!u.transport)){ e.dead=true; e.fled=true; try{ fxWithdraw(e); }catch(x){} }
   log(`${f.name} breaks off and jumps out with what is left of his fleet. He will be back.`,'s'); checkEnd(); }
 // R42 personality weights for his ships in the AI's move scoring and target choice
 function nemProf(u,prof){ const P=B&&B.nemPersona; if(!u||!u.nem||!P||!P.ai) return prof; const a=P.ai, o=Object.assign({},prof); if(a.tw) o.tw=prof.tw*a.tw; if(a.range!=null) o.range=a.range; if(a.flagFront&&u.nemFlag) o.tw=prof.tw*.6; return o; }

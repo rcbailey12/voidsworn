@@ -17,7 +17,7 @@ function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fx
 async function animWeapon(){} async function animExplode(){} function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, migrateRun, newShip, newRun, startBattle, HULLS, EVENTS, EVENT_FALLBACK, nextEvent, needMet, needText, applyOutcome, eventFlags,
   newNemesis, ensureNemesis, nemReveal, nemClockAdd, nemNodeIs, nemBattleCfg, nemAdapt, nemAfterBattle, nemLearn, NEM_CLOCK, NEM_WEAK, FAC_VERBS, verbCanUse, useVerb, wingVetAfter, wingPerkGrant, WING_XP,
-  setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS, mapScreen, eventScreen, shipyardScreen, boonStep, NEM_FAC, nemFull, nemFeedLosses, startSideTurn };
+  setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS, mapScreen, eventScreen, shipyardScreen, boonStep, NEM_FAC, nemFull, nemFeedLosses, startSideTurn, NEM_PERSONA, NEM_BEAT_WORD, nemBeatOf, ARC_VARIANT, HULL_VARIANTS, ACT };
 `);
 const pickAdm = fac => Object.entries(T.ADMIRALS).find(([k, a]) => (a.fac || 'voidsworn') === fac)[0];
 const fresh = (fac, adm) => { T.META.unlocked = {}; T.newRun(adm || pickAdm(fac), fac); return T.RUN; };
@@ -87,7 +87,7 @@ check('R42 identity: a new rival every run from his faction pools, never a playe
   return ok && names.size >= 25; });
 check('R42 scars: surviving a defeat adds a scar and a new epithet; he remembers how you beat him', () => {
   const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; const n0 = T.nemFull(); T.nemAfterBattle('win', true, { beat: 'torp', cause: 'big' });
-  return N.scars === 1 && N.epithet && T.NEM_FAC.corsair.scars.includes(N.epithet) && T.nemFull() !== n0 && N.beat === 'torp' && T.nemBattleCfg().beat === 'torp'; });
+  return N.scars === 1 && N.epithet && T.NEM_FAC.corsair.scars.includes(N.epithet) && T.nemFull() !== n0 && N.last_beat === 'torp' && T.nemBattleCfg().last_beat === 'torp' && N.scarKinds.join() === 'big' && N.epithets[0] === N.epithet; });
 check('R42 Deathless: patient clock (half speed), comes back once after being killed, even in sector 3', () => {
   const R = fresh('voidsworn'); const N = R.nem; N.fac = 'deathless'; N.clock = 0; T.nemClockAdd(1); const half = N.clock === .5;
   R.sector = 3; T.nemAfterBattle('win', true, {}); const back = !N.dead && N.revived && N.met === 2; T.nemAfterBattle('win', true, {}); return half && back && N.dead; });
@@ -105,5 +105,19 @@ check('R42 Voidsworn: never routs, challenges your flagship (20% more damage bet
   T.startBattle({ kind: 'elite', fac: 'voidsworn', col: 4, nemesis: T.nemBattleCfg(), obj: 'rout', shape: 'open', map: 'storm', seed: 5 }); const fl = T.B.units.find(u => u.nemFlag), me = T.B.units.find(u => u.pflag);
   const w = me.weapons.find(x => x.k !== 'flak'); const m1 = T.dmgMult(me, w, fl, false); T.B.nemChallenge = false; const m0 = T.dmgMult(me, w, fl, false);
   return T.B.nemNoRout && Math.abs(m1 - m0 - w.dmg * .2 * (w.vsCap || 1)) < 1e-6; });
+check('Story alignment: R42 persona ids, gender g, last_beat words, signature events and save upgrade', () => {
+  let ok = true; for (const f of T.RUN_FACTIONS) { const F = T.NEM_FAC[f]; if (!F.personas.every(p => T.NEM_PERSONA[p])) ok = false; }
+  for (let i = 0; i < 30; i++) { const R = fresh('voidsworn'); const N = R.nem; const F = T.NEM_FAC[N.fac];
+    if (N.fac === 'chorus' ? N.g !== 'n' : !(N.g === 'f') === F.fem.some(p => N.name.startsWith(p))) ok = false; if (!['m', 'f', 'n'].includes(N.g)) ok = false; }
+  for (const b of ['lance', 'torp', 'sq', 'ram', 'board', 'battery', 'evasive']) if (!T.NEM_BEAT_WORD[b]) ok = false;
+  if (T.nemBeatOf({ kind: {} }, true) !== 'evasive' || T.nemBeatOf({ kind: { torp: 3 } }, false) !== 'torp') ok = false;
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; N.clock = 3; T.nemClockAdd(1); if (!N.signatures.includes('raid')) ok = false;
+  const old = { fac: 'chorus', persona: 'ravenous', pronoun: 'it', beat: 'ion', scarList: ['big', 'ep:the Torn'], name: 'X', title: 'Y', traits: [], weak: [], revealed: [], adapt: [] }; R.nem = old; T.ensureNemesis();
+  return ok && old.persona === 'ravenous' && old.last_beat === 'battery' && old.g === 'n' && !('pronoun' in old) && old.scarKinds.join() === 'big' && old.epithets[0] === 'the Torn' && !('beat' in old) && T.nemBattleCfg().g === 'n'; });
+check('Story arcs: killing the Nemesis for good unlocks the faction arc variant (free, not for sale before), once', () => {
+  const R = fresh('ithar'); const N = R.nem; N.fac = 'corsair'; const id = T.ARC_VARIANT.ithar; T.META.variants = {};
+  const v = T.HULL_VARIANTS[id]; if (!v || !v.arc || v.cost !== 0) return false; T.META.renown = 999; try { T.ACT.buyVariant(id); } catch (e) {} if (T.META.variants[id] || T.META.renown !== 999) return false;
+  R.sector = 3; const out = T.nemAfterBattle('win', true, {}); const once = T.nemAfterBattle('win', true, {}).every(l => !/Story complete/.test(l));
+  return N.dead && T.META.variants[id] === true && out.some(l => /Story complete/.test(l)) && once && Object.keys(T.ARC_VARIANT).length === 6; });
 (async () => { for (const [name, fn] of tests) { try { const r = await fn(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.message)); } }
   console.log('\nB4 tests: ' + pass + ' ok, ' + fail + ' FAIL'); process.exitCode = fail ? 1 : 0; })();
