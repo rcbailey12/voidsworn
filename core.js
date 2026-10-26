@@ -64,7 +64,7 @@ function migrateRun(r){ if(r&&!r.fac) r.fac='voidsworn';
   if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return normalizeRun(r); }
 // v53: the one place that knows every field a RUN carries. newRun sets the real starting values; this fills anything an older or partial save lacks
 function runDefaults(){ return {fac:'voidsworn',foes:null,admiral:'vex',credits:0,cpCap:10,sector:1,relics:[],inventory:[],fleet:[],pos:null,stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},t0:0,fallen:[],ambush:false,over:false,boons:[],patrons:[],aspect:null,flagUid:null,
-  heat:[],mastery:0,ransoms:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0}; }
+  heat:[],mastery:0,ransoms:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0,flags:{},nem:null,verbUsed:0,verbNext:null}; } // B4: event flags, the Nemesis, the faction verb
 function normalizeRun(r){ if(!r||typeof r!=='object') return r; const d=runDefaults(); for(const k in d) if(r[k]==null) r[k]=d[k];
   for(const k of ['relics','inventory','fleet','fallen','boons','patrons','heat','reserve','seenEvents','regionsUsed','condsUsed']) if(!Array.isArray(r[k])) r[k]=[];
   if(typeof r.stats!=='object'||Array.isArray(r.stats)) r.stats={}; for(const k in d.stats) if(typeof r.stats[k]!=='number') r.stats[k]=0;
@@ -326,6 +326,7 @@ function newRun(admiralId,fac,opt){
   // a Devoted patron sends a gift: one common boon from the first devoted patron watching this run
   { const dev=RUN.patrons.find(p=>favourTier(p)>=2); if(dev){ const pool=Object.keys(BOONS).filter(id=>BOONS[id].p===dev&&boonUseful(id,fleetKit())); if(pool.length){ const id=pick(pool); RUN.boons.push({id,r:favourTier(dev)>=3?1:0}); RUN.giftBoon=id; } } }
   RUN.map=genSector(1);
+  RUN.flags={}; if(typeof newNemesis==='function') RUN.nem=newNemesis(); // B4: one named enemy commander per run
   META.stats.runs++;
   saveRun();
 }

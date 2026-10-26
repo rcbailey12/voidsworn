@@ -52,6 +52,7 @@ function battleScreen(cfg){
   const nd=cfg.node&&findNode(cfg.node); if(nd&&!nd.enc&&cfg.kind!=='boss'){ Object.assign(nd,rollEncounter(nd.type,nd.col)); if(!nd.map&&RUN.map&&RUN.map.region) nd.map=regionMap(RUN.map.region,nd.col,7); fitEncounter(nd); }
   const ro=cfg.kind==='boss'?bossEncounter():nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);
   const c=Object.assign({map:(nd&&nd.map)||(RUN.map&&RUN.map.region&&regionMap(RUN.map.region,cfg.kind==='boss'?6:(nd?nd.col:3),7))||(cfg.kind==='boss'&&FAC_MAP[cfg.fac]?FAC_MAP[cfg.fac][0]:'random'),dep:cfg.kind==='boss'?'line':pick(['line','line','flank']),obj:ro.enc,shape:ro.shape,arch:cfg.kind!=='boss'&&nd?nd.arch:null,mod:cfg.kind!=='boss'&&nd?nd.mod:null},cfg); // bosses fight on their faction's home ground
+  if(RUN.verbNext&&!c.verb) c.verb=RUN.verbNext; // B4: a next-battle faction verb
   const setupT0=performance.now(); startBattle(c); B.campaign=true; B.event=rollBattleEvent(c,(sectorCond()||{}).war&&c.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null); prepBattle(); const setupMs=Math.round(performance.now()-setupT0);
   const E=ENCOUNTERS[B.obj.type]||ENCOUNTERS.rout; document.getElementById('scenName').textContent=`Sector ${roman(RUN.sector)}: ${cfg.kind==='boss'?'flagship battle':(cfg.kind==='elite'?'elite ':'')+E.n.toLowerCase()} against ${FACTIONS[cfg.fac].n}`;
   G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); banner(cfg.kind==='boss'?'Sector flagship':E.n); { const bn=(RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].n).filter(Boolean), bt=bn.length?` Boons active: ${bn.slice(0,4).join(', ')}${bn.length>4?` and ${bn.length-4} more`:''}.`:''; setTimeout(()=>{ try{ if(B&&!B.over) toast((cfg.kind!=='boss'?E.d:'The sector flagship and its escort.')+(sectorCond()?' '+sectorCond().n+' in effect.':'')+bt); }catch(e){} },1400); }
@@ -66,7 +67,12 @@ function finishBattle(result){
   if(!B||B.finished) return; B.finished=true; hideEnd(); // v53: once per battle, and the end card goes first so it can never be tapped twice
   if(result==='loss'&&B.withdraw&&survivorsP()) result='retreat';
   const cfg=B.cfg; const summary={cfg,xp:[],lost:[],kills:0,rounds:B.round,prizes:[],partial:!!B.partial,boonStats:Object.assign({},B.boonStats||{})}; const r0=runRenown();
-  for(const u of B.units) if(u.parent){ const p=B.units.find(x=>x.id===u.parent); if(p){ p.dealt+=u.dealt; p.kills+=u.kills; } }
+  const wingK={}; for(const u of B.units) if(u.parent){ const p=B.units.find(x=>x.id===u.parent); if(p){ p.dealt+=u.dealt; p.kills+=u.kills; if(p.ship) wingK[p.ship.uid]=(wingK[p.ship.uid]||0)+(u.kills||0); } }
+  // B4: the Nemesis learns from how you fought; a used faction verb is spent; his own fight settles here
+  try{ const pl=B.units.filter(u=>u.side==='player'&&!u.isSq), ev=pl.reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,pl.length); nemLearn(B.usage,ev>=20?1:0); }catch(e){}
+  if(B.cfg&&B.cfg.verb) RUN.verbNext=null;
+  if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled)); } else if(result==='win'&&RUN.nem){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
+  for(const sh of RUN.fleet){ const k=wingK[sh.uid]; if(k){ const g=wingVetAfter(sh,k); if(g.length) (summary.wingPerks=summary.wingPerks||[]).push({ship:sh.name,perks:g}); } }
   summary.kills=B.units.filter(u=>u.side==='enemy'&&u.dead&&!u.fled&&!u.isSq&&!u.ship).length;
   RUN.stats.kills+=summary.kills;
   for(const u of B.units){
@@ -84,6 +90,7 @@ function finishBattle(result){
   // v52 salvage: the field remembers what died and how, and the best wrecks are offered as salvage (Starsector / Pirates! style)
   if(result==='win') summary.wrecks=B.units.filter(u=>u.side==='enemy'&&u.dead&&!u.fled&&!u.isSq&&!u.ship&&!u.captured).sort((a,b)=>(b.t.cp||0)-(a.t.cp||0)).slice(0,3).map(u=>({name:u.name,tpl:u.tpl,cls:u.t.cls,fac:u.fac,cp:u.t.cp||1,wk:[...new Set(u.weapons.map(w=>w.k))],ab:u.ab||null,regen:!!(u.hullRegen||u.regen&&!u.shMax),sh:u.shMax||0,cause:u.killCause||'blast',by:u.killedBy||null}));
   if(summary.escaped) setTimeout(()=>toast(`${summary.escaped.join(' and ')} escaped in a lifepod, wounded, and will take command of your next hull.`),1800);
+  { const msg=[...(summary.nem||[]),summary.nemWarn,...(summary.wingPerks||[]).map(w=>`The ${w.ship}'s wings earn ${w.perks.map(p=>WING_PERKS[p].n).join(' and ')}.`)].filter(Boolean); if(msg.length) setTimeout(()=>toast(msg.join(' ')),2400); }
   tel('battle_end',{perf:(()=>{ try{ return FRAMES.summary(); }catch(e){ return null; } })(),scene:sceneCensus(),boons:B.boonStats||{},ecp:B.cp0&&B.cp0.enemy,pcp:B.cp0&&B.cp0.player,usage:B.usage,obj:B.obj?B.obj.type:'rout',shape:B.shape,adapt:(B.adapt||0)+(B.adaptWings?'w'+B.adaptWings:''),event:B.event?B.event.k:null,partial:!!B.partial,escaped:(summary.escaped||[]).length,result,kind:cfg.kind,fac:cfg.fac,rounds:B.round,kills:summary.kills,lost:summary.lost.length,prizes:summary.prizes.length,
     rams:(B.usage&&B.usage.ram)||0,boardings:(B.usage&&B.usage.board)||0,captures:(B.usage&&B.usage.cap)||0,cmdRound:B.cmd?B.cmd.round:null});
   disposeAllViews(); clearOverlays(); B=null; hideTip(); hideEnd();
