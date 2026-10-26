@@ -16,4 +16,10 @@ func _ready() -> void:
 	await RenderingServer.frame_post_draw
 	var a = OS.get_cmdline_user_args()
 	if a.size() > 0: get_viewport().get_texture().get_image().save_png(a[0])
+	var av = C.page["data"]["avail"]
+	m.fly_to(av[0])
+	for i in 20: await get_tree().process_frame
+	if a.size() > 0: get_viewport().get_texture().get_image().save_png(a[0].replace(".png", "_flying.png"))
+	await get_tree().create_timer(1.2).timeout
+	print("after the jump: page ", C.page["kind"], " pos ", C.RUN["pos"])
 	get_tree().quit()
