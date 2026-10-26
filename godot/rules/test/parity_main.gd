@@ -4,6 +4,8 @@
 #   godot --headless --path godot --script res://rules/test/parity_main.gd -- scenario <name> <out.jsonl> [seed]
 # The scenario harness mirrors node/golden.js line for line: same bot for your side, same activation order, same records.
 extends SceneTree
+# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so these warnings are expected here and silenced for this file only.
+@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "integer_division", "narrowing_conversion", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 const JSM = preload("res://rules/jsm.gd")
 const RulesScript = preload("res://rules/rules.gd")
 const APIScript = preload("res://rules/battle_api.gd")

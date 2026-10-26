@@ -7,6 +7,8 @@
 # Presentation (log text, floating numbers, sounds, camera) is not ported: the harness gives it no-op stubs on both sides.
 # Anything the slice does not reach and the port does not carry stops the run with "NOT PORTED", so a gap can never pass silently.
 extends RefCounted
+# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so these warnings are expected here and silenced for this file only.
+@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "integer_division", "narrowing_conversion", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 const JSM = preload("res://rules/jsm.gd")
 
 var TB: Dictionary = {}

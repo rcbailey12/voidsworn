@@ -67,6 +67,9 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | `move(id, state, opts = {})` | Burn along `state.path` (thruster slips, reverses, climbing over rocks and diving under ships are in the path steps). `opts.late_fire = {weapons: [indices], target: id}` fires those guns at the target during the burn (those that can fire once the ship is there), as the game's attack-move does. |
 | `attack_plan(id, target_id, weapons = null) -> {state, guns, of}` | The game's attack-move plan (ui3d.js `attackMovePlan`): the best reachable state from which the most of the given guns (default every ready gun but flak) reach the target, or null. Use it for the "tap an enemy out of reach" preview. |
 | `attack_move(id, target_id, weapons = null)` | Burn to that state and fire on the way (`move` with `late_fire`). |
+| `compute_reach(id) -> {states, map}` | The full reach: every end state, and `map` keyed `"q,r"` with the cheapest state per hex. A fresh copy. |
+| `state_view(id, state) -> Dictionary` | A copy of the ship as it would stand at one of those states (position, facing, hexes moved), for previews and the threat map. |
+| `in_reach(id, wi, target_id, state = null) -> bool` | Range, arc and line of sight for gun `wi` on the target, from where the ship is or from `state`. |
 | `can_fire(id, wi, target_id) -> bool` | Range, arc, line of sight, readiness. |
 | `preview_fire(id, wi, target_id) -> Dictionary` | `{hit, shield, hull, quad, rear, can}`: hit %, expected shield and hull damage, the target's facing quadrant (0 prow, 1 starboard, 2 rear, 3 port). |
 | `fire(id, wi, target_id, called_section = null)` | Fire weapon `wi`. `called_section` is `"prow"`, `"mid"` or `"eng"` for an aimed shot. |

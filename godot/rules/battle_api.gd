@@ -2,6 +2,8 @@
 # The renderer never writes rules state: it sends commands here, reads view(), and plays take_events().
 # The turn flow is a port of the game's ui3d.js (guard, act, endActivation, aiStep, nextRound), alternating activations.
 extends RefCounted
+# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so these warnings are expected here and silenced for this file only.
+@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "integer_division", "narrowing_conversion", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 const JSM = preload("res://rules/jsm.gd")
 const RulesScript = preload("res://rules/rules.gd")
 
@@ -229,6 +231,24 @@ func can_command() -> bool: return phase == "player" and R.canCommand("player")
 func command() -> bool:                             # the Admiral's Command (once per battle, from round 1)
 	if not can_command() or R.jt(R.B.get("busy")): return false
 	R.B["busy"] = true; var ok = R.useCommand("player"); _after_act(); return ok
+# ---------------- previews and the threat map (read-only, fresh copies) ----------------
+# compute_reach(id) -> {states: [...], map: {"q,r": state}}: every end state the ship can move to (reach() returns the states only).
+func compute_reach(id: String) -> Dictionary:
+	var u = unit(id)
+	if u == null: return {"states": [], "map": {}}
+	return R.computeReach(u).duplicate(true)
+# state_view(id, state) -> a copy of the ship as it would stand at one of compute_reach's states (q, r, facing, hexes moved).
+func state_view(id: String, state: Dictionary) -> Dictionary:
+	var u = unit(id)
+	if u == null: return {}
+	var v = R.stateView(u, state); var o = v.duplicate(false); o.erase("__view"); return o
+# in_reach(id, wi, target_id, state = null) -> range, arc and line of sight for gun wi on the target, from the ship's hex or from a state.
+func in_reach(id: String, wi: int, target_id: String, state = null) -> bool:
+	var u = unit(id); var t = unit(target_id)
+	if u == null or t == null or wi < 0 or wi >= u["weapons"].size(): return false
+	var v = R.stateView(u, state) if state != null else u
+	return R.inReach(v, u["weapons"][wi], t)
+
 # ---------------- the game's own player-side AI ----------------
 # ai_activate(id): one player ship acts on its own, as the game's battle sim plays your side (sim3d.js botUnit: the Admiral's
 # Command when it pays, abilities, rams, boarding, the best move for its guns and the objective, every gun at its best target,

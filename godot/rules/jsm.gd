@@ -9,6 +9,8 @@
 #   - the canonical state text and SHA-256 that the golden records use
 # (loaded with preload, so it runs headless without an editor import)
 extends RefCounted
+# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so these warnings are expected here and silenced for this file only.
+@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "integer_division", "narrowing_conversion", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 
 static var _pb: PackedByteArray = _mk_pb()
 static func _mk_pb() -> PackedByteArray:
