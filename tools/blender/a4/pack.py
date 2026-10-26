@@ -57,7 +57,7 @@ def subset(m, tri_mask, nor, tan):
     return dict(pos=m['pos'][used], nor=nor[used], uv=m['uv'][used], tan=None if tan is None else tan[used], idx=remap[idx].astype(np.uint32))
 
 
-def pack(meta_path, gdir, res=2048, tangents=False, quant=False):
+def pack(meta_path, gdir, res=2048, tangents=False, quant=False, dmg=None):
     """tangents=False leaves TANGENT out: Godot's importer generates MikkTSpace tangents (the same method the bake used), a third less file.
     quant=True stores vertex data with KHR_mesh_quantization (half the bytes), but Godot 4.7.2 refuses the extension ("required extension
     'KHR_mesh_quantization' is not supported", tested Oct 26), so it stays off; float32 it is."""
@@ -66,14 +66,21 @@ def pack(meta_path, gdir, res=2048, tangents=False, quant=False):
     files = write_textures(meta, d, code, res)
     # ship
     m = dict(np.load(meta['mesh'] if os.path.exists(meta['mesh']) else os.path.join(base, os.path.basename(meta['mesh']))))
-    G = gio.GLB(); nor = unit(m['nor']); tan = fix_tangents(nor, m['tan'])
-    if 'sail' in m and m['sail'].any():
-        mat, smat = materials(G, code, files, sail=True); sl = m['sail'].astype(bool)
-        prims = [dict(subset(m, ~sl, nor, tan if tangents else None), mat=mat), dict(subset(m, sl, nor, tan if tangents else None), mat=smat)]
-    else:
-        mat = materials(G, code, files); prims = [dict(pos=m['pos'], nor=nor, idx=m['idx'], uv=m['uv'], tan=tan if tangents else None, mat=mat)]
-    mesh = G.mesh(code, prims, quant=quant)
+    G = gio.GLB(); nor = unit(m['nor']); tan = fix_tangents(nor, m['tan']); tg = tan if tangents else None
+    sl = m['sail'].astype(bool) if 'sail' in m else np.zeros(len(m['idx']), bool)
+    lab = dmg['label'] if dmg else np.zeros(len(m['idx']), np.int32)
+    if sl.any(): mat, smat = materials(G, code, files, sail=True)
+    else: mat = materials(G, code, files); smat = None
+    def prims_for(mask):
+        out = []
+        if (mask & ~sl).any(): out.append(dict(subset(m, mask & ~sl, nor, tg), mat=mat))
+        if (mask & sl).any(): out.append(dict(subset(m, mask & sl, nor, tg), mat=smat))
+        return out
+    mesh = G.mesh(code, prims_for(lab == 0), quant=quant)
     kids = []
+    for k in sorted(int(x) for x in np.unique(lab) if x > 0):  # R39: the hull patches the breach damage replaces (hide one, show its hole)
+        n_ = (k - 1) // 2; nm = f'skin_{n_}' if k % 2 else f'skin_{n_}_heavy'
+        kids.append(G.node({'name': nm, 'mesh': G.mesh(f'{code}_{nm}', prims_for(lab == k), quant=quant), 'extras': dict(kind='breach_skin', breach=n_, heavy=not k % 2)}))
     for h in meta['hardpoints']:
         kids.append(G.node({'name': h['name'], 'translation': [round(float(v), 6) for v in h['p']], 'rotation': gio.basis_quat(h['fwd'], h['up']), 'extras': h['extras']}))
     extras = dict(code=code, faction=meta['faction'], cls=meta['cls'], band=meta['band'], length_world=meta['length_world'], palette=meta['palette'],
@@ -94,6 +101,7 @@ def pack(meta_path, gdir, res=2048, tangents=False, quant=False):
         chunks.append(G2.node({'name': f'chunk_{len(chunks):02d}', 'mesh': mi, 'translation': [round(float(v), 6) for v in c['centre']], 'extras': dict(volume=c['volume'], tris=c['tris'])}))
     wroot = G2.node({'name': f'{code}_wreck', 'children': chunks, 'extras': dict(code=code, chunks=len(chunks), note='each chunk origin is its centre of mass; caps use wreck_interior')})
     G2.save(os.path.join(d, f'{code}_wreck.glb'), [wroot], extras=dict(code=code))
+    if dmg: write_damage(dmg, meta, files, d, code)
     c1 = gio.check(os.path.join(d, f'{code}.glb')); c2 = gio.check(os.path.join(d, f'{code}_wreck.glb'))
     print('packed', code, 'ship', c1['mb'], 'MB', c1['tris'], 'tris', c1['hardpoints'], 'hard points', 'problems', c1['problems'] or 'none', flush=True)
     print('packed', code, 'wreck', c2['mb'], 'MB', c2['tris'], 'tris', len(chunks), 'chunks', 'problems', c2['problems'] or 'none', flush=True)
@@ -108,6 +116,26 @@ def pack(meta_path, gdir, res=2048, tangents=False, quant=False):
     return c1, c2
 
 
+def write_damage(dmg, meta, files, d, code):
+    """CODE_damage.glb (R39): per breach anchor n, nodes breach_<n>_hole and breach_<n>_heavy in the ship's own frame (identity transform:
+    parent the file's root under the ship node), each with up to five surfaces: torn plates in the ship's paint, bare interior, frames and
+    decks, fire glow, hot torn edges"""
+    import damage
+    G = gio.GLB(); mats = damage.materials(G, meta['faction']); mats['hull'] = materials(G, code, files); kids = []
+    for an in dmg['anchors']:
+        for stage in ('hole', 'heavy'):
+            nm = f'breach_{an["i"]}_{stage}'; P = dmg['parts'].get(nm) or {}
+            prims = [dict(pos=a['pos'], nor=a['nor'], idx=a['idx'], uv=a.get('uv'), mat=mats[mt]) for mt, a in P.items() if len(a['idx'])]
+            if not prims: continue
+            kids.append(G.node({'name': nm, 'mesh': G.mesh(f'{code}_{nm}', prims), 'extras': dict(kind='breach_' + stage, breach=an['i'], section=an['section'],
+                         p=an['p'], n=an['n'], r=an['r_heavy'] if stage == 'heavy' else an['r'], hides=[f'skin_{an["i"]}'] + ([f'skin_{an["i"]}_heavy'] if stage == 'heavy' else []))}))
+    G.save(os.path.join(d, f'{code}_damage.glb'), [G.node({'name': f'{code}_damage', 'children': kids, 'extras': dict(
+        code=code, breaches=len(dmg['anchors']), use='parent under the ship node (identity); all children start hidden; at the breach stage show breach_<n>_hole and hide skin_<n> on the ship; heavy: show breach_<n>_heavy, hide breach_<n>_hole, skin_<n> and skin_<n>_heavy')})],
+        extras=dict(code=code))
+    c = gio.check(os.path.join(d, f'{code}_damage.glb'))
+    print('packed', code, 'damage', c['mb'], 'MB', c['tris'], 'tris', len(kids), 'nodes', 'problems', c['problems'] or 'none', flush=True)
+
+
 if __name__ == '__main__':
     a = sys.argv[1:]
     r_ = a[a.index('--res') + 1] if '--res' in a else 'auto'
@@ -115,7 +143,12 @@ if __name__ == '__main__':
         m_ = json.load(open(a[0])); res = {'S': 1024}.get(m_.get('band'), 2048)
         if m_.get('cls') == 'Squadron' or m_['code'] in ('S1_51', 'S2_23', 'B23_51'): res = 512
     else: res = int(r_)
-    c1, c2 = pack(a[0], a[1], res)
+    dmg = None
+    if '--nodamage' not in a:
+        import damage
+        m_ = json.load(open(a[0])); npz_ = m_['mesh'] if os.path.exists(m_['mesh']) else os.path.join(os.path.dirname(a[0]), os.path.basename(m_['mesh']))
+        dmg = damage.build(npz_, a[0])
+    c1, c2 = pack(a[0], a[1], res, dmg=dmg)
     if '--hi' in a:
         hres = int(a[a.index('--hires') + 1]) if '--hires' in a else 4096
-        pack(a[0], a[a.index('--hi') + 1], hres, tangents=True, quant=False)
+        pack(a[0], a[a.index('--hi') + 1], hres, tangents=True, quant=False, dmg=dmg)

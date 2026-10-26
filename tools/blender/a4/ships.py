@@ -235,12 +235,12 @@ SHIPS['H4_11'] = dict(
 SHIPS['H10_23'] = dict(
     fac='hegemony', cls='Battleship', name='Dominion-class battleship', sym='bilateral',
     spires=dict(zmin=.06, box=(-.25, 0, -.04, .04), style='mast'),
-    kit=[('casemate', 'ht', .10, 0, -.03, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
-         ('casemate', 'ht2', .25, 0, -.03, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
+    kit=[('casemate', 'ht', .0, 0, -.045, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('casemate', 'ht2', .17, 0, -.045, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),  # pass 2: on the side band (probe)
          ('spinal', 'ion', .38, 0, 0, 'top', dict(size='L', slot=2, wkind='ion', arc='F', length=3.5)),
          ('turret', 'fl', .05, .04, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', pair=True)),
-         ('engine_at', 'eP', 0, .03, -.04, 'stern', dict(r=.022, L=.032, pair=True)),
-         ('engine_at', 'eN', 0, .09, -.03, 'stern', dict(r=.016, L=.026, pair=True))],
+         ('engine_at', 'eP', 0, .042, -.05, 'stern', dict(r=.022, L=.032, pair=True)),
+         ('engine_at', 'eC', 0, 0, -.05, 'stern', dict(r=.018, L=.028))],
     notes='first pass')
 
 SHIPS['H7_23'] = dict(

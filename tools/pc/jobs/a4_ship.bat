@@ -22,7 +22,10 @@ echo --- a4 %A4CODE%: pack ---
 call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\pack.py "%OUT%\%A4CODE%_meta.json" "%A4%\godot" --res auto --hi "%A4%\godot_hi" --hires 4096
 call tools\pc\tmo.bat 120 %PY% -s a4tools\a4\sheet.py "%OUT%\checks" %A4CODE%
 for %%F in ("%OUT%\*_layout.json") do call tools\pc\tmo.bat 60 %PY% -s a4tools\a4\look.py --compose "%%F"
-call tools\pc\tmo.bat 300 %BL% -b --factory-startup -P a4tools\a2detail\reimport.py -- "%A4%\godot\%A4CODE%\%A4CODE%.glb" "%A4%\godot\%A4CODE%\%A4CODE%_wreck.glb" > "%OUT%\reimport_log.txt" 2>&1
+echo --- a4 %A4CODE%: breach damage review (R39) ---
+call tools\pc\tmo.bat 600 %BL% -b --factory-startup -P a4tools\a4\dmgview.py -- "%OUT%\%A4CODE%_ship.npz" "%OUT%\%A4CODE%_meta.json" "%OUT%\dmg\%A4CODE%_damage.png" > "%OUT%\dmg_log.txt" 2>&1
+call tools\pc\tmo.bat 60 %PY% -s a4tools\a4\dmgview.py --compose "%OUT%\dmg\%A4CODE%_damage.png_layout.json"
+call tools\pc\tmo.bat 300 %BL% -b --factory-startup -P a4tools\a2detail\reimport.py -- "%A4%\godot\%A4CODE%\%A4CODE%.glb" "%A4%\godot\%A4CODE%\%A4CODE%_wreck.glb" "%A4%\godot\%A4CODE%\%A4CODE%_damage.glb" > "%OUT%\reimport_log.txt" 2>&1
 type "%OUT%\reimport_log.txt" | findstr /l /c:"[reimport]"
 dir /b "%A4%\godot\%A4CODE%"
 :done
