@@ -98,6 +98,13 @@ check('torpedoes: a target 3 hexes from the aim hex dodges', async () => {
 check('torpedoes: the threat map steers a targeted ship out of the lane', async () => {
   const B = battle('hegemony', ['h_dominion'], 'voidsworn', ['harrow']); const t = P()[0], u = E()[0]; put(u, 14, 10, 3); put(t, 10, 10, 0); B.side = 'enemy';
   await T.fireWeapon(u, u.weapons.findIndex(w => w.k === 'torp'), t); return B.torps.length === 1 && T.torpThreat(t, { q: 10, r: 10 }) > 0 && T.torpThreat(t, { q: 10, r: 13 }) === 0; });
+// ---- B-21 ----
+check('B-21 the point defense bolted onto escorts against carrier fleets is ready to fire and intercepts wings', async () => {
+  T.RUN = T.migrateRun(base({ fleet: ['reliquary', 'reliquary', 'penitent'].map(t => T.newShip(t)) })); T.RUN.sector = 2; T.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, shape: 'open', map: 'storm', obj: 'rout', seed: 7, dep: 'line' }); T.B.terrain = {};
+  const ref = E().find(u => u.pdRefit); if (!ref) throw new Error('no refit');
+  const w = ref.weapons[ref.weapons.length - 1]; const ready = w.k === 'flak' && w.fired === false && w.cdLeft === 0 && w.off === 0 && !!w.n;
+  const wing = T.B.units.find(u => u.side === 'player' && u.isSq); wing.dead = false; ref.intercepts = 2; put(ref, 12, 10, 3); put(wing, 13, 10, 0); const tgt = E().find(u => u !== ref); put(tgt, 14, 10, 3);
+  const n0 = ref.intercepts; await T.fireWeapon(wing, 0, ref); return ready && ref.intercepts < n0; });
 // ---- B-18 ----
 check('B-18 a stall during a death explosion skips its aftermath (chain blasts) but still ends the battle; without a stall the blast lands', async () => {
   const run = async (stall) => { const B = battle('voidsworn', ['penitent'], 'hegemony', ['h_picket', 'h_picket']); const [a, b] = E(); put(a, 12, 10); put(b, 13, 10); P()[0].fx = Object.assign({}, P()[0].fx, { chainBoom: 30 });

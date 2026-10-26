@@ -115,3 +115,9 @@ Commits are on main; the newest step is at the bottom.
 4. Legendary: two iron boons held, elite reward: slot 3 is L_iron with r 3; at a normal reward it never appears.
 5. Class track: three Frigate levels: warden max hull 45 x 1.18 = 53, dmg 1.18.
 6. AI stickiness: a dominion with two equal targets keeps last activation's target.
+
+## B-21 fix (from G1)
+
+- `startBattle`, the carrier-fleet adaptation: the point defense bolted onto escorts (`u.pdRefit`) was pushed straight from `mkWeapon`, without the per-battle fields `fired`, `cdLeft` and `off`, so `weaponReady` was false and the squadron flak gauntlet (`x.off===0`) skipped it; it only ever thinned rocket salvos. It now gets `{fired:false,cdLeft:0,off:0}` and its faction name (`nameWeapons`), like every other gun. The Nemesis pd adaptation does the same.
+- Behaviour change: against fleets with two or more carriers (or a carrier admiral or the Hive aspect), refit escorts now intercept your wings (up to 2 per turn each) and add flak fire. Random draws: one more intercept volley per wing attack that passes a refit escort within range.
+- Golden scenario: two Reliquaries and a Penitent in sector 2 against a generated Hegemony fleet; the refit escort's last weapon is flak with fired false, cdLeft 0, off 0; a bomber attacking it spends one of its intercepts.

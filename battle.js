@@ -325,7 +325,7 @@ function startBattle(cfg){
   { const nCar0=RUN.fleet.filter(sh=>sh.hp>0&&HULLS[sh.tpl]&&HULLS[sh.tpl].hangar).length, carDoc=(ADMIRALS[RUN.admiral]&&ADMIRALS[RUN.admiral].cmd&&ADMIRALS[RUN.admiral].cmd.id==='scramble')||RUN.aspect==='hive';
     const nCar=nCar0+(carDoc&&nCar0>=1?1:0); /* a carrier admiral or a hive flagship counts as a second carrier: one hull with doctrine still draws a response */
     if(nCar>=2&&(!cfg.enemies||process_env('ADAPT')==='1')&&process_env('NOADAPT')!=='1'){ const pd=cfg.fac==='chorus'?'spores':'flak', cand=B.units.filter(u=>u.side==='enemy'&&!u.t.boss&&!u.isSq&&!u.weapons.some(w=>w.k==='flak')).sort((x,y)=>(y.t.cp||1)-(x.t.cp||1));
-      const n=Math.min(cand.length,nCar>=3?cand.length:Math.ceil(cand.length/2)); for(const u of cand.slice(0,n)){ u.weapons.push(mkWeapon(pd,'T',u.fx||{})); u.pdRefit=true; }
+      const n=Math.min(cand.length,nCar>=3?cand.length:Math.ceil(cand.length/2)); for(const u of cand.slice(0,n)){ u.weapons.push(Object.assign(nameWeapons(u.fac,[mkWeapon(pd,'T',u.fx||{})])[0],{fired:false,cdLeft:0,off:0})); u.pdRefit=true; } // B-21 (Oct 26): the refit gun gets the per-battle fields every other gun has, so it fires and intercepts wings
       if(n){ B.adapt=n; } if(FACTIONS[cfg.fac]&&FACTIONS[cfg.fac].sq) B.adaptWings=nCar>=3?2:1; } }
   if(enc==='intercept'){ const nT=eList.length>=3?3:2, ros=FACTIONS[cfg.fac].roster.filter(id=>HULLS[id]&&!HULLS[id].boss&&HULLS[id].ab!=='launch').sort((a,b)=>(HULLS[a].cp||1)-(HULLS[b].cp||1)||HULLS[a].hp-HULLS[b].hp);
     for(let i=0;i<nT;i++){ const u=makeUnit('enemy',ros[0]||FACTIONS[cfg.fac].roster[0],{scale:sc*1.3,dmg:dm,fac:cfg.fac}); u.transport=true; u.weapons=[]; u.ab=null; u.speed=Math.min(u.speed,3); u.maxHp=u.hp=Math.round(u.maxHp*1.5); u.name=`Transport ${['Aurum','Bastion','Cinder'][i]}`; B.units.push(u); } }
@@ -549,7 +549,7 @@ function applyNemesis(N){ B.nem=N; const es=B.units.filter(u=>u.side==='enemy'&&
     if(nemWeak('board')){ u.crewMax=Math.max(4,Math.round(u.crewMax*.7)); u.crew=Math.min(u.crew,u.crewMax); }
     if(nemWeak('slow')){ u.speed=Math.max(1,u.speed-1); }
     for(const a of N.adapt||[]){ if(a==='shields'&&u.shMax>0){ u.shMax=Math.round(u.shMax*1.2); u.sh=u.sh.map(()=>u.shMax); } if(a==='armor') u.armor=Math.min(.6,u.armor+.1); if(a==='evasion') u.ev+=8; if(a==='aim') u.aim+=8; } }
-  if((N.adapt||[]).includes('pd')){ const pd=fl.fac==='chorus'?'spores':'flak'; for(const u of es.filter(x=>!x.weapons.some(w=>w.k==='flak')).slice(0,2)){ u.weapons.push(Object.assign(mkWeapon(pd,'T',u.fx||{}),{fired:false,cdLeft:0,off:0})); } }
+  if((N.adapt||[]).includes('pd')){ const pd=fl.fac==='chorus'?'spores':'flak'; for(const u of es.filter(x=>!x.weapons.some(w=>w.k==='flak')).slice(0,2)){ u.weapons.push(Object.assign(nameWeapons(u.fac,[mkWeapon(pd,'T',u.fx||{})])[0],{fired:false,cdLeft:0,off:0})); } }
   log(`${fl.name} commands this fleet: your Nemesis.${(N.adapt||[]).length?' He has adapted: '+N.adapt.map(a=>NEM_ADAPT[a].n.toLowerCase()).join(', ')+'.':''}`,'e'); }
 // a proud flagship (weakness): once it falls below 60% hull, his escorts break and flee
 function nemBreak(){ if(!B||!B.nem||B.nemBroken||!nemWeak('anchor')) return; const f=B.units.find(u=>u.nemFlag&&!u.dead&&u.side==='enemy'); if(!f||f.hp>f.maxHp*.6) return;
