@@ -203,3 +203,13 @@ SHIPS['V16_37'] = dict(
          ('engine_at', 'eP', 0, .06, .03, 'stern', dict(r=.021, L=.03, pair=True)),
          ('sensor_dome', 'sd', .10, 0, 0, 'top', dict(r=.009))],
     notes='first pass')
+
+SHIPS['V18_51'] = dict(
+    fac='voidsworn', cls='Carrier', name='Reliquary-class carrier', sym='bilateral',
+    spires=dict(zmin=.035, style='gothic'),                                       # the melted tine racks rebuilt as crisp pinnacles
+    kit=[('turret', 'tt', .22, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='turret', arc='T', lift=.004)),
+         ('turret', 'fl', -.12, .07, 0, 'top', dict(size='S', barrels=2, slot=1, wkind='flak', arc='T', pair=True)),
+         ('bay', 'bay', 0, .20, -.075, 'bow', dict(width=.035, height=.026, launch=(1, 0, 0), pair=True)),
+         ('engine_at', 'eC', 0, .017, 0, 'stern', dict(r=.016, L=.026, pair=True)),
+         ('engine_at', 'eW', 0, .205, -.075, 'stern', dict(r=.018, L=.026, pair=True))],
+    notes='first pass')
