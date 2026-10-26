@@ -401,7 +401,7 @@ func _avail() -> Array:
 	var C = _C()
 	return C.page["data"]["avail"] if C.page["kind"] == "map" else []
 func _refresh() -> void:
-	var C = _C(); var av = _avail()
+	var C = _C(); var av = _avail(); _card_key = ""
 	_danger.clear()
 	for id in _nodes:
 		var d = _nodes[id]; var n = d["n"]; var done = C.jt(n.get("done"))
@@ -589,6 +589,8 @@ func _node_at(sp: Vector2) -> String:
 		if dd < r and dd < bd:
 			bd = dd; best = id
 	return best
+var _card_key := ""
+var _hot_by_key := false
 func _update_card() -> void:
 	if _hot == "" or _flying:
 		card.visible = false; return
@@ -598,10 +600,13 @@ func _update_card() -> void:
 	card.add_theme_stylebox_override("panel", ui._sb(Color(0.03, 0.045, 0.08, 0.95), Color(ui.GILT, 0.6), 1, 3, 12))
 	card_text.add_theme_font_size_override("normal_font_size", ui.px(15)); card_text.add_theme_font_size_override("bold_font_size", ui.px(15))
 	card_text.custom_minimum_size.x = ui.px(380)
-	card_text.text = _card_bb(n)
+	var ck = _hot + "|" + str(_routes.size()) + "|" + str(_danger.get(_hot, {}).get("ratio", 0))
+	if ck != _card_key:   # the text only changes with the node, its routes or its danger
+		_card_key = ck; card_text.text = _card_bb(n)
 	card.visible = true; card.reset_size()
-	var mp = get_local_mouse_position() + Vector2(ui.px(24), ui.px(16))
-	if mp.x + card.size.x > size.x - ui.px(_side_w): mp.x = get_local_mouse_position().x - card.size.x - ui.px(18)
+	var anchor = get_local_mouse_position() if not _hot_by_key else _screen(_nodes[_hot]["pos"]) if _nodes.has(_hot) else get_local_mouse_position()   # keyboard focus: beside the node
+	var mp = anchor + Vector2(ui.px(24), ui.px(16))
+	if mp.x + card.size.x > size.x - ui.px(_side_w): mp.x = anchor.x - card.size.x - ui.px(18)
 	mp.y = clamp(mp.y, 8, size.y - card.size.y - 8)
 	card.position = mp
 func _cc(t, col) -> String: return "[color=" + ui.hexs(col) + "]" + str(t) + "[/color]"
@@ -664,7 +669,7 @@ func _set_hot(h: String) -> void:
 func _gui_input(e: InputEvent) -> void:
 	if _flying: return
 	if e is InputEventMouseMotion:
-		_set_hot(_node_at(e.position))
+		_hot_by_key = false; _set_hot(_node_at(e.position))
 	elif e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT:
 		var id = _node_at(e.position)
 		if id != "" and _avail().has(id):
@@ -673,9 +678,9 @@ func _gui_input(e: InputEvent) -> void:
 		var av = _avail()
 		if av.is_empty(): return
 		if e.keycode in [KEY_RIGHT, KEY_DOWN, KEY_TAB]:
-			_focus = (_focus + 1) % av.size(); _set_hot(av[_focus]); accept_event()
+			_focus = (_focus + 1) % av.size(); _hot_by_key = true; _set_hot(av[_focus]); accept_event()
 		elif e.keycode in [KEY_LEFT, KEY_UP]:
-			_focus = (_focus - 1 + av.size()) % av.size(); _set_hot(av[_focus]); accept_event()
+			_focus = (_focus - 1 + av.size()) % av.size(); _hot_by_key = true; _set_hot(av[_focus]); accept_event()
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
 			accept_event(); fly_to(av[_focus % av.size()])
 func fly_to(id: String) -> void:
