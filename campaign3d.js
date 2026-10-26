@@ -33,7 +33,7 @@ const _map=mapScreen; mapScreen=function(){ _map(); appEl.classList.add('see3d')
 // title screen: live 3D showcase battle behind the menu, plus the skirmish mode
 const _title=titleScreen; titleScreen=function(){ disposeAllViews(); clearOverlays(); B=null; _title(); const menu=appEl.querySelector('.title .menu'); if(menu) menu.insertAdjacentHTML('beforeend','<button data-act="c3skirmish">3D skirmish</button><button data-act="c3settings">Settings</button>'); setupShowcase(); };
 function setupShowcase(){ const f=PLAYABLE; const pf=f[Math.floor(Math.random()*f.length)], ef=f[Math.floor(Math.random()*f.length)];
-  const saved=RUN; setupBattle({pf,ef,map:'random',dep:'line',small:G.mobile}); RUN=saved; B.showcase=true; B.showArcs=false; bRefresh(); G.ctl.attract=true; G.ctl.reset(); G.ctl.r=330; G.ctl.b=.9; }
+  const saved=RUN, rs=RNG_S; setupBattle({pf,ef,map:'random',dep:'line',small:G.mobile}); RUN=saved; RNG_S=rs; B.showcase=true; /* G3 finding (Oct 26): the decorative battle no longer moves the rules random numbers */ B.showArcs=false; bRefresh(); G.ctl.attract=true; G.ctl.reset(); G.ctl.r=330; G.ctl.b=.9; }
 ACT.c3skirmish=()=>{ hideApp(); setupBattle({small:false}); showIntro(); G.ctl.attract=true; };
 ACT.c3title=()=>{ const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on'); hideEnd(); titleScreen(); };
 
@@ -108,7 +108,7 @@ ACT.c3retreatYes=()=>{ closeModal(); if(B&&B.campaign&&!B.over&&!B.busy&&!B.fini
 ACT.c3retreatNo=()=>closeModal();
 
 // wounded captains take the next hull bought at a shipyard
-const _newShip=newShip; newShip=function(t,vet){ const sh=_newShip(t,vet); if(!B&&!vet&&RUN&&RUN.reserve&&RUN.reserve.length){ const r=RUN.reserve.shift(), f=sh.hp/Math.max(1,derive(sh).maxHp); sh.cap=r.cap; sh.hp=Math.max(1,Math.round(derive(sh).maxHp*f)); /* B1 (B-10): a hired veteran keeps his ship; hull is re-derived for the new captain's perks */ setTimeout(()=>toast(`${r.cap.name} recovers and takes command of the ${sh.name}.`),200); } return sh; };
+const _newShip=newShip; newShip=function(t,vet){ const sh=_newShip(t,vet); if((!B||B.showcase)&&!vet&&RUN&&RUN.reserve&&RUN.reserve.length){ const r=RUN.reserve.shift(), f=sh.hp/Math.max(1,derive(sh).maxHp); sh.cap=r.cap; sh.hp=Math.max(1,Math.round(derive(sh).maxHp*f)); /* B1 (B-10): a hired veteran keeps his ship; hull is re-derived for the new captain's perks */ setTimeout(()=>toast(`${r.cap.name} recovers and takes command of the ${sh.name}.`),200); } return sh; };
 // settings from the title screen
 function settingsHtml(){ const row=(k,label,val)=>`<div class="row" style="margin:6px 0"><span style="flex:1">${label}</span><button data-act="c3opt" data-arg="${k}">${val}</button></div>`;
   return `<h2>Settings</h2>${row('quality','Graphics',G.quality[0].toUpperCase()+G.quality.slice(1))}${row('fx','Reduce flashing',G.fxReduced?'On':'Off')}${row('shake','Reduce screen shake',G.shakeRed?'On':'Off')}${row('sound','Sound',G.sfxOn?'On':'Off')}<div class="row" style="margin:6px 0"><span style="flex:1">Sound volume</span><input type="range" min="0" max="100" value="${Math.round(SFX.getVol()*100)}" aria-label="Sound volume" oninput="SFX.setVol(this.value/100)" onchange="SFX.setVol(this.value/100,true)" style="width:140px;max-width:45vw"></div>${row('speed','Animation speed',SPEED<1?'Fast':'Normal')}${row('cine','Action camera',G.cine?'On':'Off')}${row('alt','Turn order',SETUP.alt?'Alternating':'Classic')}${row('copy','Copy report for Claude','Copy')}${row('follow','Camera follows activations',G.follow?'On':'Off')}${row('ai','Enemy AI',AI_LEVEL==='veteran'?'Veteran':'Standard')}${row('tips','Battle tips',(META.opts&&META.opts.tipsOff)?'Off':'On')}
@@ -121,7 +121,7 @@ ACT.c3optClose=()=>closeModal();
 function fleetSig(){ return RUN?RUN.fleet.map(s=>s.tpl+':'+s.hp).join('|')+'#'+RUN.sector:''; }
 function setupFleetShowcase(){ if(!RUN||!RUN.fleet.length) return; if(B&&B.showcase==='fleet'&&B.showSig===fleetSig()) return;
   disposeAllViews(); clearOverlays(); const pool=[(RUN.map&&RUN.map.fac)||'hegemony'];
-  startBattle({kind:'battle',fac:pool[Math.floor(Math.random()*pool.length)],col:0,enemies:[],map:'random',dep:'line'});
+  { const rs=RNG_S; startBattle({kind:'battle',fac:pool[Math.floor(Math.random()*pool.length)],col:0,enemies:[],map:'random',dep:'line'}); RNG_S=rs; } // G3 finding (Oct 26): the map's decorative battle leaves the rules random numbers as they were
   B.showcase='fleet'; B.showSig=fleetSig(); B.showArcs=false; B.side='none'; buildBattleEnv();
   const ps=alive('player').map(x=>hexWorld(x.q,x.r)); const cen=ps.reduce((a,p)=>a.add(p),V3.Zero()).scale(1/Math.max(1,ps.length)); cen.y=0;
   G.ctl.t=cen; G.home=cen.clone(); G.ctl.r=95; G.ctl.b=1.2; G.ctl.attract=true; }

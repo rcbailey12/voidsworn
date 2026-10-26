@@ -10,6 +10,11 @@ Commits are on main; the newest step is at the bottom.
 - **B-19** `sim3d.js`: every alternating round start now awaits the turn-start deaths, exactly as the game does. Use `roundStartBoth()` (step 1) as the reference order.
 - No random draws changed.
 
+## G3 findings fixed in the oracle (Oct 26, from the campaign port)
+
+- **Decorative battles no longer move the rules random numbers.** The title screen's showcase battle (`setupShowcase`) and the map's fleet showcase (`setupFleetShowcase`) call `startBattle` with no seed, which drew one number and reseeded the rules generator, so campaign rolls after a map visit depended on what was shown. Both now save `RNG_S` before and restore it after. Godot: the campaign rules generator should never be touched by anything decorative. Behaviour change: campaign rolls (event picks, shop stock, rewards) after visiting the map differ from older builds.
+- **Wounded reserve captains now take hulls bought at a shipyard.** campaign3d.js's `newShip` wrapper checked `!B`, but the map's decorative battle is loaded while you shop, so the reserve hand-off never happened. Now `(!B||B.showcase)`. Godot: a hull bought at a shipyard (not a veteran hire) takes the first reserve captain, keeping the new ship's hull fraction.
+
 ## Step 1: B3 faction identity (commits f7bfe70, 5294612)
 
 ### Data (data.js)
