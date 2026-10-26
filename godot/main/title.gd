@@ -80,6 +80,8 @@ func _ready() -> void:
 	if camp:
 		menu.add_child(_button("Progression", func() -> void: main.new_run({"screen": "legacy"})))
 		menu.add_child(_button("How to play", func() -> void: main.new_run({"screen": "help"})))
+	if ResourceLoader.exists("res://story/story.gd"):   # story hook: the Career screen (godot/story/README.md)
+		menu.add_child(_button("Career", func() -> void: load("res://story/story.gd").open_standalone(self)))
 	menu.add_child(_button("Quick battle", func() -> void: main.quick_battle()))
 	menu.add_child(_button("Settings", func() -> void: _settings()))
 	menu.add_child(_button("Quit", func() -> void: main.quit_clean()))

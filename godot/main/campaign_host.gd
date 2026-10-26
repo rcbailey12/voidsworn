@@ -34,6 +34,7 @@ var seen_n := {}            # bot runs: how often each button was offered and en
 var rng := RandomNumberGenerator.new()
 var streak := 0
 var in_battle := false
+var story = null            # story hook: res://story/story.gd (null when the story folder is missing)
 var t0 := 0.0
 
 
@@ -57,6 +58,13 @@ func start(m: Node, o: Dictionary) -> void:
 	else:
 		C.persist_on = true
 		C.persist_load()
+	# story hook (story stream, godot/story/README.md): admiral lines, flagship name, titles, career records. Attached before
+	# the first screen and before the UI binds, so it sees every change first; bot runs keep the career in memory only.
+	if ResourceLoader.exists("res://story/story.gd"):
+		story = load("res://story/story.gd").new()
+		story.name = "Story"
+		add_child(story)
+		story.attach(C, not bot)
 	C.titleScreen()
 	if o.get("continue", false):
 		C.act("continueRun")

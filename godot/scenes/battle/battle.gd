@@ -441,6 +441,13 @@ func _begin(a) -> void:
 	batches.append({"events": api.take_events(), "view": api.view()})
 	sfx.ambient_start()
 	_refresh_ui()
+	# story hook (story stream, godot/story/README.md): admiral, enemy flagship and Nemesis lines in the battle log
+	voice = null
+	if not bot and ResourceLoader.exists("res://story/battle_voice.gd"):
+		voice = load("res://story/battle_voice.gd").new()
+		voice.setup_from_rules(R, V)
+		for l in voice.opening():
+			hud.add_log(l["text"], l["kind"])
 	if ResourceLoader.exists("res://portraits/portraits.gd") and R.RUN != null:
 		var adm := str(R.RUN.get("admiral", ""))
 		var A = R.ADMIRALS.get(adm, {})
@@ -752,7 +759,13 @@ func _who(id) -> String:
 	return "p" if _side(id) == "player" else "e"
 
 
+var voice = null   # story hook: godot/story/battle_voice.gd (null when the story folder is missing)
+
+
 func _play_event(e: Dictionary) -> void:
+	if voice != null:   # story hook
+		for l in voice.on_event(e):
+			hud.add_log(l["text"], l["kind"])
 	match e["t"]:
 		"round":
 			_log("Round %d." % int(e["round"]), "x")
@@ -1382,6 +1395,10 @@ func _end_flow() -> void:
 	if bot or args.has("bot-runs"):
 		finished.emit(result)
 		return
+	if voice != null:   # story hook: your admiral's last word (or the Nemesis's gloat) on the end card
+		var vl: String = voice.closing(win)
+		if vl != "":
+			body += "\n\n" + vl
 	hud.show_end("Victory" if win else "Defeat", body, win, external)
 
 
