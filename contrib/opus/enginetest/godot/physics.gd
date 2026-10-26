@@ -6,7 +6,7 @@ extends Node3D
 const HULL_LAYER := 1
 const DEBRIS_LAYER := 2
 
-const FX := preload("res://fx.gd")
+const FX := preload("res://bfx.gd")
 const DEBRIS_BODY := """
 shader_type spatial;
 render_mode cull_disabled;
@@ -57,7 +57,7 @@ func setup(ships: Array, max_bodies: int) -> void:
 	sh.code = DEBRIS_BODY_COMPAT if compat else DEBRIS_BODY
 	_mat = ShaderMaterial.new()
 	_mat.shader = sh
-	# irregular shards (see fx.gd shard_mesh) in three sizes, each with a convex collider from its own corners
+	# irregular shards (see bfx.gd shard_mesh) in three sizes, each with a convex collider from its own corners
 	for sz in [0.45, 0.8, 1.2]:
 		var sm: Array = FX.shard_mesh(_rng, sz)
 		var cs := ConvexPolygonShape3D.new()

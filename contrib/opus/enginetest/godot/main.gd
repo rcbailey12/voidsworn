@@ -16,7 +16,7 @@ extends Node
 # Other options: --res WxH (render size; always give it), --assets dir, --key energy, --hex size, --fps N (clock rate for
 #   --shots, default 60), --no-relaunch. Relative paths for --bench, --shots and --assets are taken relative to this folder.
 
-const FX := preload("res://fx.gd")
+const FX := preload("res://bfx.gd")
 
 const SHIP_LEN := 24.0
 const FOV := 40.0
@@ -484,10 +484,14 @@ func _build_environment() -> void:
 	env.tonemap_white = 8.0
 	env.glow_enabled = true
 	env.glow_hdr_threshold = 0.8
-	env.glow_intensity = 0.8
+	env.glow_intensity = 0.6
 	env.glow_strength = 1.0
 	env.glow_bloom = 0.0
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SCREEN
+	# a tighter halo, near Babylon's bloom (kernel about 4% of the height, weight 0.35): Godot's default mix leans on the
+	# widest blur level, which turned every explosion and lance into a large white blob (A3 review)
+	for lv in 7:
+		env.set_glow_level(lv, [0.0, 0.6, 1.0, 0.5, 0.0, 0.0, 0.0][lv])
 	var we := WorldEnvironment.new()
 	we.environment = env
 	world.add_child(we)
@@ -762,8 +766,8 @@ func _write_trace(path: String) -> void:
 
 func _read_scene_options() -> void:
 	opt_rich = args.has("rich")
-	opt_max = args.has("max")
 	opt_board = args.has("board")
+	opt_max = args.has("max") or opt_board  # the board is max mode from the tactical camera, as in the Babylon half
 	opt_vsync = args.has("vsync")
 	opt_physics = opt_max or opt_board or args.has("physics")
 	n_ships = 6
@@ -795,19 +799,10 @@ func _read_scene_options() -> void:
 # Rich and max environment features. All of these are Forward+ only; Compatibility keeps the main scene's look.
 func _apply_quality() -> void:
 	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
-	if opt_rich or opt_max:
-		if compat:
-			notes.append("rich: no volumetric fog in Compatibility (particle smoke only)")
-		else:
-			# volumetric fog only where FogVolumes put density (breach vents, smoke rings, the fireball)
-			env.volumetric_fog_enabled = true
-			env.volumetric_fog_density = 0.0
-			env.volumetric_fog_albedo = Color(1, 1, 1)
-			env.volumetric_fog_length = 260.0
-			env.volumetric_fog_detail_spread = 2.0
-			env.volumetric_fog_ambient_inject = 0.6
-			env.volumetric_fog_temporal_reprojection_enabled = true
-			RenderingServer.environment_set_volumetric_fog_volume_size(160, 96)
+	if (opt_rich or opt_max) and not compat:
+		# the venting plumes, smoke rings and fireball are raymarched volumes in bfx.gd (as in the Babylon half); Godot's
+		# volumetric fog is only used for the environment's dust haze (env.gd), which sets its own values
+		RenderingServer.environment_set_volumetric_fog_volume_size(160, 96)
 	if not opt_max:
 		return
 	if compat:
@@ -815,12 +810,14 @@ func _apply_quality() -> void:
 		return
 	env.ssao_enabled = true
 	env.ssao_radius = 2.0
-	env.ssao_intensity = 1.6
+	env.ssao_intensity = 1.1  # as Babylon's SSAO2 total strength
 	env.ssil_enabled = true
 	env.ssil_radius = 6.0
 	env.ssr_enabled = true
 	env.ssr_max_steps = 96
-	env.sdfgi_enabled = true
+	# SDFGI is off unless asked for (--sdfgi): in open space it has almost nothing to bounce, and it replaces the flat
+	# ambient light, which left the dark hulls (Chorus, Deathless) nearly black on their shadow sides (A3 review)
+	env.sdfgi_enabled = args.has("sdfgi")
 	env.sdfgi_cascades = 6
 	env.sdfgi_min_cell_size = 0.5
 	env.sdfgi_use_occlusion = true
@@ -830,7 +827,8 @@ func _apply_quality() -> void:
 	key_light.light_angular_distance = 0.5  # soft (PCSS) key shadows; Godot has no screen-space contact shadows
 	key_light.shadow_blur = 1.0
 	RenderingServer.directional_shadow_atlas_set_size(8192, true)
-	notes.append("max: SSAO, SSIL, SSR, SDFGI (6 cascades), TAA on top of MSAA 4x (bench only, not in the stills), 8192 shadow atlas with soft (PCSS) key shadows, tiling detail normals on the hulls; no screen-space contact shadows in Godot")
+	notes.append("max: SSAO, SSIL, SSR, %sTAA on top of MSAA 4x (bench only, not in the stills), 8192 shadow atlas with soft (PCSS) key shadows, tiling detail normals on the hulls; no screen-space contact shadows in Godot" % (
+		"SDFGI (6 cascades), " if env.sdfgi_enabled else "no SDFGI (--sdfgi turns it on), "))
 
 
 # Max mode presentation: colour grading (built-in adjustments), a mild depth of field on the hero shots, shake from fx.
@@ -854,19 +852,33 @@ func _cam_attributes(focus: float) -> void:
 		cam.attributes = null
 		return
 	# Mild, on the hero shots only: the whole ship sharp front to back, only the far background softened (blur starts
-	# 40 units behind the focus, well past the far end of a 24-unit ship, and ramps in over 80 units, small amount).
+	# 60 units behind the focus, well past the far end of a 24-unit ship, and ramps in over 100 units, small amount).
 	if cam.attributes == null:
 		var ca := CameraAttributesPractical.new()
 		ca.dof_blur_far_enabled = true
 		ca.dof_blur_near_enabled = false
-		ca.dof_blur_amount = 0.04
+		ca.dof_blur_amount = 0.02
 		cam.attributes = ca
 	var a := cam.attributes as CameraAttributesPractical
-	a.dof_blur_far_distance = focus + 40.0
-	a.dof_blur_far_transition = 80.0
+	a.dof_blur_far_distance = focus + 60.0
+	a.dof_blur_far_transition = 100.0
 
 
 func _shot_list() -> Array:
+	var all := _shot_list_all()
+	if not args.has("only"):
+		return all
+	# --only a,b: just the stills whose file names contain one of these (quicker checks)
+	var keep: Array = []
+	for e in all:
+		for w in String(args["only"]).split(","):
+			if String(e["file"]).contains(w):
+				keep.append(e)
+				break
+	return keep
+
+
+func _shot_list_all() -> Array:
 	if opt_board:
 		return [{"t": 3.0, "cam": "board", "file": "board_t03.0.png"}, {"t": 12.6, "cam": "board", "file": "board_t12.6.png"}]
 	var prefix := "max_" if opt_max else ("rich_" if opt_rich else "")
