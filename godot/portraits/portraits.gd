@@ -86,7 +86,20 @@ static func nemesis(fac: String, n: int, scars: Array = []) -> Texture2D:
 	var sz := img.get_width()
 	var anc: Array = e.get("anchor", [0.5, 0.42, 0.34])
 	var place: Dictionary = _scars().get("place", {})
+	var patches = e.get("patch", {})
 	for k in rest:
+		# a later scar: the scarred region cut from this Nemesis's own painted scar of that kind (feathered), when present
+		if patches is Dictionary and patches.has(k):
+			var pe: Dictionary = patches[k]
+			var pi := _img("res://portraits/" + String(pe.get("file", "")))
+			if pi != null:
+				pi.convert(Image.FORMAT_RGBA8)
+				var f := float(sz) / 768.0
+				if absf(f - 1.0) > 0.01:
+					pi.resize(int(pi.get_width() * f), int(pi.get_height() * f), Image.INTERPOLATE_LANCZOS)
+				img.blend_rect(pi, Rect2i(0, 0, pi.get_width(), pi.get_height()), Vector2i(int(float(pe.get("x", 0.0)) * sz), int(float(pe.get("y", 0.0)) * sz)))
+				continue
+		# fallback: the generic overlay at the face anchor
 		var sc := _img("res://portraits/nemesis/scars/scar_%s.png" % k)
 		if sc == null or not place.has(k):
 			continue

@@ -192,13 +192,26 @@ for _fac, _L in NEM2.items():
         else:
             SUB2[_k] = (_fac, 'A Nemesis of the %s, a rival enemy war-organism: %s. %s' % (_fac.capitalize(), _d, NOBODY if _fac == 'chorus' else
                         'A machine with no figure, no statue, no head, no face, no body, no robot.') + NEM_STYLE, CREATURE)
+# n3: the five n2 subjects that still grew limbs or a body (Chorus 2, 3, 4; Deathless 1, 6), described as objects lying or floating
+SUB3 = {}
+for _k, _d in {
+ 'nem_chorus_2': "a heap of swollen glowing pustule sacs and writhing feeding tendrils erupting from a cracked grey husk that lies on its side on the cavern floor, like a fungus bursting from a carcass",
+ 'nem_chorus_3': "a giant armoured purple-black dome-shaped shell half sunk into the cavern floor, bristling with long bone spikes, glowing yellow vents along its rim, nothing beneath it",
+ 'nem_chorus_4': "a floating brain-like mass of wrinkled translucent neural tissue the size of a whale, lit from within, long nerve cords trailing beneath it like roots",
+ 'nem_deathless_1': "seven tall black obelisk processors floating in a ring around a single small green light, thin green data beams joining them, empty black space between them",
+ 'nem_deathless_6': "a huge broken ring of rotating black blades floating alone above a dark pit, a single green beam rising from the empty centre of the ring",
+}.items():
+    _fac = _k.split('_')[1]
+    SUB3[_k] = (_fac, 'A Nemesis of the %s, a rival enemy war-organism: %s. %s' % (_fac.capitalize(), _d, NOBODY if _fac == 'chorus' else
+                'A machine with no figure, no statue, no head, no face, no body, no robot, no legs, no arms.') + NEM_STYLE, CREATURE)
 for _fac, _L in NEM.items():
     for _n, _d in enumerate(_L, 1):
         _pre = HUMAN + ' ' if _fac in ('voidsworn', 'hegemony', 'corsair') else (CH + ' ' if _fac == 'chorus' else '')
         SUBJECT['nem_%s_%d' % (_fac, _n)] = (_fac, 'Portrait of a Nemesis, a rival enemy commander of the %s: %s. %s' % (_fac.capitalize(), _d, _pre) + NEM_STYLE)
 
-def item(i, model, seeds, v2=False):
-    if v2: fac, p, style = SUB2[i]
+def item(i, model, seeds, v2=False, v3=False):
+    if v3: fac, p, style = SUB3[i]
+    elif v2: fac, p, style = SUB2[i]
     else: fac, p = SUBJECT[i]; style = CREATURE if i in CREATURE_IDS else STYLE
     it = {'id': i, 'model': model, 'prompt': p + ' ' + style.format(**F[fac]), 'nosuffix': True, 'seeds': seeds}
     if model == 'qref':   # paint onto the faction's dark background plate (tools/portraits/plates.py)
@@ -222,7 +235,8 @@ BATCHES = {
 BATCHES['b2'] = [item('chorus_mending_b1', 'zit', S4), item('chorus_mending_b2', 'zit', S4), item('deathless_nekhet_b', 'zit', S4),
                   item('deathless_nekhet_b', 'qie', S4[:2]), item('ithar_aelith_b', 'qie', S4), item('ithar_aelith_b', 'qref', S4[:2])]
 BATCHES['n2'] = [item('nem_%s_%d' % (f, n), 'zit', S4[:3], v2=True) for f in ('chorus', 'deathless', 'ithar') for n in range(1, 7)]
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2'}
+BATCHES['n3'] = [item(k, 'zit', S4, v3=True) for k in SUB3]
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

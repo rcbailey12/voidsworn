@@ -1,0 +1,66 @@
+{
+ "out": "n3",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "nem_chorus_2",
+   "model": "zit",
+   "prompt": "A Nemesis of the Chorus, a rival enemy war-organism: a heap of swollen glowing pustule sacs and writhing feeding tendrils erupting from a cracked grey husk that lies on its side on the cavern floor, like a fungus bursting from a carcass. There is no person, no head, no face, no eyes, no mouth, no arms, no legs, no skeleton and no skull anywhere in the image; it does not stand or walk. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "nem_chorus_3",
+   "model": "zit",
+   "prompt": "A Nemesis of the Chorus, a rival enemy war-organism: a giant armoured purple-black dome-shaped shell half sunk into the cavern floor, bristling with long bone spikes, glowing yellow vents along its rim, nothing beneath it. There is no person, no head, no face, no eyes, no mouth, no arms, no legs, no skeleton and no skull anywhere in the image; it does not stand or walk. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "nem_chorus_4",
+   "model": "zit",
+   "prompt": "A Nemesis of the Chorus, a rival enemy war-organism: a floating brain-like mass of wrinkled translucent neural tissue the size of a whale, lit from within, long nerve cords trailing beneath it like roots. There is no person, no head, no face, no eyes, no mouth, no arms, no legs, no skeleton and no skull anywhere in the image; it does not stand or walk. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "nem_deathless_1",
+   "model": "zit",
+   "prompt": "A Nemesis of the Deathless, a rival enemy war-organism: seven tall black obelisk processors floating in a ring around a single small green light, thin green data beams joining them, empty black space between them. A machine with no figure, no statue, no head, no face, no body, no robot, no legs, no arms. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by cold emerald-green core light, deep soft shadow on the right side, a dark painterly black tomb-like machine vault with faint green circuitry background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "nem_deathless_6",
+   "model": "zit",
+   "prompt": "A Nemesis of the Deathless, a rival enemy war-organism: a huge broken ring of rotating black blades floating alone above a dark pit, a single green beam rising from the empty centre of the ring. A machine with no figure, no statue, no head, no face, no body, no robot, no legs, no arms. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by cold emerald-green core light, deep soft shadow on the right side, a dark painterly black tomb-like machine vault with faint green circuitry background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  }
+ ]
+}

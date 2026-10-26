@@ -1,0 +1,195 @@
+{
+ "out": "n1s",
+ "budget_s": 1050,
+ "items": [
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_1.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_1.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_1.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_2.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_2.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_2.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_3.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_3.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_3.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_4.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_4.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_4.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_5.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_5.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_5.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_6.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_6.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_6.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_1.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_1",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_1.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_1",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_1.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_2.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_2",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_2.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_2",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_2.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_3.png",
+   "prompt": "Add one large old healed burn scar to this person: waxy, puckered, pink-red burn tissue spreading over one cheek, the jaw and the side of the neck. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_3",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_3.png",
+   "prompt": "Replace one of this person's eyes and the cheekbone around it with a crude bolted-on cybernetic implant: a dark gunmetal plate with rivets and a glowing red lens, raw scar tissue where it meets the skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_hegemony_3",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop/nem_hegemony_3.png",
+   "prompt": "Add a deep old blade scar running vertically through one of this person's eyes from brow to cheek; that eye is milky white and blind, with old stitch marks along the scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  }
+ ]
+}

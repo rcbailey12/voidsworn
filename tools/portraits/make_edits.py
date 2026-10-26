@@ -11,7 +11,17 @@ NEM_PICKS = {
  'voidsworn': ('n1', [23, 11, 11, 11, 11, 23]),
  'hegemony':  ('n1', [23, 23, 23, 23, 11, 11]),
  'corsair':   ('n1', [23, 11, 23, 11, 23, 11]),
+ # a ('n3', seed) entry overrides the faction folder for that Nemesis
+ 'chorus':    ('n2', [11, ('n3', 0), ('n3', 0), ('n3', 0), 23, 11]),
+ 'deathless': ('n2', [('n3', 0), 11, 23, 37, 11, ('n3', 0)]),
+ 'ithar':     ('n2', [23, 37, 11, 23, 23, 23]),
 }
+
+def pick_path(nid):
+    """render path (relative to comfy_io\\PORTRAITS\\) of a Nemesis's picked render, before any fix"""
+    fac = nid.split('_')[1]; n = int(nid.split('_')[2]); folder, seeds = NEM_PICKS[fac]; s = seeds[n - 1]
+    if isinstance(s, tuple): folder, s = s
+    return '%s/%s_zit_s%d_00001_.png' % (folder, nid, s)
 FIXES = {
  'nem_voidsworn_6': "Remove the peaked officer cap from this man's head and show his bare shaved head with a row of small ritual piercings along the brow.",
  'nem_hegemony_4':  "Remove the peaked officer cap from this man's head and show short slicked-back dark hair; keep the thin glowing visor across his eyes.",
@@ -34,9 +44,8 @@ KINDS = {'voidsworn': ['burn', 'cyber', 'eye'], 'hegemony': ['burn', 'cyber', 'e
          'chorus': ['burn', 'carapace'], 'ithar': ['burn', 'porcelain'], 'deathless': ['burn', 'machine']}
 
 def src_of(fac, n):
-    folder, seeds = NEM_PICKS[fac]; nid = 'nem_%s_%d' % (fac, n)
-    if nid in FIXES: return 'nfix/%s_fix_s11_00001_.png' % nid
-    return '%s/%s_zit_s%d_00001_.png' % (folder, nid, seeds[n - 1])
+    # scar edits paint on the bust crop (nemesis_crop.py), uploaded to comfy_io\PORTRAITS\ncrop\
+    return 'ncrop/nem_%s_%d.png' % (fac, n)
 
 def scar_prompt(fac, k):
     s = SCAR[k]
@@ -45,17 +54,16 @@ def scar_prompt(fac, k):
 
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
-    fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP,
-            'src': '%s/%s_zit_s%d_00001_.png' % (NEM_PICKS[nid.split('_')[1]][0], nid, NEM_PICKS[nid.split('_')[1]][1][int(nid[-1]) - 1])}
-           for nid, p in FIXES.items()]
+    fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
     json.dump({'out': 'nfix', 'budget_s': 1050, 'items': fix}, open(os.path.join(B, 'n1fix.json'), 'w'), indent=1)
     print('n1fix', len(fix))
-    ready = [f for f in KINDS if f in NEM_PICKS]
-    items = [{'id': 'nem_%s_%d' % (f, n), 'kind': k, 'seed': 11, 'src': src_of(f, n), 'prompt': scar_prompt(f, k)}
-             for f in ready for n in range(1, 7) for k in KINDS[f]]
-    third = (len(items) + 2) // 3
-    for j, tag in enumerate('abc'):
-        part = items[j * third:(j + 1) * third]
+    # scar jobs: a = Voidsworn + Hegemony minus the tail, b = the rest of the humans, c = Chorus, Ithar, Deathless (36 each at most)
+    def items_for(facs):
+        return [{'id': 'nem_%s_%d' % (f, n), 'kind': k, 'seed': 11, 'src': src_of(f, n), 'prompt': scar_prompt(f, k)}
+                for f in facs if f in NEM_PICKS for n in range(1, 7) for k in KINDS[f]]
+    human = items_for(['voidsworn', 'hegemony', 'corsair'])
+    jobs = {'a': human[:27], 'b': human[27:], 'c': items_for(['chorus', 'ithar', 'deathless'])}
+    for tag, part in jobs.items():
         if part:
             json.dump({'out': 'n1s', 'budget_s': 1050, 'items': part}, open(os.path.join(B, 'n1s_%s.json' % tag), 'w'), indent=1)
             print('n1s_' + tag, len(part), 'factions', sorted({i['id'].split('_')[1] for i in part}))
