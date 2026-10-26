@@ -181,7 +181,7 @@ void fragment() {
 		float n2 = fbm(p * 4.5 + vec2(age * 9.0, seed * 3.0));
 		float core = smoothstep(0.55, 0.0, r + (n - 0.5) * 0.35);
 		float corona = exp(-r * r * 2.2) * (0.55 + 0.6 * n2) * smoothstep(1.0, 0.6, r + (n2 - 0.5) * 0.4);
-		vec3 hot = mix(vCol.rgb, vec3(1.0, 0.97, 0.9), core * core * 0.6);
+		vec3 hot = mix(vCol.rgb, vec3(0.88, 0.96, 1.0), core * core * 0.6);
 		add = (hot * core * 1.8 + vCol.rgb * corona * 1.1) * I;
 	} else if (k == 15) {
 		// bio glob: a wet, dark-skinned body with a bioluminescent heart and a wobbling rim
@@ -732,145 +732,33 @@ void fragment() {
 }
 """
 
-# Breach hole: torn hole, glowing jagged edge, charred ring, cracks, projected onto the hull from the depth buffer inside
-# a box (x and z span the decal, y is the hull normal). POM (max): the cavity as a height field with ribs and conduits.
-# heat cools a hole down over time (1 = fresh, 0.15 = old, still glowing a little); bio = organic growth fringe.
-const DECAL := """
-shader_type spatial;
-render_mode unshaded, blend_premul_alpha, depth_draw_never, depth_test_disabled, cull_front, shadows_disabled, fog_disabled;
-""" + COMMON + DEPTH + """
-uniform float seed = 0.0;
-uniform float heat = 1.0;
-uniform float open = 1.0;
-uniform float bio = 0.0;
-float holeR(float ang) { return (0.36 + 0.16 * (fbm(vec2(cos(ang), sin(ang)) * 2.2 + seed * 5.0) - 0.5) * 2.0 + 0.035 * sin(ang * 11.0 + seed)) * open; }
-#ifdef POM
-const float DEP = 0.22;
-float cav(vec2 uv) {
-	vec2 p = uv * 2.0 - 1.0;
-	float r = length(p);
-	float R = holeR(atan(p.y, p.x));
-	float wall = smoothstep(R + 0.005, R - 0.05, r);
-	float inner = smoothstep(R - 0.04, R - 0.14, r);
-	float rib = smoothstep(0.86, 1.0, abs(sin(p.x * 7.0 + seed))) * 0.55 + smoothstep(0.9, 1.0, abs(sin(p.y * 5.0 + seed * 2.0))) * 0.4;
-	return wall * DEP * (0.72 + 0.28 * fbm(p * 5.0 + seed) - rib * inner * 0.7);
-}
-#endif
-void fragment() {
-	vec3 vpos = scene_view_pos(SCREEN_UV, INV_PROJECTION_MATRIX);
-	vec3 wpos = (INV_VIEW_MATRIX * vec4(vpos, 1.0)).xyz;
-	mat4 inv_m = inverse(MODEL_MATRIX);
-	vec3 lp = (inv_m * vec4(wpos, 1.0)).xyz;
-	if (abs(lp.x) > 0.5 || abs(lp.y) > 0.5 || abs(lp.z) > 0.5) { discard; }
-	vec3 uN = normalize(MODEL_MATRIX[1].xyz);
-	vec3 T = normalize(MODEL_MATRIX[0].xyz);
-	vec3 Bt = normalize(MODEL_MATRIX[2].xyz);
-	vec2 vUv = lp.xz + 0.5;
-	float fl = flick(0.8 + 0.2 * vnoise(vec2(scene_t * 9.0, seed)) * vnoise(vec2(scene_t * 23.0, seed + 2.0)) * 2.0, scene_t, seed);
-	vec2 uvh = vUv;
-	float dh = 0.0;
-	vec3 V2 = normalize(CAMERA_POSITION_WORLD - wpos);
-#ifdef POM
-	vec3 Vt = vec3(dot(V2, T), dot(V2, Bt), dot(V2, uN));
-	vec2 stepUv = -Vt.xy / max(Vt.z, 0.2) * (DEP / 28.0);
-	float c = cav(uvh);
-	for (int i = 0; i < 28; i++) { if (dh >= c) { break; } uvh += stepUv; dh += DEP / 28.0; c = cav(uvh); }
-#endif
-	vec2 p = uvh * 2.0 - 1.0;
-	float r = length(p);
-	float ang = atan(p.y, p.x);
-	float R = holeR(ang);
-	float e = r - R;
-	vec3 add = vec3(0.0); vec3 base = vec3(0.0); float alpha = 0.0;
-	vec3 tv = V2 - uN * dot(V2, uN);
-	vec2 par = vec2(dot(tv, T), dot(tv, Bt)) * 0.35;
-	bool done = false;
-	vec3 glowC = mix(vec3(1.0, 0.25, 0.04), vec3(0.55, 1.0, 0.2), bio);
-#ifdef POM
-	if (dh > 0.004) {
-		float dn = clamp(dh / DEP, 0.0, 1.0);
-		float emb = spow(fbm(p * 6.0 + seed + vec2(0.0, scene_t * 0.2)), 3.0);
-		base = vec3(0.025, 0.022, 0.02) * (0.5 + 0.9 * fbm(p * 11.0)) * (1.0 - 0.6 * dn);
-		alpha = 1.0;
-		add = (glowC * (emb * 2.6 * dn + 0.12 * dn * dn) + vec3(1.0, 0.5, 0.15) * exp(-dn * 12.0) * 0.6 * heat) * fl * (0.35 + 0.65 * heat);
-		done = true;
-	}
-#endif
-	if (!done) {
-		if (e < 0.0) {
-			vec2 q = p - par;
-			float deep = smoothstep(0.0, -0.25, e);
-			float emb = spow(fbm(q * 5.0 + seed + vec2(0.0, scene_t * 0.2)), 4.0);
-			float struts = smoothstep(0.92, 1.0, abs(sin(q.x * 9.0 + seed)));
-			base = vec3(0.012, 0.010, 0.010) * (1.0 - deep * 0.6);
-			alpha = 1.0;
-			add = (glowC * emb * 1.2 * fl + vec3(1.0, 0.4, 0.08) * struts * 0.12 * (1.0 - deep)) * deep * (0.35 + 0.65 * heat);
-		} else if (e < 0.025) {
-			// the torn lip: dark metal, a thin hot line only while fresh (no glowing ring)
-			float h = 1.0 - e / 0.025;
-			base = vec3(0.03);
-			alpha = 1.0;
-			vec3 rim = mix(vec3(1.0, 0.35, 0.06), vec3(0.4, 1.0, 0.25), bio);
-			add = rim * h * h * fl * heat * heat * 0.8;
-		} else {
-			// char and soot in ragged blotches that fade into the hull (not a ring)
-			float n = fbm(p * 4.0 + seed * 3.0);
-			float n2 = fbm(p * 9.0 + seed * 5.0);
-			float charred = 1.0 - smoothstep(0.02, 0.1 + 0.12 * n, e);
-			float crack = smoothstep(0.9, 0.98, 1.0 - abs(fbm(p * 7.0 + seed) * 2.0 - 1.0)) * (1.0 - smoothstep(0.03, 0.08, e)) * heat;
-			float soot = (1.0 - smoothstep(0.0, 0.25 + 0.25 * n, e)) * smoothstep(0.35, 0.65, n2 + 0.25 * n);
-			alpha = clamp(max(charred, soot * 0.75), 0.0, 1.0);
-			base = mix(vec3(0.03, 0.022, 0.018), vec3(0.015, 0.012, 0.01), charred);
-			if (bio > 0.5) { base = mix(base, vec3(0.04, 0.06, 0.02), soot * 0.6); }
-			add = glowC * crack * 0.8 * fl * heat;
-		}
-	}
-	float rv = length(vUv * 2.0 - 1.0);
-	float edgeFade = 1.0 - smoothstep(0.85, 1.0, rv);
-	alpha *= edgeFade;
-	add *= edgeFade;
-	ALBEDO = clamp(base * alpha + add * fx_gain, 0.0, 512.0);
-	ALPHA = clamp(alpha, 0.0, 1.0);
-}
-"""
-
-# Torn plates bent outward round a hole: dark metal lit by the scene lights, glowing toward the torn tips.
-const PETAL := """
-shader_type spatial;
-render_mode cull_disabled;
-""" + COMMON + """
-uniform float seed = 0.0;
-uniform float heat = 1.0;
-void fragment() {
-	float fl = flick(0.75 + 0.25 * vnoise(vec2(scene_t * 11.0, seed + UV.x * 3.0)), scene_t, seed);
-	ALBEDO = vec3(0.03, 0.028, 0.026);
-	METALLIC = 0.6;
-	ROUGHNESS = 0.5;
-	EMISSION = vec3(1.0, 0.35, 0.06) * spow(1.0 - UV.y, 6.0) * 4.0 * fl * heat * fx_gain;
-}
-"""
-
-# Inside a breach (fx_breach.gd): the cavity floor, the backs of the skin and peeled plates, frames and decks, conduits
-# and cables, the torn edge. Lit by the scene (the hull shadows it) plus a fire point inside the hole that the scene's
-# lights cannot give. COLOR.r is the part (0 floor, 0.25 skin back, 0.5 frame or deck, 0.75 conduit, 1 torn edge),
-# COLOR.g a shade. The fire burns hot when the hole opens and settles to a smoulder; the torn edge glows, then cools.
+# Inside hull damage (fx_breach.gd): cavity floors, the backs of the skin and peeled plates, frames and decks, conduits,
+# cables and spines, the cut edge. One mesh per ship; each vertex carries its mark: CUSTOM0 (centre, R), CUSTOM1 (outward
+# normal, opened at), CUSTOM2 (cavity depth, heat, seed, style). COLOR.r is the part (0 floor, 0.25 skin back, 0.5 frame
+# or deck, 0.75 conduit, 0.85 bone, 1 cut edge), COLOR.g a shade. Lit by the scene (the hull shadows it) plus a fire
+# point inside that the scene's lights cannot give; deeper is darker. Fires settle to a smoulder; a lance cut glows
+# white, then red, then goes black; acid keeps a faint green working glow.
 const HOLE := """
 shader_type spatial;
 render_mode cull_back;
 """ + COMMON + """
-uniform vec3 fire = vec3(0.0);
-uniform vec3 centre = vec3(0.0);
-uniform vec3 axis = vec3(0.0, 1.0, 0.0);
-uniform float R = 1.0;
-uniform float t0 = 0.0;
-uniform float heat = 1.0;
-uniform float seed = 0.0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
 varying vec3 vL;
 varying vec3 vNl;
 varying vec4 vC;
-void vertex() { vL = VERTEX; vNl = NORMAL; vC = COLOR; }
+varying vec4 vA;
+varying vec4 vB;
+varying vec4 vD;
+void vertex() { vL = VERTEX; vNl = NORMAL; vC = COLOR; vA = CUSTOM0; vB = CUSTOM1; vD = CUSTOM2; }
 void fragment() {
+	vec3 centre = vA.xyz;
+	float R = max(vA.w, 1e-3);
+	vec3 axis = vB.xyz;
+	float t0 = vB.w;
+	float heat = vD.y;
+	float seed = vD.z;
+	int style = int(vD.w + 0.5);
+	vec3 fire = centre - axis * vD.x * 0.55;
 	float part = vC.r;
 	float age = max(scene_t - t0, 0.0);
 	float hot = heat * mix(0.45, 1.0, exp(-age / 10.0));
@@ -878,33 +766,251 @@ void fragment() {
 	vec3 p = vL / R;
 	float n1 = fbm(p.xy * 3.1 + p.zx * 2.3 + seed);
 	float n2 = fbm(p.yz * 9.0 + p.xy * 5.0 + seed * 2.0);
-	// how far below the skin: deeper is darker (light does not get in) and nearer the fire
 	float deep = clamp(dot(centre - vL, axis) / R, 0.0, 1.5);
 	float ao = mix(1.0, 0.25, smoothstep(0.0, 0.9, deep));
 	vec3 base = vec3(0.04, 0.038, 0.036) * (0.6 + 0.8 * vC.g) * (0.7 + 0.6 * n1);
 	float rough = 0.72;
 	float metal = 0.25;
-	if (part > 0.9) { base = vec3(0.06, 0.057, 0.054) * (0.8 + 0.4 * n2); rough = 0.55; metal = 0.5; ao = 0.8; }
+	if (part > 0.2 && part < 0.3) { base *= 1.8; metal = 0.6; rough = 0.5; }
+	if (part > 0.95) { base = vec3(0.06, 0.057, 0.054) * (0.8 + 0.4 * n2); rough = 0.55; metal = 0.5; ao = 0.8; }
+	else if (part > 0.8) { base = vec3(0.62, 0.58, 0.48) * (0.75 + 0.35 * n2); rough = 0.45; metal = 0.0; ao = 1.0; }
 	else if (part > 0.6) { base = mix(vec3(0.05, 0.042, 0.034), vec3(0.03, 0.03, 0.034), vC.g) * (0.8 + 0.4 * n2); rough = 0.5; }
 	else if (part > 0.4) { float seam = smoothstep(0.9, 1.0, abs(sin(dot(vL, vec3(1.0, 1.3, 0.7)) * 9.0 / R))); base *= 1.15 - 0.4 * seam; }
 	vec3 toF = fire - vL;
 	float dist = length(toF) / R;
-	base *= mix(0.5, 1.0, smoothstep(0.2, 1.4, dist));
+	if (part < 0.8) { base *= mix(0.5, 1.0, smoothstep(0.2, 1.4, dist)); }
+	vec3 Nl = normalize(vNl) * (FRONT_FACING ? 1.0 : -1.0);
+	float lam = 0.25 + 0.75 * max(dot(Nl, toF / max(length(toF), 1e-4)), 0.0);
+	float fall = 1.0 / (1.0 + dist * dist * 10.0);
+	float emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
+	vec3 gc = glow;
+	if (style == 8) { gc = vec3(0.45, 1.0, 0.2); hot *= 0.35; }
+	if (style == 4 || style == 11) { hot *= 0.3; }
+	vec3 em = gc * (lam * fall * 0.6 * fl * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)) + emb * 0.8 * (0.6 + 0.4 * fl) * smoothstep(1.4, 0.3, dist)) * hot;
+	if (style == 1) {
+		// a lance cut: the metal round the burn-through is molten, white, then orange, then dull red, then black
+		float cool = exp(-age / 3.0);
+		float m = cool * (part > 0.95 ? 1.0 : 0.6) * smoothstep(2.5, 0.3, dist);
+		em = heatRamp(m) * m * 4.0;
+		base *= 1.0 - 0.5 * cool;
+	} else if (style == 5 || style == 6 || style == 0) {
+		if (part > 0.95) { em += gc * exp(-age / 0.7) * 0.35 * heat * (0.7 + 0.3 * fl); }
+	}
 	ALBEDO = base;
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	AO = ao;
 	AO_LIGHT_AFFECT = 1.0;
 	SPECULAR = 0.3 * ao;
-	vec3 Nl = normalize(vNl) * (FRONT_FACING ? 1.0 : -1.0);
-	float lam = 0.25 + 0.75 * max(dot(Nl, toF / max(length(toF), 1e-4)), 0.0);
-	float fall = 1.0 / (1.0 + dist * dist * 10.0);
-	float emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
-	vec3 em = glow * (lam * fall * 0.6 * fl * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)) + emb * 0.8 * (0.6 + 0.4 * fl) * smoothstep(1.4, 0.3, dist)) * hot;
-	if (part > 0.9) {
-		// the cut edge is hot for a moment after the blast, then just dark metal (no glowing outline)
-		em += glow * exp(-age / 0.7) * 0.35 * heat * (0.7 + 0.3 * fl);
+	EMISSION = em * fx_gain;
+}
+"""
+
+# Each mark's surface (fx_breach.gd): a thin skin over the hull round the mark, blended on top. Per style: char and
+# soot fans, molten metal along a lance cut cooling white to red to black with temper colours past it, glowing slag
+# pockets that set dark and glassy, spall rings and radial cracks round a gauss exit, flak pockmarks and scratches,
+# acid etching that bubbles and glows faintly, branching electrical burns that crackle and die (ion), scraped bare
+# metal (ram). Same vertex data as HOLE plus CUSTOM3 (slot direction, half length).
+const MARK := """
+shader_type spatial;
+render_mode blend_mix, depth_draw_never, cull_back, shadows_disabled;
+""" + COMMON + """
+float segd(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a; vec2 ba = b - a; float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-6), 0.0, 1.0); return length(pa - ba * h); }
+// An electrical burn (Lichtenberg figure): trunks forking out from the strike point, two levels of branches, jagged.
+// q in units of the mark's radius. Returns (distance to the nearest branch scaled by its width, level of that branch).
+vec2 ionTree(vec2 q, float seed) {
+	float best = 1e9;
+	float lev = 0.0;
+	for (int i = 0; i < 6; i++) {
+		float fi = float(i);
+		float a0 = fi * 1.0472 + (h21(vec2(fi, seed)) - 0.5) * 0.8;
+		vec2 p0 = vec2(0.0);
+		float an = a0;
+		for (int j = 0; j < 4; j++) {
+			float fj = float(j);
+			float len = 0.24 * (1.0 - fj * 0.12);
+			an += (h21(vec2(fi * 7.0 + fj, seed + 3.0)) - 0.5) * 0.9;
+			vec2 p1 = p0 + vec2(cos(an), sin(an)) * len;
+			float w0 = 0.035 * (1.0 - fj * 0.18);
+			float d = segd(q, p0, p1) / w0;
+			if (d < best) { best = d; lev = 0.0; }
+			// a fork off each joint, and a twig off each fork
+			float sgn = h21(vec2(fi + fj * 3.0, seed + 9.0)) > 0.5 ? 1.0 : -1.0;
+			float ab = an + sgn * (0.6 + 0.5 * h21(vec2(fj, fi + seed)));
+			vec2 b1 = p1 + vec2(cos(ab), sin(ab)) * len * 0.75;
+			d = segd(q, p1, b1) / (w0 * 0.6);
+			if (d < best) { best = d; lev = 1.0; }
+			float at = ab - sgn * 0.7;
+			vec2 b2 = b1 + vec2(cos(at), sin(at)) * len * 0.45;
+			d = segd(q, b1, b2) / (w0 * 0.35);
+			if (d < best) { best = d; lev = 2.0; }
+			p0 = p1;
+		}
 	}
+	return vec2(best, lev);
+}
+uniform vec3 glow = vec3(1.0, 0.45, 0.12);
+uniform vec3 weapon = vec3(1.0, 0.6, 0.3);
+varying vec3 vL;
+varying vec4 vA;
+varying vec4 vB;
+varying vec4 vD;
+varying vec4 vE;
+void vertex() { vL = VERTEX; vA = CUSTOM0; vB = CUSTOM1; vD = CUSTOM2; vE = CUSTOM3; }
+void fragment() {
+	vec3 centre = vA.xyz;
+	float R = max(vA.w, 1e-3);
+	vec3 axis = normalize(vB.xyz);
+	float age = max(scene_t - vB.w, 0.0);
+	float seed = vD.z;
+	int style = int(vD.w + 0.5);
+	vec3 t1 = normalize(cross(axis, abs(axis.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)));
+	vec3 t2 = cross(axis, t1);
+	vec3 d = vL - centre;
+	vec2 q = vec2(dot(d, t1), dot(d, t2));
+	float r = length(q);
+	float u = r / R;
+	float ang = atan(q.y, q.x);
+	float n1 = fbm(q / R * 1.7 + seed);
+	float a = 0.0;
+	vec3 alb = vec3(0.02);
+	vec3 em = vec3(0.0);
+	float rough = 0.85;
+	if (style == 1) {
+		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
+		float al = clamp(dot(q, dd), -vE.w, vE.w);
+		float s = length(q - dd * al) / R;
+		float streak = fbm(vec2(dot(q, dd) / R * 0.4, s * 2.0) + seed);
+		float charr = 1.0 - smoothstep(0.8, 3.2 + 1.6 * n1, s);
+		alb = mix(vec3(0.05, 0.045, 0.04), vec3(0.012), smoothstep(3.0, 0.8, s));
+		float cool = exp(-age / 3.0);
+		float mol = exp(-max(s - 0.9, 0.0) * 2.4);
+		em = heatRamp(cool * mol) * mol * cool * 5.0;
+		alb += vec3(0.05, 0.035, 0.07) * smoothstep(1.4, 2.4, s) * (1.0 - smoothstep(2.4, 3.8, s)) * (1.0 - cool) * (0.5 + streak);
+		a = max(charr * (0.7 + 0.3 * streak), mol * cool);
+	} else if (style == 7) {
+		vec2 g = q / (R * 0.11);
+		vec2 gi = floor(g);
+		vec2 gf = fract(g) - 0.5;
+		float hh = h21(gi + seed);
+		float sz = 0.1 + 0.22 * h21(gi + 11.3);
+		float spot = hh > 0.62 ? smoothstep(sz, sz * 0.3, length(gf + (vec2(h21(gi + 3.1), h21(gi + 7.7)) - 0.5) * 0.6) * (0.8 + 0.4 * vnoise(q / R * 30.0))) : 0.0;
+		float scratch = smoothstep(0.82, 0.97, fbm(vec2(dot(q, vec2(0.8, 0.6)) / R * 7.0, dot(q, vec2(-0.6, 0.8)) / R * 0.7) + seed));
+		float fall = 1.0 - smoothstep(0.6, 1.3, u + (n1 - 0.5) * 0.3);
+		a = (max(spot, scratch * 0.7) + 0.3 * n1) * fall;
+		alb = mix(vec3(0.03), vec3(0.14, 0.135, 0.13), scratch * 0.6);
+		em = vec3(1.0, 0.5, 0.15) * spot * exp(-age / 0.8) * 2.0 * fall;
+	} else if (style == 8) {
+		// the acid keeps eating for a few seconds (the patch spreads), then visibly stops: the wet edge goes matte inward
+		float spread = mix(0.7, 1.0, smoothstep(0.0, 6.0, age));
+		float ue = u / spread;
+		float etch = fbm(q / R * 4.0 + seed + vec2(0.0, min(age, 6.0) * 0.05));
+		float pits = smoothstep(0.58, 0.74, etch);
+		float bub = smoothstep(0.72, 0.9, vnoise(q / R * 14.0 + vec2(scene_t * 0.7, -scene_t * 0.5) + seed)) * exp(-age / 8.0);
+		float fall = 1.0 - smoothstep(0.55, 1.3, ue + (n1 - 0.5) * 0.4);
+		float wet = exp(-age / 9.0);
+		a = fall * (0.5 + 0.5 * pits);
+		alb = mix(vec3(0.05, 0.07, 0.025), vec3(0.01, 0.015, 0.005), pits);
+		rough = mix(0.8, 0.25, wet * smoothstep(1.0, 0.4, ue));
+		em = vec3(0.45, 1.0, 0.2) * (pits * 0.25 + bub * 1.2) * fall * mix(0.15, 1.0, exp(-age / 6.0));
+	} else if (style == 9) {
+		// ion: a branching electrical burn; fresh, arcs crawl it blue-white, then it sets as a dark etched fern
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
+		// safe mode: a cheaper burn (radial jagged streaks) instead of the full branching tree
+		float spoke = 1.0 - abs(fbm(vec2(ang * 3.0 + seed, u * 2.0)) * 2.0 - 1.0);
+		vec2 tr = vec2(mix(4.0, 0.0, smoothstep(0.8, 0.97, spoke)), 0.0);
+#else
+		vec2 tr = ionTree(q / R, seed);
+#endif
+		float line = 1.0 - smoothstep(0.6, 1.6, tr.x);
+		float halo = (1.0 - smoothstep(1.0, 5.0, tr.x)) * 0.35;
+		float core = 1.0 - smoothstep(0.0, 0.12, u);
+		float fall = 1.0 - smoothstep(0.85, 1.05, u);
+		a = (max(line, core * 0.85) + halo) * fall;
+		alb = mix(vec3(0.03, 0.032, 0.04), vec3(0.008, 0.009, 0.012), line);
+		rough = mix(0.85, 0.35, line);
+		float live = exp(-age / 2.5);
+		float crawl = step(0.5, vnoise(vec2(scene_t * 14.0 + tr.y * 3.0, dot(q, vec2(3.1, 1.7)) / R * 2.0)));
+		em = vec3(0.5, 0.75, 1.0) * (line * (0.5 + 1.5 * mix(crawl, 0.5, fx_calm)) + core * 0.8) * live * 2.2 * fall;
+		em += vec3(0.25, 0.4, 0.9) * line * 0.06 * exp(-age / 30.0);
+	} else if (style == 10) {
+		float sc = smoothstep(0.72, 0.95, fbm(vec2(q.x / R * 0.5, q.y / R * 9.0) + seed));
+		a = sc * (1.0 - smoothstep(0.6, 1.1, u)) * 0.85 + 0.2 * (1.0 - smoothstep(0.3, 1.0, u));
+		alb = mix(vec3(0.03), vec3(0.2, 0.19, 0.18), sc * 0.6);
+		rough = 0.5;
+	} else if (style == 13) {
+		// stage scorch: soot fanning out in streaks over the plating, a darker burnt core, embers that cool to black
+		float fan = fbm(vec2(ang * 2.5 + seed, u * 1.2 + seed));
+		float reach = 0.55 + 0.45 * fan;
+		a = (1.0 - smoothstep(reach * 0.6, reach, u)) * (0.75 + 0.25 * n1);
+		alb = mix(vec3(0.05, 0.045, 0.04), vec3(0.008, 0.007, 0.006), smoothstep(reach, 0.15, u));
+		rough = 0.92;
+		float emb = smoothstep(0.7, 0.9, fbm(q / R * 6.0 + seed * 2.0)) * (1.0 - smoothstep(0.1, 0.5, u));
+		em = vec3(1.0, 0.35, 0.06) * emb * vD.y * mix(0.25, 1.0, exp(-age / 6.0)) * 3.0;
+	} else if (style == 12) {
+		a = 0.4 * (1.0 - smoothstep(0.3, 1.0, u + (n1 - 0.5) * 0.4));
+	} else {
+		// craters, holes and breaches: char fanning out in streaks, slag, spall and cracks by style
+		float fan = fbm(vec2(ang * 3.0 + seed, u * 0.8));
+		float reach = (style == 3 ? 2.4 : (style == 4 ? 1.5 : 2.0)) * (0.7 + 0.6 * fan);
+		float charr = 1.0 - smoothstep(0.6, reach, u);
+		a = charr * 0.9;
+		alb = mix(vec3(0.045, 0.04, 0.036), vec3(0.01), smoothstep(reach, 0.5, u));
+		if (style == 2 || style == 3) {
+			float cool = exp(-age / (style == 3 ? 4.5 : 1.6));
+			float slag = smoothstep(0.55, 0.78, fbm(q / R * 3.0 + seed * 3.0)) * (1.0 - smoothstep(0.7, 1.35, u));
+			// plasma burns light blue (Ryan, Oct 26): blue-white when fresh, deep blue as it sets, then dark glass
+			vec3 pr = mix(vec3(0.08, 0.2, 0.55), vec3(0.45, 0.78, 1.0), smoothstep(0.0, 0.5, cool));
+			pr = mix(pr, vec3(0.88, 0.96, 1.0), smoothstep(0.6, 1.0, cool));
+			vec3 hc = style == 3 ? pr : heatRamp(cool * 0.8);
+			slag *= 1.0 - smoothstep(0.3, 1.0, u);
+			em = hc * slag * cool * (style == 3 ? 3.0 : 1.5);
+			a = max(a, slag);
+			rough = mix(rough, 0.25, slag);
+			// slag runs: drips trailing down the plate from the crater
+			float run = smoothstep(0.86, 1.0, 1.0 - abs(sin(q.x / R * 6.0 + seed * 4.0))) * smoothstep(0.6, 1.0, u) * (1.0 - smoothstep(1.0, 2.2, u)) * step(q.y, 0.0);
+			a = max(a, run * 0.8);
+			em += hc * run * cool * 1.5;
+			if (style == 3) {
+				// the splash's signature: a fan of droplet spots thrown out along the shot, dark first, freckling the skirt
+				vec2 fd = normalize(vec2(dot(vE.xyz, t1), dot(vE.xyz, t2)) + vec2(1e-4, 0.0));
+				float along = dot(q, fd) / R;
+				float side = abs(dot(q, vec2(-fd.y, fd.x))) / R;
+				float cone = smoothstep(0.75, 0.2, side / max(along, 0.05)) * smoothstep(0.8, 1.2, along) * (1.0 - smoothstep(2.4, 3.3, along));
+				vec2 g = q / (R * 0.16);
+				vec2 gi = floor(g);
+				vec2 gf = fract(g) - 0.5;
+				float dsz = 0.08 + 0.2 * h21(gi + seed + 2.0);
+				float drop = h21(gi + seed) > 0.45 ? smoothstep(dsz, dsz * 0.4, length(gf + (vec2(h21(gi + 5.3), h21(gi + 9.1)) - 0.5) * 0.5)) : 0.0;
+				drop *= cone;
+				a = max(a, drop * 0.95);
+				em += pr * drop * exp(-age / 1.5) * 2.0;
+				rough = mix(rough, 0.2, drop);
+			}
+		}
+		if (style == 4) {
+			// a gauss entry: a pale stress ring with short radial cracks round a clean small hole (reads at fleet distance)
+			// broken and uneven (spalled paint and stressed metal, never a clean drawn circle)
+			float wob = fbm(vec2(ang * 2.0 + seed, seed * 3.0));
+			float ring = smoothstep(1.15, 1.5, u + (wob - 0.5) * 0.5) * (1.0 - smoothstep(1.7, 2.6, u + (n1 - 0.5) * 0.9));
+			ring *= smoothstep(0.3, 0.6, fbm(vec2(ang * 4.0, u * 2.0) + seed * 5.0));
+			float crack = smoothstep(0.93, 1.0, 1.0 - abs(sin(ang * 7.0 + n1 * 4.0 + seed))) * smoothstep(1.0, 1.3, u) * (1.0 - smoothstep(1.4, 3.2, u + (wob - 0.5)));
+			float pale = max(ring * 0.6, crack * 0.9);
+			a = max(charr * 0.5, pale);
+			alb = mix(alb, vec3(0.42, 0.43, 0.45), pale);
+			rough = mix(rough, 0.3, pale);
+			em = vec3(0.85, 0.92, 1.0) * pale * exp(-age / 0.6) * 1.5;
+		}
+		if (style == 5) {
+			float crack = smoothstep(0.92, 1.0, 1.0 - abs(sin(ang * 7.0 + n1 * 3.0))) * (1.0 - smoothstep(0.8, 2.4, u));
+			a = max(a, crack);
+		}
+	}
+	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
+	ALBEDO = alb;
+	ALPHA = clamp(a, 0.0, 1.0);
+	ROUGHNESS = rough;
+	METALLIC = 0.35;
 	EMISSION = em * fx_gain;
 }
 """

@@ -39,6 +39,16 @@ const WEIGHT_BY_ID := {
 	"hbattery": 3, "hturbo": 3, "lance": 3, "torp": 3, "htorp": 3, "startorp": 3, "doom": 3, "tendril": 3, "ram": 3,
 }
 const SHELL_SPEED := 160.0
+# Plasma is light blue whoever fires it (Ryan, Oct 26): the bolt, its splash and the crater it leaves; the shape (a fat
+# churning bolt, a splash crater with a droplet fan) carries the identity next to blue shields and the cyan interface
+const PLASMA_COL := Color(0.52, 0.82, 1.0)
+# A hit's momentum for the target's physical reaction (R50, fx_ship.hit_react): torpedoes and rams shove, slugs and
+# shells kick, light guns tap, lances and ions are energy and barely move a ship at all
+const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "macro": 1.0, "plasma": 0.7, "gauss": 1.6,
+	"auto": 0.3, "scatter": 0.35, "guns": 0.25, "las": 0.08, "prism": 0.12, "flak": 0.2, "pflak": 0.2, "mflak": 0.2,
+	"gflak": 0.25, "spores": 0.1, "spine": 0.45, "tendril": 0.7, "sporeb": 0.2, "bombs": 0.8, "lance": 0.08, "needle": 0.05,
+	"pulsar": 0.05, "ion": 0.03, "doom": 0.1}
+const PLASMA_HOT := Color(0.86, 0.95, 1.0)
 
 
 static func look_of(kind: String, wid: String, faction: String) -> String:
@@ -90,7 +100,7 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var T0: float = fx.now
 	var ka: float = A.scale_k() if A != null else 1.0
 	var kt: float = Tg.scale_k() if Tg != null else 1.0
-	var col: Color = fac["weapon"]
+	var col: Color = fac["weapon"] if lk != "plasma" else PLASMA_COL
 	# mounts: the guns that can bear (never backward)
 	var mounts: Array = []
 	if A != null:
@@ -248,6 +258,9 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			if lk == "ram":
 				ti = T0
 				tend = T0
+				# the rammer's own bow folds as well (a smaller crumple, no glow)
+				if A != null and hd.size() > 0:
+					fx.later(T0, func() -> void: A.add_mark(fx, "ram_self", 2, A.hull.bow, Vector3(1, 0, 0), Vector3(-1, 0, 0)))
 			else:
 				var vent = 0.45 + i * (0.35 if lk == "torp" else 0.12)
 				tf = T0 + vent
@@ -588,6 +601,14 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	var beam = lk in ["lance", "ion", "pulsar", "doom", "needle"]
 	var bio = lk in ["spine", "tendril", "sporeb", "spores"]
 	var light = lk in ["auto", "las", "scatter", "guns", "flak", "pflak", "mflak", "gflak", "prism"]
+	# the target's physical reaction, by the weapon's momentum and its weight (a shield takes most of the shove)
+	if Tg != null:
+		var imp: float = float(REACT_IMPULSE.get(lk, 0.5)) * [0.7, 0.85, 1.0, 1.3, 1.6][clampi(w, 0, 4)] * (1.6 if crit else 1.0)
+		if bool(tg.get("shield", false)):
+			imp *= 0.35
+		var lhp: Vector3 = tg["lp"] if tg.has("lp") else Tg.xf().affine_inverse() * p
+		var ldr: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
+		fx.later(T, func() -> void: Tg.hit_react(fx, imp, lhp, ldr))
 	if bool(tg.get("shield", false)):
 		_shield_impact(fx, lk, w, Tg, tg, T, dir, k, sustain, torp, beam, bio, light)
 		return
@@ -595,6 +616,13 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var th: Dictionary = tg["through"]
 		Tg.shield_hit(fx, th["local"], T - 0.02, 0.5, 8.0 * k, 0.4)
 	var hc = Color(1, 0.62, 0.28)
+	# every weapon leaves its own mark in the hull itself (R43; fx_breach.marks_for): burn-throughs, craters, punctures,
+	# blast holes, pockmarks, acid pits, electrical burns
+	if Tg != null and tg.has("lp"):
+		var ld: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
+		var lp0: Vector3 = tg["lp"]
+		var ln0: Vector3 = tg["ln"]
+		fx.later(T, func() -> void: Tg.add_mark(fx, lk, w, lp0, ln0, ld))
 	# --- by family
 	if beam:
 		_beam_burn(fx, lk, Tg, tg, T, sustain, col, k)
@@ -609,7 +637,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var sz = (1.4 if light else (2.5 if w <= 2 else 3.4)) * k
 		if lk == "plasma":
 			sz *= 1.3
-			hc = col.lerp(Color(1, 0.8, 0.5), 0.4)
+			hc = PLASMA_COL.lerp(PLASMA_HOT, 0.5)
 		fx.pop(p + n * 0.2 * k, T, hc.lerp(Color.WHITE, 0.3), sz * 1.6, 9.0 if not light else 5.0, n, 0.12)
 		var ns = 8 if light else (14 if w <= 2 else 22)
 		for s in ns:
@@ -625,14 +653,17 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 				fx.spr(p + n * 0.5 * k, T + 0.03 * s, 0.6 + fx.rng.randf() * 0.4, Color(1, 0.5, 0.15), 3.0, sz * 0.3, sz * 0.9, 1, n * 2.0 * k + fx.rdir() * 0.6)
 			DEATH.spawn_debris(fx, p + n * 0.5 * k, n * 4.0 * k, 2, 0.3 * k)
 		if lk == "plasma":
-			# glowing slag left on the plate, dripping
+			# glowing blue-white slag on the plate, and a fan of droplets thrown out along the shot (the splash's signature)
+			var fan: Vector3 = (dir - n * dir.dot(n))
+			fan = fan.normalized() if fan.length_squared() > 1e-4 else fx.rdir().cross(n).normalized()
 			for s in 4:
-				fx.spr(p + fx.rdir() * 0.4 * k, T + 0.05, 2.0 + fx.rng.randf(), col, 1.2, 0.4 * k, 0.3 * k, 21)
-				fx.stk(p, T + 0.1 + s * 0.15, 0.7, col.lerp(Color(1, 0.6, 0.2), 0.5), 2.0, 0.1, 0.1 * k, 7, (n + Vector3(0, -1, 0)).normalized() * 2.5 * k, 0.8)
+				fx.spr(p + fx.rdir() * 0.4 * k, T + 0.05, 2.0 + fx.rng.randf(), PLASMA_COL, 1.2, 0.4 * k, 0.3 * k, 21)
+				fx.stk(p, T + 0.1 + s * 0.15, 0.7, PLASMA_COL.lerp(PLASMA_HOT, 0.3), 2.0, 0.1, 0.1 * k, 7, (n + Vector3(0, -1, 0)).normalized() * 2.5 * k, 0.8)
+			for s in 10:
+				fx.stk(p + n * 0.1 * k, T + fx.rng.randf() * 0.04, 0.35 + fx.rng.randf() * 0.3, PLASMA_HOT, 4.0, 0.06, 0.09 * k, 1,
+					(fan * 1.4 + n * 0.5 + fx.rdir() * 0.35).normalized() * (8 + fx.rng.randf() * 10) * k, 2.4)
 		fx.light(p + n * 1.5 * k, T, 0.2, 6.0 if not light else 2.5, hc, 0)
 		fx.shake(T, 0.04 if light else (0.08 if w <= 2 else 0.14), p)
-		if Tg != null and not light and tg.has("lp"):
-			fx.later(T, func() -> void: Tg.add_hit_scorch(fx, tg["lp"], tg["ln"], (0.9 if w <= 2 else 1.4) * k))
 	if crit:
 		_crit(fx, Tg, tg, T + 0.12, k)
 
@@ -725,8 +756,6 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 	fx.light(p + n * 1.5 * k, T, dur, 5.0, col, 1)
 	fx.shake(T, 0.12, p)
 	DEATH.spawn_debris(fx, p + n * 0.5 * k, n * 3.0 * k, 2, 0.3 * k)
-	if Tg != null and tg.has("lp"):
-		fx.later(T + dur, func() -> void: Tg.add_hit_scorch(fx, tg["lp"], tg["ln"], 1.8 * k))
 
 
 static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, lash: bool) -> void:
@@ -743,12 +772,6 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 		fx.spr(p + fx.rdir() * 0.8 * k, T + 0.2 + s * 0.2, 1.8, Color(0.5, 1.0, 0.25), 1.0, 0.5 * k, 0.4 * k, 21)
 	fx.light(p + n * 1.5 * k, T, 0.6, 2.0, col, 1)
 	fx.shake(T, 0.05 if not lash else 0.1, p)
-	if Tg != null and tg.has("lp"):
-		var r = RandomNumberGenerator.new()
-		r.seed = int(T * 1000.0)
-		fx.later(T + 0.3, func() -> void:
-			var d: Node3D = DEATH.hole_decal(fx, Tg._dmg_root, tg["lp"], tg["ln"], 0.9 * k, 0.28, 0.5, r, true)
-			Tg._hit_decals.append(d))
 
 
 static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Color, k: float, w: int) -> void:
@@ -775,15 +798,6 @@ static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Co
 				fx.shd(xp, tx, 3.0, fx.rcone(dir, 0.5) * (6 + fx.rng.randf() * 10) * k, (0.15 + fx.rng.randf() * 0.25) * k, 1.0)
 			fx.spr(xp + xn * 0.8 * k, tx + 0.05, 2.0, Color(0.6, 0.65, 0.72), 0.3, 0.6 * k, 3.0 * k, 7, xn * 6.0 * k, 0.6)
 			DEATH.spawn_debris(fx, xp + xn * 0.5 * k, dir * 8.0 * k, 3, 0.35 * k)
-			var r = RandomNumberGenerator.new()
-			r.seed = int(T * 997.0)
-			fx.later(tx, func() -> void:
-				Tg._hit_decals.append(DEATH.hole_decal(fx, Tg._dmg_root, far["p"], far["n"], 0.9 * k, 0.35, 1.0, r)))
-		if tg.has("lp"):
-			var r2 = RandomNumberGenerator.new()
-			r2.seed = int(T * 991.0)
-			fx.later(T, func() -> void:
-				Tg._hit_decals.append(DEATH.hole_decal(fx, Tg._dmg_root, tg["lp"], tg["ln"], 0.6 * k, 0.3, 1.0, r2)))
 	fx.light(p + n * 1.5 * k, T, 0.25, 7.0, Color(0.85, 0.95, 1.0), 0)
 	fx.shake(T, 0.2 if w >= 3 else 0.12, p)
 	if w >= 3:
@@ -817,8 +831,6 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 	fx.light(p + n * 2.5 * k, T, 0.7, 14.0, Color(1, 0.75, 0.45), 0)
 	fx.shake(T, 0.45, p)
 	fx.hit_pause(T, 4)
-	if Tg != null and tg.has("lp"):
-		fx.later(T, func() -> void: Tg.add_hit_scorch(fx, tg["lp"], tg["ln"], 2.6 * k))
 
 
 static func _crit(fx, Tg, tg: Dictionary, T: float, k: float) -> void:

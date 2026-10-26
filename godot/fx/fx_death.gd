@@ -32,13 +32,19 @@ float en(vec3 p) {
 	return mix(mix(mix(eh(i), eh(i + vec3(1.0, 0.0, 0.0)), f.x), mix(eh(i + vec3(0.0, 1.0, 0.0)), eh(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
 		mix(mix(eh(i + vec3(0.0, 0.0, 1.0)), eh(i + vec3(1.0, 0.0, 1.0)), f.x), mix(eh(i + vec3(0.0, 1.0, 1.0)), eh(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
 }
-void vertex() { lp = VERTEX; }
+varying float rim;
+void vertex() { lp = VERTEX; rim = COLOR.r; }
 void fragment() {
-	ALBEDO = vec3(0.11, 0.105, 0.10);
-	METALLIC = 0.65;
-	ROUGHNESS = 0.5;
-	float warm = exp(-max(scene_t - spawn_t, 0.0) / 1.2);
-	EMISSION = vec3(1.0, 0.34, 0.05) * smoothstep(0.6, 0.88, en(lp * 6.0)) * warm * 2.5 * fx_gain;
+	// torn plate: sooty bare metal with a little grain; only its torn rim glows, briefly (r3 verdict: no ember speckle
+	// over the whole face, which read as a camouflage sticker)
+	float g = en(lp * 9.0);
+	float soot = smoothstep(0.35, 0.75, en(lp * 3.0 + 7.0));
+	ALBEDO = mix(vec3(0.13, 0.125, 0.12), vec3(0.03, 0.028, 0.026), soot) * (0.85 + 0.3 * g);
+	METALLIC = mix(0.7, 0.3, soot);
+	ROUGHNESS = mix(0.45, 0.85, soot);
+	float warm = exp(-max(scene_t - spawn_t, 0.0) / 0.9);
+	float edge = smoothstep(0.82, 1.0, rim) * (0.6 + 0.4 * g);
+	EMISSION = vec3(1.0, 0.34, 0.05) * edge * warm * 2.0 * fx_gain;
 }
 """
 
@@ -68,140 +74,10 @@ static func setup_physics(fx) -> void:
 	st["debris"] = []
 	st["debris_next"] = 0
 	st["wrecks"] = []
-	st["tex"] = _gen_textures()
 	st["physics_on"] = fx.quality != "low"
 
 
-# ---------------------------------------------------------------- decal textures (generated once)
-
-static func _gen_textures() -> Dictionary:
-	var out = {"scorch": [], "ember": null, "crack": null}
-	var n = FastNoiseLite.new()
-	n.frequency = 0.045
-	n.fractal_octaves = 4
-	var S = 128
-	for v in 3:
-		n.seed = 11 + v * 17
-		var img = Image.create(S, S, false, Image.FORMAT_RGBA8)
-		for y in S:
-			for x in S:
-				var dx = (x - S * 0.5) / (S * 0.5)
-				var dy = (y - S * 0.5) / (S * 0.5)
-				var r = sqrt(dx * dx + dy * dy)
-				var nn = n.get_noise_2d(x, y) * 0.5 + 0.5
-				var a = clampf((1.0 - r) * 2.0 + (nn - 0.5) * 1.6 - 0.2, 0.0, 1.0)
-				var core = clampf((0.6 - r) * 2.0 + (nn - 0.5), 0.0, 1.0)
-				var c = 0.035 * (1.0 - core) + 0.006
-				img.set_pixel(x, y, Color(c * 0.9, c * 0.82, c * 0.75, pow(a, 1.3)))
-		out["scorch"].append(ImageTexture.create_from_image(img))
-	n.seed = 5
-	n.frequency = 0.09
-	var em = Image.create(S, S, false, Image.FORMAT_RGBA8)
-	var cr = Image.create(S, S, false, Image.FORMAT_RGBA8)
-	var n2 = FastNoiseLite.new()
-	n2.seed = 9
-	n2.frequency = 0.03
-	n2.fractal_type = FastNoiseLite.FRACTAL_RIDGED
-	n2.fractal_octaves = 3
-	for y in S:
-		for x in S:
-			var dx = (x - S * 0.5) / (S * 0.5)
-			var dy = (y - S * 0.5) / (S * 0.5)
-			var r = sqrt(dx * dx + dy * dy)
-			var inner = clampf((0.7 - r) * 2.0, 0.0, 1.0)
-			var sp = smoothstep(0.62, 0.85, n.get_noise_2d(x, y) * 0.5 + 0.5) * inner
-			em.set_pixel(x, y, Color(1.0 * sp, 0.34 * sp, 0.05 * sp, 1.0))
-			var ln = smoothstep(0.82, 0.97, n2.get_noise_2d(x, y) * 0.5 + 0.5) * clampf((0.85 - r) * 2.5, 0.0, 1.0)
-			cr.set_pixel(x, y, Color(1.0 * ln + 0.6 * sp, 0.4 * ln + 0.2 * sp, 0.06 * ln, 1.0))
-	out["ember"] = ImageTexture.create_from_image(em)
-	out["crack"] = ImageTexture.create_from_image(cr)
-	return out
-
-
 # ---------------------------------------------------------------- hull decorations
-
-static func _frame(n: Vector3, spin: float) -> Basis:
-	var y = n.normalized()
-	var x = y.cross(Vector3(0, 1, 0) if absf(y.y) < 0.9 else Vector3(1, 0, 0)).normalized()
-	var z = x.cross(y)
-	return Basis(x, y, z).rotated(y, spin)
-
-
-# A lit scorch mark (Godot's clustered Decal: albedo plus glowing embers or cracks), in the parent's frame.
-static func scorch_decal(fx, parent: Node3D, p: Vector3, n: Vector3, size: float, cracked: bool, r: RandomNumberGenerator, energy := -1.0) -> Node3D:
-	if fx.compat:
-		var none = Node3D.new()
-		parent.add_child(none)
-		return none
-	var tex: Dictionary = fx.dstate["tex"]
-	var d = Decal.new()
-	d.name = "fx_scorch"
-	d.size = Vector3(size, size * 0.8, size)
-	d.texture_albedo = tex["scorch"][r.randi() % 3]
-	d.texture_emission = tex["crack"] if cracked else tex["ember"]
-	d.emission_energy = energy if energy >= 0.0 else (1.6 if cracked else 0.7)
-	d.albedo_mix = 1.0
-	d.normal_fade = 0.25
-	d.upper_fade = 0.2
-	d.lower_fade = 0.2
-	d.cull_mask = 1
-	d.transform = Transform3D(_frame(n, r.randf() * TAU), p)
-	parent.add_child(d)
-	return d
-
-
-# A projected hole (the A3 breach decal, with parallax depth in max): open 1 = breach, about 0.5 = exposed structure.
-static func hole_decal(fx, parent: Node3D, p: Vector3, n: Vector3, hole: float, open: float, heat: float, r: RandomNumberGenerator, bio := false) -> Node3D:
-	if fx.compat:
-		var none = Node3D.new()
-		parent.add_child(none)
-		return none
-	var box = MeshInstance3D.new()
-	box.name = "fx_hole"
-	var bm = BoxMesh.new()
-	bm.size = Vector3.ONE
-	box.mesh = bm
-	var m: ShaderMaterial = fx.mat(SH.DECAL, -2, "#define POM\n" if fx.quality == "max" else "")
-	m.set_shader_parameter("seed", r.randf() * 10.0)
-	m.set_shader_parameter("open", open)
-	m.set_shader_parameter("heat", heat)
-	m.set_shader_parameter("bio", 1.0 if bio else 0.0)
-	box.material_override = m
-	box.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	box.transform = Transform3D(_frame(n, r.randf() * TAU).scaled_local(Vector3(hole * 2.6, hole * 1.5, hole * 2.6)), p)
-	parent.add_child(box)
-	return box
-
-
-static func petals(fx, parent: Node3D, p: Vector3, bn: Vector3, t1: Vector3, t2: Vector3, hole: float, r: RandomNumberGenerator) -> Node3D:
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for k in 13:
-		var an = k / 13.0 * TAU + r.randf() * 0.4
-		var rr = hole * (0.4 + r.randf() * 0.08)
-		var radial = t1 * cos(an) + t2 * sin(an)
-		var tang = t1 * -sin(an) + t2 * cos(an)
-		var bw = hole * (0.03 + r.randf() * 0.05)
-		var ln = hole * (0.1 + r.randf() * 0.18)
-		var base = p + radial * rr + bn * -0.03
-		var out_d = (radial * 0.9 + bn * (0.25 + r.randf() * 0.45)).normalized()
-		var a = base + tang * bw
-		var b = base - tang * bw
-		var tip = base + out_d * ln + tang * ((r.randf() - 0.5) * bw)
-		var nn = (b - a).cross(tip - a).normalized()
-		for q in [[a, Vector2(0, 0)], [b, Vector2(1, 0)], [tip, Vector2(0.5, 1)]]:
-			st.set_normal(nn)
-			st.set_uv(q[1])
-			st.add_vertex(q[0])
-	var mi = MeshInstance3D.new()
-	mi.name = "fx_plates"
-	mi.mesh = st.commit()
-	var m: ShaderMaterial = fx.mat(SH.PETAL, 0)
-	m.set_shader_parameter("seed", r.randf() * 10.0)
-	mi.material_override = m
-	parent.add_child(mi)
-	return mi
-
 
 static func vent_volume(fx, parent: Node3D, p: Vector3, n: Vector3, hole: float, seed_v: float) -> Node3D:
 	var box = MeshInstance3D.new()
@@ -272,6 +148,8 @@ static func shard_mesh(rng: RandomNumberGenerator, size: float) -> Array:
 			if side < 0.0:
 				tri = [tri[0], tri[2], tri[1]]
 			for k in 3:
+				# vertex colour: 0 at the plate's middle, 1 on its torn rim (the debris shader glows only the rim)
+				st.set_color(Color.BLACK if tri[k].x == 0.0 and tri[k].z == 0.0 else Color.WHITE)
 				st.add_vertex(tri[k])
 		for v in ring_pts:
 			pts.append(Vector3(v.x, y, v.y))
@@ -281,6 +159,7 @@ static func shard_mesh(rng: RandomNumberGenerator, size: float) -> Array:
 		var q = [Vector3(a3.x, th * 0.5, a3.y), Vector3(b3.x, th * 0.5, b3.y), Vector3(b3.x, -th * 0.5, b3.y), Vector3(a3.x, -th * 0.5, a3.y)]
 		for tri in [[q[0], q[2], q[1]], [q[0], q[3], q[2]]]:
 			for v in tri:
+				st.set_color(Color.WHITE)
 				st.add_vertex(v)
 	st.generate_normals()
 	return [st.commit(), pts]
@@ -383,7 +262,7 @@ static func precompute(fx, s, cause := "blast") -> void:
 		var xf = inv * mi.global_transform
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
-			surfs.append({"arrays": mi.mesh.surface_get_arrays(si), "xf": xf, "mat": mat})
+			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat})
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "out": null}
 	s.set_meta("cut_job", job)
 	var tid = WorkerThreadPool.add_task(func() -> void: job["out"] = _cut(job))
