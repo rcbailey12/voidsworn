@@ -50,15 +50,15 @@ Each still is keyed to the moment its effect really lands on the effect clock (t
 
 ## Cost
 
-Ryan's PC (RTX 5080), the full 26 s reel with an orbiting camera, run r1b (Oct 26). Each feature's cost is the difference from the full run.
+Ryan's PC (RTX 5080), the full 26 s reel with an orbiting camera. Each feature's cost is the difference from the full run. Run r2 (Oct 26, with the shader warm-up; r1b in brackets).
 
 | Run | Frame avg | p99 | GPU | Feature cost |
 |---|---|---|---|---|
-| 4K max, everything | 5.78 ms | 11.84 ms | 5.09 ms | (the A3 bar: about 6 ms) |
-| 4K max, no effects | 4.18 ms | 5.53 ms | 3.49 ms | the whole effects layer: 1.60 ms |
-| 4K max, no world | 5.30 ms | 11.06 ms | 4.59 ms | dead star (lens, disc), asteroids, sky: 0.48 ms |
-| 4K max, no physics | 5.75 ms | 11.43 ms | 5.06 ms | Jolt debris and wreck pieces: 0.03 ms |
-| 4K high | 4.03 ms | 11.36 ms | 3.29 ms | max-only extras (raymarched fire and vents, distortion, soft particles, parallax holes, 64 lights, SSAO and SSIL): 1.75 ms |
-| 1440p max | 3.40 ms | 7.16 ms | 2.71 ms | |
+| 4K max, everything | 5.02 ms (5.78) | 9.94 ms (11.84) | 4.85 ms | inside the A3 bar of about 6 ms |
+| 4K max, no effects | 3.36 ms (4.18) | 4.72 ms | 3.22 ms | the whole effects layer: 1.66 ms |
+| 4K max, no world | 4.54 ms (5.30) | 9.19 ms | 4.37 ms | dead star (lens, disc), asteroids, sky: 0.48 ms |
+| 4K max, no physics | 5.00 ms (5.75) | 9.48 ms | 4.83 ms | Jolt debris and wreck pieces: 0.02 ms |
+| 4K high | 3.10 ms (4.03) | 5.43 ms | 2.93 ms | max-only extras (raymarched fire and vents, distortion, soft particles, parallax holes, 64 lights, SSAO and SSIL): 1.92 ms |
+| 1440p max | 2.77 ms (3.40) | 5.45 ms | 2.62 ms | |
 
-The p99 and the 47 ms worst frames were first-use shader compiles; round 2 adds `fx.warmup()` and records pipeline compiles during the run (target 0).
+Pipeline compiles during the measured fight in r2: draw 0, surface 8 (the death pieces' material copies; removed after r2), specialization 14 (Godot's background specialisations, which do not stall). The worst frame (35 ms) was the first break-up building its piece meshes; they are now built ahead, as soon as the background cut finishes.
