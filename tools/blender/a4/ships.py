@@ -37,9 +37,9 @@ WEAPONS = {
     'craft|fighter': [('guns', 'T')], 'craft|bomber': [('bombs', 'T')], 'craft|spore': [('sporeb', 'T')],
     'obj|station': [], 'obj|transport': [], 'obj|beacon': [],
 }
-KEYS = {'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
+KEYS = {'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
-       'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice'}
+       'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
 SIZES = {'S', 'M', 'L', 'XL'}
 
 
@@ -73,7 +73,7 @@ def check_entry(code, cfg):
 
 SHIPS = {}
 # orientation fixes known before a ship file exists: the game's AI_HULL_YAW (ships3d.js) plus A4 finds (2 = turned half round)
-YAWS = {'I14_23': 1, 'I15_11': -1, 'C15s_23': 2, 'V14_23': 2, 'V16_37': 2}
+YAWS = {'I14_23': 1, 'I15_11': -1, 'C15s_23': 2, 'V14_23': 2, 'V16_37': 2, 'B19_11': 2, 'B21_11': 2, 'B22_11': 2}
 
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Corsair (barge grammar: rust-and-bone salvage, lopsided, junk bolted on; space parts only)
@@ -266,4 +266,55 @@ SHIPS['H9_23'] = dict(
          ('turret', 'tb2', .20, 0, 0, 'top', dict(size='M', barrels=2, slot=1, wkind='turbo', arc='T', lift=.004)),
          ('spinal', 'ion', .36, 0, 0, 'top', dict(size='M', slot=2, wkind='ion', arc='F', length=3.5)),
          ('engine_at', 'eP', 0, .06, -.03, 'stern', dict(r=.024, L=.034, pair=True))],
+    notes='first pass')
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# Chorus (living bio-ships: no bolted guns or metal bells; grown emitters, ring-muscle vents, brood sacs, crisp tendrils and bone horns;
+# pairs where the body allows). Taste call (vetoable, SHIP_QUEUE asked to check with Ryan): the AI's melted worm-sticks stay where they
+# read as tentacles, the dangling stalactites are rebuilt as crisp bone horns, and the dress adds ridges, veins, pores and glowing sacs.
+SHIPS['B16_23'] = dict(
+    fac='chorus', cls='Bio-titan', name='Bio-titan', sym='organic', snap=.015,
+    cuts=[dict(name='stalactites', dir='down', level=.20, max_w=.07, min_ratio=1.6)],  # long melted spikes hanging under the body
+    spires=dict(zmin=.32, style='gothic'),                                         # the black tower on its back (the concept's spires)
+    kit=[('emitter', 'bp', 0, .10, .05, 'bow', dict(size='XL', slot=0, slot_m=1, wkind='bioplasma', arc='F', pair=True, scale=1.6)),
+         ('emitter', 'td', .05, 0, 0, 'top', dict(size='XL', slot=2, wkind='tendril', arc='T', scale=1.4)),
+         ('emitter', 'sp', -.25, .12, 0, 'top', dict(size='XL', slot=3, wkind='spores', arc='T', scale=1.4)),
+         ('orifice', 'ov', 0, .16, 0, 'stern', dict(r=.04, pair=True))],
+    scatter=[dict(fn='horn', count=7, where='below', length=(.10, .22), r=(.010, .018)),
+             dict(fn='tendril', count=10, where='side', length=(.06, .14), r=(.005, .009))],
+    notes='first pass')
+
+SHIPS['B19_11'] = dict(
+    fac='chorus', cls='Frigate', name='Drone', sym='organic', snap=.015,
+    yaw=2,  # meshed back to front: the spiked glowing heads sat at -x; the concept leads with them
+    kit=[('emitter', 'td', .15, 0, 0, 'top', dict(size='S', slot=0, wkind='tendril', arc='T', scale=1.2)),
+         ('orifice', 'ov', 0, .06, -.05, 'stern', dict(r=.035, pair=True))],
+    scatter=[dict(fn='tendril', count=6, where='below', length=(.06, .12), r=(.008, .013))],
+    notes='first pass')
+
+SHIPS['B20_11'] = dict(
+    fac='chorus', cls='Destroyer', name='Spitter', sym='organic', snap=.012,
+    spires=dict(zmin=.05, style='gothic'),
+    kit=[('emitter', 'bf', 0, 0, -.01, 'bow', dict(size='M', slot=1, wkind='bioplasma', arc='F', scale=1.2)),
+         ('emitter', 'bt', -.05, 0, 0, 'top', dict(size='M', slot=0, wkind='bioplasma', arc='T', scale=1.1)),
+         ('orifice', 'ov', 0, .03, -.02, 'stern', dict(r=.022, pair=True))],
+    scatter=[dict(fn='tendril', count=8, where='below', length=(.03, .07), r=(.004, .007))],
+    notes='first pass')
+
+SHIPS['B21_11'] = dict(
+    fac='chorus', cls='Cruiser', name='Razorfiend', sym='organic', snap=.012,
+    yaw=2,  # meshed back to front: the toothed maw sat at -x and a stinger at +x; maw first (vetoable)
+    kit=[('emitter', 'bf', 0, 0, -.03, 'bow', dict(size='M', slot=1, wkind='bioplasma', arc='F', scale=1.3)),
+         ('emitter', 'td', .05, 0, 0, 'top', dict(size='M', slot=0, wkind='tendril', arc='T', scale=1.2)),
+         ('orifice', 'ov', 0, .055, -.02, 'stern', dict(r=.024, pair=True))],
+    scatter=[dict(fn='horn', count=6, where='side', length=(.03, .06), r=(.004, .007))],
+    notes='first pass')
+
+SHIPS['B22_11'] = dict(
+    fac='chorus', cls='Carrier', name='Brood-carrier', sym='organic', snap=.012,
+    yaw=2,  # meshed back to front: the glowing bell sat at -x with the spiked tail ahead of it; bell first, like the concept (vetoable)
+    kit=[('emitter', 'bf', 0, 0, 0, 'bow', dict(size='L', slot=0, wkind='bioplasma', arc='F', scale=1.4)),
+         ('emitter', 'sp', .10, 0, 0, 'top', dict(size='L', slot=1, wkind='spores', arc='T', scale=1.2)),
+         ('brood', 'bay', .05, 0, -.02, 'port', dict(r=.03, pair=True)),
+         ('orifice', 'ov', 0, .02, 0, 'stern', dict(r=.018, pair=True))],
     notes='first pass')

@@ -125,6 +125,14 @@ def ofrustum(name, c, t, b, n, bot, top, h, shear=(0, 0), bevel=.0005, sides=4):
     return hs_lib._obj(name, bm, bevel, seg=1)
 
 
+SALVAGE_PART = [(.10, .034, .014), (.16, .055, .022), (.20, .21, .22), (.19, .18, .17), (.13, .135, .145), (.30, .08, .025)]
+
+
+def scol(default):
+    """Corsair parts take a salvage colour (rust, stolen grey, bare steel, bone-ish) instead of one clean red; others keep the default"""
+    return CTX['rng'].choice(SALVAGE_PART) if CTX['fac'] == 'corsair' else default
+
+
 def tag(col, emit=0., rgh=None, met=None):
     P = CTX['pal']; dress.tag(col, emit=emit, rgh=P['rgh'] if rgh is None else rgh, met=P['met'] if met is None else met)
 
@@ -138,7 +146,7 @@ def plinth(name, p, n, t, b, r, extra, shape='round', ratio=1.0, col=None):
     if shape == 'round': ocyl(name, c + n * h / 2, r, h, M3(t, b, n), seg=24, bevel=.0004)
     elif shape == 'hex': ofrustum(name, c, t, b, n, (r, r), (r * .92, r * .92), h, sides=6, bevel=.0003)
     else: ofrustum(name, c, t, b, n, (r, r * ratio), (r * .94, r * ratio * .94), h, bevel=.0004)
-    tag(col or (mul(CTX['pal']['base'], 1.15) if CTX['fac'] in ('corsair', 'voidsworn', 'deathless') else mul(CTX['pal']['base'], .9)))
+    tag(col or scol(mul(CTX['pal']['base'], 1.15) if CTX['fac'] in ('voidsworn', 'deathless') else mul(CTX['pal']['base'], .9)))
     if shape == 'round' and (hi + extra) - lo > r * .5:  # a tall barbette gets a collar under the turret and a band where it leaves the hull
         Mx = M3(t, b, n); top_ = c + n * h
         ocyl(name + 'cl', top_ - n * r * .09, r * 1.08, r * .14, Mx, seg=24, bevel=.0003)
@@ -172,9 +180,9 @@ def barrel_set(name, base, d, b_axis, n, count, spacing, L, r, col):
 
 # --------------------------------------------------------------------------------------------------------------------------------------
 # guns
-def turret(name, p, n, aim, size, barrels=2, slot=None, wkind='turret', arc='T', style=None, bl=1.0, lift=0.0):
+def turret(name, p, n, aim, size, barrels=2, slot=None, wkind='turret', arc='T', style=None, bl=1.0, lift=0.0, scale=1.0):
     """a turret on a barbette: plinth ring, housing, barrels. Rests aimed along aim (forward for T and F, out-and-forward for P and S)."""
-    P = CTX['pal']; fac = style or CTX['fac']; r = R(size); t, b, n = lframe(n, aim)
+    P = CTX['pal']; fac = style or CTX['fac']; r = R(size) * scale; t, b, n = lframe(n, aim)
     top = plinth(name + 'p', p, n, t, b, r * 1.12, r * .22 + lift, shape='hex' if fac == 'deathless' else 'round')
     if top is None: return None
     c = p + n * top; base, dark, gun = P['base'], P['dark'], P['gun']
@@ -234,7 +242,7 @@ def spinal(name, p, n, size, slot=None, wkind='lance', arc='F', tubes=0, length=
     if top is None: return None
     c = p + n * top
     if tubes:
-        obox(name + 'h', c + n * r * .45, t, b, n, (r * 2.4, r * 1.6, r * .9), bevel=.0006); tag(mul(P['base'], 1.0 if fac != 'corsair' else 1.3))
+        obox(name + 'h', c + n * r * .45, t, b, n, (r * 2.4, r * 1.6, r * .9), bevel=.0006); tag(scol(mul(P['base'], 1.0)))
         rows = 2 if tubes >= 4 else 1; cols = 2
         for i in range(cols):
             for j in range(rows):
@@ -260,7 +268,7 @@ def launcher(name, p, n, aim, size, cols=3, rows=2, slot=None, wkind='torp', arc
     top = plinth(name + 'p', p, n, t, b, r * .8, r * .25)
     if top is None: return None
     c = p + n * top; d = _gun_dir(aim, n, elev=.05)
-    obox(name + 'h', c + n * r * .55, t, b, n, (r * 1.8, r * (cols * .42 + .2), r * (rows * .42 + .15)), bevel=.0005); tag(mul(P['base'], 1.1))
+    obox(name + 'h', c + n * r * .55, t, b, n, (r * 1.8, r * (cols * .42 + .2), r * (rows * .42 + .15)), bevel=.0005); tag(scol(mul(P['base'], 1.1)))
     for i in range(cols):
         for j in range(rows):
             o = c + n * r * (.55 + (j - (rows - 1) / 2) * .42) + b * (i - (cols - 1) / 2) * r * .42 + t * r * .91
@@ -271,9 +279,9 @@ def launcher(name, p, n, aim, size, cols=3, rows=2, slot=None, wkind='torp', arc
     return muzzle
 
 
-def emitter(name, p, n, size, slot=None, wkind='bio', arc='F', aim=(1, 0, 0)):
+def emitter(name, p, n, size, slot=None, wkind='bio', arc='F', aim=(1, 0, 0), scale=1.0):
     """Chorus: no bolted guns. A grown weapon: a ringed muscular sphincter with a glowing throat (bioplasma, spores, tendrils)"""
-    P = CTX['pal']; r = R(size); t, b, n = lframe(n, aim); s = seat(p, n, r)
+    P = CTX['pal']; r = R(size) * scale; t, b, n = lframe(n, aim); s = seat(p, n, r)
     if s is None: return None
     c = p + n * (s[1] - .0004)
     dress.blister(name + 'b', c - n * r * .2, n, r * 1.1, r * .95, r * .55, seg=16, vseg=8); tag(mul(P['base'], 1.15), rgh=.42, met=.02)
@@ -317,6 +325,42 @@ def orifice(name, p, n, r, axis=(-1, 0, 0)):
     dress.blister(name + 'g', p + n * r * .3, n, r * .48, r * .48, r * .12, seg=14, vseg=6); tag(P['eng'], emit=1.0, rgh=.2, met=0)
     up = Vector((0, 0, 1)); up = (up - d * up.dot(d)).normalized() if abs(d.z) < .9 else Vector((1, 0, 0))
     add_hp(f'eng{len([h for h in HP if h["kind"] == "engine"])}', 'engine', p + n * r * .4, d, up, radius=r * .55, size='-', arc='-', slot=None, wkind='engine')
+    return p
+
+
+def _grow(p, n, length, bend, rng, steps=10, droop=Vector((0, 0, 0))):
+    """points of a gently curving growth from p along n (organic parts): bends one way, a little droop"""
+    side = n.cross(Vector((0, 0, 1)) if abs(n.z) < .9 else Vector((1, 0, 0))).normalized(); a = rng.uniform(0, 2 * math.pi)
+    sv = (side * math.cos(a) + n.cross(side) * math.sin(a)).normalized(); pts = []; d = n.copy(); q = p.copy()
+    for k in range(steps + 1):
+        pts.append((q.copy(), sv)); d = (d + sv * bend / steps + droop / steps).normalized(); q = q + d * length / steps
+    return pts
+
+
+def brood(name, p, n, r, launch=None):
+    """Chorus carrier bay: a swollen brood sac with a glowing birth slit; hp_bay at the slit"""
+    P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0)) if abs(n.x) < .9 else Vector((0, 0, 1)))
+    dress.blister(name + 's', p - n * r * .3, n, r * 1.5, r * 1.1, r * .9, seg=18, vseg=8); tag(mul(P['base'], 1.2), rgh=.4, met=.02)
+    obox(name + 'l', p + n * r * .55, t, b, n, (r * 1.6, r * .22, r * .3), bevel=.0003); tag(P['lens'], emit=1.0, rgh=.2, met=0)
+    d = Vector(launch).normalized() if launch else (n + Vector((.5, 0, 0))).normalized()
+    add_hp(f'bay{len([h for h in HP if h["kind"] == "bay"])}', 'bay', p + n * r * .65, d, n, size='-', arc='-', slot=None, wkind='bay', radius=r)
+    return p
+
+
+def tendril(name, p, n, length, r, bend=.9):
+    """Chorus: a crisp grown tendril (the AI melts them into lumpy worms): a tapered curving tube rooted a little into the body"""
+    P = CTX['pal']; rng = CTX['rng']; pts = _grow(p - n * r, n, length, bend, rng)
+    if dress.tube_path(name, pts, r, r * .18, 0, seg=10): tag(mul(P['base'], rng.uniform(.9, 1.25)), rgh=.42, met=.02)
+    dress.torus(name + 'b', p - n * r * .2, n, r * 1.3, r * .45, seg=12, ring=6); tag(mul(P['base'], .8), rgh=.45, met=.02)
+    return p
+
+
+def horn(name, p, n, length, r, bend=.25):
+    """Chorus and Deathless: a crisp bone spike (stalactites, crown spikes), tapered to a point, rooted in a fleshy collar"""
+    P = CTX['pal']; rng = CTX['rng']; pts = _grow(p - n * r * 1.2, n, length, bend, rng, steps=8)
+    bone = (.55, .48, .36) if CTX['fac'] == 'chorus' else mul(P['trim'], 1.0)
+    if dress.tube_path(name, pts, r, r * .05, 0, seg=10): tag(bone, rgh=.55, met=.03)
+    dress.blister(name + 'c', p - n * r * .3, n, r * 1.6, r * 1.6, r * .7, seg=12, vseg=6); tag(mul(P['base'], .85), rgh=.45, met=.02)
     return p
 
 

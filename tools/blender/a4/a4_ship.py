@@ -241,6 +241,19 @@ def main():
     for o in kit_parts:  # dressing keeps clear of the hand-built parts (not of the hole patches: they are hull)
         if o.name.startswith('cov_'): continue
         w = [o.matrix_world @ Vector(c) for c in o.bound_box]; lo = Vector(map(min, *w)); hi = Vector(map(max, *w)); H.placed.append(((lo + hi) / 2, (hi - lo).length / 2))
+    for k_, sc_ in enumerate(cfg.get('scatter', [])):  # organic growths spread over the body (Chorus tendrils, bone horns)
+        rng_ = np.random.default_rng(seed + 31 * k_); fn_ = getattr(kit, sc_['fn']); made_ = 0; tries_ = 0
+        wh = sc_.get('where', 'any'); box_ = sc_.get('box')
+        ok_ = {'any': lambda nn: True, 'side': lambda nn: abs(nn[1]) > .6, 'below': lambda nn: nn[2] < -.55, 'top': lambda nn: nn[2] > .55,
+               'aft': lambda nn: nn[0] < -.5, 'fore': lambda nn: nn[0] > .5}[wh]
+        while made_ < sc_['count'] and tries_ < sc_['count'] * 60:
+            tries_ += 1; i_ = int(rng_.integers(len(H.sp))); nn = H.sn[i_]; pp = H.sp[i_]
+            if not ok_(nn) or H.ao[i_] < .4: continue
+            if box_ and not all(box_[2 * j] < pp[j] < box_[2 * j + 1] for j in range(3)): continue
+            p_, n_ = Vector(pp.tolist()), Vector(nn.tolist()); L_ = float(rng_.uniform(*sc_['length'])); r_ = float(rng_.uniform(*sc_['r']))
+            if not H.free(p_, r_ * 3, 1.0): continue
+            fn_(f"{sc_['fn']}{k_}_{made_}", p_, n_, L_, r_); H.placed.append((p_, r_ * 3)); made_ += 1
+        log('scatter', sc_['fn'], made_)
     S = detail_lib.Surface([hull] + [o for o in kit_parts if o.name.startswith('cov_')], [o for o in kit_parts if not o.name.startswith('cov_')] or None)
     P = dict(base=bakemat4.lin(bakemat4.FAC[fac]['hull']), dark=bakemat4.lin(bakemat4.FAC[fac]['dark']), trim=bakemat4.lin(bakemat4.FAC[fac]['trim']), lens=tuple(bakemat4.FAC[fac]['win']))
     amt = cfg.get('dress', 1.0)
