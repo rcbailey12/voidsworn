@@ -2386,7 +2386,7 @@ func _panel_info() -> Dictionary:
 			orders.append({"text": str(A.get("n", u["ab"])) + ("" if u["abReady"] else " (%d)" % int(u["abCd"])), "act": "ability", "on": can and u["abReady"], "tip": str(A.get("d", ""))})
 		orders.append({"text": "Ram (X)", "act": "ram", "on": can and ui.get("ram") != null, "tip": "Charge the first enemy dead ahead (needs a run-up)."})
 		orders.append({"text": "Board (G)", "act": "board", "on": can and not (ui.get("board", []) as Array).is_empty(), "tip": "Send boarding crews into an adjacent enemy."})
-		if u.get("canStance") != null and str(u.get("stance", "")) != "":
+		if str(u.get("ab", "")) == "launch" and str(u.get("stance", "")) != "":
 			for stn in ["strike", "screen", "hunt"]:
 				orders.append({"text": "Wings: %s%s" % [stn, " (now)" if str(u.get("stance")) == stn else ""], "act": "stance", "arg": stn, "on": bool(u.get("canStance")) and str(u.get("stance")) != stn and _can_act(),
 					"tip": {"strike": "Wings range out and strike.", "screen": "Wings stay within 2 hexes, hunt craft first and shoot down torpedoes aimed at ships beside them.", "hunt": "Wings range 4 hexes further, +20% against crippled ships, easier to hit."}[stn]})
