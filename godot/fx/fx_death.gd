@@ -262,7 +262,7 @@ static func precompute(fx, s, cause := "blast") -> void:
 		var xf = inv * mi.global_transform
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
-			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat})
+			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "fmt": mi.mesh.surface_get_format(si)})
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "out": null}
 	s.set_meta("cut_job", job)
 	var tid = WorkerThreadPool.add_task(func() -> void: job["out"] = _cut(job))
@@ -288,12 +288,12 @@ static func _prebuild(fx, s) -> void:
 	job["meshes"] = meshes
 
 
-# A piece's mesh with the hull's own materials (no copies: a copy with other settings would be a new shader pipeline to
-# compile mid-fight); the death overlay draws the piece's inside faces itself.
+# A piece's mesh with the hull's own materials and vertex format (no copies, same compression: anything else would be
+# a new shader pipeline to compile mid-fight; r3 still counted 5); the death overlay draws the piece's inside faces.
 static func _piece_mesh(pc: Dictionary) -> ArrayMesh:
 	var am = ArrayMesh.new()
 	for sd in pc["surfs"]:
-		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"])
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"], [], {}, int(sd.get("fmt", 0)) & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES)
 		am.surface_set_material(am.get_surface_count() - 1, sd["mat"])
 	return am
 
@@ -404,7 +404,7 @@ static func _cut(job: Dictionary) -> Array:
 				na[Mesh.ARRAY_COLOR] = dc
 			na[Mesh.ARRAY_INDEX] = nidx
 			var pc: Dictionary = pieces[c]
-			pc["surfs"].append({"arrays": na, "mat": sd["mat"]})
+			pc["surfs"].append({"arrays": na, "mat": sd["mat"], "fmt": int(sd.get("fmt", 0))})
 			pc["n"] = int(pc["n"]) + order.size()
 			var step = maxi(1, order.size() / 120)
 			for i in range(0, order.size(), step):

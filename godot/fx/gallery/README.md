@@ -16,7 +16,11 @@ Options after `--`: `--quality max|high|low`, `--tonemap agx|aces`, `--reduce-fl
 
 Breach close-ups on one ship, outside the reel: `godot --path . --script res://fx/test/fx_breach_probe.gd` with PROBE_FAC, PROBE_CLS, PROBE_STAGE (2 to 4), PROBE_OUT (a folder), PROBE_W and PROBE_H; it prints the hull rebuild time.
 
-On Ryan's PC: `pc/g4_gallery.bat` runs as a queue job (copied to `Downloads\voidsworn_test\g4\`); it restores G4's files into `build\godot` first (other streams' jobs re-extract parts of that folder), then writes `Downloads\voidsworn_test\g4\<run>\`: `shots\` (4K, AgX), `breach_corsair\` and `breach_hegemony\` (breach close-ups on the 8K barge and super-dreadnought), `shots_aces\` (the same moments under ACES), `shots_calm\` (reduce flashing on), and the bench JSONs.
+Weapon marks (R43), one at a time on a clean hull, a close-up a second after each lands and another when it has cooled, with its cost: `godot --path . --script res://fx/test/fx_marks_probe.gd` with PROBE_FAC, PROBE_CLS, PROBE_OUT, PROBE_W, PROBE_H; prints MARKS_COST lines (worker and main-thread ms per mark).
+
+Hit reactions (R50): `godot --path . --script res://fx/test/fx_react_probe.gd` (PROBE_OUT for stills): each weapon weight hits a frigate and a super-dreadnought; prints the peak roll, yaw, pitch, drift and settle time per hit.
+
+On Ryan's PC: `pc/g4_gallery.bat` runs as a queue job (copied to `Downloads\voidsworn_test\g4\`); it restores G4's files into `build\godot` first (other streams' jobs re-extract parts of that folder), then writes `Downloads\voidsworn_test\g4\<run>\`: `shots\` (4K, AgX), `breach_corsair\` and `breach_hegemony\` (breach close-ups on the 8K barge and super-dreadnought), `shots_aces\` (the same moments under ACES), `shots_calm\` (reduce flashing on), `marks_corsair\` and `marks_voidsworn\` (every weapon's mark on the 8K barge and a Voidsworn dreadnought), `react\` (hit-reaction strips), the smoke log and the bench JSONs.
 
 ## The stills
 
@@ -57,6 +61,8 @@ Each still is keyed to the moment its effect really lands on the effect clock (t
 ## Cost
 
 Ryan's PC (RTX 5080), the full 26 s reel with an orbiting camera. Each feature's cost is the difference from the full run. Run r2 (Oct 26, with the shader warm-up; r1b in brackets).
+
+Run r3 (Oct 26, the breach rework f9b60b4 to ec23549): 4K max 4.88 ms average (GPU 4.59), no effects 3.37, no world 4.40, high 3.09, 1440p max 2.65; but p99 21.5 ms and a 120 ms worst frame at the first break-up, and 5 surface pipeline compiles in the fight. After r3: the hull rebuild builds its meshes on the worker (the main thread only swaps them in), the death cut reuses the arrays already read instead of reading an 8K hull back again. r4 measures it.
 
 | Run | Frame avg | p99 | GPU | Feature cost |
 |---|---|---|---|---|

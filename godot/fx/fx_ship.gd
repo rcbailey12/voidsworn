@@ -937,7 +937,7 @@ func _build_section(fx, i: int, up: bool) -> void:
 			for kk in 8:
 				var v = (an + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (5 + r.randf() * 9) * k
 				bs.add(qs, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + off + r.randf() * 0.08), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.3),
-					Vector4(1.0, 0.7, 0.35, 5.0), Vector4(0.05, 0.1 * k, 2.2, 1), Vector4(per, 0, 0, 0)))
+					Vector4(1.0, 0.7, 0.35, 3.5), Vector4(0.05, 0.07 * k, 2.2, 1), Vector4(per, 0, 0, 0)))
 		if st == 2:
 			var pj: Vector3 = ap + at1 * hull.L * 0.02
 			for kk in 12:
@@ -1001,7 +1001,7 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 	for kk in 12:
 		var v = (bn + upv * 0.3 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.8).normalized() * (6 + r.randf() * 12) * k
 		bs.add(qs, POOLS.pack(Vector4(P.x, P.y, P.z, s_off + r.randf() * 0.12), Vector4(v.x, v.y, v.z, 0.35 + r.randf() * 0.5),
-			Vector4(1, 0.62, 0.25, 8.0), Vector4(0.05, 0.07 * k, 1.5, 1), Vector4(spark_per, 0, 0, 0)))
+			Vector4(1, 0.62, 0.25, 4.5), Vector4(0.05, 0.05 * k, 1.5, 1), Vector4(spark_per, 0, 0, 0)))
 	# dull internal pops every 3.7 s (kept dim enough not to count against the flash budget)
 	var pop_per = 3.7
 	var p_off = fposmod(T0 + 1.3, pop_per)
@@ -1010,7 +1010,7 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 	for kk in 10:
 		var v = (bn + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (8 + r.randf() * 14) * k
 		bs.add(qs, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off + r.randf() * 0.04), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.4),
-			Vector4(1, 0.6, 0.25, 7.0), Vector4(0.04, 0.12 * k, 2.0, 1), Vector4(pop_per, 0, 0, 0)))
+			Vector4(1, 0.6, 0.25, 4.0), Vector4(0.04, 0.08 * k, 2.0, 1), Vector4(pop_per, 0, 0, 0)))
 	if up:
 		# the hole opening: a blast, a burst of plates and chips, a shove of the camera
 		var wp = to_world(brp)

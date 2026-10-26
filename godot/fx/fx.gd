@@ -759,6 +759,30 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = base
 		mi.material_overlay = ov
 		tmp.add_child(mi)
+	# every hull as it is drawn, with the death overlays on top: the overlay pipelines are per vertex format, so warming
+	# them on a box (above) does not cover the hulls, and the first break-up would compile them
+	var seen := {}
+	var hk := 0
+	for sid in ships:
+		var sh: SHIP = ships[sid]
+		for m in sh.meshes:
+			var smi := m as MeshInstance3D
+			if smi == null or smi.mesh == null or seen.has(smi.mesh.get_instance_id()):
+				continue
+			seen[smi.mesh.get_instance_id()] = true
+			for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1)]:
+				var wm := MeshInstance3D.new()
+				wm.mesh = smi.mesh
+				for si in smi.mesh.get_surface_count():
+					var am: Material = smi.get_active_material(si)
+					if am != null:
+						wm.set_surface_override_material(si, am)
+				wm.material_overlay = ov
+				var ext: float = maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
+				wm.scale = Vector3.ONE * (0.6 * unit / ext)
+				wm.position = Vector3((hk % 6 - 2.5) * 1.0, -2.0 - (hk / 6) * 1.0, 1.0) * unit
+				tmp.add_child(wm)
+				hk += 1
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0]

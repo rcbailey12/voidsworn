@@ -768,7 +768,8 @@ void fragment() {
 	float n2 = fbm(p.yz * 9.0 + p.xy * 5.0 + seed * 2.0);
 	float deep = clamp(dot(centre - vL, axis) / R, 0.0, 1.5);
 	float ao = mix(1.0, 0.25, smoothstep(0.0, 0.9, deep));
-	vec3 base = vec3(0.04, 0.038, 0.036) * (0.6 + 0.8 * vC.g) * (0.7 + 0.6 * n1);
+	// r3 verdict: the frames and decks inside were lost in black; a little more albedo lets the fire light pick them out
+	vec3 base = vec3(0.07, 0.066, 0.062) * (0.6 + 0.8 * vC.g) * (0.7 + 0.6 * n1);
 	float rough = 0.72;
 	float metal = 0.25;
 	if (part > 0.2 && part < 0.3) { base *= 1.8; metal = 0.6; rough = 0.5; }
@@ -781,7 +782,7 @@ void fragment() {
 	if (part < 0.8) { base *= mix(0.5, 1.0, smoothstep(0.2, 1.4, dist)); }
 	vec3 Nl = normalize(vNl) * (FRONT_FACING ? 1.0 : -1.0);
 	float lam = 0.25 + 0.75 * max(dot(Nl, toF / max(length(toF), 1e-4)), 0.0);
-	float fall = 1.0 / (1.0 + dist * dist * 10.0);
+	float fall = 1.0 / (1.0 + dist * dist * 5.0);
 	float emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
 	vec3 gc = glow;
 	if (style == 8) { gc = vec3(0.45, 1.0, 0.2); hot *= 0.35; }

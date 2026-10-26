@@ -1049,7 +1049,7 @@ static func emitters(b: POOLS.Batch, bs: POOLS.Batch, E: Ent, ents: Array, ends:
 		for kk in 7:
 			var v := (sd + E.n * 0.4 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.9).normalized() * R * (2.5 + r.randf() * 4.0)
 			bs.add(qs, POOLS.pack(Vector4(sp.x, sp.y, sp.z, off + r.randf() * 0.06), Vector4(v.x, v.y, v.z, 0.25 + r.randf() * 0.3),
-				Vector4(1.0, 0.75, 0.45, 5.0), Vector4(0.035, R * 0.035, 2.2, 1), Vector4(per, 0, 0, 0)))
+				Vector4(1.0, 0.75, 0.45, 3.5), Vector4(0.035, R * 0.025, 2.2, 1), Vector4(per, 0, 0, 0)))
 		b.add(q, POOLS.pack(Vector4(sp.x, sp.y, sp.z, off), Vector4(0, 0, 0, 0.12), Vector4(1.0, 0.8, 0.55, 2.5),
 			Vector4(R * 0.05, R * 0.12, 2, r.randf()), Vector4(per, 0, 0, 0)))
 
