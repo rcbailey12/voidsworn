@@ -12,8 +12,8 @@
 // presentation calls, exactly like sim3d.js.
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm'), crypto = require('crypto');
-// the game files: VS_ROOT when set (the PC runner), otherwise this repo
-const ROOT = process.env.VS_ROOT ? path.resolve(process.env.VS_ROOT) : path.resolve(__dirname, '..', '..', '..', '..');
+// the rules oracle: the pinned copy in ../oracle (VS_ORACLE overrides, for example the live repo root when catching up a rules change)
+const ROOT = process.env.VS_ORACLE ? path.resolve(process.env.VS_ORACLE) : path.resolve(__dirname, '..', 'oracle');
 Date.now = () => 0;
 global.require = require; global.Buffer = Buffer;
 global.window = {}; global.document = undefined; global.performance = { now: () => 0 };

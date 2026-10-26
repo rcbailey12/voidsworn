@@ -2,17 +2,16 @@
 rem Voidsworn rules parity check: runs the game's own battle rules in Node (the oracle) and the Godot port headless,
 rem on the same seeded battles, and prints PASS or FAIL with the first difference. Then prints enemy think times (report only).
 rem Double-click it, or run "parity.bat nopause" from a watcher job.
-rem Works from Downloads\voidsworn_test\build\ (game files beside it, the repo's godot\ folder copied to build\godot\)
+rem Works from Downloads\voidsworn_test\build\ (the repo's godot\ folder copied to build\godot\)
 rem or from a repo checkout (tools\pc\parity.bat).
 setlocal enabledelayedexpansion
 set "HERE=%~dp0"
 set "GAME="
-if exist "%HERE%data.js" set "GAME=%HERE%"
-if not defined GAME if exist "%HERE%..\..\data.js" set "GAME=%HERE%..\..\"
-if not defined GAME ( echo FAIL: cannot find the game files ^(data.js^) next to this file or two folders up. & goto :end )
-set "PROJ="
-if exist "%GAME%godot\project.godot" set "PROJ=%GAME%godot\"
-if not defined PROJ ( echo FAIL: cannot find the Godot project ^(godot\project.godot next to data.js^). & goto :end )
+if exist "%HERE%godot\project.godot" set "GAME=%HERE%"
+if not defined GAME if exist "%HERE%..\..\godot\project.godot" set "GAME=%HERE%..\..\"
+if not defined GAME ( echo FAIL: cannot find the Godot project ^(godot\project.godot next to this file or two folders up^). & goto :end )
+set "PROJ=%GAME%godot\"
+rem the rules oracle is the pinned copy in godot\rules\test\oracle\ (see its README)
 set "T=%PROJ%rules\test\"
 set "NODE=node"
 if exist "%GAME%..\node\node.exe" set "NODE=%GAME%..\node\node.exe"
@@ -20,12 +19,11 @@ set "GODOT="
 if exist "%GAME%..\godot_path.txt" set /p GODOT=<"%GAME%..\godot_path.txt"
 if not defined GODOT if exist "%HERE%godot_path.txt" set /p GODOT=<"%HERE%godot_path.txt"
 if not defined GODOT ( echo FAIL: no godot_path.txt found ^(it holds the path to the Godot console exe^). & goto :end )
-set "VS_ROOT=%GAME%"
 set "LOG=%T%parity_log.txt"
 if not exist "%T%golden" mkdir "%T%golden"
 if not exist "%T%out" mkdir "%T%out"
 echo Voidsworn rules parity, %date% %time% > "%LOG%"
-echo Game files: %GAME% >> "%LOG%"
+echo Project: %PROJ% >> "%LOG%"
 echo Godot: %GODOT% >> "%LOG%"
 set FAILS=0
 set "GD="%GODOT%" --headless --path "%PROJ%." --script res://rules/test/parity_main.gd --"
