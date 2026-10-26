@@ -1,0 +1,354 @@
+# JS semantics for the rules port: the game's numbers are JavaScript doubles, its bit operations are 32-bit, and its Math functions are V8's.
+# Everything here reproduces the exact JS result, so the port gives identical numbers on every platform:
+#   - 32-bit integer ops (Math.imul, |0, >>>) on GDScript's 64-bit int
+#   - the game's PRNG (mulberry32, core.js rnd)
+#   - Math.round as V8 does it (ties toward +infinity), not GDScript's round (ties away from zero)
+#   - Math.sin, cos, atan2, exp: V8 uses fdlibm, ported here line for line (checked against Node on 300,000 inputs: 0 differences)
+#   - Math.hypot: V8's scaled Kahan sum
+#   - a stable sort (Array.prototype.sort is stable; GDScript's sort_custom is not)
+#   - the canonical state text and SHA-256 that the golden records use
+# (loaded with preload, so it runs headless without an editor import)
+extends RefCounted
+
+static var _pb: PackedByteArray = _mk_pb()
+static func _mk_pb() -> PackedByteArray:
+	var p := PackedByteArray(); p.resize(8); return p
+
+# ---- doubles as words ----
+static func hi(x: float) -> int:
+	_pb.encode_double(0, x); return _pb.decode_s32(4)
+static func lo(x: float) -> int:
+	_pb.encode_double(0, x); return _pb.decode_u32(0)
+static func words(h: int, l: int) -> float:
+	_pb.encode_s32(4, to_i32(h)); _pb.encode_u32(0, l & 0xFFFFFFFF); return _pb.decode_double(0)
+static func hex64(x: float) -> String:
+	_pb.encode_double(0, x)
+	var s := ""
+	for i in range(7, -1, -1): s += "%02x" % _pb[i]
+	return s
+static func from_hex64(h: String) -> float:
+	for i in range(8): _pb[7 - i] = h.substr(i * 2, 2).hex_to_int()
+	return _pb.decode_double(0)
+
+# ---- 32-bit integer semantics ----
+static func to_u32(x: int) -> int:
+	return x & 0xFFFFFFFF
+static func to_i32(x: int) -> int:
+	x = x & 0xFFFFFFFF
+	return x - 0x100000000 if x >= 0x80000000 else x
+static func imul(a: int, b: int) -> int: # Math.imul, as an unsigned 32-bit result
+	a = a & 0xFFFFFFFF; b = b & 0xFFFFFFFF
+	var ah := (a >> 16) & 0xFFFF; var al := a & 0xFFFF
+	var bh := (b >> 16) & 0xFFFF; var bl := b & 0xFFFF
+	return (al * bl + (((ah * bl + al * bh) & 0xFFFF) << 16)) & 0xFFFFFFFF
+static func js_int(x: float) -> int: # ToInt32 of a double (x|0)
+	if is_nan(x) or is_inf(x): return 0
+	var t := int(x) # truncates toward zero; doubles here are far below 2^63
+	return to_i32(t)
+
+# ---- PRNG: core.js rndSeed / rnd (mulberry32) ----
+static var rng_s: int = 0 # kept as JS keeps it: rndSeed stores s>>>0, rnd stores a signed 32-bit value
+static func rnd_seed(s: int) -> void:
+	rng_s = to_u32(s)
+static func rnd() -> float:
+	rng_s = to_i32(rng_s + 0x6D2B79F5)
+	var a := to_u32(rng_s)
+	var t := imul(a ^ (a >> 15), 1 | a)
+	t = to_u32(t + imul(t ^ (t >> 7), 61 | t)) ^ t
+	return float(to_u32(t ^ (t >> 14))) / 4294967296.0
+static func rng_u32() -> int:
+	return to_u32(rng_s)
+
+# ---- Math.round (V8: ceil, then step back if that went more than half up) ----
+static func jsround(x: float) -> float:
+	if is_nan(x) or is_inf(x): return x
+	var c := ceil(x)
+	return c if c - 0.5 <= x else c - 1.0
+
+# ---- fdlibm (V8 src/base/ieee754.cc) ----
+# fdlibm constants as exact IEEE words: Godot parses long decimal literals up to an ulp off (found Oct 25: 13 of them), so none are written as decimals
+static var S1: float = words(0xBFC55555, 0x55555549)
+static var S2: float = words(0x3F811111, 0x1110F8A6)
+static var S3: float = words(0xBF2A01A0, 0x19C161D5)
+static var S4: float = words(0x3EC71DE3, 0x57B1FE7D)
+static var S5: float = words(0xBE5AE5E6, 0x8A2B9CEB)
+static var S6: float = words(0x3DE5D93A, 0x5ACFD57C)
+static var C1: float = words(0x3FA55555, 0x5555554C)
+static var C2: float = words(0xBF56C16C, 0x16C15177)
+static var C3: float = words(0x3EFA01A0, 0x19CB1590)
+static var C4: float = words(0xBE927E4F, 0x809C52AD)
+static var C5: float = words(0x3E21EE9E, 0xBDB4B1C4)
+static var C6: float = words(0xBDA8FAE9, 0xBE8838D4)
+static var INVPIO2: float = words(0x3FE45F30, 0x6DC9C883)
+static var PIO2_1: float = words(0x3FF921FB, 0x54400000)
+static var PIO2_1T: float = words(0x3DD0B461, 0x1A626331)
+static var PIO2_2: float = words(0x3DD0B461, 0x1A600000)
+static var PIO2_2T: float = words(0x3BA3198A, 0x2E037073)
+static var PIO2_3: float = words(0x3BA3198A, 0x2E000000)
+static var PIO2_3T: float = words(0x397B839A, 0x252049C1)
+static var PI_O_2: float = words(0x3FF921FB, 0x54442D18)
+static var PI_: float = words(0x400921FB, 0x54442D18)
+static var PI_LO: float = words(0x3CA1A626, 0x33145C07)
+static var INVLN2: float = words(0x3FF71547, 0x652B82FE)
+static var P1: float = words(0x3FC55555, 0x5555553E)
+static var P2: float = words(0xBF66C16C, 0x16BEBD93)
+static var P3: float = words(0x3F11566A, 0xAF25DE2C)
+static var P4: float = words(0xBEBBBD41, 0xC5D26BF1)
+static var P5: float = words(0x3E663769, 0x72BEA4D0)
+static var TWOM1000: float = words(0x01700000, 0x00000000)
+static var ATANHI: Array = [words(0x3FDDAC67, 0x0561BB4F), words(0x3FE921FB, 0x54442D18), words(0x3FEF730B, 0xD281F69B), words(0x3FF921FB, 0x54442D18)]
+static var ATANLO: Array = [words(0x3C7A2B7F, 0x222F65E2), words(0x3C81A626, 0x33145C07), words(0x3C700788, 0x7AF0CBBD), words(0x3C91A626, 0x33145C07)]
+static var AT: Array = [words(0x3FD55555, 0x5555550D), words(0xBFC99999, 0x9998EBC4), words(0x3FC24924, 0x920083FF), words(0xBFBC71C6, 0xFE231671), words(0x3FB745CD, 0xC54C206E), words(0xBFB3B0F2, 0xAF749A6D), words(0x3FB10D66, 0xA0D03D51), words(0xBFADDE2D, 0x52DEFD9A), words(0x3FA97B4B, 0x24760DEB), words(0xBFA2B444, 0x2C6A6C2F), words(0x3F90AD3A, 0xE322DA11)]
+static var LN2HI: Array = [words(0x3FE62E42, 0xFEE00000), words(0xBFE62E42, 0xFEE00000)]
+static var LN2LO: Array = [words(0x3DEA39EF, 0x35793C76), words(0xBDEA39EF, 0x35793C76)]
+static func _ksin(x: float, y: float, iy: int) -> float:
+	var ix := hi(x) & 0x7fffffff
+	if ix < 0x3e400000:
+		if js_int(x) == 0: return x
+	var z := x * x; var v := z * x
+	var r := S2 + z * (S3 + z * (S4 + z * (S5 + z * S6)))
+	if iy == 0: return x + v * (S1 + z * r)
+	return x - ((z * (0.5 * y - v * r) - y) - v * S1)
+static func _kcos(x: float, y: float) -> float:
+	var ix := hi(x) & 0x7fffffff
+	if ix < 0x3e400000:
+		if js_int(x) == 0: return 1.0
+	var z := x * x
+	var r := z * (C1 + z * (C2 + z * (C3 + z * (C4 + z * (C5 + z * C6)))))
+	if ix < 0x3FD33333: return 1.0 - (0.5 * z - (z * r - x * y))
+	var qx: float
+	if ix > 0x3fe90000: qx = 0.28125
+	else: qx = words(ix - 0x00200000, 0)
+	var hz := 0.5 * z - qx; var a := 1.0 - qx
+	return a - (hz - (z * r - x * y))
+const NPIO2_HW := [0x3FF921FB,0x400921FB,0x4012D97C,0x401921FB,0x401F6A7A,0x4022D97C,0x4025FDBB,0x402921FB,0x402C463A,0x402F6A7A,0x4031475C,0x4032D97C,0x40346B9C,0x4035FDBB,0x40378FDB,0x403921FB,0x403AB41B,0x403C463A,0x403DD85A,0x403F6A7A,0x40407E4C,0x4041475C,0x4042106C,0x4042D97C,0x4043A28C,0x40446B9C,0x404534AC,0x4045FDBB,0x4046C6CB,0x40478FDB,0x404858EB,0x404921FB]
+static func _rem_pio2(x: float, y: Array) -> int:
+	var hx := hi(x); var ix := hx & 0x7fffffff
+	var z: float; var w: float; var t: float; var r: float; var fn: float; var n: int; var i: int; var j: int
+	if ix <= 0x3fe921fb:
+		y[0] = x; y[1] = 0.0; return 0
+	if ix < 0x4002d97c:
+		if hx > 0:
+			z = x - PIO2_1
+			if ix != 0x3ff921fb:
+				y[0] = z - PIO2_1T; y[1] = (z - y[0]) - PIO2_1T
+			else:
+				z -= PIO2_2; y[0] = z - PIO2_2T; y[1] = (z - y[0]) - PIO2_2T
+			return 1
+		else:
+			z = x + PIO2_1
+			if ix != 0x3ff921fb:
+				y[0] = z + PIO2_1T; y[1] = (z - y[0]) + PIO2_1T
+			else:
+				z += PIO2_2; y[0] = z + PIO2_2T; y[1] = (z - y[0]) + PIO2_2T
+			return -1
+	if ix <= 0x413921fb:
+		t = absf(x); n = js_int(t * INVPIO2 + 0.5); fn = float(n)
+		r = t - fn * PIO2_1; w = fn * PIO2_1T
+		if n < 32 and ix != NPIO2_HW[n - 1]:
+			y[0] = r - w
+		else:
+			j = ix >> 20; y[0] = r - w; i = j - ((hi(y[0]) >> 20) & 0x7ff)
+			if i > 16:
+				t = r; w = fn * PIO2_2; r = t - w; w = fn * PIO2_2T - ((t - r) - w); y[0] = r - w; i = j - ((hi(y[0]) >> 20) & 0x7ff)
+				if i > 49:
+					t = r; w = fn * PIO2_3; r = t - w; w = fn * PIO2_3T - ((t - r) - w); y[0] = r - w
+		y[1] = (r - y[0]) - w
+		if hx < 0:
+			y[0] = -y[0]; y[1] = -y[1]; return -n
+		return n
+	push_error("JSM: sin/cos argument too large for this port"); return 0
+static func sin(x: float) -> float:
+	var ix := hi(x) & 0x7fffffff
+	if ix <= 0x3fe921fb: return _ksin(x, 0.0, 0)
+	if ix >= 0x7ff00000: return x - x
+	var y := [0.0, 0.0]; var n := _rem_pio2(x, y)
+	match n & 3:
+		0: return _ksin(y[0], y[1], 1)
+		1: return _kcos(y[0], y[1])
+		2: return -_ksin(y[0], y[1], 1)
+		_: return -_kcos(y[0], y[1])
+static func cos(x: float) -> float:
+	var ix := hi(x) & 0x7fffffff
+	if ix <= 0x3fe921fb: return _kcos(x, 0.0)
+	if ix >= 0x7ff00000: return x - x
+	var y := [0.0, 0.0]; var n := _rem_pio2(x, y)
+	match n & 3:
+		0: return _kcos(y[0], y[1])
+		1: return -_ksin(y[0], y[1], 1)
+		2: return -_kcos(y[0], y[1])
+		_: return _ksin(y[0], y[1], 1)
+# named _atan: inside this script a bare atan() would call Godot's built-in (C library) atan instead (found Oct 25)
+static func atan(x: float) -> float: return _atan(x)
+static func _atan(x: float) -> float:
+	var hx := hi(x); var ix := hx & 0x7fffffff; var id: int
+	if ix >= 0x44100000:
+		if ix > 0x7ff00000 or (ix == 0x7ff00000 and lo(x) != 0): return x + x
+		return ATANHI[3] + ATANLO[3] if hx > 0 else -ATANHI[3] - ATANLO[3]
+	if ix < 0x3fdc0000:
+		if ix < 0x3e400000:
+			if 1e300 + x > 1.0: return x
+		id = -1
+	else:
+		x = absf(x)
+		if ix < 0x3ff30000:
+			if ix < 0x3fe60000:
+				id = 0; x = (2.0 * x - 1.0) / (2.0 + x)
+			else:
+				id = 1; x = (x - 1.0) / (x + 1.0)
+		else:
+			if ix < 0x40038000:
+				id = 2; x = (x - 1.5) / (1.0 + 1.5 * x)
+			else:
+				id = 3; x = -1.0 / x
+	var z := x * x; var w := z * z
+	var s1: float = z * (AT[0] + w * (AT[2] + w * (AT[4] + w * (AT[6] + w * (AT[8] + w * AT[10])))))
+	var s2: float = w * (AT[1] + w * (AT[3] + w * (AT[5] + w * (AT[7] + w * AT[9]))))
+	if id < 0: return x - x * (s1 + s2)
+	var zz: float = ATANHI[id] - ((x * (s1 + s2) - ATANLO[id]) - x)
+	return -zz if hx < 0 else zz
+const TINY := 1e-300
+static func atan2(y: float, x: float) -> float:
+	if is_nan(x) or is_nan(y): return x + y
+	var hx := hi(x); var ix := hx & 0x7fffffff; var lx := lo(x)
+	var hy := hi(y); var iy := hy & 0x7fffffff; var ly := lo(y)
+	if ((hx - 0x3ff00000) | lx) == 0: return _atan(y)
+	var m := ((hy >> 31) & 1) | ((hx >> 30) & 2)
+	if (iy | ly) == 0:
+		match m:
+			0, 1: return y
+			2: return PI_ + TINY
+			3: return -PI_ - TINY
+	if (ix | lx) == 0: return -PI_O_2 - TINY if hy < 0 else PI_O_2 + TINY
+	if ix == 0x7ff00000 or iy == 0x7ff00000: push_error("JSM: atan2 infinity not ported"); return 0.0
+	var k := (iy - ix) >> 20; var z: float
+	if k > 60:
+		z = PI_O_2 + 0.5 * PI_LO; m &= 1
+	elif hx < 0 and k < -60: z = 0.0
+	else: z = _atan(absf(y / x))
+	match m:
+		0: return z
+		1: return -z
+		2: return PI_ - (z - PI_LO)
+		_: return (z - PI_LO) - PI_
+const HALF := [0.5, -0.5]
+static func exp(x: float) -> float:
+	var hx := to_u32(hi(x)); var xsb := (hx >> 31) & 1; hx &= 0x7fffffff
+	var hi_ := 0.0; var lo_ := 0.0; var k := 0; var t: float; var c: float; var y: float
+	if hx >= 0x40862E42: push_error("JSM: exp range not ported"); return 0.0
+	if hx > 0x3fd62e42:
+		if hx < 0x3FF0A2B2:
+			hi_ = x - LN2HI[xsb]; lo_ = LN2LO[xsb]; k = 1 - xsb - xsb
+		else:
+			k = js_int(INVLN2 * x + HALF[xsb]); t = float(k); hi_ = x - t * LN2HI[0]; lo_ = t * LN2LO[0]
+		x = hi_ - lo_
+	elif hx < 0x3e300000:
+		if 1e300 + x > 1.0: return 1.0 + x
+	else: k = 0
+	t = x * x; c = x - t * (P1 + t * (P2 + t * (P3 + t * (P4 + t * P5))))
+	if k == 0: return 1.0 - ((x * c) / (c - 2.0) - x)
+	y = 1.0 - ((lo_ - (x * c) / (2.0 - c)) - hi_)
+	if k >= -1021: return words(hi(y) + (k << 20), lo(y))
+	return words(hi(y) + ((k + 1000) << 20), lo(y)) * TWOM1000
+static func hypot(a: Array) -> float: # V8 Math.hypot
+	var mx := 0.0; var ab := []
+	for v in a:
+		var q := absf(float(v)); ab.append(q)
+		if q > mx: mx = q
+	if mx == 0.0: return 0.0
+	var sum := 0.0; var comp := 0.0
+	for v in ab:
+		var n: float = v / mx; var s := n * n - comp; var p := sum + s
+		comp = (p - sum) - s; sum = p
+	return sqrt(sum) * mx
+
+# ---- arrays ----
+static func amin(a: Array) -> float: # Math.min(...a)
+	var m := INF
+	for v in a:
+		if float(v) < m: m = float(v)
+	return m
+static func amax(a: Array) -> float:
+	var m := -INF
+	for v in a:
+		if float(v) > m: m = float(v)
+	return m
+# stable merge sort with a JS-style comparator (negative, zero or positive)
+static func ssort(a: Array, cmp: Callable) -> Array:
+	var n := a.size()
+	if n < 2: return a
+	var src := a.duplicate(); var dst := src.duplicate(); var width := 1
+	while width < n:
+		var i := 0
+		while i < n:
+			var mid := mini(i + width, n); var end := mini(i + 2 * width, n); var l := i; var r := mid; var k := i
+			while l < mid and r < end:
+				if float(cmp.call(src[r], src[l])) < 0.0:
+					dst[k] = src[r]; r += 1
+				else:
+					dst[k] = src[l]; l += 1
+				k += 1
+			while l < mid:
+				dst[k] = src[l]; l += 1; k += 1
+			while r < end:
+				dst[k] = src[r]; r += 1; k += 1
+			i += 2 * width
+		var tmp := src; src = dst; dst = tmp; width *= 2
+	for i in range(n): a[i] = src[i]
+	return a
+static func has_same(a: Array, x) -> bool: # Array.prototype.includes for objects (identity)
+	for v in a:
+		if typeof(v) == typeof(x) and is_same(v, x): return true
+	return false
+static func index_same(a: Array, x) -> int:
+	for i in range(a.size()):
+		if typeof(a[i]) == typeof(x) and is_same(a[i], x): return i
+	return -1
+
+# ---- canonical state text (identical rules to golden.js canon) ----
+static func is_unit(v) -> bool:
+	return v is Dictionary and v.has("id") and v.has("side") and v.has("hp") and v["id"] != null and v["side"] != null
+static func num(v) -> String:
+	var f := float(v)
+	if f == floor(f) and absf(f) < 9007199254740992.0: return str(int(f))
+	return "\"d:" + hex64(f) + "\""
+static func jstr(s: String) -> String: # JSON.stringify for a string
+	var o := "\""
+	for ch in s:
+		var c := ch.unicode_at(0)
+		if ch == "\"": o += "\\\""
+		elif ch == "\\": o += "\\\\"
+		elif c == 8: o += "\\b"
+		elif c == 12: o += "\\f"
+		elif c == 10: o += "\\n"
+		elif c == 13: o += "\\r"
+		elif c == 9: o += "\\t"
+		elif c < 0x20: o += "\\u%04x" % c
+		else: o += ch
+	return o + "\""
+# plain=true: data tables (no ship references); otherwise a nested ship is written as "@id"
+static func canon(v, top: String = "", skip: Dictionary = {}, plain: bool = false) -> String:
+	if v == null: return "null"
+	match typeof(v):
+		TYPE_BOOL: return "true" if v else "false"
+		TYPE_INT, TYPE_FLOAT: return num(v)
+		TYPE_STRING, TYPE_STRING_NAME: return jstr(String(v))
+		TYPE_ARRAY:
+			var parts := PackedStringArray()
+			for x in v: parts.append(canon(x, "", {}, plain))
+			return "[" + ",".join(parts) + "]"
+		TYPE_DICTIONARY:
+			if top == "" and not plain and is_unit(v): return jstr("@" + String(v["id"]))
+			var ks := []
+			for k in v.keys():
+				if v[k] == null or skip.has(k): continue
+				if typeof(v[k]) == TYPE_CALLABLE: continue
+				ks.append(String(k))
+			ks.sort()
+			var parts := PackedStringArray()
+			for k in ks: parts.append(jstr(k) + ":" + canon(v[k], "", {}, plain))
+			return "{" + ",".join(parts) + "}"
+	return "null"
+static func sha256(s: String) -> String:
+	var h := HashingContext.new(); h.start(HashingContext.HASH_SHA256); h.update(s.to_utf8_buffer())
+	return h.finish().hex_encode()

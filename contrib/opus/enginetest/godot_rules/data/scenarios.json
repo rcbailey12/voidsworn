@@ -1,0 +1,72 @@
+{
+ "s1": {
+  "note": "Sector 1 engagement: a Voidsworn destroyer and two frigates (torpedoes, a turret, autocannons, flak) against a Hegemony destroyer and two pickets (plasma lasers and turbolasers), shields, ship deaths",
+  "seed": 1001,
+  "sector": 1,
+  "admiral": "vex",
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12
+ },
+ "s2": {
+  "note": "Sector 1 flagship fight: the Hegemony flagship and two escorts against a Voidsworn cruiser, destroyer and two frigates (batteries, lance, torpedoes, turret, autocannons, flak); boss scaling, boss Command, escorts breaking, wrecks left as terrain",
+  "seed": 2002,
+  "sector": 1,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_boss",
+   "h_interdictor",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "station",
+  "dep": "line",
+  "kind": "boss",
+  "rounds": 15
+ },
+ "s3": {
+  "note": "Sector 1 engagement in an asteroid belt: Corsair marauder, reaver and raider (rocket salvos that point defense can shoot down, scrap guns, overburn, ramming AI) against a Voidsworn cruiser and two frigates",
+  "seed": 3003,
+  "sector": 1,
+  "admiral": "vex",
+  "fleet": [
+   "penitent",
+   "warden",
+   "warden"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12
+ }
+}

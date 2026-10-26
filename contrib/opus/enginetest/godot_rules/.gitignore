@@ -1,0 +1,5 @@
+golden/*.jsonl
+golden/*.txt
+out/
+.godot/
+parity_log.txt
