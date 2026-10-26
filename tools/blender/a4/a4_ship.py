@@ -25,7 +25,16 @@ def log(*a): print('[a4]', *a, flush=True)
 
 
 def build_hull(root, code, cfg):
+    if cfg.get('loft'):  # Ithar hulls the AI could not mesh (I8: a curved sheet with a stub of body) are lofted by hand instead
+        import ithar
+        h = ithar.loft(cfg['loft'], os.environ.get('A4_TMP') or os.path.join(root, '_a4tmp'))
+        o = blmesh.mesh_from_arrays('hull', h['pos'], h['idx'], nor=h['nor'], uvs={'atlas': h['uv']})
+        h['fingers'] = []; return o, h, {}, len(h['idx']), len(h['idx'])
     h = frame.load(root, code, cfg.get('yaw', 0), roll=cfg.get('roll', 0))
+    if cfg.get('pitch'):  # the AI tilted the spindle (I15: bow up); level it by turning about the port axis (degrees, + = bow down)
+        a = math.radians(cfg['pitch']); c_, s_ = math.cos(a), math.sin(a)
+        for k in ('pos', 'nor'):
+            q = h[k].copy(); h[k][:, 0] = c_ * q[:, 0] + s_ * q[:, 2]; h[k][:, 2] = -s_ * q[:, 0] + c_ * q[:, 2]
     idx, rims, rep = cuts.apply(h['pos'], h['idx'], cfg.get('cuts', []), keep_islands=cfg.get('keep_islands', False))
     for r in rep: log(r)
     h['fingers'] = []
@@ -47,8 +56,11 @@ def fill_holes(o, cfg, fac):
         if 'box' not in c or c.get('cover', True) is False: continue
         x0, x1, y0, y1, z0, z1 = c['box']; boxes.append((x0, x1, y0, y1, z0, z1))
         if c.get('mirror'): boxes.append((x0, x1, -y1, -y0, z0, z1))
-    if not boxes: return []
-    e_ = .015; inside = lambda v: any(b[0] - e_ < v.x < b[1] + e_ and b[2] - e_ < v.y < b[3] + e_ and b[4] - e_ < v.z < b[5] + e_ for b in boxes)
+    needles = [c['needle'] for c in cfg.get('cuts', []) if 'needle' in c and c.get('cover', True) is not False]
+    if not boxes and not needles: return []
+    e_ = .015
+    inside = lambda v: any(b[0] - e_ < v.x < b[1] + e_ and b[2] - e_ < v.y < b[3] + e_ and b[4] - e_ < v.z < b[5] + e_ for b in boxes) or \
+        any(cuts.in_needle(nd, (v.x, v.y, v.z), e_) for nd in needles)
     bm = bmesh.new(); bm.from_mesh(o.data)
     bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-6)  # the atlas splits vertices along UV seams; weld them (UVs live on corners)
     bnd = [e for e in bm.edges if e.is_boundary]
@@ -197,7 +209,9 @@ def export_arrays(o, code, outdir, tag='ship'):
     tg[:, 3] = np.where(tg[:, 3] < 0, -1.0, 1.0)
     uv = a['uv']['UV0'].copy(); uv[:, 1] = 1 - uv[:, 1]; uv = np.clip(uv, 0, 1)
     path = os.path.join(outdir, f'{code}_{tag}.npz')
-    np.savez(path, pos=pos.astype(np.float32), nor=nor.astype(np.float32), idx=a['idx'].astype(np.uint32), uv=uv.astype(np.float32), tan=tg.astype(np.float32))
+    ex = {}
+    if 'sail' in a['attrs']: ex['sail'] = (a['attrs']['sail'][a['idx']].max(1) > .5).astype(np.uint8)  # per triangle: sail membrane
+    np.savez(path, pos=pos.astype(np.float32), nor=nor.astype(np.float32), idx=a['idx'].astype(np.uint32), uv=uv.astype(np.float32), tan=tg.astype(np.float32), **ex)
     return path, len(a['idx'])
 
 
@@ -278,6 +292,11 @@ def main():
     log('audit:', 'PASS' if not fail else 'FAIL', f'(dress: removed {len(floaters)} floating, {len(stray)} stray)')
     for p_ in fail: log('  ', p_)
     parts = list(hs_lib.PARTS)
+    for o in parts:  # Ithar sail membranes: flagged so pack.py gives them their own see-through material
+        if o.name in kit.SAILS:
+            bpy.context.view_layer.objects.active = o
+            for md in list(o.modifiers): o.select_set(True); bpy.ops.object.modifier_apply(modifier=md.name); o.select_set(False)
+            a_ = o.data.attributes.new('sail', 'FLOAT', 'POINT'); a_.data.foreach_set('value', np.ones(len(o.data.vertices), np.float32))
     hull_attrs(hull, fac); kitobj = a2_ship.finish_parts(parts)
     kit_tris = sum(len(p_.vertices) - 2 for p_ in kitobj.data.polygons)
     core = core_point(hull)

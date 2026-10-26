@@ -33,13 +33,28 @@ def write_textures(meta, d, code, res):
     return files
 
 
-def materials(G, code, files):
+def materials(G, code, files, sail=False):
     t = {k: G.image(uri=v, name=f'{code}_{k}') for k, v in files.items()}
     hull = G.material({'name': f'{code}_hull', 'pbrMetallicRoughness': {'baseColorTexture': {'index': t['base']}, 'metallicRoughnessTexture': {'index': t['orm']},
                                                                           'metallicFactor': 1.0, 'roughnessFactor': 1.0},
                        'normalTexture': {'index': t['normal'], 'scale': 1.0}, 'occlusionTexture': {'index': t['orm'], 'strength': 1.0},
                        'emissiveTexture': {'index': t['emissive']}, 'emissiveFactor': [1, 1, 1], 'extensions': {'KHR_materials_emissive_strength': {'emissiveStrength': EMIT_STRENGTH}}})
-    return hull
+    if not sail: return hull
+    # Ithar sail membranes: the same maps, see-through and lit from both sides (the old game's glassy sail card, A4 version)
+    sm = G.material({'name': f'{code}_sail', 'alphaMode': 'BLEND', 'doubleSided': True,
+                     'pbrMetallicRoughness': {'baseColorTexture': {'index': t['base']}, 'baseColorFactor': [1, 1, 1, SAIL_ALPHA], 'metallicRoughnessTexture': {'index': t['orm']},
+                                              'metallicFactor': 1.0, 'roughnessFactor': 1.0},
+                     'emissiveTexture': {'index': t['emissive']}, 'emissiveFactor': [1, 1, 1], 'extensions': {'KHR_materials_emissive_strength': {'emissiveStrength': EMIT_STRENGTH}}})
+    return hull, sm
+
+
+SAIL_ALPHA = .55
+
+
+def subset(m, tri_mask, nor, tan):
+    """the vertices and triangles under tri_mask, re-indexed (one primitive per material)"""
+    idx = m['idx'][tri_mask]; used = np.unique(idx); remap = np.full(len(m['pos']), -1, np.int64); remap[used] = np.arange(len(used))
+    return dict(pos=m['pos'][used], nor=nor[used], uv=m['uv'][used], tan=None if tan is None else tan[used], idx=remap[idx].astype(np.uint32))
 
 
 def pack(meta_path, gdir, res=2048, tangents=False, quant=False):
@@ -51,9 +66,13 @@ def pack(meta_path, gdir, res=2048, tangents=False, quant=False):
     files = write_textures(meta, d, code, res)
     # ship
     m = dict(np.load(meta['mesh'] if os.path.exists(meta['mesh']) else os.path.join(base, os.path.basename(meta['mesh']))))
-    G = gio.GLB(); mat = materials(G, code, files)
-    nor = unit(m['nor']); tan = fix_tangents(nor, m['tan'])
-    mesh = G.mesh(code, [dict(pos=m['pos'], nor=nor, idx=m['idx'], uv=m['uv'], tan=tan if tangents else None, mat=mat)], quant=quant)
+    G = gio.GLB(); nor = unit(m['nor']); tan = fix_tangents(nor, m['tan'])
+    if 'sail' in m and m['sail'].any():
+        mat, smat = materials(G, code, files, sail=True); sl = m['sail'].astype(bool)
+        prims = [dict(subset(m, ~sl, nor, tan if tangents else None), mat=mat), dict(subset(m, sl, nor, tan if tangents else None), mat=smat)]
+    else:
+        mat = materials(G, code, files); prims = [dict(pos=m['pos'], nor=nor, idx=m['idx'], uv=m['uv'], tan=tan if tangents else None, mat=mat)]
+    mesh = G.mesh(code, prims, quant=quant)
     kids = []
     for h in meta['hardpoints']:
         kids.append(G.node({'name': h['name'], 'translation': [round(float(v), 6) for v in h['p']], 'rotation': gio.basis_quat(h['fwd'], h['up']), 'extras': h['extras']}))

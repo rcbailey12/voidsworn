@@ -46,6 +46,20 @@ def islands(p, idx, w, min_share):
     return tot[inv] < min_share * ar.sum()
 
 
+def needle_r(nd, x):
+    """the needle cut's radius at x: a number, or a list of (x, r) points interpolated"""
+    r = nd['r']
+    if isinstance(r, (int, float)): return np.full(len(x), float(r))
+    xs, rs = zip(*r); return np.interp(x, xs, rs)
+
+
+def in_needle(nd, v, e=0.):
+    """is point v (x, y, z) inside the needle cut's kept spindle (grown by e)?"""
+    y0, z0 = nd.get('axis', (0, 0)); x0, x1 = nd.get('x', (-9, 9))
+    if not (x0 - e < v[0] < x1 + e): return False
+    return np.hypot(v[1] - y0, (v[2] - z0) * nd.get('zs', 1.0)) < needle_r(nd, np.array([v[0]]))[0] + e
+
+
 def apply(p, idx, cuts, keep_islands=False, island_share=.002):
     """cuts: list of dict(name, box=(x0, x1, y0, y1, z0, z1)) or dict(name, dir='up', level=z, max_w=.03, min_ratio=2, box=(...) optional,
     mirror=True also cuts the box mirrored across y). Returns (idx_kept, rims {name: (lo, hi, nrim)}, report lines)."""
@@ -62,6 +76,13 @@ def apply(p, idx, cuts, keep_islands=False, island_share=.002):
                 if mk.any(): rims[nm] = _rim(p, idx, w, mk)
                 m |= mk
                 rep.append(f'cut {nm}: {int(mk.sum())} triangles')
+        elif 'needle' in c:  # Ithar: keep only the spindle (centres within r of the axis line y=y0, z=z0 over x0..x1); the AI sails go
+            nd = c['needle']; y0, z0 = nd.get('axis', (0, 0)); x0, x1 = nd.get('x', (-9, 9)); rr = needle_r(nd, cen[:, 0])
+            d = np.hypot(cen[:, 1] - y0, (cen[:, 2] - z0) * nd.get('zs', 1.0))
+            m = (d > rr) & (cen[:, 0] > x0) & (cen[:, 0] < x1) & ~cut_all
+            if 'outside_x' in nd: m |= ((cen[:, 0] < x0) | (cen[:, 0] > x1)) & ~cut_all  # everything past the spindle's ends too
+            if m.any(): rims[c['name']] = _rim(p, idx, w, m)
+            rep.append(f'cut {c["name"]} (outside the needle): {int(m.sum())} triangles')
         elif 'dir' in c:
             q = DIRS[c['dir']](p); sel_box = c.get('box')
             fs = spires.find_fingers(q, idx, c['level'], None, min_ratio=c.get('min_ratio', 2.0), min_h=c.get('min_h', .010), max_w=c.get('max_w', .03))

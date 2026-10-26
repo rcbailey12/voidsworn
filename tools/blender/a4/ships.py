@@ -37,7 +37,7 @@ WEAPONS = {
     'craft|fighter': [('guns', 'T')], 'craft|bomber': [('bombs', 'T')], 'craft|spore': [('sporeb', 'T')],
     'obj|station': [], 'obj|transport': [], 'obj|beacon': [],
 }
-KEYS = {'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
+KEYS = {'loft', 'pitch', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
        'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
 SIZES = {'S', 'M', 'L', 'XL'}
@@ -73,7 +73,7 @@ def check_entry(code, cfg):
 
 SHIPS = {}
 # orientation fixes known before a ship file exists: the game's AI_HULL_YAW (ships3d.js) plus A4 finds (2 = turned half round)
-YAWS = {'I14_23': 1, 'I15_11': -1, 'C15s_23': 2, 'V14_23': 2, 'V16_37': 2, 'B19_11': 2, 'B21_11': 2, 'B22_11': 2}
+YAWS = {'I14_23': 1, 'I15_11': -1, 'I11_37': 2, 'C15s_23': 2, 'V14_23': 2, 'V16_37': 2, 'B19_11': 2, 'B21_11': 2, 'B22_11': 2}
 
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Corsair (barge grammar: rust-and-bone salvage, lopsided, junk bolted on; space parts only)
@@ -319,3 +319,69 @@ SHIPS['B22_11'] = dict(
          ('brood', 'bay', .05, 0, -.02, 'port', dict(r=.03, pair=True)),
          ('orifice', 'ov', 0, .02, 0, 'stern', dict(r=.018, pair=True))],
     notes='first pass')
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# Ithar (pearl-white porcelain spindles, gold filigree, jade glow; the sails are the faction's signature). The AI meshed every sail as a
+# thick lumpy volume (R28: "Ithar broken"), so the sails are cut off and rebuilt with kit.sail: thin membranes between gold ribs with a lit
+# rim, exported with their own see-through material (pack.py). Where the AI body is a plain spindle or missing (I8, I11) the hull is lofted
+# by hand (ithar.py). Taste calls (vetoable): sail sizes follow the AI silhouette (it reads top-down), not the concepts' 3/4 framing.
+SAIL = dict(ribs=17, billow=.05, th=.0016)
+SHIPS['I14_23'] = dict(
+    fac='ithar', cls='Frigate', name='Gleam-class frigate', sym='bilateral', yaw=1, snap=.012, needle=.09,
+    cuts=[dict(name='sails', box=(-.5, .05, .086, 1, -.06, 1), mirror=True),        # the two wing fans, cut flush beside the body
+          dict(name='sailroot', box=(-.27, -.12, .05, .086, .0, .2), mirror=True)],  # the stubs on the body's shoulders
+    kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, root=(-.19, .072, -.004), u=(.309, .951, 0), v=(-.763, .247, .598), a0=-.10, a1=.90, R=.42,
+                                            hub=((-.19, .066, -.006), (0, .6, .8)), pair=True)),
+         ('turret', 'sh', .15, 0, 0, 'top', dict(size='S', barrels=1, slot=0, wkind='shard', arc='F', lift=.002)),
+         ('engine_at', 'eP', 0, .02, -.095, 'stern', dict(r=.014, L=.02, pair=True))],
+    notes='pass 1: AI body kept, wing fans rebuilt')
+
+SHIPS['I11_37'] = dict(
+    fac='ithar', cls='Destroyer', name='Seraph-class destroyer', sym='bilateral', yaw=2, snap=.012, needle=.05,
+    loft=dict(r=.020, facets=6, ys=1.25, zs=.8, x=(-.30, .50), hub=.55, hub_t=.42, hub_w=.08, taper=.8),  # AI body: a thin tube under one sheet
+    kit=[('sail', 'su', 0, 0, 0, 'top', dict(SAIL, root=(.02, .012, .014), u=(0, .35, .94), v=(-1, 0, 0), a0=-.25, a1=.95, R=.30,
+                                            hub=((.02, .012, .012), (0, .35, .94)), pair=True)),   # the tall pair rising from the hub
+         ('sail', 'sw', 0, 0, 0, 'top', dict(SAIL, ribs=13, root=(.0, .026, -.004), u=(0, 1, -.12), v=(-1, 0, 0), a0=-.30, a1=.70, R=.24,
+                                            hub=((.0, .024, -.004), (0, 1, 0)), pair=True)),      # the low pair spread to the sides
+         ('sail', 'sa', 0, 0, 0, 'top', dict(SAIL, ribs=11, root=(-.24, .008, .004), u=(-.55, .35, .76), v=(-.75, -.2, -.5), a0=-.2, a1=.5, R=.20,
+                                            pair=True)),                                         # the small trailing pair at the stern
+         ('turret', 'sh', .26, 0, 0, 'top', dict(size='M', barrels=1, slot=0, wkind='shard', arc='F', lift=.002)),
+         ('turret', 'st', .20, 0, 0, 'below', dict(size='M', barrels=2, slot=1, wkind='startorp', arc='F')),
+         ('engine_at', 'eC', 0, 0, 0, 'stern', dict(r=.008, L=.014))],
+    notes='pass 1: hand-lofted spindle, three sail pairs')
+
+SHIPS['I15_11'] = dict(
+    fac='ithar', cls='Cruiser', name='Aurora-class cruiser', sym='bilateral', yaw=-1, pitch=13.5, snap=.012, needle=.10,
+    cuts=[dict(name='sails', needle=dict(r=[(-.16, .05), (-.05, .08), (.05, .10), (.2, .09), (.35, .07), (.5, .04)], axis=(0, 0), x=(-.16, .6), outside_x=True))],
+    kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, ribs=21, root=(-.14, .03, 0), u=(-.633, .763, -.125), v=(.058, .211, .977), a0=-.05, a1=.78, R=.62,
+                                            hub=((-.14, .03, 0), (0, 1, 0)), pair=True)),
+         ('turret', 'pf', .20, .025, 0, 'top', dict(size='M', barrels=1, slot=0, slot_m=1, wkind='pulsar', arc='F', pair=True, lift=.002)),
+         ('turret', 'tt', .05, 0, 0, 'top', dict(size='M', barrels=2, slot=2, wkind='turret', arc='T', lift=.003)),
+         ('engine_at', 'eC', 0, 0, -.02, 'stern', dict(r=.02, L=.024))],
+    notes='pass 1: AI body levelled (it was meshed bow-up), stern fans rebuilt')
+
+SHIPS['I16_11'] = dict(
+    fac='ithar', cls='Carrier', name='Zenith-class carrier', sym='bilateral', snap=.012, needle=.08,
+    cuts=[dict(name='sailaft', box=(-.5, -.25, -.012, .012, -.15, 1)),     # the sail sheet over the deck (the curved blade mast forward stays)
+          dict(name='sailmid', box=(-.25, -.1, -.012, .012, -.135, 1)),
+          dict(name='sailfore', box=(-.1, .03, -.012, .012, -.12, 1))],
+    kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, ribs=21, billow=.03, root=(-.04, 0, -.125), u=(-1, 0, 0), v=(0, 0, 1), a0=.02, a1=1.55, R=.40,
+                                            hub=((-.04, 0, -.127), (0, 0, 1)))),
+         ('turret', 'pf', .32, 0, 0, 'top', dict(size='L', barrels=1, slot=0, wkind='pulsar', arc='F', lift=.002)),
+         ('turret', 'tt', -.05, 0, 0, 'below', dict(size='L', barrels=2, slot=1, wkind='turret', arc='T')),
+         ('bay', 'bay', 0, .065, -.195, 'bow', dict(width=.02, height=.012, launch=(1, 0, 0), pair=True)),
+         ('engine_at', 'eC', 0, 0, -.185, 'stern', dict(r=.016, L=.022))],
+    notes='pass 1: AI hull kept (it reads well), sail rebuilt')
+
+SHIPS['I8_37'] = dict(
+    fac='ithar', cls='Ark', name='Empyrean ark', sym='bilateral', snap=.012, needle=.06,
+    loft=dict(r=.022, facets=6, ys=1.25, zs=.8, hub=.9, hub_t=.5, hub_w=.07, taper=.85),   # the AI made one curved sheet with a stub of body
+    kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, ribs=19, root=(0, .045, -.004), u=(1, 0, 0), v=(0, 1, .10), a0=.22, a1=2.92, R=.42,
+                                            hub=((0, .045, 0), (0, 1, 0)), pair=True)),   # the leaf: the needle is its midrib
+         ('turret', 'pf', .20, 0, 0, 'top', dict(size='L', barrels=1, slot=0, wkind='pulsar', arc='F', lift=.002)),
+         ('turret', 'pf2', .20, 0, 0, 'below', dict(size='L', barrels=1, slot=1, wkind='pulsar', arc='F')),
+         ('turret', 'pt', -.14, 0, 0, 'top', dict(size='L', barrels=2, slot=2, wkind='pulsar', arc='T', lift=.002)),
+         ('turret', 'tt', -.14, 0, 0, 'below', dict(size='M', barrels=2, slot=3, wkind='turret', arc='T')),
+         ('turret', 'fl', .08, 0, 0, 'top', dict(size='S', barrels=2, slot=4, wkind='flak', arc='T')),
+         ('engine_at', 'eC', 0, 0, 0, 'stern', dict(r=.010, L=.016))],
+    notes='pass 1: hand-lofted spindle and leaf sail (the AI mesh was unusable)')

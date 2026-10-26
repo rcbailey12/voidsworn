@@ -39,7 +39,7 @@ def palette(fac):
 
 
 def setup(hull_objs, cls, fac, seed=1):
-    HP.clear(); GUNS.clear(); CTX['L'] = CLS_LEN.get(cls, 10.); CTX['fac'] = fac; CTX['pal'] = palette(fac); CTX['rng'] = random.Random(seed)
+    HP.clear(); GUNS.clear(); SAILS.clear(); CTX["L"] = CLS_LEN.get(cls, 10.); CTX['fac'] = fac; CTX['pal'] = palette(fac); CTX['rng'] = random.Random(seed)
     CTX['targets'] = list(hull_objs); rebuild_bvh()
 
 
@@ -125,6 +125,7 @@ def ofrustum(name, c, t, b, n, bot, top, h, shear=(0, 0), bevel=.0005, sides=4):
     return hs_lib._obj(name, bm, bevel, seg=1)
 
 
+SAILS = set()  # names of sail membranes (see-through material in the export)
 SALVAGE_PART = [(.10, .034, .014), (.16, .055, .022), (.20, .21, .22), (.19, .18, .17), (.13, .135, .145), (.30, .08, .025)]
 
 
@@ -495,7 +496,7 @@ def sail(name, root, u, v, a0, a1, R, ribs=9, billow=.06, th=.0016, hub=None, ri
     for i in range(nr):
         for j in range(na): bm.faces.new((grid[i][j], grid[i][j + 1], grid[i + 1][j + 1], grid[i + 1][j]))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    o = hs_lib._obj(name + 'm', bm, 0)
+    o = hs_lib._obj(name + 'm', bm, 0); SAILS.add(o.name)
     sm = o.modifiers.new('sd', 'SOLIDIFY'); sm.thickness = th; sm.offset = 0; sm.use_rim = True
     tag(mul(P['base'], 1.02), emit=.06, rgh=.35, met=.05)  # pearl membrane, a breath of glow so it reads against space
     for k in range(ribs):
