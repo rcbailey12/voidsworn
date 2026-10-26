@@ -92,7 +92,7 @@ func _ready() -> void:
 
 
 func _campaign_has_save() -> bool:
-	return main.Host.has_save()
+	return main.campaign_has_save()
 
 
 func _label(t: String, size: int, col: Color, f: Font) -> Label:
@@ -174,6 +174,7 @@ func _settings() -> void:
 	v.add_child(_choice("Enemy AI", "ai", [["veteran", "Veteran"], ["standard", "Standard"]]))
 	v.add_child(_toggle("Reduce flashing", "reduce_flashing"))
 	v.add_child(_choice("Screen shake", "shake", [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]]))
+	v.add_child(_toggle("Follow enemy activations", "follow"))
 	v.add_child(_toggle("Battle tips", "tips"))
 	v.add_child(_toggle("Full screen", "fullscreen"))
 	v.add_child(_choice("Graphics", "quality", [["max", "Max"], ["high", "High"], ["low", "Low"]]))
@@ -197,6 +198,8 @@ func _row(t: String) -> HBoxContainer:
 func _toggle(t: String, key: String) -> Control:
 	var r := _row(t)
 	var b: Button
+	if not main.settings.has(key):
+		main.settings[key] = true
 	b = _button("On" if main.settings[key] else "Off", func() -> void:
 		main.settings[key] = not bool(main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"

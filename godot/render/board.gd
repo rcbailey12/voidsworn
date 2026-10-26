@@ -20,6 +20,7 @@ var ring_over := {}          # "q,r" -> Color
 var hover_key := ""
 var props: Node3D
 var rock_meshes: Array = []
+var props_world := false     # G4 world draws the rocks, debris and nebula; the board keeps hulks, stations and the planet
 
 const FILL_SHADER := """
 shader_type spatial;
@@ -225,12 +226,14 @@ func _terrain() -> void:
 			base_fill[k] = ZONE_TINT[typ]
 		match typ:
 			"rock":
-				_rocks(c, rng, 3 + rng.randi() % 3, 2.5, 6.5)
+				if not props_world:
+					_rocks(c, rng, 3 + rng.randi() % 3, 2.5, 6.5)
 			"hulk":
 				_rocks(c, rng, 2, 1.5, 3.0)
 				_hulk(c, rng)
 			"debris":
-				_rocks(c, rng, 5, 0.5, 1.4)
+				if not props_world:
+					_rocks(c, rng, 5, 0.5, 1.4)
 			"station":
 				pass
 	_planet()

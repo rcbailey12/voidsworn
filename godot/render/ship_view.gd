@@ -73,12 +73,35 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		mi.mesh = bm
 		hull.add_child(mi)
 	_collect(hull)
+	_look()
 	_fit()
 	_engines()
 	_ring()
 	position = world_pos
 	cur_yaw = yaw_of(u["facing"])
 	rotation.y = cur_yaw
+
+
+# G4's per-faction hull fix (render/look.gd: rim light and albedo lift for the dark hulls), one material copy per hull
+static var _look_cache := {}
+
+
+func _look() -> void:
+	if not ResourceLoader.exists("res://render/look.gd"):
+		return
+	var LOOK = load("res://render/look.gd")
+	for m in meshes:
+		var mi := m as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.mesh.get_surface_count():
+			var src: Material = mi.get_active_material(i)
+			if src == null:
+				continue
+			var k := "%d|%s" % [src.get_instance_id(), fac]
+			if not _look_cache.has(k):
+				_look_cache[k] = LOOK.hull(src, fac, true)
+			mi.set_surface_override_material(i, _look_cache[k])
 
 
 func _collect(n: Node) -> void:

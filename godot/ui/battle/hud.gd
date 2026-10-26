@@ -254,6 +254,7 @@ func _build_top() -> void:
 	threat_btn = _button("Threat (R)", "threat")
 	row.add_child(threat_btn)
 	row.add_child(_button("Top-down (T)", "top"))
+	row.add_child(_button("Menu", "menu"))
 	speed_btn = _button("Speed: normal", "speed")
 	row.add_child(speed_btn)
 	end_btn = _button("End activation", "end", null, true)
@@ -755,6 +756,40 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	v.add_child(row)
 
 
+# the in-battle menu (Esc with nothing to cancel, or Menu in the top bar): items are [text, action, arg]
+var menu: PanelContainer
+
+
+func show_menu(title: String, items: Array) -> void:
+	hide_menu()
+	menu = PanelContainer.new()
+	var g := _glass(8)
+	g.content_margin_left = s(28)
+	g.content_margin_right = s(28)
+	g.content_margin_top = s(20)
+	g.content_margin_bottom = s(20)
+	menu.add_theme_stylebox_override("panel", g)
+	menu.set_anchors_preset(Control.PRESET_CENTER)
+	menu.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	menu.grow_vertical = Control.GROW_DIRECTION_BOTH
+	root.add_child(menu)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", s(8))
+	v.custom_minimum_size = Vector2(s(320), 0)
+	menu.add_child(v)
+	var t := _label(title, 32, GILT, font_goth)
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(t)
+	for it in items:
+		v.add_child(_button(str(it[0]), str(it[1]), it[2] if it.size() > 2 else null, it == items[0]))
+
+
+func hide_menu() -> void:
+	if menu != null:
+		menu.queue_free()
+		menu = null
+
+
 func hide_end() -> void:
 	if endcard != null:
 		endcard.queue_free()
@@ -778,7 +813,7 @@ func _process(dt: float) -> void:
 
 
 func over_ui(p: Vector2) -> bool:
-	for c in [top, roster, panel, log_panel, tipcard, endcard]:
+	for c in [top, roster, panel, log_panel, tipcard, endcard, menu]:
 		if c != null and is_instance_valid(c) and c.visible and c.get_global_rect().has_point(p):
 			return true
 	return false

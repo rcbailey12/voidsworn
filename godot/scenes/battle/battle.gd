@@ -89,17 +89,23 @@ var tips_off := false
 var bot := false
 var bot_t := 0.0
 var bot_moved := {}
+var follow := true          # follow enemy activations with the camera (settings)
+var cam_saved := {}
 var shots_dir := ""
 var t_start := 0.0
 var marker_root: Node3D
 var backdrop: Node3D
 var gfx = null            # G4 fx (res://fx/fx.gd) when present
+var world = null          # G4 world (res://world/world.gd) when present
+var key_light: DirectionalLight3D
+var fill_light: DirectionalLight3D
 var arrow: MeshInstance3D
 var path_dots: MultiMeshInstance3D
 var errors: Array = []
 var result := {}
 var battle_cfg := {}
 var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
+var in_campaign := false   # a campaign battle (no quit to title: the run decides what a battle ends as)
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
 var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
 var last_progress := 0.0   # real time of the last event batch (softlock watchdog for bot runs)
@@ -178,6 +184,7 @@ func _build_world() -> void:
 	we.environment = env
 	add_child(we)
 	var key := DirectionalLight3D.new()
+	key_light = key
 	key.transform = Transform3D(Basis.looking_at(KEY_DIR.normalized(), Vector3.UP), Vector3.ZERO)
 	key.light_color = KEY_COL
 	key.light_energy = 2.0
@@ -186,10 +193,15 @@ func _build_world() -> void:
 	key.directional_shadow_max_distance = 600.0
 	add_child(key)
 	var fill := DirectionalLight3D.new()
+	fill_light = fill
 	fill.transform = Transform3D(Basis.looking_at(FILL_DIR.normalized(), Vector3.UP), Vector3.ZERO)
 	fill.light_color = FILL_COL
 	fill.light_energy = 0.5
 	add_child(fill)
+	# G4's look (tonemap, exposure, glow, ambient, key and fill) when it is in the build
+	if ResourceLoader.exists("res://render/look.gd"):
+		load("res://render/look.gd").apply(env, key, fill, {"quality": str(args.get("quality", "max"))})
+		key.directional_shadow_max_distance = 600.0
 	board = Board.new()
 	board.name = "Board"
 	add_child(board)
@@ -324,9 +336,27 @@ func _begin(a) -> void:
 	sel = ""
 	inspect = ""
 	armed = -1
+	board.props_world = ResourceLoader.exists("res://world/world.gd")
 	board.build(R)
 	cam.bounds = board.bounds()
-	backdrop.build(cam.bounds, env)
+	if world != null:
+		world.queue_free()
+		world = null
+	if board.props_world:
+		# G4's world: sky and nebula per enemy faction, planet, dead star, asteroid blockers, debris, nebula, dressing
+		world = load("res://world/world.gd").new()
+		world.name = "World"
+		add_child(world)
+		var pano = null
+		if env.sky != null and env.sky.sky_material is ShaderMaterial:
+			pano = (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano")
+		var vb: Dictionary = api.view()
+		world.build(vb, {"biome": R.B.get("biome", {}), "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
+			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(R.B.get("seed", 1))})
+		for c in backdrop.get_children():
+			c.queue_free()
+	else:
+		backdrop.build(cam.bounds, env)
 	V = api.view()
 	_index_view()
 	for u in V["units"]:
@@ -368,6 +398,13 @@ func _begin(a) -> void:
 		_runner()
 
 
+func _enemy_fac_of(v: Dictionary) -> String:
+	for u in v.get("units", []):
+		if u["side"] == "enemy":
+			return str(u["fac"])
+	return "hegemony"
+
+
 func _enemy_fac() -> String:
 	for u in V.get("units", []):
 		if u["side"] == "enemy":
@@ -405,7 +442,10 @@ func _sync(v: Dictionary) -> void:
 		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
 		sv.set_marker(u["side"] == "player")
 		if gfx != null and gfx.has_method("sync_ship"):
-			gfx.sync_ship(str(u["id"]), u)
+			var su: Dictionary = u.duplicate()
+			if su.get("sec") == null:
+				su["sec"] = {}
+			gfx.sync_ship(str(u["id"]), su)
 		if u["dead"]:
 			if not sv.dead and not wrecked.has(u["id"]):
 				sv.die(false)
@@ -527,6 +567,9 @@ func _play_batch(bt: Dictionary) -> void:
 		i += 1
 	if enemy:
 		await wait(float(PACE["aiEnd"]))
+		if not cam_saved.is_empty():
+			cam.t = cam_saved["t"]
+			cam_saved = {}
 		hud.set_chip("")
 		skip = false
 	speed = user_speed
@@ -570,6 +613,11 @@ func _play_event(e: Dictionary) -> void:
 					for sv in views.values():
 						sv.set_selected(false)
 					views[e["unit"]].set_selected(true, Color(0.79, 0.64, 1.0))
+					# follow activations (the browser's G.follow): ease the camera toward the acting enemy, back after
+					if follow and not bot:
+						if cam_saved.is_empty():
+							cam_saved = {"t": cam.t, "r": cam.r}
+						cam.t = cam.t.lerp(Vector3(_pos(e["unit"]).x, 0, _pos(e["unit"]).z), 0.6)
 				await wait(float(PACE["aiGap"]))
 		"move":
 			await _play_move(e["unit"], e["path"], false)
@@ -1320,6 +1368,12 @@ func _on_key(k: int) -> void:
 		return
 	match k:
 		KEY_ESCAPE:
+			if hud.menu != null:
+				hud.hide_menu()
+				return
+			if mode == "" and armed < 0 and sel == "" and inspect == "":
+				_open_menu()
+				return
 			if mode != "":
 				mode = ""
 			elif armed >= 0:
@@ -1725,6 +1779,17 @@ func _on_action(name: String, arg) -> void:
 			tips_off = true
 			hud.hide_tipcard()
 			_save_opts()
+		"menu":
+			_open_menu()
+		"menu_close":
+			hud.hide_menu()
+		"opt":
+			_toggle_opt(str(arg))
+		"to_title":
+			hud.hide_menu()
+			ended = true
+			result = {"result": "quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+			finished.emit(result)
 		"continue":
 			hud.hide_end()
 			finished.emit(result)
@@ -1735,10 +1800,55 @@ func _on_action(name: String, arg) -> void:
 				finished.emit(result)
 		"restart":
 			hud.hide_end()
+			hud.hide_menu()
 			args.erase("seed")
 			start_default()
 		"quit":
 			get_tree().quit()
+
+
+# ---------------------------------------------------------------- in-battle menu (the browser's settings menu in the top bar)
+
+signal option_changed(key: String, value: Variant)
+
+
+func _open_menu() -> void:
+	var items: Array = [["Resume", "menu_close"]]
+	items.append(["Sound: %s" % ("on" if sfx.on else "off"), "opt", "sound"])
+	items.append(["Speed: %s" % ("fast" if user_speed < 1.0 else "normal"), "opt", "speed"])
+	items.append(["Follow enemy activations: %s" % ("on" if follow else "off"), "opt", "follow"])
+	items.append(["Battle tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
+	items.append(["Threat map: %s" % ("on" if threat_on else "off"), "opt", "threat"])
+	items.append(["Firing arcs: %s" % ("on" if arcs_on else "off"), "opt", "arcs"])
+	if external and not in_campaign:
+		items.append(["Quit to title", "to_title"])
+	elif not external:
+		items.append(["Fight again", "restart"])
+	items.append(["Quit the game", "quit"])
+	hud.show_menu("Menu", items)
+
+
+func _toggle_opt(k: String) -> void:
+	match k:
+		"sound":
+			sfx.set_on(not sfx.on)
+			option_changed.emit("sound", sfx.on)
+		"speed":
+			user_speed = 0.45 if user_speed >= 1.0 else 1.0
+			option_changed.emit("speed", user_speed)
+		"follow":
+			follow = not follow
+			option_changed.emit("follow", follow)
+		"tips":
+			tips_off = not tips_off
+			option_changed.emit("tips", not tips_off)
+		"threat":
+			threat_on = not threat_on
+		"arcs":
+			arcs_on = not arcs_on
+	_save_opts()
+	_refresh_ui()
+	_open_menu()
 
 
 # ---------------------------------------------------------------- HUD refresh
@@ -1856,6 +1966,8 @@ func _panel_info() -> Dictionary:
 # ---------------------------------------------------------------- per frame: nameplates, floats, bot
 
 func _process(dt: float) -> void:
+	if world != null and world.has_method("step"):
+		world.step(dt)
 	if api == null:
 		return
 	var vs := get_viewport().get_visible_rect().size

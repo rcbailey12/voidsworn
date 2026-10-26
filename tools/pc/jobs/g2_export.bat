@@ -5,6 +5,7 @@ rem After this, play_godot.bat runs the exported game.
 setlocal
 set "ROOT=%CD%\"
 set /p G=<"%ROOT%..\godot_path.txt"
+set "TMO=%ROOT%tools\pc\tmo.bat"
 set "LOG=%ROOT%..\shots\g2_export_log.txt"
 set "TPL=%APPDATA%\Godot\export_templates\4.7.2.stable"
 echo export %date% %time% > "%LOG%"
@@ -16,13 +17,13 @@ if not exist "%TPL%\windows_release_x86_64.exe" (
   echo FAIL: no export templates in %TPL% >> "%LOG%"
   exit /b 1
 )
-if not exist "%ROOT%godot\gen\v2.txt" "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" >> "%LOG%" 2>&1
+if not exist "%ROOT%godot\gen\v2.txt" call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" >> "%LOG%" 2>&1
 echo importing >> "%LOG%"
-"%G%" --headless --path "%ROOT%godot" --import >> "%LOG%" 2>&1
+call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --import >> "%LOG%" 2>&1
 if not exist "%ROOT%export" mkdir "%ROOT%export"
 echo exporting >> "%LOG%"
-"%G%" --headless --path "%ROOT%godot" --export-release "Windows Desktop" "%ROOT%export\Voidsworn.exe" >> "%LOG%" 2>&1
+call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --export-release "Windows Desktop" "%ROOT%export\Voidsworn.exe" >> "%LOG%" 2>&1
 if exist "%ROOT%export\Voidsworn.exe" (echo OK: %ROOT%export\Voidsworn.exe >> "%LOG%") else (echo FAIL: no exe >> "%LOG%")
 rem a quick headless smoke of the exported build: 2 bot battles
-"%ROOT%export\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%ROOT%..\shots\g2_export_smoke.json" >> "%LOG%" 2>&1
+call "%TMO%" 900 "%ROOT%export\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%ROOT%..\shots\g2_export_smoke.json" >> "%LOG%" 2>&1
 exit /b 0

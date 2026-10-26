@@ -10,14 +10,13 @@ extends Node
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Title := preload("res://main/title.gd")
-const Host := preload("res://main/campaign_host.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
 
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "veteran"}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "veteran", "follow": true}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -30,6 +29,12 @@ func _ready() -> void:
 	_load_settings()
 	_apply_settings()
 	bot_mode = args.has("bot-runs")
+	if args.has("quit-after"):
+		# a hard stop for test jobs, on every screen (real time, whatever the clock speed)
+		var lim := float(args["quit-after"])
+		get_tree().create_timer(lim, true, false, true).timeout.connect(func() -> void:
+			print("[main] quit-after %d s reached, quitting" % int(lim))
+			get_tree().quit(3))
 	if bot_mode:
 		_bot_runs.call_deferred()
 	elif args.has("battle") or args.has("scenario") or args.has("shots") or args.has("bot") or args.has("seed"):
@@ -81,16 +86,24 @@ func _apply_settings() -> void:
 
 
 func _settings_to_battle(b: Node) -> void:
+	if not b.option_changed.is_connected(_on_battle_option):
+		b.option_changed.connect(_on_battle_option)
 	if b.sfx != null:
 		b.sfx.set_on(bool(settings["sound"]))
 		b.sfx.set_volume(float(settings["volume"]))
 	b.user_speed = float(settings["speed"])
 	b.ai_level = str(settings["ai"])
+	b.follow = bool(settings.get("follow", true))
 	b.tips_off = not bool(settings["tips"])
 	if b.fx != null and "reduce_flashing" in b.fx:
 		b.fx.reduce_flashing = bool(settings["reduce_flashing"])
 	if b.fx != null and "shake_scale" in b.fx:
 		b.fx.shake_scale = float(settings["shake"])
+
+
+func _on_battle_option(key: String, value) -> void:
+	settings[key] = value
+	save_settings()
 
 
 # ---------------------------------------------------------------- screens
@@ -117,13 +130,21 @@ func new_run(opts := {}) -> void:
 		title.toast("The campaign is not in this build yet. Try a quick battle.")
 		return
 	_clear()
-	campaign = Host.new()
+	# G3's campaign (res://campaign/campaign.gd): a Node with start(main, opts) and run_over; it draws its own screens
+	campaign = load(CAMPAIGN_SCRIPT).new()
 	add_child(campaign)
 	campaign.run_over.connect(func(_summary) -> void:
 		campaign.queue_free()
 		campaign = null
 		show_title(), CONNECT_ONE_SHOT)
 	campaign.start(self, opts)
+
+
+static func campaign_has_save() -> bool:
+	if not ResourceLoader.exists(CAMPAIGN_SCRIPT):
+		return false
+	var c = load(CAMPAIGN_SCRIPT)
+	return c != null and c.has_method("has_save") and bool(c.has_save())
 
 
 func quick_battle() -> void:
@@ -155,6 +176,8 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	var b = BattleScene.instantiate()
 	b.external = true
 	b.bot = bot_mode or bool(opts.get("bot", false))
+	b.in_campaign = campaign != null
+	b.can_retreat = campaign != null and str(cfg.get("kind", "")) != "boss"
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
@@ -166,22 +189,6 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	for c in hidden:
 		if is_instance_valid(c):
 			c.visible = true
-	return r
-
-
-# A battle already set up by the campaign (its rules API, from campaign_host.gd's battle_setup).
-func play_api(a, opts := {}) -> Dictionary:
-	var b = BattleScene.instantiate()
-	b.external = true
-	b.bot = bot_mode or bool(opts.get("bot", false))
-	b.can_retreat = bool(opts.get("can_retreat", false))
-	add_child(b)
-	_settings_to_battle(b)
-	battle = b
-	b.begin_with(a)
-	var r: Dictionary = await b.finished
-	battle = null
-	b.queue_free()
 	return r
 
 
@@ -246,7 +253,7 @@ func _bot_battle(seed: int) -> Dictionary:
 
 
 func _bot_campaign(seed: int) -> Dictionary:
-	campaign = Host.new()
+	campaign = load(CAMPAIGN_SCRIPT).new()
 	add_child(campaign)
 	campaign.start(self, {"bot": true, "seed": seed})
 	var summary = await campaign.run_over

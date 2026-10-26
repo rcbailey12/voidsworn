@@ -4,35 +4,16 @@
 
 ## The campaign
 
-G3's `res://campaign/campaign.gd` holds the rules of a run and its screens as data. `campaign_host.gd` runs it inside the game:
-- It loads the tables and the save, then sets `battle_mode = "external"` and `battle_setup`.
-- `battle_setup(run, cfg)` builds the real battle through the rules API and returns its `B`.
-- On `battle_requested`, it plays that battle in the battle scene (`main.play_api(api, opts)`), then calls `campaign.finish_battle("win" | "loss" | "retreat", api.R.B)`.
-- When the campaign shows the title page again, the host hands back to main's title screen.
+G3's `res://campaign/campaign.gd` is a Node:
+- Main adds it as a child and calls `start(main, opts)`. `opts` can hold `continue`, `screen` (`"legacy"` or `"help"`), and `bot` with `seed`.
+- It draws its own screens (`godot/ui/campaign/`).
+- For every fight it calls `await main.start_battle(run, cfg, {"bot": ...})` and reads the finished rules state from `result.api`.
+- It emits `run_over(summary)` when the player is back at the title, or when a bot run ends. Main frees it and shows the title.
+- `static has_save()` decides whether the title shows Continue run.
 
-### Drawing the screens: G3's UI
+See `godot/campaign/README.md` ("The game shell hand-off") for the campaign side.
 
-When `res://ui/campaign/campaign_ui.gd` exists, the host uses it:
-
-```gdscript
-# res://ui/campaign/campaign_ui.gd (G3)
-extends CanvasLayer
-func bind(campaign) -> void    # draw campaign.page and campaign.modal_d now and on campaign.changed;
-                               # a click calls campaign.act(act, arg); show and clear campaign.toasts
-```
-
-- The host hides the UI (`visible = false`) while a battle plays.
-- Until that file lands, `campaign_fallback_ui.gd` draws each screen as its title, its facts and one button per act. Every run can be clicked through with it.
-
-### Bot runs
-
-`--bot-runs N` plays whole runs headless, title to end screen:
-- Each choice uses the weights of the G3 parity bot. The stub battle buttons are left out: real battles decide every fight, with both sides on AI.
-- Summary per run: `result` (win, loss, unfinished or crashed), `sector`, `battles`, `clicks`, `errors`, `game_s`.
-
-## Battles: `start_battle` and `play_api`
-
-`play_api(api, opts)` plays a battle the campaign host already set up. `start_battle(run, cfg, opts)` sets one up and plays it, for anything else that needs a battle.
+## Battles: `start_battle`
 
 ```gdscript
 var result: Dictionary = await main.start_battle(run, cfg)            # a player battle
@@ -43,13 +24,14 @@ var result: Dictionary = await main.start_battle(run, cfg, {"bot": true})   # bo
 - `cfg`: the battle config (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional once G1 generates fleets).
 - While the battle plays, main hides the campaign's visible children and shows them again afterwards.
 - With `bot`, the battle also returns at once when it ends (no end card).
+- In a campaign battle, the top bar offers Retreat (except against a sector flagship), and the menu has no Quit to title.
 - Without `bot`, the battle ends on its Victory or Defeat card. The player presses Continue, then the result comes back.
 
 `result` holds:
 
 | Field | Meaning |
 |---|---|
-| `result` | `"win"`, `"loss"`, or `"softlock"` (bot runs only: nothing happened for 60 s) |
+| `result` | `"win"`, `"loss"`, `"retreat"`, `"quit"` (quick battles only: Quit to title), or `"softlock"` (bot runs only: nothing happened for 60 s) |
 | `rounds` | rounds played |
 | `killed`, `lost` | enemy ships destroyed, player ships lost |
 | `errors` | Array of strings: rules functions not ported yet, softlocks |
