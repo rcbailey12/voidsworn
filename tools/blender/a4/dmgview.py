@@ -41,21 +41,29 @@ def main():
         parts[name] = [obj(f'{name}_{mt}', ar['pos'], ar['idx'], cols[mt]) for mt, ar in mats.items()]
     cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); sc.collection.objects.link(cam); sc.camera = cam; cam.data.lens = 50
     shots = []; tmp = out + '_parts'; os.makedirs(tmp, exist_ok=True)
+    hits = d.get('hits', {})
     def show(k, stage):
-        for kk, o in skins.items(): o.hide_render = bool((stage == 'hole' and kk == 2 * k + 1) or (stage == 'heavy' and kk in (2 * k + 1, 2 * k + 2)))
+        hid = set()
+        if stage == 'hole': hid = {2 * k + 1}
+        elif stage == 'heavy': hid = {2 * k + 1, 2 * k + 2}
+        elif f'breach_{k}_{stage}' in hits: hid = {(int(x.split('_')[1]) * 2 + (2 if x.endswith('heavy') else 1)) for x in hits[f'breach_{k}_{stage}']['hides']}
+        for kk, o in skins.items(): o.hide_render = bool(kk in hid)
         for name, objs in parts.items():
             vis = name == f'breach_{k}_{stage}'
             for o in objs: o.hide_render = not vis
+    STAGES = ['intact', 'hole', 'heavy']
     for k in want:
+        STAGES = ['intact', 'hole', 'heavy'] + [h['kind'] for nm, h in hits.items() if h.get('breach') == k]
         an = d['anchors'][k]; p = Vector(frame.gl_to_bl(np.array([an['p']]))[0].tolist()); n = Vector(frame.gl_to_bl(np.array([an['n']]))[0].tolist())
         for vi, (tilt, dist) in enumerate(((.25, 4.2), (.85, 5.6))):
             side = n.cross(Vector((0, 0, 1))); side = side.normalized() if side.length > .1 else Vector((1, 0, 0))
             dirv = (n + side * tilt + Vector((0, 0, .25))).normalized()
-            for stage in ('intact', 'hole', 'heavy'):
+            for stage in STAGES:
                 cam.location = p + dirv * an['r_heavy'] * dist; cam.rotation_euler = (p - cam.location).to_track_quat('-Z', 'Y').to_euler()
                 show(k, stage); f = os.path.join(tmp, f'b{k}_{vi}_{stage}.png'); sc.render.filepath = f; bpy.ops.render.render(write_still=True)
                 shots.append(dict(path=f, label=f'breach {k} ({an["section"]}) {stage}', row=len(shots) // 3))
-    lay = dict(out=out, title=f'{meta["code"]} breach damage: intact / hole / heavy per anchor (R39)', cols=3, shots=shots)
+        if len(STAGES) > 3: break  # one view per anchor when the weapon variants are on it
+    lay = dict(out=out, title=f'{meta["code"]} breach damage: intact, hole, heavy, then per-weapon variants (R39, R43)', cols=7, shots=shots)
     json.dump(lay, open(out + '_layout.json', 'w'), indent=1); print('dmgview', len(shots), 'shots')
 
 

@@ -14,6 +14,7 @@ import numpy as np
 UP = np.array([0., 1., 0.])
 HOLE_R = {'S': .042, 'M': .036, 'L': .031, 'XL': .027}  # hole radius, ship lengths (the heavy damage is HEAVY_K times wider)
 HEAVY_K = 2.1
+RAM_LABEL = 9999  # the bow zone the ram crumples (skin_bow in the ship glb)
 PLATE = .0016  # torn plate thickness, ship lengths
 # faction interiors: (cavity wall, frames and decks, fire glow, torn-edge heat); Chorus guts are flesh and bone, not metal
 INTERIOR = {
@@ -185,6 +186,108 @@ def petals(S, M, tris, inf, rad, jag, rng, bend=(.35, 1.1), K=7, gaps=2, r_in=.4
                 M.quad('edge', W[i, e[0]], Bk[i, e[0]], Bk[i, e[1]], W[i, e[1]]); M.quad('edge', W[i, e[1]], Bk[i, e[1]], Bk[i, e[0]], W[i, e[0]])
 
 
+def copy_skin(S, M, tris, xform, hot):
+    """copy ship triangles (keeping their paint), move them with xform(V) -> W (both (N, 3, 3)), give them a bare-metal back a plate's
+    thickness under, and a hot edge strip on free edges where hot(Va, Vb) says so (Va, Vb: the edge's original end points)"""
+    if len(tris) == 0: return
+    V = S.T[tris]; W = xform(V); UVt = S.uv[S.idx[tris]]
+    fn = np.cross(W[:, 1] - W[:, 0], W[:, 2] - W[:, 0]); fn /= np.maximum(np.linalg.norm(fn, axis=1, keepdims=True), 1e-12)
+    Bk = W - fn[:, None, :] * PLATE
+    for i in range(len(W)):
+        M.tri('hull', W[i, 0], W[i, 1], W[i, 2], uv=UVt[i]); M.tri('interior', Bk[i, 0], Bk[i, 2], Bk[i, 1])
+    key = lambda x: tuple(np.round(x, 7)); cnt = {}
+    for i in range(len(V)):
+        for e in ((0, 1), (1, 2), (2, 0)):
+            k_ = tuple(sorted((key(V[i, e[0]]), key(V[i, e[1]])))); cnt[k_] = cnt.get(k_, 0) + 1
+    for i in range(len(V)):
+        for e in ((0, 1), (1, 2), (2, 0)):
+            k_ = tuple(sorted((key(V[i, e[0]]), key(V[i, e[1]]))))
+            if cnt[k_] == 1 and hot(V[i, e[0]], V[i, e[1]]):
+                M.quad('edge', W[i, e[0]], Bk[i, e[0]], Bk[i, e[1]], W[i, e[1]]); M.quad('edge', W[i, e[1]], Bk[i, e[1]], Bk[i, e[0]], W[i, e[0]])
+
+
+def local(inf, X):
+    """anchor-local coordinates of points X (..., 3): rho (distance from the anchor axis), theta, height along the normal"""
+    q = X - inf['p']; a = q @ inf['t1']; b = q @ inf['t2']; return np.hypot(a, b), np.arctan2(b, a), q @ inf['n']
+
+
+def lip(M, S, inf, rad, tp, mat='edge', w=.14, seg=28):
+    """a molten lip ring on the real hull round a clean hole (hides the triangle-jagged cut)"""
+    rim = rim_points(S, inf, rad, lambda th: np.ones_like(th), tp, nrim=seg, inset=-.02)
+    n = inf['n']; inner = [p_ + (inf['p'] - p_) * w - n * rad * .05 for p_ in rim]; outer = [p_ + (p_ - inf['p']) * w * .6 for p_ in rim]
+    top = [p_ + n * rad * .06 for p_ in rim]
+    M.strip(mat, outer, top); M.strip(mat, top, inner)
+
+
+def hit_variants(S, inf, k, tp, rng):
+    """per-weapon damage at one anchor (R43): lance burn-through, torpedo crater, plasma splash, gauss punch. Each returns
+    (Mesh, the skin labels it replaces)"""
+    out = {}; r, R = inf['r'], inf['R']; hole = np.nonzero(S.label == 2 * k + 1)[0]; both = np.nonzero((S.label == 2 * k + 1) | (S.label == 2 * k + 2))[0]
+    # lance: a clean round bore with a molten lip and glowing walls; the rest of the patch stays as it was
+    M = Mesh(); rl = r * .62
+    rho, th, hh = local(inf, S.C[hole]); keep = hole[rho > rl * 1.02]
+    copy_skin(S, M, keep, lambda V: V, lambda a, b: local(inf, a)[0] < rl * 1.25 and local(inf, b)[0] < rl * 1.25)
+    lip(M, S, inf, rl, tp)
+    T = first_hit(inf['p'] - inf['n'] * .002, -inf['n'], tp); D = min(T if T else rl * 2, rl * 2.2)
+    bore = [rim_points(S, inf, rl, lambda t_: np.ones_like(t_), tp, nrim=24, inset=.0)]
+    for f in (.25, .5, .8):
+        bore.append([p_ - inf['n'] * D * f + (inf['p'] - inf['n'] * D * f - (p_ - inf['n'] * D * f)) * .12 * f for p_ in bore[0]])
+    double_sided_inward(M, 'edge', bore[:2], inf['p'] - inf['n'] * D * .5); double_sided_inward(M, 'interior', bore[1:], inf['p'] - inf['n'] * D * .5)
+    M.blob('glow', inf['p'] - inf['n'] * D * .85, rl * .35)
+    out['lance'] = (M, [2 * k + 1])
+    # torpedo: a blast crater over the wide patch, the plating dished inward, a ragged blown centre over the guts
+    M = Mesh(); dep = R * .28; jag = jag_fn(rng, 1.4)
+    rho, th, hh = local(inf, S.C[both]); keep = both[rho > R * .34 * jag(th)]
+    def dish(V):
+        rh, tv, h_ = local(inf, V); f = np.clip(1 - (rh / (R * .95)) ** 2, 0, 1) ** 1.3
+        wob = 1 + .25 * np.sin(tv * 7 + rh * 400)
+        return V - inf['n'] * (dep * f * wob)[..., None]
+    copy_skin(S, M, keep, dish, lambda a, b: local(inf, a)[0] < R * .55 and local(inf, b)[0] < R * .55)
+    cavity(S, M, inf, R * .42, jag, tp, rng, heavy=True)
+    out['torp'] = (M, [2 * k + 1, 2 * k + 2])
+    # plasma splash: no hole; the plating melted into a shallow dimple with a glowing pool and spatter round it
+    M = Mesh(); dep = r * .16
+    def melt(V):
+        rh, tv, h_ = local(inf, V); f = np.clip(1 - (rh / r) ** 2, 0, 1); rip = .3 * np.sin(rh * 900) * f
+        return V - inf['n'] * (dep * (f + rip))[..., None]
+    copy_skin(S, M, hole, melt, lambda a, b: False)
+    pool = [inf['p'] - inf['n'] * dep * .8 + (math.cos(t_) * inf['t1'] + math.sin(t_) * inf['t2']) * r * .38 * (1 + .25 * math.sin(5 * t_ + 1)) + inf['n'] * .0006
+            for t_ in np.linspace(0, 2 * math.pi, 19)[:-1]]
+    cpool = inf['p'] - inf['n'] * dep * .9 + inf['n'] * .0008
+    for j in range(len(pool)): M.tri('glow', cpool, pool[j], pool[(j + 1) % len(pool)])
+    for g in range(9):
+        t_ = rng.uniform(0, 2 * math.pi); rr = r * rng.uniform(.45, .95)
+        q = inf['p'] + (math.cos(t_) * inf['t1'] + math.sin(t_) * inf['t2']) * rr; hq = first_hit(q + inf['n'] * r, -inf['n'], tp)
+        if hq is not None: M.blob('edge', q + inf['n'] * (r - hq), r * rng.uniform(.03, .07))
+    out['splash'] = (M, [2 * k + 1])
+    # gauss: a small punched hole, the edge petals flicked outward, a short tunnel of guts
+    M = Mesh(); rg = r * .45
+    rho, th, hh = local(inf, S.C[hole]); outer = hole[rho > r * .8]
+    copy_skin(S, M, outer, lambda V: V, lambda a, b: False)
+    petals(S, M, hole[rho <= r * .8], inf, r * .8, lambda t_: np.ones_like(t_), rng, bend=(.25, .6), K=6, gaps=0, r_in=rg / (r * .8))
+    cavity(S, M, inf, rg, lambda t_: np.ones_like(t_), tp, rng)
+    out['gauss'] = (M, [2 * k + 1])
+    return out
+
+
+def ram_bow(S, rng, length=.10):
+    """the crumpled bow for a ram: the first `length` of the ship (by x) squashed back and folded, keeping its paint; returns (Mesh,
+    triangle mask of the bow zone)"""
+    x1 = S.pos[:, 0].max(); x0 = x1 - length; zone = (S.C[:, 0] > x0) & ~S.sail
+    if not zone.any(): return None, zone
+    ax = S.C[zone][:, 1:].mean(0)
+    def crush(V):
+        W = V.copy(); u = np.clip((V[..., 0] - x0) / length, 0, 1)
+        W[..., 0] = x0 + (V[..., 0] - x0) * (1 - .45 * u)  # squashed back, most at the tip
+        rad = V[..., 1:] - ax; fold = 1 + .35 * u * np.sin(u * 19 + np.arctan2(rad[..., 1], rad[..., 0]) * 3)
+        W[..., 1:] = ax + rad * fold[..., None]
+        return W
+    M = Mesh(); copy_skin(S, M, np.nonzero(zone)[0], crush, lambda a, b: False)
+    for g in range(6):
+        c_ = S.C[zone][int(rng.integers(zone.sum()))]; M.blob('glow', crush(c_[None, None, :])[0, 0], length * .04)
+    return M, zone
+
+
 def rim_points(S, inf, rad, jag, tp, nrim=28, inset=.10):
     """the cavity's rim, on the real hull round the hole: one ray per angle down the anchor normal (pulled in where the ray misses the
     hull, so the cavity follows the silhouette), set a little inside the skin"""
@@ -284,9 +387,23 @@ def build(npz, meta_path, seed=7):
     secs = []
     for inf in info:
         x = inf['p'][0]; secs.append('prow' if x > .17 else ('eng' if x < -.17 else 'mid'))
+    # per-weapon variants (R43) on one anchor per section (keeps the file small); G4 picks the variant of the anchor in the hit section
+    hits = {}
+    for sec in ('prow', 'mid', 'eng'):
+        ks = [k for k in range(len(info)) if secs[k] == sec]
+        if not ks: continue
+        k = ks[0]; inf = info[k]; tp = tp_all[np.linalg.norm(S.C[~S.sail] - inf['p'], axis=1) < inf['R'] * 5]
+        for kind, (M, labs) in hit_variants(S, inf, k, tp, rng).items():
+            parts[f'breach_{k}_{kind}'] = M.arrays(); hits[f'breach_{k}_{kind}'] = dict(breach=k, kind=kind, hides=[f'skin_{(l - 1) // 2}' + ('' if l % 2 else '_heavy') for l in labs])
+    # the ram: a crumpled bow (its own skin in the ship glb)
+    M, zone = ram_bow(S, rng)
+    if M is not None:
+        hide = sorted({int(l) for l in np.unique(S.label[zone]) if l > 0})
+        S.label[zone & (S.label == 0)] = RAM_LABEL
+        parts['ram_bow'] = M.arrays(); hits['ram_bow'] = dict(kind='ram', hides=['skin_bow'] + [f'skin_{(l - 1) // 2}' + ('' if l % 2 else '_heavy') for l in hide])
     return dict(label=S.label, parts=parts, anchors=[dict(i=k, p=inf['p'].round(5).tolist(), n=inf['n'].round(5).tolist(), section=secs[k],
                                                            r=round(inf['r'], 5), r_heavy=round(inf['R'], 5)) for k, inf in enumerate(info)],
-                fac=S.fac)
+                fac=S.fac, hits=hits)
 
 
 def materials(G, fac):

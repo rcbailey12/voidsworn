@@ -79,6 +79,8 @@ def pack(meta_path, gdir, res=2048, tangents=False, quant=False, dmg=None):
     mesh = G.mesh(code, prims_for(lab == 0), quant=quant)
     kids = []
     for k in sorted(int(x) for x in np.unique(lab) if x > 0):  # R39: the hull patches the breach damage replaces (hide one, show its hole)
+        if k == 9999:  # damage.RAM_LABEL: the bow zone a ram crumples
+            kids.append(G.node({'name': 'skin_bow', 'mesh': G.mesh(f'{code}_skin_bow', prims_for(lab == k), quant=quant), 'extras': dict(kind='ram_skin')})); continue
         n_ = (k - 1) // 2; nm = f'skin_{n_}' if k % 2 else f'skin_{n_}_heavy'
         kids.append(G.node({'name': nm, 'mesh': G.mesh(f'{code}_{nm}', prims_for(lab == k), quant=quant), 'extras': dict(kind='breach_skin', breach=n_, heavy=not k % 2)}))
     for h in meta['hardpoints']:
@@ -129,6 +131,14 @@ def write_damage(dmg, meta, files, d, code):
             if not prims: continue
             kids.append(G.node({'name': nm, 'mesh': G.mesh(f'{code}_{nm}', prims), 'extras': dict(kind='breach_' + stage, breach=an['i'], section=an['section'],
                          p=an['p'], n=an['n'], r=an['r_heavy'] if stage == 'heavy' else an['r'], hides=[f'skin_{an["i"]}'] + ([f'skin_{an["i"]}_heavy'] if stage == 'heavy' else []))}))
+    anc = {a['i']: a for a in dmg['anchors']}
+    for nm, h in dmg.get('hits', {}).items():  # R43: per-weapon variants (one anchor per section) and the ram's crumpled bow
+        P = dmg['parts'].get(nm) or {}
+        prims = [dict(pos=a['pos'], nor=a['nor'], idx=a['idx'], uv=a.get('uv'), mat=mats[mt]) for mt, a in P.items() if len(a['idx'])]
+        if not prims: continue
+        ex = dict(kind='hit_' + h['kind'], hides=h['hides'])
+        if 'breach' in h: a = anc[h['breach']]; ex.update(breach=h['breach'], section=a['section'], p=a['p'], n=a['n'], r=a['r'])
+        kids.append(G.node({'name': nm, 'mesh': G.mesh(f'{code}_{nm}', prims), 'extras': ex}))
     G.save(os.path.join(d, f'{code}_damage.glb'), [G.node({'name': f'{code}_damage', 'children': kids, 'extras': dict(
         code=code, breaches=len(dmg['anchors']), use='parent under the ship node (identity); all children start hidden; at the breach stage show breach_<n>_hole and hide skin_<n> on the ship; heavy: show breach_<n>_heavy, hide breach_<n>_hole, skin_<n> and skin_<n>_heavy')})],
         extras=dict(code=code))
