@@ -71,6 +71,8 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | `compute_reach(id) -> {states, map}` | The full reach: every end state, and `map` keyed `"q,r"` with the cheapest state per hex. A fresh copy. |
 | `state_view(id, state) -> Dictionary` | A copy of the ship as it would stand at one of those states (position, facing, hexes moved), for previews and the threat map. |
 | `in_reach(id, wi, target_id, state = null) -> bool` | Range, arc and line of sight for gun `wi` on the target, from where the ship is or from `state`. |
+| `ui_info(id) -> Dictionary` | Everything one ship's buttons, tooltips and target markers need: which orders it can give, rotate, stance and Command; the ram run-up and its estimate; boarding targets with odds; the ability's ready state and target hexes (nova, blink, launch); and per gun, against every living enemy, range, arc, line of sight, hit chance, expected shield and hull damage and the damage multiplier. Fresh copies. |
+| `world_info() -> Dictionary` | `{biome, seed, shape, well}` for building the battlefield. |
 | `can_fire(id, wi, target_id) -> bool` | Range, arc, line of sight, readiness. |
 | `preview_fire(id, wi, target_id) -> Dictionary` | `{hit, shield, hull, quad, rear, can}`: hit %, expected shield and hull damage, the target's facing quadrant (0 prow, 1 starboard, 2 rear, 3 port). |
 | `fire(id, wi, target_id, called_section = null)` | Fire weapon `wi`. `called_section` is `"prow"`, `"mid"` or `"eng"` for an aimed shot. |

@@ -264,6 +264,49 @@ func in_reach(id: String, wi: int, target_id: String, state = null) -> bool:
 	var v = R.stateView(u, state) if state != null else u
 	return R.inReach(v, u["weapons"][wi], t)
 
+# ---------------- UI state for one ship (read-only, fresh copies) ----------------
+# ui_info(id): everything the ship's buttons, tooltips and target markers need, so the scene never reads rules.gd directly.
+#   orders {brace, full, lock, helm}: can give it; rotate, stance, command: can use; ram: the run-up {target, path, dmg, recoil, soak, section} or null;
+#   board: [{target, chance, kill, loss, capture}]; ability {id, ready, cooldown, hexes: [{q, r}] for nova, blink and launch};
+#   weapons: [{i, ready, targets: [{id, can, range, inRange, inArc, los, hit, shield, hull, quad, rear, dmgMult}]}] against every living enemy.
+func ui_info(id: String) -> Dictionary:
+	var u = unit(id)
+	if u == null: return {}
+	var o := {"orders": {}, "rotate": R.canRotate(u), "stance": R.canStance(u), "command": can_command()}
+	for k in ["brace", "full", "lock", "helm"]: o["orders"][k] = R.canOrder(u, k)
+	var ri = R.ramInfo(u)
+	if ri != null:
+		var e = R.ramEstimate(u, ri.t, ri.path.size())
+		o["ram"] = {"target": ri.t["id"], "path": ri.path.duplicate(true), "dmg": e.dmg, "recoil": e.recoil, "soak": e.soak, "section": e.sec}
+	else: o["ram"] = null
+	var bl := []
+	for t in R.boardTargets(u):
+		var b = R.boardOdds(u, t); bl.append({"target": t["id"], "chance": b.chance, "kill": b.kill, "loss": b.loss, "capture": b.capture})
+	o["board"] = bl
+	var hx := []
+	if u.get("ab") == "nova": hx = R.novaTargets(u)
+	elif u.get("ab") == "blink": hx = R.blinkHexes(u)
+	elif u.get("ab") == "launch": hx = R.launchHexes(u)
+	var hs := []
+	for h in hx: hs.append({"q": int(h.q), "r": int(h.r)})
+	o["ability"] = {"id": u.get("ab"), "ready": R.canAbility(u) if not R.jt(u.get("dead")) else false, "cooldown": u.get("abCd"), "hexes": hs}
+	var ws := []
+	var foes := []
+	for t in R.alive("enemy" if u["side"] == "player" else "player"): foes.append(t)
+	for i in range(u["weapons"].size()):
+		var w = u["weapons"][i]; var ts := []
+		for t in foes:
+			var d = R.hdist(u, t); var e = R.expectedVs(u, w, t)
+			ts.append({"id": t["id"], "can": R.canFire(u, w, t), "range": d, "inRange": d >= 1 and d <= w["r"], "inArc": R.inArc(u, t, w["arc"]), "los": R.los(u, t),
+				"hit": R.hitChance(u, w, t), "shield": e.shield, "hull": e.hull, "quad": e.quad, "rear": e.rear, "dmgMult": R.dmgMult(u, w, t, e.rear)})
+		ws.append({"i": i, "ready": R.weaponReady(w), "targets": ts})
+	o["weapons"] = ws
+	return o
+# world_info(): what the scene needs to build the battlefield beyond view(): the biome (rock kind, planet, station look) and the battle seed.
+func world_info() -> Dictionary:
+	var B = R.B
+	return {"biome": B["biome"].duplicate(true) if B.get("biome") is Dictionary else B.get("biome"), "seed": B.get("seed"), "shape": B.get("shape"), "well": B["well"].duplicate(true) if B.get("well") is Dictionary else B.get("well")}
+
 # ---------------- the game's own player-side AI ----------------
 # ai_activate(id): one player ship acts on its own, as the game's battle sim plays your side (sim3d.js botUnit: the Admiral's
 # Command when it pays, abilities, rams, boarding, the best move for its guns and the objective, every gun at its best target,
