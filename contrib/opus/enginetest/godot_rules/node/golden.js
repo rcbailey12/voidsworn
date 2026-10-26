@@ -58,18 +58,18 @@ async function runScenario(S){
   RUN={admiral:S.admiral,fac:'voidsworn',credits:0,cpCap:40,sector:S.sector,relics:[],inventory:[],fleet:[],boons:[],patrons:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[]};
   for(const t of S.fleet) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
   startBattle({kind:S.kind,fac:S.fac,col:3,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies.map(tpl=>({tpl}))});
-  const rec=[snap(0,'start')]; let turn=0;
+  const rec=[snap(0,'start')]; let turn=0; const TM={acts:[],rounds:{}}; // enemy think time per activation (aiUnit only: no snapshot, no startup)
   B.alt=true; for(const x of B.units) x.activated=false; { const d=startSideTurn('enemy'); if(d) await d; } rec.push(snap(++turn,'round 1'));
   for(let r=0;!B.over&&r<S.rounds;r++){ let g=0;
     while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
       if(pp.length){ await pBot(pp[0]); pp[0].activated=true; rec.push(snap(++turn,pp[0].id)); }
       const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe;
-      for(const u of batch){ if(B.over) break; await aiUnit(u); u.activated=true; rec.push(snap(++turn,u.id)); } }
+      for(const u of batch){ if(B.over) break; const t0=process.hrtime.bigint(); await aiUnit(u); const ms=Number(process.hrtime.bigint()-t0)/1e6; TM.acts.push({turn:turn+1,round:B.round,ms}); TM.rounds[B.round]=(TM.rounds[B.round]||0)+ms; u.activated=true; rec.push(snap(++turn,u.id)); } }
     if(B.over) break; B.round++; for(const x of B.units) x.activated=false;
     // the game's round start (ui3d.js nextRound): both sides tick, then the deaths those ticks caused are awaited
     const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2;
     rec.push(snap(++turn,'round '+B.round)); }
-  rec.push(snap(++turn,'end '+(B.over||'none'))); return rec; }
+  rec.push(snap(++turn,'end '+(B.over||'none'))); rec.timing=TM; return rec; }
 `;
 
 const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
@@ -96,6 +96,7 @@ const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toStr
     if (!SCEN[a]) throw new Error('unknown scenario ' + a);
     const S = Object.assign({}, SCEN[a]); if (c) S.seed = +c; // optional seed override, for sweeps
     const rec = await __G.runScenario(S); fs.writeFileSync(b, rec.map(r => JSON.stringify(r)).join('\n') + '\n');
+    fs.writeFileSync(b + '.timing.json', JSON.stringify(rec.timing));
     const last = rec[rec.length - 1]; console.log('scenario', a, rec.length, 'records', last.actor, '->', b); return;
   }
   console.log('usage: node golden.js scenario <name> <out.jsonl> | prng <seed> <count> <out.txt> | math <out.txt>'); process.exit(2);

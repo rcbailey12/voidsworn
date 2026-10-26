@@ -85,8 +85,8 @@ func at(a, i) -> Variant: # a[i] (undefined past the end)
 		var n = int(i)
 		if n >= 0 and n < a.size(): return a[n]
 	return null
-func dup(u: Dictionary) -> Dictionary: # Object.create(u) for reads: a shallow copy
-	return u.duplicate(false)
+func dup(u: Dictionary) -> Dictionary: # Object.create(u) for reads: a shallow copy, marked as a view (never stored in the battle)
+	var v = u.duplicate(false); v["__view"] = true; return v
 func fl(x) -> float: return floor(float(x))
 func rnd() -> float: return JSM.rnd()
 func ri(a, b) -> float: return float(a) + floor(rnd() * (float(b) - float(a) + 1.0))
@@ -131,9 +131,28 @@ func hdist(a, b) -> float:
 	var dq = float(a["q"]) - float(b["q"]); var dr = float(a["r"]) - float(b["r"])
 	return (absf(dq) + absf(dr) + absf(dq + dr)) / 2.0
 func axPx(q, r) -> Dictionary: return {"x": SQRT3 * (float(q) + float(r) / 2.0), "y": 1.5 * float(r)}
+# Speed (A3 timing, Oct 25): caches that cannot change a result.
+#  - angTo is a pure function of the two hexes, so it is memoised for the whole run.
+#  - While the AI (or the bot) only scores positions, nothing on the board changes, so line of sight and the guard multiplier
+#    are memoised inside those scoring loops only (eval_begin / eval_end) and dropped afterwards.
+#  - runFx reads relics and unlocks, which do not change during a battle.
+var _ang := {}
+var _evc := false
+var _los := {}
+var _guard := {}
+var _runfx = null
+func eval_begin() -> void:
+	_evc = true; _los.clear(); _guard.clear()
+func eval_end() -> void:
+	_evc = false; _los.clear(); _guard.clear()
 func angTo(a, b) -> float:
+	var k = ((int(a["q"]) + 64) * 128 + int(a["r"]) + 64) * 16384 + (int(b["q"]) + 64) * 128 + int(b["r"]) + 64
+	var c = _ang.get(k)
+	if c != null: return c
 	var pa = axPx(a["q"], a["r"]); var pb = axPx(b["q"], b["r"])
-	return JSM.atan2(pb.y - pa.y, pb.x - pa.x) * 180.0 / PI
+	var v = JSM.atan2(pb.y - pa.y, pb.x - pa.x) * 180.0 / PI
+	_ang[k] = v
+	return v
 func relAng(u, t) -> float:
 	var d = angTo(u, t) - float(u["facing"]) * 60.0
 	d = fmod(fmod(d, 360.0) + 540.0, 360.0) - 180.0
@@ -229,6 +248,9 @@ func hasBoon(id) -> bool:
 		if b["id"] == id: return true
 	return false
 func runFx() -> Dictionary:
+	if _runfx == null: _runfx = _runFx_raw()
+	return _runfx
+func _runFx_raw() -> Dictionary:
 	var o = {}
 	if RUN != null:
 		for r in RUN["relics"]:
@@ -903,6 +925,7 @@ func fleetPower() -> float:
 func playerStrength() -> float: return fleetPower()
 
 func startBattle(cfg: Dictionary) -> void:
+	_runfx = null
 	var seed = (int(cfg["seed"]) & 0xFFFFFFFF) if cfg.get("seed") != null else int(floor(rnd() * 4294967296.0))
 	JSM.rnd_seed(seed)
 	var enc = cfg["obj"] if ENCOUNTERS.has(cfg.get("obj")) else "rout"; var midR = floori(BH / 2.0)
@@ -1211,6 +1234,14 @@ func moveUnit(u, state, opts = null) -> void:
 # ======================= combat math =======================
 func sightBlocked(q, r) -> bool: return blocks(terr(q, r)) or (SOLID != null and SOLID.has(hkey(q, r)))
 func los(a, b) -> bool:
+	if _evc:
+		var k = ((int(a["q"]) + 64) * 128 + int(a["r"]) + 64) * 16384 + (int(b["q"]) + 64) * 128 + int(b["r"]) + 64
+		var c = _los.get(k)
+		if c == null:
+			c = _los_raw(a, b); _los[k] = c
+		return c
+	return _los_raw(a, b)
+func _los_raw(a, b) -> bool:
 	var line = hexLine(a, b)
 	for i in range(1, line.size() - 1):
 		if sightBlocked(line[i].q, line[i].r): return false
@@ -1269,6 +1300,14 @@ func ownerFx(u) -> Dictionary:
 		return p["fx"] if p != null and jt(p.get("fx")) else {}
 	return u["fx"] if jt(u.get("fx")) else {}
 func guardMul(t) -> float:
+	if _evc:
+		var k = String(t["id"]) + "," + str(int(t["q"])) + "," + str(int(t["r"])) + ("v" if t.has("__view") else "")
+		var c = _guard.get(k)
+		if c == null:
+			c = _guard_raw(t); _guard[k] = c
+		return c
+	return _guard_raw(t)
+func _guard_raw(t) -> float:
 	if B == null or jt(t.get("isSq")): return 1.0
 	var m = 1.0; var near = []
 	for x in B["units"]:
@@ -2008,6 +2047,7 @@ func aiPickActivation(list: Array) -> Variant:
 	if not aiVet() or list.size() < 2: return list[0]
 	aiRefreshFocus(); var foes = alive("player"); var best = list[0]; var bv = -1e9
 	var foc = B.get("aiFocus")
+	eval_begin()
 	for u in list:
 		if jt(u.get("isSq")): continue
 		var ready = readyList(u); var mx = 0.0
@@ -2022,6 +2062,7 @@ func aiPickActivation(list: Array) -> Variant:
 				if d <= w["r"] + (u["speed"] if jt(u.get("speed")) else 2): reach = max(reach, w["dmg"] * w["shots"] * (1.3 if (foc != null and is_same(t, foc)) else 1.0))
 		var val: float = mx + reach * 0.5 + evalThreat(u, foes) * 0.25 + (10.0 if u["hp"] < u["maxHp"] * 0.3 else 0.0)
 		if val > bv: bv = val; best = u
+	eval_end()
 	return best
 func evalThreat(v, foes: Array) -> float:
 	var tot = 0.0
@@ -2217,6 +2258,7 @@ func aiUnit(u) -> void:
 			if not is_same(x, u) and not is_same(x, flE) and not jt(x.get("transport")): escO.append(x)
 		for x in escO:
 			if hdist(x, flE) <= 3: escIn += 1
+	eval_begin()
 	for s in states:
 		var v = stateView(u, s)
 		var vet = vet0; var focus = focus0
@@ -2251,6 +2293,7 @@ func aiUnit(u) -> void:
 		score += aiObjScore(u, v); score += aiWellScore(u, v)
 		if score > bestScore:
 			bestScore = score; best = s
+	eval_end()
 	var vctx = {"started": false, "result": null}
 	if best != null and best.path.size() > 0:
 		var midFire: bool = not jt(u.get("isSq")) and not jt(runner) and not (u.get("ab") == "nova" and canAbility(u))

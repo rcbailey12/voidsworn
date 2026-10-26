@@ -31,10 +31,10 @@ set FAILS=0
 set "GD="%GODOT%" --headless --path "%RULES%." --script res://main.gd --"
 
 echo.
-echo [1/4] Exporting the game's data tables for Godot...
+echo [1/5] Exporting the game's data tables for Godot...
 "%NODE%" "%RULES%node\export_data.js" "%RULES%data\tables.json" >> "%LOG%" 2>&1 || ( echo   FAIL: data export & set /a FAILS+=1 )
 
-echo [2/4] Random numbers: first 10,000 draws from 3 seeds...
+echo [2/5] Random numbers: first 10,000 draws from 3 seeds...
 for %%S in (1001 7 4242424242) do (
   "%NODE%" "%RULES%node\golden.js" prng %%S 10000 "%RULES%golden\prng_%%S.txt" >> "%LOG%" 2>&1
   !GD! prng %%S 10000 "%RULES%out\prng_%%S.txt" >> "%LOG%" 2>&1
@@ -43,19 +43,26 @@ for %%S in (1001 7 4242424242) do (
   type "%RULES%out\cmp.txt" >> "%LOG%"
 )
 
-echo [3/4] Math functions the rules use ^(sin, cos, atan2, exp, hypot, round^) on 243,721 inputs...
+echo [3/5] Math functions the rules use ^(sin, cos, atan2, exp, hypot, round^) on 243,721 inputs...
 "%NODE%" "%RULES%node\golden.js" math "%RULES%golden\math.txt" >> "%LOG%" 2>&1
 !GD! math "%RULES%golden\math.txt" > "%RULES%out\math.txt" 2>&1
 if errorlevel 1 ( echo   FAIL & type "%RULES%out\math.txt" & set /a FAILS+=1 ) else ( echo   PASS )
 type "%RULES%out\math.txt" >> "%LOG%"
 
-echo [4/4] Seeded battles, every activation compared ^(state hash, PRNG state^)...
-for %%B in (s1 s2 s3) do (
+echo [4/5] Seeded battles, every activation compared ^(state hash, PRNG state^)...
+for %%B in (s1 s2 s3 s4 s5) do (
   "%NODE%" "%RULES%node\golden.js" scenario %%B "%RULES%golden\%%B.jsonl" >> "%LOG%" 2>&1
   !GD! scenario %%B "%RULES%out\%%B.jsonl" >> "%LOG%" 2>&1
   "%NODE%" "%RULES%node\compare.js" scenario "%RULES%golden\%%B.jsonl" "%RULES%out\%%B.jsonl" > "%RULES%out\cmp.txt" 2>&1
   if errorlevel 1 ( echo   battle %%B: FAIL & type "%RULES%out\cmp.txt" & set /a FAILS+=1 ) else ( echo   battle %%B: PASS )
   type "%RULES%out\cmp.txt" >> "%LOG%"
+)
+
+echo [5/5] Enemy think time in the two 10-against-10 sector 3 battles ^(report only; game bar: worst under about 0.5 s^)...
+for %%B in (s4 s5) do (
+  "%NODE%" "%RULES%node\timing.js" %%B "%RULES%golden\%%B.jsonl.timing.json" "%RULES%out\%%B.jsonl.timing.json" > "%RULES%out\timing.txt" 2>&1
+  type "%RULES%out\timing.txt"
+  type "%RULES%out\timing.txt" >> "%LOG%"
 )
 
 echo.

@@ -59,6 +59,7 @@ func pBot(u) -> void:
 	var foes = R.alive("enemy")
 	if foes.size() == 0: return
 	var states = R.computeReach(u).states; var best: Variant = null; var bs = -1e9
+	R.eval_begin()
 	for s in states:
 		var v = R.stateView(u, s); var off = R.evalOffense(v, R.readyList(u), foes); var th = R.evalThreat(v, foes)
 		var ds := []
@@ -66,6 +67,7 @@ func pBot(u) -> void:
 		var nd = JSM.amin(ds); var sc = off - th * 0.3 - (0.0 if off > 0 else nd * 3.0)
 		if sc > bs:
 			bs = sc; best = s
+	R.eval_end()
 	if best != null and best.path.size() > 0: R.moveUnit(u, best)
 	for i in range(u["weapons"].size()):
 		var bt: Variant = null; var bv = 0.0
@@ -95,6 +97,7 @@ func scenario(name: String, out: String, seed_override: int = -1) -> int:
 	for tpl in S.enemies: en.append({"tpl": tpl})
 	R.startBattle({"kind": S.kind, "fac": S.fac, "col": 3, "seed": int(S.seed), "obj": S.obj, "shape": S.shape, "map": S.map, "dep": S.dep, "enemies": en})
 	var rec := [snap(0, "start")]; var turn := 0
+	var tm_acts := []; var tm_rounds := {}   # enemy think time per activation (aiUnit only: no snapshot, no startup)
 	var B = R.B
 	B["alt"] = true
 	for x in B["units"]: x["activated"] = false
@@ -119,7 +122,9 @@ func scenario(name: String, out: String, seed_override: int = -1) -> int:
 			var batch: Array = ([R.aiPickActivation(pe)] if pe.size() > 0 else []) if more else pe
 			for u in batch:
 				if R.jt(R.B.get("over")): break
-				R.aiUnit(u); u["activated"] = true; turn += 1; rec.append(snap(turn, u["id"]))
+				var t0 := Time.get_ticks_usec(); R.aiUnit(u); var ms := (Time.get_ticks_usec() - t0) / 1000.0
+				tm_acts.append({"turn": turn + 1, "round": int(R.B["round"]), "ms": ms}); tm_rounds[str(int(R.B["round"]))] = float(tm_rounds.get(str(int(R.B["round"])), 0.0)) + ms
+				u["activated"] = true; turn += 1; rec.append(snap(turn, u["id"]))
 		if R.jt(R.B.get("over")): break
 		R.B["round"] = R.B["round"] + 1
 		for x in R.B["units"]: x["activated"] = false
@@ -132,6 +137,7 @@ func scenario(name: String, out: String, seed_override: int = -1) -> int:
 	var f := FileAccess.open(out, FileAccess.WRITE)
 	for x in rec: f.store_line(JSON.stringify(x))
 	f.close()
+	var ft := FileAccess.open(out + ".timing.json", FileAccess.WRITE); ft.store_string(JSON.stringify({"acts": tm_acts, "rounds": tm_rounds})); ft.close()
 	print("scenario ", name, " ", rec.size(), " records ", rec[rec.size() - 1].actor, " -> ", out)
 	if stopped:
 		printerr("NOT PORTED: ", R.not_ported); return 3

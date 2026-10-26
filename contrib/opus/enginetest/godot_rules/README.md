@@ -22,10 +22,13 @@ This folder holds a slice of the Voidsworn battle rules ported to GDScript (Godo
    - **s1:** a sector 1 engagement at a station.
    - **s2:** the sector 1 Hegemony flagship and two escorts.
    - **s3:** a Corsair fight in an asteroid belt on a square arena.
+   - **s4 and s5:** two 10-against-10 battles at sector 3 size (Hegemony; Corsair), which also serve as the timing test.
 
    Node runs the game's own `data.js`, `core.js` and `battle.js` unchanged (`node/golden.js`). After every activation it writes the whole battle state in canonical form, a SHA-256 of that state, and the PRNG state. Godot writes the same record, and `node/compare.js` stops at the first turn and field that differ.
    - Integers must match exactly.
    - Every other number is compared as its exact 64-bit double. There is no tolerance anywhere.
+
+5. **Timing (report only).** Enemy think time per activation in s4 and s5: the AI's `aiUnit` only, with no snapshots and no startup. It reports the average, the worst, and the total per round, for Node and for Godot. The game bar is a worst enemy think under about 0.5 s on the PC.
 
 ## Files
 

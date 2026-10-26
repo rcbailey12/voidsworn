@@ -68,5 +68,79 @@
   "dep": "line",
   "kind": "battle",
   "rounds": 12
+ },
+ "s4": {
+  "note": "Timing test, sector 3 size: 10 Voidsworn ships against 10 Hegemony ships, veteran AI (carriers left out: squadrons are not ported yet)",
+  "seed": 4004,
+  "sector": 3,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "penitent",
+   "harrow",
+   "harrow",
+   "harrow",
+   "warden",
+   "warden",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_interdictor",
+   "h_interdictor",
+   "h_interdictor",
+   "h_picket",
+   "h_picket",
+   "h_picket",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12
+ },
+ "s5": {
+  "note": "Timing test, sector 3 size: 10 Voidsworn ships against 10 Corsair ships (ramming AI looks ahead from every hex), veteran AI",
+  "seed": 5005,
+  "sector": 3,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "penitent",
+   "harrow",
+   "harrow",
+   "harrow",
+   "warden",
+   "warden",
+   "warden",
+   "warden"
+  ],
+  "fac": "corsair",
+  "enemies": [
+   "c_marauder",
+   "c_marauder",
+   "c_marauder",
+   "c_reaver",
+   "c_reaver",
+   "c_reaver",
+   "c_raider",
+   "c_raider",
+   "c_raider",
+   "c_raider"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12
  }
 }
