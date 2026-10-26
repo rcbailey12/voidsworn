@@ -121,3 +121,37 @@ Commits are on main; the newest step is at the bottom.
 - `startBattle`, the carrier-fleet adaptation: the point defense bolted onto escorts (`u.pdRefit`) was pushed straight from `mkWeapon`, without the per-battle fields `fired`, `cdLeft` and `off`, so `weaponReady` was false and the squadron flak gauntlet (`x.off===0`) skipped it; it only ever thinned rocket salvos. It now gets `{fired:false,cdLeft:0,off:0}` and its faction name (`nameWeapons`), like every other gun. The Nemesis pd adaptation does the same.
 - Behaviour change: against fleets with two or more carriers (or a carrier admiral or the Hive aspect), refit escorts now intercept your wings (up to 2 per turn each) and add flak fire. Random draws: one more intercept volley per wing attack that passes a refit escort within range.
 - Golden scenario: two Reliquaries and a Penitent in sector 2 against a generated Hegemony fleet; the refit escort's last weapon is flak with fired false, cdLeft 0, off 0; a bomber attacking it spends one of its intercepts.
+
+## Pass 2 tuning (commit 7b313c4)
+
+- data.js `MOVE_RULES`: Voidsworn `rake` .2 to .3; Ithar `evade` 10 to 14.
+- battle.js: `SYNC_DMG` .15 to .12, `SYNC_AIM` 8 to 6; `FEED_CAP` .2 to .15; `CHORUS_BITE` .2 to .12; Ithar star torpedoes (`w.trait==='star'`) use ring penalties [0,0,10] instead of `TORP_RING`.
+
+## R42 Nemesis v2 (commit 7b313c4)
+
+### Data (data.js)
+- `NEM_TRAITS` (14 strength traits), `NEM_PERSONA` (8 personalities with AI weights), `NEM_FAC[fac]` (name parts pre/post, titles, persona pool, trait pool, scar epithets, behaviour `beh`), `NEM_ADAPT_FAC[fac]` (faction names for the five counters plus one `special`), `NEM_LINES` (placeholder taunts by persona plus the "again" line; the story helper's pools replace these), `NEM_BEAT_WORD`.
+
+### Campaign (G3, campaign_run.js and campaign3d.js)
+- `newNemesis()` draws, in order: faction fallback pick (only if `RUN.foes` is missing), `nemName` (pick pre, pick post, retried up to 12 times while the name appears in an admiral's name; post parts starting lower case join without a space), title pick, persona pick, trait shuffle (first two), portrait (1 + floor(rnd x 6)), weakness shuffle (anchor removed for Voidsworn and Deathless). Fields: persona, traits, portrait, scars, scarList (causes plus 'ep:' epithet markers), epithet, beat, fed, riches, revived. `ensureNemesis` upgrades a B4 save (keeps clock, weaknesses, adaptations).
+- `nemFull()` = title + name + epithet. Clock: `nemClockAdd(n)` multiplies gains by `beh.clock` (Deathless .5, Voidsworn 1.5) and rounds to halves. On filling: `nemStrike()`: raid (Corsair: take 25% of credits if 30 or more; else, with 3+ ships, cut out the lowest-hull non-flagship ship under 25% hull, riches +1), tithe (Deathless: every ship loses 6% max hull, min 1); other strikes act in battle.
+- `nemAfterBattle(result, flagDead, {fled, beat, cause})`: fled (scar 'fled', riches +1 for factions with a flee rule); flagDead with `beh.revive` and not yet revived (revived, scar, and in sector 3 `met` drops back one so he can meet you again); flagDead in sector 3 (dead); flagDead earlier (scar); Chorus (`adaptFast`) adapts after every meeting. `nemScar(cause)` adds a scar and picks an unused epithet. `nemFeedLosses(n)`: Chorus fed +n (max 8), called from finishBattle for every battle with player losses. `nemBeatOf(usage)` picks what beat him (lance, torp x2, sq, battery, ram x3, board x3, ion).
+- `nemAdapt()`: cap = sector-1, plus beaten + scars for Chorus, max 6; picks the highest-scoring counter with a score above 0 (aim now weighs evaded x3), else the faction special, else the first unused counter.
+- Hegemony Nemesis fights force the reinforcement event at round 3 (campaign3d.js battleScreen).
+
+### Battle (G1, battle.js)
+- `applyNemesis`: Ithar duel fleet (keep the flagship and the three biggest, all elite with +6 aim, +5 crit); Corsair riches (one `cheapHull` per riches level, plus one for the 'riches' special, placed at `edgeHex('enemy')`); traits (gunnery +6 aim, armored +.08 armor, swift +1 speed, deadeye +10 crit, veil +8 ev, regrowth +4 hull regen, veterans x1.12 hull incl. sections, shielded x1.2 shields, boarders x1.3 crew, artillery +1 range and opt on guns, rockets torpedo cd -1, brood +1 hangar and spare, undying legion +1); Chorus fed x(1 + .04 x fed, max .32) hull; specials (veil +6 ev, hunger +3 regen, zeal +.08 dmg, legion +1, formation enemy sync radius +1). `B.cp0.enemy` recomputed. A log line with his taunt (or the "again" line if he has been beaten before).
+- `nemFleeCheck()` at the enemy's turn start: Corsair flagship hull <= 35%; Ithar every flagship shield <= .5 and hull <= 60%: he and all his capital escorts are `fled`, `B.nemFled`, checkEnd (a win for you).
+- `B.nemNoRout` (Voidsworn, Deathless): the 35% rout rule never applies.
+- `dmgMult`: challenge (+.2 between his flagship and your `pflag` ship, both ways); zeal trait (+.12 at 1 hex).
+- AI: `nemProf(u,prof)` (persona tw and range; proud flagship tw x.6) in `aiUnit`; `nemTargetBonus(u,t)` in `aiPickPrimary` (cruel and cunning: +20 x missing hull share; greedy: +25 on your flagship).
+
+### Random draws
+- Campaign: the identity draws above at run start; `nemScar` one pick per survival; Corsair riches spawn draws nothing.
+- Battle: none added (riches ships are made without draws; duel pruning has none).
+
+### Suggested golden scenarios
+1. Corsair Nemesis at clock 3 with 200 credits: one win fills it and takes 50 credits; in his fight, flagship at 30% hull at the enemy turn start: `nemFled`, win.
+2. Deathless Nemesis: clock +1 per win gives .5; flagship killed in sector 3: revived, met 2; killed again: dead.
+3. Chorus Nemesis with fed 3: his flagship's max hull is 1.12 x the fed-0 battle with the same seed.
+4. Voidsworn Nemesis: your flagship's `dmgMult` against his flagship is +.2 x weapon damage; the enemy never routs.
