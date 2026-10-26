@@ -213,3 +213,31 @@ SHIPS['V18_51'] = dict(
          ('engine_at', 'eC', 0, .017, 0, 'stern', dict(r=.016, L=.026, pair=True)),
          ('engine_at', 'eW', 0, .205, -.075, 'stern', dict(r=.018, L=.026, pair=True))],
     notes='first pass')
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# Hegemony (clean light-grey navy with blue trim; parade finish; bilateral)
+SHIPS['H4_11'] = dict(
+    fac='hegemony', cls='Super-dreadnought', name='Dominion super-dreadnought', sym='bilateral',
+    spires=dict(zmin=.07, box=(-.12, 0, -.03, .03), style='mast'),             # the A2 rebuild of the melted mast tubes
+    cuts=[dict(name='tfore', box=(.195, .325, -.052, .052, -.084, .10)),          # AI U-shaped turret blobs: rebuilt as turrets
+          dict(name='taft', box=(-.365, -.235, -.052, .052, -.090, .10))],
+    kit=[('casemate', 'ht', .0, 0, -.10, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('casemate', 'ht2', -.16, 0, -.10, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('turret', 'tb', .26, 0, 0, 'top', dict(size='L', barrels=2, slot=2, wkind='turbo', arc='T', lift=.004)),
+         ('turret', 'tb2', -.30, 0, 0, 'top', dict(size='L', barrels=2, slot=2, wkind='turbo', arc='T', lift=.004)),
+         ('spinal', 'ion', .39, 0, 0, 'top', dict(size='L', slot=3, wkind='ion', arc='F', length=3.5)),
+         ('turret', 'fl', .12, .07, 0, 'top', dict(size='S', barrels=2, slot=4, wkind='flak', arc='T', pair=True)),
+         ('engine_at', 'eC', 0, 0, -.065, 'stern', dict(r=.03, L=.04)),
+         ('engine_at', 'eP', 0, .055, -.075, 'stern', dict(r=.024, L=.034, pair=True))],
+    notes='first pass')
+
+SHIPS['H10_23'] = dict(
+    fac='hegemony', cls='Battleship', name='Dominion-class battleship', sym='bilateral',
+    spires=dict(zmin=.06, box=(-.25, 0, -.04, .04), style='mast'),
+    kit=[('casemate', 'ht', .10, 0, -.03, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('casemate', 'ht2', .25, 0, -.03, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('spinal', 'ion', .38, 0, 0, 'top', dict(size='L', slot=2, wkind='ion', arc='F', length=3.5)),
+         ('turret', 'fl', .05, .04, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', pair=True)),
+         ('engine_at', 'eP', 0, .03, -.04, 'stern', dict(r=.022, L=.032, pair=True)),
+         ('engine_at', 'eN', 0, .09, -.03, 'stern', dict(r=.016, L=.026, pair=True))],
+    notes='first pass')

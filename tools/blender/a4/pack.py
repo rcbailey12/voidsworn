@@ -42,8 +42,10 @@ def materials(G, code, files):
     return hull
 
 
-def pack(meta_path, gdir, res=2048, tangents=False):
-    """tangents=False leaves TANGENT out: Godot's importer generates MikkTSpace tangents (the same method the bake used), a third less file"""
+def pack(meta_path, gdir, res=2048, tangents=False, quant=False):
+    """tangents=False leaves TANGENT out: Godot's importer generates MikkTSpace tangents (the same method the bake used), a third less file.
+    quant=True stores vertex data with KHR_mesh_quantization (half the bytes), but Godot 4.7.2 refuses the extension ("required extension
+    'KHR_mesh_quantization' is not supported", tested Oct 26), so it stays off; float32 it is."""
     meta = json.load(open(meta_path)); code = meta['code']; base = os.path.dirname(meta_path)
     d = os.path.join(gdir, code); os.makedirs(d, exist_ok=True)
     files = write_textures(meta, d, code, res)
@@ -51,7 +53,7 @@ def pack(meta_path, gdir, res=2048, tangents=False):
     m = dict(np.load(meta['mesh'] if os.path.exists(meta['mesh']) else os.path.join(base, os.path.basename(meta['mesh']))))
     G = gio.GLB(); mat = materials(G, code, files)
     nor = unit(m['nor']); tan = fix_tangents(nor, m['tan'])
-    mesh = G.mesh(code, [dict(pos=m['pos'], nor=nor, idx=m['idx'], uv=m['uv'], tan=tan if tangents else None, mat=mat)])
+    mesh = G.mesh(code, [dict(pos=m['pos'], nor=nor, idx=m['idx'], uv=m['uv'], tan=tan if tangents else None, mat=mat)], quant=quant)
     kids = []
     for h in meta['hardpoints']:
         kids.append(G.node({'name': h['name'], 'translation': [round(float(v), 6) for v in h['p']], 'rotation': gio.basis_quat(h['fwd'], h['up']), 'extras': h['extras']}))
@@ -69,7 +71,7 @@ def pack(meta_path, gdir, res=2048, tangents=False):
         if pre + 'pos' not in W: continue
         prims = [dict(pos=W[pre + 'pos'], nor=unit(W[pre + 'nor']), idx=W[pre + 'idx'], uv=W.get(pre + 'uv'), tan=fix_tangents(unit(W[pre + 'nor']), W[pre + 'tan']) if (tangents and pre + 'tan' in W) else None, mat=mat2)]
         if f'c{i}_cap_pos' in W: prims.append(dict(pos=W[f'c{i}_cap_pos'], nor=unit(W[f'c{i}_cap_nor']), idx=W[f'c{i}_cap_idx'], mat=inner))
-        mi = G2.mesh(f'{code}_chunk{len(chunks):02d}', prims)
+        mi = G2.mesh(f'{code}_chunk{len(chunks):02d}', prims, quant=quant)
         chunks.append(G2.node({'name': f'chunk_{len(chunks):02d}', 'mesh': mi, 'translation': [round(float(v), 6) for v in c['centre']], 'extras': dict(volume=c['volume'], tris=c['tris'])}))
     wroot = G2.node({'name': f'{code}_wreck', 'children': chunks, 'extras': dict(code=code, chunks=len(chunks), note='each chunk origin is its centre of mass; caps use wreck_interior')})
     G2.save(os.path.join(d, f'{code}_wreck.glb'), [wroot], extras=dict(code=code))
@@ -97,4 +99,4 @@ if __name__ == '__main__':
     c1, c2 = pack(a[0], a[1], res)
     if '--hi' in a:
         hres = int(a[a.index('--hires') + 1]) if '--hires' in a else 4096
-        pack(a[0], a[a.index('--hi') + 1], hres, tangents=True)
+        pack(a[0], a[a.index('--hi') + 1], hres, tangents=True, quant=False)
