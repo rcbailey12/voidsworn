@@ -15,7 +15,7 @@ Last update: Oct 26 2026 (dd58851), G2.
 | Windows build (.exe) | done on the PC (build\export\Voidsworn.exe); smoke test of the exe pending |
 | Double-click start for Ryan | done: tools/pc/play_godot.bat (runs the exported .exe when present) |
 | Headless full runs with both sides on AI (errors, softlocks, time) | done: --bot-runs N (the game's own AI on your side, G3's choices); errors counted with a Logger. PC: 10-run batches in the queue |
-| Report a problem (browser: copy report) | missing |
+| Report a problem (browser: copy report) | done: in-battle menu, copies the battle facts, errors and log |
 | Shader warm-up on the loading screen, pipeline compiles counted in play | done (0 in sandbox runs) |
 | Compatibility renderer launcher (play_godot_safe.bat) | done |
 
@@ -44,7 +44,7 @@ Last update: Oct 26 2026 (dd58851), G2.
 | Feature | Status |
 |---|---|
 | Hex board at game scale, terrain (rocks, hulks, debris, nebula, ion storm, station, planet) | done (station as one structure per cluster); dead star picture: G4 world |
-| Ships from the game hulls and the six 8K flagships, faction finish, engine glows | done (G4 and A4 improve) |
+| Ships from the game hulls and the six 8K flagships, faction finish, engine glows | done; A4 kit ships with breach skins are used as soon as they are in godot/assets/ships |
 | Footprints: green ring under yours, broken violet hex under the enemy's (B1) | done |
 | Nameplates with hull and shield bars, gold star on flagships | done |
 | Camera: right-drag orbit, left-drag or WASD pan, wheel zoom, T top-down, Home reset, F focus | done |
@@ -59,16 +59,19 @@ Last update: Oct 26 2026 (dd58851), G2.
 | Admiral's Command (player) | done: top-bar button when ready, two clicks to confirm as the game asks |
 | End activation, Pass, Continue (Enter) | done |
 | Enemy turns at B2 pace, Enter or Space hurries, enemy-acting chip, camera follow | done |
-| Threat map (R) | done: the browser's computeThreat (every end state of every enemy, guns summed per hex, line of sight); about 0.8 s to build in the sandbox, cached per change |
-| Firing arcs (V, the fans) | partial: the hexes a ready gun reaches, outlined; no fan meshes |
+| Threat map (R) | done: the rules' threat_map (byte for byte with the browser), on a worker thread when the board changes |
+| Firing arcs (V, the fans) | done: fans under the selected ship, on by default, V toggles |
 | Hull and shield bars that change as hits land, floating numbers (shield, hull, Miss, Critical, Shields down) | done |
 | Battle log with the browser's lines and colours | done: the rules' own log lines, word for word |
 | Round banner, Victory and Defeat card | done |
 | Retreat button in campaign battles | done |
-| Objective in the top bar (rout, flagship, hunt, defend, intercept, break, hold) | done; objective zones on the board missing |
+| Objective in the top bar (rout, flagship, hunt, defend, intercept, break, hold) | done, with the zones on the board and their tips |
 | Speed: normal or fast | done |
 | Onboarding tips one at a time, Got it, Hide tips (B1) | done (9 of the 10 browser tips; the Command tip waits for the Command) |
-| Squadrons and carriers | done: wings drawn as craft formations, wing orders (click your wing, then a target); stances wait for stream B |
+| Squadrons and carriers | done: wings drawn as craft formations, wing orders (click your wing, then a target), Strike, Screen and Hunt stances |
+| Travelling torpedoes (stream B) | done: lanes, parked salvos, strikes and misses a turn later |
+| Move, then fire (stream B) | done: movement left shown after firing |
+| Deathless rising wrecks | done |
 | Mid-battle events (reinforcements, warnings) | done: the rules log them; reinforcements appear with the next view |
 | Cut-ins (cinematic camera), follow activations toggle, concept-art hulls toggle, temporal AA toggle | missing |
 | Legend and command strip help | missing |
@@ -90,4 +93,5 @@ Last update: Oct 26 2026 (dd58851), G2.
 | The game's cue table, recorded clips and synth cues (rendered offline from sfx.js) | done |
 | Buses, compressor and limiter, reverb send, voice caps, round robin, pitch jitter, salvo thinning | done |
 | Ambient bed | partial: recorded room tone only (the browser adds a synth bed) |
+| Music (title, map per sector, battle by factions with intensity, stings) | done (the music helper's player; Music on/off and volume in settings) |
 | Engine cues on moves | done |

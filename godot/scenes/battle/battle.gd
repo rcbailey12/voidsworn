@@ -2116,6 +2116,13 @@ func _on_action(name: String, arg) -> void:
 			_open_menu()
 		"menu_close":
 			hud.hide_menu()
+		"report":
+			# the browser's Report a problem: the battle's facts, the errors and the log, ready to paste
+			var lines: Array = Array(hud.log_text.get_parsed_text().split("\n"))
+			var rep := {"version": ProjectSettings.get_setting("application/config/version", "dev"), "round": V.get("round"), "phase": api.phase if api != null else "",
+				"seed": api.world_info().get("seed") if api != null and api.has_method("world_info") else null, "errors": errors, "log": lines.slice(maxi(0, lines.size() - 60))}
+			DisplayServer.clipboard_set(JSON.stringify(rep, "  "))
+			hud.toast("Problem report copied. Paste it into a message to Ryan's helpers.")
 		"opt":
 			_toggle_opt(str(arg))
 		"to_title":
@@ -2157,6 +2164,7 @@ func _open_menu() -> void:
 		items.append(["Quit to title", "to_title"])
 	elif not external:
 		items.append(["Fight again", "restart"])
+	items.append(["Copy a problem report", "report"])
 	items.append(["Quit the game", "quit"])
 	hud.show_menu("Menu", items)
 
