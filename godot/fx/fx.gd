@@ -74,6 +74,7 @@ var _later: Array = []      # [t, callable]
 var _shake_off = Vector2.ZERO
 
 static var _globals_added := false
+static var _live_ids: Array = []    # instance ids of live fx nodes (ids, not references, so nothing is kept alive)
 
 
 static func register_globals() -> void:
@@ -87,6 +88,44 @@ static func register_globals() -> void:
 
 func _ready() -> void:
 	register_globals()
+	_live_ids.append(get_instance_id())
+
+
+func _exit_tree() -> void:
+	release()
+
+
+# Drop everything that holds GPU resources, so it is freed while the rendering server still exists. Background cut
+# tasks are waited for first: an unawaited WorkerThreadPool task keeps its job (hull materials and textures) alive
+# until the process ends, after the rendering server is gone (G2: "RenderingServer is null" at exit, a crash risk).
+func release() -> void:
+	for id in ships:
+		var s = ships[id]
+		if s.has_meta("cut_task"):
+			WorkerThreadPool.wait_for_task_completion(int(s.get_meta("cut_task")))
+			s.remove_meta("cut_task")
+		if s.has_meta("cut_job"):
+			s.remove_meta("cut_job")
+	for w in dstate.get("wrecks", []):
+		for l in w.get("lights", []):
+			l["on"] = false
+	ships.clear()
+	_later.clear()
+	_lev.clear()
+	_lsrc.clear()
+	_shaders.clear()
+	dstate.clear()
+	pools.clear()
+	_live_ids.erase(get_instance_id())
+
+
+# For a clean quit (G2's main.quit_clean calls it): release every live fx node's resources now.
+static func clear_static() -> void:
+	for iid in _live_ids.duplicate():
+		var n = instance_from_id(iid)
+		if n != null and is_instance_valid(n):
+			n.release()
+	_live_ids.clear()
 
 
 func setup(opts := {}) -> void:

@@ -23,6 +23,7 @@ fx.setup({
 - fx runs its own `_process`. It keeps its own effect clock (scene_t, a global shader parameter it registers) that slows during hit pause.
 - For stills and tests: `fx.manual = true` and then `fx.step(dt)` once per frame; the clock then only moves with `step`.
 - On the loading screen, after ships, lights and world are built: `await fx.warmup(cam)` (draws every effect material once, so the first lance, shield ripple or death never stalls on a shader compile).
+- Clean quit: fx releases its GPU resources when its node leaves the tree; `FX.clear_static()` releases every live fx at once (G2's `quit_clean`).
 - Safe mode (the Compatibility renderer, `play_godot_safe.bat`): fx and world detect it and drop Decals, raymarched volumes, distortion and the lens; everything else plays.
 - Physics: fx makes its own Jolt rigid bodies (death chunks, debris) with `gravity_scale = 0`, so it works whatever the project gravity is. Please keep `3d/physics_engine="Jolt Physics"` in project.godot (it is the engine the A3 proof measured).
 
