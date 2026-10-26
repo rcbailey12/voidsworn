@@ -413,21 +413,22 @@ async function fMatrix(n){ fidInstall(); const F=RUN_FACTIONS, T=+(process.env.C
   console.log('FM '+JSON.stringify({out,st,hull,weap,ab})); console.log('FID '+JSON.stringify(fidReport())); }
 // B4: Nemesis fights against plain elite fights of the same node, by sector (start fleet grown to the sector's usual size).
 // Arms: plain elite, Nemesis (two random weaknesses, sector-1 adaptations), Nemesis with no weaknesses (what his adaptations alone cost you).
-async function nemMatrix(n){ const out={}; const G=[0,7,12,18];
+async function nemMatrix(n){ const out={}; const G=[0,7,12,18]; let fl=0;
   for(const S of [1,2,3]) for(const arm of ['plain','nem','nemNoWeak']){ let w=0,t=0,rd=0;
     for(let i=0;i<n;i++){ const fac=RUN_FACTIONS[i%6], adms=Object.keys(ADMIRALS).filter(a=>(ADMIRALS[a].fac||'voidsworn')===fac), adm=adms[(i/6|0)%adms.length];
       RUN={admiral:adm,fac,credits:0,cpCap:60,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
       for(const tp of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(tp,fac),true)); RUN.flagUid=RUN.fleet[0].uid;
       { const ros=FACTIONS[fac].roster.filter(id=>!HULLS[id].unique&&(HULLS[id].cp||1)<=4); let g=0; while(fleetCP()<G[S]&&g++<30){ const pk=pick(ros); if(fleetCP()+(HULLS[pk].cp||1)>G[S]+1) continue; RUN.fleet.push(newShip(pk,true)); } }
       const ef=pick(RUN_FACTIONS.filter(f=>f!==fac)), keys=Object.keys(NEM_WEAK), ad=Object.keys(NEM_ADAPT);
-      const nem=arm==='plain'?null:{name:'Test',title:'Warlord',fac:ef,weak:arm==='nem'?shuffle(keys.slice()).slice(0,2):[],revealed:[],adapt:shuffle(ad.slice()).slice(0,S-1),scars:0};
+      const NF=NEM_FAC[ef], bh=NF.beh, wk=keys.filter(k=>!(k==='anchor'&&(bh.noFlee||bh.revive))), sp=NEM_ADAPT_FAC[ef].special.id; // R42: a generated rival of that faction, as the campaign builds him
+      const nem=arm==='plain'?null:{name:'Test',title:NF.titles[0],fac:ef,persona:pick(NF.personas),traits:shuffle(NF.traits.slice()).slice(0,2),weak:arm==='nem'?shuffle(wk.slice()).slice(0,2):[],revealed:[],adapt:shuffle(ad.concat([sp])).slice(0,S-1),scars:Math.max(0,S-2),fed:bh.feeds?S-1:0,riches:bh.flee&&bh.strike==='raid'?S-1:0};
       startBattle({kind:'elite',fac:ef,col:4,obj:'rout',shape:pick(['open','ring','dense']),map:'random',dep:'line',nemesis:nem}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
       while(!B.over&&r<30){ await swarmPhase('player'); await swarmPhase('enemy'); let g=0;
         while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
           if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe; for(const u of batch){ if(B.over) break; await aiUnit(u); u.activated=true; } }
         if(B.over) break; B.round++; for(const x of B.units) x.activated=false; await roundStart(); r++; }
-      w+=B.over==='win'?1:0; t++; rd+=B.round; }
-    out['s'+S+' '+arm]=Math.round(w/t*100)+'% r'+(rd/t).toFixed(1); }
+      w+=B.over==='win'?1:0; t++; rd+=B.round; if(B.nemFled) fl=(fl||0)+1; }
+    out['s'+S+' '+arm]=Math.round(w/t*100)+'% r'+(rd/t).toFixed(1)+(fl?' fled '+fl:''); fl=0; }
   console.log('nemmatrix '+n+' per cell', JSON.stringify(out)); }
 async function boonSingle(n){ const S0={tag:'b',player:['penitent','harrow','harrow','warden'],enemy:['h_vanguard','h_interdictor','h_interdictor','h_picket','h_picket']}; const res=[];
   const run=async (b,asp)=>{ let w=0,hp=0; for(let i=0;i<n;i++){ const r=await sim(Object.assign({},S0,{boons:b,aspect:asp||null}),2); if(r.res==='win') w++; hp+=r.hpLeft; } return [Math.round(w/n*100),Math.round(hp/n*100)]; };

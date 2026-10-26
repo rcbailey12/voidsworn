@@ -17,7 +17,7 @@ eval(src + `
 function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){} function tel(){} function nodeSeeds(){ return 0; }
 async function animWeapon(){} async function animExplode(){} function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, migrateRun, newShip, startBattle, HULLS, BOONS, fireWeapon, computeReach, giveOrder, braceMul, applyHit, startSideTurn, turnStart, killUnit,
-  rollBoonOffer, boonReroll, boonDecline, boonRerollCost, boonDeclineCred, derive, buyClassTrack, classTrack, aiPickPrimary, dmgMult, hitChance, canFire, useCommand, runCommand, landVolley };
+  CHORUS_BITE, FEED_CAP, rollBoonOffer, boonReroll, boonDecline, boonRerollCost, boonDeclineCred, derive, buyClassTrack, classTrack, aiPickPrimary, dmgMult, hitChance, canFire, useCommand, runCommand, landVolley };
 `);
 const base = (o) => Object.assign({ fac: 'voidsworn', admiral: 'vex', credits: 500, cpCap: 30, sector: 1, relics: [], inventory: [], boons: [], patrons: ['iron', 'storm', 'star', 'rook'], map: { cols: [] }, fleet: [] }, o || {});
 function battle(fac, ptpls, efac, etpls, boons) { T.RUN = T.migrateRun(base({ fac, fleet: ptpls.map(t => T.newShip(t)), boons: (boons || []).map(id => ({ id, r: 0 })) })); T.RUN.flagUid = T.RUN.fleet[0].uid;
@@ -36,10 +36,10 @@ check('v54: after firing a ship cannot move on; an Ithar hull may fade with half
 check('v54: a Command barrage (free volley) leaves movement as it was', async () => {
   battle('voidsworn', ['penitent', 'harrow'], 'hegemony', ['h_dominion']); const [u] = P(), t = E()[0]; put(u, 8, 10, 0); put(t, 11, 10, 3); T.B.round = 3;
   await T.runCommand('player', { id: 'barrage', n: 'Fire for effect' }, 2); return !u.postFire && T.computeReach(u).map.size > 0; });
-check('v54: Chorus hulls regrow 20% of the hull damage they deal at 1 to 2 hexes, inside the 25% a round cap', async () => {
+check('v54: Chorus hulls regrow a share of the hull damage they deal at 1 to 2 hexes, inside the feed cap', async () => {
   battle('chorus', ['b_razor'], 'hegemony', ['h_dominion']); const u = P()[0], t = E()[0]; put(u, 8, 10, 0); put(t, 10, 10, 3); u.hp = 40; t.sh = [0, 0, 0, 0];
   const res = { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0 }; await T.landVolley(u, u.weapons[0], t, { quad: 0, shBefore: 0, shots: [true, true], called: null, res });
-  return res.hull > 0 && u.hp === 40 + Math.min(Math.round(res.hull * .2), Math.round(u.maxHp * .25)); });
+  return res.hull > 0 && u.hp === 40 + Math.min(Math.round(res.hull * T.CHORUS_BITE), Math.round(u.maxHp * T.FEED_CAP)); });
 check('v54: a bracing Voidsworn hull covers one adjacent ally facing the same way; Shield Wall covers every neighbour', () => {
   battle('voidsworn', ['penitent', 'harrow', 'warden'], 'hegemony', ['h_dominion']); const [a, b, c] = P(); put(a, 8, 10, 0); put(b, 9, 10, 0); put(c, 8, 11, 3);
   T.giveOrder(a, 'brace'); const one = T.braceMul(b) < 1 && T.braceMul(c) === 1;

@@ -53,7 +53,7 @@ function battleScreen(cfg){
   const ro=cfg.kind==='boss'?bossEncounter():nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);
   const c=Object.assign({map:(nd&&nd.map)||(RUN.map&&RUN.map.region&&regionMap(RUN.map.region,cfg.kind==='boss'?6:(nd?nd.col:3),7))||(cfg.kind==='boss'&&FAC_MAP[cfg.fac]?FAC_MAP[cfg.fac][0]:'random'),dep:cfg.kind==='boss'?'line':pick(['line','line','flank']),obj:ro.enc,shape:ro.shape,arch:cfg.kind!=='boss'&&nd?nd.arch:null,mod:cfg.kind!=='boss'&&nd?nd.mod:null},cfg); // bosses fight on their faction's home ground
   if(RUN.verbNext&&!c.verb) c.verb=RUN.verbNext; // B4: a next-battle faction verb
-  const setupT0=performance.now(); startBattle(c); B.campaign=true; B.event=rollBattleEvent(c,(sectorCond()||{}).war&&c.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null); prepBattle(); const setupMs=Math.round(performance.now()-setupT0);
+  const setupT0=performance.now(); startBattle(c); B.campaign=true; B.event=c.nemesis&&NEM_FAC[c.nemesis.fac]&&NEM_FAC[c.nemesis.fac].beh.strike==='reinforce'?Object.assign(rollBattleEvent(c,'reinf_enemy'),{r:3}):rollBattleEvent(c,(sectorCond()||{}).war&&c.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null); // R42: a Hegemony Nemesis always brings reinforcements in round 3 prepBattle(); const setupMs=Math.round(performance.now()-setupT0);
   const E=ENCOUNTERS[B.obj.type]||ENCOUNTERS.rout; document.getElementById('scenName').textContent=`Sector ${roman(RUN.sector)}: ${cfg.kind==='boss'?'flagship battle':(cfg.kind==='elite'?'elite ':'')+E.n.toLowerCase()} against ${FACTIONS[cfg.fac].n}`;
   G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); banner(cfg.kind==='boss'?'Sector flagship':E.n); { const bn=(RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].n).filter(Boolean), bt=bn.length?` Boons active: ${bn.slice(0,4).join(', ')}${bn.length>4?` and ${bn.length-4} more`:''}.`:''; setTimeout(()=>{ try{ if(B&&!B.over) toast((cfg.kind!=='boss'?E.d:'The sector flagship and its escort.')+(sectorCond()?' '+sectorCond().n+' in effect.':'')+bt); }catch(e){} },1400); }
   try{ FRAMES.reset(); fxMark('setup'); }catch(e){} tel('battle_start',{cond:B.cond||null,arch:c.arch||null,mod:c.mod||null,setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
@@ -71,7 +71,8 @@ function finishBattle(result){
   // B4: the Nemesis learns from how you fought; a used faction verb is spent; his own fight settles here
   try{ const pl=B.units.filter(u=>u.side==='player'&&!u.isSq), ev=pl.reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,pl.length); nemLearn(B.usage,ev>=20?1:0); }catch(e){}
   if(B.cfg&&B.cfg.verb) RUN.verbNext=null;
-  if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled)); } else if(result==='win'&&RUN.nem){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
+  if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled),{fled:!!B.nemFled,beat:nemBeatOf(B.usage),cause:fl&&fl.killCause}); } else if(result==='win'&&RUN.nem){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
+  { const lostN=B.units.filter(u=>u.side==='player'&&u.ship&&u.dead&&!u.exited).length; if(lostN) nemFeedLosses(lostN); } // R42: a Chorus Nemesis grows from your losses
   for(const sh of RUN.fleet){ const k=wingK[sh.uid]; if(k){ const g=wingVetAfter(sh,k); if(g.length) (summary.wingPerks=summary.wingPerks||[]).push({ship:sh.name,perks:g}); } }
   summary.kills=B.units.filter(u=>u.side==='enemy'&&u.dead&&!u.fled&&!u.isSq&&!u.ship).length;
   RUN.stats.kills+=summary.kills;

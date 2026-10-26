@@ -101,11 +101,11 @@ const HULLS = {
 
 // v50 drives: how each faction bends the thruster rules (battle.js MOVE_BASE). n/d show in the ship panel and codex.
 const MOVE_RULES={
-  voidsworn:{rake:.2,n:'Broadside doctrine',d:'Port and starboard guns hit 20% harder after moving 2+ hexes (others get 10%).'},
+  voidsworn:{rake:.3,n:'Broadside doctrine',d:'Port and starboard guns hit 30% harder after moving 2+ hexes (others get 10%).'}, // B3 pass 2 tuning: was 20%
   hegemony:{rev:1,n:'Retro thrusters',d:'Backing off one hex costs 1 movement instead of 2.'},
   corsair:{slip:1,n:'Bolted burners',d:'Sideslips cost 1 movement instead of 2.'},
   chorus:{pivot:1,n:'Living hull',d:'The first turn each round costs no movement.'},
-  ithar:{evadeAt:2,evade:10,n:'Fan sails',d:'After moving 2+ hexes, enemies get \u221210 to hit it (others need 3 hexes for \u22125).'},
+  ithar:{evadeAt:2,evade:14,n:'Fan sails',d:'After moving 2+ hexes, enemies get \u221214 to hit it (others need 3 hexes for \u22125).'}, // B3 pass 2 tuning: was 10
   deathless:{over:0,n:'Phase drive',d:'Passes through rocks, wrecks and enemy ships at no extra cost.'}};
 const FACTIONS = {
   voidsworn:{n:'Voidsworn Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#4a4440',trim:'#c8501f',glow:'#ff7a2a',style:'gothic',blurb:'Gothic crusader battleships. Heavy armor, lance batteries and broadsides that hit like a cathedral falling.'},
@@ -436,6 +436,57 @@ const NEM_ADAPT={
   armor:{n:'Ram plating',d:'His ships have 10% more armor.',why:'you rammed and boarded'},
   evasion:{n:'Evasive drills',d:'His ships have 8 more evasion.',why:'you leaned on broadsides and batteries'},
   aim:{n:'Gunnery drills',d:'His ships aim 8 better.',why:'you won by staying hard to hit'}};
+// ---------- R42 Nemesis v2: a different rival every run, built per faction (never a player admiral), with faction behaviour ----------
+// Name: one part from pre and one from post (plus a title and an epithet), so it never matches an ADMIRALS name. Personality and two strength traits
+// come from the faction pools; the portrait is one of six per faction (nem_<faction>_1..6); scars add overlays and a new epithet each time he survives.
+// beh: how he behaves. clock = clock gain per win (patient below 1, zealous above); flee = he withdraws from a lost fight (flagship hull or
+// shields test) and comes back; revive = he comes back once after his flagship is destroyed; strike = what a full clock does on the map
+// (raid: takes credits, or a crippled ship if you have none, always announced on his card first; reinforce: his fight brings reinforcements;
+// challenge: a duel with your flagship; tithe: your fleet loses hull to the hunt); fleet = archetype his fleet is built as; ai = battle weights.
+const NEM_TRAITS={
+  gunnery:{n:'Master gunners',d:'His ships aim 6 better.'}, armored:{n:'Heavy plating',d:'His ships have 8% more armor.'}, swift:{n:'Hot engines',d:'His ships have 1 more movement.'},
+  veterans:{n:'Veteran crews',d:'His ships have 12% more hull.'}, deadeye:{n:'Deadeyes',d:'His ships have 10% more critical chance.'}, shielded:{n:'Overcharged shields',d:'His ships have 20% more shields.'},
+  boarders:{n:'Boarding gangs',d:'His ships carry 30% more crew.'}, regrowth:{n:'Deep regrowth',d:'His ships regrow 4 more hull each turn.'}, brood:{n:'Swollen broods',d:'His carriers field one more wing.'},
+  undying:{n:'Endless dead',d:'One more of his ships reassembles after falling.'}, veil:{n:'Veil-dancers',d:'His ships are 8 harder to hit.'}, artillery:{n:'Artillery line',d:'His guns reach 1 hex further.'},
+  zeal:{n:'Zealots',d:'His ships deal 12% more damage to a ship next to them.'}, rockets:{n:'Rocket hoarders',d:'His torpedoes reload a turn faster.'}};
+const NEM_PERSONA={
+  cunning:{n:'Cunning',d:'Strikes your flanks and your weakest ship.',ai:{focusWeak:1,rear:1}}, zealous:{n:'Zealous',d:'Charges in and never backs off.',ai:{tw:.6,range:-2}},
+  cruel:{n:'Cruel',d:'Finishes crippled ships first.',ai:{focusWeak:1}}, patient:{n:'Patient',d:'Waits for you to come to him.',ai:{tw:1.3,range:2}},
+  proud:{n:'Proud',d:'Leads from the front with his flagship.',ai:{flagFront:1}}, greedy:{n:'Greedy',d:'Goes for your richest prize, your flagship.',ai:{focusFlag:1}},
+  methodical:{n:'Methodical',d:'Holds his line and advances only in formation.',ai:{tw:1.2}}, ravenous:{n:'Ravenous',d:'Swarms whatever is closest.',ai:{tw:.5,range:-1}}};
+const NEM_FAC={
+  corsair:{pre:['Krag','Vash','Rusk','Gor','Snag','Black','Red','Mad','Skarn','Jagg'],post:['Tooth','Maw','Gut','Vane','Hook','Knuckle','Rot','Grin','Spur','Wreck'],titles:['Reaver-king','Warlord','Scrap-baron','Pirate prince'],
+    personas:['cunning','greedy','proud','cruel'],traits:['boarders','swift','rockets','deadeye','gunnery','veterans'],scars:['the Burned','Ironjaw','Half-Face','the Unsunk','Patchwork','One-Eye'],
+    beh:{clock:1,flee:{hull:.35},strike:'raid',fleet:'swarm',d:'Raids your path. When his clock fills he takes 25% of your credits (or, if you have under 30 credits, a ship under 25% hull from a fleet of three or more). He flees a fight he is losing and comes back richer, with an extra ship each time.'}},
+  deathless:{pre:['Ankh','Sekh','Neph','Amen','Thut','Osir','Ptah','Kher','Mer','Seth'],post:['amun','ekhet','ophis','arkh','enmet','ankh','esut','hotep','umet','akh'],titles:['Phaeron','Dynast','Tomb-lord','Overlord'],
+    personas:['patient','proud','cruel','methodical'],traits:['undying','armored','veterans','regrowth','gunnery','deadeye'],scars:['the Twice-Dead','the Rebuilt','Cracked-Crown','the Unfinished','Hollow-Eye','the Patient'],
+    beh:{clock:.5,revive:1,strike:'tithe',fleet:'heavy',d:'Patient: his clock moves at half speed. He never retreats. Killed once, he reassembles and comes back scarred. When his clock fills, the hunt drains 6% hull from every ship you have.'}},
+  ithar:{pre:['Ael','Ith','Sae','Ny','Cael','Lir','Tal','Fae','Ely','Ors'],post:['wyn','riel','thas','lune','vael','dris','eth','nor','iel','ane'],titles:['Seraph','Starwarden','Duelist','Wing-lord'],
+    personas:['cunning','proud','patient','cruel'],traits:['veil','shielded','swift','deadeye','gunnery','artillery'],scars:['the Cracked Prism','Dimmed','the Scarred Sail','Thornwing','the Unbowed','Ashwake'],
+    beh:{clock:1,flee:{shields:1,hull:.6},strike:'duel',fleet:'duel',d:'A duelist: he keeps his range, picks off your weakest ship, and withdraws to fight again once his flagship’s shields are all down and its hull is under 60%. His fleet is small and elite.'}},
+  chorus:{pre:['Seventh','Hollow','Wet','Grieving','Ninefold','Brine','Pale','Deep','Thrumming','Gnawing'],post:['Mouth','Hymn','Tide','Coil','Throat','Bloom','Choir','Murmur','Maw','Psalm'],titles:['Matriarch','Elder Throat','Hive-mind','Brood-queen'],
+    personas:['ravenous','cruel','cunning','patient'],traits:['regrowth','brood','veterans','swift','boarders','deadeye'],scars:['the Scarred Choir','Half-Sung','the Burned Throat','Rotflesh','the Gnawed','Scabsong'],
+    beh:{clock:1,feeds:1,adaptFast:1,strike:'swarm',fleet:'swarm',d:'Grows from your losses: every ship you lose anywhere makes his fleet 4% tougher (up to 32%). He swarms, and adapts after every meeting, not just every sector.'}},
+  hegemony:{pre:['Konrad','Ilsa','Viktor','Aldric','Petra','Halvar','Ruprecht','Katrin','Sanne','Gerold'],post:['Steiner','Valk','Morgan','Hale','Draxen','Kolb','Reiter','Vos','Brandt','Lindqvist'],titles:['Grand Admiral','Fleet Marshal','Line Admiral','High Commodore'],
+    personas:['methodical','proud','patient','cunning'],traits:['artillery','shielded','gunnery','armored','veterans','deadeye'],scars:['the Burned Admiral','Ironside','One-Arm','the Unbroken','Scarface','the Survivor'],
+    beh:{clock:1,strike:'reinforce',fleet:'heavy',formation:1,d:'Methodical: an artillery line around his flagship, and his fights always bring reinforcements in round 3. He adapts by drilling his formation tighter.'}},
+  voidsworn:{pre:['Saint','Brother','Inquisitor','Castellan','Confessor','Templar','Arch-deacon','Chaplain','Penitent','Lector'],post:['Varrow','Ashdown','Quell','Harrowgate','Vane','Stroud','Draeger','Holloway','Blackwood','Corvane'],titles:['Crusade-master','High Templar','Lord Inquisitor','Arch-confessor'],
+    personas:['zealous','proud','cruel','methodical'],traits:['zeal','boarders','armored','veterans','gunnery','artillery'],scars:['the Branded','Ironhand','the Martyr-Scarred','Burnt-Psalm','the Unrepentant','Ashface'],
+    beh:{clock:1.5,noFlee:1,strike:'challenge',fleet:'line',d:'A zealot: his clock moves fast, he charges and boards, never flees, and challenges your flagship to a duel (his flagship and yours deal 20% more damage to each other).'}}};
+// faction-specific adaptations: the same counters as NEM_ADAPT, in each faction's own words, plus one faction-only adaptation (special) that he
+// takes when nothing in particular stood out in how you fought
+const NEM_ADAPT_FAC={
+  corsair:{shields:'Stolen shield cells',pd:'Chaff launchers',armor:'Scrap ram plating',evasion:'Overbored burners',aim:'Stolen gun sights',special:{id:'riches',n:'Bigger crew',d:'One more ship joins his fleet.'}},
+  deathless:{shields:'Quantum ward',pd:'Gauss pylons',armor:'Living-metal shell',evasion:'Phase drift',aim:'Tomb sight',special:{id:'legion',n:'Wider legion',d:'One more of his ships reassembles.'}},
+  ithar:{shields:'Prism lattice',pd:'Mirror veil',armor:'Wraithbone keel',evasion:'Starwind vanes',aim:'Farsight crystals',special:{id:'veil',n:'Deeper veil',d:'His ships are 6 more harder to hit.'}},
+  chorus:{shields:'Membrane bloom',pd:'Spore curtains',armor:'Chitin layers',evasion:'Fin clusters',aim:'Hunting eyes',special:{id:'hunger',n:'Hunger',d:'His ships regrow 3 more hull each turn.'}},
+  hegemony:{shields:'Deflector drills',pd:'Picket screens',armor:'Bow plating',evasion:'Attitude drills',aim:'Fire-control drills',special:{id:'formation',n:'Tight formation',d:'His synchronized fire reaches one hex further.'}},
+  voidsworn:{shields:'Void shield rites',pd:'Censer flak',armor:'Blessed plate',evasion:'Litany of speed',aim:'Auspex rites',special:{id:'zeal',n:'Fervour',d:'His ships deal 8% more damage.'}}};
+// what he says when you meet again (placeholders until the story helper's rival line pools arrive; {beat} is how you beat him last time)
+const NEM_LINES={
+  meet:{cunning:'I have watched you. I know where you are thin.',zealous:'Face me, heretic, and be judged.',cruel:'I will take your fleet apart one ship at a time.',patient:'I have waited longer than your kind has lived.',proud:'You are not worthy of my guns. You will have them anyway.',greedy:'Your flagship will look fine in my yards.',methodical:'Every move you can make, I have already drilled against.',ravenous:'More. Always more.'},
+  again:'Last time you beat me with {beat}. It will not work twice.'};
+const NEM_BEAT_WORD={lance:'lances',torp:'torpedoes',sq:'your wings',ram:'rams',board:'boarding parties',battery:'massed batteries',broad:'broadsides',ion:'ion fire',evaded:'speed'};
 // ---------- B4 faction campaign verbs: one small action per faction, once per sector, from the map ----------
 // cost: cred (credits), mod (a refit from the hold), xp (flagship captain experience). free: an earlier event flag that waives the cost.
 // next: an effect on your next battle (battle.js applyVerb). Each use writes the flag verb_<id>.
