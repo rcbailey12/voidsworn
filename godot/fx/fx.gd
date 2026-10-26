@@ -6,6 +6,7 @@ extends Node3D
 #   registry. The looks themselves live in fx_weapons.gd (weapons, impacts), fx_ship.gd (engines, shields, staged
 #   damage) and fx_death.gd (deaths, wrecks, physics).
 
+const BREACH := preload("res://fx/fx_breach.gd")
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
@@ -26,7 +27,11 @@ const FAC := {
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
 const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
-const FLASH_CAP := 3
+const FLASH_CAP := 3         # counted flashes in any rolling second (WCAG 2.3.1 general flash threshold)
+const FLASH_I := 4.0         # sprite intensity from which a short flash-like sprite counts (dimmer pops are free)
+const FLASH_SCREEN := 0.06   # ... and only when it covers at least this share of the screen height (small sparks are free)
+const FLASH_LIGHT := 8.0     # light peak from which a decaying event light counts (it lights a big patch of hull)
+const FLASH_KINDS := [0, 2, 12, 13]   # sprite kinds that can flash: flash, fireball core, beam charge, impact flare
 
 # --- settings (API.md 1, 8)
 var quality = "max"
@@ -70,6 +75,7 @@ var _shakes: Array = []     # [t, amount, pos]
 var _pauses: Array = []     # [t, frames]
 var _flashes: PackedFloat64Array = []
 var flash_log: PackedFloat64Array = []   # every counted flash (tests check the 3-a-second cap)
+var _refused: PackedFloat64Array = []    # flashes the budget turned down (their lights stay dark)
 var _later: Array = []      # [t, callable]
 var _shake_off = Vector2.ZERO
 
@@ -262,6 +268,12 @@ const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true}
 
 func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
 		drag := 0.0, spin := 0.0, acc := 0.0) -> void:
+	# every bright, short, flash-like sprite goes through the flash budget here, whoever calls it (muzzle cores, beam
+	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
+	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or (_flash_sized(p, maxf(s0, s1)) and not flash_ok(t))):
+		kind = 18
+		i = minf(i, 3.0) * 0.4
+		life = maxf(life * 3.0, 0.4)
 	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life), Vector4(col.r, col.g, col.b, i),
 		Vector4(s0 * unit, s1 * unit, kind, rng.randf()), Vector4(0.0, acc, drag, spin)))
@@ -311,17 +323,41 @@ func rcone(axis: Vector3, spread: float) -> Vector3:
 # ---------------------------------------------------------------- flash budget (API.md 8)
 
 # Ask to put a counted flash on screen at time T. Returns true when it may draw as a bright flash; false means draw the
-# calm version (ring, soft lift, sparks). Flashes inside 0.33 s of a counted one merge into it (free).
+# calm version (soft lift, ring, sparks) and no light. Flashes inside FLASH_WINDOW (0.12 s) of a counted one merge
+# into it (free). The budget is a trailing window: the second up to T may hold at most FLASH_CAP counted flashes,
+# this one included. Volleys book impacts ahead of time, so a flash already booked later than T must also keep its own
+# trailing second within the cap once T is in it; that is the second loop (without it a late booking could break the
+# cap for a flash booked earlier).
 func flash_ok(T: float) -> bool:
 	if reduce_flashing:
 		return false
-	var near = 0
+	var near := PackedFloat64Array()
 	for f in _flashes:
 		if absf(f - T) < FLASH_WINDOW:
 			return true
 		if absf(f - T) < 1.0:
-			near += 1
-	if near >= FLASH_CAP:
+			near.append(f)
+	# the trailing second (T - 1, T]
+	var c := 1
+	for f in near:
+		if f <= T:
+			c += 1
+	var ok := c <= FLASH_CAP
+	# flashes booked after T: their trailing seconds (f - 1, f] now hold T too
+	if ok:
+		for f2 in near:
+			if f2 > T:
+				var c2 := 1
+				for f in near:
+					if f > f2 - 1.0 and f <= f2:
+						c2 += 1
+				if c2 > FLASH_CAP:
+					ok = false
+					break
+	if not ok:
+		_refused.append(T)
+		if _refused.size() > 64:
+			_refused = _refused.slice(32)
 		return false
 	_flashes.append(T)
 	flash_log.append(T)
@@ -346,11 +382,30 @@ func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.U
 # ---------------------------------------------------------------- lights
 
 # shape 0 decay, 1 sustain (fades in and out), 2 ramp up (charge)
+# A big decaying light is a flash on the hulls it lights: it goes through the budget like a sprite (merging with the
+# pop it comes with). A refused flash draws no light at all: a light that goes with a flash the budget turned down
+# (within FLASH_WINDOW of it) is dropped, whatever its size. In reduce-flashing mode decay lights rise lower and slower.
 func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 0) -> void:
+	if shape == 0 and not reduce_flashing:
+		for f in _refused:
+			if absf(f - t) < FLASH_WINDOW:
+				return
+		if peak >= FLASH_LIGHT and not flash_ok(t):
+			return
 	if reduce_flashing and shape == 0:
 		peak *= 0.45
 		life *= 1.8
 	_lev.append([p, t, life, peak, col, shape])
+
+
+# Whether a sprite of this size at p is big enough on screen to count as a flash (WCAG counts flashes by area; small
+# muzzle flashes and sparks at battle zoom are below it). With no camera every bright sprite counts.
+func _flash_sized(p: Vector3, size: float) -> bool:
+	if camera == null or not is_instance_valid(camera):
+		return true
+	var d := maxf(camera.global_position.distance_to(p), 0.01)
+	var h := 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5)
+	return size * unit / h >= FLASH_SCREEN
 
 
 func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3) -> Dictionary:
@@ -375,7 +430,7 @@ func _update_lights() -> void:
 		var I = 0.0
 		match int(e[5]):
 			0: I = pow(1.0 - u, 2.0)
-			1: I = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * (0.88 + 0.12 * sin(now * 50.0))
+			1: I = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.85, 1.0, u)) * (1.0 if reduce_flashing else 0.88 + 0.12 * sin(now * 50.0))
 			2: I = u * u
 		ev.append([e[0], I * float(e[3]), e[4]])
 	_lev = keep
@@ -547,6 +602,60 @@ func ability(id: String, _ab := "") -> void:
 		(ships[id] as SHIP).pulse(self, 1.0)
 
 
+# A weapon mark on a ship's hull without a volley (API.md 14): look as in volley's looks plus "board" (a blown boarding
+# hatch) and "ram"; at a hull point (world) or, with none, a visible point of the struck section (sec 0 eng, 1 mid, 2 prow).
+func hull_mark(id: String, look: String, w := 2, world_p := Vector3.INF, dir := Vector3.ZERO, sec := 1) -> void:
+	if not ships.has(id):
+		return
+	var s: SHIP = ships[id]
+	var lp: Vector3
+	var ln: Vector3
+	if world_p == Vector3.INF:
+		var h: Dictionary = s.hull.random_sample(sec, 1.5) if look != "ram" else {"p": s.hull.bow, "n": Vector3(1, 0, 0)}
+		lp = h["p"]
+		ln = h["n"]
+	else:
+		var inv: Transform3D = s.xf().affine_inverse()
+		var hp: Dictionary = s.hull.ray(inv * world_p + (inv.basis * dir).normalized() * -s.hull.L, (inv.basis * dir).normalized()) if dir != Vector3.ZERO else {}
+		lp = hp["p"] if not hp.is_empty() else inv * world_p
+		ln = hp["n"] if not hp.is_empty() else (lp - s.hull.c).normalized()
+	var ld: Vector3 = (s.xf().basis.inverse() * dir).normalized() if dir != Vector3.ZERO else -ln
+	s.add_mark(self, look, w, lp, ln, ld)
+
+
+# The rules' "board" event (API.md 11): the boarding party's breach in the target's hull at a plausible boarding point
+# (the side facing the attacker, mid section, near the waterline of the hull's side, never on top or below), venting
+# gas and lit from inside while the fight goes on (about 3 s), then a dark gash. Returns seconds until it has played.
+func board(attacker_id: String, target_id: String, _result := "") -> float:
+	if not ships.has(target_id):
+		return 0.0
+	var s: SHIP = ships[target_id]
+	var toward: Vector3 = ships[attacker_id].to_world(ships[attacker_id].hull.c) if ships.has(attacker_id) else s.to_world(s.hull.c + Vector3(0, 0, s.hull.W * 3.0))
+	var inv: Transform3D = s.xf().affine_inverse()
+	var tl: Vector3 = inv * toward
+	var side := Vector3(0, 0, signf(tl.z - s.hull.c.z) if absf(tl.z - s.hull.c.z) > 1e-3 else 1.0)
+	var from: Vector3 = s.hull.c + side * (s.hull.W * 2.0 + s.hull.L * 0.2) + Vector3(s.hull.L * 0.05, 0, 0)
+	var h: Dictionary = s.hull.ray(from, -side)
+	if h.is_empty():
+		return 0.0
+	var lp: Vector3 = h["p"]
+	var ln: Vector3 = h["n"]
+	s.add_mark(self, "board", 2, lp, ln, -ln)
+	var wp: Vector3 = s.to_world(lp)
+	var wn: Vector3 = s.dir_world(ln)
+	var k: float = s.scale_k()
+	var T: float = now + 0.1
+	# a pried-open hatch: a short, dull blast (not a counted flash), then gas venting and sparks from inside
+	spr(wp + wn * 0.3 * k, T, 0.4, Color(1, 0.65, 0.35), 2.5, 0.6 * k, 1.8 * k, 2)
+	for j in 14:
+		spr(wp + wn * 0.2 * k, T + 0.15 + j * 0.2, 1.4, Color(0.62, 0.66, 0.74), 0.25, 0.3 * k, 2.2 * k, 7, (wn + rdir() * 0.25).normalized() * 4.0 * k, 0.8)
+	for j in 18:
+		stk(wp, T + 0.3 + randf() * 2.6, 0.3 + randf() * 0.3, Color(1, 0.7, 0.4), 4.0, 0.05, 0.08 * k, 1, (wn + rdir() * 0.6).normalized() * (5 + randf() * 8) * k, 2.0)
+	light(wp + wn * 0.6 * k, T, 3.0, 2.5, Color(1, 0.6, 0.3), 1)
+	shake(T, 0.06, wp)
+	return 3.2
+
+
 func command(id: String, _cmd := "") -> void:
 	if ships.has(id):
 		(ships[id] as SHIP).pulse(self, 1.6)
@@ -613,10 +722,10 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	tmp.global_position = at
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
-	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.PETAL, 0), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
+	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
 		mat(SH.RIBBON, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1)]
 	if not compat:
-		mats.append_array([mat(SH.DECAL, -2, "#define POM\n"), mat(SH.DECAL, -2), mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
+		mats.append_array([mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
 	for i in mats.size():
 		var mi = MeshInstance3D.new()
 		mi.mesh = box
@@ -629,17 +738,20 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	harr[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 0, 0)])
 	harr[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.BACK, Vector3.BACK, Vector3.BACK])
 	harr[Mesh.ARRAY_COLOR] = PackedColorArray([Color.WHITE, Color.WHITE, Color.WHITE])
+	var c4 = PackedFloat32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
+	for ci in [Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1, Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3]:
+		harr[ci] = c4
 	var hm = ArrayMesh.new()
-	hm.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, harr)
-	for sd in [Vector3.BACK, Vector3.FORWARD]:
+	hm.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, harr, [], {}, BREACH.custom_flags())
+	for sd in [Vector3.BACK, Vector3.FORWARD, Vector3.UP]:
 		var hmi = MeshInstance3D.new()
 		hmi.mesh = hm
-		hmi.material_override = mat(SH.HOLE, 0)
+		hmi.material_override = mat(SH.HOLE, 0) if sd != Vector3.UP else mat(SH.MARK, 1)
 		hmi.position = sd * unit * 0.5
 		hmi.rotation.y = 0.0 if sd == Vector3.BACK else PI
 		hmi.scale = Vector3.ONE * unit * 2.0
 		tmp.add_child(hmi)
-	# overlays (death pieces and cracks) over a plain lit material, a Decal, and a debris body
+	# overlays (death pieces and cracks) over a plain lit material, and a debris body
 	var base = StandardMaterial3D.new()
 	for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1)]:
 		var mi = MeshInstance3D.new()
@@ -647,12 +759,6 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = base
 		mi.material_overlay = ov
 		tmp.add_child(mi)
-	if not compat:
-		var d = Decal.new()
-		d.size = Vector3(2, 2, 2) * unit
-		d.texture_albedo = dstate["tex"]["scorch"][0]
-		d.texture_emission = dstate["tex"]["ember"]
-		tmp.add_child(d)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0]

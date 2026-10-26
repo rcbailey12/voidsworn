@@ -117,9 +117,15 @@ func _run() -> void:
 	for i in 600:
 		fx.step(1.0 / 60.0)
 	fx.reduce_flashing = true
+	var counted_before: int = fx.flash_log.size()
 	fx.volley("voidsworn_1", "torp", "chorus_0", {"weapon_id": "torp"})
+	fx.volley("hegemony_0", "battery", "voidsworn_1", {"weapon_id": "hbattery"})
 	for i in 200:
 		fx.step(1.0 / 60.0)
+	if fx.flash_log.size() != counted_before:
+		push_error("reduce flashing still counted %d flashes" % (fx.flash_log.size() - counted_before))
+		errors += 1
+	fx.reduce_flashing = false
 	fx.clear_wreck("hegemony_0")
 	fx.remove_ship("corsair_0")
 	# squadrons come from view() with sec and sh set to null

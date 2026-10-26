@@ -24,7 +24,7 @@ fx.setup({
 - For stills and tests: `fx.manual = true` and then `fx.step(dt)` once per frame; the clock then only moves with `step`.
 - On the loading screen, after ships, lights and world are built: `await fx.warmup(cam)` (draws every effect material once, so the first lance, shield ripple or death never stalls on a shader compile).
 - Clean quit: fx releases its GPU resources when its node leaves the tree; `FX.clear_static()` releases every live fx at once (G2's `quit_clean`).
-- Safe mode (the Compatibility renderer, `play_godot_safe.bat`): fx and world detect it and drop Decals, raymarched volumes, distortion and the lens; everything else plays.
+- Safe mode (the Compatibility renderer, `play_godot_safe.bat`): fx and world detect it and drop raymarched volumes, distortion and the lens; everything else plays. Hull damage and every weapon mark draw in safe mode too (they are hull geometry plus an overlay mesh, not Decals); the ion burn uses a cheaper pattern there.
 - Physics: fx makes its own Jolt rigid bodies (death chunks, debris) with `gravity_scale = 0`, so it works whatever the project gravity is. Please keep `3d/physics_engine="Jolt Physics"` in project.godot (it is the engine the A3 proof measured).
 
 ## 2. Ships
@@ -57,7 +57,7 @@ Call it after the events that changed a ship have been animated (or simply after
 | Stage | When (per section, hp fraction) | Look |
 |---|---|---|
 | 0 intact | above 0.8 | clean hull |
-| 1 scorched | 0.6 to 0.8 | scorch marks, a thin wisp of smoke |
+| 1 scorched | 0.6 to 0.8 | scorch spreading over the plating round the struck area (an overlay on the hull that glows faintly, then cools dark), a thin wisp of smoke |
 | 2 dented | 0.4 to 0.6 | the hull itself dents and wrinkles; a wider blackened patch, sparking wires, a thin gas jet |
 | 3 holed | 0.2 to 0.4 | a hole cut in the real hull: plates bent back, the ring round it buckled, a cavity with frames, decks and conduits lit by fire inside; embers, sparks at torn conduits, gas, thin smoke; debris shedding |
 | 4 hull breach | below 0.2, or the section is broken | the hole grows, plus a buckled panel and (medium ships up) a bite out of an upper edge, so the silhouette changes; streaming debris, spark showers, dull internal pops |
@@ -65,6 +65,7 @@ Call it after the events that changed a ship have been animated (or simply after
 
 - Thresholds are Claude's starting values (vetoable, tuned on screen).
 - A stage that goes up while shots are still flying at that ship waits until they land, so holes open when the hit lands, not before.
+- A section whose stage falls back to 1 or 0 (repair) also loses its weapon marks (section 14), so the hull never disagrees with the game.
 - `burning` adds deck fires. A broken `eng` section makes the engines sputter and smoke. Shields rising again (`sh`) play a short faction-coloured regen shimmer.
 
 ## 3. Weapons
@@ -84,6 +85,9 @@ var r = fx.volley(attacker_id, kind, target_id, opts)
   - `late`: true when the shots are fired on the move (`move.late_fire`); fx fires from where the ship is at that moment.
 - The look per kind (A5 sheets, R16): battery ripples gun by gun with muzzle blast, flame tongue, smoke ring and tracer; flak bursts in the air; lance charges, holds a white-hot beam and cuts a molten trench; torpedo vents, flies a trackable body with a long plume and lands as the heaviest blast; bio spits wobbling globs that splash and corrode; gauss charges its coils, crosses almost invisibly and punches through with an exit spray; sq craft fly a strafing run.
 - Guns fire from mounts on the side facing the target and never backward (CLAUDE.md); a target behind the ship is engaged by turret mounts on top.
+- Every hull hit leaves its weapon's own mark in the hull itself (R43, section 14): a lance burn-through, a light blue plasma splash crater with a droplet fan, a gauss entry with a stress ring and a spalled exit, a torpedo blast hole with plates blown inward, flak pockmarks, Chorus acid pitting with spines, an ion branching burn, a ram crumple (and a smaller one on the rammer's bow). Shield-only hits leave no hull mark.
+- Every hit also moves the ship (R50, section 7): mass-scaled, by the weapon's momentum.
+- Plasma is light blue whoever fires it (Ryan, Oct 26): bolt, splash and crater.
 - `impacts` are the moments to show floating numbers; `done` is when G2 may start the next event (G2 can start earlier; effects overlap fine).
 
 Travelling torpedoes (B3; ready now, for when the rules change lands):
@@ -115,6 +119,8 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 
 - `fx.ability(id, ab)` and `fx.command(id, cmd)`: a short faction-coloured pulse on the ship (a stand-in until each ability gets its own look; coming).
 - `fx.launch(carrier_id, squadron_id)`: bay flare and craft streaming out toward the new wing.
+- `var t = fx.board(attacker_id, target_id, result)` on the rules' `board` event: a breach in the target's hull at a plausible boarding point (its side facing the attacker, mid section), venting gas and lit from inside for about 3 s, then a dark gash that stays as a mark. Returns seconds until it has played. (G2: this replaces the stub flash at the board event.)
+- `fx.hull_mark(id, look, w, world_p, dir, sec)`: a weapon mark without a volley (look as in volley, plus `board` and `ram`).
 - `fx.tick(id, kind)` for turn-start damage (`fire`, `acid`, `tidal`, `storm`): a small flare-up of that kind on the ship.
 - `fx.hull_point(id, section, toward)`: `{p, n}` in world space on the hull (section `"prow"`, `"mid"`, `"eng"` or `""`, on the side facing the point `toward`), for anything G2 wants to anchor there.
 
@@ -123,10 +129,17 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 - Shake is a trauma model (trauma squared, smooth noise, decays), positional only, applied to `cam.h_offset` and `cam.v_offset`. Battery light, lance and gauss medium, torpedo heavy, capital death heaviest, all inside the A5 ranges (0.15 to 0.30 s normally, 0.35 to 0.45 s only for capital deaths), and smaller with distance from the camera. `setup({"camera": null})` turns it off; then read `fx.shake_offset()` (a Vector2) and apply it yourself.
 - Hit pause never blocks input: fx slows its own clock for a few frames (2 to 6 frames on heavy hits, 7 to 12 on kills of big ships). G2 should multiply its own animation delta by `fx.anim_speed()` (1.0 normally, dips during a pause) so ship motion pauses with the effects.
 
+### Hit reactions (R50)
+
+A hit no longer just flashes: the ship reacts with its mass. A short shudder runs through the hull, a roll, pitch or yaw kick comes from where the hit lands, and attitude thrusters visibly fire (small gas puffs at the hull's corners, picked so their thrust opposes the motion) until the ship settles. Torpedoes and rams shove, shells and gauss slugs kick, light guns tap, lances and ions are energy and barely move a ship. Mass by class: a frigate takes a real jolt (a torpedo rolls it about 6 degrees and moves it about 3% of its length; settled in under 3 s); a super-dreadnought barely moves (a torpedo: about 1.4 degrees, 0.6% of its length; settles over 4 s). Heavy hits also make the drive stutter. The camera shake (above) scales with the hit and distance and follows `shake_scale`. Measured by `fx/test/fx_react_probe.gd`.
+
+**For G2 (shared root):** fx writes the ship root's `rotation.x` and `rotation.z` (roll and pitch; ShipView never writes them) while a reaction plays and sets them back to 0 when it settles. Yaw and the small drift are added to `rotation.y` and `position` only while `root.busy()` is false (ShipView writes position and yaw itself during a path); fx takes its own offset back out when the ship settles, and drops it when a path starts. G2's weighty movement (R50 part 2) can keep its own RCS puffs for turns and burns; fx's puffs only answer hits. If G2 later wants to own the whole root, `fx.ship(id)._ra` (angles) and `_pd` (drift) are the state to read instead.
+
 ## 8. Accessibility
 
-- At most 3 counted flashes per rolling second anywhere on screen (WCAG 2.3.2). Flashes landing within 0.12 s of each other (a salvo) count as one; over the budget, flashes draw as smoke and sparks without the bright core.
-- `fx.reduce_flashing = true`: no counted flashes at all. Bright pops become expanding rings, particle bursts and a gentle glow rise; muzzle flashes become smoke-forward; fire flicker becomes slow breathing; effect shake halves.
+- At most 3 counted flashes in any rolling second anywhere on screen (WCAG 2.3.1). Flashes landing within 0.12 s of each other (a salvo) count as one (`FLASH_WINDOW` in fx.gd). The count is a trailing window: the second up to a flash may hold at most 3 counted flashes, that one included (a flash booked ahead by a volley also keeps its own trailing second within 3). Over the budget, a flash draws as a soft lift, smoke and sparks without the bright core, and draws no light.
+- What counts: every short (0.6 s or less), bright (intensity 4 or more) flash-like sprite (flash, fireball core, beam charge, impact flare) that covers at least 6% of the screen height, whoever spawns it (the check sits in `fx.spr`, so muzzle cores, beam contact, secondary pops and death flames are all covered), and every decaying event light with a peak of 8 or more. Smaller flashes and sparks are under the WCAG area threshold at battle zoom and are free; close up they count. `fx.flash_log` lists every counted flash (the smoke test fails if any rolling second holds more than 3).
+- `fx.reduce_flashing = true`: no counted flashes at all, and every bright flash-like sprite becomes a soft lift whatever its size (WCAG 2.3.2). Bright pops become expanding rings, particle bursts and a gentle glow rise; muzzle flashes become smoke-forward; fire flicker becomes slow breathing; effect shake halves.
 - `fx.shake_scale` (0..1) at any time.
 
 ## 9. World (`godot/world/`)
@@ -167,7 +180,8 @@ Tonemapper, exposure, bloom threshold and the dark-hull lift are chosen in look.
 | `wreck` | nothing: the wreck is already there |
 | `fled` | `jump_out(unit)` |
 | `ability`, `command` | `ability(unit, ab)`, `command(unit, id)` |
-| `ram` | `volley(unit, "torp", target, {weapon_id: "ram", hits: [...]})` (ram impact look: coming) |
+| `ram` | `volley(unit, "torp", target, {weapon_id: "ram", hits: [...]})`: the ram's crumple on the target, a smaller one on the rammer, the biggest shove |
+| `board` | `board(unit, target, result)` |
 | any batch end | `sync_ship(id, unit)` for the units that changed |
 
 ## 12. Cost
@@ -206,7 +220,7 @@ func play_event(e: Dictionary) -> float:     # returns how long to wait before t
 # each frame: your animation delta *= fx.anim_speed()
 ```
 
-## 14. Hull damage geometry (generic cut now, A4's pre-cut parts when present)
+## 14. Hull damage geometry and weapon marks (generic cut now, A4's pre-cut parts when present)
 
 From stage 2 the hull itself changes (fx_breach.gd). The rebuild runs on a worker thread from the hull's original arrays
 (about 0.6 s for a 38k-triangle hull on a desktop CPU, 1.5 to 3 s in the cloud sandbox) and is applied in one frame;
@@ -220,6 +234,26 @@ The death pieces are re-cut from the damaged hull afterwards.
 | 2 | dent: the skin pushed in with wrinkles (radius 5% of the ship's length) |
 | 3 | hole, radius 3% of length: triangles inside a torn outline removed (radial tears between 4 or 5 petals), the ring round it peeled back as bent plates, a wider ring buckled in; a cavity behind it from the removed skin pushed inward (rubble floor, frames and decks sliced through it, conduits, cables, the plates' backs, the skin's cut thickness), lit by a fire point inside |
 | 4 | the hole at 4.6%, a buckled panel elsewhere in the section, and (medium ships up) a 3.2% hole on an upper edge, which through thin hull goes right through and bites the silhouette |
+
+**Weapon marks (R43).** Every hull hit adds a mark entry at the hit point (fx_breach.marks_for, by look and weight), built by the same rebuild as the breaches: the mark changes the hull geometry where its kind needs it and lays an overlay skin with its surface (char, molten metal cooling white to red to black, light blue plasma slag, spall, acid etching, electrical burns, scraped metal).
+
+| Look | Mark | Geometry | Surface |
+|---|---|---|---|
+| lance, needle, pulsar, las | burn-through | a narrow slot cut across the line of fire with raised molten lips (through thin hull) | molten lips white, then red, then black; temper colours past them |
+| plasma (laser, turbo, hturbo) | splash crater | a melted bowl, no hole | light blue slag pockets that set as dark glass, slag runs, a fan of droplets thrown out along the shot |
+| macro, battery, rockets | shell crater | a shallow crater | char fan, brief orange slag |
+| auto, scatter, guns | chips | small pits, nothing torn through | pockmarks and scratches |
+| gauss | entry and exit | a small clean hole; a bigger exit on the far side with plates spalled outward | a pale, broken stress ring with radial cracks round the entry (reads at fleet distance) |
+| torp, star | blast hole | a wide hole with its plates blown inward, a cavity with frames and decks, fire inside | char fan |
+| flak variants | pockmarks | a stippled patch, never through the hull | grey rash, brief sparkle |
+| spine, tendril, spores | acid pitting | pits, a few eaten through; spines stuck in along the shot | wet green-black etching that spreads for a few seconds, then stops and goes matte |
+| ion, doom | electrical burn | none | a branching (Lichtenberg) burn, arcs crawling it at first, then a dark etched fern |
+| ram | crumple | a deep fold of the plating at the bow or the struck side | scraped bare metal, no glow |
+| board | boarding breach | a pried square hatch, plates bent out, lit inside | char |
+
+Budget: at most 4 marks per hull section and 12 per ship (sections 0 eng, 1 mid, 2 prow). A repeat of the same mark close by (anywhere in the section for a torpedo crater or an ion burn) rebuilds the old one bigger and fresh (up to 1.6 times) instead of placing a twin; past the section budget the oldest shell crater or pockmark goes first, then the oldest mark. A section repaired back to stage 1 or 0 loses its marks. The section breaches (stages 2 to 4) and the stage scorch come on top of the budget.
+
+Cost (cloud sandbox CPU, about three times slower than Ryan's PC; the PC numbers are in the gallery README once measured): a single mark rebuilds a 38k-triangle hull in 70 to 260 ms on a worker thread; the main thread only swaps in the meshes built there (a few ms). All rebuilds start from the hull's original arrays and keep its vertex format, so nothing compiles.
 
 **A4 pre-cut parts (agreed with A4, Oct 26; fx wires them in when the first files land).** Per ship:
 
