@@ -48,7 +48,6 @@ var _sec_nodes = [[], [], []]
 var _sec_lights = [[], [], []]
 var _burn_nodes: Array = []
 var _burning = false
-var _hit_decals: Array = []
 var _dmg_root: Node3D
 var _seed = 0
 var _anchors = {}          # where each section's damage sits (stays put as the stage grows)
@@ -59,6 +58,23 @@ var _dmg_dirty = false
 var _dmg_job: Dictionary = {}
 var _hole_nodes: Array = []
 var _hole_lights: Array = []
+var _marks: Array = []     # weapon marks on the hull (fx_breach.Ent), oldest first, at most BREACH.MARK_CAP
+var _mark_n = 0
+var mark_ms: Array = []    # per rebuild: [entries, worker ms, apply ms] (the gallery and probes report it)
+# hit reaction (R50): a damped angular kick (x roll, y yaw, z pitch, radians) that thrusters arrest, a small drift
+# (ship frame) that thrusters stop, and a shudder; fx owns the root's roll and pitch (G2 never writes rotation.x or z),
+# and adds yaw and drift only while G2 is not moving the ship (G2 writes position and yaw during a path)
+var _ra := Vector3.ZERO
+var _rv := Vector3.ZERO
+var _pd := Vector3.ZERO
+var _pv := Vector3.ZERO
+var _shud := 0.0
+var _shud_t := 0.0
+var _app_pos := Vector3.ZERO
+var _app_yaw := 0.0
+var _reacting := false
+var _rcs_next := 0.0
+var _stutter_until := -1.0
 
 
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
@@ -197,7 +213,8 @@ func _build_trails(fx) -> void:
 func update(fx, dt: float) -> void:
 	if gone or not is_instance_valid(root):
 		return
-	var pos = root.global_position
+	_react_step(fx, dt)
+	var pos = root.global_position - root.get_parent_node_3d().global_transform.basis * _app_pos if root.get_parent_node_3d() != null else root.global_position
 	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
 	_last_pos = pos
 	_moving = maxf(_moving - dt, 0.0)
@@ -206,8 +223,13 @@ func update(fx, dt: float) -> void:
 	var want = 0.0 if dead else (engine_level if _moving <= 0.0 else maxf(engine_level, 1.6))
 	_eng_cur = lerpf(_eng_cur, want, clampf(dt * 4.0, 0.0, 1.0))
 	if _eng_mat != null:
-		_eng_mat.set_shader_parameter("gate", clampf(_eng_cur, 0.0, 2.0))
-		_eng_rib_mat.set_shader_parameter("gate", clampf(_eng_cur, 0.0, 2.0))
+		var g := clampf(_eng_cur, 0.0, 2.0)
+		if fx.now < _stutter_until:
+			# a heavy hit makes the drive stumble: the plume gutters and catches again
+			var flick := 1.0 if fposmod(sin(fx.now * 37.0 + float(_seed)) * 43758.5, 1.0) > 0.45 else 0.0
+			g *= 0.3 + 0.7 * maxf(flick, smoothstep(_stutter_until - 0.25, _stutter_until, fx.now))
+		_eng_mat.set_shader_parameter("gate", g)
+		_eng_rib_mat.set_shader_parameter("gate", g)
 		_eng_rib_mat.set_shader_parameter("lenk", clampf(0.5 + 0.5 * _eng_cur, 0.0, 1.8))
 	_update_trails(fx, moved > 1e-4)
 	if _shield_mi != null:
@@ -452,6 +474,122 @@ func _regen(fx) -> void:
 	_shield_until = maxf(_shield_until, fx.now + 1.05)
 
 
+# ---------------------------------------------------------------- hit reaction (R50)
+
+# How much a ship of this weight resists a shove (craft, light, medium, heavy, capital): capital ships barely move.
+const REACT_MASS := [0.6, 1.0, 2.2, 5.0, 12.0]
+# How fast its thrusters bring it back (a frigate snaps back, a capital ship settles slowly).
+const REACT_FREQ := [5.0, 4.2, 3.2, 2.4, 1.8]
+
+
+# A hit's physical reaction. impulse: the weapon's momentum (fx_weapons.REACT_IMPULSE: torpedoes and rams shove,
+# shells and slugs kick, lances and ions barely at all); lp, ldir: hit point and shot direction in the ship frame.
+func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3) -> void:
+	if dead or gone or impulse <= 0.0:
+		return
+	var m: float = REACT_MASS[clampi(weight, 0, 4)]
+	var L: float = maxf(hull.L, 1.0)
+	var d := ldir.normalized()
+	var r: Vector3 = (lp - hull.c) / L
+	# the angular kick: torque from where the hit lands, about the ship's own axes (x roll, y yaw, z pitch)
+	# lever arms never vanish: a hull is not a point, and a hit near the middle still rocks it a little
+	var hh: float = maxf(hull.H / L, 0.05) * 0.5
+	r.y = signf(r.y if absf(r.y) > 1e-4 else 1.0) * maxf(absf(r.y), hh * 0.6)
+	r.x = signf(r.x if absf(r.x) > 1e-4 else 1.0) * maxf(absf(r.x), 0.08)
+	var tq := r.cross(d)
+	# turning inertia grows faster than mass (a long hull resists spin more than it resists a shove)
+	_rv += Vector3(tq.x * 2.4, tq.y * 0.8, tq.z * 1.2) * impulse * 0.9 / pow(m, 1.25)
+	# a drift along the shot, in world units scaled to the hull (a frigate jolts, a capital ship barely translates)
+	_pv += d * impulse * L * 0.03 / m
+	# the shudder: a short, damped high-frequency vibration through the hull
+	_shud = maxf(_shud, minf(impulse / m, 4.0) * 0.0018)
+	_shud_t = fx.now
+	if impulse >= 2.5:
+		_stutter_until = maxf(_stutter_until, fx.now + 0.8)
+	_reacting = true
+
+
+func _react_step(fx, dt: float) -> void:
+	if not _reacting:
+		return
+	var w: float = REACT_FREQ[clampi(weight, 0, 4)]
+	var z := 0.85
+	var h := minf(dt, 1.0 / 30.0)
+	# thrusters arrest the spin and the drift: a damped spring per axis
+	_rv += (-_ra * w * w - _rv * 2.0 * z * w) * h
+	_ra += _rv * h
+	_pv += (-_pd * w * w * 0.5 - _pv * 2.0 * z * w * 0.7) * h
+	_pd += _pv * h
+	var age: float = fx.now - _shud_t
+	var sh := _shud * exp(-age / 0.22)
+	var shx := sh * sin(age * 95.0 + 1.3)
+	var shz := sh * 0.7 * sin(age * 121.0)
+	_rcs(fx)
+	var busy: bool = root.has_method("busy") and bool(root.call("busy"))
+	# roll and pitch are fx's own: absolute
+	root.rotation.x = _ra.x + shx
+	root.rotation.z = _ra.z + shz
+	# yaw and drift: only while G2 is not driving the root (it sets position and yaw itself during a path)
+	if busy:
+		_app_pos = Vector3.ZERO
+		_app_yaw = 0.0
+	else:
+		var want_pos: Vector3 = Basis(Vector3.UP, root.rotation.y) * _pd
+		root.position += want_pos - _app_pos
+		_app_pos = want_pos
+		root.rotation.y += _ra.y - _app_yaw
+		_app_yaw = _ra.y
+	if _ra.length() < 6e-4 and _rv.length() < 1e-3 and _pd.length() < hull.L * 1e-4 and _pv.length() < hull.L * 2e-4 and sh < 1e-4:
+		root.rotation.x = 0.0
+		root.rotation.z = 0.0
+		if not busy:
+			root.position -= _app_pos
+			root.rotation.y -= _app_yaw
+		_app_pos = Vector3.ZERO
+		_app_yaw = 0.0
+		_ra = Vector3.ZERO
+		_rv = Vector3.ZERO
+		_pd = Vector3.ZERO
+		_pv = Vector3.ZERO
+		_shud = 0.0
+		_reacting = false
+
+
+# Attitude thrusters visibly fighting the spin and the drift: short gas puffs at the hull's corners, picked so their
+# thrust opposes the motion, while the ship is still turning or sliding noticeably.
+func _rcs(fx) -> void:
+	if squadron or fx.now < _rcs_next:
+		return
+	var spin := _rv.length()
+	var slide := _pv.length() / maxf(hull.L, 1.0)
+	if spin < 0.01 and slide < 0.004:
+		return
+	_rcs_next = fx.now + 0.07
+	var L: float = hull.L
+	var W: float = hull.W
+	var H: float = hull.H
+	var best: Array = []
+	for sx in [-0.32, 0.32]:
+		for sy in [-0.45, 0.45]:
+			for sz in [-0.5, 0.5]:
+				var rp: Vector3 = hull.c + Vector3(sx * L, sy * H, sz * W)
+				for t in [Vector3(0, -signf(sy), 0), Vector3(0, 0, -signf(sz))]:
+					# thrust t at rp: torque (rp - c) x t must oppose the spin; force t must oppose the drift
+					var score: float = ((rp - hull.c) / L).cross(t).dot(_rv) * 4.0 + t.dot(_pv) / L * 40.0
+					best.append([score, rp, t])
+	best.sort_custom(func(a: Array, b: Array) -> bool: return float(a[0]) < float(b[0]))
+	var k := scale_k()
+	for j in 2:
+		if float(best[j][0]) >= 0.0:
+			break
+		var rp: Vector3 = best[j][1]
+		var t: Vector3 = best[j][2]
+		var wp: Vector3 = to_world(rp)
+		var gv: Vector3 = dir_world(-t) * (5.0 + fx.rng.randf() * 3.0) * k
+		fx.spr(wp, fx.now, 0.35, Color(0.85, 0.88, 0.95), 0.6, 0.12 * k, 0.9 * k, 7, gv, 2.5)
+		fx.spr(wp, fx.now, 0.06, Color(0.9, 0.95, 1.0), 1.5, 0.08 * k, 0.15 * k, 18)
+
+
 # ---------------------------------------------------------------- staged damage (API.md 2)
 
 func sync(fx, u: Dictionary) -> void:
@@ -512,6 +650,8 @@ func _apply_stages(fx, want: Array) -> void:
 			var up: bool = int(want[i]) > int(stage[i])
 			stage[i] = int(want[i])
 			_build_section(fx, i, up)
+			if not up and int(want[i]) <= 1:
+				_repair_marks(fx, i)
 	var sp: bool = int(stage[0]) >= 3
 	if sp != _eng_sputter:
 		_eng_sputter = sp
@@ -561,11 +701,29 @@ func _t0(a: Dictionary, st: int, fx) -> float:
 # buckled panel and (medium ships up) a bite out of an upper edge.
 func _plan(fx, i: int, st: int) -> Array:
 	var out: Array = []
-	if squadron or weight <= 0 or st < 2:
+	if squadron or weight <= 0 or st < 1:
 		return out
 	var L: float = hull.L
 	var sd = float(posmod(_seed, 1000)) * 0.01 + i * 3.7
 	var a = _anchor(i, "a")
+	# scorch spreading over the plating round the damage, wider each stage, plus smaller burns elsewhere in the section
+	# (an overlay on the hull, not a Decal: it cools from glowing to dark like the weapon marks and draws in safe mode)
+	var sc = BREACH.surface(a["p"], a["n"], L * (0.03 + 0.034 * st), sd + 0.7, BREACH.S_SCORCH)
+	sc.t0 = _t0(a, -st, fx)
+	sc.sec = i
+	sc.heat = 0.3 if st >= 3 else 0.15
+	out.append(sc)
+	var rs := RandomNumberGenerator.new()
+	rs.seed = _seed + i * 7919 + 5
+	for j in [0, 1, 2, 3, 3][st]:
+		var h: Dictionary = hull.random_sample(i, 2.5)
+		var s2 = BREACH.surface(h["p"], h["n"], L * (0.015 + 0.012 * rs.randf()), sd + 5.0 + j, BREACH.S_SCORCH)
+		s2.t0 = sc.t0
+		s2.sec = i
+		s2.heat = 0.2
+		out.append(s2)
+	if st == 1:
+		return out
 	if st == 2:
 		out.append(BREACH.dent(a["p"], a["n"], L * 0.05, L * 0.05 * 0.22, sd))
 		return out
@@ -594,13 +752,14 @@ func _dmg_request(fx) -> void:
 	var ents: Array = []
 	for i in 3:
 		ents.append_array(_ents[i])
+	ents.append_array(_marks)
 	if ents.is_empty() and _orig.is_empty():
 		return
 	if _orig.is_empty():
 		_orig = BREACH.gather(self)
 		if _orig.is_empty():
 			return
-	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "cell": hull.L / 16.0, "out": {}}
+	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "cell": hull.L / 16.0, "ovl": hull.L * 0.0006, "out": {}, "hull": hull}
 	_dmg_job = job
 	_dmg_task = WorkerThreadPool.add_task(func() -> void: job["out"] = BREACH.compute(job))
 	fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))
@@ -624,7 +783,9 @@ func flush_damage(fx) -> void:
 	_dmg_task = -1
 	if dead or gone:
 		return
+	var t_ap := Time.get_ticks_usec()
 	BREACH.apply(fx, self, _dmg_job)
+	mark_ms.append([(_dmg_job["ents"] as Array).size(), int(_dmg_job.get("out", {}).get("ms", -1)), (Time.get_ticks_usec() - t_ap) / 1000.0])
 	# the death pieces are cut from the hull as it is now, holes and all
 	if has_meta("cut_job") and not has_meta("cut_task"):
 		remove_meta("cut_job")
@@ -632,6 +793,101 @@ func flush_damage(fx) -> void:
 	if _dmg_dirty:
 		_dmg_dirty = false
 		_dmg_request(fx)
+
+
+# A weapon's own mark on the hull where a shot landed (R43): look and weight pick it (fx_breach.marks_for); lp, ln and
+# ldir are the hit point, its normal and the shot's direction in the ship frame. A fresh hit on an old mark of the same
+# style grows and reheats it instead of stacking more geometry (_place_mark has the budget).
+func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3) -> void:
+	if squadron or weight <= 0 or dead or gone:
+		return
+	_mark_n += 1
+	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction)
+	if es.is_empty():
+		return
+	for e in es:
+		e.t0 = fx.now
+		e.sec = hull.section_of(e.c.x)
+		_place_mark(fx, e)
+	_dmg_request(fx)
+
+
+# One new mark into the ship's list (R43 budget). A repeat of the same style close by (anywhere in the section for a
+# torpedo crater or an ion tree) rebuilds the old mark bigger and fresh instead of placing a twin. Entries are never
+# changed in place (a worker may be reading them): a grown mark is a new entry. Past SEC_MARK_CAP in a section the
+# oldest light mark (shell crater, pockmarks) goes first, then the oldest; past MARK_CAP the oldest on the ship.
+func _place_mark(fx, e) -> void:
+	var whole_sec: bool = e.style in [BREACH.S_BLAST, BREACH.S_ION]
+	for j in _marks.size():
+		var o = _marks[j]
+		if o.style != e.style or o.sec != e.sec or o.style in [BREACH.S_GAUSS_IN, BREACH.S_GAUSS_OUT]:
+			continue
+		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
+			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
+			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.c, o.n, o.ldir, o.seed_v, faction, g)
+			if o.part_i < es2.size():
+				var n2 = es2[o.part_i]
+				n2.t0 = fx.now
+				n2.sec = o.sec
+				_marks.remove_at(j)
+				_marks.append(n2)
+				return
+	_marks.append(e)
+	var in_sec: Array = []
+	for o in _marks:
+		if o.sec == e.sec:
+			in_sec.append(o)
+	if in_sec.size() > BREACH.SEC_MARK_CAP:
+		var drop = in_sec[0]
+		for o in in_sec:
+			if o != e and o.style in [BREACH.S_SHELL, BREACH.S_FLAK]:
+				drop = o
+				break
+		_marks.erase(drop)
+	while _marks.size() > BREACH.MARK_CAP:
+		_marks.pop_front()
+
+
+# Repair (a section's stage falls back to 1 or 0): its weapon marks go too, so the hull never disagrees with the game.
+func _repair_marks(fx, i: int) -> void:
+	var keep: Array = []
+	for o in _marks:
+		if o.sec != i:
+			keep.append(o)
+	if keep.size() != _marks.size():
+		_marks = keep
+		_dmg_request(fx)
+
+
+# A hull surface's arrays, read back once per ship and shared by the damage rebuild and the death cut (reading an 8K
+# hull's arrays back costs a long frame, so it happens once, and after damage the cut uses the rebuilt arrays).
+var _arr_cache := {}
+
+
+func arrays_of(am: ArrayMesh, si: int) -> Array:
+	var key := "%d:%d" % [am.get_instance_id(), si]
+	if not _arr_cache.has(key):
+		_arr_cache[key] = am.surface_get_arrays(si)
+	return _arr_cache[key]
+
+
+# The arrays the hull is drawn with now, per mesh instance and surface (rebuilt by damage, or the original).
+func current_arrays(mi: MeshInstance3D, si: int) -> Array:
+	if not _dmg_job.is_empty():
+		var outs: Array = (_dmg_job.get("out", {}) as Dictionary).get("surfs", [])
+		var surfs: Array = _dmg_job["surfs"]
+		for k in surfs.size():
+			if surfs[k]["mi"] == mi and int(surfs[k]["si"]) == si:
+				if k < outs.size() and outs[k] != null:
+					return outs[k]
+				return surfs[k]["arrays"]
+	var src = mi.mesh
+	if not _orig.is_empty():
+		for sd in _orig:
+			if sd["mi"] == mi:
+				src = sd["mesh"]
+				break
+	return arrays_of(src, si) if src is ArrayMesh else (src as Mesh).surface_get_arrays(si)
 
 
 func wait_damage() -> void:
@@ -664,13 +920,7 @@ func _build_section(fx, i: int, up: bool) -> void:
 	var picks: Array = []
 	for j in 6:
 		picks.append(hull.random_sample(i, 2.5))
-	# the blackened area round the damage grows with the stage; a few smaller marks elsewhere
-	_sec_nodes[i].append(DEATH.scorch_decal(fx, _dmg_root, ap, an, hull.L * (0.05 + 0.065 * st), false, r, 0.3 if st >= 3 else 0.15))
-	if st >= 3:
-		_sec_nodes[i].append(DEATH.scorch_decal(fx, _dmg_root, ap, an, hull.L * (0.03 + 0.035 * st), false, r, 0.0))
-	for j in [0, 1, 2, 3, 3][st]:
-		var h: Dictionary = picks[j]
-		_sec_nodes[i].append(DEATH.scorch_decal(fx, _dmg_root, h["p"], h["n"], hull.L * (0.03 + 0.025 * r.randf()), false, r, 0.2))
+	# the blackened area round the damage (fx_breach scorch overlays, planned in _plan) grows with the stage
 	# 1 and 2: a thin wisp of smoke from the struck area (from 3 the hole makes its own)
 	if st <= 2:
 		var ps: Vector3 = ap + an * 0.1
@@ -811,17 +1061,6 @@ func _set_burning(fx, on: bool) -> void:
 	_dmg_root.add_child(holder2)
 	_burn_nodes.append(holder2)
 	b.build(fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else ""), holder2, "fx_burn")
-
-
-func add_hit_scorch(fx, local_p: Vector3, local_n: Vector3, size: float) -> void:
-	var r = RandomNumberGenerator.new()
-	r.seed = int(fx.now * 1000.0) + _seed
-	var d: Node = DEATH.scorch_decal(fx, _dmg_root, local_p, local_n, size, false, r)
-	_hit_decals.append(d)
-	while _hit_decals.size() > 10:
-		var o = _hit_decals.pop_front()
-		if is_instance_valid(o):
-			(o as Node).queue_free()
 
 
 # ---------------------------------------------------------------- small events
