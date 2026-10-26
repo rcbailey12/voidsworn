@@ -17,7 +17,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "veteran", "follow": true, "music": true, "music_volume": 0.7}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "veteran", "follow": true, "music": true, "music_volume": 0.7, "cine": "key"}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -156,6 +156,7 @@ func _settings_to_battle(b: Node) -> void:
 	b.user_speed = float(settings["speed"])
 	b.ai_level = str(settings["ai"])
 	b.follow = bool(settings.get("follow", true))
+	b.cine = str(settings.get("cine", "key"))
 	b.tips_off = not bool(settings["tips"])
 	if b.fx != null and "reduce_flashing" in b.fx:
 		b.fx.reduce_flashing = bool(settings["reduce_flashing"])

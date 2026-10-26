@@ -177,6 +177,7 @@ func _settings() -> void:
 	v.add_child(_toggle("Reduce flashing", "reduce_flashing"))
 	v.add_child(_choice("Screen shake", "shake", [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]]))
 	v.add_child(_toggle("Follow enemy activations", "follow"))
+	v.add_child(_choice("Cut-ins", "cine", [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]]))
 	v.add_child(_toggle("Battle tips", "tips"))
 	v.add_child(_toggle("Full screen", "fullscreen"))
 	v.add_child(_choice("Graphics", "quality", [["max", "Max"], ["high", "High"], ["low", "Low"]]))

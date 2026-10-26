@@ -95,6 +95,8 @@ var bot_ab := {}
 var bot_cmd_used := false
 var wing_sel := ""          # one of your squadrons picked for a standing order
 var cmd_armed_t := -9.0
+var cine := "key"          # cut-ins: "key" moments, "all" attacks, "off" (settings)
+var cine_saved := {}
 var follow := true          # follow enemy activations with the camera (settings)
 var cam_saved := {}
 var shots_dir := ""
@@ -1023,9 +1025,68 @@ func _wfam(u: Dictionary, w: Dictionary) -> String:
 	return {"voidsworn": "las", "hegemony": "plasma", "corsair": "tracer", "chorus": "spine", "ithar": "needle", "deathless": "rail"}.get(str(u.get("fac", "")), "shell")
 
 
+# fx3d.js cineWants and cineFrame: a side-on shot of the big moments (lances, torpedoes and novas on bosses or a nearly
+# dead target, capital volleys on them, kills of bigger ships), letterboxed, back to the board after
+func _cine_wants(kind: String, a_id, t_id) -> bool:
+	if cine == "off" or bot or shots_dir != "":
+		return false
+	if cine == "all":
+		return true
+	var a: Dictionary = VU.get(a_id, {})
+	var t: Dictionary = VU.get(t_id, {})
+	var big: bool = bool(a.get("flagship", false)) or bool(t.get("flagship", false))
+	var low: bool = not t.is_empty() and float(disp.get(t_id, {}).get("hp", t.get("hp", 1))) <= float(t.get("maxHp", 1)) * 0.35
+	match kind:
+		"kill":
+			return not t.is_empty() and not t.get("squadron", false) and (float(t.get("size", 0)) >= 0.6 or big)
+		"lance", "torp", "nova":
+			return true
+		"volley":
+			return float(a.get("size", 0)) >= 0.7 and (big or low)
+	return false
+
+
+func _cine_frame(a_id, t_id) -> void:
+	var pa := _pos(a_id)
+	var pt := _pos(t_id)
+	var mid := (pa + pt) * 0.5
+	mid.y = 0
+	var dist := Vector2(pt.x - pa.x, pt.z - pa.z).length()
+	# Godot camera azimuth: side-on to the line of fire, the side nearer the current view
+	var base := atan2(-(pt.z - pa.z), pt.x - pa.x)
+	var al := base + PI / 2.0
+	var al2 := base - PI / 2.0
+	var cur: float = cam.a
+	al = cur + angle_difference(cur, al)
+	al2 = cur + angle_difference(cur, al2)
+	if cine_saved.is_empty():
+		cine_saved = {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
+	cam.a = al if absf(al - cur) < absf(al2 - cur) else al2
+	cam.b = 1.02
+	cam.r = clampf(dist * 1.25 + 34.0, 60.0, 200.0)
+	cam.t = mid
+	hud.letterbox(true)
+
+
+func _cine_release() -> void:
+	if cine_saved.is_empty():
+		return
+	cam.a = cine_saved["a"]
+	cam.b = cine_saved["b"]
+	cam.r = cine_saved["r"]
+	cam.t = cine_saved["t"]
+	cine_saved = {}
+	hud.letterbox(false)
+
+
 func _play_fire(e: Dictionary, grp: Array) -> void:
 	var a_id = e["unit"]
 	var t_id = e["target"]
+	var ckind := "lance" if str(e["kind"]) == "lance" else "torp" if str(e["kind"]) == "torp" else "volley"
+	var cined := _cine_wants(ckind, a_id, t_id)
+	if cined:
+		_cine_frame(a_id, t_id)
+		await wait(320.0)
 	var u: Dictionary = VU.get(a_id, {})
 	var fac := str(u.get("fac", "hegemony"))
 	var P: Dictionary = HT.FAC3D.get(fac, HT.FAC3D["hegemony"])
@@ -1173,6 +1234,9 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		elif g["t"] == "burning":
 			_float(g["unit"], "Fire on deck", Color("#f08a4b"), -24)
 	await wait(80.0)
+	if cined:
+		await wait(900.0)
+		_cine_release()
 
 
 var torp_marks := {}      # salvo id -> placeholder marker (when G4's lanes are not in the build)
@@ -1255,6 +1319,10 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 func _play_death(e: Dictionary) -> void:
 	var id = e["unit"]
 	var sv = views.get(id)
+	if sv != null and _cine_wants("kill", e.get("by"), id) and cine_saved.is_empty():
+		var by = e.get("by") if e.get("by") != null and views.has(e.get("by")) else id
+		_cine_frame(by, id)
+		get_tree().create_timer(1.6 * speed).timeout.connect(_cine_release)
 	var cause := str(e.get("cause", "blast"))
 	var friend := _side(id) == "player"
 	var sq := bool(VU.get(id, {}).get("squadron", false))
@@ -2157,6 +2225,7 @@ func _open_menu() -> void:
 	items.append(["Sound: %s" % ("on" if sfx.on else "off"), "opt", "sound"])
 	items.append(["Speed: %s" % ("fast" if user_speed < 1.0 else "normal"), "opt", "speed"])
 	items.append(["Follow enemy activations: %s" % ("on" if follow else "off"), "opt", "follow"])
+	items.append(["Cut-ins: %s" % {"key": "key moments", "all": "every attack", "off": "off"}.get(cine, cine), "opt", "cine"])
 	items.append(["Battle tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
 	items.append(["Threat map: %s" % ("on" if threat_on else "off"), "opt", "threat"])
 	items.append(["Firing arcs: %s" % ("on" if arcs_on else "off"), "opt", "arcs"])
@@ -2180,6 +2249,9 @@ func _toggle_opt(k: String) -> void:
 		"follow":
 			follow = not follow
 			option_changed.emit("follow", follow)
+		"cine":
+			cine = {"key": "all", "all": "off", "off": "key"}.get(cine, "key")
+			option_changed.emit("cine", cine)
 		"tips":
 			tips_off = not tips_off
 			option_changed.emit("tips", not tips_off)
@@ -2335,7 +2407,7 @@ func _process(dt: float) -> void:
 	for id in views:
 		var sv = views[id]
 		var u: Dictionary = VU.get(id, {})
-		if u.is_empty() or sv.dead or not sv.visible:
+		if u.is_empty() or sv.dead or not sv.visible or not cine_saved.is_empty():
 			hud.set_plate(str(id), Vector2.ZERO, false, "", true, false, 0, 1, 0, 0)
 			continue
 		var wp: Vector3 = sv.position + Vector3(0, 3.0 + sv.L * 0.18, 0)

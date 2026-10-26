@@ -822,6 +822,30 @@ func show_menu(title: String, items: Array) -> void:
 		v.add_child(_button(str(it[0]), str(it[1]), it[2] if it.size() > 2 else null, it == items[0]))
 
 
+# cut-in letterbox bars
+var bars: Array = []
+
+
+func letterbox(on: bool) -> void:
+	if bars.is_empty():
+		for top_bar in [true, false]:
+			var b := ColorRect.new()
+			b.color = Color(0, 0, 0, 1)
+			b.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			b.anchor_left = 0.0
+			b.anchor_right = 1.0
+			b.anchor_top = 0.0 if top_bar else 0.91
+			b.anchor_bottom = 0.09 if top_bar else 1.0
+			b.visible = false
+			root.add_child(b)
+			bars.append(b)
+	for b in bars:
+		(b as ColorRect).visible = on
+	for c in [top, roster, panel, log_panel]:
+		if c != null:
+			c.modulate.a = 0.0 if on else 1.0
+
+
 # the loading cover while the battle warms up its shaders
 var load_cover: ColorRect
 
