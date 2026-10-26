@@ -421,21 +421,27 @@ function shieldShatter(p,dir,col){ try{ if(!G.scene||G.fxReduced) return; const 
 
 // ---------- battle damage that burns into the hull ----------
 // Damaged ships get their own copies of the hull and dark materials, so scorched plating and glowing cracks spread across that ship alone as its hull drops.
-function shipDamageFx(v,hr){ try{ if(!v||!v.model||v.state!=='alive') return; const amt=Math.max(0,Math.min(1,(.8-hr)/.72)); if(amt<=0&&!v.dmgMats) return;
+// B-17 (Oct 25): the damaged clones are built and compiled while the "Entering battle" cover is up (shipDamagePrep from battleWarm), so a
+// ship's first hit below 80% only swaps a ready material instead of cloning and compiling mid-fight. A view made later (wings, reinforcements)
+// still builds its clones on first damage, as before. window.VS_NOWARM17=1 turns the early build off (hitchprobe.py compares the two).
+function shipDamagePrep(v){ if(!v||!v.model||v.dmgMats) return; const M=facMats(v.fac), map=new Map(); v.dmgMats=[]; v.dmgMap=map; const seed=(v.u&&v.u.id?String(v.u.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0):Math.random()*100)%37;
+  const srcs=[M.hull,M.dark,M.aiHull]; for(const m of v.model.meshes) if(m.material&&m.material._isAiHull&&!srcs.includes(m.material)) srcs.push(m.material);
+  for(const src of srcs){ if(!src||!src._hullFx) continue; const c=src.clone(src.name+'_dmg');
+    for(const k of ['albedoTexture','bumpTexture','metallicTexture','emissiveTexture','ambientTexture','opacityTexture','microSurfaceTexture','reflectivityTexture','lightmapTexture','reflectionTexture']){ if(c[k]!==src[k]){ const blank=c[k]; c[k]=src[k]||null; try{ if(blank&&blank!==src[k]&&!Object.values(G.tex).includes(blank)) blank.dispose(); }catch(e){} } } // clones of generated textures come back blank: share the originals
+    const o=src._hullFx, opts=Object.assign(typeof hfxOpts==='function'?hfxOpts(o,v.fac):{rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy},{ai:o.ai,wcol:o.wcol,ring:o.ring,haz:o.haz,mtex:o.mtex,paint:o.paint,kit:o.kit,fin:o.fin,det:o.det}); let pl=c.pluginManager&&c.pluginManager.getPlugin&&c.pluginManager.getPlugin('HullFx');
+    if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(c,opts); c._hullFx=pl; pl.dseed=seed; map.set(src,c); v.dmgMats.push(c);
+    // isReady(mesh) reads the draw state of the material the mesh shows now, so it cannot vouch for the clone; forceCompilation builds the
+    // clone's own shader on a scratch submesh (probe on Ryan's PC, Oct 25). Once per clone: every mesh that shows src shares the result.
+    const m0=v.model.meshes.find(m=>m.material===src&&!m.isDisposed()), done=()=>{ c._dmgReady=true; };
+    if(m0&&c.forceCompilationAsync) c.forceCompilationAsync(m0).then(done,done); else done(); } }
+function shipDamageFx(v,hr){ try{ if(!v||!v.model||v.state!=='alive') return; const amt=Math.max(0,Math.min(1,(.8-hr)/.72)); if(amt<=0&&!v.dmgOn) return;
     if(v.lastDmg!=null&&Math.abs(v.lastDmg-amt)<.01) return; v.lastDmg=amt;
-    if(!v.dmgMats){ const M=facMats(v.fac), map=new Map(); v.dmgMats=[]; const seed=(v.u&&v.u.id?String(v.u.id).split('').reduce((a,c)=>a+c.charCodeAt(0),0):Math.random()*100)%37;
-      const srcs=[M.hull,M.dark,M.aiHull]; for(const m of v.model.meshes) if(m.material&&m.material._isAiHull&&!srcs.includes(m.material)) srcs.push(m.material);
-      for(const src of srcs){ if(!src||!src._hullFx) continue; const c=src.clone(src.name+'_dmg');
-        for(const k of ['albedoTexture','bumpTexture','metallicTexture','emissiveTexture','ambientTexture','opacityTexture','microSurfaceTexture','reflectivityTexture','lightmapTexture','reflectionTexture']){ if(c[k]!==src[k]){ const blank=c[k]; c[k]=src[k]||null; try{ if(blank&&blank!==src[k]&&!Object.values(G.tex).includes(blank)) blank.dispose(); }catch(e){} } } // clones of generated textures come back blank: share the originals
-        const o=src._hullFx, opts=Object.assign(typeof hfxOpts==='function'?hfxOpts(o,v.fac):{rim:o.rim,str:o.str,style:o.style,ecol:o.ecol,wear:o.wear,seed:o.seed,energy:o.energy},{ai:o.ai,wcol:o.wcol,ring:o.ring,haz:o.haz,mtex:o.mtex,paint:o.paint,kit:o.kit,fin:o.fin,det:o.det}); let pl=c.pluginManager&&c.pluginManager.getPlugin&&c.pluginManager.getPlugin('HullFx');
-        if(pl) Object.assign(pl,opts); else pl=new HullFxPlugin(c,opts); c._hullFx=pl; pl.dseed=seed; map.set(src,c); v.dmgMats.push(c); }
-      for(const m of v.model.meshes) if(map.has(m.material)){ const src=m.material, c=map.get(src); // Oct 25: the ship vanished until the damaged shader compiled (a blink on GPU, seconds on software GL): keep the intact material on screen and swap once the damaged one is ready
-        // isReady(mesh) reads the draw state of the material the mesh shows now, so it cannot vouch for the clone; forceCompilation builds
-        // the clone's own shader on a scratch submesh, then we swap (probe on Ryan's PC, Oct 25)
+    if(!v.dmgOn){ v.dmgOn=true; shipDamagePrep(v); const map=v.dmgMap||new Map();
+      for(const m of v.model.meshes) if(map.has(m.material)){ const src=m.material, c=map.get(src); // Oct 25: the ship vanished until the damaged shader compiled: keep the intact material on screen and swap once the damaged one is ready
         const swap=()=>{ try{ if(v.state==='alive'&&!m.isDisposed()&&m.material===src) m.material=c; }catch(e){} };
-        if(c.forceCompilationAsync) c.forceCompilationAsync(m).then(swap,()=>setTimeout(swap,2500)); else swap(); } }
-    for(const c of v.dmgMats) if(c._hullFx) c._hullFx.dmg=amt; }catch(e){ console.warn('damage shading',e); } }
-function disposeDamageMats(v){ try{ (v.dmgMats||[]).forEach(m=>m.dispose(false,false)); }catch(e){} v.dmgMats=null; }
+        if(c._dmgReady) swap(); else if(c.forceCompilationAsync) c.forceCompilationAsync(m).then(swap,()=>setTimeout(swap,2500)); else swap(); } }
+    for(const c of v.dmgMats||[]) if(c._hullFx) c._hullFx.dmg=amt; }catch(e){ console.warn('damage shading',e); } }
+function disposeDamageMats(v){ try{ (v.dmgMats||[]).forEach(m=>m.dispose(false,false)); }catch(e){} v.dmgMats=null; v.dmgMap=null; v.dmgOn=false; v.lastDmg=null; }
 
 // ---------- asteroid surfaces: dust, darker basalt and mineral veins over the rock texture, in each rock's own coordinates ----------
 class RockFxPlugin extends BABYLON.MaterialPluginBase{
