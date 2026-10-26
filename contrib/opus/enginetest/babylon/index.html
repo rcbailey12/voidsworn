@@ -1623,8 +1623,10 @@ window.__shot = function (name) {
   STILL_POSE = false;
   if (BOARD) { BRD.select(1); BRD.click = null; BRD.setHover(2); }
   if (MAXM && !BOARD) {   // presentation: depth of field on the close-ups, focused on the look-at point
-    var dof = ((s && (s[1] === 'close' || s[1] === 'breach')) || !!HEROES[name]) && pipe.depthOfFieldEnabled;
-    if (dof) { pipe.depthOfField.focalLength = 80; pipe.depthOfField.fStop = 2.0; pipe.depthOfField.focusDistance = B.Vector3.Distance(cam.position, cam.getTarget()) * 1000; }
+    // review parity: depth of field only on the six hero shots, and mild there (the whole ship sharp, only the far
+    // background softened); every other still, close_20 and breach_30 included, renders with it neutral (no blur)
+    var dof = !!HEROES[name] && pipe.depthOfFieldEnabled;
+    if (dof) { pipe.depthOfField.focalLength = 50; pipe.depthOfField.fStop = 11; pipe.depthOfField.focusDistance = B.Vector3.Distance(cam.position, cam.getTarget()) * 1000; }
     else dofNeutral();
   }
   if (PH) physTo(t, 1e6);   // replay the physics from t = 0 on the fixed clock

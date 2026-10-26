@@ -97,7 +97,7 @@ How it measures:
   - There is no gravity. The world steps at a fixed 1/60 s on the scene clock, so a still replays it from t = 0 and always comes out the same.
   - The JSON gets `physics_step_avg_ms` and `physics_step_max_ms` (the step time inside each frame) and the notes give the body count. In this mode the GPU debris shards for those sources and the analytic chunk smoke trails are switched off.
 - **Presentation (max mode):**
-  - depth of field on the close-ups and heroes, built in (DefaultRenderingPipeline, focused on the look-at point, f/2, 80 mm). It is switched on once at load and left neutral (f/32, far focus) for the battle camera, because switching it on and off between stills rebuilt the post chain and broke the frame. Its blur passes therefore also run, and count, in the max-mode benchmark;
+  - depth of field on the six hero stills only, and mild (DefaultRenderingPipeline, focused on the ship centre, f/11, 50 mm: the whole ship sharp, only the far background softened). Every other still renders with it neutral, close_20 and breach_30 included (review parity). It is switched on once at load and left neutral (f/32, far focus) for the battle camera, because switching it on and off between stills rebuilt the post chain and broke the frame. Its blur passes therefore also run, and count, in the max-mode benchmark;
   - screen shake scaled by weapon weight (broadside 0.25 per gun, lance 0.5, hit 0.6, destruction 2.5) and by distance. It is a deterministic function of t, so the stills shake the same each time;
   - colour grading with built-in curves (cool shadows, warm highlights).
   - Dropped per the trimmed scope: kill-cam, motion blur, lens effects, light shafts.
