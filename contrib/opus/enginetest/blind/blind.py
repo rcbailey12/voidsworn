@@ -2,8 +2,8 @@
 import sys, os, json, random
 from PIL import Image, ImageDraw, ImageFont
 R, OUT = sys.argv[1], sys.argv[2]; os.makedirs(OUT, exist_ok=True)
-B = {'main': 'final_b_main', 'max': 'final_b_max_hi', 'board': 'final_b_board'}
-G = {'main': 'final_g_main', 'max': 'final_g_max_hi', 'board': 'final_g_board_hi'}
+B = {'main': 'rs_b_main', 'max': 'rs_b_max', 'board': 'final_b_board'}
+G = {'main': 'rs_g_main', 'max': 'rs_g_max', 'board': 'final_g_board_hi'}
 NAMES = {'V1b_r_23': 'Voidsworn', 'H4_11': 'Hegemony', 'C19_51': 'Corsair Pyre-Barge', 'B16_23': 'Chorus', 'I8_37': 'Ithar', 'D22_23': 'Deathless'}
 CODES = ['V1b_r_23', 'H4_11', 'C19_51', 'B16_23', 'I8_37', 'D22_23']
 PAIRS = [
@@ -20,7 +20,7 @@ PAIRS = [
  ('16 Game board view, destruction', 'board', 'board_126.png', 'board_t12.6.png'),
 ]
 rng = random.Random(int.from_bytes(os.urandom(4), 'little'))
-babylon_is_A = rng.random() < 0.5
+babylon_is_A = (os.environ['FORCE_A'] == 'babylon') if os.environ.get('FORCE_A') else rng.random() < 0.5
 try: F = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 44)
 except Exception: F = ImageFont.load_default()
 W, H = 1600, 900; made = []
