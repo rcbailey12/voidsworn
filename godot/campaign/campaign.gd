@@ -1945,3 +1945,14 @@ func stub_resolve(o: String) -> void:
 			var k = pick(live); k["kills"] = float(k["kills"]) + 1; e["killedBy"] = k["name"]
 	if o == "partial": B["partial"] = true
 	B["over"] = "loss" if loss else "win"
+
+# The browser's "Copy report for Claude" (campaign3d.js copyReport): settings, the run in short and the last 200 run-log events,
+# as one JSON text for the game shell to put on the clipboard. battle: the battle shell's own summary, or null.
+func report_text(build_id: String = "godot", battle = null) -> String:
+	var run = null
+	if RUN != null:
+		var fl = []
+		for s in RUN["fleet"]: fl.append(str(s["tpl"]) + ":" + numstr(s["hp"]))
+		run = {"fac": RUN["fac"], "admiral": RUN["admiral"], "sector": RUN["sector"], "fleet": fl}
+	return JSON.stringify({"build": build_id, "at": Time.get_datetime_string_from_system(true), "os": OS.get_name(), "opts": META.get("opts"), "run": run, "battle": battle,
+		"events": tel_log.slice(max(0, tel_log.size() - 200))})
