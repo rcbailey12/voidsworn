@@ -39,7 +39,75 @@ static func _json(path: String) -> Dictionary:
 
 static func default_profile() -> Dictionary:
 	return {"v": VERSION, "admirals": {}, "medals": {}, "history": [], "live": {}, "won_facs": [],
-		"totals": {"runs": 0, "wins": 0, "battles": 0, "kills": 0, "lost": 0, "captures": 0, "flag_kills": 0}, "chronicle": []}
+		"totals": {"runs": 0, "wins": 0, "battles": 0, "kills": 0, "lost": 0, "captures": 0, "flag_kills": 0}, "chronicle": [],
+		"arc_rewards": {}, "paint_on": {}}
+
+
+# ---------------------------------------------------------------- faction arcs (cosmetic rewards; data/arcs.json)
+
+var arcs_data: Dictionary = {}
+
+
+func arcs() -> Dictionary:
+	if arcs_data.is_empty():
+		arcs_data = _json("res://story/data/arcs.json")
+	return arcs_data
+
+
+# Every medal the profile can hold: the base twelve plus one per faction arc.
+func all_medals() -> Array:
+	var out: Array = medals_data.get("medals", []).duplicate()
+	for fac in arcs():
+		if arcs()[fac] is Dictionary and arcs()[fac].get("medal") is Dictionary:
+			out.append(arcs()[fac]["medal"])
+	return out
+
+
+# A faction arc's ending (beat 3 fought). won: the Nemesis's last fight was won, which finishes the arc and pays its
+# rewards: the arc medal, the arc title, the flagship paint (switched on), and the unlock id stream B's rules read.
+# choices: {beat: option key}, kept for the Chronicle. Returns the Chronicle row.
+func record_arc_end(fac: String, admiral: String, rival: String, choices: Dictionary, won: bool) -> Dictionary:
+	var A: Dictionary = arcs().get(fac, {})
+	var row := {"t": int(Time.get_unix_time_from_system()), "fac": fac, "arc": str(A.get("arc", fac)), "admiral": admiral, "rival": rival, "choices": choices, "won": won}
+	P["chronicle"].append(row)
+	if P["chronicle"].size() > 60:
+		P["chronicle"] = P["chronicle"].slice(P["chronicle"].size() - 60)
+	if won and not A.is_empty():
+		award(str(A["medal"]["id"]))
+		var first: bool = not P["arc_rewards"].has(fac)
+		P["arc_rewards"][fac] = {"title": str(A.get("title", "")), "paint": str(A.get("paint", {}).get("id", "")), "unlock": str(A.get("unlock_variant", "")),
+			"first": P["arc_rewards"].get(fac, {}).get("first", row["t"]), "count": int(P["arc_rewards"].get(fac, {}).get("count", 0)) + 1}
+		if first:
+			P["paint_on"][fac] = true
+	save_profile()
+	return row
+
+
+# The flagship paint for a faction: {id, n, hull, trim, glow, pattern} when earned and switched on, else {}.
+func flagship_paint(fac: String) -> Dictionary:
+	if not P["arc_rewards"].has(fac) or not bool(P["paint_on"].get(fac, false)):
+		return {}
+	return arcs().get(fac, {}).get("paint", {})
+
+
+func set_paint(fac: String, on: bool) -> void:
+	if P["arc_rewards"].has(fac):
+		P["paint_on"][fac] = on
+		save_profile()
+
+
+# Hull variant ids earned by finishing arcs (stream B's rules decide what they do; see godot/story/unlocks.md).
+func arc_unlocks() -> Array:
+	var out: Array = []
+	for fac in P["arc_rewards"]:
+		var u := str(P["arc_rewards"][fac].get("unlock", ""))
+		if u != "":
+			out.append(u)
+	return out
+
+
+func arc_title(fac: String) -> String:
+	return str(P["arc_rewards"].get(fac, {}).get("title", ""))
 
 
 # ---------------------------------------------------------------- load and save

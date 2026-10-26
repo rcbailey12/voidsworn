@@ -101,11 +101,21 @@ func _enemy_line(who: String, moment: String, text: String) -> Array:
 	return [{"text": "%s: \"%s\"" % [who, _fill(text)], "kind": "e", "who": "enemy", "moment": moment}]
 
 
+var rival = preload("res://story/rival.gd").new()
+
+
+func _ctx() -> Dictionary:
+	return {"you": admiral_name(), "flagship": str(info.get("flagship_name", "your flagship"))}
+
+
+# The Nemesis's line for a moment (godot/story/rival.gd: pools by his faction, personality, scars and memory).
 func _nem_text(k: String) -> String:
 	var nem = info.get("nem")
 	if not (nem is Dictionary):
 		return ""
-	return str(V.get("nemesis", {}).get(str(nem.get("fac", "")), {}).get(k, ""))
+	if k == "open":
+		return rival.opening(nem, int(info.get("sector", 1)), int(info.get("seed", 0)), _ctx())
+	return rival.line(k, nem, int(info.get("seed", 0)), _ctx())
 
 
 func _nem_name() -> String:
@@ -126,7 +136,7 @@ func _boss_name() -> String:
 func opening() -> Array:
 	var out: Array = []
 	if info.get("nem") is Dictionary:
-		out += _enemy_line(_nem_name(), "nem_hail", _nem_text("final" if int(info.get("sector", 1)) >= 3 else "hail"))
+		out += _enemy_line(_nem_name(), "nem_hail", _nem_text("open"))
 		out += _adm_line("nemesis")
 	elif str(info.get("kind", "")) == "boss":
 		out += _enemy_line(_boss_name(), "boss_hail", str(V.get("factions", {}).get(str(info.get("enemy_fac", "")), {}).get("boss_hail", "")))
@@ -165,7 +175,16 @@ func on_event(e: Dictionary) -> Array:
 					out += _adm_line("kill_flag")
 			elif u["side"] == "player" and not said.has("lost"):
 				said["lost"] = true
+				if info.get("nem") is Dictionary:
+					out += _enemy_line(_nem_name(), "nem_kill", _nem_text("kill"))
 				out += _adm_line("lost")
+		"nem_signature", "nem_act":
+			# stream B's faction behaviour for the Nemesis (R42: a Corsair raids and flees, the Deathless one returns once,
+			# an Ithar duels and withdraws, the Chorus feeds on your losses, Hegemony reinforcements, a Voidsworn challenge);
+			# whichever event name stream B gives it, it speaks once per battle
+			if info.get("nem") is Dictionary and not said.has("nem_signature"):
+				said["nem_signature"] = true
+				out += _enemy_line(_nem_name(), "nem_signature", _nem_text("signature"))
 		"command":
 			if str(e.get("side", "")) == "player" and not said.has("command"):
 				said["command"] = true
@@ -183,6 +202,6 @@ func on_event(e: Dictionary) -> Array:
 # One line for the end card (your admiral's win or loss line; against the Nemesis on a loss, his gloat).
 func closing(win: bool) -> String:
 	if not win and info.get("nem") is Dictionary and _nem_text("gloat") != "":
-		return "%s: \"%s\"" % [_nem_name(), _fill(_nem_text("gloat"))]
+		return "%s: \"%s\"" % [_nem_name(), _nem_text("gloat")]
 	var t := adm_text("win" if win else "loss")
 	return "%s: \"%s\"" % [admiral_name(), t] if t != "" else ""

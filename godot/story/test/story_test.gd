@@ -80,9 +80,28 @@ func t_data() -> void:
 	for f in facs:
 		for k in ["boss_hail", "boss_down"]:
 			fac_ok = fac_ok and str(V["factions"].get(f, {}).get(k, "")) != ""
-		for k in ["hail", "beaten", "final", "death", "gloat"]:
-			fac_ok = fac_ok and str(V["nemesis"].get(f, {}).get(k, "")) != ""
-	ok(fac_ok, "data: every faction has flagship and Nemesis lines")
+	ok(fac_ok, "data: every faction has flagship lines")
+	var RL = JSON.parse_string(_read("res://story/data/rival_lines.json"))
+	var rl_missing: Array = []
+	var n_lines := 0
+	for f in facs:
+		var F: Dictionary = RL.get(f, {})
+		for k in ["hail", "again", "final", "beaten", "death", "gloat", "kill", "signature", "scar"]:
+			if not (F.get(k) is Array) or F[k].size() < 2:
+				rl_missing.append("%s.%s" % [f, k])
+			else:
+				n_lines += F[k].size()
+		for k in ["lance", "torp", "sq", "ram", "board", "battery", "evasive"]:
+			if str(F.get("memory", {}).get(k, "")) == "":
+				rl_missing.append("%s.memory.%s" % [f, k])
+			n_lines += 1
+		for p in RL["personalities"]:
+			for k in ["hail", "beaten"]:
+				if str(F.get("personality", {}).get(p, {}).get(k, "")) == "":
+					rl_missing.append("%s.%s.%s" % [f, p, k])
+				n_lines += 1
+	ok(rl_missing.is_empty(), "data: Nemesis pools complete for all six factions (%d lines) %s" % [n_lines, str(rl_missing.slice(0, 6))])
+	ok(not _read("res://story/data/rival_lines.json").contains("—"), "data: rival_lines.json has no em dashes")
 	var T = JSON.parse_string(_read("res://story/data/titles.json"))
 	var n_ok := true
 	for t in T["titles"] + [T["fallback"]]:
@@ -184,6 +203,15 @@ func t_career() -> void:
 	c3.save_path = c.save_path
 	c3.load_profile()
 	ok(int(c3.P["totals"]["battles"]) == 4, "career: a damaged file falls back to the backup (one save behind)")
+	# arc rewards (cosmetic side)
+	c3.record_arc_end("chorus", "matriarch", "Rear admiral Petra Lindqvist", {"1": "ate"}, false)
+	ok(not c3.P["medals"].has("arc_chorus") and c3.flagship_paint("chorus").is_empty(), "arcs: a lost arc pays nothing but is in the Chronicle")
+	c3.record_arc_end("ithar", "aelith", "Warlord Bones Sharkey", {"1": "song", "2": "song", "3": "sails"}, true)
+	ok(c3.P["medals"].has("arc_ithar") and c3.arc_title("ithar") == "Keeper of the Houses", "arcs: arc medal and title")
+	ok(str(c3.flagship_paint("ithar").get("id", "")) == "mourning_pearl" and c3.arc_unlocks() == ["i_carrier_a"], "arcs: paint switched on and unlock reported")
+	c3.set_paint("ithar", false)
+	ok(c3.flagship_paint("ithar").is_empty() and c3.P["chronicle"].size() == 2, "arcs: paint switched off; two Chronicle rows")
+	ok(c3.all_medals().size() == 18, "arcs: 12 medals plus 6 arc medals")
 	for p in [c.save_path, c.save_path + ".bak"]:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
@@ -212,8 +240,36 @@ func t_voice() -> void:
 	vn.setup(view, {"admiral": "kassar", "admiral_name": "Grand Admiral Ilsa Kassar", "fac": "hegemony", "kind": "elite", "enemy_fac": "deathless", "sector": 3, "seed": 1,
 		"nem": {"name": "Setekh the Patient", "title": "Dynast", "fac": "deathless"}})
 	var op2: Array = vn.opening()
-	ok(op2.size() == 2 and str(op2[0]["text"]).contains("brief error in a long count") and str(op2[1]["text"]).contains("Dynast Setekh the Patient"), "voice: Nemesis opening in sector III uses his final line and his name")
+	var RL = JSON.parse_string(_read("res://story/data/rival_lines.json"))
+	var said_final := false
+	for l in RL["deathless"]["final"]:
+		said_final = said_final or str(op2[0]["text"]).contains(str(l))
+	ok(op2.size() == 2 and said_final and str(op2[1]["text"]).contains("Dynast Setekh the Patient"), "voice: Nemesis opening in sector III uses his final line and his name")
 	ok(vn.closing(false).begins_with("Dynast Setekh the Patient:"), "voice: Nemesis gloats on a loss")
+	# variety: the same moment across many generated Nemeses and seeds
+	var R = load("res://story/rival.gd").new()
+	var seen := {}
+	for i in 60:
+		var nem := {"name": "Name%d" % i, "title": "Warlord", "fac": "corsair", "personality": ["proud", "cruel", "cunning", "zealous", "cold", "mocking"][i % 6], "beaten": 0, "scars": 0}
+		seen[R.opening(nem, 1, i)] = true
+	ok(seen.size() >= 6, "rival: first-meeting hails vary across Nemeses (%d different lines from 60)" % seen.size())
+	var again := {"name": "Scarface", "title": "Warlord", "fac": "corsair", "beaten": 1, "scars": 2, "adapt": ["armor"]}
+	var kinds := {}
+	for sd in 40:
+		var l: String = R.opening(again, 2, sd)
+		if l == str(RL["corsair"]["memory"]["ram"]):
+			kinds["memory"] = true
+		elif l.contains("twice"):
+			kinds["scar"] = true
+		else:
+			kinds["again"] = true
+	ok(kinds.size() == 3, "rival: a later meeting mixes memory (rammed him last time), scar ({scars} filled: twice) and rematch lines %s" % str(kinds.keys()))
+	ok(R.memory_key({"seen": {"torp": 3, "lance": 9}}) == "lance" and R.memory_key({"last_beat": "board"}) == "board", "rival: memory key from seen counts or stream B's last_beat")
+	var vs = Voice.new()
+	vs.setup(view, {"admiral": "grax", "admiral_name": "Warlord Grax Ironjaw", "kind": "elite", "enemy_fac": "ithar", "sector": 2, "seed": 4, "nem": {"name": "Ilyra Glasswing", "title": "Starwarden", "fac": "ithar"}})
+	var sl: Array = vs.on_event({"t": "nem_signature"})
+	sl += vs.on_event({"t": "nem_signature"})
+	ok(sl.size() == 1 and str(sl[0]["text"]).begins_with("Starwarden Ilyra Glasswing:"), "voice: his faction signature speaks once")
 	# a real rules battle, both sides on the game's AI, every event through the voice
 	var api = API.new()
 	var e: String = api.load_rules()
@@ -265,7 +321,7 @@ func t_ui() -> void:
 	var run := {"t0": 5, "admiral": "aelith", "fac": "ithar", "sector": 3, "flagUid": "u", "fleet": [{"uid": "u", "name": "Glasswing"}]}
 	S.career.record_battle(run, _B("boss", true, 0, 5, {"kind": {"sq": 9, "lance": 2}}), "win")
 	S.career.record_run_end(run, true, "Aelith Dawnsail")
-	S.career.P["chronicle"].append({"fac": "ithar", "arc": "The Grave of Houses", "rival": "Warlord Bones Sharkey", "won": true})
+	S.career.record_arc_end("ithar", "aelith", "Warlord Bones Sharkey", {}, true)
 	var scr = S.open_career()
 	ok(scr != null, "ui: career screen opens")
 	if scr != null:

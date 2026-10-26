@@ -1,0 +1,51 @@
+{
+  "_about": "What finishing a faction arc gives (Ryan, Oct 26: both a cosmetic reward and a gameplay unlock). An arc is finished by winning its beat 3 fight (the Nemesis's last). Cosmetic side, owned by the story layer and kept in the career profile: a medal, a Chronicle entry, a title added to the admiral's name, and a flagship paint scheme the player can switch on or off per faction. Gameplay side: one hull variant per faction (unlock_variant), drafted in godot/story/unlocks.md; its rules belong to stream B, and the story layer only reports that it was earned (story.arc_unlocks()). Paint colours are hex; pattern is a short note for whoever paints it (G4 look, A4 ships). No em dashes.",
+  "voidsworn": {
+    "arc": "The Oath at the Hollow Sun",
+    "medal": {"id": "arc_voidsworn", "n": "Oath Kept", "d": "Relight the Hollow Sun: finish the Voidsworn story.", "glyph": "O", "col": "#ffb35a"},
+    "title": "Relighter of the Hollow Sun",
+    "paint": {"id": "last_light", "n": "Last Light", "hull": "#d9d2c0", "trim": "#c9a24a", "glow": "#ffb35a", "pattern": "Bone-white plate, gilt trim, the captains' names chalked in ash along the flanks."},
+    "unlock_variant": "vs_penitent_l",
+    "unlock_name": "Penitent lantern-cruiser"
+  },
+  "hegemony": {
+    "arc": "Pacification Order 41",
+    "medal": {"id": "arc_hegemony", "n": "Order Fulfilled", "d": "Secure the anchorage: finish the Hegemony story.", "glyph": "A", "col": "#9fc4ff"},
+    "title": "Keeper of the Anchorage",
+    "paint": {"id": "anchorage_black", "n": "Anchorage Black", "hull": "#1c2433", "trim": "#c4ccd5", "glow": "#9fc4ff", "pattern": "Near-black hull, silver wedge trim, one white escort stripe for the column that lived."},
+    "unlock_variant": "h_interdictor_e",
+    "unlock_name": "Interdictor column escort"
+  },
+  "corsair": {
+    "arc": "Saints' Gold",
+    "medal": {"id": "arc_corsair", "n": "Saints' Gold", "d": "Crack the treasure fleet: finish the Corsair story.", "glyph": "G", "col": "#ffcf5a"},
+    "title": "Finder of Saints' Gold",
+    "paint": {"id": "treasure_gilt", "n": "Treasure Gilt", "hull": "#3a2a1a", "trim": "#d4a838", "glow": "#ffcf5a", "pattern": "Rust-brown hull hammered over with stolen gold leaf, crowns welded to the prow."},
+    "unlock_variant": "c_marauder_g",
+    "unlock_name": "Gilded marauder"
+  },
+  "chorus": {
+    "arc": "Eat the Sun",
+    "medal": {"id": "arc_chorus", "n": "Sun-Eater", "d": "Eat the singing heart of the dead star: finish the Chorus story.", "glyph": "S", "col": "#ffd27a"},
+    "title": "Who Ate the Sun",
+    "paint": {"id": "sunheart", "n": "Sunheart", "hull": "#4a2a1c", "trim": "#ffb040", "glow": "#ffd27a", "pattern": "Ember-coloured flesh with veins of slow gold light, pulsing in time."},
+    "unlock_variant": "b_razor_e",
+    "unlock_name": "Sun-eater razorfiend"
+  },
+  "ithar": {
+    "arc": "The Grave of Houses",
+    "medal": {"id": "arc_ithar", "n": "Archive Returned", "d": "Bring the light-archive home: finish the Ithar story.", "glyph": "H", "col": "#c9b8ff"},
+    "title": "Keeper of the Houses",
+    "paint": {"id": "mourning_pearl", "n": "Mourning Pearl", "hull": "#2b2f3a", "trim": "#e8e4f0", "glow": "#c9b8ff", "pattern": "Dusk-grey porcelain with pearl edges, the sails faintly violet, house sigils etched small."},
+    "unlock_variant": "i_carrier_a",
+    "unlock_name": "Archive wraithcarrier"
+  },
+  "deathless": {
+    "arc": "The Court Restored",
+    "medal": {"id": "arc_deathless", "n": "Court Restored", "d": "Restore the first court: finish the Deathless story.", "glyph": "R", "col": "#ffd36a"},
+    "title": "Restorer of the First Court",
+    "paint": {"id": "court_gold", "n": "Court Gold", "hull": "#1a1712", "trim": "#c8a050", "glow": "#ffd36a", "pattern": "Obsidian hull with court-gold inlay; the glow turns from tomb green to gold."},
+    "unlock_variant": "d_jackal_h",
+    "unlock_name": "Jackal court guard"
+  }
+}

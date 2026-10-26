@@ -238,15 +238,15 @@ func _admiral_card(id: String, a: Dictionary) -> Control:
 func _medals() -> void:
 	var have: Dictionary = _P().get("medals", {})
 	var n := 0
-	for m in story.career.medals_data.get("medals", []):
+	for m in story.career.all_medals():
 		if have.has(str(m["id"])):
 			n += 1
-	body.add_child(lbl("%d of %d medals earned." % [n, story.career.medals_data.get("medals", []).size()], 17, BONE2))
+	body.add_child(lbl("%d of %d medals earned." % [n, story.career.all_medals().size()], 17, BONE2))
 	var g := GridContainer.new()
 	g.columns = 3
 	g.add_theme_constant_override("h_separation", px(10))
 	g.add_theme_constant_override("v_separation", px(10))
-	for m in story.career.medals_data.get("medals", []):
+	for m in story.career.all_medals():
 		var got: Dictionary = have.get(str(m["id"]), {})
 		var p := _panel(IRON if not got.is_empty() else INK, GILT2 if not got.is_empty() else IRON3, 10)
 		p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -344,15 +344,39 @@ func _chronicle() -> void:
 		var v := VBoxContainer.new()
 		v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		v.add_child(lbl(str(story.FAC.get(fac, {}).get("n", fac)), 18, BONE if not done.is_empty() else BONE3, semi))
+		var A: Dictionary = story.career.arcs().get(fac, {})
+		var rw: Dictionary = _P().get("arc_rewards", {}).get(fac, {})
+		v.add_child(lbl(str(A.get("arc", "")), 15, GILT if not rw.is_empty() else BONE3))
 		if done.is_empty():
 			v.add_child(lbl("Not yet told.", 15, BONE3))
 		else:
 			var last: Dictionary = done[done.size() - 1]
-			v.add_child(lbl("%s. Rival: %s." % [str(last.get("arc", "")), str(last.get("rival", ""))], 15, BONE2))
+			v.add_child(lbl("%s. Rival: %s." % ["Finished" if bool(last.get("won", false)) else "Fell at the Hollow Sun", str(last.get("rival", ""))], 15, BONE2))
+		if not rw.is_empty():
+			v.add_child(lbl("Title: " + str(rw.get("title", "")), 15, GILT))
+			var pt: Dictionary = A.get("paint", {})
+			var prow := HBoxContainer.new()
+			prow.add_theme_constant_override("separation", px(6))
+			for key in ["hull", "trim", "glow"]:
+				var sw := ColorRect.new()
+				sw.color = Color(str(pt.get(key, "#000000")))
+				sw.custom_minimum_size = Vector2(px(18), px(18))
+				prow.add_child(sw)
+			var on: bool = bool(_P().get("paint_on", {}).get(fac, false))
+			prow.add_child(lbl("Paint: " + str(pt.get("n", "")), 15, BONE2, null, false))
+			prow.add_child(_btn("Flying it" if on else "Not flying it", _toggle_paint.bind(fac, not on), on))
+			v.add_child(prow)
+			if str(rw.get("unlock", "")) != "":
+				v.add_child(lbl("Hull unlocked: " + str(A.get("unlock_name", rw["unlock"])), 14, BONE3))
 		h.add_child(v)
 		p.add_child(h)
 		g.add_child(p)
 	body.add_child(g)
+
+
+func _toggle_paint(fac: String, on: bool) -> void:
+	story.set_paint(fac, on)
+	render()
 
 
 func _close() -> void:

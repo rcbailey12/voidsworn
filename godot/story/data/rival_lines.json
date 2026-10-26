@@ -1,0 +1,179 @@
+{
+  "_about": "The Nemesis's lines (R42): pools keyed by his faction (his voice), then by moment, plus small pools per personality, lines about his scars, and lines about how you beat him last time. godot/story/rival.gd picks one line per moment from the pools with a hash of his name, the moment and the battle seed, so each run's Nemesis sounds different but stays consistent within a battle. Placeholders: {rival} his full name, {you} your admiral's name, {flagship} your flagship's name, {scars} how many times he has been scarred (as a word: once, twice, three times). Moments: hail (his battle starts, first meeting), again (a later meeting after you beat him), final (his last fight, sector III), beaten (his flagship breaks and he escapes), death (his flagship dies in his last fight), gloat (you lose to him), kill (he destroys one of your ships), signature (his faction's own behaviour, when stream B's rules fire it), scar (a later meeting, he talks about his scars), memory.<how> (a later meeting, he talks about how you beat him: lance, torp, sq, ram, board, battery, evasive). Personalities are a proposal for stream B: proud, cruel, cunning, zealous, cold, mocking; any other id falls back to the faction pools. No em dashes.",
+  "personalities": {
+    "proud": "Talks about honour, rank and his own name; takes defeat as an insult.",
+    "cruel": "Enjoys suffering; talks about what he did to others.",
+    "cunning": "Talks about traps, patience and knowing your moves.",
+    "zealous": "Talks about faith, purpose or hunger as a holy duty.",
+    "cold": "Short, flat, procedural; never raises his voice.",
+    "mocking": "Laughs at you; treats the war as a game he is winning."
+  },
+  "voidsworn": {
+    "hail": ["I have prayed for this. The saints answer.", "Heretic. Your name is already written in the book of the burned.", "Kneel, and I will make it quick. Stand, and I will make it holy."],
+    "again": ["We meet again. I have done penance for our last meeting. You have not.", "The saints spared me so I could finish this.", "You won once. The litany calls that a test, not a verdict."],
+    "final": ["You stand in the light of a dead saint and call it righteous. I came to put the light out.", "Here, at the Hollow Sun, the saints will judge between us."],
+    "beaten": ["This is penance, not defeat. I will return, cleansed.", "Mark this day. I will make you regret every hour of it."],
+    "death": ["Read my name... at the end of the litany.", "Saints... receive me... I tried."],
+    "gloat": ["One more heretic for the pyre.", "Burn the wreck. Sing over the ashes."],
+    "kill": ["Another soul sent to judgement.", "Purged. Who is next?"],
+    "signature": ["I challenge you, flagship to flagship. Let the saints watch.", "Face me alone, if your oath means anything."],
+    "scar": ["You marked me {scars}. I wear each scar like a relic.", "Every scar you gave me is a verse in my litany of hate."],
+    "memory": {
+      "lance": "Your lances burned me last time. I have prayed over my shields since.",
+      "torp": "You hid behind torpedoes last time. Cowards' weapons. I am ready for them now.",
+      "sq": "Your little wings stung me last time. I have brought guns for every one of them.",
+      "ram": "You rammed me like a beast. I have armoured my prow for your faith.",
+      "board": "Your boarders defiled my decks. Every corridor is a shrine to the dead now. They are waiting.",
+      "battery": "You battered me with broadsides. I have learned to dance away from them.",
+      "evasive": "You ran from my guns last time. There is nowhere left to run."
+    },
+    "personality": {
+      "proud": {"hail": "I am the sword of the saints. You will remember my name as you burn.", "beaten": "You have insulted me. The saints keep a careful account."},
+      "cruel": {"hail": "I lit the pyres on six worlds. Yours will make seven.", "beaten": "Run, then. I will burn everything you pass."},
+      "cunning": {"hail": "You came the way I hoped you would. The saints are generous.", "beaten": "A small loss. My trap is larger than this battle."},
+      "zealous": {"hail": "The saints have shown me your death. I only carry it out.", "beaten": "The saints test me. I will pass."},
+      "cold": {"hail": "Heretic identified. Judgement begins.", "beaten": "Withdrawing. Judgement is delayed, not cancelled."},
+      "mocking": {"hail": "A crusade against me? How flattering. How brief.", "beaten": "Ha. Enjoy your little miracle. They run out."}
+    }
+  },
+  "hegemony": {
+    "hail": ["You have been designated a priority target. Comply by dying.", "Attention, unregistered fleet. You are now an entry in my report.", "This sector is under Hegemony administration. You are not on the list."],
+    "again": ["Our previous engagement has been reviewed. Corrections have been made.", "You are in my file now. It is a thick file.", "Last time was a statistical outlier. Today is the average."],
+    "final": ["This is your final notice. Stand down, or be removed from the record.", "The anchorage is closed to you. Permanently."],
+    "beaten": ["Tactical withdrawal. This is noted in your file, not mine.", "Disengage. Regroup. This is not over."],
+    "death": ["Note the time. For the report.", "Flagship lost. Command passes to... nobody."],
+    "gloat": ["Target neutralised. Log it and move on.", "Engagement concluded. Efficiency rating: excellent."],
+    "kill": ["One hostile removed. Continue.", "Confirmed kill. Next target."],
+    "signature": ["All reserve squadrons, jump in now. Encircle them.", "Reinforcements on my mark. Mark."],
+    "scar": ["You damaged me {scars}. Each time, the Admiralty sent me a better ship.", "My scars are logged, catalogued and avenged in order."],
+    "memory": {
+      "lance": "Your lances strained my shields last time. My emitters have been upgraded.",
+      "torp": "Torpedoes, last time. My point defense officers have been retrained. Some of them replaced.",
+      "sq": "Your wings caught us unscreened last time. That officer is no longer with us.",
+      "ram": "You rammed my line. Unprofessional. My prows are reinforced now.",
+      "board": "You boarded my ships. My marines have orders to take no prisoners.",
+      "battery": "Your batteries outgunned us at close range. We will not close this time.",
+      "evasive": "You evaded my gunnery last time. My gunners have run the drill four hundred times since."
+    },
+    "personality": {
+      "proud": {"hail": "I am a Rear Admiral of the Hegemony. You are a rounding error.", "beaten": "This will not appear in my service record. You will."},
+      "cruel": {"hail": "I have orders to make an example of you. I asked for those orders.", "beaten": "Withdraw. I will take this out on the next colony instead."},
+      "cunning": {"hail": "Your route was predicted eleven days ago. Welcome.", "beaten": "Acceptable losses. You have revealed your doctrine."},
+      "zealous": {"hail": "For the Hegemony. For order. For the end of you.", "beaten": "The Hegemony endures. So do I."},
+      "cold": {"hail": "Engage.", "beaten": "Disengage."},
+      "mocking": {"hail": "Is this your whole fleet? I have parade formations bigger than this.", "beaten": "Fine. Have a medal. I will take it back later."}
+    }
+  },
+  "corsair": {
+    "hail": ["There you are! I've been saving a spot on my wall for your flag.", "Nice fleet. Shame about the owner.", "Oi! Everything you've got, in a pile, now. Or the hard way. Please the hard way."],
+    "again": ["Remember me? I remember you. I remember everything you cost me.", "Back for more? Good. I need the parts.", "You got lucky last time. I don't believe in luck. I believe in bigger guns."],
+    "final": ["Nice ship. I'll take it when you're done with it. Which is now.", "All in, then. Winner takes the treasure. Loser takes a long walk."],
+    "beaten": ["You got lucky! Keep the change, I'll be back for it!", "Every ship, scatter! Grab what you can carry!"],
+    "death": ["Worth it. Almost.", "Tell them... I went down... rich..."],
+    "gloat": ["Strip it. Sell the rest. Burn what's left.", "Lads! Drinks are on the dead!"],
+    "kill": ["Ha! That one's mine!", "Pop! There goes another one!"],
+    "signature": ["Grab the loot and burn for the edge! We're done here!", "That's enough plunder for one day. Run, lads!"],
+    "scar": ["You scarred me {scars}. Each one cost me a fortune in surgeons.", "See this face? You did this. I've been practising my revenge in the mirror."],
+    "memory": {
+      "lance": "Your lances cut my lads apart last time. I've welded on twice the plate.",
+      "torp": "You torpedoed me last time. Funny. I brought more torpedoes.",
+      "sq": "Your little fighters chewed my hulls. I've got flak on everything now. Even the galley.",
+      "ram": "You rammed me! Me! That's my move! Do it again, I dare you!",
+      "board": "Your boarders stole my best ship. I want it back. I want you with it.",
+      "battery": "Your guns peppered me last time. I've got thicker skin now. Literally.",
+      "evasive": "You ran circles round me last time. I've strapped on bigger engines."
+    },
+    "personality": {
+      "proud": {"hail": "Know who I am? Every port from here to the rim knows. Soon you will too.", "beaten": "Nobody does this to me! Nobody!"},
+      "cruel": {"hail": "I keep the crews I catch. Alive, mostly. For a while.", "beaten": "Run! I'll take it out on the next convoy."},
+      "cunning": {"hail": "Followed my breadcrumbs, did you? Good little fleet.", "beaten": "Lost a few ships. Got what I came for, though."},
+      "zealous": {"hail": "Loot is the only god. And I am its prophet.", "beaten": "The loot gods test me! I will pass!"},
+      "cold": {"hail": "Business. Nothing personal. Hand it over.", "beaten": "Bad deal. Walking away."},
+      "mocking": {"hail": "Oh, look! A fleet! It's like Midwinter came early!", "beaten": "Ha! Fine! You win this round! I'm still richer!"}
+    }
+  },
+  "chorus": {
+    "hail": ["We followed your scent across the stars. Now we feed.", "Meat that thinks. Meat that runs. Meat that sings when it breaks.", "Hungry. Hungry. Hungry. You."],
+    "again": ["We remember the taste of you. We want more.", "You hurt us. We grew. We are larger than your hurt now.", "The song learned your shape. It is waiting."],
+    "final": ["Many mouths. One hunger. You are the meal that sings.", "The sun is ours to eat. And so are you."],
+    "beaten": ["Wounded. Not ended. We remember the taste of you.", "Scatter. Grow. Return."],
+    "death": ["The song... goes on... without...", "Many mouths... falling... silent..."],
+    "gloat": ["Taste. Remember. Hunger.", "Full. Briefly. Then hungry again."],
+    "kill": ["Swallowed.", "Another voice for the choir."],
+    "signature": ["Your dead feed us. Thank you for your dead.", "Every ship you lose makes us stronger. Lose more."],
+    "scar": ["You cut us {scars}. The scars grew teeth.", "Our wounds closed over your name. We feel it in every scar."],
+    "memory": {
+      "lance": "Your light burned us. We grew thicker skins in the dark.",
+      "torp": "Your fire-seeds hurt us. We grew mouths that eat them.",
+      "sq": "Your little stingers came. We grew spores to catch them.",
+      "ram": "You crashed into us. We grew shells.",
+      "board": "Your crawlers came inside us. We digested them. Send more.",
+      "battery": "Your many small fires hurt. We learned to move between them.",
+      "evasive": "You were hard to catch. We grew faster eyes."
+    },
+    "personality": {
+      "proud": {"hail": "We are the greatest throat in the dark. Kneel and be eaten.", "beaten": "Insult. Insult. The throat remembers."},
+      "cruel": {"hail": "We eat slowly. So you can hear it.", "beaten": "We will eat your colonies while you chase us."},
+      "cunning": {"hail": "We waited where you would come. You came.", "beaten": "Lost a limb. Grew a plan."},
+      "zealous": {"hail": "The hunger is holy. You are the offering.", "beaten": "The hunger tests us. We stay hungry."},
+      "cold": {"hail": "Prey sighted. Feed.", "beaten": "Retreat. Regrow."},
+      "mocking": {"hail": "Little meat brought friends. How kind.", "beaten": "Ha. Ha. Ha. We will still eat you. Later."}
+    }
+  },
+  "ithar": {
+    "hail": ["I have watched your kind for a long time. I am tired of watching.", "You are very young to die so far from home.", "Turn back. I will not ask in a second language."],
+    "again": ["A thousand years from now no one will remember our last meeting. I will remember it for all of them.", "You were lucky once. Luck is a young race's word.", "We meet again. I have rehearsed this for longer than you have lived."],
+    "final": ["We watched younger stars than you burn out. No one will miss you.", "This grave was old before your world had oceans. You will not disturb it."],
+    "beaten": ["A small setback, over a long life. We will meet again.", "I withdraw. Not because you won. Because I can afford to wait."],
+    "death": ["So the last light goes out... gently.", "Remember... that I was beautiful..."],
+    "gloat": ["Mourn them, if your kind still knows how.", "Another short song, ended."],
+    "kill": ["Gone, like a spark.", "One fewer. The silence improves."],
+    "signature": ["Your flagship and mine, alone. Let us see which song is older.", "Enough. I have seen what I came to see. We withdraw."],
+    "scar": ["You marked me {scars}. In nine centuries no one else has.", "My scars are the only thing your kind has ever made that will last."],
+    "memory": {
+      "lance": "Your crude lances found my shields last time. I have woven them finer.",
+      "torp": "Your torpedoes surprised me once. Surprise is a young race's only weapon. It is spent.",
+      "sq": "Your little wings swarmed me. I have brought starlings of my own.",
+      "ram": "You threw your ships at mine like stones. I will not stand still for it again.",
+      "board": "Your boarders walked my halls. I have had them cleansed with light.",
+      "battery": "Your guns were loud and many. I have learned to step between them.",
+      "evasive": "You flitted out of reach last time. I am older at that game than you."
+    },
+    "personality": {
+      "proud": {"hail": "I am the last of a great house. You are the first of nothing.", "beaten": "You will not live long enough to boast of this."},
+      "cruel": {"hail": "I will let one of your ships live, so it can tell the others how the rest died.", "beaten": "Go. Your worlds are fragile. I will visit them."},
+      "cunning": {"hail": "I chose this place a century ago, for exactly this.", "beaten": "Expected. My song has many verses."},
+      "zealous": {"hail": "The elders sang that I would end you. I am only the last note.", "beaten": "The song bends. It does not break."},
+      "cold": {"hail": "Begin.", "beaten": "Enough."},
+      "mocking": {"hail": "Oh, you are adorable. Do you know how old these sails are?", "beaten": "Charming. Truly. Do try to live long enough to try again."}
+    }
+  },
+  "deathless": {
+    "hail": ["Your name is entered in the census of the condemned.", "Trespasser. The dynasty has noted you.", "You are a brief error in an ancient count. Correction begins."],
+    "again": ["You delayed me. Delay is all your kind can ever do.", "I have been rebuilt. You have only grown older.", "Our last meeting is recorded. So is its rematch. I know how it ends."],
+    "final": ["You are a brief error in a long count. I am here to correct it.", "The court waits. You will not keep it waiting long."],
+    "beaten": ["A delay. The count resumes shortly.", "This hull is lost. I am not."],
+    "death": ["The count... is not... finished.", "Interred... again..."],
+    "gloat": ["Recorded. Filed. Forgotten.", "Correction complete."],
+    "kill": ["Erased.", "One fewer squatter."],
+    "signature": ["Did you think death would stop me? I have died before.", "Rise. The dynasty does not accept this ending."],
+    "scar": ["You broke my body {scars}. Each time it was rebuilt stronger.", "My scars are filed in the archive. Yours will be filed in the dust."],
+    "memory": {
+      "lance": "Your beams cut my hull last time. The living metal remembers and thickens.",
+      "torp": "Your torpedoes cracked me. My sentries are awake now.",
+      "sq": "Your small craft annoyed me. Annoyances are corrected.",
+      "ram": "You struck me with your hull. Crude. Effective once.",
+      "board": "Your boarders entered my tomb. They are still there. In a sense.",
+      "battery": "Your guns chipped at me. I am stone. Stone is patient.",
+      "evasive": "You avoided my arcs last time. I have recalculated."
+    },
+    "personality": {
+      "proud": {"hail": "I ruled worlds before your sun was lit. Address me accordingly.", "beaten": "This insult is filed under eternity."},
+      "cruel": {"hail": "I will not kill your crews. I will keep them. Forever.", "beaten": "I withdraw to your colonies. They will be corrected first."},
+      "cunning": {"hail": "I have run this battle ten thousand times in the tomb. You lose in all of them.", "beaten": "Within parameters. The long count continues."},
+      "zealous": {"hail": "The dynasty commands. I obey. You end.", "beaten": "The dynasty is patient. So am I."},
+      "cold": {"hail": "Squatter detected. Correct.", "beaten": "Retreat. Rebuild."},
+      "mocking": {"hail": "The living, playing at war. It never stops being amusing.", "beaten": "Very good. I will tell the court. They will laugh."}
+    }
+  }
+}

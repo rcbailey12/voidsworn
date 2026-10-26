@@ -196,14 +196,47 @@ func earned_title_text(run: Dictionary) -> String:
 func titled_name(admiral_id: String) -> String:
 	var a: Dictionary = career.P.get("admirals", {}).get(admiral_id, {})
 	var t := str(a.get("last_title", ""))
-	return admiral_name(admiral_id) + (" " + career.title_name(t, admiral_fac(admiral_id)) if t != "" else "")
+	var at: String = career.arc_title(admiral_fac(admiral_id))
+	return admiral_name(admiral_id) + (" " + career.title_name(t, admiral_fac(admiral_id)) if t != "" else "") + ((", " + at) if at != "" else "")
 
 
 func medal_name(id: String) -> String:
-	for m in career.medals_data.get("medals", []):
+	for m in career.all_medals():
 		if str(m["id"]) == id:
 			return str(m["n"])
 	return id
+
+
+# ---------------------------------------------------------------- arc rewards (cosmetic; the unlock's rules are stream B's)
+
+# The flagship paint scheme to draw for a faction (default: the current run's), or {} for the faction's normal colours.
+# {id, n, hull, trim, glow, pattern}, colours as hex. For the ship renderer (G2, G4 look, A4 ships): tint the player's
+# flagship with it when not empty.
+func flagship_paint(fac: String = "") -> Dictionary:
+	if fac == "" and C != null and C.RUN is Dictionary:
+		fac = str(C.RUN.get("fac", ""))
+	return career.flagship_paint(fac)
+
+
+func set_paint(fac: String, on: bool) -> void:
+	career.set_paint(fac, on)
+
+
+func arc_unlocks() -> Array:
+	return career.arc_unlocks()
+
+
+# Called when a faction arc's beat 3 is decided (step 3 wiring). Emits medal_earned for the arc medal.
+func arc_end(won: bool, choices: Dictionary = {}) -> Dictionary:
+	if C == null or not (C.RUN is Dictionary):
+		return {}
+	var run: Dictionary = C.RUN
+	var nem = run.get("nem")
+	var rival := ("%s %s" % [str(nem.get("title", "")), str(nem.get("name", ""))]).strip_edges() if nem is Dictionary else ""
+	var row: Dictionary = career.record_arc_end(str(run.get("fac", "")), str(run.get("admiral", "")), rival, choices, won)
+	for id in career.take_new_medals():
+		medal_earned.emit(id, medal_name(id))
+	return row
 
 
 # A fresh battle voice for the battle scene (see battle_voice.gd).
