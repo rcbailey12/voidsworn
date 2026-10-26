@@ -27,7 +27,7 @@ def log(*a): print('[a4]', *a, flush=True)
 def build_hull(root, code, cfg):
     if cfg.get('loft'):  # Ithar hulls the AI could not mesh (I8: a curved sheet with a stub of body) are lofted by hand instead
         import ithar
-        h = ithar.loft(cfg['loft'], os.environ.get('A4_TMP') or os.path.join(root, '_a4tmp'))
+        import tempfile; h = ithar.loft(cfg['loft'], os.environ.get('A4_TMP') or os.path.join(tempfile.gettempdir(), 'a4tmp'))
         o = blmesh.mesh_from_arrays('hull', h['pos'], h['idx'], nor=h['nor'], uvs={'atlas': h['uv']})
         h['fingers'] = []; return o, h, {}, len(h['idx']), len(h['idx'])
     h = frame.load(root, code, cfg.get('yaw', 0), roll=cfg.get('roll', 0))
