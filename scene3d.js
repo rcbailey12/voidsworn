@@ -11,6 +11,7 @@ function hexC3(h){ return C3.FromHexString(h); }
 
 function init3D(canvas){
   const engine=new BABYLON.Engine(canvas,true,{stencil:/[?&]shots/.test(location.search),antialias:true,preserveDrawingBuffer:/[?&]shots/.test(location.search)},true); /* v45: no preserved buffer or stencil unless a capture script asks for them */
+  try{ const gi=engine.getGlInfo&&engine.getGlInfo(), r=(gi&&gi.renderer)||''; if(!/[?&]shots/.test(location.search)&&/Basic Render|SwiftShader|llvmpipe|Software/i.test(r)){ const b=document.createElement('div'); b.id='swwarn'; b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;padding:10px 16px;background:#7a1d12;color:#fff;font:600 15px system-ui,sans-serif;text-align:center'; b.textContent='Your browser is not using your graphics card ('+r.replace(/^ANGLE \(|\)$/g,'')+'), so the game will be very slow. Close every browser window and reopen it, or open the game in Microsoft Edge.'; document.body.appendChild(b); console.warn('[vs] software rendering:',r); } }catch(e){} /* Oct 25: warn when the browser has fallen back to software rendering */
   const scene=new BABYLON.Scene(engine);
   scene.clearColor=new C4(.01,.015,.03,1);
   scene.ambientColor=new C3(.2,.22,.28);
