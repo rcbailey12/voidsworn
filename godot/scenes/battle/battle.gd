@@ -90,6 +90,8 @@ var tips_off := false
 var bot := false
 var bot_t := 0.0
 var bot_moved := {}
+var bot_ab := {}
+var bot_cmd_used := false
 var wing_sel := ""          # one of your squadrons picked for a standing order
 var cmd_armed_t := -9.0
 var follow := true          # follow enemy activations with the camera (settings)
@@ -331,6 +333,9 @@ func _begin(a) -> void:
 	ended = false
 	result = {}
 	errors.clear()
+	bot_ab.clear()
+	bot_moved.clear()
+	bot_cmd_used = false
 	t_start = Time.get_ticks_msec() / 1000.0
 	last_progress = t_start
 	for id in views:
@@ -2182,12 +2187,41 @@ func _bot_step() -> void:
 				u_id = u["id"]
 				break
 	if u_id == "":
-		_cmd(func(): api.end_activation(); return true)
+		if _classic():
+			_cmd(func(): api.end_turn(); return true)
+		else:
+			_cmd(func(): api.end_activation(); return true)
 		return
 	sel = u_id
 	var ru = api.unit(u_id)
+	# the Admiral's Command once the fight is joined
+	if api.has_method("can_command") and int(V["round"]) >= 2 and api.can_command() and not bot_cmd_used:
+		bot_cmd_used = true
+		_cmd(func(): return api.command())
+		return
 	# fire first if anything bears
 	var tgt := _bot_target(ru)
+	# a damage or reload ability just before a volley, a shield surge when a facing is down, evasion when hurt
+	var ab := str(ru.get("ab", "")) if ru.get("ab") != null else ""
+	if ab != "" and R.canAbility(ru) and bot_ab.get(u_id, -1) != int(V["round"]):
+		var use := false
+		if tgt != "" and ab in ["focus", "frenzy"]:
+			use = true
+		elif ab == "reload" and _any_fired(ru) == false and tgt != "":
+			use = false
+		elif ab == "surge" and float(ru["shMax"]) > 0 and (ru["sh"] as Array).min() < float(ru["shMax"]) * 0.3:
+			use = true
+		elif ab in ["evasive", "phase"] and float(ru["hp"]) < float(ru["maxHp"]) * 0.6:
+			use = true
+		elif ab in ["regrow", "reclaim"] and float(ru["hp"]) < float(ru["maxHp"]) * 0.7:
+			use = true
+		elif ab in ["ionpulse", "overburn"] and tgt != "":
+			use = true
+		if use:
+			bot_ab[u_id] = int(V["round"])
+			var aid := u_id
+			if _cmd(func(): return api.ability(aid)):
+				return
 	if tgt != "":
 		var id := u_id
 		_cmd(func():
