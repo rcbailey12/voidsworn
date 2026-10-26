@@ -2,26 +2,102 @@
 # The renderer never writes rules state: it sends commands here, reads view(), and plays take_events().
 # The turn flow is a port of the game's ui3d.js (guard, act, endActivation, aiStep, nextRound), alternating activations.
 extends RefCounted
-# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so these warnings are expected here and silenced for this file only.
-@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "integer_division", "narrowing_conversion", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
+# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so the untyped-code warnings are silenced for this file only.
+# Of the six classes the project leaves on, three stay ON here and give 0 warnings (Oct 26, checked by turning them into errors):
+# integer_division and narrowing_conversion (the JS-port number traps) and unsafe_property_access. The other three are silenced
+# because they are the JS shapes themselves (65 call arguments, 449 method calls, 16 discarded results at Oct 26): unsafe_call_argument
+# (Variant into a typed float), unsafe_method_access (calls on untyped values) and return_value_discarded (JS ignores results the same way).
+@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 const JSM = preload("res://rules/jsm.gd")
 const RulesScript = preload("res://rules/rules.gd")
 
 var R                       # the rules (rules.gd); read-only for the game side, use view()
-var phase := "none"         # "player" | "enemy" | "over" | "none"
+var phase := "none"         # "player" | "enemy" | "over" | "none" | "halted" (hard stop, see below)
 var _queue: Array = []      # enemy units still to act in the current enemy step
-var _mutex := Mutex.new()
+var _mutex := Mutex.new()    # recursive: every public call below holds it (see "Threads" in API.md)
 var _hexes: Array = []       # every playable hex {q, r} of this battle's board (fixed at setup; view().hexes, read-only)
 var _alt := true              # alternating activations (the game's default) or Classic mode (whole turns)
 var _c_order: Array = []; var _c_i := 0; var _c_g := 0; var _c_done: Array = []   # Classic mode: the enemy turn in progress (battle.js aiTurn)
 
 # ---------------- setup ----------------
+# ---------------- threads, errors and the hard stop ----------------
+# Every public function is a thin wrapper: lock, run the body (_i_<name>), check, unlock. So step() or threat_map() may run on a
+# worker thread while the scene calls view(), ui_info() or anything else: the other caller waits for the lock instead of reading
+# half-changed state. A runtime error inside the rules returns from the failing function with a default value and execution goes
+# on (GDScript has no exceptions), so the wrapper always reaches its unlock; the error itself is caught by a Logger that counts
+# script errors raised in res://rules/ during the call.
+# Hard stop (on by default in debug builds and for bot runs: set hard_stop = true): a rules script error or a NOT PORTED rule
+# (rules.gd np() or an unported maths branch in jsm.gd) during any call halts the battle: phase becomes "halted", view().halt says
+# why, an event {t: "halt", why} is emitted, and every command and step() does nothing until the next new_battle. With hard_stop
+# off (release builds) the error is still logged and counted, and play goes on.
+var hard_stop: bool = OS.is_debug_build()
+var halted := ""              # why the battle was halted ("" while it runs)
+var version := 0              # bumped after every call that can change the battle; caches below are per version
+var _depth := 0
+var _err0 := 0
+var _ui_cache := {}; var _ui_ver := -1
+var _threat_cache := {}; var _threat_ver := -1
+class RulesErrors extends Logger:
+	var n := 0
+	var first := ""
+	var mutex := Mutex.new()
+	func _log_error(function: String, file: String, line: int, code: String, rationale: String, editor_notify: bool, error_type: int, script_backtraces: Array) -> void:
+		if error_type == Logger.ERROR_TYPE_WARNING: return
+		var mine := file.begins_with("res://rules/")
+		if not mine:
+			for bt in script_backtraces:
+				if bt is ScriptBacktrace and bt.get_frame_count() > 0 and String(bt.get_frame_file(0)).begins_with("res://rules/"): mine = true
+		if not mine: return
+		mutex.lock()
+		n += 1
+		if first == "": first = "%s (%s:%d %s)" % [rationale if rationale != "" else code, file.get_file(), line, function]
+		mutex.unlock()
+	func count() -> int:
+		mutex.lock(); var c := n; mutex.unlock(); return c
+	func first_msg() -> String:
+		mutex.lock(); var f := first; first = ""; mutex.unlock(); return f
+static var _errlog: RulesErrors = null
+static var _errlog_mutex := Mutex.new()
+static func _errors() -> RulesErrors:
+	_errlog_mutex.lock()
+	if _errlog == null:
+		_errlog = RulesErrors.new(); OS.add_logger(_errlog)
+	_errlog_mutex.unlock()
+	return _errlog
+func _enter() -> void:
+	_mutex.lock()
+	_depth += 1
+	if _depth == 1:
+		_err0 = _errors().count(); _errors().first_msg()   # forget an older error's text
+func _leave(changes: bool) -> void:
+	if _depth == 1:
+		if changes: version += 1
+		if halted == "" and R != null:
+			var why := ""
+			if _errors().count() > _err0: why = "rules script error: " + _errors().first_msg()
+			elif R.not_ported != "": why = "NOT PORTED: " + R.not_ported
+			if why != "" and hard_stop: _halt(why)
+	_depth -= 1
+	_mutex.unlock()
+func _halt(why: String) -> void:
+	halted = why; phase = "halted"; _queue.clear(); version += 1
+	if R != null: R.emit({"t": "halt", "why": why})
+	printerr("BATTLE HALTED (hard stop): ", why)
+
 func load_rules(tables_path: String = "res://rules/data/tables.json") -> String:
+	_enter(); halted = ""
+	if R != null: R.not_ported = ""   # a new battle starts clean
+	var r = _i_load_rules(tables_path); _leave(true); return r
+func _i_load_rules(tables_path: String = "res://rules/data/tables.json") -> String:
 	R = RulesScript.new()
 	return R.load_tables(tables_path)
 
 # A battle from a test scenario (rules/test/scenarios.json) or a scenario dictionary with the same fields.
 func new_battle_scenario(sc, seed_override: int = -1) -> void:
+	_enter(); halted = ""
+	if R != null: R.not_ported = ""   # a new battle starts clean
+	_i_new_battle_scenario(sc, seed_override); _leave(true)
+func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	var S = sc
 	if sc is String:
 		S = JSON.parse_string(FileAccess.get_file_as_string("res://rules/test/scenarios.json"))[sc]
@@ -42,7 +118,7 @@ func new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if R.jt(S.get("mod")): cfg["mod"] = S.mod
 	if S.get("nemesis") != null: cfg["nemesis"] = S.nemesis.duplicate(true)
 	if R.jt(S.get("verb")): cfg["verb"] = S.verb
-	if S.get("alt") == false: cfg["alt"] = false
+	if R.js_false(S.get("alt")): cfg["alt"] = false
 	if R.jt(S.get("campaign")):
 		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force"); cfg["event_war"] = S.get("event_war")
 	if S.get("enemies") != null:
@@ -51,11 +127,48 @@ func new_battle_scenario(sc, seed_override: int = -1) -> void:
 		cfg["enemies"] = en
 	new_battle(run, cfg)
 
+# The config is the one input the rules take from outside (G3's campaign, G2's scenes, saves). The rules compare these fields with
+# string literals, and GDScript stops the call on a cross-type ==, so a wrong type is reported here and dropped (treated as unset,
+# as JS would treat an unknown value) instead of stopping a battle halfway through its setup. StringName becomes String.
+const CFG_STRINGS := ["kind", "fac", "obj", "shape", "map", "dep", "arch", "mod", "verb", "event_force", "biome", "approach", "arena"]
+var cfg_errors: Array = []   # what _clean_cfg dropped in the last new_battle (also pushed as engine errors)
+func _clean_cfg(cfg: Dictionary) -> Dictionary:
+	cfg_errors = []
+	var c := cfg.duplicate()
+	for k in CFG_STRINGS:
+		if not c.has(k) or c[k] == null: continue
+		if c[k] is StringName: c[k] = String(c[k])
+		elif not (c[k] is String):
+			cfg_errors.append("battle config %s must be a String or null, got %s (%s): dropped" % [k, type_string(typeof(c[k])), str(c[k]).left(60)])
+			c.erase(k)
+	for k in ["seed", "col"]:
+		if c.has(k) and c[k] != null and not (c[k] is int or c[k] is float):
+			cfg_errors.append("battle config %s must be a number, got %s: dropped" % [k, type_string(typeof(c[k]))]); c.erase(k)
+	for k in ["enemies"]:
+		if c.has(k) and c[k] != null and not (c[k] is Array):
+			cfg_errors.append("battle config %s must be an Array, got %s: dropped" % [k, type_string(typeof(c[k]))]); c.erase(k)
+	for k in ["nemesis"]:
+		if c.has(k) and c[k] != null and not (c[k] is Dictionary):
+			cfg_errors.append("battle config %s must be a Dictionary, got %s: dropped" % [k, type_string(typeof(c[k]))]); c.erase(k)
+	if not (c.get("fac") is String and R.FACTIONS.has(c["fac"])):
+		cfg_errors.append("battle config fac must name a faction, got %s: the battle cannot be set up" % str(c.get("fac")))
+	elif c.get("enemies") == null and c.get("col") == null:
+		cfg_errors.append("battle config col (map column) missing for a generated fleet: using 3"); c["col"] = 3
+	for e in cfg_errors: push_error(e)
+	return c
+
 # A battle from a campaign run (the RUN dictionary: admiral, fac, sector, fleet of ships, relics, boons, ...) and a battle config
 # (kind, fac, col, seed, obj, shape, map, dep, arch, mod; enemies optional: without it the enemy fleet is generated).
 func new_battle(run: Dictionary, cfg: Dictionary) -> void:
+	_enter(); halted = ""
+	if R != null: R.not_ported = ""   # a new battle starts clean
+	_i_new_battle(run, cfg); _leave(true)
+func _i_new_battle(run: Dictionary, cfg: Dictionary) -> void:
+	cfg = _clean_cfg(cfg)
+	if not (cfg.get("fac") is String and R.FACTIONS.has(cfg["fac"])):
+		R.events.clear(); _queue.clear(); _halt(cfg_errors[-1]); return
 	R.RUN = run; R.events.clear(); _queue.clear()
-	var campaign = R.jt(cfg.get("campaign")); var force = cfg.get("event_force"); var war = R.jt(cfg.get("event_war")); _alt = cfg.get("alt") != false
+	var campaign = R.jt(cfg.get("campaign")); var force = cfg.get("event_force"); var war = R.jt(cfg.get("event_war")); _alt = not R.js_false(cfg.get("alt"))   # JS cfg.alt!==false (type-safe: any other value, even a Dictionary, means alternating)
 	cfg = cfg.duplicate(); cfg.erase("campaign"); cfg.erase("event_force"); cfg.erase("event_war"); cfg.erase("alt")
 	R.startBattle(cfg)
 	_hexes = []
@@ -78,12 +191,18 @@ func _prep() -> void: # ui3d.js prepBattle
 
 # ---------------- reading state ----------------
 func unit(id: String) -> Variant:
+	_enter()
+	var r = _i_unit(id); _leave(false); return r
+func _i_unit(id: String) -> Variant:
 	for u in R.B["units"]:
 		if u["id"] == id: return u
 	return null
 
 # A plain copy for drawing. Safe to keep; never changes behind your back.
 func view() -> Dictionary:
+	_enter()
+	var r = _i_view(); _leave(false); return r
+func _i_view() -> Dictionary:
 	var B = R.B; var us := []
 	for u in B["units"]:
 		var ws := []
@@ -98,7 +217,7 @@ func view() -> Dictionary:
 			"moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy")})
 	return {"round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
-		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps(), "zones": _zones()}
+		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps(), "zones": _zones(), "halt": halted if halted != "" else null}
 func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
 	var o := {}
 	if R.B.get("obj") == null: return o
@@ -114,17 +233,29 @@ func _torps() -> Array: # torpedo salvos in flight: they strike at the start of 
 
 # Everything that happened since the last call, in order (API.md lists the event types).
 func take_events() -> Array:
+	_enter()
+	var r = _i_take_events(); _leave(false); return r
+func _i_take_events() -> Array:
 	var e = R.events; R.events = []; return e
 
 # ---------------- previews for the UI (no state change) ----------------
-func reach(id: String) -> Array:          # every end state the ship can move to: {q, r, f, cost, t, path}
+func reach(id: String) -> Array:
+	_enter()
+	var r = _i_reach(id); _leave(false); return r
+func _i_reach(id: String) -> Array:          # every end state the ship can move to: {q, r, f, cost, t, path}
 	var u = unit(id)
 	if u == null or not _can_use(u): return []
 	return R.computeReach(u).states
 func can_fire(id: String, wi: int, target_id: String) -> bool:
+	_enter()
+	var r = _i_can_fire(id, wi, target_id); _leave(false); return r
+func _i_can_fire(id: String, wi: int, target_id: String) -> bool:
 	var u = unit(id); var t = unit(target_id)
 	return u != null and t != null and R.canFire(u, u["weapons"][wi], t)
-func preview_fire(id: String, wi: int, target_id: String) -> Dictionary:   # hit %, expected shield and hull damage, facing quadrant
+func preview_fire(id: String, wi: int, target_id: String) -> Dictionary:
+	_enter()
+	var r = _i_preview_fire(id, wi, target_id); _leave(false); return r
+func _i_preview_fire(id: String, wi: int, target_id: String) -> Dictionary:   # hit %, expected shield and hull damage, facing quadrant
 	var u = unit(id); var t = unit(target_id); var w = u["weapons"][wi]
 	var e = R.expectedVs(u, w, t)
 	return {"hit": R.hitChance(u, w, t), "shield": e.shield, "hull": e.hull, "quad": e.quad, "rear": e.rear, "can": R.canFire(u, w, t)}
@@ -161,6 +292,10 @@ func _done_raw(u) -> bool: # ui3d.js isDoneRaw
 # state: one of reach(id). opts.late_fire = {weapons: [indices], target: id} fires those guns during the burn, as the game's
 # attack-move does (about two-thirds of the way along; the move event then has late_fire true and the fire events follow it).
 func move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_move(id, state, opts); _leave(true); return r
+func _i_move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
 	var u = unit(id)
 	if not _guard(u): return false
 	R.B["busy"] = true
@@ -181,6 +316,9 @@ func move(id: String, state: Dictionary, opts: Dictionary = {}) -> bool:
 # ui3d.js attackMovePlan: the best reachable state from which the given guns (default: every ready gun but flak) reach the target.
 # Returns {state, guns, of} or null. attack_move(id, target_id) burns there and opens fire on the way, as tapping an enemy does.
 func attack_plan(id: String, target_id: String, weapons = null) -> Variant:
+	_enter()
+	var r = _i_attack_plan(id, target_id, weapons); _leave(false); return r
+func _i_attack_plan(id: String, target_id: String, weapons = null) -> Variant:
 	var s = unit(id); var t = unit(target_id)
 	if s == null or t == null or R.jt(s.get("isSq")) or R.jt(s.get("braced")) or R.jt(t.get("dead")): return null
 	var idx = []
@@ -204,6 +342,10 @@ func attack_plan(id: String, target_id: String, weapons = null) -> Variant:
 	R.eval_end()
 	return best
 func attack_move(id: String, target_id: String, weapons = null) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_attack_move(id, target_id, weapons); _leave(true); return r
+func _i_attack_move(id: String, target_id: String, weapons = null) -> bool:
 	var s = unit(id)
 	if s == null or s["side"] != "player" or not _can_use(s): return false
 	var am = attack_plan(id, target_id, weapons)
@@ -211,26 +353,50 @@ func attack_move(id: String, target_id: String, weapons = null) -> bool:
 	var idx = weapons if weapons != null else range(s["weapons"].size())
 	return move(id, am.state, {"late_fire": {"weapons": idx, "target": target_id}})
 func fire(id: String, wi: int, target_id: String, called_section = null) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_fire(id, wi, target_id, called_section); _leave(true); return r
+func _i_fire(id: String, wi: int, target_id: String, called_section = null) -> bool:
 	var u = unit(id); var t = unit(target_id)
 	if t == null or not _guard(u): return false
 	R.B["busy"] = true; var ok = R.fireWeapon(u, wi, t, {"called": called_section} if called_section != null else {}); _after_act(); return ok
-func ability(id: String, arg = null) -> bool:       # arg: {hex: {q, r}} for nova, blink and launch; {kind} for launch
+func ability(id: String, arg = null) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_ability(id, arg); _leave(true); return r
+func _i_ability(id: String, arg = null) -> bool:       # arg: {hex: {q, r}} for nova, blink and launch; {kind} for launch
 	var u = unit(id)
 	if not _guard(u): return false
 	R.B["busy"] = true; var ok = R.useAbility(u, arg); _after_act(); return ok
-func order(id: String, kind: String) -> bool:       # "brace" | "full" | "lock" | "helm"
+func order(id: String, kind: String) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_order(id, kind); _leave(true); return r
+func _i_order(id: String, kind: String) -> bool:       # "brace" | "full" | "lock" | "helm"
 	var u = unit(id)
 	if not _guard(u) or not R.canOrder(u, kind): return false
 	R.B["busy"] = true; R.giveOrder(u, kind); _after_act(); return true
 func ram(id: String) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_ram(id); _leave(true); return r
+func _i_ram(id: String) -> bool:
 	var u = unit(id)
 	if not _guard(u): return false
 	R.B["busy"] = true; var ok = R.ramUnit(u); _after_act(); return ok
 func board(id: String, target_id: String) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_board(id, target_id); _leave(true); return r
+func _i_board(id: String, target_id: String) -> bool:
 	var u = unit(id); var t = unit(target_id)
 	if t == null or not _guard(u): return false
 	R.B["busy"] = true; var ok = R.boardUnit(u, t); _after_act(); return ok
-func rotate(id: String, dir: int) -> bool:          # +1 or -1: turn in place
+func rotate(id: String, dir: int) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_rotate(id, dir); _leave(true); return r
+func _i_rotate(id: String, dir: int) -> bool:          # +1 or -1: turn in place
 	var u = unit(id)
 	if not _guard(u): return false                  # as the game: the ship becomes the active one even if it cannot turn
 	var ok = R.canRotate(u)
@@ -238,6 +404,10 @@ func rotate(id: String, dir: int) -> bool:          # +1 or -1: turn in place
 # A standing order for one of your wings (ui3d.js wing select then tap): an enemy ship = strike it until it dies,
 # one of your own ships = guard it. Pass target_id = null to do nothing. Orders take effect in the wing's next swarm phase.
 func wing_order(wing_id: String, target_id: String) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_wing_order(wing_id, target_id); _leave(true); return r
+func _i_wing_order(wing_id: String, target_id: String) -> bool:
 	var w = unit(wing_id); var u = unit(target_id)
 	if phase == "over" or w == null or u == null or w["side"] != "player" or not R.jt(w.get("isSq")) or R.jt(w.get("dead")): return false
 	if is_same(u, w) or (u["side"] == "player" and R.jt(u.get("isSq"))): return false
@@ -246,26 +416,46 @@ func wing_order(wing_id: String, target_id: String) -> bool:
 	R.hook("wing order", w); return true
 # B4 wing doctrines: a carrier's stance for its wings ("strike", "screen" or "hunt"), one free change per round (ACT.stance)
 func stance(id: String, st: String) -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_stance(id, st); _leave(true); return r
+func _i_stance(id: String, st: String) -> bool:
 	var u = unit(id)
 	if phase != "player" or u == null or u["side"] != "player" or R.jt(R.B.get("busy")) or R.jt(R.B.get("over")) or not R.canStance(u): return false
 	return R.setStance(u, st)
-func can_command() -> bool: return phase == "player" and R.canCommand("player")
-func command() -> bool:                             # the Admiral's Command (once per battle, from round 1)
+func can_command() -> bool:
+	_enter()
+	var r = _i_can_command(); _leave(false); return r
+func _i_can_command() -> bool: return phase == "player" and R.canCommand("player")
+func command() -> bool:
+	_enter()
+	if halted != "": var h = false; _leave(false); return h
+	var r = _i_command(); _leave(true); return r
+func _i_command() -> bool:                             # the Admiral's Command (once per battle, from round 1)
 	if not can_command() or R.jt(R.B.get("busy")): return false
 	R.B["busy"] = true; var ok = R.useCommand("player"); _after_act(); return ok
 # ---------------- previews and the threat map (read-only, fresh copies) ----------------
 # compute_reach(id) -> {states: [...], map: {"q,r": state}}: every end state the ship can move to (reach() returns the states only).
 func compute_reach(id: String) -> Dictionary:
+	_enter()
+	var r = _i_compute_reach(id); _leave(false); return r
+func _i_compute_reach(id: String) -> Dictionary:
 	var u = unit(id)
 	if u == null: return {"states": [], "map": {}}
 	return R.computeReach(u).duplicate(true)
 # state_view(id, state) -> a copy of the ship as it would stand at one of compute_reach's states (q, r, facing, hexes moved).
 func state_view(id: String, state: Dictionary) -> Dictionary:
+	_enter()
+	var r = _i_state_view(id, state); _leave(false); return r
+func _i_state_view(id: String, state: Dictionary) -> Dictionary:
 	var u = unit(id)
 	if u == null: return {}
 	var v = R.stateView(u, state); var o = v.duplicate(false); o.erase("__view"); return o
 # in_reach(id, wi, target_id, state = null) -> range, arc and line of sight for gun wi on the target, from the ship's hex or from a state.
 func in_reach(id: String, wi: int, target_id: String, state = null) -> bool:
+	_enter()
+	var r = _i_in_reach(id, wi, target_id, state); _leave(false); return r
+func _i_in_reach(id: String, wi: int, target_id: String, state = null) -> bool:
 	var u = unit(id); var t = unit(target_id)
 	if u == null or t == null or wi < 0 or wi >= u["weapons"].size(): return false
 	var v = R.stateView(u, state) if state != null else u
@@ -277,6 +467,13 @@ func in_reach(id: String, wi: int, target_id: String, state = null) -> bool:
 #   board: [{target, chance, kill, loss, capture}]; ability {id, ready, cooldown, hexes: [{q, r}] for nova, blink and launch};
 #   weapons: [{i, ready, targets: [{id, can, range, inRange, inArc, los, hit, shield, hull, quad, rear, dmgMult}]}] against every living enemy.
 func ui_info(id: String) -> Dictionary:
+	_enter()
+	var r = _i_ui_info(id); _leave(false); return r
+func _i_ui_info(id: String) -> Dictionary:
+	if _ui_ver != version: _ui_cache.clear(); _ui_ver = version
+	if not _ui_cache.has(id): _ui_cache[id] = _ui_info_raw(id)
+	return _ui_cache[id].duplicate(true)
+func _ui_info_raw(id: String) -> Dictionary:
 	var u = unit(id)
 	if u == null: return {}
 	var o := {"orders": {}, "rotate": R.canRotate(u), "stance": R.canStance(u), "command": can_command()}
@@ -313,6 +510,14 @@ func ui_info(id: String) -> Dictionary:
 # the given one), each hex it could reach and face this turn, the raw damage of its guns (ready or ready next turn) that reach the hex in
 # arc with line of sight, taking the best end state per ship and summing over ships.
 func threat_map(only_id = null) -> Dictionary:
+	_enter()
+	var r = _i_threat_map(only_id); _leave(false); return r
+func _i_threat_map(only_id = null) -> Dictionary:
+	if _threat_ver != version: _threat_cache.clear(); _threat_ver = version
+	var ck = str(only_id)
+	if not _threat_cache.has(ck): _threat_cache[ck] = _threat_map_raw(only_id)
+	return _threat_cache[ck].duplicate()
+func _threat_map_raw(only_id = null) -> Dictionary:
 	var out := {}
 	var hexes = R.boardHexes()
 	var list = []
@@ -360,6 +565,9 @@ func threat_map(only_id = null) -> Dictionary:
 	return out
 # world_info(): what the scene needs to build the battlefield beyond view(): the biome (rock kind, planet, station look) and the battle seed.
 func world_info() -> Dictionary:
+	_enter()
+	var r = _i_world_info(); _leave(false); return r
+func _i_world_info() -> Dictionary:
 	var B = R.B
 	return {"biome": B["biome"].duplicate(true) if B.get("biome") is Dictionary else B.get("biome"), "seed": B.get("seed"), "shape": B.get("shape"), "well": B["well"].duplicate(true) if B.get("well") is Dictionary else B.get("well")}
 
@@ -370,6 +578,10 @@ func world_info() -> Dictionary:
 # activation then ends as usual (alternating mode). The game's enemy AI (aiUnit) only ever plays the enemy side.
 # Stops early if the enemy phase starts or the round changes.
 func ai_activate(id: String) -> void:
+	_enter()
+	if halted != "": _leave(false); return
+	_i_ai_activate(id); _leave(true)
+func _i_ai_activate(id: String) -> void:
 	var u = unit(id)
 	if u == null or u["side"] != "player" or phase != "player": return
 	_ai_activate(u)
@@ -482,11 +694,19 @@ func _ai_activate(u) -> void:
 func _bot_act(u, fn: Callable) -> Variant:
 	if not _guard(u): return null
 	R.B["busy"] = true; var r = fn.call(); _after_act(); return r
-func hurry() -> void:                               # Enter or Space: presentation only, the rules do not change
+func hurry() -> void:
+	_enter()
+	if halted != "": _leave(false); return
+	_i_hurry(); _leave(true)
+func _i_hurry() -> void:                               # Enter or Space: presentation only, the rules do not change
 	pass
 
 # ui3d.js endActivation: the acting ship (or the given one, as "Pass") is done, then the enemy side takes its step
 func end_activation(id = null) -> void:
+	_enter()
+	if halted != "": _leave(false); return
+	_i_end_activation(id); _leave(true)
+func _i_end_activation(id = null) -> void:
 	var B = R.B
 	if not _alt or phase != "player" or R.jt(B.get("over")): return
 	if B.get("activeUnit") != null:
@@ -503,7 +723,10 @@ func end_activation(id = null) -> void:
 # runs one ship's whole activation (and the round change when a round ends) and returns its events. step() is safe to run on a
 # worker thread while the scene animates earlier events, as long as the scene does not call anything else here meanwhile.
 func step() -> Array:
-	_mutex.lock()
+	_enter()
+	if halted != "": var h = take_events(); _leave(false); return h
+	var r = _i_step(); _leave(true); return r
+func _i_step() -> Array:
 	var B = R.B
 	if phase == "enemy" and not _alt: _c_step()
 	elif phase == "enemy" and _queue.size() > 0:
@@ -515,13 +738,16 @@ func step() -> Array:
 			R.aiUnit(u); u["activated"] = true; R.hook("activation", u)
 		if _queue.size() == 0: _end_batch()
 	var e = take_events()
-	_mutex.unlock()
 	return e
 
 # ---------------- Classic mode (cfg.alt = false): whole turns, ui3d.js endTurn ----------------
 # The player moves and fires with any ships in any order, then calls end_turn(). The enemy turn is then stepped one ship per
 # step() call, exactly as battle.js aiTurn orders it: its squadrons first, then each next ship picked by opportunity.
 func end_turn() -> void:
+	_enter()
+	if halted != "": _leave(false); return
+	_i_end_turn(); _leave(true)
+func _i_end_turn() -> void:
 	var B = R.B
 	if _alt or phase != "player" or R.jt(B.get("over")) or R.jt(B.get("busy")): return
 	B["busy"] = true; B["sel"] = null; B["armed"] = null; B["mode"] = null; B["inspect"] = null; B["reach"] = null

@@ -1126,5 +1126,69 @@
    "h_picket"
   ],
   "alt": false
+ },
+ "s32": {
+  "note": "Dead-star tidal death (X20 verifier): sector 1 Corsair raiders on a dead-star field with the basic bot; a ship ends a turn on the well's rim and is torn apart by tidal stress (wellTick killCause tidal, queued death at the turn tick)",
+  "shape": "deadstar",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 14,
+  "bot": "basic",
+  "admiral": "grax",
+  "seed": 38,
+  "sector": 1,
+  "obj": "rout",
+  "map": "open",
+  "fac": "corsair",
+  "fleet": [
+   "warden",
+   "warden",
+   "penitent"
+  ],
+  "enemies": [
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ]
+ },
+ "s33": {
+  "note": "Rift board (X20 verifier): a jagged chasm splits the field, crossed by two or three bridges (VOID.rift, riftCells as board cut-outs); Ithar in an asteroid belt, the full bot",
+  "shape": "rift",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "grax",
+  "seed": 7,
+  "sector": 2,
+  "obj": "rout",
+  "map": "belt",
+  "fac": "ithar",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "warden"
+  ]
+ },
+ "s34": {
+  "note": "Shoals board (X20 verifier): holes torn out of the middle of the field (cut and inner cells, noise-edged); Chorus on an open field, the full bot",
+  "shape": "shoals",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "grax",
+  "seed": 1,
+  "sector": 2,
+  "obj": "rout",
+  "map": "open",
+  "fac": "chorus",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "warden"
+  ]
  }
 }

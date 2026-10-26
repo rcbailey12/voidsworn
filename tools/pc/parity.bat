@@ -69,6 +69,11 @@ for %%B in (s4 s19 s23) do (
   if errorlevel 1 ( echo   threat map %%B: FAIL & set /a FAILS+=1 ) else ( echo   threat map %%B: PASS )
 )
 
+echo [4c] Threads and the hard stop: enemy steps on a worker thread while the scene reads ^(s4, s23^)...
+"%GODOT%" --headless --path "%PROJ%." --script res://rules/test/thread_test.gd -- s4 s23 > "%T%out\thread.txt" 2>&1
+if errorlevel 1 ( echo   FAIL & findstr /b /c:"thread test" /c:"hard stop" /c:"  halted" "%T%out\thread.txt" & set /a FAILS+=1 ) else ( findstr /b /c:"thread test" /c:"hard stop" "%T%out\thread.txt" )
+type "%T%out\thread.txt" >> "%LOG%"
+
 echo [5/5] Enemy think time in the timing battles ^(report only; game bar: worst under about 0.5 s^)...
 "%NODE%" "%T%node\timing.js" all "%T%." > "%T%out\timing.txt" 2>&1
 type "%T%out\timing.txt"
@@ -81,4 +86,5 @@ echo.
 if /i not "%~1"=="nopause" pause
 endlocal
 rem ===================== G3 campaign parity (appended by the G3 helper; everything is in parity_campaign.bat) =====================
-call "%~dp0parity_campaign.bat" %1
+rem parity_campaign.bat sits beside this file in a repo checkout or in build\; in a lane B copy (build_b\parity.bat) it is in tools\pc\
+if exist "%~dp0parity_campaign.bat" ( call "%~dp0parity_campaign.bat" %1 ) else if exist "%~dp0tools\pc\parity_campaign.bat" ( call "%~dp0tools\pc\parity_campaign.bat" %1 ) else ( echo FAIL: parity_campaign.bat not found next to parity.bat or in tools\pc\ )

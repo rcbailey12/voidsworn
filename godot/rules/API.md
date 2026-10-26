@@ -32,7 +32,8 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
 `api.phase` is one of:
 - `"player"`: waiting for the player;
 - `"enemy"`: call `step()`;
-- `"over"`: the battle has ended.
+- `"over"`: the battle has ended;
+- `"halted"`: a hard stop (see "Errors and the hard stop" below); nothing more happens until the next `new_battle`.
 
 1. **Player phase.** The player picks one of their ships that has not yet acted this round. The first command a ship receives makes it the active ship.
    - Ships move, then fire (the game's v54 doctrine): once a ship has fired it cannot move, except Ithar hulls (and any ship with the Slip the Net boon), which may still use half the movement they had left, without climbing over or diving under. `reach()` and `view().units[].moveLeft` already account for it.
@@ -47,7 +48,7 @@ api.new_battle(run, cfg)              # run = the campaign run dict (admiral, fa
 
 **Thinking during animation:**
 - `step()` touches only rules state and returns plain events, so it is safe to run on a worker thread (`WorkerThreadPool`) while the scene is still animating the previous events.
-- Don't call anything else on `api` until it returns.
+- Every public function holds the API's lock (see "Threads" below), so the scene may keep calling `view()`, `ui_info()` and the rest meanwhile: such a call waits until the step finishes. To keep frames smooth, avoid calling into `api` every frame while a step runs; draw from the last `view()` instead.
 - The rules run ahead of the picture; the scene plays the events at its own pace.
 - That hides enemy think time behind the previous ship's animation. Worst think measured so far: 0.35 to 0.69 s per activation in the cloud on 10-against-10 battles; PC numbers come from `parity.bat` step 5.
 
@@ -157,9 +158,24 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 
 Presentation events (no rules meaning; draw them or not):
 
+## Threads (Oct 26)
+
+- **One lock for everything.** Every public function in `battle_api.gd` is a thin wrapper: lock (a recursive `Mutex`), run the body, check for errors, unlock. A call from another thread waits for the one running; nobody reads half-changed state. `step()` and `threat_map()` on a worker thread are fine.
+- **No shared scratch state in the maths.** `jsm.gd` converts floats with a fresh 8-byte buffer per call (the old shared static buffer was a data race).
+- **`version`** goes up after every call that can change the battle (commands, `step()`, `end_turn()`, `new_battle`). `ui_info(id)` and `threat_map()` are cached per version, so asking again before anything changes is instant. Both still return fresh copies.
+- **Checked by** `rules/test/thread_test.gd` (in `parity.bat` and `run_parity.sh`): s4 and s23 played twice, once on one thread and once with every `step()` on a worker while the main thread calls `view()`, `ui_info()`, `threat_map()`, `compute_reach()` and `preview_fire()`; both runs must end identical.
+
+## Errors and the hard stop (Oct 26)
+
+- GDScript has no exceptions: a runtime error returns from the failing function with a default value and play goes on with a wrong number. The API counts script errors raised inside `res://rules/` during each call (a Godot `Logger`), and reads `R.not_ported` (an unported rule, or an unported maths branch in `jsm.gd`).
+- **`hard_stop`** (default: on in debug builds, off in release builds; set `api.hard_stop = true` for bot runs): any such error halts the battle. `phase` becomes `"halted"`, `view().halt` says why, one event `{t: "halt", why}` is emitted, and every command and `step()` does nothing until the next `new_battle` / `new_battle_scenario`. The lock is always released, because the wrapper's unlock runs even when the body failed.
+- With `hard_stop` off the error is still logged, and play goes on.
+- **The battle config** is checked at `new_battle`: the string fields (kind, fac, obj, shape, map, dep, arch, mod, verb, event_force, biome, approach, arena) must be Strings or null, seed and col numbers, enemies an Array, nemesis a Dictionary. A wrong type is reported in `api.cfg_errors` (and as an error, so a hard stop halts) and the field is dropped. Without a known `fac` the battle cannot be set up and halts even with `hard_stop` off. A generated fleet without `col` uses column 3.
+- Inside the rules, `R.js_eq(a, b)` (JS `===`) and `R.js_false(x)` (`x === false`) compare untyped values safely: GDScript's `==` stops the call when the two sides have different types (a Dictionary against `false`, a String against a number), except against `null`, int against float and String against StringName.
+
 ## Determinism (audit items, Oct 26)
 
 - **Ship ids** are deterministic: `x0` followed by a counter that starts at 1 for every battle (the JS oracle pins `Date.now()` to 0, so its ids are the same). No timestamp exists anywhere in rules state or in the hash.
 - **Sorting:** every sort in the rules is a stable merge sort with the JS comparator (`JSM.ssort`, matching JS's stable `Array.prototype.sort`). Ties keep their insertion order, which is itself deterministic, so every ordering has a total tiebreak.
 - **Randomness:** all rules randomness comes from the game's seeded PRNG (`JSM.rnd`). Cosmetic randomness in the scene must use its own generator, never `JSM.rnd`.
-- **Maths:** sin, cos, atan2, exp, hypot and round are V8's exact algorithms, so results are identical on every machine.
+- **Maths:** sin, cos, atan2, exp, hypot, round and pow are V8's exact algorithms, so results are identical on every machine. Every fdlibm branch is ported (infinities, exp overflow and underflow, V8's exp(1) special case, pow with huge exponents and subnormal results) except sin and cos of arguments above 2^19 pi, which stop the battle as NOT PORTED (the rules only pass angles).

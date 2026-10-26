@@ -9,28 +9,35 @@
 #   - the canonical state text and SHA-256 that the golden records use
 # (loaded with preload, so it runs headless without an editor import)
 extends RefCounted
-# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so these warnings are expected here and silenced for this file only.
-@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "integer_division", "narrowing_conversion", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
+# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so the untyped-code warnings are silenced for this file only.
+# Of the six classes the project leaves on, three stay ON here and give 0 warnings (Oct 26, checked by turning them into errors):
+# integer_division and narrowing_conversion (the JS-port number traps) and unsafe_property_access. The other three are silenced
+# because they are the JS shapes themselves (35 call arguments, 4 method calls, 6 discarded results at Oct 26): unsafe_call_argument
+# (Variant into a typed float), unsafe_method_access (calls on untyped values) and return_value_discarded (JS ignores results the same way).
+@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 
-static var _pb: PackedByteArray = _mk_pb()
-static func _mk_pb() -> PackedByteArray:
+# Scratch bytes for the float-word conversions: a fresh 8-byte buffer per call, never a shared static one, so rules code may run on a
+# worker thread (the battle API's step() and threat_map()) while the scene thread converts floats too (Oct 26 review: the old static
+# buffer was a data race). Costs about 0.2 microseconds a call.
+static func _pb8() -> PackedByteArray:
 	var p := PackedByteArray(); p.resize(8); return p
 
 # ---- doubles as words ----
 static func hi(x: float) -> int:
-	_pb.encode_double(0, x); return _pb.decode_s32(4)
+	var p := _pb8(); p.encode_double(0, x); return p.decode_s32(4)
 static func lo(x: float) -> int:
-	_pb.encode_double(0, x); return _pb.decode_u32(0)
+	var p := _pb8(); p.encode_double(0, x); return p.decode_u32(0)
 static func words(h: int, l: int) -> float:
-	_pb.encode_s32(4, to_i32(h)); _pb.encode_u32(0, l & 0xFFFFFFFF); return _pb.decode_double(0)
+	var p := _pb8(); p.encode_s32(4, to_i32(h)); p.encode_u32(0, l & 0xFFFFFFFF); return p.decode_double(0)
 static func hex64(x: float) -> String:
-	_pb.encode_double(0, x)
+	var p := _pb8(); p.encode_double(0, x)
 	var s := ""
-	for i in range(7, -1, -1): s += "%02x" % _pb[i]
+	for i in range(7, -1, -1): s += "%02x" % p[i]
 	return s
 static func from_hex64(h: String) -> float:
-	for i in range(8): _pb[7 - i] = h.substr(i * 2, 2).hex_to_int()
-	return _pb.decode_double(0)
+	var p := _pb8()
+	for i in range(8): p[7 - i] = h.substr(i * 2, 2).hex_to_int()
+	return p.decode_double(0)
 
 # ---- 32-bit integer semantics ----
 static func to_u32(x: int) -> int:
@@ -68,6 +75,14 @@ static func jsround(x: float) -> float:
 	return c if c - 0.5 <= x else c - 1.0
 
 # ---- fdlibm (V8 src/base/ieee754.cc) ----
+# Unported maths branch: a hard stop, never a plausible number. The function returns NAN and sets not_ported; rules.gd's
+# not_ported reads it, so the parity harness stops at the next record and the game's battle scene reports "NOT PORTED" (as for rules).
+# Every fdlibm branch is ported except sin/cos of |x| > 2^19 pi (V8's __kernel_rem_pio2 big-argument reduction); the rules only pass angles.
+static var not_ported := ""
+static func _np(what: String) -> float:
+	if not_ported == "": not_ported = "JSM " + what
+	push_error("NOT PORTED: JSM " + what)
+	return NAN
 # fdlibm constants as exact IEEE words: Godot parses long decimal literals up to an ulp off (found Oct 25: 13 of them), so none are written as decimals
 static var S1: float = words(0xBFC55555, 0x55555549)
 static var S2: float = words(0x3F811111, 0x1110F8A6)
@@ -89,6 +104,8 @@ static var PIO2_2T: float = words(0x3BA3198A, 0x2E037073)
 static var PIO2_3: float = words(0x3BA3198A, 0x2E000000)
 static var PIO2_3T: float = words(0x397B839A, 0x252049C1)
 static var PI_O_2: float = words(0x3FF921FB, 0x54442D18)
+static var PI_O_4: float = words(0x3FE921FB, 0x54442D18)
+static var NEG_ZERO: float = words(0x80000000, 0)
 static var PI_: float = words(0x400921FB, 0x54442D18)
 static var PI_LO: float = words(0x3CA1A626, 0x33145C07)
 static var INVLN2: float = words(0x3FF71547, 0x652B82FE)
@@ -98,6 +115,11 @@ static var P3: float = words(0x3F11566A, 0xAF25DE2C)
 static var P4: float = words(0xBEBBBD41, 0xC5D26BF1)
 static var P5: float = words(0x3E663769, 0x72BEA4D0)
 static var TWOM1000: float = words(0x01700000, 0x00000000)
+static var TWO1023: float = words(0x7FE00000, 0x00000000)
+static var EXP_OTH: float = words(0x40862E42, 0xFEFA39EF)
+static var EXP_UTH: float = words(0xC0874910, 0xD52D3051)
+static var EXP_E: float = words(0x4005BF0A, 0x8B145769)
+static var EXP_HUGE: float = words(0x7E37E43C, 0x8800759C)
 static var ATANHI: Array = [words(0x3FDDAC67, 0x0561BB4F), words(0x3FE921FB, 0x54442D18), words(0x3FEF730B, 0xD281F69B), words(0x3FF921FB, 0x54442D18)]
 static var ATANLO: Array = [words(0x3C7A2B7F, 0x222F65E2), words(0x3C81A626, 0x33145C07), words(0x3C700788, 0x7AF0CBBD), words(0x3C91A626, 0x33145C07)]
 static var AT: Array = [words(0x3FD55555, 0x5555550D), words(0xBFC99999, 0x9998EBC4), words(0x3FC24924, 0x920083FF), words(0xBFBC71C6, 0xFE231671), words(0x3FB745CD, 0xC54C206E), words(0xBFB3B0F2, 0xAF749A6D), words(0x3FB10D66, 0xA0D03D51), words(0xBFADDE2D, 0x52DEFD9A), words(0x3FA97B4B, 0x24760DEB), words(0xBFA2B444, 0x2C6A6C2F), words(0x3F90AD3A, 0xE322DA11)]
@@ -159,7 +181,7 @@ static func _rem_pio2(x: float, y: Array) -> int:
 		if hx < 0:
 			y[0] = -y[0]; y[1] = -y[1]; return -n
 		return n
-	push_error("JSM: sin/cos argument too large for this port"); return 0
+	_np("sin/cos of |x| > 2^19 pi (big-argument reduction)"); y[0] = NAN; y[1] = NAN; return 0
 static func sin(x: float) -> float:
 	var ix := hi(x) & 0x7fffffff
 	if ix <= 0x3fe921fb: return _ksin(x, 0.0, 0)
@@ -222,7 +244,20 @@ static func atan2(y: float, x: float) -> float:
 			2: return PI_ + TINY
 			3: return -PI_ - TINY
 	if (ix | lx) == 0: return -PI_O_2 - TINY if hy < 0 else PI_O_2 + TINY
-	if ix == 0x7ff00000 or iy == 0x7ff00000: push_error("JSM: atan2 infinity not ported"); return 0.0
+	if ix == 0x7ff00000: # x is INF
+		if iy == 0x7ff00000:
+			match m:
+				0: return PI_O_4 + TINY
+				1: return -PI_O_4 - TINY
+				2: return 3.0 * PI_O_4 + TINY
+				_: return -3.0 * PI_O_4 - TINY
+		else:
+			match m:
+				0: return 0.0
+				1: return NEG_ZERO
+				2: return PI_ + TINY
+				_: return -PI_ - TINY
+	if iy == 0x7ff00000: return -PI_O_2 - TINY if hy < 0 else PI_O_2 + TINY # y is INF
 	var k := (iy - ix) >> 20; var z: float
 	if k > 60:
 		z = PI_O_2 + 0.5 * PI_LO; m &= 1
@@ -237,9 +272,15 @@ const HALF := [0.5, -0.5]
 static func exp(x: float) -> float:
 	var hx := to_u32(hi(x)); var xsb := (hx >> 31) & 1; hx &= 0x7fffffff
 	var hi_ := 0.0; var lo_ := 0.0; var k := 0; var t: float; var c: float; var y: float
-	if hx >= 0x40862E42: push_error("JSM: exp range not ported"); return 0.0
+	if hx >= 0x40862E42: # |x| >= 709.78...
+		if hx >= 0x7ff00000:
+			if ((hx & 0xfffff) | lo(x)) != 0: return x + x # NaN
+			return x if xsb == 0 else 0.0 # exp(+-inf) = {inf, 0}
+		if x > EXP_OTH: return EXP_HUGE * EXP_HUGE # overflow
+		if x < EXP_UTH: return TWOM1000 * TWOM1000 # underflow
 	if hx > 0x3fd62e42:
 		if hx < 0x3FF0A2B2:
+			if x == 1.0: return EXP_E # V8 special-cases exp(1) (the reduction below gets its last bit wrong)
 			hi_ = x - LN2HI[xsb]; lo_ = LN2LO[xsb]; k = 1 - xsb - xsb
 		else:
 			k = js_int(INVLN2 * x + HALF[xsb]); t = float(k); hi_ = x - t * LN2HI[0]; lo_ = t * LN2LO[0]
@@ -250,8 +291,10 @@ static func exp(x: float) -> float:
 	t = x * x; c = x - t * (P1 + t * (P2 + t * (P3 + t * (P4 + t * P5))))
 	if k == 0: return 1.0 - ((x * c) / (c - 2.0) - x)
 	y = 1.0 - ((lo_ - (x * c) / (2.0 - c)) - hi_)
-	if k >= -1021: return words(hi(y) + (k << 20), lo(y))
-	return words(hi(y) + ((k + 1000) << 20), lo(y)) * TWOM1000
+	if k >= -1021:
+		if k == 1024: return y * 2.0 * TWO1023
+		return y * words(0x3FF00000 + (k << 20), 0)
+	return y * words(0x3FF00000 + ((k + 1000) << 20), 0) * TWOM1000
 # ---- Math.pow: V8 12.4 (the V8 in Node 22, the oracle) src/base/ieee754.cc pow, line for line; checked against Node ----
 static var PW_DPH1: float = words(0x3FE2B803, 0x40000000)
 static var PW_DPL1: float = words(0x3E4CFDEB, 0x43CFD006)
@@ -273,6 +316,7 @@ static var PW_IVLN2H: float = words(0x3FF71547, 0x60000000)
 static var PW_IVLN2L: float = words(0x3E54AE0B, 0xF85DDF44)
 static var PW_HUGE: float = words(0x7E37E43C, 0x8800759C)
 static var PW_TINY: float = words(0x01A56E1F, 0xC2F8F359)
+static var PW_THIRD: float = words(0x3FD55555, 0x55555555)
 static func _sl(x: float, l: int) -> float: return words(hi(x), l)
 static func _sh(x: float, h: int) -> float: return words(h, lo(x))
 static func pow(x: float, y: float) -> float:
@@ -313,8 +357,17 @@ static func pow(x: float, y: float) -> float:
 	if (n | yisint) == 0: return NAN
 	s = 1.0
 	if (n | (yisint - 1)) == 0: s = -1.0
-	if iy > 0x41e00000:
-		push_error("JSM: pow with |y| > 2^31 not ported"); return 0.0
+	if iy > 0x41e00000: # |y| > 2^31
+		if iy > 0x43f00000: # |y| > 2^64: must overflow or underflow
+			if ix <= 0x3fefffff: return PW_HUGE * PW_HUGE if hy < 0 else PW_TINY * PW_TINY
+			if ix >= 0x3ff00000: return PW_HUGE * PW_HUGE if hy > 0 else PW_TINY * PW_TINY
+		if ix < 0x3fefffff: return s * PW_HUGE * PW_HUGE if hy < 0 else s * PW_TINY * PW_TINY
+		if ix > 0x3ff00000: return s * PW_HUGE * PW_HUGE if hy > 0 else s * PW_TINY * PW_TINY
+		t = ax - 1.0 # |1-x| <= 2^-20: log(x) by x - x^2/2 + x^3/3 - x^4/4
+		w = (t * t) * (0.5 - t * (PW_THIRD - t * 0.25))
+		u = PW_IVLN2H * t; v = t * PW_IVLN2L - w * PW_IVLN2
+		t1 = _sl(u + v, 0); t2 = v - (t1 - u)
+		return _pow_tail(y, t1, t2, s)
 	n = 0
 	if ix < 0x00100000:
 		ax *= 9007199254740992.0; n -= 53; ix = hi(ax)
@@ -332,6 +385,11 @@ static func pow(x: float, y: float) -> float:
 	u = s_h * t_h; v = s_l * t_h + t_l * ss; p_h = _sl(u + v, 0); p_l = v - (p_h - u)
 	z_h = PW_CPH * p_h; z_l = PW_CPL * p_h + p_l * PW_CP + dpl
 	t = float(n); t1 = _sl((((z_h + z_l) + dph) + t), 0); t2 = z_l - (((t1 - t) - dph) - z_h)
+	return _pow_tail(y, t1, t2, s)
+# pow, from "split up y into y1+y2 and compute (y1+y2)*(t1+t2)" to the end (shared by both log branches)
+static func _pow_tail(y: float, t1: float, t2: float, s: float) -> float:
+	var z: float; var p_h: float; var p_l: float; var y1: float; var r: float; var t: float; var u: float; var v: float; var w: float
+	var i: int; var j: int; var k: int; var n: int
 	y1 = _sl(y, 0); p_l = (y - y1) * t1 + y * t2; p_h = y1 * t1; z = p_l + p_h; j = hi(z); i = lo(z)
 	if j >= 0x40900000:
 		if ((j - 0x40900000) | i) != 0: return s * PW_HUGE * PW_HUGE
@@ -348,10 +406,28 @@ static func pow(x: float, y: float) -> float:
 	t = _sl(p_l + p_h, 0); u = t * PW_LG2H; v = (p_l - (t - p_h)) * PW_LG2 + t * PW_LG2L; z = u + v; w = v - (z - u)
 	t = z * z; t1 = z - t * (P1 + t * (P2 + t * (P3 + t * (P4 + t * P5)))); r = (z * t1) / ((t1 - 2.0) - (w + z * w)); z = 1.0 - (r - z)
 	j = hi(z) + (n << 20)
-	if (j >> 20) <= 0:
-		push_error("JSM: pow subnormal result not ported"); return 0.0
+	if (j >> 20) <= 0: return s * scalbn(z, n) # subnormal output
 	z = _sh(z, hi(z) + (n << 20))
 	return s * z
+# scalbn(x, n) = x * 2^n with one rounding (fdlibm s_scalbn.c; the same result as C's correctly rounded std::scalbn that V8 calls)
+static var TWO54: float = words(0x43500000, 0)
+static var TWOM54: float = words(0x3C900000, 0)
+static func scalbn(x: float, n: int) -> float:
+	var hx := hi(x); var lx := lo(x); var k := (hx & 0x7ff00000) >> 20
+	if k == 0: # 0 or subnormal x
+		if ((hx & 0x7fffffff) | lx) == 0: return x
+		x *= TWO54; hx = hi(x); k = ((hx & 0x7ff00000) >> 20) - 54
+		if n < -50000: return PW_TINY * x
+	if k == 0x7ff: return x + x # NaN or Inf
+	k = k + n
+	if k > 0x7fe: return PW_HUGE * _copysign(PW_HUGE, x)
+	if k > 0: return _sh(x, (hx & to_i32(0x800fffff)) | (k << 20))
+	if k <= -54:
+		if n > 50000: return PW_HUGE * _copysign(PW_HUGE, x)
+		return PW_TINY * _copysign(PW_TINY, x)
+	k += 54
+	return _sh(x, (hx & to_i32(0x800fffff)) | (k << 20)) * TWOM54
+static func _copysign(a: float, b: float) -> float: return absf(a) if hi(b) >= 0 else -absf(a)
 static func hypot(a: Array) -> float: # V8 Math.hypot
 	var mx := 0.0; var ab := []
 	for v in a:

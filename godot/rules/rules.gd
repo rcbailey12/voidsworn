@@ -7,8 +7,12 @@
 # Presentation (log text, floating numbers, sounds, camera) is not ported: the harness gives it no-op stubs on both sides.
 # Anything the slice does not reach and the port does not carry stops the run with "NOT PORTED", so a gap can never pass silently.
 extends RefCounted
-# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so these warnings are expected here and silenced for this file only.
-@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_property_access", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "integer_division", "narrowing_conversion", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
+# The JS port keeps JS shapes (untyped Dictionaries, JS-style numbers), so the untyped-code warnings are silenced for this file only.
+# Of the six classes the project leaves on, three stay ON here and give 0 warnings (Oct 26, checked by turning them into errors):
+# integer_division and narrowing_conversion (the JS-port number traps) and unsafe_property_access. The other three are silenced
+# because they are the JS shapes themselves (2,676 call arguments, 1,097 method calls, 68 discarded results at Oct 26): unsafe_call_argument
+# (Variant into a typed float), unsafe_method_access (calls on untyped values) and return_value_discarded (JS ignores results the same way).
+@warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
 const JSM = preload("res://rules/jsm.gd")
 
 var TB: Dictionary = {}
@@ -65,6 +69,12 @@ func load_tables(path: String) -> String:
 	TB = _dec(j["tables"])
 	var sum = JSM.sha256(JSM.canon(TB, "t", {}, true))
 	if sum != j["sha256"]: return "table checksum differs: " + sum + " vs " + str(j["sha256"])
+	# fail hard on a missing table (the exporter lists every table this port reads; it refuses to write the file if one is missing)
+	if not (j.get("required") is Array): return "tables.json has no required-table list: re-export it with rules/test/node/export_data.js"
+	var missing: Array = []
+	for n in j["required"]:
+		if not TB.has(n): missing.append(n)
+	if not missing.is_empty(): return "tables missing from " + path + ": " + " ".join(missing)
 	WPN = TB.W; ARC_NAME = TB.ARC_NAME; FAC_WNAMES = TB.FAC_WNAMES; FAC_WTRAIT = TB.FAC_WTRAIT; HULLS = TB.HULLS; MOVE_RULES = TB.MOVE_RULES
 	FACTIONS = TB.FACTIONS; ABILITIES = TB.ABILITIES; ORDERS = TB.ORDERS; MODULES = TB.MODULES; PERKS = TB.PERKS; RANK_XP = TB.RANK_XP; RELICS = TB.RELICS
 	ADMIRALS = TB.ADMIRALS; SHIP_NAMES = TB.SHIP_NAMES; CAPTAINS = TB.CAPTAINS; MORE_SHIP_NAMES = TB.MORE_SHIP_NAMES; SECTOR_CONDS = TB.SECTOR_CONDS
@@ -90,7 +100,14 @@ func _dec(v):
 	return v
 
 # ======================= JS helpers =======================
-var not_ported := ""   # set by np(); the harness stops at the next record and reports it
+# set by np() or by an unported maths branch in jsm.gd; the harness stops at the next record and reports it, the battle scene logs it.
+# Clearing it (not_ported = "") clears both.
+var _np_rules := ""
+var not_ported: String:
+	get: return _np_rules if _np_rules != "" else JSM.not_ported
+	set(v):
+		_np_rules = v
+		if v == "": JSM.not_ported = ""
 func np(what: String) -> void:
 	if not_ported == "": not_ported = what
 	push_error("NOT PORTED: " + what)
@@ -100,8 +117,20 @@ func jt(x) -> bool: # JS truthiness (named jt: Object.tr is taken)
 		TYPE_BOOL: return x
 		TYPE_INT: return x != 0
 		TYPE_FLOAT: return x != 0.0 and not is_nan(x)
-		TYPE_STRING: return x != ""
+		TYPE_STRING, TYPE_STRING_NAME: return x != ""
 	return true
+# JS strict equality (a === b) for untyped values. GDScript stops the call with a script error when == or != meets two different
+# types (Dictionary vs false, "x" vs 1, [] vs "s", true vs 1; only null, int/float and String/StringName mix), where JS just says false.
+# Use this, or js_false, wherever a value from outside the rules (a battle config, a save, a scene call) is compared.
+static func js_eq(a, b) -> bool:
+	if a == null or b == null: return a == null and b == null
+	var ta := typeof(a); var tb := typeof(b)
+	if (ta == TYPE_INT or ta == TYPE_FLOAT) and (tb == TYPE_INT or tb == TYPE_FLOAT): return a == b
+	if (ta == TYPE_STRING or ta == TYPE_STRING_NAME) and (tb == TYPE_STRING or tb == TYPE_STRING_NAME): return String(a) == String(b)
+	if ta != tb: return false
+	if ta == TYPE_DICTIONARY or ta == TYPE_ARRAY or ta == TYPE_OBJECT: return is_same(a, b)
+	return a == b
+static func js_false(x) -> bool: return x is bool and x == false # x === false
 func z0(x) -> Variant: # x||0
 	return x if jt(x) else 0
 func g(d, k) -> Variant: # d && d[k]

@@ -210,6 +210,18 @@ const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toStr
         'exp ' + hex(e) + ' ' + hex(0) + ' ' + hex(Math.exp(e)), 'hypot ' + hex(y) + ' ' + hex(z) + ' ' + hex(Math.hypot(y, z)), 'round ' + hex(q) + ' ' + hex(0) + ' ' + hex(Math.round(q))); const px = r() * 40, py = r() * 6 - 3; out.push('pow ' + hex(px) + ' ' + hex(py) + ' ' + hex(Math.pow(px, py))); }
     for (const cp of [1, 2, 3, 4, 5, 6, 8, 10, 12]) out.push('pow ' + hex(cp) + ' ' + hex(1.6) + ' ' + hex(Math.pow(cp, 1.6)));
     for (let q = -30; q <= 30; q++) for (let rr = -30; rr <= 30; rr++) { const x = Math.sqrt(3) * (q + rr / 2), y = 1.5 * rr; out.push('atan2 ' + hex(y) + ' ' + hex(x) + ' ' + hex(Math.atan2(y, x))); }
+    // edge branches (Oct 26, Muse review): infinities, exp near overflow and underflow, exp(1), pow with |y| > 2^31 and subnormal results
+    const I = Infinity, sm = 5e-324, edge = [I, -I, 0, -0, 1, -1, 1e300, -1e300, sm, -sm, 2.5, -2.5];
+    for (const y of edge) for (const x of edge) out.push('atan2 ' + hex(y) + ' ' + hex(x) + ' ' + hex(Math.atan2(y, x)));
+    const ex = [I, -I, 1, -1, 0.5, 709, 709.08, 709.2, 709.5, 709.7, 709.78, 709.782712893384, 709.7827128933841, 709.79, 710, 1000, 1e300, -708, -708.4, -709, -709.1, -720, -740, -745, -745.13, -745.1332191019411, -745.1332191019412, -745.14, -746, -1000, -1e300];
+    for (let i = 0; i < 3000; i++) ex.push(r() * 1500 - 750);
+    for (const e of ex) out.push('exp ' + hex(e) + ' ' + hex(0) + ' ' + hex(Math.exp(e)));
+    const P31 = 2147483648, pw = [];
+    for (const x of [0.5, 0.999, 0.9999999, 1 - 2 ** -30, 1 - 2 ** -21, 1 + 2 ** -21, 1 + 2 ** -30, 1.0000001, 1.001, 2, 1e-300, 1e300])
+      for (const y of [P31 + 1, -(P31 + 1), 3e9, -3e9, 2 ** 40, -(2 ** 40), 2 ** 63, -(2 ** 63), 2 ** 65, -(2 ** 65), 1e300, -1e300]) pw.push([x, y]);
+    for (const [x, y] of [[2, -1030], [2, -1074], [2, -1075], [2, -1060.5], [10, -310], [10, -320], [10, -323.3], [0.5, 1040], [0.5, 1074.5], [1.5, -1800], [3, -650]]) pw.push([x, y]);
+    for (let i = 0; i < 3000; i++) { const x = 1.01 + r() * 19, y = -((1022 + r() * 53) * Math.LN2 / Math.log(x)); pw.push([x, y]); }
+    for (const [x, y] of pw) out.push('pow ' + hex(x) + ' ' + hex(y) + ' ' + hex(Math.pow(x, y)));
     fs.writeFileSync(a, out.join('\n') + '\n'); console.log('math', out.length, 'values ->', a); return;
   }
   if (mode === 'threat') { // threat <scenario> <out>: ui3d.js computeThreat (copied below) after the battle setup and the first enemy step, for api.threat_map

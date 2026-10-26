@@ -29,10 +29,28 @@ const enc = v => {
   return v;
 };
 for (const n of names) { const v = __T[n]; if (STATE.includes(n) || v === undefined || typeof v === 'function' || v instanceof Set || v instanceof Map) { skipped.push(n); continue; } out[n] = enc(v); }
+// Fail hard (X20, Oct 26 verifier): every table the GDScript port reads (TB.NAME, TB["NAME"], TB.get("NAME") in godot/rules/*.gd) must be
+// exported. A table renamed, removed or turned into a function in the JS would otherwise vanish from the file and only show up later
+// as a null deep inside a battle. FNAMES is optional (the browser defines it in ui3d.js; the port falls back to {} like a missing FNAMES).
+const OPTIONAL = ['FNAMES'];
+const gdDir = path.resolve(__dirname, '..', '..');
+const required = [];
+for (const f of fs.readdirSync(gdDir).filter(f => f.endsWith('.gd'))) {
+  const src = fs.readFileSync(path.join(gdDir, f), 'utf8'), re = /\bTB(?:\.([A-Z_][A-Z0-9_]*)\b|\[\s*"([A-Z_][A-Z0-9_]*)"\s*\]|\.get\(\s*"([A-Z_][A-Z0-9_]*)")/g; let m;
+  while ((m = re.exec(src))) { const n = m[1] || m[2] || m[3]; if (!required.includes(n)) required.push(n); }
+}
+required.sort();
+const missing = required.filter(n => !(n in out) && !OPTIONAL.includes(n));
+const extraMissing = ['ENC_SPECIAL', 'SEC_NAME', 'HEX_W', 'CX', 'BH', 'BOSS_DMG', 'WELL_PULL', 'WELL_ASSIST', 'WELL_DMG', 'SYNC_DMG', 'SYNC_AIM', 'FEED_NEAR', 'FEED_R', 'FEED_CAP', 'TORP_STRAY', 'WING_HUNT_LEASH', 'WING_SCREEN_TORP', 'TORP_WARHEAD'].filter(n => !(n in out));
+if (missing.length || extraMissing.length) {
+  console.error('FAIL: tables the Godot port reads are missing from the JS oracle (' + ROOT + '): ' + missing.concat(extraMissing.filter(n => !missing.includes(n))).join(' '));
+  console.error('Nothing written. Rename the table in godot/rules/*.gd too, or bring it back in the JS.');
+  process.exit(1);
+}
 // canonical text of the tables, the same rules as the golden state (sorted keys, integers plain, other numbers as their hex double)
 const canon = v => { if (v === null || v === undefined) return 'null'; if (typeof v === 'boolean') return String(v); if (typeof v === 'number') return Number.isInteger(v) ? String(v) : '"d:' + (b => (b.writeDoubleBE(v), b.toString('hex')))(Buffer.alloc(8)) + '"';
   if (typeof v === 'string') return v.startsWith('#d:') ? '"d:' + v.slice(3) + '"' : JSON.stringify(v); if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
   return '{' + Object.keys(v).filter(k => v[k] !== null && v[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}'; };
 const sum = crypto.createHash('sha256').update(canon(out)).digest('hex');
-fs.writeFileSync(process.argv[2], JSON.stringify({ sha256: sum, tables: out }));
-console.log('exported', Object.keys(out).length, 'tables, sha256', sum.slice(0, 16), '| skipped (code, not data):', skipped.join(' '));
+fs.writeFileSync(process.argv[2], JSON.stringify({ sha256: sum, required: required.filter(n => !OPTIONAL.includes(n)), tables: out }));
+console.log('exported', Object.keys(out).length, 'tables (' + required.length + ' read by the port, all present), sha256', sum.slice(0, 16), '| skipped (code, not data):', skipped.join(' '));
