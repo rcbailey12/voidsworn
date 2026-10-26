@@ -158,7 +158,7 @@ def petals(S, M, tris, inf, rad, jag, rng, bend=(.35, 1.1), K=7, gaps=2, r_in=.4
     sec_t = sector(np.arctan2((S.C[keep] - p) @ t2, (S.C[keep] - p) @ t1))
     band = rad * (1 - r_in) * 1.1
     V0 = S.T[keep]; elen = np.linalg.norm(V0 - np.roll(V0, 1, axis=1), axis=2).max(1)
-    small = elen < band * .8  # big flat triangles would bend into long spikes: they just go with the hole
+    small = elen < band * .6  # big flat triangles would bend into long spikes: they just go with the hole
     keep = keep[small]; sec_t = sec_t[small]
     if len(keep) == 0: return
     V = S.T[keep]; UVt = S.uv[S.idx[keep]]
@@ -235,7 +235,9 @@ def cavity(S, M, inf, rad, jag, tp, rng, heavy=False):
                 row_f.append(p + UP * y + th_ * u - n * jagf); row_b.append(p + UP * y + th_ * u * .6 - n * back)
             dz = UP * rad * .035
             M.strip('frame', row_f, row_b, closed=False); M.strip('frame', [x - dz for x in row_b], [x - dz for x in row_f], closed=False)
-            M.strip('edge' if heavy else 'frame', [x - dz for x in row_f], row_f, closed=False)
+            M.strip('frame', [x - dz for x in row_f], row_f, closed=False)
+            for s_ in range(0, nseg + 1, 3):  # embers along the torn deck edge
+                if rng.uniform() < .6: M.blob('glow', row_f[s_] - dz * .5, rad * rng.uniform(.02, .045))
             for s_ in range(0, nseg + 1, 2):  # deck beams under the plate
                 M.box('frame', (row_f[s_] + row_b[s_]) / 2 - dz * 1.8, (row_b[s_] - row_f[s_]) / 2, dz * .8, th_ * rad * .03)
     else:
@@ -243,7 +245,7 @@ def cavity(S, M, inf, rad, jag, tp, rng, heavy=False):
             ring = [rows[0][j] * (1 - f) + rows[-1][j] * f + dirs[j] * rad * .08 for j in range(nr)]
             inner = [p - n * D * f + dirs[j] * rad * (.25 + .30 * rng.uniform()) for j in range(nr)]
             dz = -n * rad * .03
-            M.strip('frame', ring, inner); M.strip('frame', [x + dz for x in inner], [x + dz for x in ring]); M.strip('edge' if heavy else 'frame', inner, [x + dz for x in inner])
+            M.strip('frame', ring, inner); M.strip('frame', [x + dz for x in inner], [x + dz for x in ring]); M.strip('frame', inner, [x + dz for x in inner])
     # conduits across the cavity, some torn with a sparking end
     ax2 = unit(np.cross(UP, n)) if side else t1
     for c_ in range(3 if not heavy else 4):
@@ -276,7 +278,7 @@ def build(npz, meta_path, seed=7):
         parts[f'breach_{k}_hole'] = M.arrays()
         # the heavy damage: bigger torn band, deeper guts
         M = Mesh(); both = np.nonzero((S.label == 2 * k + 1) | (S.label == 2 * k + 2))[0]
-        petals(S, M, both, inf, inf['R'], inf['jag2'], rng, bend=(.6, 1.5), K=9, gaps=3, r_in=.62)
+        petals(S, M, both, inf, inf['R'], inf['jag2'], rng, bend=(.5, 1.25), K=9, gaps=3, r_in=.62)
         cavity(S, M, inf, inf['R'] * .92, inf['jag2'], tp, rng, heavy=True)
         parts[f'breach_{k}_heavy'] = M.arrays()
     secs = []

@@ -496,6 +496,7 @@ def sail(name, root, u, v, a0, a1, R, ribs=9, billow=.06, th=.0016, hub=None, ri
     for i in range(nr):
         for j in range(na): bm.faces.new((grid[i][j], grid[i][j + 1], grid[i + 1][j + 1], grid[i + 1][j]))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    rim = [(grid[nr][j].co.copy(), w) for j in range(na + 1)]  # before the bmesh is handed over (and freed)
     o = hs_lib._obj(name + 'm', bm, 0); SAILS.add(o.name)
     sm = o.modifiers.new('sd', 'SOLIDIFY'); sm.thickness = th; sm.offset = 0; sm.use_rim = True
     tag(mul(P['base'], 1.02), emit=.06, rgh=.35, met=.05)  # pearl membrane, a breath of glow so it reads against space
@@ -506,10 +507,9 @@ def sail(name, root, u, v, a0, a1, R, ribs=9, billow=.06, th=.0016, hub=None, ri
             q = root + (u * math.cos(a) + v * math.sin(a)) * rad + w * bil; pts.append((q, w))
         dress.tube_path(name + f'r{k}', pts, max(th * 1.6, .0016) * (1.8 if k in (0, ribs - 1) else 1.0), th * .9, 0, seg=6)
     tag(P['trim'], rgh=.32, met=.6)
-    rim = [(grid[nr][j].co.copy(), w) for j in range(na + 1)]
     dress.tube_path(name + 'e', rim, th * .9, th * .9, 0, seg=6); tag(P['lens'], emit=rim_glow, rgh=.2, met=0)
     if hub is not None:
-        hp, hn = hub; dress.torus(name + 'h', hp, hn, R * .07, R * .02, seg=16, ring=6); tag(P['trim'], rgh=.32, met=.6)
+        hp, hn = Vector(hub[0]), Vector(hub[1]).normalized(); dress.torus(name + 'h', hp, hn, R * .07, R * .02, seg=16, ring=6); tag(P['trim'], rgh=.32, met=.6)
     return o
 
 

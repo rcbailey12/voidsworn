@@ -281,6 +281,11 @@ def main():
     parts = list(hs_lib.PARTS); log('parts', len(parts), 'breach anchors', nb, round(time.time() - t0, 1), 's')
     import a2_ship
     lo0, hi0 = H.lo.copy(), H.hi.copy(); H.lo = lo0 - Vector((.08, .08, .08)); H.hi = hi0 + Vector((.08, .08, .08))  # engines and guns may reach past the AI hull's box
+    sail_names = tuple(s_[1] for s_ in cfg.get('kit', []) if s_[0] == 'sail')
+    for o in (parts if sail_names else []):  # Ithar sails spread far past the spindle: their own reach widens the box
+        if o.name.startswith(sail_names):
+            for c_ in o.bound_box:
+                w_ = o.matrix_world @ Vector(c_); H.lo = Vector(map(min, H.lo, w_ - Vector((.03, .03, .03)))); H.hi = Vector(map(max, H.hi, w_ + Vector((.03, .03, .03))))
     probs, stray, _ = a2_ship.audit(H, parts); H.lo, H.hi = lo0, hi0
     kitset = set(o.name for o in kit_parts); kit_float = [p_ for p_ in probs if p_.split()[1] in kitset]
     floaters = [p_.split()[1] for p_ in probs if p_.endswith('floats') and p_.split()[1] not in kitset]

@@ -338,16 +338,16 @@ SHIPS['I14_23'] = dict(
 
 SHIPS['I11_37'] = dict(
     fac='ithar', cls='Destroyer', name='Seraph-class destroyer', sym='bilateral', yaw=2, snap=.012, needle=.05,
-    loft=dict(r=.020, facets=6, ys=1.25, zs=.8, x=(-.30, .50), hub=.55, hub_t=.42, hub_w=.08, taper=.8),  # AI body: a thin tube under one sheet
+    loft=dict(r=.025, facets=6, ys=1.25, zs=.8, x=(-.30, .50), hub=.55, hub_t=.42, hub_w=.08, taper=.8, stern=.45),  # AI body: a thin tube under one sheet
     kit=[('sail', 'su', 0, 0, 0, 'top', dict(SAIL, root=(.02, .012, .014), u=(0, .35, .94), v=(-1, 0, 0), a0=-.25, a1=.95, R=.30,
                                             hub=((.02, .012, .012), (0, .35, .94)), pair=True)),   # the tall pair rising from the hub
          ('sail', 'sw', 0, 0, 0, 'top', dict(SAIL, ribs=13, root=(.0, .026, -.004), u=(0, 1, -.12), v=(-1, 0, 0), a0=-.30, a1=.70, R=.24,
                                             hub=((.0, .024, -.004), (0, 1, 0)), pair=True)),      # the low pair spread to the sides
          ('sail', 'sa', 0, 0, 0, 'top', dict(SAIL, ribs=11, root=(-.24, .008, .004), u=(-.55, .35, .76), v=(-.75, -.2, -.5), a0=-.2, a1=.5, R=.20,
-                                            pair=True)),                                         # the small trailing pair at the stern
-         ('turret', 'sh', .26, 0, 0, 'top', dict(size='M', barrels=1, slot=0, wkind='shard', arc='F', lift=.002)),
-         ('turret', 'st', .20, 0, 0, 'below', dict(size='M', barrels=2, slot=1, wkind='startorp', arc='F')),
-         ('engine_at', 'eC', 0, 0, 0, 'stern', dict(r=.008, L=.014))],
+                                            hub=((-.24, .008, .006), (0, .5, .85)), pair=True)),                                         # the small trailing pair at the stern
+         ('turret', 'sh', .22, 0, 0, 'top', dict(size='S', barrels=1, slot=0, wkind='shard', arc='F', lift=.002)),
+         ('turret', 'st', .16, 0, 0, 'below', dict(size='S', barrels=2, slot=1, wkind='startorp', arc='F')),
+         ('engine_at', 'eC', 0, .001, .001, 'stern', dict(r=.009, L=.0125))],
     notes='pass 1: hand-lofted spindle, three sail pairs')
 
 SHIPS['I15_11'] = dict(
@@ -375,13 +375,13 @@ SHIPS['I16_11'] = dict(
 
 SHIPS['I8_37'] = dict(
     fac='ithar', cls='Ark', name='Empyrean ark', sym='bilateral', snap=.012, needle=.06,
-    loft=dict(r=.022, facets=6, ys=1.25, zs=.8, hub=.9, hub_t=.5, hub_w=.07, taper=.85),   # the AI made one curved sheet with a stub of body
+    loft=dict(r=.026, facets=6, ys=1.25, zs=.8, hub=.9, hub_t=.5, hub_w=.07, taper=.85, stern=.45),   # the AI made one curved sheet with a stub of body
     kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, ribs=19, root=(0, .045, -.004), u=(1, 0, 0), v=(0, 1, .10), a0=.22, a1=2.92, R=.42,
                                             hub=((0, .045, 0), (0, 1, 0)), pair=True)),   # the leaf: the needle is its midrib
          ('turret', 'pf', .20, 0, 0, 'top', dict(size='L', barrels=1, slot=0, wkind='pulsar', arc='F', lift=.002)),
          ('turret', 'pf2', .20, 0, 0, 'below', dict(size='L', barrels=1, slot=1, wkind='pulsar', arc='F')),
          ('turret', 'pt', -.14, 0, 0, 'top', dict(size='L', barrels=2, slot=2, wkind='pulsar', arc='T', lift=.002)),
          ('turret', 'tt', -.14, 0, 0, 'below', dict(size='M', barrels=2, slot=3, wkind='turret', arc='T')),
-         ('turret', 'fl', .08, 0, 0, 'top', dict(size='S', barrels=2, slot=4, wkind='flak', arc='T')),
-         ('engine_at', 'eC', 0, 0, 0, 'stern', dict(r=.010, L=.016))],
+         ('turret', 'fl', .16, 0, 0, 'top', dict(size='M', barrels=2, slot=4, wkind='flak', arc='T', lift=.003)),
+         ('engine_at', 'eC', 0, .001, .001, 'stern', dict(r=.011, L=.015))],
     notes='pass 1: hand-lofted spindle and leaf sail (the AI mesh was unusable)')
