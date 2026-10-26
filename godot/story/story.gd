@@ -139,7 +139,7 @@ func _fill(t: String, run) -> String:
 		flag = Career.flagship_name(run)
 		var nem = run.get("nem")
 		if nem is Dictionary:
-			rival = ("%s %s" % [str(nem.get("title", "")), str(nem.get("name", ""))]).strip_edges()
+			rival = preload("res://story/tokens.gd").full_name(nem)
 	return t.replace("{flagship}", flag if flag != "" else "the flagship").replace("{rival}", rival if rival != "" else "the enemy commander").replace("{enemy}", "the enemy")
 
 
@@ -281,7 +281,7 @@ func arc_chose(ev: Dictionary, key: String) -> void:
 	if C == null or not (C.RUN is Dictionary) or not bool(ev.get("arc", false)):
 		return
 	var id := str(ev.get("id", ""))
-	career.note_arc_choice(C.RUN, id, int(id.substr(id.length() - 2, 1)) if id.length() >= 2 else 0, key)
+	career.note_arc_choice(C.RUN, id, int(id.substr(id.length() - 2, 1)) if id.length() >= 2 else 0, key, str(ev.get("labels", {}).get(key, key)))
 
 
 # Called when a faction arc's beat 3 is decided (step 3 wiring). Emits medal_earned for the arc medal.
@@ -290,10 +290,11 @@ func arc_end(won: bool, choices: Dictionary = {}) -> Dictionary:
 		return {}
 	var run: Dictionary = C.RUN
 	var nem = run.get("nem")
-	var rival := ("%s %s" % [str(nem.get("title", "")), str(nem.get("name", ""))]).strip_edges() if nem is Dictionary else ""
+	var rival: String = preload("res://story/tokens.gd").full_name(nem)
 	if choices.is_empty() and str(career.P.get("live", {}).get("key", "")) == career.run_key(run):
 		choices = career.P["live"].get("arc_choices", {}).duplicate()
-	var row: Dictionary = career.record_arc_end(str(run.get("fac", "")), str(run.get("admiral", "")), rival, choices, won)
+	var rfac := str(FAC.get(str(nem.get("fac", "")), {}).get("n", "")) if nem is Dictionary else ""
+	var row: Dictionary = career.record_arc_end(str(run.get("fac", "")), str(run.get("admiral", "")), rival, choices, won, rfac)
 	for id in career.take_new_medals():
 		medal_earned.emit(id, medal_name(id))
 	return row

@@ -7,9 +7,12 @@ extends RefCounted
 #   name, title, fac                 (B4, today)
 #   scars, beaten                    (B4, today: times his flagship broke and he escaped; times you beat him)
 #   adapt, seen                      (B4, today: what he adapted to; what he saw you use this sector)
-#   personality                      (R42, stream B: proud, cruel, cunning, zealous, cold or mocking proposed; any id works)
-#   last_beat                        (R42, stream B, optional: how you beat him last time, one of lance, torp, sq, ram,
-#                                     board, battery, evasive; when missing it is read from adapt and seen)
+#   persona                          (R42, stream B, data.js NEM_PERSONA: cunning, zealous, cruel, patient, proud, greedy,
+#                                     methodical, ravenous; four per faction; `personality` is read too, as a fallback)
+#   beat                             (R42, stream B: how you beat him last time, a NEM_BEAT_WORD key; `last_beat` too)
+#   epithet                          (R42, stream B: the name his scars earned him; part of his full name)
+# How you beat him maps onto the memory lines lance, torp, sq, ram, board, battery, evasive (broad to battery, ion to
+# lance, evaded to evasive); with no `beat`, it is read from adapt and seen.
 
 const Tokens := preload("res://story/tokens.gd")
 
@@ -28,9 +31,15 @@ func _init() -> void:
 
 
 static func full_name(nem) -> String:
+	return Tokens.full_name(nem)
+
+
+# stream B's field is `persona` (R42); `personality` was this stream's earlier proposal
+static func persona_of(nem) -> String:
 	if not (nem is Dictionary):
 		return ""
-	return ("%s %s" % [str(nem.get("title", "")), str(nem.get("name", ""))]).strip_edges()
+	var p = nem.get("persona", nem.get("personality", ""))
+	return str(p) if p != null else ""
 
 
 static func _h(s: String) -> int:
@@ -38,6 +47,10 @@ static func _h(s: String) -> int:
 	var h := 2166136261
 	for i in s.length():
 		h = ((h ^ s.unicode_at(i)) * 16777619) & 0x7fffffff
+	# final mix: FNV's low bits follow the characters' parity, so "pick one of two" needs the high bits stirred in
+	h ^= h >> 13
+	h = (h * 0x5bd1e995) & 0x7fffffff
+	h ^= h >> 15
 	return h
 
 
@@ -57,9 +70,9 @@ func _fac(nem) -> Dictionary:
 static func memory_key(nem) -> String:
 	if not (nem is Dictionary):
 		return ""
-	var lb := str(nem.get("last_beat", ""))
-	if lb != "":
-		return lb
+	var lb := str(nem.get("beat", nem.get("last_beat", "")))
+	if lb != "" and lb != "<null>":
+		return SEEN_TO_MEMORY.get(lb, lb)
 	var ad = nem.get("adapt", [])
 	if ad is Array and ad.size() > 0 and ADAPT_TO_MEMORY.has(str(ad[ad.size() - 1])):
 		return ADAPT_TO_MEMORY[str(ad[ad.size() - 1])]
@@ -86,7 +99,7 @@ func deed(nem, seed := 0) -> String:
 	var D2: Dictionary = F.get("deed", {})
 	if D2.is_empty():
 		return ""
-	var pers := str(nem.get("personality", "")) if nem is Dictionary else ""
+	var pers := persona_of(nem)
 	if not D2.has(pers):
 		var ks: Array = D2.keys()
 		ks.sort()
@@ -126,7 +139,7 @@ func final_hail(nem, flags = {}, seed := 0, ctx: Dictionary = {}) -> String:
 # One line for a moment: beaten, death, gloat, kill, signature (and hail, again, final, scar).
 func line(moment: String, nem, seed := 0, ctx: Dictionary = {}) -> String:
 	var F := _fac(nem)
-	var pers := str(nem.get("personality", "")) if nem is Dictionary else ""
+	var pers := persona_of(nem)
 	# a personality line for beaten and hail when he has one (half the time, so the faction pool still shows)
 	if pers != "" and moment in ["hail", "beaten"] and F.get("personality", {}).has(pers) and _h(str(nem.get("name", "")) + moment + str(seed)) % 2 == 0:
 		var pl := str(F["personality"][pers].get(moment, ""))

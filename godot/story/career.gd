@@ -66,9 +66,14 @@ func all_medals() -> Array:
 # A faction arc's ending (beat 3 fought). won: the Nemesis's last fight was won, which finishes the arc and pays its
 # rewards: the arc medal, the arc title, the flagship paint (switched on), and the unlock id stream B's rules read.
 # choices: {beat: option key}, kept for the Chronicle. Returns the Chronicle row.
-func record_arc_end(fac: String, admiral: String, rival: String, choices: Dictionary, won: bool) -> Dictionary:
+func record_arc_end(fac: String, admiral: String, rival: String, choices: Dictionary, won: bool, rival_fac: String = "") -> Dictionary:
 	var A: Dictionary = arcs().get(fac, {})
 	var row := {"t": int(Time.get_unix_time_from_system()), "fac": fac, "arc": str(A.get("arc", fac)), "admiral": admiral, "rival": rival, "choices": choices, "won": won}
+	# the run facts the Chronicle shows (outlines.md, "What a Chronicle entry records")
+	var L: Dictionary = P.get("live", {})
+	row["said"] = L.get("arc_labels", {}).duplicate() if L.get("arc_labels") is Dictionary else {}
+	row["first_lost"] = str(L.get("first_lost", ""))
+	row["rival_fac"] = rival_fac
 	P["chronicle"].append(row)
 	if P["chronicle"].size() > 60:
 		P["chronicle"] = P["chronicle"].slice(P["chronicle"].size() - 60)
@@ -118,7 +123,7 @@ func arc_title(fac: String, admiral: String = "") -> String:
 
 
 # A beat card was shown (variants prefer the version seen less) and a choice made (kept for the Chronicle).
-func note_arc_choice(run: Dictionary, beat_id: String, beat_no: int, key: String) -> void:
+func note_arc_choice(run: Dictionary, beat_id: String, beat_no: int, key: String, label: String = "") -> void:
 	if not P.has("arc_seen"):
 		P["arc_seen"] = {}
 	P["arc_seen"][beat_id] = int(P["arc_seen"].get(beat_id, 0)) + 1
@@ -126,6 +131,9 @@ func note_arc_choice(run: Dictionary, beat_id: String, beat_no: int, key: String
 	if not L.has("arc_choices"):
 		L["arc_choices"] = {}
 	L["arc_choices"][str(beat_no)] = key
+	if not L.has("arc_labels"):
+		L["arc_labels"] = {}
+	L["arc_labels"][str(beat_no)] = label if label != "" else key
 	save_profile()
 
 

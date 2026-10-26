@@ -74,7 +74,7 @@ func _fill(t: String) -> String:
 	var nem = info.get("nem")
 	var rival := ""
 	if nem is Dictionary:
-		rival = ("%s %s" % [str(nem.get("title", "")), str(nem.get("name", ""))]).strip_edges()
+		rival = preload("res://story/tokens.gd").full_name(nem)
 	return t.replace("{flagship}", str(info.get("flagship_name", "the flagship"))).replace("{rival}", rival if rival != "" else "the enemy commander").replace("{enemy}", str(info.get("enemy_name", "the enemy")))
 
 
@@ -119,10 +119,7 @@ func _nem_text(k: String) -> String:
 
 
 func _nem_name() -> String:
-	var nem = info.get("nem")
-	if not (nem is Dictionary):
-		return ""
-	return ("%s %s" % [str(nem.get("title", "")), str(nem.get("name", ""))]).strip_edges()
+	return preload("res://story/tokens.gd").full_name(info.get("nem"))
 
 
 func _boss_name() -> String:

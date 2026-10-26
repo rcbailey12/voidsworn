@@ -96,9 +96,15 @@ func t_data() -> void:
 			if str(F.get("memory", {}).get(k, "")) == "":
 				rl_missing.append("%s.memory.%s" % [f, k])
 			n_lines += 1
-		for p in RL["personalities"]:
+		var pp: Dictionary = F.get("personality", {})
+		var dd: Dictionary = F.get("deed", {})
+		if pp.size() != 4 or dd.size() != 4 or pp.keys() != dd.keys():
+			rl_missing.append("%s: personas %s, deeds %s" % [f, str(pp.keys()), str(dd.keys())])
+		for p in pp:
+			if not RL["personalities"].has(p):
+				rl_missing.append("%s.%s not a stream B persona" % [f, p])
 			for k in ["hail", "beaten"]:
-				if str(F.get("personality", {}).get(p, {}).get(k, "")) == "":
+				if str(pp[p].get(k, "")) == "":
 					rl_missing.append("%s.%s.%s" % [f, p, k])
 				n_lines += 1
 	ok(rl_missing.is_empty(), "data: Nemesis pools complete for all six factions (%d lines) %s" % [n_lines, str(rl_missing.slice(0, 6))])
@@ -239,19 +245,19 @@ func t_voice() -> void:
 	ok(v.closing(true).ends_with("\"The line held. It always holds.\""), "voice: closing line")
 	var vn = Voice.new()
 	vn.setup(view, {"admiral": "kassar", "admiral_name": "Grand Admiral Ilsa Kassar", "fac": "hegemony", "kind": "elite", "enemy_fac": "deathless", "sector": 3, "seed": 1,
-		"nem": {"name": "Setekh the Patient", "title": "Dynast", "fac": "deathless"}})
+		"nem": {"name": "Halvane", "title": "Justiciar", "epithet": "the Unpardoning", "fac": "deathless"}})
 	var op2: Array = vn.opening()
 	var RL = JSON.parse_string(_read("res://story/data/rival_lines.json"))
 	var said_final := false
 	for l in RL["deathless"]["final"]:
 		said_final = said_final or str(op2[0]["text"]).contains(str(l))
-	ok(op2.size() == 2 and said_final and str(op2[1]["text"]).contains("Dynast Setekh the Patient"), "voice: Nemesis opening in sector III uses his final line and his name")
-	ok(vn.closing(false).begins_with("Dynast Setekh the Patient:"), "voice: Nemesis gloats on a loss")
+	ok(op2.size() == 2 and said_final and str(op2[1]["text"]).contains("Justiciar Halvane the Unpardoning"), "voice: Nemesis opening in sector III uses his final line and his full name with epithet")
+	ok(vn.closing(false).begins_with("Justiciar Halvane the Unpardoning:"), "voice: Nemesis gloats on a loss")
 	# variety: the same moment across many generated Nemeses and seeds
 	var R = load("res://story/rival.gd").new()
 	var seen := {}
 	for i in 60:
-		var nem := {"name": "Name%d" % i, "title": "Warlord", "fac": "corsair", "personality": ["proud", "cruel", "cunning", "zealous", "cold", "mocking"][i % 6], "beaten": 0, "scars": 0}
+		var nem := {"name": "Name%d" % i, "title": "Warlord", "fac": "corsair", "persona": ["cunning", "greedy", "proud", "cruel"][i % 4], "beaten": 0, "scars": 0}
 		seen[R.opening(nem, 1, i)] = true
 	ok(seen.size() >= 6, "rival: first-meeting hails vary across Nemeses (%d different lines from 60)" % seen.size())
 	var again := {"name": "Scarface", "title": "Warlord", "fac": "corsair", "beaten": 1, "scars": 2, "adapt": ["armor"]}
@@ -265,7 +271,7 @@ func t_voice() -> void:
 		else:
 			kinds["again"] = true
 	ok(kinds.size() == 3, "rival: a later meeting mixes memory (rammed him last time), scar ({scars} filled: twice) and rematch lines %s" % str(kinds.keys()))
-	ok(R.memory_key({"seen": {"torp": 3, "lance": 9}}) == "lance" and R.memory_key({"last_beat": "board"}) == "board", "rival: memory key from seen counts or stream B's last_beat")
+	ok(R.memory_key({"seen": {"torp": 3, "lance": 9}}) == "lance" and R.memory_key({"beat": "board"}) == "board" and R.memory_key({"beat": "broad"}) == "battery" and R.memory_key({"beat": "evaded"}) == "evasive", "rival: memory key from stream B's nem.beat (broad to battery, evaded to evasive) or from seen counts")
 	var vs = Voice.new()
 	vs.setup(view, {"admiral": "grax", "admiral_name": "Warlord Grax Ironjaw", "kind": "elite", "enemy_fac": "ithar", "sector": 2, "seed": 4, "nem": {"name": "Ilyra Glasswing", "title": "Starwarden", "fac": "ithar"}})
 	var sl: Array = vs.on_event({"t": "nem_signature"})
@@ -313,7 +319,7 @@ func t_voice() -> void:
 
 func t_arc() -> void:
 	var T = load("res://story/tokens.gd")
-	var she := {"name": "Petra Lindqvist", "title": "Rear admiral", "fac": "hegemony", "personality": "mocking", "scars": 2}
+	var she := {"name": "Petra Lindqvist", "title": "Rear admiral", "fac": "hegemony", "persona": "methodical", "scars": 2}
 	var it := {"name": "Hollow Song", "title": "Matriarch", "fac": "chorus"}
 	var he := {"name": "Grim Rattigan", "title": "Warlord", "fac": "corsair", "g": "m"}
 	ok(T.fill("{He} lost {his} fleet; {he} blames {him}self. Scarred {scars}.", {"nem": she}) == "She lost her fleet; she blames herself. Scarred twice.", "tokens: she/her from the name pool")
@@ -323,7 +329,7 @@ func t_arc() -> void:
 	ok(a.load_arc("voidsworn", "res://story/test/fixture_arc.json"), "arc: fixture loads")
 	var ctx := {"nem": she, "flags": {}, "seed": 3, "seen": {"arc_voidsworn_1B": 1}, "first_lost": "", "arcs_finished": 0}
 	var b1: Dictionary = a.render(1, ctx)
-	ok(str(b1["b"]).contains("Rear admiral Petra Lindqvist did this. She left a bill, itemised, with a late fee.") and str(b1["b"]).contains("herself"), "arc: beat 1 fills the deed by faction and personality, with pronouns")
+	ok(str(b1["b"]).contains("Rear admiral Petra Lindqvist did this. She left an inventory of what was taken, and when she will return for the rest.") and str(b1["b"]).contains("herself"), "arc: beat 1 fills the deed by faction and personality, with pronouns")
 	ok(b1["o"][0]["fl"].get("fx_keep") == 1 and b1["o"][1]["fl"].get("greed") == 1 and b1["o"][1]["fl"].get("fx_sell") == 1, "arc: an option's story flag rides in fl (the event system stores it)")
 	var seen := {"arc_voidsworn_1A": 2, "arc_voidsworn_1B": 0}
 	ctx["seen"] = seen
@@ -346,6 +352,7 @@ func t_arc() -> void:
 	ok(str(b3["b"]).contains("You left people behind for a bonus"), "arc: beat 3 hail follows the run's lean (ruthless)")
 	ctx["nem"] = {"name": "Grim Rattigan", "title": "Warlord", "fac": "corsair", "beaten": 1}
 	ok(str(a.render(3, ctx)["b"]).contains("I had the dents framed"), "arc: beat 3 hail when he remembers you")
+	ok(a.cond("flag:fx_keep|flag:fx_sell", {"flags": {"fx_sell": 1}}) and not a.cond("flag:fx_keep|flag:zz", {"flags": {"fx_sell": 1}}) and a.cond("!flag:zz&flag:fx_sell|flag:q", {"flags": {"fx_sell": 1}}), "arc: conditions with & and |")
 	ok(a.ending(true, ctx) == "WIN. WIN-SELL" and a.ending(false, {"flags": {"fx_keep": 1}}) == "LOSS. LOSS-KEEP", "arc: endings follow the choices")
 	ctx["arcs_finished"] = 2
 	ok(bool(a.render(1, ctx)["skim_first"]), "arc: skim card first after two finished arcs")

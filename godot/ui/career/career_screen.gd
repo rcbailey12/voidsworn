@@ -356,7 +356,17 @@ func _chronicle() -> void:
 			v.add_child(lbl("Not yet told.", 15, BONE3))
 		else:
 			var last: Dictionary = done[done.size() - 1]
-			v.add_child(lbl("%s. Rival: %s." % ["Finished" if bool(last.get("won", false)) else "Fell at the Hollow Sun", str(last.get("rival", ""))], 15, BONE2))
+			v.add_child(lbl("%s. Rival: %s." % ["Finished" if bool(last.get("won", false)) else "Fell at the Hollow Sun", str(last.get("rival", "")) + ((" of " + str(last["rival_fac"])) if str(last.get("rival_fac", "")) != "" else "")], 15, BONE2))
+			var said: Dictionary = last.get("said", {}) if last.get("said") is Dictionary else {}
+			if not said.is_empty():
+				var ks: Array = said.keys()
+				ks.sort()
+				var parts: Array = []
+				for k in ks:
+					parts.append(str(said[k]).trim_suffix("."))
+				v.add_child(lbl(". ".join(PackedStringArray(parts)) + ".", 14, BONE3))
+			if str(last.get("first_lost", "")) != "":
+				v.add_child(lbl("First ship lost: the " + str(last["first_lost"]) + ".", 14, BONE3))
 		if not rw.is_empty():
 			v.add_child(lbl("Title: " + str(rw.get("title", "")), 15, GILT))
 			var pt: Dictionary = A.get("paint", {})

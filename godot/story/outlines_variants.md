@@ -15,33 +15,33 @@ Companion to `outlines.md` (read that first). Status: REVISED Oct 26, waiting fo
 
 ### Beat 1B (sector I): The Pilgrim's Casket
 
-Kneel, and receive the pilgrim. Her ship limped into the fleet on one engine, hull scored, her crew dead at their posts, and she will not let go of the casket in her arms. Inside is Saint Vesper's iron hand. She carried it out of the shrine-moon alone. {rival} came for it. {rival_deed} Before she sleeps she asks one thing: that the hand go where the saint would want it, into battle. Your quartermasters note that pilgrims on the next world would pay well for it, and that {rival} will follow the hand wherever it goes. Every captain has chalked a name on the hull already. {best_captain} chalks the pilgrim's. Decide what the hand is for.
+Kneel, and receive the pilgrim. Her ship limped into the fleet on one engine, hull scored, her crew dead at their posts, and she will not let go of the casket in her arms. Inside is Saint Vesper's iron hand. She carried it out of the beacon-moon alone. {rival} came for it. {rival_deed} Before she sleeps she asks one thing: that the hand go where the saint would want it, into battle. Your quartermasters note that pilgrims on the next world would pay well for it, and that {rival} will follow the hand wherever it goes. Every captain has chalked a name on the hull already. {best_captain} chalks the pilgrim's. Decide what the hand is for.
 
 - **Carry the hand into battle** (as A: a relic, clock +1, `vs_hand`). *The pilgrim smiles once and does not wake. The keepers of the fleet take up the casket.*
 - **Sell it to the pilgrims** (as A: +60 credits, `vs_sold`). *You sell it while she sleeps. When she wakes, nobody tells her. She knows anyway.*
 
-Skim: The pilgrim brings Saint Vesper's hand out of the burning shrine. {rival} wants it. Carry it into battle, or sell it.
+Skim: The pilgrim brings Saint Vesper's hand out of the burning beacon-moon. {rival} wants it. Carry it into battle, or sell it.
 
-### Beat 2B (sector II): The Penitent Station
+### Beat 2B (sector II): The Oath Station
 
-A confession station turns in the dark, its broadcast still running: a confessor's recorded voice reading the jump routes to the Hollow Sun, one number at a time, between penances. {rival} has mined the approach and waits beyond it. {rival_line} Hear the confessor's voice: listen to the end, and give {him} the hours. Hear the captains: strike now, and let the voice confess to no one. [If you carry the hand: the casket has grown warm, and the crew call it a sign.] [If you sold it: the recorded voice reaches the penance for avarice, and lingers there.] The routes are long. The mines are patient. The oath allows no answer that is both swift and holy. Choose which sin you will confess.
+An oath station turns in the dark, its broadcast still running: an oath-reader's recorded voice reading the jump routes to the Hollow Sun, one number at a time, between oaths. {rival} has mined the approach and waits beyond it. {rival_line} Hear the recorded voice: listen to the end, and give {him} the hours. Hear the captains: strike now, and let the voice swear to no one. [If you carry the hand: the casket has grown warm, and {rival} has been told where it rides.] [If you sold it: the recorded voice reaches the oath against selling the holy, and lingers there.] The routes are long. The mines are patient. The oath allows no answer that is both swift and holy. Choose which sin you will confess.
 
 - **Listen to the end** (as A, recover the code). *The voice finishes, blesses no one, and stops. The routes are yours.*
-- **Strike now** (as A). *You leave the voice mid-penance. It is still confessing when you are out of range.*
-- Blue, needs the hand: **Answer the confession with the hand** (as A, ring the bell with the hand). *You hold the hand to the station's speaker. The voice falls silent, then reads the routes all at once.*
+- **Strike now** (as A). *You leave the voice mid-oath. It is still reading when you are out of range.*
+- Blue, needs the hand: **Answer the oath with the hand** (as A, ring the bell with the hand). *You hold the hand to the station's speaker. The voice falls silent, then reads the routes all at once.*
 - Blue, needs the sale: **Pay the pilgrims to listen for you** (as A). *The pilgrims dock at the station and kneel. They will remember every number.*
 
-Skim: A recorded confessor reads the routes, slowly. {rival} waits past the mines. Listen and lose time, or strike now.
+Skim: A recorded oath-reader reads the routes, slowly. {rival} waits past the mines. Listen and lose time, or strike now.
 
 ### Beat 3B (sector III): The Beacon Tower
 
-The beacon of the Hollow Sun is a tower of black iron as long as a battleship, built by the first oath-fleet and dark for a thousand years. {rival} has anchored to its foot. {rival_line} Its firing chamber is empty. Read the hull: every chalk name is still there. [If you lost ships: the crews have chalked {first_lost} beside them.] [If you carry the hand: {he} asks for nothing but the hand.] [If you sold it: the pilgrims send one word on the open channel: Forgiven. It does not help.] Call across the fleet and hear the answer. Who lights the dark? We do. Who pays? We do. The tower takes a relic, as the saints did, or a reactor, as the desperate did. {best_captain} stands at the rail, waiting. Choose the price.
+The beacon of the Hollow Sun is a tower of black iron as long as a battleship, built by the first oath-fleet and dark for a thousand years. {rival} has anchored to its foot. {rival_line} [If the hand answered the oath for you: {rival} heard it across the whole sector, and {his} line has not formed cleanly since.] [If it did not: {rival} plays the station's recording on every channel, reading your name between the oaths.] Its firing chamber is empty. [If you carry the hand: {he} asks for nothing but the hand.] [If you sold it: the pilgrims send one word on the open channel: Forgiven. It does not help.] Read the hull: every chalk name is still there. [If you lost ships: the crews have chalked {first_lost} beside them.] Call across the fleet and hear the answer. Who lights the dark? We do. Who pays? We do. The tower takes a relic, as the saints did, or a reactor, as the desperate did. {best_captain} stands at the rail, waiting. Choose the price.
 
 - Options and endings as A.
 
 Skim: The beacon tower stands dark at the Hollow Sun. {rival} is anchored at its foot. Light it with the saint's hand, or with a reactor.
 
-Prior win (beat 1 nod): *[The litanists sing a verse with your name in it before the charge. It is a short verse. They are working on it.]*
+Prior win (beat 1 nod): *[The rite-keepers read a verse with your name in it before the oath. It is a short verse. They are working on it.]*
 
 ---
 
@@ -58,7 +58,7 @@ Skim: The census frigate Tally drifts with her count unfinished. {rival} found h
 
 ### Beat 2B (sector II): The Hospital Ship
 
-The hospital ship Mercy of Order, four hundred wounded aboard, has lost her engines on the gravity shoals of sector II. {rival} holds the only exit and has not fired. {rival_line} The Admiralty signal is precise: the Mercy is within acceptable limits; proceed to the objective. Your flag captain hands you a second message, from the ship's surgeon, who is nineteen and the most senior officer left: we are sorting by survivability, as per the manual. [If you went off the record: the census record gave you {his} patrol pattern.] [If you scuttled it: the commendation hangs on your wall, framed by someone with initiative.] To break through is to disobey. To leave is to follow orders, and let the surgeon finish sorting.
+The hospital ship Mercy of Order, four hundred wounded aboard, has lost her engines on the gravity shoals of sector II. {rival} holds the only exit and has not fired. {rival_line} The Admiralty signal is precise: the Mercy is within acceptable limits; proceed to the objective. Your flag captain hands you a second message, from the ship's surgeon, who is nineteen and the most senior officer left: we are sorting by survivability, as per the manual. [If you went off the record: the census record gave you {his} patrol pattern, and {he} knows it.] [If you scuttled it: the commendation hangs on your wall; {rival} has sent a copy back, unsigned.] To break through is to disobey. To leave is to follow orders, and let the surgeon finish sorting.
 
 - **Disobey and tow her out** (as A: a picket joins with a veteran captain, `hg_broke`). *The surgeon sends her thanks in the correct format. Then she sends it again, not in the correct format.*
 - **Proceed to the objective** (as A: +80 credits, `hg_left`). *The Mercy's last signal is a casualty list, sorted. Your flag captain initials it.*
@@ -69,11 +69,11 @@ Skim: A hospital ship is stranded on the shoals. The Admiralty says proceed. Dis
 
 ### Beat 3B (sector III): The Survey Buoys
 
-The anchorage buoys at the Hollow Sun still broadcast the original survey: depth, drift, capacity nine fleets. {rival} has switched every buoy to a new message, about you. It repeats every eleven seconds. Your communications officer has stopped translating it; the crews have not stopped listening. {rival_line} Authorisation arrives eleven days late, stamped in triplicate. [If you broke them out: a reprimand is attached, unsigned. The rescued ship's escort holds station off your bow and has not asked for orders.] [If you left them: the list has new names on it. Your flag captain added them, in the correct format.] [If you filed the exception: the list is shorter.] The guns are synchronised. The column forms on your flagship. There is one tradition no appendix governs: before a decisive engagement a commander speaks to the line, unrecorded. Every ship hears it. Nobody writes it down.
+The anchorage buoys at the Hollow Sun still broadcast the original survey: depth, drift, capacity nine fleets. {rival} has switched every buoy to a new message, about you. It repeats every eleven seconds. Your communications officer has stopped translating it; the crews have not stopped listening. {rival_line} [If you broke them out: {rival} has read your reprimand, and sent you a copy, annotated.] [If you did not: {rival}'s buoys read the Mercy's casualty list between the depth soundings.] Authorisation arrives eleven days late, stamped in triplicate. [If you broke them out: the rescued ship's escort holds station off your bow and has not asked for orders.] [If you left them: the list has new names on it. Your flag captain added them, in the correct format.] [If you filed the exception: the list is shorter.] The guns are synchronised. The column forms on your flagship. There is one tradition no appendix governs: before a decisive engagement a commander speaks to the line, unrecorded. Every ship hears it. Nobody writes it down.
 
 - Options and endings as A.
 
-Skim: {rival} holds the anchorage, the buoys broadcasting a message about you. One unrecorded speech before the fight. Read the names, speak of duty, or give the lieutenant the line.
+Skim: {rival} holds the anchorage, the buoys broadcasting a message about you. One unrecorded speech before the fight. Read the names, order the crews to be correct, or give the lieutenant the line.
 
 Prior win (beat 1 nod): *[Order 41 has a previous holder. Their report is attached as a model of the correct format. It is yours.]*
 
@@ -92,7 +92,7 @@ Skim: Mott's map to the treasure fleet is in every den, and {rival} wants yours 
 
 ### Beat 2B (sector II): The Card Game at Rattlehold
 
-The treasure fleet's black box is the pot in a card game at Rattlehold, the rock where thieves go to rob each other politely. Every crew with a grudge has taken a seat. {rival} has not. {His} fleet is parked off the rock, waiting to see who walks out with the box. {rival_line} The dealer cheats for the house. Your quartermaster cheats for you, badly. The knife crews say flip the table and run under cover of the riot. The bosun says buy in at full stake and play it straight. [If you threw the party: Mott recognises the dealer from his own stories, and goes pale.] [If you rigged the parcel: the whole table has heard about the parcel.] The cards go round once. Your turn.
+The treasure fleet's black box is the pot in a card game at Rattlehold, the rock where thieves go to rob each other politely. Every crew with a grudge has taken a seat. {rival} has not. {His} fleet is parked off the rock, waiting to see who walks out with the box. {rival_line} The dealer cheats for the house. Your quartermaster cheats for you, badly. The knife crews say flip the table and run under cover of the riot. The bosun says buy in at full stake and play it straight. [If you threw the party: Mott recognises the dealer from his own stories, and goes pale.] [If you rigged the parcel: {rival} has heard about the parcel too, and keeps {his} distance.] The cards go round once. Your turn.
 
 - **Flip the table** (as A, steal it: a relic, next fight an ambush, `cs_stole`). *The riot spreads to three decks. You leave with the box and someone's hat.*
 - **Buy in at full stake (80 credits)** (as A: a raider crew joins, `cs_paid`). *You lose the hand and win the room. A raider captain asks to deal you in permanently.*
@@ -103,11 +103,11 @@ Skim: The black box is the pot at Rattlehold's card table. {rival} waits outside
 
 ### Beat 3B (sector III): The Frozen Prize
 
-The treasure fleet is real, and frozen. A dozen haulers hang in a single block of ice at the Hollow Sun, holds sealed, harpoon lines still taut. Old Mott cannot stop laughing, which is worse than the crying. {rival} has drilled {his} ships into the block itself, so every shot at {him} cracks the prize. {rival_line} [If you burned Rattlehold: half your crews still smell of its smoke.] [If you paid: the raider crew keep asking when they get their share.] [Prior loss: in the ice, a familiar hull. The paint reads {prior_flagship}.] The crews are counting shares out loud, which is bad luck. The Ashfall rule: the winner sets the split. Tonight you set it before the fight, out loud. Mott stops laughing and waits.
+The treasure fleet is real, and frozen. A dozen haulers hang in a single block of ice at the Hollow Sun, holds sealed, harpoon lines still taut. Old Mott cannot stop laughing, which is worse than the crying. {rival} has drilled {his} ships into the block itself, so every shot at {him} cracks the prize. {rival_line} [If {rival} lost face at Rattlehold: the dens know it, and {he} knows they know.] [If {he} let you buy the box: {he} wanted you to bring it here.] [If you burned Rattlehold: half your crews still smell of its smoke.] [Prior loss: in the ice, a familiar hull. The paint reads {prior_flagship}.] The crews are counting shares out loud, which is bad luck. Some would rather die rich than live poor. Tonight you tell them which they are. Mott stops laughing and waits.
 
 - Options and endings as A.
 
-Skim: The treasure fleet is frozen in one block of ice, {rival} drilled into it. Set the split before the fight: double shares, nothing, or let Mott speak.
+Skim: The treasure fleet is frozen in one block of ice, {rival} drilled into it. Double shares and fight round the gold, shoot through the prize, or let Mott speak.
 
 Prior win (beat 1 nod): *[The dens still talk about the last split. Two of the people in the story are drinking at the next table.]*
 
@@ -117,7 +117,7 @@ Prior win (beat 1 nod): *[The dens still talk about the last split. Two of the p
 
 ### Beat 1B (sector I): The Empty Feeding Ground
 
-We wake hungry. Every throat, one want. Far off, the Hollow Sun. Dead outside. Warm inside. The first meat. We go. The first feeding ground is a moon of soft things. It should be full. It is empty. Picked clean. Not eaten. Taken. Packed. Carried off. {rival} did this. {rival_deed} We taste the empty burrows. Cold. Clean. Wrong. Hunger says: eat what is left. The roots. The dirt. Anything. Grow. Memory says: eat nothing. Remember empty. Then we know what {he} takes. Then we know where {he} goes. Two throats pull at the swarm. The swarm turns to you. Choose.
+We wake hungry. Every throat, one want. Far off, the Hollow Sun. Dead outside. Warm inside. The first meat. We go. The first feeding ground. A moon of soft things. It should be full. It is empty. Picked clean. Not eaten. Taken. Packed. Carried off. {rival} did this. {rival_deed} We taste the empty burrows. Cold. Clean. Wrong. Hunger says: eat what is left. The roots. The dirt. Anything. Grow. Memory says: eat nothing. Remember empty. Then we know what {he} takes. Then we know where {he} goes. Two throats pull at the swarm. The swarm turns to you. Choose.
 
 - **Eat what is left** (as A: regrow 30%, `ch_ate`). *We eat roots and dirt. It is not enough. It is something.*
 - **Remember empty** (as A: clock back one, `ch_smell`). *We eat nothing. We hold the empty in every throat. Memory is pleased.*
@@ -126,7 +126,7 @@ Skim: The feeding ground is picked clean by {rival}. Hunger says eat what is lef
 
 ### Beat 2B (sector II): The Hatchery Hulk
 
-A dead ship. Huge. Old. Full of our eggs. Laid long ago. Warm still. {rival} has wired the hulk to burn. {He} waits outside. {rival_line} Hunger says: eat the eggs. Now. Before the fire. Come out heavier. Memory says: hatch them. Feed them our flesh. They fight beside us. The wires hum. The eggs pulse. The small ones stir inside the shells. Heat climbs the walls. [If we ate: Hunger is louder since the feeding ground. Memory is hard to hear.] [If we kept the empty: the empty is here too. {He} has taken some eggs already.] The hulk groans. Fire is coming. We have little time. The hunger has never had to choose before. It does not like it.
+A dead ship. Huge. Old. Full of our eggs. Laid long ago. Warm still. {rival} has wired the hulk to burn. {He} waits outside. {rival_line} Hunger says: eat the eggs. Now. Before the fire. Come out heavier. Memory says: hatch them. Feed them our flesh. They fight beside us. The wires hum. The eggs pulse. The small ones stir inside the shells. Heat climbs the walls. [If we ate: Hunger is louder since the feeding ground. {He} knows. {He} wired the eggs for hungry things.] [If we kept the empty: the empty is here too. {He} has taken some eggs already.] The hulk groans. Fire is coming. We have little time. The hunger has never had to choose before. It does not like it.
 
 - **Eat the eggs** (as A, dive and eat). *We eat fast. The fire takes the rest. We do not look back.*
 - **Hatch them on our flesh** (as A: a drone joins, `ch_spawn`). *One hatches in time. It bites the wire first.*
@@ -137,7 +137,7 @@ Skim: A hulk full of our old eggs, wired to burn by {rival}. Eat them now, or ha
 
 ### Beat 3B (sector III): The Warm Core
 
-Closer now. The dead star's shell is cracked. Light leaks out. Warm. Wet. Old. {rival} has built a wall of ships across the crack. {rival_line} Behind the wall, the meat. We smell it. We have smelled nothing else for days. We have come so far. We are thin. We are many. The warm calls every throat. [If we fed the spawn: the small ones swim at our flanks, furious.] [If Hunger leads: only Hunger speaks now. Memory is a scar.] [If we hunted {him}: we know {his} soft places by taste.] Hunger says: through the wall. Every mouth. Now. Memory says: taste the wall first. Find the weak ship. Then through. The crack glows. The wall waits. Nine mouths. One answer. We are so hungry.
+Closer now. The dead star's shell is cracked. Light leaks out. Warm. Wet. Old. {rival} walls the crack with ships. Many ships. {rival_line} [If we hunted {him}: {he} limps. {He} remembers our teeth.] [If we did not: {he} is fat. {He} ate the eggs we left.] Behind the wall, the meat. We smell it. We have smelled nothing else for days. We have come so far. We are thin. We are many. The warm calls every throat. [If Hunger leads: only Hunger speaks now. Memory is a scar.] [If we fed the spawn: the small ones swim at our flanks, furious.] Hunger says: through the wall. Every mouth. Now. Memory says: taste the wall first. Find the weak ship. Then through. The crack glows. The wall waits. Nine mouths. One answer. We are so hungry.
 
 - Options and endings as A.
 
@@ -151,7 +151,7 @@ Prior win (beat 1 nod): *[We remember warm. We remember full. We want it again.]
 
 ### Beat 1B (sector I): The Last Archivist
 
-The Hollow Sun was a lamp once, when your house still had a name worth lighting. The elders have sent you to fetch its archive home, with an index, a cross-index, and a list of things you are not to touch. They have not named a child in four hundred years; they are particular. On the first night you find an archive-ship adrift, its keeper alive, very old, and the last who remembers the archive's filing order. {rival} has been asking her questions. {rival_deed} She offers to give you the filing order now, all of it, though giving it all at once will finish her. Or she can sleep, and you can manage without. Your archivist would very much like the filing order.
+The Hollow Sun was a lamp once, when your house still had a name worth lighting. The First Singers have sent you to fetch its archive home, with an index, a cross-index, and a list of things you are not to touch. They have not named a child in four hundred years; they are particular. On the first night you find an archive-ship adrift, its keeper alive, very old, and the last who remembers the archive's filing order. {rival} has been asking her questions. {rival_deed} She offers to give you the filing order now, all of it, though giving it all at once will finish her. Or she can sleep, and you can manage without. Your archivist would very much like the filing order.
 
 - **Take the filing order** (as A, take its song: clock back one, `it_song`). *She recites it in one breath and is gone before the last shelf. Your archivist writes every word.*
 - **Let her sleep** (as A: 15 experience each, `it_mercy`). *She sleeps. Your archivist sits with her, sulking, until morning.*
@@ -160,7 +160,7 @@ Skim: The last keeper of the archive's filing order offers it all at once, and i
 
 ### Beat 2B (sector II): The Broken Gallery
 
-In sector II the voyage passes the Gallery, a ring of mirrors the old houses built to hold their light for a thousand years. {rival} is breaking them. Each mirror releases its stored light in one blinding flash, and the flashes blind your sensors. {rival_line} Your captains are barely four centuries old and some are weeping; the archivist is logging every mirror, in tears, by catalogue number. The oldest seraph polished these mirrors as a child. She says that sung to, the light would settle and the flashes stop. It would cost time, and {he} would see you coming. [If you took the filing order: you know which mirror is next, and the one after.] [If you let her sleep: she told your captains the Gallery's safe path before she slept.]
+In sector II the voyage passes the Gallery, a ring of mirrors the old houses built to hold their light for a thousand years. {rival} is breaking them. Each mirror releases its stored light in one blinding flash, and the flashes blind your sensors. {rival_line} Your captains are barely four centuries old and some are weeping; the archivist is logging every mirror, in tears, by catalogue number. The oldest seraph polished these mirrors as a child. She says that sung to, the light would settle and the flashes stop. It would cost time, and {he} would see you coming. [If you took the filing order: you know which mirror {rival} breaks next.] [If you let her sleep: she told your captains the path {rival} did not watch.]
 
 - **Sing to the light** (as A, sing the lament). *The mirrors dim to a glow. The archivist records the catalogue numbers of the survivors.*
 - **Go dark through the flashes** (as A: 5% damage, a weakness revealed). *You fly blind. When you can see again, {his} seams are close enough to touch.*
@@ -171,13 +171,13 @@ Skim: {rival} is breaking the Gallery's mirrors, and the flashes blind you. Sing
 
 ### Beat 3B (sector III): The Index Room
 
-The archive's core is a room of light at the heart of the Hollow Sun, and its door is an index: every house, in order. {rival} is reading it aloud, house by house, and deleting each one as {he} goes. {rival_line} Your sails catch the last of the glow. [If the filing order is still yours: it would open the core without a fight at the gate.] [If you lost ships: the {first_lost} is not with you; you will have to explain that to the elders, in writing.] Every ship in this fleet is a line of a song that ends with it. Nothing is coming after you to sing the rest. The archivist asks, very politely, which you mean to save if you cannot save both: the archive, or the fleet.
+The archive's core is a room of light at the heart of the Hollow Sun, and its door is an index: every house, in order. {rival} is reading it aloud, house by house, and deleting each one as {he} goes. {rival_line} [If you caught {him} at the Gallery: {he} reads faster now, and does not look up.] [If you did not: {he} pauses at your house's name, and reads it twice.] Your sails catch the last of the glow. [If the filing order is still yours: it would open the core without a fight at the gate.] [If you let the keeper sleep: she wakes far behind you and calls the index's first line across three sectors.] [If you lost ships: the {first_lost} is not with you; you will have to explain that to the First Singers, in writing.] Every ship in this fleet is a line of a song that ends with it. Nothing is coming after you to sing the rest. The archivist asks, very politely, which you mean to save if you cannot save both: the archive, or the fleet.
 
 - Options and endings as A.
 
 Skim: {rival} is deleting the archive house by house. Save the archive at a ship's cost, save the fleet, or open the core with what you carried.
 
-Prior win (beat 1 nod): *[The archive you brought home last time has been re-filed twice. The elders are almost satisfied.]*
+Prior win (beat 1 nod): *[The archive you brought home last time has been re-filed twice. The First Singers are almost satisfied.]*
 
 ---
 
@@ -185,18 +185,18 @@ Prior win (beat 1 nod): *[The archive you brought home last time has been re-fil
 
 ### Beat 1B (sector I): The Overdue Census
 
-We wake by writ, rank by rank, as the law prescribes. The record lists what was lost in the long sleep: three sectors of the old holdings occupied by the living, and beneath the Hollow Sun the first Court, adjourned. The session will resume. One holding failed to answer the waking census: a vault at the edge of the first sector. Its warden's report is ten thousand years overdue. On inspection, the warden has been dismantled with care and his seal of office removed. {rival} did this. {rival_deed} The wardens request a writ of pursuit. The archivists recommend patience. The law permits either. It forgets neither. The record waits for your entry.
+We wake by writ, rank by rank, as the law prescribes. The record lists what was lost in the long sleep: three sectors of the old holdings occupied by the living, and beneath the Hollow Sun the first Court, adjourned. The session will resume. One holding failed to answer the waking census: a vault at the edge of the first sector. Its custodian's report is ten thousand years overdue. On inspection, the custodian has been dismantled with care and the seal of office removed. {rival} did this. {rival_deed} The bailiffs request a writ of pursuit. The archivists recommend patience. The law permits either. It forgets neither. The record waits for your entry.
 
 - **Issue the writ** (as A: 20 experience each, clock +1, `dd_writ`). *The writ names the hour of the offence to the second. The legions memorise it.*
-- **Be patient** (as A: rebuild 15%, `dd_patient`). *The archivists begin reading the warden. They are thorough. They have time.*
+- **Be patient** (as A: rebuild 15%, `dd_patient`). *The archivists begin reading the custodian. They are thorough. They have time.*
 
-Skim: A vault failed the waking census; its warden is dismantled and his seal taken by {rival}. Issue a writ of pursuit, or be patient.
+Skim: A vault failed the waking census; its custodian is dismantled and the seal taken by {rival}. Issue a writ of pursuit, or be patient.
 
 ### Beat 2B (sector II): The Counterfeit Writs
 
 In sector II, writs bearing the stolen seal are reaching occupied worlds: forged orders, in the Court's own form, telling the living that the holdings are theirs by law. {rival} is issuing them. {rival_line} Below your fleet lies a second vault, its legions sleeping, a reserve the law says may wake only to defend the Court in session. Waking it would answer the forgeries with hulls. It would also break the law the forgeries pretend to keep. [If you were patient: the archivists know the seal's flaw; every forged writ carries it.] [If you issued the writ: {rival} has forged one naming you.] The Court cannot forgive a broken law. It cannot forgive a forged one. It has never been asked to choose.
 
-- **Wake the reserve** (as A: a jackal joins, clock +1, `dd_broke`). *The legions rise and read the forged writs with interest.*
+- **Wake the reserve** (as A: a destroyer joins, clock +1, `dd_broke`). *The legions rise and read the forged writs with interest.*
 - **Keep the law** (as A, nothing now, `dd_lawful`). *You answer the forgeries with a correction notice. It is very long.*
 - Blue, needs patience: **Expose the flaw (costs a refit)** (as A). *Every forged writ cracks along the same line at once. The living notice.*
 
@@ -204,7 +204,7 @@ Skim: Forged writs under the stolen seal are reaching the living. Wake the reser
 
 ### Beat 3B (sector III): The Processional
 
-The processional route to the first Court runs between two rows of statues, each the image of a warden, each facing inward. {rival} has defaced every one with {his} own mark and drawn up {his} fleet at the end of the route. The legions look at the statues, then at {rival}, and say nothing. Nothing needs saying. {rival_line} Your fleet takes the old formation without being ordered. The record finishes its count. [If you woke the reserve: the reserve stands at the formation's edge, listed as irregular. The rest of the fleet does not stand beside it.] [If you kept the law: the vault's honour guard has woken on its own and asks, formally, for its place in the line.] The law of reclamation is simple. The guns charge. The clerks wait for your entry.
+The processional route to the first Court runs between two rows of statues, each the image of a custodian, each facing inward. {rival} has defaced every one with {his} own mark and drawn up {his} fleet at the end of the route. The legions look at the statues, then at {rival}, and say nothing. Nothing needs saying. {rival_line} [If the flaw was exposed: {rival} has stopped issuing writs; the cracked seal is nowhere to be seen.] [If it was not: the stolen seal is fixed to {rival}'s flagship's prow.] Your fleet takes the old formation without being ordered. The record finishes its count. [If you woke the reserve: the reserve stands at the formation's edge, listed as irregular.] [If you kept the law: the vault's honour guard, lawfully woken in defence of the Court in session, asks formally for its place in the line.] The law of reclamation is simple. The guns charge. The clerks wait for your entry.
 
 - Options and endings as A.
 
@@ -221,7 +221,7 @@ Prior win (beat 1 nod): *[The record notes a previous restoration under your com
 - Voidsworn 3A: The Hollow Sun, the chalk names, and {rival} among the wrecks. Light the beacon with the hand, or with a reactor.
 - Hegemony 1A: K-7's fourteen crew are dead and {rival} has the post. Recover the black box off the record, or follow orders.
 - Hegemony 2A: Eleven haulers on the shoals. The Admiralty says proceed. Disobey and break them out, or follow orders.
-- Hegemony 3A: The anchorage, and one unrecorded speech. Read the names, speak of duty, or give the lieutenant the line.
+- Hegemony 3A: The anchorage, and one unrecorded speech. Read the names, order the crews to be correct, or give the lieutenant the line.
 - Corsair 1A: {rival} got to your last fence. Send a rigged reply, or throw a party.
 - Corsair 2A: The black box is up for auction and {rival} is waiting outside. Steal it, or pay full price.
 - Corsair 3A: The treasure fleet, {rival} chained to it. Set the split: double shares, nothing, or Mott's speech.

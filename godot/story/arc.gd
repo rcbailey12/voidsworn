@@ -10,7 +10,7 @@ extends RefCounted
 #    text: [segment, ...],
 #    options: [{k, l, s, out, r, fl?, flag?, need?, if?}]}
 # A segment is a string, or {"t": text, "if": condition} shown only when the condition holds (at most MAX_COND per card).
-# Conditions: terms joined by "&", each optionally negated with "!":
+# Conditions: terms joined by "&" (all must hold); a term may list alternatives with "|"; each atom may be negated with "!":
 #   flag:<name>    the run has that flag (RUN.flags, written by earlier choices)
 #   lost           a ship has been lost this run
 #   prior_loss     the last run with this faction was lost   prior_win   the last run with this faction was won
@@ -47,38 +47,48 @@ static func cond(c: String, ctx: Dictionary) -> bool:
 	if c == "":
 		return true
 	for term in c.split("&"):
-		var t := term.strip_edges()
-		var neg := t.begins_with("!")
-		if neg:
-			t = t.substr(1)
-		var v := false
-		var flags: Dictionary = ctx.get("flags", {}) if ctx.get("flags") is Dictionary else {}
-		var nem = ctx.get("nem")
-		if t.begins_with("flag:"):
-			v = flags.has(t.substr(5)) and flags[t.substr(5)] != null
-		elif t == "lost":
-			v = str(ctx.get("first_lost", "")) != ""
-		elif t == "prior_loss":
-			v = bool(ctx.get("prior_loss", false))
-		elif t == "prior_win":
-			v = bool(ctx.get("prior_win", false))
-		elif t == "beaten":
-			v = nem is Dictionary and int(nem.get("beaten", 0)) > 0
-		elif t == "scarred":
-			v = nem is Dictionary and int(nem.get("scars", 0)) > 0
-		if v == neg:
+		# a term may list alternatives with "|": true when any of them holds
+		var any := false
+		for alt in term.split("|"):
+			if _atom(alt.strip_edges(), ctx):
+				any = true
+				break
+		if not any:
 			return false
 	return true
 
 
-func segments(list: Array, ctx: Dictionary) -> String:
+static func _atom(a: String, ctx: Dictionary) -> bool:
+	var t := a
+	var neg := t.begins_with("!")
+	if neg:
+		t = t.substr(1)
+	var v := false
+	var flags: Dictionary = ctx.get("flags", {}) if ctx.get("flags") is Dictionary else {}
+	var nem = ctx.get("nem")
+	if t.begins_with("flag:"):
+		v = flags.has(t.substr(5)) and flags[t.substr(5)] != null
+	elif t == "lost":
+		v = str(ctx.get("first_lost", "")) != ""
+	elif t == "prior_loss":
+		v = bool(ctx.get("prior_loss", false))
+	elif t == "prior_win":
+		v = bool(ctx.get("prior_win", false))
+	elif t == "beaten":
+		v = nem is Dictionary and int(nem.get("beaten", 0)) > 0
+	elif t == "scarred":
+		v = nem is Dictionary and int(nem.get("scars", 0)) > 0
+	return v != neg
+
+
+func segments(list: Array, ctx: Dictionary, max_cond: int = MAX_COND) -> String:
 	var out: Array = []
 	var shown := 0
 	for s in list:
 		if s is String:
 			out.append(s)
 		elif s is Dictionary:
-			if shown < MAX_COND and cond(str(s.get("if", "")), ctx):
+			if shown < max_cond and cond(str(s.get("if", "")), ctx):
 				out.append(str(s.get("t", "")))
 				shown += 1
 	return Tokens.fill(" ".join(PackedStringArray(out)), ctx)
@@ -137,6 +147,7 @@ func render(beat_no: int, ctx: Dictionary) -> Dictionary:
 			text.insert(1, {"t": str(A["prior_loss"]), "if": "prior_loss"})
 	var opts: Array = []
 	var outs := {}
+	var labels := {}
 	for o in beat.get("options", []):
 		if not cond(str(o.get("if", "")), c):
 			continue
@@ -148,11 +159,13 @@ func render(beat_no: int, ctx: Dictionary) -> Dictionary:
 			e["need"] = o["need"]
 		opts.append(e)
 		outs[e["k"]] = Tokens.fill(str(o.get("out", "")), c)
+		labels[e["k"]] = e["l"]
 	var fin: int = int(ctx.get("arcs_finished", 0))
 	return {"id": "%s%s" % [prefix, v], "t": Tokens.fill(str(beat.get("title", "")), c), "b": segments(text, c), "skim": Tokens.fill(str(beat.get("skim", "")), c),
-		"skim_first": fin >= SKIM_AFTER, "o": opts, "outs": outs, "variant": v, "charge": str(A.get("charge", "")) if beat_no == 1 else "", "arc": true}
+		"skim_first": fin >= SKIM_AFTER, "o": opts, "outs": outs, "labels": labels, "variant": v, "charge": str(A.get("charge", "")) if beat_no == 1 else "", "arc": true}
 
 
 # The win or loss text, with the lines the run's choices earned.
+# Endings show up to three earned lines (the beat 3 choice, a sector II echo, a sector I echo).
 func ending(won: bool, ctx: Dictionary) -> String:
-	return segments(A.get("win" if won else "loss", []), ctx)
+	return segments(A.get("win" if won else "loss", []), ctx, 3)

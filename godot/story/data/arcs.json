@@ -46,6 +46,6 @@
     "title": "Restorer of the First Court",
     "paint": {"id": "court_gold", "n": "Court Gold", "hull": "#1a1712", "trim": "#c8a050", "glow": "#ffd36a", "pattern": "Obsidian hull with court-gold inlay; the glow turns from tomb green to gold."},
     "unlock_variant": "d_jackal_h",
-    "unlock_name": "Jackal court guard"
+    "unlock_name": "Court guard destroyer"
   }
 }

@@ -42,10 +42,13 @@ static func pronouns(nem) -> Dictionary:
 	return {"he": "he", "him": "him", "his": "his"}
 
 
+# His full name as the campaign shows it (campaign_run.js nemFull): title, name, and the epithet his scars earned.
 static func full_name(nem) -> String:
 	if not (nem is Dictionary):
 		return ""
-	return ("%s %s" % [str(nem.get("title", "")), str(nem.get("name", ""))]).strip_edges()
+	var ep = nem.get("epithet")
+	var e := (" " + str(ep)) if ep != null and str(ep) != "" else ""
+	return ("%s %s%s" % [str(nem.get("title", "")), str(nem.get("name", "")), e]).strip_edges()
 
 
 static func _cap(s: String) -> String:

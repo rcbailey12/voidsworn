@@ -1,12 +1,14 @@
 {
-  "_about": "The Nemesis's lines (R42): pools keyed by his faction (his voice), then by moment, plus small pools per personality, lines about his scars, and lines about how you beat him last time. godot/story/rival.gd picks one line per moment from the pools with a hash of his name, the moment and the battle seed, so each run's Nemesis sounds different but stays consistent within a battle. Placeholders: {rival} his full name, {you} your admiral's name, {flagship} your flagship's name, {scars} how many times he has been scarred (as a word: once, twice, three times). Moments: hail (his battle starts, first meeting), again (a later meeting after you beat him), final (his last fight, sector III), beaten (his flagship breaks and he escapes), death (his flagship dies in his last fight), gloat (you lose to him), kill (he destroys one of your ships), signature (his faction's own behaviour, when stream B's rules fire it), scar (a later meeting, he talks about his scars), memory.<how> (a later meeting, he talks about how you beat him: lance, torp, sq, ram, board, battery, evasive). Personalities are a proposal for stream B: proud, cruel, cunning, zealous, cold, mocking; any other id falls back to the faction pools. No em dashes. deed: the beat 1 calling card by personality ({rival_deed}). final_by: his beat 3 hail, picked in the order remembers (you beat him before or he is scarred), mercy, ruthless (your choices' leaning), else sun (what the Hollow Sun means to him). Pronoun tokens {He} {he} {him} {his} follow his gender (it for a Chorus mind).",
+  "_about": "The Nemesis's lines (R42): pools keyed by his faction (his voice), then by moment, plus small pools per personality, lines about his scars, and lines about how you beat him last time. godot/story/rival.gd picks one line per moment from the pools with a hash of his name, the moment and the battle seed, so each run's Nemesis sounds different but stays consistent within a battle. Placeholders: {rival} his full name, {you} your admiral's name, {flagship} your flagship's name, {scars} how many times he has been scarred (as a word: once, twice, three times). Moments: hail (his battle starts, first meeting), again (a later meeting after you beat him), final (his last fight, sector III), beaten (his flagship breaks and he escapes), death (his flagship dies in his last fight), gloat (you lose to him), kill (he destroys one of your ships), signature (his faction's own behaviour, when stream B's rules fire it), scar (a later meeting, he talks about his scars), memory.<how> (a later meeting, he talks about how you beat him: lance, torp, sq, ram, board, battery, evasive; stream B's nem.beat words map onto these, broad to battery, ion to lance, evaded to evasive). Personas are stream B's own (data.js NEM_PERSONA, four per faction in NEM_FAC[fac].personas); the Nemesis carries his as nem.persona. Any other id falls back to the faction pools. No em dashes. deed: the beat 1 calling card by personality ({rival_deed}). final_by: his beat 3 hail, picked in the order remembers (you beat him before or he is scarred), mercy, ruthless (your choices' leaning), else sun (what the Hollow Sun means to him). Pronoun tokens {He} {he} {him} {his} follow his gender (it for a Chorus mind).",
   "personalities": {
-    "proud": "Talks about honour, rank and his own name; takes defeat as an insult.",
-    "cruel": "Enjoys suffering; talks about what he did to others.",
-    "cunning": "Talks about traps, patience and knowing your moves.",
-    "zealous": "Talks about faith, purpose or hunger as a holy duty.",
-    "cold": "Short, flat, procedural; never raises his voice.",
-    "mocking": "Laughs at you; treats the war as a game he is winning."
+    "cunning": "Strikes your flanks and your weakest ship.",
+    "zealous": "Charges in and never backs off.",
+    "cruel": "Finishes crippled ships first.",
+    "patient": "Waits for you to come to him.",
+    "proud": "Leads from the front with his flagship.",
+    "greedy": "Goes for your richest prize, your flagship.",
+    "methodical": "Holds his line and advances only in formation.",
+    "ravenous": "Swarms whatever is closest."
   },
   "voidsworn": {
     "hail": [
@@ -58,6 +60,10 @@
       "evasive": "You ran from my guns last time. There is nowhere left to run."
     },
     "personality": {
+      "zealous": {
+        "hail": "The saints have shown me your death. I only carry it out.",
+        "beaten": "The saints test me. I will pass."
+      },
       "proud": {
         "hail": "I am the sword of the saints. You will remember my name as you burn.",
         "beaten": "You have insulted me. The saints keep a careful account."
@@ -66,30 +72,16 @@
         "hail": "I lit the pyres on six worlds. Yours will make seven.",
         "beaten": "Run, then. I will burn everything you pass."
       },
-      "cunning": {
-        "hail": "You came the way I hoped you would. The saints are generous.",
-        "beaten": "A small loss. My trap is larger than this battle."
-      },
-      "zealous": {
-        "hail": "The saints have shown me your death. I only carry it out.",
-        "beaten": "The saints test me. I will pass."
-      },
-      "cold": {
+      "methodical": {
         "hail": "Heretic identified. Judgement begins.",
         "beaten": "Withdrawing. Judgement is delayed, not cancelled."
-      },
-      "mocking": {
-        "hail": "A crusade against me? How flattering. How brief.",
-        "beaten": "Ha. Enjoy your little miracle. They run out."
       }
     },
     "deed": {
+      "zealous": "{He} declared the ground blessed and everyone on it a sinner.",
       "proud": "{He} left a formal challenge nailed to the door, signed with {his} full name and every title.",
       "cruel": "{He} burned everything but one thing, so you would know it had been chosen.",
-      "cunning": "{He} left the place untouched, except for a sermon on the comms that loops your name.",
-      "zealous": "{He} declared the ground blessed and everyone on it a sinner.",
-      "cold": "{He} left a judgement, three lines long, with your name on the third.",
-      "mocking": "{He} left an indulgence pardoning you in advance, for dying."
+      "methodical": "{He} left a judgement, three lines long, with your name on the third."
     },
     "final_by": {
       "sun": "That coal is a reliquary and I am the last priest it has. Your hands are not clean enough to light it.",
@@ -148,38 +140,28 @@
       "evasive": "You evaded my gunnery last time. My gunners have run the drill four hundred times since."
     },
     "personality": {
+      "methodical": {
+        "hail": "Engage.",
+        "beaten": "Disengage."
+      },
       "proud": {
         "hail": "I am a Rear Admiral of the Hegemony. You are a rounding error.",
         "beaten": "This will not appear in my service record. You will."
       },
-      "cruel": {
-        "hail": "I have orders to make an example of you. I asked for those orders.",
-        "beaten": "Withdraw. I will take this out on the next colony instead."
+      "patient": {
+        "hail": "I have held this lane for eleven days. You are on schedule.",
+        "beaten": "Withdrawing. The schedule allows for this."
       },
       "cunning": {
         "hail": "Your route was predicted eleven days ago. Welcome.",
         "beaten": "Acceptable losses. You have revealed your doctrine."
-      },
-      "zealous": {
-        "hail": "For the Hegemony. For order. For the end of you.",
-        "beaten": "The Hegemony endures. So do I."
-      },
-      "cold": {
-        "hail": "Engage.",
-        "beaten": "Disengage."
-      },
-      "mocking": {
-        "hail": "Is this your whole fleet? I have parade formations bigger than this.",
-        "beaten": "Fine. Have a medal. I will take it back later."
       }
     },
     "deed": {
+      "methodical": "{He} left an inventory of what was taken, and when {he} will return for the rest.",
       "proud": "{He} left a notice of claim, numbered and countersigned.",
-      "cruel": "{He} lined up what was left so it spelled {his} name.",
-      "cunning": "{He} left a forwarding address that is a trap, and a polite note saying so.",
-      "zealous": "{He} raised the Hegemony flag over it and saluted the empty hall.",
-      "cold": "{He} left an inventory of what was taken, and when {he} will return for the rest.",
-      "mocking": "{He} left a bill, itemised, with a late fee."
+      "patient": "{He} sealed the doors and left a timetable on them: the hour {he} expects you, to the minute.",
+      "cunning": "{He} left a forwarding address that is a trap, and a polite note saying so."
     },
     "final_by": {
       "sun": "The survey says this anchorage holds nine fleets. It will hold one. Stand down and be counted.",
@@ -238,6 +220,14 @@
       "evasive": "You ran circles round me last time. I've strapped on bigger engines."
     },
     "personality": {
+      "cunning": {
+        "hail": "Followed my breadcrumbs, did you? Good little fleet.",
+        "beaten": "Lost a few ships. Got what I came for, though."
+      },
+      "greedy": {
+        "hail": "That flagship of yours. I want it. I have already sold it twice.",
+        "beaten": "Fine! Keep it! I'll take it with interest next time!"
+      },
       "proud": {
         "hail": "Know who I am? Every port from here to the rim knows. Soon you will too.",
         "beaten": "Nobody does this to me! Nobody!"
@@ -245,31 +235,13 @@
       "cruel": {
         "hail": "I keep the crews I catch. Alive, mostly. For a while.",
         "beaten": "Run! I'll take it out on the next convoy."
-      },
-      "cunning": {
-        "hail": "Followed my breadcrumbs, did you? Good little fleet.",
-        "beaten": "Lost a few ships. Got what I came for, though."
-      },
-      "zealous": {
-        "hail": "Loot is the only god. And I am its prophet.",
-        "beaten": "The loot gods test me! I will pass!"
-      },
-      "cold": {
-        "hail": "Business. Nothing personal. Hand it over.",
-        "beaten": "Bad deal. Walking away."
-      },
-      "mocking": {
-        "hail": "Oh, look! A fleet! It's like Midwinter came early!",
-        "beaten": "Ha! Fine! You win this round! I'm still richer!"
       }
     },
     "deed": {
-      "proud": "{He} painted {his} name over the door, very large, and spelled it right for once.",
-      "cruel": "{He} took everything, then came back for the bolts.",
       "cunning": "{He} left a cut of the take behind, with your name on it, which is worse than a threat.",
-      "zealous": "{He} swore an oath to the loot gods over the wreckage.",
-      "cold": "{He} took exactly what was worth taking, and nothing else.",
-      "mocking": "{He} left a thank-you card."
+      "greedy": "{He} took everything, then came back for the bolts.",
+      "proud": "{He} painted {his} name over the door, very large, and spelled it right for once.",
+      "cruel": "{He} left the crew alive, in the airlock, with the outer door ajar."
     },
     "final_by": {
       "sun": "Got here first, so it's mine. That's the whole law out here. Say hello to my chains.",
@@ -328,9 +300,9 @@
       "evasive": "You were hard to catch. We grew faster eyes."
     },
     "personality": {
-      "proud": {
-        "hail": "We are the greatest throat in the dark. Kneel and be eaten.",
-        "beaten": "Insult. Insult. The throat remembers."
+      "ravenous": {
+        "hail": "More. More. More. You.",
+        "beaten": "Hungry. Hungrier. Back soon."
       },
       "cruel": {
         "hail": "We eat slowly. So you can hear it.",
@@ -340,26 +312,16 @@
         "hail": "We waited where you would come. You came.",
         "beaten": "Lost a limb. Grew a plan."
       },
-      "zealous": {
-        "hail": "The hunger is holy. You are the offering.",
-        "beaten": "The hunger tests us. We stay hungry."
-      },
-      "cold": {
-        "hail": "Prey sighted. Feed.",
-        "beaten": "Retreat. Regrow."
-      },
-      "mocking": {
-        "hail": "Little meat brought friends. How kind.",
-        "beaten": "Ha. Ha. Ha. We will still eat you. Later."
+      "patient": {
+        "hail": "We waited in the dark until you were fat. Now.",
+        "beaten": "We wait again. We are good at waiting."
       }
     },
     "deed": {
-      "proud": "{He} ate everything but the bones, and stacked the bones neatly.",
+      "ravenous": "{He} ate everything, the walls included, and left the hole.",
       "cruel": "{He} ate slowly, so the rest could watch.",
       "cunning": "{He} left the doors open and the food out, and waited to see who came.",
-      "zealous": "{He} fed in a perfect ring, facing inward, like a prayer.",
-      "cold": "{He} ate what {he} needed, and not one mouthful more.",
-      "mocking": "{He} left one bite missing from everything."
+      "patient": "{He} waited until the young were fat, then ate only those."
     },
     "final_by": {
       "sun": "It is warm in our mouths already. You are the part in the way.",
@@ -418,38 +380,28 @@
       "evasive": "You flitted out of reach last time. I am older at that game than you."
     },
     "personality": {
-      "proud": {
-        "hail": "I am the last of a great house. You are the first of nothing.",
-        "beaten": "You will not live long enough to boast of this."
-      },
-      "cruel": {
-        "hail": "I will let one of your ships live, so it can tell the others how the rest died.",
-        "beaten": "Go. Your worlds are fragile. I will visit them."
-      },
       "cunning": {
         "hail": "I chose this place a century ago, for exactly this.",
         "beaten": "Expected. My song has many verses."
       },
-      "zealous": {
-        "hail": "The elders sang that I would end you. I am only the last note.",
-        "beaten": "The song bends. It does not break."
+      "proud": {
+        "hail": "I am the last of a great house. You are the first of nothing.",
+        "beaten": "You will not live long enough to boast of this."
       },
-      "cold": {
-        "hail": "Begin.",
-        "beaten": "Enough."
+      "patient": {
+        "hail": "I watched your grandparents' grandparents learn to sail. I can wait out you.",
+        "beaten": "There will be another hour. There always is, for me."
       },
-      "mocking": {
-        "hail": "Oh, you are adorable. Do you know how old these sails are?",
-        "beaten": "Charming. Truly. Do try to live long enough to try again."
+      "cruel": {
+        "hail": "I will let one of your ships live, so it can tell the others how the rest died.",
+        "beaten": "Go. Your worlds are fragile. I will visit them."
       }
     },
     "deed": {
-      "proud": "{He} left a single line of verse, flawless, in a language nobody living reads.",
-      "cruel": "{He} stayed long enough for everything there to forget its own name.",
       "cunning": "{He} left everything exactly as it was, minus one thing nobody noticed for a week.",
-      "zealous": "{He} lit a mourning lamp, for you, in advance.",
-      "cold": "{He} took nothing, and left a note of what {he} had chosen not to take.",
-      "mocking": "{He} corrected the spelling on every sign, and left."
+      "proud": "{He} left a single line of verse, flawless, in a language nobody living reads.",
+      "patient": "{He} lit a mourning lamp, for you, in advance.",
+      "cruel": "{He} stayed long enough for everything there to forget its own name."
     },
     "final_by": {
       "sun": "This was my house's lamp before your people learned fire. I came to see it put out properly.",
@@ -508,6 +460,10 @@
       "evasive": "You avoided my arcs last time. I have recalculated."
     },
     "personality": {
+      "patient": {
+        "hail": "I have waited ten thousand years. Your arrival changes nothing in the schedule.",
+        "beaten": "A delay. The record is patient. So am I."
+      },
       "proud": {
         "hail": "I ruled worlds before your sun was lit. Address me accordingly.",
         "beaten": "This insult is filed under eternity."
@@ -516,30 +472,16 @@
         "hail": "I will not kill your crews. I will keep them. Forever.",
         "beaten": "I withdraw to your colonies. They will be corrected first."
       },
-      "cunning": {
-        "hail": "I have run this battle ten thousand times in the tomb. You lose in all of them.",
-        "beaten": "Within parameters. The long count continues."
-      },
-      "zealous": {
-        "hail": "The dynasty commands. I obey. You end.",
-        "beaten": "The dynasty is patient. So am I."
-      },
-      "cold": {
+      "methodical": {
         "hail": "Squatter detected. Correct.",
         "beaten": "Retreat. Rebuild."
-      },
-      "mocking": {
-        "hail": "The living, playing at war. It never stops being amusing.",
-        "beaten": "Very good. I will tell the court. They will laugh."
       }
     },
     "deed": {
+      "patient": "{He} filed a claim to the place a thousand years ago, and waited.",
       "proud": "{He} entered {his} claim in the record above yours.",
       "cruel": "{He} kept the defenders, and they are still in the record as {his}.",
-      "cunning": "{He} filed a claim to the place a thousand years ago, and waited.",
-      "zealous": "{He} recited the law of reclamation over it and called it a sentence.",
-      "cold": "{He} catalogued the place, and left the catalogue on the door with your name on the last page.",
-      "mocking": "{He} left the warden standing, facing the door, with a guest book."
+      "methodical": "{He} catalogued the place, and left the catalogue on the door with your name on the last page."
     },
     "final_by": {
       "sun": "I held this ground before your kind had a word for sun. Kneel, and be entered as a guest.",

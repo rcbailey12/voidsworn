@@ -4,7 +4,7 @@ extends Control
 # Medal mode: set glyph (one character) and col instead of fac. dim = true draws it greyed (not earned yet).
 #
 # Crests: Voidsworn a cracked halo over a sword; Hegemony a wedge in a ring of five stars; Corsairs a skull with a gear
-# for a jaw; Chorus a ring of nine open mouths; Ithar a sail over a falling star; Deathless a crowned eye over a tomb door.
+# for a jaw; Chorus a ring of nine open mouths; Ithar a sail over a falling star; Deathless an open eye over a sealed vault door, a seal ring between them.
 
 const GLOW := {"voidsworn": "#ff7a2a", "hegemony": "#5fa0ff", "corsair": "#e0402c", "chorus": "#d6d24a", "ithar": "#9fffd2", "deathless": "#3dff6a"}
 
@@ -83,10 +83,10 @@ func _draw() -> void:
 			draw_arc(c + Vector2(0, 2.4 * u), 3.8 * u, deg_to_rad(215), deg_to_rad(325), 16, k, w, true)
 			draw_arc(c + Vector2(0, -2.4 * u), 3.8 * u, deg_to_rad(35), deg_to_rad(145), 16, k, w, true)
 			draw_circle(c, 1.1 * u, k)
-			var crown := PackedVector2Array([c + Vector2(-2.6 * u, -3.4 * u), c + Vector2(-2.6 * u, -5.8 * u), c + Vector2(-1.2 * u, -4.4 * u), c + Vector2(0, -6.2 * u),
-				c + Vector2(1.2 * u, -4.4 * u), c + Vector2(2.6 * u, -5.8 * u), c + Vector2(2.6 * u, -3.4 * u)])
-			draw_polyline(crown, k, w * 0.9, true)
-			draw_rect(Rect2(c + Vector2(-1.6 * u, 3.4 * u), Vector2(3.2 * u, 3.0 * u)), k, false, w * 0.8)
+			# an open eye above a sealed vault door, a seal ring between them (no crown: R45 40k distance pass)
+			draw_arc(c + Vector2(0, 3.0 * u), 1.0 * u, 0, TAU, 16, k, w * 0.8, true)
+			draw_rect(Rect2(c + Vector2(-1.8 * u, 4.4 * u), Vector2(3.6 * u, 2.4 * u)), k, false, w * 0.8)
+			draw_line(c + Vector2(0, 4.4 * u), c + Vector2(0, 6.8 * u), k, w * 0.6, true)
 		_:
 			_glyph(c, s, k)
 

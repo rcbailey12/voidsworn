@@ -39,7 +39,7 @@ func _initialize() -> void:
 			for b in 3:
 				c.record_battle(run, _B("boss" if b == 2 else "battle", 1 if (b == 1 and s == 2) else 0, 5, r["us"]), "win")
 		c.record_run_end(run, bool(r["won"]), S.admiral_name(str(r["admiral"])))
-	c.record_arc_end("hegemony", "kassar", "Dynast Setekh the Patient", {"1": "offbook", "2": "broke", "3": "names"}, true)
+	c.record_arc_end("hegemony", "kassar", "Justiciar Halvane the Unpardoning", {"1": "offbook", "2": "broke", "3": "names"}, true)
 	c.record_arc_end("ithar", "aelith", "Warlord Bones Sharkey", {"1": "song"}, false)
 	var scr = S.open_career()
 	for t in ["records", "medals", "titles", "history", "chronicle"]:
