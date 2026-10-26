@@ -85,16 +85,17 @@ func _walk(p: Array, out: Array) -> void:
 func is_repair(n: Dictionary) -> bool: return n["type"] in ["shipyard", "drydock", "field"] or (n.get("rw") is Dictionary and n["rw"].get("k") == "repair")
 func path_stats(p: Array) -> Dictionary:
 	var by = _by_id()
-	var st = {"fights": 0, "elites": 0, "repairs": 0, "shops": 0, "events": 0, "boons": 0, "refits": 0, "credits": 0, "relics": 0, "danger": 0.0, "worst": 0, "worst_name": "Easy", "running": [], "repair_before_boss": false}
+	var st = {"fights": 0, "elites": 0, "repairs": 0, "shops": 0, "events": 0, "boons": 0, "refits": 0, "credits": 0, "relics": 0, "danger": 0.0, "worst": 0, "worst_name": "None", "running": [], "repair_before_boss": false}
 	for id in p:
 		var n = by[id]; var t = n["type"]
 		if t in ["battle", "elite", "boss"]:
 			if t != "boss": st["fights"] += 1
 			if t == "elite": st["elites"] += 1; st["relics"] += 1
-			var d = danger(n)
+			var d = danger(n) if t != "boss" else {}   # the flagship ends every route, so it is left out of the comparison
 			if not d.is_empty():
 				st["danger"] += d["ratio"]; var bi = band_index(d["band"])
-				if bi > st["worst"] or st["worst_name"] == "": st["worst"] = bi; st["worst_name"] = d["band"]
+				if bi > st["worst"] or st["worst_name"] == "None":
+					st["worst"] = bi; st["worst_name"] = d["band"]
 		if t == "shipyard": st["shops"] += 1
 		if t == "event": st["events"] += 1
 		if is_repair(n) and t != "boss": st["repairs"] += 1; st["repair_before_boss"] = true

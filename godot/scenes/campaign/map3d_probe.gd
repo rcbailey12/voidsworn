@@ -16,7 +16,15 @@ func _ready() -> void:
 	await RenderingServer.frame_post_draw
 	var a = OS.get_cmdline_user_args()
 	if a.size() > 0: get_viewport().get_texture().get_image().save_png(a[0])
+	var mid = C.RUN["map"]["cols"][3][0]["id"]
+	get_viewport().warp_mouse(m._screen(m._nodes[mid]["pos"]) + Vector2(10, 10))
+	m._set_hot(mid)
+	for i in 8: await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	if a.size() > 0: get_viewport().get_texture().get_image().save_png(a[0].replace(".png", "_route.png"))
+	print("routes through ", mid, ": ", m._routes.map(func(r): return [r["name"], r["path"], r["st"]["fights"], r["st"]["worst_name"]]))
 	var av = C.page["data"]["avail"]
+	m._set_hot("")
 	m.fly_to(av[0])
 	for i in 20: await get_tree().process_frame
 	if a.size() > 0: get_viewport().get_texture().get_image().save_png(a[0].replace(".png", "_flying.png"))

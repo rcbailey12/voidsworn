@@ -512,7 +512,7 @@ func _draw_overlay() -> void:
 		if on_route.has(id):
 			var rr = on_route[id]; var st = rr[1]
 			var t = "%d fight%s · %d repair%s" % [st["fights"], "" if st["fights"] == 1 else "s", st["repairs"], "" if st["repairs"] == 1 else "s"]
-			_chip(t, base + Vector2(0, -6.0 * s) + Vector2(0, -float(d["top"]) * 0.0), int(11 * s), rr[0]["col"], true)
+			_chip(t, top + Vector2(0, -36.0 * s), int(11 * s), rr[0]["col"], true)
 	if has_focus() and av.size() > 0:
 		var fid = av[_focus % av.size()]
 		var fp = _screen(_nodes[fid]["pos"]); overlay.draw_arc(fp, 30.0 * ui.k, 0, TAU, 40, ui.GILT, 2.0, true)
