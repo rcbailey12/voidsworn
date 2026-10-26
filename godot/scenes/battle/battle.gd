@@ -93,12 +93,14 @@ var shots_dir := ""
 var t_start := 0.0
 var marker_root: Node3D
 var backdrop: Node3D
+var gfx = null            # G4 fx (res://fx/fx.gd) when present
 var arrow: MeshInstance3D
 var path_dots: MultiMeshInstance3D
 var errors: Array = []
 var result := {}
 var battle_cfg := {}
 var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
+var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
 var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
 var last_progress := 0.0   # real time of the last event batch (softlock watchdog for bot runs)
 var softlock_s := 60.0
@@ -200,10 +202,17 @@ func _build_world() -> void:
 	fx = Fx.new()
 	fx.name = "Fx"
 	add_child(fx)
+	# the G4 effects system (godot/fx/API.md) when it is in the build; the placeholder stays for anything it lacks
+	if ResourceLoader.exists("res://fx/fx.gd"):
+		gfx = load("res://fx/fx.gd").new()
+		gfx.name = "GFx"
+		add_child(gfx)
 	cam = CamRig.new()
 	cam.name = "Camera"
 	add_child(cam)
 	cam.current = true
+	if gfx != null and gfx.has_method("setup"):
+		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": false, "shake": 1.0, "unit": 1.0})
 	_build_arrow()
 
 
@@ -285,6 +294,11 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 		push_error(e)
 	a.new_battle(run, cfg)
 	battle_cfg = cfg
+	_begin(a)
+
+
+# a battle the campaign has already set up (main.play_api)
+func begin_with(a) -> void:
 	_begin(a)
 
 
@@ -377,6 +391,8 @@ func _make_view(u: Dictionary) -> void:
 	sv.set_marker(u["side"] == "player")
 	views[u["id"]] = sv
 	disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
+	if gfx != null and gfx.has_method("add_ship"):
+		gfx.add_ship(str(u["id"]), sv, {"faction": str(u["fac"]), "meshes": sv.meshes, "cls": str(u["cls"]), "size": float(u["size"]), "squadron": bool(u["squadron"]), "flagship": bool(u["flagship"])})
 
 
 func _sync(v: Dictionary) -> void:
@@ -388,6 +404,8 @@ func _sync(v: Dictionary) -> void:
 		var sv = views[u["id"]]
 		disp[u["id"]] = {"hp": float(u["hp"]), "sh": (u["sh"] as Array).duplicate()}
 		sv.set_marker(u["side"] == "player")
+		if gfx != null and gfx.has_method("sync_ship"):
+			gfx.sync_ship(str(u["id"]), u)
 		if u["dead"]:
 			if not sv.dead and not wrecked.has(u["id"]):
 				sv.die(false)
@@ -583,6 +601,8 @@ func _play_event(e: Dictionary) -> void:
 				d["hp"] = float(d["hp"]) - float(e["hull"])
 			var lbl := {"fire": ["Fire", "#f08a4b"], "acid": ["Acid", "#c8e04a"], "tidal": ["Tidal stress", "#c79bff"], "storm": ["Ion storm", "#9fd4ff"]}.get(str(e["kind"]), ["", "#ffffff"])
 			_float(e["unit"], "%s −%d" % [lbl[0], int(e["hull"])] if float(e["hull"]) > 0 else str(lbl[0]), Color(lbl[1]))
+			if gfx != null and gfx.has_method("tick"):
+				gfx.tick(str(e["unit"]), str(e["kind"]))
 			await wait(120.0)
 		"ability":
 			var ab := str(e["ab"])
@@ -590,7 +610,10 @@ func _play_event(e: Dictionary) -> void:
 			if ab != "launch":
 				hud.add_log("%s: %s." % [_name(e["unit"]), str(A.get("n", ab))], _who(e["unit"]))
 			var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "hegemony")), HT.FAC3D["hegemony"])["eng"]
-			fx.flash(_pos(e["unit"]) + Vector3(0, 2, 0), 18.0, c, 0.5)
+			if gfx != null and gfx.has_method("ability"):
+				gfx.ability(str(e["unit"]), ab)
+			else:
+				fx.flash(_pos(e["unit"]) + Vector3(0, 2, 0), 18.0, c, 0.5)
 			if ab == "blink" and e.get("hex") != null:
 				sfx.play("phase", {"pos": _pos(e["unit"])})
 				var sv = views.get(e["unit"])
@@ -654,7 +677,11 @@ func _play_event(e: Dictionary) -> void:
 			await _play_death(e)
 		"fled":
 			var sv = views.get(e["unit"])
-			if sv != null:
+			if gfx != null and gfx.has_method("jump_out"):
+				gfx.jump_out(str(e["unit"]))
+				if sv != null:
+					sv.dead = true
+			elif sv != null:
 				sv.flee()
 			hud.add_log("%s leaves the battle." % _name(e["unit"]), "e" if _side(e["unit"]) == "player" else "s")
 			await wait(300.0)
@@ -756,7 +783,29 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var shield_col: Color = HT.FAC3D.get(str(VU.get(t_id, {}).get("fac", "hegemony")), P)["shield"]
 	var total := 0.0
 	var hi := 0
-	if fam in ["lance", "ion"]:
+	if gfx != null and gfx.has_method("volley"):
+		var hl: Array = []
+		for h in hits:
+			hl.append({"shield": h["shield"], "hull": h["hull"], "section": h.get("section", ""), "crit": h["crit"]})
+		var r: Dictionary = gfx.volley(str(a_id), str(e["kind"]), str(t_id), {"weapon_id": str(e.get("weapon_id", "")), "shots": shots, "hits": hl, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
+		if fam in ["lance", "ion"]:
+			sfx.lance(fam == "ion", fac, from)
+		elif fam == "torp":
+			sfx.torp(fac, from)
+		else:
+			sfx.gun(str(e["kind"]), fam == "sq", null if fam == "sq" else fam if fam in ["spine", "glob", "plasma", "las", "tracer", "needle", "rail"] else "shell", from)
+		var imp: Array = r.get("impacts", [])
+		for k in hits.size():
+			var at: float = float(imp[k]) if k < imp.size() else 0.3
+			var h: Dictionary = hits[k]
+			get_tree().create_timer(maxf(at, 0.001)).timeout.connect(func() -> void:
+				_apply_hit(h)
+				if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
+					sfx.shield(_pos(t_id))
+				else:
+					sfx.hit(_pos(t_id), h["crit"]))
+		total = float(r.get("done", 0.6)) / maxf(sp, 0.01)
+	elif fam in ["lance", "ion"]:
 		sfx.lance(fam == "ion", fac, from)
 		total = 0.32 + n * 0.25 + 0.15
 		for i in n:
@@ -829,7 +878,9 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 				d["sh"][int(g["quad"])] = 0
 			_float(g["unit"], "Shields down", Color("#9fe2ff"), -40)
 			sfx.shield(_pos(g["unit"]), true)
-			if tsv != null:
+			if gfx != null and gfx.has_method("shield_break"):
+				gfx.shield_break(str(g["unit"]), int(g["quad"]))
+			elif tsv != null:
 				fx.shield(tsv, L, int(g["quad"]), shield_col, 0.0, true)
 		elif g["t"] == "burning":
 			_float(g["unit"], "Fire on deck", Color("#f08a4b"), -24)
@@ -888,6 +939,16 @@ func _play_death(e: Dictionary) -> void:
 	var L: float = sv.L
 	var p: Vector3 = sv.position + Vector3(0, 2, 0)
 	var big := L >= 14.0
+	if gfx != null and gfx.has_method("death"):
+		var t: float = float(gfx.death(str(id), cause))
+		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
+		sv.dead = true
+		if sv.marker != null:
+			sv.marker.visible = false
+		sv.ring.visible = false
+		hud.remove_plate(str(id))
+		await get_tree().create_timer(maxf(0.3, t * 0.6)).timeout
+		return
 	fx.flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
 	fx.flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
 	fx.flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
@@ -1555,6 +1616,11 @@ func _on_action(name: String, arg) -> void:
 		"continue":
 			hud.hide_end()
 			finished.emit(result)
+		"retreat":
+			if can_retreat and _can_act():
+				ended = true
+				result = {"result": "retreat", "rounds": int(V["round"]), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+				finished.emit(result)
 		"restart":
 			hud.hide_end()
 			args.erase("seed")
@@ -1583,6 +1649,8 @@ func _refresh_ui() -> void:
 	var turn := "Battle over" if ended or api.phase == "over" else ("Your activation (%d ready)" % pend if mine else "Enemy activation")
 	var end_text := "End activation" if active != "" else ("Pass" if pend > 0 else "Continue")
 	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
+	hud.retreat_btn.visible = can_retreat and not ended
+	hud.retreat_btn.disabled = not (mine and not busy)
 	var rows: Array = []
 	for u in V["units"]:
 		if u["side"] != "player" or u["squadron"] or (u["dead"] and not views.has(u["id"])):

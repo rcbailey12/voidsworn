@@ -10,6 +10,7 @@ extends Node
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const Title := preload("res://main/title.gd")
+const Host := preload("res://main/campaign_host.gd")
 const CAMPAIGN_SCRIPT := "res://campaign/campaign.gd"
 const SETTINGS_PATH := "user://settings.json"
 
@@ -115,13 +116,12 @@ func new_run(opts := {}) -> void:
 		title.toast("The campaign is not in this build yet. Try a quick battle.")
 		return
 	_clear()
-	campaign = load(CAMPAIGN_SCRIPT).new()
+	campaign = Host.new()
 	add_child(campaign)
-	if campaign.has_signal("run_over"):
-		campaign.run_over.connect(func(_summary) -> void:
-			campaign.queue_free()
-			campaign = null
-			show_title())
+	campaign.run_over.connect(func(_summary) -> void:
+		campaign.queue_free()
+		campaign = null
+		show_title(), CONNECT_ONE_SHOT)
 	campaign.start(self, opts)
 
 
@@ -168,6 +168,22 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	return r
 
 
+# A battle already set up by the campaign (its rules API, from campaign_host.gd's battle_setup).
+func play_api(a, opts := {}) -> Dictionary:
+	var b = BattleScene.instantiate()
+	b.external = true
+	b.bot = bot_mode or bool(opts.get("bot", false))
+	b.can_retreat = bool(opts.get("can_retreat", false))
+	add_child(b)
+	_settings_to_battle(b)
+	battle = b
+	b.begin_with(a)
+	var r: Dictionary = await b.finished
+	battle = null
+	b.queue_free()
+	return r
+
+
 # ---------------------------------------------------------------- bot runs (headless test of whole runs)
 
 func _bot_runs() -> void:
@@ -178,11 +194,16 @@ func _bot_runs() -> void:
 	var seed0 := int(args.get("seed", 1000))
 	for i in n:
 		var t0 := Time.get_ticks_msec()
-		var rec := {}
+		var rec = {}
 		if has_campaign():
 			rec = await _bot_campaign(seed0 + i)
 		else:
 			rec = await _bot_battle(seed0 + i)
+		if not (rec is Dictionary):
+			rec = {}
+		if not rec.has("result"):
+			rec["result"] = "crashed"
+			rec["errors"] = ["the run stopped without a result (script error, see the log)"]
 		rec["run"] = i + 1
 		rec["seed"] = seed0 + i
 		rec["real_s"] = (Time.get_ticks_msec() - t0) / 1000.0
@@ -224,7 +245,7 @@ func _bot_battle(seed: int) -> Dictionary:
 
 
 func _bot_campaign(seed: int) -> Dictionary:
-	campaign = load(CAMPAIGN_SCRIPT).new()
+	campaign = Host.new()
 	add_child(campaign)
 	campaign.start(self, {"bot": true, "seed": seed})
 	var summary = await campaign.run_over

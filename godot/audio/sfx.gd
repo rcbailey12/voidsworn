@@ -50,10 +50,14 @@ func _ready() -> void:
 
 
 func _load(p: String) -> AudioStream:
+	# the imported stream when the project has been imported or exported, else the raw Ogg file
+	if FileAccess.file_exists(p + ".import"):
+		var r = load(p)
+		if r is AudioStream:
+			return r
 	if not FileAccess.file_exists(p):
 		return null
-	var s := AudioStreamOggVorbis.load_from_file(p)
-	return s
+	return AudioStreamOggVorbis.load_from_file(p)
 
 
 func _buses() -> void:

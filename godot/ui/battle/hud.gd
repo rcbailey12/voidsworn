@@ -37,6 +37,7 @@ var obj_lbl: Label
 var end_btn: Button
 var speed_btn: Button
 var threat_btn: Button
+var retreat_btn: Button
 var roster: PanelContainer
 var roster_box: VBoxContainer
 var roster_sc: ScrollContainer
@@ -86,8 +87,13 @@ func _ready() -> void:
 
 
 func _font(name: String) -> FontFile:
-	var f := FontFile.new()
+	# the imported font when the project has been imported or exported, else the raw file
 	var p := "res://ui/battle/fonts/" + name
+	if FileAccess.file_exists(p + ".import"):
+		var r = load(p)
+		if r is FontFile:
+			return r
+	var f := FontFile.new()
 	if FileAccess.file_exists(p):
 		f.data = FileAccess.get_file_as_bytes(p)
 	return f
@@ -242,6 +248,9 @@ func _build_top() -> void:
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(sp)
+	retreat_btn = _button("Retreat", "retreat")
+	retreat_btn.visible = false
+	row.add_child(retreat_btn)
 	threat_btn = _button("Threat (R)", "threat")
 	row.add_child(threat_btn)
 	row.add_child(_button("Top-down (T)", "top"))

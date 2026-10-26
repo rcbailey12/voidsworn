@@ -15,8 +15,13 @@ var _toast_t := 0.0
 
 
 func _font(n: String) -> FontFile:
-	var f := FontFile.new()
+	# the imported font when the project has been imported or exported, else the raw file
 	var p := "res://ui/battle/fonts/" + n
+	if FileAccess.file_exists(p + ".import"):
+		var r = load(p)
+		if r is FontFile:
+			return r
+	var f := FontFile.new()
 	if FileAccess.file_exists(p):
 		f.data = FileAccess.get_file_as_bytes(p)
 	return f
@@ -87,10 +92,7 @@ func _ready() -> void:
 
 
 func _campaign_has_save() -> bool:
-	var c = load(main.CAMPAIGN_SCRIPT)
-	if c != null and c.has_method("has_save"):
-		return bool(c.has_save())
-	return false
+	return main.Host.has_save()
 
 
 func _label(t: String, size: int, col: Color, f: Font) -> Label:
