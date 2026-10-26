@@ -435,7 +435,8 @@ func _begin(a) -> void:
 		if u["side"] == "enemy" and not u["squadron"]:
 			ne += 1
 	_log("Contact: %s. %d ship%s on the auspex." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
-	if api.world_info().get("well") != null and api.world_info().get("well") != false:
+	var well = api.world_info().get("well")
+	if well is Dictionary or (well is bool and well):
 		_log("A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	sfx.ambient_start()
