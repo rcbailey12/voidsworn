@@ -8,7 +8,8 @@ extends Node
 
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
-const JSM = preload("res://rules/jsm.gd")
+const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
+const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
 
 var C
 var ui
@@ -18,8 +19,11 @@ func _ready() -> void:
 	var err = C.load_tables()
 	if err != "":
 		push_error(err); get_tree().quit(1); return
-	ui = UIScript.new(); add_child(ui); ui.bind(C)
 	var a := OS.get_cmdline_user_args()
+	if ResourceLoader.exists("res://story/story.gd"):   # the story layer (godot/story/README.md), as the game shell attaches it
+		var story = load("res://story/story.gd").new(); story.name = "Story"; add_child(story)
+		story.attach(C, a.is_empty())   # test modes keep the career in memory only
+	ui = UIScript.new(); add_child(ui); ui.bind(C)
 	if a.size() >= 2 and a[0] == "shots":
 		C.save_path = "user://campaign_shots_save.json"; _shots(a[1]); return
 	if a.size() >= 2 and a[0] == "bot":

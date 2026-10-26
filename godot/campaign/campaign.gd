@@ -13,7 +13,8 @@ extends RefCounted
 signal changed            # the page or the modal changed
 signal battle_requested   # a battle page is up (external mode): the battle side reads pending_battle and calls finish_battle()
 
-const JSM = preload("res://rules/jsm.gd")
+const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
+const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
 const TABLES_PATH := "res://campaign/data/campaign_tables.json"
 
 # ---------------- tables ----------------
@@ -36,6 +37,12 @@ var UID := 1
 var W: Dictionary = {}  # the JS window._* transients: rewardCfg, rw, relicChoice, wrecks, boonOffer, modOffer, aspOffer
 var promote_after: Callable = Callable()
 var cur_event = null
+# Story arcs (godot/story/README.md "Story arcs"): a faction arc card at the start of each sector, drawn by the event screen.
+# OFF until the coordinator relays Ryan's approval of the arc text; with arcs_on false nothing below runs, so parity is unchanged.
+var arcs_on := false
+var arc_source = null    # Callable(beat 1..3) -> event-shaped card (story.arc_beat), {} when the faction has no arc file
+var arc_chose_cb = null  # Callable(card, key) (story.arc_chose), after the campaign applied the choice
+var arc_end_cb = null    # Callable(won) (story.arc_end), at the end of a run whose beat 3 was played
 var yard_node = null
 var picked_admiral := "vex"
 var picked_faction := "voidsworn"
@@ -53,10 +60,18 @@ var save_path := "user://voidsworn_campaign.json"
 var tel_log: Array = []     # a slim run log (events only), kept with the save; not part of parity
 
 # ======================= setup =======================
+# Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
+# lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_CLOCK", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
 	if j == null: return "cannot read " + path
+	if not (j is Dictionary) or not (j.get("tables") is Dictionary): return "campaign tables: " + path + " has no tables"
+	var missing := []
+	for n in REQUIRED_TABLES:
+		if not j["tables"].has(n): missing.append(n)
+	if not missing.is_empty(): return "campaign tables missing (re-run godot/campaign/test/node/export_campaign.js): " + ", ".join(missing)
 	TB = _dec(j["tables"])
 	var sum = JSM.sha256(JSM.canon(TB, "t", {}, true))
 	if sum != j["sha256"]: return "campaign table checksum differs: " + sum + " vs " + str(j["sha256"])
@@ -163,18 +178,10 @@ func factionGate(fac, tpl) -> Variant:
 		for e in h["w"]:
 			if W_.has(e[0]) and G["noKind"].has(W_[e[0]].get("k")): return G["d"]
 	return null
-func trait_fx(tk: String, w: Dictionary) -> void: # copied from godot/rules/rules.gd (G1), the weapon trait effects
-	match tk:
-		"las": w["fall"] = ceil(float(w["fall"]) / 2.0); w["acc"] = w["acc"] + 4
-		"hellfire": w["ignite"] = 1
-		"plasma": w["pierce"] = max(z0(w.get("pierce")), 0.25); w["dmg"] = w["dmg"] + 1
-		"scrap": w["shots"] = w["shots"] + 1; w["acc"] = w["acc"] - 12; w["crit"] = z0(w.get("crit")) + 3
-		"rockets": w["shots"] = w["shots"] * 3; w["dmg"] = jsround(float(w["dmg"]) / 2.9); w["acc"] = w["acc"] + 2; w["evMult"] = 1.5; w["rockets"] = 1
-		"spines": w["shred"] = 0.03
-		"acid": w["acid"] = 1
-		"needle": w["acc"] = w["acc"] + 6; w["crit"] = z0(w.get("crit")) + 8
-		"star": w["evMult"] = 1.2
-		"gauss": w["armorPierce"] = 0.5
+var _trait_rules = null   # a rules object with no battle loaded, used only for its weapon trait effects (one source: godot/rules/rules.gd)
+func trait_fx(tk: String, w: Dictionary) -> void: # the weapon trait effects, from the rules through the battle API (no copy kept here)
+	if _trait_rules == null: _trait_rules = BattleAPI.RulesScript.new()
+	_trait_rules.trait_fx(tk, w)
 func nameWeapons(fac, list: Array) -> Array:
 	for w in list:
 		w["n"] = wName(fac, w["id"])
@@ -1013,7 +1020,8 @@ func act(name: String, arg = "") -> void:
 	var a = "" if arg == null else str(arg)
 	match name:
 		"title": titleScreen()
-		"closeModal": close_modal()
+		"closeModal":
+			if not _arc_after(modal_d): close_modal()
 		"continueRun": ACT_continueRun()
 		"newRunScreen": ACT_newRunScreen()
 		"abandonRun":
@@ -1208,6 +1216,7 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	if victory and hl > 0:
 		META["heatBest"] = or_(META.get("heatBest"), {}); META["heatBest"][RUN["fac"]] = max(float(z0(META["heatBest"].get(RUN["fac"]))), hl)
 	RUN["carry"] = {"ren": ren, "mxGain": mxGain, "mx0": mx0, "mx1": mx1, "hl": hl}
+	if arcs_on and not abandoned and arc_end_cb is Callable and (arc_end_cb as Callable).is_valid() and _arc_played(3): arc_end_cb.call(victory)
 	RUN["over"] = true; SAVED_RUN = null; persist_save()
 	var nf = nextFacPick() if victory else null
 	var acts = []
@@ -1781,11 +1790,42 @@ func applyOutcome(r) -> Array:
 		if m2 != "": out.append(m2)
 	if out.size() == 0 and not jt(r.get("fight")): out.append("You move on.")
 	return out
+# Story arcs: after the sector intro (beat 1) and each sector change (beats 2 and 3), the arc card opens as an event.
+func _arc_after(md) -> bool:
+	if not arcs_on or not (arc_source is Callable) or not (arc_source as Callable).is_valid() or RUN == null: return false
+	if md == null or not (md.get("kind") in ["intro", "sector"]): return false
+	var card = arc_source.call(int(RUN["sector"]))
+	if not (card is Dictionary) or card.is_empty() or not (card.get("o") is Array) or card["o"].is_empty(): return false
+	cur_event = card.duplicate(false); cur_event["arc"] = true
+	var acts = []
+	for i in range(cur_event["o"].size()):
+		A(acts, "eventChoice", i, eventOptOk(cur_event["o"][i]))
+	show_modal("event", {"ev": cur_event}, acts)
+	return true
+func _arc_choice(o, i: int) -> void:   # an arc card's choice: its outcome and flags, no map node is completed
+	var r = o["r"] if o.get("r") is Dictionary else {}
+	var lines = applyOutcome(r)
+	var k = str(o["k"]) if jt(o.get("k")) else str(i)
+	var out = cur_event.get("outs", {}).get(k, "") if cur_event.get("outs") is Dictionary else ""
+	if str(out) != "": lines.insert(0, str(out))
+	if lines.has("You move on."): lines.erase("You move on.")
+	if arc_chose_cb is Callable and (arc_chose_cb as Callable).is_valid(): arc_chose_cb.call(cur_event, k)
+	saveRun(); mapScreen()
+	var acts = []; A(acts, "closeModal")
+	show_modal("event_result", {"ev": cur_event, "lines": lines}, acts)
+func _arc_played(beat: int) -> bool:
+	if RUN == null or not (RUN.get("flags") is Dictionary): return false
+	var pre = "arc_" + str(RUN["fac"]) + "_" + str(beat)
+	for k in RUN["flags"].keys():
+		if str(k).begins_with(pre): return true
+	return false
 func ACT_eventChoice(a: String) -> void:
 	var i = int(a)
 	var o = cur_event["o"][i] if (i >= 0 and i < cur_event["o"].size()) else null
 	if o == null or not eventOptOk(o): return
 	eventFlags(cur_event, o, i)
+	if jt(cur_event.get("arc")):
+		_arc_choice(o, i); return
 	var r = o["r"]
 	if r is Dictionary and jt(r.get("fight")):
 		close_modal(); battleScreen({"kind": "elite", "fac": r["fight"], "col": float(findNode(RUN["curNode"])["col"]) + 1, "node": RUN["curNode"], "eventRelic": true}); return
@@ -1948,12 +1988,12 @@ func ACT_takeSalvage(a: String) -> void:
 	if k == "mod" and jt(y.get("mod")):
 		RUN["inventory"].append(y["mod"]); toast(modName(y["mod"]) + " stripped from the " + str(w["name"]) + " and stowed in the hold.")
 	elif k == "tow" and jt(y.get("tow")) and HULLS.has(w.get("tpl")) and fleetCP() + float(or_(HULLS[w["tpl"]].get("cp"), 1)) > float(RUN["cpCap"]):
-		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast("No command points to crew the " + str(w["name"]) + ". She is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
+		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast("No command points to crew " + ("" if str(w["name"]).begins_with("The ") else "the ") + str(w["name"]) + ". She is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
 	elif k == "tow" and jt(y.get("tow")):
 		var sh = newShip(w["tpl"]); sh["name"] = w["name"]; sh["hp"] = max(1.0, jsround(float(derive(sh)["maxHp"]) * 0.35)); RUN["fleet"].append(sh)
 		toast("The " + str(w["name"]) + " is under tow. Patch her up at a shipyard.")
 	else:
-		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast("The " + str(w["name"]) + " is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
+		RUN["credits"] = float(RUN["credits"]) + float(y["cred"]); toast(("" if str(w["name"]).begins_with("The ") else "The ") + str(w["name"]) + " is broken up for scrap: +" + numstr(y["cred"]) + " credits.")
 	tel("salvage_pick", {"k": k, "cause": w.get("cause")})
 	W["wrecks"] = []
 	if RUN.get("reward") != null:

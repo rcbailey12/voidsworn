@@ -31,6 +31,14 @@ for (const id of Object.keys(ADMIRALS)) { const cs = [ADMIRALS[id].cmd, __E.altC
 const canon = v => { if (v === null || v === undefined) return 'null'; if (typeof v === 'boolean') return String(v); if (typeof v === 'number') return Number.isInteger(v) ? String(v) : '"d:' + (b => (b.writeDoubleBE(v), b.toString('hex')))(Buffer.alloc(8)) + '"';
   if (typeof v === 'string') return v.startsWith('#d:') ? '"d:' + v.slice(3) + '"' : JSON.stringify(v); if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
   return '{' + Object.keys(v).filter(k => v[k] !== null && v[k] !== undefined).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}'; };
+// Fail loudly when a table the campaign reads is missing: the campaign's own REQUIRED_TABLES list plus every TB table its scripts read.
+const G = path.resolve(__dirname, '..', '..', '..'), need = new Set();
+const gdFiles = ['campaign', 'ui/campaign', 'scenes/campaign'].flatMap(d => { const dir = path.join(G, d); return fs.existsSync(dir) ? fs.readdirSync(dir).filter(f => f.endsWith('.gd')).map(f => path.join(dir, f)) : []; });
+for (const f of gdFiles) { const s = fs.readFileSync(f, 'utf8'); let m; const re = /\bTB(?:\.|\[")([A-Z_][A-Z0-9_]*)/g; while ((m = re.exec(s))) need.add(m[1]);
+  const rq = /const REQUIRED_TABLES = \[([^\]]*)\]/.exec(s); if (rq) for (const q of rq[1].matchAll(/"([A-Z_][A-Z0-9_]*)"/g)) need.add(q[1]); }
+if (!need.size) { console.error('export_campaign: found no campaign scripts under ' + G + ' to check the tables against'); process.exit(2); }
+const missing = [...need].filter(n => out[n] === undefined).sort();
+if (missing.length) { console.error('export_campaign: FAIL, the oracle has no table for: ' + missing.join(', ') + ' (the campaign reads them; nothing written)'); process.exit(1); }
 const sum = crypto.createHash('sha256').update(canon(out)).digest('hex');
 const dest = process.argv[2] || path.resolve(__dirname, '..', '..', 'data', 'campaign_tables.json');
 fs.writeFileSync(dest, JSON.stringify({ sha256: sum, oracle: 'godot/campaign/test/oracle', tables: out }));

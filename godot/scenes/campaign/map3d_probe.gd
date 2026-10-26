@@ -3,7 +3,8 @@ extends Node
 #   godot --path godot res://scenes/campaign/map3d_probe.tscn -- <out.png>
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
-const JSM = preload("res://rules/jsm.gd")
+const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
+const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
 
 func _ready() -> void:
 	var C = CampaignScript.new(); C.load_tables()

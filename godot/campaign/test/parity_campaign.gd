@@ -3,7 +3,8 @@
 # Writes <out_dir>/c<seed>.jsonl for each seed. Mirrors test/node/golden_campaign.js line for line: the same seeded profile,
 # the same bot (integer weights, a 31-bit LCG, the "stay" cap, the rare page reload), the same stub battle and the same records.
 extends SceneTree
-const JSM = preload("res://rules/jsm.gd")
+const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
+const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
 const CampaignScript = preload("res://campaign/campaign.gd")
 var C
 

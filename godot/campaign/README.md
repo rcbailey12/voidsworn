@@ -38,6 +38,16 @@ G2's `godot/main/campaign_host.gd` hosts the campaign (contract: `godot/main/REA
 Events with blue options (`needMet`, `needText`, `eventFlags`, no event repeats, 'quiet' once all are seen) and the new outcome kinds; the Nemesis (`newNemesis`, clock, `nemNodeIs` marks his fight on the map, `nemAfterBattle`, `nemLearn`, `nemAdapt` at each new sector); faction actions on the map (`factionVerb`); wing veterancy; legendary boons; boon reroll and decline; class refit tracks at shipyards (`buyTrack`); Corsair prize money; faction gates on prizes and towing. New buttons: `factionVerb`, `boonReroll` (arg `patron:minRarity`), `boonDecline`, `buyTrack` (arg the class name).
 - `can_retreat()` says whether the battle may offer Retreat (never against a sector flagship).
 
+## The story layer (godot/story/README.md)
+
+- Screens: the admiral page, the sector I intro and sector change dialogs and the end page draw `story.campaign_line()`; the admiral card and the war-room panel show `story.titled_name()`; the fleet screen has "Rename flagship" (`story.open_rename()`); Progression has a "Career" tab button (`story.open_career()`); the admiral card shows the face from `godot/portraits/` (painting or crest). All guarded: without `godot/story/` or `godot/portraits/` nothing shows.
+- Story arcs, behind a flag: `campaign.arcs_on` (default **false** until Ryan approves the arc text). When on, closing the sector I intro or a sector change dialog opens `arc_source(sector)` (the UI wires `story.arc_beat`) as an event card. Its choice runs the normal `eventFlags` and `applyOutcome`, completes no map node, adds the card's outcome line, saves, and calls `arc_chose_cb(card, key)` (`story.arc_chose`). At the end of a run that played beat 3, `arc_end_cb(won)` (`story.arc_end`). With the flag off, or on with no arc file for the faction, a run is identical step by step: `test/arc_hook_test.gd` checks both, plus the card flow with a test card.
+
+## Rules access and tables
+
+- The campaign reaches the battle rules only through `res://rules/battle_api.gd` (its `JSM`, the shared JS maths and PRNG, and a table-free rules object for the weapon trait effects). No copy of rules code is kept here.
+- `load_tables` refuses to start when a table in `REQUIRED_TABLES` is missing, and `test/node/export_campaign.js` fails (exit 1, nothing written) when the oracle lacks any table the campaign scripts read.
+
 ## Saves
 
 A fresh Godot save (browser saves are not carried over, R33): `user://voidsworn_campaign.json` plus a backup one save behind (`.bak`). It holds the profile (`meta`), the saved run and a slim run log. Every non-integer number is written as its exact IEEE hex, because Godot's JSON reader can land one unit in the last place off. A damaged save falls back to the backup; the half that is sound is kept. Set `persist_on = true` and call `persist_load()` at start (the parity harness keeps saves in memory).

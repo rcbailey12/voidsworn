@@ -43,6 +43,7 @@ var hide_on_battle := false           # the game shell shows its own battle scen
 var _acts: Array = []                 # the buttons the current screen allows
 var _modal_acts: Array = []
 var _dirty := false
+var _fs_name := ""
 
 func _ready() -> void:
 	layer = 20
@@ -80,6 +81,12 @@ func _process(delta: float) -> void:
 	if C == null: return
 	if _dirty:
 		_dirty = false; render()
+	if C.arc_source == null and _story() != null:   # story arcs: the campaign asks the story layer for the card (shown only while C.arcs_on)
+		var st = _story(); C.arc_source = st.arc_beat; C.arc_chose_cb = st.arc_chose; C.arc_end_cb = st.arc_end
+	if C.RUN != null and _story() != null:   # a rename in the story dialog changes the flagship's name without a campaign signal
+		var fs = C.flagshipOf(); var nm = str(fs["name"]) if fs != null else ""
+		if nm != _fs_name:
+			_fs_name = nm; _dirty = true
 	if C.toasts.size() > 0:
 		for t in C.toasts: _toast(t)
 		C.toasts.clear()
@@ -280,7 +287,13 @@ func _admiral() -> Control:
 		var a = C.ADMIRALS[id]; var un = C.jt(C.META["admirals"].get(id))
 		var cv = card(C.picked_admiral == id, 330); var col = cv[1]
 		if not un: cv[0].modulate.a = 0.55
-		col.add_child(lbl(a["n"], 20, BONE, font_semi)); col.add_child(lbl(a["doc"], 16, GILT)); col.add_child(lbl(a["d"], 16, BONE2))
+		var face = _face(id)
+		if face != null:   # godot/portraits: the painting when one is picked, else the crest
+			var hr = hbox(10); var tr = TextureRect.new(); tr.texture = face; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			tr.custom_minimum_size = Vector2(px(84), px(84)); hr.add_child(tr)
+			var nv = vbox(2); nv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; nv.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); nv.add_child(lbl(a["doc"], 16, GILT)); hr.add_child(nv); col.add_child(hr)
+		else: col.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); col.add_child(lbl(a["doc"], 16, GILT))
+		col.add_child(lbl(a["d"], 16, BONE2))
 		col.add_child(_mastery_bar(id))
 		var fleet = []
 		for t in a["start"]: fleet.append(C.HULLS[C.equivHull(t, C.picked_faction)]["n"])
@@ -291,9 +304,31 @@ func _admiral() -> Control:
 		else: col.add_child(lbl("Unlock for " + C.numstr(a.get("cost")) + " renown in Legacy", 15, BONE2))
 		cards.add_child(cv[0])
 	v.add_child(cards)
+	_story_line(v)
 	v.add_child(_run_options())
 	var row = hbox(); add(row, abtn("Launch the " + C.runWord(C.picked_faction), "startRun", "", true)); add(row, abtn("Back", "title")); v.add_child(row)
 	return v
+# ---------------- story layer hooks (godot/story/README.md, hook 3): all guarded, nothing here changes campaign state ----------------
+func _story() -> Node:
+	var p = get_parent()
+	return p.get_node_or_null("Story") if p != null else null
+func _story_text() -> String:
+	var st = _story()
+	return str(st.campaign_line()) if st != null else ""
+func _story_line(v: Control) -> void:
+	var t = _story_text()
+	if t != "": v.add_child(lbl(t, 17, GILT))
+func _admiral_title(id) -> String:   # the admiral's name with the latest earned title
+	var st = _story()
+	if st != null:
+		var t = str(st.titled_name(str(id)))
+		if t != "": return t
+	return str(C.ADMIRALS[id]["n"])
+var _faces := {}
+func _face(id) -> Texture2D:
+	if not ResourceLoader.exists("res://portraits/portraits.gd"): return null
+	if not _faces.has(id): _faces[id] = load("res://portraits/portraits.gd").face(str(id))
+	return _faces[id]
 func _cmd_text(cmd, fac) -> String:
 	var t = C.CMD_TEXT.get(cmd["id"])
 	return str(t.get(fac, "")) if t != null else ""
@@ -468,7 +503,7 @@ func _side() -> Control:
 	var top = hbox(); top.add_child(_readout("Credits", C.numstr(R["credits"]), GILT)); top.add_child(spacer())
 	top.add_child(_readout("Command points", C.numstr(C.fleetCP()) + " / " + C.numstr(R["cpCap"]), BONE, true)); v.add_child(top)
 	var A = C.ADMIRALS[R["admiral"]]
-	v.add_child(lbl("Admiral: " + str(A["n"]) + ", " + str(A["doc"]).to_lower(), 14, BONE3))
+	v.add_child(lbl("Admiral: " + _admiral_title(R["admiral"]) + ", " + str(A["doc"]).to_lower(), 14, BONE3))
 	_nem_panel(v); _verb_panel(v)
 	v.add_child(_wr_head("Fleet"))
 	var fs = C.flagshipOf()
@@ -626,6 +661,9 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 func _fleet(d: Dictionary) -> Control:
 	var v = vbox(10)
 	var head = hbox(); head.add_child(gothic("Fleet")); head.add_child(spacer())
+	var st = _story()
+	if st != null and C.flagshipOf() != null:   # story layer: name your flagship
+		var rb = Button.new(); rb.text = "Rename flagship"; rb.focus_mode = Control.FOCUS_ALL; rb.pressed.connect(func(): st.open_rename()); head.add_child(rb)
 	add(head, abtn("Done", "backShipyard" if d["back"] == "shipyard" else "backMap", "", true)); v.add_child(head)
 	v.add_child(lbl("Refits can be moved between ships freely. Mark upgrades and repairs happen at shipyards and drydocks.", 18, BONE2))
 	var R = C.RUN
@@ -720,6 +758,9 @@ func _legacy() -> Control:
 	v.add_child(rich(c("Runs launched: " + C.numstr(st["runs"]) + ". Deepest sector reached: " + C.numstr(C.z0(st.get("best"))) + ". Runs won: " + C.numstr(st["wins"]) + ". Renown: ", BONE2) + c(C.numstr(C.z0(M.get("renown"))), GILT) + c(".", BONE2), 17))
 	var tabs = hbox(6)
 	for t in [["variants", "Hull variants"], ["mastery", "Admiral mastery"], ["favour", "Patron favour"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]: add(tabs, abtn(t[1], "progTab", t[0], C.prog_tab == t[0]))
+	var stc = _story()
+	if stc != null:   # story layer: the Career screen (records, medals, titles, history)
+		var cb = Button.new(); cb.text = "Career"; cb.focus_mode = Control.FOCUS_ALL; cb.pressed.connect(func(): stc.open_career()); tabs.add_child(cb)
 	v.add_child(tabs)
 	match C.prog_tab:
 		"variants":
@@ -821,6 +862,9 @@ func _end(d: Dictionary) -> Control:
 	elif d["abandoned"]: sub = "The fleet stands down. Its deeds are recorded."
 	else: sub = "The last hull goes dark in sector " + C.roman(R["sector"]) + ". The survivors will tell it differently."
 	var sl = lbl(sub, 20, BONE2); sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(sl)
+	var stl = _story_text()
+	if stl != "":
+		var sll = lbl(stl, 18, GILT); sll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(sll)
 	var carry = panel(GILT, Color(0.37, 0.7, 0.65, 0.08), 12); var cv = vbox(4); carry.add_child(cv)
 	cv.add_child(lbl("CARRIED FORWARD", 12, BONE3))
 	cv.add_child(rich("[b]" + c("+" + C.numstr(cy["ren"]) + " renown", GILT) + "[/b]" + ((" " + c("(Heat " + C.numstr(cy["hl"]) + ": +" + C.numstr(cy["hl"] * 10) + "%)", BONE3)) if C.jt(cy["hl"]) else "") + " · you now have " + C.numstr(C.META["renown"]) + ". Spend it on hull variants in Progression.", 16))
@@ -900,6 +944,7 @@ func _modal(md: Dictionary) -> void:
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", GILT) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)
 			if md["kind"] == "intro": p.call("Pick a route across the sector map. Battles marked with a patron’s sigil pay out that patron’s boons, so the route you choose shapes your build. The flagship of the sector waits at the far end.", BONE2)
+			_story_line(v)
 			add(v, abtn("Plot a course", "closeModal", "", true, false, acts))
 		"abandon":
 			h2.call("Abandon the current run?"); p.call("Starting over ends your saved run. Your best result so far is kept either way.", BONE2)
