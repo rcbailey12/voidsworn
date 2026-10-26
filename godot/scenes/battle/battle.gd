@@ -1131,6 +1131,15 @@ func _overlay() -> void:
 		for e in V["units"]:
 			if e["side"] == "enemy" and not e["dead"] and not _firing_set(e["id"]).is_empty():
 				rings[board.key(e["q"], e["r"])] = TARGET_RING
+	if arcs_on and _usable(u):
+		var ar := _arc_rings()
+		for k in ar:
+			if not rings.has(k):
+				rings[k] = ar[k]
+	if mode in ["nova", "blink", "launch"]:
+		for h in _ability_hexes():
+			fills[board.key(h.q, h.r)] = Color(0.55, 0.8, 1.0, 0.3)
+			rings[board.key(h.q, h.r)] = Color(0.6, 0.85, 1.0, 0.8)
 	if mode == "board" and not u.is_empty():
 		for t in R.boardTargets(api.unit(sel)):
 			rings[board.key(t["q"], t["r"])] = Color(1, 0.75, 0.3, 1)
@@ -1167,26 +1176,113 @@ func _hover_state(k: String):
 	return st
 
 
+var _threat_cache := {}
+var _threat_key := ""
+
+
+# ui3d.js computeThreat: for every enemy ship, every hex it can end its move on and every facing there, the guns that bear
+# on each hex (range, arc, line of sight); the best end state counts per enemy, summed over enemies. Darker = more damage.
 func _threat_fills() -> Dictionary:
-	# the hexes enemy guns can reach next turn from where they stand, darker where more guns bear (a quick read: the game's
-	# threat map also adds each enemy's movement)
+	var key := "%d|%d|%d" % [int(V.get("round", 0)), batches.size(), hud.log_text.get_line_count()]
+	if key != _threat_key:
+		_threat_key = key
+		var t0 := Time.get_ticks_msec()
+		_threat_cache = _compute_threat()
+		print("[battle] threat map %d ms" % (Time.get_ticks_msec() - t0))
 	var out := {}
-	var cnt := {}
-	for h in board.cells:
-		var k: String = board.key(h.q, h.r)
-		var n := 0
-		for e in R.alive("enemy"):
-			for w in e["weapons"]:
-				if w["k"] == "flak":
-					continue
-				var d: int = R.hdist(e, {"q": h.q, "r": h.r})
-				if d <= int(w["r"]) and d >= 1 and R.inArc(e, {"q": h.q, "r": h.r}, w["arc"]):
-					n += 1
-		if n > 0:
-			cnt[k] = n
-	for k in cnt:
-		out[k] = Color(0.9, 0.15, 0.12, minf(0.12 + 0.07 * cnt[k], 0.5))
+	var mx := 1.0
+	for k in _threat_cache:
+		mx = maxf(mx, float(_threat_cache[k]))
+	for k in _threat_cache:
+		var f := float(_threat_cache[k]) / mx
+		out[k] = Color(0.95, 0.18, 0.12, 0.08 + 0.4 * f)
 	return out
+
+
+func _compute_threat() -> Dictionary:
+	var map := {}
+	var hexes: Array = board.cells
+	for e in R.alive("enemy"):
+		var ws: Array = []
+		for w in e["weapons"]:
+			if float(R.z0(w.get("off"))) <= 1 and float(R.z0(w.get("cdLeft"))) <= 1 and w["k"] != "flak":
+				ws.append(w)
+		if ws.is_empty():
+			continue
+		var seen := {}
+		var states: Array = [{"q": e["q"], "r": e["r"], "f": e["facing"], "cost": 0, "path": []}]
+		if not R.jt(e.get("isSq")):
+			states.append_array(R.computeReach(e).states)
+		var maxr := 0
+		for w in ws:
+			maxr = maxi(maxr, int(w["r"]))
+		var mul := float(e.get("dmg", 1)) if e.get("dmg") != null else 1.0
+		var per := {}
+		var near_c := {}
+		for st in states:
+			var sk := "%d,%d,%d" % [int(st["q"]), int(st["r"]), int(st["f"])]
+			if seen.has(sk):
+				continue
+			seen[sk] = true
+			var v = R.stateView(e, st)
+			var pk := "%d,%d" % [int(st["q"]), int(st["r"])]
+			if not near_c.has(pk):
+				var nl: Array = []
+				for h in hexes:
+					var hh0 := {"q": h.q, "r": h.r}
+					var d0: int = R.hdist(v, hh0)
+					if d0 <= maxr:
+						nl.append([hh0, d0])
+				near_c[pk] = nl
+			for nd in near_c[pk]:
+				var hh: Dictionary = nd[0]
+				var d: int = nd[1]
+				var h := hh
+				var val := 0.0
+				for w in ws:
+					if d <= int(w["r"]) and R.inArc(v, hh, w["arc"]):
+						val += float(w["shots"]) * float(w["dmg"]) * mul
+				if val <= 0.0:
+					continue
+				var k: String = board.key(h.q, h.r)
+				if val > float(per.get(k, 0.0)) and R.los(v, hh):
+					per[k] = val
+		for k in per:
+			map[k] = float(map.get(k, 0.0)) + float(per[k])
+	return map
+
+
+# the selected ship's firing arcs (V): every hex a ready gun reaches from where it stands
+func _arc_rings() -> Dictionary:
+	var out := {}
+	var ru = api.unit(sel) if sel != "" else null
+	if ru == null:
+		return out
+	for h in board.cells:
+		var hh := {"q": h.q, "r": h.r}
+		var d: int = R.hdist(ru, hh)
+		if d < 1:
+			continue
+		for w in ru["weapons"]:
+			if w["k"] != "flak" and R.weaponReady(w) and d <= int(w["r"]) and R.inArc(ru, hh, w["arc"]):
+				out[board.key(h.q, h.r)] = Color(1.0, 0.55, 0.25, 0.35)
+				break
+	return out
+
+
+# target hexes for nova, blink and launch
+func _ability_hexes() -> Array:
+	var ru = api.unit(sel) if sel != "" else null
+	if ru == null:
+		return []
+	match mode:
+		"nova":
+			return R.novaTargets(ru)
+		"blink":
+			return R.blinkHexes(ru)
+		"launch":
+			return R.launchHexes(ru)
+	return []
 
 
 func _unit_at(q: int, r: int) -> Dictionary:
@@ -1372,6 +1468,20 @@ func _on_click() -> void:
 		return
 	var u := _unit_at(hover.x, hover.y)
 	var s := _sel_unit()
+	if mode in ["nova", "blink", "launch"] and not s.is_empty():
+		var m := mode
+		mode = ""
+		var ok := false
+		for h in _ability_hexes():
+			if int(h.q) == hover.x and int(h.r) == hover.y:
+				ok = true
+		if ok:
+			var id := sel
+			var hx := {"q": hover.x, "r": hover.y}
+			_cmd(func(): return api.ability(id, {"hex": hx}))
+		else:
+			_refresh_ui()
+		return
 	if mode == "board" and not s.is_empty():
 		mode = ""
 		if not u.is_empty() and u["side"] == "enemy":
@@ -1581,7 +1691,9 @@ func _on_action(name: String, arg) -> void:
 				var id := sel
 				var ab := str(_sel_unit().get("ab", ""))
 				if ab in ["nova", "blink", "launch"]:
-					hud.toast("This ability needs a target hex (coming next).")
+					mode = "" if mode == ab else ab
+					hud.toast({"nova": "Click a hex 3 to 9 ahead for the nova shell.", "blink": "Click an open hex within 3 to jump to.", "launch": "Click an open hex next to the carrier."}[ab])
+					_refresh_ui()
 				else:
 					_cmd(func(): return api.ability(id))
 		"ram":

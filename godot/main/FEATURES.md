@@ -53,12 +53,12 @@ Last update: Oct 26 2026, G2.
 | Why you can't fire (out of range, arc, sight, braced, spent) | done (toast) |
 | Brace (B), ram (X), board (G) | done |
 | Abilities without a target (evasive, reload, focus, surge, ion pulse, overburn, frenzy, regrow, reclaim, phase) | done |
-| Abilities with a target hex (nova, blink, launch) | missing: needs target-hex picking (G2 next) |
+| Abilities with a target hex (nova, blink, launch) | done for nova and blink (pick the hex); launch waits for squadrons (G1) |
 | Admiral's Command (player) | missing (rules: G1 not ported; button: G2 after) |
 | End activation, Pass, Continue (Enter) | done |
 | Enemy turns at B2 pace, Enter or Space hurries, enemy-acting chip, camera follow | done; camera follow is a highlight ring only |
-| Threat map (R) | partial: shades hexes enemy guns reach from where they stand; the browser also adds each enemy's movement |
-| Firing arcs (V, the fans) | missing |
+| Threat map (R) | done: the browser's computeThreat (every end state of every enemy, guns summed per hex, line of sight); about 0.8 s to build in the sandbox, cached per change |
+| Firing arcs (V, the fans) | partial: the hexes a ready gun reaches, outlined; no fan meshes |
 | Hull and shield bars that change as hits land, floating numbers (shield, hull, Miss, Critical, Shields down) | done |
 | Battle log with the browser's lines and colours | done (built from the event stream until G1's log event lands) |
 | Round banner, Victory and Defeat card | done |
