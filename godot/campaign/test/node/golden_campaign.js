@@ -94,8 +94,8 @@ function canonJ(v){
 }
 const sha=s=>require('crypto').createHash('sha256').update(s).digest('hex');
 function trans(){ return {rw:window._rw,relicChoice:window._relicChoice,wrecks:window._wrecks,boonOffer:window._boonOffer,modOffer:window._modOffer,aspOffer:window._aspOffer,rewardCfg:window._rewardCfg,
-  ev:curEvent?curEvent.id:null,yard:yardNode?yardNode.id:null,pa:pickedAdmiral,pf:pickedFaction,opt:runOpt,tab:progTab,
-  b:B?{seed:B.seed,round:B.round,over:B.over||null,partial:!!B.partial,units:B.units.map(u=>[u.id,u.side,u.tpl,u.hp,!!u.dead,!!u.captured,!!u.fled,u.kills,u.dealt,u.killCause||null,u.killedBy||null])}:null}; }
+  ev:curEvent?curEvent.id:null,evFac:curEvent?(curEvent.o||[]).map(o=>o.l).join('|'):null,yard:yardNode?yardNode.id:null,pa:pickedAdmiral,pf:pickedFaction,opt:runOpt,tab:progTab,uid:UID,ended:__ENDED,
+  b:B?{seed:B.seed,round:B.round,over:B.over||null,partial:!!B.partial,campaign:!!B.campaign,finished:!!B.finished,event:B.event||null,units:B.units.map(u=>[u.id,u.side,u.tpl,u.hp,!!u.dead,!!u.captured,!!u.fled,u.kills,u.dealt,u.killCause||null,u.killedBy||null])}:null}; }
 function parts(){ return {run:RUN?canonJ(Object.assign({},RUN,{map:undefined})):'null', map:RUN&&RUN.map?canonJ(RUN.map):'null', meta:canonJ(Object.assign({},META,{tel:undefined})), t:canonJ(trans()), saved:canonJ(SAVED_RUN)}; }
 // ---------------- one seeded run ----------------
 function runSeed(seed,write){

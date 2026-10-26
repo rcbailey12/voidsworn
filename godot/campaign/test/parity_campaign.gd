@@ -99,9 +99,10 @@ func trans() -> Dictionary:
 		var us = []
 		for u in C.B["units"]:
 			us.append([u["id"], u["side"], u["tpl"], u["hp"], C.jt(u.get("dead")), C.jt(u.get("captured")), C.jt(u.get("fled")), u["kills"], u["dealt"], u.get("killCause") if C.jt(u.get("killCause")) else null, u.get("killedBy") if C.jt(u.get("killedBy")) else null])
-		b = {"seed": C.B["seed"], "round": C.B["round"], "over": C.B["over"] if C.jt(C.B.get("over")) else null, "partial": C.jt(C.B.get("partial")), "units": us}
+		b = {"seed": C.B["seed"], "round": C.B["round"], "over": C.B["over"] if C.jt(C.B.get("over")) else null, "partial": C.jt(C.B.get("partial")), "campaign": C.jt(C.B.get("campaign")),
+			"finished": C.jt(C.B.get("finished")), "event": C.B.get("event"), "units": us}
 	return {"rw": W.get("rw"), "relicChoice": W.get("relicChoice"), "wrecks": W.get("wrecks"), "boonOffer": W.get("boonOffer"), "modOffer": W.get("modOffer"), "aspOffer": W.get("aspOffer"),
-		"rewardCfg": W.get("rewardCfg"), "ev": C.cur_event["id"] if C.cur_event != null else null, "yard": C.yard_node["id"] if C.yard_node != null else null, "pa": C.picked_admiral,
+		"rewardCfg": W.get("rewardCfg"), "ev": C.cur_event["id"] if C.cur_event != null else null, "evFac": "|".join(PackedStringArray(C.cur_event["o"].map(func(o): return str(o["l"])))) if C.cur_event != null else null, "uid": C.UID, "ended": C.ended, "yard": C.yard_node["id"] if C.yard_node != null else null, "pa": C.picked_admiral,
 		"pf": C.picked_faction, "opt": C.run_opt, "tab": C.prog_tab, "b": b}
 func parts() -> Dictionary:
 	var run = "null"
