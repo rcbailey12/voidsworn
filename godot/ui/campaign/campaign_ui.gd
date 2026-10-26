@@ -33,6 +33,7 @@ var bg: ColorRect
 var page_box: Control
 var map3d: Control                    # the 3D sector map, kept alive between renders (it animates)
 var use_3d_map := true                # false: the flat map (map_view.gd)
+var ai_level := "veteran"             # the battle setting the shell uses (godot/main settings "ai"); the map's danger bands follow it
 var modal_box: Control
 var toast_box: VBoxContainer
 var theme_main: Theme
@@ -365,12 +366,7 @@ func _map() -> Control:
 	var head = hbox()
 	head.add_child(lbl("Sector " + C.roman(R["sector"]) + ((": " + str(C.REGIONS[m["region"]]["n"])) if C.jt(m.get("region")) and C.REGIONS.has(m["region"]) else ""), 44, BONE, font_goth, false))
 	head.add_child(spacer()); add(head, abtn("Save and quit", "saveQuit")); main.add_child(head)
-	var hp = c("Hostile presence: ", BONE2) + "[b]" + c(esc(F["n"]), BLOOD) + "[/b]. " + c(esc(F.get("blurb", "")), BONE2)
-	if R.get("foes") is Array and R["foes"].size() >= 5:
-		hp += " " + c("Rival raiders from the " + esc(str(C.FACTIONS[R["foes"][3]]["n"]).trim_prefix("The ")) + " and the " + esc(str(C.FACTIONS[R["foes"][4]]["n"]).trim_prefix("The ")) + " may also strike.", BONE3)
-	main.add_child(rich(hp, 16))
-	var cond = C.sectorCond()
-	if cond != null: main.add_child(rich(c("Sector condition: [b]" + esc(cond["n"]) + "[/b].", GILT) + " " + c(esc(cond["d"]), BONE2), 16))
+	main.add_child(_intel_strip())
 	if use_3d_map:
 		var gap = Control.new(); gap.size_flags_vertical = Control.SIZE_EXPAND_FILL; gap.mouse_filter = Control.MOUSE_FILTER_IGNORE; main.add_child(gap)
 		for ctl in [hb, mm, main, head]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -405,6 +401,28 @@ func _map() -> Control:
 	main.add_child(lbl("Choose a pulsing node to jump there. You can only move forward along the lines.", 15, BONE3))
 	hb.add_child(_side())
 	return hb
+# The sector intel strip: who is here and what is different about this sector (room kept for the Nemesis clock, stream B)
+func _intel_strip() -> Control:
+	var R = C.RUN; var m = R["map"]; var F = C.FACTIONS[m["fac"]]
+	var row = flow(8); row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var box = func(head: String, body: String, col: Color, tip: String = "") -> Control:
+		var p = panel(Color(col, 0.55), Color(0.03, 0.045, 0.08, 0.82), 7); var v = vbox(1); p.add_child(v); p.mouse_filter = Control.MOUSE_FILTER_PASS; p.custom_minimum_size.x = px(170 if head.length() < 18 else 230)
+		v.add_child(lbl(head.to_upper(), 11, BONE3, font_semi, false)); v.add_child(rich(body, 15))
+		if tip != "": p.tooltip_text = tip
+		return p
+	row.add_child(box.call("Hostile presence", "[b]" + c(esc(F["n"]), Color(F.get("glow", "#e07a70"))) + "[/b]", Color(F.get("glow", "#e07a70")), str(F.get("blurb", ""))))
+	if R.get("foes") is Array and R["foes"].size() >= 5:
+		var a = C.FACTIONS[R["foes"][3]]; var b = C.FACTIONS[R["foes"][4]]
+		row.add_child(box.call("Rival raiders", c(esc(str(a["n"]).trim_prefix("The ")), Color(a.get("glow", "#ffffff"))) + ", " + c(esc(str(b["n"]).trim_prefix("The ")), Color(b.get("glow", "#ffffff"))), BONE3,
+			"About one ordinary fight in five comes from a rival outside the sector's main enemy. Their nodes carry a ring in their colour, and their patrols drift nearby."))
+	var cond = C.sectorCond()
+	if cond != null: row.add_child(box.call("Sector condition", "[b]" + c(esc(cond["n"]), GILT) + "[/b]", GILT, str(cond["d"])))
+	var ps = []
+	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
+	row.add_child(box.call("Patrons watching", ", ".join(PackedStringArray(ps)), Color(0.7, 0.6, 1.0), "Win at a node with a patron's sigil and that patron offers a boon."))
+	if R.get("nemesis") != null:   # stream B's Nemesis: shown when the run carries one
+		var nm = R["nemesis"]; row.add_child(box.call("Nemesis", esc(str(nm.get("name", nm.get("n", "The Nemesis")))) + ((" " + c("\u00b7 " + str(nm.get("clock")), BLOOD)) if nm.get("clock") != null else ""), BLOOD))
+	return row
 func _reward_label(rw) -> String:
 	if rw == null or not (rw is Dictionary): return ""
 	if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")): return "Boon of " + str(C.PATRONS[rw["p"]]["short"])
@@ -453,8 +471,23 @@ func _side() -> Control:
 		if fs != null and fs["uid"] == s["uid"]: r1.add_child(lbl("★", 14, GILT, null, false))
 		r1.add_child(lbl(s["name"], 16, BONE, font_semi, false)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 14, BONE2, null, false)); rv.add_child(r1)
 		rv.add_child(rich(c(esc(C.HULLS[s["tpl"]]["cls"]) + " Mk " + C.roman(s["mk"]) + ", " + esc(C.rankName(s["cap"])) + " " + esc(s["cap"]["name"]), BONE3) + (" " + c("(promotion ready)", GILT) if C.jt(s["cap"].get("pending")) else ""), 13))
-		rv.add_child(_seg_bar(float(s["hp"]) / float(d["maxHp"]))); v.add_child(row)
+		rv.add_child(_seg_bar(float(s["hp"]) / float(d["maxHp"])))
+		var ready = []
+		var hf = float(s["hp"]) / float(d["maxHp"])
+		ready.append(c("Ready" if hf >= 0.7 else ("Damaged" if hf >= 0.4 else "Crippled"), VERD if hf >= 0.7 else (Color("#f0b35a") if hf >= 0.4 else BLOOD)))
+		var free = int(C.HULLS[s["tpl"]]["slots"]) - s["mods"].size()
+		if free > 0 and R["inventory"].size() > 0: ready.append(c("refit to fit", GILT))
+		elif free > 0: ready.append(c("%d free slot%s" % [free, "" if free == 1 else "s"], BONE3))
+		if C.jt(s["cap"].get("pending")): ready.append(c("promotion ready", GILT))
+		rv.add_child(rich("  \u00b7  ".join(PackedStringArray(ready)), 12)); v.add_child(row)
 	var pend = R["fleet"].any(func(s): return C.jt(s["cap"].get("pending")))
+	if map3d != null and map3d.intel != null:
+		var fc = map3d.intel.fleet_condition()
+		if fc["hurt"]:
+			var any_rep = false
+			for pth in map3d.intel.all_paths():
+				if map3d.intel.path_stats(pth)["repair_before_boss"]: any_rep = true
+			v.add_child(rich(c("Fleet hull at %d%%." % int(round(fc["avg"] * 100.0)), BLOOD) + " " + c("Plan a repair stop before the flagship." if any_rep else "No repair stop is left on any route to the flagship.", BONE2), 13))
 	add(v, abtn("Promote captains and refit" if pend else "Manage fleet and refits", "fleetScreen", "", pend))
 	if R["inventory"].size() > 0: v.add_child(lbl(str(R["inventory"].size()) + " refit" + ("s" if R["inventory"].size() > 1 else "") + " in the hold.", 14, BONE3))
 	if C.jt(R.get("aspect")) and C.ASPECTS.has(R["aspect"]):
