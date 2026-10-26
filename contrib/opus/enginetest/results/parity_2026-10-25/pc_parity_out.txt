@@ -1,0 +1,15 @@
+
+[1/4] Exporting the game's data tables for Godot...
+[2/4] Random numbers: first 10,000 draws from 3 seeds...
+  seed 1001: PASS 
+  seed 7: PASS 
+  seed 4242424242: PASS 
+[3/4] Math functions the rules use (sin, cos, atan2, exp, hypot, round) on 243,721 inputs...
+  PASS 
+[4/4] Seeded battles, every activation compared (state hash, PRNG state)...
+  battle s1: PASS 
+  battle s2: PASS 
+  battle s3: PASS 
+
+PASS: the Godot port matches the game's rules exactly. 
+
