@@ -28,8 +28,12 @@ func bind(campaign) -> void    # draw campaign.page and campaign.modal_d now and
 ### Bot runs
 
 `--bot-runs N` plays whole runs headless, title to end screen:
-- Each choice uses the weights of the G3 parity bot. The stub battle buttons are left out: real battles decide every fight, with both sides on AI.
-- Summary per run: `result` (win, loss, unfinished or crashed), `sector`, `battles`, `clicks`, `errors`, `game_s`.
+- Battles: real battles decide every fight, with the game's own AI on both sides (api.ai_activate is sim3d's player bot).
+- Choices: `--bot-policy smart` (the default) spends like a sensible player. At a yard it repairs, buys the dearest hull that fits, upgrades, then fits modules. On the map it heads for a yard when the fleet is under 4 ships or holds 300+ credits. It tows salvage and keeps prizes when there is room. `--bot-policy random` uses the G3 parity weights instead, which rarely buy hulls.
+- Summary per run: `result` (win, loss, unfinished or crashed), `sector`, `battles`, `clicks`, `errors`, `game_s`, plus:
+  - `log`: one line per battle (sector, kind, faction, objective, result, rounds, ships left on each side, the fleet going in), to compare with `node sim3d.js campaign`;
+  - `pressed` and `offered`: button counts.
+- `--run-timeout S` (default 600 real seconds): a run that overruns prints `[botrun] HANG {...}` with where it stood (page, battle phase, round, flags, idle time), writes the report and quits with exit code 2.
 
 ## Battles: `start_battle` and `play_api`
 

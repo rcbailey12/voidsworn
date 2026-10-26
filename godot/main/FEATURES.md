@@ -14,7 +14,7 @@ Last update: Oct 26 2026 (dd58851), G2.
 | Saves: run and profile | done in G3 rules (user://voidsworn_campaign.json with a backup) |
 | Windows build (.exe) | done on the PC (build\export\Voidsworn.exe); smoke test of the exe pending |
 | Double-click start for Ryan | done: tools/pc/play_godot.bat (runs the exported .exe when present) |
-| Headless full runs with both sides on AI (errors, softlocks, time) | done: --bot-runs N (the game's own AI on your side, G3's choices); errors counted with a Logger. PC: 10-run batches in the queue |
+| Headless full runs with both sides on AI (errors, softlocks, time) | done: --bot-runs N (the game's own AI on your side; the smart policy shops like a player); errors counted with a Logger; a log line per battle; --run-timeout hang guard. PC: 8-run batches in lane B |
 | Report a problem (browser: copy report) | done: in-battle menu, copies the battle facts, errors and log |
 | Shader warm-up on the loading screen, pipeline compiles counted in play | done (0 in sandbox runs) |
 | Compatibility renderer launcher (play_godot_safe.bat) | done |
