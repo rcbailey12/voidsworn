@@ -1,0 +1,114 @@
+{
+ "painted": {
+  "matriarch": {
+   "faction": "chorus",
+   "pick": "painted/matriarch.webp",
+   "alts": [
+    "alts/matriarch_alt1.webp",
+    "alts/matriarch_alt2.webp"
+   ],
+   "source": "chorus_matriarch_zit_s51",
+   "alt_sources": [
+    "chorus_matriarch_zit_s23",
+    "chorus_matriarch_zit_s11"
+   ],
+   "note": "Nine uneven throats venting spore swarms and a brood sac of larvae: Spawning Surge reads at a glance. s37 rejected (grew a head)."
+  },
+  "mending": {
+   "faction": "chorus",
+   "pick": "painted/mending.webp",
+   "alts": [
+    "alts/mending_alt1.webp",
+    "alts/mending_alt2.webp",
+    "alts/mending_alt3.webp"
+   ],
+   "source": "chorus_mending_b2_zit_s11",
+   "alt_sources": [
+    "chorus_mending_b1_zit_s23",
+    "chorus_mending_b1_zit_s51",
+    "chorus_mending_b2_zit_s51"
+   ],
+   "note": "Living Suture-Hive (R37): honeycomb hive flesh sewn shut with rows of bone stitches, amber nursing sacs dripping onto new flesh. No face, no body. Batch 1 Mending renders all rejected (faces); b2 s23 rejected (sacs read as a skull face)."
+  },
+  "vex": {
+   "faction": "voidsworn",
+   "pick": "painted/vex.webp",
+   "alts": [
+    "alts/vex_alt1.webp",
+    "alts/vex_alt2.webp",
+    "alts/vex_alt3.webp"
+   ],
+   "source": "voidsworn_vex_qie_s11",
+   "alt_sources": [
+    "voidsworn_vex_qref_s11",
+    "voidsworn_vex_qie_s23",
+    "voidsworn_vex_qref_s23"
+   ],
+   "note": "Oath scars, wax seals and parchment strips, orange broadside beams through a gothic viewport. Z-Image takes rejected (sea-going battleships in the window, small face)."
+  },
+  "kassar": {
+   "faction": "hegemony",
+   "pick": "painted/kassar.webp",
+   "alts": [
+    "alts/kassar_alt1.webp",
+    "alts/kassar_alt2.webp",
+    "alts/kassar_alt3.webp"
+   ],
+   "source": "hegemony_kassar_qie_s23",
+   "alt_sources": [
+    "hegemony_kassar_qref_s23",
+    "hegemony_kassar_qie_s11",
+    "hegemony_kassar_qref_s11"
+   ],
+   "note": "Targeting grid on the face, gloved hands, rows of firing-solution displays. Z-Image takes rejected (gun pictograms on the screens)."
+  },
+  "grax": {
+   "faction": "corsair",
+   "pick": "painted/grax.webp",
+   "alts": [
+    "alts/grax_alt1.webp",
+    "alts/grax_alt2.webp",
+    "alts/grax_alt3.webp"
+   ],
+   "source": "corsair_grax_qref_s23",
+   "alt_sources": [
+    "corsair_grax_qie_s11",
+    "corsair_grax_qie_s23",
+    "corsair_grax_qref_s11"
+   ],
+   "note": "Iron jaw, red cyber eye, boarding axe, patchwork plates in clashing colours from three fleets, sparks."
+  },
+  "aelith": {
+   "faction": "ithar",
+   "pick": "painted/aelith.webp",
+   "alts": [
+    "alts/aelith_alt1.webp",
+    "alts/aelith_alt2.webp",
+    "alts/aelith_alt3.webp"
+   ],
+   "source": "ithar_aelith_b_qie_s37",
+   "alt_sources": [
+    "ithar_aelith_b_qie_s23",
+    "ithar_aelith_b_qref_s23",
+    "ithar_aelith_b_qie_s51"
+   ],
+   "note": "Robed rerun (batch 2): crested skull, gold light channels, light sails, star-craft murmuration. Batch 1 rejected (nude torso, five fingers)."
+  },
+  "nekhet": {
+   "faction": "deathless",
+   "pick": "painted/nekhet.webp",
+   "alts": [
+    "alts/nekhet_alt1.webp",
+    "alts/nekhet_alt2.webp",
+    "alts/nekhet_alt3.webp"
+   ],
+   "source": "deathless_nekhet_b_qie_s23",
+   "alt_sources": [
+    "deathless_nekhet_b_qie_s11",
+    "deathless_nekhet_b_zit_s51",
+    "deathless_nekhet_b_zit_s37"
+   ],
+   "note": "Broken ring of bone-white computation plates around a green core, repair drones, no figure (batch 2). Batch 1 rejected (torso or a face in every render)."
+  }
+ }
+}

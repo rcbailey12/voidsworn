@@ -59,6 +59,43 @@ SUBJECT = {
   "and black metal around a blazing green core, cracked segments floating apart and being reassembled by small attending service drones with thin green beams, "
   "ancient worn surfaces engraved with circuit patterns, sensor lights instead of a face, an ominous patient presence."),
 }
+# ---------- batch 2 (Oct 26 review of batch 1) ----------
+# Batch 1 failures: every Mending render grew a face or a humanoid body (the "portrait of an admiral" framing pulls the
+# models toward a person), every Nekhet render kept a torso or a face inside the ring, and Aelith came out as a nude
+# five-fingered grey alien. For the non-humans the subject is now described as an organism or machine (CREATURE style,
+# no "portrait", no "bust"); Aelith gets a robe, seven fingers and a regal crest.
+CREATURE = ("Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, "
+ "dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by {glow}, "
+ "deep soft shadow on the right side, a dark painterly {plate} background softly out of focus, muted desaturated palette with one strong glow colour, "
+ "museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.")
+NOBODY = ("There is no person, no head, no face, no eyes, no mouth, no arms, no legs, no skeleton and no skull anywhere in the image; "
+          "it does not stand or walk.")
+SUBJECT.update({
+ 'chorus_mending_b1': ('chorus',
+  "The Living Suture-Hive, a Chorus bio-swarm organism: a sprawling asymmetric living mass grafted over a cracked dark chitin shell, "
+  "like a wasp nest made of wet flesh. Clusters of translucent amber nursing sacs glow from inside it. Hundreds of curved pale bone needles "
+  "grow out of the mass and pull glowing pink membrane threads across the cracks of the shell like surgical sutures; fresh pink scar tissue "
+  "knits the wounds shut and new flesh regrows over old wounds. One shapeless organic lump seen from slightly below. " + NOBODY),
+ 'chorus_mending_b2': ('chorus',
+  "The Living Suture-Hive, a Chorus bio-swarm organism: a pulsing cocoon of veined pink membrane wrapped around the broken wreck of a dark "
+  "organic hull, stitched closed with long rows of curved pale bone needles and glowing pink sinew threads, like a vast surgical wound "
+  "being sewn shut. Swollen amber nursing sacs hang from the cocoon like fruit, glowing from within, dripping nutrient fluid onto raw new "
+  "flesh that grows over the seams. An organic shape like a tumour or a hive, never a body. " + NOBODY),
+ 'deathless_nekhet_b': ('deathless',
+  "The Undying, a Deathless machine intelligence: a monumental broken ring of bone-white ceramic computation plates and black metal, "
+  "floating in a black tomb-like vault. Inside the ring there is only a blazing sphere of cold emerald-green light and nothing else. "
+  "Cracked ring segments drift apart and small attending service drones repair them with thin green beams. Rows of small green sensor "
+  "lights glow along the ring. Ancient worn surfaces engraved with circuit patterns. An ominous patient presence. "
+  "No figure, no statue, no head, no face, no body, no robot inside the ring."),
+ 'ithar_aelith_b': ('ithar',
+  "Portrait of Aelith Dawnsail of the Ithar, an ancient dying elder alien race: a tall regal luminous alien noble, clearly not human and "
+  "not a grey alien: an elongated crested skull and a very long slender neck, huge wide-set solid black eyes, pale translucent porcelain "
+  "skin with glowing gold light channels running beneath it, wearing a high-collared flowing robe of woven pale light that covers the body "
+  "to the neck, one hand raised gracefully showing seven very long slender fingers, behind her a radiant fan of near-geometric light sails "
+  "like stained glass made of light, a flight of tiny glowing star-craft wheeling around her like a murmuration. "
+  "Nothing aquatic: no fins, no gills, no scales."),
+})
+CREATURE_IDS = ('chorus_mending_b1', 'chorus_mending_b2', 'deathless_nekhet_b')
 # ---------- Nemesis pool (R42): 6 per faction, same painted style, more villainous framing ----------
 # Ids nem_<faction>_<1..6>. A red rim light from the right and a low camera mark every Nemesis apart from the named admirals;
 # the red-black frame and the scars (burn, cyber, eye, carapace, porcelain, machine) are composited in post or in game.
@@ -115,14 +152,55 @@ NEM = {
   "a broken halo of rotating black blades around a dark core with a single green beam",
  ],
 }
+# Nemesis batch 2 (Oct 26 review of n1): every Chorus render was the same skull-headed humanoid, most Deathless renders had
+# human faces or bodies, and the Ithar did not share Aelith's anatomy. Rewritten as organisms and machines with distinct
+# silhouettes (CREATURE style, no body), and the Ithar get one shared anatomy line.
+ITHAR = ("An Ithar, an ancient elder alien race: an elongated crested skull, a very long slender neck, huge solid black eyes, pale porcelain skin "
+         "with glowing gold light channels beneath it, robed, seven-fingered hands; clearly not human and not a grey alien.")
+NEM2 = {
+ 'chorus': [
+  "a huge circular ring of grinding chitin plates around a dark pulsing hollow throat, dripping acid, the ring grown out of a mass of purple-black flesh",
+  "clusters of swollen glowing pustule sacs and writhing feeding tendrils bursting out of a cracked grey host shell, like a fungus erupting from a carcass",
+  "an armoured purple-black dome like a giant beetle shell with no head and no legs, bristling with long bone spikes and glowing yellow vents",
+  "a floating mass of wrinkled translucent neural tissue lit from within, threaded with thick nerve cords that trail away into the dark like roots",
+  "a towering stalk of fungal flesh like a giant puffball, shedding thick clouds of glowing yellow spores from gills under its cap",
+  "huge folded sheets of veined membrane with acid-yellow veins wrapped like a cloak around a dark pulsing core, the edges lined with hooked barbs",
+ ],
+ 'deathless': [
+  "a cluster of black obelisk processors orbiting a single green sensor light, thin green data beams linking them",
+  "a towering spine of green-lit segmented black metal vertebrae coiled around a cold green core, like a mechanical serpent with no head",
+  "thousands of tiny black beetle-shaped drones forming a shifting sphere around a green core, streams of drones peeling away from it",
+  "a monolithic black slab covered in moving green glyph lights, split down the middle by a glowing crack, cables pouring from its base",
+  "an upright sarcophagus-shaped machine split open down the front, revealing only green-lit gears, coils and a glowing core inside",
+  "a broken halo of rotating black blades around a dark core, a single green beam rising from it",
+ ],
+ 'ithar': [
+  "a gaunt Ithar inquisitor crowned by sharp spikes of light, a cold pitiless gaze, dark grey high-collared robes",
+  "an Ithar seer with a veil of fine light threads over the eyes, long seven-fingered hands ending in blade-like fingertips, a high-collared robe",
+  "a statuesque Ithar war-matriarch, gold light channels flaring red-gold under the skin, armour of glass-like petals over a long robe",
+  "an Ithar exile with dimmed flickering light channels, ash-grey cracked skin, a crown of broken light sails, a ragged robe",
+  "an Ithar archon with a tall crest and a smooth mask of mirrored light where the face should be, an ornate robe",
+  "an ancient Ithar with skin like aged ivory, an extremely long neck, eyes glowing a faint cruel red, a heavy ceremonial collar",
+ ],
+}
+SUB2 = {}   # n2 subjects, same ids as n1 (nem_<faction>_<n>), rendered into n2\
+for _fac, _L in NEM2.items():
+    for _n, _d in enumerate(_L, 1):
+        _k = 'nem_%s_%d' % (_fac, _n)
+        if _fac == 'ithar':
+            SUB2[_k] = (_fac, 'Portrait of a Nemesis, a rival enemy commander of the Ithar: %s. %s' % (_d, ITHAR) + NEM_STYLE, STYLE)
+        else:
+            SUB2[_k] = (_fac, 'A Nemesis of the %s, a rival enemy war-organism: %s. %s' % (_fac.capitalize(), _d, NOBODY if _fac == 'chorus' else
+                        'A machine with no figure, no statue, no head, no face, no body, no robot.') + NEM_STYLE, CREATURE)
 for _fac, _L in NEM.items():
     for _n, _d in enumerate(_L, 1):
         _pre = HUMAN + ' ' if _fac in ('voidsworn', 'hegemony', 'corsair') else (CH + ' ' if _fac == 'chorus' else '')
         SUBJECT['nem_%s_%d' % (_fac, _n)] = (_fac, 'Portrait of a Nemesis, a rival enemy commander of the %s: %s. %s' % (_fac.capitalize(), _d, _pre) + NEM_STYLE)
 
-def item(i, model, seeds):
-    fac, p = SUBJECT[i]
-    it = {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F[fac]), 'nosuffix': True, 'seeds': seeds}
+def item(i, model, seeds, v2=False):
+    if v2: fac, p, style = SUB2[i]
+    else: fac, p = SUBJECT[i]; style = CREATURE if i in CREATURE_IDS else STYLE
+    it = {'id': i, 'model': model, 'prompt': p + ' ' + style.format(**F[fac]), 'nosuffix': True, 'seeds': seeds}
     if model == 'qref':   # paint onto the faction's dark background plate (tools/portraits/plates.py)
         it['ref'] = 'plate_%s.png' % fac
         it['prompt'] = 'Paint a full new character portrait onto this dark background, filling the frame. ' + it['prompt']
@@ -141,7 +219,10 @@ BATCHES = {
  'n1a': [item('nem_%s_%d' % (f, n), 'zit', S4[:3]) for f in ('voidsworn', 'hegemony', 'corsair') for n in range(1, 7)],
  'n1b': [item('nem_%s_%d' % (f, n), 'zit', S4[:3]) for f in ('chorus', 'ithar', 'deathless') for n in range(1, 7)],
 }
-OUT = {'n1a': 'n1', 'n1b': 'n1'}
+BATCHES['b2'] = [item('chorus_mending_b1', 'zit', S4), item('chorus_mending_b2', 'zit', S4), item('deathless_nekhet_b', 'zit', S4),
+                  item('deathless_nekhet_b', 'qie', S4[:2]), item('ithar_aelith_b', 'qie', S4), item('ithar_aelith_b', 'qref', S4[:2])]
+BATCHES['n2'] = [item('nem_%s_%d' % (f, n), 'zit', S4[:3], v2=True) for f in ('chorus', 'deathless', 'ithar') for n in range(1, 7)]
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

@@ -23,7 +23,7 @@ def framed(im, fac, size=1024):
 def candidates(png_dir):
     out = {}
     for p in sorted(glob.glob(os.path.join(png_dir, '*.png'))):
-        m = re.match(r'(.+?)_(zit|qie)_s(\d+)_\d+_\.png$', os.path.basename(p))
+        m = re.match(r'(.+?)_(zit|qie|qref)_s(\d+)_\d+_\.png$', os.path.basename(p))
         if m: out.setdefault(m.group(1), []).append((m.group(1) + '_' + m.group(2) + '_s' + m.group(3), p))
     return out
 
@@ -64,16 +64,47 @@ def cmd_publish(png_dir, picks_path):
                                'note': e.get('note', '')}
         print('published', adm, '+', len(alts), 'alts')
     json.dump(idx, open(idx_path, 'w'), indent=1)
-    # final per-faction sheets: the pick first, then the alternates, framed as in game
-    by = {}
-    for adm, e in idx['painted'].items():
-        by.setdefault(e['faction'], []).append(('%s PICK' % adm, os.path.join(PD, e['pick'])))
-        for a in e['alts']: by[e['faction']].append((os.path.basename(a)[:-5], os.path.join(PD, a)))
+    cmd_phone_sheets(idx)
+
+def cmd_phone_sheets(idx=None):
+    """one tall WebP per faction for Ryan's phone: each painted admiral big (framed as in game) with its alternates under it,
+    then the crests of the faction's other admirals. 1080 px wide."""
+    import io, cairosvg
+    sys.path.insert(0, HERE); from crests import NAMES, ADM
+    idx = idx or json.load(open(os.path.join(PD, 'index.json')))
+    W = 1080; tf, nf, sf = font(40, True), font(30, True), font(22)
     for fac in FACORDER:
-        if fac in by:
-            print(sheet(by[fac], os.path.join(SHEETS, fac + '_portraits.webp'), '%s portraits: picks and alternates' % fac.capitalize(), cols=4))
+        painted = [(a, e) for a, e in idx['painted'].items() if e['faction'] == fac]
+        others = [a for a, (f, _) in ADM.items() if f == fac and a not in dict(painted)]
+        blocks = []                                                 # (height, draw function)
+        for adm, e in painted:
+            def draw(im, d, y, adm=adm, e=e):
+                d.text((24, y), NAMES.get(adm, adm), fill=(240, 232, 210), font=nf)
+                im.paste(Image.open(os.path.join(PD, e['pick'])).convert('RGB').resize((W - 48, W - 48), Image.LANCZOS), (24, y + 46))
+                y2 = y + 46 + W - 48 + 14; n = max(1, len(e['alts'])); cw = (W - 48 - (n - 1) * 12) // max(n, 4)
+                if e['alts']: d.text((24, y2), 'Alternates (swap by editing "pick" in godot/portraits/index.json)', fill=(170, 170, 170), font=sf)
+                for i, a in enumerate(e['alts']):
+                    im.paste(Image.open(os.path.join(PD, a)).convert('RGB').resize((cw, cw), Image.LANCZOS), (24 + i * (cw + 12), y2 + 32))
+            n = max(1, len(e['alts'])); cw = (W - 48 - (n - 1) * 12) // max(n, 4)
+            blocks.append((46 + W - 48 + 14 + (32 + cw if e['alts'] else 0) + 40, draw))
+        if others:
+            cw = (W - 48 - 3 * 12) // 4
+            def drawc(im, d, y, others=others, cw=cw):
+                d.text((24, y), 'Crests (admirals without a painting)', fill=(170, 170, 170), font=sf)
+                for i, a in enumerate(others):
+                    png = cairosvg.svg2png(url=os.path.join(PD, 'crests', a + '.svg'), output_width=cw, output_height=cw)
+                    t = Image.open(io.BytesIO(png)).convert('RGBA'); x = 24 + (i % 4) * (cw + 12); yy = y + 34 + (i // 4) * (cw + 40)
+                    im.paste(t, (x, yy), t); d.text((x, yy + cw + 4), NAMES.get(a, a), fill=(220, 220, 220), font=sf)
+            blocks.append((34 + ((len(others) + 3) // 4) * (cw + 40) + 20, drawc))
+        H = 90 + sum(h for h, _ in blocks)
+        im = Image.new('RGB', (W, H), (14, 14, 18)); d = ImageDraw.Draw(im)
+        d.rectangle([0, 0, W, 8], fill=TRIM[fac]); d.text((24, 24), fac.capitalize() + ' admirals', fill=(255, 255, 255), font=tf)
+        y = 90
+        for h, fn in blocks: fn(im, d, y); y += h
+        out = os.path.join(SHEETS, fac + '_portraits.webp'); im.save(out, 'WEBP', quality=82, method=6); print(out, im.size)
 
 if __name__ == '__main__':
     a = sys.argv[1:]
     if a[0] == 'sheets': cmd_sheets(a[1], a[2] if len(a) > 2 else 'b1')
     elif a[0] == 'publish': cmd_publish(a[1], a[2])
+    elif a[0] == 'phone': cmd_phone_sheets()

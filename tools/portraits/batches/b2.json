@@ -1,0 +1,75 @@
+{
+ "out": "b2",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "chorus_mending_b1",
+   "model": "zit",
+   "prompt": "The Living Suture-Hive, a Chorus bio-swarm organism: a sprawling asymmetric living mass grafted over a cracked dark chitin shell, like a wasp nest made of wet flesh. Clusters of translucent amber nursing sacs glow from inside it. Hundreds of curved pale bone needles grow out of the mass and pull glowing pink membrane threads across the cracks of the shell like surgical sutures; fresh pink scar tissue knits the wounds shut and new flesh regrows over old wounds. One shapeless organic lump seen from slightly below. There is no person, no head, no face, no eyes, no mouth, no arms, no legs, no skeleton and no skull anywhere in the image; it does not stand or walk. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "chorus_mending_b2",
+   "model": "zit",
+   "prompt": "The Living Suture-Hive, a Chorus bio-swarm organism: a pulsing cocoon of veined pink membrane wrapped around the broken wreck of a dark organic hull, stitched closed with long rows of curved pale bone needles and glowing pink sinew threads, like a vast surgical wound being sewn shut. Swollen amber nursing sacs hang from the cocoon like fruit, glowing from within, dripping nutrient fluid onto raw new flesh that grows over the seams. An organic shape like a tumour or a hive, never a body. There is no person, no head, no face, no eyes, no mouth, no arms, no legs, no skeleton and no skull anywhere in the image; it does not stand or walk. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "deathless_nekhet_b",
+   "model": "zit",
+   "prompt": "The Undying, a Deathless machine intelligence: a monumental broken ring of bone-white ceramic computation plates and black metal, floating in a black tomb-like vault. Inside the ring there is only a blazing sphere of cold emerald-green light and nothing else. Cracked ring segments drift apart and small attending service drones repair them with thin green beams. Rows of small green sensor lights glow along the ring. Ancient worn surfaces engraved with circuit patterns. An ominous patient presence. No figure, no statue, no head, no face, no body, no robot inside the ring. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by cold emerald-green core light, deep soft shadow on the right side, a dark painterly black tomb-like machine vault with faint green circuitry background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "deathless_nekhet_b",
+   "model": "qie",
+   "prompt": "The Undying, a Deathless machine intelligence: a monumental broken ring of bone-white ceramic computation plates and black metal, floating in a black tomb-like vault. Inside the ring there is only a blazing sphere of cold emerald-green light and nothing else. Cracked ring segments drift apart and small attending service drones repair them with thin green beams. Rows of small green sensor lights glow along the ring. Ancient worn surfaces engraved with circuit patterns. An ominous patient presence. No figure, no statue, no head, no face, no body, no robot inside the ring. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by cold emerald-green core light, deep soft shadow on the right side, a dark painterly black tomb-like machine vault with faint green circuitry background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23
+   ]
+  },
+  {
+   "id": "ithar_aelith_b",
+   "model": "qie",
+   "prompt": "Portrait of Aelith Dawnsail of the Ithar, an ancient dying elder alien race: a tall regal luminous alien noble, clearly not human and not a grey alien: an elongated crested skull and a very long slender neck, huge wide-set solid black eyes, pale translucent porcelain skin with glowing gold light channels running beneath it, wearing a high-collared flowing robe of woven pale light that covers the body to the neck, one hand raised gracefully showing seven very long slender fingers, behind her a radiant fan of near-geometric light sails like stained glass made of light, a flight of tiny glowing star-craft wheeling around her like a murmuration. Nothing aquatic: no fins, no gills, no scales. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by pale mint-green and soft gold radiance, deep soft shadow on the right side, a dark painterly deep starfield with faint aurora light background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "ithar_aelith_b",
+   "model": "qref",
+   "prompt": "Paint a full new character portrait onto this dark background, filling the frame. Portrait of Aelith Dawnsail of the Ithar, an ancient dying elder alien race: a tall regal luminous alien noble, clearly not human and not a grey alien: an elongated crested skull and a very long slender neck, huge wide-set solid black eyes, pale translucent porcelain skin with glowing gold light channels running beneath it, wearing a high-collared flowing robe of woven pale light that covers the body to the neck, one hand raised gracefully showing seven very long slender fingers, behind her a radiant fan of near-geometric light sails like stained glass made of light, a flight of tiny glowing star-craft wheeling around her like a murmuration. Nothing aquatic: no fins, no gills, no scales. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by pale mint-green and soft gold radiance, deep soft shadow on the right side, a dark painterly deep starfield with faint aurora light background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23
+   ],
+   "ref": "plate_ithar.png"
+  }
+ ]
+}

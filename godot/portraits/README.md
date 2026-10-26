@@ -11,6 +11,42 @@ R37 and R40: finish the Chorus set first, then one painted poster admiral per re
 - `sheets/*.webp`: contact sheets per faction (for Ryan's phone) and `crests_all.webp`.
 - `portraits.gd`: lookup for any screen.
 
+## Painted admirals (Oct 26 picks)
+
+Seven paintings are in: the Chorus pair plus one poster admiral per other faction. Every other admiral shows its crest. Phone sheets: `sheets/<faction>_portraits.webp` (pick, alternates, crests of the rest). Picks, alternates and the reason for each are in `index.json` and `tools/portraits/picks_b1b2.json`.
+
+| Admiral | Pick | Model | Why |
+|---|---|---|---|
+| The Matriarch | b1 `chorus_matriarch_zit_s51` | Z-Image Turbo | nine uneven throats venting spore swarms, a brood sac full of larvae: Spawning Surge at a glance |
+| The Mending Choir | b2 `chorus_mending_b2_zit_s11` | Z-Image Turbo | the Living Suture-Hive: hive flesh sewn shut with bone stitches, amber nursing sacs dripping onto new flesh |
+| Castellan Vex | b1 `voidsworn_vex_qie_s11` | Qwen-Image-Edit | oath scars, wax seals, parchment strips, broadside beams through a gothic viewport |
+| Ilsa Kassar | b1 `hegemony_kassar_qie_s23` | Qwen-Image-Edit | targeting grid on the face, rows of firing-solution displays |
+| Grax Ironjaw | b1 `corsair_grax_qref_s23` | Qwen-Image-Edit (on plate) | iron jaw, red cyber eye, axe, patchwork plates from three fleets |
+| Aelith Dawnsail | b2 `ithar_aelith_b_qie_s37` | Qwen-Image-Edit | robed rerun: crested skull, gold light channels, light sails |
+| Nekhet the Undying | b2 `deathless_nekhet_b_qie_s23` | Qwen-Image-Edit | broken ring of computation plates round a green core, repair drones, no figure |
+
+Rejected in review (kept on the PC, not in the repo): every batch 1 Mending render (human faces or a skull-headed body), every batch 1 Nekhet (a torso or a face inside the ring), batch 1 Aelith (nude torso, five fingers), Vex on Z-Image (sea-going battleships in the window), Kassar on Z-Image (gun pictograms on the screens), Matriarch s37 (grew a head), and the Voice and Razormaw alternates (shoulders, a fanged jaw). For the non-human admirals the prompts now describe an organism or a machine, never "a portrait of an admiral" (`make_batches.py`, CREATURE style): the portrait framing is what pulled the models toward a person.
+
+Style: humans, Ithar and Deathless use the Qwen renders (close bust, crisp faces); the Chorus pair use Z-Image's oil-paint look, which suits flesh and gives the Chorus its own texture. All seven share the dark faction field, the left key light in the faction glow and the same thin trim frame.
+
+### Calls handed over in R45
+
+**Mending Choir as the Living Suture-Hive: done.** Picked `painted/mending.webp` (above). Alternates: the cracked-shell hive with pink sutures (b2 variant 1, s23 and s51) and the stitched cocoon s51.
+
+**Matriarch v3 verdict: the new painting replaces v3 in the game.** v3 could not be compared directly: it is not on Ryan's PC in any folder this stream can reach (`Downloads\voidsworn_test` and `Downloads\Claude outputs` were searched; the manifest's paths are for Muse's local pack, and none of the 40 manifest images are on the PC or in the repo), and neither is the approved Voice v4. So the verdict rests on the brief and on consistency with what the game will actually show. The new `chorus_matriarch_zit_s51` matches the DeepSeek 1.3 brief point by point (nine throats of different lengths fused into one brood mass, spore swarms venting from the tips, translucent brood sacs with larvae, no face or limbs), and it is painted by the same model, template and lighting as the new Mending, so the two Chorus paintings sit together on the admiral screen; a v3 from a different image tool would not match them or the five Qwen posters. If Ryan prefers v3 when he sees both, save it as `painted/matriarch.webp` (1024 px, any square) and it is used with no code change.
+
+### Manifest reconciliation (FINDINGS D20)
+
+`contrib/muse/design/IMAGE_MANIFEST.md` is Muse's and is not edited here. These rows supersede its portrait rows for the three Chorus admirals:
+
+| Admiral | Status | File used by the game | Bytes | SHA-256 |
+|---|---|---|---:|---|
+| Voice of the Deep | v4 FINAL (Ryan, Oct 24). The manifest row (403,732 bytes, `a1bfcea0...`) is the superseded v1. v4 is `adm_voice_of_the_deep.webp`, 519,924 bytes, `6790c41e5afcbc416cb23773cf89db9c54b653dd8952932138f024b015b886b6`, in Muse's local pack only. | none yet: the crest shows until v4 is saved as `painted/voice.webp` | | |
+| The Matriarch | Manifest row (v2, 688,858 bytes, `bacfaecb...`) superseded. v3 candidate not used (verdict above). | `painted/matriarch.webp` (b1 `chorus_matriarch_zit_s51`) | 109,062 | `7c37f35f533effc87e9dd30ad08a2aad1edc96876ece2022796f19eaa73c572b` |
+| The Mending Choir | Manifest row (v2, 750,690 bytes, `3275f6bd...`) superseded by the Living Suture-Hive direction (R37, R45). | `painted/mending.webp` (b2 `chorus_mending_b2_zit_s11`) | 115,362 | `941111a8269c943aa68501a7ed7d3cd2302d2778dcc9f52dbd964ae5a45d7c59` |
+
+Razormaw stays as Muse's final in the local pack (crest in game until the file is saved as `painted/razormaw.webp`).
+
 ## For G3 and the story helper
 
 ```gdscript

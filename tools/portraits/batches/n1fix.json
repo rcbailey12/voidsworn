@@ -1,0 +1,41 @@
+{
+ "out": "nfix",
+ "budget_s": 1050,
+ "items": [
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "fix",
+   "seed": 11,
+   "prompt": "Remove the peaked officer cap from this man's head and show his bare shaved head with a row of small ritual piercings along the brow. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else.",
+   "src": "n1/nem_voidsworn_6_zit_s23_00001_.png"
+  },
+  {
+   "id": "nem_hegemony_4",
+   "kind": "fix",
+   "seed": 11,
+   "prompt": "Remove the peaked officer cap from this man's head and show short slicked-back dark hair; keep the thin glowing visor across his eyes. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else.",
+   "src": "n1/nem_hegemony_4_zit_s23_00001_.png"
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "fix",
+   "seed": 11,
+   "prompt": "Remove the peaked officer cap and show a bald head; make the chrome mask cover only the left half of the face, the right half is a pale, stern human face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else.",
+   "src": "n1/nem_hegemony_5_zit_s11_00001_.png"
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "fix",
+   "seed": 11,
+   "prompt": "Remove the peaked officer cap from this woman's head and show a shaved undercut hairstyle with the long top swept to one side. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else.",
+   "src": "n1/nem_corsair_1_zit_s23_00001_.png"
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "fix",
+   "seed": 11,
+   "prompt": "Replace the helmet with a crude faceplate welded together from mismatched rusty scrap plates with rivets and weld seams, a single round red optic on one side. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else.",
+   "src": "n1/nem_corsair_2_zit_s11_00001_.png"
+  }
+ ]
+}
