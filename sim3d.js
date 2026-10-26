@@ -3,7 +3,7 @@ const fs=require('fs');
 eval(['data.js','core.js','battle.js'].map(f=>fs.readFileSync(f,'utf8')).join('\n')+`
 function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){}
 // B-19 (Oct 26): round start waits for turn-start deaths (fire, acid, the dead star) the way the game does (ui3d.js nextRound): player ticks, then enemy ticks unless the battle ended, each awaited
-async function roundStart(){ const d1=startSideTurn('player'), d2=B.over?null:startSideTurn('enemy'); if(d1) await d1; if(d2) await d2; }
+async function roundStart(){ await roundStartBoth(); } // B3: battle.js owns the round start (ticks, then travelling torpedoes) so the sim and the game share one order
 // B3 faction identity telemetry (harness only, no rules change): per faction, how far it fights, how incoming damage splits between shields,
 // armor (and other cuts) and hull, how much hull it regrows, and how many of its ships die. fmatrix prints it as an FID line.
 var FID={}; function fidOf(f){ return FID[f]||(FID[f]={fires:0,range:0,raw:0,shield:0,hull:0,regen:0,fielded:0,died:0,battles:0,dealt:0,feed:0,charge:0,sync:0,syncShots:0,torpLaunch:0,torpHit:0,torpDodge:0,revive:0}); }
@@ -14,7 +14,7 @@ function fidInstall(){ if(global.__fidOn) return; global.__fidOn=1;
 function fidBattle(){ for(const u of B.units){ if(u.isSq||u.transport||u.reinf) continue; const F=fidOf(u.fac); F.fielded++; if(u.dead&&!u.fled) F.died++; F.dealt+=u.dealt||0; } const seen=new Set(B.units.filter(u=>!u.isSq).map(u=>u.fac)); for(const f of seen) fidOf(f).battles++;
   const fs=B.fstat||{}; for(const f in fs){ const F=fidOf(f); for(const k in fs[f]) F[k]=(F[k]||0)+fs[f][k]; } }
 function fidReport(){ const o={}; for(const [f,F] of Object.entries(FID)){ const raw=Math.max(1,F.raw); o[f]={range:+(F.range/Math.max(1,F.fires)).toFixed(2),shieldPct:Math.round(F.shield/raw*100),cutPct:Math.round(Math.max(0,raw-F.shield-F.hull)/raw*100),hullPct:Math.round(F.hull/raw*100),regenPerShip:Math.round(F.regen/Math.max(1,F.fielded)),lossPct:Math.round(F.died/Math.max(1,F.fielded)*100),dealtPerShip:Math.round(F.dealt/Math.max(1,F.fielded))};
-    for(const k of ['feed','charge','sync','syncShots','torpLaunch','torpHit','torpDodge','revive']) if(F[k]) o[f][k]=Math.round(F[k]/Math.max(1,F.battles)*10)/10; } return o; }
+    for(const k of ['feed','charge','sync','syncShots','torpLaunch','torpHit','torpDodge','torpGone','revive']) if(F[k]) o[f][k]=Math.round(F[k]/Math.max(1,F.battles)*10)/10; } return o; }
 var CLOCK={old:0,neu:0,real:0,rounds:0}, ESC=1;
 // B2 timing model 'real': the game's own presentation durations (fx3d.js animPath, wfx3d.js animWeapon, fx3d.js animExplode, ui3d.js turn waits),
 // scaled by the speed the game runs that phase at (PACE in core.js: player 1, enemy activations PACE.enemy, the enemy tail PACE.tail, wings PACE.swarm).
@@ -53,7 +53,7 @@ async function botTurn(){ await swarmPhase('player');
       else await useAbility(u); }
     const foes=alive('enemy'); if(!foes.length) break;
     const {states}=computeReach(u); let best=null,bs=-1e9;
-    const PFb=pathField(foes.filter(f=>!f.isSq)); for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const hd=Math.min(...foes.map(f=>hdist(v,f))), nd=Math.max(hd,fieldDist(PFb,v,hd)); const sc=off-th*.3-(off>0?0:nd*3)-botObj(v); if(sc>bs){bs=sc;best=s;} }
+    const PFb=pathField(foes.filter(f=>!f.isSq)); for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const hd=Math.min(...foes.map(f=>hdist(v,f))), nd=Math.max(hd,fieldDist(PFb,v,hd)); const sc=off-th*.3-(off>0?0:nd*3)-botObj(v)-torpThreat(u,v)*.9-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
     if(best&&best.path.length) await moveUnit(u,best);
     for(let i=0;i<u.weapons.length;i++){ let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt) await fireWeapon(u,i,bt); if(B.over) return; }
   }
@@ -69,7 +69,7 @@ async function sim(S,sector){
       while(!B.over&&g++<40){ const pp=alive('player').filter(x=>!x.isSq&&!x.activated), pe=alive('enemy').filter(x=>!x.isSq&&!x.activated); if(!pp.length&&!pe.length) break;
         if(pp.length){ await botUnit(pp[0]); pp[0].activated=true; } const batch=alive('player').some(x=>!x.isSq&&!x.activated)?(pe.length?[aiPickActivation(pe)]:[]):pe; for(const u of batch){ if(B.over) break; await aiUnit(u); u.activated=true; } }
       if(B.over) break; B.round++; for(const x of B.units) x.activated=false; await roundStart(); r++; } }
-  else while(!B.over && r<30){ await botTurn(); if(B.over) break; B.side='enemy'; await startSideTurn('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await startSideTurn('player'); r++; }
+  else while(!B.over && r<30){ await botTurn(); if(B.over) break; B.side='enemy'; await turnStart('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await turnStart('player'); r++; }
   if(process.env.SQDBG){ const g=global.SQD=global.SQD||{}; for(const u of B.units){ const k=u.side+':'+(u.isSq?'sq:'+u.t.sq:u.tpl); g[k]=g[k]||{dealt:0,n:0,died:0}; g[k].dealt+=u.dealt||0; g[k].n++; if(u.dead) g[k].died++; } }
   const pl=B.units.filter(u=>u.side==='player'&&!u.isSq);
   if(process.env.NANDBG){ for(const u of pl) if(!isFinite(u.hp)||!isFinite(u.maxHp)) console.log('NaN unit',u.tpl,u.name,u.hp,u.maxHp,u.captured?'captured':'',u.reinf?'reinf':''); }
@@ -101,7 +101,7 @@ async function botUnit(u){
   if(!u.isSq) await tacticRam(u); if(B.over||u.dead) return;
   const foes=alive('enemy'); if(!foes.length) return;
   const {states}=computeReach(u); let best=null,bs=-1e9;
-  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObj(v); if(sc>bs){bs=sc;best=s;} }
+  for(const s of states){ const v=stateView(u,s); const off=evalOffense(v,u.weapons.filter(weaponReady),foes); const th=evalThreat(v,foes); const nd=Math.min(...foes.map(f=>hdist(v,f))); const sc=off-th*.3-(off>0?0:nd*3)-botObj(v)-torpThreat(u,v)*.9-syncPull(u,v)*1.5; if(sc>bs){bs=sc;best=s;} }
   if(best&&best.path.length) await moveUnit(u,best);
   if(!u.isSq && await tacticBoard(u)){ u.activated=true; return; }
   for(let i=0;i<u.weapons.length;i++){ let bt=null,bv=0; for(const t of alive('enemy')){ if(canFire(u,u.weapons[i],t)){ const e=expectedVs(u,u.weapons[i],t); const v=e.hull+e.shield*.3+(e.hull>=t.hp?20:0); if(v>bv){bv=v;bt=t;} } } if(bt) await fireWeapon(u,i,bt); if(B.over) return; }
@@ -113,7 +113,7 @@ async function match(pf,ef,mode,alt){
   for(const t of genFleet(pf,mode)) RUN.fleet.push(newShip(t,true));
   startBattle({kind:mode==='fl'?'boss':'battle',fac:ef,col:3,enemies:genFleet(ef,mode).map(tpl=>({tpl})),dep:pick(['line','flank','ambush'])});
   STATS.rounds+=0; let r=0;
-  if(!alt){ while(!B.over&&r<30){ await botTurn(); if(B.over) break; B.side='enemy'; await startSideTurn('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await startSideTurn('player'); r++; } }
+  if(!alt){ while(!B.over&&r<30){ await botTurn(); if(B.over) break; B.side='enemy'; await turnStart('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await turnStart('player'); r++; } }
   else { B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');
     while(!B.over&&r<30){
       await swarmPhase('player'); await swarmPhase('enemy');
@@ -259,7 +259,7 @@ async function ruleCheck(){ const out=[]; const ok=(n,c,note)=>out.push((c?'PASS
   // seed replay: the same seed and the same scripted moves give the same opening rounds (and a different seed does not)
   { const fp=async seed=>{ RUN={fac:'voidsworn',admiral:'vex',fleet:[],relics:[],inventory:[],sector:2,cpCap:60,credits:0,stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],patrons:Object.keys(PATRONS).slice(0,4),boons:[],aspect:null}; rndSeed(99);
       for(const t of ['penitent','harrow','warden']) RUN.fleet.push(newShip(t,false)); RUN.flagUid=RUN.fleet[0].uid;
-      startBattle({kind:'battle',fac:'hegemony',col:3,obj:'rout',seed}); const s0=B.seed; for(let r=0;r<3&&!B.over;r++){ await botTurn(); if(B.over) break; B.side='enemy'; await startSideTurn('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await startSideTurn('player'); }
+      startBattle({kind:'battle',fac:'hegemony',col:3,obj:'rout',seed}); const s0=B.seed; for(let r=0;r<3&&!B.over;r++){ await botTurn(); if(B.over) break; B.side='enemy'; await turnStart('enemy'); await aiTurn(); if(B.over) break; B.round++; B.side='player'; await turnStart('player'); }
       return JSON.stringify([s0,B.shape,Object.keys(B.terrain).sort().join(';'),B.units.map(u=>[u.tpl,u.q,u.r,u.facing,Math.round(u.hp*10),u.dead?1:0,u.weapons.map(w=>w.fired?1:0).join('')]),B.log.map(x=>x.m)]); };
     const a=await fp(12345), b=await fp(12345), c=await fp(54321); ok('seed replay: same seed and moves give the same opening rounds',a===b&&a!==c,'fingerprint '+a.length+' chars'+(a===b?'':' (replay diverged)')+(a===c?' (different seed matched too)':'')); }
   // animPath is presentation only: moves, turns and rams commit their own position after the live check
