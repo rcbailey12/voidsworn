@@ -8,6 +8,8 @@ extends SceneTree
 # (S3TC/RGTC) so the GPU reads them as they are.
 
 const HT := preload("res://render/hull_table.gd")
+# bump when the generated files change shape; tools/pc/play_godot.bat rebuilds when gen\v<N>.txt is missing
+const GEN_VERSION := 2
 
 var repo := ""
 var hi_dir := ""
@@ -44,6 +46,18 @@ func _init() -> void:
 			_build_hi(code)
 	_build_rocks()
 	_build_sky()
+	# the A3 asteroid field placements (seed 7), used as backdrop dressing round the board (render/backdrop.gd)
+	for p in [env_dir.path_join("asteroids.json"), repo.path_join("contrib/opus/enginetest/assets/env/asteroids.json")]:
+		if p != "" and FileAccess.file_exists(p):
+			var af := FileAccess.open("res://gen/asteroids.json", FileAccess.WRITE)
+			af.store_string(FileAccess.get_file_as_string(p))
+			af.close()
+			manifest["field"] = "res://gen/asteroids.json"
+			break
+	manifest["version"] = GEN_VERSION
+	var vf := FileAccess.open("res://gen/v%d.txt" % GEN_VERSION, FileAccess.WRITE)
+	vf.store_string("built")
+	vf.close()
 	var f := FileAccess.open("res://gen/manifest.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(manifest, "  "))
 	f.close()

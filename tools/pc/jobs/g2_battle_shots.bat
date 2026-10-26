@@ -9,7 +9,7 @@ if exist "%CD%\godot\project.godot" set "ROOT=%CD%\"
 set /p G=<"%ROOT%..\godot_path.txt"
 set "OUT=%ROOT%..\shots\g2"
 if not exist "%OUT%" mkdir "%OUT%"
-if not exist "%ROOT%godot\gen\manifest.json" (
+if not exist "%ROOT%godot\gen\v2.txt" (
   echo Building the Godot assets first...
   "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" > "%OUT%\build_assets_log.txt" 2>&1
 )

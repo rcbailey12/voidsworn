@@ -264,9 +264,10 @@ func set_top(round_n: int, turn: String, objective: String, end_text: String, en
 # ---------------------------------------------------------------- roster (your fleet)
 
 func _build_roster() -> void:
-	roster = _panel(12, 76, -1, -1, 236, 10)
+	roster = _panel(12, 76, -1, -1, 250, 10)
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.custom_minimum_size.x = s(226)
 	roster_sc = sc
 	roster.add_child(sc)
 	roster_box = VBoxContainer.new()
@@ -318,7 +319,8 @@ func set_roster(rows: Array) -> void:
 		var row := HBoxContainer.new()
 		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var nm := _label(("★ " if r["flag"] else "") + str(r["name"]), 15, BONE, font_semi)
-		nm.clip_text = true
+		nm.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		nm.custom_minimum_size.x = s(130)
 		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(nm)
 		row.add_child(_label(str(r["status"]), 13, GILT if r["status"] == "Active" else BONE2))
@@ -367,6 +369,7 @@ func _build_panel() -> void:
 	panel = _panel(-1, 76, 12, -1, 340, 10)
 	var sc := ScrollContainer.new()
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.custom_minimum_size.x = s(316)
 	panel_sc = sc
 	panel.add_child(sc)
 	panel_box = VBoxContainer.new()
@@ -709,7 +712,7 @@ func hide_tipcard() -> void:
 		tipcard = null
 
 
-func show_end(title: String, body: String, win: bool) -> void:
+func show_end(title: String, body: String, win: bool, external := false) -> void:
 	endcard = PanelContainer.new()
 	var g := _glass(8)
 	g.content_margin_left = s(36)
@@ -735,8 +738,11 @@ func show_end(title: String, body: String, win: bool) -> void:
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", s(10))
-	row.add_child(_button("Fight again", "restart", null, true))
-	row.add_child(_button("Quit", "quit"))
+	if external:
+		row.add_child(_button("Continue", "continue", null, true))
+	else:
+		row.add_child(_button("Fight again", "restart", null, true))
+		row.add_child(_button("Quit", "quit"))
 	v.add_child(row)
 
 

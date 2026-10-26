@@ -33,7 +33,7 @@ if exist "%ROOT%contrib\opus\enginetest\assets\hi" set "HI=%ROOT%contrib\opus\en
 if exist "%ROOT%..\enginetest\assets\hi" set "HI=%ROOT%..\enginetest\assets\hi"
 set "ENV="
 if exist "%ROOT%..\enginetest\assets\env" set "ENV=%ROOT%..\enginetest\assets\env"
-if not exist "%ROOT%godot\gen\manifest.json" (
+if not exist "%ROOT%godot\gen\v2.txt" (
   echo Preparing ships, rocks and sky for Godot. This happens once and takes about a minute...
   "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%HI%" --env "%ENV%" > "%ROOT%godot\build_assets_log.txt" 2>&1
 )

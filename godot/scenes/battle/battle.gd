@@ -23,6 +23,7 @@ const HT := preload("res://render/hull_table.gd")
 const HUD := preload("res://ui/battle/hud.gd")
 const Fx := preload("res://scenes/battle/fx_stub.gd")
 const Sfx := preload("res://audio/sfx.gd")
+const Backdrop := preload("res://render/backdrop.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
@@ -91,17 +92,22 @@ var bot_moved := {}
 var shots_dir := ""
 var t_start := 0.0
 var marker_root: Node3D
+var backdrop: Node3D
 var arrow: MeshInstance3D
 var path_dots: MultiMeshInstance3D
 var errors: Array = []
 var result := {}
 var battle_cfg := {}
+var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
+var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
+var last_progress := 0.0   # real time of the last event batch (softlock watchdog for bot runs)
+var softlock_s := 60.0
 
 
 func _ready() -> void:
 	_args()
 	t_start = Time.get_ticks_msec() / 1000.0
-	bot = args.has("bot")
+	bot = bot or args.has("bot")
 	shots_dir = str(args.get("shots", ""))
 	_load_opts()
 	_build_world()
@@ -112,7 +118,7 @@ func _ready() -> void:
 	hud = HUD.new()
 	add_child(hud)
 	hud.action.connect(_on_action)
-	if not bool(args.has("battle_external")):
+	if not external:
 		start_default()
 	if shots_dir != "":
 		_shots()
@@ -141,7 +147,8 @@ func _build_world() -> void:
 	var sky_res := str(man.get("sky", ""))
 	if sky_res != "" and ResourceLoader.exists(sky_res):
 		var sh := Shader.new()
-		sh.code = "shader_type sky;\nuniform sampler2D pano : source_color, filter_linear, repeat_enable;\nvoid sky() {\n\tCOLOR = min(texture(pano, SKY_COORDS).rgb, vec3(0.78));\n}\n"
+		# the dead-star sky (A3), mipmapped so the 8K star field does not alias into speckle, and kept dim and subtle
+		sh.code = "shader_type sky;\nuniform sampler2D pano : source_color, filter_linear_mipmap_anisotropic, repeat_enable;\nvoid sky() {\n\tvec3 c = texture(pano, SKY_COORDS).rgb;\n\tCOLOR = min(c * 0.8, vec3(0.6));\n}\n"
 		var pano := ShaderMaterial.new()
 		pano.shader = sh
 		pano.set_shader_parameter("pano", load(sky_res))
@@ -184,6 +191,9 @@ func _build_world() -> void:
 	board = Board.new()
 	board.name = "Board"
 	add_child(board)
+	backdrop = Backdrop.new()
+	backdrop.name = "Backdrop"
+	add_child(backdrop)
 	marker_root = Node3D.new()
 	marker_root.name = "Markers"
 	add_child(marker_root)
@@ -249,7 +259,7 @@ func start_default() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
 	var fac := str(args.get("fac", ["hegemony", "corsair"][rng.randi() % 2]))
-	var groups := {"hegemony": [["h_interdictor", "h_picket", "h_picket"], ["h_vanguard", "h_picket", "h_picket"], ["h_interdictor", "h_interdictor", "h_picket"]],
+	var groups := {"hegemony": [["h_interdictor", "h_picket", "h_picket"], ["h_interdictor", "h_picket", "h_picket", "h_picket"], ["h_interdictor", "h_interdictor", "h_picket"]],
 		"corsair": [["c_marauder", "c_raider", "c_raider"], ["c_reaver", "c_reaver", "c_raider"], ["c_reaver", "c_raider", "c_raider", "c_raider"]]}
 	var maps := ["open", "belt", "station", "planet", "storm", "graveyard"]
 	var g: Array = groups.get(fac, groups["hegemony"])[rng.randi() % 3]
@@ -281,9 +291,14 @@ func start_battle(run: Dictionary, cfg: Dictionary) -> void:
 func _begin(a) -> void:
 	api = a
 	R = a.R
+	if ai_level != "":
+		R.AI_LEVEL = ai_level
 	PACE = R.PACE
 	ended = false
 	result = {}
+	errors.clear()
+	t_start = Time.get_ticks_msec() / 1000.0
+	last_progress = t_start
 	for id in views:
 		(views[id] as Node).queue_free()
 	views.clear()
@@ -297,20 +312,31 @@ func _begin(a) -> void:
 	armed = -1
 	board.build(R)
 	cam.bounds = board.bounds()
+	backdrop.build(cam.bounds, env)
 	V = api.view()
 	_index_view()
 	for u in V["units"]:
 		_make_view(u)
 	_sync(V)
-	# open on the two fleets (the game's camera: ArcRotate alpha -pi/2, beta 0.86, radius 215)
-	var mid := Vector3.ZERO
-	var n := 0
+	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
+	var pc := Vector3.ZERO
+	var ec := Vector3.ZERO
+	var np := 0
+	var ne2 := 0
 	for u in V["units"]:
-		mid += board.hex_world(u["q"], u["r"])
-		n += 1
-	cam.home = mid / maxf(1.0, n)
+		if u["side"] == "player":
+			pc += board.hex_world(u["q"], u["r"])
+			np += 1
+		else:
+			ec += board.hex_world(u["q"], u["r"])
+			ne2 += 1
+	pc /= maxf(1.0, np)
+	ec = ec / maxf(1.0, ne2) if ne2 > 0 else pc
+	cam.home = pc.lerp(ec, 0.3)
 	cam.home.y = 0.0
 	cam.reset_view()
+	cam.home_r = clampf(pc.distance_to(ec) * 0.75, 130.0, 210.0)
+	cam.r = cam.home_r
 	cam.snap()
 	hud.log_text.clear()
 	var F = R.FACTIONS.get(_enemy_fac(), {})
@@ -393,6 +419,7 @@ func _runner() -> void:
 			_refresh_ui()
 			return
 		var bt: Dictionary = batches.pop_front()
+		last_progress = Time.get_ticks_msec() / 1000.0
 		await _play_batch(bt)
 		_sync(bt["view"])
 		_refresh_ui()
@@ -891,9 +918,10 @@ func _end_flow() -> void:
 				killed += 1
 	result = {"result": "win" if win else "loss", "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
 	var body := "%d enemy ship%s destroyed, %d of yours lost, in %d round%s." % [killed, "" if killed == 1 else "s", lost, int(V["round"]), "" if int(V["round"]) == 1 else "s"]
-	if not args.has("battle_external"):
-		hud.show_end("Victory" if win else "Defeat", body, win)
-	finished.emit(result)
+	if bot or args.has("bot-runs"):
+		finished.emit(result)
+		return
+	hud.show_end("Victory" if win else "Defeat", body, win, external)
 
 
 # ---------------------------------------------------------------- selection, overlays, tips
@@ -1524,6 +1552,9 @@ func _on_action(name: String, arg) -> void:
 			tips_off = true
 			hud.hide_tipcard()
 			_save_opts()
+		"continue":
+			hud.hide_end()
+			finished.emit(result)
 		"restart":
 			hud.hide_end()
 			args.erase("seed")
@@ -1674,13 +1705,19 @@ func _process(dt: float) -> void:
 		if f.t > 1.6:
 			lbl.queue_free()
 			floats.remove_at(i)
-	if bot and not busy and not ended and api.phase == "player":
+	if bot and not busy and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
 		bot_t += dt
 		if bot_t > 0.05:
 			bot_t = 0.0
 			_bot_step()
 	if args.has("quit-after") and Time.get_ticks_msec() / 1000.0 - t_start > float(args["quit-after"]):
 		_quit_report()
+	# softlock watchdog (bot runs): nothing happened for softlock_s seconds of real time while the battle is not over
+	if bot and not ended and last_progress > 0.0 and Time.get_ticks_msec() / 1000.0 - last_progress > softlock_s:
+		_error("softlock: no progress for %d s (phase %s, busy %s, round %s)" % [int(softlock_s), str(api.phase), str(busy), str(V.get("round"))])
+		ended = true
+		result = {"result": "softlock", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start}
+		finished.emit(result)
 
 
 func _float(id, text: String, col: Color, dy := 0.0) -> void:
@@ -1783,20 +1820,32 @@ func _bot_step() -> void:
 			return any)
 		return
 	if float(ru["mp"]) > 0 and bot_moved.get(u_id, -1) != int(V["round"]):
+		# the move that deals the most expected damage from where it ends, minus what the enemy can send back there;
+		# with nothing in reach, close on the nearest enemy
 		var states: Array = api.reach(u_id)
 		var best = null
 		var bs := -1e9
 		var foes: Array = R.alive("enemy")
 		for st in states:
 			var v = R.stateView(ru, st)
-			var sc := 0.0
+			var out := 0.0
+			for w in ru["weapons"]:
+				if w["k"] == "flak" or not R.weaponReady(w):
+					continue
+				var bw := 0.0
+				for t in foes:
+					if R.inReach(v, w, t):
+						var ev = R.expectedVs(v, w, t)
+						bw = maxf(bw, float(ev.hull) + float(ev.shield) * 0.4)
+				out += bw
+			var threat := 0.0
 			var near := 1e9
 			for t in foes:
 				near = minf(near, float(R.hdist(v, t)))
-				for w in ru["weapons"]:
-					if w["k"] != "flak" and R.weaponReady(w) and R.inReach(v, w, t):
-						sc += 100.0 + float(w["dmg"]) * float(w["shots"]) * (1.0 - float(t["hp"]) / maxf(1.0, float(t["maxHp"])) * 0.5)
-			sc -= near * 2.0 + float(st.cost) * 0.5
+				for w in t["weapons"]:
+					if w["k"] != "flak" and R.inReach(t, w, v):
+						threat += float(w["dmg"]) * float(w["shots"]) * 0.5
+			var sc := out * 3.0 - threat * 0.6 - (near * 4.0 if out <= 0.0 else 0.0) - float(st.cost) * 0.2
 			if sc > bs:
 				bs = sc
 				best = st
@@ -1894,6 +1943,9 @@ func _shots() -> void:
 	threat_on = false
 	cam.toggle_top()
 	cam.reset_view()
+	if args.has("quick"):
+		_quit_report()
+		return
 	hud.show_tip("", Vector2.ZERO)
 	_refresh_ui()
 	await get_tree().create_timer(1.0).timeout

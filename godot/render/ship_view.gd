@@ -42,8 +42,11 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	if not HT.FAC3D.has(fac):
 		fac = "hegemony"
 	var cls := str(u.get("cls", "Frigate")) if u.get("cls") != null else "Frigate"
-	L = HT.CLS_LEN.get(cls, 10.0)
+	L = HT.CLS_LEN.get(cls, 10.0) * HT.SHIP_K
 	code = HT.code_for(fac, cls)
+	if u.has("code"):
+		code = str(u["code"])
+		L = float(u.get("L", L))
 	bob_seed = randf() * 10.0
 	hull = Node3D.new()
 	hull.name = "hull"
@@ -153,8 +156,9 @@ static func _glow_tex() -> Texture2D:
 func _ring() -> void:
 	ring = MeshInstance3D.new()
 	var tm := TorusMesh.new()
-	tm.inner_radius = 8.6
-	tm.outer_radius = 9.2
+	var rr := maxf(8.6, L * 0.56)
+	tm.inner_radius = rr
+	tm.outer_radius = rr + 0.6
 	tm.rings = 64
 	tm.ring_segments = 6
 	ring.mesh = tm
@@ -183,7 +187,7 @@ func set_marker(friend: bool) -> void:
 	marker = MeshInstance3D.new()
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var r0 := 7.4
+	var r0 := maxf(7.4, L * 0.5)
 	var w := 0.5
 	if friend:
 		for i in 48:

@@ -160,7 +160,7 @@ func _hex_mesh(rad: float, ring: bool) -> ArrayMesh:
 
 const ZONE_TINT := {"neb": Color(0.69, 0.49, 1.0, 0.16), "debris": Color(0.83, 0.75, 0.53, 0.12), "storm": Color(1.0, 0.91, 0.4, 0.13)}
 const BASE_FILL := Color(0.04, 0.06, 0.09, 0.18)
-const BASE_RING := Color(0.45, 0.65, 1.0, 0.16)
+const BASE_RING := Color(0.45, 0.65, 1.0, 0.07)
 
 
 func refresh() -> void:
@@ -232,8 +232,31 @@ func _terrain() -> void:
 			"debris":
 				_rocks(c, rng, 5, 0.5, 1.4)
 			"station":
-				_station(c, rng)
+				pass
 	_planet()
+	# one station structure per cluster of station hexes (the game builds one across the cluster)
+	var seen := {}
+	for k in T:
+		if T[k] != "station" or seen.has(k):
+			continue
+		var stack := [k]
+		var cl: Array = []
+		seen[k] = true
+		while not stack.is_empty():
+			var cur: String = stack.pop_back()
+			cl.append(cur)
+			var qr: PackedStringArray = cur.split(",")
+			for d in [[1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, -1]]:
+				var nk := key(int(qr[0]) + d[0], int(qr[1]) + d[1])
+				if T.get(nk, "") == "station" and not seen.has(nk):
+					seen[nk] = true
+					stack.append(nk)
+		var cen := Vector3.ZERO
+		for ck in cl:
+			var qr2: PackedStringArray = ck.split(",")
+			cen += hex_world(int(qr2[0]), int(qr2[1]))
+		cen /= float(cl.size())
+		_station(cen, rng, 46.0 if cl.size() >= 5 else 22.0 + 4.0 * cl.size())
 
 
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:
@@ -265,13 +288,26 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	props.add_child(mi)
 
 
-func _station(c: Vector3, rng: RandomNumberGenerator) -> void:
+func _station(c: Vector3, rng: RandomNumberGenerator, size := 46.0) -> void:
 	var p := "res://gen/hulls/O1_37.res"
 	if not ResourceLoader.exists(p):
 		return
+	# the game's station (ships3d.js buildMeshStation): one structure across the station hexes, 46 long, lifted 3
 	var mi := MeshInstance3D.new()
 	mi.mesh = load(p)
-	mi.transform = Transform3D(Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(14, 14, -14)), c)
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(0.36, 0.38, 0.42)
+	m.metallic = 0.55
+	m.roughness = 0.5
+	var src = (mi.mesh as Mesh).surface_get_material(0)
+	if src is StandardMaterial3D:
+		m.normal_enabled = (src as StandardMaterial3D).normal_enabled
+		m.normal_texture = (src as StandardMaterial3D).normal_texture
+		m.ao_enabled = (src as StandardMaterial3D).ao_enabled
+		m.ao_texture = (src as StandardMaterial3D).ao_texture
+		m.ao_texture_channel = (src as StandardMaterial3D).ao_texture_channel
+	mi.material_override = m
+	mi.transform = Transform3D(Basis.from_euler(Vector3(0.06, rng.randf() * 6.0, 0.04)).scaled(Vector3(size, size, -size)), c + Vector3(0, 3, 0))
 	props.add_child(mi)
 
 

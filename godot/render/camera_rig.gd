@@ -5,8 +5,10 @@ extends Camera3D
 # (Godot is right-handed, the game's Babylon scene left-handed), so the board looks the same way round.
 
 var a := -PI / 2.0
-var b := 0.86
-var r := 215.0
+var b := 0.98
+var r := 170.0
+var home_r := 170.0
+var home_b := 0.98
 var t := Vector3.ZERO
 var home := Vector3.ZERO
 var bounds := Vector2(300, 220)
@@ -34,8 +36,8 @@ func _ready() -> void:
 
 func reset_view() -> void:
 	a = -PI / 2.0
-	b = 0.86
-	r = 215.0
+	b = home_b
+	r = home_r
 	t = home
 	topdown = false
 
