@@ -5,6 +5,7 @@ REM Queue: drop any NAME.bat into queue\ ; jobs run one at a time, oldest first,
 REM output goes to queue\logs\NAME.log, and the job file moves to queue\done\ when finished.
 cd /d "%~dp0"
 title VS job queue
+if exist watcher_b.bat start "" /min "%~dp0watcher_b.bat"
 if not exist queue mkdir queue
 if not exist queue\done mkdir queue\done
 if not exist queue\logs mkdir queue\logs
