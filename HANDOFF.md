@@ -1,4 +1,4 @@
-# Voidsworn: handoff (Oct 25, 2026, night)
+# Voidsworn: handoff (Oct 26, 2026, morning)
 
 ## 1. What and where
 
@@ -34,10 +34,11 @@
 - **B2:** built and PC-checked (contrib/opus/compute/b2/pc_checks_2026-10-25.txt): one PACE table, faster enemy turns, Enter or Space to hurry, the size ramp (about 9 / 13 / 18 ships by sector), capture on one batched prize screen (R23), admiral fixes in data.js (sector 1 boss spread 57 to 89%, inside the 50 to 90 band, S6 FIXED; 96 runs per admiral for admiral calls, S10). Ryan's first short playtest (2 encounters, in Edge): turns a bit quicker, bigger enemies fine, occasional hitches (B-17; `hitchprobe.py` is ready for a PC run, lower priority now that the game may move to Godot).
 - **Slow-play fix:** Ryan's Chrome had fallen back to software rendering. play.bat now opens Edge, and the game shows a red banner when the browser is not using the graphics card (scene3d.js, 6dd31d4).
 - **A2 engine test DONE:** `contrib/opus/enginetest/RESULTS.md` (numbers, blind reads, port cost). Blind page: https://claude.ai/artifact/LtFoz3Fyatn2bVGLSL9FjE (A = Babylon, B = Godot). Godot won lighting, detail and asteroids; Babylon won effects clearly; Godot's shield is not visible; Chorus and Deathless too dark in Godot; Ithar broken in both (asset).
-- **A3 engine call (R28): Godot, after a short proof.** Two helpers are on it:
-  - effects parity: the Godot builder (agent ad36c07a1a9f9cf41) rebuilds Babylon's breach, venting and smoke, explosions, trails, shield ripple and board laser in `contrib/opus/enginetest/godot/`, plus the dark-hull fix; then Opus runs the shots on the PC and shows Ryan side by side;
-  - rules parity: the B2 helper (agent a373165be9bedd0f7) ports one seeded battle to GDScript in `contrib/opus/enginetest/godot_rules/` with an exact PRNG port and a per-turn state hash against the Node sim; `tools/pc/parity.bat` prints PASS or FAIL.
-  - Both pass: the game moves to Godot (port plan: contrib/muse/reviews/engine_port_plan_synthesis.md; the Node sim stays the golden oracle; voidsworn-3d.html stays the fallback during the port). Either struggles: Babylon 9.30 stays.
+- **A3 DONE: the game moves to Godot 4.7 (R32).** Proof passed: rules parity at every activation in 5 battles on the PC plus 60 seeds (R29); enemy think worst 0.33 s in 10-a-side fights (R30); Babylon's effects ported into Godot, frame times about even with Babylon (R31). Open side-by-side page: https://claude.ai/artifact/Vum3uvpPPKPTkGRTVjSZyB. Ryan: "Godot seems way better. It's very noticeable now." Effects still need a big pass (G4).
+- **The move (R33, plan section 4 "G"):** first playable = one full battle; today's browser version frozen (fixes only); effects pass after a battle plays; done = Godot does everything today's does. Phases G1 to G5. Running now:
+  - G1 battle rules complete: agent a373165be9bedd0f7, moving the rules port to `godot/rules/` with `godot/rules/API.md` first, then the rest of battle.js, each feature behind a golden scenario in `tools/pc/parity.bat`;
+  - G2 first playable battle: agent ad36c07a1a9f9cf41, in `godot/` (scenes, render, ui, audio), against the API; Ryan runs it from `tools/pc/play_godot.bat`.
+- **Muse audit of the proof:** DeepSeek leg filed and applied (RESULTS.md corrections; the 8K rerun JSONs are now in the repo; board sheets at 8K both sides). Qwen leg and the Muse synthesis not filed yet.
 - **Outside models:** Muse runs DeepSeek and Qwen from briefs in `contrib/opus/briefs/`. Done: engine choice and B2 syntheses (picked up, X13), Muse's audit of Opus (accepted, X15). Also done: `muse_2026-10-25b_while_opus_paused.md` (A5 effects sheets, B3 admiral levers, port plan, FINDINGS follow-up pass; registry edits applied).
 - **Project skills** now exist in `.claude/skills/` (ship-kit, screenshot-verdict, playtest-and-balance). Use them.
 
@@ -76,9 +77,9 @@ None blocking. He weighs in next at:
 
 ## 5. Next tasks
 
-1. **A3 proof:** when each helper reports, run its job on the PC (fresh staging folder; verify job.bat; separate run.request; restart watcher.bat by computer control if needed). Build A/B sheets of the effects (reuse `contrib/opus/enginetest/blind/blind.py`; labels can be open now), run `parity.bat`, record the result in FINDINGS and the plan, then give Ryan the switch call.
-2. **If Godot:** turn the port plan into plan phases (A4 then builds in Godot); K1 still comes before A4. **If Babylon:** move the game to 9.30 (X16) and fold the effects lessons into A5.
-3. **Later:** B-17 hitch probe (only if Babylon stays), B3 notes (Hegemony boss 54%, Deathless 96%, Chorus 59% in the subset), fix the Ithar source mesh, A5 using Muse's effects sheets.
+1. **G1 and G2:** run each helper's milestone on the PC when it reports (fresh staging folder, verify job.bat, separate run.request; `parity.bat` must print PASS). Show Ryan G2 screenshots, then his first Godot battle is the G2 exit.
+2. **Muse:** fold in the Qwen leg and the synthesis of `contrib/opus/briefs/muse_2026-10-25c_engine_proof_audit.md` when filed.
+3. **Later:** G3 (whole run), G4 (effects pass, Ryan expects big gains), G5 (switch over, Windows build), then Steam (check X18, the GodotSteam licence). K1 before A4. B3 balance lands in data.js and flows to Godot. Fix the Ithar source mesh.
 
 ## 6. Gotchas
 
@@ -140,5 +141,5 @@ None blocking. He weighs in next at:
 
 Starter line:
 ```
-Read HANDOFF.md, then contrib/opus/go-forward-plan.md and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). You own the approved plan. The engine call is Godot after a short proof (R28): collect the effects-parity and rules-parity helper results, run both on Ryan's PC, show him side-by-side effects sheets and the parity PASS or FAIL, then plan the port or stay on Babylon 9.30.
+Read HANDOFF.md, then contrib/opus/go-forward-plan.md (section 4 "G. The move to Godot") and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). Voidsworn is moving to Godot (R32, R33). Keep G1 (rules, parity.bat PASS) and G2 (first playable battle) moving, run their milestones on Ryan's PC, and get Ryan's first Godot battle.
 ```
