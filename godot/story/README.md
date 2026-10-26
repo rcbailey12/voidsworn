@@ -14,11 +14,17 @@ Owner: the story and career stream (travel sprint, R37). Folders: `godot/story/`
 | `story.gd` | The layer itself (a Node). Watches the campaign, records battles and runs, gives lines for text boxes, renames the flagship, opens the screens. |
 | `career.gd` | The career profile: records per admiral, totals, medals, titles, run history. Pure logic, no nodes. |
 | `battle_voice.gd` | Admiral, enemy flagship and Nemesis lines in battle, driven by the rules' event stream. |
-| `data/voices.json` | Every line: 24 admirals x 11 moments, enemy flagship lines per faction, Nemesis lines per faction. |
+| `rival.gd` | The Nemesis's voice (R42): picks his lines by faction, personality, scars and how you beat him; his beat 1 calling card; his beat 3 hail by the run's lean. |
+| `tokens.gd` | Story tokens (`{rival}`, `{he}` `{him}` `{his}`, `{rival_deed}`, `{first_lost}` ...) with plain fallbacks. |
+| `arc.gd` | The arc engine: beat data, variant pick, conditional lines, event-shaped cards, endings. Arc files come after approval. |
+| `data/voices.json` | 24 admirals x 11 moments, and enemy sector flagship lines per faction. |
+| `data/rival_lines.json` | The Nemesis's pools per faction: hail, rematch, final, beaten, death, gloat, kill, signature, scars, memory (7 ways you beat him), 6 personalities, calling cards, beat 3 hails. |
 | `data/titles.json` | 12 titles earned from how you fight, plus a fallback, each worded per faction, with the rules in plain words. |
 | `data/medals.json` | 12 medals. |
-| `outlines.md` | The six faction story outlines, waiting for Ryan's approval. |
-| `test/story_test.gd` | Headless checks (below). `test/check_outlines.py` checks outline word counts and dashes. |
+| `data/arcs.json` | What finishing each arc pays: medal, arc title, flagship paint, and the hull unlock id. |
+| `outlines.md`, `outlines_variants.md` | The six faction story outlines (REVISED after two reviews) and their B versions, skims and rival incidents; waiting for Ryan's approval. |
+| `unlocks.md` | Draft hull unlock per faction, for stream B (rules and balance). |
+| `test/story_test.gd` | Headless checks (below). `test/check_outlines.py` checks outline word counts, pronoun tokens and dashes. `test/fixture_arc.json` is test data for `arc.gd`. |
 | `../ui/career/career_screen.gd` | The Career screen: Records, Medals, Titles, History, Chronicle tabs. |
 | `../ui/career/rename_dialog.gd` | "Name your flagship". |
 | `../ui/career/crest.gd` | Faction crests and medals drawn as vector strokes (crests instead of portraits). Usable anywhere. |
@@ -109,10 +115,13 @@ Per run, at the end screen: the title earned, the run's line in the history, the
 
 ## Story arcs (step 3, after Ryan approves `outlines.md`)
 
-Planned delivery, using only machinery that exists or that stream B is adding:
-- Each beat is an event-shaped object (`{id, t, b, o:[{k, l, s, need?, r, fl?}]}`), the same shape as `EVENTS` in data.js, so the existing event screen draws it and the existing `applyOutcome` and `eventFlags` apply it. Outcome keys used: `cred`, `cost`, `relic`, `xp`, `healAll`, `shipRaw`, `nemIntel`, `nemClock`, `ambush`, `dmgAll`; blue options use `need:{flag:...}` with the `fl` counter flags written by beat 1.
-- Beat 1 shows after the sector I intro, beat 2 and beat 3 when a new sector starts. That needs one campaign hook: "show arc beat N for this faction now" (G3 and stream B, to be agreed). Text placeholders `{rival}` come from `RUN.nem`.
-- The Chronicle tab already reads `career.P.chronicle` (`{fac, arc, rival, choices, won, t}` rows).
+The plumbing is built and tested (`arc.gd`, `tokens.gd`, `rival.gd`); the arc files (`data/arcs/<faction>.json`) are written once Ryan approves the text.
+
+- `story.arc_beat(n)` returns the card for beat 1, 2 or 3 of the run's faction as an event-shaped dictionary, `{id, t, b, o:[{k, l, s, r, fl, need?}], outs, skim, skim_first, charge, variant, arc: true}`: the same shape as `EVENTS` in data.js, so the existing event screen can draw it and the existing `applyOutcome` and `eventFlags` apply it (each option's story flag rides in `fl`, so `RUN.flags` remembers it). `outs[k]` is the one-sentence result to show after the click. `skim_first` says to open on the short card.
+- After the campaign applies the choice: `story.arc_chose(card, key)` (marks the variant seen, keeps the choice for the Chronicle). After beat 3's fight: `story.arc_end(won)` (Chronicle, medal, title, paint, unlock id).
+- Outcome keys used by the outlines: `cred`, `cost`, `relic`, `payRelic`, `xp`, `healAll`, `dmgAll`, `dmgOne`, `dmgBig`, `shipRaw` (+`vet`), `mod`, `payMod`, `payXp`, `nemIntel`, `nemClock`, `ambush`. Counters written for the rival's memory: `mercy`, `greed`, `loud`.
+- **Hook wanted (G3 with stream B):** show `story.arc_beat(1)` after the sector I intro, and `arc_beat(2)` and `arc_beat(3)` when sectors II and III begin, through the event screen. Until then the arcs do not appear.
+- **Asked of stream B (R42):** a gender field on `RUN.nem` (`g`: `m`, `f` or `n`; until then `tokens.gd` guesses from the captain name pools, and a Chorus rival is `it`); personality ids `proud`, `cruel`, `cunning`, `zealous`, `cold`, `mocking` (any other id falls back to the faction pools); optional `last_beat` (how you beat him: `lance`, `torp`, `sq`, `ram`, `board`, `battery`, `evasive`); `beaten` and `scars` carried into the battle's `B.nem`; and an event `{t: "nem_signature"}` when his faction behaviour fires, so the battle voice can speak it.
 
 ## Checks
 

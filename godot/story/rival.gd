@@ -11,6 +11,8 @@ extends RefCounted
 #   last_beat                        (R42, stream B, optional: how you beat him last time, one of lance, torp, sq, ram,
 #                                     board, battery, evasive; when missing it is read from adapt and seen)
 
+const Tokens := preload("res://story/tokens.gd")
+
 var D: Dictionary = {}
 
 const ADAPT_TO_MEMORY := {"shields": "lance", "pd": "torp", "armor": "ram", "evasion": "battery", "aim": "evasive"}
@@ -73,8 +75,52 @@ static func memory_key(nem) -> String:
 
 
 func fill(t: String, nem, ctx: Dictionary = {}) -> String:
-	var sc := int(nem.get("scars", 0)) if nem is Dictionary else 0
-	return t.replace("{rival}", full_name(nem)).replace("{scars}", TIMES[clampi(sc, 0, TIMES.size() - 1)]).replace("{you}", str(ctx.get("you", "admiral"))).replace("{flagship}", str(ctx.get("flagship", "your flagship")))
+	var c := ctx.duplicate()
+	c["nem"] = nem
+	return Tokens.fill(t, c)
+
+
+# His beat 1 calling card ({rival_deed}): by his faction and personality; without a personality, one picked by his name.
+func deed(nem, seed := 0) -> String:
+	var F := _fac(nem)
+	var D2: Dictionary = F.get("deed", {})
+	if D2.is_empty():
+		return ""
+	var pers := str(nem.get("personality", "")) if nem is Dictionary else ""
+	if not D2.has(pers):
+		var ks: Array = D2.keys()
+		ks.sort()
+		pers = ks[_h(str(nem.get("name", "")) + "|deed|" + str(seed)) % ks.size()]
+	return str(D2[pers])
+
+
+# Which way the run's choices leaned, from the shared event counters (RUN.flags mercy, greed, loud): "mercy",
+# "ruthless" or "" (even, or no choices yet).
+static func lean(flags) -> String:
+	if not (flags is Dictionary):
+		return ""
+	var m := float(flags.get("mercy", 0))
+	var r := float(flags.get("greed", 0)) + float(flags.get("loud", 0))
+	if m > r:
+		return "mercy"
+	if r > m:
+		return "ruthless"
+	return ""
+
+
+# His beat 3 hail (outlines.md Table B): remembers (you beat him before, or he carries scars), then the run's lean
+# (mercy or ruthless), else what the Hollow Sun means to him.
+func final_hail(nem, flags = {}, seed := 0, ctx: Dictionary = {}) -> String:
+	var F := _fac(nem)
+	var fb: Dictionary = F.get("final_by", {})
+	if fb.is_empty():
+		return line("final", nem, seed, ctx)
+	var k := "sun"
+	if nem is Dictionary and (int(nem.get("beaten", 0)) > 0 or int(nem.get("scars", 0)) > 0):
+		k = "remembers"
+	elif lean(flags) != "":
+		k = lean(flags)
+	return fill(str(fb.get(k, fb.get("sun", ""))), nem, ctx)
 
 
 # One line for a moment: beaten, death, gloat, kill, signature (and hail, again, final, scar).

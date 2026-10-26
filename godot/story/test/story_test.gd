@@ -36,6 +36,7 @@ func _initialize() -> void:
 	t_career()
 	t_voice()
 	t_campaign(runs)
+	t_arc()
 	await t_ui()
 	print("story_test: %s (%d failed)" % ["PASS" if fails == 0 else "FAIL", fails])
 	quit(0 if fails == 0 else 1)
@@ -306,6 +307,48 @@ func t_voice() -> void:
 	var close: String = rv.closing(win)
 	print("      s1: %d events, %d voice lines, result %s: %s" % [n_ev, got.size(), str(api.view().get("over")), str(got.map(func(l): return l["moment"]))])
 	ok(api.phase == "over" and got.size() >= 1 and close != "", "voice: a real battle plays through with admiral lines (%d)" % got.size())
+
+
+# ---------------------------------------------------------------- 7. arc plumbing (tokens, conditions, variants)
+
+func t_arc() -> void:
+	var T = load("res://story/tokens.gd")
+	var she := {"name": "Petra Lindqvist", "title": "Rear admiral", "fac": "hegemony", "personality": "mocking", "scars": 2}
+	var it := {"name": "Hollow Song", "title": "Matriarch", "fac": "chorus"}
+	var he := {"name": "Grim Rattigan", "title": "Warlord", "fac": "corsair", "g": "m"}
+	ok(T.fill("{He} lost {his} fleet; {he} blames {him}self. Scarred {scars}.", {"nem": she}) == "She lost her fleet; she blames herself. Scarred twice.", "tokens: she/her from the name pool")
+	ok(T.fill("{He} ate {his} fill.", {"nem": it}) == "It ate its fill.", "tokens: a Chorus rival is it")
+	ok(T.fill("{rival} meets {best_captain} near {first_lost}.", {"nem": he}) == "Warlord Grim Rattigan meets your senior captain near a ship of the line.", "tokens: missing run facts fall back to plain words")
+	var a = load("res://story/arc.gd").new()
+	ok(a.load_arc("voidsworn", "res://story/test/fixture_arc.json"), "arc: fixture loads")
+	var ctx := {"nem": she, "flags": {}, "seed": 3, "seen": {"arc_voidsworn_1B": 1}, "first_lost": "", "arcs_finished": 0}
+	var b1: Dictionary = a.render(1, ctx)
+	ok(str(b1["b"]).contains("Rear admiral Petra Lindqvist did this. She left a bill, itemised, with a late fee.") and str(b1["b"]).contains("herself"), "arc: beat 1 fills the deed by faction and personality, with pronouns")
+	ok(b1["o"][0]["fl"].get("fx_keep") == 1 and b1["o"][1]["fl"].get("greed") == 1 and b1["o"][1]["fl"].get("fx_sell") == 1, "arc: an option's story flag rides in fl (the event system stores it)")
+	var seen := {"arc_voidsworn_1A": 2, "arc_voidsworn_1B": 0}
+	ctx["seen"] = seen
+	ok(str(a.render(1, ctx)["variant"]) == "B", "arc: the less-seen version is picked")
+	ctx["prior_loss"] = true
+	ok(str(a.render(1, ctx)["b"]).contains("PRIOR-LOSS"), "arc: prior-loss line on beat 1")
+	ctx["flags"] = {"fx_keep": 1}
+	ctx["first_lost"] = "Oathkeeper"
+	var b2: Dictionary = a.render(2, ctx)
+	var txt := str(b2["b"])
+	ok(txt.contains("KEEP-LINE") and txt.contains("LOST-LINE Oathkeeper") and not txt.contains("SELL-LINE") and not txt.contains("THIRD-COND"), "arc: conditional lines, at most two per card: %s" % txt)
+	ok(txt.contains("Rear admiral Petra Lindqvist: \""), "arc: beat 2 carries his line")
+	var ks: Array = b2["o"].map(func(o): return o["k"])
+	ok(ks == ["x", "blue"] and b2["o"][1].has("need"), "arc: hidden option stays hidden, blue keeps its need %s" % str(ks))
+	ctx["flags"] = {"fx_sell": 1, "greed": 2}
+	ks = a.render(2, ctx)["o"].map(func(o): return o["k"])
+	ok(ks.has("hidden"), "arc: an option shows when its condition holds")
+	ctx["nem"] = {"name": "Petra Lindqvist", "title": "Rear admiral", "fac": "hegemony"}
+	var b3: Dictionary = a.render(3, ctx)
+	ok(str(b3["b"]).contains("You left people behind for a bonus"), "arc: beat 3 hail follows the run's lean (ruthless)")
+	ctx["nem"] = {"name": "Grim Rattigan", "title": "Warlord", "fac": "corsair", "beaten": 1}
+	ok(str(a.render(3, ctx)["b"]).contains("I had the dents framed"), "arc: beat 3 hail when he remembers you")
+	ok(a.ending(true, ctx) == "WIN. WIN-SELL" and a.ending(false, {"flags": {"fx_keep": 1}}) == "LOSS. LOSS-KEEP", "arc: endings follow the choices")
+	ctx["arcs_finished"] = 2
+	ok(bool(a.render(1, ctx)["skim_first"]), "arc: skim card first after two finished arcs")
 
 
 # ---------------------------------------------------------------- 6. screens build (headless: layout only)

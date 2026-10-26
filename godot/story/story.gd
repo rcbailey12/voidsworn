@@ -226,6 +226,64 @@ func arc_unlocks() -> Array:
 	return career.arc_unlocks()
 
 
+# ---------------------------------------------------------------- arc beats (plumbing; arc files arrive after approval)
+
+const ArcScript := preload("res://story/arc.gd")
+
+
+# Everything a card's tokens and conditions read, from the campaign run and the career profile.
+func arc_context(run = null) -> Dictionary:
+	if run == null and C != null:
+		run = C.RUN
+	if not (run is Dictionary):
+		return {}
+	var fac := str(run.get("fac", ""))
+	var L: Dictionary = career.P.get("live", {}) if str(career.P.get("live", {}).get("key", "")) == career.run_key(run) else {}
+	var best := ""
+	var bx := -1.0
+	for s in run.get("fleet", []):
+		if s is Dictionary and s.get("cap") is Dictionary and float(s["cap"].get("xp", 0)) > bx:
+			bx = float(s["cap"].get("xp", 0))
+			best = str(s["cap"].get("name", ""))
+	var first_lost := str(L.get("first_lost", ""))
+	if first_lost == "" and run.get("fallen") is Array and run["fallen"].size() > 0:
+		first_lost = str(run["fallen"][0].get("ship", ""))
+	var fallen := ""
+	if C != null and C.META is Dictionary and C.META.get("fallen") is Array:
+		var cur: Array = run.get("fallen", []) if run.get("fallen") is Array else []
+		for i in range(C.META["fallen"].size() - 1, -1, -1):
+			var f = C.META["fallen"][i]
+			if f is Dictionary and str(f.get("fac", "")) == fac and not cur.has(f):
+				fallen = str(f.get("name", ""))
+				break
+	var last: Dictionary = career.last_run_of(fac)
+	return {"nem": run.get("nem"), "flags": run.get("flags", {}) if run.get("flags") is Dictionary else {}, "seed": int(float(run.get("t0", 0))) % 100000,
+		"first_lost": first_lost, "best_captain": best, "fallen_name": fallen, "flagship": Career.flagship_name(run), "you": admiral_name(str(run.get("admiral", ""))),
+		"prior_flagship": str(last.get("flagship", "")) if not bool(last.get("victory", true)) else "",
+		"prior_loss": not last.is_empty() and not bool(last.get("victory", false)), "prior_win": bool(last.get("victory", false)),
+		"seen": career.P.get("arc_seen", {}), "arcs_finished": career.arcs_finished(fac)}
+
+
+# The arc card for a beat (1, 2 or 3) of the current run's faction, as an event-shaped dictionary, or {} when that
+# faction's arc file does not exist yet.
+func arc_beat(beat_no: int) -> Dictionary:
+	if C == null or not (C.RUN is Dictionary):
+		return {}
+	var a = ArcScript.new()
+	if not a.load_arc(str(C.RUN.get("fac", ""))):
+		return {}
+	return a.render(beat_no, arc_context())
+
+
+# Record a choice on an arc card (after the campaign applied its outcome): the variant counts as seen and the choice
+# is kept for the Chronicle.
+func arc_chose(ev: Dictionary, key: String) -> void:
+	if C == null or not (C.RUN is Dictionary) or not bool(ev.get("arc", false)):
+		return
+	var id := str(ev.get("id", ""))
+	career.note_arc_choice(C.RUN, id, int(id.substr(id.length() - 2, 1)) if id.length() >= 2 else 0, key)
+
+
 # Called when a faction arc's beat 3 is decided (step 3 wiring). Emits medal_earned for the arc medal.
 func arc_end(won: bool, choices: Dictionary = {}) -> Dictionary:
 	if C == null or not (C.RUN is Dictionary):
@@ -233,6 +291,8 @@ func arc_end(won: bool, choices: Dictionary = {}) -> Dictionary:
 	var run: Dictionary = C.RUN
 	var nem = run.get("nem")
 	var rival := ("%s %s" % [str(nem.get("title", "")), str(nem.get("name", ""))]).strip_edges() if nem is Dictionary else ""
+	if choices.is_empty() and str(career.P.get("live", {}).get("key", "")) == career.run_key(run):
+		choices = career.P["live"].get("arc_choices", {}).duplicate()
 	var row: Dictionary = career.record_arc_end(str(run.get("fac", "")), str(run.get("admiral", "")), rival, choices, won)
 	for id in career.take_new_medals():
 		medal_earned.emit(id, medal_name(id))

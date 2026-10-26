@@ -110,6 +110,31 @@ func arc_title(fac: String) -> String:
 	return str(P["arc_rewards"].get(fac, {}).get("title", ""))
 
 
+# A beat card was shown (variants prefer the version seen less) and a choice made (kept for the Chronicle).
+func note_arc_choice(run: Dictionary, beat_id: String, beat_no: int, key: String) -> void:
+	if not P.has("arc_seen"):
+		P["arc_seen"] = {}
+	P["arc_seen"][beat_id] = int(P["arc_seen"].get(beat_id, 0)) + 1
+	var L := _live(run)
+	if not L.has("arc_choices"):
+		L["arc_choices"] = {}
+	L["arc_choices"][str(beat_no)] = key
+	save_profile()
+
+
+# How many times an arc of this faction has been played to its end (won or lost).
+func arcs_finished(fac: String) -> int:
+	return P["chronicle"].filter(func(e): return e is Dictionary and str(e.get("fac", "")) == fac).size()
+
+
+# The last finished run with this faction: {} or its history row.
+func last_run_of(fac: String) -> Dictionary:
+	for i in range(P["history"].size() - 1, -1, -1):
+		if str(P["history"][i].get("fac", "")) == fac:
+			return P["history"][i]
+	return {}
+
+
 # ---------------------------------------------------------------- load and save
 
 func load_profile() -> void:
@@ -224,6 +249,8 @@ func record_battle(run: Dictionary, B: Dictionary, result: String) -> Dictionary
 		if str(u.get("side", "")) == "player":
 			if dead and not _t(u.get("captured")):
 				lost += 1
+				if str(L.get("first_lost", "")) == "" and str(u.get("name", "")) != "":
+					L["first_lost"] = str(u["name"])
 			elif not dead and not _t(u.get("fled")) and not _t(u.get("captured")):
 				alive += 1
 		elif dead:
