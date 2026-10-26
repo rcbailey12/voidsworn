@@ -68,6 +68,10 @@
 - the 1.32 GB figure is retired;
 - no triangle caps.
 
+## Ryan traveling (Oct 26 to about Oct 30)
+
+Ryan is away from his PC for about 4 days and works from his phone at the usual pace; he won't play builds. His PC stays on with watcher.bat running; `voidsworn_test\autostart_on.bat` (tools/pc/) restarts the watcher at login. Send screenshots to his phone; playtests and visual sign-offs wait for his return. G3 (campaign) may start once G1's API is stable (Ryan, Oct 26).
+
 ## 4. Open questions for Ryan
 
 None blocking. He weighs in next at:
