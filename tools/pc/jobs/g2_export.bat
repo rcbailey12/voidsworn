@@ -24,6 +24,8 @@ if not exist "%ROOT%export" mkdir "%ROOT%export"
 echo exporting >> "%LOG%"
 call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --export-release "Windows Desktop" "%ROOT%export\Voidsworn.exe" >> "%LOG%" 2>&1
 if exist "%ROOT%export\Voidsworn.exe" (echo OK: %ROOT%export\Voidsworn.exe >> "%LOG%") else (echo FAIL: no exe >> "%LOG%")
+rem what is in the package: no test folders, the real campaign UI, fx, story and music player
+call "%TMO%" 300 "%ROOT%export\Voidsworn.console.exe" --headless -- --check-export >> "%LOG%" 2>&1
 rem a quick headless smoke of the exported build: 2 bot battles
 call "%TMO%" 900 "%ROOT%export\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%ROOT%..\shots\g2_export_smoke.json" >> "%LOG%" 2>&1
 exit /b 0

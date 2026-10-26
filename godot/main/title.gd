@@ -6,6 +6,7 @@ const HUD := preload("res://ui/battle/hud.gd")
 var main: Node
 var k := 1.0
 var root: Control
+var menu: VBoxContainer
 var font: FontFile
 var font_semi: FontFile
 var font_goth: FontFile
@@ -67,7 +68,7 @@ func _ready() -> void:
 	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sub.custom_minimum_size = Vector2(s(620), 0)
 	v.add_child(sub)
-	var menu := VBoxContainer.new()
+	menu = VBoxContainer.new()
 	menu.add_theme_constant_override("separation", s(8))
 	menu.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	menu.custom_minimum_size = Vector2(s(300), 0)
@@ -85,6 +86,7 @@ func _ready() -> void:
 	menu.add_child(_button("Quick battle", func() -> void: main.quick_battle()))
 	menu.add_child(_button("Settings", func() -> void: _settings()))
 	menu.add_child(_button("Quit", func() -> void: main.quit_clean()))
+	(menu.get_child(0) as Control).grab_focus.call_deferred()  # arrow keys, Enter and a controller work from the start
 	toast_lbl = _label("", 17, HUD.EMBER, font_semi)
 	toast_lbl.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -109,7 +111,7 @@ func _label(t: String, size: int, col: Color, f: Font) -> Label:
 func _button(t: String, cb: Callable, primary := false) -> Button:
 	var b := Button.new()
 	b.text = t
-	b.focus_mode = Control.FOCUS_NONE
+	b.focus_mode = Control.FOCUS_ALL  # keyboard and controller reach every title and settings button (WCAG 2.1.1)
 	b.add_theme_font_override("font", font_semi if primary else font)
 	b.add_theme_font_size_override("font_size", s(19))
 	var sb := StyleBoxFlat.new()
@@ -125,7 +127,13 @@ func _button(t: String, cb: Callable, primary := false) -> Button:
 	b.add_theme_stylebox_override("normal", sb)
 	b.add_theme_stylebox_override("hover", sh)
 	b.add_theme_stylebox_override("pressed", sh)
-	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	var sf := StyleBoxFlat.new()  # a visible focus ring (WCAG 2.4.7)
+	sf.draw_center = false
+	sf.border_color = HUD.BONE
+	sf.set_border_width_all(maxi(2, s(2)))
+	sf.set_corner_radius_all(s(4))
+	sf.expand_margin_left = 3; sf.expand_margin_right = 3; sf.expand_margin_top = 3; sf.expand_margin_bottom = 3
+	b.add_theme_stylebox_override("focus", sf)
 	var fc := Color("#1c1405") if primary else HUD.BONE
 	b.add_theme_color_override("font_color", fc)
 	b.add_theme_color_override("font_hover_color", fc)
@@ -188,8 +196,19 @@ func _settings() -> void:
 	row.add_child(_button("Done", func() -> void:
 		main.save_settings()
 		settings_panel.queue_free()
-		settings_panel = null, true))
+		settings_panel = null
+		_focus_first(menu), true))
 	v.add_child(row)
+	_focus_first(settings_panel)
+
+
+func _focus_first(n: Node) -> void:
+	if n == null:
+		return
+	for b in n.find_children("*", "Button", true, false):
+		if (b as Button).visible and not (b as Button).disabled:
+			(b as Button).grab_focus.call_deferred()
+			return
 
 
 func _row(t: String) -> HBoxContainer:
@@ -246,7 +265,7 @@ func _slider(t: String, key: String, lo: float, hi: float) -> Control:
 	sl.value = float(main.settings[key])
 	sl.custom_minimum_size = Vector2(s(200), s(24))
 	sl.value_changed.connect(func(x: float) -> void:
-		main.settings[key] = x)
-	sl.drag_ended.connect(func(_c: bool) -> void: main.save_settings())
+		main.settings[key] = x
+		main.save_settings())  # saved on every change, so arrow keys and a controller save too
 	r.add_child(sl)
 	return r

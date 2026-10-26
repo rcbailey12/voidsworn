@@ -467,7 +467,7 @@ func set_panel(info: Dictionary) -> void:
 
 
 func keys_text() -> String:
-	return "[font_size=%d][color=#7d7768]Click a gold hex to move, an enemy to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick a weapon, [b]B[/b] brace, [b]Tab[/b] next ship, [b]Enter[/b] end activation, [b]Esc[/b] cancel. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]F[/b] focus, [b]Home[/b] reset view.[/color][/font_size]" % s(12)
+	return "[font_size=%d][color=#b3aa95]Click a gold hex to move, an enemy to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick a weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]Tab[/b] next ship, [b]Enter[/b] end activation, [b]Space[/b] hurry the enemy, [b]Esc[/b] cancel. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Home[/b] reset view.[/color][/font_size]" % s(12)
 
 
 func _sect(t: String) -> Control:
@@ -539,7 +539,7 @@ func _build_log() -> void:
 	log_panel.add_child(log_text)
 
 
-const LOG_COL := {"p": "#5fb3a6", "e": "#e27f74", "s": "#d0a64b", "x": "#7d7768", "ember": "#f0b35a"}
+const LOG_COL := {"p": "#5fb3a6", "e": "#e27f74", "s": "#d0a64b", "x": "#b3aa95", "ember": "#f0b35a"}
 
 
 func add_log(m: String, c: String) -> void:

@@ -2,7 +2,7 @@
 
 Status words: **done** (works in Godot), **partial** (works, with a gap named), **missing**, and the owner when another stream builds it (G1 rules, G3 campaign, G4 look, A4 ships). Updated by G2 with each commit that changes a row.
 
-Last update: Oct 26 2026 (dd58851), G2.
+Last update: Oct 26 2026 evening, G2.
 
 ## The program
 
@@ -10,9 +10,9 @@ Last update: Oct 26 2026 (dd58851), G2.
 |---|---|
 | One program: title, campaign, battles, back to title (godot/main) | done |
 | Title screen: Continue run, New run, Progression, How to play, wording as the browser | done (title.gd); Quick battle and Settings added |
-| Settings: sound on or off, volume, speed, enemy AI (Veteran or Standard), reduce flashing, screen shake, follow enemy activations, battle tips, full screen, graphics quality | done (saved to user://settings.json; the in-battle menu changes them too). Graphics quality is stored but does nothing yet |
+| Settings: sound on or off, volume, speed, enemy AI (Veteran or Standard), reduce flashing, screen shake, follow enemy activations, battle tips, full screen, graphics quality | done (saved to user://settings.json, written whole then renamed; the in-battle menu changes them too). Graphics sets MSAA, shadows, SSAO, SSIL and haze. Keyboard and controller reach every title and settings button, with a visible focus ring |
 | Saves: run and profile | done in G3 rules (user://voidsworn_campaign.json with a backup) |
-| Windows build (.exe) | done on the PC (build\export\Voidsworn.exe); smoke test of the exe pending |
+| Windows build (.exe) | done on the PC (the preset writes ../export from build\godot, so build\export\Voidsworn.exe); test folders kept out of the package; `--check-export` on the exe checks that; exe smoke test pending |
 | Double-click start for Ryan | done: tools/pc/play_godot.bat (runs the exported .exe when present) |
 | Headless full runs with both sides on AI (errors, softlocks, time) | done: --bot-runs N (the game's own AI on your side; the smart policy shops like a player); errors counted with a Logger; a log line per battle; --run-timeout hang guard. PC: 8-run batches in lane B |
 | Report a problem (browser: copy report) | done: in-battle menu, copies the battle facts, errors and log |
@@ -73,8 +73,9 @@ Last update: Oct 26 2026 (dd58851), G2.
 | Move, then fire (stream B) | done: movement left shown after firing |
 | Deathless rising wrecks | done |
 | Mid-battle events (reinforcements, warnings) | done: the rules log them; reinforcements appear with the next view |
-| Cut-ins (cinematic camera), follow activations toggle, concept-art hulls toggle, temporal AA toggle | missing |
-| Legend and command strip help | missing |
+| Cut-ins (cinematic camera), follow activations toggle | done (Key moments, Every attack or Off; follow in settings and the battle menu) |
+| Concept-art hulls toggle, temporal AA toggle | missing |
+| Legend and command strip help | partial: the controls line under the ship panel lists every key (readable colour now); no legend panel yet |
 | Ship sheet (full stats) | partial: the side panel |
 
 ## Battle effects and look (G4)
@@ -93,5 +94,5 @@ Last update: Oct 26 2026 (dd58851), G2.
 | The game's cue table, recorded clips and synth cues (rendered offline from sfx.js) | done |
 | Buses, compressor and limiter, reverb send, voice caps, round robin, pitch jitter, salvo thinning | done |
 | Ambient bed | partial: recorded room tone only (the browser adds a synth bed) |
-| Music (title, map per sector, battle by factions with intensity, stings) | done (the music helper's player; Music on/off and volume in settings) |
+| Music (title, map per sector, battle by factions with intensity, stings) | partial: the player is wired (Music on/off and volume in settings), but the music content (music.json, the tracks, CREDITS.md) has not landed, so the game is silent there |
 | Engine cues on moves | done |

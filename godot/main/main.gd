@@ -93,13 +93,38 @@ func _ready() -> void:
 		get_tree().create_timer(lim, true, false, true).timeout.connect(func() -> void:
 			print("[main] quit-after %d s reached, quitting" % int(lim))
 			quit_clean(3))
-	if bot_mode:
+	if args.has("check-export"):
+		_check_export.call_deferred()
+	elif bot_mode:
 		_bot_runs.call_deferred()
 	elif args.has("battle") or args.has("scenario") or args.has("shots") or args.has("bot") or args.has("seed"):
 		# straight into a battle (test jobs, screenshot jobs): the battle reads the same arguments
 		quick_battle()
 	else:
 		show_title()
+
+
+# --check-export (run on the exported build): no test trees in the package, and the real parts of the game are in it
+# (not the fallbacks). Prints [export-check] OK or FAIL with the reasons; exit code 0 or 1.
+func _check_export() -> void:
+	var bad: Array = []
+	for d in ["res://rules/test", "res://campaign/test", "res://fx/test", "res://music/test", "res://story/test", "res://portraits/test", "res://audio/build"]:
+		if DirAccess.dir_exists_absolute(d):
+			bad.append("test folder shipped: " + d)
+	for f in ["res://campaign/campaign.gd", "res://ui/campaign/campaign_ui.gd", "res://fx/fx.gd", "res://world/world.gd", "res://story/story.gd",
+			"res://music/music_player.gd", "res://rules/battle_api.gd", "res://scenes/battle/battle.tscn"]:
+		if not ResourceLoader.exists(f):
+			bad.append("missing: " + f)
+	for f in ["res://rules/data/tables.json"]:
+		if not FileAccess.file_exists(f):
+			bad.append("missing: " + f)
+	if not DirAccess.dir_exists_absolute("res://gen"):
+		bad.append("missing: res://gen (the built assets)")
+	if not FileAccess.file_exists("res://music/music.json"):
+		bad.append("note: no music content yet (res://music/music.json)")
+	var fails := bad.filter(func(x): return not str(x).begins_with("note:"))
+	print("[export-check] %s %s" % ["OK" if fails.is_empty() else "FAIL", JSON.stringify(bad)])
+	quit_clean(0 if fails.is_empty() else 1)
 
 
 func _args() -> void:
@@ -128,9 +153,13 @@ func _load_settings() -> void:
 
 
 func save_settings() -> void:
-	var f := FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
+	# written whole to a temp file, then renamed over the old one, so a crash mid-write never leaves half a file
+	var tmp := SETTINGS_PATH + ".tmp"
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
 	if f != null:
 		f.store_string(JSON.stringify(settings, "  "))
+		f.close()
+		DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), ProjectSettings.globalize_path(SETTINGS_PATH))
 	_apply_settings()
 
 
