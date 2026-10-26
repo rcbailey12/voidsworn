@@ -70,3 +70,5 @@ if %FAILS%==0 ( echo PASS: the Godot port matches the game's rules exactly. & ec
 echo.
 if /i not "%~1"=="nopause" pause
 endlocal
+rem ===================== G3 campaign parity (appended by the G3 helper; everything is in parity_campaign.bat) =====================
+call "%~dp0parity_campaign.bat" %1
