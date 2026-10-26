@@ -14,7 +14,7 @@ function fidInstall(){ if(global.__fidOn) return; global.__fidOn=1;
 function fidBattle(){ for(const u of B.units){ if(u.isSq||u.transport||u.reinf) continue; const F=fidOf(u.fac); F.fielded++; if(u.dead&&!u.fled) F.died++; F.dealt+=u.dealt||0; } const seen=new Set(B.units.filter(u=>!u.isSq).map(u=>u.fac)); for(const f of seen) fidOf(f).battles++;
   const fs=B.fstat||{}; for(const f in fs){ const F=fidOf(f); for(const k in fs[f]) F[k]=(F[k]||0)+fs[f][k]; } }
 function fidReport(){ const o={}; for(const [f,F] of Object.entries(FID)){ const raw=Math.max(1,F.raw); o[f]={range:+(F.range/Math.max(1,F.fires)).toFixed(2),shieldPct:Math.round(F.shield/raw*100),cutPct:Math.round(Math.max(0,raw-F.shield-F.hull)/raw*100),hullPct:Math.round(F.hull/raw*100),regenPerShip:Math.round(F.regen/Math.max(1,F.fielded)),lossPct:Math.round(F.died/Math.max(1,F.fielded)*100),dealtPerShip:Math.round(F.dealt/Math.max(1,F.fielded))};
-    for(const k of ['feed','charge','sync','syncShots','torpLaunch','torpHit','torpDodge','torpGone','revive']) if(F[k]) o[f][k]=Math.round(F[k]/Math.max(1,F.battles)*10)/10; } return o; }
+    for(const k of ['shots','syncShots','braces','feed','charge','fade','torpLaunch','torpHit','torpDodge','torpGone','revive']) if(F[k]) o[f][k]=Math.round(F[k]/Math.max(1,F.battles)*10)/10; } return o; }
 var CLOCK={old:0,neu:0,real:0,rounds:0}, ESC=1;
 // B2 timing model 'real': the game's own presentation durations (fx3d.js animPath, wfx3d.js animWeapon, fx3d.js animExplode, ui3d.js turn waits),
 // scaled by the speed the game runs that phase at (PACE in core.js: player 1, enemy activations PACE.enemy, the enemy tail PACE.tail, wings PACE.swarm).

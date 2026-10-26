@@ -124,7 +124,7 @@ function fleetPower(){ if(typeof RUN==='undefined'||!RUN||!RUN.fleet) return 99;
   const boons=(RUN.boons||[]).reduce((a,b)=>a+((RARITY[b.r||0]||RARITY[0]).m),0); return p*(1+.035*boons+.025*((RUN.relics||[]).length)); }
 function playerStrength(){ return fleetPower(); }
 // sector flagship hull/shield scale and damage, by sector (sims can override with BOSS_SCALE / BOSS_DMG)
-const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.95,chorus:1.10,deathless:1,ithar:.80}; // per-flagship tuning from the boss matrix (v40, retuned v45 at n=12)
+const BOSS_FAC={corsair:1.45,voidsworn:1.40,hegemony:.85,chorus:1.10,deathless:1,ithar:.80}; // per-flagship tuning from the boss matrix (v40, retuned v45 at n=12)
 let BOSS_SCALE=[0,.5,.55,.7], BOSS_DMG=[0,.85,.88,.95];
 try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE')); if(process_env('BOSS_DMG')) BOSS_DMG=JSON.parse(process_env('BOSS_DMG')); }catch(e){}
 // B2 battle-size ramp (R1): enemy fleets grow by sector toward about 10, 14 and 20 ships on board with a small elite player fleet (4 to 7, wings
@@ -470,11 +470,11 @@ async function rotateUnit(u,dir){ if(!canRotate(u)||!inThisBattle(u)) return; co
 // ---------- B3 faction identity (Oct 26; numbers are Claude's calls, vetoable) ----------
 // One rule per faction on top of the drives (MOVE_RULES) and gates (FAC_GATES in data.js). Every rule keys off the hull's own faction (u.fac).
 const SYNC_R=3, SYNC_DMG=.15, SYNC_AIM=8; // Hegemony: radius around the anchor, bonus on a target a synced ally already fired at this round
-const FEED_KILL=.15, FEED_NEAR=.08, FEED_R=2, FEED_CAP=.25; // Chorus: hull share regrown by the killer, by others within FEED_R of the kill, cap per ship per round
+const FEED_KILL=.12, FEED_NEAR=.06, FEED_R=2, FEED_CAP=.2; // tuned Oct 26 after the first PC pass (enemy Chorus rose from 41 to 51 enemy-side wins in fmatrix) // Chorus: hull share regrown by the killer, by others within FEED_R of the kill, cap per ship per round
 const LEGION_HP=.35; // Deathless: hull a reassembled ship comes back with
 const FAC_RULES={
   hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their flagship fire as one: a target another synced ship already fired on this round is ${SYNC_AIM} easier to hit and takes +${Math.round(SYNC_DMG*100)}% damage. Lose the flagship and sync is gone for the rest of the battle. Does not stack with Anchored Volley.`},
-  ithar:{n:'Prism charge',d:'A shield facing that was not hit since this ship’s last turn recharges to full at the start of its turn. Ithar hulls cannot Brace.'},
+  ithar:{n:'Prism charge',d:'At the start of its turn, a shield facing that was not hit since its last turn recharges to full, and a facing that was hit recharges twice. Ithar hulls cannot Brace.'},
   chorus:{n:'Feed',d:`When an enemy ship dies, the Chorus ship that killed it regrows ${Math.round(FEED_KILL*100)}% of its hull and every other Chorus ship within ${FEED_R} hexes regrows ${Math.round(FEED_NEAR*100)}%, up to ${Math.round(FEED_CAP*100)}% per ship each round.`},
   deathless:{n:'Endless legion',d:`The first Deathless ship to fall each battle (never the flagship) reassembles at the start of the next round with ${Math.round(LEGION_HP*100)}% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it.`},
   corsair:{n:'Close in',d:'Corsairs field no lance weapons, and their rocket pods fire salvos that point defense can thin.'},
@@ -497,7 +497,7 @@ function syncLose(t){ if(!B||!t||!t.anchor||!B.syncLost||B.syncLost[t.side]) ret
 function syncPull(u,v){ if(!u||u.isSq||u.fac!=='hegemony'||u.anchor) return 0; const a=syncAnchor(u.side); if(!a) return 0; return Math.max(0,hdist(v,a)-syncR(u.side)); }
 // Ithar prism charge: facings hit since the ship's last turn (applyHit marks them); unmarked facings refill at turn start
 function ithChargeTurn(u){ if(u.fac!=='ithar'||!(u.shMax>0)||u.isSq) return; const hit=u.shHit||[0,0,0,0];
-  if(!(u.st.shieldOff>0)){ let g=0; for(let i=0;i<4;i++) if(!hit[i]&&u.sh[i]<u.shMax){ g+=u.shMax-u.sh[i]; u.sh[i]=u.shMax; } if(g>0) fstat('ithar','charge',g); } u.shHit=[0,0,0,0]; }
+  if(!(u.st.shieldOff>0)){ let g=0; const rg=Math.round(u.regen*((B&&B.condRegen)||1)); for(let i=0;i<4;i++){ if(u.regenLock&&u.regenLock[i]) continue; const add=!hit[i]?u.shMax-u.sh[i]:Math.min(rg,u.shMax-u.sh[i]); if(add>0){ g+=add; u.sh[i]+=add; } } if(g>0) fstat('ithar','charge',g); } u.shHit=[0,0,0,0]; } // tuned Oct 26: struck facings also regenerate a second time (Ithar fell to 50 in fmatrix)
 // Chorus feed: an enemy capital ship dies; the killing side's Chorus ships nearby regrow hull, capped per round
 function chorusFeed(t,by){ if(!B||!t||t.isSq) return; const side=by?by.side:(t.side==='player'?'enemy':'player'); if(side===t.side) return; const killer=by?(by.isSq?B.units.find(x=>x.id===by.parent):by):null;
   for(const u of B.units){ if(u.dead||u.side!==side||u.isSq||u.fac!=='chorus'||u.pyre||u.hp>=u.maxHp) continue; const share=u===killer?FEED_KILL:hdist(u,t)<=FEED_R?FEED_NEAR:0; if(!share) continue;
@@ -520,7 +520,7 @@ function legionTurn(side){ if(!B||B.over) return []; const out=[]; for(const u o
 // plain-words lines for the ship panel
 function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=[];
   if(u.fac==='hegemony'){ const a=syncAnchor(u.side); out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); }
-  if(u.fac==='ithar'&&u.shMax>0) out.push('Prism charge: facings not hit since its last turn refill to full.');
+  if(u.fac==='ithar'&&u.shMax>0) out.push('Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.');
   if(u.fac==='chorus') out.push(`Feeds on kills nearby (up to ${Math.round(FEED_CAP*100)}% hull a round).`);
   if(u.fac==='deathless'&&u.t&&u.t.reanimate){ const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Endless legion: the first to fall reassembles next round.':'Endless legion spent.'); }
   for(const s of (B.torps||[])) if(s.tid===u.id&&s.side!==u.side) out.push('<span class="blood">Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.</span>');
@@ -532,7 +532,7 @@ function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=[];
 // to the target's hex at launch (the aim hex). At impact: the original target is hit if it is still within 2 hexes of the aim hex (10 harder 1 hex off,
 // 25 harder 2 hexes off); otherwise an enemy hull sitting on the aim hex is hit (10 harder); otherwise the salvo runs wide. Range 6 and the cooldown stay.
 // Damage multipliers are taken at launch (what the preview showed); accuracy, shields, armor and point defense at impact.
-const TORP_RING=[0,10,25], TORP_STRAY=10; // to-hit penalty by hexes the target got from the aim hex (3+ is a clean dodge), and for a stray hull on the aim hex
+const TORP_RING=[0,5,15], TORP_STRAY=10, TORP_WARHEAD=1.2; // tuned Oct 26: torpedoes that can be dodged carry 20% heavier warheads (torpedo admirals fell out of the 50 to 90 band) // to-hit penalty by hexes the target got from the aim hex (3+ is a clean dodge), and for a stray hull on the aim hex
 function torpTravels(w,u){ return !!w&&w.k==='torp'&&!(u&&u.isSq)&&process_env('TORP_INSTANT')!=='1'; }
 function torpGhost(u,sure){ const g=Object.assign({},u); g.sureUsed=sure; g.ghost=true; return g; }
 // expected torpedo damage aimed at u if it ends at v (AI and bot dodge with this)
@@ -730,7 +730,7 @@ async function fireWeapon(u,wi,t,opts={}){ if(!inThisBattle(u)) return false; co
   const res={shield:0,hull:0,crits:0,hits:0,misses:0,sys:null};
   const called=opts.called&&!t.isSq&&!opts.intercept?opts.called:null;
   const su=u.sureUsed; if(!opts.intercept) u.sureUsed=keep[2]; const hc=hitChance(u,w,t); u.sureUsed=su; // B3 (B-20): the rangefinder relic reads the count from before this shot (it never applied before)
-  if(!opts.intercept&&syncOn(u,t)) fstat(u.fac,'syncShots');
+  if(!opts.intercept&&!u.isSq){ fstat(u.fac,'shots'); if(syncOn(u,t)) fstat(u.fac,'syncShots'); } // telemetry: synced share of Hegemony fire
   const shots=[];
   for(let i=0;i<w.shots;i++) shots.push(rnd()*100<hc);
   rocketDefense(w,t,shots,res);
@@ -778,8 +778,8 @@ async function landVolley(u,w,t,o){ const quad=o.quad, shots=o.shots, called=o.c
 // B3 torpedo launch: the gun is spent and the salvo is placed in flight with its lane; nothing is rolled yet
 async function launchTorp(u,w,t,opts,live,keep,b0){
   const S={id:(B.torpSeq=(B.torpSeq||0)+1), side:u.side, by:u.id, fac:u.fac, w:Object.assign({},w), tid:t.id, aim:{q:t.q,r:t.r}, from:{q:u.q,r:u.r}, r:B.round, called:opts.called&&!t.isSq?opts.called:null};
-  if(syncOn(u,t)) fstat(u.fac,'syncShots');
-  S.base=dmgMult(u,w,t,false); S.rearAdd=dmgMult(u,w,t,true)-S.base; S.ghost=torpGhost(u,keep[2]); // multipliers as the preview showed them at launch
+  fstat(u.fac,'shots'); if(syncOn(u,t)) fstat(u.fac,'syncShots');
+  S.base=dmgMult(u,w,t,false)*TORP_WARHEAD; S.rearAdd=dmgMult(u,w,t,true)*TORP_WARHEAD-S.base; S.ghost=torpGhost(u,keep[2]); // multipliers as the preview showed them at launch
   if(typeof animTorpLaunch==='function'){ try{ await animTorpLaunch(u,S); }catch(e){ console.warn(e); } if(!live()){ if(B===b0){ w.fired=keep[0]; w.cdLeft=keep[1]; u.sureUsed=keep[2]; u.postFire=keep[3]; u.postMp=keep[4]; } return false; } }
   syncMarkShot(u,t); B.torps.push(S); fstat(u.fac,'torpLaunch'); if(B) B.prog=(B.prog||0)+1;
   log(`${u.name} launches ${w.n} at ${t.name}. They strike its marked hex next turn.`, u.side==='player'?'p':'e'); try{ fxText(t,'Torpedo lane: impact next turn','#ff9f3a',-44); }catch(e){}
@@ -789,7 +789,7 @@ async function torpImpact(S){ const live=liveFrom(null), w=S.w, g=S.ghost; g.q=S
   const real=B.units.find(x=>x.id===S.by)||null, orig=B.units.find(x=>x.id===S.tid);
   let t=null, pen=0;
   if(orig&&!orig.dead&&orig.side!==S.side&&hdist(orig,S.aim)<=2){ t=orig; pen=TORP_RING[hdist(orig,S.aim)]; }
-  else { const o=unitAt(S.aim.q,S.aim.r); if(o&&!o.isSq&&!o.dead&&o.side!==S.side){ t=o; pen=TORP_STRAY; } }
+  else { const foes=B.units.filter(o=>!o.dead&&!o.isSq&&o.side!==S.side&&hdist(o,S.aim)<=((orig&&!orig.dead)?0:1)).sort((a,b)=>hdist(a,S.aim)-hdist(b,S.aim)||(a.id<b.id?-1:1)); if(foes.length){ t=foes[0]; pen=TORP_STRAY; } } // a stray hull on the aim hex; if the target is already gone, the nearest enemy within 1 hex
   if(!t&&g.fx&&g.fx.spread){ const near=alive(S.side==='player'?'enemy':'player').filter(x=>!x.isSq&&hdist(x,S.aim)<=1); if(near.length){ log(`${w.n} from ${g.name} burst in the lane, catching ${near.length} ship${near.length>1?'s':''}.`,S.side==='player'?'p':'e');
     for(const x of near){ if(x.dead) continue; const r=applyHit(g,w,x,S.base*g.fx.spread,shieldQuad(x,g)); boonFx(x,'e_spread','\u2212'+r.hull,-20); if(x.hp<=0){ x.killCause='big'; await killUnit(x,real||g); } } } } // Spread Pattern
   if(!t){ fstat(S.fac,orig&&!orig.dead?'torpDodge':'torpGone'); log(`${w.n} from ${g.name} run wide: ${orig&&!orig.dead?orig.name+' slipped out of the lane':'nothing left in the lane'}.`,'x'); try{ if(typeof fxFlash==='function') fxFlash(S.aim,'#ff9f3a'); }catch(e){} return; }
@@ -991,7 +991,7 @@ function canOrder(u,o){
 function giveOrder(u,o){ if(B.usage&&u.side==='player') B.usage.ord[o]=(B.usage.ord[o]||0)+1;
   if(!canOrder(u,o)) return;
   u.order=o;
-  if(o==='brace'){ u.braced=true; u.mp=0; for(const w of u.weapons) w.fired=true; fxText(u,'Braced','#7fd6c8',-24); braceCover(u); if(u.fx.bastion&&u.shMax>0){ u.sh=u.sh.map(()=>u.shMax); boonFx(u,'d_bastion','shields full',-44); } }
+  if(o==='brace'){ fstat(u.fac,'braces'); u.braced=true; u.mp=0; for(const w of u.weapons) w.fired=true; fxText(u,'Braced','#7fd6c8',-24); braceCover(u); if(u.fx.bastion&&u.shMax>0){ u.sh=u.sh.map(()=>u.shMax); boonFx(u,'d_bastion','shields full',-44); } }
   if(o==='full'){ u.fullAhead=true; u.noTurn=true; u.mp+=Math.ceil(u.mp*.5); }
   if(o==='lock'){ u.lockOn=true; u.mp=0; }
   if(o==='helm'){ u.turnsLeft++; }

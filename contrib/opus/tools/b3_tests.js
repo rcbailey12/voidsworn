@@ -15,10 +15,10 @@ let pass = 0, fail = 0; const tests = [];
 function check(name, fn) { tests.push([name, fn]); }
 eval(src + `
 function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){} function tel(){} function nodeSeeds(){ return 0; }
-async function animWeapon(){} async function animExplode(){} function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
+async function animWeapon(){} var EXPL=null; async function animExplode(u){ if(EXPL) await EXPL(u); } function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, get RNG(){ return RNG_S; }, migrateRun, newShip, startBattle, HULLS, factionGate, canOrder,
   fireWeapon, killUnit, startSideTurn, turnStart, dmgMult, hitChance, syncOn, inSync, syncAnchor, prizePlan, salvageYield,
-  SYNC_DMG, SYNC_AIM, FEED_KILL, FEED_NEAR, FEED_CAP, LEGION_HP, canFire, torpThreat };
+  setExplode(f){ EXPL=f; }, SYNC_DMG, SYNC_AIM, FEED_KILL, FEED_NEAR, FEED_CAP, LEGION_HP, canFire, torpThreat };
 `);
 const base = (o) => Object.assign({ fac: 'voidsworn', admiral: 'vex', credits: 500, cpCap: 30, sector: 1, relics: [], inventory: [], boons: [], map: { cols: [] }, fleet: [] }, o || {});
 // a battle with fixed fleets and no terrain; units are then placed by hand so distances are exact
@@ -57,9 +57,9 @@ check('Hegemony sync does not stack with Anchored Volley (the larger bonus appli
   s1.fx = Object.assign({}, s1.fx, { stillPct: .25 }); s1.hexMoved = 0; const w = s1.weapons.find(x => x.k === 'battery'); const still = T.dmgMult(s1, w, t, false);
   B.syncMark.player[t.id] = { r: B.round, ids: [a.id] }; const both = T.dmgMult(s1, w, t, false); return T.syncOn(s1, t) && Math.abs(both - still) < 1e-6; });
 // ---- Ithar prism charge ----
-check('Ithar prism charge: an unhit facing refills to full, a struck facing only regenerates', () => {
+check('Ithar prism charge: an unhit facing refills to full, a struck facing regenerates twice', () => {
   battle('ithar', ['i_song'], 'hegemony', ['h_picket']); const u = P()[0]; u.regen = 2; u.sh = [5, 5, 5, 5]; u.shHit = [1, 0, 0, 0];
-  T.startSideTurn('player'); return u.sh[0] === 7 && u.sh[1] === u.shMax && u.sh[2] === u.shMax && u.sh[3] === u.shMax && u.shHit.every(x => !x); });
+  T.startSideTurn('player'); return u.sh[0] === 9 && u.sh[1] === u.shMax && u.sh[2] === u.shMax && u.sh[3] === u.shMax && u.shHit.every(x => !x); });
 check('Ithar prism charge stays off while the shield generator is down; other factions get no charge', () => {
   battle('ithar', ['i_song'], 'hegemony', ['h_dominion']); const u = P()[0], h = E()[0]; u.sh = [0, 0, 0, 0]; u.st.shieldOff = 2; h.sh = [1, 1, 1, 1]; h.regen = 0;
   T.startSideTurn('player'); T.startSideTurn('enemy'); return u.sh.every(x => x === 0) && h.sh.every(x => x === 1); });
@@ -98,6 +98,12 @@ check('torpedoes: a target 3 hexes from the aim hex dodges', async () => {
 check('torpedoes: the threat map steers a targeted ship out of the lane', async () => {
   const B = battle('hegemony', ['h_dominion'], 'voidsworn', ['harrow']); const t = P()[0], u = E()[0]; put(u, 14, 10, 3); put(t, 10, 10, 0); B.side = 'enemy';
   await T.fireWeapon(u, u.weapons.findIndex(w => w.k === 'torp'), t); return B.torps.length === 1 && T.torpThreat(t, { q: 10, r: 10 }) > 0 && T.torpThreat(t, { q: 10, r: 13 }) === 0; });
+// ---- B-18 ----
+check('B-18 a stall during a death explosion skips its aftermath (chain blasts) but still ends the battle; without a stall the blast lands', async () => {
+  const run = async (stall) => { const B = battle('voidsworn', ['penitent'], 'hegemony', ['h_picket', 'h_picket']); const [a, b] = E(); put(a, 12, 10); put(b, 13, 10); P()[0].fx = Object.assign({}, P()[0].fx, { chainBoom: 30 });
+    b.hp = 20; const save = global.animExplodeHook; T.setExplode(stall ? (async () => { B.epoch = (B.epoch || 0) + 1; }) : null); await T.killUnit(a, P()[0]); T.setExplode(null); return { b: b.hp, over: B.over }; };
+  const live = await run(false), stalled = await run(true);
+  return live.b < 20 && stalled.b === 20; });
 // ---- B-20 ----
 check('B-20 the rangefinder relic now applies to the first real shot of each ship', async () => {
   battle('voidsworn', ['penitent'], 'hegemony', ['h_dominion']); T.RUN.relics = ['cogitator']; const u = P()[0], t = E()[0]; put(u, 8, 10, 0);
