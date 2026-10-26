@@ -18,6 +18,15 @@ foreach ($f in $files) {
   if ((Test-Path $dst) -and ((Get-Item $dst).Length -gt $f[2])) { L ("have " + $f[1] + " " + [math]::Round((Get-Item $dst).Length/1GB,2) + " GB"); continue }
   $dir = Split-Path $dst; if (-not (Test-Path $dir)) { New-Item -ItemType Directory $dir | Out-Null }
   $tmp = $dst + '.part'; $t = Get-Date
+  # Lane A (pt_b1) and lane B (pt_dl) both call this script: if the other copy is writing the .part right now
+  # (exclusive open fails), wait for it to finish instead of fighting over the file.
+  $waited = 0
+  while ((Test-Path $tmp) -and $waited -lt 2400) {
+    try { $h = [IO.File]::Open($tmp, 'Open', 'ReadWrite', 'None'); $h.Close(); break }
+    catch { if ($waited -eq 0) { L ("another download is writing " + $f[1] + ", waiting") }; Start-Sleep -Seconds 20; $waited += 20 }
+  }
+  if ((Test-Path $dst) -and ((Get-Item $dst).Length -gt $f[2])) { L ("have " + $f[1] + " after waiting " + $waited + " s"); continue }
+  if (Test-Path $tmp) { Remove-Item -Force $tmp }
   L ("get " + $f[0])
   try { Invoke-WebRequest -Uri $f[0] -OutFile $tmp -UseBasicParsing -Headers @{ 'User-Agent' = 'voidsworn' }
         Move-Item -Force $tmp $dst
