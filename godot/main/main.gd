@@ -51,6 +51,8 @@ class ErrCount extends Logger:
 	var mutex := Mutex.new()
 
 	func _log_error(function: String, file: String, line: int, code: String, rationale: String, editor_notify: bool, error_type: int, script_backtraces: Array) -> void:
+		if error_type == Logger.ERROR_TYPE_WARNING:
+			return
 		mutex.lock()
 		n += 1
 		if first.size() < 5:
