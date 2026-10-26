@@ -67,7 +67,7 @@ Last update: Oct 26 2026 evening, G2.
 | Retreat button in campaign battles | done |
 | Objective in the top bar (rout, flagship, hunt, defend, intercept, break, hold) | done, with the zones on the board and their tips |
 | Speed: normal or fast | done |
-| Onboarding tips one at a time, Got it, Hide tips (B1) | done (9 of the 10 browser tips; the Command tip waits for the Command) |
+| Onboarding tips one at a time, Got it, Hide tips (B1) | done: all 10 browser tips (fix 2 motion rule in the move tip, fix 3 alternating turns at battle start, fix 5 enemy-acting chip; fix 1 Standard AI on a fresh profile) |
 | Squadrons and carriers | done: wings drawn as craft formations, wing orders (click your wing, then a target), Strike, Screen and Hunt stances |
 | Travelling torpedoes (stream B) | done: lanes, parked salvos, strikes and misses a turn later |
 | Move, then fire (stream B) | done: movement left shown after firing |
@@ -85,7 +85,7 @@ Last update: Oct 26 2026 evening, G2.
 | Weapon families, impacts, shields per faction, staged damage, deaths, wrecks, trails, shake, hit pause | done through G4's fx (G2 calls it per event) |
 | Sky, nebula, planet, dead star, asteroid blockers, dressing | done through G4's world |
 | Black-hole lensing and accretion disc on the dead-star board | G4 |
-| Reduce flashing (WCAG) | done (G4; the setting reaches fx) |
+| Reduce flashing (WCAG) | done: the setting and Screen shake reach G4's fx live (settings and the battle menu); the scene's own flashes (boarding, ram, blink, risen wrecks, nova, launches) go through fx's 3-per-second budget and reduce mode. Compatibility mode (play_godot_safe.bat) draws no hull damage marks yet (G4: decals are off there) |
 
 ## Sound (G2)
 

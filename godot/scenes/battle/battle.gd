@@ -43,6 +43,7 @@ const TIPS := [
 	["move", "Shields and hull", "The cyan bars on the ship panel are its shields: four facings that soak hits and recharge each turn. Amber is hull: damage that stays. Keep your strongest shield facing the enemy."],
 	["target", "Firing", "Enemies you can hit have a red ring. Hover one for hit odds and expected damage, then click to fire every weapon that bears. Keys 1 to 6 pick a single weapon."],
 	["fired", "Alternating activations", "Each ship acts once per round. When this ship is done, press End activation (Enter) and the enemy moves one of theirs."],
+	["resolve", "Admiral's Command", "Your admiral's signature move is ready: it glows gold in the top bar. You get it once per battle. It grows each round you wait and when you lose a ship, so pick your moment."],
 	["close", "Close action", "Ramming speed (X) charges the first enemy dead ahead. Boarding (G) sends crews into an adjacent enemy; win and the ship is yours."],
 	["threat", "Threat map", "Before you end a move, check where the enemy can reach. Press R, or Threat in the top bar, to shade every hex their guns can hit next turn: the darker the hex, the more damage is waiting there."],
 	["objective", "Objectives", "Not every fight is a slugging match. The top bar shows this fight's goal."],
@@ -125,6 +126,8 @@ func _ready() -> void:
 	t_start = Time.get_ticks_msec() / 1000.0
 	bot = bot or args.has("bot")
 	shots_dir = str(args.get("shots", ""))
+	if args.has("breach-shots"):
+		shots_dir = str(args["breach-shots"])
 	_load_opts()
 	_build_world()
 	sfx = Sfx.new()
@@ -136,7 +139,9 @@ func _ready() -> void:
 	hud.action.connect(_on_action)
 	if not external:
 		start_default()
-	if shots_dir != "":
+	if args.has("breach-shots"):
+		_breach_shots()
+	elif shots_dir != "":
 		_shots()
 
 
@@ -233,7 +238,7 @@ func _build_world() -> void:
 	add_child(cam)
 	cam.current = true
 	if gfx != null and gfx.has_method("setup"):
-		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": false, "shake": 1.0, "unit": 1.0})
+		gfx.setup({"camera": cam, "quality": str(args.get("quality", "max")), "reduce_flashing": reduce_flashing, "shake": shake_scale, "unit": 1.0})
 	_build_arrow()
 
 
@@ -626,6 +631,8 @@ func _runner() -> void:
 	while true:
 		if not is_inside_tree():
 			return
+		while hold and is_inside_tree():
+			await get_tree().process_frame
 		if batches.is_empty():
 			if api.phase == "enemy" and not ended:
 				while _threat_busy:
@@ -752,6 +759,44 @@ func _exit_tree() -> void:
 		_think_tid = -1
 
 
+# Reduce flashing and Screen shake (settings, and the battle menu): reach G4's fx live
+var reduce_flashing := false
+var shake_scale := 1.0
+
+
+func set_fx_opts(rf: bool, sh: float) -> void:
+	reduce_flashing = rf
+	shake_scale = sh
+	if gfx != null:
+		if "reduce_flashing" in gfx:
+			gfx.reduce_flashing = rf
+		if "shake_scale" in gfx:
+			gfx.shake_scale = sh
+
+
+# Every bright flash the scene itself asks for (boarding, ramming, blink, risen wrecks, nova, launches) goes through G4's
+# fx budget (3 counted flashes per rolling second, none in reduce mode: fx.pop draws a ring and a glow instead). The old
+# placeholder sprite only draws when G4's fx is missing, under the same rules.
+var _stub_flashes: Array = []
+
+
+func _flash(p: Vector3, size: float, col: Color, dur := 0.35, delay := 0.0, light := true) -> void:
+	if gfx != null and gfx.has_method("pop"):
+		var T: float = float(gfx.now) + delay
+		gfx.pop(p, T, col, size * 0.5, 3.0, Vector3.UP, clampf(dur * 0.5, 0.1, 0.4))
+		if light and gfx.has_method("light"):
+			gfx.light(p, T, dur, 2.0, col, 0)
+		return
+	if reduce_flashing:
+		return
+	var now := Time.get_ticks_msec() / 1000.0 + delay
+	_stub_flashes = _stub_flashes.filter(func(t): return now - float(t) < 1.0)
+	if _stub_flashes.size() >= 3:
+		return
+	_stub_flashes.append(now)
+	fx.flash(p, size, col, dur, delay, light)
+
+
 func _error(m: String) -> void:
 	errors.append(m)
 	push_warning(m)
@@ -857,7 +902,7 @@ func _play_event(e: Dictionary) -> void:
 				if gfx != null and gfx.has_method("launch") and e.get("parent") != null:
 					gfx.launch(str(e["parent"]), str(e["unit"]))
 				else:
-					fx.flash(board.hex_world(int(e["q"]), int(e["r"]), 2.0), 10.0, Color(1, 0.8, 0.5), 0.4)
+					_flash(board.hex_world(int(e["q"]), int(e["r"]), 2.0), 10.0, Color(1, 0.8, 0.5), 0.4)
 				sfx.play("launch", {"pos": board.hex_world(int(e["q"]), int(e["r"]))})
 			await wait(220.0)
 		"torpedo":
@@ -888,7 +933,7 @@ func _play_event(e: Dictionary) -> void:
 					var ru: Dictionary = VU.get(e["unit"], {})
 					gfx.add_ship(str(e["unit"]), sv, {"faction": str(ru.get("fac", "deathless")), "meshes": sv.meshes, "cls": str(ru.get("cls", "")), "size": float(ru.get("size", 0.5)), "squadron": false, "flagship": bool(ru.get("flagship", false))})
 				wrecked.erase(e["unit"])
-				fx.flash(sv.position + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
+				_flash(sv.position + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
 			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
 			await wait(600.0)
 		"stance":
@@ -897,11 +942,11 @@ func _play_event(e: Dictionary) -> void:
 			var sv = views.get(e["unit"])
 			if sv != null:
 				var c: Color = HT.FAC3D.get(str(VU.get(e["unit"], {}).get("fac", "ithar")), HT.FAC3D["ithar"])["eng"]
-				fx.flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+				_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
 				sfx.play("phase", {"pos": sv.position})
 				await wait(250.0)
 				sv.position = board.hex_world(int(e["to"]["q"]), int(e["to"]["r"]))
-				fx.flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+				_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
 				await wait(250.0)
 		"side":
 			if e["side"] == "player":
@@ -962,20 +1007,20 @@ func _play_event(e: Dictionary) -> void:
 			if gfx != null and gfx.has_method("ability"):
 				gfx.ability(str(e["unit"]), ab)
 			else:
-				fx.flash(_pos(e["unit"]) + Vector3(0, 2, 0), 18.0, c, 0.5)
+				_flash(_pos(e["unit"]) + Vector3(0, 2, 0), 18.0, c, 0.5)
 			if ab == "blink" and e.get("hex") != null:
 				sfx.play("phase", {"pos": _pos(e["unit"])})
 				var sv = views.get(e["unit"])
 				if sv != null:
 					sv.position = board.hex_world(e["hex"]["q"], e["hex"]["r"])
-					fx.flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
+					_flash(sv.position + Vector3(0, 2, 0), 18.0, c, 0.5)
 			elif ab == "nova" and e.get("hex") != null:
 				sfx.play("charge", {"pos": _pos(e["unit"])})
 				await wait(500.0)
 				var p: Vector3 = board.hex_world(e["hex"]["q"], e["hex"]["r"], 2.0)
 				fx.bolt(_pos(e["unit"]) + Vector3(0, 2, 0), p, Color(1, 0.8, 0.5), 0.35 * speed, 0.0, 3.0)
 				await wait(350.0)
-				fx.flash(p, 60.0, Color(1, 0.7, 0.4), 0.8)
+				_flash(p, 60.0, Color(1, 0.7, 0.4), 0.8)
 				sfx.boom(1.0, p)
 			await wait(300.0)
 		"order":
@@ -987,7 +1032,7 @@ func _play_event(e: Dictionary) -> void:
 		"ram":
 			await _play_move(e["unit"], e["path"], true)
 			sfx.boom(0.8, _pos(e["target"]))
-			fx.flash(_pos(e["target"]) + Vector3(0, 2, 0), 30.0, Color(1, 0.7, 0.4), 0.6)
+			_flash(_pos(e["target"]) + Vector3(0, 2, 0), 30.0, Color(1, 0.7, 0.4), 0.6)
 			_log("%s rams %s at full speed: %d to its %s, %d back to the ram." % [_name(e["unit"]), _name(e["target"]), int(e["dmg"]), SEC_NAME.get(str(e["section"]), str(e["section"])), int(e["recoil"])], _who(e["unit"]))
 			var d: Dictionary = disp.get(e["target"], {})
 			if d.has("hp"):
@@ -1006,7 +1051,7 @@ func _play_event(e: Dictionary) -> void:
 				_log("%s's boarders overrun %s, but the last of its crew hold the bridge." % [_name(e["unit"]), _name(e["target"])], who)
 			else:
 				_log("%s boards %s: %d defenders killed, %d boarders lost." % [_name(e["unit"]), _name(e["target"]), int(e["kill"]), int(e["loss"])], who)
-			fx.flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
+			_flash(_pos(e["target"]) + Vector3(0, 2, 0), 14.0, Color(1, 0.8, 0.5), 0.5)
 			await wait(600.0)
 		"command_warning":
 			var C = _command(str(e["id"]))
@@ -1370,10 +1415,10 @@ func _schedule_impact(t_id, h: Dictionary, delay: float, L: float, shield_col: C
 		var p: Vector3 = sv.position + Vector3(randf_range(-0.3, 0.3) * L, 1.0, randf_range(-0.12, 0.12) * L)
 		if float(h["shield"]) > 0 and float(h["hull"]) <= 0:
 			fx.shield(sv, L, int(h["quad"]), shield_col)
-			fx.flash(p, 4.0 + L * 0.25, shield_col, 0.25, 0.0, false)
+			_flash(p, 4.0 + L * 0.25, shield_col, 0.25, 0.0, false)
 			sfx.shield(p)
 		else:
-			fx.flash(p, 5.0 + L * 0.3 + (8.0 if fam == "torp" else 0.0), Color(1.0, 0.62, 0.3), 0.3)
+			_flash(p, 5.0 + L * 0.3 + (8.0 if fam == "torp" else 0.0), Color(1.0, 0.62, 0.3), 0.3)
 			if fam == "torp":
 				sfx.boom(0.8, p)
 			elif fam in ["lance", "ion"]:
@@ -1397,7 +1442,7 @@ func _impact(t_id, h: Dictionary, col: Color) -> void:
 	var sv = views.get(t_id)
 	if sv == null:
 		return
-	fx.flash(sv.position + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, col, 0.3)
+	_flash(sv.position + Vector3(0, 1.5, 0), 6.0 + sv.L * 0.3, col, 0.3)
 	sfx.hit(sv.position, h.get("crit", false))
 
 
@@ -1427,9 +1472,9 @@ func _play_death(e: Dictionary) -> void:
 		hud.remove_plate(str(id))
 		await get_tree().create_timer(maxf(0.3, t * 0.6)).timeout
 		return
-	fx.flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
-	fx.flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
-	fx.flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
+	_flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
+	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
+	_flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
 	sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
 	sv.die(wrecked.has(id))
 	hud.remove_plate(str(id))
@@ -2328,6 +2373,8 @@ func _open_menu() -> void:
 	items.append(["Follow enemy activations: %s" % ("on" if follow else "off"), "opt", "follow"])
 	items.append(["Cut-ins: %s" % {"key": "key moments", "all": "every attack", "off": "off"}.get(cine, cine), "opt", "cine"])
 	items.append(["Battle tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
+	items.append(["Reduce flashing: %s" % ("on" if reduce_flashing else "off"), "opt", "flash"])
+	items.append(["Screen shake: %s" % ("full" if shake_scale >= 1.0 else ("reduced" if shake_scale > 0.0 else "off")), "opt", "shake"])
 	items.append(["Threat map: %s" % ("on" if threat_on else "off"), "opt", "threat"])
 	items.append(["Firing arcs: %s" % ("on" if arcs_on else "off"), "opt", "arcs"])
 	if external and not in_campaign:
@@ -2356,6 +2403,12 @@ func _toggle_opt(k: String) -> void:
 		"tips":
 			tips_off = not tips_off
 			option_changed.emit("tips", not tips_off)
+		"flash":
+			set_fx_opts(not reduce_flashing, shake_scale)
+			option_changed.emit("reduce_flashing", reduce_flashing)
+		"shake":
+			set_fx_opts(reduce_flashing, 0.5 if shake_scale >= 1.0 else (0.0 if shake_scale > 0.0 else 1.0))
+			option_changed.emit("shake", shake_scale)
 		"threat":
 			threat_on = not threat_on
 		"arcs":
@@ -2590,6 +2643,7 @@ func _tutorial() -> void:
 		var cu := _ui(sel)
 		close = cu.get("ram") != null or not (cu.get("board", []) as Array).is_empty()
 	var cond := {"start": true, "turns": true, "threat": int(V["round"]) >= 2, "select": not s.is_empty(), "move": moved, "target": targets, "fired": fired, "close": close,
+		"resolve": api.has_method("can_command") and api.can_command(),
 		"objective": V.get("obj") != null and str(V["obj"].get("type", "rout")) != "rout"}
 	for t in TIPS:
 		if not tips.has(t[0]) and cond.get(t[0], false):
@@ -2605,7 +2659,7 @@ func _load_opts() -> void:
 			tips = o.get("tips", {})
 			tips_off = bool(o.get("tipsOff", false))
 			user_speed = float(o.get("speed", 1.0))
-	if args.has("no-tips") or args.has("shots"):
+	if args.has("no-tips") or args.has("shots") or args.has("breach-shots"):
 		tips_off = true
 
 
@@ -2671,6 +2725,10 @@ var fire_shots := 0
 
 
 func _snap(name: String) -> void:
+	if DisplayServer.get_name() == "headless":
+		print("[shots] (headless, not saved) ", name)
+		await get_tree().process_frame
+		return
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
 	DirAccess.make_dir_recursive_absolute(shots_dir)
@@ -2737,6 +2795,101 @@ func _shots() -> void:
 	await get_tree().create_timer(2.0).timeout
 	await _snap("end")
 	_quit_report()
+
+
+# --breach-shots <dir>: close-ups of real hull damage in play. Both sides on AI; whenever a ship (an A4 kit ship first)
+# reaches a holed section (stage 3 or 4 by the fx thresholds), the battle holds, the camera closes in from both sides and
+# above, then play goes on; up to three ships. After the battle, survivors are shown forced to stages 3 and 4 (file
+# names say "forced"). Also prints the A4 ship check: skins, heavy skins, hard points per ship on the board.
+var hold := false
+
+
+func _breach_shots() -> void:
+	while busy or warming or api == null:
+		await get_tree().process_frame
+	await get_tree().create_timer(2.0).timeout
+	for id in views:
+		var sv = views[id]
+		var c := {"skin": 0, "heavy": 0, "hp": 0}
+		for n in (sv as Node).find_children("*", "", true, false):
+			var nm := str(n.name)
+			if nm.begins_with("skin_"):
+				c["heavy" if nm.ends_with("_heavy") else "skin"] += 1
+			elif nm.begins_with("hp_"):
+				c["hp"] += 1
+		print("[breach] ship %s %s a4=%s L=%.1f skins=%d heavy=%d hardpoints=%d" % [id, str(VU.get(id, {}).get("cls", "?")), str(sv.a4), float(sv.L), c["skin"], c["heavy"], c["hp"]])
+	await _snap("board_start")
+	user_speed = 0.45  # the game's Fast speed: the job fits its time and the pictures are the same
+	bot = true
+	var done := {}
+	while not ended and done.size() < 3:
+		await get_tree().process_frame
+		if hold:
+			continue
+		var pick := ""
+		for u in V.get("units", []):
+			if u["dead"] or u["squadron"] or done.has(u["id"]) or not views.has(u["id"]):
+				continue
+			if _sec_stage(u) >= 3 and (pick == "" or (views[u["id"]].a4 and not views[pick].a4)):
+				pick = u["id"]
+		if pick != "":
+			hold = true
+			done[pick] = true
+			await get_tree().create_timer(2.5).timeout  # the shots in flight land and the hole opens
+			if VU.has(pick) and not VU[pick]["dead"]:
+				await _closeups(pick, "inplay")
+			hold = false
+	while not ended:
+		await get_tree().process_frame
+	await get_tree().create_timer(2.0).timeout
+	var forced := 0
+	for u in V.get("units", []):
+		if forced >= 2 or u["dead"] or u["squadron"] or done.has(u["id"]) or not views.has(u["id"]) or not views[u["id"]].a4:
+			continue
+		forced += 1
+		for st in [[0.3, "forced3"], [0.1, "forced4"]]:
+			var su: Dictionary = u.duplicate(true)
+			if su.get("sec") is Dictionary:
+				for k in su["sec"]:
+					su["sec"][k]["hp"] = float(su["sec"][k].get("max", 1.0)) * float(st[0])
+			su["hp"] = float(su["maxHp"]) * float(st[0])
+			if gfx != null and gfx.has_method("sync_ship"):
+				gfx.sync_ship(str(u["id"]), su)
+			await get_tree().create_timer(3.5).timeout  # the hull rebuild runs on a worker (section 14)
+			await _closeups(u["id"], st[1])
+	print("[breach] in play: %d ships, forced: %d ships" % [done.size(), forced])
+	_quit_report()
+
+
+func _sec_stage(u: Dictionary) -> int:
+	# the fx ladder (fx/API.md section 2): the worst section's stage
+	var best := 0
+	var sec = u.get("sec")
+	if sec is Dictionary:
+		for k in sec:
+			var sd = sec[k]
+			if sd is Dictionary:
+				var f := float(sd.get("hp", 1.0) if sd.get("hp") != null else 1.0) / maxf(float(sd.get("max", 1.0) if sd.get("max") != null else 1.0), 1.0)
+				var st := 0 if f > 0.8 else (1 if f > 0.6 else (2 if f > 0.4 else (3 if f > 0.2 else 4)))
+				if sd.get("broken") == true:
+					st = 4
+				best = maxi(best, st)
+	return best
+
+
+func _closeups(id: String, tag: String) -> void:
+	var sv = views[id]
+	var save := [cam.a, cam.b, cam.r, cam.t]
+	var yaw: float = sv.rotation.y
+	var rr := clampf(float(sv.L) * 1.5, cam.min_r, 140.0)
+	var nm := "%s_%s_%s" % [tag, str(VU.get(id, {}).get("cls", "ship")).replace(" ", ""), id]
+	for v in [[yaw + PI / 2.0, 0.35, "port"], [yaw - PI / 2.0, 0.35, "starboard"], [yaw + PI * 0.75, 0.9, "above"]]:
+		cam.a = float(v[0]); cam.b = float(v[1]); cam.r = rr; cam.t = Vector3(sv.position.x, 0, sv.position.z)
+		cam.snap()
+		await get_tree().create_timer(0.5).timeout
+		await _snap(nm + "_" + str(v[2]))
+	cam.a = save[0]; cam.b = save[1]; cam.r = save[2]; cam.t = save[3]
+	cam.snap()
 
 
 func _quit_report() -> void:

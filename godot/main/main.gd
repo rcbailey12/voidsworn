@@ -17,7 +17,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "veteran", "follow": true, "music": true, "music_volume": 0.7, "cine": "key"}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key"}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -78,9 +78,14 @@ var music: Node              # godot/music/music_player.gd (the music helper's p
 func _ready() -> void:
 	name = "Main"
 	_args()
-	_load_settings()
-	_apply_settings()
 	bot_mode = args.has("bot-runs")
+	# a fresh profile starts on Standard enemy AI (onboarding fix 1, campaign3d.js:3); bot runs ignore the player's
+	# settings file and play Veteran, as sim3d does, unless --ai says otherwise
+	if bot_mode:
+		settings["ai"] = str(args.get("ai", "veteran"))
+	else:
+		_load_settings()
+	_apply_settings()
 	if ResourceLoader.exists("res://music/music_player.gd") and not args.has("bot-runs"):
 		music = load("res://music/music_player.gd").new()
 		music.name = "Music"
@@ -187,10 +192,7 @@ func _settings_to_battle(b: Node) -> void:
 	b.follow = bool(settings.get("follow", true))
 	b.cine = str(settings.get("cine", "key"))
 	b.tips_off = not bool(settings["tips"])
-	if b.fx != null and "reduce_flashing" in b.fx:
-		b.fx.reduce_flashing = bool(settings["reduce_flashing"])
-	if b.fx != null and "shake_scale" in b.fx:
-		b.fx.shake_scale = float(settings["shake"])
+	b.set_fx_opts(bool(settings["reduce_flashing"]), float(settings["shake"]))
 
 
 func _on_battle_option(key: String, value) -> void:
