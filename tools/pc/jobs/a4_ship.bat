@@ -19,7 +19,7 @@ echo --- a4 %A4CODE%: build and bake ---
 call tools\pc\tmo.bat 900 %BL% -b --factory-startup -P a4tools\a4\a4_ship.py -- %A4CODE% "%OUT%" --res 4096 --samples 16 --checks "%OUT%\checks" > "%OUT%\build_log.txt" 2>&1
 type "%OUT%\build_log.txt" | findstr /l /c:"[a4]" /c:"[a2]" /c:"[wreck]" /c:"[kit]" /c:"dress " /c:"Error" /c:"Traceback"
 echo --- a4 %A4CODE%: pack ---
-call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\pack.py "%OUT%\%A4CODE%_meta.json" "%A4%\godot" --res 2048 --hi "%A4%\godot_hi" --hires 4096
+call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\pack.py "%OUT%\%A4CODE%_meta.json" "%A4%\godot" --res auto --hi "%A4%\godot_hi" --hires 4096
 call tools\pc\tmo.bat 120 %PY% -s a4tools\a4\sheet.py "%OUT%\checks" %A4CODE%
 call tools\pc\tmo.bat 300 %BL% -b --factory-startup -P a4tools\a2detail\reimport.py -- "%A4%\godot\%A4CODE%\%A4CODE%.glb" "%A4%\godot\%A4CODE%\%A4CODE%_wreck.glb" > "%OUT%\reimport_log.txt" 2>&1
 type "%OUT%\reimport_log.txt" | findstr /l /c:"[reimport]"

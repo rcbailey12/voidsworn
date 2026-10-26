@@ -139,6 +139,11 @@ def plinth(name, p, n, t, b, r, extra, shape='round', ratio=1.0, col=None):
     elif shape == 'hex': ofrustum(name, c, t, b, n, (r, r), (r * .92, r * .92), h, sides=6, bevel=.0003)
     else: ofrustum(name, c, t, b, n, (r, r * ratio), (r * .94, r * ratio * .94), h, bevel=.0004)
     tag(col or (mul(CTX['pal']['base'], 1.15) if CTX['fac'] in ('corsair', 'voidsworn', 'deathless') else mul(CTX['pal']['base'], .9)))
+    if shape == 'round' and (hi + extra) - lo > r * .5:  # a tall barbette gets a collar under the turret and a band where it leaves the hull
+        Mx = M3(t, b, n); top_ = c + n * h
+        ocyl(name + 'cl', top_ - n * r * .09, r * 1.08, r * .14, Mx, seg=24, bevel=.0003)
+        ocyl(name + 'bd', p + n * (hi + .0008), r * 1.05, r * .08, Mx, seg=24, bevel=.0002)
+        tag(mul(CTX['pal']['dark'], 1.8), rgh=.5, met=.6)
     return hi + extra
 
 
@@ -178,9 +183,13 @@ def turret(name, p, n, aim, size, barrels=2, slot=None, wkind='turret', arc='T',
         obox(name + 'v', c + t * r * .05 + n * r * .40, t, b, n, (r * .5, r * .9, r * .06), bevel=.0002); tag(P['trim'])
         mz = r * .30; bln, brad, sp = r * 2.6 * bl, r * .085, r * .32
     elif fac == 'corsair':  # crude box with a bolted plate, a little off square
-        rot = CTX['rng'].uniform(-.08, .08)
-        obox(name + 'h', c + n * r * .30, t, b, n, (r * 1.7, r * 1.45, r * .60), bevel=.0006, rot=rot); tag(CTX['rng'].choice((mul(base, 1.1), (.13, .135, .145), (.17, .165, .16))))
-        obox(name + 'q', c + n * r * .62 - t * r * .2, t, b, n, (r * .9, r * 1.1, r * .08), bevel=.0002, rot=rot * 1.5); tag((.20, .17, .14))
+        rot = CTX['rng'].uniform(-.08, .08); Rr = Matrix.Rotation(rot, 3, n); tr, br = Rr @ t, Rr @ b
+        ofrustum(name + 'h', c - tr * r * .1, tr, br, n, (r * .95, r * .78), (r * .70, r * .66), r * .62, shear=(r * .12, 0)); tag(CTX['rng'].choice((mul(base, 1.1), (.13, .135, .145), (.17, .165, .16))))
+        for sd in (1, -1):  # bolted side plates, one a size off (salvage)
+            obox(name + f'sp{sd}', c + br * sd * r * .80 + n * r * .30 - tr * r * .1, tr, br, n, (r * (1.3 if sd > 0 else 1.1), r * .07, r * .5), bevel=.0002)
+        tag((.20, .17, .14))
+        obox(name + 'q', c + n * r * .63 - tr * r * .35, tr, br, n, (r * .55, r * .6, r * .06), bevel=.0002, rot=.2); tag((.10, .034, .014))
+        dress.blister(name + 'k', c + n * r * .62 - tr * r * .55 + br * r * .3, n, r * .2, r * .2, r * .12, seg=10, vseg=5); tag((.07, .07, .075), rgh=.5, met=.6)
         mz = r * .30; bln, brad, sp = r * 2.1 * bl, r * .13, r * .42
     elif fac == 'deathless':  # carved hexagonal head with a green slit
         ofrustum(name + 'h', c, t, b, n, (r * .95, r * .95), (r * .62, r * .62), r * .62, sides=6); tag(mul(base, 1.2))

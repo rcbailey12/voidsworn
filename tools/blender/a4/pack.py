@@ -89,7 +89,11 @@ def pack(meta_path, gdir, res=2048, tangents=False):
 
 if __name__ == '__main__':
     a = sys.argv[1:]
-    res = int(a[a.index('--res') + 1]) if '--res' in a else 2048
+    r_ = a[a.index('--res') + 1] if '--res' in a else 'auto'
+    if r_ == 'auto':  # K1 decision 1: 1024 for frigates and the beacon (small on the board), 512 for squadron craft, 2048 for the rest
+        m_ = json.load(open(a[0])); res = {'S': 1024}.get(m_.get('band'), 2048)
+        if m_.get('cls') == 'Squadron' or m_['code'] in ('S1_51', 'S2_23', 'B23_51'): res = 512
+    else: res = int(r_)
     c1, c2 = pack(a[0], a[1], res)
     if '--hi' in a:
         hres = int(a[a.index('--hires') + 1]) if '--hires' in a else 4096

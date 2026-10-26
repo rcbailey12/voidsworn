@@ -71,6 +71,8 @@ def check_entry(code, cfg):
 
 
 SHIPS = {}
+# orientation fixes known before a ship file exists: the game's AI_HULL_YAW (ships3d.js) plus A4 finds (2 = turned half round)
+YAWS = {'I14_23': 1, 'I15_11': -1, 'C15s_23': 2}
 
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Corsair (barge grammar: rust-and-bone salvage, lopsided, junk bolted on; space parts only)

@@ -19,7 +19,12 @@ def main():
                 if f.endswith(pat): shutil.copy(os.path.join(src, f), d)
         d = os.path.join(out, 'a4tools', 'hs'); os.makedirs(d)
         for f in ('hs_lib.py', 'detail_lib.py'): shutil.copy(os.path.join(REPO, 'tools/blender/hs', f), d)
-        open(os.path.join(out, 'a4tools', 'a4_ship.bat'), 'w', newline='').write(crlf(open(os.path.join(REPO, 'tools/pc/jobs/a4_ship.bat')).read()))
+        for b in ('a4_ship.bat', 'a4_looks.bat', 'a4_lineup.bat'):
+            if os.path.exists(os.path.join(REPO, 'tools/pc/jobs', b)):
+                open(os.path.join(out, 'a4tools', b), 'w', newline='').write(crlf(open(os.path.join(REPO, 'tools/pc/jobs', b)).read()))
+    if '--looks' in a:
+        open(os.path.join(out, f'a4_looks_{tag}.bat'), 'w', newline='').write(crlf(f'@echo off\nset A4LOOK={" ".join(codes)}\ncall a4tools\\a4_looks.bat\nset A4LOOK=\nexit /b\n'))
+        codes = []
     for c in codes:
         open(os.path.join(out, f'a4_{c}_{tag}.bat'), 'w', newline='').write(crlf(f'@echo off\nset A4CODE={c}\ncall a4tools\\a4_ship.bat\nset A4CODE=\nexit /b\n'))
     n = sum(len(fs) for _, _, fs in os.walk(out)); print('staged', n, 'files in', out)

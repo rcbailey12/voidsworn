@@ -66,7 +66,13 @@ them as hulks.
 
 ## Import notes for the Godot side
 
-- Godot imports these glb files on its own when the editor opens the project (textures compressed to VRAM formats). The G2 asset builder
+- **Texture rule for this folder (Muse's Godot shipping review, adopted):** every map imports as VRAM Compressed, High Quality (BC7) for
+  `_base`, `_orm` and `_emissive`; `_normal` as BC5 with Normal Map on; mipmaps on for all. Nothing here is HDR, so no BC6H. `*.import`
+  files are git-ignored in this project, so the rule has to live in the importer that reads the folder: the G2 asset builder
+  (`render/build_assets.gd`, which already compresses to S3TC/RGTC) or a project-level import default. Never ship them uncompressed:
+  an uncompressed 8K map is about 341 MiB with mips; at the repo's 2048 a ship's four maps are about 85 MiB uncompressed against about
+  21 MiB as BC7/BC5.
+- Godot imports these glb files on its own when the editor opens the project. The G2 asset builder
   (`render/build_assets.gd`) can instead read them with GLTFDocument at build time, like the A2 flagships; the relative image URIs
   resolve from the glb's folder either way.
 - Ship nodes are named by code; mesh and material are named `<CODE>` and `<CODE>_hull`.
