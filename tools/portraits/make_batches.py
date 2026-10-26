@@ -59,6 +59,67 @@ SUBJECT = {
   "and black metal around a blazing green core, cracked segments floating apart and being reassembled by small attending service drones with thin green beams, "
   "ancient worn surfaces engraved with circuit patterns, sensor lights instead of a face, an ominous patient presence."),
 }
+# ---------- Nemesis pool (R42): 6 per faction, same painted style, more villainous framing ----------
+# Ids nem_<faction>_<1..6>. A red rim light from the right and a low camera mark every Nemesis apart from the named admirals;
+# the red-black frame and the scars (burn, cyber, eye, carapace, porcelain, machine) are composited in post or in game.
+NEM_STYLE = (" Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, "
+ "a thin blood-red rim light from the right edge cutting through the shadow.")
+HUMAN = "A human, a space-fleet commander, nothing naval: no hats, no sailor uniforms."
+NEM = {
+ 'voidsworn': [
+  "a gaunt zealot inquisitor-admiral with a branded forehead, hollow burning eyes, an iron collar hung with chains and wax oath seals, dark armoured void-coat",
+  "a massive armoured war-priest commander wearing a tarnished brass rebreather mask, smoking censers on chains, heavy ceramite plates covered in scripture",
+  "a cold aristocratic flagellant-admiral woman, shaved head covered in litany tattoos, a blood-red sash over black armour, a thin cruel smile",
+  "an old castellan with a white beard and a furious glare, one arm replaced by a heavy black iron mechanical arm, battered gothic armour",
+  "a hooded executioner-commodore, a skull-shaped steel visor half raised over a scarred jaw, candle wax dripping down his armour",
+  "a young fanatic commander with ritual piercings along the brow and glowing orange eye implants, a mad devout stare",
+ ],
+ 'hegemony': [
+  "a bald, surgeon-faced commissar-admiral with a single red targeting lens over one eye, thin lips, black gloves, pale grey high-collared uniform",
+  "a severe woman admiral, platinum hair slicked back, a high black collar with flat enamel rank bars, face half lit by red alert light",
+  "a heavyset grand marshal with heavy jowls, rows of flat blue enamel rank bars, pale contemptuous eyes",
+  "a young prodigy admiral with razor-sharp features and a cold smile, a thin holographic tactical visor across the brow",
+  "an intelligence chief in a grey uniform with a featureless chrome half-mask covering the left side of the face",
+  "an elderly fleet lord with white hair and a medical exoskeleton brace around the neck, cruel patient eyes",
+ ],
+ 'corsair': [
+  "a tattooed raider queen with a shaved undercut, gold teeth, a chain of stolen dog tags, patchwork armour",
+  "a hulking brute warlord with a welded steel faceplate and a single red optic, rusted armour plates from different fleets",
+  "a wiry grinning knife-man with old acid burns, cracked goggles pushed up, a crest of braided cables instead of hair",
+  "a fat smuggler baron in a stolen admiral's coat full of mismatched medals, rings on every finger, cigar smoke",
+  "a weathered old scavenger captain with a battered respirator and patched hazard-striped armour, one squinting eye",
+  "a feral young warlord with war paint of engine grease and a crude crown of bent shrapnel",
+ ],
+ 'chorus': [
+  "a ravenous maw-colony: a ring of grinding chitin plates around a dark pulsing hollow, dripping acid",
+  "a parasite bloom: clusters of swollen pustule sacs and writhing feeding tendrils bursting out of a cracked host carapace",
+  "a spined siege-organism: an armoured purple-black dome bristling with long bone spikes and glowing yellow vents",
+  "a hive-mind mass: wrinkled translucent neural tissue lit from within, threaded with thick nerve cords",
+  "a spore-mother: a towering stalk of fungal flesh shedding clouds of glowing spores",
+  "a predator membrane: huge folded sheets of veined membrane with acid-yellow veins, wrapped around a dark core",
+ ],
+ 'ithar': [
+  "a gaunt Ithar inquisitor with an elongated skull crowned by sharp spikes of light, cold pitiless solid black eyes, white porcelain skin",
+  "an Ithar seer with a veil of fine light threads over the face, long seven-fingered hands ending in blade-like fingertips",
+  "a statuesque Ithar war-matriarch, gold light channels flaring red-gold under translucent skin, armour of glass-like petals",
+  "an Ithar exile with dimmed flickering light channels, ash-grey skin, a crown of broken light sails",
+  "an Ithar archon with a tall crested head and a smooth mask of mirrored light where the face should be",
+  "an ancient Ithar with skin like aged ivory, an extremely long neck, eyes glowing a faint cruel red",
+ ],
+ 'deathless': [
+  "a cluster of black obelisk processors orbiting a single green sensor core, thin green data beams between them",
+  "a towering lattice of green-lit segmented metal vertebrae around a cold core, no head, no face",
+  "a swarm core: thousands of tiny black beetle-shaped drones forming a shifting mass around a green core",
+  "a pale ceramic mask suspended in a field of floating black cables, green slit-light glowing behind it",
+  "a sarcophagus-shaped machine split open down the front, revealing green-lit gears and coils",
+  "a broken halo of rotating black blades around a dark core with a single green beam",
+ ],
+}
+for _fac, _L in NEM.items():
+    for _n, _d in enumerate(_L, 1):
+        _pre = HUMAN + ' ' if _fac in ('voidsworn', 'hegemony', 'corsair') else (CH + ' ' if _fac == 'chorus' else '')
+        SUBJECT['nem_%s_%d' % (_fac, _n)] = (_fac, 'Portrait of a Nemesis, a rival enemy commander of the %s: %s. %s' % (_fac.capitalize(), _d, _pre) + NEM_STYLE)
+
 def item(i, model, seeds):
     fac, p = SUBJECT[i]
     it = {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F[fac]), 'nosuffix': True, 'seeds': seeds}
@@ -76,9 +137,13 @@ BATCHES = {
  # fallback with no download: only Qwen-Image-Edit 2511 (already on the PC)
  'b1q': [item('chorus_mending', 'qref', S4), item('chorus_mending', 'qie', S4[:2]), item('chorus_matriarch', 'qref', S4[:3])]
         + [item(k, 'qref', S4[:2]) for k in POSTERS],
+ # Nemesis pool (R42): 3 candidates each on Z-Image Turbo, two jobs of about 10 to 15 minutes
+ 'n1a': [item('nem_%s_%d' % (f, n), 'zit', S4[:3]) for f in ('voidsworn', 'hegemony', 'corsair') for n in range(1, 7)],
+ 'n1b': [item('nem_%s_%d' % (f, n), 'zit', S4[:3]) for f in ('chorus', 'ithar', 'deathless') for n in range(1, 7)],
 }
+OUT = {'n1a': 'n1', 'n1b': 'n1'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():
-        json.dump({'out': 'b1', 'budget_s': 960, 'items': items}, open(os.path.join(HERE, 'batches', k + '.json'), 'w'), indent=1)
+        json.dump({'out': OUT.get(k, 'b1'), 'budget_s': 960, 'items': items}, open(os.path.join(HERE, 'batches', k + '.json'), 'w'), indent=1)
         print(k, len(items), 'items', sum(len(i['seeds']) for i in items), 'images')

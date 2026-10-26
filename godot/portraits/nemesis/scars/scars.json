@@ -1,0 +1,63 @@
+{
+ "kinds": {
+  "burn": [
+   "voidsworn",
+   "hegemony",
+   "corsair",
+   "chorus",
+   "ithar",
+   "deathless"
+  ],
+  "cyber": [
+   "voidsworn",
+   "hegemony",
+   "corsair"
+  ],
+  "eye": [
+   "voidsworn",
+   "hegemony",
+   "corsair"
+  ],
+  "carapace": [
+   "chorus"
+  ],
+  "porcelain": [
+   "ithar"
+  ],
+  "machine": [
+   "deathless"
+  ]
+ },
+ "place": {
+  "burn": [
+   -0.25,
+   0.25,
+   1.2
+  ],
+  "cyber": [
+   0.22,
+   -0.05,
+   0.9
+  ],
+  "eye": [
+   -0.2,
+   -0.05,
+   1.1
+  ],
+  "carapace": [
+   0.15,
+   0.1,
+   1.1
+  ],
+  "porcelain": [
+   0.1,
+   -0.1,
+   1.0
+  ],
+  "machine": [
+   0.1,
+   0.05,
+   1.0
+  ]
+ }
+}
