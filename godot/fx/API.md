@@ -38,7 +38,7 @@ fx.remove_ship(id)                     # removes the ship and its effects at onc
 - `root`: the ship's Node3D. **Ship frame:** bow along local +X, up +Y. G2 mirrors each hull in z under the root (main 680c6ea), so root +Z is **starboard** on screen and -Z is port; fx follows that by default (`setup({"starboard_z": 1})`, the default; pass -1 for an unmirrored root where +Z is port). fx finds every hull point from the real, transformed triangles, so mirroring never puts an effect off the hull; only the facing quads (0 prow, 1 starboard, 2 rear, 3 port) use this setting. G2 turns the root for facing and moves it along paths; fx effects attached to the ship follow it.
 - `info` (all optional except `faction`):
   - `faction`: `"voidsworn"`, `"hegemony"`, `"corsair"`, `"chorus"`, `"ithar"`, `"deathless"`;
-  - `meshes`: Array of the hull MeshInstance3Ds. **Pass `sv.meshes` from ShipView** (the default, every MeshInstance3D under `root`, would also take in the selection ring and the footprint marker). fx reads their triangles once (hit points, breach placement, death pieces), never changes their materials, and hides them at the break-up of a death;
+  - `meshes`: Array of the hull MeshInstance3Ds. **Pass `sv.meshes` from ShipView** (the default, every MeshInstance3D under `root`, would also take in the selection ring and the footprint marker). fx reads their triangles once (hit points, breach placement, death pieces), never changes their materials, and hides them at the break-up of a death. From damage stage 2 fx swaps in a rebuilt copy of a damaged hull's mesh (same materials, same vertex format, the override materials kept; section 14), so G2 must not cache or reassign `mesh` on these nodes during a battle;
   - `cls`: the template class (`"Frigate"`, `"Cruiser"`, `"Squadron"`, ...) and `size` (the data.js draw scale); together they pick the effect weight (light, medium, heavy, capital);
   - `squadron`: true for strike-craft wings (no shield bubble, no damage ladder, small death);
   - `shielded`: default true for Voidsworn, Hegemony, Corsair and Ithar, false for Chorus and Deathless (R3: shields keep faction colours);
@@ -57,10 +57,10 @@ Call it after the events that changed a ship have been animated (or simply after
 | Stage | When (per section, hp fraction) | Look |
 |---|---|---|
 | 0 intact | above 0.8 | clean hull |
-| 1 scorched | 0.6 to 0.8 | lit scorch marks, smoke wisps, faint embers |
-| 2 dented | 0.4 to 0.6 | more scorch, cracked plates with glowing seams, sparking wire bursts, thin gas jets |
-| 3 exposed structure | 0.2 to 0.4 | open patches with ribs and conduits, first small fires, debris shedding |
-| 4 hull breach | below 0.2, or the section is broken | a real hole: glowing torn edge, bent plates, venting gas, streaming debris, licking fire, spark showers, secondary pops |
+| 1 scorched | 0.6 to 0.8 | scorch marks, a thin wisp of smoke |
+| 2 dented | 0.4 to 0.6 | the hull itself dents and wrinkles; a wider blackened patch, sparking wires, a thin gas jet |
+| 3 holed | 0.2 to 0.4 | a hole cut in the real hull: plates bent back, the ring round it buckled, a cavity with frames, decks and conduits lit by fire inside; embers, sparks at torn conduits, gas, thin smoke; debris shedding |
+| 4 hull breach | below 0.2, or the section is broken | the hole grows, plus a buckled panel and (medium ships up) a bite out of an upper edge, so the silhouette changes; streaming debris, spark showers, dull internal pops |
 | 5 wreck | `dead` (after `death`) | see section 5 |
 
 - Thresholds are Claude's starting values (vetoable, tuned on screen).
@@ -205,3 +205,42 @@ func play_event(e: Dictionary) -> float:     # returns how long to wait before t
 # after each batch: for u in api.view().units: fx.sync_ship(str(u["id"]), u)
 # each frame: your animation delta *= fx.anim_speed()
 ```
+
+## 14. Hull damage geometry (generic cut now, A4's pre-cut parts when present)
+
+From stage 2 the hull itself changes (fx_breach.gd). The rebuild runs on a worker thread from the hull's original arrays
+(about 0.6 s for a 38k-triangle hull on a desktop CPU, 1.5 to 3 s in the cloud sandbox) and is applied in one frame;
+the opening blast covers the gap. The rebuilt mesh keeps the hull's materials and vertex format, so nothing new compiles.
+The death pieces are re-cut from the damaged hull afterwards.
+
+**Generic cut (every hull, today).** Per damaged section, at one anchor that stays put as the stage grows:
+
+| Stage | Hull change |
+|---|---|
+| 2 | dent: the skin pushed in with wrinkles (radius 5% of the ship's length) |
+| 3 | hole, radius 3% of length: triangles inside a torn outline removed (radial tears between 4 or 5 petals), the ring round it peeled back as bent plates, a wider ring buckled in; a cavity behind it from the removed skin pushed inward (rubble floor, frames and decks sliced through it, conduits, cables, the plates' backs, the skin's cut thickness), lit by a fire point inside |
+| 4 | the hole at 4.6%, a buckled panel elsewhere in the section, and (medium ships up) a 3.2% hole on an upper edge, which through thin hull goes right through and bites the silhouette |
+
+**A4 pre-cut parts (agreed with A4, Oct 26; fx wires them in when the first files land).** Per ship:
+
+1. The ship's glb: the root mesh is the hull minus the breach patches; children `skin_<n>` (the patch a hole replaces)
+   and `skin_<n>_heavy` (the extra ring the heavy damage tears away), visible by default, identity transform, same
+   material as the hull. Root mesh plus all skins is the intact ship. extras: `kind = breach_skin`, `breach = n`, `heavy`.
+2. `<CODE>_damage.glb`: root `<CODE>_damage`, children `breach_<n>_hole` and `breach_<n>_heavy`, hidden at first. Up
+   to five surfaces by material name: `<CODE>_hull` (the bent plates in the ship's paint; fx gives this surface the
+   material the hull's surface 0 really uses at runtime, so it carries the faction look), `damage_interior` (bare
+   metal backs, the cavity wall), `damage_frame` (frames, stringers, decks, conduits), `damage_glow` (fire spots, lit
+   conduit bands, torn sparking ends; emissive 1, HDR colour in albedo and emission), `damage_edge` (hot torn edges;
+   emissive 0.5). fx scales the glow itself against exposure and the flash rules. extras on each node: `kind`
+   (`breach_hole` or `breach_heavy`), `breach` n, `section` (prow, mid, eng by x), `p` (anchor point), `n` (outward
+   normal), `r` (radius, ship units), `hides` (the skin node names to hide).
+3. Everything is in the hull mesh's own frame. fx parents `<CODE>_damage` under the hull mesh's parent with the hull
+   mesh's transform, so it inherits G2's scale and mirror.
+4. Swap: stage 3 shows `breach_<n>_hole` and hides `skin_<n>`; stage 4 shows `breach_<n>_heavy` and hides
+   `breach_<n>_hole`, `skin_<n>` and `skin_<n>_heavy`. The anchor is the same n as `hp_breach_<n>`; fx picks the anchor
+   for a section from `extras.section`, puts its fire, gas, sparks and embers at `p` along `n`, and keeps the generic
+   cut away from that anchor. Stage 2 dents stay generic.
+5. **G2's part:** res://gen hulls are a single Mesh today, so the `skin_<n>` children would be lost. fx looks first for
+   (a) the hull scene in gen with `skin_<n>` MeshInstance3D children named exactly that, plus
+   `res://gen/damage/<CODE>_damage.scn`; then for (b) `res://assets/ships/<CODE>/<CODE>.glb` and `<CODE>_damage.glb`.
+6. Death pieces: the wreck is built from the hull as it is at the time of death (intact parts plus whatever is cut).
