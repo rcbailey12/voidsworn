@@ -62,7 +62,7 @@ for %%B in (!SCEN!) do (
 )
 
 echo [5/5] Enemy think time in the timing battles ^(report only; game bar: worst under about 0.5 s^)...
-"%NODE%" "%T%node\timing.js" all "%T%" > "%T%out\timing.txt" 2>&1
+"%NODE%" "%T%node\timing.js" all "%T%." > "%T%out\timing.txt" 2>&1
 type "%T%out\timing.txt"
 type "%T%out\timing.txt" >> "%LOG%"
 
