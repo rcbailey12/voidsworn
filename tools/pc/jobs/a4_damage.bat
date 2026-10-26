@@ -17,8 +17,11 @@ call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\pack.py "%OUT%\%1_meta.json" "%A4%\
 call tools\pc\tmo.bat 600 %BL% -b --factory-startup -P a4tools\a4\dmgview.py -- "%OUT%\%1_ship.npz" "%OUT%\%1_meta.json" "%OUT%\dmg\%1_damage.png" > "%OUT%\dmg_log.txt" 2>&1
 type "%OUT%\dmg_log.txt" | findstr /l /c:"dmgview" /c:"Error" /c:"Traceback"
 call tools\pc\tmo.bat 60 %PY% -s a4tools\a4\dmgview.py --compose "%OUT%\dmg\%1_damage.png_layout.json"
+if not exist "%CD%\godot\assets\ships\%1" mkdir "%CD%\godot\assets\ships\%1"
+xcopy "%A4%\godot\%1\*" "%CD%\godot\assets\ships\%1\" /y /q
 goto :eof
 :done
+call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\manifest.py "%A4%\godot" "%A4%\out" "%A4%\manifest"
 set A4DMG=
 echo --- a4 damage done ---
 exit /b

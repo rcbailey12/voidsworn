@@ -538,6 +538,7 @@ def place(fn, name, x, y, z, side, *a, pair=False, aim=None, **kw):
 
 
 def breach_anchors(Hd, count, min_sep=None, seed=3):
+    if count <= 0: return 0
     """breach anchor candidates spread over open hull (not under parts): farthest-point sampling over the hull samples with good AO and
     flat curvature, on the flanks and top"""
     rng = np.random.default_rng(seed); ok = np.nonzero((Hd.ao > .55) & (np.abs(Hd.cv) < .08) & (Hd.sn[:, 2] > -.4))[0]

@@ -419,3 +419,39 @@ SHIPS['D21_23'] = dict(
          ('turret', 'sn', -.36, 0, 0, 'top', dict(size='M', barrels=2, slot=3, wkind='gsentry', arc='T', lift=.003)),
          ('engine_at', 'eP', 0, .06, -.20, 'stern', dict(r=.02, L=.028, pair=True))],
     notes='pass 1: flies long side first as in the game today (vetoable: the curved edge could lead)')
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# Squadron craft (shared by every faction, tinted per faction in the game: built in the light Hegemony grey so a tint reads; Chorus wings
+# fly the spore) and the objective structures (neutral light grey). Taste calls, vetoable. Craft mounts use scale: a size S mount is 10% of
+# a 1.6-unit fighter.
+SHIPS['S1_51'] = dict(
+    fac='hegemony', cls='Squadron', name='Fighter wing', sym='bilateral', wkey='craft|fighter', breach=0, wreck=3, dress=.5,
+    kit=[('turret', 'gn', .05, 0, 0, 'top', dict(size='S', barrels=2, slot=0, wkind='guns', arc='T', scale=.35)),
+         ('engine_at', 'eC', 0, 0, -.01, 'stern', dict(r=.04, L=.05))],
+    notes='pass 1')
+
+SHIPS['S2_23'] = dict(
+    fac='hegemony', cls='Squadron', name='Bomber wing', sym='bilateral', wkey='craft|bomber', breach=0, wreck=3, dress=.5,
+    kit=[('turret', 'bb', 0, 0, 0, 'below', dict(size='S', barrels=1, slot=0, wkind='bombs', arc='T', scale=.35)),
+         ('engine_at', 'eP', 0, .245, -.015, 'stern', dict(r=.02, L=.028, pair=True)),
+         ('engine_at', 'eL', 0, .238, -.085, 'stern', dict(r=.02, L=.028, pair=True))],
+    notes='pass 1')
+
+SHIPS['B23_51'] = dict(
+    fac='chorus', cls='Squadron', name='Spore wing', sym='organic', wkey='craft|spore', breach=0, wreck=3, snap=.015,
+    kit=[('emitter', 'sp', 0, 0, 0, 'top', dict(size='S', slot=0, wkind='sporeb', arc='T', scale=.4))],
+    notes='pass 1: the trailing tentacles stay (they read as the spore drifting)')
+
+SHIPS['O1_37'] = dict(
+    fac='hegemony', cls='station', name='Defence station', sym='bilateral', wkey='obj|station',
+    kit=[('sensor_dome', 'sd', 0, 0, 0, 'top', dict(r=.03))],
+    notes='pass 1: AI hull kept (vetoable: Kenney/KayKit station parts are allowed by the plan)')
+
+SHIPS['O2_37'] = dict(
+    fac='hegemony', cls='transport', name='Convoy transport', sym='bilateral', wkey='obj|transport',
+    kit=[('engine_at', 'eP', 0, .045, .0, 'stern', dict(r=.02, L=.028, pair=True))],
+    notes='pass 1')
+
+SHIPS['O3_11'] = dict(
+    fac='hegemony', cls='beacon', name='Relay beacon', sym='bilateral', wkey='obj|beacon', wreck=4,
+    kit=[], notes='pass 1: stands upright as meshed (the tower is the beacon)')

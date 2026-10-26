@@ -27,7 +27,11 @@ call tools\pc\tmo.bat 600 %BL% -b --factory-startup -P a4tools\a4\dmgview.py -- 
 call tools\pc\tmo.bat 60 %PY% -s a4tools\a4\dmgview.py --compose "%OUT%\dmg\%A4CODE%_damage.png_layout.json"
 call tools\pc\tmo.bat 300 %BL% -b --factory-startup -P a4tools\a2detail\reimport.py -- "%A4%\godot\%A4CODE%\%A4CODE%.glb" "%A4%\godot\%A4CODE%\%A4CODE%_wreck.glb" "%A4%\godot\%A4CODE%\%A4CODE%_damage.glb" > "%OUT%\reimport_log.txt" 2>&1
 type "%OUT%\reimport_log.txt" | findstr /l /c:"[reimport]"
-dir /b "%A4%\godot\%A4CODE%"
+echo --- a4 %A4CODE%: copy into the game build and refresh the manifest ---
+if not exist "%CD%\godot\assets\ships\%A4CODE%" mkdir "%CD%\godot\assets\ships\%A4CODE%"
+xcopy "%A4%\godot\%A4CODE%\*" "%CD%\godot\assets\ships\%A4CODE%\" /y /q
+call tools\pc\tmo.bat 300 %PY% -s a4tools\a4\manifest.py "%A4%\godot" "%A4%\out" "%A4%\manifest"
+dir /b "%CD%\godot\assets\ships\%A4CODE%"
 :done
 set A4_ROOT=
 set CHECK_SAMPLES=

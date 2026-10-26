@@ -4,6 +4,14 @@ Every ship here is built by one script chain in `tools/blender/a4/` (see `tools/
 (`hulls_hi/`), with the hand-built kit, faction surface detail, baked paint, hard points and wreck pieces. Owner of this folder: the A4
 ships helper. Decisions behind the format: `tools/blender/a4/K1_DECISIONS.md` (Ryan can veto any of them).
 
+## Where the files live (Oct 26 2026)
+
+The full glb files and maps (about 10 MB a ship) stay **out of the repo** until Ryan decides on large-file storage. Every A4 ship job on
+Ryan's PC copies the finished files into the game build at `Downloads\voidsworn_test\build\godot\assets\ships\<CODE>\` (where G2's
+asset builder reads them into `gen/ships`, `gen/damage` and `gen/wreck`). The repo carries `manifest.json` here (per ship: name,
+faction, class, hard point counts, breach count, every file with its size and sha256, the PC path) and `previews/` (the studio views and
+the breach damage review per ship, about 100 KB each), so a review can be matched to the exact build on the PC.
+
 ## What is in a ship folder
 
 `godot/assets/ships/<CODE>/`, for example `C13s_23/`:
@@ -12,6 +20,7 @@ ships helper. Decisions behind the format: `tools/blender/a4/K1_DECISIONS.md` (R
 |---|---|
 | `<CODE>.glb` | the ship: one mesh, one material, plus an empty node per hard point (children of the ship node) |
 | `<CODE>_wreck.glb` | the death pieces: the same ship cut into 3 to 10 chunks, one node per chunk |
+| `<CODE>_damage.glb` | real hull damage per breach anchor (R39): `breach_<n>_hole` and `breach_<n>_heavy` (see below) |
 | `<CODE>_base.jpg` | albedo (sRGB), 2048 |
 | `<CODE>_orm.jpg` | R occlusion, G roughness, B metal (glTF convention), 2048 |
 | `<CODE>_normal.jpg` | tangent-space normal map (MikkTSpace, OpenGL +Y), 2048 |
@@ -63,6 +72,25 @@ Chunk counts by size band: S 4 (craft 3), M 6, L 8, XL 10. Cuts run mostly acros
 breaks like a ship. Suggested use (for the G4 effects helper): on death hide the live ship, spawn the wreck at the same transform, give each
 chunk a rigid body with mass from volume, an outward impulse from `hp_core` plus the ship's velocity and a little spin, and fade or drift
 them as hulks.
+
+## Breach damage (R39, format agreed with G4; godot/fx/API.md section 14)
+
+- The ship glb's root mesh is the hull minus the breach patches; its children `skin_<n>` (the patch a hole replaces) and
+  `skin_<n>_heavy` (the wider patch heavy damage also tears away, reaching through thin hull so the silhouette loses a bite) complete
+  the intact ship. Same material as the hull, identity transforms. `n` matches `hp_breach_<n>`.
+- `<CODE>_damage.glb`: root `<CODE>_damage` (parent it under the hull mesh's parent with the hull mesh's transform; everything is in the
+  hull's own frame). Children `breach_<n>_hole` and `breach_<n>_heavy`, hidden at start. Surfaces by material: `<CODE>_hull` (torn
+  plates bent outward, in the ship's own paint), `damage_interior` (bare plate backs, cavity wall), `damage_frame` (frame rings,
+  stringers, deck layers, conduits), `damage_glow` (fire glow, lit conduit bands, sparking torn conduit ends; emissive strength 1, G4
+  scales it), `damage_edge` (hot torn plate edges; strength 0.5). Chorus guts are flesh and bone; Ithar and Deathless glow jade and green.
+- Node extras: `kind` (breach_hole, breach_heavy), `breach`, `section` (prow, mid, eng), `p`, `n` (anchor point and outward normal),
+  `r` (radius), `hides` (skin nodes to hide).
+- Swap: ladder stage 3 shows `breach_<n>_hole` and hides `skin_<n>`; stage 4 shows `breach_<n>_heavy` and hides the hole, `skin_<n>`
+  and `skin_<n>_heavy`. Squadron craft have no breaches. Generator: `tools/blender/a4/damage.py` (numpy, from the exported arrays).
+
+## Ithar sails
+
+Ithar sail membranes are a second surface of the ship mesh with the material `<CODE>_sail` (alpha blend, double-sided, the same maps).
 
 ## Import notes for the Godot side
 
