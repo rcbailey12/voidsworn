@@ -7,6 +7,9 @@ var ui                     # campaign_ui.gd (colours, fonts, the campaign)
 var _hot := ""             # node under the mouse
 var _focus_i := 0          # keyboard focus among the reachable nodes
 var _t := 0.0
+var _intel = null          # map_intel.gd: the same danger estimate the 3D map shows
+var _dg := {}              # node id -> danger, refreshed when the map or the fleet changes
+var _dg_key := ""
 
 func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
@@ -40,6 +43,7 @@ func _draw() -> void:
 		if nxt: draw_dashed_line(_pos(A), _pos(Bn), col, 2.0 * s, 6.0 * s)
 		else: draw_line(_pos(A), _pos(Bn), col, (3.0 if trav else 2.0) * s, true)
 	var f = ui.font; var fs = int(12.5 * s)
+	_refresh_danger()
 	for n in _nodes():
 		var p = _pos(n); var r = _rad(n); var av = avail.has(n["id"]); var cur = R.get("pos") == n["id"]; var done = C.jt(n.get("done"))
 		var col = Color("#7d7768") if done else (Color("#e07a70") if (n["type"] == "elite" or n["type"] == "boss") else (ui.BONE if av else Color("#8a8474")))
@@ -58,6 +62,12 @@ func _draw() -> void:
 		if C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done and (n["type"] == "battle" or n["type"] == "elite" or n["type"] == "boss"):
 			_text(str(C.MAP_NAME[n["map"]]), Vector2(p.x, p.y - r - 7.0 * s), int(10.5 * s), Color("#7f8fa6"))
 		if not done and C.nemNodeIs(n): _text("Nemesis", Vector2(p.x, p.y - r - 20.0 * s), int(12 * s), Color("#ff6b5a"))   # B4
+		var dg = _dg.get(n["id"], {})
+		if not done and not dg.is_empty():   # the danger band, as on the 3D map
+			var bt = str(dg["band"]).to_upper(); var bfs = int(10.5 * s); var bw = ui.font_semi.get_string_size(bt, HORIZONTAL_ALIGNMENT_LEFT, -1, bfs).x + 8.0 * s
+			var bp = Vector2(p.x - r - bw * 0.5 - 2.0 * s, p.y - r * 0.2)
+			draw_rect(Rect2(bp - Vector2(bw * 0.5, 9.0 * s), Vector2(bw, 13.0 * s)), Color(0.02, 0.03, 0.05, 0.85)); draw_rect(Rect2(bp - Vector2(bw * 0.5, 9.0 * s), Vector2(bw, 13.0 * s)), dg["col"], false, 1.0)
+			_text(bt, bp + Vector2(0, 1.5 * s), bfs, dg["col"], ui.font_semi)
 		var rw = n.get("rw")
 		if rw is Dictionary and not done:
 			if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")):
@@ -68,6 +78,16 @@ func _draw() -> void:
 			else:
 				var lab = ui._reward_label(rw)
 				if lab != "": _text(lab, Vector2(p.x, below), int(11.5 * s), Color("#bfb6a0") if av else Color("#6f6a5e"))
+func _refresh_danger() -> void:
+	var C = ui.C
+	var key = str(C.RUN["map"]["edges"].hash()) + str(C.RUN.get("pos")) + str(C.RUN["fleet"].map(func(x): return [x["uid"], x["hp"]]).hash()) + str(C.RUN.get("nem", {}).hash() if C.RUN.get("nem") is Dictionary else 0)
+	if key == _dg_key: return
+	_dg_key = key
+	if _intel == null or _intel.C != C: _intel = load("res://ui/campaign/map_intel.gd").new(C)
+	_intel.ai_level = ui.ai_level
+	_dg.clear()
+	for n in _nodes():
+		if not C.jt(n.get("done")): _dg[n["id"]] = _intel.danger(n)
 func _text(t: String, at: Vector2, size: int, col: Color, fnt: Font = null) -> void:
 	var f = fnt if fnt != null else ui.font
 	var w = f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
@@ -111,6 +131,12 @@ func _get_tooltip(at: Vector2) -> String:
 		var al = ui._arch_label(n, C.nodeFaction(n))
 		if al != "": t += " " + al + "."
 	if C.jt(n.get("mod")) and C.NODE_MODS.has(n["mod"]): t += " " + str(C.NODE_MODS[n["mod"]]["n"]) + ": " + str(C.NODE_MODS[n["mod"]]["d"])
+	var dg = _dg.get(id, {})
+	if not dg.is_empty(): t += "\nDanger: " + str(dg["band"]) + " (their strength about %d%% of your fleet's)." % int(round(dg["ratio"] * 100.0))
+	if _intel != null and not C.jt(n.get("done")):   # the routes through this node, as the 3D map's hover card gives them
+		for r in _intel.routes_through(id):
+			var st = r["st"]
+			t += "\n%s route: %d fights (%d elite), %d repair stops, %d shipyards, %d boons, %d refits, %d relics; worst fight %s." % [r["name"], st["fights"], st["elites"], st["repairs"], st["shops"], st["boons"], st["refits"], st["relics"], st["worst_name"]]
 	return t
 func _focus_id() -> String:
 	var av = _avail()
