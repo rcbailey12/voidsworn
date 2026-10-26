@@ -1,0 +1,22 @@
+{
+  "engine": "godot",
+  "renderer": "forward_plus",
+  "mode": "max",
+  "ships": 6,
+  "width": 3840,
+  "height": 2160,
+  "seconds": 20.0,
+  "frames": 2652,
+  "avg_ms": 7.54,
+  "p99_ms": 10.97,
+  "max_ms": 15.79,
+  "fps_avg": 132.62,
+  "load_s": 38.033,
+  "gpu_mem_mb": 12960.9,
+  "notes": "max mode: ships from assets/hi where present; sky: env/sky_deadstar_8k.png; max: SSAO, SSIL, SSR, SDFGI (6 cascades), TAA on top of MSAA 4x, 8192 shadow atlas with soft (PCSS) key shadows, tiling detail normals on the hulls; no screen-space contact shadows in Godot; rich: soft particles (flame, smoke and glow sprites fade into hull depth; hand-written, reads the depth texture); rich: volumetric fog (FogVolume with fog shaders) for breach venting, smoke rings and the fireball; rich: breach holes with depth by parallax occlusion mapping (hand-written), a light per gun and per impact; max: detail normal layer on 7 hull materials; effects: 14 instanced kinds (one draw each) for 6 ships; max: colour grading with Environment adjustments (contrast, saturation, a cool-shadow warm-highlight curve); env: 206 asteroids (200 instanced in 8 MultiMeshes, 6 big rocks), dust haze in volumetric fog; effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) 0.453 ms average; engine-measured 3D render time per frame: GPU 6.72 ms, render CPU 0.67 ms; frame breakdown (CPU wall time per frame, averages over the run): physics steps 0.01 ms (0.53 ticks per frame); node processing 0.57 ms (every _process and particle node, effect script 0.45 ms of it); tree flush and render sync 0.06 ms; render-server draw 6.52 ms (scene update 0.27, 3D view render CPU 0.67, rest 5.57: GPU frame wait, particle update, 2D, present); between frames 0.38 ms (OS events, input); 147 draw calls, 757 objects, 2252 nodes in the tree; shader warm-up after load took 0.3 s (every effect, fade and chunk state drawn once, until pipeline compiles stop); adapter NVIDIA GeForce RTX 5080, driver vulkan 1.4.351; render target 3840x2160 (from --res) in a SubViewport with MSAA 4x, shown in a 3840x2130 window; vsync mode 0 (0 = off); gpu_mem_mb is Performance RENDER_VIDEO_MEM_USED at the end (peak during run 12961 MB); textures loaded uncompressed (RGB8 with mipmaps), as GLTFDocument gives them at runtime",
+  "lights_active_avg": 21.2,
+  "lights_active_max": 28,
+  "physics_ms_avg": 1.131,
+  "physics_ms_p99": 1.684,
+  "bodies_max": 586
+}
