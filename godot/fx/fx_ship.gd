@@ -441,7 +441,7 @@ func shield_break(fx, quad: int) -> void:
 			for i in 30:
 				fx.spr(wp + fx.rdir() * 5.0 * k, T + fx.rng.randf() * 0.5, 1.2 + fx.rng.randf() * 0.8, sc, 2.2, 0.7 * k, 0.2 * k, 16,
 					fx.rcone(wn, 1.2) * (2 + fx.rng.randf() * 4) * k, 0.4, 1.5)
-			fx.ring(wp, wn, T, 1.3, sc, 1.0, 2.0 * k, 20.0 * k, 3)
+			fx.ring(wp, wn, T, 1.0, sc, 1.0, 2.0 * k, 20.0 * k, 3)
 			fx.spr(wp, T, 1.0, sc, 1.6, 6.0 * k, 14.0 * k, 18)
 
 

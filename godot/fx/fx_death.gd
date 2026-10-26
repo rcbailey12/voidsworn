@@ -681,9 +681,9 @@ static func _break_up(fx, s, cause: String, tint: Color) -> void:
 	else:
 		fx.spr(center, T, 0.9, Color(1, 0.8, 0.6), 3.0, R * 0.6, R * 2.0, 18)
 	fx.spr(center, T, 0.6, tint.lerp(Color(1, 0.8, 0.55), 0.5), 8.0 * big, R * 0.3, R * 0.9, 2)
-	fx.ring(center, s.dir_world(Vector3(0.12, 1, 0.08)), T, 1.6, Color(0.45, 0.6, 1.0), 0.8 * big, R * 0.1, R * 4.5, 1)
+	fx.ring(center, s.dir_world(Vector3(0.12, 1, 0.08)), T, 1.0, Color(0.45, 0.6, 1.0), 0.8 * big, R * 0.1, R * 4.5, 1)
 	if w >= 2:
-		fx.ring(center, s.dir_world(Vector3(0.6, 0.5, -0.4)), T + 0.05, 1.1, Color(1.0, 0.6, 0.3), 0.45 * big, R * 0.1, R * 2.2, 1)
+		fx.ring(center, s.dir_world(Vector3(0.6, 0.5, -0.4)), T + 0.05, 0.8, Color(1.0, 0.6, 0.3), 0.45 * big, R * 0.1, R * 2.2, 1)
 		fx.dst(center, T, 0.9, R * 0.3, R * 4.0, 0, 1.0 * big)
 	fireball(fx, center, R * 2.2, T, 4.0 + w * 0.5, tint)
 	# a rolling fireball of flame sprites too (reads at any zoom, and on high quality without volumes)
