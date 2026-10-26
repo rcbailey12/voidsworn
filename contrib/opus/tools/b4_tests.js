@@ -17,7 +17,7 @@ function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fx
 async function animWeapon(){} async function animExplode(){} function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, migrateRun, newShip, newRun, startBattle, HULLS, EVENTS, EVENT_FALLBACK, nextEvent, needMet, needText, applyOutcome, eventFlags,
   newNemesis, ensureNemesis, nemReveal, nemClockAdd, nemNodeIs, nemBattleCfg, nemAdapt, nemAfterBattle, nemLearn, NEM_CLOCK, NEM_WEAK, FAC_VERBS, verbCanUse, useVerb, wingVetAfter, wingPerkGrant, WING_XP,
-  setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS, mapScreen, eventScreen, shipyardScreen, boonStep, NEM_FAC, nemFull, nemFeedLosses, startSideTurn, NEM_PERSONA, NEM_BEAT_WORD, nemBeatOf, ARC_VARIANT, HULL_VARIANTS, ACT };
+  setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS, mapScreen, eventScreen, shipyardScreen, boonStep, NEM_FAC, nemFull, nemFeedLosses, startSideTurn, NEM_PERSONA, NEM_BEAT_WORD, nemBeatOf, ARC_VARIANT, HULL_VARIANTS, ACT, nemTargetBonus, nemDuelTarget, nemFoundMerge, landVolley, nemScar, nemPanel, W };
 `);
 const pickAdm = fac => Object.entries(T.ADMIRALS).find(([k, a]) => (a.fac || 'voidsworn') === fac)[0];
 const fresh = (fac, adm) => { T.META.unlocked = {}; T.newRun(adm || pickAdm(fac), fac); return T.RUN; };
@@ -40,7 +40,7 @@ check('no event repeats within a run; a quiet stretch once every event is seen',
   return dup === 0 && last === T.EVENT_FALLBACK && seen.size >= 25; });
 check('Nemesis: created with the run (a rival faction, two hidden weaknesses), clock fills toward his fight, intel reveals', () => {
   const R = fresh('ithar'); const N = R.nem; if (!N || N.fac === 'ithar' || N.weak.length !== 2 || N.revealed.length) throw new Error('setup ' + JSON.stringify(N));
-  let msg = ''; for (let i = 0; i < T.NEM_CLOCK; i++) msg = T.nemClockAdd(1) || msg; const w = T.nemReveal();
+  let msg = ''; for (let i = 0; i < T.NEM_CLOCK * 2 && !N.strike; i++) msg = T.nemClockAdd(1) || msg; const w = T.nemReveal(); // a Deathless rival's clock moves at half speed
   return N.strike && /next fight/.test(msg) && w === N.weak[0] && N.revealed.length === 1; });
 check('Nemesis: met once per sector (strike, or the fight before the rest stop), marked on the map', () => {
   const R = fresh('voidsworn'); const N = R.nem; const cols = R.map.cols, early = cols[1].find(n => n.type === 'battle' || n.type === 'elite'), late = cols[cols.length - 3].find(n => n.type === 'battle' || n.type === 'elite');
@@ -119,5 +119,37 @@ check('Story arcs: killing the Nemesis for good unlocks the faction arc variant 
   const v = T.HULL_VARIANTS[id]; if (!v || !v.arc || v.cost !== 0) return false; T.META.renown = 999; try { T.ACT.buyVariant(id); } catch (e) {} if (T.META.variants[id] || T.META.renown !== 999) return false;
   R.sector = 3; const out = T.nemAfterBattle('win', true, {}); const once = T.nemAfterBattle('win', true, {}).every(l => !/Story complete/.test(l));
   return N.dead && T.META.variants[id] === true && out.some(l => /Story complete/.test(l)) && once && Object.keys(T.ARC_VARIANT).length === 6; });
+check('R49 Deathless: destroyed before sector 3 he withdraws like the others (no comeback spent); in sector 3 he rises once, then dies', () => {
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'deathless'; R.sector = 2; T.nemAfterBattle('win', true, { cause: 'big' }); const early = !N.revived && !N.dead && N.scars === 1;
+  R.sector = 3; T.nemAfterBattle('win', true, {}); const back = N.revived && !N.dead && N.met === 2; T.nemAfterBattle('win', true, {}); return early && back && N.dead; });
+check('R49 Corsair: a towed ship is warned on his card, held, not returned when he only flees, and comes back when he dies', () => {
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'corsair'; R.credits = 10; while (R.fleet.length < 3) R.fleet.push(T.newShip(R.fleet[R.fleet.length - 1].tpl, false));
+  const v = R.fleet.find(x => x.uid !== R.flagUid); v.hp = 1; N.clock = 3; N.met = 0; const warn = /most damaged ship/.test(T.nemPanel()); T.nemClockAdd(1); const taken = N.held === v && !R.fleet.includes(v);
+  T.nemAfterBattle('win', false, { fled: true }); const stillHeld = N.held === v; R.sector = 3; const out = T.nemAfterBattle('win', true, {}); return warn && taken && stillHeld && N.dead && R.fleet.includes(v) && !N.held && out.some(l => /take back/.test(l)); });
+check('R49 Ithar: a rival who fled returns with the same small elite fleet, honed (shields and aim), never extra ships', () => {
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'ithar'; N.traits = ['swift', 'deadeye']; N.adapt = [];
+  const fleet = () => { T.startBattle({ kind: 'elite', fac: 'ithar', col: 4, nemesis: T.nemBattleCfg(), obj: 'rout', shape: 'open', map: 'storm', seed: 11 }); const es = T.B.units.filter(u => u.side === 'enemy' && !u.isSq); return { n: es.length, sh: T.B.units.find(u => u.nemFlag).shMax, aim: T.B.units.find(u => u.nemFlag).aim }; };
+  const a = fleet(); T.nemAfterBattle('win', false, { fled: true }); const b = fleet(); return N.riches === 0 && N.honed === 1 && b.n === a.n && a.n <= 4 && b.sh === Math.round(a.sh * 1.1) && b.aim === a.aim + 3; });
+check('R49 Voidsworn duel: his flagship seeks your flagship, then your strongest ship once it falls', () => {
+  const R = fresh('hegemony'); const N = R.nem; N.fac = 'voidsworn'; N.persona = 'methodical';
+  T.startBattle({ kind: 'elite', fac: 'voidsworn', col: 4, nemesis: T.nemBattleCfg(), obj: 'rout', shape: 'open', map: 'storm', seed: 5 }); const fl = T.B.units.find(u => u.nemFlag), me = T.B.units.find(u => u.pflag);
+  const other = T.B.units.find(u => u.side === 'player' && !u.isSq && !u.pflag); const seeks = T.nemTargetBonus(fl, me) - T.nemTargetBonus(fl, other) === 30;
+  me.dead = true; const d = T.nemDuelTarget(); const next = d && d !== me && T.nemTargetBonus(fl, d) === 30 && T.B.log.some(l => /turns to/.test(l.m)); return seeks && next; });
+check('R42 weaknesses: triggering one in battle reveals it (a rear hit on Thin stern plating), and it stays known', async () => {
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'hegemony'; N.weak = ['flank', 'slow']; N.revealed = [];
+  T.startBattle({ kind: 'elite', fac: 'hegemony', col: 4, nemesis: T.nemBattleCfg(), obj: 'rout', shape: 'open', map: 'storm', seed: 6 }); const fl = T.B.units.find(u => u.nemFlag), me = T.B.units.find(u => u.pflag);
+  const w = me.weapons.find(x => x.k !== 'flak'); await T.landVolley(me, w, fl, { quad: 2, shBefore: 0, shots: [true], res: { shield: 0, hull: 0, crits: 0, hits: 0, misses: 0, sys: null } });
+  const found = (T.B.nemFound || []).includes('flank'); T.nemFoundMerge(T.B.nemFound); return found && N.revealed.includes('flank') && !N.revealed.includes('slow'); });
+check('R42 identity: no strength and weakness that cancel (swift/slow, boarders/board, shielded/ion)', () => {
+  for (let i = 0; i < 120; i++) { const N = fresh(['voidsworn', 'corsair', 'ithar'][i % 3]).nem; const t = N.traits, w = N.weak;
+    if ((t.includes('swift') && w.includes('slow')) || (t.includes('boarders') && w.includes('board')) || (t.includes('shielded') && w.includes('ion'))) return false; } return true; });
+check('R42 memory: beaten by lances, his next adaptation is the shield counter, so "it will not work twice" is true', () => {
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'hegemony'; N.adapt = []; N.seen = { battery: 5 }; R.sector = 2; T.nemAfterBattle('win', false, { beat: 'lance' }); return T.nemAdapt() === 'shields'; });
+check('R42 narration: Chorus feeding says so; scar epithets follow the cause; Hegemony escorts hold an artillery line', () => {
+  const R = fresh('voidsworn'); const N = R.nem; N.fac = 'chorus'; N.fed = 0; const line = T.nemFeedLosses(2); const fedOk = /feeds on your losses/.test(line) && /8%/.test(line);
+  N.fac = 'corsair'; N.epithets = []; T.nemScar('fled'); const ep = N.epithet === 'the Uncaught';
+  N.fac = 'hegemony'; N.traits = ['armored', 'gunnery']; N.adapt = []; T.startBattle({ kind: 'elite', fac: 'hegemony', col: 4, nemesis: T.nemBattleCfg(), obj: 'rout', shape: 'open', map: 'storm', seed: 7 });
+  const esc = T.B.units.find(u => u.side === 'enemy' && u.nem && !u.nemFlag && !u.isSq), w = esc && esc.weapons.find(x => x.k !== 'flak' && x.k !== 'sq'); const line2 = w && w.opt === T.W[w.id].opt + 1;
+  return fedOk && ep && (line2 || !w) && T.B.nemLine; });
 (async () => { for (const [name, fn] of tests) { try { const r = await fn(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.message)); } }
   console.log('\nB4 tests: ' + pass + ' ok, ' + fail + ' FAIL'); process.exitCode = fail ? 1 : 0; })();
