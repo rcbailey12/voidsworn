@@ -38,7 +38,9 @@ if __name__ == '__main__':
     code = a[0]; side = a[1] if len(a) > 1 else 'top'
     x0, x1, dx = (float(v) for v in a[2:5]) if len(a) > 4 else (-.5, .5, .05)
     cs = [float(v) for v in a[5:]] or [0.0]
-    T, h = bvh(code)
+    import ships
+    yaw = ships.SHIPS.get(code, {}).get('yaw', ships.YAWS.get(code, 0))
+    T, h = bvh(code, yaw=yaw)
     xs = np.arange(x0, x1 + 1e-9, dx)
     print(f'{code} {side}: first hit {"z" if side in ("top", "below") else "y"} per x (columns), rows at {"y" if side in ("top", "below") else "z"} =', cs)
     print('      x ' + ' '.join(f'{x:+6.3f}' for x in xs))

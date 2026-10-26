@@ -190,9 +190,10 @@ SHIPS['V15_37'] = dict(
     cuts=[dict(name='sticks', dir='aft', level=.36, max_w=.03, min_ratio=1.5),   # thin AI prongs trailing off the stern
           dict(name='sternblob', box=(-.52, -.40, -.065, .065, -.055, .05))],     # melted engine block: rebuilt as bells
     kit=[('spinal', 'torp', .25, 0, 0, 'top', dict(size='M', slot=0, wkind='torp', arc='F', tubes=2)),
-         ('turret', 'tt', -.03, 0, 0, 'top', dict(size='M', barrels=2, slot=1, wkind='turret', arc='T', lift=.004)),
-         ('engine_at', 'eP', 0, .03, 0, 'stern', dict(r=.022, L=.032, pair=True))],
-    notes='first pass')
+         ('turret', 'tt', .07, 0, 0, 'top', dict(size='M', barrels=2, slot=1, wkind='turret', arc='T', lift=.004)),
+         ('engine_at', 'eP', 0, .03, -.025, 'stern', dict(r=.02, L=.03, pair=True))],
+    spires=dict(zmin=.035, style='gothic'),   # the melted tall fin over the waist (concept: a crisp black spike), rebuilt crisp
+    notes='pass 2: turret moved off the fin (it had swallowed it and read as a smokestack), bells lowered to the stern face')
 
 SHIPS['V16_37'] = dict(
     fac='voidsworn', cls='Cruiser', name='Penitent-class cruiser', sym='bilateral',
@@ -200,7 +201,7 @@ SHIPS['V16_37'] = dict(
     kit=[('casemate', 'bt', .06, 0, -.01, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='battery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'bt2', -.08, 0, -.01, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='battery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('spinal', 'lance', .28, 0, 0, 'top', dict(size='L', slot=2, wkind='lance', arc='F', length=4.5)),
-         ('engine_at', 'eP', 0, .06, .03, 'stern', dict(r=.021, L=.03, pair=True)),
+         ('engine_at', 'eP', 0, .03, -.023, 'stern', dict(r=.016, L=.026, pair=True)),   # pass 2: on the nacelle ends (probe), was off the hull
          ('sensor_dome', 'sd', .10, 0, 0, 'top', dict(r=.009))],
     notes='first pass')
 
