@@ -1,0 +1,31 @@
+{
+  "_about": "Titles earned from how you fight (R37). At the end of a run, story.gd adds up what you did in its battles (the rules' own usage counters: guns fired by kind and arc, aimed shots, rams, boardings, captures, braces, Commands, abilities; plus kills and losses). Each rule gives a score = value / need. The title with the highest score of at least 1 wins; ties go to the earlier row. A run needs at least min_battles battles to earn any title; otherwise, or if nothing reaches 1, the run earns the fallback. Shares are of all guns fired (squadron strikes included). Text only; nothing here changes campaign or battle rules.",
+  "min_battles": 3,
+  "fallback": {"id": "steadfast", "rule": "No single style stood out.", "n": {"voidsworn": "the Steadfast", "hegemony": "the Regular", "corsair": "the Survivor", "chorus": "the Patient Hunger", "ithar": "the Wanderer", "deathless": "the Enduring"}},
+  "titles": [
+    {"id": "brawler", "stat": "ram_board", "need": 4, "rule": "4 or more rams and boarding actions in the run.",
+     "n": {"voidsworn": "the Breaker", "hegemony": "the Battering Ram", "corsair": "the Breaker", "chorus": "the Gnasher", "ithar": "the Spear of the Sail", "deathless": "the Iron Fist"}},
+    {"id": "prizetaker", "stat": "captures", "need": 2, "rule": "2 or more enemy ships captured by boarding in the run.",
+     "n": {"voidsworn": "the Redeemer of Hulls", "hegemony": "the Prize Master", "corsair": "the Collector", "chorus": "the Devourer of Crews", "ithar": "the Gatherer", "deathless": "the Reclaimer"}},
+    {"id": "lancer", "stat": "share_lance", "need": 0.35, "rule": "Lances and gauss guns make up 35% or more of the guns you fired.",
+     "n": {"voidsworn": "the Lance of Judgement", "hegemony": "the Marksman", "corsair": "the Long Shot", "chorus": "the Far Spitter", "ithar": "the Light-Singer", "deathless": "the Flayer"}},
+    {"id": "torpedoer", "stat": "share_torp", "need": 0.25, "rule": "Torpedoes make up 25% or more of the guns you fired.",
+     "n": {"voidsworn": "the Torpedo Saint", "hegemony": "the Torpedo Marshal", "corsair": "the Fuse", "chorus": "the Spore Hurler", "ithar": "the Falling Star", "deathless": "the Doombringer"}},
+    {"id": "carrier", "stat": "share_sq", "need": 0.35, "rule": "Squadron strikes make up 35% or more of everything your fleet fired.",
+     "n": {"voidsworn": "the Lord of Wings", "hegemony": "the Carrier Marshal", "corsair": "the Beekeeper", "chorus": "the Brood-Mother", "ithar": "the Starling Queen", "deathless": "the Lord of Scarabs"}},
+    {"id": "broadside", "stat": "share_broad", "need": 0.55, "rule": "Port and starboard broadsides make up 55% or more of the guns you fired.",
+     "n": {"voidsworn": "the Broadside", "hegemony": "the Line Admiral", "corsair": "the Rake", "chorus": "the Flanking Tide", "ithar": "the Turning Sail", "deathless": "the Wall of Arcs"}},
+    {"id": "gunline", "stat": "share_battery", "need": 0.55, "rule": "Batteries make up 55% or more of the guns you fired.",
+     "n": {"voidsworn": "the Gunline", "hegemony": "the Battery Master", "corsair": "the Hail of Junk", "chorus": "the Spitting Swarm", "ithar": "the Bright Rain", "deathless": "the Steady Fire"}},
+    {"id": "marksman", "stat": "aimed", "need": 8, "rule": "8 or more aimed shots at a chosen section in the run.",
+     "n": {"voidsworn": "the Surgeon", "hegemony": "the Precise", "corsair": "the Eye", "chorus": "the Seeker", "ithar": "the Needle", "deathless": "the Exact"}},
+    {"id": "anvil", "stat": "braces", "need": 6, "rule": "6 or more brace orders in the run.",
+     "n": {"voidsworn": "the Anvil", "hegemony": "the Bulwark", "corsair": "the Tough Nut", "chorus": "the Shell", "ithar": "the Ward", "deathless": "the Unmoving"}},
+    {"id": "unscarred", "stat": "unscarred", "need": 6, "rule": "6 or more battles in the run without losing a single ship.",
+     "n": {"voidsworn": "the Unscarred", "hegemony": "the Flawless", "corsair": "the Lucky", "chorus": "the Unbroken Swarm", "ithar": "the Untouched", "deathless": "the Undiminished"}},
+    {"id": "butcher", "stat": "kills_per_battle", "need": 4.5, "rule": "4.5 or more enemy ships destroyed per battle across the run.",
+     "n": {"voidsworn": "the Purifier", "hegemony": "the Annihilator", "corsair": "the Butcher", "chorus": "the Glutton", "ithar": "the Bane", "deathless": "the Reaper"}},
+    {"id": "tactician", "stat": "abilities_per_battle", "need": 2.5, "rule": "2.5 or more ship abilities used per battle across the run.",
+     "n": {"voidsworn": "the Cunning", "hegemony": "the Tactician", "corsair": "the Trickster", "chorus": "the Many-Limbed", "ithar": "the Dancer", "deathless": "the Engineer"}}
+  ]
+}

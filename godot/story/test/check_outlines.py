@@ -7,7 +7,7 @@ import pathlib
 p = pathlib.Path(__file__).resolve().parents[1] / "outlines.md"
 t = p.read_text(encoding="utf-8")
 bad = 0
-if "—" in t or "–" in t:
+if "\u2014" in t or "\u2013" in t:
     print("FAIL: em or en dash found")
     bad += 1
 beats = re.split(r"^### ", t, flags=re.M)[1:]
