@@ -87,6 +87,12 @@ them as hulks.
   `r` (radius), `hides` (skin nodes to hide).
 - Swap: ladder stage 3 shows `breach_<n>_hole` and hides `skin_<n>`; stage 4 shows `breach_<n>_heavy` and hides the hole, `skin_<n>`
   and `skin_<n>_heavy`. Squadron craft have no breaches. Generator: `tools/blender/a4/damage.py` (numpy, from the exported arrays).
+- Per-weapon damage (R43), on one anchor per section (prow, mid, eng): `breach_<n>_lance` (clean round burn-through, molten lip,
+  glowing bore), `breach_<n>_torp` (blast crater: plating dished inward over the wide patch, ragged blown centre, guts),
+  `breach_<n>_splash` (plasma: no hole, a melted dimple with a glowing pool and spatter), `breach_<n>_gauss` (small punched hole,
+  petals flicked outward). extras `kind` = `hit_<kind>` plus `breach`, `section`, `p`, `n`, `r`, `hides`.
+- Ram: `ram_bow` (the first tenth of the ship squashed back and folded, in its own paint) replaces the ship glb's `skin_bow` child
+  (and any breach skins in that zone, listed in `hides`).
 
 ## Ithar sails
 
