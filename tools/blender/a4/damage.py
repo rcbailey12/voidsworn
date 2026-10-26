@@ -186,11 +186,24 @@ def petals(S, M, tris, inf, rad, jag, rng, bend=(.35, 1.1), K=7, gaps=2, r_in=.4
                 M.quad('edge', W[i, e[0]], Bk[i, e[0]], Bk[i, e[1]], W[i, e[1]]); M.quad('edge', W[i, e[1]], Bk[i, e[1]], Bk[i, e[0]], W[i, e[0]])
 
 
-def copy_skin(S, M, tris, xform, hot):
+def subdivide(V, UV, times):
+    """split each triangle in four, `times` over (positions and UVs together), so a fine displacement (acid pits) has vertices to move"""
+    for _ in range(times):
+        m01, m12, m20 = (V[:, 0] + V[:, 1]) / 2, (V[:, 1] + V[:, 2]) / 2, (V[:, 2] + V[:, 0]) / 2
+        u01, u12, u20 = (UV[:, 0] + UV[:, 1]) / 2, (UV[:, 1] + UV[:, 2]) / 2, (UV[:, 2] + UV[:, 0]) / 2
+        V = np.concatenate([np.stack(t, 1) for t in ((V[:, 0], m01, m20), (m01, V[:, 1], m12), (m20, m12, V[:, 2]), (m01, m12, m20))])
+        UV = np.concatenate([np.stack(t, 1) for t in ((UV[:, 0], u01, u20), (u01, UV[:, 1], u12), (u20, u12, UV[:, 2]), (u01, u12, u20))])
+    return V, UV
+
+
+def copy_skin(S, M, tris, xform, hot, sub=0):
     """copy ship triangles (keeping their paint), move them with xform(V) -> W (both (N, 3, 3)), give them a bare-metal back a plate's
-    thickness under, and a hot edge strip on free edges where hot(Va, Vb) says so (Va, Vb: the edge's original end points)"""
+    thickness under, and a hot edge strip on free edges where hot(Va, Vb) says so (Va, Vb: the edge's original end points). sub: split
+    each triangle in four that many times first (no hot edges then)"""
     if len(tris) == 0: return
-    V = S.T[tris]; W = xform(V); UVt = S.uv[S.idx[tris]]
+    V = S.T[tris]; UVt = S.uv[S.idx[tris]]
+    if sub: V, UVt = subdivide(V, UVt, sub); hot = lambda a, b: False
+    W = xform(V)
     fn = np.cross(W[:, 1] - W[:, 0], W[:, 2] - W[:, 0]); fn /= np.maximum(np.linalg.norm(fn, axis=1, keepdims=True), 1e-12)
     Bk = W - fn[:, None, :] * PLATE
     for i in range(len(W)):
@@ -250,7 +263,7 @@ def hit_variants(S, inf, k, tp, rng):
     def melt(V):
         rh, tv, h_ = local(inf, V); f = np.clip(1 - (rh / r) ** 2, 0, 1); rip = .3 * np.sin(rh * 900) * f
         return V - inf['n'] * (dep * (f + rip))[..., None]
-    copy_skin(S, M, hole, melt, lambda a, b: False)
+    copy_skin(S, M, hole, melt, lambda a, b: False, sub=2)
     pool = [inf['p'] - inf['n'] * dep * .8 + (math.cos(t_) * inf['t1'] + math.sin(t_) * inf['t2']) * r * .38 * (1 + .25 * math.sin(5 * t_ + 1)) + inf['n'] * .0006
             for t_ in np.linspace(0, 2 * math.pi, 19)[:-1]]
     cpool = inf['p'] - inf['n'] * dep * .9 + inf['n'] * .0008
@@ -267,6 +280,45 @@ def hit_variants(S, inf, k, tp, rng):
     petals(S, M, hole[rho <= r * .8], inf, r * .8, lambda t_: np.ones_like(t_), rng, bend=(.25, .6), K=6, gaps=0, r_in=rg / (r * .8))
     cavity(S, M, inf, rg, lambda t_: np.ones_like(t_), tp, rng)
     out['gauss'] = (M, [2 * k + 1])
+    # acid (Chorus bioplasma and spines, R43 "bio acid pitting and spines"): no clean hole; the plating eaten into a cluster of pits that
+    # run together, the patch sagging, a glowing pool in each pit, and bone-like spines driven in at a slant
+    M = Mesh(); pits = []
+    for g in range(8):
+        t_ = rng.uniform(0, 2 * math.pi); rr = r * rng.uniform(0, .7); pits.append((rr * math.cos(t_), rr * math.sin(t_), r * rng.uniform(.14, .30), r * rng.uniform(.07, .14)))
+    def eat(V):
+        q = V - inf['p']; a = q @ inf['t1']; b = q @ inf['t2']; rh = np.hypot(a, b); dz = .35 * r * .25 * np.clip(1 - (rh / r) ** 2, 0, 1)
+        for (pa, pb, pr, pd) in pits: dz = dz + pd * np.exp(-((a - pa) ** 2 + (b - pb) ** 2) / (pr * pr))
+        return V - inf['n'] * dz[..., None]
+    copy_skin(S, M, hole, eat, lambda a, b: False, sub=2)
+    for (pa, pb, pr, pd) in pits:
+        q = inf['p'] + inf['t1'] * pa + inf['t2'] * pb; hq = first_hit(q + inf['n'] * r, -inf['n'], tp)
+        if hq is not None: M.blob('glow', q + inf['n'] * (r - hq) - inf['n'] * pd * .75, pr * .32)
+    for g in range(3):
+        t_ = rng.uniform(0, 2 * math.pi); rr = r * rng.uniform(.1, .6); q = inf['p'] + (math.cos(t_) * inf['t1'] + math.sin(t_) * inf['t2']) * rr
+        hq = first_hit(q + inf['n'] * r, -inf['n'], tp)
+        if hq is None: continue
+        base = q + inf['n'] * (r - hq) - inf['n'] * r * .08; tilt = unit(inf['n'] + (math.cos(t_ + 2) * inf['t1'] + math.sin(t_ + 2) * inf['t2']) * rng.uniform(.4, .9))
+        L_ = r * rng.uniform(.6, 1.0); w_ = r * .055
+        for s_, (f0, f1, wf) in enumerate(((0, .45, 1.0), (.45, .8, .62), (.8, 1.0, .3))):
+            M.cyl('frame', base + tilt * L_ * f0, base + tilt * L_ * f1, w_ * wf, seg=7)
+    out['acid'] = (M, [2 * k + 1])
+    # boarding breach (Corsair claws, Chorus tendrils): a neat round cut, its plug pushed in and lying askew in the short tunnel behind,
+    # the cut edge still glowing
+    M = Mesh(); rb = r * .55
+    rho, th, hh = local(inf, S.C[hole]); keep = hole[rho > rb * 1.02]; plug = hole[rho <= rb * 1.02]
+    copy_skin(S, M, keep, lambda V: V, lambda a, b: local(inf, a)[0] < rb * 1.3 and local(inf, b)[0] < rb * 1.3)
+    lip(M, S, inf, rb, tp, w=.07)
+    T = first_hit(inf['p'] - inf['n'] * .002, -inf['n'], tp); D = min(T if T else rb * 2, rb * 1.8)
+    tun = [rim_points(S, inf, rb, lambda t_: np.ones_like(t_), tp, nrim=24, inset=.0)]
+    for f in (.3, .7, 1.0): tun.append([p_ - inf['n'] * D * f for p_ in tun[0]])
+    double_sided_inward(M, 'edge', tun[:2], inf['p'] - inf['n'] * D * .5); double_sided_inward(M, 'interior', tun[1:], inf['p'] - inf['n'] * D * .5)
+    def push(V):
+        q = V - inf['p']; a = q @ inf['t1']; b = q @ inf['t2']; h_ = q @ inf['n']; ang = math.radians(28)
+        a2 = a * math.cos(ang) - h_ * math.sin(ang); h2 = a * math.sin(ang) + h_ * math.cos(ang)
+        return inf['p'] + a2[..., None] * inf['t1'] + b[..., None] * inf['t2'] + (h2 - D * .7)[..., None] * inf['n']
+    copy_skin(S, M, plug, push, lambda a, b: True)
+    M.blob('glow', inf['p'] - inf['n'] * D * .95, rb * .3)
+    out['board'] = (M, [2 * k + 1])
     return out
 
 

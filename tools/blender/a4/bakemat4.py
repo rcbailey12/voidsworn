@@ -203,7 +203,11 @@ def build(o, fac, nmap, mmap, info):
     e_col = g.mix(emit, e_col, col)  # lenses, glowing sacs and veins carry their own colour
     # ---------------- normal ----------------
     nm = g.n('ShaderNodeNormalMap', uv_map='atlas'); g.link(tn.outputs[0], nm.inputs['Color'])
-    nbase = g.vmix(hull, gn, nm.outputs[0])
+    # guard (Oct 26, H4's belly): where the hulls_hi normal map tips the surface past about 60 degrees (the AI bake of deep rib channels),
+    # the baked hull shades black in patches; fade those texels back toward the true surface normal
+    tame = g.smooth(g.vmath('DOT_PRODUCT', nm.outputs[0], gn), .30, .62)
+    nmap_t = g.vmath('NORMALIZE', g.vmix(tame, gn, nm.outputs[0]))
+    nbase = g.vmix(hull, gn, nmap_t)
     if fac in ('voidsworn', 'hegemony', 'corsair'):
         s1 = seams(g, obj, {'hegemony': 24, 'voidsworn': 20, 'corsair': 17}[fac], (1.0, 2.2, 2.2), 'CHEBYCHEV', .025)
         s2 = seams(g, obj, 60, (1.0, 1.8, 1.8), 'CHEBYCHEV', .03)
@@ -215,7 +219,10 @@ def build(o, fac, nmap, mmap, info):
     else:  # chorus: wrinkles and pores
         wr = g.noise(g.vmath('MULTIPLY', obj, (1, 1, 2.5)), 55, 6, .6); po = g.smooth(g.voro(obj, 140), 0.0, .25)
         ht = g.add(g.mul(wr, .7), g.mul(po, .3))
-    ht = g.mul(ht, hull)
+    if fac in ('voidsworn', 'hegemony', 'corsair', 'deathless'):  # Oct 26: hand-built parts take the panel seams too (they read as plain blocks
+        ht = g.add(g.mul(ht, hull), g.mul(g.add(g.mul(ht, .6), .4), part))  # beside the AI hull otherwise), a little softer than the hull's
+    else:
+        ht = g.mul(ht, hull)
     ht = g.add(ht, g.mul(g.noise(obj, 600, 2), LK['grit']))  # fine grit everywhere
     bmp = g.n('ShaderNodeBump'); bmp.inputs['Strength'].default_value = .8 if fac != 'ithar' else .4; bmp.inputs['Distance'].default_value = .0012
     g.link(ht, bmp.inputs['Height']); g.link(nbase, bmp.inputs['Normal'])

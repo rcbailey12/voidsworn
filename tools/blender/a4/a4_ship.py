@@ -89,7 +89,7 @@ def fill_holes(o, cfg, fac):
         nf += 1; tagv = 1 + nf  # this hole's faces only (earlier patches must not be subdivided again)
         for f in new: f[pl] = tagv
         L_rim = sum(e.calc_length() for e in g)
-        for _ in range(2 if L_rim > .03 else 0):
+        for _ in range((3 if L_rim > .15 else 2) if L_rim > .03 else 0):
             inner = list({e for f in bm.faces if f[pl] == tagv for e in f.edges if len(e.link_faces) == 2 and all(ff[pl] == tagv for ff in e.link_faces)})
             if not inner: break
             r2 = bmesh.ops.subdivide_edges(bm, edges=inner, cuts=1, use_grid_fill=False)
@@ -97,21 +97,47 @@ def fill_holes(o, cfg, fac):
                 if isinstance(f, bmesh.types.BMFace): f[pl] = tagv
             bmesh.ops.triangulate(bm, faces=[f for f in bm.faces if f[pl] == tagv and len(f.verts) > 3])
         mine = [f for f in bm.faces if f[pl] == tagv]
+        # pass 2 (Oct 26 review): the fan left long sliver triangles that shaded as a starburst round every rebuilt turret (H4, H9);
+        # flip the patch's inner edges to the best-shaped triangles before relaxing
+        inner_e = [e for e in {e for f in mine for e in f.edges} if len(e.link_faces) == 2 and all(ff[pl] == tagv for ff in e.link_faces)]
+        if inner_e:
+            r_ = bmesh.ops.beautify_fill(bm, faces=mine, edges=inner_e)
+            for f in r_.get('geom', []):
+                if isinstance(f, bmesh.types.BMFace): f[pl] = tagv
+            mine = [f for f in bm.faces if f[pl] == tagv]
         rimv = {v for f in mine for v in f.verts if any(ff[pl] != tagv for ff in v.link_faces) or any(e.is_boundary for e in v.link_edges)}
         innerv = list({v for f in mine for v in f.verts if v not in rimv})
         for _ in range(12 if innerv else 0): bmesh.ops.smooth_vert(bm, verts=innerv, factor=.8, use_axis_x=True, use_axis_y=True, use_axis_z=True)
+        # pass 2: a hole cut in a flat deck (most turret and tower cuts) gets a flat patch: the relaxed patch creased into folds round the
+        # rebuilt turrets (H4, H9). When the rim is close to a plane, the inner vertices go onto that plane.
+        if innerv and len(rimv) >= 4:
+            R_ = np.array([tuple(v.co) for v in rimv]); c_ = R_.mean(0); _, sv, vt = np.linalg.svd(R_ - c_); nrm = vt[2]
+            spread = np.sqrt(sv[0] ** 2 / len(R_)); resid = np.abs((R_ - c_) @ nrm).max()
+            if resid < .18 * spread:
+                for v in innerv:
+                    q = np.array(tuple(v.co)); v.co = Vector((q - nrm * ((q - c_) @ nrm)).tolist())
     pf = [f for f in bm.faces if f[pl] >= 1]
     if not pf: bm.free(); return []
     # split the patch faces into their own object
-    pb = bmesh.new(); vmap = {}
+    # each patch faces the way the hull round its rim faces (pass 2: after the edge flips, recalc alone sometimes turned a patch inside out
+    # and the kit rays met its back: "met an inside face")
+    hull_n = {}
+    for f in pf:
+        for v in f.verts:
+            for ff in v.link_faces:
+                if ff[pl] < 1: hull_n[f[pl]] = hull_n.get(f[pl], Vector()) + ff.normal
+    pb = bmesh.new(); vmap = {}; ftag = []
     for f in pf:
         vv = []
         for v in f.verts:
             if v not in vmap: vmap[v] = pb.verts.new(v.co)
             vv.append(vmap[v])
-        try: pb.faces.new(vv)
+        try: nf_ = pb.faces.new(vv); ftag.append((nf_, f[pl]))
         except ValueError: pass
     bmesh.ops.recalc_face_normals(pb, faces=pb.faces[:])
+    for tv in {t for _, t in ftag}:
+        fs = [f_ for f_, t in ftag if t == tv]; pn = sum((f_.normal for f_ in fs), Vector())
+        if tv in hull_n and pn.dot(hull_n[tv]) < 0: bmesh.ops.reverse_faces(pb, faces=fs)
     out_n = sum((f.normal for f in pf), Vector())
     bmesh.ops.delete(bm, geom=pf, context='FACES_ONLY')
     bm.to_mesh(o.data); bm.free(); o.data.update()
@@ -246,7 +272,9 @@ def main():
     hull, h, rims, tri0, tri1 = build_hull(root, code, cfg); log(code, fac, cls, 'hull tris', tri0, '->', tri1, 'chirality flip' if h['flipped'] else '')
     seed = sum(map(ord, code)); kit.setup([hull], cls, fac, seed)
     if h['fingers']:
-        F_ = bakemat4.FAC[fac]; dress.build_spires(h['fingers'], cfg['spires'].get('style', 'gothic'), bakemat4.lin(F_['hull']), bakemat4.lin(F_['dark']), dict(rgh=F_['rgh'], met=F_['met']))
+        F_ = bakemat4.FAC[fac]; st_ = cfg['spires'].get('style', 'gothic')
+        if st_ == 'array': dress4.build_array_spires(h['fingers'], bakemat4.lin(F_['hull']), bakemat4.lin(F_['dark']), dict(rgh=F_['rgh'], met=F_['met']))
+        else: dress.build_spires(h['fingers'], st_, bakemat4.lin(F_['hull']), bakemat4.lin(F_['dark']), dict(rgh=F_['rgh'], met=F_['met']))
     covers = fill_holes(hull, cfg, fac); made, missed = run_kit(cfg, rims, covers); kit_parts = list(hs_lib.PARTS); log('kit parts', len(kit_parts), 'placements', made, 'missed', missed)
     mmap = blmesh.load_image_np(h['tex'][1])
     H = dress.Hull(hull, mmap, (0, 1, 0), (0, 0, 0)); H.asym = cfg.get('sym', 'bilateral') != 'bilateral'; H.snap = cfg.get('snap', .006)

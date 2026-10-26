@@ -31,7 +31,18 @@ Decisions this rests on: `K1_DECISIONS.md` (Claude's calls, Ryan can veto).
    check in Blender. The job then copies the folder into the PC game build (`build\godot\assets\ships\<CODE>\`) and `manifest.py`
    writes the manifest and previews that go into the repo (the glbs stay out of git for now).
 8. **Review**: `look.py` (Workbench clay with a coordinate grid and close-ups, cloud), the studio views and 9-cell blob sweep from the bake
-   job (Cycles, PC), and the faction lineup sheet (`lineup.py`).
+   job (Cycles, PC), and the faction lineup sheet (`lineup.py`: a phone-width WebP, the whole line at true relative size on top, then
+   one framed card per ship, biggest first, with name, class, length and weapons).
+
+## Review pass 2 (Oct 26, after every hull was built once)
+
+- Bake: hulls_hi normal-map texels that tip the surface past about 60 degrees fade back to the true normal (H4's belly baked black in
+  patches; every Chorus belly had white streaks); hand-built parts on metal factions take the panel seams too (they read as plain blocks).
+- Naval tells cut: B20 and B21 conning towers, masts, stay wire and bow whiskers; Hegemony antenna masts rebuilt as slim sensor
+  arrays (spires style `array`, dress4.py) instead of fat tubes that read as funnels.
+- H9: melted bridge rebuilt by hand, aft cut floor at the deck.
+- Damage: `acid` and `board` variants per section (damage.py), finer patches for splash and acid.
+- dmgview's sheet step no longer imports bpy (it stopped every breach review sheet in the first pass).
 
 ## Running it
 

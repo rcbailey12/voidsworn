@@ -86,3 +86,32 @@ def dress_corsair(H, S, seed, P, amount=1.0):
         fit += 1
     dress.lights(H, rng, P['lens'], mul(dark, 1.5), props, n_pairs=2)
     print(f'dress corsair: {n_pl} salvage plates, {fit} fittings, {nrun} pipe runs')
+
+
+def build_array_spires(fingers, col, dark, props):
+    """style 'array' (Oct 26, A4 review of H4: the 'mast' rebuild kept the AI's fat tubes, which read as funnels on a tower, a naval tell):
+    each melted AI finger becomes a sensor array: a mount plate over the cut rim (as in dress.build_spires), a slim whip antenna (radius
+    capped, so no fat pipes), a sensor pod a third of the way up, and on every other whip a small dish angled out to the side."""
+    import bmesh, hs_lib
+    n = 0; done = set()
+    for f in fingers:
+        x, y = float(f['c'][0]), float(f['c'][1]); z1, r = f['z1'], f['r']; lo, hi = f['rim_lo'], f['rim_hi']
+        z0 = float(hi[2]); h = z1 - z0
+        if h < .006: continue
+        if f['group'] not in done:
+            done.add(f['group']); x0, x1, y0, y1 = lo[0] - .0025, hi[0] + .0025, lo[1] - .0025, hi[1] + .0025
+            if abs(y0 + y1) < .006: e = max(abs(y0), abs(y1)); y0, y1 = -e, e
+            zt, zbm = float(hi[2]) + .0012, float(lo[2]) - .004
+            hs_lib.box(f'spm{n}', ((x0 + x1) / 2, (y0 + y1) / 2, (zt + zbm) / 2), (max(x1 - x0, .006), max(y1 - y0, .006), zt - zbm), bevel=.0006); tag(mul(col, .8), **props)
+        rw = min(r * .45, .0022); h = h * .85  # slim, and a little shorter than the melted tube it replaces
+        hs_lib.cyl(f'spi{n}', (x, y, z0 + h * .5), rw, h, axis='Z', seg=8, r2=rw * .35, bevel=0); tag(mul(dark, 1.4), rgh=.4, met=.6)
+        hs_lib.cyl(f'spp{n}', (x, y, z0 + h * .33), rw * 2.6, h * .09, axis='Z', seg=10, bevel=0); tag(mul(col, .95), **props)  # sensor pod
+        if n % 2 == 0:  # dish: a shallow cone tipped out to the side it stands on
+            side = 1 if y >= 0 else -1; R = Matrix.Rotation(side * math.radians(-62), 3, 'X')
+            hs_lib.cyl(f'spd{n}', (x, y + side * rw * 3.5, z0 + h * .62), rw * 4.2, rw * 1.6, axis='Z', seg=14, r2=rw * .8, bevel=0, rot=R)
+            tag(mul(col, 1.05), rgh=.35, met=.3)
+        b = bmesh.new(); bmesh.ops.create_uvsphere(b, u_segments=8, v_segments=5, radius=max(.0010, rw * 1.1)); bmesh.ops.translate(b, verts=b.verts, vec=(x, y, z0 + h))
+        hs_lib._obj(f'spf{n}', b, 0); tag(mul(col, .95), rgh=.3, met=.3)
+        n += 1
+    print(f'spires rebuilt as sensor arrays: {n}')
+    return n

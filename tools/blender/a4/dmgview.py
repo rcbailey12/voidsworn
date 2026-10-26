@@ -6,12 +6,12 @@ import sys, os, json, math
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path: sys.path.insert(0, HERE)
 import numpy as np
-import bpy
-from mathutils import Vector
-import damage, frame
+# bpy, mathutils, damage and frame load inside the Blender-only functions: the compose step runs in plain Python (PC job, ComfyUI's
+# Python), where importing bpy at the top stopped every breach review sheet on Oct 26
 
 
 def obj(name, pos, idx, col):
+    import bpy, frame
     me = bpy.data.meshes.new(name); P = frame.gl_to_bl(np.asarray(pos, float))
     me.vertices.add(len(P)); me.vertices.foreach_set('co', P.astype(np.float32).ravel())
     I = np.asarray(idx, np.int64).reshape(-1, 3); me.loops.add(I.size); me.loops.foreach_set('vertex_index', I[:, ::-1].ravel().astype(np.int32))
@@ -22,6 +22,9 @@ def obj(name, pos, idx, col):
 
 
 def main():
+    import bpy
+    from mathutils import Vector
+    import damage, frame
     a = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
     npz, metap, out = a[0], a[1], a[2]; os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True); d = damage.build(npz, metap); meta = json.load(open(metap))
     want = [int(x) for x in a[3].split(',')] if len(a) > 3 else list(range(len(d['anchors'])))
@@ -63,7 +66,7 @@ def main():
                 show(k, stage); f = os.path.join(tmp, f'b{k}_{vi}_{stage}.png'); sc.render.filepath = f; bpy.ops.render.render(write_still=True)
                 shots.append(dict(path=f, label=f'breach {k} ({an["section"]}) {stage}', row=len(shots) // 3))
         if len(STAGES) > 3: break  # one view per anchor when the weapon variants are on it
-    lay = dict(out=out, title=f'{meta["code"]} breach damage: intact, hole, heavy, then per-weapon variants (R39, R43)', cols=7, shots=shots)
+    lay = dict(out=out, title=f'{meta["code"]} breach damage: intact, hole, heavy, then per-weapon variants (R39, R43)', cols=max(3, len(STAGES)), shots=shots)
     json.dump(lay, open(out + '_layout.json', 'w'), indent=1); print('dmgview', len(shots), 'shots')
 
 

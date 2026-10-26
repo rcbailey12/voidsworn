@@ -90,7 +90,10 @@ them as hulks.
 - Per-weapon damage (R43), on one anchor per section (prow, mid, eng): `breach_<n>_lance` (clean round burn-through, molten lip,
   glowing bore), `breach_<n>_torp` (blast crater: plating dished inward over the wide patch, ragged blown centre, guts),
   `breach_<n>_splash` (plasma: no hole, a melted dimple with a glowing pool and spatter), `breach_<n>_gauss` (small punched hole,
-  petals flicked outward). extras `kind` = `hit_<kind>` plus `breach`, `section`, `p`, `n`, `r`, `hides`.
+  petals flicked outward), `breach_<n>_acid` (Chorus bioplasma and spines: no clean hole, the plating eaten into pits that run
+  together, a glowing pool in each pit, three spines driven in at a slant in `damage_frame`), `breach_<n>_board` (boarding: a neat
+  round cut with a glowing lip, its plug pushed in and lying askew in a short tunnel). extras `kind` = `hit_<kind>` plus `breach`,
+  `section`, `p`, `n`, `r`, `hides`. Acid and board added Oct 26 (second A4 pass); every ship rebuilt that day carries all six.
 - Ram: `ram_bow` (the first tenth of the ship squashed back and folded, in its own paint) replaces the ship glb's `skin_bow` child
   (and any breach skins in that zone, listed in `hides`).
 
