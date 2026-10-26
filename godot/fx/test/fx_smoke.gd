@@ -122,6 +122,8 @@ func _run() -> void:
 		fx.step(1.0 / 60.0)
 	fx.clear_wreck("hegemony_0")
 	fx.remove_ship("corsair_0")
+	# squadrons come from view() with sec and sh set to null
+	fx.sync_ship("chorus_0", {"hp": 10, "maxHp": 18, "sec": null, "sh": null, "burning": null})
 	# accessibility: no rolling second may hold more than 3 counted flashes (WCAG 2.3.2), even in this worst-case reel
 	var fl: PackedFloat64Array = fx.flash_log.duplicate()
 	fl.sort()

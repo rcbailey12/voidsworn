@@ -446,18 +446,20 @@ func _regen(fx) -> void:
 func sync(fx, u: Dictionary) -> void:
 	if dead or gone:
 		return
-	var sec: Dictionary = u.get("sec", {})
-	var maxhp = maxf(float(u.get("maxHp", 1.0)), 1.0)
-	var hpf = float(u.get("hp", maxhp)) / maxhp
+	# view() sends null for fields a unit does not have (sec and sh for squadrons): treat them as absent
+	var sec: Dictionary = u["sec"] if u.get("sec") is Dictionary else {}
+	var maxhp = maxf(float(u["maxHp"]) if u.get("maxHp") != null else 1.0, 1.0)
+	var hpf = (float(u["hp"]) if u.get("hp") != null else maxhp) / maxhp
 	var want = [0, 0, 0]
 	var names = ["eng", "mid", "prow"]
 	for i in 3:
 		var f = hpf
 		var broken = false
 		if sec.has(names[i]):
-			var s: Dictionary = sec[names[i]]
-			f = float(s.get("hp", 1.0)) / maxf(float(s.get("max", 1.0)), 1.0)
-			broken = bool(s.get("broken", false))
+			var s = sec[names[i]]
+			if s is Dictionary:
+				f = float(s.get("hp", 1.0) if s.get("hp") != null else 1.0) / maxf(float(s.get("max", 1.0) if s.get("max") != null else 1.0), 1.0)
+				broken = s.get("broken") == true
 		var st = 0 if f > 0.8 else (1 if f > 0.6 else (2 if f > 0.4 else (3 if f > 0.2 else 4)))
 		if broken:
 			st = 4
@@ -474,12 +476,14 @@ func sync(fx, u: Dictionary) -> void:
 		_apply_stages(fx, want)
 	# shields: a rise means regen
 	var shs = 0.0
-	for v in u.get("sh", []):
-		shs += float(v)
+	var sh_list = u.get("sh")
+	if sh_list is Array:
+		for v in sh_list:
+			shs += float(v) if v != null else 0.0
 	if _last_sh >= 0.0 and shs > _last_sh + 0.5:
 		_regen(fx)
 	_last_sh = shs
-	var burn = bool(u.get("burning", false))
+	var burn = u.get("burning") == true
 	if burn != _burning:
 		_burning = burn
 		_set_burning(fx, burn)

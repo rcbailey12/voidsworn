@@ -169,8 +169,10 @@ func planet(idx: int, center: Vector3) -> void:
 	m.set_shader_parameter("seed", float(idx) * 3.7)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_planet_dir = Vector3(-0.45, -0.25, -0.86).normalized()
-	mi.position = center + _planet_dir * 2200.0
+	# behind the battle and a little above the board plane: the board camera looks down through the transparent board,
+	# so a planet below the plane showed as a huge disc right under the fleet (G2, scenario s3)
+	_planet_dir = Vector3(-0.42, 0.16, -0.89).normalized()
+	mi.position = center + _planet_dir * 2400.0
 	mi.scale = Vector3.ONE * 520.0
 	add_child(mi)
 	_spin.append([mi, Vector3.UP, 0.004])

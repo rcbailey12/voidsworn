@@ -111,7 +111,7 @@ func setup(opts := {}) -> void:
 	pools["shd"] = POOLS.Pool.new(3072 if big else 1536, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
 	if big:
 		pools["dst"] = POOLS.Pool.new(256, _mat(SH.DISTORT, 3), self, "fx_distort", POOLS.quad_shape())
-	for k in (48 if big else (24 if rich else 8)):
+	for k in (64 if big else (24 if rich else 8)):
 		var l = OmniLight3D.new()
 		l.light_energy = 0.0
 		l.shadow_enabled = false
