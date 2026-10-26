@@ -10,7 +10,7 @@ set /p G=<"%ROOT%..\godot_path.txt"
 set "TMO=%ROOT%tools\pc\tmo.bat"
 set "OUT=%ROOT%..\shots\g2"
 if not exist "%OUT%" mkdir "%OUT%"
-if not exist "%ROOT%godot\gen\v2.txt" (
+if not exist "%ROOT%godot\gen\v3.txt" (
   echo Building the Godot assets first...
   call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" > "%OUT%\build_assets_log.txt" 2>&1
 )

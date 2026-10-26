@@ -9,7 +9,7 @@ extends SceneTree
 
 const HT := preload("res://render/hull_table.gd")
 # bump when the generated files change shape; tools/pc/play_godot.bat rebuilds when gen\v<N>.txt is missing
-const GEN_VERSION := 2
+const GEN_VERSION := 3
 
 var repo := ""
 var hi_dir := ""
@@ -34,6 +34,8 @@ func _init() -> void:
 	for d in ["res://gen", "res://gen/hulls", "res://gen/hi", "res://gen/rocks"]:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(d))
 	var old = _read_json("res://gen/manifest.json")
+	if old is Dictionary and int(old.get("version", 1)) < GEN_VERSION:
+		force = true   # the generated files changed shape: rebuild everything once
 	if old is Dictionary and not force:
 		manifest = old
 	var codes := {}
@@ -106,7 +108,12 @@ func _compress(img: Image, normal := false, _srgb := true) -> Texture2D:
 	if img.get_format() != Image.FORMAT_RGBA8 and img.get_format() != Image.FORMAT_RGB8:
 		img.convert(Image.FORMAT_RGBA8 if img.detect_alpha() != Image.ALPHA_NONE else Image.FORMAT_RGB8)
 	img.generate_mipmaps()
-	img.compress(Image.COMPRESS_S3TC, Image.COMPRESS_SOURCE_NORMAL if normal else Image.COMPRESS_SOURCE_GENERIC)
+	# the ship texture rule (godot/assets/ships/README.md, A4): BC7 high quality for colour, ORM and emissive; BC5 for
+	# normal maps (RGTC from the normal source); mipmaps on; nothing HDR. Falls back to S3TC where BC7 is unavailable.
+	if normal:
+		img.compress(Image.COMPRESS_S3TC, Image.COMPRESS_SOURCE_NORMAL)
+	elif img.compress(Image.COMPRESS_BPTC, Image.COMPRESS_SOURCE_GENERIC) != OK:
+		img.compress(Image.COMPRESS_S3TC, Image.COMPRESS_SOURCE_GENERIC)
 	return ImageTexture.create_from_image(img)
 
 

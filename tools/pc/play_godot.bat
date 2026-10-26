@@ -3,6 +3,7 @@ rem Play Voidsworn in Godot. Double-click this file.
 rem The first time, it prepares the ship, rock and sky files for Godot (about a minute), then the game opens.
 rem Works from Downloads\voidsworn_test (the game is in build\, the Godot project in build\godot\)
 rem or from a repo checkout (tools\pc\play_godot.bat). If an exported Voidsworn.exe exists, it runs that instead.
+rem play_godot_safe.bat runs the same in the simpler Compatibility renderer, for a PC where the game will not start.
 setlocal
 set "HERE=%~dp0"
 set "ROOT="
@@ -14,7 +15,7 @@ if not defined ROOT (
   exit /b 1
 )
 if exist "%ROOT%export\Voidsworn.exe" (
-  start "" "%ROOT%export\Voidsworn.exe"
+  start "" "%ROOT%export\Voidsworn.exe" %*
   exit /b 0
 )
 set "G="
@@ -33,9 +34,9 @@ if exist "%ROOT%contrib\opus\enginetest\assets\hi" set "HI=%ROOT%contrib\opus\en
 if exist "%ROOT%..\enginetest\assets\hi" set "HI=%ROOT%..\enginetest\assets\hi"
 set "ENV="
 if exist "%ROOT%..\enginetest\assets\env" set "ENV=%ROOT%..\enginetest\assets\env"
-if not exist "%ROOT%godot\gen\v2.txt" (
+if not exist "%ROOT%godot\gen\v3.txt" (
   echo Preparing ships, rocks and sky for Godot. This happens once and takes about a minute...
   "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%HI%" --env "%ENV%" > "%ROOT%godot\build_assets_log.txt" 2>&1
 )
-start "" "%GW%" --path "%ROOT%godot"
+start "" "%GW%" --path "%ROOT%godot" %*
 exit /b 0

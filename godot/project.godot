@@ -48,3 +48,14 @@ limits/cluster_builder/max_clustered_elements=1024
 [physics]
 
 3d/physics_engine="Jolt Physics"
+
+[importer_defaults]
+
+texture={
+"compress/high_quality": true,
+"compress/mode": 2,
+"compress/normal_map": 0,
+"detect_3d/compress_to": 0,
+"mipmaps/generate": true,
+"process/hdr_as_srgb": false
+}
