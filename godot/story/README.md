@@ -33,6 +33,8 @@ Owner: the story and career stream (travel sprint, R37). Folders: `godot/story/`
 
 Each hook is a few lines, guarded so the game still runs if `godot/story/` is missing. Until a hook lands, that part of step 1 just does not show.
 
+**Status (Oct 26):** hooks 1, 2 and 4 are in (commit 7c704d9, added by the story stream as clearly marked "story hook" lines in `campaign_host.gd`, `battle.gd` and `title.gd`; G2 owns those files and may move them). Hook 3 (G3's campaign screens) and the arc beat hook (below, "Story arcs") are still wanted. The rename prompt and career recording already work through hook 1.
+
 ### 1. Campaign host (G2, `godot/main/campaign_host.gd`, in `start()`, before `ui.bind(C)`)
 
 ```gdscript
