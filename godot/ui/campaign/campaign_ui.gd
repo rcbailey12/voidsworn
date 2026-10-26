@@ -7,6 +7,7 @@ extends CanvasLayer
 # Colours and fonts match the battle HUD (godot/ui/battle/hud.gd). Sizes scale with the window height (designed at 1080).
 
 const MapView = preload("res://ui/campaign/map_view.gd")
+const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
 
 const INK := Color("#0f1626")
@@ -30,6 +31,8 @@ var font_goth: Font
 var root: Control
 var bg: ColorRect
 var page_box: Control
+var map3d: Control                    # the 3D sector map, kept alive between renders (it animates)
+var use_3d_map := true                # false: the flat map (map_view.gd)
 var modal_box: Control
 var toast_box: VBoxContainer
 var theme_main: Theme
@@ -46,7 +49,8 @@ func _ready() -> void:
 	font_goth = _font("res://ui/battle/fonts/UnifrakturMaguntia-Book.ttf")
 	root = Control.new(); root.set_anchors_preset(Control.PRESET_FULL_RECT); add_child(root)
 	bg = ColorRect.new(); bg.color = INK; bg.set_anchors_preset(Control.PRESET_FULL_RECT); root.add_child(bg)
-	page_box = Control.new(); page_box.set_anchors_preset(Control.PRESET_FULL_RECT); root.add_child(page_box)
+	map3d = Map3D.new(); map3d.ui = self; map3d.visible = false; root.add_child(map3d)
+	page_box = Control.new(); page_box.set_anchors_preset(Control.PRESET_FULL_RECT); page_box.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(page_box)
 	modal_box = Control.new(); modal_box.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.mouse_filter = Control.MOUSE_FILTER_IGNORE; root.add_child(modal_box)
 	toast_box = VBoxContainer.new(); toast_box.set_anchors_preset(Control.PRESET_CENTER_BOTTOM); toast_box.grow_horizontal = Control.GROW_DIRECTION_BOTH; toast_box.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	toast_box.mouse_filter = Control.MOUSE_FILTER_IGNORE; toast_box.alignment = BoxContainer.ALIGNMENT_END; root.add_child(toast_box)
@@ -191,6 +195,9 @@ func render() -> void:
 	var battle = pg["kind"] == "battle"
 	root.visible = not (battle and hide_on_battle and (C.modal_d == null or C.modal_d["kind"] == "retreat"))   # rewards after a fight show over the battle scene
 	bg.color = INK
+	var on_map = pg["kind"] == "map" and use_3d_map and C.RUN != null
+	map3d.visible = on_map; bg.visible = not on_map
+	if on_map: map3d.sync()
 	var body: Control = null
 	match pg["kind"]:
 		"title": body = _title()
@@ -364,13 +371,17 @@ func _map() -> Control:
 	main.add_child(rich(hp, 16))
 	var cond = C.sectorCond()
 	if cond != null: main.add_child(rich(c("Sector condition: [b]" + esc(cond["n"]) + "[/b].", GILT) + " " + c(esc(cond["d"]), BONE2), 16))
-	var mv = MapView.new(); mv.ui = self; mv.size_flags_vertical = Control.SIZE_EXPAND_FILL; mv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mv.custom_minimum_size = Vector2(px(600), px(320)); main.add_child(mv)
-	var legend = flow(14)
+	if use_3d_map:
+		var gap = Control.new(); gap.size_flags_vertical = Control.SIZE_EXPAND_FILL; gap.mouse_filter = Control.MOUSE_FILTER_IGNORE; main.add_child(gap)
+		for ctl in [hb, mm, main, head]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	else:
+		var mv = MapView.new(); mv.ui = self; mv.size_flags_vertical = Control.SIZE_EXPAND_FILL; mv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		mv.custom_minimum_size = Vector2(px(600), px(320)); main.add_child(mv)
+	var legend = flow(14); legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for kk in C.NODE_INFO.keys(): legend.add_child(lbl("● " + str(C.NODE_INFO[kk]["n"]), 14, BLOOD if kk == "elite" or kk == "boss" else BONE2, null, false))
 	main.add_child(legend)
 	# what the reachable fights are (the browser's encounter previews)
-	var seen = {}; var prev = vbox(6)
+	var seen = {}; var prev = flow(8); prev.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for id in C.page["data"]["avail"]:
 		var n = C.findNode(id)
 		if n == null or not C.jt(n.get("enc")) or not C.ENCOUNTERS.has(n["enc"]): continue
@@ -389,7 +400,7 @@ func _map() -> Control:
 		if C.jt(n.get("rw")):
 			var rw = n["rw"]; var rc = Color(C.PATRONS[rw["p"]]["col"]) if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")) else BONE2
 			t += "\n" + c("Reward: " + _reward_label(rw) + (" (rare or better)" if C.jt(rw.get("min")) else ""), rc)
-		var p = panel(Color(GILT, 0.22), Color(0.055, 0.08, 0.125, 0.55), 8); p.add_child(rich(t, 15)); prev.add_child(p)
+		var p = panel(Color(GILT, 0.3), Color(0.03, 0.045, 0.08, 0.82), 8); p.custom_minimum_size.x = px(330); p.add_child(rich(t, 14)); prev.add_child(p)
 	main.add_child(prev)
 	main.add_child(lbl("Choose a pulsing node to jump there. You can only move forward along the lines.", 15, BONE3))
 	hb.add_child(_side())
@@ -408,43 +419,66 @@ func _arch_label(n, fac) -> String:
 	if a == null or not C.ARCHETYPES.has(a): return ""
 	var names = C.ARCHETYPES[a]["names"]
 	return str(names.get(fac, names.get("hegemony", "")))
+# The side panel as a war-room display: dark glass, gilt corner brackets, small-caps section rules, big readouts.
+func _wr_head(t: String) -> Control:
+	var h = hbox(8); var l = lbl(t.to_upper(), 13, GILT, font_semi, false); l.add_theme_constant_override("outline_size", 0); h.add_child(l)
+	var line = ColorRect.new(); line.color = Color(GILT, 0.35); line.custom_minimum_size = Vector2(0, px(1)); line.size_flags_horizontal = Control.SIZE_EXPAND_FILL; line.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(line)
+	return h
+func _readout(label: String, value: String, col: Color, right: bool = false) -> Control:
+	var v = vbox(0); var a = lbl(label.to_upper(), 11, BONE3, font_semi, false); var b = lbl(value, 30, col, font_semi, false)
+	if right: a.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; b.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	v.add_child(a); v.add_child(b); return v
+func _brackets(c: Control) -> void:
+	c.draw.connect(func():
+		var s = c.size; var L = float(px(18)); var w = 2.0; var col = Color(GILT, 0.75)
+		for corner in [Vector2(0, 0), Vector2(s.x, 0), Vector2(0, s.y), Vector2(s.x, s.y)]:
+			var dx = L if corner.x == 0 else -L; var dy = L if corner.y == 0 else -L
+			c.draw_line(corner, corner + Vector2(dx, 0), col, w); c.draw_line(corner, corner + Vector2(0, dy), col, w)
+		for i in range(0, int(s.y), 4): c.draw_line(Vector2(0, i), Vector2(s.x, i), Color(1, 1, 1, 0.012), 1.0))
 func _side() -> Control:
 	var R = C.RUN
-	var p = panel(Color(GILT, 0.2), Color(0.047, 0.07, 0.12, 0.85), 18); p.custom_minimum_size.x = px(380)
+	var p = panel(Color(GILT, 0.22), Color(0.025, 0.04, 0.07, 0.86), 18); p.custom_minimum_size.x = px(380); _brackets(p)
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	var v = vbox(6); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(v); p.add_child(sc)
-	var top = hbox()
-	var cr = vbox(0); cr.add_child(lbl("Credits", 14, BONE3)); cr.add_child(lbl(C.numstr(R["credits"]), 26, GILT, font_semi)); top.add_child(cr)
-	top.add_child(spacer())
-	var cp = vbox(0); var l1 = lbl("Command points", 14, BONE3); l1.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; cp.add_child(l1)
-	var l2 = rich("[right]" + C.numstr(C.fleetCP()) + c("/" + C.numstr(R["cpCap"]), BONE3) + "[/right]", 26); cp.add_child(l2); cp.custom_minimum_size.x = px(140); top.add_child(cp)
-	v.add_child(top)
+	var v = vbox(7); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(v); p.add_child(sc)
+	v.add_child(lbl("FLEET COMMAND · SECTOR " + C.roman(R["sector"]), 12, BONE3, font_semi, false))
+	var top = hbox(); top.add_child(_readout("Credits", C.numstr(R["credits"]), GILT)); top.add_child(spacer())
+	top.add_child(_readout("Command points", C.numstr(C.fleetCP()) + " / " + C.numstr(R["cpCap"]), BONE, true)); v.add_child(top)
 	var A = C.ADMIRALS[R["admiral"]]
-	v.add_child(lbl("Admiral: " + str(A["n"]) + ", " + str(A["doc"]).to_lower(), 15, BONE3))
-	v.add_child(lbl("Fleet", 19, GILT, font_semi))
+	v.add_child(lbl("Admiral: " + str(A["n"]) + ", " + str(A["doc"]).to_lower(), 14, BONE3))
+	v.add_child(_wr_head("Fleet"))
+	var fs = C.flagshipOf()
 	for s in R["fleet"]:
-		var d = C.derive(s); var row = vbox(2)
-		var r1 = hbox(); r1.add_child(lbl(s["name"], 16)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 15, BONE3, null, false)); row.add_child(r1)
-		row.add_child(rich(c(esc(C.HULLS[s["tpl"]]["cls"]) + " Mk " + C.roman(s["mk"]) + ", " + esc(C.rankName(s["cap"])) + " " + esc(s["cap"]["name"]), BONE3) + (" " + c("(promotion ready)", GILT) if C.jt(s["cap"].get("pending")) else ""), 14))
-		row.add_child(bar(float(s["hp"]) / float(d["maxHp"]))); v.add_child(row)
+		var d = C.derive(s); var row = panel(Color(IRON3, 0.8), Color(0.06, 0.085, 0.13, 0.8), 6); var rv = vbox(3); row.add_child(rv)
+		var r1 = hbox(6)
+		if fs != null and fs["uid"] == s["uid"]: r1.add_child(lbl("★", 14, GILT, null, false))
+		r1.add_child(lbl(s["name"], 16, BONE, font_semi, false)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 14, BONE2, null, false)); rv.add_child(r1)
+		rv.add_child(rich(c(esc(C.HULLS[s["tpl"]]["cls"]) + " Mk " + C.roman(s["mk"]) + ", " + esc(C.rankName(s["cap"])) + " " + esc(s["cap"]["name"]), BONE3) + (" " + c("(promotion ready)", GILT) if C.jt(s["cap"].get("pending")) else ""), 13))
+		rv.add_child(_seg_bar(float(s["hp"]) / float(d["maxHp"]))); v.add_child(row)
 	var pend = R["fleet"].any(func(s): return C.jt(s["cap"].get("pending")))
 	add(v, abtn("Promote captains and refit" if pend else "Manage fleet and refits", "fleetScreen", "", pend))
-	if R["inventory"].size() > 0: v.add_child(lbl(str(R["inventory"].size()) + " refit" + ("s" if R["inventory"].size() > 1 else "") + " in the hold.", 15, BONE3))
+	if R["inventory"].size() > 0: v.add_child(lbl(str(R["inventory"].size()) + " refit" + ("s" if R["inventory"].size() > 1 else "") + " in the hold.", 14, BONE3))
 	if C.jt(R.get("aspect")) and C.ASPECTS.has(R["aspect"]):
-		v.add_child(lbl("Flagship", 19, GILT, font_semi)); var fs = C.flagshipOf()
-		v.add_child(rich("[b]" + esc(fs["name"] if fs != null else "") + "[/b] " + c(esc(C.ASPECTS[R["aspect"]]["n"]), GILT), 16)); v.add_child(lbl(C.ASPECTS[R["aspect"]]["d"], 14, BONE2))
-	v.add_child(lbl("Boons", 19, GILT, font_semi))
+		v.add_child(_wr_head("Flagship"))
+		v.add_child(rich("[b]" + esc(fs["name"] if fs != null else "") + "[/b] " + c(esc(C.ASPECTS[R["aspect"]]["n"]), GILT), 15)); v.add_child(lbl(C.ASPECTS[R["aspect"]]["d"], 13, BONE2))
+	v.add_child(_wr_head("Boons"))
 	if R["boons"].size() > 0:
 		for b in R["boons"]: v.add_child(_boon_line(b))
-	else: v.add_child(lbl("None yet. Win at a node with a patron’s sigil to earn one.", 15, BONE3))
+	else: v.add_child(lbl("None yet. Win at a node with a patron\u2019s sigil to earn one.", 14, BONE3))
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
-	v.add_child(rich(c("Patrons this run: ", BONE3) + ", ".join(PackedStringArray(ps)), 14))
-	v.add_child(lbl("Relics", 19, GILT, font_semi))
+	v.add_child(rich(c("Patrons this run: ", BONE3) + ", ".join(PackedStringArray(ps)), 13))
+	v.add_child(_wr_head("Relics"))
 	if R["relics"].size() > 0:
-		for r in R["relics"]: v.add_child(rich("[b]" + esc(C.relicName(r)) + "[/b]\n" + c(esc(C.RELICS[r]["d"]), BONE2), 15))
-	else: v.add_child(lbl("None yet. Elite fleets and flagships carry them.", 15, BONE3))
+		for r in R["relics"]: v.add_child(rich("[b]" + esc(C.relicName(r)) + "[/b]\n" + c(esc(C.RELICS[r]["d"]), BONE2), 14))
+	else: v.add_child(lbl("None yet. Elite fleets and flagships carry them.", 14, BONE3))
 	return p
+func _seg_bar(f: float) -> Control:
+	var h = HBoxContainer.new(); h.add_theme_constant_override("separation", px(2))
+	var n = 20; var on = int(round(clamp(f, 0.0, 1.0) * n))
+	for i in n:
+		var r = ColorRect.new(); r.custom_minimum_size = Vector2(0, px(5)); r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		r.color = (BLOOD if f < 0.35 else Color("#ffae42")) if i < on else Color(0.25, 0.12, 0.12, 0.8); h.add_child(r)
+	return h
 func _boon_line(b) -> Control:
 	var B0 = C.BOONS[b["id"]]; var r = int(C.z0(b.get("r")))
 	var col = Color(C.PATRONS[B0["p"]]["col"]) if C.jt(B0.get("p")) else Color("#f0b35a")
