@@ -86,6 +86,7 @@ var opt_vsync := false
 var opt_physics := false
 var mode_name := "main"
 var hi_dir := ""
+var hi_emissive := 0
 var all_ships: Array = []
 var phys: Node3D = null
 var board: Node = null
@@ -178,6 +179,8 @@ func _ready() -> void:
 	_build_environment()
 	_apply_quality()
 	_build_ships()
+	if hi_emissive > 0:
+		notes.append("max mode: %d hi emissive maps with no KHR_materials_emissive_strength set to strength 4 (GLTFDocument gives 1.0), as in the Babylon max mode" % hi_emissive)
 	var list: Array = SHIPS
 	var opts := {}
 	if stress:
@@ -1048,6 +1051,8 @@ func _load_gltf(path: String, keep_surfs: bool) -> Dictionary:
 	# (No UV-set fix: Godot 4.7's GLTFDocument already puts a material's TEXCOORD_1 maps on its first UV set.)
 	_fix_vertex_colors(st)
 	_add_mipmaps(st)
+	if hi_dir != "" and path.begins_with(hi_dir):
+		_hi_emission(st, path.get_file())
 	var out := {"pts": PackedVector3Array(), "nrm": PackedVector3Array()}
 	var surfs: Array = []
 	for gm in st.get_meshes():
@@ -1069,6 +1074,24 @@ func _load_gltf(path: String, keep_surfs: bool) -> Dictionary:
 	print("[enginetest]   %s: parse %.0f ms, fixes %.0f ms, scene %.0f ms" % [path.get_file(), (t1 - t0) / 1000.0, (t2 - t1) / 1000.0,
 		(Time.get_ticks_usec() - t2) / 1000.0])
 	return out
+
+
+# Max-detail files: GLTFDocument maps emissiveFactor to the emission colour and KHR_materials_emissive_strength (when
+# present) to emission_energy_multiplier, else 1.0. The hi files carry no strength, so, as the Babylon max mode does,
+# an emissive map with no strength in the file gets 4, which lets windows and running lights reach the glow threshold.
+func _hi_emission(st: GLTFState, file: String) -> void:
+	var jm: Array = st.json.get("materials", [])
+	var mats := st.get_materials()
+	for i in mini(jm.size(), mats.size()):
+		var m := mats[i] as BaseMaterial3D
+		var jd: Dictionary = jm[i]
+		if m == null or not jd.has("emissiveTexture"):
+			continue
+		if (jd.get("extensions", {}) as Dictionary).has("KHR_materials_emissive_strength"):
+			continue
+		print("[enginetest]   %s material %d: emission energy %.2f from the file, set to 4" % [file, i, m.emission_energy_multiplier])
+		m.emission_energy_multiplier = 4.0
+		hi_emissive += 1
 
 
 func _fix_vertex_colors(st: GLTFState) -> void:
