@@ -48,6 +48,7 @@ This is the single list of what is true, wrong or open about the game and the de
 | R23 | Oct 25, B2 calls: (1) no enemy squadrons yet; Ryan judges big-fleet tempo in play first (turns already under 15 s per round); (2) one batched prize screen for all prizes after a battle, with values side by side, a default per prize and one confirm; (3) no ongoing upkeep for kept prizes, the fleet slot is the cost (revisit if adding is always the best choice). |
 | R24 | Oct 25: (1) Dead Star: the gravity-well board stays as it plays today; the painting is its backdrop (re-confirms R2; Muse's "background only" reading is retired, D21). (2) OK to download Godot's official 4.7.2 export templates (1.28 GB, github.com/godotengine/godot-builds) on the PC for the standalone .exe test. |
 | R25 | Oct 25, Ryan on the concept paintings and backgrounds (including the Dead Star painting): "If the paintings or backgrounds don't line up or fit current structure, don't force it. It's more inspiration than anything." They guide mood and palette; nothing is bent to match them, and B2 item 4 (Dead Star backdrop) uses the painting only if it fits. |
+| R26 | Oct 25 evening, Ryan's first B1 plus B2 playtest (two encounters, play.bat in Edge after his Chrome had fallen back to software rendering): "It stuttered occasionally... moments when I would feel it hitch. Turns felt a little quicker, not crazy but a bit. Bigger enemies felt fine." No blockers found; reward reloads, retreat, boarding and capture not yet exercised. |
 
 ## Premises and rulings checked against the game
 
@@ -118,6 +119,7 @@ Full tables: `compute/balance_reference.md` and the CSVs beside it. Every later 
 | B-14 | Sim harness crash | VERIFIED | sim3d.js:112 `OBJS_SEEN[B.obj.type].w++` on an unseen type | FIXED (d88035a, guard as in the plan section 10) |
 | B-15 | Council chair's top 10 | None done in code | evidence/bugs_at_d5d0227.md | OPEN (B1 covers 1 and 2; others in later phases) |
 | B-16 | Every AI hull vanished on its first damage below 80% hull (until the cloned damage shader compiled), and once it came back a damaged painted hull drew as generic plating | VERIFIED Oct 25 (closeshot probes on Ryan's PC: barge and hulk-carrier invisible at 0.7 s and 1.8 s, back at 12 s with a plain panel grid) | gfx3d.js `shipDamageFx`: the clone dropped the paint, kit, finish and detail flags (new shader) and was swapped in before it compiled. Fix d234ed3 and the v3 commit: all flags copied, clone compiled on a scratch submesh, then swapped. Re-probe: clones ready at 0.7 s, barge visible with its own paint. | FIXED |
+| B-17 | Occasional hitches in the play build (Ryan, Oct 25, Edge on the RTX 5080) | Reported in play; the engine test saw 25 to 60 ms frames in Babylon too (shader compiles, GC, board labels) | OPEN: measure in a scripted real-browser battle on the PC (long frames with what was happening), fix the cheap causes (shader pre-warm, per-frame allocation); deeper work waits for the engine call |
 
 ## The record: documents and data
 
