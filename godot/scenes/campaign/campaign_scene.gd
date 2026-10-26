@@ -14,7 +14,7 @@ var C
 var ui
 
 func _ready() -> void:
-	C = CampaignScript.new()
+	C = CampaignScript.new(); add_child(C)
 	var err = C.load_tables()
 	if err != "":
 		push_error(err); get_tree().quit(1); return
