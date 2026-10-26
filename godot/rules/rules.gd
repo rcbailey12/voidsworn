@@ -165,11 +165,19 @@ var _ang := {}
 var _evc := false
 var _los := {}
 var _guard := {}
+var _tc := {}      # terrain by packed hex, inside a scoring window (terrain cannot change there)
+var _ob := {}      # onBoard by packed hex, for the whole battle (the board and its cut-outs are fixed at setup)
+var _mr := {}      # moveRules by faction (read-only tables)
+var _hc := {}      # hitChance inside a scoring window, keyed by both ships' positions and hexes moved
+var _lw := {}      # evalThreatVet: each foe's live guns inside a scoring window
+var _slot := {}    # unit id -> small number, for the packed cache keys
 var _runfx = null
 func eval_begin() -> void:
-	_evc = true; _los.clear(); _guard.clear()
+	_evc = true; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear()
+	if B != null:
+		for i in range(B["units"].size()): _slot[B["units"][i]["id"]] = i
 func eval_end() -> void:
-	_evc = false; _los.clear(); _guard.clear()
+	_evc = false; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear()
 func angTo(a, b) -> float:
 	var k = ((int(a["q"]) + 64) * 128 + int(a["r"]) + 64) * 16384 + (int(b["q"]) + 64) * 128 + int(b["r"]) + 64
 	var c = _ang.get(k)
@@ -372,6 +380,12 @@ func hexXZ(h) -> Dictionary: return {"x": HEX_W * (float(h["q"]) + float(h["r"])
 func planetEdge(R) -> float: return float(R) * 1.5 * HEX_S + HEX_S * 0.5
 func offToAx(c, r) -> Dictionary: return {"q": float(c) - floor(float(r) / 2.0), "r": float(r)}
 func onBoard(q, r) -> bool:
+	var k = (int(q) + 512) * 1024 + int(r) + 512
+	var c = _ob.get(k)
+	if c == null:
+		c = _onBoard_raw(q, r); _ob[k] = c
+	return c
+func _onBoard_raw(q, r) -> bool:
 	if r < 0 or r >= BH: return false
 	var c = float(q) + floor(float(r) / 2.0)
 	return c >= 0 and c < BW and not (CUT != null and CUT.has(hkey(q, r)))
@@ -407,7 +421,12 @@ func occMap() -> Dictionary:
 	for u in B["units"]:
 		if not jt(u.get("dead")): m[hkey(u["q"], u["r"])] = u
 	return m
-func terr(q, r): return B["terrain"].get(hkey(q, r))
+func terr(q, r):
+	if _evc:
+		var k = (int(q) + 512) * 1024 + int(r) + 512
+		if _tc.has(k): return _tc[k]
+		var v = B["terrain"].get(hkey(q, r)); _tc[k] = v; return v
+	return B["terrain"].get(hkey(q, r))
 func _cpOf(id) -> float: return float(HULLS[id]["cp"]) if jt(HULLS[id].get("cp")) else 1.0
 func _cmpCheap(a, b) -> float:
 	var d = _cpOf(a) - _cpOf(b)
@@ -494,7 +513,7 @@ func terrainConnected(T: Dictionary) -> bool:
 
 func genTerrain(map, shape, opt) -> Dictionary:
 	if opt == null: opt = {}
-	CUT = null; var VOID = {}
+	CUT = null; var VOID = {}; _ob.clear()
 	var cut = {}; var inner = {}
 	var ph = []
 	for i in range(6): ph.append(rnd() * 6.28)
@@ -576,6 +595,7 @@ func genTerrain(map, shape, opt) -> Dictionary:
 				if d <= 2 or (d == 3 and nz.call(c * 7 + r * 2, 4) > 0.55):
 					cut[hkey(h.q, h.r)] = true; inner[hkey(h.q, h.r)] = true
 	if cut.size() > 0: CUT = cut
+	_ob.clear()
 	SOLID = null
 	if cut.size() > 0:
 		var seen = {}; var holes = []; var rift = {}
@@ -1362,7 +1382,13 @@ func passable(u, q, r, occ) -> bool:
 	var o = occ.get(hkey(q, r))
 	if o != null and o["side"] != u["side"] and not jt(u.get("isSq")): return false
 	return true
-func moveRules(u) -> Dictionary:
+func moveRules(u) -> Dictionary: # the same values as the game's fresh object; callers only read it
+	var k = "sq" if (u != null and jt(u.get("isSq"))) else (String(u["fac"]) if u != null else "")
+	var c = _mr.get(k)
+	if c == null:
+		c = _moveRules_raw(u); _mr[k] = c
+	return c
+func _moveRules_raw(u) -> Dictionary:
 	var o = MOVE_BASE.duplicate()
 	if u != null and not jt(u.get("isSq")) and jt(MOVE_RULES.get(u["fac"])):
 		for k in MOVE_RULES[u["fac"]].keys(): o[k] = MOVE_RULES[u["fac"]][k]
@@ -1518,6 +1544,21 @@ func rakeBonus(u, w) -> float:
 	if u == null or jt(u.get("isSq")) or not (w["arc"] == "P" or w["arc"] == "S") or z0(u.get("hexMoved")) < 2: return 0.0
 	return moveRules(u)["rake"]
 func hitChance(u, w, t) -> float:
+	if _evc:
+		var su = _slot.get(u.get("id")); var st = _slot.get(t.get("id")); var wi = -1
+		var ws = u["weapons"]
+		for i in range(ws.size()):
+			if is_same(ws[i], w):
+				wi = i; break
+		var hu = int(z0(u.get("hexMoved"))); var ht = int(z0(t.get("hexMoved")))
+		if su != null and st != null and su < 128 and st < 128 and wi >= 0 and wi < 16 and hu < 64 and ht < 64:
+			var k = ((((((((su * 16 + wi) * 128 + st) * 128 + (int(u["q"]) + 64)) * 128 + (int(u["r"]) + 64)) * 128 + (int(t["q"]) + 64)) * 128 + (int(t["r"]) + 64)) * 64 + hu) * 64 + ht)
+			var c = _hc.get(k)
+			if c == null:
+				c = _hitChance_raw(u, w, t); _hc[k] = c
+			return c
+	return _hitChance_raw(u, w, t)
+func _hitChance_raw(u, w, t) -> float:
 	var d = hdist(u, t); var over: float = max(0, d - w["opt"] - z0(u["fx"].get("longAim")))
 	var c: float = w["acc"] + u["aim"] + (15 if jt(u.get("lockOn")) else 0) - (15 if jt(u.get("fullAhead")) else 0) - over * w["fall"] - min(45, t["ev"] + z0(t.get("evBuff"))) * (w["evMult"] if jt(w.get("evMult")) else 1)
 	if jt(t.get("isSq")) and w["k"] != "flak" and w["k"] != "sq": c -= 15
@@ -2752,8 +2793,14 @@ func evalThreatVet(v, foes: Array) -> float:
 		var d = hdist(p, v)
 		if d > 13: continue
 		var ls: Variant = null
-		for w in p["weapons"]:
-			if gt(w.get("cdLeft"), 1) or gt(w.get("off"), 1) or not aiGunLive(p, w): continue
+		var lw = _lw.get(p["id"]) if _evc else null
+		if lw == null:
+			lw = []
+			for w in p["weapons"]:
+				if gt(w.get("cdLeft"), 1) or gt(w.get("off"), 1) or not aiGunLive(p, w): continue
+				lw.append(w)
+			if _evc: _lw[p["id"]] = lw
+		for w in lw:
 			if d <= w["r"] and inArc(p, v, w["arc"]):
 				var e = expectedVs(p, w, v); tot += e.hull + e.shield * 0.2
 			elif d <= w["r"] + max(1, (p["speed"] if jt(p.get("speed")) else 2) - 1) and aiArcSoon(p, v, w["arc"]):
