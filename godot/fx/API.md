@@ -22,6 +22,8 @@ fx.setup({
 
 - fx runs its own `_process`. It keeps its own effect clock (scene_t, a global shader parameter it registers) that slows during hit pause.
 - For stills and tests: `fx.manual = true` and then `fx.step(dt)` once per frame; the clock then only moves with `step`.
+- On the loading screen, after ships, lights and world are built: `await fx.warmup(cam)` (draws every effect material once, so the first lance, shield ripple or death never stalls on a shader compile).
+- Safe mode (the Compatibility renderer, `play_godot_safe.bat`): fx and world detect it and drop Decals, raymarched volumes, distortion and the lens; everything else plays.
 - Physics: fx makes its own Jolt rigid bodies (death chunks, debris) with `gravity_scale = 0`, so it works whatever the project gravity is. Please keep `3d/physics_engine="Jolt Physics"` in project.godot (it is the engine the A3 proof measured).
 
 ## 2. Ships
@@ -169,4 +171,36 @@ Tonemapper, exposure, bloom threshold and the dark-hull lift are chosen in look.
 
 ## 12. Cost
 
-Measured at 4K max detail on Ryan's PC (RTX 5080) in the effects gallery (`godot/fx/gallery/`); numbers per feature are in `godot/fx/gallery/README.md` when the first PC run lands.
+Ryan's PC (RTX 5080), 4K max detail, the gallery's 26 s reel (`godot/fx/gallery/README.md` has the table): everything 5.78 ms a frame against 4.18 ms with no effects, so the effects layer costs about 1.6 ms; the world 0.5 ms; physics 0.03 ms. High quality saves about 1.75 ms. Call `fx.warmup(cam)` on the loading screen so no shader compiles mid-fight.
+
+## 13. Drop-in event player (a sketch for battle.gd)
+
+```gdscript
+func play_event(e: Dictionary) -> float:     # returns how long to wait before the next event
+	match e["t"]:
+		"fire":
+			var hits := []
+			for h in pending_hits(e):              # the "hit" events that follow this "fire" in the stream
+				hits.append({"shield": h["shield"], "hull": h["hull"], "section": h["section"], "crit": h["crit"]})
+			var r: Dictionary = fx.volley(str(e["unit"]), str(e["kind"]), str(e["target"]),
+				{"weapon_id": str(e["weapon_id"]), "shots": e["shots"], "hits": hits, "quad": int(e["quad"]), "pd": int(e.get("pd", 0))})
+			return r["done"]
+		"shield_down":
+			fx.shield_break(str(e["unit"]), int(e["quad"]))
+			return 0.3
+		"death":
+			return fx.death(str(e["unit"]), str(e["cause"]))
+		"fled":
+			fx.jump_out(str(e["unit"]))
+			return 0.5
+		"ability":
+			fx.ability(str(e["unit"]), str(e["ab"]))
+		"command":
+			fx.command(str(e["unit"]), str(e["id"]))
+		"tick":
+			fx.tick(str(e["unit"]), str(e["kind"]))
+	return 0.0
+
+# after each batch: for u in api.view().units: fx.sync_ship(str(u["id"]), u)
+# each frame: your animation delta *= fx.anim_speed()
+```
