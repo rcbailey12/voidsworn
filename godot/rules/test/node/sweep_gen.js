@@ -30,7 +30,8 @@ for (let i = 0; i < n; i++) {
   if (chance(0.3)) S.vet = true;
   if (chance(0.25)) S.ai = 'standard';
   if (chance(0.15)) S.alt = false;
-  if (chance(0.5)) { S.campaign = true; if (chance(0.3)) S.event_force = pick(Object.keys(T.BEVENTS)); }
+  if (chance(0.4)) S.attack_move = true;
+  if (chance(0.5)) { S.campaign = true; if (chance(0.3)) S.event_force = pick(Object.keys(T.BEVENTS)); else if (chance(0.3)) S.event_war = true; }
   res['w' + (i + 1)] = S;
 }
 fs.writeFileSync(out, JSON.stringify(res, null, 1)); console.log('sweep', n, 'battles ->', out);

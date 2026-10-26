@@ -64,7 +64,9 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | Call | What it does |
 |---|---|
 | `reach(id) -> Array` | Every end state the ship can move to: `{q, r, f, cost, t, path}`. `f` is the facing (0 to 5), `t` the turns used. Pass one of these to `move`. |
-| `move(id, state)` | Burn along `state.path` (thruster slips, reverses, climbing over rocks and diving under ships are in the path steps). |
+| `move(id, state, opts = {})` | Burn along `state.path` (thruster slips, reverses, climbing over rocks and diving under ships are in the path steps). `opts.late_fire = {weapons: [indices], target: id}` fires those guns at the target during the burn (those that can fire once the ship is there), as the game's attack-move does. |
+| `attack_plan(id, target_id, weapons = null) -> {state, guns, of}` | The game's attack-move plan (ui3d.js `attackMovePlan`): the best reachable state from which the most of the given guns (default every ready gun but flak) reach the target, or null. Use it for the "tap an enemy out of reach" preview. |
+| `attack_move(id, target_id, weapons = null)` | Burn to that state and fire on the way (`move` with `late_fire`). |
 | `can_fire(id, wi, target_id) -> bool` | Range, arc, line of sight, readiness. |
 | `preview_fire(id, wi, target_id) -> Dictionary` | `{hit, shield, hull, quad, rear, can}`: hit %, expected shield and hull damage, the target's facing quadrant (0 prow, 1 starboard, 2 rear, 3 port). |
 | `fire(id, wi, target_id, called_section = null)` | Fire weapon `wi`. `called_section` is `"prow"`, `"mid"` or `"eng"` for an aimed shot. |
@@ -76,6 +78,7 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | `end_turn()` | Classic mode only: end your whole turn. |
 | `rotate(id, dir)` | Turn in place one step (`dir` = +1 or -1), costing one movement point and one turn (free for ships that pivot). As in the game, the ship becomes the active one even when it cannot turn; returns whether it turned. |
 | `can_command() -> bool`, `command()` | The Admiral's Command: once per battle, from round 1, during your phase, no ship needed. The game asks for a confirming second tap; that is UI only. |
+| `ai_activate(id)` | The game's own player-side AI plays this ship's activation (the battle sim's `botUnit`: Command when it pays, ability, ram, the best move for its guns and the objective, boarding, every gun at its best target, brace when hurt; plus one turn in place when no gun bears), through these same commands. Use it for auto-play or a full-run bot. It stops when the activation ends; in alternating mode the enemy phase then starts as usual. (The enemy AI, `aiUnit`, only ever plays the enemy side in the game, so it is not offered for your ships.) |
 | `wing_order(wing_id, target_id)` | A standing order for one of your squadrons: an enemy ship means strike it until it dies, one of your ships means guard it. Works any time before the end. The wing acts on it in its next swarm phase. |
 | `hurry()` | Enter or Space. Presentation only: the rules do not change. Play the queued events faster. |
 
@@ -91,6 +94,7 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 {round, side, phase, over, arena, terrain: {"q,r": "rock"|"hulk"|"station"|"planet"|"neb"|"debris"|"storm"},
  cut: ["q,r", ...] (hexes cut away from the board), map: {map, shape, station?, planet?, wrecks?, deadstar?, holes?},
  obj: {type, score, escore, ...}, focus: id of the enemy fleet's current focus target or null,
+ hexes: [{q, r}, ...] (every playable hex of the board; the same read-only array every call, fixed at setup),
  units: [{id, side, tpl, name, cls, fac, size, squadron, q, r, facing, hp, maxHp, sh: [prow, starboard, rear, port], shMax,
           sec: {prow: {hp, max, broken}, mid: {...}, eng: {...}}, crew, crewMax, dead, fled, activated, active, braced,
           mp, turnsLeft, ab, abCd, abReady, burning, flagship,
@@ -131,9 +135,10 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `wreck` | `unit, q, r` | The hulk stays on the board as blocking terrain. |
 | `fled` | `unit` | The ship left the battle (escorts fleeing, a breakthrough, a convoy getting through). |
 | `log` | `text, kind` | A battle log line, word for word as the game writes it. `kind` is the game's colour class: `p` (good for you), `e` (bad for you), `s` (a success), `x` (neutral), `ember` (warnings), or null. |
+| `float` | `unit, text, color, dy` | A floating callout over a ship, word for word and in the game's colour ("\u221212 hull", "Shields down", "Critical", "Braced", ability names, boon names). `dy` is the game's vertical offset in pixels (negative is higher; null means 0). |
 | `end` | `result` | The battle is over. |
 
-**Not events:** the game's floating callouts (`fxText`: "-12 hull", "Shields down", "Critical") are presentation only and carry no rules information beyond the `hit`, `shield_down`, `system` and `log` events, so the scene draws its own from those.
+Presentation events (no rules meaning; draw them or not):
 
 ## Determinism (audit items, Oct 26)
 

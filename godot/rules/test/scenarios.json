@@ -181,7 +181,7 @@
   "kind": "battle",
   "rounds": 12,
   "bot": "full",
-  "note": "Generated enemy fleet (carrier archetype, exact V8 pow in the budget) against two Voidsworn carriers: carrier adaptation (point-defence refits, B-20, and the adaptive fighter screen), Hegemony fighters, flank deployment",
+  "note": "Generated enemy fleet (carrier archetype, exact V8 pow in the budget) against two Voidsworn carriers: carrier adaptation (point-defence refits, B-20, and the adaptive fighter screen), Hegemony fighters, flank deployment; attack-move (fire during the burn) when no gun bears",
   "seed": 7007,
   "sector": 2,
   "admiral": "ashgrove",
@@ -194,7 +194,8 @@
   "fac": "hegemony",
   "arch": "carrier",
   "col": 4,
-  "map": "station"
+  "map": "station",
+  "attack_move": true
  },
  "s8": {
   "obj": "rout",
@@ -539,7 +540,7 @@
   "rounds": 14,
   "bot": "full",
   "admiral": "vex",
-  "note": "Fight type: Breakthrough. Get half the fleet off the far edge past an Ithar blocking line (veterans block the lead ship's lane)",
+  "note": "Fight type: Breakthrough. Get half the fleet off the far edge past an Ithar blocking line (veterans block the lead ship's lane); attack-move (fire during the burn) when no gun bears",
   "seed": 14014,
   "sector": 2,
   "obj": "break",
@@ -557,7 +558,8 @@
    "i_blade",
    "i_wisp",
    "i_wisp"
-  ]
+  ],
+  "attack_move": true
  },
  "s15": {
   "shape": "dense",
@@ -712,7 +714,7 @@
   ]
  },
  "s21": {
-  "note": "Classic mode (whole turns, battle.js aiTurn: squadrons first, then each ship picked by opportunity) with the full bot; carriers on both sides",
+  "note": "Classic mode (whole turns, battle.js aiTurn: squadrons first, then each ship picked by opportunity) with the full bot; carriers on both sides; attack-move (fire during the burn) when no gun bears",
   "seed": 21021,
   "sector": 2,
   "admiral": "ashgrove",
@@ -736,7 +738,8 @@
   "kind": "battle",
   "rounds": 10,
   "bot": "full",
-  "alt": false
+  "alt": false,
+  "attack_move": true
  },
  "s22": {
   "note": "Classic mode with the Standard AI and the basic bot; Corsair raiders",
@@ -802,5 +805,57 @@
   "rounds": 12,
   "bot": "full",
   "timing": true
+ },
+ "s24": {
+  "note": "B-20 coverage: Ashgrove with three carriers against a generated Hegemony flagship fleet (point-defence refits that lack fired, cdLeft, off and their name; the flagship's Barrage Command resets and restores them; criticals can knock a refit out and bring it into the flak gauntlet); a campaign battle in a sector at war",
+  "seed": 24024,
+  "sector": 3,
+  "admiral": "ashgrove",
+  "fleet": [
+   "reliquary",
+   "reliquary",
+   "reliquary",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "kind": "boss",
+  "obj": "rout",
+  "shape": "open",
+  "map": "station",
+  "dep": "line",
+  "rounds": 14,
+  "bot": "full",
+  "campaign": true,
+  "event_war": true
+ },
+ "s25": {
+  "note": "B-20 coverage, second fleet: Corsair player carriers and the hive aspect against a generated Hegemony carrier fleet (refits on most escorts, fighter screen), sector at war, Classic mode, faction ship names (FNAMES)",
+  "seed": 25025,
+  "sector": 2,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_hulk",
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "hegemony",
+  "arch": "carrier",
+  "col": 5,
+  "kind": "battle",
+  "obj": "rout",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "rounds": 12,
+  "bot": "full",
+  "aspect": "hive",
+  "campaign": true,
+  "event_war": true,
+  "alt": false
  }
 }

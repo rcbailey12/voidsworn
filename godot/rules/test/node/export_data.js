@@ -10,7 +10,9 @@ const fs = require('fs'), path = require('path'), vm = require('vm'), crypto = r
 // the rules oracle: the pinned copy in ../oracle (VS_ORACLE overrides, for example the live repo root when catching up a rules change)
 const ROOT = process.env.VS_ORACLE ? path.resolve(process.env.VS_ORACLE) : path.resolve(__dirname, '..', 'oracle');
 global.window = {}; global.document = undefined; global.performance = { now: () => 0 };
-const srcs = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
+// the browser also defines FNAMES (ui3d.js), which core.js shipName reads: pinned as oracle/fnames.js (or taken from ui3d.js beside a VS_ORACLE checkout)
+const fnamesSrc = () => { const f = path.join(ROOT, 'fnames.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); const u = path.join(ROOT, 'ui3d.js'); if (fs.existsSync(u)) { const m = fs.readFileSync(u, 'utf8').match(/^const FNAMES=[\s\S]*?\};/m); if (m) return m[0]; } return ''; };
+const srcs = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).concat([fnamesSrc()]);
 const names = [];
 for (const s of srcs) { const re = /^(?:const|let)\s+([A-Z_][A-Z0-9_]*)\s*=/gm; let m; while ((m = re.exec(s))) if (!names.includes(m[1])) names.push(m[1]); }
 // a few tables are declared later on the same line as another (const A=..., B=...)

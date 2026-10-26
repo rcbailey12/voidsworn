@@ -75,6 +75,19 @@ async function pBotF(u){
   if(!B.over&&B.side==='player'&&!u.activated&&B.alt) await endActivationF(true,u);
 }
 
+// ---- ui3d.js attack-move (attackMovePlan, firingSet, tap an enemy out of reach): burn to the best hex for the shot, fire on the way.
+// B.reach is the selected ship's computeReach and B.armed is null (every gun) here.
+function attackPlanF(s,t){ if(!B||!s||s.isSq||s.braced||t.dead) return null; let best=null;
+  const idx=s.weapons.map((w,i)=>i).filter(i=>{ const w=s.weapons[i]; return w.k!=='flak'&&weaponReady(w); }); if(!idx.length) return null;
+  for(const st of computeReach(s).states){ if(st.q===s.q&&st.r===s.r) continue; const v=stateView(s,st); const n=idx.filter(i=>inReach(v,s.weapons[i],t)).length; if(!n) continue;
+    const hx=(st.path||[]).filter(p=>!p.rot).length, sc=n*100-st.cost*3-(st.t||0)+(hx>=2?4:0); if(!best||sc>best.sc) best={st,n,sc,of:idx.length}; }
+  return best; }
+async function attackMoveF(s,u){ if(!(s&&s.side==='player'&&canUseF(s))) return false; const am=attackPlanF(s,u); if(!(am&&guardF(s))) return false;
+  await actF(()=>moveUnit(s,am.st,{onLate:async()=>{ const live=liveFrom(s); for(const i of s.weapons.map((w,i)=>i).filter(i=>canFire(s,s.weapons[i],u))){ if(u.dead||s.dead||B.over||!live()) break; await fireWeapon(s,i,u); } }})); return true; }
+// scenarios with attack_move: a ship with no gun bearing first attack-moves on the nearest enemy ship (coverage for the API's attack_move)
+async function attackFirstF(u){ if(B.over||u.dead||u.isSq) return; if(u.weapons.some(w=>weaponReady(w)&&alive('enemy').some(t=>canFire(u,w,t)))) return;
+  const es=alive('enemy').filter(x=>!x.isSq); if(!es.length) return; let t=es[0]; for(const x of es) if(hdist(u,x)<hdist(u,t)) t=x; await attackMoveF(u,t); }
+
 // ---- the full bot: sim3d.js botUnit (Command, abilities, rams, boarding, brace, objective pull), through the game's command path.
 // One addition for coverage: a ship with nothing to shoot turns in place once. Each step stops when the activation has ended.
 function botObjF(v){ const o=B.obj; if(!o) return 0; const col=h=>h.q+Math.floor(h.r/2);
@@ -85,7 +98,7 @@ function botObjF(v){ const o=B.obj; if(!o) return 0; const col=h=>h.q+Math.floor
   if(o.type==='hunt'){ const f=alive('enemy').find(x=>x.flagship); return f?hdist(v,f)*2.5:0; }
   return 0; }
 async function pBotFull(u){
-  const gone=()=>B.over||u.dead||u.activated||B.side!=='player';
+  const r0=B.round, gone=()=>B.over||u.dead||u.activated||B.side!=='player'||B.round!==r0; // stops when the activation ends or the round changes (as api.ai_activate)
   if(gone()) return;
   if(canCommand('player')&&!B.busy){ const c=commandFor('player'); const pl=alive('player').filter(x=>!x.isSq), en=alive('enemy').filter(x=>!x.isSq);
     if(c&&pl.length&&en.length){ const near=en.filter(e=>pl.some(p=>hdist(p,e)<=8)).length, hpR=pl.reduce((a,p)=>a+p.hp,0)/pl.reduce((a,p)=>a+p.maxHp,0), hurt=pl.some(p=>p.hp<p.maxHp*.5);
@@ -141,18 +154,20 @@ async function runScenario(S){
   const cfg={kind:S.kind,fac:S.fac,col:S.col==null?3:S.col,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies?S.enemies.map(tpl=>({tpl})):undefined};
   if(S.arch) cfg.arch=S.arch; if(S.mod) cfg.mod=S.mod;
   startBattle(cfg);
-  if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_force||null); } // campaign3d.js battleScreen
+  if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_war?(cfg.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null):(S.event_force||null)); } // campaign3d.js battleScreen (event_war: the sector at war)
   hook('start',null);
   B.alt=S.alt!==false; for(const x of B.units) x.activated=false; if(B.alt){ const d=startSideTurn('enemy'); if(d) await d; } // ui3d.js prepBattle
   let g=0;
-  const bot=S.bot==='full'?pBotFull:pBotF;
+  const bot0=S.bot==='full'?pBotFull:pBotF, bot=S.attack_move?async u=>{ await attackFirstF(u); if(!B.over&&!u.dead&&!u.activated&&B.side==='player') await bot0(u); }:bot0;
   if(B.alt) while(!B.over&&B.round<=S.rounds&&g++<2000){ const u=pendingP()[0]; if(u) await bot(u); else await endActivationF(true,null); }
   else while(!B.over&&B.round<=S.rounds&&g++<200){ for(const u of alive('player').filter(x=>!x.isSq)){ if(B.over) break; await bot(u); } if(!B.over) await endTurnF(); }
   hook('end '+(B.over||'none'),null); HOOK=null; rec.timing=TM; return rec; }
 `;
 
 console.debug = () => {}; // the game's swarm timing chatter
-const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
+// the browser also defines FNAMES (ui3d.js), which core.js shipName reads: pinned as oracle/fnames.js (or taken from ui3d.js beside a VS_ORACLE checkout)
+const fnamesSrc = () => { const f = path.join(ROOT, 'fnames.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); const u = path.join(ROOT, 'ui3d.js'); if (fs.existsSync(u)) { const m = fs.readFileSync(u, 'utf8').match(/^const FNAMES=[\s\S]*?\};/m); if (m) return m[0]; } return ''; };
+const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).concat([fnamesSrc()]);
 vm.runInThisContext(files.join('\n') + '\n' + HARNESS + '\nglobalThis.__G={runScenario,rndSeed,rnd,get S(){ return RNG_S; }};', { filename: 'rules_bundle.js' });
 // COVER=1: count calls to the rules functions each scenario reaches (a coverage check for the golden scenarios; printed to stderr)
 const COVER = process.env.COVER ? {} : null;
