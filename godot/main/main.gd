@@ -34,6 +34,12 @@ func quit_clean(code := 0) -> void:
 	await get_tree().process_frame
 	load("res://render/ship_view.gd").clear_static()
 	load("res://scenes/battle/fx_stub.gd").clear_static()
+	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
+	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd"]:
+		if ResourceLoader.exists(sp):
+			var sc = load(sp)
+			if sc != null and sc.has_method("clear_static"):
+				sc.clear_static()
 	get_tree().quit(code)
 
 
@@ -310,7 +316,7 @@ func _bot_battle(seed: int) -> Dictionary:
 	battle = b
 	b.start_default()
 	var r: Dictionary = await b.finished
-	var out := {"mode": "battle", "result": r.get("result"), "rounds": r.get("rounds"), "errors": r.get("errors", []), "game_s": r.get("secs")}
+	var out := {"mode": "battle", "result": r.get("result"), "rounds": r.get("rounds"), "errors": r.get("errors", []), "game_s": r.get("secs"), "pipeline_compiles": r.get("pipeline_compiles", -1)}
 	battle = null
 	b.queue_free()
 	await get_tree().process_frame

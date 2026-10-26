@@ -808,6 +808,27 @@ func show_menu(title: String, items: Array) -> void:
 		v.add_child(_button(str(it[0]), str(it[1]), it[2] if it.size() > 2 else null, it == items[0]))
 
 
+# the loading cover while the battle warms up its shaders
+var load_cover: ColorRect
+
+
+func loading(on: bool) -> void:
+	if on and load_cover == null:
+		load_cover = ColorRect.new()
+		load_cover.color = Color(0.02, 0.025, 0.04, 1.0)
+		load_cover.set_anchors_preset(Control.PRESET_FULL_RECT)
+		load_cover.mouse_filter = Control.MOUSE_FILTER_STOP
+		var l := _label("Preparing the battle...", 30, GILT, font_goth)
+		l.set_anchors_preset(Control.PRESET_CENTER)
+		l.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		l.grow_vertical = Control.GROW_DIRECTION_BOTH
+		load_cover.add_child(l)
+		root.add_child(load_cover)
+	elif not on and load_cover != null:
+		load_cover.queue_free()
+		load_cover = null
+
+
 func hide_menu() -> void:
 	if menu != null:
 		menu.queue_free()

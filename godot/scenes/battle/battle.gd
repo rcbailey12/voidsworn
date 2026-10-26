@@ -220,7 +220,7 @@ func _build_world() -> void:
 	fx.name = "Fx"
 	add_child(fx)
 	# the G4 effects system (godot/fx/API.md) when it is in the build; the placeholder stays for anything it lacks
-	if ResourceLoader.exists("res://fx/fx.gd"):
+	if ResourceLoader.exists("res://fx/fx.gd") and not args.has("nofx"):
 		gfx = load("res://fx/fx.gd").new()
 		gfx.name = "GFx"
 		add_child(gfx)
@@ -349,7 +349,7 @@ func _begin(a) -> void:
 	sel = ""
 	inspect = ""
 	armed = -1
-	board.props_world = ResourceLoader.exists("res://world/world.gd")
+	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
 	board.build(R)
 	cam.bounds = board.bounds()
 	if world != null:
@@ -407,8 +407,60 @@ func _begin(a) -> void:
 	batches.append({"events": api.take_events(), "view": api.view()})
 	sfx.ambient_start()
 	_refresh_ui()
+	await _warmup()
 	if not busy:
 		_runner()
+
+
+# Loading-screen warm-up (Muse shipping review): compile every pipeline the battle will use before play starts, so the
+# first lance or explosion never hitches: every hull in view for a few frames (camera pulled back over the whole
+# board), then G4's fx.warmup draws each effect material once in this battle's own environment. The pipeline
+# compilations that still happen during play are counted (Performance PIPELINE_COMPILATIONS_DRAW) and reported.
+var pipe_base := -1
+
+
+func _pipe_count() -> int:
+	var n := 0
+	for m in ["PIPELINE_COMPILATIONS_DRAW", "PIPELINE_COMPILATIONS_SPECIALIZATION"]:
+		if ClassDB.class_has_integer_constant("Performance", m):
+			n += int(Performance.get_monitor(ClassDB.class_get_integer_constant("Performance", m)))
+	return n
+
+
+var warming := false
+
+
+func _warmup() -> void:
+	warming = true
+	hud.loading(true)
+	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
+	cam.b = 0.6
+	cam.r = maxf(cam.bounds.x, cam.bounds.y) * 2.4
+	cam.t = Vector3.ZERO
+	cam.snap()
+	for i in 3:
+		await get_tree().process_frame
+	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
+		# at most 4 s: a warm-up that never returns must never hold the battle
+		var done := [false]
+		var run := func() -> void:
+			await gfx.warmup(cam)
+			done[0] = true
+		run.call()
+		var t0 := Time.get_ticks_msec()
+		while not done[0] and Time.get_ticks_msec() - t0 < 4000:
+			await get_tree().process_frame
+	for i in 2:
+		await get_tree().process_frame
+	cam.a = keep["a"]
+	cam.b = keep["b"]
+	cam.r = keep["r"]
+	cam.t = keep["t"]
+	cam.snap()
+	await get_tree().process_frame
+	pipe_base = _pipe_count()
+	hud.loading(false)
+	warming = false
 
 
 func _enemy_fac_of(v: Dictionary) -> String:
@@ -1073,7 +1125,8 @@ func _end_flow() -> void:
 				lost += 1
 			else:
 				killed += 1
-	result = {"result": "win" if win else "loss", "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+	result = {"result": "win" if win else "loss", "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V,
+		"pipeline_compiles": _pipe_count() - pipe_base if pipe_base >= 0 else -1}
 	var body := "%d enemy ship%s destroyed, %d of yours lost, in %d round%s." % [killed, "" if killed == 1 else "s", lost, int(V["round"]), "" if int(V["round"]) == 1 else "s"]
 	if bot or args.has("bot-runs"):
 		finished.emit(result)
@@ -1088,7 +1141,7 @@ func _sel_unit() -> Dictionary:
 
 
 func _can_act() -> bool:
-	return not busy and not ended and api != null and api.phase == "player"
+	return not busy and not warming and not ended and api != null and api.phase == "player"
 
 
 func _usable(u: Dictionary) -> bool:
@@ -1126,11 +1179,15 @@ func _update_reach() -> void:
 # ui3d.js bestFacingReach: on each hex, end on the facing that brings the most ready guns onto an enemy (cheapest on ties)
 func _best_facing(u: Dictionary) -> void:
 	var ru = api.unit(sel)
-	var foes: Array = R.alive("enemy")
+	var foes: Array = []
+	for t in V["units"]:
+		if t["side"] == "enemy" and not t["dead"]:
+			foes.append(t["id"])
 	var ready: Array = []
-	for w in ru["weapons"]:
+	for i in range(ru["weapons"].size()):
+		var w = ru["weapons"][i]
 		if R.weaponReady(w) and w["k"] != "flak":
-			ready.append(w)
+			ready.append(i)
 	var best := {}
 	for st in reach_states:
 		var k: String = board.key(st.q, st.r)
@@ -1139,14 +1196,12 @@ func _best_facing(u: Dictionary) -> void:
 		reach_alt[k].append(st)
 		var n := 0
 		var sc := -float(st.cost) * 10.0 - float(st.get("t", 0))
-		if not ready.is_empty() and not foes.is_empty():
-			var v = R.stateView(ru, st)
-			for w in ready:
-				for t in foes:
-					if R.inReach(v, w, t):
-						n += 1
-						break
-			sc += n * 1000.0
+		for wi in ready:
+			for tid in foes:
+				if api.in_reach(sel, wi, tid, st):
+					n += 1
+					break
+		sc += n * 1000.0
 		if not best.has(k) or sc > float(best[k]["sc"]):
 			best[k] = {"st": st, "sc": sc, "n": n}
 	for k in best:
@@ -1169,37 +1224,11 @@ func _firing_set(t_id: String) -> Array:
 
 
 func _attack_move(t_id: String):
-	# v51 attack-move: an enemy your guns can't reach yet; burn to the best hex for that shot and fire
-	var ru = api.unit(sel)
-	var tu = api.unit(t_id)
-	if ru == null or tu == null or R.jt(ru.get("braced")):
+	# v51 attack-move (the rules' attack_plan): an enemy your guns can't reach yet; burn to the best hex and fire on the way
+	var am = api.attack_plan(sel, t_id, [armed] if armed >= 0 else null)
+	if am == null:
 		return null
-	var idx: Array = []
-	for i in ([armed] if armed >= 0 else range(ru["weapons"].size())):
-		var w = ru["weapons"][i]
-		if w["k"] != "flak" and R.weaponReady(w):
-			idx.append(i)
-	if idx.is_empty():
-		return null
-	var best = null
-	for st in reach_states:
-		if int(st.q) == int(ru["q"]) and int(st.r) == int(ru["r"]):
-			continue
-		var v = R.stateView(ru, st)
-		var n := 0
-		for i in idx:
-			if R.inReach(v, ru["weapons"][i], tu):
-				n += 1
-		if n == 0:
-			continue
-		var hx := 0
-		for p in st.path:
-			if not R.jt(p.get("rot")):
-				hx += 1
-		var sc := n * 100.0 - float(st.cost) * 3.0 - float(st.get("t", 0)) + (4.0 if hx >= 2 else 0.0)
-		if best == null or sc > float(best["sc"]):
-			best = {"st": st, "n": n, "sc": sc, "of": idx.size()}
-	return best
+	return {"st": am["state"], "n": int(am["guns"]), "of": int(am["of"])}
 
 
 func _clear_overlay() -> void:
@@ -1308,7 +1337,7 @@ func _compute_threat() -> Dictionary:
 		var seen := {}
 		var states: Array = [{"q": e["q"], "r": e["r"], "f": e["facing"], "cost": 0, "path": []}]
 		if not R.jt(e.get("isSq")):
-			states.append_array(R.computeReach(e).states)
+			states.append_array(api.compute_reach(e["id"]).states)
 		var maxr := 0
 		for w in ws:
 			maxr = maxi(maxr, int(w["r"]))
@@ -1320,7 +1349,7 @@ func _compute_threat() -> Dictionary:
 			if seen.has(sk):
 				continue
 			seen[sk] = true
-			var v = R.stateView(e, st)
+			var v = api.state_view(e["id"], st)
 			var pk := "%d,%d" % [int(st["q"]), int(st["r"])]
 			if not near_c.has(pk):
 				var nl: Array = []
@@ -1641,19 +1670,8 @@ func _on_click() -> void:
 			if am != null:
 				var id := sel
 				var tid: String = u["id"]
-				var st = am["st"]
-				_cmd(func():
-					if not api.move(id, st):
-						return false
-					for i in range(api.unit(id)["weapons"].size()):
-						if armed >= 0 and i != armed:
-							continue
-						if api.can_fire(id, i, tid):
-							api.fire(id, i, tid)
-						var tu = api.unit(tid)
-						if tu == null or R.jt(tu.get("dead")) or api.phase != "player":
-							break
-					return true)
+				var wsel = [armed] if armed >= 0 else null
+				_cmd(func(): return api.attack_move(id, tid, wsel))
 				armed = -1
 				return
 			hud.toast(_cant_fire_reason(u["id"]))
@@ -2091,7 +2109,7 @@ func _process(dt: float) -> void:
 		if f.t > 1.6:
 			lbl.queue_free()
 			floats.remove_at(i)
-	if bot and not busy and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
+	if bot and not busy and not warming and not ended and api.phase == "player" and Engine.get_process_frames() % 2 == 0:
 		bot_t += dt
 		if bot_t > 0.05:
 			bot_t = 0.0
@@ -2194,6 +2212,15 @@ func _bot_step() -> void:
 		return
 	sel = u_id
 	var ru = api.unit(u_id)
+	# the game's own player-side AI (sim3d.js botUnit, G1 ai_activate) when the rules have it
+	if api.has_method("ai_activate"):
+		var aid := u_id
+		_cmd(func():
+			api.ai_activate(aid)
+			if api.phase == "player" and api.unit(aid) != null and R.jt(api.unit(aid).get("activated")) == false and _alive_active(aid):
+				api.end_activation()
+			return true)
+		return
 	# the Admiral's Command once the fight is joined
 	if api.has_method("can_command") and int(V["round"]) >= 2 and api.can_command() and not bot_cmd_used:
 		bot_cmd_used = true
@@ -2276,6 +2303,11 @@ func _bot_step() -> void:
 	_cmd(func(): api.end_activation(); return true)
 
 
+func _alive_active(id: String) -> bool:
+	var a = R.B.get("activeUnit")
+	return a != null and str(a.get("id")) == id
+
+
 func _any_fired(ru) -> bool:
 	for w in ru["weapons"]:
 		if R.jt(w.get("fired")):
@@ -2322,7 +2354,7 @@ func _hover_unit(id: String) -> void:
 func _shots() -> void:
 	# fixed moments for the screenshot-verdict skill: the opening board, a selected ship with its move range, the move
 	# preview, the attack tip on an enemy, the threat map, top-down, mid-battle fire, and the end card
-	while busy or api == null:
+	while busy or warming or api == null:
 		await get_tree().process_frame
 	await get_tree().create_timer(2.5).timeout
 	await _snap("start")
@@ -2373,7 +2405,8 @@ func _shots() -> void:
 
 
 func _quit_report() -> void:
-	print("[battle] report: ", JSON.stringify({"result": result.get("result", "unfinished"), "round": V.get("round"), "errors": errors, "secs": Time.get_ticks_msec() / 1000.0 - t_start}))
+	print("[battle] report: ", JSON.stringify({"result": result.get("result", "unfinished"), "round": V.get("round"), "errors": errors, "secs": Time.get_ticks_msec() / 1000.0 - t_start,
+		"pipeline_compiles_in_play": _pipe_count() - pipe_base if pipe_base >= 0 else -1}))
 	_quit()
 
 
@@ -2389,4 +2422,10 @@ func _quit(code := 0) -> void:
 	await get_tree().process_frame
 	ShipView.clear_static()
 	Fx.clear_static()
+	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
+	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd"]:
+		if ResourceLoader.exists(sp):
+			var sc = load(sp)
+			if sc != null and sc.has_method("clear_static"):
+				sc.clear_static()
 	get_tree().quit(code)
