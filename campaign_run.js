@@ -180,8 +180,11 @@ function shipyardScreen(n){
     <div class="cards">${ships}</div>
     <h3 style="margin:26px 0 10px">Hulls for sale</h3><div class="cards">${hulls}</div>
     <h3 style="margin:26px 0 10px">Refits for sale</h3><div class="cards">${mods}</div>
+    <h3 style="margin:26px 0 10px">Class refits</h3><p class="muted" style="margin:0 0 8px">A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to ${CLASS_TRACK_MAX}.</p>
+    <div class="row wrap">${[...new Set(RUN.fleet.map(s=>HULLS[s.tpl].cls))].map(cls=>{ const lv=classTrack(cls), c=classTrackCost(cls), max=lv>=CLASS_TRACK_MAX; return `<button ${!max&&RUN.credits>=c?'':'disabled'} data-act="buyTrack" data-arg="${esc(cls)}">${esc(cls)} ${'●'.repeat(lv)}${'○'.repeat(CLASS_TRACK_MAX-lv)} ${max?'(full)':`for ${c}`}</button>`; }).join('')}</div>
   </div></div>`);
 }
+ACT.buyTrack=cls=>{ if(!buyClassTrack(cls)) return; try{ tel('shop',{k:'track',id:cls,lv:classTrack(cls)}); }catch(e){} toast(`${cls} refit level ${classTrack(cls)}: every ${cls.toLowerCase()} gains.`); shipyardScreen(yardNode); };
 ACT.yardFleet=()=>fleetScreen('shipyard');
 ACT.backShipyard=()=>shipyardScreen(yardNode);
 ACT.leaveYard=()=>{ completeNode(); mapScreen(); };
@@ -426,7 +429,17 @@ function boonStep(p,minR){ const P=PATRONS[p]; if(!P){ relicStep(); return; } co
   modal(`<div class="boonhead" style="border-color:${P.col}"><span class="sigil" style="background:${P.col}">${P.glyph}</span><div><h2 style="margin:0;color:${P.col}">${esc(P.n)}</h2><div class="muted" style="font-size:14px">${esc(P.theme)}</div></div></div>
     <p class="muted" style="font-style:italic;margin:8px 0 12px">“${esc(P.quote)}”</p>${rewardDef('boon')}
     ${offer.map((o,i)=>{ const b=BOONS[o.id], R=RARITY[o.r||0], duo=b.duo; return `<button class="choice boon" data-act="takeBoon" data-arg="${i}" style="border-left:4px solid ${duo?PATRONS[duo[0]].col:P.col}">
-      <span class="rar" style="color:${duo?'#ffd27a':R.col}">${duo?'Duo: '+duo.map(q=>esc(PATRONS[q].short)).join(' + '):R.n}</span><b>${esc(b.n)}</b><small>${esc(b.d(R.m))}</small></button>`; }).join('')}`); }
+      <span class="rar" style="color:${duo?'#ffd27a':R.col}">${duo?'Duo: '+duo.map(q=>esc(PATRONS[q].short)).join(' + '):R.n}</span><b>${esc(b.n)}</b><small>${esc(b.d(R.m))}</small></button>`; }).join('')}
+    <div class="row" style="margin-top:10px"><button ${boonRerollOk()?'':'disabled'} data-act="boonReroll" data-arg="${p}:${minR||0}">Reroll the offer (${boonRerollCost()} credits, once)</button><button data-act="boonDecline">Decline: take ${boonDeclineCred()} credits</button></div>`); }
+// B4 step 3 (v54): decline a boon offer for credits, or reroll it once per reward for a price that grows each time you reroll in a run
+function boonDeclineCred(){ return 30+10*((RUN&&RUN.sector)||1); }
+function boonRerollCost(){ return 25+15*((RUN&&RUN.boonRerolls)||0); }
+function boonRerollOk(){ return !!(RUN&&RUN.reward&&!RUN.reward.rerolled&&RUN.credits>=boonRerollCost()); }
+function boonReroll(p,minR){ if(!boonRerollOk()) return null; RUN.credits-=boonRerollCost(); RUN.boonRerolls=(RUN.boonRerolls||0)+1; RUN.reward.rerolled=true; const old=(RUN.reward.boonOffer||[]).map(o=>o.id);
+  let off=rollBoonOffer(p,minR); for(let k=0;k<4&&off.length&&off.every(o=>old.includes(o.id));k++) off=rollBoonOffer(p,minR); RUN.reward.boonOffer=off; return off; }
+function boonDecline(){ const c=boonDeclineCred(); RUN.credits+=c; return c; }
+ACT.boonReroll=a=>{ const [p,m]=String(a).split(':'); if(!boonReroll(p,+m||0)) return; saveRun(); closeModal(); boonStep(p,+m||0); };
+ACT.boonDecline=()=>{ const c=boonDecline(); try{ tel('boon_decline',{cred:c}); }catch(e){} toast(`You decline. +${c} credits.`); closeModal(); relicStep(); };
 ACT.takeBoon=i=>{ const o=(window._boonOffer||[])[+i]; if(!o) return; changeFleet(()=>{ RUN.boons=RUN.boons||[]; RUN.boons.push({id:o.id,r:o.r||0}); });
   { const ps=BOONS[o.id].p?[BOONS[o.id].p]:(BOONS[o.id].duo||[]); META.favour=META.favour||{}; for(const p of ps){ const t0=favourTier(p); META.favour[p]=(META.favour[p]||0)+1+(o.r||0); const t1=favourTier(p); if(t1>t0) setTimeout(()=>toast(`${PATRONS[p].n} now counts you ${FAVOUR_TIERS[t1].n}: ${FAVOUR_TIERS[t1].d}`),900); } }
   try{ tel('boon_pick',{id:o.id,r:o.r||0,p:BOONS[o.id].p||'duo',offered:(window._boonOffer||[]).map(x=>x.id+':'+(x.r||0)),sector:RUN.sector}); }catch(e){}

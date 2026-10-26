@@ -544,7 +544,7 @@ const HEAT={
 // ---------- Patrons, boons and flagship aspects ----------
 // Each run four of six patrons watch the crusade. Battles on the map carry a patron's sigil; win there and that patron offers three boons, take one.
 // Boons change rules, not just numbers; rarity scales their strength (Common x1, Rare x1.5, Epic x2). Two patrons' boons together unlock duo boons.
-const RARITY=[{n:'Common',m:1,col:'#cfc6b0'},{n:'Rare',m:1.5,col:'#62ccff'},{n:'Epic',m:2,col:'#c58bff'}];
+const RARITY=[{n:'Common',m:1,col:'#cfc6b0'},{n:'Rare',m:1.5,col:'#62ccff'},{n:'Epic',m:2,col:'#c58bff'},{n:'Legendary',m:1,col:'#ff8a3d'}]; // B4 step 3: Legendary (index 3) is only ever a patron's legendary boon
 const PATRONS={
   iron:{n:'Kharon, the Iron Saint',short:'Kharon',col:'#e0b04a',glyph:'K',theme:'Broadsides, armor and holding the line',quote:'Stand. Fire. Stand again.'},
   storm:{n:'Vyre, the Storm Queen',short:'Vyre',col:'#5fd4ff',glyph:'V',theme:'Shields, ion fire and lightning',quote:'Every shield is a promise. Break theirs.'},
@@ -559,7 +559,7 @@ const BOONS={
   i_still:{p:'iron',n:'Anchored Volley',d:m=>`A ship that hasn't moved this activation deals +${boonPct(.25*m)} damage with broadsides and batteries.`,fx:m=>({stillPct:.25*m})},
   i_plate:{p:'iron',n:"Saint's Plating",d:m=>`+${boonPct(.08*m)} armor across the fleet.`,fx:m=>({armor:.08*m})},
   i_brace:{p:'iron',n:'Iron Discipline',d:m=>`Bracing blocks an extra ${boonPct(.1*m)}, and braced ships strike back: every enemy attack that hits one takes ${Math.round(18*m)} damage in return.`,fx:m=>({riposte:Math.round(18*m),bracePlus:.1*m})},
-  i_line:{p:'iron',n:'Unbroken Line',d:m=>`Ships next to another of your ships take ${boonPct(.12*m)} less hull damage.`,fx:m=>({lineGuard:.12*m})},
+  i_line:{p:'iron',n:'Unbroken Line',d:m=>`Ships next to another of your ships take ${boonPct(.12*m)} less hull damage.${m>=2?' Epic: they are also 5 harder to hit.':''}`,fx:m=>({lineGuard:.12*m,lineEv:m>=2?5:0})},
   // Vyre
   s_cap:{p:'storm',n:'Capacitor Surge',d:m=>`Shields +${boonPct(.2*m)} across the fleet.`,fx:m=>({shPct:.2*m})},
   s_arc:{p:'storm',n:'Arc Discharge',d:m=>`When your fire knocks out an enemy shield facing, its generator shorts for ${Math.round(9*m)} hull damage.`,fx:m=>({arcShort:Math.round(9*m)})},
@@ -576,7 +576,7 @@ const BOONS={
   a_lance:{p:'star',n:'Starlight Lances',d:m=>`Lances deal +${boonPct(.35*m)} damage.`,fx:m=>({lancePct:.35*m})},
   a_aim:{p:'star',n:'Silent Aim',d:m=>`+${Math.round(5*m)} aim for every weapon.`,fx:m=>({aim:Math.round(5*m)})},
   a_crit:{p:'star',n:'Killing Light',d:m=>`+${Math.round(6*m)}% critical chance, criticals deal x${+(1.5+.25*m).toFixed(2)}, and every critical hit wrecks a ship system.`,fx:m=>({crit:Math.round(6*m),critMul:.25*m,critSys:1})},
-  a_long:{p:'star',n:'Long Silence',d:m=>`Ignore the first ${Math.floor(m*1.5)} hex${Math.floor(m*1.5)>1?'es':''} of long-range penalty.`,fx:m=>({longAim:Math.floor(m*1.5)})},
+  a_long:{p:'star',n:'Long Silence',d:m=>`Ignore the first ${Math.floor(m*1.5)} hex${Math.floor(m*1.5)>1?'es':''} of long-range penalty.${m>=2?' Epic: lances reach 1 hex further.':''}`,fx:m=>({longAim:Math.floor(m*1.5),lanceRange:m>=2?1:0})},
   a_rear:{p:'star',n:'Blind Spot',d:m=>`Hits on an enemy's rear arc deal +${boonPct(.25*m)} damage.`,fx:m=>({rearPct:.25*m})},
   // Rook
   r_burn:{p:'rook',n:'Afterburners',d:m=>`+${m>=2?2:1} speed across the fleet${m>=1.5?`, and +${m>=2?10:6} evasion`:''}.`,fx:m=>({speed:m>=2?2:1,ev:m>=2?10:m>=1.5?6:0})},
@@ -588,7 +588,7 @@ const BOONS={
   e_war:{p:'ember',n:'Choir Warheads',d:m=>`Torpedoes deal +${boonPct(.25*m)} damage.`,fx:m=>({torpPct:.25*m})},
   e_reload:{p:'ember',n:'Hymn of Reloading',d:m=>`Torpedoes reload ${m>=1.5?2:1} turn${m>=1.5?'s':''} faster.`,fx:m=>({torpCd:m>=1.5?2:1})},
   e_kindle:{p:'ember',n:'Kindling',d:m=>`Hull hits have a ${boonPct(.12*m)} chance to start a fire (fires burn ${6+Math.round(4*m)} a turn for 2 turns).`,fx:m=>({igniteCh:.12*m,fireDmg:Math.round(4*m)})},
-  e_chain:{p:'ember',n:'Chain Reaction',d:m=>`Enemy ships you destroy explode, dealing ${Math.round(20*m)} damage to every enemy within 2 hexes.`,fx:m=>({chainBoom:Math.round(20*m)})},
+  e_chain:{p:'ember',n:'Chain Reaction',d:m=>`Enemy ships you destroy explode, dealing ${Math.round(20*m)} damage to every enemy within 2 hexes.${m>=2?' Epic: the blast sets them burning.':''}`,fx:m=>({chainBoom:Math.round(20*m),chainFire:m>=2?1:0})},
   e_hunt:{p:'ember',n:'Funeral Pyre',d:m=>`+${boonPct(.2*m)} damage against ships below half hull, and ships you hit while below half can no longer regrow hull or reanimate.`,fx:m=>({huntPct:.2*m,pyre:1})},
   // Duo boons: need a boon from each of two patrons
   d_jugg:{duo:['iron','rook'],n:'Juggernaut',d:()=>'Rams deal +50% damage and the rammer takes no recoil.',fx:()=>({ramPct:.5,ramGuard:1})},
@@ -598,7 +598,22 @@ const BOONS={
   d_hunter:{duo:['star','rook'],n:"Hunter's Line",d:()=>'Ships that moved 3+ hexes gain +25% critical chance.',fx:()=>({momCrit:25})},
   d_inferno:{duo:['ember','iron'],n:'Broadside Inferno',d:()=>'Broadside hits have a 40% chance to start a fire, and your fires burn hotter (10 a turn) and a turn longer.',fx:()=>({broadIgnite:.4,fireLong:1,fireDmg:4})}};
 // boons that only matter if the fleet has the right kit; offers skip them when it doesn't
-const BOON_NEED={i_still:'still',s_cap:'shields',s_regen:'shields',d_bastion:'shields',i_broad:'broad',d_inferno:'broad',e_war:'torp',e_reload:'torp',a_lance:'lance',d_ionlance:'lance',h_hatch:'carrier',h_wings:'sq',h_chitin:'sq',h_feast:'sq',d_burnswarm:'sq'};
+// B4 step 3: rule-changing boons (one per patron) and a legendary per patron. A legendary is offered at an elite or flagship reward once you
+// hold two boons from that patron (Hades style), always in the third slot; it never rolls otherwise (leg:true keeps it out of every normal pool).
+Object.assign(BOONS,{
+  i_wall:{p:'iron',n:'Shield Wall',d:()=>'Bracing covers every ship next to the braced ship too: they take the brace’s hull cut until its next turn.',fx:()=>({wallBrace:1})},
+  s_chain:{p:'storm',n:'Chain Lightning',d:()=>'When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength.',fx:()=>({chainSh:1})},
+  h_brood:{p:'hunger',n:'Brood Tithe',d:()=>'Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it.',fx:()=>({broodTithe:1})},
+  a_mark:{p:'star',n:'Marked for Death',d:()=>'Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends.',fx:()=>({markLance:1})},
+  r_slip:{p:'rook',n:'Slip the Net',d:()=>'Your ships may move after firing, up to half the movement they had left (without climbing over or diving under).',fx:()=>({fade:1})},
+  e_spread:{p:'ember',n:'Spread Pattern',d:()=>'Torpedoes that run wide still burst: every enemy within 1 hex of the aim hex takes 30% of one torpedo’s damage.',fx:()=>({spread:.3})},
+  L_iron:{p:'iron',leg:1,n:'Unbreakable',d:()=>'Legendary. Every ship survives its first killing blow each battle at 1 hull.',fx:()=>({lastStand:1})},
+  L_storm:{p:'storm',leg:1,n:'Eye of the Storm',d:()=>'Legendary. Every shield facing on every ship refills completely at the start of each of your turns.',fx:()=>({stormRegen:1})},
+  L_hunger:{p:'hunger',leg:1,n:'The Endless Swarm',d:()=>'Legendary. Carriers field two more wings and never run out of spares.',fx:()=>({hangar:2,endless:1})},
+  L_star:{p:'star',leg:1,n:'One Clean Line',d:()=>'Legendary. Lances always hit (95%) and pass straight through shields.',fx:()=>({lanceSure:1})},
+  L_rook:{p:'rook',leg:1,n:'Unstoppable',d:()=>'Legendary. Rams deal 50% more, can take 70% of a ship’s hull, and the rammer takes no recoil.',fx:()=>({ramPct:.5,ramCap:.3,ramGuard:1})},
+  L_ember:{p:'ember',leg:1,n:'Pyre of Stars',d:()=>'Legendary. Every enemy ship you destroy explodes for 40 damage to every enemy within 2 hexes.',fx:()=>({chainBoom:40})}});
+const BOON_NEED={h_brood:'carrier',a_mark:'lance',e_spread:'torp',L_hunger:'carrier',L_star:'lance',i_still:'still',s_cap:'shields',s_regen:'shields',d_bastion:'shields',i_broad:'broad',d_inferno:'broad',e_war:'torp',e_reload:'torp',a_lance:'lance',d_ionlance:'lance',h_hatch:'carrier',h_wings:'sq',h_chitin:'sq',h_feast:'sq',d_burnswarm:'sq'};
 // the flagship's aspect is picked at the start of a run, from three offered at random
 const ASPECTS={
   lancer:{n:'Aspect of the Spear',d:'Your flagship’s forward guns deal +50% damage and reach 1 hex further, and it can turn once more each round to bring them to bear.',fx:{prowPct:.5,prowRange:1,turns:1}},

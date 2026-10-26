@@ -64,7 +64,7 @@ function migrateRun(r){ if(r&&!r.fac) r.fac='voidsworn';
   if(r&&(!r.v||r.v<2)){ r.v=2; r.stats=r.stats||{battles:0,elites:0,bosses:0,kills:0}; r.fallen=r.fallen||[]; } return normalizeRun(r); }
 // v53: the one place that knows every field a RUN carries. newRun sets the real starting values; this fills anything an older or partial save lacks
 function runDefaults(){ return {fac:'voidsworn',foes:null,admiral:'vex',credits:0,cpCap:10,sector:1,relics:[],inventory:[],fleet:[],pos:null,stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},t0:0,fallen:[],ambush:false,over:false,boons:[],patrons:[],aspect:null,flagUid:null,
-  heat:[],mastery:0,ransoms:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0,flags:{},nem:null,verbUsed:0,verbNext:null}; } // B4: event flags, the Nemesis, the faction verb
+  heat:[],mastery:0,ransoms:0,altFleet:false,cmdOverride:null,giftBoon:null,reserve:[],seenEvents:[],regionsUsed:[],condsUsed:[],curNode:null,reinf:0,flags:{},nem:null,verbUsed:0,verbNext:null,classTrack:{},boonRerolls:0}; } // B4: event flags, the Nemesis, the faction verb
 function normalizeRun(r){ if(!r||typeof r!=='object') return r; const d=runDefaults(); for(const k in d) if(r[k]==null) r[k]=d[k];
   for(const k of ['relics','inventory','fleet','fallen','boons','patrons','heat','reserve','seenEvents','regionsUsed','condsUsed']) if(!Array.isArray(r[k])) r[k]=[];
   if(typeof r.stats!=='object'||Array.isArray(r.stats)) r.stats={}; for(const k in d.stats) if(typeof r.stats[k]!=='number') r.stats[k]=0;
@@ -177,12 +177,14 @@ function rollRarity(minR,s,p){ const ft=p?favourTier(p):0, x=rnd(), rare=.24+.06
 function fleetKit(){ const k={}; for(const sh of (RUN&&RUN.fleet)||[]){ const d=derive(sh); for(const w of d.weapons){ if(w.k==='torp') k.torp=1; if(w.k==='lance') k.lance=1; if(w.k==='battery') k.batt=1; if(w.k==='flak') k.flak=1; if(w.arc==='P'||w.arc==='S') k.broad=1; if(w.arc==='P'||w.arc==='S'||w.k==='battery') k.still=1; } if((HULLS[sh.tpl].sh||0)>0) k.shields=1; if(HULLS[sh.tpl].hangar) k.carrier=1; if(d.hangar) k.sq=1; } return k; }
 function boonUseful(id,kit){ const n=BOON_NEED[id]; return !n||!!kit[n]; }
 function rollBoonOffer(p,minR){ ensurePatrons(); const s=(RUN&&RUN.sector)||1, have=boonPatrons(), kit=fleetKit();
-  let pool=Object.keys(BOONS).filter(id=>BOONS[id].p===p&&!hasBoon(id)); pool=shuffle(pool); const junk=pool.filter(id=>!boonUseful(id,kit)); pool=pool.filter(id=>boonUseful(id,kit));
+  let pool=Object.keys(BOONS).filter(id=>BOONS[id].p===p&&!BOONS[id].leg&&!hasBoon(id)); pool=shuffle(pool); const junk=pool.filter(id=>!boonUseful(id,kit)); pool=pool.filter(id=>boonUseful(id,kit));
   const duos=Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.duo&&!hasBoon(id)&&boonUseful(id,kit)&&b.duo.includes(p)&&b.duo.every(q=>have.has(q)||q===p)&&b.duo.some(q=>q!==p&&have.has(q)); });
   const out=pool.slice(0,3).map(id=>({id,r:rollRarity(minR,s,p)}));
   if(duos.length&&(out.length<3||rnd()<.45)){ const d={id:pick(duos),r:0}; if(out.length>=3) out[2]=d; else out.push(d); }
-  if(out.length<3){ const extra=shuffle(Object.keys(BOONS).filter(id=>BOONS[id].p&&BOONS[id].p!==p&&RUN.patrons.includes(BOONS[id].p)&&!hasBoon(id)&&boonUseful(id,kit)&&!out.some(o=>o.id===id))); while(out.length<3&&extra.length) out.push({id:extra.pop(),r:rollRarity(minR,s)}); while(out.length<3&&junk.length) out.push({id:junk.pop(),r:rollRarity(minR,s)}); }
+  if(out.length<3){ const extra=shuffle(Object.keys(BOONS).filter(id=>BOONS[id].p&&!BOONS[id].leg&&BOONS[id].p!==p&&RUN.patrons.includes(BOONS[id].p)&&!hasBoon(id)&&boonUseful(id,kit)&&!out.some(o=>o.id===id))); while(out.length<3&&extra.length) out.push({id:extra.pop(),r:rollRarity(minR,s)}); while(out.length<3&&junk.length) out.push({id:junk.pop(),r:rollRarity(minR,s)}); }
+  { const L=legendaryFor(p,minR); if(L){ if(out.length>=3) out[2]={id:L,r:3}; else out.push({id:L,r:3}); } } // B4 step 3: the patron's legendary, at elite and flagship rewards, once you hold two of its boons
   return out; }
+function legendaryFor(p,minR){ if(!(minR>=1)) return null; const L=Object.keys(BOONS).find(id=>BOONS[id].leg&&BOONS[id].p===p); if(!L||hasBoon(L)||!boonUseful(L,fleetKit())) return null; const n=(RUN.boons||[]).filter(b=>BOONS[b.id]&&BOONS[b.id].p===p&&!BOONS[b.id].leg).length; return n>=2?L:null; }
 // what a map node pays out: usually a patron's boon (its sigil shows on the map), sometimes a refit, credits or repairs
 function rollNodeReward(type){ ensurePatrons(); const p=pick(RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
 function flagshipOf(){ return RUN&&RUN.fleet&&RUN.fleet.find(s=>s.uid===RUN.flagUid); }
@@ -195,22 +197,28 @@ function mkWeapon(id,arc,fx){ const b=W[id]; const w=Object.assign({id,arc},b); 
   if(b.k==='flak'&&fx.flakPlus){ w.shots+=2*fx.flakPlus; w.r+=fx.flakPlus; w.opt+=fx.flakPlus; }
   if(b.k==='torp'&&fx.torpCd) w.cd=Math.max(1,w.cd-fx.torpCd);
   if(arc==='F'&&fx.prowRange){ w.r+=fx.prowRange; w.opt+=fx.prowRange; }
+  if(b.k==='lance'&&fx.lanceRange){ w.r+=fx.lanceRange; w.opt+=fx.lanceRange; } // Long Silence, Epic
   return w; }
 function derive(ship){
   const t=HULLS[ship.tpl];
   const asp=RUN&&RUN.aspect&&ship.uid===RUN.flagUid&&ASPECTS[RUN.aspect]?[ASPECTS[RUN.aspect].fx]:[];
   const fx=sumFx([...fleetFxList(), ...ship.mods.map(m=>MODULES[m]?MODULES[m].fx:unknownId('module',m)), ...ship.cap.perks.map(p=>PERKS[p]?PERKS[p].fx:unknownId('perk',p)), ...asp]);
-  const mk=ship.mk||1, mm=1+.2*(mk-1);
-  const maxHp=Math.round(t.hp*mm*(1+(fx.hpPct||0)));
+  const mk=ship.mk||1, mm=1+.2*(mk-1), tr=classTrack(t.cls); // B4 step 3: the shared class refit track adds 6% hull and 6% damage per level
+  const maxHp=Math.round(t.hp*mm*(1+(fx.hpPct||0)+.06*tr));
   return {
     maxHp, shMax:Math.round(t.sh*mm*(1+(fx.shPct||0))), regen:Math.round(t.rg*mm*(1+(fx.regenPct||0))),
     armor:Math.min(.6,t.ar+(fx.armor||0)), speed:t.sp+(fx.speed||0), turns:t.tn+(fx.turns||0), ev:t.ev+(fx.ev||0),
-    aim:fx.aim||0, crit:fx.crit||0, dmg:1+.15*(mk-1)+(fx.dmgPct||0), fx,
+    aim:fx.aim||0, crit:fx.crit||0, dmg:1+.15*(mk-1)+(fx.dmgPct||0)+.06*tr, fx,
     hangar:t.hangar?t.hangar+(fx.hangar||0)+(fx.hive||0):(fx.hive||0),
     hullRegen:(fx.hullRegen||0)+Math.round((fx.hullRegenPct||0)*maxHp)+Math.round((t.regen||0)*mm),
     weapons:nameWeapons(t.fac,t.w.map(([id,arc])=>mkWeapon(id,arc,fx))),
   };
 }
+// B4 step 3: shared refit tracks per class, bought at shipyards; every ship of that class gains, now and later (RUN.classTrack[cls] 0..3)
+const CLASS_TRACK_MAX=3;
+function classTrack(cls){ return (typeof RUN!=='undefined'&&RUN&&RUN.classTrack&&RUN.classTrack[cls])||0; }
+function classTrackCost(cls){ return Math.round((60+50*classTrack(cls))*priceMult()); }
+function buyClassTrack(cls){ if(!RUN||classTrack(cls)>=CLASS_TRACK_MAX) return false; const c=classTrackCost(cls); if(RUN.credits<c) return false; RUN.credits-=c; changeFleet(()=>{ RUN.classTrack=RUN.classTrack||{}; RUN.classTrack[cls]=classTrack(cls)+1; }); return true; }
 function changeShip(ship, fn){ const before=derive(ship).maxHp; fn(ship); const after=derive(ship).maxHp; ship.hp=clamp(ship.hp+(after-before),1,after); }
 function changeFleet(fn){ const b=RUN.fleet.map(s=>derive(s).maxHp); fn(); RUN.fleet.forEach((s,i)=>{ const a=derive(s).maxHp; s.hp=clamp(s.hp+(a-b[i]),1,a); }); }
 function fleetCP(){ return RUN.fleet.reduce((a,s)=>a+HULLS[s.tpl].cp,0); }
@@ -324,7 +332,7 @@ function newRun(admiralId,fac,opt){
   RUN.cpCap=Math.max(RUN.cpCap, fleetCP()+3); ensureFlagship();
   if(RUN.mastery>=4){ const f=flagshipOf(); if(f){ f.mk=Math.max(f.mk||1,2); f.cap.rank=Math.max(f.cap.rank,2); f.cap.xp=Math.max(f.cap.xp,RANK_XP[2]); if(f.cap.perks.length<2) f.cap.perks.push(pick(Object.keys(PERKS).filter(p=>!f.cap.perks.includes(p)))); f.hp=derive(f).maxHp; } }
   // a Devoted patron sends a gift: one common boon from the first devoted patron watching this run
-  { const dev=RUN.patrons.find(p=>favourTier(p)>=2); if(dev){ const pool=Object.keys(BOONS).filter(id=>BOONS[id].p===dev&&boonUseful(id,fleetKit())); if(pool.length){ const id=pick(pool); RUN.boons.push({id,r:favourTier(dev)>=3?1:0}); RUN.giftBoon=id; } } }
+  { const dev=RUN.patrons.find(p=>favourTier(p)>=2); if(dev){ const pool=Object.keys(BOONS).filter(id=>BOONS[id].p===dev&&!BOONS[id].leg&&boonUseful(id,fleetKit())); if(pool.length){ const id=pick(pool); RUN.boons.push({id,r:favourTier(dev)>=3?1:0}); RUN.giftBoon=id; } } }
   RUN.map=genSector(1);
   RUN.flags={}; if(typeof newNemesis==='function') RUN.nem=newNemesis(); // B4: one named enemy commander per run
   META.stats.runs++;
