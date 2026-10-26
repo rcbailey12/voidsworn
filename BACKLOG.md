@@ -43,6 +43,7 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 - [ ] Cleanup: points-only ship build, pooled effect meshes, reflection probe per battle
 
 ## 4. Game
+- [ ] [G3] Campaign map upgrade (Ryan, Oct 26: "very plain and boring right now. It feels less like our inspirations of Sins 2, Rogue Trader, BattleTech"): a 3D star map with real depth, the sector's dead star and nebulae, fleet tokens that travel between nodes, node art per type, hover detail and faction territory; first pass in the travel sprint, Ryan refines on return
 - [ ] v54 factions and rewards: doctrines (Ithar and Chorus first), boon decline and reroll, rule-changing boons, legendaries per patron, rarity, refit track (`NEXT.md`)
 - [ ] AI polish: response curves, hysteresis, debug score overlay
 - [ ] [B2] Sector 1 balance (owner won 4/4 with no losses on v53.2)
