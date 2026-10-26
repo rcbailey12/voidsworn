@@ -13,7 +13,7 @@
   "voidsworn": {
     "hail": [
       "I have prayed for this. The saints answer.",
-      "Heretic. Your name is already written in the book of the burned.",
+      "Oath-breaker. Your name is already written in the book of the burned.",
       "Kneel, and I will make it quick. Stand, and I will make it holy."
     ],
     "again": [
@@ -35,7 +35,7 @@
       "Saints... receive me... I tried."
     ],
     "gloat": [
-      "One more heretic for the pyre.",
+      "One more oath-breaker for the fire.",
       "Burn the wreck. Sing over the ashes."
     ],
     "kill": [
@@ -73,7 +73,7 @@
         "beaten": "Run, then. I will burn everything you pass."
       },
       "methodical": {
-        "hail": "Heretic identified. Judgement begins.",
+        "hail": "Oath-breaker identified. Judgement begins.",
         "beaten": "Withdrawing. Judgement is delayed, not cancelled."
       }
     },

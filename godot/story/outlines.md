@@ -81,7 +81,7 @@ The Hollow Sun fills the viewports, a black coal ringed in slow fire, the first 
   *You set the casket in the firing chamber with your own hands. The chalk names seem brighter. That is the fire.*
 - **Light it with a reactor.** Your largest ship takes 25% hull damage. Every captain gains 25 experience: they would follow you into the star. (flag `vs_lit_reactor`)
   *The engineers weep as they rig the reactor. Then they cheer. Then they get back to work.*
-- Blue, needs the sale: **Buy back your name (60 credits).** The litanists sing it again: every ship repairs 15%. (flag `vs_bought`)
+- Blue, needs the sale: **Buy back your name (60 credits).** The rite-keepers read it again: every ship repairs 15%. (flag `vs_bought`)
   *Your name goes back into the Rite, one line lower than it was before.*
 
 Win: *{rival}'s flagship breaks against the old iron lanterns and falls into the star. The beacon catches on the third attempt, and the Hollow Sun throws a light for the first time in a thousand years.* + saint: *The saint's hand burns away in it; the rite-keepers say she was waiting.* / reactor: *The ship that gave its reactor limps home dark, and the crews chalk a new name on her: yours.* / bought back: *The rite-keepers add a verse. Your name is in it, near the end.*

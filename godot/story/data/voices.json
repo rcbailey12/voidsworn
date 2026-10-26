@@ -3,7 +3,7 @@
   "admirals": {
     "vex": {
       "pick": "Form the line. The line is the prayer.",
-      "sector": "Another sector, another wall of heretics. We break it the old way: broadside by broadside.",
+      "sector": "Another sector, another wall of oath-breakers. We break it the old way: broadside by broadside.",
       "start": [
         "Run out the guns. Present the flank.",
         "Hold the line. Let them come to the broadsides."
@@ -18,7 +18,7 @@
       "loss": "The line is broken. May the saints forgive my arithmetic."
     },
     "malek": {
-      "pick": "Heresy hides. I find it. Then I put a torpedo through it.",
+      "pick": "Oath-breakers hide. I find them. Then I put a torpedo through them.",
       "sector": "New hunting grounds. Every merchant here is lying to me, and I will learn why.",
       "start": [
         "Torpedoes warm. Find me a soft stern.",
