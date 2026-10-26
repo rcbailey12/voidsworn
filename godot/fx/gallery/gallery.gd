@@ -319,6 +319,17 @@ func _set_cam(name: String, t: float) -> void:
 			pass
 
 
+# A camera beside a firing line, so the attacker, the shot and the target are all in frame: eye and look for a line a->b,
+# looking at the point `frac` along it, from `dist` away on the camera's side, `h` up.
+func _side(a: Vector3, b: Vector3, frac: float, dist: float, h: float) -> Array:
+	var d := (b - a).normalized()
+	var perp := d.cross(Vector3.UP).normalized()
+	if perp.z < 0.0:
+		perp = -perp
+	var look := a.lerp(b, frac)
+	return [look + perp * dist + Vector3(0, h, 0), look]
+
+
 # Stills: [time or moment name, file, eye, look, fov, offset]. A moment is when an effect really lands (marked by the
 # reel on the effect clock), so every still catches its effect at the same instant on every run and machine.
 func _shot_list() -> Array:
@@ -331,29 +342,42 @@ func _shot_list() -> Array:
 	var D := _ship_c("D")
 	L.append([0.8, "g01_overview_idle.png", Vector3(0, 78, 150), Vector3(0, -6, 0), 40.0, 0.0])
 	L.append([0.8, "g02_engines_close.png", V + Vector3(-42, 14, 26), V + Vector3(-8, 0, 0), 38.0, 0.0])
-	L.append(["macro", "g03_macro_broadside.png", (V + B) * 0.5 + Vector3(-50, 22, 8), (V + B) * 0.5 + Vector3(0, 0, -10), 42.0, 0.05])
-	L.append(["prism", "g04_prism_on_shield.png", H + Vector3(-18, 16, -44), H + Vector3(0, 0, -6), 40.0, 0.06])
-	L.append(["plasma", "g05_plasma_bolts.png", (H + D) * 0.5 + Vector3(-36, 24, 10), (H + D) * 0.5, 44.0, -0.3])
+	var s_g03 := _side(V, B, 0.55, 70.0, 26.0)
+	L.append(["macro", "g03_macro_broadside.png", s_g03[0], s_g03[1], 42.0, 0.05])
+	var s_g04 := _side(I, H, 0.75, 50.0, 18.0)
+	L.append(["prism", "g04_prism_on_shield.png", s_g04[0], s_g04[1], 40.0, 0.06])
+	var s_g05 := _side(H, D, 0.5, 70.0, 24.0)
+	L.append(["plasma", "g05_plasma_bolts.png", s_g05[0], s_g05[1], 44.0, -0.3])
 	L.append(["plasma", "g05b_plasma_on_hull.png", D + Vector3(-26, 18, 26), D, 38.0, 0.08])
-	L.append(["rockets", "g06_rockets_inbound.png", (C + V) * 0.5 + Vector3(-6, 20, 40), (C + V) * 0.5 + Vector3(-14, 6, 0), 40.0, -0.55])
-	L.append(["lance", "g07_lance_burn.png", (V + B) * 0.5 + Vector3(-62, 18, 0), (V + B) * 0.5 + Vector3(0, 0, -6), 46.0, 0.3])
+	var s_g06 := _side(C, V, 0.45, 64.0, 24.0)
+	L.append(["rockets", "g06_rockets_inbound.png", s_g06[0], s_g06[1], 40.0, -0.55])
+	var s_g07 := _side(V, B, 0.5, 72.0, 20.0)
+	L.append(["lance", "g07_lance_burn.png", s_g07[0], s_g07[1], 46.0, 0.3])
 	L.append(["lance", "g07b_lance_trench.png", B + Vector3(-22, 12, 26), B + Vector3(0, 0, 6), 34.0, 0.6])
-	L.append(["ion", "g08_ion_on_shield.png", I + Vector3(30, 18, 34), I + Vector3(0, 0, 6), 40.0, 0.25])
-	L.append(["gauss", "g09_gauss_punch.png", H + Vector3(30, 14, -36), H, 38.0, 0.06])
-	L.append(["spine", "g10_bio_spines.png", C + Vector3(-30, 20, -34), C + Vector3(-4, 0, -4), 40.0, -0.25])
+	var s_g08 := _side(H, I, 0.7, 54.0, 20.0)
+	L.append(["ion", "g08_ion_on_shield.png", s_g08[0], s_g08[1], 40.0, 0.25])
+	var s_g09 := _side(D, H, 0.6, 70.0, 22.0)
+	L.append(["gauss", "g09_gauss_punch.png", s_g09[0], s_g09[1], 38.0, 0.06])
+	var s_g10 := _side(B, C, 0.5, 70.0, 24.0)
+	L.append(["spine", "g10_bio_spines.png", s_g10[0], s_g10[1], 40.0, -0.25])
 	L.append(["spine", "g10b_bio_splash.png", C + Vector3(-24, 16, -30), C, 38.0, 0.25])
-	L.append(["doom", "g11_doom_arc.png", (D + I) * 0.5 + Vector3(0, 20, -50), (D + I) * 0.5, 44.0, 0.15])
-	L.append(["flak", "g12_flak.png", B + Vector3(10, 30, 44), B + Vector3(4, 0, 0), 40.0, 0.1])
-	L.append(["torp", "g13a_torpedo_flight.png", (V + D) * 0.5 + Vector3(-10, 34, 36), (V + D) * 0.5 + Vector3(18, 4, -10), 46.0, -0.5])
+	var s_g11 := _side(D, I, 0.5, 54.0, 18.0)
+	L.append(["doom", "g11_doom_arc.png", s_g11[0], s_g11[1], 44.0, 0.15])
+	var s_g12 := _side(H, B, 0.7, 60.0, 24.0)
+	L.append(["flak", "g12_flak.png", s_g12[0], s_g12[1], 40.0, 0.1])
+	var s_g13a := _side(V, D, 0.55, 80.0, 30.0)
+	L.append(["torp", "g13a_torpedo_flight.png", s_g13a[0], s_g13a[1], 46.0, -0.5])
 	L.append(["torp", "g13_torpedo_hit.png", D + Vector3(-36, 20, 30), D, 38.0, 0.12])
-	L.append(["craft", "g14_strike_craft.png", I + Vector3(-34, 22, 40), I + Vector3(0, 2, 6), 42.0, -0.15])
+	var s_g14 := _side(V, I, 0.6, 64.0, 24.0)
+	L.append(["craft", "g14_strike_craft.png", s_g14[0], s_g14[1], 42.0, -0.15])
 	L.append(["stage4", "g15_breach_barge.png", C + Vector3(-8, 22, 24), C + Vector3(-2, 0, 0), 36.0, 0.4])
 	L.append(["stage2", "g15a_dented_barge.png", C + Vector3(-8, 22, 24), C + Vector3(-2, 0, 0), 36.0, 0.5])
 	L.append(["break_V", "g16_shield_break_voidsworn.png", V + Vector3(-10, 14, 42), V, 40.0, 0.12])
 	L.append(["break_H", "g17_shield_break_hegemony.png", H + Vector3(-10, 14, 42), H, 40.0, 0.12])
 	L.append(["break_C", "g18_shield_break_corsair.png", C + Vector3(-10, 14, 42), C, 40.0, 0.25])
 	L.append(["break_I", "g19_shield_break_ithar.png", I + Vector3(-10, 22, 56), I, 40.0, 0.2])
-	L.append(["star", "g20_star_torpedo.png", B + Vector3(10, 26, -46), B, 42.0, -0.4])
+	var s_g20 := _side(I, B, 0.5, 60.0, 24.0)
+	L.append(["star", "g20_star_torpedo.png", s_g20[0], s_g20[1], 42.0, -0.4])
 	L.append(["death_big_cook", "g21a_death_cookoff.png", B + Vector3(-40, 30, -50), B, 46.0, 0.0])
 	L.append(["death_big", "g21_death_big.png", B + Vector3(-40, 30, -50), B, 46.0, 1.0])
 	L.append(["death_big", "g21b_death_big_after.png", B + Vector3(-40, 30, -50), B, 46.0, 3.0])

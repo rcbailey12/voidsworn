@@ -558,7 +558,9 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 	var timp = t0 + (to.distance_to(start) - 6.0) / spd
 	for c in 3:
 		var off = side * (c - 1) * 1.2 + Vector3(0, (c % 2) * 0.6, 0)
-		fx.spr(start + off, t0 + c * 0.04, life, eng, 1.6, 1.4, 1.4, 23, vel)
+		fx.spr(start + off, t0 + c * 0.04, life, eng, 4.0, 2.4, 2.4, 23, vel)
+		# a short vapour trail riding with each craft, so a wing reads as moving lights at battle zoom
+		fx.stk(start + off, t0 + c * 0.04, life, eng, 3.0, 7.0, 0.35, 0, vel)
 		# craft fire: miniature tracers, bombs or spore sacs
 		for s in 3:
 			var tsh = timp - 0.35 + s * 0.08 + c * 0.03
@@ -572,7 +574,7 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 					if s == 0:
 						fx.spr(ps, tsh, (to - ps).length() / 45.0, col, 1.4, 0.7, 0.7, 15, dd * 45.0)
 				_:
-					fx.stk(ps, tsh, (to - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 5.0, 2.0, 0.15, 0, dd * 260.0)
+					fx.stk(ps, tsh, (to - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 9.0, 3.0, 0.25, 0, dd * 260.0)
 	return timp + (0.3 if lk == "bombs" else 0.1)
 
 
