@@ -93,14 +93,14 @@ func open(st) -> void:
 	regular = _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
 	semi = _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
 	goth = _font("res://ui/battle/fonts/UnifrakturMaguntia-Book.ttf")
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var bg := ColorRect.new()
 	bg.color = Color(0.024, 0.035, 0.063, 0.94)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var margin := MarginContainer.new()
-	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right"]:
 		margin.add_theme_constant_override("margin_" + side, px(80))
 	for side in ["top", "bottom"]:
@@ -175,6 +175,11 @@ func _n(x) -> String:
 	return str(int(float(x if x != null else 0)))
 
 
+func _pl(x, word: String) -> String:
+	var n := int(float(x if x != null else 0))
+	return "%d %s%s" % [n, word, "" if n == 1 else "s"]
+
+
 func _records() -> void:
 	var T: Dictionary = _P().get("totals", {})
 	var f := HFlowContainer.new()
@@ -221,7 +226,7 @@ func _admiral_card(id: String, a: Dictionary) -> Control:
 		p.add_child(v)
 		return p
 	var best := int(a.get("best", 0))
-	v.add_child(lbl("%s runs, %s won. Best: sector %s. %s battles, %s kills, %s ships lost." % [_n(a.get("runs")), _n(a.get("wins")), ROMAN[clampi(best, 0, 5)], _n(a.get("battles")), _n(a.get("kills")), _n(a.get("lost"))], 15, BONE2))
+	v.add_child(lbl("%s, %s won. Best: sector %s. %s, %s, %s lost." % [_pl(a.get("runs"), "run"), _n(a.get("wins")), ROMAN[clampi(best, 0, 5)], _pl(a.get("battles"), "battle"), _pl(a.get("kills"), "kill"), _pl(a.get("lost"), "ship")], 15, BONE2))
 	var tl: Dictionary = a.get("titles", {})
 	if not tl.is_empty():
 		var parts: Array = []

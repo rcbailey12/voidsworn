@@ -75,8 +75,11 @@ func record_arc_end(fac: String, admiral: String, rival: String, choices: Dictio
 	if won and not A.is_empty():
 		award(str(A["medal"]["id"]))
 		var first: bool = not P["arc_rewards"].has(fac)
+		var who: Array = P["arc_rewards"].get(fac, {}).get("admirals", []).duplicate()
+		if admiral != "" and not who.has(admiral):
+			who.append(admiral)
 		P["arc_rewards"][fac] = {"title": str(A.get("title", "")), "paint": str(A.get("paint", {}).get("id", "")), "unlock": str(A.get("unlock_variant", "")),
-			"first": P["arc_rewards"].get(fac, {}).get("first", row["t"]), "count": int(P["arc_rewards"].get(fac, {}).get("count", 0)) + 1}
+			"first": P["arc_rewards"].get(fac, {}).get("first", row["t"]), "count": int(P["arc_rewards"].get(fac, {}).get("count", 0)) + 1, "admirals": who}
 		if first:
 			P["paint_on"][fac] = true
 	save_profile()
@@ -106,8 +109,12 @@ func arc_unlocks() -> Array:
 	return out
 
 
-func arc_title(fac: String) -> String:
-	return str(P["arc_rewards"].get(fac, {}).get("title", ""))
+# The arc title for a faction; with an admiral id, only when that admiral is the one who finished the arc.
+func arc_title(fac: String, admiral: String = "") -> String:
+	var rw: Dictionary = P["arc_rewards"].get(fac, {})
+	if admiral != "" and not rw.get("admirals", []).has(admiral):
+		return ""
+	return str(rw.get("title", ""))
 
 
 # A beat card was shown (variants prefer the version seen less) and a choice made (kept for the Chronicle).

@@ -4,7 +4,10 @@
     "vex": {
       "pick": "Form the line. The line is the prayer.",
       "sector": "Another sector, another wall of heretics. We break it the old way: broadside by broadside.",
-      "start": ["Run out the guns. Present the flank.", "Hold the line. Let them come to the broadsides."],
+      "start": [
+        "Run out the guns. Present the flank.",
+        "Hold the line. Let them come to the broadsides."
+      ],
       "boss": "Their flagship is a fortress. So is ours. We will see whose walls are thicker.",
       "nemesis": "{rival}. I have kept a candle burning for this meeting.",
       "kill_flag": "Their flagship is ash. Note the time in the log of saints.",
@@ -17,7 +20,10 @@
     "malek": {
       "pick": "Heresy hides. I find it. Then I put a torpedo through it.",
       "sector": "New hunting grounds. Every merchant here is lying to me, and I will learn why.",
-      "start": ["Torpedoes warm. Find me a soft stern.", "They think they are the hunters. Correct them."],
+      "start": [
+        "Torpedoes warm. Find me a soft stern.",
+        "They think they are the hunters. Correct them."
+      ],
       "boss": "A big ship is only a big target. Get behind it.",
       "nemesis": "{rival}. I have read your file twice. Today I close it.",
       "kill_flag": "Confession extracted. Their flagship is finished.",
@@ -30,7 +36,10 @@
     "ashgrove": {
       "pick": "My pilots fly. The rest of you keep the decks warm.",
       "sector": "Fresh sky. Wing leaders, check your fuel and your prayers, in that order.",
-      "start": ["Launch the wings. Bring me their position in two minutes.", "Fighters out, bombers armed. Make the void crowded."],
+      "start": [
+        "Launch the wings. Bring me their position in two minutes.",
+        "Fighters out, bombers armed. Make the void crowded."
+      ],
       "boss": "Big flagship, slow turret tracking. My bombers love that kind.",
       "nemesis": "{rival} is out there. Every pilot in this fleet knows the name.",
       "kill_flag": "Bombers report the flagship down. Drinks are on the deck crew.",
@@ -43,7 +52,10 @@
     "thale": {
       "pick": "I have outlived three crusades by refusing to die. It is a habit.",
       "sector": "Deeper, then. The iron does not mind the dark.",
-      "start": ["Shields to full. Let them break their teeth on us.", "Iron doctrine. We stand. They fall."],
+      "start": [
+        "Shields to full. Let them break their teeth on us.",
+        "Iron doctrine. We stand. They fall."
+      ],
       "boss": "A worthy wall. We will lean on it until it falls over.",
       "nemesis": "{rival}. Let him hit us. Let him see how little it does.",
       "kill_flag": "Their flagship is down. The iron endures.",
@@ -56,7 +68,10 @@
     "kassar": {
       "pick": "Discipline is a weapon with infinite ammunition.",
       "sector": "New sector. Same standard. Synchronise on the flagship and wait for my mark.",
-      "start": ["All batteries, synchronise. Fire on my mark.", "Column formation. Keep the interval. Keep the discipline."],
+      "start": [
+        "All batteries, synchronise. Fire on my mark.",
+        "Column formation. Keep the interval. Keep the discipline."
+      ],
       "boss": "Their flagship is the anchor of their fleet. Remove it.",
       "nemesis": "{rival} is on the auspex. Log it. Then destroy it.",
       "kill_flag": "Enemy flagship eliminated. Note the efficiency.",
@@ -69,7 +84,10 @@
     "vorn": {
       "pick": "I do not miss. I calculate.",
       "sector": "Interdiction grid deployed. Nothing jumps through this sector without my permission.",
-      "start": ["Lock the targets. Wait for the solution.", "Interdiction fields up. Let them try to run."],
+      "start": [
+        "Lock the targets. Wait for the solution.",
+        "Interdiction fields up. Let them try to run."
+      ],
       "boss": "Every flagship has a weak point. I have already found this one.",
       "nemesis": "{rival}. His patterns are predictable. Predict them.",
       "kill_flag": "Flagship destroyed. The solution was correct.",
@@ -82,7 +100,10 @@
     "reyes": {
       "pick": "The strike group goes where I point. I point at the enemy.",
       "sector": "New sector. Strike group, prepare for a long sortie.",
-      "start": ["Strike group, launch. Clear the lanes.", "Wings up. Let them see the Navy coming."],
+      "start": [
+        "Strike group, launch. Clear the lanes.",
+        "Wings up. Let them see the Navy coming."
+      ],
       "boss": "That flagship is the prize. Strike group, mark it.",
       "nemesis": "{rival} again. My pilots have been waiting for a rematch.",
       "kill_flag": "Flagship down. Strike group, well flown.",
@@ -95,7 +116,10 @@
     "maren": {
       "pick": "The column moves slowly. It does not stop.",
       "sector": "Advance. The armour will carry us through.",
-      "start": ["Armour forward. Shields up. Advance.", "Close ranks. Let the plating do its work."],
+      "start": [
+        "Armour forward. Shields up. Advance.",
+        "Close ranks. Let the plating do its work."
+      ],
       "boss": "A heavy ship. So are we. Forward.",
       "nemesis": "{rival} wants to test our armour. He may test it.",
       "kill_flag": "Their flagship falls. The column advances.",
@@ -108,7 +132,10 @@
     "grax": {
       "pick": "Ram it. Board it. Take it. Easy.",
       "sector": "New sector, new loot. Full burn, lads.",
-      "start": ["Full burn! First to ram gets the biggest share!", "Grapples ready! Aim for the shiny ones!"],
+      "start": [
+        "Full burn! First to ram gets the biggest share!",
+        "Grapples ready! Aim for the shiny ones!"
+      ],
       "boss": "That's a big boat. More boat to take.",
       "nemesis": "{rival}! Oi! I owe you a ram!",
       "kill_flag": "Their big one's gone! Strip it before it cools!",
@@ -121,7 +148,10 @@
     "sable": {
       "pick": "Smile at them. Then cut.",
       "sector": "A new sector full of fat merchants and soft sterns. Lovely.",
-      "start": ["Go quiet. Get behind them. Then smile.", "Knives out, darlings. Mind the backs."],
+      "start": [
+        "Go quiet. Get behind them. Then smile.",
+        "Knives out, darlings. Mind the backs."
+      ],
       "boss": "A great proud flagship. They never watch their backs.",
       "nemesis": "{rival}. How sweet. You came all this way to bleed.",
       "kill_flag": "Their flagship, gutted. I do so enjoy my work.",
@@ -134,7 +164,10 @@
     "mott": {
       "pick": "I've flown junk longer than you've been alive, and the junk's still flying.",
       "sector": "New sector. My grandmother used to say these lanes were cursed. She was usually right.",
-      "start": ["Let the swarm loose! Mind the rusty ones, they bite.", "Hulks, open your bays. Out you go, you lovely scrap."],
+      "start": [
+        "Let the swarm loose! Mind the rusty ones, they bite.",
+        "Hulks, open your bays. Out you go, you lovely scrap."
+      ],
       "boss": "Big flagship. Seen bigger. Seen 'em burn, too.",
       "nemesis": "{rival}. I remember your mother. She owed me money.",
       "kill_flag": "Down she goes! Salvage rights, I'm calling it!",
@@ -147,7 +180,10 @@
     "vesh": {
       "pick": "Everything is worth something. Especially your ship.",
       "sector": "New sector. New things to collect.",
-      "start": ["Patch the hulls. We will need them shiny for later.", "Fight carefully. I want their parts intact."],
+      "start": [
+        "Patch the hulls. We will need them shiny for later.",
+        "Fight carefully. I want their parts intact."
+      ],
       "boss": "Such a lovely flagship. I want its armour for my collection.",
       "nemesis": "{rival}. I have a shelf ready for your crown.",
       "kill_flag": "Their flagship is mine now. In pieces, but mine.",
@@ -160,20 +196,26 @@
     "matriarch": {
       "pick": "We are many. We are hungry. We are mother.",
       "sector": "New feeding grounds. The broods stir. Go, children. Go.",
-      "start": ["Release the broods. Feed.", "Open the sacs. The children hunger."],
+      "start": [
+        "Release the broods. Feed.",
+        "Open the sacs. The children hunger."
+      ],
       "boss": "A great shell full of meat. The children will crack it.",
-      "nemesis": "{rival}. You cut our song. Now you feed our young.",
+      "nemesis": "{rival}. You spoiled our young. Now you feed them.",
       "kill_flag": "The great shell is open. Children, eat.",
-      "lost": "One of us goes silent. The rest of us sing louder.",
+      "lost": "One of us goes quiet. The rest of us grow hungrier.",
       "flag_hurt": "The mother is wounded. The children grow angry.",
       "command": "Spawning surge. All broods, all at once.",
       "win": "We have fed. We grow.",
-      "loss": "The broods fall silent. Mother waits for the next song."
+      "loss": "The broods fall quiet. Mother waits. Mother is patient."
     },
     "razormaw": {
       "pick": "Fast. Sharp. Hungry.",
       "sector": "New prey. Run.",
-      "start": ["Hunt. Now.", "Find the slow ones. Bite."],
+      "start": [
+        "Hunt. Now.",
+        "Find the slow ones. Bite."
+      ],
       "boss": "Big prey. Bite the back.",
       "nemesis": "{rival}. Smell you. Coming.",
       "kill_flag": "Big prey dead. Eat.",
@@ -186,7 +228,10 @@
     "mending": {
       "pick": "Hush. Every wound is a doorway. We go in through it.",
       "sector": "A new sector. So many broken things to mend into us.",
-      "start": ["Hush now. Grow, and bite.", "Every cut they give us, we grow back thicker."],
+      "start": [
+        "Hush now. Grow, and bite.",
+        "Every cut they give us, we grow back thicker."
+      ],
       "boss": "Their flagship is so hard, so brittle. We will soften it.",
       "nemesis": "{rival}. Hush. You will be part of us soon.",
       "kill_flag": "Their flagship opens like a flower. Mend it into us.",
@@ -197,22 +242,28 @@
       "loss": "Too many wounds. Even we cannot mend this."
     },
     "voice": {
-      "pick": "Listen. Under the static. That is us, singing acid.",
-      "sector": "A new sector. Let the deep song pour into it.",
-      "start": ["Sing, and let the song burn.", "Open every throat. Let them taste the chorus."],
+      "pick": "Listen. Under the static. That hum is us, and it burns.",
+      "sector": "A new sector. Let the deep throats open on it.",
+      "start": [
+        "Open wide. Let the acid fall.",
+        "Open every throat. Let them taste us."
+      ],
       "boss": "Their flagship hums one note. We will drown it in ours.",
-      "nemesis": "{rival}. We have learned your name. We sing it while we eat.",
-      "kill_flag": "Their flagship dissolves into our song.",
-      "lost": "A voice in the choir goes silent. The song holds.",
-      "flag_hurt": "The Voice is wounded. It sings louder.",
+      "nemesis": "{rival}. We have your scent. We say your name while we eat.",
+      "kill_flag": "Their flagship dissolves. We drink it.",
+      "lost": "A throat closes. The others open wider.",
+      "flag_hurt": "The Voice is wounded. It roars louder.",
       "command": "Discordant volley. Every throat, one note.",
-      "win": "The song goes on.",
-      "loss": "The song falters. It will find new throats."
+      "win": "We hum. We are full. For now.",
+      "loss": "The hum falters. It will find new throats."
     },
     "aelith": {
       "pick": "Spread the wings. The void is wide and we are quick.",
       "sector": "A new sky. My starlings will learn it by nightfall.",
-      "start": ["Starlings, fly. Light and quick.", "Wings out. Make them look everywhere at once."],
+      "start": [
+        "Starlings, fly. Light and quick.",
+        "Wings out. Make them look everywhere at once."
+      ],
       "boss": "A heavy flagship. Heavy things cannot follow starlings.",
       "nemesis": "{rival}. The buoys sang of you. My wings remember.",
       "kill_flag": "Their flagship falls, and my starlings sing over it.",
@@ -225,7 +276,10 @@
     "vaelen": {
       "pick": "Every lance is a note. Together they are a choir.",
       "sector": "A new sector. Tune the lances. We sing here next.",
-      "start": ["Lances, find your pitch.", "Sing with light. Let them hear the choir."],
+      "start": [
+        "Lances, find your pitch.",
+        "Sing with light. Let them hear the choir."
+      ],
       "boss": "Their flagship is a single loud note. The choir will answer.",
       "nemesis": "{rival}. You broke our glass. Now hear the song.",
       "kill_flag": "Their flagship is silenced. The chord resolves.",
@@ -238,7 +292,10 @@
     "thorne": {
       "pick": "You will not see us. That is the point.",
       "sector": "A new sector. We drift in, like mist.",
-      "start": ["Veils up. Be where they are not looking.", "Drift. Wait. Then strike from nowhere."],
+      "start": [
+        "Veils up. Be where they are not looking.",
+        "Drift. Wait. Then strike from nowhere."
+      ],
       "boss": "A great flagship, staring at empty space. We are behind it.",
       "nemesis": "{rival}. He hunts shadows. We are the shadows.",
       "kill_flag": "Their flagship never saw us.",
@@ -251,7 +308,10 @@
     "mirelle": {
       "pick": "The prism holds. The light bends. The fleet endures.",
       "sector": "A new sector. Raise the wards. The young need shelter.",
-      "start": ["Wards up. Bend their light away.", "Prisms aligned. Let their fire scatter."],
+      "start": [
+        "Wards up. Bend their light away.",
+        "Prisms aligned. Let their fire scatter."
+      ],
       "boss": "Their flagship burns bright. The prism will bend it.",
       "nemesis": "{rival}. You will not touch my young.",
       "kill_flag": "Their flagship is broken. The light is ours.",
@@ -264,7 +324,10 @@
     "nekhet": {
       "pick": "I have died eleven times. It has never taken.",
       "sector": "Another sector of squatters. The legion advances.",
-      "start": ["Legion, advance. Fear nothing. Nothing can end you.", "Wake, and march."],
+      "start": [
+        "Legion, advance. Fear nothing. Nothing can end you.",
+        "Wake, and march."
+      ],
       "boss": "A flagship. Another crown for the reclamation.",
       "nemesis": "{rival}. You took what was ours. I will take it back with interest.",
       "kill_flag": "Their flagship is ended. Ours never are.",
@@ -277,7 +340,10 @@
     "sekhmar": {
       "pick": "The living are a crop. I am the harvest.",
       "sector": "A new field, ripe and waiting.",
-      "start": ["Reap.", "Doom arcs charged. Begin the harvest."],
+      "start": [
+        "Reap.",
+        "Doom arcs charged. Begin the harvest."
+      ],
       "boss": "A great stalk. It will fall like all the others.",
       "nemesis": "{rival}. Your season ends today.",
       "kill_flag": "Their flagship is reaped.",
@@ -290,7 +356,10 @@
     "anuket": {
       "pick": "Silence is a blade. I keep it sharp.",
       "sector": "A new sector. Move without sound.",
-      "start": ["Silent running. Find their backs.", "Let them hear nothing until the end."],
+      "start": [
+        "Silent running. Find their backs.",
+        "Let them hear nothing until the end."
+      ],
       "boss": "A loud flagship. It will not hear us coming.",
       "nemesis": "{rival}. You will not hear me.",
       "kill_flag": "Their flagship is silent now.",
@@ -303,7 +372,10 @@
     "khepra": {
       "pick": "Stone does not hurry. Stone does not break.",
       "sector": "A new sector. We will wear it down like water on rock.",
-      "start": ["Stand. Let them strike stone.", "Patience. They tire. We do not."],
+      "start": [
+        "Stand. Let them strike stone.",
+        "Patience. They tire. We do not."
+      ],
       "boss": "A great flagship. Stone has outlasted greater.",
       "nemesis": "{rival}. I have waited longer than your kind has existed. I can wait out you.",
       "kill_flag": "Their flagship is dust. Stone remains.",
@@ -316,11 +388,29 @@
   },
   "factions": {
     "_about": "Lines spoken by an enemy sector flagship (boss_hail at battle start, boss_down when it dies), in its faction's voice.",
-    "voidsworn": {"boss_hail": "Heretic. Kneel before the saints, or burn before them.", "boss_down": "The saints... turn their faces away..."},
-    "hegemony": {"boss_hail": "You are in violation of Hegemony space. Surrender is not an option offered.", "boss_down": "Flagship lost. Transmit the... final log..."},
-    "corsair": {"boss_hail": "That's a pretty fleet. Be a shame if someone took it apart.", "boss_down": "Abandon ship! Grab the good stuff!"},
-    "chorus": {"boss_hail": "We hear you. We taste you. We are coming.", "boss_down": "The great throat... closes..."},
-    "ithar": {"boss_hail": "Turn back, younger race. This space was old before your star was lit.", "boss_down": "Another light fades. There are so few left."},
-    "deathless": {"boss_hail": "You trespass on the dynasty's ground. You will be corrected.", "boss_down": "Temporary... cessation..."}
+    "voidsworn": {
+      "boss_hail": "Heretic. Kneel before the saints, or burn before them.",
+      "boss_down": "The saints... turn their faces away..."
+    },
+    "hegemony": {
+      "boss_hail": "You are in violation of Hegemony space. Surrender is not an option offered.",
+      "boss_down": "Flagship lost. Transmit the... final log..."
+    },
+    "corsair": {
+      "boss_hail": "That's a pretty fleet. Be a shame if someone took it apart.",
+      "boss_down": "Abandon ship! Grab the good stuff!"
+    },
+    "chorus": {
+      "boss_hail": "We hear you. We taste you. We are coming.",
+      "boss_down": "The great throat... closes..."
+    },
+    "ithar": {
+      "boss_hail": "Turn back, younger race. This space was old before your star was lit.",
+      "boss_down": "Another light fades. There are so few left."
+    },
+    "deathless": {
+      "boss_hail": "You trespass on the dynasty's ground. You will be corrected.",
+      "boss_down": "Temporary... cessation..."
+    }
   }
 }

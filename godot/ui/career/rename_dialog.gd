@@ -43,17 +43,17 @@ func _sb(bg: Color, border: Color, bw := 1, rad := 4, pad := 10.0) -> StyleBoxFl
 func open(st) -> void:
 	story = st
 	k = clampf(get_viewport_rect().size.y / 1080.0, 0.6, 2.0)
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var regular := _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
 	var semi := _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
 	var goth := _font("res://ui/battle/fonts/UnifrakturMaguntia-Book.ttf")
 	var dimr := ColorRect.new()
 	dimr.color = Color(0.024, 0.035, 0.063, 0.7)
-	dimr.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dimr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(dimr)
 	var cc := CenterContainer.new()
-	cc.set_anchors_preset(Control.PRESET_FULL_RECT)
+	cc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(cc)
 	var box := PanelContainer.new()
 	box.add_theme_stylebox_override("panel", _sb(IRON, GILT2, 1, 6, 24))

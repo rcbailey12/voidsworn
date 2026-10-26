@@ -196,7 +196,7 @@ func earned_title_text(run: Dictionary) -> String:
 func titled_name(admiral_id: String) -> String:
 	var a: Dictionary = career.P.get("admirals", {}).get(admiral_id, {})
 	var t := str(a.get("last_title", ""))
-	var at: String = career.arc_title(admiral_fac(admiral_id))
+	var at: String = career.arc_title(admiral_fac(admiral_id), admiral_id)
 	return admiral_name(admiral_id) + (" " + career.title_name(t, admiral_fac(admiral_id)) if t != "" else "") + ((", " + at) if at != "" else "")
 
 

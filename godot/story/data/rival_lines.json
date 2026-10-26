@@ -281,17 +281,17 @@
   "chorus": {
     "hail": [
       "We followed your scent across the stars. Now we feed.",
-      "Meat that thinks. Meat that runs. Meat that sings when it breaks.",
+      "Meat that thinks. Meat that runs. Meat that screams when it breaks.",
       "Hungry. Hungry. Hungry. You."
     ],
     "again": [
       "We remember the taste of you. We want more.",
       "You hurt us. We grew. We are larger than your hurt now.",
-      "The song learned your shape. It is waiting."
+      "The swarm learned your smell. It is waiting."
     ],
     "final": [
       "It is warm in our mouths already. You are the part in the way.",
-      "Many mouths. One hunger. You are the meal that sings.",
+      "Many mouths. One hunger. You are the meal that runs.",
       "The sun is ours to eat. And so are you."
     ],
     "beaten": [
@@ -299,7 +299,7 @@
       "Scatter. Grow. Return."
     ],
     "death": [
-      "The song... goes on... without...",
+      "The hunger... goes on... without...",
       "Many mouths... falling... silent..."
     ],
     "gloat": [
@@ -308,7 +308,7 @@
     ],
     "kill": [
       "Swallowed.",
-      "Another voice for the choir."
+      "Another taste for the swarm."
     ],
     "signature": [
       "Your dead feed us. Thank you for your dead.",
