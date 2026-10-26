@@ -366,13 +366,15 @@ SHIPS['I11_37'] = dict(
 
 SHIPS['I15_11'] = dict(
     fac='ithar', cls='Cruiser', name='Aurora-class cruiser', sym='bilateral', yaw=-1, pitch=13.5, snap=.012, needle=.10,
-    cuts=[dict(name='sails', needle=dict(r=[(-.16, .05), (-.05, .08), (.05, .10), (.2, .09), (.35, .07), (.5, .04)], axis=(0, 0), x=(-.16, .6), outside_x=True))],
+    # pass 2 (Oct 26 review): the needle cut left the AI sail roots as a torn, crumpled shell with an open gap over the stern half, so the
+    # body is lofted by hand like I8 and I11 (the AI's own forward spindle was a plain taper; the fan sails stay as built)
+    loft=dict(r=.055, facets=6, ys=1.25, zs=.78, x=(-.24, .50), hub=.45, hub_t=.135, hub_w=.06, taper=.8, stern=.5),
     kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, ribs=21, root=(-.14, .03, 0), u=(-.633, .763, -.125), v=(.058, .211, .977), a0=-.05, a1=.78, R=.62,
                                             hub=((-.14, .03, 0), (0, 1, 0)), pair=True)),
          ('turret', 'pf', .20, .025, 0, 'top', dict(size='M', barrels=1, slot=0, slot_m=1, wkind='pulsar', arc='F', pair=True, lift=.002)),
          ('turret', 'tt', .05, 0, 0, 'top', dict(size='M', barrels=2, slot=2, wkind='turret', arc='T', lift=.003)),
          ('engine_at', 'eC', 0, 0, -.02, 'stern', dict(r=.02, L=.024))],
-    notes='pass 1: AI body levelled (it was meshed bow-up), stern fans rebuilt')
+    notes='pass 2: hand-lofted spindle (the cut AI stern was a crumpled shell), stern fans as before')
 
 SHIPS['I16_11'] = dict(
     fac='ithar', cls='Carrier', name='Zenith-class carrier', sym='bilateral', snap=.012, needle=.08,
