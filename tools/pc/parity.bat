@@ -61,6 +61,14 @@ for %%B in (!SCEN!) do (
   type "%T%out\cmp.txt" >> "%LOG%"
 )
 
+echo [4b] Threat overlay ^(ui3d.js computeThreat^) against api.threat_map, rounds 1 to 3...
+for %%B in (s4 s19 s23) do (
+  "%NODE%" "%T%node\golden.js" threat %%B "%T%golden\threat_%%B.json" >> "%LOG%" 2>&1
+  !GD! threat %%B "%T%out\threat_%%B.json" >> "%LOG%" 2>&1
+  fc /b "%T%golden\threat_%%B.json" "%T%out\threat_%%B.json" > nul 2>&1
+  if errorlevel 1 ( echo   threat map %%B: FAIL & set /a FAILS+=1 ) else ( echo   threat map %%B: PASS )
+)
+
 echo [5/5] Enemy think time in the timing battles ^(report only; game bar: worst under about 0.5 s^)...
 "%NODE%" "%T%node\timing.js" all "%T%." > "%T%out\timing.txt" 2>&1
 type "%T%out\timing.txt"

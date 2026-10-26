@@ -72,6 +72,7 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 | `state_view(id, state) -> Dictionary` | A copy of the ship as it would stand at one of those states (position, facing, hexes moved), for previews and the threat map. |
 | `in_reach(id, wi, target_id, state = null) -> bool` | Range, arc and line of sight for gun `wi` on the target, from where the ship is or from `state`. |
 | `ui_info(id) -> Dictionary` | Everything one ship's buttons, tooltips and target markers need: which orders it can give, rotate, stance and Command; the ram run-up and its estimate; boarding targets with odds; the ability's ready state and target hexes (nova, blink, launch); and per gun, against every living enemy, range, arc, line of sight, hit chance, expected shield and hull damage and the damage multiplier. Fresh copies. |
+| `threat_map(only_id = null) -> {"q,r": damage}` | The game's threat overlay (ui3d.js `computeThreat`): per hex, the raw gun damage every living enemy (or only `only_id`) could bring to it this turn from any hex and facing it can reach, guns ready now or next turn, in arc and in line of sight; best end state per ship, summed over ships. |
 | `world_info() -> Dictionary` | `{biome, seed, shape, well}` for building the battlefield. |
 | `can_fire(id, wi, target_id) -> bool` | Range, arc, line of sight, readiness. |
 | `preview_fire(id, wi, target_id) -> Dictionary` | `{hit, shield, hull, quad, rear, can}`: hit %, expected shield and hull damage, the target's facing quadrant (0 prow, 1 starboard, 2 rear, 3 port). |
@@ -102,6 +103,7 @@ All return `true` when the action happened. They do nothing (return `false`) whe
  cut: ["q,r", ...] (hexes cut away from the board), map: {map, shape, station?, planet?, wrecks?, deadstar?, holes?},
  obj: {type, score, escore, ...}, focus: id of the enemy fleet's current focus target or null,
  torps: [{id, side, by, target, aim: {q, r}, from: {q, r}, round}] (torpedo salvos in flight: they land on `aim` at the start of `side`'s next turn),
+ zones: {"q,r": "exit" | "texit" | "guard"} (objective hexes: breakthrough exits, the transports' escape row, the station's guard ring),
  hexes: [{q, r}, ...] (every playable hex of the board; the same read-only array every call, fixed at setup),
  units: [{id, side, tpl, name, cls, fac, size, squadron, q, r, facing, hp, maxHp, sh: [prow, starboard, rear, port], shMax,
           sec: {prow: {hp, max, broken}, mid: {...}, eng: {...}}, crew, crewMax, dead, fled, activated, active, braced,

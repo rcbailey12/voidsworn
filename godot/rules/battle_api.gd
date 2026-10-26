@@ -98,7 +98,14 @@ func view() -> Dictionary:
 			"moveLeft": R.postFireMp(u), "fired": R.jt(u.get("postFire")), "stance": u.get("stance") if (u.get("ab") == "launch" or R.jt(R.g(u.get("fx"), "hive"))) else null, "canStance": R.canStance(u),
 			"anchor": R.jt(u.get("anchor")), "inSync": R.inSync(u), "rising": u.get("riseAt"), "nemesis": R.jt(u.get("nemFlag")), "covered": u.get("coverBy")})
 	return {"round": int(B["round"]), "side": B["side"], "phase": phase, "over": B["over"] if R.jt(B.get("over")) else null, "terrain": B["terrain"].duplicate(), "map": B["map"].duplicate(true),
-		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps()}
+		"obj": B["obj"].duplicate(true) if B.get("obj") != null else null, "units": us, "focus": B["aiFocus"]["id"] if B.get("aiFocus") != null else null, "arena": B["arena"], "cut": R.CUT.keys() if R.CUT != null else [], "hexes": _hexes, "torps": _torps(), "zones": _zones()}
+func _zones() -> Dictionary: # battle.js objZone: "exit" (breakthrough: jump clear here), "texit" (intercept: transports escape here), "guard" (defend: the ring 2 hexes out)
+	var o := {}
+	if R.B.get("obj") == null: return o
+	for h in _hexes:
+		var z = R.objZone(h.q, h.r)
+		if z != null: o[str(h.q) + "," + str(h.r)] = z
+	return o
 func _torps() -> Array: # torpedo salvos in flight: they strike at the start of the firing side's next turn
 	var o := []
 	for s in (R.B["torps"] if R.B.get("torps") != null else []):
@@ -302,6 +309,55 @@ func ui_info(id: String) -> Dictionary:
 		ws.append({"i": i, "ready": R.weaponReady(w), "targets": ts})
 	o["weapons"] = ws
 	return o
+# threat_map(only_id = null) -> {"q,r": damage}: the game's threat overlay (ui3d.js computeThreat). For every living enemy ship (or only
+# the given one), each hex it could reach and face this turn, the raw damage of its guns (ready or ready next turn) that reach the hex in
+# arc with line of sight, taking the best end state per ship and summing over ships.
+func threat_map(only_id = null) -> Dictionary:
+	var out := {}
+	var hexes = R.boardHexes()
+	var list = []
+	if only_id != null:
+		var o = unit(only_id)
+		if o != null: list = [o]
+	else: list = R.alive("enemy")
+	R.eval_begin()
+	var losC := {}
+	for e in list:
+		var ws = []
+		for w in e["weapons"]:
+			if R.le(w.get("off"), 1) and R.le(w.get("cdLeft"), 1): ws.append(w)   # JS: undefined <= 1 is false (B-20 refits never count)
+		if ws.size() == 0: continue
+		var seen := {}; var states = []
+		var all = [{"q": e["q"], "r": e["r"], "f": e["facing"], "cost": 0, "path": []}]
+		if not R.jt(e.get("isSq")): all += R.computeReach(e).states
+		for st in all:
+			var k = str(int(st.q)) + "," + str(int(st.r)) + "," + str(int(st.f))
+			if seen.has(k): continue
+			seen[k] = true; states.append(st)
+		var per := {}; var maxR = 0.0; var mul = e["dmg"] if R.jt(e.get("dmg")) else 1
+		for w in ws: maxR = max(maxR, w["r"])
+		for st in states:
+			var v = R.stateView(e, st); var fk = str(int(st.q)) + "," + str(int(st.r)) + "|" + str(maxR)
+			var lc = losC.get(fk)
+			if lc == null:
+				lc = {"near": [], "los": {}}
+				for h in hexes:
+					var d = R.hdist(v, h)
+					if d <= maxR: lc["near"].append({"h": h, "d": d, "k": R.hkey(h.q, h.r)})
+				losC[fk] = lc
+			for n in lc["near"]:
+				var val = 0.0
+				for w in ws:
+					if n.d > w["r"] or not R.inArc(v, n.h, w["arc"]): continue
+					val += w["shots"] * w["dmg"] * mul
+				if val == 0.0: continue
+				var l = lc["los"].get(n.k)
+				if l == null:
+					l = R.los(v, n.h); lc["los"][n.k] = l
+				if l and val > float(per.get(n.k, 0.0)): per[n.k] = val
+		for k in per.keys(): out[k] = float(out.get(k, 0.0)) + per[k]
+	R.eval_end()
+	return out
 # world_info(): what the scene needs to build the battlefield beyond view(): the biome (rock kind, planet, station look) and the battle seed.
 func world_info() -> Dictionary:
 	var B = R.B

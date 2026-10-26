@@ -10,6 +10,8 @@ node node/golden.js math golden/math.txt >/dev/null
 if gd math "$T/golden/math.txt" > out/math.txt 2>&1; then echo "  math: PASS ($(grep '^math' out/math.txt))"; else echo "  math: FAIL"; grep '^math' out/math.txt; F=$((F+1)); fi
 for b in $SC; do rm -f golden/$b.jsonl out/$b.jsonl; node node/golden.js scenario $b golden/$b.jsonl >/dev/null; gd scenario $b "$T/out/$b.jsonl" > out/$b.log 2>&1
   if node node/compare.js scenario golden/$b.jsonl out/$b.jsonl > out/cmp.txt; then echo "  battle $b: PASS ($(head -1 out/cmp.txt))"; else echo "  battle $b: FAIL $(grep -o 'NOT PORTED: .*' out/$b.log | head -1)"; grep -m3 'SCRIPT ERROR' out/$b.log; cat out/cmp.txt; F=$((F+1)); fi; done
+for b in s4 s19 s23; do node node/golden.js threat $b golden/threat_$b.json >/dev/null; gd threat $b "$T/out/threat_$b.json" > out/threat_$b.log 2>&1
+  if cmp -s golden/threat_$b.json out/threat_$b.json; then echo "  threat map $b: PASS (ui3d.js computeThreat, rounds 1 to 3)"; else echo "  threat map $b: FAIL"; F=$((F+1)); fi; done
 echo "Enemy think time (report only; game bar: worst under about 0.5 s):"
 for b in $SC; do [ -f out/$b.jsonl.timing.json ] && node -e "process.exit(require('./scenarios.json')['$b'].timing?0:1)" && node node/timing.js $b golden/$b.jsonl.timing.json out/$b.jsonl.timing.json; done
 if [ $F -eq 0 ]; then echo "PASS: the Godot port matches the game's rules exactly."; else echo "FAIL: $F check(s) differ."; exit 1; fi

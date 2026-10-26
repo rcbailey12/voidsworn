@@ -161,16 +161,32 @@ async function runScenario(S){
   B.alt=S.alt!==false; for(const x of B.units) x.activated=false; if(B.alt){ const d=startSideTurn('enemy'); if(d) await d; } // ui3d.js prepBattle
   let g=0;
   const bot0=S.bot==='full'?pBotFull:pBotF, bot=S.attack_move?async u=>{ await attackFirstF(u); if(!B.over&&!u.dead&&!u.activated&&B.side==='player') await bot0(u); }:bot0;
-  if(B.alt) while(!B.over&&B.round<=S.rounds&&g++<2000){ const u=pendingP()[0]; if(u) await bot(u); else await endActivationF(true,null); }
+  if(B.alt) while(!B.over&&B.round<=S.rounds&&g++<2000){ threatSnap(); const u=pendingP()[0]; if(u) await bot(u); else await endActivationF(true,null); }
   else while(!B.over&&B.round<=S.rounds&&g++<200){ for(const u of alive('player').filter(x=>!x.isSq)){ if(B.over) break; await bot(u); } if(!B.over) await endTurnF(); }
   hook('end '+(B.over||'none'),null); HOOK=null; rec.timing=TM; return rec; }
+// ui3d.js computeThreat at the pinned commit (the threat overlay), for checking api.threat_map
+function computeThreatF(only){ const map=new Map(), hexes=boardHexes(), losC=new Map();
+  for(const e of only?[only]:alive('enemy')){
+    const ws=e.weapons.filter(w=>w.off<=1&&w.cdLeft<=1); if(!ws.length) continue;
+    const seen=new Set(), states=[{q:e.q,r:e.r,f:e.facing,cost:0,path:[]}].concat(e.isSq?[]:computeReach(e).states).filter(s=>{ const k=s.q+','+s.r+','+s.f; if(seen.has(k)) return false; seen.add(k); return true; });
+    const per=new Map(), maxR=Math.max(...ws.map(w=>w.r)), mul=e.dmg||1;
+    for(const s of states){ const v=stateView(e,s), fk=s.q+','+s.r+'|'+maxR; let lc=losC.get(fk); if(!lc){ lc={near:[],los:new Map()}; for(const h of hexes){ const d=hdist(v,h); if(d<=maxR) lc.near.push({h,d,k:hkey(h.q,h.r)}); } losC.set(fk,lc); }
+      for(const n of lc.near){ const h=n.h, d=n.d; let val=0; for(const w of ws){ if(d>w.r||!inArc(v,h,w.arc)) continue; val+=w.shots*w.dmg*mul; } if(!val) continue;
+        let l=lc.los.get(n.k); if(l===undefined){ l=los(v,h); lc.los.set(n.k,l); } if(l&&val>(per.get(n.k)||0)) per.set(n.k,val); } }
+    for(const [k,val] of per) map.set(k,(map.get(k)||0)+val);
+  }
+  return map; }
+var THREAT=null; // threat check: the overlay at the start of each round up to round 3 (canonical: "q,r" -> exact double)
+function threatSnap(){ if(!THREAT||THREAT[B.round]) return; const m=computeThreatF(), o={}; for(const [k,v] of [...m].sort((x,y)=>x[0]<y[0]?-1:x[0]>y[0]?1:0)) o[k]=hex(v); THREAT[B.round]=o; }
+async function threatScenario(S){ THREAT={}; await runScenario(Object.assign({},S,{rounds:3})); const t=THREAT; THREAT=null; return t; }
+function hex(v){ const b=Buffer.alloc(8); b.writeDoubleBE(v); return b.toString('hex'); }
 `;
 
 console.debug = () => {}; // the game's swarm timing chatter
 // the browser also defines FNAMES (ui3d.js), which core.js shipName reads: pinned as oracle/fnames.js (or taken from ui3d.js beside a VS_ORACLE checkout)
 const fnamesSrc = () => { const f = path.join(ROOT, 'fnames.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); const u = path.join(ROOT, 'ui3d.js'); if (fs.existsSync(u)) { const m = fs.readFileSync(u, 'utf8').match(/^const FNAMES=[\s\S]*?\};/m); if (m) return m[0]; } return ''; };
 const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).concat([fnamesSrc()]);
-vm.runInThisContext(files.join('\n') + '\n' + HARNESS + '\nglobalThis.__G={runScenario,rndSeed,rnd,get S(){ return RNG_S; }};', { filename: 'rules_bundle.js' });
+vm.runInThisContext(files.join('\n') + '\n' + HARNESS + '\nglobalThis.__G={runScenario,threatScenario,rndSeed,rnd,get S(){ return RNG_S; }};', { filename: 'rules_bundle.js' });
 // COVER=1: count calls to the rules functions each scenario reaches (a coverage check for the golden scenarios; printed to stderr)
 const COVER = process.env.COVER ? {} : null;
 if (COVER) for (const k of Object.getOwnPropertyNames(globalThis)) { const f = globalThis[k];
@@ -195,6 +211,9 @@ const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toStr
     for (const cp of [1, 2, 3, 4, 5, 6, 8, 10, 12]) out.push('pow ' + hex(cp) + ' ' + hex(1.6) + ' ' + hex(Math.pow(cp, 1.6)));
     for (let q = -30; q <= 30; q++) for (let rr = -30; rr <= 30; rr++) { const x = Math.sqrt(3) * (q + rr / 2), y = 1.5 * rr; out.push('atan2 ' + hex(y) + ' ' + hex(x) + ' ' + hex(Math.atan2(y, x))); }
     fs.writeFileSync(a, out.join('\n') + '\n'); console.log('math', out.length, 'values ->', a); return;
+  }
+  if (mode === 'threat') { // threat <scenario> <out>: ui3d.js computeThreat (copied below) after the battle setup and the first enemy step, for api.threat_map
+    const S = Object.assign({}, SCEN[a]); const out = await __G.threatScenario(S); fs.writeFileSync(b, JSON.stringify(out)); console.log('threat', a, Object.keys(out).length, 'hexes ->', b); return;
   }
   if (mode === 'batch') { // every battle in a scenario file (the sweep), one golden file each: batch <file.json> <outdir>
     const L = JSON.parse(fs.readFileSync(a, 'utf8')); let k = 0;

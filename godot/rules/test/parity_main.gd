@@ -18,6 +18,7 @@ func _init() -> void:
 	elif a.size() >= 2 and a[0] == "math": code = math(a[1])
 	elif a.size() >= 3 and a[0] == "scenario": code = scenario(a[1], a[2], int(a[3]) if a.size() >= 4 else -1, a[4] if a.size() >= 5 else "")
 	elif a.size() >= 3 and a[0] == "batch": code = batch(a[1], a[2])
+	elif a.size() >= 3 and a[0] == "threat": code = threat(a[1], a[2])
 	else: printerr("usage: -- prng <seed> <count> <out> | math <file> | scenario <name> <out> [seed|-1] [file.json] | batch <file.json> <outdir>")
 	quit(code)
 
@@ -136,6 +137,22 @@ func batch(file: String, outdir: String) -> int:
 		var c := scenario(name, outdir.path_join(name + ".jsonl"), -1, file); worst = max(worst, c); k += 1
 	print("batch ", k, " battles -> ", outdir)
 	return worst
+# threat <scenario> <out>: api.threat_map at the start of each round up to round 3, for golden.js threat (ui3d.js computeThreat)
+var THREAT = null
+func threat_snap() -> void:
+	if THREAT == null or THREAT.has(str(int(R.B["round"]))): return
+	var m = api.threat_map(); var ks = m.keys(); ks.sort(); var o := {}
+	for k in ks: o[k] = JSM.hex64(m[k])
+	THREAT[str(int(R.B["round"]))] = o
+func threat(name: String, out: String) -> int:
+	THREAT = {}
+	var all = JSON.parse_string(FileAccess.get_file_as_string("res://rules/test/scenarios.json"))
+	var S = all[name].duplicate(true); S.rounds = 3
+	var tmp := {"__t": S}
+	var f0 := FileAccess.open("user://threat_tmp.json", FileAccess.WRITE); f0.store_string(JSON.stringify(tmp)); f0.close()
+	scenario("__t", "user://threat_tmp.jsonl", -1, "user://threat_tmp.json")
+	var f := FileAccess.open(out, FileAccess.WRITE); f.store_string(JSON.stringify(THREAT)); f.close()
+	print("threat ", name, " -> ", out); THREAT = null; return 0
 func scenario(name: String, out: String, seed_override: int = -1, file: String = "") -> int:
 	tm_acts = []; tm_rounds = {}; snap_us = 0; stopped = false
 	api = APIScript.new()
@@ -160,6 +177,7 @@ func scenario(name: String, out: String, seed_override: int = -1, file: String =
 	if R.jt(R.B.get("alt")):
 		while not R.jt(R.B.get("over")) and R.B["round"] <= int(S.rounds) and g < 2000:
 			g += 1
+			threat_snap()
 			var pp = api._pendingP()
 			if pp.size() > 0:
 				bot(pp[0], S)
