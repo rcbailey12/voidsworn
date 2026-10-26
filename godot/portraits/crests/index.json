@@ -1,0 +1,122 @@
+{
+ "vex": {
+  "faction": "voidsworn",
+  "command": "barrage",
+  "file": "crests/vex.svg"
+ },
+ "malek": {
+  "faction": "voidsworn",
+  "command": "hunt",
+  "file": "crests/malek.svg"
+ },
+ "ashgrove": {
+  "faction": "voidsworn",
+  "command": "scramble",
+  "file": "crests/ashgrove.svg"
+ },
+ "thale": {
+  "faction": "voidsworn",
+  "command": "iron",
+  "file": "crests/thale.svg"
+ },
+ "kassar": {
+  "faction": "hegemony",
+  "command": "barrage",
+  "file": "crests/kassar.svg"
+ },
+ "vorn": {
+  "faction": "hegemony",
+  "command": "hunt",
+  "file": "crests/vorn.svg"
+ },
+ "reyes": {
+  "faction": "hegemony",
+  "command": "scramble",
+  "file": "crests/reyes.svg"
+ },
+ "maren": {
+  "faction": "hegemony",
+  "command": "iron",
+  "file": "crests/maren.svg"
+ },
+ "grax": {
+  "faction": "corsair",
+  "command": "surge",
+  "file": "crests/grax.svg"
+ },
+ "sable": {
+  "faction": "corsair",
+  "command": "hunt",
+  "file": "crests/sable.svg"
+ },
+ "mott": {
+  "faction": "corsair",
+  "command": "scramble",
+  "file": "crests/mott.svg"
+ },
+ "vesh": {
+  "faction": "corsair",
+  "command": "restore",
+  "file": "crests/vesh.svg"
+ },
+ "matriarch": {
+  "faction": "chorus",
+  "command": "scramble",
+  "file": "crests/matriarch.svg"
+ },
+ "razormaw": {
+  "faction": "chorus",
+  "command": "surge",
+  "file": "crests/razormaw.svg"
+ },
+ "mending": {
+  "faction": "chorus",
+  "command": "restore",
+  "file": "crests/mending.svg"
+ },
+ "voice": {
+  "faction": "chorus",
+  "command": "barrage",
+  "file": "crests/voice.svg"
+ },
+ "aelith": {
+  "faction": "ithar",
+  "command": "scramble",
+  "file": "crests/aelith.svg"
+ },
+ "vaelen": {
+  "faction": "ithar",
+  "command": "barrage",
+  "file": "crests/vaelen.svg"
+ },
+ "thorne": {
+  "faction": "ithar",
+  "command": "surge",
+  "file": "crests/thorne.svg"
+ },
+ "mirelle": {
+  "faction": "ithar",
+  "command": "iron",
+  "file": "crests/mirelle.svg"
+ },
+ "nekhet": {
+  "faction": "deathless",
+  "command": "restore",
+  "file": "crests/nekhet.svg"
+ },
+ "sekhmar": {
+  "faction": "deathless",
+  "command": "barrage",
+  "file": "crests/sekhmar.svg"
+ },
+ "anuket": {
+  "faction": "deathless",
+  "command": "hunt",
+  "file": "crests/anuket.svg"
+ },
+ "khepra": {
+  "faction": "deathless",
+  "command": "iron",
+  "file": "crests/khepra.svg"
+ }
+}

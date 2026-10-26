@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<defs><radialGradient id="g" cx="0.38" cy="0.4" r="0.75"><stop offset="0" stop-color="#2e1612"/><stop offset="1" stop-color="#120806"/></radialGradient>
+<clipPath id="k"><path d="M123.9 67 L298 52 L404.8 95.2 L445.2 233.7 L414.8 346.3 L312.3 456.4 L163 470 L94 384.6 L64.9 214.7 L93.7 115 Z"/></clipPath></defs>
+<path d="M123.9 67 L298 52 L404.8 95.2 L445.2 233.7 L414.8 346.3 L312.3 456.4 L163 470 L94 384.6 L64.9 214.7 L93.7 115 Z" fill="url(#g)"/>
+<g clip-path="url(#k)"><path d="M0 0 L300 0 L120 512 L0 512 Z" fill="#e0402c" opacity="0.05"/></g>
+<path d="M123.9 67 L298 52 L404.8 95.2 L445.2 233.7 L414.8 346.3 L312.3 456.4 L163 470 L94 384.6 L64.9 214.7 L93.7 115 Z" fill="none" stroke="#b8402a" stroke-width="10" stroke-linejoin="round"/>
+<path d="M123.9 67 L298 52 L404.8 95.2 L445.2 233.7 L414.8 346.3 L312.3 456.4 L163 470 L94 384.6 L64.9 214.7 L93.7 115 Z" fill="none" stroke="#e0402c" stroke-width="2.5" opacity="0.5" transform="translate(256 262) scale(0.9) translate(-256 -262)" stroke-linejoin="round"/>
+<circle cx="137.1" cy="85.9" r="6" fill="#b8402a"/><circle cx="390" cy="111.3" r="6" fill="#b8402a"/><circle cx="398.9" cy="337.3" r="6" fill="#b8402a"/><circle cx="172.3" cy="448.6" r="6" fill="#b8402a"/><circle cx="84.1" cy="218.9" r="6" fill="#b8402a"/>
+<g clip-path="url(#k)">
+<path d="M137.5 335.4 L257.4 253.8 L372 339.2" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
+<path d="M168.5 380.9 L255 314.1 L338 382.2" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
+<path d="M254.8 141.5 L266.9 166.1 L257.9 159.8 L246 166.8 Z" fill="#e0402c" opacity="0.2" stroke="#e0402c" stroke-width="11.1" stroke-linejoin="bevel"/>
+<path d="M208.4 175.1 L219.3 201.7 L209.8 195.3 L199.1 200.6 Z" fill="#e0402c" opacity="0.2" stroke="#e0402c" stroke-width="11.1" stroke-linejoin="bevel"/>
+<path d="M303 174.8 L311.7 203.4 L302.3 195.7 L291.1 200.9 Z" fill="#e0402c" opacity="0.2" stroke="#e0402c" stroke-width="11.1" stroke-linejoin="bevel"/>
+<path d="M165.1 212.8 L174.1 237.4 L162.5 232.2 L154.8 239.4 Z" fill="#e0402c" opacity="0.2" stroke="#e0402c" stroke-width="11.1" stroke-linejoin="bevel"/>
+<path d="M346.5 211.8 L357.5 236.6 L349 231 L335.1 236.8 Z" fill="#e0402c" opacity="0.2" stroke="#e0402c" stroke-width="11.1" stroke-linejoin="bevel"/>
+<path d="M137.5 335.4 L257.4 253.8 L372 339.2" stroke="#e0402c" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel" fill="none"/>
+<path d="M168.5 380.9 L255 314.1 L338 382.2" stroke="#e0402c" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel" fill="none"/>
+<path d="M254.8 141.5 L266.9 166.1 L257.9 159.8 L246 166.8 Z" fill="#e0402c" stroke="#e0402c" stroke-width="4.2" stroke-linejoin="bevel"/>
+<path d="M208.4 175.1 L219.3 201.7 L209.8 195.3 L199.1 200.6 Z" fill="#e0402c" stroke="#e0402c" stroke-width="4.2" stroke-linejoin="bevel"/>
+<path d="M303 174.8 L311.7 203.4 L302.3 195.7 L291.1 200.9 Z" fill="#e0402c" stroke="#e0402c" stroke-width="4.2" stroke-linejoin="bevel"/>
+<path d="M165.1 212.8 L174.1 237.4 L162.5 232.2 L154.8 239.4 Z" fill="#e0402c" stroke="#e0402c" stroke-width="4.2" stroke-linejoin="bevel"/>
+<path d="M346.5 211.8 L357.5 236.6 L349 231 L335.1 236.8 Z" fill="#e0402c" stroke="#e0402c" stroke-width="4.2" stroke-linejoin="bevel"/>
+<path d="M137.5 335.4 L257.4 253.8 L372 339.2" stroke="#ffffff" stroke-width="3.7" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.5"/>
+<path d="M168.5 380.9 L255 314.1 L338 382.2" stroke="#ffffff" stroke-width="3.7" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.5"/>
+<path d="M254.8 141.5 L266.9 166.1 L257.9 159.8 L246 166.8 Z" fill="#ffffff" opacity="0.5" stroke="#ffffff" stroke-width="0.9" stroke-linejoin="bevel"/>
+<path d="M208.4 175.1 L219.3 201.7 L209.8 195.3 L199.1 200.6 Z" fill="#ffffff" opacity="0.5" stroke="#ffffff" stroke-width="0.9" stroke-linejoin="bevel"/>
+<path d="M303 174.8 L311.7 203.4 L302.3 195.7 L291.1 200.9 Z" fill="#ffffff" opacity="0.5" stroke="#ffffff" stroke-width="0.9" stroke-linejoin="bevel"/>
+<path d="M165.1 212.8 L174.1 237.4 L162.5 232.2 L154.8 239.4 Z" fill="#ffffff" opacity="0.5" stroke="#ffffff" stroke-width="0.9" stroke-linejoin="bevel"/>
+<path d="M346.5 211.8 L357.5 236.6 L349 231 L335.1 236.8 Z" fill="#ffffff" opacity="0.5" stroke="#ffffff" stroke-width="0.9" stroke-linejoin="bevel"/>
+</g>
+</svg>

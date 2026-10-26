@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<defs><radialGradient id="g" cx="0.38" cy="0.4" r="0.75"><stop offset="0" stop-color="#2e1612"/><stop offset="1" stop-color="#120806"/></radialGradient>
+<clipPath id="k"><path d="M115.1 73.6 L304.1 56.3 L409.7 96.7 L436.2 233.6 L406.6 349.3 L320.4 450.4 L170.3 465.7 L85.2 385.5 L61.7 213.3 L86.9 122.2 Z"/></clipPath></defs>
+<path d="M115.1 73.6 L304.1 56.3 L409.7 96.7 L436.2 233.6 L406.6 349.3 L320.4 450.4 L170.3 465.7 L85.2 385.5 L61.7 213.3 L86.9 122.2 Z" fill="url(#g)"/>
+<g clip-path="url(#k)"><path d="M0 0 L300 0 L120 512 L0 512 Z" fill="#e0402c" opacity="0.05"/></g>
+<path d="M115.1 73.6 L304.1 56.3 L409.7 96.7 L436.2 233.6 L406.6 349.3 L320.4 450.4 L170.3 465.7 L85.2 385.5 L61.7 213.3 L86.9 122.2 Z" fill="none" stroke="#b8402a" stroke-width="10" stroke-linejoin="round"/>
+<path d="M115.1 73.6 L304.1 56.3 L409.7 96.7 L436.2 233.6 L406.6 349.3 L320.4 450.4 L170.3 465.7 L85.2 385.5 L61.7 213.3 L86.9 122.2 Z" fill="none" stroke="#e0402c" stroke-width="2.5" opacity="0.5" transform="translate(256 262) scale(0.9) translate(-256 -262)" stroke-linejoin="round"/>
+<circle cx="129.2" cy="91.8" r="6" fill="#b8402a"/><circle cx="394.3" cy="112.6" r="6" fill="#b8402a"/><circle cx="391.5" cy="340" r="6" fill="#b8402a"/><circle cx="178.9" cy="444.7" r="6" fill="#b8402a"/><circle cx="81.1" cy="217.6" r="6" fill="#b8402a"/>
+<g clip-path="url(#k)">
+<path d="M164.1 254 L251.5 194.9 L353.3 256.1" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
+<path d="M156.1 307.2 L257.6 244.3 L348 302.8" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
+<path d="M164.9 360.6 L252.6 301.8 L348.4 353.8" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
+<path d="M209.9 358.1 L210.4 380.6" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
+<path d="M258.5 358.6 L257.6 395.7" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
+<path d="M304.4 358.3 L302.7 378.8" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
+<path d="M164.1 254 L251.5 194.9 L353.3 256.1" stroke="#e0402c" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel" fill="none"/>
+<path d="M156.1 307.2 L257.6 244.3 L348 302.8" stroke="#e0402c" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel" fill="none"/>
+<path d="M164.9 360.6 L252.6 301.8 L348.4 353.8" stroke="#e0402c" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel" fill="none"/>
+<path d="M209.9 358.1 L210.4 380.6" stroke="#e0402c" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel" fill="none"/>
+<path d="M258.5 358.6 L257.6 395.7" stroke="#e0402c" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel" fill="none"/>
+<path d="M304.4 358.3 L302.7 378.8" stroke="#e0402c" stroke-width="17" stroke-linecap="square" stroke-linejoin="bevel" fill="none"/>
+<path d="M164.1 254 L251.5 194.9 L353.3 256.1" stroke="#ffffff" stroke-width="3.7" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.5"/>
+<path d="M156.1 307.2 L257.6 244.3 L348 302.8" stroke="#ffffff" stroke-width="3.7" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.5"/>
+<path d="M164.9 360.6 L252.6 301.8 L348.4 353.8" stroke="#ffffff" stroke-width="3.7" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.5"/>
+<path d="M209.9 358.1 L210.4 380.6" stroke="#ffffff" stroke-width="3.7" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.5"/>
+<path d="M258.5 358.6 L257.6 395.7" stroke="#ffffff" stroke-width="3.7" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.5"/>
+<path d="M304.4 358.3 L302.7 378.8" stroke="#ffffff" stroke-width="3.7" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.5"/>
+</g>
+</svg>
