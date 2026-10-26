@@ -104,7 +104,8 @@
   "map": "station",
   "dep": "line",
   "kind": "battle",
-  "rounds": 12
+  "rounds": 12,
+  "timing": true
  },
  "s5": {
   "note": "Timing test, sector 3 size: 10 Voidsworn ships against 10 Corsair ships (ramming AI looks ahead from every hex), veteran AI",
@@ -141,6 +142,7 @@
   "map": "belt",
   "dep": "line",
   "kind": "battle",
-  "rounds": 12
+  "rounds": 12,
+  "timing": true
  }
 }

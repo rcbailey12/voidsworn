@@ -8,7 +8,7 @@
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm'), crypto = require('crypto');
 // the game files: VS_ROOT when set (the PC runner), otherwise this repo
-const ROOT = process.env.VS_ROOT ? path.resolve(process.env.VS_ROOT) : path.resolve(__dirname, '..', '..', '..', '..', '..');
+const ROOT = process.env.VS_ROOT ? path.resolve(process.env.VS_ROOT) : path.resolve(__dirname, '..', '..', '..', '..');
 global.window = {}; global.document = undefined; global.performance = { now: () => 0 };
 const srcs = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
 const names = [];

@@ -1,7 +1,7 @@
 # A3 rules parity, Godot side. Run headless:
-#   godot --headless --path <this folder> --script res://main.gd -- prng <seed> <count> <out.txt>
-#   godot --headless --path <this folder> --script res://main.gd -- math <node_math.txt>
-#   godot --headless --path <this folder> --script res://main.gd -- scenario <name> <out.jsonl>
+#   godot --headless --path godot --script res://rules/test/parity_main.gd -- prng <seed> <count> <out.txt>
+#   godot --headless --path godot --script res://rules/test/parity_main.gd -- math <node_math.txt>
+#   godot --headless --path godot --script res://rules/test/parity_main.gd -- scenario <name> <out.jsonl> [seed]
 # The scenario harness mirrors node/golden.js line for line: same bot for your side, same activation order, same records.
 extends SceneTree
 const JSM = preload("res://rules/jsm.gd")
@@ -81,10 +81,10 @@ func pBot(u) -> void:
 
 func scenario(name: String, out: String, seed_override: int = -1) -> int:
 	R = RulesScript.new()
-	var err = R.load_tables("res://data/tables.json")
+	var err = R.load_tables("res://rules/data/tables.json")
 	if err != "":
 		printerr(err); return 1
-	var all = JSON.parse_string(FileAccess.get_file_as_string("res://data/scenarios.json"))
+	var all = JSON.parse_string(FileAccess.get_file_as_string("res://rules/test/scenarios.json"))
 	if not all.has(name):
 		printerr("unknown scenario ", name); return 1
 	var S = all[name]

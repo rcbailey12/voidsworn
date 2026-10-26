@@ -1,24 +1,25 @@
-# Godot rules parity (A3 gate, FINDINGS R28)
+# Godot rules parity (G1; started as the A3 gate, FINDINGS R28 and R29)
 
-This folder holds a slice of the Voidsworn battle rules ported to GDScript (Godot 4.7.2). The slice runs headless, with no scene and no rendering. The goal is to prove that the port plays out exactly like the game.
+The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js` (Godot 4.7.2). This folder is their parity test: it runs the port headless, with no scene and no rendering, against the JS game. The game side uses the rules through `godot/rules/battle_api.gd` (see `godot/rules/API.md`).
 
 ## Running it
 
 - **On the PC:** double-click `tools\pc\parity.bat`. It works in two places:
-  - in `Downloads\voidsworn_test\build\`, with the game files beside it and this folder copied to `build\godot_rules\`;
+  - in `Downloads\voidsworn_test\build\`, with the game files beside it and the repo's `godot\` folder copied to `build\godot\`;
   - in a repo checkout.
 
   It prints PASS or FAIL. On a FAIL it also gives the first turn and field that differ.
-- **In the cloud or on Linux:** `GODOT=/path/to/godot sh run_parity.sh`.
+- **In the cloud or on Linux:** `GODOT=/path/to/godot sh godot/rules/test/run_parity.sh [scenario ...]`.
+- **API smoke test:** `godot --headless --path godot --script res://rules/test/api_smoke.gd -- s1` plays a battle through `battle_api.gd` and prints the event counts.
 
 ## What it checks
 
-1. **Data.** `node/export_data.js` writes every data table from `data.js`, `core.js` and `battle.js` to `data/tables.json`. Nothing is copied by hand.
+1. **Data.** `node/export_data.js` writes every data table from `data.js`, `core.js` and `battle.js` to `godot/rules/data/tables.json`. Nothing is copied by hand.
    - Non-integer numbers are written as exact IEEE hex.
    - The Godot loader recomputes a SHA-256 of the tables and refuses to run if it differs.
 2. **Random numbers.** The game's PRNG (mulberry32), ported exactly. The check compares the first 10,000 draws from seeds 1001, 7 and 4242424242.
 3. **Math.** V8 computes `sin`, `cos`, `atan2` and `exp` with fdlibm and `hypot` with its own scaled sum. These are ported line for line in `rules/jsm.gd`, along with V8's `Math.round`. The check covers 243,721 inputs against Node.
-4. **Battles.** `data/scenarios.json` holds three seeded fights:
+4. **Battles.** `scenarios.json` holds the seeded fights:
    - **s1:** a sector 1 engagement at a station.
    - **s2:** the sector 1 Hegemony flagship and two escorts.
    - **s3:** a Corsair fight in an asteroid belt on a square arena.
@@ -32,17 +33,17 @@ This folder holds a slice of the Voidsworn battle rules ported to GDScript (Godo
 
 ## Files
 
-- `rules/jsm.gd`: JavaScript number semantics:
+- `../jsm.gd`: JavaScript number semantics:
   - 32-bit ops and the PRNG;
   - V8 rounding;
   - fdlibm and V8 `hypot`;
   - a stable sort;
   - the canonical state writer.
-- `rules/rules.gd`: the ported rules, in the same order and with the same names as the JS. Units stay dictionaries with the JS field names.
+- `../rules.gd`: the ported rules, in the same order and with the same names as the JS. Units stay dictionaries with the JS field names.
   - **Async functions** run synchronously.
   - **Tick deaths:** deaths queued by turn ticks have their tail deferred to the point where the game awaits them.
   - **Unported rules:** anything a battle reaches that the port does not carry stops the run with `NOT PORTED: <rule>`, so a gap cannot pass silently.
-- `main.gd`: the Godot harness. It mirrors `node/golden.js`: the same bot for the player's side, the same activation order and the same records.
+- `parity_main.gd`: the Godot harness. It mirrors `node/golden.js`: the same bot for the player's side, the same activation order and the same records.
 - `node/summary.js`: lists in plain words what a scenario exercised.
 
 ## Traps found while porting (keep these in mind for the full port)

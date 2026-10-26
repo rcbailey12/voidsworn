@@ -29,6 +29,12 @@ var UID = 1
 var AI_LEVEL = "veteran"
 var deferred: Array = []   # killUnit tails from queued deaths (JS: continuations that run when the game awaits the turn's deaths)
 var SQRT3 = sqrt(3.0)
+# Event stream for rendering (API.md). Emitted where the JS game calls its presentation hooks; never read by the rules.
+var events: Array = []
+var events_on := true
+func emit(e: Dictionary) -> void:
+	if events_on: events.append(e)
+func _uid(u): return u["id"] if u is Dictionary and u.get("id") != null else null
 
 # ======================= loading =======================
 func load_tables(path: String) -> String:
@@ -821,7 +827,7 @@ func wellTick(u, dq) -> Variant:
 	if d <= WELL_ASSIST:
 		u["mp"] = u["mp"] + 1; u["gravAssist"] = true
 	if d <= WELL_RIM:
-		u["hp"] = u["hp"] - WELL_DMG
+		u["hp"] = u["hp"] - WELL_DMG; emit({"t": "tick", "unit": u["id"], "kind": "tidal", "hull": WELL_DMG})
 		if u["hp"] <= 0:
 			u["hp"] = 0; u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
 	elif d <= WELL_PULL:
@@ -831,6 +837,7 @@ func wellTick(u, dq) -> Variant:
 			if hdist(n, W) != d - 1 or not onBoard(n.q, n.r) or blocks(terr(n.q, n.r)) or occ.has(hkey(n.q, n.r)): continue
 			best = n; break
 		if best != null:
+			emit({"t": "pulled", "unit": u["id"], "from": {"q": u["q"], "r": u["r"]}, "to": {"q": best.q, "r": best.r}})
 			u["q"] = best.q; u["r"] = best.r
 	return null
 func aiWellScore(u, v) -> float:
@@ -1064,7 +1071,7 @@ func escortsBreak() -> void:
 		if not is_same(u, boss) and not jt(u.get("isSq")): esc.append(u)
 	B["escortsFled"] = true
 	for e in esc:
-		e["dead"] = true; e["fled"] = true
+		e["dead"] = true; e["fled"] = true; emit({"t": "fled", "unit": e["id"]})
 	boss["regen"] = 0; boss["hullRegen"] = 0; boss["reanimate"] = false
 	var nsh = []
 	for v in boss["sh"]: nsh.append(JSM.jsround(v * 0.5))
@@ -1092,12 +1099,12 @@ func startSideTurn(side) -> int:
 			for i in range(4): u["sh"][i] = min(u["shMax"], u["sh"][i] + rg)
 		if jt(u.get("hullRegen")) and u["hp"] < u["maxHp"] and not jt(u.get("pyre")): u["hp"] = min(u["maxHp"], u["hp"] + u["hullRegen"])
 		if z0(u["st"].get("acid")) > 0 and not jt(u.get("isSq")):
-			u["st"]["acid"] = u["st"]["acid"] - 1; u["hp"] = u["hp"] - 4
+			u["st"]["acid"] = u["st"]["acid"] - 1; u["hp"] = u["hp"] - 4; emit({"t": "tick", "unit": u["id"], "kind": "acid", "hull": 4})
 			if u["hp"] <= 0:
 				u["hp"] = 0; burned = true; u["killCause"] = "melt"; queueDeath(u, deaths)
 		if u["st"]["fire"] > 0 and not jt(u.get("dead")):
 			var fd = u["st"]["fireDmg"] if jt(u["st"].get("fireDmg")) else 6
-			u["st"]["fire"] = u["st"]["fire"] - 1; u["hp"] = u["hp"] - fd
+			u["st"]["fire"] = u["st"]["fire"] - 1; u["hp"] = u["hp"] - fd; emit({"t": "tick", "unit": u["id"], "kind": "fire", "hull": fd})
 			if u["hp"] <= 0:
 				u["hp"] = 0; burned = true; u["killCause"] = "dark"; queueDeath(u, deaths)
 			if not jt(u["st"]["fire"]): u["st"]["fireDmg"] = 0
@@ -1108,6 +1115,7 @@ func startSideTurn(side) -> int:
 		u["boarded"] = false; u["rammed"] = false; u["emerg"] = false; u["repel"] = false
 		if terr(u["q"], u["r"]) == "storm" and not jt(u.get("isSq")) and u["shMax"] > 0:
 			for i in range(4): u["sh"][i] = max(0, u["sh"][i] - 10)
+			emit({"t": "tick", "unit": u["id"], "kind": "storm", "hull": 0})
 		if jt(u.get("crewMax")) and u["crew"] <= 0:
 			u["mp"] = 0; u["turnsLeft"] = 0
 			for w in u["weapons"]: w["fired"] = true
@@ -1221,6 +1229,7 @@ func _commit(u, state, ctx: Dictionary) -> void:
 func moveUnit(u, state, opts = null) -> void:
 	if not inThisBattle(u): return
 	var live = liveFrom(null); var ctx = {"committed": false}
+	emit({"t": "move", "unit": u["id"], "path": state.path.duplicate(true), "late_fire": opts != null and opts.get("onLate") != null})
 	if opts != null and opts.get("onLate") != null:
 		if live.call():
 			_commit(u, state, ctx); opts["onLate"].call()
@@ -1371,10 +1380,12 @@ func applyHit(att, w, t, dmg: float, quad: int) -> Dictionary:
 	if hull > 0 and not jt(t.get("isSq")) and not jt(t.get("dead")):
 		if jt(w.get("ignite")):
 			t["st"]["fire"] = max(z0(t["st"].get("fire")), 2); t["st"]["fireDmg"] = max(t["st"]["fireDmg"] if jt(t["st"].get("fireDmg")) else 6, 6)
+			emit({"t": "burning", "unit": t["id"]})
 		if jt(w.get("shred")): t["shredded"] = min(0.15, z0(t.get("shredded")) + w["shred"])
 		if jt(w.get("acid")): t["st"]["acid"] = 2
 	if jt(of.get("pyre")) and not jt(t.get("isSq")) and t["hp"] < t["maxHp"] / 2.0: t["pyre"] = true
 	t["hp"] = t["hp"] - hull; att["dealt"] = att["dealt"] + hull
+	emit({"t": "hit", "unit": _uid(att), "target": t["id"], "quad": quad, "section": t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], "shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit})
 	damageSection(t, t["_calledSec"] if jt(t.get("_calledSec")) else SEC_OF_QUAD[quad], hull, att)
 	return {"shield": JSM.jsround(absorbed * ion), "hull": hull, "crit": crit}
 func repairSection(t, sec, frac) -> bool:
@@ -1404,6 +1415,7 @@ func damageSection(t, sec, dmg, by) -> void:
 	s["hp"] = max(0, s["hp"] - dmg)
 	if s["hp"] > 0 or jt(s.get("broken")): return
 	s["broken"] = true
+	emit({"t": "section_down", "unit": t["id"], "section": sec})
 	if sec == "prow":
 		for w in t["weapons"]:
 			if w["arc"] == "F": w["off"] = 999
@@ -1477,6 +1489,7 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 					shots[i] = false; d["intercepts"] = d["intercepts"] - 1; shot += 1
 				i += 1
 		if shot != 0: res["pd"] = shot
+	emit({"t": "fire", "unit": u["id"], "weapon": wi, "weapon_id": w["id"], "kind": w["k"], "arc": w["arc"], "name": w.get("n"), "target": t["id"], "shots": shots.duplicate(), "pd": z0(res.get("pd")), "quad": quad})
 	if B != null: B["prog"] = z0(B.get("prog")) + 1
 	if not live.call():
 		if not jt(opts.get("intercept")) and is_same(B, b0):
@@ -1496,10 +1509,12 @@ func fireWeapon(u, wi: int, t, opts: Dictionary = {}) -> bool:
 			res.crits += 1; var cs = ownerFx(u).get("critSys")
 			if not jt(res.sys) and (jt(called) or jt(cs) or rnd() < 0.4):
 				res.sys = systemDamage(t, called)
+				if res.sys != null: emit({"t": "system", "unit": t["id"], "text": res.sys})
 				if jt(cs) and jt(res.sys): boonFx(t, "a_crit")
 	if called != null:
 		u["crit"] = u["crit"] - 15; t["_calledSec"] = null
 	if res.shield > 0:
+		if t["shMax"] > 0 and t["sh"][quad] <= 0.5: emit({"t": "shield_down", "unit": t["id"], "quad": quad})
 		if t["shMax"] > 0 and t["sh"][quad] <= 0.5:
 			var ar = ownerFx(u).get("arcShort")
 			if jt(ar) and shBefore > 0.5 and not jt(t.get("dead")): np("arcShort boon")
@@ -1543,6 +1558,7 @@ func ramUnit(u) -> bool:
 	u["mp"] = 0; u["turnsLeft"] = 0; u["rammed"] = true
 	if jt(B.get("usage")) and u["side"] == "player": np("player ram usage")
 	var e = ramEstimate(u, t, info.path.size())
+	emit({"t": "ram", "unit": u["id"], "target": t["id"], "path": info.path.duplicate(true), "dmg": e.dmg, "recoil": e.recoil, "soak": e.soak, "section": e.sec})
 	if not live.call() or jt(t.get("dead")): return false
 	var qd = shieldQuad(t, u)
 	if jt(e.soak) and t.get("sh") != null: t["sh"][qd] = max(0, t["sh"][qd] - e.soak * 1.5)
@@ -1583,6 +1599,8 @@ func boardUnit(u, t) -> bool:
 	var a = u["crew"] * (BOARD_MULT[u["fac"]] if jt(BOARD_MULT.get(u["fac"])) else 1.0) * (1.0 + z0(g(u.get("fx"), "boardPct"))) * (0.75 + rnd() * 0.5)
 	var d = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5) * (0.75 + rnd() * 0.5)
 	var kill = JSM.jsround(a * 0.38); var loss = min(u["crew"] - 1, JSM.jsround(d * 0.3)); t["crew"] = max(0, t["crew"] - kill); u["crew"] = max(1, u["crew"] - loss)
+	var outcome = "overrun" if (t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured"))) else ("capture" if t["crew"] <= 0 else "raid")
+	emit({"t": "board", "unit": u["id"], "target": t["id"], "result": outcome, "kill": kill, "loss": loss})
 	if t["crew"] <= 0 and (t["side"] == "player" or jt(t.get("boss"))) and not jt(t.get("captured")):
 		t["crew"] = max(2, JSM.jsround(t["crewMax"] * 0.15)); systemDamage(t); systemDamage(t)
 		if jt(B.get("usage")) and t["side"] == "player": B["usage"]["overrun"] = z0(B["usage"].get("overrun")) + 1
@@ -1638,12 +1656,13 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 		if jt(runFx().get("avenge")): np("avenge relic")
 	if by != null and by["side"] == "player" and not jt(t.get("isSq")) and jt(runFx().get("bloodied")): np("bloodied relic")
 	if not jt(t.get("isSq")) and t["size"] >= 0.7 and not blocks(B["terrain"].get(hkey(t["q"], t["r"]))):
-		B["terrain"][hkey(t["q"], t["r"])] = "hulk"; t["hulk"] = true
+		B["terrain"][hkey(t["q"], t["r"])] = "hulk"; t["hulk"] = true; emit({"t": "wreck", "unit": t["id"], "q": t["q"], "r": t["r"]})
 	if by != null and not jt(t.get("isSq")): gainResolve(by["side"], 1)
 	if by != null:
 		by["kills"] = by["kills"] + 1
 		if jt(by.get("parent")): pass   # p.kills += 0
 	if by != null and jt(by.get("isSq")): np("feast boon")
+	emit({"t": "death", "unit": t["id"], "cause": t.get("killCause") if t.get("killCause") != null else "blast", "by": _uid(by)})
 	var tail = func():
 		var cb = ownerFx(by).get("chainBoom") if (by != null and not jt(t.get("isSq")) and by["side"] != t["side"]) else 0
 		if jt(cb): np("chainBoom boon")
@@ -1745,6 +1764,7 @@ func giveOrder(u, o) -> void:
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ord"][o] = z0(B["usage"]["ord"].get(o)) + 1
 	if not canOrder(u, o): return
 	u["order"] = o
+	emit({"t": "order", "unit": u["id"], "order": o})
 	if o == "brace":
 		u["braced"] = true; u["mp"] = 0
 		for w in u["weapons"]: w["fired"] = true
@@ -1782,7 +1802,8 @@ func bossCmdTick() -> void:
 	var c = BOSS_CMD.get(boss["fac"])
 	if c == null: return
 	if B.get("cmdENext") == null:
-		if B["round"] >= 2 or boss["hp"] < boss["maxHp"] * 0.6: B["cmdENext"] = B["round"] + 1
+		if B["round"] >= 2 or boss["hp"] < boss["maxHp"] * 0.6:
+			B["cmdENext"] = B["round"] + 1; emit({"t": "command_warning", "side": "enemy", "id": c["id"], "round": B["cmdENext"], "unit": boss["id"]})
 func bossCmdFire() -> void:
 	if B == null or jt(B.get("over")) or jt(B.get("cmdEUsed")) or B.get("cmdENext") == null or B["round"] < B["cmdENext"]: return
 	var boss: Variant = null
@@ -1792,6 +1813,7 @@ func bossCmdFire() -> void:
 		B["cmdEUsed"] = true; return
 	var c = BOSS_CMD[boss["fac"]]
 	B["cmdEUsed"] = true; B["cmdE"] = {"id": c["id"], "side": "enemy", "round": B["round"], "tier": 1}
+	emit({"t": "command", "side": "enemy", "id": c["id"], "tier": 1, "unit": boss["id"]})
 	runCommand("enemy", c, 1)
 func runCommand(side, c, tier) -> bool:
 	var foe = "enemy" if side == "player" else "player"; var bStart = B
@@ -1888,6 +1910,7 @@ func useAbility(u, arg = null) -> bool:
 	if not inThisBattle(u) or not canAbility(u): return false
 	if jt(B.get("usage")) and u["side"] == "player": B["usage"]["ab"][u["ab"]] = z0(B["usage"]["ab"].get(u["ab"])) + 1
 	var a = u["ab"]
+	emit({"t": "ability", "unit": u["id"], "ab": a, "hex": arg.get("hex") if arg is Dictionary else null})
 	if a == "evasive":
 		u["evBuff"] = 25; u["mp"] = u["mp"] + 2
 	if a == "reload":

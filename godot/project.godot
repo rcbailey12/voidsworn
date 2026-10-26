@@ -1,8 +1,8 @@
-; A3 rules parity spike: the Voidsworn battle rules ported to GDScript, run headless (no scene, no rendering).
+; Voidsworn in Godot 4.7 (plan section G). godot/rules/ is the battle rules (GDScript, golden-tested against the JS game); scenes, render and UI live beside it.
 config_version=5
 
 [application]
-config/name="voidsworn_rules"
+config/name="Voidsworn"
 
 [debug]
 

@@ -13,7 +13,7 @@
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm'), crypto = require('crypto');
 // the game files: VS_ROOT when set (the PC runner), otherwise this repo
-const ROOT = process.env.VS_ROOT ? path.resolve(process.env.VS_ROOT) : path.resolve(__dirname, '..', '..', '..', '..', '..');
+const ROOT = process.env.VS_ROOT ? path.resolve(process.env.VS_ROOT) : path.resolve(__dirname, '..', '..', '..', '..');
 Date.now = () => 0;
 global.require = require; global.Buffer = Buffer;
 global.window = {}; global.document = undefined; global.performance = { now: () => 0 };
@@ -74,7 +74,7 @@ async function runScenario(S){
 
 const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
 vm.runInThisContext(files.join('\n') + '\n' + HARNESS + '\nglobalThis.__G={runScenario,rndSeed,rnd,get S(){ return RNG_S; }};', { filename: 'rules_bundle.js' });
-const SCEN = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'scenarios.json'), 'utf8'));
+const SCEN = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'scenarios.json'), 'utf8'));
 const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toString('hex'); };
 
 (async () => {
