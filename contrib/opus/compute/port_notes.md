@@ -79,3 +79,39 @@ Commits are on main; the newest step is at the bottom.
 5. Wing stance: switch strike -> hunt (allowed), hunt -> screen in the same round (refused); a hunting bomber's `dmgMult` against a ship at 30% hull is +.2 over strike.
 6. Torpedo into a screen: a salvo whose target has a screening wing beside it loses up to one shot per wing.
 7. Campaign (G3): `nextEvent` never repeats in a 40-draw run and ends on 'quiet'; `nemClockAdd` four times sets strike; `nemAfterBattle('win',true)` in sector 3 sets dead.
+
+## Step 1 tuning (commit c7b1a78, after the first PC pass)
+
+- `FEED_KILL` .15 to .12, `FEED_NEAR` .08 to .06, `FEED_CAP` .25 to .2.
+- Torpedoes: `TORP_RING` [0,10,25] to [0,5,15]; `TORP_WARHEAD`=1.2 multiplies `S.base` and `S.rearAdd` at launch; when the original target is dead at impact, the nearest enemy capital within 1 hex of the aim hex is hit at the stray penalty (ties by unit id), otherwise only a hull on the aim hex.
+- `BOSS_FAC.hegemony` .95 to .85.
+- Ithar prism charge: an unhit facing refills to full; a hit facing gets its regen a second time (after the normal regen), both skipped for an ion-locked facing.
+- Telemetry only: `fstat` counts shots, syncShots, braces, fade. No rules effect.
+
+## Step 3: game backlog (commits 02e55fc, 7f74d94 and the step 1 tuning above)
+
+### Battle (G1)
+- **Move, then fire (v54, decided)**: the first non-flak shot of a capital ship sets `u.postFire=true` and `u.postMp` = half the movement left for Ithar (`canFade`: Ithar or the Slip the Net boon), else 0. `computeReach` uses `MP=postFireMp(u)` and forbids climbing or diving after firing. `moveUnit` spends `postMp` too. Cleared at turn start. Rotating in place and rams are not limited. A Command barrage saves and restores `postFire`. An abandoned shot restores it. The AI and the bot always move before firing, so only the new fade moves show up in the sims: `fadeMove(u)` after the volley (AI in `aiAfterFire`, the bot after its guns) steps to the reachable hex with the least `evalThreat + torpThreat` if that cuts the threat by a quarter.
+- **Chorus bite (v54)**: `landVolley`, direct fire only: a Chorus capital that deals hull damage at 1 to 2 hexes regrows `CHORUS_BITE`=20% of it through `chorusRegrow` (the same per-round cap as feed).
+- **Voidsworn brace cover (v54)**: `giveOrder(u,'brace')` calls `braceCover(u)`: the most damaged adjacent same-side capital with the same facing gets `coverBy=u.id`; with the Shield Wall boon (`fx.wallBrace`, any faction) every adjacent ally does. `braceMul(t)` replaces the brace term in `applyHit`, `expectedVs` and `aiFocusVal`.
+- **Hegemony ion lock (v54)**: `applyHit`: a Hegemony attacker's ion weapon sets `t.regenLock[quad]`; that facing skips its regen (and Storm Mantle and prism charge) at the next turn start, then the lock clears.
+- **Boon rules**: chainSh (Chain Lightning: a broken facing's two neighbours lose a third), broodTithe (a free wing from the nearest carrier with a free hex on each capital kill), markLance (first lance hit each round marks the target: +10 aim for the side), fade, spread (a salvo that runs wide bursts on enemies within 1 of the aim hex for `S.base*spread`, through `applyHit`), lanceSure (lances 95% and pierce 1), lanceRange (`mkWeapon`), lineEv (-5 to hit next to an ally), chainFire (chain blasts set fire 2 turns), endless (spares 99).
+- **AI polish**: `aiHurtW(u,prof)` replaces the 30% step with a smoothstep from 60% to 30% hull and a latch (`u.aiHurt` on below 30%, off above 45%); `aiPickPrimary` keeps `u.aiLastT` while it is worth at least `AI_STICK`=85% of the best.
+
+### Campaign (G3)
+- `RARITY[3]` Legendary. `rollBoonOffer(p,minR)` excludes `leg` boons from every pool and, when `minR>=1` and you hold two non-legendary boons of patron p, puts `legendaryFor(p)` in slot 3 with r 3.
+- Boon offer screen: `boonDecline()` (30 + 10 per sector credits) and `boonReroll(p,minR)` (once per reward, `RUN.reward.rerolled`; cost 25 + 15 x `RUN.boonRerolls`; rerolls up to 4 times to avoid the same three).
+- Class refit track: `RUN.classTrack[cls]` 0..3, `buyClassTrack(cls)` at 60 + 50 x level (times priceMult); `derive` adds .06 x level to the hull multiplier and to dmg.
+- Corsair prize money (finishBattle): on a win with at least one prize, a refit from the first prize's salvage yield (else a random refit) and 20 credits.
+
+### Random draws
+- Added: Spread Pattern bursts draw through `applyHit` (crit and fire rolls per enemy caught); Brood Tithe and fade draw none; `boonReroll` draws a new offer (up to five offers); legendary offers draw none.
+- AI behaviour changes (caution curve, target stickiness, fade) shift whole-battle parity without new draws.
+
+### Suggested golden scenarios
+1. Penitent fires a battery: `computeReach` is empty after; an Ithar songship with 6 movement fires: reach costs at most 3, no over-moves.
+2. Voidsworn brace with a same-facing neighbour and a cross-facing neighbour: only the first gets `braceMul` .6.
+3. Hegemony ion hit on facing 0 at sh 1, regen 5: next turn start facing 0 stays 1, others +5.
+4. Legendary: two iron boons held, elite reward: slot 3 is L_iron with r 3; at a normal reward it never appears.
+5. Class track: three Frigate levels: warden max hull 45 x 1.18 = 53, dmg 1.18.
+6. AI stickiness: a dominion with two equal targets keeps last activation's target.
