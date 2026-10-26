@@ -17,7 +17,7 @@ if not exist "%TPL%\windows_release_x86_64.exe" (
   echo FAIL: no export templates in %TPL% >> "%LOG%"
   exit /b 1
 )
-if not exist "%ROOT%godot\gen\v3.txt" call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" >> "%LOG%" 2>&1
+if not exist "%ROOT%godot\gen\v3.txt" call "%TMO%" 900 "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" --max-seconds 600 >> "%LOG%" 2>&1
 echo importing >> "%LOG%"
 call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --import >> "%LOG%" 2>&1
 if not exist "%ROOT%export" mkdir "%ROOT%export"

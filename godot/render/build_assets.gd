@@ -15,6 +15,9 @@ var repo := ""
 var hi_dir := ""
 var env_dir := ""
 var force := false
+var max_s := 0.0            # --max-seconds N: stop starting new items after N seconds (the next run carries on)
+var t_start := 0
+var out_of_time := false
 var manifest := {"hulls": {}, "hi": {}, "rocks": {}, "sky": "", "ships": {}}
 
 
@@ -27,17 +30,20 @@ func _init() -> void:
 			"--hi": hi_dir = a[i + 1]; i += 1
 			"--env": env_dir = a[i + 1]; i += 1
 			"--force": force = true
+			"--max-seconds": max_s = float(a[i + 1]); i += 1
 		i += 1
 	if repo == "":
 		repo = ProjectSettings.globalize_path("res://").get_base_dir().get_base_dir()
 	var t0 := Time.get_ticks_msec()
 	for d in ["res://gen", "res://gen/hulls", "res://gen/hi", "res://gen/rocks"]:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(d))
+	t_start = Time.get_ticks_msec()
 	var old = _read_json("res://gen/manifest.json")
-	if old is Dictionary and int(old.get("version", 1)) < GEN_VERSION:
-		force = true   # the generated files changed shape: rebuild everything once
 	if old is Dictionary and not force:
 		manifest = old
+		for k in ["hulls", "hi", "rocks", "ships"]:
+			if not manifest.has(k):
+				manifest[k] = {}
 	var codes := {}
 	for k in HT.AI_HULLS:
 		codes[HT.AI_HULLS[k]] = true
@@ -58,15 +64,36 @@ func _init() -> void:
 			manifest["field"] = "res://gen/asteroids.json"
 			break
 	manifest["version"] = GEN_VERSION
-	var vf := FileAccess.open("res://gen/v%d.txt" % GEN_VERSION, FileAccess.WRITE)
-	vf.store_string("built")
-	vf.close()
+	if out_of_time:
+		print("[assets] time budget reached: run again to finish (progress kept)")
+	else:
+		var vf := FileAccess.open("res://gen/v%d.txt" % GEN_VERSION, FileAccess.WRITE)
+		vf.store_string("built")
+		vf.close()
 	var f := FileAccess.open("res://gen/manifest.json", FileAccess.WRITE)
 	f.store_string(JSON.stringify(manifest, "  "))
 	f.close()
 	print("[assets] done in %.1f s: %d hulls, %d max-detail, %d rocks, sky %s" % [(Time.get_ticks_msec() - t0) / 1000.0,
 		manifest["hulls"].size(), manifest["hi"].size(), manifest["rocks"].size(), manifest["sky"] != ""])
 	quit(0)
+
+
+# an item is current when it was built by this generator version and its file is there; past the time budget nothing new
+# is started (it counts as current for now, and the version marker is not written, so the next run carries on)
+func _current(table: Dictionary, code: String, out: String) -> bool:
+	if not force and table.has(code) and FileAccess.file_exists(out) and int(table[code].get("v", 0)) >= GEN_VERSION:
+		return true
+	if max_s > 0.0 and (Time.get_ticks_msec() - t_start) / 1000.0 > max_s:
+		out_of_time = true
+		return true
+	_save_manifest()
+	return false
+
+
+func _save_manifest() -> void:
+	var f := FileAccess.open("res://gen/manifest.json", FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(manifest, "  "))
 
 
 func _read_json(path: String) -> Variant:
@@ -199,7 +226,7 @@ func _fac_of(code: String) -> String:
 
 func _build_hull(code: String) -> void:
 	var out := "res://gen/hulls/%s.res" % code
-	if not force and manifest["hulls"].has(code) and FileAccess.file_exists(out):
+	if _current(manifest["hulls"], code, out):
 		return
 	var jp := _find(code + ".json")
 	if jp == "":
@@ -229,7 +256,7 @@ func _build_hull(code: String) -> void:
 	var mesh := _mesh(d, m)
 	ResourceSaver.save(mesh, out, ResourceSaver.FLAG_COMPRESS)
 	var aabb := mesh.get_aabb()
-	manifest["hulls"][code] = {"res": out, "fac": fac, "tris": idx_tris(d), "aabb": [aabb.position.x, aabb.position.y, aabb.position.z, aabb.size.x, aabb.size.y, aabb.size.z]}
+	manifest["hulls"][code] = {"v": GEN_VERSION, "res": out, "fac": fac, "tris": idx_tris(d), "aabb": [aabb.position.x, aabb.position.y, aabb.position.z, aabb.size.x, aabb.size.y, aabb.size.z]}
 	print("[assets] hull %s (%s) %d tris" % [code, jp.get_base_dir().get_file(), idx_tris(d)])
 
 
@@ -241,7 +268,7 @@ func idx_tris(d: Dictionary) -> int:
 
 func _build_hi(code: String) -> void:
 	var out := "res://gen/hi/%s.scn" % code
-	if not force and manifest["hi"].has(code) and FileAccess.file_exists(out):
+	if _current(manifest["hi"], code, out):
 		return
 	var files: Array = HT.HI_FILES[code]
 	var root := Node3D.new()
@@ -274,7 +301,7 @@ func _build_hi(code: String) -> void:
 	ps.pack(root)
 	ResourceSaver.save(ps, out, ResourceSaver.FLAG_COMPRESS)
 	root.free()
-	manifest["hi"][code] = {"res": out}
+	manifest["hi"][code] = {"v": GEN_VERSION, "res": out}
 	print("[assets] max-detail %s" % code)
 
 
@@ -297,9 +324,9 @@ func _build_a4_ships() -> void:
 		if not FileAccess.file_exists(src):
 			continue
 		var out := "res://gen/ships/%s.scn" % code
-		if not force and manifest["ships"].has(code) and FileAccess.file_exists(out):
+		if _current(manifest["ships"], code, out):
 			continue
-		var e := {"res": out, "mirror": false}
+		var e := {"v": GEN_VERSION, "res": out, "mirror": false}
 		if _glb_to_scene(src, out, code):
 			for extra in [["_damage", "res://gen/damage/%s_damage.scn"], ["_wreck", "res://gen/wreck/%s_wreck.scn"]]:
 				var sp := base.path_join(code).path_join(code + extra[0] + ".glb")
@@ -362,7 +389,7 @@ func _build_rocks() -> void:
 		for k in int(index[set_name]):
 			var code := "%s%02d" % [set_name, k]
 			var out := "res://gen/rocks/%s.res" % code
-			if not force and manifest["rocks"].has(code) and FileAccess.file_exists(out):
+			if _current(manifest["rocks"], code, out):
 				continue
 			var jp := repo.path_join(dir).path_join(code + ".json")
 			if not FileAccess.file_exists(jp):
@@ -384,12 +411,12 @@ func _build_rocks() -> void:
 					m.ao_texture = mt
 			var mesh := _mesh(d, m)
 			ResourceSaver.save(mesh, out, ResourceSaver.FLAG_COMPRESS)
-			manifest["rocks"][code] = {"res": out, "set": set_name}
+			manifest["rocks"][code] = {"v": GEN_VERSION, "res": out, "set": set_name}
 
 
 func _build_sky() -> void:
 	var out := "res://gen/sky.res"
-	if not force and manifest["sky"] != "" and FileAccess.file_exists(out):
+	if not force and manifest["sky"] != "" and FileAccess.file_exists(out) and int(manifest.get("sky_v", 0)) >= GEN_VERSION:
 		return
 	var cands := [env_dir.path_join("sky_deadstar_8k.png"), repo.path_join("contrib/opus/enginetest/assets/env/sky_deadstar_8k.png"),
 		repo.path_join("contrib/opus/enginetest/starfield_4k.png")]
@@ -399,5 +426,6 @@ func _build_sky() -> void:
 			if t != null:
 				ResourceSaver.save(t, out, ResourceSaver.FLAG_COMPRESS)
 				manifest["sky"] = out
+				manifest["sky_v"] = GEN_VERSION
 				print("[assets] sky from " + p)
 				return

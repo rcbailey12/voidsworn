@@ -34,9 +34,12 @@ if exist "%ROOT%contrib\opus\enginetest\assets\hi" set "HI=%ROOT%contrib\opus\en
 if exist "%ROOT%..\enginetest\assets\hi" set "HI=%ROOT%..\enginetest\assets\hi"
 set "ENV="
 if exist "%ROOT%..\enginetest\assets\env" set "ENV=%ROOT%..\enginetest\assets\env"
-if not exist "%ROOT%godot\gen\v3.txt" (
-  echo Preparing ships, rocks and sky for Godot. This happens once and takes about a minute...
+if not exist "%ROOT%godot\gen\manifest.json" (
+  echo Preparing ships, rocks and sky for Godot. This happens once and takes a few minutes...
   "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%HI%" --env "%ENV%" > "%ROOT%godot\build_assets_log.txt" 2>&1
+) else if not exist "%ROOT%godot\gen\v3.txt" (
+  echo Updating ship textures for two minutes; the rest carries on next time...
+  "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%HI%" --env "%ENV%" --max-seconds 120 > "%ROOT%godot\build_assets_log.txt" 2>&1
 )
 start "" "%GW%" --path "%ROOT%godot" %*
 exit /b 0
