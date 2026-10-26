@@ -27,6 +27,7 @@ ap.add_argument('--rich', action='store_true', help='ceiling round rich effects 
 ap.add_argument('--max', action='store_true', help='max-detail round: rich effects, hi assets when present, detail features')
 ap.add_argument('--board', action='store_true', help='game slice: max mode from the tactical camera over a hex board, with UI; measures click to visible ring')
 ap.add_argument('--ui', default='gui', choices=['gui', 'html'], help='board labels: Babylon GUI (default) or HTML over the canvas')
+ap.add_argument('--hi', default='auto', choices=['auto', 'on', 'off'], help='max-detail ships from assets/hi/ (auto: in max and board modes when all seven files are there)')
 ap.add_argument('--noenv', action='store_true', help='ignore assets/env/ (diagnostics)')
 ap.add_argument('--vsync', action='store_true', help='leave vsync and the frame limiter on; reports dropped frames against the display rate')
 ap.add_argument('--soft', action='store_true', help='software WebGL (SwiftShader), sandbox validation only')
@@ -104,8 +105,13 @@ else:
 if a.webgpu: args += ['--enable-unsafe-webgpu']
 args += ['--enable-precise-memory-info', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows']
 
+HI_FILES = ['V1b_r_23.glb', 'H4_11.glb', 'C19_51_shell.glb', 'C19_51_kit.glb', 'B16_23.glb', 'I8_37.glb', 'D22_23.glb']
+hi_ok = all(os.path.exists(os.path.join(ENGTEST, 'assets', 'hi', f)) for f in HI_FILES)
+use_hi = a.hi == 'on' or (a.hi == 'auto' and (a.max or a.board) and hi_ok)
+if use_hi and not hi_ok: sys.exit('--hi on, but assets/hi/ is missing some of: ' + ', '.join(HI_FILES))
+print('ship assets:', 'assets/hi/ (max-detail)' if use_hi else 'assets/')
 mode = 'bench' if a.out else 'shots'
-url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + '&bjs=' + a.bjs + ('&webgpu=1' if a.webgpu else '') + ('&stress=1' if a.stress else '') + ('&ships=%d' % a.ships if a.ships else '') + ('&rich=1' if a.rich else '') + ('&max=1' if a.max else '') + ('&board=1' if a.board else '') + ('&ui=html' if a.ui == 'html' else '') + ('&envsky=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'sky_deadstar_8k.png')) else '') + ('&envrocks=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'asteroids.json')) else '') + ('&vsync=1' if a.vsync else '') + ('&' + a.extra if a.extra else '')
+url = 'http://127.0.0.1:%d/babylon/index.html?mode=%s&res=%dx%d&seconds=%g&warmup=%g&msaa=%d' % (port, mode, W, H, a.seconds, a.warmup, a.msaa) + '&bjs=' + a.bjs + ('&hi=1' if use_hi else '') + ('&webgpu=1' if a.webgpu else '') + ('&stress=1' if a.stress else '') + ('&ships=%d' % a.ships if a.ships else '') + ('&rich=1' if a.rich else '') + ('&max=1' if a.max else '') + ('&board=1' if a.board else '') + ('&ui=html' if a.ui == 'html' else '') + ('&envsky=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'sky_deadstar_8k.png')) else '') + ('&envrocks=1' if not a.noenv and os.path.exists(os.path.join(ENGTEST, 'assets', 'env', 'asteroids.json')) else '') + ('&vsync=1' if a.vsync else '') + ('&' + a.extra if a.extra else '')
 errors = []
 with sync_playwright() as p:
     T0 = time.time(); b = None
@@ -128,7 +134,7 @@ with sync_playwright() as p:
         for e in errors: print('  ', e)
         sys.exit('page error: ' + pg.evaluate('window.__error'))
     info = pg.evaluate('window.__info')
-    print('Babylon %s, %s' % (info.get('bjs'), info.get('renderer')))
+    print('Babylon %s, %s, hi assets %s, textures about %s MB' % (info.get('bjs'), info.get('renderer'), info.get('hi'), info.get('tex_mb')))
     print('loaded in %.2f s (page), pre-warm %.2f s, %d ships, GL: %s, %dx%d, ship tris %d' % (info['load_s'], info['prewarm_s'], info['ships_n'], info['gl'].get('renderer'), info['width'], info['height'], info['ship_tris']))
     soft = 'swiftshader' in str(info['gl']).lower()
     if soft and not a.soft: print('WARNING: the page is on SwiftShader (software), not the GPU; these numbers are not valid')
@@ -170,7 +176,7 @@ if res is not None:
              'frame time = time between requestAnimationFrame callbacks; median %s ms' % ex['median_ms']]
     if ex.get('gpu_frame_ms_avg') is not None: notes.append('GPU timer query average %.3f ms per frame' % ex['gpu_frame_ms_avg'])
     notes.append('load_s from navigation start to the first presented frame with all six ships and the sky; browser launch took %.2f s more' % launch_s)
-    notes.append('gpu_mem_mb: WebGL has no GPU memory counter')
+    notes.append('gpu_mem_mb: WebGL has no GPU memory counter; textures estimated at %s MB as uncompressed RGBA8 with mips' % ex.get('tex_mb_estimate'))
     if smi['base'] is not None and smi['peak'] is not None:
         notes.append('nvidia-smi total memory used: %d MB before launch, %d MB peak (%+d MB)' % (smi['base'], smi['peak'], smi['peak'] - smi['base']))
     rates = [1000.0 / hz for hz in (60, 75, 120, 144, 165, 240)]
@@ -183,7 +189,7 @@ if res is not None:
     notes.append('%d ships; shaders pre-warmed for %.2f s after load_s, before the warm-up' % (ex['ships'], ex['prewarm_s']))
     notes.append('JS work per frame (update plus render calls): worst 1%% %s ms, max %s ms' % (ex['work_p99_ms'], ex['work_max_ms']))
     notes.append('worst frames (scene t s: frame ms / JS work ms): ' + ', '.join('%.2f: %.1f/%.1f' % (r[0], r[1], r[2]) for r in worst[:8]))
-    notes.insert(0, 'Babylon %s' % ex.get('bjs'))
+    notes.insert(0, 'Babylon %s, ships from %s' % (ex.get('bjs'), 'assets/hi/ (max-detail, the files\' own PBR materials)' if ex.get('hi_assets') else 'assets/'))
     if ex.get('light_route'): notes.append('event lights: ' + ex['light_route'])
     if ex.get('rich_lights_avg') is not None: notes.append('rich lights: %s point lights in the scene, %s distinct event lights lit at once on average, %s at most' % (ex['point_lights'], ex['rich_lights_avg'], ex['rich_lights_max']))
     notes.append('environment: %s' % (('dead-star sky' if ex['env']['sky'] else 'starfield sky') + ', %d rocks' % ex['env']['rocks'] if ex.get('env') else 'none (assets/env/ missing or not this mode)'))

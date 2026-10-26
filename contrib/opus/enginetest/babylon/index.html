@@ -74,7 +74,10 @@ var STRESS = Q.get('stress') === '1' || (RICH && !MAXM) || NSHIPS >= 24;
 NSHIPS = STRESS ? Math.max(24, NSHIPS) : 6;
 var ORBIT_R = !STRESS ? 150 : NSHIPS === 24 ? 190 : 150 + 40 * (1 + (NSHIPS - 24) / 12);
 var ORBIT_H = !STRESS ? 70 : NSHIPS === 24 ? 85 : ORBIT_R * 0.45;
-var PHYS = MAXM;   // push round, trimmed: chunks and debris are Havok rigid bodies in max mode
+var PHYS = MAXM;
+// hi=1 (run.py sets it for max and board when every file is in assets/hi/): the shared max-detail flagships, with their own
+// PBR materials (base colour, ORM, normal, emissive), instead of the hull2glb faction-colour files
+var HI = Q.get('hi') === '1', HI_EMISSIVE = 4;   // push round, trimmed: chunks and debris are Havok rigid bodies in max mode
 var MODE_NAME = BOARD ? 'board' : (MAXM ? 'max' : RICH ? 'rich' : '') + (NSHIPS > 24 ? ((MAXM || RICH) ? '_' : '') + 'ships' + NSHIPS : (MAXM && STRESS ? '_stress' : ''));
 if (!MODE_NAME) MODE_NAME = STRESS ? 'stress' : 'main';
 var msg = document.getElementById('msg');
@@ -281,7 +284,7 @@ var skyReady = new Promise(function (res) { if (skyTex.isReady()) res(); else sk
 var shipMeshes = [];
 async function loadShip(def, i) {
   var conts = await Promise.all(def.files.map(function (f) {
-    return B.SceneLoader.LoadAssetContainerAsync('../assets/', f, scene);
+    return B.SceneLoader.LoadAssetContainerAsync(HI ? '../assets/hi/' : '../assets/', f, scene);
   }));
   var pivot = new B.TransformNode('ship_' + def.fac, scene);
   var spin = new B.TransformNode('spin_' + def.fac, scene); spin.parent = pivot;
@@ -296,6 +299,9 @@ async function loadShip(def, i) {
       // Only the unpainted barge test exports have no material; glTF's default (metal 1, rough 1) would render
       // them black without an environment map. The painted PC files carry their own materials.
       if (mat.name === '__GLTFLoader._default') { mat.metallic = 0.0; mat.roughness = 0.75; }
+      // hi files: windows and running lights glow under bloom. If the file carries KHR_materials_emissive_strength the
+      // loader has already set a strength above 1 and it is kept; plain emissive maps get HI_EMISSIVE.
+      if (HI && mat.emissiveTexture && mat.emissiveIntensity <= 1) mat.emissiveIntensity = HI_EMISSIVE;
     });
   });
   // bounds in the file's own frame (everything is identity at this point)
@@ -778,7 +784,7 @@ if (MAXM) {
     dpx[o] = Math.max(0, Math.min(255, 128 + (h0 - 0.5) * 120)); dpx[o + 1] = 128 + ny / nl * 127; dpx[o + 2] = 128 + (rng() - 0.5) * 50; dpx[o + 3] = 128 + nx / nl * 127;
   }
   var detailTex = new B.RawTexture(dpx, DN, DN, B.Constants.TEXTUREFORMAT_RGBA, scene, true, false, B.Texture.TRILINEAR_SAMPLINGMODE);
-  detailTex.wrapU = detailTex.wrapV = B.Texture.WRAP_ADDRESSMODE; detailTex.uScale = detailTex.vScale = 6;
+  detailTex.wrapU = detailTex.wrapV = B.Texture.WRAP_ADDRESSMODE; detailTex.uScale = detailTex.vScale = HI ? 40 : 6;   // hi files: one UV atlas over the ship, so a finer tiling
   var shipMats = {}; shipMeshes.forEach(function (m) { if (m.material instanceof B.PBRMaterial) shipMats[m.material.uniqueId] = m.material; });
   Object.keys(shipMats).forEach(function (k) { var mt = shipMats[k]; mt.detailMap.texture = detailTex; mt.detailMap.isEnabled = true;
     mt.detailMap.diffuseBlendLevel = 0.2; mt.detailMap.roughnessBlendLevel = 0.3; mt.detailMap.bumpLevel = 1.0; });
@@ -1011,7 +1017,7 @@ var DL = function (x) { return Math.min(x, DPER - 0.1); };   // destruction part
 var heg = SHIPS[1], hm = heg.meshes[0], dScale = heg.scale * 0.6;
 var cHeg = heg.c0;   // the glTF-frame centre the ship was centred on
 var hPos = hm.getVerticesData(B.VertexBuffer.PositionKind), hNor = hm.getVerticesData(B.VertexBuffer.NormalKind);
-var hUV = hm.getVerticesData(B.VertexBuffer.UVKind), hUV2 = hm.getVerticesData(B.VertexBuffer.UV2Kind), hIdx = hm.getIndices();
+var hUV = hm.getVerticesData(B.VertexBuffer.UVKind), hUV2 = hm.getVerticesData(B.VertexBuffer.UV2Kind), hTan = hm.getVerticesData(B.VertexBuffer.TangentKind), hIdx = hm.getIndices();
 var CUTS = [function (x, y, z) { return x - (0.22 + 0.25 * y); }, function (x, y, z) { return x - (0.0 - 0.3 * z + 0.1 * y); }, function (x, y, z) { return x - (-0.24 - 0.2 * y + 0.15 * z); }];
 var NCH = 4, chTris = [[], [], [], []];
 for (var f = 0; f < hIdx.length; f += 3) {
@@ -1034,13 +1040,14 @@ for (var ci = 0; ci < NCH; ci++) {
   var tris = chTris[ci], cen = V3(0, 0, 0), cnt = 0;
   tris.forEach(function (f) { for (var j = 0; j < 3; j++) { var v = hIdx[f + j]; cen.addInPlaceFromFloats(hPos[v * 3] - cHeg.x, hPos[v * 3 + 1] - cHeg.y, hPos[v * 3 + 2] - cHeg.z); cnt++; } });
   cen.scaleInPlace(1 / cnt);
-  var P = [], N = [], U = [], U2 = [], I = [];
+  var P = [], N = [], U = [], U2 = [], TG = [], I = [];   // (the hi files have no second UV set but carry tangents)
   tris.forEach(function (f) { for (var j = 0; j < 3; j++) { var v = hIdx[f + j];
     P.push(hPos[v * 3] - cHeg.x - cen.x, hPos[v * 3 + 1] - cHeg.y - cen.y, hPos[v * 3 + 2] - cHeg.z - cen.z);
-    N.push(hNor[v * 3], hNor[v * 3 + 1], hNor[v * 3 + 2]); U.push(hUV[v * 2], hUV[v * 2 + 1]); U2.push(hUV2[v * 2], hUV2[v * 2 + 1]); I.push(I.length); } });
+    N.push(hNor[v * 3], hNor[v * 3 + 1], hNor[v * 3 + 2]); if (hUV) U.push(hUV[v * 2], hUV[v * 2 + 1]); if (hUV2) U2.push(hUV2[v * 2], hUV2[v * 2 + 1]);
+    if (hTan) TG.push(hTan[v * 4], hTan[v * 4 + 1], hTan[v * 4 + 2], hTan[v * 4 + 3]); I.push(I.length); } });
   var node = new B.TransformNode('chunk_' + ci, scene); node.rotationQuaternion = B.Quaternion.Identity();   // unscaled, so a physics body can own it
   var cm = new B.Mesh('chunkMesh_' + ci, scene), vd = new B.VertexData();
-  vd.positions = P; vd.normals = N; vd.uvs = U; vd.uvs2 = U2; vd.indices = I; vd.applyToMesh(cm);
+  vd.positions = P; vd.normals = N; if (U.length) vd.uvs = U; if (U2.length) vd.uvs2 = U2; if (TG.length) vd.tangents = TG; vd.indices = I; vd.applyToMesh(cm);
   cm.material = hegMat; cm.parent = node; cm.scaling.setAll(dScale); cm.receiveShadows = true; cm.renderingGroupId = 1; cm.isPickable = false; csm.addShadowCaster(cm, false);
   // burning break edges
   var E = new Batch('chunkEdge_' + ci, 2), mids = [];
@@ -1581,7 +1588,10 @@ else try {
   glInfo.vendor = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
 } catch (e) { glInfo.renderer = 'unknown'; }
 var tris = 0; shipMeshes.forEach(function (m) { tris += m.getTotalIndices() / 3; });
-window.__info = { bjs: B.Engine.Version, renderer: IS_WEBGPU ? 'webgpu' : 'webgl2', load_s: loadS, prewarm_s: warmS, stress: STRESS, ships_n: SHIPS.length, gl: glInfo, webgl: engine.webGLVersion, width: engine.getRenderWidth(), height: engine.getRenderHeight(),
+// texture memory estimate: every loaded 2D texture as uncompressed RGBA8 with mips (WebGL keeps JPEG and PNG uncompressed)
+var TEX_MB = 0; scene.textures.forEach(function (tx) { try { var z = tx.getSize(); if (z && z.width && !tx.isCube) TEX_MB += z.width * z.height * 4 * 1.333 / 1048576; } catch (e) {} });
+TEX_MB = Math.round(TEX_MB);
+window.__info = { hi: HI, tex_mb: TEX_MB, bjs: B.Engine.Version, renderer: IS_WEBGPU ? 'webgpu' : 'webgl2', load_s: loadS, prewarm_s: warmS, stress: STRESS, ships_n: SHIPS.length, gl: glInfo, webgl: engine.webGLVersion, width: engine.getRenderWidth(), height: engine.getRenderHeight(),
   ship_tris: tris, lib: window.__libSource, fx: fxStats, ships: SHIPS.map(function (d) {
     return { fac: d.fac, scale: +d.scale.toFixed(3), nozzles: d.nozzles.length, size: [d.L, d.H, d.W].map(function (v) { return +v.toFixed(2); }) };
   }) };
@@ -1703,7 +1713,7 @@ function runBench() {
         work_p99_ms: r3(wk / k), work_max_ms: r3(wsorted[0]),
         rich_lights_avg: RICH && LSTAT.n ? r3(LSTAT.sum / LSTAT.n) : null, rich_lights_max: RICH ? LSTAT.max : null, point_lights: scene.lights.length + CL_L.length,
         light_route: !RICH ? 'one light per ship' : CL ? 'ClusteredLightContainer, ' + CL_N + ' lights' : 'per-ship pools of ' + POOL_K + ' (12 lights per material)', bjs: B.Engine.Version,
-        env: ENV.ok ? { sky: ENV.sky, rocks: ROCKS.length } : null, physics_bodies: PH ? PH.bodies : null,
+        env: ENV.ok ? { sky: ENV.sky, rocks: ROCKS.length } : null, hi_assets: HI, tex_mb_estimate: TEX_MB, physics_bodies: PH ? PH.bodies : null,
         trace: { columns: ['second', 'frames', 'avg_ms', 'p99_ms', 'max_ms', 'frames_over_16.7ms', 'max_js_work_ms'], per_second: per,
           worst_frames: { columns: ['scene_t_s', 'frame_ms', 'js_work_ms'], rows: spikes },
           shader_compiles: { columns: ['bench_t_s', 'effect'], rows: COMPILES }, heap_drops: { columns: ['bench_t_s', 'MB'], rows: GCS } } }
