@@ -122,7 +122,7 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 
 ## 8. Accessibility
 
-- At most 3 counted flashes per rolling second anywhere on screen (WCAG 2.3.2). Flashes inside 0.33 s merge into one; over the budget, flashes draw as smoke and sparks without the bright core.
+- At most 3 counted flashes per rolling second anywhere on screen (WCAG 2.3.2). Flashes landing within 0.12 s of each other (a salvo) count as one; over the budget, flashes draw as smoke and sparks without the bright core.
 - `fx.reduce_flashing = true`: no counted flashes at all. Bright pops become expanding rings, particle bursts and a gentle glow rise; muzzle flashes become smoke-forward; fire flicker becomes slow breathing; effect shake halves.
 - `fx.shake_scale` (0..1) at any time.
 

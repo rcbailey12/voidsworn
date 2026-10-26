@@ -122,5 +122,19 @@ func _run() -> void:
 		fx.step(1.0 / 60.0)
 	fx.clear_wreck("hegemony_0")
 	fx.remove_ship("corsair_0")
+	# accessibility: no rolling second may hold more than 3 counted flashes (WCAG 2.3.2), even in this worst-case reel
+	var fl: PackedFloat64Array = fx.flash_log.duplicate()
+	fl.sort()
+	var worst := 0
+	for i in fl.size():
+		var n_in := 0
+		for j in range(i, fl.size()):
+			if fl[j] - fl[i] < 1.0:
+				n_in += 1
+		worst = maxi(worst, n_in)
+	if worst > 3:
+		push_error("flash cap broken: %d counted flashes in one second" % worst)
+		errors += 1
+	print("FX_SMOKE flashes counted=%d worst_per_second=%d" % [fl.size(), worst])
 	print("FX_SMOKE particles=%d lights=%d wrecks=%d errors=%d" % [fx.particles_emitted(), fx.active_lights(), fx.dstate["wrecks"].size(), errors])
 	quit(1 if errors > 0 else 0)

@@ -294,7 +294,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				fx.spr(from, tf, 0.05, Color(0.85, 0.95, 1.0), 12.0, 1.2 * ka, 2.2 * ka, 0)
 			fx.ring(from + dir * 0.5 * ka, dir, tf, 0.35, Color(0.8, 0.95, 1.0), 1.2, 0.5 * ka, 4.0 * ka, 3)
 			fx.dst(from + dir, tf, 0.3, 1.0 * ka, 6.0 * ka, 0, 1.2)
-			fx.stk(from, tf, 0.35, col.lerp(Color.WHITE, 0.6), 7.0, dist, 0.18 * ka, 5, dir)
+			fx.stk(from, tf, 0.3, col.lerp(Color.WHITE, 0.5), 3.0, dist, 0.1 * ka, 5, dir)
 			fx.ring(from + dir * dist * 0.5, dir, tf + 0.05, 0.45, Color(0.8, 0.9, 1.0), 0.5, 0.5 * ka, 3.0 * ka, 3)
 			fx.light(from, tf, 0.12, 6.0, Color(0.85, 0.95, 1.0), 0)
 			fx.shake(tf, 0.08, from)
@@ -401,7 +401,7 @@ static func _torp_mesh(fx, k: float, fac: Dictionary) -> MeshInstance3D:
 
 static func _rocket_mesh(fx, k: float) -> MeshInstance3D:
 	var mi = _torp_mesh(fx, k, {})
-	mi.scale = Vector3(1.4, 0.55, 0.55) * 0.6 * k * fx.unit
+	mi.scale = Vector3(1.4, 0.55, 0.55) * 1.0 * k * fx.unit
 	return mi
 
 
@@ -471,13 +471,16 @@ static func update(fx, dt: float) -> void:
 					fx.spr(ps, tt, 0.25, eng, 2.0, 2.4 * k, 1.2 * k, 17)
 					fx.spr(ps, tt, 0.6, eng, 0.6, 1.0 * k, 2.2 * k, 18)
 				else:
-					fx.spr(ps, tt, 0.12, eng, 3.5 if lk == "torp" else 3.0, (1.2 if lk == "torp" else 0.9) * k, 0.4 * k, 2)
+					fx.spr(ps, tt, 0.14, eng, 5.0 if lk == "torp" else 4.0, (2.2 if lk == "torp" else 1.6) * k, 0.6 * k, 2)
 					if lk == "torp":
 						# the long persistent plume: the signature that keeps every torpedo trackable
-						fx.spr(ps, tt, 3.6, Color(0.62, 0.64, 0.7), 0.1, 0.9 * k, 3.4 * k, 7, fx.rdir() * 0.5 * k, 0.6, 0.3)
-						fx.spr(ps, tt, 0.7, eng, 0.5, 0.8 * k, 1.6 * k, 18)
+						fx.spr(ps, tt, 3.6, Color(0.62, 0.64, 0.7), 0.12, 1.0 * k, 3.8 * k, 7, fx.rdir() * 0.5 * k, 0.6, 0.3)
+						fx.spr(ps, tt, 0.9, eng, 0.7, 1.2 * k, 2.4 * k, 18)
 					else:
-						fx.spr(ps, tt, 1.6, Color(0.2, 0.18, 0.16), 0.5, 0.4 * k, 2.0 * k, 8, fx.rdir() * 0.8 * k, 0.8, 0.5)
+						# rattle-rockets: a hot streak and a dirty grey smoke trail each, so the swarm reads at a glance
+						fx.spr(ps, tt, 1.8, Color(0.34, 0.31, 0.28), 0.45, 0.6 * k, 2.8 * k, 8, fx.rdir() * 0.8 * k, 0.8, 0.5)
+						if s == nemit - 1:
+							fx.stk(pos, tt, 0.08, eng.lerp(Color(1, 0.85, 0.5), 0.4), 6.0, 0.06, 0.35 * k, 1, -d * 40.0 * k, 0.0)
 		if lk != "star":
 			fx.light(pos - d * k, now, 0.05, 1.5 if lk == "torp" else 0.8, eng, 1)
 		else:

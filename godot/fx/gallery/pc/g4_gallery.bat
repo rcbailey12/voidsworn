@@ -9,6 +9,8 @@ set "P=%CD%\godot"
 set "OUT=%CD%\..\g4\%RUN%"
 if not exist "%OUT%" mkdir "%OUT%"
 echo [g4] godot=%G% project=%P% out=%OUT%
+rem other streams' jobs re-extract parts of build\godot (render\ among them), so put G4's files back first
+if exist "%CD%\..\g4\src\godot" xcopy /e /y /i /q "%CD%\..\g4\src\godot" "%P%" >nul
 rem 1. the stills at 4K, max detail, AgX (the look.gd default)
 "%G%" --path "%P%" --fixed-fps 60 --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --shots "%OUT%\shots" --res 3840x2160 --quality max > "%OUT%\shots_log.txt" 2>&1
 rem 2. tonemapper comparison: the same moments under ACES

@@ -25,7 +25,7 @@ const FAC := {
 }
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
-const FLASH_WINDOW := 0.33
+const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
 const FLASH_CAP := 3
 
 # --- settings (API.md 1, 8)
@@ -68,6 +68,7 @@ var _trauma = 0.0
 var _shakes: Array = []     # [t, amount, pos]
 var _pauses: Array = []     # [t, frames]
 var _flashes: PackedFloat64Array = []
+var flash_log: PackedFloat64Array = []   # every counted flash (tests check the 3-a-second cap)
 var _later: Array = []      # [t, callable]
 var _shake_off = Vector2.ZERO
 
@@ -277,6 +278,7 @@ func flash_ok(T: float) -> bool:
 	if near >= FLASH_CAP:
 		return false
 	_flashes.append(T)
+	flash_log.append(T)
 	if _flashes.size() > 64:
 		var keep = PackedFloat64Array()
 		for f in _flashes:
