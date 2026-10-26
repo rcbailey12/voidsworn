@@ -1,0 +1,19 @@
+{
+  "engine": "godot",
+  "renderer": "forward_plus",
+  "mode": "main",
+  "ships": 6,
+  "width": 2560,
+  "height": 1440,
+  "seconds": 20.0,
+  "frames": 24464,
+  "avg_ms": 0.818,
+  "p99_ms": 1.244,
+  "max_ms": 1.75,
+  "fps_avg": 1223.19,
+  "load_s": 4.044,
+  "gpu_mem_mb": 1051.8,
+  "notes": "effects ported from the Babylon half: 758 sprites, 1020 streaks, 26 rings, 2092 ribbon vertices, 282 shards in 6 static meshes; 4 shields, 6 breach decals; effect script per frame (fx.update: ship drift, phase groups, particle triggers, lights) 0.049 ms average; engine-measured 3D render time per frame: GPU 0.70 ms, render CPU 0.13 ms; frame breakdown (CPU wall time per frame, averages over the run): physics steps 0.00 ms (0.06 ticks per frame); node processing 0.07 ms (every _process and particle node, effect script 0.05 ms of it); tree flush and render sync 0.01 ms; render-server draw 0.71 ms (scene update 0.02, 3D view render CPU 0.13, rest 0.56: GPU frame wait, particle update, 2D, present); between frames 0.02 ms (OS events, input); 61 draw calls, 61 objects, 86 nodes in the tree; shader warm-up after load took 0.0 s (every effect, fade and chunk state drawn once, until pipeline compiles stop); adapter NVIDIA GeForce RTX 5080, driver vulkan 1.4.351; render target 2560x1440 (from --res) in a SubViewport with MSAA 4x, shown in a 2560x1440 window; vsync mode 0 (0 = off); gpu_mem_mb is Performance RENDER_VIDEO_MEM_USED at the end (peak during run 1052 MB); textures loaded uncompressed (RGB8 with mipmaps), as GLTFDocument gives them at runtime",
+  "lights_active_avg": 6.2,
+  "lights_active_max": 7
+}
