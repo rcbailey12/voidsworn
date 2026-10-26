@@ -23,9 +23,14 @@ Decisions this rests on: `K1_DECISIONS.md` (Claude's calls, Ryan can veto).
    side, S on starboard; every weapon slot has a mount. Dress parts that float are removed; kit parts that float fail the build.
 4. **Bake** (PC GPU, `bakemat4.py`): albedo, ORM, emissive, normal at 4096 on one atlas. Engine glow comes from the modelled bells.
 5. **Wreck** (`wreck.py`): the finished ship cut into chunks, capped, each with its own centre of mass.
-6. **Pack** (`pack.py`, needs PIL): `godot/assets/ships/<CODE>/` with the ship glb (hard point nodes), the wreck glb and four shared
-   JPEG maps at 2048; the 4096 set on the PC. Structural checks on both files (`gio.check`), reimport check in Blender.
-7. **Review**: `look.py` (Workbench clay with a coordinate grid and close-ups, cloud), the studio views and 9-cell blob sweep from the bake
+6. **Breach damage** (`damage.py`, numpy, R39): per breach anchor a hull patch (`skin_<n>`, `skin_<n>_heavy`) split out of the ship
+   mesh, and `<CODE>_damage.glb` with the hole and the heavy damage (torn plates bent outward in the ship's paint, a cavity with frame
+   rings, stringers, decks, conduits and fire glow). Review sheet: `dmgview.py` (intact, hole, heavy per anchor).
+7. **Pack** (`pack.py`, needs PIL): `<CODE>/` with the ship glb (hard point nodes, skins, Ithar sails as a see-through second surface),
+   the wreck glb, the damage glb and four shared JPEG maps at 2048; the 4096 set on the PC. Structural checks (`gio.check`), reimport
+   check in Blender. The job then copies the folder into the PC game build (`build\godot\assets\ships\<CODE>\`) and `manifest.py`
+   writes the manifest and previews that go into the repo (the glbs stay out of git for now).
+8. **Review**: `look.py` (Workbench clay with a coordinate grid and close-ups, cloud), the studio views and 9-cell blob sweep from the bake
    job (Cycles, PC), and the faction lineup sheet (`lineup.py`).
 
 ## Running it
@@ -36,6 +41,14 @@ Decisions this rests on: `K1_DECISIONS.md` (Claude's calls, Ryan can veto).
 - PC, full: `python3 tools/blender/a4/stage.py STAGE_DIR TAG CODE...` stages `a4tools\` and one queued job per ship
   (`tools/pc/jobs/a4_ship.bat`, about 4 to 8 minutes a ship); copy `a4tools\` into `voidsworn_test\build\`, then the job files into
   `voidsworn_test\queue\`. Results in `voidsworn_test\a4\`.
+
+## Hulls the AI got wrong
+
+- Turned: `yaw` (quarter turns, 2 = back to front: C15s, V14, V16, B19, B21, B22, I11, D9; -1: D20 meshed side-on).
+- Slanted: `pitch` and `roll_deg` level a hull the AI meshed at an angle (`frame.tilt`; I15 bow up 13.5 degrees, D22's ring rolled 26).
+- Ithar (`ithar.py`, R28 "Ithar broken"): the AI sails are thick lumps, so they are cut (box cuts, or `needle` cuts that keep only the
+  spindle) and rebuilt with `kit.sail` (membrane, gold ribs, lit rim, hub ring). Where the body itself is unusable (I8, I11) the hull is
+  lofted by hand (`loft`: a faceted porcelain spindle with a hub bulge and a flat stern face for the engine).
 
 ## Frames
 
