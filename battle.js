@@ -717,7 +717,8 @@ async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.uni
   if(by&&!t.isSq) gainResolve(by.side,1);
   if(by){ by.kills++; if(by.parent){ const p=B.units.find(x=>x.id===by.parent); if(p) p.kills+=0; } }
   if(by&&by.isSq){ const p=B.units.find(x=>x.id===by.parent&&!x.dead); if(p&&p.fx&&p.fx.feast){ p.spare=(p.spare||0)+1; const h=Math.round(p.maxHp*p.fx.feast); p.hp=Math.min(p.maxHp,p.hp+h); boonFx(p,'h_feast','+'+h+' hull, +1 wing',-30); } }
-  const b0=B, live=liveFrom(null); { const dk=t.side==='enemy'&&!t.isSq&&!(t.t&&t.t.boss)?enemyPaceK():1; SPEED*=dk; try{ await animExplode(t); } finally{ SPEED/=dk; } } // B2: in big fights an escort's death plays quicker; flagships keep the full show if(!live()){ if(B===b0&&!B.over) try{ checkEnd(); }catch(e){} return; } // v45: epoch check like every other await, so a stalled battle never sees this explosion's aftermath
+  const b0=B, live=liveFrom(null); { const dk=t.side==='enemy'&&!t.isSq&&!(t.t&&t.t.boss)?enemyPaceK():1; SPEED*=dk; try{ await animExplode(t); } finally{ SPEED/=dk; } } // B2: in big fights an escort's death plays quicker; flagships keep the full show
+  if(!live()){ if(B===b0&&!B.over) try{ checkEnd(); }catch(e){} return; } // v45: epoch check like every other await, so a stalled battle never sees this explosion's aftermath (B-18, Oct 26: this line was swallowed by the comment above and never ran)
   { const cb=by&&!t.isSq&&by.side!==t.side?ownerFx(by).chainBoom:0; if(cb){ const near=B.units.filter(x=>!x.dead&&x.side===t.side&&x!==t&&hdist(x,t)<=2); if(near.length) log(`${t.name}'s reactor goes up, scorching ${near.length} nearby ship${near.length>1?'s':''}.`,by.side==='player'?'p':'e');
       for(const x of near){ if(x.dead) continue; x.hp-=cb; boonFx(x,'e_chain','\u2212'+cb,-12); if(x.hp<=0) await killUnit(x,by); } } }
   log(`${t.name} ${t.isSq?'is shot down':'is destroyed'}.`, t.side==='player'?'e':'p');
