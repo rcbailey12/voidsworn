@@ -101,6 +101,7 @@ func _exit_tree() -> void:
 func release() -> void:
 	for id in ships:
 		var s = ships[id]
+		s.wait_damage()
 		if s.has_meta("cut_task"):
 			WorkerThreadPool.wait_for_task_completion(int(s.get_meta("cut_task")))
 			s.remove_meta("cut_task")
@@ -622,6 +623,22 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		mi.material_override = mats[i]
 		mi.position = Vector3((i % 4 - 1.5) * 2.5, (i / 4 - 1.0) * 2.5, 0) * unit
 		tmp.add_child(mi)
+	# a breach interior (its own vertex format: position, normal, colour)
+	var harr = []
+	harr.resize(Mesh.ARRAY_MAX)
+	harr[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 0, 0)])
+	harr[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.BACK, Vector3.BACK, Vector3.BACK])
+	harr[Mesh.ARRAY_COLOR] = PackedColorArray([Color.WHITE, Color.WHITE, Color.WHITE])
+	var hm = ArrayMesh.new()
+	hm.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, harr)
+	for sd in [Vector3.BACK, Vector3.FORWARD]:
+		var hmi = MeshInstance3D.new()
+		hmi.mesh = hm
+		hmi.material_override = mat(SH.HOLE, 0)
+		hmi.position = sd * unit * 0.5
+		hmi.rotation.y = 0.0 if sd == Vector3.BACK else PI
+		hmi.scale = Vector3.ONE * unit * 2.0
+		tmp.add_child(hmi)
 	# overlays (death pieces and cracks) over a plain lit material, a Decal, and a debris body
 	var base = StandardMaterial3D.new()
 	for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1)]:

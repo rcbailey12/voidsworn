@@ -805,18 +805,21 @@ void fragment() {
 			base = vec3(0.012, 0.010, 0.010) * (1.0 - deep * 0.6);
 			alpha = 1.0;
 			add = (glowC * emb * 1.2 * fl + vec3(1.0, 0.4, 0.08) * struts * 0.12 * (1.0 - deep)) * deep * (0.35 + 0.65 * heat);
-		} else if (e < 0.05) {
-			float h = 1.0 - e / 0.05;
-			base = vec3(0.02);
+		} else if (e < 0.025) {
+			// the torn lip: dark metal, a thin hot line only while fresh (no glowing ring)
+			float h = 1.0 - e / 0.025;
+			base = vec3(0.03);
 			alpha = 1.0;
-			vec3 rim = mix(mix(vec3(1.0, 0.3, 0.04) * 2.0, vec3(1.0, 0.8, 0.55) * 4.5, h * h), vec3(0.4, 1.0, 0.25) * 2.0, bio);
-			add = rim * h * fl * heat;
+			vec3 rim = mix(vec3(1.0, 0.35, 0.06), vec3(0.4, 1.0, 0.25), bio);
+			add = rim * h * h * fl * heat * heat * 0.8;
 		} else {
+			// char and soot in ragged blotches that fade into the hull (not a ring)
 			float n = fbm(p * 4.0 + seed * 3.0);
-			float charred = 1.0 - smoothstep(0.05, 0.2 + 0.1 * n, e);
-			float crack = smoothstep(0.9, 0.98, 1.0 - abs(fbm(p * 7.0 + seed) * 2.0 - 1.0)) * (1.0 - smoothstep(0.05, 0.12, e));
-			float soot = (1.0 - smoothstep(0.08, 0.62, e)) * (0.7 + 0.6 * n);
-			alpha = clamp(max(charred, soot * 0.9), 0.0, 1.0);
+			float n2 = fbm(p * 9.0 + seed * 5.0);
+			float charred = 1.0 - smoothstep(0.02, 0.1 + 0.12 * n, e);
+			float crack = smoothstep(0.9, 0.98, 1.0 - abs(fbm(p * 7.0 + seed) * 2.0 - 1.0)) * (1.0 - smoothstep(0.03, 0.08, e)) * heat;
+			float soot = (1.0 - smoothstep(0.0, 0.25 + 0.25 * n, e)) * smoothstep(0.35, 0.65, n2 + 0.25 * n);
+			alpha = clamp(max(charred, soot * 0.75), 0.0, 1.0);
 			base = mix(vec3(0.03, 0.022, 0.018), vec3(0.015, 0.012, 0.01), charred);
 			if (bio > 0.5) { base = mix(base, vec3(0.04, 0.06, 0.02), soot * 0.6); }
 			add = glowC * crack * 0.8 * fl * heat;
@@ -844,6 +847,64 @@ void fragment() {
 	METALLIC = 0.6;
 	ROUGHNESS = 0.5;
 	EMISSION = vec3(1.0, 0.35, 0.06) * spow(1.0 - UV.y, 6.0) * 4.0 * fl * heat * fx_gain;
+}
+"""
+
+# Inside a breach (fx_breach.gd): the cavity floor, the backs of the skin and peeled plates, frames and decks, conduits
+# and cables, the torn edge. Lit by the scene (the hull shadows it) plus a fire point inside the hole that the scene's
+# lights cannot give. COLOR.r is the part (0 floor, 0.25 skin back, 0.5 frame or deck, 0.75 conduit, 1 torn edge),
+# COLOR.g a shade. The fire burns hot when the hole opens and settles to a smoulder; the torn edge glows, then cools.
+const HOLE := """
+shader_type spatial;
+render_mode cull_back;
+""" + COMMON + """
+uniform vec3 fire = vec3(0.0);
+uniform vec3 centre = vec3(0.0);
+uniform vec3 axis = vec3(0.0, 1.0, 0.0);
+uniform float R = 1.0;
+uniform float t0 = 0.0;
+uniform float heat = 1.0;
+uniform float seed = 0.0;
+uniform vec3 glow = vec3(1.0, 0.45, 0.12);
+varying vec3 vL;
+varying vec3 vNl;
+varying vec4 vC;
+void vertex() { vL = VERTEX; vNl = NORMAL; vC = COLOR; }
+void fragment() {
+	float part = vC.r;
+	float age = max(scene_t - t0, 0.0);
+	float hot = heat * mix(0.45, 1.0, exp(-age / 10.0));
+	float fl = flick(0.7 + 0.3 * vnoise(vec2(scene_t * 7.0, seed)) * vnoise(vec2(scene_t * 17.0, seed + 3.0)) * 2.0, scene_t, seed);
+	vec3 p = vL / R;
+	float n1 = fbm(p.xy * 3.1 + p.zx * 2.3 + seed);
+	float n2 = fbm(p.yz * 9.0 + p.xy * 5.0 + seed * 2.0);
+	// how far below the skin: deeper is darker (light does not get in) and nearer the fire
+	float deep = clamp(dot(centre - vL, axis) / R, 0.0, 1.5);
+	float ao = mix(1.0, 0.25, smoothstep(0.0, 0.9, deep));
+	vec3 base = vec3(0.04, 0.038, 0.036) * (0.6 + 0.8 * vC.g) * (0.7 + 0.6 * n1);
+	float rough = 0.72;
+	float metal = 0.25;
+	if (part > 0.9) { base = vec3(0.09, 0.085, 0.08) * (0.8 + 0.4 * n2); rough = 0.45; metal = 0.6; ao = 1.0; }
+	else if (part > 0.6) { base = mix(vec3(0.05, 0.042, 0.034), vec3(0.03, 0.03, 0.034), vC.g) * (0.8 + 0.4 * n2); rough = 0.5; }
+	else if (part > 0.4) { float seam = smoothstep(0.9, 1.0, abs(sin(dot(vL, vec3(1.0, 1.3, 0.7)) * 9.0 / R))); base *= 1.15 - 0.4 * seam; }
+	vec3 toF = fire - vL;
+	float dist = length(toF) / R;
+	base *= mix(0.5, 1.0, smoothstep(0.2, 1.4, dist));
+	ALBEDO = base;
+	ROUGHNESS = rough;
+	METALLIC = metal;
+	AO = ao;
+	AO_LIGHT_AFFECT = 1.0;
+	SPECULAR = 0.3 * ao;
+	vec3 Nl = normalize(vNl) * (FRONT_FACING ? 1.0 : -1.0);
+	float lam = 0.25 + 0.75 * max(dot(Nl, toF / max(length(toF), 1e-4)), 0.0);
+	float fall = 1.0 / (1.0 + dist * dist * 10.0);
+	float emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
+	vec3 em = glow * (lam * fall * 0.6 * fl * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)) + emb * 0.8 * (0.6 + 0.4 * fl) * smoothstep(1.4, 0.3, dist)) * hot;
+	if (part > 0.9) {
+		em += mix(glow, vec3(1.0, 0.82, 0.6), exp(-age * 1.5)) * exp(-age / 1.5) * 1.0 * heat * (0.7 + 0.3 * fl);
+	}
+	EMISSION = em * fx_gain;
 }
 """
 
@@ -878,8 +939,11 @@ void fragment() {
 	float fl = flick(0.55 + 0.9 * vnoise(vec2(dot(vL, vec3(3.1, 1.7, 2.3)), scene_t * 3.0)), scene_t, 1.0);
 	if (!FRONT_FACING) {
 		float n = fbm(vL.xy * 1.3 + vL.zx * 0.9);
-		float emb = smoothstep(0.62, 0.8, n) * heat;
-		ALBEDO = vec3(0.012, 0.010, 0.009) * (0.6 + n) + (glow * emb * 1.6 * fl + glow * exp(-x * 2.5) * heat * 1.2) * fx_gain;
+		// embers only near the break: elsewhere a back face is just the hull's dark inside (r2: glowing specks round the
+		// silhouette, where back faces show past the front at grazing angles)
+		float near_cut = exp(-x * 1.2);
+		float emb = smoothstep(0.62, 0.8, n) * heat * near_cut;
+		ALBEDO = vec3(0.012, 0.010, 0.009) * (0.6 + n) + (glow * emb * 1.6 * fl + glow * exp(-x * 3.0) * heat * 1.0) * fx_gain;
 		ALPHA = 1.0;
 	} else {
 		if (x > 3.0 || heat <= 0.01) { discard; }
@@ -950,9 +1014,11 @@ float field(vec3 pl, float age, inout vec3 em, inout vec3 alb) {
 	em = vec3(0.0);
 	if (vtype < 0.5) {
 		float r = length(pl) * 2.0;
-		float rs = 0.25 + 0.6 * (1.0 - exp(-age * 1.6));
+		// the ball grows to a little over half the box, and density fades to nothing before the box's faces, so its noisy
+		// edge never meets them (r2: hard straight box edges)
+		float rs = 0.2 + 0.42 * (1.0 - exp(-age * 1.6));
 		float n = fbm3(pl * 5.0 + vec3(P.z, -age * 0.6, age * 0.3));
-		float d = clamp((rs - r) / rs * 1.6 + (n - 0.5) * 1.4, 0.0, 1.0);
+		float d = clamp((rs - r) / rs * 1.6 + (n - 0.5) * 1.4, 0.0, 1.0) * smoothstep(0.98, 0.72, r);
 		float temp = clamp((1.0 - r / rs) * 1.4 + (n - 0.5), 0.0, 1.0) * exp(-age * 1.1);
 		em = mix(heatRamp(temp), heatRamp(temp) * tint * 1.4, 0.3) * temp * temp * 14.0;
 		alb = vec3(0.05, 0.045, 0.04);

@@ -8,6 +8,7 @@ const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 const HULL := preload("res://fx/fx_hull.gd")
 const DEATH := preload("res://fx/fx_death.gd")
+const BREACH := preload("res://fx/fx_breach.gd")
 
 const TRAIL_PTS := 40
 const TRAIL_LEN := 60.0
@@ -50,6 +51,14 @@ var _burning = false
 var _hit_decals: Array = []
 var _dmg_root: Node3D
 var _seed = 0
+var _anchors = {}          # where each section's damage sits (stays put as the stage grows)
+var _ents = [[], [], []]   # the hull damage entries (fx_breach.Ent) per section
+var _orig: Array = []      # the hull's original surfaces, gathered at the first damage
+var _dmg_task = -1
+var _dmg_dirty = false
+var _dmg_job: Dictionary = {}
+var _hole_nodes: Array = []
+var _hole_lights: Array = []
 
 
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
@@ -82,6 +91,8 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 
 
 func teardown(fx) -> void:
+	wait_damage()
+	BREACH.clear_nodes(self)
 	for t in _trails:
 		if is_instance_valid(t["mi"]):
 			(t["mi"] as Node).queue_free()
@@ -523,9 +534,109 @@ func _clear_lights(i: int) -> void:
 	_sec_lights[i] = []
 
 
+# Where a section's damage sits: "a" the main hole, "d" a buckled panel, "b" a bite out of an upper edge (so the
+# silhouette changes). Picked once, so a dent becomes a hole becomes a breach in the same place.
+func _anchor(i: int, kind: String) -> Dictionary:
+	var key = "%s%d" % [kind, i]
+	if not _anchors.has(key):
+		var h: Dictionary = hull.random_sample(i, 2.5)
+		if kind == "b":
+			for t in 32:
+				var c: Dictionary = hull.random_sample(i, 0.0)
+				var ny = (c["n"] as Vector3).y
+				if ny > 0.15 and ny < 0.75:
+					h = c
+					break
+		_anchors[key] = {"p": h["p"], "n": h["n"], "t": {}}
+	return _anchors[key]
+
+
+func _t0(a: Dictionary, st: int, fx) -> float:
+	if not (a["t"] as Dictionary).has(st):
+		a["t"][st] = fx.now
+	return float(a["t"][st])
+
+
+# The hull damage for a section at a stage: 2 a dent, 3 a hole with its plates bent back, 4 a bigger breach plus a
+# buckled panel and (medium ships up) a bite out of an upper edge.
+func _plan(fx, i: int, st: int) -> Array:
+	var out: Array = []
+	if squadron or weight <= 0 or st < 2:
+		return out
+	var L: float = hull.L
+	var sd = float(posmod(_seed, 1000)) * 0.01 + i * 3.7
+	var a = _anchor(i, "a")
+	if st == 2:
+		out.append(BREACH.dent(a["p"], a["n"], L * 0.05, L * 0.05 * 0.22, sd))
+		return out
+	var big = st >= 4
+	var e = BREACH.hole(hull, a["p"], a["n"], L * (0.046 if big else 0.03), 1.3 if big else 0.85, 0.14 if big else 0.1, sd)
+	e.t0 = _t0(a, st, fx)
+	e.sec = i
+	out.append(e)
+	if big:
+		var d = _anchor(i, "d")
+		out.append(BREACH.dent(d["p"], d["n"], L * 0.045, L * 0.045 * 0.22, sd + 1.3))
+		if weight >= 2:
+			var bt = _anchor(i, "b")
+			var eb = BREACH.hole(hull, bt["p"], bt["n"], L * 0.032, 1.1, 0.12, sd + 2.1)
+			eb.t0 = _t0(bt, st, fx)
+			eb.sec = i
+			out.append(eb)
+	return out
+
+
+# Rebuild the hull from its original arrays with every section's damage, on a worker thread; apply when done.
+func _dmg_request(fx) -> void:
+	if _dmg_task >= 0:
+		_dmg_dirty = true
+		return
+	var ents: Array = []
+	for i in 3:
+		ents.append_array(_ents[i])
+	if ents.is_empty() and _orig.is_empty():
+		return
+	if _orig.is_empty():
+		_orig = BREACH.gather(self)
+		if _orig.is_empty():
+			return
+	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "out": {}}
+	_dmg_job = job
+	_dmg_task = WorkerThreadPool.add_task(func() -> void: job["out"] = BREACH.compute(job))
+	fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))
+
+
+func _dmg_poll(fx) -> void:
+	if _dmg_task < 0:
+		return
+	if not WorkerThreadPool.is_task_completed(_dmg_task):
+		fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))
+		return
+	WorkerThreadPool.wait_for_task_completion(_dmg_task)
+	_dmg_task = -1
+	if dead or gone:
+		return
+	BREACH.apply(fx, self, _dmg_job)
+	# the death pieces are cut from the hull as it is now, holes and all
+	if has_meta("cut_job") and not has_meta("cut_task"):
+		remove_meta("cut_job")
+		DEATH.precompute(fx, self)
+	if _dmg_dirty:
+		_dmg_dirty = false
+		_dmg_request(fx)
+
+
+func wait_damage() -> void:
+	if _dmg_task >= 0:
+		WorkerThreadPool.wait_for_task_completion(_dmg_task)
+		_dmg_task = -1
+
+
 func _build_section(fx, i: int, up: bool) -> void:
 	_clear_section(i)
 	var st: int = stage[i]
+	_ents[i] = _plan(fx, i, st)
+	_dmg_request(fx)
 	if st <= 0:
 		return
 	var r = RandomNumberGenerator.new()
@@ -537,65 +648,50 @@ func _build_section(fx, i: int, up: bool) -> void:
 	var bshard = POOLS.Batch.new()
 	var q = POOLS.quad_shape()
 	var qs = POOLS.streak_shape()
+	var a = _anchor(i, "a")
+	var ap: Vector3 = a["p"]
+	var an: Vector3 = a["n"]
+	var at1 = an.cross(Vector3.UP if absf(an.y) < 0.9 else Vector3.RIGHT).normalized()
+	var at2 = an.cross(at1)
 	var picks: Array = []
-	for j in 8:
+	for j in 6:
 		picks.append(hull.random_sample(i, 2.5))
-	# 1+: scorch marks and smoke wisps
-	var n_scorch = [0, 2, 4, 5, 6][st]
-	for j in n_scorch:
-		var h: Dictionary = picks[j % picks.size()]
-		_sec_nodes[i].append(DEATH.scorch_decal(fx, _dmg_root, h["p"], h["n"], hull.L * (0.05 + 0.03 * r.randf()) * (1.0 + 0.2 * st), st >= 2, r))
-	for j in mini(st, 3):
-		var h: Dictionary = picks[(j + 3) % picks.size()]
-		var p: Vector3 = (h["p"] as Vector3) + (h["n"] as Vector3) * 0.2
-		for kk in 4:
-			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 1.1 + r.randf()), Vector4(h["n"].x * 1.5, h["n"].y * 1.5 + 0.4, h["n"].z * 1.5, 4.0),
-				Vector4(0.16, 0.15, 0.14, 0.32), Vector4(0.6 * k, 3.2 * k, 3, r.randf()), Vector4(4.4, 0, 0.6, 0.3)))
-	# 2+: sparking wire bursts and thin gas jets
+	# the blackened area round the damage grows with the stage; a few smaller marks elsewhere
+	_sec_nodes[i].append(DEATH.scorch_decal(fx, _dmg_root, ap, an, hull.L * (0.05 + 0.065 * st), false, r, 0.3 if st >= 3 else 0.15))
+	if st >= 3:
+		_sec_nodes[i].append(DEATH.scorch_decal(fx, _dmg_root, ap, an, hull.L * (0.03 + 0.035 * st), false, r, 0.0))
+	for j in [0, 1, 2, 3, 3][st]:
+		var h: Dictionary = picks[j]
+		_sec_nodes[i].append(DEATH.scorch_decal(fx, _dmg_root, h["p"], h["n"], hull.L * (0.03 + 0.025 * r.randf()), false, r, 0.2))
+	# 1 and 2: a thin wisp of smoke from the struck area (from 3 the hole makes its own)
+	if st <= 2:
+		var ps: Vector3 = ap + an * 0.1
+		for kk in 3:
+			var v = an * hull.L * 0.03 + Vector3(0, hull.L * 0.01, 0)
+			b.add(q, POOLS.pack(Vector4(ps.x, ps.y, ps.z, -20.0 + kk * 1.0 + r.randf() * 0.3), Vector4(v.x, v.y, v.z, 3.0),
+				Vector4(0.12, 0.115, 0.11, 0.16), Vector4(hull.L * 0.012, hull.L * 0.055, 3, r.randf()), Vector4(3.0, 0, 0.7, 0.3)))
+	# 2+: sparking wires and a thin gas jet at the damaged plates
 	if st >= 2:
 		for j in (1 if st == 2 else 2):
-			var h: Dictionary = picks[(j + 5) % picks.size()]
-			var p: Vector3 = h["p"]
-			var n: Vector3 = h["n"]
+			var p: Vector3 = ap + (at1 * (r.randf() - 0.5) + at2 * (r.randf() - 0.5)) * hull.L * 0.05
 			var per = 1.6 + r.randf() * 1.4
 			var off = r.randf() * per
-			for kk in 10:
-				var v = (n + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (5 + r.randf() * 9) * k
+			for kk in 8:
+				var v = (an + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (5 + r.randf() * 9) * k
 				bs.add(qs, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + off + r.randf() * 0.08), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.3),
 					Vector4(1.0, 0.7, 0.35, 5.0), Vector4(0.05, 0.1 * k, 2.2, 1), Vector4(per, 0, 0, 0)))
-			var hj: Dictionary = picks[(j + 1) % picks.size()]
-			var pj: Vector3 = (hj["p"] as Vector3) + (hj["n"] as Vector3) * 0.1
-			for kk in 14:
+		if st == 2:
+			var pj: Vector3 = ap + at1 * hull.L * 0.02
+			for kk in 12:
 				var tk = -20.0 + kk * 0.09
-				var v: Vector3 = (hj["n"] as Vector3) * (5.0 + r.randf() * 2.0) * k
-				b.add(q, POOLS.pack(Vector4(pj.x, pj.y, pj.z, tk), Vector4(v.x, v.y, v.z, 1.0), Vector4(0.62, 0.68, 0.78, 0.18),
-					Vector4(0.15 * k, 1.1 * k, 7, r.randf()), Vector4(1.26, 0, 0.8, 0.5)))
-	# 3+: exposed structure, first small fires, debris shedding
+				var v: Vector3 = (an + at2 * 0.3).normalized() * (4.0 + r.randf() * 2.0) * k
+				b.add(q, POOLS.pack(Vector4(pj.x, pj.y, pj.z, tk), Vector4(v.x, v.y, v.z, 0.9), Vector4(0.62, 0.68, 0.78, 0.16),
+					Vector4(0.12 * k, 0.9 * k, 7, r.randf()), Vector4(1.26, 0, 0.8, 0.5)))
+	# 3+: debris shedding from the hole
 	if st >= 3:
-		var he: Dictionary = picks[0]
-		_sec_nodes[i].append(DEATH.hole_decal(fx, _dmg_root, he["p"], he["n"], hull.L * 0.07 * (1.0 + 0.3 * (st - 3)), 0.55, 0.45, r, faction == "chorus"))
-		var nf = 1 + (1 if hull.L > 18.0 else 0) + (st - 3)
-		for j in nf:
-			var h: Dictionary = picks[(j * 2 + 1) % picks.size()]
-			var p: Vector3 = (h["p"] as Vector3) + (h["n"] as Vector3) * 0.15
-			var hole = hull.L * 0.05
-			for kk in 10:
-				var off = (h["n"] as Vector3).cross(Vector3.UP if absf((h["n"] as Vector3).y) < 0.9 else Vector3.RIGHT).normalized() * (r.randf() - 0.5) * hole
-				var v: Vector3 = (h["n"] as Vector3) * (1.0 + r.randf()) + Vector3(0, 1.0, 0)
-				b.add(q, POOLS.pack(Vector4(p.x + off.x, p.y + off.y, p.z + off.z, -20.0 + kk * 0.08), Vector4(v.x, v.y, v.z, 0.5 + r.randf() * 0.3),
-					Vector4(1.0, 0.5, 0.15, 2.2), Vector4(hole * 0.3, hole * 0.9, 1, r.randf()), Vector4(0.8, 0, 0, 0)))
-			for kk in 3:
-				b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.8), Vector4(h["n"].x * 2.0, h["n"].y * 2.0 + 0.5, h["n"].z * 2.0, 2.4),
-					Vector4(0.1, 0.09, 0.085, 0.45), Vector4(hole * 0.6, hole * 3.0, 3, r.randf()), Vector4(2.4, 0, 0.6, 0.3)))
-			var holder = Node3D.new()
-			holder.position = p + (h["n"] as Vector3) * 1.0
-			_dmg_root.add_child(holder)
-			_sec_nodes[i].append(holder)
-			_sec_lights[i].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.5, 0.15), 1.6 + 0.4 * (st - 3), 0.45))
-		var hd: Dictionary = picks[2]
-		var pd: Vector3 = (hd["p"] as Vector3) + (hd["n"] as Vector3) * 0.2
+		var pd: Vector3 = ap + an * 0.1
 		for kk in 3:
-			var v = ((hd["n"] as Vector3) + Vector3(r.randf() - 0.5, r.randf() * 0.4, r.randf() - 0.5)).normalized() * (1.5 + r.randf() * 2.0) * k
+			var v = (an + Vector3(r.randf() - 0.5, r.randf() * 0.4, r.randf() - 0.5)).normalized() * (1.5 + r.randf() * 2.0) * k
 			var ax = Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5).normalized()
 			bshard.add(POOLS.shard_shape(r), POOLS.pack(Vector4(pd.x, pd.y, pd.z, -20.0 + kk * 1.3), Vector4(v.x, v.y, v.z, 3.6),
 				Vector4(ax.x, ax.y, ax.z, 2.0 + r.randf() * 3.0), Vector4(hull.L * 0.012, 3.9, 0.0, 0.0), Vector4(0.6, r.randf(), 0, 0)))
@@ -610,11 +706,10 @@ func _build_section(fx, i: int, up: bool) -> void:
 	b.build(spm, holder2, "fx_sec_sprites")
 	bs.build(fx.mat(SH.STREAK, 1), holder2, "fx_sec_sparks")
 	bshard.build(fx.mat(SH.SHARD, 0), holder2, "fx_sec_debris")
-	# the moment a stage goes up: a burst at the struck section
+	# the moment a stage goes up: a burst where the damage is
 	if up and st >= 2:
-		var h0: Dictionary = picks[0]
-		var wp = to_world(h0["p"])
-		var wn = dir_world(h0["n"])
+		var wp = to_world(ap)
+		var wn = dir_world(an)
 		fx.pop(wp + wn * 0.3, T, Color(1, 0.7, 0.4), (2.0 + st) * k, 6.0, wn, 0.12)
 		for kk in 8 + st * 4:
 			fx.stk(wp, T + fx.rng.randf() * 0.05, 0.3 + fx.rng.randf() * 0.4, Color(1, 0.6, 0.25), 7.0, 0.05, 0.12, 1, fx.rcone(wn, 0.9) * (8 + fx.rng.randf() * 14) * k, 2.0)
@@ -623,74 +718,41 @@ func _build_section(fx, i: int, up: bool) -> void:
 		DEATH.spawn_debris(fx, wp + wn * 0.6, wn * 4.0 * k, st - 1, hull.L * 0.02)
 
 
+# Stage 4 on top of the hole itself (fx_breach.gd cuts it, peels it, builds the inside and its fire, gas and sparks):
+# debris streaming out, spark showers and dull internal pops from deep inside, and the moment the hole opens.
 func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Batch, r: RandomNumberGenerator, up: bool) -> void:
-	var h: Dictionary = hull.random_sample(i, 2.5)
-	var brp: Vector3 = h["p"]
-	var bn: Vector3 = h["n"]
+	var a = _anchor(i, "a")
+	var brp: Vector3 = a["p"]
+	var bn: Vector3 = a["n"]
 	var hole = hull.L / 10.0
 	var k = scale_k()
-	var t1 = bn.cross(Vector3(0, 1, 0) if absf(bn.y) < 0.9 else Vector3(1, 0, 0)).normalized()
-	var t2 = bn.cross(t1)
 	var q = POOLS.quad_shape()
 	var qs = POOLS.streak_shape()
 	var T0: float = fx.now
-	_sec_nodes[i].append(DEATH.hole_decal(fx, _dmg_root, brp, bn, hole, 1.0, 1.0, r, faction == "chorus"))
-	_sec_nodes[i].append(DEATH.petals(fx, _dmg_root, brp, bn, t1, t2, hole, r))
-	var P = brp + bn * 0.2
+	var P = brp - bn * hole * 0.1
 	var upv = Vector3(0, 1, 0)
-	# venting gas: a raymarched plume in max, puffing sprites otherwise
-	if fx.quality == "max":
-		_sec_nodes[i].append(DEATH.vent_volume(fx, _dmg_root, brp, bn, hole, r.randf() * 10.0))
-	else:
-		for kk in 40:
-			var tk = -20.0 + kk * 0.045
-			var wav = sin(kk * 0.45) * 0.25
-			var puff = 0.7 + 0.3 * sin(kk * 0.9)
-			var vd = (bn + t1 * wav + upv * 0.25).normalized() * ((9 + r.randf() * 3) * puff) * k
-			b.add(q, POOLS.pack(Vector4(P.x, P.y, P.z, tk), Vector4(vd.x, vd.y, vd.z, 1.8), Vector4(0.62, 0.68, 0.78, 0.3 * puff),
-				Vector4(hole * 0.2, hole * 1.1, 7, r.randf()), Vector4(1.8, 0, 0.7, r.randf() - 0.5)))
 	# debris streaming out
 	for kk in 9:
 		var v = (bn + upv * 0.2 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.6).normalized() * (2.5 + r.randf() * 3) * k
 		var ax = Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5).normalized()
 		bshard.add(POOLS.shard_shape(r), POOLS.pack(Vector4(P.x, P.y, P.z, -20.0 + kk * 0.37), Vector4(v.x, v.y, v.z, 3.3),
-			Vector4(ax.x, ax.y, ax.z, 1 + r.randf() * 4), Vector4(hole * (0.05 + r.randf() * 0.07), 3.3, 0.0, 0.0), Vector4(0.7, r.randf(), 0, 0)))
-	# licking fire round the rim
-	for kk in 14:
-		var fa = r.randf() * TAU
-		var off = t1 * (cos(fa) * hole * 0.42) + t2 * (sin(fa) * hole * 0.42)
-		var v = bn * (1.2 + r.randf()) + upv * 1.2 + off * 0.6
-		b.add(q, POOLS.pack(Vector4(brp.x + off.x + bn.x * 0.1, brp.y + off.y + bn.y * 0.1, brp.z + off.z + bn.z * 0.1, -20.0 + kk * 0.064),
-			Vector4(v.x, v.y, v.z, 0.45 + r.randf() * 0.3), Vector4(1, 0.5, 0.15, 2.4), Vector4(hole * 0.15, hole * 0.5, 1, r.randf()), Vector4(0.9, 0, 0, 0)))
-	# spark showers: the first one lands the moment the hole opens (the A3 sparks were 1.2 s late), then every 2.3 s
+			Vector4(ax.x, ax.y, ax.z, 1 + r.randf() * 4), Vector4(hole * (0.04 + r.randf() * 0.06), 3.3, 0.0, 0.0), Vector4(0.7, r.randf(), 0, 0)))
+	# spark showers from inside: the first one lands the moment the hole opens (the A3 sparks were 1.2 s late), then every 2.3 s
 	var spark_per = 2.3
 	var s_off = fposmod(T0, spark_per)
-	for kk in 18:
+	for kk in 12:
 		var v = (bn + upv * 0.3 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.8).normalized() * (6 + r.randf() * 12) * k
 		bs.add(qs, POOLS.pack(Vector4(P.x, P.y, P.z, s_off + r.randf() * 0.12), Vector4(v.x, v.y, v.z, 0.35 + r.randf() * 0.5),
-			Vector4(1, 0.62, 0.25, 8.0), Vector4(0.05, 0.12 * k, 1.5, 1), Vector4(spark_per, 0, 0, 0)))
-	# secondary pops every 3.7 s (sub-flash: kept dim enough not to count against the flash budget)
+			Vector4(1, 0.62, 0.25, 8.0), Vector4(0.05, 0.07 * k, 1.5, 1), Vector4(spark_per, 0, 0, 0)))
+	# dull internal pops every 3.7 s (kept dim enough not to count against the flash budget)
 	var pop_per = 3.7
 	var p_off = fposmod(T0 + 1.3, pop_per)
-	var Pp = P + bn * 0.5
-	b.add(q, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off), Vector4(0, 0, 0, 0.35), Vector4(1, 0.7, 0.4, 3.5), Vector4(hole * 0.3, hole * 1.3, 2, r.randf()), Vector4(pop_per, 0, 0, 0)))
-	for kk in 5:
-		var v = (bn + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.7).normalized() * (2 + r.randf() * 2) * k
-		b.add(q, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off + r.randf() * 0.05), Vector4(v.x, v.y, v.z, 0.6 + r.randf() * 0.3),
-			Vector4(1, 0.55, 0.2, 3.2), Vector4(hole * 0.4, hole * 1.1, 1, r.randf()), Vector4(pop_per, 0, 0, 0)))
-	for kk in 12:
+	var Pp = brp - bn * hole * 0.15
+	b.add(q, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off), Vector4(0, 0, 0, 0.3), Vector4(1, 0.6, 0.3, 2.2), Vector4(hole * 0.2, hole * 0.7, 2, r.randf()), Vector4(pop_per, 0, 0, 0)))
+	for kk in 10:
 		var v = (bn + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (8 + r.randf() * 14) * k
 		bs.add(qs, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off + r.randf() * 0.04), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.4),
 			Vector4(1, 0.6, 0.25, 7.0), Vector4(0.04, 0.12 * k, 2.0, 1), Vector4(pop_per, 0, 0, 0)))
-	for kk in 3:
-		var v = bn * 2.5 * k
-		b.add(q, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off + 0.1), Vector4(v.x, v.y, v.z, 1.5), Vector4(0.12, 0.11, 0.1, 0.45),
-			Vector4(hole * 0.5, hole * 2.0, 3, r.randf()), Vector4(pop_per, 0, 0.7, 0)))
-	var holder = Node3D.new()
-	holder.position = brp + bn * 1.5
-	_dmg_root.add_child(holder)
-	_sec_nodes[i].append(holder)
-	_sec_lights[i].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.45, 0.12), 2.2, 0.35))
 	if up:
 		# the hole opening: a blast, a burst of plates and chips, a shove of the camera
 		var wp = to_world(brp)
@@ -701,8 +763,8 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 			fx.stk(wp, T0 + fx.rng.randf() * 0.05, 0.35 + fx.rng.randf() * 0.5, Color(1, 0.6, 0.25), 8.0, 0.05, 0.13, 1, fx.rcone(wn, 1.0) * (10 + fx.rng.randf() * 18) * k, 1.8)
 		for kk in 10:
 			fx.shd(wp, T0, 3.0, fx.rcone(wn, 0.8) * (3 + fx.rng.randf() * 7) * k, hole * (0.08 + fx.rng.randf() * 0.12), 1.0)
-		for kk in 3:
-			fx.spr(wp + wn * 1.0, T0 + 0.05 + kk * 0.08, 2.2, Color(0.1, 0.09, 0.085), 0.6, hole * 0.8, hole * 3.0, 3, wn * 2.5 * k, 0.6)
+		for kk in 2:
+			fx.spr(wp + wn * 1.0, T0 + 0.08 + kk * 0.1, 1.8, Color(0.1, 0.09, 0.085), 0.45, hole * 0.4, hole * 1.6, 3, wn * 2.5 * k, 0.6)
 		fx.light(wp + wn * 2.0, T0, 0.5, 8.0, Color(1, 0.65, 0.3), 0)
 		fx.shake(T0, 0.22, wp)
 		DEATH.spawn_debris(fx, wp + wn * 0.8, wn * 5.0 * k, 4, hole * 0.25)

@@ -89,10 +89,10 @@ static func _gen_textures() -> Dictionary:
 				var dy = (y - S * 0.5) / (S * 0.5)
 				var r = sqrt(dx * dx + dy * dy)
 				var nn = n.get_noise_2d(x, y) * 0.5 + 0.5
-				var a = clampf((1.0 - r) * 1.6 + (nn - 0.5) * 1.4 - 0.15, 0.0, 1.0)
-				var core = clampf((0.5 - r) * 2.0, 0.0, 1.0)
-				var c = 0.06 * (1.0 - core) + 0.012
-				img.set_pixel(x, y, Color(c * 0.9, c * 0.82, c * 0.75, a * a))
+				var a = clampf((1.0 - r) * 2.0 + (nn - 0.5) * 1.6 - 0.2, 0.0, 1.0)
+				var core = clampf((0.6 - r) * 2.0 + (nn - 0.5), 0.0, 1.0)
+				var c = 0.035 * (1.0 - core) + 0.006
+				img.set_pixel(x, y, Color(c * 0.9, c * 0.82, c * 0.75, pow(a, 1.3)))
 		out["scorch"].append(ImageTexture.create_from_image(img))
 	n.seed = 5
 	n.frequency = 0.09
@@ -128,7 +128,7 @@ static func _frame(n: Vector3, spin: float) -> Basis:
 
 
 # A lit scorch mark (Godot's clustered Decal: albedo plus glowing embers or cracks), in the parent's frame.
-static func scorch_decal(fx, parent: Node3D, p: Vector3, n: Vector3, size: float, cracked: bool, r: RandomNumberGenerator) -> Node3D:
+static func scorch_decal(fx, parent: Node3D, p: Vector3, n: Vector3, size: float, cracked: bool, r: RandomNumberGenerator, energy := -1.0) -> Node3D:
 	if fx.compat:
 		var none = Node3D.new()
 		parent.add_child(none)
@@ -139,7 +139,7 @@ static func scorch_decal(fx, parent: Node3D, p: Vector3, n: Vector3, size: float
 	d.size = Vector3(size, size * 0.8, size)
 	d.texture_albedo = tex["scorch"][r.randi() % 3]
 	d.texture_emission = tex["crack"] if cracked else tex["ember"]
-	d.emission_energy = 1.6 if cracked else 0.7
+	d.emission_energy = energy if energy >= 0.0 else (1.6 if cracked else 0.7)
 	d.albedo_mix = 1.0
 	d.normal_fade = 0.25
 	d.upper_fade = 0.2
@@ -235,12 +235,12 @@ static func fireball(fx, p: Vector3, size: float, t0: float, life: float, tint: 
 	m.set_shader_parameter("vtype", 0.0)
 	m.set_shader_parameter("t0", t0)
 	m.set_shader_parameter("life", life)
-	m.set_shader_parameter("P", Vector4(0.0, 1.0, fx.rng.randf() * 10.0, 0.16 * 44.0 / maxf(size, 1.0)))
+	m.set_shader_parameter("P", Vector4(0.0, 1.0, fx.rng.randf() * 10.0, 0.16 * 44.0 / maxf(size * 1.3, 1.0)))
 	m.set_shader_parameter("tint", Vector3(tint.r, tint.g, tint.b))
 	box.material_override = m
 	box.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	box.position = p
-	box.scale = Vector3.ONE * size
+	box.scale = Vector3.ONE * size * 1.3
 	fx.add_child(box)
 	fx.later(t0 + life + 0.1, func() -> void:
 		if is_instance_valid(box):
@@ -651,6 +651,9 @@ static func _hide_ship(s) -> void:
 		s._dmg_root.visible = false
 	for sec in 3:
 		s._clear_lights(sec)
+	for l in s._hole_lights:
+		l["on"] = false
+	s._hole_lights = []
 	for t in s._trails:
 		if is_instance_valid(t["mi"]):
 			(t["mi"] as Node3D).visible = false
