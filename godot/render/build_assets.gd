@@ -324,9 +324,26 @@ func _build_a4_ships() -> void:
 		if not FileAccess.file_exists(src):
 			continue
 		var out := "res://gen/ships/%s.scn" % code
+		# A4 re-exports ships under the same names: a changed source (time or size of the ship, damage or wreck glb)
+		# rebuilds that ship even when the generator version is current
+		var stamp := ""
+		var newest := 0
+		for suf in ["", "_damage", "_wreck"]:
+			var sp0 := base.path_join(code).path_join(code + suf + ".glb")
+			if FileAccess.file_exists(sp0):
+				var fa := FileAccess.open(sp0, FileAccess.READ)
+				var mt := FileAccess.get_modified_time(sp0)
+				newest = maxi(newest, mt)
+				stamp += "%d:%d;" % [mt, fa.get_length() if fa != null else 0]
+		if manifest["ships"].has(code):
+			var me: Dictionary = manifest["ships"][code]
+			if not me.has("src") and FileAccess.file_exists(out) and FileAccess.get_modified_time(out) >= newest:
+				me["src"] = stamp  # built before stamps were kept, from these same files
+			if str(me.get("src", "")) != stamp:
+				me["v"] = 0
 		if _current(manifest["ships"], code, out):
 			continue
-		var e := {"v": GEN_VERSION, "res": out, "mirror": false}
+		var e := {"v": GEN_VERSION, "res": out, "mirror": false, "src": stamp}
 		if _glb_to_scene(src, out, code):
 			for extra in [["_damage", "res://gen/damage/%s_damage.scn"], ["_wreck", "res://gen/wreck/%s_wreck.scn"]]:
 				var sp := base.path_join(code).path_join(code + extra[0] + ".glb")
@@ -334,6 +351,45 @@ func _build_a4_ships() -> void:
 					e[extra[0].substr(1)] = extra[1] % code
 			manifest["ships"][code] = e
 			print("[assets] A4 ship %s%s" % [code, " (+ breach parts)" if e.has("damage") else ""])
+	_check_a4_ships()
+
+
+# one line per A4 ship as the game will load it: skins, heavy skins, hard points, breach holes and heavies, wreck chunks
+func _check_a4_ships() -> void:
+	var n := 0
+	for code in manifest.get("ships", {}):
+		var e: Dictionary = manifest["ships"][code]
+		var c := {"skin": 0, "heavy": 0, "hp": 0, "hole": 0, "hvy": 0, "chunks": 0, "mesh": 0}
+		var parts := [[str(e.get("res", "")), "ship"], [str(e.get("damage", "")), "damage"], [str(e.get("wreck", "")), "wreck"]]
+		var ok := true
+		for pr in parts:
+			if pr[0] == "":
+				continue
+			var ps = load(pr[0])
+			if not (ps is PackedScene):
+				ok = false
+				continue
+			var root: Node = (ps as PackedScene).instantiate()
+			for nd in root.find_children("*", "", true, false):
+				var nm := str(nd.name)
+				if pr[1] == "ship":
+					if nm.begins_with("skin_"):
+						c["heavy" if nm.ends_with("_heavy") else "skin"] += 1
+					elif nm.begins_with("hp_"):
+						c["hp"] += 1
+					elif nd is MeshInstance3D:
+						c["mesh"] += 1
+				elif pr[1] == "damage":
+					if nm.ends_with("_hole"):
+						c["hole"] += 1
+					elif nm.ends_with("_heavy"):
+						c["hvy"] += 1
+				elif nd is MeshInstance3D:
+					c["chunks"] += 1
+			root.free()
+		n += 1
+		print("[assets] check %s loads=%s skins=%d heavy_skins=%d hardpoints=%d hull_meshes=%d holes=%d heavies=%d wreck_chunks=%d" % [code, str(ok), c["skin"], c["heavy"], c["hp"], c["mesh"], c["hole"], c["hvy"], c["chunks"]])
+	print("[assets] check: %d A4 ships in the manifest" % n)
 
 
 func _glb_to_scene(path: String, out: String, name: String) -> bool:
