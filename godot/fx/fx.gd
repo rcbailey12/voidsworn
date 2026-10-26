@@ -504,6 +504,23 @@ func command(id: String, _cmd := "") -> void:
 		(ships[id] as SHIP).pulse(self, 1.6)
 
 
+# Travelling torpedoes (B3): a lane during the player's turn, the torpedo parked in it, the strike next turn.
+func torp_lane(lane_id: String, attacker_id: String, to_point: Vector3, turns := 1) -> void:
+	WEAP.torp_lane(self, lane_id, attacker_id, to_point, turns)
+
+
+func torp_launch(lane_id: String) -> void:
+	WEAP.torp_launch(self, lane_id)
+
+
+func torp_strike(lane_id: String, target_id: String, hit := {}) -> Dictionary:
+	return WEAP.torp_strike(self, lane_id, target_id, hit)
+
+
+func torp_lane_clear(lane_id: String) -> void:
+	WEAP.torp_lane_clear(self, lane_id, true)
+
+
 func launch(carrier_id: String, squadron_id := "") -> void:
 	WEAP.launch(self, carrier_id, squadron_id)
 

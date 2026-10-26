@@ -35,11 +35,12 @@ fx.remove_ship(id)                     # removes the ship and its effects at onc
 - `root`: the ship's Node3D. **Ship frame:** bow along local +X, up +Y. G2 mirrors each hull in z under the root (main 680c6ea), so root +Z is **starboard** on screen and -Z is port; fx follows that by default (`setup({"starboard_z": 1})`, the default; pass -1 for an unmirrored root where +Z is port). fx finds every hull point from the real, transformed triangles, so mirroring never puts an effect off the hull; only the facing quads (0 prow, 1 starboard, 2 rear, 3 port) use this setting. G2 turns the root for facing and moves it along paths; fx effects attached to the ship follow it.
 - `info` (all optional except `faction`):
   - `faction`: `"voidsworn"`, `"hegemony"`, `"corsair"`, `"chorus"`, `"ithar"`, `"deathless"`;
-  - `meshes`: Array of the hull MeshInstance3Ds (default: every MeshInstance3D under `root`). fx reads their triangles once (hit points, breach placement, death pieces), never changes their materials, and hides them at the break-up of a death;
+  - `meshes`: Array of the hull MeshInstance3Ds. **Pass `sv.meshes` from ShipView** (the default, every MeshInstance3D under `root`, would also take in the selection ring and the footprint marker). fx reads their triangles once (hit points, breach placement, death pieces), never changes their materials, and hides them at the break-up of a death;
   - `cls`: the template class (`"Frigate"`, `"Cruiser"`, `"Squadron"`, ...) and `size` (the data.js draw scale); together they pick the effect weight (light, medium, heavy, capital);
   - `squadron`: true for strike-craft wings (no shield bubble, no damage ladder, small death);
   - `shielded`: default true for Voidsworn, Hegemony, Corsair and Ithar, false for Chorus and Deathless (R3: shields keep faction colours);
   - `flagship`: true adds weight to its death.
+- ShipView's placeholder engine glows (`sv.engines`) should be hidden once fx is on (fx draws the engines).
 - Engine trails start automatically: the hot core, the plume and the long cooling trail per faction (Corsair sputters and coughs soot). The trail bends behind a moving ship by itself (fx watches the root's motion). Optional: `fx.set_engine(id, level)` with 0 off, 1 cruise (default), 2 full burn (during a `move`, if G2 wants the extra flare).
 
 ### Keeping the damage look in step: `sync_ship`
@@ -82,7 +83,12 @@ var r = fx.volley(attacker_id, kind, target_id, opts)
 - Guns fire from mounts on the side facing the target and never backward (CLAUDE.md); a target behind the ship is engaged by turret mounts on top.
 - `impacts` are the moments to show floating numbers; `done` is when G2 may start the next event (G2 can start earlier; effects overlap fine).
 
-Coming (B3, travelling torpedoes, with the rules change): `fx.torp_lane(lane_id, attacker_id, to_point, turns)`, `fx.torp_lane_clear(lane_id)`, `fx.torp_launch(lane_id)` (the torpedo parks in its lane until the next turn) and `fx.torp_strike(lane_id, target_id, hit)`. Today `volley(..., "torp", ...)` plays launch, flight and impact in one go.
+Travelling torpedoes (B3; ready now, for when the rules change lands):
+- `fx.torp_lane(lane_id, attacker_id, to_point, turns)`: a lane on the board from the attacker's bow to `to_point` (world), chevrons running toward an impact marker that pulses, in the attacker's weapon colour;
+- `fx.torp_launch(lane_id)`: the torpedo vents, runs out along the lane and holds there, engine burning, until the next turn;
+- `var r = fx.torp_strike(lane_id, target_id, hit)`: the two-stage warning (a dim pulse, then a ramp to white, about 0.8 s, K2 pin), then the torpedo closes and strikes (`hit` as in `volley` hits, or `{}` for a miss); returns `{impacts, done}` like `volley`;
+- `fx.torp_lane_clear(lane_id)`: the target got out of the lane; the torpedo runs on past the marker and burns out.
+Today's rules still resolve torpedoes at once: `volley(..., "torp", ...)` plays launch, flight and impact in one go.
 
 ## 4. Shields
 
@@ -96,6 +102,7 @@ var t = fx.death(id, cause)            # seconds until the break-up has played; 
 fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g. at battle end)
 ```
 
+- `fx.well` (Vector3): the dead star's position; `world.build` sets it on `fx` when given `"fx": fx` in its options (tidal deaths fall toward it).
 - `cause` from the `death` event: `cut` (lance: the hull splits along a glowing cut), `big` (torpedo or ram: the biggest fireball, many pieces), `flay` (gauss: perforated and peeled, many small pieces), `melt` (acid or spines: corrosion glow and sagging, few pieces), `dark` (burn-out: lights die, a quiet dark hulk), `tidal` (the dead star: pieces pulled toward the well), `blast` (anything else).
 - The sequence: a held beat with lights and engines stuttering, a cook-off of internal explosions along the hull, then the real hull breaks into pieces (Jolt rigid bodies cut from the ship's own mesh, with glowing cross-sections), a final blast and shockwave for heavy ships, embers and debris. The pieces then drift as burning wrecks (fires, vents, occasional sparks, slowly cooling); the biggest piece stays near the ship's hex (the rules' `wreck` event keeps the hulk as terrain).
 - fx hides the ship's own meshes at the break-up. G2 can keep or free the root after `t`; fx keeps its own copies of the meshes.
@@ -125,7 +132,7 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 const WORLD = preload("res://world/world.gd")
 var w = WORLD.new()
 world_node.add_child(w)
-w.build(view(), {"biome": biome, "fac": enemy_faction, "hex_world": func(q, r) -> Vector3, "camera": cam, "environment": env, "quality": "max"})
+w.build(view(), {"biome": biome, "fac": enemy_faction, "hex_world": func(q, r) -> Vector3, "camera": cam, "environment": env, "quality": "max", "fx": fx})
 w.update(delta)                        # or let it run its own _process (default)
 ```
 

@@ -20,7 +20,7 @@ const BIOMES := {
 }
 # rock kinds (battle.js ROCK_KINDS): base albedo (linear), shader kind
 const ROCKS := {
-	"stone": [Vector3(0.30, 0.27, 0.24), 0], "ice": [Vector3(0.42, 0.5, 0.58), 1], "iron": [Vector3(0.24, 0.22, 0.21), 2],
+	"stone": [Vector3(0.17, 0.155, 0.14), 0], "ice": [Vector3(0.26, 0.31, 0.36), 1], "iron": [Vector3(0.24, 0.22, 0.21), 2],
 	"carbon": [Vector3(0.09, 0.085, 0.08), 3], "crystal": [Vector3(0.16, 0.18, 0.18), 4],
 }
 # backdrop planets (biome.planet 0..7): [colour a, colour b, atmosphere, gas giant]
@@ -42,6 +42,7 @@ var _well := Vector3.INF
 var _rng := RandomNumberGenerator.new()
 var _mesh_lib := {}
 var _planet_dir := Vector3.ZERO
+var disc_tilt := -12.0       # degrees; the board view looks down about 55 degrees, so a small tilt reads
 
 
 func well_position() -> Vector3:
@@ -94,6 +95,8 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	if map.has("deadstar") and map["deadstar"] != null:
 		var ds: Dictionary = map["deadstar"]
 		dead_star(hw.call(int(ds["q"]), int(ds["r"])) + Vector3(0, -10, 0), 1.0)
+		if opts.has("fx") and opts["fx"] != null:
+			opts["fx"].well = _well
 	for k in terrain.keys():
 		var qr := String(k).split(",")
 		var p: Vector3 = hw.call(int(qr[0]), int(qr[1]))
@@ -108,9 +111,10 @@ func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 	quality = String(opts.get("quality", "max"))
 	_rng.seed = 7
 	sky(env, "corsair", null, 3)
+	disc_tilt = -24.0
 	dead_star(opts.get("deadstar", Vector3(0, -20, -150)), 1.0)
 	for i in 3:
-		blocker(Vector3(-110 + i * 110, -2, -80 + (i % 2) * 20), ["stone", "ice", "crystal"][i])
+		blocker(Vector3(-40 + i * 70, -2, -95 + (i % 2) * 20), ["stone", "ice", "crystal"][i])
 	dressing(Vector3(-120, 0, -70), Vector3(120, 0, 70), "carbon", 40)
 
 
@@ -195,7 +199,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	root.add_child(core)
 	# the accretion disc, tilted, turning (opaque where dense, so the lens bends its far side over the shadow)
 	var tilt := Node3D.new()
-	tilt.rotation = Vector3(deg_to_rad(-12.0), 0.0, deg_to_rad(6.0))
+	tilt.rotation = Vector3(deg_to_rad(disc_tilt), 0.0, deg_to_rad(6.0))
 	root.add_child(tilt)
 	var disc := MeshInstance3D.new()
 	disc.mesh = _annulus(Rsh * 1.2, Rsh * 3.8, 192, 16)

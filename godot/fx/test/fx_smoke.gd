@@ -101,6 +101,18 @@ func _run() -> void:
 		k += 1
 		for i in 20:
 			fx.step(1.0 / 60.0)
+	fx.torp_lane("L1", "voidsworn_1", fx.ship("corsair_1").to_world(fx.ship("corsair_1").hull.c), 1)
+	fx.torp_launch("L1")
+	for i in 150:
+		fx.step(1.0 / 60.0)
+	var rs: Dictionary = fx.torp_strike("L1", "corsair_1", {"shield": 0, "hull": 30, "section": "mid", "crit": false})
+	if rs["impacts"].size() != 1:
+		errors += 1
+	fx.torp_lane("L2", "voidsworn_1", Vector3(0, 0, 0), 1)
+	fx.torp_launch("L2")
+	for i in 30:
+		fx.step(1.0 / 60.0)
+	fx.torp_lane_clear("L2")
 	fx.jump_out("ithar_1")
 	for i in 600:
 		fx.step(1.0 / 60.0)
