@@ -17,7 +17,7 @@ function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fx
 async function animWeapon(){} async function animExplode(){} function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, migrateRun, newShip, newRun, startBattle, HULLS, EVENTS, EVENT_FALLBACK, nextEvent, needMet, needText, applyOutcome, eventFlags,
   newNemesis, ensureNemesis, nemReveal, nemClockAdd, nemNodeIs, nemBattleCfg, nemAdapt, nemAfterBattle, nemLearn, NEM_CLOCK, NEM_WEAK, FAC_VERBS, verbCanUse, useVerb, wingVetAfter, wingPerkGrant, WING_XP,
-  setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS };
+  setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS, mapScreen, eventScreen, shipyardScreen, boonStep };
 `);
 const pickAdm = fac => Object.entries(T.ADMIRALS).find(([k, a]) => (a.fac || 'voidsworn') === fac)[0];
 const fresh = (fac, adm) => { T.META.unlocked = {}; T.newRun(adm || pickAdm(fac), fac); return T.RUN; };
@@ -75,5 +75,8 @@ check('wing doctrines: one free stance change per round; hunting wings deal more
   const w = wing.weapons[0]; t.hp = Math.floor(t.maxHp * .3); const m1 = T.dmgMult(wing, w, t, false); car.stance = 'strike'; const m0 = T.dmgMult(wing, w, t, false);
   const foe = T.B.units.find(u => u.side === 'enemy' && !u.isSq && u.weapons.some(x => x.k !== 'flak' && x.arc === 'T')), fw = foe.weapons.find(x => x.k !== 'flak' && x.arc === 'T'); T.B.terrain = {}; foe.q = wing.q + 2; foe.r = wing.r; foe.aim = 20; const h0 = T.hitChance(foe, fw, wing); car.stance = 'hunt'; const h1 = T.hitChance(foe, fw, wing);
   return ch1 && !ch2 && T.wingStance(wing) === 'hunt' && m1 > m0 && (h1 > h0 || h1 === 95); });
+check('screens render without errors: map (Nemesis card, verb button, Nemesis node tag), events, shipyard (class refits), boon offer (reroll, decline)', () => {
+  const R = fresh('chorus'); R.nem.strike = true; R.inventory = ['prow']; T.mapScreen(); const n = R.map.cols[1][0]; R.curNode = n.id; T.eventScreen(n);
+  T.shipyardScreen({ id: 'x' }); R.reward = { boonOffer: null }; T.boonStep('iron', 1); return true; });
 (async () => { for (const [name, fn] of tests) { try { const r = await fn(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.message)); } }
   console.log('\nB4 tests: ' + pass + ' ok, ' + fail + ' FAIL'); process.exitCode = fail ? 1 : 0; })();
