@@ -1,0 +1,1 @@
+archmatrix s2 col3 {"none":"91% r5.7 ships 7.3","swarm":"94% r5.0 ships 8.3","heavy":"95% r6.1 ships 4.7","carrier":"88% r6.3 ships 6.3"}

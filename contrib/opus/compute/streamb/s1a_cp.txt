@@ -1,0 +1,24 @@
+sector 1 battle win 100%  rounds 3.4  hull left 82%  ships lost 0.2  timeouts 0  wait old 59s new 34s  real 34s  per round 10.2s  max round 17.8s  ships 4.0+3.6
+   tempo: enemy activations per player activation 0.71, enemy ships firing per round 1.7, first player ship lost in round 3.7
+sector 1 battle win 96%  rounds 5.1  hull left 58%  ships lost 1.1  timeouts 0  wait old 99s new 57s  real 52s  per round 10.2s  max round 17.8s  ships 4.0+5.0
+   tempo: enemy activations per player activation 0.98, enemy ships firing per round 2.4, first player ship lost in round 3.7
+sector 1 elite  win 75%  rounds 6.2  hull left 37%  ships lost 2.1  timeouts 0  wait old 120s new 69s  real 59s  per round 9.6s  max round 18.6s  ships 4.0+5.3
+   tempo: enemy activations per player activation 1.16, enemy ships firing per round 2.6, first player ship lost in round 3.6
+sector 1 boss   win 83%  rounds 9.5  hull left 47%  ships lost 1.4  timeouts 0  wait old 126s new 73s  real 72s  per round 7.7s  max round 17.9s  ships 4.0+3.2
+   tempo: enemy activations per player activation 0.48, enemy ships firing per round 1.2, first player ship lost in round 4.8
+sector 2 battle win 98%  rounds 5.1  hull left 64%  ships lost 1.7  timeouts 0  wait old 127s new 73s  real 63s  per round 12.5s  max round 25.0s  ships 5.0+6.8
+   tempo: enemy activations per player activation 1.13, enemy ships firing per round 3.0, first player ship lost in round 3.2
+sector 2 battle win 74%  rounds 7.2  hull left 38%  ships lost 3.1  timeouts 0  wait old 180s new 102s  real 80s  per round 11.2s  max round 24.3s  ships 5.0+8.1
+   tempo: enemy activations per player activation 1.60, enemy ships firing per round 3.6, first player ship lost in round 3.1
+sector 2 elite  win 64%  rounds 6.7  hull left 31%  ships lost 3.5  timeouts 0  wait old 178s new 101s  real 76s  per round 11.6s  max round 24.6s  ships 5.0+8.4
+   tempo: enemy activations per player activation 1.75, enemy ships firing per round 4.1, first player ship lost in round 2.9
+sector 2 boss   win 62%  rounds 11.5  hull left 24%  ships lost 3.7  timeouts 2  wait old 199s new 114s  real 97s  per round 8.4s  max round 23.2s  ships 5.0+6.4
+   tempo: enemy activations per player activation 1.02, enemy ships firing per round 1.9, first player ship lost in round 3.4
+sector 3 battle win 95%  rounds 5.5  hull left 70%  ships lost 1.7  timeouts 0  wait old 201s new 113s  real 77s  per round 14.4s  max round 27.1s  ships 5.0+11.6
+   tempo: enemy activations per player activation 1.89, enemy ships firing per round 5.5, first player ship lost in round 3.5
+sector 3 battle win 81%  rounds 6.7  hull left 53%  ships lost 2.6  timeouts 0  wait old 258s new 144s  real 86s  per round 13.3s  max round 29.0s  ships 5.0+13.6
+   tempo: enemy activations per player activation 2.55, enemy ships firing per round 6.9, first player ship lost in round 3.1
+sector 3 elite  win 59%  rounds 7.7  hull left 39%  ships lost 3.2  timeouts 0  wait old 292s new 162s  real 93s  per round 12.4s  max round 29.0s  ships 5.0+13.7
+   tempo: enemy activations per player activation 2.91, enemy ships firing per round 7.1, first player ship lost in round 3.0
+sector 3 boss   win 77%  rounds 16.5  hull left 31%  ships lost 3.6  timeouts 8  wait old 353s new 197s  real 139s  per round 8.5s  max round 27.6s  ships 5.0+11.5
+   tempo: enemy activations per player activation 1.53, enemy ships firing per round 2.9, first player ship lost in round 3.6
