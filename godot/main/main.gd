@@ -17,7 +17,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "veteran", "follow": true}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "veteran", "follow": true, "music": true, "music_volume": 0.7}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -35,7 +35,7 @@ func quit_clean(code := 0) -> void:
 	load("res://render/ship_view.gd").clear_static()
 	load("res://scenes/battle/fx_stub.gd").clear_static()
 	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
-	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd"]:
+	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd", "res://portraits/portraits.gd"]:
 		if ResourceLoader.exists(sp):
 			var sc = load(sp)
 			if sc != null and sc.has_method("clear_static"):
@@ -72,6 +72,7 @@ class ErrCount extends Logger:
 
 
 var errlog: ErrCount
+var music: Node              # godot/music/music_player.gd (the music helper's player), one for the whole game
 
 
 func _ready() -> void:
@@ -80,6 +81,12 @@ func _ready() -> void:
 	_load_settings()
 	_apply_settings()
 	bot_mode = args.has("bot-runs")
+	if ResourceLoader.exists("res://music/music_player.gd") and not args.has("bot-runs"):
+		music = load("res://music/music_player.gd").new()
+		music.name = "Music"
+		add_child(music)
+		music.set_volume(float(settings.get("music_volume", 0.7)))
+		music.set_on(bool(settings.get("music", true)))
 	if args.has("quit-after"):
 		# a hard stop for test jobs, on every screen (real time, whatever the clock speed)
 		var lim := float(args["quit-after"])
@@ -134,9 +141,13 @@ func _apply_settings() -> void:
 			DisplayServer.window_set_mode(want)
 	if battle != null and is_instance_valid(battle):
 		_settings_to_battle(battle)
+	if music != null:
+		music.set_volume(float(settings.get("music_volume", 0.7)))
+		music.set_on(bool(settings.get("music", true)))
 
 
 func _settings_to_battle(b: Node) -> void:
+	b.music = music
 	if not b.option_changed.is_connected(_on_battle_option):
 		b.option_changed.connect(_on_battle_option)
 	if b.sfx != null:
@@ -161,6 +172,8 @@ func _on_battle_option(key: String, value) -> void:
 
 func show_title() -> void:
 	_clear()
+	if music != null:
+		music.play_title()
 	title = Title.new()
 	title.main = self
 	add_child(title)

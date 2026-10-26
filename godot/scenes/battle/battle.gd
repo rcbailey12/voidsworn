@@ -102,6 +102,7 @@ var t_start := 0.0
 var marker_root: Node3D
 var backdrop: Node3D
 var gfx = null            # G4 fx (res://fx/fx.gd) when present
+var music: Node = null    # the music player when the game shell gave one
 var world = null          # G4 world (res://world/world.gd) when present
 var key_light: DirectionalLight3D
 var fill_light: DirectionalLight3D
@@ -437,7 +438,18 @@ func _begin(a) -> void:
 	batches.append({"events": api.take_events(), "view": api.view()})
 	sfx.ambient_start()
 	_refresh_ui()
+	if ResourceLoader.exists("res://portraits/portraits.gd") and R.RUN != null:
+		var adm := str(R.RUN.get("admiral", ""))
+		var A = R.ADMIRALS.get(adm, {})
+		hud.set_crest(load("res://portraits/portraits.gd").crest(adm), str(A.get("n", adm)) if A is Dictionary else adm)
 	await _warmup()
+	if music != null:
+		var pf := "voidsworn"
+		for u in V["units"]:
+			if u["side"] == "player":
+				pf = str(u["fac"])
+				break
+		music.play_battle(pf, _enemy_fac())
 	if not busy:
 		_runner()
 
@@ -530,9 +542,40 @@ func _make_view(u: Dictionary) -> void:
 		gfx.add_ship(str(u["id"]), sv, info)
 
 
+func _music_feed() -> void:
+	if music == null or V.is_empty():
+		return
+	var mine := 0
+	var foes := 0
+	var hp := 0.0
+	var mhp := 0.0
+	var flag := 1.0
+	var close := 0
+	var boss := false
+	for u in V["units"]:
+		if u["dead"] or u["squadron"]:
+			continue
+		if u["side"] == "player":
+			mine += 1
+			hp += float(u["hp"])
+			mhp += float(u["maxHp"])
+			if u["flagship"]:
+				flag = float(u["hp"]) / maxf(1.0, float(u["maxHp"]))
+		else:
+			foes += 1
+			if u["flagship"]:
+				boss = true
+			for m in V["units"]:
+				if m["side"] == "player" and not m["dead"] and absi(int(m["q"]) - int(u["q"])) + absi(int(m["r"]) - int(u["r"])) <= 4:
+					close += 1
+					break
+	music.feed({"close": close, "hull": hp / maxf(1.0, mhp), "flagship": flag, "mine": mine, "enemy": foes, "boss": boss})
+
+
 func _sync(v: Dictionary) -> void:
 	V = v
 	_index_view()
+	_music_feed()
 	if gfx == null or not gfx.has_method("torp_lane"):
 		var live := {}
 		for tp in V.get("torps", []):
@@ -1249,6 +1292,11 @@ func _end_flow() -> void:
 	var win := str(over) == "win"
 	await wait(500.0)
 	sfx.sting(win)
+	if music != null:
+		if win:
+			music.victory()
+		else:
+			music.defeat()
 	hud.banner("Victory" if win else "Defeat", Color("#d0a64b") if win else Color("#e27f74"), 1.6)
 	await get_tree().create_timer(1.2).timeout
 	var lost := 0
@@ -2527,7 +2575,7 @@ func _quit(code := 0) -> void:
 	ShipView.clear_static()
 	Fx.clear_static()
 	# other streams' statics (G4 fx and world, G3 screens): a clear_static() there is called too when it exists
-	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd"]:
+	for sp in ["res://fx/fx.gd", "res://world/world.gd", "res://render/look.gd", "res://ui/campaign/campaign_ui.gd", "res://portraits/portraits.gd"]:
 		if ResourceLoader.exists(sp):
 			var sc = load(sp)
 			if sc != null and sc.has_method("clear_static"):

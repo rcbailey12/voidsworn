@@ -170,6 +170,8 @@ func _settings() -> void:
 	v.add_child(_label("Settings", 30, HUD.GILT, font_goth))
 	v.add_child(_toggle("Sound", "sound"))
 	v.add_child(_slider("Volume", "volume", 0.0, 1.0))
+	v.add_child(_toggle("Music", "music"))
+	v.add_child(_slider("Music volume", "music_volume", 0.0, 1.0))
 	v.add_child(_choice("Speed", "speed", [[1.0, "Normal"], [0.45, "Fast"]]))
 	v.add_child(_choice("Enemy AI", "ai", [["veteran", "Veteran"], ["standard", "Standard"]]))
 	v.add_child(_toggle("Reduce flashing", "reduce_flashing"))
@@ -236,6 +238,8 @@ func _slider(t: String, key: String, lo: float, hi: float) -> Control:
 	sl.min_value = lo
 	sl.max_value = hi
 	sl.step = 0.05
+	if not main.settings.has(key):
+		main.settings[key] = 0.7
 	sl.value = float(main.settings[key])
 	sl.custom_minimum_size = Vector2(s(200), s(24))
 	sl.value_changed.connect(func(x: float) -> void:

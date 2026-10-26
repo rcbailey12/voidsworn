@@ -32,6 +32,7 @@ var k := 1.0                        # window height / 1080
 var root: Control
 var top: PanelContainer
 var title_lbl: Label
+var crest: TextureRect
 var turn_lbl: Label
 var obj_lbl: Label
 var end_btn: Button
@@ -252,6 +253,12 @@ func _build_top() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", s(12))
 	top.add_child(row)
+	crest = TextureRect.new()
+	crest.custom_minimum_size = Vector2(s(36), s(36))
+	crest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	crest.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	crest.visible = false
+	row.add_child(crest)
 	title_lbl = _label("Round 1", 28, BONE, font_goth)
 	row.add_child(title_lbl)
 	turn_lbl = _label("", 17, BONE2, font_semi)
@@ -277,6 +284,13 @@ func _build_top() -> void:
 	row.add_child(speed_btn)
 	end_btn = _button("End activation", "end", null, true)
 	row.add_child(end_btn)
+
+
+# your admiral's crest (godot/portraits) at the left of the top bar
+func set_crest(tex: Texture2D, tip: String) -> void:
+	crest.texture = tex
+	crest.visible = tex != null
+	crest.tooltip_text = tip
 
 
 func set_command(label: String, ready: bool) -> void:

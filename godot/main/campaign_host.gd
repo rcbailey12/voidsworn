@@ -78,7 +78,18 @@ static func has_save() -> bool:
 	return FileAccess.file_exists("user://voidsworn_campaign.json")
 
 
+var _music_page := ""
+
+
 func _on_changed() -> void:
+	# the map's music per sector (the music helper's player)
+	var kind := str(C.page.get("kind", ""))
+	if main.music != null and kind != _music_page:
+		_music_page = kind
+		if kind == "map" and C.RUN != null:
+			main.music.play_map(int(C.RUN.get("sector", 1)))
+		elif kind == "title":
+			main.music.play_title()
 	# back on the title page (the player left the run, or the run ended and they pressed Title): hand back to main's title
 	if not bot and C.page.get("kind", "") == "title" and C.modal_d == null:
 		run_over.emit({"result": "title"})
