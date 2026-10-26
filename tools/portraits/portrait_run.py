@@ -4,6 +4,7 @@
 # Workflows:
 #   zit : Z-Image Turbo text to image (official ComfyUI template settings: lumina2 text encoder, AuraFlow shift 3, 8 steps, cfg 1, res_multistep)
 #   qie : Qwen-Image-Edit 2511 used as text to image (empty latent, Lightning 8-step LoRA), the model already on the PC for ship views
+#   qref: Qwen-Image-Edit 2511 painting onto a reference image (item key 'ref': a background plate PNG in comfy_io\PORTRAITS\)
 # Batch json: {"out": "b1", "suffix": "...", "items": [{"id": "mending", "model": "zit", "prompt": "...", "seeds": [11, 23], "w": 1024, "h": 1024}]}
 import os, sys, json, time, subprocess, urllib.request, urllib.error
 DL = os.path.join(os.environ['USERPROFILE'], 'Downloads'); R = os.path.join(DL, 'ComfyUI_windows_portable'); C = os.path.join(R, 'ComfyUI')
@@ -72,6 +73,21 @@ def qie(prompt, seed, prefix, w=1024, h=1024, steps=8, cfg=1.0):
       '16': {'class_type': 'VAEDecode', 'inputs': {'samples': ['15', 0], 'vae': ['9', 0]}},
       '17': {'class_type': 'SaveImage', 'inputs': {'images': ['16', 0], 'filename_prefix': prefix}}}
 
+def qref(prompt, seed, prefix, img, w=1024, h=1024, steps=8, cfg=1.0):
+    # Qwen-Image-Edit 2511 painting onto a reference image (a dark faction background plate made in the sandbox):
+    # the same chain as comfy_run.py qwen_prompt (proven on this PC), without the angles LoRA
+    p = qie(prompt, seed, prefix, w, h, steps, cfg)
+    p['1'] = {'class_type': 'LoadImage', 'inputs': {'image': img}}
+    p['2'] = {'class_type': 'FluxKontextImageScale', 'inputs': {'image': ['1', 0]}}
+    p['10']['inputs']['image1'] = ['2', 0]
+    p['11']['inputs']['image1'] = ['2', 0]
+    p['12'] = {'class_type': 'FluxKontextMultiReferenceLatentMethod', 'inputs': {'conditioning': ['10', 0], 'reference_latents_method': 'index_timestep_zero'}}
+    p['13'] = {'class_type': 'FluxKontextMultiReferenceLatentMethod', 'inputs': {'conditioning': ['11', 0], 'reference_latents_method': 'index_timestep_zero'}}
+    p['14'] = {'class_type': 'VAEEncode', 'inputs': {'pixels': ['2', 0], 'vae': ['9', 0]}}
+    p['15']['inputs']['positive'] = ['12', 0]
+    p['15']['inputs']['negative'] = ['13', 0]
+    return p
+
 NEEDS = {'zit': [('diffusion_models', 'z_image_turbo_bf16.safetensors'), ('text_encoders', 'qwen_3_4b.safetensors'), ('vae', 'ae.safetensors')],
          'qie': [('diffusion_models', 'qwen_image_edit_2511_fp8mixed.safetensors'), ('text_encoders', 'qwen_2.5_vl_7b_fp8_scaled.safetensors'),
                  ('vae', 'qwen_image_vae.safetensors'), ('loras', 'Qwen-Image-Edit-2511-Lightning-8steps-V1.0-bf16.safetensors')]}
@@ -96,8 +112,8 @@ def probe():
 
 def gen(path):
     B = json.load(open(path, encoding='utf-8')); out = B['out']; suf = B.get('suffix', '')
-    items = B['items']; order = sorted(range(len(items)), key=lambda i: (items[i].get('model', 'zit') != 'zit', i))  # one model load per family
-    ok = {m: ready(m) for m in NEEDS}; p = start(); n = 0; t0 = time.time(); man = []
+    items = B['items']; order = sorted(range(len(items)), key=lambda i: ({'zit': 0, 'qie': 1, 'qref': 1}.get(items[i].get('model', 'zit'), 2), i))  # one model load per family
+    ok = {m: ready(m) for m in NEEDS}; ok['qref'] = ok['qie']; p = start(); n = 0; t0 = time.time(); man = []
     try:
         for i in order:
             it = items[i]; m = it.get('model', 'zit')
@@ -106,8 +122,12 @@ def gen(path):
             for sd in it.get('seeds', [11, 23, 37]):
                 pre = f"{out}/{it['id']}_{m}_s{sd}"
                 if os.path.exists(os.path.join(IO_, pre + '_00001_.png')): continue
-                fn = zit if m == 'zit' else qie
-                r = run(fn(txt, sd, pre, it.get('w', 1024), it.get('h', 1024)), pre)
+                if m == 'qref':
+                    if not os.path.exists(os.path.join(IO_, it['ref'])): log('missing ref', it['ref']); break
+                    r = run(qref(txt, sd, pre, it['ref'], it.get('w', 1024), it.get('h', 1024)), pre)
+                else:
+                    fn = zit if m == 'zit' else qie
+                    r = run(fn(txt, sd, pre, it.get('w', 1024), it.get('h', 1024)), pre)
                 n += 1; man.append({'id': it['id'], 'model': m, 'seed': sd, 'ok': bool(r and r.get('status', {}).get('status_str') == 'success'), 'prompt': txt})
                 if time.time() - t0 > B.get('budget_s', 1050): log('budget reached, stopping'); raise StopIteration
     except StopIteration: pass

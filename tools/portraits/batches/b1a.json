@@ -1,0 +1,52 @@
+{
+ "out": "b1",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "chorus_mending",
+   "model": "zit",
+   "prompt": "Portrait of The Mending Choir, a Chorus bio-swarm admiral in the form of a Living Suture-Hive: a pulsing biological cocoon-graft, clusters of translucent amber nursing sacs glowing from within, curved pale chitin bone-needles growing out of the flesh and stitching glowing pink membrane webbing across a shattered dark carapace, fresh pink scar tissue knitting the cracks closed, new flesh visibly regrowing over old wounds. It is an alien grown organism, not a person and not an animal: no face, no eyes, no mouth with teeth, no limbs, no human features; no buildings, no machines, no instruments, no architecture. Glistening wet flesh, membrane, chitin, bile, gross deep-sea biology. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "chorus_matriarch",
+   "model": "zit",
+   "prompt": "Portrait of The Matriarch of Nine Throats, a Chorus brood-mother organism: nine uneven fleshy throat-tubes of very different lengths and thicknesses, bent and leaning at odd angles, fused at the base into one swollen leaking brood mass, split wet openings at their tips exhaling clouds of tiny glowing spore swarms, translucent brood sacs bulging with swarming larvae shadows, purple-black flesh with ochre chitin ridges, an irregular organic silhouette. It is an alien grown organism, not a person and not an animal: no face, no eyes, no mouth with teeth, no limbs, no human features; no buildings, no machines, no instruments, no architecture. Glistening wet flesh, membrane, chitin, bile, gross deep-sea biology. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "chorus_voice",
+   "model": "zit",
+   "prompt": "Portrait of Voice of the Deep, a Chorus organism shaped like a hollow dome of opaque abyssal membrane, its rim a ragged lip of regrowing flesh shedding strips into the dark, irregular fleshy ridges, acid-green spittle and droplets spraying outward as if singing. It is an alien grown organism, not a person and not an animal: no face, no eyes, no mouth with teeth, no limbs, no human features; no buildings, no machines, no instruments, no architecture. Glistening wet flesh, membrane, chitin, bile, gross deep-sea biology. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "chorus_razormaw",
+   "model": "zit",
+   "prompt": "Portrait of Razormaw, a Chorus hunter-pack organism: a ring of curved chitin blades grown from purple-black flesh, arranged as a hunting formation that reads as a hungry maw around an empty dark centre where a single small lure light glows, strands of bile and torn membrane trailing behind it as if surging forward. It is an alien grown organism, not a person and not an animal: no face, no eyes, no mouth with teeth, no limbs, no human features; no buildings, no machines, no instruments, no architecture. Glistening wet flesh, membrane, chitin, bile, gross deep-sea biology. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by sickly yellow-green bioluminescent light, deep soft shadow on the right side, a dark painterly wet purple-black organic cavern of membrane and spore haze background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  }
+ ]
+}

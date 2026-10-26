@@ -61,15 +61,24 @@ SUBJECT = {
 }
 def item(i, model, seeds):
     fac, p = SUBJECT[i]
-    return {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F[fac]), 'nosuffix': True, 'seeds': seeds}
+    it = {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F[fac]), 'nosuffix': True, 'seeds': seeds}
+    if model == 'qref':   # paint onto the faction's dark background plate (tools/portraits/plates.py)
+        it['ref'] = 'plate_%s.png' % fac
+        it['prompt'] = 'Paint a full new character portrait onto this dark background, filling the frame. ' + it['prompt']
+    return it
 S4 = [11, 23, 37, 51]
+POSTERS = ('voidsworn_vex', 'hegemony_kassar', 'corsair_grax', 'ithar_aelith', 'deathless_nekhet')
+# Each batch is one PC queue job of about 20 minutes or less; all write into comfy_io\PORTRAITS\b1\.
 BATCHES = {
- 'b1': [item('chorus_mending', 'zit', S4), item('chorus_mending', 'qie', S4), item('chorus_matriarch', 'zit', S4),
-        item('chorus_voice', 'zit', S4[:3]), item('chorus_razormaw', 'zit', S4[:3])]
-       + [item(k, m, S4) for k in ('voidsworn_vex', 'hegemony_kassar', 'corsair_grax', 'ithar_aelith', 'deathless_nekhet') for m in ('zit', 'qie')],
+ 'b1a': [item('chorus_mending', 'zit', S4), item('chorus_matriarch', 'zit', S4), item('chorus_voice', 'zit', S4[:3]), item('chorus_razormaw', 'zit', S4[:3])],
+ 'b1b': [item(k, 'zit', S4) for k in POSTERS] + [item('chorus_mending', 'qref', S4)],
+ 'b1c': [item('chorus_mending', 'qie', S4)] + [item(k, m, S4[:2]) for k in POSTERS for m in ('qie', 'qref')],
+ # fallback with no download: only Qwen-Image-Edit 2511 (already on the PC)
+ 'b1q': [item('chorus_mending', 'qref', S4), item('chorus_mending', 'qie', S4[:2]), item('chorus_matriarch', 'qref', S4[:3])]
+        + [item(k, 'qref', S4[:2]) for k in POSTERS],
 }
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():
-        json.dump({'out': k, 'budget_s': 960, 'items': items}, open(os.path.join(HERE, 'batches', k + '.json'), 'w'), indent=1)
+        json.dump({'out': 'b1', 'budget_s': 960, 'items': items}, open(os.path.join(HERE, 'batches', k + '.json'), 'w'), indent=1)
         print(k, len(items), 'items', sum(len(i['seeds']) for i in items), 'images')
