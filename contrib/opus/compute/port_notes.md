@@ -155,3 +155,64 @@ Commits are on main; the newest step is at the bottom.
 2. Deathless Nemesis: clock +1 per win gives .5; flagship killed in sector 3: revived, met 2; killed again: dead.
 3. Chorus Nemesis with fed 3: his flagship's max hull is 1.12 x the fed-0 battle with the same seed.
 4. Voidsworn Nemesis: your flagship's `dmgMult` against his flagship is +.2 x weapon damage; the enemy never routs.
+
+## Step 4: R42 story fields, R41 arc hulls, R42 and R49 Nemesis behaviour, customization reserve (Oct 26 evening; commits c88567c, 69bddcf, 0365a38, 5358672)
+
+Second stream B helper. Carries over the first helper's uncommitted R42 alignment work.
+
+### Checks confirmed, no change
+- **Round start order** (Muse must-fix 1): the game (ui3d.js alternating mode) and every sim loop call the same `roundStartBoth()` in battle.js, so they cannot drift; Muse's ordering claim was rejected in X20.
+- **Faction identity counters** (Muse must-fix 2): `fstat` producers are live (feed, charge, syncShots, torpLaunch, torpHit, torpDodge, torpGone, revive, braces, fade). `node sim3d.js fmatrix 1` prints non-zero definers for all six factions.
+- **B-21**: fixed in b8d1a97 with its own check in b3_tests.js (the refit gun gets fired, cdLeft, off; intercepts are counted after it is added).
+
+### Campaign (G3)
+- **Nemesis fields**: `persona` and its ids stay exactly as R42 (NEM_PERSONA, four per faction in `NEM_FAC[fac].personas`). New: `g` ('m', 'f', 'n'): 'n' for the Chorus (`NEM_FAC.chorus.g`), 'f' when the name starts with one of `NEM_FAC[fac].fem`, else 'm'; `nemGender(fac,name)`, **no random draw**. `last_beat` replaces `beat` (ids lance, torp, sq, ram, board, battery, evasive; `nemBeatOf(usage, evasive)`, evasive when the fleet's average evasion is 20+). `scarKinds` (causes) and `epithets` replace `scarList`. `signatures` (last 40 kinds). `loot`, `held`, `honed`, `gloat`. `ensureNemesis` upgrades older saves (beat to last_beat with ion mapped to battery, pronoun to g, scarList split) and keeps met, beaten, scars.
+- **Name tables** (strings only): Deathless, Voidsworn and Chorus name parts and titles, Chorus scar epithets, Hegemony "Lindqvist", five NEM_ADAPT_FAC names, "the Unsunk" to "the Uncaught". `NEM_FAC[fac].scarBy` {fled, burn, wound} lists. Hegemony `beh.formation` removed (nothing read it; the +1 sync radius is the 'formation' adaptation only); `beh.line` added. `beh.ai` for Ithar {range:3, focusWeak:1} and Voidsworn {hunt:1, charge:1}.
+- **newNemesis draw order** (unchanged order, one change): name (pre, post, up to 12 retries), title, persona, trait shuffle, portrait, weakness shuffle. The weakness pool now drops a weakness that cancels a drawn strength (slow with swift, board with boarders, ion with shielded), so that shuffle can be one element shorter (**one draw fewer**).
+- **nemStrike** raid: credits taken go to `N.loot`; a towed ship goes to `N.held` (only one at a time; riches +1 as before).
+- **nemWarnLine** on his card when the next win fills the clock (R7): what the raid will take (and how to stop the ship cut: repair above 25% or keep 30 credits), the tithe, or that the next fight is his.
+- **nemAfterBattle** (new branch order): win: beaten+1, gloat cleared, last_beat set and `nemBeatTeach(beat)` adds 8 to the matching `seen` counter (so his next adaptation counters what beat him), weakness reveal as before; then fled (riches+1 only for a raid faction, `honed`+1 for the duel faction, scar 'fled'); else flagship dead in sector 3 with revive unused (revived, scar, met = sector-1: one last fight); else flagship dead in sector 3 (dead); else flagship dead earlier (scar; every faction, the Deathless one too, R49); else withdraws. Then, only when he is dead, `loot` and `held` come back (R49). Then `arcComplete(RUN.fac)` on any sector 3 win that does not bring him back. Loss: clock 1, `gloat` = 'flagship' (your flagship died, `o.myFlagDead`), 'retreat' or 'loss'. Chorus fast adaptation line now carries the why text.
+- **nemScar(cause)**: the epithet is picked from `scarBy[tag]` (fled; melt, flay, tidal = burn; the rest = wound), falling back to any unused one. Still one draw.
+- **nemFeedLosses** returns a line (fed and the hull bonus) shown in the battle summary. **nemFoundMerge(B.nemFound)** in finishBattle adds weaknesses found in battle to `revealed`.
+- **ACT.enterNode**: his fight passes `arch: beh.fleet` when it is an ARCHETYPES key (Corsair and Chorus swarm, Deathless and Hegemony heavy), so `genEnemyFleet` draws differ for those fights.
+- **R41 arc hulls**: six `HULL_VARIANTS` rows with `cost:0` and `arc`, `ARC_VARIANT[fac]`. `arcComplete(fac)` sets `META.variants[id]` once (above). `ACT.buyVariant` refuses arc rows; the Progression tab says "Finish the <faction> story to unlock".
+
+### Battle (G1)
+- **nemSig(kind)**: pushes `{kind, r}` to `B.nemSigs` (and the campaign record). G1: emit `{t:'nem_signature', kind}` there. Kinds in battle: challenge, duel, line (at setup), flee_battle, reinforce (when the round 3 reinforcements arrive, in `eventTick`). Campaign kinds: raid, tithe, flee, revive, feed, fast_adapt.
+- **applyNemesis**: riches ships only for a raid faction (R49: an Ithar who fled no longer brings extra ships); duel faction `honed` h (max 3): aim +3h and shields x(1+.1h) on his ships; `beh.line`: his escorts' non-flak, non-wing guns get opt +1; `B.nemAi`, `B.nemLine`; memory line: gloat line if he won last time, else the "again" line only when his adaptations hold the counter (`NEM_BEAT_COUNTER`), else "remember".
+- **Voidsworn duel** (R49): `nemDuelTarget()` = your flagship, else your biggest living ship (cp, max hull, id); stored in `B.nemDuel`, logged at setup and when it changes. `dmgMult` challenge +.2 now between his flagship and `B.nemDuel` (was `pflag`). `nemTargetBonus` +30 for his flagship on that ship.
+- **AI**: `nemProf` applies `beh.ai` after the personality (range max, charge: flagship tw x.7); `nemTargetBonus` focusWeak also from `beh.ai`; `syncPull` weight x2 for his ships when `B.nemLine`.
+- **Weakness found in battle** `nemTrip(k)`: landVolley after the hit loop (your hit on his ship: flank on a rear-arc hit, ion when an ion or lance hit took shield, torp on a torpedo hit; his ship hitting yours at 2 hexes or less: brawl), boardUnit after the boarders land (board), nemBreak (anchor), enemy turn start from round 2 (slow). Logs once, adds to `B.nem.revealed` and `B.nemFound`.
+
+### Random draws
+- Campaign: weakness shuffle can be one draw shorter; arch-built Nemesis fleets draw differently; everything else in this step draws nothing new.
+- Battle: none added or moved. AI behaviour (duel hunt, Ithar range and focus, the line pull) shifts whole-battle parity in Nemesis fights.
+
+### Sims
+- `node sim3d.js varmatrix N` (VK=battle: sector 2 generated fleets; VK=boss: sector 1 flagships): each arc hull against its base, paired seeds, as the second ship in the faction's first admiral's start fleet.
+
+### Customization reserve (brainstorm section 6), schema only
+1. Ship instance state: already separate. A fleet ship is `{uid, tpl, name, mk, hp, mods, cap}` and `derive()` resolves numbers from `HULLS[tpl]` at battle time. Reserved: `ship.fit = {pod, module, trim}` (absent until used) and `shipFit(ship)` in core.js; `FIT_SLOTS` describes the slots. Nothing applies it. Godot: keep the field in the save schema.
+2. Variant row schema: `{base, n, d, w, mod, cost, arc}`, merged into HULLS with `variant` and `base`; documented in data.js. Done.
+3. Flagship mount conventions: not stream B (A4 and G4).
+4. Sim hook: `FIT='{"pod":..,"module":..,"trim":..}'` puts a fit on the flagship of every sim run (`simFit()`); inert until a resolver exists.
+5. Faction weapon pool tags: `FAC_WPOOL[fac]` (weapon ids carried by that faction's hulls, variants included), computed at load. The exporter should pick it up.
+6. How the Nemesis counts usage today: `fireWeapon` counts the player side's shots by weapon kind (`B.usage.kind`, plus ion, rams, boards, broadside fire), fleet-wide, every battle; `nemLearn` adds each battle into `RUN.nem.seen`; `nemAdapt` reads it at a sector change (the Chorus after every meeting) and then clears it. So the window is "since his last adaptation" (about a sector), the basis is the whole fleet, not the flagship, plus the +8 for what beat him. Cheap later: a rolling list of the last four battles instead of a sum (guardrail 1). Not cheap now: the duel refresh (guardrail 3) needs per-ship usage; `B.usage` is per side.
+
+### Review open questions (contrib/muse/reviews/nemesis_review.md), answered from the code
+1. Tithe: clamps each ship at 1 hull remaining (`max(1, hp - 6%)`); it never destroys a ship.
+2. Branch order: the old code checked revive first, so a Deathless kill in sectors 1 and 2 spent his comeback. Fixed above (R49).
+3. Hegemony formation: only the 'formation' adaptation gives +1 sync radius; the unused innate flag is gone.
+4. A full clock does both: the raid or tithe lands at once, and the next battle or elite node becomes his fight.
+5. Duel and swarm strikes only force the fight; their behaviour lives in his battle rules (duel fleet, honed; Chorus feed and swarm archetype).
+6. `ensureNemesis` keeps met, beaten, scars, dead, strike, seen, weaknesses, revealed, adaptations and the old beat.
+7. Card (browser): faction behaviour text with his pronouns, the warning line, fed, what he holds, weaknesses (known ones named), adaptations with their effect, and what beat him. Godot shows the same from these fields.
+
+### Suggested golden scenarios
+1. Deathless: flagship killed in sector 2: scar 1, revived false; sector 3 kill: revived, met 2; again: dead and the arc variant unlocked.
+2. Corsair: 10 credits, three ships, one at 1 hull, clock 3: one win tows it (`held`); he flees: still held; killed in sector 3: back in the fleet.
+3. Ithar: fled once: same fleet count (4 or fewer), flagship shields x1.1, aim +3, riches 0.
+4. Voidsworn: `nemTargetBonus(flag, yourFlagship) - nemTargetBonus(flag, other) == 30`; kill your flagship: the duel moves to your biggest ship and `dmgMult` between them gets +.2.
+5. Weakness: Hegemony rival with flank; your rear-arc hit lands: `B.nemFound` = ['flank'] and the log line.
+6. Beat sync: beaten with lance (seen battery 5): next `nemAdapt()` is shields, and the next meeting's line is the "again" line.
+7. Hegemony line: an escort's battery opt is the table opt + 1; `syncPull` doubled for his ships.
