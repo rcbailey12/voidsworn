@@ -24,9 +24,9 @@ const BLOOD := Color("#e27f74")
 const GLASS := Color(0.047, 0.07, 0.12, 0.80)
 const BLUE := Color("#62a8ff")   # B4 blue event options
 # Words Ryan has ruled will change once the lore is signed off (patron to core, sigil to signal, boon to protocol,
-# favour to sync). No text changes before sign-off; the map screen's own strings read these so the swap is one edit
+# favour to sync; Opus's veto on rename_map_final V14: the relic item type becomes salvage). No text changes before sign-off; the map screen's own strings read these so the swap is one edit
 # here (the texts ported from the browser game follow the project-wide rename). Ids never change.
-const TERMS := {"patron": "patron", "patrons": "patrons", "sigil": "sigil", "boon": "boon", "boons": "boons", "favour": "favour"}
+const TERMS := {"patron": "patron", "patrons": "patrons", "sigil": "sigil", "boon": "boon", "boons": "boons", "favour": "favour", "relic": "relic", "relics": "relics"}
 static func term(k: String, cap: bool = false) -> String:
 	var t: String = TERMS.get(k, k)
 	return (t.substr(0, 1).to_upper() + t.substr(1)) if cap else t
@@ -297,7 +297,9 @@ func _wrap_page(inner: Control, maxw: float = 1440) -> Control:
 func _title() -> Control:
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var v = vbox(10); v.custom_minimum_size.x = px(640); v.alignment = BoxContainer.ALIGNMENT_CENTER
-	var h = lbl("VOIDSWORN", 96, BONE, font_goth, false); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h)
+	var title_txt = "VOIDSWORN"   # the game's name from G2's brand.gd (one place for the title, R59)
+	if ResourceLoader.exists("res://ui/battle/brand.gd"): title_txt = str(load("res://ui/battle/brand.gd").TITLE).to_upper()
+	var h = lbl(title_txt, 96 if title_txt.length() <= 12 else 58, BONE, font_goth, false); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h)
 	var s = lbl("Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain.", 20, BONE2)
 	s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(s)
 	var menu = vbox(10); menu.custom_minimum_size.x = px(260)
@@ -501,7 +503,7 @@ func _map() -> Control:
 	for ctl in [hb, mm, main, head, tv]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var legend = flow(18); legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# the key: what each kind of stop gives, and the danger bands the chart prints on every fight (map_intel.gd)
-	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops a relic", "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
+	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops a " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
 	for kk in C.NODE_INFO.keys():
 		var gl = STOP_GLYPH.get(kk, ["●", "#b3aa95"])
 		legend.add_child(rich_inline(c(gl[0], Color(gl[1])) + " [b]" + c(esc(C.NODE_INFO[kk]["n"]), BLOOD if kk == "elite" or kk == "boss" else BONE) + "[/b] " + c(LEG.get(kk, ""), BONE3), 13))
@@ -661,7 +663,7 @@ func _side() -> Control:
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
 	v.add_child(rich(c(term("patrons", true) + " this run: ", BONE3) + ", ".join(PackedStringArray(ps)), 13))
-	v.add_child(_wr_head("Relics"))
+	v.add_child(_wr_head(term("relics", true)))
 	if R["relics"].size() > 0:
 		for r in R["relics"]: v.add_child(rich("[b]" + esc(C.relicName(r)) + "[/b]\n" + c(esc(C.RELICS[r]["d"]), BONE2), 14))
 	else: v.add_child(lbl("None yet. Elite fleets and flagships carry them.", 14, BONE3))

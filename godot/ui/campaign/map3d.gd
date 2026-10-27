@@ -809,12 +809,12 @@ func _card_bb(n: Dictionary) -> String:
 	# the routes through this node to the flagship
 	if not _routes.is_empty() and not C.jt(n.get("done")):
 		t += "\n\n[b]" + _cc("ROUTES TO THE FLAGSHIP", ui.GILT) + "[/b]"
-		t += "\n" + _cc("Safest: the mildest worst fight, then the least danger in all (repair stops count in its favour). Richest: the most rewards (relic 4, " + ui.term("boon") + " 3, refit 2, shipyard 2, credits 1, event 1).", ui.BONE3)
+		t += "\n" + _cc("Safest: the mildest worst fight, then the least danger in all (repair stops count in its favour). Richest: the most rewards (" + ui.term("relic") + " 4, " + ui.term("boon") + " 3, refit 2, shipyard 2, credits 1, event 1).", ui.BONE3)
 		var fc = intel.fleet_condition()
 		for r in _routes:
 			var st = r["st"]
 			t += "\n[b]" + _cc(r["name"], r["col"]) + "[/b]  " + "%d fight%s%s, %d repair stop%s, %d shipyard%s" % [st["fights"], "" if st["fights"] == 1 else "s", (" (%d elite)" % st["elites"]) if st["elites"] > 0 else "", st["repairs"], "" if st["repairs"] == 1 else "s", st["shops"], "" if st["shops"] == 1 else "s"]
-			t += "\n   " + _cc(("%d " + ui.term("boon") + "%s, %d refit%s, %d relic%s, %d credit reward%s, %d event%s · worst fight: ") % [st["boons"], "" if st["boons"] == 1 else "s", st["refits"], "" if st["refits"] == 1 else "s", st["relics"], "" if st["relics"] == 1 else "s", st["credits"], "" if st["credits"] == 1 else "s", st["events"], "" if st["events"] == 1 else "s"], ui.BONE3) + _cc(st["worst_name"], Intel.BANDS[st["worst"]][2])
+			t += "\n   " + _cc(("%d " + ui.term("boon") + "%s, %d refit%s, %d %s, %d credit reward%s, %d event%s · worst fight: ") % [st["boons"], "" if st["boons"] == 1 else "s", st["refits"], "" if st["refits"] == 1 else "s", st["relics"], ui.term("relic") if st["relics"] == 1 else ui.term("relics"), st["credits"], "" if st["credits"] == 1 else "s", st["events"], "" if st["events"] == 1 else "s"], ui.BONE3) + _cc(st["worst_name"], Intel.BANDS[st["worst"]][2])
 			if fc["hurt"] and not st["repair_before_boss"]: t += "\n   " + _cc("Your fleet is hurt and this route has no repair stop before the flagship.", ui.BLOOD)
 	if _avail().has(n["id"]): t += "\n" + _cc("Click to jump here.", ui.BONE3)
 	return t
