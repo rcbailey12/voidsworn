@@ -74,9 +74,7 @@ static func setup_physics(fx) -> void:
 		var meshes: Array = []
 		for v in DEBRIS_VARIANTS:
 			var sm = shard_mesh(r, sz)
-			var cs = ConvexPolygonShape3D.new()
-			cs.points = sm[1]
-			shapes.append(cs)
+			shapes.append(safe_convex(sm[1]))
 			meshes.append(sm[0])
 		st["debris_shapes"].append(shapes)
 		st["debris_meshes"].append(meshes)
@@ -229,12 +227,94 @@ static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float
 		(b.get_node("mesh") as GeometryInstance3D).set_instance_shader_parameter("spawn_t", fx.now)
 
 
+# A convex collider Jolt can always build (G2 bot runs: a 900-point hull failed and logged an error). The point cloud is
+# cleaned (no NaN or infinite points), cut down to the extreme points along 50 fixed directions (at most 50 points, the
+# hull's shape kept), and checked for flat or tiny input; anything degenerate gets its (thickened) bounding box instead.
+const _HULL_DIRS := 50
+static var _dirs: PackedVector3Array = PackedVector3Array()
+
+
+static func safe_convex(src: PackedVector3Array) -> Shape3D:
+	var pts := PackedVector3Array()
+	for p in src:
+		if is_finite(p.x) and is_finite(p.y) and is_finite(p.z):
+			pts.append(p)
+	if pts.is_empty():
+		var b0 := BoxShape3D.new()
+		b0.size = Vector3.ONE * 0.1
+		return b0
+	var lo := pts[0]
+	var hi := pts[0]
+	for p in pts:
+		lo = lo.min(p)
+		hi = hi.max(p)
+	var ext := hi - lo
+	var size := maxf(ext.x, maxf(ext.y, ext.z))
+	if _dirs.is_empty():
+		# Fibonacci sphere: evenly spread directions
+		for i in _HULL_DIRS:
+			var y := 1.0 - 2.0 * (float(i) + 0.5) / _HULL_DIRS
+			var rr := sqrt(maxf(0.0, 1.0 - y * y))
+			var a := float(i) * 2.399963
+			_dirs.append(Vector3(cos(a) * rr, y, sin(a) * rr))
+	var keep := {}
+	for d in _dirs:
+		var bi := 0
+		var bd := -INF
+		for i in pts.size():
+			var k := pts[i].dot(d)
+			if k > bd:
+				bd = k
+				bi = i
+		keep[bi] = true
+	var out := PackedVector3Array()
+	for i in keep:
+		out.append(pts[i])
+	# degenerate (a point, a line or a flat sheet): a box from the bounds, never thinner than 2% of the largest side
+	var flat := out.size() < 4 or size < 1e-4
+	if not flat:
+		var a0 := out[0]
+		var a1 := a0
+		for p in out:
+			if p.distance_squared_to(a0) > a1.distance_squared_to(a0):
+				a1 = p
+		var ax := (a1 - a0).normalized()
+		var a2 := a0
+		var bd2 := 0.0
+		for p in out:
+			var w := p - a0
+			var dl := (w - ax * w.dot(ax)).length_squared()
+			if dl > bd2:
+				bd2 = dl
+				a2 = p
+		var nrm := (a1 - a0).cross(a2 - a0)
+		if nrm.length_squared() < 1e-12 or sqrt(bd2) < size * 0.01:
+			flat = true
+		else:
+			nrm = nrm.normalized()
+			var off := 0.0
+			for p in out:
+				off = maxf(off, absf((p - a0).dot(nrm)))
+			flat = off < size * 0.01
+	if flat:
+		# the bounds as an eight-corner hull, so it sits where the points are (a BoxShape3D is centred on the origin)
+		var t := (ext.max(Vector3.ONE * maxf(size * 0.02, 0.05)) - ext) * 0.5
+		var l2 := lo - t
+		var h2 := hi + t
+		var bx := ConvexPolygonShape3D.new()
+		bx.points = PackedVector3Array([Vector3(l2.x, l2.y, l2.z), Vector3(h2.x, l2.y, l2.z), Vector3(l2.x, h2.y, l2.z), Vector3(h2.x, h2.y, l2.z),
+			Vector3(l2.x, l2.y, h2.z), Vector3(h2.x, l2.y, h2.z), Vector3(l2.x, h2.y, h2.z), Vector3(h2.x, h2.y, h2.z)])
+		return bx
+	var cs := ConvexPolygonShape3D.new()
+	cs.points = out
+	return cs
+
+
 # One convex collider per live ship (from its visible hull samples) riding the root, so debris bounces off hulls.
 static func add_collider(fx, s) -> void:
 	if not bool(fx.dstate.get("physics_on", false)) or s.hull.sp.size() < 8:
 		return
-	var shape = ConvexPolygonShape3D.new()
-	shape.points = s.hull.sp
+	var shape: Shape3D = safe_convex(s.hull.sp)
 	var body = AnimatableBody3D.new()
 	body.name = "fx_collider"
 	body.sync_to_physics = false
@@ -644,9 +724,7 @@ static func _break_up(fx, s, cause: String, tint: Color) -> void:
 				pts.append(p - cen)
 			if pts.size() >= 4:
 				var cs = CollisionShape3D.new()
-				var shp = ConvexPolygonShape3D.new()
-				shp.points = pts
-				cs.shape = shp
+				cs.shape = safe_convex(pts)
 				rb.add_child(cs)
 			node = rb
 		else:
