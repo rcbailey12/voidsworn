@@ -328,8 +328,10 @@ def main():
             dress.dress_armour(H, S, fac, seed, P)
         elif fac == 'corsair': dress4.dress_corsair(H, S, seed, P, amt, plates=cfg.get('plates', 1.0))
         elif fac == 'chorus': dress.dress_chorus(H, S, seed, P)
-        elif fac == 'ithar': P['trim'] = bakemat4.lin('#c9a44a'); dress.dress_ithar(H, S, seed, P)
-        elif fac == 'deathless': P['trim'] = bakemat4.lin('#7d867f'); dress.dress_deathless(H, S, seed, P)
+        elif fac == 'ithar': P['trim'] = bakemat4.lin('#c8ccd2'); dress.dress_ithar(H, S, seed, P)       # silver inlay (lore r8)
+        elif fac == 'deathless':  # Eclipse (lore r8): shield-plate bands in place of the carved-bone ribs and vertebrae, violet-white light seams
+            P['trim'] = bakemat4.lin('#3c3150'); dress.dress_armour(H, S, 'deathless', seed, P)
+            dress.lights(H, np.random.default_rng(seed + 5), P['lens'], P['dark'], dict(rgh=.45, met=.4), n_pairs=4)
     nb = kit.breach_anchors(H, cfg.get('breach', {'S': 4, 'M': 6, 'L': 8, 'XL': 10}[kit.BAND.get(cls, 'M')]))
     parts = list(hs_lib.PARTS); log('parts', len(parts), 'breach anchors', nb, round(time.time() - t0, 1), 's')
     import a2_ship

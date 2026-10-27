@@ -29,12 +29,14 @@ def mul(c, k): return tuple(min(1., x * k) for x in c)
 
 def palette(fac):
     """part colours (linear) per faction, from FAC3D (ships3d.js) like bakemat: base hull, dark, trim, gun metal, lens (win), engine (eng)"""
-    F = {'voidsworn': ('#4a4440', '#1c1918', '#9c3a1c', (1, .42, .12), (1, .50, .16)), 'hegemony': ('#c4ccd5', '#5a6573', '#3a78d0', (.78, .9, 1), (.45, .72, 1)),
-         'corsair': ('#6a2c22', '#28140f', '#a3542c', (1, .4, .2), (1, .38, .16)), 'chorus': ('#57364c', '#211419', '#a4913a', (.85, .92, .25), (.80, .90, .28)),
-         'ithar': ('#e4ebe7', '#6c8179', '#d7c88a', (.6, 1, .82), (.62, 1, .84)), 'deathless': ('#2c3431', '#121715', '#1fbf4a', (.15, 1, .35), (.15, 1, .35))}[fac]
+    F = {'voidsworn': ('#2b2d31', '#111214', '#dfe6ec', (1, .42, .12), (1, .50, .16)), 'hegemony': ('#c4ccd5', '#5a6573', '#3a78d0', (.78, .9, 1), (.45, .72, 1)),
+         'corsair': ('#6a2c22', '#28140f', '#a3542c', (1, .4, .2), (1, .38, .16)), 'chorus': ('#3b3a22', '#17160c', '#b5852f', (.78, .92, .22), (.75, .90, .25)),
+         'ithar': ('#cfe0ea', '#7d8f9c', '#c8ccd2', (.85, .90, 1.0), (.80, .86, 1.0)), 'deathless': ('#1e1726', '#0d0a12', '#e9d9a6', (.85, .75, 1.0), (1.0, .86, .58))}[fac]
+    # Oct 27, lore approved (R59): Crusade black iron and frost white, Glasswrights crystal and silver, Eclipse violet-black and white-gold,
+    # Chorus dark olive and ochre; Hullbreakers and Hegemony unchanged
     base, dark, trim = srgb(F[0]), srgb(F[1]), srgb(F[2])
-    gun = {'voidsworn': (.045, .042, .040), 'hegemony': (.30, .33, .37), 'corsair': (.07, .07, .075), 'chorus': mul(dark, 1.4), 'ithar': (.62, .66, .64), 'deathless': (.05, .06, .055)}[fac]
-    finish = {'voidsworn': (.55, .36), 'hegemony': (.46, .16), 'corsair': (.62, .35), 'chorus': (.4, .02), 'ithar': (.34, .12), 'deathless': (.55, .4)}[fac]
+    gun = {'voidsworn': (.045, .046, .050), 'hegemony': (.30, .33, .37), 'corsair': (.07, .07, .075), 'chorus': mul(dark, 1.4), 'ithar': (.66, .69, .74), 'deathless': (.05, .04, .06)}[fac]
+    finish = {'voidsworn': (.50, .42), 'hegemony': (.46, .16), 'corsair': (.62, .35), 'chorus': (.4, .02), 'ithar': (.16, .35), 'deathless': (.45, .42)}[fac]
     return dict(base=base, dark=dark, trim=trim, gun=gun, lens=tuple(F[3]), eng=tuple(F[4]), rgh=finish[0], met=finish[1])
 
 
@@ -319,6 +321,8 @@ def engine(name, p, r, L=None, axis=Vector((-1, 0, 0)), style=None, n_hint=None)
     for k in range(3): ocyl(name + f'r{k}', p + d * L * (.35 + k * .22), r * (.84 + k * .05), L * .05, Mx, seg=32, bevel=0)
     tag(mul(P['dark'], 2.2), rgh=.5, met=.7)
     ocyl(name + 'g', p + d * (L - .0006), r * .88, .0016, Mx, seg=28, bevel=0); tag(P['eng'], emit=1.0, rgh=.2, met=0)  # glowing throat across the bell mouth
+    if fac == 'deathless':  # Eclipse (lore r8): a white-gold corona ring round the engine mouth
+        dress.torus(name + 'cr', p + d * (L - .0008), d, r * 1.06, max(r * .07, .0006), seg=28, ring=6); tag((1.0, .88, .60), emit=1.0, rgh=.2, met=0)
     exitp = p + d * L
     add_hp(f'eng{len([h for h in HP if h["kind"] == "engine"])}', 'engine', exitp, d, up, radius=r, size='-', arc='-', slot=None, wkind='engine')
     return exitp

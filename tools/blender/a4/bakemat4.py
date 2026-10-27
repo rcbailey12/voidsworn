@@ -13,11 +13,12 @@ import bpy
 FAC = {  # from ships3d.js FAC3D (hull, dark, trim as sRGB hex; win and eng as linear). met/rgh: the painted-hull finish (the game's paint
     # mode runs metal about .08 to .36, roughness .5 to .6; the old flat-colour table had Hegemony at .40 metal, which reads as wet chrome
     # once the albedo carries the paint), so a painted hull is paint, with worn edges going to bare metal
-    'voidsworn': dict(hull='#4a4440', dark='#1c1918', trim='#9c3a1c', win=(1, .42, .12), eng=(1, .50, .16), met=.32, rgh=.56),
+    # Oct 27, lore approved (R59, contrib/opus/briefs/lore_rollout_2026-10-27.md): Sunward Crusade black iron, frost-white markings, ember
+    'voidsworn': dict(hull='#2b2d31', dark='#111214', trim='#dfe6ec', win=(1, .42, .12), eng=(1, .50, .16), met=.40, rgh=.50),
     'hegemony': dict(hull='#c4ccd5', dark='#5a6573', trim='#3a78d0', win=(.78, .9, 1), eng=(.45, .72, 1), met=.14, rgh=.50),
-    'chorus': dict(hull='#57364c', dark='#211419', trim='#a4913a', win=(.85, .92, .25), eng=(.80, .90, .28), met=.02, rgh=.40),
-    'ithar': dict(hull='#e4ebe7', dark='#6c8179', trim='#d7c88a', win=(.6, 1, .82), eng=(.62, 1, .84), met=.12, rgh=.36),
-    'deathless': dict(hull='#2c3431', dark='#121715', trim='#1fbf4a', win=(.15, 1, .35), eng=(.15, 1, .35), met=.38, rgh=.52),
+    'chorus': dict(hull='#3b3a22', dark='#17160c', trim='#b5852f', win=(.78, .92, .22), eng=(.75, .90, .25), met=.02, rgh=.40),  # dark olive flesh, ochre chitin, bile glow
+    'ithar': dict(hull='#cfe0ea', dark='#7d8f9c', trim='#c8ccd2', win=(.85, .90, 1.0), eng=(.80, .86, 1.0), met=.35, rgh=.14),  # Glasswrights: crystal, silver, stored light
+    'deathless': dict(hull='#1e1726', dark='#0d0a12', trim='#e9d9a6', win=(.85, .75, 1.0), eng=(1.0, .86, .58), met=.42, rgh=.42),  # Eclipse: violet-black, white-gold corona, violet-white glow
     'corsair': dict(hull='#5c2a1c', dark='#28140f', trim='#a3542c', win=(1, .4, .2), eng=(1, .38, .16), met=.30, rgh=.62),
 }
 # Corsair hull tone cells: rust shades only. The stolen grey, steel and bone panels are real 3D plates (dress4.py); painted patch cells
@@ -140,10 +141,10 @@ def build(o, fac, nmap, mmap, info):
         mott = g.noise(obj, 14, 6, .62); vein = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.noise(obj, 7, 3, .5), .5)), .018)
         base = g.mix(g.rng(mott, .3, .7, 0, .35), base, (min(1, hc[0] * 1.8), hc[1] * 1.3, min(1, hc[2] * 1.6)))  # paler, pinker flesh patches
         base = g.mix(g.mul(vein, .55), base, tuple(c * .35 for c in dark))                          # dark vein lines
-        base = g.mix(g.mul(cavity, .8), base, (.12, .015, .02))                                     # deep red in the folds
+        base = g.mix(g.mul(cavity, .8), base, (.035, .04, .012))                                    # dark olive-brown in the folds
         base = g.mix(g.mul(g.smooth(curv, .08, .25), .12), base, tuple(min(1, c * 1.2) for c in lin(F['trim'])))  # a little bile-yellow on the sharpest ridges
     else:
-        worn = {'voidsworn': (.16, .15, .14), 'hegemony': (.80, .82, .84), 'deathless': (.30, .32, .31), 'ithar': (.95, .93, .86), 'corsair': (.20, .19, .18)}[fac]
+        worn = {'voidsworn': (.30, .31, .33), 'hegemony': (.80, .82, .84), 'deathless': (.26, .22, .32), 'ithar': (.95, .97, 1.0), 'corsair': (.20, .19, .18)}[fac]  # Crusade: bare iron, no rust
         wk = {'voidsworn': .8, 'hegemony': .25, 'deathless': .6, 'ithar': .2, 'corsair': .9}[fac]
         base = g.mix(g.mul(wear, wk), base, worn)                                                   # worn edges
         base = g.mix(g.mul(cavity, {'voidsworn': .7, 'hegemony': .4, 'deathless': .6, 'ithar': .3, 'corsair': .8}[fac]), base, tuple(c * .4 for c in dark))  # grime in the crevices
@@ -164,8 +165,19 @@ def build(o, fac, nmap, mmap, info):
         base = g.mix(g.mul(fil, g.mul(hull, .85)), base, trim)
         ang = g.math('ARCTAN2', Z, g.math('SUBTRACT', X, 0.0)); rad_l = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.math('FRACT', g.mul(ang, 22)), .5)), .04)
         sail = g.smooth(g.math('SQRT', g.add(g.mul(Y, Y), g.mul(Z, Z))), info['needle'], info['needle'] * 1.6)
-        base = g.mix(g.mul(g.mul(rad_l, sail), .5), base, (.75, .86, .82))
-        base = g.mix(g.mul(sail, .10), base, (.80, .95, .90))  # the membrane reads faintly jade
+        base = g.mix(g.mul(g.mul(rad_l, sail), .5), base, (.86, .88, .92))
+        base = g.mix(g.mul(sail, .10), base, (.88, .92, 1.0))  # the vane reads faintly ice-blue (crystal, lore r8)
+    if fac == 'voidsworn':  # frost-white markings (lore r8): paired bow chevrons and a frost dusting on worn upward edges
+        side_v = g.smooth(g.math('ABSOLUTE', NY), .55, .8); zc_v = (info['lo'][2] + info['hi'][2]) / 2; h_v = info['hi'][2] - info['lo'][2]
+        chev_v = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.math('FRACT', g.mul(g.add(X, g.mul(g.math('ABSOLUTE', Z), .6)), 26)), .5)), .10)
+        chev_v = g.mul(g.mul(chev_v, g.math('GREATER_THAN', X, info['hi'][0] - .14)), g.mul(side_v, g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', Z, zc_v)), h_v * .06)))
+        base = g.mix(g.mul(hull, chev_v), base, trim)
+        base = g.mix(g.mul(g.mul(wear, g.smooth(NZ, .3, .9)), .45), base, (.80, .85, .90))
+    if fac == 'ithar':  # Glasswrights: faceted rainbow edges (hue running with position), the rest clear pale crystal
+        ph = g.mul(g.add(g.add(X, g.mul(Y, 1.7)), g.mul(Z, 2.3)), 21.0)
+        rb = g.comb(g.add(.5, g.mul(g.math('SINE', ph), .5)), g.add(.5, g.mul(g.math('SINE', g.add(ph, 2.09)), .5)), g.add(.5, g.mul(g.math('SINE', g.add(ph, 4.19)), .5)))
+        edge_i = g.mul(hull, g.smooth(curv, .03, .16))
+        base = g.mix(g.mul(edge_i, .65), base, rb)
     albedo = base
     # ---------------- roughness / metal / occlusion ----------------
     rg = g.add(g.mul(hull, F['rgh']), g.mul(part, prg))
@@ -204,6 +216,8 @@ def build(o, fac, nmap, mmap, info):
         aft = g.mul(g.smooth(g.mul(NX, -1.0), .5, .8), g.math('LESS_THAN', X, info['lo'][0] + .08 * (info['hi'][0] - info['lo'][0])))
         eng = g.mul(g.mul(aft, hull), g.rng(sm.outputs[0], .8, .45, 0, 1))
         e_col = g.mix(eng, e_col, F['eng'])
+    if fac == 'ithar':  # stored light: the rainbow edges glow softly, the crystal body holds a faint pale light
+        e_col = g.mix(g.mul(edge_i, .45), e_col, rb); e_col = g.mix(g.mul(hull, .10), e_col, (.80, .86, 1.0))
     e_col = g.mix(emit, e_col, col)  # lenses, glowing sacs and veins carry their own colour
     # ---------------- normal ----------------
     nm = g.n('ShaderNodeNormalMap', uv_map='atlas'); g.link(tn.outputs[0], nm.inputs['Color'])

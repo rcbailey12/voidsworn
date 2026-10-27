@@ -3,7 +3,7 @@
 #
 # entry keys:
 #   fac, cls       faction and data.js class (the class sets part sizes through kit.CLS_LEN, and the weapon slots below)
-#   name           display name
+#   name           display name (Oct 27: the approved lore, contrib/opus/compute/rename_map_final.md; ids and cls never change)
 #   sym            'bilateral' (mirrored pairs) | 'corsair' (lopsided on purpose) | 'organic' (pairs where the body allows)
 #   yaw            the game's AI_HULL_YAW for side-on meshes (A4 adds 2: turned half round)
 #   roll           quarter turns about the bow axis (A4: hulls meshed lying on their side)
@@ -120,7 +120,7 @@ SHIPS['C19_51'] = dict(
           'applied), three boarding claws, trophy plates, sensor arrays and radiators; no tower, no tapered whale body, no neat pods')
 
 SHIPS['C13s_23'] = dict(
-    fac='corsair', cls='Frigate', name='Raider-class frigate', sym='corsair',
+    fac='corsair', cls='Frigate', name='Hullbreaker raider', sym='corsair',
     cuts=[dict(name='spine', box=(-.06, .34, -.032, .032, .088, .30)),          # AI top gun, tower and bent pipe mast: rebuilt
           dict(name='crown', box=(-.52, -.385, -.08, .08, -.07, .07)),          # AI engine crown with prongs: rebuilt as bells
           dict(name='chinfin', box=(.26, .425, -.024, .024, -.25, -.116))],     # pass 3: the fin under the bow read as a boat keel (naval tell)
@@ -137,7 +137,7 @@ SHIPS['C13s_23'] = dict(
           'the pole antenna, trophy plates in the dress')
 
 SHIPS['C14s_23'] = dict(
-    fac='corsair', cls='Destroyer', name='Reaver-class destroyer', sym='corsair',
+    fac='corsair', cls='Destroyer', name='Hullbreaker gutship', sym='corsair',
     cuts=[dict(name='tower', box=(.075, .27, -.075, .075, .035, .30)),          # AI lattice tower and crossbar mast (naval tells): rebuilt as antenna arrays
           dict(name='arch', box=(-.50, -.255, -.13, .13, .005, .30)),           # AI wire arch over the stern: rebuilt as heat radiators
           dict(name='nozzle', box=(-.52, -.465, -.065, .065, -.12, .005)),      # AI engine ring at the stern face: rebuilt as a bell
@@ -158,7 +158,7 @@ SHIPS['C14s_23'] = dict(
           'trophy plates in the dress')
 
 SHIPS['C15s_23'] = dict(
-    fac='corsair', cls='Cruiser', name='Marauder-class cruiser', sym='corsair',
+    fac='corsair', cls='Cruiser', name='Hullbreaker wrecker', sym='corsair',
     yaw=2,  # meshed back to front: the rounded nose is at -x in hulls_hi and the crane at +x, so today's game flies it stern first
     cuts=[dict(name='crane', box=(-.50, -.02, -.07, .07, .012, .30)),          # AI A-frame crane with cables (rigging: a naval tell)
           dict(name='fork', box=(.115, .225, -.055, .055, .055, .30)),          # AI fork tower and melted top gun
@@ -179,7 +179,7 @@ SHIPS['C15s_23'] = dict(
           'of the pole antennas, trophy plates in the dress')
 
 SHIPS['C16s_23'] = dict(
-    fac='corsair', cls='Carrier', name='Hulk-carrier', sym='corsair',
+    fac='corsair', cls='Carrier', name='Hullbreaker hulk-carrier', sym='corsair',
     cuts=[dict(name='mast', box=(.115, .20, -.05, .05, .105, .30)),           # AI thin mast sticks and the melted star part
           dict(name='spikes', box=(-.50, -.355, -.075, .075, .062, .30)),       # AI spiky stern clusters
           dict(name='sticks', dir='aft', level=.40, max_w=.03, min_ratio=1.6),  # thin AI sticks trailing aft (wire debris)
@@ -203,7 +203,7 @@ SHIPS['C16s_23'] = dict(
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Voidsworn (grimdark black steel, ember glow; bilateral). Flagship first: V1b_r_23 is the K1 "Basilica" proof manifest.
 SHIPS['V1b_r_23'] = dict(
-    fac='voidsworn', cls='Dreadnought', name='Ascendant-class dreadnought', sym='bilateral',
+    fac='voidsworn', cls='Dreadnought', name='Daybreak-class dreadnought', sym='bilateral',
     reshape=[dict(x0=0.25, tip=.50, power=2.5, fair=12, cut=.47)],   # pass 5: faired, deck nearly level, square-cut prow (no droop)   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
     spires=dict(zmin=-.03, exclude_x=.40, style='radiator'),                     # the A2 rebuild: melted AI pinnacles cut and rebuilt crisp
     cuts=[dict(name='domes', box=(-.215, .035, -.042, .042, -.046, .12)),        # AI dome turrets along the spine
@@ -227,7 +227,7 @@ SHIPS['V1b_r_23'] = dict(
           'tower top cut and rebuilt as a command tower with radiator banks and sensor arrays; spires are heat-radiator stacks')
 
 SHIPS['V17_37'] = dict(
-    fac='voidsworn', cls='Battleship', name='Cathedral-class battleship', sym='bilateral',
+    fac='voidsworn', cls='Battleship', name='Bastion-class battleship', sym='bilateral',
     cuts=[dict(name='horns', dir='aft', level=.36, max_w=.035, min_ratio=1.5),   # thin curved AI horns trailing off the stern
           dict(name='hornsup', dir='up', level=.03, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03),
           dict(name='hornsdn', dir='down', level=.05, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03),
@@ -266,7 +266,7 @@ SHIPS['V15_37'] = dict(
     notes='pass 2: turret moved off the fin (it had swallowed it and read as a smokestack), bells lowered to the stern face')
 
 SHIPS['V16_37'] = dict(
-    fac='voidsworn', cls='Cruiser', name='Penitent-class cruiser', sym='bilateral',
+    fac='voidsworn', cls='Cruiser', name='Vigil-class cruiser', sym='bilateral',
     yaw=2,  # meshed back to front: the twin engine nacelles sat at +x and the fins swept toward +x; the concept flies the dart point first
     kit=[('casemate', 'bt', .06, 0, -.01, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='battery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'bt2', -.08, 0, -.01, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='battery', arc='P', aim=(.26, .97, 0), pair=True)),
@@ -276,7 +276,7 @@ SHIPS['V16_37'] = dict(
     notes='first pass')
 
 SHIPS['V18_51'] = dict(
-    fac='voidsworn', cls='Carrier', name='Reliquary-class carrier', sym='bilateral',
+    fac='voidsworn', cls='Carrier', name='Hearth-class carrier', sym='bilateral',
     spires=dict(zmin=.035, style='radiator'),                                       # the melted tine racks rebuilt as crisp pinnacles
     kit=[('turret', 'tt', .22, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='turret', arc='T', lift=.004)),
          ('turret', 'fl', -.12, .07, 0, 'top', dict(size='S', barrels=2, slot=1, wkind='flak', arc='T', pair=True)),
@@ -288,7 +288,7 @@ SHIPS['V18_51'] = dict(
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Hegemony (clean light-grey navy with blue trim; parade finish; bilateral)
 SHIPS['H4_11'] = dict(
-    fac='hegemony', cls='Super-dreadnought', name='Dominion super-dreadnought', sym='bilateral',
+    fac='hegemony', cls='Super-dreadnought', name='Dominion dreadnought', sym='bilateral',
     reshape=[dict(x0=0.22, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='tfore', box=(.195, .325, -.052, .052, -.084, .10)),          # AI U-shaped turret blobs: rebuilt as turrets
           dict(name='taft', box=(-.365, -.235, -.052, .052, -.090, .10)),
@@ -326,7 +326,7 @@ SHIPS['H10_23'] = dict(
           'radiator fins; bow a chisel wedge (pass 4)')
 
 SHIPS['H7_23'] = dict(
-    fac='hegemony', cls='Frigate', name='Picket-class frigate', sym='bilateral',
+    fac='hegemony', cls='Frigate', name='Hegemony picket', sym='bilateral',
     reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='mast', box=(-.185, -.035, -.036, .036, .060, .40))],      # pass 5 (Opus): the small mast tower
     kit=[('spinal', 'las', .30, 0, 0, 'top', dict(size='M', slot=0, wkind='laser', arc='F', length=3.0)),
@@ -338,7 +338,7 @@ SHIPS['H7_23'] = dict(
     notes='pass 5 (Oct 27, Opus): the small mast tower cut, a low command block with an array; bow a chisel wedge (pass 4)')
 
 SHIPS['H8_23'] = dict(
-    fac='hegemony', cls='Destroyer', name='Interdictor-class destroyer', sym='bilateral',
+    fac='hegemony', cls='Destroyer', name='Cordon destroyer', sym='bilateral',
     reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='aftgun', box=(-.52, -.235, -.045, .045, .0, .12)),           # AI turret whose long barrel aimed aft (no ship fires backward)
           dict(name='mast', box=(-.20, -.075, -.04, .04, .052, .40))],          # pass 5 (Opus): the small mast tower
@@ -351,7 +351,7 @@ SHIPS['H8_23'] = dict(
     notes='pass 5 (Oct 27, Opus): the small mast tower cut, a low command block with an array; bow a chisel wedge (pass 4)')
 
 SHIPS['H9_23'] = dict(
-    fac='hegemony', cls='Cruiser', name='Vanguard-class cruiser', sym='bilateral',
+    fac='hegemony', cls='Cruiser', name='Vanguard cruiser', sym='bilateral',
     reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='aftguns', box=(-.43, -.245, -.05, .05, .062, .20)),         # AI twin-gun block aimed aft (no ship fires backward); pass 2: floor
                                                                                     # at the deck (z .03 cut through it and the patch came out a stretched fan)
@@ -372,7 +372,7 @@ SHIPS['H9_23'] = dict(
 # pairs where the body allows). Taste call (vetoable, SHIP_QUEUE asked to check with Ryan): the AI's melted worm-sticks stay where they
 # read as tentacles, the dangling stalactites are rebuilt as crisp bone horns, and the dress adds ridges, veins, pores and glowing sacs.
 SHIPS['B16_23'] = dict(
-    fac='chorus', cls='Bio-titan', name='Bio-titan', sym='organic', snap=.015,
+    fac='chorus', cls='Bio-titan', name='The Ninefold Maw', sym='organic', snap=.015,
     cuts=[dict(name='stalactites', dir='down', level=.20, max_w=.07, min_ratio=1.6)],  # long melted spikes hanging under the body
     spires=dict(zmin=.32, style='gothic'),                                         # the black tower on its back (the concept's spires)
     kit=[('emitter', 'bp', 0, .10, .05, 'bow', dict(size='XL', slot=0, slot_m=1, wkind='bioplasma', arc='F', pair=True, scale=1.6)),
@@ -384,7 +384,7 @@ SHIPS['B16_23'] = dict(
     notes='first pass')
 
 SHIPS['B19_11'] = dict(
-    fac='chorus', cls='Frigate', name='Drone', sym='organic', snap=.015,
+    fac='chorus', cls='Frigate', name='Chorus drone-spawn', sym='organic', snap=.015,
     yaw=2,  # meshed back to front: the spiked glowing heads sat at -x; the concept leads with them
     kit=[('emitter', 'td', .15, 0, 0, 'top', dict(size='S', slot=0, wkind='tendril', arc='T', scale=1.2)),
          ('orifice', 'ov', 0, .06, -.05, 'stern', dict(r=.035, pair=True))],
@@ -392,7 +392,7 @@ SHIPS['B19_11'] = dict(
     notes='first pass')
 
 SHIPS['B20_11'] = dict(
-    fac='chorus', cls='Destroyer', name='Spitter', sym='organic', snap=.012,
+    fac='chorus', cls='Destroyer', name='Chorus spitter', sym='organic', snap=.012,
     # pass 2 (Oct 26 review): the concept's submarine conning tower with two masts and a stay wire (naval tells, CLAUDE.md) is cut, not
     # rebuilt as spires; a low bone crest and the dorsal emitter take its place; the thin AI whiskers at the bow go too (probe-tested)
     cuts=[dict(name='tower', box=(-.235, .005, -.036, .036, .034, .30)),
@@ -407,7 +407,7 @@ SHIPS['B20_11'] = dict(
     notes='pass 2: conning tower, masts and bow whiskers cut (naval tells); the stay wire on the deck stays as a dorsal tendon')
 
 SHIPS['B21_11'] = dict(
-    fac='chorus', cls='Cruiser', name='Razorfiend', sym='organic', snap=.012,
+    fac='chorus', cls='Cruiser', name='Chorus bladeback', sym='organic', snap=.012,
     yaw=2,  # meshed back to front: the toothed maw sat at -x and a stinger at +x; maw first (vetoable)
     # pass 2 (Oct 26 review): the concept's conning tower with a periscope (naval tells) is cut; a bone crest sits behind the emitter
     cuts=[dict(name='tower', box=(-.005, .135, -.046, .046, .056, .30))],
@@ -419,7 +419,7 @@ SHIPS['B21_11'] = dict(
     notes='pass 2: conning tower and periscope cut (naval tells)')
 
 SHIPS['B22_11'] = dict(
-    fac='chorus', cls='Carrier', name='Brood-carrier', sym='organic', snap=.012,
+    fac='chorus', cls='Carrier', name='Chorus brood-sac', sym='organic', snap=.012,
     yaw=2,  # meshed back to front: the glowing bell sat at -x with the spiked tail ahead of it; bell first, like the concept (vetoable)
     kit=[('emitter', 'bf', 0, 0, 0, 'bow', dict(size='L', slot=0, wkind='bioplasma', arc='F', scale=1.4)),
          ('emitter', 'sp', .10, 0, 0, 'top', dict(size='L', slot=1, wkind='spores', arc='T', scale=1.2)),
@@ -434,7 +434,7 @@ SHIPS['B22_11'] = dict(
 # by hand (ithar.py). Taste calls (vetoable): sail sizes follow the AI silhouette (it reads top-down), not the concepts' 3/4 framing.
 SAIL = dict(ribs=17, billow=.05, th=.0016)
 SHIPS['I14_23'] = dict(
-    fac='ithar', cls='Frigate', name='Gleam-class frigate', sym='bilateral', yaw=1, snap=.012, needle=.09,
+    fac='ithar', cls='Frigate', name='Glasswright sliver', sym='bilateral', yaw=1, snap=.012, needle=.09,
     cuts=[dict(name='sails', box=(-.5, .05, .086, 1, -.06, 1), mirror=True),        # the two wing fans, cut flush beside the body
           dict(name='sailroot', box=(-.27, -.12, .05, .086, .0, .2), mirror=True)],  # the stubs on the body's shoulders
     kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, root=(-.19, .072, -.004), u=(.309, .951, 0), v=(-.763, .247, .598), a0=-.10, a1=.90, R=.42,
@@ -444,7 +444,7 @@ SHIPS['I14_23'] = dict(
     notes='pass 1: AI body kept, wing fans rebuilt')
 
 SHIPS['I11_37'] = dict(
-    fac='ithar', cls='Destroyer', name='Seraph-class destroyer', sym='bilateral', yaw=2, snap=.012, needle=.05,
+    fac='ithar', cls='Destroyer', name='Glasswright lancet', sym='bilateral', yaw=2, snap=.012, needle=.05,
     loft=dict(r=.025, facets=6, ys=1.25, zs=.8, x=(-.30, .50), hub=.55, hub_t=.42, hub_w=.08, taper=.8, stern=.45),  # AI body: a thin tube under one sheet
     kit=[('sail', 'su', 0, 0, 0, 'top', dict(SAIL, root=(.02, .012, .014), u=(0, .35, .94), v=(-1, 0, 0), a0=-.25, a1=.95, R=.30,
                                             hub=((.02, .012, .012), (0, .35, .94)), pair=True)),   # the tall pair rising from the hub
@@ -458,7 +458,7 @@ SHIPS['I11_37'] = dict(
     notes='pass 1: hand-lofted spindle, three sail pairs')
 
 SHIPS['I15_11'] = dict(
-    fac='ithar', cls='Cruiser', name='Aurora-class cruiser', sym='bilateral', yaw=-1, pitch=13.5, snap=.012, needle=.10,
+    fac='ithar', cls='Cruiser', name='Glasswright prism', sym='bilateral', yaw=-1, pitch=13.5, snap=.012, needle=.10,
     # pass 2 (Oct 26 review): the needle cut left the AI sail roots as a torn, crumpled shell with an open gap over the stern half, so the
     # body is lofted by hand like I8 and I11 (the AI's own forward spindle was a plain taper; the fan sails stay as built)
     loft=dict(r=.055, facets=6, ys=1.25, zs=.78, x=(-.24, .50), hub=.45, hub_t=.135, hub_w=.06, taper=.8, stern=.5),
@@ -470,7 +470,7 @@ SHIPS['I15_11'] = dict(
     notes='pass 2: hand-lofted spindle (the cut AI stern was a crumpled shell), stern fans as before')
 
 SHIPS['I16_11'] = dict(
-    fac='ithar', cls='Carrier', name='Zenith-class carrier', sym='bilateral', snap=.012, needle=.08,
+    fac='ithar', cls='Carrier', name='Glasswright aperture', sym='bilateral', snap=.012, needle=.08,
     cuts=[dict(name='sailaft', box=(-.5, -.25, -.012, .012, -.15, 1)),     # the sail sheet over the deck (the curved blade mast forward stays)
           dict(name='sailmid', box=(-.25, -.1, -.012, .012, -.135, 1)),
           dict(name='sailfore', box=(-.1, .03, -.012, .012, -.12, 1)),
@@ -486,7 +486,7 @@ SHIPS['I16_11'] = dict(
           'shape the lore allows); no repaint (the Ithar look is changing)')
 
 SHIPS['I8_37'] = dict(
-    fac='ithar', cls='Ark', name='Empyrean ark', sym='bilateral', snap=.012, needle=.06,
+    fac='ithar', cls='Ark', name='The Unfinished', sym='bilateral', snap=.012, needle=.06,
     loft=dict(r=.026, facets=6, ys=1.25, zs=.8, hub=.9, hub_t=.5, hub_w=.07, taper=.85, stern=.45),   # the AI made one curved sheet with a stub of body
     kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, ribs=19, root=(0, .045, -.004), u=(1, 0, 0), v=(0, 1, .10), a0=.22, a1=2.92, R=.42,
                                             hub=((0, .045, 0), (0, 1, 0)), pair=True)),   # the leaf: the needle is its midrib
@@ -501,7 +501,7 @@ SHIPS['I8_37'] = dict(
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Deathless (black tomb-stone, bone-grey trim, sickly green light; gothic, bilateral). Gauss turrets in the hex style with a green slit.
 SHIPS['D22_23'] = dict(
-    fac='deathless', cls='Tomb-ark', name='Necropolis tomb-ark', sym='bilateral', pitch=2.4, roll_deg=-25.9,   # the AI meshed the ring rolled 26 degrees (plane fit of the ring)
+    fac='deathless', cls='Tomb-ark', name='The Unsetting', sym='bilateral', pitch=2.4, roll_deg=-25.9,   # the AI meshed the ring rolled 26 degrees (plane fit of the ring)
     kit=[('turret', 'gs', 0, .38, 0, 'top', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='gauss', arc='T', pair=True, lift=.003)),
          ('spinal', 'doom', .36, 0, 0, 'top', dict(size='L', slot=2, wkind='doom', arc='F', length=3.0)),
          ('turret', 'fl', -.36, 0, 0, 'top', dict(size='M', barrels=2, slot=3, wkind='flak', arc='T', lift=.003)),
@@ -509,14 +509,14 @@ SHIPS['D22_23'] = dict(
     notes='pass 1: ring levelled; the downward spire stays (vetoable: the concept shows a small ship on a green beam there)')
 
 SHIPS['D9_23'] = dict(
-    fac='deathless', cls='Frigate', name='Ossuary frigate', sym='bilateral', yaw=2,   # meshed back to front: the skull and claws sat aft
+    fac='deathless', cls='Frigate', name='Eclipse mote', sym='bilateral', yaw=2,   # meshed back to front: the skull and claws sat aft
     cuts=[dict(name='gun', box=(.05, .22, -.025, .025, .105, .2))],                   # the AI deck gun (rebuilt: gauss turret)
     kit=[('turret', 'gs', .13, 0, 0, 'top', dict(size='S', barrels=2, slot=0, wkind='gauss', arc='T', lift=.003)),
          ('engine_at', 'eC', 0, 0, .02, 'stern', dict(r=.022, L=.03))],
     notes='pass 1: the ribcage is the design and stays')
 
 SHIPS['D20_23'] = dict(
-    fac='deathless', cls='Destroyer', name='Revenant destroyer', sym='bilateral', yaw=-1,  # meshed side-on: the long axis lay port to starboard
+    fac='deathless', cls='Destroyer', name='Eclipse flare', sym='bilateral', yaw=-1,  # meshed side-on: the long axis lay port to starboard
     cuts=[dict(name='dome', box=(.20, .31, -.035, .035, .066, .16))],                       # the AI turret blob on the spine
     kit=[('turret', 'gs', .25, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='gauss', arc='T', lift=.003)),
          ('spinal', 'gf', .31, 0, 0, 'top', dict(size='S', slot=1, wkind='gauss', arc='F', length=3.0)),
@@ -525,7 +525,7 @@ SHIPS['D20_23'] = dict(
     notes='pass 1')
 
 SHIPS['D21_23'] = dict(
-    fac='deathless', cls='Cruiser', name='Monolith cruiser', sym='bilateral',
+    fac='deathless', cls='Cruiser', name='Eclipse zenith', sym='bilateral',
     kit=[('turret', 'gs', -.20, .09, 0, 'top', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='gauss', arc='T', pair=True, lift=.003)),
          ('spinal', 'doom', .30, 0, 0, 'top', dict(size='L', slot=2, wkind='doom', arc='F', length=2.5)),
          ('turret', 'sn', -.36, 0, 0, 'top', dict(size='M', barrels=2, slot=3, wkind='gsentry', arc='T', lift=.003)),

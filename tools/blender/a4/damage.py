@@ -16,14 +16,15 @@ HOLE_R = {'S': .042, 'M': .036, 'L': .031, 'XL': .027}  # hole radius, ship leng
 HEAVY_K = 2.1
 RAM_LABEL = 9999  # the bow zone the ram crumples (skin_bow in the ship glb)
 PLATE = .0016  # torn plate thickness, ship lengths
-# faction interiors: (cavity wall, frames and decks, fire glow, torn-edge heat); Chorus guts are flesh and bone, not metal
+# faction interiors: (cavity wall, frames and decks, fire glow, torn-edge heat); Chorus guts are flesh and bone, not metal; Oct 27 lore
+# palettes: Glasswright stored light, Eclipse violet-white glow and white-gold heat, Chorus bile
 INTERIOR = {
     'voidsworn': ((.035, .030, .028), (.13, .12, .11), (1.0, .42, .10), (1.0, .55, .22)),
     'hegemony': ((.050, .055, .062), (.30, .32, .35), (1.0, .50, .16), (1.0, .62, .30)),
     'corsair': ((.045, .028, .018), (.17, .10, .06), (1.0, .38, .08), (1.0, .50, .18)),
-    'chorus': ((.10, .018, .022), (.55, .48, .38), (.55, 1.0, .25), (.85, .95, .30)),
-    'ithar': ((.060, .075, .070), (.70, .72, .66), (.45, 1.0, .75), (.75, 1.0, .85)),
-    'deathless': ((.030, .036, .032), (.16, .18, .17), (.35, 1.0, .30), (.60, 1.0, .50)),
+    'chorus': ((.05, .05, .015), (.55, .48, .38), (.70, .95, .20), (.85, .95, .30)),
+    'ithar': ((.070, .080, .090), (.75, .78, .82), (.85, .90, 1.0), (.95, .95, 1.0)),
+    'deathless': ((.030, .025, .040), (.18, .15, .22), (.85, .75, 1.0), (1.0, .88, .62)),
 }
 
 

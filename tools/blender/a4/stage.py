@@ -9,12 +9,12 @@ HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.abspath(os.pat
 def crlf(s): return s.replace('\r\n', '\n').replace('\n', '\r\n')
 
 
-LINEUPS = [('corsair', 'Corsair line', 'C19_51 C16s_23 C15s_23 C14s_23 C13s_23'),
-           ('voidsworn', 'Voidsworn line', 'V1b_r_23 V17_37 V18_51 V16_37 V15_37 V14_23'),
-           ('hegemony', 'Hegemony line', 'H4_11 H10_23 H9_23 H8_23 H7_23'),
+LINEUPS = [('corsair', 'Ashfall Hullbreakers line', 'C19_51 C16s_23 C15s_23 C14s_23 C13s_23'),
+           ('voidsworn', 'Sunward Crusade line', 'V1b_r_23 V17_37 V18_51 V16_37 V15_37 V14_23'),
+           ('hegemony', 'Hegemony Navy line', 'H4_11 H10_23 H9_23 H8_23 H7_23'),
            ('chorus', 'Chorus line', 'B16_23 B22_11 B21_11 B20_11 B19_11 B23_51'),
-           ('ithar', 'Ithar line', 'I8_37 I16_11 I15_11 I11_37 I14_23'),
-           ('deathless', 'Deathless line', 'D22_23 D21_23 D20_23 D9_23'),
+           ('ithar', 'Glasswright line', 'I8_37 I16_11 I15_11 I11_37 I14_23'),
+           ('deathless', 'Eclipse line', 'D22_23 D21_23 D20_23 D9_23'),
            ('zcraft', 'Squadron craft and objectives', 'O1_37 O2_37 O3_11 S2_23 S1_51 B23_51')]
 
 

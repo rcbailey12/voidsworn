@@ -15,9 +15,11 @@ for p in (HERE, os.path.join(HERE, '..', 'a2detail')):
 W = 1080                  # sheet width (phone portrait)
 CARD = (1080, 640)        # card render size
 ARC = {'F': 'forward', 'T': 'turret', 'P': 'port', 'S': 'starboard'}
-WNAME = {'hbattery': 'heavy battery', 'battery': 'battery', 'hturbo': 'heavy turbolaser', 'turbo': 'turbolaser', 'torp': 'torpedoes',
+# Oct 27, lore approved: class and weapon display names (rename_map_final.md 4.0; the cls keys stay)
+CLS_NAME = {'Battle-barge': 'War-barge', 'Bio-titan': 'Colossus', 'Ark': 'Lattice-ship', 'Tomb-ark': 'Archive-ship'}
+WNAME = {'hbattery': 'heavy battery', 'battery': 'battery', 'hturbo': 'heavy pulse laser', 'turbo': 'pulse laser', 'torp': 'torpedoes',
          'htorp': 'heavy torpedoes', 'autocannon': 'autocannon', 'flak': 'flak', 'lance': 'lance', 'ion': 'ion cannon', 'laser': 'laser',
-         'scatter': 'scatter guns', 'gauss': 'gauss', 'doom': 'doom beam', 'gsentry': 'gauss sentry', 'pulsar': 'pulsar', 'shard': 'shard',
+         'scatter': 'scatter guns', 'gauss': 'null cannon', 'doom': 'corona arc', 'gsentry': 'null sentry', 'pulsar': 'prism lance', 'shard': 'shard',
          'startorp': 'star torpedo', 'bioplasma': 'bioplasma', 'tendril': 'tendrils', 'spores': 'spores', 'turret': 'turret', 'guns': 'guns',
          'bombs': 'bombs', 'sporeb': 'spore bombs'}
 
@@ -149,7 +151,7 @@ def compose(lay_path):
         d.ellipse((30, y + 18, 76, y + 64), fill=acc); t = str(c['num']); tw = d.textlength(t, font=font(28, True))
         d.text((53 - tw / 2, y + 23), t, font=font(28, True), fill=bg)
         d.text((92, y + 16), c['name'], font=font(36, True), fill=ink)
-        d.text((92, y + 62), f"{c['cls']}, {c['L']:g} units long ({c['code']})", font=font(24), fill=dim)
+        d.text((92, y + 62), f"{CLS_NAME.get(c['cls'], c['cls'])}, {c['L']:g} units long ({c['code']})", font=font(24), fill=dim)
         d.text((92, y + 94), c['weapons'], font=font(24), fill=dim)
         y += CB + PAD
     out = L['out']
