@@ -1132,7 +1132,7 @@ void fragment() {
 			hc = vec3(0.03, 0.029, 0.028);
 			hc = mix(hc, vec3(0.008), pit);
 			hc = mix(hc, vec3(0.42, 0.41, 0.4), chip);
-			ha *= mix(0.62, 1.0, max(pit, chip));
+			ha = min(1.0, ha * 1.8) * mix(0.72, 1.0, max(pit, chip));
 			hr = mix(0.7, 0.35, chip);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
@@ -1170,7 +1170,7 @@ void fragment() {
 		else if (style == 3) { sc = vec3(0.35, 0.65, 1.0); scl = 6.0; }
 		else if (style == 8) { sc = vec3(0.45, 1.0, 0.2); scl = 8.0; sk = 1.3; }
 		else if (style == 9) { sc = vec3(0.45, 0.65, 1.0); scl = 6.0; sk = 1.3; }
-		else if (style == 7) { sk = 1.0; scl = 5.0; }
+		else if (style == 7) { sk = 1.3; scl = 6.0; }
 		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }
 		else if (style == 10) { sc = vec3(1.0, 0.55, 0.25); scl = 5.0; sk = 1.1; }
 		else if (style == 12 || style == 13) { sk = 0.0; }
@@ -1198,7 +1198,7 @@ void fragment() {
 		if (style == 2) { le = 0.32; }
 		else if (style == 3) { le = 0.36; }
 		else if (style == 4 || style == 5) { le = 0.3; }
-		else if (style == 7) { le = 0.3; eb = vec2(0.55, 0.9); }
+		else if (style == 7) { le = 0.6; eb = vec2(0.45, 0.9); }
 		if (le > 0.0) {
 			float ew = (eb.y - eb.x) * 0.3;
 			float edge = smoothstep(eb.x, eb.x + ew, hu) * (1.0 - smoothstep(eb.y - ew, eb.y, hu));
