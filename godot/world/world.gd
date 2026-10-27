@@ -267,6 +267,9 @@ func _annulus(r0: float, r1: float, seg: int, rings: int) -> ArrayMesh:
 # A faceted rock: an icosphere roughed up by noise, then cut by random planes (every vertex past a plane is pressed onto
 # it), so it has big flat fracture faces and sharp edges instead of a lumpy potato. Flat shaded.
 func rock_mesh(r: RandomNumberGenerator, elong: Vector3, cuts: int) -> ArrayMesh:
+	# r6 rebuild (BACKLOG "asteroid rebuild"): a finer sphere (3 subdivisions, 1280 faces) shaped by ridged noise, a few
+	# impact craters with raised rims, then the flat cuts that make it a sharp, faceted blocker; smooth shading inside
+	# each facet. Built once per rock kind into a small library at load (about 0.1 s for all of them).
 	var verts: Array = []
 	var t := (1.0 + sqrt(5.0)) / 2.0
 	for v in [Vector3(-1, t, 0), Vector3(1, t, 0), Vector3(-1, -t, 0), Vector3(1, -t, 0), Vector3(0, -1, t), Vector3(0, 1, t),
@@ -274,7 +277,7 @@ func rock_mesh(r: RandomNumberGenerator, elong: Vector3, cuts: int) -> ArrayMesh
 		verts.append(v.normalized())
 	var faces := [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
 		[3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]]
-	for it in 2:
+	for it in 3:
 		var mid := {}
 		var nf: Array = []
 		for f in faces:
@@ -292,26 +295,69 @@ func rock_mesh(r: RandomNumberGenerator, elong: Vector3, cuts: int) -> ArrayMesh
 			nf.append([f[2], m[2], m[1]])
 			nf.append([m[0], m[1], m[2]])
 		faces = nf
-	var ph := Vector3(r.randf() * 10.0, r.randf() * 10.0, r.randf() * 10.0)
+	var big := FastNoiseLite.new()
+	big.seed = r.randi()
+	big.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	big.frequency = 0.9
+	big.fractal_type = FastNoiseLite.FRACTAL_FBM
+	big.fractal_octaves = 3
+	var ridge := FastNoiseLite.new()
+	ridge.seed = r.randi()
+	ridge.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	ridge.frequency = 2.2
+	ridge.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	ridge.fractal_octaves = 3
+	var craters: Array = []
+	for c in r.randi_range(2, 5):
+		craters.append([Vector3(r.randf_range(-1, 1), r.randf_range(-1, 1), r.randf_range(-1, 1)).normalized(), r.randf_range(0.18, 0.42), r.randf_range(0.05, 0.11)])
 	for i in verts.size():
 		var v: Vector3 = verts[i]
-		var n := 1.0 + 0.18 * sin(v.x * 3.1 + ph.x) * cos(v.y * 2.7 + ph.y) + 0.1 * sin(v.z * 5.3 + v.x * 2.0 + ph.z)
-		verts[i] = v * n
+		var h := 1.0 + 0.2 * big.get_noise_3dv(v) + 0.05 * ridge.get_noise_3dv(v)
+		for cr in craters:
+			var d: float = acos(clampf(v.dot(cr[0]), -1.0, 1.0))
+			var rc: float = cr[1]
+			if d < rc * 1.6:
+				var u := d / rc
+				h -= float(cr[2]) * maxf(0.0, 1.0 - u * u)
+				h += float(cr[2]) * 0.45 * exp(-pow((u - 1.0) / 0.25, 2.0))
+		verts[i] = v * h
+	# flat cuts: each vertex past a plane is pushed onto it, and remembers the plane (a face lying wholly on one plane
+	# is shaded flat, so the cuts stay crisp while the noisy rock between them shades smooth)
+	var on_cut := PackedInt32Array()
+	on_cut.resize(verts.size())
+	on_cut.fill(-1)
+	var cut_n: Array = []
 	for c in cuts:
 		var nn := Vector3(r.randf_range(-1, 1), r.randf_range(-1, 1), r.randf_range(-1, 1)).normalized()
-		var d := r.randf_range(0.42, 0.8)
+		var d := r.randf_range(0.5, 0.85)
+		cut_n.append(nn)
 		for i in verts.size():
 			var v: Vector3 = verts[i]
 			var k := v.dot(nn)
 			if k > d:
 				verts[i] = v - nn * (k - d)
+				on_cut[i] = c
+	var P := PackedVector3Array()
+	for v in verts:
+		P.append((v as Vector3) * elong)
+	var vn := PackedVector3Array()
+	vn.resize(P.size())
+	for f in faces:
+		var fn := (P[f[2]] - P[f[0]]).cross(P[f[1]] - P[f[0]])
+		if fn.dot(P[f[0]] + P[f[1]] + P[f[2]]) < 0.0:
+			fn = -fn
+		for e in 3:
+			vn[f[e]] += fn
+	var inv := Basis.from_scale(Vector3(1.0 / elong.x, 1.0 / elong.y, 1.0 / elong.z))
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	st.set_smooth_group(-1)
 	for f in faces:
+		var ci: int = on_cut[f[0]]
+		var flat: bool = ci >= 0 and on_cut[f[1]] == ci and on_cut[f[2]] == ci
+		var fnrm: Vector3 = (inv * (cut_n[ci] as Vector3)).normalized() if flat else Vector3.ZERO
 		for e in [0, 2, 1]:
-			st.add_vertex((verts[f[e]] as Vector3) * elong)
-	st.generate_normals()
+			st.set_normal(fnrm if flat else (vn[f[e]] as Vector3).normalized())
+			st.add_vertex(P[f[e]])
 	return st.commit()
 
 

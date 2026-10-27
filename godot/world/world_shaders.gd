@@ -9,7 +9,8 @@ float wvn(vec2 p) {
 	return mix(mix(wh21(i), wh21(i + vec2(1.0, 0.0)), f.x), mix(wh21(i + vec2(0.0, 1.0)), wh21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 float wfbm(vec2 p) { float a = 0.5; float s = 0.0; for (int k = 0; k < 5; k++) { s += a * wvn(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return s; }
-float wh31(vec3 p) { p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+// r6: Hoskins' hash13 (the old product hash drew diagonal lattice lines once a shader amplified the noise)
+float wh31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 float wvn3(vec3 x) {
 	vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
 	return mix(mix(mix(wh31(i), wh31(i + vec3(1.0, 0.0, 0.0)), f.x), mix(wh31(i + vec3(0.0, 1.0, 0.0)), wh31(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
@@ -203,9 +204,9 @@ void fragment() {
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	// crack lines: ice glows faintly cold, crystal veins glow
-	float crack = smoothstep(0.92, 0.985, 1.0 - abs(wfbm3(p * 3.0) * 2.0 - 1.0));
+	float crack = smoothstep(0.95, 0.992, 1.0 - abs(wfbm3(p * 2.2) * 2.0 - 1.0));
 	if (kind == 1) { EMISSION = vec3(0.12, 0.3, 0.45) * crack * 0.6; }
-	if (kind == 4) { EMISSION = vec3(0.2, 0.9, 0.7) * crack * 1.4; }
+	if (kind == 4) { EMISSION = vec3(0.2, 0.9, 0.7) * crack * 0.9; }
 }
 """
 
