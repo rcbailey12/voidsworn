@@ -151,5 +151,16 @@ check('R42 narration: Chorus feeding says so; scar epithets follow the cause; He
   N.fac = 'hegemony'; N.traits = ['armored', 'gunnery']; N.adapt = []; T.startBattle({ kind: 'elite', fac: 'hegemony', col: 4, nemesis: T.nemBattleCfg(), obj: 'rout', shape: 'open', map: 'storm', seed: 7 });
   const esc = T.B.units.find(u => u.side === 'enemy' && u.nem && !u.nemFlag && !u.isSq), w = esc && esc.weapons.find(x => x.k !== 'flak' && x.k !== 'sq'); const line2 = w && w.opt === T.W[w.id].opt + 1;
   return fedOk && ep && (line2 || !w) && T.B.nemLine; });
+// Muse audit (Oct 27, verified by Opus): admiral start fleets are campaign data, so prove they reach a battle through the real campaign path (newRun, then startBattle reads RUN.fleet)
+check('every admiral start fleet (step 5 band included) reaches battle through newRun: Grax fields marauder, reaver, reaver', () => {
+  const bad = []; let grax = '';
+  for (const [adm, A] of Object.entries(T.ADMIRALS)) { const fac = A.fac || 'voidsworn'; fresh(fac, adm);
+    const foe = T.RUN_FACTIONS.find(f => f !== fac); T.startBattle({ kind: 'battle', fac: foe, col: 1, obj: 'rout', shape: 'open', map: 'storm', seed: 11 });
+    const got = T.B.units.filter(u => u.side === 'player' && !u.isSq && !u.reinf).map(u => u.tpl);
+    if (got.join(',') !== A.start.join(',')) bad.push(adm + ': ' + got.join(',') + ' vs ' + A.start.join(','));
+    if (adm === 'grax') grax = got.join(','); }
+  if (bad.length) throw new Error(bad.slice(0, 4).join(' | '));
+  console.log('      grax in battle: ' + grax);
+  return grax === 'c_marauder,c_reaver,c_reaver'; });
 (async () => { for (const [name, fn] of tests) { try { const r = await fn(); if (r === false) throw new Error('returned false'); pass++; console.log('ok    ' + name); } catch (e) { fail++; console.log('FAIL  ' + name + ': ' + (e && e.message)); } }
   console.log('\nB4 tests: ' + pass + ' ok, ' + fail + ' FAIL'); process.exitCode = fail ? 1 : 0; })();
