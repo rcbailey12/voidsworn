@@ -8,6 +8,7 @@ extends CanvasLayer
 
 const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
+const Crest = preload("res://ui/campaign/crest.gd")
 
 const INK := Color("#0f1626")
 const IRON := Color("#182133")
@@ -557,7 +558,9 @@ func _intel_strip() -> Control:
 		v.add_child(caps(head, 11, Color(col.lerp(BONE3, 0.45), 1.0))); v.add_child(rich(body, 15))
 		if tip != "": p.tooltip_text = tip
 		return p
-	row.add_child(box.call("Hostile presence", "[b]" + c(esc(F["n"]), fac_col(m["fac"])) + "[/b]", fac_col(m["fac"]), str(F.get("blurb", ""))))
+	var hp = box.call("Hostile presence", "[b]" + c(esc(F["n"]), fac_col(m["fac"])) + "[/b]", fac_col(m["fac"]), str(F.get("blurb", "")))
+	var hv = hp.get_child(0); hp.remove_child(hv); var hrow = hbox(8); hrow.add_child(Crest.make(str(m["fac"]), px(40))); hrow.add_child(hv); hp.add_child(hrow)   # the faction's crest beside its name
+	row.add_child(hp)
 	if R.get("foes") is Array and R["foes"].size() >= 5:
 		var a = R["foes"][3]; var b = R["foes"][4]
 		row.add_child(box.call("Rival raiders", c(esc(str(C.FACTIONS[a]["n"]).trim_prefix("The ")), fac_col(a)) + ", " + c(esc(str(C.FACTIONS[b]["n"]).trim_prefix("The ")), fac_col(b)) + c(" · about 1 fight in 5", BONE3), BONE3,
@@ -755,6 +758,7 @@ func nem_portrait() -> Texture2D:
 	var key = str(N["fac"]) + ":" + str(idx) + ":" + ",".join(PackedStringArray(scars))
 	if key != _nem_key:
 		_nem_key = key; _nem_tex = Pt.nemesis(str(N["fac"]), idx, scars)
+		if _nem_tex == null: _nem_tex = Crest.faction_texture(str(N["fac"]))   # the portraits helper's faction crest
 		if _nem_tex == null: _nem_tex = _fac_crest(Pt, str(N["fac"]))   # pools held back (Ithar, Deathless until the new looks are signed off): his faction's crest
 	return _nem_tex
 func _fac_crest(Pt, fac: String) -> Texture2D:   # the crest of the first admiral of a faction (there are no faction crests of their own)

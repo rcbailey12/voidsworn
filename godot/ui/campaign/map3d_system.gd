@@ -4,20 +4,19 @@ extends RefCounted
 # (planets with atmospheres and moons, stations, asteroid fields, nebula pockets, wreck fields). Presentation only:
 # its randomness is the map's own generator, never the rules' PRNG.
 #
-# Faction looks follow the lore (R51; round 4 colours for the Chorus and the Deathless): colours and visuals only; ids
-# and names stay as they are (lore is in flux).
+# Faction looks follow the approved lore (lore_bible_r8.md, R59): colours and visuals only; ids never change.
 
 const SH := preload("res://ui/campaign/map3d_shaders.gd")
 
 # Faction looks (lore rounds 3 and 4). base: hull and dark tone; main: the faction colour; light: its lights and glows;
 # text: a readable colour for its name on the dark UI; look: 0 plain, 1 lights pulse in step, 2 rainbow edges, 3 corona.
 const LOOKS := {
-	"voidsworn": {"base": Color("#1c1815"), "main": Color("#d8621e"), "light": Color("#ff8a36"), "text": Color("#ff9a4a"), "look": 0},
+	"voidsworn": {"base": Color("#18191c"), "main": Color("#e8ecf2"), "light": Color("#ff8a36"), "text": Color("#ff9a4a"), "look": 0},   # r8: black iron, frost white, bright ember
 	"hegemony": {"base": Color("#80868f"), "main": Color("#4a7fbf"), "light": Color("#6eb2ff"), "text": Color("#7ab4f0"), "look": 1},
-	"corsair": {"base": Color("#1e1b19"), "main": Color("#9a4a26"), "light": Color("#c0362c"), "text": Color("#d8664a"), "look": 0},
+	"corsair": {"base": Color("#1e1b19"), "main": Color("#9a4a26"), "light": Color("#e0302a"), "text": Color("#d8664a"), "look": 0},   # r8: soot, rust, dried blood, red running lights
 	"chorus": {"base": Color("#2b2716"), "main": Color("#8a6a2c"), "light": Color("#c4d83e"), "text": Color("#cde05a"), "look": 0},   # round 4: dark olive, ochre, bile yellow-green
 	"ithar": {"base": Color("#d6f2ff"), "main": Color("#a8e6ff"), "light": Color("#e8fcff"), "text": Color("#c4f0ff"), "look": 2},
-	"deathless": {"base": Color("#1b0f26"), "main": Color("#55287a"), "light": Color("#ffe2a0"), "text": Color("#f0d690"), "look": 3},
+	"deathless": {"base": Color("#1b0f26"), "main": Color("#55287a"), "light": Color("#ffe2a0"), "glow": Color("#e6d8ff"), "text": Color("#f0d690"), "look": 3},   # r8 Eclipse: violet-black plates, white-gold corona, violet-white inner glow
 }
 # sky tints per sector faction: [nebula 1, nebula 2, highlight]
 const SKIES := {
