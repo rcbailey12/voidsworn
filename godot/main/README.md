@@ -74,6 +74,8 @@ Main keeps the settings in `user://settings.json` and passes them to every battl
 - `ai` (`veteran` or `standard`);
 - `reduce_flashing` and `shake` (passed on to G4 fx);
 - `tips`, `fullscreen` and `quality`.
+- `movement` (`cinematic`, the default, or `brisk`): how ships move (R50, below);
+- `taa`: Temporal AA on Max and High (off by default).
 
 The campaign reads them from `main.settings`. A campaign screen changes one with `main.settings[key] = value`, then `main.save_settings()`.
 
@@ -86,3 +88,24 @@ godot --headless --path godot -- --bot-runs 50 --fast 40 --report report.json
 - With the campaign in the build, each run is a full campaign run. Without it, each run is one sector 1 battle.
 - The exit code is 0 when every run had 0 errors and 0 softlocks.
 - PC job: `tools/pc/jobs/g2_checks.bat`.
+
+## Ship movement (R50)
+
+`ship_view.gd` moves a ship along the rules' path in one of two ways:
+- **Cinematic** (default): the main engine builds speed and brakes over a time scaled by mass (frigate 0 to capital 1), the hull swings round on a critically damped spring and banks into the turn (bank and pitch sit on the hull child, never the root, which G4's hit reactions own), a big hull's turn blends into its burn, the ship slides past its hex and settles back, the engines flare through G4's `set_engine` and RCS puffs fire on turns and stops.
+- **Brisk**: the earlier motion (eased burn, eased facing).
+
+Pace: the burn takes the same time in both modes; only the burn holds up the battle (`burning()`), and the settle plays on while the next ship acts. `busy()` stays true through the settle and the yaw swing: it tells G4's hit reaction that G2 is steering the ship, so fx adds its yaw kick and drift only once the ship is at rest. Rules outcomes are the same in both modes (checked on the same seed).
+
+## Test and capture switches (after `--`)
+
+| Switch | What it does |
+|---|---|
+| `--movement cinematic\|brisk` | overrides the setting for this launch |
+| `--move-frames <dir>` | the player's biggest and smallest ship each make a long burn with a turn from a fixed camera; a JPG per rendered frame (with Godot's `--fixed-fps 30`) through the settle, a folder per ship |
+| `--sheet-check` | builds the ship sheet for every ship on the board and prints `[sheet] N ships` |
+| `--title-shot <png>` | the title with its decorative battle faded in, saved, then quit |
+| `--window WxH` | an exact window size for capture jobs (the project starts maximised) |
+| `--no-showcase` | no decorative battle behind the title |
+
+Every battle result (and each bot-run battle line) carries `pace`: the enemy's share of each round in game seconds (`enemy_s_mean`, `enemy_s_max`). Measure it at real speed (`--fast 1` with Godot's `--fixed-fps 60`).
