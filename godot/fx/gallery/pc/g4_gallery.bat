@@ -77,6 +77,10 @@ call tools\pc\tmo.bat 600 "%G%" --headless --path "%P%" --script res://fx/test/f
 rem 1e. the fx smoke test (flash cap, reduce flashing, errors); script errors do not reach its own count, so grep them
 call tools\pc\tmo.bat 300 "%G%" --headless --path "%P%" --script res://fx/test/fx_smoke.gd > "%OUT%\smoke_log.txt" 2>&1
 findstr /c:"SCRIPT ERROR" "%OUT%\smoke_log.txt" >nul && echo [g4] SMOKE HAS SCRIPT ERRORS
+rem 1g. engines on the A4 kit ships: from the hp_eng hard points? a rear still of each at a burn (r13)
+set "PROBE_OUT=%OUT%\nozzles"
+if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
+call tools\pc\tmo.bat 300 "%G%" --path "%P%" --resolution 1280x720 --script res://fx/test/fx_nozzle_probe.gd > "%OUT%\nozzles_log.txt" 2>&1
 rem 3. reduce flashing: the same moments with the option on
 call tools\pc\tmo.bat 900 "%G%" --path "%P%" --fixed-fps 60 --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --shots "%OUT%\shots_calm" --res 3840x2160 --quality max --reduce-flashing --only g03,g09,g13_,g21_ > "%OUT%\shots_calm_log.txt" 2>&1
 rem 4. frame times at 4K: everything, without effects, and high quality (the ACES, no-world, no-physics and 1440p

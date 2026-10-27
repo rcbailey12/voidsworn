@@ -12,6 +12,7 @@ const BREACH := preload("res://fx/fx_breach.gd")
 
 const TRAIL_PTS := 40
 const TRAIL_LEN := 60.0
+const IDLE_GLOW := 0.3                    # engine glow of a parked ship, as a share of cruise (r12)
 const TRAIL_RELAX := Vector2(1.6, 3.2)   # history older than this relaxes back into the straight idle trail
 
 var id = ""
@@ -117,11 +118,23 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 			break
 	if _ref_mi != null:
 		_ref0 = root.global_transform.affine_inverse() * _ref_mi.global_transform
+	_hide_placeholder_engines()
 	_build_engines(fx)
 	_build_trails(fx)
 	if shielded:
 		_build_shield(fx)
 	_last_pos = root.global_position
+
+
+# ShipView's placeholder engine glows (render/ship_view.gd sv.engines) sit at fixed spots behind the stern, not at the
+# real nozzles; fx draws the engines, so they stay hidden while fx runs the ship (API.md 2; Ryan r12: glows and trails
+# did not line up with the engines). Checked every frame because ShipView shows them again on revive.
+func _hide_placeholder_engines() -> void:
+	var es = root.get("engines")
+	if es is Array:
+		for e in es:
+			if e is Node3D and (e as Node3D).visible:
+				(e as Node3D).visible = false
 
 
 func teardown(fx) -> void:
@@ -188,6 +201,9 @@ func _build_engines(fx) -> void:
 	for nz in hull.nozzles:
 		var np: Vector3 = nz["p"]
 		var r: float = nz["r"]
+		var nd: Vector3 = nz.get("d", Vector3(-1, 0, 0))
+		# velocities below are written for a plume along -X; turned onto this nozzle's own direction
+		var rot := Basis(Quaternion(Vector3(-1, 0, 0), nd)) if nd.dot(Vector3(-1, 0, 0)) > -0.999 else Basis(Vector3.UP, PI)
 		var plume = clampf(1.5 * hull.W, 2.0, 32.0)
 		b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(eng.r, eng.g, eng.b, 2.0),
 			Vector4(r * 2.8, r * 2.8, 11 if corsair else 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
@@ -196,21 +212,24 @@ func _build_engines(fx) -> void:
 			# a corona round the core in the faction's second colour (faction look data, accent; none in use yet)
 			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
 				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
-		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(-1, 0, 0, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
+		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(nd.x, nd.y, nd.z, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
 			Vector4(r * 1.3, r * 0.5, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
 		if corsair:
 			# soot coughs (the Corsair exception: haphazard, junky)
 			for k in 9:
 				var tk = -20.0 + k * 0.23 + (k % 3) * 0.05
-				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, tk), Vector4(-5 - fx.rng.randf() * 3, fx.rng.randf() - 0.3, fx.rng.randf() - 0.5, 1.8),
+				var v0 := rot * Vector3(-5 - fx.rng.randf() * 3, fx.rng.randf() - 0.3, fx.rng.randf() - 0.5)
+				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, tk), Vector4(v0.x, v0.y, v0.z, 1.8),
 					Vector4(0.06, 0.05, 0.045, 0.55), Vector4(r * 1.2, r * 4.5, 8, fx.rng.randf()), Vector4(2.1, 0, 0.8, 0)))
 		elif extra == "spores":
 			for k in 4:
-				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 0.6), Vector4(-3, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5, 2.0),
+				var v1 := rot * Vector3(-3, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5)
+				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 0.6), Vector4(v1.x, v1.y, v1.z, 2.0),
 					Vector4(eng.r * 0.4, eng.g * 0.4, eng.b * 0.3, 0.35), Vector4(r * 0.8, r * 3.0, 20, fx.rng.randf()), Vector4(2.4, 0, 0.6, 0)))
 		elif extra == "embers":
 			for k in 3:
-				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 1.3), Vector4(-6, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5, 0.9),
+				var v2 := rot * Vector3(-6, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5)
+				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 1.3), Vector4(v2.x, v2.y, v2.z, 0.9),
 					Vector4(1.0, 0.5, 0.15, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
@@ -232,13 +251,14 @@ func _build_trails(fx) -> void:
 		mi.extra_cull_margin = 16384.0
 		fx.add_child(mi)
 		mi.global_transform = Transform3D.IDENTITY
-		_trails.append({"mi": mi, "hist": [], "seed": fx.rng.randf(), "r": nz["r"], "p": nz["p"], "dirty": true})
+		_trails.append({"mi": mi, "hist": [], "seed": fx.rng.randf(), "r": nz["r"], "p": nz["p"], "d": nz.get("d", Vector3(-1, 0, 0)), "dirty": true})
 
 
 func update(fx, dt: float) -> void:
 	if gone or not is_instance_valid(root):
 		return
 	_react_step(fx, dt)
+	_hide_placeholder_engines()
 	var hm := hull_motion()
 	if is_instance_valid(_dmg_root) and _dmg_root.get_child_count() > 0:
 		_dmg_root.transform = hm
@@ -252,7 +272,9 @@ func update(fx, dt: float) -> void:
 	_moving = maxf(_moving - dt, 0.0)
 	if moved > 1e-4:
 		_moving = 0.4
-	var want = 0.0 if dead else (engine_level if _moving <= 0.0 else maxf(engine_level, 1.6))
+	# the drive glows full only while the ship thrusts (moving, or a burn G2 asks for with set_engine above cruise); a
+	# parked ship keeps a dim pilot glow and a short, faint trail (Ryan, r12: engines glowed and trailed at rest)
+	var want = 0.0 if dead else ((engine_level if absf(engine_level - 1.0) > 0.05 else 1.6) if _moving > 0.0 else (engine_level if engine_level > 1.05 else IDLE_GLOW * engine_level))
 	_eng_cur = lerpf(_eng_cur, want, clampf(dt * 4.0, 0.0, 1.0))
 	if _eng_mat != null:
 		var g := clampf(_eng_cur, 0.0, 2.0)
@@ -277,7 +299,8 @@ func _update_trails(fx, moved: bool) -> void:
 		var np = xfm * (t["p"] as Vector3)
 		var hist: Array = t["hist"]
 		var plume = clampf(1.5 * hull.W, 2.0, 32.0)
-		var start = np + back * (0.3 * plume)
+		# the trail leaves along this nozzle's own plume (kit hard points can splay or angle the bells)
+		var start = np + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
 		if moved:
 			if hist.is_empty() or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit:
 				hist.push_front([start, fx.now])

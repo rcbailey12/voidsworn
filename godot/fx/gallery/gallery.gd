@@ -97,6 +97,7 @@ func _ready() -> void:
 			fx.add_ship(s["id"], sv, {"faction": s["fac"], "cls": s["cls"], "size": 1.25, "flagship": true, "meshes": sv.meshes})
 			for e in sv.engines:
 				(e as Node3D).visible = false   # G2's placeholder engine glows give way to the fx engines
+			fx.set_engine(s["id"], 1.6)   # the gallery fleet is under way (a parked ship only keeps a pilot glow, r13)
 		# a squadron for the strike run: a small wing beside the Voidsworn
 		_events()
 	print("[gallery] mode=%s res=%dx%d quality=%s renderer=%s adapter=%s" % [mode, res.x, res.y, quality,

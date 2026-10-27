@@ -23,7 +23,8 @@ var c = Vector3.ZERO
 var sp = PackedVector3Array()      # sample points
 var sn = PackedVector3Array()      # sample normals
 var ssec = PackedInt32Array()      # sample sections
-var nozzles: Array = []             # {p, r}
+var nozzles: Array = []             # {p, r, d}: exit point, bell radius, plume direction (all in the root frame)
+var nozzles_from_kit = false        # true when the nozzles came from A4's hp_eng_* hard points
 var bow = Vector3.ZERO
 var mounts = {}                    # "port", "stb", "top" -> Array of {p, n}
 var tri_count = 0
@@ -74,6 +75,7 @@ func analyse(root: Node3D, meshes: Array, seed_v: int) -> void:
 	_samples(900)
 	_find_bow()
 	_find_nozzles()
+	_kit_nozzles(root)
 	for side in ["port", "stb", "top"]:
 		mounts[side] = _mount_row(side)
 
@@ -150,7 +152,7 @@ func _find_nozzles() -> void:
 		if (h["p"] as Vector3).x <= minx + 0.08 * L:
 			pts.append(h["p"])
 	if pts.size() < 2:
-		nozzles = [{"p": Vector3(box.position.x - 0.1, c.y, c.z), "r": clampf(0.18 * minf(W, H), 0.3, 3.0)}]
+		nozzles = [{"p": Vector3(box.position.x - 0.1, c.y, c.z), "r": clampf(0.18 * minf(W, H), 0.3, 3.0), "d": Vector3(-1, 0, 0)}]
 		return
 	var K = 3 if W > 0.45 * L else 2
 	if pts.size() < 6:
@@ -191,7 +193,37 @@ func _find_nozzles() -> void:
 		if cnt == 0:
 			continue
 		var r = clampf(sqrt(float(cnt)) * cell * 0.45, 0.12 * minf(W, H), 0.3 * minf(W, H))
-		nozzles.append({"p": Vector3(mx - 0.05, cen[k].x, cen[k].y), "r": r})
+		nozzles.append({"p": Vector3(mx - 0.05, cen[k].x, cen[k].y), "r": r, "d": Vector3(-1, 0, 0)})
+
+
+# A4's kit ships carry an empty node per engine exit, hp_eng_<n> (tools/blender/a4/K1_DECISIONS.md: -Z points out of the
+# bell along the plume, extras.radius is the bell radius). When a hull has them, the engines and trails come out of those
+# real nozzles instead of the stern-face guess above (Ryan, r12: trails did not line up with the engines).
+func _kit_nozzles(root: Node3D) -> void:
+	var inv = root.global_transform.affine_inverse()
+	var found: Array = []
+	for nd in root.find_children("hp_eng*", "Node3D", true, false):
+		var n3 = nd as Node3D
+		if n3 == null or String(n3.name).begins_with("fx_"):
+			continue
+		var xf: Transform3D = inv * n3.global_transform
+		var d: Vector3 = -(xf.basis.z)
+		var k: float = d.length()
+		if k < 1e-6:
+			continue
+		d /= k
+		var r = 0.0
+		var ex = n3.get_meta("extras", {})
+		if ex is Dictionary and (ex as Dictionary).has("radius"):
+			r = float(ex["radius"]) * k
+		elif n3.has_meta("radius"):
+			r = float(n3.get_meta("radius")) * k
+		if r <= 0.0:
+			r = clampf(0.12 * minf(W, H), 0.05, 3.0)
+		found.append({"p": xf.origin, "r": r, "d": d})
+	if not found.is_empty():
+		nozzles = found
+		nozzles_from_kit = true
 
 
 func _mount_row(side: String) -> Array:
