@@ -170,7 +170,7 @@ func save_settings() -> void:
 
 func _apply_settings() -> void:
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
-	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames")
+	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames") or args.has("title-shot")
 	if not bot_mode and not capture and DisplayServer.get_name() != "headless":
 		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if settings["fullscreen"] else DisplayServer.WINDOW_MODE_MAXIMIZED
 		if DisplayServer.window_get_mode() != want:
@@ -213,12 +213,44 @@ func show_title() -> void:
 	title = Title.new()
 	title.main = self
 	add_child(title)
+	# the decorative battle behind the menu, built once the title has painted, then faded in over the sky picture
+	if not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase"):
+		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
+
+
+var showcase: Node = null
+
+
+func _start_showcase() -> void:
+	if title == null or not is_instance_valid(title) or showcase != null:
+		return
+	showcase = BattleScene.instantiate()
+	showcase.showcase = true
+	showcase.args["quality"] = str(settings["quality"])
+	showcase.args["taa"] = bool(settings.get("taa", false))
+	showcase.args["fac"] = ["hegemony", "corsair"][randi() % 2]
+	add_child(showcase)
+	move_child(showcase, 0)
+	while is_instance_valid(showcase) and not showcase.showcase_ready:
+		await get_tree().process_frame
+	if is_instance_valid(showcase) and title != null and is_instance_valid(title) and title.has_method("reveal_showcase"):
+		title.reveal_showcase()
+	if args.has("title-shot"):
+		# --title-shot <png>: the title with its showcase faded in (screenshot jobs), then quit
+		await get_tree().create_timer(4.0).timeout
+		await RenderingServer.frame_post_draw
+		get_viewport().get_texture().get_image().save_png(str(args["title-shot"]))
+		print("[title] shot saved ", args["title-shot"])
+		quit_clean(0)
 
 
 func _clear() -> void:
 	if title != null and is_instance_valid(title):
 		title.queue_free()
 	title = null
+	if showcase != null and is_instance_valid(showcase):
+		showcase.queue_free()
+	showcase = null
 
 
 func has_campaign() -> bool:

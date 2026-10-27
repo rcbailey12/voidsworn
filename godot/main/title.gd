@@ -53,6 +53,8 @@ func _ready() -> void:
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	shade.color = Color(0.03, 0.04, 0.07, 0.55)
 	root.add_child(shade)
+	_bg = bg
+	_shade = shade
 	var v := VBoxContainer.new()
 	v.set_anchors_preset(Control.PRESET_CENTER)
 	v.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -271,3 +273,16 @@ func _slider(t: String, key: String, lo: float, hi: float) -> Control:
 		main.save_settings())  # saved on every change, so arrow keys and a controller save too
 	r.add_child(sl)
 	return r
+
+
+# main's decorative battle is ready behind the menu: the sky picture fades out over it, the shade stays for the menu
+var _bg: TextureRect
+var _shade: ColorRect
+
+
+func reveal_showcase() -> void:
+	if _bg == null or not is_instance_valid(_bg):
+		return
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(_bg, "modulate:a", 0.0, 2.5)
+	tw.tween_property(_shade, "color:a", 0.42, 2.5)

@@ -37,7 +37,7 @@ Last update: Oct 26 2026 evening, G2.
 | Progression (renown, hull variants, mastery, patrons) | done | fallback |
 | How to play | done | fallback |
 | Run end screen | done | fallback |
-| Map and title showcase battles (decorative) | missing (G3 left out of parity) | missing |
+| Map and title showcase battles (decorative) | title: done in G2 (main builds a decorative battle behind the menu once the title has painted and fades it in over the sky picture: no HUD, no turns, no input, a slow camera drift; skipped on Low graphics; `--no-showcase` turns it off, `--title-shot <png>` captures it). Map: G3's 3D star-system map takes its place | title done |
 
 ## Battle: controls and screen (G2)
 

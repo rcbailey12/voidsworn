@@ -120,6 +120,7 @@ var battle_cfg := {}
 var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
 var in_campaign := false   # a campaign battle (no quit to title: the run decides what a battle ends as)
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
+var showcase := false     # the title screen's decorative battle (campaign3d.js setupShowcase): no HUD, no turns, no input, slow orbit
 var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
 var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
 var last_progress := 0.0   # real time of the last event batch (softlock watchdog for bot runs)
@@ -146,6 +147,11 @@ func _ready() -> void:
 	hud = HUD.new()
 	add_child(hud)
 	hud.action.connect(_on_action)
+	if showcase:
+		hud.visible = false
+		cam.input_enabled = false
+		set_process_unhandled_input(false)
+		tips_off = true
 	if not external:
 		start_default()
 	if args.has("breach-shots"):
@@ -456,12 +462,13 @@ func _begin(a) -> void:
 	if well is Dictionary or (well is bool and well):
 		_log("A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
-	sfx.ambient_start()
+	if not showcase:
+		sfx.ambient_start()
 	_refresh_ui()
 	_legend()
 	# story hook (story stream, godot/story/README.md): admiral, enemy flagship and Nemesis lines in the battle log
 	voice = null
-	if not bot and ResourceLoader.exists("res://story/battle_voice.gd"):
+	if not bot and not showcase and ResourceLoader.exists("res://story/battle_voice.gd"):
 		voice = load("res://story/battle_voice.gd").new()
 		if voice.has_method("setup_from_api"):
 			voice.setup_from_api(api, V)
@@ -481,6 +488,17 @@ func _begin(a) -> void:
 				pf = str(u["fac"])
 				break
 		music.play_battle(pf, _enemy_fac(), boss_fight)
+	if showcase:
+		# the fleets hold their line; the camera drifts round the board from high up, as the browser's title does
+		cam.reset_view()
+		cam.r = clampf(cam.home_r * 1.6, 200.0, 340.0)
+		cam.b = 0.9
+		for id in views:
+			for n in [views[id].ring, views[id].marker]:
+				if n != null:
+					n.visible = false
+		showcase_ready = true
+		return
 	if not busy:
 		_runner()
 
@@ -2808,8 +2826,13 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 
 # ---------------------------------------------------------------- per frame: nameplates, floats, bot
 
+var showcase_ready := false
+
+
 func _process(dt: float) -> void:
 	game_t += dt
+	if showcase_ready:
+		cam.a += dt * 0.035
 	if world != null and world.has_method("step"):
 		world.step(dt)
 	if api == null:
