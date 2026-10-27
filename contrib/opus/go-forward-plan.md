@@ -43,9 +43,10 @@ Updated by the build session as phases move. A phase is done when its exit check
 | A2 Six-ship engine test | DONE Oct 25 | contrib/opus/enginetest/RESULTS.md: blind read, numbers both engines (capped and uncapped), Godot .exe, max-detail 8K ships. |
 | A3 Engine call | DONE Oct 26: GODOT (R32) | Rules parity (R29), speed (R30) and effects parity (R31) passed; Ryan picked Godot on the open sheets. Port phases next. |
 | B2 Faster, then bigger battles | BUILT, waiting on Ryan's playtest | Faster (enemy waits about halved: sector 3 21.8 to 8.0 s per round in the real browser), the size ramp (about 9 / 13 / 18 ships), one batched prize screen with add, strip or ransom (R23). Checks: fuzz 2000 0 exceptions (S9), check pack 0 FAIL, b1_tests 39 ok. Sector 1 boss spread now 57 to 89% (S6 fixed: Mending, Voice, Vesh start fleets trimmed, Kassar guns 5% lighter). Play build: double-click Downloads\\voidsworn_test\\play.bat. Item 4 (Dead Star backdrop): the paintings are inspiration, not a spec (R25); use one only if it fits. |
-| G1 Battle rules complete | IN PROGRESS Oct 26 | Section 4, G. Slice already matches (R29, R30). |
-| G2 First playable battle | IN PROGRESS Oct 26 | Built in parallel with G1 from the A3 test scene. |
-| G3 campaign, G4 look, A4 ships, B3 and B4 | IN PROGRESS Oct 26 (travel sprint, R34) | One helper per stream, section 4 "Travel sprint". A5 is G4. |
+| G1 Battle rules complete | DONE Oct 27 | Full parity on the PC (FINDINGS G-12); re-pins per new port_notes step. |
+| G2 Whole game in Godot | BUILT Oct 27, polishing | Title to final boss, Windows build, smart bot 100 runs 0 hangs, pace under 15 s per round; thruster-true movement in progress (R54). |
+| G3 campaign | DONE Oct 27 | Campaign parity green; R51 map rebuilt as a star system (4 rounds). |
+| G4 look (A5), A4 ships, B3 and B4 | IN PROGRESS Oct 27 (travel sprint, R34) | One helper per stream, section 4 "Travel sprint". Lore round 6 waits on Ryan before renames and repaints. |
 | G5, B5 | NOT STARTED | B5 and career mode wait on Ryan's scope answers. |
 
 ## 1. What is decided

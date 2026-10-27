@@ -1,4 +1,51 @@
-# Voidsworn: handoff (Oct 26, 2026, morning)
+# Voidsworn: handoff (updated Oct 27, 2026, midday)
+
+## 0. Status at Oct 27 midday (read this first)
+
+**The Godot move (travel sprint, R34/R35).**
+- G1 rules: DONE. Godot matches JS at d8b47c6 plus steps 5, 5b and 6. PC: 43/43 golden battles; 1,500 random battles with 0 diffs; nothing NOT PORTED (FINDINGS G-12). Re-pins per new port_notes step.
+- G2 battle and game:
+  - Built: title to final boss, the Windows build, a smart bot, and the Cinematic/Brisk movement setting.
+  - Pace fix: every battle's worst round is under 15 s.
+  - Bot runs: 100 smart runs with 0 hangs, then 36 runs across all six factions, 34 of them clean.
+  - Sci-fi fonts are in, and the title text lives in brand.gd.
+  - IN PROGRESS: thruster-true movement (R54: main drive on the hull axis, RCS turns and sidesteps, trails from real nozzles), then the Career font swap.
+- G3 campaign: DONE. The R51 map is rebuilt as a Sins 2 style star system over 4 rounds (docs/shots/g3_campaign/8a12941/). Campaign parity is green.
+- G4 effects:
+  - Built: per-weapon hull marks with glow that carries to the battle camera, mass-scaled hit reactions, per-faction shield breaks, wrecks from the real hulls, cratered asteroids, and the dead-star black hole with Doppler beaming (docs/shots/g4/f3603c9/).
+  - IN PROGRESS: flak readability, lasting scars, and the Jolt convex-hull guard.
+- A4 ships:
+  - Pass 3 is done for Corsairs and Voidsworn (docs/shots/a4/46a89fe/).
+  - IN PROGRESS: the Pyre-Barge redesign to match C13s to C16s (R54), the Hegemony naval hull reshape, the V17/V1b gothic peaks, the I16 masts, and the lance-slot fan pattern.
+- Stream B rules: admiral band and faction tune; the PC confirmation set is running.
+- Music: 24 CC0/CC BY tracks in game; CREDITS.md done.
+- Portraits: 24 Nemesis portraits in game, and new-look prompts drafted. Painting is held for lore approval.
+- Story and career: paused for lore approval.
+
+**Lore (R44 to R54).**
+- Round 6 is in the live doc https://claude.ai/artifact/SKyQf2QcJSXGmXfmxKxFpJ, with a repo copy at contrib/opus/compute/lore_bible_r6.md.
+- Earlier rounds sit as appendices in the doc. Round 5 verification is contrib/opus/evidence/lore_r4_review_verification_2026_10_27.md.
+- Nothing is renamed in game code, data or UI until Ryan says "lore approved". Then the renames route to stream B (data.js display names), the story helper (arc rewrite), G1/G3 (re-export), G2 (brand.gd), portraits (paint the final looks), and A4/G4 (faction repaints).
+
+**Helpers (relaunched Oct 27 02:45 UTC; resumed after each usage reset).**
+
+| Stream | Agent id |
+|---|---|
+| G1 | a2fcec4812d63553e |
+| G2 | a9d00919887842fac |
+| G3 | a5c861647dc80efec |
+| G4 | ab228ebd03e89dc25 |
+| A4 | aee63f07b81a53b35 |
+| B | ae68d8fc77338c24e |
+| Music and portraits | a9e1f7c8ca0a13d01 |
+
+- Takeover brief: contrib/opus/briefs/takeover_2026-10-27.md.
+- A chat interrupt from Ryan stops every helper; check them after one.
+- Stale edits from the first helper set are kept as patches in contrib/opus/evidence/stale_worktree_patches_2026_10_27/.
+
+**Muse.**
+- The lore review brief is contrib/opus/briefs/muse_2026-10-27_lore_review.md (round 4, done and verified).
+- The full catch-up audit brief is contrib/opus/briefs/muse_2026-10-27b_full_audit.md.
 
 ## 1. What and where
 
