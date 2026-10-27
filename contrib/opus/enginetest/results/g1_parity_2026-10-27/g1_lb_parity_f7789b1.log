@@ -1,0 +1,123 @@
+[Tue 10/27/2026 14:31:10.14] started 
+=== parity.bat ===
+
+[1/5] Exporting the game's data tables for Godot...
+[2/5] Random numbers: first 10,000 draws from 3 seeds...
+  seed 1001: PASS 
+  seed 7: PASS 
+  seed 4242424242: PASS 
+[3/5] Math functions the rules use (sin, cos, atan2, exp, hypot, round, pow) on 316,090 inputs...
+  PASS 
+[4/5] Seeded battles, every activation compared (state hash, PRNG state): s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 s16 s17 s18 s19 s20 s21 s22 s23 s24 s25 s26 s27 s28 s29 s30 s31 s32 s33 s34 s35 s36 s37 s38 s39 s40 s41 s42 s43 s44 s45 s46 s47 s48
+  battle s1: PASS 
+  battle s2: PASS 
+  battle s3: PASS 
+  battle s4: PASS 
+  battle s5: PASS 
+  battle s6: PASS 
+  battle s7: PASS 
+  battle s8: PASS 
+  battle s9: PASS 
+  battle s10: PASS 
+  battle s11: PASS 
+  battle s12: PASS 
+  battle s13: PASS 
+  battle s14: PASS 
+  battle s15: PASS 
+  battle s16: PASS 
+  battle s17: PASS 
+  battle s18: PASS 
+  battle s19: PASS 
+  battle s20: PASS 
+  battle s21: PASS 
+  battle s22: PASS 
+  battle s23: PASS 
+  battle s24: PASS 
+  battle s25: PASS 
+  battle s26: PASS 
+  battle s27: PASS 
+  battle s28: PASS 
+  battle s29: PASS 
+  battle s30: PASS 
+  battle s31: PASS 
+  battle s32: PASS 
+  battle s33: PASS 
+  battle s34: PASS 
+  battle s35: PASS 
+  battle s36: PASS 
+  battle s37: PASS 
+  battle s38: PASS 
+  battle s39: PASS 
+  battle s40: PASS 
+  battle s41: PASS 
+  battle s42: PASS 
+  battle s43: PASS 
+  battle s44: PASS 
+  battle s45: PASS 
+  battle s46: PASS 
+  battle s47: PASS 
+  battle s48: PASS 
+[4b] Threat overlay (ui3d.js computeThreat) against api.threat_map, rounds 1 to 3...
+  threat map s4: PASS 
+  threat map s19: PASS 
+  threat map s23: PASS 
+[4c] Threads and the hard stop: enemy steps on a worker thread while the scene reads (s4, s23)...
+hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+thread test s4: PASS (over after round 6, 934 events, 59 reads during enemy steps on a worker)
+thread test s23: PASS (over after round 10, 1537 events, 96 reads during enemy steps on a worker)
+[5/5] Enemy think time in the timing battles (report only; game bar: worst under about 0.5 s)...
+  s4: 32 enemy activations
+    Node   think per activation: average 0.031 s, worst 0.051 s (round 2); per round: average 0.166 s, worst 0.321 s
+    Godot  think per activation: average 0.107 s, worst 0.313 s (round 2); per round: average 0.572 s, worst 1.297 s
+    Godot/Node: 3.4x on average. Worst enemy think is inside the 0.5 s bar
+  s5: 39 enemy activations
+    Node   think per activation: average 0.028 s, worst 0.053 s (round 5); per round: average 0.185 s, worst 0.299 s
+    Godot  think per activation: average 0.106 s, worst 0.259 s (round 2); per round: average 0.688 s, worst 1.253 s
+    Godot/Node: 3.7x on average. Worst enemy think is inside the 0.5 s bar
+  s23: 51 enemy activations
+    Node   think per activation: average 0.030 s, worst 0.051 s (round 2); per round: average 0.169 s, worst 0.349 s
+    Godot  think per activation: average 0.084 s, worst 0.403 s (round 2); per round: average 0.474 s, worst 1.474 s
+    Godot/Node: 2.8x on average. Worst enemy think is inside the 0.5 s bar
+
+PASS: the Godot port matches the game's rules exactly. 
+
+
+Campaign parity (G3)
+[1/3] Campaign tables still match the pinned JS files...
+  PASS 
+[2/3] Playing 30 seeded runs in the JS game and in Godot...
+[3/3] Comparing every click (buttons on screen, campaign state, saved copy, PRNG state)...
+  run 1: PASS 
+  run 2: PASS 
+  run 3: PASS 
+  run 4: PASS 
+  run 5: PASS 
+  run 6: PASS 
+  run 7: PASS 
+  run 8: PASS 
+  run 9: PASS 
+  run 10: PASS 
+  run 11: PASS 
+  run 12: PASS 
+  run 13: PASS 
+  run 14: PASS 
+  run 15: PASS 
+  run 16: PASS 
+  run 17: PASS 
+  run 18: PASS 
+  run 19: PASS 
+  run 20: PASS 
+  run 21: PASS 
+  run 22: PASS 
+  run 23: PASS 
+  run 24: PASS 
+  run 25: PASS 
+  run 26: PASS 
+  run 27: PASS 
+  run 28: PASS 
+  run 29: PASS 
+  run 30: PASS 
+
+PASS: the Godot campaign matches the game on all 30 seeded runs. 
+
+[Tue 10/27/2026 14:31:10.15] finished 

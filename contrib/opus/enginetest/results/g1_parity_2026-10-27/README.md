@@ -2,7 +2,35 @@
 
 The Godot 4.7.2 rules port (`godot/rules/`) checked against the pinned JS oracle (`godot/rules/test/oracle/`). The PC logs are copied unchanged from `Downloads\voidsworn_test\queue_b\logs\`; only the line endings were changed.
 
-## Cloud record at 61c57fa (oracle: battle.js and core.js at d8b47c6, data.js at 6b1571e)
+## Headline: bdb1a9d, PC lane B and cloud (Oct 27)
+
+**Commit:** bdb1a9d. **Oracle:** `godot/rules/test/oracle/` battle.js, core.js and data.js are all byte-identical to the game's files at cb55ec9 (stream B steps 0 to 7b), which are also the files at the root of bdb1a9d. **Tables:** sha256 bd6677a8f04c003b, 131 exported, 90 read by the port.
+
+| Check | PC lane B (`g1_lb_parity_bdb1a9d`, `g1_lb_sweep_bdb1a9d`) | Cloud |
+|---|---|---|
+| PRNG, 10,000 draws from each of 3 seeds | 3 of 3 PASS | 3 of 3 PASS |
+| Maths, 316,090 inputs (26,030 of them big-argument sin and cos) | PASS, 0 differences | PASS, 0 differences |
+| Golden battles s1 to s48, state hash and PRNG after every action (includes s44 to s48) | 48 of 48 PASS | 48 of 48 PASS |
+| Threat overlay for s4, s19 and s23 | 3 of 3 PASS | 3 of 3 PASS |
+| Threads and the hard stop | PASS | PASS |
+| 200-battle random sweep, seed 9 | 200 of 200 identical, 38,235 records, 0 differ (17 min 55 s) | 200 of 200 identical, 38,235 records, 0 differ |
+| G3 campaign parity (G3's own check, against G3's pinned JS at d8b47c6) | 30 of 30 PASS | not run |
+
+PC enemy think time per activation (report only; the bar is about 0.5 s). All three are inside the bar: s4 0.108 s average / 0.301 s worst, s5 0.106 / 0.262 s, s23 0.099 / 0.469 s.
+
+**What this does not cover (JS-only by design):**
+- The battle tooltip and legend helpers: `factionTraitLines`, `cantFireReason`, `cmdNext`, `ramFrom` and `terrainPresent`, with their tables `TERRAIN_INFO`, `FAC_RULES`, `CMD_HOLD` and `WING_PERKS`. G2's battle scene writes its own text.
+- The encounter rolls in battle.js: `pickRegion`, `regionMap`, `fitEncounter`, `rollEncounter` and `bossEncounter`, with `DEEP_MAPS`, `ENC_POOL`, `ENC_SPECIAL`, `FAC_REGION` and `REGIONS`. G3 ports these in `godot/campaign/campaign.gd` and checks them in its own campaign parity.
+- `export_data.js` only checks that the tables the port reads exist. The 41 tables nothing in `godot/rules/` reads are listed in `godot/rules/test/README.md` (What it checks, item 1).
+- G3's campaign check compares against G3's own pinned copy (d8b47c6). Campaign data changed after that (stream B steps 5 to 7b: admiral start fleets and bonuses, arc variant rows, Chorus regrowth), so it says nothing yet about the current data.
+
+## PC lane B at f7789b1 (oracle cb55ec9), Oct 27
+
+`g1_lb_parity_f7789b1`: 48 of 48 battles, PRNG, maths (316,090), threat maps, threads and hard stop all PASS; G3 campaign 30 of 30. Worst think: s4 0.313 s, s5 0.259 s, s23 0.403 s. `g1_lb_sweep_f7789b1`, seed 8: 200 of 200 identical, 35,596 records, 0 differ (the cloud run of seed 8 at f7789b1 gives the same 35,596 records). bdb1a9d differs from f7789b1 only in where the squadron leash constant is read from (same value).
+
+# Earlier runs (each names its commit)
+
+## Cloud at 61c57fa (oracle: battle.js and core.js at d8b47c6, data.js at 6b1571e)
 
 | Check | Result |
 |---|---|
@@ -74,6 +102,20 @@ s4 missed the bar on this run. On 1027b it was 0.279 s. Node's own worst also ro
 
 200-battle sweep, seed 3: 200 of 200 identical, 36,606 records, 0 differ; endings: 128 wins, 54 losses, 18 with no result. It took 17 min 28 s.
 
-## Running sweep record
+## Sweep record (unique battles only)
 
-Seeds 1, 2, 3 and 4 on the PC, seed 4 again and seeds 5, 6 and 7 in the cloud: 1,500 different random battles, 273,265 records, 0 differences.
+Each seed makes a different set of 200 battles (300 for seed 7). A seed run twice (once on the PC and once in the cloud, at the same commit) is the same battles, so it is counted once.
+
+| Seed | Commit (oracle) | Where | Battles | Records | Differences |
+|---|---|---|---|---|---|
+| 1 | lane A run 1027a, oracle c7b1a78 (the source commit was not recorded) | PC | 200 | 36,604 | 0 |
+| 2 | 2d54b56 (oracle c7b1a78) | PC | 200 | 37,694 | 0 |
+| 3 | 2b91ea4 (oracle c7b1a78) | PC | 200 | 36,606 | 0 |
+| 4 | 61c57fa (oracle d8b47c6 and 6b1571e) | PC and cloud (same battles) | 200 | 33,500 | 0 |
+| 5 | 02f23da (oracle 59f13a5) | cloud | 200 | 36,163 | 0 |
+| 6 | 48638ef (oracle 59f13a5) | cloud | 200 | 37,913 | 0 |
+| 7 | 48638ef (oracle 59f13a5) | cloud | 300 | 54,785 | 0 |
+| 8 | f7789b1 (oracle cb55ec9) | PC and cloud (same battles) | 200 | 35,596 | 0 |
+| 9 | bdb1a9d (oracle cb55ec9) | PC and cloud (same battles) | 200 | 38,235 | 0 |
+
+Total: 1,900 unique battles, 347,096 records, 0 differences. Only seeds 8 and 9 ran against the current rules (cb55ec9): 400 battles, 73,831 records. The earlier seeds ran against older oracles, as named.
