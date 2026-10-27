@@ -76,7 +76,7 @@ Last update: Oct 26 2026 evening, G2.
 | Mid-battle events (reinforcements, warnings) | done: the rules log them; reinforcements appear with the next view |
 | Cut-ins (cinematic camera), follow activations toggle | done (Key moments, Every attack or Off; follow in settings and the battle menu) |
 | Concept-art hulls toggle, temporal AA toggle | missing |
-| Legend and command strip help | partial: the controls line under the ship panel lists every key (readable colour now); no legend panel yet |
+| Legend and command strip help | done: the terrain legend beside your fleet list (the encounter, its zones and the terrain on this board as swatches; a click opens names, effects, the encounter rule and the board shape, as ui3d.js refreshLegend); the controls line lists every key |
 | Ship sheet (full stats) | partial: the side panel |
 
 ## Battle effects and look (G4)
@@ -95,5 +95,5 @@ Last update: Oct 26 2026 evening, G2.
 | The game's cue table, recorded clips and synth cues (rendered offline from sfx.js) | done |
 | Buses, compressor and limiter, reverb send, voice caps, round robin, pitch jitter, salvo thinning | done |
 | Ambient bed | partial: recorded room tone only (the browser adds a synth bed) |
-| Music (title, map per sector, battle by factions with intensity, stings) | done: the music helper's player and tracks (music.json, CREDITS.md); Music on/off and volume in settings. Licences: see godot/music/CREDITS.md |
+| Music (title, map per sector, battle by factions with intensity, stings) | done: the music helper's player and tracks (music.json, CREDITS.md); Music on/off and volume in settings; sector flagship fights and the finale play the boss theme and the champion fanfare, and only they get the boss intensity lift. Licences: see godot/music/CREDITS.md |
 | Engine cues on moves | done |

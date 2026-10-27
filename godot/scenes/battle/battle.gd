@@ -120,6 +120,7 @@ var battle_cfg := {}
 var ai_level := ""         # "veteran" or "standard" (settings); empty keeps the rules default
 var in_campaign := false   # a campaign battle (no quit to title: the run decides what a battle ends as)
 var can_retreat := false   # campaign battles (not against a sector flagship): the top bar offers Retreat
+var boss_fight := false    # a sector flagship fight or the finale (battle kind "boss"): boss music and the champion fanfare
 var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
 var last_progress := 0.0   # real time of the last event batch (softlock watchdog for bot runs)
 var softlock_s := 60.0
@@ -372,6 +373,7 @@ func _begin(a) -> void:
 	if ai_level != "":
 		_api_set_ai(ai_level)
 	PACE = TBL.get("PACE", {})
+	boss_fight = _api_battle_kind() == "boss"
 	ended = false
 	result = {}
 	errors.clear()
@@ -452,6 +454,7 @@ func _begin(a) -> void:
 	batches.append({"events": api.take_events(), "view": api.view()})
 	sfx.ambient_start()
 	_refresh_ui()
+	_legend()
 	# story hook (story stream, godot/story/README.md): admiral, enemy flagship and Nemesis lines in the battle log
 	voice = null
 	if not bot and ResourceLoader.exists("res://story/battle_voice.gd"):
@@ -473,7 +476,7 @@ func _begin(a) -> void:
 			if u["side"] == "player":
 				pf = str(u["fac"])
 				break
-		music.play_battle(pf, _enemy_fac())
+		music.play_battle(pf, _enemy_fac(), boss_fight)
 	if not busy:
 		_runner()
 
@@ -587,7 +590,8 @@ func _music_feed() -> void:
 				flag = float(u["hp"]) / maxf(1.0, float(u["maxHp"]))
 		else:
 			foes += 1
-			if u["flagship"]:
+			# the boss lift only in a real boss fight while its flagship lives (most fights have an enemy flagship)
+			if u["flagship"] and boss_fight:
 				boss = true
 			for m in V["units"]:
 				if m["side"] == "player" and not m["dead"] and absi(int(m["q"]) - int(u["q"])) + absi(int(m["r"]) - int(u["r"])) <= 4:
@@ -708,6 +712,16 @@ var _threat_tid := -1
 
 # The rules only through battle_api.gd (the verifier's rule, Oct 26): the wrappers below are the API's; until each lands
 # in battle_api.gd the marked fallback reads api.R in this one place only.
+func _api_battle_kind() -> String:
+	if api.has_method("battle_kind"):
+		return str(api.battle_kind())
+	# fallback until battle_api exposes it: read once in _begin, before any worker task runs
+	var B = api.R.B
+	if B is Dictionary and B.get("cfg") is Dictionary:
+		return str(B["cfg"].get("kind", ""))
+	return ""
+
+
 func _api_tables() -> Dictionary:
 	if api.has_method("tables"):
 		return api.tables()
@@ -1515,7 +1529,7 @@ func _end_flow() -> void:
 	sfx.sting(win)
 	if music != null:
 		if win:
-			music.victory()
+			music.victory(boss_fight)
 		else:
 			music.defeat()
 	hud.banner("Victory" if win else "Defeat", Color("#d0a64b") if win else Color("#e27f74"), 1.6)
@@ -2208,6 +2222,45 @@ func _tip() -> String:
 			return "[b]%s[/b]\n%s" % [str(info.get("n", terr)), str(info.get("fx", info.get("d", "")))]
 		return "[b]%s[/b]" % terr.capitalize()
 	return ""
+
+
+# the terrain legend (ui3d.js refreshLegend): the encounter, the zones and the terrain kinds on this board; blockers share
+# one row ("Asteroids, Station: Blocks movement and line of fire.")
+func _legend() -> void:
+	var TI: Dictionary = TBL.get("TERRAIN_INFO", {})
+	var BL: Dictionary = TBL.get("BLOCKING", {})
+	var present := {}
+	for k in V["terrain"].values():
+		present[str(k)] = true
+	var rows: Array = []
+	for z in ["exit", "texit", "guard"]:
+		if z in board.zone_of.values():
+			var zi: Array = {"exit": ["Exit", "#7dff9b", "A ship that ends its move here jumps clear of the battle."],
+				"texit": ["Transport exit", "#e07a70", "An enemy transport that reaches this edge gets through."],
+				"guard": ["Station perimeter", "#e07a70", "Every enemy ship this close to the station at the start of a round knocks out 1 integrity."]}[z]
+			rows.append(zi)
+	var blockers: Array = []
+	var block_col := ""
+	for k in TI.keys():
+		if not present.has(k):
+			continue
+		var info: Dictionary = TI[k]
+		if BL.has(k):
+			blockers.append(str(info.get("n", k)))
+			if block_col == "":
+				block_col = str(info.get("col", "#bda088"))
+			continue
+		rows.append([str(info.get("n", k)), str(info.get("col", "#888888")), str(info.get("fx", ""))])
+	if not blockers.is_empty():
+		rows.insert(rows.size(), [", ".join(blockers), block_col, "Blocks movement and line of fire."])
+	var o = V.get("obj")
+	var E = TBL.get("ENCOUNTERS", {}).get(str(o.get("type")) if o is Dictionary else "rout", null)
+	var title := str(E.get("n", "")) if E is Dictionary else ""
+	var desc := str(E.get("d", "")) if E is Dictionary else ""
+	var shape = api.world_info().get("shape")
+	if shape != null and str(shape) != "open" and TBL.get("SHAPES", {}).has(str(shape)):
+		desc += " Board: %s." % str(TBL["SHAPES"][str(shape)]).to_lower()
+	hud.set_legend(title, desc.strip_edges(), rows)
 
 
 func _ship_tip(u: Dictionary) -> String:

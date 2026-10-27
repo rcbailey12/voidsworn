@@ -61,6 +61,9 @@ var _banner_t := 0.0
 var _banner_dur := 0.0
 var toast_lbl: Label
 var _toast_t := 0.0
+var legend: PanelContainer
+var legend_open := false
+var _legend := {}                   # {title, desc, rows: [[name, colour, effect]]}
 
 
 func _ready() -> void:
@@ -86,6 +89,7 @@ func _ready() -> void:
 	_build_tip()
 	_build_chip()
 	_build_hint()
+	_build_legend()
 
 
 # true when the project has been imported (or exported) and the imported data for this file is really there; a project
@@ -657,6 +661,83 @@ func _build_hint() -> void:
 	root.add_child(hint)
 
 
+# ---------------------------------------------------------------- terrain legend (ui3d.js refreshLegend)
+# Only what is on this battlefield: the encounter, its zones and its terrain. Collapsed it is a chip of swatches beside
+# your fleet list; a click opens the names and what each does (and the encounter's own rule), another click closes it.
+
+func _build_legend() -> void:
+	legend = _panel(274, 76, -1, -1, 380, 10)
+	legend.visible = false
+	legend.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	legend.gui_input.connect(func(ev: InputEvent) -> void:
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			legend_open = not legend_open
+			_draw_legend()
+			legend.accept_event())
+
+
+func set_legend(title: String, desc: String, rows: Array) -> void:
+	_legend = {"title": title, "desc": desc, "rows": rows}
+	_draw_legend()
+
+
+func _swatch(col: String) -> Control:
+	var c := ColorRect.new()
+	c.color = Color(col)
+	c.custom_minimum_size = Vector2(s(12), s(12))
+	c.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return c
+
+
+func _draw_legend() -> void:
+	for c in legend.get_children():
+		legend.remove_child(c)
+		c.queue_free()
+	var rows: Array = _legend.get("rows", [])
+	var title: String = _legend.get("title", "")
+	if rows.is_empty() and title == "":
+		legend.visible = false
+		return
+	legend.visible = true
+	if not legend_open:
+		var h := HBoxContainer.new()
+		h.add_theme_constant_override("separation", s(6))
+		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		h.add_child(_label(title if title != "" else "Terrain", 14, BONE2))
+		for r in rows:
+			h.add_child(_swatch(str(r[1])))
+		h.add_child(_label("▾", 14, BONE3))
+		legend.add_child(h)
+		legend.offset_right = legend.offset_left + h.get_combined_minimum_size().x + s(24)
+		legend.reset_size()
+		return
+	legend.offset_right = legend.offset_left + s(380)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", s(4))
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bb := "[b][color=#d0a64b]%s[/color][/b] [color=#7d7768](click to close)[/color]" % (title if title != "" else "Terrain")
+	if str(_legend.get("desc", "")) != "":
+		bb += "\n[color=#b3aa95]%s[/color]" % str(_legend["desc"])
+	var head := _rich(bb)
+	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	head.custom_minimum_size.x = s(352)
+	v.add_child(head)
+	for r in rows:
+		var h := HBoxContainer.new()
+		h.add_theme_constant_override("separation", s(8))
+		h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		h.add_child(_swatch(str(r[1])))
+		var t := _rich("[b]%s[/b] %s" % [str(r[0]), str(r[2])])
+		t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		t.custom_minimum_size.x = s(332)
+		h.add_child(t)
+		v.add_child(h)
+	legend.add_child(v)
+	legend.reset_size()
+
+
 # ---------------------------------------------------------------- nameplates
 
 func plate(id: String) -> Control:
@@ -896,7 +977,7 @@ func _process(dt: float) -> void:
 
 
 func over_ui(p: Vector2) -> bool:
-	for c in [top, roster, panel, log_panel, tipcard, endcard, menu]:
+	for c in [top, roster, panel, log_panel, tipcard, endcard, menu, legend]:
 		if c != null and is_instance_valid(c) and c.visible and c.get_global_rect().has_point(p):
 			return true
 	return false
