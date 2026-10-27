@@ -2,6 +2,22 @@
 
 Taken by the campaign screenshot tour (`godot/scenes/campaign/campaign.tscn -- shots`) and the 3D map probe (`map3d_probe.tscn`). Each folder is named for the commit that drew it. Converted to WebP (quality 82) to keep the repo small; the PNGs stay on the PC in `voidsworn_test\shots\`.
 
+## 9ef9b85 (R51 star system, first before and after set)
+
+One PC job (`queue\g3_r51_9ef9b85.bat`) drew both: `before_*` is the map at 1edd967 (the round 2 map Ryan saw), `after_*` is 9ef9b85, same seed (4242), same window, same angles (`campaign.tscn -- mapshots` and `map3d_probe.tscn`).
+
+| File | Shot |
+|---|---|
+| `before_m1_map`, `after_m1_map` | the start of a run, sector I, settled camera |
+| `before_m2_hover`, `after_m2_hover` | the hover card over a fight in the middle of the sector, with the safest and richest routes lit |
+| `after_m3_zoom` | zoomed in toward the first jump (the old map had no zoom) |
+| `after_m4_low` | Map detail: Low (the same system with fewer stars, clouds and debris) |
+| `before_m5_sector2`, `after_m5_sector2` | the start of sector II (the Nemesis clock is full, so every fight is his) |
+| `before_map3d_route`, `after_map3d_route` | the probe's route planner shot, another frame |
+| `before_map3d_flying`, `after_map3d_flying` | the fleet in flight on its first jump |
+
+Known for the next round: ship hulls (stations, the fleet, the flagship, patrols) read too small at this zoom; label stacks can still touch where stops crowd (a de-overlap pass is in the next commit); a Nemesis crest prints beside every one of his fights when the clock is full.
+
 ## 89fb977 (3D map round 2, stream B screens, the Nemesis face)
 
 | File | Screen |
