@@ -1,0 +1,12 @@
+# nemmatrix split by sector (Opus: the one-piece sweep timed out twice). PC lane B, Oct 27. 48 per cell, SEED 4101/4102/4103 per sector, so the plain arm is the same battles in both.
+# pre = 69bddcf (before the R42/R49 Nemesis behaviour pass), post = main 75a75d0 rules (after; admirals before the band change)
+## sb_nem1_pre
+nemmatrix 48 per cell {"s1 plain":"77% r6.9","s1 nem":"71% r7.2 fled 6","s1 nemNoWeak":"63% r7.2 fled 7"}
+## sb_nem1_post
+nemmatrix 48 per cell {"s1 plain":"77% r6.9","s1 nem":"73% r7.2 fled 4","s1 nemNoWeak":"65% r6.6 fled 4"}
+## sb_nem2_pre
+nemmatrix 48 per cell {"s2 plain":"67% r7.0","s2 nem":"60% r7.0 fled 5","s2 nemNoWeak":"44% r7.3 fled 6"}
+## sb_nem2_post
+nemmatrix 48 per cell {"s2 plain":"67% r7.0","s2 nem":"71% r6.9 fled 2","s2 nemNoWeak":"54% r6.8 fled 4"}
+## sb_nem3_post
+nemmatrix 48 per cell {"s3 plain":"56% r7.8","s3 nem":"40% r7.2 fled 1","s3 nemNoWeak":"40% r6.4 fled 3"}

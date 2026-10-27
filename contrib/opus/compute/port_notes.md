@@ -247,3 +247,29 @@ Untouched admirals stay at their pass 2 numbers (51 to 85%). Confirmation run: P
 ### Suggested golden scenarios
 1. New run as Grax: fleet is marauder, reaver, reaver (7 command points).
 2. Mending Choir ship at 100 of 150 hull at turn start: +6 hull (4%), not +9.
+
+## Step 6: R41 arc hull variants retuned as sidegrades (Oct 27; data.js only)
+
+Target (godot/story/unlocks.md): within a few points of the base hull's win rate, never strictly better. Sim: `varmatrix` fields each variant as the second ship in its faction's first admiral's start fleet, against the base hull in the same seeded battles (VK=battle: sector 2 generated fleets; VK=boss: sector 1 flagships). This is the sim pass Muse's Job 6 waits on.
+
+### Data (data.js `HULL_VARIANTS`, arc rows), for the exporter
+- `c_marauder_g` Gilded marauder: no hull bonus (`mod:{sp:3}`; was hp 140). Text updated.
+- `b_razor_e` Sun-eater razorfiend: weapons `[['bioplasma','T'],['bioplasma','F']]` (the tendril turret becomes a bio-plasma turret; was tendril turret plus two prow bio-plasma), regen 11 (was 13), speed 3. Text updated.
+- `i_carrier_a` Archive wraithcarrier: keeps its pulsar lance and turret (`[['pulsar','F'],['turret','T']]`; was turret plus flak), 3 wings, shields 24 (was 30), speed 3 (was 4). Text updated.
+- `d_jackal_h` Jackal court guard: no hull bonus (was hp 120). Text updated.
+- `vs_penitent_l` and `h_interdictor_e`: unchanged.
+- No code changed; no random draws added or moved.
+
+### Sim, battle mode (sector 2), win % base to variant, n = 60 per hull
+| Variant | Before (cd56751) | After |
+|---|---|---|
+| vs_penitent_l | 72 to 70 | unchanged |
+| h_interdictor_e | 83 to 82 | unchanged |
+| c_marauder_g | 57 to 68 (+11) | 67 to 70 (PC, vc1) |
+| b_razor_e | 77 to 87 (+10) | 82 to 80 (cloud) |
+| i_carrier_a | 58 to 35 (-23) | 58 to 58 (PC, vc1) |
+| d_jackal_h | 87 to 93 (+6) | 87 to 88 (PC, vc1) |
+Razorfiend legs tried (cloud, n 60): regen 11 with two prow bio-plasma +7 (hull 125) and +11 (hull 150); regen 9 with two prow bio-plasma +12; regen 13 with base guns +1; bio-plasma turret at regen 13 +5. Boss mode (sector 1) is near 100% for every row before and after, so it cannot separate them. Confirmation at n 96 for all six, both modes: PC lane B jobs `sb_vc2_*`, results in `contrib/opus/compute/streamb/vc2_var.txt`.
+
+### Sims
+- `nemmatrix` takes `NS=1` (or 2, 3, or a list); `fmatrix` takes `FROWS=corsair,...` (player-side rows); `campaign` takes `CSEC=1` (sectors). They let PC jobs split long sweeps under the 20 minute limit; with `SEED` the same seed gives the same battles.
