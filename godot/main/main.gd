@@ -184,7 +184,7 @@ func _capture_window(spec: String) -> void:
 
 func _apply_settings() -> void:
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
-	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames") or args.has("title-shot")
+	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames") or args.has("title-shot") or args.has("career-shot")
 	if capture and args.has("window") and DisplayServer.get_name() != "headless":
 		# --window WxH: an exact window for capture jobs (the project starts maximised, and Godot's --windowed does not undo that)
 		_capture_window.call_deferred(str(args["window"]))
@@ -233,6 +233,23 @@ func show_title() -> void:
 	# the decorative battle behind the menu, built once the title has painted, then faded in over the sky picture
 	if not bot_mode and DisplayServer.get_name() != "headless" and str(settings.get("quality", "max")) != "low" and not args.has("no-showcase"):
 		get_tree().create_timer(0.5).timeout.connect(_start_showcase)
+	if args.has("career-shot"):
+		_career_shot.call_deferred(str(args["career-shot"]))
+
+
+# --career-shot <png>: open the Career screen from the title as its button does, save a shot, quit (screenshot jobs)
+func _career_shot(path: String) -> void:
+	await get_tree().create_timer(1.0).timeout
+	if not ResourceLoader.exists("res://story/story.gd") or title == null:
+		print("[career] no story layer in this build")
+		quit_clean(1)
+		return
+	load("res://story/story.gd").open_standalone(title)
+	await get_tree().create_timer(2.5).timeout
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(path)
+	print("[career] shot saved ", path)
+	quit_clean(0)
 
 
 var showcase: Node = null
