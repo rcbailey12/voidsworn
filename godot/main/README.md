@@ -109,3 +109,15 @@ Pace: the burn takes the same time in both modes; only the burn holds up the bat
 | `--no-showcase` | no decorative battle behind the title |
 
 Every battle result (and each bot-run battle line) carries `pace`: the enemy's share of each round in game seconds (`enemy_s_mean`, `enemy_s_max`). Measure it at real speed (`--fast 1` with Godot's `--fixed-fps 60`).
+
+## Vetoable calls (G2, Oct 27)
+
+Technical calls made without Ryan; any of them can be reversed.
+- Movement defaults to Cinematic; the burn takes the same time as Brisk, and only the settle (about 0.5 to 1 s) overlaps the next ship.
+- The slide past the hex is about 5% of a hull's length (never under a tenth of a hex); heavy hulls bank up to about 9 degrees, frigates about 15.
+- RCS puffs are drawn by the scene in G4's puff colour (G4 has no public puff call).
+- Enemy volleys hold the battle for the browser's own volley length at the B2 pace, while G4's longer effects play on over the next volley; your own first volley at normal speed plays in full; a killing volley waits for its impacts; deaths hold half their length at most on the enemy's turn (big hulls 0.8 s at least).
+- The title shows a decorative battle on open maps (no belts), Max and High graphics only; the browser's map showcase is not carried over (G3's 3D map replaces it).
+- The concept-art hulls toggle is not carried over (Godot has the game hulls only). Temporal AA is a setting, off by default.
+- The ship sheet leaves out the enemy reach line (it needs a threat pass per hover; R shows the threat map).
+- The ambient bed plays at the browser's levels: room tone 0.032 over the synth bed.
