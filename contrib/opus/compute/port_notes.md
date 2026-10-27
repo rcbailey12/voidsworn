@@ -323,3 +323,25 @@ Arc variants, battle mode, n 96 (PC unless noted), base to variant: penitent lan
 - `i_carrier_a`: shields 22 (was 24); text updated.
 - Final, battle mode, true pairs (cloud), base to variant: lantern-cruiser 78 to 75 (n 60), column escort 63 to 70 (n 96), gilded marauder 67 to 68 (n 96), sun-eater razorfiend 88 to 82 (n 60), archive wraithcarrier 61 to 68 (n 96), court guard 86 to 92 (n 96). Every row within 7 points of its base, both directions. Boss mode stays near 100% for all rows and does not separate them.
 - PC check after step 7 (unpaired, n 96): Malek 60, Sable 63 (bossmatrix, 200 runs); lantern-cruiser 77 to 80, gilded marauder 61 to 63, razorfiend 73 to 79, wraithcarrier (shields 24) 58 to 64, court guard 78 to 89.
+
+## Step 8: skirmish lists at equal command points (Oct 27; ui3d.js and sim3d.js `FLEET_LISTS`)
+
+Opus: Deathless skirmish matchups (13% against Corsair, 6% against Chorus) must reach about 30%. Cause: the skirmish lists were not cost-matched. Deathless, Voidsworn and Hegemony brought 16 command points, Chorus 19, Corsair and Ithar 20; skirmish fights turn on numbers (Deathless with two more jackals, 20 points: 21 to 92 against Corsair, 8 to 100 against Chorus, cloud, 24 per cell). No rule changed.
+
+### Data (G2 skirmish setup and the tables exporter: `FLEET_LISTS[fac].sk`, both copies identical)
+- voidsworn: cathedral, penitent, penitent, reliquary, harrow, warden x3 (one more penitent and warden).
+- hegemony: dominion, vanguard x2, interdictor, picket x4 (one more vanguard).
+- chorus: brood-mother, razorfiend x2, spitter x2, drone x5 (one more drone).
+- deathless: harvester x2, jackal x4, scythe x4 (two more jackals).
+- corsair and ithar unchanged. The `fl` (flagship) lists are unchanged. Every `sk` list is now 20 points.
+
+### Sim: skirmish matrix, 16 per cell (PC, same seeds as pass 3), row = player side
+| | voidsworn | hegemony | corsair | chorus | ithar | deathless | avg | pass 3 avg |
+|---|---|---|---|---|---|---|---|---|
+| voidsworn | 94 | 81 | 100 | 88 | 100 | 94 | 93 | 63 |
+| hegemony | 81 | 63 | 100 | 94 | 100 | 69 | 84 | 75 |
+| corsair | 88 | 81 | 100 | 94 | 75 | 81 | 86 | 94 |
+| chorus | 75 | 81 | 100 | 69 | 88 | 94 | 84 | 90 |
+| ithar | 88 | 69 | 100 | 75 | 75 | 69 | 79 | 86 |
+| deathless | 56 | 100 | 81 | 81 | 88 | 63 | 78 | 60 |
+Lowest cell 56 (was 6). The player-side bot edge in this mode stays large (mirrors 63 to 100), and the AI-played Corsair list loses to every player-side faction (it did before too, except against Deathless). fmatrix and the faction strength table do not use these lists, so they are unchanged.

@@ -77,13 +77,14 @@ async function sim(S,sector){
 }
 
 // hand-built fleets: fixed composition per faction, so tuning moves smoothly instead of jumping when a points budget tips over
+// Skirmish lists (Oct 27, stream B): every faction's list is 20 command points (was 16 for Voidsworn, Hegemony and Deathless, 19 for Chorus, 20 for Corsair and Ithar).
 const FLEET_LISTS={
-  voidsworn:{sk:['cathedral','penitent','reliquary','harrow','warden','warden'],fl:['ascendant','cathedral','penitent','harrow','warden']},
-  hegemony:{sk:['h_dominion','h_vanguard','h_interdictor','h_picket','h_picket','h_picket','h_picket'],fl:['h_boss','h_vanguard','h_interdictor','h_picket','h_picket']},
+  voidsworn:{sk:['cathedral','penitent','penitent','reliquary','harrow','warden','warden','warden'],fl:['ascendant','cathedral','penitent','harrow','warden']},
+  hegemony:{sk:['h_dominion','h_vanguard','h_vanguard','h_interdictor','h_picket','h_picket','h_picket','h_picket'],fl:['h_boss','h_vanguard','h_interdictor','h_picket','h_picket']},
   corsair:{sk:['c_hulk','c_marauder','c_marauder','c_reaver','c_reaver','c_raider','c_raider','c_raider','c_raider','c_raider','c_raider'],fl:['c_boss','c_marauder','c_reaver','c_raider','c_raider','c_raider']},
-  chorus:{sk:['b_brood','b_razor','b_razor','b_spitter','b_spitter','b_drone','b_drone','b_drone','b_drone'],fl:['b_boss','b_razor','b_spitter','b_drone','b_drone']},
+  chorus:{sk:['b_brood','b_razor','b_razor','b_spitter','b_spitter','b_drone','b_drone','b_drone','b_drone','b_drone'],fl:['b_boss','b_razor','b_spitter','b_drone','b_drone']},
   ithar:{sk:['i_carrier','i_song','i_song','i_blade','i_blade','i_wisp','i_wisp','i_wisp'],fl:['i_boss','i_song','i_blade','i_wisp','i_wisp']},
-  deathless:{sk:['d_harvester','d_harvester','d_jackal','d_jackal','d_scythe','d_scythe','d_scythe','d_scythe'],fl:['d_boss','d_harvester','d_jackal','d_scythe']},
+  deathless:{sk:['d_harvester','d_harvester','d_jackal','d_jackal','d_jackal','d_jackal','d_scythe','d_scythe','d_scythe','d_scythe'],fl:['d_boss','d_harvester','d_jackal','d_scythe']},
 };
 function genFleet(fac,mode){ const L=FLEET_LISTS[fac]||FLEET_LISTS.hegemony; return (mode==='fl'?L.fl:L.sk).slice(); }
 // the bot uses the player's whole toolkit: Admiral's Command and Brace, not just guns, rams and boarding
