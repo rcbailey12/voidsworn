@@ -281,3 +281,38 @@ Razorfiend legs tried (cloud, n 60): regen 11 with two prow bio-plasma +7 (hull 
 
 ### Sims
 - `nemmatrix` takes `NS=1` (or 2, 3, or a list); `fmatrix` takes `FROWS=corsair,...` (player-side rows); `campaign` takes `CSEC=1` (sectors). They let PC jobs split long sweeps under the 20 minute limit; with `SEED` the same seed gives the same battles.
+
+## Step 7: pass 3 tuning, faction spread (B3 exit) and the last band and variant fixes (Oct 27)
+
+Pass 3 (`streamb/pass3_report.md`) showed Chorus still ahead and Voidsworn and Ithar behind in fmatrix. "Strength" below = (row average + enemy-side wins) / 2, so 50 is even.
+
+### Battle rules (G1)
+- battle.js: `CHORUS_BITE` .12 to .08; `FEED_CAP` .15 to .12 (feed and bite share the cap, as before).
+- data.js `MOVE_RULES`: Voidsworn `rake` .3 to .4 (text 40%); Ithar `evade` 14 to 18 (text).
+- data.js Chorus hull regrowth per round: drone 5 to 4, spitter 6 to 5, razorfiend 9 to 7, brood-mother 10 to 8. The Chorus flagship (`b_boss`) is unchanged.
+- No random draws added or moved.
+
+### Data (exporter)
+- Admirals: Malek `rearPct` .35 to .5; Sable `rearPct` .2 to .5 (texts "+50%").
+- Arc variants: `vs_penitent_l` weapons `[['lance','F'],['lance','F'],['battery','T']]` (the flak turret becomes a battery turret; text updated); `d_jackal_h` `mod:{hp:100}` (10 less hull than the base; text updated); `b_razor_e` regen 9 (still 2 above the new base 7; text updated).
+
+### Sims
+fmatrix, 64 per cell (PC, paired seeds with pass 3):
+| Faction | Strength pass 3 | After t2 |
+|---|---|---|
+| Voidsworn | 43.5 | 47.9 |
+| Hegemony | 51 | 52.4 |
+| Corsair | 47.5 | 46.0 |
+| Chorus | 60.5 | 55.2 |
+| Ithar | 43.5 | 46.2 |
+| Deathless | 54 | 52.3 |
+Spread 17 points to 9. Rounds 8.58, timeouts 12 of 2304. Chorus still regrows 18 hull per ship per battle (was 22) and fights at 1.8 hexes; identity kept.
+
+Sector 1 bossmatrix after t2 (PC, 200 runs per admiral): vex 61, malek 53, ashgrove 56, thale 72, kassar 82, vorn 78, reyes 76, maren 78, grax 65, sable 47, mott 56, vesh 70, matriarch 64, razormaw 80, mending 68, voice 78, aelith 78, vaelen 74, thorne 71, mirelle 70, nekhet 77, sekhmar 62, anuket 85, khepra 70. Then Malek and Sable rear hits +50%: cloud 200 runs Malek 65, Sable 70 (cloud runs about 6 points above the PC for these two: Sable unchanged was 53 in the cloud against 47 on the PC). PC confirmation job `sb_p3b_bm`.
+
+Arc variants, battle mode, n 96 (PC unless noted), base to variant: penitent lantern with flak 79 to 67, with hull 135 81 to 65, speed 4 76 to 65, battery turret 77 to 78 (cloud, n 60, picked); court guard hull 120 (vc1 rows) 79 to 90, hull 100 82 to 84 (picked), no sentry 83 to 84; razorfiend after t2 73 to 79. PC confirmation job `sb_p3b_var`.
+
+### Suggested golden scenarios
+1. Chorus razorfiend at 100 of 150 hull, turn start: +7 (was +9); its 1-hex hit for 50 hull regrows 4 (8%).
+2. Voidsworn penitent moves 2 hexes and fires a broadside: `dmgMult` includes +.4.
+3. Ithar songship that moved 2 hexes: shots at it get -18.

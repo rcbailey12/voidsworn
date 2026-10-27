@@ -471,7 +471,7 @@ async function rotateUnit(u,dir){ if(!canRotate(u)||!inThisBattle(u)) return; co
 // ---------- B3 faction identity (Oct 26; numbers are Claude's calls, vetoable) ----------
 // One rule per faction on top of the drives (MOVE_RULES) and gates (FAC_GATES in data.js). Every rule keys off the hull's own faction (u.fac).
 const SYNC_R=3, SYNC_DMG=.12, SYNC_AIM=6; // pass 2 tuning: was .15 and 8 // Hegemony: radius around the anchor, bonus on a target a synced ally already fired at this round
-const FEED_KILL=.12, FEED_NEAR=.06, FEED_R=2, FEED_CAP=.15; // pass 2 tuning: cap was .2 // tuned Oct 26 after the first PC pass (enemy Chorus rose from 41 to 51 enemy-side wins in fmatrix) // Chorus: hull share regrown by the killer, by others within FEED_R of the kill, cap per ship per round
+const FEED_KILL=.12, FEED_NEAR=.06, FEED_R=2, FEED_CAP=.12; // pass 3 tuning: .15 to .12 (pass 2: .2 to .15) // tuned Oct 26 after the first PC pass (enemy Chorus rose from 41 to 51 enemy-side wins in fmatrix) // Chorus: hull share regrown by the killer, by others within FEED_R of the kill, cap per ship per round
 const LEGION_HP=.35; // Deathless: hull a reassembled ship comes back with
 const FAC_RULES={
   hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their flagship fire as one: a target another synced ship already fired on this round is ${SYNC_AIM} easier to hit and takes +${Math.round(SYNC_DMG*100)}% damage. Lose the flagship and sync is gone for the rest of the battle. Does not stack with Anchored Volley.`},
@@ -507,7 +507,7 @@ function chorusFeed(t,by){ if(!B||!t||t.isSq) return; const side=by?by.side:(t.s
 function chorusRegrow(u,amt,label){ if(!u||u.dead||u.pyre||amt<=0) return 0; if(u.fedR!==B.round){ u.fedR=B.round; u.fed=0; } const room=Math.max(0,Math.round(u.maxHp*FEED_CAP)-u.fed), h=Math.min(room,u.maxHp-u.hp,amt); if(h<=0) return 0;
   u.hp+=h; u.fed+=h; fstat('chorus','feed',h); try{ fxText(u,(label||'Feeds')+' +'+h,'#d6d24a',-26); }catch(e){} return h; }
 // v54 doctrine (decided): a Chorus hull that deals hull damage at 1 to 2 hexes regrows CHORUS_BITE of it, inside the same per-round cap
-const CHORUS_BITE=.12; // pass 2 tuning: was .2
+const CHORUS_BITE=.08; // pass 3 tuning: .12 to .08 (pass 2: .2 to .12)
 function chorusBiteEst(u,t,hull){ return u&&t&&u.fac==='chorus'&&!u.isSq&&hdist(u,t)<=2?Math.round(hull*CHORUS_BITE):0; }
 // Deathless endless legion: a fallen Deathless ship lies reassembling and rises at its side's next turn start
 function legionCan(t){ if(!B||!B.legion||t.isSq||t.fac!=='deathless'||!t.t||!t.t.reanimate||t.reanimated||t.pyre||t.boss||t.pflag||t.flagship||t.transport) return false; const L=B.legion[t.side]; return !!L&&L.used<L.max; }
