@@ -414,7 +414,7 @@ async function fMatrix(n){ fidInstall(); const F=RUN_FACTIONS, T=+(process.env.C
 // B4: Nemesis fights against plain elite fights of the same node, by sector (start fleet grown to the sector's usual size).
 // Arms: plain elite, Nemesis (two random weaknesses, sector-1 adaptations), Nemesis with no weaknesses (what his adaptations alone cost you).
 async function nemMatrix(n){ const out={}; const G=[0,7,12,18]; let fl=0;
-  for(const S of [1,2,3]) for(const arm of ['plain','nem','nemNoWeak']){ let w=0,t=0,rd=0;
+  for(const S of (process.env.NS?process.env.NS.split(',').map(Number):[1,2,3])) for(const arm of ['plain','nem','nemNoWeak']){ let w=0,t=0,rd=0;
     for(let i=0;i<n;i++){ const fac=RUN_FACTIONS[i%6], adms=Object.keys(ADMIRALS).filter(a=>(ADMIRALS[a].fac||'voidsworn')===fac), adm=adms[(i/6|0)%adms.length];
       RUN={admiral:adm,fac,credits:0,cpCap:60,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
       for(const tp of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(tp,fac),true)); RUN.flagUid=RUN.fleet[0].uid; simFit();
@@ -430,6 +430,7 @@ async function nemMatrix(n){ const out={}; const G=[0,7,12,18]; let fl=0;
       w+=B.over==='win'?1:0; t++; rd+=B.round; if(B.nemFled) fl=(fl||0)+1; }
     out['s'+S+' '+arm]=Math.round(w/t*100)+'% r'+(rd/t).toFixed(1)+(fl?' fled '+fl:''); fl=0; }
   console.log('nemmatrix '+n+' per cell', JSON.stringify(out)); }
+// nemmatrix NS=1 (or 2, 3, or a list) runs only those sectors, so a PC job splits the sweep under the 20 minute limit; SEED sets the seed per job.
 // R41 arc unlocks: each arc hull variant against its base hull, paired seeds (the same battle with the base hull, then with the variant).
 // Fleet: the faction's first admiral's start fleet plus the test hull, as a second ship. VK=battle (sector 2 generated fleets, default) or boss (sector 1 flagships).
 // customization reserve: FIT='{"pod":"lance","module":null,"trim":"prow"}' puts that fit on the flagship of every sim run (inert until a fit resolver exists)

@@ -216,3 +216,34 @@ Second stream B helper. Carries over the first helper's uncommitted R42 alignmen
 5. Weakness: Hegemony rival with flank; your rear-arc hit lands: `B.nemFound` = ['flank'] and the log line.
 6. Beat sync: beaten with lance (seen battery 5): next `nemAdapt()` is shields, and the next meeting's line is the "again" line.
 7. Hegemony line: an escort's battery opt is the table opt + 1; `syncPull` doubled for his ships.
+
+## Step 5: admiral band (Oct 27; data.js only)
+
+Third stream B helper. Band: the plan's starting band is no admiral below 50% or above 90% against a sector 1 flagship (plan B2 exit). Vetoable call: tune to about 55 to 85% so a 100-run sample cannot drift across the 50 and 90 lines on noise alone (about 5 points either way at 100 runs, FINDINGS S10).
+
+### Data (data.js `ADMIRALS`), for the exporter
+- Kassar: start `h_vanguard, h_picket` (was `h_vanguard, h_interdictor`).
+- Reyes: `sqPct` .25 to .1; text "+10% damage".
+- Maren: start `h_dominion, h_picket` (was two pickets).
+- Grax: start `c_marauder, c_reaver, c_reaver` (was `c_marauder, c_reaver, c_raider`).
+- Matriarch: start `b_brood, b_drone, b_drone` (one more drone).
+- Mending Choir: `hullRegenPct` .06 to .04; text "4%".
+- Nekhet: `hullRegenPct` .06 to .04; text "4%".
+- No battle.js or campaign code changed. Random draws: none added or moved; a different start fleet changes the draws a battle makes (more or fewer ships), so admiral parity goldens that use these four start fleets need new expected values.
+
+### Sim (sector 1 bossmatrix, 100 runs per admiral per leg; each admiral's legs are independent, so single legs equal the combined change)
+| Admiral | Before (pass 2, PC) | Change | After |
+|---|---|---|---|
+| Grax | 34% | start marauder, 2 reavers | 63% (PC) |
+| Kassar | 91% | start vanguard, picket | 82% (PC) |
+| Matriarch | 50% | one more drone | 66% (PC) |
+| Nekhet | 90% | regrow 4% | 77% (cloud) |
+| Mending | 87% | regrow 4% | 80% (cloud) |
+| Maren | 88% | start dominion, picket | 79% (cloud) |
+| Reyes | 86% | squadrons +10% | 80% (cloud) |
+Rejected legs (same sample size): Grax two marauders 40, Grax four ships 70; Kassar vanguard and two pickets 92, Kassar guns 10% lighter 87; Matriarch brood and spitter 80; Nekhet harvester and scythe 71, harvester and two scythes 79; Maren hull +5% 86; Reyes vanguard and picket 61, squadrons +15% 84, +15% with no squadron hull bonus 83.
+Untouched admirals stay at their pass 2 numbers (51 to 85%). Confirmation run: PC lane B, 200 runs per admiral, all 24 (jobs `sb_band1_1` to `_6`); results in `contrib/opus/compute/streamb/band1_bm.txt`.
+
+### Suggested golden scenarios
+1. New run as Grax: fleet is marauder, reaver, reaver (7 command points).
+2. Mending Choir ship at 100 of 150 hull at turn start: +6 hull (4%), not +9.
