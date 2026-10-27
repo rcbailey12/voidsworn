@@ -52,7 +52,7 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 
 ## Latest record
 
-`contrib/opus/enginetest/results/g1_parity_2026-10-27/README.md`: at 61c57fa, 43 of 43 battles, maths (316,090 inputs), PRNG, threat maps and threads all PASS in the cloud, and a 200-battle sweep (seed 4) with 0 differences. The PC lane B run of the same commit is queued; its result goes in the same file.
+`contrib/opus/enginetest/results/g1_parity_2026-10-27/README.md`. On Ryan's PC (lane B) at 61c57fa: 43 of 43 battles, maths (316,090 inputs), PRNG, threat maps, threads and G3's campaign check all PASS. Every enemy think time is inside the 0.5 s bar (worst 0.406 s, s23), and the seed 4 sweep is 200 of 200. In the cloud at 48638ef: 47 of 47. Sweeps so far: 1,500 battles, 0 differences.
 
 ## Files
 
