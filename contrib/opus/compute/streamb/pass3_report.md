@@ -32,3 +32,13 @@ none 79 (84), swarm 78 (85), heavy 90 (90), carrier 83 (83).
 fuzz 4 x 500 = 2000 battles: exceptions 0, invariant breaks 0, average 7.1 rounds.
 
 ## Nemesis (nemmatrix, separate split run): see `nem_split.txt`.
+
+## Addendum (Oct 27): what drives the sector 3 round time
+Campaign sim, `real` timing model (the browser's own animation durations), CATS breakdown, 16 per cell, seconds per round:
+| Cell | Total | Player fire | Player move | Enemy fire | Enemy move | Enemy deaths | Banner and gaps |
+|---|---|---|---|---|---|---|---|
+| Sector 1 battle (col 1) | 10.6 | 2.9 | 3.9 | 1.0 | 1.0 | 1.0 | 0.7 |
+| Sector 3 battle (col 1) | 13.8 | 3.8 | 3.2 | 2.0 | 1.7 | 1.4 | 0.8 |
+| Sector 3 battle (col 4) | 12.9 | 3.0 | 2.8 | 2.7 | 1.8 | 0.9 | 0.8 |
+| Sector 3 elite | 12.5 | 3.2 | 2.8 | 2.3 | 1.8 | 0.9 | 0.8 |
+Read: about half of every round is the player's own five ships moving and firing (6 to 7 s, the same in every sector). The sector 3 excess over sector 1 (about 3 s) is the enemy phase with 12 to 14 ships: their fire (+1 to 1.7 s), moves (+0.7 to 0.8 s) and deaths (+0.4 s), even with the existing big-fleet speed-up (`enemyPaceK`, floor `PACE.bigMin` .5). No rule drives it; it is presentation time. The Godot battle scene (G2) owns the real timings now (its cinematic movement, R50), so any fix belongs there: overlap enemy activations or shorten the enemy tail in big fights. The JS `PACE` constants only feed the browser and this sim model. The step 9 easing (smaller sector 3 enemy fleets) shortens these rounds a little; numbers in the step 9 confirmation.
