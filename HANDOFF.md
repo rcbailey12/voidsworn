@@ -19,14 +19,14 @@
   - IN PROGRESS: the Pyre-Barge redesign to match C13s to C16s (R54), the Hegemony naval hull reshape, the V17/V1b gothic peaks, the I16 masts, and the lance-slot fan pattern.
 - Stream B rules: admiral band and faction tune; the PC confirmation set is running.
 - Music: 24 CC0/CC BY tracks in game; CREDITS.md done.
-- Portraits: 24 Nemesis portraits in game (godot/portraits/index.json, 24 nemesis entries; files in godot/portraits/nemesis/pool), and new-look prompts drafted. Painting is held for lore approval.
+- Portraits: repainting to the approved looks (R59). 24 Nemesis portraits in game (godot/portraits/index.json, 24 nemesis entries; files in godot/portraits/nemesis/pool), and new-look prompts drafted. Painting is held for lore approval.
 - Music files: 24 tracks in godot/music/tracks.
-- Story and career: paused for lore approval.
+- Story and career: being rewritten to the approved lore by the lore rollout helper (R59).
 
-**Lore (R44 to R54).**
+**Lore (R44 to R59): APPROVED Oct 27.** Rollout in progress: contrib/opus/briefs/lore_rollout_2026-10-27.md; final map contrib/opus/compute/rename_map_final.md (being written).
 - Round 8 is in the live doc https://claude.ai/artifact/SKyQf2QcJSXGmXfmxKxFpJ (earlier rounds below it as appendices), with a repo copy at contrib/opus/compute/lore_bible_r8.md. The people: Starwrights; machine faction: Eclipse (R57, R58). Next comment seq to read after: 211.
 - Earlier rounds sit as appendices in the doc. Round 5 verification is contrib/opus/evidence/lore_r4_review_verification_2026_10_27.md.
-- Nothing is renamed in game code, data or UI until Ryan says "lore approved". Then the renames route to stream B (data.js display names), the story helper (arc rewrite), G1/G3 (re-export), G2 (brand.gd), portraits (paint the final looks), and A4/G4 (faction repaints).
+- Ryan said "lore approved" on Oct 27 (R59). Renames route per the rollout brief: L (map, story rewrite, final sweep), B (data.js and JS), G1/G3 (re-export and Godot copies), G2 (brand.gd title "Embers of the Hollow Sun"), G4 (faction palettes), A4 (hull repaints), portraits (final looks and crests).
 
 **Helpers (relaunched Oct 27 02:45 UTC; resumed after each usage reset).**
 

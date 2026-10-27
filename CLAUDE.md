@@ -10,6 +10,7 @@
   - battles grow over a run toward about 20 ships (a guide, not a cap);
   - the dead-star gravity-well board stays;
   - capture is add, strip or ransom.
+- **Lore approved (owner, Oct 27 2026; FINDINGS R59).** The game is *Embers of the Hollow Sun*. Display names follow `contrib/opus/compute/lore_bible_r8.md` and `contrib/opus/compute/rename_map_final.md`; ids never change: `voidsworn` = Sunward Crusade, `corsair` = Ashfall Hullbreakers, `ithar` = the Glasswrights, `deathless` = Eclipse, `chorus` = the Chorus, `hegemony` = Hegemony Navy. Where these rules say Corsair, read Hullbreakers (still the haphazard, junky exception).
 
 - **Ryan's PC first (owner, Oct 21 2026).** Anything heavy runs on Ryan's PC through the test watcher, not in the cloud sandbox: AI model runs (ComfyUI, Pixal3D, Qwen, TRELLIS, Hunyuan), Blender bakes and renders (`voidsworn_test\blender\blender-4.5.14-windows-x64\blender.exe`, GPU), closeshots, smoke tests, load probes. The PC has an RTX 5080 (16 GB), 32 GB RAM and 400+ GB free. The sandbox (about 8 GB RAM, CPU only) is for editing code, small conversions and looking at results; it runs out of memory on full-detail meshes.
 - How the PC runner works, and its pitfalls: see HANDOFF.md ("PC test runner").
