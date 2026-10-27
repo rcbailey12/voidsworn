@@ -227,12 +227,11 @@ func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the s
 	var pal = System.PLANETS[_rng.randi() % System.PLANETS.size()]
 	match place:
 		"planet":
-			var body = sys.planet(obj, pal, 2.5, Vector3(0.0, 2.2, -0.4))
-			sys.moon(obj, body.position, 4.1, 0.46)
-			return 4.9
+			var body = sys.planet(obj, pal, 2.2, Vector3(0.0, 2.1, -0.3))
+			sys.moon(obj, body.position, 3.3, 0.4)   # the moon's orbit stays inside the stop (neighbours sit 7.7 or more away)
+			return 4.5
 		"station":
-			sys.planet(obj, [5, Color(0.5, 0.48, 0.46), Color(0.24, 0.23, 0.22), Color(0.6, 0.6, 0.65)], 1.3, Vector3(-2.6, 1.3, -2.2), false)
-			var L = System.look(d["fac"])
+			var L = System.look(d["fac"])   # one clear object: the station alone (R51 round 3, no planet jammed in behind it)
 			var st = props.station(obj, L["base"].lerp(Color(0.62, 0.63, 0.66), 0.75), L["main"])
 			st.position = Vector3(0.5, 2.3, 0.3); st.rotation_degrees = Vector3(14, 0, -10); st.scale = Vector3.ONE * 0.85
 			_spinners.append([st, Vector3.UP, 0.035]); _spinners.append([st.get_node("ring"), Vector3.UP, 0.22])
@@ -256,11 +255,11 @@ func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the s
 			var lt = OmniLight3D.new(); lt.light_color = Color(1.0, 0.4, 0.15); lt.light_energy = 1.2; lt.omni_range = 4.0; lt.position = Vector3(0.6, 1.5, 0); obj.add_child(lt)
 			return 3.0
 		"storm":
-			sys.clouds(obj, Color(0.3, 0.55, 1.0), Color(0.7, 0.35, 1.0), 7 if quality != "low" else 4, 1.3, Vector3(0, 1.8, 0), 0.75, 1.0)
+			sys.clouds(obj, Color(0.3, 0.55, 1.0), Color(0.7, 0.35, 1.0), 7 if quality != "low" else 4, 1.0, Vector3(0, 1.8, 0), 0.75, 1.0)
 			var lt2 = OmniLight3D.new(); lt2.light_color = Color(0.5, 0.65, 1.0); lt2.light_energy = 1.0; lt2.omni_range = 5.0; lt2.position = Vector3(0, 1.8, 0); obj.add_child(lt2)
 			return 3.6
-	# open space: a small planet far behind the stop so the place still reads
-	sys.planet(obj, pal, 1.2, Vector3(-1.4, 1.3, -1.6))
+	# open space: a faint dust pocket, nothing that crowds the marker
+	sys.clouds(obj, Color(0.4, 0.45, 0.6), Color(0.3, 0.32, 0.45), 3, 0.8, Vector3(0, 1.2, 0), 0.35)
 	return 2.6
 var _base_sig := ""
 func _add_node(n: Dictionary) -> void:
@@ -293,8 +292,7 @@ func _add_node(n: Dictionary) -> void:
 		match t:
 			"shipyard":
 				# a construction gantry round a hull being built, floodlit, welding sparks on the work
-				sys.planet(obj, System.PLANETS[1], 1.6, Vector3(-2.8, 1.6, -2.6))
-				var PL = System.look(C.RUN["fac"])
+				var PL = System.look(C.RUN["fac"])   # the gantry alone (no planet jammed in behind it)
 				var gy = props.gantry(obj, 6.4, 2.8, 3.0, Color(0.46, 0.47, 0.5), PL["main"]); gy.position = Vector3(0, 0.6, 0); gy.rotation_degrees = Vector3(0, -25, 0)
 				var hb = _hull(C.RUN["fac"], "Cruiser", 5.2)
 				if hb != null: hb.position = Vector3(0, 1.8, 0); gy.add_child(hb)
@@ -303,8 +301,7 @@ func _add_node(n: Dictionary) -> void:
 				top = 3.8
 			"drydock":
 				# a dock frame round a docked hull, work lights on it, drones at the plates
-				sys.planet(obj, System.PLANETS[4], 1.2, Vector3(-2.6, 1.2, -2.2))
-				var DL = System.look(C.RUN["fac"])
+				var DL = System.look(C.RUN["fac"])   # the dock alone
 				var df = props.dock_frame(obj, 5.2, 2.2, 2.6, Color(0.44, 0.46, 0.5), teal); df.position = Vector3(0, 1.8, 0); df.rotation_degrees = Vector3(0, -20, 0)
 				var hk = _hull(C.RUN["fac"], "Frigate", 4.0)
 				if hk != null: df.add_child(hk)
@@ -327,7 +324,7 @@ func _add_node(n: Dictionary) -> void:
 				for i in (6 if quality != "low" else 3): _drones.append([props.drone(obj, green, Color(0.5, 0.52, 0.55)), Vector3(0, 1.8, 0), _rng.randf_range(1.6, 2.8), _rng.randf_range(0.35, 0.7) * (1 if i % 2 == 0 else -1), _rng.randf() * TAU, _rng.randf_range(-0.7, 0.9)])
 				top = 3.0
 			"event":
-				sys.clouds(obj, Color(0.25, 0.75, 1.0), Color(0.55, 0.3, 1.0), 6 if quality != "low" else 3, 1.2, Vector3(0, 1.8, 0), 0.6)
+				sys.clouds(obj, Color(0.25, 0.75, 1.0), Color(0.55, 0.3, 1.0), 6 if quality != "low" else 3, 1.0, Vector3(0, 1.8, 0), 0.6)
 				var m7 = _mat(cyan, 3.0, 0.0, 0.2); mats.append(m7)
 				obj.add_child(sys.mi(sys.sphere(0.32, 16, 8), m7, Vector3(0, 1.8, 0)))
 				sys.glow(obj, cyan, 3.4, Vector3(0, 1.8, 0), 2.2, 0.8, 1.0)

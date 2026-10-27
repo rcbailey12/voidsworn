@@ -252,7 +252,7 @@ func belt(parent: Node3D, theta: float, r: float, node_pos: Vector3, kind: int) 
 	for k in meshes.size():
 		var items = []
 		for i in n / meshes.size():
-			var a = theta + sys.rng.randfn() * (5.0 / r) * 1.4; var rr = r + sys.rng.randfn() * 1.5
+			var a = theta + sys.rng.randfn() * (3.0 / r); var rr = r + sys.rng.randfn() * 0.9   # the field stays within its own stop
 			var p = Vector3(cos(a) * rr, sys.rng.randfn() * 0.45 + 0.7, -sin(a) * rr) - node_pos
 			var s = pow(sys.rng.randf(), 2.2) * 0.38 + 0.06
 			items.append([Transform3D(sys.rand_basis(s), p), 0.0])
