@@ -98,7 +98,7 @@ func open(st) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var bg := ColorRect.new()
-	bg.color = Color(0.024, 0.035, 0.063, 0.94)
+	bg.color = Color(0.024, 0.035, 0.063, 1.0)  # opaque: the title (and its decorative battle) must not show through
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var margin := MarginContainer.new()

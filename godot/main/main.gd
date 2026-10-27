@@ -271,8 +271,12 @@ func _start_showcase() -> void:
 	if is_instance_valid(showcase) and title != null and is_instance_valid(title) and title.has_method("reveal_showcase"):
 		title.reveal_showcase()
 	if args.has("title-shot"):
-		# --title-shot <png>: the title with its showcase faded in (screenshot jobs), then quit
+		# --title-shot <png>: the title with its showcase faded in (screenshot jobs), then quit; --title-open settings opens
+		# the Settings panel first
 		await get_tree().create_timer(4.0).timeout
+		if str(args.get("title-open", "")) == "settings" and title != null and is_instance_valid(title):
+			title._settings()
+			await get_tree().create_timer(0.5).timeout
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(str(args["title-shot"]))
 		print("[title] shot saved ", args["title-shot"])

@@ -12,6 +12,7 @@ var font: FontFile
 var font_semi: FontFile
 var font_goth: Font
 var settings_panel: PanelContainer
+var settings_dim: ColorRect
 var toast_lbl: Label
 var _toast_t := 0.0
 
@@ -164,9 +165,16 @@ func _settings() -> void:
 	if settings_panel != null:
 		settings_panel.queue_free()
 	var S: Dictionary = main.settings
+	# the title dims hard behind the panel (a modal over the menu, not a window into it), and the panel itself is opaque
+	if settings_dim == null:
+		settings_dim = ColorRect.new()
+		settings_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+		settings_dim.color = Color(0.016, 0.024, 0.043, 0.93)
+		settings_dim.mouse_filter = Control.MOUSE_FILTER_STOP
+		root.add_child(settings_dim)
 	settings_panel = PanelContainer.new()
 	var g := StyleBoxFlat.new()
-	g.bg_color = Color(0.047, 0.07, 0.12, 0.95)
+	g.bg_color = Color(0.047, 0.07, 0.12, 1.0)
 	g.border_color = Color(0.816, 0.651, 0.294, 0.3)
 	g.set_border_width_all(1)
 	g.set_corner_radius_all(s(8))
@@ -205,6 +213,9 @@ func _settings() -> void:
 		main.save_settings()
 		settings_panel.queue_free()
 		settings_panel = null
+		if settings_dim != null:
+			settings_dim.queue_free()
+			settings_dim = null
 		_focus_first(menu), true))
 	v.add_child(row)
 	_focus_first(settings_panel)
