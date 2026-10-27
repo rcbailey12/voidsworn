@@ -57,6 +57,19 @@ Decisions this rests on: `K1_DECISIONS.md` (Claude's calls, Ryan can veto).
 - Breach anchors keep off the bow and stern tips and the end faces (a nose-tip hole faced forward with its guts out past the bow).
 - Ithar and Deathless: no repaint or restyle (their looks are changing); shape fixes only.
 
+## Pass 4 (Oct 27, Ryan on the barge and Opus relaying the standing rulings)
+
+- Pyre-Barge (C19_51) rebuilt in the family grammar: `compose.py` welds captured C16s, C15s, C13s and C14s hulls (each with its own
+  blob-sweep cuts, plus `cuts_extra` in its own frame) into one lopsided war-barge, with the parts' AI maps tiled into one 2x2 atlas.
+  Three boarding claws, more trophy plates (dress over 1.2), dirty orange engines on every hull. It now builds through `a4_ship.py`
+  like any ship; `barge4.py` (the v15 path) stays for reference, with its mast towers swapped for low sensor arrays.
+- `reshape.flat_bow` (ship key `reshape`): naval side profiles (raked stem, sheer deck, forefoot) become a chisel wedge with a flat
+  belly; the top view is untouched. Hegemony H4, H7 to H10 and V1b.
+- Hegemony: the painted waterline stripe is gone, windows only in small clusters, recessed light clusters with sensor housings.
+- V1b: the cathedral tower top is a command tower with radiator banks and sensor arrays; V17: the three peaks are a radiator bank.
+- I16: the two upright masts are emitter booms laid along the deck (`kit.boom`); the fan vane stays.
+- Cut holes with a simple rim are filled by a beauty triangulation (a radial fan on V1b's spine showed in G4's marks sheet).
+
 ## Running it
 
 - Cloud, shape only: `python3 tools/blender/a4/a4_ship.py CODE OUTDIR --nobake --look` (Workbench sheets `CODE_a4look.png` and
