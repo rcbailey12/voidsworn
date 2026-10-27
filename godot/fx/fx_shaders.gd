@@ -1125,13 +1125,14 @@ void fragment() {
 			float rr = length(ff - jo) * (0.85 + 0.3 * vnoise(q / R * 40.0 + seed));
 			float pr = 0.07 + 0.3 * pow(h21(fi + seed + 5.9), 2.0);
 			float spot = smoothstep(pr, pr * 0.5, rr);
-			float pit = step(0.35, cellv) * step(cellv, 0.85) * spot;
-			float chip = step(0.85, cellv) * spot;
-			hc = vec3(0.07, 0.068, 0.066);
-			hc = mix(hc, vec3(0.012), pit);
+			// r12 (Opus): the pocks gather into one darker peppered patch (denser pits on a sooty ground), so the patch
+			// reads as a whole from the battle camera instead of as isolated specks; a faint warm rim edges it (below)
+			float pit = step(0.22, cellv) * step(cellv, 0.88) * spot;
+			float chip = step(0.88, cellv) * spot;
+			hc = vec3(0.03, 0.029, 0.028);
+			hc = mix(hc, vec3(0.008), pit);
 			hc = mix(hc, vec3(0.42, 0.41, 0.4), chip);
-			// the field between the pocks is only a light grime, so the specks carry it
-			ha *= mix(0.3, 0.95, max(pit, chip));
+			ha *= mix(0.62, 1.0, max(pit, chip));
 			hr = mix(0.7, 0.35, chip);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
@@ -1178,6 +1179,8 @@ void fragment() {
 		float sband = (1.0 - smoothstep(0.2, 0.7, hu)) * (0.35 + 0.65 * smoothstep(0.42, 0.68, hn));
 		hem += sc * sband * sglow * 2.4;
 		if (style != 10 && style != 7) { hc *= 0.7; ha = min(1.0, ha * 1.25); }
+		// r12 (Opus): plasma, shell and gauss scars stay stronger once cooled: darker, denser char
+		if (style == 2 || style == 3 || style == 4 || style == 5) { hc *= 0.6; ha = min(1.0, ha * 1.3); }
 		if (style == 6 || style == 11 || style == 5) {
 			// torn holes keep a dull ember ring for a long while, so a hit ship still shows where it was holed
 			hem += vec3(1.0, 0.32, 0.06) * smoothstep(0.62, 0.8, hn) * (1.0 - smoothstep(0.15, 0.5, hu)) * (0.08 + 0.5 * live) * exp(-age / 40.0);
@@ -1187,6 +1190,21 @@ void fragment() {
 		rough = mix(hr, rough, a / max(at, 1e-4));
 		em += hem * ha * (1.0 - a);
 		a = at;
+		// r12 (Opus): a dim broken edge that lasts the battle (about five minutes to half), so a cooled plasma, shell,
+		// gauss or flak scar still shows from the battle camera: round the char for the craters and holes, round the
+		// outside of the peppered patch for flak. It comes up with the scorch, never jumps (no flash).
+		float le = 0.0;
+		vec2 eb = vec2(0.2, 0.5);
+		if (style == 2) { le = 0.32; }
+		else if (style == 3) { le = 0.36; }
+		else if (style == 4 || style == 5) { le = 0.3; }
+		else if (style == 7) { le = 0.3; eb = vec2(0.55, 0.9); }
+		if (le > 0.0) {
+			float ew = (eb.y - eb.x) * 0.3;
+			float edge = smoothstep(eb.x, eb.x + ew, hu) * (1.0 - smoothstep(eb.y - ew, eb.y, hu));
+			edge *= 0.35 + 0.65 * smoothstep(0.42, 0.66, hn);
+			em += sc * edge * le * smoothstep(0.0, 0.25, age) * exp(-age / 420.0);
+		}
 	}
 	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
 	ALBEDO = alb;
