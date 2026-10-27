@@ -258,3 +258,78 @@ Generic MODULES and RELICS show for the Sunward Crusade (it has no MOD_NAMES or 
 | `n:'Tomb-blade strike'` | n:'Out of the shadow' | data.js:233 | B | Ostrel's Command. |
 | `n:'Khepra the Patient',doc:'Living stone'` | n:'Seveth, Twice-Restored',doc:'Layered plates' | data.js:234 | B | Canonical name; the durable admiral (twice restored). |
 | `cmd:{id:'iron',n:'Living stone'` | cmd:{id:'iron',n:'Sunshade wall' | data.js:234 | B | Seveth's Command. |
+
+## 7. Events, faction verbs, event results
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `b:'Your auspex finds an ancient gothic warship drifting without power, its hull etched with prayers no one has spoken in ten thousand years.'` | b:'Your scanners find an ancient warship drifting without power, its hull etched with Starwright script no one has read in a thousand years.' | data.js:274 | B | |
+| `s:'Risky. Could hold archeotech, could hold something awake.'` | s:'Risky. Could hold founders’ tech, could hold something awake.' | data.js:275 | B | |
+| `l:'Leave it to its prayers'` | l:'Leave it to the dark' | data.js:277 | B | |
+| `s:'A clean cut: archeotech and salvage, nothing wakes.'` | s:'A clean cut: founders’ tech and salvage, nothing wakes.' | data.js:320 | B | |
+| `owes you a favour` | owes you one | data.js:322 | B | "Their captain pays well and owes you one: ..." |
+| `t:'The astropath’s vision',b:'Your fleet astropath wakes screaming. She has seen where a relic lies, but reaching it means sailing through a warp-rift.'` | t:'A signal in the static',b:'Your signals officer has pulled an old founders’ beacon out of the static. A relic lies beyond it, but reaching it means crossing a rift.' | data.js:282 | B | Event id `astropath` stays. No psychics (bible 1.2). |
+| `b:'Your sensor officer has decoded a ghost signal: an old Navy relic cache, deep inside a hyperspace rift.'` | b:'Your sensor officer has decoded a ghost signal: an old Navy relic cache, deep inside a rift.' | data.js:282 | B | Hegemony variant. |
+| `corsair:{t:'The navigator’s hunch',b:'Your half-mad navigator swears she can smell treasure on the far side of a rift. She is usually right. Usually.'}` | corsair:{t:'The tracker’s nose',b:'Your best tracker swears she can smell old metal on the far side of a rift. She is usually right. Usually.'} | data.js:282 | B | Hullbreakers hunt by scent and sound. |
+| `chorus:{t:'A scent in the void',b:'The brood-mind tastes something ancient and delicious beyond a rift in space.'}` | chorus:{t:'A scent in the dark',b:'The swarm tastes something old and delicious beyond a rift.'} | data.js:282 | B | |
+| `ithar:{t:'A seer’s dream',b:'Your seer dreams of a lost treasure of your people, sleeping beyond a rift.'}` | ithar:{t:'A glint beyond the rift',b:'Your mirrors catch a glint of old Starwright glass beyond a rift: a lost treasure of your people.'} | data.js:282 | B | |
+| `deathless:{t:'A dynastic beacon',b:'An old dynastic beacon pulses from beyond a rift. Something of the dynasty is still out there.'}` | deathless:{t:'An Archive beacon',b:'An Archive beacon from before the collapse pulses beyond a rift. Something of Ardent is still out there.'} | data.js:282 | B | |
+| `t:'Warp storm'` | t:'Rift storm' | data.js:288 | B | |
+| `t:'An Ithar seer',b:'A lone Ithar vessel matches your course. Its seer offers a trade: one of your refits for one of their treasures.'` | t:'A Glasswright wanderer',b:'A lone Glasswright vessel matches your course. Its keeper offers a trade: one of your refits for one of their treasures.' | data.js:291 | B | Event id `seer` stays. |
+| `l:'Sing back to her',s:'She trades a relic for a song. No refit lost.'` | l:'Answer her tone in glass',s:'She trades a relic for the courtesy. No refit lost.' | data.js:325 | B | Option key `song` stays (Glasswright-only blue option). |
+| `The seer smiles and gives anyway.` | The keeper smiles and gives anyway. | campaign_run.js:355; godot/campaign/campaign.gd:1920 | B, G3 | Event result (both games). |
+| `t:'A void-shrine',b:'An orbital shrine to a forgotten saint hangs over a dead world. Your crews ask to make an offering.'` | t:'A wall of names',b:'A memorial station hangs over a dead world, its walls chalked with the names of a crusade that never came home. Your crews ask to leave an offering.' | data.js:300 | B | Faction-power string (vetoable V10). Event id `shrine` stays. |
+| `hegemony:{b:'An old orbital shrine hangs over a dead world. Spacers are a superstitious lot, and your crews ask to leave an offering.'}` | hegemony:{b:'An old memorial station hangs over a dead world. Spacers are a superstitious lot, and your crews ask to leave an offering.'} | data.js:300 | B | |
+| `corsair:{b:'An orbital shrine to some forgotten saint hangs over a dead world. Even pirates hedge their bets: your crews ask to leave an offering.'}` | corsair:{b:'An old memorial station hangs over a dead world, heaped with other packs’ trophies. Your crews want to leave one of their own.'} | data.js:300 | B | |
+| `ithar:{t:'A shrine of the old world',b:'A shrine from before your people’s fall hangs over a dead world. Your crews ask to leave an offering.'}` | ithar:{t:'A mirror of the old world',b:'A mirror array from before your people’s fall still turns over a dead world. Your crews ask to leave an offering.'} | data.js:300 | B | |
+| `l:'Pray and hope'` | l:'Chalk your names and hope' | data.js:302 | B | |
+| `The saint answers. Every ship repairs 30% of its hull.` | Luck holds. Every ship repairs 30% of its hull. | campaign_run.js:362; godot/campaign/campaign.gd:1952 | B, G3 | Event result (both games). |
+| `b:'A lifeboat of Hegemony officers begs for asylum.` | b:'An escape pod of Hegemony officers begs for asylum. | data.js:304 | B | Lifeboat is a sea word. |
+| `b:'A corsair cache hidden in the rings of a gas giant.` | b:'A Hullbreaker cache hidden in the rings of a gas giant. | data.js:307 | B | |
+| `t:'The tithe vault',b:'An abandoned tithe station` | t:'The toll vault',b:'An abandoned toll station | data.js:333 | B | Tithe is a church word. Event id `tithe` stays. |
+| `l:'Let the living metal knit it'` | l:'Let the repair drones knit it' | data.js:344 | B | |
+| `t:'A song in the dark',b:'A dying Ithar songship is singing its own lament. The melody carries old star charts in it, for those who can hear.'` | t:'A tone in the dark',b:'A dying Glasswright prism rings with one long clear tone as its light fades. The tone carries old star charts in it, for those who can read it.' | data.js:362 | B | |
+| `l:'Join the song'` | l:'Answer the tone' | data.js:364 | B | Faction-power string. |
+| `l:'Trade a relic for its archive'` | l:'Trade a relic for its charts' | data.js:365 | B | The archive is Eclipse's word. |
+| `t:'A sealed tomb-world',b:'A planet of black glass hums under your keels. Deep below, something counts the seconds until it wakes.'` | t:'A siphon array',b:'A ring of black collectors circles a dimming star, drinking its energy. Something aboard counts the seconds until you come in range.' | data.js:366 | B | Event id `tomb` stays. |
+| `l:'Wake it and take what it guards',s:'Fight an elite Deathless battle. Win a relic.'` | l:'Break the array and take what it guards',s:'Fight an elite Eclipse battle. Win a relic.' | data.js:367 | B | |
+| `l:'Map it from orbit and leave'` | l:'Chart it and leave' | data.js:368 | B | |
+| `t:'A sleeping tomb-world',b:'A tomb-world of your own dynasty, its legions dormant. A word from you would wake one of them.'` | t:'A dormant hull yard',b:'An Eclipse yard from before the collapse drifts in the dark, its hulls stored without minds. A copy from the Archive would wake one of them.' | data.js:369 | B | Event id `tombhome` stays. |
+| `l:'Wake one scythe',s:'A Deathless scythe joins the fleet at full hull.'` | l:'Wake one mote',s:'An Eclipse mote joins the fleet at full hull.' | data.js:370 | B | |
+| `l:'Take its tithe instead'` | l:'Strip it for parts instead' | data.js:371 | B | |
+| `t:'A pirate haven'` | t:'A raider den' | data.js:412 | B | |
+| `s:'Fight an elite Corsair battle. Win a relic.'` | s:'Fight an elite Hullbreaker battle. Win a relic.' | data.js:413 | B | |
+| `s:'A Corsair raider joins with a veteran captain.'` | s:'A Hullbreaker raider joins with a veteran captain.' | data.js:415 | B | |
+| `voidsworn:{id:'vigil',n:'Hold a vigil',` | voidsworn:{id:'vigil',n:'Keep the dawn watch', | data.js:497 | B | Crusade verb (bible 2.9 ritual); Vigil is now a hull class. Id `vigil` stays. |
+| `freeD:'free after an offering at a void-shrine'` | freeD:'free after an offering at a wall of names' | data.js:497 | B | Faction-power string. |
+| `freeD:'free once you have joined the song'` | freeD:'free once you have answered the tone' | data.js:501 | B | Faction-power string. |
+| `deathless:{id:'waken',n:'Waken the legion',d:'Next battle, the endless legion has one more return.'` | deathless:{id:'waken',n:'Back up the fleet',d:'Next battle, Archive restore brings back one more ship.' | data.js:502 | B | Faction-power string. Id `waken` stays. |
+| `freeD:'free once a tomb-world has woken for you'` | freeD:'free once a dormant yard has woken a hull for you' | data.js:502 | B | Faction-power string. |
+| `(Corsairs) tow a small hull home` | (Hullbreakers) tow a small hull home | campaign_run.js:390 | B | Salvage reward line. |
+| `Auspex confirms ` | Scanners confirm | campaign_run.js:540; godot/ui/campaign/campaign_ui.gd:1118 | B, G3 | Sector II and III intro (both games). |
+| `"Auspex confirms [b]"` | "Scanners confirm [b]" | godot/ui/campaign/campaign_ui.gd:1118 | G3 | Godot copy. |
+
+## 8. Hull variants and fleet archetypes
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `n:'Penitent gun-cruiser',d:'Swaps the prow lance for a dorsal macro battery: guns in every arc.'` | n:'Vigil gun-cruiser',d:'Swaps the prow lance for a dorsal sear battery: guns in every arc.' | data.js:550 | B | |
+| `d:'No hangar; a third turbolaser turret instead.'` | d:'No hangar; a third plasma lance turret instead.' | data.js:552 | B | The Hegemony shows `turbo` as Plasma lance. |
+| `n:'Reaver gunboat'` | n:'Turret gutship' | data.js:553 | B | Gunboat is a sea word. |
+| `n:'Razorfiend stalker'` | n:'Bladeback stalker' | data.js:556 | B | |
+| `n:'Wisp lancer',d:'A pulsar lance in place of the shuriken cannon.'` | n:'Sliver lancer',d:'A prism lance in place of the prism shards.' | data.js:557 | B | |
+| `n:'Songship warden'` | n:'Warded prism' | data.js:558 | B | Warden is a Crusade class. |
+| `n:'Scythe sentinel',d:'Adds gauss sentries:` | n:'Mote sentinel',d:'Adds a null spire: | data.js:559 | B | Eclipse shows `gsentry` as Null spire. |
+| `n:'Harvester tomb-turret',d:'Its doom arc sits on a turret` | n:'Turreted zenith',d:'Its corona arc sits on a turret | data.js:560 | B | |
+| `n:'Penitent lantern-cruiser'` | n:'Vigil lance-cruiser' | data.js:564 | B | Arc unlock; lanterns are off-limits for the Crusade (bible 2.4). Must match godot/story/data/arcs.json (L). |
+| `n:'Interdictor column escort'` | n:'Cordon column escort' | data.js:565 | B | Arc unlock. |
+| `n:'Gilded marauder'` | n:'Trophy wrecker' | data.js:566 | B | Arc unlock (Hullbreaker trophy plates). |
+| `n:'Sun-eater razorfiend',d:'Its tendril cluster becomes a second bio-plasma spitter on a turret;` | n:'Sun-eater bladeback',d:'Its tendril cluster becomes a second spine volley on a turret; | data.js:567 | B | Arc unlock. |
+| `n:'Archive wraithcarrier'` | n:'Ringing aperture' | data.js:568 | B | Arc unlock (the Ringing Field, bible 6.10). |
+| `n:'Jackal court guard',d:'Both gauss guns on turrets and a gauss sentry, 10 less hull.'` | n:'Archive guard flare',d:'Both null cannons on turrets and a null spire, 10 less hull.' | data.js:569 | B | Arc unlock. |
+| `voidsworn:'Zealot flotilla'` | voidsworn:'Frontier flotilla' | data.js:592 | B | Archetype names. |
+| `ithar:'Wisp flight',deathless:'Scythe harvest'` | ithar:'Sliver flight',deathless:'Mote cloud' | data.js:592 | B | |
+| `voidsworn:'Cathedral line'` | voidsworn:'Bastion line' | data.js:593 | B | |
+| `chorus:'Titan pod',ithar:'Songline'` | chorus:'Bloat pod',ithar:'Prism line' | data.js:593 | B | |
+| `voidsworn:'Reliquary group'` | voidsworn:'Hearth group' | data.js:594 | B | |
+| `corsair:'Raider nest',chorus:'Hive cluster',ithar:'Wraith host',deathless:'Harvest ark'` | corsair:'Hulk den',chorus:'Brood cluster',ithar:'Aperture host',deathless:'Repair host' | data.js:594 | B | |
