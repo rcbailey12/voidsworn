@@ -563,10 +563,10 @@ const HULL_VARIANTS={
 Object.assign(HULL_VARIANTS,{
   vs_penitent_l:{base:'penitent',arc:'voidsworn',n:'Penitent lantern-cruiser',d:'Two prow lances and a flak turret instead of the broadsides: all its punch points one way.',w:[['lance','F'],['lance','F'],['flak','T']],cost:0},
   h_interdictor_e:{base:'h_interdictor',arc:'hegemony',n:'Interdictor column escort',d:'Adds a flak turret and heavier shields; one hex slower.',w:[['ion','F'],['turbo','T'],['flak','T']],mod:{sh:24,sp:3},cost:0},
-  c_marauder_g:{base:'c_marauder',arc:'corsair',n:'Gilded marauder',d:'A second prow torpedo instead of flak, 20 more hull, one hex slower.',w:[['scatter','P'],['scatter','S'],['torp','F'],['torp','F']],mod:{hp:140,sp:3},cost:0},
-  b_razor_e:{base:'b_razor',arc:'chorus',n:'Sun-eater razorfiend',d:'Regrows 13 a round and spits a second bio-plasma volley forward; one hex slower.',w:[['tendril','T'],['bioplasma','F'],['bioplasma','F']],mod:{regen:13,sp:3},cost:0},
-  i_carrier_a:{base:'i_carrier',arc:'ithar',n:'Archive wraithcarrier',d:'Three wings and a flak turret instead of its lance.',w:[['turret','T'],['flak','T']],mod:{hangar:3,sh:30},cost:0},
-  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Jackal court guard',d:'Both gauss guns on turrets, a gauss sentry, 10 more hull.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],mod:{hp:120},cost:0}});
+  c_marauder_g:{base:'c_marauder',arc:'corsair',n:'Gilded marauder',d:'A second prow torpedo instead of flak, and one hex slower.',w:[['scatter','P'],['scatter','S'],['torp','F'],['torp','F']],mod:{sp:3},cost:0},
+  b_razor_e:{base:'b_razor',arc:'chorus',n:'Sun-eater razorfiend',d:'Its tendril cluster becomes a second bio-plasma spitter on a turret; regrows 11 a round, one hex slower.',w:[['bioplasma','T'],['bioplasma','F']],mod:{regen:11,sp:3},cost:0},
+  i_carrier_a:{base:'i_carrier',arc:'ithar',n:'Archive wraithcarrier',d:'A third wing, paid for with lighter shields (24) and one hex of speed.',w:[['pulsar','F'],['turret','T']],mod:{hangar:3,sh:24,sp:3},cost:0},
+  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Jackal court guard',d:'Both gauss guns on turrets and a gauss sentry.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],cost:0}});
 const ARC_VARIANT=Object.fromEntries(Object.entries(HULL_VARIANTS).filter(([,v])=>v.arc).map(([id,v])=>[v.arc,id]));
 // Customization reserve (Oct 26, customization brainstorm section 6; schema only, nothing reads these for rules yet).
 // Variant rows: base (parent hull id: the variant inherits its model, sections and sounds), cost (renown; 0 with arc = earned by finishing that story arc), arc.

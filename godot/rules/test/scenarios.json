@@ -1517,5 +1517,79 @@
    "b_drone"
   ],
   "fac": "ithar"
+ },
+ "s44": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "sector": 2,
+  "note": "Stream B step 6, R41 arc hull variants as sidegrades: the Gilded marauder (two prow torpedoes, no hull bonus) in your Corsair fleet against the Jackal court guard (turreted gauss and a gauss sentry, no hull bonus) in a Deathless fleet",
+  "map": "belt",
+  "seed": 44044,
+  "admiral": "grax",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder_g",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "deathless",
+  "enemies": [
+   "d_jackal_h",
+   "d_jackal",
+   "d_harvester"
+  ]
+ },
+ "s45": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "sector": 2,
+  "note": "Stream B step 6: the Sun-eater razorfiend (bio-plasma turret and prow spitter, regrows 11) in your Chorus brood against the Archive wraithcarrier (pulsar lance and turret, three wings, shields 24, speed 3) in an Ithar fleet",
+  "map": "open",
+  "seed": 45045,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor_e",
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "ithar",
+  "enemies": [
+   "i_carrier_a",
+   "i_blade",
+   "i_wisp"
+  ]
+ },
+ "s46": {
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "sector": 2,
+  "note": "Stream B step 6: the unchanged arc rows, the Voidsworn lance penitent in your fleet against the Hegemony interdictor variant (ion prow, turbo turret)",
+  "map": "station",
+  "seed": 46046,
+  "admiral": "vex",
+  "fleet": [
+   "vs_penitent_l",
+   "cathedral",
+   "harrow"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor_e",
+   "h_vanguard",
+   "h_picket"
+  ]
  }
 }
