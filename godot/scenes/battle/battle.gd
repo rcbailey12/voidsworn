@@ -494,9 +494,14 @@ func _begin(a) -> void:
 		music.play_battle(pf, _enemy_fac(), boss_fight)
 	if showcase:
 		# the fleets hold their line; the camera drifts round the board from high up, as the browser's title does
+		# no board grid behind the menu (the hex fills and outlines), only the ships, rocks and sky; framed low and close
+		# on your line with the enemy beyond it
+		board.fills.visible = false
+		board.rings.visible = false
 		cam.reset_view()
-		cam.r = clampf(cam.home_r * 1.6, 200.0, 340.0)
-		cam.b = 0.9
+		cam.t = cam.home
+		cam.r = clampf(cam.home_r * 0.95, 120.0, 210.0)
+		cam.b = 1.05
 		for id in views:
 			for n in [views[id].ring, views[id].marker]:
 				if n != null:

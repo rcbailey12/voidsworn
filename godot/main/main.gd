@@ -244,6 +244,7 @@ func _start_showcase() -> void:
 	showcase.args["quality"] = str(settings["quality"])
 	showcase.args["taa"] = bool(settings.get("taa", false))
 	showcase.args["fac"] = ["hegemony", "corsair"][randi() % 2]
+	showcase.args["map"] = ["open", "planet", "station", "storm"][randi() % 4]  # open fields: the dense belts hide the ships at this height
 	add_child(showcase)
 	move_child(showcase, 0)
 	while is_instance_valid(showcase) and not showcase.showcase_ready:
