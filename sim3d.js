@@ -439,7 +439,7 @@ async function varMatrix(n){ const kind=process.env.VK||'battle', S=kind==='boss
   const ids=(process.env.VARS?process.env.VARS.split(','):Object.keys(HULL_VARIANTS).filter(id=>HULL_VARIANTS[id].arc));
   for(const vid of ids){ const V=HULL_VARIANTS[vid], fac=HULLS[V.base].fac, adm=Object.keys(ADMIRALS).find(a=>(ADMIRALS[a].fac||'voidsworn')===fac), foes=RUN_FACTIONS.filter(f=>f!==fac); const res={};
     for(const tpl of [V.base,vid]){ let w=0,hp=0,lost=0,rd=0,dealt=0,died=0;
-      for(let i=0;i<n;i++){ const ef=foes[i%foes.length];
+      for(let i=0;i<n;i++){ const ef=foes[i%foes.length]; rndSeed(7000+i); // Oct 27: seed before the fleet is built, so captain and name draws match between the base and the variant run (true pairs)
         RUN={admiral:adm,fac,credits:0,cpCap:60,sector:S,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
         for(const tp of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(tp,fac),true)); RUN.fleet.splice(1,0,newShip(tpl,true)); RUN.flagUid=RUN.fleet[0].uid; simFit();
         startBattle({kind:kind==='boss'?'boss':'battle',fac:ef,col:kind==='boss'?6:3,obj:'rout',shape:['open','ring','dense'][i%3],map:'random',dep:'line',seed:7000+i}); let r=0; B.alt=true; for(const x of B.units) x.activated=false; startSideTurn('enemy');

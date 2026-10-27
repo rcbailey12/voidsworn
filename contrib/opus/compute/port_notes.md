@@ -316,3 +316,10 @@ Arc variants, battle mode, n 96 (PC unless noted), base to variant: penitent lan
 1. Chorus razorfiend at 100 of 150 hull, turn start: +7 (was +9); its 1-hex hit for 50 hull regrows 4 (8%).
 2. Voidsworn penitent moves 2 hexes and fires a broadside: `dmgMult` includes +.4.
 3. Ithar songship that moved 2 hexes: shots at it get -18.
+
+### Step 7b: final arc variant pass with true pairs (Oct 27)
+- Sim fix: `varmatrix` now reseeds (`rndSeed(7000+i)`) before it builds the fleet, so the base run and the variant run draw the same captains and names; before, only the battle was seeded and captain draws leaked between runs (the same base hull read 68 to 83 in different runs). Same seed now gives the same numbers.
+- `h_interdictor_e`: hull 60 (was 74) instead of the shield bonus (`mod:{hp:60,sp:3}`; flak turret kept); text updated. With Kassar's new start fleet the flak turret alone was worth +15 (no shield bonus: 63 to 78; flak instead of the turbolaser: 63 to 41; hull 60: 63 to 70).
+- `i_carrier_a`: shields 22 (was 24); text updated.
+- Final, battle mode, true pairs (cloud), base to variant: lantern-cruiser 78 to 75 (n 60), column escort 63 to 70 (n 96), gilded marauder 67 to 68 (n 96), sun-eater razorfiend 88 to 82 (n 60), archive wraithcarrier 61 to 68 (n 96), court guard 86 to 92 (n 96). Every row within 7 points of its base, both directions. Boss mode stays near 100% for all rows and does not separate them.
+- PC check after step 7 (unpaired, n 96): Malek 60, Sable 63 (bossmatrix, 200 runs); lantern-cruiser 77 to 80, gilded marauder 61 to 63, razorfiend 73 to 79, wraithcarrier (shields 24) 58 to 64, court guard 78 to 89.
