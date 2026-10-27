@@ -224,9 +224,40 @@ Generic MODULES and RELICS show for the Sunward Crusade (it has no MOD_NAMES or 
 | `phylactery:'Phylactery of the Undying'` | phylactery:'Second Ignition' | data.js:269 | B | Bible 7.10. |
 | `ledger:'Tithe ledger'` | ledger:'Siphon ledger' | data.js:269 | B | |
 | `salvage:'Harvest engine',coils:'Chronometron',logbook:'Annals of the dynasty',armourweave:'Living-metal weave'` | salvage:'Salvage swarm',coils:'Long clock',logbook:'The Archive',armourweave:'Sunshade weave' | data.js:269 | B | |
-| `salvagers:{n:'Salvage protocols'` | salvagers:{n:'Salvage crews' | data.js:249 | B | "Protocol" now belongs to the cores. |
+| `salvagers:{n:'Salvage protocols'` | salvagers:{n:'Recovery crews' | data.js:249 | B | "Protocol" now belongs to the cores. |
 | `d:'Voidsworn fleets may take one Ascendant-class dreadnought.'` | d:'Sunward Crusade fleets may take one Daybreak-class dreadnought.' | data.js:240 | B | Legacy unlock. |
 | `n:'Aspect of the Hive'` | n:'Aspect of the Brood' | data.js:691 | B | Hive. |
+
+## 5b. Relic becomes salvage (the item type; Opus veto of V14)
+
+Phrase by phrase. "Salvage" is uncountable: say "salvage" or "a piece of salvage". Ids never change.
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `n:'Relic of the founders',d:'Begin each run with a random relic.'` | n:'Founders’ salvage',d:'Begin each run with a random piece of salvage.' | data.js:247 | B | Legacy unlock. |
+| `s:'Gain a relic. A random ship takes heavy damage.'` | s:'Gain salvage. A random ship takes heavy damage.' | data.js:283 | B | |
+| `l:'Trade a module for a relic',s:'Lose a random installed module. Gain a relic.'` | l:'Trade a module for salvage',s:'Lose a random installed module. Gain salvage.' | data.js:292 | B | |
+| `s:'Fight an elite Chorus battle. Win a relic.'` | s:'Fight an elite Chorus battle. Win salvage.' | data.js:298 | B | |
+| `s:'Gain a relic. A refit from the hold burns out instead of a hull.'` | s:'Gain salvage. A refit from the hold burns out instead of a hull.' | data.js:324 | B | |
+| `l:'Leave one of your relics as an offering'` | l:'Leave a piece of salvage as an offering' | data.js:328 | B | |
+| `s:'Gain a relic, and the charts show you` | s:'Gain salvage, and the charts show you | data.js:364 | B | |
+| `s:'Lose a relic. Reveal a Nemesis weakness and gain 120 credits.'` | s:'Lose a piece of salvage. Reveal a Nemesis weakness and gain 120 credits.' | data.js:365 | B | |
+| `t:'A relic auction',b:'A neutral station is auctioning relics recovered from a dead crusade.` | t:'A salvage auction',b:'A neutral station is auctioning salvage recovered from a dead crusade. | data.js:400 | B | |
+| `s:'Gain a relic.'` | s:'Gain salvage.' | data.js:401 | B | Auction bid. |
+| `l:'Trade one of your relics for one of theirs',s:'Lose a relic, gain a different one and 40 credits.'` | l:'Trade a piece of your salvage for one of theirs',s:'Lose a piece of salvage, gain a different piece and 40 credits.' | data.js:402 | B | |
+| `d:'Tougher enemies with veteran captains. Drops a relic.'` | d:'Tougher enemies with veteran captains. Drops salvage.' | campaign_run.js:2 | B | Map node info. |
+| `"veteran fleet, drops a relic"` | "veteran fleet, drops salvage" | godot/ui/campaign/campaign_ui.gd:504 | G3 | Godot map. |
+| `<h3>Relics</h3>` | `<h3>Salvage</h3>` | campaign_run.js:68 | B | Map sidebar. |
+| `"Relics"` | "Salvage" | godot/ui/campaign/campaign_ui.gd:664 | G3 | Godot map sidebar heading. |
+| `nd.relic===1?'a relic':` | nd.relic===1?'a piece of salvage': | campaign_run.js:226 | B | Blue option requirement. |
+| `"a relic"` | "a piece of salvage" | godot/campaign/campaign.gd:1504 | G3 | Godot copy. |
+| `Relic gained: ` | Salvage gained: | campaign_run.js:356; godot/campaign/campaign.gd:1924 | B, G3 | Event result (both games). |
+| `No relics left to find. +80 credits instead.` | No salvage left to find. +80 credits instead. | campaign_run.js:356; godot/campaign/campaign.gd:1926 | B, G3 | Both games. |
+| `relic:'A relic is a fleet-wide effect that lasts for the rest of this run.'` | relic:'Salvage is a fleet-wide effect that lasts for the rest of this run.' | campaign_run.js:393 | B | Reward definition (key `relic` stays). |
+| `Relics are fleet-wide bonuses that last for the run.` | Salvage gives fleet-wide bonuses that last for the run. | campaign_meta.js:169; godot/ui/campaign/campaign_ui.gd:1020 | B, G3 | How to play (both). |
+| `"Take relic"` | "Take salvage" | godot/main/campaign_fallback_ui.gd:12 | G2 | Fallback UI. |
+| `the most rewards (relic 4, ` | the most rewards (salvage 4, | godot/ui/campaign/map3d.gd:812 | G3 | Route tooltip. |
+| `%d refit%s, %d relic%s, %d credit reward%s` | %d refit%s, %d salvage, %d credit reward%s | godot/ui/campaign/map3d.gd:817 | G3 | Route tooltip; drop the matching plural argument. |
 
 ## 6. Admirals and Commands
 
@@ -268,15 +299,15 @@ Generic MODULES and RELICS show for the Sunward Crusade (it has no MOD_NAMES or 
 | `l:'Leave it to its prayers'` | l:'Leave it to the dark' | data.js:277 | B | |
 | `s:'A clean cut: archeotech and salvage, nothing wakes.'` | s:'A clean cut: founders’ tech and salvage, nothing wakes.' | data.js:320 | B | |
 | `owes you a favour` | owes you one | data.js:322 | B | "Their captain pays well and owes you one: ..." |
-| `t:'The astropath’s vision',b:'Your fleet astropath wakes screaming. She has seen where a relic lies, but reaching it means sailing through a warp-rift.'` | t:'A signal in the static',b:'Your signals officer has pulled an old founders’ beacon out of the static. A relic lies beyond it, but reaching it means crossing a rift.' | data.js:282 | B | Event id `astropath` stays. No psychics (bible 1.2). |
-| `b:'Your sensor officer has decoded a ghost signal: an old Navy relic cache, deep inside a hyperspace rift.'` | b:'Your sensor officer has decoded a ghost signal: an old Navy relic cache, deep inside a rift.' | data.js:282 | B | Hegemony variant. |
+| `t:'The astropath’s vision',b:'Your fleet astropath wakes screaming. She has seen where a relic lies, but reaching it means sailing through a warp-rift.'` | t:'A signal in the static',b:'Your signals officer has pulled an old founders’ beacon out of the static. Old salvage lies beyond it, but reaching it means crossing a rift.' | data.js:282 | B | Event id `astropath` stays. No psychics (bible 1.2). |
+| `b:'Your sensor officer has decoded a ghost signal: an old Navy relic cache, deep inside a hyperspace rift.'` | b:'Your sensor officer has decoded a ghost signal: an old Navy salvage cache, deep inside a rift.' | data.js:282 | B | Hegemony variant. |
 | `corsair:{t:'The navigator’s hunch',b:'Your half-mad navigator swears she can smell treasure on the far side of a rift. She is usually right. Usually.'}` | corsair:{t:'The tracker’s nose',b:'Your best tracker swears she can smell old metal on the far side of a rift. She is usually right. Usually.'} | data.js:282 | B | Hullbreakers hunt by scent and sound. |
 | `chorus:{t:'A scent in the void',b:'The brood-mind tastes something ancient and delicious beyond a rift in space.'}` | chorus:{t:'A scent in the dark',b:'The swarm tastes something old and delicious beyond a rift.'} | data.js:282 | B | |
 | `ithar:{t:'A seer’s dream',b:'Your seer dreams of a lost treasure of your people, sleeping beyond a rift.'}` | ithar:{t:'A glint beyond the rift',b:'Your mirrors catch a glint of old Starwright glass beyond a rift: a lost treasure of your people.'} | data.js:282 | B | |
 | `deathless:{t:'A dynastic beacon',b:'An old dynastic beacon pulses from beyond a rift. Something of the dynasty is still out there.'}` | deathless:{t:'An Archive beacon',b:'An Archive beacon from before the collapse pulses beyond a rift. Something of Ardent is still out there.'} | data.js:282 | B | |
 | `t:'Warp storm'` | t:'Rift storm' | data.js:288 | B | |
 | `t:'An Ithar seer',b:'A lone Ithar vessel matches your course. Its seer offers a trade: one of your refits for one of their treasures.'` | t:'A Glasswright wanderer',b:'A lone Glasswright vessel matches your course. Its keeper offers a trade: one of your refits for one of their treasures.' | data.js:291 | B | Event id `seer` stays. |
-| `l:'Sing back to her',s:'She trades a relic for a song. No refit lost.'` | l:'Answer her tone in glass',s:'She trades a relic for the courtesy. No refit lost.' | data.js:325 | B | Option key `song` stays (Glasswright-only blue option). |
+| `l:'Sing back to her',s:'She trades a relic for a song. No refit lost.'` | l:'Answer her tone in glass',s:'She trades salvage for the courtesy. No refit lost.' | data.js:325 | B | Option key `song` stays (Glasswright-only blue option). |
 | `The seer smiles and gives anyway.` | The keeper smiles and gives anyway. | campaign_run.js:355; godot/campaign/campaign.gd:1920 | B, G3 | Event result (both games). |
 | `t:'A void-shrine',b:'An orbital shrine to a forgotten saint hangs over a dead world. Your crews ask to make an offering.'` | t:'A wall of names',b:'A memorial station hangs over a dead world, its walls chalked with the names of a crusade that never came home. Your crews ask to leave an offering.' | data.js:300 | B | Faction-power string (vetoable V10). Event id `shrine` stays. |
 | `hegemony:{b:'An old orbital shrine hangs over a dead world. Spacers are a superstitious lot, and your crews ask to leave an offering.'}` | hegemony:{b:'An old memorial station hangs over a dead world. Spacers are a superstitious lot, and your crews ask to leave an offering.'} | data.js:300 | B | |
@@ -290,15 +321,15 @@ Generic MODULES and RELICS show for the Sunward Crusade (it has no MOD_NAMES or 
 | `l:'Let the living metal knit it'` | l:'Let the repair drones knit it' | data.js:344 | B | |
 | `t:'A song in the dark',b:'A dying Ithar songship is singing its own lament. The melody carries old star charts in it, for those who can hear.'` | t:'A tone in the dark',b:'A dying Glasswright prism rings with one long clear tone as its light fades. The tone carries old star charts in it, for those who can read it.' | data.js:362 | B | |
 | `l:'Join the song'` | l:'Answer the tone' | data.js:364 | B | Faction-power string. |
-| `l:'Trade a relic for its archive'` | l:'Trade a relic for its charts' | data.js:365 | B | The archive is Eclipse's word. |
+| `l:'Trade a relic for its archive'` | l:'Trade salvage for its charts' | data.js:365 | B | The archive is Eclipse's word. |
 | `t:'A sealed tomb-world',b:'A planet of black glass hums under your keels. Deep below, something counts the seconds until it wakes.'` | t:'A siphon array',b:'A ring of black collectors circles a dimming star, drinking its energy. Something aboard counts the seconds until you come in range.' | data.js:366 | B | Event id `tomb` stays. |
-| `l:'Wake it and take what it guards',s:'Fight an elite Deathless battle. Win a relic.'` | l:'Break the array and take what it guards',s:'Fight an elite Eclipse battle. Win a relic.' | data.js:367 | B | |
+| `l:'Wake it and take what it guards',s:'Fight an elite Deathless battle. Win a relic.'` | l:'Break the array and take what it guards',s:'Fight an elite Eclipse battle. Win salvage.' | data.js:367 | B | |
 | `l:'Map it from orbit and leave'` | l:'Chart it and leave' | data.js:368 | B | |
 | `t:'A sleeping tomb-world',b:'A tomb-world of your own dynasty, its legions dormant. A word from you would wake one of them.'` | t:'A dormant hull yard',b:'An Eclipse yard from before the collapse drifts in the dark, its hulls stored without minds. A copy from the Archive would wake one of them.' | data.js:369 | B | Event id `tombhome` stays. |
 | `l:'Wake one scythe',s:'A Deathless scythe joins the fleet at full hull.'` | l:'Wake one mote',s:'An Eclipse mote joins the fleet at full hull.' | data.js:370 | B | |
 | `l:'Take its tithe instead'` | l:'Strip it for parts instead' | data.js:371 | B | |
 | `t:'A pirate haven'` | t:'A raider den' | data.js:412 | B | |
-| `s:'Fight an elite Corsair battle. Win a relic.'` | s:'Fight an elite Hullbreaker battle. Win a relic.' | data.js:413 | B | |
+| `s:'Fight an elite Corsair battle. Win a relic.'` | s:'Fight an elite Hullbreaker battle. Win salvage.' | data.js:413 | B | |
 | `s:'A Corsair raider joins with a veteran captain.'` | s:'A Hullbreaker raider joins with a veteran captain.' | data.js:415 | B | |
 | `voidsworn:{id:'vigil',n:'Hold a vigil',` | voidsworn:{id:'vigil',n:'Keep the dawn watch', | data.js:497 | B | Crusade verb (bible 2.9 ritual); Vigil is now a hull class. Id `vigil` stays. |
 | `freeD:'free after an offering at a void-shrine'` | freeD:'free after an offering at a wall of names' | data.js:497 | B | Faction-power string. |
@@ -478,15 +509,15 @@ Opus or Ryan can veto any of these; each is a few strings to swap.
 - **V11 Events:** the astropath becomes a signals officer and a founders' beacon (no psychics); the Ithar seer becomes a Glasswright wanderer and its keeper; the tithe vault becomes a toll vault; the pirate haven a raider den; "The saint answers" becomes "Luck holds".
 - **V12 Nova cannon** becomes **Spinal cannon** (shared by three flagships, so a neutral name).
 - **V13 Battle shapes:** the gravity-well board's label is "Hollow Sun" (canonical row: the dead star is the Hollow Sun); Colossus becomes "Giant wreck" (Colossus is now the Maw's class); Shoals becomes "Rock shoals"; Archipelago kept.
-- **V14 Relics keep the word "relic"** as the item type (a roguelite term, not the Crusade honour word the bible bans); only church-flavoured relic names change.
+- **V14 (vetoed by Opus, Oct 27): relic becomes salvage.** The bible's 1.2 table lists "relic" as a never-say word, so the item type label changes too: **salvage** ("drops salvage", "Salvage: Wake-tracker", the Salvage heading, "a piece of salvage" where a count is needed). Ids stay (`RELICS`, `relic`, `relics`, `takeRelic`, `payRelic`, `relicChoice`, `eventRelic`, `relicName`). Rows in section 5b. Watch-out for the appliers: the after-battle wreck step is also called salvage ("Salvage the field", REWARD_DEF `salvage`), and one item is "Salvage rig"; both stay as they are unless Opus rules otherwise.
 - **V15 Arc unlocks:** Vigil lance-cruiser, Cordon column escort, Trophy wrecker, Sun-eater bladeback, Ringing aperture, Archive guard flare.
 - **V16 Run-end headlines:** Hullbreakers "Strongest keeps it", Glasswrights "The light is kept", Eclipse "Noon returns" (the others kept).
 - **V17 Refits and relics the bible does not name:** section 5 (for example Scanner array, Screen capacitor, The Chalked Roll, Wake-tracker, Tasting pores, Annealing kilns, Long-count reckoner, Siphon ledger, Long clock).
-- **V18 Small ones:** Hegemony "Shield wall order" (protocol now belongs to the cores), "Salvage crews" (was Salvage protocols), "Spitting volley", "Acid tide", Hegemony ship names Optimal, Consensus, Projection, Punctual, Comptroller, Allocation, Forecast.
+- **V18 Small ones:** Hegemony "Shield wall order" (protocol now belongs to the cores), "Recovery crews" (was Salvage protocols), "Spitting volley", "Acid tide", Hegemony ship names Optimal, Consensus, Projection, Punctual, Comptroller, Allocation, Forecast.
 
 ## 14. Looked at and kept
 
-- Generic words: void (Open void, Deep void, Quiet void), relic (the item type), crusade (the Crusade's run word and "Pale Crusader", "Crusader's wrath"), Warden-class and Harrow-class, Lance array, Phase jump (Glasswright short jumps), Prism charge, Undying foes (Heat), Zealots (Nemesis trait), Ion cannon, Plasma drive, Deflector (Hegemony words), Bright Censure, Judgement Bell (bells belong to the Crusade), Ashen Vigil and Everwatch (bible ship names), Funeral Pyre and Pyre of Stars, Warlord's Pyre-Barge (canonical), Wolfpack (the Hullbreakers are wolf-like pack hunters), Archipelago.
+- Generic words: void (Open void, Deep void, Quiet void), crusade (the Crusade's run word and "Pale Crusader", "Crusader's wrath"), Warden-class and Harrow-class, Lance array, Phase jump (Glasswright short jumps), Prism charge, Undying foes (Heat), Zealots (Nemesis trait), Ion cannon, Plasma drive, Deflector (Hegemony words), Bright Censure, Judgement Bell (bells belong to the Crusade), Ashen Vigil and Everwatch (bible ship names), Funeral Pyre and Pyre of Stars, Warlord's Pyre-Barge (canonical), Wolfpack (the Hullbreakers are wolf-like pack hunters), Archipelago.
 - Chorus: the Matriarch of Nine Throats, Razormaw, Voice of the Deep, drone-spawn, spitter, brood, Spawning surge, Blood frenzy, Regrowth tide, Deep Murmur, Lantern Gut.
 - Hegemony: the Iron Mandate, picket, vanguard, dominion, the rest of the HNS names, all admirals except Kassar's rank.
 - Ids, save keys, CSS class names and code comments (the sweep in Job 3 reports display strings only).
