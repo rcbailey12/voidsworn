@@ -790,7 +790,8 @@ void fragment() {
 			float pid = h21(floor(lp.xz * 0.28) + floor(lp.y * 0.28) * 7.3);
 			float tdie = dist * 0.7 + pid * 0.45;
 			float ct = ba - tdie;
-			float stut = step(0.45, h21(vec2(pid * 31.0, floor(scene_t * 7.0))));
+			// the stutter stays low contrast and slow enough that the whole bubble never strobes (flash rules)
+			float stut = mix(0.35, 1.0, step(0.45, h21(vec2(pid * 31.0, floor(scene_t * 4.5)))));
 			float on = mix(stut, 0.5 + 0.5 * cos(min(ba, tdie) * 3.0), fx_calm);
 			alive = ct < 0.0 ? on * smoothstep(0.0, -0.35, ct) + 0.15 : 0.0;
 			add += alive * (0.5 + 0.5 * pat) * 0.7 + smoothstep(-0.05, 0.0, ct) * step(ct, 0.0) * 0.8 * calm;
