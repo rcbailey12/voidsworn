@@ -354,30 +354,8 @@ void fragment() {
 }
 """
 
-# The threat marker over a fight: a faceted gem lit from inside, in the enemy's colour, with the faction's own light:
-# look 0 plain, 1 pulse in step (every Hegemony light keeps the same beat), 2 rainbow edges (Ithar crystal), 3 a white-gold
-# corona (Deathless).
-const MARKER := """
-shader_type spatial;
-render_mode unshaded, shadows_disabled, fog_disabled;
-""" + NOISE + """
-uniform vec4 col : source_color = vec4(1.0, 0.3, 0.2, 1.0);
-uniform vec4 rim : source_color = vec4(1.0, 0.7, 0.5, 1.0);
-uniform float look = 0.0;
-uniform float dim = 1.0;
-void fragment() {
-	float f = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-	vec3 c = col.rgb * (0.7 + 0.6 * f) * 1.8;
-	vec3 r = rim.rgb * pow(f, 2.0) * 2.4;
-	if (look > 1.5 && look < 2.5) r = hue(f * 1.4 + TIME * 0.12) * pow(f, 1.5) * 3.0;
-	float p = 1.0;
-	if (look > 0.5 && look < 1.5) p = 0.7 + 0.5 * sin(TIME * 2.4);
-	ALBEDO = (c + r) * p * dim;
-}
-"""
-
 # A faction halo on the chart plane round a rival's stop (and the flagship): a ring in the faction's light.
-# look as in MARKER (2 turns the ring into a rainbow, 1 pulses in step).
+# look: 0 plain, 1 pulses in step (Hegemony), 2 a rainbow ring (Ithar crystal), 3 corona (Deathless).
 const HALO := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -617,9 +595,13 @@ void fragment() {
 	ALBEDO = col;
 	METALLIC = metal * (0.6 + 0.4 * h1);
 	ROUGHNESS = 0.35 + 0.35 * grime + seam * 0.2;
-	// rows of windows: a small lit slot in some panels
-	float wmask = step(1.0 - windows, mh2(c2 + 7.3)) * step(abs(f2.y - 0.5), 0.08) * step(abs(f2.x - 0.5), 0.18);
-	EMISSION = win_col * wmask * 1.5 + accent * glow * (1.0 - seam) * 0.6;
+	// window strips in clusters: a run of lit slots along some plates, only where a slow noise says a deck is lived in
+	float cluster = smoothstep(0.52, 0.62, mn3(lp * 1.3 + 3.7));
+	float strip = step(abs(f1.y - 0.5), 0.06) * step(0.35, fract(f1.x * 7.0)) * step(0.08, f1.x) * step(f1.x, 0.92);
+	float wmask = strip * cluster * step(1.0 - windows * 3.0, mh2(c1 + 7.3));
+	// a warm rim from the Hollow Sun's disc, so the silhouette reads at full-map distance
+	float fr = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.5);
+	EMISSION = win_col * wmask * 1.6 + accent * glow * (1.0 - seam) * 0.6 + vec3(1.0, 0.62, 0.34) * fr * 0.22;
 }
 """
 
@@ -744,5 +726,47 @@ void fragment() {
 	// the photon ring: thin and bright all the way round
 	float ring = exp(-pow((th - 1.03) / 0.022, 2.0)) * 2.4 + exp(-pow((th - 1.08) / 0.06, 2.0)) * 0.5;
 	ALBEDO = (c * arc + vec3(1.0, 0.86, 0.62) * ring) * gain;
+}
+"""
+
+# The threat marker over a fight (R51 round 3, replaces the lit gem): a crisp holographic diamond outline in the
+# danger band's colour, an inner pip in the enemy faction's light, corner ticks, a scan line sweeping down it and a
+# soft pulse ring going out. elite draws a second outline and a gold crown bar. Camera-facing.
+const THREAT := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, depth_test_disabled, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec4 col : source_color = vec4(0.5, 0.86, 0.42, 1.0);
+uniform vec4 fac : source_color = vec4(1.0, 0.5, 0.2, 1.0);
+uniform float elite = 0.0;
+uniform float dim = 1.0;
+uniform float phase = 0.0;
+void vertex() {
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
+	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+}
+float line(float d, float w) { float aa = fwidth(d) * 1.2; return 1.0 - smoothstep(w - aa, w + aa, abs(d)); }
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	p.y *= 0.8;
+	float dm = abs(p.x) + abs(p.y);                     // diamond distance
+	float t = TIME + phase;
+	float o1 = line(dm - 0.62, 0.035);
+	float o2 = elite * line(dm - 0.76, 0.022);
+	float fillv = (1.0 - smoothstep(0.55, 0.62, dm)) * 0.12;
+	float pip = 1.0 - smoothstep(0.16, 0.2, dm);
+	// corner ticks just outside the outline, on the four points
+	float ticks = 0.0;
+	ticks += line(abs(p.y), 0.02) * step(0.7, abs(p.x)) * step(abs(p.x), 0.86);
+	ticks += line(abs(p.x), 0.02) * step(0.7, abs(p.y)) * step(abs(p.y), 0.86);
+	// scan line sweeping down inside the diamond
+	float sy = 0.62 - fract(t * 0.45) * 1.24;
+	float scan = line(p.y - sy, 0.012) * (1.0 - smoothstep(0.58, 0.62, dm)) * 0.9;
+	// pulse ring going out
+	float pr = 0.62 + fract(t * 0.6) * 0.38;
+	float pulse = line(dm - pr, 0.018) * (1.0 - fract(t * 0.6)) * 0.7;
+	// gold crown bar for an elite
+	float crown = elite * line(p.y - 0.86, 0.025) * step(abs(p.x), 0.3);
+	vec3 c = col.rgb * (o1 * 2.2 + fillv + ticks * 1.2 + scan + pulse) + fac.rgb * pip * 1.8 + vec3(1.0, 0.78, 0.35) * (o2 * 1.8 + crown * 2.2);
+	ALBEDO = c * dim;
 }
 """

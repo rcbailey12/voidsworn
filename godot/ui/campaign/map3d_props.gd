@@ -74,8 +74,8 @@ func spot(parent: Node3D, pos: Vector3, target: Vector3, col: Color, energy: flo
 # ---------------------------------------------------------------- the orbital station (about 7 units across)
 func station(parent: Node3D, base: Color, accent: Color) -> Node3D:
 	var root = Node3D.new(); parent.add_child(root)
-	var hm = hull_mat(base, accent, 1.8, 0.1, 0.3)
-	var hm2 = hull_mat(base.darkened(0.15), accent, 2.6, 0.03, 0.4)
+	var hm = hull_mat(base, accent, 1.2, 0.12, 0.3)
+	var hm2 = hull_mat(base.darkened(0.15), accent, 1.8, 0.04, 0.4)
 	# the spindle and its modules
 	part(root, cyl(0.3, 4.6), hm2)
 	part(root, cyl(0.62, 0.8), hm, Vector3(0, 1.05, 0)); part(root, cyl(0.55, 0.6), hm, Vector3(0, -0.55, 0))
@@ -84,7 +84,15 @@ func station(parent: Node3D, base: Color, accent: Color) -> Node3D:
 	# the habitat ring on four spokes
 	var ring = Node3D.new(); ring.name = "ring"; ring.position = Vector3(0, 0.3, 0); root.add_child(ring)
 	var t = TorusMesh.new(); t.inner_radius = 2.05; t.outer_radius = 2.45; t.rings = 96 if q > 0.5 else 48; t.ring_segments = 18 if q > 0.5 else 10
-	part(ring, t, hull_mat(base, accent, 2.4, 0.16, 0.3))
+	part(ring, t, hull_mat(base, accent, 1.6, 0.2, 0.3))
+	# greebles on the ring: small boxes (vents, hatches, conduit blocks) scattered over its outer face
+	var gitems = []
+	for i in (70 if q > 0.5 else 24):
+		var ga = sys.rng.randf() * TAU; var gv = sys.rng.randf_range(-0.9, 0.9)
+		var gp = Vector3(cos(ga) * (2.25 + 0.2 * cos(gv)), 0.2 * sin(gv), sin(ga) * (2.25 + 0.2 * cos(gv)))
+		var gb = Basis(Vector3.UP, -ga) * Basis.from_scale(Vector3(sys.rng.randf_range(0.06, 0.16), sys.rng.randf_range(0.04, 0.08), sys.rng.randf_range(0.08, 0.24)))
+		gitems.append([Transform3D(gb, gp), 0.0])
+	caster(sys.scatter(ring, box(1, 1, 1), hull_mat(base.darkened(0.25), accent, 6.0, 0.0, 0.5), gitems))
 	for i in 4:
 		var a = i * TAU / 4.0 + TAU / 8.0
 		beam(ring, Vector3(cos(a) * 0.7, 0, sin(a) * 0.7), Vector3(cos(a) * 2.1, 0, sin(a) * 2.1), 0.14, hm2)

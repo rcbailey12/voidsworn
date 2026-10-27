@@ -273,10 +273,8 @@ func _add_node(n: Dictionary) -> void:
 	var d = {"n": n, "pos": p, "theta": pp.x, "r": pp.y, "fac": nfac if nfac != "" else str(C.RUN["map"]["fac"])}
 	if fight and t != "boss":
 		top = _place_scene(obj, str(n.get("map", "")), d)
-		var gem = sys.marker(obj, Vector3(0, top + 0.9, 0), 0.48 if t == "battle" else 0.62, nfac, t == "elite"); mats.append(gem.material_override)
-		if t == "elite":
-			var gm = _mat(gold, 2.2); mats.append(gm)
-			var cr = sys.mi(_torus(0.85, 0.94), gm, Vector3(0, top + 0.9, 0)); cr.rotation_degrees = Vector3(80, 0, 0); cr.name = "spin2"; obj.add_child(cr)
+		var tm = sys.threat(obj, Vector3(0, top + 0.9, 0), 2.0 if t == "battle" else 2.5, nfac, t == "elite"); mats.append(tm.material_override)
+		d["threat"] = tm.material_override
 		top += 1.6
 	elif t == "boss":
 		var fac = C.RUN["map"]["fac"]; var btpl = C.FACTIONS[fac].get("boss"); var cls = str(C.HULLS[btpl].get("cls", "Battleship")) if btpl != null and C.HULLS.has(btpl) else "Battleship"
@@ -338,6 +336,8 @@ func _add_node(n: Dictionary) -> void:
 	if t in ["shipyard", "drydock", "field"] or str(n.get("map", "")) in ["station", "graveyard"]:
 		var fl = OmniLight3D.new(); fl.light_color = Color(0.7, 0.78, 1.0); fl.light_energy = 2.4; fl.omni_range = 16.0; fl.omni_attenuation = 1.1
 		fl.position = Vector3(3.0, 5.0, 4.5); fl.shadow_enabled = false; obj.add_child(fl)
+		var ky = OmniLight3D.new(); ky.light_color = Color(1.0, 0.9, 0.78); ky.light_energy = 1.1; ky.omni_range = 15.0; ky.omni_attenuation = 1.0   # a faint key from the camera's side
+		ky.position = Vector3(-2.0, 7.0, 8.0); ky.shadow_enabled = false; obj.add_child(ky)
 	# the ring round the stop (its colour says what you can do there) and, for a rival raider, a halo in the rival's look
 	var big = RING_R * (1.55 if t == "boss" else 1.0)
 	var rmat = sys.mat("RING", {"col": Color(1, 1, 1, 0.25), "r": 0.8})
@@ -422,6 +422,7 @@ func _refresh() -> void:
 			m.albedo_color = c0.lerp(Color(0.28, 0.28, 0.3), 0.75) if done else c0
 			if m.emission_enabled: m.emission_energy_multiplier = e0 * (0.08 if done else 1.0)
 		if not done: _danger[id] = intel.danger(n)
+		if d.has("threat") and _danger.has(id) and not _danger[id].is_empty(): d["threat"].set_shader_parameter("col", Color(_danger[id]["col"]))   # the marker takes the danger band's colour
 		# the ring says what you can do with the stop: gilt where you can jump now, bright where the fleet is, faint ahead, grey behind
 		var rc = Color(0.75, 0.82, 1.0, 0.32); var dash = 0.0; var fill = 0.0
 		if done: rc = Color(0.5, 0.5, 0.55, 0.16)
@@ -513,7 +514,7 @@ func _process(delta: float) -> void:
 		if sp2 != null: sp2.rotate_y(delta * 0.8)
 		var bob = o.get_node_or_null("bob")
 		if bob != null:
-			bob.rotate_y(delta * 1.2); bob.position.y = _nodes[id]["top"] - 0.7 + sin(_t * 1.6 + _nodes[id]["theta"] * 3.0) * 0.12
+			bob.position.y = _nodes[id]["top"] - 0.7 + sin(_t * 1.6 + _nodes[id]["theta"] * 3.0) * 0.12
 		var av = _avail().has(id)
 		var k = 1.0 + (0.05 * sin(_t * 2.6) if av else 0.0) + (0.1 if id == _hot else 0.0)
 		_nodes[id]["ring"].scale = Vector3(k, 1, k)
@@ -791,12 +792,12 @@ func _card_bb(n: Dictionary) -> String:
 	# the routes through this node to the flagship
 	if not _routes.is_empty() and not C.jt(n.get("done")):
 		t += "\n\n[b]" + _cc("ROUTES TO THE FLAGSHIP", ui.GILT) + "[/b]"
-		t += "\n" + _cc("Safest: the mildest worst fight, then the least danger in all (repair stops count in its favour). Richest: the most rewards (relic 4, boon 3, refit 2, shipyard 2, credits 1, event 1).", ui.BONE3)
+		t += "\n" + _cc("Safest: the mildest worst fight, then the least danger in all (repair stops count in its favour). Richest: the most rewards (relic 4, " + ui.term("boon") + " 3, refit 2, shipyard 2, credits 1, event 1).", ui.BONE3)
 		var fc = intel.fleet_condition()
 		for r in _routes:
 			var st = r["st"]
 			t += "\n[b]" + _cc(r["name"], r["col"]) + "[/b]  " + "%d fight%s%s, %d repair stop%s, %d shipyard%s" % [st["fights"], "" if st["fights"] == 1 else "s", (" (%d elite)" % st["elites"]) if st["elites"] > 0 else "", st["repairs"], "" if st["repairs"] == 1 else "s", st["shops"], "" if st["shops"] == 1 else "s"]
-			t += "\n   " + _cc("%d boon%s, %d refit%s, %d relic%s, %d credit reward%s, %d event%s · worst fight: " % [st["boons"], "" if st["boons"] == 1 else "s", st["refits"], "" if st["refits"] == 1 else "s", st["relics"], "" if st["relics"] == 1 else "s", st["credits"], "" if st["credits"] == 1 else "s", st["events"], "" if st["events"] == 1 else "s"], ui.BONE3) + _cc(st["worst_name"], Intel.BANDS[st["worst"]][2])
+			t += "\n   " + _cc(("%d " + ui.term("boon") + "%s, %d refit%s, %d relic%s, %d credit reward%s, %d event%s · worst fight: ") % [st["boons"], "" if st["boons"] == 1 else "s", st["refits"], "" if st["refits"] == 1 else "s", st["relics"], "" if st["relics"] == 1 else "s", st["credits"], "" if st["credits"] == 1 else "s", st["events"], "" if st["events"] == 1 else "s"], ui.BONE3) + _cc(st["worst_name"], Intel.BANDS[st["worst"]][2])
 			if fc["hurt"] and not st["repair_before_boss"]: t += "\n   " + _cc("Your fleet is hurt and this route has no repair stop before the flagship.", ui.BLOOD)
 	if _avail().has(n["id"]): t += "\n" + _cc("Click to jump here.", ui.BONE3)
 	return t

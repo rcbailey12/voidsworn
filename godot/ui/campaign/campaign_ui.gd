@@ -23,6 +23,13 @@ const VERD := Color("#5fb3a6")
 const BLOOD := Color("#e27f74")
 const GLASS := Color(0.047, 0.07, 0.12, 0.80)
 const BLUE := Color("#62a8ff")   # B4 blue event options
+# Words Ryan has ruled will change once the lore is signed off (patron to core, sigil to signal, boon to protocol,
+# favour to sync). No text changes before sign-off; the map screen's own strings read these so the swap is one edit
+# here (the texts ported from the browser game follow the project-wide rename). Ids never change.
+const TERMS := {"patron": "patron", "patrons": "patrons", "sigil": "sigil", "boon": "boon", "boons": "boons", "favour": "favour"}
+static func term(k: String, cap: bool = false) -> String:
+	var t: String = TERMS.get(k, k)
+	return (t.substr(0, 1).to_upper() + t.substr(1)) if cap else t
 
 var C                      # the campaign (campaign.gd)
 var k := 1.0
@@ -565,7 +572,7 @@ func _intel_strip() -> Control:
 		row.add_child(box.call("Sector condition", "[b]" + c(esc(cond["n"]), GILT) + "[/b] " + c(esc(cond["d"]), BONE2), GILT, "", 340.0))
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
-	row.add_child(box.call("Patrons watching", ", ".join(PackedStringArray(ps)) + c(" · win at a sigil for a boon", BONE3), Color(0.7, 0.6, 1.0), "Win at a stop with a patron's sigil and that patron offers a boon.", 250.0))
+	row.add_child(box.call(term("patrons", true) + " watching", ", ".join(PackedStringArray(ps)) + c(" · win at a " + term("sigil") + " for a " + term("boon"), BONE3), Color(0.7, 0.6, 1.0), "Win at a stop with a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + ".", 250.0))
 	if R.get("heat") is Array and R["heat"].size() > 0:   # the run's Heat rules, which also feed the danger estimate
 		var hs = []
 		for kk in R["heat"]:
@@ -649,13 +656,13 @@ func _side() -> Control:
 	if C.jt(R.get("aspect")) and C.ASPECTS.has(R["aspect"]):
 		v.add_child(_wr_head("Flagship"))
 		v.add_child(rich("[b]" + esc(fs["name"] if fs != null else "") + "[/b] " + c(esc(C.ASPECTS[R["aspect"]]["n"]), GILT), 15)); v.add_child(lbl(C.ASPECTS[R["aspect"]]["d"], 13, BONE2))
-	v.add_child(_wr_head("Boons"))
+	v.add_child(_wr_head(term("boons", true)))
 	if R["boons"].size() > 0:
 		for b in R["boons"]: v.add_child(_boon_line(b))
-	else: v.add_child(lbl("None yet. Win at a node with a patron\u2019s sigil to earn one.", 14, BONE3))
+	else: v.add_child(lbl("None yet. Win at a node with a " + term("patron") + "\u2019s " + term("sigil") + " to earn one.", 14, BONE3))
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
-	v.add_child(rich(c("Patrons this run: ", BONE3) + ", ".join(PackedStringArray(ps)), 13))
+	v.add_child(rich(c(term("patrons", true) + " this run: ", BONE3) + ", ".join(PackedStringArray(ps)), 13))
 	v.add_child(_wr_head("Relics"))
 	if R["relics"].size() > 0:
 		for r in R["relics"]: v.add_child(rich("[b]" + esc(C.relicName(r)) + "[/b]\n" + c(esc(C.RELICS[r]["d"]), BONE2), 14))

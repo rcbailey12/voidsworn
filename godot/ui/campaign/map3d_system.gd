@@ -53,7 +53,7 @@ func _sh(name: String) -> Shader:
 		var codes = {"SKY": SH.SKY, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
 			"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "RING": SH.RING, "CLOUD": SH.CLOUD,
 			"HULL": SH.HULL, "SOLAR": SH.SOLAR, "RADIATOR": SH.RADIATOR, "ROCK_HI": SH.ROCK_HI, "CLOUDS": SH.CLOUDS,
-			"MARKER": SH.MARKER, "HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW, "BH_LENSED": SH.BH_LENSED}
+			"HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW, "BH_LENSED": SH.BH_LENSED, "THREAT": SH.THREAT}
 		var s = Shader.new(); s.code = codes[name]; _shaders[name] = s
 	return _shaders[name]
 func mat(name: String, params: Dictionary = {}) -> ShaderMaterial:
@@ -278,13 +278,13 @@ func wreck_scraps(parent: Node3D, n: int, spread: float) -> void:
 	for i in n:
 		items.append([Transform3D(rand_basis(rng.randf_range(0.15, 0.55)), Vector3(rng.randfn() * spread, rng.randf_range(0.3, 2.2), rng.randfn() * spread * 0.7)), 1.0 if rng.randf() < 0.3 else 0.0])
 	scatter(parent, plate, mat("ROCK", {"tint": Color(0.28, 0.27, 0.26), "metal": 0.7, "ember": 1.0}), items)
-func marker(parent: Node3D, at: Vector3, size: float, fac: String, elite: bool) -> MeshInstance3D:
+# the threat marker over a fight: a holographic diamond in the danger band's colour (set by map3d after the danger
+# estimate), the enemy faction's light at its centre
+func threat(parent: Node3D, at: Vector3, size: float, fac: String, elite: bool) -> MeshInstance3D:
 	var L = look(fac)
-	var gem = mi(sphere(size, 4, 2), mat("MARKER", {"col": Color("#ff3a2a") if elite else Color("#e8402e"), "rim": L["light"], "look": float(L["look"])}), at)
-	gem.scale = Vector3(1.0, 1.35, 1.0); gem.name = "bob"; parent.add_child(gem)
-	glow(parent, Color(1.0, 0.25, 0.15, 1.0), size * 4.5, at, 2.2, 0.55)
-	if int(L["look"]) == 3: glow(parent, L["light"], size * 7.0, at, 3.0, 0.45)   # the Deathless white-gold corona
-	return gem
+	var m = mi(quad(1, 1), mat("THREAT", {"fac": L["light"], "elite": 1.0 if elite else 0.0, "phase": rng.randf() * 10.0}), at, Vector3.ONE * size)
+	m.name = "bob"; m.extra_cull_margin = size; parent.add_child(m)
+	return m
 func halo(parent: Node3D, fac: String, radius: float, at: Vector3 = Vector3(0, 0.04, 0)) -> MeshInstance3D:
 	var L = look(fac); var h = radius / 0.85
 	var m = mi(flat(h * 2.0, h * 2.0), mat("HALO", {"col": L["light"], "col2": L["main"].lerp(L["light"], 0.4), "look": float(L["look"])}), at)
