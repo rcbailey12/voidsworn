@@ -152,6 +152,8 @@ func _ready() -> void:
 		_breach_shots()
 	elif args.has("move-frames"):
 		_move_frames()
+	elif args.has("sheet-check"):
+		_sheet_check()
 	elif shots_dir != "":
 		_shots()
 
@@ -2610,8 +2612,9 @@ func _panel_info() -> Dictionary:
 		else:
 			right = "ready"
 		var arc_name = TBL.get("ARC_NAME", {}).get(str(w["arc"]), str(w["arc"]))
-		ws.append({"i": w["i"], "name": str(w["name"]), "desc": "%s, range %d, %d×%d" % [str(arc_name), int(w["range"]), int(rw["shots"]), int(round(float(rw["dmg"])))], "right": right, "ready": w["ready"], "armed": int(w["i"]) == armed and id == sel})
+		ws.append({"i": w["i"], "name": str(w["name"]), "desc": _weapon_desc(ru, rw, str(arc_name)), "right": right, "ready": w["ready"], "armed": int(w["i"]) == armed and id == sel})
 	info["weapons"] = ws
+	_panel_sheet(u, ru, info)
 	if u["side"] == "player" and not u["dead"]:
 		var can := _can_act() and _usable(u)
 		var orders: Array = []
@@ -2630,6 +2633,175 @@ func _panel_info() -> Dictionary:
 		orders.append({"text": "Turn right (E)", "act": "rotr", "on": can})
 		info["orders"] = orders
 	return info
+
+
+# ---------------------------------------------------------------- the full ship sheet (ui3d.js refreshPanel)
+const SEC_LBL := {"prow": "Prow", "mid": "Midships", "eng": "Engines"}
+static var _boon_d = null   # campaign_tables.json BOON_D: boon id -> description per rarity
+
+
+# a number as the browser prints it (2, not 2.0)
+static func _n(x) -> String:
+	if (x is float) and is_equal_approx(x, roundf(x)):
+		return str(int(x))
+	return str(x)
+
+
+func _weapon_desc(ru, rw, arc_name: String) -> String:
+	var mul := float(ru.get("dmg", 1.0)) if _jt(ru.get("dmg")) else 1.0
+	var t := "%s, %d×%d damage, range %d" % ["Turret" if str(rw.get("arc")) == "T" else arc_name, int(rw["shots"]), int(round(float(rw["dmg"]) * mul)), int(rw["r"])]
+	if _jt(rw.get("pierce")):
+		t += ", %d%% through shields" % int(round(float(rw["pierce"]) * 100.0))
+	if _jt(rw.get("ion")):
+		t += ", shreds shields"
+	if float(_z0(rw.get("vsSq"))) > 1.0:
+		t += ", anti-squadron"
+	if _jt(rw.get("cd")):
+		t += ", reload %d" % int(rw["cd"])
+	if float(_z0(rw.get("evMult"))) > 1.0:
+		t += " (slow)"
+	var wt = TBL.get("WTRAITS", {}).get(str(rw.get("trait", "")))
+	if _jt(rw.get("trait")) and wt is Dictionary:
+		t += "\n" + str(wt.get("d", "")).capitalize().left(1) + str(wt.get("d", "")).substr(1) + "."
+	return t
+
+
+func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
+	var R = api.R
+	var Bs = R.B
+	var T: Dictionary = ru.get("t", {}) if ru.get("t") is Dictionary else {}
+	# class line: the template name, elite captain; then the captain and perks
+	if not _jt(ru.get("isSq")):
+		info["cls"] = str(T.get("n", u["cls"])) + (", elite captain" if _jt(ru.get("elite")) else "")
+	var cap = ru.get("ship", {}).get("cap") if ru.get("ship") is Dictionary else null
+	if cap is Dictionary:
+		var ranks: Array = TBL.get("CAPTAINS", {}).get(str(cap.get("fac", "voidsworn")), TBL.get("CAPTAINS", {}).get("voidsworn", {})).get("ranks", [])
+		var rk := str(ranks[clampi(int(_z0(cap.get("rank"))), 0, ranks.size() - 1)]) if not ranks.is_empty() else ""
+		var line := "%s %s" % [rk, str(cap.get("name", ""))]
+		for pk in cap.get("perks", []):
+			var P = TBL.get("PERKS", {}).get(str(pk))
+			if P is Dictionary:
+				line += "  [color=#d0a64b]%s[/color] [color=#7d7768](%s)[/color]" % [str(P.get("n", pk)), str(P.get("d", "")).trim_suffix(".")]
+		info["captain"] = line.strip_edges()
+	# hull by section
+	if ru.get("sec") is Dictionary:
+		var secs: Array = []
+		for k in ["prow", "mid", "eng"]:
+			var sc = ru["sec"].get(k)
+			if sc is Dictionary:
+				secs.append([SEC_LBL[k] + (" (out)" if float(sc.get("hp", 0)) <= 0.0 else ""), float(sc.get("hp", 0)), float(sc.get("max", 1))])
+		info["secs"] = secs
+	# shields in words
+	if float(u["shMax"]) > 0.0:
+		var sh: Array = disp.get(u["id"], {"sh": u["sh"]})["sh"]
+		info["stats"] = str(info.get("stats", "")) + "\n[color=#62ccff]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
+	# state and faction lines (refreshPanel tr[] and battle.js factionTraitLines)
+	var tr: Array = []
+	if _jt(ru.get("hullRegen")):
+		tr.append("Repairs %d hull each turn." % int(ru["hullRegen"]))
+	var st: Dictionary = ru.get("st", {}) if ru.get("st") is Dictionary else {}
+	if _jt(st.get("engine")):
+		tr.append("Engines damaged (−%d speed)." % int(st["engine"]))
+	if _jt(st.get("shieldOff")):
+		tr.append("Shield generator offline.")
+	if _jt(ru.get("evBuff")):
+		tr.append("Evasive: +%d evasion." % int(ru["evBuff"]))
+	if _jt(ru.get("lockOn")):
+		tr.append("Locked on: +15 aim, +10% crit.")
+	if _jt(ru.get("focus")):
+		tr.append("Concentrated fire: +30% damage.")
+	if Bs.get("aiFocus") is Dictionary and Bs["aiFocus"].get("id") == ru.get("id") and not u["dead"]:
+		tr.append("[color=#e27f74]The enemy fleet is focusing its fire on this ship.[/color]")
+	if not _jt(ru.get("isSq")):
+		var fac := str(ru.get("fac", ""))
+		if fac == "hegemony":
+			var anc = R.syncAnchor(ru["side"])
+			var sr := int(TBL.get("SYNC_R", 3))
+			tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Hegemony ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
+		if fac == "ithar" and float(u["shMax"]) > 0.0:
+			tr.append("Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.")
+		if fac == "chorus":
+			tr.append("Feeds on kills nearby (up to %d%% hull a round)." % int(round(float(TBL.get("FEED_CAP", 0.0)) * 100.0)))
+		if fac == "deathless" and _jt(T.get("reanimate")):
+			var L = Bs.get("legion", {}).get(ru["side"]) if Bs.get("legion") is Dictionary else null
+			tr.append("Reassembled this battle." if _jt(ru.get("risen")) else ("Endless legion: the first to fall reassembles next round." if L is Dictionary and float(L.get("used", 0)) < float(L.get("max", 0)) and not _jt(ru.get("pflag")) and not _jt(ru.get("flagship")) and not _jt(ru.get("boss")) else "Endless legion spent."))
+		for ts in (Bs["torps"] if Bs.get("torps") is Array else []):
+			if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
+				tr.append("[color=#e27f74]Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.[/color]")
+		if ru.get("ab") == "launch" or (ru.get("fx") is Dictionary and _jt(ru["fx"].get("hive"))):
+			var WS = TBL.get("WING_STANCES", {}).get(str(ru.get("stance", "strike")) if _jt(ru.get("stance")) else "strike", {})
+			tr.append("Wing stance: %s. %s%s" % [str(WS.get("n", "")), str(WS.get("d", "")), ((" One free change this round." if R.canStance(ru) else " Changed this round.") if ru["side"] == "player" else "")])
+			var pks: Array = R.wingPerks(ru)
+			if not pks.is_empty():
+				var parts: Array = []
+				for k in pks:
+					var WP = TBL.get("WING_PERKS", {}).get(str(k), {})
+					parts.append("%s (%s)" % [str(WP.get("n", k)), str(WP.get("d", "")).trim_suffix(".")])
+				tr.append("Wing veterans: " + ", ".join(parts) + ".")
+		if _jt(ru.get("nem")) and _jt(Bs.get("nem")) and _jt(ru.get("nemFlag")):
+			tr.append("[color=#e27f74]Your Nemesis commands from this ship.[/color]")
+			var kn: Array = []
+			var weak: Array = Bs["nem"]["weak"] if Bs["nem"].get("weak") is Array else []
+			for w in (Bs["nem"]["revealed"] if Bs["nem"].get("revealed") is Array else []):
+				if w in weak:
+					var NW = TBL.get("NEM_WEAK", {}).get(str(w), {})
+					kn.append("%s (%s)" % [str(NW.get("n", w)), str(NW.get("d", "")).trim_suffix(".")])
+			if not kn.is_empty():
+				tr.append("Known weaknesses: " + "; ".join(kn) + ".")
+		# helm: thrusters and the faction drive (ui3d.js driveLine)
+		if ru["side"] == "player":
+			var MR: Dictionary = R.moveRules(ru)
+			var M = TBL.get("MOVE_RULES", {}).get(fac)
+			var dl := "Thrusters: sideslip %s, back off %s, pass over or under %s." % [_n(MR.get("slip")), _n(MR.get("rev")), ("+" + _n(MR.get("over"))) if _jt(MR.get("over")) else "free"]
+			if M is Dictionary:
+				dl += " [color=#d0a64b]%s[/color]: %s" % [str(M.get("n", "")), str(M.get("d", ""))]
+			if ru.get("hexMoved") != null:
+				if int(ru["hexMoved"]) == 0:
+					dl += " [color=#e27f74]Has not moved: enemies get +%s to hit.[/color]" % _n(MR.get("still"))
+				elif int(ru["hexMoved"]) >= int(_z0(MR.get("evadeAt"))):
+					dl += " [color=#5fb3a6]Evasive: enemies get −%s to hit.[/color]" % _n(MR.get("evade"))
+			tr.append("[color=#7d7768]%s[/color]" % dl)
+	if not tr.is_empty():
+		info["note"] = "[font_size=%d]%s[/font_size]" % [hud.s(13), " ".join(tr)]
+	# extra sections
+	var extra: Array = []
+	if ru["side"] == "enemy" and _jt(T.get("boss")) and TBL.get("BOSS_CMD", {}).has(str(ru.get("fac"))):
+		var c = TBL["BOSS_CMD"][str(ru["fac"])]
+		var when := "used" if _jt(Bs.get("cmdEUsed")) else ("strikes next round" if Bs.get("cmdENext") != null else "not yet")
+		var col := "#e27f74" if Bs.get("cmdENext") != null and not _jt(Bs.get("cmdEUsed")) else "#b3aa95"
+		extra.append(["Flagship Command (%s)" % when, "[color=%s][b]%s.[/b] %s[/color]" % [col, str(c.get("n", "")), str(R.bossCmdText(c, ru["fac"]))]])
+	var RUN = R.RUN
+	if ru["side"] == "player" and not _jt(ru.get("isSq")) and RUN is Dictionary and ((RUN.get("boons", []) as Array).size() > 0 or (_jt(RUN.get("aspect")) and _jt(ru.get("pflag")))):
+		if _boon_d == null:
+			_boon_d = {}
+			if FileAccess.file_exists("res://campaign/data/campaign_tables.json"):
+				var J = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/data/campaign_tables.json"))
+				if J is Dictionary:
+					var tt = J.get("tables", J)
+					if tt is Dictionary and tt.get("BOON_D") is Dictionary:
+						_boon_d = tt["BOON_D"]
+		var bb := ""
+		if _jt(ru.get("pflag")) and _jt(RUN.get("aspect")):
+			var AS = TBL.get("ASPECTS", {}).get(str(RUN["aspect"]))
+			if AS is Dictionary:
+				bb += "[b][color=#d0a64b]%s[/color][/b] [color=#b3aa95]%s[/color]\n" % [str(AS.get("n", "")), str(AS.get("d", ""))]
+		var stats: Dictionary = Bs.get("boonStats", {}) if Bs.get("boonStats") is Dictionary else {}
+		for b in RUN.get("boons", []):
+			var B0 = TBL.get("BOONS", {}).get(str(b.get("id")))
+			if not B0 is Dictionary:
+				continue
+			var pat = B0.get("p") if _jt(B0.get("p")) else (B0.get("duo", [""])[0] if B0.get("duo") is Array else "")
+			var pcol := str(TBL.get("PATRONS", {}).get(str(pat), {}).get("col", "#d0a64b"))
+			var dl: Array = _boon_d.get(str(b.get("id")), [])
+			var d := str(dl[clampi(int(_z0(b.get("r"))), 0, dl.size() - 1)]) if not dl.is_empty() else ""
+			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#b3aa95]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [color=#d0a64b]×%d this battle[/color]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
+		if bb != "":
+			extra.append(["Fleet boons", bb.strip_edges()])
+	if ru["side"] == "enemy":
+		var F = TBL.get("FACTIONS", {}).get(str(ru.get("fac")), {})
+		if F is Dictionary and str(F.get("blurb", "")) != "":
+			extra.append([str(F.get("n", "")), "[color=#b3aa95]%s[/color]" % str(F["blurb"])])
+	info["extra"] = extra
 
 
 # ---------------------------------------------------------------- per frame: nameplates, floats, bot
@@ -3010,6 +3182,27 @@ func _move_frames() -> void:
 				_cmd(func(): api.end_activation(); return true)
 		while busy:
 			await get_tree().process_frame
+	_quit_report()
+
+
+# --sheet-check: build the ship sheet for every ship on the board (yours selected, theirs inspected), print a summary
+func _sheet_check() -> void:
+	while busy or warming or api == null:
+		await get_tree().process_frame
+	var n := 0
+	var lines := 0
+	for u in V["units"]:
+		if u["dead"]:
+			continue
+		sel = u["id"] if u["side"] == "player" else ""
+		inspect = "" if u["side"] == "player" else u["id"]
+		var info := _panel_info()
+		n += 1
+		lines += (info.get("extra", []) as Array).size() + (1 if info.has("note") else 0) + (1 if info.has("captain") else 0)
+		hud.set_panel(info)
+	sel = ""
+	inspect = ""
+	print("[sheet] %d ships, %d extra parts" % [n, lines])
 	_quit_report()
 
 

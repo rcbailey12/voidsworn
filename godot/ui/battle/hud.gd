@@ -442,7 +442,21 @@ func set_panel(info: Dictionary) -> void:
 	nm.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	panel_box.add_child(nm)
 	panel_box.add_child(_label(str(info["cls"]), 14, BONE2))
+	if str(info.get("captain", "")) != "":
+		panel_box.add_child(_rich("[font_size=%d]%s[/font_size]" % [s(13), str(info["captain"])]))
 	panel_box.add_child(_hull_bar(float(info["hp"]), float(info["maxHp"]), 7))
+	if info.get("secs") is Array and not (info["secs"] as Array).is_empty():
+		var sg := GridContainer.new()
+		sg.columns = (info["secs"] as Array).size()
+		sg.add_theme_constant_override("h_separation", s(6))
+		for sc in info["secs"]:
+			var sv := VBoxContainer.new()
+			sv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			sv.add_theme_constant_override("separation", s(1))
+			sv.add_child(_label(str(sc[0]), 12, BLOOD if float(sc[1]) <= 0.0 else BONE2))
+			sv.add_child(_hull_bar(float(sc[1]), float(sc[2]), 4))
+			sg.add_child(sv)
+		panel_box.add_child(sg)
 	if float(info["shMax"]) > 0.0:
 		panel_box.add_child(_shield_quads(info["sh"], float(info["shMax"])))
 	panel_box.add_child(_rich(info["stats"]))
@@ -466,6 +480,9 @@ func set_panel(info: Dictionary) -> void:
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			g.add_child(b)
 		panel_box.add_child(g)
+	for ex in info.get("extra", []):
+		panel_box.add_child(_sect(str(ex[0])))
+		panel_box.add_child(_rich("[font_size=%d]%s[/font_size]" % [s(13), str(ex[1])]))
 	if info.get("side", "") == "player":
 		panel_box.add_child(_rich("\n" + keys_text()))
 
