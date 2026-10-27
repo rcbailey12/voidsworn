@@ -43,8 +43,9 @@ fx.remove_ship(id)                     # removes the ship and its effects at onc
   - `squadron`: true for strike-craft wings (no shield bubble, no damage ladder, small death);
   - `shielded`: default true for Voidsworn, Hegemony, Corsair and Ithar, false for Chorus and Deathless (R3: shields keep faction colours);
   - `flagship`: true adds weight to its death.
-- ShipView's placeholder engine glows (`sv.engines`) should be hidden once fx is on (fx draws the engines).
+- ShipView's placeholder engine glows (`sv.engines`) should be hidden once fx is on (fx draws the engines). Since r13 fx also hides them itself, every frame, for any ship it runs (they sit at fixed spots behind the stern, not on the real nozzles).
 - Engine trails start automatically: the hot core, the plume and the long cooling trail per faction (Corsair sputters and coughs soot). The trail bends behind a moving ship by itself (fx watches the root's motion). Optional: `fx.set_engine(id, level)` with 0 off, 1 cruise (default), 2 full burn (during a `move`, if G2 wants the extra flare).
+- Where the engines are (r13): on A4 kit ships, from the `hp_eng_<n>` hard points (exit point, `extras.radius`, plume along the node's -Z), so cores, plumes and trails come out of the real bells and follow each bell's own direction; hulls without them keep the stern-face guess. The drive glows full only while the ship thrusts (fx sees the root move, or `set_engine` above 1); a parked ship keeps a dim pilot glow (30% of cruise) and a short faint trail. A level below 1 during a move (G2's braking dim) is kept.
 
 ### Keeping the damage look in step: `sync_ship`
 
