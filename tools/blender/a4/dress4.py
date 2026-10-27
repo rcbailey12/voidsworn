@@ -64,7 +64,7 @@ def trophy_plates(H, S, rng, r, count, props, loose=False):
     return made
 
 
-def dress_corsair(H, S, seed, P, amount=1.0):
+def dress_corsair(H, S, seed, P, amount=1.0, plates=1.0):
     rng = np.random.default_rng(seed); r = random.Random(seed)
     dark = P['dark']; open_ok = lambda i: H.ao[i] > .42 and abs(H.cv[i]) < .14
     props = dict(rgh=.62, met=.32); n_pl = fit = nrun = 0
@@ -91,7 +91,7 @@ def dress_corsair(H, S, seed, P, amount=1.0):
     # salvage plates: mixed shapes and colours, off square, welded or riveted
     sizes = [(.60, (.032, .075), (.022, .045)), (.30, (.018, .032), (.012, .022)), (.10, (.010, .016), (.007, .012))]
     kinds = (('rect', .3), ('chamfer', .3), ('trap', .15), ('slant', .15), ('L', .1))
-    for p, n, rad in singles(H, rng, int(380 * amount), open_ok, lambda g: g.uniform(.016, .038), k=.8):
+    for p, n, rad in singles(H, rng, int(380 * amount * plates), open_ok, lambda g: g.uniform(.016, .038), k=.8):
         u = r.random(); acc = 0
         for wgt, wr, hr in sizes:
             acc += wgt
@@ -170,8 +170,8 @@ def _vane(name, x, y, z0, h, wb, wt, th, along_x):
 def build_radiator_spires(fingers, col, dark, props, glow=(1.0, .42, .12)):
     """style 'radiator' (Oct 27 lore note: Voidsworn spires read as heat-radiator spires, not church spires): each melted AI finger becomes
     a heat-radiator spire at the same spot and height: a mount plate over the cut rim, a square core, a cross of thin flat radiator vanes
-    with heat-pipe ribs running up them, ember-lit vent slits low on the vanes, and a flat emitter cap. No point, no finial, no gothic
-    bands, no stepped collars (the first try with collars read as a pagoda)."""
+    with heat-pipe ribs running up them, ember-lit vent slits at the roots, and a flat dark hood. No point, no finial, no gothic bands,
+    no stepped collars (they read as a pagoda), no glow on top (a lit cap over an upright stack read as a candle)."""
     import hs_lib
     n = 0; done = set()
     for f in fingers:
@@ -185,7 +185,8 @@ def build_radiator_spires(fingers, col, dark, props, glow=(1.0, .42, .12)):
             hs_lib.box(f'spm{n}', ((x0 + x1) / 2, (y0 + y1) / 2, (zt + zbm) / 2), (max(x1 - x0, .006), max(y1 - y0, .006), zt - zbm), bevel=.0006); tag(mul(col, .8), **props)
         # proportions of a radiator, not a needle: a wider core and vanes, height capped at about five vane widths (the V1b pass-3 sheet:
         # the tall thin ones still read as a steeple over the tower)
-        r = max(r, .0035); zs = z0 - .0006; hh = min(h * .94, r * 2.6 * 5)
+        # pass 5 (Opus: V1b's rows of upright glowing stacks read like candle rows): squatter (about three vane widths), no glowing cap
+        r = max(r, .004); zs = z0 - .0006; hh = min(h * .94, r * 2.6 * 3.2)
         hs_lib.cyl(f'spi{n}', (x, y, zs + hh * .5), r * .80, hh, axis='Z', seg=4, r2=r * .42, bevel=0); tag(mul(col, 1.05), **props)  # core
         th = max(.0007, r * .12)
         for k, ax in enumerate((True, False)):  # a cross of flat radiator vanes, nearly straight-sided (a steep taper or stepped collars read as a pagoda)
@@ -200,10 +201,9 @@ def build_radiator_spires(fingers, col, dark, props, glow=(1.0, .42, .12)):
         for k, ax in enumerate((True, False)):  # ember vent slits low on each vane, both faces
             for s in (-1, 1):
                 ox, oy = ((r * .95 * s, th * .6) if ax else (th * .6, r * .95 * s))
-                hs_lib.box(f'spg{n}{k}{s}', (x + ox, y + oy, zs + hh * .34), ((r * .75, th * .5, hh * .48) if ax else (th * .5, r * .75, hh * .48)), bevel=0)
-        tag(glow, emit=1.0, rgh=.3, met=0)  # Oct 27 (Opus: the Voidsworn line reads very dark): taller, wider vents at full glow
-        hs_lib.cyl(f'spt{n}', (x, y, zs + hh + .0008), r * .55, .0018, axis='Z', seg=4, bevel=0); tag(mul(dark, 1.6), rgh=.45, met=.6)  # flat cap
-        hs_lib.cyl(f'spl{n}', (x, y, zs + hh + .0019), r * .40, .0008, axis='Z', seg=8, bevel=0); tag(glow, emit=1.0, rgh=.2, met=0)   # emitter lens
+                hs_lib.box(f'spg{n}{k}{s}', (x + ox, y + oy, zs + hh * .17), ((r * .85, th * .5, hh * .28) if ax else (th * .5, r * .85, hh * .28)), bevel=0)
+        tag(glow, emit=1.0, rgh=.3, met=0)  # the ember sits at the vents' roots (a glow at the top read as a candle flame)
+        hs_lib.cyl(f'spt{n}', (x, y, zs + hh + .0008), r * 1.15, .0018, axis='Z', seg=4, bevel=0); tag(mul(dark, 1.6), rgh=.45, met=.6)  # a flat dark hood over the vanes
         n += 1
     print(f'spires rebuilt as heat radiators: {n}')
     return n
@@ -214,7 +214,7 @@ def light_clusters(H, S, seed, P, count=8):
     dark recess with a small grid of lit ports) and, beside every other one, a sensor housing. Mirrored port and starboard pairs."""
     from dress import mirrored_frame, housing
     rng = np.random.default_rng(seed + 77); r = random.Random(seed + 77); made = 0
-    base, dark, lens = P['base'], P['dark'], P['lens']; props = dict(rgh=.46, met=.16)
+    base, dark, lens = P['base'], P['dark'], P['lens']; props = dict(rgh=.46, met=.16) if P['base'][0] > .3 else dict(rgh=.55, met=.36)
     side = lambda i: abs(Vector(H.sn[i].tolist()).dot(H.m)) > .7 and H.ao[i] > .5 and abs(H.cv[i]) < .10 and abs(H.sp[i][0]) < .40
     for p, n, mir, rad in H.pairs(rng, count, side, .016, k=1.2):
         t, b, n1 = frame_for(n); w, h = r.uniform(.016, .026), r.uniform(.007, .010)
@@ -240,5 +240,5 @@ def light_clusters(H, S, seed, P, count=8):
             if made % 2 == 0:  # a sensor housing beside it
                 housing(nm + 's', q + tt * w * .85, nn, tt, bb, h * .9, h * .9, mul(base, .9), dome=True, props=props)
         made += 1
-    print(f'dress hegemony: {made} light cluster pairs')
+    print(f'dress light clusters: {made} pairs')
     return made

@@ -21,10 +21,11 @@ def envelope(pos, idx, nb=200):
     return (edges[:-1] + edges[1:]) / 2, lo, hi
 
 
-def flat_bow(pos, idx, x0, tip=.30, power=1.0, top=None):
-    """in place on pos. x0: where the reshaping starts (aft of it nothing moves). tip: the tip's height as a share of the hull's depth at x0
-    (0.3: a low blunt edge). power: the top line's curve (1 straight, under 1 a fuller shoulder). top: optional z cap for the envelope's top
-    at x0 (when a part aft of x0 would otherwise set it). Returns the number of vertices moved."""
+def flat_bow(pos, idx, x0, tip=.30, power=1.0, top=None, fair=0, cut=None):
+    """in place on pos. x0: where the reshaping starts (aft of it nothing moves). tip: the tip's height as a share of the hull's depth at x0.
+    power: the top line's curve (1 straight; 2.5 keeps the deck nearly level and chamfers it down only near the front: pass 5, Ryan saw
+    the straight slope as a drooping, knife-down prow). top: optional z cap for the envelope's top at x0. fair: Taubin passes over the
+    bow. cut: x where the point is cut off square (an armoured prow face goes there). Returns the number of vertices moved."""
     xc, lo, hi = envelope(pos, idx)
     zlo = lambda x: np.interp(x, xc, lo); zhi = lambda x: np.interp(x, xc, hi)
     xmax = pos[np.unique(idx.ravel()), 0].max()
@@ -36,7 +37,26 @@ def flat_bow(pos, idx, x0, tip=.30, power=1.0, top=None):
     t = np.clip((z - a) / np.maximum(b - a, 1e-6), 0, 1.0)
     zt = zt0 + (zt_tip - zt0) * s ** power
     pos[m, 2] = zb0 + t * (zt - zb0)
+    if fair: fair_region(pos, idx, x0, fair)
+    if cut is not None:  # pass 5 (Ryan: 'a weird downward slope on hegemony prows'): the point is cut off square; kit.prow_face caps it
+        pos[pos[:, 0] > cut, 0] = cut
     return int(m.sum())
+
+
+def fair_region(pos, idx, x0, iters, ramp=.06):
+    """hand-fairing stand-in (Opus, Oct 27: V1b's reshaped bow had a wavy underside): Taubin smoothing (no shrink) of y and z over the
+    welded mesh forward of x0, fading in over `ramp`, so the AI surface's waves even out into a faired loft while the outline and the flat
+    belly stay"""
+    w = hullio.weld_ids(pos); W = w.max() + 1
+    P = np.zeros((W, 3)); np.add.at(P, w, pos); cnt = np.bincount(w, minlength=W)[:, None]; P /= np.maximum(cnt, 1)
+    e = np.concatenate([w[idx[:, [0, 1]]], w[idx[:, [1, 2]]], w[idx[:, [2, 0]]]]); e = e[e[:, 0] != e[:, 1]]; e = np.unique(np.concatenate([e, e[:, ::-1]]), axis=0)  # both directions, each edge once
+    wt = np.clip((P[:, 0] - x0) / ramp, 0, 1)[:, None]
+    deg = np.bincount(e[:, 0], minlength=W)[:, None]
+    for _ in range(iters):
+        for lam in (.5, -.53):
+            acc = np.zeros((W, 3)); np.add.at(acc, e[:, 0], P[e[:, 1]]); avg = acc / np.maximum(deg, 1)
+            d = (avg - P) * lam * wt; d[:, 0] = 0; P += d
+    pos[:] = P[w]
 
 
 def vertex_normals(pos, idx):

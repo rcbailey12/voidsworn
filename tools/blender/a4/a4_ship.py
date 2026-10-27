@@ -51,7 +51,7 @@ def build_hull(root, code, cfg):
             nm = reshape.flat_bow(h['pos'], idx, **spec); x0_ = spec['x0'] - .02
             vn = reshape.vertex_normals(h['pos'], idx); sel_ = h['pos'][:, 0] > x0_; h['nor'][sel_] = vn[sel_]
             log('reshaped bow from x', spec['x0'], nm, 'vertices')
-    p, n, i, u = hullio.pn_refine(h['pos'], h['nor'], idx, [h['uv2']])
+    p, n, i, u = hullio.pn_refine(h['pos'], h['nor'], idx, [h['uv2']], **cfg.get('refine', {}))  # refine: lighter for a welded composite
     uv = u[0].copy(); uv[:, 1] = 1 - uv[:, 1]
     o = blmesh.mesh_from_arrays('hull', p, i, nor=n, uvs={'atlas': uv})
     return o, h, rims, len(h['idx']), len(i)
@@ -195,7 +195,7 @@ def run_kit(cfg, rims, covers=()):
         for k, r in enumerate(res):
             if r is None: missed.append(name + ('m' if k else ''))
             else: made += 1
-        if fn_name in ('cover', 'bridge', 'sensor_dome'): kit.rebuild_bvh()
+        if fn_name in ('cover', 'bridge', 'sensor_dome', 'command_block'): kit.rebuild_bvh()
     return made, missed
 
 
@@ -324,9 +324,9 @@ def main():
     amt = cfg.get('dress', 1.0)
     if amt > 0:
         if fac in ('voidsworn', 'hegemony'):
-            if fac == 'hegemony': dress4.light_clusters(H, S, seed, P)  # first, so the panelling keeps clear of them
+            dress4.light_clusters(H, S, seed, P)  # first, so the panelling keeps clear of them (Voidsworn too since pass 5: no window rows)
             dress.dress_armour(H, S, fac, seed, P)
-        elif fac == 'corsair': dress4.dress_corsair(H, S, seed, P, amt)
+        elif fac == 'corsair': dress4.dress_corsair(H, S, seed, P, amt, plates=cfg.get('plates', 1.0))
         elif fac == 'chorus': dress.dress_chorus(H, S, seed, P)
         elif fac == 'ithar': P['trim'] = bakemat4.lin('#c9a44a'); dress.dress_ithar(H, S, seed, P)
         elif fac == 'deathless': P['trim'] = bakemat4.lin('#7d867f'); dress.dress_deathless(H, S, seed, P)
@@ -348,6 +348,9 @@ def main():
     for nm in floaters: o = bpy.data.objects[nm]; hs_lib.PARTS.remove(o); bpy.data.objects.remove(o)
     gprobs = audit_guns(cfg); fail = kit_float + gprobs
     log('audit:', 'PASS' if not fail else 'FAIL', f'(dress: removed {len(floaters)} floating, {len(stray)} stray)')
+    tri_ = lambda o: sum(len(pp.vertices) - 2 for pp in o.data.polygons)
+    kt_ = sum(tri_(o) for o in hs_lib.PARTS if o.name in kitset); dt_ = sum(tri_(o) for o in hs_lib.PARTS if o.name not in kitset)
+    log('triangles: hull', tri_(hull), 'kit', kt_, 'dress', dt_, 'total', tri_(hull) + kt_ + dt_)
     for p_ in fail: log('  ', p_)
     parts = list(hs_lib.PARTS)
     for o in parts:  # Ithar sail membranes: flagged so pack.py gives them their own see-through material

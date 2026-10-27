@@ -38,6 +38,7 @@ def load(root, cfg, tmpdir, ships_mod):
             px = _read(path); r0 = (1 - row) * TILE; tiles[key][r0:r0 + TILE, col * TILE:(col + 1) * TILE] = px
     pn = os.path.join(tmpdir, 'compose_n.png'); pm = os.path.join(tmpdir, 'compose_m.png'); _write(tiles['n'], pn); _write(tiles['m'], pm)
     pos = np.concatenate(P).astype(np.float32); idx = np.concatenate(I)
+    if cfg.get('hide_inside', True): idx = drop_hidden(pos, idx, parts)
     return dict(pos=pos, nor=np.concatenate(N).astype(np.float32), idx=idx, uv2=np.concatenate(U).astype(np.float32), tex=(pn, pm),
                 flipped=False, parts=parts, cut_boxes=boxes)
 
@@ -57,3 +58,32 @@ def _write(arr, path):
     H, W = arr.shape[:2]; im = bpy.data.images.new(os.path.basename(path), W, H, alpha=False, float_buffer=False)
     im.colorspace_settings.name = 'Non-Color'; im.pixels.foreach_set(arr.ravel()); im.filepath_raw = path; im.file_format = 'PNG'; im.save()
     bpy.data.images.remove(im)
+
+
+def drop_hidden(pos, idx, parts, dirs=((0, 0, 1), (0, 0, -1), (0, 1, 0), (0, -1, 0), (1, 0, 0))):
+    """Oct 27 (Opus: the barge at 475k triangles is too heavy): each part's triangles buried inside another part are dropped. Inside is
+    a majority vote of ray parity in five directions against the other parts (the AI meshes are open in places, so one ray can lie)."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+    owner = np.zeros(len(pos), np.int64)
+    for k, (_, o, n) in enumerate(parts): owner[o:o + n] = k
+    tri_owner = owner[idx[:, 0]]; keep = np.ones(len(idx), bool); dropped = 0
+    for k in range(len(parts)):
+        mine = np.nonzero(tri_owner == k)[0]; others = idx[tri_owner != k]
+        if not len(mine) or not len(others): continue
+        T = BVHTree.FromPolygons([tuple(map(float, v)) for v in pos], [tuple(map(int, t)) for t in others])
+        C = pos[idx[mine]].mean(1)
+        lo = pos[others.ravel()].min(0) - .01; hi = pos[others.ravel()].max(0) + .01
+        cand = np.nonzero(np.all((C > lo) & (C < hi), 1))[0]  # only centroids inside the other parts' box can be buried
+        for j in cand:
+            c = Vector(C[j].tolist()); votes = 0
+            for d in dirs:
+                dv = Vector(d); o_ = c.copy(); hits = 0
+                for _ in range(24):
+                    h = T.ray_cast(o_, dv, 2.0)
+                    if h[0] is None: break
+                    hits += 1; o_ = h[0] + dv * 1e-5
+                votes += hits % 2
+            if votes >= 3: keep[mine[j]] = False; dropped += 1
+    print(f'[compose] dropped {dropped} buried triangles of {len(idx)}', flush=True)
+    return idx[keep]

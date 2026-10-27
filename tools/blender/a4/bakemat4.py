@@ -193,7 +193,8 @@ def build(o, fac, nmap, mmap, info):
         side = g.math('LESS_THAN', upd, .35)
         win = g.mul(g.mul(g.mul(rect, deck), g.mul(run, lit)), g.mul(side, open_))
         if fac == 'ithar': win = g.mul(win, g.math('LESS_THAN', g.math('SQRT', g.add(g.mul(Y, Y), g.mul(Z, Z))), info['needle']))
-        if fac == 'hegemony':  # Oct 27: windows only in small recessed clusters, never a long row along the flank (a waterline read)
+        if fac in ('hegemony', 'voidsworn'):  # Oct 27: windows only in small clusters, never a long row along the flank (Hegemony: a waterline
+            # read; Voidsworn, Muse audit: V1b's regular rows read as the banned porthole row at lineup distance)
             clus = g.math('LESS_THAN', g.voro(g.vmath('MULTIPLY', obj, (1.0, 1.0, 1.6)), 7.0), .16)
             win = g.mul(win, clus)
         e_col = g.mix(win, (0, 0, 0), F['win'])

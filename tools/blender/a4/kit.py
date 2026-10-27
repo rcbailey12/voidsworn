@@ -515,6 +515,76 @@ def boom(name, p, n, length, r, nodes=3):
     return c
 
 
+def prow_face(name, p, n, depth=.022, lens=True):
+    """an armoured prow face on a bow cut off square (reshape cut; Opus relaying Ryan, Oct 27: end in a short armoured prow, a third to
+    half the hull's height, not a point): a chamfered block standing forward of the cut face with chines along its lower edges and a
+    sensor housing set into it. It finds the cut face itself (the given point only picks the side): the hull's forward-most hits at y 0."""
+    P = CTX['pal']; T = CTX['T']; f = Vector((1, 0, 0))
+    def front(y, z):
+        h = T.ray_cast(Vector((2.0, y, z)), -f, 4.0); return None if h[0] is None else h[0]
+    zs = [z_ * .004 for z_ in range(-60, 61)]; hits = [(z, front(0, z)) for z in zs]; hits = [(z, q) for z, q in hits if q is not None]
+    if not hits: return None
+    xm = max(q.x for _, q in hits); face = [z for z, q in hits if q.x > xm - .004]
+    if len(face) < 2: return None
+    z0, z1 = min(face), max(face); zc = (z0 + z1) / 2; H = z1 - z0
+    ys = [y_ * .004 for y_ in range(-40, 41)]; wy = [y for y in ys if (front(y, zc) or Vector((0, 0, 0))).x > xm - .004]
+    W = (max(wy) - min(wy)) if len(wy) >= 2 else H
+    pc = Vector((xm, 0, zc)); t, b, n = lframe(f, Vector((0, 0, 1)))  # t up, b across, n forward
+    obox(name + 'p', pc - n * .004, t, b, n, (H * 1.02, W * 1.02, .010), bevel=.0004); tag(mul(P['base'], .95))  # backing plate over the cut
+    blk = ofrustum(name + 'k', pc - n * .001, t, b, n, (H / 2, W / 2), (H / 2 * .72, W / 2 * .78), depth, bevel=.0006); tag(mul(P['base'], 1.05))
+    for s_ in (1, -1):  # chines along the lower edges, running back onto the hull
+        obox(name + f'c{s_}', pc + n * depth * .30 - t * H * .40 + b * s_ * W * .44, t, b, n, (H * .10, W * .10, depth * 1.6), bevel=.0002)
+    tag(mul(P['dark'], 1.8), rgh=.45, met=.6)
+    if lens:  # a sensor housing set into the face
+        q = pc + n * (depth + .0004)
+        ocyl(name + 'sh', q - n * .002, min(H, W) * .20, .006, M3(t, b, n), seg=16, bevel=.0002); tag(mul(P['dark'], 1.6))
+        dress.blister(name + 'sl', q + n * .001, n, min(H, W) * .13, min(H, W) * .13, min(H, W) * .08, seg=14, vseg=6); tag(P['lens'], emit=1.0, rgh=.2, met=0)
+    return pc
+
+
+def command_block(name, p, n, length, width, height, fins=7):
+    """Hegemony command block (Opus, Oct 27: stacked towers and tiered bridges read as naval superstructure, pagoda masts): one low,
+    broad armoured block with a slight chamfer (no stepped tiers, no crossbars), a lit visor band across the front, a roof plate, and heat
+    radiator fins standing off both flanks with gaps between them. It becomes a seat for the parts placed after it (sensor domes, arrays)."""
+    P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0))); L, W, H = length, width, height
+    top = plinth(name + 'p', p, n, t, b, max(L, W) * .5, H * .04, shape='box', ratio=min(1.0, W / max(L, 1e-6)))
+    if top is None: return None
+    c = p + n * top
+    blk = ofrustum(name + 'k', c - n * .0004, t, b, n, (L / 2, W / 2), (L / 2 * .90, W / 2 * .88), H, shear=(L * .03, 0), bevel=.0006)
+    tag(mul(P['base'], 1.04))
+    obox(name + 'r', c + n * (H + .0004), t, b, n, (L * .78, W * .74, .0016), bevel=.0003); tag(mul(P['dark'], 1.6))  # roof plate
+    obox(name + 'v', c + n * H * .72 + t * (L / 2 * .93 + L * .03 * .72), t, b, n, (L * .03, W * .78, H * .12), bevel=0); tag(P['lens'], emit=1.0, rgh=.2, met=0)
+    for s_ in (1, -1):  # radiator fins off each flank, gaps between them, a lit strip at their roots
+        for k in range(fins):
+            q = c + t * L * (-.34 + .68 * k / max(fins - 1, 1)) + b * s_ * (W / 2 * .93 + H * .22) + n * H * .45
+            obox(name + f'f{s_}{k}', q, t, b, n, (L * .016, H * .50, H * .78), bevel=0)  # thin plates standing off the flank, gaps between
+        tag(mul(P['dark'], 2.2), rgh=.4, met=.65)
+        obox(name + f'g{s_}', c + b * s_ * (W / 2 * .95 + H * .05) + n * H * .12, t, b, n, (L * .74, H * .10, H * .10), bevel=0); tag(P['lens'], emit=.9, rgh=.2, met=0)
+    for o in (blk,):
+        if o is not None: add_target(o)
+    return c + n * H
+
+
+def radiator_bank(name, p, n, length, width, height, n_fins=10):
+    """a heat-radiator bank that reads as hardware (Opus, Oct 27: the V17 bank read as a black billboard): a framed mount (rails, end
+    posts), a comb of thin fins across the ship with gaps between them, an ember glow at their roots, low overall"""
+    P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0)))
+    top = plinth(name + 'p', p, n, t, b, max(length, width) * .5, height * .05, shape='box', ratio=min(1.0, width / max(length, 1e-6)))
+    if top is None: return None
+    c = p + n * top
+    obox(name + 'b', c + n * height * .06, t, b, n, (length, width, height * .12), bevel=.0003); tag(mul(P['dark'], 1.8))  # mount deck
+    for s_ in (1, -1):  # frame rails and end posts
+        obox(name + f'r{s_}', c + b * s_ * width * .5 + n * height * .30, t, b, n, (length * 1.02, width * .06, height * .55), bevel=.0002)
+        obox(name + f'e{s_}', c + t * s_ * length * .5 + n * height * .45, t, b, n, (length * .04, width * 1.06, height * .9), bevel=.0002)
+    tag(mul(P['base'], 1.1))
+    for k in range(n_fins):  # thin fins across, with gaps
+        q = c + t * length * (-.44 + .88 * k / max(n_fins - 1, 1)) + n * height * .55
+        obox(name + f'f{k}', q, t, b, n, (length * .018, width * .88, height * .85), bevel=0)
+    tag(mul(P['dark'], 2.4), rgh=.4, met=.65)
+    obox(name + 'g', c + n * height * .14, t, b, n, (length * .92, width * .80, height * .05), bevel=0); tag(P['lens'], emit=1.0, rgh=.2, met=0)  # ember at the roots
+    return c
+
+
 def sensor_dome(name, p, n, r):
     P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0)))
     top = plinth(name + 'p', p, n, t, b, r * 1.15, r * .12)
