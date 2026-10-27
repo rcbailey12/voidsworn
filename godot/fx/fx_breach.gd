@@ -216,6 +216,9 @@ static func hole(hull, c: Vector3, n: Vector3, R: float, bend: float, buckle: fl
 	e.ov = R * (2.2 if style in [S_BREACH, S_BLAST] else (3.4 if style == S_GAUSS_IN else 2.6))    # gauss entry: room for its stress ring
 	e.tess = R * 0.4
 	e.treach = cr
+	if style == S_BREACH:
+		# the stage breaches get a soot halo too, so a torn edge never reads as a clean paper cut-out (r6 g15c)
+		e.halo = R * 2.4
 	return e
 
 
@@ -1396,7 +1399,8 @@ static func emitters(b: POOLS.Batch, bs: POOLS.Batch, E: Ent, ents: Array, ends:
 
 static func gather(s) -> Array:
 	var out: Array = []
-	var inv: Transform3D = s.root.global_transform.affine_inverse()
+	# in the hull's pose when the ship was added (the frame of its analysis and of the damage root, which follows it)
+	var inv: Transform3D = s.hull_motion().affine_inverse() * s.root.global_transform.affine_inverse()
 	for m in s.meshes:
 		var mi := m as MeshInstance3D
 		if mi == null or not (mi.mesh is ArrayMesh) or not mi.is_inside_tree():
@@ -1485,6 +1489,10 @@ static func apply(fx, s, job: Dictionary) -> void:
 	for mi in by_mi:
 		var ks: Array = by_mi[mi]
 		var sd0: Dictionary = orig[ks[0]]
+		# the damage overlay copies the full-detail triangles: an imported hull drawn at a lower automatic LOD would cover
+		# it (r6: ion burns and flak pocks, which leave the mesh itself unchanged, vanished on the 8K hulls), so a damaged
+		# hull always draws its full detail (the rebuilt meshes carry no LODs anyway)
+		(mi as MeshInstance3D).lod_bias = 128.0
 		var am = meshes.get(int(sd0["mid"]))
 		if am == null:
 			if mi.mesh != sd0["mesh"]:

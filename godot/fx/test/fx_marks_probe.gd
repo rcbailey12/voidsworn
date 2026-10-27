@@ -113,6 +113,12 @@ func _run() -> void:
 		fx.step(1.0 / 60.0)
 		await process_frame
 	var out := _env("PROBE_OUT", "/tmp")
+	# the clean hull from the battle camera, before any mark (a reference for the _tac stills)
+	cam.fov = 45.0
+	cam.look_at_from_position(sv.to_global(h.c + Vector3(0.0, 0.75, 0.6).normalized() * 170.0), sv.to_global(h.c))
+	for i in 3:
+		await RenderingServer.frame_post_draw
+	vp.get_texture().get_image().save_png("%s/clean_tac.png" % out)
 	var L: float = h.L
 	var total_ms := 0.0
 	# one mark at a time on the clean hull (each one's own cost, and nothing evicted by the section budget): a close-up
@@ -137,8 +143,10 @@ func _run() -> void:
 		total_ms += ms
 		var last: Array = s.mark_ms[s.mark_ms.size() - 1] if not s.mark_ms.is_empty() else [0, -1, -1]
 		var ovt := 0
+		var outd: Dictionary = s._dmg_job.get("out", {})
+		print("DBG out keys ", outd.keys(), " skin ", outd.get("skin"), " nodes ", s._hole_nodes.size(), " dirty ", s._dmg_dirty, " task ", s._dmg_task)
 		for nd in s._hole_nodes:
-			if nd is MeshInstance3D and (nd as MeshInstance3D).name == "fx_damage_marks" and (nd as MeshInstance3D).mesh != null:
+			if nd is MeshInstance3D and String((nd as MeshInstance3D).name).contains("damage_marks") and (nd as MeshInstance3D).mesh != null:
 				ovt = (nd as MeshInstance3D).mesh.surface_get_array_len(0) / 3
 		print("MARKS_COST %s entries=%d wall=%.1f ms worker=%d ms main-thread apply=%.1f ms overlay tris=%d" % [look, last[0], ms, last[1], last[2], ovt])
 		var T0: float = fx.now

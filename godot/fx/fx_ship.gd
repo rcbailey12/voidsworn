@@ -75,6 +75,15 @@ var _app_yaw := 0.0
 var _reacting := false
 var _rcs_next := 0.0
 var _stutter_until := -1.0
+var _ref_mi: MeshInstance3D = null
+var _ref0 := Transform3D.IDENTITY
+
+
+# How the hull has moved under the root since the ship was added (ShipView's bob and bank), in the root's frame.
+func hull_motion() -> Transform3D:
+	if _ref_mi == null or not is_instance_valid(_ref_mi) or not _ref_mi.is_inside_tree():
+		return Transform3D.IDENTITY
+	return (root.global_transform.affine_inverse() * _ref_mi.global_transform) * _ref0.affine_inverse()
 
 
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
@@ -99,6 +108,15 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	_dmg_root = Node3D.new()
 	_dmg_root.name = "fx_damage"
 	root.add_child(_dmg_root)
+	# ShipView bobs and banks the hull node under the root; the hull analysis above is in the pose of this moment, so
+	# the damage (overlay skins, cavities, fires) follows the hull's motion from here (r6: the hull bobbed 0.25 units
+	# up and down past a mark overlay lifted 0.026, so overlay-only marks such as ion burns kept vanishing into it)
+	for m in meshes:
+		if m is MeshInstance3D:
+			_ref_mi = m
+			break
+	if _ref_mi != null:
+		_ref0 = root.global_transform.affine_inverse() * _ref_mi.global_transform
 	_build_engines(fx)
 	_build_trails(fx)
 	if shielded:
@@ -139,15 +157,16 @@ static func _find_meshes(n: Node) -> Array:
 
 
 func xf() -> Transform3D:
-	return root.global_transform
+	# the hull's own frame now: the root, plus ShipView's bob and bank since the ship was added
+	return root.global_transform * hull_motion()
 
 
 func to_world(p: Vector3) -> Vector3:
-	return root.global_transform * p
+	return xf() * p
 
 
 func dir_world(d: Vector3) -> Vector3:
-	return (root.global_transform.basis * d).normalized()
+	return (xf().basis * d).normalized()
 
 
 func scale_k() -> float:
@@ -220,6 +239,13 @@ func update(fx, dt: float) -> void:
 	if gone or not is_instance_valid(root):
 		return
 	_react_step(fx, dt)
+	var hm := hull_motion()
+	if is_instance_valid(_dmg_root) and _dmg_root.get_child_count() > 0:
+		_dmg_root.transform = hm
+	if is_instance_valid(_eng_node):
+		_eng_node.transform = hm
+	if _shield_mi != null and _shield_mi.visible:
+		_shield_mi.transform = hm * Transform3D(Basis.from_scale(hull.shield_radii()), hull.c)
 	var pos = root.global_position - root.get_parent_node_3d().global_transform.basis * _app_pos if root.get_parent_node_3d() != null else root.global_position
 	var moved = pos.distance_to(_last_pos) if _last_pos != Vector3.INF else 0.0
 	_last_pos = pos
@@ -243,7 +269,7 @@ func update(fx, dt: float) -> void:
 
 
 func _update_trails(fx, moved: bool) -> void:
-	var xfm = root.global_transform
+	var xfm = xf()
 	var back = -(xfm.basis.x).normalized()
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
@@ -392,7 +418,7 @@ func _build_shield(fx) -> void:
 
 # Where a shot from `from_world` meets the bubble (world point and outward normal).
 func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
-	var inv = root.global_transform.affine_inverse()
+	var inv = xf().affine_inverse()
 	var rad = hull.shield_radii()
 	var o = (inv * from_world) - hull.c
 	var tgt = (aim_local - hull.c) if aim_local != Vector3.INF else Vector3.ZERO
@@ -411,7 +437,7 @@ func shield_point(from_world: Vector3, aim_local := Vector3.INF) -> Dictionary:
 		var tt = (-b - sqrt(disc)) / (2.0 * a)
 		lp = o + d * tt
 	var n = (lp / (rad * rad)).normalized()
-	return {"p": root.global_transform * (lp + hull.c), "n": (root.global_transform.basis * n).normalized(), "local": lp}
+	return {"p": xf() * (lp + hull.c), "n": (xf().basis * n).normalized(), "local": lp}
 
 
 func shield_hit(fx, local_p: Vector3, T: float, strength: float, spread: float, life := 0.6) -> void:

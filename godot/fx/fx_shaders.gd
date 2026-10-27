@@ -774,7 +774,7 @@ void fragment() {
 		float alive = 1.0;
 		if (style == 0) {
 			vec2 vc = vor3(un * 3.2 + vec3(7.1, 3.3, 1.9));
-			float ct = ba - (dist * 1.0 + vc.y * 0.22);
+			float ct = ba - (dist * 0.7 + vc.y * 0.2);
 			float crack = smoothstep(0.07, 0.0, vc.x) * smoothstep(-0.25, 0.0, ct) * exp(-max(ct, 0.0) * 2.5) * 2.4;
 			float sheet = ct < 0.0 ? 0.0 : exp(-ct * 5.0) * 0.9 * calm;
 			alive = ct < 0.0 ? 1.0 : exp(-ct * 6.0);
@@ -787,14 +787,17 @@ void fragment() {
 			alive = step(ct, 0.0);
 			add += (rim + pop) * alive;
 		} else if (style == 2) {
-			float pid = h21(floor(lp.xz * 0.28) + floor(lp.y * 0.28) * 7.3);
+			// irregular patches (r6: axis-aligned blocks read as a checkerboard)
+			vec2 pv = vor3(un * 4.5 + vec3(2.3, 5.1, 0.7));
+			float pid = pv.y;
 			float tdie = dist * 0.7 + pid * 0.45;
 			float ct = ba - tdie;
 			// the stutter stays low contrast and slow enough that the whole bubble never strobes (flash rules)
 			float stut = mix(0.35, 1.0, step(0.45, h21(vec2(pid * 31.0, floor(scene_t * 4.5)))));
 			float on = mix(stut, 0.5 + 0.5 * cos(min(ba, tdie) * 3.0), fx_calm);
 			alive = ct < 0.0 ? on * smoothstep(0.0, -0.35, ct) + 0.15 : 0.0;
-			add += alive * (0.5 + 0.5 * pat) * 0.7 + smoothstep(-0.05, 0.0, ct) * step(ct, 0.0) * 0.8 * calm;
+			float seam = smoothstep(0.06, 0.0, pv.x) * step(ct, 0.0) * 0.6;
+			add += alive * (0.5 + 0.5 * pat) * 0.45 + seam + smoothstep(-0.05, 0.0, ct) * step(ct, 0.0) * 0.8 * calm;
 		} else {
 			float zone = smoothstep(-0.1, 0.5, facing);
 			float tear = smoothstep(ba * 1.3 - 0.1, ba * 1.3, 1.0 - facing + (fbm(lp.xy * 0.5 + lp.zx * 0.5) - 0.5) * 0.4);
@@ -1110,11 +1113,16 @@ void fragment() {
 			hr = mix(0.3, 0.12, fr);
 			hem = vec3(0.3, 0.6, 1.0) * (0.03 + fr * (0.1 + 0.6 * live)) * (1.0 - smoothstep(0.2, 0.85, hu));
 		} else if (style == 7) {
-			// flak: a grey rash, lighter than soot (chipped paint and bare metal specks)
-			float sp = step(0.6, h21(floor(q / R * 9.0) + seed));
-			hc = mix(vec3(0.05, 0.05, 0.05), vec3(0.22, 0.215, 0.21), sp * 0.8);
-			ha *= 0.85;
-			hr = 0.6;
+			// flak: salt and pepper, dark pits and bright chipped-metal specks, so the rash reads on light and dark hulls
+			// alike (r6: a mid-grey rash vanished on the grey Voidsworn deck)
+			float cellv = h21(floor(q / R * 9.0) + seed);
+			float pit = step(0.55, cellv) * step(cellv, 0.85);
+			float chip = step(0.85, cellv);
+			hc = vec3(0.07, 0.068, 0.066);
+			hc = mix(hc, vec3(0.012), pit);
+			hc = mix(hc, vec3(0.42, 0.41, 0.4), chip);
+			ha *= 0.9;
+			hr = mix(0.7, 0.35, chip);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
 			hc = mix(vec3(0.03, 0.045, 0.012), vec3(0.006, 0.01, 0.003), pit);
