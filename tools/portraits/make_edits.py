@@ -49,6 +49,9 @@ SCAR = {
 KINDS = {'voidsworn': ['burn', 'cyber', 'eye'], 'hegemony': ['burn', 'cyber', 'eye'], 'corsair': ['burn', 'cyber', 'eye'],
          'chorus': ['burn', 'carapace'], 'ithar': ['burn', 'porcelain'], 'deathless': ['burn', 'machine']}
 
+# n1s_c2 picks (Oct 27): which seed's carapace edit is published per Chorus Nemesis (copied as the s11 file for nemesis_publish.py)
+CARAPACE_PICK = {1: 23, 2: 23, 3: 11, 4: 23, 5: 23, 6: 23}
+
 def src_of(fac, n):
     # scar edits paint on the bust crop (nemesis_crop.py), uploaded to comfy_io\PORTRAITS\ncrop\
     return 'ncrop/nem_%s_%d.png' % (fac, n)

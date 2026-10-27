@@ -741,6 +741,174 @@
      "area": 0.049
     }
    }
+  },
+  "nem_chorus_1": {
+   "faction": "chorus",
+   "pick": "nemesis/pool/nem_chorus_1.webp",
+   "anchor": [
+    0.5,
+    0.5,
+    0.333
+   ],
+   "source": "n2/nem_chorus_1_zit_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_chorus_1_burn.webp",
+    "carapace": "nemesis/pool/nem_chorus_1_carapace.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_chorus_1_burn_patch.webp",
+     "x": 0.1263,
+     "y": 0.1784,
+     "area": 0.182
+    },
+    "carapace": {
+     "file": "nemesis/pool/nem_chorus_1_carapace_patch.webp",
+     "x": 0.4948,
+     "y": 0.2396,
+     "area": 0.124
+    }
+   }
+  },
+  "nem_chorus_2": {
+   "faction": "chorus",
+   "pick": "nemesis/pool/nem_chorus_2.webp",
+   "anchor": [
+    0.5,
+    0.5,
+    0.333
+   ],
+   "source": "n3/nem_chorus_2_zit_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_chorus_2_burn.webp",
+    "carapace": "nemesis/pool/nem_chorus_2_carapace.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_chorus_2_burn_patch.webp",
+     "x": 0.4336,
+     "y": 0.4661,
+     "area": 0.125
+    },
+    "carapace": {
+     "file": "nemesis/pool/nem_chorus_2_carapace_patch.webp",
+     "x": 0.487,
+     "y": 0.5013,
+     "area": 0.106
+    }
+   }
+  },
+  "nem_chorus_3": {
+   "faction": "chorus",
+   "pick": "nemesis/pool/nem_chorus_3.webp",
+   "anchor": [
+    0.5,
+    0.5,
+    0.333
+   ],
+   "source": "n3/nem_chorus_3_zit_s37_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_chorus_3_burn.webp",
+    "carapace": "nemesis/pool/nem_chorus_3_carapace.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_chorus_3_burn_patch.webp",
+     "x": 0.224,
+     "y": 0.1979,
+     "area": 0.131
+    },
+    "carapace": {
+     "file": "nemesis/pool/nem_chorus_3_carapace_patch.webp",
+     "x": 0.3698,
+     "y": 0.2435,
+     "area": 0.099
+    }
+   }
+  },
+  "nem_chorus_4": {
+   "faction": "chorus",
+   "pick": "nemesis/pool/nem_chorus_4.webp",
+   "anchor": [
+    0.5,
+    0.5,
+    0.333
+   ],
+   "source": "n3/nem_chorus_4_zit_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_chorus_4_burn.webp",
+    "carapace": "nemesis/pool/nem_chorus_4_carapace.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_chorus_4_burn_patch.webp",
+     "x": 0.1029,
+     "y": 0.3021,
+     "area": 0.114
+    },
+    "carapace": {
+     "file": "nemesis/pool/nem_chorus_4_carapace_patch.webp",
+     "x": 0.3581,
+     "y": 0.0404,
+     "area": 0.142
+    }
+   }
+  },
+  "nem_chorus_5": {
+   "faction": "chorus",
+   "pick": "nemesis/pool/nem_chorus_5.webp",
+   "anchor": [
+    0.5,
+    0.5,
+    0.333
+   ],
+   "source": "n2/nem_chorus_5_zit_s23_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_chorus_5_burn.webp",
+    "carapace": "nemesis/pool/nem_chorus_5_carapace.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_chorus_5_burn_patch.webp",
+     "x": 0.3438,
+     "y": 0.151,
+     "area": 0.122
+    },
+    "carapace": {
+     "file": "nemesis/pool/nem_chorus_5_carapace_patch.webp",
+     "x": 0.1836,
+     "y": 0.0,
+     "area": 0.116
+    }
+   }
+  },
+  "nem_chorus_6": {
+   "faction": "chorus",
+   "pick": "nemesis/pool/nem_chorus_6.webp",
+   "anchor": [
+    0.5,
+    0.5,
+    0.333
+   ],
+   "source": "n2/nem_chorus_6_zit_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_chorus_6_burn.webp",
+    "carapace": "nemesis/pool/nem_chorus_6_carapace.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_chorus_6_burn_patch.webp",
+     "x": 0.1706,
+     "y": 0.194,
+     "area": 0.11
+    },
+    "carapace": {
+     "file": "nemesis/pool/nem_chorus_6_carapace_patch.webp",
+     "x": 0.2266,
+     "y": 0.2487,
+     "area": 0.102
+    }
+   }
   }
  }
 }
