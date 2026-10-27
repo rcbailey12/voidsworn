@@ -3267,7 +3267,6 @@ func wingKind(u, i = null):
 	var nf = have.size() - nb
 	if i != null: return "fighter" if int(i) % 2 != 0 else "bomber"
 	return "bomber" if nb <= nf else "fighter"
-const SQ_LEASH = 8
 func sqRole(s) -> String: return "fighter" if s["t"].get("sq") == "fighter" else "bomber"
 func sqWants(s, t) -> bool:
 	if jt(t.get("dead")) or t["side"] == s["side"]: return false
@@ -3312,7 +3311,7 @@ func sqPlan(s):
 	var ready = readyList(s); var states = computeReach(s).states; var here = {"q": s["q"], "r": s["r"], "f": s["facing"], "cost": 0, "stay": true}
 	var stc = null if ord != null else wingStance(s)
 	var guard = ord.t if (ord != null and ord.kind == "guard") else (carrier if (stc == "screen" and carrier != null) else null)
-	var lim = SQ_LEASH + (2 if (ord != null and ord.kind == "strike") else 0) + (TB.WING_HUNT_LEASH if stc == "hunt" else 0)
+	var lim = int(TB.SQ_LEASH) + (2 if (ord != null and ord.kind == "strike") else 0) + (TB.WING_HUNT_LEASH if stc == "hunt" else 0)
 	var gr = (TB.WING_SCREEN_R + 1) if stc == "screen" else 3
 	var leashOK = func(v): return hdist(v, guard) <= gr if guard != null else (carrier == null or hdist(v, carrier) <= lim)
 	var best = null
