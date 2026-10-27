@@ -143,8 +143,6 @@ func _run() -> void:
 		total_ms += ms
 		var last: Array = s.mark_ms[s.mark_ms.size() - 1] if not s.mark_ms.is_empty() else [0, -1, -1]
 		var ovt := 0
-		var outd: Dictionary = s._dmg_job.get("out", {})
-		print("DBG out keys ", outd.keys(), " skin ", outd.get("skin"), " nodes ", s._hole_nodes.size(), " dirty ", s._dmg_dirty, " task ", s._dmg_task)
 		for nd in s._hole_nodes:
 			if nd is MeshInstance3D and String((nd as MeshInstance3D).name).contains("damage_marks") and (nd as MeshInstance3D).mesh != null:
 				ovt = (nd as MeshInstance3D).mesh.surface_get_array_len(0) / 3

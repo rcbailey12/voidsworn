@@ -321,8 +321,9 @@ const PLANET := """
 shader_type spatial;
 render_mode cull_back, shadows_disabled;
 """ + NOISE + """
-uniform vec3 a = vec3(0.6, 0.45, 0.3);
-uniform vec3 b = vec3(0.3, 0.2, 0.15);
+// named col_a and col_b (r7, G2's find: a uniform named a shadowed the noise functions' locals and planets failed to compile)
+uniform vec3 col_a = vec3(0.6, 0.45, 0.3);
+uniform vec3 col_b = vec3(0.3, 0.2, 0.15);
 uniform vec3 atmo = vec3(0.4, 0.6, 1.0);
 uniform float gas = 1.0;
 uniform float seed = 0.0;
@@ -332,7 +333,7 @@ void fragment() {
 	vec3 p = normalize(vL);
 	float n = wfbm3(p * 3.0 + seed);
 	float t = gas > 0.5 ? wfbm(vec2(p.y * 9.0 + n * 1.4, seed)) : wfbm3(p * 6.0 + seed);
-	ALBEDO = mix(b, a, smoothstep(0.3, 0.7, t)) * (0.8 + 0.4 * n);
+	ALBEDO = mix(col_b, col_a, smoothstep(0.3, 0.7, t)) * (0.8 + 0.4 * n);
 	ROUGHNESS = 0.9;
 	float f = pow(1.0 - abs(dot(NORMAL, VIEW)), 3.0);
 	EMISSION = atmo * f * 0.25;

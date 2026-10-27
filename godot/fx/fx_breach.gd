@@ -846,7 +846,7 @@ static func compute(job: Dictionary) -> Dictionary:
 			spines(hull, parts[i], E, E.dir, r)
 		ends_by.append([ends, r.state])
 	var t_parts := Time.get_ticks_msec() - t_ms
-	var meshes := {}
+	var mesh_src := {}
 	var surfs: Array = job["surfs"]
 	var groups := {}
 	for k in surfs.size():
@@ -862,19 +862,48 @@ static func compute(job: Dictionary) -> Dictionary:
 				any = true
 		if not any or int(surfs[ks[0]]["n"]) != ks.size():
 			continue
-		var am := ArrayMesh.new()
+		var src: Array = []
 		for k in ks:
 			var sd: Dictionary = surfs[k]
-			var arrays: Array = out_s[k] if out_s[k] != null else sd["arrays"]
-			var flags := int(sd["fmt"]) & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES
-			am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, flags)
-			am.surface_set_material(am.get_surface_count() - 1, sd["mat"])
-		meshes[key] = am
-	var inside := _merged(ents, parts, false)
-	var skin := _merged(ents, parts, true)
+			src.append([out_s[k] if out_s[k] != null else sd["arrays"], int(sd["fmt"]) & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES, sd["mat"]])
+		mesh_src[key] = src
+	var inside_a = _merged(ents, parts, false)
+	var skin_a = _merged(ents, parts, true)
+	var res := {"surfs": out_s, "parts": parts, "ends": ends_by, "mesh_src": mesh_src, "inside_a": inside_a, "skin_a": skin_a}
+	# the meshes are made here on the worker when the renderer allows it (r3: on the main thread the 8K barge's rebuild
+	# cost a long frame); a headless run makes them in apply instead (G2: the headless renderer cannot build meshes on a
+	# worker thread, which errored bot runs)
+	if bool(job.get("mesh_on_worker", true)):
+		build_meshes(res)
 	# where the time went (ms from the start): surfaces, cut edges and walls, conduits and spines, then the meshes
-	return {"surfs": out_s, "parts": parts, "ends": ends_by, "meshes": meshes, "inside": inside, "skin": skin,
-		"ms": Time.get_ticks_msec() - t_ms, "phases": [t_surf, t_edges, t_parts]}
+	res["ms"] = Time.get_ticks_msec() - t_ms
+	res["phases"] = [t_surf, t_edges, t_parts]
+	return res
+
+
+# Turn a rebuild's arrays into meshes (once: on the worker, or in apply on the main thread).
+static func build_meshes(res: Dictionary) -> void:
+	if res.has("meshes"):
+		return
+	var meshes := {}
+	var mesh_src: Dictionary = res.get("mesh_src", {})
+	for key in mesh_src:
+		var am := ArrayMesh.new()
+		for e in mesh_src[key]:
+			am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, e[0], [], {}, int(e[1]))
+			am.surface_set_material(am.get_surface_count() - 1, e[2])
+		meshes[key] = am
+	res["meshes"] = meshes
+	res["inside"] = _mesh_of(res.get("inside_a"))
+	res["skin"] = _mesh_of(res.get("skin_a"))
+
+
+static func _mesh_of(arr) -> ArrayMesh:
+	if arr == null:
+		return null
+	var am := ArrayMesh.new()
+	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, custom_flags())
+	return am
 
 
 # One surface: displace the skin near the damage, mark removed triangles zero-area, collect cavities and overlay skins.
@@ -1015,6 +1044,9 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 			var eps := 1e9
 			for x in lents:
 				var E: Ent = x
+				# surface-only marks (ion burns, the stage scorch) never move the skin: they only need the overlay
+				if E.kind == K_SURFACE:
+					continue
 				var d2 := (p - E.c).length_squared()
 				if d2 < E.inf2:
 					if lvl == 0:
@@ -1419,9 +1451,9 @@ static func gather(s) -> Array:
 	return out
 
 
-# One mesh from every entry's parts (the interior, or the overlay skins), each vertex carrying its entry's data:
+# One mesh's arrays from every entry's parts (the interior, or the overlay skins), each vertex carrying its entry's data:
 # CUSTOM0 (centre, R), CUSTOM1 (normal, opened at), CUSTOM2 (cavity depth, heat, seed, style), CUSTOM3 (slot dir, half length).
-static func _merged(ents: Array, parts: Array, overlay: bool) -> ArrayMesh:
+static func _merged(ents: Array, parts: Array, overlay: bool):
 	var pos := PackedVector3Array()
 	var nrm := PackedVector3Array()
 	var col := PackedColorArray()
@@ -1456,9 +1488,7 @@ static func _merged(ents: Array, parts: Array, overlay: bool) -> ArrayMesh:
 	arr[Mesh.ARRAY_CUSTOM1] = c1
 	arr[Mesh.ARRAY_CUSTOM2] = c2
 	arr[Mesh.ARRAY_CUSTOM3] = c3
-	var am := ArrayMesh.new()
-	am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr, [], {}, custom_flags())
-	return am
+	return arr
 
 
 static func custom_flags() -> int:
@@ -1475,6 +1505,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var res: Dictionary = job.get("out", {})
 	if res.is_empty():
 		return
+	build_meshes(res)
 	var orig: Array = job["surfs"]
 	var meshes: Dictionary = res.get("meshes", {})
 	var by_mi := {}

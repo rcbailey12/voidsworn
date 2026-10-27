@@ -858,7 +858,8 @@ func _dmg_request(fx) -> void:
 		_orig = BREACH.gather(self)
 		if _orig.is_empty():
 			return
-	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "cell": hull.L / 16.0, "ovl": hull.L * 0.0006, "out": {}, "hull": hull}
+	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "cell": hull.L / 16.0, "ovl": hull.L * 0.0006, "out": {}, "hull": hull,
+		"mesh_on_worker": DisplayServer.get_name() != "headless"}
 	_dmg_job = job
 	_dmg_task = WorkerThreadPool.add_task(func() -> void: job["out"] = BREACH.compute(job))
 	fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))

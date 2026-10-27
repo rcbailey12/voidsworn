@@ -160,8 +160,8 @@ func planet(idx: int, center: Vector3) -> void:
 	var sh := Shader.new()
 	sh.code = WS.PLANET
 	m.shader = sh
-	m.set_shader_parameter("a", pp[0])
-	m.set_shader_parameter("b", pp[1])
+	m.set_shader_parameter("col_a", pp[0])
+	m.set_shader_parameter("col_b", pp[1])
 	m.set_shader_parameter("atmo", pp[2])
 	m.set_shader_parameter("gas", pp[3])
 	m.set_shader_parameter("seed", float(idx) * 3.7)
