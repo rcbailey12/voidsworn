@@ -24,7 +24,7 @@
 - Story and career: paused for lore approval.
 
 **Lore (R44 to R54).**
-- Round 7 is in the live doc https://claude.ai/artifact/SKyQf2QcJSXGmXfmxKxFpJ (round 6 below it as an appendix), with a repo copy at contrib/opus/compute/lore_bible_r7.md. Machine faction: the Eclipse (R57).
+- Round 8 is in the live doc https://claude.ai/artifact/SKyQf2QcJSXGmXfmxKxFpJ (earlier rounds below it as appendices), with a repo copy at contrib/opus/compute/lore_bible_r8.md. The people: Starwrights; machine faction: Eclipse (R57, R58). Next comment seq to read after: 211.
 - Earlier rounds sit as appendices in the doc. Round 5 verification is contrib/opus/evidence/lore_r4_review_verification_2026_10_27.md.
 - Nothing is renamed in game code, data or UI until Ryan says "lore approved". Then the renames route to stream B (data.js display names), the story helper (arc rewrite), G1/G3 (re-export), G2 (brand.gd), portraits (paint the final looks), and A4/G4 (faction repaints).
 
