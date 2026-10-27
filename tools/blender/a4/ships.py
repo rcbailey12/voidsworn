@@ -84,7 +84,7 @@ SHIPS['C13s_23'] = dict(
     cuts=[dict(name='spine', box=(-.06, .34, -.032, .032, .088, .30)),          # AI top gun, tower and bent pipe mast: rebuilt
           dict(name='crown', box=(-.52, -.385, -.08, .08, -.07, .07)),          # AI engine crown with prongs: rebuilt as bells
           dict(name='chinfin', box=(.26, .425, -.024, .024, -.25, -.116))],     # pass 3: the fin under the bow read as a boat keel (naval tell)
-    kit=[('turret', 'ac', .16, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='autocannon', arc='T', lift=.035)),
+    kit=[('turret', 'ac', .16, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='autocannon', arc='T', lift=.022)),   # pass 3: lower barbette (the tall drum read as a funnel)
          ('sensor_array', 'ant', .00, .006, 0, 'top', dict(w=.034)),        # pass 3: the pole antenna read as a mast
          ('hook_prow', 'hook', .34, 0, 0, 'below', dict(length=.17, r=.024, drop=.004)),   # pass 3: boarding claw under the chin
          ('engine_at', 'eM', 0, 0, 0, 'stern', dict(r=.040, L=.055)),
@@ -106,7 +106,7 @@ SHIPS['C14s_23'] = dict(
          ('casemate', 'scat', .06, 0, -.07, 'stbd', dict(size='M', barrels=2, slot=1, wkind='scatter', arc='S', aim=(.26, -.97, 0))),
          ('sensor_array', 'ant', .17, .02, 0, 'top', dict(w=.040)),         # pass 3: the two pole antennas read as masts
          ('sensor_array', 'ant2', .10, -.035, 0, 'top', dict(w=.028, panels=2, dish=False)),
-         ('hook_prow', 'hook', .36, 0, 0, 'below', dict(length=.17, r=.022, drop=.002)),   # pass 3: boarding claw from the chin pod
+         ('hook_prow', 'hook', .435, 0, 0, 'below', dict(length=.15, r=.020, drop=.004)),   # pass 3: boarding claw under the chin, ahead of the pod
          ('radiators', 'rad', -.37, 0, 0, 'top', dict(length=.12, height=.05, n_fins=3)),
          ('radiators', 'rad2', .005, .005, 0, 'top', dict(length=.07, height=.04, n_fins=2, splay=24)),
          ('engine_at', 'eM', 0, 0, -.06, 'stern', dict(r=.046, L=.06)),
@@ -114,7 +114,7 @@ SHIPS['C14s_23'] = dict(
          ('engine_at', 'eS', 0, -.058, -.025, 'stern', dict(r=.024, L=.035)),
          ('tank', 'tk', -.17, -.05, 0, 'top', dict(r=.012, length=.07)),
          ('sensor_dome', 'sd', .02, 0, 0, 'top', dict(r=.013))],
-    notes='pass 3 (Oct 27 lore note, grimmer Corsairs): boarding claw from the chin pod, low sensor arrays instead of the pole antennas, '
+    notes='pass 3 (Oct 27 lore note, grimmer Corsairs): boarding claw under the chin ahead of the pod (on the pod it stood on a long leg), low sensor arrays instead of the pole antennas, '
           'trophy plates in the dress')
 
 SHIPS['C15s_23'] = dict(
@@ -126,7 +126,7 @@ SHIPS['C15s_23'] = dict(
           dict(name='chinfin', box=(.335, .43, -.024, .024, -.20, -.106))],     # pass 3: the fin under the bow read as a boat keel (naval tell)
     kit=[('casemate', 'scat', .378, 0, -.005, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='scatter', arc='P', aim=(.26, .97, 0), pair=True)),
          ('spinal', 'torp', .29, 0, 0, 'top', dict(size='M', slot=2, wkind='torp', arc='F', tubes=4)),
-         ('turret', 'flak', .145, 0, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', lift=.02)),
+         ('turret', 'flak', .145, 0, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', lift=.008)),   # pass 3: lower barbette (read as a funnel)
          ('sensor_array', 'ant', .195, .01, 0, 'top', dict(w=.040)),        # pass 3: the pole antennas read as masts with a crow's nest
          ('sensor_array', 'ant2', -.25, .025, 0, 'top', dict(w=.028, dish=False)),
          ('hook_prow', 'hook', .38, 0, 0, 'below', dict(length=.15, r=.020, drop=.004)),   # pass 3: boarding claw under the chin
@@ -145,7 +145,7 @@ SHIPS['C16s_23'] = dict(
           dict(name='sticks', dir='aft', level=.40, max_w=.03, min_ratio=1.6),  # thin AI sticks trailing aft (wire debris)
           dict(name='bulb', box=(.33, .47, -.055, .055, -.22, -.095)),          # AI bulb on a stalk under the bow
           dict(name='bulb2', box=(.23, .35, -.05, .05, -.20, -.115)),           # pass 2: the bulb's loose end, left floating under the bow
-          dict(name='prongs', dir='fore', level=.40, max_w=.03, min_ratio=1.6)],  # pass 3: thin AI prongs off the bow sides (wire debris)
+          dict(name='prongs', box=(.432, .53, .046, .076, -.06, -.02), mirror=True)],  # pass 3: thin AI rods past the bow sides (probe: y .06, x .42 to .50)
     kit=[('turret', 'tA', .26, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='turret', arc='T', lift=.01)),
          ('turret', 'tB', -.15, 0, 0, 'top', dict(size='M', barrels=3, slot=1, wkind='turret', arc='T', lift=.012)),
          ('bay', 'bay', .05, 0, -.05, 'port', dict(width=.085, height=.05, pair=True)),
@@ -155,9 +155,8 @@ SHIPS['C16s_23'] = dict(
          ('engine_at', 'eP', 0, .046, .005, 'stern', dict(r=.032, L=.05)),
          ('engine_at', 'eS', 0, -.044, -.004, 'stern', dict(r=.026, L=.042)),
          ('engine_at', 'eB', 0, 0, -.075, 'stern', dict(r=.021, L=.03)),
-         ('sensor_dome', 'sd', .22, -.02, 0, 'below', dict(r=.018)),          # pass 3: moved aft, the claw pylon took its place
          ('tank', 'tk', -.05, .07, 0, 'top', dict(r=.012, length=.08))],
-    notes='pass 3 (Oct 27 lore note, grimmer Corsairs): bow prongs cut, boarding claw under the chin, low sensor array instead of the pole '
+    notes='pass 3 (Oct 27 lore note, grimmer Corsairs): bow rods cut, boarding claw under the chin (the belly dome dropped: on the slope it hung on a long leg), low sensor array instead of the pole '
           'antenna, trophy plates in the dress')
 
 # ---------------------------------------------------------------------------------------------------------------------------------------

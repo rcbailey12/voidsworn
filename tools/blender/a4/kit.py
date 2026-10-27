@@ -243,14 +243,27 @@ def spinal(name, p, n, size, slot=None, wkind='lance', arc='F', tubes=0, length=
     if top is None: return None
     c = p + n * top
     if tubes:
-        obox(name + 'h', c + n * r * .45, t, b, n, (r * 2.4, r * 1.6, r * .9), bevel=.0006); tag(scol(mul(P['base'], 1.0)))
-        rows = 2 if tubes >= 4 else 1; cols = 2
+        # pass 3 (lineup read the old launcher as a plain crate): a sloped armoured housing, cheek plates, tube collars, a reload hatch
+        ofrustum(name + 'h', c - n * .0004, t, b, n, (r * 1.2, r * .8), (r * 1.02, r * .66), r * .9 + .0004, shear=(r * .08, 0), bevel=.0006)
+        tag(scol(mul(P['base'], 1.0)))
+        for s_ in (1, -1):  # armour cheeks along both flanks
+            obox(name + f'k{s_}', c + n * r * .40 + b * s_ * r * .80 - t * r * .15, t, b, n, (r * 1.9, r * .12, r * .66), bevel=.0003)
+        obox(name + 'w', c + n * r * .92 - t * r * .35, t, b, n, (r * .8, r * .62, r * .07), bevel=.0002)  # reload hatch
+        for s_ in (1, -1): ocyl(name + f'lg{s_}', c + n * r * .97 - t * r * .35 + b * s_ * r * .22, r * .06, r * .08, M3(t, b, n), seg=8, bevel=0)
+        tag(mul(P['dark'], 1.8), rgh=.5, met=.6)
+        rows = 2 if tubes >= 4 else 1; cols = 2; Mt = M3(b, n, t)
         for i in range(cols):
             for j in range(rows):
-                o = c + n * r * (.45 + (j - (rows - 1) / 2) * .42) + b * (i - .5) * r * .7 + t * r * 1.2
-                ocyl(name + f't{i}{j}', o, r * .17, r * .04, M3(b, n, t), seg=14, bevel=0)
+                o = c + n * r * (.45 + (j - (rows - 1) / 2) * .42) + b * (i - .5) * r * .7 + t * r * 1.17
+                ocyl(name + f'c{i}{j}', o, r * .21, r * .12, Mt, seg=16, bevel=.0002)
+        tag(P['gun'], rgh=.42, met=.8)
+        for i in range(cols):
+            for j in range(rows):
+                o = c + n * r * (.45 + (j - (rows - 1) / 2) * .42) + b * (i - .5) * r * .7 + t * r * 1.235
+                ocyl(name + f't{i}{j}', o, r * .15, r * .02, Mt, seg=14, bevel=0)
         tag((.01, .01, .012), rgh=.9, met=.2)
-        muzzle = c + n * r * .45 + t * r * 1.22; d = Vector((1, 0, 0))
+        obox(name + 's', c + n * r * .905 + t * r * .55, t, b, n, (r * .5, r * .9, r * .02), bevel=0); tag(P['trim'] if fac != 'corsair' else (.40, .30, .02), rgh=.5, met=.3)
+        muzzle = c + n * r * .45 + t * r * 1.25; d = Vector((1, 0, 0))
     else:
         ofrustum(name + 'h', c - t * r * length * .5, t, b, n, (r * length * .5, r * .7), (r * length * .45, r * .5), r * .7, shear=(r * .2, 0)); tag(mul(P['base'], 1.05))
         for k in range(3): obox(name + f'r{k}', c + n * r * .72 - t * r * (length * .3 - k * r * 0 - k * length * .22), t, b, n, (r * .18, r * .8, r * .1), bevel=.0002)
@@ -429,7 +442,7 @@ def sensor_array(name, p, n, w, panels=2, dish=True):
         obox(name + f'a{k}', pc, t, pb, pn, (w * .62, w * .42, w * .045), bevel=.0002)
         strips.append((pc + pn * w * .03, pb, pn))
     tag(mul(P['base'], 1.05) if CTX['fac'] != 'corsair' else (.13, .135, .145), rgh=.45, met=.6)
-    for k, (q, pb, pn) in enumerate(strips): obox(name + f'l{k}', q, t, pb, pn, (w * .50, w * .05, w * .012), bevel=0)
+    for k, (q, pb, pn) in enumerate(strips): obox(name + f'l{k}', q - pn * w * .006, t, pb, pn, (w * .50, w * .05, w * .014), bevel=0)
     tag(P['lens'], emit=1.0, rgh=.2, met=0)
     if dish:  # dish on a ball mount at the aft end of the base, tipped up and outboard
         q = c + n * w * .22 - t * w * .38
