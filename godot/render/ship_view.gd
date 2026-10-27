@@ -209,6 +209,7 @@ static func _glow_tex() -> Texture2D:
 
 func _ring() -> void:
 	ring = MeshInstance3D.new()
+	ring.name = "fx_ring"  # fx_* names keep G4's mesh walk (fx_ship._find_meshes, A4 ships) off the footprint and marker
 	var tm := TorusMesh.new()
 	var rr := maxf(8.6, L * 0.56)
 	tm.inner_radius = rr
@@ -239,6 +240,7 @@ func set_marker(friend: bool) -> void:
 	if marker != null:
 		marker.queue_free()
 	marker = MeshInstance3D.new()
+	marker.name = "fx_marker"
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var r0 := maxf(7.4, L * 0.5)
@@ -493,7 +495,9 @@ func _motion(dt: float) -> void:
 			var d := _vel
 			d.y = 0.0
 			_settle_dir = d.normalized() if d.length() > 0.01 else Vector3(cos(-cur_yaw), 0, sin(-cur_yaw))
-			_settle_A = lerpf(0.9, 0.55, mass) * clampf(L / 14.0, 0.5, 1.6) * clampf(path_S, 0.3, 1.0)
+			# the slide past the hex: a heavy hull carries more momentum and slides further (about 5% of its length,
+			# never under a tenth of a hex, so a frigate's is still seen at battle zoom); the swing peaks near 0.6 of this
+			_settle_A = maxf(10.0 * lerpf(0.08, 0.12, mass), L * lerpf(0.06, 0.05, mass)) * clampf(path_S, 0.3, 1.0)
 			_settle_T = lerpf(0.45, 0.95, mass)
 			settle_t = 0.0
 	elif settle_t >= 0.0:
@@ -528,7 +532,7 @@ func _motion(dt: float) -> void:
 		_puff_cd = 0.35
 	# bank into the turn, more for light hulls; a slight nose dip when braking hard
 	var spd := clampf(_vel.length() / maxf(L * 1.5, 1.0), 0.0, 1.0)
-	var roll_t := clampf(-_yaw_v * lerpf(0.10, 0.06, mass) * (0.4 + 0.6 * spd), -lerpf(0.26, 0.12, mass), lerpf(0.26, 0.12, mass))
+	var roll_t := clampf(-_yaw_v * lerpf(0.10, 0.08, mass) * (0.4 + 0.6 * spd), -lerpf(0.26, 0.15, mass), lerpf(0.26, 0.15, mass))
 	_roll = lerpf(_roll, roll_t, clampf(dt * lerpf(9.0, 3.5, mass), 0.0, 1.0))
 	var pitch_t := 0.025 * mass * (1.0 if thrust < -0.1 else (-0.6 if thrust > 0.9 else 0.0))
 	_pitch = lerpf(_pitch, pitch_t, clampf(dt * 3.0, 0.0, 1.0))

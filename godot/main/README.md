@@ -33,6 +33,7 @@ func bind(campaign) -> void    # draw campaign.page and campaign.modal_d now and
 - Summary per run: `result` (win, loss, unfinished or crashed), `sector`, `battles`, `clicks`, `errors`, `game_s`, plus:
   - `log`: one line per battle (sector, kind, faction, objective, result, rounds, ships left on each side, the fleet going in), to compare with `node sim3d.js campaign`;
   - `pressed` and `offered`: button counts.
+  - each battle line's `pace`: the enemy's share of each round in game seconds (`enemy_s_mean`, `enemy_s_max`, `rounds`, `movement`). Measure it at real speed (`--fast 1` with Godot's `--fixed-fps 60`): at `--fast 40` every frame is 40 game frames long and the numbers are noise.
 - `--run-timeout S` (default 600 real seconds): a run that overruns prints `[botrun] HANG {...}` with where it stood (page, battle phase, round, flags, idle time), writes the report and quits with exit code 2.
 
 ## Battles: `start_battle` and `play_api`

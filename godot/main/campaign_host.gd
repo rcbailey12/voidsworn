@@ -195,7 +195,8 @@ func _battle_line(a, res: String, r: Dictionary) -> Dictionary:
 	var o = B.get("obj")
 	return {"sector": int(C.RUN.get("sector", 0)) if C.RUN != null else 0, "kind": str(cfg_now.get("kind", "?")), "fac": str(cfg_now.get("fac", "?")),
 		"obj": str(o.get("type")) if o is Dictionary else "?", "result": res, "raw": str(r.get("result", "")), "rounds": int(B.get("round", 0)),
-		"fleet_in": str(cfg_now.get("_fleet", "")), "player": "%d/%d" % [pa, ps], "enemy": "%d/%d" % [ea, es], "hull": snappedf(hp / max(1.0, mh), 0.01)}
+		"fleet_in": str(cfg_now.get("_fleet", "")), "player": "%d/%d" % [pa, ps], "enemy": "%d/%d" % [ea, es], "hull": snappedf(hp / max(1.0, mh), 0.01),
+		"pace": r.get("pace", {})}
 
 
 # ---------------------------------------------------------------- the full-run bot

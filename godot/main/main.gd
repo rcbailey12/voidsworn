@@ -409,7 +409,7 @@ func _bot_battle(seed: int) -> Dictionary:
 	battle = b
 	b.start_default()
 	var r: Dictionary = await b.finished
-	var out := {"mode": "battle", "result": r.get("result"), "rounds": r.get("rounds"), "errors": r.get("errors", []), "game_s": r.get("secs"), "pipeline_compiles": r.get("pipeline_compiles", -1)}
+	var out := {"mode": "battle", "result": r.get("result"), "rounds": r.get("rounds"), "errors": r.get("errors", []), "game_s": r.get("secs"), "pipeline_compiles": r.get("pipeline_compiles", -1), "pace": r.get("pace", {})}
 	battle = null
 	b.queue_free()
 	await get_tree().process_frame

@@ -48,7 +48,7 @@ Last update: Oct 26 2026 evening, G2.
 | Footprints: green ring under yours, broken violet hex under the enemy's (B1) | done |
 | Nameplates with hull and shield bars, gold star on flagships | done |
 | Camera: right-drag orbit, left-drag or WASD pan, wheel zoom, T top-down, Home reset, F focus | done |
-| Ship movement with weight (R50): mass-scaled burn and braking, hulls swing and bank into turns, big hulls arc, overshoot and settle, engine flare on the burn, RCS puffs on turns and stops, wings trail a beat behind; the settle overlaps the next ship so the pace holds; Movement: Cinematic or Brisk in settings and the battle menu | done (RCS puffs drawn by the scene until G4 has its own) |
+| Ship movement with weight (R50): mass-scaled burn and braking, hulls swing and bank into turns, big hulls arc, overshoot and settle, engine flare on the burn, RCS puffs on turns and stops, wings trail a beat behind; the settle overlaps the next ship so the pace holds; Movement: Cinematic or Brisk in settings and the battle menu. Measured: the enemy's share of a round is the same in both (within 0.3 s, same seed, same outcomes); every battle report carries `pace` (enemy seconds per round, mean and max) | done (RCS puffs drawn by the scene in G4's puff colour) |
 | Select (click or Tab), move range in gold, best facing per hex, facing arrow and path preview, Q/E to pick the facing | done |
 | Turn in place (Q/E on the ship's own hex) | done (rules rotate) |
 | Fire: every gun that bears with one click, 1-6 picks one gun, hit chance and expected damage in the tip | done |

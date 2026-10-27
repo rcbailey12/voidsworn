@@ -73,6 +73,8 @@ var speed := 1.0           # the game's SPEED (duration multiplier)
 var user_speed := 1.0      # Speed: normal (1) or fast (0.45)
 var movement := "cinematic"  # Movement: cinematic (heavy ships, R50) or brisk (the earlier motion)
 var move_frames := ""        # --move-frames <dir>: a frame per rendered frame while ships burn (before and after captures)
+var game_t := 0.0             # game-clock seconds since the battle scene started (scaled by --fast like every animation)
+var pace_enemy := {}          # round -> game seconds spent playing the enemy's activations (the player's wait, B2 target 12 s, limit 15 s)
 var skip := false
 var sel := ""              # selected ship id
 var inspect := ""          # enemy shown in the panel
@@ -835,6 +837,7 @@ func _play_batch(bt: Dictionary) -> void:
 		if e["t"] == "activation" and e["side"] == "enemy":
 			enemy = true
 	speed = user_speed
+	var t_batch := game_t
 	if enemy:
 		speed = minf(speed, float(PACE["skip"]) if skip else (float(PACE["enemy"]) if _player_pending() > 0 else float(PACE["tail"])) * _enemy_pace_k())
 	var i := 0
@@ -860,6 +863,8 @@ func _play_batch(bt: Dictionary) -> void:
 			cam_saved = {}
 		hud.set_chip("")
 		skip = false
+		var rk := int(V.get("round", 0))
+		pace_enemy[rk] = float(pace_enemy.get(rk, 0.0)) + game_t - t_batch
 	speed = user_speed
 
 
@@ -1524,7 +1529,7 @@ func _end_flow() -> void:
 			else:
 				killed += 1
 	result = {"result": "win" if win else "loss", "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V,
-		"pipeline_compiles": _pipe_count() - pipe_base if pipe_base >= 0 else -1}
+		"pipeline_compiles": _pipe_count() - pipe_base if pipe_base >= 0 else -1, "pace": pace_stats()}
 	var body := "%d enemy ship%s destroyed, %d of yours lost, in %d round%s." % [killed, "" if killed == 1 else "s", lost, int(V["round"]), "" if int(V["round"]) == 1 else "s"]
 	if bot or args.has("bot-runs"):
 		finished.emit(result)
@@ -2577,6 +2582,7 @@ func _panel_info() -> Dictionary:
 # ---------------------------------------------------------------- per frame: nameplates, floats, bot
 
 func _process(dt: float) -> void:
+	game_t += dt
 	if world != null and world.has_method("step"):
 		world.step(dt)
 	if api == null:
@@ -2929,7 +2935,7 @@ func _move_frames() -> void:
 		var b: Vector3 = board.hex_world(best.q, best.r)
 		cam.a = -PI / 2.0
 		cam.b = 0.85
-		cam.r = maxf(90.0, a.distance_to(b) * 1.9)
+		cam.r = maxf(float(views[id].L) * 2.2, a.distance_to(b) * 1.6)
 		cam.t = (a + b) * 0.5
 		cam.snap()
 		await get_tree().create_timer(0.4).timeout
@@ -2985,9 +2991,22 @@ func _closeups(id: String, tag: String) -> void:
 	cam.snap()
 
 
+# the enemy's share of each round in game seconds (what the player waits through at the B2 pace; hurry not pressed)
+func pace_stats() -> Dictionary:
+	var vals: Array = pace_enemy.values()
+	if vals.is_empty():
+		return {"rounds": 0}
+	var tot := 0.0
+	var mx := 0.0
+	for v in vals:
+		tot += float(v)
+		mx = maxf(mx, float(v))
+	return {"rounds": vals.size(), "enemy_s_mean": snappedf(tot / vals.size(), 0.01), "enemy_s_max": snappedf(mx, 0.01), "movement": movement}
+
+
 func _quit_report() -> void:
 	print("[battle] report: ", JSON.stringify({"result": result.get("result", "unfinished"), "round": V.get("round"), "errors": errors, "secs": Time.get_ticks_msec() / 1000.0 - t_start,
-		"pipeline_compiles_in_play": _pipe_count() - pipe_base if pipe_base >= 0 else -1}))
+		"pipeline_compiles_in_play": _pipe_count() - pipe_base if pipe_base >= 0 else -1, "pace": pace_stats()}))
 	_quit()
 
 
