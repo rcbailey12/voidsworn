@@ -96,6 +96,26 @@ for n in range(1, 7):
     R8E['nem_voidsworn_%d' % n] = ('ncrop/nem_voidsworn_%d.png' % n, CRUSADE + CR_EXTRA.get(n, '') + KEEP, [11])
     R8E['nem_hegemony_%d' % n] = ('ncrop/nem_hegemony_%d.png' % n, HEGE + HG_EXTRA.get(n, '') + KEEP, [11])
 
+# round 8 scar prompts per faction look (kinds and ids unchanged: porcelain is the Glasswright kind, machine the Eclipse kind)
+SCAR8 = {
+ 'corsair': {'burn': "Add one large old healed burn to this furred creature: a patch of fur burned away on one side of the face and neck, scorched bare puckered skin beneath.",
+             'cyber': "Replace one of this creature's eyes with a crude bolted-on iron plate with rivets and a small glowing red lens, raw scarred skin and torn fur round it.",
+             'eye': "Add a deep old claw scar running through one of this creature's eyes from brow to muzzle, the fur parted along it; that eye is milky white and blind."},
+ 'ithar': {'burn': "Add an old burn scar to this being: a patch of darkened, scorched skin on one side of the face and neck where the faint light patterns are broken and dark.",
+           'porcelain': "Add a web of fine cracks across this being's light-storing skin on one side of the face and neck, soft light leaking from the cracks."},
+ 'deathless': {'burn': "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted.",
+               'machine': "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched."},
+}
+def r8_scar_items(facs, src_dir='ncrop8'):
+    out = []
+    for f in facs:
+        for n in range(1, 7):
+            for k in KINDS[f]:
+                pr = SCAR8.get(f, {}).get(k) or (SCAR[k].get(f, SCAR[k]['human']) if isinstance(SCAR[k], dict) else SCAR[k])
+                out.append({'id': 'nem_%s_%d' % (f, n), 'kind': k, 'seed': 11, 'src': '%s/nem_%s_%d.png' % (src_dir, f, n),
+                            'prompt': pr + (KEEP_OBJ if f == 'chorus' or (f == 'deathless' and n == 6) else KEEP)})
+    return out
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
