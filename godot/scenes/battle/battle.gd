@@ -469,10 +469,10 @@ func _begin(a) -> void:
 	for u in V["units"]:
 		if u["side"] == "enemy" and not u["squadron"]:
 			ne += 1
-	_log("Contact: %s. %d ship%s on the auspex." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
+	_log("Contact: %s. %d ship%s on the scanners." % [str(F.get("n", _enemy_fac())), ne, "s" if ne > 1 else ""], "s")
 	var well = api.world_info().get("well")
 	if well is Dictionary or (well is bool and well):
-		_log("A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
+		_log("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "s")
 	batches.append({"events": api.take_events(), "view": api.view()})
 	if not showcase:
 		sfx.ambient_start()
@@ -2881,7 +2881,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			tr.append("Feeds on kills nearby (up to %d%% hull a round)." % int(round(float(TBL.get("FEED_CAP", 0.0)) * 100.0)))
 		if fac == "deathless" and _jt(T.get("reanimate")):
 			var L = Bs.get("legion", {}).get(ru["side"]) if Bs.get("legion") is Dictionary else null
-			tr.append("Reassembled this battle." if _jt(ru.get("risen")) else ("Endless legion: the first to fall reassembles next round." if L is Dictionary and float(L.get("used", 0)) < float(L.get("max", 0)) and not _jt(ru.get("pflag")) and not _jt(ru.get("flagship")) and not _jt(ru.get("boss")) else "Endless legion spent."))
+			tr.append("Reassembled this battle." if _jt(ru.get("risen")) else ("Archive restore: the first to fall reassembles next round." if L is Dictionary and float(L.get("used", 0)) < float(L.get("max", 0)) and not _jt(ru.get("pflag")) and not _jt(ru.get("flagship")) and not _jt(ru.get("boss")) else "Archive restore spent."))
 		for ts in (Bs["torps"] if Bs.get("torps") is Array else []):
 			if ts.get("tid") == ru.get("id") and ts.get("side") != ru.get("side"):
 				tr.append("[color=#e27f74]Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.[/color]")
@@ -2953,7 +2953,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 			var d := str(dl[clampi(int(_z0(b.get("r"))), 0, dl.size() - 1)]) if not dl.is_empty() else ""
 			bb += "[color=%s]▌[/color][b]%s[/b]%s [color=#b3aa95]%s[/color]\n" % [pcol, str(B0.get("n", "")), (" [color=#d0a64b]×%d this battle[/color]" % int(stats[b["id"]])) if _jt(stats.get(b.get("id"))) else "", d]
 		if bb != "":
-			extra.append(["Fleet boons", bb.strip_edges()])
+			extra.append(["Fleet protocols", bb.strip_edges()])
 	if ru["side"] == "enemy":
 		var F = TBL.get("FACTIONS", {}).get(str(ru.get("fac")), {})
 		if F is Dictionary and str(F.get("blurb", "")) != "":

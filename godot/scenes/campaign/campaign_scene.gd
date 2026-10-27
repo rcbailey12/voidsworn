@@ -56,7 +56,7 @@ func _shots(dir: String) -> void:
 	var M = C.META
 	M["renown"] = 95; M["stats"]["runs"] = 6; M["stats"]["best"] = 3; M["stats"]["wins"] = 1; M["stats"]["wonFacs"] = ["voidsworn"]
 	M["mastery"]["vex"] = 34; M["favour"]["iron"] = 13; M["favour"]["storm"] = 5
-	M["fallen"] = [{"name": "Ordo Halvar", "rank": 2, "fac": "voidsworn", "ship": "Saint Ignatius", "sector": 2}]
+	M["fallen"] = [{"name": "Casimir Holloway", "rank": 2, "fac": "voidsworn", "ship": "Banked Fire", "sector": 2}]
 	C.titleScreen(); await _shot(dir, "01_title")
 	C.act("legacy"); await _shot(dir, "02_progression")
 	C.act("progTab", "favour"); await _shot(dir, "03_progression_favour")

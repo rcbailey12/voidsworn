@@ -4,12 +4,12 @@ extends CanvasLayer
 # be clicked through with it. Words for the buttons follow the browser's where known.
 
 const HUD := preload("res://ui/battle/hud.gd")
-const WORDS := {"newRunScreen": "New run", "continueRun": "Continue run", "startRun": "Launch the crusade", "enterNode": "Go to", "leaveYard": "Leave the shipyard",
+const WORDS := {"newRunScreen": "New run", "continueRun": "Continue run", "startRun": "Launch", "enterNode": "Go to", "leaveYard": "Leave the shipyard",
 	"backMap": "Back to the map", "backShipyard": "Back to the shipyard", "repairAll": "Repair all", "repair": "Repair", "buyHull": "Buy hull", "buyMod": "Buy module",
 	"upgradeMk": "Upgrade", "sellShip": "Sell", "sellConfirm": "Sell it", "equip": "Equip", "unequip": "Unequip", "promote": "Promote", "fleetScreen": "Fleet",
 	"fleetFromModal": "Fleet", "closeModal": "Close", "title": "Title screen", "legacy": "Progression", "help": "How to play", "pickAdmiral": "Admiral",
 	"pickFaction": "Faction", "pickAspect": "Aspect", "eventChoice": "Choose", "prizeStep": "Decide on the prize ships", "prizeSet": "Set", "prizeConfirm": "Confirm",
-	"salvageStep": "Salvage", "takeSalvage": "Take", "rewardNext": "Continue", "takeMod": "Take module", "takeBoon": "Take boon", "takeRelic": "Take relic",
+	"salvageStep": "Salvage", "takeSalvage": "Take", "rewardNext": "Continue", "takeMod": "Take module", "takeBoon": "Take protocol", "takeRelic": "Take salvage",
 	"takePerk": "Take perk", "c3continue": "Continue", "c3retreat": "Retreat", "c3retreatYes": "Retreat", "c3retreatNo": "Stay", "saveQuit": "Save and quit",
 	"abandonRun": "Abandon run", "buyVariant": "Unlock", "progTab": "Tab", "optAlt": "Alternate start", "optCmd": "Alternate Command", "optHeat": "Heat",
 	"battle": "Battle", "yardFleet": "Fleet"}

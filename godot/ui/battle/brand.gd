@@ -4,11 +4,11 @@ extends RefCounted
 # sci-fi display face) and small labels Oxanium small caps, the same faces G3's campaign map uses
 # (godot/ui/campaign/fonts, OFL); body text stays Barlow Semi Condensed.
 #
-# Renaming the game: change TITLE (and TAGLINE) here only. TAGLINE waits for the lore helper's rename_map_final.md. The title screen fits any
+# Renaming the game: change TITLE (and TAGLINE) here only. Both follow contrib/opus/compute/rename_map_final.md. The title screen fits any
 # length on one line; the window title follows TITLE.
 
 const TITLE := "Embers of the Hollow Sun"   # lore round 8, approved by Ryan Oct 27 (FINDINGS R59)
-const TAGLINE := "Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain."
+const TAGLINE := "Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain."
 
 const DISPLAY_PATH := "res://ui/campaign/fonts/Michroma-Regular.ttf"
 const CAPS_PATH := "res://ui/campaign/fonts/Oxanium-Variable.ttf"
