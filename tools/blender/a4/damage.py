@@ -224,9 +224,9 @@ def local(inf, X):
     q = X - inf['p']; a = q @ inf['t1']; b = q @ inf['t2']; return np.hypot(a, b), np.arctan2(b, a), q @ inf['n']
 
 
-def lip(M, S, inf, rad, tp, mat='edge', w=.14, seg=28):
-    """a molten lip ring on the real hull round a clean hole (hides the triangle-jagged cut)"""
-    rim = rim_points(S, inf, rad, lambda th: np.ones_like(th), tp, nrim=seg, inset=-.02)
+def lip(M, S, inf, rad, tp, mat='edge', w=.14, seg=28, shape=None):
+    """a molten lip ring on the real hull round a clean hole (hides the triangle-jagged cut); shape(theta) scales the radius (a slot)"""
+    rim = rim_points(S, inf, rad, shape or (lambda th: np.ones_like(th)), tp, nrim=seg, inset=-.02)
     n = inf['n']; inner = [p_ + (inf['p'] - p_) * w - n * rad * .05 for p_ in rim]; outer = [p_ + (p_ - inf['p']) * w * .6 for p_ in rim]
     top = [p_ + n * rad * .06 for p_ in rim]
     M.strip(mat, outer, top); M.strip(mat, top, inner)
@@ -236,17 +236,19 @@ def hit_variants(S, inf, k, tp, rng):
     """per-weapon damage at one anchor (R43): lance burn-through, torpedo crater, plasma splash, gauss punch. Each returns
     (Mesh, the skin labels it replaces)"""
     out = {}; r, R = inf['r'], inf['R']; hole = np.nonzero(S.label == 2 * k + 1)[0]; both = np.nonzero((S.label == 2 * k + 1) | (S.label == 2 * k + 2))[0]
-    # lance: a clean round bore with a molten lip and glowing walls; the rest of the patch stays as it was
-    M = Mesh(); rl = r * .62
-    rho, th, hh = local(inf, S.C[hole]); keep = hole[rho > rl * 1.02]
-    copy_skin(S, M, keep, lambda V: V, lambda a, b: local(inf, a)[0] < rl * 1.25 and local(inf, b)[0] < rl * 1.25)
-    lip(M, S, inf, rl, tp)
-    T = first_hit(inf['p'] - inf['n'] * .002, -inf['n'], tp); D = min(T if T else rl * 2, rl * 2.2)
-    bore = [rim_points(S, inf, rl, lambda t_: np.ones_like(t_), tp, nrim=24, inset=.0)]
+    # lance: a clean burn-through SLOT along the ship (pass 2: the damage marks reference wants the lance as the one line-shaped mark, a
+    # lit slot that reads at fleet distance), a molten lip, glowing walls; the rest of the patch stays as it was
+    M = Mesh(); rl = r * .60; ecc = .28
+    slot = lambda t_: ecc / np.sqrt((ecc * np.cos(t_)) ** 2 + np.sin(t_) ** 2)   # ellipse 1 : .28, long axis along t1 (the ship's length)
+    rho, th, hh = local(inf, S.C[hole]); keep = hole[rho > rl * slot(th) * 1.02]
+    copy_skin(S, M, keep, lambda V: V, lambda a, b: local(inf, a)[0] < rl * 1.15 and local(inf, b)[0] < rl * 1.15)
+    lip(M, S, inf, rl, tp, w=.10, seg=36, shape=slot)
+    T = first_hit(inf['p'] - inf['n'] * .002, -inf['n'], tp); D = min(T if T else rl * 1.2, rl * 1.3)
+    bore = [rim_points(S, inf, rl, slot, tp, nrim=36, inset=.0)]
     for f in (.25, .5, .8):
         bore.append([p_ - inf['n'] * D * f + (inf['p'] - inf['n'] * D * f - (p_ - inf['n'] * D * f)) * .12 * f for p_ in bore[0]])
     double_sided_inward(M, 'edge', bore[:2], inf['p'] - inf['n'] * D * .5); double_sided_inward(M, 'interior', bore[1:], inf['p'] - inf['n'] * D * .5)
-    M.blob('glow', inf['p'] - inf['n'] * D * .85, rl * .35)
+    for f in (-.5, 0, .5): M.blob('glow', inf['p'] - inf['n'] * D * .8 + inf['t1'] * rl * f, rl * .14)
     out['lance'] = (M, [2 * k + 1])
     # torpedo: a blast crater over the wide patch, the plating dished inward, a ragged blown centre over the guts
     M = Mesh(); dep = R * .28; jag = jag_fn(rng, 1.4)
