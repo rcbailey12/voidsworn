@@ -172,6 +172,11 @@ func _build_engines(fx) -> void:
 		var plume = clampf(1.5 * hull.W, 2.0, 32.0)
 		b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(eng.r, eng.g, eng.b, 2.0),
 			Vector4(r * 2.8, r * 2.8, 11 if corsair else 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
+		var acc = fac.get("accent")
+		if acc is Color:
+			# a corona round the core in the faction's second colour (faction look data, accent; none in use yet)
+			b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0), Vector4(0, 0, 0, 1.0), Vector4(acc.r, acc.g, acc.b, 0.9),
+				Vector4(r * 5.0, r * 5.0, 4, fx.rng.randf()), Vector4(1.0, 0, 0, 0)))
 		rb.add(rs, POOLS.pack(Vector4(np.x, np.y, np.z, 3 if corsair else 0), Vector4(-1, 0, 0, plume), Vector4(eng.r, eng.g, eng.b, 0.9),
 			Vector4(r * 1.3, r * 0.5, fx.rng.randf(), 0), Vector4(-20.0, 1.0, 1.0, 0)))
 		if corsair:
@@ -359,6 +364,12 @@ func _build_shield(fx) -> void:
 	_shield_mat.set_shader_parameter("col", Vector3(sc.r, sc.g, sc.b) * 2.2)
 	_shield_mat.set_shader_parameter("rad", hull.shield_radii())
 	_shield_mat.set_shader_parameter("style", int(fac["shield_style"]))
+	var se = fac.get("shield_edge")
+	if se is Color:
+		_shield_mat.set_shader_parameter("edge_mode", 1)
+		_shield_mat.set_shader_parameter("edge_col", Vector3(se.r, se.g, se.b))
+	elif se is String and se == "rainbow":
+		_shield_mat.set_shader_parameter("edge_mode", 2)
 	var hits = PackedVector4Array()
 	var hw = PackedVector4Array()
 	for i in 6:

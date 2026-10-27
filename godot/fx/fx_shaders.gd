@@ -647,6 +647,9 @@ uniform vec4 hitw[6];
 uniform float brk_t = -100.0;
 uniform vec3 brk_dir = vec3(1.0, 0.0, 0.0);
 uniform float regen_t = -100.0;
+// the bubble's rim (faction look data, shield_edge): 0 none, 1 a colour, 2 rainbow (reserved for the coming lore looks)
+uniform int edge_mode = 0;
+uniform vec3 edge_col = vec3(1.0);
 varying vec3 vL;
 varying vec3 vW;
 varying vec3 vN;
@@ -742,6 +745,12 @@ void fragment() {
 	if (style == 3) {
 		float hue = fract(dot(vN, vec3(0.3, 0.5, 0.2)) + scene_t * 0.1);
 		C = mix(col, clamp(abs(fract(hue + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0) * length(col) * 0.6, 0.3);
+	}
+	if (edge_mode == 1) {
+		C = mix(C, edge_col * length(col) * 0.577, smoothstep(0.1, 0.6, fres));
+	} else if (edge_mode == 2) {
+		float eh = fract(dot(vN, vec3(0.5, 0.3, 0.7)) * 1.5 + fres * 0.8);
+		C = mix(C, clamp(abs(fract(eh + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0) * length(col) * 0.7, smoothstep(0.15, 0.7, fres));
 	}
 	float total = I * pat * (0.9 + 1.2 * fres);
 	// break (r4 review: three factions tore the same noise holes in a bright, nearly opaque bubble). Each faction now
@@ -1262,10 +1271,12 @@ float field(vec3 pl, float age, inout vec3 em, inout vec3 alb) {
 		// edge never meets them (r2: hard straight box edges)
 		float rs = 0.2 + 0.42 * (1.0 - exp(-age * 1.6));
 		float n = fbm3(pl * 5.0 + vec3(P.z, -age * 0.6, age * 0.3));
-		float d = clamp((rs - r) / rs * 1.6 + (n - 0.5) * 1.4, 0.0, 1.0) * smoothstep(0.98, 0.72, r);
-		float temp = clamp((1.0 - r / rs) * 1.4 + (n - 0.5), 0.0, 1.0) * exp(-age * 1.1);
-		em = mix(heatRamp(temp), heatRamp(temp) * tint * 1.4, 0.3) * temp * temp * 14.0;
-		alb = vec3(0.05, 0.045, 0.04);
+		// a finer billow so the fire breaks into lobes and smoke pockets instead of one flat bright disc (r5)
+		float nb = vn3(pl * 13.0 + vec3(-age * 0.9, P.z * 2.0, age * 0.5));
+		float d = clamp((rs - r) / rs * 1.6 + (n - 0.5) * 1.4 + (nb - 0.5) * 0.4, 0.0, 1.0) * smoothstep(0.98, 0.72, r);
+		float temp = clamp((1.0 - r / rs) * 1.3 + (n - 0.5) * 1.2 + (nb - 0.5) * 0.5, 0.0, 1.0) * exp(-age * 1.25);
+		em = mix(heatRamp(temp), heatRamp(temp) * tint * 1.4, 0.3) * temp * temp * 10.0 * (0.55 + 0.9 * nb);
+		alb = vec3(0.065, 0.058, 0.052) * (0.7 + 0.6 * nb);
 		float vis = smoothstep(0.0, 0.15, age) * (1.0 - smoothstep(life - 1.0, life, age));
 		return d * d * 3.0 * vis;
 	}

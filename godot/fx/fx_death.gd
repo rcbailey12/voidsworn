@@ -15,6 +15,7 @@ const POOLS := preload("res://fx/fx_pool.gd")
 const HULL_LAYER := 1
 const DEBRIS_LAYER := 2
 const DEBRIS_CAP := 360
+const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
 
 const DEBRIS_BODY := """
@@ -35,16 +36,18 @@ float en(vec3 p) {
 varying float rim;
 void vertex() { lp = VERTEX; rim = COLOR.r; }
 void fragment() {
-	// torn plate: sooty bare metal with a little grain; only its torn rim glows, briefly (r3 verdict: no ember speckle
-	// over the whole face, which read as a camouflage sticker)
+	// torn plate: sooty bare metal with a little grain; only parts of its torn rim glow, briefly (r3 verdict: no ember
+	// speckle over the whole face; r5: a rim glowing all the way round outlined every plate like a cartoon, and a
+	// mirror-smooth face caught the sky, so the glow now breaks along the edge and the face is rough and sooty)
 	float g = en(lp * 9.0);
-	float soot = smoothstep(0.35, 0.75, en(lp * 3.0 + 7.0));
-	ALBEDO = mix(vec3(0.13, 0.125, 0.12), vec3(0.03, 0.028, 0.026), soot) * (0.85 + 0.3 * g);
-	METALLIC = mix(0.7, 0.3, soot);
-	ROUGHNESS = mix(0.45, 0.85, soot);
-	float warm = exp(-max(scene_t - spawn_t, 0.0) / 0.9);
-	float edge = smoothstep(0.82, 1.0, rim) * (0.6 + 0.4 * g);
-	EMISSION = vec3(1.0, 0.34, 0.05) * edge * warm * 2.0 * fx_gain;
+	float soot = smoothstep(0.3, 0.7, en(lp * 3.0 + 7.0));
+	ALBEDO = mix(vec3(0.11, 0.105, 0.1), vec3(0.025, 0.023, 0.021), soot) * (0.8 + 0.4 * g);
+	METALLIC = mix(0.5, 0.2, soot);
+	ROUGHNESS = mix(0.62, 0.92, soot);
+	float warm = exp(-max(scene_t - spawn_t, 0.0) / 0.55);
+	float seg = smoothstep(0.5, 0.7, en(lp * 5.0 + 3.0));
+	float edge = smoothstep(0.85, 1.0, rim) * seg * (0.6 + 0.4 * g);
+	EMISSION = vec3(1.0, 0.34, 0.05) * edge * warm * 1.3 * fx_gain;
 }
 """
 
@@ -65,12 +68,18 @@ static func setup_physics(fx) -> void:
 	st["debris_meshes"] = []
 	var r = RandomNumberGenerator.new()
 	r.seed = 77
+	# three sizes, four torn shapes each (r5: three meshes in all made every plate the same hexagon)
 	for sz in [0.45, 0.8, 1.2]:
-		var sm = shard_mesh(r, sz)
-		var cs = ConvexPolygonShape3D.new()
-		cs.points = sm[1]
-		st["debris_shapes"].append(cs)
-		st["debris_meshes"].append(sm[0])
+		var shapes: Array = []
+		var meshes: Array = []
+		for v in DEBRIS_VARIANTS:
+			var sm = shard_mesh(r, sz)
+			var cs = ConvexPolygonShape3D.new()
+			cs.points = sm[1]
+			shapes.append(cs)
+			meshes.append(sm[0])
+		st["debris_shapes"].append(shapes)
+		st["debris_meshes"].append(meshes)
 	st["debris"] = []
 	st["debris_next"] = 0
 	st["wrecks"] = []
@@ -126,16 +135,21 @@ static func fireball(fx, p: Vector3, size: float, t0: float, life: float, tint: 
 # ---------------------------------------------------------------- debris bodies (Jolt)
 
 static func shard_mesh(rng: RandomNumberGenerator, size: float) -> Array:
-	var n = rng.randi_range(5, 7)
+	# a torn plate: a ragged outline (notches and teeth, stretched along one axis), creased once so it reads bent
+	var n = rng.randi_range(9, 13)
 	var ring_pts: Array = []
 	var angs: Array = []
 	for i in n:
-		angs.append(TAU * (i + rng.randf_range(-0.3, 0.3)) / n)
+		angs.append(TAU * (i + rng.randf_range(-0.35, 0.35)) / n)
 	angs.sort()
-	for a in angs:
-		var r = size * rng.randf_range(0.35, 0.6)
-		ring_pts.append(Vector2(cos(a) * r * 1.4, sin(a) * r))
-	var th = size * rng.randf_range(0.08, 0.16)
+	var stretch := rng.randf_range(1.2, 1.9)
+	for i in angs.size():
+		var a: float = angs[i]
+		var r = size * rng.randf_range(0.3, 0.6) * (0.62 if (i % 3 == 1 and rng.randf() < 0.7) else 1.0)
+		ring_pts.append(Vector2(cos(a) * r * stretch, sin(a) * r))
+	var th = size * rng.randf_range(0.05, 0.1)
+	var crease := rng.randf_range(-0.2, 0.25) * size
+	var bend := rng.randf_range(0.3, 0.9) * (1.0 if rng.randf() < 0.5 else -1.0)
 	var st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var pts = PackedVector3Array()
@@ -150,9 +164,9 @@ static func shard_mesh(rng: RandomNumberGenerator, size: float) -> Array:
 			for k in 3:
 				# vertex colour: 0 at the plate's middle, 1 on its torn rim (the debris shader glows only the rim)
 				st.set_color(Color.BLACK if tri[k].x == 0.0 and tri[k].z == 0.0 else Color.WHITE)
-				st.add_vertex(tri[k])
+				st.add_vertex(_fold(tri[k], crease, bend))
 		for v in ring_pts:
-			pts.append(Vector3(v.x, y, v.y))
+			pts.append(_fold(Vector3(v.x, y, v.y), crease, bend))
 	for i in n:
 		var a3: Vector2 = ring_pts[i]
 		var b3: Vector2 = ring_pts[(i + 1) % n]
@@ -160,9 +174,19 @@ static func shard_mesh(rng: RandomNumberGenerator, size: float) -> Array:
 		for tri in [[q[0], q[2], q[1]], [q[0], q[3], q[2]]]:
 			for v in tri:
 				st.set_color(Color.WHITE)
-				st.add_vertex(v)
+				st.add_vertex(_fold(v, crease, bend))
 	st.generate_normals()
 	return [st.commit(), pts]
+
+
+# Bend a plate along the line x = crease (the part past it lifts by `bend` per unit), as torn plating folds.
+static func _fold(v: Vector3, crease: float, bend: float) -> Vector3:
+	var d := v.x - crease
+	if d <= 0.0:
+		return v
+	var c := cos(bend)
+	var s := sin(bend)
+	return Vector3(crease + d * c - v.y * s, d * s + v.y * c, v.z)
 
 
 static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float) -> void:
@@ -182,12 +206,13 @@ static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float
 			b.collision_layer = DEBRIS_LAYER
 			b.collision_mask = HULL_LAYER | DEBRIS_LAYER
 			b.physics_material_override = st["bounce"]
+			var vi: int = fx.rng.randi() % DEBRIS_VARIANTS
 			var cs = CollisionShape3D.new()
-			cs.shape = st["debris_shapes"][sc]
+			cs.shape = st["debris_shapes"][sc][vi]
 			b.add_child(cs)
 			var mi = MeshInstance3D.new()
 			mi.name = "mesh"
-			mi.mesh = st["debris_meshes"][sc]
+			mi.mesh = st["debris_meshes"][sc][vi]
 			mi.material_override = st["debris_mat"]
 			b.add_child(mi)
 			fx.phys_root.add_child(b)

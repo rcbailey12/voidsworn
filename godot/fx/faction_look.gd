@@ -13,8 +13,8 @@ extends RefCounted
 #   damage_glow                fire and lit conduits inside hull damage
 #   hull_fix                   [rim amount, rim tint, albedo lift] for look.gd's hull fix (dark hulls)
 #   nebula                     three colours for the battle sky when this faction is the enemy (world.gd)
-#   accent                     reserved: a second effect colour (e.g. a corona round the engine cores and shields)
-#   shield_edge                reserved: an edge colour or "rainbow" for the shield's rim and breaks
+#   accent                     a second effect colour; when set, a corona round each engine core (none in use yet)
+#   shield_edge                an edge colour or "rainbow" for the shield bubble's rim (none in use yet)
 # Ids never change; display names live in the story tables, not here.
 
 const PATH := "res://fx/faction_looks.json"

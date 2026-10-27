@@ -778,7 +778,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 				hk += 1
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
-		db.mesh = dstate["debris_meshes"][0]
+		db.mesh = dstate["debris_meshes"][0][0]
 		db.material_override = dstate["debris_mat"]
 		tmp.add_child(db)
 	for i in frames:
