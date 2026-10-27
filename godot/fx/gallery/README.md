@@ -60,6 +60,15 @@ Each still is keyed to the moment its effect really lands on the effect clock (t
 - **Damage follows the hull's bob (r7):** ShipView bobs each hull 0.25 units and banks it; the damage overlay, cavities, fires, engines and shield now follow that motion (the hull frame at add_ship), and every effect position goes through it. Before, overlay-only marks (ion burns, flak) sank into the bobbing hull and vanished on the PC runs.
 - **Flak rash (r7):** dark pits and bright chipped specks, so it reads on light and dark hulls; stage breaches get a soot halo; Corsair shield patches are irregular cells, not blocks.
 - **Flak pocks and ram crumple (r8):** flak pocks are round specks of mixed sizes over a light grime (r7 drew square grid cells, which looked like digital camouflage). A ram folds the bow in rings round the nose, shoves the tip back and kinks it to one side (r7 only pushed the nose back, which stayed smooth).
+- **20-ship performance record (r18, Ryan's PC, RTX 5080, full effects, gallery --fleet 20: a seeded running battle of random volleys and three deaths from the battle camera, 30 s):**
+
+  | Renderer | Size | Average | 1% low | Worst frame |
+  |---|---|---|---|---|
+  | Forward+ | 1920x1080 | 3.96 ms (253 fps) | 66.8 ms (15 fps) | 4302 ms |
+  | Forward+ | 3840x2160 | 6.99 ms (143 fps) | 109.8 ms (9 fps) | 4029 ms |
+  | Compatibility | 1920x1080 | 3.56 ms (281 fps) | 54.6 ms (18 fps) | 1584 ms |
+
+  The averages are comfortable; the 1% lows and the multi-second worst frames were real stalls: every damage rebuild re-launched the ship's death cut (seconds of worker time on a big hull, piece meshes uploaded on the main thread) and a death waited on a cut still running. Fixed in 2aac0ca (re-cut at most every 6 s, deaths use the last finished cut, a first cut still running holds the cook-off instead of the frame); the r19 run re-measures, and the bench now lists every frame over 33 ms. For comparison the six-flagship 4K bench: 5.37 ms average, 1% low 21.2 ms.
 - **Marks at battle distance (r18, Muse audit B4.3):** each weapon leaves its own shape, not only a glow: flak a dotted patch of coarse black pocks with a few still glowing; acid a green stain with drips running off it; ion a seven-spoke starburst with a cold blue glow along the spokes; ram long pale gouges along the ship's length; lance a slot with temper colours; plasma blue glass; shell and gauss dark char with a small smouldering core that lasts the battle. The brief scorch glow is tight and short (r9 to r15 left a wide orange wash). The damage and engines now hang under the hull mesh itself, so they move with the bobbing hull in the same frame (before, in stills, the overlay sank into the hull at random; that was why marks came and went between runs).
 - **Safe mode (Compatibility renderer):** the marks draw there too (hull geometry plus an overlay mesh, not decals); glow is simpler and the lens is off. The r18 run records the frigate marks on both renderers.
 - **Dead star close up (r18):** filaments wound along the flow, dark dust lanes, a thicker look edge-on, and two thin glowing haze layers above and below the disc.
