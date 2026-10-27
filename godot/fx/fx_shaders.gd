@@ -1203,6 +1203,13 @@ void fragment() {
 		else if (style == 3) { le = 0.36; }
 		else if (style == 4 || style == 5) { le = 0.3; }
 		else if (style == 7) { le = 0.5; eb = vec2(0.55, 0.8); }
+		// r17: and a small smouldering core that lasts the battle, tight round the mark's centre, so a frigate still
+		// carries its hits from the battle camera without the wide wash of r9-r15
+		float lc = (style == 2 || style == 3 || style == 4 || style == 5 || style == 7) ? 0.7 : ((style == 8 || style == 9) ? 0.4 : 0.0);
+		if (lc > 0.0) {
+			float core = (1.0 - smoothstep(0.04, 0.22, hu)) * (0.5 + 0.5 * smoothstep(0.35, 0.65, hn));
+			em += sc * core * lc * smoothstep(0.0, 0.25, age) * exp(-age / 300.0);
+		}
 		if (le > 0.0) {
 			float ew = (eb.y - eb.x) * 0.3;
 			float edge = smoothstep(eb.x, eb.x + ew, hu) * (1.0 - smoothstep(eb.y - ew, eb.y, hu));
