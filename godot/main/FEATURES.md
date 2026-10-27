@@ -77,7 +77,7 @@ Last update: Oct 26 2026 evening, G2.
 | Cut-ins (cinematic camera), follow activations toggle | done (Key moments, Every attack or Off; follow in settings and the battle menu) |
 | Concept-art hulls toggle, temporal AA toggle | missing |
 | Legend and command strip help | done: the terrain legend beside your fleet list (the encounter, its zones and the terrain on this board as swatches; a click opens names, effects, the encounter rule and the board shape, as ui3d.js refreshLegend); the controls line lists every key |
-| Ship sheet (full stats) | partial: the side panel |
+| Ship sheet (full stats) | done: the side panel carries the browser sheet: class and elite captain, captain rank and perks, hull by section, crew, shields in words with recharge, state lines (repairs, engine damage, shield generator, evasive, locked on, focus, enemy focus), faction lines (sync, prism charge, feeding, endless legion, torpedoes inbound, wing stance and veterans, Nemesis and known weaknesses), thrusters and faction drive, weapon detail (shield pierce, ion, anti-squadron, reload, slow, trait), Flagship Command on a boss, fleet boons and aspect, the enemy faction blurb. Left out: the enemy reach line (it needs a threat pass per hover; R shows the threat map). `--sheet-check` builds every ship's sheet |
 
 ## Battle effects and look (G4)
 
