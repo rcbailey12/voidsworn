@@ -6,6 +6,8 @@ extends CanvasLayer
 
 signal action(name: String, arg: Variant)
 
+const Brand := preload("res://ui/battle/brand.gd")
+
 const INK := Color("#0f1626")
 const IRON := Color("#182133")
 const IRON2 := Color("#222d44")
@@ -27,7 +29,8 @@ const FOE := Color(0.79, 0.64, 1.0)
 
 var font: FontFile
 var font_semi: FontFile
-var font_goth: FontFile
+var font_goth: Font                 # headers: Michroma (brand.gd), the sci-fi display face
+var font_caps: Font                 # section heads: Oxanium small caps
 var k := 1.0                        # window height / 1080
 var root: Control
 var top: PanelContainer
@@ -70,7 +73,8 @@ func _ready() -> void:
 	layer = 10
 	font = _font("BarlowSemiCondensed-Regular.ttf")
 	font_semi = _font("BarlowSemiCondensed-SemiBold.ttf")
-	font_goth = _font("UnifrakturMaguntia-Book.ttf")
+	font_goth = Brand.display()
+	font_caps = Brand.caps()
 	k = clampf(get_viewport().get_visible_rect().size.y / 1080.0, 0.6, 2.2)
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -263,7 +267,7 @@ func _build_top() -> void:
 	crest.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	crest.visible = false
 	row.add_child(crest)
-	title_lbl = _label("Round 1", 28, BONE, font_goth)
+	title_lbl = _label("Round 1", 21, BONE, font_goth)
 	row.add_child(title_lbl)
 	turn_lbl = _label("", 17, BONE2, font_semi)
 	turn_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -344,7 +348,7 @@ func set_roster(rows: Array) -> void:
 		roster_box.remove_child(c)
 		c.queue_free()
 	_fit(roster_sc, roster_box, roster, get_viewport().get_visible_rect().size.y - s(76 + 160))
-	var head := _label("Your fleet", 15, GILT, font_semi)
+	var head := _label("YOUR FLEET", 13, GILT, font_caps)
 	roster_box.add_child(head)
 	for r in rows:
 		var card := PanelContainer.new()
@@ -497,7 +501,7 @@ func _sect(t: String) -> Control:
 	line.color = Color(0.176, 0.227, 0.337, 0.8)
 	line.custom_minimum_size = Vector2(0, 1)
 	v.add_child(line)
-	v.add_child(_label(t, 15, GILT, font_semi))
+	v.add_child(_label(t.to_upper(), 13, GILT, font_caps))
 	return v
 
 
@@ -576,7 +580,7 @@ func add_log(m: String, c: String) -> void:
 
 
 func _build_banner() -> void:
-	banner_lbl = _label("", 64, BONE, font_goth)
+	banner_lbl = _label("", 46, BONE, font_goth)
 	banner_lbl.set_anchors_preset(Control.PRESET_CENTER)
 	banner_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	banner_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -873,7 +877,7 @@ func show_end(title: String, body: String, win: bool, external := false) -> void
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(12))
 	endcard.add_child(v)
-	var t := _label(title, 44, GILT if win else BLOOD, font_goth)
+	var t := _label(title, 34, GILT if win else BLOOD, font_goth)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(t)
 	var b := _label(body, 16, BONE2)
@@ -913,7 +917,7 @@ func show_menu(title: String, items: Array) -> void:
 	v.add_theme_constant_override("separation", s(8))
 	v.custom_minimum_size = Vector2(s(320), 0)
 	menu.add_child(v)
-	var t := _label(title, 32, GILT, font_goth)
+	var t := _label(title, 24, GILT, font_goth)
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(t)
 	for it in items:
@@ -954,7 +958,7 @@ func loading(on: bool) -> void:
 		load_cover.color = Color(0.02, 0.025, 0.04, 1.0)
 		load_cover.set_anchors_preset(Control.PRESET_FULL_RECT)
 		load_cover.mouse_filter = Control.MOUSE_FILTER_STOP
-		var l := _label("Preparing the battle...", 30, GILT, font_goth)
+		var l := _label("Preparing the battle...", 22, GILT, font_goth)
 		l.set_anchors_preset(Control.PRESET_CENTER)
 		l.grow_horizontal = Control.GROW_DIRECTION_BOTH
 		l.grow_vertical = Control.GROW_DIRECTION_BOTH

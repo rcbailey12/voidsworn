@@ -18,7 +18,7 @@ var C
 var k := 1.0
 var root: Control
 var box: VBoxContainer
-var font_goth: FontFile
+var font_goth: Font
 
 
 func bind(campaign) -> void:
@@ -29,10 +29,7 @@ func bind(campaign) -> void:
 
 func _ready() -> void:
 	k = clampf(get_viewport().get_visible_rect().size.y / 1080.0, 0.6, 2.2)
-	font_goth = FontFile.new()
-	var p := "res://ui/battle/fonts/UnifrakturMaguntia-Book.ttf"
-	if FileAccess.file_exists(p):
-		font_goth.data = FileAccess.get_file_as_bytes(p)
+	font_goth = load("res://ui/battle/brand.gd").display()  # the sci-fi display face (lore round 5)
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -68,7 +65,7 @@ func _draw() -> void:
 
 
 func _screen(s: Dictionary, modal: bool) -> void:
-	var h := _lbl(str(s.get("kind", "")).capitalize(), 40 if not modal else 30, HUD.GILT)
+	var h := _lbl(str(s.get("kind", "")).capitalize(), 30 if not modal else 23, HUD.GILT)
 	h.add_theme_font_override("font", font_goth)
 	box.add_child(h)
 	var facts := _facts(s.get("data", {}))

@@ -78,6 +78,8 @@ var music: Node              # godot/music/music_player.gd (the music helper's p
 func _ready() -> void:
 	name = "Main"
 	_args()
+	if DisplayServer.get_name() != "headless":
+		DisplayServer.window_set_title(load("res://ui/battle/brand.gd").TITLE)  # brand.gd: the one place to rename the game
 	bot_mode = args.has("bot-runs")
 	# a fresh profile starts on Standard enemy AI (onboarding fix 1, campaign3d.js:3); bot runs ignore the player's
 	# settings file and play Veteran, as sim3d does, unless --ai says otherwise

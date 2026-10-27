@@ -110,6 +110,10 @@ Pace: the burn takes the same time in both modes; only the burn holds up the bat
 
 Every battle result (and each bot-run battle line) carries `pace`: the enemy's share of each round in game seconds (`enemy_s_mean`, `enemy_s_max`). Measure it at real speed (`--fast 1` with Godot's `--fixed-fps 60`).
 
+## Name and type faces
+
+`godot/ui/battle/brand.gd` holds the game's name (`TITLE`), the title-screen line (`TAGLINE`) and the faces for every G2 screen: Michroma for headers (title logo, "Round 1", banners, end card, menus), Oxanium small caps for section heads, Barlow Semi Condensed for body text, the same faces as G3's campaign map (lore round 5: the blackletter is retired). Renaming the game is a one-line change there; the title fits any length on one line and the window title follows.
+
 ## Vetoable calls (G2, Oct 27)
 
 Technical calls made without Ryan; any of them can be reversed.

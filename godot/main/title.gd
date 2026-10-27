@@ -2,6 +2,7 @@ extends CanvasLayer
 # The title screen (campaign_meta.js titleScreen) and the settings panel. Words and colours as today's game.
 
 const HUD := preload("res://ui/battle/hud.gd")
+const Brand := preload("res://ui/battle/brand.gd")
 
 var main: Node
 var k := 1.0
@@ -9,7 +10,7 @@ var root: Control
 var menu: VBoxContainer
 var font: FontFile
 var font_semi: FontFile
-var font_goth: FontFile
+var font_goth: Font
 var settings_panel: PanelContainer
 var toast_lbl: Label
 var _toast_t := 0.0
@@ -36,7 +37,7 @@ func _ready() -> void:
 	k = clampf(get_viewport().get_visible_rect().size.y / 1080.0, 0.6, 2.2)
 	font = _font("BarlowSemiCondensed-Regular.ttf")
 	font_semi = _font("BarlowSemiCondensed-SemiBold.ttf")
-	font_goth = _font("UnifrakturMaguntia-Book.ttf")
+	font_goth = Brand.display()  # the sci-fi display face (lore round 5); the blackletter is retired
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -62,10 +63,13 @@ func _ready() -> void:
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
 	v.add_theme_constant_override("separation", s(14))
 	root.add_child(v)
-	var h := _label("Voidsworn", 110, HUD.GILT, font_goth)
+	# the game's name (brand.gd TITLE, the one place to rename it), one line at the largest size that fits
+	var vw := get_viewport().get_visible_rect().size.x
+	var h := _label(Brand.TITLE, 84, HUD.GILT, font_goth)
+	h.add_theme_font_size_override("font_size", Brand.fit_size(Brand.TITLE, font_goth, s(84), vw * 0.86))
 	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(h)
-	var sub := _label("Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain.", 19, HUD.BONE2, font)
+	var sub := _label(Brand.TAGLINE, 19, HUD.BONE2, font)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sub.custom_minimum_size = Vector2(s(620), 0)
@@ -179,7 +183,7 @@ func _settings() -> void:
 	v.add_theme_constant_override("separation", s(10))
 	v.custom_minimum_size = Vector2(s(460), 0)
 	settings_panel.add_child(v)
-	v.add_child(_label("Settings", 30, HUD.GILT, font_goth))
+	v.add_child(_label("Settings", 24, HUD.GILT, font_goth))
 	v.add_child(_toggle("Sound", "sound"))
 	v.add_child(_slider("Volume", "volume", 0.0, 1.0))
 	v.add_child(_toggle("Music", "music"))
