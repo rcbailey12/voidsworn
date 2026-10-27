@@ -1474,5 +1474,48 @@
    "mode": "alternating",
    "from": "settings"
   }
+ },
+ "s42": {
+  "note": "Stream B step 5 admiral band: Fleet Marshal Reyes (squadrons +10% now, was +25%; +1 wing, squadron hull +25%) with his Hegemony strike group start fleet plus a dominion, against a generated Corsair swarm; his Launch the strike group Command",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "seed": 42042,
+  "sector": 1,
+  "admiral": "reyes",
+  "fac_player": "hegemony",
+  "col": 2,
+  "fleet": [
+   "h_vanguard",
+   "h_picket",
+   "h_picket",
+   "h_dominion"
+  ],
+  "fac": "corsair"
+ },
+ "s43": {
+  "note": "Stream B step 5 admiral band: the Matriarch of Nine Throats with her new start fleet (brood and two drones), Chorus spore swarms and the Spawning surge Command, against Ithar; the Mending Choir and Nekhet 4% regrowth is covered by s15 and s28",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "belt",
+  "seed": 43043,
+  "sector": 1,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "col": 2,
+  "fleet": [
+   "b_brood",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "ithar"
  }
 }
