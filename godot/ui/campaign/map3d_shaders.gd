@@ -707,3 +707,42 @@ void fragment() {
 	ALPHA = c * 0.85;
 }
 """
+
+# The lensed image of the disc's far side, drawn on a camera-facing quad behind the shadow: the glowing arc that wraps
+# over the top of the shadow and the thinner one under it (brightest above and below, fading where the disc itself
+# passes at the sides), the disc's own colours and spin, then the thin bright photon ring at the shadow's edge. No
+# screen copy, so nothing on the chart is ever bent and there are no seams at any camera angle. r_shadow is the
+# shadow radius as a fraction of the quad's half size.
+const BH_LENSED := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + NOISE + """
+uniform float r_shadow = 0.25;
+uniform float gain = 1.0;
+uniform float spin = 0.3;
+uniform float tilt_dir = 0.0;   // screen angle of the disc's long axis (radians); arcs sit across it
+void vertex() {
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
+	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+}
+void fragment() {
+	vec2 p = (UV - 0.5) * 2.0;
+	p.y = -p.y;
+	float th = length(p) / r_shadow;          // in shadow radii
+	float ang = atan(p.y, p.x) - tilt_dir;
+	float across = abs(sin(ang));               // 1 above and below the disc's line, 0 along it
+	// the upper arc is the big lensed image of the far side, the lower one a thinner secondary image
+	float up = step(0.0, sin(ang));
+	float w_out = mix(1.32, 1.62, up);
+	float band = smoothstep(1.03, 1.1, th) * (1.0 - smoothstep(w_out - 0.25, w_out, th));
+	float u = clamp((th - 1.05) / (w_out - 1.05), 0.0, 1.0);
+	float a2 = ang * 3.0 + TIME * spin * 2.0;
+	float sp = mfbm2(vec2(a2 + log(max(th, 1.0)) * 6.0, th * 3.0), 4);
+	vec3 c = mix(vec3(1.0, 0.92, 0.8), vec3(1.0, 0.55, 0.2), smoothstep(0.0, 0.35, u));
+	c = mix(c, vec3(0.55, 0.12, 0.04), smoothstep(0.35, 1.0, u)) * (2.2 - 1.6 * u);
+	float arc = band * pow(across, 0.7) * (0.55 + 0.7 * sp) * mix(0.55, 1.0, up);
+	// the photon ring: thin and bright all the way round
+	float ring = exp(-pow((th - 1.03) / 0.022, 2.0)) * 2.4 + exp(-pow((th - 1.08) / 0.06, 2.0)) * 0.5;
+	ALBEDO = (c * arc + vec3(1.0, 0.86, 0.62) * ring) * gain;
+}
+"""

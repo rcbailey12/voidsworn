@@ -63,8 +63,8 @@ func spot(parent: Node3D, pos: Vector3, target: Vector3, col: Color, energy: flo
 # ---------------------------------------------------------------- the orbital station (about 7 units across)
 func station(parent: Node3D, base: Color, accent: Color) -> Node3D:
 	var root = Node3D.new(); parent.add_child(root)
-	var hm = hull_mat(base, accent, 6.0, 0.08)
-	var hm2 = hull_mat(base.darkened(0.2), accent, 9.0, 0.02, 0.75)
+	var hm = hull_mat(base, accent, 2.6, 0.1, 0.45)
+	var hm2 = hull_mat(base.darkened(0.15), accent, 4.0, 0.03, 0.55)
 	# the spindle and its modules
 	part(root, cyl(0.3, 4.6), hm2)
 	part(root, cyl(0.62, 0.8), hm, Vector3(0, 1.05, 0)); part(root, cyl(0.55, 0.6), hm, Vector3(0, -0.55, 0))
@@ -73,7 +73,7 @@ func station(parent: Node3D, base: Color, accent: Color) -> Node3D:
 	# the habitat ring on four spokes
 	var ring = Node3D.new(); ring.name = "ring"; ring.position = Vector3(0, 0.3, 0); root.add_child(ring)
 	var t = TorusMesh.new(); t.inner_radius = 2.05; t.outer_radius = 2.45; t.rings = 96 if q > 0.5 else 48; t.ring_segments = 18 if q > 0.5 else 10
-	part(ring, t, hull_mat(base, accent, 10.0, 0.14))
+	part(ring, t, hull_mat(base, accent, 4.0, 0.16, 0.45))
 	for i in 4:
 		var a = i * TAU / 4.0 + TAU / 8.0
 		beam(ring, Vector3(cos(a) * 0.7, 0, sin(a) * 0.7), Vector3(cos(a) * 2.1, 0, sin(a) * 2.1), 0.14, hm2)
@@ -112,7 +112,7 @@ func station(parent: Node3D, base: Color, accent: Color) -> Node3D:
 # ---------------------------------------------------------------- construction gantry (a slipway frame round a hull)
 func gantry(parent: Node3D, L: float, H: float, W: float, base: Color, accent: Color) -> Node3D:
 	var root = Node3D.new(); parent.add_child(root)
-	var gm = hull_mat(base, accent, 8.0, 0.0, 0.8)
+	var gm = hull_mat(base, accent, 5.0, 0.0, 0.55)
 	var bays = 4 if q > 0.5 else 2
 	for i in bays + 1:
 		var x = -L * 0.5 + L * float(i) / bays
@@ -143,7 +143,7 @@ func sparks(parent: Node3D, center: Vector3, spread: float, n: int) -> void:
 # ---------------------------------------------------------------- dock frame (a closed lattice box round a docked hull)
 func dock_frame(parent: Node3D, L: float, H: float, W: float, base: Color, accent: Color) -> Node3D:
 	var root = Node3D.new(); parent.add_child(root)
-	var gm = hull_mat(base, accent, 8.0, 0.0, 0.8)
+	var gm = hull_mat(base, accent, 5.0, 0.0, 0.55)
 	var xs = [-L * 0.5, L * 0.5]; var ys = [-H * 0.5, H * 0.5]; var zs = [-W * 0.5, W * 0.5]
 	for y in ys:
 		for z in zs: truss(root, Vector3(xs[0], y, z), Vector3(xs[1], y, z), 0.3, gm)

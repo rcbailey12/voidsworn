@@ -91,7 +91,7 @@ func _ready() -> void:
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE   # tight glow only: wide levels would wash light over the Hollow Sun's black core
 	for lv in 7: env.set_glow_level(lv, lv >= 1 and lv <= 4)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR; env.ambient_light_color = Color(0.32, 0.36, 0.48); env.ambient_light_energy = 0.32
-	env.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
+	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY   # metal plating picks up the nebula and the stars
 	env.adjustment_enabled = true; env.adjustment_contrast = 1.06; env.adjustment_saturation = 1.08
 	var we = WorldEnvironment.new(); we.environment = env; vp.add_child(we)
 	var fill = DirectionalLight3D.new(); fill.rotation_degrees = Vector3(-38, 150, 0); fill.light_energy = 0.32; fill.light_color = Color(0.62, 0.72, 1.0); vp.add_child(fill)
@@ -335,7 +335,7 @@ func _add_node(n: Dictionary) -> void:
 				top = 3.2
 	# a soft cool fill over built stops, so their plating reads on the side away from the Hollow Sun
 	if t in ["shipyard", "drydock", "field"] or str(n.get("map", "")) in ["station", "graveyard"]:
-		var fl = OmniLight3D.new(); fl.light_color = Color(0.62, 0.72, 1.0); fl.light_energy = 0.9; fl.omni_range = 11.0; fl.omni_attenuation = 1.4
+		var fl = OmniLight3D.new(); fl.light_color = Color(0.66, 0.75, 1.0); fl.light_energy = 1.7; fl.omni_range = 15.0; fl.omni_attenuation = 1.2
 		fl.position = Vector3(3.0, 5.0, 4.5); fl.shadow_enabled = false; obj.add_child(fl)
 	# the ring round the stop (its colour says what you can do there) and, for a rival raider, a halo in the rival's look
 	var big = RING_R * (1.55 if t == "boss" else 1.0)

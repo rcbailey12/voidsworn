@@ -53,7 +53,7 @@ func _sh(name: String) -> Shader:
 		var codes = {"SKY": SH.SKY, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
 			"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "RING": SH.RING, "CLOUD": SH.CLOUD,
 			"HULL": SH.HULL, "SOLAR": SH.SOLAR, "RADIATOR": SH.RADIATOR, "ROCK_HI": SH.ROCK_HI, "CLOUDS": SH.CLOUDS,
-			"MARKER": SH.MARKER, "HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW}
+			"MARKER": SH.MARKER, "HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW, "BH_LENSED": SH.BH_LENSED}
 		var s = Shader.new(); s.code = codes[name]; _shaders[name] = s
 	return _shaders[name]
 func mat(name: String, params: Dictionary = {}) -> ShaderMaterial:
@@ -136,7 +136,7 @@ func glow(parent: Node3D, col: Color, size: float, at: Vector3 = Vector3.ZERO, p
 func sky(env: Environment, fac: String, seed_v: int) -> void:
 	var t = SKIES.get(fac, SKIES["hegemony"])
 	var m = mat("SKY", {"c1": t[0], "c2": t[1], "c3": t[2], "seed": float(seed_v % 97) * 1.37, "q": q})
-	var s = Sky.new(); s.sky_material = m; s.radiance_size = Sky.RADIANCE_SIZE_32; s.process_mode = Sky.PROCESS_MODE_QUALITY
+	var s = Sky.new(); s.sky_material = m; s.radiance_size = Sky.RADIANCE_SIZE_128 if q > 0.5 else Sky.RADIANCE_SIZE_64; s.process_mode = Sky.PROCESS_MODE_QUALITY
 	env.sky = s; env.background_mode = Environment.BG_SKY
 func backdrop(parent: Node3D, fac: String, px_scale: float) -> void:
 	# near stars on a shell round the chart: they slide against the sky as the camera moves
@@ -177,14 +177,11 @@ func hollow_sun(parent: Node3D, core_r: float = 5.0) -> Dictionary:
 	var dmesh = arc_mesh((r_in + r_out) * 0.5, r_out - r_in, 0.0, TAU, 192 if q > 0.5 else 96)
 	var disc = mi(dmesh, mat("BH_DISC", {"r_in": r_in, "r_out": r_out, "spin": 0.3, "gain": 0.55}))
 	disc.extra_cull_margin = r_out; tilt.add_child(disc)
-	if q > 0.5:
-		var half = core_r * 4.0
-		var lens = mi(quad(1, 1), mat("BH_LENS", {"r_shadow": core_r / half, "r_einstein": core_r * 1.6 / half, "photon": 0.55}))
-		lens.material_override.render_priority = -30   # first among the see-through things: it copies the opaque picture
-		lens.scale = Vector3.ONE * half; lens.extra_cull_margin = half * 4.0; root.add_child(lens)
-	else:
-		var sh = mi(quad(1, 1), mat("BH_SHADOW", {"r_shadow": 1.0 / 1.6}), Vector3.ZERO, Vector3.ONE * core_r * 3.2)
-		sh.material_override.render_priority = 5; root.add_child(sh)
+	# the lensed arcs over and under the shadow and the photon ring (a camera-facing quad at the centre, behind the near
+	# half of the disc). G4's screen-space lens is not used here: on the map's free camera it folded the disc at the
+	# lens edge and would bend the stops round the hole.
+	var lz = mi(quad(1, 1), mat("BH_LENSED", {"r_shadow": 1.0 / 2.0, "gain": 0.7}), Vector3.ZERO, Vector3.ONE * core_r * 4.0)
+	lz.extra_cull_margin = core_r * 4.0; root.add_child(lz)
 	var front = mi(dmesh, mat("BH_FRONT", {"r_in": r_in, "r_out": r_out, "spin": 0.3, "hole_center": sun_pos, "gain": 0.55}))
 	front.material_override.render_priority = 10; front.extra_cull_margin = r_out; tilt.add_child(front)
 	glow(root, Color(1.0, 0.45, 0.15, 1.0), r_out * 2.6, Vector3.ZERO, 3.0, 0.1)
