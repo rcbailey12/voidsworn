@@ -1,0 +1,87 @@
+# pass 3 raw (PC lane B, Oct 27), code bcc7e47 rules (B3, B4, step 3 backlog, pass 2 tuning, admiral band 5b, arc variants vc2). Swarm debug lines removed.
+## fm1
+FID {"voidsworn":{"range":2.74,"shieldPct":33,"cutPct":7,"hullPct":61,"regenPerShip":0,"lossPct":71,"dealtPerShip":103,"shots":28.2,"braces":0.1,"torpLaunch":2.6,"torpHit":0.7,"torpDodge":0.8,"torpGone":0.1},"hegemony":{"range":3.05,"shieldPct":38,"cutPct":8,"hullPct":54,"regenPerShip":0,"lossPct":64,"dealtPerShip":105,"shots":30.9,"syncShots":8.8,"braces":0.1},"corsair":{"range":2.36,"shieldPct":29,"cutPct":6,"hullPct":65,"regenPerShip":0,"lossPct":64,"dealtPerShip":81,"shots":27.4,"braces":0.1,"torpLaunch":4.1,"torpHit":2.1,"torpDodge":0.4,"torpGone":0.3},"chorus":{"range":1.72,"shieldPct":0,"cutPct":9,"hullPct":91,"regenPerShip":24,"lossPct":56,"dealtPerShip":83,"shots":19.3,"braces":0.3,"feed":59.5},"ithar":{"range":2.78,"shieldPct":51,"cutPct":0,"hullPct":50,"regenPerShip":0,"lossPct":60,"dealtPerShip":99,"shots":29.1,"charge":41.2,"fade":0.1,"torpLaunch":2.3,"torpHit":1,"torpDodge":0.2,"torpGone":0.4},"deathless":{"range":2.67,"shieldPct":0,"cutPct":16,"hullPct":84,"regenPerShip":11,"lossPct":59,"dealtPerShip":96,"shots":33.4,"braces":0,"revive":0.9}}
+## fm2
+FID {"hegemony":{"range":2.9,"shieldPct":32,"cutPct":7,"hullPct":61,"regenPerShip":0,"lossPct":60,"dealtPerShip":104,"shots":32.4,"syncShots":7.7,"braces":0.1},"voidsworn":{"range":2.76,"shieldPct":21,"cutPct":10,"hullPct":69,"regenPerShip":0,"lossPct":72,"dealtPerShip":88,"shots":21.6,"braces":0,"torpLaunch":2.4,"torpHit":1.1,"torpDodge":0.2,"torpGone":0.2},"corsair":{"range":2.44,"shieldPct":18,"cutPct":7,"hullPct":75,"regenPerShip":0,"lossPct":68,"dealtPerShip":67,"shots":23.5,"braces":0.1,"torpLaunch":4.4,"torpHit":2.4,"torpDodge":0.4,"torpGone":0.3},"chorus":{"range":1.78,"shieldPct":0,"cutPct":9,"hullPct":91,"regenPerShip":21,"lossPct":64,"dealtPerShip":75,"shots":17,"braces":0.5,"feed":49.4},"ithar":{"range":2.94,"shieldPct":33,"cutPct":0,"hullPct":69,"regenPerShip":0,"lossPct":76,"dealtPerShip":63,"shots":21.5,"charge":39.2,"fade":0.3,"torpLaunch":2,"torpHit":0.7,"torpDodge":0.2,"torpGone":0.3},"deathless":{"range":2.68,"shieldPct":0,"cutPct":14,"hullPct":86,"regenPerShip":12,"lossPct":66,"dealtPerShip":90,"shots":35.3,"braces":0,"revive":1}}
+## fm3
+FID {"voidsworn":{"range":2.62,"shieldPct":38,"cutPct":5,"hullPct":56,"regenPerShip":0,"lossPct":71,"dealtPerShip":109,"shots":24.4,"braces":0.1,"torpLaunch":2.5,"torpHit":0.9,"torpDodge":0.2,"torpGone":0.2},"corsair":{"range":2.43,"shieldPct":25,"cutPct":5,"hullPct":70,"regenPerShip":3,"lossPct":64,"dealtPerShip":80,"shots":29,"braces":0.1,"torpLaunch":5.3,"torpHit":2.1,"torpDodge":1.6,"torpGone":0.3},"hegemony":{"range":2.88,"shieldPct":39,"cutPct":6,"hullPct":55,"regenPerShip":0,"lossPct":70,"dealtPerShip":119,"shots":28.3,"syncShots":7,"braces":0},"chorus":{"range":1.79,"shieldPct":0,"cutPct":5,"hullPct":95,"regenPerShip":21,"lossPct":64,"dealtPerShip":80,"shots":15.9,"braces":0.3,"feed":64.3},"ithar":{"range":2.78,"shieldPct":51,"cutPct":0,"hullPct":52,"regenPerShip":0,"lossPct":58,"dealtPerShip":89,"shots":25.1,"charge":45.9,"fade":0.1,"torpLaunch":2.5,"torpHit":0.9,"torpDodge":0.3,"torpGone":0.4},"deathless":{"range":2.74,"shieldPct":0,"cutPct":11,"hullPct":89,"regenPerShip":10,"lossPct":55,"dealtPerShip":92,"shots":33.9,"braces":0,"revive":1}}
+## fm4
+FID {"chorus":{"range":1.82,"shieldPct":0,"cutPct":6,"hullPct":94,"regenPerShip":19,"lossPct":58,"dealtPerShip":89,"shots":21.8,"braces":0.8,"feed":51},"voidsworn":{"range":2.6,"shieldPct":38,"cutPct":3,"hullPct":60,"regenPerShip":0,"lossPct":73,"dealtPerShip":145,"shots":22,"braces":0,"torpLaunch":1.6,"torpHit":0.6,"torpDodge":0.2,"torpGone":0.1},"hegemony":{"range":2.93,"shieldPct":38,"cutPct":1,"hullPct":60,"regenPerShip":0,"lossPct":80,"dealtPerShip":148,"shots":30.3,"syncShots":6.7,"braces":0},"corsair":{"range":2.43,"shieldPct":28,"cutPct":0,"hullPct":72,"regenPerShip":0,"lossPct":66,"dealtPerShip":112,"shots":21.7,"braces":0,"torpLaunch":4.6,"torpHit":2.8,"torpDodge":0.7,"torpGone":0.3},"ithar":{"range":2.72,"shieldPct":43,"cutPct":0,"hullPct":61,"regenPerShip":0,"lossPct":73,"dealtPerShip":96,"shots":21.9,"charge":31.8,"fade":0.1,"torpLaunch":2.5,"torpHit":1,"torpDodge":0.3,"torpGone":0.4},"deathless":{"range":2.62,"shieldPct":0,"cutPct":9,"hullPct":91,"regenPerShip":4,"lossPct":68,"dealtPerShip":117,"shots":31,"revive":1.1}}
+## fm5
+FID {"ithar":{"range":2.65,"shieldPct":46,"cutPct":0,"hullPct":56,"regenPerShip":0,"lossPct":65,"dealtPerShip":88,"shots":31.3,"charge":41.5,"fade":0.3,"torpLaunch":3.2,"torpHit":1.1,"torpDodge":1,"torpGone":0.2},"voidsworn":{"range":2.74,"shieldPct":35,"cutPct":6,"hullPct":60,"regenPerShip":0,"lossPct":66,"dealtPerShip":69,"shots":21.4,"braces":0.1,"torpLaunch":1.9,"torpHit":0.4,"torpDodge":0.2,"torpGone":0.1},"hegemony":{"range":3.02,"shieldPct":36,"cutPct":6,"hullPct":58,"regenPerShip":0,"lossPct":60,"dealtPerShip":76,"shots":31.8,"syncShots":10.1,"braces":0},"corsair":{"range":2.4,"shieldPct":26,"cutPct":5,"hullPct":70,"regenPerShip":0,"lossPct":62,"dealtPerShip":45,"shots":24.7,"braces":0.1,"torpLaunch":4.7,"torpHit":2.6,"torpDodge":0.8,"torpGone":0.3},"chorus":{"range":1.78,"shieldPct":0,"cutPct":2,"hullPct":98,"regenPerShip":18,"lossPct":58,"dealtPerShip":50,"shots":18,"braces":0.1,"feed":48.9},"deathless":{"range":2.87,"shieldPct":0,"cutPct":11,"hullPct":89,"regenPerShip":9,"lossPct":53,"dealtPerShip":57,"shots":32.2,"braces":0,"revive":1}}
+## fm6
+FID {"deathless":{"range":2.76,"shieldPct":0,"cutPct":12,"hullPct":88,"regenPerShip":11,"lossPct":60,"dealtPerShip":106,"shots":40.8,"braces":0,"revive":1},"voidsworn":{"range":2.9,"shieldPct":33,"cutPct":2,"hullPct":65,"regenPerShip":0,"lossPct":66,"dealtPerShip":130,"shots":22.8,"braces":0.2,"torpLaunch":1.8,"torpHit":0.8,"torpDodge":0.4,"torpGone":0},"hegemony":{"range":3.23,"shieldPct":34,"cutPct":1,"hullPct":65,"regenPerShip":0,"lossPct":81,"dealtPerShip":115,"shots":32.4,"syncShots":8.2,"braces":0},"corsair":{"range":2.47,"shieldPct":27,"cutPct":1,"hullPct":71,"regenPerShip":0,"lossPct":62,"dealtPerShip":110,"shots":23.1,"braces":0.2,"torpLaunch":4,"torpHit":2.4,"torpDodge":0.7,"torpGone":0.2},"chorus":{"range":1.77,"shieldPct":0,"cutPct":3,"hullPct":97,"regenPerShip":28,"lossPct":54,"dealtPerShip":99,"shots":16.6,"braces":0.9,"feed":77},"ithar":{"range":2.99,"shieldPct":34,"cutPct":0,"hullPct":68,"regenPerShip":0,"lossPct":78,"dealtPerShip":111,"shots":26.6,"charge":18.7,"fade":0.4,"torpLaunch":2.4,"torpHit":1.1,"torpDodge":0.5,"torpGone":0.2}}
+## mx1
+           void hege cors chor itha deat
+voidsworn    94   81   44   38   38   81   avg 63
+per battle: rounds 8.3, timeouts 0/96, rams 1.7, boardings 0.5, captures 0.44, sections lost 16.0
+## mx2
+           void hege cors chor itha deat
+hegemony     88   94   75   69   56   69   avg 75
+per battle: rounds 7.9, timeouts 0/96, rams 1.3, boardings 0.3, captures 0.06, sections lost 16.1
+## mx3
+           void hege cors chor itha deat
+corsair     100  100  100   81   81  100   avg 94
+per battle: rounds 5.8, timeouts 0/96, rams 2.2, boardings 0.7, captures 0.54, sections lost 16.8
+## mx4
+           void hege cors chor itha deat
+chorus      100  100   75   88   75  100   avg 90
+per battle: rounds 6.1, timeouts 0/96, rams 2.0, boardings 0.4, captures 0.32, sections lost 18.8
+## mx5
+           void hege cors chor itha deat
+ithar       100   94  100   56   75   94   avg 86
+per battle: rounds 6.5, timeouts 0/96, rams 1.5, boardings 1.3, captures 0.00, sections lost 14.1
+## mx6
+           void hege cors chor itha deat
+deathless    94  100   13    6   63   88   avg 60
+per battle: rounds 7.4, timeouts 0/96, rams 3.0, boardings 0.6, captures 0.04, sections lost 17.7
+## cp1
+sector 1 battle win 100%  rounds 3.5  hull left 81%  ships lost 0.2  timeouts 0  wait old 60s new 35s  real 35s  per round 10.3s  max round 15.1s  ships 4.0+3.8
+   tempo: enemy activations per player activation 0.75, enemy ships firing per round 1.7, first player ship lost in round 4.1
+sector 1 battle win 98%  rounds 4.4  hull left 63%  ships lost 0.9  timeouts 0  wait old 89s new 51s  real 46s  per round 10.8s  max round 17.4s  ships 4.0+5.0
+   tempo: enemy activations per player activation 0.99, enemy ships firing per round 2.4, first player ship lost in round 3.8
+sector 1 elite  win 83%  rounds 6.1  hull left 37%  ships lost 2.0  timeouts 0  wait old 121s new 70s  real 60s  per round 10.0s  max round 18.6s  ships 4.0+5.5
+   tempo: enemy activations per player activation 1.19, enemy ships firing per round 2.6, first player ship lost in round 3.6
+sector 1 boss   win 88%  rounds 8.4  hull left 50%  ships lost 1.5  timeouts 0  wait old 115s new 66s  real 66s  per round 8.1s  max round 16.7s  ships 4.0+3.1
+   tempo: enemy activations per player activation 0.51, enemy ships firing per round 1.2, first player ship lost in round 4.7
+## cp2
+sector 2 battle win 97%  rounds 4.8  hull left 68%  ships lost 1.6  timeouts 0  wait old 116s new 67s  real 60s  per round 12.6s  max round 23.0s  ships 5.0+6.7
+   tempo: enemy activations per player activation 1.06, enemy ships firing per round 2.7, first player ship lost in round 3.1
+sector 2 battle win 85%  rounds 6.0  hull left 48%  ships lost 2.5  timeouts 0  wait old 160s new 92s  real 73s  per round 12.4s  max round 26.1s  ships 5.0+8.3
+   tempo: enemy activations per player activation 1.47, enemy ships firing per round 3.7, first player ship lost in round 2.9
+sector 2 elite  win 62%  rounds 7.6  hull left 23%  ships lost 3.8  timeouts 0  wait old 192s new 109s  real 83s  per round 11.1s  max round 25.2s  ships 5.0+8.3
+   tempo: enemy activations per player activation 1.71, enemy ships firing per round 3.7, first player ship lost in round 2.9
+sector 2 boss   win 63%  rounds 11.4  hull left 22%  ships lost 3.7  timeouts 0  wait old 196s new 113s  real 97s  per round 8.6s  max round 21.2s  ships 5.0+6.2
+   tempo: enemy activations per player activation 0.97, enemy ships firing per round 1.8, first player ship lost in round 3.4
+## cp3
+sector 3 battle win 92%  rounds 6.0  hull left 68%  ships lost 1.9  timeouts 0  wait old 209s new 118s  real 80s  per round 13.6s  max round 22.9s  ships 5.0+11.7
+   tempo: enemy activations per player activation 1.96, enemy ships firing per round 5.6, first player ship lost in round 3.6
+sector 3 battle win 90%  rounds 7.2  hull left 49%  ships lost 2.8  timeouts 0  wait old 273s new 151s  real 92s  per round 12.8s  max round 27.2s  ships 5.0+13.8
+   tempo: enemy activations per player activation 2.56, enemy ships firing per round 6.8, first player ship lost in round 3.4
+sector 3 elite  win 70%  rounds 7.1  hull left 44%  ships lost 3.2  timeouts 0  wait old 272s new 151s  real 88s  per round 12.7s  max round 27.8s  ships 5.0+13.7
+   tempo: enemy activations per player activation 2.81, enemy ships firing per round 7.0, first player ship lost in round 3.1
+sector 3 boss   win 77%  rounds 15.2  hull left 33%  ships lost 3.4  timeouts 0  wait old 339s new 191s  real 137s  per round 9.1s  max round 25.9s  ships 5.0+11.5
+   tempo: enemy activations per player activation 1.48, enemy ships firing per round 3.0, first player ship lost in round 3.8
+## rs
+RUNSIM {
+ "s1 battle": "211 battles, won 93%, lost/fight 0.32, e/p cp 0.99, rounds 4.0",
+ "s1 boss": "60 battles, won 92%, lost/fight 0.72, e/p cp 1.67, rounds 7.5",
+ "s1 elite": "42 battles, won 86%, lost/fight 0.69, e/p cp 1.26, rounds 4.8",
+ "s2 battle": "116 battles, won 86%, lost/fight 0.59, e/p cp 1.45, rounds 4.5",
+ "s2 boss": "35 battles, won 69%, lost/fight 1.49, e/p cp 2.12, rounds 8.9",
+ "s2 elite": "19 battles, won 79%, lost/fight 1.11, e/p cp 1.74, rounds 5.1",
+ "s3 battle": "38 battles, won 87%, lost/fight 0.76, e/p cp 1.65, rounds 4.7",
+ "s3 boss": "16 battles, won 63%, lost/fight 1.75, e/p cp 2.48, rounds 7.9",
+ "s3 elite": "14 battles, won 79%, lost/fight 1.07, e/p cp 2.14, rounds 4.6"
+}
+reach {"1":80,"2":55,"3":24,"won":10}
+## am
+archmatrix s2 col3 {"none":"79% r6.7 ships 7.2","swarm":"78% r6.1 ships 8.3","heavy":"90% r6.5 ships 4.8","carrier":"83% r6.9 ships 6.4"}
+## fz1
+fuzz 500 battles: exceptions 0, invariant breaks 0 (0 distinct), avg rounds 7.1
+## fz2
+fuzz 500 battles: exceptions 0, invariant breaks 0 (0 distinct), avg rounds 7.2
+## fz3
+fuzz 500 battles: exceptions 0, invariant breaks 0 (0 distinct), avg rounds 7.1
+## fz4
+fuzz 500 battles: exceptions 0, invariant breaks 0 (0 distinct), avg rounds 7.1
