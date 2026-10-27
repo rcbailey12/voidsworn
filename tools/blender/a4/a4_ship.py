@@ -274,6 +274,7 @@ def main():
     if h['fingers']:
         F_ = bakemat4.FAC[fac]; st_ = cfg['spires'].get('style', 'gothic')
         if st_ == 'array': dress4.build_array_spires(h['fingers'], bakemat4.lin(F_['hull']), bakemat4.lin(F_['dark']), dict(rgh=F_['rgh'], met=F_['met']))
+        elif st_ == 'radiator': dress4.build_radiator_spires(h['fingers'], bakemat4.lin(F_['hull']), bakemat4.lin(F_['dark']), dict(rgh=F_['rgh'], met=F_['met']), tuple(F_['win']))
         else: dress.build_spires(h['fingers'], st_, bakemat4.lin(F_['hull']), bakemat4.lin(F_['dark']), dict(rgh=F_['rgh'], met=F_['met']))
     covers = fill_holes(hull, cfg, fac); made, missed = run_kit(cfg, rims, covers); kit_parts = list(hs_lib.PARTS); log('kit parts', len(kit_parts), 'placements', made, 'missed', missed)
     mmap = blmesh.load_image_np(h['tex'][1])

@@ -10,8 +10,10 @@
 #   cuts           AI parts taken out before refining (cuts.py): dict(name, box=(x0, x1, y0, y1, z0, z1), mirror, cover, pad, raise)
 #                  or dict(name, dir='up'|'down'|'aft'|'fore'|'port'|'stbd', level, max_w, min_ratio, box)
 #   kit            hand-built parts, in order: (function, name, x, y, z, side, {kwargs}); kwargs: pair, aim, size, slot, wkind, arc, ...
-#                  functions: turret casemate spinal launcher emitter engine_at thruster_pod radiators antenna sensor_dome bridge tank bay
-#   spires         dict(zmin, box, exclude_x, style='gothic'|'mast'): melted thin spires found and rebuilt crisp (a2detail/spires.py)
+#                  functions: turret casemate spinal launcher emitter engine_at thruster_pod radiators antenna sensor_array hook_prow
+#                  sensor_dome bridge tank bay
+#   spires         dict(zmin, box, exclude_x, style='gothic'|'mast'|'array'|'radiator'): melted thin spires found and rebuilt crisp
+#                  (a2detail/spires.py; Voidsworn 'radiator' since Oct 27: heat-radiator spires, not church spires)
 #   dress          surface-detail amount (0 off, 1 normal)
 #   breach, wreck  counts (default by size band)
 #   notes          the blob-sweep verdicts and taste calls, for the report
@@ -39,7 +41,7 @@ WEAPONS = {
 }
 KEYS = {'loft', 'pitch', 'roll_deg', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
-       'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
+       'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_array', 'hook_prow', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
 SIZES = {'S', 'M', 'L', 'XL'}
 
 
@@ -80,16 +82,19 @@ YAWS = {'I14_23': 1, 'I15_11': -1, 'I11_37': 2, 'D20_23': -1, 'D9_23': 2, 'C15s_
 SHIPS['C13s_23'] = dict(
     fac='corsair', cls='Frigate', name='Raider-class frigate', sym='corsair',
     cuts=[dict(name='spine', box=(-.06, .34, -.032, .032, .088, .30)),          # AI top gun, tower and bent pipe mast: rebuilt
-          dict(name='crown', box=(-.52, -.385, -.08, .08, -.07, .07))],         # AI engine crown with prongs: rebuilt as bells
+          dict(name='crown', box=(-.52, -.385, -.08, .08, -.07, .07)),          # AI engine crown with prongs: rebuilt as bells
+          dict(name='chinfin', box=(.26, .425, -.024, .024, -.25, -.116))],     # pass 3: the fin under the bow read as a boat keel (naval tell)
     kit=[('turret', 'ac', .16, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='autocannon', arc='T', lift=.035)),
-         ('antenna', 'ant', .00, 0, 0, 'top', dict(h=.075)),
+         ('sensor_array', 'ant', .00, .006, 0, 'top', dict(w=.034)),        # pass 3: the pole antenna read as a mast
+         ('hook_prow', 'hook', .34, 0, 0, 'below', dict(length=.17, r=.024, drop=.004)),   # pass 3: boarding claw under the chin
          ('engine_at', 'eM', 0, 0, 0, 'stern', dict(r=.040, L=.055)),
          ('engine_at', 'eP', 0, .056, -.038, 'stern', dict(r=.020, L=.030)),
          ('engine_at', 'eS', 0, -.050, .036, 'stern', dict(r=.016, L=.026)),
          ('radiators', 'rad', -.20, 0, 0, 'top', dict(length=.07, height=.035)),
          ('tank', 'tk', -.12, .052, 0, 'top', dict(r=.011, length=.06)),
          ('sensor_dome', 'sd', .31, 0, 0, 'top', dict(r=.011))],
-    notes='first pass')
+    notes='pass 3 (Oct 27 lore note, grimmer Corsairs): chin fin cut (keel read), boarding claw under the chin, low sensor array instead of '
+          'the pole antenna, trophy plates in the dress')
 
 SHIPS['C14s_23'] = dict(
     fac='corsair', cls='Destroyer', name='Reaver-class destroyer', sym='corsair',
@@ -99,8 +104,9 @@ SHIPS['C14s_23'] = dict(
           dict(name='funnel', box=(-.045, .055, -.065, .075, .03, .30))],       # AI smokestack and leaning wire sticks: rebuilt as radiators
     kit=[('spinal', 'torp', .33, 0, 0, 'top', dict(size='M', slot=0, wkind='torp', arc='F', tubes=4)),
          ('casemate', 'scat', .06, 0, -.07, 'stbd', dict(size='M', barrels=2, slot=1, wkind='scatter', arc='S', aim=(.26, -.97, 0))),
-         ('antenna', 'ant', .17, .02, 0, 'top', dict(h=.10)),
-         ('antenna', 'ant2', .12, -.035, 0, 'top', dict(h=.06, dishes=1)),
+         ('sensor_array', 'ant', .17, .02, 0, 'top', dict(w=.040)),         # pass 3: the two pole antennas read as masts
+         ('sensor_array', 'ant2', .10, -.035, 0, 'top', dict(w=.028, panels=2, dish=False)),
+         ('hook_prow', 'hook', .36, 0, 0, 'below', dict(length=.17, r=.022, drop=.002)),   # pass 3: boarding claw from the chin pod
          ('radiators', 'rad', -.37, 0, 0, 'top', dict(length=.12, height=.05, n_fins=3)),
          ('radiators', 'rad2', .005, .005, 0, 'top', dict(length=.07, height=.04, n_fins=2, splay=24)),
          ('engine_at', 'eM', 0, 0, -.06, 'stern', dict(r=.046, L=.06)),
@@ -108,25 +114,29 @@ SHIPS['C14s_23'] = dict(
          ('engine_at', 'eS', 0, -.058, -.025, 'stern', dict(r=.024, L=.035)),
          ('tank', 'tk', -.17, -.05, 0, 'top', dict(r=.012, length=.07)),
          ('sensor_dome', 'sd', .02, 0, 0, 'top', dict(r=.013))],
-    notes='first pass')
+    notes='pass 3 (Oct 27 lore note, grimmer Corsairs): boarding claw from the chin pod, low sensor arrays instead of the pole antennas, '
+          'trophy plates in the dress')
 
 SHIPS['C15s_23'] = dict(
     fac='corsair', cls='Cruiser', name='Marauder-class cruiser', sym='corsair',
     yaw=2,  # meshed back to front: the rounded nose is at -x in hulls_hi and the crane at +x, so today's game flies it stern first
     cuts=[dict(name='crane', box=(-.50, -.02, -.07, .07, .012, .30)),          # AI A-frame crane with cables (rigging: a naval tell)
           dict(name='fork', box=(.115, .225, -.055, .055, .055, .30)),          # AI fork tower and melted top gun
-          dict(name='domes', box=(.31, .445, .045, .125, -.055, .045), mirror=True)],  # AI side gun domes and prongs
+          dict(name='domes', box=(.31, .445, .045, .125, -.055, .045), mirror=True),   # AI side gun domes and prongs
+          dict(name='chinfin', box=(.335, .43, -.024, .024, -.20, -.106))],     # pass 3: the fin under the bow read as a boat keel (naval tell)
     kit=[('casemate', 'scat', .378, 0, -.005, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='scatter', arc='P', aim=(.26, .97, 0), pair=True)),
          ('spinal', 'torp', .29, 0, 0, 'top', dict(size='M', slot=2, wkind='torp', arc='F', tubes=4)),
          ('turret', 'flak', .145, 0, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', lift=.02)),
-         ('antenna', 'ant', .195, .01, 0, 'top', dict(h=.10)),
-         ('antenna', 'ant2', -.25, .025, 0, 'top', dict(h=.06, dishes=1)),
+         ('sensor_array', 'ant', .195, .01, 0, 'top', dict(w=.040)),        # pass 3: the pole antennas read as masts with a crow's nest
+         ('sensor_array', 'ant2', -.25, .025, 0, 'top', dict(w=.028, dish=False)),
+         ('hook_prow', 'hook', .38, 0, 0, 'below', dict(length=.15, r=.020, drop=.004)),   # pass 3: boarding claw under the chin
          ('radiators', 'rad', -.39, 0, 0, 'top', dict(length=.10, height=.05, n_fins=2)),
          ('engine_at', 'eM', 0, 0, -.02, 'stern', dict(r=.036, L=.05)),
          ('engine_at', 'eP', 0, .052, .004, 'stern', dict(r=.020, L=.03)),
          ('engine_at', 'eS', 0, -.046, -.052, 'stern', dict(r=.025, L=.035)),
          ('tank', 'tk', -.15, -.04, 0, 'top', dict(r=.011, length=.07))],
-    notes='first pass')
+    notes='pass 3 (Oct 27 lore note, grimmer Corsairs): chin fin cut (keel read), boarding claw under the chin, low sensor arrays instead '
+          'of the pole antennas, trophy plates in the dress')
 
 SHIPS['C16s_23'] = dict(
     fac='corsair', cls='Carrier', name='Hulk-carrier', sym='corsair',
@@ -134,24 +144,27 @@ SHIPS['C16s_23'] = dict(
           dict(name='spikes', box=(-.50, -.355, -.075, .075, .062, .30)),       # AI spiky stern clusters
           dict(name='sticks', dir='aft', level=.40, max_w=.03, min_ratio=1.6),  # thin AI sticks trailing aft (wire debris)
           dict(name='bulb', box=(.33, .47, -.055, .055, -.22, -.095)),          # AI bulb on a stalk under the bow
-          dict(name='bulb2', box=(.23, .35, -.05, .05, -.20, -.115))],          # pass 2: the bulb's loose end, left floating under the bow
+          dict(name='bulb2', box=(.23, .35, -.05, .05, -.20, -.115)),           # pass 2: the bulb's loose end, left floating under the bow
+          dict(name='prongs', dir='fore', level=.40, max_w=.03, min_ratio=1.6)],  # pass 3: thin AI prongs off the bow sides (wire debris)
     kit=[('turret', 'tA', .26, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='turret', arc='T', lift=.01)),
          ('turret', 'tB', -.15, 0, 0, 'top', dict(size='M', barrels=3, slot=1, wkind='turret', arc='T', lift=.012)),
          ('bay', 'bay', .05, 0, -.05, 'port', dict(width=.085, height=.05, pair=True)),
-         ('antenna', 'ant', .155, -.01, 0, 'top', dict(h=.11)),
+         ('sensor_array', 'ant', .155, -.01, 0, 'top', dict(w=.042)),       # pass 3: the pole antenna read as a mast with a crow's nest
+         ('hook_prow', 'hook', .37, 0, 0, 'below', dict(length=.15, r=.020, drop=.004)),   # pass 3: boarding claw under the chin
          ('radiators', 'rad', -.42, 0, 0, 'top', dict(length=.09, height=.055, n_fins=2)),
          ('engine_at', 'eP', 0, .046, .005, 'stern', dict(r=.032, L=.05)),
          ('engine_at', 'eS', 0, -.044, -.004, 'stern', dict(r=.026, L=.042)),
          ('engine_at', 'eB', 0, 0, -.075, 'stern', dict(r=.021, L=.03)),
-         ('sensor_dome', 'sd', .40, 0, 0, 'below', dict(r=.02)),
+         ('sensor_dome', 'sd', .22, -.02, 0, 'below', dict(r=.018)),          # pass 3: moved aft, the claw pylon took its place
          ('tank', 'tk', -.05, .07, 0, 'top', dict(r=.012, length=.08))],
-    notes='first pass')
+    notes='pass 3 (Oct 27 lore note, grimmer Corsairs): bow prongs cut, boarding claw under the chin, low sensor array instead of the pole '
+          'antenna, trophy plates in the dress')
 
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Voidsworn (grimdark black steel, ember glow; bilateral). Flagship first: V1b_r_23 is the K1 "Basilica" proof manifest.
 SHIPS['V1b_r_23'] = dict(
     fac='voidsworn', cls='Dreadnought', name='Ascendant-class dreadnought', sym='bilateral',
-    spires=dict(zmin=-.03, exclude_x=.40, style='gothic'),                     # the A2 rebuild: melted AI pinnacles cut and rebuilt crisp
+    spires=dict(zmin=-.03, exclude_x=.40, style='radiator'),                     # the A2 rebuild: melted AI pinnacles cut and rebuilt crisp
     cuts=[dict(name='domes', box=(-.215, .035, -.042, .042, -.046, .12))],       # AI dome turrets along the spine
     kit=[('casemate', 'hb', -.085, 0, -.09, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'hb2', .045, 0, -.09, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
@@ -180,7 +193,7 @@ SHIPS['V17_37'] = dict(
 SHIPS['V14_23'] = dict(
     fac='voidsworn', cls='Frigate', name='Warden-class frigate', sym='bilateral',
     yaw=2,  # meshed back to front: the twin ring nozzles sat at +x (the bow) in hulls_hi; the concept has them aft
-    spires=dict(zmin=.035, style='gothic'),
+    spires=dict(zmin=.035, style='radiator'),
     kit=[('turret', 'ac', .19, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='autocannon', arc='F', lift=.004)),
          ('turret', 'fl', -.06, .04, 0, 'top', dict(size='S', barrels=2, slot=1, wkind='flak', arc='T', pair=True)),
          ('engine_at', 'eP', 0, .032, .02, 'stern', dict(r=.027, L=.035, pair=True))],
@@ -193,7 +206,7 @@ SHIPS['V15_37'] = dict(
     kit=[('spinal', 'torp', .25, 0, 0, 'top', dict(size='M', slot=0, wkind='torp', arc='F', tubes=2)),
          ('turret', 'tt', .07, 0, 0, 'top', dict(size='M', barrels=2, slot=1, wkind='turret', arc='T', lift=.004)),
          ('engine_at', 'eP', 0, .03, -.025, 'stern', dict(r=.02, L=.03, pair=True))],
-    spires=dict(zmin=.035, style='gothic'),   # the melted tall fin over the waist (concept: a crisp black spike), rebuilt crisp
+    spires=dict(zmin=.035, style='radiator'),   # the melted tall fin over the waist (concept: a crisp black spike), rebuilt crisp
     notes='pass 2: turret moved off the fin (it had swallowed it and read as a smokestack), bells lowered to the stern face')
 
 SHIPS['V16_37'] = dict(
@@ -208,7 +221,7 @@ SHIPS['V16_37'] = dict(
 
 SHIPS['V18_51'] = dict(
     fac='voidsworn', cls='Carrier', name='Reliquary-class carrier', sym='bilateral',
-    spires=dict(zmin=.035, style='gothic'),                                       # the melted tine racks rebuilt as crisp pinnacles
+    spires=dict(zmin=.035, style='radiator'),                                       # the melted tine racks rebuilt as crisp pinnacles
     kit=[('turret', 'tt', .22, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='turret', arc='T', lift=.004)),
          ('turret', 'fl', -.12, .07, 0, 'top', dict(size='S', barrels=2, slot=1, wkind='flak', arc='T', pair=True)),
          ('bay', 'bay', 0, .20, -.075, 'bow', dict(width=.035, height=.026, launch=(1, 0, 0), pair=True)),

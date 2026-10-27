@@ -412,6 +412,78 @@ def antenna(name, p, n, h, dishes=2):
     return c
 
 
+def sensor_array(name, p, n, w, panels=2, dish=True):
+    """low sensor array, what a tall pole antenna becomes (owner Oct 24: crossbar masts read naval and become antenna arrays; the pass-2
+    Corsair poles with their red dish balls still read as masts with a crow's nest in the lineup). A squat armoured base, phased-array
+    panels leaning together in an A (faces outboard, a lit strip on each), a dish on a ball mount, two short whips. About w tall."""
+    P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0)))
+    top = plinth(name + 'p', p, n, t, b, w * .55, w * .06, shape='box', ratio=.75)
+    if top is None: return None
+    c = p + n * top
+    ofrustum(name + 'b', c - n * .0004, t, b, n, (w * .50, w * .36), (w * .42, w * .30), w * .22, bevel=.0003); tag(scol(mul(P['dark'], 1.6)))
+    cb = c + n * w * .21; strips = []
+    for k in range(panels):
+        s = 1 if k % 2 == 0 else -1; off = t * w * .30 * (k // 2 - (panels - 1) // 2 / 2)
+        pn = (b * s * math.cos(math.radians(30)) + n * math.sin(math.radians(30))).normalized(); pb = pn.cross(t).normalized()
+        pc = cb + off + b * s * w * .13 + n * w * .19
+        obox(name + f'a{k}', pc, t, pb, pn, (w * .62, w * .42, w * .045), bevel=.0002)
+        strips.append((pc + pn * w * .03, pb, pn))
+    tag(mul(P['base'], 1.05) if CTX['fac'] != 'corsair' else (.13, .135, .145), rgh=.45, met=.6)
+    for k, (q, pb, pn) in enumerate(strips): obox(name + f'l{k}', q, t, pb, pn, (w * .50, w * .05, w * .012), bevel=0)
+    tag(P['lens'], emit=1.0, rgh=.2, met=0)
+    if dish:  # dish on a ball mount at the aft end of the base, tipped up and outboard
+        q = c + n * w * .22 - t * w * .38
+        dress.blister(name + 'bl', q, n, w * .09, w * .09, w * .09, seg=12, vseg=6); tag(P['gun'], rgh=.45, met=.8)
+        Rr = Matrix.Rotation(math.radians(35), 3, t) @ M3(t, b, n)
+        hs_lib.cyl(name + 'ds', tuple(q + n * w * .12 + b * w * .05), w * .20, w * .05, axis='Z', seg=18, r2=w * .07, bevel=.0002, rot=Rr)
+        tag(mul(P['base'], 1.2) if CTX['fac'] != 'corsair' else (.19, .18, .17))
+    for k, (dt, db, hh) in enumerate(((.40, .22, .55), (.34, -.25, .38))):
+        ocyl(name + f'w{k}', c + n * (w * .17 + w * hh / 2) + t * w * dt + b * w * db, max(w * .025, .0005), w * hh, M3(t, b, n), seg=6, bevel=0)
+    tag(P['gun'], rgh=.4, met=.7)
+    return c
+
+
+def hook_prow(name, p, n, length, r, drop=0.0, tines=3, teeth=5):
+    """Corsair boarding claw (lore note Oct 27: Corsairs read grimmer and more menacing, hook prows, still junky). A heavy collar seated on
+    the prow, or under the chin on a pylon (`drop` along the surface normal); a tapered boom running forward with two hydraulic rams; a claw
+    hub with welded teeth and curved grapple tines that curl back in at the tips. Boarding gear, not a sea ram: no stem blade, no keel
+    line; it juts forward along the ship's axis from a visible mount."""
+    P = CTX['pal']; rng = CTX['rng']; f = Vector((1, 0, 0)); fwd_mount = abs(n.dot(f)) > .7
+    t, b, n = lframe(n, Vector((0, 0, 1)) if fwd_mount else f)
+    top = plinth(name + 'p', p, n, t, b, r * 1.25, r * .30, shape='hex')
+    if top is None: return None
+    c = p + n * top
+    if fwd_mount: base = c; e2 = t
+    else:  # pylon from the chin down to the boom line; the boom hangs under it with an overlap
+        ofrustum(name + 'py', c - n * .0004, t, b, n, (r * 1.1, r * .55), (r * .8, r * .45), drop + r * .2, bevel=.0003); tag(scol(mul(P['dark'], 1.6)))
+        base = c + n * (drop + r * .7) - f * r * .6; e2 = -n
+    e2 = (e2 - f * e2.dot(f)).normalized(); e1 = e2.cross(f).normalized(); Mf = M3(e1, e2, f)
+    bl = length * .60
+    ofrustum(name + 'bm', base - f * r * .2, e1, e2, f, (r * .70, r * .70), (r * .48, r * .48), bl + r * .2, sides=6, bevel=.0003)
+    tag(scol(mul(P['dark'], 1.6)))
+    for k, ang in enumerate((.5 + rng.uniform(-.2, .2), 2.6 + rng.uniform(-.2, .2))):  # two uneven hydraulic rams along the boom
+        d = e1 * math.cos(ang) + e2 * math.sin(ang)
+        ocyl(name + f'ra{k}', base + d * r * .60 + f * bl * .36, r * .15, bl * .62, Mf, seg=10, bevel=0)
+        ocyl(name + f'rb{k}', base + d * r * .60 + f * bl * .62, r * .22, bl * .18, Mf, seg=10, bevel=0)
+    tag(P['gun'], rgh=.4, met=.8)
+    head = base + f * bl
+    ocyl(name + 'hd', head + f * r * .15, r * .80, r * .55, Mf, seg=12, bevel=.0003); tag(scol((.13, .135, .145)))
+    L = length * .36
+    for k in range(tines):  # grapple tines: out and forward from the hub, then curling back in toward the axis
+        ang = 2 * math.pi * k / tines + math.pi / 2 + rng.uniform(-.25, .25); d = e1 * math.cos(ang) + e2 * math.sin(ang)
+        kL = L * rng.uniform(.85, 1.1); pts = []
+        for u_, v_ in ((0, .45), (.22, 1.0), (.45, 1.38), (.66, 1.50), (.84, 1.30), (.96, .95), (1.0, .62), (.95, .38)):
+            pts.append((head + f * (r * .25 + kL * u_) + d * r * v_, d))
+        dress.tube_path(name + f'tn{k}', pts, r * .36, r * .09, -r * .13, seg=8)
+    tag(scol((.19, .18, .17)), rgh=.35, met=.85)
+    for k in range(teeth):  # welded teeth on the hub face, uneven
+        ang = 2 * math.pi * k / teeth + math.pi / teeth + rng.uniform(-.3, .3); d = e1 * math.cos(ang) + e2 * math.sin(ang)
+        h_ = r * rng.uniform(.45, .80); q = head + f * r * .38 + d * r * .50
+        ocyl(name + f'th{k}', q + f * h_ / 2, r * .13, h_, Mf, seg=6, r2=r * .02, bevel=0)
+    tag((.42, .38, .30), rgh=.6, met=.3)
+    return head
+
+
 def sensor_dome(name, p, n, r):
     P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0)))
     top = plinth(name + 'p', p, n, t, b, r * 1.15, r * .12)
@@ -541,7 +613,10 @@ def breach_anchors(Hd, count, min_sep=None, seed=3):
     if count <= 0: return 0
     """breach anchor candidates spread over open hull (not under parts): farthest-point sampling over the hull samples with good AO and
     flat curvature, on the flanks and top"""
-    rng = np.random.default_rng(seed); ok = np.nonzero((Hd.ao > .55) & (np.abs(Hd.cv) < .08) & (Hd.sn[:, 2] > -.4))[0]
+    # not on the bow or stern tips (Oct 27 review: farthest-point sampling took the nose tip first, and a hole there faces forward with its
+    # guts poking out past the bow; the ram has its own crumpled bow), not on the end faces
+    rng = np.random.default_rng(seed)
+    ok = np.nonzero((Hd.ao > .55) & (np.abs(Hd.cv) < .08) & (Hd.sn[:, 2] > -.4) & (np.abs(Hd.sp[:, 0]) < .40) & (np.abs(Hd.sn[:, 0]) < .65))[0]
     if len(ok) < count: ok = np.arange(len(Hd.sp))
     pick = [int(rng.choice(ok))]; d = np.linalg.norm(Hd.sp[ok] - Hd.sp[pick[0]], axis=1)
     PT = detail_lib.bvh_of(hs_lib.PARTS) if hs_lib.PARTS else None

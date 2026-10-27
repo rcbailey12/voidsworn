@@ -44,6 +44,19 @@ Decisions this rests on: `K1_DECISIONS.md` (Claude's calls, Ryan can veto).
 - Damage: `acid` and `board` variants per section (damage.py), finer patches for splash and acid.
 - dmgview's sheet step no longer imports bpy (it stopped every breach review sheet in the first pass).
 
+## Review pass 3 (Oct 27, lore notes while lore round 3 is open)
+
+- Corsairs grimmer and more menacing, still junky: `kit.hook_prow` (a boarding claw under the chin or on the prow: collar, boom with
+  hydraulic rams, a toothed hub and curled grapple tines; boarding gear, not a sea ram), trophy plates in the dress (`dress4.trophy_plates`:
+  armour torn off Hegemony, Voidsworn and Chorus ships in the victim's paint and trim stripe, bolted on crooked with clamps, a bone kill
+  tally; Ithar and Deathless are not used while their looks change).
+- Naval tells cut: the Corsair pole antennas with dish balls read as masts with a crow's nest, now `kit.sensor_array` (low base, phased
+  panels in an A, a dish on a ball mount, short whips); C13s and C15s chin fins read as boat keels, cut; C16s bow prongs cut.
+- Voidsworn spires: style `radiator` (`dress4.build_radiator_spires`): a square core, a cross of flat vanes with heat-pipe ribs, ember
+  vent slits, a flat emitter cap. No points, finials or bands (a first try with stepped collars read as a pagoda).
+- Breach anchors keep off the bow and stern tips and the end faces (a nose-tip hole faced forward with its guts out past the bow).
+- Ithar and Deathless: no repaint or restyle (their looks are changing); shape fixes only.
+
 ## Running it
 
 - Cloud, shape only: `python3 tools/blender/a4/a4_ship.py CODE OUTDIR --nobake --look` (Workbench sheets `CODE_a4look.png` and

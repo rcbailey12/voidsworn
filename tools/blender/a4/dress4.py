@@ -30,10 +30,43 @@ def singles(H, rng, count, accept, rad, k=1.0, tries=40):
         H.placed.append((p, r)); made += 1; yield p, n, r
 
 
+# trophy plates (lore note Oct 27: Corsairs grimmer and more menacing, trophy plates): armour torn off the ships they took, in the victim's
+# own paint and trim stripe, bolted on crooked with heavy clamps, a bone-white kill tally scratched across. Victims whose looks are settled
+# only (Hegemony parade grey with blue, Voidsworn black with ember red, Chorus chitin with gold); Ithar and Deathless looks are changing.
+TROPHY = [(((.55, .60, .66), (.06, .19, .62)), .45), (((.030, .028, .027), (.34, .045, .012)), .35), (((.10, .042, .075), (.37, .29, .045)), .20)]
+BONE = (.62, .57, .46)
+
+
+def trophy_plates(H, S, rng, r, count, props):
+    made = 0
+    ok = lambda i: abs(H.sn[i][1]) > .55 and H.ao[i] > .45 and abs(H.cv[i]) < .10 and H.sp[i][0] > -.30
+    for p, n, rad in singles(H, rng, count, ok, lambda g: g.uniform(.030, .040), k=1.0, tries=80):
+        (base, stripe) = pick(r, TROPHY); w, h = r.uniform(.045, .070), r.uniform(.026, .038)
+        t, b, n1 = frame_for(n); Rm = Matrix.Rotation(math.radians(r.uniform(-14, 14)), 3, n1); t, b = Rm @ t, Rm @ b
+        th = .0030; pts = detail_lib.outline(r.choice(('slant', 'trap', 'chamfer')), w, h, r)
+        if not plate(H, S, f'ctro{made}', p, n1, t, b, pts, th, -.0003, mul(base, r.uniform(.8, 1.0)), dict(rgh=.45, met=.35), 2, random.Random(r.random())): continue
+        top = p + n1 * (th - .0003)
+        sv = r.uniform(-.25, .25) * h  # the victim's trim stripe across the plate
+        detail_lib.obox(f'ctro{made}s', top + b * sv + n1 * .0010, t, b, n1, (w * .86, h * .16, .0010), bevel=0); tag(stripe, rgh=.45, met=.3)
+        u0 = r.uniform(-.30, -.05) * w  # kill tally: groups of four strokes and a slash, scratched in bone white
+        for g in range(r.choice((1, 2, 2, 3))):
+            for k in range(4):
+                detail_lib.obox(f'ctro{made}k{g}{k}', top + t * (u0 + g * w * .22 + k * w * .035) - b * h * .22 + n1 * .0010, t, b, n1, (w * .010, h * .32, .0008), bevel=0)
+            detail_lib.obox(f'ctro{made}x{g}', top + t * (u0 + g * w * .22 + w * .052) - b * h * .22 + n1 * .0010, t, b, n1, (w * .16, h * .025, .0009), bevel=0, rot=math.radians(28))
+        tag(BONE, rgh=.7, met=.05)
+        for s in (-1, 1):  # heavy clamps biting over the plate edge onto the hull
+            q = p + t * s * w * .44
+            detail_lib.obox(f'ctro{made}c{s}', q + n1 * .0012, t, b, n1, (w * .07, h * .30, .0034), bevel=.0003)
+        tag((.07, .07, .075), rgh=.55, met=.7)
+        made += 1
+    return made
+
+
 def dress_corsair(H, S, seed, P, amount=1.0):
     rng = np.random.default_rng(seed); r = random.Random(seed)
     dark = P['dark']; open_ok = lambda i: H.ao[i] > .42 and abs(H.cv[i]) < .14
     props = dict(rgh=.62, met=.32); n_pl = fit = nrun = 0
+    n_tro = trophy_plates(H, S, rng, r, max(2, int(round(6 * amount))), props)
     # pipe runs along the flanks at uneven heights, port and starboard picked separately (lopsided on purpose)
     for side in (1, -1):
         rows = [r.uniform(.35, .62) for _ in range(r.choice((1, 2)))]
@@ -85,7 +118,7 @@ def dress_corsair(H, S, seed, P, amount=1.0):
             tag(((.40, .30, .02), (.02, .02, .02))[k % 2], rgh=.55, met=.2)
         fit += 1
     dress.lights(H, rng, P['lens'], mul(dark, 1.5), props, n_pairs=2)
-    print(f'dress corsair: {n_pl} salvage plates, {fit} fittings, {nrun} pipe runs')
+    print(f'dress corsair: {n_tro} trophy plates, {n_pl} salvage plates, {fit} fittings, {nrun} pipe runs')
 
 
 def build_array_spires(fingers, col, dark, props):
@@ -114,4 +147,59 @@ def build_array_spires(fingers, col, dark, props):
         hs_lib._obj(f'spf{n}', b, 0); tag(mul(col, .95), rgh=.3, met=.3)
         n += 1
     print(f'spires rebuilt as sensor arrays: {n}')
+    return n
+
+
+def _vane(name, x, y, z0, h, wb, wt, th, along_x):
+    """a thin tapered radiator vane standing on (x, y, z0), height h, base width wb, top width wt, thickness th, in the x-z or y-z plane"""
+    import bmesh, hs_lib
+    bm = bmesh.new(); V = []
+    for (w, z) in ((wb, z0), (wt, z0 + h)):
+        for s in (-1, 1):
+            for tt in (-1, 1):
+                u, v = s * w / 2, tt * th / 2
+                V.append(bm.verts.new((x + u, y + v, z) if along_x else (x + v, y + u, z)))
+    # V: bottom (-,-) (-,+) (+,-) (+,+), top the same + 4
+    for f in ((0, 2, 3, 1), (4, 5, 7, 6), (0, 1, 5, 4), (2, 6, 7, 3), (0, 4, 6, 2), (1, 3, 7, 5)): bm.faces.new([V[i] for i in f])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return hs_lib._obj(name, bm, 0)
+
+
+def build_radiator_spires(fingers, col, dark, props, glow=(1.0, .42, .12)):
+    """style 'radiator' (Oct 27 lore note: Voidsworn spires read as heat-radiator spires, not church spires): each melted AI finger becomes
+    a heat-radiator spire at the same spot and height: a mount plate over the cut rim, a square core, a cross of thin flat radiator vanes
+    with heat-pipe ribs running up them, ember-lit vent slits low on the vanes, and a flat emitter cap. No point, no finial, no gothic
+    bands, no stepped collars (the first try with collars read as a pagoda)."""
+    import hs_lib
+    n = 0; done = set()
+    for f in fingers:
+        x, y = float(f['c'][0]), float(f['c'][1]); z1, r = f['z1'], f['r']; lo, hi = f['rim_lo'], f['rim_hi']
+        z0 = float(hi[2]); h = z1 - z0
+        if h < .006: continue
+        if f['group'] not in done:
+            done.add(f['group']); x0, x1, y0, y1 = lo[0] - .0025, hi[0] + .0025, lo[1] - .0025, hi[1] + .0025
+            if abs(y0 + y1) < .006: e = max(abs(y0), abs(y1)); y0, y1 = -e, e
+            zt, zbm = float(hi[2]) + .0012, float(lo[2]) - .004
+            hs_lib.box(f'spm{n}', ((x0 + x1) / 2, (y0 + y1) / 2, (zt + zbm) / 2), (max(x1 - x0, .006), max(y1 - y0, .006), zt - zbm), bevel=.0006); tag(mul(col, .8), **props)
+        zs = z0 - .0006; hh = h * .94
+        hs_lib.cyl(f'spi{n}', (x, y, zs + hh * .5), r * .80, hh, axis='Z', seg=4, r2=r * .42, bevel=0); tag(mul(col, 1.05), **props)  # core
+        th = max(.0007, r * .12)
+        for k, ax in enumerate((True, False)):  # a cross of flat radiator vanes, nearly straight-sided (a steep taper or stepped collars read as a pagoda)
+            _vane(f'spv{n}{k}', x, y, zs, hh * .90, r * 2.6, r * 1.7, th, ax)
+        tag(mul(dark, 2.2), rgh=.4, met=.65)
+        for k, ax in enumerate((True, False)):  # heat-pipe ribs running up each vane face (vertical, never stacked rings)
+            for s_ in (-1, 1):
+                for u_ in (-.85, -.45, .45, .85):
+                    ox, oy = ((r * u_, s_ * th * .75) if ax else (s_ * th * .75, r * u_))
+                    hs_lib.box(f'spr{n}{k}{s_}{u_}', (x + ox, y + oy, zs + hh * .44), ((r * .10, th * .6, hh * .80) if ax else (th * .6, r * .10, hh * .80)), bevel=0)
+        tag(mul(dark, 1.6), rgh=.45, met=.6)
+        for k, ax in enumerate((True, False)):  # ember vent slits low on each vane, both faces
+            for s in (-1, 1):
+                ox, oy = ((r * .95 * s, th * .6) if ax else (th * .6, r * .95 * s))
+                hs_lib.box(f'spg{n}{k}{s}', (x + ox, y + oy, zs + hh * .22), ((r * .55, th * .5, hh * .22) if ax else (th * .5, r * .55, hh * .22)), bevel=0)
+        tag(glow, emit=.8, rgh=.3, met=0)
+        hs_lib.cyl(f'spt{n}', (x, y, zs + hh + .0008), r * .55, .0018, axis='Z', seg=4, bevel=0); tag(mul(dark, 1.6), rgh=.45, met=.6)  # flat cap
+        hs_lib.cyl(f'spl{n}', (x, y, zs + hh + .0019), r * .30, .0008, axis='Z', seg=8, bevel=0); tag(glow, emit=.9, rgh=.2, met=0)   # emitter lens
+        n += 1
+    print(f'spires rebuilt as heat radiators: {n}')
     return n
