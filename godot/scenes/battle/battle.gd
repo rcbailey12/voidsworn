@@ -74,6 +74,7 @@ var user_speed := 1.0      # Speed: normal (1) or fast (0.45)
 var movement := "cinematic"  # Movement: cinematic (heavy ships, R50) or brisk (the earlier motion)
 var move_frames := ""        # --move-frames <dir>: a frame per rendered frame while ships burn (before and after captures)
 var game_t := 0.0             # game-clock seconds since the battle scene started (scaled by --fast like every animation)
+var pace_kind := {}           # event kind -> game seconds spent playing it in enemy batches (where the wait goes)
 var pace_enemy := {}          # round -> game seconds spent playing the enemy's activations (the player's wait, B2 target 12 s, limit 15 s)
 var skip := false
 var sel := ""              # selected ship id
@@ -875,12 +876,18 @@ func _player_pending() -> int:
 	return n
 
 
+var dying := {}               # units that die in the batch being played (their killing volley waits for its impacts)
+
+
 func _play_batch(bt: Dictionary) -> void:
 	var evs: Array = bt["events"]
 	var enemy := false
+	dying.clear()
 	for e in evs:
 		if e["t"] == "activation" and e["side"] == "enemy":
 			enemy = true
+		if e["t"] == "death" and e.get("unit") != null:
+			dying[str(e["unit"])] = true
 	speed = user_speed
 	var t_batch := game_t
 	if enemy:
@@ -894,15 +901,23 @@ func _play_batch(bt: Dictionary) -> void:
 			while j < evs.size() and evs[j]["t"] in ["hit", "system", "shield_down", "burning"] and str(evs[j].get("target", evs[j].get("unit"))) == str(e["target"]):
 				grp.append(evs[j])
 				j += 1
+			var tf := game_t
 			await _play_fire(e, grp)
+			if enemy:
+				pace_kind["fire"] = float(pace_kind.get("fire", 0.0)) + game_t - tf
 			i = j
 			continue
+		var te := game_t
 		await _play_event(e)
+		if enemy:
+			pace_kind[str(e["t"])] = float(pace_kind.get(str(e["t"]), 0.0)) + game_t - te
 		if skip and enemy:
 			speed = minf(speed, float(PACE["skip"]))
 		i += 1
 	if enemy:
+		var ta := game_t
 		await wait(float(PACE["aiEnd"]))
+		pace_kind["aiEnd"] = float(pace_kind.get("aiEnd", 0.0)) + game_t - ta
 		if not cam_saved.is_empty():
 			cam.t = cam_saved["t"]
 			cam_saved = {}
@@ -1206,6 +1221,23 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		gfx.set_engine(str(id), 1.0)
 
 
+# How long a G4 volley holds the battle, as `total` (the caller waits total * sp): the effect's own length scaled by the
+# B2 pace like every other animation (enemy 0.5, tail 0.38, the big-fleet ramp, hurry 0.18, later volleys 0.5), so its
+# tail overlaps the next volley (its hits still land on their own timers). A volley that kills waits for its last
+# impact, so the death never plays before the blow lands. (Before: done / sp, so the pace cancelled out and every enemy
+# volley played at full length.)
+# At a paced speed (k < 1) the hold is the browser's own volley length (cap) when G4's effect runs longer, as the browser
+# paced it; at full speed (your own first volley) the effect plays out in full.
+func _fx_wait(done: float, impacts: Array, sp: float, kills := false, cap := INF) -> float:
+	var last := 0.0
+	for t in impacts:
+		last = maxf(last, float(t))
+	var k := maxf(sp, 0.01)
+	if k >= 1.0:
+		return maxf(done, (last + 0.08) if kills else 0.0)
+	return maxf(minf(done, cap) * k, (last + 0.08) if kills else 0.0) / k
+
+
 func _wfam(u: Dictionary, w: Dictionary) -> String:
 	var k := str(w["kind"])
 	if u.get("squadron", false):
@@ -1314,6 +1346,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var shield_col: Color = HT.FAC3D.get(str(VU.get(t_id, {}).get("fac", "hegemony")), P)["shield"]
 	var total := 0.0
 	var hi := 0
+	# the browser's own length for this volley (fx3d.js timing), the cap for a paced wait
+	var btot := (0.32 + n * 0.25 + 0.15) if fam in ["lance", "ion"] else ((0.32 + n * 0.12 + 0.84) if fam == "torp" else (n * 0.07 + 0.49))
 	if e.has("torpedo") and e.get("from") != null:
 		from = board.hex_world(int(e["from"]["q"]), int(e["from"]["r"]), 1.5)
 		_torp_clear(str(e["torpedo"]))
@@ -1329,7 +1363,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			get_tree().create_timer(maxf(at, 0.001)).timeout.connect(func() -> void:
 				_apply_hit(h)
 				sfx.boom(0.8, _pos(t_id)))
-		total = float(r.get("done", 1.2)) / maxf(sp, 0.01)
+		total = _fx_wait(float(r.get("done", 1.2)), imp, sp, dying.has(str(t_id)), btot)
 	elif gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:
@@ -1351,7 +1385,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 					sfx.shield(_pos(t_id))
 				else:
 					sfx.hit(_pos(t_id), h["crit"]))
-		total = float(r.get("done", 0.6)) / maxf(sp, 0.01)
+		total = _fx_wait(float(r.get("done", 0.6)), imp, sp, dying.has(str(t_id)), btot)
 	elif fam in ["lance", "ion"]:
 		sfx.lance(fam == "ion", fac, from)
 		total = 0.32 + n * 0.25 + 0.15
@@ -1538,7 +1572,10 @@ func _play_death(e: Dictionary) -> void:
 			sv.marker.visible = false
 		sv.ring.visible = false
 		hud.remove_plate(str(id))
-		await get_tree().create_timer(maxf(0.3, t * 0.6)).timeout
+		# a death is a key moment: it follows the pace only gently (half its hold at most on the enemy's turn, a quarter on
+		# hurry) and a big hull always gets 0.8 s; G4's effect plays on either way
+		var pk := clampf(speed, 0.25 if skip else 0.5, 1.0)
+		await get_tree().create_timer(maxf(0.8 if big else 0.3, t * 0.6 * pk)).timeout
 		return
 	_flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
 	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
@@ -1576,6 +1613,10 @@ func _end_flow() -> void:
 	result = {"result": "win" if win else "loss", "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V,
 		"pipeline_compiles": _pipe_count() - pipe_base if pipe_base >= 0 else -1, "pace": pace_stats()}
 	var body := "%d enemy ship%s destroyed, %d of yours lost, in %d round%s." % [killed, "" if killed == 1 else "s", lost, int(V["round"]), "" if int(V["round"]) == 1 else "s"]
+	if args.has("pace-report"):
+		# --pace-report (with --bot): the battle's report with the enemy's time per round by event kind, then quit
+		_quit_report()
+		return
 	if bot or args.has("bot-runs"):
 		finished.emit(result)
 		return
@@ -3281,7 +3322,11 @@ func pace_stats() -> Dictionary:
 	for v in vals:
 		tot += float(v)
 		mx = maxf(mx, float(v))
-	return {"rounds": vals.size(), "enemy_s_mean": snappedf(tot / vals.size(), 0.01), "enemy_s_max": snappedf(mx, 0.01), "movement": movement}
+	var kinds := {}
+	for k in pace_kind:
+		if float(pace_kind[k]) >= 0.05:
+			kinds[k] = snappedf(float(pace_kind[k]) / vals.size(), 0.01)
+	return {"rounds": vals.size(), "enemy_s_mean": snappedf(tot / vals.size(), 0.01), "enemy_s_max": snappedf(mx, 0.01), "movement": movement, "per_round_by_kind": kinds}
 
 
 func _quit_report() -> void:

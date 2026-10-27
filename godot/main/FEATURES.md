@@ -59,7 +59,7 @@ Last update: Oct 26 2026 evening, G2.
 | Abilities with a target hex (nova, blink, launch) | done (pick the hex) |
 | Admiral's Command (player) | done: top-bar button when ready, two clicks to confirm as the game asks |
 | End activation, Pass, Continue (Enter) | done |
-| Enemy turns at B2 pace, Enter or Space hurries, enemy-acting chip, camera follow | done |
+| Enemy turns at B2 pace, Enter or Space hurries, enemy-acting chip, camera follow | done. Oct 27 fix: G4 volleys now follow the pace (they played at full length, so big fights ran 20 to 30 s of enemy time a round; a 20-ship sector 3 fight measured 30.1 s mean, now 13.4 s; a 10-ship fight 6.4 to 7.2 s), held to the browser's volley length while the effect plays on; a killing volley waits for its impacts; deaths follow the pace gently. `--pace-report` with `--bot` prints the enemy's time per round by event kind |
 | Threat map (R) | done: the rules' threat_map (byte for byte with the browser), on a worker thread when the board changes |
 | Firing arcs (V, the fans) | done: fans under the selected ship, on by default, V toggles |
 | Hull and shield bars that change as hits land, floating numbers (shield, hull, Miss, Critical, Shields down) | done |
