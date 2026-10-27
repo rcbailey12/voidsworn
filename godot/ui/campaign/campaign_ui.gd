@@ -29,12 +29,14 @@ var k := 1.0
 var font: Font
 var font_semi: Font
 var font_goth: Font
+var font_caps: FontVariation           # small caps headers: the semi-bold face, letter-spaced
 var root: Control
 var bg: ColorRect
 var page_box: Control
 var map3d: Control                    # the 3D sector map, kept alive between renders (it animates)
 var use_3d_map := true                # false: the flat map (map_view.gd)
 var ai_level := "veteran"             # the battle setting the shell uses (godot/main settings "ai"); the map's danger bands follow it
+var map_quality := "high"             # the 3D map's detail, "high" or "low" (R51): from the game's Graphics setting, then the map's own toggle
 var modal_box: Control
 var toast_box: VBoxContainer
 var theme_main: Theme
@@ -50,6 +52,7 @@ func _ready() -> void:
 	font = _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
 	font_semi = _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
 	font_goth = _font("res://ui/battle/fonts/UnifrakturMaguntia-Book.ttf")
+	font_caps = FontVariation.new(); font_caps.base_font = font_semi; font_caps.spacing_glyph = 1
 	root = Control.new(); root.set_anchors_preset(Control.PRESET_FULL_RECT); add_child(root)
 	bg = ColorRect.new(); bg.color = INK; bg.set_anchors_preset(Control.PRESET_FULL_RECT); root.add_child(bg)
 	map3d = Map3D.new(); map3d.ui = self; map3d.visible = false; root.add_child(map3d)
@@ -59,7 +62,23 @@ func _ready() -> void:
 	toast_box.mouse_filter = Control.MOUSE_FILTER_IGNORE; toast_box.alignment = BoxContainer.ALIGNMENT_END; root.add_child(toast_box)
 	get_viewport().size_changed.connect(func(): _rescale(); _dirty = true)
 	_rescale()
+	map_quality = _load_map_quality()
 
+const MAP_PREFS := "user://campaign_map.json"
+func _load_map_quality() -> String:   # the map's own toggle wins; otherwise the game's Graphics setting (Low -> low)
+	for path in [MAP_PREFS, "user://settings.json"]:
+		if not FileAccess.file_exists(path): continue
+		var o = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if not (o is Dictionary): continue
+		if path == MAP_PREFS and o.get("quality") in ["high", "low"]: return o["quality"]
+		if path != MAP_PREFS and o.has("quality"): return "low" if str(o["quality"]) == "low" else "high"
+	return "high"
+func set_map_quality(qv: String) -> void:
+	map_quality = qv
+	var f = FileAccess.open(MAP_PREFS, FileAccess.WRITE)
+	if f != null: f.store_string(JSON.stringify({"quality": qv}))
+	if map3d != null: map3d.set_quality(qv)
+	_dirty = true
 func _font(p: String) -> Font:
 	if ResourceLoader.exists(p): return load(p)
 	var f = FontFile.new()
@@ -98,6 +117,12 @@ func _sb(bgc: Color, border: Color, bw: int = 1, rad: int = 4, pad: float = 8.0)
 	s.corner_radius_top_left = rad; s.corner_radius_top_right = rad; s.corner_radius_bottom_left = rad; s.corner_radius_bottom_right = rad
 	s.content_margin_left = px(pad * 1.4); s.content_margin_right = px(pad * 1.4); s.content_margin_top = px(pad); s.content_margin_bottom = px(pad)
 	return s
+# Dark glass: a translucent panel with a coloured accent on one side, a faint border, a soft shadow (R51 panels pass).
+func _glass(bgc: Color, accent: Color, side: String = "left", aw: int = 3, rad: int = 3, pad: float = 10.0, shadow: float = 10.0) -> StyleBoxFlat:
+	var s = _sb(bgc, accent, 0, rad, pad)
+	if side != "": s.set("border_width_" + side, max(1, px(aw)))
+	s.shadow_color = Color(0, 0, 0, 0.45); s.shadow_size = px(shadow); s.shadow_offset = Vector2(0, px(2))
+	return s
 func _make_theme() -> Theme:
 	var t = Theme.new()
 	t.default_font = font; t.default_font_size = px(18)
@@ -105,14 +130,19 @@ func _make_theme() -> Theme:
 	t.set_color("default_color", "RichTextLabel", BONE)
 	t.set_font("normal_font", "RichTextLabel", font); t.set_font("bold_font", "RichTextLabel", font_semi)
 	t.set_font_size("normal_font_size", "RichTextLabel", px(17)); t.set_font_size("bold_font_size", "RichTextLabel", px(17))
-	t.set_stylebox("normal", "Button", _sb(IRON2, IRON3)); t.set_stylebox("hover", "Button", _sb(IRON3, GILT2))
-	t.set_stylebox("pressed", "Button", _sb(IRON3, GILT)); t.set_stylebox("focus", "Button", _sb(Color(0, 0, 0, 0), GILT, 2))
+	var bn = _sb(Color(0.075, 0.1, 0.16, 0.94), Color(0.36, 0.44, 0.6, 0.5), 1, 3); bn.shadow_color = Color(0, 0, 0, 0.35); bn.shadow_size = px(5); bn.border_width_bottom = max(1, px(2)); bn.border_color = Color(0.36, 0.44, 0.6, 0.5)
+	var bh = _sb(Color(0.11, 0.14, 0.22, 0.97), GILT2, 1, 3); bh.shadow_color = Color(GILT, 0.18); bh.shadow_size = px(8); bh.border_width_bottom = max(1, px(2))
+	var bp = _sb(Color(0.14, 0.17, 0.25, 1.0), GILT, 1, 3); bp.border_width_bottom = max(1, px(2))
+	var bf = _sb(Color(0, 0, 0, 0), GILT, 2, 3); bf.shadow_color = Color(GILT, 0.28); bf.shadow_size = px(8)
+	t.set_stylebox("normal", "Button", bn); t.set_stylebox("hover", "Button", bh)
+	t.set_stylebox("pressed", "Button", bp); t.set_stylebox("focus", "Button", bf)
 	t.set_stylebox("disabled", "Button", _sb(Color(IRON2, 0.5), Color(IRON3, 0.5)))
 	t.set_color("font_color", "Button", BONE); t.set_color("font_hover_color", "Button", BONE); t.set_color("font_pressed_color", "Button", BONE)
 	t.set_color("font_disabled_color", "Button", BONE3); t.set_color("font_focus_color", "Button", BONE)
 	t.set_font_size("font_size", "Button", px(17))
 	t.set_stylebox("panel", "PanelContainer", _sb(IRON, IRON3, 1, 4, 12))
-	t.set_stylebox("panel", "TooltipPanel", _sb(IRON2, GILT2, 1, 4, 6))
+	var tp = _sb(Color(0.035, 0.05, 0.085, 0.97), Color(GILT, 0.45), 1, 4, 7); tp.shadow_color = Color(0, 0, 0, 0.5); tp.shadow_size = px(10)
+	t.set_stylebox("panel", "TooltipPanel", tp)
 	t.set_color("font_color", "TooltipLabel", BONE); t.set_font_size("font_size", "TooltipLabel", px(15))
 	return t
 
@@ -145,7 +175,8 @@ func spacer() -> Control:
 func flow(sep: float = 14) -> HFlowContainer:
 	var f = HFlowContainer.new(); f.add_theme_constant_override("h_separation", px(sep)); f.add_theme_constant_override("v_separation", px(sep)); return f
 func panel(border: Color = IRON3, bgc: Color = IRON, pad: float = 14) -> PanelContainer:
-	var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", _sb(bgc, border, 1, 4, pad)); return p
+	var sb = _sb(bgc, border, 1, 4, pad); sb.shadow_color = Color(0, 0, 0, 0.35); sb.shadow_size = px(8); sb.shadow_offset = Vector2(0, px(2))
+	var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", sb); return p
 func card(sel: bool = false, width: float = 300) -> Array: # [PanelContainer, VBoxContainer]
 	var p = panel(GILT if sel else IRON3, IRON, 14); p.custom_minimum_size.x = px(width)
 	if sel: p.add_theme_stylebox_override("panel", _sb(IRON, GILT, 2, 4, 14))
@@ -399,34 +430,78 @@ func _aspect() -> Control:
 	return v
 
 # ---------------- the sector map ----------------
+# R51 panels pass: the chart fills the screen; a dark fade behind the header and the footer keeps text legible over the
+# sky; the briefing is a row of glass cards with an accent edge in each one's colour; the key uses the chart's own glyphs.
+const STOP_GLYPH := {"battle": ["◆", "#e8503e"], "elite": ["◆", "#ff3a2a"], "shipyard": ["■", "#d0a64b"], "drydock": ["■", "#5fb3a6"], "field": ["✚", "#7ddc6a"], "event": ["●", "#62ccff"], "boss": ["✦", "#ff3a2a"]}
+func fac_col(fac) -> Color:   # a faction's name colour: its lore round 3 look (R51), names unchanged
+	return Map3D.System.text_col(fac) if Map3D.System.LOOKS.has(str(fac)) else (Color(C.FACTIONS[fac].get("glow", "#e07a70")) if C.FACTIONS.has(fac) else BONE)
+func caps(text: String, size: float = 12, col: Color = BONE3) -> Label: return lbl(text.to_upper(), size, col, font_caps, false)
+func _fade(top: bool, h: float) -> TextureRect:   # a vertical dark fade (header or footer)
+	var g = Gradient.new(); g.set_color(0, Color(0.004, 0.006, 0.012, 0.88)); g.set_color(1, Color(0.004, 0.006, 0.012, 0.0))
+	var gt = GradientTexture2D.new(); gt.gradient = g; gt.fill_from = Vector2(0, 0) if top else Vector2(0, 1); gt.fill_to = Vector2(0, 1) if top else Vector2(0, 0); gt.width = 4; gt.height = 64
+	var tr = TextureRect.new(); tr.texture = gt; tr.stretch_mode = TextureRect.STRETCH_SCALE; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tr.anchor_left = 0; tr.anchor_right = 1
+	if top: tr.anchor_top = 0; tr.anchor_bottom = 0; tr.offset_bottom = px(h)
+	else: tr.anchor_top = 1; tr.anchor_bottom = 1; tr.offset_top = -px(h)
+	return tr
+func _rule(col: Color = GILT, w: float = 420) -> Control:   # a thin gilt rule with a diamond, fading out to the right
+	var r = Control.new(); r.custom_minimum_size = Vector2(px(w), px(10)); r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	r.draw.connect(func():
+		var y = r.size.y * 0.5; var d = float(px(4))
+		r.draw_colored_polygon(PackedVector2Array([Vector2(0, y), Vector2(d, y - d), Vector2(d * 2, y), Vector2(d, y + d)]), col)
+		var n = 24
+		for i in n:
+			var x0 = d * 2.6 + (r.size.x - d * 2.6) * float(i) / n; var x1 = d * 2.6 + (r.size.x - d * 2.6) * float(i + 1) / n
+			r.draw_line(Vector2(x0, y), Vector2(x1, y), Color(col, 0.75 * (1.0 - float(i) / n)), max(1.0, float(px(1)))))
+	return r
 func _map() -> Control:
 	var R = C.RUN; var m = R["map"]; var F = C.FACTIONS[m["fac"]]
+	var wrap = Control.new(); wrap.set_anchors_preset(Control.PRESET_FULL_RECT); wrap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var hb = HBoxContainer.new(); hb.set_anchors_preset(Control.PRESET_FULL_RECT); hb.add_theme_constant_override("separation", 0)
-	var main = vbox(6); main.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var mm = MarginContainer.new(); mm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var left = Control.new(); left.size_flags_horizontal = Control.SIZE_EXPAND_FILL; left.mouse_filter = Control.MOUSE_FILTER_IGNORE; hb.add_child(left)
+	if use_3d_map:
+		left.add_child(_fade(true, 250)); left.add_child(_fade(false, 330))
+	var main = vbox(8); main.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var mm = MarginContainer.new(); mm.set_anchors_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]: mm.add_theme_constant_override("margin_" + side, px(24))
-	mm.add_child(main); hb.add_child(mm)
-	var head = hbox()
-	head.add_child(lbl("Sector " + C.roman(R["sector"]) + ((": " + str(C.REGIONS[m["region"]]["n"])) if C.jt(m.get("region")) and C.REGIONS.has(m["region"]) else ""), 44, BONE, font_goth, false))
-	head.add_child(spacer()); add(head, abtn("Save and quit", "saveQuit")); main.add_child(head)
+	mm.add_child(main); left.add_child(mm)
+	# the header: the sector's name, a line saying where you are and who holds it, the map's detail toggle, save and quit
+	var head = hbox(14)
+	var tv = vbox(0)
+	tv.add_child(lbl("Sector " + C.roman(R["sector"]) + ((": " + str(C.REGIONS[m["region"]]["n"])) if C.jt(m.get("region")) and C.REGIONS.has(m["region"]) else ""), 46, BONE, font_goth, false))
+	var here = C.findNode(R["pos"]) if R.get("pos") != null else null
+	var step = (int(here["col"]) + 1) if here != null else 0
+	var sub = c("SECTOR " + C.roman(R["sector"]) + " OF III", BONE2) + c("   ·   ", BONE3) + c("JUMP " + str(step) + " OF " + str(m["cols"].size()), BONE2) + c("   ·   ", BONE3) + c(C.numstr(C.z0(R["stats"].get("battles"))) + " FIGHTS SO FAR", BONE2) + c("   ·   HELD BY  ", BONE3) + "[b]" + c(esc(str(F["n"]).to_upper()), fac_col(m["fac"])) + "[/b]"
+	var sl = rich_inline(sub, 13); sl.add_theme_font_override("normal_font", font_caps); tv.add_child(sl)
+	tv.add_child(_rule(GILT, 460)); head.add_child(tv)
+	head.add_child(spacer())
+	if use_3d_map:
+		var qb = Button.new(); qb.text = "Map detail: " + ("High" if map_quality != "low" else "Low"); qb.focus_mode = Control.FOCUS_ALL; qb.add_theme_font_size_override("font_size", px(15))
+		qb.tooltip_text = "High draws the full star system. Low draws fewer stars, clouds and debris for a smoother map on slower machines."
+		qb.pressed.connect(func(): set_map_quality("low" if map_quality != "low" else "high"))
+		qb.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; head.add_child(qb)
+	var sq = abtn("Save and quit", "saveQuit")
+	if sq != null: sq.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; head.add_child(sq)
+	main.add_child(head)
 	_map_strip = _intel_strip(); main.add_child(_map_strip)
 	if use_3d_map:
 		var gap = Control.new(); gap.size_flags_vertical = Control.SIZE_EXPAND_FILL; gap.mouse_filter = Control.MOUSE_FILTER_IGNORE; main.add_child(gap)
-		for ctl in [hb, mm, main, head]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		for ctl in [hb, mm, main, head, tv]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	else:
 		var mv = MapView.new(); mv.ui = self; mv.size_flags_vertical = Control.SIZE_EXPAND_FILL; mv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		mv.custom_minimum_size = Vector2(px(600), px(320)); main.add_child(mv)
-	var legend = flow(14); legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var legend = flow(18); legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# the key: what each kind of stop gives, and the danger bands the chart prints on every fight (map_intel.gd)
 	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops a relic", "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
 	for kk in C.NODE_INFO.keys():
-		legend.add_child(rich_inline("[b]" + c(esc(C.NODE_INFO[kk]["n"]), BLOOD if kk == "elite" or kk == "boss" else BONE) + "[/b] " + c(LEG.get(kk, ""), BONE3), 13))
+		var gl = STOP_GLYPH.get(kk, ["●", "#b3aa95"])
+		legend.add_child(rich_inline(c(gl[0], Color(gl[1])) + " [b]" + c(esc(C.NODE_INFO[kk]["n"]), BLOOD if kk == "elite" or kk == "boss" else BONE) + "[/b] " + c(LEG.get(kk, ""), BONE3), 13))
 	var bands = []
-	for b in [["Easy", "#7ddc6a"], ["Even", "#d0a64b"], ["Hard", "#f0883a"], ["Deadly", "#e2453a"]]: bands.append("[b]" + c(b[0], Color(b[1])) + "[/b]")
-	legend.add_child(rich_inline(c("Danger against your fleet now: ", BONE3) + " ".join(PackedStringArray(bands)) + c(" · hover a stop for its routes", BONE3), 13))
+	for b in [["Easy", "#7ddc6a"], ["Even", "#d0a64b"], ["Hard", "#f0883a"], ["Deadly", "#e2453a"]]: bands.append("[bgcolor=" + hexs(Color(b[1]).darkened(0.72)) + "][b]" + c(" " + b[0].to_upper() + " ", Color(b[1])) + "[/b][/bgcolor]")
+	legend.add_child(rich_inline(c("Danger against your fleet now  ", BONE3) + " ".join(PackedStringArray(bands)) + c("   ·   hover a stop for its routes", BONE3), 13))
 	main.add_child(legend); _map_legend = legend
 	# what the reachable fights are (the browser's encounter previews)
-	var seen = {}; var prev = flow(8); prev.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var seen = {}; var prev = flow(10); prev.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for id in C.page["data"]["avail"]:
 		var n = C.findNode(id)
 		if n == null or not C.jt(n.get("enc")) or not C.ENCOUNTERS.has(n["enc"]): continue
@@ -445,11 +520,17 @@ func _map() -> Control:
 		if C.jt(n.get("rw")):
 			var rw = n["rw"]; var rc = Color(C.PATRONS[rw["p"]]["col"]) if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")) else BONE2
 			t += "\n" + c("Reward: " + _reward_label(rw) + (" (rare or better)" if C.jt(rw.get("min")) else ""), rc)
-		var p = panel(Color(GILT, 0.3), Color(0.03, 0.045, 0.08, 0.82), 8); p.custom_minimum_size.x = px(330); p.add_child(rich(t, 14)); prev.add_child(p)
+		var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", _glass(Color(0.02, 0.03, 0.055, 0.86), fac_col(fac), "left", 3, 3, 9))
+		p.custom_minimum_size.x = px(340); var pv = vbox(2); p.add_child(pv)
+		pv.add_child(caps(("Elite fleet" if n["type"] == "elite" else "Next fight") + " · " + str(C.FACTIONS[fac]["n"] if C.FACTIONS.has(fac) else ""), 11, fac_col(fac)))
+		pv.add_child(rich(t, 14)); prev.add_child(p)
 	main.add_child(prev)
-	main.add_child(lbl("Choose a pulsing node to jump there. You can only move forward along the lines.", 15, BONE3))
+	var hint = c("Choose a pulsing stop to jump there. You can only move forward along the lanes.", BONE3)
+	if use_3d_map: hint += c("   ·   scroll to zoom, right-drag to pan, Home to reset", Color(BONE3, 0.8))
+	main.add_child(rich(hint, 14))
 	hb.add_child(_side())
-	return hb
+	wrap.add_child(hb)
+	return wrap
 # The 3D map frames itself between the intel strip and the legend (map3d.gd _free_rect)
 var _map_strip: Control = null
 var _map_legend: Control = null
@@ -457,35 +538,33 @@ func map_free_y() -> Vector2:
 	var t = _map_strip.get_global_rect().end.y if is_instance_valid(_map_strip) and _map_strip.is_inside_tree() else -1.0
 	var b = _map_legend.get_global_rect().position.y if is_instance_valid(_map_legend) and _map_legend.is_inside_tree() else -1.0
 	return Vector2(t, b)
-# The sector intel strip: who is here and what is different about this sector (room kept for the Nemesis clock, stream B)
+# The sector briefing: who is here and what is different about this sector, one glass card each (R51)
 func _intel_strip() -> Control:
 	var R = C.RUN; var m = R["map"]; var F = C.FACTIONS[m["fac"]]
-	var row = flow(8); row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var box = func(head: String, body: String, col: Color, tip: String = "") -> Control:
-		var p = panel(Color(col, 0.55), Color(0.03, 0.045, 0.08, 0.82), 7); var v = vbox(1); p.add_child(v); p.mouse_filter = Control.MOUSE_FILTER_PASS; p.custom_minimum_size.x = px(170 if head.length() < 18 else 230)
-		v.add_child(lbl(head.to_upper(), 11, BONE3, font_semi, false)); v.add_child(rich(body, 15))
+	var row = flow(10); row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var box = func(head: String, body: String, col: Color, tip: String = "", w: float = 0.0) -> Control:
+		var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", _glass(Color(0.02, 0.03, 0.055, 0.8), col, "left", 3, 3, 8))
+		var v = vbox(2); p.add_child(v); p.mouse_filter = Control.MOUSE_FILTER_PASS
+		p.custom_minimum_size.x = px(w if w > 0.0 else (180.0 if head.length() < 18 else 230.0))
+		v.add_child(caps(head, 11, Color(col.lerp(BONE3, 0.45), 1.0))); v.add_child(rich(body, 15))
 		if tip != "": p.tooltip_text = tip
 		return p
-	row.add_child(box.call("Hostile presence", "[b]" + c(esc(F["n"]), Color(F.get("glow", "#e07a70"))) + "[/b]", Color(F.get("glow", "#e07a70")), str(F.get("blurb", ""))))
+	row.add_child(box.call("Hostile presence", "[b]" + c(esc(F["n"]), fac_col(m["fac"])) + "[/b]", fac_col(m["fac"]), str(F.get("blurb", ""))))
 	if R.get("foes") is Array and R["foes"].size() >= 5:
-		var a = C.FACTIONS[R["foes"][3]]; var b = C.FACTIONS[R["foes"][4]]
-		row.add_child(box.call("Rival raiders", c(esc(str(a["n"]).trim_prefix("The ")), Color(a.get("glow", "#ffffff"))) + ", " + c(esc(str(b["n"]).trim_prefix("The ")), Color(b.get("glow", "#ffffff"))) + c(" · about 1 fight in 5", BONE3), BONE3,
-			"About one ordinary fight in five comes from a rival outside the sector's main enemy. Their nodes carry a ring in their colour, and their patrols drift nearby."))
+		var a = R["foes"][3]; var b = R["foes"][4]
+		row.add_child(box.call("Rival raiders", c(esc(str(C.FACTIONS[a]["n"]).trim_prefix("The ")), fac_col(a)) + ", " + c(esc(str(C.FACTIONS[b]["n"]).trim_prefix("The ")), fac_col(b)) + c(" · about 1 fight in 5", BONE3), BONE3,
+			"About one ordinary fight in five comes from a rival outside the sector's main enemy. Their stops carry a halo in their colours, and their patrols drift nearby.", 250.0))
 	var cond = C.sectorCond()
 	if cond != null:   # the effect in words on the strip itself, not only in a tooltip
-		var cb = box.call("Sector condition", "[b]" + c(esc(cond["n"]), GILT) + "[/b] " + c(esc(cond["d"]), BONE2), GILT); cb.custom_minimum_size.x = px(330); row.add_child(cb)
+		row.add_child(box.call("Sector condition", "[b]" + c(esc(cond["n"]), GILT) + "[/b] " + c(esc(cond["d"]), BONE2), GILT, "", 340.0))
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
-	row.add_child(box.call("Patrons watching", ", ".join(PackedStringArray(ps)) + c(" · win at a sigil for a boon", BONE3), Color(0.7, 0.6, 1.0), "Win at a node with a patron's sigil and that patron offers a boon."))
-	# where you are in the run (the Nemesis has his own card in the side panel)
-	var cols = m["cols"].size(); var here = C.findNode(R["pos"]) if R.get("pos") != null else null
-	var step = (int(here["col"]) + 1) if here != null else 0
-	row.add_child(box.call("Progress", "[b]" + c("Sector " + C.roman(R["sector"]) + " of III", BONE) + "[/b] " + c("· jump " + str(step) + " of " + str(cols) + " · " + C.numstr(C.z0(R["stats"].get("battles"))) + " fights so far", BONE2), BONE3))
+	row.add_child(box.call("Patrons watching", ", ".join(PackedStringArray(ps)) + c(" · win at a sigil for a boon", BONE3), Color(0.7, 0.6, 1.0), "Win at a stop with a patron's sigil and that patron offers a boon.", 250.0))
 	if R.get("heat") is Array and R["heat"].size() > 0:   # the run's Heat rules, which also feed the danger estimate
 		var hs = []
 		for kk in R["heat"]:
 			if C.HEAT.has(kk): hs.append("[b]" + c(esc(C.HEAT[kk]["n"]), BLOOD) + "[/b] " + c(esc(str(C.HEAT[kk]["d"]).trim_suffix(".")), BONE2))
-		var hb2 = box.call("Heat " + C.numstr(C.heatLevel(R["heat"])), "; ".join(PackedStringArray(hs)), BLOOD); hb2.custom_minimum_size.x = px(330); row.add_child(hb2)
+		row.add_child(box.call("Heat " + C.numstr(C.heatLevel(R["heat"])), "; ".join(PackedStringArray(hs)), BLOOD, "", 340.0))
 	return row
 func _reward_label(rw) -> String:
 	if rw == null or not (rw is Dictionary): return ""
@@ -502,12 +581,14 @@ func _arch_label(n, fac) -> String:
 	var names = C.ARCHETYPES[a]["names"]
 	return str(names.get(fac, names.get("hegemony", "")))
 # The side panel as a war-room display: dark glass, gilt corner brackets, small-caps section rules, big readouts.
-func _wr_head(t: String) -> Control:
-	var h = hbox(8); var l = lbl(t.to_upper(), 13, GILT, font_semi, false); l.add_theme_constant_override("outline_size", 0); h.add_child(l)
-	var line = ColorRect.new(); line.color = Color(GILT, 0.35); line.custom_minimum_size = Vector2(0, px(1)); line.size_flags_horizontal = Control.SIZE_EXPAND_FILL; line.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(line)
-	return h
+func _wr_head(t: String) -> Control:   # a section rule: a gilt diamond, the name in letter-spaced caps, a line fading out
+	var h = hbox(8); var m = MarginContainer.new(); m.add_theme_constant_override("margin_top", px(8))
+	var dm = lbl("◆", 9, GILT, null, false); dm.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(dm)
+	h.add_child(caps(t, 13, GILT))
+	var line = _rule(Color(GILT, 0.55), 40); line.size_flags_horizontal = Control.SIZE_EXPAND_FILL; line.size_flags_vertical = Control.SIZE_SHRINK_CENTER; h.add_child(line)
+	m.add_child(h); return m
 func _readout(label: String, value: String, col: Color, right: bool = false) -> Control:
-	var v = vbox(0); var a = lbl(label.to_upper(), 11, BONE3, font_semi, false); var b = lbl(value, 30, col, font_semi, false)
+	var v = vbox(0); var a = caps(label, 11, BONE3); var b = lbl(value, 32, col, font_semi, false)
 	if right: a.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; b.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	v.add_child(a); v.add_child(b); return v
 func _brackets(c: Control) -> void:
@@ -519,10 +600,12 @@ func _brackets(c: Control) -> void:
 		for i in range(0, int(s.y), 4): c.draw_line(Vector2(0, i), Vector2(s.x, i), Color(1, 1, 1, 0.012), 1.0))
 func _side() -> Control:
 	var R = C.RUN
-	var p = panel(Color(GILT, 0.22), Color(0.025, 0.04, 0.07, 1.0), 18); p.custom_minimum_size.x = px(380); _brackets(p)   # opaque: the 3D map must not show through
+	var p = PanelContainer.new(); p.custom_minimum_size.x = px(380); _brackets(p)   # opaque: the 3D map must not show through
+	var psb = _glass(Color(0.016, 0.024, 0.042, 1.0), Color(GILT, 0.5), "left", 1, 0, 18, 22); psb.shadow_offset = Vector2(-px(6), 0); psb.shadow_color = Color(0, 0, 0, 0.6)
+	p.add_theme_stylebox_override("panel", psb)
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var v = vbox(7); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(v); p.add_child(sc)
-	v.add_child(lbl("FLEET COMMAND · SECTOR " + C.roman(R["sector"]), 12, BONE3, font_semi, false))
+	v.add_child(caps("Fleet command · Sector " + C.roman(R["sector"]), 12, Color(GILT, 0.8)))
 	var top = hbox(); top.add_child(_readout("Credits", C.numstr(R["credits"]), GILT)); top.add_child(spacer())
 	top.add_child(_readout("Command points", C.numstr(C.fleetCP()) + " / " + C.numstr(R["cpCap"]), BONE, true)); v.add_child(top)
 	var A = C.ADMIRALS[R["admiral"]]
@@ -531,7 +614,9 @@ func _side() -> Control:
 	v.add_child(_wr_head("Fleet"))
 	var fs = C.flagshipOf()
 	for s in R["fleet"]:
-		var d = C.derive(s); var row = panel(Color(IRON3, 0.8), Color(0.06, 0.085, 0.13, 0.8), 6); var rv = vbox(3); row.add_child(rv)
+		var d = C.derive(s); var hf0 = float(s["hp"]) / float(d["maxHp"])
+		var row = PanelContainer.new(); row.add_theme_stylebox_override("panel", _glass(Color(0.05, 0.07, 0.11, 0.9), VERD if hf0 >= 0.7 else (Color("#f0b35a") if hf0 >= 0.4 else BLOOD), "left", 3, 3, 7, 4))
+		var rv = vbox(3); row.add_child(rv)
 		var r1 = hbox(6)
 		if fs != null and fs["uid"] == s["uid"]: r1.add_child(lbl("★", 14, GILT, null, false))
 		r1.add_child(lbl(s["name"], 16, BONE, font_semi, false)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 14, BONE2, null, false)); rv.add_child(r1)
@@ -661,7 +746,14 @@ func nem_portrait() -> Texture2D:
 	var key = str(N["fac"]) + ":" + str(idx) + ":" + ",".join(PackedStringArray(scars))
 	if key != _nem_key:
 		_nem_key = key; _nem_tex = Pt.nemesis(str(N["fac"]), idx, scars)
+		if _nem_tex == null: _nem_tex = _fac_crest(Pt, str(N["fac"]))   # pools held back (Ithar, Deathless until the new looks are signed off): his faction's crest
 	return _nem_tex
+func _fac_crest(Pt, fac: String) -> Texture2D:   # the crest of the first admiral of a faction (there are no faction crests of their own)
+	for id in C.ADMIRALS:
+		if str(C.ADMIRALS[id].get("fac", "")) == fac:
+			var t = Pt.crest(str(id))
+			if t != null: return t
+	return null
 func _verb_panel(v: VBoxContainer) -> void:
 	var V = C.verbFor()
 	if V == null: return
@@ -669,13 +761,17 @@ func _verb_panel(v: VBoxContainer) -> void:
 	v.add_child(_wr_head("Faction action"))
 	add(v, choice(str(V["n"]), str(V["d"]) + "\n" + ("Used this sector" if used else C.verbCostText(V)), "factionVerb"))
 	if C.jt(C.RUN.get("verbNext")): v.add_child(lbl("Ready for your next battle.", 13, GILT))
-func _seg_bar(f: float) -> Control:
-	var h = HBoxContainer.new(); h.add_theme_constant_override("separation", px(2))
-	var n = 20; var on = int(round(clamp(f, 0.0, 1.0) * n))
-	for i in n:
-		var r = ColorRect.new(); r.custom_minimum_size = Vector2(0, px(5)); r.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		r.color = (BLOOD if f < 0.35 else Color("#ffae42")) if i < on else Color(0.25, 0.12, 0.12, 0.8); h.add_child(r)
-	return h
+func _seg_bar(f: float) -> Control:   # a hull bar: fine segments, a lit edge on the filled part
+	var bar = Control.new(); bar.custom_minimum_size = Vector2(0, px(6)); bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL; bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ff = clamp(f, 0.0, 1.0); var col = BLOOD if f < 0.35 else (Color("#ffae42") if f < 0.7 else Color("#f2c063"))
+	bar.draw.connect(func():
+		var w = bar.size.x; var h = bar.size.y; var n = 24; var gap = max(1.0, float(px(2)))
+		var sw = (w - gap * (n - 1)) / n
+		for i in n:
+			var x = i * (sw + gap); var lit = (float(i) + 0.5) / n <= ff
+			bar.draw_rect(Rect2(x, 0, sw, h), col if lit else Color(0.2, 0.11, 0.1, 0.85))
+			if lit: bar.draw_rect(Rect2(x, 0, sw, max(1.0, h * 0.3)), Color(1, 1, 1, 0.22)))
+	return bar
 func _boon_line(b) -> Control:
 	var B0 = C.BOONS[b["id"]]; var r = int(C.z0(b.get("r")))
 	var col = Color(C.PATRONS[B0["p"]]["col"]) if C.jt(B0.get("p")) else Color("#f0b35a")

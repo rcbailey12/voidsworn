@@ -44,6 +44,16 @@ A new identity every run from the faction's own pools (`nemName`, `nemGender`, t
 
 The war-room Nemesis card shows all of it in words (persona, strengths with their effect, his faction's behaviour line, the clock with half steps and its pace, fed, riches, the Deathless comeback, weaknesses and adaptations with their effects, what he remembers), and his face from the stored portrait id with one overlay per scar. The map's danger estimate counts his scars, adaptations, strengths, fed and riches, and the hover card lists what moved the number.
 
+## The sector map look (R51, ui/campaign/map3d*.gd)
+
+The 3D map is a star system round the Hollow Sun (Ryan, R51: a Sins of a Solar Empire 2 system). Presentation only; the rules, parity and the bot never see it.
+
+- `map3d.gd`: layout, camera, input, labels, the hover card. The seven jumps sweep round the sun from left to right: column `c` sits at bearing `ANG0 - ANG_SPAN * c / 6`, a stop's orbit radius runs from `R_OUT` (row y = 0) to `R_IN` (y = 1), so lanes keep the old order and never cross more than before. Smooth zoom (wheel toward the cursor, + and -), pan (right or middle drag, WASD), Home or a double click resets; arriving in a sector or jumping resets the view.
+- `map3d_system.gd`: the scene parts. The Hollow Sun (black core with an ember rim, a broken ring of slow fire, haze, the system's only warm light, a turning battlefield debris ring of rock, torn plates and girders, some smouldering), orbit lines, planets (rock, ocean, gas giant with rings, ice, lava) with an atmosphere rim lit from the sun and moons on their own orbits, stations, asteroid fields along the stop's orbit, nebula pockets (storms flicker), wreck fields, the sky and its parallax layers (near stars, nebula sheets below the chart). `LOOKS` holds the lore round 3 faction looks (colours only, no renames): Voidsworn black iron and ember, Hegemony grey and steel blue with lights pulsing in step, Corsairs soot, rust and dried blood, Chorus purple-black and bile yellow, Ithar clear crystal with rainbow edges, Deathless violet-black with a white-gold corona. The UI's faction name colours read the same table (`campaign_ui.fac_col`).
+- `map3d_shaders.gd`: every shader, own uniforms and TIME only (no globals).
+- Quality: `campaign_ui.map_quality` ("high" or "low"; Low draws fewer stars, debris and cloud octaves, 2x MSAA). It starts from the game's Graphics setting (Low means low) and the map screen's "Map detail" button saves its own choice to `user://campaign_map.json`.
+- Shots: `campaign.tscn -- mapshots <dir>` saves the map at fixed angles (start of a run, a hover card, a closer view, low quality, the start of sector II) for before and after sets.
+
 ## The story layer (godot/story/README.md)
 
 - Screens: the admiral page, the sector I intro and sector change dialogs and the end page draw `story.campaign_line()`; the admiral card and the war-room panel show `story.titled_name()`; the fleet screen has "Rename flagship" (`story.open_rename()`); Progression has a "Career" tab button (`story.open_career()`); the admiral card shows the face from `godot/portraits/` (painting or crest). All guarded: without `godot/story/` or `godot/portraits/` nothing shows.
