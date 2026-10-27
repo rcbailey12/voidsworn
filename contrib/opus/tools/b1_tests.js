@@ -97,7 +97,7 @@ check('B-4 rewards survive a reload at every step: node done once, same offers, 
   const { node, summary } = rewardSetup(); T.rewardFlow(summary);
   const s0 = T.SAVED_RUN; if (!s0.reward || s0.reward.stage !== 'salvage' || !T.findNode.call(null, node.id)) throw new Error('reward not saved at start');
   const banked = s0.credits; if (!(banked > 100)) throw new Error('credits not banked');
-  reload(); if (!/Salvage the field/.test(T.modalHtml)) throw new Error('salvage not resumed');
+  reload(); if (!/Strip the wrecks/.test(T.modalHtml)) throw new Error('salvage not resumed'); // lore r8: the wreck step is Strip
   T.ACT.takeSalvage('0:cred'); const afterSalvage = T.SAVED_RUN.credits; if (T.SAVED_RUN.reward.stage !== 'pick') throw new Error('stage after salvage ' + T.SAVED_RUN.reward.stage);
   const offer = JSON.stringify(T.SAVED_RUN.reward.boonOffer); if (!offer || offer === 'null') throw new Error('boon offer not saved');
   reload(); if (JSON.stringify(T.SAVED_RUN.reward.boonOffer) !== offer) throw new Error('boon offer changed on reload');
@@ -164,7 +164,7 @@ check('Onboarding 5: a Threat tip points at the real Threat toggle (R and the to
 check('Onboarding 4: every reward screen carries its one-line definition', () => {
   const { summary } = rewardSetup(); T.rewardFlow(summary); T.ACT.salvageStep(); const sal = T.modalHtml; T.ACT.takeSalvage('0:cred'); const boon = T.modalHtml; T.ACT.takeBoon('0'); const relic = T.modalHtml;
   const cr = fs.readFileSync(path.join(ROOT, 'campaign_run.js'), 'utf8');
-  return /class="dim rdef"[^>]*>Salvage:/.test(sal) && /A boon is/.test(boon) && /A relic is/.test(relic) && /<h2>Salvaged refits<\/h2>\$\{rewardDef\('refit'\)\}/.test(cr) && /Choose one perk\.<\/p>\$\{rewardDef\('promotion'\)\}/.test(cr);
+  return /class="dim rdef"[^>]*>Strip:/.test(sal) && /A protocol is/.test(boon) && /Salvage is/.test(relic) && /<h2>Recovered refits<\/h2>\$\{rewardDef\('refit'\)\}/.test(cr) && /Choose one perk\.<\/p>\$\{rewardDef\('promotion'\)\}/.test(cr);
 });
 // ---- Enemy markers: colour clear of every faction shield and the gold ring, plus a shape cue ----
 check('Markers: the enemy colour is far from all six shield colours, the gold ring and friend green, in normal and colour-blind vision', () => {

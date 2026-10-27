@@ -15,13 +15,13 @@ const TERRAIN_INFO={
   storm:{n:'Ion storm',col:'#ffe866',fx:'Ships inside lose 10 shield on every facing each turn and aim 10 points worse.'}};
 function terrainPresent(){ const s=new Set(Object.values(B.terrain||{})); return Object.keys(TERRAIN_INFO).filter(k=>s.has(k)); }
 // battle variety: board shapes and encounter types
-const SHAPES={open:'Open void',corridor:'Corridor',lanes:'Split lanes',ring:'Ring',dense:'Dense field',compact:'Close quarters',deadstar:'Dead star',rift:'Rift',shoals:'Shoals',hourglass:'Hourglass',archipelago:'Archipelago',colossus:'Colossus'};
+const SHAPES={open:'Open void',corridor:'Corridor',lanes:'Split lanes',ring:'Ring',dense:'Dense field',compact:'Close quarters',deadstar:'Hollow Sun',rift:'Rift',shoals:'Rock shoals',hourglass:'Hourglass',archipelago:'Archipelago',colossus:'Giant wreck'};
 const ENC_ROUNDS=6;
 function process_env(k){ try{ return typeof process!=='undefined'&&process.env?process.env[k]:undefined; }catch(e){ return undefined; } }
 // mid-battle events: at most one per fight, always announced a round ahead
 const BEVENTS={
-  reinf_enemy:{n:'Enemy reinforcements',warn:'Long-range scan: enemy reinforcements will drop out of warp at the start of round {r}, on their side of the field.',go:'Enemy reinforcements drop out of warp.'},
-  reinf_ally:{n:'Friendly reinforcements',warn:'Fleet command: a friendly ship will join you at the start of round {r}, on your side of the field.',go:'A friendly ship drops out of warp to help. It returns to its own patrol after the battle.'},
+  reinf_enemy:{n:'Enemy reinforcements',warn:'Long-range scan: enemy reinforcements will jump in at the start of round {r}, on their side of the field.',go:'Enemy reinforcements jump in.'},
+  reinf_ally:{n:'Friendly reinforcements',warn:'Fleet command: a friendly ship will join you at the start of round {r}, on your side of the field.',go:'A friendly ship jumps in to help. It returns to its own patrol after the battle.'},
   flare:{n:'Solar flare',warn:'The star is flaring. At the start of round {r} every ship on both sides loses its shields for that round.',go:'Solar flare! Every shield on the field is down this round.'}};
 function rollBattleEvent(cfg,force){ if(!cfg||cfg.kind==='boss') return null; if(!force&&rnd()>.45) return null; return {k:force&&BEVENTS[force]?force:pick(Object.keys(BEVENTS)),warnR:2,r:ri(3,4)}; }
 function edgeHex(side){ const bb=boardBounds(), mr=Math.floor((bb.r0+bb.r1)/2), occ=occMap(), c=side==='player'?bb.c0+1:bb.c1-1; let best=null,bd=1e9;
@@ -280,7 +280,7 @@ function approachDeploy(){ const ap=B.approach, hs=boardHexes(); if(!hs.length) 
 const WELL_RIM=3, WELL_PULL=5, WELL_ASSIST=6, WELL_DMG=7;
 function wellTick(u,dq){ const W=B&&B.well; if(!W||u.isSq||u.dead) return; const d=hdist(u,W); u.gravAssist=false;
   if(d<=WELL_ASSIST){ u.mp+=1; u.gravAssist=true; }
-  if(d<=WELL_RIM){ u.hp-=WELL_DMG; if(typeof fxText==='function') fxText(u,'Tidal stress \u2212'+WELL_DMG,'#c79bff'); if(u.hp<=0){ u.hp=0; log(`${u.name} is torn apart by the dead star's gravity.`, u.side==='player'?'e':'p'); u.killCause='tidal'; queueDeath(u,dq); return 'dead'; } }
+  if(d<=WELL_RIM){ u.hp-=WELL_DMG; if(typeof fxText==='function') fxText(u,'Tidal stress \u2212'+WELL_DMG,'#c79bff'); if(u.hp<=0){ u.hp=0; log(`${u.name} is torn apart by the Hollow Sun's gravity.`, u.side==='player'?'e':'p'); u.killCause='tidal'; queueDeath(u,dq); return 'dead'; } }
   else if(d<=WELL_PULL){ const occ=occMap(); let best=null; for(const dd of DIRS){ const n={q:u.q+dd[0],r:u.r+dd[1]}; if(hdist(n,W)!==d-1||!onBoard(n.q,n.r)||blocks(terr(n.q,n.r))||occ.has(hkey(n.q,n.r))) continue; best=n; break; }
     if(best){ const from={q:u.q,r:u.r}; u.q=best.q; u.r=best.r; if(typeof fxGravPull==='function') fxGravPull(u,from); if(typeof fxText==='function') fxText(u,'Dragged by gravity','#c79bff'); } } }
 function aiWellScore(u,v){ const W=B&&B.well; if(!W||u.isSq) return 0; const d=hdist(v,W); return d<=WELL_RIM?-45:d<=WELL_PULL?-6:0; }
@@ -351,8 +351,8 @@ function startBattle(cfg){
   startSideTurn('player');
   for(const u of alive('enemy')) u.intercepts=u.weapons.some(w=>w.k==='flak')?2:0;
   const F=FACTIONS[cfg.fac];
-  log(`Contact: ${F.n}. ${eList.length} ship${eList.length>1?'s':''} on the auspex.`, 's');
-  if(B.well) log('A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.','ember');
+  log(`Contact: ${F.n}. ${eList.length} ship${eList.length>1?'s':''} on the scanners.`, 's');
+  if(B.well) log('The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.','ember');
   if(cfg.kind==='elite') log('Elite captains command this fleet.', 'e');
   if(cfg.kind==='boss') log(`${HULLS[F.boss].n} is here. Everything else is escort.`, 'e');
 }
@@ -475,10 +475,10 @@ const FEED_KILL=.12, FEED_NEAR=.06, FEED_R=2, FEED_CAP=.12; // pass 3 tuning: .1
 const LEGION_HP=.35; // Deathless: hull a reassembled ship comes back with
 const FAC_RULES={
   hegemony:{n:'Synchronized fire',d:`Ships within ${SYNC_R} hexes of their flagship fire as one: a target another synced ship already fired on this round is ${SYNC_AIM} easier to hit and takes +${Math.round(SYNC_DMG*100)}% damage. Lose the flagship and sync is gone for the rest of the battle. Does not stack with Anchored Volley.`},
-  ithar:{n:'Prism charge',d:'At the start of its turn, a shield facing that was not hit since its last turn recharges to full, and a facing that was hit recharges twice. Ithar hulls cannot Brace.'},
+  ithar:{n:'Prism charge',d:'At the start of its turn, a shield facing that was not hit since its last turn recharges to full, and a facing that was hit recharges twice. Glasswright hulls cannot Brace.'},
   chorus:{n:'Feed',d:`When an enemy ship dies, the Chorus ship that killed it regrows ${Math.round(FEED_KILL*100)}% of its hull and every other Chorus ship within ${FEED_R} hexes regrows ${Math.round(FEED_NEAR*100)}%, up to ${Math.round(FEED_CAP*100)}% per ship each round.`},
-  deathless:{n:'Endless legion',d:`The first Deathless ship to fall each battle (never the flagship) reassembles at the start of the next round with ${Math.round(LEGION_HP*100)}% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it.`},
-  corsair:{n:'Close in',d:'Corsairs field no lance weapons, and their rocket pods fire salvos that point defense can thin.'},
+  deathless:{n:'Archive restore',d:`The first Eclipse ship to fall each battle (never the flagship) reassembles at the start of the next round with ${Math.round(LEGION_HP*100)}% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it.`},
+  corsair:{n:'Close in',d:'Hullbreakers field no lance weapons, and their rocket pods fire salvos that point defense can thin.'},
   voidsworn:{n:'Line of battle',d:'Broadsides hit harder after a hard burn (drive rule); carriers cost 25% more.'}};
 // telemetry for the sims: per-faction counters in B.fstat (never read by rules)
 function fstat(fac,k,n){ if(!B||!fac) return; const F=(B.fstat=B.fstat||{})[fac]||(B.fstat[fac]={}); F[k]=(F[k]||0)+(n==null?1:n); }
@@ -523,7 +523,7 @@ function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=[];
   if(u.fac==='hegemony'){ const a=syncAnchor(u.side); out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); }
   if(u.fac==='ithar'&&u.shMax>0) out.push('Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.');
   if(u.fac==='chorus') out.push(`Feeds on kills nearby (up to ${Math.round(FEED_CAP*100)}% hull a round).`);
-  if(u.fac==='deathless'&&u.t&&u.t.reanimate){ const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Endless legion: the first to fall reassembles next round.':'Endless legion spent.'); }
+  if(u.fac==='deathless'&&u.t&&u.t.reanimate){ const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Archive restore: the first to fall reassembles next round.':'Archive restore spent.'); }
   for(const s of (B.torps||[])) if(s.tid===u.id&&s.side!==u.side) out.push('<span class="blood">Torpedoes inbound: they strike its marked hex next turn. Move 3 or more hexes from it to dodge.</span>');
   if(u.ab==='launch'||(u.fx&&u.fx.hive)){ const st=WING_STANCES[u.stance||'strike']; out.push(`Wing stance: ${st.n}. ${st.d}${u.side==='player'?(canStance(u)?' One free change this round.':' Changed this round.'):''}`); const pk=wingPerks(u); if(pk.length) out.push('Wing veterans: '+pk.map(k=>WING_PERKS[k].n+' ('+WING_PERKS[k].d.replace(/\.$/,'')+')').join(', ')+'.'); }
   if(u.nem&&B.nem){ if(u.nemFlag) out.push('<span class="blood">Your Nemesis commands from this ship.</span>'); const kn=(B.nem.revealed||[]).filter(w=>B.nem.weak.includes(w)); if(kn.length&&u.nemFlag) out.push('Known weaknesses: '+kn.map(w=>NEM_WEAK[w].n+' ('+NEM_WEAK[w].d.replace(/\.$/,'')+')').join('; ')+'.'); }
@@ -922,7 +922,7 @@ async function tacticBoard(u){ let best=null,bv=0; for(const t of boardTargets(u
 // v52: how a ship dies depends on what killed it (presentation only; fx3d animExplode reads u.killCause)
 // v53: the one list of kill causes. killCauseOf, the turn ticks (melt, dark, tidal) and rams (big) set u.killCause to one of these ids;
 // fx3d animExplode keys its death presets by the same ids (an id it lacks plays the plain blast), and salvage reads the words and whether the wreck is scrap
-const KILL_CAUSES={cut:{w:'cut in two by a lance'},big:{w:'blown apart',scrap:1},flay:{w:'flayed by gauss fire',scrap:1},melt:{w:'dissolved',scrap:1},dark:{w:'gutted and dark'},blast:{w:'destroyed'},tidal:{w:'torn apart by the dead star',scrap:1}};
+const KILL_CAUSES={cut:{w:'cut in two by a lance'},big:{w:'blown apart',scrap:1},flay:{w:'unmade by null fire',scrap:1},melt:{w:'dissolved',scrap:1},dark:{w:'gutted and dark'},blast:{w:'destroyed'},tidal:{w:'torn apart by the Hollow Sun',scrap:1}};
 function killCauseOf(w,t){ if(!w) return 'blast'; const k=w.k, tr=w.trait;
   if(tr==='gauss'||k==='gauss'||k==='doom') return 'flay';
   if(tr==='acid'||tr==='spines'||k==='bioplasma'||k==='tendril'||k==='sporeb') return 'melt';
@@ -933,9 +933,9 @@ function killCauseOf(w,t){ if(!w) return 'blast'; const k=w.k, tr=w.trait;
 async function killUnit(t,by){ if(t&&by&&!t.killedBy) t.killedBy=by.isSq?((B.units.find(x=>x.id===by.parent)||by).name):by.name;
   if(t.dead) return;
   if(t.fx.lastStand && !t.usedLastStand){ t.usedLastStand=true; t.hp=1; fxText(t,'Last stand','#f0b35a',-30); log(`${t.name} refuses to die! (Last stand)`,'s'); return; }
-  if(t.side==='player' && !t.isSq && runFx().revive && !B.reviveUsed){ B.reviveUsed=true; t.hp=Math.round(t.maxHp*.25); fxText(t,'Reawakens','#7dff9b',-30); log(`The phylactery hums. ${t.name} reawakens at 25% hull.`,'s'); return; }
+  if(t.side==='player' && !t.isSq && runFx().revive && !B.reviveUsed){ B.reviveUsed=true; t.hp=Math.round(t.maxHp*.25); fxText(t,'Restarts','#7dff9b',-30); log(`Second ignition. ${t.name} restarts at 25% hull.`,'s'); return; }
   const legion=legionCan(t); // B3 Deathless endless legion replaces the random reanimate for Deathless hulls; other reanimating hulls (Undying foes heat) keep the old roll
-  if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); fxText(t,'Reanimating','#7dff9b',-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
+  if(!legion && t.reanimate && !t.reanimated && !t.pyre && !(t.fac==='deathless'&&t.t&&t.t.reanimate) && rnd()<(t.side==='enemy'?.2:.35)){ t.reanimated=true; t.hp=Math.round(t.maxHp*.3); fxText(t,'Rebuilding','#7dff9b',-30); log(`${t.name} reassembles itself from the wreckage.`,'e'); return; }
   t.dead=true; t.hp=0;
   if(legion){ t.reanimated=true; t.riseAt=B.round+1; B.legion[t.side].used++; log(`${t.name} falls, but its wreck is already reassembling. It rises next round.`,t.side==='player'?'p':'e'); try{ fxText(t,'Reassembling: rises next round','#7dff9b',-30); }catch(e){} }
   syncLose(t); chorusFeed(t,by); // B3: a dead anchor collapses Hegemony sync; Chorus feed on the kill
@@ -1106,7 +1106,7 @@ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'playe
     for(const s of alive(side).filter(x=>x.isSq)){ s.activated=false; s.mp=s.speed; s.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; }); } await swarmPhase(side); }
   if(B===bStart) checkEnd(); return true; }
 // enemy flagships carry a Command of their own: announced a round ahead, fired once, at power 2
-const BOSS_CMD={hegemony:{id:'barrage',n:'Imperial broadside'},corsair:{id:'surge',n:'Burn and board'},chorus:{id:'restore',n:'Hive regrowth'},ithar:{id:'iron',n:'Prism ward'},deathless:{id:'restore',n:'Rise again'},voidsworn:{id:'hunt',n:'Crusader\u2019s wrath'}};
+const BOSS_CMD={hegemony:{id:'barrage',n:'Registry broadside'},corsair:{id:'surge',n:'Burn and board'},chorus:{id:'restore',n:'Brood regrowth'},ithar:{id:'iron',n:'Prism ward'},deathless:{id:'restore',n:'Restore from the Archive'},voidsworn:{id:'hunt',n:'Crusader\u2019s wrath'}};
 function bossCmdText(c,fac){ return cmdDesc(c,1,fac).replace(/your ships/g,'its ships').replace(/against you/g,'against them').replace(/Every ship/g,'Every enemy ship'); }
 function bossCmdTick(){ if(!B||B.over||B.cmdEUsed) return; const boss=B.units.find(u=>u.side==='enemy'&&u.t&&u.t.boss&&!u.dead); if(!boss) return; const c=BOSS_CMD[boss.fac]; if(!c) return;
   if(B.cmdENext==null){ if(B.round>=2||boss.hp<boss.maxHp*.6){ B.cmdENext=B.round+1; log(`${boss.name} is preparing ${c.n}. ${bossCmdText(c,boss.fac)} It strikes next round.`,'e'); try{ fxText(boss,'Preparing: '+c.n,'#ff8a6a',-56); }catch(e){} try{ if(typeof toast==='function'&&typeof document!=='undefined') toast(`${boss.name} is preparing ${c.n}. It strikes next round.`); if(typeof banner==='function'&&typeof document!=='undefined') setTimeout(()=>{ try{ banner(`${c.n} next round`,'#ff8a6a'); }catch(e){} },900); }catch(e){} /* v45: the boss Command gets a banner too */ } return; } }
@@ -1186,7 +1186,7 @@ async function useAbility(u,arg){
   if(a==='frenzy'){ u.focus=true; fxText(u,'Blood frenzy','#ff8fe0',-24); }
   if(a==='overburn'){ u.mp+=3; u.ramBoost=1.5; fxText(u,'Overburn','#ffb35c',-24); }
   if(a==='regrow'){ const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*.25)); u.hp+=h; fxText(u,'+'+h+' hull','#8ff0a0',-24); }
-  if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; fxText(t,'+'+h+' hull','#7dff9b',-24); log(u.name+' reanimates '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
+  if(a==='reclaim'){ const ts=alive(u.side).filter(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp).sort((p,q)=>p.hp/p.maxHp-q.hp/q.maxHp), t=ts[0]; if(t){ const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*.2)); t.hp+=h; fxText(t,'+'+h+' hull','#7dff9b',-24); log(u.name+' rebuilds '+(t===u?'its own hull':t.name)+' for '+h+'.',u.side==='player'?'p':'e'); } }
   if(a==='ionpulse'){ const foes=alive(u.side==='player'?'enemy':'player').filter(t=>!t.isSq&&hdist(t,u)<=4); for(const t of foes){ if(t.sh) t.sh=t.sh.map(x=>Math.floor(x*.5)); try{ fxShield(t,-1); }catch(e){} } fxText(u,'Ion pulse','#9fd4ff',-24); log(u.name+' fires an ion pulse: '+foes.length+' enemy ship'+(foes.length===1?'':'s')+' lose half their shields.',u.side==='player'?'p':'e'); }
   if(a==='blink'){ const h=arg&&arg.hex?arg.hex:autoBlink(u); if(!h||!blinkHexes(u).some(x=>x.q===h.q&&x.r===h.r)) return false; const live=liveFrom(u), from={q:u.q,r:u.r}; u.q=h.q; u.r=h.r; u.vis=null; try{ if(typeof animBlink==='function') await animBlink(u,from); }catch(e){} if(!live()){ u.abCd=abilityCd(u); return false; } /* B1 (B-6): a jump whose animation stalled still lands, so it still costs the cooldown */ fxText(u,'Phase jump','#9fe3ff',-24); objAfterMove(u); } // v53: hex re-checked before the jump, live check after it (the jump itself is instant, so the hex is set before animBlink draws the arrival)
   if(a==='surge'){ for(let i=0;i<4;i++) u.sh[i]=u.shMax; if(u.st.shieldOff<99) u.st.shieldOff=0; fxShield(u,-1); fxText(u,'Shields surge','#7fd6c8',-24); }
@@ -1208,7 +1208,7 @@ async function useAbility(u,arg){
       const r=applyHit(u,{pierce:.3,crit:5},x,dmg,quad);
       if(r.shield) fxText(x,'\u2212'+r.shield,'#7fd6c8',-18);
       fxText(x,'\u2212'+r.hull,'#ff7a6e',0);
-      log(`Nova blast hits ${x.name} for ${r.hull} hull${r.shield?` and ${r.shield} shields`:''}.`, x.side==='player'?'e':'p');
+      log(`Spinal shell hits ${x.name} for ${r.hull} hull${r.shield?` and ${r.shield} shields`:''}.`, x.side==='player'?'e':'p');
       if(x.hp<=0) await killUnit(x,u);
     }
     return true;

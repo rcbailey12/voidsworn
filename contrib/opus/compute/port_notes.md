@@ -370,3 +370,12 @@ Read: B-21 and move-then-fire each cost about 3.5 points; the pass 2 tuning cost
 | 7101 | 17% | 20% |
 | 7102 | 10% | 19% |
 Candidates tried on the same two seeds: boss escorts only (.45/.55) and sector 3 grow 1.28: 17.5%; the above plus lighter sector 2 grow 1.2 and thin .66/.60: 31%. Fuzz 500 on the new code: 0 exceptions. PC confirmation on two fresh seeds (7103, 7104) and the campaign sim for sectors 2 and 3: jobs `sb_ramp_*`, results to follow in this section.
+
+## Step 10: STRINGS ONLY, lore round 8 rename (Oct 27; rename_map_final.md at 762df28; commit in the line below)
+
+Display strings only; no id, key, rule, number or random draw changed (same seed, same sim output before and after: `SEED=5 ADMS=grax bossmatrix 4` gives 85% r8.3 both times). G1 and G3: re-pin the oracle and re-export the tables.
+- Applied every row with owner B in `contrib/opus/compute/rename_map_final.md` (sections 1 to 10, including 5b relic to salvage and 5c Strip the wrecks, Scrap rig, Recovered refits, Spoils) to data.js, battle.js, campaign_run.js, campaign_meta.js, campaign3d.js, ui3d.js and head.html: 331 replacements. Where a file writes the apostrophe as the `’` escape, the New text was written the same way.
+- Row 4.0: new `CLS_NAME` and `clsName(c)` in data.js (next to HULLS): Battle-barge shows as War-barge, Bio-titan as Colossus, Ark as Lattice-ship, Tomb-ark as Archive-ship. `cls` values stay (they key models, sizes and fx). `clsName` is used where a class is shown: ui3d.js ship panel, campaign_run.js fleet row, class refit buttons and their toast (the grouping key stays `cls`), and the wreck cards. The exporter should pick up `CLS_NAME`; Godot shows classes through the same map.
+- Test strings updated to the new text: b1_tests (Strip the wrecks; reward definitions "Strip:", "A protocol is", "Salvage is", "Recovered refits").
+- Checks: check pack 0 FAIL (14 CHECK); b1 39 ok, b3 17 ok, b4 29 ok, backlog 11 ok; build.py test builds; no em dashes.
+- Not applied by B (other owners): godot/ rows (G1, G2, G3, L), tools/portraits (P). Ids that read like old names (`voidsworn`, `ithar`, `boon`, `relic`, `patron`, `favour` and the rest) stay by rule.
