@@ -434,6 +434,10 @@ func _shot_list() -> Array:
 	var D := _ship_c("D")
 	L.append([0.8, "g01_overview_idle.png", Vector3(0, 78, 150), Vector3(0, -6, 0), 40.0, 0.0])
 	L.append([0.8, "g02_engines_close.png", V + Vector3(-42, 14, 26), V + Vector3(-8, 0, 0), 38.0, 0.0])
+	# per-faction sheet (lore round 8 palettes): each flagship from the rear quarter, engines and coronas burning
+	for fid in ["V", "H", "C", "B", "I", "D"]:
+		var fc := _ship_c(fid)
+		L.append([0.8, "f_%s_engines.png" % fid, fc + Vector3(-42, 14, 26), fc + Vector3(-8, 0, 0), 38.0, 0.0])
 	# the dead star close up (Muse audit B4.5: the disc read flat close up)
 	var ds := Vector3(-130, -26, -165)
 	L.append([0.8, "g01b_dead_star_close.png", ds + Vector3(40, 22, 62), ds, 40.0, 0.0])
