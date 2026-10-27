@@ -48,6 +48,10 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 
 5. **Timing (report only).** Enemy think time per activation in the scenarios marked `timing` (s4, s5, s23): the AI's `aiUnit` only, with no snapshots and no startup. It reports the average, the worst, and the total per round, for Node and for Godot. The game bar is a worst enemy think under about 0.5 s on the PC.
 
+## Latest record
+
+`contrib/opus/enginetest/results/g1_parity_2026-10-27/README.md`: at 61c57fa, 43 of 43 battles, maths (316,090 inputs), PRNG, threat maps and threads all PASS in the cloud, and a 200-battle sweep (seed 4) with 0 differences. The PC lane B run of the same commit is queued; its result goes in the same file.
+
 ## Files
 
 - `../jsm.gd`: JavaScript number semantics:
