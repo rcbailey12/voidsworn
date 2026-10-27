@@ -22,6 +22,7 @@ extends Control
 
 const Intel := preload("res://ui/campaign/map_intel.gd")
 const System := preload("res://ui/campaign/map3d_system.gd")
+const Props := preload("res://ui/campaign/map3d_props.gd")
 const SHIP_VIEW := "res://render/ship_view.gd"
 const HT_PATH := "res://render/hull_table.gd"
 
@@ -32,12 +33,16 @@ const ANG_SPAN := 200.0
 const R_IN := 21.0
 const R_OUT := 52.0
 const RING_R := 2.4          # the ring round each stop
-const SUN_R := 6.0           # the Hollow Sun's core
+const SUN_R := 5.0           # the Hollow Sun's shadow (the black hole)
 const CAM_DIR := Vector3(0.0, 0.79, 0.62)
+const TOKEN_OFF := Vector3(0.0, 1.8, 3.0)   # where the fleet holds over a stop (above it, toward the camera)
 
 var ui                        # campaign_ui.gd
 var intel
 var sys                       # map3d_system.gd
+var props                     # map3d_props.gd (stations, gantries, dock frames, drones, asteroids at full finish)
+var _spinners: Array = []     # [node, axis, rate] parts that turn (station rings, the station itself)
+var _drones: Array = []       # [node, center, radius, speed, phase, height]
 var vpc: SubViewportContainer
 var vp: SubViewport
 var cam: Camera3D
@@ -100,6 +105,7 @@ func _C(): return ui.C
 func _apply_quality() -> void:
 	var hi = quality != "low"
 	vp.msaa_3d = Viewport.MSAA_4X if hi else Viewport.MSAA_2X
+	vp.positional_shadow_atlas_size = 4096 if hi else 0   # High: the Hollow Sun's light casts soft shadows
 	vp.screen_space_aa = Viewport.SCREEN_SPACE_AA_DISABLED
 	env.set_glow_level(4, hi)
 func set_quality(qv: String) -> void:
@@ -150,6 +156,30 @@ func _hull(fac: String, cls: String, length: float, code: String = "") -> Node3D
 	var k = length / max(0.1, float(sv.L)); wrap.scale = Vector3.ONE * k
 	sv.set_process(false)
 	return wrap
+# A wreck from A4's real death pieces (gen/wreck/<CODE>_wreck.scn, G2's asset build): the chunks of the ship drifted
+# apart and turned, smouldering at the torn edges. null when the build has no wreck pieces (the cloud sandbox).
+func _wreck(fac: String, cls: String, length: float) -> Node3D:
+	var code = _code_for(fac, cls)
+	if code == "": return null
+	var path = "res://gen/wreck/%s_wreck.scn" % code
+	if not ResourceLoader.exists(path): return null
+	var ps = load(path)
+	if not (ps is PackedScene): return null
+	var inst: Node3D = ps.instantiate()
+	var root = Node3D.new(); root.add_child(inst); root.scale = Vector3.ONE * length
+	var chunks = inst.find_children("*", "MeshInstance3D", true, false)
+	for ch in chunks:
+		var c: MeshInstance3D = ch
+		var ctr = c.get_aabb().get_center()
+		var out = Vector3(ctr.x, ctr.y * 0.5, ctr.z).normalized() if ctr.length() > 0.001 else Vector3(_rng.randf_range(-1, 1), 0, _rng.randf_range(-1, 1)).normalized()
+		c.position += out * _rng.randf_range(0.05, 0.16) + Vector3(0, _rng.randf_range(-0.04, 0.04), 0)
+		c.rotate_object_local(Vector3(_rng.randf(), _rng.randf(), _rng.randf()).normalized(), _rng.randf_range(0.1, 0.45))
+		c.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if quality != "low" else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# the torn edge still burns: a hot glow and a little light at the break
+		var gp = c.position + ctr * 0.6
+		var g = sys.glow(inst, Color(1.0, 0.45, 0.12, 1.0), 0.28, gp, 2.2, 1.2, 1.0); g.scale = Vector3.ONE * 0.28
+	var lt = OmniLight3D.new(); lt.light_color = Color(1.0, 0.42, 0.15); lt.light_energy = 1.4; lt.omni_range = 0.9; inst.add_child(lt)
+	return root
 func _code_for(fac: String, cls: String) -> String:
 	if not ResourceLoader.exists(HT_PATH): return ""
 	return load(HT_PATH).code_for(fac, cls)
@@ -160,11 +190,14 @@ func _build(sig: String) -> void:
 	if root3 != null: root3.queue_free()
 	root3 = Node3D.new(); vp.add_child(root3)
 	_nodes.clear(); _lanes.clear(); _patrols.clear(); _sync_lights.clear()
-	_rng.seed = hash(sig)
+	var base_sig = sig.trim_suffix("|" + quality)   # High and Low draw the same system: each stop reseeds from its own id
+	_base_sig = base_sig; _rng.seed = hash(base_sig)
 	sys = System.new(); sys.rng = _rng; sys.q = 1.0 if quality != "low" else 0.0
+	props = Props.new(sys); _spinners.clear(); _drones.clear()
 	sys.sky(env, fac, int(C.RUN["sector"]) * 13 + str(m.get("region", "")).length())
 	sys.backdrop(root3, fac, max(1.0, ui.k))
 	var hs = sys.hollow_sun(root3, SUN_R); _debris = hs["debris"]
+	_rng.seed = hash(base_sig) + 7
 	for col in m["cols"]:
 		for n in col: _add_node(n)
 	_add_orbits()
@@ -186,33 +219,33 @@ func _add_orbits() -> void:
 	for id in _nodes:
 		var d = _nodes[id]; var span = 7.5 / d["r"]
 		sys.orbit_arc(root3, d["r"], d["theta"] - span, d["theta"] + span, Color(0.7, 0.8, 1.0, 0.45), 0.36)
-	sys.orbit(root3, SUN_R * 3.6, Color(1.0, 0.5, 0.25, 0.12), 0.25, 90.0)   # the edge of the debris ring
+	sys.orbit(root3, SUN_R * 4.05, Color(1.0, 0.5, 0.25, 0.12), 0.25, 90.0)   # the edge of the debris ring
 
 # ---------------- stop scenes ----------------
 func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the setting of the stop; returns the height of its top
 	var pal = System.PLANETS[_rng.randi() % System.PLANETS.size()]
 	match place:
 		"planet":
-			var body = sys.planet(obj, pal, 2.1, Vector3(0.0, 1.9, -0.3))
-			sys.moon(obj, body.position, 3.6, 0.42)
-			return 4.3
+			var body = sys.planet(obj, pal, 2.5, Vector3(0.0, 2.2, -0.4))
+			sys.moon(obj, body.position, 4.1, 0.46)
+			return 4.9
 		"station":
-			var pb = sys.planet(obj, [5, Color(0.5, 0.48, 0.46), Color(0.24, 0.23, 0.22), Color(0.6, 0.6, 0.65)], 1.0, Vector3(-1.5, 1.2, -1.0), false)
-			var h = _hull("hegemony", "", 3.6, "O1_37")
-			var st = Node3D.new(); st.name = "spin"; st.position = Vector3(0.6, 1.7, 0.4); obj.add_child(st)
-			if h != null: st.add_child(h)
-			else:
-				var r = sys.mi(TorusMesh.new(), sys.std(Color(0.55, 0.55, 0.58), 0.0, 0.7, 0.35)); r.scale = Vector3.ONE * 1.1; r.rotation_degrees = Vector3(20, 0, 0); st.add_child(r)
-			sys.glow(st, Color(1.0, 0.3, 0.25, 1.0), 0.7, Vector3(1.4, 0.2, 0), 2.0, 1.4, 1.0)
-			sys.glow(st, Color(0.4, 1.0, 0.5, 1.0), 0.7, Vector3(-1.4, 0.2, 0), 2.0, 1.4, 1.0)
-			return 3.4
+			sys.planet(obj, [5, Color(0.5, 0.48, 0.46), Color(0.24, 0.23, 0.22), Color(0.6, 0.6, 0.65)], 1.3, Vector3(-2.6, 1.3, -2.2), false)
+			var L = System.look(d["fac"])
+			var st = props.station(obj, L["base"].lerp(Color(0.5, 0.52, 0.56), 0.6), L["main"])
+			st.position = Vector3(0.5, 2.3, 0.3); st.rotation_degrees = Vector3(14, 0, -10); st.scale = Vector3.ONE * 0.85
+			_spinners.append([st, Vector3.UP, 0.035]); _spinners.append([st.get_node("ring"), Vector3.UP, 0.22])
+			return 5.2
 		"belt":
-			sys.belt(obj, d["theta"], d["r"], d["pos"], _rng.randi() % 3)
-			return 2.6
+			props.belt(obj, d["theta"], d["r"], d["pos"], _rng.randi() % 3)
+			return 3.0
 		"graveyard":
 			var wf = ["voidsworn", "hegemony", "corsair", "deathless"][_rng.randi() % 4]
-			var hk = _hull(wf, "Cruiser", 4.2)
-			if hk != null:
+			var wr = _wreck(wf, "Cruiser", 7.0)
+			var hk = null if wr != null else _hull(wf, "Cruiser", 6.5)
+			if wr != null:
+				wr.position = Vector3(0, 1.6, 0); wr.rotation_degrees = Vector3(14, _rng.randf() * 360.0, 24); obj.add_child(wr)
+			elif hk != null:
 				hk.position = Vector3(0, 1.3, 0); hk.rotation_degrees = Vector3(18, _rng.randf() * 360.0, 32); obj.add_child(hk)
 			else:
 				var bx = BoxMesh.new(); bx.size = Vector3(3.2, 0.6, 0.9)
@@ -228,13 +261,15 @@ func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the s
 	# open space: a small planet far behind the stop so the place still reads
 	sys.planet(obj, pal, 1.2, Vector3(-1.4, 1.3, -1.6))
 	return 2.6
+var _base_sig := ""
 func _add_node(n: Dictionary) -> void:
+	_rng.seed = hash(_base_sig + "|" + str(n["id"]))
 	var C = _C(); var pp = _polar(n); var p = _at(pp.x, pp.y); var obj = Node3D.new(); obj.position = p; root3.add_child(obj)
 	var t = n["type"]; var mats = []; var top = 2.0
 	var gold = Color("#d0a64b"); var teal = Color("#5fb3a6"); var cyan = Color("#62ccff")
 	var fight = t in ["battle", "elite", "boss"]
-	var d = {"n": n, "pos": p, "theta": pp.x, "r": pp.y}
 	var nfac = C.nodeFaction(n) if fight else ""
+	var d = {"n": n, "pos": p, "theta": pp.x, "r": pp.y, "fac": nfac if nfac != "" else str(C.RUN["map"]["fac"])}
 	if fight and t != "boss":
 		top = _place_scene(obj, str(n.get("map", "")), d)
 		var gem = sys.marker(obj, Vector3(0, top + 0.9, 0), 0.48 if t == "battle" else 0.62, nfac, t == "elite"); mats.append(gem.material_override)
@@ -245,7 +280,7 @@ func _add_node(n: Dictionary) -> void:
 	elif t == "boss":
 		var fac = C.RUN["map"]["fac"]; var btpl = C.FACTIONS[fac].get("boss"); var cls = str(C.HULLS[btpl].get("cls", "Battleship")) if btpl != null and C.HULLS.has(btpl) else "Battleship"
 		var L = System.look(fac)
-		var bh = _hull(fac, cls, 8.0)
+		var bh = _hull(fac, cls, 12.0)
 		if bh != null:
 			bh.position = Vector3(0, 2.2, 0); bh.rotation_degrees = Vector3(0, 180, 0); obj.add_child(bh)   # it faces back down the sector, at you
 		else:
@@ -258,45 +293,50 @@ func _add_node(n: Dictionary) -> void:
 	else:
 		match t:
 			"shipyard":
-				sys.planet(obj, System.PLANETS[1], 1.5, Vector3(-1.8, 1.4, -1.6))
-				var sh = _hull("voidsworn", "", 3.4, "O1_37")
-				var st = Node3D.new(); st.name = "spin"; st.position = Vector3(0.5, 1.6, 0.3); obj.add_child(st)
-				if sh != null: st.add_child(sh)
-				else:
-					var ring = sys.mi(_torus(0.9, 1.25), sys.std(Color(0.55, 0.52, 0.48), 0.0, 0.7, 0.35)); ring.rotation_degrees = Vector3(25, 0, 0); st.add_child(ring)
-				var gm4 = _mat(gold, 2.4); mats.append(gm4)
-				var beam = BoxMesh.new(); beam.size = Vector3(0.12, 0.12, 3.4)
-				for sx in [-1.0, 1.0]: obj.add_child(sys.mi(beam, sys.std(Color(0.42, 0.4, 0.38), 0.0, 0.8, 0.4), Vector3(sx * 1.6, 1.0, 0.3)))
-				for i in 4: obj.add_child(sys.mi(sys.sphere(0.09, 8, 4), gm4, Vector3(cos(i * TAU / 4.0) * 1.7, 1.6, sin(i * TAU / 4.0) * 1.7)))
-				sys.glow(obj, Color(1.0, 0.8, 0.4, 1.0), 3.0, Vector3(0.5, 1.6, 0.3), 2.5, 0.5)
-				top = 3.4
+				# a construction gantry round a hull being built, floodlit, welding sparks on the work
+				sys.planet(obj, System.PLANETS[1], 1.6, Vector3(-2.8, 1.6, -2.6))
+				var PL = System.look(C.RUN["fac"])
+				var gy = props.gantry(obj, 6.4, 2.8, 3.0, Color(0.46, 0.47, 0.5), PL["main"]); gy.position = Vector3(0, 0.6, 0); gy.rotation_degrees = Vector3(0, -25, 0)
+				var hb = _hull(C.RUN["fac"], "Cruiser", 5.2)
+				if hb != null: hb.position = Vector3(0, 1.8, 0); gy.add_child(hb)
+				else: props.part(gy, props.box(4.6, 0.8, 1.2), props.hull_mat(Color(0.4, 0.4, 0.42), PL["main"]), Vector3(0, 1.2, 0))
+				props.sparks(gy, Vector3(0, 1.5, 0), 1.8, 6 if quality != "low" else 3)
+				top = 3.8
 			"drydock":
-				sys.planet(obj, System.PLANETS[4], 1.1, Vector3(-1.7, 1.1, -1.4))
-				var m5 = sys.std(Color(0.46, 0.48, 0.52), 0.0, 0.8, 0.4); var m5b = _mat(teal, 2.0); mats.append(m5b)
-				var bx = BoxMesh.new(); bx.size = Vector3(0.22, 1.8, 2.6)
-				obj.add_child(sys.mi(bx, m5, Vector3(-0.9, 1.4, 0))); obj.add_child(sys.mi(bx, m5, Vector3(0.9, 1.4, 0)))
-				var bar = BoxMesh.new(); bar.size = Vector3(2.0, 0.14, 0.14)
-				for z in [-1.1, 0.0, 1.1]: obj.add_child(sys.mi(bar, m5b, Vector3(0, 2.3, z)))
-				var hk = _hull(C.RUN["fac"], "Frigate", 1.9)
-				if hk != null: hk.position = Vector3(0, 1.3, 0); obj.add_child(hk)
-				sys.glow(obj, teal, 3.2, Vector3(0, 1.6, 0), 2.5, 0.45)
-				top = 3.0
+				# a dock frame round a docked hull, work lights on it, drones at the plates
+				sys.planet(obj, System.PLANETS[4], 1.2, Vector3(-2.6, 1.2, -2.2))
+				var DL = System.look(C.RUN["fac"])
+				var df = props.dock_frame(obj, 5.2, 2.2, 2.6, Color(0.44, 0.46, 0.5), teal); df.position = Vector3(0, 1.8, 0); df.rotation_degrees = Vector3(0, -20, 0)
+				var hk = _hull(C.RUN["fac"], "Frigate", 4.0)
+				if hk != null: df.add_child(hk)
+				else: props.part(df, props.box(3.6, 0.6, 0.9), props.hull_mat(Color(0.4, 0.4, 0.42), DL["main"]))
+				for i in (4 if quality != "low" else 2): _drones.append([props.drone(obj, teal, Color(0.5, 0.52, 0.56)), Vector3(0, 1.8, 0), _rng.randf_range(1.4, 2.2), _rng.randf_range(0.3, 0.6) * (1 if i % 2 == 0 else -1), _rng.randf() * TAU, _rng.randf_range(-0.6, 0.8)])
+				top = 3.4
 			"field":
-				var tend = _hull(C.RUN["fac"], "Frigate", 1.8)
-				if tend != null: tend.position = Vector3(0, 1.4, 0); obj.add_child(tend)
-				var m6 = _mat(Color("#7ddc6a"), 2.2); mats.append(m6)
-				var sw = Node3D.new(); sw.name = "spin"; sw.position = Vector3(0, 1.5, 0); obj.add_child(sw)
-				for i in 4:
-					var bx2 = BoxMesh.new(); bx2.size = Vector3(0.26, 0.14, 0.4)
-					var dp = Vector3(cos(i * TAU / 4.0), 0.15 * sin(i * 2.0), sin(i * TAU / 4.0)) * 1.4
-					sw.add_child(sys.mi(bx2, m6, dp)); sys.glow(sw, Color("#7ddc6a"), 0.9, dp, 2.0, 1.0)
-				top = 2.6
+				# a repair tender: the hull, two lattice crane arms with floodlights, a swarm of drones, welding sparks
+				var green = Color("#7ddc6a"); var FL = System.look(C.RUN["fac"])
+				var tn = Node3D.new(); tn.position = Vector3(0, 1.8, 0); tn.rotation_degrees = Vector3(0, -30, 0); obj.add_child(tn)
+				var tend = _hull(C.RUN["fac"], "Frigate", 3.6)
+				if tend != null: tn.add_child(tend)
+				else: props.part(tn, props.box(3.0, 0.6, 0.8), props.hull_mat(Color(0.42, 0.43, 0.46), FL["main"]))
+				var am = props.hull_mat(Color(0.45, 0.46, 0.48), green, 8.0, 0.0, 0.8)
+				for sz in [-1.0, 1.0]:
+					props.truss(tn, Vector3(0.2, 0.3, sz * 0.4), Vector3(1.4, 0.9, sz * 1.5), 0.26, am, 3)
+					props.truss(tn, Vector3(1.4, 0.9, sz * 1.5), Vector3(2.4, 0.4, sz * 1.1), 0.22, am, 2)
+					props.spot(tn, Vector3(2.4, 0.4, sz * 1.1), Vector3(2.6, -0.6, 0), Color(0.8, 1.0, 0.8), 2.4, 5.0)
+				props.sparks(tn, Vector3(2.4, -0.1, 0), 0.6, 4 if quality != "low" else 2)
+				for i in (6 if quality != "low" else 3): _drones.append([props.drone(obj, green, Color(0.5, 0.52, 0.55)), Vector3(0, 1.8, 0), _rng.randf_range(1.6, 2.8), _rng.randf_range(0.35, 0.7) * (1 if i % 2 == 0 else -1), _rng.randf() * TAU, _rng.randf_range(-0.7, 0.9)])
+				top = 3.0
 			"event":
 				sys.clouds(obj, Color(0.25, 0.75, 1.0), Color(0.55, 0.3, 1.0), 6 if quality != "low" else 3, 1.2, Vector3(0, 1.8, 0), 0.6)
 				var m7 = _mat(cyan, 3.0, 0.0, 0.2); mats.append(m7)
 				obj.add_child(sys.mi(sys.sphere(0.32, 16, 8), m7, Vector3(0, 1.8, 0)))
 				sys.glow(obj, cyan, 3.4, Vector3(0, 1.8, 0), 2.2, 0.8, 1.0)
 				top = 3.2
+	# a soft cool fill over built stops, so their plating reads on the side away from the Hollow Sun
+	if t in ["shipyard", "drydock", "field"] or str(n.get("map", "")) in ["station", "graveyard"]:
+		var fl = OmniLight3D.new(); fl.light_color = Color(0.62, 0.72, 1.0); fl.light_energy = 0.9; fl.omni_range = 11.0; fl.omni_attenuation = 1.4
+		fl.position = Vector3(3.0, 5.0, 4.5); fl.shadow_enabled = false; obj.add_child(fl)
 	# the ring round the stop (its colour says what you can do there) and, for a rival raider, a halo in the rival's look
 	var big = RING_R * (1.55 if t == "boss" else 1.0)
 	var rmat = sys.mat("RING", {"col": Color(1, 1, 1, 0.25), "r": 0.8})
@@ -306,7 +346,8 @@ func _add_node(n: Dictionary) -> void:
 		var f = C.nodeFaction(n)
 		if f != C.RUN["map"]["fac"] and C.FACTIONS.has(f): rival = f
 	if rival != null: sys.halo(obj, rival, big * 1.22)
-	d.merge({"obj": obj, "ring": ring2, "rmat": rmat, "mats": mats, "top": top, "rival": rival, "ring_r": big})
+	var hg = sys.glow(obj, Color(1.0, 0.86, 0.55, 1.0), big * 3.4, Vector3(0, 0.4, 0), 2.6, 0.0)   # the hover glow (eased in _process)
+	d.merge({"obj": obj, "ring": ring2, "rmat": rmat, "mats": mats, "top": top, "rival": rival, "ring_r": big, "hg": hg, "hk": 0.0})
 	_nodes[n["id"]] = d
 func _torus(r0: float, r1: float) -> TorusMesh:
 	var t = TorusMesh.new(); t.inner_radius = r0; t.outer_radius = r1; t.rings = 48; t.ring_segments = 8; return t
@@ -332,7 +373,7 @@ func _add_patrols() -> void:   # enemy patrols: one round each rival raider stop
 	for i in min(2, far.size()): _patrol(fac, far[_rng.randi() % far.size()] + Vector3(0, 0, _rng.randf_range(-4, 4)), _rng.randf_range(5.5, 7.5), _rng.randf_range(0.15, 0.25))
 func _patrol(fac: String, c: Vector3, r: float, sp: float) -> void:
 	var L = System.look(fac)
-	var node = _hull(fac, "Frigate", 1.8)
+	var node = _hull(fac, "Frigate", 3.0)
 	if node == null:
 		var pm = PrismMesh.new(); pm.size = Vector3(0.5, 1.2, 0.2)
 		node = Node3D.new(); var m = sys.mi(pm, _mat(L["main"], 1.0)); m.rotation_degrees = Vector3(0, 0, -90); node.add_child(m)
@@ -345,7 +386,7 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 	var C = _C(); var t = Node3D.new(); var L = System.look(C.RUN["fac"])
 	var fs = C.flagshipOf()
 	var h = null
-	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), 5.5)
+	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), 8.5)
 	if h != null: t.add_child(h)
 	else:
 		var hull = PrismMesh.new(); hull.size = Vector3(1.4, 3.4, 0.5)
@@ -353,15 +394,15 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 	var esc = C.RUN["fleet"].filter(func(x): return fs == null or x["uid"] != fs["uid"])
 	esc = C.ssort(esc, func(a, b): return float(C.or_(C.HULLS[b["tpl"]].get("cp"), 1)) - float(C.or_(C.HULLS[a["tpl"]].get("cp"), 1)))
 	for i in range(min(2, esc.size())):
-		var e = _hull(C.RUN["fac"], str(C.HULLS[esc[i]["tpl"]].get("cls", "Frigate")), 3.0)
+		var e = _hull(C.RUN["fac"], str(C.HULLS[esc[i]["tpl"]].get("cls", "Frigate")), 4.6)
 		if e != null:
-			e.position = Vector3(-2.6, -0.3, 2.2 if i == 0 else -2.2); t.add_child(e)
-	sys.glow(t, L["light"], 2.6, Vector3(-2.9, 0, 0), 2.0, 1.4)
-	var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.0; l.omni_range = 6.0; l.position = Vector3(-2.9, 0, 0); t.add_child(l)
+			e.position = Vector3(-3.8, -0.4, 3.0 if i == 0 else -3.0); t.add_child(e)
+	sys.glow(t, L["light"], 3.6, Vector3(-4.4, 0, 0), 2.0, 1.4)
+	var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.4; l.omni_range = 9.0; l.position = Vector3(-4.4, 0, 0); t.add_child(l)
 	return t
 func _token_home() -> Vector3:
 	var C = _C(); var pos = C.RUN.get("pos")
-	if pos != null and _nodes.has(pos): return _nodes[pos]["pos"] + Vector3(0, _nodes[pos]["top"] + 1.0, 1.6)
+	if pos != null and _nodes.has(pos): return _nodes[pos]["pos"] + TOKEN_OFF + Vector3(0, _nodes[pos]["top"], 0)
 	var n0 = C.RUN["map"]["cols"][0][0]; var pp = _polar(n0)
 	return _at(pp.x + deg_to_rad(9.0), R_OUT + 3.0) + Vector3(0, 3.0, 0)   # just before the first jump, outside the outer orbit
 
@@ -444,6 +485,17 @@ func _process(delta: float) -> void:
 	cam.position = target + CAM_DIR * dist + drift * _cam_zoom * _uz + Vector3(mp.x * 1.4, -mp.y * 0.9, 0) * _uz
 	cam.look_at(target, Vector3.UP)
 	if _debris != null: _debris.rotate_y(delta * 0.012)
+	for sp in _spinners:
+		if is_instance_valid(sp[0]): sp[0].rotate_object_local(sp[1], delta * sp[2])
+	for dr in _drones:   # repair drones working round the hull
+		var a = dr[4] + _t * dr[3]
+		dr[0].position = dr[1] + Vector3(cos(a) * dr[2], dr[5] + sin(_t * 1.3 + dr[4]) * 0.15, sin(a) * dr[2] * 0.7)
+		dr[0].rotation.y = -a + (PI if dr[3] < 0 else 0.0)
+	if props != null:
+		for b in props.blinkers:   # running lights and welding sparks
+			if is_instance_valid(b[0]):
+				var ph = fmod(_t + b[1], b[2]) / b[2]
+				b[0].material_override.set_shader_parameter("gain", 0.25 + 1.6 * exp(-ph * 9.0))
 	var sync_k = 0.7 + 0.5 * sin(_t * 2.4)   # the Hegemony lights keep one beat
 	for sl in _sync_lights:
 		if is_instance_valid(sl[0]): sl[0].light_energy = sl[1] * sync_k
@@ -465,6 +517,9 @@ func _process(delta: float) -> void:
 		var k = 1.0 + (0.05 * sin(_t * 2.6) if av else 0.0) + (0.1 if id == _hot else 0.0)
 		_nodes[id]["ring"].scale = Vector3(k, 1, k)
 		_nodes[id]["rmat"].set_shader_parameter("hot", 1.0 if id == _hot else 0.0)
+		var hk = lerp(float(_nodes[id]["hk"]), 1.0 if id == _hot else 0.0, 1.0 - exp(-delta * 10.0)); _nodes[id]["hk"] = hk
+		_nodes[id]["hg"].visible = hk > 0.01
+		if hk > 0.01: _nodes[id]["hg"].material_override.set_shader_parameter("gain", hk * (0.32 if av else 0.2))
 	for pt in _patrols:
 		var a = pt[4] + _t * pt[3]
 		var p = pt[1] + Vector3(cos(a) * pt[2], sin(_t * 0.7 + pt[4]) * 0.3, sin(a) * pt[2] * 0.6)
@@ -497,7 +552,8 @@ func _fit(fr: Rect2) -> void:
 	for id in _nodes:   # the node's scene and its labels: a little wider than the ring, up to the region name, down to the chips
 		var p = _nodes[id]["pos"]
 		for d in [Vector3(-5.0, 0, 0), Vector3(5.0, 0, 0), Vector3(0, _nodes[id]["top"] + 2.6, -1.0), Vector3(0, 0, 5.0)]: pts.append(p + d)
-	for d in [Vector3(-SUN_R * 2.2, 0, 0), Vector3(SUN_R * 2.2, 0, 0), Vector3(0, 0, SUN_R * 2.4), Vector3(0, SUN_R * 1.2, 0)]: pts.append(d)   # the Hollow Sun and its fire stay in frame
+	for d in [Vector3(-SUN_R * 3.0, 0, 0), Vector3(SUN_R * 3.0, 0, 0), Vector3(0, SUN_R * 1.9, SUN_R * 2.3), Vector3(0, 0, SUN_R * 3.9)]: pts.append(d)   # the Hollow Sun and its disc stay in frame
+	if _C().RUN.get("pos") == null: pts.append(_token_home())   # the fleet waiting before the first jump
 	var lo = Vector3(INF, 0, INF); var hi = Vector3(-INF, 0, -INF)
 	for id in _nodes:
 		var p = _nodes[id]["pos"]; lo = Vector3(min(lo.x, p.x), 0, min(lo.z, p.z)); hi = Vector3(max(hi.x, p.x), 0, max(hi.z, p.z))
@@ -518,6 +574,7 @@ func _draw_overlay() -> void:
 	var on_route = {}
 	for r in _routes:
 		for st in r["st"]["running"]: on_route[st["id"]] = [r, st]
+	var dy = _label_shifts(s)
 	for id in _nodes:
 		var d = _nodes[id]; var n = d["n"]; var done = C.jt(n.get("done"))
 		if cam.is_position_behind(d["pos"]): continue
@@ -525,7 +582,7 @@ func _draw_overlay() -> void:
 		var fight = n["type"] in ["battle", "elite", "boss"]
 		var col = ui.BONE if av.has(id) else Color(0.66, 0.64, 0.6)
 		if done: col = Color(0.45, 0.44, 0.42)
-		var y = base.y + 30.0 * s
+		var y = base.y + 30.0 * s + dy.get(id, 0.0)
 		var name = ""
 		if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]) and not done: name = str(C.ENCOUNTERS[n["enc"]]["n"])
 		elif not fight: name = str(C.NODE_INFO[n["type"]]["n"])
@@ -533,7 +590,7 @@ func _draw_overlay() -> void:
 		if name != "": _text(name, Vector2(base.x, y), int(15 * s), col, ui.font_semi); y += 17.0 * s
 		if fight and not done and C.nemNodeIs(n):   # B4: his fight is marked before you commit
 			var nt = ui.nem_portrait()   # his framed face beside his fight's tags (godot/portraits, R42), when the painting exists
-			if nt != null:
+			if nt != null and (av.has(id) or id == _hot):   # his face beside the fights you can take now (every fight is his when the clock is full)
 				var ps = 38.0 * s; var pr = Rect2(base.x - 42.0 * s - ps, y - 12.0 * s, ps, ps)
 				overlay.draw_rect(pr.grow(2.0 * s), Color(0.02, 0.02, 0.03, 0.9)); overlay.draw_texture_rect(nt, pr, false)
 				overlay.draw_rect(pr.grow(2.0 * s), Color("#ff6b5a"), false, 1.5 * s)
@@ -544,18 +601,18 @@ func _draw_overlay() -> void:
 			if C.jt(n.get("shape")) and n["shape"] != "open" and C.SHAPES.has(n["shape"]): sub = str(C.SHAPES[n["shape"]]).to_lower()
 			if C.jt(n.get("mod")) and C.NODE_MODS.has(n["mod"]): sub = (sub + " · " if sub != "" else "") + str(C.NODE_MODS[n["mod"]]["short"]).to_lower()
 			_chip(dg["band"].to_upper(), Vector2(base.x, y + 2.0 * s), int(11 * s), dg["col"]); y += 17.0 * s
-			if sub != "": _text(sub, Vector2(base.x, y), int(12 * s), Color(0.6, 0.66, 0.75)); y += 14.0 * s
+			if sub != "" and _detail(id): _text(sub, Vector2(base.x, y), int(12 * s), Color(0.6, 0.66, 0.75)); y += 14.0 * s
 		var rw = n.get("rw")
 		if rw is Dictionary and not done:
 			if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")):
 				var P = C.PATRONS[rw["p"]]; var pc = Color(P["col"]); var bp = top + Vector2(0, -6.0 * s)
 				overlay.draw_circle(bp, 9.5 * s, pc); overlay.draw_arc(bp, 9.5 * s, 0, TAU, 24, ui.INK, 2.0 * s, true)
 				_text(str(P["glyph"]), bp + Vector2(0, 4.5 * s), int(12 * s), ui.INK, ui.font_semi)
-				_text(str(P["short"]) + (" ★" if C.jt(rw.get("min")) else ""), Vector2(base.x, y), int(12 * s), pc if av.has(id) else Color(0.55, 0.53, 0.5))
-			else:
+				if _detail(id): _text(str(P["short"]) + (" ★" if C.jt(rw.get("min")) else ""), Vector2(base.x, y), int(12 * s), pc if av.has(id) else Color(0.55, 0.53, 0.5))
+			elif _detail(id):
 				var lab = ui._reward_label(rw)
 				if lab != "": _text(lab, Vector2(base.x, y), int(12 * s), Color("#bfb6a0") if av.has(id) else Color("#7f7a6e"))
-		if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done: _text(str(C.MAP_NAME[n["map"]]).to_upper(), top + Vector2(0, -20.0 * s), int(10 * s), Color(0.62, 0.7, 0.82), ui.font_caps)
+		if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done and _detail(id): _text(str(C.MAP_NAME[n["map"]]).to_upper(), top + Vector2(0, -20.0 * s), int(10 * s), Color(0.62, 0.7, 0.82), ui.font_caps)
 
 		# running totals along the lit routes
 		if on_route.has(id):
@@ -565,6 +622,49 @@ func _draw_overlay() -> void:
 	if has_focus() and av.size() > 0:
 		var fid = av[_focus % av.size()]
 		var fp = _screen(_nodes[fid]["pos"]); overlay.draw_arc(fp, 30.0 * ui.k, 0, TAU, 40, ui.GILT, 2.0, true)
+# Label stacks under the stops must not print over each other: each stack, top to bottom on screen, moves down below any
+# stack it would overlap (a short way at most; the text never changes).
+# What each stop prints under it, by priority (Opus, R51 round 2): its name, then the Nemesis and danger tags; the
+# secondary lines (board shape and modifier, reward, the place type) show on hover, on keyboard focus or zoomed in.
+# Nothing is lost: the hover card and the fight previews carry all of it.
+func _detail(id: String) -> bool: return id == _hot or _uz < 0.72
+func _label_name(n: Dictionary) -> String:
+	var C = _C(); var done = C.jt(n.get("done")); var fight = n["type"] in ["battle", "elite", "boss"]
+	if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]) and not done: return str(C.ENCOUNTERS[n["enc"]]["n"])
+	if not fight: return str(C.NODE_INFO[n["type"]]["n"])
+	if n["type"] == "boss": return "Sector flagship"
+	return ""
+func _label_shifts(s: float) -> Dictionary:
+	var C = _C(); var items = []
+	for id in _nodes:
+		var d = _nodes[id]; var n = d["n"]
+		if cam.is_position_behind(d["pos"]): continue
+		var done = C.jt(n.get("done")); var fight = n["type"] in ["battle", "elite", "boss"]
+		var h = 0.0; var nm = _label_name(n)
+		if nm != "": h += 17.0
+		if fight and not done and C.nemNodeIs(n): h += 18.0
+		if fight and not done and _danger.has(id) and not _danger[id].is_empty():
+			h += 17.0
+			if ((C.jt(n.get("shape")) and n["shape"] != "open") or C.jt(n.get("mod"))) and _detail(id): h += 14.0
+		if n.get("rw") is Dictionary and not done and _detail(id): h += 14.0
+		if h <= 0.0: continue
+		var b = _screen(d["pos"]); var w = max(90.0 * s, ui.font_semi.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, int(15 * s)).x + 8.0 * s)
+		items.append([b.y, id, Rect2(b.x - w * 0.5, b.y + 17.0 * s, w, h * s)])
+	items.sort_custom(func(a, b): return a[0] < b[0])
+	var placed = []; var out = {}
+	for it in items:
+		var r: Rect2 = it[2]; var shift = 0.0
+		for k in 6:
+			var hit = false
+			for p in placed:
+				if r.intersects(p):
+					var mv = p.end.y + 3.0 * s - r.position.y
+					if shift + mv > 70.0 * s: break
+					r.position.y += mv; shift += mv; hit = true
+			if not hit: break
+		placed.append(r)
+		if shift > 0.0: out[it[1]] = shift
+	return out
 func _text(t: String, at: Vector2, size: int, col: Color, fnt: Font = null) -> void:
 	var f = fnt if fnt != null else ui.font
 	var w = f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
@@ -757,12 +857,20 @@ func _gui_input(e: InputEvent) -> void:
 			_focus = (_focus - 1 + av.size()) % av.size(); _hot_by_key = true; _set_hot(av[_focus]); accept_event()
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
 			accept_event(); fly_to(av[_focus % av.size()])
+func _flash(at: Vector3, delay: float) -> void:
+	var L = System.look(_C().RUN["fac"])
+	var g = sys.glow(root3, L["light"], 7.0, at, 2.2, 0.0)
+	var tw = create_tween(); tw.tween_interval(delay)
+	tw.tween_method(func(v): g.material_override.set_shader_parameter("gain", v), 0.0, 1.6, 0.12)
+	tw.tween_method(func(v): g.material_override.set_shader_parameter("gain", v), 1.6, 0.0, 0.7)
+	tw.tween_callback(g.queue_free)
 func fly_to(id: String) -> void:
 	if _flying or not _nodes.has(id): return
 	_flying = true; card.visible = false; _drag = false
-	var a = token.position; var b = _nodes[id]["pos"] + Vector3(0, _nodes[id]["top"] + 1.0, 1.6)
+	var a = token.position; var b = _nodes[id]["pos"] + TOKEN_OFF + Vector3(0, _nodes[id]["top"], 0)
 	token.look_at(token.position + (b - a).normalized(), Vector3.UP); token.rotate_object_local(Vector3.UP, PI * 0.5)
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
+	_flash(a, 0.0); _flash(b, 1.15)   # the drive flare as the fleet leaves, and again where it drops in
 	var tw = create_tween(); tw.set_trans(Tween.TRANS_SINE); tw.set_ease(Tween.EASE_IN_OUT)
 	tw.tween_property(self, "_cam_zoom", 0.7, 0.35); tw.parallel().tween_property(self, "_cam_focus", (a + b) * 0.5, 0.35)
 	tw.tween_method(func(f): token.position = a.lerp(b, f) + Vector3(0, sin(f * PI) * 2.0, 0); _cam_focus = token.position, 0.0, 1.0, 1.0)

@@ -122,59 +122,6 @@ void fragment() {
 }
 """
 
-# The Hollow Sun's core: a dead black sphere, its rim catching the fire round it, faint embers crawling on the dark surface.
-const SUN_CORE := """
-shader_type spatial;
-render_mode unshaded, shadows_disabled, fog_disabled;
-""" + NOISE + """
-uniform vec3 ember = vec3(1.0, 0.42, 0.12);
-varying vec3 lp;
-void vertex() { lp = VERTEX; }
-void fragment() {
-	float f = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-	float rim = pow(f, 9.0) * 2.6 + pow(f, 4.0) * 0.05;
-	vec3 p = normalize(lp);
-	float cr = mfbm(p * 5.0 + vec3(0.0, TIME * 0.008, 0.0), 4);
-	float cracks = smoothstep(0.018, 0.0, abs(cr - 0.5)) * 0.07 * (1.0 - f);
-	ALBEDO = ember * (rim + cracks);
-}
-"""
-
-# The ring of slow fire round the Hollow Sun: hot at its inner edge, fraying into tongues of flame outward, turning slowly.
-const SUN_FIRE := """
-shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + NOISE + """
-uniform float r_in = 7.0;
-uniform float r_out = 12.0;
-uniform float q = 1.0;
-uniform float gain = 1.0;
-varying vec3 vL;
-void vertex() { vL = VERTEX; }
-void fragment() {
-	vec2 p = vL.xz;
-	float r = length(p);
-	float u = clamp((r - r_in) / (r_out - r_in), 0.0, 1.0);
-	float ang = atan(p.y, p.x);
-	int o = q > 0.5 ? 5 : 3;
-	float t = TIME * 0.018;
-	vec2 fp = vec2(ang * 4.0 / 3.14159 + t * 2.0, r * 0.35 - t * 3.0);
-	float n = mfbm2(fp * vec2(2.0, 1.0) + mfbm2(fp * 3.0 + 4.0, o) * 0.9, o);
-	float n2 = mfbm2(vec2(ang * 9.0 - t * 5.0, r * 1.2), o);
-	// density: a broken hot band near the inner edge (bright arcs and dim gaps), ragged tongues of flame reaching out
-	float arcs = smoothstep(0.32, 0.72, mfbm2(vec2(ang * 1.6 + t * 1.5, 3.0), 3));
-	float core = exp(-pow((u - 0.1) / 0.075, 2.0)) * (0.25 + 0.9 * arcs) * (0.45 + 0.75 * smoothstep(0.3, 0.75, n2));
-	float tongues = smoothstep(u * 1.2 + 0.05, u * 1.2 + 0.3, n) * pow(1.0 - u, 1.5) * (0.5 + 0.7 * arcs);
-	float dens = clamp(core + tongues * 0.9, 0.0, 2.0) * smoothstep(0.0, 0.03, u);
-	vec3 hot = vec3(1.0, 0.86, 0.6);
-	vec3 warm = vec3(1.0, 0.42, 0.1);
-	vec3 deep = vec3(0.55, 0.08, 0.02);
-	vec3 c = mix(hot, warm, smoothstep(0.05, 0.35, u + (1.0 - n) * 0.2));
-	c = mix(c, deep, smoothstep(0.3, 0.9, u));
-	ALBEDO = c * dens * (1.5 - 1.0 * u) * gain;
-}
-"""
-
 # A soft radial glow on a camera-facing quad (the Hollow Sun's haze, node halos, light flares).
 const GLOW := """
 shader_type spatial;
@@ -208,11 +155,17 @@ uniform vec3 atmo : source_color = vec3(0.5, 0.7, 1.0);
 uniform float kind = 0.0;
 uniform float seed = 0.0;
 uniform float q = 1.0;
+uniform vec3 sun_pos = vec3(0.0);
+uniform float night = 1.0;
 varying vec3 lp;
-void vertex() { lp = VERTEX; }
+varying vec3 wn;
+varying vec3 wp;
+void vertex() { lp = VERTEX; wn = (MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz; wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 void fragment() {
 	vec3 p = normalize(lp);
 	int o = q > 0.5 ? 6 : 4;
+	float dark = smoothstep(0.05, -0.3, dot(normalize(wn), normalize(sun_pos - wp)));   // the night side
+	float city = 0.0;
 	vec3 s = p * 2.3 + seed;
 	vec3 col; float rough = 0.85; vec3 em = vec3(0.0);
 	if (kind > 1.5 && kind < 2.5) {
@@ -226,6 +179,7 @@ void fragment() {
 		float det = mfbm(p * 11.0 + seed, o);
 		if (kind > 0.5 && kind < 1.5) {
 			float land = smoothstep(0.49, 0.53, h);
+			city = land * step(0.74, mn3(p * 46.0 + seed)) * smoothstep(0.55, 0.62, det + 0.2);
 			col = mix(b, mix(a, a * 0.6, det), land);
 			rough = mix(0.3, 0.9, land);
 			float cl = smoothstep(0.5, 0.75, mfbm(p * 3.2 + vec3(TIME * 0.004, 0.0, seed), o));
@@ -248,7 +202,7 @@ void fragment() {
 	ROUGHNESS = rough;
 	SPECULAR = 0.3;
 	float f = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-	EMISSION = em + atmo * pow(f, 4.0) * 0.18;
+	EMISSION = em * (0.35 + 0.65 * dark) + atmo * pow(f, 4.0) * 0.18 + vec3(1.0, 0.72, 0.38) * city * dark * night * 2.4;
 }
 """
 
@@ -266,9 +220,9 @@ void fragment() {
 	vec3 n = normalize(wn);
 	vec3 v = normalize(CAMERA_POSITION_WORLD - wp);
 	float f = 1.0 - clamp(dot(n, v), 0.0, 1.0);
-	float lit = clamp(dot(n, normalize(sun_pos - wp)) * 0.75 + 0.35, 0.0, 1.0);
-	float rim = pow(f, 2.2) * (1.0 - smoothstep(0.82, 1.0, f));
-	ALBEDO = atmo * rim * lit * 2.4 * gain;
+	float lit = clamp(dot(n, normalize(sun_pos - wp)) * 0.9 + 0.2, 0.0, 1.0);
+	float rim = pow(f, 3.2) * (1.0 - smoothstep(0.9, 1.0, f));   // a thin bright limb, clear over the face
+	ALBEDO = atmo * rim * lit * 2.2 * gain;
 }
 """
 
@@ -456,5 +410,300 @@ void fragment() {
 	float r = length(uv) * 2.0;
 	float n = mfbm(vec3(UV * 5.0, TIME * 0.01), 4);
 	ALBEDO = col.rgb * col.a * pow(clamp(1.0 - r, 0.0, 1.0), 2.0) * (0.45 + 0.55 * n);
+}
+"""
+
+# ---- The Hollow Sun as a black hole (R51 round 2, lore round 4): the same look as G4's dead-star board
+# (godot/world/world_shaders.gd DISC, DISC_FRONT, LENS), with TIME in place of the battle's scene_t global.
+
+# The accretion disc of the dead star. Opaque where dense, so the lens pass bends its far side over and under the
+# shadow (the arc a real black hole shows); differential rotation, spiral turbulence, temperature falling outward,
+# Doppler beaming (the side coming toward the camera brighter and bluer). r_in, r_out in the disc mesh's local units.
+const BH_DISC := """
+shader_type spatial;
+render_mode unshaded, cull_disabled, shadows_disabled, fog_disabled;
+""" + NOISE + """
+uniform float r_in = 1.0;
+uniform float r_out = 3.0;
+uniform float spin = 0.3;
+uniform float gain = 1.0;
+uniform float front_cut = 0.0;
+uniform vec3 hole_center = vec3(0.0);
+varying vec3 vL;
+varying vec3 vW;
+void vertex() { vL = VERTEX; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	vec2 q = vL.xz;
+	float r = length(q);
+	float u = clamp((r - r_in) / (r_out - r_in), 0.0, 1.0);
+	float ang = atan(q.y, q.x);
+	float w = spin / pow(max(r / r_in, 1.0), 1.5);
+	float a2 = ang + TIME * w;
+	float sp = mfbm2(vec2(a2 * 3.0 + log(r) * 6.0, r * 1.5), 5);
+	float sp2 = mfbm2(vec2(a2 * 7.0 - log(r) * 4.0, r * 4.0 + 3.0), 5);
+	float dens = smoothstep(0.0, 0.06, u) * (1.0 - smoothstep(0.7, 1.0, u)) * (0.55 + 0.7 * sp) * (0.75 + 0.45 * sp2);
+	vec3 c = mix(vec3(1.0, 0.92, 0.8), vec3(1.0, 0.55, 0.2), smoothstep(0.0, 0.3, u));
+	c = mix(c, vec3(0.55, 0.12, 0.04), smoothstep(0.3, 1.0, u)) * (2.6 - 2.0 * u);
+	vec3 tang = normalize((MODEL_MATRIX * vec4(-q.y, 0.0, q.x, 0.0)).xyz);
+	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
+	float dop = dot(tang, V);
+	c *= 1.0 + 0.85 * dop;
+	c = mix(c, c * vec3(0.8, 0.95, 1.25), clamp(dop, 0.0, 1.0) * 0.4);
+	if (dens < 0.035) { discard; }
+	ALBEDO = c * dens * gain;
+}
+"""
+
+# The near half of the disc again, added on top after the lens, so the half in front of the hole stays in front.
+const BH_FRONT := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + NOISE + """
+uniform float r_in = 1.0;
+uniform float r_out = 3.0;
+uniform float spin = 0.3;
+uniform float gain = 1.0;
+uniform vec3 hole_center = vec3(0.0);
+varying vec3 vL;
+varying vec3 vW;
+void vertex() { vL = VERTEX; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	vec2 q = vL.xz;
+	float r = length(q);
+	float u = clamp((r - r_in) / (r_out - r_in), 0.0, 1.0);
+	float ang = atan(q.y, q.x);
+	float w = spin / pow(max(r / r_in, 1.0), 1.5);
+	float a2 = ang + TIME * w;
+	float sp = mfbm2(vec2(a2 * 3.0 + log(r) * 6.0, r * 1.5), 5);
+	float sp2 = mfbm2(vec2(a2 * 7.0 - log(r) * 4.0, r * 4.0 + 3.0), 5);
+	float dens = smoothstep(0.0, 0.08, u) * (1.0 - smoothstep(0.75, 1.0, u)) * (0.45 + 0.75 * sp) * (0.7 + 0.5 * sp2);
+	vec3 c = mix(vec3(1.0, 0.92, 0.8), vec3(1.0, 0.55, 0.2), smoothstep(0.0, 0.35, u));
+	c = mix(c, vec3(0.55, 0.12, 0.04), smoothstep(0.35, 1.0, u)) * (2.4 - 1.8 * u);
+	vec3 tang = normalize((MODEL_MATRIX * vec4(-q.y, 0.0, q.x, 0.0)).xyz);
+	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
+	c *= 1.0 + 0.85 * dot(tang, V);
+	vec3 toHole = hole_center - CAMERA_POSITION_WORLD;
+	vec3 toFrag = vW - CAMERA_POSITION_WORLD;
+	float front = smoothstep(0.0, 0.08 * length(toHole), length(toHole) - length(toFrag));
+	ALBEDO = c * dens * gain * front * 0.9;
+}
+"""
+
+# Gravitational lensing on a camera-facing quad over the hole (G4's LENS): the picture behind the hole is pushed out
+# round the Einstein ring and pulled in from the far side; inside the shadow nothing escapes, ringed by the photon ring.
+# Only what lies behind the hole is bent (depth check), so the chart in front never moves.
+const BH_LENS := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap, repeat_disable;
+uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
+uniform float r_shadow = 0.12;
+uniform float r_einstein = 0.2;
+uniform float photon = 1.0;
+uniform vec3 ring_col = vec3(1.0, 0.8, 0.55);
+varying vec2 vUv;
+varying vec4 vCenterClip;
+void vertex() {
+	vec3 c = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	float half_size = length(MODEL_MATRIX[0].xyz);
+	vec4 vp = VIEW_MATRIX * vec4(c, 1.0);
+	vp.xy += VERTEX.xy * half_size * 2.0;
+	POSITION = PROJECTION_MATRIX * vp;
+	vCenterClip = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(c, 1.0));
+	vUv = VERTEX.xy * 2.0;
+}
+void fragment() {
+	float r = length(vUv);
+	if (r > 1.0) { discard; }
+	vec2 cs = vCenterClip.xy / vCenterClip.w * 0.5 + 0.5;
+	vec2 d = SCREEN_UV - cs;
+	float k = length(d) / max(r, 1e-4);
+	vec2 dir = r > 1e-4 ? d / length(d) : vec2(0.0);
+	float th = r;
+	float re2 = r_einstein * r_einstein;
+	float beta = th - re2 / max(th, 1e-3);
+	float edge = smoothstep(1.0, 0.6, r);
+	float b = mix(th, beta, edge);
+	vec2 suv = cs + dir * b * k;
+	float hole_z = -(VIEW_MATRIX * vec4((MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz, 1.0)).z;
+	float dsrc = texture(depth_tex, suv).r;
+	vec4 vsrc = INV_PROJECTION_MATRIX * vec4(suv * 2.0 - 1.0, dsrc, 1.0);
+	float src_z = -vsrc.z / vsrc.w;
+	if (src_z < hole_z * 0.98) { suv = SCREEN_UV + dir * 0.02 * edge; }
+	vec3 col = textureLod(screen_tex, suv, 0.0).rgb;
+	float mag = 1.0 + 0.6 * exp(-pow((th - r_einstein) / (r_einstein * 0.35), 2.0)) * edge;
+	col *= mag;
+	float sh = smoothstep(r_shadow * 1.02, r_shadow * 0.98, th);
+	float ring = exp(-pow((th - r_shadow * 1.05) / (r_shadow * 0.035), 2.0)) * photon;
+	float ring2 = exp(-pow((th - r_shadow * 1.12) / (r_shadow * 0.08), 2.0)) * photon * 0.35;
+	col = mix(col, vec3(0.0), sh) + ring_col * (ring * 6.0 + ring2 * 2.0) * (0.92 + 0.08 * sin(TIME * 0.7));
+	ALBEDO = col;
+	ALPHA = smoothstep(1.0, 0.85, r);
+}
+"""
+
+# Low quality (no lens): a camera-facing black shadow disc with the photon ring and a faint lensed glow round it.
+const BH_SHADOW := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform float r_shadow = 0.5;
+uniform vec3 ring_col = vec3(1.0, 0.8, 0.55);
+void vertex() {
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
+	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));
+}
+void fragment() {
+	float th = length(UV - 0.5) * 2.0;
+	float sh = smoothstep(r_shadow * 1.02, r_shadow * 0.98, th);
+	float ring = exp(-pow((th - r_shadow * 1.05) / (r_shadow * 0.035), 2.0));
+	float ring2 = exp(-pow((th - r_shadow * 1.2) / (r_shadow * 0.15), 2.0)) * 0.25;
+	ALBEDO = ring_col * (ring * 6.0 + ring2 * 2.0) * (1.0 - sh);
+	ALPHA = clamp(sh + ring + ring2, 0.0, 1.0);
+}
+"""
+
+# ---- Stop objects at full finish (R51 round 2, Ryan: "the actual icons still look kind of low poly").
+# Bump mapping without textures: the height is computed in the fragment and turned into a normal with screen-space
+# derivatives (surface gradient), so every procedural part carries panel seams, grit and craters in its lighting.
+const BUMP := """
+vec3 bump_normal(vec3 n, vec3 pos, float h, float k) {
+	vec3 dpdx = dFdx(pos); vec3 dpdy = dFdy(pos);
+	float dhx = dFdx(h); float dhy = dFdy(h);
+	vec3 r1 = cross(dpdy, n); vec3 r2 = cross(n, dpdx);
+	float det = dot(dpdx, r1);
+	vec3 grad = sign(det) * (dhx * r1 + dhy * r2);
+	return normalize(abs(det) * n - grad * k);
+}
+"""
+
+# Space hull plating for stations, gantries, docks, tenders and drones: panels in rows of varied widths on the face's
+# main plane, recessed seams, a finer second panel layer, grime, a few accent panels in the faction colour, rows of lit
+# windows. Lit by the Hollow Sun (PBR).
+const HULL := """
+shader_type spatial;
+""" + NOISE + BUMP + """
+uniform vec3 base : source_color = vec3(0.45, 0.47, 0.5);
+uniform vec3 accent : source_color = vec3(0.3, 0.45, 0.7);
+uniform vec3 win_col : source_color = vec3(1.0, 0.82, 0.55);
+uniform float scale = 3.0;
+uniform float windows = 0.12;
+uniform float metal = 0.6;
+uniform float glow = 0.0;
+varying vec3 lp;
+varying vec3 ln;
+void vertex() { lp = VERTEX; ln = NORMAL; }
+vec2 puv(vec3 p, vec3 n) { vec3 a = abs(n); if (a.x > a.y && a.x > a.z) return p.zy; if (a.y > a.z) return p.xz; return p.xy; }
+float panels(vec2 uv, out vec2 cell, out vec2 f) {
+	float row = floor(uv.y);
+	float w = 1.0 + floor(mh2(vec2(row, 7.7)) * 3.0);
+	vec2 q = vec2((uv.x + mh2(vec2(row, 3.1)) * w) / w, uv.y);
+	cell = vec2(floor(q.x), row); f = fract(q);
+	return min(min(f.x, 1.0 - f.x) * w, min(f.y, 1.0 - f.y));
+}
+void fragment() {
+	vec2 uv = puv(lp, ln) * scale;
+	vec2 c1; vec2 f1; float e1 = panels(uv, c1, f1);
+	vec2 c2; vec2 f2; float e2 = panels(uv * 3.0 + 11.0, c2, f2);
+	float h1 = mh2(c1 + 0.5); float h2 = mh2(c2 + 1.5);
+	float seam = 1.0 - smoothstep(0.0, 0.05, e1);
+	float seam2 = 1.0 - smoothstep(0.0, 0.06, e2);
+	float grime = mfbm(lp * 2.2 + 4.0, 4);
+	vec3 col = base * (0.78 + 0.32 * h1) * (0.9 + 0.2 * h2);
+	col = mix(col, accent, step(0.88, h1) * 0.75);
+	col *= 1.0 - seam * 0.38 - seam2 * 0.12;
+	col *= 0.82 + 0.3 * grime;
+	float ht = smoothstep(0.0, 0.05, e1) * 0.6 + smoothstep(0.0, 0.06, e2) * 0.25 + step(0.8, h2) * 0.1;
+	NORMAL = bump_normal(NORMAL, VERTEX, ht, 0.9);
+	ALBEDO = col;
+	METALLIC = metal * (0.7 + 0.3 * h1);
+	ROUGHNESS = 0.35 + 0.35 * grime + seam * 0.2;
+	// rows of windows: a small lit slot in some panels
+	float wmask = step(1.0 - windows, mh2(c2 + 7.3)) * step(abs(f2.y - 0.5), 0.08) * step(abs(f2.x - 0.5), 0.18);
+	EMISSION = win_col * wmask * 1.5 + accent * glow * (1.0 - seam) * 0.6;
+}
+"""
+
+# Solar arrays: dark blue cells in a silver grid, a glossy sheen.
+const SOLAR := """
+shader_type spatial;
+""" + NOISE + """
+varying vec3 lp;
+void vertex() { lp = VERTEX; }
+void fragment() {
+	vec2 g = abs(fract(UV * vec2(18.0, 6.0)) - 0.5);
+	float grid = smoothstep(0.44, 0.48, max(g.x, g.y));
+	vec3 cellc = vec3(0.04, 0.07, 0.16) * (0.85 + 0.3 * mh2(floor(UV * vec2(18.0, 6.0))));
+	ALBEDO = mix(cellc, vec3(0.62, 0.64, 0.68), grid);
+	METALLIC = mix(0.3, 0.9, grid);
+	ROUGHNESS = mix(0.15, 0.4, grid);
+}
+"""
+
+# Heat radiators: dark fins whose cores glow a dull ember from the heat they shed.
+const RADIATOR := """
+shader_type spatial;
+""" + NOISE + BUMP + """
+uniform vec3 heat : source_color = vec3(1.0, 0.38, 0.12);
+uniform float gain = 1.0;
+void fragment() {
+	float fins = abs(fract(UV.x * 14.0) - 0.5);
+	float ht = smoothstep(0.1, 0.35, fins);
+	NORMAL = bump_normal(NORMAL, VERTEX, ht, 0.6);
+	ALBEDO = vec3(0.12, 0.11, 0.11);
+	METALLIC = 0.7; ROUGHNESS = 0.5;
+	float core = smoothstep(0.5, 0.0, abs(UV.y - 0.5)) * (1.0 - ht * 0.5);
+	EMISSION = heat * core * gain * (0.75 + 0.25 * sin(TIME * 0.5 + UV.x * 3.0));
+}
+"""
+
+# Asteroid rock at full finish: strata and dust from 3D noise, fine grit and pitting in the lighting (bump), darker in
+# the craters the mesh carries (COLOR.r is the crater depth), a faint rim from the sun. kind 0 stone, 1 iron, 2 ice.
+const ROCK_HI := """
+shader_type spatial;
+""" + NOISE + BUMP + """
+uniform vec3 tint : source_color = vec3(0.3, 0.27, 0.24);
+uniform float kind = 0.0;
+uniform float q = 1.0;
+varying vec3 lp;
+varying float crater;
+void vertex() { lp = VERTEX; crater = COLOR.r; }
+void fragment() {
+	int o = q > 0.5 ? 5 : 3;
+	float strata = 0.5 + 0.5 * sin(lp.y * 9.0 + mfbm(lp * 2.0, 3) * 6.0);
+	float dust = mfbm(lp * 3.5 + 2.0, o);
+	float grit = mfbm(lp * 6.5, o);
+	vec3 col = tint * (0.7 + 0.35 * dust) * (0.88 + 0.18 * strata);
+	col *= 1.0 - crater * 0.45;
+	if (kind > 1.5) col = mix(col, vec3(0.75, 0.82, 0.9), smoothstep(0.45, 0.7, dust) * 0.6);
+	if (kind > 0.5 && kind < 1.5) col = mix(col, vec3(0.42, 0.3, 0.22), smoothstep(0.55, 0.8, grit) * 0.5);
+	float ht = grit * 0.35 + dust * 0.4 + smoothstep(0.6, 0.72, mfbm(lp * 4.0 + 5.0, 3)) * -0.2;
+	NORMAL = bump_normal(NORMAL, VERTEX, ht, q > 0.5 ? 0.45 : 0.25);
+	ALBEDO = col;
+	METALLIC = kind > 0.5 && kind < 1.5 ? 0.55 : 0.05;
+	ROUGHNESS = kind > 1.5 ? 0.45 : 0.9;
+	float f = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
+	RIM = 0.4; RIM_TINT = 0.6;
+	EMISSION = vec3(1.0, 0.55, 0.3) * pow(f, 5.0) * 0.08;
+}
+"""
+
+# A planet's cloud layer: a slightly larger shell, clouds drifting, lit by the sun, transparent between.
+const CLOUDS := """
+shader_type spatial;
+render_mode depth_draw_never, cull_back;
+""" + NOISE + """
+uniform float cover = 0.5;
+uniform float seed = 0.0;
+uniform float q = 1.0;
+varying vec3 lp;
+void vertex() { lp = VERTEX; }
+void fragment() {
+	vec3 p = normalize(lp);
+	int o = q > 0.5 ? 5 : 3;
+	float n = mfbm(p * 3.0 + vec3(TIME * 0.006, 0.0, seed) + mfbm(p * 6.0 + seed, 3) * 0.5, o);
+	float c = smoothstep(1.0 - cover, 1.0 - cover + 0.25, n);
+	ALBEDO = vec3(0.95);
+	ROUGHNESS = 0.9;
+	ALPHA = c * 0.85;
 }
 """

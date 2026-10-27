@@ -28,7 +28,7 @@ var C                      # the campaign (campaign.gd)
 var k := 1.0
 var font: Font
 var font_semi: Font
-var font_goth: Font
+var font_goth: Font                   # the display face for headers (R51 round 2: Michroma, a clean wide sci-fi face; the blackletter is retired)
 var font_caps: FontVariation           # small caps headers: the semi-bold face, letter-spaced
 var root: Control
 var bg: ColorRect
@@ -51,8 +51,9 @@ func _ready() -> void:
 	layer = 20
 	font = _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
 	font_semi = _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
-	font_goth = _font("res://ui/battle/fonts/UnifrakturMaguntia-Book.ttf")
-	font_caps = FontVariation.new(); font_caps.base_font = font_semi; font_caps.spacing_glyph = 1
+	font_goth = _font("res://ui/campaign/fonts/Michroma-Regular.ttf")
+	font_caps = FontVariation.new(); font_caps.base_font = _font("res://ui/campaign/fonts/Oxanium-Variable.ttf"); font_caps.spacing_glyph = 1
+	font_caps.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 600}
 	root = Control.new(); root.set_anchors_preset(Control.PRESET_FULL_RECT); add_child(root)
 	bg = ColorRect.new(); bg.color = INK; bg.set_anchors_preset(Control.PRESET_FULL_RECT); root.add_child(bg)
 	map3d = Map3D.new(); map3d.ui = self; map3d.visible = false; root.add_child(map3d)
@@ -165,7 +166,7 @@ func rich_inline(bb: String, size: float = 15) -> RichTextLabel:   # one line, a
 	var r = rich(bb, size); r.autowrap_mode = TextServer.AUTOWRAP_OFF; r.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN; r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return r
 func c(text: String, col: Color) -> String: return "[color=" + hexs(col) + "]" + text + "[/color]"
-func gothic(text: String, size: float = 52) -> Label: return lbl(text, size, BONE, font_goth, true)
+func gothic(text: String, size: float = 52) -> Label: return lbl(text, size * 0.7, BONE, font_goth, true)
 func vbox(sep: float = 8) -> VBoxContainer:
 	var v = VBoxContainer.new(); v.add_theme_constant_override("separation", px(sep)); return v
 func hbox(sep: float = 10) -> HBoxContainer:
@@ -178,8 +179,10 @@ func panel(border: Color = IRON3, bgc: Color = IRON, pad: float = 14) -> PanelCo
 	var sb = _sb(bgc, border, 1, 4, pad); sb.shadow_color = Color(0, 0, 0, 0.35); sb.shadow_size = px(8); sb.shadow_offset = Vector2(0, px(2))
 	var p = PanelContainer.new(); p.add_theme_stylebox_override("panel", sb); return p
 func card(sel: bool = false, width: float = 300) -> Array: # [PanelContainer, VBoxContainer]
-	var p = panel(GILT if sel else IRON3, IRON, 14); p.custom_minimum_size.x = px(width)
-	if sel: p.add_theme_stylebox_override("panel", _sb(IRON, GILT, 2, 4, 14))
+	var p = PanelContainer.new(); p.custom_minimum_size.x = px(width)
+	var sb = _glass(Color(0.05, 0.07, 0.115, 0.96), GILT if sel else Color(0.42, 0.5, 0.66), "top", 2 if sel else 1, 4, 14, 8)
+	if sel: sb.bg_color = Color(0.09, 0.085, 0.07, 0.97)
+	p.add_theme_stylebox_override("panel", sb)
 	var v = vbox(6); p.add_child(v); return [p, v]
 func bar(f: float, w: float = 0) -> Control:
 	var b = ColorRect.new(); b.color = Color("#3a1d1d"); b.custom_minimum_size = Vector2(px(w), px(6)); b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -284,7 +287,7 @@ func _wrap_page(inner: Control, maxw: float = 1440) -> Control:
 func _title() -> Control:
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var v = vbox(10); v.custom_minimum_size.x = px(640); v.alignment = BoxContainer.ALIGNMENT_CENTER
-	var h = lbl("Voidsworn", 148, BONE, font_goth, false); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h)
+	var h = lbl("VOIDSWORN", 96, BONE, font_goth, false); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h)
 	var s = lbl("Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain.", 20, BONE2)
 	s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(s)
 	var menu = vbox(10); menu.custom_minimum_size.x = px(260)
@@ -468,7 +471,7 @@ func _map() -> Control:
 	# the header: the sector's name, a line saying where you are and who holds it, the map's detail toggle, save and quit
 	var head = hbox(14)
 	var tv = vbox(0)
-	tv.add_child(lbl("Sector " + C.roman(R["sector"]) + ((": " + str(C.REGIONS[m["region"]]["n"])) if C.jt(m.get("region")) and C.REGIONS.has(m["region"]) else ""), 46, BONE, font_goth, false))
+	tv.add_child(lbl("Sector " + C.roman(R["sector"]) + ((": " + str(C.REGIONS[m["region"]]["n"])) if C.jt(m.get("region")) and C.REGIONS.has(m["region"]) else ""), 30, BONE, font_goth, false))
 	var here = C.findNode(R["pos"]) if R.get("pos") != null else null
 	var step = (int(here["col"]) + 1) if here != null else 0
 	var sub = c("SECTOR " + C.roman(R["sector"]) + " OF III", BONE2) + c("   ·   ", BONE3) + c("JUMP " + str(step) + " OF " + str(m["cols"].size()), BONE2) + c("   ·   ", BONE3) + c(C.numstr(C.z0(R["stats"].get("battles"))) + " FIGHTS SO FAR", BONE2) + c("   ·   HELD BY  ", BONE3) + "[b]" + c(esc(str(F["n"]).to_upper()), fac_col(m["fac"])) + "[/b]"
@@ -907,7 +910,7 @@ func _battle_stub(d: Dictionary) -> Control:
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var p = panel(GILT2, IRON, 24); p.custom_minimum_size.x = px(720); var v = vbox(10); p.add_child(v)
 	var kind = "flagship battle" if cfg["kind"] == "boss" else (("elite " if cfg["kind"] == "elite" else "") + str(E["n"]).to_lower())
-	v.add_child(lbl("Sector " + C.roman(C.RUN["sector"]) + ": " + kind + " against " + str(C.FACTIONS[cfg["fac"]]["n"]), 30, BONE, font_goth))
+	v.add_child(lbl("Sector " + C.roman(C.RUN["sector"]) + ": " + kind + " against " + str(C.FACTIONS[cfg["fac"]]["n"]), 22, BONE, font_goth))
 	v.add_child(lbl(("The sector flagship and its escort." if cfg["kind"] == "boss" else str(E["d"])), 17, BONE2))
 	v.add_child(lbl("Test battle: the real battle scene plugs in here. Pick how this fight ends.", 15, BONE3))
 	var row = flow(8)
@@ -1021,7 +1024,7 @@ func _end(d: Dictionary) -> Control:
 	var sc = ScrollContainer.new(); sc.custom_minimum_size = Vector2(px(760), min(px(1000), get_viewport().get_visible_rect().size.y - px(40))); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var v = vbox(10); v.custom_minimum_size.x = px(720); sc.add_child(v); cc.add_child(sc)
 	var title = (str(C.WIN_TITLE.get(R["fac"], "Victory"))) if victory else ("Run abandoned" if d["abandoned"] else "The fleet is lost")
-	var h = lbl(title, 96, BONE, font_goth); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h)
+	var h = lbl(title, 62, BONE, font_goth); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h)
 	var sub = ""
 	if victory: sub = "Three sectors broken, three flagships burning behind you. " + str(C.ADMIRALS[R["admiral"]]["n"]) + " brings the " + str(C.FACTIONS[R["fac"]]["n"]).trim_prefix("The ") + " home."
 	elif d["abandoned"]: sub = "The fleet stands down. Its deeds are recorded."
@@ -1087,10 +1090,11 @@ func _modal(md: Dictionary) -> void:
 	_modal_acts = md["acts"]; var acts = _modal_acts; var d = md["data"]
 	var dim = ColorRect.new(); dim.color = Color(0.024, 0.035, 0.063, 0.78); dim.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(dim)
 	var cc = CenterContainer.new(); cc.set_anchors_preset(Control.PRESET_FULL_RECT); modal_box.add_child(cc)
-	var box = panel(GILT2, IRON, 24)
+	var box = PanelContainer.new(); var bsb = _glass(Color(0.026, 0.038, 0.066, 0.98), GILT, "top", 2, 4, 24, 30); bsb.shadow_color = Color(0, 0, 0, 0.6)
+	box.add_theme_stylebox_override("panel", bsb); _brackets(box)   # a dialog: dark glass, a gilt top edge, corner brackets, a deep shadow
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var v = vbox(8); v.custom_minimum_size.x = px(700); sc.add_child(v); box.add_child(sc); cc.add_child(box)
-	var h2 = func(t: String): v.add_child(lbl(t, 40, BONE, font_goth))
+	var h2 = func(t: String): v.add_child(lbl(t, 27, BONE, font_goth))
 	var p = func(t: String, col: Color = BONE): v.add_child(lbl(t, 17, col))
 	var R = C.RUN
 	match md["kind"]:
@@ -1197,7 +1201,7 @@ func _modal(md: Dictionary) -> void:
 		"boon":
 			var P = C.PATRONS[d["patron"]]; var pc = Color(P["col"])
 			var hd = hbox(12); var sg = lbl(P["glyph"], 26, INK, font_semi, false); var sgp = panel(pc, pc, 6); sgp.add_child(sg); hd.add_child(sgp)
-			var hv = vbox(0); hv.add_child(lbl(P["n"], 34, pc, font_goth)); hv.add_child(lbl(P["theme"], 15, BONE2)); hd.add_child(hv); v.add_child(hd)
+			var hv = vbox(0); hv.add_child(lbl(P["n"], 23, pc, font_goth)); hv.add_child(lbl(P["theme"], 15, BONE2)); hd.add_child(hv); v.add_child(hd)
 			p.call("“" + str(P["quote"]) + "”", BONE2); p.call(str(C.REWARD_DEF["boon"]), BONE3)
 			var offer = d["offer"]
 			for i in range(offer.size()):

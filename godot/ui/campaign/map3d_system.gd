@@ -4,17 +4,18 @@ extends RefCounted
 # (planets with atmospheres and moons, stations, asteroid fields, nebula pockets, wreck fields). Presentation only:
 # its randomness is the map's own generator, never the rules' PRNG.
 #
-# Faction looks follow lore round 3 (R51): colours and visuals only; ids and names stay as they are (lore is in flux).
+# Faction looks follow the lore (R51; round 4 colours for the Chorus and the Deathless): colours and visuals only; ids
+# and names stay as they are (lore is in flux).
 
 const SH := preload("res://ui/campaign/map3d_shaders.gd")
 
-# Lore round 3 faction looks. base: hull and dark tone; main: the faction colour; light: its lights and glows;
+# Faction looks (lore rounds 3 and 4). base: hull and dark tone; main: the faction colour; light: its lights and glows;
 # text: a readable colour for its name on the dark UI; look: 0 plain, 1 lights pulse in step, 2 rainbow edges, 3 corona.
 const LOOKS := {
 	"voidsworn": {"base": Color("#1c1815"), "main": Color("#d8621e"), "light": Color("#ff8a36"), "text": Color("#ff9a4a"), "look": 0},
 	"hegemony": {"base": Color("#80868f"), "main": Color("#4a7fbf"), "light": Color("#6eb2ff"), "text": Color("#7ab4f0"), "look": 1},
 	"corsair": {"base": Color("#1e1b19"), "main": Color("#9a4a26"), "light": Color("#c0362c"), "text": Color("#d8664a"), "look": 0},
-	"chorus": {"base": Color("#22122b"), "main": Color("#6e3584"), "light": Color("#d4cb3c"), "text": Color("#dcd45a"), "look": 0},
+	"chorus": {"base": Color("#2b2716"), "main": Color("#8a6a2c"), "light": Color("#c4d83e"), "text": Color("#cde05a"), "look": 0},   # round 4: dark olive, ochre, bile yellow-green
 	"ithar": {"base": Color("#d6f2ff"), "main": Color("#a8e6ff"), "light": Color("#e8fcff"), "text": Color("#c4f0ff"), "look": 2},
 	"deathless": {"base": Color("#1b0f26"), "main": Color("#55287a"), "light": Color("#ffe2a0"), "text": Color("#f0d690"), "look": 3},
 }
@@ -23,7 +24,7 @@ const SKIES := {
 	"voidsworn": [Vector3(0.42, 0.14, 0.05), Vector3(0.2, 0.08, 0.1), Vector3(1.0, 0.6, 0.3)],
 	"hegemony": [Vector3(0.1, 0.2, 0.42), Vector3(0.3, 0.38, 0.55), Vector3(0.7, 0.85, 1.0)],
 	"corsair": [Vector3(0.36, 0.12, 0.06), Vector3(0.42, 0.06, 0.06), Vector3(1.0, 0.55, 0.3)],
-	"chorus": [Vector3(0.24, 0.08, 0.32), Vector3(0.42, 0.4, 0.08), Vector3(0.9, 0.88, 0.4)],
+	"chorus": [Vector3(0.2, 0.18, 0.06), Vector3(0.36, 0.42, 0.08), Vector3(0.8, 0.9, 0.35)],
 	"ithar": [Vector3(0.08, 0.28, 0.4), Vector3(0.32, 0.2, 0.52), Vector3(0.8, 1.0, 1.0)],
 	"deathless": [Vector3(0.18, 0.06, 0.3), Vector3(0.32, 0.14, 0.44), Vector3(1.0, 0.86, 0.58)],
 }
@@ -49,9 +50,10 @@ static func text_col(fac) -> Color: return look(fac)["text"]
 
 func _sh(name: String) -> Shader:
 	if not _shaders.has(name):
-		var codes = {"SKY": SH.SKY, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "SUN_CORE": SH.SUN_CORE, "SUN_FIRE": SH.SUN_FIRE, "GLOW": SH.GLOW,
+		var codes = {"SKY": SH.SKY, "STARPTS": SH.STARPTS, "NEB_SHEET": SH.NEB_SHEET, "GLOW": SH.GLOW,
 			"PLANET": SH.PLANET, "ATMO": SH.ATMO, "ROCK": SH.ROCK, "ORBIT": SH.ORBIT, "LANE": SH.LANE, "RING": SH.RING, "CLOUD": SH.CLOUD,
-			"MARKER": SH.MARKER, "HALO": SH.HALO, "TERR": SH.TERR}
+			"HULL": SH.HULL, "SOLAR": SH.SOLAR, "RADIATOR": SH.RADIATOR, "ROCK_HI": SH.ROCK_HI, "CLOUDS": SH.CLOUDS,
+			"MARKER": SH.MARKER, "HALO": SH.HALO, "TERR": SH.TERR, "BH_DISC": SH.BH_DISC, "BH_FRONT": SH.BH_FRONT, "BH_LENS": SH.BH_LENS, "BH_SHADOW": SH.BH_SHADOW}
 		var s = Shader.new(); s.code = codes[name]; _shaders[name] = s
 	return _shaders[name]
 func mat(name: String, params: Dictionary = {}) -> ShaderMaterial:
@@ -161,25 +163,37 @@ func backdrop(parent: Node3D, fac: String, px_scale: float) -> void:
 		parent.add_child(sh)
 
 # ---------------------------------------------------------------- the Hollow Sun
-# A dead black star ringed in slow fire, its glow the only light in the system, a ring of battle debris round it.
+# A black hole ringed by the accretion disc of the dead star (lore round 4), the same look as G4's dead-star board:
+# a shadow with a thin bright photon ring, a tilted disc whose far side the lens bends over and under the shadow, its
+# glow the only warm light in the system, and a battlefield debris ring round it.
 # Returns {"root", "debris"} (the debris turns in map3d's _process).
-func hollow_sun(parent: Node3D, core_r: float = 6.0) -> Dictionary:
+const DISC_TILT := -40.0     # degrees about x: the disc's near side rises toward the camera, close to edge-on, so the lens arcs read
+func hollow_sun(parent: Node3D, core_r: float = 5.0) -> Dictionary:
 	var root = Node3D.new(); root.name = "HollowSun"; root.position = sun_pos; parent.add_child(root)
-	root.add_child(mi(sphere(core_r, 64 if q > 0.5 else 32, 32 if q > 0.5 else 16), mat("SUN_CORE")))
-	var tilt = Node3D.new(); tilt.rotation = Vector3(deg_to_rad(-9.0), 0, deg_to_rad(5.0)); root.add_child(tilt)
-	var r_in = core_r * 1.06; var r_out = core_r * 2.05
-	var fire = mi(arc_mesh((r_in + r_out) * 0.5, r_out - r_in, 0.0, TAU, 160 if q > 0.5 else 80), mat("SUN_FIRE", {"r_in": r_in, "r_out": r_out, "q": q}))
-	fire.extra_cull_margin = r_out; tilt.add_child(fire)
-	# a thinner, fainter outer fire band, slower
-	var fire2 = mi(arc_mesh(r_out * 1.18, r_out * 0.35, 0.0, TAU, 120 if q > 0.5 else 60), mat("SUN_FIRE", {"r_in": r_out * 1.0, "r_out": r_out * 1.36, "q": q, "gain": 0.35}))
-	fire2.rotation.y = 1.3; tilt.add_child(fire2)
-	glow(root, Color(1.0, 0.42, 0.12, 1.0), core_r * 5.2, Vector3.ZERO, 2.4, 0.55)
-	glow(root, Color(0.7, 0.16, 0.05, 1.0), core_r * 13.0, Vector3.ZERO, 3.2, 0.22)
-	var l = OmniLight3D.new(); l.light_color = Color(1.0, 0.6, 0.32); l.light_energy = 5.0; l.omni_range = 150.0; l.omni_attenuation = 0.55
-	l.shadow_enabled = false; root.add_child(l)
+	var cm = StandardMaterial3D.new(); cm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED; cm.albedo_color = Color.BLACK
+	root.add_child(mi(sphere(core_r, 48, 24), cm))   # the shadow writes depth: what passes behind it is hidden
+	var tilt = Node3D.new(); tilt.rotation = Vector3(deg_to_rad(DISC_TILT), 0, deg_to_rad(6.0)); root.add_child(tilt)
+	var r_in = core_r * 1.25; var r_out = core_r * 3.0   # the lens (4.0 core radii) must reach past the disc or its edge folds
+	var dmesh = arc_mesh((r_in + r_out) * 0.5, r_out - r_in, 0.0, TAU, 192 if q > 0.5 else 96)
+	var disc = mi(dmesh, mat("BH_DISC", {"r_in": r_in, "r_out": r_out, "spin": 0.3, "gain": 0.55}))
+	disc.extra_cull_margin = r_out; tilt.add_child(disc)
+	if q > 0.5:
+		var half = core_r * 4.0
+		var lens = mi(quad(1, 1), mat("BH_LENS", {"r_shadow": core_r / half, "r_einstein": core_r * 1.6 / half, "photon": 0.55}))
+		lens.material_override.render_priority = -30   # first among the see-through things: it copies the opaque picture
+		lens.scale = Vector3.ONE * half; lens.extra_cull_margin = half * 4.0; root.add_child(lens)
+	else:
+		var sh = mi(quad(1, 1), mat("BH_SHADOW", {"r_shadow": 1.0 / 1.6}), Vector3.ZERO, Vector3.ONE * core_r * 3.2)
+		sh.material_override.render_priority = 5; root.add_child(sh)
+	var front = mi(dmesh, mat("BH_FRONT", {"r_in": r_in, "r_out": r_out, "spin": 0.3, "hole_center": sun_pos, "gain": 0.55}))
+	front.material_override.render_priority = 10; front.extra_cull_margin = r_out; tilt.add_child(front)
+	glow(root, Color(1.0, 0.45, 0.15, 1.0), r_out * 2.6, Vector3.ZERO, 3.0, 0.1)
+	var l = OmniLight3D.new(); l.light_color = Color(1.0, 0.62, 0.34); l.light_energy = 5.0; l.omni_range = 150.0; l.omni_attenuation = 0.55
+	l.shadow_enabled = q > 0.5; l.shadow_blur = 2.0; l.shadow_bias = 0.08; l.shadow_normal_bias = 1.5   # High: soft shadows from the disc's light
+	l.omni_shadow_mode = OmniLight3D.SHADOW_CUBE; root.add_child(l)
 	# the battlefield debris ring: rock, torn hull plates and girders, some still smouldering
 	var deb = Node3D.new(); deb.name = "debris"; deb.rotation = Vector3(deg_to_rad(-4.0), 0, deg_to_rad(3.0)); root.add_child(deb)
-	var r0 = core_r * 2.3; var r1 = core_r * 3.1
+	var r0 = core_r * 3.0; var r1 = core_r * 3.9
 	var nk = [520, 420, 160] if q > 0.5 else [140, 110, 40]
 	var lib = rocks_lib()
 	for k in lib.size():
@@ -220,10 +234,14 @@ func orbit_arc(parent: Node3D, r: float, a0: float, a1: float, col: Color, w: fl
 func planet(parent: Node3D, pal: Array, radius: float, at: Vector3, with_atmo: bool = true) -> Node3D:
 	var body = Node3D.new(); body.position = at; body.name = "body"; parent.add_child(body)
 	var seg = 64 if q > 0.5 else 32
-	var p = mi(sphere(radius, seg, seg / 2), mat("PLANET", {"a": pal[1], "b": pal[2], "atmo": pal[3], "kind": float(pal[0]), "seed": rng.randf() * 40.0, "q": q}))
+	var p = mi(sphere(radius, seg, seg / 2), mat("PLANET", {"a": pal[1], "b": pal[2], "atmo": pal[3], "kind": float(pal[0]), "seed": rng.randf() * 40.0, "q": q, "sun_pos": sun_pos}))
 	p.name = "spin"; p.rotation = Vector3(deg_to_rad(rng.randf_range(-20, 20)), 0, deg_to_rad(rng.randf_range(-25, 25))); body.add_child(p)
+	if q > 0.5: p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	if int(pal[0]) in [0, 1, 3]:   # a cloud layer drifting over rock, ocean and ice worlds
+		var cl = mi(sphere(radius * 1.025, seg, seg / 2), mat("CLOUDS", {"cover": 0.5 if int(pal[0]) == 1 else 0.28, "seed": rng.randf() * 30.0, "q": q}))
+		cl.rotation = p.rotation; p.add_child(cl); cl.rotation = Vector3.ZERO
 	if with_atmo:
-		body.add_child(mi(sphere(radius * 1.09, seg, seg / 2), mat("ATMO", {"atmo": pal[3], "sun_pos": sun_pos, "gain": 0.6 if int(pal[0]) == 5 else 1.0})))
+		body.add_child(mi(sphere(radius * 1.04, seg, seg / 2), mat("ATMO", {"atmo": pal[3], "sun_pos": sun_pos, "gain": 0.6 if int(pal[0]) == 5 else 1.0})))
 	if int(pal[0]) == 2 and rng.randf() < 0.55:   # rings round some gas giants
 		var rg = mi(arc_mesh(radius * 1.75, radius * 0.9, 0.0, TAU, 96), mat("ORBIT", {"col": Color(pal[1].lerp(Color.WHITE, 0.3), 0.55)}))
 		rg.rotation = Vector3(deg_to_rad(rng.randf_range(12, 28)), 0, deg_to_rad(rng.randf_range(-20, 20))); body.add_child(rg)
@@ -231,7 +249,8 @@ func planet(parent: Node3D, pal: Array, radius: float, at: Vector3, with_atmo: b
 func moon(parent: Node3D, center: Vector3, orbit_r: float, radius: float) -> Node3D:
 	var piv = Node3D.new(); piv.name = "moon"; piv.position = center; piv.rotation = Vector3(deg_to_rad(rng.randf_range(10, 24)), rng.randf() * TAU, 0); parent.add_child(piv)
 	var pal = [5, Color(0.62, 0.6, 0.58), Color(0.3, 0.29, 0.28), Color(0.6, 0.6, 0.65)]
-	var m = mi(sphere(radius, 24, 12), mat("PLANET", {"a": pal[1], "b": pal[2], "atmo": pal[3], "kind": 5.0, "seed": rng.randf() * 40.0, "q": q}), Vector3(orbit_r, 0, 0))
+	var m = mi(sphere(radius, 32, 16), mat("PLANET", {"a": pal[1], "b": pal[2], "atmo": pal[3], "kind": 5.0, "seed": rng.randf() * 40.0, "q": q, "sun_pos": sun_pos}), Vector3(orbit_r, 0, 0))
+	if q > 0.5: m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	piv.add_child(m)
 	piv.add_child(mi(arc_mesh(orbit_r, 0.08, 0.0, TAU, 64), mat("ORBIT", {"col": Color(0.7, 0.78, 0.95, 0.35)})))
 	return piv
