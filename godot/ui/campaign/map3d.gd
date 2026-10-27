@@ -53,6 +53,7 @@ var overlay: Control
 var card: PanelContainer
 var card_text: RichTextLabel
 var quality := "high"         # "high" or "low" (ui.map_quality)
+var backdrop := false         # true: drawn behind another page (no labels, no hover, no input)
 var _sig := ""
 var _nodes := {}              # id -> {n, pos, obj, ring, rmat, mats, top, rival, theta, r}
 var _lanes := {}              # "a>b" -> {a, b, mi, mat, hazard}
@@ -527,6 +528,9 @@ func _process(delta: float) -> void:
 		pt[0].position = p
 		if p.distance_to(nxt) > 0.001: pt[0].look_at(nxt, Vector3.UP); pt[0].rotate_object_local(Vector3.UP, PI * 0.5)
 	if token != null and not _flying: token.position.y = _token_home().y + sin(_t * 1.4) * 0.2
+	overlay.visible = not backdrop
+	if backdrop:
+		card.visible = false; return
 	overlay.queue_redraw()
 	_update_card()
 
@@ -821,7 +825,7 @@ func _clamp_pan() -> void:
 	if _pan_t.length() > lim: _pan_t = _pan_t.normalized() * lim
 	if _uz_t >= 0.999: _pan_t = _pan_t.limit_length(R_OUT * 0.5)
 func _gui_input(e: InputEvent) -> void:
-	if _flying: return
+	if _flying or backdrop: return
 	if e is InputEventMouseMotion:
 		if _drag:
 			var a = _ground(_drag_at); var b = _ground(e.position); _drag_at = e.position

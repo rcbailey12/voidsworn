@@ -246,8 +246,11 @@ func render() -> void:
 	root.visible = not (battle and hide_on_battle and (C.modal_d == null or C.modal_d["kind"] == "retreat"))   # rewards after a fight show over the battle scene
 	bg.color = INK
 	var on_map = pg["kind"] == "map" and use_3d_map and C.RUN != null
-	map3d.visible = on_map; bg.visible = not on_map
-	if on_map: map3d.sync()
+	# in a run, the fleet, shipyard and battle pages sit over the star system, dimmed (R51 panels pass)
+	var behind = (not on_map) and use_3d_map and C.RUN != null and C.RUN.get("map") != null and pg["kind"] in ["fleet", "shipyard", "battle"]
+	map3d.visible = on_map or behind; bg.visible = not on_map
+	if behind: bg.color = Color(INK, 0.86)
+	if map3d.visible: map3d.backdrop = behind; map3d.sync()
 	var body: Control = null
 	match pg["kind"]:
 		"title": body = _title()
