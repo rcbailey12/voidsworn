@@ -19,7 +19,8 @@
   - IN PROGRESS: the Pyre-Barge redesign to match C13s to C16s (R54), the Hegemony naval hull reshape, the V17/V1b gothic peaks, the I16 masts, and the lance-slot fan pattern.
 - Stream B rules: admiral band and faction tune; the PC confirmation set is running.
 - Music: 24 CC0/CC BY tracks in game; CREDITS.md done.
-- Portraits: 24 Nemesis portraits in game, and new-look prompts drafted. Painting is held for lore approval.
+- Portraits: 24 Nemesis portraits in game (godot/portraits/index.json, 24 nemesis entries; files in godot/portraits/nemesis/pool), and new-look prompts drafted. Painting is held for lore approval.
+- Music files: 24 tracks in godot/music/tracks.
 - Story and career: paused for lore approval.
 
 **Lore (R44 to R54).**
@@ -45,7 +46,7 @@
 
 **Muse.**
 - The lore review brief is contrib/opus/briefs/muse_2026-10-27_lore_review.md (round 4, done and verified).
-- The full catch-up audit brief is contrib/opus/briefs/muse_2026-10-27b_full_audit.md.
+- The full catch-up audit brief is contrib/opus/briefs/muse_2026-10-27b_full_audit.md. Result: contrib/muse/reviews/full_audit_2026_10_27.md, verified in contrib/opus/evidence/full_audit_verification_2026_10_27.md (FINDINGS R56).
 
 ## 1. What and where
 
