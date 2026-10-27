@@ -341,7 +341,7 @@ static func buckle_at(P: Vector3, ents: Array) -> Vector3:
 		if d.length_squared() > E.inf2:
 			continue
 		var h := d.dot(E.n)
-		if h < -E.R * 0.6 - E.depth or h > E.R * 0.6 + E.depth:
+		if E.style != S_RAM and (h < -E.R * 0.6 - E.depth or h > E.R * 0.6 + E.depth):
 			continue
 		var lx := d.dot(E.t1)
 		var ly := d.dot(E.t2)
@@ -349,14 +349,28 @@ static func buckle_at(P: Vector3, ents: Array) -> Vector3:
 		var nzv := _nz(P * (4.0 / E.R) + Vector3(E.p[6], E.p[7], E.p[0]))
 		match E.kind:
 			K_DENT:
+				if E.style == S_RAM:
+					# r8: the bow crumples like a concertina. The falloff is by the full distance (a pointed bow runs back
+					# along the hit normal, so the flat-dent band cut it off in a step); rings of folds run round the nose,
+					# in and out from its axis; the tip is shoved back and kinked to one side. (r7: only a uniform push
+					# back along the bow, which left the nose smooth and merely shorter.)
+					var u3 := d.length() / E.R
+					if u3 >= 1.0:
+						continue
+					var f3 := 1.0 - u3 * u3
+					var rad := d - E.n * h
+					var rl := rad.length()
+					if rl > 1e-5:
+						out += (rad / rl) * E.depth * 0.55 * sin(h / E.R * 10.0 + nzv * 1.8) * f3 * minf(rl / (E.R * 0.12), 1.0)
+					out -= E.n * E.depth * f3 * f3 * (0.75 + 0.25 * nzv)
+					out += E.t1 * E.depth * 0.6 * f3 * f3 * f3 * (0.5 + 0.5 * sin(E.p[3]))
+					out -= E.n * E.depth * 0.2 * sin(lx / E.R * 11.0 + nzv * 1.5) * f3
+					continue
 				var u := r / E.R
 				if u >= 1.0:
 					continue
 				var f := 1.0 - u * u
 				var amp := E.depth * (f * f * (0.65 + 0.35 * nzv) + 0.22 * sin(u * 13.0 + nzv * 3.0) * (1.0 - u))
-				if E.style == S_RAM:
-					# folds across the bow: the plating crumples like a concertina
-					amp += E.depth * 0.45 * sin(lx / E.R * 11.0 + nzv * 1.5) * f
 				out -= E.n * amp
 			K_HOLE:
 				var e := maxf(E.edge(lx, ly), 0.0)
@@ -1658,7 +1672,7 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 		var hm: float = minf(float(HALO_MIN.get(e.style, 0.0)) * wk * sqrt(g), L * HALO_MAX_L)
 		if hm > 0.0:
 			e.halo = maxf(hm, e.ov * 0.9)
-			e.ov = maxf(e.ov, e.halo * (1.0 if e.kind != K_SLOT else 0.8))
+			e.ov = maxf(e.ov, e.halo * (1.15 if e.kind != K_SLOT else 0.9))  # the halo's noisy rim reaches 1.15 halo
 		e.look = look
 		e.wt = w
 		e.ldir = dir

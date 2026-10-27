@@ -1115,13 +1115,23 @@ void fragment() {
 		} else if (style == 7) {
 			// flak: salt and pepper, dark pits and bright chipped-metal specks, so the rash reads on light and dark hulls
 			// alike (r6: a mid-grey rash vanished on the grey Voidsworn deck)
-			float cellv = h21(floor(q / R * 9.0) + seed);
-			float pit = step(0.55, cellv) * step(cellv, 0.85);
-			float chip = step(0.85, cellv);
+			// r8: round pocks of mixed sizes scattered off a jittered grid (r7 drew the grid cells themselves: square
+			// pixels, a digital-camouflage look)
+			vec2 fg = q / R * 5.5;
+			vec2 fi = floor(fg);
+			vec2 ff = fract(fg) - 0.5;
+			float cellv = h21(fi + seed);
+			vec2 jo = (vec2(h21(fi + seed + 3.7), h21(fi + seed + 8.1)) - 0.5) * 0.45;
+			float rr = length(ff - jo) * (0.85 + 0.3 * vnoise(q / R * 40.0 + seed));
+			float pr = 0.07 + 0.3 * pow(h21(fi + seed + 5.9), 2.0);
+			float spot = smoothstep(pr, pr * 0.5, rr);
+			float pit = step(0.35, cellv) * step(cellv, 0.85) * spot;
+			float chip = step(0.85, cellv) * spot;
 			hc = vec3(0.07, 0.068, 0.066);
 			hc = mix(hc, vec3(0.012), pit);
 			hc = mix(hc, vec3(0.42, 0.41, 0.4), chip);
-			ha *= 0.9;
+			// the field between the pocks is only a light grime, so the specks carry it
+			ha *= mix(0.3, 0.95, max(pit, chip));
 			hr = mix(0.7, 0.35, chip);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
