@@ -69,8 +69,53 @@ void fragment() {
 		vec3 toFrag = vW - CAMERA_POSITION_WORLD;
 		if (length(toFrag) > length(toHole)) { discard; }
 	}
+	// r18 (Muse audit B4.5, flat in close-up): fine filaments wound along the flow and dark dust lanes break the disc
+	// up, and the gas looks thicker where it is seen edge-on (a slab of glowing gas, not a painted plate)
+	float rr = length(q);
+	float aa = atan(q.y, q.x) + scene_t * spin / pow(max(rr / r_in, 1.0), 1.5);
+	float fil = wfbm(vec2(aa * 22.0 + log(rr) * 30.0, rr * 9.0));
+	float lane = smoothstep(0.62, 0.8, wfbm(vec2(aa * 4.0 - log(rr) * 9.0, rr * 2.2 + 7.0)));
+	c *= (0.85 + 0.3 * fil) * (1.0 - 0.5 * lane);
+	vec3 Nw = normalize((MODEL_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+	float graz = 1.0 - abs(dot(Nw, V));
+	c *= 1.0 + 0.6 * graz * graz;
 	if (dens < 0.035) { discard; }
 	ALBEDO = c * dens * gain;
+}
+"""
+
+# r18: a haze of thinner glowing gas just above and below the disc (two annuli), drawn additively, stronger when seen
+# edge-on, turning at its own rate, so the disc has thickness and depth up close.
+const DISC_HAZE := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+global uniform float scene_t;
+""" + NOISE + """
+uniform float r_in = 1.0;
+uniform float r_out = 3.0;
+uniform float spin = 0.25;
+uniform float gain = 0.35;
+uniform float seed = 0.0;
+uniform vec3 hot = vec3(1.0, 0.85, 0.65);
+uniform vec3 cool = vec3(0.6, 0.16, 0.05);
+varying vec3 vL;
+varying vec3 vW;
+void vertex() { vL = VERTEX; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	vec2 q = vL.xz;
+	float r = length(q);
+	float u = clamp((r - r_in) / (r_out - r_in), 0.0, 1.0);
+	float a = atan(q.y, q.x) + scene_t * spin * 0.8 / pow(max(r / r_in, 1.0), 1.5);
+	float n = wfbm(vec2(a * 2.5 + log(r) * 5.0 + seed, r * 1.2 + seed));
+	float puff = smoothstep(0.35, 0.8, n);
+	float dens = smoothstep(0.0, 0.15, u) * (1.0 - smoothstep(0.5, 1.0, u)) * puff;
+	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
+	vec3 Nw = normalize((MODEL_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
+	float graz = 1.0 - abs(dot(Nw, V));
+	vec3 c = mix(hot, cool, smoothstep(0.1, 0.9, u)) * (2.0 - 1.5 * u);
+	vec3 tang = normalize((MODEL_MATRIX * vec4(-q.y, 0.0, q.x, 0.0)).xyz);
+	c *= 1.0 + 0.6 * dot(tang, V);
+	ALBEDO = c * dens * gain * (0.35 + 0.65 * graz);
 }
 """
 

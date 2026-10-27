@@ -11,6 +11,9 @@ extends Node
 #   --res WxH              render size (default 1920x1080; 3840x2160 for 4K)
 #   --quality max|high|low --tonemap agx|aces --reduce-flashing --no-fx --no-world --no-physics --only a,b --seconds S
 #   --lo                   force the game-detail hulls even where max-detail 8K flagships exist
+#   --fleet N              (with --bench) N ships in all: the six flagships plus line ships of every class, a running
+#                          battle of random volleys and three deaths, seen from the battle camera (170 units, fov 45);
+#                          the 20-ship performance record (Muse audit B4.6)
 
 const FX := preload("res://fx/fx.gd")
 const LOOK := preload("res://render/look.gd")
@@ -61,6 +64,7 @@ var worst_ms := 0.0
 var holding := false
 var moments := {}
 var waiting: Array = []      # stills waiting for their moment: [name, file, eye, look, fov, offset]
+var fleet: Array = []        # the --fleet bench's line ships
 
 
 func _ready() -> void:
@@ -98,6 +102,10 @@ func _ready() -> void:
 			for e in sv.engines:
 				(e as Node3D).visible = false   # G2's placeholder engine glows give way to the fx engines
 			fx.set_engine(s["id"], 1.6)   # the gallery fleet is under way (a parked ship only keeps a pilot glow, r13)
+		for f in fleet:
+			var sv2: Node3D = ships[f["id"]]
+			fx.add_ship(f["id"], sv2, {"faction": f["fac"], "cls": f["cls"], "size": f["size"], "meshes": sv2.meshes})
+			fx.set_engine(f["id"], 1.6)
 		# a squadron for the strike run: a small wing beside the Voidsworn
 		_events()
 	print("[gallery] mode=%s res=%dx%d quality=%s renderer=%s adapter=%s" % [mode, res.x, res.y, quality,
@@ -200,6 +208,28 @@ func _build_ships() -> void:
 				if mat is BaseMaterial3D:
 					mi.set_surface_override_material(si, LOOK.hull(mat, s["fac"], true))
 		ships[s["id"]] = sv
+	var n_fleet := int(args.get("fleet", "0"))
+	for i in maxi(0, n_fleet - FLAGS.size()):
+		var f := _fleet_ship(i)
+		var sv: Node3D = SV.new()
+		sv.name = f["id"]
+		world.add_child(sv)
+		sv.setup({"id": f["id"], "fac": f["fac"], "cls": f["cls"], "facing": 0 if f["side"] == 0 else 3, "hp": 100, "maxHp": 100}, f["pos"], not args.has("lo"))
+		ships[f["id"]] = sv
+		fleet.append(f)
+
+
+# The line ships of the --fleet bench: classes in turn, the near side the flagships V H C's factions, the far side B I D's.
+func _fleet_ship(i: int) -> Dictionary:
+	var classes := ["Frigate", "Destroyer", "Cruiser", "Battleship", "Carrier", "Frigate", "Destroyer"]
+	var sizes := {"Frigate": 0.55, "Destroyer": 0.7, "Cruiser": 0.85, "Battleship": 1.0, "Carrier": 0.95}
+	var side := i % 2
+	var k := i / 2
+	var facs := ["voidsworn", "hegemony", "corsair"] if side == 0 else ["chorus", "ithar", "deathless"]
+	var cls: String = classes[i % classes.size()]
+	var x := -120.0 + k * 36.0
+	var z := (70.0 + (k % 2) * 24.0) * (1.0 if side == 0 else -1.0)
+	return {"id": "F%d" % (i + 7), "fac": facs[k % 3], "cls": cls, "size": sizes[cls], "side": side, "pos": Vector3(x, 0, z)}
 
 
 # ---------------------------------------------------------------- the reel
@@ -288,7 +318,51 @@ func _events() -> void:
 		_mark("death_big", fx.now + td - 0.6))
 	_ev(14.5, func(): _mark("death_flay", fx.now + fx.death("D", "flay") - 0.6))
 	_ev(16.5, func(): _mark("death_cut", fx.now + fx.death("H", "cut") - 0.6))
+	if not fleet.is_empty():
+		_fleet_events()
 	events.sort_custom(func(a, b): return float(a[0]) < float(b[0]))
+
+
+# The --fleet bench's running battle: a random volley every 0.3 s between the two sides, every look in the reel, and three
+# line ships die along the way (seeded, so every run plays the same battle).
+func _fleet_events() -> void:
+	var r := RandomNumberGenerator.new()
+	r.seed = 2026
+	var side_a: Array = ["V", "H", "C"]
+	var side_b: Array = ["B", "I", "D"]
+	for f in fleet:
+		(side_a if f["side"] == 0 else side_b).append(f["id"])
+	var looks := [["macro", "battery", "hbattery"], ["plasma", "battery", "hturbo"], ["lance", "lance", "lance"], ["gauss", "gauss", "gauss"],
+		["torp", "torp", "torp"], ["flak", "flak", "flak"], ["spine", "bio", "bioplasma"], ["ion", "lance", "ion"], ["auto", "battery", "autocannon"],
+		["rockets", "torp", "torp"], ["prism", "battery", "shard"], ["las", "battery", "turret"]]
+	var dead := {}
+	var t := 0.5
+	while t < 40.0:
+		var from_a := r.randf() < 0.5
+		var att: String = (side_a if from_a else side_b)[r.randi() % (side_a if from_a else side_b).size()]
+		var tgt: String = (side_b if from_a else side_a)[r.randi() % (side_b if from_a else side_a).size()]
+		var lk: Array = looks[r.randi() % looks.size()]
+		var shield := r.randf() < 0.35
+		var nsh := 1 + r.randi() % 3
+		var shots := []
+		var hits := []
+		for k in nsh:
+			shots.append(true)
+			hits.append(_hit(shield, ["prow", "mid", "eng"][r.randi() % 3]))
+		var a_id := att
+		var t_id := tgt
+		var lk0: String = lk[0]
+		var lk1: String = lk[1]
+		var lk2: String = lk[2]
+		_ev(t, func():
+			if fx.ships.has(a_id) and fx.ships.has(t_id) and not fx.ships[a_id].dead and not fx.ships[t_id].dead:
+				fx.volley(a_id, lk1, t_id, {"weapon_id": lk2, "shots": shots, "hits": hits}))
+		t += 0.3
+	for k in 3:
+		var did: String = fleet[k * 3]["id"]
+		_ev(8.0 + k * 7.0, func():
+			if fx.ships.has(did) and not fx.ships[did].dead:
+				fx.death(did, ["big", "flay", "cut"][k]))
 
 
 func _unit(hp: float, burning: bool, eng_broken := false) -> Dictionary:
@@ -360,6 +434,9 @@ func _shot_list() -> Array:
 	var D := _ship_c("D")
 	L.append([0.8, "g01_overview_idle.png", Vector3(0, 78, 150), Vector3(0, -6, 0), 40.0, 0.0])
 	L.append([0.8, "g02_engines_close.png", V + Vector3(-42, 14, 26), V + Vector3(-8, 0, 0), 38.0, 0.0])
+	# the dead star close up (Muse audit B4.5: the disc read flat close up)
+	var ds := Vector3(-130, -26, -165)
+	L.append([0.8, "g01b_dead_star_close.png", ds + Vector3(40, 22, 62), ds, 40.0, 0.0])
 	var s_g03 := _side(V, B, 0.55, 70.0, 26.0)
 	L.append(["macro", "g03_macro_broadside.png", s_g03[0], s_g03[1], 42.0, 0.05])
 	var s_g04 := _side(I, H, 0.75, 50.0, 18.0)
@@ -511,7 +588,12 @@ func _capture(path: String) -> void:
 
 
 func _process_bench() -> void:
-	_set_cam("orbit", clock)
+	if fleet.is_empty():
+		_set_cam("orbit", clock)
+	else:
+		# the battle camera: 170 units out, fov 45, turning slowly round the board
+		var a := deg_to_rad(180.0 + 40.0 * sin(clock * 0.08))
+		_cam_at(Vector3(sin(a) * 105.0, 134.0, cos(a) * 105.0), Vector3(0, 0, 0), 45.0)
 	var now := Time.get_ticks_usec()
 	if clock < warm:
 		bench_last = now
@@ -551,7 +633,9 @@ func _finish_bench() -> void:
 		"tonemap": String(args.get("tonemap", LOOK.TONEMAP)), "width": res.x, "height": res.y, "frames": n,
 		"avg_ms": snappedf(tot / maxf(n, 1), 0.001), "p99_ms": snappedf(worst, 0.001), "max_ms": snappedf(s[n - 1] if n > 0 else 0.0, 0.001),
 		"gpu_ms": snappedf(gpu_sum / maxf(gpu_n, 1), 0.001), "particles": fx.particles_emitted() if fx != null else 0,
-		"adapter": RenderingServer.get_video_adapter_name(), "worst_frame_at": snappedf(worst_t, 0.01), "notes": "; ".join(notes)}
+		"adapter": RenderingServer.get_video_adapter_name(), "worst_frame_at": snappedf(worst_t, 0.01), "notes": "; ".join(notes),
+		"renderer": RenderingServer.get_current_rendering_method(), "ships": ships.size(),
+		"fps_avg": snappedf(1000.0 / maxf(tot / maxf(n, 1), 0.001), 0.1), "fps_1pct_low": snappedf(1000.0 / maxf(worst, 0.001), 0.1)}
 	for m in pc0:
 		out["pipeline_compiles_" + String(m).to_lower()] = Performance.get_monitor(Performance.get("PIPELINE_COMPILATIONS_" + m)) - float(pc0[m])
 	var path := _abs(String(args["bench"]))

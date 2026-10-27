@@ -216,6 +216,23 @@ func dead_star(c: Vector3, s: float) -> void:
 	disc.material_override = dm
 	disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	tilt.add_child(disc)
+	# r18: thin glowing haze just above and below the disc, so it has thickness up close (Muse audit B4.5)
+	if quality != "low":
+		var hsh := Shader.new()
+		hsh.code = WS.DISC_HAZE
+		for k in 2:
+			var hz := MeshInstance3D.new()
+			hz.mesh = _annulus(Rsh * 1.15, Rsh * 4.2, 128, 10)
+			var hm := ShaderMaterial.new()
+			hm.shader = hsh
+			hm.set_shader_parameter("r_in", Rsh * 1.15)
+			hm.set_shader_parameter("r_out", Rsh * 4.2)
+			hm.set_shader_parameter("spin", 0.35)
+			hm.set_shader_parameter("seed", 3.7 * float(k + 1))
+			hz.material_override = hm
+			hz.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			hz.position = Vector3(0.0, Rsh * (0.07 if k == 0 else -0.07), 0.0)
+			tilt.add_child(hz)
 	# the lens over everything behind the hole (max and high)
 	if quality != "low":
 		var lens := MeshInstance3D.new()

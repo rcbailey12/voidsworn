@@ -1,5 +1,6 @@
 {
   "_doc": "Per-faction colours and styles for effects, hulls and backdrops (G4). Linear RGB. Read by fx/faction_look.gd. Change a faction's look here, not in code. See fx/API.md section 15.",
+  "_fields": "damage_glow is used (fire and lit conduits inside hull damage, the stage glow and the hole lights); since r18 it differs by faction where the look is settled: Voidsworn orange, Hegemony hotter white-gold, Corsair a dirtier red, Chorus bio green. Ithar and Deathless keep the default orange until Ryan signs off their new lore looks. accent and shield_edge are wired in code (an engine corona; a shield rim colour or rainbow) but deliberately null for every faction: they are reserved for the Deathless white-gold corona and the Ithar rainbow rim, waiting on that sign-off.",
   "voidsworn": {
     "weapon": [1.0, 0.45, 0.15], "shield": [1.0, 0.46, 0.16], "engine": [1.0, 0.50, 0.16],
     "shield_style": 0, "trail": 0, "shielded": true, "engine_extra": "none",
@@ -10,14 +11,14 @@
   "hegemony": {
     "weapon": [0.55, 0.82, 1.0], "shield": [0.38, 0.68, 1.0], "engine": [0.45, 0.72, 1.0],
     "shield_style": 1, "trail": 0, "shielded": true, "engine_extra": "none",
-    "damage_glow": [1.0, 0.45, 0.12], "hull_fix": [0.08, 0.2, 1.0],
+    "damage_glow": [1.0, 0.72, 0.38], "hull_fix": [0.08, 0.2, 1.0],
     "nebula": [[0.08, 0.2, 0.42], [0.22, 0.42, 0.72], [0.85, 0.93, 1.0]],
     "accent": null, "shield_edge": null
   },
   "corsair": {
     "weapon": [0.95, 0.22, 0.10], "shield": [0.85, 0.16, 0.10], "engine": [1.0, 0.38, 0.16],
     "shield_style": 2, "trail": 1, "shielded": true, "engine_extra": "soot",
-    "damage_glow": [1.0, 0.45, 0.12], "hull_fix": [0.15, 0.3, 1.0],
+    "damage_glow": [1.0, 0.3, 0.07], "hull_fix": [0.15, 0.3, 1.0],
     "nebula": [[0.32, 0.12, 0.06], [0.8, 0.32, 0.1], [1.0, 0.74, 0.34]],
     "accent": null, "shield_edge": null
   },

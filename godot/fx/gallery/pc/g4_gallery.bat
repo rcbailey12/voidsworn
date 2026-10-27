@@ -46,6 +46,10 @@ set "PROBE_SIZE=0.55"
 set "PROBE_OUT=%OUT%\marks_frigate"
 if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
 call tools\pc\tmo.bat 900 "%G%" --path "%P%" --resolution 1920x1080 --script res://fx/test/fx_marks_probe.gd > "%OUT%\marks_frigate_log.txt" 2>&1
+rem ... and the same frigate on the Compatibility renderer (safe mode), to show what marks it draws
+set "PROBE_OUT=%OUT%\marks_frigate_compat"
+if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
+call tools\pc\tmo.bat 900 "%G%" --path "%P%" --rendering-driver opengl3 --resolution 1920x1080 --script res://fx/test/fx_marks_probe.gd > "%OUT%\marks_frigate_compat_log.txt" 2>&1
 set "PROBE_SIZE="
 rem 1d. hit reactions (R50) per weapon weight on a frigate and a super-dreadnought: numbers, a per-frame trace, a strip of
 rem stills per hit, and 30 fps JPEG clips of the heavy hits (made into a video in the sandbox)
@@ -59,14 +63,15 @@ if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
 set "PROBE_CLIP=1"
 set "PROBE_STILLS=0"
 set "PROBE_ONLY=macro,gauss,torp,ram"
-call tools\pc\tmo.bat 900 "%G%" --path "%P%" --resolution 1920x1080 --script res://fx/test/fx_react_probe.gd > "%OUT%\react_clips_log.txt" 2>&1
+rem (r18: react clips off to keep the job under 20 minutes; set G4_CLIPS=1 to film them)
+if "%G4_CLIPS%"=="1" call tools\pc\tmo.bat 900 "%G%" --path "%P%" --resolution 1920x1080 --script res://fx/test/fx_react_probe.gd > "%OUT%\react_clips_log.txt" 2>&1
 set "PROBE_CLIP="
 set "PROBE_STILLS="
 set "PROBE_ONLY="
 set "PROBE_W=1920"
 set "PROBE_H=1080"
 rem pack each clip's frames into one zip (fewer files to fetch)
-for /d %%D in ("%OUT%\react_clips\clip_*") do powershell -NoProfile -Command "Compress-Archive -Path '%%D\*' -DestinationPath '%%D.zip' -Force"
+if "%G4_CLIPS%"=="1" for /d %%D in ("%OUT%\react_clips\clip_*") do powershell -NoProfile -Command "Compress-Archive -Path '%%D\*' -DestinationPath '%%D.zip' -Force"
 rem 1f. the worker cost of the hull rebuild on the 8K hulls (headless): each mark alone, then every section at stage 4
 set "PROBE_FAC=corsair"
 set "PROBE_CLS=Battle-barge"
@@ -85,9 +90,13 @@ rem 3. reduce flashing: the same moments with the option on
 call tools\pc\tmo.bat 900 "%G%" --path "%P%" --fixed-fps 60 --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --shots "%OUT%\shots_calm" --res 3840x2160 --quality max --reduce-flashing --only g03,g09,g13_,g21_ > "%OUT%\shots_calm_log.txt" 2>&1
 rem 4. frame times at 4K: everything, without effects, and high quality (the ACES, no-world, no-physics and 1440p
 rem runs are in r4)
+rem 20 ships, full effects, a running battle from the battle camera (Muse audit B4.6): main renderer at 1080p and 4K, and the
+rem Compatibility renderer (safe mode) at 1080p
+call tools\pc\tmo.bat 600 "%G%" --path "%P%" --disable-vsync --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --bench "%OUT%\bench20_1080_main.json" --res 1920x1080 --quality max --fleet 20 --seconds 30 > "%OUT%\bench20_1080_main_log.txt" 2>&1
+call tools\pc\tmo.bat 600 "%G%" --path "%P%" --disable-vsync --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --bench "%OUT%\bench20_4k_main.json" --res 3840x2160 --quality max --fleet 20 --seconds 30 > "%OUT%\bench20_4k_main_log.txt" 2>&1
+call tools\pc\tmo.bat 600 "%G%" --path "%P%" --rendering-driver opengl3 --disable-vsync --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --bench "%OUT%\bench20_1080_compat.json" --res 1920x1080 --quality max --fleet 20 --seconds 30 > "%OUT%\bench20_1080_compat_log.txt" 2>&1
 call tools\pc\tmo.bat 900 "%G%" --path "%P%" --disable-vsync --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --bench "%OUT%\bench_4k_max.json" --res 3840x2160 --quality max > "%OUT%\bench_4k_max_log.txt" 2>&1
-call tools\pc\tmo.bat 900 "%G%" --path "%P%" --disable-vsync --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --bench "%OUT%\bench_4k_nofx.json" --res 3840x2160 --quality max --no-fx > "%OUT%\bench_4k_nofx_log.txt" 2>&1
-call tools\pc\tmo.bat 900 "%G%" --path "%P%" --disable-vsync --resolution 1920x1080 res://fx/gallery/gallery.tscn -- --bench "%OUT%\bench_4k_high.json" --res 3840x2160 --quality high > "%OUT%\bench_4k_high_log.txt" 2>&1
+rem (r18: the nofx and high 4K benches dropped to keep the job under 20 minutes; the 20-ship benches took their place)
 echo [g4] done
 dir /b "%OUT%"
 exit /b 0
