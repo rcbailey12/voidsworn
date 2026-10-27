@@ -81,10 +81,10 @@ const HULLS = {
   c_hulk:{n:'Corsair hulk-carrier',cls:'Carrier',fac:'corsair',size:.86,cp:4,hp:170,sh:16,rg:6,ar:.2,sp:2,tn:1,ev:0,w:[['turret','T'],['turret','T']],ab:'launch',hangar:2},
   c_boss:{n:"Warlord's Pyre-Barge",cls:'Battle-barge',fac:'corsair',size:1.22,cp:10,hp:600,sh:30,rg:8,ar:.25,sp:2,tn:1,ev:0,w:[['scatter','P'],['scatter','S'],['htorp','F'],['flak','T']],ab:'launch',hangar:2,boss:true},
   // ---- The Chorus (bio-swarm)
-  b_drone:{n:'Chorus drone-spawn',cls:'Frigate',fac:'chorus',size:.48,cp:1,hp:46,sh:0,rg:0,ar:.05,sp:5,tn:3,ev:15,w:[['tendril','T']],ab:'regrow',regen:5},
-  b_spitter:{n:'Chorus spitter',cls:'Destroyer',fac:'chorus',size:.6,cp:2,hp:82,sh:0,rg:0,ar:.1,sp:4,tn:2,ev:8,w:[['bioplasma','T'],['bioplasma','F']],ab:'regrow',regen:6},
-  b_razor:{n:'Chorus razorfiend',cls:'Cruiser',fac:'chorus',size:.76,cp:3,hp:150,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:4,w:[['tendril','T'],['bioplasma','F']],ab:'frenzy',regen:9},
-  b_brood:{n:'Chorus brood-mother',cls:'Carrier',fac:'chorus',size:.9,cp:5,hp:200,sh:0,rg:0,ar:.2,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['spores','T']],ab:'launch',hangar:3,regen:10},
+  b_drone:{n:'Chorus drone-spawn',cls:'Frigate',fac:'chorus',size:.48,cp:1,hp:46,sh:0,rg:0,ar:.05,sp:5,tn:3,ev:15,w:[['tendril','T']],ab:'regrow',regen:4},
+  b_spitter:{n:'Chorus spitter',cls:'Destroyer',fac:'chorus',size:.6,cp:2,hp:82,sh:0,rg:0,ar:.1,sp:4,tn:2,ev:8,w:[['bioplasma','T'],['bioplasma','F']],ab:'regrow',regen:5},
+  b_razor:{n:'Chorus razorfiend',cls:'Cruiser',fac:'chorus',size:.76,cp:3,hp:150,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:4,w:[['tendril','T'],['bioplasma','F']],ab:'frenzy',regen:7},
+  b_brood:{n:'Chorus brood-mother',cls:'Carrier',fac:'chorus',size:.9,cp:5,hp:200,sh:0,rg:0,ar:.2,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['spores','T']],ab:'launch',hangar:3,regen:8},
   b_boss:{n:'Hive Leviathan',cls:'Bio-titan',fac:'chorus',size:1.3,cp:12,hp:650,sh:0,rg:0,ar:.25,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['bioplasma','F'],['tendril','T'],['spores','T']],ab:'launch',hangar:3,regen:20,boss:true},
   // ---- The Ithar (elder race)
   i_wisp:{n:'Ithar wisp',cls:'Frigate',fac:'ithar',size:.46,cp:1,hp:30,sh:12,rg:6,ar:0,sp:7,tn:3,ev:28,w:[['shard','F']],ab:'blink'},
@@ -101,11 +101,11 @@ const HULLS = {
 
 // v50 drives: how each faction bends the thruster rules (battle.js MOVE_BASE). n/d show in the ship panel and codex.
 const MOVE_RULES={
-  voidsworn:{rake:.3,n:'Broadside doctrine',d:'Port and starboard guns hit 30% harder after moving 2+ hexes (others get 10%).'}, // B3 pass 2 tuning: was 20%
+  voidsworn:{rake:.4,n:'Broadside doctrine',d:'Port and starboard guns hit 40% harder after moving 2+ hexes (others get 10%).'}, // pass 3 tuning: .3 to .4 (pass 2: .2 to .3)
   hegemony:{rev:1,n:'Retro thrusters',d:'Backing off one hex costs 1 movement instead of 2.'},
   corsair:{slip:1,n:'Bolted burners',d:'Sideslips cost 1 movement instead of 2.'},
   chorus:{pivot:1,n:'Living hull',d:'The first turn each round costs no movement.'},
-  ithar:{evadeAt:2,evade:14,n:'Fan sails',d:'After moving 2+ hexes, enemies get \u221214 to hit it (others need 3 hexes for \u22125).'}, // B3 pass 2 tuning: was 10
+  ithar:{evadeAt:2,evade:18,n:'Fan sails',d:'After moving 2+ hexes, enemies get \u221218 to hit it (others need 3 hexes for \u22125).'}, // pass 3 tuning: 14 to 18 (pass 2: 10 to 14)
   deathless:{over:0,n:'Phase drive',d:'Passes through rocks, wrecks and enemy ships at no extra cost.'}};
 const FACTIONS = {
   voidsworn:{n:'Voidsworn Crusade',boss:'ascendant',roster:['warden','harrow','penitent','reliquary','cathedral'],hull:'#4a4440',trim:'#c8501f',glow:'#ff7a2a',style:'gothic',blurb:'Gothic crusader battleships. Heavy armor, lance batteries and broadsides that hit like a cathedral falling.'},
@@ -198,10 +198,10 @@ const RELICS = {
   armourweave:{n:'Adamant armourweave',d:'+6% armor across the fleet.',fx:{armor:.06}},
 };
 
-// Admiral band (stream B, Oct 27): Kassar, Reyes, Maren, Grax, Matriarch, Mending, Nekhet, then Malek and Ashgrove (and Mending's fleet) retuned so every admiral sits about 55 to 85% against a sector 1 flagship (bossmatrix); see port_notes.md.
+// Admiral band (stream B, Oct 27): Kassar, Reyes, Maren, Grax, Matriarch, Mending, Nekhet, then Malek, Ashgrove, Sable (and Mending's fleet) retuned so every admiral sits about 55 to 85% against a sector 1 flagship (bossmatrix); see port_notes.md.
 const ADMIRALS = {
   vex:{n:'Admiral Castellan Vex',doc:'Line of battle',d:'Broadside weapons deal +15% damage.',fx:{broadPct:.15},start:['penitent','harrow','warden'],cost:0},
-  malek:{n:'Inquisitor-Captain Malek Draven',doc:'Hunter-killer',d:'Torpedoes reload a turn faster. +35% damage on rear-arc hits.',fx:{torpCd:1,rearPct:.35},start:['harrow','harrow','warden','warden'],cost:30},
+  malek:{n:'Inquisitor-Captain Malek Draven',doc:'Hunter-killer',d:'Torpedoes reload a turn faster. +50% damage on rear-arc hits.',fx:{torpCd:1,rearPct:.5},start:['harrow','harrow','warden','warden'],cost:30},
   ashgrove:{n:'Commodore Sera Ashgrove',doc:'Carrier doctrine',d:'Squadrons deal +40% damage and carriers hold +1 wing.',fx:{sqPct:.4,hangar:1,sqHp:.25},start:['reliquary','harrow','warden'],cost:45},
   thale:{n:'High Admiral Oryn Thale',doc:'Iron doctrine',d:'All ships +15% hull and +10% shields.',fx:{hpPct:.15,shPct:.1},start:['cathedral','warden'],cost:80},
 };
@@ -217,7 +217,7 @@ Object.assign(ADMIRALS,{
   reyes:{fac:'hegemony',n:'Fleet Marshal Corin Reyes',doc:'Strike group',d:'Squadrons deal +10% damage and star cruisers hold +1 wing.',fx:{sqPct:.1,hangar:1,sqHp:.25},start:['h_vanguard','h_picket','h_picket'],cost:45,cmd:{id:'scramble',n:'Launch the strike group',d:'Every carrier launches an extra wing (even past its hangar limit), then all squadrons strike again at once with +50% damage this round.'}},
   maren:{fac:'hegemony',n:'Line Admiral Oskar Maren',doc:'Armored column',d:'All ships +15% hull and +10% shields.',fx:{hpPct:.15,shPct:.1},start:['h_dominion','h_picket'],cost:80,cmd:{id:'iron',n:'Shield wall protocol',d:'All shields refill and your ships take 40% less hull damage this round.'}},
   grax:{fac:'corsair',n:'Warlord Grax Ironjaw',doc:'Ram and board',d:'+1 speed for every ship and +10% damage.',fx:{speed:1,dmgPct:.1},start:['c_marauder','c_reaver','c_reaver'],cost:0,cmd:{id:'surge',n:'Full burn',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
-  sable:{fac:'corsair',n:'Sable Venn, the Smiling Knife',doc:'Knife work',d:'+20% damage on rear-arc hits and +10% crit chance.',fx:{rearPct:.2,crit:10},start:['c_reaver','c_reaver','c_raider','c_raider'],cost:30,cmd:{id:'hunt',n:'Knife in the dark',d:'Torpedoes reload at once and every ship deals +30% damage this round.'}},
+  sable:{fac:'corsair',n:'Sable Venn, the Smiling Knife',doc:'Knife work',d:'+50% damage on rear-arc hits and +10% crit chance.',fx:{rearPct:.5,crit:10},start:['c_reaver','c_reaver','c_raider','c_raider'],cost:30,cmd:{id:'hunt',n:'Knife in the dark',d:'Torpedoes reload at once and every ship deals +30% damage this round.'}},
   mott:{fac:'corsair',n:'Old Mott Brannigan',doc:'Junkyard carriers',d:'Squadrons deal +25% damage and hulks hold +1 wing.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['c_hulk','c_reaver'],cost:45,cmd:{id:'scramble',n:'Release the swarm',d:'Every carrier launches an extra wing (even past its hangar limit), then all squadrons strike again at once with +50% damage this round.'}},
   vesh:{fac:'corsair',n:'Vesh the Collector',doc:'Scrap armor',d:'Ships patch 5% of their hull each round and have +10% armor.',fx:{hullRegenPct:.05,armor:.1},start:['c_hulk','c_reaver'],cost:80,cmd:{id:'restore',n:'Patch and pray',d:'Every ship repairs 25% of its hull and patches damaged sections, even destroyed ones.'}},
   matriarch:{fac:'chorus',n:'The Matriarch of Nine Throats',doc:'Brood swarm',d:'Spore swarms deal +25% damage and broods hold +1 swarm.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['b_brood','b_drone','b_drone'],cost:0,cmd:{id:'scramble',n:'Spawning surge',d:'Every brood releases an extra swarm (even past its limit), then all swarms strike again at once with +50% damage this round.'}},
@@ -561,12 +561,12 @@ const HULL_VARIANTS={
 // R41 arc unlocks (story helper draft godot/story/unlocks.md, Oct 26): one sidegrade per faction, earned by finishing that faction's story arc
 // (its Nemesis's last fight), never sold for renown (cost 0, arc field). Numbers sim-checked against the base hulls in stream B.
 Object.assign(HULL_VARIANTS,{
-  vs_penitent_l:{base:'penitent',arc:'voidsworn',n:'Penitent lantern-cruiser',d:'Two prow lances and a flak turret instead of the broadsides: all its punch points one way.',w:[['lance','F'],['lance','F'],['flak','T']],cost:0},
-  h_interdictor_e:{base:'h_interdictor',arc:'hegemony',n:'Interdictor column escort',d:'Adds a flak turret and heavier shields; one hex slower.',w:[['ion','F'],['turbo','T'],['flak','T']],mod:{sh:24,sp:3},cost:0},
+  vs_penitent_l:{base:'penitent',arc:'voidsworn',n:'Penitent lantern-cruiser',d:'Two prow lances and a dorsal battery turret instead of the broadsides: its heavy punch points one way.',w:[['lance','F'],['lance','F'],['battery','T']],cost:0},
+  h_interdictor_e:{base:'h_interdictor',arc:'hegemony',n:'Interdictor column escort',d:'Adds a flak turret, paid for with a lighter hull (60) and one hex of speed.',w:[['ion','F'],['turbo','T'],['flak','T']],mod:{hp:60,sp:3},cost:0},
   c_marauder_g:{base:'c_marauder',arc:'corsair',n:'Gilded marauder',d:'A second prow torpedo instead of flak, and one hex slower.',w:[['scatter','P'],['scatter','S'],['torp','F'],['torp','F']],mod:{sp:3},cost:0},
-  b_razor_e:{base:'b_razor',arc:'chorus',n:'Sun-eater razorfiend',d:'Its tendril cluster becomes a second bio-plasma spitter on a turret; regrows 11 a round, one hex slower.',w:[['bioplasma','T'],['bioplasma','F']],mod:{regen:11,sp:3},cost:0},
-  i_carrier_a:{base:'i_carrier',arc:'ithar',n:'Archive wraithcarrier',d:'A third wing, paid for with lighter shields (24) and one hex of speed.',w:[['pulsar','F'],['turret','T']],mod:{hangar:3,sh:24,sp:3},cost:0},
-  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Jackal court guard',d:'Both gauss guns on turrets and a gauss sentry.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],cost:0}});
+  b_razor_e:{base:'b_razor',arc:'chorus',n:'Sun-eater razorfiend',d:'Its tendril cluster becomes a second bio-plasma spitter on a turret; regrows 9 a round (2 more than the base), one hex slower.',w:[['bioplasma','T'],['bioplasma','F']],mod:{regen:9,sp:3},cost:0},
+  i_carrier_a:{base:'i_carrier',arc:'ithar',n:'Archive wraithcarrier',d:'A third wing, paid for with lighter shields (22) and one hex of speed.',w:[['pulsar','F'],['turret','T']],mod:{hangar:3,sh:22,sp:3},cost:0},
+  d_jackal_h:{base:'d_jackal',arc:'deathless',n:'Jackal court guard',d:'Both gauss guns on turrets and a gauss sentry, 10 less hull.',w:[['gauss','T'],['gauss','T'],['gsentry','T']],mod:{hp:100},cost:0}});
 const ARC_VARIANT=Object.fromEntries(Object.entries(HULL_VARIANTS).filter(([,v])=>v.arc).map(([id,v])=>[v.arc,id]));
 // Customization reserve (Oct 26, customization brainstorm section 6; schema only, nothing reads these for rules yet).
 // Variant rows: base (parent hull id: the variant inherits its model, sections and sounds), cost (renown; 0 with arc = earned by finishing that story arc), arc.

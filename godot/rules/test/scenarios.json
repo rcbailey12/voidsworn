@@ -1610,5 +1610,33 @@
    "harrow",
    "warden"
   ]
+ },
+ "s48": {
+  "note": "Stream B step 7 (pass 3): Sable (rear hits +50%, crit +10) with her Corsair start fleet against a Chorus fleet with the new regrowth (drone 4, spitter 5, razorfiend 7, brood-mother 8), bite .08 and feed cap .12; Voidsworn rake .4 and Ithar evade 18 are carried by the Voidsworn and Ithar goldens",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "belt",
+  "seed": 48048,
+  "sector": 2,
+  "admiral": "sable",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_raider",
+   "c_raider"
+  ],
+  "fac": "chorus",
+  "enemies": [
+   "b_brood",
+   "b_razor",
+   "b_spitter",
+   "b_drone",
+   "b_drone"
+  ]
  }
 }
