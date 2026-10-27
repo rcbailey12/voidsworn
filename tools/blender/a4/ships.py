@@ -87,8 +87,8 @@ YAWS = {'I14_23': 1, 'I15_11': -1, 'I11_37': 2, 'D20_23': -1, 'D9_23': 2, 'C15s_
 # (the bigger sponson to port), a captured destroyer hull riding on top as the upper decks, three boarding claws, trophy plates, pipe runs
 # and rust; dirty orange engines on every hull. Replaces the v15 whale body with its tower and neat pods (barge4.py stays for reference).
 SHIPS['C19_51'] = dict(
-    fac='corsair', cls='Battle-barge', name="Warlord's Pyre-Barge", sym='corsair', dress=1.35, plates=.55,
-    refine=dict(curve_frac=.03, long_q=.96),   # Opus, Oct 27: 475k triangles too heavy; four AI hulls welded need little refining
+    fac='corsair', cls='Battle-barge', name="Warlord's Pyre-Barge", sym='corsair', dress=1.35, plates=.30,
+    refine=dict(curve_frac=.035, long_q=.985),   # Opus, Oct 27: 475k triangles too heavy; four AI hulls welded need little refining
     compose=[dict(code='C16s_23', scale=1.0, at=(0, 0, 0)),             # the body: a Hulk-carrier hull
              dict(code='C15s_23', scale=.80, at=(-.05, .17, -.05)),     # port sponson: a Marauder hull, the heavier side
              dict(code='C13s_23', scale=.58, at=(.08, -.17, -.06),      # starboard sponson: a Raider hull, shorter and further forward,
