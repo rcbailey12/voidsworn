@@ -715,15 +715,15 @@ void fragment() {
 	float across = abs(sin(ang));               // 1 above and below the disc's line, 0 along it
 	// the upper arc is the big lensed image of the far side, the lower one a thinner secondary image
 	float up = step(0.0, sin(ang));
-	float w_out = mix(1.4, 1.62, up);
-	float band = smoothstep(1.035, 1.07, th) * (1.0 - smoothstep(w_out - 0.12, w_out, th));
+	float w_out = mix(1.26, 1.44, up);   // a defined band, not a halo (NASA Goddard 2019: thin arcs hugging the shadow)
+	float band = smoothstep(1.035, 1.06, th) * (1.0 - smoothstep(w_out - 0.06, w_out, th));
 	float u = clamp((th - 1.05) / (w_out - 1.05), 0.0, 1.0);
 	float a2 = ang * 3.0 + TIME * spin * 2.0;
 	float sp = mfbm2(vec2(a2 * 4.0 + log(max(th, 1.0)) * 8.0, th * 7.0), 4);   // streaks along the arc, like the disc's own
 	vec3 c = mix(vec3(1.0, 0.92, 0.8), vec3(1.0, 0.55, 0.2), smoothstep(0.0, 0.35, u));
 	c = mix(c, vec3(0.55, 0.12, 0.04), smoothstep(0.35, 1.0, u)) * (2.2 - 1.6 * u);
 	// the lower arc (the far side seen under the shadow) is thinner and a little fainter than the upper one
-	float arc = band * pow(across, 0.7) * (0.55 + 0.7 * sp) * mix(0.8, 1.0, up);
+	float arc = band * pow(across, 0.8) * (0.45 + 0.8 * sp) * mix(0.75, 1.0, up) * 0.85;
 	// Doppler beaming: the side of the disc turning toward the camera (screen right) brighter and whiter-blue, the
 	// receding side dimmer and redder; kept subtle so the look stays on brand
 	float beam = cos(ang + tilt_dir);
@@ -759,7 +759,7 @@ void fragment() {
 	float t = TIME + phase;
 	float o1 = line(dm - 0.62, 0.035);
 	float o2 = elite * line(dm - 0.76, 0.022);
-	float fillv = (1.0 - smoothstep(0.55, 0.62, dm)) * 0.12;
+	float fillv = (1.0 - smoothstep(0.55, 0.62, dm)) * 0.045;
 	float pip = 1.0 - smoothstep(0.16, 0.2, dm);
 	// corner ticks just outside the outline, on the four points
 	float ticks = 0.0;
