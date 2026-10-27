@@ -128,6 +128,8 @@ func _button(t: String, cb: Callable, primary := false) -> Button:
 	sb.set_corner_radius_all(s(4))
 	sb.content_margin_top = s(9)
 	sb.content_margin_bottom = s(9)
+	sb.content_margin_left = s(20)   # a short label (Done) keeps clear of its own edges
+	sb.content_margin_right = s(20)
 	var sh := sb.duplicate() as StyleBoxFlat
 	sh.bg_color = Color("#e2bb62") if primary else HUD.IRON3
 	sh.border_color = HUD.GILT2 if not primary else HUD.GILT
