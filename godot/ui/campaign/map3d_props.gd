@@ -175,7 +175,7 @@ func dock_frame(parent: Node3D, L: float, H: float, W: float, base: Color, accen
 # ---------------------------------------------------------------- repair drones
 func drone(parent: Node3D, col: Color, base: Color) -> Node3D:
 	var d = Node3D.new(); parent.add_child(d)
-	var hm = hull_mat(base, col, 14.0, 0.0)
+	var hm = hull_mat(base.lightened(0.15), col, 4.0, 0.0, 0.3)
 	part(d, box(0.26, 0.1, 0.34), hm)
 	for sx in [-1.0, 1.0]:
 		part(d, box(0.04, 0.04, 0.22), hm, Vector3(sx * 0.17, 0, 0.12), Vector3(0, sx * 20.0, 0))   # manipulator arms
