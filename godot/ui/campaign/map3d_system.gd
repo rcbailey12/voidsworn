@@ -238,7 +238,7 @@ func planet(parent: Node3D, pal: Array, radius: float, at: Vector3, with_atmo: b
 		var cl = mi(sphere(radius * 1.025, seg, seg / 2), mat("CLOUDS", {"cover": 0.5 if int(pal[0]) == 1 else 0.28, "seed": rng.randf() * 30.0, "q": q}))
 		cl.rotation = p.rotation; p.add_child(cl); cl.rotation = Vector3.ZERO
 	if with_atmo:
-		body.add_child(mi(sphere(radius * 1.04, seg, seg / 2), mat("ATMO", {"atmo": pal[3], "sun_pos": sun_pos, "gain": 0.6 if int(pal[0]) == 5 else 1.0})))
+		body.add_child(mi(sphere(radius * 1.025, seg, seg / 2), mat("ATMO", {"atmo": pal[3], "sun_pos": sun_pos, "gain": 0.6 if int(pal[0]) == 5 else 1.0})))
 	if int(pal[0]) == 2 and rng.randf() < 0.55:   # rings round some gas giants
 		var rg = mi(arc_mesh(radius * 1.75, radius * 0.9, 0.0, TAU, 96), mat("ORBIT", {"col": Color(pal[1].lerp(Color.WHITE, 0.3), 0.55)}))
 		rg.rotation = Vector3(deg_to_rad(rng.randf_range(12, 28)), 0, deg_to_rad(rng.randf_range(-20, 20))); body.add_child(rg)

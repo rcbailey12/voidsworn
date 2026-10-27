@@ -232,7 +232,7 @@ func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the s
 		"station":
 			sys.planet(obj, [5, Color(0.5, 0.48, 0.46), Color(0.24, 0.23, 0.22), Color(0.6, 0.6, 0.65)], 1.3, Vector3(-2.6, 1.3, -2.2), false)
 			var L = System.look(d["fac"])
-			var st = props.station(obj, L["base"].lerp(Color(0.5, 0.52, 0.56), 0.6), L["main"])
+			var st = props.station(obj, L["base"].lerp(Color(0.62, 0.63, 0.66), 0.75), L["main"])
 			st.position = Vector3(0.5, 2.3, 0.3); st.rotation_degrees = Vector3(14, 0, -10); st.scale = Vector3.ONE * 0.85
 			_spinners.append([st, Vector3.UP, 0.035]); _spinners.append([st.get_node("ring"), Vector3.UP, 0.22])
 			return 5.2

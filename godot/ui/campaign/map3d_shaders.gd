@@ -221,8 +221,8 @@ void fragment() {
 	vec3 v = normalize(CAMERA_POSITION_WORLD - wp);
 	float f = 1.0 - clamp(dot(n, v), 0.0, 1.0);
 	float lit = clamp(dot(n, normalize(sun_pos - wp)) * 0.9 + 0.2, 0.0, 1.0);
-	float rim = pow(f, 3.2) * (1.0 - smoothstep(0.9, 1.0, f));   // a thin bright limb, clear over the face
-	ALBEDO = atmo * rim * lit * 2.2 * gain;
+	float rim = pow(f, 7.0) * (1.0 - smoothstep(0.93, 1.0, f));   // a thin bright limb, clear over the face
+	ALBEDO = atmo * rim * lit * 4.0 * gain;
 }
 """
 
@@ -605,17 +605,17 @@ void fragment() {
 	vec2 c1; vec2 f1; float e1 = panels(uv, c1, f1);
 	vec2 c2; vec2 f2; float e2 = panels(uv * 3.0 + 11.0, c2, f2);
 	float h1 = mh2(c1 + 0.5); float h2 = mh2(c2 + 1.5);
-	float seam = 1.0 - smoothstep(0.0, 0.05, e1);
-	float seam2 = 1.0 - smoothstep(0.0, 0.06, e2);
+	float seam = 1.0 - smoothstep(0.0, 0.022, e1);
+	float seam2 = 1.0 - smoothstep(0.0, 0.03, e2);
 	float grime = mfbm(lp * 2.2 + 4.0, 4);
 	vec3 col = base * (0.78 + 0.32 * h1) * (0.9 + 0.2 * h2);
-	col = mix(col, accent, step(0.88, h1) * 0.75);
-	col *= 1.0 - seam * 0.38 - seam2 * 0.12;
+	col = mix(col, accent, step(0.95, h1) * 0.55);
+	col *= 1.0 - seam * 0.45 - seam2 * 0.15;
 	col *= 0.82 + 0.3 * grime;
-	float ht = smoothstep(0.0, 0.05, e1) * 0.6 + smoothstep(0.0, 0.06, e2) * 0.25 + step(0.8, h2) * 0.1;
-	NORMAL = bump_normal(NORMAL, VERTEX, ht, 0.9);
+	float ht = smoothstep(0.0, 0.022, e1) * 0.5 + smoothstep(0.0, 0.03, e2) * 0.2 + step(0.85, h2) * 0.06;   // flat panels, narrow grooves
+	NORMAL = bump_normal(NORMAL, VERTEX, ht, 0.35);
 	ALBEDO = col;
-	METALLIC = metal * (0.7 + 0.3 * h1);
+	METALLIC = metal * (0.6 + 0.4 * h1);
 	ROUGHNESS = 0.35 + 0.35 * grime + seam * 0.2;
 	// rows of windows: a small lit slot in some panels
 	float wmask = step(1.0 - windows, mh2(c2 + 7.3)) * step(abs(f2.y - 0.5), 0.08) * step(abs(f2.x - 0.5), 0.18);

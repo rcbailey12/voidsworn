@@ -32,9 +32,9 @@ func part(parent: Node3D, mesh: Mesh, m: Material, pos: Vector3 = Vector3.ZERO, 
 func beam(parent: Node3D, a: Vector3, b: Vector3, w: float, m: Material) -> MeshInstance3D:
 	var d = b - a; var L = d.length()
 	var n = part(parent, box(w, w, max(0.01, L)), m, (a + b) * 0.5)
-	if L > 0.001:
+	if L > 0.001:   # local frame: -Z of the box along the member (look_at would work in global space)
 		var up = Vector3.UP if abs(d.normalized().dot(Vector3.UP)) < 0.95 else Vector3.RIGHT
-		n.look_at_from_position(n.position, b, up)
+		n.transform = Transform3D(Basis.looking_at(d.normalized(), up), (a + b) * 0.5)
 	return n
 # a lattice member from a to b: four rails a square of side w apart, braced by diagonals every bay
 func truss(parent: Node3D, a: Vector3, b: Vector3, w: float, m: Material, bays: int = -1) -> void:
@@ -56,15 +56,16 @@ func light(parent: Node3D, pos: Vector3, col: Color, size: float = 0.5, blink: b
 	return g
 func spot(parent: Node3D, pos: Vector3, target: Vector3, col: Color, energy: float = 3.0, rng: float = 6.0) -> void:   # a work floodlight
 	var s = SpotLight3D.new(); s.light_color = col; s.light_energy = energy; s.spot_range = rng; s.spot_angle = 32.0; s.spot_attenuation = 0.8
-	s.shadow_enabled = false; parent.add_child(s); s.position = pos
-	if (target - pos).length() > 0.01: s.look_at(parent.to_global(target) if parent.is_inside_tree() else target, Vector3.UP if abs((target - pos).normalized().y) < 0.95 else Vector3.RIGHT)
+	s.shadow_enabled = false; parent.add_child(s)
+	var dv = target - pos
+	s.transform = Transform3D(Basis.looking_at(dv.normalized(), Vector3.UP if abs(dv.normalized().y) < 0.95 else Vector3.RIGHT) if dv.length() > 0.01 else Basis(), pos)
 	light(parent, pos, col, 0.55)
 
 # ---------------------------------------------------------------- the orbital station (about 7 units across)
 func station(parent: Node3D, base: Color, accent: Color) -> Node3D:
 	var root = Node3D.new(); parent.add_child(root)
-	var hm = hull_mat(base, accent, 2.6, 0.1, 0.45)
-	var hm2 = hull_mat(base.darkened(0.15), accent, 4.0, 0.03, 0.55)
+	var hm = hull_mat(base, accent, 1.8, 0.1, 0.3)
+	var hm2 = hull_mat(base.darkened(0.15), accent, 2.6, 0.03, 0.4)
 	# the spindle and its modules
 	part(root, cyl(0.3, 4.6), hm2)
 	part(root, cyl(0.62, 0.8), hm, Vector3(0, 1.05, 0)); part(root, cyl(0.55, 0.6), hm, Vector3(0, -0.55, 0))
@@ -73,7 +74,7 @@ func station(parent: Node3D, base: Color, accent: Color) -> Node3D:
 	# the habitat ring on four spokes
 	var ring = Node3D.new(); ring.name = "ring"; ring.position = Vector3(0, 0.3, 0); root.add_child(ring)
 	var t = TorusMesh.new(); t.inner_radius = 2.05; t.outer_radius = 2.45; t.rings = 96 if q > 0.5 else 48; t.ring_segments = 18 if q > 0.5 else 10
-	part(ring, t, hull_mat(base, accent, 4.0, 0.16, 0.45))
+	part(ring, t, hull_mat(base, accent, 2.4, 0.16, 0.3))
 	for i in 4:
 		var a = i * TAU / 4.0 + TAU / 8.0
 		beam(ring, Vector3(cos(a) * 0.7, 0, sin(a) * 0.7), Vector3(cos(a) * 2.1, 0, sin(a) * 2.1), 0.14, hm2)
