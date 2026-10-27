@@ -138,6 +138,8 @@ func _ready() -> void:
 	if args.has("move-frames"):
 		shots_dir = str(args["move-frames"])
 	_load_opts()
+	if shots_dir != "" or args.has("sheet-check"):
+		tips_off = true   # screenshot jobs: no onboarding tip card covering the top of the screen
 	if args.has("movement"):
 		movement = str(args["movement"])
 	_build_world()
@@ -161,6 +163,8 @@ func _ready() -> void:
 		_move_frames()
 	elif args.has("sheet-check"):
 		_sheet_check()
+	elif args.has("planet-shot"):
+		_planet_shot()
 	elif shots_dir != "":
 		_shots()
 
@@ -410,6 +414,8 @@ func _begin(a) -> void:
 	inspect = ""
 	armed = -1
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
+	if key_light != null:
+		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
 	board.build(api)
 	cam.bounds = board.bounds()
 	_post_quality(str(args.get("quality", "max")))
@@ -3323,6 +3329,28 @@ func _move_frames() -> void:
 				_cmd(func(): api.end_activation(); return true)
 		while busy:
 			await get_tree().process_frame
+	_quit_report()
+
+
+# --planet-shot <png> (with --map planet): the board planet framed from the battle camera's height, then quit
+func _planet_shot() -> void:
+	while busy or warming or api == null:
+		await get_tree().process_frame
+	hud.visible = false
+	if board.planet_node == null:
+		print("[planet] no planet on this board")
+		_quit_report()
+		return
+	var p: Vector3 = board.planet_node.position
+	var rad: float = (board.planet_node.mesh as SphereMesh).radius
+	cam.t = Vector3(p.x, 0, p.z)
+	cam.r = rad * 3.2
+	cam.b = 1.15
+	cam.snap()
+	await get_tree().create_timer(1.0).timeout
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(str(args["planet-shot"]))
+	print("[planet] shot saved ", args["planet-shot"])
 	_quit_report()
 
 

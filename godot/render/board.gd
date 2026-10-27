@@ -10,6 +10,16 @@ var HW := HS * sqrt(3.0)
 var api = null               # the rules API (godot/rules/battle_api.gd): read through view() and world_info()
 var VW := {}                 # the view the board was built from
 var WI := {}                 # world_info()
+var planet_node: MeshInstance3D = null   # the board planet, when the map has one
+var sun_dir := Vector3(0.4, 0.6, 0.7)   # toward the battle's key light (battle.gd sets it before build)
+# the board planet's look per battle: [kind (G3 map shader: 0 rock, 1 terran, 3 ice, 4 lava, 5 barren), colour a, b, atmosphere]
+const PLANET_LOOKS := [
+	[0, Color(0.55, 0.42, 0.3), Color(0.22, 0.15, 0.1), Color(0.9, 0.65, 0.4)],
+	[1, Color(0.36, 0.42, 0.24), Color(0.07, 0.15, 0.3), Color(0.45, 0.7, 1.0)],
+	[3, Color(0.82, 0.88, 0.94), Color(0.42, 0.52, 0.62), Color(0.6, 0.8, 1.0)],
+	[4, Color(0.28, 0.2, 0.16), Color(0.08, 0.06, 0.05), Color(1.0, 0.45, 0.2)],
+	[5, Color(0.5, 0.48, 0.46), Color(0.2, 0.19, 0.19), Color(0.6, 0.62, 0.7)],
+]
 var ox := 0.0
 var oz := 0.0
 var cells: Array = []        # [{q, r}]
@@ -357,9 +367,49 @@ func _planet() -> void:
 	sp.rings = 48
 	var mi := MeshInstance3D.new()
 	mi.mesh = sp
-	var m := StandardMaterial3D.new()
-	m.albedo_color = Color(0.33, 0.29, 0.27)
-	m.roughness = 0.95
-	mi.material_override = m
 	mi.position = hex_world(pl.q, pl.r, -rad * 0.55)
 	props.add_child(mi)
+	planet_node = mi
+	# the campaign map's planet look (G3's map3d_shaders.gd PLANET and ATMO, which Ryan has seen on the map): surface
+	# detail per kind, a night side away from the battle's key light, a thin lit limb; the flat matte ball only if the
+	# shaders are missing from the build
+	var MS = load("res://ui/campaign/map3d_shaders.gd") if ResourceLoader.exists("res://ui/campaign/map3d_shaders.gd") else null
+	if MS == null:
+		var m := StandardMaterial3D.new()
+		m.albedo_color = Color(0.33, 0.29, 0.27)
+		m.roughness = 0.95
+		mi.material_override = m
+		return
+	var seed_v := int(WI.get("seed", 1)) if WI.get("seed") != null else 1
+	var look: Array = PLANET_LOOKS[posmod(seed_v, PLANET_LOOKS.size())]
+	var sun := mi.position + sun_dir.normalized() * 100000.0
+	var pm := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = MS.PLANET
+	pm.shader = sh
+	pm.set_shader_parameter("kind", float(look[0]))
+	pm.set_shader_parameter("a", look[1])
+	pm.set_shader_parameter("b", look[2])
+	pm.set_shader_parameter("atmo", look[3])
+	pm.set_shader_parameter("seed", float(posmod(seed_v, 97)) * 1.37)
+	pm.set_shader_parameter("sun_pos", sun)
+	pm.set_shader_parameter("q", 1.0)
+	mi.material_override = pm
+	var shell := MeshInstance3D.new()
+	var ss := SphereMesh.new()
+	ss.radius = rad * 1.03
+	ss.height = rad * 2.06
+	ss.radial_segments = 96
+	ss.rings = 48
+	shell.mesh = ss
+	var am := ShaderMaterial.new()
+	var ash := Shader.new()
+	ash.code = MS.ATMO
+	am.shader = ash
+	am.set_shader_parameter("atmo", look[3])
+	am.set_shader_parameter("sun_pos", sun)
+	am.set_shader_parameter("gain", 1.0)
+	shell.material_override = am
+	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	shell.position = mi.position
+	props.add_child(shell)
