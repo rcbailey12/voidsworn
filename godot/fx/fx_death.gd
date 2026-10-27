@@ -545,7 +545,7 @@ static func death(fx, s, cause: String) -> float:
 	var TB = T + hold + cook
 	var tint = Color(1, 0.55, 0.2)
 	if cause == "melt":
-		tint = Color(0.6, 1.0, 0.3)
+		tint = Color(0.68, 0.92, 0.2)
 	# 1. the held beat: one dip in the engines and lights
 	fx.hit_pause(T, [2, 3, 4, 7, 9][w])
 	# 2. cook-off: internal explosions rippling along the hull
@@ -606,7 +606,7 @@ static func _cook_burst(fx, s, lp: Vector3, ln: Vector3, k: float, tint: Color, 
 		fx.shd(wp, T, 2.5, fx.rcone(wn, 0.8) * (3 + fx.rng.randf() * 6) * k, s.hull.L * (0.006 + fx.rng.randf() * 0.01), 1.0)
 	if cause == "melt":
 		for i in 3:
-			fx.spr(wp, T, 1.8, Color(0.4, 0.8, 0.15), 0.6, sz * 0.6, sz * 2.2, 20, wn * 1.5 * k, 0.5)
+			fx.spr(wp, T, 1.8, Color(0.5, 0.62, 0.12), 0.6, sz * 0.6, sz * 2.2, 20, wn * 1.5 * k, 0.5)
 	fx.light(wp + wn * 1.5, T, 0.4, 7.0, tint, 0)
 	fx.shake(T, 0.12, wp)
 	spawn_debris(fx, wp + wn * 0.5, wn * 4.0 * k, 2, s.hull.L * 0.02)

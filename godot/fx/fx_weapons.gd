@@ -767,9 +767,9 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 	for s in 12:
 		fx.stk(p, T, 0.6, col, 2.0, 0.08, 0.1 * k, 6, (fx.rcone(n, 1.0) * 6.0 + Vector3(0, -2, 0)) * k, 1.2)
 	for s in 5:
-		fx.spr(p + n * 0.3 * k + fx.rdir() * 0.6 * k, T + 0.1 + s * 0.25, 2.5, Color(0.35, 0.55, 0.15), 0.45, 0.8 * k, 3.0 * k, 20, n * 1.0 * k + Vector3(0, 0.5, 0), 0.5)
+		fx.spr(p + n * 0.3 * k + fx.rdir() * 0.6 * k, T + 0.1 + s * 0.25, 2.5, Color(0.42, 0.46, 0.12), 0.45, 0.8 * k, 3.0 * k, 20, n * 1.0 * k + Vector3(0, 0.5, 0), 0.5)
 	for s in 6:
-		fx.spr(p + fx.rdir() * 0.8 * k, T + 0.2 + s * 0.2, 1.8, Color(0.5, 1.0, 0.25), 1.0, 0.5 * k, 0.4 * k, 21)
+		fx.spr(p + fx.rdir() * 0.8 * k, T + 0.2 + s * 0.2, 1.8, Color(0.66, 0.95, 0.2), 1.0, 0.5 * k, 0.4 * k, 21)
 	fx.light(p + n * 1.5 * k, T, 0.6, 2.0, col, 1)
 	fx.shake(T, 0.05 if not lash else 0.1, p)
 

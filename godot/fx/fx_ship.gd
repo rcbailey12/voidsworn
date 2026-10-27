@@ -240,10 +240,12 @@ func _build_engines(fx) -> void:
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 0.6), Vector4(v1.x, v1.y, v1.z, 2.0),
 					Vector4(eng.r * 0.4, eng.g * 0.4, eng.b * 0.3, 0.35), Vector4(r * 0.8, r * 3.0, 20, fx.rng.randf()), Vector4(2.4, 0, 0.6, 0)))
 		elif extra == "embers":
+			# embers in the faction's second colour when it has one (Eclipse: white-gold), else hot orange
+			var ec: Color = acc if acc is Color else Color(1.0, 0.5, 0.15)
 			for k in 3:
 				var v2 := rot * Vector3(-6, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5)
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 1.3), Vector4(v2.x, v2.y, v2.z, 0.9),
-					Vector4(1.0, 0.5, 0.15, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
+					Vector4(ec.r, ec.g, ec.b, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
 	_eng_mat = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
 	var holder = MeshInstance3D.new()

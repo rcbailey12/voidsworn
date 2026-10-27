@@ -511,7 +511,8 @@ void fragment() {
 		float flash = mix(0.6 + 0.4 * h21(vec2(strike, seed)), 0.85, fx_calm);
 		float core = exp(-x * x * 40.0) * 4.0;
 		float glow = exp(-x * x * 3.0) * 0.8;
-		c = (vec3(0.9, 1.0, 0.92) * core + vCol.rgb * glow) * env * flash * vCol.a;
+		// the arc's core is white tinted by the weapon colour (r18: was a fixed green-white; Eclipse has no green)
+		c = (mix(vec3(1.0), vCol.rgb, 0.2) * core + vCol.rgb * glow) * env * flash * vCol.a;
 	} else if (k == 9) {
 		float env = smoothstep(0.0, 0.08, age) * (1.0 - smoothstep(life - 0.15, life, age));
 		float n = fbm(vec2(s * 12.0 - scene_t * 3.0, vSide * 2.0 + seed));
@@ -524,21 +525,28 @@ void fragment() {
 		float glow = exp(-x * x * 6.0) * 1.0 * sh + exp(-x * x * 1.6) * 0.15;
 		float ends = smoothstep(0.0, 0.01, s) * (1.0 - smoothstep(0.985, 1.0, s));
 		vec3 coreC = vec3(1.0, 0.97, 0.92);
+		vec3 glowC = vCol.rgb;
 		if (k == 5) {
 			// ion: crawling blue-white arcs wrapped around the beam
 			float arc = spow(abs(sin(s * vInfo2.x * 0.9 - scene_t * 40.0 + vSide * 3.0 + seed)), 30.0) * exp(-x * x * 1.2);
 			glow += arc * 2.5 * (0.5 + 0.5 * vnoise(vec2(s * 30.0, scene_t * 25.0)));
 		} else if (k == 7) {
+			// the Prism lance (lore round 8): a white core splitting into a rainbow fringe, the hue running out across the
+			// beam's width and drifting along it, in travelling pulses
 			float puls = smoothstep(0.35, 0.0, abs(fract(s * vInfo2.x / 9.0 - age * 6.0) - 0.5) - 0.15);
 			core *= 0.35 + puls;
 			glow *= 0.4 + puls * 1.2;
+			coreC = vec3(1.0);
+			float hue = fract(x * 0.45 + s * 0.6 - scene_t * 0.4 + seed);
+			vec3 rb = clamp(abs(fract(hue + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+			glowC = mix(vCol.rgb, rb, 0.85 * smoothstep(0.15, 0.6, x));
 		} else if (k == 8) {
 			core = exp(-x * x * 140.0) * 6.0;
 			glow = exp(-x * x * 10.0) * 0.7 * sh;
 			float hue = fract(s * 3.0 - scene_t * 2.0 + seed);
 			coreC = mix(coreC, clamp(abs(fract(hue + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0), 0.25);
 		}
-		c = (coreC * core + vCol.rgb * glow) * env * ends * vCol.a;
+		c = (coreC * core + glowC * glow) * env * ends * vCol.a;
 	}
 	ALBEDO = clamp(c * fx_gain, 0.0, 512.0);
 }
@@ -867,7 +875,7 @@ void fragment() {
 	float fall = 1.0 / (1.0 + dist * dist * 5.0);
 	float emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
 	vec3 gc = glow;
-	if (style == 8) { gc = vec3(0.45, 1.0, 0.2); hot *= 0.35; }
+	if (style == 8) { gc = vec3(0.62, 0.95, 0.14); hot *= 0.35; }
 	if (style == 4 || style == 11) { hot *= 0.3; }
 	vec3 em = gc * (lam * fall * 0.6 * fl * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)) + emb * 0.8 * (0.6 + 0.4 * fl) * smoothstep(1.4, 0.3, dist)) * hot;
 	if (style == 1) {
@@ -998,7 +1006,7 @@ void fragment() {
 		a = fall * (0.5 + 0.5 * pits);
 		alb = mix(vec3(0.05, 0.07, 0.025), vec3(0.01, 0.015, 0.005), pits);
 		rough = mix(0.8, 0.25, wet * smoothstep(1.0, 0.4, ue));
-		em = vec3(0.45, 1.0, 0.2) * (pits * 0.25 + bub * 1.2) * fall * mix(0.15, 1.0, exp(-age / 6.0));
+		em = vec3(0.62, 0.95, 0.14) * (pits * 0.25 + bub * 1.2) * fall * mix(0.15, 1.0, exp(-age / 6.0));
 	} else if (style == 9) {
 		// ion: a branching electrical burn; fresh, arcs crawl it blue-white, then it sets as a dark etched fern
 #if CURRENT_RENDERER == RENDERER_COMPATIBILITY
@@ -1151,7 +1159,7 @@ void fragment() {
 			float pit = smoothstep(0.58, 0.72, hn);
 			hc = mix(vec3(0.03, 0.045, 0.012), vec3(0.006, 0.01, 0.003), pit);
 			hr = mix(0.85, 0.3, exp(-age / 9.0) * pit);
-			hem = vec3(0.4, 1.0, 0.2) * pit * (0.04 + 0.4 * exp(-age / 6.0));
+			hem = vec3(0.6, 0.95, 0.14) * pit * (0.04 + 0.4 * exp(-age / 6.0));
 			// r18 (Muse audit B4.3): the signature is a green stain with drips running off it, down the hull side (or
 			// aft along a deck), long enough to read as streaks from the battle camera
 			vec3 dn = vec3(0.0, -1.0, 0.0);
@@ -1166,7 +1174,7 @@ void fragment() {
 			float ac2 = max(drip, stain);
 			hc = mix(hc, vec3(0.02, 0.05, 0.008), ac2 * 0.85);
 			ha = max(ha, max(drip * 0.9, stain));
-			hem += vec3(0.45, 1.0, 0.2) * (drip * 0.6 + stain * 0.45) * (0.28 * exp(-age / 300.0) + 0.6 * exp(-age / 6.0));
+			hem += vec3(0.62, 0.95, 0.14) * (drip * 0.6 + stain * 0.45) * (0.28 * exp(-age / 300.0) + 0.6 * exp(-age / 6.0));
 		} else if (style == 9) {
 			hc = vec3(0.012, 0.015, 0.03);
 			hem = vec3(0.3, 0.5, 1.0) * smoothstep(0.62, 0.8, hn) * (0.03 + 0.5 * live);
@@ -1215,7 +1223,7 @@ void fragment() {
 		float sk = 1.0;
 		if (style == 1) { sc = vec3(1.0, 0.48, 0.14); scl = 5.0; }
 		else if (style == 3) { sc = vec3(0.35, 0.65, 1.0); scl = 6.0; }
-		else if (style == 8) { sc = vec3(0.45, 1.0, 0.2); scl = 8.0; sk = 1.3; }
+		else if (style == 8) { sc = vec3(0.62, 0.95, 0.14); scl = 8.0; sk = 1.3; }
 		else if (style == 9) { sc = vec3(0.45, 0.65, 1.0); scl = 6.0; sk = 1.3; }
 		else if (style == 7) { sk = 1.0; scl = 6.0; }
 		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }
