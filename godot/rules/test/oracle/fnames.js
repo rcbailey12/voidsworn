@@ -1,4 +1,4 @@
-// ui3d.js FNAMES at c7b1a78
+// ui3d.js FNAMES at d8b47c6 (unchanged since c7b1a78)
 const FNAMES={hegemony:['HNS Dominator','HNS Relentless','HNS Sovereign','HNS Executor','HNS Imperious','HNS Harbinger','HNS Adjudicator','HNS Vigilance','HNS Tyrant','HNS Resolute'],
   corsair:['Rust Maw','Gutter Queen','Red Tithe','Scrapjaw','Ashen Grin','Last Laugh','Cinder Wolf','Bad Omen','Salvage Right','Hollow Crown'],
   chorus:['Hive-node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorefeather','Sac-mother','Thornback','Tidehunger','Wet Choir','Crawling Hymn'],

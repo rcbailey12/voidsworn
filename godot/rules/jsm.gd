@@ -77,7 +77,7 @@ static func jsround(x: float) -> float:
 # ---- fdlibm (V8 src/base/ieee754.cc) ----
 # Unported maths branch: a hard stop, never a plausible number. The function returns NAN and sets not_ported; rules.gd's
 # not_ported reads it, so the parity harness stops at the next record and the game's battle scene reports "NOT PORTED" (as for rules).
-# Every fdlibm branch is ported except sin/cos of |x| > 2^19 pi (V8's __kernel_rem_pio2 big-argument reduction); the rules only pass angles.
+# Every fdlibm branch is ported (the last one, sin/cos of |x| > 2^19 pi through __kernel_rem_pio2, on Oct 27); _np stays for any future gap.
 static var not_ported := ""
 static func _np(what: String) -> float:
 	if not_ported == "": not_ported = "JSM " + what
@@ -181,7 +181,112 @@ static func _rem_pio2(x: float, y: Array) -> int:
 		if hx < 0:
 			y[0] = -y[0]; y[1] = -y[1]; return -n
 		return n
-	_np("sin/cos of |x| > 2^19 pi (big-argument reduction)"); y[0] = NAN; y[1] = NAN; return 0
+	return _rem_pio2_big(x, y)
+# |x| > 2^19 pi: V8's big-argument path (ieee754.cc __ieee754_rem_pio2 tail, then __kernel_rem_pio2 with prec 2), line for line.
+# Ported Oct 27 (was the last NOT PORTED branch); checked on about 205,000 big inputs against Node (golden.js math).
+const TWO_OVER_PI := [0xA2F983,0x6E4E44,0x1529FC,0x2757D1,0xF534DD,0xC0DB62,0x95993C,0x439041,0xFE5163,0xABDEBB,0xC561B7,0x246E3A,0x424DD2,0xE00649,0x2EEA09,0xD1921C,0xFE1DEB,0x1CB129,0xA73EE8,0x8235F5,0x2EBB44,0x84E99C,0x7026B4,0x5F7E41,0x3991D6,0x398353,0x39F49C,0x845F8B,0xBDF928,0x3B1FF8,0x97FFDE,0x05980F,0xEF2F11,0x8B5A0A,0x6D1F6D,0x367ECF,0x27CB09,0xB74F46,0x3F669E,0x5FEA2D,0x7527BA,0xC7EBE5,0xF17B3D,0x0739F7,0x8A5292,0xEA6BFB,0x5FB11F,0x8D5D08,0x560330,0x46FC7B,0x6BABF0,0xCFBC20,0x9AF436,0x771741,0x434DD6,0x8D7E0D,0x9BC2F6,0xD57C5B,0x0B5BAA,0x2F75C1,0x5A6C26,0x3E2C7B,0x7F26AB,0x64B6C3,0xA6B12C,0x9F26D2]
+static var KPIO2: Array = [words(0x3FF921FB, 0x40000000), words(0x3E74442D, 0), words(0x3CF84698, 0x80000000), words(0x3B78CC51, 0x60000000), words(0x39F01B83, 0x80000000), words(0x387A2520, 0x40000000), words(0x36E38222, 0x80000000), words(0x3569F31D, 0)]
+const TWO24 := 16777216.0
+const TWON24 := 5.9604644775390625e-08   # 2^-24, exact in decimal
+static func _scalbn(x: float, n: int) -> float: # x * 2^n; the exponents here stay well inside the normal range
+	return x * pow(2.0, float(n))
+static func _rem_pio2_big(x: float, y: Array) -> int:
+	var hx := hi(x); var ix := hx & 0x7fffffff
+	var e0 := (ix >> 20) - 1046
+	var z := words(ix - (e0 << 20), lo(x))
+	var tx := [0.0, 0.0, 0.0]
+	for i in range(2):
+		tx[i] = float(int(z)); z = (z - tx[i]) * TWO24
+	tx[2] = z
+	var nx := 3
+	while tx[nx - 1] == 0.0: nx -= 1
+	var n := _krem_pio2(tx, y, e0, nx)
+	if hx < 0:
+		y[0] = -y[0]; y[1] = -y[1]; return -n
+	return n
+static func _krem_pio2(x: Array, y: Array, e0: int, nx: int) -> int:
+	var jk := 4; var jp := jk   # init_jk[prec 2]
+	var iq := []; var f := []; var fq := []; var q := []
+	iq.resize(20); iq.fill(0); f.resize(20); f.fill(0.0); fq.resize(20); fq.fill(0.0); q.resize(20); q.fill(0.0)
+	var jx := nx - 1
+	var jv := int((e0 - 3) / 24.0)   # C int division truncates toward zero
+	if jv < 0: jv = 0
+	var q0 := e0 - 24 * (jv + 1)
+	var j := jv - jx; var m := jx + jk
+	for i in range(m + 1):
+		f[i] = 0.0 if j < 0 else float(TWO_OVER_PI[j]); j += 1
+	var fw: float
+	for i in range(jk + 1):
+		fw = 0.0
+		for jj in range(jx + 1): fw += x[jj] * f[jx + i - jj]
+		q[i] = fw
+	var jz := jk; var z: float; var n: int; var ih: int; var carry: int
+	while true:   # recompute
+		var i := 0; j = jz; z = q[jz]
+		while j > 0:
+			fw = float(int(TWON24 * z)); iq[i] = int(z - TWO24 * fw); z = q[j - 1] + fw
+			i += 1; j -= 1
+		z = _scalbn(z, q0)
+		z -= 8.0 * floor(z * 0.125)
+		n = int(z); z -= float(n); ih = 0
+		if q0 > 0:
+			i = iq[jz - 1] >> (24 - q0); n += i
+			iq[jz - 1] -= i << (24 - q0)
+			ih = iq[jz - 1] >> (23 - q0)
+		elif q0 == 0: ih = iq[jz - 1] >> 23
+		elif z >= 0.5: ih = 2
+		if ih > 0:
+			n += 1; carry = 0
+			for k in range(jz):
+				j = iq[k]
+				if carry == 0:
+					if j != 0:
+						carry = 1; iq[k] = 0x1000000 - j
+				else: iq[k] = 0xffffff - j
+			if q0 == 1: iq[jz - 1] &= 0x7fffff
+			elif q0 == 2: iq[jz - 1] &= 0x3fffff
+			if ih == 2:
+				z = 1.0 - z
+				if carry != 0: z -= _scalbn(1.0, q0)
+		if z == 0.0:
+			j = 0
+			for k in range(jz - 1, jk - 1, -1): j |= iq[k]
+			if j == 0:
+				var kk := 1
+				while iq[jk - kk] == 0: kk += 1
+				for k in range(jz + 1, jz + kk + 1):
+					f[jx + k] = float(TWO_OVER_PI[jv + k])
+					fw = 0.0
+					for jj in range(jx + 1): fw += x[jj] * f[jx + k - jj]
+					q[k] = fw
+				jz += kk
+				continue
+		break
+	if z == 0.0:
+		jz -= 1; q0 -= 24
+		while iq[jz] == 0:
+			jz -= 1; q0 -= 24
+	else:
+		z = _scalbn(z, -q0)
+		if z >= TWO24:
+			fw = float(int(TWON24 * z)); iq[jz] = int(z - TWO24 * fw)
+			jz += 1; q0 += 24; iq[jz] = int(fw)
+		else: iq[jz] = int(z)
+	fw = _scalbn(1.0, q0)
+	for i in range(jz, -1, -1):
+		q[i] = fw * float(iq[i]); fw *= TWON24
+	for i in range(jz, -1, -1):
+		fw = 0.0; var k := 0
+		while k <= jp and k <= jz - i:
+			fw += KPIO2[k] * q[i + k]; k += 1
+		fq[jz - i] = fw
+	fw = 0.0
+	for i in range(jz, -1, -1): fw += fq[i]
+	y[0] = fw if ih == 0 else -fw
+	fw = fq[0] - fw
+	for i in range(1, jz + 1): fw += fq[i]
+	y[1] = fw if ih == 0 else -fw
+	return n & 7
 static func sin(x: float) -> float:
 	var ix := hi(x) & 0x7fffffff
 	if ix <= 0x3fe921fb: return _ksin(x, 0.0, 0)

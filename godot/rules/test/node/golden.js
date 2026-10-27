@@ -185,7 +185,10 @@ function hex(v){ const b=Buffer.alloc(8); b.writeDoubleBE(v); return b.toString(
 console.debug = () => {}; // the game's swarm timing chatter
 // the browser also defines FNAMES (ui3d.js), which core.js shipName reads: pinned as oracle/fnames.js (or taken from ui3d.js beside a VS_ORACLE checkout)
 const fnamesSrc = () => { const f = path.join(ROOT, 'fnames.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); const u = path.join(ROOT, 'ui3d.js'); if (fs.existsSync(u)) { const m = fs.readFileSync(u, 'utf8').match(/^const FNAMES=[\s\S]*?\};/m); if (m) return m[0]; } return ''; };
-const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).concat([fnamesSrc()]);
+// campaign_run.js functions battle.js calls when they exist (nemAdaptName): the browser always has them, so the harness does too (oracle/campaign_hooks.js,
+// or taken from campaign_run.js beside a VS_ORACLE checkout)
+const hooksSrc = () => { const f = path.join(ROOT, 'campaign_hooks.js'); if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8'); const c = path.join(ROOT, 'campaign_run.js'); if (fs.existsSync(c)) { const m = fs.readFileSync(c, 'utf8').match(/^function nemAdaptName\(.*$/m); if (m) return m[0]; } return ''; };
+const files = ['data.js', 'core.js', 'battle.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8')).concat([fnamesSrc(), hooksSrc()]);
 vm.runInThisContext(files.join('\n') + '\n' + HARNESS + '\nglobalThis.__G={runScenario,threatScenario,rndSeed,rnd,get S(){ return RNG_S; }};', { filename: 'rules_bundle.js' });
 // COVER=1: count calls to the rules functions each scenario reaches (a coverage check for the golden scenarios; printed to stderr)
 const COVER = process.env.COVER ? {} : null;
@@ -222,6 +225,11 @@ const hex = v => { const b = Buffer.alloc(8); b.writeDoubleBE(v); return b.toStr
     for (const [x, y] of [[2, -1030], [2, -1074], [2, -1075], [2, -1060.5], [10, -310], [10, -320], [10, -323.3], [0.5, 1040], [0.5, 1074.5], [1.5, -1800], [3, -650]]) pw.push([x, y]);
     for (let i = 0; i < 3000; i++) { const x = 1.01 + r() * 19, y = -((1022 + r() * 53) * Math.LN2 / Math.log(x)); pw.push([x, y]); }
     for (const [x, y] of pw) out.push('pow ' + hex(x) + ' ' + hex(y) + ' ' + hex(Math.pow(x, y)));
+    // sin and cos above 2^19 pi (Oct 27): V8's __kernel_rem_pio2 big-argument reduction, every exponent up to the largest double
+    const big = [Number.MAX_VALUE, -Number.MAX_VALUE, 1e22, 1e300, 2 ** 1023, 1647099.3291652855, 1647099.33, 2 ** 20 * Math.PI, -(2 ** 20) * Math.PI, 1e6, 1e15, 2 ** 53, 2 ** 60, 4.5e15, 6381956970095103 * 2 ** 797];
+    for (let i = 0; i < 12000; i++) big.push((r() < 0.5 ? -1 : 1) * (1 + r()) * Math.pow(2, 20 + Math.floor(r() * 1004)));
+    for (let i = 0; i < 1000; i++) big.push(1647100 + r() * 1e6);
+    for (const x of big) out.push('sin ' + hex(x) + ' ' + hex(0) + ' ' + hex(Math.sin(x)), 'cos ' + hex(x) + ' ' + hex(0) + ' ' + hex(Math.cos(x)));
     fs.writeFileSync(a, out.join('\n') + '\n'); console.log('math', out.length, 'values ->', a); return;
   }
   if (mode === 'threat') { // threat <scenario> <out>: ui3d.js computeThreat (copied below) after the battle setup and the first enemy step, for api.threat_map

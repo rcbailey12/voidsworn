@@ -204,11 +204,11 @@ var _lw := {}      # evalThreatVet: each foe's live guns inside a scoring window
 var _slot := {}    # unit id -> small number, for the packed cache keys
 var _runfx = null
 func eval_begin() -> void:
-	_evc = true; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear()
+	_evc = true; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear(); _ev.clear()
 	if B != null:
 		for i in range(B["units"].size()): _slot[B["units"][i]["id"]] = i
 func eval_end() -> void:
-	_evc = false; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear()
+	_evc = false; _los.clear(); _guard.clear(); _tc.clear(); _hc.clear(); _lw.clear(); _slot.clear(); _ev.clear()
 func angTo(a, b) -> float:
 	var k = ((int(a["q"]) + 64) * 128 + int(a["r"]) + 64) * 16384 + (int(b["q"]) + 64) * 128 + int(b["r"]) + 64
 	var c = _ang.get(k)
@@ -511,6 +511,7 @@ func eventTick() -> void:
 		var side = "enemy" if e["k"] == "reinf_enemy" else "player"; var h = edgeHex(side)
 		if h == null:
 			logm("The reinforcements could not find a clear lane and turn back.", "x"); return
+		if side == "enemy" and jt(B.get("nem")): nemSig("reinforce")   # R42: a Hegemony Nemesis's reinforcements
 		var fac = B["cfg"]["fac"] if side == "enemy" else (RUN["fac"] if RUN != null and jt(RUN.get("fac")) else "voidsworn")
 		var s = B["sector"] if jt(B.get("sector")) else 1
 		var u = makeUnit(side, cheapHull(fac), {"scale": (1.0 + 0.12 * (s - 1)) if side == "enemy" else 1, "dmg": (1.0 + 0.08 * (s - 1)) if side == "enemy" else 1, "fac": fac})
@@ -1170,7 +1171,8 @@ func startBattle(cfg: Dictionary) -> void:
 		JSM.ssort(cand, func(x, y): return (y["t"]["cp"] if jt(y["t"].get("cp")) else 1) - (x["t"]["cp"] if jt(x["t"].get("cp")) else 1))
 		var n = min(cand.size(), cand.size() if nCar >= 3 else int(ceil(cand.size() / 2.0)))
 		for i in range(n):
-			var u = cand[i]; u["weapons"].append(mkWeapon(pd, "T", u["fx"] if jt(u.get("fx")) else {})); u["pdRefit"] = true
+			var u = cand[i]; var rw = nameWeapons(u["fac"], [mkWeapon(pd, "T", u["fx"] if jt(u.get("fx")) else {})])[0]
+			rw["fired"] = false; rw["cdLeft"] = 0; rw["off"] = 0; u["weapons"].append(rw); u["pdRefit"] = true   # B-21: the refit gun gets the per-battle fields, so it fires and intercepts wings
 		if n != 0: B["adapt"] = n
 		if FACTIONS.has(cfg["fac"]) and jt(FACTIONS[cfg["fac"]].get("sq")): B["adaptWings"] = 2 if nCar >= 3 else 1
 	if enc == "intercept":
@@ -1375,6 +1377,9 @@ func startSideTurn(side) -> int:
 	if side == "enemy":
 		aiRefreshFocus(); bossCmdTick()
 	escortsBreak(); nemBreak()
+	if side == "enemy":   # R42: a Corsair or Ithar Nemesis withdraws from a lost fight; a slow one shows it from round 2
+		nemFleeCheck()
+		if B["round"] >= 2 and jt(B.get("nem")): nemTrip("slow")
 	if side == "enemy":
 		for u in B["units"]:
 			if u["side"] == "enemy" and not jt(u.get("dead")) and not jt(u.get("isSq")): aiStance(u)
@@ -1719,44 +1724,237 @@ func torpThreat(u, v) -> float:
 		elif d == 0: tot += sv["w"]["dmg"] * sv["w"]["shots"] * 0.5
 	return tot
 func nemWeak(k) -> bool: return B != null and B.get("nem") != null and B["nem"].get("weak") != null and B["nem"]["weak"].has(k)
-func applyNemesis(N) -> void:
+func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, faction behaviour, duel fleet, honed, riches, artillery line, memory lines)
 	B["nem"] = N; var es = []
 	for u in B["units"]:
 		if u["side"] == "enemy" and not jt(u.get("isSq")) and not jt(u.get("transport")): es.append(u)
 	if es.size() == 0: return
+	var NF = TB.NEM_FAC.get(N.get("fac")) if TB.NEM_FAC.get(N.get("fac")) != null else {"beh": {}}
+	var beh = NF["beh"] if jt(NF.get("beh")) else {}
+	var tr = N["traits"] if N.get("traits") != null else []
+	var ad = N["adapt"] if N.get("adapt") != null else []
 	var srt = es.duplicate(); JSM.ssort(srt, func(a, b): return _byCpHp(a, b)); var fl = srt[0]
 	fl["nemFlag"] = true; fl["elite"] = true; fl["name"] = String(N["title"]) + " " + String(N["name"]); fl["dmg"] = fl["dmg"] * (1.0 + 0.1 * z0(N.get("scars")))
+	if beh.get("strike") == "duel" and es.size() > 4: # R42 duelist (Ithar): at most four hulls
+		var rest = []
+		for u in es:
+			if not is_same(u, fl): rest.append(u)
+		JSM.ssort(rest, func(a, b): return (float(b["t"]["cp"]) if jt(b["t"].get("cp")) else 1.0) - (float(a["t"]["cp"]) if jt(a["t"].get("cp")) else 1.0))
+		var keep = [fl] + rest.slice(0, 3)
+		var nu = []
+		for u in B["units"]:
+			var par = null
+			if jt(u.get("parent")):
+				for x in B["units"]:
+					if x["id"] == u["parent"]: par = x; break
+			if u["side"] != "enemy" or jt(u.get("isSq")) or jt(u.get("transport")) or JSM.has_same(keep, u) or (par != null and JSM.has_same(keep, par)): nu.append(u)
+		B["units"] = nu
+		var es2 = []
+		for u in es:
+			if JSM.has_same(keep, u): es2.append(u)
+		es = es2
+	if beh.get("strike") == "duel":
+		for u in es:
+			if not jt(u.get("elite")):
+				u["elite"] = true; u["aim"] = u["aim"] + 6; u["crit"] = u["crit"] + 5
+	if beh.get("strike") == "duel" and jt(N.get("honed")): # R49: an Ithar who fled comes back honed
+		var h = min(3, N["honed"])
+		for u in es:
+			u["aim"] = u["aim"] + 3 * h
+			if u["shMax"] > 0:
+				u["shMax"] = JSM.jsround(u["shMax"] * (1.0 + 0.1 * h)); var sh = []
+				for _i in range(u["sh"].size()): sh.append(u["shMax"])
+				u["sh"] = sh
+	var nr = (z0(N.get("riches")) if beh.get("strike") == "raid" else 0) + (1 if ad.has("riches") else 0) # R42 Corsair riches (R49: only a Corsair)
+	for _i in range(int(nr)):
+		var hx = edgeHex("enemy")
+		if hx == null: break
+		var sct = B["sector"] if jt(B.get("sector")) else 1
+		var x = makeUnit("enemy", cheapHull(fl["fac"]), {"scale": 1.0 + 0.12 * (sct - 1), "dmg": 1.0 + 0.08 * (sct - 1), "fac": fl["fac"]})
+		x["q"] = hx.q; x["r"] = hx.r; x["facing"] = 3; B["units"].append(x); es.append(x)
 	if fl["fac"] == "hegemony":
 		for u in es: u["anchor"] = false
 		fl["anchor"] = true
-	var adapt = N["adapt"] if N.get("adapt") != null else []
+	if jt(beh.get("line")): # R42 Hegemony artillery line
+		for u in es:
+			if is_same(u, fl): continue
+			for w in u["weapons"]:
+				if w["k"] != "flak" and w["k"] != "sq": w["opt"] = w["opt"] + 1
+	var fed: float = min(0.32, 0.04 * z0(N.get("fed")))
 	for u in es:
 		u["nem"] = true
 		if nemWeak("board"):
 			u["crewMax"] = max(4, JSM.jsround(u["crewMax"] * 0.7)); u["crew"] = min(u["crew"], u["crewMax"])
 		if nemWeak("slow"): u["speed"] = max(1, u["speed"] - 1)
-		for a in adapt:
+		for a in ad:
 			if a == "shields" and u["shMax"] > 0:
-				u["shMax"] = JSM.jsround(u["shMax"] * 1.2); u["sh"] = [u["shMax"], u["shMax"], u["shMax"], u["shMax"]]
+				u["shMax"] = JSM.jsround(u["shMax"] * 1.2); var sh = []
+				for _i in range(u["sh"].size()): sh.append(u["shMax"])
+				u["sh"] = sh
 			if a == "armor": u["armor"] = min(0.6, u["armor"] + 0.1)
 			if a == "evasion": u["ev"] = u["ev"] + 8
 			if a == "aim": u["aim"] = u["aim"] + 8
-	if adapt.has("pd"):
+			if a == "veil": u["ev"] = u["ev"] + 6
+			if a == "hunger": u["hullRegen"] = u["hullRegen"] + 3
+			if a == "zeal": u["dmg"] = u["dmg"] + 0.08
+		if tr.has("gunnery"): u["aim"] = u["aim"] + 6
+		if tr.has("armored"): u["armor"] = min(0.6, u["armor"] + 0.08)
+		if tr.has("swift"): u["speed"] = u["speed"] + 1
+		if tr.has("deadeye"): u["crit"] = u["crit"] + 10
+		if tr.has("veil"): u["ev"] = u["ev"] + 8
+		if tr.has("regrowth"): u["hullRegen"] = u["hullRegen"] + 4
+		if tr.has("veterans") or fed > 0:
+			var k: float = 1.0 + (0.12 if tr.has("veterans") else 0.0) + fed
+			u["maxHp"] = JSM.jsround(u["maxHp"] * k); u["hp"] = JSM.jsround(u["hp"] * k)
+			if jt(u.get("sec")):
+				for sk in u["sec"].keys():
+					u["sec"][sk]["max"] = JSM.jsround(u["sec"][sk]["max"] * k); u["sec"][sk]["hp"] = JSM.jsround(u["sec"][sk]["hp"] * k)
+		if tr.has("shielded") and u["shMax"] > 0:
+			u["shMax"] = JSM.jsround(u["shMax"] * 1.2); var sh = []
+			for _i in range(u["sh"].size()): sh.append(u["shMax"])
+			u["sh"] = sh
+		if tr.has("boarders"):
+			u["crewMax"] = JSM.jsround(u["crewMax"] * 1.3); u["crew"] = u["crewMax"]
+		if tr.has("artillery"):
+			for w in u["weapons"]:
+				if w["k"] != "flak" and w["k"] != "sq":
+					w["r"] = w["r"] + 1; w["opt"] = w["opt"] + 1
+		if tr.has("rockets"):
+			for w in u["weapons"]:
+				if w["k"] == "torp": w["cd"] = max(1, (w["cd"] if jt(w.get("cd")) else 2) - 1)
+		if tr.has("brood") and u.get("ab") == "launch":
+			u["hangar"] = z0(u.get("hangar")) + 1; u["spare"] = z0(u.get("spare")) + 1
+	if tr.has("undying") and jt(B.get("legion")): B["legion"]["enemy"]["max"] = B["legion"]["enemy"]["max"] + 1
+	if ad.has("legion") and jt(B.get("legion")): B["legion"]["enemy"]["max"] = B["legion"]["enemy"]["max"] + 1
+	if ad.has("formation"):
+		var sr = B["syncR"].duplicate() if B.get("syncR") is Dictionary else {}
+		sr["enemy"] = TB.SYNC_R + 1; B["syncR"] = sr
+	if ad.has("pd"):
 		var pd = "spores" if fl["fac"] == "chorus" else "flak"; var nf = []
 		for u in es:
 			if not _has_flak(u): nf.append(u)
 		for u in nf.slice(0, 2):
-			var w = mkWeapon(pd, "T", u["fx"] if jt(u.get("fx")) else {}); w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0; u["weapons"].append(w)
+			var w = nameWeapons(u["fac"], [mkWeapon(pd, "T", u["fx"] if jt(u.get("fx")) else {})])[0]; w["fired"] = false; w["cdLeft"] = 0; w["off"] = 0; u["weapons"].append(w)
+	B["nemFlee"] = beh["flee"] if jt(beh.get("flee")) else null; B["nemAi"] = beh["ai"] if jt(beh.get("ai")) else null; B["nemLine"] = jt(beh.get("line"))
+	B["nemNoRout"] = jt(beh.get("noFlee")) or jt(beh.get("revive")); B["nemChallenge"] = beh.get("strike") == "challenge"
+	B["nemPersona"] = TB.NEM_PERSONA.get(N.get("persona")) if N.get("persona") != null else null
+	if B.get("cp0") != null: B["cp0"]["enemy"] = sideCP("enemy")
 	var an = []
-	for a in adapt: an.append(String(TB.NEM_ADAPT[a]["n"]).to_lower())
-	logm(String(fl["name"]) + " commands this fleet: your Nemesis." + ((" He has adapted: " + ", ".join(an) + ".") if adapt.size() > 0 else ""), "e")
+	for a in ad: an.append(nemAdaptName(a, N.get("fac")).to_lower())
+	var pron = "It" if N.get("g") == "n" else ("She" if N.get("g") == "f" else "He")
+	logm(String(fl["name"]) + " commands this fleet: your Nemesis." + ((" " + pron + " has adapted: " + ", ".join(an) + ".") if ad.size() > 0 else ""), "e")
+	var L = TB.NEM_LINES
+	var bw = null
+	if jt(N.get("last_beat")): bw = TB.NEM_BEAT_WORD.get(N["last_beat"]) if jt(TB.NEM_BEAT_WORD.get(N["last_beat"])) else N["last_beat"]
+	var cnt = TB.NEM_BEAT_COUNTER.get(N["last_beat"]) if N.get("last_beat") != null else null
+	var line = null
+	if jt(N.get("gloat")) and jt(L.get("gloat")): line = L["gloat"].get(N["gloat"])
+	elif jt(N.get("met")) and jt(bw):
+		var tpl = L["again"] if ad.has(cnt) else (L["remember"] if jt(L.get("remember")) else L["again"])
+		var ts = String(tpl); var bi = ts.find("{beat}")   # JS replace: the first occurrence only
+		line = (ts.substr(0, bi) + String(bw) + ts.substr(bi + 6)) if bi >= 0 else ts
+	else: line = L["meet"].get(N.get("persona")) if (N.get("persona") != null and jt(L["meet"].get(N["persona"]))) else ""
+	if jt(line): logm(String(fl["name"]) + ": \"" + String(line) + "\"", "e")
+	if jt(B.get("nemChallenge")): nemSig("challenge")
+	if beh.get("strike") == "duel": nemSig("duel")
+	if jt(beh.get("line")): nemSig("line")
+	if jt(B.get("nemChallenge")):
+		var d = nemDuelTarget()
+		if d != null: logm(String(fl["name"]) + " challenges " + ("your flagship" if jt(d.get("pflag")) else String(d["name"])) + " to single combat and comes for it: the two ships deal 20% more damage to each other.", "e")
+# campaign_run.js nemAdaptName: the counter's name in the Nemesis's own faction words (the browser loads it beside battle.js)
+func nemAdaptName(a, fac) -> String:
+	var T = TB.NEM_ADAPT_FAC.get(fac) if (fac != null and TB.NEM_ADAPT_FAC.get(fac) != null) else {}
+	if T.get("special") != null and js_eq(T["special"].get("id"), a): return String(T["special"]["n"])
+	if a is String and a != "special" and jt(T.get(a)): return String(T[a])
+	if a is String and TB.NEM_ADAPT.get(a) != null and jt(TB.NEM_ADAPT[a].get("n")): return String(TB.NEM_ADAPT[a]["n"])
+	return tv(a)
+# R49 Voidsworn challenge: his flagship seeks your flagship, or your strongest ship once it is gone
+func nemDuelTarget() -> Variant:
+	if B == null or not jt(B.get("nemChallenge")): return null
+	var d = null
+	if B.get("nemDuel") != null:
+		for u in B["units"]:
+			if u["id"] == B["nemDuel"] and not jt(u.get("dead")) and u["side"] == "player": d = u; break
+	if d == null:
+		for u in B["units"]:
+			if jt(u.get("pflag")) and not jt(u.get("dead")) and u["side"] == "player": d = u; break
+		if d == null:
+			var c = []
+			for u in B["units"]:
+				if u["side"] == "player" and not jt(u.get("dead")) and not jt(u.get("isSq")) and not jt(u.get("reinf")): c.append(u)
+			JSM.ssort(c, func(a, b):
+				var dd = _byCpHp(a, b)
+				return dd if dd != 0.0 else (-1 if String(a["id"]) < String(b["id"]) else 1))
+			if c.size() > 0: d = c[0]
+		if d != null:
+			var first = B.get("nemDuel") == null; B["nemDuel"] = d["id"]
+			if not first:
+				var f = null
+				for u in B["units"]:
+					if jt(u.get("nemFlag")) and not jt(u.get("dead")): f = u; break
+				if f != null: logm(String(f["name"]) + " turns to " + String(d["name"]) + ": the duel goes on.", "e")
+	return d
+# R42: a Corsair or Ithar Nemesis withdraws from a lost fight (checked at each enemy turn start)
+func nemFleeCheck() -> void:
+	if B == null or B.get("nem") == null or not jt(B.get("nemFlee")) or jt(B.get("nemFled")) or jt(B.get("over")): return
+	var f = null
+	for u in B["units"]:
+		if jt(u.get("nemFlag")) and not jt(u.get("dead")) and u["side"] == "enemy": f = u; break
+	if f == null: return
+	var Rf = B["nemFlee"]
+	var low = f["hp"] <= f["maxHp"] * z0(Rf.get("hull"))
+	if low and jt(Rf.get("shields")) and f["shMax"] > 0:
+		for x in f["sh"]:
+			if x > 0.5: low = false; break
+	if not low: return
+	B["nemFled"] = true; nemSig("flee_battle")
+	for e in alive("enemy"):
+		if jt(e.get("isSq")) or jt(e.get("transport")): continue
+		e["dead"] = true; e["fled"] = true; emit({"t": "fled", "unit": e["id"]})
+	logm(String(f["name"]) + " breaks off and jumps out with what is left of his fleet. He will be back.", "s"); checkEnd()
+# R42 personality and faction weights for his ships in the AI's move scoring
+func nemProf(u, prof) -> Dictionary:
+	var P = B.get("nemPersona") if B != null else null; var F = B.get("nemAi") if B != null else null
+	if u == null or not jt(u.get("nem")) or ((P == null or not jt(P.get("ai"))) and not jt(F)): return prof
+	var a = P["ai"] if (P != null and jt(P.get("ai"))) else {}; var o = prof.duplicate()
+	if jt(a.get("tw")): o["tw"] = prof["tw"] * a["tw"]
+	if a.get("range") != null: o["range"] = a["range"]
+	if jt(a.get("flagFront")) and jt(u.get("nemFlag")): o["tw"] = prof["tw"] * 0.6
+	if jt(F):
+		if F.get("range") != null: o["range"] = max(z0(o.get("range")), F["range"])
+		if jt(F.get("charge")) and jt(u.get("nemFlag")): o["tw"] = o["tw"] * 0.7
+	return o
+func nemTargetBonus(u, t) -> float:
+	var P = B.get("nemPersona") if B != null else null; var F = B.get("nemAi") if B != null else null
+	if u == null or not jt(u.get("nem")) or t == null: return 0.0
+	var a = P["ai"] if (P != null and jt(P.get("ai"))) else {}; var v = 0.0
+	if jt(a.get("focusWeak")) or (jt(F) and jt(F.get("focusWeak"))): v += 20.0 * (1.0 - float(t["hp"]) / t["maxHp"])
+	if jt(a.get("focusFlag")) and jt(t.get("pflag")): v += 25.0
+	if jt(F) and jt(F.get("hunt")) and jt(u.get("nemFlag")) and is_same(t, nemDuelTarget()): v += 30.0
+	return v
+# R42 signatures: his faction behaviour firing (the campaign records them from the event)
+func nemSig(kind: String) -> void:
+	if B == null or B.get("nem") == null: return
+	if B.get("nemSigs") == null: B["nemSigs"] = []
+	B["nemSigs"].append({"kind": kind, "r": B["round"]})
+	emit({"t": "nem_signature", "kind": kind})
+# R42 weaknesses found by triggering them: logged once, known for the rest of the run (no random draws)
+func nemTrip(k: String) -> void:
+	if B == null or B.get("nem") == null or not nemWeak(k): return
+	if B.get("nemFound") == null: B["nemFound"] = []
+	var rev = B["nem"].get("revealed") if B["nem"].get("revealed") != null else []
+	if B["nemFound"].has(k) or rev.has(k): return
+	B["nemFound"].append(k)
+	if B["nem"].get("revealed") == null: B["nem"]["revealed"] = []
+	B["nem"]["revealed"].append(k)
+	logm("Weakness found: " + String(TB.NEM_WEAK[k]["n"]) + ". " + String(TB.NEM_WEAK[k]["d"]), "s")
 func nemBreak() -> void:
 	if B == null or B.get("nem") == null or jt(B.get("nemBroken")) or not nemWeak("anchor"): return
 	var f = null
 	for u in B["units"]:
 		if jt(u.get("nemFlag")) and not jt(u.get("dead")) and u["side"] == "enemy": f = u; break
 	if f == null or f["hp"] > f["maxHp"] * 0.6: return
-	B["nemBroken"] = true; var esc = []
+	B["nemBroken"] = true; nemTrip("anchor"); var esc = []
 	for u in alive("enemy"):
 		if not is_same(u, f) and not jt(u.get("isSq")) and not jt(u.get("transport")): esc.append(u)
 	for e in esc:
@@ -1905,7 +2103,7 @@ func torpImpact(S) -> void:
 		if x["id"] == S["tid"] and orig == null: orig = x
 	var t = null; var pen = 0
 	if orig != null and not jt(orig.get("dead")) and orig["side"] != S["side"] and hdist(orig, S["aim"]) <= 2:
-		t = orig; pen = TB.TORP_RING[int(hdist(orig, S["aim"]))]
+		t = orig; pen = ([0, 0, 10] if w.get("trait") == "star" else TB.TORP_RING)[int(hdist(orig, S["aim"]))]   # Ithar star torpedoes track better
 	else:
 		var lim = 0 if (orig != null and not jt(orig.get("dead"))) else 1; var fs = []
 		for o in B["units"]:
@@ -2098,6 +2296,8 @@ func dmgMult(u, w, t, rear) -> float:
 	if jt(u.get("isSq")): m += z0(u.get("sqPct"))
 	if rear: m += z0(fx.get("rearPct"))
 	if rear and jt(t.get("nem")) and nemWeak("flank"): m += 0.25
+	if B != null and jt(B.get("nemChallenge")) and ((jt(u.get("nemFlag")) and js_eq(t.get("id"), B.get("nemDuel"))) or (js_eq(u.get("id"), B.get("nemDuel")) and jt(t.get("nemFlag")))): m += 0.2   # R42 Voidsworn Nemesis: the flagship duel
+	if jt(u.get("nem")) and B != null and B.get("nem") != null and (B["nem"]["traits"] if B["nem"].get("traits") != null else []).has("zeal") and hdist(u, t) == 1: m += 0.12   # R42 trait: zealots up close
 	if jt(u.get("isSq")) and not jt(t.get("isSq")):
 		if wingStance(u) == "hunt" and t["hp"] < t["maxHp"] / 2.0: m += 0.2
 		var par = null
@@ -2120,7 +2320,27 @@ func dmgMult(u, w, t, rear) -> float:
 	if jt(u.get("isSq")) and cmdActive(u["side"], "scramble"): base *= 1.0 + cmdPow("scramble", null, u["side"])
 	if B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"]: base *= B["volleyMul"]["m"]
 	return base
+# Inside a scoring window (eval_begin to eval_end) nothing in the battle changes, so expectedVs depends only on the two ships, the gun,
+# the shooter's hex and hexes moved (hit chance, sync, rake), the target's hex, facing (shield quadrant) and hexes moved. Not on the
+# shooter's facing: arcs are checked by the callers. Callers only read the result.
+var _ev := {}
 func expectedVs(u, w, t) -> Dictionary:
+	if _evc:
+		var su = _slot.get(u.get("id")); var st = _slot.get(t.get("id")); var wi = -1
+		var ws = u["weapons"]
+		for i in range(ws.size()):
+			if is_same(ws[i], w):
+				wi = i; break
+		var hu = int(z0(u.get("hexMoved"))); var ht = int(z0(t.get("hexMoved")))
+		var uq = int(u["q"]) + 64; var ur = int(u["r"]); var tq = int(t["q"]) + 64; var tr = int(t["r"]); var tf = int(t["facing"])
+		if su != null and st != null and su < 64 and st < 64 and wi >= 0 and wi < 16 and hu < 16 and ht < 16 and uq >= 0 and uq < 128 and tq >= 0 and tq < 128 and ur >= 0 and ur < 64 and tr >= 0 and tr < 64 and tf >= 0 and tf < 8:
+			var k = (((((((((su * 16 + wi) * 64 + st) * 128 + uq) * 64 + ur) * 128 + tq) * 64 + tr) * 16 + hu) * 16 + ht) * 8 + tf)
+			var c = _ev.get(k)
+			if c == null:
+				c = _expectedVs_raw(u, w, t); _ev[k] = c
+			return c
+	return _expectedVs_raw(u, w, t)
+func _expectedVs_raw(u, w, t) -> Dictionary:
 	var quad = shieldQuad(t, u); var rear = quad == 2
 	var hit = hitChance(u, w, t) / 100.0; var per = dmgMult(u, w, t, rear)
 	var raw: float = per * w["shots"] * hit
@@ -2308,6 +2528,12 @@ func landVolley(u, w, t, o) -> bool: # the shots of one weapon land (direct fire
 				if jt(cs) and jt(res.sys): boonFx(t, "a_crit", res.sys, -48)
 	if called != null:
 		u["crit"] = u["crit"] - 15; t["_calledSec"] = null
+	if res.hits > 0 and jt(B.get("nem")):   # R42: weaknesses found by triggering them
+		if jt(t.get("nem")) and u["side"] == "player":
+			if quad == 2: nemTrip("flank")
+			if (jt(w.get("ion")) or w.get("k") == "lance") and res.shield > 0: nemTrip("ion")
+			if jt(o.get("torp")): nemTrip("torp")
+		if jt(u.get("nem")) and t["side"] == "player" and not jt(u.get("isSq")) and hdist(u, t) <= 2: nemTrip("brawl")
 	if res.shield > 0:
 		flt(t, "−" + ns(res.shield) + " shield", "#62ccff", -18)
 		if t["shMax"] > 0 and t["sh"][quad] <= 0.5:
@@ -2438,6 +2664,7 @@ func boardUnit(u, t) -> bool:
 	var live = liveFrom(u)
 	hook("board", u)
 	if not live.call() or jt(t.get("dead")): return false
+	if jt(t.get("nem")) and u["side"] == "player": nemTrip("board")   # R42: his thin crews show once you board
 	var a = u["crew"] * (BOARD_MULT[u["fac"]] if jt(BOARD_MULT.get(u["fac"])) else 1.0) * (1.0 + z0(g(u.get("fx"), "boardPct"))) * (0.75 + rnd() * 0.5)
 	var d = t["crew"] * (BOARD_MULT[t["fac"]] if jt(BOARD_MULT.get(t["fac"])) else 1.0) * (2.25 if jt(t.get("repel")) else 1.5) * (0.75 + rnd() * 0.5)
 	var kill = JSM.jsround(a * 0.38); var loss = min(u["crew"] - 1, JSM.jsround(d * 0.3)); t["crew"] = max(0, t["crew"] - kill); u["crew"] = max(1, u["crew"] - loss)
@@ -2804,7 +3031,7 @@ func checkEndRules() -> void:
 		bossDown = true
 		for u in B["units"]:
 			if jt(u.get("boss")) and u["side"] == "enemy" and not jt(u.get("dead")): bossDown = false
-	if bossDown or sideCP("enemy") <= B["cp0"]["enemy"] * 0.35:
+	if bossDown or (sideCP("enemy") <= B["cp0"]["enemy"] * 0.35 and not jt(B.get("nemNoRout"))):   # R42: a Voidsworn or Deathless Nemesis fights to the last hull
 		B["over"] = "win"; B["routed"] = true; logm("The flagship is gone. Its escorts break and flee." if bossDown else "The enemy fleet breaks and flees.", "s")
 
 # ======================= orders, commands, abilities =======================
@@ -3461,7 +3688,7 @@ func aiPickPrimary(u, ws: Array, focus) -> Variant: # with target hysteresis: ke
 			if not canFire(u, w, t): continue
 			var e = expectedVs(u, w, t); sh += e.shield * 0.3; hull += e.hull
 		if sh == 0.0 and hull == 0.0: continue
-		var val: float = (min(hull, t["hp"]) + sh) * (0.6 if jt(t.get("isSq")) else 1.1) + ((25.0 + t["maxHp"] * 0.15) if hull >= t["hp"] else 0.0) + (10.0 if (focus != null and is_same(t, focus)) else 0.0) + (1.0 - float(t["hp"]) / t["maxHp"]) * 15.0
+		var val: float = (min(hull, t["hp"]) + sh) * (0.6 if jt(t.get("isSq")) else 1.1) + ((25.0 + t["maxHp"] * 0.15) if hull >= t["hp"] else 0.0) + (10.0 if (focus != null and is_same(t, focus)) else 0.0) + (1.0 - float(t["hp"]) / t["maxHp"]) * 15.0 + nemTargetBonus(u, t)
 		if last != null and is_same(t, last): lastV = val
 		if val > pv: pv = val; primary = t
 	if last != null and lastV > 0 and lastV >= pv * TB.AI_STICK: primary = last
@@ -3670,7 +3897,7 @@ func aiUnit(u) -> void:
 		var vet = vet0; var focus = focus0
 		var off = evalOffenseVet(v, ready, foes, focus) if vet else evalOffense(v, ready, foes)
 		var threat = evalThreatVet(v, foes) if vet else evalThreat(v, foes)
-		var prof = FACTION_AI[u["fac"]] if (not jt(u.get("isSq")) and jt(FACTION_AI.get(u["fac"]))) else FACTION_AI["voidsworn"]
+		var prof = nemProf(u, FACTION_AI[u["fac"]] if (not jt(u.get("isSq")) and jt(FACTION_AI.get(u["fac"]))) else FACTION_AI["voidsworn"])
 		var tw: float = (0.15 if jt(u.get("isSq")) else (0.3 if not vet else (0.65 if jt(u.get("flagship")) else aiHurtW(u, prof)))) * prof["tw"]
 		var score: float = off - threat * tw
 		if vet and not jt(u.get("isSq")) and threat >= u["hp"]: score -= 25.0
@@ -3696,7 +3923,7 @@ func aiUnit(u) -> void:
 			var hd = JSM.amin(hds); var nd: float = max(hd, fieldDist(PF, v, hd)); score -= max(0, nd - minR) * 4.0
 		score -= s.cost * 0.05
 		if not jt(u.get("isSq")):
-			score -= torpThreat(u, v) * 0.9; score -= syncPull(u, v) * (2.0 if vet else 1.2)
+			score -= torpThreat(u, v) * 0.9; score -= syncPull(u, v) * (2.0 if vet else 1.2) * (2.0 if (jt(u.get("nem")) and jt(B.get("nemLine"))) else 1.0)
 		if jt(B.get("obj")) and B["obj"].type == "hold" and not jt(u.get("isSq")) and not vet: score -= hdist(v, B["obj"].hex) * 1.6
 		score += aiObjScore(u, v); score += aiWellScore(u, v)
 		if score > bestScore:

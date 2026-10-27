@@ -1190,5 +1190,289 @@
    "harrow",
    "warden"
   ]
+ },
+ "s35": {
+  "note": "Nemesis R42/R49, Corsair (stream B step 4): raid faction riches (two escapes plus the riches special bring extra ships at the edge), greedy persona (+25 on your flagship), boarders and rockets traits, the 'remember' memory line; he withdraws when his flagship drops under 35% hull (nemFleeCheck, flee_battle signature); flank and brawl weaknesses found by triggering them",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "map": "belt",
+  "seed": 2,
+  "sector": 2,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "harrow",
+   "warden"
+  ],
+  "fac": "corsair",
+  "nemesis": {
+   "name": "KragTooth",
+   "title": "Reaver-king",
+   "fac": "corsair",
+   "weak": [
+    "flank",
+    "brawl"
+   ],
+   "adapt": [
+    "riches",
+    "aim"
+   ],
+   "scars": 1,
+   "persona": "greedy",
+   "traits": [
+    "boarders",
+    "rockets"
+   ],
+   "g": "m",
+   "riches": 2,
+   "met": 1,
+   "last_beat": "torp"
+  }
+ },
+ "s36": {
+  "note": "Nemesis R42/R49, Ithar: the duel fleet (four hulls at most, all elite), honed 2 (aim +6, shields x1.2), riches ignored for a non-raid faction, shielded and artillery traits, veil special, faction AI (keep range 3, pick off the weakest), duel signature; withdraws once every flagship shield is down and hull under 60%; ion and torp weaknesses found",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "seed": 1,
+  "sector": 3,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "reliquary",
+   "harrow",
+   "harrow",
+   "warden"
+  ],
+  "fac": "ithar",
+  "nemesis": {
+   "name": "Aelwyn",
+   "title": "Seraph",
+   "fac": "ithar",
+   "weak": [
+    "ion",
+    "torp"
+   ],
+   "adapt": [
+    "veil",
+    "shields"
+   ],
+   "scars": 0,
+   "persona": "patient",
+   "traits": [
+    "shielded",
+    "artillery"
+   ],
+   "g": "f",
+   "honed": 2,
+   "riches": 3
+  }
+ },
+ "s37": {
+  "note": "Nemesis R42/R49, Voidsworn: the challenge (nemDuelTarget: your flagship, then your biggest ship once it falls, logged), +20% damage both ways in the duel, his flagship hunts it (+30 target bonus) and charges (tw x.7), zeal trait (+12% at 1 hex) and zeal special, veterans, never routs; slow weakness found at round 2",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "seed": 4,
+  "sector": 2,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "voidsworn",
+  "nemesis": {
+   "name": "Varrow",
+   "title": "Lord Censor",
+   "fac": "voidsworn",
+   "weak": [
+    "board",
+    "slow"
+   ],
+   "adapt": [
+    "evasion",
+    "zeal"
+   ],
+   "scars": 2,
+   "persona": "zealous",
+   "traits": [
+    "zeal",
+    "veterans"
+   ],
+   "g": "m",
+   "met": 1,
+   "last_beat": "battery"
+  }
+ },
+ "s38": {
+  "note": "Nemesis R42/R49, Hegemony: artillery line (escorts' guns opt +1, syncPull x2), formation special (enemy sync radius 4), artillery and gunnery traits, the gloat line, campaign reinforcements (reinforce signature), line signature; anchor and flank weaknesses found",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "map": "station",
+  "seed": 1,
+  "sector": 2,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "campaign": true,
+  "event_force": "reinf_enemy",
+  "nemesis": {
+   "name": "Ilsa Valk",
+   "title": "Grand Admiral",
+   "fac": "hegemony",
+   "weak": [
+    "anchor",
+    "flank"
+   ],
+   "adapt": [
+    "formation",
+    "pd"
+   ],
+   "scars": 0,
+   "persona": "methodical",
+   "traits": [
+    "artillery",
+    "gunnery"
+   ],
+   "g": "f",
+   "gloat": "flagship"
+  }
+ },
+ "s39": {
+  "note": "Nemesis R42/R49, Deathless: undying trait and legion special (two more returns), regrowth trait, never routs (revive faction), cruel persona (finishes crippled ships), the 'again' line when his adaptation counters what beat him (lance and shields; here armor and legion, so 'remember'); slow weakness found",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "map": "graveyard",
+  "seed": 1,
+  "sector": 3,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "reliquary",
+   "harrow",
+   "harrow",
+   "warden"
+  ],
+  "fac": "deathless",
+  "nemesis": {
+   "name": "Aldric",
+   "title": "Ash-king",
+   "fac": "deathless",
+   "weak": [
+    "slow",
+    "ion"
+   ],
+   "adapt": [
+    "legion",
+    "armor"
+   ],
+   "scars": 1,
+   "persona": "cruel",
+   "traits": [
+    "undying",
+    "regrowth"
+   ],
+   "g": "m",
+   "met": 2,
+   "last_beat": "lance"
+  }
+ },
+ "s40": {
+  "note": "Nemesis R42/R49, Chorus: fed 3 (hull x1.12 incl. sections), hunger special (+3 regen), brood (one more wing and spare) and swift traits, ravenous persona, 'It' pronoun in the log; board weakness found",
+  "obj": "rout",
+  "shape": "open",
+  "dep": "line",
+  "kind": "elite",
+  "rounds": 12,
+  "bot": "full",
+  "map": "open",
+  "seed": 1,
+  "sector": 2,
+  "admiral": "vex",
+  "fleet": [
+   "cathedral",
+   "reliquary",
+   "harrow",
+   "warden"
+  ],
+  "fac": "chorus",
+  "nemesis": {
+   "name": "Hollow Maw",
+   "title": "Spawn-mother",
+   "fac": "chorus",
+   "weak": [
+    "board",
+    "torp"
+   ],
+   "adapt": [
+    "hunger",
+    "pd"
+   ],
+   "scars": 0,
+   "persona": "ravenous",
+   "traits": [
+    "brood",
+    "swift"
+   ],
+   "g": "n",
+   "fed": 3
+  }
+ },
+ "s41": {
+  "note": "Config type safety on the dead-star board (takeover queue item 3): cfg.alt arrives as a Dictionary (a settings blob) instead of a bool. The game reads cfg.alt!==false, so anything but false means alternating activations; battle_api.gd once compared it with == false, which stops the call in GDScript (the same bug stopped battle.gd:438 on the dead-star board). Generated sector 2 Hegemony fleet, full bot, an ion storm field, gravity well pulls and tidal damage",
+  "obj": "rout",
+  "shape": "deadstar",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "map": "storm",
+  "seed": 41041,
+  "sector": 2,
+  "admiral": "vex",
+  "col": 3,
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "alt": {
+   "mode": "alternating",
+   "from": "settings"
+  }
  }
 }

@@ -44,7 +44,7 @@ for %%S in (1001 7 4242424242) do (
   type "%T%out\cmp.txt" >> "%LOG%"
 )
 
-echo [3/5] Math functions the rules use ^(sin, cos, atan2, exp, hypot, round, pow^) on 283,730 inputs...
+echo [3/5] Math functions the rules use ^(sin, cos, atan2, exp, hypot, round, pow^) on 316,090 inputs...
 "%NODE%" "%T%node\golden.js" math "%T%golden\math.txt" >> "%LOG%" 2>&1
 !GD! math "%T%golden\math.txt" > "%T%out\math.txt" 2>&1
 if errorlevel 1 ( echo   FAIL & type "%T%out\math.txt" & set /a FAILS+=1 ) else ( echo   PASS )

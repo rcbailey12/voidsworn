@@ -1,7 +1,7 @@
 // Random battle list for the parity sweep: node sweep_gen.js <count> <seed> <out.json>
 // Every field the scenarios understand is varied: fight type, field shape and map, deployment, battle kind, sector, column,
 // both factions, the admiral (and so the Command), the player fleet, generated enemy fleets (archetype, modifier), boons,
-// relics, aspect, heat, veteran captains, AI level, Classic mode, campaign events and the bot. Both sides read the same file.
+// relics, aspect, heat, veteran captains, AI level, Classic mode, campaign events, the Nemesis (R42 and R49) and the bot. Both sides read the same file.
 const fs = require('fs'), path = require('path');
 const T = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'tables.json'), 'utf8')).tables;
 const [n, seed, out] = [+process.argv[2] || 200, +process.argv[3] || 1, process.argv[4] || 'sweep.json'];
@@ -31,7 +31,13 @@ for (let i = 0; i < n; i++) {
   if (chance(0.25)) S.ai = 'standard';
   if (chance(0.15)) S.alt = false;
   if (chance(0.4)) S.attack_move = true;
-  if (kind === 'elite' && chance(0.4)) S.nemesis = { name: 'Nemesis', title: 'Admiral', fac: S.fac, weak: some(Object.keys(T.NEM_WEAK), 2), adapt: some(Object.keys(T.NEM_ADAPT), Math.floor(r() * 4)), scars: Math.floor(r() * 3) };
+  if (kind === 'elite' && chance(0.7)) { // the R42 and R49 Nemesis: persona, traits, faction special, honed, riches, fed, memory lines
+    const NF = T.NEM_FAC[S.fac] || { beh: {}, personas: [], traits: [] }, sp = (T.NEM_ADAPT_FAC[S.fac] || {}).special;
+    S.nemesis = { name: 'Nemesis', title: 'Admiral', fac: S.fac, weak: some(Object.keys(T.NEM_WEAK), 2), adapt: some(Object.keys(T.NEM_ADAPT).concat(sp ? [sp.id] : []), Math.floor(r() * 4)), scars: Math.floor(r() * 3),
+      persona: pick(NF.personas.length ? NF.personas : Object.keys(T.NEM_PERSONA)), traits: some(NF.traits || [], 2), g: NF.g || pick(['m', 'f']) };
+    const N = S.nemesis;
+    if (chance(0.5)) N.riches = Math.floor(r() * 4); if (chance(0.5)) N.honed = 1 + Math.floor(r() * 3); if (chance(0.4)) N.fed = Math.floor(r() * 9);
+    if (chance(0.5)) { N.met = 1 + Math.floor(r() * 2); N.last_beat = pick(['lance', 'torp', 'sq', 'ram', 'board', 'battery', 'evasive']); } else if (chance(0.3)) N.gloat = pick(Object.keys(T.NEM_LINES.gloat)); }
   if (chance(0.3) && T.FAC_VERBS[pf] && T.FAC_VERBS[pf].next) S.verb = T.FAC_VERBS[pf].id;
   if (chance(0.25)) { const cls = ['Frigate', 'Destroyer', 'Cruiser', 'Carrier']; S.class_track = {}; for (const c of some(cls, 2)) S.class_track[c] = 1 + Math.floor(r() * 3); }
   if (chance(0.5)) { S.campaign = true; if (chance(0.3)) S.event_force = pick(Object.keys(T.BEVENTS)); else if (chance(0.3)) S.event_war = true; }

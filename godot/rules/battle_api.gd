@@ -118,7 +118,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if R.jt(S.get("mod")): cfg["mod"] = S.mod
 	if S.get("nemesis") != null: cfg["nemesis"] = S.nemesis.duplicate(true)
 	if R.jt(S.get("verb")): cfg["verb"] = S.verb
-	if R.js_false(S.get("alt")): cfg["alt"] = false
+	if S.get("alt") != null: cfg["alt"] = S.alt   # passed through untouched, so new_battle's type-safe cfg.alt!==false is what decides (s41: a Dictionary)
 	if R.jt(S.get("campaign")):
 		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force"); cfg["event_war"] = S.get("event_war")
 	if S.get("enemies") != null:

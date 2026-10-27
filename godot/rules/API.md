@@ -147,13 +147,14 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `command` | `side, id, tier, unit` | A Command fires (barrage, hunt, iron, restore, surge, scramble). |
 | `death` | `unit, cause, by` | Play the death; `cause` picks the look: `cut` (lance), `big` (torpedo, ram), `flay` (gauss), `melt` (acid, spines), `dark` (burn-out, lucky battery hit), `tidal`, `blast`. |
 | `wreck` | `unit, q, r` | The hulk stays on the board as blocking terrain. |
-| `fled` | `unit` | The ship left the battle (escorts fleeing, a breakthrough, a convoy getting through). |
+| `fled` | `unit` | The ship left the battle (escorts fleeing, a breakthrough, a convoy getting through, a Nemesis withdrawing). |
 | `log` | `text, kind` | A battle log line, word for word as the game writes it. `kind` is the game's colour class: `p` (good for you), `e` (bad for you), `s` (a success), `x` (neutral), `ember` (warnings), or null. |
 | `float` | `unit, text, color, dy` | A floating callout over a ship, word for word and in the game's colour ("\u221212 hull", "Shields down", "Critical", "Braced", ability names, boon names). `dy` is the game's vertical offset in pixels (negative is higher; null means 0). |
 | `torpedo` | `unit, target, id, aim, name` | A torpedo salvo launches (no shots are rolled yet); draw its lane to `aim`. |
 | `torpedo_miss` | `id, aim` | A salvo runs wide at impact. A salvo that hits plays as a `fire` event with `torpedo` and `from` fields, at the start of the firing side's next turn. |
 | `risen` | `unit, q, r` | A Deathless wreck reassembles (the endless legion). |
 | `stance` | `unit, stance` | A carrier's wing stance changed. |
+| `nem_signature` | `kind` | Your Nemesis's faction behaviour fired (R42, for his battle voice): `challenge`, `duel`, `line` (at setup), `flee_battle` (he withdraws; his ships then leave as `fled`), `reinforce` (the round 3 reinforcements are his). `B.nemSigs` keeps them with the round, `B.nemFound` the weaknesses found in this battle (with a log line each). |
 | `end` | `result` | The battle is over. |
 
 Presentation events (no rules meaning; draw them or not):
@@ -170,7 +171,7 @@ Presentation events (no rules meaning; draw them or not):
 - GDScript has no exceptions: a runtime error returns from the failing function with a default value and play goes on with a wrong number. The API counts script errors raised inside `res://rules/` during each call (a Godot `Logger`), and reads `R.not_ported` (an unported rule, or an unported maths branch in `jsm.gd`).
 - **`hard_stop`** (default: on in debug builds, off in release builds; set `api.hard_stop = true` for bot runs): any such error halts the battle. `phase` becomes `"halted"`, `view().halt` says why, one event `{t: "halt", why}` is emitted, and every command and `step()` does nothing until the next `new_battle` / `new_battle_scenario`. The lock is always released, because the wrapper's unlock runs even when the body failed.
 - With `hard_stop` off the error is still logged, and play goes on.
-- **The battle config** is checked at `new_battle`: the string fields (kind, fac, obj, shape, map, dep, arch, mod, verb, event_force, biome, approach, arena) must be Strings or null, seed and col numbers, enemies an Array, nemesis a Dictionary. A wrong type is reported in `api.cfg_errors` (and as an error, so a hard stop halts) and the field is dropped. Without a known `fac` the battle cannot be set up and halts even with `hard_stop` off. A generated fleet without `col` uses column 3.
+- **The battle config** is checked at `new_battle`: the string fields (kind, fac, obj, shape, map, dep, arch, mod, verb, event_force, biome, approach, arena) must be Strings or null, seed and col numbers, enemies an Array, nemesis a Dictionary. A wrong type is reported in `api.cfg_errors` (and as an error, so a hard stop halts) and the field is dropped. Without a known `fac` the battle cannot be set up and halts even with `hard_stop` off. A generated fleet without `col` uses column 3. `alt` may be any value: only `false` means Classic mode, exactly as the game's `cfg.alt!==false` (a Dictionary used to stop the call; s41 covers it).
 - Inside the rules, `R.js_eq(a, b)` (JS `===`) and `R.js_false(x)` (`x === false`) compare untyped values safely: GDScript's `==` stops the call when the two sides have different types (a Dictionary against `false`, a String against a number), except against `null`, int against float and String against StringName.
 
 ## Determinism (audit items, Oct 26)
@@ -178,4 +179,4 @@ Presentation events (no rules meaning; draw them or not):
 - **Ship ids** are deterministic: `x0` followed by a counter that starts at 1 for every battle (the JS oracle pins `Date.now()` to 0, so its ids are the same). No timestamp exists anywhere in rules state or in the hash.
 - **Sorting:** every sort in the rules is a stable merge sort with the JS comparator (`JSM.ssort`, matching JS's stable `Array.prototype.sort`). Ties keep their insertion order, which is itself deterministic, so every ordering has a total tiebreak.
 - **Randomness:** all rules randomness comes from the game's seeded PRNG (`JSM.rnd`). Cosmetic randomness in the scene must use its own generator, never `JSM.rnd`.
-- **Maths:** sin, cos, atan2, exp, hypot, round and pow are V8's exact algorithms, so results are identical on every machine. Every fdlibm branch is ported (infinities, exp overflow and underflow, V8's exp(1) special case, pow with huge exponents and subnormal results) except sin and cos of arguments above 2^19 pi, which stop the battle as NOT PORTED (the rules only pass angles).
+- **Maths:** sin, cos, atan2, exp, hypot, round and pow are V8's exact algorithms, so results are identical on every machine. Every fdlibm branch is ported (infinities, exp overflow and underflow, V8's exp(1) special case, pow with huge exponents and subnormal results, and since Oct 27 sin and cos of any size through V8's big-argument reduction).
