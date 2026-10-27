@@ -227,6 +227,11 @@ func dead_star(c: Vector3, s: float) -> void:
 		var half := Rsh * 5.0
 		lm.set_shader_parameter("r_shadow", Rsh * 1.0 / half)
 		lm.set_shader_parameter("r_einstein", Rsh * 1.6 / half)
+		# the disc's lensed arcs and Doppler beaming are drawn in the lens (matching G3's map); it needs the disc's frame
+		lm.set_shader_parameter("disc_basis", tilt.global_transform.basis.orthonormalized() if tilt.is_inside_tree() else Basis.from_euler(tilt.rotation))
+		lm.set_shader_parameter("disc_r_mid", Rsh * 2.2)
+		lm.set_shader_parameter("disc_reach", Rsh * 4.2)
+		lm.set_shader_parameter("spin", 0.35)
 		lm.render_priority = -30   # drawn first among the see-through things: it copies the opaque picture, so later effects (beams, trails in front of it) draw over it, not under it
 		lens.material_override = lm
 		lens.scale = Vector3.ONE * half

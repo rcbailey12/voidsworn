@@ -122,12 +122,19 @@ const LENS := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 global uniform float scene_t;
+""" + NOISE + """
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap, repeat_disable;
 uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
 uniform float r_shadow = 0.12;   // shadow radius as a fraction of the quad's half size
 uniform float r_einstein = 0.2;
 uniform float photon = 1.0;
-uniform vec3 ring_col = vec3(1.0, 0.8, 0.55);
+uniform vec3 ring_col = vec3(1.0, 0.88, 0.68);
+// the disc (r6, to match G3's map): its world basis (y is its normal), its radii (world units), and the arcs' strength
+uniform mat3 disc_basis = mat3(1.0);
+uniform float disc_r_mid = 3.0;
+uniform float disc_reach = 5.0;
+uniform float arc_gain = 0.8;
+uniform float spin = 0.35;
 varying vec2 vUv;
 varying vec4 vCenterClip;
 varying float vHalf;
@@ -156,21 +163,55 @@ void fragment() {
 	float edge = smoothstep(1.0, 0.6, r);
 	float b = mix(th, beta, edge);
 	vec2 suv = cs + dir * b * k;
-	// only what lies behind the hole is bent: a pixel from something in front of it (a ship) is not used
-	float hole_z = -(VIEW_MATRIX * vec4((MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz, 1.0)).z;
+	// only the far background is bent: a source pixel nearer than the far edge of the disc (a ship, the disc itself) is
+	// not used, so nothing in front of the hole moves and the disc is never folded into fragments (r6: r4's g01 showed
+	// torn copies of the disc round the shadow); its lensed image is drawn below instead, as arcs over and under the shadow
+	vec3 H = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	float hole_z = -(VIEW_MATRIX * vec4(H, 1.0)).z;
 	float dsrc = texture(depth_tex, suv).r;
 	vec4 vsrc = INV_PROJECTION_MATRIX * vec4(suv * 2.0 - 1.0, dsrc, 1.0);
 	float src_z = -vsrc.z / vsrc.w;
-	if (src_z < hole_z * 0.98) { suv = SCREEN_UV + dir * 0.02 * edge; }
+	if (src_z < hole_z + disc_reach) { suv = SCREEN_UV; }
 	vec3 col = textureLod(screen_tex, suv, 0.0).rgb;
 	// a little extra brightening near the Einstein ring (lensing magnifies)
 	float mag = 1.0 + 0.6 * exp(-pow((th - r_einstein) / (r_einstein * 0.35), 2.0)) * edge;
 	col *= mag;
-	// the shadow and the photon ring
-	float sh = smoothstep(r_shadow * 1.02, r_shadow * 0.98, th);
-	float ring = exp(-pow((th - r_shadow * 1.05) / (r_shadow * 0.035), 2.0)) * photon;
-	float ring2 = exp(-pow((th - r_shadow * 1.12) / (r_shadow * 0.08), 2.0)) * photon * 0.35;
-	col = mix(col, vec3(0.0), sh) + ring_col * (ring * 6.0 + ring2 * 2.0) * (0.92 + 0.08 * sin(scene_t * 0.7));
+	// the disc's far side, lensed: a broad arc over the shadow and a thin secondary arc under it (the same recipe as
+	// G3's map, BH_LENSED), with Doppler beaming (the side turning toward the camera brighter and bluer)
+	vec3 N = normalize(disc_basis[1]);
+	vec3 Vd = normalize(H - CAMERA_POSITION_WORLD);
+	vec3 fdir = Vd - N * dot(Vd, N);
+	fdir = length(fdir) > 1e-4 ? normalize(fdir) : vec3(0.0, 0.0, 1.0);
+	vec3 A = normalize(cross(N, Vd));
+	vec2 hv = (VIEW_MATRIX * vec4(H, 1.0)).xy;
+	vec2 up2 = normalize((VIEW_MATRIX * vec4(H + fdir * disc_r_mid, 1.0)).xy - hv + vec2(0.0, 1e-5));
+	vec2 ax2 = normalize((VIEW_MATRIX * vec4(H + A * disc_r_mid, 1.0)).xy - hv + vec2(1e-5, 0.0));
+	vec2 pd = r > 1e-4 ? vUv / r : vec2(0.0, 1.0);
+	float ts = th / max(r_shadow, 1e-4);         // in shadow radii
+	float across = abs(pd.x * ax2.y - pd.y * ax2.x);
+	float up = step(0.0, dot(pd, up2));
+	float w_out = mix(1.4, 1.62, up);
+	float band = smoothstep(1.035, 1.07, ts) * (1.0 - smoothstep(w_out - 0.12, w_out, ts));
+	float u = clamp((ts - 1.05) / (w_out - 1.05), 0.0, 1.0);
+	float ang = atan(pd.y, pd.x);
+	float a2 = ang * 3.0 + scene_t * spin * 2.0;
+	float sp = wfbm(vec2(a2 * 4.0 + log(max(ts, 1.0)) * 8.0, ts * 7.0));
+	vec3 c = mix(vec3(1.0, 0.92, 0.8), vec3(1.0, 0.55, 0.2), smoothstep(0.0, 0.35, u));
+	c = mix(c, vec3(0.55, 0.12, 0.04), smoothstep(0.35, 1.0, u)) * (2.2 - 1.6 * u);
+	float arc = band * pow(across, 0.7) * (0.55 + 0.7 * sp) * mix(0.8, 1.0, up);
+	// which end of the long axis turns toward the camera
+	vec3 endp = H + A * disc_r_mid;
+	vec3 qE = transpose(disc_basis) * (endp - H);
+	vec3 tW = disc_basis * vec3(-qE.z, 0.0, qE.x);
+	float dopR = dot(normalize(tW), normalize(CAMERA_POSITION_WORLD - endp)) * sign(spin);
+	float beam = clamp(dopR * 2.0, -1.0, 1.0) * dot(pd, ax2);
+	c *= 1.0 + 0.45 * beam;
+	c = mix(c, c * vec3(0.85, 0.97, 1.2), clamp(beam, 0.0, 1.0) * 0.35);
+	c = mix(c, c * vec3(1.1, 0.8, 0.65), clamp(-beam, 0.0, 1.0) * 0.35);
+	// the shadow and the photon ring: thin, sharp, hugging the shadow, a little brighter on the approaching side
+	float sh = smoothstep(1.02, 0.98, ts);
+	float ring = (exp(-pow((ts - 1.02) / 0.011, 2.0)) * 3.2 * (1.0 + 0.25 * beam) + exp(-pow((ts - 1.06) / 0.05, 2.0)) * 0.35) * photon;
+	col = mix(col, vec3(0.0), sh) + (c * arc * arc_gain + ring_col * ring) * (0.95 + 0.05 * sin(scene_t * 0.7));
 	ALBEDO = col;
 	ALPHA = smoothstep(1.0, 0.85, r);
 }
