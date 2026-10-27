@@ -1097,6 +1097,7 @@ void fragment() {
 	// cuts; dark blue glass freckles round plasma; a grey rash round flak; green-black etch round acid; a blue-black
 	// scorched fern field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
 	float H = vH;
+	float hs = 0.0;   // the halo's share of this pixel (soot is matte: no metal, little specular; r13)
 	if (H > 0.05) {
 		float hb = fbm(q / R * (0.55 / max(H * 0.25, 0.5)) + seed * 1.7);
 		float hn = fbm(q / R * (2.2 / max(H * 0.25, 0.5)) + seed * 3.1);
@@ -1133,7 +1134,7 @@ void fragment() {
 			hc = mix(hc, vec3(0.008), pit);
 			hc = mix(hc, vec3(0.42, 0.41, 0.4), chip);
 			ha = min(1.0, ha * 1.8) * mix(0.72, 1.0, max(pit, chip));
-			hr = mix(0.7, 0.35, chip);
+			hr = mix(0.95, 0.35, chip);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
 			hc = mix(vec3(0.03, 0.045, 0.012), vec3(0.006, 0.01, 0.003), pit);
@@ -1170,12 +1171,12 @@ void fragment() {
 		else if (style == 3) { sc = vec3(0.35, 0.65, 1.0); scl = 6.0; }
 		else if (style == 8) { sc = vec3(0.45, 1.0, 0.2); scl = 8.0; sk = 1.3; }
 		else if (style == 9) { sc = vec3(0.45, 0.65, 1.0); scl = 6.0; sk = 1.3; }
-		else if (style == 7) { sk = 1.3; scl = 6.0; }
+		else if (style == 7) { sk = 1.0; scl = 6.0; }
 		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }
 		else if (style == 10) { sc = vec3(1.0, 0.55, 0.25); scl = 5.0; sk = 1.1; }
 		else if (style == 12 || style == 13) { sk = 0.0; }
 		// ... and a dim glow that lingers for most of a minute, so a hit ship still shows its hits from the battle camera
-		float sglow = smoothstep(0.0, 0.25, age) * (exp(-age / scl) + 0.18 * exp(-age / 45.0)) * sk;
+		float sglow = smoothstep(0.0, 0.25, age) * (exp(-age / scl) + 0.12 * exp(-age / 45.0)) * sk;
 		float sband = (1.0 - smoothstep(0.2, 0.7, hu)) * (0.35 + 0.65 * smoothstep(0.42, 0.68, hn));
 		hem += sc * sband * sglow * 2.4;
 		if (style != 10 && style != 7) { hc *= 0.7; ha = min(1.0, ha * 1.25); }
@@ -1186,6 +1187,7 @@ void fragment() {
 			hem += vec3(1.0, 0.32, 0.06) * smoothstep(0.62, 0.8, hn) * (1.0 - smoothstep(0.15, 0.5, hu)) * (0.08 + 0.5 * live) * exp(-age / 40.0);
 		}
 		float at = a + ha * (1.0 - a);
+		hs = style == 10 ? 0.0 : ha * (1.0 - a) / max(at, 1e-4);
 		alb = (alb * a + hc * ha * (1.0 - a)) / max(at, 1e-4);
 		rough = mix(hr, rough, a / max(at, 1e-4));
 		em += hem * ha * (1.0 - a);
@@ -1194,11 +1196,11 @@ void fragment() {
 		// gauss or flak scar still shows from the battle camera: round the char for the craters and holes, round the
 		// outside of the peppered patch for flak. It comes up with the scorch, never jumps (no flash).
 		float le = 0.0;
-		vec2 eb = vec2(0.2, 0.5);
+		vec2 eb = vec2(0.25, 0.45);
 		if (style == 2) { le = 0.32; }
 		else if (style == 3) { le = 0.36; }
 		else if (style == 4 || style == 5) { le = 0.3; }
-		else if (style == 7) { le = 0.6; eb = vec2(0.45, 0.9); }
+		else if (style == 7) { le = 0.5; eb = vec2(0.55, 0.8); }
 		if (le > 0.0) {
 			float ew = (eb.y - eb.x) * 0.3;
 			float edge = smoothstep(eb.x, eb.x + ew, hu) * (1.0 - smoothstep(eb.y - ew, eb.y, hu));
@@ -1210,7 +1212,10 @@ void fragment() {
 	ALBEDO = alb;
 	ALPHA = clamp(a, 0.0, 1.0);
 	ROUGHNESS = rough;
-	METALLIC = 0.35;
+	// r13: soot and char are matte and barely reflect; the old flat metallic 0.35 let the key light's glancing sheen turn
+	// a dark halo light grey on the PC frigate, so the darkening never showed
+	METALLIC = mix(0.35, 0.0, hs);
+	SPECULAR = mix(0.5, 0.1, hs);
 	EMISSION = em * fx_gain;
 }
 """

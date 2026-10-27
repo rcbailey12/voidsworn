@@ -951,6 +951,7 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 		# every triangle goes into each cell its box overlaps (r4: a big kit plate's centroid can sit cells away from a
 		# mark on it, so centroid bucketing missed it), up to 64 cells; past that, its centroid's cell
 		var grid := {}
+		var big := PackedInt32Array()
 		for t in nt:
 			var a0 := P[idx[t * 3]] / cell
 			var a1 := P[idx[t * 3 + 1]] / cell
@@ -959,9 +960,10 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 			var hi := Vector3i(floori(maxf(a0.x, maxf(a1.x, a2.x))), floori(maxf(a0.y, maxf(a1.y, a2.y))), floori(maxf(a0.z, maxf(a1.z, a2.z))))
 			var span := (hi - lo) + Vector3i.ONE
 			if span.x * span.y * span.z > 64:
-				var cq := (a0 + a1 + a2) / 3.0
-				lo = Vector3i(floori(cq.x), floori(cq.y), floori(cq.z))
-				hi = lo
+				# r13: a plate this big goes on a list every mark checks (centroid bucketing left whole kit plates out of
+				# the overlay inside a mark's halo: hard-edged gaps and stray glowing triangles on the PC frigate)
+				big.append(t)
+				continue
 			for gx in range(lo.x, hi.x + 1):
 				for gy in range(lo.y, hi.y + 1):
 					for gz in range(lo.z, hi.z + 1):
@@ -970,7 +972,9 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 							grid[key] = []
 						(grid[key] as Array).append(t)
 		sd["grid"] = grid
+		sd["big"] = big
 	var grid: Dictionary = sd["grid"]
+	var big_t: PackedInt32Array = sd.get("big", PackedInt32Array())
 	var tmark := PackedByteArray()
 	tmark.resize(nt)
 	var cand := PackedInt32Array()
@@ -1013,6 +1017,12 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 				tl[t] = li
 			elif tl[t] != li:
 				tl[t] = 0
+	# the big plates meet every mark (the overlay and vertex tests reject the far ones cheaply)
+	for t in big_t:
+		if tmark[t] == 0:
+			tmark[t] = 1
+			cand.append(t)
+		tl[t] = 0
 	if cand.is_empty():
 		return null
 	# split the big triangles near cutting and denting marks first, so a hole smaller than a plate can still be cut

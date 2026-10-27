@@ -136,6 +136,8 @@ func _run() -> void:
 		var t1: Vector3 = n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
 		var d: Vector3 = (-n * 0.8 + t1 * 0.6).normalized()
 		s._marks.clear()
+		# the same sparks, smoke and fires for this mark on every run (r13: random fires made runs hard to compare)
+		fx.rng.seed = 1000 + j
 		var t := Time.get_ticks_usec()
 		s.add_mark(fx, look, w, p, n, d)
 		s.flush_damage(fx)
