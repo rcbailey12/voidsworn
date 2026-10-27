@@ -65,6 +65,7 @@ var holding := false
 var moments := {}
 var waiting: Array = []      # stills waiting for their moment: [name, file, eye, look, fov, offset]
 var fleet: Array = []        # the --fleet bench's line ships
+var hitches: Array = []      # bench frames over 33 ms: [clock, ms]
 
 
 func _ready() -> void:
@@ -607,6 +608,8 @@ func _process_bench() -> void:
 		for m in ["DRAW", "SURFACE", "SPECIALIZATION", "MESH"]:
 			pc0[m] = Performance.get_monitor(Performance.get("PIPELINE_COMPILATIONS_" + m))
 	var fms := (now - bench_last) / 1000.0
+	if fms > 33.0 and hitches.size() < 60:
+		hitches.append([snappedf(clock, 0.01), snappedf(fms, 0.1)])
 	if fms > worst_ms:
 		worst_ms = fms
 		worst_t = clock
@@ -638,7 +641,7 @@ func _finish_bench() -> void:
 		"avg_ms": snappedf(tot / maxf(n, 1), 0.001), "p99_ms": snappedf(worst, 0.001), "max_ms": snappedf(s[n - 1] if n > 0 else 0.0, 0.001),
 		"gpu_ms": snappedf(gpu_sum / maxf(gpu_n, 1), 0.001), "particles": fx.particles_emitted() if fx != null else 0,
 		"adapter": RenderingServer.get_video_adapter_name(), "worst_frame_at": snappedf(worst_t, 0.01), "notes": "; ".join(notes),
-		"renderer": RenderingServer.get_current_rendering_method(), "ships": ships.size(),
+		"renderer": RenderingServer.get_current_rendering_method(), "ships": ships.size(), "hitches_over_33ms": hitches,
 		"fps_avg": snappedf(1000.0 / maxf(tot / maxf(n, 1), 0.001), 0.1), "fps_1pct_low": snappedf(1000.0 / maxf(worst, 0.001), 0.1)}
 	for m in pc0:
 		out["pipeline_compiles_" + String(m).to_lower()] = Performance.get_monitor(Performance.get("PIPELINE_COMPILATIONS_" + m)) - float(pc0[m])

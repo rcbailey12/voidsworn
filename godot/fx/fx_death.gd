@@ -375,6 +375,13 @@ static func precompute(fx, s, cause := "blast") -> void:
 	fx.later(fx.now + 0.5, func() -> void: _prebuild(fx, s))
 
 
+static func _collect_later(fx, tid: int) -> void:
+	if WorkerThreadPool.is_task_completed(tid):
+		WorkerThreadPool.wait_for_task_completion(tid)
+		return
+	fx.later(fx.now + 0.25, func() -> void: _collect_later(fx, tid))
+
+
 # When the cut is done, upload the pieces' meshes while the battle is quiet, so the break-up itself only shows them
 # (the first break-up cost a 35 ms frame when it built them on the spot).
 static func _prebuild(fx, s) -> void:
@@ -572,8 +579,18 @@ static func death(fx, s, cause: String) -> float:
 	# 3. break-up
 	if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 		precompute(fx, s, cause)
-	fx.later(TB, func() -> void: _break_up(fx, s, cause, tint))
+	fx.later(TB, func() -> void: _break_up_when_ready(fx, s, cause, tint, TB + 2.5))
 	return TB - T + 0.6
+
+
+# r18: when the ship's first cut is still running on a worker (a busy 20-ship battle), the cook-off holds a little longer
+# instead of the main thread waiting for it (the 20-ship bench froze 4 s on such a death); past the deadline it waits.
+static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: float) -> void:
+	if s.has_meta("cut_task") and not s.has_meta("cut_prev") and fx.now < deadline:
+		if not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
+			fx.later(fx.now + 0.05, func() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
+			return
+	_break_up(fx, s, cause, tint)
 
 
 # Glowing fissures spreading over the hull while it cooks off (an overlay on the ship's own meshes; the ship is dying,
@@ -651,7 +668,14 @@ static func _break_up(fx, s, cause: String, tint: Color) -> void:
 	var center: Vector3 = s.to_world(h.c)
 	var job: Dictionary = s.get_meta("cut_job", {})
 	if s.has_meta("cut_task"):
-		WorkerThreadPool.wait_for_task_completion(int(s.get_meta("cut_task")))
+		var tid: int = int(s.get_meta("cut_task"))
+		if not WorkerThreadPool.is_task_completed(tid) and s.has_meta("cut_prev"):
+			# r18: a fresher cut is still running; break up along the last finished one (a little out of date, never a
+			# stall) and collect the running task when it is done
+			job = s.get_meta("cut_prev")
+			_collect_later(fx, tid)
+		else:
+			WorkerThreadPool.wait_for_task_completion(tid)
 		s.remove_meta("cut_task")
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())

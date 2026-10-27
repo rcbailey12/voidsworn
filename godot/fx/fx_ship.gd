@@ -920,13 +920,38 @@ func flush_damage(fx) -> void:
 	var t_ap := Time.get_ticks_usec()
 	BREACH.apply(fx, self, _dmg_job)
 	mark_ms.append([(_dmg_job["ents"] as Array).size(), int(_dmg_job.get("out", {}).get("ms", -1)), (Time.get_ticks_usec() - t_ap) / 1000.0])
-	# the death pieces are cut from the hull as it is now, holes and all
-	if has_meta("cut_job") and not has_meta("cut_task"):
-		remove_meta("cut_job")
-		DEATH.precompute(fx, self)
+	# the death pieces are cut from the hull as it is now, holes and all. r18 (20-ship bench: 1% lows of 15 fps and a
+	# 4 s stall): at most one fresh cut every CUT_REFRESH seconds per ship, not one per hit (each cut is seconds of
+	# worker time on a big hull and its pieces' meshes are uploaded on the main thread); the last finished cut is kept
+	# so a death never waits for a cut still running
+	_cut_stale = true
+	_cut_refresh(fx)
 	if _dmg_dirty:
 		_dmg_dirty = false
 		_dmg_request(fx)
+
+
+const CUT_REFRESH := 6.0
+var _cut_stale := false
+var _cut_t := -1e9
+var _cut_pending := false
+
+
+func _cut_refresh(fx) -> void:
+	if dead or gone or not _cut_stale or not has_meta("cut_job") or has_meta("cut_task"):
+		return
+	if fx.now - _cut_t < CUT_REFRESH:
+		if not _cut_pending:
+			_cut_pending = true
+			fx.later(_cut_t + CUT_REFRESH, func() -> void:
+				_cut_pending = false
+				_cut_refresh(fx))
+		return
+	_cut_t = fx.now
+	_cut_stale = false
+	set_meta("cut_prev", get_meta("cut_job"))
+	remove_meta("cut_job")
+	DEATH.precompute(fx, self)
 
 
 # A weapon's own mark on the hull where a shot landed (R43): look and weight pick it (fx_breach.marks_for); lp, ln and
