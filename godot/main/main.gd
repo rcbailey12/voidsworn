@@ -168,9 +168,24 @@ func save_settings() -> void:
 	_apply_settings()
 
 
+func _capture_window(spec: String) -> void:
+	var wh := spec.split("x")
+	if wh.size() != 2:
+		return
+	var want := Vector2i(int(wh[0]), int(wh[1]))
+	for i in 3:  # the start-up maximise can land a frame or two later; apply it until it holds
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		DisplayServer.window_set_size(want)
+		await get_tree().process_frame
+	print("[main] capture window ", DisplayServer.window_get_size(), " viewport ", get_viewport().get_visible_rect().size)
+
+
 func _apply_settings() -> void:
 	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
 	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames") or args.has("title-shot")
+	if capture and args.has("window") and DisplayServer.get_name() != "headless":
+		# --window WxH: an exact window for capture jobs (the project starts maximised, and Godot's --windowed does not undo that)
+		_capture_window.call_deferred(str(args["window"]))
 	if not bot_mode and not capture and DisplayServer.get_name() != "headless":
 		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if settings["fullscreen"] else DisplayServer.WINDOW_MODE_MAXIMIZED
 		if DisplayServer.window_get_mode() != want:
