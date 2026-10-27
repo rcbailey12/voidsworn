@@ -394,6 +394,7 @@ func _begin(a) -> void:
 	errors.clear()
 	bot_ab.clear()
 	bot_moved.clear()
+	bot_tried.clear()
 	bot_cmd_used = false
 	t_start = Time.get_ticks_msec() / 1000.0
 	last_progress = t_start
@@ -691,7 +692,9 @@ func _runner() -> void:
 			_refresh_ui()
 			return
 		var bt: Dictionary = batches.pop_front()
-		last_progress = Time.get_ticks_msec() / 1000.0
+		# only a batch with events is progress: a bot looping on commands that change nothing must still trip the watchdog
+		if not (bt.get("events", []) as Array).is_empty():
+			last_progress = Time.get_ticks_msec() / 1000.0
 		await _play_batch(bt)
 		_sync(bt["view"])
 		_refresh_ui()
@@ -2919,6 +2922,12 @@ func _process(dt: float) -> void:
 		if bot_t > 0.05:
 			bot_t = 0.0
 			_bot_step()
+	if args.has("trace-bot") and Engine.get_process_frames() % 120 == 0 and api != null:
+		var act := ""
+		for u in V.get("units", []):
+			if u["active"]:
+				act = "%s(%s %s)" % [u["id"], u["side"], u.get("tpl", "")]
+		print("[trace] round %s phase %s side %s busy %s warming %s threat %s ended %s active %s sel %s last %.1f" % [str(V.get("round")), str(api.phase), str(V.get("side")), str(busy), str(warming), str(_threat_busy), str(ended), act, sel, Time.get_ticks_msec() / 1000.0 - last_progress])
 	if args.has("quit-after") and Time.get_ticks_msec() / 1000.0 - t_start > float(args["quit-after"]):
 		_quit_report()
 	# softlock watchdog (bot runs): nothing happened for softlock_s seconds of real time while the battle is not over
@@ -3001,6 +3010,9 @@ func _save_opts() -> void:
 
 # A simple player for test runs through the same commands a person uses: each ship takes the move that brings the most
 # guns onto the weakest enemy in reach, fires everything that bears, braces when nothing can, and ends its activation.
+var bot_tried := {}          # ship id -> round the bot last handed it to the AI (a ship the AI leaves idle is not picked again)
+
+
 func _bot_step() -> void:
 	var u_id := ""
 	for u in V["units"]:
@@ -3008,7 +3020,7 @@ func _bot_step() -> void:
 			u_id = u["id"]
 	if u_id == "":
 		for u in V["units"]:
-			if _usable(u) and not u["squadron"]:
+			if _usable(u) and not u["squadron"] and bot_tried.get(u["id"], -1) != V.get("round"):
 				u_id = u["id"]
 				break
 	if u_id == "":
@@ -3022,10 +3034,13 @@ func _bot_step() -> void:
 	# the game's own player-side AI (sim3d.js botUnit, G1 ai_activate) when the rules have it
 	if api.has_method("ai_activate"):
 		var aid := u_id
+		bot_tried[aid] = V.get("round")
 		_cmd(func():
 			api.ai_activate(aid)
-			if api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false and _alive_active(aid):
-				api.end_activation()
+			# a ship the AI leaves idle (nothing in reach, nothing to launch) never starts its activation: pass it, as the
+			# player's Pass does, or the bot would pick it forever (a Corsair carrier fleet softlocked the battle at round 1)
+			if api.phase == "player" and api.unit(aid) != null and _jt(api.unit(aid).get("activated")) == false:
+				api.end_activation(aid)
 			return true)
 		return
 	# (rules without ai_activate: just end the activation)

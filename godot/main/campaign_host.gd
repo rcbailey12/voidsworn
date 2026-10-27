@@ -196,7 +196,7 @@ func _battle_line(a, res: String, r: Dictionary) -> Dictionary:
 	return {"sector": int(C.RUN.get("sector", 0)) if C.RUN != null else 0, "kind": str(cfg_now.get("kind", "?")), "fac": str(cfg_now.get("fac", "?")),
 		"obj": str(o.get("type")) if o is Dictionary else "?", "result": res, "raw": str(r.get("result", "")), "rounds": int(B.get("round", 0)),
 		"fleet_in": str(cfg_now.get("_fleet", "")), "player": "%d/%d" % [pa, ps], "enemy": "%d/%d" % [ea, es], "hull": snappedf(hp / max(1.0, mh), 0.01),
-		"pace": r.get("pace", {})}
+		"pace": r.get("pace", {}), "pfac": str(C.RUN.get("fac", "")) if C.RUN != null else ""}
 
 
 # ---------------------------------------------------------------- the full-run bot
@@ -223,9 +223,22 @@ func _hull_cost(x) -> float:
 	return float(h.get("cost", 0)) if h is Dictionary else 0.0
 
 
+var bot_fac := ""            # --bot-fac <faction|random>: the player faction for bot runs (default: the game's first, Voidsworn)
+
+
 func _smart(list: Array):
 	var on: Array = list.filter(func(x): return int(x[2]) == 1 and x[0] != "battle" and x[0] != "c3retreat")
 	var kind := str(C.page.get("kind", "")) if C.modal_d == null else str(C.modal_d.get("kind", "modal"))
+	if kind == "admiral" and main.args.has("bot-fac"):
+		if bot_fac == "":
+			var facs: Array = on.filter(func(x): return x[0] == "pickFaction").map(func(x): return str(x[1]))
+			bot_fac = str(main.args["bot-fac"])
+			if bot_fac == "random" and not facs.is_empty():
+				bot_fac = facs[absi(int(main.args.get("seed", randi()))) % facs.size()]  # follows --seed, so a run can be replayed
+		if str(C.picked_faction) != bot_fac:
+			for x in on:
+				if x[0] == "pickFaction" and str(x[1]) == bot_fac:
+					return x
 	if kind != last_kind:
 		pressed.clear()
 		last_kind = kind

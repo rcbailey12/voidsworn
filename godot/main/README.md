@@ -107,6 +107,9 @@ Pace: the burn takes the same time in both modes; only the burn holds up the bat
 | `--title-shot <png>` | the title with its decorative battle faded in, saved, then quit |
 | `--window WxH` | an exact window size for capture jobs (the project starts maximised) |
 | `--no-showcase` | no decorative battle behind the title |
+| `--pace-report` (with `--bot`) | at the battle's end, prints its report with the enemy's time per round by event kind, then quits |
+| `--trace-bot` | prints the round, phase, active ship and busy flags twice a second (softlock hunting) |
+| `--bot-fac <faction\|random>` (with `--bot-runs`) | the player faction for bot runs; `random` follows `--seed`. Without it the bot always plays Voidsworn |
 
 Every battle result (and each bot-run battle line) carries `pace`: the enemy's share of each round in game seconds (`enemy_s_mean`, `enemy_s_max`). Measure it at real speed (`--fast 1` with Godot's `--fixed-fps 60`).
 
