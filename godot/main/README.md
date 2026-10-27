@@ -113,13 +113,13 @@ Easing (R55): every segment thrusts up, coasts, then brakes for as long as it th
 | `--no-showcase` | no decorative battle behind the title |
 | `--pace-report` (with `--bot`) | at the battle's end, prints its report with the enemy's time per round by event kind, then quits |
 | `--trace-bot` | prints the round, phase, active ship and busy flags twice a second (softlock hunting) |
-| `--bot-fac <faction\|random>` (with `--bot-runs`) | the player faction for bot runs; `random` follows `--seed`. Without it the bot always plays Voidsworn |
+| `--bot-fac <faction\|random>` (with `--bot-runs`) | the player faction for bot runs; `random` follows `--seed`. Without it the bot always plays the Sunward Crusade (id `voidsworn`) |
 
 Every battle result (and each bot-run battle line) carries `pace`: the enemy's share of each round in game seconds (`enemy_s_mean`, `enemy_s_max`). Measure it at real speed (`--fast 1` with Godot's `--fixed-fps 60`).
 
 ## Name and type faces
 
-`godot/ui/battle/brand.gd` holds the game's name (`TITLE`), the title-screen line (`TAGLINE`) and the faces for every G2 screen: Michroma for headers (title logo, "Round 1", banners, end card, menus), Oxanium small caps for section heads, Barlow Semi Condensed for body text, the same faces as G3's campaign map (lore round 5: the blackletter is retired). Renaming the game is a one-line change there; the title fits any length on one line and the window title follows.
+`godot/ui/battle/brand.gd` holds the game's name (`TITLE`), the title-screen line (`TAGLINE`) and the faces for every G2 screen: Michroma for headers (title logo, "Round 1", banners, end card, menus), Oxanium small caps for section heads, Barlow Semi Condensed for body text, the same faces as G3's campaign map (lore round 5: the blackletter is retired). The game is "Embers of the Hollow Sun" (lore round 8, Oct 27); renaming it is a one-line change there; the title fits any length on one line and the window title follows.
 
 ## Vetoable calls (G2, Oct 27)
 
@@ -134,3 +134,4 @@ Technical calls made without Ryan; any of them can be reversed.
 - The ambient bed plays at the browser's levels: room tone 0.032 over the synth bed.
 - The round budget: past 8 s of a round's enemy time the rest of its turn speeds up smoothly (to 0.35 of the pace by 13 s), so long rounds stay near 15 s.
 - Under the round budget a killing volley lets go halfway to its last impact and a big hull's death hold shrinks.
+- The new game name (Embers of the Hollow Sun) shows on the title, the window title and the exe properties, but the exe file stays Voidsworn.exe and saves stay in the old Voidsworn user folder (project.godot pins custom_user_dir_name), so nothing Ryan has saved is lost.

@@ -223,7 +223,7 @@ func _hull_cost(x) -> float:
 	return float(h.get("cost", 0)) if h is Dictionary else 0.0
 
 
-var bot_fac := ""            # --bot-fac <faction|random>: the player faction for bot runs (default: the game's first, Voidsworn)
+var bot_fac := ""            # --bot-fac <faction|random>: the player faction for bot runs (default: the game's first, the Sunward Crusade, id voidsworn)
 
 
 func _smart(list: Array):

@@ -1,8 +1,11 @@
-; Voidsworn in Godot 4.7 (plan section G). godot/rules/ is the battle rules (GDScript, golden-tested against the JS game); scenes, render and UI live beside it.
+; Embers of the Hollow Sun (repo and ids: voidsworn) in Godot 4.7 (plan section G). godot/rules/ is the battle rules (GDScript, golden-tested against the JS game); scenes, render and UI live beside it.
 config_version=5
 
 [application]
-config/name="Voidsworn"
+config/name="Embers of the Hollow Sun"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="Godot/app_userdata/Voidsworn"
+config/custom_user_dir_name.linuxbsd="godot/app_userdata/Voidsworn"
 run/main_scene="res://main/main.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 run/max_fps=0
