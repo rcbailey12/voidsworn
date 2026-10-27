@@ -22,6 +22,8 @@ var vol := 0.8
 var on := true
 var max_voices := 34
 var _amb: AudioStreamPlayer
+var _bed: AudioStreamPlayer
+const BED_GAIN := 0.0411      # render_ambient_bed.py prints it: the browser's bed level (0.065) over the file's normalising
 var cam: Camera3D
 
 
@@ -303,7 +305,25 @@ func sting(win: bool) -> void:
 	play("sting_win" if win else "sting_loss")
 
 
+# the ambient bed as the browser plays it (sfx.js ambient and _ambSample): a low evolving synth bed (rumble, two beating
+# drones and a fifth, a breath of air, rendered offline into a seamless 120 s loop) with the recorded room tone over it;
+# both fade in over a few seconds and sit on the ambient bus, which explosions duck
 func ambient_start() -> void:
+	if _bed == null:
+		var bs := _load("res://audio/synth/ambient_bed.ogg")
+		if bs is AudioStreamOggVorbis:
+			var ob := bs as AudioStreamOggVorbis
+			ob.loop = true
+			ob.loop_offset = 1.0   # the file is [1 s of tail][the 120 s loop][1 s of head]; loop 121 s -> 1 s
+			ob.bpm = 60.0
+			ob.beat_count = 121
+			_bed = AudioStreamPlayer.new()
+			_bed.stream = ob
+			_bed.bus = "ambient"
+			add_child(_bed)
+			_bed.volume_db = -60.0
+			_bed.play(1.0 + randf() * 119.0)
+			create_tween().tween_property(_bed, "volume_db", linear_to_db(BED_GAIN), 4.0)
 	if _amb != null or not clips.has("ambient"):
 		return
 	_amb = AudioStreamPlayer.new()
@@ -312,6 +332,7 @@ func ambient_start() -> void:
 		(st as AudioStreamOggVorbis).loop = true
 	_amb.stream = st
 	_amb.bus = "ambient"
-	_amb.volume_db = linear_to_db(0.065)
 	add_child(_amb)
+	_amb.volume_db = -60.0
 	_amb.play(randf() * st.get_length() * 0.5)
+	create_tween().tween_property(_amb, "volume_db", linear_to_db(0.032), 5.0)  # the browser's room tone level over the bed

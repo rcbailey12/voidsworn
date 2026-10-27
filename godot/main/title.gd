@@ -192,6 +192,7 @@ func _settings() -> void:
 	v.add_child(_toggle("Battle tips", "tips"))
 	v.add_child(_toggle("Full screen", "fullscreen"))
 	v.add_child(_choice("Graphics", "quality", [["max", "Max"], ["high", "High"], ["low", "Low"]]))
+	v.add_child(_toggle("Temporal AA (smoother edges, softer motion)", "taa"))
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_END
 	row.add_child(_button("Done", func() -> void:

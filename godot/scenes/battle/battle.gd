@@ -269,6 +269,8 @@ func _apply_quality(q: String) -> void:
 		_:
 			vp.msaa_3d = Viewport.MSAA_4X
 			RenderingServer.directional_shadow_atlas_set_size(4096, true)
+	# Temporal AA (settings, off by default as in the browser): Max and High only
+	vp.use_taa = _jt(args.get("taa", false)) and q != "low"
 
 
 func _post_quality(q: String) -> void:

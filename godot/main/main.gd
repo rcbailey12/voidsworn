@@ -17,7 +17,7 @@ const SETTINGS_PATH := "user://settings.json"
 signal battle_done(result: Dictionary)
 
 var args := {}
-var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic"}
+var settings := {"volume": 0.8, "sound": true, "reduce_flashing": false, "shake": 1.0, "speed": 1.0, "tips": true, "fullscreen": true, "quality": "max", "ai": "standard", "follow": true, "music": true, "music_volume": 0.7, "cine": "key", "movement": "cinematic", "taa": false}
 var title: CanvasLayer
 var battle: Node
 var campaign: Node
@@ -249,6 +249,7 @@ func quick_battle() -> void:
 	var b = BattleScene.instantiate()
 	b.external = true
 	b.args["quality"] = str(settings["quality"])
+	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
@@ -277,6 +278,7 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	b.in_campaign = campaign != null
 	b.can_retreat = campaign != null and str(cfg.get("kind", "")) != "boss"
 	b.args["quality"] = str(settings["quality"])
+	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b
@@ -299,6 +301,7 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.can_retreat = bool(opts.get("can_retreat", false))
 	b.in_campaign = true
 	b.args["quality"] = str(settings["quality"])
+	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)
 	_settings_to_battle(b)
 	battle = b

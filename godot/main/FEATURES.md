@@ -75,7 +75,7 @@ Last update: Oct 26 2026 evening, G2.
 | Deathless rising wrecks | done |
 | Mid-battle events (reinforcements, warnings) | done: the rules log them; reinforcements appear with the next view |
 | Cut-ins (cinematic camera), follow activations toggle | done (Key moments, Every attack or Off; follow in settings and the battle menu) |
-| Concept-art hulls toggle, temporal AA toggle | missing |
+| Concept-art hulls toggle, temporal AA toggle | Temporal AA: done (settings, off by default, Max and High). Concept-art hulls: not carried over (vetoable): Godot draws the game hulls and A4 kit ships only; the browser's procedural fallback hulls do not exist here |
 | Legend and command strip help | done: the terrain legend beside your fleet list (the encounter, its zones and the terrain on this board as swatches; a click opens names, effects, the encounter rule and the board shape, as ui3d.js refreshLegend); the controls line lists every key |
 | Ship sheet (full stats) | done: the side panel carries the browser sheet: class and elite captain, captain rank and perks, hull by section, crew, shields in words with recharge, state lines (repairs, engine damage, shield generator, evasive, locked on, focus, enemy focus), faction lines (sync, prism charge, feeding, endless legion, torpedoes inbound, wing stance and veterans, Nemesis and known weaknesses), thrusters and faction drive, weapon detail (shield pierce, ion, anti-squadron, reload, slow, trait), Flagship Command on a boss, fleet boons and aspect, the enemy faction blurb. Left out: the enemy reach line (it needs a threat pass per hover; R shows the threat map). `--sheet-check` builds every ship's sheet |
 
@@ -94,6 +94,6 @@ Last update: Oct 26 2026 evening, G2.
 |---|---|
 | The game's cue table, recorded clips and synth cues (rendered offline from sfx.js) | done |
 | Buses, compressor and limiter, reverb send, voice caps, round robin, pitch jitter, salvo thinning | done |
-| Ambient bed | partial: recorded room tone only (the browser adds a synth bed) |
+| Ambient bed | done: the browser's synth bed (rumble, beating drones, air; rendered offline into a seamless loop, godot/audio/build/render_ambient_bed.py) with the recorded room tone over it, at the browser's levels, fading in |
 | Music (title, map per sector, battle by factions with intensity, stings) | done: the music helper's player and tracks (music.json, CREDITS.md); Music on/off and volume in settings; sector flagship fights and the finale play the boss theme and the champion fanfare, and only they get the boss intensity lift. Licences: see godot/music/CREDITS.md |
 | Engine cues on moves | done |
