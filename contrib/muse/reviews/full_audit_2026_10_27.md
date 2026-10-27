@@ -231,3 +231,27 @@ B: Keep both; the bans target specific franchises' words, not suffixes or ranks 
 Q10. The broadside number (A6.1): the lore says 30% (line 173); the game says 40% after moving 2+ hexes.
 A (Recommended): Fix the lore to 40%, "two or more hexes". All four legs recommend this; the game's number was tuned deliberately in balance pass 3.
 B: Keep 30% in the lore and tune the game down to match later.
+
+# Ryan's rulings on the ten questions (Oct 27, 2026)
+
+Recorded by the chair from Ryan's answers in chat on Oct 27, 2026. His words are quoted where the answer carried new direction beyond the letter. Opus: these rulings change two things the audit treated as settled (Q4 and Q6 below); read those two carefully.
+
+Q1 (Totality minds): A. Billions of individual minds backed up in one shared Archive; fix bible lines 12 and 45. Ryan's reason: "Otherwise it stretches into Chorus a bit too much." A merged single mind is Chorus territory; the Totality stays individual.
+
+Q2 (Glasswright generations): A. The Glasswrights are long-lived (300 to 400 years), so the 1,000 year collapse, the two or three generations from his round 4 ruling, and line 429 "grandmothers' voices" all hold at once.
+
+Q3 (Chorus surface rule): A, keep Q8 strict; cut the Ardenti shapes at line 339 and the remembered names at line 374. Ryan's framing, which goes further than the question: "I don't think of them as people but creations of rogue glasswrights who worked with flesh, not glass." Chair note for Opus: this touches the r6 origin. Round 6 tells the Chorus as a third Ardenti movement that rewrote its own biology; Ryan's framing makes them a made thing, built by rogue Glasswright flesh-workers. Reconcile the two before the next bible round; the third-path structure can survive if the flesh-workers were a Glasswright splinter, but who made the Chorus, and whether they were ever people, is now a Ryan-stated position, not a detail.
+
+Q4 (heat motif and the Hullbreakers): the question's premise is REJECTED and R54 ask 8 is superseded in part. Ryan: "I don't really want the hullbreakers to be eyeless hear seaking. I think of them as more violent, hairy/furry monsters. Weird mix of bears/wolves/mammals" (his "hear seaking" read as heat-seeking). Rulings that follow: the Hullbreakers are not eyeless and not heat-hunters; they are violent furry mammal monsters on a bear/wolf pattern. The r6 Hullbreaker biology built on heat pits, eyelessness, and thermal judgement (lines 259 to 293 and everything downstream of it) needs rework, not a motif patch. The motif question itself dissolves: heat is the Chorus's, unshared. Chair inference, marked as such: a bear/wolf read points their senses toward scent, hearing, and pack behaviour; that is the chair's gloss, not Ryan's words, and the rework is Opus's to draft with Ryan's veto.
+
+Q5 (Listening Post K-7): rename it to a different letter and number. The specific replacement was not picked; any designation that is not K-7 and carries no franchise echo works.
+
+Q6 (one word, one owner): A MIX. Enforce where it is cheap, tolerate overlap where factions are related. Ryan: "a mix of a and b. I don't like penumbra node at all. Some overlap is okay, especially with related factions like humans and glass right/eclipse/totality" (read: Glasswrights, and the Eclipse/Totality pairing). So: the Corona-ward node rename to Penumbra node is REJECTED by name; find another word or leave the refit. Mirror and Prism overlaps among sibling factions are acceptable. Separately, and bigger: the faction name itself is reopened. Ryan: "I don't love totality, it should be back towards the sun theme with eclipse." The name "the Totality" is NOT settled anymore; Ryan wants the machine faction's name moved back toward the sun and eclipse theme. No final name was picked in this answer. Names already on record from the r6 pick list (line 45) are "the Eclipse" and "the Occlusion". For Opus: treat the name as open, propose against the sun/eclipse direction, Ryan keeps the pick. Everything else named Totality in the bible and this audit reads as a placeholder until he picks.
+
+Q7 (core nicknames): SPLIT, as offered. Keep Kharon and Vyre, the Storm Queen as survivor nicknames. Fix H-3: its original name becomes Crucible, and "the Hunger Below" is the nickname survivors gave it after the Chorus took it.
+
+Q8 (Hullbreaker titles and Pyre-Barge): B is acceptable (keep, with the outsider-translation line), but Ryan notes he is "looking for a rework of them anyway". Read together with Q4: the Hullbreaker rank and title set is slated for rework alongside the species change, so B is the interim state, not the final one. Pyre-Barge keeps its name.
+
+Q9 (lord-titles): A. Swap both: Eclipse-lord becomes Eclipse-prime or First Index, and Grand Admiral becomes First Admiral.
+
+Q10 (broadside): A. Fix bible line 173 to 40% after moving two or more hexes, matching data.js. The game does not change.
