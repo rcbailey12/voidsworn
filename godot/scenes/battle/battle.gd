@@ -600,6 +600,9 @@ func _make_view(u: Dictionary) -> void:
 		if not sv.a4:
 			info["meshes"] = sv.meshes   # A4 ships: fx finds the hull and its skin_<n> patches itself
 		gfx.add_ship(str(u["id"]), sv, info)
+		sv.fx_engines = true   # G4 draws the engines at the hull's real nozzles: hide ShipView's guessed glows
+		if movement != "brisk" and gfx.has_method("set_engine"):
+			gfx.set_engine(str(u["id"]), ENGINE_IDLE)
 
 
 func _music_feed() -> void:
@@ -1006,6 +1009,7 @@ func _play_event(e: Dictionary) -> void:
 					gfx.remove_ship(str(e["unit"]))
 					var ru: Dictionary = VU.get(e["unit"], {})
 					gfx.add_ship(str(e["unit"]), sv, {"faction": str(ru.get("fac", "deathless")), "meshes": sv.meshes, "cls": str(ru.get("cls", "")), "size": float(ru.get("size", 0.5)), "squadron": false, "flagship": bool(ru.get("flagship", false))})
+					sv.fx_engines = true
 				wrecked.erase(e["unit"])
 				_flash(sv.position + Vector3(0, 2, 0), 16.0, Color(0.2, 1.0, 0.4), 0.8)
 			_float(e["unit"], "Risen", Color("#7dff9b"), -30)
@@ -1187,12 +1191,11 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	var la: float = sv.cur_yaw
 	var size := float(u.get("size", 0.5))
 	var mass := 0.0 if bool(u.get("squadron", false)) else clampf((size - 0.3) / 0.6, 0.0, 1.0)
-	var cin := movement != "brisk"
+	var cin := movement != "brisk" and not bool(u.get("squadron", false))
 	for st in path:
 		var a: float = la + angle_difference(la, ShipView.yaw_of(st["f"]))
 		if _jt(st.get("rot")):
-			# cinematic: a big hull's turn blends into the burn (an arc) instead of a pivot before it
-			s += float(PACE["rot"]) * (1.0 - 0.5 * mass if cin else 1.0)
+			s += float(PACE["rot"])
 			yaws.append({"s": s, "yaw": a})
 		else:
 			s += 1.0
@@ -1206,7 +1209,10 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	var per := (430.0 if size > 0.8 else 350.0 if size > 0.6 else 280.0) * float(MOVE_PER.get(str(u.get("fac", "")), 1.0))
 	var dur := minf((per * maxf(s, 0.001) + 260.0) * (0.72 if charge else 1.0) * float(PACE["move"]), 3600.0) / 1000.0
 	sv.speed_k = 1.0
-	sv.play_path(keys, yaws, alts, s, dur * speed, {"mass": mass, "cinematic": cin})
+	if cin:
+		sv.play_moves(_move_segments(sv, path, mass), dur * speed, {"mass": mass})
+	else:
+		sv.play_path(keys, yaws, alts, s, dur * speed, {"mass": mass})
 	if size > 0.3:
 		sfx.play("engine", {"pos": sv.position, "gain": minf(1.0, 0.55 + size * 0.6)})
 	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
@@ -1214,14 +1220,51 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		if skip:
 			sv.speed_k = float(PACE["skip"])
 		if eng_on:
-			# main engine flare and trail swell on the burn, dim while braking (G4 fx engine level: 1 cruise, 2 burn)
-			gfx.set_engine(str(id), clampf(1.0 + float(sv.thrust), 0.5, 2.2))
+			# the main drive glows only while it pushes the ship ahead (G4 fx engine level: idle, 2 full burn)
+			gfx.set_engine(str(id), lerpf(ENGINE_IDLE, 2.0, float(sv.thrust)) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
 		if move_frames != "":
 			await _snap("f")
 		else:
 			await get_tree().process_frame
 	if eng_on:
-		gfx.set_engine(str(id), 1.0)
+		gfx.set_engine(str(id), ENGINE_IDLE if cin else 1.0)
+
+
+# Cinematic moves as segments from rest to rest (ship_view.gd play_moves): consecutive turn steps make one turn about
+# the centre; consecutive translation steps (ahead, sidestep, back off: the heading never changes in them) make one run.
+# Weights share the move's time (the B2 pace is unchanged): a turn step weighs PACE.rot, a heavier hull spending a little
+# more of its time on a turn; a run weighs its steps plus a little for its thrust-up and thrust-down.
+const ENGINE_IDLE := 0.35     # the main drive at rest or coasting: a pilot glow, the full plume only when it pushes
+
+
+func _move_segments(sv, path: Array, mass: float) -> Array:
+	var out: Array = []
+	var la: float = sv.cur_yaw
+	var pos := Vector3(sv.position.x, 0, sv.position.z)
+	for st in path:
+		var a: float = la + angle_difference(la, ShipView.yaw_of(st["f"]))
+		if _jt(st.get("rot")):
+			if out.is_empty() or out[-1]["kind"] != "turn":
+				out.append({"kind": "turn", "a0": la, "a1": a, "w": 0.0})
+			out[-1]["a1"] = a
+			out[-1]["w"] = float(out[-1]["w"]) + float(PACE["rot"]) * lerpf(0.9, 1.25, mass)
+		else:
+			if out.is_empty() or out[-1]["kind"] != "run":
+				out.append({"kind": "run", "pts": [pos], "yaw": la, "w": 0.35})
+			var ov := float(st.get("over", 0)) if st.get("over") != null else 0.0
+			var p: Vector3 = board.hex_world(st["q"], st["r"])
+			p.y = (9.0 if ov > 0 else -7.5) if ov != 0.0 else 0.0
+			out[-1]["pts"].append(p)
+			out[-1]["w"] = float(out[-1]["w"]) + 1.0
+			pos = Vector3(p.x, 0, p.z)
+		la = a
+	# a run that ends over or under an obstacle still comes back to the board plane
+	for g in out:
+		if g["kind"] == "run":
+			var last: Vector3 = g["pts"][-1]
+			if absf(last.y) > 0.01:
+				g["pts"].append(Vector3(last.x, 0, last.z))
+	return out
 
 
 # How long a G4 volley holds the battle, as `total` (the caller waits total * sp): the effect's own length scaled by the
@@ -3238,12 +3281,18 @@ func _move_frames() -> void:
 		var u: Dictionary = VU[id]
 		var best = null
 		var bsc := -1e9
+		var want := str(args.get("maneuver", ""))
 		for st in states:
 			var turn := absf(angle_difference(ShipView.yaw_of(u["facing"]), ShipView.yaw_of(st.f)))
 			var sc := float(st.cost) * 1.0 + (3.0 if turn > 1.0 else (1.5 if turn > 0.5 else 0.0))
+			if want != "":
+				sc = _maneuver_score(st.path, want)
 			if sc > bsc:
 				bsc = sc
 				best = st
+		if want != "" and bsc <= -1e8:
+			print("[moves] %s: no %s move in reach" % [str(id), want])
+			best = null
 		if best == null:
 			continue
 		var a: Vector3 = views[id].position
@@ -3294,6 +3343,40 @@ func _sheet_check() -> void:
 	inspect = ""
 	print("[sheet] %d ships, %d extra parts" % [n, lines])
 	_quit_report()
+
+
+# --maneuver straight|turn|side|back (with --move-frames): how well a path shows one maneuver; -1e9 when it does not
+#   straight: ahead only, the longer the better; turn: turns in place then ahead (rotate, then burn);
+#   side: sidesteps only; back: backing off only
+func _maneuver_score(path: Array, want: String) -> float:
+	var n_rot := 0
+	var n_slip := 0
+	var n_rev := 0
+	var n_fwd := 0
+	var rot_after_move := false
+	for st in path:
+		if _jt(st.get("rot")):
+			n_rot += 1
+			if n_fwd + n_slip + n_rev > 0:
+				rot_after_move = true
+		elif _jt(st.get("slip")):
+			n_slip += 1
+		elif _jt(st.get("rev")):
+			n_rev += 1
+		else:
+			n_fwd += 1
+		if st.get("over") != null and float(st.get("over")) != 0.0:
+			return -1e9
+	match want:
+		"straight":
+			return float(n_fwd) if n_fwd > 0 and n_rot + n_slip + n_rev == 0 else -1e9
+		"turn":
+			return float(n_rot) * 2.0 + float(n_fwd) if n_rot > 0 and n_fwd > 0 and n_slip + n_rev == 0 and not rot_after_move else -1e9
+		"side":
+			return float(n_slip) if n_slip > 0 and n_rot + n_fwd + n_rev == 0 else -1e9
+		"back":
+			return float(n_rev) if n_rev > 0 and n_rot + n_fwd + n_slip == 0 else -1e9
+	return -1e9
 
 
 func _sec_stage(u: Dictionary) -> int:

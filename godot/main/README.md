@@ -92,10 +92,12 @@ godot --headless --path godot -- --bot-runs 50 --fast 40 --report report.json
 ## Ship movement (R50)
 
 `ship_view.gd` moves a ship along the rules' path in one of two ways:
-- **Cinematic** (default): the main engine builds speed and brakes over a time scaled by mass (frigate 0 to capital 1), the hull swings round on a critically damped spring and banks into the turn (bank and pitch sit on the hull child, never the root, which G4's hit reactions own), a big hull's turn blends into its burn, the ship slides past its hex and settles back, the engines flare through G4's `set_engine` and RCS puffs fire on turns and stops.
-- **Brisk**: the earlier motion (eased burn, eased facing).
+- **Cinematic** (default), real spaceship motion (Ryan, Oct 27): the battle splits the path into segments (`battle.gd _move_segments`), each from rest to rest. A turn rotates the hull about its centre with an RCS couple (bow and stern jets firing opposite ways) that starts the spin and a counter-couple that stops it. A run slides the hull along a smooth curve through its hexes with the heading fixed, since the rules never change the heading in ahead, sidestep or back-off steps. Thrusters follow the hull's real acceleration in its own frame: the main drive (G4's engine level through `set_engine`) only while it pushes the ship ahead, the bow's retro jets for braking and backing off, aft jets to stop a back-off, matched side jets for sidesteps. No banking. Heavier hulls spend more of each segment building and bleeding speed or spin.
+- **Brisk**: the earlier motion (eased burn, eased facing); strike craft always move this way.
 
-Pace: the burn takes the same time in both modes; only the burn holds up the battle (`burning()`), and the settle plays on while the next ship acts. `busy()` stays true through the settle and the yaw swing: it tells G4's hit reaction that G2 is steering the ship, so fx adds its yaw kick and drift only once the ship is at rest. Rules outcomes are the same in both modes (checked on the same seed).
+Pace: a move takes the same time as before (the B2 formula), shared between its segments by weight; the battle waits on `burning()`. `busy()` is true while a move runs: it tells G4's hit reaction that G2 is steering the ship, so fx adds its yaw kick and drift only at rest. Rules outcomes are the same in both modes.
+
+`--maneuver straight|turn|side|back` with `--move-frames` picks that maneuver for the biggest and smallest ship (proof clips).
 
 ## Test and capture switches (after `--`)
 
@@ -120,9 +122,9 @@ Every battle result (and each bot-run battle line) carries `pace`: the enemy's s
 ## Vetoable calls (G2, Oct 27)
 
 Technical calls made without Ryan; any of them can be reversed.
-- Movement defaults to Cinematic; the burn takes the same time as Brisk, and only the settle (about 0.5 to 1 s) overlaps the next ship.
-- The slide past the hex is about 5% of a hull's length (never under a tenth of a hex); heavy hulls bank up to about 9 degrees, frigates about 15.
-- RCS puffs are drawn by the scene in G4's puff colour (G4 has no public puff call).
+- Movement defaults to Cinematic (real spaceship motion, Oct 27); a move takes the same time as Brisk. Segments stop between a turn and a run (rotate first, then burn) rather than blending them.
+- The main drive idles at a pilot glow (G4 engine level 0.35) at rest and while coasting; the full plume only while it pushes.
+- Jets are drawn by the scene (additive puffs, about 5% of the hull's length, left in space where fired).
 - Enemy volleys hold the battle for the browser's own volley length at the B2 pace, while G4's longer effects play on over the next volley; your own first volley at normal speed plays in full; a killing volley waits for its impacts; deaths hold half their length at most on the enemy's turn (big hulls 0.8 s at least).
 - The title shows a decorative battle on open maps (no belts), Max and High graphics only; the browser's map showcase is not carried over (G3's 3D map replaces it).
 - The concept-art hulls toggle is not carried over (Godot has the game hulls only). Temporal AA is a setting, off by default.
