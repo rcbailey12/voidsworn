@@ -55,6 +55,11 @@ const S_SCORCH := 13      # the stage ladder's spreading scorch (fx_ship._plan)
 const MARK_CAP := 12      # weapon marks per ship (section breaches come on top)
 const SEC_MARK_CAP := 4   # ... and per hull section; past it a repeat grows an old mark or the lightest old mark goes
 const GROW_MAX := 1.6     # how far repeats can grow a mark (lance slots lengthen, craters widen, ion trees spread)
+# The smallest halo per mark style, in world units (the game's scale: hexes 17.3 across; the battle camera sits 170 away,
+# about 7.7 pixels a unit at 1080p). Claude's picks, vetoable; tuned on the r5 battle-distance stills.
+const HALO_MIN := {S_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
+	S_FLAK: 1.7, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6}
+const HALO_MAX_L := 0.12   # ... but never wider than this share of the ship's length (a frigate is not one big scorch)
 
 
 class Ent:
@@ -96,6 +101,13 @@ class Ent:
 	var ldir := Vector3.ZERO
 	var part_i := 0
 	var grow := 1.0
+	# local refinement (r4: coarse kit plates and AI hull panels are a few big triangles, so a hole or crater smaller
+	# than a triangle could not be cut or dented): edges longer than tess within treach of the mark get split first
+	var tess := 0.0
+	var treach := 0.0
+	# the soot or etch halo round the mark (world units), so every mark reads from the battle camera (r4: at 170 units
+	# a crater the size of its geometry was a pixel or two); 0: none
+	var halo := 0.0
 
 	func rh(a: float) -> float:
 		return R * (1.0 + 0.16 * sin(3.0 * a + p[0]) + 0.09 * sin(5.0 * a + p[1]) + 0.05 * sin(9.0 * a + p[2]))
@@ -174,6 +186,8 @@ static func dent(c: Vector3, n: Vector3, R: float, depth: float, seed_v: float, 
 	e.depth = depth
 	e.inf2 = R * R
 	e.ov = R * 1.1 if style == S_RAM else 0.0
+	e.tess = R * 0.4
+	e.treach = R * 0.9
 	return e
 
 
@@ -200,6 +214,8 @@ static func hole(hull, c: Vector3, n: Vector3, R: float, bend: float, buckle: fl
 	e.walls = R > 0.0 and style in [S_BREACH, S_BLAST]
 	e.conduits = style in [S_BREACH, S_BLAST]
 	e.ov = R * (2.2 if style in [S_BREACH, S_BLAST] else (3.4 if style == S_GAUSS_IN else 2.6))    # gauss entry: room for its stress ring
+	e.tess = R * 0.4
+	e.treach = cr
 	return e
 
 
@@ -224,6 +240,8 @@ static func slot(hull, c: Vector3, n: Vector3, dir: Vector3, R: float, hl: float
 	var cr := hl + R * 2.5 + e.w
 	e.cutr2 = cr * cr
 	e.ov = R * 6.0
+	e.tess = R * 0.9
+	e.treach = R * 3.0
 	return e
 
 
@@ -233,6 +251,8 @@ static func crater(c: Vector3, n: Vector3, R: float, depth: float, seed_v: float
 	var inf := R * 1.6
 	e.inf2 = inf * inf
 	e.ov = R * (3.4 if style == S_PLASMA else 2.2)    # plasma: room for the droplet fan
+	e.tess = R * 0.45
+	e.treach = R * 1.3
 	return e
 
 
@@ -259,6 +279,9 @@ static func cluster(c: Vector3, n: Vector3, R: float, n_pits: int, pr: float, te
 	e.inf2 = inf * inf
 	e.cutr2 = inf * inf if any_hole else 0.0
 	e.ov = R * 1.35
+	if any_hole:
+		e.tess = pr * 1.2
+		e.treach = R + pr * 2.0
 	return e
 
 
@@ -448,6 +471,248 @@ static func _in_overlay(Q: Vector3, E: Ent) -> bool:
 	return lx * lx + ly * ly < E.ov * E.ov
 
 
+# Does triangle abc (centroid Q) reach into E's overlay? The centroid alone missed big plates under a small mark (r4).
+static func _tri_in_overlay(a: Vector3, b: Vector3, c: Vector3, Q: Vector3, E: Ent) -> bool:
+	if E.ov <= 0.0:
+		return false
+	if _in_overlay(Q, E) or _in_overlay(a, E) or _in_overlay(b, E) or _in_overlay(c, E):
+		return true
+	var reach := E.ov + E.hl
+	var r2 := reach * reach
+	if (a - E.c).length_squared() > r2 * 16.0 and (b - E.c).length_squared() > r2 * 16.0 and (c - E.c).length_squared() > r2 * 16.0:
+		# a cheap reject unless the triangle is big enough to span the mark
+		var ext := maxf((b - a).length(), maxf((c - b).length(), (a - c).length()))
+		if ext < reach * 2.0:
+			return false
+	if _in_overlay(_closest_on_tri(E.c, a, b, c), E):
+		return true
+	if E.kind == K_SLOT:
+		return _in_overlay(_closest_on_tri(E.c + E.dir * E.hl, a, b, c), E) or _in_overlay(_closest_on_tri(E.c - E.dir * E.hl, a, b, c), E)
+	return false
+
+
+# Closest point to p on triangle abc (Ericson, Real-Time Collision Detection 5.1.5).
+static func _closest_on_tri(p: Vector3, a: Vector3, b: Vector3, c: Vector3) -> Vector3:
+	var ab := b - a
+	var ac := c - a
+	var ap := p - a
+	var d1 := ab.dot(ap)
+	var d2 := ac.dot(ap)
+	if d1 <= 0.0 and d2 <= 0.0:
+		return a
+	var bp := p - b
+	var d3 := ab.dot(bp)
+	var d4 := ac.dot(bp)
+	if d3 >= 0.0 and d4 <= d3:
+		return b
+	var vc := d1 * d4 - d3 * d2
+	if vc <= 0.0 and d1 >= 0.0 and d3 <= 0.0:
+		return a + ab * (d1 / (d1 - d3))
+	var cp := p - c
+	var d5 := ab.dot(cp)
+	var d6 := ac.dot(cp)
+	if d6 >= 0.0 and d5 <= d6:
+		return c
+	var vb := d5 * d2 - d1 * d6
+	if vb <= 0.0 and d2 >= 0.0 and d6 <= 0.0:
+		return a + ac * (d2 / (d2 - d6))
+	var va := d3 * d6 - d5 * d4
+	if va <= 0.0 and (d4 - d3) >= 0.0 and (d5 - d6) >= 0.0:
+		return b + (c - b) * ((d4 - d3) / ((d4 - d3) + (d5 - d6)))
+	var den := 1.0 / maxf(va + vb + vc, 1e-30)
+	return a + ab * (vb * den) + ac * (vc * den)
+
+
+static func _seg_pt_d2(p: Vector3, a: Vector3, b: Vector3) -> float:
+	var ab := b - a
+	var t := clampf((p - a).dot(ab) / maxf(ab.length_squared(), 1e-20), 0.0, 1.0)
+	return (a + ab * t - p).length_squared()
+
+
+# Should the edge pa-pb be split? Long against a mark's tess and within its treach. A pure function of the two end
+# positions (in either order), so the triangles on both sides of an edge always agree and no crack opens.
+static func _want_split(pa: Vector3, pb: Vector3, ents: Array, tess_min: float, lmin2 := 0.0) -> bool:
+	var l2 := pa.distance_squared_to(pb)
+	if l2 <= lmin2:
+		return false
+	for x in ents:
+		var E: Ent = x
+		var tl := maxf(E.tess, tess_min)
+		if E.tess <= 0.0 or l2 <= tl * tl:
+			continue
+		var r2 := E.treach * E.treach
+		if E.kind == K_SLOT:
+			for k in 7:
+				var sp := E.c + E.dir * E.hl * (float(k) / 3.0 - 1.0)
+				if _seg_pt_d2(sp, pa, pb) < r2:
+					return true
+		elif _seg_pt_d2(E.c, pa, pb) < r2:
+			return true
+	return false
+
+
+const REFINE_MAX_TRIS := 20000
+const REFINE_PASSES := 6
+
+
+# Split the candidate triangles near marks until their edges are short enough (red-green templates on the edges that
+# need it, so neighbours stay conforming). New vertices interpolate every attribute of the surface, so the vertex format
+# and the materials stay as they were. Returns {} when nothing needed splitting.
+static func _refine(arr: Array, P: PackedVector3Array, idx: PackedInt32Array, cand: PackedInt32Array, ents: Array, tess_min: float) -> Dictionary:
+	var any := false
+	for x in ents:
+		if (x as Ent).tess > 0.0:
+			any = true
+			break
+	if not any:
+		return {}
+	# the shortest edge any mark asks for: finer edges are rejected before looking at the marks (8K hulls are mostly fine)
+	var lmin := 1e9
+	for x in ents:
+		var E: Ent = x
+		if E.tess > 0.0:
+			lmin = minf(lmin, maxf(E.tess, tess_min))
+	var lmin2 := lmin * lmin
+	var nv0 := P.size()
+	# attributes to interpolate: [array index, comps, kind] (kind 0 vec3, 1 vec2, 2 color, 3 float comps, 4 copy bytes, 5 copy ints)
+	var attrs: Array = []
+	var A := arr.duplicate()
+	for k in Mesh.ARRAY_MAX:
+		if k == Mesh.ARRAY_INDEX or A[k] == null:
+			continue
+		var v = A[k]
+		if v is PackedVector3Array and v.size() == nv0:
+			attrs.append([k, 3, 0])
+		elif v is PackedVector2Array and v.size() == nv0:
+			attrs.append([k, 2, 1])
+		elif v is PackedColorArray and v.size() == nv0:
+			attrs.append([k, 4, 2])
+		elif v is PackedFloat32Array and v.size() > 0 and v.size() % nv0 == 0:
+			attrs.append([k, v.size() / nv0, 3])
+		elif v is PackedByteArray and v.size() > 0 and v.size() % nv0 == 0:
+			attrs.append([k, v.size() / nv0, 4])
+		elif v is PackedInt32Array and v.size() > 0 and v.size() % nv0 == 0:
+			attrs.append([k, v.size() / nv0, 5])
+		else:
+			return {}
+		A[k] = v.duplicate()
+	var P2 := P.duplicate()
+	var I2 := idx.duplicate()
+	var C2 := cand.duplicate()
+	var mids := {}
+	var queue: Array = []
+	for t in cand:
+		queue.append(t)
+	var added := 0
+	for pass_i in REFINE_PASSES:
+		if queue.is_empty() or added > REFINE_MAX_TRIS:
+			break
+		var nxt: Array = []
+		for t in queue:
+			if added > REFINE_MAX_TRIS:
+				break
+			var i0 := I2[t * 3]
+			var i1 := I2[t * 3 + 1]
+			var i2 := I2[t * 3 + 2]
+			if i0 == i1 or i1 == i2 or i0 == i2:
+				continue
+			var s01 := _want_split(P2[i0], P2[i1], ents, tess_min, lmin2)
+			var s12 := _want_split(P2[i1], P2[i2], ents, tess_min, lmin2)
+			var s20 := _want_split(P2[i2], P2[i0], ents, tess_min, lmin2)
+			var ns := int(s01) + int(s12) + int(s20)
+			if ns == 0:
+				continue
+			var tris: Array = []
+			if ns == 3:
+				var m01 := _mid(A, attrs, P2, mids, i0, i1)
+				var m12 := _mid(A, attrs, P2, mids, i1, i2)
+				var m20 := _mid(A, attrs, P2, mids, i2, i0)
+				tris = [[i0, m01, m20], [m01, i1, m12], [m20, m12, i2], [m01, m12, m20]]
+			else:
+				# rotate so the split edges come first: (a, b, c) with ab split, and bc too when two are split
+				var a := i0
+				var b := i1
+				var c := i2
+				if ns == 1:
+					if s12:
+						a = i1; b = i2; c = i0
+					elif s20:
+						a = i2; b = i0; c = i1
+					var m := _mid(A, attrs, P2, mids, a, b)
+					tris = [[a, m, c], [m, b, c]]
+				else:
+					if not s01:
+						a = i1; b = i2; c = i0
+					elif not s12:
+						a = i2; b = i0; c = i1
+					var mab := _mid(A, attrs, P2, mids, a, b)
+					var mbc := _mid(A, attrs, P2, mids, b, c)
+					tris = [[mab, b, mbc], [a, mab, mbc], [a, mbc, c]]
+			for j in tris.size():
+				var tr: Array = tris[j]
+				var slot_t: int = t
+				if j > 0:
+					slot_t = I2.size() / 3
+					I2.append(0)
+					I2.append(0)
+					I2.append(0)
+					C2.append(slot_t)
+					added += 1
+				I2[slot_t * 3] = tr[0]
+				I2[slot_t * 3 + 1] = tr[1]
+				I2[slot_t * 3 + 2] = tr[2]
+				nxt.append(slot_t)
+		queue = nxt
+	if added == 0:
+		return {}
+	return {"arr": A, "P": P2, "idx": I2, "cand": C2}
+
+
+# The midpoint vertex of edge ia-ib (shared by both triangles on a welded edge), every attribute interpolated.
+static func _mid(A: Array, attrs: Array, P2: PackedVector3Array, mids: Dictionary, ia: int, ib: int) -> int:
+	var key := Vector2i(mini(ia, ib), maxi(ia, ib))
+	var got = mids.get(key)
+	if got != null:
+		return got
+	var ni := P2.size()
+	P2.append((P2[ia] + P2[ib]) * 0.5)
+	for at in attrs:
+		var k: int = at[0]
+		var cmp: int = at[1]
+		var kind: int = at[2]
+		var v = A[k]
+		match kind:
+			0:
+				var m: Vector3 = (v[ia] + v[ib]) * 0.5
+				if k == Mesh.ARRAY_NORMAL and m.length_squared() > 1e-12:
+					m = m.normalized()
+				v.append(m)
+			1:
+				v.append((v[ia] + v[ib]) * 0.5)
+			2:
+				v.append((v[ia] as Color).lerp(v[ib], 0.5))
+			3:
+				var vals := PackedFloat32Array()
+				vals.resize(cmp)
+				for q in cmp:
+					vals[q] = (v[ia * cmp + q] + v[ib * cmp + q]) * 0.5
+				if k == Mesh.ARRAY_TANGENT and cmp == 4:
+					var tv := Vector3(vals[0], vals[1], vals[2])
+					if tv.length_squared() > 1e-12:
+						tv = tv.normalized()
+					vals[0] = tv.x
+					vals[1] = tv.y
+					vals[2] = tv.z
+					vals[3] = v[ia * cmp + 3]
+				v.append_array(vals)
+			_:
+				for q in cmp:
+					v.append(v[ia * cmp + q])
+		A[k] = v
+	mids[key] = ni
+	return ni
+
+
 # ---------------------------------------------------------------- the worker
 
 class Part:
@@ -537,7 +802,8 @@ static func compute(job: Dictionary) -> Dictionary:
 		if not hit:
 			out_s.append(null)
 			continue
-		out_s.append(_surface(sd, ents, parts, edges, q, float(job.get("cell", 1.0)), float(job.get("ovl", 0.02))))
+		out_s.append(_surface(sd, ents, parts, edges, q, float(job.get("cell", 1.0)), float(job.get("ovl", 0.02)), q * 8.0))
+	var t_surf := Time.get_ticks_msec() - t_ms
 	# the cut edge: the skin's thickness along every edge between a kept and a removed triangle
 	for key in edges:
 		var ed: Dictionary = edges[key]
@@ -563,6 +829,7 @@ static func compute(job: Dictionary) -> Dictionary:
 			_walls(parts[i], E)
 	# conduits and spines (they read the hull's triangle mesh only), then every mesh, all here on the worker: the main
 	# thread only swaps them in (r3 showed the 8K barge's rebuild costing a long frame when the meshes were built there)
+	var t_edges := Time.get_ticks_msec() - t_ms
 	var hull = job.get("hull")
 	var ends_by: Array = []
 	var r := RandomNumberGenerator.new()
@@ -575,6 +842,7 @@ static func compute(job: Dictionary) -> Dictionary:
 		elif E.kind == K_CLUSTER and E.style == S_ACID:
 			spines(hull, parts[i], E, E.dir, r)
 		ends_by.append([ends, r.state])
+	var t_parts := Time.get_ticks_msec() - t_ms
 	var meshes := {}
 	var surfs: Array = job["surfs"]
 	var groups := {}
@@ -601,14 +869,15 @@ static func compute(job: Dictionary) -> Dictionary:
 		meshes[key] = am
 	var inside := _merged(ents, parts, false)
 	var skin := _merged(ents, parts, true)
+	# where the time went (ms from the start): surfaces, cut edges and walls, conduits and spines, then the meshes
 	return {"surfs": out_s, "parts": parts, "ends": ends_by, "meshes": meshes, "inside": inside, "skin": skin,
-		"ms": Time.get_ticks_msec() - t_ms}
+		"ms": Time.get_ticks_msec() - t_ms, "phases": [t_surf, t_edges, t_parts]}
 
 
 # One surface: displace the skin near the damage, mark removed triangles zero-area, collect cavities and overlay skins.
 # Only triangles in grid cells near the damage are visited (the grid and the ship-frame positions are built once per
 # surface and kept in sd), so an 8K hull costs about what a game hull does.
-static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionary, q: float, cell: float, ovl: float):
+static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionary, q: float, cell: float, ovl: float, tess_min := 0.0):
 	var arr: Array = sd["arrays"]
 	var xf: Transform3D = sd["xf"]
 	var V: PackedVector3Array = arr[Mesh.ARRAY_VERTEX]
@@ -633,35 +902,91 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 		idx = sd["ident"]
 	var nt := idx.size() / 3
 	if not sd.has("grid"):
+		# every triangle goes into each cell its box overlaps (r4: a big kit plate's centroid can sit cells away from a
+		# mark on it, so centroid bucketing missed it), up to 64 cells; past that, its centroid's cell
 		var grid := {}
 		for t in nt:
-			var cq := (P[idx[t * 3]] + P[idx[t * 3 + 1]] + P[idx[t * 3 + 2]]) / (3.0 * cell)
-			var key := Vector3i(floori(cq.x), floori(cq.y), floori(cq.z))
-			if not grid.has(key):
-				grid[key] = []
-			(grid[key] as Array).append(t)
+			var a0 := P[idx[t * 3]] / cell
+			var a1 := P[idx[t * 3 + 1]] / cell
+			var a2 := P[idx[t * 3 + 2]] / cell
+			var lo := Vector3i(floori(minf(a0.x, minf(a1.x, a2.x))), floori(minf(a0.y, minf(a1.y, a2.y))), floori(minf(a0.z, minf(a1.z, a2.z))))
+			var hi := Vector3i(floori(maxf(a0.x, maxf(a1.x, a2.x))), floori(maxf(a0.y, maxf(a1.y, a2.y))), floori(maxf(a0.z, maxf(a1.z, a2.z))))
+			var span := (hi - lo) + Vector3i.ONE
+			if span.x * span.y * span.z > 64:
+				var cq := (a0 + a1 + a2) / 3.0
+				lo = Vector3i(floori(cq.x), floori(cq.y), floori(cq.z))
+				hi = lo
+			for gx in range(lo.x, hi.x + 1):
+				for gy in range(lo.y, hi.y + 1):
+					for gz in range(lo.z, hi.z + 1):
+						var key := Vector3i(gx, gy, gz)
+						if not grid.has(key):
+							grid[key] = []
+						(grid[key] as Array).append(t)
 		sd["grid"] = grid
 	var grid: Dictionary = sd["grid"]
 	var tmark := PackedByteArray()
 	tmark.resize(nt)
 	var cand := PackedInt32Array()
-	for x in ents:
-		var E: Ent = x
+	# which marks reach each grid cell (r5: an 8K hull's damaged region holds tens of thousands of vertices, and testing
+	# every one against all 20 or so marks cost seconds; each triangle now only meets the marks of its own cell)
+	var cell_ents := {}
+	for ei in ents.size():
+		var E: Ent = ents[ei]
 		var rr := maxf(sqrt(E.inf2), E.ov + E.hl) + cell
 		var lo := (E.c - Vector3.ONE * rr) / cell
 		var hi := (E.c + Vector3.ONE * rr) / cell
 		for cx in range(floori(lo.x), floori(hi.x) + 1):
 			for cy in range(floori(lo.y), floori(hi.y) + 1):
 				for cz in range(floori(lo.z), floori(hi.z) + 1):
-					var lst = grid.get(Vector3i(cx, cy, cz))
-					if lst == null:
+					var key := Vector3i(cx, cy, cz)
+					if not grid.has(key):
 						continue
-					for t in lst:
-						if tmark[t] == 0:
-							tmark[t] = 1
-							cand.append(t)
+					if not cell_ents.has(key):
+						cell_ents[key] = PackedInt32Array()
+					var ce: PackedInt32Array = cell_ents[key]
+					ce.append(ei)
+					cell_ents[key] = ce
+	# per triangle, the index of its cell's mark list (-2: all marks, for a triangle in several cells' reach)
+	var lists: Array = [ents]
+	var maps: Array = [PackedInt32Array(range(ents.size()))]
+	var tl := PackedInt32Array()
+	tl.resize(nt)
+	for key in cell_ents:
+		var ce: PackedInt32Array = cell_ents[key]
+		var sub: Array = []
+		for ei in ce:
+			sub.append(ents[ei])
+		var li := lists.size()
+		lists.append(sub)
+		maps.append(ce)
+		for t in grid[key]:
+			if tmark[t] == 0:
+				tmark[t] = 1
+				cand.append(t)
+				tl[t] = li
+			elif tl[t] != li:
+				tl[t] = 0
 	if cand.is_empty():
 		return null
+	# split the big triangles near cutting and denting marks first, so a hole smaller than a plate can still be cut
+	var rf: Dictionary = _refine(arr, P, idx, cand, ents, tess_min)
+	if not rf.is_empty():
+		arr = rf["arr"]
+		P = rf["P"]
+		idx = rf["idx"]
+		cand = rf["cand"]
+		N = arr[Mesh.ARRAY_NORMAL] if has_n else N
+		nv = P.size()
+		nt = idx.size() / 3
+		# the split triangles meet every mark (a split triangle came from a big one, near several)
+		var old_nt := tl.size()
+		tl.resize(nt)
+		for t in range(old_nt, nt):
+			tl[t] = 0
+		for t in cand:
+			if t < old_nt and tl[t] > 0:
+				tl[t] = 0
 	var nb: Basis = xf.basis.inverse().transposed()
 	var back: Basis = xf.basis.transposed()
 	var near := PackedByteArray()
@@ -676,6 +1001,7 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 	var N2 := N.duplicate()
 	var changed := false
 	for t in cand:
+		var lents: Array = lists[tl[t]]
 		for j in 3:
 			var i := idx[t * 3 + j]
 			if seen[i] == 1:
@@ -684,7 +1010,7 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 			var p := P[i]
 			var lvl := 0
 			var eps := 1e9
-			for x in ents:
+			for x in lents:
 				var E: Ent = x
 				var d2 := (p - E.c).length_squared()
 				if d2 < E.inf2:
@@ -698,8 +1024,8 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 			if lvl == 0:
 				continue
 			near[i] = lvl
-			var pv := peel_at(p, ents)
-			var dv := pv + buckle_at(p, ents)
+			var pv := peel_at(p, lents)
+			var dv := pv + buckle_at(p, lents)
 			pm[i] = pv.length()
 			if dv.length_squared() < 1e-12:
 				continue
@@ -709,9 +1035,9 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 			var ta := nr.cross(Vector3.UP if absf(nr.y) < 0.9 else Vector3.RIGHT).normalized()
 			var tb := nr.cross(ta)
 			var pa := p + ta * eps
-			pa += peel_at(pa, ents) + buckle_at(pa, ents)
+			pa += peel_at(pa, lents) + buckle_at(pa, lents)
 			var pb := p + tb * eps
-			pb += peel_at(pb, ents) + buckle_at(pb, ents)
+			pb += peel_at(pb, lents) + buckle_at(pb, lents)
 			var nn := (pa - dp).cross(pb - dp)
 			if nn.length_squared() > 1e-20:
 				nn = nn.normalized()
@@ -722,6 +1048,8 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 	var removed_any := false
 	var tri_i := PackedInt32Array([0, 0, 0])
 	for t in cand:
+		var lents: Array = lists[tl[t]]
+		var lmap: PackedInt32Array = maps[tl[t]]
 		var i0 := idx[t * 3]
 		var i1 := idx[t * 3 + 1]
 		var i2 := idx[t * 3 + 2]
@@ -730,7 +1058,9 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 		var c := P[i2]
 		var Q := (a + b + c) / 3.0
 		var cz := near[i0] == 2 or near[i1] == 2 or near[i2] == 2
-		var ri := removed_by(Q, ents) if cz else -1
+		var ri := removed_by(Q, lents) if cz else -1
+		if ri >= 0:
+			ri = lmap[ri]
 		var n0 := NR[i0]
 		var n1 := NR[i1]
 		var n2 := NR[i2]
@@ -747,14 +1077,21 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 				ed["own"] = ri
 				edges[key] = ed
 			if not E.through:
-				_cup_tri(parts[ri], E, ents, a, b, c, n0 + n1 + n2)
+				_cup_tri(parts[ri], E, lents, a, b, c, n0 + n1 + n2)
 			continue
 		# the overlay skin over each mark this triangle lies under, lifted a hair off the hull
 		var DQ := (Dp[i0] + Dp[i1] + Dp[i2]) / 3.0
-		for mi in ents.size():
-			var Em: Ent = ents[mi]
-			if _in_overlay(Q, Em):
-				_otri(parts[mi], Dp[i0] + n0 * ovl, Dp[i1] + n1 * ovl, Dp[i2] + n2 * ovl, n0, n1, n2, n0 + n1 + n2, Color(float(Em.style) / 16.0, 0, 0, 1))
+		var tr2 := maxf(Q.distance_squared_to(a), maxf(Q.distance_squared_to(b), Q.distance_squared_to(c)))
+		var trr := sqrt(tr2)
+		for lj in lents.size():
+			var Em: Ent = lents[lj]
+			if Em.ov <= 0.0:
+				continue
+			var reach := Em.ov + Em.hl + trr
+			if Q.distance_squared_to(Em.c) > reach * reach:
+				continue
+			if _tri_in_overlay(a, b, c, Q, Em):
+				_otri(parts[lmap[lj]], Dp[i0] + n0 * ovl, Dp[i1] + n1 * ovl, Dp[i2] + n2 * ovl, n0, n1, n2, n0 + n1 + n2, Color(float(Em.style) / 16.0, 0, 0, 1))
 		if not cz:
 			continue
 		tri_i[0] = i0
@@ -772,9 +1109,10 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 			ed["nb"] = NR[ib]
 			ed["kc"] = DQ
 			edges[key] = ed
-		var ow := owner_of(Q, ents)
+		var ow := owner_of(Q, lents)
 		if ow < 0:
 			continue
+		ow = lmap[ow]
 		var Eo: Ent = ents[ow]
 		var nsum := n0 + n1 + n2
 		# the back of the skin round the cut (and of the peeled plates), a plate's thickness in
@@ -782,7 +1120,7 @@ static func _surface(sd: Dictionary, ents: Array, parts: Array, edges: Dictionar
 		var shade := 0.35 + 0.3 * _nz(Q * 5.0 / maxf(Eo.R, 1e-3))
 		_tri(pt, Dp[i0] - n0 * Eo.th, Dp[i1] - n1 * Eo.th, Dp[i2] - n2 * Eo.th, -n0, -n1, -n2, -nsum, Color(PART_SKIN, shade, 0, 1))
 		if maxf(pm[i0], maxf(pm[i1], pm[i2])) > Eo.R * 0.01 and not Eo.through:
-			_cup_tri(pt, Eo, ents, a, b, c, nsum)
+			_cup_tri(pt, Eo, lents, a, b, c, nsum)
 	if not changed and not removed_any:
 		return null
 	var na := arr.duplicate()
@@ -1099,7 +1437,9 @@ static func _merged(ents: Array, parts: Array, overlay: bool) -> ArrayMesh:
 		var cnt := pp.size()
 		c0.append_array(_rep4(Vector4(E.c.x, E.c.y, E.c.z, E.R), cnt))
 		c1.append_array(_rep4(Vector4(E.n.x, E.n.y, E.n.z, E.t0), cnt))
-		c2.append_array(_rep4(Vector4(E.D if not E.through else E.R * 0.2, E.heat, E.seed_v, float(E.style)), cnt))
+		# the overlay's CUSTOM2.x is the halo extent in units of R (the interior's is the cavity depth)
+		var c2x: float = (E.halo / maxf(E.R, 1e-4)) if overlay else (E.D if not E.through else E.R * 0.2)
+		c2.append_array(_rep4(Vector4(c2x, E.heat, E.seed_v, float(E.style)), cnt))
 		c3.append_array(_rep4(Vector4(E.dir.x, E.dir.y, E.dir.z, E.hl), cnt))
 	if pos.size() < 3:
 		return null
@@ -1156,7 +1496,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 	clear_nodes(s)
 	var ents: Array = job["ents"]
 	var ends_by: Array = res.get("ends", [])
-	var glow := Color(0.55, 1.0, 0.2) if s.faction == "chorus" else Color(1.0, 0.45, 0.12)
+	var glow: Color = s.fac.get("damage_glow", Color(1.0, 0.45, 0.12))
 	var b := POOLS.Batch.new()
 	var bs := POOLS.Batch.new()
 	var r := RandomNumberGenerator.new()
@@ -1275,6 +1615,11 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 			out.append(hole(hull, p, n, L * 0.012 * g, 1.4, 0.06, seed_v, S_HATCH))
 	for j in out.size():
 		var e: Ent = out[j]
+		# the halo that makes it read at battle distance: at least HALO_MIN world units, grows with the weapon's weight
+		var hm: float = minf(float(HALO_MIN.get(e.style, 0.0)) * wk * sqrt(g), L * HALO_MAX_L)
+		if hm > 0.0:
+			e.halo = maxf(hm, e.ov * 0.9)
+			e.ov = maxf(e.ov, e.halo * (1.0 if e.kind != K_SLOT else 0.8))
 		e.look = look
 		e.wt = w
 		e.ldir = dir

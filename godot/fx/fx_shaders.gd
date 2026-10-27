@@ -386,10 +386,11 @@ void fragment() {
 		base = vCol.rgb * (0.75 + 0.5 * n);
 		add = vec3(1.0, 0.45, 0.1) * spow(1.0 - t, 10.0) * alpha * 2.0;
 	} else if (k == 1) {
-		float d1 = (r - 0.95) / 0.018;
-		float d2 = (r - 0.88) / 0.06;
-		float rg = exp(-d1 * d1) * 1.6 + exp(-d2 * d2) * 0.2;
-		float n = 0.4 + 1.0 * fbm(vec2(ang * 5.0 + seed, t * 3.0));
+		// a shock front of hot gas, broken into arcs and soft (r4 review: a thin neon circle read as a cartoon)
+		float d1 = (r - 0.93) / (0.04 + 0.03 * t);
+		float d2 = (r - 0.8) / 0.14;
+		float rg = exp(-d1 * d1) * 0.9 + exp(-d2 * d2) * 0.25;
+		float n = smoothstep(0.3, 0.75, fbm(vec2(ang * 3.0 + seed * 5.0, t * 2.0 + r * 2.0))) * 1.3;
 		vec3 col = mix(vec3(1.0, 0.85, 0.65), vCol.rgb, sqrt(t));
 		add = col * rg * n * spow(1.0 - t, 1.5) * vCol.a;
 	} else if (k == 2) {
@@ -617,7 +618,7 @@ void vertex() {
 		vec3 disp = dr > 0.0 ? a1.xyz * (1.0 - exp(-dr * age)) / dr : a1.xyz * age;
 		VERTEX = a0.xyz + disp + rotA(VERTEX, k, an) * sc;
 		NORMAL = rotA(NORMAL, k, an);
-		vHeat = a4.x * exp(-age * 2.5);
+		vHeat = a4.x * exp(-age * 3.5);
 	}
 }
 void fragment() {
@@ -626,7 +627,7 @@ void fragment() {
 	ALBEDO = alb;
 	METALLIC = 0.5;
 	ROUGHNESS = 0.45;
-	EMISSION = vec3(1.0, 0.33, 0.06) * vHeat * 2.0 * fx_gain;
+	EMISSION = vec3(1.0, 0.33, 0.06) * vHeat * 1.2 * fx_gain;
 }
 """
 
@@ -658,6 +659,27 @@ float hexcell(vec2 q) {
 	vec2 h = vec2(q.x * 1.1547, q.y + q.x * 0.57735);
 	vec2 f = fract(h) - 0.5;
 	return max(abs(f.x), max(abs(f.y), abs(f.x + f.y)));
+}
+vec3 h33(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
+// 3D cells on the bubble: x = distance to the nearest cell border, y = the cell's id
+vec2 vor3(vec3 x) {
+	vec3 i = floor(x);
+	vec3 f = fract(x);
+	float d1 = 8.0;
+	float d2 = 8.0;
+	float id = 0.0;
+	for (int a = -1; a <= 1; a++) {
+		for (int b = -1; b <= 1; b++) {
+			for (int c = -1; c <= 1; c++) {
+				vec3 g = vec3(float(a), float(b), float(c));
+				vec3 o = h33(i + g);
+				vec3 r = g + o - f;
+				float d = dot(r, r);
+				if (d < d1) { d2 = d1; d1 = d; id = o.x; } else if (d < d2) { d2 = d; }
+			}
+		}
+	}
+	return vec2(sqrt(d2) - sqrt(d1), id);
 }
 void fragment() {
 	vec3 lp = vL * rad;
@@ -692,6 +714,8 @@ void fragment() {
 	vec3 V = normalize(CAMERA_POSITION_WORLD - vW);
 	float fres = spow(1.0 - abs(dot(normalize(vN), V)), 4.0);
 	float pat = 1.0;
+	vec2 hexId = vec2(0.0);
+	float hexEdge = 1.0;
 	if (style == 0) {
 		float cr = spow(1.0 - abs(fbm(lp.xy * 0.6 + lp.zx * 0.4 + scene_t * 0.4) * 2.0 - 1.0), 8.0);
 		pat = 0.6 + 1.4 * cr;
@@ -700,8 +724,11 @@ void fragment() {
 		const vec2 hs = vec2(1.0, 1.7320508);
 		vec4 hcc = floor(vec4(hp, hp - vec2(0.5, 1.0)) / hs.xyxy) + 0.5;
 		vec4 hh = vec4(hp - hcc.xy * hs, hp - (hcc.zw + 0.5) * hs);
-		vec2 hq = abs(dot(hh.xy, hh.xy) < dot(hh.zw, hh.zw) ? hh.xy : hh.zw);
+		bool firstCell = dot(hh.xy, hh.xy) < dot(hh.zw, hh.zw);
+		vec2 hq = abs(firstCell ? hh.xy : hh.zw);
 		float hd = 0.5 - max(dot(hq, hs * 0.5), hq.x);
+		hexId = firstCell ? hcc.xy : hcc.zw + 0.5;
+		hexEdge = hd;
 		pat = 0.45 + 1.7 * smoothstep(0.07, 0.0, hd);
 	} else if (style == 2) {
 		float fl = mix(step(0.3, vnoise(vec2(scene_t * 28.0, 3.0))), 0.8, fx_calm);
@@ -717,15 +744,57 @@ void fragment() {
 		C = mix(col, clamp(abs(fract(hue + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0) * length(col) * 0.6, 0.3);
 	}
 	float total = I * pat * (0.9 + 1.2 * fres);
-	// break: the facing toward brk_dir flares white-hot, then tears away from its centre outward
+	// break (r4 review: three factions tore the same noise holes in a bright, nearly opaque bubble). Each faction now
+	// breaks in its own way, spreading from the struck facing over the bubble, and the bubble stays see-through:
+	//   0 Voidsworn: the gold veil cracks into sheets; cracks run white-gold ahead of the front, each sheet flares as it
+	//     peels loose, then is gone;
+	//   1 Hegemony: the hex lattice shatters cell by cell; each cell fills bright for an instant and pops out, its
+	//     border glowing as the front nears (the shards fly as particles);
+	//   2 Corsair: it sputters out in patches; each patch stutters on and off (slow breathing with reduce flashing) and
+	//     dies, dirty red, until nothing is left;
+	//   3 Ithar: the veil sheets away from the struck side (left as it was: the Ithar look is changing).
 	float ba = scene_t - brk_t;
-	if (ba > 0.0 && ba < 1.4) {
-		float facing = dot(normalize(vL), normalize(brk_dir));
-		float zone = smoothstep(-0.1, 0.5, facing);
-		float flare = exp(-ba * 6.0) * 1.4 * mix(1.0, 0.3, fx_calm);
-		float tear = smoothstep(ba * 1.3 - 0.1, ba * 1.3, 1.0 - facing + (fbm(lp.xy * 0.5 + lp.zx * 0.5) - 0.5) * 0.4);
-		float edge = exp(-spow((1.0 - facing - ba * 1.3) / 0.08, 2.0)) * 2.5 * (1.0 - ba / 1.4);
-		total += zone * (flare * pat + edge) * tear + fres * zone * 0.8 * (1.0 - ba / 1.4);
+	if (ba > 0.0 && ba < 1.6) {
+		vec3 un = normalize(vL);
+		float facing = dot(un, normalize(brk_dir));
+		float dist = (1.0 - facing) * 0.5;
+		float life = 1.0 - ba / 1.6;
+		float calm = mix(1.0, 0.3, fx_calm);
+		// a local flare where it gave way (not the whole hemisphere)
+		float add = exp(-ba * 7.0) * exp(-dist * dist * 40.0) * 1.6 * calm;
+		float alive = 1.0;
+		if (style == 0) {
+			vec2 vc = vor3(un * 3.2 + vec3(7.1, 3.3, 1.9));
+			float ct = ba - (dist * 1.0 + vc.y * 0.22);
+			float crack = smoothstep(0.07, 0.0, vc.x) * smoothstep(-0.25, 0.0, ct) * exp(-max(ct, 0.0) * 2.5) * 2.4;
+			float sheet = ct < 0.0 ? 0.0 : exp(-ct * 5.0) * 0.9 * calm;
+			alive = ct < 0.0 ? 1.0 : exp(-ct * 6.0);
+			add += crack * (0.6 + 0.4 * pat) + sheet * pat * 0.6;
+		} else if (style == 1) {
+			float cid = h21(hexId + vec2(3.7, 1.3));
+			float ct = ba - (dist * 0.9 + cid * 0.25);
+			float rim = smoothstep(0.08, 0.0, hexEdge) * smoothstep(-0.3, 0.0, ct) * step(ct, 0.0) * 1.6;
+			float pop = smoothstep(-0.06, 0.0, ct) * step(ct, 0.0) * 1.8 * calm;
+			alive = step(ct, 0.0);
+			add += (rim + pop) * alive;
+		} else if (style == 2) {
+			float pid = h21(floor(lp.xz * 0.28) + floor(lp.y * 0.28) * 7.3);
+			float tdie = dist * 0.7 + pid * 0.45;
+			float ct = ba - tdie;
+			float stut = step(0.45, h21(vec2(pid * 31.0, floor(scene_t * 7.0))));
+			float on = mix(stut, 0.5 + 0.5 * cos(min(ba, tdie) * 3.0), fx_calm);
+			alive = ct < 0.0 ? on * smoothstep(0.0, -0.35, ct) + 0.15 : 0.0;
+			add += alive * (0.5 + 0.5 * pat) * 0.7 + smoothstep(-0.05, 0.0, ct) * step(ct, 0.0) * 0.8 * calm;
+		} else {
+			float zone = smoothstep(-0.1, 0.5, facing);
+			float tear = smoothstep(ba * 1.3 - 0.1, ba * 1.3, 1.0 - facing + (fbm(lp.xy * 0.5 + lp.zx * 0.5) - 0.5) * 0.4);
+			float edge = exp(-spow((1.0 - facing - ba * 1.3) / 0.08, 2.0)) * 2.5 * life;
+			add += zone * (exp(-ba * 6.0) * 1.4 * calm * pat + edge) * tear;
+			alive = tear;
+		}
+		// what is left of the veil stays faintly visible, so the break reads as the bubble coming apart
+		if (style != 2) { add += alive * 0.3 * pat * (0.3 + 0.7 * fres); }
+		total = total * alive + add * life * (0.55 + 0.45 * fres);
 	}
 	if (total < 0.002) { discard; }
 	ALBEDO = clamp(C * total * fx_gain, 0.0, 512.0);
@@ -857,7 +926,8 @@ varying vec4 vA;
 varying vec4 vB;
 varying vec4 vD;
 varying vec4 vE;
-void vertex() { vL = VERTEX; vA = CUSTOM0; vB = CUSTOM1; vD = CUSTOM2; vE = CUSTOM3; }
+varying float vH;
+void vertex() { vL = VERTEX; vA = CUSTOM0; vB = CUSTOM1; vD = CUSTOM2; vE = CUSTOM3; vH = CUSTOM2.x; }
 void fragment() {
 	vec3 centre = vA.xyz;
 	float R = max(vA.w, 1e-3);
@@ -877,10 +947,12 @@ void fragment() {
 	vec3 alb = vec3(0.02);
 	vec3 em = vec3(0.0);
 	float rough = 0.85;
+	float hd = u;
 	if (style == 1) {
 		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
 		float al = clamp(dot(q, dd), -vE.w, vE.w);
 		float s = length(q - dd * al) / R;
+		hd = s;
 		float streak = fbm(vec2(dot(q, dd) / R * 0.4, s * 2.0) + seed);
 		float charr = 1.0 - smoothstep(0.8, 3.2 + 1.6 * n1, s);
 		alb = mix(vec3(0.05, 0.045, 0.04), vec3(0.012), smoothstep(3.0, 0.8, s));
@@ -965,7 +1037,7 @@ void fragment() {
 			pr = mix(pr, vec3(0.88, 0.96, 1.0), smoothstep(0.6, 1.0, cool));
 			vec3 hc = style == 3 ? pr : heatRamp(cool * 0.8);
 			slag *= 1.0 - smoothstep(0.3, 1.0, u);
-			em = hc * slag * cool * (style == 3 ? 3.0 : 1.5);
+			em = hc * slag * cool * (style == 3 ? 1.8 : 1.1);
 			a = max(a, slag);
 			rough = mix(rough, 0.25, slag);
 			// slag runs: drips trailing down the plate from the crater
@@ -1006,6 +1078,67 @@ void fragment() {
 			float crack = smoothstep(0.92, 1.0, 1.0 - abs(sin(ang * 7.0 + n1 * 3.0))) * (1.0 - smoothstep(0.8, 2.4, u));
 			a = max(a, crack);
 		}
+	}
+	// The halo (r4 review): every mark carries a wide, broken field in its own signature so it reads from the battle
+	// camera, 170 units away, where the mark's own detail is a few pixels: soot round shells, torpedo holes and lance
+	// cuts; dark blue glass freckles round plasma; a grey rash round flak; green-black etch round acid; a blue-black
+	// scorched fern field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
+	float H = vH;
+	if (H > 0.05) {
+		float hb = fbm(q / R * (0.55 / max(H * 0.25, 0.5)) + seed * 1.7);
+		float hn = fbm(q / R * (2.2 / max(H * 0.25, 0.5)) + seed * 3.1);
+		float hu = hd / H + (hb - 0.5) * 0.35;
+		float ha = (1.0 - smoothstep(0.25, 1.0, hu)) * (0.55 + 0.45 * hn);
+		vec3 hc = vec3(0.016, 0.014, 0.013);
+		float hr = 0.95;
+		vec3 hem = vec3(0.0);
+		float live = exp(-age / 4.0);
+		if (style == 3) {
+			// plasma: a glaze of dark blue glass with brighter slag freckles and a faint cold sheen that lasts
+			float fr = smoothstep(0.5, 0.72, hn);
+			hc = mix(vec3(0.012, 0.025, 0.055), vec3(0.05, 0.13, 0.26), fr);
+			hr = mix(0.3, 0.12, fr);
+			hem = vec3(0.3, 0.6, 1.0) * (0.03 + fr * (0.1 + 0.6 * live)) * (1.0 - smoothstep(0.2, 0.85, hu));
+		} else if (style == 7) {
+			// flak: a grey rash, lighter than soot (chipped paint and bare metal specks)
+			float sp = step(0.6, h21(floor(q / R * 9.0) + seed));
+			hc = mix(vec3(0.05, 0.05, 0.05), vec3(0.22, 0.215, 0.21), sp * 0.8);
+			ha *= 0.85;
+			hr = 0.6;
+		} else if (style == 8) {
+			float pit = smoothstep(0.58, 0.72, hn);
+			hc = mix(vec3(0.03, 0.045, 0.012), vec3(0.006, 0.01, 0.003), pit);
+			hr = mix(0.85, 0.3, exp(-age / 9.0) * pit);
+			hem = vec3(0.4, 1.0, 0.2) * pit * (0.04 + 0.4 * exp(-age / 6.0));
+		} else if (style == 9) {
+			hc = vec3(0.012, 0.015, 0.03);
+			hem = vec3(0.3, 0.5, 1.0) * smoothstep(0.62, 0.8, hn) * (0.03 + 0.5 * live);
+		} else if (style == 10) {
+			// a ram scrapes the paint off: bright streaked bare metal, no soot
+			float st = smoothstep(0.5, 0.85, fbm(vec2(q.x / R * 0.35, q.y / R * 5.0) + seed));
+			hc = mix(vec3(0.1, 0.1, 0.1), vec3(0.42, 0.41, 0.4), st);
+			hr = mix(0.6, 0.3, st);
+			ha *= 0.5 + 0.5 * st;
+		} else if (style == 5) {
+			hc = mix(vec3(0.03), vec3(0.3, 0.3, 0.31), smoothstep(0.55, 0.8, hn));
+			hr = 0.5;
+		} else if (style == 1) {
+			// lance: soot along the cut, with temper colours (straw, purple, blue) banding the metal near it
+			float tb = clamp(hd / max(H * 0.45, 1.0), 0.0, 1.0);
+			vec3 temper = mix(vec3(0.16, 0.12, 0.05), vec3(0.09, 0.05, 0.12), smoothstep(0.2, 0.55, tb));
+			temper = mix(temper, vec3(0.04, 0.06, 0.14), smoothstep(0.55, 0.9, tb));
+			hc = mix(temper, vec3(0.014), smoothstep(0.75, 1.0, tb) * 0.7);
+			hr = 0.45;
+		}
+		if (style == 6 || style == 11 || style == 5) {
+			// torn holes keep a dull ember ring for a long while, so a hit ship still shows where it was holed
+			hem += vec3(1.0, 0.32, 0.06) * smoothstep(0.62, 0.8, hn) * (1.0 - smoothstep(0.15, 0.5, hu)) * (0.08 + 0.5 * live) * exp(-age / 40.0);
+		}
+		float at = a + ha * (1.0 - a);
+		alb = (alb * a + hc * ha * (1.0 - a)) / max(at, 1e-4);
+		rough = mix(hr, rough, a / max(at, 1e-4));
+		em += hem * ha * (1.0 - a);
+		a = at;
 	}
 	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
 	ALBEDO = alb;
@@ -1093,15 +1226,18 @@ void fragment() {
 """
 
 const NOISE3 := """
-float h31(vec3 p) { p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+// r5: a better hash (Hoskins' hash13), quintic fades and rotated octaves; the old product hash and cubic fade drew a
+// diagonal lattice through the fireballs once their emission amplified the noise (r4 g21: a grid of hard diamonds)
+float h31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 float vn3(vec3 x) {
 	vec3 i = floor(x);
 	vec3 f = fract(x);
-	f = f * f * (3.0 - 2.0 * f);
+	f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
 	return mix(mix(mix(h31(i), h31(i + vec3(1.0, 0.0, 0.0)), f.x), mix(h31(i + vec3(0.0, 1.0, 0.0)), h31(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
 		mix(mix(h31(i + vec3(0.0, 0.0, 1.0)), h31(i + vec3(1.0, 0.0, 1.0)), f.x), mix(h31(i + vec3(0.0, 1.0, 1.0)), h31(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
 }
-float fbm3(vec3 p) { return 0.5 * vn3(p) + 0.25 * vn3(p * 2.03 + 3.1) + 0.125 * vn3(p * 4.07 + 7.7); }
+const mat3 NROT = mat3(vec3(0.00, 0.80, 0.60), vec3(-0.80, 0.36, -0.48), vec3(-0.60, -0.48, 0.64));
+float fbm3(vec3 p) { return 0.5 * vn3(p) + 0.25 * vn3(NROT * p * 2.03 + 3.1) + 0.125 * vn3(NROT * NROT * p * 4.07 + 7.7); }
 """
 
 # Raymarched volumes (max): type 0 a fireball rolling into dark smoke, 1 a breach's venting gas plume. A unit box, back

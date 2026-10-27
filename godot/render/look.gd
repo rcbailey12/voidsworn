@@ -24,15 +24,9 @@ const TONEMAP := "agx"
 # AgX keeps highlights further from white, so effects need a little more push to read as hot
 const FX_GAIN := {"aces": 0.5556, "agx": 0.75}
 
-# Dark-hull fix per faction: [rim amount, rim tint, albedo lift]
-const HULL_FIX := {
-	"chorus": [0.45, 0.55, 1.35],
-	"deathless": [0.4, 0.5, 1.3],
-	"corsair": [0.15, 0.3, 1.0],
-	"voidsworn": [0.12, 0.3, 1.0],
-	"hegemony": [0.08, 0.2, 1.0],
-	"ithar": [0.1, 0.25, 1.0],
-}
+# Dark-hull fix per faction: [rim amount, rim tint, albedo lift], from the faction look data (fx/faction_looks.json,
+# field hull_fix), so a repaint is a data edit
+const FLOOK := preload("res://fx/faction_look.gd")
 
 
 static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLight3D, opts := {}) -> void:
@@ -98,7 +92,7 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 		return mat
 	if copy:
 		m = m.duplicate()
-	var f: Array = HULL_FIX.get(faction.to_lower(), [0.1, 0.25, 1.0])
+	var f: Array = FLOOK.of(faction).get("hull_fix", [0.1, 0.25, 1.0])
 	m.rim_enabled = true
 	m.rim = float(f[0])
 	m.rim_tint = float(f[1])

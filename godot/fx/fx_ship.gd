@@ -162,7 +162,8 @@ func _build_engines(fx) -> void:
 	var b = POOLS.Batch.new()
 	var rb = POOLS.Batch.new()
 	var eng: Color = fac["engine"]
-	var corsair = faction == "corsair" or _eng_sputter
+	var extra := String(fac.get("engine_extra", "none"))
+	var corsair = extra == "soot" or _eng_sputter
 	var q = POOLS.quad_shape()
 	var rs = POOLS.ribbon_shape(14)
 	for nz in hull.nozzles:
@@ -179,11 +180,11 @@ func _build_engines(fx) -> void:
 				var tk = -20.0 + k * 0.23 + (k % 3) * 0.05
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, tk), Vector4(-5 - fx.rng.randf() * 3, fx.rng.randf() - 0.3, fx.rng.randf() - 0.5, 1.8),
 					Vector4(0.06, 0.05, 0.045, 0.55), Vector4(r * 1.2, r * 4.5, 8, fx.rng.randf()), Vector4(2.1, 0, 0.8, 0)))
-		elif faction == "chorus":
+		elif extra == "spores":
 			for k in 4:
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 0.6), Vector4(-3, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5, 2.0),
 					Vector4(eng.r * 0.4, eng.g * 0.4, eng.b * 0.3, 0.35), Vector4(r * 0.8, r * 3.0, 20, fx.rng.randf()), Vector4(2.4, 0, 0.6, 0)))
-		elif faction == "deathless":
+		elif extra == "embers":
 			for k in 3:
 				b.add(q, POOLS.pack(Vector4(np.x, np.y, np.z, -20.0 + k * 1.3), Vector4(-6, fx.rng.randf() - 0.5, fx.rng.randf() - 0.5, 0.9),
 					Vector4(1.0, 0.5, 0.15, 2.2), Vector4(r * 0.2, r * 0.1, 19, fx.rng.randf()), Vector4(3.9, 0, 0.5, 0)))
@@ -310,7 +311,7 @@ func _trail_mesh(fx, t: Dictionary, start: Vector3, back: Vector3, eng: Color, l
 	var c1 = PackedFloat32Array()
 	var idx = PackedInt32Array()
 	var r: float = t["r"]
-	var style: int = 1 if (faction == "corsair" or _eng_sputter) else int(fac["trail"])
+	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or _eng_sputter) else int(fac["trail"])
 	var s = 0.0
 	var w0 = r * 1.1
 	var w1 = r * 2.4 * clampf(scale_k(), 0.6, 1.6)
@@ -478,8 +479,24 @@ func _regen(fx) -> void:
 
 # How much a ship of this weight resists a shove (craft, light, medium, heavy, capital): capital ships barely move.
 const REACT_MASS := [0.6, 1.0, 2.2, 5.0, 12.0]
-# How fast its thrusters bring it back (a frigate snaps back, a capital ship settles slowly).
-const REACT_FREQ := [5.0, 4.2, 3.2, 2.4, 1.8]
+# The weighty reaction (r4 review; Ryan: no cartoon push back). A hit does not spring the ship out and back. It plays in
+# three beats, all slower for heavier hulls:
+#   1. onset: the kick builds over a few frames (a frigate jolts, a capital hull's mass soaks it up over a sixth of a
+#      second) while a shudder runs through the structure (lower and longer in big hulls);
+#   2. arrest: after a short delay the attitude thrusters fire and brake the spin and the slide at a steady rate (a
+#      visible burn, not an exponential ease): REACT_ARREST seconds for the biggest hit of the moment;
+#   3. recovery: once stopped, the helm brings the ship back level and onto its hex, slowly and without overshoot
+#      (critically damped at REACT_RECOVER rad/s).
+const REACT_ONSET := [0.03, 0.05, 0.08, 0.12, 0.16]
+const REACT_ARREST := [0.35, 0.5, 0.7, 0.95, 1.2]
+const REACT_RECOVER := [3.6, 3.0, 2.4, 1.9, 1.5]
+const REACT_SHUDDER_HZ := [11.0, 9.0, 7.0, 5.0, 4.0]
+const REACT_SHUDDER_T := [0.16, 0.2, 0.28, 0.38, 0.5]
+var _kick_v := Vector3.ZERO     # angular kick still to be delivered (onset)
+var _kick_p := Vector3.ZERO     # drift kick still to be delivered
+var _brk := Vector3.ZERO        # thrusters' braking rate per axis (rad/s2)
+var _brk_p := 0.0               # ... and for the slide (units/s2)
+var _brk_at := 0.0              # when the thrusters start braking
 
 
 # A hit's physical reaction. impulse: the weapon's momentum (fx_weapons.REACT_IMPULSE: torpedoes and rams shove,
@@ -487,7 +504,8 @@ const REACT_FREQ := [5.0, 4.2, 3.2, 2.4, 1.8]
 func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3) -> void:
 	if dead or gone or impulse <= 0.0:
 		return
-	var m: float = REACT_MASS[clampi(weight, 0, 4)]
+	var wi := clampi(weight, 0, 4)
+	var m: float = REACT_MASS[wi]
 	var L: float = maxf(hull.L, 1.0)
 	var d := ldir.normalized()
 	var r: Vector3 = (lp - hull.c) / L
@@ -498,32 +516,71 @@ func hit_react(fx, impulse: float, lp: Vector3, ldir: Vector3) -> void:
 	r.x = signf(r.x if absf(r.x) > 1e-4 else 1.0) * maxf(absf(r.x), 0.08)
 	var tq := r.cross(d)
 	# turning inertia grows faster than mass (a long hull resists spin more than it resists a shove)
-	_rv += Vector3(tq.x * 2.4, tq.y * 0.8, tq.z * 1.2) * impulse * 0.9 / pow(m, 1.25)
-	# a drift along the shot, in world units scaled to the hull (a frigate jolts, a capital ship barely translates)
-	_pv += d * impulse * L * 0.03 / m
-	# the shudder: a short, damped high-frequency vibration through the hull
-	_shud = maxf(_shud, minf(impulse / m, 4.0) * 0.0018)
+	var dv := Vector3(tq.x * 2.4, tq.y * 0.8, tq.z * 1.2) * impulse * 0.25 / pow(m, 1.25)
+	var dp := d * impulse * L * 0.0095 / m
+	_kick_v += dv
+	_kick_p += dp
+	# the thrusters brake whatever the ship will be doing once the kick is in, over REACT_ARREST seconds
+	var t_ar: float = REACT_ARREST[wi]
+	var v_after := _rv + _kick_v
+	_brk = Vector3(maxf(_brk.x, absf(v_after.x) / t_ar), maxf(_brk.y, absf(v_after.y) / t_ar), maxf(_brk.z, absf(v_after.z) / t_ar))
+	_brk_p = maxf(_brk_p, (_pv + _kick_p).length() / (t_ar * 1.3))
+	_brk_at = fx.now + REACT_ONSET[wi] + 0.05
+	# the shudder: a damped structural vibration (bigger hulls ring lower and longer, and show it more than they move)
+	_shud = maxf(_shud * exp(-(fx.now - _shud_t) / REACT_SHUDDER_T[wi]), minf(impulse / sqrt(m), 4.0) * 0.0025)
 	_shud_t = fx.now
 	if impulse >= 2.5:
 		_stutter_until = maxf(_stutter_until, fx.now + 0.8)
 	_reacting = true
 
 
+static func _brake(v: float, b: float, h: float) -> float:
+	if absf(v) <= b * h:
+		return 0.0
+	return v - signf(v) * b * h
+
+
 func _react_step(fx, dt: float) -> void:
 	if not _reacting:
 		return
-	var w: float = REACT_FREQ[clampi(weight, 0, 4)]
-	var z := 0.85
+	var wi := clampi(weight, 0, 4)
 	var h := minf(dt, 1.0 / 30.0)
-	# thrusters arrest the spin and the drift: a damped spring per axis
-	_rv += (-_ra * w * w - _rv * 2.0 * z * w) * h
+	# 1. onset: deliver the kick over REACT_ONSET (about 95% of it inside that time)
+	var f := 1.0 - exp(-h * 3.0 / float(REACT_ONSET[wi]))
+	_rv += _kick_v * f
+	_kick_v *= 1.0 - f
+	_pv += _kick_p * f
+	_kick_p *= 1.0 - f
+	var wr: float = REACT_RECOVER[wi]
+	if fx.now >= _brk_at:
+		# 2. arrest: a steady thruster burn against the spin and the slide, per axis
+		var ax := [0, 1, 2]
+		for k in ax:
+			if _brk[k] > 0.0:
+				_rv[k] = _brake(_rv[k], _brk[k], h)
+				if _rv[k] == 0.0 and _kick_v.length() < 1e-4:
+					_brk[k] = 0.0
+			else:
+				# 3. recovery: back to level, critically damped (no overshoot, no bounce)
+				_rv[k] += (-_ra[k] * wr * wr - _rv[k] * 2.0 * wr) * h
+		if _brk_p > 0.0:
+			var sp := _pv.length()
+			if sp <= _brk_p * h:
+				_pv = Vector3.ZERO
+				if _kick_p.length() < 1e-4:
+					_brk_p = 0.0
+			else:
+				_pv -= _pv / sp * _brk_p * h
+		else:
+			var wp := wr
+			_pv += (-_pd * wp * wp - _pv * 2.0 * wp) * h
 	_ra += _rv * h
-	_pv += (-_pd * w * w * 0.5 - _pv * 2.0 * z * w * 0.7) * h
 	_pd += _pv * h
 	var age: float = fx.now - _shud_t
-	var sh := _shud * exp(-age / 0.22)
-	var shx := sh * sin(age * 95.0 + 1.3)
-	var shz := sh * 0.7 * sin(age * 121.0)
+	var sh := _shud * exp(-age / float(REACT_SHUDDER_T[wi]))
+	var w_sh: float = TAU * float(REACT_SHUDDER_HZ[wi])
+	var shx := sh * sin(age * w_sh + 1.3)
+	var shz := sh * 0.7 * sin(age * w_sh * 1.27)
 	_rcs(fx)
 	var busy: bool = root.has_method("busy") and bool(root.call("busy"))
 	# roll and pitch are fx's own: absolute
@@ -539,7 +596,8 @@ func _react_step(fx, dt: float) -> void:
 		_app_pos = want_pos
 		root.rotation.y += _ra.y - _app_yaw
 		_app_yaw = _ra.y
-	if _ra.length() < 6e-4 and _rv.length() < 1e-3 and _pd.length() < hull.L * 1e-4 and _pv.length() < hull.L * 2e-4 and sh < 1e-4:
+	var idle: bool = _kick_v.length() < 1e-4 and _kick_p.length() < hull.L * 1e-5 and _brk == Vector3.ZERO and _brk_p == 0.0
+	if idle and _ra.length() < 6e-4 and _rv.length() < 1e-3 and _pd.length() < hull.L * 3e-4 and _pv.length() < hull.L * 3e-4 and sh < 1e-4:
 		root.rotation.x = 0.0
 		root.rotation.z = 0.0
 		if not busy:
@@ -562,9 +620,13 @@ func _rcs(fx) -> void:
 		return
 	var spin := _rv.length()
 	var slide := _pv.length() / maxf(hull.L, 1.0)
-	if spin < 0.01 and slide < 0.004:
+	# while the thrusters brake (beat 2) they burn steadily; in the slow recovery only now and then
+	var braking: bool = fx.now >= _brk_at and (_brk != Vector3.ZERO or _brk_p > 0.0)
+	if not braking and spin < 0.01 and slide < 0.004:
 		return
-	_rcs_next = fx.now + 0.07
+	if braking and spin < 0.002 and slide < 0.0008:
+		return
+	_rcs_next = fx.now + (0.05 if braking else 0.12)
 	var L: float = hull.L
 	var W: float = hull.W
 	var H: float = hull.H

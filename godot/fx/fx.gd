@@ -14,16 +14,9 @@ const SHIP := preload("res://fx/fx_ship.gd")
 const WEAP := preload("res://fx/fx_weapons.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 
-# Faction colours: linear RGB from ships3d.js FAC3D (A5 sheets 2.1). Styles are Claude's calls (vetoable):
-# shield 0 gold veil, 1 hex lattice, 2 patchy, 3 prismatic; trail 0 clean, 1 sooty sputter, 2 spore puffs, 3 guttering.
-const FAC := {
-	"voidsworn": {"weapon": Color(1.0, 0.45, 0.15), "shield": Color(1.0, 0.46, 0.16), "engine": Color(1.0, 0.50, 0.16), "shield_style": 0, "trail": 0, "shielded": true},
-	"hegemony": {"weapon": Color(0.55, 0.82, 1.0), "shield": Color(0.38, 0.68, 1.0), "engine": Color(0.45, 0.72, 1.0), "shield_style": 1, "trail": 0, "shielded": true},
-	"corsair": {"weapon": Color(0.95, 0.22, 0.10), "shield": Color(0.85, 0.16, 0.10), "engine": Color(1.0, 0.38, 0.16), "shield_style": 2, "trail": 1, "shielded": true},
-	"chorus": {"weapon": Color(0.85, 0.90, 0.30), "shield": null, "engine": Color(0.80, 0.90, 0.28), "shield_style": 0, "trail": 2, "shielded": false},
-	"ithar": {"weapon": Color(0.75, 1.0, 0.88), "shield": Color(0.72, 1.0, 0.86), "engine": Color(0.62, 1.0, 0.84), "shield_style": 3, "trail": 0, "shielded": true},
-	"deathless": {"weapon": Color(0.20, 1.0, 0.38), "shield": null, "engine": Color(0.15, 1.0, 0.35), "shield_style": 0, "trail": 3, "shielded": false},
-}
+# Faction colours and styles come from data (fx/faction_looks.json via fx/faction_look.gd; API.md 15), so a faction's
+# palette can change without touching code. Styles are Claude's calls (vetoable).
+const FLOOK := preload("res://fx/faction_look.gd")
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const LIGHT_K := 0.9
 const FLASH_WINDOW := 0.12   # flashes this close are one event (a salvo landing together)
@@ -557,7 +550,7 @@ func hull_point(id: String, section: String, toward: Vector3) -> Dictionary:
 
 
 func faction_info(f: String) -> Dictionary:
-	return FAC.get(f, FAC["voidsworn"])
+	return FLOOK.of(f)
 
 
 func ship(id: String) -> SHIP:

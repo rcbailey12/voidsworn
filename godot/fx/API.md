@@ -100,7 +100,7 @@ Today's rules still resolve torpedoes at once: `volley(..., "torp", ...)` plays 
 ## 4. Shields
 
 - Shield hits come with `volley` (`hits[i].shield > 0`).
-- `fx.shield_break(id, quad)` on the `shield_down` event: that facing collapses in the faction's own way (Voidsworn: the gold veil tears with a crackling flare; Hegemony: the blue hex lattice shatters into cells; Corsair: it sputters, flickers and dies in patches with sparks; Ithar: the mint veil folds and sheets away).
+- `fx.shield_break(id, quad)` on the `shield_down` event: the bubble comes apart from the struck facing outward, each faction its own way, and stays see-through while it does (r5): Voidsworn, the gold veil cracks into sheets that flare as they peel loose; Hegemony, the hex lattice shatters cell by cell (each cell fills bright and pops out, shards fly); Corsair, it sputters out in patches that stutter on and off and die (slow breathing with reduce flashing); Ithar, the veil sheets away from the struck side (unchanged while the Ithar look is under review).
 
 ## 5. Death and wrecks
 
@@ -131,7 +131,13 @@ fx.clear_wreck(id)                     # optional: remove the wreck pieces (e.g.
 
 ### Hit reactions (R50)
 
-A hit no longer just flashes: the ship reacts with its mass. A short shudder runs through the hull, a roll, pitch or yaw kick comes from where the hit lands, and attitude thrusters visibly fire (small gas puffs at the hull's corners, picked so their thrust opposes the motion) until the ship settles. Torpedoes and rams shove, shells and gauss slugs kick, light guns tap, lances and ions are energy and barely move a ship. Mass by class: a frigate takes a real jolt (a torpedo rolls it about 6 degrees and moves it about 3% of its length; settled in under 3 s); a super-dreadnought barely moves (a torpedo: about 1.4 degrees, 0.6% of its length; settles over 4 s). Heavy hits also make the drive stutter. The camera shake (above) scales with the hit and distance and follows `shake_scale`. Measured by `fx/test/fx_react_probe.gd`.
+A hit no longer just flashes: the ship reacts with its mass, in three beats (r5, after Ryan's "no cartoon push back"; the ship never springs out and back):
+
+1. **Onset:** the kick builds over a few frames (0.03 s for craft up to 0.16 s for a capital hull, whose mass soaks it up) while a structural shudder runs through the hull (lower and longer in big hulls: 11 Hz for craft down to 4 Hz for capital ships; big hulls show more shudder than motion).
+2. **Arrest:** a moment later the attitude thrusters fire and brake the spin and the slide at a steady rate, a visible burn of gas puffs at the hull's corners picked to oppose the motion, over 0.35 s (craft) to 1.2 s (capital).
+3. **Recovery:** once stopped, the helm brings the ship back level and onto its hex, slowly and without overshoot (critically damped).
+
+Torpedoes and rams shove, shells and gauss slugs kick, light guns tap, lances and ions are energy and barely move a ship. Mass by class: a frigate takes a real jolt (a torpedo rolls it about 6.6 degrees at its peak, about 0.6 s after the hit, and slides it 3% of its length; settled in about 3.4 s); a super-dreadnought barely moves (a torpedo: about 1.4 degrees, peaking after 1.3 s; settled in about 5 s). Heavy hits also make the drive stutter. The camera shake (above) scales with the hit and distance and follows `shake_scale`. Measured by `fx/test/fx_react_probe.gd` (it also writes a per-frame trace and, with PROBE_CLIP=1, clips).
 
 **For G2 (shared root):** fx writes the ship root's `rotation.x` and `rotation.z` (roll and pitch; ShipView never writes them) while a reaction plays and sets them back to 0 when it settles. Yaw and the small drift are added to `rotation.y` and `position` only while `root.busy()` is false (ShipView writes position and yaw itself during a path); fx takes its own offset back out when the ship settles, and drops it when a path starts. G2's weighty movement (R50 part 2) can keep its own RCS puffs for turns and burns; fx's puffs only answer hits. If G2 later wants to own the whole root, `fx.ship(id)._ra` (angles) and `_pd` (drift) are the state to read instead.
 
@@ -235,6 +241,10 @@ The death pieces are re-cut from the damaged hull afterwards.
 | 3 | hole, radius 3% of length: triangles inside a torn outline removed (radial tears between 4 or 5 petals), the ring round it peeled back as bent plates, a wider ring buckled in; a cavity behind it from the removed skin pushed inward (rubble floor, frames and decks sliced through it, conduits, cables, the plates' backs, the skin's cut thickness), lit by a fire point inside |
 | 4 | the hole at 4.6%, a buckled panel elsewhere in the section, and (medium ships up) a 3.2% hole on an upper edge, which through thin hull goes right through and bites the silhouette |
 
+**Refinement (r5).** Coarse geometry (kit plates and big AI hull panels are a few large triangles) is split locally before a mark is cut: edges longer than the mark needs, near the mark, are split (conforming on both sides, every vertex attribute interpolated, so the vertex format and materials stay), so a hole or crater smaller than a plate is still cut and dented. The overlay skin covers every triangle that reaches into the mark, not only those whose centre does.
+
+**Halo (r5).** Every weapon mark also lays a wide halo in its own signature, at least `HALO_MIN` world units (fx_breach.gd; 0.75 for a lance cut up to 2.1 for a torpedo hole), so it reads from the battle camera 170 units away, where the mark's own detail is a few pixels: soot round shells, torpedo holes and boarding breaches; soot with temper colours along a lance cut; dark blue glass freckles with a faint lasting sheen round plasma; a grey rash round flak; green-black etch round acid; a blue-black field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
+
 **Weapon marks (R43).** Every hull hit adds a mark entry at the hit point (fx_breach.marks_for, by look and weight), built by the same rebuild as the breaches: the mark changes the hull geometry where its kind needs it and lays an overlay skin with its surface (char, molten metal cooling white to red to black, light blue plasma slag, spall, acid etching, electrical burns, scraped metal).
 
 | Look | Mark | Geometry | Surface |
@@ -278,3 +288,7 @@ Cost (cloud sandbox CPU, about three times slower than Ryan's PC; the PC numbers
    (a) the hull scene in gen with `skin_<n>` MeshInstance3D children named exactly that, plus
    `res://gen/damage/<CODE>_damage.scn`; then for (b) `res://assets/ships/<CODE>/<CODE>.glb` and `<CODE>_damage.glb`.
 6. Death pieces: the wreck is built from the hull as it is at the time of death (intact parts plus whatever is cut).
+
+## 15. Faction looks as data
+
+Every faction colour and style the effects, hull fix and backdrops use comes from `res://fx/faction_looks.json` (read by `fx/faction_look.gd`; `FLOOK.of(faction)` returns the entry, `fx.faction_info(f)` the same). Fields: `weapon`, `shield` (null: no bubble), `engine`, `shield_style` (0 veil, 1 hex lattice, 2 patchy, 3 prismatic), `trail`, `shielded`, `engine_extra` (none, soot, spores, embers), `damage_glow` (fire inside hull damage), `hull_fix` (look.gd's rim and lift for dark hulls), `nebula` (the battle sky when this faction is the enemy), and two reserved fields for the coming lore looks: `accent` (a second effect colour, for example the Deathless white-gold corona) and `shield_edge` (an edge colour or rainbow, for example the Ithar crystal). A repaint is an edit to the json; nothing in code names a faction's colour. The json ships in the export (`include_filter="*.json"`). Ids never change.

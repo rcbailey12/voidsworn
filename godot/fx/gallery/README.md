@@ -16,9 +16,9 @@ Options after `--`: `--quality max|high|low`, `--tonemap agx|aces`, `--reduce-fl
 
 Breach close-ups on one ship, outside the reel: `godot --path . --script res://fx/test/fx_breach_probe.gd` with PROBE_FAC, PROBE_CLS, PROBE_STAGE (2 to 4), PROBE_OUT (a folder), PROBE_W and PROBE_H; it prints the hull rebuild time.
 
-Weapon marks (R43), one at a time on a clean hull, a close-up a second after each lands and another when it has cooled, with its cost: `godot --path . --script res://fx/test/fx_marks_probe.gd` with PROBE_FAC, PROBE_CLS, PROBE_OUT, PROBE_W, PROBE_H; prints MARKS_COST lines (worker and main-thread ms per mark).
+Weapon marks (R43), one at a time on a clean hull, a close-up a second after each lands, another when it has cooled, and a still from the battle camera's distance (170 units, fov 45: `_tac`), with its cost: `godot --path . --script res://fx/test/fx_marks_probe.gd` with PROBE_FAC, PROBE_CLS, PROBE_OUT, PROBE_W, PROBE_H, PROBE_SIZE and optionally PROBE_LOOKS (a comma list); prints MARKS_HULL and MARKS_COST lines (worker and main-thread ms per mark).
 
-Hit reactions (R50): `godot --path . --script res://fx/test/fx_react_probe.gd` (PROBE_OUT for stills): each weapon weight hits a frigate and a super-dreadnought; prints the peak roll, yaw, pitch, drift and settle time per hit.
+Hit reactions (R50): `godot --path . --script res://fx/test/fx_react_probe.gd` (PROBE_OUT for stills): each weapon weight hits a frigate and a super-dreadnought; prints the peak roll, yaw, pitch, drift and settle time per hit, writes `react_trace.csv` (every frame), and with PROBE_CLIP=1 a 30 fps JPEG sequence per hit (PROBE_ONLY picks the weapons, PROBE_STILLS=0 skips the strips). Runs headless for the numbers alone.
 
 On Ryan's PC: `pc/g4_gallery.bat` runs as a queue job (copied to `Downloads\voidsworn_test\g4\`); it restores G4's files into `build\godot` first (other streams' jobs re-extract parts of that folder), then writes `Downloads\voidsworn_test\g4\<run>\`: `shots\` (4K, AgX), `breach_corsair\` and `breach_hegemony\` (breach close-ups on the 8K barge and super-dreadnought), `shots_aces\` (the same moments under ACES), `shots_calm\` (reduce flashing on), `marks_corsair\` and `marks_voidsworn\` (every weapon's mark on the 8K barge and a Voidsworn dreadnought), `react\` (hit-reaction strips), the smoke log and the bench JSONs.
 
@@ -52,6 +52,12 @@ Each still is keyed to the moment its effect really lands on the effect clock (t
 | g24 | The wrecks drifting at the end of the reel |
 
 ## Look decisions (vetoable)
+
+- **Weapon marks read from the battle camera (r5).** r4's close-ups showed most marks invisible or barely there: big kit plates and AI panels are a few large triangles, so a mark smaller than a triangle could neither cut the hull nor get its overlay (the overlay took only triangles whose centre lay inside it). Now coarse triangles near a mark are split first (conforming, all attributes interpolated) and the overlay takes every triangle that reaches into the mark. Each mark also lays a halo in its own signature, at least HALO_MIN world units (0.75 to 2.1; the battle camera sees about 7.7 pixels a unit at 1080p), so a mark is a readable patch from the battle camera and its detail shows when zoomed in. Fresh glow trimmed (plasma 3.0 to 1.8, shells 1.5 to 1.1) so the shape shows instead of a bloom blob.
+- **Hit reactions (r5):** onset, thruster arrest, slow recovery (API.md 7), instead of a spring out and back. Peaks kept near r4's (frigate torpedo about 6.6 degrees, super-dreadnought 1.4) but they come later and leave slower.
+- **Shield breaks (r5):** each faction comes apart its own way and the bubble stays see-through (API.md 4); r4's breaks were the same noise holes in a bright, nearly opaque bubble for three factions.
+- **Explosion noise (r5):** the 3D noise behind fireballs and gas used a product hash and cubic fades that drew a diagonal grid of hard diamonds through big fireballs (r4 g21); now Hoskins' hash, quintic fades and rotated octaves.
+- **Torpedo shock ring (r5):** a soft, broken front of hot gas instead of a thin neon circle, and fewer, less regular spark lines (the r4 strips read as a cartoon burst).
 
 - **Tonemapper: AgX** (`tonemap_check.py` replicates Godot 4.7.2's ACES and AgX exactly and scores the game's colours). ACES pushes the Corsair red 17 degrees toward orange at the brightness effects use, so Corsair and Voidsworn effects drift toward each other; AgX keeps faction hues within 8 degrees and hull colours neutral (chroma kept 0.97). Khronos PBR Neutral was the most faithful for effects (1 degree mean drift) but over-saturates hulls by about half and is not built into Godot 4.7; it would need a custom post pass, so it stays a later option. `shots_aces\` shows the same moments under ACES for Ryan's eye.
 - **Dark hulls:** a Fresnel rim in the faction tint plus a small albedo lift for Chorus and Deathless (look.gd HULL_FIX), not more key light.

@@ -262,7 +262,7 @@ static func precompute(fx, s, cause := "blast") -> void:
 		var xf = inv * mi.global_transform
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
-			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "fmt": mi.mesh.surface_get_format(si)})
+			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0})
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "out": null}
 	s.set_meta("cut_job", job)
 	var tid = WorkerThreadPool.add_task(func() -> void: job["out"] = _cut(job))

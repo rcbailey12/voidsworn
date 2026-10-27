@@ -3,7 +3,9 @@ extends SceneTree
 # ship from the side; the probe records the peak roll, pitch and yaw (degrees), the peak drift (share of the ship's
 # length) and how long the thrusters take to settle it, and saves a strip of stills per hit (just before, the impact,
 # then 0.15, 0.4 and 0.9 s after) so the shudder, the kick and the thruster puffs can be seen.
-# PROBE_OUT (a folder; no stills if empty), PROBE_W, PROBE_H. Prints REACT lines.
+# Also writes react_trace.csv (every frame of every hit: roll, yaw, pitch in degrees, drift in % of length) and, with
+# PROBE_CLIP=1, a 30 fps JPEG sequence per hit in clip_<ship>_<weapon>/ (3.5 s from just before the impact) for a video.
+# PROBE_OUT (a folder; no stills if empty), PROBE_W, PROBE_H, PROBE_ONLY (optional: torp,ram,... only those). Prints REACT lines.
 
 const FX := preload("res://fx/fx.gd")
 const SV := preload("res://render/ship_view.gd")
@@ -68,12 +70,20 @@ func _run() -> void:
 	for i in 30:
 		fx.step(1.0 / 60.0)
 		await process_frame
+	var clip := _env("PROBE_CLIP", "") == "1" and out != ""
+	var only := _env("PROBE_ONLY", "")
+	var stills := _env("PROBE_STILLS", "1") != "0"
+	var csv: FileAccess = FileAccess.open(out + "/react_trace.csv", FileAccess.WRITE) if out != "" else null
+	if csv != null:
+		csv.store_line("ship,weapon,t,roll,yaw,pitch,drift")
 	for sd in SHIPS:
 		var id: String = sd[0]
 		var sv: Node3D = views[id]
 		var s = fx.ship(id)
 		var L: float = s.hull.L
 		for sh in SHOTS:
+			if only != "" and not (str(sh[2]) in only.split(",")):
+				continue
 			var r: Dictionary = fx.volley("A" + id, sh[1], id, {"weapon_id": sh[0], "shots": [true], "hits": [{"shield": 0, "hull": 6, "section": "mid", "crit": false}], "quad": 1})
 			var t_imp: float = fx.now + float((r["impacts"] as Array)[0]) if not (r["impacts"] as Array).is_empty() else fx.now
 			var base_pos: Vector3 = sv.position
@@ -85,19 +95,36 @@ func _run() -> void:
 			var mi := 0
 			var cen: Vector3 = sv.to_global(s.hull.c)
 			cam.look_at_from_position(cen + Vector3(-0.35 * L, 0.45 * L, 1.15 * L), cen)
-			var t_end: float = t_imp + 4.0
+			var t_end: float = t_imp + 7.0
+			var cdir := "%s/clip_%s_%s" % [out, id, sh[2]]
+			if clip:
+				DirAccess.make_dir_recursive_absolute(cdir)
+			var t_clip0: float = t_imp - 0.5
+			var ci := 0
+			var fi := 0
 			while fx.now < t_end:
 				fx.step(1.0 / 60.0)
+				fi += 1
 				var a := Vector3(rad_to_deg(sv.rotation.x), rad_to_deg(sv.rotation.y - base_yaw), rad_to_deg(sv.rotation.z))
 				peak = Vector3(maxf(peak.x, absf(a.x)), maxf(peak.y, absf(a.y)), maxf(peak.z, absf(a.z)))
 				drift = maxf(drift, sv.position.distance_to(base_pos) / L)
+				if csv != null and fx.now >= t_imp - 0.2:
+					csv.store_line("%s,%s,%.4f,%.4f,%.4f,%.4f,%.4f" % [sd[2], sh[2], fx.now - t_imp, a.x, a.y, a.z, sv.position.distance_to(base_pos) / L * 100.0])
 				if fx.now > t_imp + 0.1 and settle < 0.0 and not s._reacting:
 					settle = fx.now - t_imp
-				if out != "" and mi < marks.size() and fx.now >= t_imp + float(marks[mi]):
+				if clip and fx.now >= t_clip0 and fx.now < t_imp + 3.5 and fi % 2 == 0:
+					await RenderingServer.frame_post_draw
+					vp.get_texture().get_image().save_jpg("%s/f%03d.jpg" % [cdir, ci], 0.88)
+					ci += 1
+				elif out != "" and stills and mi < marks.size() and fx.now >= t_imp + float(marks[mi]):
 					await RenderingServer.frame_post_draw
 					vp.get_texture().get_image().save_png("%s/%s_%s_%d.png" % [out, id, sh[2], mi])
 					mi += 1
 				else:
 					await process_frame
+			if settle < 0.0 and not s._reacting:
+				settle = fx.now - t_imp
 			print("REACT %s %s roll=%.2f yaw=%.2f pitch=%.2f deg drift=%.2f%% of length settle=%.2f s" % [sd[2], sh[2], peak.x, peak.y, peak.z, drift * 100.0, settle])
+	if csv != null:
+		csv.close()
 	quit()

@@ -9,15 +9,9 @@ extends Node3D
 
 const WS := preload("res://world/world_shaders.gd")
 
-# the browser game's BIOMES (scene3d.js): nebula colours per enemy faction
-const BIOMES := {
-	"voidsworn": [Vector3(0.13, 0.26, 0.6), Vector3(0.62, 0.22, 0.45), Vector3(1.0, 0.64, 0.36)],
-	"hegemony": [Vector3(0.08, 0.2, 0.42), Vector3(0.22, 0.42, 0.72), Vector3(0.85, 0.93, 1.0)],
-	"corsair": [Vector3(0.32, 0.12, 0.06), Vector3(0.8, 0.32, 0.1), Vector3(1.0, 0.74, 0.34)],
-	"chorus": [Vector3(0.16, 0.36, 0.16), Vector3(0.6, 0.18, 0.56), Vector3(0.9, 1.0, 0.5)],
-	"ithar": [Vector3(0.04, 0.26, 0.32), Vector3(0.38, 0.18, 0.7), Vector3(0.7, 0.95, 1.0)],
-	"deathless": [Vector3(0.06, 0.22, 0.15), Vector3(0.16, 0.52, 0.34), Vector3(0.6, 1.0, 0.72)],
-}
+# nebula colours per enemy faction (the browser game's BIOMES, scene3d.js) come from the faction look data
+# (fx/faction_looks.json, field nebula)
+const FLOOK := preload("res://fx/faction_look.gd")
 # rock kinds (battle.js ROCK_KINDS): base albedo (linear), shader kind
 const ROCKS := {
 	"stone": [Vector3(0.17, 0.155, 0.14), 0], "ice": [Vector3(0.26, 0.31, 0.36), 1], "iron": [Vector3(0.24, 0.22, 0.21), 2],
@@ -129,7 +123,7 @@ func sky(env: Environment, fac: String, pano: Texture2D, seed_v: int) -> void:
 	var sh := Shader.new()
 	sh.code = WS.SKY
 	m.shader = sh
-	var b: Array = BIOMES.get(fac, BIOMES["voidsworn"])
+	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
 	m.set_shader_parameter("c1", b[0])
 	m.set_shader_parameter("c2", b[1])
 	m.set_shader_parameter("c3", b[2])
@@ -407,7 +401,7 @@ func debris_field(p: Vector3, kind: String) -> void:
 
 func nebula_hex(p: Vector3, fac: String) -> void:
 	# a soft glowing cloud: a few large additive sprites (cheap), tinted by the sector's nebula colours
-	var b: Array = BIOMES.get(fac, BIOMES["voidsworn"])
+	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
 	for i in 5:
 		var s := Sprite3D.new()
 		s.texture = _soft_tex()
