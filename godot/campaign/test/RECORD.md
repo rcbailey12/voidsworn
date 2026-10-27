@@ -13,7 +13,7 @@ Newest first. Each row names the commit the run used and where its log lives.
 
 | When (UTC) | Commit | Where | Check | Result | Log |
 |---|---|---|---|---|---|
-| Oct 27 | 9711a7e | Ryan's PC (RTX 5080), lane A job `queue\g3_r51i_9711a7e.bat` | `tools\pc\parity_campaign.bat`, 30 seeded runs | see below (filled in when the job finishes) | `voidsworn_test\shots\g3_r51i_9711a7e\parity_campaign_log.txt`, copied to `docs/shots/g3_campaign/9711a7e/` |
+| Oct 27 | 9711a7e | Ryan's PC (RTX 5080), lane A job `queue\g3_r51i_9711a7e.bat` | `tools\pc\parity_campaign.bat`, 30 seeded runs | **PASS, 30 of 30** (tables PASS; same step counts as the cloud run, seed by seed) | `voidsworn_test\shots\g3_r51i_9711a7e\parity_campaign_log.txt`, copied to `docs/shots/g3_campaign/9711a7e/` |
 | Oct 27 | 9711a7e (rules as at ae6073b) | cloud sandbox, Godot 4.7.2 Linux headless | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS; seeds 1 to 30, 10 to 239 steps each) | below |
 | Oct 27 | 9711a7e | cloud | `run_nem_scenarios.sh` | **PASS** (64 records identical) | below |
 | Oct 27 | 9711a7e | cloud | `save_test.gd` | **PASS** | below |

@@ -2,6 +2,10 @@
 
 Taken by the campaign screenshot tour (`godot/scenes/campaign/campaign.tscn -- shots`) and the 3D map probe (`map3d_probe.tscn`). Each folder is named for the commit that drew it. Converted to WebP (quality 82) to keep the repo small; the PNGs stay on the PC in `voidsworn_test\shots\`.
 
+## 9711a7e (Muse full audit B3 fixes; wide and zoomed)
+
+One PC job (`queue\g3_r51i_9711a7e.bat`): `before_*` is 8a12941, `after_*` is 9711a7e. Wide view: `m1_map`; zoomed: `m3_zoom` (toward the first jump) and the new `m3b_zoom_mid` (zoomed on the middle of the sector). Changes: the sidebar says "Admiral Castellan Vex, line of battle" (no doubled rank) and the Nemesis's unknown weaknesses once with a count; zoomed, labels that would run under the panels are hidden, crowded label stacks keep to name and tags, and the place type (asteroid belt, ion storm) shows only on hover, so it no longer repeats; stop rings ahead are tinted by kind; the shipyard has a plated cradle, control towers, a service module and plating going onto the frame (`s_shipyard`). The same job ran campaign parity on the PC with the after files: 30 of 30 PASS (`parity_campaign_log.txt` here).
+
 ## 8a12941 (R51 round 4 polish)
 
 One PC job (`queue\g3_r51h_8a12941.bat`): `before_*` is 16881fd (round 3), `after_*` is 8a12941; same seed, angles and file names. What changed: a soft cool fill on the docked hull (drydock) and the repair tender's hull, so their shadow sides are no longer black; the black hole's lower lensed arc is as strong as the upper one, so it reads at full-map zoom; station plating has roughness wear patches and a neutral warm grey (the purple cast is gone). Compare `s_station`, `s_drydock`, `s_field`, `s_sun` and `m1_map`.

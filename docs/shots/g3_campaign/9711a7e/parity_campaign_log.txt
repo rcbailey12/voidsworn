@@ -1,0 +1,99 @@
+Voidsworn campaign parity, Tue 10/27/2026 13:11:43.00 
+Project: C:\Users\rcbai\Downloads\voidsworn_test\build\tools\pc\..\..\godot\ 
+Godot: C:\Users\rcbai\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe 
+exported 133 tables, sha256 a5bcd2bb62a5c253
+  skipped (state or code): RNG_S SPEED UID UNKNOWN_IDS META SAVED_RUN RUN ARENA B CUT SOLID TERRAIN_META ACT AI_LEVEL ERRS PERF
+  code fields left out (carried as evaluated tables or as GDScript): WTRAITS.*.f BOONS.*.d BOONS.*.fx
+seed 1: 177 steps
+seed 2: 214 steps
+seed 3: 211 steps
+seed 4: 158 steps
+seed 5: 189 steps
+seed 6: 238 steps
+seed 7: 27 steps
+seed 8: 189 steps
+seed 9: 188 steps
+seed 10: 142 steps
+seed 11: 19 steps
+seed 12: 42 steps
+seed 13: 41 steps
+seed 14: 217 steps
+seed 15: 225 steps
+seed 16: 159 steps
+seed 17: 166 steps
+seed 18: 202 steps
+seed 19: 214 steps
+seed 20: 208 steps
+seed 21: 224 steps
+seed 22: 217 steps
+seed 23: 173 steps
+seed 24: 9 steps
+seed 25: 182 steps
+seed 26: 234 steps
+seed 27: 12 steps
+seed 28: 199 steps
+seed 29: 214 steps
+seed 30: 83 steps
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+seed 1: 177 steps
+seed 2: 214 steps
+seed 3: 211 steps
+seed 4: 158 steps
+seed 5: 189 steps
+seed 6: 238 steps
+seed 7: 27 steps
+seed 8: 189 steps
+seed 9: 188 steps
+seed 10: 142 steps
+seed 11: 19 steps
+seed 12: 42 steps
+seed 13: 41 steps
+seed 14: 217 steps
+seed 15: 225 steps
+seed 16: 159 steps
+seed 17: 166 steps
+seed 18: 202 steps
+seed 19: 214 steps
+seed 20: 208 steps
+seed 21: 224 steps
+seed 22: 217 steps
+seed 23: 173 steps
+seed 24: 9 steps
+seed 25: 182 steps
+seed 26: 234 steps
+seed 27: 12 steps
+seed 28: 199 steps
+seed 29: 214 steps
+seed 30: 83 steps
+PASS: 178 steps identical, ended with "end"
+PASS: 215 steps identical, ended with "end"
+PASS: 212 steps identical, ended with "end"
+PASS: 159 steps identical, ended with "end"
+PASS: 190 steps identical, ended with "end"
+PASS: 239 steps identical, ended with "end"
+PASS: 28 steps identical, ended with "end"
+PASS: 190 steps identical, ended with "end"
+PASS: 189 steps identical, ended with "end"
+PASS: 143 steps identical, ended with "end"
+PASS: 20 steps identical, ended with "end"
+PASS: 43 steps identical, ended with "end"
+PASS: 42 steps identical, ended with "end"
+PASS: 218 steps identical, ended with "end"
+PASS: 226 steps identical, ended with "end"
+PASS: 160 steps identical, ended with "end"
+PASS: 167 steps identical, ended with "end"
+PASS: 203 steps identical, ended with "end"
+PASS: 215 steps identical, ended with "end"
+PASS: 209 steps identical, ended with "end"
+PASS: 225 steps identical, ended with "end"
+PASS: 218 steps identical, ended with "end"
+PASS: 174 steps identical, ended with "end"
+PASS: 10 steps identical, ended with "end"
+PASS: 183 steps identical, ended with "end"
+PASS: 235 steps identical, ended with "end"
+PASS: 13 steps identical, ended with "end"
+PASS: 200 steps identical, ended with "end"
+PASS: 215 steps identical, ended with "end"
+PASS: 84 steps identical, ended with "end"
+PASS  
