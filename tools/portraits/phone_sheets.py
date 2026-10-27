@@ -11,10 +11,10 @@ sys.path.insert(0, HERE)
 from post import font
 from make_edits import KINDS
 W = 1080; BG = (14, 14, 18)
-NAME = {'matriarch': 'The Matriarch', 'mending': 'The Mending Choir', 'vex': 'Castellan Vex', 'kassar': 'Ilsa Kassar',
-        'grax': 'Grax Ironjaw', 'aelith': 'Aelith Dawnsail', 'nekhet': 'Nekhet the Undying'}
-FAC = {'voidsworn': 'Voidsworn', 'hegemony': 'Hegemony', 'corsair': 'Corsair', 'chorus': 'Chorus', 'ithar': 'Ithar', 'deathless': 'Deathless'}
-IN_REVIEW = {'voidsworn', 'hegemony', 'corsair', 'ithar', 'deathless'}   # lore round 4 changes these looks (Chorus: colour only)
+NAME = {'matriarch': 'The Matriarch', 'mending': 'The Mending Throng', 'vex': 'Admiral Roderic Vex', 'kassar': 'First Admiral Ilsa Kassar',
+        'grax': 'Grax Steelgrin', 'aelith': 'Tamsa of the Clear Aperture', 'nekhet': 'Nadir Aurex, Ninth Frame'}   # rename_map_final.md section 6
+FAC = {'voidsworn': 'Sunward Crusade', 'hegemony': 'Hegemony Navy', 'corsair': 'Ashfall Hullbreakers', 'chorus': 'The Chorus', 'ithar': 'The Glasswrights', 'deathless': 'Eclipse'}
+IN_REVIEW = set()   # lore approved Oct 27 (R59): every look is final; admiral names follow rename_map_final.md when it lands
 
 def header(h, title, sub):
     im = Image.new('RGB', (W, h), BG); d = ImageDraw.Draw(im)
@@ -44,7 +44,7 @@ def nemesis(out):
         if not ids: continue
         fr = Image.open(os.path.join(PD, 'nemesis', 'frame_%s.png' % fac)).convert('RGBA')
         kinds = KINDS[fac]; cols = 1 + len(kinds); gap = 10; c = (W - gap * (cols + 1)) // cols; lab = 40; top = 130
-        im, d = header(top + len(ids) * (c + lab + gap), '%s Nemesis' % FAC[fac],
+        im, d = header(top + len(ids) * (c + lab + gap), '%s: Nemesis' % FAC[fac],
                        'Left: as first met. Then the same Nemesis with each painted scar.' + ('  Look changing.' if fac in IN_REVIEW else ''))
         for r, nid in enumerate(ids):
             e = nem[nid]; cells = [('no scar', e['pick'])] + [(k, e['baked'][k]) for k in kinds if k in e['baked']]

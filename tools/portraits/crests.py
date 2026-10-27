@@ -24,11 +24,11 @@ ADM = {
  'aelith': ('ithar', 'scramble'), 'vaelen': ('ithar', 'barrage'), 'thorne': ('ithar', 'surge'), 'mirelle': ('ithar', 'iron'),
  'nekhet': ('deathless', 'restore'), 'sekhmar': ('deathless', 'barrage'), 'anuket': ('deathless', 'hunt'), 'khepra': ('deathless', 'iron'),
 }
-NAMES = {'vex': 'Castellan Vex', 'malek': 'Malek Draven', 'ashgrove': 'Sera Ashgrove', 'thale': 'Oryn Thale', 'kassar': 'Ilsa Kassar',
- 'vorn': 'Dace Vorn', 'reyes': 'Corin Reyes', 'maren': 'Oskar Maren', 'grax': 'Grax Ironjaw', 'sable': 'Sable Venn', 'mott': 'Old Mott',
- 'vesh': 'Vesh the Collector', 'matriarch': 'The Matriarch', 'razormaw': 'Razormaw', 'mending': 'The Mending Choir', 'voice': 'Voice of the Deep',
- 'aelith': 'Aelith Dawnsail', 'vaelen': 'Seraph Vaelen', 'thorne': 'Thorne of the Veil', 'mirelle': 'Mirelle Starwarden',
- 'nekhet': 'Nekhet the Undying', 'sekhmar': 'Sekhmar the Reaper', 'anuket': 'Cryptlord Anuket', 'khepra': 'Khepra the Patient'}
+NAMES = {'vex': 'Admiral Roderic Vex', 'malek': 'Oath-Captain Malek Draven', 'ashgrove': 'Sera Ashgrove', 'thale': 'Oryn Thale', 'kassar': 'Ilsa Kassar',
+ 'vorn': 'Dace Vorn', 'reyes': 'Corin Reyes', 'maren': 'Oskar Maren', 'grax': 'Grax Steelgrin', 'sable': 'Sable the Smiling Knife', 'mott': 'Old Mott',
+ 'vesh': 'Vesh the Collector', 'matriarch': 'The Matriarch', 'razormaw': 'Razormaw', 'mending': 'The Mending Throng', 'voice': 'Voice of the Deep',
+ 'aelith': 'Tamsa of the Clear Aperture', 'vaelen': 'Saro of Long Focus', 'thorne': 'Vell of the Third Mirror', 'mirelle': 'Brin of the Fourth Lens',
+ 'nekhet': 'Nadir Aurex, Ninth Frame', 'sekhmar': 'Umbra Vessane, Third-Housed', 'anuket': 'Ostrel of the Long Copy', 'khepra': 'Seveth, Twice-Restored'}  # rename_map_final.md section 6
 # line style per faction: stroke width, caps, joins, jitter (px, for hand-made or grown looks)
 STY = {
  'voidsworn': dict(w=17, cap='butt', join='miter', jit=0), 'hegemony': dict(w=13, cap='butt', join='miter', jit=0),

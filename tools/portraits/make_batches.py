@@ -23,7 +23,7 @@ SUBJECT = {
  # Chorus set (finish first). Mending: the Living Suture-Hive (Argon, chair lean). Matriarch: alternates to v3 from the DeepSeek 1.3 brief.
  # Voice v4 and Razormaw are final in Muse's local set; these two are style-matched alternates only.
  'chorus_mending': ('chorus',
-  "Portrait of The Mending Choir, a Chorus bio-swarm admiral in the form of a Living Suture-Hive: a pulsing biological cocoon-graft, "
+  "Portrait of The Mending Throng, a Chorus bio-swarm admiral in the form of a Living Suture-Hive: a pulsing biological cocoon-graft, "
   "clusters of translucent amber nursing sacs glowing from within, curved pale chitin bone-needles growing out of the flesh and stitching "
   "glowing pink membrane webbing across a shattered dark carapace, fresh pink scar tissue knitting the cracks closed, new flesh visibly regrowing over old wounds. " + CH),
  'chorus_matriarch': ('chorus',
@@ -38,24 +38,24 @@ SUBJECT = {
   "that reads as a hungry maw around an empty dark centre where a single small lure light glows, strands of bile and torn membrane trailing behind it as if surging forward. " + CH),
  # One painted poster admiral per remaining faction: each faction's starting admiral (cost 0 in data.js).
  'voidsworn_vex': ('voidsworn',
-  "Portrait of Admiral Castellan Vex of the Voidsworn Crusade, a stern weathered human fleet admiral in his late fifties, shaved scarred head with ritual oath scars, "
+  "Portrait of Admiral Roderic Vex of the Sunward Crusade, a stern weathered human fleet admiral in his late fifties, shaved scarred head with ritual oath scars, "
   "grey stubble, hard tired eyes, a high-collared dark armoured space-fleet greatcoat with ornate ceramite shoulder plates, red wax votive seals and parchment oath strips pinned to the chest, "
   "a small brass reliquary on a chain, behind him through a tall gothic viewport a distant line of battleships firing a broadside of orange lance beams into the void."),
  'hegemony_kassar': ('hegemony',
-  "Portrait of Grand Admiral Ilsa Kassar of the Hegemony Navy, a composed precise human woman in her early fifties, silver hair in a severe short cut, cold grey eyes, "
+  "Portrait of First Admiral Ilsa Kassar of the Hegemony Navy, a composed precise human woman in her early fifties, silver hair in a severe short cut, cold grey eyes, "
   "a pale grey high-collared space-fleet dress uniform with rows of flat blue enamel rank bars and clean geometric shoulder boards, gloved hands clasped behind her back, "
   "faint blue targeting grids reflected on her face, behind her a pale clinical bridge where many identical firing-solution displays glow in perfect rows."),
  'corsair_grax': ('corsair',
-  "Portrait of Warlord Grax Ironjaw of the Ashfall Corsairs, a hulking scarred human space pirate warlord, a crude riveted iron prosthetic lower jaw, "
+  "Portrait of Warlord Grax Steelgrin of the Ashfall Hullbreakers, a hulking scarred human space pirate warlord, a crude riveted iron prosthetic lower jaw, "
   "a grin of steel, one cybernetic red eye, a shaved head with old burn scars, patchwork armour welded together from three different fleets' salvaged plates in clashing colours, "
   "mismatched stolen medals and torn insignia, grease and rust, a heavy boarding axe resting on his shoulder, sparks raining behind him in a cramped junk-built space-ship cockpit."),
  'ithar_aelith': ('ithar',
-  "Portrait of Aelith Dawnsail of the Ithar, an ancient dying elder alien race, a statuesque luminous alien being, clearly not human: an elongated skull and very long slender neck, "
+  "Portrait of Tamsa of the Clear Aperture, a Glasswright, an ancient dying elder alien race, a statuesque luminous alien being, clearly not human: an elongated skull and very long slender neck, "
   "huge wide-set solid black eyes, pale translucent porcelain skin with glowing gold light channels running beneath it, long seven-fingered hands raised gracefully, "
   "behind her a radiant fan of near-geometric light sails like stained glass made of light, a flight of tiny glowing star-craft wheeling around her like a murmuration. "
   "Nothing aquatic: no fins, no gills, no scales."),
  'deathless_nekhet': ('deathless',
-  "Portrait of Overlord Nekhet the Undying of the Deathless Dynasty, a machine intelligence with no humanoid body: a monumental broken ring of bone-white ceramic computation plates "
+  "Portrait of Nadir Aurex, Ninth Frame, of Eclipse, a machine intelligence with no humanoid body: a monumental broken ring of bone-white ceramic computation plates "
   "and black metal around a blazing green core, cracked segments floating apart and being reassembled by small attending service drones with thin green beams, "
   "ancient worn surfaces engraved with circuit patterns, sensor lights instead of a face, an ominous patient presence."),
 }
@@ -88,7 +88,7 @@ SUBJECT.update({
   "lights glow along the ring. Ancient worn surfaces engraved with circuit patterns. An ominous patient presence. "
   "No figure, no statue, no head, no face, no body, no robot inside the ring."),
  'ithar_aelith_b': ('ithar',
-  "Portrait of Aelith Dawnsail of the Ithar, an ancient dying elder alien race: a tall regal luminous alien noble, clearly not human and "
+  "Portrait of Tamsa of the Clear Aperture, a Glasswright, an ancient dying elder alien race: a tall regal luminous alien noble, clearly not human and "
   "not a grey alien: an elongated crested skull and a very long slender neck, huge wide-set solid black eyes, pale translucent porcelain "
   "skin with glowing gold light channels running beneath it, wearing a high-collared flowing robe of woven pale light that covers the body "
   "to the neck, one hand raised gracefully showing seven very long slender fingers, behind her a radiant fan of near-geometric light sails "
@@ -183,14 +183,15 @@ NEM2 = {
   "an ancient Ithar with skin like aged ivory, an extremely long neck, eyes glowing a faint cruel red, a heavy ceremonial collar",
  ],
 }
+DISP = {'chorus': 'the Chorus', 'deathless': 'Eclipse', 'ithar': 'the Glasswrights', 'voidsworn': 'the Sunward Crusade', 'hegemony': 'the Hegemony', 'corsair': 'the Hullbreakers'}
 SUB2 = {}   # n2 subjects, same ids as n1 (nem_<faction>_<n>), rendered into n2\
 for _fac, _L in NEM2.items():
     for _n, _d in enumerate(_L, 1):
         _k = 'nem_%s_%d' % (_fac, _n)
         if _fac == 'ithar':
-            SUB2[_k] = (_fac, 'Portrait of a Nemesis, a rival enemy commander of the Ithar: %s. %s' % (_d, ITHAR) + NEM_STYLE, STYLE)
+            SUB2[_k] = (_fac, 'Portrait of a Nemesis, a rival enemy commander of the Glasswrights: %s. %s' % (_d, ITHAR) + NEM_STYLE, STYLE)
         else:
-            SUB2[_k] = (_fac, 'A Nemesis of the %s, a rival enemy war-organism: %s. %s' % (_fac.capitalize(), _d, NOBODY if _fac == 'chorus' else
+            SUB2[_k] = (_fac, 'A Nemesis of %s, a rival enemy war-organism: %s. %s' % (DISP[_fac], _d, NOBODY if _fac == 'chorus' else
                         'A machine with no figure, no statue, no head, no face, no body, no robot.') + NEM_STYLE, CREATURE)
 # n3: the five n2 subjects that still grew limbs or a body (Chorus 2, 3, 4; Deathless 1, 6), described as objects lying or floating
 SUB3 = {}
@@ -202,12 +203,12 @@ for _k, _d in {
  'nem_deathless_6': "a huge broken ring of rotating black blades floating alone above a dark pit, a single green beam rising from the empty centre of the ring",
 }.items():
     _fac = _k.split('_')[1]
-    SUB3[_k] = (_fac, 'A Nemesis of the %s, a rival enemy war-organism: %s. %s' % (_fac.capitalize(), _d, NOBODY if _fac == 'chorus' else
+    SUB3[_k] = (_fac, 'A Nemesis of %s, a rival enemy war-organism: %s. %s' % (DISP[_fac], _d, NOBODY if _fac == 'chorus' else
                 'A machine with no figure, no statue, no head, no face, no body, no robot, no legs, no arms.') + NEM_STYLE, CREATURE)
 for _fac, _L in NEM.items():
     for _n, _d in enumerate(_L, 1):
         _pre = HUMAN + ' ' if _fac in ('voidsworn', 'hegemony', 'corsair') else (CH + ' ' if _fac == 'chorus' else '')
-        SUBJECT['nem_%s_%d' % (_fac, _n)] = (_fac, 'Portrait of a Nemesis, a rival enemy commander of the %s: %s. %s' % (_fac.capitalize(), _d, _pre) + NEM_STYLE)
+        SUBJECT['nem_%s_%d' % (_fac, _n)] = (_fac, 'Portrait of a Nemesis, a rival enemy commander of the %s: %s. %s' % (DISP[_fac], _d, _pre) + NEM_STYLE)
 
 def item(i, model, seeds, v2=False, v3=False):
     if v3: fac, p, style = SUB3[i]
