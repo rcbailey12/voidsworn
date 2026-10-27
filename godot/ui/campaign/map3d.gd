@@ -411,6 +411,9 @@ func _token_home() -> Vector3:
 	return _at(pp.x + deg_to_rad(16.0), R_OUT + 6.0) + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
 
 # ---------------- state ----------------
+func campaign_glyph(t: String) -> String:
+	var g = ui.STOP_GLYPH.get(t, ["", "#b3aa95"])
+	return g[1]
 func _avail() -> Array:
 	var C = _C()
 	return C.page["data"]["avail"] if C.page["kind"] == "map" else []
@@ -427,7 +430,8 @@ func _refresh() -> void:
 		if not done: _danger[id] = intel.danger(n)
 		if d.has("threat") and _danger.has(id) and not _danger[id].is_empty(): d["threat"].set_shader_parameter("col", Color(_danger[id]["col"]))   # the marker takes the danger band's colour
 		# the ring says what you can do with the stop: gilt where you can jump now, bright where the fleet is, faint ahead, grey behind
-		var rc = Color(0.75, 0.82, 1.0, 0.32); var dash = 0.0; var fill = 0.0
+		var tg = Color(campaign_glyph(n["type"]))   # stops ahead: a ring in their kind's colour, so no ring is plain
+		var rc = Color(tg.lerp(Color(0.8, 0.86, 1.0), 0.45), 0.42); var dash = 0.0; var fill = 0.35
 		if done: rc = Color(0.5, 0.5, 0.55, 0.16)
 		if av.has(id): rc = Color(1.0, 0.76, 0.34, 0.95); dash = 1.0; fill = 1.0
 		if C.RUN.get("pos") == id: rc = Color(1.0, 0.88, 0.55, 1.0); fill = 0.6
@@ -583,10 +587,14 @@ func _draw_overlay() -> void:
 	for r in _routes:
 		for st in r["st"]["running"]: on_route[st["id"]] = [r, st]
 	var dy = _label_shifts(s)
+	var fr0 = _free_rect(); var fr_lab = Rect2(fr0.position + Vector2(40.0 * s, 10.0 * s), fr0.size - Vector2(80.0 * s, 80.0 * s))
 	for id in _nodes:
 		var d = _nodes[id]; var n = d["n"]; var done = C.jt(n.get("done"))
 		if cam.is_position_behind(d["pos"]): continue
 		var base = _screen(d["pos"]); var top = _screen(d["pos"] + Vector3(0, d["top"] + 0.6, 0))
+		# zoomed or panned: a stop whose labels would run under the briefing, the key, the fight cards or the side panel
+		# prints no labels (its 3D scene stays; hover still shows its card)
+		if id != _hot and not fr_lab.has_point(base): continue
 		var fight = n["type"] in ["battle", "elite", "boss"]
 		var col = ui.BONE if av.has(id) else Color(0.66, 0.64, 0.6)
 		if done: col = Color(0.45, 0.44, 0.42)
@@ -620,7 +628,7 @@ func _draw_overlay() -> void:
 			elif _detail(id):
 				var lab = ui._reward_label(rw)
 				if lab != "": _text(lab, Vector2(base.x, y), int(12 * s), Color("#bfb6a0") if av.has(id) else Color("#7f7a6e"))
-		if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done and _detail(id): _text(str(C.MAP_NAME[n["map"]]).to_upper(), top + Vector2(0, -20.0 * s), int(10 * s), Color(0.62, 0.7, 0.82), ui.font_caps)
+		if fight and C.jt(n.get("map")) and C.MAP_NAME.has(n["map"]) and not done and id == _hot: _text(str(C.MAP_NAME[n["map"]]).to_upper(), top + Vector2(0, -20.0 * s), int(10 * s), Color(0.62, 0.7, 0.82), ui.font_caps)
 
 		# running totals along the lit routes
 		if on_route.has(id):
@@ -635,7 +643,8 @@ func _draw_overlay() -> void:
 # What each stop prints under it, by priority (Opus, R51 round 2): its name, then the Nemesis and danger tags; the
 # secondary lines (board shape and modifier, reward, the place type) show on hover, on keyboard focus or zoomed in.
 # Nothing is lost: the hover card and the fight previews carry all of it.
-func _detail(id: String) -> bool: return id == _hot or _uz < 0.72
+var _crowded := {}   # stops whose label stack still touches another after the shift: they keep to name and tags at zoom
+func _detail(id: String) -> bool: return id == _hot or (_uz < 0.72 and not _crowded.has(id))
 func _label_name(n: Dictionary) -> String:
 	var C = _C(); var done = C.jt(n.get("done")); var fight = n["type"] in ["battle", "elite", "boss"]
 	if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]) and not done: return str(C.ENCOUNTERS[n["enc"]]["n"])
@@ -659,7 +668,7 @@ func _label_shifts(s: float) -> Dictionary:
 		var b = _screen(d["pos"]); var w = max(90.0 * s, ui.font_semi.get_string_size(nm, HORIZONTAL_ALIGNMENT_LEFT, -1, int(15 * s)).x + 8.0 * s)
 		items.append([b.y, id, Rect2(b.x - w * 0.5, b.y + 17.0 * s, w, h * s)])
 	items.sort_custom(func(a, b): return a[0] < b[0])
-	var placed = []; var out = {}
+	var placed = []; var out = {}; var crowd = {}
 	for it in items:
 		var r: Rect2 = it[2]; var shift = 0.0
 		for k in 6:
@@ -670,8 +679,13 @@ func _label_shifts(s: float) -> Dictionary:
 					if shift + mv > 70.0 * s: break
 					r.position.y += mv; shift += mv; hit = true
 			if not hit: break
+		var still = false
+		for p in placed:
+			if r.intersects(p): still = true
+		if still: crowd[it[1]] = true
 		placed.append(r)
 		if shift > 0.0: out[it[1]] = shift
+	_crowded = crowd
 	return out
 func _text(t: String, at: Vector2, size: int, col: Color, fnt: Font = null) -> void:
 	var f = fnt if fnt != null else ui.font

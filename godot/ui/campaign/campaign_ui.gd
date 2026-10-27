@@ -6,7 +6,6 @@ extends CanvasLayer
 # Tab and the arrow keys move between buttons and map nodes, Enter or Space presses the focused one.
 # Colours and fonts match the battle HUD (godot/ui/battle/hud.gd). Sizes scale with the window height (designed at 1080).
 
-const MapView = preload("res://ui/campaign/map_view.gd")
 const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
 
@@ -41,7 +40,7 @@ var root: Control
 var bg: ColorRect
 var page_box: Control
 var map3d: Control                    # the 3D sector map, kept alive between renders (it animates)
-var use_3d_map := true                # false: the flat map (map_view.gd)
+var use_3d_map := true                # always true: the flat map (map_view.gd) is retired (R51 audit); kept for the shot harness
 var ai_level := "veteran"             # the battle setting the shell uses (godot/main settings "ai"); the map's danger bands follow it
 var map_quality := "high"             # the 3D map's detail, "high" or "low" (R51): from the game's Graphics setting, then the map's own toggle
 var modal_box: Control
@@ -497,12 +496,8 @@ func _map() -> Control:
 	if sq != null: sq.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; head.add_child(sq)
 	main.add_child(head)
 	_map_strip = _intel_strip(); main.add_child(_map_strip)
-	if use_3d_map:
-		var gap = Control.new(); gap.size_flags_vertical = Control.SIZE_EXPAND_FILL; gap.mouse_filter = Control.MOUSE_FILTER_IGNORE; main.add_child(gap)
-		for ctl in [hb, mm, main, head, tv]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	else:
-		var mv = MapView.new(); mv.ui = self; mv.size_flags_vertical = Control.SIZE_EXPAND_FILL; mv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		mv.custom_minimum_size = Vector2(px(600), px(320)); main.add_child(mv)
+	var gap = Control.new(); gap.size_flags_vertical = Control.SIZE_EXPAND_FILL; gap.mouse_filter = Control.MOUSE_FILTER_IGNORE; main.add_child(gap)
+	for ctl in [hb, mm, main, head, tv]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var legend = flow(18); legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# the key: what each kind of stop gives, and the danger bands the chart prints on every fight (map_intel.gd)
 	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops a relic", "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
@@ -622,7 +617,7 @@ func _side() -> Control:
 	var top = hbox(); top.add_child(_readout("Credits", C.numstr(R["credits"]), GILT)); top.add_child(spacer())
 	top.add_child(_readout("Command points", C.numstr(C.fleetCP()) + " / " + C.numstr(R["cpCap"]), BONE, true)); v.add_child(top)
 	var A = C.ADMIRALS[R["admiral"]]
-	v.add_child(lbl("Admiral: " + _admiral_title(R["admiral"]) + ", " + str(A["doc"]).to_lower(), 14, BONE3))
+	v.add_child(lbl(_admiral_title(R["admiral"]) + ", " + str(A["doc"]).to_lower(), 14, BONE3))   # the name already carries the rank
 	_nem_panel(v); _verb_panel(v)
 	v.add_child(_wr_head("Fleet"))
 	var fs = C.flagshipOf()
@@ -716,10 +711,11 @@ func _nem_panel(v: VBoxContainer) -> void:
 	if C.jt(beh.get("revive")):   # R49: only in the last sector
 		v.add_child(rich(c("Comeback: ", BONE2) + (c("spent, the next kill is final", GILT) if C.jt(N.get("revived")) else c("in sector III his flagship rises once more after it falls; before that he withdraws like any rival", BLOOD)), 13))
 	# weaknesses with what they do; adaptations in his faction's words with what they do
-	var ws = []
+	var ws = []; var unknown = 0
 	for w in N["weak"]:
 		if N["revealed"].has(w): ws.append(c("[b]" + esc(C.NEM_WEAK[w]["n"]) + "[/b]", GILT) + c(" (" + esc(str(C.NEM_WEAK[w].get("d", "")).trim_suffix(".")) + ")", BONE2))
-		else: ws.append(c("unknown (win against him to learn it)", BONE3))
+		else: unknown += 1
+	if unknown > 0: ws.append(c(("%d unknown" % unknown if ws.size() > 0 or unknown > 1 else "unknown") + " (win against him to learn " + ("one" if unknown > 1 else "it") + ")", BONE3))   # said once, with a count
 	v.add_child(rich(c("Weaknesses: ", BONE2) + "; ".join(PackedStringArray(ws)), 13))
 	if N["adapt"].size() > 0:
 		var ad = []

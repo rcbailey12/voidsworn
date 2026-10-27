@@ -142,6 +142,17 @@ func gantry(parent: Node3D, L: float, H: float, W: float, base: Color, accent: C
 	truss(root, Vector3(-L * 0.5, H, W * 0.5), Vector3(L * 0.5, H, W * 0.5), 0.28, gm)
 	truss(root, Vector3(-L * 0.5, 0, -W * 0.5), Vector3(L * 0.5, 0, -W * 0.5), 0.28, gm)
 	truss(root, Vector3(-L * 0.5, 0, W * 0.5), Vector3(L * 0.5, 0, W * 0.5), 0.28, gm)
+	# solid structure so the yard reads as a built facility, not a wireframe: a plated cradle under the hull, a control
+	# tower with lit windows at each end, a service module along one side, plating going onto the frame
+	var pm = hull_mat(base.lerp(Color(0.55, 0.55, 0.56), 0.5), accent, 1.6, 0.12, 0.35)
+	part(root, box(L * 0.72, 0.32, W * 0.42), pm, Vector3(0, H * 0.18, 0))
+	for sx in [-1.0, 1.0]:
+		part(root, box(0.7, H + 0.5, 0.8), hull_mat(base.lerp(Color(0.55, 0.55, 0.56), 0.5), accent, 1.4, 0.35, 0.35), Vector3(sx * (L * 0.5 + 0.45), (H + 0.5) * 0.5, -W * 0.5))
+		light(root, Vector3(sx * (L * 0.5 + 0.45), H + 0.6, -W * 0.5), Color(1.0, 0.3, 0.25), 0.4, true)
+	part(root, box(L * 0.5, 0.5, 0.55), hull_mat(base, accent, 1.6, 0.3, 0.35), Vector3(0, H * 0.55, W * 0.5 + 0.35))
+	for i in 3:
+		var px = -L * 0.3 + i * L * 0.2
+		part(root, box(L * 0.16, 0.06, W * 0.8), pm, Vector3(px, H + 0.05, 0))
 	# a crane trolley on the top rails with its hoist
 	var cx = sys.rng.randf_range(-L * 0.3, L * 0.3)
 	part(root, box(0.5, 0.3, W + 0.3), hull_mat(accent.darkened(0.2), base, 2.5, 0.0, 0.3), Vector3(cx, H + 0.2, 0))

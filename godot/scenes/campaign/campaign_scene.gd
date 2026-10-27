@@ -93,6 +93,8 @@ func _mapshots(dir: String) -> void:
 	if m.has_method("zoom_by"):
 		m.zoom_by(0.55, m._screen(m._nodes[C.page["data"]["avail"][0]]["pos"])); await get_tree().create_timer(1.5).timeout
 		await _shot(dir, "m3_zoom"); m.reset_view(); await get_tree().create_timer(1.2).timeout
+		m.zoom_by(0.5, m._screen(m._nodes[mid]["pos"])); await get_tree().create_timer(1.5).timeout   # zoomed on the middle of the sector
+		await _shot(dir, "m3b_zoom_mid"); m.reset_view(); await get_tree().create_timer(1.2).timeout
 	if ui.has_method("set_map_quality"):
 		var q0 = ui.map_quality; ui.set_map_quality("low"); await _frames(4)
 		await _shot(dir, "m4_low"); ui.set_map_quality(q0); await _frames(4)
