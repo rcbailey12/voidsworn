@@ -1,0 +1,133 @@
+# full-run attribution, PC lane B, Oct 27: runsim 100 x 2 seeds (7101, 7102) per variant; same seed gives the same runs on the PC and in the cloud
+## V0_1
+ "s1 battle": "279 battles, won 96%, lost/fight 0.27, e/p cp 1.01, rounds 4.1",
+ "s1 boss": "80 battles, won 91%, lost/fight 0.57, e/p cp 1.78, rounds 7.6",
+ "s1 elite": "51 battles, won 84%, lost/fight 0.67, e/p cp 1.33, rounds 5.2",
+ "s2 battle": "125 battles, won 82%, lost/fight 0.79, e/p cp 1.41, rounds 5.0",
+ "s2 boss": "36 battles, won 78%, lost/fight 1.61, e/p cp 2.39, rounds 8.5",
+ "s2 elite": "34 battles, won 59%, lost/fight 1.12, e/p cp 1.72, rounds 5.5",
+ "s3 battle": "46 battles, won 80%, lost/fight 0.65, e/p cp 1.68, rounds 4.2",
+ "s3 boss": "14 battles, won 79%, lost/fight 1.71, e/p cp 2.22, rounds 7.3",
+ "s3 elite": "15 battles, won 67%, lost/fight 2.07, e/p cp 2.20, rounds 5.3"
+reach {"1":100,"2":72,"3":28,"won":11}
+## V0_2
+ "s1 battle": "284 battles, won 95%, lost/fight 0.27, e/p cp 1.00, rounds 4.2",
+ "s1 boss": "76 battles, won 86%, lost/fight 0.71, e/p cp 1.87, rounds 7.8",
+ "s1 elite": "54 battles, won 81%, lost/fight 0.57, e/p cp 1.49, rounds 4.9",
+ "s2 battle": "100 battles, won 85%, lost/fight 0.70, e/p cp 1.33, rounds 4.9",
+ "s2 boss": "42 battles, won 76%, lost/fight 1.50, e/p cp 2.04, rounds 9.4",
+ "s2 elite": "23 battles, won 65%, lost/fight 1.74, e/p cp 1.58, rounds 5.8",
+ "s3 battle": "54 battles, won 78%, lost/fight 0.91, e/p cp 1.65, rounds 5.1",
+ "s3 boss": "18 battles, won 67%, lost/fight 1.33, e/p cp 2.59, rounds 8.2",
+ "s3 elite": "9 battles, won 78%, lost/fight 1.22, e/p cp 1.91, rounds 4.8"
+reach {"1":100,"2":65,"3":32,"won":12}
+## V1_1
+ "s1 battle": "289 battles, won 93%, lost/fight 0.38, e/p cp 1.03, rounds 4.2",
+ "s1 boss": "69 battles, won 86%, lost/fight 0.71, e/p cp 2.11, rounds 8.7",
+ "s1 elite": "61 battles, won 84%, lost/fight 0.72, e/p cp 1.32, rounds 4.7",
+ "s2 battle": "112 battles, won 88%, lost/fight 0.46, e/p cp 1.44, rounds 4.5",
+ "s2 boss": "37 battles, won 73%, lost/fight 1.32, e/p cp 2.11, rounds 8.4",
+ "s2 elite": "29 battles, won 69%, lost/fight 1.14, e/p cp 1.65, rounds 5.0",
+ "s3 battle": "48 battles, won 88%, lost/fight 0.65, e/p cp 1.65, rounds 4.5",
+ "s3 boss": "19 battles, won 84%, lost/fight 1.11, e/p cp 2.40, rounds 7.3",
+ "s3 elite": "14 battles, won 86%, lost/fight 0.36, e/p cp 1.84, rounds 4.3"
+reach {"1":100,"2":59,"3":27,"won":16}
+## V1_2
+ "s1 battle": "279 battles, won 92%, lost/fight 0.30, e/p cp 0.99, rounds 4.3",
+ "s1 boss": "64 battles, won 92%, lost/fight 0.59, e/p cp 1.74, rounds 7.3",
+ "s1 elite": "53 battles, won 74%, lost/fight 0.89, e/p cp 1.37, rounds 5.1",
+ "s2 battle": "95 battles, won 89%, lost/fight 0.79, e/p cp 1.39, rounds 5.0",
+ "s2 boss": "36 battles, won 67%, lost/fight 1.78, e/p cp 2.40, rounds 9.0",
+ "s2 elite": "36 battles, won 64%, lost/fight 1.36, e/p cp 1.73, rounds 5.5",
+ "s3 battle": "41 battles, won 76%, lost/fight 0.66, e/p cp 1.71, rounds 3.5",
+ "s3 boss": "10 battles, won 50%, lost/fight 2.00, e/p cp 2.61, rounds 9.3",
+ "s3 elite": "5 battles, won 20%, lost/fight 1.40, e/p cp 2.23, rounds 5.2"
+reach {"1":100,"2":59,"3":24,"won":5}
+## V2_1
+ "s1 battle": "298 battles, won 96%, lost/fight 0.32, e/p cp 1.01, rounds 4.1",
+ "s1 boss": "81 battles, won 95%, lost/fight 0.63, e/p cp 1.75, rounds 7.4",
+ "s1 elite": "47 battles, won 85%, lost/fight 0.60, e/p cp 1.43, rounds 4.2",
+ "s2 battle": "133 battles, won 90%, lost/fight 0.68, e/p cp 1.42, rounds 4.5",
+ "s2 boss": "49 battles, won 80%, lost/fight 1.12, e/p cp 2.19, rounds 8.1",
+ "s2 elite": "39 battles, won 62%, lost/fight 1.28, e/p cp 1.74, rounds 5.6",
+ "s3 battle": "69 battles, won 84%, lost/fight 0.78, e/p cp 1.72, rounds 4.1",
+ "s3 boss": "23 battles, won 74%, lost/fight 1.26, e/p cp 2.27, rounds 7.8",
+ "s3 elite": "23 battles, won 78%, lost/fight 0.65, e/p cp 1.76, rounds 4.2"
+reach {"1":100,"2":77,"3":39,"won":17}
+## V2_2
+ "s1 battle": "279 battles, won 97%, lost/fight 0.27, e/p cp 1.00, rounds 4.1",
+ "s1 boss": "82 battles, won 90%, lost/fight 0.67, e/p cp 1.99, rounds 6.9",
+ "s1 elite": "63 battles, won 83%, lost/fight 0.65, e/p cp 1.39, rounds 4.7",
+ "s2 battle": "143 battles, won 90%, lost/fight 0.69, e/p cp 1.53, rounds 5.0",
+ "s2 boss": "48 battles, won 73%, lost/fight 1.10, e/p cp 2.03, rounds 8.8",
+ "s2 elite": "22 battles, won 45%, lost/fight 1.59, e/p cp 1.76, rounds 5.2",
+ "s3 battle": "58 battles, won 81%, lost/fight 0.55, e/p cp 1.56, rounds 4.2",
+ "s3 boss": "19 battles, won 68%, lost/fight 1.26, e/p cp 2.11, rounds 8.7",
+ "s3 elite": "21 battles, won 76%, lost/fight 1.00, e/p cp 1.95, rounds 4.3"
+reach {"1":100,"2":74,"3":35,"won":13}
+## V3_1
+ "s1 battle": "289 battles, won 95%, lost/fight 0.29, e/p cp 1.02, rounds 4.0",
+ "s1 boss": "73 battles, won 88%, lost/fight 0.66, e/p cp 1.79, rounds 8.4",
+ "s1 elite": "59 battles, won 78%, lost/fight 0.93, e/p cp 1.36, rounds 5.0",
+ "s2 battle": "102 battles, won 80%, lost/fight 0.73, e/p cp 1.43, rounds 4.6",
+ "s2 boss": "37 battles, won 73%, lost/fight 1.41, e/p cp 2.23, rounds 9.1",
+ "s2 elite": "34 battles, won 79%, lost/fight 1.00, e/p cp 1.64, rounds 5.0",
+ "s3 battle": "52 battles, won 90%, lost/fight 0.60, e/p cp 1.74, rounds 4.4",
+ "s3 boss": "21 battles, won 86%, lost/fight 0.81, e/p cp 2.26, rounds 6.5",
+ "s3 elite": "9 battles, won 89%, lost/fight 0.78, e/p cp 1.94, rounds 3.3"
+reach {"1":100,"2":64,"3":27,"won":18}
+## V3_2
+ "s1 battle": "276 battles, won 94%, lost/fight 0.32, e/p cp 1.00, rounds 4.1",
+ "s1 boss": "75 battles, won 93%, lost/fight 0.61, e/p cp 1.82, rounds 7.6",
+ "s1 elite": "53 battles, won 85%, lost/fight 0.68, e/p cp 1.34, rounds 5.0",
+ "s2 battle": "122 battles, won 83%, lost/fight 0.70, e/p cp 1.45, rounds 4.9",
+ "s2 boss": "35 battles, won 69%, lost/fight 1.60, e/p cp 2.14, rounds 9.7",
+ "s2 elite": "35 battles, won 60%, lost/fight 1.31, e/p cp 1.75, rounds 5.0",
+ "s3 battle": "41 battles, won 83%, lost/fight 0.44, e/p cp 1.71, rounds 3.7",
+ "s3 boss": "16 battles, won 75%, lost/fight 1.13, e/p cp 2.35, rounds 5.8",
+ "s3 elite": "8 battles, won 88%, lost/fight 0.75, e/p cp 1.69, rounds 3.6"
+reach {"1":100,"2":70,"3":24,"won":12}
+## V4_1
+ "s1 battle": "287 battles, won 97%, lost/fight 0.23, e/p cp 0.99, rounds 3.9",
+ "s1 boss": "81 battles, won 83%, lost/fight 0.77, e/p cp 1.87, rounds 8.5",
+ "s1 elite": "48 battles, won 79%, lost/fight 0.73, e/p cp 1.41, rounds 4.6",
+ "s2 battle": "113 battles, won 78%, lost/fight 0.92, e/p cp 1.40, rounds 5.1",
+ "s2 boss": "29 battles, won 97%, lost/fight 0.79, e/p cp 2.14, rounds 8.8",
+ "s2 elite": "25 battles, won 48%, lost/fight 1.68, e/p cp 1.98, rounds 5.4",
+ "s3 battle": "47 battles, won 87%, lost/fight 0.66, e/p cp 1.74, rounds 5.1",
+ "s3 boss": "18 battles, won 94%, lost/fight 0.89, e/p cp 2.26, rounds 6.7",
+ "s3 elite": "16 battles, won 75%, lost/fight 1.13, e/p cp 1.79, rounds 4.1"
+reach {"1":100,"2":67,"3":28,"won":17}
+## V4_2
+ "s1 battle": "276 battles, won 96%, lost/fight 0.27, e/p cp 0.97, rounds 3.9",
+ "s1 boss": "78 battles, won 90%, lost/fight 0.60, e/p cp 1.91, rounds 7.8",
+ "s1 elite": "74 battles, won 86%, lost/fight 0.72, e/p cp 1.40, rounds 4.6",
+ "s2 battle": "123 battles, won 80%, lost/fight 0.76, e/p cp 1.59, rounds 5.1",
+ "s2 boss": "38 battles, won 66%, lost/fight 1.50, e/p cp 2.27, rounds 9.0",
+ "s2 elite": "26 battles, won 69%, lost/fight 1.19, e/p cp 1.62, rounds 4.7",
+ "s3 battle": "42 battles, won 76%, lost/fight 0.74, e/p cp 1.73, rounds 4.4",
+ "s3 boss": "12 battles, won 83%, lost/fight 1.00, e/p cp 2.30, rounds 6.3",
+ "s3 elite": "12 battles, won 75%, lost/fight 1.00, e/p cp 1.78, rounds 4.1"
+reach {"1":100,"2":70,"3":25,"won":10}
+## V5_1
+ "s1 battle": "277 battles, won 95%, lost/fight 0.26, e/p cp 0.98, rounds 3.9",
+ "s1 boss": "75 battles, won 89%, lost/fight 0.72, e/p cp 1.72, rounds 6.9",
+ "s1 elite": "56 battles, won 82%, lost/fight 0.77, e/p cp 1.35, rounds 4.4",
+ "s2 battle": "118 battles, won 90%, lost/fight 0.58, e/p cp 1.39, rounds 4.5",
+ "s2 boss": "45 battles, won 80%, lost/fight 1.31, e/p cp 2.29, rounds 8.7",
+ "s2 elite": "34 battles, won 71%, lost/fight 0.91, e/p cp 1.59, rounds 4.9",
+ "s3 battle": "62 battles, won 90%, lost/fight 0.50, e/p cp 1.71, rounds 4.0",
+ "s3 boss": "24 battles, won 75%, lost/fight 1.58, e/p cp 2.20, rounds 8.4",
+ "s3 elite": "18 battles, won 67%, lost/fight 1.06, e/p cp 2.11, rounds 4.4"
+reach {"1":100,"2":67,"3":36,"won":18}
+## V5_2
+ "s1 battle": "287 battles, won 97%, lost/fight 0.24, e/p cp 1.00, rounds 3.8",
+ "s1 boss": "83 battles, won 92%, lost/fight 0.61, e/p cp 1.85, rounds 7.5",
+ "s1 elite": "49 battles, won 82%, lost/fight 0.86, e/p cp 1.41, rounds 4.3",
+ "s2 battle": "135 battles, won 90%, lost/fight 0.59, e/p cp 1.44, rounds 4.2",
+ "s2 boss": "50 battles, won 78%, lost/fight 1.26, e/p cp 2.06, rounds 8.7",
+ "s2 elite": "37 battles, won 65%, lost/fight 1.00, e/p cp 1.69, rounds 4.2",
+ "s3 battle": "53 battles, won 89%, lost/fight 0.66, e/p cp 1.55, rounds 3.8",
+ "s3 boss": "29 battles, won 76%, lost/fight 1.48, e/p cp 2.31, rounds 7.7",
+ "s3 elite": "24 battles, won 83%, lost/fight 1.04, e/p cp 2.01, rounds 4.8"
+reach {"1":100,"2":76,"3":39,"won":22}
