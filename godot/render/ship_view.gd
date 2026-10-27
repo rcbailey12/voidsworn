@@ -90,10 +90,14 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 			hull.add_child(mi)
 			made = true
 	if not made:
+		# no built hull (a copy of the project without gen/): a plain block, as an ArrayMesh like every real hull, since
+		# G4's fx reads surface formats and arrays from the ship's meshes (primitive meshes have no surface_get_format)
 		var bm := BoxMesh.new()
 		bm.size = Vector3(1, 0.25, 0.35)
+		var am := ArrayMesh.new()
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, bm.get_mesh_arrays())
 		var mi := MeshInstance3D.new()
-		mi.mesh = bm
+		mi.mesh = am
 		hull.add_child(mi)
 	_collect(hull)
 	_look()
