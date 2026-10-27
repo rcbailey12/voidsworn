@@ -593,8 +593,9 @@ void fragment() {
 	float ht = smoothstep(0.0, 0.022, e1) * 0.5 + smoothstep(0.0, 0.03, e2) * 0.2 + step(0.85, h2) * 0.06;   // flat panels, narrow grooves
 	NORMAL = bump_normal(NORMAL, VERTEX, ht, 0.35);
 	ALBEDO = col;
-	METALLIC = metal * (0.6 + 0.4 * h1);
-	ROUGHNESS = 0.35 + 0.35 * grime + seam * 0.2;
+	METALLIC = metal * (0.5 + 0.5 * h1);
+	float wear = mfbm(lp * 7.0 + 9.0, 4);   // scuffed and polished patches, so plates never read as one smooth plastic
+	ROUGHNESS = clamp(0.42 + 0.3 * grime + 0.28 * (wear - 0.5) * 2.0 * 0.5 + seam * 0.2 + h2 * 0.12, 0.25, 0.95);
 	// window strips in clusters: a run of lit slots along some plates, only where a slow noise says a deck is lived in
 	float cluster = smoothstep(0.52, 0.62, mn3(lp * 1.3 + 3.7));
 	float strip = step(abs(f1.y - 0.5), 0.06) * step(0.35, fract(f1.x * 7.0)) * step(0.08, f1.x) * step(f1.x, 0.92);
@@ -715,7 +716,7 @@ void fragment() {
 	float across = abs(sin(ang));               // 1 above and below the disc's line, 0 along it
 	// the upper arc is the big lensed image of the far side, the lower one a thinner secondary image
 	float up = step(0.0, sin(ang));
-	float w_out = mix(1.26, 1.44, up);   // a defined band, not a halo (NASA Goddard 2019: thin arcs hugging the shadow)
+	float w_out = mix(1.32, 1.44, up);   // a defined band, not a halo (NASA Goddard 2019: thin arcs hugging the shadow)
 	float band = smoothstep(1.035, 1.06, th) * (1.0 - smoothstep(w_out - 0.06, w_out, th));
 	float u = clamp((th - 1.05) / (w_out - 1.05), 0.0, 1.0);
 	float a2 = ang * 3.0 + TIME * spin * 2.0;
@@ -723,7 +724,7 @@ void fragment() {
 	vec3 c = mix(vec3(1.0, 0.92, 0.8), vec3(1.0, 0.55, 0.2), smoothstep(0.0, 0.35, u));
 	c = mix(c, vec3(0.55, 0.12, 0.04), smoothstep(0.35, 1.0, u)) * (2.2 - 1.6 * u);
 	// the lower arc (the far side seen under the shadow) is thinner and a little fainter than the upper one
-	float arc = band * pow(across, 0.8) * (0.45 + 0.8 * sp) * mix(0.75, 1.0, up) * 0.85;
+	float arc = band * pow(across, 0.8) * (0.45 + 0.8 * sp) * mix(1.0, 1.0, up) * 0.95;   // the lower arc as strong as the upper, so it reads at full-map zoom
 	// Doppler beaming: the side of the disc turning toward the camera (screen right) brighter and whiter-blue, the
 	// receding side dimmer and redder; kept subtle so the look stays on brand
 	float beam = cos(ang + tilt_dir);

@@ -181,6 +181,10 @@ func _wreck(fac: String, cls: String, length: float) -> Node3D:
 		var g = sys.glow(inst, Color(1.0, 0.45, 0.12, 1.0), 0.28, gp, 2.2, 1.2, 1.0); g.scale = Vector3.ONE * 0.28
 	var lt = OmniLight3D.new(); lt.light_color = Color(1.0, 0.42, 0.15); lt.light_energy = 1.4; lt.omni_range = 0.9; inst.add_child(lt)
 	return root
+# a soft cool fill from the camera's side onto a real hull whose far side the Hollow Sun leaves black
+func _hull_fill(parent: Node3D, at: Vector3, rng: float) -> void:
+	var l = OmniLight3D.new(); l.light_color = Color(0.75, 0.82, 1.0); l.light_energy = 1.6; l.omni_range = rng; l.omni_attenuation = 1.2
+	l.position = at; l.shadow_enabled = false; parent.add_child(l)
 func _code_for(fac: String, cls: String) -> String:
 	if not ResourceLoader.exists(HT_PATH): return ""
 	return load(HT_PATH).code_for(fac, cls)
@@ -232,7 +236,7 @@ func _place_scene(obj: Node3D, place: String, d: Dictionary) -> float:   # the s
 			return 4.5
 		"station":
 			var L = System.look(d["fac"])   # one clear object: the station alone (R51 round 3, no planet jammed in behind it)
-			var st = props.station(obj, L["base"].lerp(Color(0.62, 0.63, 0.66), 0.75), L["main"])
+			var st = props.station(obj, L["base"].lerp(Color(0.6, 0.59, 0.57), 0.85), L["main"].lerp(Color(0.5, 0.5, 0.5), 0.4))   # neutral, slightly warm grey; the accent toned down (no purple cast)
 			st.position = Vector3(0.5, 2.3, 0.3); st.rotation_degrees = Vector3(14, 0, -10); st.scale = Vector3.ONE * 0.85
 			_spinners.append([st, Vector3.UP, 0.035]); _spinners.append([st.get_node("ring"), Vector3.UP, 0.22])
 			return 5.2
@@ -305,6 +309,7 @@ func _add_node(n: Dictionary) -> void:
 				var df = props.dock_frame(obj, 5.2, 2.2, 2.6, Color(0.44, 0.46, 0.5), teal); df.position = Vector3(0, 1.8, 0); df.rotation_degrees = Vector3(0, -20, 0)
 				var hk = _hull(C.RUN["fac"], "Frigate", 4.0)
 				if hk != null: df.add_child(hk)
+				_hull_fill(df, Vector3(0, 1.4, 2.2), 6.0)   # light the docked hull's shadow side
 				else: props.part(df, props.box(3.6, 0.6, 0.9), props.hull_mat(Color(0.4, 0.4, 0.42), DL["main"]))
 				for i in (4 if quality != "low" else 2): _drones.append([props.drone(obj, teal, Color(0.5, 0.52, 0.56)), Vector3(0, 1.8, 0), _rng.randf_range(1.4, 2.2), _rng.randf_range(0.3, 0.6) * (1 if i % 2 == 0 else -1), _rng.randf() * TAU, _rng.randf_range(-0.6, 0.8)])
 				top = 3.4
@@ -314,6 +319,7 @@ func _add_node(n: Dictionary) -> void:
 				var tn = Node3D.new(); tn.position = Vector3(0, 1.8, 0); tn.rotation_degrees = Vector3(0, -30, 0); obj.add_child(tn)
 				var tend = _hull(C.RUN["fac"], "Frigate", 3.6)
 				if tend != null: tn.add_child(tend)
+				_hull_fill(tn, Vector3(0, 1.2, 2.4), 6.0)
 				else: props.part(tn, props.box(3.0, 0.6, 0.8), props.hull_mat(Color(0.42, 0.43, 0.46), FL["main"]))
 				var am = props.hull_mat(Color(0.45, 0.46, 0.48), green, 8.0, 0.0, 0.8)
 				for sz in [-1.0, 1.0]:
