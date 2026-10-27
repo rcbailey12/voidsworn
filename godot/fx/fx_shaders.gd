@@ -1173,7 +1173,8 @@ void fragment() {
 		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }
 		else if (style == 10) { sc = vec3(1.0, 0.55, 0.25); scl = 4.0; sk = 0.7; }
 		else if (style == 12 || style == 13) { sk = 0.0; }
-		float sglow = smoothstep(0.0, 0.25, age) * exp(-age / scl) * sk;
+		// ... and a dim glow that lingers for most of a minute, so a hit ship still shows its hits from the battle camera
+		float sglow = smoothstep(0.0, 0.25, age) * (exp(-age / scl) + 0.1 * exp(-age / 45.0)) * sk;
 		float sband = (1.0 - smoothstep(0.2, 0.7, hu)) * (0.35 + 0.65 * smoothstep(0.42, 0.68, hn));
 		hem += sc * sband * sglow * 2.4;
 		if (style != 10 && style != 7) { hc *= 0.7; ha = min(1.0, ha * 1.25); }

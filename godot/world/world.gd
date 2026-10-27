@@ -14,8 +14,10 @@ const WS := preload("res://world/world_shaders.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 # rock kinds (battle.js ROCK_KINDS): base albedo (linear), shader kind
 const ROCKS := {
-	"stone": [Vector3(0.17, 0.155, 0.14), 0], "ice": [Vector3(0.26, 0.31, 0.36), 1], "iron": [Vector3(0.24, 0.22, 0.21), 2],
-	"carbon": [Vector3(0.09, 0.085, 0.08), 3], "crystal": [Vector3(0.16, 0.18, 0.18), 4],
+	# r10: darker, warmer regolith (real asteroids are dark; r9's lighter values read as pale cream under the key light,
+	# where G3's map rocks are dark brown)
+	"stone": [Vector3(0.085, 0.068, 0.055), 0], "ice": [Vector3(0.2, 0.24, 0.29), 1], "iron": [Vector3(0.11, 0.09, 0.078), 2],
+	"carbon": [Vector3(0.045, 0.04, 0.036), 3], "crystal": [Vector3(0.075, 0.085, 0.085), 4],
 }
 # backdrop planets (biome.planet 0..7): [colour a, colour b, atmosphere, gas giant]
 const PLANETS := [
@@ -238,11 +240,14 @@ func dead_star(c: Vector3, s: float) -> void:
 		lens.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		lens.extra_cull_margin = half * 4.0
 		root.add_child(lens)
-	# a faint red-orange glow round it (the lit gas): an omni light, no shadows
+	# the disc's warm light (the lit gas): an omni light, no shadows. r10 lighting pass: it reaches further and falls off
+	# more steeply, so ships near the well take a warm side light from the disc (the rocks' rim matches it) while the
+	# far side of the board keeps the plain key light
 	var l := OmniLight3D.new()
 	l.light_color = Color(1.0, 0.6, 0.3)
-	l.light_energy = 1.2
-	l.omni_range = Rsh * 9.0
+	l.light_energy = 1.6
+	l.omni_range = Rsh * 14.0
+	l.omni_attenuation = 1.6
 	l.shadow_enabled = false
 	root.add_child(l)
 	notes.append("dead star: core, lensing %s, accretion disc" % ("on" if quality != "low" else "off"))
@@ -352,7 +357,7 @@ func _rock_mat(kind: String, seed_v: float) -> ShaderMaterial:
 	# the dead star's disc rims the rocks near it in its own warm light (r8)
 	if _well != Vector3.INF:
 		m.set_shader_parameter("rim_pos", _well)
-		m.set_shader_parameter("rim_k", 1.0)
+		m.set_shader_parameter("rim_k", 1.6)
 	return m
 
 

@@ -44,7 +44,8 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 		env.tonemap_white = 8.0
 	_fx_gain(FX_GAIN.get(tm, 0.5556))
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(1, 1, 1)
+	# r10 lighting pass: a slightly cool ambient against the warm key, so shadow sides read as depth, not flat grey
+	env.ambient_light_color = Color(0.86, 0.9, 1.0)
 	env.ambient_light_energy = 0.25 * key_e
 	env.glow_enabled = true
 	env.glow_hdr_threshold = 0.8
