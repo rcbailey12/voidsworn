@@ -308,8 +308,8 @@ func _add_node(n: Dictionary) -> void:
 				var DL = System.look(C.RUN["fac"])   # the dock alone
 				var df = props.dock_frame(obj, 5.2, 2.2, 2.6, Color(0.44, 0.46, 0.5), teal); df.position = Vector3(0, 1.8, 0); df.rotation_degrees = Vector3(0, -20, 0)
 				var hk = _hull(C.RUN["fac"], "Frigate", 4.0)
-				if hk != null: df.add_child(hk)
 				_hull_fill(df, Vector3(0, 1.4, 2.2), 6.0)   # light the docked hull's shadow side
+				if hk != null: df.add_child(hk)
 				else: props.part(df, props.box(3.6, 0.6, 0.9), props.hull_mat(Color(0.4, 0.4, 0.42), DL["main"]))
 				for i in (4 if quality != "low" else 2): _drones.append([props.drone(obj, teal, Color(0.5, 0.52, 0.56)), Vector3(0, 1.8, 0), _rng.randf_range(1.4, 2.2), _rng.randf_range(0.3, 0.6) * (1 if i % 2 == 0 else -1), _rng.randf() * TAU, _rng.randf_range(-0.6, 0.8)])
 				top = 3.4
@@ -318,8 +318,8 @@ func _add_node(n: Dictionary) -> void:
 				var green = Color("#7ddc6a"); var FL = System.look(C.RUN["fac"])
 				var tn = Node3D.new(); tn.position = Vector3(0, 1.8, 0); tn.rotation_degrees = Vector3(0, -30, 0); obj.add_child(tn)
 				var tend = _hull(C.RUN["fac"], "Frigate", 3.6)
-				if tend != null: tn.add_child(tend)
 				_hull_fill(tn, Vector3(0, 1.2, 2.4), 6.0)
+				if tend != null: tn.add_child(tend)
 				else: props.part(tn, props.box(3.0, 0.6, 0.8), props.hull_mat(Color(0.42, 0.43, 0.46), FL["main"]))
 				var am = props.hull_mat(Color(0.45, 0.46, 0.48), green, 8.0, 0.0, 0.8)
 				for sz in [-1.0, 1.0]:
