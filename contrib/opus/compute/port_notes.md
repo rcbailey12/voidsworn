@@ -371,7 +371,7 @@ Read: B-21 and move-then-fire each cost about 3.5 points; the pass 2 tuning cost
 | 7102 | 10% | 19% |
 Candidates tried on the same two seeds: boss escorts only (.45/.55) and sector 3 grow 1.28: 17.5%; the above plus lighter sector 2 grow 1.2 and thin .66/.60: 31%. Fuzz 500 on the new code: 0 exceptions. PC confirmation on two fresh seeds (7103, 7104) and the campaign sim for sectors 2 and 3: jobs `sb_ramp_*`, results to follow in this section.
 
-## Step 10: STRINGS ONLY, lore round 8 rename (Oct 27; rename_map_final.md at 762df28; commit in the line below)
+## Step 10: STRINGS ONLY, lore round 8 rename (Oct 27; commit 90aaf85; rename_map_final.md at 762df28)
 
 Display strings only; no id, key, rule, number or random draw changed (same seed, same sim output before and after: `SEED=5 ADMS=grax bossmatrix 4` gives 85% r8.3 both times). G1 and G3: re-pin the oracle and re-export the tables.
 - Applied every row with owner B in `contrib/opus/compute/rename_map_final.md` (sections 1 to 10, including 5b relic to salvage and 5c Strip the wrecks, Scrap rig, Recovered refits, Spoils) to data.js, battle.js, campaign_run.js, campaign_meta.js, campaign3d.js, ui3d.js and head.html: 331 replacements. Where a file writes the apostrophe as the `’` escape, the New text was written the same way.
