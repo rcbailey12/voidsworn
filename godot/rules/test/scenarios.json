@@ -700,7 +700,7 @@
   "rounds": 12,
   "bot": "full",
   "admiral": "vex",
-  "note": "Fight type: Engagement (rout) on a generated fleet, sector 1 column 0 (B0small: compact field), the sector 1 opener",
+  "note": "Fight type: Engagement (rout) on a generated fleet, sector 1 column 0, the sector 1 opener (three ships, so the field stays open; s47 covers the compact field)",
   "seed": 20020,
   "sector": 1,
   "obj": "rout",
@@ -1590,6 +1590,25 @@
    "h_interdictor_e",
    "h_vanguard",
    "h_picket"
+  ]
+ },
+ "s47": {
+  "note": "B0small (found Oct 27 by a coverage pass: s20 has three ships, so no golden took this branch): a two-ship fleet on an open rout fights on the compact field instead; generated sector 1 Hegemony fleet, column 0",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "vex",
+  "seed": 47047,
+  "sector": 1,
+  "obj": "rout",
+  "map": "open",
+  "fac": "hegemony",
+  "col": 0,
+  "fleet": [
+   "harrow",
+   "warden"
   ]
  }
 }
