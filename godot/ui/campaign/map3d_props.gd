@@ -136,7 +136,7 @@ func gantry(parent: Node3D, L: float, H: float, W: float, base: Color, accent: C
 	truss(root, Vector3(-L * 0.5, 0, W * 0.5), Vector3(L * 0.5, 0, W * 0.5), 0.28, gm)
 	# a crane trolley on the top rails with its hoist
 	var cx = sys.rng.randf_range(-L * 0.3, L * 0.3)
-	part(root, box(0.5, 0.3, W + 0.3), hull_mat(accent.darkened(0.2), base, 5.0, 0.0), Vector3(cx, H + 0.2, 0))
+	part(root, box(0.5, 0.3, W + 0.3), hull_mat(accent.darkened(0.2), base, 2.5, 0.0, 0.3), Vector3(cx, H + 0.2, 0))
 	beam(root, Vector3(cx, H, 0), Vector3(cx, H * 0.55, 0), 0.04, gm)
 	# floodlights on the top corners onto the work, and amber warning lights
 	for sx in [-1.0, 1.0]:
@@ -169,7 +169,7 @@ func dock_frame(parent: Node3D, L: float, H: float, W: float, base: Color, accen
 	for sx in [-1.0, 1.0]:
 		for sy in [-1.0, 1.0]:
 			spot(root, Vector3(sx * L * 0.42, sy * H * 0.5, -W * 0.5), Vector3(0, 0, 0), Color(0.75, 1.0, 0.95), 2.2, L * 1.2)
-	part(root, box(L * 0.3, H * 0.35, 0.5), hull_mat(base, accent, 5.0, 0.4), Vector3(0, H * 0.5 + 0.3, -W * 0.5))
+	part(root, box(L * 0.3, H * 0.35, 0.5), hull_mat(base, accent, 2.2, 0.3, 0.3), Vector3(0, H * 0.5 + 0.3, -W * 0.5))
 	return root
 
 # ---------------------------------------------------------------- repair drones

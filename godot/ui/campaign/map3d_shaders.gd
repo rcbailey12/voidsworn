@@ -595,7 +595,7 @@ void vertex() { lp = VERTEX; ln = NORMAL; }
 vec2 puv(vec3 p, vec3 n) { vec3 a = abs(n); if (a.x > a.y && a.x > a.z) return p.zy; if (a.y > a.z) return p.xz; return p.xy; }
 float panels(vec2 uv, out vec2 cell, out vec2 f) {
 	float row = floor(uv.y);
-	float w = 1.0 + floor(mh2(vec2(row, 7.7)) * 3.0);
+	float w = 2.0 + floor(mh2(vec2(row, 7.7)) * 4.0);   // long plates (2 to 5 rows wide), not bricks
 	vec2 q = vec2((uv.x + mh2(vec2(row, 3.1)) * w) / w, uv.y);
 	cell = vec2(floor(q.x), row); f = fract(q);
 	return min(min(f.x, 1.0 - f.x) * w, min(f.y, 1.0 - f.y));
@@ -603,14 +603,14 @@ float panels(vec2 uv, out vec2 cell, out vec2 f) {
 void fragment() {
 	vec2 uv = puv(lp, ln) * scale;
 	vec2 c1; vec2 f1; float e1 = panels(uv, c1, f1);
-	vec2 c2; vec2 f2; float e2 = panels(uv * 3.0 + 11.0, c2, f2);
+	vec2 c2; vec2 f2; float e2 = panels(uv * 2.2 + 11.0, c2, f2);
 	float h1 = mh2(c1 + 0.5); float h2 = mh2(c2 + 1.5);
 	float seam = 1.0 - smoothstep(0.0, 0.022, e1);
 	float seam2 = 1.0 - smoothstep(0.0, 0.03, e2);
 	float grime = mfbm(lp * 2.2 + 4.0, 4);
 	vec3 col = base * (0.78 + 0.32 * h1) * (0.9 + 0.2 * h2);
 	col = mix(col, accent, step(0.95, h1) * 0.55);
-	col *= 1.0 - seam * 0.45 - seam2 * 0.15;
+	col *= 1.0 - seam * 0.32 - seam2 * 0.08;
 	col *= 0.82 + 0.3 * grime;
 	float ht = smoothstep(0.0, 0.022, e1) * 0.5 + smoothstep(0.0, 0.03, e2) * 0.2 + step(0.85, h2) * 0.06;   // flat panels, narrow grooves
 	NORMAL = bump_normal(NORMAL, VERTEX, ht, 0.35);

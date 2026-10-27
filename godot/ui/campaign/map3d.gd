@@ -336,7 +336,7 @@ func _add_node(n: Dictionary) -> void:
 				top = 3.2
 	# a soft cool fill over built stops, so their plating reads on the side away from the Hollow Sun
 	if t in ["shipyard", "drydock", "field"] or str(n.get("map", "")) in ["station", "graveyard"]:
-		var fl = OmniLight3D.new(); fl.light_color = Color(0.66, 0.75, 1.0); fl.light_energy = 1.7; fl.omni_range = 15.0; fl.omni_attenuation = 1.2
+		var fl = OmniLight3D.new(); fl.light_color = Color(0.7, 0.78, 1.0); fl.light_energy = 2.4; fl.omni_range = 16.0; fl.omni_attenuation = 1.1
 		fl.position = Vector3(3.0, 5.0, 4.5); fl.shadow_enabled = false; obj.add_child(fl)
 	# the ring round the stop (its colour says what you can do there) and, for a rival raider, a halo in the rival's look
 	var big = RING_R * (1.55 if t == "boss" else 1.0)
@@ -405,7 +405,7 @@ func _token_home() -> Vector3:
 	var C = _C(); var pos = C.RUN.get("pos")
 	if pos != null and _nodes.has(pos): return _nodes[pos]["pos"] + TOKEN_OFF + Vector3(0, _nodes[pos]["top"], 0)
 	var n0 = C.RUN["map"]["cols"][0][0]; var pp = _polar(n0)
-	return _at(pp.x + deg_to_rad(9.0), R_OUT + 3.0) + Vector3(0, 3.0, 0)   # just before the first jump, outside the outer orbit
+	return _at(pp.x + deg_to_rad(16.0), R_OUT + 6.0) + Vector3(0, 3.0, 0)   # just before the first jump, clear of the first stop
 
 # ---------------- state ----------------
 func _avail() -> Array:
