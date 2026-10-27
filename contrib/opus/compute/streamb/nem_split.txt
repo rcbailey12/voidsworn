@@ -10,3 +10,13 @@ nemmatrix 48 per cell {"s2 plain":"67% r7.0","s2 nem":"60% r7.0 fled 5","s2 nemN
 nemmatrix 48 per cell {"s2 plain":"67% r7.0","s2 nem":"71% r6.9 fled 2","s2 nemNoWeak":"54% r6.8 fled 4"}
 ## sb_nem3_post
 nemmatrix 48 per cell {"s3 plain":"56% r7.8","s3 nem":"40% r7.2 fled 1","s3 nemNoWeak":"40% r6.4 fled 3"}
+## sb_nem3_pre
+nemmatrix 48 per cell {"s3 plain":"56% r7.8","s3 nem":"25% r8.1","s3 nemNoWeak":"42% r6.8 fled 10"}
+
+# Summary (player win %, n 48 per cell; plain is the same seeded battles in both)
+| sector | plain elite | Nemesis pre | Nemesis post | Nemesis, no weaknesses, pre | post |
+|---|---|---|---|---|---|
+| 1 | 77 | 71 | 73 | 63 | 65 |
+| 2 | 67 | 60 | 71 | 44 | 54 |
+| 3 | 56 | 25 | 40 | 42 | 40 |
+Read: the R42/R49 behaviour pass made his sector 2 and 3 fights easier (sector 3 with weaknesses 25 to 40). He still costs you 4 to 16 points against a plain elite fight of the same node. Before, his sector 3 fight was harder with weaknesses (25) than without (42); after, the two arms match (40 and 40), so in sector 3 his weaknesses no longer change the result much. Noise at 48 per cell is about 7 points.

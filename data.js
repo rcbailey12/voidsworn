@@ -198,11 +198,11 @@ const RELICS = {
   armourweave:{n:'Adamant armourweave',d:'+6% armor across the fleet.',fx:{armor:.06}},
 };
 
-// Admiral band (stream B, Oct 27): Kassar, Reyes, Maren, Grax, Matriarch, Mending and Nekhet retuned so every admiral sits about 55 to 85% against a sector 1 flagship (bossmatrix); see port_notes.md.
+// Admiral band (stream B, Oct 27): Kassar, Reyes, Maren, Grax, Matriarch, Mending, Nekhet, then Malek and Ashgrove (and Mending's fleet) retuned so every admiral sits about 55 to 85% against a sector 1 flagship (bossmatrix); see port_notes.md.
 const ADMIRALS = {
   vex:{n:'Admiral Castellan Vex',doc:'Line of battle',d:'Broadside weapons deal +15% damage.',fx:{broadPct:.15},start:['penitent','harrow','warden'],cost:0},
-  malek:{n:'Inquisitor-Captain Malek Draven',doc:'Hunter-killer',d:'Torpedoes reload a turn faster. +20% damage on rear-arc hits.',fx:{torpCd:1,rearPct:.2},start:['harrow','harrow','warden','warden'],cost:30},
-  ashgrove:{n:'Commodore Sera Ashgrove',doc:'Carrier doctrine',d:'Squadrons deal +25% damage and carriers hold +1 wing.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['reliquary','harrow','warden'],cost:45},
+  malek:{n:'Inquisitor-Captain Malek Draven',doc:'Hunter-killer',d:'Torpedoes reload a turn faster. +35% damage on rear-arc hits.',fx:{torpCd:1,rearPct:.35},start:['harrow','harrow','warden','warden'],cost:30},
+  ashgrove:{n:'Commodore Sera Ashgrove',doc:'Carrier doctrine',d:'Squadrons deal +40% damage and carriers hold +1 wing.',fx:{sqPct:.4,hangar:1,sqHp:.25},start:['reliquary','harrow','warden'],cost:45},
   thale:{n:'High Admiral Oryn Thale',doc:'Iron doctrine',d:'All ships +15% hull and +10% shields.',fx:{hpPct:.15,shPct:.1},start:['cathedral','warden'],cost:80},
 };
 
@@ -222,7 +222,7 @@ Object.assign(ADMIRALS,{
   vesh:{fac:'corsair',n:'Vesh the Collector',doc:'Scrap armor',d:'Ships patch 5% of their hull each round and have +10% armor.',fx:{hullRegenPct:.05,armor:.1},start:['c_hulk','c_reaver'],cost:80,cmd:{id:'restore',n:'Patch and pray',d:'Every ship repairs 25% of its hull and patches damaged sections, even destroyed ones.'}},
   matriarch:{fac:'chorus',n:'The Matriarch of Nine Throats',doc:'Brood swarm',d:'Spore swarms deal +25% damage and broods hold +1 swarm.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['b_brood','b_drone','b_drone'],cost:0,cmd:{id:'scramble',n:'Spawning surge',d:'Every brood releases an extra swarm (even past its limit), then all swarms strike again at once with +50% damage this round.'}},
   razormaw:{fac:'chorus',n:'Razormaw',doc:'Hunter pack',d:'+1 speed and +15% damage on rear-arc hits.',fx:{speed:1,rearPct:.15},start:['b_razor','b_spitter','b_drone'],cost:30,cmd:{id:'surge',n:'Blood frenzy',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
-  mending:{fac:'chorus',n:'The Mending Choir',doc:'Regrowth',d:'Ships regrow 4% of their hull each round.',fx:{hullRegenPct:.04},start:['b_razor','b_spitter'],cost:45,cmd:{id:'restore',n:'Regrowth tide',d:'Every ship regrows 25% of its hull and heals damaged sections, even destroyed ones.'}},
+  mending:{fac:'chorus',n:'The Mending Choir',doc:'Regrowth',d:'Ships regrow 4% of their hull each round.',fx:{hullRegenPct:.04},start:['b_razor','b_drone'],cost:45,cmd:{id:'restore',n:'Regrowth tide',d:'Every ship regrows 25% of its hull and heals damaged sections, even destroyed ones.'}},
   voice:{fac:'chorus',n:'Voice of the Deep',doc:'Acid chorus',d:'+15% damage with every weapon.',fx:{dmgPct:.15},start:['b_razor','b_spitter','b_drone'],cost:80,cmd:{id:'barrage',n:'Discordant volley',d:'Every ship spits a free volley at the best target it can reach, right now.'}},
   aelith:{fac:'ithar',n:'Aelith Dawnsail',doc:'Wing-mistress',d:'Squadrons deal +25% damage and carriers hold +1 wing.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['i_carrier','i_wisp'],cost:0,cmd:{id:'scramble',n:'Starling flight',d:'Every carrier launches an extra wing (even past its hangar limit), then all squadrons strike again at once with +50% damage this round.'}},
   vaelen:{fac:'ithar',n:'Seraph Vaelen',doc:'Lance choir',d:'Lances deal +20% damage and gain +10 aim.',fx:{lancePct:.2,aim:10},start:['i_song','i_blade'],cost:30,cmd:{id:'barrage',n:'Chord of light',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},

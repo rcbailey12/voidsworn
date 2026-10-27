@@ -244,9 +244,17 @@ Third stream B helper. Band: the plan's starting band is no admiral below 50% or
 Rejected legs (same sample size): Grax two marauders 40, Grax four ships 70; Kassar vanguard and two pickets 92, Kassar guns 10% lighter 87; Matriarch brood and spitter 80; Nekhet harvester and scythe 71, harvester and two scythes 79; Maren hull +5% 86; Reyes vanguard and picket 61, squadrons +15% 84, +15% with no squadron hull bonus 83.
 Untouched admirals stay at their pass 2 numbers (51 to 85%). Confirmation run: PC lane B, 200 runs per admiral, all 24 (jobs `sb_band1_1` to `_6`); results in `contrib/opus/compute/streamb/band1_bm.txt`.
 
+### Step 5b: PC confirmation and three more changes (Oct 27)
+PC lane B, 200 runs per admiral (`streamb/band1_bm.txt`): vex 58, malek 50, ashgrove 50, thale 71, kassar 81, vorn 78, reyes 80, maren 74, grax 64, sable 55, mott 63, vesh 68, matriarch 69, razormaw 81, mending 90, voice 84, aelith 68, vaelen 74, thorne 65, mirelle 68, nekhet 77, sekhmar 62, anuket 84, khepra 69. Malek and Ashgrove (untouched, 56 and 55 at 100 runs in pass 2) sit on the 50 line; Mending stayed at 90.
+- Malek: `rearPct` .2 to .35; text "+35%". Cloud 100 runs: 59 (a fifth frigate instead: 79).
+- Ashgrove: `sqPct` .25 to .4; text "+40%". Cloud 100 runs: 62 (a second frigate instead: 65).
+- Mending Choir: start `b_razor, b_drone` (was razorfiend and spitter), regrow stays 4%. Cloud 200 runs: 77 (regrow 2% with the old fleet: 85).
+PC confirmation: jobs `sb_band2` (Malek, Ashgrove) and `sb_band3` (Mending).
+
 ### Suggested golden scenarios
 1. New run as Grax: fleet is marauder, reaver, reaver (7 command points).
 2. Mending Choir ship at 100 of 150 hull at turn start: +6 hull (4%), not +9.
+3. Malek: a rear-arc hit gets +.35 in `dmgMult` (was +.2); Ashgrove: squadron damage x1.4.
 
 ## Step 6: R41 arc hull variants retuned as sidegrades (Oct 27; data.js only)
 
