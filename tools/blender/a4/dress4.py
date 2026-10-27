@@ -181,7 +181,9 @@ def build_radiator_spires(fingers, col, dark, props, glow=(1.0, .42, .12)):
             if abs(y0 + y1) < .006: e = max(abs(y0), abs(y1)); y0, y1 = -e, e
             zt, zbm = float(hi[2]) + .0012, float(lo[2]) - .004
             hs_lib.box(f'spm{n}', ((x0 + x1) / 2, (y0 + y1) / 2, (zt + zbm) / 2), (max(x1 - x0, .006), max(y1 - y0, .006), zt - zbm), bevel=.0006); tag(mul(col, .8), **props)
-        zs = z0 - .0006; hh = h * .94
+        # proportions of a radiator, not a needle: a wider core and vanes, height capped at about five vane widths (the V1b pass-3 sheet:
+        # the tall thin ones still read as a steeple over the tower)
+        r = max(r, .0035); zs = z0 - .0006; hh = min(h * .94, r * 2.6 * 5)
         hs_lib.cyl(f'spi{n}', (x, y, zs + hh * .5), r * .80, hh, axis='Z', seg=4, r2=r * .42, bevel=0); tag(mul(col, 1.05), **props)  # core
         th = max(.0007, r * .12)
         for k, ax in enumerate((True, False)):  # a cross of flat radiator vanes, nearly straight-sided (a steep taper or stepped collars read as a pagoda)

@@ -164,7 +164,8 @@ SHIPS['C16s_23'] = dict(
 SHIPS['V1b_r_23'] = dict(
     fac='voidsworn', cls='Dreadnought', name='Ascendant-class dreadnought', sym='bilateral',
     spires=dict(zmin=-.03, exclude_x=.40, style='radiator'),                     # the A2 rebuild: melted AI pinnacles cut and rebuilt crisp
-    cuts=[dict(name='domes', box=(-.215, .035, -.042, .042, -.046, .12))],       # AI dome turrets along the spine
+    cuts=[dict(name='domes', box=(-.215, .035, -.042, .042, -.046, .12)),        # AI dome turrets along the spine
+          dict(name='bowspike', box=(.400, .432, -.012, .012, -.036, .30))],    # pass 3: the thin upright spike on the prow read as a jackstaff
     kit=[('casemate', 'hb', -.085, 0, -.09, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'hb2', .045, 0, -.09, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('turret', 'tt', -.03, 0, 0, 'top', dict(size='L', barrels=3, slot=2, wkind='turret', arc='T', lift=.006)),
