@@ -734,10 +734,10 @@ void fragment() {
 	// the upper arc is the big lensed image of the far side, the lower one a thinner secondary image
 	float up = step(0.0, sin(ang));
 	float w_out = mix(1.32, 1.62, up);
-	float band = smoothstep(1.03, 1.1, th) * (1.0 - smoothstep(w_out - 0.25, w_out, th));
+	float band = smoothstep(1.035, 1.07, th) * (1.0 - smoothstep(w_out - 0.12, w_out, th));
 	float u = clamp((th - 1.05) / (w_out - 1.05), 0.0, 1.0);
 	float a2 = ang * 3.0 + TIME * spin * 2.0;
-	float sp = mfbm2(vec2(a2 + log(max(th, 1.0)) * 6.0, th * 3.0), 4);
+	float sp = mfbm2(vec2(a2 * 4.0 + log(max(th, 1.0)) * 8.0, th * 7.0), 4);   // streaks along the arc, like the disc's own
 	vec3 c = mix(vec3(1.0, 0.92, 0.8), vec3(1.0, 0.55, 0.2), smoothstep(0.0, 0.35, u));
 	c = mix(c, vec3(0.55, 0.12, 0.04), smoothstep(0.35, 1.0, u)) * (2.2 - 1.6 * u);
 	float arc = band * pow(across, 0.7) * (0.55 + 0.7 * sp) * mix(0.55, 1.0, up);

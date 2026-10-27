@@ -36,20 +36,30 @@ func beam(parent: Node3D, a: Vector3, b: Vector3, w: float, m: Material) -> Mesh
 		var up = Vector3.UP if abs(d.normalized().dot(Vector3.UP)) < 0.95 else Vector3.RIGHT
 		n.transform = Transform3D(Basis.looking_at(d.normalized(), up), (a + b) * 0.5)
 	return n
-# a lattice member from a to b: four rails a square of side w apart, braced by diagonals every bay
+# a lattice member from a to b: four rails a square of side w apart, braced by diagonals every bay; one MultiMesh per
+# member (a unit box per bar), so a whole gantry is a few draw calls
+static var _unit_box: BoxMesh = null
 func truss(parent: Node3D, a: Vector3, b: Vector3, w: float, m: Material, bays: int = -1) -> void:
-	var d = b - a; var L = d.length(); if L < 0.01: return
+	var d = b - a; var L = d.length()
+	if L < 0.01: return
 	var ax = d / L; var up = Vector3.UP if abs(ax.dot(Vector3.UP)) < 0.95 else Vector3.RIGHT
 	var s1 = ax.cross(up).normalized() * w * 0.5; var s2 = ax.cross(s1).normalized() * w * 0.5
 	var corners = [s1 + s2, s1 - s2, -s1 - s2, -s1 + s2]
-	var rw = max(0.045, w * 0.2)
-	for cn in corners: beam(parent, a + cn, b + cn, rw, m)
+	var rw = max(0.04, w * 0.16)
+	var bars = []   # [from, to, width]
+	for cn in corners: bars.append([a + cn, b + cn, rw])
 	var nb = bays if bays > 0 else max(1, int(round(L / (w * 1.4))))
 	if q < 0.5: nb = max(1, nb / 2)
 	for i in nb:
 		var p0 = a + d * (float(i) / nb); var p1 = a + d * (float(i + 1) / nb)
-		for k in 4:
-			beam(parent, p0 + corners[k], p1 + corners[(k + 1) % 4], rw * 0.6, m)
+		for k in 4: bars.append([p0 + corners[k], p1 + corners[(k + 1) % 4], rw * 0.6])
+	if _unit_box == null: _unit_box = box(1, 1, 1)
+	var mm = MultiMesh.new(); mm.transform_format = MultiMesh.TRANSFORM_3D; mm.mesh = _unit_box; mm.instance_count = bars.size()
+	for i in bars.size():
+		var bd = bars[i][1] - bars[i][0]; var bl = bd.length()
+		var bu = Vector3.UP if abs(bd.normalized().dot(Vector3.UP)) < 0.95 else Vector3.RIGHT
+		mm.set_instance_transform(i, Transform3D(Basis.looking_at(bd.normalized(), bu) * Basis.from_scale(Vector3(bars[i][2], bars[i][2], bl)), (bars[i][0] + bars[i][1]) * 0.5))
+	var n = MultiMeshInstance3D.new(); n.multimesh = mm; n.material_override = m; caster(n); parent.add_child(n)
 func light(parent: Node3D, pos: Vector3, col: Color, size: float = 0.5, blink: bool = false) -> MeshInstance3D:
 	var g = sys.glow(parent, col, size, pos, 2.2, 1.6)
 	if blink: blinkers.append([g, sys.rng.randf() * TAU, sys.rng.randf_range(1.4, 2.6)])
@@ -117,13 +127,13 @@ func gantry(parent: Node3D, L: float, H: float, W: float, base: Color, accent: C
 	var bays = 4 if q > 0.5 else 2
 	for i in bays + 1:
 		var x = -L * 0.5 + L * float(i) / bays
-		truss(root, Vector3(x, 0, -W * 0.5), Vector3(x, H, -W * 0.5), 0.34, gm, 3)
-		truss(root, Vector3(x, 0, W * 0.5), Vector3(x, H, W * 0.5), 0.34, gm, 3)
-		truss(root, Vector3(x, H, -W * 0.5), Vector3(x, H, W * 0.5), 0.34, gm, 3)
-	truss(root, Vector3(-L * 0.5, H, -W * 0.5), Vector3(L * 0.5, H, -W * 0.5), 0.34, gm)
-	truss(root, Vector3(-L * 0.5, H, W * 0.5), Vector3(L * 0.5, H, W * 0.5), 0.34, gm)
-	truss(root, Vector3(-L * 0.5, 0, -W * 0.5), Vector3(L * 0.5, 0, -W * 0.5), 0.34, gm)
-	truss(root, Vector3(-L * 0.5, 0, W * 0.5), Vector3(L * 0.5, 0, W * 0.5), 0.34, gm)
+		truss(root, Vector3(x, 0, -W * 0.5), Vector3(x, H, -W * 0.5), 0.28, gm, 3)
+		truss(root, Vector3(x, 0, W * 0.5), Vector3(x, H, W * 0.5), 0.28, gm, 3)
+		truss(root, Vector3(x, H, -W * 0.5), Vector3(x, H, W * 0.5), 0.28, gm, 3)
+	truss(root, Vector3(-L * 0.5, H, -W * 0.5), Vector3(L * 0.5, H, -W * 0.5), 0.28, gm)
+	truss(root, Vector3(-L * 0.5, H, W * 0.5), Vector3(L * 0.5, H, W * 0.5), 0.28, gm)
+	truss(root, Vector3(-L * 0.5, 0, -W * 0.5), Vector3(L * 0.5, 0, -W * 0.5), 0.28, gm)
+	truss(root, Vector3(-L * 0.5, 0, W * 0.5), Vector3(L * 0.5, 0, W * 0.5), 0.28, gm)
 	# a crane trolley on the top rails with its hoist
 	var cx = sys.rng.randf_range(-L * 0.3, L * 0.3)
 	part(root, box(0.5, 0.3, W + 0.3), hull_mat(accent.darkened(0.2), base, 5.0, 0.0), Vector3(cx, H + 0.2, 0))
@@ -147,10 +157,10 @@ func dock_frame(parent: Node3D, L: float, H: float, W: float, base: Color, accen
 	var gm = hull_mat(base, accent, 5.0, 0.0, 0.55)
 	var xs = [-L * 0.5, L * 0.5]; var ys = [-H * 0.5, H * 0.5]; var zs = [-W * 0.5, W * 0.5]
 	for y in ys:
-		for z in zs: truss(root, Vector3(xs[0], y, z), Vector3(xs[1], y, z), 0.3, gm)
+		for z in zs: truss(root, Vector3(xs[0], y, z), Vector3(xs[1], y, z), 0.26, gm)
 	for x in xs:
-		for y in ys: truss(root, Vector3(x, y, zs[0]), Vector3(x, y, zs[1]), 0.3, gm, 2)
-		for z in zs: truss(root, Vector3(x, ys[0], z), Vector3(x, ys[1], z), 0.3, gm, 2)
+		for y in ys: truss(root, Vector3(x, y, zs[0]), Vector3(x, y, zs[1]), 0.26, gm, 2)
+		for z in zs: truss(root, Vector3(x, ys[0], z), Vector3(x, ys[1], z), 0.26, gm, 2)
 	# docking clamps reaching in from the frame
 	for sx in [-0.25, 0.25]:
 		for sz in [-1.0, 1.0]:
