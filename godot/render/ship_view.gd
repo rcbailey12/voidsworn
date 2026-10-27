@@ -657,7 +657,7 @@ func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
 	sp.material_override = _puff_mat()
 	sp.modulate = Color(0.85, 0.88, 0.95, 0.75 * k)  # G4's hit-reaction RCS colour (fx_ship._rcs)
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
-	sp.pixel_size = maxf(L, 6.0) * 0.0009 * (0.6 + 0.4 * k)
+	sp.pixel_size = clampf(L * 0.07, 1.4, 2.8) / 64.0 * (0.6 + 0.4 * k)
 	sp.top_level = true
 	add_child(sp)
 	sp.global_position = to_global(at + dir.normalized() * maxf(L, 6.0) * 0.03)  # just outside the hull, not inside it

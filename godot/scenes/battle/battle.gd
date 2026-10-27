@@ -3273,6 +3273,8 @@ func _move_frames() -> void:
 		if mine.size() > 1:
 			picks.append(mine[-1]["id"])
 	follow = false  # the camera stays on the burn
+	tips_off = true
+	hud.hide_tipcard()
 	print("[moves] movement %s, ships %s" % [movement, str(picks)])
 	for id in picks:
 		while not _can_act():
@@ -3299,7 +3301,7 @@ func _move_frames() -> void:
 		var b: Vector3 = board.hex_world(best.q, best.r)
 		cam.a = -PI / 2.0
 		cam.b = 0.85
-		cam.r = maxf(float(views[id].L) * 2.2, a.distance_to(b) * 1.6)
+		cam.r = maxf(float(views[id].L) * 3.0, a.distance_to(b) * 2.4)
 		cam.t = (a + b) * 0.5
 		cam.snap()
 		await get_tree().create_timer(0.4).timeout
