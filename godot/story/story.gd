@@ -99,7 +99,8 @@ func _on_changed() -> void:
 		if run == null and pd.get("run") is Dictionary:
 			run = pd["run"]
 		if run is Dictionary:
-			var o = B.get("over")
+			var ov = B.get("over")
+			var o: String = ov if ov is String else ""  # over is false (bool) until the battle ends, and stays false on a retreat
 			career.record_battle(run, B, "win" if o == "win" else ("loss" if o == "loss" else "retreat"))
 	if C.RUN is Dictionary:
 		career.note_sector(C.RUN)
