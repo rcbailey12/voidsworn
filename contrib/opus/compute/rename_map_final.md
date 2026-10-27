@@ -20,7 +20,7 @@ Owner key: **B**, **G1**, **G2**, **G3**, **L**, **P** (see above).
 | Old | New | Where | Owner | Note |
 |---|---|---|---|---|
 | `<h1>Voidsworn</h1>` | `<h1>Embers of the Hollow Sun</h1>` | campaign_meta.js:30; ui3d.js:624 | B | Title screen (browser). G2 landed the Godot title in 49f0d85. |
-| `Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain.` | Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain. | campaign_meta.js:31; godot/ui/battle/brand.gd:11; godot/ui/campaign/campaign_ui.gd:301 | B, G2, G3 | The tagline (vetoable V1). Any faction can be picked, so it no longer says crusade. |
+| `Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain.` | Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain. | campaign_meta.js:31; godot/ui/campaign/campaign_ui.gd:301 | B, G3 | The tagline (vetoable V1). Any faction can be picked, so it no longer says crusade. |
 | `<title>Voidsworn: 3D battle prototype</title>` | `<title>Embers of the Hollow Sun</title>` | head.html:6 | B | Browser tab title. |
 | `<span class="t">Voidsworn</span>` | `<span class="t">Embers of the Hollow Sun</span>` | ui3d.js:62 | B | Battle top bar (browser). |
 | `<div class="ibox"><h1>Voidsworn</h1>` | `<div class="ibox"><h1>Embers of the Hollow Sun</h1>` | ui3d.js:624 | B | Skirmish setup header (browser). |
@@ -71,9 +71,9 @@ The words: patron becomes **core**, boon becomes **protocol**, sigil becomes **s
 | `Boons in action: ` | Protocols in action: | campaign_run.js:421 | B | |
 | `No boon triggered this battle. Check the Fleet boons section on a ship to see what sets each one off.` | No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off. | campaign_run.js:421; godot/ui/campaign/campaign_ui.gd:1159 | B, G3 | |
 | `<h4>Fleet boons</h4>` | `<h4>Fleet protocols</h4>` | ui3d.js:150 | B | Ship panel (browser). |
-| `"Fleet boons"` | "Fleet protocols" | godot/scenes/battle/battle.gd:2956 | G2 | Ship panel (Godot battle). |
+| `"Fleet boons"` | "Fleet protocols" | (not found) | ? | Ship panel (Godot battle). |
 | ` Boons active: ` | ` Protocols active: ` | campaign3d.js:58 | B | campaign3d tooltip. |
-| `"Take boon"` | "Take protocol" | godot/main/campaign_fallback_ui.gd:12 | G2 | Fallback UI button. |
+| `"Take boon"` | "Take protocol" | (not found) | ? | Fallback UI button. |
 | `who counts you Devoted: <b>` | now Synced with you: <b> | campaign_meta.js:105 | B | Reads "A gift from K-1 Kharon, the Unbent, now Synced with you: Thunder Broadside." |
 | `", who counts you Devoted: [b]"` | ", now Synced with you: [b]" | godot/ui/campaign/campaign_ui.gd:435 | G3 | Godot copy. |
 | `Patrons watching this ${runWord()}: ` | Cores in range of this ${runWord()}: | campaign_meta.js:106 | B | Aspect screen. |
@@ -162,7 +162,7 @@ The words: patron becomes **core**, boon becomes **protocol**, sigil becomes **s
 | `deathless:{n:'Endless legion',d:` | deathless:{n:'Archive restore',d: | battle.js:480 | B | Eclipse faction rule name (battle.js FACTION_RULES). |
 | `The first Deathless ship to fall each battle` | The first Eclipse ship to fall each battle | battle.js:480 | B | Same rule text. |
 | `'Endless legion: the first to fall reassembles next round.':'Endless legion spent.'` | 'Archive restore: the first to fall reassembles next round.':'Archive restore spent.' | battle.js:526 | B | Ship panel. |
-| `"Endless legion: the first to fall reassembles next round."` | "Archive restore: the first to fall reassembles next round." | godot/scenes/battle/battle.gd:2884 | G2 | Godot ship panel; also its "Endless legion spent." on the same line becomes "Archive restore spent." |
+| `"Endless legion: the first to fall reassembles next round."` | "Archive restore: the first to fall reassembles next round." | (not found) | ? | Godot ship panel; also its "Endless legion spent." on the same line becomes "Archive restore spent." |
 | `Ithar hulls cannot Brace.` | Glasswright hulls cannot Brace. | battle.js:478 | B | Glasswright rule text. |
 | `corsair:{n:'Close in',d:'Corsairs field no lance weapons` | corsair:{n:'Close in',d:'Hullbreakers field no lance weapons | battle.js:481 | B | |
 | `d:'Corsairs field no lance weapons (no long-range beams): they win up close.'` | d:'Hullbreakers field no lance weapons (no long-range beams): they win up close.' | data.js:539 | B | FAC_GATES. |
@@ -174,10 +174,10 @@ The words: patron becomes **core**, boon becomes **protocol**, sigil becomes **s
 | `['deadstar','Dead star']` | ['deadstar','Hollow Sun'] | ui3d.js:15 | B | Skirmish shape picker. |
 | ` is torn apart by the dead star's gravity.` | ` is torn apart by the Hollow Sun's gravity.` | battle.js:283; godot/rules/rules.gd:969 | B, G1 | Battle log (both games). |
 | `tidal:{w:'torn apart by the dead star'` | tidal:{w:'torn apart by the Hollow Sun' | battle.js:925 | B | Kill cause. |
-| `A dead star warps this field.` | The Hollow Sun warps this field. | battle.js:355; godot/scenes/battle/battle.gd:475; godot/rules/rules.gd:1257 | B, G2, G1 | Battle start log (both games, three places). |
+| `A dead star warps this field.` | The Hollow Sun warps this field. | battle.js:355; godot/rules/rules.gd:1257 | B, G1 | Battle start log (both games, three places). |
 | `colossus:'Colossus'` | colossus:'Giant wreck' | battle.js:18 | B | Battle shape label; Colossus is now the Ninefold Maw's class (one name, one owner). |
 | `shoals:'Shoals'` | shoals:'Rock shoals' | battle.js:18 | B | Optional, sea word softened (vetoable V13). |
-| ` on the auspex.` | ` on the scanners.` | battle.js:354; godot/story/data/voices.json:76; godot/scenes/battle/battle.gd:472; godot/rules/rules.gd:1256 | B, L, G2, G1 | Battle start log (both games). |
+| ` on the auspex.` | ` on the scanners.` | battle.js:354; godot/story/data/voices.json:76; godot/rules/rules.gd:1256 | B, L, G1 | Battle start log (both games). |
 | `will drop out of warp at the start of round {r}` | will jump in at the start of round {r} | battle.js:23 | B | Battle event warning. |
 | `go:'Enemy reinforcements drop out of warp.'` | go:'Enemy reinforcements jump in.' | battle.js:23 | B | |
 | `A friendly ship drops out of warp to help.` | A friendly ship jumps in to help. | battle.js:24 | B | |
@@ -255,9 +255,26 @@ Phrase by phrase. "Salvage" is uncountable: say "salvage" or "a piece of salvage
 | `No relics left to find. +80 credits instead.` | No salvage left to find. +80 credits instead. | campaign_run.js:356; godot/campaign/campaign.gd:1926 | B, G3 | Both games. |
 | `relic:'A relic is a fleet-wide effect that lasts for the rest of this run.'` | relic:'Salvage is a fleet-wide effect that lasts for the rest of this run.' | campaign_run.js:393 | B | Reward definition (key `relic` stays). |
 | `Relics are fleet-wide bonuses that last for the run.` | Salvage gives fleet-wide bonuses that last for the run. | campaign_meta.js:169; godot/ui/campaign/campaign_ui.gd:1020 | B, G3 | How to play (both). |
-| `"Take relic"` | "Take salvage" | godot/main/campaign_fallback_ui.gd:12 | G2 | Fallback UI. |
+| `"Take relic"` | "Take salvage" | (not found) | ? | Fallback UI. |
 | `the most rewards (relic 4, ` | the most rewards (salvage 4, | godot/ui/campaign/map3d.gd:812 | G3 | Route tooltip. |
 | `%d refit%s, %d relic%s, %d credit reward%s` | %d refit%s, %d salvage, %d credit reward%s | godot/ui/campaign/map3d.gd:817 | G3 | Route tooltip; drop the matching plural argument. |
+
+### 5c. Keep salvage to one meaning (Opus ruling, Oct 27)
+
+The wreck step after a battle becomes "Strip", and the Salvage rig item becomes Scrap rig, so "salvage" only ever means the item type.
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `salvage:'Salvage: work one wreck from this fight.` | salvage:'Strip: work one wreck from this fight. | campaign_run.js:390 | B | REWARD_DEF (key `salvage` stays). The rest of the line follows row 7 ("(Hullbreakers) tow a small hull home"). |
+| `data-act="salvageStep">Salvage the field</button>` | data-act="salvageStep">Strip the wrecks</button> | campaign_run.js:418 | B | Action name stays. |
+| `<h2>Salvage the field</h2>` | `<h2>Strip the wrecks</h2>` | campaign_run.js:472 | B | |
+| `"Salvage the field"` | "Strip the wrecks" | godot/ui/campaign/campaign_ui.gd:1164,1197 | G3 | Godot (button and header). |
+| `<h2>Salvaged refits</h2>` | `<h2>Recovered refits</h2>` | campaign_run.js:484 | B | Refit offer header. |
+| `"Salvaged refits"` | "Recovered refits" | godot/ui/campaign/campaign_ui.gd:1209 | G3 | Godot. |
+| `salvage:{n:'Salvage rig'` | salvage:{n:'Scrap rig' | data.js:195 | B | Item (id `salvage` stays). |
+| `salvage:'Salvage rig'` | salvage:'Scrap rig' | data.js:265,266 | B | Hegemony and Hullbreaker RELIC_NAMES. |
+| `<p class="gilt">Salvage: +${v} credits.</p>` | `<p class="gilt">Spoils: +${v} credits.</p>` | campaign_run.js:407 | B | Credit reward line; L's suggestion on the same principle (vetoable). |
+| `"Salvage: +"` | "Spoils: +" | godot/campaign/campaign.gd:2075 | G3 | Godot copy. |
 
 ## 6. Admirals and Commands
 
@@ -435,7 +452,7 @@ One name, one owner (bible 1.4): no captain pool rolls an admiral's given name o
 | `chorus:['Hive-node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorefeather','Sac-mother','Thornback','Tidehunger','Wet Choir','Crawling Hymn']` | chorus:['Node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorebloom','Sac-mother','Thornback','Tidehunger','Wet Maw','Crawling Gut'] | ui3d.js:21 | B | |
 | `ithar:['Silverthorn','Dawnwhisper','Lament of Stars','Glass Heron','Moonveil','Farsinger','Pale Current','Starfall','Quiet Blade','Evening Tide']` | ithar:['Silverthorn','Clear Whisper','Lament of Stars','Glass Heron','Moonveil','Far Focus','Pale Current','Starfall','Quiet Prism','Evening Tide'] | ui3d.js:22 | B | |
 | `deathless:['Eternal Vigil','The Unbroken','Sepulchre','Tomb of Ashes','Grave Sovereign','Ossuary','Never-Ending','Obelisk','Dust Throne','Silent Heir']` | deathless:['Long Noon','The Unbroken','Last Light Kept','Copy of Ardent','Ninth Shade','Cold Memory','Never-Ending','Gnomon','Dust of Noon','Silent Heir'] | ui3d.js:23 | B | |
-| `"ship": "Saint Ignatius"` | "ship": "Banked Fire" | godot/scenes/campaign/campaign_scene.gd:59 | G2 | Screenshot fixture (shows on the Hall of the fallen). Its captain "Ordo Halvar" becomes "Casimir Holloway" (Ordo is an Inquisition word). |
+| `"ship": "Saint Ignatius"` | "ship": "Banked Fire" | (not found) | ? | Screenshot fixture (shows on the Hall of the fallen). Its captain "Ordo Halvar" becomes "Casimir Holloway" (Ordo is an Inquisition word). |
 
 ## 10. Help text and Godot-only screen text
 
@@ -451,12 +468,12 @@ One name, one owner (bible 1.4): no captain pool rolls an admiral's given name o
 
 | Old | New | Where | Owner | Note |
 |---|---|---|---|---|
-| `const TAGLINE := "Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain."` | const TAGLINE := "Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain." | godot/ui/battle/brand.gd:11 | G2 | Same tagline as row 1.2 (G2). |
+| `const TAGLINE := "Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain."` | const TAGLINE := "Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain." | (not found) | ? | Same tagline as row 1.2 (G2). |
 | `term("patrons", true) + " watching"` | term("patrons", true) + " in range" | godot/ui/campaign/campaign_ui.gd:573 | G3 | Map sidebar box title after the TERMS switch ("Cores in range"). |
 | `" · win at a " + term("sigil") + " for a " + term("boon")` | " · win at a " + term("sigil") + " for a " + term("boon") | godot/ui/campaign/campaign_ui.gd:573 | G3 | Reads "win at a signal for a protocol" after the switch: fine as is, listed so nobody hunts for it. |
 | `"Win at a stop with a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + "."` | "Win at a stop carrying a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + "." | godot/ui/campaign/campaign_ui.gd:573 | G3 | Tooltip; "carrying" reads better with signal. |
 | `"None yet. Win at a node with a " + term("patron") + "’s " + term("sigil") + " to earn one."` | "None yet. Win at a node carrying a " + term("patron") + "’s " + term("sigil") + " to earn one." | godot/ui/campaign/campaign_ui.gd:660 | G3 | |
-| `"startRun": "Launch the crusade"` | "startRun": "Launch" | godot/main/campaign_fallback_ui.gd:7 | G2 | Fallback UI label; the run word depends on the faction (Homecoming, raid ...). |
+| `"startRun": "Launch the crusade"` | "startRun": "Launch" | (not found) | ? | Fallback UI label; the run word depends on the faction (Homecoming, raid ...). |
 
 G2's own rows already landed in 49f0d85 (title, window title, project name, product name and description; exe file name kept as Voidsworn.exe, save folder kept). Nothing else for G2 in project.godot or export_presets.cfg. `godot/main/FEATURES.md` mentions the old exe and folder names only as file paths; keep.
 
@@ -509,7 +526,7 @@ Opus or Ryan can veto any of these; each is a few strings to swap.
 - **V11 Events:** the astropath becomes a signals officer and a founders' beacon (no psychics); the Ithar seer becomes a Glasswright wanderer and its keeper; the tithe vault becomes a toll vault; the pirate haven a raider den; "The saint answers" becomes "Luck holds".
 - **V12 Nova cannon** becomes **Spinal cannon** (shared by three flagships, so a neutral name).
 - **V13 Battle shapes:** the gravity-well board's label is "Hollow Sun" (canonical row: the dead star is the Hollow Sun); Colossus becomes "Giant wreck" (Colossus is now the Maw's class); Shoals becomes "Rock shoals"; Archipelago kept.
-- **V14 (vetoed by Opus, Oct 27): relic becomes salvage.** The bible's 1.2 table lists "relic" as a never-say word, so the item type label changes too: **salvage** ("drops salvage", "Salvage: Wake-tracker", the Salvage heading, "a piece of salvage" where a count is needed). Ids stay (`RELICS`, `relic`, `relics`, `takeRelic`, `payRelic`, `relicChoice`, `eventRelic`, `relicName`). Rows in section 5b. Watch-out for the appliers: the after-battle wreck step is also called salvage ("Salvage the field", REWARD_DEF `salvage`), and one item is "Salvage rig"; both stay as they are unless Opus rules otherwise.
+- **V14 (vetoed by Opus, Oct 27): relic becomes salvage.** The bible's 1.2 table lists "relic" as a never-say word, so the item type label changes too: **salvage** ("drops salvage", "Salvage: Wake-tracker", the Salvage heading, "a piece of salvage" where a count is needed). Ids stay (`RELICS`, `relic`, `relics`, `takeRelic`, `payRelic`, `relicChoice`, `eventRelic`, `relicName`). Rows in section 5b. Opus then ruled (5c): the wreck step becomes "Strip the wrecks" and Salvage rig becomes Scrap rig, so salvage has one meaning.
 - **V15 Arc unlocks:** Vigil lance-cruiser, Cordon column escort, Trophy wrecker, Sun-eater bladeback, Ringing aperture, Archive guard flare.
 - **V16 Run-end headlines:** Hullbreakers "Strongest keeps it", Glasswrights "The light is kept", Eclipse "Noon returns" (the others kept).
 - **V17 Refits and relics the bible does not name:** section 5 (for example Scanner array, Screen capacitor, The Chalked Roll, Wake-tracker, Tasting pores, Annealing kilns, Long-count reckoner, Siphon ledger, Long clock).
