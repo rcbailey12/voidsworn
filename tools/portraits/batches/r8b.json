@@ -1,0 +1,104 @@
+{
+ "out": "r8",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "deathless_nekhet_r8",
+   "model": "zit",
+   "prompt": "The great ring mind of Eclipse, a machine intelligence: a monumental broken ring of layered dark violet-black plates floating around a blazing core of white-gold light, cracked ring segments drifting apart and being refitted by tiny repair drones with thin white beams, a faint violet-white inner glow. A machine with no figure, no statue, no head, no face, no body, no robot inside it, no green light. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void with the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "nem_deathless_1",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis of Eclipse: a gaunt archivist frame with a mantle of thin data plates, its visor narrowed to a slit. An Eclipse machine being: a tall machine body built from layered dark violet-black armour plates, a narrow horizontal visor of white-gold light where a face would be, a small core of trapped white light glowing in the chest. Not a skeleton, no skull, no green light, no crown, no throne, no Egyptian or tomb motifs. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void with the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_2",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis of Eclipse: a heavy armoured frame with heat-shield fans rising from the shoulders like a raised hood. An Eclipse machine being: a tall machine body built from layered dark violet-black armour plates, a narrow horizontal visor of white-gold light where a face would be, a small core of trapped white light glowing in the chest. Not a skeleton, no skull, no green light, no crown, no throne, no Egyptian or tomb motifs. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void with the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_3",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis of Eclipse: a frame rebuilt many times from mismatched violet-black plates, old repair seams across it. An Eclipse machine being: a tall machine body built from layered dark violet-black armour plates, a narrow horizontal visor of white-gold light where a face would be, a small core of trapped white light glowing in the chest. Not a skeleton, no skull, no green light, no crown, no throne, no Egyptian or tomb motifs. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void with the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_4",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis of Eclipse: a slender frame with a cracked visor, the chest core flickering. An Eclipse machine being: a tall machine body built from layered dark violet-black armour plates, a narrow horizontal visor of white-gold light where a face would be, a small core of trapped white light glowing in the chest. Not a skeleton, no skull, no green light, no crown, no throne, no Egyptian or tomb motifs. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void with the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_5",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis of Eclipse: a frame sheltering behind a raised fan of overlapping heat-shield plates, only the visor showing above it. An Eclipse machine being: a tall machine body built from layered dark violet-black armour plates, a narrow horizontal visor of white-gold light where a face would be, a small core of trapped white light glowing in the chest. Not a skeleton, no skull, no green light, no crown, no throne, no Egyptian or tomb motifs. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void with the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_6",
+   "model": "zit",
+   "prompt": "A Nemesis of Eclipse: a broken ring of dark violet-black blades floating over a dark pit, a thin white-gold corona round its empty centre. A machine with no figure, no statue, no head, no face, no body, no robot inside it, no green light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void with the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "corsair_grax_r8",
+   "model": "qie",
+   "prompt": "Portrait of the warlord of the Ashfall Hullbreakers. A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones. An old scarred alpha with grey and rust-brown fur, a riveted steel plate bolted along the lower jaw like a steel grin, heavy claws resting on a boarding hook, harness plates in clashing colours from three different fleets, chains across the chest. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23
+   ]
+  },
+  {
+   "id": "ithar_aelith_r8",
+   "model": "qie",
+   "prompt": "Portrait of a Glasswright elder. A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. A grieving dignified face, a high collar of faceted crystal, one long-fingered hand raised holding a small glowing light-core, behind her tall crystal vanes and silver mirrors that split the light into rainbow fringes. Nothing aquatic: no fins, no gills, no scales. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23
+   ]
+  }
+ ]
+}

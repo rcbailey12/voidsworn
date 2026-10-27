@@ -1,0 +1,162 @@
+{
+ "out": "r8",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "corsair_grax_r8",
+   "model": "zit",
+   "prompt": "Portrait of the warlord of the Ashfall Hullbreakers. A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones. An old scarred alpha with grey and rust-brown fur, a riveted steel plate bolted along the lower jaw like a steel grin, heavy claws resting on a boarding hook, harness plates in clashing colours from three different fleets, chains across the chest. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "ithar_aelith_r8",
+   "model": "zit",
+   "prompt": "Portrait of a Glasswright elder. A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. A grieving dignified face, a high collar of faceted crystal, one long-fingered hand raised holding a small glowing light-core, behind her tall crystal vanes and silver mirrors that split the light into rainbow fringes. Nothing aquatic: no fins, no gills, no scales. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "nem_corsair_1",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy warlord of the Hullbreakers: a grizzled grey alpha with a torn ear, a harness of pale grey Hegemony hull panels and chains across the chest. A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_2",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy warlord of the Hullbreakers: a black-furred brute with a welded iron guard over its long jaws, one eye shining in the dark. A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_3",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy warlord of the Hullbreakers: a lean rust-brown hunter with long ears, small listening dishes strapped to its harness, scrap plates across the shoulders. A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_4",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy warlord of the Hullbreakers: a huge old pack-lord with a grey muzzle and heavy claws, shards of clear crystal strapped into its harness. A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_5",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy warlord of the Hullbreakers: a scarred matted black she-beast baring her teeth, a harness of dark violet machine plates. A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_6",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy warlord of the Hullbreakers: a young feral one with rust and grey fur, chains wrapped round its forearms, a boarding hook on its back. A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_1",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a gaunt Glasswright keeper with a cold pitiless gaze, a high collar of sharp crystal shards. A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_2",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a Glasswright with a veil of fine mirror-thread over the brow, long fingers cupping a light-core. A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_3",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a Glasswright war-leader in armour of overlapping crystal plates that split light into rainbow fringes. A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_4",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a Glasswright exile whose light-storing skin has gone dark and cracked, a ragged mirror-thread robe. A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_5",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a Glasswright keeper with a smooth mirrored visor and a caged light-core worn at the chest. A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_6",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: an ancient Glasswright with an extremely long neck, the light patterns in the skin glowing brightly, the second eyelids half closed. A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  }
+ ]
+}

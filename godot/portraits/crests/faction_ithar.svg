@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<defs><radialGradient id="g" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="#1a2230"/><stop offset="1" stop-color="#080c12" stop-opacity="0"/></radialGradient></defs>
+<circle cx="256" cy="262" r="240" fill="url(#g)"/>
+<path d="M40 262 L176 262" stroke="#eef8ff" stroke-width="10" stroke-linecap="round"/>
+<path d="M336 262 L476 214" stroke="#ff6a6a" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+<path d="M336 262 L476 233" stroke="#ffb34a" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+<path d="M336 262 L476 252" stroke="#f4f06a" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+<path d="M336 262 L476 271" stroke="#6aff9a" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+<path d="M336 262 L476 290" stroke="#6ab8ff" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+<path d="M336 262 L476 309" stroke="#a87aff" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+<path d="M256 112 C340 160 340 364 256 412 C172 364 172 160 256 112 Z" fill="#e6eef2" fill-opacity="0.18" stroke="#c9d2da" stroke-width="10"/>
+<path d="M176 262 L336 262" stroke="#ffffff" stroke-width="6" opacity="0.8"/>
+<path d="M262 120 L248 196 L270 236 L240 300 L258 352" fill="none" stroke="#080c12" stroke-width="5"/>
+<path d="M248 196 L214 214 M270 236 L304 226 M240 300 L208 318" fill="none" stroke="#080c12" stroke-width="4"/>
+</svg>

@@ -61,6 +61,41 @@ def scar_prompt(fac, k):
     if isinstance(s, dict): s = s.get(fac, s['human'])
     return s + (KEEP_OBJ if fac in ('chorus', 'deathless') else KEEP)
 
+# ---------- round 8 looks (lore approved Oct 27, R59): restyle edits that keep each face and composition ----------
+# batches/r8e.json -> comfy_io\PORTRAITS\r8e\<id>_r8_s<seed>_00001_.png. Chorus: recolour off purple (bible 5.3). Sunward Crusade:
+# unaugmented, frost scars, no religious ornament (2.4, 2.5). Hegemony: tasteful implants, pale grey uniforms (3.3). Nemesis ids edit
+# their bust crop; the touched-up crop is then re-scarred (r8s batches) so every scar is painted on the new look.
+KEEP_P = " Keep the same face, pose, composition, lighting direction and painting style."
+CHORUS_RC = ("Recolour this organism: dark olive-brown flesh and membrane instead of purple or pink, ochre bone and chitin, bile "
+             "yellow-green glow, and a dark olive-brown cavern behind it instead of purple.")
+CRUSADE = ("Make this a plain unaugmented human soldier: remove any glowing eyes, implants, religious ornaments, wax seals, parchment, "
+           "scripture, censers, candles, crosses and skulls; plain black iron armour with names chalked on it in white; add pale frost "
+           "scars on the exposed skin.")
+HEGE = ("Give this officer tasteful implants: a small cortical-link port at the temple glowing faint blue, faint lines of blue data in "
+        "the irises, and thin faint blue subdermal lines along the jaw; the uniform becomes pale grey with steel-blue trim.")
+R8E = {
+ 'nem_chorus_%d' % n: ('ncrop/nem_chorus_%d.png' % n, CHORUS_RC + KEEP_OBJ, [11]) for n in range(1, 7)}
+R8E.update({
+ 'matriarch': ('b1/chorus_matriarch_zit_s51_00001_.png', CHORUS_RC + KEEP_OBJ, [11, 23]),
+ 'mending': ('b2/chorus_mending_b2_zit_s11_00001_.png', CHORUS_RC + KEEP_OBJ, [11, 23]),
+ 'nekhet': ('b2/deathless_nekhet_b_qie_s23_00001_.png', "Recolour this machine: the ring plates become layered dark violet-black armour, the "
+            "green core becomes blazing white-gold light, every green beam and light becomes white-gold, a faint violet-white inner glow; "
+            "no bone-white ceramic." + KEEP_OBJ, [11, 23]),
+ 'vex': ('b1/voidsworn_vex_qie_s11_00001_.png', "Remove every wax seal, parchment strip, reliquary, candle and gothic church window. Add pale "
+         "frost scars across his face, an old burned oath brand on his brow, surgical scars at the temple where implants were cut out, and "
+         "names chalked in white on his black iron shoulder plates; the window shows black iron warships with ember-orange radiator spires." + KEEP_P, [11, 23]),
+ 'kassar': ('b1/hegemony_kassar_qie_s23_00001_.png', "Add a small cortical-link port at her temple glowing faint blue, lines of blue data "
+            "moving across her irises, and thin faint blue subdermal lines along her jaw." + KEEP_P, [11, 23]),
+})
+CR_EXTRA = {1: ' The eyes become plain hard tired human eyes.', 2: ' The brass rebreather becomes a battered black iron rebreather; no censers or chains of charms.',
+            3: ' The head tattoos become old burned oath brands; the red sash goes.', 5: ' The skull visor becomes a plain black iron visor.',
+            6: ' The glowing eyes become plain hard tired human eyes; the brow piercings become a row of burned oath brands.'}
+HG_EXTRA = {1: ' The red eye lens becomes a subtle ocular implant with blue data in the iris.', 4: ' The visor goes; the implants are subtle.',
+            5: ' The chrome half-mask becomes a smooth pale grey implant plate on the left side of the face.'}
+for n in range(1, 7):
+    R8E['nem_voidsworn_%d' % n] = ('ncrop/nem_voidsworn_%d.png' % n, CRUSADE + CR_EXTRA.get(n, '') + KEEP, [11])
+    R8E['nem_hegemony_%d' % n] = ('ncrop/nem_hegemony_%d.png' % n, HEGE + HG_EXTRA.get(n, '') + KEEP, [11])
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -81,3 +116,6 @@ if __name__ == '__main__':
     c2 = [dict(it, seed=sd) for it in items_for(['chorus']) if it['kind'] == 'carapace' for sd in (11, 23)]
     json.dump({'out': 'n1s_c2', 'budget_s': 1050, 'items': c2}, open(os.path.join(B, 'n1s_c2.json'), 'w'), indent=1)
     print('n1s_c2', len(c2))
+    r8e = [{'id': i, 'kind': 'r8', 'seed': sd, 'src': src, 'prompt': p} for i, (src, p, seeds) in R8E.items() for sd in seeds]
+    json.dump({'out': 'r8e', 'budget_s': 1100, 'items': r8e}, open(os.path.join(B, 'r8e.json'), 'w'), indent=1)
+    print('r8e', len(r8e))

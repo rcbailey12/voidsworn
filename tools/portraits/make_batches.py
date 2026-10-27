@@ -236,7 +236,89 @@ BATCHES['b2'] = [item('chorus_mending_b1', 'zit', S4), item('chorus_mending_b2',
                   item('deathless_nekhet_b', 'qie', S4[:2]), item('ithar_aelith_b', 'qie', S4), item('ithar_aelith_b', 'qref', S4[:2])]
 BATCHES['n2'] = [item('nem_%s_%d' % (f, n), 'zit', S4[:3], v2=True) for f in ('chorus', 'deathless', 'ithar') for n in range(1, 7)]
 BATCHES['n3'] = [item(k, 'zit', S4, v3=True) for k in SUB3]
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3'}
+# ---------- round 8 looks (lore approved Oct 27, FINDINGS R59; contrib/opus/compute/lore_bible_r8.md 2.5 to 7.3) ----------
+# Everything above is the superseded first pass, kept so old batches can be rebuilt. New work uses F8 and the R8 subjects.
+# Ids and file names never change (voidsworn = Sunward Crusade, corsair = Ashfall Hullbreakers, ithar = Glasswrights,
+# deathless = Eclipse). Display names wait for contrib/opus/compute/rename_map_final.md; no prompt below needs one.
+F8 = {
+ 'voidsworn': dict(glow='warm ember-orange light', plate='black-iron warship bridge with frost on the viewports and ember-orange radiator spires glowing outside'),
+ 'hegemony': dict(glow='cool clinical blue-white light', plate='clean pale grey command deck with rows of steel-blue displays'),
+ 'corsair': dict(glow='dim red running lights and a red-orange engine glow', plate='dark soot-black ship interior hung with chains, scrap and hull plates'),
+ 'chorus': dict(glow='bile yellow-green bioluminescent light', plate='wet dark olive-brown organic cavern of membrane and spore haze'),
+ 'ithar': dict(glow='clear white light split into faint rainbow fringes', plate='dark space seen through faceted crystal and silver mirrors'),
+ 'deathless': dict(glow='pale white-gold corona light', plate='black void with the dark disc of a black hole ringed by a thin white-gold glow'),
+}
+BEAST = ("A Hullbreaker, a huge hunched furred alien predator, clearly not human and not a werewolf in clothes: bear-heavy shoulders, a long "
+         "wolf-like muzzle full of teeth, thick matted fur, heavy claws, small fierce eyes that shine in the dark. Scrap armour harness "
+         "strapped over the fur, made of hull plates torn from other ships. Trophies are machine parts and hull plates, never skulls or bones.")
+GLASS8 = ("A Glasswright, a tall slender biological alien, plainly not human, not a grey alien and not an elf: a very long slender neck, "
+          "large dark eyes behind a clear transparent second eyelid, pale skin that stores light and glows faintly in fine patterns, wearing "
+          "layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery.")
+ECL = ("An Eclipse machine being: a tall machine body built from layered dark violet-black armour plates, a narrow horizontal visor of "
+       "white-gold light where a face would be, a small core of trapped white light glowing in the chest. Not a skeleton, no skull, "
+       "no green light, no crown, no throne, no Egyptian or tomb motifs.")
+NOMACH = 'A machine with no figure, no statue, no head, no face, no body, no robot inside it, no green light.'
+CROW = 'A grown organism, not a person and not an animal: no face, no eyes, no mouth with teeth, no limbs, no human features.'
+R8 = {
+ # posters (the painted admirals): fresh renders for the three factions whose people changed
+ 'corsair_grax_r8': ('corsair', STYLE,
+  "Portrait of the warlord of the Ashfall Hullbreakers. " + BEAST + " An old scarred alpha with grey and rust-brown fur, a riveted steel "
+  "plate bolted along the lower jaw like a steel grin, heavy claws resting on a boarding hook, harness plates in clashing colours from "
+  "three different fleets, chains across the chest."),
+ 'ithar_aelith_r8': ('ithar', STYLE,
+  "Portrait of a Glasswright elder. " + GLASS8 + " A grieving dignified face, a high collar of faceted crystal, one long-fingered hand "
+  "raised holding a small glowing light-core, behind her tall crystal vanes and silver mirrors that split the light into rainbow fringes. "
+  "Nothing aquatic: no fins, no gills, no scales."),
+ 'deathless_nekhet_r8': ('deathless', CREATURE,
+  "The great ring mind of Eclipse, a machine intelligence: a monumental broken ring of layered dark violet-black plates floating around "
+  "a blazing core of white-gold light, cracked ring segments drifting apart and being refitted by tiny repair drones with thin white "
+  "beams, a faint violet-white inner glow. " + NOMACH),
+}
+NEM8 = {
+ 'corsair': [
+  "a grizzled grey alpha with a torn ear, a harness of pale grey Hegemony hull panels and chains across the chest",
+  "a black-furred brute with a welded iron guard over its long jaws, one eye shining in the dark",
+  "a lean rust-brown hunter with long ears, small listening dishes strapped to its harness, scrap plates across the shoulders",
+  "a huge old pack-lord with a grey muzzle and heavy claws, shards of clear crystal strapped into its harness",
+  "a scarred matted black she-beast baring her teeth, a harness of dark violet machine plates",
+  "a young feral one with rust and grey fur, chains wrapped round its forearms, a boarding hook on its back",
+ ],
+ 'ithar': [
+  "a gaunt Glasswright keeper with a cold pitiless gaze, a high collar of sharp crystal shards",
+  "a Glasswright with a veil of fine mirror-thread over the brow, long fingers cupping a light-core",
+  "a Glasswright war-leader in armour of overlapping crystal plates that split light into rainbow fringes",
+  "a Glasswright exile whose light-storing skin has gone dark and cracked, a ragged mirror-thread robe",
+  "a Glasswright keeper with a smooth mirrored visor and a caged light-core worn at the chest",
+  "an ancient Glasswright with an extremely long neck, the light patterns in the skin glowing brightly, the second eyelids half closed",
+ ],
+ 'deathless': [
+  "a gaunt archivist frame with a mantle of thin data plates, its visor narrowed to a slit",
+  "a heavy armoured frame with heat-shield fans rising from the shoulders like a raised hood",
+  "a frame rebuilt many times from mismatched violet-black plates, old repair seams across it",
+  "a slender frame with a cracked visor, the chest core flickering",
+  "a frame sheltering behind a raised fan of overlapping heat-shield plates, only the visor showing above it",
+  "a broken ring of dark violet-black blades floating over a dark pit, a thin white-gold corona round its empty centre",
+ ],
+}
+def r8_nem(fac, n, d):
+    if fac == 'corsair':
+        p, style = 'Portrait of a Nemesis, a rival enemy warlord of the Hullbreakers: %s. %s' % (d, BEAST), STYLE
+    elif fac == 'ithar':
+        p, style = 'Portrait of a Nemesis, a rival enemy commander of the Glasswrights: %s. %s' % (d, GLASS8), STYLE
+    elif n == 6:
+        p, style = 'A Nemesis of Eclipse: %s. %s' % (d, NOMACH), CREATURE
+    else:
+        p, style = 'Portrait of a Nemesis of Eclipse: %s. %s' % (d, ECL), STYLE
+    return {'id': 'nem_%s_%d' % (fac, n), 'model': 'zit', 'prompt': p + NEM_STYLE + ' ' + style.format(**F8[fac]), 'nosuffix': True, 'seeds': [11, 23, 37]}
+def r8_poster(i, model, seeds):
+    fac, style, p = R8[i]
+    return {'id': i, 'model': model, 'prompt': p + ' ' + style.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
+# r8a about 9 minutes (Hullbreakers and Glasswrights), r8b about 8 minutes (Eclipse, plus the Qwen poster takes); out r8\
+BATCHES['r8a'] = [r8_poster(k, 'zit', S4) for k in ('corsair_grax_r8', 'ithar_aelith_r8')] + \
+                 [r8_nem(f, n, d) for f in ('corsair', 'ithar') for n, d in enumerate(NEM8[f], 1)]
+BATCHES['r8b'] = [r8_poster('deathless_nekhet_r8', 'zit', S4)] + [r8_nem('deathless', n, d) for n, d in enumerate(NEM8['deathless'], 1)] + \
+                 [r8_poster(k, 'qie', S4[:2]) for k in ('corsair_grax_r8', 'ithar_aelith_r8')]
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-<defs><radialGradient id="g" cx="0.38" cy="0.4" r="0.75"><stop offset="0" stop-color="#2e1612"/><stop offset="1" stop-color="#120806"/></radialGradient>
+<defs><radialGradient id="g" cx="0.38" cy="0.4" r="0.75"><stop offset="0" stop-color="#2a1612"/><stop offset="1" stop-color="#100806"/></radialGradient>
 <clipPath id="k"><path d="M116.5 70.2 L295.6 58.7 L400.8 87.6 L441.2 225.9 L412.4 351 L323.4 446.9 L167 458.2 L92.9 378 L61.2 217.9 L94.2 122 Z"/></clipPath></defs>
 <path d="M116.5 70.2 L295.6 58.7 L400.8 87.6 L441.2 225.9 L412.4 351 L323.4 446.9 L167 458.2 L92.9 378 L61.2 217.9 L94.2 122 Z" fill="url(#g)"/>
 <g clip-path="url(#k)"><path d="M0 0 L300 0 L120 512 L0 512 Z" fill="#e0402c" opacity="0.05"/></g>
-<path d="M116.5 70.2 L295.6 58.7 L400.8 87.6 L441.2 225.9 L412.4 351 L323.4 446.9 L167 458.2 L92.9 378 L61.2 217.9 L94.2 122 Z" fill="none" stroke="#b8402a" stroke-width="10" stroke-linejoin="round"/>
+<path d="M116.5 70.2 L295.6 58.7 L400.8 87.6 L441.2 225.9 L412.4 351 L323.4 446.9 L167 458.2 L92.9 378 L61.2 217.9 L94.2 122 Z" fill="none" stroke="#a8452e" stroke-width="10" stroke-linejoin="round"/>
 <path d="M116.5 70.2 L295.6 58.7 L400.8 87.6 L441.2 225.9 L412.4 351 L323.4 446.9 L167 458.2 L92.9 378 L61.2 217.9 L94.2 122 Z" fill="none" stroke="#e0402c" stroke-width="2.5" opacity="0.5" transform="translate(256 262) scale(0.9) translate(-256 -262)" stroke-linejoin="round"/>
-<circle cx="130.4" cy="88.7" r="6" fill="#b8402a"/><circle cx="386.4" cy="104.5" r="6" fill="#b8402a"/><circle cx="396.7" cy="341.5" r="6" fill="#b8402a"/><circle cx="175.9" cy="438" r="6" fill="#b8402a"/><circle cx="80.7" cy="221.7" r="6" fill="#b8402a"/>
+<circle cx="130.4" cy="88.7" r="6" fill="#a8452e"/><circle cx="386.4" cy="104.5" r="6" fill="#a8452e"/><circle cx="396.7" cy="341.5" r="6" fill="#a8452e"/><circle cx="175.9" cy="438" r="6" fill="#a8452e"/><circle cx="80.7" cy="221.7" r="6" fill="#a8452e"/>
 <g clip-path="url(#k)">
 <circle cx="256" cy="266" r="70" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>
 <path d="M306 266 L360 266" stroke="#e0402c" stroke-width="44.2" stroke-linecap="square" stroke-linejoin="bevel" fill="none" opacity="0.2"/>

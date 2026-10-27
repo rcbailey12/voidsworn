@@ -38,6 +38,11 @@ static func crest(id: String) -> Texture2D:
 	return _tex("res://portraits/crests/" + id + ".svg")
 
 
+# Faction crest (lore bible round 8, section x.8): id is the faction id (voidsworn, hegemony, corsair, chorus, ithar, deathless).
+static func faction_crest(id: String) -> Texture2D:
+	return _tex("res://portraits/crests/faction_" + id + ".svg")
+
+
 static func _exists(p: String) -> bool:
 	return ResourceLoader.exists(p) or FileAccess.file_exists(p)
 

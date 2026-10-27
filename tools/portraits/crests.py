@@ -7,13 +7,13 @@ import math, os, random, re, json
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.dirname(os.path.dirname(HERE))
 OUT = os.path.join(REPO, 'godot', 'portraits', 'crests')
 
-FAC = {  # data.js FACTIONS colours; field = a dark tint of the hull colour so every crest reads on dark UI
- 'voidsworn': dict(hull='#4a4440', trim='#c8501f', glow='#ff7a2a', field=('#2a2420', '#120e0c')),
- 'hegemony':  dict(hull='#c4ccd5', trim='#3a78d0', glow='#5fa0ff', field=('#1d2836', '#0b1018')),
- 'corsair':   dict(hull='#6a2c22', trim='#b8402a', glow='#e0402c', field=('#2e1612', '#120806')),
- 'chorus':    dict(hull='#57364c', trim='#a4913a', glow='#d6d24a', field=('#34202e', '#140a12')),
- 'ithar':     dict(hull='#eef3f1', trim='#d7c88a', glow='#9fffd2', field=('#1c2a2a', '#0a1212')),
- 'deathless': dict(hull='#1d2220', trim='#1fbf4a', glow='#3dff6a', field=('#141a17', '#060808')),
+FAC = {  # round 8 palettes (lore approved Oct 27, R59: bible 2.5 to 7.3); field = a dark tint so every crest reads on dark UI
+ 'voidsworn': dict(hull='#2b2c30', trim='#dfe6ee', glow='#ff8a2a', field=('#24242a', '#0c0c10')),   # black iron, frost white, bright ember
+ 'hegemony':  dict(hull='#c4ccd5', trim='#3a78d0', glow='#5fa0ff', field=('#1d2836', '#0b1018')),   # pale grey, steel blue, implant blue
+ 'corsair':   dict(hull='#3a2a24', trim='#a8452e', glow='#e0402c', field=('#2a1612', '#100806')),   # soot, rust, dried blood, red running lights
+ 'chorus':    dict(hull='#4a4426', trim='#b8893a', glow='#c6e04a', field=('#2a2814', '#0e0c06')),   # dark olive, ochre bone, bile yellow-green
+ 'ithar':     dict(hull='#e6eef2', trim='#c9d2da', glow='#eef8ff', field=('#1a2230', '#080c12')),   # clear crystal, silver, stored light
+ 'deathless': dict(hull='#221a2c', trim='#f0d690', glow='#fff2c8', field=('#1c1426', '#08060c')),   # violet-black, white-gold corona
 }
 # admiral -> (faction, command id), from data.js ADMIRALS
 ADM = {
@@ -52,9 +52,9 @@ def smooth_closed(P):
 
 def frame(fac, rnd):
     """outer crest outline path (d) for the faction, plus extra decoration svg drawn behind/around"""
-    if fac == 'voidsworn':   # gothic shield with a spire
+    if fac == 'voidsworn':   # heavy iron shield crowned by a half sun (no spire: no church shapes, bible 2.4)
         d = 'M256 58 Q352 70 420 116 L420 286 Q420 398 256 474 Q92 398 92 286 L92 116 Q160 70 256 58 Z'
-        deco = '<path d="M256 14 L270 58 L242 58 Z" fill="{trim}"/><path d="M228 40 L284 40" stroke="{trim}" stroke-width="7"/>'
+        deco = '<path d="M222 56 A34 34 0 0 1 290 56 Z" fill="{glow}"/><path d="M214 56 L298 56" stroke="{trim}" stroke-width="6"/>'
         return d, deco
     if fac == 'hegemony':    # clean wedge
         return 'M256 46 L430 118 L430 300 L256 470 L82 300 L82 118 Z', ''
@@ -175,6 +175,64 @@ def crest(aid):
 '''
     return re.sub(r'\n\s*\n', '\n', svg)
 
+# ---------- faction crests (bible x.8), one per faction: crests/faction_<id>.svg ----------
+def emblem(fac):
+    c = FAC[fac]; rnd = random.Random('faction_' + fac); E = []
+    T, G, H = c['trim'], c['glow'], c['hull']
+    if fac == 'voidsworn':     # a half sun, its lower half black, over a broken link
+        E.append('<path d="M136 236 A120 120 0 0 1 376 236 Z" fill="%s"/>' % G)
+        E += ['<path d="M256 236 L%s %s" stroke="%s" stroke-width="10" stroke-linecap="round"/>' % (f(256 + 166 * math.cos(a)), f(236 - 166 * math.sin(a)), G)
+              for a in [math.radians(15 + k * 30) for k in range(6)]]
+        E.append('<path d="M136 236 A120 120 0 0 0 376 236 Z" fill="#050506" stroke="%s" stroke-width="6"/>' % T)
+        E.append('<path d="M120 236 L392 236" stroke="%s" stroke-width="8"/>' % T)
+        E.append('<path d="M196 408 L170 408 A34 34 0 0 1 170 340 L214 340" fill="none" stroke="%s" stroke-width="18" stroke-linecap="butt"/>' % T)
+        E.append('<path d="M316 340 L342 340 A34 34 0 0 1 342 408 L298 408" fill="none" stroke="%s" stroke-width="18" stroke-linecap="butt"/>' % T)
+        E.append('<path d="M236 362 L248 384 M276 362 L264 384" stroke="%s" stroke-width="6"/>' % G)
+    elif fac == 'hegemony':    # a wedge in a ring of five linked nodes
+        P = [(256 + 168 * math.cos(math.radians(-90 + k * 72)), 262 + 168 * math.sin(math.radians(-90 + k * 72))) for k in range(5)]
+        E.append('<path d="%s" fill="none" stroke="%s" stroke-width="8"/>' % (poly(P, True), T))
+        E += ['<circle cx="%s" cy="%s" r="26" fill="%s" stroke="%s" stroke-width="6"/>' % (f(x), f(y), c['field'][0], G) for x, y in P]
+        E += ['<circle cx="%s" cy="%s" r="9" fill="%s"/>' % (f(x), f(y), G) for x, y in P]
+        E.append('<path d="M256 166 L332 312 L256 286 L180 312 Z" fill="%s" stroke="%s" stroke-width="6" stroke-linejoin="miter"/>' % (H, T))
+    elif fac == 'corsair':     # a ring of welded scrap teeth around three claw slashes
+        for k in range(14):
+            a = math.radians(k * 360 / 14 + rnd.uniform(-4, 4)); w = math.radians(rnd.uniform(8, 12)); r0 = 150; r1 = 200 + rnd.uniform(-12, 18)
+            P = [(256 + r0 * math.cos(a - w), 262 + r0 * math.sin(a - w)), (256 + r1 * math.cos(a), 262 + r1 * math.sin(a)), (256 + r0 * math.cos(a + w), 262 + r0 * math.sin(a + w))]
+            E.append('<path d="%s" fill="%s" stroke="%s" stroke-width="5" stroke-linejoin="bevel"/>' % (poly(P, True), H, T))
+        E.append('<circle cx="256" cy="262" r="150" fill="none" stroke="%s" stroke-width="14"/>' % T)
+        E += ['<circle cx="%s" cy="%s" r="5" fill="%s"/>' % (f(256 + 150 * math.cos(math.radians(k * 45 + 10))), f(262 + 150 * math.sin(math.radians(k * 45 + 10))), G) for k in range(8)]
+        for dx in (-52, 0, 52):
+            E.append('<path d="M%s %s Q%s %s %s %s L%s %s Q%s %s %s %s Z" fill="%s"/>' % (
+                f(256 + dx - 30), f(170), f(256 + dx + 4), f(262), f(256 + dx + 34), f(352), f(256 + dx + 22), f(354), f(256 + dx - 12), f(262), f(256 + dx - 18), f(172), G))
+    elif fac == 'chorus':      # a ring of nine open mouths
+        E.append('<circle cx="256" cy="262" r="172" fill="none" stroke="%s" stroke-width="22" opacity="0.55"/>' % H)
+        for k in range(9):
+            a = math.radians(-90 + k * 40); x, y = 256 + 172 * math.cos(a), 262 + 172 * math.sin(a); rot = math.degrees(a) + 90
+            E.append('<g transform="translate(%s %s) rotate(%s)"><ellipse rx="44" ry="31" fill="%s" stroke="%s" stroke-width="7"/>'
+                     '<ellipse rx="30" ry="17" fill="#070604"/><path d="M-22 -8 L-14 3 L-6 -9 L2 3 L10 -9 L18 2" fill="none" stroke="%s" stroke-width="4"/></g>' % (f(x), f(y), f(rot), H, T, T))
+        E.append('<circle cx="256" cy="262" r="46" fill="%s" opacity="0.85"/>' % G)
+        E.append('<circle cx="256" cy="262" r="20" fill="#070604"/>')
+    elif fac == 'ithar':       # a cracked lens with one beam of light passing through
+        E.append('<path d="M40 262 L176 262" stroke="%s" stroke-width="10" stroke-linecap="round"/>' % G)
+        for k, col in enumerate(('#ff6a6a', '#ffb34a', '#f4f06a', '#6aff9a', '#6ab8ff', '#a87aff')):
+            E.append('<path d="M336 262 L476 %s" stroke="%s" stroke-width="5" stroke-linecap="round" opacity="0.9"/>' % (f(214 + k * 19), col))
+        E.append('<path d="M256 112 C340 160 340 364 256 412 C172 364 172 160 256 112 Z" fill="%s" fill-opacity="0.18" stroke="%s" stroke-width="10"/>' % (H, T))
+        E.append('<path d="M176 262 L336 262" stroke="#ffffff" stroke-width="6" opacity="0.8"/>')
+        E.append('<path d="M262 120 L248 196 L270 236 L240 300 L258 352" fill="none" stroke="%s" stroke-width="5"/>' % c['field'][1])
+        E.append('<path d="M248 196 L214 214 M270 236 L304 226 M240 300 L208 318" fill="none" stroke="%s" stroke-width="4"/>' % c['field'][1])
+    elif fac == 'deathless':   # an eclipsed sun: a black disc with a thin white-gold ring
+        E.append('<circle cx="256" cy="262" r="182" fill="none" stroke="%s" stroke-width="44" opacity="0.16"/>' % T)
+        E.append('<circle cx="256" cy="262" r="164" fill="none" stroke="%s" stroke-width="18" opacity="0.38"/>' % T)
+        E.append('<circle cx="256" cy="262" r="150" fill="#030204" stroke="%s" stroke-width="7"/>' % T)
+        E.append('<path d="M150 156 A150 150 0 0 1 362 156" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.7"/>')
+    body = '\n'.join(E)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<defs><radialGradient id="g" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="{c['field'][0]}"/><stop offset="1" stop-color="{c['field'][1]}" stop-opacity="0"/></radialGradient></defs>
+<circle cx="256" cy="262" r="240" fill="url(#g)"/>
+{body}
+</svg>
+"""
+
 def sheet(paths, out, cols=6, cell=300, title=None):
     from PIL import Image, ImageDraw, ImageFont
     import cairosvg, io
@@ -197,7 +255,9 @@ if __name__ == '__main__':
         open(os.path.join(OUT, aid + '.svg'), 'w').write(crest(aid))
     json.dump({a: {'faction': ADM[a][0], 'command': ADM[a][1], 'file': 'crests/' + a + '.svg'} for a in ADM},
               open(os.path.join(OUT, 'index.json'), 'w'), indent=1)
-    print('wrote', len(ADM), 'crests to', OUT)
+    for fac in FAC:
+        open(os.path.join(OUT, 'faction_%s.svg' % fac), 'w').write(emblem(fac))
+    print('wrote', len(ADM), 'admiral crests and', len(FAC), 'faction crests to', OUT)
     try:
         sd = os.path.join(REPO, 'godot', 'portraits', 'sheets'); os.makedirs(sd, exist_ok=True)
         print(sheet([(os.path.join(OUT, a + '.svg'), NAMES[a]) for a in ADM], os.path.join(sd, 'crests_all.webp'), title='Voidsworn admiral crests (one per admiral; glyph = Command)'))
