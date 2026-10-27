@@ -169,7 +169,9 @@ func save_settings() -> void:
 
 
 func _apply_settings() -> void:
-	if not bot_mode and DisplayServer.get_name() != "headless":
+	# screenshot and capture jobs keep the window the command line asked for (--resolution), so every frame is one size
+	var capture: bool = args.has("shots") or args.has("breach-shots") or args.has("move-frames")
+	if not bot_mode and not capture and DisplayServer.get_name() != "headless":
 		var want := DisplayServer.WINDOW_MODE_FULLSCREEN if settings["fullscreen"] else DisplayServer.WINDOW_MODE_MAXIMIZED
 		if DisplayServer.window_get_mode() != want:
 			DisplayServer.window_set_mode(want)
