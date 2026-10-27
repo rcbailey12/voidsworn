@@ -1,0 +1,13 @@
+# pass 2 boss matrix, sector 1, Ryan's PC lane B, code cd56751 (= main 69bddcf battle rules), bossmatrix 20 per boss faction = 100 runs per admiral
+[Mon 10/26/2026 17:36:44.17] started 
+exit 0
+bossmatrix s1 {"vex":"61% r9.5","malek":"56% r10.1","ashgrove":"55% r12.0 (carrier)","thale":"66% r13.3","kassar":"91% r9.0 (carrier)","vorn":"77% r9.7","reyes":"86% r11.3 (carrier)","maren":"88% r14.9 (carrier)","grax":"34% r8.9","sable":"57% r8.8","mott":"65% r8.6 (carrier)","vesh":"72% r11.7 (carrier)"}
+by boss {"hegemony":"33%","corsair":"91%","chorus":"60%","ithar":"63%","deathless":"75%","voidsworn":"86%"}
+carrier fleets 76% gun fleets 59%
+[Mon 10/26/2026 17:36:44.17] finished 
+[Mon 10/26/2026 17:51:09.11] started 
+exit 0
+bossmatrix s1 {"matriarch":"50% r13.6 (carrier)","razormaw":"85% r8.0","mending":"87% r9.0","voice":"82% r8.8","aelith":"72% r13.1 (carrier)","vaelen":"73% r9.1","thorne":"67% r12.7","mirelle":"67% r10.8","nekhet":"90% r12.5","sekhmar":"57% r11.9","anuket":"81% r10.3","khepra":"73% r11.6"}
+by boss {"voidsworn":"84%","hegemony":"65%","corsair":"77%","ithar":"68%","deathless":"73%","chorus":"73%"}
+carrier fleets 61% gun fleets 76%
+[Mon 10/26/2026 17:51:09.11] finished 

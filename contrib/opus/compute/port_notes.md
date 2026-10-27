@@ -156,7 +156,7 @@ Commits are on main; the newest step is at the bottom.
 3. Chorus Nemesis with fed 3: his flagship's max hull is 1.12 x the fed-0 battle with the same seed.
 4. Voidsworn Nemesis: your flagship's `dmgMult` against his flagship is +.2 x weapon damage; the enemy never routs.
 
-## Step 4: R42 story fields, R41 arc hulls, R42 and R49 Nemesis behaviour, customization reserve (Oct 26 evening; commits c88567c, 69bddcf, 0365a38, 5358672)
+## Step 4: R42 story fields, R41 arc hulls, R42 and R49 Nemesis behaviour, customization reserve (Oct 26 evening; commits c88567c, 69bddcf, ae22b11, d8b47c6)
 
 Second stream B helper. Carries over the first helper's uncommitted R42 alignment work.
 
