@@ -97,7 +97,9 @@ godot --headless --path godot -- --bot-runs 50 --fast 40 --report report.json
 
 Pace: a move takes the same time as before (the B2 formula), shared between its segments by weight; the battle waits on `burning()`. `busy()` is true while a move runs: it tells G4's hit reaction that G2 is steering the ship, so fx adds its yaw kick and drift only at rest. Rules outcomes are the same in both modes.
 
-`--maneuver straight|turn|side|back` with `--move-frames` picks that maneuver for the biggest and smallest ship (proof clips).
+Easing (R55): every segment thrusts up, coasts, then brakes for as long as it thrust up (sine ramps, nothing snaps to rest) and ends in a slight settle, a small overshoot the jets correct. The jets follow the burn the segment is in, so they fire through the whole of it: along the direction of travel while speed builds, against it while it bleeds. `--flip-burn` (test): straight runs of 3+ hexes on cruisers and bigger burn out, flip end for end, brake on the main drive and flip back.
+
+`--maneuver straight|turn|side|back` with `--move-frames` picks that maneuver; `--cls Dreadnought,Cruiser` picks your ships by class (default: the biggest and the smallest).
 
 ## Test and capture switches (after `--`)
 
@@ -130,3 +132,5 @@ Technical calls made without Ryan; any of them can be reversed.
 - The concept-art hulls toggle is not carried over (Godot has the game hulls only). Temporal AA is a setting, off by default.
 - The ship sheet leaves out the enemy reach line (it needs a threat pass per hover; R shows the threat map).
 - The ambient bed plays at the browser's levels: room tone 0.032 over the synth bed.
+- The round budget: past 8 s of a round's enemy time the rest of its turn speeds up smoothly (to 0.35 of the pace by 13 s), so long rounds stay near 15 s.
+- Under the round budget a killing volley lets go halfway to its last impact and a big hull's death hold shrinks.

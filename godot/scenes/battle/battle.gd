@@ -872,6 +872,14 @@ func wait(ms: float) -> void:
 	await get_tree().create_timer(maxf(ms, 1.0) / 1000.0 * speed).timeout
 
 
+# The round budget (B2: a round's enemy time under 15 s at worst): once the enemy has used 8 s of a round, everything it
+# still plays speeds up smoothly, reaching 0.35 of its pace by 13 s, like an automatic hurry at the end of a long round.
+static func _round_budget_k(used: float) -> float:
+	if used <= 8.0:
+		return 1.0
+	return lerpf(1.0, 0.35, clampf((used - 8.0) / 5.0, 0.0, 1.0))
+
+
 func _enemy_pace_k() -> float:
 	var n := 0
 	for u in V["units"]:
@@ -904,6 +912,7 @@ func _play_batch(bt: Dictionary) -> void:
 	var t_batch := game_t
 	if enemy:
 		speed = minf(speed, float(PACE["skip"]) if skip else (float(PACE["enemy"]) if _player_pending() > 0 else float(PACE["tail"])) * _enemy_pace_k())
+	var base_speed := speed
 	var i := 0
 	while i < evs.size():
 		var e: Dictionary = evs[i]
@@ -917,12 +926,16 @@ func _play_batch(bt: Dictionary) -> void:
 			await _play_fire(e, grp)
 			if enemy:
 				pace_kind["fire"] = float(pace_kind.get("fire", 0.0)) + game_t - tf
+				speed = base_speed * _round_budget_k(float(pace_enemy.get(int(V.get("round", 0)), 0.0)) + game_t - t_batch)
+				if skip:
+					speed = minf(speed, float(PACE["skip"]))
 			i = j
 			continue
 		var te := game_t
 		await _play_event(e)
 		if enemy:
 			pace_kind[str(e["t"])] = float(pace_kind.get(str(e["t"]), 0.0)) + game_t - te
+			speed = base_speed * _round_budget_k(float(pace_enemy.get(int(V.get("round", 0)), 0.0)) + game_t - t_batch)
 		if skip and enemy:
 			speed = minf(speed, float(PACE["skip"]))
 		i += 1
@@ -937,6 +950,11 @@ func _play_batch(bt: Dictionary) -> void:
 		skip = false
 		var rk := int(V.get("round", 0))
 		pace_enemy[rk] = float(pace_enemy.get(rk, 0.0)) + game_t - t_batch
+		if args.has("pace-trace"):
+			var kinds_b := {}
+			for e2 in evs:
+				kinds_b[str(e2["t"])] = int(kinds_b.get(str(e2["t"]), 0)) + 1
+			print("[pace] round %d batch %.2f s speed %.2f events %s" % [rk, game_t - t_batch, speed, JSON.stringify(kinds_b)])
 	speed = user_speed
 
 
@@ -1216,7 +1234,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	var dur := minf((per * maxf(s, 0.001) + 260.0) * (0.72 if charge else 1.0) * float(PACE["move"]), 3600.0) / 1000.0
 	sv.speed_k = 1.0
 	if cin:
-		sv.play_moves(_move_segments(sv, path, mass), dur * speed, {"mass": mass})
+		sv.play_moves(_move_segments(sv, path, mass, args.has("flip-burn") and str(u.get("cls", "")) in FLIP_CLASSES), dur * speed, {"mass": mass})
 	else:
 		sv.play_path(keys, yaws, alts, s, dur * speed, {"mass": mass})
 	if size > 0.3:
@@ -1243,7 +1261,11 @@ func _play_move(id, path: Array, charge: bool) -> void:
 const ENGINE_IDLE := 0.35     # the main drive at rest or coasting: a pilot glow, the full plume only when it pushes
 
 
-func _move_segments(sv, path: Array, mass: float) -> Array:
+# hulls big enough for the flip-and-burn test (R55, --flip-burn): cruisers and up
+const FLIP_CLASSES := ["Cruiser", "Carrier", "Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Bio-titan", "Ark", "Tomb-ark"]
+
+
+func _move_segments(sv, path: Array, mass: float, flip_ok := false) -> Array:
 	var out: Array = []
 	var la: float = sv.cur_yaw
 	var pos := Vector3(sv.position.x, 0, sv.position.z)
@@ -1256,7 +1278,11 @@ func _move_segments(sv, path: Array, mass: float) -> Array:
 			out[-1]["w"] = float(out[-1]["w"]) + float(PACE["rot"]) * lerpf(0.9, 1.25, mass)
 		else:
 			if out.is_empty() or out[-1]["kind"] != "run":
-				out.append({"kind": "run", "pts": [pos], "yaw": la, "w": 0.35})
+				out.append({"kind": "run", "pts": [pos], "yaw": la, "w": 0.35, "fwd": 0, "other": 0})
+			if _jt(st.get("slip")) or _jt(st.get("rev")) or (st.get("over") != null and float(st.get("over")) != 0.0):
+				out[-1]["other"] = int(out[-1]["other"]) + 1
+			else:
+				out[-1]["fwd"] = int(out[-1]["fwd"]) + 1
 			var ov := float(st.get("over", 0)) if st.get("over") != null else 0.0
 			var p: Vector3 = board.hex_world(st["q"], st["r"])
 			p.y = (9.0 if ov > 0 else -7.5) if ov != 0.0 else 0.0
@@ -1264,6 +1290,11 @@ func _move_segments(sv, path: Array, mass: float) -> Array:
 			out[-1]["w"] = float(out[-1]["w"]) + 1.0
 			pos = Vector3(p.x, 0, p.z)
 		la = a
+	# flip and burn (test): a straight run of 3 hexes or more on a cruiser or bigger
+	if flip_ok:
+		for g in out:
+			if g["kind"] == "run" and int(g["other"]) == 0 and int(g["fwd"]) >= 3:
+				g["flip"] = true
 	# a run that ends over or under an obstacle still comes back to the board plane
 	for g in out:
 		if g["kind"] == "run":
@@ -1287,7 +1318,10 @@ func _fx_wait(done: float, impacts: Array, sp: float, kills := false, cap := INF
 	var k := maxf(sp, 0.01)
 	if k >= 1.0:
 		return maxf(done, (last + 0.08) if kills else 0.0)
-	return maxf(minf(done, cap) * k, (last + 0.08) if kills else 0.0) / k
+	# deep in the round budget (very low speed) a killing volley lets go halfway to its last impact: the death starts as
+	# the final hits land
+	var floor_t := ((last + 0.08) * (0.5 if k < 0.12 else 1.0)) if kills else 0.0
+	return maxf(minf(done, cap) * k, floor_t) / k
 
 
 func _wfam(u: Dictionary, w: Dictionary) -> String:
@@ -1627,7 +1661,8 @@ func _play_death(e: Dictionary) -> void:
 		# a death is a key moment: it follows the pace only gently (half its hold at most on the enemy's turn, a quarter on
 		# hurry) and a big hull always gets 0.8 s; G4's effect plays on either way
 		var pk := clampf(speed, 0.25 if skip else 0.5, 1.0)
-		await get_tree().create_timer(maxf(0.8 if big else 0.3, t * 0.6 * pk)).timeout
+		var floor_k := clampf(speed / 0.35, 0.35, 1.0)   # under the round budget a big hull's hold shrinks too
+		await get_tree().create_timer(maxf((0.8 if big else 0.3) * floor_k, t * 0.6 * minf(pk, floor_k))).timeout
 		return
 	_flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
 	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
@@ -3274,7 +3309,14 @@ func _move_frames() -> void:
 			mine.append(u)
 	mine.sort_custom(func(a, b): return float(a["size"]) > float(b["size"]))
 	var picks: Array = []
-	if not mine.is_empty():
+	if args.has("cls"):
+		# --cls Dreadnought,Cruiser: the first of your ships of each class, in that order
+		for c in str(args["cls"]).split(","):
+			for u2 in mine:
+				if str(u2["cls"]) == c and not (u2["id"] in picks):
+					picks.append(u2["id"])
+					break
+	elif not mine.is_empty():
 		picks.append(mine[0]["id"])
 		if mine.size() > 1:
 			picks.append(mine[-1]["id"])
@@ -3301,6 +3343,8 @@ func _move_frames() -> void:
 		if want != "" and bsc <= -1e8:
 			print("[moves] %s: no %s move in reach" % [str(id), want])
 			best = null
+		elif best != null:
+			print("[moves] %s (%s) path: %d steps, score %.1f" % [str(id), str(u["cls"]), (best.path as Array).size(), bsc])
 		if best == null:
 			continue
 		var a: Vector3 = views[id].position
@@ -3454,7 +3498,10 @@ func pace_stats() -> Dictionary:
 	for k in pace_kind:
 		if float(pace_kind[k]) >= 0.05:
 			kinds[k] = snappedf(float(pace_kind[k]) / vals.size(), 0.01)
-	return {"rounds": vals.size(), "enemy_s_mean": snappedf(tot / vals.size(), 0.01), "enemy_s_max": snappedf(mx, 0.01), "movement": movement, "per_round_by_kind": kinds}
+	var by_round: Array = []
+	for r in pace_enemy.keys():
+		by_round.append(snappedf(float(pace_enemy[r]), 0.1))
+	return {"rounds": vals.size(), "enemy_s_mean": snappedf(tot / vals.size(), 0.01), "enemy_s_max": snappedf(mx, 0.01), "movement": movement, "per_round_by_kind": kinds, "by_round": by_round}
 
 
 func _quit_report() -> void:

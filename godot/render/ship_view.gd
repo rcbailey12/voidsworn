@@ -464,6 +464,14 @@ func play_moves(segments: Array, dur: float, opts := {}) -> void:
 		g["T"] = maxf(dur * float(g["w"]) / maxf(tot, 1e-4), 0.02)
 		if g["kind"] == "run":
 			_prep_run(g)
+			var pts: Array = g["pts"]
+			var net: Vector3 = (pts[-1] as Vector3) - (pts[0] as Vector3)
+			net.y = 0.0
+			g["dir_l"] = (Basis(Vector3.UP, float(g["yaw"])).inverse() * net).normalized() if net.length() > 0.01 else Vector3(1, 0, 0)
+			# the settle: a slight overshoot, about 4% of the hull's length (never more than 2.5% of the run)
+			g["settle"] = 0.0 if bool(g.get("flip", false)) else minf(0.025, (0.04 * L + 0.4) / float(g["len"]))
+		else:
+			g["settle"] = 0.03
 		segs.append(g)
 	seg_i = 0
 	seg_t = 0.0
@@ -516,10 +524,19 @@ static func _curve_at(g: Dictionary, d: float) -> Vector3:
 	return (smp[lo] as Vector3).lerp(smp[hi], clampf((d - float(cum[lo])) / span, 0.0, 1.0))
 
 
-# the fraction of a segment covered at time fraction p: thrust up (sine ramp), coast, thrust down; from rest to rest.
-# A heavier hull has less thrust for its mass, so its ramps take more of the segment.
+# Easing (Ryan, R55: "the stop is kind of sudden"): every segment thrusts up, coasts, then brakes for as long as it
+# thrust up, eased both ways (sine ramps: speed and spin build and bleed smoothly, nothing snaps to rest), and ends in a
+# small settle, a slight overshoot that the jets correct. A heavier hull has less thrust for its mass, so its ramps
+# take more of the segment.
+const SETTLE_T := 0.14        # the settle's share of a segment
+
+
+func _ta() -> float:
+	return lerpf(0.34, 0.44, mass)
+
+
 func _ramp(p: float) -> float:
-	var ta := lerpf(0.26, 0.44, mass)
+	var ta := _ta()
 	var vmax := 1.0 / (1.0 - ta)
 	if p < ta:
 		return vmax * (p * 0.5 - ta / (2.0 * PI) * sin(PI * p / ta))
@@ -527,6 +544,32 @@ func _ramp(p: float) -> float:
 		var q := 1.0 - p
 		return 1.0 - vmax * (q * 0.5 - ta / (2.0 * PI) * sin(PI * q / ta))
 	return vmax * (ta * 0.5 + (p - ta))
+
+
+# the fraction covered at time fraction p, the settle included (it can pass 1 for a moment: the overshoot)
+func _ease(g: Dictionary, p: float) -> float:
+	var d := float(g.get("settle", 0.0))
+	if d <= 0.0:
+		return _ramp(p)
+	var pm := 1.0 - SETTLE_T
+	if p < pm:
+		return (1.0 + d) * _ramp(p / pm)
+	var q := (p - pm) / SETTLE_T
+	return 1.0 + d * (1.0 - q * q * (3.0 - 2.0 * q))
+
+
+# which burn a segment is in at time fraction p: ["up" | "coast" | "down" | "settle", how far through it]
+func _phase(g: Dictionary, p: float) -> Array:
+	var pm := 1.0 - SETTLE_T if float(g.get("settle", 0.0)) > 0.0 else 1.0
+	if p >= pm:
+		return ["settle", (p - pm) / maxf(1.0 - pm, 1e-4)]
+	var r := p / pm
+	var ta := _ta()
+	if r < ta:
+		return ["up", r / ta]
+	if r > 1.0 - ta:
+		return ["down", (r - (1.0 - ta)) / ta]
+	return ["coast", 0.0]
 
 
 func _seg_step(dt: float) -> void:
@@ -546,8 +589,8 @@ func _seg_step(dt: float) -> void:
 		_yaw_a = 0.0
 		return
 	var g: Dictionary = segs[seg_i]
-	_seg_pose(g, _ramp(seg_t / float(g["T"])))
-	# the hull's real motion, in animation time, smoothed a little (frame times jitter)
+	_seg_pose(g, seg_t / float(g["T"]))
+	# the hull's real motion, in animation time (the wings' lag reads it)
 	var v := (position - _prev_pos) / maxf(dts, 1e-4)
 	_acc = _acc.lerp((v - _vel) / maxf(dts, 1e-4), 0.5)
 	_vel = v
@@ -556,49 +599,119 @@ func _seg_step(dt: float) -> void:
 	_yaw_a = lerpf(_yaw_a, (yv - _yaw_v) / maxf(dts, 1e-4), 0.5)
 	_yaw_v = yv
 	_prev_yaw = cur_yaw
-	_thrusters(g, dts)
+	_thrusters(g, seg_t / float(g["T"]), dts)
 
 
-func _seg_pose(g: Dictionary, f: float) -> void:
+func _seg_pose(g: Dictionary, p: float) -> void:
 	if g["kind"] == "turn":
+		var f := _ease(g, p) if p < 1.0 else 1.0
 		cur_yaw = float(g["a0"]) + angle_difference(float(g["a0"]), float(g["a1"])) * f
 		rotation.y = cur_yaw
+	elif bool(g.get("flip", false)):
+		_flip_pose(g, p)
 	else:
+		var f := _ease(g, p) if p < 1.0 else 1.0
 		position = _curve_at(g, float(g["len"]) * f)
 		cur_yaw = float(g["yaw"])
 		rotation.y = cur_yaw
 
 
-# what the thrusters do this frame, from the hull's acceleration in its own frame (x ahead, z to the side)
-func _thrusters(g: Dictionary, dts: float) -> void:
-	var T := float(g["T"])
-	var ta := lerpf(0.26, 0.44, mass)
+# Flip and burn (R55 test, --flip-burn: straight runs of 3+ hexes on cruisers and bigger): burn out, flip end for end on
+# the turning jets while coasting, burn the main drive to brake, then flip back to the end heading at rest.
+const FLIP := [0.26, 0.22, 0.26]   # shares of the run: burn out, flip, brake burn (the rest is the flip back)
+
+
+static func _spin_ease(x: float) -> float:
+	return 0.5 - 0.5 * cos(PI * clampf(x, 0.0, 1.0))
+
+
+func _flip_pose(g: Dictionary, p: float) -> void:
+	var a: float = FLIP[0]
+	var f: float = FLIP[1]
+	var b: float = FLIP[2]
+	var v := 1.0 / (a * 0.5 + f + b * 0.5)
+	var s := 1.0
+	if p < a:
+		s = v * (p * 0.5 - a / (2.0 * PI) * sin(PI * p / a))
+	elif p < a + f:
+		s = v * (a * 0.5 + (p - a))
+	elif p < a + f + b:
+		var q := a + f + b - p
+		s = 1.0 - v * (q * 0.5 - b / (2.0 * PI) * sin(PI * q / b))
+	position = _curve_at(g, float(g["len"]) * clampf(s, 0.0, 1.0))
+	var base := float(g["yaw"])
+	var yaw := base
+	if p >= 1.0:
+		yaw = base
+	elif p >= a + f + b:
+		yaw = base + PI + PI * _spin_ease((p - a - f - b) / (1.0 - a - f - b))
+	elif p >= a + f:
+		yaw = base + PI
+	elif p >= a:
+		yaw = base + PI * _spin_ease((p - a) / f)
+	cur_yaw = yaw
+	rotation.y = cur_yaw
+
+
+# The thrusters follow the burn the segment is in, so the jets fire through the whole of each burn: the push is along
+# the direction of travel while speed builds and against it while it bleeds (and back and forth in the settle). In the
+# ship's frame: a push ahead is the main drive on a forward run's thrust-up, aft jets otherwise (stopping a back-off,
+# the settle); a push astern is the bow's retro jets; a push to the side is a matched pair of side jets. A turn's spin
+# builds and bleeds on the bow and stern jets (the couple).
+func _thrusters(g: Dictionary, p: float, dts: float) -> void:
 	for k in _puff_cd.keys():
 		_puff_cd[k] = float(_puff_cd[k]) - dts
 	thrust = 0.0
+	var ph: Array = _phase(g, p)
+	var kph := String(ph[0])
+	var x := float(ph[1])
+	var k := clampf(sin(PI * x), 0.35, 1.0)
 	if g["kind"] == "turn":
-		# peak angular acceleration of this turn's ramp; the couple fires while the spin builds or bleeds
-		var ang := absf(angle_difference(float(g["a0"]), float(g["a1"])))
-		var a_pk := ang / (T * T * (1.0 - ta) * ta) * 0.5 * PI
-		if absf(_yaw_a) > 0.25 * a_pk:
-			_emit("couple", _couple_puffs.bind(signf(_yaw_a), clampf(absf(_yaw_a) / a_pk, 0.4, 1.0)))
+		var rot := signf(angle_difference(float(g["a0"]), float(g["a1"])))
+		match kph:
+			"up": _emit("couple", _couple_puffs.bind(rot, k))
+			"down": _emit("couple", _couple_puffs.bind(-rot, k))
+			"settle": _emit("couple", _couple_puffs.bind(-rot if x < 0.5 else rot, 0.4))
 		return
-	var len := float(g["len"])
-	var a_pk := len / (T * T * (1.0 - ta) * ta) * 0.5 * PI
-	var inv := Basis(Vector3.UP, cur_yaw).inverse()
-	var al: Vector3 = inv * _acc
-	var vl: Vector3 = inv * _vel
-	var ax := al.x / a_pk
-	var az := al.z / a_pk
-	if ax > 0.2:
-		if vl.x >= -0.05 * len / T:
-			thrust = clampf(ax, 0.0, 1.0)                              # the main drive pushes the ship ahead
+	if bool(g.get("flip", false)):
+		_flip_thrusters(p)
+		return
+	var dl: Vector3 = g.get("dir_l", Vector3(1, 0, 0))   # the direction of travel in the ship's frame
+	var push := Vector3.ZERO
+	var kk := k
+	match kph:
+		"up": push = dl
+		"down": push = -dl
+		"settle":
+			push = -dl if x < 0.5 else dl
+			kk = 0.45
+	if push == Vector3.ZERO:
+		return
+	if push.x > 0.3:
+		if kph == "up" and dl.x > 0.3:
+			thrust = clampf(sin(PI * x) * 1.1, 0.0, 1.0)              # the main drive pushes the ship ahead
 		else:
-			_emit("aft", _aft_puffs.bind(clampf(ax, 0.4, 1.0)))      # stopping a back-off: aft jets, not the drive
-	elif ax < -0.2:
-		_emit("retro", _retro_puffs.bind(clampf(-ax, 0.4, 1.0)))     # braking or backing off: the bow's retro jets
-	if absf(az) > 0.2:
-		_emit("side", _side_puffs.bind(signf(az), clampf(absf(az), 0.4, 1.0)))
+			_emit("aft", _aft_puffs.bind(kk))                         # stopping a back-off, the settle: aft jets
+	elif push.x < -0.3:
+		_emit("retro", _retro_puffs.bind(kk))                         # braking or backing off: the bow's retro jets
+	if absf(push.z) > 0.3:
+		_emit("side", _side_puffs.bind(signf(push.z), kk))
+
+
+func _flip_thrusters(p: float) -> void:
+	var a: float = FLIP[0]
+	var f: float = FLIP[1]
+	var b: float = FLIP[2]
+	if p < a:
+		thrust = clampf(sin(PI * p / a) * 1.1, 0.0, 1.0)            # burn out
+	elif p < a + f:
+		var q := (p - a) / f
+		_emit("couple", _couple_puffs.bind(1.0 if q < 0.5 else -1.0, clampf(sin(PI * fmod(q * 2.0, 1.0)), 0.4, 1.0)))
+	elif p < a + f + b:
+		thrust = clampf(sin(PI * (p - a - f) / b) * 1.1, 0.0, 1.0)  # the main drive brakes, the ship end for end
+	else:
+		var q := (p - a - f - b) / (1.0 - a - f - b)
+		_emit("couple", _couple_puffs.bind(1.0 if q < 0.5 else -1.0, clampf(sin(PI * fmod(q * 2.0, 1.0)), 0.4, 1.0)))
 
 
 func _emit(kind: String, f: Callable) -> void:
