@@ -2,7 +2,7 @@
 
 Written by L (lore rollout helper). Source of truth: `lore_bible_r8.md` and the canonical table in `contrib/opus/briefs/lore_rollout_2026-10-27.md`. This file supersedes `rename_map.md` (Oct 26): its inventory of where strings live was reused, its new names were not (Brand, Flux, Verdict arc, Chord lance, Deathless Court, writ/warrant/edict, the Court words and others are all retired).
 
-**Read at:** main `00d2b4b` (no covered file changed between `e243729` and `00d2b4b`) (every Where cell below was produced by grepping the exact Old string at that commit; `(not found)` would mean the row is stale). Generated files are not listed and follow by re-export: `godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`, the oracle copies under `godot/*/test/oracle/`, and `voidsworn-3d.html`.
+**Read at:** main `762df28` (first written at `e243729`; Where cells re-grepped at `762df28`, and a cell starting "applied:" means the owner has already made that change) (every Where cell below was produced by grepping the exact Old string at that commit; `(not found)` would mean the row is stale). Generated files are not listed and follow by re-export: `godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`, the oracle copies under `godot/*/test/oracle/`, and `voidsworn-3d.html`.
 
 ## Rules for whoever applies a row
 
@@ -71,9 +71,9 @@ The words: patron becomes **core**, boon becomes **protocol**, sigil becomes **s
 | `Boons in action: ` | Protocols in action: | campaign_run.js:421 | B | |
 | `No boon triggered this battle. Check the Fleet boons section on a ship to see what sets each one off.` | No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off. | campaign_run.js:421; godot/ui/campaign/campaign_ui.gd:1159 | B, G3 | |
 | `<h4>Fleet boons</h4>` | `<h4>Fleet protocols</h4>` | ui3d.js:150 | B | Ship panel (browser). |
-| `"Fleet boons"` | "Fleet protocols" | (not found) | ? | Ship panel (Godot battle). |
+| `"Fleet boons"` | "Fleet protocols" | applied: godot/main/FEATURES.md:15; godot/scenes/battle/battle.gd:2956 | G2 | Ship panel (Godot battle). |
 | ` Boons active: ` | ` Protocols active: ` | campaign3d.js:58 | B | campaign3d tooltip. |
-| `"Take boon"` | "Take protocol" | (not found) | ? | Fallback UI button. |
+| `"Take boon"` | "Take protocol" | applied: godot/main/FEATURES.md:15; godot/main/campaign_fallback_ui.gd:12 | G2 | Fallback UI button. |
 | `who counts you Devoted: <b>` | now Synced with you: <b> | campaign_meta.js:105 | B | Reads "A gift from K-1 Kharon, the Unbent, now Synced with you: Thunder Broadside." |
 | `", who counts you Devoted: [b]"` | ", now Synced with you: [b]" | godot/ui/campaign/campaign_ui.gd:435 | G3 | Godot copy. |
 | `Patrons watching this ${runWord()}: ` | Cores in range of this ${runWord()}: | campaign_meta.js:106 | B | Aspect screen. |
@@ -162,7 +162,7 @@ The words: patron becomes **core**, boon becomes **protocol**, sigil becomes **s
 | `deathless:{n:'Endless legion',d:` | deathless:{n:'Archive restore',d: | battle.js:480 | B | Eclipse faction rule name (battle.js FACTION_RULES). |
 | `The first Deathless ship to fall each battle` | The first Eclipse ship to fall each battle | battle.js:480 | B | Same rule text. |
 | `'Endless legion: the first to fall reassembles next round.':'Endless legion spent.'` | 'Archive restore: the first to fall reassembles next round.':'Archive restore spent.' | battle.js:526 | B | Ship panel. |
-| `"Endless legion: the first to fall reassembles next round."` | "Archive restore: the first to fall reassembles next round." | (not found) | ? | Godot ship panel; also its "Endless legion spent." on the same line becomes "Archive restore spent." |
+| `"Endless legion: the first to fall reassembles next round."` | "Archive restore: the first to fall reassembles next round." | applied: godot/scenes/battle/battle.gd:2884 | G2 | Godot ship panel; also its "Endless legion spent." on the same line becomes "Archive restore spent." |
 | `Ithar hulls cannot Brace.` | Glasswright hulls cannot Brace. | battle.js:478 | B | Glasswright rule text. |
 | `corsair:{n:'Close in',d:'Corsairs field no lance weapons` | corsair:{n:'Close in',d:'Hullbreakers field no lance weapons | battle.js:481 | B | |
 | `d:'Corsairs field no lance weapons (no long-range beams): they win up close.'` | d:'Hullbreakers field no lance weapons (no long-range beams): they win up close.' | data.js:539 | B | FAC_GATES. |
@@ -255,7 +255,7 @@ Phrase by phrase. "Salvage" is uncountable: say "salvage" or "a piece of salvage
 | `No relics left to find. +80 credits instead.` | No salvage left to find. +80 credits instead. | campaign_run.js:356; godot/campaign/campaign.gd:1926 | B, G3 | Both games. |
 | `relic:'A relic is a fleet-wide effect that lasts for the rest of this run.'` | relic:'Salvage is a fleet-wide effect that lasts for the rest of this run.' | campaign_run.js:393 | B | Reward definition (key `relic` stays). |
 | `Relics are fleet-wide bonuses that last for the run.` | Salvage gives fleet-wide bonuses that last for the run. | campaign_meta.js:169; godot/ui/campaign/campaign_ui.gd:1020 | B, G3 | How to play (both). |
-| `"Take relic"` | "Take salvage" | (not found) | ? | Fallback UI. |
+| `"Take relic"` | "Take salvage" | applied: godot/main/FEATURES.md:15; godot/main/campaign_fallback_ui.gd:12 | G2 | Fallback UI. |
 | `the most rewards (relic 4, ` | the most rewards (salvage 4, | godot/ui/campaign/map3d.gd:812 | G3 | Route tooltip. |
 | `%d refit%s, %d relic%s, %d credit reward%s` | %d refit%s, %d salvage, %d credit reward%s | godot/ui/campaign/map3d.gd:817 | G3 | Route tooltip; drop the matching plural argument. |
 
@@ -452,7 +452,7 @@ One name, one owner (bible 1.4): no captain pool rolls an admiral's given name o
 | `chorus:['Hive-node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorefeather','Sac-mother','Thornback','Tidehunger','Wet Choir','Crawling Hymn']` | chorus:['Node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorebloom','Sac-mother','Thornback','Tidehunger','Wet Maw','Crawling Gut'] | ui3d.js:21 | B | |
 | `ithar:['Silverthorn','Dawnwhisper','Lament of Stars','Glass Heron','Moonveil','Farsinger','Pale Current','Starfall','Quiet Blade','Evening Tide']` | ithar:['Silverthorn','Clear Whisper','Lament of Stars','Glass Heron','Moonveil','Far Focus','Pale Current','Starfall','Quiet Prism','Evening Tide'] | ui3d.js:22 | B | |
 | `deathless:['Eternal Vigil','The Unbroken','Sepulchre','Tomb of Ashes','Grave Sovereign','Ossuary','Never-Ending','Obelisk','Dust Throne','Silent Heir']` | deathless:['Long Noon','The Unbroken','Last Light Kept','Copy of Ardent','Ninth Shade','Cold Memory','Never-Ending','Gnomon','Dust of Noon','Silent Heir'] | ui3d.js:23 | B | |
-| `"ship": "Saint Ignatius"` | "ship": "Banked Fire" | (not found) | ? | Screenshot fixture (shows on the Hall of the fallen). Its captain "Ordo Halvar" becomes "Casimir Holloway" (Ordo is an Inquisition word). |
+| `"ship": "Saint Ignatius"` | "ship": "Banked Fire" | applied: godot/scenes/campaign/campaign_scene.gd:59 | G2 | Screenshot fixture (shows on the Hall of the fallen). Its captain "Ordo Halvar" becomes "Casimir Holloway" (Ordo is an Inquisition word). |
 
 ## 10. Help text and Godot-only screen text
 
@@ -468,12 +468,12 @@ One name, one owner (bible 1.4): no captain pool rolls an admiral's given name o
 
 | Old | New | Where | Owner | Note |
 |---|---|---|---|---|
-| `const TAGLINE := "Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain."` | const TAGLINE := "Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain." | (not found) | ? | Same tagline as row 1.2 (G2). |
+| `const TAGLINE := "Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain."` | const TAGLINE := "Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain." | applied: godot/ui/battle/brand.gd:11 | G2 | Same tagline as row 1.2 (G2). |
 | `term("patrons", true) + " watching"` | term("patrons", true) + " in range" | godot/ui/campaign/campaign_ui.gd:573 | G3 | Map sidebar box title after the TERMS switch ("Cores in range"). |
 | `" · win at a " + term("sigil") + " for a " + term("boon")` | " · win at a " + term("sigil") + " for a " + term("boon") | godot/ui/campaign/campaign_ui.gd:573 | G3 | Reads "win at a signal for a protocol" after the switch: fine as is, listed so nobody hunts for it. |
 | `"Win at a stop with a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + "."` | "Win at a stop carrying a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + "." | godot/ui/campaign/campaign_ui.gd:573 | G3 | Tooltip; "carrying" reads better with signal. |
 | `"None yet. Win at a node with a " + term("patron") + "’s " + term("sigil") + " to earn one."` | "None yet. Win at a node carrying a " + term("patron") + "’s " + term("sigil") + " to earn one." | godot/ui/campaign/campaign_ui.gd:660 | G3 | |
-| `"startRun": "Launch the crusade"` | "startRun": "Launch" | (not found) | ? | Fallback UI label; the run word depends on the faction (Homecoming, raid ...). |
+| `"startRun": "Launch the crusade"` | "startRun": "Launch" | applied: godot/main/campaign_fallback_ui.gd:7 | G2 | Fallback UI label; the run word depends on the faction (Homecoming, raid ...). |
 
 G2's own rows already landed in 49f0d85 (title, window title, project name, product name and description; exe file name kept as Voidsworn.exe, save folder kept). Nothing else for G2 in project.godot or export_presets.cfg. `godot/main/FEATURES.md` mentions the old exe and folder names only as file paths; keep.
 
