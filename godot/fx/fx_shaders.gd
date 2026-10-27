@@ -1103,6 +1103,7 @@ void fragment() {
 		float hn = fbm(q / R * (2.2 / max(H * 0.25, 0.5)) + seed * 3.1);
 		float hu = hd / H + (hb - 0.5) * 0.35;
 		float ha = (1.0 - smoothstep(0.25, 1.0, hu)) * (0.55 + 0.45 * hn);
+		vec2 hq = q / (R * H);   // the plane in halo units (1 at the halo's edge)
 		vec3 hc = vec3(0.016, 0.014, 0.013);
 		float hr = 0.95;
 		vec3 hem = vec3(0.0);
@@ -1135,20 +1136,65 @@ void fragment() {
 			hc = mix(hc, vec3(0.42, 0.41, 0.4), chip);
 			ha = min(1.0, ha * 1.8) * mix(0.72, 1.0, max(pit, chip));
 			hr = mix(0.95, 0.35, chip);
+			// r18 (Muse audit B4.3): the signature at the battle camera is a dotted patch: coarse black pocks a fifth of
+			// the halo across (a few pixels each at 170 units), a few still glowing, over the fine pepper
+			vec2 cg = hq * 5.0;
+			vec2 ci = floor(cg);
+			vec2 cf = fract(cg) - 0.5;
+			float cv = h21(ci + seed + 17.0);
+			vec2 cj = (vec2(h21(ci + seed + 2.3), h21(ci + seed + 6.1)) - 0.5) * 0.4;
+			float cdot = smoothstep(0.3, 0.16, length(cf - cj)) * step(0.3, cv) * (1.0 - smoothstep(0.55, 0.85, length(hq)));
+			hc = mix(hc, vec3(0.005), cdot);
+			ha = max(ha, cdot);
+			hem += vec3(1.0, 0.42, 0.1) * cdot * step(0.78, cv) * (0.3 * exp(-age / 300.0) + 0.9 * live);
 		} else if (style == 8) {
 			float pit = smoothstep(0.58, 0.72, hn);
 			hc = mix(vec3(0.03, 0.045, 0.012), vec3(0.006, 0.01, 0.003), pit);
 			hr = mix(0.85, 0.3, exp(-age / 9.0) * pit);
 			hem = vec3(0.4, 1.0, 0.2) * pit * (0.04 + 0.4 * exp(-age / 6.0));
+			// r18 (Muse audit B4.3): the signature is a green stain with drips running off it, down the hull side (or
+			// aft along a deck), long enough to read as streaks from the battle camera
+			vec3 dn = vec3(0.0, -1.0, 0.0);
+			vec2 gd = vec2(dot(dn, t1), dot(dn, t2));
+			if (length(gd) < 0.3) { gd = vec2(dot(vec3(-1.0, 0.0, 0.0), t1), dot(vec3(-1.0, 0.0, 0.0), t2)); }
+			gd = normalize(gd + vec2(1e-4, 0.0));
+			float along = dot(hq, gd);
+			float acr = dot(hq, vec2(-gd.y, gd.x));
+			float lane = vnoise(vec2(acr * 8.0 + seed * 3.0, seed));
+			float drip = smoothstep(0.55, 0.75, lane) * smoothstep(-0.05, 0.1, along) * (1.0 - smoothstep(0.35 + 0.6 * lane, 1.1, along)) * (1.0 - smoothstep(0.3, 0.55, abs(acr)));
+			float stain = 1.0 - smoothstep(0.12, 0.42, length(hq) + (hn - 0.5) * 0.25);
+			float ac2 = max(drip, stain);
+			hc = mix(hc, vec3(0.02, 0.05, 0.008), ac2 * 0.85);
+			ha = max(ha, max(drip * 0.9, stain));
+			hem += vec3(0.45, 1.0, 0.2) * (drip * 0.6 + stain * 0.45) * (0.28 * exp(-age / 300.0) + 0.6 * exp(-age / 6.0));
 		} else if (style == 9) {
 			hc = vec3(0.012, 0.015, 0.03);
 			hem = vec3(0.3, 0.5, 1.0) * smoothstep(0.62, 0.8, hn) * (0.03 + 0.5 * live);
+			// r18 (Muse audit B4.3): the signature is a starburst, seven jagged spokes out to the halo's edge, dark with a
+			// cold blue glow along them, a shape no other weapon leaves
+			float ang2 = atan(hq.y, hq.x);
+			float rr2 = length(hq);
+			float sector = floor((ang2 + PI) / TAU * 7.0);
+			float acen = (sector + 0.5) / 7.0 * TAU - PI + (h21(vec2(sector, seed)) - 0.5) * 0.5;
+			float jag = (vnoise(vec2(rr2 * 10.0, sector * 3.1 + seed)) - 0.5) * 0.3;
+			float dang = abs(mod(ang2 - acen - jag + PI, TAU) - PI) * max(rr2, 0.05);
+			float spoke = (1.0 - smoothstep(0.035, 0.07, dang)) * smoothstep(0.06, 0.14, rr2) * (1.0 - smoothstep(0.55 + 0.4 * h21(vec2(sector, seed + 3.0)), 1.0, rr2));
+			hc = mix(hc, vec3(0.004, 0.006, 0.02), spoke);
+			ha = max(ha, spoke);
+			hem += vec3(0.4, 0.62, 1.0) * spoke * (0.35 * exp(-age / 300.0) + 1.0 * live);
 		} else if (style == 10) {
-			// a ram scrapes the paint off: bright streaked bare metal, no soot
-			float st = smoothstep(0.5, 0.85, fbm(vec2(q.x / R * 0.35, q.y / R * 5.0) + seed));
-			hc = mix(vec3(0.1, 0.1, 0.1), vec3(0.42, 0.41, 0.4), st);
-			hr = mix(0.6, 0.3, st);
-			ha *= 0.5 + 0.5 * st;
+			// a ram scrapes the paint off: bright streaked bare metal, no soot. r18 (Muse audit B4.3): long bright
+			// gouges along the ship's length, wide and pale enough to read from the battle camera, still hot at first
+			vec2 sdv = vec2(dot(vec3(1.0, 0.0, 0.0), t1), dot(vec3(1.0, 0.0, 0.0), t2));
+			if (length(sdv) < 0.3) { sdv = vec2(1.0, 0.0); }
+			sdv = normalize(sdv);
+			float al = dot(hq, sdv);
+			float ac = dot(hq, vec2(-sdv.y, sdv.x));
+			float st = smoothstep(0.5, 0.78, fbm(vec2(al * 1.2, ac * 8.0) + seed)) * (1.0 - smoothstep(0.45, 0.85, abs(ac)));
+			hc = mix(vec3(0.05), vec3(0.62, 0.6, 0.57), st);
+			hr = mix(0.7, 0.25, st);
+			ha = max(ha * 0.6, st);
+			hem += vec3(1.0, 0.55, 0.25) * st * 0.6 * live;
 		} else if (style == 5) {
 			hc = mix(vec3(0.03), vec3(0.3, 0.3, 0.31), smoothstep(0.55, 0.8, hn));
 			hr = 0.5;

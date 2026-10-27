@@ -87,6 +87,15 @@ func hull_motion() -> Transform3D:
 	return (root.global_transform.affine_inverse() * _ref_mi.global_transform) * _ref0.affine_inverse()
 
 
+# Hang a node in the hull's frame of add_ship time so it moves with the hull mesh (r18; see setup).
+func _attach(n: Node3D) -> void:
+	if _ref_mi != null and is_instance_valid(_ref_mi):
+		_ref_mi.add_child(n)
+		n.transform = _ref0.affine_inverse()
+	else:
+		root.add_child(n)
+
+
 func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	id = sid
 	root = r
@@ -106,18 +115,22 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	hull = HULL.new()
 	hull.stb_z = float(fx.starboard_z)
 	hull.analyse(root, meshes, _seed)
-	_dmg_root = Node3D.new()
-	_dmg_root.name = "fx_damage"
-	root.add_child(_dmg_root)
 	# ShipView bobs and banks the hull node under the root; the hull analysis above is in the pose of this moment, so
 	# the damage (overlay skins, cavities, fires) follows the hull's motion from here (r6: the hull bobbed 0.25 units
-	# up and down past a mark overlay lifted 0.026, so overlay-only marks such as ion burns kept vanishing into it)
+	# up and down past a mark overlay lifted 0.026, so overlay-only marks such as ion burns kept vanishing into it).
+	# r18: the damage and the engines hang under a hull mesh itself (with the inverse of its pose now), so they move
+	# with the hull in the same frame, every frame; r6-r17 copied the hull's motion in fx's update, which lagged
+	# whenever the hull moved between fx steps (the stills: overlays sank into the bobbing hull at random, which is
+	# why marks came and went between runs)
 	for m in meshes:
 		if m is MeshInstance3D:
 			_ref_mi = m
 			break
 	if _ref_mi != null:
 		_ref0 = root.global_transform.affine_inverse() * _ref_mi.global_transform
+	_dmg_root = Node3D.new()
+	_dmg_root.name = "fx_damage"
+	_attach(_dmg_root)
 	_hide_placeholder_engines()
 	_build_engines(fx)
 	_build_trails(fx)
@@ -235,7 +248,7 @@ func _build_engines(fx) -> void:
 	_eng_rib_mat = fx.mat(SH.RIBBON, 1)
 	var holder = MeshInstance3D.new()
 	holder.name = "fx_engines"
-	root.add_child(holder)
+	_attach(holder)
 	_eng_node = holder
 	b.build(_eng_mat, holder, "fx_eng_cores")
 	rb.build(_eng_rib_mat, holder, "fx_eng_plumes")
@@ -260,10 +273,6 @@ func update(fx, dt: float) -> void:
 	_react_step(fx, dt)
 	_hide_placeholder_engines()
 	var hm := hull_motion()
-	if is_instance_valid(_dmg_root) and _dmg_root.get_child_count() > 0:
-		_dmg_root.transform = hm
-	if is_instance_valid(_eng_node):
-		_eng_node.transform = hm
 	if _shield_mi != null and _shield_mi.visible:
 		_shield_mi.transform = hm * Transform3D(Basis.from_scale(hull.shield_radii()), hull.c)
 	var pos = root.global_position - root.get_parent_node_3d().global_transform.basis * _app_pos if root.get_parent_node_3d() != null else root.global_position
