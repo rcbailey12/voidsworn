@@ -1,0 +1,73 @@
+{
+ "note": "DRAFT: do not queue until Ryan signs off the new faction looks (lore round 4). Built by tools/portraits/look_drafts.py.",
+ "out": "n4",
+ "budget_s": 1050,
+ "items": [
+  {
+   "id": "nem_corsair_1",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander: a raider queen with a burned scalp and a shaved undercut, gold teeth, a chain of stolen neural link ports round her neck. A human, a space-fleet commander, nothing naval: no hats, no sailor uniforms. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by harsh red emergency light and sparks, deep soft shadow on the right side, a dark painterly soot-black salvage-ship cockpit hung with chains and hooks, smoke and rust background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_2",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander: a hulking brute with a welded steel faceplate cut from a Hegemony hull and a single red optic, hooks hanging from the shoulders. A human, a space-fleet commander, nothing naval: no hats, no sailor uniforms. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by harsh red emergency light and sparks, deep soft shadow on the right side, a dark painterly soot-black salvage-ship cockpit hung with chains and hooks, smoke and rust background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_3",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander: a wiry knife-man with old acid burns, cracked goggles, a crest of braided cables, a shard of clear crystal set in his cheek. A human, a space-fleet commander, nothing naval: no hats, no sailor uniforms. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by harsh red emergency light and sparks, deep soft shadow on the right side, a dark painterly soot-black salvage-ship cockpit hung with chains and hooks, smoke and rust background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_4",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander: a smuggler baron in a coat stitched from torn hull insignia, rings on every finger, a dark violet machine plate as a breastplate. A human, a space-fleet commander, nothing naval: no hats, no sailor uniforms. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by harsh red emergency light and sparks, deep soft shadow on the right side, a dark painterly soot-black salvage-ship cockpit hung with chains and hooks, smoke and rust background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_5",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander: a weathered old wrecker captain with a battered respirator and chains wrapped round soot-black armour, one squinting red eye. A human, a space-fleet commander, nothing naval: no hats, no sailor uniforms. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by harsh red emergency light and sparks, deep soft shadow on the right side, a dark painterly soot-black salvage-ship cockpit hung with chains and hooks, smoke and rust background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_corsair_6",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander: a feral young warlord with war paint of soot and dried blood, a necklace of trophy teeth and machine parts. A human, a space-fleet commander, nothing naval: no hats, no sailor uniforms. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by harsh red emergency light and sparks, deep soft shadow on the right side, a dark painterly soot-black salvage-ship cockpit hung with chains and hooks, smoke and rust background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  }
+ ]
+}

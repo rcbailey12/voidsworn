@@ -1,0 +1,73 @@
+{
+ "note": "DRAFT: do not queue until Ryan signs off the new faction looks (lore round 4). Built by tools/portraits/look_drafts.py.",
+ "out": "n4",
+ "budget_s": 1050,
+ "items": [
+  {
+   "id": "nem_ithar_1",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a gaunt Glasswright inquisitor with a cold pitiless gaze, a high collar of sharp crystal shards. A Glasswright, a tall slender biological alien, clearly not human and not a grey alien: an elongated skull, a very long slender neck, large dark eyes, pale skin, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by warm white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly deep space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_2",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a Glasswright seer with a veil of fine mirror-threads over the eyes, long blade-like fingertips. A Glasswright, a tall slender biological alien, clearly not human and not a grey alien: an elongated skull, a very long slender neck, large dark eyes, pale skin, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by warm white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly deep space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_3",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a Glasswright war-matriarch in armour of overlapping crystal petals that split light into rainbow fringes. A Glasswright, a tall slender biological alien, clearly not human and not a grey alien: an elongated skull, a very long slender neck, large dark eyes, pale skin, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by warm white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly deep space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_4",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a Glasswright exile with dimmed cracked light-core jewellery and a ragged mirror-thread robe. A Glasswright, a tall slender biological alien, clearly not human and not a grey alien: an elongated skull, a very long slender neck, large dark eyes, pale skin, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by warm white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly deep space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_5",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: a Glasswright archon with a smooth mask of polished mirror where the face should be. A Glasswright, a tall slender biological alien, clearly not human and not a grey alien: an elongated skull, a very long slender neck, large dark eyes, pale skin, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by warm white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly deep space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_ithar_6",
+   "model": "zit",
+   "prompt": "Portrait of a Nemesis, a rival enemy commander of the Glasswrights: an ancient Glasswright with skin like aged ivory and an extremely long neck, a single dark eye reflecting a dead sun. A Glasswright, a tall slender biological alien, clearly not human and not a grey alien: an elongated skull, a very long slender neck, large dark eyes, pale skin, wearing layered robes of crystal plates and mirror-thread fabric that catch the light, small glowing light-cores worn as jewellery. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by warm white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly deep space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  }
+ ]
+}

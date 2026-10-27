@@ -1,0 +1,105 @@
+{
+ "note": "DRAFT: do not queue until Ryan signs off the new faction looks (lore round 4). Built by tools/portraits/look_drafts.py.",
+ "out": "r4e",
+ "budget_s": 1050,
+ "items": [
+  {
+   "id": "vex",
+   "kind": "r4",
+   "seed": 11,
+   "src": "b1/voidsworn_vex_qie_s11_00001_.png",
+   "prompt": "Remove every wax seal, parchment strip and reliquary. Add frost scars across his face and an old burned oath brand on his brow, surgical scars at his temple where implants were cut out, and names chalked in white on his black iron shoulder plates. Make the colours black iron, ember orange, ash grey and frost white. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "vex",
+   "kind": "r4",
+   "seed": 23,
+   "src": "b1/voidsworn_vex_qie_s11_00001_.png",
+   "prompt": "Remove every wax seal, parchment strip and reliquary. Add frost scars across his face and an old burned oath brand on his brow, surgical scars at his temple where implants were cut out, and names chalked in white on his black iron shoulder plates. Make the colours black iron, ember orange, ash grey and frost white. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "kassar",
+   "kind": "r4",
+   "seed": 11,
+   "src": "b1/hegemony_kassar_qie_s23_00001_.png",
+   "prompt": "Add a small neural-lace port at her temple glowing faint blue, lines of data moving across her irises, and thin faint blue subdermal lines along her jaw. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "kassar",
+   "kind": "r4",
+   "seed": 23,
+   "src": "b1/hegemony_kassar_qie_s23_00001_.png",
+   "prompt": "Add a small neural-lace port at her temple glowing faint blue, lines of data moving across her irises, and thin faint blue subdermal lines along her jaw. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "grax",
+   "kind": "r4",
+   "seed": 11,
+   "src": "b1/corsair_grax_qref_s23_00001_.png",
+   "prompt": "Make him grimmer: soot and dried blood on the armour, trophies on chains across his chest (a shard of clear crystal, a torn neural link port, a dark violet machine plate), the axe replaced by a heavy boarding hook, a cold stare instead of a grin. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "grax",
+   "kind": "r4",
+   "seed": 23,
+   "src": "b1/corsair_grax_qref_s23_00001_.png",
+   "prompt": "Make him grimmer: soot and dried blood on the armour, trophies on chains across his chest (a shard of clear crystal, a torn neural link port, a dark violet machine plate), the axe replaced by a heavy boarding hook, a cold stare instead of a grin. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "nekhet",
+   "kind": "r4",
+   "seed": 11,
+   "src": "b2/deathless_nekhet_b_qie_s23_00001_.png",
+   "prompt": "Recolour this machine: the ring plates become layered dark violet-black armour, the green core becomes blazing white-gold light, every green beam and light becomes white-gold, a faint violet-white inner glow. Remove the bone-white ceramic look. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "nekhet",
+   "kind": "r4",
+   "seed": 23,
+   "src": "b2/deathless_nekhet_b_qie_s23_00001_.png",
+   "prompt": "Recolour this machine: the ring plates become layered dark violet-black armour, the green core becomes blazing white-gold light, every green beam and light becomes white-gold, a faint violet-white inner glow. Remove the bone-white ceramic look. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "aelith",
+   "kind": "r4",
+   "seed": 11,
+   "src": "b2/ithar_aelith_b_qie_s37_00001_.png",
+   "prompt": "Replace the glowing gold channels under her skin with plain pale skin, dress her in layered robes of faceted crystal plates and mirror-thread fabric, add small glowing light-cores as jewellery, and turn the light sails behind her into tall crystal vanes and silver mirrors that split the light into rainbow fringes. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "aelith",
+   "kind": "r4",
+   "seed": 23,
+   "src": "b2/ithar_aelith_b_qie_s37_00001_.png",
+   "prompt": "Replace the glowing gold channels under her skin with plain pale skin, dress her in layered robes of faceted crystal plates and mirror-thread fabric, add small glowing light-cores as jewellery, and turn the light sails behind her into tall crystal vanes and silver mirrors that split the light into rainbow fringes. Keep the same face, pose, composition, lighting direction and painting style."
+  },
+  {
+   "id": "matriarch",
+   "kind": "r4",
+   "seed": 11,
+   "src": "b1/chorus_matriarch_zit_s51_00001_.png",
+   "prompt": "Recolour this organism: dark olive-brown flesh instead of purple, ochre chitin ridges, bile yellow-green glow, and a dark olive-brown cavern behind it instead of purple. Keep the same organism, its shape, composition, lighting direction and painting style."
+  },
+  {
+   "id": "matriarch",
+   "kind": "r4",
+   "seed": 23,
+   "src": "b1/chorus_matriarch_zit_s51_00001_.png",
+   "prompt": "Recolour this organism: dark olive-brown flesh instead of purple, ochre chitin ridges, bile yellow-green glow, and a dark olive-brown cavern behind it instead of purple. Keep the same organism, its shape, composition, lighting direction and painting style."
+  },
+  {
+   "id": "mending",
+   "kind": "r4",
+   "seed": 11,
+   "src": "b2/chorus_mending_b2_zit_s11_00001_.png",
+   "prompt": "Recolour this organism: dark olive-brown flesh and membrane instead of pink and purple, ochre bone needles, bile yellow-green glow, and a dark olive-brown cavern behind it. Keep the same organism, its shape, composition, lighting direction and painting style."
+  },
+  {
+   "id": "mending",
+   "kind": "r4",
+   "seed": 23,
+   "src": "b2/chorus_mending_b2_zit_s11_00001_.png",
+   "prompt": "Recolour this organism: dark olive-brown flesh and membrane instead of pink and purple, ochre bone needles, bile yellow-green glow, and a dark olive-brown cavern behind it. Keep the same organism, its shape, composition, lighting direction and painting style."
+  }
+ ]
+}

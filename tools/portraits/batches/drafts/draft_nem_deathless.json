@@ -1,0 +1,73 @@
+{
+ "note": "DRAFT: do not queue until Ryan signs off the new faction looks (lore round 4). Built by tools/portraits/look_drafts.py.",
+ "out": "n4",
+ "budget_s": 1050,
+ "items": [
+  {
+   "id": "nem_deathless_1",
+   "model": "zit",
+   "prompt": "A Nemesis of the Eclipsed: seven tall dark violet-black plate pylons floating in a ring round a single small white-gold light, thin white beams joining them. A machine with no figure, no statue, no head, no face, no body, no robot, no green light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void around the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_2",
+   "model": "zit",
+   "prompt": "A Nemesis of the Eclipsed: a towering spine of layered dark violet-black plates coiled round a white-gold core, like a serpent of heat shields, no head. A machine with no figure, no statue, no head, no face, no body, no robot, no green light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void around the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_3",
+   "model": "zit",
+   "prompt": "A Nemesis of the Eclipsed: thousands of tiny dark violet plates swarming in a shifting sphere round a white-gold core. A machine with no figure, no statue, no head, no face, no body, no robot, no green light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void around the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_4",
+   "model": "zit",
+   "prompt": "A Nemesis of the Eclipsed: a tall machine figure of dark violet-black plates with a cracked white-gold visor, its chest core flickering. An Eclipsed machine being: a tall machine body built from layered dark violet-black armour plates, a narrow horizontal visor of white-gold light where a face would be, a small core of trapped white light glowing in the chest. Not a skeleton, no skull, no green light, no crown, no Egyptian motifs. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void around the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_5",
+   "model": "zit",
+   "prompt": "A Nemesis of the Eclipsed: a vast fan of overlapping dark violet heat-shield plates opening round a small white-gold core like an eclipse. A machine with no figure, no statue, no head, no face, no body, no robot, no green light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void around the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  },
+  {
+   "id": "nem_deathless_6",
+   "model": "zit",
+   "prompt": "A Nemesis of the Eclipsed: a broken ring of dark violet-black blades floating over a dark pit, a thin white-gold corona round its empty centre. A machine with no figure, no statue, no head, no face, no body, no robot, no green light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction creature concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, the subject centred and filling the frame, lit hard from the left by pale white-gold corona light, deep soft shadow on the right side, a dark painterly black void around the dark disc of a black hole ringed by a thin white-gold glow background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37
+   ]
+  }
+ ]
+}
