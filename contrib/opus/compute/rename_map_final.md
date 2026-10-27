@@ -2,7 +2,7 @@
 
 Written by L (lore rollout helper). Source of truth: `lore_bible_r8.md` and the canonical table in `contrib/opus/briefs/lore_rollout_2026-10-27.md`. This file supersedes `rename_map.md` (Oct 26): its inventory of where strings live was reused, its new names were not (Brand, Flux, Verdict arc, Chord lance, Deathless Court, writ/warrant/edict, the Court words and others are all retired).
 
-**Read at:** main `e243729` (every Where cell below was produced by grepping the exact Old string at that commit; `(not found)` would mean the row is stale). Generated files are not listed and follow by re-export: `godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`, the oracle copies under `godot/*/test/oracle/`, and `voidsworn-3d.html`.
+**Read at:** main `00d2b4b` (no covered file changed between `e243729` and `00d2b4b`) (every Where cell below was produced by grepping the exact Old string at that commit; `(not found)` would mean the row is stale). Generated files are not listed and follow by re-export: `godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`, the oracle copies under `godot/*/test/oracle/`, and `voidsworn-3d.html`.
 
 ## Rules for whoever applies a row
 
@@ -405,3 +405,92 @@ One name, one owner (bible 1.4): no captain pool rolls an admiral's given name o
 | `ithar:['Silverthorn','Dawnwhisper','Lament of Stars','Glass Heron','Moonveil','Farsinger','Pale Current','Starfall','Quiet Blade','Evening Tide']` | ithar:['Silverthorn','Clear Whisper','Lament of Stars','Glass Heron','Moonveil','Far Focus','Pale Current','Starfall','Quiet Prism','Evening Tide'] | ui3d.js:22 | B | |
 | `deathless:['Eternal Vigil','The Unbroken','Sepulchre','Tomb of Ashes','Grave Sovereign','Ossuary','Never-Ending','Obelisk','Dust Throne','Silent Heir']` | deathless:['Long Noon','The Unbroken','Last Light Kept','Copy of Ardent','Ninth Shade','Cold Memory','Never-Ending','Gnomon','Dust of Noon','Silent Heir'] | ui3d.js:23 | B | |
 | `"ship": "Saint Ignatius"` | "ship": "Banked Fire" | godot/scenes/campaign/campaign_scene.gd:59 | G2 | Screenshot fixture (shows on the Hall of the fallen). Its captain "Ordo Halvar" becomes "Casimir Holloway" (Ordo is an Inquisition word). |
+
+## 10. Help text and Godot-only screen text
+
+### 10.1 How to play (both games)
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `gauss weapons mostly ignore them` | null weapons mostly ignore them | campaign_meta.js:160; godot/ui/campaign/campaign_ui.gd:1015 | B, G3 | |
+| `Hegemony ion pulses, Corsair overburn, Chorus regrowth and frenzy, Ithar phase jumps, Deathless reanimation beams, and the Voidsworn’s burns, reloads and shield surges` | Hegemony ion pulses, Hullbreaker overburn, Chorus regrowth and frenzy, Glasswright phase jumps, Eclipse repair swarms, and the Crusade’s burns, reloads and shield surges | campaign_meta.js:165 | B | |
+| `patrons grow fond of you as you take their boons, offering rarer boons and eventually a gift at the start of a run` | cores sync with you as you take their protocols, offering rarer protocols and eventually a gift at the start of a run | godot/ui/campaign/campaign_ui.gd:1009 | G3 | Godot copy of the 2.x row (the browser line has `<b>` tags). |
+
+### 10.2 Godot screens (G2, G3)
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `const TAGLINE := "Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain."` | const TAGLINE := "Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain." | godot/ui/battle/brand.gd:11 | G2 | Same tagline as row 1.2 (G2). |
+| `term("patrons", true) + " watching"` | term("patrons", true) + " in range" | godot/ui/campaign/campaign_ui.gd:573 | G3 | Map sidebar box title after the TERMS switch ("Cores in range"). |
+| `" · win at a " + term("sigil") + " for a " + term("boon")` | " · win at a " + term("sigil") + " for a " + term("boon") | godot/ui/campaign/campaign_ui.gd:573 | G3 | Reads "win at a signal for a protocol" after the switch: fine as is, listed so nobody hunts for it. |
+| `"Win at a stop with a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + "."` | "Win at a stop carrying a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + "." | godot/ui/campaign/campaign_ui.gd:573 | G3 | Tooltip; "carrying" reads better with signal. |
+| `"None yet. Win at a node with a " + term("patron") + "’s " + term("sigil") + " to earn one."` | "None yet. Win at a node carrying a " + term("patron") + "’s " + term("sigil") + " to earn one." | godot/ui/campaign/campaign_ui.gd:660 | G3 | |
+| `"startRun": "Launch the crusade"` | "startRun": "Launch" | godot/main/campaign_fallback_ui.gd:7 | G2 | Fallback UI label; the run word depends on the faction (Homecoming, raid ...). |
+
+G2's own rows already landed in 49f0d85 (title, window title, project name, product name and description; exe file name kept as Voidsworn.exe, save folder kept). Nothing else for G2 in project.godot or export_presets.cfg. `godot/main/FEATURES.md` mentions the old exe and folder names only as file paths; keep.
+
+## 11. Story layer (godot/story, L)
+
+L rewrites `godot/story/` to round 8 in Job 2 (arcs, outlines, titles, unlocks, chronicle and career text, Nemesis story lines, voices, tokens.gd, tests, README). Every id, hook, trigger and data shape stays. The rows below are the ones other streams read or mirror; the full text changes are in L's commits and `lore_rollout_notes.md`.
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `"unlock_name": "Penitent lantern-cruiser"` | "unlock_name": "Vigil lance-cruiser" | godot/story/data/arcs.json:9 | L | Must match data.js HULL_VARIANTS (8.x). |
+| `"unlock_name": "Interdictor column escort"` | "unlock_name": "Cordon column escort" | godot/story/data/arcs.json:17 | L | |
+| `"unlock_name": "Gilded marauder"` | "unlock_name": "Trophy wrecker" | godot/story/data/arcs.json:25 | L | |
+| `"unlock_name": "Sun-eater razorfiend"` | "unlock_name": "Sun-eater bladeback" | godot/story/data/arcs.json:33 | L | |
+| `"unlock_name": "Archive wraithcarrier"` | "unlock_name": "Ringing aperture" | godot/story/data/arcs.json:41 | L | |
+| `"unlock_name": "Court guard destroyer"` | "unlock_name": "Archive guard flare" | godot/story/data/arcs.json:49 | L | Already differed from data.js ("Jackal court guard"); both now say Archive guard flare. |
+| `Lances and gauss guns make up` | Lances and null guns make up | godot/story/data/titles.json:10 | L | Title rule text. |
+| `"Warlord Grax Ironjaw` | "Warlord Grax Steelgrin | godot/story/test/story_test.gd:195,276; godot/story/README.md:96 | L | Test fixtures and README sample. |
+| `Admiral Castellan Vex` | Admiral Roderic Vex | data.js:203; tools/portraits/make_batches.py:41; godot/story/story.gd:155,181; godot/story/test/story_test.gd:233,235 | B, P, L | Test fixtures and comments (data.js row is in 6). |
+| `const FEMININE := [` | (list rewritten to the new pools) | godot/story/tokens.gd:19 | L | tokens.gd pronoun fallback: drop Isolde, Mireille, Serafine, Maren, Ilsa, Aelith, Ilyra, Nyssa, Saelune, Eluned, Faewyn, Liraen, Ysolde, Tauret, Nefrah, Khepset; add Mathilde, Sabine, Rosalind, Margery, Clemence, Marit, Margit, Ida, Hedda, Agathe, Edda, Tamsa, Ilvy, Ressa, Nell, Sefa, Orra, Desmae, Imra, Rhosse, Altheve, plus the Nemesis prefixes from NEM_FAC fem lists. |
+
+## 12. Portraits (P)
+
+P landed the round 8 prompts in e243729. What is left in `tools/portraits/make_batches.py` is the batch 1 and 2 history (subjects already painted, kept so old batches can be rebuilt). If any of those subjects is queued again, change the names in it first:
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `Portrait of Admiral Castellan Vex of the Voidsworn Crusade` | Portrait of Admiral Roderic Vex of the Sunward Crusade | tools/portraits/make_batches.py:41 | P | |
+| `Portrait of Grand Admiral Ilsa Kassar` | Portrait of First Admiral Ilsa Kassar | tools/portraits/make_batches.py:45 | P | |
+| `Portrait of Warlord Grax Ironjaw of the Ashfall Corsairs` | Portrait of Warlord Grax Steelgrin of the Ashfall Hullbreakers | tools/portraits/make_batches.py:49 | P | And the human-pirate description becomes the furred bear and wolf species (brief, Portraits row). |
+| `Portrait of Overlord Nekhet the Undying of the Deathless Dynasty` | Portrait of Nadir Aurex, Ninth Frame, of Eclipse | tools/portraits/make_batches.py:58 | P | |
+| `Portrait of The Mending Choir` | Portrait of The Mending Throng | tools/portraits/make_batches.py:26 | P | |
+| `Portrait of Aelith Dawnsail of the Ithar` | Portrait of Tamsa of the Clear Aperture, a Glasswright | tools/portraits/make_batches.py:53,91 | P | |
+| `'Portrait of a Nemesis, a rival enemy commander of the Ithar: %s. %s'` | 'Portrait of a Nemesis, a rival enemy commander of the Glasswrights: %s. %s' | tools/portraits/make_batches.py:191 | P | |
+| `'A Nemesis of the %s, a rival enemy war-organism: %s. %s' % (_fac.capitalize()` | use a display name map: chorus "the Chorus", deathless "Eclipse" | tools/portraits/make_batches.py:193,205 | P | `_fac.capitalize()` would print "Deathless". |
+
+## 13. Vetoable calls (L's picks where the bible is silent)
+
+Opus or Ryan can veto any of these; each is a few strings to swap.
+
+- **V1 Tagline:** "Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain." (any faction can be played, so not "crusade").
+- **V2 Faction blurbs:** six new one-liners in section 1 (gameplay half kept, lore half from the bible).
+- **V3 Ship classes:** `cls` stays as the internal key; new display map: War-barge, Colossus (canonical), **Lattice-ship** for The Unfinished (the bible gives no class; it is built around the largest piece of the Lattice), Archive-ship (canonical).
+- **V4 Crusade admirals:** Castellan Vex becomes **Admiral Roderic Vex**; Oath-Captain Malek Draven (canonical), Commodore Sera Ashgrove and High Admiral Oryn Thale kept.
+- **V5 Hullbreaker admirals:** **Warlord Grax Steelgrin**, **Old Mott** (no surname), **Sable the Smiling Knife** (human surname Venn dropped; a sable is a furred hunter, so the name fits the species), Vesh the Collector kept.
+- **V6 Glasswright admirals** (name plus optical family line): aelith = **Tamsa of the Clear Aperture** (carriers), vaelen = **Saro of Long Focus** (lances; Command "Burning glass"), thorne = **Vell of the Third Mirror** (evasion; Command "Scatter the light"), mirelle = **Brin of the Fourth Lens** (shields). Corin skipped: Corin Reyes is Hegemony.
+- **V7 Eclipse admirals by doctrine:** nekhet = **Nadir Aurex, Ninth Frame** (regrowth starter, and its portrait is the bible's broken ring mind), sekhmar = **Umbra Vessane, Third-Housed** (corona-arc offence), anuket = **Ostrel of the Long Copy** (silent flanker), khepra = **Seveth, Twice-Restored** (the durable one). Commands: Release the repair swarms, Noon volley, Out of the shadow, Sunshade wall.
+- **V8 Name pools:** all pools in section 9. Hullbreaker captains are harsh names plus fight epithets ("Krogg the Gutter", "Thrag Longjaw"); Glasswright captains carry family lines ("Oskel of the Second Lens"); Eclipse captains carry iteration epithets ("Benth of the Fifth Frame"); Crusade Nemesis titles are the bible's (High Warden, Warden of the Roll, Dawnwarden, Oath-warden) over old European given names; Eclipse Nemesis titles High Nadir, Eclipse-prime, Archivist, Nadir; Glasswright Lens-keeper, First Mirror, Keeper of Astra, Duelist.
+- **V9 Cores:** sync tiers **Listening, Partial sync, Synced, Full sync**; protocols renamed only where a church or song word or a clash forced it (Unbent Plating, Incendiary Warheads, Hot Tubes, Brood Harvest, Fortress). The S-6 badge letter is S.
+- **V10 Faction-power strings:** void-shrine becomes **"A wall of names"** (a memorial station chalked with a lost crusade's names), and the Crusade verb becomes **"Keep the dawn watch"** (free after an offering there); "joined the song" becomes **"answered the tone"** (a dying Glasswright prism ringing one clear tone); "Waken the legion" becomes **"Back up the fleet"**; tomb-world becomes **"A siphon array"** (the hostile event) and **"A dormant hull yard"** (the Eclipse-only twin); the Eclipse rule "Endless legion" becomes **"Archive restore"**.
+- **V11 Events:** the astropath becomes a signals officer and a founders' beacon (no psychics); the Ithar seer becomes a Glasswright wanderer and its keeper; the tithe vault becomes a toll vault; the pirate haven a raider den; "The saint answers" becomes "Luck holds".
+- **V12 Nova cannon** becomes **Spinal cannon** (shared by three flagships, so a neutral name).
+- **V13 Battle shapes:** the gravity-well board's label is "Hollow Sun" (canonical row: the dead star is the Hollow Sun); Colossus becomes "Giant wreck" (Colossus is now the Maw's class); Shoals becomes "Rock shoals"; Archipelago kept.
+- **V14 Relics keep the word "relic"** as the item type (a roguelite term, not the Crusade honour word the bible bans); only church-flavoured relic names change.
+- **V15 Arc unlocks:** Vigil lance-cruiser, Cordon column escort, Trophy wrecker, Sun-eater bladeback, Ringing aperture, Archive guard flare.
+- **V16 Run-end headlines:** Hullbreakers "Strongest keeps it", Glasswrights "The light is kept", Eclipse "Noon returns" (the others kept).
+- **V17 Refits and relics the bible does not name:** section 5 (for example Scanner array, Screen capacitor, The Chalked Roll, Wake-tracker, Tasting pores, Annealing kilns, Long-count reckoner, Siphon ledger, Long clock).
+- **V18 Small ones:** Hegemony "Shield wall order" (protocol now belongs to the cores), "Salvage crews" (was Salvage protocols), "Spitting volley", "Acid tide", Hegemony ship names Optimal, Consensus, Projection, Punctual, Comptroller, Allocation, Forecast.
+
+## 14. Looked at and kept
+
+- Generic words: void (Open void, Deep void, Quiet void), relic (the item type), crusade (the Crusade's run word and "Pale Crusader", "Crusader's wrath"), Warden-class and Harrow-class, Lance array, Phase jump (Glasswright short jumps), Prism charge, Undying foes (Heat), Zealots (Nemesis trait), Ion cannon, Plasma drive, Deflector (Hegemony words), Bright Censure, Judgement Bell (bells belong to the Crusade), Ashen Vigil and Everwatch (bible ship names), Funeral Pyre and Pyre of Stars, Warlord's Pyre-Barge (canonical), Wolfpack (the Hullbreakers are wolf-like pack hunters), Archipelago.
+- Chorus: the Matriarch of Nine Throats, Razormaw, Voice of the Deep, drone-spawn, spitter, brood, Spawning surge, Blood frenzy, Regrowth tide, Deep Murmur, Lantern Gut.
+- Hegemony: the Iron Mandate, picket, vanguard, dominion, the rest of the HNS names, all admirals except Kassar's rank.
+- Ids, save keys, CSS class names and code comments (the sweep in Job 3 reports display strings only).
+
+## 15. Grep check
+
+Every Old cell was searched as an exact substring (also with `’` and `’` swapped) across: data.js, battle.js, core.js, campaign_run.js, campaign_meta.js, campaign3d.js, ui3d.js, head.html, main3d.js, tools/portraits/make_batches.py, godot/project.godot, godot/export_presets.cfg, godot/main/FEATURES.md, godot/story (gd, json, md, py; not review_incorporation.md, which is history), godot/ui, godot/main, godot/scenes, godot/rules (code and tests), godot/campaign (code and tests, not oracle), godot/portraits. Rows found: all; rows missing: 0. core.js, main3d.js and godot/portraits/*.gd had no display hits (ids only).
