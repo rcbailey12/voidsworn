@@ -1,52 +1,40 @@
-# Voidsworn: handoff (updated Oct 27, 2026, midday)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Oct 27, 2026, evening)
 
-## 0. Status at Oct 27 midday (read this first)
+## 0. Status at Oct 27 evening (read this first)
 
-**The Godot move (travel sprint, R34/R35).**
-- G1 rules: DONE. Godot matches JS at d8b47c6 plus steps 5, 5b and 6. PC: 43/43 golden battles; 1,500 random battles with 0 diffs; nothing NOT PORTED (FINDINGS G-12). Re-pins per new port_notes step.
-- G2 battle and game:
-  - Built: title to final boss, the Windows build, a smart bot, and the Cinematic/Brisk movement setting.
-  - Pace fix: every battle's worst round is under 15 s.
-  - Bot runs: 100 smart runs with 0 hangs, then 36 runs across all six factions, 34 of them clean.
-  - Sci-fi fonts are in, and the title text lives in brand.gd.
-  - IN PROGRESS: thruster-true movement (R54: main drive on the hull axis, RCS turns and sidesteps, trails from real nozzles), then the Career font swap.
-- G3 campaign: DONE. The R51 map is rebuilt as a Sins 2 style star system over 4 rounds (docs/shots/g3_campaign/8a12941/). Campaign parity is green.
-- G4 effects:
-  - Built: per-weapon hull marks with glow that carries to the battle camera, mass-scaled hit reactions, per-faction shield breaks, wrecks from the real hulls, cratered asteroids, and the dead-star black hole with Doppler beaming (docs/shots/g4/f3603c9/).
-  - IN PROGRESS: flak readability, lasting scars, and the Jolt convex-hull guard.
-- A4 ships:
-  - Pass 3 is done for Corsairs and Voidsworn (docs/shots/a4/46a89fe/).
-  - IN PROGRESS: the Pyre-Barge redesign to match C13s to C16s (R54), the Hegemony naval hull reshape, the V17/V1b gothic peaks, the I16 masts, and the lance-slot fan pattern.
-- Stream B rules: admiral band and faction tune; the PC confirmation set is running.
-- Music: 24 CC0/CC BY tracks in game; CREDITS.md done.
-- Portraits: repainting to the approved looks (R59). 24 Nemesis portraits in game (godot/portraits/index.json, 24 nemesis entries; files in godot/portraits/nemesis/pool), and new-look prompts drafted. Painting is held for lore approval.
-- Music files: 24 tracks in godot/music/tracks.
-- Story and career: being rewritten to the approved lore by the lore rollout helper (R59).
+**Opus is offline from about Oct 27 16:00 PT (weekly usage cap).** Ryan is running audits with Muse and the other LLMs meanwhile. Audit brief: contrib/opus/briefs/muse_2026-10-27c_rollout_audit.md. Whoever picks this up next (Opus, or a fresh Claude session): read this section, then FINDINGS R51 to R60, then the briefs named below.
 
-**Lore (R44 to R59): APPROVED Oct 27.** Rollout in progress: contrib/opus/briefs/lore_rollout_2026-10-27.md; final map contrib/opus/compute/rename_map_final.md (being written).
-- Round 8 is in the live doc https://claude.ai/artifact/SKyQf2QcJSXGmXfmxKxFpJ (earlier rounds below it as appendices), with a repo copy at contrib/opus/compute/lore_bible_r8.md. The people: Starwrights; machine faction: Eclipse (R57, R58). Next comment seq to read after: 211.
-- Earlier rounds sit as appendices in the doc. Round 5 verification is contrib/opus/evidence/lore_r4_review_verification_2026_10_27.md.
-- Ryan said "lore approved" on Oct 27 (R59). Renames route per the rollout brief: L (map, story rewrite, final sweep), B (data.js and JS), G1/G3 (re-export and Godot copies), G2 (brand.gd title "Embers of the Hollow Sun"), G4 (faction palettes), A4 (hull repaints), portraits (final looks and crests).
+**Lore: APPROVED Oct 27 (R59).** The game is *Embers of the Hollow Sun*.
+- Source of truth: contrib/opus/compute/lore_bible_r8.md (live doc https://claude.ai/artifact/SKyQf2QcJSXGmXfmxKxFpJ, marked approved).
+- Rollout brief: contrib/opus/briefs/lore_rollout_2026-10-27.md (canonical names, who does what).
+- Final map: contrib/opus/compute/rename_map_final.md (L; 348+ rows with file:line and owner).
+  - Opus accepted every vetoable call except V14: relic becomes **salvage**.
+  - The wreck step becomes **Strip the wrecks**, Salvage rig becomes **Scrap rig**, Salvaged refits becomes **Recovered refits**, and "Salvage: +N credits" becomes **"Spoils: +N credits"** (R60, section 5c).
+- Ids never change.
 
-**Helpers (relaunched Oct 27 02:45 UTC; resumed after each usage reset).**
+**Rollout status (as of 144dc71):**
 
-| Stream | Agent id |
-|---|---|
-| G1 | a2fcec4812d63553e |
-| G2 | a9d00919887842fac |
-| G3 | a5c861647dc80efec |
-| G4 | ab228ebd03e89dc25 |
-| A4 | aee63f07b81a53b35 |
-| B | ae68d8fc77338c24e |
-| Music and portraits | a9e1f7c8ca0a13d01 |
+| Stream | Done | Still to do |
+|---|---|---|
+| L (lore rollout) | rename_map_final.md (1695ea4 to 144dc71) | Job 2: rewrite godot/story to round 8. Job 3: final sweep for retired words, reported in contrib/opus/compute/lore_rollout_notes.md. |
+| B (rules) | Pass 3 balance (G-13); full-run wins eased back toward about 20% (d551697, port_notes step 9) | The strings step: data.js and JS rows of the map, as its own port_notes step. Deathless skirmish matchups; sector 3 round time; start fleets reaching battles. |
+| G1 (rules port) | Parity headline at bdb1a9d: 48 of 48 goldens on the PC and in the cloud, seed 9 sweep 200 of 200 (803f72d) | Port step 9, then B's strings step: re-pin, re-export, godot/rules rows, re-run parity. |
+| G2 (game) | Title "Embers of the Hollow Sun", window and exe product name (49f0d85; exe file stays Voidsworn.exe, the save folder is pinned); tagline and G2 rows (239fdeb); exe launch test (ef5cab2); Career and Settings opaque; board planets | Movement A/B clips (current, smooth stop, flip-and-burn; R55) into docs/shots/g2/3be2896/; the 36-run bot re-run on current main (clean so far); title re-shoot. |
+| G3 (campaign) | Crest hook and round 8 map palettes (0dacdc0); title reads brand.gd (6dc30ee); campaign parity 30/30 PC and cloud at 9711a7e | B's strings step, then in ONE commit: oracle re-pin, campaign.gd string port, its 29 map rows and section 5c (parity compares event text and button lists, so they can't land apart). Re-run parity, re-shoot the map. |
+| G4 (effects) | Round 8 palettes (5b4b732); marks at battle distance (fbd22e7); 20-ship bench (2aac0ca) | The bench found a 1% low of 15 fps and a 4.3 s freeze on a death at 20 ships; the fix landed in 2aac0ca, but a re-bench is needed to confirm. Then the black-hole disc. |
+| A4 (ships) | Pass 5 (b1e7f54): Hegemony and V1b blunt level prows; Pyre-Barge at 256k triangles (was 475k); twelve ships audit PASS | Faction repaints: Crusade black iron, frost and ember; Glasswrights crystal; Eclipse violet-black and white-gold; Chorus olive and bile. Then V17's radiator bank, V1b's vents and porthole rows, the Warden mount if not done. |
+| Portraits | Six faction crests (e243729, crests/faction_<id>.svg); round 8 prompts and scar prompts (494c000) | Admiral and Nemesis repaints on PC lane A (jobs r8a, r8b, r8e) and contact sheets. Display names follow the map. |
 
-- Takeover brief: contrib/opus/briefs/takeover_2026-10-27.md.
-- A chat interrupt from Ryan stops every helper; check them after one.
-- Stale edits from the first helper set are kept as patches in contrib/opus/evidence/stale_worktree_patches_2026_10_27/.
+**Helpers.** These are Opus's background agents, and they stop when Opus's usage stops. A fresh session can't message them; it relaunches each stream with contrib/opus/briefs/takeover_2026-10-27.md plus that stream's row above. Each stream's worktree is under .claude/worktrees/ (vs_g2 is at /home/claude/vs_g2); check for uncommitted work first.
 
-**Muse.**
-- The lore review brief is contrib/opus/briefs/muse_2026-10-27_lore_review.md (round 4, done and verified).
-- The full catch-up audit brief is contrib/opus/briefs/muse_2026-10-27b_full_audit.md. Result: contrib/muse/reviews/full_audit_2026_10_27.md, verified in contrib/opus/evidence/full_audit_verification_2026_10_27.md (FINDINGS R56).
+**PC runner.** Lane A (`queue\`, GPU) and lane B (`queue_b\`, CPU), always through tools\pc\tmo.bat. Inspect with device_list_dir and device_stage_files only. Never drive the PC by computer control to unstick jobs. Large downloads need Ryan's OK.
+
+**Earlier today, settled:**
+- Muse full audit verified (R56): no blockers, every fix routed.
+- Thruster-true movement: dim pilot glow, turn then burn, agile strike craft (R54, R55).
+- Pyre-Barge rebuilt from welded Hullbreaker hulls.
+- Campaign map audit fixes.
+- 24 Nemesis portraits and 24 music tracks confirmed in the repo.
 
 ## 1. What and where
 
