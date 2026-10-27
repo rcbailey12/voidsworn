@@ -19,6 +19,7 @@ var bob_seed := 0.0
 var meshes: Array = []
 var fade := 1.0
 var hull_base := Vector3.ZERO
+var hull_basis := Basis.IDENTITY # the hull's fitted basis (scale, mirror, yaw fix); bank and pitch are laid over it
 var a4 := false              # an A4 kit ship (not mirrored)
 
 static var _manifest = null
@@ -102,6 +103,7 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 			var wing: Node3D = hull.duplicate()
 			wing.position = hull.position + off
 			add_child(wing)
+			wings.append([wing, wing.position])
 			_collect(wing)
 	_engines()
 	_ring()
@@ -157,6 +159,7 @@ func _fit() -> void:
 	hull.transform = Transform3D(Basis(Vector3.UP, yaw_fix).scaled(Vector3(k, k, k if a4 else -k)), Vector3.ZERO)
 	hull.position = -(hull.transform.basis * c)
 	hull_base = hull.position
+	hull_basis = hull.transform.basis
 
 
 func _rel(n: Node3D) -> Transform3D:
@@ -343,7 +346,14 @@ var path_t := 0.0
 var _tans: Array = []
 
 
-func play_path(keys: Array, yaws: Array, alts: Array, S: float, dur: float) -> void:
+func play_path(keys: Array, yaws: Array, alts: Array, S: float, dur: float, opts := {}) -> void:
+	mass = clampf(float(opts.get("mass", 0.5)), 0.0, 1.0)
+	cinematic = bool(opts.get("cinematic", true))
+	settle_t = -1.0
+	_decel_puffed = false
+	_prev_pos = position
+	if cinematic and not yaws.is_empty() and absf(angle_difference(cur_yaw, float(yaws[-1]["yaw"]))) > 0.2:
+		_turn_puffs(signf(angle_difference(cur_yaw, float(yaws[-1]["yaw"]))))
 	path_keys = keys
 	path_yaws = yaws
 	path_alts = alts
@@ -391,14 +401,211 @@ static func _key_at(arr: Array, x: float, field: String) -> float:
 	return float(A[field]) + (float(Bk[field]) - float(A[field])) * e
 
 
-func busy() -> bool:
+# burning: the burn itself. The battle waits only on this; the settle after it (overshoot, drift, last RCS puffs)
+# plays on while the next ship starts, so heavier motion costs no extra time at the B2 pace.
+func burning() -> bool:
 	return path_dur > 0.0
 
 
-func _process(dt: float) -> void:
+# busy: G2 is steering this node (burn, settle or a yaw swing still running) and writes its position and yaw itself.
+# G4's hit reactions read this (fx_ship._react_step) and add their yaw kick and drift only while it is false.
+func busy() -> bool:
+	return path_dur > 0.0 or settle_t >= 0.0 or _yaw_v != 0.0
+
+
+# ---------------------------------------------------------------- heavy-ship motion (R50, "Movement: cinematic")
+# mass 0 (a frigate) to 1 (a capital ship): how long the main engine takes to build up speed and to bleed it off (the
+# same total time as before, so turns are no slower), how fast the hull swings round (a spring, so a big hull arcs
+# into its new heading instead of pivoting), how far it banks into the turn, how far it overshoots the hex and settles.
+var mass := 0.5
+var cinematic := true
+var thrust := 0.0             # -1 braking (retro) .. 1 full burn; the battle feeds it to the engine glow and trail
+var settle_t := -1.0
+var _settle_T := 0.6
+var _settle_dir := Vector3.ZERO
+var _settle_A := 0.0
+var _end_pos := Vector3.ZERO
+var _yaw_v := 0.0
+var _roll := 0.0
+var _pitch := 0.0
+var _prev_pos := Vector3.ZERO
+var _vel := Vector3.ZERO
+var _decel_puffed := false
+var _puff_cd := 0.0
+var wings: Array = []         # strike craft beside the lead hull: [node, rest offset]
+var puffs: Array = []
+
+
+func _phases() -> Vector2:
+	return Vector2(lerpf(0.10, 0.34, mass), lerpf(0.14, 0.38, mass))
+
+
+# distance fraction at time fraction p: a smooth (sine-ramped) burn, cruise, then braking; total area 1
+func _profile(p: float) -> float:
+	var ph := _phases()
+	var ta := ph.x
+	var td := ph.y
+	var vmax := 1.0 / (1.0 - ta * 0.5 - td * 0.5)
+	if p < ta:
+		return vmax * (p * 0.5 - ta / (2.0 * PI) * sin(PI * p / ta))
+	if p > 1.0 - td:
+		var q := 1.0 - p
+		return 1.0 - vmax * (q * 0.5 - td / (2.0 * PI) * sin(PI * q / td))
+	return vmax * (ta * 0.5 + (p - ta))
+
+
+func _spring_yaw(target: float, dt: float) -> float:
+	# critically damped: a frigate snaps round, a capital ship swings
+	# the exact step of a critically damped spring, stable at any frame time (bot runs play at 40x)
+	var w := lerpf(13.0, 5.5, mass) / maxf(speed_k, 0.2)
+	var x := -angle_difference(cur_yaw, target)  # current minus target
+	var v := _yaw_v
+	var ex := exp(-w * dt)
+	var x2 := (x + (v + w * x) * dt) * ex
+	var v2 := (v - w * (v + w * x) * dt) * ex
+	if not (is_finite(x2) and is_finite(v2)):
+		x2 = 0.0
+		v2 = 0.0
+	cur_yaw = target + x2
+	_yaw_v = v2
+	return (v2 - v) / maxf(dt, 1e-4)
+
+
+func _motion(dt: float) -> void:
+	var target_yaw := cur_yaw
+	var moving := false
 	if path_dur > 0.0:
 		path_t = minf(path_t + dt / (path_dur * speed_k), 1.0)
-		# ease in and out over the whole burn (thrust up, cruise, brake)
+		var x := path_S * _profile(path_t)
+		var pos := _pos_at(x)
+		pos.y = _key_at(path_alts, x, "y")
+		position = pos
+		target_yaw = _key_at(path_yaws, x, "yaw")
+		var ph := _phases()
+		thrust = 1.0 if path_t < ph.x else (-0.6 if path_t > 1.0 - ph.y else 0.35)
+		if path_t > 1.0 - ph.y and not _decel_puffed:
+			_decel_puffed = true
+			_retro_puffs()
+		moving = true
+		if path_t >= 1.0:
+			path_dur = 0.0
+			_end_pos = Vector3(pos.x, pos.y, pos.z)
+			var d := _vel
+			d.y = 0.0
+			_settle_dir = d.normalized() if d.length() > 0.01 else Vector3(cos(-cur_yaw), 0, sin(-cur_yaw))
+			_settle_A = lerpf(0.9, 0.55, mass) * clampf(L / 14.0, 0.5, 1.6) * clampf(path_S, 0.3, 1.0)
+			_settle_T = lerpf(0.45, 0.95, mass)
+			settle_t = 0.0
+	elif settle_t >= 0.0:
+		settle_t += dt / maxf(speed_k, 0.05)
+		var k := settle_t / _settle_T
+		# past the hex and back: a damped swing, then a slow drift to rest
+		var off := _settle_dir * _settle_A * sin(PI * 1.7 * k) * exp(-3.6 * k)
+		position = _end_pos + off
+		target_yaw = _key_at(path_yaws, path_S, "yaw") if not path_yaws.is_empty() else cur_yaw
+		thrust = -0.3 if k < 0.35 else 0.0
+		if k >= 1.0:
+			settle_t = -1.0
+			position = _end_pos
+			_settle_puffs()
+	else:
+		thrust = 0.0
+		target_yaw = _key_at(path_yaws, path_S, "yaw") if not path_yaws.is_empty() else cur_yaw
+	_vel = (position - _prev_pos) / maxf(dt, 1e-4)
+	_prev_pos = position
+	var acc := 0.0
+	# yaw is written only while steering: at rest the root's yaw belongs to G4's hit reaction
+	if moving or settle_t >= 0.0 or _yaw_v != 0.0 or absf(angle_difference(cur_yaw, target_yaw)) > 0.0005:
+		acc = _spring_yaw(target_yaw, dt)
+		if absf(angle_difference(cur_yaw, target_yaw)) < 0.0005 and absf(_yaw_v) < 0.002:
+			cur_yaw = target_yaw
+			_yaw_v = 0.0
+		rotation.y = cur_yaw
+	# RCS on hard swings (rate limited)
+	_puff_cd -= dt
+	if moving and absf(acc) > lerpf(30.0, 6.0, mass) and _puff_cd <= 0.0:
+		_turn_puffs(signf(acc))
+		_puff_cd = 0.35
+	# bank into the turn, more for light hulls; a slight nose dip when braking hard
+	var spd := clampf(_vel.length() / maxf(L * 1.5, 1.0), 0.0, 1.0)
+	var roll_t := clampf(-_yaw_v * lerpf(0.10, 0.06, mass) * (0.4 + 0.6 * spd), -lerpf(0.26, 0.12, mass), lerpf(0.26, 0.12, mass))
+	_roll = lerpf(_roll, roll_t, clampf(dt * lerpf(9.0, 3.5, mass), 0.0, 1.0))
+	var pitch_t := 0.025 * mass * (1.0 if thrust < -0.1 else (-0.6 if thrust > 0.9 else 0.0))
+	_pitch = lerpf(_pitch, pitch_t, clampf(dt * 3.0, 0.0, 1.0))
+	# strike craft trail the lead a beat behind, closing up when the wing stops
+	for wv in wings:
+		var back: Vector3 = (wv[1] as Vector3) - Vector3(1, 0, 0) * spd * L * 0.9 * (1.0 + float(wings.find(wv)) * 0.5)
+		(wv[0] as Node3D).position = (wv[0] as Node3D).position.lerp(back, clampf(dt * 4.0, 0.0, 1.0))
+
+
+func snap_to(p: Vector3, yaw: float) -> void:
+	path_dur = 0.0
+	settle_t = -1.0
+	path_yaws = []
+	_yaw_v = 0.0
+	position = p
+	_prev_pos = p
+	cur_yaw = yaw
+	rotation.y = yaw
+
+
+# ---------------------------------------------------------------- RCS puffs: short cold-gas bursts at the hull corners
+func _turn_puffs(sgn: float) -> void:
+	# a turn to port (positive yaw) fires the bow's starboard and the stern's port jets, and the mirror for starboard
+	var bx := L * 0.42
+	var sz := L * 0.13
+	_puff(Vector3(bx, 0.3, sz * sgn), Vector3(0, 0, sgn))
+	_puff(Vector3(-bx, 0.3, -sz * sgn), Vector3(0, 0, -sgn))
+
+
+func _retro_puffs() -> void:
+	var bx := L * 0.45
+	_puff(Vector3(bx, 0.4, L * 0.08), Vector3(1, 0.1, 0.35))
+	_puff(Vector3(bx, 0.4, -L * 0.08), Vector3(1, 0.1, -0.35))
+
+
+func _settle_puffs() -> void:
+	_puff(Vector3(L * 0.3, 0.6, L * 0.1), Vector3(0.3, 0.2, 1), 0.6)
+	_puff(Vector3(-L * 0.3, 0.6, -L * 0.1), Vector3(-0.3, 0.2, -1), 0.6)
+
+
+func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
+	if dead or not visible or DisplayServer.get_name() == "headless":
+		return
+	var sp := Sprite3D.new()
+	sp.texture = _glow_tex()
+	sp.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sp.shaded = false
+	sp.transparent = true
+	sp.modulate = Color(0.85, 0.88, 0.95, 0.55 * k)  # G4's hit-reaction RCS colour (fx_ship._rcs)
+	sp.pixel_size = L * 0.0005 * k
+	sp.position = at
+	add_child(sp)
+	puffs.append({"n": sp, "t": 0.0, "v": dir.normalized() * L * 0.9 * k, "s": sp.pixel_size})
+
+
+func _puffs_step(dt: float) -> void:
+	for i in range(puffs.size() - 1, -1, -1):
+		var pf: Dictionary = puffs[i]
+		pf.t += dt
+		var sp: Sprite3D = pf.n
+		var life := 0.35  # as G4's RCS puffs
+		sp.position += (pf.v as Vector3) * dt * (1.0 - pf.t / life)
+		sp.pixel_size = float(pf.s) * (1.0 + pf.t * 5.0)
+		sp.modulate.a = maxf(0.0, 0.55 * (1.0 - pf.t / life))
+		if pf.t >= life:
+			sp.queue_free()
+			puffs.remove_at(i)
+
+
+func _process(dt: float) -> void:
+	if not puffs.is_empty():
+		_puffs_step(dt)
+	if cinematic and not dead and (path_dur > 0.0 or settle_t >= 0.0 or absf(_yaw_v) > 0.0 or absf(_roll) > 0.0005):
+		_motion(dt)
+	elif path_dur > 0.0:
+		# Movement: brisk (the earlier motion): ease in and out over the whole burn, facing eased between keys
+		path_t = minf(path_t + dt / (path_dur * speed_k), 1.0)
 		var p := path_t
 		var e := p * p * (3.0 - 2.0 * p) * 0.6 + p * 0.4
 		var x := path_S * e
@@ -407,8 +614,10 @@ func _process(dt: float) -> void:
 		position = pos
 		cur_yaw = _key_at(path_yaws, x, "yaw")
 		rotation.y = cur_yaw
+		thrust = 1.0 if p < 0.3 else 0.3
 		if path_t >= 1.0:
 			path_dur = 0.0
+			thrust = 0.0
 	if fleeing > 0.0:
 		fleeing += dt
 		position += Vector3(cos(-rotation.y), 0, sin(-rotation.y)) * dt * 60.0 * fleeing
@@ -425,7 +634,16 @@ func _process(dt: float) -> void:
 			(e as Sprite3D).visible = false
 		if sink >= 1.0:
 			visible = false
-	# a slow idle drift, so the fleet does not look parked
-	hull.position = hull_base + Vector3(0, sin(Time.get_ticks_msec() / 1000.0 * 0.6 + bob_seed) * 0.25, 0)
+	# a slow idle drift, so the fleet does not look parked; bank and pitch laid over the fitted hull
+	var bob := Vector3(0, sin(Time.get_ticks_msec() / 1000.0 * 0.6 + bob_seed) * 0.25, 0)
+	if dead:
+		hull.position = hull_base + bob
+	else:
+		var tilt := Basis.from_euler(Vector3(_roll, 0.0, _pitch))
+		hull.transform = Transform3D(tilt * hull_basis, tilt * hull_base + bob)
+	# engine glows swell on the burn and dim while braking
+	var eg := clampf(1.0 + thrust * 0.6, 0.55, 1.6)
+	for e in engines:
+		(e as Sprite3D).pixel_size = L * 0.0009 * eg
 	if ring.visible:
 		ring.rotation.y = -rotation.y

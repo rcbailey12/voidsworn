@@ -71,6 +71,8 @@ var think_out = null
 var thinking := false
 var speed := 1.0           # the game's SPEED (duration multiplier)
 var user_speed := 1.0      # Speed: normal (1) or fast (0.45)
+var movement := "cinematic"  # Movement: cinematic (heavy ships, R50) or brisk (the earlier motion)
+var move_frames := ""        # --move-frames <dir>: a frame per rendered frame while ships burn (before and after captures)
 var skip := false
 var sel := ""              # selected ship id
 var inspect := ""          # enemy shown in the panel
@@ -128,7 +130,11 @@ func _ready() -> void:
 	shots_dir = str(args.get("shots", ""))
 	if args.has("breach-shots"):
 		shots_dir = str(args["breach-shots"])
+	if args.has("move-frames"):
+		shots_dir = str(args["move-frames"])
 	_load_opts()
+	if args.has("movement"):
+		movement = str(args["movement"])
 	_build_world()
 	sfx = Sfx.new()
 	sfx.name = "Sfx"
@@ -141,6 +147,8 @@ func _ready() -> void:
 		start_default()
 	if args.has("breach-shots"):
 		_breach_shots()
+	elif args.has("move-frames"):
+		_move_frames()
 	elif shots_dir != "":
 		_shots()
 
@@ -616,12 +624,10 @@ func _sync(v: Dictionary) -> void:
 			if not sv.dead and not wrecked.has(u["id"]):
 				sv.die(false)
 			continue
-		if not sv.busy():
+		if not sv.busy():  # busy covers the settle: leave it to finish instead of snapping it
 			var want: Vector3 = board.hex_world(u["q"], u["r"])
 			if Vector2(sv.position.x - want.x, sv.position.z - want.z).length() > 0.5 or absf(angle_difference(sv.cur_yaw, ShipView.yaw_of(u["facing"]))) > 0.05:
-				sv.position = want
-				sv.cur_yaw = ShipView.yaw_of(u["facing"])
-				sv.rotation.y = sv.cur_yaw
+				sv.snap_to(want, ShipView.yaw_of(u["facing"]))
 
 
 # ---------------------------------------------------------------- the player loop: play batches, let the enemy think
@@ -1111,10 +1117,14 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	var alts: Array = [{"s": 0.0, "y": 0.0}]
 	var s := 0.0
 	var la: float = sv.cur_yaw
+	var size := float(u.get("size", 0.5))
+	var mass := 0.0 if bool(u.get("squadron", false)) else clampf((size - 0.3) / 0.6, 0.0, 1.0)
+	var cin := movement != "brisk"
 	for st in path:
 		var a: float = la + angle_difference(la, ShipView.yaw_of(st["f"]))
 		if _jt(st.get("rot")):
-			s += float(PACE["rot"])
+			# cinematic: a big hull's turn blends into the burn (an arc) instead of a pivot before it
+			s += float(PACE["rot"]) * (1.0 - 0.5 * mass if cin else 1.0)
 			yaws.append({"s": s, "yaw": a})
 		else:
 			s += 1.0
@@ -1125,17 +1135,25 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		la = a
 	if float(keys[-1]["s"]) < s:
 		keys.append({"s": s, "pos": keys[-1]["pos"]})
-	var size := float(u.get("size", 0.5))
 	var per := (430.0 if size > 0.8 else 350.0 if size > 0.6 else 280.0) * float(MOVE_PER.get(str(u.get("fac", "")), 1.0))
 	var dur := minf((per * maxf(s, 0.001) + 260.0) * (0.72 if charge else 1.0) * float(PACE["move"]), 3600.0) / 1000.0
 	sv.speed_k = 1.0
-	sv.play_path(keys, yaws, alts, s, dur * speed)
+	sv.play_path(keys, yaws, alts, s, dur * speed, {"mass": mass, "cinematic": cin})
 	if size > 0.3:
 		sfx.play("engine", {"pos": sv.position, "gain": minf(1.0, 0.55 + size * 0.6)})
-	while sv.busy() and not sv.dead:
+	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
+	while sv.burning() and not sv.dead:
 		if skip:
 			sv.speed_k = float(PACE["skip"])
-		await get_tree().process_frame
+		if eng_on:
+			# main engine flare and trail swell on the burn, dim while braking (G4 fx engine level: 1 cruise, 2 burn)
+			gfx.set_engine(str(id), clampf(1.0 + float(sv.thrust), 0.5, 2.2))
+		if move_frames != "":
+			await _snap("f")
+		else:
+			await get_tree().process_frame
+	if eng_on:
+		gfx.set_engine(str(id), 1.0)
 
 
 func _wfam(u: Dictionary, w: Dictionary) -> String:
@@ -2370,6 +2388,7 @@ func _open_menu() -> void:
 	var items: Array = [["Resume", "menu_close"]]
 	items.append(["Sound: %s" % ("on" if sfx.on else "off"), "opt", "sound"])
 	items.append(["Speed: %s" % ("fast" if user_speed < 1.0 else "normal"), "opt", "speed"])
+	items.append(["Movement: %s" % movement, "opt", "movement"])
 	items.append(["Follow enemy activations: %s" % ("on" if follow else "off"), "opt", "follow"])
 	items.append(["Cut-ins: %s" % {"key": "key moments", "all": "every attack", "off": "off"}.get(cine, cine), "opt", "cine"])
 	items.append(["Battle tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
@@ -2394,6 +2413,9 @@ func _toggle_opt(k: String) -> void:
 		"speed":
 			user_speed = 0.45 if user_speed >= 1.0 else 1.0
 			option_changed.emit("speed", user_speed)
+		"movement":
+			movement = "brisk" if movement == "cinematic" else "cinematic"
+			option_changed.emit("movement", movement)
 		"follow":
 			follow = not follow
 			option_changed.emit("follow", follow)
@@ -2726,11 +2748,20 @@ var fire_shots := 0
 
 func _snap(name: String) -> void:
 	if DisplayServer.get_name() == "headless":
-		print("[shots] (headless, not saved) ", name)
+		if move_frames == "":
+			print("[shots] (headless, not saved) ", name)
+		else:
+			shot_n += 1
 		await get_tree().process_frame
 		return
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
+	if move_frames != "":
+		# move captures: small JPGs per frame in a folder per ship
+		DirAccess.make_dir_recursive_absolute(move_frames)
+		shot_n += 1
+		img.save_jpg(move_frames.path_join("%04d.jpg" % shot_n), 0.85)
+		return
 	DirAccess.make_dir_recursive_absolute(shots_dir)
 	shot_n += 1
 	var p := shots_dir.path_join("%02d_%s.png" % [shot_n, name])
@@ -2858,6 +2889,68 @@ func _breach_shots() -> void:
 			await get_tree().create_timer(3.5).timeout  # the hull rebuild runs on a worker (section 14)
 			await _closeups(u["id"], st[1])
 	print("[breach] in play: %d ships, forced: %d ships" % [done.size(), forced])
+	_quit_report()
+
+
+# --move-frames <dir> [--movement cinematic|brisk]: the player's biggest and smallest ship each make a long burn with a
+# turn, from a fixed camera; a JPG per rendered frame (run with --fixed-fps 30 for even timing), through the settle
+func _move_frames() -> void:
+	while busy or warming or api == null:
+		await get_tree().process_frame
+	await get_tree().create_timer(1.5).timeout
+	var mine: Array = []
+	for u in V["units"]:
+		if u["side"] == "player" and not u["dead"] and not u["squadron"]:
+			mine.append(u)
+	mine.sort_custom(func(a, b): return float(a["size"]) > float(b["size"]))
+	var picks: Array = []
+	if not mine.is_empty():
+		picks.append(mine[0]["id"])
+		if mine.size() > 1:
+			picks.append(mine[-1]["id"])
+	follow = false  # the camera stays on the burn
+	print("[moves] movement %s, ships %s" % [movement, str(picks)])
+	for id in picks:
+		while not _can_act():
+			await get_tree().process_frame
+		var states: Array = api.reach(id)
+		var u: Dictionary = VU[id]
+		var best = null
+		var bsc := -1e9
+		for st in states:
+			var turn := absf(angle_difference(ShipView.yaw_of(u["facing"]), ShipView.yaw_of(st.f)))
+			var sc := float(st.cost) * 1.0 + (3.0 if turn > 1.0 else (1.5 if turn > 0.5 else 0.0))
+			if sc > bsc:
+				bsc = sc
+				best = st
+		if best == null:
+			continue
+		var a: Vector3 = views[id].position
+		var b: Vector3 = board.hex_world(best.q, best.r)
+		cam.a = -PI / 2.0
+		cam.b = 0.85
+		cam.r = maxf(90.0, a.distance_to(b) * 1.9)
+		cam.t = (a + b) * 0.5
+		cam.snap()
+		await get_tree().create_timer(0.4).timeout
+		move_frames = shots_dir.path_join(str(id))
+		var n0 := shot_n
+		var sid: String = id
+		var st0 = best
+		_cmd(func(): return api.move(sid, st0))
+		while busy or views[id].burning():
+			await get_tree().process_frame
+		for k in 42:  # the settle, 1.4 s at 30 frames a second
+			await _snap("f")
+		move_frames = ""
+		print("[moves] %s done: %d frames" % [str(id), shot_n - n0])
+		if _can_act():
+			if _classic():
+				_cmd(func(): api.end_turn(); return true)
+			else:
+				_cmd(func(): api.end_activation(); return true)
+		while busy:
+			await get_tree().process_frame
 	_quit_report()
 
 

@@ -183,6 +183,7 @@ func _settings() -> void:
 	v.add_child(_toggle("Music", "music"))
 	v.add_child(_slider("Music volume", "music_volume", 0.0, 1.0))
 	v.add_child(_choice("Speed", "speed", [[1.0, "Normal"], [0.45, "Fast"]]))
+	v.add_child(_choice("Movement", "movement", [["cinematic", "Cinematic"], ["brisk", "Brisk"]]))
 	v.add_child(_choice("Enemy AI", "ai", [["veteran", "Veteran"], ["standard", "Standard"]]))
 	v.add_child(_toggle("Reduce flashing", "reduce_flashing"))
 	v.add_child(_choice("Screen shake", "shake", [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]]))
