@@ -11,9 +11,12 @@
 #                  or dict(name, dir='up'|'down'|'aft'|'fore'|'port'|'stbd', level, max_w, min_ratio, box)
 #   kit            hand-built parts, in order: (function, name, x, y, z, side, {kwargs}); kwargs: pair, aim, size, slot, wkind, arc, ...
 #                  functions: turret casemate spinal launcher emitter engine_at thruster_pod radiators antenna sensor_array hook_prow
-#                  sensor_dome bridge tank bay
+#                  boom sensor_dome bridge tank bay
 #   spires         dict(zmin, box, exclude_x, style='gothic'|'mast'|'array'|'radiator'): melted thin spires found and rebuilt crisp
 #                  (a2detail/spires.py; Voidsworn 'radiator' since Oct 27: heat-radiator spires, not church spires)
+#   compose        [dict(code, scale, at)]: a hull welded from AI hulls of the line (compose.py; the Pyre-Barge, Oct 27)
+#   reshape        [dict(x0, tip, power, top)]: the bow turned into a chisel wedge in side view (reshape.flat_bow; Oct 27, no raked stem,
+#                  sheer deck or forefoot)
 #   dress          surface-detail amount (0 off, 1 normal)
 #   breach, wreck  counts (default by size band)
 #   notes          the blob-sweep verdicts and taste calls, for the report
@@ -39,9 +42,9 @@ WEAPONS = {
     'craft|fighter': [('guns', 'T')], 'craft|bomber': [('bombs', 'T')], 'craft|spore': [('sporeb', 'T')],
     'obj|station': [], 'obj|transport': [], 'obj|beacon': [],
 }
-KEYS = {'loft', 'pitch', 'roll_deg', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
+KEYS = {'compose', 'reshape', 'loft', 'pitch', 'roll_deg', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
-       'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_array', 'hook_prow', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
+       'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_array', 'hook_prow', 'boom', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
 SIZES = {'S', 'M', 'L', 'XL'}
 
 
@@ -79,6 +82,42 @@ YAWS = {'I14_23': 1, 'I15_11': -1, 'I11_37': 2, 'D20_23': -1, 'D9_23': 2, 'C15s_
 
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Corsair (barge grammar: rust-and-bone salvage, lopsided, junk bolted on; space parts only)
+# The Pyre-Barge, rebuilt Oct 27 (Ryan: "very different from the other hullbreaker ships, not in a good way. I like the design of the
+# others more"). The flagship of the C13s to C16s family: three captured hulls of its own line welded round a Hulk-carrier body, lopsided
+# (the bigger sponson to port), a captured destroyer hull riding on top as the upper decks, three boarding claws, trophy plates, pipe runs
+# and rust; dirty orange engines on every hull. Replaces the v15 whale body with its tower and neat pods (barge4.py stays for reference).
+SHIPS['C19_51'] = dict(
+    fac='corsair', cls='Battle-barge', name="Warlord's Pyre-Barge", sym='corsair', dress=1.35,
+    compose=[dict(code='C16s_23', scale=1.0, at=(0, 0, 0)),             # the body: a Hulk-carrier hull
+             dict(code='C15s_23', scale=.80, at=(-.05, .17, -.05)),     # port sponson: a Marauder hull, the heavier side
+             dict(code='C13s_23', scale=.58, at=(.08, -.17, -.06),      # starboard sponson: a Raider hull, shorter and further forward,
+                  cuts_extra=[dict(name='finup', box=(-.52, -.355, -.07, .07, .068, .30)),      # its tail fins cut (they stuck up and down
+                              dict(name='findn', box=(-.52, -.34, -.07, .07, -.30, -.078))]),  # between the welded hulls)
+             dict(code='C14s_23', scale=.56, at=(-.13, 0, .135))],      # upper decks: a Reaver hull riding on the body's back
+    kit=[('casemate', 'scA', .10, 0, -.045, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='scatter', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('casemate', 'scB', -.12, 0, -.06, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='scatter', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('spinal', 'torp', .30, 0, 0, 'top', dict(size='L', slot=2, wkind='htorp', arc='F', tubes=4)),
+         ('turret', 'flA', -.04, 0, 0, 'top', dict(size='M', barrels=3, slot=3, wkind='flak', arc='T', lift=.006)),
+         ('turret', 'flB', -.27, .01, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', lift=.004)),
+         ('hook_prow', 'hook', .40, 0, 0, 'below', dict(length=.15, r=.017, drop=.004)),        # the main claw under the body's chin
+         ('hook_prow', 'hookP', .26, .17, 0, 'below', dict(length=.12, r=.013, drop=.004)),     # a claw under each sponson's bow
+         ('hook_prow', 'hookS', .33, -.17, 0, 'below', dict(length=.10, r=.011, drop=.003)),
+         ('engine_at', 'eP', 0, .046, .005, 'stern', dict(r=.032, L=.05)),
+         ('engine_at', 'eS', 0, -.044, -.004, 'stern', dict(r=.026, L=.042)),
+         ('engine_at', 'eB', 0, 0, -.075, 'stern', dict(r=.021, L=.03)),
+         ('engine_at', 'ePs', 0, .17, -.066, 'stern', dict(r=.028, L=.04)),
+         ('engine_at', 'eSs', 0, -.17, -.06, 'stern', dict(r=.022, L=.034)),
+         ('engine_at', 'eT', 0, 0, .135, 'stern', dict(r=.022, L=.032)),
+         ('sensor_array', 'saT', -.12, .0, 0, 'top', dict(w=.045)),
+         ('sensor_array', 'saB', .19, -.06, 0, 'top', dict(w=.034, dish=False)),
+         ('radiators', 'radT', -.33, 0, 0, 'top', dict(length=.10, height=.05, n_fins=3)),
+         ('radiators', 'radP', -.24, .18, 0, 'top', dict(length=.09, height=.04, n_fins=2, splay=24)),
+         ('tank', 'tkA', .14, .085, 0, 'top', dict(r=.012, length=.08)),
+         ('tank', 'tkB', .04, .20, 0, 'top', dict(r=.011, length=.07)),
+         ('tank', 'tkC', -.05, -.19, 0, 'top', dict(r=.010, length=.06))],
+    notes='pass 4 (Oct 27): rebuilt in the family grammar from captured C16s, C15s, C13s and C14s hulls (their own blob-sweep cuts '
+          'applied), three boarding claws, trophy plates, sensor arrays and radiators; no tower, no tapered whale body, no neat pods')
+
 SHIPS['C13s_23'] = dict(
     fac='corsair', cls='Frigate', name='Raider-class frigate', sym='corsair',
     cuts=[dict(name='spine', box=(-.06, .34, -.032, .032, .088, .30)),          # AI top gun, tower and bent pipe mast: rebuilt
@@ -145,7 +184,8 @@ SHIPS['C16s_23'] = dict(
           dict(name='sticks', dir='aft', level=.40, max_w=.03, min_ratio=1.6),  # thin AI sticks trailing aft (wire debris)
           dict(name='bulb', box=(.33, .47, -.055, .055, -.22, -.095)),          # AI bulb on a stalk under the bow
           dict(name='bulb2', box=(.23, .35, -.05, .05, -.20, -.115)),           # pass 2: the bulb's loose end, left floating under the bow
-          dict(name='prongs', box=(.432, .53, .046, .076, -.06, -.02), mirror=True)],  # pass 3: thin AI rods past the bow sides (probe: y .06, x .42 to .50)
+          dict(name='prongs', box=(.432, .53, .046, .076, -.06, -.02), mirror=True),
+          dict(name='drips', box=(-.41, -.355, -.02, .02, -.25, -.125))],       # pass 4: melted drips hanging under the stern  # pass 3: thin AI rods past the bow sides (probe: y .06, x .42 to .50)
     kit=[('turret', 'tA', .26, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='turret', arc='T', lift=.01)),
          ('turret', 'tB', -.15, 0, 0, 'top', dict(size='M', barrels=3, slot=1, wkind='turret', arc='T', lift=.012)),
          ('bay', 'bay', .05, 0, -.05, 'port', dict(width=.085, height=.05, pair=True)),
@@ -163,9 +203,12 @@ SHIPS['C16s_23'] = dict(
 # Voidsworn (grimdark black steel, ember glow; bilateral). Flagship first: V1b_r_23 is the K1 "Basilica" proof manifest.
 SHIPS['V1b_r_23'] = dict(
     fac='voidsworn', cls='Dreadnought', name='Ascendant-class dreadnought', sym='bilateral',
+    reshape=[dict(x0=0.25, tip=.30)],   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
     spires=dict(zmin=-.03, exclude_x=.40, style='radiator'),                     # the A2 rebuild: melted AI pinnacles cut and rebuilt crisp
     cuts=[dict(name='domes', box=(-.215, .035, -.042, .042, -.046, .12)),        # AI dome turrets along the spine
-          dict(name='bowspike', box=(.400, .432, -.012, .012, -.036, .30))],    # pass 3: the thin upright spike on the prow read as a jackstaff
+          dict(name='bowspike', box=(.400, .432, -.012, .012, -.036, .30)),     # pass 3: the thin upright spike on the prow read as a jackstaff
+          dict(name='tower', box=(.095, .195, -.042, .042, .045, .30)),         # pass 4: the cathedral tower's pinnacled top (Opus: a command tower,
+          dict(name='pillars', box=(.218, .262, .022, .072, -.02, .30), mirror=True)],  # not a cathedral) and the pinnacle pillars ahead of it
     kit=[('casemate', 'hb', -.085, 0, -.09, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'hb2', .045, 0, -.09, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('turret', 'tt', -.03, 0, 0, 'top', dict(size='L', barrels=3, slot=2, wkind='turret', arc='T', lift=.006)),
@@ -173,22 +216,29 @@ SHIPS['V1b_r_23'] = dict(
          ('turret', 'fl', -.40, .05, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', pair=True)),
          ('engine_at', 'eC', 0, 0, -.10, 'stern', dict(r=.032, L=.045)),
          ('engine_at', 'eP', 0, .066, -.10, 'stern', dict(r=.029, L=.042, pair=True)),
-         ('sensor_dome', 'sd', .30, 0, 0, 'top', dict(r=.014))],
-    notes='first pass; the bow keeps the concept ram profile (vetoable: a naval-reading lower bow line)')
+         ('sensor_dome', 'sd', .30, 0, 0, 'top', dict(r=.014)),
+         ('bridge', 'cmd', .145, 0, 0, 'top', dict(length=.085, width=.062, height=.040, tiers=2)),       # pass 4: command tower on the cut tower
+         ('radiators', 'trad', .145, .050, 0, 'top', dict(length=.085, height=.042, n_fins=3, pair=True)),  # heat radiator banks flanking it
+         ('sensor_array', 'tsa', .208, 0, 0, 'top', dict(w=.040)),
+         ('sensor_array', 'psa', .240, .046, 0, 'top', dict(w=.028, dish=False, pair=True))],             # where the pinnacle pillars stood
+    notes='pass 4 (Oct 27, Opus relaying the owner): bow reshaped to a chisel wedge (the concept ram read as a raked stem); the cathedral '
+          'tower top cut and rebuilt as a command tower with radiator banks and sensor arrays; spires are heat-radiator stacks')
 
 SHIPS['V17_37'] = dict(
     fac='voidsworn', cls='Battleship', name='Cathedral-class battleship', sym='bilateral',
     cuts=[dict(name='horns', dir='aft', level=.36, max_w=.035, min_ratio=1.5),   # thin curved AI horns trailing off the stern
           dict(name='hornsup', dir='up', level=.03, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03),
-          dict(name='hornsdn', dir='down', level=.05, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03)],
+          dict(name='hornsdn', dir='down', level=.05, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03),
+          dict(name='peaks', box=(-.045, .165, -.019, .019, .030, .30))],      # pass 4: the three cathedral peaks cut flat (Opus: radiator banks)
     kit=[('casemate', 'hb', -.11, 0, -.03, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'hb2', .10, 0, -.03, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hbattery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('spinal', 'lance', .30, 0, 0, 'top', dict(size='L', slot=2, wkind='lance', arc='F', length=4.5)),
          ('turret', 'fl', -.21, .035, 0, 'top', dict(size='S', barrels=2, slot=3, wkind='flak', arc='T', pair=True)),
          ('engine_at', 'eC', 0, 0, -.015, 'stern', dict(r=.026, L=.04)),
          ('engine_at', 'eP', 0, .046, -.03, 'stern', dict(r=.020, L=.032, pair=True)),
-         ('sensor_dome', 'sd', .38, 0, 0, 'top', dict(r=.010))],
-    notes='first pass')
+         ('sensor_dome', 'sd', .38, 0, 0, 'top', dict(r=.010)),
+         ('radiators', 'rbank', .06, 0, 0, 'top', dict(length=.17, height=.055, n_fins=4, splay=14))],   # pass 4: a radiator bank where the peaks stood
+    notes='pass 4 (Oct 27): the three cathedral peaks cut flat and rebuilt as a heat-radiator bank')
 
 SHIPS['V14_23'] = dict(
     fac='voidsworn', cls='Frigate', name='Warden-class frigate', sym='bilateral',
@@ -233,6 +283,7 @@ SHIPS['V18_51'] = dict(
 # Hegemony (clean light-grey navy with blue trim; parade finish; bilateral)
 SHIPS['H4_11'] = dict(
     fac='hegemony', cls='Super-dreadnought', name='Dominion super-dreadnought', sym='bilateral',
+    reshape=[dict(x0=0.22, tip=.30)],   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
     spires=dict(zmin=.07, box=(-.12, 0, -.03, .03), style='array'),            # pass 2: melted mast tubes rebuilt as slim sensor arrays (not funnels)
     cuts=[dict(name='tfore', box=(.195, .325, -.052, .052, -.084, .10)),          # AI U-shaped turret blobs: rebuilt as turrets
           dict(name='taft', box=(-.365, -.235, -.052, .052, -.090, .10))],
@@ -248,6 +299,7 @@ SHIPS['H4_11'] = dict(
 
 SHIPS['H10_23'] = dict(
     fac='hegemony', cls='Battleship', name='Dominion-class battleship', sym='bilateral',
+    reshape=[dict(x0=0.2, tip=.30)],   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
     spires=dict(zmin=.06, box=(-.25, 0, -.04, .04), style='array'),
     kit=[('casemate', 'ht', .0, 0, -.045, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'ht2', .17, 0, -.045, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),  # pass 2: on the side band (probe)
@@ -259,6 +311,7 @@ SHIPS['H10_23'] = dict(
 
 SHIPS['H7_23'] = dict(
     fac='hegemony', cls='Frigate', name='Picket-class frigate', sym='bilateral',
+    reshape=[dict(x0=0.2, tip=.30)],   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
     spires=dict(zmin=.08, style='array'),
     kit=[('spinal', 'las', .30, 0, 0, 'top', dict(size='M', slot=0, wkind='laser', arc='F', length=3.0)),
          ('turret', 'fl', -.05, .075, 0, 'top', dict(size='S', barrels=2, slot=1, wkind='flak', arc='T', pair=True)),
@@ -267,6 +320,7 @@ SHIPS['H7_23'] = dict(
 
 SHIPS['H8_23'] = dict(
     fac='hegemony', cls='Destroyer', name='Interdictor-class destroyer', sym='bilateral',
+    reshape=[dict(x0=0.2, tip=.30)],   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
     spires=dict(zmin=.10, style='array'),
     cuts=[dict(name='aftgun', box=(-.52, -.235, -.045, .045, .0, .12))],          # AI turret whose long barrel aimed aft (no ship fires backward)
     kit=[('turret', 'tb', -.29, 0, 0, 'top', dict(size='M', barrels=2, slot=1, wkind='turbo', arc='T', lift=.004)),
@@ -276,6 +330,7 @@ SHIPS['H8_23'] = dict(
 
 SHIPS['H9_23'] = dict(
     fac='hegemony', cls='Cruiser', name='Vanguard-class cruiser', sym='bilateral',
+    reshape=[dict(x0=0.2, tip=.30)],   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
     cuts=[dict(name='aftguns', box=(-.43, -.245, -.05, .05, .062, .20)),         # AI twin-gun block aimed aft (no ship fires backward); pass 2: floor
                                                                                     # at the deck (z .03 cut through it and the patch came out a stretched fan)
           dict(name='bridge', box=(-.245, -.035, -.056, .056, .064, .20))],       # pass 2: the melted AI bridge lump, rebuilt by hand
@@ -393,14 +448,17 @@ SHIPS['I16_11'] = dict(
     fac='ithar', cls='Carrier', name='Zenith-class carrier', sym='bilateral', snap=.012, needle=.08,
     cuts=[dict(name='sailaft', box=(-.5, -.25, -.012, .012, -.15, 1)),     # the sail sheet over the deck (the curved blade mast forward stays)
           dict(name='sailmid', box=(-.25, -.1, -.012, .012, -.135, 1)),
-          dict(name='sailfore', box=(-.1, .03, -.012, .012, -.12, 1))],
+          dict(name='sailfore', box=(-.1, .03, -.012, .012, -.12, 1)),
+          dict(name='masts', box=(.03, .25, -.022, .022, -.11, 1))],        # pass 4 (Opus): the two upright masts read as a sailboat's
     kit=[('sail', 'sl', 0, 0, 0, 'top', dict(SAIL, ribs=21, billow=.03, root=(-.04, 0, -.125), u=(-1, 0, 0), v=(0, 0, 1), a0=.02, a1=1.55, R=.40,
                                             hub=((-.04, 0, -.127), (0, 0, 1)))),
          ('turret', 'pf', .32, 0, 0, 'top', dict(size='L', barrels=1, slot=0, wkind='pulsar', arc='F', lift=.002)),
          ('turret', 'tt', -.05, 0, 0, 'below', dict(size='L', barrels=2, slot=1, wkind='turret', arc='T')),
          ('bay', 'bay', 0, .065, -.195, 'bow', dict(width=.02, height=.012, launch=(1, 0, 0), pair=True)),
-         ('engine_at', 'eC', 0, 0, -.185, 'stern', dict(r=.016, L=.022))],
-    notes='pass 1: AI hull kept (it reads well), sail rebuilt')
+         ('engine_at', 'eC', 0, 0, -.185, 'stern', dict(r=.016, L=.022)),
+         ('boom', 'bm', .14, .016, 0, 'top', dict(length=.16, r=.0045, pair=True))],   # pass 4: emitter booms laid along the hull instead
+    notes='pass 4 (Oct 27): the two upright masts cut and rebuilt as emitter booms along the deck; the fan vane stays (the one sail-like '
+          'shape the lore allows); no repaint (the Ithar look is changing)')
 
 SHIPS['I8_37'] = dict(
     fac='ithar', cls='Ark', name='Empyrean ark', sym='bilateral', snap=.012, needle=.06,

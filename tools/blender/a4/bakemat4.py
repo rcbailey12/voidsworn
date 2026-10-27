@@ -152,13 +152,13 @@ def build(o, fac, nmap, mmap, info):
         if fac == 'corsair':  # rust blooms over everything, parts included (nothing on a Corsair ship looks new)
             rb = g.smooth(g.noise(obj, 22, 6, .6), .58, .72); base = g.mix(g.mul(rb, .55), base, (.13, .045, .016))
     gm = g.rng(ao, .35, 1.0, .55, 1.0); base = g.mix(1.0, base, g.comb(gm, gm, gm), 'MULTIPLY')
-    if fac == 'hegemony':  # faction markings: a thin blue trim line along each flank and paired bow chevrons
+    if fac == 'hegemony':  # faction markings: paired bow chevrons. Oct 27: the thin blue line along each flank is gone (with the row of lit
+        # windows under it, it read as a ship's waterline stripe, a naval tell); the steel blue stays on the chevrons and the parts' trim
         zc = (info['lo'][2] + info['hi'][2]) / 2; h = info['hi'][2] - info['lo'][2]
         side = g.smooth(g.math('ABSOLUTE', NY), .55, .8)
-        line = g.mul(g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', Z, zc - h * .10)), h * .010), side)
         chev = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.math('FRACT', g.mul(g.add(X, g.mul(g.math('ABSOLUTE', Z), .6)), 28)), .5)), .12)
         chev = g.mul(g.mul(chev, g.math('GREATER_THAN', X, info['hi'][0] - .16)), g.mul(side, g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', Z, zc - h * .02)), h * .05)))
-        base = g.mix(g.mul(hull, g.math('MAXIMUM', line, chev)), base, trim)
+        base = g.mix(g.mul(hull, chev), base, trim)
     if fac == 'ithar':  # gold filigree inlay painted into the pearl, and fine radial lines on the sail
         fil = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.noise(g.vmath('MULTIPLY', obj, (1, 3, 3)), 9, 2, .4), .5)), .008)
         base = g.mix(g.mul(fil, g.mul(hull, .85)), base, trim)
@@ -193,6 +193,9 @@ def build(o, fac, nmap, mmap, info):
         side = g.math('LESS_THAN', upd, .35)
         win = g.mul(g.mul(g.mul(rect, deck), g.mul(run, lit)), g.mul(side, open_))
         if fac == 'ithar': win = g.mul(win, g.math('LESS_THAN', g.math('SQRT', g.add(g.mul(Y, Y), g.mul(Z, Z))), info['needle']))
+        if fac == 'hegemony':  # Oct 27: windows only in small recessed clusters, never a long row along the flank (a waterline read)
+            clus = g.math('LESS_THAN', g.voro(g.vmath('MULTIPLY', obj, (1.0, 1.0, 1.6)), 7.0), .16)
+            win = g.mul(win, clus)
         e_col = g.mix(win, (0, 0, 0), F['win'])
     else:
         e_col = (0, 0, 0)

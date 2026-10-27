@@ -30,16 +30,27 @@ def build_hull(root, code, cfg):
         import tempfile; h = ithar.loft(cfg['loft'], os.environ.get('A4_TMP') or os.path.join(tempfile.gettempdir(), 'a4tmp'))
         o = blmesh.mesh_from_arrays('hull', h['pos'], h['idx'], nor=h['nor'], uvs={'atlas': h['uv']})
         h['fingers'] = []; return o, h, {}, len(h['idx']), len(h['idx'])
-    h = frame.load(root, code, cfg.get('yaw', 0), roll=cfg.get('roll', 0))
+    if cfg.get('compose'):  # a war-barge welded from captured hulls of its own line (compose.py)
+        import compose, tempfile
+        h = compose.load(root, cfg, os.path.join(os.environ.get('A4_TMP') or os.path.join(tempfile.gettempdir(), 'a4tmp'), code), ships)
+        log('composed from', ', '.join(f'{c} ({n} verts)' for c, _, n in h['parts']))
+        cfg['_cut_boxes'] = h['cut_boxes']
+    else: h = frame.load(root, code, cfg.get('yaw', 0), roll=cfg.get('roll', 0))
     if cfg.get('pitch') or cfg.get('roll_deg'):  # the AI meshed it at a slant (I15 bow up, D22's ring rolled): level it
         frame.tilt(h, cfg.get('pitch', 0.), cfg.get('roll_deg', 0.))
-    idx, rims, rep = cuts.apply(h['pos'], h['idx'], cfg.get('cuts', []), keep_islands=cfg.get('keep_islands', False))
+    idx, rims, rep = cuts.apply(h['pos'], h['idx'], cfg.get('cuts', []), keep_islands=cfg.get('keep_islands', False) or bool(cfg.get('compose')))
     for r in rep: log(r)
     h['fingers'] = []
     if cfg.get('spires'):  # the A2 blob-sweep rebuild of melted thin spires (a2detail/spires.py): cut here, rebuilt crisp in main()
         import spires
         sp = cfg['spires']; h['fingers'] = spires.scan(h['pos'], idx, sp['zmin'], sp.get('box'), sp.get('exclude_x'))
         idx = spires.cut(h['pos'], idx, h['fingers']); log('spires cut', len(h['fingers']))
+    if cfg.get('reshape'):  # Oct 27: naval side profiles (raked stem, sheer deck, forefoot) become a chisel wedge (reshape.py)
+        import reshape
+        for spec in cfg['reshape']:
+            nm = reshape.flat_bow(h['pos'], idx, **spec); x0_ = spec['x0'] - .02
+            vn = reshape.vertex_normals(h['pos'], idx); sel_ = h['pos'][:, 0] > x0_; h['nor'][sel_] = vn[sel_]
+            log('reshaped bow from x', spec['x0'], nm, 'vertices')
     p, n, i, u = hullio.pn_refine(h['pos'], h['nor'], idx, [h['uv2']])
     uv = u[0].copy(); uv[:, 1] = 1 - uv[:, 1]
     o = blmesh.mesh_from_arrays('hull', p, i, nor=n, uvs={'atlas': uv})
@@ -54,6 +65,7 @@ def fill_holes(o, cfg, fac):
         if 'box' not in c or c.get('cover', True) is False: continue
         x0, x1, y0, y1, z0, z1 = c['box']; boxes.append((x0, x1, y0, y1, z0, z1))
         if c.get('mirror'): boxes.append((x0, x1, -y1, -y0, z0, z1))
+    boxes += cfg.get('_cut_boxes', [])
     needles = [c['needle'] for c in cfg.get('cuts', []) if 'needle' in c and c.get('cover', True) is not False]
     if not boxes and not needles: return []
     e_ = .015
@@ -77,8 +89,20 @@ def fill_holes(o, cfg, fac):
         if len(g) < 3 or not inside(cen): continue
         # fan from the loop's centre: works for any boundary (holes_fill skips loops that touch themselves); each new triangle runs its
         # rim edge the opposite way to the hull face beside it, so the patch faces outward with the hull
-        cv = bm.verts.new(cen); new = []
+        new = []
+        # Oct 27 (G4's marks sheet: a radial fan on V1b's spine where the long dome cut was patched): a simple loop is filled by a beauty
+        # triangulation across it instead, so a long slot gets no sliver fan; loops that touch themselves keep the fan
+        deg = {}
         for e in g:
+            for v in e.verts: deg[v] = deg.get(v, 0) + 1
+        if all(d == 2 for d in deg.values()) and len(g) >= 4:
+            R_ = np.array([tuple(v.co) for v in deg]); _, _, vt_ = np.linalg.svd(R_ - R_.mean(0)); nrm_ = Vector(vt_[2].tolist())
+            try:
+                r_ = bmesh.ops.triangle_fill(bm, use_beauty=True, use_dissolve=False, edges=g, normal=nrm_)
+                new = [f for f in r_.get('geom', []) if isinstance(f, bmesh.types.BMFace)]
+            except Exception: new = []
+        cv = None if new else bm.verts.new(cen)
+        for e in (g if cv is not None else ()):
             if not e.link_faces: continue
             f0 = e.link_faces[0]; lp = next((l for l in f0.loops if l.edge == e), None)
             if lp is None: continue
@@ -299,7 +323,9 @@ def main():
     P = dict(base=bakemat4.lin(bakemat4.FAC[fac]['hull']), dark=bakemat4.lin(bakemat4.FAC[fac]['dark']), trim=bakemat4.lin(bakemat4.FAC[fac]['trim']), lens=tuple(bakemat4.FAC[fac]['win']))
     amt = cfg.get('dress', 1.0)
     if amt > 0:
-        if fac in ('voidsworn', 'hegemony'): dress.dress_armour(H, S, fac, seed, P)
+        if fac in ('voidsworn', 'hegemony'):
+            if fac == 'hegemony': dress4.light_clusters(H, S, seed, P)  # first, so the panelling keeps clear of them
+            dress.dress_armour(H, S, fac, seed, P)
         elif fac == 'corsair': dress4.dress_corsair(H, S, seed, P, amt)
         elif fac == 'chorus': dress.dress_chorus(H, S, seed, P)
         elif fac == 'ithar': P['trim'] = bakemat4.lin('#c9a44a'); dress.dress_ithar(H, S, seed, P)

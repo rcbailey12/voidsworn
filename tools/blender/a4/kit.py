@@ -497,6 +497,24 @@ def hook_prow(name, p, n, length, r, drop=0.0, tines=3, teeth=5):
     return head
 
 
+def boom(name, p, n, length, r, nodes=3):
+    """an emitter spine or sensor boom laid along the hull (Oct 27, Opus: what an upright mast becomes on a hull that keeps one sail-like
+    vane): a slender tapered boom fore and aft on two saddle mounts, glowing emitter rings along it and a lens at the forward tip"""
+    P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0))); tops = []
+    for s_ in (-.30, .30):
+        q = p + t * length * s_; top = plinth(name + f's{"ab"[s_ > 0]}', q, n, t, b, r * 1.6, r * .9, shape='box', ratio=.8)
+        if top is None: return None
+        tops.append(top)
+    c = p + n * (max(tops) + r * .6); Mx = M3(b, n, t)
+    ocyl(name + 'b', c, r, length, Mx, seg=16, r2=r * .45, bevel=.0002); tag(mul(P['base'], 1.05))
+    for k in range(nodes):
+        f = -.35 + .7 * k / max(nodes - 1, 1); rr = r * (1 - .55 * (f + .5)) * 1.25
+        ocyl(name + f'n{k}', c + t * length * f, rr, r * .35, Mx, seg=16, bevel=0)
+    tag(P['lens'], emit=.9, rgh=.2, met=0)
+    ocyl(name + 'tp', c + t * length * .5, r * .5, r * .5, Mx, seg=12, r2=r * .15, bevel=0); tag(P['trim'], rgh=.3, met=.6)
+    return c
+
+
 def sensor_dome(name, p, n, r):
     P = CTX['pal']; t, b, n = lframe(n, Vector((1, 0, 0)))
     top = plinth(name + 'p', p, n, t, b, r * 1.15, r * .12)

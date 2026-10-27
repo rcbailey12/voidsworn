@@ -37,10 +37,12 @@ TROPHY = [(((.55, .60, .66), (.06, .19, .62)), .45), (((.030, .028, .027), (.34,
 BONE = (.62, .57, .46)
 
 
-def trophy_plates(H, S, rng, r, count, props):
+def trophy_plates(H, S, rng, r, count, props, loose=False):
     made = 0
     ok = lambda i: abs(H.sn[i][1]) > .55 and H.ao[i] > .45 and abs(H.cv[i]) < .10 and H.sp[i][0] > -.30
-    for p, n, rad in singles(H, rng, count, ok, lambda g: g.uniform(.030, .040), k=1.0, tries=80):
+    if loose:  # the war-barge (dress over 1.2): its welded sponsons hide most flank, so decks and the outer flanks take trophies too
+        ok = lambda i: (abs(H.sn[i][1]) > .45 or H.sn[i][2] > .75) and H.ao[i] > .40 and abs(H.cv[i]) < .12 and H.sp[i][0] > -.42
+    for p, n, rad in singles(H, rng, count, ok, lambda g: g.uniform(.030, .040), k=1.0, tries=160 if loose else 80):
         (base, stripe) = pick(r, TROPHY); w, h = r.uniform(.045, .070), r.uniform(.026, .038)
         t, b, n1 = frame_for(n); Rm = Matrix.Rotation(math.radians(r.uniform(-14, 14)), 3, n1); t, b = Rm @ t, Rm @ b
         th = .0030; pts = detail_lib.outline(r.choice(('slant', 'trap', 'chamfer')), w, h, r)
@@ -66,7 +68,7 @@ def dress_corsair(H, S, seed, P, amount=1.0):
     rng = np.random.default_rng(seed); r = random.Random(seed)
     dark = P['dark']; open_ok = lambda i: H.ao[i] > .42 and abs(H.cv[i]) < .14
     props = dict(rgh=.62, met=.32); n_pl = fit = nrun = 0
-    n_tro = trophy_plates(H, S, rng, r, max(2, int(round(6 * amount))), props)
+    n_tro = trophy_plates(H, S, rng, r, max(2, int(round(6 * amount))) + (6 if amount > 1.2 else 0), props, loose=amount > 1.2)
     # pipe runs along the flanks at uneven heights, port and starboard picked separately (lopsided on purpose)
     for side in (1, -1):
         rows = [r.uniform(.35, .62) for _ in range(r.choice((1, 2)))]
@@ -198,10 +200,45 @@ def build_radiator_spires(fingers, col, dark, props, glow=(1.0, .42, .12)):
         for k, ax in enumerate((True, False)):  # ember vent slits low on each vane, both faces
             for s in (-1, 1):
                 ox, oy = ((r * .95 * s, th * .6) if ax else (th * .6, r * .95 * s))
-                hs_lib.box(f'spg{n}{k}{s}', (x + ox, y + oy, zs + hh * .22), ((r * .55, th * .5, hh * .22) if ax else (th * .5, r * .55, hh * .22)), bevel=0)
-        tag(glow, emit=.8, rgh=.3, met=0)
+                hs_lib.box(f'spg{n}{k}{s}', (x + ox, y + oy, zs + hh * .34), ((r * .75, th * .5, hh * .48) if ax else (th * .5, r * .75, hh * .48)), bevel=0)
+        tag(glow, emit=1.0, rgh=.3, met=0)  # Oct 27 (Opus: the Voidsworn line reads very dark): taller, wider vents at full glow
         hs_lib.cyl(f'spt{n}', (x, y, zs + hh + .0008), r * .55, .0018, axis='Z', seg=4, bevel=0); tag(mul(dark, 1.6), rgh=.45, met=.6)  # flat cap
-        hs_lib.cyl(f'spl{n}', (x, y, zs + hh + .0019), r * .30, .0008, axis='Z', seg=8, bevel=0); tag(glow, emit=.9, rgh=.2, met=0)   # emitter lens
+        hs_lib.cyl(f'spl{n}', (x, y, zs + hh + .0019), r * .40, .0008, axis='Z', seg=8, bevel=0); tag(glow, emit=1.0, rgh=.2, met=0)   # emitter lens
         n += 1
     print(f'spires rebuilt as heat radiators: {n}')
     return n
+
+
+def light_clusters(H, S, seed, P, count=8):
+    """Hegemony (Oct 27): what the long row of lit windows along each flank becomes: recessed light clusters (an armoured frame round a
+    dark recess with a small grid of lit ports) and, beside every other one, a sensor housing. Mirrored port and starboard pairs."""
+    from dress import mirrored_frame, housing
+    rng = np.random.default_rng(seed + 77); r = random.Random(seed + 77); made = 0
+    base, dark, lens = P['base'], P['dark'], P['lens']; props = dict(rgh=.46, met=.16)
+    side = lambda i: abs(Vector(H.sn[i].tolist()).dot(H.m)) > .7 and H.ao[i] > .5 and abs(H.cv[i]) < .10 and abs(H.sp[i][0]) < .40
+    for p, n, mir, rad in H.pairs(rng, count, side, .016, k=1.2):
+        t, b, n1 = frame_for(n); w, h = r.uniform(.016, .026), r.uniform(.007, .010)
+        if not H.flat(p, n1, t, b, w * 1.3, h * 1.5): continue
+        sides = [(p, n1, t, b)]
+        if mir:
+            t2, b2, n2 = mirrored_frame(H, mir[1], t)
+            if not H.flat(mir[0], n2, t2, b2, w * 1.3, h * 1.5): continue
+            sides.append((mir[0], n2, t2, b2))
+        cols, rows = (4 if w > .02 else 3), 2
+        for s_, (q, nn, tt, bb) in enumerate(sides):
+            nm = f'hlc{made}{"ab"[s_]}'
+            detail_lib.obox(nm + 'k', q + nn * .0004, tt, bb, nn, (w, h, .0010), bevel=0); tag(mul(dark, .45), rgh=.8, met=.2)  # dark recess
+            for sx in (-1, 1):  # armoured frame round it
+                detail_lib.obox(nm + f'fa{sx}', q + tt * sx * w * .53 + nn * .0012, tt, bb, nn, (w * .07, h * 1.2, .0026), bevel=.0002)
+                detail_lib.obox(nm + f'fb{sx}', q + bb * sx * h * .56 + nn * .0012, tt, bb, nn, (w * 1.12, h * .12, .0026), bevel=.0002)
+            tag(mul(base, .92), **props)
+            for i in range(cols):
+                for j in range(rows):
+                    c = q + tt * (i - (cols - 1) / 2) * w * .22 + bb * (j - .5) * h * .42 + nn * .0010
+                    detail_lib.obox(nm + f'l{i}{j}', c, tt, bb, nn, (w * .13, h * .26, .0008), bevel=0)
+            tag(lens, emit=1.0, rgh=.2, met=0)
+            if made % 2 == 0:  # a sensor housing beside it
+                housing(nm + 's', q + tt * w * .85, nn, tt, bb, h * .9, h * .9, mul(base, .9), dome=True, props=props)
+        made += 1
+    print(f'dress hegemony: {made} light cluster pairs')
+    return made

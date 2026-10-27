@@ -42,6 +42,39 @@ def hardpoints():
     return hp
 
 
+# Oct 27 (Opus, CLAUDE.md: crossbar masts are naval tells and become antenna arrays): the v15 antenna towers on the bridge roof and under
+# the belly (a square pole with dishes and whips, about 0.14 and 0.10 tall) still read as a mast in the lineup. Their faces are taken
+# out of the painted kit and low sensor arrays (kit.sensor_array) take their place. A4 frame boxes (x0, x1, y0, y1, z0, z1).
+MAST_BOXES = [(-.072, .008, -.062, .062, .0955, .40), (-.258, -.172, -.062, .062, -.40, -.2045)]
+
+
+def mast_to_arrays(objs):
+    import kit, dress, hs_lib
+    gone = 0
+    for o in objs:
+        bm = bmesh.new(); bm.from_mesh(o.data); dead = []
+        for f in bm.faces:
+            c = f.calc_center_median()
+            if any(b[0] < c.x < b[1] and b[2] < c.y < b[3] and b[4] < c.z < b[5] for b in MAST_BOXES): dead.append(f)
+        if dead: bmesh.ops.delete(bm, geom=dead, context='FACES'); bm.to_mesh(o.data); o.data.update(); gone += len(dead)
+        bm.free()
+    hs_lib.PARTS.clear(); dress.PROPS.clear(); dress._mark[0] = 0
+    kit.setup(list(objs), 'Battle-barge', 'corsair', 19)
+    kit.place(kit.sensor_array, 'bsaT', -.032, 0, 0, 'top', w=.050)
+    kit.place(kit.sensor_array, 'bsaV', -.215, 0, 0, 'below', w=.044, dish=False)
+    parts = list(hs_lib.PARTS); out = []
+    for k, o in enumerate(parts):  # each part gets a plain material carrying its colour; bake_mat bakes that colour (no painted texture)
+        pr = dress.PROPS.get(o.name, dict(col=(.17, .165, .16), emit=0., rgh=.5, met=.5))
+        m = bpy.data.materials.new(f'a4part{k}'); m.use_nodes = True; m.diffuse_color = (*pr['col'], 1)
+        m['a4col'] = list(pr['col']); m['a4emit'] = float(pr['emit']); m['a4rgh'] = float(pr['rgh']); m['a4met'] = float(pr['met'])
+        o.data.materials.clear(); o.data.materials.append(m)
+        if not o.data.uv_layers: o.data.uv_layers.new(name='atlas')
+        else: o.data.uv_layers[0].name = 'atlas'
+        out.append(o)
+    log('mast towers out:', gone, 'faces; low sensor arrays in:', len(out), 'parts')
+    return out
+
+
 def bake_mat(m):
     """emission bake sources from an imported glTF material: images by their names (_base, _orm, _normal, _emissive), old UVs 'atlas'"""
     imgs = {}
@@ -61,7 +94,8 @@ def bake_mat(m):
     if 'normal' in tex: L.new(tex['normal'].outputs[0], nm.inputs['Color'])
     pb = T.nodes.new('ShaderNodeBsdfPrincipled'); L.new(nm.outputs[0], pb.inputs['Normal'])
     target = T.nodes.new('ShaderNodeTexImage'); target.name = 'bake_target'; T.nodes.active = target
-    return dict(T=T, em=em, out=out, tex=tex, pb=pb, target=target)
+    part = dict(col=tuple(m['a4col']), emit=m['a4emit'], rgh=m['a4rgh'], met=m['a4met']) if 'a4col' in m else dict(col=None, emit=0, rgh=.5, met=.5)
+    return dict(T=T, em=em, out=out, tex=tex, pb=pb, target=target, **part)
 
 
 def main():
@@ -77,6 +111,7 @@ def main():
         o.data.transform(o.matrix_world); o.matrix_world = Matrix.Identity(4)
         o.data.transform(Matrix.Rotation(math.pi, 4, 'Z')); o.data.update()
         if o.data.uv_layers: o.data.uv_layers[0].name = 'atlas'
+    objs += mast_to_arrays(objs)
     bpy.ops.object.select_all(action='DESELECT')
     for o in objs: o.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]; bpy.ops.object.join(); ship = bpy.context.view_layer.objects.active; ship.name = CODE
@@ -103,6 +138,9 @@ def main():
                 M['T'].links.new(M['em'].outputs[0], M['out'].inputs[0])
                 for l in list(M['em'].inputs[0].links): M['T'].links.remove(l)
                 if src in M['tex']: M['T'].links.new(M['tex'][src].outputs[0], M['em'].inputs[0])
+                elif M.get('col') is not None:  # a hand-built part (mast_to_arrays): its own colour, finish and glow
+                    c_, e_ = M['col'], M['emit']
+                    M['em'].inputs[0].default_value = (*(x * e_ for x in c_), 1) if src == 'emissive' else (1, M['rgh'], M['met'], 1) if src == 'orm' else (*c_, 1)
                 else: M['em'].inputs[0].default_value = (0, 0, 0, 1) if src == 'emissive' else (1, .6, 0, 1) if src == 'orm' else (.3, .3, .3, 1)
         t = time.time()
         if key == 'normal': sc.render.bake.normal_space = 'TANGENT'; bpy.ops.object.bake(type='NORMAL')
