@@ -345,3 +345,28 @@ Opus: Deathless skirmish matchups (13% against Corsair, 6% against Chorus) must 
 | ithar | 88 | 69 | 100 | 75 | 75 | 69 | 79 | 86 |
 | deathless | 56 | 100 | 81 | 81 | 88 | 63 | 78 | 60 |
 Lowest cell 56 (was 6). The player-side bot edge in this mode stays large (mirrors 63 to 100), and the AI-played Corsair list loses to every player-side faction (it did before too, except against Deathless). fmatrix and the faction strength table do not use these lists, so they are unchanged.
+
+## Step 9: full-run wins, attribution and sector 2 and 3 easing (Oct 27; battle.js `RAMP` only)
+
+### Attribution (PC lane B, `runsim 100` x 2 seeds = 200 seeded runs per variant; the same seed gives the same runs on the PC and in the cloud; raw `streamb/fullrun_attr.txt`)
+| Code | Full-run wins | Reach sector 2 | Reach sector 3 |
+|---|---|---|---|
+| Pass 1 code (5294612) | 20.0% | 72% | 38% |
+| bcc7e47 (pass 3), control | 11.5% | 68% | 30% |
+| bcc7e47 without the pass 2 tuning | 10.5% | 59% | 26% |
+| bcc7e47 without the B-21 escort anti-wing fix | 15.0% | 76% | 37% |
+| bcc7e47 without move-then-fire | 15.0% | 67% | 26% |
+| main cb55ec9 (after pass 3 tuning) | 13.5% | 68% | 26% |
+Read: B-21 and move-then-fire each cost about 3.5 points; the pass 2 tuning cost nothing (backing it out is 1 point worse); the last 1 to 2 points of the 8.5-point drop are within noise (about 2.5 points at 200 runs) and fall on the other B4 and step 3 changes. Standard error per row about 2.4 points.
+
+### Rules (G1: battle.js `RAMP`, campaign enemy fleets only)
+- `grow` [0,1.2,1.25,1.35] to [0,1.2,1.24,1.26]; `thin` [0,.73,.68,.64] to [0,.73,.675,.62]; `boss` [0,.3,.55,.65] to [0,.3,.44,.53]. Sector 1 values unchanged. B-21 and move-then-fire stay.
+- Random draws: none added or moved; smaller budgets mean fewer `genEnemyFleet` picks in sectors 2 and 3.
+- Unaffected by construction (checked: same seed, identical output before and after): the sector 1 bossmatrix (admiral band) and fmatrix (faction strength), which use sector 1 or set fleets.
+
+### Sim (runsim 100 per seed, same seeds before and after)
+| Seed | Before (cb55ec9) | After |
+|---|---|---|
+| 7101 | 17% | 20% |
+| 7102 | 10% | 19% |
+Candidates tried on the same two seeds: boss escorts only (.45/.55) and sector 3 grow 1.28: 17.5%; the above plus lighter sector 2 grow 1.2 and thin .66/.60: 31%. Fuzz 500 on the new code: 0 exceptions. PC confirmation on two fresh seeds (7103, 7104) and the campaign sim for sectors 2 and 3: jobs `sb_ramp_*`, results to follow in this section.

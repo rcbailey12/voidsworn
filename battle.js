@@ -133,7 +133,7 @@ try{ if(process_env('BOSS_SCALE')) BOSS_SCALE=JSON.parse(process_env('BOSS_SCALE
 // a little as numbers rise (thin) so total threat follows the old difficulty curve. Your fleet's power scales the budget both ways (refP), so a
 // strong fleet meets more and a battered one less (this replaces the old 'never outgrow the player' floor). ceil is a soft ceiling for
 // performance, not a design cap. AI difficulty: Standard meets 10% less. Sims can override any field with RAMP='{...}'.
-let RAMP={grow:[0,1.2,1.25,1.35], light:[0,4,4,5], thin:[0,.73,.68,.64], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.3,.55,.65], escort:.78, std:.9}; // tuned Oct 25 against the B0 baseline (campaign sim; sector 1 boss escorts held near the old .28 for the boss matrix)
+let RAMP={grow:[0,1.2,1.24,1.26], light:[0,4,4,5], thin:[0,.73,.675,.62], refP:[0,7,12,20], pw:.6, pwMin:.75, pwMax:1.3, ceil:[0,10,14,20], boss:[0,.3,.44,.53], escort:.78, std:.9}; // Oct 27 stream B: sectors 2 and 3 eased (grow 1.25/1.35 to 1.24/1.26, thin .68/.64 to .675/.62, boss escorts .55/.65 to .44/.53) to bring sim full-run wins from 13.5% back to about 20%; sector 1 unchanged // tuned Oct 25 against the B0 baseline (campaign sim; sector 1 boss escorts held near the old .28 for the boss matrix)
 try{ if(process_env('RAMP')) Object.assign(RAMP,JSON.parse(process_env('RAMP'))); }catch(e){ console.warn('RAMP override ignored (not valid JSON):',e.message); }
 function effArch(arch,fac){ if(arch==='carrier'){ const F=FACTIONS[fac]; if(!F||!F.roster.some(id=>HULLS[id]&&HULLS[id].ab==='launch')) return 'heavy'; } return arch||null; }
 function genEnemyFleet(fac,s,col,kind,arch,mod){ arch=effArch(arch,fac);
