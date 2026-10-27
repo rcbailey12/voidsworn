@@ -172,8 +172,9 @@ func _run() -> void:
 					await RenderingServer.frame_post_draw
 				vp.get_texture().get_image().save_png("%s/%s.png" % [out, nm])
 				print("wrote ", nm)
-				if pass_i == 1:
-					# the battle camera's distance, looking at the ship from the mark's side and from above
+				if true:
+					# the battle camera's distance, looking at the ship from the mark's side and from above (r8: a second
+					# after the hit too, _tacf, with the scorch still glowing; _tac is the cooled mark 9 s on)
 					var vd: Vector3 = (nn + Vector3(0, 0.7, 0)).normalized()
 					if E.style == BREACH.S_RAM:
 						vd = Vector3(0.6, 0.6, 0.5).normalized()
@@ -181,7 +182,7 @@ func _run() -> void:
 					cam.look_at_from_position(sv.to_global(h.c + vd * 170.0), sv.to_global(h.c))
 					for i in 3:
 						await RenderingServer.frame_post_draw
-					vp.get_texture().get_image().save_png("%s/%s_tac.png" % [out, nm.replace("_cooled", "")])
+					vp.get_texture().get_image().save_png("%s/%s_%s.png" % [out, nm.replace("_cooled", ""), "tac" if pass_i == 1 else "tacf"])
 	print("MARKS_COST total %.1f ms for %d marks one at a time; hull tris %d" % [total_ms, LOOKS.size(), h.tri_count])
 	if only != "":
 		quit()

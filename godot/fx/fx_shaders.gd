@@ -1158,6 +1158,25 @@ void fragment() {
 			hc = mix(temper, vec3(0.014), smoothstep(0.75, 1.0, tb) * 0.7);
 			hr = 0.45;
 		}
+		// r8 (Opus): every mark carries a short-lived glowing scorch, broken by the halo noise, in the weapon's own
+		// heat colour, so a fresh hit reads from the battle camera even on a frigate. It comes up softly over a quarter
+		// second and cools over several (no flash: it never jumps, so the flash budget is untouched). The soot under
+		// it is darker and denser than before as well.
+		vec3 sc = vec3(1.0, 0.4, 0.1);
+		float scl = 6.0;
+		float sk = 1.0;
+		if (style == 1) { sc = vec3(1.0, 0.48, 0.14); scl = 5.0; }
+		else if (style == 3) { sc = vec3(0.35, 0.65, 1.0); scl = 6.0; }
+		else if (style == 8) { sc = vec3(0.45, 1.0, 0.2); scl = 8.0; sk = 0.8; }
+		else if (style == 9) { sc = vec3(0.45, 0.65, 1.0); scl = 5.0; }
+		else if (style == 7) { sk = 0.7; scl = 4.0; }
+		else if (style == 6 || style == 11) { scl = 9.0; sk = 1.2; }
+		else if (style == 10) { sc = vec3(1.0, 0.55, 0.25); scl = 4.0; sk = 0.7; }
+		else if (style == 12 || style == 13) { sk = 0.0; }
+		float sglow = smoothstep(0.0, 0.25, age) * exp(-age / scl) * sk;
+		float sband = (1.0 - smoothstep(0.2, 0.7, hu)) * (0.35 + 0.65 * smoothstep(0.42, 0.68, hn));
+		hem += sc * sband * sglow * 2.4;
+		if (style != 10 && style != 7) { hc *= 0.7; ha = min(1.0, ha * 1.25); }
 		if (style == 6 || style == 11 || style == 5) {
 			// torn holes keep a dull ember ring for a long while, so a hit ship still shows where it was holed
 			hem += vec3(1.0, 0.32, 0.06) * smoothstep(0.62, 0.8, hn) * (1.0 - smoothstep(0.15, 0.5, hu)) * (0.08 + 0.5 * live) * exp(-age / 40.0);

@@ -217,8 +217,10 @@ void fragment() {
 }
 """
 
-# Faceted asteroid: flat faces (the mesh is split per face), a rock albedo with strata and grit from triplanar noise,
-# darker in the cracks, and for crystal rocks glowing spikes. kind: 0 stone, 1 ice, 2 iron, 3 carbon, 4 crystal.
+# Asteroid rock (r8, matching G3's campaign map rocks, map3d_shaders.gd ROCK_HI): strata and dust from 3D noise, fine
+# grit and pitting in the lighting (a bump from the same noise), darker dusty crater floors and brighter worn rims (the
+# mesh's COLOR.r and .g), albedo and roughness varied across the body, and a warm rim from the dead star's disc when the
+# board has one (rim_pos, its world position; rim_k 0 without it). kind: 0 stone, 1 ice, 2 iron, 3 carbon, 4 crystal.
 const ROCK := """
 shader_type spatial;
 render_mode cull_back;
@@ -226,28 +228,65 @@ render_mode cull_back;
 uniform vec3 base = vec3(0.3, 0.28, 0.26);
 uniform int kind = 0;
 uniform float seed = 0.0;
+uniform float q = 1.0;
+uniform vec3 rim_pos = vec3(0.0);
+uniform vec3 rim_col = vec3(1.0, 0.6, 0.3);
+uniform float rim_k = 0.0;
 varying vec3 vL;
-varying vec3 vN;
-void vertex() { vL = VERTEX; vN = NORMAL; }
+varying vec3 vW;
+varying vec2 vC;
+void vertex() { vL = VERTEX; vC = COLOR.rg; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+vec3 bump_normal(vec3 n, vec3 pos, float h, float k) {
+	vec3 dpdx = dFdx(pos); vec3 dpdy = dFdy(pos);
+	float dhx = dFdx(h); float dhy = dFdy(h);
+	vec3 r1 = cross(dpdy, n); vec3 r2 = cross(n, dpdx);
+	float det = dot(dpdx, r1);
+	vec3 grad = sign(det) * (dhx * r1 + dhy * r2);
+	return normalize(abs(det) * n - grad * k);
+}
 void fragment() {
 	vec3 p = vL * 1.3 + seed;
-	float n = wfbm3(p * 1.7);
-	float g = wfbm3(p * 9.0);
-	float strata = 0.5 + 0.5 * sin(vL.y * 7.0 + n * 3.0);
-	vec3 a = base * (0.55 + 0.45 * n) * (0.8 + 0.3 * g);
-	float rough = 0.85;
+	float dust = wfbm3(p * 2.6);
+	float grit = wfbm3(p * 8.0 + 5.0);
+	float strata = 0.5 + 0.5 * sin(vL.y * 9.0 + wfbm3(p * 1.5) * 6.0);
+	float crater = vC.x;
+	float rimw = vC.y;
+	vec3 a = base * (0.7 + 0.45 * dust) * (0.86 + 0.2 * strata) * (0.85 + 0.3 * grit);
+	// broad patches of lighter and darker regolith across the body
+	float patchv = smoothstep(0.35, 0.7, wfbm3(p * 0.8 + 11.0));
+	a *= mix(0.8, 1.2, patchv);
+	a *= 1.0 - crater * 0.6;
+	a *= 1.0 + rimw * 0.25;
+	float rough = mix(0.82, 0.95, dust);
 	float metal = 0.0;
-	if (kind == 0) { a *= 0.85 + 0.25 * strata; }
-	if (kind == 1) { a = mix(a, vec3(0.75, 0.85, 0.95), 0.25 + 0.2 * n); rough = 0.35; }
-	if (kind == 2) { metal = 0.75; rough = 0.45; a *= 0.9 + 0.2 * g; }
-	if (kind == 3) { rough = 0.95; }
+	if (kind == 0) { a = mix(a, a * vec3(1.08, 0.98, 0.9), strata * 0.5); }
+	if (kind == 1) { a = mix(a, vec3(0.7, 0.8, 0.9), smoothstep(0.4, 0.7, dust) * 0.55); rough = mix(0.3, 0.6, crater + grit * 0.4); }
+	if (kind == 2) { metal = mix(0.35, 0.75, smoothstep(0.45, 0.7, grit)); rough = mix(0.4, 0.75, dust); a = mix(a, vec3(0.3, 0.2, 0.14), smoothstep(0.55, 0.8, grit) * 0.4); }
+	if (kind == 3) { rough = 0.95; a *= mix(0.9, 1.4, smoothstep(0.6, 0.8, grit)); }
+	// pitting and grit in the lighting
+	float ht = grit * 0.35 + dust * 0.4 - smoothstep(0.6, 0.72, wfbm3(p * 5.0 + 3.0)) * 0.25;
+	if (q > 0.5) { ht += wfbm3(p * 22.0) * 0.12; }
+	NORMAL = bump_normal(NORMAL, VERTEX, ht, q > 0.5 ? 0.5 : 0.3);
 	ALBEDO = a;
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	// crack lines: ice glows faintly cold, crystal veins glow
 	float crack = smoothstep(0.95, 0.992, 1.0 - abs(wfbm3(p * 2.2) * 2.0 - 1.0));
-	if (kind == 1) { EMISSION = vec3(0.12, 0.3, 0.45) * crack * 0.6; }
-	if (kind == 4) { EMISSION = vec3(0.2, 0.9, 0.7) * crack * 0.9; }
+	vec3 em = vec3(0.0);
+	if (kind == 1) { em = vec3(0.12, 0.3, 0.45) * crack * 0.6; }
+	if (kind == 4) { em = vec3(0.2, 0.9, 0.7) * crack * 0.9; }
+	// the disc's warm light on the side facing it, strongest at the silhouette (a rim), fading with distance
+	if (rim_k > 0.0) {
+		vec3 nw = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
+		vec3 L = rim_pos - vW;
+		float dl = length(L);
+		L /= max(dl, 1e-3);
+		float fres = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 2.5);
+		float face = clamp(dot(nw, L) * 0.8 + 0.2, 0.0, 1.0);
+		float fall = 1.0 / (1.0 + dl * dl / 40000.0);
+		em += rim_col * rim_k * face * (0.06 + 0.9 * fres) * fall * (0.6 + 0.4 * (1.0 - crater));
+	}
+	EMISSION = em;
 }
 """
 

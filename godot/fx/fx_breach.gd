@@ -59,7 +59,7 @@ const GROW_MAX := 1.6     # how far repeats can grow a mark (lance slots lengthe
 # about 7.7 pixels a unit at 1080p). Claude's picks, vetoable; tuned on the r5 battle-distance stills.
 const HALO_MIN := {S_BURN: 1.1, S_SHELL: 1.3, S_PLASMA: 1.6, S_GAUSS_IN: 1.1, S_GAUSS_OUT: 1.4, S_BLAST: 2.8,
 	S_FLAK: 1.7, S_ACID: 1.7, S_ION: 2.3, S_RAM: 2.6, S_HATCH: 1.6}
-const HALO_MAX_L := 0.12   # ... but never wider than this share of the ship's length (a frigate is not one big scorch)
+const HALO_MAX_L := 0.16   # ... but never wider than this share of the ship's length (a frigate is not one big scorch; r8 0.12 to 0.16 so frigate hits carry at 170 units)
 
 
 class Ent:
@@ -361,9 +361,9 @@ static func buckle_at(P: Vector3, ents: Array) -> Vector3:
 					var rad := d - E.n * h
 					var rl := rad.length()
 					if rl > 1e-5:
-						out += (rad / rl) * E.depth * 0.55 * sin(h / E.R * 10.0 + nzv * 1.8) * f3 * minf(rl / (E.R * 0.12), 1.0)
-					out -= E.n * E.depth * f3 * f3 * (0.75 + 0.25 * nzv)
-					out += E.t1 * E.depth * 0.6 * f3 * f3 * f3 * (0.5 + 0.5 * sin(E.p[3]))
+						out += (rad / rl) * E.depth * 0.8 * sin(h / E.R * 9.0 + nzv * 2.2) * f3 * minf(rl / (E.R * 0.12), 1.0)
+					out -= E.n * E.depth * f3 * f3 * (0.9 + 0.3 * nzv)
+					out += E.t1 * E.depth * 0.9 * f3 * f3 * f3 * (0.5 + 0.5 * sin(E.p[3]))
 					out -= E.n * E.depth * 0.2 * sin(lx / E.R * 11.0 + nzv * 1.5) * f3
 					continue
 				var u := r / E.R
@@ -1660,7 +1660,7 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 		"rockets":
 			out.append(crater(p, n, L * 0.022 * wk * g, L * 0.012 * wk, seed_v, S_SHELL))
 		"ram":
-			out.append(dent(p, n, L * 0.1 * g, L * 0.022 * g, seed_v, S_RAM))
+			out.append(dent(p, n, L * 0.1 * g, L * 0.03 * g, seed_v, S_RAM))
 		"ram_self":
 			# the rammer's own bow folds too, a smaller crumple
 			out.append(dent(p, n, L * 0.06 * g, L * 0.012 * g, seed_v, S_RAM))
