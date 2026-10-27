@@ -2,6 +2,26 @@
 
 Taken by the campaign screenshot tour (`godot/scenes/campaign/campaign.tscn -- shots`) and the 3D map probe (`map3d_probe.tscn`). Each folder is named for the commit that drew it. Converted to WebP (quality 82) to keep the repo small; the PNGs stay on the PC in `voidsworn_test\shots\`.
 
+## 9416dff (R51 round 2: stop objects at full finish, the black hole, sci-fi headers, label priority)
+
+One PC job (`queue\g3_r51d_9416dff.bat`): `before_*` is 9ef9b85 (the first R51 set Ryan saw), `after_*` is 9416dff; same seed, window and angles. The map shots are `m1` to `m5` as before. The close-ups come from `stops_probe.tscn` (the same camera offset for each kind of stop; close-ups resized to 1920 wide):
+
+| File | Stop |
+|---|---|
+| `*_s_sun` | the Hollow Sun (before: the dead star and fire ring; after: the black hole with its disc, lensed arcs and photon ring) |
+| `*_s_planet` | a planet-edge fight (atmosphere limb, clouds, moon on its orbit) |
+| `*_s_station` | an orbital-station fight (after: the procedural station) |
+| `*_s_belt` | an asteroid-belt fight (after: displaced rocks with craters along the orbit) |
+| `*_s_wreck` | a ship-graveyard fight (after: A4's real death pieces) |
+| `*_s_nebula` | an ion-storm fight (nebula pocket) |
+| `*_s_shipyard` | a shipyard (after: gantry, crane, floodlights, a hull being built) |
+| `*_s_drydock` | a drydock (after: dock frame, clamps, work lights, drones) |
+| `*_s_field` | field repairs (after: tender with lattice arms and drones) |
+| `*_s_event` | an unknown signal |
+| `*_s_flagship` | the sector flagship |
+
+Since 9416dff (not in these shots): lattice members drawn as one MultiMesh each, slimmer bars, crisper lensed arcs, calmer drone plating, and the fleet, shipyard and battle pages now sit over the dimmed star system.
+
 ## 9ef9b85 (R51 star system, first before and after set)
 
 One PC job (`queue\g3_r51_9ef9b85.bat`) drew both: `before_*` is the map at 1edd967 (the round 2 map Ryan saw), `after_*` is 9ef9b85, same seed (4242), same window, same angles (`campaign.tscn -- mapshots` and `map3d_probe.tscn`).
