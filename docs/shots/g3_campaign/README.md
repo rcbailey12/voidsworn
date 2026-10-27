@@ -2,6 +2,10 @@
 
 Taken by the campaign screenshot tour (`godot/scenes/campaign/campaign.tscn -- shots`) and the 3D map probe (`map3d_probe.tscn`). Each folder is named for the commit that drew it. Converted to WebP (quality 82) to keep the repo small; the PNGs stay on the PC in `voidsworn_test\shots\`.
 
+## 8a12941 (R51 round 4 polish)
+
+One PC job (`queue\g3_r51h_8a12941.bat`): `before_*` is 16881fd (round 3), `after_*` is 8a12941; same seed, angles and file names. What changed: a soft cool fill on the docked hull (drydock) and the repair tender's hull, so their shadow sides are no longer black; the black hole's lower lensed arc is as strong as the upper one, so it reads at full-map zoom; station plating has roughness wear patches and a neutral warm grey (the purple cast is gone). Compare `s_station`, `s_drydock`, `s_field`, `s_sun` and `m1_map`.
+
 ## 16881fd (R51 round 3: Ryan's and Opus's round 3 notes)
 
 One PC job (`queue\g3_r51g_16881fd.bat`): `before_*` is 9416dff (the round 2 set), `after_*` is 16881fd; same seed, window, angles and file names as the 9416dff set (`m1` to `m5` map shots, `s_*` close-ups of every stop kind).
