@@ -47,7 +47,7 @@ func open(st) -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var regular := _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
 	var semi := _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
-	var goth := _font("res://ui/battle/fonts/UnifrakturMaguntia-Book.ttf")
+	var goth: Font = load("res://ui/battle/brand.gd").display()  # Michroma (lore round 5; the blackletter is retired)
 	var dimr := ColorRect.new()
 	dimr.color = Color(0.024, 0.035, 0.063, 0.7)
 	dimr.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -71,7 +71,7 @@ func open(st) -> void:
 	var t := Label.new()
 	t.text = "Name your flagship"
 	t.add_theme_font_override("font", goth)
-	t.add_theme_font_size_override("font_size", px(40))
+	t.add_theme_font_size_override("font_size", px(28))
 	t.add_theme_color_override("font_color", BONE)
 	h.add_child(t)
 	v.add_child(h)

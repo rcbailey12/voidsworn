@@ -27,6 +27,7 @@ var k := 1.0
 var regular: Font
 var semi: Font
 var goth: Font
+var caps: Font
 var body: VBoxContainer
 var tab_row: HBoxContainer
 
@@ -92,7 +93,8 @@ func open(st) -> void:
 	k = clampf(get_viewport_rect().size.y / 1080.0, 0.6, 2.0)
 	regular = _font("res://ui/battle/fonts/BarlowSemiCondensed-Regular.ttf")
 	semi = _font("res://ui/battle/fonts/BarlowSemiCondensed-SemiBold.ttf")
-	goth = _font("res://ui/battle/fonts/UnifrakturMaguntia-Book.ttf")
+	goth = load("res://ui/battle/brand.gd").display()  # Michroma headers (lore round 5; the blackletter is retired)
+	caps = load("res://ui/battle/brand.gd").caps()     # Oxanium small caps for labels
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var bg := ColorRect.new()
@@ -111,7 +113,7 @@ func open(st) -> void:
 	margin.add_child(v)
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", px(16))
-	head.add_child(lbl("Career", 56, BONE, goth, false))
+	head.add_child(lbl("Career", 40, BONE, goth, false))
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(sp)
@@ -166,7 +168,7 @@ func _tile(label: String, value: String, col := BONE) -> Control:
 	p.custom_minimum_size.x = px(150)
 	var v := VBoxContainer.new()
 	v.add_child(lbl(value, 34, col, semi, false))
-	v.add_child(lbl(label.to_upper(), 12, BONE3, semi, false))
+	v.add_child(lbl(label.to_upper(), 12, BONE3, caps, false))
 	p.add_child(v)
 	return p
 
@@ -201,7 +203,7 @@ func _records() -> void:
 		cr.fac = fac
 		cr.custom_minimum_size = Vector2(px(40), px(40))
 		row.add_child(cr)
-		row.add_child(lbl(str(story.FAC.get(fac, {}).get("n", fac)), 26, BONE, goth, false))
+		row.add_child(lbl(str(story.FAC.get(fac, {}).get("n", fac)), 19, BONE, goth, false))
 		body.add_child(row)
 		var g := GridContainer.new()
 		g.columns = 2
