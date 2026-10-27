@@ -2,6 +2,12 @@
 
 Taken by the campaign screenshot tour (`godot/scenes/campaign/campaign.tscn -- shots`) and the 3D map probe (`map3d_probe.tscn`). Each folder is named for the commit that drew it. Converted to WebP (quality 82) to keep the repo small; the PNGs stay on the PC in `voidsworn_test\shots\`.
 
+## 16881fd (R51 round 3: Ryan's and Opus's round 3 notes)
+
+One PC job (`queue\g3_r51g_16881fd.bat`): `before_*` is 9416dff (the round 2 set), `after_*` is 16881fd; same seed, window, angles and file names as the 9416dff set (`m1` to `m5` map shots, `s_*` close-ups of every stop kind).
+
+What changed on screen: holographic threat diamonds in the danger band's colour replace the red gems; each stop is one clear object (no planets jammed into stations, shipyards, docks or open space; moons, asteroid fields and nebula pockets stay inside their own stop); the black hole after real simulations (thin lensed arcs over and, thinner, under the shadow, subtle Doppler beaming with the approaching side brighter and whiter, a sharp thin photon ring); station plating with long plates, clustered window strips and greebles on the ring; a warm rim and a faint key light so built stops read at full-map zoom; the fleet token held clear of the first stop. No text changed (the patron, sigil, boon and favour words are swappable in one place for when the lore is signed off).
+
 ## 9416dff (R51 round 2: stop objects at full finish, the black hole, sci-fi headers, label priority)
 
 One PC job (`queue\g3_r51d_9416dff.bat`): `before_*` is 9ef9b85 (the first R51 set Ryan saw), `after_*` is 9416dff; same seed, window and angles. The map shots are `m1` to `m5` as before. The close-ups come from `stops_probe.tscn` (the same camera offset for each kind of stop; close-ups resized to 1920 wide):
