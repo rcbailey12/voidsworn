@@ -330,6 +330,10 @@ func _build_arrow() -> void:
 # or a fixed test battle with --scenario. The campaign (godot/main) calls start_battle instead.
 func start_default() -> void:
 	var seed := int(args.get("seed", randi() % 1000000 + 1))
+	if args.has("scenario") and not FileAccess.file_exists("res://rules/test/scenarios.json"):
+		# an exported build has no test folders: play the default battle instead of halting
+		push_warning("--scenario needs res://rules/test/scenarios.json (not in an exported build); playing the default battle")
+		args.erase("scenario")
 	if args.has("scenario"):
 		var a = API.new()
 		var e: String = a.load_rules()
