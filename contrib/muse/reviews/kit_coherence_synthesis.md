@@ -1,0 +1,79 @@
+# Faction kit coherence audit, synthesis (chair)
+
+Program: Oct 27 program item 3. Date: Oct 27, 2026.
+Legs: 4 (DeepSeek, Qwen, Argon, Rey), all pinned to 68b42ce406286eb95ea7df6aaf3f683c1231b51d.
+Files: contrib/deepseek/reviews/kit_coherence_2026_10_27.md, contrib/qwen/reviews/kit_coherence_2026_10_27.md, contrib/gemini/reviews/kit_coherence_2026_10_27.md, contrib/muse/reviews/kit_coherence_rey_2026_10_27.md. Screening notes for the three external legs sit in the chair working folder.
+Standing note: every code claim below is an observation for Opus to confirm, per the role split. This synthesis proposes; Opus verifies.
+
+## Verdict: PASS WITH CONDITIONS
+
+The six faction kits are coherent and playable as they stand. No leg's BLOCKER survives chair checking: DeepSeek raised 3 and Argon raised 14, and all 17 tags are downgraded below with reasons. Qwen returned PASS WITH CONDITIONS and Rey returned PASS WITH CONDITIONS, and the chair lands in the same place. The conditions are FIXes 1 to 4: one approved ruling that is coded nowhere in the browser campaign, one ability that is dead in two of six matchups, one faction still rendering in colours the approved bible removed, and one weapon naming mismatch that sends lance buffs to the wrong gun. None of them blocks Ryan's test on return; all four should be landed or explicitly dispositioned by Opus.
+
+## Why no BLOCKER survives
+
+- Voidsworn carrier gate (DeepSeek BLOCKER, Argon 1.1): downgraded to a scope question for Opus, not carried as a numbered finding. The recorded gate is a purchase and class availability flag ("a carrier Voidsworn cannot buy") whose data model existence was explicitly left as an Opus confirmation; whether start fleets and enemy rosters are in scope was never settled, and bible 2.7 says carriers kept. A scope question for Opus, not a breach on this evidence.
+- Chorus repair as an in-battle breach (DeepSeek BLOCKER): downgraded and split. The approved prohibition is shipyard scope only (price ladder synthesis lines 54 to 55, wider scope left OPUS TO CONFIRM). In-battle regen, the regrow ability and the Regrowth tide Command are designed faction identity under the Oct 24 to 26 rulings. The half that is real is finding 1 below: the shipyard gate itself is not coded.
+- Hegemony synchronized fire missing (DeepSeek BLOCKER, Argon 2.1): downgraded to verified present. The definer lives in battle.js mechanics, not in the data.js slice the pack carried: a grep finds 58 sync and anchor hits in battle.js, with Hegemony anchors set up at battle.js:348. The flagship anchor formation rule is likewise mechanics side. Presence verified by the Rey leg; tuning values were not assessed.
+- Ion as Hegemony identity (DeepSeek BLOCKER): downgraded to NOTE. The ruling demotes ion from definer to weapon flavour; a faction blurb describing its ion cannons is flavour text about weapons, and the definer itself is present in mechanics (above). The ion family's real problem is the dead zone, which stands on its own as finding 2.
+- Glasswright Brace prohibition missing (Argon 5.1, raised as FIX by DeepSeek): resolved PASS by chair check. FAC_GATES.ithar.noBrace sits at data.js:541, outside the pack's lines 1 to 275 slice, and canOrder enforces it at battle.js:1036.
+- Dead module BLOCKERs (Argon 4.2 and 6.1): downgraded by the chair check reported in the next section. Module offers are already gated, so the named-but-unusable module entries are inert table completeness, not dead picks.
+- Missing cost and slots fields on non-Voidsworn hulls (Argon 2.4): UNSURE, not a BLOCKER. The observation is accurate for HULLS, but whether another path derives prices is a code question; it is carried as an open risk in the cross-reference section below and deferred to the economy pack.
+
+## Settled by chair check during synthesis: module offers are gated
+
+OBSERVED (chair check, Rey leg finding 10): modulePool at core.js:234 filters module offers through fleetKit at core.js:179, which only sets the shields flag when a fleet hull actually has shields, and relicUseful at core.js:239 separately blocks the shield relic for a shieldless fleet; the comment at core.js:233 states the intent. INFERRED: a pure Chorus or Eclipse fleet is never offered shield modules, so the faction names Argon catalogued for gated-out modules (a shield capacitor named "Membrane bloom" for a shieldless faction, and the Eclipse equivalents) never surface as picks. This downgrades Argon's dead-module BLOCKERs and answers the open question Qwen raised from the pack about UI gating: modules and relics are gated. What the chair did not trace is the captain perk offer path, so dead perks (deflector on a shieldless fleet, stubborn on a noBrace fleet) stay a NOTE, carried as finding 12.
+
+## Findings
+
+1. FIX. The approved Chorus shipyard repair prohibition is coded nowhere in the browser campaign. Attribution: chair-raised, confirmed in the Rey leg (finding 1); Argon 4.1 pointed at missing code under a wider framing; DeepSeek's Chorus BLOCKER split into this half. OBSERVED: the price ladder synthesis records "Chorus no shipyard repair (approved, NEEDS CODE)". FAC_GATES at data.js:541 carries only the corsair lance kind gate and the ithar noBrace flag, with no chorus entry. ACT.repair (campaign_run.js:198) and ACT.repairAll (campaign_run.js:199) restore hull for credits with no faction check, and the drydock screen is likewise unchecked by faction. OBSERVED: non-Crusade runs exist in this code, so the gap is reachable in play, not theoretical. This is the audit's most concrete new defect. Note: the Godot campaign port was not checked (see Not checked), so whether the gap exists there is open.
+
+2. FIX. The ion dead zone: ABILITIES.ionpulse does literally nothing against Chorus and Eclipse. Attribution: FIX in all three external legs (DeepSeek Hegemony finding 3, Qwen Hegemony finding 1 and its cross-faction FIX, Argon 2.2) and Rey finding 2. OBSERVED: ionpulse reads "Every enemy ship within 4 hexes loses half of each shield facing", it sits only on h_interdictor, and every Chorus hull (b_drone to b_boss) and every Eclipse hull (d_scythe to d_boss) has sh:0. INFERRED: in two of six matchups the destroyer's sole ability is a blank button. OBSERVED: the wider ion family degrades rather than dies, since W.ion keeps its base damage when its ion:2.5 property has no shield to strip, and the plasma trait keeps its +1 damage when its pierce finds no shield. The FIX is scoped to the ability; what ionpulse should do against shieldless targets is a design call for Opus.
+
+3. FIX. Eclipse still renders in Necron green with tomb styling. Attribution: Argon 6.2, chair-confirmed, Rey finding 3. OBSERVED: FACTIONS.deathless at data.js:126 sets trim '#1fbf4a', glow '#3dff6a', style 'tomb'. Bible 7.2 bans green glow and every tomb tell, and bible 7.3 specifies dark violet-black plates, a white-gold eclipse corona and violet-white inner glow. OBSERVED: unlike the internal keys in finding 11, the trim, glow and style fields are player-visible rendering data. OBSERVED: the same entry's blurb still says Eclipse is "stealing starlight", wording Ryan already ruled on in the rollout audit (stellar energy, not light); its application is pending in the rename pack (program item 9), so the two changes can land together.
+
+4. FIX. Hegemony "Plasma lance" naming versus weapon kind sends lance buffs to the ion cannon. Attribution: Argon 2.3, chair-confirmed, Rey finding 4. OBSERVED: FAC_WNAMES.hegemony (data.js:36) names turbo "Plasma lance" and hturbo "Heavy plasma lance", but both weapons are k:'battery' (data.js lines 11 and 12). MODULES.crystal and PERKS.lanceadept key off the lance kind, which in the Hegemony set is only W.ion; the battery loaders module is what actually buffs the two guns named lance. INFERRED: a player reading names buys lance buffs for guns they do not affect. Either the names or the kind needs to move; that choice is Opus's.
+
+5. FIX (small, text level). Seveth's Command refills shields his fleet does not have. Attribution: residue of Argon 6.1 at corrected severity, Rey finding 6. OBSERVED: ADMIRALS.khepra (data.js:236) has the 'iron' command text "All shields refill and your ships take 40% less hull damage this round", while every Eclipse hull has sh:0; the other admirals sharing that template lead shielded fleets, so the copied text is half dead only for Seveth. INFERRED: a one-line per-admiral wording fix; per-faction command text already exists per admiral.
+
+6. NOTE. Duplicate ability pairs under faction-flavoured names. Attribution: all three external legs, Rey finding 7. OBSERVED: ABILITIES.evasive and ABILITIES.phase have identical effect text (+25 evasion, +2 movement, cd 3); ABILITIES.focus and ABILITIES.frenzy are likewise identical (+30% damage this turn, cd 3). INFERRED: if the fx layer differentiates them per faction the duplication is cosmetic; from data alone the factions carry fewer distinct abilities than the roster suggests.
+
+7. NOTE. Three faction bosses share ab:'nova'. Attribution: all three external legs (Qwen counted two, DeepSeek and Argon three), Rey finding 7. OBSERVED: ascendant, h_boss and d_boss all carry ab:'nova'. INFERRED: a generic spinal-cannon job shared by three flagships blurs boss identity unless presentation separates them, which the pack cannot show.
+
+8. NOTE. Sunward Crusade has no MOD_NAMES or RELIC_NAMES coverage. Attribution: all three external legs (Argon 1.4 the most detailed), Rey finding 9. OBSERVED: the name tables at data.js lines 260 to 271 carry entries for the other five factions and none for voidsworn, so Crusade refits and salvage show the generic names every other faction gets flavour for, including base relic names with alien and Eclipse flavour. INFERRED: an omission rather than a design stance, since bible chapter 2 lists no Crusade-specific names either; a naming pass closes it.
+
+9. NOTE. FACTIONS.voidsworn has no sq field. Attribution: Qwen, Argon 1.1, Rey finding 9. OBSERVED: the other five factions specify sq (hegemony 'fighter', corsair 'bomber', chorus 'spore', ithar 'fighter', deathless null) and voidsworn's entry has none, despite fielding the hangar:2 Hearth carrier. OBSERVED (Rey chair check): wingKind at battle.js:1159 falls back to 'fighter' when the field is absent, so Hearth launches work. INFERRED: data hygiene, not a bug; one explicit field removes the silent fallback.
+
+10. NOTE. The Eclipse flagship does not reanimate, and nothing records whether that is deliberate. Attribution: DeepSeek and Qwen, Rey finding 8. OBSERVED: d_scythe, d_jackal and d_harvester all carry reanimate:true in HULLS; d_boss does not. OBSERVED: bible 7.5 describes reanimation as a faction mechanic with no flagship carve-out. INFERRED: excluding the boss may be sound tuning, but it is currently an undocumented exception; one line in the record either way closes it.
+
+11. NOTE. Eclipse internal keys sit on the bible avoid list. Attribution: DeepSeek, Qwen, Argon. OBSERVED: weapon keys gauss and doom, relic key phylactery, admiral keys nekhet, sekhmar, anuket and khepra, and cls 'Tomb-ark' all appear on bible 7.2's avoid list. OBSERVED: every display name driven by these keys is correct, so nothing reaches the player. INFERRED: source hygiene only, worth cleaning the next time those tables are touched for another reason; it does not belong on the critical path. (The player-visible half of this family is finding 3, which is a FIX.)
+
+12. NOTE. Boarding has no Corsair-specific expression in the kit, and dead perks remain an open end. Attribution: boarding scored FIX by DeepSeek and Rey (finding 5 of the Rey leg) and FIX by Argon 3.3; the chair carries it as the strongest NOTE, one step under FIX, because the mechanic itself exists. OBSERVED: bible 4.5 promises "rams and boarding" and 4.3 puts boarding claws at the bow; the corsair kit delivers the ram half (ABILITIES.overburn on c_raider and c_marauder) and nothing for boarding, the only boarding-named weapon (W.tendril) belongs to the Chorus, and Grax's doctrine is named "Ram and board". INFERRED: the doctrine name promises a verb the faction's own ships express no better than anyone's. On perks: OBSERVED that module and relic offers are gated (section above), but the captain perk offer path was not traced, so whether deflector or stubborn can be offered where they can never apply stays open; carried in Not checked.
+
+## Cross-reference: captured hull sell price risk (INFERRED, unconfirmed)
+
+Attribution: Rey leg, raised in its Not checked section. OBSERVED: Argon 2.4 established that non-Voidsworn hulls carry no cost field in HULLS. OBSERVED (Rey chair check): the shipyard sell line at campaign_run.js:174 reads HULLS cost directly, while core.js shipValue has a safe fallback (40 times cp) that the sell line does not use. INFERRED: if a prize-add keeps a cost-less captured hull's key, selling it could price at NaN. This is a risk read from two code paths, not an observed defect, and this synthesis asserts no verdict on it: the economy pack (program item 8, still running) is answering the capture-value question from code, and its result governs. Flagged here only so the two audits do not pass each other silently.
+
+## Verified passes worth recording
+
+- Glasswrights no Brace: PASS. Coded at data.js:541 and enforced at battle.js:1036 (chair check).
+- Hegemony synchronized fire and flagship anchor: PRESENT in battle.js mechanics (chair check; tuning not assessed).
+- Hullbreakers no lances: PASS. FAC_GATES.corsair.noKind at data.js:541, applied at prize time (Rey chair check).
+- Eclipse no shields: PASS as a roster fact, all hulls sh:0 and rg:0 (all legs agree).
+- Chorus versus Eclipse counter: DELIVERED. Qwen's positive confirmation stands: the acid trait bypasses armour, which is the bible 5.1 and 5.4 answer to Eclipse's heavy armour.
+
+## What would change the verdict
+
+- If Opus's check of the Godot campaign finds the Chorus repair gate also missing there, finding 1 widens from a browser-build defect to the shipped build, and the verdict's conditions get heavier (still not a playtest blocker, since the asymmetry's absence does not break a run).
+- If play or sim evidence showed the ionpulse dead zone moving Hegemony matchup outcomes materially, finding 2 would rise in priority; as an ability-slot defect it is a FIX either way.
+- If any BLOCKER downgraded here were re-established from code the chair did not read (in particular the carrier gate's scope, if Opus's confirmation lands it as a roster rule rather than a purchase rule), the affected faction verdict reopens.
+- Nothing in these legs touches balance numbers; a verdict change on balance grounds would have to come from the evidence packs (items 7 and 8), not this audit.
+
+## Questions for Ryan
+
+None. Every open item in this audit is a technical disposition for Opus under the standing decision split (the carrier gate's data model, the ionpulse fallback behaviour, the names-versus-kind choice in finding 4), or is already covered by an existing Ryan ruling (the starlight wording in finding 3). No human-direction question arises from this audit, so none is manufactured here.
+
+## Not checked
+
+- The Godot campaign repair path: whether any Chorus repair gate exists in godot/campaign code. Finding 1 is verified against the browser campaign only.
+- The captain perk offer path: whether perks such as deflector (shield regeneration) or stubborn (Brace bonus) are filtered when offered to captains of shieldless or noBrace fleets. Module and relic offers are verified gated; perks are not traced.
+- The Godot rules port's own tables and gates, anchor radius and synchronized fire strength as balance values, and whether the duplicated abilities of finding 6 are visually differentiated in the fx layer. All outside this audit's pack and chair checks.
