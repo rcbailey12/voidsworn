@@ -40,3 +40,5 @@ QUESTIONS FOR RYAN
 
 1. Haven: should every fight-start event guarantee a free way out, or is one telegraphed forced fight per table acceptable as a pressure valve? The data fix is trivial in either direction; the principle is the decision.
 2. No other human-direction questions arise from this audit. The seer direction (drop the exclusion or drop the splice) and the flags comparison change are Opus's calls within the recorded design.
+
+RYAN'S RULING (Oct 28, 2026, on question 1 above): GIVE HAVEN A FREE OUT. Every fight-start event guarantees a free exit; haven gains a leave option alongside raid, tribute and recruit. The data change is Opus's to make; the principle is settled and applies to any future fight-start event added to the table.

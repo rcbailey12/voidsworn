@@ -36,3 +36,5 @@ QUESTIONS FOR RYAN
 
 1. Visual verdicts are yours by standing rule, so one for your playthrough rather than a ruling now: in the threat view, should enemy ships be framed in view by default even at the cost of zooming out past the friendly formation? The fix direction (frame both fleets vs edge indicators) changes what G2 builds; flag it when you test.
 2. No other human-direction questions arise from this audit.
+
+RYAN'S RULING (Oct 28, 2026, on question 1 above): battles START ZOOMED OUT. The opening camera shows the whole battlefield and the enemy fleet, then zooms in on the player's fleet. This settles the framing question in the wider form: not only the threat view but the battle start itself guarantees the enemy is seen before play begins. Edge indicators are not the chosen direction. G2 camera work is Opus's lane; the direction is ruled.

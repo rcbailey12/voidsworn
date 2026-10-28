@@ -106,3 +106,5 @@ E-9 (PASS, CONFIRMED BY 2+ LEGS): all six palette rows in faction_looks.json mat
 6. Thornback and Moonveil: SWAP BOTH out of the ship name pools.
 
 With these rulings the rollout audit is closed. The unproven performance items (r19 re-bench, fresh-seed win-rate confirmation, the post-tuning faction and admiral tables) remain Opus-lane follow-ups already tracked in HANDOFF, not open questions for Ryan.
+
+ADDENDUM RULING (Ryan, Oct 28, 2026): THE HUNGER BELOW STAYS IN THE DISPLAY NAME. The tension flagged by the Oct 27 program (rename_map_final.md line 49 sets 'H-3 Crucible, "the Hunger Below"' as canonical and data.js:624 matches, against the full-audit Q7 ruling that Hunger Below is only a post-Chorus survivor nickname) is resolved in the map's favour: Ryan likes the name in the display, so the canonical form stands as written and the map needs no errata on this row. This supersedes the strict nickname-only reading of Q7; the nickname origin can still live in survivor dialogue, but it no longer constrains the display name.

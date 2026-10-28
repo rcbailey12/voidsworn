@@ -42,3 +42,5 @@ QUESTIONS FOR RYAN
 
 1. "Acceptable Loss" in the Crusade ship name pool: same treatment as Thornback and Moonveil (swap it out), or acceptable as gallows humour in a Crusade pool? Voice call only; no defect either way.
 2. No other human-direction questions arise from this audit. The help rewrite, naming passes and card fixes are Opus's work within recorded rulings.
+
+RYAN'S RULING (Oct 28, 2026, on question 1 above): SWAP "Acceptable Loss" OUT of the Crusade ship name pool, the same treatment as Thornback and Moonveil. The replacement name is not ruled; the chair suggestion on record is "Debt Paid", which fits the Crusade debt-keeping voice, offered for Opus to take or replace.
