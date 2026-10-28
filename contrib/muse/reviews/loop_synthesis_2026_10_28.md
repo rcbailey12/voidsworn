@@ -1,0 +1,40 @@
+Loop and retention synthesis, Oct 28 program item 3 (the run-to-run loop: what a run leaves behind, what pulls the next one, where retention breaks). Chair synthesis of the DeepSeek, Qwen, and Argon (Gemini) blind legs, briefed from design text only (no code pack), plus chair cross-checks against the code at the pin (main 264f441d) and the item 4 difficulty evidence. Verdicts and findings are observations for Opus to confirm, not orders.
+
+## Verdict: THE LOOP LEAKS, at run 4
+
+All three legs returned the same verdict, word for word: THE LOOP LEAKS. All three also located the leak at the same place: run 4, the moment the novelty of the first three runs is spent and the game's long-term offers have not yet become visible or reachable. The legs diverge sharply on the repair, and the divergence is the finding: each leg's ONE CHANGE embodies a different theory of what a run owes the next run. The chair does not pick a winner; the three theories are recorded separately below, because the designer choosing between them is choosing a retention philosophy, not a patch.
+
+## What all three legs agree is working (the protect list)
+
+Visible node routing with rewards shown on the map (the player plans a route, not a dice roll). The capture and salvage chain (winning a fight produces hulls, modules, and decisions, not just currency). Permadeath with aspect inheritance (losses are real, but the fallen leave something structured behind). Core routing: only 4 of 6 patron cores appear per run (chair-verified in core.js, ensurePatrons), which keeps any single run's build space narrower than the game's and gives the next run a reason to differ. Any repair that damages these four is a bad repair.
+
+## The three ONE CHANGEs (three theories of the leak)
+
+1. DeepSeek: un-gate Heat after the first loss. Theory: the loop leaks because the game's best repeat-play system (self-imposed difficulty for standing) is locked behind the one thing most players have not done yet (win). Let a player who has died once start climbing Heat immediately; the climb becomes the reason to run again while the first win is still ahead.
+2. Qwen: restore the ladder and make the post-loss screen show what the loss just made affordable. Theory: the loop leaks at the payoff screen, not in the run. A loss currently reports totals; it should close a sale. "Your fleet died. It bought this." The next run starts because the player wants to spend, field, or test what the death purchased.
+3. Argon: a three-part bundle: flip the unlock flag (restore the ladder), pool mastery per faction instead of per admiral (so progress is never stranded on a benched admiral), and rebuild Heat as an Ascension-style content ladder whose levels inject node modifiers and new Nemesis behaviors, not just stat pressure. Theory: the loop leaks because nothing about the world changes as you climb; only numbers move. Content change, not currency, is the retention engine.
+
+## Chair cross-checks
+
+1. Argon's death-spiral mechanism survives contact with the difficulty evidence. Argon (loop leg) described a sector-transition death spiral: a fleet exits sector 1 attrited, meets a step up in enemy strength at the sector 2 boundary, and the run dies there in a way that feels like a wall rather than a fight. The item 4 sims (400 fresh runs) support the shape: sector 2 elites are the hardest fight class in the game (69.9% bot win rate, below the sector 2 boss at 81.5%), the steepest enemy-strength step in the pooled data is sector 1 to sector 2 (peaking at 2.09x at the sector 2 boss), and sector 2 is where the plurality of runs end (135 of 400). Difficulty overall is attrition-driven, not boss-gated, which is exactly the condition under which a transition spiral forms. Whether human players experience the bot's wall the same way is not testable from sims; the mechanism is plausible and the numbers do not contradict it.
+2. One premise correction from the code: the enemy AI steps up after the player's first run (main3d.js sets AI_LEVEL to veteran once META.stats.runs is above zero; the Settings screen exposes the AI level with a working control). So run 2 is not run 1 with more renown; it is run 1 against a smarter opponent. Qwen's loop leg had the substance of this right. Any retention math that assumes static difficulty across the first five runs is wrong in the game's favor: the loop does have an early difficulty ratchet, it is just invisible to the player.
+3. Screened slips: Qwen's loop leg and Argon's loop leg both described mastery as having 5 levels; it is levels 0 to 4, four perks. Argon's loop headline figure (a two-thirds leak framing in its summary line) understates its own body's 86.2% figure for the bypassed sinks, which the progression synthesis verifies from code. Neither slip changes a verdict.
+
+## The designer's rulings (Oct 28, 2026) reframe the leak
+
+Two rulings landed after these legs were written, and they cut the legs' arguments in half. First: the high loss rate (about 80%) is fine and expected; Argon's loop BLOCKER 2, which argued from the failure rate itself, is void as stated. What survives of every leg's retention case is narrower and stronger: failure currently pays invisibly and its currency buys almost nothing (progression synthesis), so a run 4 player has died three times without once seeing the game change because they died. Second: meta-progression is to be wrapped as generational learning (each crusade inherits from the last). Inside that frame, the three ONE CHANGEs stop being rivals and become layers the designer can sequence: Qwen's is about the debrief screen (name the inheritance, including what is now affordable), DeepSeek's is about when the difficulty ladder opens (the route is being learned from the first death, not only after it is proven), Argon's is about what the ladder contains (new conditions and Nemesis behaviors as the generations advance). The chair's recommendation is to treat them as a stack in that order (screen, gate, content), not a choice, while noting Argon's mastery pooling is separable and cuts against the lineage fiction (mastery is per-admiral precisely because it belongs to a house).
+
+## Run 1 / Run 5 / Run 10
+
+RUN 1: Near impossible by the designer's ruling, and that is the loop's foundation, not its problem: run 1 is the first crusade, expected to die teaching. The retention question for run 1 is only whether its debrief makes the death legible as tuition.
+
+RUN 5: This is the leak's address. By run 4 to 5 the player has typically died three or four times, the first completion is statistically near (the sims put wins at about 1 in 5 runs for the bot; the design intends a first player completion around runs 4 to 6), and the loop holds only if each death visibly bought something the next attempt carries. As shipped it does not (dead sinks, invisible sync), so run 5 is where the game currently spends its goodwill.
+
+RUN 10: If the player arrives, the loop's long tail is lineage depth across admirals, full sync per core, and Heat. Argon's content-ladder point bites hardest here: by run 10 the player has seen essentially everything the map can show (see the variety synthesis exposure accounting), so run 10 retention is content-shaped or it is nothing.
+
+## Questions for the designer (collected, per program rules; legs' questions recast inside the learning frame)
+
+1. Captain death: should it carry a mechanical echo (a successor penalty, a fallen-captain record the next generation flies against), or is grief the point and the debrief's naming of the fallen is the whole mechanic?
+2. Nemesis visibility: between encounters, should the player see how the Nemesis is adapting to their build (a visible inheritance the next crusade plans around), or does hidden adaptation preserve dread?
+3. At run 10, wide or deep: is the intended pull breadth (all factions, all admirals) or depth (one faction's full doctrine, sync, and Heat record)?
+4. Post-boss recovery: should clearing a sector boss guarantee a recovery beat (the safety net Argon's spiral argument implies), or is arriving at sector 2 wounded the intended price of the route?
