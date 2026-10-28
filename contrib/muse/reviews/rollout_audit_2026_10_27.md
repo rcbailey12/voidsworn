@@ -95,3 +95,14 @@ E-9 (PASS, CONFIRMED BY 2+ LEGS): all six palette rows in faction_looks.json mat
 6. Two ship names in the random pools (from C-6). Thornback is a Warhammer monster name and Moonveil is a famous Elden Ring sword. Both are single ordinary-looking words in the random ship name pools.
    - A (recommended): Swap both now, while pool edits are cheap.
    - B: Keep both. Single common words are fair game.
+
+## Ryan's rulings (Oct 27, 2026)
+
+1. Steelgrin: RENAME. The suggested replacement on record is Grax Ironmaw (DeepSeek CD). Applying the rename to the bible, the map and the game strings is L and B lane work under Opus.
+2. Starlight blurb: FIX APPROVED. The Eclipse blurb changes to the energy wording ("siphoning stellar energy to light a new sun").
+3. Salvage swarm: KEEP. Ryan's call after the chair's plain-language explanation: the name is fine as it stands; rename later only if it bothers him in play. The 5c split among the legs stays on record above and the question is closed unless he reopens it.
+4. Plain "Nadir" title: DROP. The Eclipse Nemesis title pool goes back to the bible's three (High Nadir, Eclipse-prime, Archivist).
+5. V1b prow: FLAGGED by Ryan, not accepted and not a send-back order. His read on the sheet in this audit: it looks okay from the side but different from the top, where it still reads pointed. He also raised a new observation of his own: a weird wavy effect on the ships in these sheets, which he is unsure is modeling or material. Both points go to A4 to answer: reconcile the top and side reads on the V1b bow, and diagnose the waviness (hull geometry, normals or material) across the pass 5 ships. Ryan's eye is the verdict on the answer.
+6. Thornback and Moonveil: SWAP BOTH out of the ship name pools.
+
+With these rulings the rollout audit is closed. The unproven performance items (r19 re-bench, fresh-seed win-rate confirmation, the post-tuning faction and admiral tables) remain Opus-lane follow-ups already tracked in HANDOFF, not open questions for Ryan.
