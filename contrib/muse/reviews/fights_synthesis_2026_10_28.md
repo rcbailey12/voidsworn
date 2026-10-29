@@ -41,3 +41,7 @@ Qwen's and Argon's legs both reconstruct encounter distribution from an assumed 
 ## Not checked
 
 What actually spawns on a Deathless carrier-archetype roll (Opus one-read check); whether ambush fleets flee at two-thirds (battle code, outside the pack); the shipped UI's preview text beyond the pack slices (the findings are about pack-level preview data; if the UI adds thresholds the pack lacks, finding 5 downgrades to a pack defect).
+
+## Designer rulings (Oct 29, 2026)
+
+Q1 RULED: boss fights get their own objective table (option A; the designer's reason: it makes the bosses unique). The Command Link is not adopted. Q2 RULED from the roster side: Deathless/Eclipse gets no carrier; the false-preview problem is therefore answered by keeping the faction carrier-less (the archetype roll should not promise one), and the generator's spawn behavior on that roll remains an Opus check. Recorded in full in MEMORY.md and the roster synthesis addendum.

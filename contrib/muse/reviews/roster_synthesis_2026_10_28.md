@@ -45,3 +45,7 @@ The pack claimed five base hulls per faction plus a boss. The code says otherwis
 ## Not checked
 
 Silhouette and visual identity at battle distance (no art in the pack; Ryan's eye at the playtest); weapon table values behind the autocannon-versus-laser question (outside the pack, so the warden/picket difference could be larger in practice than the hull rows show); Godot port parity for variant hydration.
+
+## Designer rulings (Oct 29, 2026)
+
+Q7 RULED (split, chair's option c, sharpened): the uneven ladders stand for the four-hull factions, and Eclipse/Deathless expands a bit, gaining a battleship-class hull so its ladder scales (frigate, destroyer, cruiser, battleship, boss). The designer's principle: factions should feel unique and different, but they should scale appropriately. Q2 cross-reference: Deathless/Eclipse gets NO carrier, ruled the same day. Q8 RULED: option (a); every variant carries a real trade, and the silent weapon deletions (finding 2) and ability deletions (finding 3) are fixed or disclosed regardless of policy. Q9 RULED: option (a); the ascendant goes to speed 2 (the designer called the movement-ability option overcomplicated). Q10 RULED: option (c); the combat verbs (focus, ionpulse, frenzy) spread to second hulls, reclaim stays the harvester's signature.

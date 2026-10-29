@@ -79,3 +79,7 @@ Traces at the stated rates (win 43 XP, loss 10 XP, 80 percent loss rate, one foc
 ## Appendix: the 12 LEGACY doctrine items (for the Rule 4 audit)
 
 From data.js at 264f441d (LEGACY, line 239): u_carrier (Carrier hulls in shipyards, 30), u_battleship (Battleship hulls in shipyards, 60), u_dread (one Daybreak-class dreadnought, 120, requires u_battleship), chest1/2/3 (War chest I-III, +75 starting credits each, 20/40/65), cmd1/2 (Command authority I-II, +2 fleet command points each, 35/70), vets (Veteran officers, starting captains at Commander rank with a perk, 50), founder (Founders' salvage, a random piece of salvage at run start, 60), wrights (Master shipwrights, shipyard prices -15 percent, 45), salvagers (Recovery crews, +20 percent credits from battles, 40). Total 635 renown. Tree skills must not duplicate these effects; economy and shipyard-availability effects are doctrine's ground in particular.
+
+## Designer rulings (Oct 29, 2026)
+
+Q13 RULED: the Heat rule in section 8 is adopted as composed (each Heat point adds +2 XP to the flown admiral and +1 XP to the faction shadow pool; overflow at any cap routes into the line's shadow XP). This closes the parked progression question Q3 from Oct 28. Q14 RULED: section 8's renown position is accepted (renown's post-run-15 role is the experimentation currency, with escalating per-pick respec as its standing sink); new doctrine content is placed on the backlog as future content in its own right, not as a currency fix, and price re-inflation is rejected.

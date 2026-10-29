@@ -44,3 +44,7 @@ Only weighting. Qwen reads the generator's axes as the story (objective plus are
 ## Not checked
 
 Camera fit beyond the opening-shot rule (the playable Godot battle is the real test); visual silhouette and sprite legibility (Ryan's eye, at the playtest); whether the Godot port reproduces clearSpawns and the arena weights identically.
+
+## Designer rulings (Oct 29, 2026)
+
+Q11 RULED: option (a), shape-aware clearing, with an addition in the designer's own framing: the shapes and maps themselves are to be revised so clearing is needed less, with defining features kept out of the spawn corridors by construction rather than rescued after the fact. The boss rock thinning is revisited under the same principle (carve lanes, do not thin globally). Q12 RULED: option (a) now; biome is visual-only and is to be documented as such. Mechanical biomes go on the backlog as a post-playtest candidate.

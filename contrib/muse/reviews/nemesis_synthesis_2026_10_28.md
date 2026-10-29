@@ -41,3 +41,7 @@ Two chair census errors in the pack are owned here so they do not propagate: the
 ## Not checked
 
 Live escape rates and actual adaptation frequencies in played runs (needs telemetry or a dedicated sim, not a pack read); nemSay and pronoun consistency inside Argon's garbled-transcription passage (flagged in its screening, cheap for Opus to verify); Godot port parity for the strike and adaptation rules.
+
+## Designer rulings (Oct 29, 2026)
+
+Q3 RULED: option (a) now (own the mandatory once-per-sector meeting; fiction and UI language should match it), with option (b), a genuinely clock-summoned hunter, placed on the backlog to be decided after the Godot playtest. Q4 RULED: option (a), the clash check; an adaptation may not directly counter a revealed weakness. Q6 RULED: option (c), measure first; escape and compounding rates are to be instrumented before any cap is tuned. Q5 (intel guarantee) is NOT YET RULED: the designer asked whether the weakness ever changes. Chair answer from code: each Nemesis is created with exactly two weaknesses (campaign_run.js:249-251, pool filtered so no weakness cancels his traits); they never change during that Nemesis's life; a successor or new run rolls a fresh pair. Reveals happen on a win (captured logs), through intel events, and by triggering the weakness in battle. His pick on the guarantee is pending that answer.
