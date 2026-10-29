@@ -30,3 +30,7 @@ RUN 10: Routing and reward screens are solved except for duo and legendary chasi
 2. Should cred nodes pay meaningfully more (Argon suggested 75 to 100+) so they compete with a boon node's decline floor, or is boon dominance the intent?
 3. Is the deterministic legendary intended (a guaranteed payoff for patron loyalty), or should it be a weighted roll, or occupy a slot that does not delete duos? (All three legs asked a version of this.)
 4. Is the off-patron spillover intentional (offers stay full at the cost of patron identity and the sync bonus), or should offers shrink to what the patron can actually give? (DeepSeek)
+
+## Addendum: designer rulings (Oct 28, 2026)
+
+(1) Rule-changing protocols: numeric rarity scaling is RULED. The eight rule-shaped protocols should gain value across rarity tiers; the designer explicitly likes rarity RNG carrying real value, as in other roguelikes. The fixed-tier alternative is rejected. (2) Credit nodes: RULED, rebalance them so they make sense in the economy; the dominance gap is a tuning defect, not an intent. Exact figures are a tuning task. (3) The legendary: RULED as the hybrid. It stays engineerable (a player can build toward the conditions), but the contested slot resolves by weighted roll between the duo and the legendary rather than by deterministic overwrite. Question 4 of this synthesis (off-patron spillover) was not understood by the designer and has been re-explained in plain terms; it remains open, and no ruling is recorded for it here.

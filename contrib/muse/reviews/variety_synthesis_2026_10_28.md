@@ -49,3 +49,7 @@ RUN 10: Combinatorial variety only: routes, conditions in combination, faction-a
 1. The pivot slot: should one slot in each boon offer be reserved for an off-kit option, so builds can pivot mid-run at an opportunity cost? (Argon)
 2. Reward labels: full information everywhere (protecting the planning game), or hidden on event nodes only (buying a little exploration back)? (DeepSeek vs the loop protect list; the chair's middle version is above.)
 3. Should the battle-layer variety budget (archetypes beyond three, node modifiers beyond two) grow before launch, accepting the encounter axis already carries more than players will credit it for?
+
+## Addendum: designer rulings (Oct 28, 2026)
+
+(1) The pivot slot: RULED against (chair reading of the designer's answer, flagged to him for correction). He endorsed the deepening model: kit-filtered offers plus RNG in what is offered, building run on run, is what makes each run feel unique. No reserved off-kit slot. (2) Reward labels: RULED, hidden on event nodes only (the chair's middle version); full information everywhere else, protecting visible routing. (3) Battle-layer variety budget: RULED deferred. Factions, build types, and admirals carry variety for now; growing archetypes and modifiers waits, with the Godot playtest the natural revisit point.
