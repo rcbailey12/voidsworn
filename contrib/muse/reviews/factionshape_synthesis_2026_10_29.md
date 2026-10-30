@@ -35,3 +35,9 @@ All four prongs sketched nearly the same hull (cp 6-7, hp 250-280, armor .35-.40
 ## Designer questions
 
 One, for Ryan, in the program report: the CP direction (multiplier on budgets, per DeepSeek; integer ladder re-base, per Argon; or ceiling allowance plus a player-side Eclipse step, per Rey), with the sims-first path priced. The Battleship price key is not a question; it is a bug-shaped fix for Opus.
+
+## Addendum: designer's ruling (Ryan, Oct 29, 2026, evening)
+
+Ryan ruled on the principle: Eclipse ships should be stronger but more expensive, Chorus the opposite, faction appropriate across the board. The asymmetry direction is therefore settled, and it applies across the systems that express cost and strength (stats, credit price, and CP), not one lever in isolation.
+
+Chair mapping of the ruling onto the three mechanisms on file, flagged for correction if Ryan reads his words differently: the principle endorses real per-faction cost differences (which kills the universal-CP status quo and the pure ceiling-allowance-only reading), but Argon's generator arithmetic still binds any implementation, because fractional hull costs strand budget in the fill loop. The compliant implementations are therefore the budget-level multiplier (DeepSeek) or the integer ladder re-base (Argon), and the Rey leg's ceiling point survives as a necessary companion rather than an alternative: if the Chorus discount buys cheaper hulls but the board ceiling still caps the fleet at the same count, the swarm discount converts into heavier hulls, so a Chorus ceiling allowance has to ride along for the discount to express as more ships. Sims first, per the Rey leg's flag, before any generator change ships. The Battleship price key remains a bug-shaped fix for Opus regardless of mechanism.
