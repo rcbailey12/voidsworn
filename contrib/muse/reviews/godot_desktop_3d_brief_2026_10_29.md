@@ -52,6 +52,15 @@ In adoption order: HDR glow with AgX tonemapping and debanding; clustered weapon
 
 Counter-recommendation: SDFGI is likely a poor fit here. It is the most demanding GI option, ships do not participate as dynamic occluders or emissives in it, and empty space gives it almost nothing to do. Use sky IBL plus ReflectionProbes; prototype SDFGI only around stations, if ever.
 
+## Red-team corrections (Oct 29, 2026, DeepSeek and Qwen legs, chair-adjudicated)
+
+- VRAM figure corrected: in the July 2026 Steam survey data, 16 GB is now the most common VRAM capacity (25.90 percent) ahead of 8 GB (25.32 percent). The section 1 sentence "8 GB VRAM is the most common" is superseded; the design implication is unchanged (default tier targets the RTX 3060 class at 1080p).
+- Phantom Camera caveat corrected: 4.7 compatibility IS evidenced. The addon's v0.11.0.3 release notes fix an issue introduced in Godot 4.7.1 and v0.11.0.4 is current (DeepSeek leg, READ from the repo). The "Not verified" entry below is superseded on this point.
+- SDFGI wording trimmed: the docs describe SDFGI as one of the most demanding GI techniques (DeepSeek leg, READ). The counter-recommendation itself stands on the documented limits (no dynamic occluders or dynamic emissive surfaces).
+- amount_ratio phrasing refined (Qwen leg): it gives no memory benefit and at most a marginal compute benefit; the practical conclusion (quality tiers must change amounts or swap scenes) is unchanged.
+- Two Qwen objections were checked against the primary source and REJECTED: TAA is Forward+ only per the current stable docs' antialiasing table (not in Mobile), and the docs date the Vulkan to D3D12 to Compatibility fallback chain "Since Godot 4.4," matching section 1 as written.
+- AreaLight3D's dating as a 4.7 addition remains unverified by either leg (HDR output is confirmed present in stable for Forward+ and Mobile). Treat the 4.7 dating as provisional.
+
 ## Not verified by the research
 
 - No shipped-game renderer statistics exist in a verifiable form.
