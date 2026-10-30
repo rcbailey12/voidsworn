@@ -31,3 +31,7 @@ The pre-commit information layer is the best thing in the battle UI and several 
 ## Designer questions
 
 One, for Ryan, in the program report: decouple inspect and target from instant fire (which remedy shape), with the attack-move preview as part of the same call. Everything else on this item is a fix list needing no ruling: the wingSel cancel gap, the misleading hint, the keysHelp omissions, the unnamed expected-damage target, and the Tap wording pass the drift legs also flagged.
+
+## Addendum: designer's ruling (Ryan, Oct 29, 2026, evening)
+
+Ryan declined to pick from the remedy patches and directed the chair to bring back solutions modeled on how comparable tactics games structure activation (move-then-fire turns, combined action-point pools). The chair's solutions memo (battleui_activation_models_2026_10_29.md) mapped five field models and three solutions, and Ryan RULED: phased activation is right. The battle UI direction is therefore Solution 1 from the memo: a move beat with free rehearsal and inspect-only enemy clicks, then a fire beat with odds computed from the real hex and an explicit Fire control, the planner's suggested position offered as a visible ghost, and mid-move fire as an explicit declared choice. The action-point pool stays on file as a named Godot-era experiment, not the direction. The minimal patch is superseded as a standalone option; its honest attack-move preview is absorbed into the phased model.

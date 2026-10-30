@@ -33,3 +33,5 @@ Solution 1 now, Solution 2 kept as a named Godot-era experiment. Phased activati
 ## Decision for Ryan
 
 Pick the structure: (1) phased activation, (2) action-point pool as a deliberate redesign, or (3) the minimal commitment patch. The attack-move destination preview ships under any of the three and is not a separate question.
+
+DECIDED (Ryan, Oct 29, 2026, evening): phased activation. Solution 1 is the battle UI direction; the AP pool remains a named Godot-era experiment on file, and the minimal patch is superseded (its attack-move preview is absorbed into the phased model).
