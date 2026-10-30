@@ -25,6 +25,8 @@ const EXPORTS = [
   // tables (data.js)
   'HULLS', 'FACTIONS', 'ADMIRALS', 'RELICS', 'MODULES', 'BOONS', 'PATRONS',
   'ASPECTS', 'PERKS', 'HEAT', 'RARITY', 'CAPTAINS',
+  'W', 'HULL_VARIANTS', 'FAC_PRICE', 'RELIC_NAMES', 'BOON_NEED', 'ARC_NAME',
+  'FAC_GATES', 'ENCOUNTERS', 'SHAPES',
   // fleet generation + ramp (battle.js / core.js)
   'genEnemyFleet', 'effArch', 'RAMP', 'fleetPower',
   // persistence (core.js)
