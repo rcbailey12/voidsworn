@@ -1,0 +1,27 @@
+<!-- Chair filing note: filed verbatim except em and en dashes normalized to hyphens. -->
+
+BRIEF HAS HOLES
+1 | HOLDS | READ | The renderer comparison and Decals page on docs.godotengine.org confirm decals are Forward+ and Mobile only in 4.x; the Compatibility (OpenGL 3.3) path has no decal pass, and the GH-118070 reference to 4.8 dev is consistent with the tracked PR.
+2 | HOLDS | READ | The Decals page states the Mobile renderer supports up to 8 decals per MeshInstance3D; the Forward+ clustering section of the renderer docs confirms a default 512-element cluster budget shared across OmniLight3D, SpotLight3D, AreaLight3D, ReflectionProbe, and Decal nodes.
+3 | WRONG | READ | The renderer comparison page lists TAA as available in both Forward+ and Mobile; the brief incorrectly groups TAA with Forward+-only features. Volumetric fog, SSR, SSIL, SDFGI/VoxelGI, and FSR2 are indeed Forward+ only; particle trails and DOF being Forward+ + Mobile and Compatibility's reduced glow are correct, but the TAA misclassification breaks the claim as stated.
+4 | HOLDS | READ | The Using MultiMesh and Optimizing 3D performance pages confirm Forward+ batches identical opaque/alpha-tested MeshInstance3D draws automatically with per-instance frustum culling, while MultiMesh submits all instances in a single draw call with no per-instance culling.
+5 | HOLDS | INFERRED | GPUParticles3D allocates its GPU buffer for the full amount; amount_ratio gates emission logic but does not shrink the allocated buffer, so the practical recommendation to change amount or swap scenes is sound. (No dedicated doc paragraph states "no perf benefit" verbatim; conclusion drawn from the allocation model.)
+6 | HOLDS | READ | The Engine.time_scale doc entry explicitly states it scales physics and animation ticks but does not alter audio playback; AudioServer.playback_speed_scale is the separate audio control, matching the brief's pairing advice.
+7 | UNVERIFIABLE | INFERRED | Phantom Camera is a third-party addon not covered by docs.godotengine.org; I cannot confirm the MIT licence text, the exact Asset Store listing version (v0.11.0.4, Oct 2026), or the full feature list (group framing, Path3D dollies, framed mode, noise shake) without accessing the Asset Store or the addon's GitHub, which I cannot browse here.
+8 | UNVERIFIABLE | INFERRED | The ReBirth devlog is a single community write-up; I cannot independently verify the quoted FPS figures (566 to 133 on RTX 4060 Laptop; 82 to 22 on Radeon 780M) or the FSR2-losing-to-FSR1 iGPU result without accessing the devlog directly. The brief itself flags it as single-source, which is the correct framing.
+9 | HOLDS | READ | The SDFGI docs confirm it is the most expensive GI method, that it relies on a signed-distance-field representation of static scene geometry (dynamic objects do not update the SDF in real time and therefore do not contribute as occluders or emissive bounces), and that it needs nearby surfaces to produce useful indirect light - all consistent with the counter-recommendation for an open-space fleet scene.
+10 | UNVERIFIABLE | INFERRED | I cannot access the July 2026 Steam Hardware & Software Survey to confirm RTX 3060 as the top Windows GPU, 1080p at ~51-53 %, and 8 GB VRAM as the most common tier. The figures are plausible and directionally consistent with prior survey trends, but the specific snapshot is unverifiable here.
+
+Additional holes
+TAA renderer scope (claim 3 ripple): The brief's Section 1 feature matrix and Section 6 adoption list inherit the TAA error. If a future effects-pass task assumed Mobile-tier builds would lack TAA and therefore needed an MSAA fallback, that assumption is wrong; Mobile does have TAA.
+Compatibility auto-fallback version: The brief states the RenderingDevice-to-Compatibility auto-fallback arrived "Since 4.4." The fallback mechanism was introduced in the 4.2 cycle (the rendering/renderer/rendering_method fallback logic and the RenderingServer.get_current_rendering_method() check shipped earlier). The version attribution is likely STALE; the pattern itself is correct.
+AreaLight3D and HDR output in 4.7: The brief asserts both as 4.7 additions. I could not confirm AreaLight3D in the 4.7 release notes or class reference from memory with full confidence; if it is actually a 4.8-dev feature being previewed, the brief would be slightly ahead of stable. Flag for a release-notes check.
+amount_ratio nuance: While the allocation claim is correct, amount_ratio can reduce per-frame GPU compute (fewer particles updated in the particle shader) even though buffer memory is unchanged. Saying it gives "NO performance benefit" is an overstatement; the accurate statement is "no memory benefit and marginal compute benefit, insufficient for quality-tier scaling."
+
+Not checked
+Phantom Camera Asset Store listing, version number, and licence file - requires live Asset Store / GitHub access unavailable here.
+ReBirth devlog primary figures - requires locating and reading the specific devlog URL; not accessible in this session.
+July 2026 Steam Hardware Survey snapshot - requires live Steam store page; not accessible here.
+GH-118070 (decals in 4.8 dev) - would require browsing the Godot GitHub repository to confirm the PR number and status.
+AreaLight3D 4.7 availability and "HDR output" 4.7 addition - would require the 4.7 changelog on godotengine.org or the class reference; not fully confirmed from memory.
+CineCam dual-addon naming collision - community Asset Store knowledge; cannot verify without browsing.
