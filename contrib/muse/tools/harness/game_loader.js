@@ -79,6 +79,13 @@ function loadGame(repoDir) {
     get: () => vm.runInContext('SAVED_RUN', sandbox),
     set: v => { sandbox.__v = v; vm.runInContext('SAVED_RUN = __v', sandbox); },
   });
+  Object.defineProperty(out, 'RUN', {
+    get: () => vm.runInContext('RUN', sandbox),
+    set: v => { sandbox.__v = v; vm.runInContext('RUN = __v', sandbox); },
+  });
+  Object.defineProperty(out, 'B', {
+    get: () => vm.runInContext('B', sandbox),
+  });
   return out;
 }
 
