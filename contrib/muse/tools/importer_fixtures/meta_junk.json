@@ -1,0 +1,106 @@
+{
+  "fixture": "meta_junk",
+  "store": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":95,\"unlocked\":{\"chest1\":true,\"zzz_legacy\":true},\"admirals\":{\"vex\":true,\"zzz_admiral\":true},\"fallen\":[{\"name\":\"Captain Ana Ruiz\",\"rank\":0,\"fac\":\"voidsworn\",\"ship\":\"Quiet Ledger\",\"sector\":1}],\"stats\":{\"runs\":3,\"best\":2,\"wins\":0},\"opts\":{},\"tel\":[],\"updated\":1793200000000,\"mastery\":{\"vex\":11,\"zzz_admiral\":40},\"favour\":{\"iron\":4,\"zzz_patron\":9},\"variants\":{\"vs_harrow_t\":true,\"zzz_variant\":true},\"heatBest\":{\"voidsworn\":1,\"zzz_heat\":2}},\"run\":null}"
+  },
+  "envelope": {
+    "meta": {
+      "v": 2,
+      "renown": 95,
+      "unlocked": {
+        "chest1": true,
+        "zzz_legacy": true
+      },
+      "admirals": {
+        "vex": true,
+        "zzz_admiral": true
+      },
+      "fallen": [
+        {
+          "name": "Captain Ana Ruiz",
+          "rank": 0,
+          "fac": "voidsworn",
+          "ship": "Quiet Ledger",
+          "sector": 1
+        }
+      ],
+      "stats": {
+        "runs": 3,
+        "best": 2,
+        "wins": 0
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "vex": 11,
+        "zzz_admiral": 40
+      },
+      "favour": {
+        "iron": 4,
+        "zzz_patron": 9
+      },
+      "variants": {
+        "vs_harrow_t": true,
+        "zzz_variant": true
+      },
+      "heatBest": {
+        "voidsworn": 1,
+        "zzz_heat": 2
+      }
+    },
+    "run": null
+  },
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 95,
+      "unlocked": {
+        "chest1": true,
+        "zzz_legacy": true
+      },
+      "admirals": {
+        "vex": true,
+        "zzz_admiral": true
+      },
+      "fallen": [
+        {
+          "name": "Captain Ana Ruiz",
+          "rank": 0,
+          "fac": "voidsworn",
+          "ship": "Quiet Ledger",
+          "sector": 1
+        }
+      ],
+      "stats": {
+        "runs": 3,
+        "best": 2,
+        "wins": 0,
+        "wonFacs": []
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "vex": 11,
+        "zzz_admiral": 40
+      },
+      "favour": {
+        "iron": 4,
+        "zzz_patron": 9
+      },
+      "variants": {
+        "vs_harrow_t": true,
+        "zzz_variant": true
+      },
+      "heatBest": {
+        "voidsworn": 1,
+        "zzz_heat": 2
+      },
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": null,
+    "recovered": false
+  }
+}

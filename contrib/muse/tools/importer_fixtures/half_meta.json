@@ -1,0 +1,72 @@
+{
+  "fixture": "half_meta",
+  "store": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":175,\"unlocked\":{},\"admirals\":{\"vex\":true,\"kassar\":true},\"fallen\":[],\"stats\":{\"runs\":5,\"best\":2,\"wins\":1,\"wonFacs\":[\"hegemony\"]},\"opts\":{},\"tel\":[],\"updated\":1793200000000,\"mastery\":{\"vex\":20},\"favour\":{},\"variants\":{},\"heatBest\":{}},\"run\":{\"fleet\":\"broken\",\"map\":null}}"
+  },
+  "envelope": {
+    "meta": {
+      "v": 2,
+      "renown": 175,
+      "unlocked": {},
+      "admirals": {
+        "vex": true,
+        "kassar": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 5,
+        "best": 2,
+        "wins": 1,
+        "wonFacs": [
+          "hegemony"
+        ]
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "vex": 20
+      },
+      "favour": {},
+      "variants": {},
+      "heatBest": {}
+    },
+    "run": {
+      "fleet": "broken",
+      "map": null
+    }
+  },
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 175,
+      "unlocked": {},
+      "admirals": {
+        "vex": true,
+        "kassar": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 5,
+        "best": 2,
+        "wins": 1,
+        "wonFacs": [
+          "hegemony"
+        ]
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "vex": 20
+      },
+      "favour": {},
+      "variants": {},
+      "heatBest": {},
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": null,
+    "recovered": false
+  }
+}

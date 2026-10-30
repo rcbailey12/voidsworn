@@ -1,0 +1,566 @@
+{
+  "fixture": "settled_run",
+  "store": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":333,\"unlocked\":{\"chest1\":true},\"admirals\":{\"vex\":true,\"sable\":true},\"fallen\":[{\"name\":\"Captain Ivo Brandt\",\"rank\":1,\"fac\":\"corsair\",\"ship\":\"Last Wager\",\"sector\":3}],\"stats\":{\"runs\":5,\"best\":3,\"wins\":2,\"wonFacs\":[\"hegemony\",\"corsair\"]},\"opts\":{},\"tel\":[{\"t\":1793200000000,\"ev\":\"run_end\",\"sector\":3,\"build\":\"dev\",\"victory\":true,\"abandoned\":false,\"fac\":\"corsair\",\"stats\":{\"battles\":14,\"elites\":4,\"bosses\":3,\"kills\":88,\"lost\":2},\"mins\":5760,\"fleet\":[\"c_hulk\",\"c_reaver\",\"c_raider\"]}],\"updated\":1793200000000,\"mastery\":{\"sable\":67},\"favour\":{},\"variants\":{},\"heatBest\":{\"corsair\":1},\"runAt\":1793200000000},\"run\":null}",
+    "voidsworn.v1.bak": "{\"meta\":{\"v\":2,\"renown\":200,\"unlocked\":{\"chest1\":true},\"admirals\":{\"vex\":true,\"sable\":true},\"fallen\":[],\"stats\":{\"runs\":5,\"best\":3,\"wins\":1,\"wonFacs\":[\"hegemony\"]},\"opts\":{},\"tel\":[],\"updated\":1793200000000,\"mastery\":{\"sable\":20},\"favour\":{},\"variants\":{},\"heatBest\":{}},\"run\":{\"fac\":\"corsair\",\"foes\":[\"voidsworn\",\"hegemony\",\"ithar\",\"chorus\"],\"admiral\":\"sable\",\"credits\":340,\"cpCap\":16,\"sector\":3,\"relics\":[],\"inventory\":[],\"fleet\":[{\"uid\":\"xmvs8zbb41\",\"tpl\":\"c_hulk\",\"name\":\"Second Death\",\"mk\":1,\"hp\":170,\"mods\":[],\"cap\":{\"fac\":\"corsair\",\"name\":\"Brak Longjaw\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvs8zbb42\",\"tpl\":\"c_reaver\",\"name\":\"Chain of Teeth\",\"mk\":1,\"hp\":68,\"mods\":[],\"cap\":{\"fac\":\"corsair\",\"name\":\"Drask the Quiet\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvs8zbb43\",\"tpl\":\"c_raider\",\"name\":\"Cold Trail\",\"mk\":1,\"hp\":46,\"mods\":[],\"cap\":{\"fac\":\"corsair\",\"name\":\"Gash the Quiet\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}}],\"pos\":null,\"stats\":{\"battles\":14,\"elites\":4,\"bosses\":3,\"kills\":88,\"lost\":2},\"t0\":1792854400000,\"fallen\":[{\"name\":\"Captain Ivo Brandt\",\"rank\":1,\"fac\":\"corsair\",\"ship\":\"Last Wager\",\"sector\":3}],\"ambush\":false,\"over\":false,\"boons\":[],\"patrons\":[\"star\",\"rook\",\"storm\",\"ember\"],\"aspect\":null,\"flagUid\":\"xmvs8zbb41\",\"heat\":[\"h_flag\"],\"mastery\":0,\"ransoms\":0,\"altFleet\":false,\"cmdOverride\":null,\"giftBoon\":null,\"reserve\":[],\"seenEvents\":[],\"regionsUsed\":[\"nebula\"],\"condsUsed\":[\"dark\"],\"curNode\":null,\"reinf\":0,\"flags\":{},\"nem\":{\"fac\":\"chorus\",\"name\":\"Brine Mouth\",\"g\":\"n\",\"title\":\"Gorge-mind\",\"persona\":\"ravenous\",\"traits\":[\"regrowth\",\"deadeye\"],\"portrait\":\"nem_chorus_4\",\"weak\":[\"torp\",\"anchor\"],\"revealed\":[],\"adapt\":[],\"clock\":0,\"met\":2,\"beaten\":2,\"scars\":0,\"scarKinds\":[],\"epithets\":[],\"epithet\":null,\"last_beat\":null,\"fed\":0,\"riches\":0,\"loot\":0,\"held\":null,\"gloat\":null,\"honed\":0,\"revived\":false,\"dead\":false,\"strike\":false,\"seen\":{},\"signatures\":[]},\"verbUsed\":0,\"verbNext\":null,\"classTrack\":{},\"boonRerolls\":0,\"map\":{\"fac\":\"ithar\",\"cols\":[[{\"id\":\"0-0\",\"col\":0,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"shipyard\",\"done\":false,\"map\":\"storm\"}],[{\"id\":\"1-0\",\"col\":1,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"battle\",\"done\":false,\"enc\":\"flagship\",\"shape\":\"shoals\",\"rw\":{\"k\":\"repair\"},\"arch\":null,\"mod\":null,\"map\":\"storm\"},{\"id\":\"1-1\",\"col\":1,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"battle\",\"done\":false,\"enc\":\"ambush\",\"shape\":\"dense\",\"rw\":{\"k\":\"boon\",\"p\":\"rook\"},\"arch\":\"carrier\",\"mod\":null,\"map\":\"storm\"}],[{\"id\":\"2-0\",\"col\":2,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"battle\",\"done\":false,\"enc\":\"hold\",\"shape\":\"dense\",\"rw\":{\"k\":\"repair\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"storm\"},{\"id\":\"2-1\",\"col\":2,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"field\",\"done\":false,\"map\":\"storm\"}],[{\"id\":\"3-0\",\"col\":3,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"shipyard\",\"done\":false,\"map\":\"storm\"},{\"id\":\"3-1\",\"col\":3,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"elite\",\"done\":false,\"enc\":\"hold\",\"shape\":\"archipelago\",\"rw\":{\"k\":\"boon\",\"p\":\"ember\",\"min\":1},\"arch\":null,\"mod\":null,\"map\":\"storm\"},{\"id\":\"3-2\",\"col\":3,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"battle\",\"done\":false,\"enc\":\"flagship\",\"shape\":\"deadstar\",\"rw\":{\"k\":\"boon\",\"p\":\"star\"},\"arch\":\"heavy\",\"mod\":null,\"map\":\"storm\"}],[{\"id\":\"4-0\",\"col\":4,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"event\",\"done\":false,\"map\":\"belt\"},{\"id\":\"4-1\",\"col\":4,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"elite\",\"done\":false,\"enc\":\"intercept\",\"shape\":\"shoals\",\"rw\":{\"k\":\"boon\",\"p\":\"rook\",\"min\":1},\"arch\":null,\"mod\":null,\"map\":\"belt\"}],[{\"id\":\"5-0\",\"col\":5,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"field\",\"done\":false,\"map\":\"belt\"},{\"id\":\"5-1\",\"col\":5,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"shipyard\",\"done\":false,\"map\":\"belt\"}],[{\"id\":\"6-0\",\"col\":6,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"boss\",\"done\":false,\"rw\":{\"k\":\"boon\",\"p\":\"storm\",\"min\":1},\"map\":\"storm\"}]],\"edges\":[[\"0-0\",\"1-0\"],[\"0-0\",\"1-1\"],[\"1-0\",\"2-0\"],[\"1-1\",\"2-1\"],[\"2-0\",\"3-0\"],[\"2-1\",\"3-2\"],[\"2-1\",\"3-1\"],[\"3-0\",\"4-0\"],[\"3-1\",\"4-0\"],[\"3-2\",\"4-1\"],[\"4-0\",\"5-0\"],[\"4-1\",\"5-1\"],[\"5-0\",\"6-0\"],[\"5-1\",\"6-0\"]],\"cond\":\"dark\",\"region\":\"nebula\",\"biome\":{\"rock\":\"crystal\",\"planet\":6,\"station\":\"spire\"}}}}"
+  },
+  "envelope": {
+    "meta": {
+      "v": 2,
+      "renown": 333,
+      "unlocked": {
+        "chest1": true
+      },
+      "admirals": {
+        "vex": true,
+        "sable": true
+      },
+      "fallen": [
+        {
+          "name": "Captain Ivo Brandt",
+          "rank": 1,
+          "fac": "corsair",
+          "ship": "Last Wager",
+          "sector": 3
+        }
+      ],
+      "stats": {
+        "runs": 5,
+        "best": 3,
+        "wins": 2,
+        "wonFacs": [
+          "hegemony",
+          "corsair"
+        ]
+      },
+      "opts": {},
+      "tel": [
+        {
+          "t": 1793200000000,
+          "ev": "run_end",
+          "sector": 3,
+          "build": "dev",
+          "victory": true,
+          "abandoned": false,
+          "fac": "corsair",
+          "stats": {
+            "battles": 14,
+            "elites": 4,
+            "bosses": 3,
+            "kills": 88,
+            "lost": 2
+          },
+          "mins": 5760,
+          "fleet": [
+            "c_hulk",
+            "c_reaver",
+            "c_raider"
+          ]
+        }
+      ],
+      "updated": 1793200000000,
+      "mastery": {
+        "sable": 67
+      },
+      "favour": {},
+      "variants": {},
+      "heatBest": {
+        "corsair": 1
+      },
+      "runAt": 1793200000000
+    },
+    "run": null
+  },
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 393,
+      "unlocked": {
+        "chest1": true
+      },
+      "admirals": {
+        "vex": true,
+        "sable": true
+      },
+      "fallen": [
+        {
+          "name": "Captain Ivo Brandt",
+          "rank": 1,
+          "fac": "corsair",
+          "ship": "Last Wager",
+          "sector": 3
+        }
+      ],
+      "stats": {
+        "runs": 5,
+        "best": 3,
+        "wins": 2,
+        "wonFacs": [
+          "hegemony",
+          "corsair"
+        ]
+      },
+      "opts": {},
+      "tel": [
+        {
+          "t": 1793200000000,
+          "ev": "run_end",
+          "sector": 3,
+          "build": "dev",
+          "victory": true,
+          "abandoned": false,
+          "fac": "corsair",
+          "stats": {
+            "battles": 14,
+            "elites": 4,
+            "bosses": 3,
+            "kills": 88,
+            "lost": 2
+          },
+          "mins": 5760,
+          "fleet": [
+            "c_hulk",
+            "c_reaver",
+            "c_raider"
+          ]
+        }
+      ],
+      "updated": 1793200000000,
+      "mastery": {
+        "sable": 67
+      },
+      "favour": {},
+      "variants": {},
+      "heatBest": {
+        "corsair": 1
+      },
+      "runAt": 1793200000000,
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": null,
+    "recovered": false
+  },
+  "preEndRun": {
+    "fac": "corsair",
+    "foes": [
+      "voidsworn",
+      "hegemony",
+      "ithar",
+      "chorus"
+    ],
+    "admiral": "sable",
+    "credits": 340,
+    "cpCap": 16,
+    "sector": 3,
+    "relics": [],
+    "inventory": [],
+    "fleet": [
+      {
+        "uid": "xmvs8zbb41",
+        "tpl": "c_hulk",
+        "name": "Second Death",
+        "mk": 1,
+        "hp": 170,
+        "mods": [],
+        "cap": {
+          "fac": "corsair",
+          "name": "Brak Longjaw",
+          "xp": 0,
+          "rank": 0,
+          "perks": [],
+          "pending": 0
+        }
+      },
+      {
+        "uid": "xmvs8zbb42",
+        "tpl": "c_reaver",
+        "name": "Chain of Teeth",
+        "mk": 1,
+        "hp": 68,
+        "mods": [],
+        "cap": {
+          "fac": "corsair",
+          "name": "Drask the Quiet",
+          "xp": 0,
+          "rank": 0,
+          "perks": [],
+          "pending": 0
+        }
+      },
+      {
+        "uid": "xmvs8zbb43",
+        "tpl": "c_raider",
+        "name": "Cold Trail",
+        "mk": 1,
+        "hp": 46,
+        "mods": [],
+        "cap": {
+          "fac": "corsair",
+          "name": "Gash the Quiet",
+          "xp": 0,
+          "rank": 0,
+          "perks": [],
+          "pending": 0
+        }
+      }
+    ],
+    "pos": null,
+    "stats": {
+      "battles": 14,
+      "elites": 4,
+      "bosses": 3,
+      "kills": 88,
+      "lost": 2
+    },
+    "t0": 1792854400000,
+    "fallen": [
+      {
+        "name": "Captain Ivo Brandt",
+        "rank": 1,
+        "fac": "corsair",
+        "ship": "Last Wager",
+        "sector": 3
+      }
+    ],
+    "ambush": false,
+    "over": false,
+    "boons": [],
+    "patrons": [
+      "star",
+      "rook",
+      "storm",
+      "ember"
+    ],
+    "aspect": null,
+    "flagUid": "xmvs8zbb41",
+    "heat": [
+      "h_flag"
+    ],
+    "mastery": 0,
+    "ransoms": 0,
+    "altFleet": false,
+    "cmdOverride": null,
+    "giftBoon": null,
+    "reserve": [],
+    "seenEvents": [],
+    "regionsUsed": [
+      "nebula"
+    ],
+    "condsUsed": [
+      "dark"
+    ],
+    "curNode": null,
+    "reinf": 0,
+    "flags": {},
+    "nem": {
+      "fac": "chorus",
+      "name": "Brine Mouth",
+      "g": "n",
+      "title": "Gorge-mind",
+      "persona": "ravenous",
+      "traits": [
+        "regrowth",
+        "deadeye"
+      ],
+      "portrait": "nem_chorus_4",
+      "weak": [
+        "torp",
+        "anchor"
+      ],
+      "revealed": [],
+      "adapt": [],
+      "clock": 0,
+      "met": 2,
+      "beaten": 2,
+      "scars": 0,
+      "scarKinds": [],
+      "epithets": [],
+      "epithet": null,
+      "last_beat": null,
+      "fed": 0,
+      "riches": 0,
+      "loot": 0,
+      "held": null,
+      "gloat": null,
+      "honed": 0,
+      "revived": false,
+      "dead": false,
+      "strike": false,
+      "seen": {},
+      "signatures": []
+    },
+    "verbUsed": 0,
+    "verbNext": null,
+    "classTrack": {},
+    "boonRerolls": 0,
+    "map": {
+      "fac": "ithar",
+      "cols": [
+        [
+          {
+            "id": "0-0",
+            "col": 0,
+            "row": 0,
+            "n": 1,
+            "y": 0.5,
+            "type": "shipyard",
+            "done": false,
+            "map": "storm"
+          }
+        ],
+        [
+          {
+            "id": "1-0",
+            "col": 1,
+            "row": 0,
+            "n": 2,
+            "y": 0.25,
+            "type": "battle",
+            "done": false,
+            "enc": "flagship",
+            "shape": "shoals",
+            "rw": {
+              "k": "repair"
+            },
+            "arch": null,
+            "mod": null,
+            "map": "storm"
+          },
+          {
+            "id": "1-1",
+            "col": 1,
+            "row": 1,
+            "n": 2,
+            "y": 0.75,
+            "type": "battle",
+            "done": false,
+            "enc": "ambush",
+            "shape": "dense",
+            "rw": {
+              "k": "boon",
+              "p": "rook"
+            },
+            "arch": "carrier",
+            "mod": null,
+            "map": "storm"
+          }
+        ],
+        [
+          {
+            "id": "2-0",
+            "col": 2,
+            "row": 0,
+            "n": 2,
+            "y": 0.25,
+            "type": "battle",
+            "done": false,
+            "enc": "hold",
+            "shape": "dense",
+            "rw": {
+              "k": "repair"
+            },
+            "arch": "swarm",
+            "mod": null,
+            "map": "storm"
+          },
+          {
+            "id": "2-1",
+            "col": 2,
+            "row": 1,
+            "n": 2,
+            "y": 0.75,
+            "type": "field",
+            "done": false,
+            "map": "storm"
+          }
+        ],
+        [
+          {
+            "id": "3-0",
+            "col": 3,
+            "row": 0,
+            "n": 3,
+            "y": 0.16666666666666666,
+            "type": "shipyard",
+            "done": false,
+            "map": "storm"
+          },
+          {
+            "id": "3-1",
+            "col": 3,
+            "row": 1,
+            "n": 3,
+            "y": 0.5,
+            "type": "elite",
+            "done": false,
+            "enc": "hold",
+            "shape": "archipelago",
+            "rw": {
+              "k": "boon",
+              "p": "ember",
+              "min": 1
+            },
+            "arch": null,
+            "mod": null,
+            "map": "storm"
+          },
+          {
+            "id": "3-2",
+            "col": 3,
+            "row": 2,
+            "n": 3,
+            "y": 0.8333333333333334,
+            "type": "battle",
+            "done": false,
+            "enc": "flagship",
+            "shape": "deadstar",
+            "rw": {
+              "k": "boon",
+              "p": "star"
+            },
+            "arch": "heavy",
+            "mod": null,
+            "map": "storm"
+          }
+        ],
+        [
+          {
+            "id": "4-0",
+            "col": 4,
+            "row": 0,
+            "n": 2,
+            "y": 0.25,
+            "type": "event",
+            "done": false,
+            "map": "belt"
+          },
+          {
+            "id": "4-1",
+            "col": 4,
+            "row": 1,
+            "n": 2,
+            "y": 0.75,
+            "type": "elite",
+            "done": false,
+            "enc": "intercept",
+            "shape": "shoals",
+            "rw": {
+              "k": "boon",
+              "p": "rook",
+              "min": 1
+            },
+            "arch": null,
+            "mod": null,
+            "map": "belt"
+          }
+        ],
+        [
+          {
+            "id": "5-0",
+            "col": 5,
+            "row": 0,
+            "n": 2,
+            "y": 0.25,
+            "type": "field",
+            "done": false,
+            "map": "belt"
+          },
+          {
+            "id": "5-1",
+            "col": 5,
+            "row": 1,
+            "n": 2,
+            "y": 0.75,
+            "type": "shipyard",
+            "done": false,
+            "map": "belt"
+          }
+        ],
+        [
+          {
+            "id": "6-0",
+            "col": 6,
+            "row": 0,
+            "n": 1,
+            "y": 0.5,
+            "type": "boss",
+            "done": false,
+            "rw": {
+              "k": "boon",
+              "p": "storm",
+              "min": 1
+            },
+            "map": "storm"
+          }
+        ]
+      ],
+      "edges": [
+        [
+          "0-0",
+          "1-0"
+        ],
+        [
+          "0-0",
+          "1-1"
+        ],
+        [
+          "1-0",
+          "2-0"
+        ],
+        [
+          "1-1",
+          "2-1"
+        ],
+        [
+          "2-0",
+          "3-0"
+        ],
+        [
+          "2-1",
+          "3-2"
+        ],
+        [
+          "2-1",
+          "3-1"
+        ],
+        [
+          "3-0",
+          "4-0"
+        ],
+        [
+          "3-1",
+          "4-0"
+        ],
+        [
+          "3-2",
+          "4-1"
+        ],
+        [
+          "4-0",
+          "5-0"
+        ],
+        [
+          "4-1",
+          "5-1"
+        ],
+        [
+          "5-0",
+          "6-0"
+        ],
+        [
+          "5-1",
+          "6-0"
+        ]
+      ],
+      "cond": "dark",
+      "region": "nebula",
+      "biome": {
+        "rock": "crystal",
+        "planet": 6,
+        "station": "spire"
+      }
+    }
+  },
+  "settledBy": "campaign_meta.js endRun(true), run inside this generator with DOM stubs and a pinned clock; renown, wins, wonFacs, fallen, mastery and heatBest in the primary envelope are its fold"
+}

@@ -1,0 +1,1487 @@
+{
+  "fixture": "fleet_edges",
+  "store": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":175,\"unlocked\":{},\"admirals\":{\"vex\":true},\"fallen\":[],\"stats\":{\"runs\":5,\"best\":3,\"wins\":0},\"opts\":{},\"tel\":[],\"updated\":1793200000000,\"mastery\":{\"vex\":22},\"favour\":{},\"variants\":{},\"heatBest\":{}},\"run\":{\"fac\":\"voidsworn\",\"foes\":[\"deathless\",\"corsair\",\"chorus\",\"ithar\",\"hegemony\"],\"admiral\":\"vex\",\"credits\":95,\"cpCap\":16,\"sector\":3,\"relics\":[],\"inventory\":[],\"fleet\":[{\"uid\":\"xmvuhwgj51\",\"tpl\":\"warden\",\"name\":\"Cold Reckoning\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Mathilde Ivers\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj52\",\"tpl\":\"c_raider\",\"name\":\"Cold Trail\",\"mk\":1,\"hp\":46,\"mods\":[],\"cap\":{\"fac\":\"corsair\",\"name\":\"Gash Rattlebone\",\"xp\":30,\"rank\":0,\"perks\":[],\"pending\":2}},{\"uid\":\"xmvuhwgj53\",\"tpl\":\"warden\",\"name\":\"Vigilant Ash\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Brannoc Marchetti\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj54\",\"tpl\":\"b_drone\",\"name\":\"Shrieking Coil\",\"mk\":1,\"hp\":46,\"mods\":[],\"cap\":{\"fac\":\"chorus\",\"name\":\"Undertow\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj55\",\"tpl\":\"warden\",\"name\":\"Bright Censure\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Ninette Ferro\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj56\",\"tpl\":\"i_wisp\",\"name\":\"Starfall\",\"mk\":1,\"hp\":0,\"mods\":[],\"cap\":{\"fac\":\"ithar\",\"name\":\"Lun of the Bright Collector\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj67\",\"tpl\":\"warden\",\"name\":\"Resolve of the Reach\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Rourke Ashdown\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj68\",\"tpl\":\"d_scythe\",\"name\":\"Ninth Winter\",\"mk\":1,\"hp\":22,\"mods\":[],\"cap\":{\"fac\":\"deathless\",\"name\":\"Caddex the Never-Dark\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj69\",\"tpl\":\"warden\",\"name\":\"Obsidian Brand\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Lysander Kade\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj610\",\"tpl\":\"h_picket\",\"name\":\"HNS Consensus\",\"mk\":1,\"hp\":40,\"mods\":[],\"cap\":{\"fac\":\"hegemony\",\"name\":\"Mara Kessler\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj611\",\"tpl\":\"warden\",\"name\":\"Long Watch\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Casimir Ostrava\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj612\",\"tpl\":\"c_raider\",\"name\":\"Rattletrap\",\"mk\":1,\"hp\":46,\"mods\":[],\"cap\":{\"fac\":\"corsair\",\"name\":\"Brak Rattlebone\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj613\",\"tpl\":\"warden\",\"name\":\"Relentless Ember\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Hadrian Stroud\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj614\",\"tpl\":\"b_drone\",\"name\":\"Tide of Teeth\",\"mk\":1,\"hp\":46,\"mods\":[],\"cap\":{\"fac\":\"chorus\",\"name\":\"Coiled Gullet\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj615\",\"tpl\":\"warden\",\"name\":\"Burning Spire\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Lucan Vashti\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwgj616\",\"tpl\":\"warden\",\"name\":\"Acceptable Loss\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Thessaly Harrowgate\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}}],\"pos\":\"0-0\",\"stats\":{\"battles\":10,\"elites\":2,\"bosses\":2,\"kills\":61,\"lost\":4},\"t0\":1792940800000,\"fallen\":[],\"ambush\":false,\"over\":false,\"boons\":[],\"patrons\":[\"iron\"],\"aspect\":null,\"flagUid\":\"xmvuhwgj54\",\"heat\":[],\"mastery\":0,\"ransoms\":0,\"altFleet\":false,\"cmdOverride\":null,\"giftBoon\":null,\"reserve\":[],\"seenEvents\":[],\"regionsUsed\":[\"nebula\"],\"condsUsed\":[\"ion\"],\"curNode\":\"0-0\",\"reinf\":0,\"flags\":{},\"nem\":{\"fac\":\"ithar\",\"name\":\"Ny ul\",\"g\":\"f\",\"title\":\"Duelist\",\"persona\":\"cunning\",\"traits\":[\"swift\",\"veil\"],\"portrait\":\"nem_ithar_2\",\"weak\":[\"brawl\",\"flank\"],\"revealed\":[],\"adapt\":[],\"clock\":0,\"met\":0,\"beaten\":0,\"scars\":0,\"scarKinds\":[],\"epithets\":[],\"epithet\":null,\"last_beat\":null,\"fed\":0,\"riches\":0,\"loot\":0,\"held\":null,\"gloat\":null,\"honed\":0,\"revived\":false,\"dead\":false,\"strike\":false,\"seen\":{},\"signatures\":[]},\"verbUsed\":0,\"verbNext\":null,\"classTrack\":{},\"boonRerolls\":0,\"map\":{\"fac\":\"chorus\",\"cols\":[[{\"id\":\"0-0\",\"col\":0,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"shipyard\",\"done\":true,\"map\":\"storm\"}],[{\"id\":\"1-0\",\"col\":1,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"battle\",\"done\":false,\"enc\":\"hunt\",\"shape\":\"open\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\"},\"arch\":\"carrier\",\"mod\":null,\"map\":\"storm\"},{\"id\":\"1-1\",\"col\":1,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"battle\",\"done\":false,\"enc\":\"rout\",\"shape\":\"dense\",\"rw\":{\"k\":\"cred\"},\"arch\":null,\"mod\":null,\"map\":\"storm\"}],[{\"id\":\"2-0\",\"col\":2,\"row\":0,\"n\":4,\"y\":0.125,\"type\":\"event\",\"done\":false,\"map\":\"storm\"},{\"id\":\"2-1\",\"col\":2,\"row\":1,\"n\":4,\"y\":0.375,\"type\":\"elite\",\"done\":false,\"enc\":\"flagship\",\"shape\":\"corridor\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\",\"min\":1},\"arch\":\"carrier\",\"mod\":null,\"map\":\"storm\"},{\"id\":\"2-2\",\"col\":2,\"row\":2,\"n\":4,\"y\":0.625,\"type\":\"battle\",\"done\":false,\"enc\":\"ambush\",\"shape\":\"shoals\",\"rw\":{\"k\":\"mod\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"storm\"},{\"id\":\"2-3\",\"col\":2,\"row\":3,\"n\":4,\"y\":0.875,\"type\":\"elite\",\"done\":false,\"enc\":\"rout\",\"shape\":\"lanes\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\",\"min\":1},\"arch\":\"heavy\",\"mod\":null,\"map\":\"storm\"}],[{\"id\":\"3-0\",\"col\":3,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"battle\",\"done\":false,\"enc\":\"intercept\",\"shape\":\"open\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\"},\"arch\":null,\"mod\":null,\"map\":\"storm\"},{\"id\":\"3-1\",\"col\":3,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"shipyard\",\"done\":false,\"map\":\"storm\"}],[{\"id\":\"4-0\",\"col\":4,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"battle\",\"done\":false,\"enc\":\"ambush\",\"shape\":\"dense\",\"rw\":{\"k\":\"cred\"},\"arch\":null,\"mod\":null,\"map\":\"belt\"},{\"id\":\"4-1\",\"col\":4,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"field\",\"done\":false,\"map\":\"belt\"},{\"id\":\"4-2\",\"col\":4,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"elite\",\"done\":false,\"enc\":\"flagship\",\"shape\":\"dense\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\",\"min\":1},\"arch\":\"swarm\",\"mod\":null,\"map\":\"belt\"}],[{\"id\":\"5-0\",\"col\":5,\"row\":0,\"n\":4,\"y\":0.125,\"type\":\"drydock\",\"done\":false,\"map\":\"belt\"},{\"id\":\"5-1\",\"col\":5,\"row\":1,\"n\":4,\"y\":0.375,\"type\":\"shipyard\",\"done\":false,\"map\":\"belt\"},{\"id\":\"5-2\",\"col\":5,\"row\":2,\"n\":4,\"y\":0.625,\"type\":\"field\",\"done\":false,\"map\":\"belt\"},{\"id\":\"5-3\",\"col\":5,\"row\":3,\"n\":4,\"y\":0.875,\"type\":\"field\",\"done\":false,\"map\":\"belt\"}],[{\"id\":\"6-0\",\"col\":6,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"boss\",\"done\":false,\"rw\":{\"k\":\"boon\",\"p\":\"iron\",\"min\":1},\"map\":\"storm\"}]],\"edges\":[[\"0-0\",\"1-0\"],[\"0-0\",\"1-1\"],[\"1-0\",\"2-0\"],[\"1-1\",\"2-2\"],[\"1-0\",\"2-1\"],[\"1-1\",\"2-3\"],[\"2-0\",\"3-0\"],[\"2-1\",\"3-0\"],[\"2-1\",\"3-1\"],[\"2-2\",\"3-1\"],[\"2-3\",\"3-1\"],[\"3-0\",\"4-0\"],[\"3-0\",\"4-1\"],[\"3-1\",\"4-2\"],[\"3-1\",\"4-1\"],[\"4-0\",\"5-0\"],[\"4-0\",\"5-1\"],[\"4-1\",\"5-1\"],[\"4-2\",\"5-3\"],[\"4-1\",\"5-2\"],[\"5-0\",\"6-0\"],[\"5-1\",\"6-0\"],[\"5-2\",\"6-0\"],[\"5-3\",\"6-0\"]],\"cond\":\"ion\",\"region\":\"nebula\",\"biome\":{\"rock\":\"ice\",\"planet\":7,\"station\":\"spire\"}}}}"
+  },
+  "envelope": {
+    "meta": {
+      "v": 2,
+      "renown": 175,
+      "unlocked": {},
+      "admirals": {
+        "vex": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 5,
+        "best": 3,
+        "wins": 0
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "vex": 22
+      },
+      "favour": {},
+      "variants": {},
+      "heatBest": {}
+    },
+    "run": {
+      "fac": "voidsworn",
+      "foes": [
+        "deathless",
+        "corsair",
+        "chorus",
+        "ithar",
+        "hegemony"
+      ],
+      "admiral": "vex",
+      "credits": 95,
+      "cpCap": 16,
+      "sector": 3,
+      "relics": [],
+      "inventory": [],
+      "fleet": [
+        {
+          "uid": "xmvuhwgj51",
+          "tpl": "warden",
+          "name": "Cold Reckoning",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Mathilde Ivers",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj52",
+          "tpl": "c_raider",
+          "name": "Cold Trail",
+          "mk": 1,
+          "hp": 46,
+          "mods": [],
+          "cap": {
+            "fac": "corsair",
+            "name": "Gash Rattlebone",
+            "xp": 30,
+            "rank": 0,
+            "perks": [],
+            "pending": 2
+          }
+        },
+        {
+          "uid": "xmvuhwgj53",
+          "tpl": "warden",
+          "name": "Vigilant Ash",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Brannoc Marchetti",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj54",
+          "tpl": "b_drone",
+          "name": "Shrieking Coil",
+          "mk": 1,
+          "hp": 46,
+          "mods": [],
+          "cap": {
+            "fac": "chorus",
+            "name": "Undertow",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj55",
+          "tpl": "warden",
+          "name": "Bright Censure",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Ninette Ferro",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj56",
+          "tpl": "i_wisp",
+          "name": "Starfall",
+          "mk": 1,
+          "hp": 0,
+          "mods": [],
+          "cap": {
+            "fac": "ithar",
+            "name": "Lun of the Bright Collector",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj67",
+          "tpl": "warden",
+          "name": "Resolve of the Reach",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Rourke Ashdown",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj68",
+          "tpl": "d_scythe",
+          "name": "Ninth Winter",
+          "mk": 1,
+          "hp": 22,
+          "mods": [],
+          "cap": {
+            "fac": "deathless",
+            "name": "Caddex the Never-Dark",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj69",
+          "tpl": "warden",
+          "name": "Obsidian Brand",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Lysander Kade",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj610",
+          "tpl": "h_picket",
+          "name": "HNS Consensus",
+          "mk": 1,
+          "hp": 40,
+          "mods": [],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Mara Kessler",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj611",
+          "tpl": "warden",
+          "name": "Long Watch",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Casimir Ostrava",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj612",
+          "tpl": "c_raider",
+          "name": "Rattletrap",
+          "mk": 1,
+          "hp": 46,
+          "mods": [],
+          "cap": {
+            "fac": "corsair",
+            "name": "Brak Rattlebone",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj613",
+          "tpl": "warden",
+          "name": "Relentless Ember",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Hadrian Stroud",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj614",
+          "tpl": "b_drone",
+          "name": "Tide of Teeth",
+          "mk": 1,
+          "hp": 46,
+          "mods": [],
+          "cap": {
+            "fac": "chorus",
+            "name": "Coiled Gullet",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj615",
+          "tpl": "warden",
+          "name": "Burning Spire",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Lucan Vashti",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj616",
+          "tpl": "warden",
+          "name": "Acceptable Loss",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Thessaly Harrowgate",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        }
+      ],
+      "pos": "0-0",
+      "stats": {
+        "battles": 10,
+        "elites": 2,
+        "bosses": 2,
+        "kills": 61,
+        "lost": 4
+      },
+      "t0": 1792940800000,
+      "fallen": [],
+      "ambush": false,
+      "over": false,
+      "boons": [],
+      "patrons": [
+        "iron"
+      ],
+      "aspect": null,
+      "flagUid": "xmvuhwgj54",
+      "heat": [],
+      "mastery": 0,
+      "ransoms": 0,
+      "altFleet": false,
+      "cmdOverride": null,
+      "giftBoon": null,
+      "reserve": [],
+      "seenEvents": [],
+      "regionsUsed": [
+        "nebula"
+      ],
+      "condsUsed": [
+        "ion"
+      ],
+      "curNode": "0-0",
+      "reinf": 0,
+      "flags": {},
+      "nem": {
+        "fac": "ithar",
+        "name": "Ny ul",
+        "g": "f",
+        "title": "Duelist",
+        "persona": "cunning",
+        "traits": [
+          "swift",
+          "veil"
+        ],
+        "portrait": "nem_ithar_2",
+        "weak": [
+          "brawl",
+          "flank"
+        ],
+        "revealed": [],
+        "adapt": [],
+        "clock": 0,
+        "met": 0,
+        "beaten": 0,
+        "scars": 0,
+        "scarKinds": [],
+        "epithets": [],
+        "epithet": null,
+        "last_beat": null,
+        "fed": 0,
+        "riches": 0,
+        "loot": 0,
+        "held": null,
+        "gloat": null,
+        "honed": 0,
+        "revived": false,
+        "dead": false,
+        "strike": false,
+        "seen": {},
+        "signatures": []
+      },
+      "verbUsed": 0,
+      "verbNext": null,
+      "classTrack": {},
+      "boonRerolls": 0,
+      "map": {
+        "fac": "chorus",
+        "cols": [
+          [
+            {
+              "id": "0-0",
+              "col": 0,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "shipyard",
+              "done": true,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "1-0",
+              "col": 1,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "battle",
+              "done": false,
+              "enc": "hunt",
+              "shape": "open",
+              "rw": {
+                "k": "boon",
+                "p": "iron"
+              },
+              "arch": "carrier",
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "1-1",
+              "col": 1,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "battle",
+              "done": false,
+              "enc": "rout",
+              "shape": "dense",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "2-0",
+              "col": 2,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "event",
+              "done": false,
+              "map": "storm"
+            },
+            {
+              "id": "2-1",
+              "col": 2,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "elite",
+              "done": false,
+              "enc": "flagship",
+              "shape": "corridor",
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "arch": "carrier",
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "2-2",
+              "col": 2,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "shoals",
+              "rw": {
+                "k": "mod"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "2-3",
+              "col": 2,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "elite",
+              "done": false,
+              "enc": "rout",
+              "shape": "lanes",
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "arch": "heavy",
+              "mod": null,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "3-0",
+              "col": 3,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "open",
+              "rw": {
+                "k": "boon",
+                "p": "iron"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "3-1",
+              "col": 3,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "shipyard",
+              "done": false,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "4-0",
+              "col": 4,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "dense",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "belt"
+            },
+            {
+              "id": "4-1",
+              "col": 4,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "4-2",
+              "col": 4,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "elite",
+              "done": false,
+              "enc": "flagship",
+              "shape": "dense",
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "5-0",
+              "col": 5,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "drydock",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-1",
+              "col": 5,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-2",
+              "col": 5,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-3",
+              "col": 5,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "6-0",
+              "col": 6,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "boss",
+              "done": false,
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "map": "storm"
+            }
+          ]
+        ],
+        "edges": [
+          [
+            "0-0",
+            "1-0"
+          ],
+          [
+            "0-0",
+            "1-1"
+          ],
+          [
+            "1-0",
+            "2-0"
+          ],
+          [
+            "1-1",
+            "2-2"
+          ],
+          [
+            "1-0",
+            "2-1"
+          ],
+          [
+            "1-1",
+            "2-3"
+          ],
+          [
+            "2-0",
+            "3-0"
+          ],
+          [
+            "2-1",
+            "3-0"
+          ],
+          [
+            "2-1",
+            "3-1"
+          ],
+          [
+            "2-2",
+            "3-1"
+          ],
+          [
+            "2-3",
+            "3-1"
+          ],
+          [
+            "3-0",
+            "4-0"
+          ],
+          [
+            "3-0",
+            "4-1"
+          ],
+          [
+            "3-1",
+            "4-2"
+          ],
+          [
+            "3-1",
+            "4-1"
+          ],
+          [
+            "4-0",
+            "5-0"
+          ],
+          [
+            "4-0",
+            "5-1"
+          ],
+          [
+            "4-1",
+            "5-1"
+          ],
+          [
+            "4-2",
+            "5-3"
+          ],
+          [
+            "4-1",
+            "5-2"
+          ],
+          [
+            "5-0",
+            "6-0"
+          ],
+          [
+            "5-1",
+            "6-0"
+          ],
+          [
+            "5-2",
+            "6-0"
+          ],
+          [
+            "5-3",
+            "6-0"
+          ]
+        ],
+        "cond": "ion",
+        "region": "nebula",
+        "biome": {
+          "rock": "ice",
+          "planet": 7,
+          "station": "spire"
+        }
+      }
+    }
+  },
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 175,
+      "unlocked": {},
+      "admirals": {
+        "vex": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 5,
+        "best": 3,
+        "wins": 0,
+        "wonFacs": []
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "vex": 22
+      },
+      "favour": {},
+      "variants": {},
+      "heatBest": {},
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": {
+      "fac": "voidsworn",
+      "foes": [
+        "deathless",
+        "corsair",
+        "chorus",
+        "ithar",
+        "hegemony"
+      ],
+      "admiral": "vex",
+      "credits": 95,
+      "cpCap": 16,
+      "sector": 3,
+      "relics": [],
+      "inventory": [],
+      "fleet": [
+        {
+          "uid": "xmvuhwgj51",
+          "tpl": "warden",
+          "name": "Cold Reckoning",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Mathilde Ivers",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj52",
+          "tpl": "c_raider",
+          "name": "Cold Trail",
+          "mk": 1,
+          "hp": 46,
+          "mods": [],
+          "cap": {
+            "fac": "corsair",
+            "name": "Gash Rattlebone",
+            "xp": 30,
+            "rank": 0,
+            "perks": [],
+            "pending": 2
+          }
+        },
+        {
+          "uid": "xmvuhwgj53",
+          "tpl": "warden",
+          "name": "Vigilant Ash",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Brannoc Marchetti",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj54",
+          "tpl": "b_drone",
+          "name": "Shrieking Coil",
+          "mk": 1,
+          "hp": 46,
+          "mods": [],
+          "cap": {
+            "fac": "chorus",
+            "name": "Undertow",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj55",
+          "tpl": "warden",
+          "name": "Bright Censure",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Ninette Ferro",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj56",
+          "tpl": "i_wisp",
+          "name": "Starfall",
+          "mk": 1,
+          "hp": 1,
+          "mods": [],
+          "cap": {
+            "fac": "ithar",
+            "name": "Lun of the Bright Collector",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj67",
+          "tpl": "warden",
+          "name": "Resolve of the Reach",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Rourke Ashdown",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj68",
+          "tpl": "d_scythe",
+          "name": "Ninth Winter",
+          "mk": 1,
+          "hp": 22,
+          "mods": [],
+          "cap": {
+            "fac": "deathless",
+            "name": "Caddex the Never-Dark",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj69",
+          "tpl": "warden",
+          "name": "Obsidian Brand",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Lysander Kade",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj610",
+          "tpl": "h_picket",
+          "name": "HNS Consensus",
+          "mk": 1,
+          "hp": 40,
+          "mods": [],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Mara Kessler",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj611",
+          "tpl": "warden",
+          "name": "Long Watch",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Casimir Ostrava",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj612",
+          "tpl": "c_raider",
+          "name": "Rattletrap",
+          "mk": 1,
+          "hp": 46,
+          "mods": [],
+          "cap": {
+            "fac": "corsair",
+            "name": "Brak Rattlebone",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj613",
+          "tpl": "warden",
+          "name": "Relentless Ember",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Hadrian Stroud",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj614",
+          "tpl": "b_drone",
+          "name": "Tide of Teeth",
+          "mk": 1,
+          "hp": 46,
+          "mods": [],
+          "cap": {
+            "fac": "chorus",
+            "name": "Coiled Gullet",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj615",
+          "tpl": "warden",
+          "name": "Burning Spire",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Lucan Vashti",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwgj616",
+          "tpl": "warden",
+          "name": "Acceptable Loss",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Thessaly Harrowgate",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        }
+      ],
+      "pos": "0-0",
+      "stats": {
+        "battles": 10,
+        "elites": 2,
+        "bosses": 2,
+        "kills": 61,
+        "lost": 4
+      },
+      "t0": 1792940800000,
+      "fallen": [],
+      "ambush": false,
+      "over": false,
+      "boons": [],
+      "patrons": [
+        "iron"
+      ],
+      "aspect": null,
+      "flagUid": "xmvuhwgj54",
+      "heat": [],
+      "mastery": 0,
+      "ransoms": 0,
+      "altFleet": false,
+      "cmdOverride": null,
+      "giftBoon": null,
+      "reserve": [],
+      "seenEvents": [],
+      "regionsUsed": [
+        "nebula"
+      ],
+      "condsUsed": [
+        "ion"
+      ],
+      "curNode": "0-0",
+      "reinf": 0,
+      "flags": {},
+      "nem": {
+        "fac": "ithar",
+        "name": "Ny ul",
+        "g": "f",
+        "title": "Duelist",
+        "persona": "cunning",
+        "traits": [
+          "swift",
+          "veil"
+        ],
+        "portrait": "nem_ithar_2",
+        "weak": [
+          "brawl",
+          "flank"
+        ],
+        "revealed": [],
+        "adapt": [],
+        "clock": 0,
+        "met": 0,
+        "beaten": 0,
+        "scars": 0,
+        "scarKinds": [],
+        "epithets": [],
+        "epithet": null,
+        "last_beat": null,
+        "fed": 0,
+        "riches": 0,
+        "loot": 0,
+        "held": null,
+        "gloat": null,
+        "honed": 0,
+        "revived": false,
+        "dead": false,
+        "strike": false,
+        "seen": {},
+        "signatures": []
+      },
+      "verbUsed": 0,
+      "verbNext": null,
+      "classTrack": {},
+      "boonRerolls": 0,
+      "map": {
+        "fac": "chorus",
+        "cols": [
+          [
+            {
+              "id": "0-0",
+              "col": 0,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "shipyard",
+              "done": true,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "1-0",
+              "col": 1,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "battle",
+              "done": false,
+              "enc": "hunt",
+              "shape": "open",
+              "rw": {
+                "k": "boon",
+                "p": "iron"
+              },
+              "arch": "carrier",
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "1-1",
+              "col": 1,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "battle",
+              "done": false,
+              "enc": "rout",
+              "shape": "dense",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "2-0",
+              "col": 2,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "event",
+              "done": false,
+              "map": "storm"
+            },
+            {
+              "id": "2-1",
+              "col": 2,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "elite",
+              "done": false,
+              "enc": "flagship",
+              "shape": "corridor",
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "arch": "carrier",
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "2-2",
+              "col": 2,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "shoals",
+              "rw": {
+                "k": "mod"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "2-3",
+              "col": 2,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "elite",
+              "done": false,
+              "enc": "rout",
+              "shape": "lanes",
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "arch": "heavy",
+              "mod": null,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "3-0",
+              "col": 3,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "open",
+              "rw": {
+                "k": "boon",
+                "p": "iron"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "3-1",
+              "col": 3,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "shipyard",
+              "done": false,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "4-0",
+              "col": 4,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "dense",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "belt"
+            },
+            {
+              "id": "4-1",
+              "col": 4,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "4-2",
+              "col": 4,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "elite",
+              "done": false,
+              "enc": "flagship",
+              "shape": "dense",
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "5-0",
+              "col": 5,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "drydock",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-1",
+              "col": 5,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-2",
+              "col": 5,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-3",
+              "col": 5,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "6-0",
+              "col": 6,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "boss",
+              "done": false,
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "map": "storm"
+            }
+          ]
+        ],
+        "edges": [
+          [
+            "0-0",
+            "1-0"
+          ],
+          [
+            "0-0",
+            "1-1"
+          ],
+          [
+            "1-0",
+            "2-0"
+          ],
+          [
+            "1-1",
+            "2-2"
+          ],
+          [
+            "1-0",
+            "2-1"
+          ],
+          [
+            "1-1",
+            "2-3"
+          ],
+          [
+            "2-0",
+            "3-0"
+          ],
+          [
+            "2-1",
+            "3-0"
+          ],
+          [
+            "2-1",
+            "3-1"
+          ],
+          [
+            "2-2",
+            "3-1"
+          ],
+          [
+            "2-3",
+            "3-1"
+          ],
+          [
+            "3-0",
+            "4-0"
+          ],
+          [
+            "3-0",
+            "4-1"
+          ],
+          [
+            "3-1",
+            "4-2"
+          ],
+          [
+            "3-1",
+            "4-1"
+          ],
+          [
+            "4-0",
+            "5-0"
+          ],
+          [
+            "4-0",
+            "5-1"
+          ],
+          [
+            "4-1",
+            "5-1"
+          ],
+          [
+            "4-2",
+            "5-3"
+          ],
+          [
+            "4-1",
+            "5-2"
+          ],
+          [
+            "5-0",
+            "6-0"
+          ],
+          [
+            "5-1",
+            "6-0"
+          ],
+          [
+            "5-2",
+            "6-0"
+          ],
+          [
+            "5-3",
+            "6-0"
+          ]
+        ],
+        "cond": "ion",
+        "region": "nebula",
+        "biome": {
+          "rock": "ice",
+          "planet": 7,
+          "station": "spire"
+        }
+      },
+      "v": 2
+    },
+    "recovered": false
+  }
+}

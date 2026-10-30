@@ -1,0 +1,237 @@
+{
+  "fixture": "longlived_meta",
+  "store": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":460,\"unlocked\":{\"u_carrier\":true,\"u_battleship\":true,\"chest1\":true,\"chest2\":true,\"cmd1\":true,\"vets\":true,\"founder\":true,\"wrights\":true},\"admirals\":{\"vex\":true,\"kassar\":true,\"vorn\":true,\"thale\":true,\"grax\":true,\"sable\":true,\"aelith\":true,\"matriarch\":true,\"nekhet\":true},\"fallen\":[{\"name\":\"Captain Ruth Calloway\",\"rank\":1,\"fac\":\"voidsworn\",\"ship\":\"Ledger of Ash\",\"sector\":2},{\"name\":\"Captain Pavel Ostrov\",\"rank\":2,\"fac\":\"hegemony\",\"ship\":\"Patient Verdict\",\"sector\":3},{\"name\":\"Captain Ivo Brandt\",\"rank\":1,\"fac\":\"corsair\",\"ship\":\"Last Wager\",\"sector\":3},{\"name\":\"Captain Saye Lindqvist\",\"rank\":0,\"fac\":\"voidsworn\",\"ship\":\"Quiet Tithe\",\"sector\":1},{\"name\":\"Captain Miren Okafor\",\"rank\":1,\"fac\":\"chorus\",\"ship\":\"Long Throat\",\"sector\":2},{\"name\":\"Captain Hadleigh Vane\",\"rank\":3,\"fac\":\"hegemony\",\"ship\":\"Granite Psalm\",\"sector\":3}],\"stats\":{\"runs\":16,\"best\":3,\"wins\":3,\"wonFacs\":[\"voidsworn\",\"corsair\",\"chorus\"]},\"opts\":{},\"tel\":[],\"updated\":1793200000000,\"mastery\":{\"vex\":64,\"kassar\":41,\"vorn\":52,\"sable\":33,\"aelith\":27,\"matriarch\":19,\"grax\":12,\"nekhet\":8},\"favour\":{\"iron\":12,\"storm\":7,\"hunger\":15,\"star\":4,\"ember\":9,\"rook\":2},\"variants\":{\"vs_harrow_t\":true,\"c_reaver_t\":true,\"h_vanguard_g\":true,\"b_spitter_s\":true,\"i_wisp_l\":true},\"heatBest\":{\"voidsworn\":2,\"corsair\":1}},\"run\":null}"
+  },
+  "envelope": {
+    "meta": {
+      "v": 2,
+      "renown": 460,
+      "unlocked": {
+        "u_carrier": true,
+        "u_battleship": true,
+        "chest1": true,
+        "chest2": true,
+        "cmd1": true,
+        "vets": true,
+        "founder": true,
+        "wrights": true
+      },
+      "admirals": {
+        "vex": true,
+        "kassar": true,
+        "vorn": true,
+        "thale": true,
+        "grax": true,
+        "sable": true,
+        "aelith": true,
+        "matriarch": true,
+        "nekhet": true
+      },
+      "fallen": [
+        {
+          "name": "Captain Ruth Calloway",
+          "rank": 1,
+          "fac": "voidsworn",
+          "ship": "Ledger of Ash",
+          "sector": 2
+        },
+        {
+          "name": "Captain Pavel Ostrov",
+          "rank": 2,
+          "fac": "hegemony",
+          "ship": "Patient Verdict",
+          "sector": 3
+        },
+        {
+          "name": "Captain Ivo Brandt",
+          "rank": 1,
+          "fac": "corsair",
+          "ship": "Last Wager",
+          "sector": 3
+        },
+        {
+          "name": "Captain Saye Lindqvist",
+          "rank": 0,
+          "fac": "voidsworn",
+          "ship": "Quiet Tithe",
+          "sector": 1
+        },
+        {
+          "name": "Captain Miren Okafor",
+          "rank": 1,
+          "fac": "chorus",
+          "ship": "Long Throat",
+          "sector": 2
+        },
+        {
+          "name": "Captain Hadleigh Vane",
+          "rank": 3,
+          "fac": "hegemony",
+          "ship": "Granite Psalm",
+          "sector": 3
+        }
+      ],
+      "stats": {
+        "runs": 16,
+        "best": 3,
+        "wins": 3,
+        "wonFacs": [
+          "voidsworn",
+          "corsair",
+          "chorus"
+        ]
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "vex": 64,
+        "kassar": 41,
+        "vorn": 52,
+        "sable": 33,
+        "aelith": 27,
+        "matriarch": 19,
+        "grax": 12,
+        "nekhet": 8
+      },
+      "favour": {
+        "iron": 12,
+        "storm": 7,
+        "hunger": 15,
+        "star": 4,
+        "ember": 9,
+        "rook": 2
+      },
+      "variants": {
+        "vs_harrow_t": true,
+        "c_reaver_t": true,
+        "h_vanguard_g": true,
+        "b_spitter_s": true,
+        "i_wisp_l": true
+      },
+      "heatBest": {
+        "voidsworn": 2,
+        "corsair": 1
+      }
+    },
+    "run": null
+  },
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 460,
+      "unlocked": {
+        "u_carrier": true,
+        "u_battleship": true,
+        "chest1": true,
+        "chest2": true,
+        "cmd1": true,
+        "vets": true,
+        "founder": true,
+        "wrights": true
+      },
+      "admirals": {
+        "vex": true,
+        "kassar": true,
+        "vorn": true,
+        "thale": true,
+        "grax": true,
+        "sable": true,
+        "aelith": true,
+        "matriarch": true,
+        "nekhet": true
+      },
+      "fallen": [
+        {
+          "name": "Captain Ruth Calloway",
+          "rank": 1,
+          "fac": "voidsworn",
+          "ship": "Ledger of Ash",
+          "sector": 2
+        },
+        {
+          "name": "Captain Pavel Ostrov",
+          "rank": 2,
+          "fac": "hegemony",
+          "ship": "Patient Verdict",
+          "sector": 3
+        },
+        {
+          "name": "Captain Ivo Brandt",
+          "rank": 1,
+          "fac": "corsair",
+          "ship": "Last Wager",
+          "sector": 3
+        },
+        {
+          "name": "Captain Saye Lindqvist",
+          "rank": 0,
+          "fac": "voidsworn",
+          "ship": "Quiet Tithe",
+          "sector": 1
+        },
+        {
+          "name": "Captain Miren Okafor",
+          "rank": 1,
+          "fac": "chorus",
+          "ship": "Long Throat",
+          "sector": 2
+        },
+        {
+          "name": "Captain Hadleigh Vane",
+          "rank": 3,
+          "fac": "hegemony",
+          "ship": "Granite Psalm",
+          "sector": 3
+        }
+      ],
+      "stats": {
+        "runs": 16,
+        "best": 3,
+        "wins": 3,
+        "wonFacs": [
+          "voidsworn",
+          "corsair",
+          "chorus"
+        ]
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "vex": 64,
+        "kassar": 41,
+        "vorn": 52,
+        "sable": 33,
+        "aelith": 27,
+        "matriarch": 19,
+        "grax": 12,
+        "nekhet": 8
+      },
+      "favour": {
+        "iron": 12,
+        "storm": 7,
+        "hunger": 15,
+        "star": 4,
+        "ember": 9,
+        "rook": 2
+      },
+      "variants": {
+        "vs_harrow_t": true,
+        "c_reaver_t": true,
+        "h_vanguard_g": true,
+        "b_spitter_s": true,
+        "i_wisp_l": true
+      },
+      "heatBest": {
+        "voidsworn": 2,
+        "corsair": 1
+      },
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": null,
+    "recovered": false
+  }
+}

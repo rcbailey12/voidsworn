@@ -1,0 +1,993 @@
+{
+  "fixture": "early_run",
+  "store": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":0,\"unlocked\":{},\"admirals\":{\"vex\":true},\"fallen\":[],\"stats\":{\"runs\":1,\"best\":0,\"wins\":0},\"opts\":{},\"tel\":[],\"updated\":1793200000000,\"mastery\":{},\"favour\":{},\"variants\":{},\"heatBest\":{}},\"run\":{\"fac\":\"voidsworn\",\"foes\":[\"corsair\",\"hegemony\",\"chorus\",\"deathless\",\"ithar\"],\"admiral\":\"vex\",\"credits\":120,\"cpCap\":10,\"sector\":1,\"relics\":[],\"inventory\":[],\"fleet\":[{\"uid\":\"xmvuhwgep1\",\"tpl\":\"penitent\",\"name\":\"Ashen Vigil\",\"mk\":1,\"hp\":120,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Lucan Stroud\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwges2\",\"tpl\":\"harrow\",\"name\":\"Everwatch\",\"mk\":1,\"hp\":78,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Emeric Lachance\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvuhwges3\",\"tpl\":\"warden\",\"name\":\"Iron Dusk\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Ninette Maddox\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}}],\"pos\":\"0-0\",\"stats\":{\"battles\":0,\"elites\":0,\"bosses\":0,\"kills\":0,\"lost\":0},\"t0\":1793200000000,\"fallen\":[],\"ambush\":false,\"over\":false,\"boons\":[],\"patrons\":[\"hunger\",\"ember\",\"storm\",\"star\"],\"aspect\":null,\"flagUid\":\"xmvuhwgep1\",\"heat\":[],\"mastery\":0,\"ransoms\":0,\"altFleet\":false,\"cmdOverride\":null,\"giftBoon\":null,\"reserve\":[],\"seenEvents\":[],\"regionsUsed\":[\"frontier\"],\"condsUsed\":[\"war\"],\"curNode\":null,\"reinf\":0,\"flags\":{},\"nem\":null,\"verbUsed\":0,\"verbNext\":null,\"classTrack\":{},\"boonRerolls\":0,\"map\":{\"fac\":\"corsair\",\"cols\":[[{\"id\":\"0-0\",\"col\":0,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"battle\",\"done\":false,\"enc\":\"rout\",\"shape\":\"rift\",\"rw\":{\"k\":\"boon\",\"p\":\"storm\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"belt\"}],[{\"id\":\"1-0\",\"col\":1,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"battle\",\"done\":false,\"enc\":\"break\",\"shape\":\"colossus\",\"rw\":{\"k\":\"repair\"},\"arch\":\"carrier\",\"mod\":null,\"map\":\"belt\"},{\"id\":\"1-1\",\"col\":1,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"battle\",\"done\":false,\"enc\":\"ambush\",\"shape\":\"ring\",\"rw\":{\"k\":\"boon\",\"p\":\"storm\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"belt\"},{\"id\":\"1-2\",\"col\":1,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"event\",\"done\":false,\"map\":\"belt\"}],[{\"id\":\"2-0\",\"col\":2,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"battle\",\"done\":false,\"enc\":\"hunt\",\"shape\":\"open\",\"rw\":{\"k\":\"boon\",\"p\":\"hunger\"},\"arch\":null,\"mod\":null,\"map\":\"belt\"},{\"id\":\"2-1\",\"col\":2,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"field\",\"done\":false,\"map\":\"belt\"},{\"id\":\"2-2\",\"col\":2,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"battle\",\"done\":false,\"enc\":\"intercept\",\"shape\":\"ring\",\"rw\":{\"k\":\"boon\",\"p\":\"hunger\"},\"arch\":null,\"mod\":\"veteran\",\"map\":\"belt\"}],[{\"id\":\"3-0\",\"col\":3,\"row\":0,\"n\":4,\"y\":0.125,\"type\":\"battle\",\"done\":false,\"enc\":\"break\",\"shape\":\"rift\",\"rw\":{\"k\":\"cred\"},\"arch\":\"carrier\",\"mod\":\"bounty\",\"map\":\"belt\"},{\"id\":\"3-1\",\"col\":3,\"row\":1,\"n\":4,\"y\":0.375,\"type\":\"event\",\"done\":false,\"map\":\"belt\"},{\"id\":\"3-2\",\"col\":3,\"row\":2,\"n\":4,\"y\":0.625,\"type\":\"shipyard\",\"done\":false,\"map\":\"belt\"},{\"id\":\"3-3\",\"col\":3,\"row\":3,\"n\":4,\"y\":0.875,\"type\":\"event\",\"done\":false,\"map\":\"belt\"}],[{\"id\":\"4-0\",\"col\":4,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"elite\",\"done\":false,\"enc\":\"break\",\"shape\":\"archipelago\",\"rw\":{\"k\":\"boon\",\"p\":\"ember\",\"min\":1},\"arch\":null,\"mod\":null,\"map\":\"graveyard\"},{\"id\":\"4-1\",\"col\":4,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"battle\",\"done\":false,\"enc\":\"intercept\",\"shape\":\"ring\",\"rw\":{\"k\":\"boon\",\"p\":\"storm\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"graveyard\"}],[{\"id\":\"5-0\",\"col\":5,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"shipyard\",\"done\":false,\"map\":\"graveyard\"},{\"id\":\"5-1\",\"col\":5,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"drydock\",\"done\":false,\"map\":\"graveyard\"},{\"id\":\"5-2\",\"col\":5,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"field\",\"done\":false,\"map\":\"graveyard\"}],[{\"id\":\"6-0\",\"col\":6,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"boss\",\"done\":false,\"rw\":{\"k\":\"boon\",\"p\":\"star\",\"min\":1},\"map\":\"station\"}]],\"edges\":[[\"0-0\",\"1-1\"],[\"0-0\",\"1-0\"],[\"0-0\",\"1-2\"],[\"1-0\",\"2-0\"],[\"1-1\",\"2-1\"],[\"1-1\",\"2-0\"],[\"1-2\",\"2-2\"],[\"2-0\",\"3-0\"],[\"2-0\",\"3-1\"],[\"2-1\",\"3-1\"],[\"2-1\",\"3-2\"],[\"2-2\",\"3-3\"],[\"3-0\",\"4-0\"],[\"3-1\",\"4-0\"],[\"3-2\",\"4-1\"],[\"3-2\",\"4-0\"],[\"3-3\",\"4-1\"],[\"4-0\",\"5-0\"],[\"4-1\",\"5-2\"],[\"4-0\",\"5-1\"],[\"5-0\",\"6-0\"],[\"5-1\",\"6-0\"],[\"5-2\",\"6-0\"]],\"cond\":\"war\",\"region\":\"frontier\",\"biome\":{\"rock\":\"iron\",\"planet\":4,\"station\":\"rig\"}},\"reward\":null}}"
+  },
+  "envelope": {
+    "meta": {
+      "v": 2,
+      "renown": 0,
+      "unlocked": {},
+      "admirals": {
+        "vex": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 1,
+        "best": 0,
+        "wins": 0
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {},
+      "favour": {},
+      "variants": {},
+      "heatBest": {}
+    },
+    "run": {
+      "fac": "voidsworn",
+      "foes": [
+        "corsair",
+        "hegemony",
+        "chorus",
+        "deathless",
+        "ithar"
+      ],
+      "admiral": "vex",
+      "credits": 120,
+      "cpCap": 10,
+      "sector": 1,
+      "relics": [],
+      "inventory": [],
+      "fleet": [
+        {
+          "uid": "xmvuhwgep1",
+          "tpl": "penitent",
+          "name": "Ashen Vigil",
+          "mk": 1,
+          "hp": 120,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Lucan Stroud",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwges2",
+          "tpl": "harrow",
+          "name": "Everwatch",
+          "mk": 1,
+          "hp": 78,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Emeric Lachance",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwges3",
+          "tpl": "warden",
+          "name": "Iron Dusk",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Ninette Maddox",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        }
+      ],
+      "pos": "0-0",
+      "stats": {
+        "battles": 0,
+        "elites": 0,
+        "bosses": 0,
+        "kills": 0,
+        "lost": 0
+      },
+      "t0": 1793200000000,
+      "fallen": [],
+      "ambush": false,
+      "over": false,
+      "boons": [],
+      "patrons": [
+        "hunger",
+        "ember",
+        "storm",
+        "star"
+      ],
+      "aspect": null,
+      "flagUid": "xmvuhwgep1",
+      "heat": [],
+      "mastery": 0,
+      "ransoms": 0,
+      "altFleet": false,
+      "cmdOverride": null,
+      "giftBoon": null,
+      "reserve": [],
+      "seenEvents": [],
+      "regionsUsed": [
+        "frontier"
+      ],
+      "condsUsed": [
+        "war"
+      ],
+      "curNode": null,
+      "reinf": 0,
+      "flags": {},
+      "nem": null,
+      "verbUsed": 0,
+      "verbNext": null,
+      "classTrack": {},
+      "boonRerolls": 0,
+      "map": {
+        "fac": "corsair",
+        "cols": [
+          [
+            {
+              "id": "0-0",
+              "col": 0,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "battle",
+              "done": false,
+              "enc": "rout",
+              "shape": "rift",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "1-0",
+              "col": 1,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": false,
+              "enc": "break",
+              "shape": "colossus",
+              "rw": {
+                "k": "repair"
+              },
+              "arch": "carrier",
+              "mod": null,
+              "map": "belt"
+            },
+            {
+              "id": "1-1",
+              "col": 1,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "ring",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "belt"
+            },
+            {
+              "id": "1-2",
+              "col": 1,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "2-0",
+              "col": 2,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": false,
+              "enc": "hunt",
+              "shape": "open",
+              "rw": {
+                "k": "boon",
+                "p": "hunger"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "belt"
+            },
+            {
+              "id": "2-1",
+              "col": 2,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "2-2",
+              "col": 2,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "ring",
+              "rw": {
+                "k": "boon",
+                "p": "hunger"
+              },
+              "arch": null,
+              "mod": "veteran",
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "3-0",
+              "col": 3,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "battle",
+              "done": false,
+              "enc": "break",
+              "shape": "rift",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": "carrier",
+              "mod": "bounty",
+              "map": "belt"
+            },
+            {
+              "id": "3-1",
+              "col": 3,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "3-2",
+              "col": 3,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "3-3",
+              "col": 3,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "4-0",
+              "col": 4,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "elite",
+              "done": false,
+              "enc": "break",
+              "shape": "archipelago",
+              "rw": {
+                "k": "boon",
+                "p": "ember",
+                "min": 1
+              },
+              "arch": null,
+              "mod": null,
+              "map": "graveyard"
+            },
+            {
+              "id": "4-1",
+              "col": 4,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "ring",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "graveyard"
+            }
+          ],
+          [
+            {
+              "id": "5-0",
+              "col": 5,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "shipyard",
+              "done": false,
+              "map": "graveyard"
+            },
+            {
+              "id": "5-1",
+              "col": 5,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "drydock",
+              "done": false,
+              "map": "graveyard"
+            },
+            {
+              "id": "5-2",
+              "col": 5,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "field",
+              "done": false,
+              "map": "graveyard"
+            }
+          ],
+          [
+            {
+              "id": "6-0",
+              "col": 6,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "boss",
+              "done": false,
+              "rw": {
+                "k": "boon",
+                "p": "star",
+                "min": 1
+              },
+              "map": "station"
+            }
+          ]
+        ],
+        "edges": [
+          [
+            "0-0",
+            "1-1"
+          ],
+          [
+            "0-0",
+            "1-0"
+          ],
+          [
+            "0-0",
+            "1-2"
+          ],
+          [
+            "1-0",
+            "2-0"
+          ],
+          [
+            "1-1",
+            "2-1"
+          ],
+          [
+            "1-1",
+            "2-0"
+          ],
+          [
+            "1-2",
+            "2-2"
+          ],
+          [
+            "2-0",
+            "3-0"
+          ],
+          [
+            "2-0",
+            "3-1"
+          ],
+          [
+            "2-1",
+            "3-1"
+          ],
+          [
+            "2-1",
+            "3-2"
+          ],
+          [
+            "2-2",
+            "3-3"
+          ],
+          [
+            "3-0",
+            "4-0"
+          ],
+          [
+            "3-1",
+            "4-0"
+          ],
+          [
+            "3-2",
+            "4-1"
+          ],
+          [
+            "3-2",
+            "4-0"
+          ],
+          [
+            "3-3",
+            "4-1"
+          ],
+          [
+            "4-0",
+            "5-0"
+          ],
+          [
+            "4-1",
+            "5-2"
+          ],
+          [
+            "4-0",
+            "5-1"
+          ],
+          [
+            "5-0",
+            "6-0"
+          ],
+          [
+            "5-1",
+            "6-0"
+          ],
+          [
+            "5-2",
+            "6-0"
+          ]
+        ],
+        "cond": "war",
+        "region": "frontier",
+        "biome": {
+          "rock": "iron",
+          "planet": 4,
+          "station": "rig"
+        }
+      },
+      "reward": null
+    }
+  },
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 0,
+      "unlocked": {},
+      "admirals": {
+        "vex": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 1,
+        "best": 0,
+        "wins": 0,
+        "wonFacs": []
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {},
+      "favour": {},
+      "variants": {},
+      "heatBest": {},
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": {
+      "fac": "voidsworn",
+      "foes": [
+        "corsair",
+        "hegemony",
+        "chorus",
+        "deathless",
+        "ithar"
+      ],
+      "admiral": "vex",
+      "credits": 120,
+      "cpCap": 10,
+      "sector": 1,
+      "relics": [],
+      "inventory": [],
+      "fleet": [
+        {
+          "uid": "xmvuhwgep1",
+          "tpl": "penitent",
+          "name": "Ashen Vigil",
+          "mk": 1,
+          "hp": 120,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Lucan Stroud",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwges2",
+          "tpl": "harrow",
+          "name": "Everwatch",
+          "mk": 1,
+          "hp": 78,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Emeric Lachance",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvuhwges3",
+          "tpl": "warden",
+          "name": "Iron Dusk",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Ninette Maddox",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        }
+      ],
+      "pos": "0-0",
+      "stats": {
+        "battles": 0,
+        "elites": 0,
+        "bosses": 0,
+        "kills": 0,
+        "lost": 0
+      },
+      "t0": 1793200000000,
+      "fallen": [],
+      "ambush": false,
+      "over": false,
+      "boons": [],
+      "patrons": [
+        "hunger",
+        "ember",
+        "storm",
+        "star"
+      ],
+      "aspect": null,
+      "flagUid": "xmvuhwgep1",
+      "heat": [],
+      "mastery": 0,
+      "ransoms": 0,
+      "altFleet": false,
+      "cmdOverride": null,
+      "giftBoon": null,
+      "reserve": [],
+      "seenEvents": [],
+      "regionsUsed": [
+        "frontier"
+      ],
+      "condsUsed": [
+        "war"
+      ],
+      "curNode": null,
+      "reinf": 0,
+      "flags": {},
+      "nem": null,
+      "verbUsed": 0,
+      "verbNext": null,
+      "classTrack": {},
+      "boonRerolls": 0,
+      "map": {
+        "fac": "corsair",
+        "cols": [
+          [
+            {
+              "id": "0-0",
+              "col": 0,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "battle",
+              "done": false,
+              "enc": "rout",
+              "shape": "rift",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "1-0",
+              "col": 1,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": false,
+              "enc": "break",
+              "shape": "colossus",
+              "rw": {
+                "k": "repair"
+              },
+              "arch": "carrier",
+              "mod": null,
+              "map": "belt"
+            },
+            {
+              "id": "1-1",
+              "col": 1,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "ring",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "belt"
+            },
+            {
+              "id": "1-2",
+              "col": 1,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "2-0",
+              "col": 2,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": false,
+              "enc": "hunt",
+              "shape": "open",
+              "rw": {
+                "k": "boon",
+                "p": "hunger"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "belt"
+            },
+            {
+              "id": "2-1",
+              "col": 2,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "2-2",
+              "col": 2,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "ring",
+              "rw": {
+                "k": "boon",
+                "p": "hunger"
+              },
+              "arch": null,
+              "mod": "veteran",
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "3-0",
+              "col": 3,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "battle",
+              "done": false,
+              "enc": "break",
+              "shape": "rift",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": "carrier",
+              "mod": "bounty",
+              "map": "belt"
+            },
+            {
+              "id": "3-1",
+              "col": 3,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "3-2",
+              "col": 3,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "3-3",
+              "col": 3,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "4-0",
+              "col": 4,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "elite",
+              "done": false,
+              "enc": "break",
+              "shape": "archipelago",
+              "rw": {
+                "k": "boon",
+                "p": "ember",
+                "min": 1
+              },
+              "arch": null,
+              "mod": null,
+              "map": "graveyard"
+            },
+            {
+              "id": "4-1",
+              "col": 4,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "ring",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "graveyard"
+            }
+          ],
+          [
+            {
+              "id": "5-0",
+              "col": 5,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "shipyard",
+              "done": false,
+              "map": "graveyard"
+            },
+            {
+              "id": "5-1",
+              "col": 5,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "drydock",
+              "done": false,
+              "map": "graveyard"
+            },
+            {
+              "id": "5-2",
+              "col": 5,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "field",
+              "done": false,
+              "map": "graveyard"
+            }
+          ],
+          [
+            {
+              "id": "6-0",
+              "col": 6,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "boss",
+              "done": false,
+              "rw": {
+                "k": "boon",
+                "p": "star",
+                "min": 1
+              },
+              "map": "station"
+            }
+          ]
+        ],
+        "edges": [
+          [
+            "0-0",
+            "1-1"
+          ],
+          [
+            "0-0",
+            "1-0"
+          ],
+          [
+            "0-0",
+            "1-2"
+          ],
+          [
+            "1-0",
+            "2-0"
+          ],
+          [
+            "1-1",
+            "2-1"
+          ],
+          [
+            "1-1",
+            "2-0"
+          ],
+          [
+            "1-2",
+            "2-2"
+          ],
+          [
+            "2-0",
+            "3-0"
+          ],
+          [
+            "2-0",
+            "3-1"
+          ],
+          [
+            "2-1",
+            "3-1"
+          ],
+          [
+            "2-1",
+            "3-2"
+          ],
+          [
+            "2-2",
+            "3-3"
+          ],
+          [
+            "3-0",
+            "4-0"
+          ],
+          [
+            "3-1",
+            "4-0"
+          ],
+          [
+            "3-2",
+            "4-1"
+          ],
+          [
+            "3-2",
+            "4-0"
+          ],
+          [
+            "3-3",
+            "4-1"
+          ],
+          [
+            "4-0",
+            "5-0"
+          ],
+          [
+            "4-1",
+            "5-2"
+          ],
+          [
+            "4-0",
+            "5-1"
+          ],
+          [
+            "5-0",
+            "6-0"
+          ],
+          [
+            "5-1",
+            "6-0"
+          ],
+          [
+            "5-2",
+            "6-0"
+          ]
+        ],
+        "cond": "war",
+        "region": "frontier",
+        "biome": {
+          "rock": "iron",
+          "planet": 4,
+          "station": "rig"
+        }
+      },
+      "reward": null,
+      "v": 2
+    },
+    "recovered": false
+  }
+}

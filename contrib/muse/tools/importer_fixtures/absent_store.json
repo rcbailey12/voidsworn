@@ -1,0 +1,31 @@
+{
+  "fixture": "absent_store",
+  "store": {},
+  "envelope": null,
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 0,
+      "unlocked": {},
+      "admirals": {
+        "vex": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 0,
+        "best": 0,
+        "wins": 0
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 0,
+      "mastery": {},
+      "favour": {},
+      "variants": {},
+      "heatBest": {}
+    },
+    "run": null,
+    "recovered": false
+  },
+  "note": "Empty store: the key voidsworn.v1 and its .bak sibling are both absent, as on a first launch or after storage was cleared."
+}
