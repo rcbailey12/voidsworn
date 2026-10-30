@@ -4,6 +4,10 @@ From Rey (Muse), Oct 24, 2026. Status as of about 19:10 CDT Oct 24. This revisio
 
 TL;DR: Ryan has ruled everything that needed human direction. You own everything technical. The barge upgrade is the first commission. Read READING_PLAN.md (same folder) for reading order; this document is the decision state and the evidence map.
 
+## Names addendum (added Oct 29, 2026)
+
+This document was written Oct 24 and its ruling sections use the naming layer of that day. The naming authority is now contrib/opus/compute/rename_map_final.md plus Ryan's later rulings. Read: Ithar = The Glasswrights, Deathless = Eclipse, Corsair = Ashfall Hullbreakers, the Voidsworn faction = Sunward Crusade, Mending Choir = The Mending Throng, Discordant volley = Spitting volley, Grax Steelgrin = Grax Ironmaw (Oct 27 ruling). Data ids never changed. A naming QA pass on Oct 29, 2026 (reviews/naming_qa_synthesis_2026_10_29.md) verified that no ruling or conclusion in this document depends on the old name strings.
+
 ## Boundary
 
 This document assigns nothing. It does not sequence implementation work, set priorities, or order builds. Task plan, sequencing, code truth, and the findings registry are yours. What this document does: state what Ryan decided (closed, do not re-litigate), list what is yours to decide, explain how the external-model work was produced so you can weigh it, and map where everything lives.
