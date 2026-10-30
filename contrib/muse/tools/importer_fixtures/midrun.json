@@ -1,0 +1,1259 @@
+{
+  "fixture": "midrun",
+  "store": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":130,\"unlocked\":{\"u_carrier\":true,\"chest1\":true,\"vets\":true},\"admirals\":{\"vex\":true,\"kassar\":true},\"fallen\":[{\"name\":\"Captain Ruth Calloway\",\"rank\":1,\"fac\":\"voidsworn\",\"ship\":\"Ledger of Ash\",\"sector\":2}],\"stats\":{\"runs\":4,\"best\":2,\"wins\":1},\"opts\":{},\"tel\":[],\"updated\":1793200000000,\"mastery\":{\"kassar\":17,\"vex\":6},\"favour\":{\"iron\":3},\"variants\":{\"vs_harrow_t\":true},\"heatBest\":{}},\"run\":{\"fac\":\"hegemony\",\"foes\":[\"corsair\",\"ithar\",\"deathless\",\"chorus\"],\"admiral\":\"kassar\",\"credits\":265,\"cpCap\":13,\"sector\":2,\"relics\":[\"martyr\",\"ledger\"],\"inventory\":[\"regen\",\"auspex\"],\"fleet\":[{\"uid\":\"xmvugk14k1\",\"tpl\":\"h_vanguard\",\"name\":\"HNS Arbiter\",\"mk\":1,\"hp\":155,\"mods\":[\"capacitor\",\"gyro\"],\"cap\":{\"fac\":\"hegemony\",\"name\":\"Katrin Vollmer\",\"xp\":40,\"rank\":1,\"perks\":[\"gunnery\",\"ironhull\"],\"pending\":0}},{\"uid\":\"xmvugk14l2\",\"tpl\":\"h_interdictor\",\"name\":\"HNS Consensus\",\"mk\":1,\"hp\":74,\"mods\":[],\"cap\":{\"fac\":\"hegemony\",\"name\":\"Rhea Hollis\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvugk14l3\",\"tpl\":\"h_interdictor\",\"name\":\"HNS Consensus\",\"mk\":1,\"hp\":12,\"mods\":[],\"cap\":{\"fac\":\"hegemony\",\"name\":\"Rhea Hollis\",\"xp\":0,\"rank\":0,\"perks\":[\"steady\"],\"pending\":0}},{\"uid\":\"xmvugk14l4\",\"tpl\":\"h_picket\",\"name\":\"HNS Arbiter\",\"mk\":1,\"hp\":39,\"mods\":[\"prow\"],\"cap\":{\"fac\":\"hegemony\",\"name\":\"Mara Falk\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvugk14l5\",\"tpl\":\"h_dominion\",\"name\":\"HNS Projection\",\"mk\":1,\"hp\":230,\"mods\":[],\"cap\":{\"fac\":\"hegemony\",\"name\":\"Sanne Hollis\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}}],\"pos\":\"1-0\",\"stats\":{\"battles\":9,\"elites\":2,\"bosses\":1,\"kills\":47,\"lost\":1},\"t0\":1793113600000,\"fallen\":[{\"name\":\"Captain Tomas Rhee\",\"rank\":0,\"fac\":\"hegemony\",\"ship\":\"Patient Verdict\",\"sector\":2}],\"ambush\":false,\"over\":false,\"boons\":[{\"id\":\"i_broad\",\"r\":1},{\"id\":\"i_plate\",\"r\":0}],\"patrons\":[\"iron\",\"storm\"],\"aspect\":\"bulwark\",\"flagUid\":\"xmvugk14k1\",\"heat\":[\"h_flag\"],\"mastery\":0,\"ransoms\":0,\"altFleet\":false,\"cmdOverride\":null,\"giftBoon\":null,\"reserve\":[],\"seenEvents\":[],\"regionsUsed\":[\"nebula\"],\"condsUsed\":[\"wreck\"],\"curNode\":\"1-0\",\"reinf\":0,\"flags\":{},\"nem\":{\"fac\":\"chorus\",\"name\":\"Thrumming Throat\",\"g\":\"n\",\"title\":\"Gorge-mind\",\"persona\":\"cruel\",\"traits\":[\"deadeye\",\"regrowth\"],\"portrait\":\"nem_chorus_1\",\"weak\":[\"slow\",\"flank\"],\"revealed\":[\"slow\"],\"adapt\":[],\"clock\":3,\"met\":1,\"beaten\":0,\"scars\":0,\"scarKinds\":[],\"epithets\":[],\"epithet\":null,\"last_beat\":null,\"fed\":0,\"riches\":0,\"loot\":0,\"held\":null,\"gloat\":null,\"honed\":0,\"revived\":false,\"dead\":false,\"strike\":false,\"seen\":{},\"signatures\":[]},\"verbUsed\":0,\"verbNext\":null,\"classTrack\":{},\"boonRerolls\":0,\"map\":{\"fac\":\"ithar\",\"cols\":[[{\"id\":\"0-0\",\"col\":0,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"shipyard\",\"done\":true,\"map\":\"storm\"}],[{\"id\":\"1-0\",\"col\":1,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"battle\",\"done\":true,\"enc\":\"hold\",\"shape\":\"hourglass\",\"rw\":{\"k\":\"boon\",\"p\":\"storm\"},\"arch\":null,\"mod\":null,\"map\":\"storm\"},{\"id\":\"1-1\",\"col\":1,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"battle\",\"done\":false,\"enc\":\"intercept\",\"shape\":\"shoals\",\"rw\":{\"k\":\"repair\"},\"arch\":\"heavy\",\"mod\":null,\"map\":\"storm\"},{\"id\":\"1-2\",\"col\":1,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"battle\",\"done\":false,\"enc\":\"ambush\",\"shape\":\"open\",\"rw\":{\"k\":\"mod\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"storm\"}],[{\"id\":\"2-0\",\"col\":2,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"event\",\"done\":false,\"map\":\"storm\"},{\"id\":\"2-1\",\"col\":2,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"battle\",\"done\":false,\"enc\":\"break\",\"shape\":\"rift\",\"rw\":{\"k\":\"boon\",\"p\":\"storm\"},\"arch\":\"swarm\",\"mod\":\"veteran\",\"map\":\"storm\"}],[{\"id\":\"3-0\",\"col\":3,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"shipyard\",\"done\":false,\"map\":\"storm\"},{\"id\":\"3-1\",\"col\":3,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"field\",\"done\":false,\"map\":\"storm\"},{\"id\":\"3-2\",\"col\":3,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"battle\",\"done\":false,\"enc\":\"flagship\",\"shape\":\"archipelago\",\"rw\":{\"k\":\"cred\"},\"arch\":\"heavy\",\"mod\":null,\"map\":\"storm\"}],[{\"id\":\"4-0\",\"col\":4,\"row\":0,\"n\":4,\"y\":0.125,\"type\":\"shipyard\",\"done\":false,\"map\":\"belt\"},{\"id\":\"4-1\",\"col\":4,\"row\":1,\"n\":4,\"y\":0.375,\"type\":\"event\",\"done\":false,\"map\":\"belt\"},{\"id\":\"4-2\",\"col\":4,\"row\":2,\"n\":4,\"y\":0.625,\"type\":\"battle\",\"done\":false,\"enc\":\"ambush\",\"shape\":\"archipelago\",\"rw\":{\"k\":\"cred\"},\"arch\":null,\"mod\":\"veteran\",\"map\":\"belt\"},{\"id\":\"4-3\",\"col\":4,\"row\":3,\"n\":4,\"y\":0.875,\"type\":\"elite\",\"done\":false,\"enc\":\"rout\",\"shape\":\"colossus\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\",\"min\":1},\"arch\":null,\"mod\":null,\"map\":\"belt\"}],[{\"id\":\"5-0\",\"col\":5,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"shipyard\",\"done\":false,\"map\":\"belt\"},{\"id\":\"5-1\",\"col\":5,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"field\",\"done\":false,\"map\":\"belt\"},{\"id\":\"5-2\",\"col\":5,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"shipyard\",\"done\":false,\"map\":\"belt\"}],[{\"id\":\"6-0\",\"col\":6,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"boss\",\"done\":false,\"rw\":{\"k\":\"boon\",\"p\":\"storm\",\"min\":1},\"map\":\"storm\"}]],\"edges\":[[\"0-0\",\"1-1\"],[\"0-0\",\"1-0\"],[\"0-0\",\"1-2\"],[\"1-0\",\"2-0\"],[\"1-1\",\"2-0\"],[\"1-2\",\"2-1\"],[\"2-0\",\"3-0\"],[\"2-1\",\"3-2\"],[\"2-1\",\"3-1\"],[\"3-0\",\"4-0\"],[\"3-1\",\"4-1\"],[\"3-2\",\"4-3\"],[\"3-1\",\"4-2\"],[\"4-0\",\"5-0\"],[\"4-1\",\"5-1\"],[\"4-2\",\"5-1\"],[\"4-2\",\"5-2\"],[\"4-3\",\"5-2\"],[\"5-0\",\"6-0\"],[\"5-1\",\"6-0\"],[\"5-2\",\"6-0\"]],\"cond\":\"wreck\",\"region\":\"nebula\",\"biome\":{\"rock\":\"ice\",\"planet\":6,\"station\":\"spire\"}},\"reward\":{\"kind\":\"elite\",\"node\":\"1-0\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\"},\"relics\":[\"cogitator\",\"spore\"],\"wrecks\":[],\"prizes\":[],\"stage\":\"relic\",\"boonOffer\":[{\"id\":\"i_still\",\"r\":1},{\"id\":\"i_brace\",\"r\":0},{\"id\":\"i_line\",\"r\":2}],\"modOffer\":null}}}"
+  },
+  "envelope": {
+    "meta": {
+      "v": 2,
+      "renown": 130,
+      "unlocked": {
+        "u_carrier": true,
+        "chest1": true,
+        "vets": true
+      },
+      "admirals": {
+        "vex": true,
+        "kassar": true
+      },
+      "fallen": [
+        {
+          "name": "Captain Ruth Calloway",
+          "rank": 1,
+          "fac": "voidsworn",
+          "ship": "Ledger of Ash",
+          "sector": 2
+        }
+      ],
+      "stats": {
+        "runs": 4,
+        "best": 2,
+        "wins": 1
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "kassar": 17,
+        "vex": 6
+      },
+      "favour": {
+        "iron": 3
+      },
+      "variants": {
+        "vs_harrow_t": true
+      },
+      "heatBest": {}
+    },
+    "run": {
+      "fac": "hegemony",
+      "foes": [
+        "corsair",
+        "ithar",
+        "deathless",
+        "chorus"
+      ],
+      "admiral": "kassar",
+      "credits": 265,
+      "cpCap": 13,
+      "sector": 2,
+      "relics": [
+        "martyr",
+        "ledger"
+      ],
+      "inventory": [
+        "regen",
+        "auspex"
+      ],
+      "fleet": [
+        {
+          "uid": "xmvugk14k1",
+          "tpl": "h_vanguard",
+          "name": "HNS Arbiter",
+          "mk": 1,
+          "hp": 155,
+          "mods": [
+            "capacitor",
+            "gyro"
+          ],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Katrin Vollmer",
+            "xp": 40,
+            "rank": 1,
+            "perks": [
+              "gunnery",
+              "ironhull"
+            ],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk14l2",
+          "tpl": "h_interdictor",
+          "name": "HNS Consensus",
+          "mk": 1,
+          "hp": 74,
+          "mods": [],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Rhea Hollis",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk14l3",
+          "tpl": "h_interdictor",
+          "name": "HNS Consensus",
+          "mk": 1,
+          "hp": 12,
+          "mods": [],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Rhea Hollis",
+            "xp": 0,
+            "rank": 0,
+            "perks": [
+              "steady"
+            ],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk14l4",
+          "tpl": "h_picket",
+          "name": "HNS Arbiter",
+          "mk": 1,
+          "hp": 39,
+          "mods": [
+            "prow"
+          ],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Mara Falk",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk14l5",
+          "tpl": "h_dominion",
+          "name": "HNS Projection",
+          "mk": 1,
+          "hp": 230,
+          "mods": [],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Sanne Hollis",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        }
+      ],
+      "pos": "1-0",
+      "stats": {
+        "battles": 9,
+        "elites": 2,
+        "bosses": 1,
+        "kills": 47,
+        "lost": 1
+      },
+      "t0": 1793113600000,
+      "fallen": [
+        {
+          "name": "Captain Tomas Rhee",
+          "rank": 0,
+          "fac": "hegemony",
+          "ship": "Patient Verdict",
+          "sector": 2
+        }
+      ],
+      "ambush": false,
+      "over": false,
+      "boons": [
+        {
+          "id": "i_broad",
+          "r": 1
+        },
+        {
+          "id": "i_plate",
+          "r": 0
+        }
+      ],
+      "patrons": [
+        "iron",
+        "storm"
+      ],
+      "aspect": "bulwark",
+      "flagUid": "xmvugk14k1",
+      "heat": [
+        "h_flag"
+      ],
+      "mastery": 0,
+      "ransoms": 0,
+      "altFleet": false,
+      "cmdOverride": null,
+      "giftBoon": null,
+      "reserve": [],
+      "seenEvents": [],
+      "regionsUsed": [
+        "nebula"
+      ],
+      "condsUsed": [
+        "wreck"
+      ],
+      "curNode": "1-0",
+      "reinf": 0,
+      "flags": {},
+      "nem": {
+        "fac": "chorus",
+        "name": "Thrumming Throat",
+        "g": "n",
+        "title": "Gorge-mind",
+        "persona": "cruel",
+        "traits": [
+          "deadeye",
+          "regrowth"
+        ],
+        "portrait": "nem_chorus_1",
+        "weak": [
+          "slow",
+          "flank"
+        ],
+        "revealed": [
+          "slow"
+        ],
+        "adapt": [],
+        "clock": 3,
+        "met": 1,
+        "beaten": 0,
+        "scars": 0,
+        "scarKinds": [],
+        "epithets": [],
+        "epithet": null,
+        "last_beat": null,
+        "fed": 0,
+        "riches": 0,
+        "loot": 0,
+        "held": null,
+        "gloat": null,
+        "honed": 0,
+        "revived": false,
+        "dead": false,
+        "strike": false,
+        "seen": {},
+        "signatures": []
+      },
+      "verbUsed": 0,
+      "verbNext": null,
+      "classTrack": {},
+      "boonRerolls": 0,
+      "map": {
+        "fac": "ithar",
+        "cols": [
+          [
+            {
+              "id": "0-0",
+              "col": 0,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "shipyard",
+              "done": true,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "1-0",
+              "col": 1,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": true,
+              "enc": "hold",
+              "shape": "hourglass",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "1-1",
+              "col": 1,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "shoals",
+              "rw": {
+                "k": "repair"
+              },
+              "arch": "heavy",
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "1-2",
+              "col": 1,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "open",
+              "rw": {
+                "k": "mod"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "2-0",
+              "col": 2,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "event",
+              "done": false,
+              "map": "storm"
+            },
+            {
+              "id": "2-1",
+              "col": 2,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "battle",
+              "done": false,
+              "enc": "break",
+              "shape": "rift",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": "swarm",
+              "mod": "veteran",
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "3-0",
+              "col": 3,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "shipyard",
+              "done": false,
+              "map": "storm"
+            },
+            {
+              "id": "3-1",
+              "col": 3,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "field",
+              "done": false,
+              "map": "storm"
+            },
+            {
+              "id": "3-2",
+              "col": 3,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "battle",
+              "done": false,
+              "enc": "flagship",
+              "shape": "archipelago",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": "heavy",
+              "mod": null,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "4-0",
+              "col": 4,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "4-1",
+              "col": 4,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "4-2",
+              "col": 4,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "archipelago",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": null,
+              "mod": "veteran",
+              "map": "belt"
+            },
+            {
+              "id": "4-3",
+              "col": 4,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "elite",
+              "done": false,
+              "enc": "rout",
+              "shape": "colossus",
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "arch": null,
+              "mod": null,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "5-0",
+              "col": 5,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-1",
+              "col": 5,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-2",
+              "col": 5,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "6-0",
+              "col": 6,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "boss",
+              "done": false,
+              "rw": {
+                "k": "boon",
+                "p": "storm",
+                "min": 1
+              },
+              "map": "storm"
+            }
+          ]
+        ],
+        "edges": [
+          [
+            "0-0",
+            "1-1"
+          ],
+          [
+            "0-0",
+            "1-0"
+          ],
+          [
+            "0-0",
+            "1-2"
+          ],
+          [
+            "1-0",
+            "2-0"
+          ],
+          [
+            "1-1",
+            "2-0"
+          ],
+          [
+            "1-2",
+            "2-1"
+          ],
+          [
+            "2-0",
+            "3-0"
+          ],
+          [
+            "2-1",
+            "3-2"
+          ],
+          [
+            "2-1",
+            "3-1"
+          ],
+          [
+            "3-0",
+            "4-0"
+          ],
+          [
+            "3-1",
+            "4-1"
+          ],
+          [
+            "3-2",
+            "4-3"
+          ],
+          [
+            "3-1",
+            "4-2"
+          ],
+          [
+            "4-0",
+            "5-0"
+          ],
+          [
+            "4-1",
+            "5-1"
+          ],
+          [
+            "4-2",
+            "5-1"
+          ],
+          [
+            "4-2",
+            "5-2"
+          ],
+          [
+            "4-3",
+            "5-2"
+          ],
+          [
+            "5-0",
+            "6-0"
+          ],
+          [
+            "5-1",
+            "6-0"
+          ],
+          [
+            "5-2",
+            "6-0"
+          ]
+        ],
+        "cond": "wreck",
+        "region": "nebula",
+        "biome": {
+          "rock": "ice",
+          "planet": 6,
+          "station": "spire"
+        }
+      },
+      "reward": {
+        "kind": "elite",
+        "node": "1-0",
+        "rw": {
+          "k": "boon",
+          "p": "iron"
+        },
+        "relics": [
+          "cogitator",
+          "spore"
+        ],
+        "wrecks": [],
+        "prizes": [],
+        "stage": "relic",
+        "boonOffer": [
+          {
+            "id": "i_still",
+            "r": 1
+          },
+          {
+            "id": "i_brace",
+            "r": 0
+          },
+          {
+            "id": "i_line",
+            "r": 2
+          }
+        ],
+        "modOffer": null
+      }
+    }
+  },
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 130,
+      "unlocked": {
+        "u_carrier": true,
+        "chest1": true,
+        "vets": true
+      },
+      "admirals": {
+        "vex": true,
+        "kassar": true
+      },
+      "fallen": [
+        {
+          "name": "Captain Ruth Calloway",
+          "rank": 1,
+          "fac": "voidsworn",
+          "ship": "Ledger of Ash",
+          "sector": 2
+        }
+      ],
+      "stats": {
+        "runs": 4,
+        "best": 2,
+        "wins": 1,
+        "wonFacs": []
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {
+        "kassar": 17,
+        "vex": 6
+      },
+      "favour": {
+        "iron": 3
+      },
+      "variants": {
+        "vs_harrow_t": true
+      },
+      "heatBest": {},
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": {
+      "fac": "hegemony",
+      "foes": [
+        "corsair",
+        "ithar",
+        "deathless",
+        "chorus"
+      ],
+      "admiral": "kassar",
+      "credits": 265,
+      "cpCap": 13,
+      "sector": 2,
+      "relics": [
+        "martyr",
+        "ledger"
+      ],
+      "inventory": [
+        "regen",
+        "auspex"
+      ],
+      "fleet": [
+        {
+          "uid": "xmvugk14k1",
+          "tpl": "h_vanguard",
+          "name": "HNS Arbiter",
+          "mk": 1,
+          "hp": 155,
+          "mods": [
+            "capacitor",
+            "gyro"
+          ],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Katrin Vollmer",
+            "xp": 40,
+            "rank": 1,
+            "perks": [
+              "gunnery",
+              "ironhull"
+            ],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk14l2",
+          "tpl": "h_interdictor",
+          "name": "HNS Consensus",
+          "mk": 1,
+          "hp": 74,
+          "mods": [],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Rhea Hollis",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk14l3",
+          "tpl": "h_interdictor",
+          "name": "HNS Consensus",
+          "mk": 1,
+          "hp": 12,
+          "mods": [],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Rhea Hollis",
+            "xp": 0,
+            "rank": 0,
+            "perks": [
+              "steady"
+            ],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk14l4",
+          "tpl": "h_picket",
+          "name": "HNS Arbiter",
+          "mk": 1,
+          "hp": 39,
+          "mods": [
+            "prow"
+          ],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Mara Falk",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk14l5",
+          "tpl": "h_dominion",
+          "name": "HNS Projection",
+          "mk": 1,
+          "hp": 230,
+          "mods": [],
+          "cap": {
+            "fac": "hegemony",
+            "name": "Sanne Hollis",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        }
+      ],
+      "pos": "1-0",
+      "stats": {
+        "battles": 9,
+        "elites": 2,
+        "bosses": 1,
+        "kills": 47,
+        "lost": 1
+      },
+      "t0": 1793113600000,
+      "fallen": [
+        {
+          "name": "Captain Tomas Rhee",
+          "rank": 0,
+          "fac": "hegemony",
+          "ship": "Patient Verdict",
+          "sector": 2
+        }
+      ],
+      "ambush": false,
+      "over": false,
+      "boons": [
+        {
+          "id": "i_broad",
+          "r": 1
+        },
+        {
+          "id": "i_plate",
+          "r": 0
+        }
+      ],
+      "patrons": [
+        "iron",
+        "storm"
+      ],
+      "aspect": "bulwark",
+      "flagUid": "xmvugk14k1",
+      "heat": [
+        "h_flag"
+      ],
+      "mastery": 0,
+      "ransoms": 0,
+      "altFleet": false,
+      "cmdOverride": null,
+      "giftBoon": null,
+      "reserve": [],
+      "seenEvents": [],
+      "regionsUsed": [
+        "nebula"
+      ],
+      "condsUsed": [
+        "wreck"
+      ],
+      "curNode": "1-0",
+      "reinf": 0,
+      "flags": {},
+      "nem": {
+        "fac": "chorus",
+        "name": "Thrumming Throat",
+        "g": "n",
+        "title": "Gorge-mind",
+        "persona": "cruel",
+        "traits": [
+          "deadeye",
+          "regrowth"
+        ],
+        "portrait": "nem_chorus_1",
+        "weak": [
+          "slow",
+          "flank"
+        ],
+        "revealed": [
+          "slow"
+        ],
+        "adapt": [],
+        "clock": 3,
+        "met": 1,
+        "beaten": 0,
+        "scars": 0,
+        "scarKinds": [],
+        "epithets": [],
+        "epithet": null,
+        "last_beat": null,
+        "fed": 0,
+        "riches": 0,
+        "loot": 0,
+        "held": null,
+        "gloat": null,
+        "honed": 0,
+        "revived": false,
+        "dead": false,
+        "strike": false,
+        "seen": {},
+        "signatures": []
+      },
+      "verbUsed": 0,
+      "verbNext": null,
+      "classTrack": {},
+      "boonRerolls": 0,
+      "map": {
+        "fac": "ithar",
+        "cols": [
+          [
+            {
+              "id": "0-0",
+              "col": 0,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "shipyard",
+              "done": true,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "1-0",
+              "col": 1,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": true,
+              "enc": "hold",
+              "shape": "hourglass",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "1-1",
+              "col": 1,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "shoals",
+              "rw": {
+                "k": "repair"
+              },
+              "arch": "heavy",
+              "mod": null,
+              "map": "storm"
+            },
+            {
+              "id": "1-2",
+              "col": 1,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "open",
+              "rw": {
+                "k": "mod"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "2-0",
+              "col": 2,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "event",
+              "done": false,
+              "map": "storm"
+            },
+            {
+              "id": "2-1",
+              "col": 2,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "battle",
+              "done": false,
+              "enc": "break",
+              "shape": "rift",
+              "rw": {
+                "k": "boon",
+                "p": "storm"
+              },
+              "arch": "swarm",
+              "mod": "veteran",
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "3-0",
+              "col": 3,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "shipyard",
+              "done": false,
+              "map": "storm"
+            },
+            {
+              "id": "3-1",
+              "col": 3,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "field",
+              "done": false,
+              "map": "storm"
+            },
+            {
+              "id": "3-2",
+              "col": 3,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "battle",
+              "done": false,
+              "enc": "flagship",
+              "shape": "archipelago",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": "heavy",
+              "mod": null,
+              "map": "storm"
+            }
+          ],
+          [
+            {
+              "id": "4-0",
+              "col": 4,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "4-1",
+              "col": 4,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "4-2",
+              "col": 4,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "archipelago",
+              "rw": {
+                "k": "cred"
+              },
+              "arch": null,
+              "mod": "veteran",
+              "map": "belt"
+            },
+            {
+              "id": "4-3",
+              "col": 4,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "elite",
+              "done": false,
+              "enc": "rout",
+              "shape": "colossus",
+              "rw": {
+                "k": "boon",
+                "p": "iron",
+                "min": 1
+              },
+              "arch": null,
+              "mod": null,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "5-0",
+              "col": 5,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-1",
+              "col": 5,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "field",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "5-2",
+              "col": 5,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "shipyard",
+              "done": false,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "6-0",
+              "col": 6,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "boss",
+              "done": false,
+              "rw": {
+                "k": "boon",
+                "p": "storm",
+                "min": 1
+              },
+              "map": "storm"
+            }
+          ]
+        ],
+        "edges": [
+          [
+            "0-0",
+            "1-1"
+          ],
+          [
+            "0-0",
+            "1-0"
+          ],
+          [
+            "0-0",
+            "1-2"
+          ],
+          [
+            "1-0",
+            "2-0"
+          ],
+          [
+            "1-1",
+            "2-0"
+          ],
+          [
+            "1-2",
+            "2-1"
+          ],
+          [
+            "2-0",
+            "3-0"
+          ],
+          [
+            "2-1",
+            "3-2"
+          ],
+          [
+            "2-1",
+            "3-1"
+          ],
+          [
+            "3-0",
+            "4-0"
+          ],
+          [
+            "3-1",
+            "4-1"
+          ],
+          [
+            "3-2",
+            "4-3"
+          ],
+          [
+            "3-1",
+            "4-2"
+          ],
+          [
+            "4-0",
+            "5-0"
+          ],
+          [
+            "4-1",
+            "5-1"
+          ],
+          [
+            "4-2",
+            "5-1"
+          ],
+          [
+            "4-2",
+            "5-2"
+          ],
+          [
+            "4-3",
+            "5-2"
+          ],
+          [
+            "5-0",
+            "6-0"
+          ],
+          [
+            "5-1",
+            "6-0"
+          ],
+          [
+            "5-2",
+            "6-0"
+          ]
+        ],
+        "cond": "wreck",
+        "region": "nebula",
+        "biome": {
+          "rock": "ice",
+          "planet": 6,
+          "station": "spire"
+        }
+      },
+      "reward": {
+        "kind": "elite",
+        "node": "1-0",
+        "rw": {
+          "k": "boon",
+          "p": "iron"
+        },
+        "relics": [
+          "cogitator",
+          "spore"
+        ],
+        "wrecks": [],
+        "prizes": [],
+        "stage": "relic",
+        "boonOffer": [
+          {
+            "id": "i_still",
+            "r": 1
+          },
+          {
+            "id": "i_brace",
+            "r": 0
+          },
+          {
+            "id": "i_line",
+            "r": 2
+          }
+        ],
+        "modOffer": null
+      },
+      "v": 2
+    },
+    "recovered": false
+  }
+}

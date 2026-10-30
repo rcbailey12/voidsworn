@@ -1,0 +1,58 @@
+{
+  "fixture": "fresh",
+  "store": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":0,\"unlocked\":{},\"admirals\":{\"vex\":true},\"fallen\":[],\"stats\":{\"runs\":0,\"best\":0,\"wins\":0},\"opts\":{},\"tel\":[],\"updated\":0,\"mastery\":{},\"favour\":{},\"variants\":{},\"heatBest\":{}},\"run\":null}"
+  },
+  "envelope": {
+    "meta": {
+      "v": 2,
+      "renown": 0,
+      "unlocked": {},
+      "admirals": {
+        "vex": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 0,
+        "best": 0,
+        "wins": 0
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 0,
+      "mastery": {},
+      "favour": {},
+      "variants": {},
+      "heatBest": {}
+    },
+    "run": null
+  },
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 0,
+      "unlocked": {},
+      "admirals": {
+        "vex": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 0,
+        "best": 0,
+        "wins": 0,
+        "wonFacs": []
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 0,
+      "mastery": {},
+      "favour": {},
+      "variants": {},
+      "heatBest": {},
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": null,
+    "recovered": false
+  }
+}

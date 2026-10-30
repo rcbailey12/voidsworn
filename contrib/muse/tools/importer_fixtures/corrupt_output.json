@@ -1,0 +1,486 @@
+{
+  "fixture": "corrupt_output",
+  "loaded": {
+    "meta": {
+      "v": 2,
+      "renown": 75,
+      "unlocked": {},
+      "admirals": {
+        "vex": true
+      },
+      "fallen": [],
+      "stats": {
+        "runs": 2,
+        "best": 1,
+        "wins": 0,
+        "wonFacs": []
+      },
+      "opts": {},
+      "tel": [],
+      "updated": 1793200000000,
+      "mastery": {},
+      "favour": {},
+      "variants": {},
+      "heatBest": {},
+      "backfilled": 1,
+      "wonFix41": 1
+    },
+    "run": {
+      "fac": "voidsworn",
+      "foes": null,
+      "admiral": "vex",
+      "credits": 120,
+      "cpCap": 10,
+      "sector": 1,
+      "relics": [],
+      "inventory": [],
+      "fleet": [
+        {
+          "uid": "xmvugk16a1",
+          "tpl": "warden",
+          "name": "Wrath of Vesper",
+          "mk": 1,
+          "hp": 45,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Hadrian Ostrava",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        },
+        {
+          "uid": "xmvugk16a2",
+          "tpl": "harrow",
+          "name": "Ashen Vigil",
+          "mk": 1,
+          "hp": 78,
+          "mods": [],
+          "cap": {
+            "fac": "voidsworn",
+            "name": "Hadrian Holloway",
+            "xp": 0,
+            "rank": 0,
+            "perks": [],
+            "pending": 0
+          }
+        }
+      ],
+      "pos": null,
+      "stats": {
+        "battles": 0,
+        "elites": 0,
+        "bosses": 0,
+        "kills": 0,
+        "lost": 0
+      },
+      "t0": 0,
+      "fallen": [],
+      "ambush": false,
+      "over": false,
+      "boons": [],
+      "patrons": [
+        "iron",
+        "star",
+        "hunger",
+        "ember"
+      ],
+      "aspect": null,
+      "flagUid": null,
+      "heat": [],
+      "mastery": 0,
+      "ransoms": 0,
+      "altFleet": false,
+      "cmdOverride": null,
+      "giftBoon": null,
+      "reserve": [],
+      "seenEvents": [],
+      "regionsUsed": [
+        "world"
+      ],
+      "condsUsed": [
+        "ion"
+      ],
+      "curNode": null,
+      "reinf": 0,
+      "flags": {},
+      "nem": null,
+      "verbUsed": 0,
+      "verbNext": null,
+      "classTrack": {},
+      "boonRerolls": 0,
+      "map": {
+        "fac": "hegemony",
+        "cols": [
+          [
+            {
+              "id": "0-0",
+              "col": 0,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "battle",
+              "done": false,
+              "enc": "rout",
+              "shape": "archipelago",
+              "rw": {
+                "k": "boon",
+                "p": "iron"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "1-0",
+              "col": 1,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "battle",
+              "done": false,
+              "enc": "defend",
+              "shape": "archipelago",
+              "rw": {
+                "k": "boon",
+                "p": "ember"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "station"
+            },
+            {
+              "id": "1-1",
+              "col": 1,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "event",
+              "done": false,
+              "map": "belt"
+            },
+            {
+              "id": "1-2",
+              "col": 1,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "battle",
+              "done": false,
+              "enc": "flagship",
+              "shape": "open",
+              "rw": {
+                "k": "mod"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "belt"
+            }
+          ],
+          [
+            {
+              "id": "2-0",
+              "col": 2,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "shipyard",
+              "done": false,
+              "map": "station"
+            },
+            {
+              "id": "2-1",
+              "col": 2,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "event",
+              "done": false,
+              "map": "station"
+            },
+            {
+              "id": "2-2",
+              "col": 2,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "battle",
+              "done": false,
+              "enc": "intercept",
+              "shape": "dense",
+              "rw": {
+                "k": "boon",
+                "p": "star"
+              },
+              "arch": "swarm",
+              "mod": null,
+              "map": "station"
+            }
+          ],
+          [
+            {
+              "id": "3-0",
+              "col": 3,
+              "row": 0,
+              "n": 2,
+              "y": 0.25,
+              "type": "shipyard",
+              "done": false,
+              "map": "station"
+            },
+            {
+              "id": "3-1",
+              "col": 3,
+              "row": 1,
+              "n": 2,
+              "y": 0.75,
+              "type": "battle",
+              "done": false,
+              "enc": "flagship",
+              "shape": "corridor",
+              "rw": {
+                "k": "boon",
+                "p": "star"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "station"
+            }
+          ],
+          [
+            {
+              "id": "4-0",
+              "col": 4,
+              "row": 0,
+              "n": 4,
+              "y": 0.125,
+              "type": "elite",
+              "done": false,
+              "enc": "break",
+              "shape": "corridor",
+              "rw": {
+                "k": "boon",
+                "p": "star",
+                "min": 1
+              },
+              "arch": "carrier",
+              "mod": null,
+              "map": "planet"
+            },
+            {
+              "id": "4-1",
+              "col": 4,
+              "row": 1,
+              "n": 4,
+              "y": 0.375,
+              "type": "field",
+              "done": false,
+              "map": "planet"
+            },
+            {
+              "id": "4-2",
+              "col": 4,
+              "row": 2,
+              "n": 4,
+              "y": 0.625,
+              "type": "event",
+              "done": false,
+              "map": "planet"
+            },
+            {
+              "id": "4-3",
+              "col": 4,
+              "row": 3,
+              "n": 4,
+              "y": 0.875,
+              "type": "battle",
+              "done": false,
+              "enc": "ambush",
+              "shape": "dense",
+              "rw": {
+                "k": "boon",
+                "p": "ember"
+              },
+              "arch": null,
+              "mod": null,
+              "map": "planet"
+            }
+          ],
+          [
+            {
+              "id": "5-0",
+              "col": 5,
+              "row": 0,
+              "n": 3,
+              "y": 0.16666666666666666,
+              "type": "drydock",
+              "done": false,
+              "map": "planet"
+            },
+            {
+              "id": "5-1",
+              "col": 5,
+              "row": 1,
+              "n": 3,
+              "y": 0.5,
+              "type": "drydock",
+              "done": false,
+              "map": "planet"
+            },
+            {
+              "id": "5-2",
+              "col": 5,
+              "row": 2,
+              "n": 3,
+              "y": 0.8333333333333334,
+              "type": "shipyard",
+              "done": false,
+              "map": "planet"
+            }
+          ],
+          [
+            {
+              "id": "6-0",
+              "col": 6,
+              "row": 0,
+              "n": 1,
+              "y": 0.5,
+              "type": "boss",
+              "done": false,
+              "rw": {
+                "k": "boon",
+                "p": "star",
+                "min": 1
+              },
+              "map": "planet"
+            }
+          ]
+        ],
+        "edges": [
+          [
+            "0-0",
+            "1-1"
+          ],
+          [
+            "0-0",
+            "1-0"
+          ],
+          [
+            "0-0",
+            "1-2"
+          ],
+          [
+            "1-0",
+            "2-0"
+          ],
+          [
+            "1-0",
+            "2-1"
+          ],
+          [
+            "1-1",
+            "2-1"
+          ],
+          [
+            "1-2",
+            "2-2"
+          ],
+          [
+            "1-2",
+            "2-1"
+          ],
+          [
+            "2-0",
+            "3-0"
+          ],
+          [
+            "2-1",
+            "3-0"
+          ],
+          [
+            "2-1",
+            "3-1"
+          ],
+          [
+            "2-2",
+            "3-1"
+          ],
+          [
+            "3-0",
+            "4-0"
+          ],
+          [
+            "3-1",
+            "4-2"
+          ],
+          [
+            "3-1",
+            "4-3"
+          ],
+          [
+            "3-0",
+            "4-1"
+          ],
+          [
+            "4-0",
+            "5-0"
+          ],
+          [
+            "4-0",
+            "5-1"
+          ],
+          [
+            "4-1",
+            "5-1"
+          ],
+          [
+            "4-2",
+            "5-1"
+          ],
+          [
+            "4-2",
+            "5-2"
+          ],
+          [
+            "4-3",
+            "5-2"
+          ],
+          [
+            "4-3",
+            "5-1"
+          ],
+          [
+            "5-0",
+            "6-0"
+          ],
+          [
+            "5-1",
+            "6-0"
+          ],
+          [
+            "5-2",
+            "6-0"
+          ]
+        ],
+        "cond": "ion",
+        "region": "world",
+        "biome": {
+          "rock": "ice",
+          "planet": 1,
+          "station": "ring"
+        }
+      },
+      "v": 2
+    },
+    "recovered": true
+  },
+  "recoveredFrom": "voidsworn.v1.bak",
+  "storeAfter": {
+    "voidsworn.v1": "{\"meta\":{\"v\":2,\"renown\":140,\"unlocked\":{},\"admirals\":{\"vex\":true},\"fallen\":[],\"stats\":{\"runs\":2,\"best\":1,\"wins\":0},\"opts\":{},\"tel\":[],\"updated\":1793203600000,\"mastery\":{},\"favour\":{},\"variants\":{},\"heatBest\":{}},\"run\":{\"fac\":\"voidsworn\",\"foes\":null,\"admiral\":\"vex\",\"credits\":480,\"cpCap\":10,\"sector\":1,\"relics\":[],\"inventory\":[],\"fleet\":[{\"uid\":\"xmvugk16a1\",\"tpl\":\"warden\",\"name\":\"Wrath of Vesper\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Hadrian Ostrava\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvugk16a2\",\"tpl\":\"harrow\",\"name\":\"Ashen Vigil\",\"mk\":1,\"hp\":78,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Hadrian Holloway\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}}],\"pos\":null,\"stats\":{\"battles\":3,\"elites\":0,\"bosses\":0,\"kills\":0,\"lost\":0},\"t0\":0,\"fallen\":[],\"ambush\":false,\"over\":false,\"boons\":[],\"patrons\":[\"iron\",\"star\",\"hunger\",\"ember\"],\"aspect\":null,\"flagUid\":null,\"heat\":[],\"mastery\":0,\"ransoms\":0,\"altFleet\":false,\"cmdOverride\":null,\"giftBoon\":null,\"reserve\":[],\"seenEvents\":[],\"regionsUsed\":[\"world\"],\"condsUsed\":[\"ion\"],\"curNode\":null,\"reinf\":0,\"flags\":{},\"nem\":null,\"verbUsed\":0,\"verbNext\":null,\"classTrack\":{},\"boonRerolls\":0,\"map\":{\"fac\":\"hegemony\",\"cols\":[[{\"id\":\"0-0\",\"col\":0,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"battle\",\"done\":false,\"enc\":\"rout\",\"shape\":\"archipelago\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"belt\"}],[{\"id\":\"1-0\",\"col\":1,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"battle\",\"done\":false,\"enc\":\"defend\",\"shape\":\"archipelago\",\"rw\":{\"k\":\"boon\",\"p\":\"ember\"},\"arch\":null,\"mod\":null,\"map\":\"station\"},{\"id\":\"1-1\",\"col\":1,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"event\",\"done\":false,\"map\":\"belt\"},{\"id\":\"1-2\",\"col\":1,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"battle\",\"done\":false,\"enc\":\"flagship\",\"shape\":\"open\",\"rw\":{\"k\":\"mod\"},\"arch\":null,\"mod\":null,\"map\":\"belt\"}],[{\"id\":\"2-0\",\"col\":2,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"shipyard\",\"done\":false,\"map\":\"station\"},{\"id\":\"2-1\",\"col\":2,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"event\",\"done\":false,\"map\":\"station\"},{\"id\":\"2-2\",\"col\":2,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"battle\",\"done\":false,\"enc\":\"intercept\",\"shape\":\"dense\",\"rw\":{\"k",
+    "voidsworn.v1.bak": "{\"meta\":{\"v\":2,\"renown\":75,\"unlocked\":{},\"admirals\":{\"vex\":true},\"fallen\":[],\"stats\":{\"runs\":2,\"best\":1,\"wins\":0},\"opts\":{},\"tel\":[],\"updated\":1793200000000,\"mastery\":{},\"favour\":{},\"variants\":{},\"heatBest\":{}},\"run\":{\"fac\":\"voidsworn\",\"foes\":null,\"admiral\":\"vex\",\"credits\":120,\"cpCap\":10,\"sector\":1,\"relics\":[],\"inventory\":[],\"fleet\":[{\"uid\":\"xmvugk16a1\",\"tpl\":\"warden\",\"name\":\"Wrath of Vesper\",\"mk\":1,\"hp\":45,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Hadrian Ostrava\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}},{\"uid\":\"xmvugk16a2\",\"tpl\":\"harrow\",\"name\":\"Ashen Vigil\",\"mk\":1,\"hp\":78,\"mods\":[],\"cap\":{\"fac\":\"voidsworn\",\"name\":\"Hadrian Holloway\",\"xp\":0,\"rank\":0,\"perks\":[],\"pending\":0}}],\"pos\":null,\"stats\":{\"battles\":0,\"elites\":0,\"bosses\":0,\"kills\":0,\"lost\":0},\"t0\":0,\"fallen\":[],\"ambush\":false,\"over\":false,\"boons\":[],\"patrons\":[\"iron\",\"star\",\"hunger\",\"ember\"],\"aspect\":null,\"flagUid\":null,\"heat\":[],\"mastery\":0,\"ransoms\":0,\"altFleet\":false,\"cmdOverride\":null,\"giftBoon\":null,\"reserve\":[],\"seenEvents\":[],\"regionsUsed\":[\"world\"],\"condsUsed\":[\"ion\"],\"curNode\":null,\"reinf\":0,\"flags\":{},\"nem\":null,\"verbUsed\":0,\"verbNext\":null,\"classTrack\":{},\"boonRerolls\":0,\"map\":{\"fac\":\"hegemony\",\"cols\":[[{\"id\":\"0-0\",\"col\":0,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"battle\",\"done\":false,\"enc\":\"rout\",\"shape\":\"archipelago\",\"rw\":{\"k\":\"boon\",\"p\":\"iron\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"belt\"}],[{\"id\":\"1-0\",\"col\":1,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"battle\",\"done\":false,\"enc\":\"defend\",\"shape\":\"archipelago\",\"rw\":{\"k\":\"boon\",\"p\":\"ember\"},\"arch\":null,\"mod\":null,\"map\":\"station\"},{\"id\":\"1-1\",\"col\":1,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"event\",\"done\":false,\"map\":\"belt\"},{\"id\":\"1-2\",\"col\":1,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"battle\",\"done\":false,\"enc\":\"flagship\",\"shape\":\"open\",\"rw\":{\"k\":\"mod\"},\"arch\":null,\"mod\":null,\"map\":\"belt\"}],[{\"id\":\"2-0\",\"col\":2,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"shipyard\",\"done\":false,\"map\":\"station\"},{\"id\":\"2-1\",\"col\":2,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"event\",\"done\":false,\"map\":\"station\"},{\"id\":\"2-2\",\"col\":2,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"battle\",\"done\":false,\"enc\":\"intercept\",\"shape\":\"dense\",\"rw\":{\"k\":\"boon\",\"p\":\"star\"},\"arch\":\"swarm\",\"mod\":null,\"map\":\"station\"}],[{\"id\":\"3-0\",\"col\":3,\"row\":0,\"n\":2,\"y\":0.25,\"type\":\"shipyard\",\"done\":false,\"map\":\"station\"},{\"id\":\"3-1\",\"col\":3,\"row\":1,\"n\":2,\"y\":0.75,\"type\":\"battle\",\"done\":false,\"enc\":\"flagship\",\"shape\":\"corridor\",\"rw\":{\"k\":\"boon\",\"p\":\"star\"},\"arch\":null,\"mod\":null,\"map\":\"station\"}],[{\"id\":\"4-0\",\"col\":4,\"row\":0,\"n\":4,\"y\":0.125,\"type\":\"elite\",\"done\":false,\"enc\":\"break\",\"shape\":\"corridor\",\"rw\":{\"k\":\"boon\",\"p\":\"star\",\"min\":1},\"arch\":\"carrier\",\"mod\":null,\"map\":\"planet\"},{\"id\":\"4-1\",\"col\":4,\"row\":1,\"n\":4,\"y\":0.375,\"type\":\"field\",\"done\":false,\"map\":\"planet\"},{\"id\":\"4-2\",\"col\":4,\"row\":2,\"n\":4,\"y\":0.625,\"type\":\"event\",\"done\":false,\"map\":\"planet\"},{\"id\":\"4-3\",\"col\":4,\"row\":3,\"n\":4,\"y\":0.875,\"type\":\"battle\",\"done\":false,\"enc\":\"ambush\",\"shape\":\"dense\",\"rw\":{\"k\":\"boon\",\"p\":\"ember\"},\"arch\":null,\"mod\":null,\"map\":\"planet\"}],[{\"id\":\"5-0\",\"col\":5,\"row\":0,\"n\":3,\"y\":0.16666666666666666,\"type\":\"drydock\",\"done\":false,\"map\":\"planet\"},{\"id\":\"5-1\",\"col\":5,\"row\":1,\"n\":3,\"y\":0.5,\"type\":\"drydock\",\"done\":false,\"map\":\"planet\"},{\"id\":\"5-2\",\"col\":5,\"row\":2,\"n\":3,\"y\":0.8333333333333334,\"type\":\"shipyard\",\"done\":false,\"map\":\"planet\"}],[{\"id\":\"6-0\",\"col\":6,\"row\":0,\"n\":1,\"y\":0.5,\"type\":\"boss\",\"done\":false,\"rw\":{\"k\":\"boon\",\"p\":\"star\",\"min\":1},\"map\":\"planet\"}]],\"edges\":[[\"0-0\",\"1-1\"],[\"0-0\",\"1-0\"],[\"0-0\",\"1-2\"],[\"1-0\",\"2-0\"],[\"1-0\",\"2-1\"],[\"1-1\",\"2-1\"],[\"1-2\",\"2-2\"],[\"1-2\",\"2-1\"],[\"2-0\",\"3-0\"],[\"2-1\",\"3-0\"],[\"2-1\",\"3-1\"],[\"2-2\",\"3-1\"],[\"3-0\",\"4-0\"],[\"3-1\",\"4-2\"],[\"3-1\",\"4-3\"],[\"3-0\",\"4-1\"],[\"4-0\",\"5-0\"],[\"4-0\",\"5-1\"],[\"4-1\",\"5-1\"],[\"4-2\",\"5-1\"],[\"4-2\",\"5-2\"],[\"4-3\",\"5-2\"],[\"4-3\",\"5-1\"],[\"5-0\",\"6-0\"],[\"5-1\",\"6-0\"],[\"5-2\",\"6-0\"]],\"cond\":\"ion\",\"region\":\"world\",\"biome\":{\"rock\":\"ice\",\"planet\":1,\"station\":\"ring\"}}}}"
+  }
+}
