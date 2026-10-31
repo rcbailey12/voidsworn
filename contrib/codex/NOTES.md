@@ -1,3 +1,9 @@
+# Full campaign and rules acceptance prepared (October 31, 2026)
+
+Continue at `acceptance/README.md`. The 200-battle sweep passes with 36,462 exact records; full current-source campaign parity passes 30 seeds / 4,520 records / 55 reloads; real native campaign integration completes 42 battles across all six factions; current native threaded/hard-stop checks pass. The new campaign candidate restores two statements swallowed by a comment at browser `campaign3d.js:56`, then explicitly refreshes seven oracle files and the full campaign export. Prices and the earlier boon eligibility repair are preserved. Optional Saro still passes 707 / 96 checks afterward. A fail-closed Windows export job is prepared but not Windows-executed. The PC bridge, Blender runtime and GPU are unavailable here, so graphics and Windows acceptance remain open. Main, saves and the baseline remain unchanged.
+
+---
+
 # Current-source finalization prepared (October 31, 2026)
 
 Continue at `finalization/README.md`: real-battle current-source evidence (48 scenarios / 10,670 exact records), separate campaign hull synchronization (16 mechanical fields across 12 entries; 816 native inventory/fitting/derived checks pass), six JS lifecycle contracts, hardened record comparison, gate adapter candidate, R33 boundary and PC acceptance checklist. Prior integration plus both new patches passes 16 battles / 3,616 records. Existing optional Saro applies afterward and retains 707 / 96 exact records with zero native fitting differences. The native control still fails 16 of 16 current-source battles. Runtime/main, player saves and the cutover baseline remain unchanged. No randomized re-pin sweep, full campaign re-pin, Windows/Blender/GPU acceptance or release clearance is claimed.

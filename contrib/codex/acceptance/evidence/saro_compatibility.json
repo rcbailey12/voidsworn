@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "work": "/tmp/voidsworn-final-saro-d29EZP",
+  "order": [
+    "integration",
+    "campaign hulls",
+    "battle refresh",
+    "existing Saro patch"
+  ],
+  "checks": [
+    {
+      "label": "model",
+      "records": 707,
+      "nodeFileSHA256": "d1b8c4438a3b962959c39ddb229eea96f12fe3d304dc47bd40e4b438d39f3535",
+      "godotFileSHA256": "f975d58664108af602e73ae9cbcccd58b1bb055da705a2752ae864ee5656d6d1"
+    },
+    {
+      "label": "pilot",
+      "records": 96,
+      "nodeFileSHA256": "47e71294c97440c22b60da354f72bcd6da150bc6e035b4c167b770ccd3943af5",
+      "godotFileSHA256": "3d56d25265e046d6f8f119bfa31c7d15b51a47e6f88347518e0b978406f50614"
+    }
+  ],
+  "nativeFittingDifferences": 0,
+  "limits": [
+    "Two-effect pilot only. Native dialogs, 358 effects and full rendered campaign-UI parity remain unfinished.",
+    "Use patches in this exact order. Historical Saro full-file copies and their old hashes do not include the new refreshes."
+  ]
+}

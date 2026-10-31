@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "scope": "Actual current JS battleScreen with four real rule units and instrumented presentation; candidate prepares once and records finite setup time; native control reproduces the entry crash.",
+  "cases": [
+    {
+      "id": "native_control",
+      "exit": 1,
+      "error": "ReferenceError: setupMs is not defined"
+    },
+    {
+      "id": "campaign_candidate",
+      "exit": 0,
+      "result": {
+        "prepCount": 1,
+        "setupMs": 0,
+        "units": 4
+      }
+    }
+  ]
+}

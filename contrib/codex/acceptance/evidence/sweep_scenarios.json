@@ -1,0 +1,8356 @@
+{
+ "w1": {
+  "note": "sweep",
+  "seed": 3031705447,
+  "sector": 1,
+  "admiral": "ashgrove",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "cathedral"
+  ],
+  "fac": "hegemony",
+  "obj": "flagship",
+  "shape": "ring",
+  "map": "station",
+  "dep": "ambush",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "r_prow",
+    "r": 0
+   },
+   {
+    "id": "s_chain",
+    "r": 1
+   },
+   {
+    "id": "d_jugg",
+    "r": 1
+   },
+   {
+    "id": "s_arc",
+    "r": 2
+   },
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "L_ember",
+    "r": 3
+   }
+  ],
+  "vet": true,
+  "attack_move": true,
+  "verb": "vigil",
+  "campaign": true,
+  "event_force": "reinf_ally"
+ },
+ "w2": {
+  "note": "sweep",
+  "seed": 2123650392,
+  "sector": 3,
+  "admiral": "ashgrove",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "cathedral",
+   "warden",
+   "penitent",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "obj": "flagship",
+  "shape": "hourglass",
+  "map": "station",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "h_hatch",
+    "r": 0
+   },
+   {
+    "id": "s_ion",
+    "r": 1
+   },
+   {
+    "id": "s_arc",
+    "r": 2
+   }
+  ],
+  "heat": [
+   "h_coffers",
+   "h_cmd",
+   "h_hunted"
+  ],
+  "attack_move": true,
+  "class_track": {
+   "Cruiser": 3,
+   "Destroyer": 1
+  }
+ },
+ "w3": {
+  "note": "sweep",
+  "seed": 2688077757,
+  "sector": 1,
+  "admiral": "mirelle",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "hegemony",
+  "obj": "flagship",
+  "shape": "colossus",
+  "map": "station",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "relics": [
+   "banner",
+   "compass"
+  ],
+  "campaign": true,
+  "event_war": true
+ },
+ "w4": {
+  "note": "sweep",
+  "seed": 3101309789,
+  "sector": 1,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "reliquary"
+  ],
+  "fac": "corsair",
+  "obj": "hold",
+  "shape": "corridor",
+  "map": "open",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [],
+  "aspect": "storm",
+  "heat": [
+   "h_undying"
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "corsair",
+   "weak": [
+    "board",
+    "anchor"
+   ],
+   "adapt": [
+    "riches"
+   ],
+   "scars": 0,
+   "persona": "greedy",
+   "traits": [
+    "swift",
+    "gunnery"
+   ],
+   "g": "f",
+   "honed": 1,
+   "met": 1,
+   "last_beat": "lance"
+  },
+  "verb": "vigil"
+ },
+ "w5": {
+  "note": "sweep",
+  "seed": 164269012,
+  "sector": 1,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "voidsworn",
+  "obj": "flagship",
+  "shape": "lanes",
+  "map": "graveyard",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "h_hatch",
+    "r": 2
+   },
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "L_ember",
+    "r": 3
+   },
+   {
+    "id": "a_lance",
+    "r": 1
+   },
+   {
+    "id": "h_board",
+    "r": 0
+   },
+   {
+    "id": "L_hunger",
+    "r": 3
+   }
+  ],
+  "heat": [
+   "h_elite"
+  ]
+ },
+ "w6": {
+  "note": "sweep",
+  "seed": 851250806,
+  "sector": 3,
+  "admiral": "nekhet",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_harvester",
+   "d_scythe"
+  ],
+  "fac": "corsair",
+  "obj": "rout",
+  "shape": "shoals",
+  "map": "belt",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "veteran",
+  "relics": [
+   "cogitator"
+  ],
+  "vet": true,
+  "ai": "standard"
+ },
+ "w7": {
+  "note": "sweep",
+  "seed": 3118804630,
+  "sector": 3,
+  "admiral": "sable",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_reaver",
+   "c_marauder",
+   "c_marauder",
+   "c_raider",
+   "c_reaver",
+   "c_marauder"
+  ],
+  "fac": "chorus",
+  "obj": "flagship",
+  "shape": "corridor",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "i_plate",
+    "r": 2
+   },
+   {
+    "id": "s_ion",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "lattice",
+   "ledger"
+  ],
+  "vet": true,
+  "attack_move": true
+ },
+ "w8": {
+  "note": "sweep",
+  "seed": 3630269821,
+  "sector": 2,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_drone",
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "voidsworn",
+  "obj": "defend",
+  "shape": "corridor",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "boons": [],
+  "relics": [
+   "phylactery",
+   "ledger"
+  ],
+  "class_track": {
+   "Frigate": 1,
+   "Carrier": 3
+  },
+  "campaign": true,
+  "event_war": true
+ },
+ "w9": {
+  "note": "sweep",
+  "seed": 3373411074,
+  "sector": 3,
+  "admiral": "thorne",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_blade",
+   "i_song"
+  ],
+  "fac": "deathless",
+  "obj": "hold",
+  "shape": "corridor",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "L_hunger",
+    "r": 3
+   },
+   {
+    "id": "r_mom",
+    "r": 1
+   },
+   {
+    "id": "e_spread",
+    "r": 1
+   },
+   {
+    "id": "r_prow",
+    "r": 1
+   },
+   {
+    "id": "s_arc",
+    "r": 0
+   },
+   {
+    "id": "i_still",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "logbook",
+   "salvage",
+   "compass"
+  ],
+  "vet": true,
+  "ai": "standard",
+  "attack_move": true,
+  "class_track": {
+   "Destroyer": 2,
+   "Cruiser": 1
+  }
+ },
+ "w10": {
+  "note": "sweep",
+  "seed": 2126209315,
+  "sector": 1,
+  "admiral": "anuket",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_harvester"
+  ],
+  "fac": "ithar",
+  "obj": "flagship",
+  "shape": "hourglass",
+  "map": "belt",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "carrier",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "h_hatch",
+    "r": 1
+   },
+   {
+    "id": "s_chain",
+    "r": 1
+   },
+   {
+    "id": "a_mark",
+    "r": 1
+   },
+   {
+    "id": "h_board",
+    "r": 0
+   },
+   {
+    "id": "L_hunger",
+    "r": 3
+   }
+  ],
+  "aspect": "bulwark",
+  "heat": [
+   "h_elite",
+   "h_flag",
+   "h_hunted"
+  ],
+  "vet": true,
+  "attack_move": true
+ },
+ "w11": {
+  "note": "sweep",
+  "seed": 3775931359,
+  "sector": 2,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_razor"
+  ],
+  "fac": "corsair",
+  "obj": "rout",
+  "shape": "shoals",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "h_hatch",
+    "r": 2
+   },
+   {
+    "id": "h_wings",
+    "r": 1
+   },
+   {
+    "id": "d_inferno",
+    "r": 0
+   },
+   {
+    "id": "s_ev",
+    "r": 1
+   },
+   {
+    "id": "h_board",
+    "r": 2
+   },
+   {
+    "id": "e_reload",
+    "r": 0
+   }
+  ],
+  "vet": true,
+  "attack_move": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "corsair",
+   "weak": [
+    "anchor",
+    "board"
+   ],
+   "adapt": [
+    "shields",
+    "aim"
+   ],
+   "scars": 1,
+   "persona": "proud",
+   "traits": [
+    "rockets",
+    "swift"
+   ],
+   "g": "m",
+   "riches": 1,
+   "fed": 1
+  },
+  "campaign": true,
+  "event_war": true
+ },
+ "w12": {
+  "note": "sweep",
+  "seed": 828716698,
+  "sector": 1,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_raider"
+  ],
+  "fac": "chorus",
+  "obj": "break",
+  "shape": "lanes",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "ai": "standard",
+  "alt": false,
+  "attack_move": true
+ },
+ "w13": {
+  "note": "sweep",
+  "seed": 1122752279,
+  "sector": 1,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "cathedral",
+   "reliquary"
+  ],
+  "fac": "ithar",
+  "obj": "intercept",
+  "shape": "dense",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "d_ionlance",
+    "r": 2
+   },
+   {
+    "id": "e_reload",
+    "r": 0
+   },
+   {
+    "id": "r_slip",
+    "r": 2
+   }
+  ],
+  "aspect": "storm",
+  "heat": [
+   "h_undying",
+   "h_repair",
+   "h_flag"
+  ],
+  "alt": false,
+  "attack_move": true,
+  "class_track": {
+   "Destroyer": 1,
+   "Cruiser": 1
+  },
+  "campaign": true
+ },
+ "w14": {
+  "note": "sweep",
+  "seed": 194400741,
+  "sector": 1,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "fac": "ithar",
+  "obj": "rout",
+  "shape": "rift",
+  "map": "open",
+  "dep": "flank",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "a_crit",
+    "r": 2
+   },
+   {
+    "id": "r_shock",
+    "r": 0
+   },
+   {
+    "id": "d_ionlance",
+    "r": 0
+   },
+   {
+    "id": "i_brace",
+    "r": 2
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "L_storm",
+    "r": 3
+   }
+  ],
+  "relics": [
+   "cogitator"
+  ],
+  "aspect": "lancer",
+  "heat": [
+   "h_coffers",
+   "h_hunted"
+  ],
+  "alt": false,
+  "attack_move": true,
+  "class_track": {
+   "Destroyer": 3,
+   "Carrier": 2
+  }
+ },
+ "w15": {
+  "note": "sweep",
+  "seed": 3061837500,
+  "sector": 1,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "ithar",
+  "obj": "hunt",
+  "shape": "colossus",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "i_brace",
+    "r": 0
+   },
+   {
+    "id": "h_chitin",
+    "r": 1
+   },
+   {
+    "id": "d_inferno",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "spore"
+  ],
+  "heat": [
+   "h_hunted",
+   "h_coffers",
+   "h_flag"
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "ithar",
+   "weak": [
+    "torp",
+    "board"
+   ],
+   "adapt": [],
+   "scars": 1,
+   "persona": "proud",
+   "traits": [
+    "veil",
+    "artillery"
+   ],
+   "g": "f",
+   "riches": 3,
+   "honed": 3,
+   "fed": 2,
+   "met": 2,
+   "last_beat": "board"
+  },
+  "campaign": true
+ },
+ "w16": {
+  "note": "sweep",
+  "seed": 926557436,
+  "sector": 3,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "reliquary",
+   "warden",
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "deathless",
+  "obj": "intercept",
+  "shape": "dense",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "deathless",
+   "weak": [
+    "flank",
+    "torp"
+   ],
+   "adapt": [],
+   "scars": 1,
+   "persona": "proud",
+   "traits": [
+    "gunnery",
+    "deadeye"
+   ],
+   "g": "f",
+   "fed": 6
+  },
+  "verb": "vigil",
+  "campaign": true,
+  "event_war": true
+ },
+ "w17": {
+  "note": "sweep",
+  "seed": 3903624322,
+  "sector": 1,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "obj": "ambush",
+  "shape": "ring",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "mod": "veteran",
+  "relics": [
+   "spore",
+   "banner",
+   "salvage"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "class_track": {
+   "Frigate": 3,
+   "Carrier": 1
+  }
+ },
+ "w18": {
+  "note": "sweep",
+  "seed": 525013708,
+  "sector": 1,
+  "admiral": "sable",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_hulk"
+  ],
+  "fac": "chorus",
+  "obj": "rout",
+  "shape": "deadstar",
+  "map": "station",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "h_chitin",
+    "r": 0
+   },
+   {
+    "id": "a_lance",
+    "r": 0
+   },
+   {
+    "id": "L_star",
+    "r": 3
+   }
+  ],
+  "vet": true,
+  "campaign": true,
+  "event_force": "reinf_ally"
+ },
+ "w19": {
+  "note": "sweep",
+  "seed": 3016075466,
+  "sector": 3,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_drone",
+   "b_drone",
+   "b_razor",
+   "b_brood"
+  ],
+  "fac": "ithar",
+  "obj": "hold",
+  "shape": "corridor",
+  "map": "open",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "r_shock",
+    "r": 0
+   },
+   {
+    "id": "r_burn",
+    "r": 2
+   },
+   {
+    "id": "e_kindle",
+    "r": 0
+   },
+   {
+    "id": "e_hunt",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "armourweave",
+   "ledger",
+   "martyr"
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "ithar",
+   "weak": [
+    "slow",
+    "flank"
+   ],
+   "adapt": [
+    "armor"
+   ],
+   "scars": 2,
+   "persona": "cruel",
+   "traits": [
+    "artillery",
+    "shielded"
+   ],
+   "g": "f",
+   "honed": 3,
+   "met": 1,
+   "last_beat": "board"
+  }
+ },
+ "w20": {
+  "note": "sweep",
+  "seed": 35901061,
+  "sector": 1,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_dominion",
+   "h_dominion"
+  ],
+  "fac": "ithar",
+  "obj": "hunt",
+  "shape": "hourglass",
+  "map": "graveyard",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "r_burn",
+    "r": 1
+   },
+   {
+    "id": "L_storm",
+    "r": 3
+   },
+   {
+    "id": "r_mom",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "banner",
+   "salvage",
+   "ledger"
+  ],
+  "aspect": "bulwark",
+  "verb": "drill"
+ },
+ "w21": {
+  "note": "sweep",
+  "seed": 4128593706,
+  "sector": 2,
+  "admiral": "aelith",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_blade",
+   "i_song"
+  ],
+  "fac": "chorus",
+  "obj": "hold",
+  "shape": "dense",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "aspect": "hive",
+  "campaign": true
+ },
+ "w22": {
+  "note": "sweep",
+  "seed": 2896046004,
+  "sector": 3,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket",
+   "h_picket",
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "fac": "deathless",
+  "obj": "hold",
+  "shape": "open",
+  "map": "planet",
+  "dep": "line",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "i_plate",
+    "r": 2
+   },
+   {
+    "id": "s_ion",
+    "r": 1
+   },
+   {
+    "id": "d_inferno",
+    "r": 2
+   },
+   {
+    "id": "r_prow",
+    "r": 2
+   },
+   {
+    "id": "r_slip",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "banner"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "deathless",
+   "weak": [
+    "torp",
+    "brawl"
+   ],
+   "adapt": [
+    "evasion",
+    "legion"
+   ],
+   "scars": 0,
+   "persona": "cruel",
+   "traits": [
+    "armored",
+    "gunnery"
+   ],
+   "g": "m",
+   "fed": 0,
+   "met": 2,
+   "last_beat": "evasive"
+  },
+  "campaign": true
+ },
+ "w23": {
+  "note": "sweep",
+  "seed": 3296848859,
+  "sector": 1,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_interdictor"
+  ],
+  "fac": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [],
+  "relics": [
+   "coils",
+   "martyr",
+   "logbook",
+   "spore"
+  ],
+  "heat": [
+   "h_undying",
+   "h_elite",
+   "h_cmd"
+  ],
+  "vet": true,
+  "ai": "standard",
+  "attack_move": true,
+  "class_track": {
+   "Frigate": 2,
+   "Carrier": 2
+  },
+  "campaign": true
+ },
+ "w24": {
+  "note": "sweep",
+  "seed": 3168727446,
+  "sector": 2,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_razor",
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "rift",
+  "map": "planet",
+  "dep": "line",
+  "kind": "elite",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "s_cap",
+    "r": 2
+   },
+   {
+    "id": "i_brace",
+    "r": 2
+   },
+   {
+    "id": "d_burnswarm",
+    "r": 2
+   },
+   {
+    "id": "h_feast",
+    "r": 1
+   },
+   {
+    "id": "i_still",
+    "r": 1
+   },
+   {
+    "id": "e_reload",
+    "r": 2
+   }
+  ],
+  "aspect": "hive",
+  "vet": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "hegemony",
+   "weak": [
+    "anchor",
+    "board"
+   ],
+   "adapt": [
+    "evasion",
+    "formation",
+    "armor"
+   ],
+   "scars": 0,
+   "persona": "patient",
+   "traits": [
+    "veterans",
+    "shielded"
+   ],
+   "g": "f",
+   "riches": 0,
+   "gloat": "retreat"
+  },
+  "campaign": true
+ },
+ "w25": {
+  "note": "sweep",
+  "seed": 427623456,
+  "sector": 2,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_spitter",
+   "b_drone",
+   "b_drone",
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "ithar",
+  "obj": "rout",
+  "shape": "archipelago",
+  "map": "belt",
+  "dep": "line",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_brace",
+    "r": 1
+   },
+   {
+    "id": "s_regen",
+    "r": 0
+   },
+   {
+    "id": "s_arc",
+    "r": 1
+   },
+   {
+    "id": "s_ion",
+    "r": 0
+   },
+   {
+    "id": "L_ember",
+    "r": 3
+   },
+   {
+    "id": "e_hunt",
+    "r": 2
+   }
+  ],
+  "aspect": "lancer",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "ithar",
+   "weak": [
+    "ion",
+    "brawl"
+   ],
+   "adapt": [
+    "pd",
+    "aim"
+   ],
+   "scars": 2,
+   "persona": "patient",
+   "traits": [
+    "veil",
+    "shielded"
+   ],
+   "g": "f",
+   "riches": 2,
+   "fed": 0,
+   "met": 2,
+   "last_beat": "torp"
+  },
+  "campaign": true,
+  "event_war": true
+ },
+ "w26": {
+  "note": "sweep",
+  "seed": 3309298583,
+  "sector": 1,
+  "admiral": "aelith",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_blade",
+   "i_carrier"
+  ],
+  "fac": "deathless",
+  "obj": "break",
+  "shape": "colossus",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "a_long",
+    "r": 1
+   },
+   {
+    "id": "r_burn",
+    "r": 2
+   },
+   {
+    "id": "e_chain",
+    "r": 2
+   },
+   {
+    "id": "d_inferno",
+    "r": 2
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "s_arc",
+    "r": 1
+   }
+  ],
+  "aspect": "bulwark",
+  "class_track": {
+   "Destroyer": 2,
+   "Carrier": 3
+  },
+  "campaign": true,
+  "event_war": true
+ },
+ "w27": {
+  "note": "sweep",
+  "seed": 3919781958,
+  "sector": 3,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "reliquary",
+   "warden",
+   "reliquary",
+   "reliquary"
+  ],
+  "fac": "corsair",
+  "obj": "intercept",
+  "shape": "deadstar",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "basic",
+  "mod": "veteran",
+  "relics": [
+   "martyr",
+   "armourweave",
+   "phylactery"
+  ]
+ },
+ "w28": {
+  "note": "sweep",
+  "seed": 1400015513,
+  "sector": 2,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_hulk",
+   "c_raider"
+  ],
+  "fac": "ithar",
+  "obj": "break",
+  "shape": "shoals",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "e_kindle",
+    "r": 1
+   },
+   {
+    "id": "e_reload",
+    "r": 2
+   },
+   {
+    "id": "r_shock",
+    "r": 0
+   },
+   {
+    "id": "i_brace",
+    "r": 1
+   },
+   {
+    "id": "r_mom",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "lattice",
+   "banner"
+  ],
+  "heat": [
+   "h_undying",
+   "h_coffers"
+  ],
+  "campaign": true
+ },
+ "w29": {
+  "note": "sweep",
+  "seed": 3536498441,
+  "sector": 2,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_spitter",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "ithar",
+  "obj": "ambush",
+  "shape": "deadstar",
+  "map": "belt",
+  "dep": "line",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "h_chitin",
+    "r": 1
+   },
+   {
+    "id": "s_arc",
+    "r": 0
+   },
+   {
+    "id": "i_brace",
+    "r": 2
+   }
+  ],
+  "vet": true
+ },
+ "w30": {
+  "note": "sweep",
+  "seed": 1963643588,
+  "sector": 3,
+  "admiral": "vaelen",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_song",
+   "i_blade"
+  ],
+  "fac": "voidsworn",
+  "obj": "ambush",
+  "shape": "ring",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full"
+ },
+ "w31": {
+  "note": "sweep",
+  "seed": 2560856058,
+  "sector": 3,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "penitent",
+   "harrow",
+   "harrow"
+  ],
+  "fac": "corsair",
+  "obj": "defend",
+  "shape": "archipelago",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "basic",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "r_jink",
+    "r": 0
+   },
+   {
+    "id": "L_hunger",
+    "r": 3
+   }
+  ],
+  "vet": true,
+  "ai": "standard",
+  "verb": "vigil"
+ },
+ "w32": {
+  "note": "sweep",
+  "seed": 2554028221,
+  "sector": 2,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "voidsworn",
+  "obj": "break",
+  "shape": "corridor",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "d_hunter",
+    "r": 2
+   },
+   {
+    "id": "i_plate",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "lattice",
+   "armourweave"
+  ],
+  "attack_move": true
+ },
+ "w33": {
+  "note": "sweep",
+  "seed": 3467840322,
+  "sector": 2,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_drone",
+   "b_razor",
+   "b_drone",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "voidsworn",
+  "obj": "rout",
+  "shape": "shoals",
+  "map": "open",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [],
+  "campaign": true,
+  "event_war": true
+ },
+ "w34": {
+  "note": "sweep",
+  "seed": 3417750600,
+  "sector": 2,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_dominion",
+   "h_dominion"
+  ],
+  "fac": "ithar",
+  "obj": "hunt",
+  "shape": "corridor",
+  "map": "open",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "s_cap",
+    "r": 2
+   },
+   {
+    "id": "r_shock",
+    "r": 0
+   },
+   {
+    "id": "s_ion",
+    "r": 0
+   },
+   {
+    "id": "d_hunter",
+    "r": 1
+   },
+   {
+    "id": "L_storm",
+    "r": 3
+   },
+   {
+    "id": "a_aim",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "ledger",
+   "martyr"
+  ],
+  "campaign": true,
+  "event_force": "flare"
+ },
+ "w35": {
+  "note": "sweep",
+  "seed": 1239890127,
+  "sector": 2,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "ithar",
+  "obj": "break",
+  "shape": "corridor",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "i_broad",
+    "r": 2
+   },
+   {
+    "id": "e_reload",
+    "r": 2
+   },
+   {
+    "id": "s_chain",
+    "r": 1
+   },
+   {
+    "id": "e_spread",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "cogitator",
+   "compass",
+   "coils",
+   "ledger"
+  ],
+  "heat": [
+   "h_coffers"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "class_track": {
+   "Carrier": 3,
+   "Cruiser": 3
+  }
+ },
+ "w36": {
+  "note": "sweep",
+  "seed": 708226495,
+  "sector": 1,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_raider"
+  ],
+  "fac": "voidsworn",
+  "obj": "hunt",
+  "shape": "open",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "heat": [
+   "h_coffers"
+  ],
+  "vet": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "voidsworn",
+   "weak": [
+    "ion",
+    "slow"
+   ],
+   "adapt": [
+    "armor",
+    "evasion",
+    "aim"
+   ],
+   "scars": 0,
+   "persona": "methodical",
+   "traits": [
+    "gunnery",
+    "boarders"
+   ],
+   "g": "f",
+   "riches": 0,
+   "honed": 2,
+   "met": 2,
+   "last_beat": "lance"
+  }
+ },
+ "w37": {
+  "note": "sweep",
+  "seed": 317393752,
+  "sector": 2,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_vanguard",
+   "h_picket",
+   "h_vanguard"
+  ],
+  "fac": "deathless",
+  "obj": "hold",
+  "shape": "hourglass",
+  "map": "open",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 1,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "aspect": "ram",
+  "heat": [
+   "h_coffers"
+  ],
+  "attack_move": true,
+  "verb": "drill"
+ },
+ "w38": {
+  "note": "sweep",
+  "seed": 1062666497,
+  "sector": 1,
+  "admiral": "maren",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "fac": "corsair",
+  "obj": "rout",
+  "shape": "archipelago",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "relics": [
+   "armourweave",
+   "lattice",
+   "banner"
+  ],
+  "heat": [
+   "h_hunted"
+  ],
+  "vet": true,
+  "ai": "standard",
+  "alt": false,
+  "verb": "drill",
+  "campaign": true
+ },
+ "w39": {
+  "note": "sweep",
+  "seed": 3768889138,
+  "sector": 1,
+  "admiral": "grax",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "hourglass",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "ai": "standard",
+  "campaign": true
+ },
+ "w40": {
+  "note": "sweep",
+  "seed": 787852353,
+  "sector": 1,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "reliquary",
+   "cathedral"
+  ],
+  "fac": "corsair",
+  "obj": "flagship",
+  "shape": "corridor",
+  "map": "graveyard",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "relics": [
+   "salvage",
+   "spore",
+   "ledger",
+   "logbook"
+  ],
+  "aspect": "ram",
+  "vet": true,
+  "alt": false
+ },
+ "w41": {
+  "note": "sweep",
+  "seed": 1452240856,
+  "sector": 1,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "cathedral",
+   "harrow"
+  ],
+  "fac": "ithar",
+  "obj": "rout",
+  "shape": "colossus",
+  "map": "open",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "relics": [
+   "martyr"
+  ],
+  "campaign": true
+ },
+ "w42": {
+  "note": "sweep",
+  "seed": 771352067,
+  "sector": 2,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_vanguard",
+   "h_picket",
+   "h_vanguard"
+  ],
+  "fac": "ithar",
+  "obj": "hold",
+  "shape": "open",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "heat": [
+   "h_undying",
+   "h_elite"
+  ],
+  "ai": "standard",
+  "alt": false,
+  "attack_move": true,
+  "class_track": {
+   "Frigate": 2,
+   "Cruiser": 1
+  }
+ },
+ "w43": {
+  "note": "sweep",
+  "seed": 3464964469,
+  "sector": 1,
+  "admiral": "ashgrove",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "reliquary",
+   "cathedral"
+  ],
+  "fac": "ithar",
+  "obj": "hold",
+  "shape": "archipelago",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "r_prow",
+    "r": 2
+   },
+   {
+    "id": "e_kindle",
+    "r": 0
+   },
+   {
+    "id": "d_bastion",
+    "r": 2
+   },
+   {
+    "id": "h_wings",
+    "r": 2
+   }
+  ],
+  "vet": true,
+  "class_track": {
+   "Cruiser": 2,
+   "Destroyer": 3
+  },
+  "campaign": true,
+  "event_force": "flare"
+ },
+ "w44": {
+  "note": "sweep",
+  "seed": 1076326239,
+  "sector": 1,
+  "admiral": "grax",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_hulk"
+  ],
+  "fac": "voidsworn",
+  "obj": "intercept",
+  "shape": "shoals",
+  "map": "open",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "e_spread",
+    "r": 1
+   },
+   {
+    "id": "r_shock",
+    "r": 2
+   },
+   {
+    "id": "d_ionlance",
+    "r": 0
+   },
+   {
+    "id": "a_mark",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "martyr"
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "voidsworn",
+   "weak": [
+    "anchor",
+    "slow"
+   ],
+   "adapt": [],
+   "scars": 2,
+   "persona": "cruel",
+   "traits": [
+    "artillery",
+    "gunnery"
+   ],
+   "g": "m",
+   "riches": 0,
+   "honed": 2,
+   "gloat": "flagship"
+  },
+  "campaign": true
+ },
+ "w45": {
+  "note": "sweep",
+  "seed": 2101703706,
+  "sector": 3,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_harvester"
+  ],
+  "fac": "chorus",
+  "obj": "intercept",
+  "shape": "shoals",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "L_iron",
+    "r": 3
+   },
+   {
+    "id": "r_jink",
+    "r": 2
+   },
+   {
+    "id": "h_board",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "ledger",
+   "lattice"
+  ],
+  "vet": true,
+  "verb": "waken"
+ },
+ "w46": {
+  "note": "sweep",
+  "seed": 270855490,
+  "sector": 3,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_drone",
+   "b_drone",
+   "b_spitter",
+   "b_razor",
+   "b_spitter"
+  ],
+  "fac": "deathless",
+  "obj": "rout",
+  "shape": "lanes",
+  "map": "open",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "aspect": "hive",
+  "attack_move": true,
+  "campaign": true,
+  "event_force": "reinf_ally"
+ },
+ "w47": {
+  "note": "sweep",
+  "seed": 3534605896,
+  "sector": 1,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_brood"
+  ],
+  "fac": "hegemony",
+  "obj": "intercept",
+  "shape": "deadstar",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "aspect": "hive",
+  "heat": [
+   "h_coffers",
+   "h_repair",
+   "h_elite"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "hegemony",
+   "weak": [
+    "flank",
+    "brawl"
+   ],
+   "adapt": [
+    "pd",
+    "armor"
+   ],
+   "scars": 1,
+   "persona": "proud",
+   "traits": [
+    "artillery",
+    "gunnery"
+   ],
+   "g": "m",
+   "fed": 6
+  },
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w48": {
+  "note": "sweep",
+  "seed": 2127084663,
+  "sector": 3,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "reliquary",
+   "harrow",
+   "reliquary",
+   "reliquary"
+  ],
+  "fac": "hegemony",
+  "obj": "defend",
+  "shape": "open",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_plate",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "lattice",
+   "armourweave",
+   "coils",
+   "logbook"
+  ],
+  "heat": [
+   "h_coffers",
+   "h_cmd",
+   "h_elite"
+  ],
+  "vet": true,
+  "campaign": true,
+  "event_war": true
+ },
+ "w49": {
+  "note": "sweep",
+  "seed": 3393956264,
+  "sector": 3,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "reliquary",
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "corsair",
+  "obj": "flagship",
+  "shape": "ring",
+  "map": "station",
+  "dep": "flank",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "aspect": "bulwark"
+ },
+ "w50": {
+  "note": "sweep",
+  "seed": 2147990590,
+  "sector": 3,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "penitent",
+   "cathedral",
+   "warden",
+   "penitent"
+  ],
+  "fac": "corsair",
+  "obj": "hunt",
+  "shape": "dense",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "basic",
+  "boons": [
+   {
+    "id": "a_aim",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "cogitator",
+   "salvage",
+   "banner"
+  ],
+  "heat": [
+   "h_repair",
+   "h_hunted"
+  ],
+  "verb": "vigil",
+  "campaign": true
+ },
+ "w51": {
+  "note": "sweep",
+  "seed": 1841555632,
+  "sector": 3,
+  "admiral": "grax",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_reaver",
+   "c_marauder",
+   "c_hulk",
+   "c_hulk",
+   "c_raider"
+  ],
+  "fac": "chorus",
+  "obj": "defend",
+  "shape": "archipelago",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "a_aim",
+    "r": 1
+   },
+   {
+    "id": "r_shock",
+    "r": 2
+   },
+   {
+    "id": "d_hunter",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "phylactery",
+   "spore",
+   "salvage"
+  ],
+  "aspect": "admiral",
+  "heat": [
+   "h_cmd",
+   "h_elite",
+   "h_coffers"
+  ],
+  "ai": "standard",
+  "attack_move": true
+ },
+ "w52": {
+  "note": "sweep",
+  "seed": 2840149129,
+  "sector": 3,
+  "admiral": "sable",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_raider",
+   "c_reaver",
+   "c_marauder",
+   "c_reaver"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "colossus",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "s_ev",
+    "r": 2
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   },
+   {
+    "id": "h_wings",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "armourweave",
+   "compass"
+  ],
+  "heat": [
+   "h_coffers",
+   "h_undying",
+   "h_repair"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "class_track": {
+   "Destroyer": 2,
+   "Carrier": 2
+  },
+  "campaign": true,
+  "event_war": true
+ },
+ "w53": {
+  "note": "sweep",
+  "seed": 3285491728,
+  "sector": 3,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "penitent",
+   "cathedral",
+   "penitent"
+  ],
+  "fac": "chorus",
+  "obj": "flagship",
+  "shape": "deadstar",
+  "map": "station",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "class_track": {
+   "Carrier": 1,
+   "Destroyer": 3
+  }
+ },
+ "w54": {
+  "note": "sweep",
+  "seed": 61881965,
+  "sector": 3,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_scythe",
+   "d_jackal",
+   "d_scythe",
+   "d_harvester",
+   "d_jackal"
+  ],
+  "fac": "chorus",
+  "obj": "hold",
+  "shape": "shoals",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "s_arc",
+    "r": 1
+   }
+  ],
+  "campaign": true
+ },
+ "w55": {
+  "note": "sweep",
+  "seed": 266876174,
+  "sector": 3,
+  "admiral": "vaelen",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_blade",
+   "i_song",
+   "i_carrier"
+  ],
+  "fac": "chorus",
+  "obj": "break",
+  "shape": "lanes",
+  "map": "planet",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "a_lance",
+    "r": 0
+   },
+   {
+    "id": "s_ev",
+    "r": 0
+   },
+   {
+    "id": "h_chitin",
+    "r": 0
+   },
+   {
+    "id": "a_crit",
+    "r": 0
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   }
+  ],
+  "relics": [
+   "coils",
+   "compass",
+   "cogitator"
+  ],
+  "heat": [
+   "h_cmd"
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "chorus",
+   "weak": [
+    "brawl",
+    "board"
+   ],
+   "adapt": [
+    "hunger",
+    "armor"
+   ],
+   "scars": 0,
+   "persona": "patient",
+   "traits": [
+    "swift",
+    "regrowth"
+   ],
+   "g": "n",
+   "riches": 3,
+   "honed": 2
+  },
+  "class_track": {
+   "Cruiser": 3,
+   "Destroyer": 1
+  },
+  "campaign": true,
+  "event_force": "flare"
+ },
+ "w56": {
+  "note": "sweep",
+  "seed": 3696794595,
+  "sector": 2,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "cathedral",
+   "warden",
+   "reliquary"
+  ],
+  "fac": "deathless",
+  "obj": "ambush",
+  "shape": "ring",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "relics": [
+   "cogitator",
+   "compass",
+   "salvage"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "verb": "vigil",
+  "campaign": true,
+  "event_war": true
+ },
+ "w57": {
+  "note": "sweep",
+  "seed": 2877762133,
+  "sector": 2,
+  "admiral": "anuket",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_harvester",
+   "d_harvester"
+  ],
+  "fac": "ithar",
+  "obj": "hunt",
+  "shape": "open",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "a_mark",
+    "r": 1
+   },
+   {
+    "id": "d_inferno",
+    "r": 0
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   },
+   {
+    "id": "i_wall",
+    "r": 2
+   },
+   {
+    "id": "h_chitin",
+    "r": 1
+   },
+   {
+    "id": "d_bastion",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "spore",
+   "banner",
+   "phylactery"
+  ],
+  "attack_move": true,
+  "class_track": {
+   "Destroyer": 1,
+   "Carrier": 2
+  }
+ },
+ "w58": {
+  "note": "sweep",
+  "seed": 957822695,
+  "sector": 2,
+  "admiral": "aelith",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_blade",
+   "i_wisp",
+   "i_blade",
+   "i_song"
+  ],
+  "fac": "chorus",
+  "obj": "hold",
+  "shape": "corridor",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "e_war",
+    "r": 0
+   },
+   {
+    "id": "r_burn",
+    "r": 2
+   },
+   {
+    "id": "i_broad",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "martyr",
+   "spore",
+   "lattice"
+  ],
+  "verb": "attune"
+ },
+ "w59": {
+  "note": "sweep",
+  "seed": 651832782,
+  "sector": 3,
+  "admiral": "grax",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_hulk",
+   "c_marauder",
+   "c_marauder",
+   "c_marauder"
+  ],
+  "fac": "ithar",
+  "obj": "rout",
+  "shape": "colossus",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "relics": [
+   "lattice",
+   "logbook",
+   "salvage",
+   "armourweave"
+  ],
+  "heat": [
+   "h_repair",
+   "h_elite",
+   "h_cmd"
+  ],
+  "alt": false,
+  "attack_move": true,
+  "campaign": true
+ },
+ "w60": {
+  "note": "sweep",
+  "seed": 1962215996,
+  "sector": 1,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "cathedral"
+  ],
+  "fac": "deathless",
+  "obj": "hold",
+  "shape": "dense",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "h_wings",
+    "r": 2
+   },
+   {
+    "id": "s_regen",
+    "r": 2
+   },
+   {
+    "id": "h_chitin",
+    "r": 0
+   },
+   {
+    "id": "h_feast",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "coils",
+   "ledger",
+   "phylactery"
+  ],
+  "attack_move": true
+ },
+ "w61": {
+  "note": "sweep",
+  "seed": 2901789214,
+  "sector": 2,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_brood",
+   "b_spitter",
+   "b_spitter"
+  ],
+  "fac": "ithar",
+  "obj": "flagship",
+  "shape": "hourglass",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "d_inferno",
+    "r": 2
+   },
+   {
+    "id": "h_hatch",
+    "r": 1
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "L_storm",
+    "r": 3
+   }
+  ],
+  "relics": [
+   "coils",
+   "logbook"
+  ],
+  "heat": [
+   "h_hunted",
+   "h_flag",
+   "h_elite"
+  ],
+  "alt": false,
+  "campaign": true,
+  "event_war": true
+ },
+ "w62": {
+  "note": "sweep",
+  "seed": 1468246703,
+  "sector": 3,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_harvester",
+   "d_scythe",
+   "d_scythe",
+   "d_jackal",
+   "d_harvester"
+  ],
+  "fac": "ithar",
+  "obj": "hold",
+  "shape": "shoals",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "r_shock",
+    "r": 0
+   },
+   {
+    "id": "r_slip",
+    "r": 1
+   },
+   {
+    "id": "h_wings",
+    "r": 2
+   },
+   {
+    "id": "s_arc",
+    "r": 1
+   },
+   {
+    "id": "e_reload",
+    "r": 1
+   },
+   {
+    "id": "h_board",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "cogitator",
+   "phylactery"
+  ],
+  "campaign": true
+ },
+ "w63": {
+  "note": "sweep",
+  "seed": 970524575,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "harrow",
+   "warden",
+   "harrow"
+  ],
+  "fac": "corsair",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "basic",
+  "relics": [
+   "ledger",
+   "lattice"
+  ],
+  "class_track": {
+   "Frigate": 3,
+   "Cruiser": 2
+  }
+ },
+ "w64": {
+  "note": "sweep",
+  "seed": 1926236017,
+  "sector": 1,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "reliquary"
+  ],
+  "fac": "ithar",
+  "obj": "ambush",
+  "shape": "shoals",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 5,
+  "rounds": 10,
+  "bot": "basic",
+  "mod": "bounty",
+  "boons": [],
+  "vet": true
+ },
+ "w65": {
+  "note": "sweep",
+  "seed": 3998116168,
+  "sector": 3,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_picket",
+   "h_picket",
+   "h_vanguard",
+   "h_vanguard",
+   "h_picket"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "dense",
+  "map": "planet",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "vet": true,
+  "verb": "drill",
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w66": {
+  "note": "sweep",
+  "seed": 1844683368,
+  "sector": 3,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_marauder",
+   "c_reaver",
+   "c_raider",
+   "c_hulk"
+  ],
+  "fac": "ithar",
+  "obj": "ambush",
+  "shape": "dense",
+  "map": "station",
+  "dep": "line",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "basic",
+  "mod": "bounty",
+  "relics": [
+   "lattice",
+   "coils"
+  ],
+  "heat": [
+   "h_cmd"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "ithar",
+   "weak": [
+    "anchor",
+    "ion"
+   ],
+   "adapt": [
+    "armor",
+    "shields",
+    "evasion"
+   ],
+   "scars": 0,
+   "persona": "patient",
+   "traits": [
+    "shielded",
+    "gunnery"
+   ],
+   "g": "m",
+   "riches": 2,
+   "honed": 3,
+   "fed": 1,
+   "met": 1,
+   "last_beat": "board"
+  }
+ },
+ "w67": {
+  "note": "sweep",
+  "seed": 918703307,
+  "sector": 3,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_razor",
+   "b_razor",
+   "b_razor",
+   "b_razor"
+  ],
+  "fac": "deathless",
+  "obj": "hunt",
+  "shape": "dense",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "e_spread",
+    "r": 2
+   },
+   {
+    "id": "r_prow",
+    "r": 2
+   },
+   {
+    "id": "h_hatch",
+    "r": 0
+   },
+   {
+    "id": "a_rear",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "spore",
+   "cogitator",
+   "coils",
+   "armourweave"
+  ],
+  "heat": [
+   "h_coffers"
+  ],
+  "ai": "standard",
+  "alt": false,
+  "campaign": true,
+  "event_force": "reinf_ally"
+ },
+ "w68": {
+  "note": "sweep",
+  "seed": 3696217787,
+  "sector": 2,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "fac": "corsair",
+  "obj": "break",
+  "shape": "rift",
+  "map": "planet",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "relics": [
+   "martyr"
+  ],
+  "aspect": "bulwark",
+  "heat": [
+   "h_undying"
+  ],
+  "vet": true,
+  "alt": false,
+  "verb": "waken",
+  "campaign": true,
+  "event_force": "reinf_ally"
+ },
+ "w69": {
+  "note": "sweep",
+  "seed": 279292782,
+  "sector": 2,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_marauder",
+   "c_marauder",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "deathless",
+  "obj": "hold",
+  "shape": "dense",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "veteran",
+  "relics": [
+   "ledger",
+   "spore",
+   "salvage",
+   "coils"
+  ],
+  "ai": "standard",
+  "alt": false,
+  "class_track": {
+   "Carrier": 1,
+   "Frigate": 2
+  }
+ },
+ "w70": {
+  "note": "sweep",
+  "seed": 3638846172,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "penitent",
+   "cathedral"
+  ],
+  "fac": "deathless",
+  "obj": "ambush",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "relics": [
+   "logbook",
+   "lattice",
+   "ledger",
+   "salvage"
+  ],
+  "attack_move": true,
+  "campaign": true
+ },
+ "w71": {
+  "note": "sweep",
+  "seed": 1535339610,
+  "sector": 3,
+  "admiral": "vaelen",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_song",
+   "i_blade",
+   "i_blade",
+   "i_blade",
+   "i_wisp"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "hourglass",
+  "map": "belt",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "h_hatch",
+    "r": 1
+   },
+   {
+    "id": "i_plate",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "ledger",
+   "coils",
+   "phylactery",
+   "spore"
+  ],
+  "vet": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "deathless",
+   "weak": [
+    "ion",
+    "slow"
+   ],
+   "adapt": [],
+   "scars": 1,
+   "persona": "proud",
+   "traits": [
+    "undying",
+    "deadeye"
+   ],
+   "g": "f",
+   "honed": 2,
+   "fed": 7
+  },
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w72": {
+  "note": "sweep",
+  "seed": 576376951,
+  "sector": 3,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_drone",
+   "b_drone",
+   "b_spitter",
+   "b_drone",
+   "b_spitter"
+  ],
+  "fac": "corsair",
+  "obj": "intercept",
+  "shape": "archipelago",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_still",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "compass"
+  ],
+  "aspect": "storm",
+  "attack_move": true
+ },
+ "w73": {
+  "note": "sweep",
+  "seed": 2104828363,
+  "sector": 3,
+  "admiral": "nekhet",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_harvester"
+  ],
+  "fac": "corsair",
+  "obj": "break",
+  "shape": "colossus",
+  "map": "planet",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "L_storm",
+    "r": 3
+   }
+  ],
+  "vet": true,
+  "attack_move": true,
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w74": {
+  "note": "sweep",
+  "seed": 1778317056,
+  "sector": 1,
+  "admiral": "sable",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "obj": "intercept",
+  "shape": "open",
+  "map": "planet",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "r_prow",
+    "r": 1
+   },
+   {
+    "id": "i_plate",
+    "r": 1
+   },
+   {
+    "id": "i_line",
+    "r": 2
+   }
+  ],
+  "class_track": {
+   "Carrier": 3,
+   "Cruiser": 1
+  }
+ },
+ "w75": {
+  "note": "sweep",
+  "seed": 2987997235,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "cathedral",
+   "warden",
+   "warden"
+  ],
+  "fac": "deathless",
+  "obj": "ambush",
+  "shape": "colossus",
+  "map": "open",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "s_arc",
+    "r": 1
+   },
+   {
+    "id": "i_plate",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "lattice",
+   "logbook",
+   "compass"
+  ],
+  "ai": "standard",
+  "campaign": true
+ },
+ "w76": {
+  "note": "sweep",
+  "seed": 3749668281,
+  "sector": 1,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_spitter"
+  ],
+  "fac": "hegemony",
+  "obj": "ambush",
+  "shape": "deadstar",
+  "map": "open",
+  "dep": "ambush",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "heat": [
+   "h_repair",
+   "h_coffers",
+   "h_cmd"
+  ],
+  "vet": true
+ },
+ "w77": {
+  "note": "sweep",
+  "seed": 3572499943,
+  "sector": 1,
+  "admiral": "nekhet",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_harvester"
+  ],
+  "fac": "hegemony",
+  "obj": "defend",
+  "shape": "lanes",
+  "map": "station",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_line",
+    "r": 1
+   },
+   {
+    "id": "r_slip",
+    "r": 1
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   }
+  ],
+  "relics": [
+   "ledger",
+   "logbook",
+   "spore"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "campaign": true,
+  "event_war": true
+ },
+ "w78": {
+  "note": "sweep",
+  "seed": 209700833,
+  "sector": 2,
+  "admiral": "anuket",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "fac": "hegemony",
+  "obj": "hunt",
+  "shape": "deadstar",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "d_bastion",
+    "r": 0
+   },
+   {
+    "id": "e_spread",
+    "r": 2
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   },
+   {
+    "id": "s_ion",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "logbook",
+   "ledger",
+   "cogitator",
+   "armourweave"
+  ],
+  "heat": [
+   "h_repair",
+   "h_flag"
+  ],
+  "ai": "standard"
+ },
+ "w79": {
+  "note": "sweep",
+  "seed": 2326051389,
+  "sector": 1,
+  "admiral": "nekhet",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_scythe",
+   "d_harvester"
+  ],
+  "fac": "voidsworn",
+  "obj": "intercept",
+  "shape": "ring",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "heat": [
+   "h_flag",
+   "h_hunted"
+  ],
+  "ai": "standard",
+  "alt": false
+ },
+ "w80": {
+  "note": "sweep",
+  "seed": 775382493,
+  "sector": 1,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_raider",
+   "c_raider",
+   "c_raider"
+  ],
+  "fac": "ithar",
+  "obj": "hold",
+  "shape": "colossus",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "e_chain",
+    "r": 2
+   },
+   {
+    "id": "r_slip",
+    "r": 2
+   },
+   {
+    "id": "r_burn",
+    "r": 2
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "s_arc",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "martyr"
+  ],
+  "campaign": true
+ },
+ "w81": {
+  "note": "sweep",
+  "seed": 3807778960,
+  "sector": 3,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden",
+   "harrow",
+   "penitent",
+   "reliquary"
+  ],
+  "fac": "corsair",
+  "obj": "ambush",
+  "shape": "colossus",
+  "map": "planet",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "ai": "standard",
+  "attack_move": true,
+  "verb": "vigil"
+ },
+ "w82": {
+  "note": "sweep",
+  "seed": 4112003205,
+  "sector": 1,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_vanguard",
+   "h_interdictor"
+  ],
+  "fac": "voidsworn",
+  "obj": "hold",
+  "shape": "rift",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "r_prow",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "logbook",
+   "armourweave",
+   "compass"
+  ],
+  "aspect": "bulwark",
+  "attack_move": true
+ },
+ "w83": {
+  "note": "sweep",
+  "seed": 2121540749,
+  "sector": 2,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_reaver",
+   "c_raider",
+   "c_hulk",
+   "c_raider"
+  ],
+  "fac": "chorus",
+  "obj": "rout",
+  "shape": "ring",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_brace",
+    "r": 2
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "d_bastion",
+    "r": 0
+   },
+   {
+    "id": "e_spread",
+    "r": 0
+   }
+  ],
+  "aspect": "hive",
+  "campaign": true,
+  "event_war": true
+ },
+ "w84": {
+  "note": "sweep",
+  "seed": 1878261176,
+  "sector": 1,
+  "admiral": "reyes",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_dominion",
+   "h_vanguard"
+  ],
+  "fac": "deathless",
+  "obj": "rout",
+  "shape": "colossus",
+  "map": "belt",
+  "dep": "flank",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "heat": [
+   "h_repair",
+   "h_flag",
+   "h_coffers"
+  ],
+  "vet": true,
+  "attack_move": true
+ },
+ "w85": {
+  "note": "sweep",
+  "seed": 3756912344,
+  "sector": 2,
+  "admiral": "maren",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_picket"
+  ],
+  "fac": "ithar",
+  "obj": "hold",
+  "shape": "dense",
+  "map": "graveyard",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "h_feast",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "salvage",
+   "ledger",
+   "compass"
+  ],
+  "alt": false,
+  "attack_move": true
+ },
+ "w86": {
+  "note": "sweep",
+  "seed": 1369234294,
+  "sector": 3,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_spitter",
+   "b_brood",
+   "b_drone",
+   "b_razor"
+  ],
+  "fac": "hegemony",
+  "obj": "flagship",
+  "shape": "lanes",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_still",
+    "r": 0
+   }
+  ]
+ },
+ "w87": {
+  "note": "sweep",
+  "seed": 167339017,
+  "sector": 3,
+  "admiral": "maren",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_vanguard",
+   "h_picket",
+   "h_interdictor",
+   "h_dominion",
+   "h_picket"
+  ],
+  "fac": "deathless",
+  "obj": "rout",
+  "shape": "ring",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "mod": "bounty",
+  "boons": [],
+  "relics": [
+   "logbook",
+   "cogitator",
+   "phylactery"
+  ],
+  "heat": [
+   "h_elite",
+   "h_repair"
+  ]
+ },
+ "w88": {
+  "note": "sweep",
+  "seed": 3959422589,
+  "sector": 2,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "voidsworn",
+  "obj": "rout",
+  "shape": "open",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "elite",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "voidsworn",
+   "weak": [
+    "ion",
+    "board"
+   ],
+   "adapt": [],
+   "scars": 1,
+   "persona": "methodical",
+   "traits": [
+    "gunnery",
+    "artillery"
+   ],
+   "g": "m",
+   "riches": 2,
+   "fed": 8,
+   "met": 1,
+   "last_beat": "ram"
+  },
+  "campaign": true
+ },
+ "w89": {
+  "note": "sweep",
+  "seed": 4132994541,
+  "sector": 1,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "obj": "hunt",
+  "shape": "shoals",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "e_hunt",
+    "r": 0
+   },
+   {
+    "id": "d_bastion",
+    "r": 2
+   },
+   {
+    "id": "h_hatch",
+    "r": 0
+   },
+   {
+    "id": "L_storm",
+    "r": 3
+   },
+   {
+    "id": "a_long",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "ledger",
+   "compass",
+   "logbook",
+   "coils"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "campaign": true
+ },
+ "w90": {
+  "note": "sweep",
+  "seed": 2851000669,
+  "sector": 3,
+  "admiral": "vaelen",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_wisp",
+   "i_blade",
+   "i_song",
+   "i_blade"
+  ],
+  "fac": "corsair",
+  "obj": "flagship",
+  "shape": "deadstar",
+  "map": "open",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "relics": [
+   "compass"
+  ],
+  "aspect": "storm",
+  "heat": [
+   "h_undying"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "campaign": true
+ },
+ "w91": {
+  "note": "sweep",
+  "seed": 966561096,
+  "sector": 2,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_drone",
+   "b_spitter",
+   "b_brood"
+  ],
+  "fac": "hegemony",
+  "obj": "flagship",
+  "shape": "open",
+  "map": "planet",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "aspect": "storm",
+  "heat": [
+   "h_repair",
+   "h_coffers"
+  ],
+  "vet": true,
+  "ai": "standard",
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w92": {
+  "note": "sweep",
+  "seed": 366927027,
+  "sector": 1,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "cathedral",
+   "harrow"
+  ],
+  "fac": "ithar",
+  "obj": "ambush",
+  "shape": "ring",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "r_mom",
+    "r": 2
+   },
+   {
+    "id": "L_hunger",
+    "r": 3
+   },
+   {
+    "id": "a_aim",
+    "r": 2
+   },
+   {
+    "id": "a_crit",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "banner"
+  ],
+  "heat": [
+   "h_undying"
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "ithar",
+   "weak": [
+    "board",
+    "flank"
+   ],
+   "adapt": [
+    "aim"
+   ],
+   "scars": 2,
+   "persona": "cunning",
+   "traits": [
+    "artillery",
+    "shielded"
+   ],
+   "g": "f",
+   "riches": 0,
+   "honed": 1,
+   "met": 1,
+   "last_beat": "ram"
+  },
+  "verb": "vigil"
+ },
+ "w93": {
+  "note": "sweep",
+  "seed": 3031268031,
+  "sector": 2,
+  "admiral": "anuket",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "corsair",
+  "obj": "hunt",
+  "shape": "colossus",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "campaign": true
+ },
+ "w94": {
+  "note": "sweep",
+  "seed": 2391771098,
+  "sector": 1,
+  "admiral": "thorne",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_blade"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "dense",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 1,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "mod": "veteran",
+  "boons": [],
+  "relics": [
+   "logbook",
+   "lattice",
+   "martyr"
+  ],
+  "aspect": "ram",
+  "heat": [
+   "h_repair"
+  ],
+  "ai": "standard",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "deathless",
+   "weak": [
+    "slow",
+    "board"
+   ],
+   "adapt": [
+    "aim",
+    "shields",
+    "evasion"
+   ],
+   "scars": 0,
+   "persona": "cruel",
+   "traits": [
+    "veterans",
+    "deadeye"
+   ],
+   "g": "f",
+   "honed": 1,
+   "fed": 1,
+   "met": 2,
+   "last_beat": "sq"
+  },
+  "verb": "attune",
+  "campaign": true,
+  "event_war": true
+ },
+ "w95": {
+  "note": "sweep",
+  "seed": 2618979260,
+  "sector": 1,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_razor",
+   "b_drone"
+  ],
+  "fac": "voidsworn",
+  "obj": "intercept",
+  "shape": "open",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "heat": [
+   "h_repair"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "class_track": {
+   "Destroyer": 3,
+   "Cruiser": 1
+  },
+  "campaign": true
+ },
+ "w96": {
+  "note": "sweep",
+  "seed": 1870094688,
+  "sector": 1,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_raider"
+  ],
+  "fac": "deathless",
+  "obj": "ambush",
+  "shape": "archipelago",
+  "map": "station",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "relics": [
+   "phylactery"
+  ],
+  "aspect": "admiral"
+ },
+ "w97": {
+  "note": "sweep",
+  "seed": 2008402217,
+  "sector": 1,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_vanguard"
+  ],
+  "fac": "corsair",
+  "obj": "rout",
+  "shape": "deadstar",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "relics": [
+   "phylactery",
+   "lattice"
+  ]
+ },
+ "w98": {
+  "note": "sweep",
+  "seed": 3948673952,
+  "sector": 2,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_raider",
+   "c_reaver",
+   "c_raider"
+  ],
+  "fac": "chorus",
+  "obj": "flagship",
+  "shape": "lanes",
+  "map": "belt",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 5,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "swarm",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "h_hatch",
+    "r": 2
+   },
+   {
+    "id": "s_arc",
+    "r": 0
+   },
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "r_burn",
+    "r": 1
+   }
+  ],
+  "aspect": "admiral",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "chorus",
+   "weak": [
+    "ion",
+    "flank"
+   ],
+   "adapt": [
+    "shields",
+    "evasion",
+    "aim"
+   ],
+   "scars": 2,
+   "persona": "patient",
+   "traits": [
+    "brood",
+    "swift"
+   ],
+   "g": "n",
+   "met": 1,
+   "last_beat": "torp"
+  }
+ },
+ "w99": {
+  "note": "sweep",
+  "seed": 2530874136,
+  "sector": 3,
+  "admiral": "thorne",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_song",
+   "i_wisp",
+   "i_blade",
+   "i_carrier"
+  ],
+  "fac": "chorus",
+  "obj": "intercept",
+  "shape": "deadstar",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "relics": [
+   "logbook",
+   "salvage"
+  ],
+  "aspect": "storm",
+  "attack_move": true,
+  "class_track": {
+   "Destroyer": 1,
+   "Frigate": 2
+  },
+  "campaign": true
+ },
+ "w100": {
+  "note": "sweep",
+  "seed": 1789243305,
+  "sector": 2,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "fac": "deathless",
+  "obj": "hold",
+  "shape": "colossus",
+  "map": "planet",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "relics": [
+   "phylactery",
+   "lattice",
+   "coils",
+   "salvage"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "class_track": {
+   "Cruiser": 3,
+   "Carrier": 3
+  },
+  "campaign": true
+ },
+ "w101": {
+  "note": "sweep",
+  "seed": 1562924008,
+  "sector": 2,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "reliquary",
+   "warden",
+   "penitent"
+  ],
+  "fac": "corsair",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "i_line",
+    "r": 1
+   },
+   {
+    "id": "r_shock",
+    "r": 0
+   },
+   {
+    "id": "e_hunt",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "lattice"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "campaign": true,
+  "event_force": "reinf_ally"
+ },
+ "w102": {
+  "note": "sweep",
+  "seed": 4048598058,
+  "sector": 3,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_scythe",
+   "d_harvester",
+   "d_scythe",
+   "d_harvester"
+  ],
+  "fac": "hegemony",
+  "obj": "break",
+  "shape": "archipelago",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [],
+  "relics": [
+   "coils",
+   "phylactery",
+   "lattice",
+   "salvage"
+  ],
+  "aspect": "lancer",
+  "class_track": {
+   "Carrier": 2,
+   "Destroyer": 3
+  }
+ },
+ "w103": {
+  "note": "sweep",
+  "seed": 2922402965,
+  "sector": 2,
+  "admiral": "mirelle",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_wisp",
+   "i_wisp",
+   "i_carrier",
+   "i_blade"
+  ],
+  "fac": "corsair",
+  "obj": "flagship",
+  "shape": "rift",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "h_board",
+    "r": 1
+   },
+   {
+    "id": "s_chain",
+    "r": 0
+   },
+   {
+    "id": "h_chitin",
+    "r": 0
+   }
+  ],
+  "vet": true,
+  "verb": "attune"
+ },
+ "w104": {
+  "note": "sweep",
+  "seed": 1948520022,
+  "sector": 1,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_razor"
+  ],
+  "fac": "deathless",
+  "obj": "hold",
+  "shape": "archipelago",
+  "map": "station",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "vet": true
+ },
+ "w105": {
+  "note": "sweep",
+  "seed": 3916654967,
+  "sector": 3,
+  "admiral": "sable",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_reaver",
+   "c_reaver",
+   "c_hulk",
+   "c_raider",
+   "c_raider",
+   "c_hulk"
+  ],
+  "fac": "hegemony",
+  "obj": "ambush",
+  "shape": "archipelago",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "r_jink",
+    "r": 1
+   }
+  ],
+  "aspect": "ram",
+  "heat": [
+   "h_flag"
+  ],
+  "ai": "standard"
+ },
+ "w106": {
+  "note": "sweep",
+  "seed": 3558915808,
+  "sector": 2,
+  "admiral": "ashgrove",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "reliquary",
+   "warden"
+  ],
+  "fac": "ithar",
+  "obj": "ambush",
+  "shape": "open",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "d_jugg",
+    "r": 1
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   },
+   {
+    "id": "L_star",
+    "r": 3
+   }
+  ],
+  "relics": [
+   "martyr",
+   "ledger",
+   "banner"
+  ],
+  "aspect": "admiral",
+  "ai": "standard",
+  "campaign": true,
+  "event_war": true
+ },
+ "w107": {
+  "note": "sweep",
+  "seed": 49005794,
+  "sector": 3,
+  "admiral": "khepra",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_harvester",
+   "d_jackal"
+  ],
+  "fac": "corsair",
+  "obj": "hold",
+  "shape": "rift",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "L_storm",
+    "r": 3
+   },
+   {
+    "id": "e_war",
+    "r": 1
+   },
+   {
+    "id": "s_regen",
+    "r": 1
+   },
+   {
+    "id": "s_ion",
+    "r": 1
+   }
+  ],
+  "aspect": "hive",
+  "vet": true
+ },
+ "w108": {
+  "note": "sweep",
+  "seed": 1000764646,
+  "sector": 1,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_vanguard",
+   "h_dominion"
+  ],
+  "fac": "voidsworn",
+  "obj": "defend",
+  "shape": "archipelago",
+  "map": "belt",
+  "dep": "line",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "i_line",
+    "r": 2
+   },
+   {
+    "id": "i_plate",
+    "r": 2
+   },
+   {
+    "id": "r_burn",
+    "r": 2
+   },
+   {
+    "id": "i_broad",
+    "r": 2
+   },
+   {
+    "id": "s_chain",
+    "r": 1
+   },
+   {
+    "id": "s_arc",
+    "r": 0
+   }
+  ],
+  "ai": "standard"
+ },
+ "w109": {
+  "note": "sweep",
+  "seed": 1268178337,
+  "sector": 1,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "reliquary",
+   "cathedral"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "dense",
+  "map": "planet",
+  "dep": "line",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "heat": [
+   "h_coffers",
+   "h_cmd"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "deathless",
+   "weak": [
+    "slow",
+    "anchor"
+   ],
+   "adapt": [
+    "evasion",
+    "legion",
+    "shields"
+   ],
+   "scars": 2,
+   "persona": "proud",
+   "traits": [
+    "undying",
+    "veterans"
+   ],
+   "g": "m",
+   "fed": 4
+  },
+  "verb": "vigil"
+ },
+ "w110": {
+  "note": "sweep",
+  "seed": 1943803155,
+  "sector": 3,
+  "admiral": "maren",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_dominion",
+   "h_dominion",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "deathless",
+  "obj": "ambush",
+  "shape": "ring",
+  "map": "planet",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_broad",
+    "r": 0
+   },
+   {
+    "id": "e_kindle",
+    "r": 1
+   },
+   {
+    "id": "e_chain",
+    "r": 2
+   },
+   {
+    "id": "d_inferno",
+    "r": 2
+   }
+  ],
+  "aspect": "lancer",
+  "attack_move": true,
+  "verb": "drill",
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w111": {
+  "note": "sweep",
+  "seed": 3601100336,
+  "sector": 1,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "cathedral"
+  ],
+  "fac": "chorus",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "relics": [
+   "martyr",
+   "spore",
+   "banner",
+   "phylactery"
+  ],
+  "heat": [
+   "h_coffers",
+   "h_repair"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "verb": "vigil",
+  "campaign": true,
+  "event_war": true
+ },
+ "w112": {
+  "note": "sweep",
+  "seed": 2015336815,
+  "sector": 1,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_brood"
+  ],
+  "fac": "deathless",
+  "obj": "ambush",
+  "shape": "deadstar",
+  "map": "belt",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "bounty",
+  "aspect": "ram",
+  "heat": [
+   "h_hunted",
+   "h_repair",
+   "h_elite"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "campaign": true,
+  "event_war": true
+ },
+ "w113": {
+  "note": "sweep",
+  "seed": 1395331093,
+  "sector": 3,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_reaver",
+   "c_raider",
+   "c_hulk"
+  ],
+  "fac": "voidsworn",
+  "obj": "flagship",
+  "shape": "corridor",
+  "map": "planet",
+  "dep": "line",
+  "kind": "elite",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_brace",
+    "r": 0
+   },
+   {
+    "id": "i_wall",
+    "r": 1
+   },
+   {
+    "id": "h_hatch",
+    "r": 1
+   },
+   {
+    "id": "e_kindle",
+    "r": 2
+   },
+   {
+    "id": "r_burn",
+    "r": 1
+   },
+   {
+    "id": "d_burnswarm",
+    "r": 2
+   }
+  ],
+  "ai": "standard"
+ },
+ "w114": {
+  "note": "sweep",
+  "seed": 491295793,
+  "sector": 3,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "cathedral",
+   "harrow",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "shoals",
+  "map": "open",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "vet": true,
+  "verb": "vigil",
+  "campaign": true,
+  "event_war": true
+ },
+ "w115": {
+  "note": "sweep",
+  "seed": 3307138824,
+  "sector": 3,
+  "admiral": "khepra",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_scythe",
+   "d_jackal",
+   "d_harvester",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "fac": "ithar",
+  "obj": "flagship",
+  "shape": "rift",
+  "map": "open",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [],
+  "relics": [
+   "salvage"
+  ],
+  "aspect": "ram",
+  "alt": false,
+  "attack_move": true,
+  "campaign": true
+ },
+ "w116": {
+  "note": "sweep",
+  "seed": 4015845740,
+  "sector": 3,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_marauder",
+   "c_raider",
+   "c_hulk",
+   "c_marauder"
+  ],
+  "fac": "deathless",
+  "obj": "break",
+  "shape": "corridor",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "h_board",
+    "r": 2
+   },
+   {
+    "id": "i_still",
+    "r": 2
+   },
+   {
+    "id": "L_storm",
+    "r": 3
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "s_ev",
+    "r": 2
+   }
+  ],
+  "ai": "standard",
+  "class_track": {
+   "Destroyer": 1,
+   "Carrier": 1
+  }
+ },
+ "w117": {
+  "note": "sweep",
+  "seed": 3636844001,
+  "sector": 3,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "harrow",
+   "cathedral",
+   "cathedral"
+  ],
+  "fac": "deathless",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "e_war",
+    "r": 0
+   },
+   {
+    "id": "h_brood",
+    "r": 0
+   },
+   {
+    "id": "i_still",
+    "r": 0
+   },
+   {
+    "id": "s_chain",
+    "r": 2
+   },
+   {
+    "id": "e_hunt",
+    "r": 2
+   }
+  ],
+  "aspect": "ram",
+  "vet": true,
+  "attack_move": true
+ },
+ "w118": {
+  "note": "sweep",
+  "seed": 3078266998,
+  "sector": 1,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_dominion"
+  ],
+  "fac": "voidsworn",
+  "obj": "break",
+  "shape": "corridor",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "d_burnswarm",
+    "r": 1
+   },
+   {
+    "id": "a_rear",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "cogitator",
+   "coils",
+   "martyr"
+  ],
+  "heat": [
+   "h_cmd"
+  ],
+  "vet": true
+ },
+ "w119": {
+  "note": "sweep",
+  "seed": 1799317924,
+  "sector": 1,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "fac": "corsair",
+  "obj": "hunt",
+  "shape": "hourglass",
+  "map": "planet",
+  "dep": "line",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "heat": [
+   "h_coffers",
+   "h_flag",
+   "h_elite"
+  ],
+  "vet": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "corsair",
+   "weak": [
+    "flank",
+    "ion"
+   ],
+   "adapt": [
+    "shields",
+    "armor"
+   ],
+   "scars": 2,
+   "persona": "greedy",
+   "traits": [
+    "gunnery",
+    "deadeye"
+   ],
+   "g": "f",
+   "riches": 2,
+   "honed": 3,
+   "fed": 2,
+   "met": 2,
+   "last_beat": "sq"
+  },
+  "campaign": true,
+  "event_war": true
+ },
+ "w120": {
+  "note": "sweep",
+  "seed": 360230371,
+  "sector": 1,
+  "admiral": "maren",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_vanguard"
+  ],
+  "fac": "corsair",
+  "obj": "ambush",
+  "shape": "dense",
+  "map": "station",
+  "dep": "ambush",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "relics": [
+   "logbook",
+   "phylactery",
+   "banner",
+   "cogitator"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "verb": "drill",
+  "campaign": true,
+  "event_force": "flare"
+ },
+ "w121": {
+  "note": "sweep",
+  "seed": 860621909,
+  "sector": 2,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "archipelago",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "L_iron",
+    "r": 3
+   },
+   {
+    "id": "h_chitin",
+    "r": 1
+   },
+   {
+    "id": "e_spread",
+    "r": 1
+   },
+   {
+    "id": "h_wings",
+    "r": 1
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   }
+  ],
+  "heat": [
+   "h_cmd",
+   "h_coffers"
+  ],
+  "vet": true
+ },
+ "w122": {
+  "note": "sweep",
+  "seed": 4231226270,
+  "sector": 3,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_raider",
+   "c_reaver",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "obj": "hunt",
+  "shape": "ring",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "L_storm",
+    "r": 3
+   },
+   {
+    "id": "i_line",
+    "r": 0
+   },
+   {
+    "id": "i_still",
+    "r": 0
+   },
+   {
+    "id": "i_broad",
+    "r": 2
+   },
+   {
+    "id": "r_prow",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "compass",
+   "banner",
+   "ledger",
+   "armourweave"
+  ],
+  "ai": "standard",
+  "attack_move": true
+ },
+ "w123": {
+  "note": "sweep",
+  "seed": 3678003984,
+  "sector": 1,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_spitter"
+  ],
+  "fac": "ithar",
+  "obj": "intercept",
+  "shape": "open",
+  "map": "open",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "r_shock",
+    "r": 2
+   },
+   {
+    "id": "i_brace",
+    "r": 2
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "L_hunger",
+    "r": 3
+   },
+   {
+    "id": "r_slip",
+    "r": 2
+   }
+  ],
+  "attack_move": true,
+  "campaign": true,
+  "event_war": true
+ },
+ "w124": {
+  "note": "sweep",
+  "seed": 1536169731,
+  "sector": 2,
+  "admiral": "anuket",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_harvester",
+   "d_scythe",
+   "d_scythe",
+   "d_jackal",
+   "d_scythe"
+  ],
+  "fac": "corsair",
+  "obj": "flagship",
+  "shape": "archipelago",
+  "map": "open",
+  "dep": "flank",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "e_war",
+    "r": 0
+   },
+   {
+    "id": "a_rear",
+    "r": 2
+   },
+   {
+    "id": "i_broad",
+    "r": 0
+   },
+   {
+    "id": "r_mom",
+    "r": 2
+   }
+  ],
+  "vet": true,
+  "attack_move": true,
+  "class_track": {
+   "Carrier": 3,
+   "Destroyer": 1
+  }
+ },
+ "w125": {
+  "note": "sweep",
+  "seed": 2548791994,
+  "sector": 2,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_scythe",
+   "d_harvester"
+  ],
+  "fac": "chorus",
+  "obj": "rout",
+  "shape": "archipelago",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "veteran",
+  "boons": [],
+  "relics": [
+   "salvage"
+  ],
+  "aspect": "storm",
+  "heat": [
+   "h_coffers",
+   "h_repair",
+   "h_hunted"
+  ],
+  "attack_move": true
+ },
+ "w126": {
+  "note": "sweep",
+  "seed": 2833139774,
+  "sector": 2,
+  "admiral": "aelith",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "corsair",
+  "obj": "rout",
+  "shape": "lanes",
+  "map": "station",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "basic",
+  "mod": "veteran",
+  "relics": [
+   "martyr",
+   "phylactery",
+   "cogitator"
+  ],
+  "aspect": "hive",
+  "heat": [
+   "h_undying"
+  ],
+  "campaign": true
+ },
+ "w127": {
+  "note": "sweep",
+  "seed": 949435559,
+  "sector": 2,
+  "admiral": "khepra",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "fac": "hegemony",
+  "obj": "flagship",
+  "shape": "ring",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "a_mark",
+    "r": 1
+   }
+  ],
+  "ai": "standard"
+ },
+ "w128": {
+  "note": "sweep",
+  "seed": 2530168838,
+  "sector": 3,
+  "admiral": "thorne",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_blade",
+   "i_carrier",
+   "i_wisp",
+   "i_carrier"
+  ],
+  "fac": "hegemony",
+  "obj": "intercept",
+  "shape": "dense",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "d_burnswarm",
+    "r": 2
+   },
+   {
+    "id": "h_hatch",
+    "r": 0
+   },
+   {
+    "id": "r_mom",
+    "r": 2
+   },
+   {
+    "id": "i_line",
+    "r": 1
+   },
+   {
+    "id": "r_prow",
+    "r": 1
+   }
+  ],
+  "aspect": "bulwark",
+  "verb": "attune",
+  "campaign": true
+ },
+ "w129": {
+  "note": "sweep",
+  "seed": 4043275090,
+  "sector": 2,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone",
+   "b_razor"
+  ],
+  "fac": "hegemony",
+  "obj": "intercept",
+  "shape": "deadstar",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "campaign": true
+ },
+ "w130": {
+  "note": "sweep",
+  "seed": 947728353,
+  "sector": 2,
+  "admiral": "reyes",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_dominion",
+   "h_dominion"
+  ],
+  "fac": "ithar",
+  "obj": "intercept",
+  "shape": "dense",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "d_ionlance",
+    "r": 0
+   },
+   {
+    "id": "s_regen",
+    "r": 0
+   },
+   {
+    "id": "e_kindle",
+    "r": 1
+   },
+   {
+    "id": "d_hunter",
+    "r": 2
+   },
+   {
+    "id": "i_brace",
+    "r": 0
+   }
+  ],
+  "aspect": "ram",
+  "heat": [
+   "h_elite"
+  ],
+  "alt": false,
+  "attack_move": true
+ },
+ "w131": {
+  "note": "sweep",
+  "seed": 936684587,
+  "sector": 2,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "fac": "ithar",
+  "obj": "defend",
+  "shape": "open",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "relics": [
+   "coils",
+   "banner",
+   "ledger",
+   "salvage"
+  ],
+  "verb": "drill",
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w132": {
+  "note": "sweep",
+  "seed": 191584447,
+  "sector": 3,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_dominion",
+   "h_picket",
+   "h_dominion"
+  ],
+  "fac": "corsair",
+  "obj": "hold",
+  "shape": "open",
+  "map": "belt",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "d_ionlance",
+    "r": 2
+   },
+   {
+    "id": "h_chitin",
+    "r": 2
+   },
+   {
+    "id": "e_hunt",
+    "r": 2
+   }
+  ],
+  "campaign": true,
+  "event_war": true
+ },
+ "w133": {
+  "note": "sweep",
+  "seed": 3453585634,
+  "sector": 2,
+  "admiral": "khepra",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "fac": "chorus",
+  "obj": "rout",
+  "shape": "hourglass",
+  "map": "station",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "heat": [
+   "h_repair",
+   "h_undying",
+   "h_hunted"
+  ],
+  "ai": "standard"
+ },
+ "w134": {
+  "note": "sweep",
+  "seed": 1220908588,
+  "sector": 3,
+  "admiral": "mirelle",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_song",
+   "i_song",
+   "i_wisp",
+   "i_blade",
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "ring",
+  "map": "station",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "L_storm",
+    "r": 3
+   },
+   {
+    "id": "d_jugg",
+    "r": 0
+   },
+   {
+    "id": "i_brace",
+    "r": 2
+   },
+   {
+    "id": "r_shock",
+    "r": 0
+   },
+   {
+    "id": "i_still",
+    "r": 0
+   }
+  ],
+  "heat": [
+   "h_elite",
+   "h_flag",
+   "h_cmd"
+  ],
+  "ai": "standard",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "hegemony",
+   "weak": [
+    "anchor",
+    "ion"
+   ],
+   "adapt": [],
+   "scars": 0,
+   "persona": "cunning",
+   "traits": [
+    "artillery",
+    "deadeye"
+   ],
+   "g": "m",
+   "met": 2,
+   "last_beat": "battery"
+  }
+ },
+ "w135": {
+  "note": "sweep",
+  "seed": 367467613,
+  "sector": 1,
+  "admiral": "mirelle",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_song"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "deadstar",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "r_burn",
+    "r": 0
+   },
+   {
+    "id": "s_ev",
+    "r": 1
+   },
+   {
+    "id": "h_brood",
+    "r": 2
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   },
+   {
+    "id": "d_jugg",
+    "r": 1
+   }
+  ],
+  "verb": "attune",
+  "class_track": {
+   "Carrier": 3,
+   "Destroyer": 2
+  },
+  "campaign": true,
+  "event_war": true
+ },
+ "w136": {
+  "note": "sweep",
+  "seed": 1308833040,
+  "sector": 3,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "penitent",
+   "harrow",
+   "cathedral",
+   "penitent"
+  ],
+  "fac": "ithar",
+  "obj": "flagship",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "boons": [],
+  "heat": [
+   "h_hunted",
+   "h_elite"
+  ],
+  "vet": true,
+  "verb": "vigil",
+  "class_track": {
+   "Carrier": 2,
+   "Destroyer": 2
+  }
+ },
+ "w137": {
+  "note": "sweep",
+  "seed": 2070529518,
+  "sector": 3,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_reaver",
+   "c_marauder",
+   "c_raider",
+   "c_hulk"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "deadstar",
+  "map": "planet",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "h_hatch",
+    "r": 1
+   },
+   {
+    "id": "s_regen",
+    "r": 0
+   }
+  ],
+  "aspect": "hive",
+  "heat": [
+   "h_coffers",
+   "h_flag",
+   "h_hunted"
+  ],
+  "ai": "standard",
+  "alt": false,
+  "attack_move": true,
+  "campaign": true,
+  "event_force": "flare"
+ },
+ "w138": {
+  "note": "sweep",
+  "seed": 2771110921,
+  "sector": 1,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "rift",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "attack_move": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "deathless",
+   "weak": [
+    "brawl",
+    "board"
+   ],
+   "adapt": [],
+   "scars": 0,
+   "persona": "cruel",
+   "traits": [
+    "regrowth",
+    "undying"
+   ],
+   "g": "m",
+   "riches": 3,
+   "honed": 2,
+   "fed": 2
+  }
+ },
+ "w139": {
+  "note": "sweep",
+  "seed": 965887495,
+  "sector": 3,
+  "admiral": "thorne",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_blade",
+   "i_carrier",
+   "i_song"
+  ],
+  "fac": "hegemony",
+  "obj": "hold",
+  "shape": "colossus",
+  "map": "station",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "relics": [
+   "banner"
+  ],
+  "heat": [
+   "h_undying",
+   "h_hunted",
+   "h_flag"
+  ],
+  "vet": true,
+  "verb": "attune"
+ },
+ "w140": {
+  "note": "sweep",
+  "seed": 574664217,
+  "sector": 2,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_jackal",
+   "d_harvester"
+  ],
+  "fac": "chorus",
+  "obj": "rout",
+  "shape": "shoals",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "aspect": "storm",
+  "attack_move": true
+ },
+ "w141": {
+  "note": "sweep",
+  "seed": 605877794,
+  "sector": 1,
+  "admiral": "vex",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "reliquary",
+   "cathedral"
+  ],
+  "fac": "ithar",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "open",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "relics": [
+   "cogitator"
+  ],
+  "vet": true,
+  "ai": "standard",
+  "alt": false
+ },
+ "w142": {
+  "note": "sweep",
+  "seed": 663979891,
+  "sector": 2,
+  "admiral": "khepra",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_harvester",
+   "d_jackal"
+  ],
+  "fac": "hegemony",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "relics": [
+   "spore",
+   "coils",
+   "cogitator",
+   "armourweave"
+  ],
+  "aspect": "lancer",
+  "attack_move": true,
+  "class_track": {
+   "Frigate": 3,
+   "Carrier": 1
+  }
+ },
+ "w143": {
+  "note": "sweep",
+  "seed": 2134585926,
+  "sector": 1,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "reliquary",
+   "cathedral"
+  ],
+  "fac": "hegemony",
+  "obj": "break",
+  "shape": "colossus",
+  "map": "open",
+  "dep": "line",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "swarm",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "r_mom",
+    "r": 0
+   },
+   {
+    "id": "L_hunger",
+    "r": 3
+   },
+   {
+    "id": "a_rear",
+    "r": 2
+   }
+  ],
+  "vet": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "hegemony",
+   "weak": [
+    "brawl",
+    "torp"
+   ],
+   "adapt": [
+    "shields",
+    "evasion"
+   ],
+   "scars": 1,
+   "persona": "methodical",
+   "traits": [
+    "gunnery",
+    "shielded"
+   ],
+   "g": "m",
+   "riches": 3,
+   "honed": 3,
+   "met": 2,
+   "last_beat": "lance"
+  },
+  "class_track": {
+   "Carrier": 2,
+   "Destroyer": 2
+  }
+ },
+ "w144": {
+  "note": "sweep",
+  "seed": 3756109474,
+  "sector": 3,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_spitter",
+   "b_drone",
+   "b_spitter",
+   "b_brood"
+  ],
+  "fac": "corsair",
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "e_chain",
+    "r": 2
+   },
+   {
+    "id": "s_ion",
+    "r": 0
+   },
+   {
+    "id": "e_hunt",
+    "r": 1
+   }
+  ],
+  "heat": [
+   "h_cmd",
+   "h_coffers",
+   "h_elite"
+  ],
+  "vet": true,
+  "attack_move": true
+ },
+ "w145": {
+  "note": "sweep",
+  "seed": 4208569261,
+  "sector": 2,
+  "admiral": "khepra",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_jackal",
+   "d_scythe",
+   "d_jackal",
+   "d_harvester"
+  ],
+  "fac": "corsair",
+  "obj": "hunt",
+  "shape": "ring",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "h_brood",
+    "r": 2
+   },
+   {
+    "id": "e_chain",
+    "r": 1
+   },
+   {
+    "id": "s_regen",
+    "r": 2
+   },
+   {
+    "id": "e_reload",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "salvage"
+  ]
+ },
+ "w146": {
+  "note": "sweep",
+  "seed": 2273867932,
+  "sector": 2,
+  "admiral": "sable",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_hulk",
+   "c_reaver",
+   "c_reaver"
+  ],
+  "fac": "hegemony",
+  "obj": "hunt",
+  "shape": "ring",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "d_bastion",
+    "r": 2
+   },
+   {
+    "id": "s_regen",
+    "r": 0
+   },
+   {
+    "id": "i_brace",
+    "r": 0
+   },
+   {
+    "id": "e_hunt",
+    "r": 1
+   },
+   {
+    "id": "d_ionlance",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "cogitator",
+   "banner"
+  ],
+  "aspect": "hive",
+  "vet": true
+ },
+ "w147": {
+  "note": "sweep",
+  "seed": 424813093,
+  "sector": 2,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_marauder",
+   "c_raider",
+   "c_raider",
+   "c_reaver"
+  ],
+  "fac": "chorus",
+  "obj": "rout",
+  "shape": "deadstar",
+  "map": "station",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "h_feast",
+    "r": 1
+   },
+   {
+    "id": "a_long",
+    "r": 2
+   },
+   {
+    "id": "r_mom",
+    "r": 1
+   },
+   {
+    "id": "i_brace",
+    "r": 1
+   },
+   {
+    "id": "s_ion",
+    "r": 1
+   },
+   {
+    "id": "r_slip",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "cogitator",
+   "martyr",
+   "phylactery"
+  ],
+  "aspect": "ram",
+  "heat": [
+   "h_undying",
+   "h_flag"
+  ],
+  "alt": false,
+  "campaign": true,
+  "event_war": true
+ },
+ "w148": {
+  "note": "sweep",
+  "seed": 167652992,
+  "sector": 3,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_harvester",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "fac": "corsair",
+  "obj": "hunt",
+  "shape": "colossus",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "d_inferno",
+    "r": 0
+   },
+   {
+    "id": "d_jugg",
+    "r": 0
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   }
+  ],
+  "heat": [
+   "h_repair"
+  ]
+ },
+ "w149": {
+  "note": "sweep",
+  "seed": 4109295582,
+  "sector": 3,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "cathedral",
+   "warden",
+   "cathedral",
+   "warden"
+  ],
+  "fac": "ithar",
+  "obj": "intercept",
+  "shape": "shoals",
+  "map": "graveyard",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "r_burn",
+    "r": 0
+   },
+   {
+    "id": "i_line",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "coils",
+   "phylactery",
+   "cogitator",
+   "logbook"
+  ],
+  "aspect": "hive",
+  "ai": "standard",
+  "attack_move": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "ithar",
+   "weak": [
+    "anchor",
+    "brawl"
+   ],
+   "adapt": [
+    "veil",
+    "shields",
+    "aim"
+   ],
+   "scars": 1,
+   "persona": "proud",
+   "traits": [
+    "swift",
+    "veil"
+   ],
+   "g": "m",
+   "fed": 2,
+   "met": 1,
+   "last_beat": "board"
+  }
+ },
+ "w150": {
+  "note": "sweep",
+  "seed": 39763642,
+  "sector": 3,
+  "admiral": "grax",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_reaver",
+   "c_raider",
+   "c_reaver",
+   "c_marauder"
+  ],
+  "fac": "ithar",
+  "obj": "ambush",
+  "shape": "dense",
+  "map": "open",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "relics": [
+   "ledger",
+   "phylactery",
+   "cogitator",
+   "martyr"
+  ],
+  "vet": true,
+  "ai": "standard"
+ },
+ "w151": {
+  "note": "sweep",
+  "seed": 163701855,
+  "sector": 3,
+  "admiral": "ashgrove",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "warden",
+   "reliquary",
+   "warden",
+   "penitent",
+   "harrow"
+  ],
+  "fac": "corsair",
+  "obj": "ambush",
+  "shape": "colossus",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "e_reload",
+    "r": 0
+   },
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "h_board",
+    "r": 2
+   },
+   {
+    "id": "h_chitin",
+    "r": 1
+   }
+  ],
+  "aspect": "bulwark",
+  "ai": "standard",
+  "verb": "vigil"
+ },
+ "w152": {
+  "note": "sweep",
+  "seed": 3299331973,
+  "sector": 3,
+  "admiral": "mirelle",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_blade",
+   "i_blade",
+   "i_carrier",
+   "i_wisp",
+   "i_song"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "archipelago",
+  "map": "planet",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "s_ev",
+    "r": 0
+   },
+   {
+    "id": "h_brood",
+    "r": 2
+   },
+   {
+    "id": "e_chain",
+    "r": 0
+   },
+   {
+    "id": "e_kindle",
+    "r": 0
+   },
+   {
+    "id": "d_ionlance",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "armourweave"
+  ],
+  "aspect": "storm",
+  "heat": [
+   "h_cmd",
+   "h_hunted"
+  ],
+  "campaign": true
+ },
+ "w153": {
+  "note": "sweep",
+  "seed": 4155336668,
+  "sector": 3,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_scythe",
+   "d_harvester",
+   "d_scythe",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "fac": "voidsworn",
+  "obj": "rout",
+  "shape": "hourglass",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "i_still",
+    "r": 1
+   },
+   {
+    "id": "s_cap",
+    "r": 1
+   }
+  ],
+  "aspect": "lancer",
+  "heat": [
+   "h_coffers",
+   "h_undying"
+  ],
+  "vet": true,
+  "verb": "waken"
+ },
+ "w154": {
+  "note": "sweep",
+  "seed": 335752957,
+  "sector": 3,
+  "admiral": "thorne",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_wisp",
+   "i_song",
+   "i_wisp"
+  ],
+  "fac": "voidsworn",
+  "obj": "ambush",
+  "shape": "archipelago",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "a_aim",
+    "r": 1
+   }
+  ],
+  "aspect": "lancer",
+  "alt": false,
+  "attack_move": true,
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w155": {
+  "note": "sweep",
+  "seed": 4054925534,
+  "sector": 2,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_razor",
+   "b_brood",
+   "b_drone"
+  ],
+  "fac": "corsair",
+  "obj": "hold",
+  "shape": "archipelago",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [],
+  "relics": [
+   "logbook",
+   "compass",
+   "salvage"
+  ],
+  "aspect": "admiral",
+  "vet": true,
+  "ai": "standard",
+  "attack_move": true,
+  "campaign": true
+ },
+ "w156": {
+  "note": "sweep",
+  "seed": 1873296805,
+  "sector": 1,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "deathless",
+  "obj": "intercept",
+  "shape": "archipelago",
+  "map": "station",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "boons": [],
+  "aspect": "hive",
+  "heat": [
+   "h_elite"
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "deathless",
+   "weak": [
+    "brawl",
+    "board"
+   ],
+   "adapt": [],
+   "scars": 0,
+   "persona": "patient",
+   "traits": [
+    "armored",
+    "gunnery"
+   ],
+   "g": "f",
+   "riches": 1,
+   "honed": 2,
+   "fed": 0,
+   "met": 2,
+   "last_beat": "board"
+  }
+ },
+ "w157": {
+  "note": "sweep",
+  "seed": 1491760822,
+  "sector": 1,
+  "admiral": "vaelen",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_wisp",
+   "i_blade",
+   "i_blade"
+  ],
+  "fac": "chorus",
+  "obj": "defend",
+  "shape": "corridor",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w158": {
+  "note": "sweep",
+  "seed": 3399002967,
+  "sector": 3,
+  "admiral": "aelith",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_song",
+   "i_blade"
+  ],
+  "fac": "voidsworn",
+  "obj": "hold",
+  "shape": "dense",
+  "map": "storm",
+  "dep": "line",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "aspect": "hive",
+  "heat": [
+   "h_flag"
+  ],
+  "vet": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "voidsworn",
+   "weak": [
+    "slow",
+    "board"
+   ],
+   "adapt": [
+    "evasion",
+    "aim",
+    "armor"
+   ],
+   "scars": 0,
+   "persona": "cruel",
+   "traits": [
+    "boarders",
+    "artillery"
+   ],
+   "g": "f",
+   "honed": 3,
+   "met": 2,
+   "last_beat": "ram"
+  },
+  "campaign": true
+ },
+ "w159": {
+  "note": "sweep",
+  "seed": 2309783693,
+  "sector": 3,
+  "admiral": "mirelle",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_wisp",
+   "i_carrier",
+   "i_carrier",
+   "i_wisp"
+  ],
+  "fac": "corsair",
+  "obj": "intercept",
+  "shape": "open",
+  "map": "station",
+  "dep": "line",
+  "kind": "elite",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "L_iron",
+    "r": 3
+   }
+  ],
+  "vet": true,
+  "attack_move": true,
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "corsair",
+   "weak": [
+    "flank",
+    "board"
+   ],
+   "adapt": [],
+   "scars": 1,
+   "persona": "greedy",
+   "traits": [
+    "boarders",
+    "deadeye"
+   ],
+   "g": "m",
+   "honed": 3
+  }
+ },
+ "w160": {
+  "note": "sweep",
+  "seed": 2419706665,
+  "sector": 1,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_hulk",
+   "c_reaver"
+  ],
+  "fac": "chorus",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "relics": [
+   "logbook",
+   "phylactery",
+   "lattice"
+  ],
+  "aspect": "bulwark",
+  "heat": [
+   "h_elite",
+   "h_hunted"
+  ],
+  "alt": false,
+  "class_track": {
+   "Carrier": 2,
+   "Cruiser": 2
+  }
+ },
+ "w161": {
+  "note": "sweep",
+  "seed": 2241323955,
+  "sector": 3,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_vanguard",
+   "h_vanguard",
+   "h_vanguard"
+  ],
+  "fac": "ithar",
+  "obj": "hunt",
+  "shape": "open",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "relics": [
+   "lattice",
+   "compass",
+   "spore",
+   "ledger"
+  ],
+  "class_track": {
+   "Cruiser": 1,
+   "Carrier": 1
+  },
+  "campaign": true
+ },
+ "w162": {
+  "note": "sweep",
+  "seed": 1055921465,
+  "sector": 1,
+  "admiral": "sekhmar",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_harvester",
+   "d_scythe"
+  ],
+  "fac": "voidsworn",
+  "obj": "rout",
+  "shape": "colossus",
+  "map": "planet",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "s_cap",
+    "r": 0
+   },
+   {
+    "id": "e_kindle",
+    "r": 0
+   },
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   },
+   {
+    "id": "a_aim",
+    "r": 1
+   },
+   {
+    "id": "i_brace",
+    "r": 0
+   }
+  ],
+  "vet": true,
+  "ai": "standard"
+ },
+ "w163": {
+  "note": "sweep",
+  "seed": 2965154356,
+  "sector": 1,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "reliquary",
+   "penitent"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "archipelago",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "mod": "veteran",
+  "vet": true
+ },
+ "w164": {
+  "note": "sweep",
+  "seed": 1856932283,
+  "sector": 2,
+  "admiral": "mending",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_spitter",
+   "b_brood"
+  ],
+  "fac": "deathless",
+  "obj": "intercept",
+  "shape": "open",
+  "map": "graveyard",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "h_board",
+    "r": 2
+   },
+   {
+    "id": "h_hatch",
+    "r": 1
+   },
+   {
+    "id": "i_still",
+    "r": 1
+   },
+   {
+    "id": "e_spread",
+    "r": 0
+   },
+   {
+    "id": "a_long",
+    "r": 0
+   },
+   {
+    "id": "r_slip",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "ledger",
+   "logbook",
+   "phylactery",
+   "armourweave"
+  ],
+  "aspect": "hive",
+  "ai": "standard"
+ },
+ "w165": {
+  "note": "sweep",
+  "seed": 3031564203,
+  "sector": 2,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_drone",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "obj": "ambush",
+  "shape": "colossus",
+  "map": "station",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "i_wall",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "lattice",
+   "martyr"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "class_track": {
+   "Frigate": 2,
+   "Carrier": 2
+  }
+ },
+ "w166": {
+  "note": "sweep",
+  "seed": 569445022,
+  "sector": 1,
+  "admiral": "vaelen",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_wisp"
+  ],
+  "fac": "voidsworn",
+  "obj": "ambush",
+  "shape": "colossus",
+  "map": "storm",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "h_feast",
+    "r": 1
+   },
+   {
+    "id": "i_plate",
+    "r": 1
+   }
+  ],
+  "aspect": "hive",
+  "vet": true,
+  "attack_move": true,
+  "class_track": {
+   "Carrier": 3,
+   "Frigate": 3
+  }
+ },
+ "w167": {
+  "note": "sweep",
+  "seed": 2136892556,
+  "sector": 2,
+  "admiral": "grax",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_marauder",
+   "c_marauder"
+  ],
+  "fac": "voidsworn",
+  "obj": "break",
+  "shape": "colossus",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "bounty",
+  "heat": [
+   "h_elite",
+   "h_cmd",
+   "h_flag"
+  ],
+  "vet": true,
+  "campaign": true
+ },
+ "w168": {
+  "note": "sweep",
+  "seed": 17096496,
+  "sector": 2,
+  "admiral": "vaelen",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_wisp",
+   "i_blade",
+   "i_wisp"
+  ],
+  "fac": "voidsworn",
+  "obj": "flagship",
+  "shape": "colossus",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "L_ember",
+    "r": 3
+   },
+   {
+    "id": "L_hunger",
+    "r": 3
+   },
+   {
+    "id": "h_brood",
+    "r": 1
+   },
+   {
+    "id": "i_broad",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "ledger",
+   "salvage"
+  ],
+  "aspect": "lancer",
+  "vet": true,
+  "attack_move": true,
+  "verb": "attune",
+  "campaign": true,
+  "event_war": true
+ },
+ "w169": {
+  "note": "sweep",
+  "seed": 3699427617,
+  "sector": 1,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "harrow",
+   "cathedral"
+  ],
+  "fac": "corsair",
+  "obj": "flagship",
+  "shape": "corridor",
+  "map": "storm",
+  "dep": "line",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "mod": "veteran",
+  "aspect": "hive",
+  "campaign": true
+ },
+ "w170": {
+  "note": "sweep",
+  "seed": 308845327,
+  "sector": 1,
+  "admiral": "mirelle",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_wisp",
+   "i_blade"
+  ],
+  "fac": "deathless",
+  "obj": "hold",
+  "shape": "rift",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "relics": [
+   "armourweave",
+   "martyr"
+  ],
+  "heat": [
+   "h_coffers",
+   "h_undying",
+   "h_elite"
+  ],
+  "attack_move": true,
+  "campaign": true
+ },
+ "w171": {
+  "note": "sweep",
+  "seed": 3212453874,
+  "sector": 2,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_spitter",
+   "b_brood",
+   "b_razor"
+  ],
+  "fac": "corsair",
+  "obj": "hold",
+  "shape": "corridor",
+  "map": "planet",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "carrier",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "i_broad",
+    "r": 0
+   },
+   {
+    "id": "s_arc",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "ledger",
+   "martyr",
+   "coils",
+   "spore"
+  ],
+  "vet": true,
+  "attack_move": true,
+  "class_track": {
+   "Carrier": 3,
+   "Frigate": 2
+  }
+ },
+ "w172": {
+  "note": "sweep",
+  "seed": 3263235966,
+  "sector": 3,
+  "admiral": "grax",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_reaver",
+   "c_hulk",
+   "c_hulk"
+  ],
+  "fac": "hegemony",
+  "obj": "hold",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "ai": "standard",
+  "attack_move": true
+ },
+ "w173": {
+  "note": "sweep",
+  "seed": 338528575,
+  "sector": 3,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_spitter",
+   "b_spitter",
+   "b_spitter",
+   "b_brood"
+  ],
+  "fac": "deathless",
+  "obj": "rout",
+  "shape": "archipelago",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "r_burn",
+    "r": 1
+   },
+   {
+    "id": "a_long",
+    "r": 0
+   }
+  ],
+  "aspect": "lancer",
+  "heat": [
+   "h_coffers",
+   "h_hunted",
+   "h_elite"
+  ],
+  "vet": true,
+  "ai": "standard",
+  "attack_move": true,
+  "class_track": {
+   "Carrier": 3,
+   "Cruiser": 3
+  },
+  "campaign": true
+ },
+ "w174": {
+  "note": "sweep",
+  "seed": 1224075579,
+  "sector": 1,
+  "admiral": "anuket",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_jackal",
+   "d_jackal"
+  ],
+  "fac": "chorus",
+  "obj": "defend",
+  "shape": "lanes",
+  "map": "station",
+  "dep": "line",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "L_star",
+    "r": 3
+   },
+   {
+    "id": "e_hunt",
+    "r": 1
+   },
+   {
+    "id": "a_mark",
+    "r": 1
+   },
+   {
+    "id": "a_aim",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "ledger",
+   "logbook",
+   "coils",
+   "compass"
+  ]
+ },
+ "w175": {
+  "note": "sweep",
+  "seed": 1460187861,
+  "sector": 2,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "cathedral"
+  ],
+  "fac": "chorus",
+  "obj": "flagship",
+  "shape": "lanes",
+  "map": "open",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "s_ev",
+    "r": 0
+   },
+   {
+    "id": "i_wall",
+    "r": 2
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   }
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "chorus",
+   "weak": [
+    "brawl",
+    "torp"
+   ],
+   "adapt": [
+    "shields",
+    "pd"
+   ],
+   "scars": 0,
+   "persona": "patient",
+   "traits": [
+    "regrowth",
+    "swift"
+   ],
+   "g": "n",
+   "honed": 1
+  }
+ },
+ "w176": {
+  "note": "sweep",
+  "seed": 3257643879,
+  "sector": 1,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_razor"
+  ],
+  "fac": "voidsworn",
+  "obj": "defend",
+  "shape": "corridor",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "bounty",
+  "boons": [],
+  "relics": [
+   "ledger",
+   "cogitator"
+  ],
+  "vet": true,
+  "ai": "standard",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "voidsworn",
+   "weak": [
+    "board",
+    "anchor"
+   ],
+   "adapt": [
+    "zeal",
+    "armor",
+    "aim"
+   ],
+   "scars": 0,
+   "persona": "proud",
+   "traits": [
+    "armored",
+    "gunnery"
+   ],
+   "g": "m"
+  }
+ },
+ "w177": {
+  "note": "sweep",
+  "seed": 538106912,
+  "sector": 3,
+  "admiral": "matriarch",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_brood",
+   "b_brood",
+   "b_drone",
+   "b_spitter"
+  ],
+  "fac": "deathless",
+  "obj": "break",
+  "shape": "corridor",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "boons": [],
+  "attack_move": true
+ },
+ "w178": {
+  "note": "sweep",
+  "seed": 3469876969,
+  "sector": 2,
+  "admiral": "aelith",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_blade",
+   "i_blade",
+   "i_blade",
+   "i_wisp"
+  ],
+  "fac": "corsair",
+  "obj": "defend",
+  "shape": "open",
+  "map": "belt",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "d_burnswarm",
+    "r": 1
+   },
+   {
+    "id": "a_aim",
+    "r": 0
+   }
+  ],
+  "vet": true,
+  "attack_move": true,
+  "class_track": {
+   "Carrier": 2,
+   "Cruiser": 3
+  },
+  "campaign": true
+ },
+ "w179": {
+  "note": "sweep",
+  "seed": 4234850673,
+  "sector": 1,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_spitter",
+   "b_drone",
+   "b_spitter"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "ring",
+  "map": "station",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "r_shock",
+    "r": 1
+   }
+  ],
+  "vet": true,
+  "attack_move": true,
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w180": {
+  "note": "sweep",
+  "seed": 3144026952,
+  "sector": 2,
+  "admiral": "thale",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "cathedral",
+   "reliquary"
+  ],
+  "fac": "chorus",
+  "obj": "flagship",
+  "shape": "shoals",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "r_mom",
+    "r": 0
+   },
+   {
+    "id": "s_regen",
+    "r": 0
+   },
+   {
+    "id": "e_reload",
+    "r": 0
+   },
+   {
+    "id": "a_mark",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "compass",
+   "banner",
+   "armourweave"
+  ],
+  "aspect": "bulwark",
+  "vet": true,
+  "attack_move": true,
+  "verb": "vigil"
+ },
+ "w181": {
+  "note": "sweep",
+  "seed": 4241309322,
+  "sector": 1,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_brood"
+  ],
+  "fac": "deathless",
+  "obj": "flagship",
+  "shape": "corridor",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "bounty",
+  "aspect": "storm",
+  "ai": "standard",
+  "attack_move": true,
+  "campaign": true
+ },
+ "w182": {
+  "note": "sweep",
+  "seed": 2285159949,
+  "sector": 3,
+  "admiral": "reyes",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_interdictor",
+   "h_interdictor",
+   "h_dominion",
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "fac": "chorus",
+  "obj": "ambush",
+  "shape": "archipelago",
+  "map": "belt",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "d_ionlance",
+    "r": 1
+   }
+  ],
+  "attack_move": true,
+  "campaign": true,
+  "event_war": true
+ },
+ "w183": {
+  "note": "sweep",
+  "seed": 1976726830,
+  "sector": 2,
+  "admiral": "sable",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_reaver",
+   "c_raider",
+   "c_marauder",
+   "c_marauder"
+  ],
+  "fac": "chorus",
+  "obj": "hunt",
+  "shape": "rift",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "boons": [
+   {
+    "id": "h_brood",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "ledger",
+   "cogitator",
+   "compass",
+   "armourweave"
+  ],
+  "aspect": "storm",
+  "heat": [
+   "h_repair"
+  ],
+  "class_track": {
+   "Destroyer": 2,
+   "Cruiser": 1
+  }
+ },
+ "w184": {
+  "note": "sweep",
+  "seed": 3999144971,
+  "sector": 2,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "cathedral",
+   "penitent",
+   "harrow"
+  ],
+  "fac": "chorus",
+  "obj": "rout",
+  "shape": "hourglass",
+  "map": "station",
+  "dep": "line",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [
+   {
+    "id": "i_plate",
+    "r": 0
+   },
+   {
+    "id": "s_ev",
+    "r": 0
+   },
+   {
+    "id": "i_still",
+    "r": 2
+   },
+   {
+    "id": "d_inferno",
+    "r": 2
+   }
+  ],
+  "attack_move": true
+ },
+ "w185": {
+  "note": "sweep",
+  "seed": 4146909704,
+  "sector": 3,
+  "admiral": "maren",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_dominion",
+   "h_picket",
+   "h_dominion"
+  ],
+  "fac": "voidsworn",
+  "obj": "hold",
+  "shape": "dense",
+  "map": "station",
+  "dep": "flank",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "boons": [],
+  "relics": [
+   "martyr",
+   "banner",
+   "logbook"
+  ],
+  "ai": "standard"
+ },
+ "w186": {
+  "note": "sweep",
+  "seed": 178240115,
+  "sector": 1,
+  "admiral": "malek",
+  "fac_player": "voidsworn",
+  "fleet": [
+   "warden",
+   "penitent"
+  ],
+  "fac": "ithar",
+  "obj": "intercept",
+  "shape": "archipelago",
+  "map": "storm",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "attack_move": true,
+  "verb": "vigil",
+  "campaign": true
+ },
+ "w187": {
+  "note": "sweep",
+  "seed": 2484834579,
+  "sector": 3,
+  "admiral": "kassar",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_vanguard",
+   "h_picket",
+   "h_picket",
+   "h_vanguard",
+   "h_picket",
+   "h_interdictor"
+  ],
+  "fac": "deathless",
+  "obj": "rout",
+  "shape": "rift",
+  "map": "open",
+  "dep": "flank",
+  "kind": "boss",
+  "col": 6,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "relics": [
+   "banner",
+   "armourweave",
+   "cogitator",
+   "ledger"
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "campaign": true,
+  "event_war": true
+ },
+ "w188": {
+  "note": "sweep",
+  "seed": 969818470,
+  "sector": 3,
+  "admiral": "khepra",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_scythe",
+   "d_jackal",
+   "d_jackal",
+   "d_harvester",
+   "d_harvester"
+  ],
+  "fac": "chorus",
+  "obj": "ambush",
+  "shape": "open",
+  "map": "planet",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "a_lance",
+    "r": 0
+   },
+   {
+    "id": "s_arc",
+    "r": 2
+   },
+   {
+    "id": "d_jugg",
+    "r": 0
+   },
+   {
+    "id": "a_crit",
+    "r": 0
+   },
+   {
+    "id": "s_ion",
+    "r": 0
+   }
+  ],
+  "relics": [
+   "martyr",
+   "ledger",
+   "compass",
+   "armourweave"
+  ],
+  "vet": true
+ },
+ "w189": {
+  "note": "sweep",
+  "seed": 997221143,
+  "sector": 3,
+  "admiral": "voice",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_drone",
+   "b_razor",
+   "b_brood",
+   "b_drone",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "ithar",
+  "obj": "ambush",
+  "shape": "archipelago",
+  "map": "station",
+  "dep": "line",
+  "kind": "elite",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "relics": [
+   "cogitator",
+   "salvage",
+   "ledger",
+   "compass"
+  ],
+  "aspect": "ram",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "ithar",
+   "weak": [
+    "ion",
+    "anchor"
+   ],
+   "adapt": [
+    "shields",
+    "aim"
+   ],
+   "scars": 0,
+   "persona": "cunning",
+   "traits": [
+    "veil",
+    "gunnery"
+   ],
+   "g": "m",
+   "honed": 2
+  },
+  "campaign": true
+ },
+ "w190": {
+  "note": "sweep",
+  "seed": 2382502477,
+  "sector": 1,
+  "admiral": "nekhet",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_jackal",
+   "d_scythe",
+   "d_scythe",
+   "d_jackal"
+  ],
+  "fac": "ithar",
+  "obj": "flagship",
+  "shape": "deadstar",
+  "map": "station",
+  "dep": "line",
+  "kind": "elite",
+  "col": 0,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "h_feast",
+    "r": 0
+   },
+   {
+    "id": "s_arc",
+    "r": 2
+   },
+   {
+    "id": "a_lance",
+    "r": 0
+   },
+   {
+    "id": "r_mom",
+    "r": 0
+   },
+   {
+    "id": "e_chain",
+    "r": 0
+   }
+  ],
+  "heat": [
+   "h_coffers"
+  ],
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "ithar",
+   "weak": [
+    "slow",
+    "torp"
+   ],
+   "adapt": [
+    "evasion",
+    "shields",
+    "armor"
+   ],
+   "scars": 0,
+   "persona": "patient",
+   "traits": [
+    "swift",
+    "artillery"
+   ],
+   "g": "m",
+   "honed": 2
+  },
+  "verb": "waken",
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ },
+ "w191": {
+  "note": "sweep",
+  "seed": 4126888333,
+  "sector": 3,
+  "admiral": "nekhet",
+  "fac_player": "deathless",
+  "fleet": [
+   "d_harvester",
+   "d_jackal",
+   "d_harvester",
+   "d_jackal",
+   "d_scythe",
+   "d_scythe"
+  ],
+  "fac": "ithar",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 3,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "relics": [
+   "martyr",
+   "coils",
+   "logbook",
+   "banner"
+  ],
+  "aspect": "storm",
+  "verb": "waken"
+ },
+ "w192": {
+  "note": "sweep",
+  "seed": 168912558,
+  "sector": 2,
+  "admiral": "aelith",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_song",
+   "i_wisp",
+   "i_song"
+  ],
+  "fac": "chorus",
+  "obj": "intercept",
+  "shape": "dense",
+  "map": "belt",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "s_arc",
+    "r": 2
+   },
+   {
+    "id": "i_wall",
+    "r": 1
+   },
+   {
+    "id": "i_brace",
+    "r": 1
+   },
+   {
+    "id": "h_chitin",
+    "r": 2
+   }
+  ]
+ },
+ "w193": {
+  "note": "sweep",
+  "seed": 4234269724,
+  "sector": 2,
+  "admiral": "maren",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_interdictor",
+   "h_vanguard",
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "fac": "ithar",
+  "obj": "hunt",
+  "shape": "open",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "swarm",
+  "boons": [
+   {
+    "id": "i_plate",
+    "r": 0
+   },
+   {
+    "id": "r_prow",
+    "r": 0
+   },
+   {
+    "id": "h_board",
+    "r": 1
+   }
+  ],
+  "relics": [
+   "armourweave",
+   "phylactery"
+  ],
+  "aspect": "hive",
+  "attack_move": true,
+  "campaign": true,
+  "event_force": "reinf_ally"
+ },
+ "w194": {
+  "note": "sweep",
+  "seed": 2564582481,
+  "sector": 2,
+  "admiral": "mott",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_raider",
+   "c_reaver",
+   "c_marauder",
+   "c_marauder"
+  ],
+  "fac": "chorus",
+  "obj": "flagship",
+  "shape": "deadstar",
+  "map": "station",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "swarm",
+  "aspect": "storm"
+ },
+ "w195": {
+  "note": "sweep",
+  "seed": 2679947038,
+  "sector": 2,
+  "admiral": "thorne",
+  "fac_player": "ithar",
+  "fleet": [
+   "i_carrier",
+   "i_blade",
+   "i_wisp",
+   "i_wisp"
+  ],
+  "fac": "hegemony",
+  "obj": "rout",
+  "shape": "lanes",
+  "map": "graveyard",
+  "dep": "ambush",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "basic",
+  "arch": "heavy",
+  "mod": "veteran",
+  "class_track": {
+   "Destroyer": 1,
+   "Cruiser": 1
+  }
+ },
+ "w196": {
+  "note": "sweep",
+  "seed": 3468489534,
+  "sector": 1,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_interdictor",
+   "h_interdictor"
+  ],
+  "fac": "ithar",
+  "obj": "defend",
+  "shape": "dense",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "boons": [
+   {
+    "id": "r_slip",
+    "r": 2
+   }
+  ],
+  "relics": [
+   "lattice"
+  ],
+  "aspect": "hive",
+  "ai": "standard",
+  "attack_move": true,
+  "campaign": true
+ },
+ "w197": {
+  "note": "sweep",
+  "seed": 2489744005,
+  "sector": 2,
+  "admiral": "vorn",
+  "fac_player": "hegemony",
+  "fleet": [
+   "h_picket",
+   "h_dominion",
+   "h_interdictor"
+  ],
+  "fac": "chorus",
+  "obj": "hunt",
+  "shape": "colossus",
+  "map": "storm",
+  "dep": "ambush",
+  "kind": "elite",
+  "col": 5,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "carrier",
+  "mod": "veteran",
+  "relics": [
+   "banner"
+  ],
+  "aspect": "bulwark",
+  "nemesis": {
+   "name": "Nemesis",
+   "title": "Admiral",
+   "fac": "chorus",
+   "weak": [
+    "anchor",
+    "torp"
+   ],
+   "adapt": [],
+   "scars": 1,
+   "persona": "cunning",
+   "traits": [
+    "swift",
+    "veterans"
+   ],
+   "g": "n",
+   "honed": 3
+  },
+  "campaign": true
+ },
+ "w198": {
+  "note": "sweep",
+  "seed": 3110074418,
+  "sector": 1,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_raider",
+   "c_hulk"
+  ],
+  "fac": "voidsworn",
+  "obj": "break",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "col": 4,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "veteran",
+  "boons": [
+   {
+    "id": "L_rook",
+    "r": 3
+   },
+   {
+    "id": "d_burnswarm",
+    "r": 0
+   },
+   {
+    "id": "s_arc",
+    "r": 1
+   },
+   {
+    "id": "e_chain",
+    "r": 1
+   },
+   {
+    "id": "L_iron",
+    "r": 3
+   }
+  ],
+  "relics": [
+   "lattice",
+   "ledger",
+   "salvage"
+  ],
+  "ai": "standard"
+ },
+ "w199": {
+  "note": "sweep",
+  "seed": 2376450138,
+  "sector": 1,
+  "admiral": "vesh",
+  "fac_player": "corsair",
+  "fleet": [
+   "c_marauder",
+   "c_marauder"
+  ],
+  "fac": "hegemony",
+  "obj": "defend",
+  "shape": "corridor",
+  "map": "storm",
+  "dep": "flank",
+  "kind": "elite",
+  "col": 1,
+  "rounds": 10,
+  "bot": "full",
+  "arch": "heavy",
+  "boons": [],
+  "ai": "standard"
+ },
+ "w200": {
+  "note": "sweep",
+  "seed": 3281203339,
+  "sector": 3,
+  "admiral": "razormaw",
+  "fac_player": "chorus",
+  "fleet": [
+   "b_razor",
+   "b_brood",
+   "b_brood"
+  ],
+  "fac": "corsair",
+  "obj": "rout",
+  "shape": "rift",
+  "map": "graveyard",
+  "dep": "line",
+  "kind": "battle",
+  "col": 2,
+  "rounds": 10,
+  "bot": "full",
+  "mod": "bounty",
+  "boons": [
+   {
+    "id": "e_chain",
+    "r": 1
+   },
+   {
+    "id": "a_rear",
+    "r": 0
+   },
+   {
+    "id": "d_inferno",
+    "r": 0
+   }
+  ],
+  "ai": "standard",
+  "attack_move": true,
+  "campaign": true,
+  "event_force": "reinf_enemy"
+ }
+}

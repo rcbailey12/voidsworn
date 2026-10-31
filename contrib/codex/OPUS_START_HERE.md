@@ -1,5 +1,11 @@
 # Opus: current integration packet
 
+## Latest: full campaign reconciliation and remaining acceptance
+
+Start with [acceptance/README.md](acceptance/README.md). The new follow-on completes the 200-battle current-source sweep (36,462 exact records), full current-source campaign/save-reload reconciliation (30 seeds, 4,520 exact records, 55 reloads), native threaded/hard-stop checks, and a six-faction real-campaign integration smoke (42 actual battles through rewards/run end). It also prepares the browser battle-entry fix: a line comment had swallowed `prepBattle()` and `setupMs`. The older oracle masked the crash. Apply the new campaign re-pin only after the three earlier repair/refresh patches; optional Saro still passes afterward.
+
+A Windows export-job candidate now checks failures instead of always returning success. Actual Windows/Blender/RTX execution remains blocked here by the missing PC bridge and runtime capabilities. All work remains Contrib candidates; main, player saves and the cutover baseline are unchanged. The older sections below retain their original dated scopes; the acceptance packet supersedes their remaining-automated-check list.
+
 ## Latest: current-source battle and hull finalization
 
 Read [finalization/README.md](finalization/README.md) after the integration packet below. It adds an explicit battle oracle/table refresh (48 scenarios / 10,670 exact state and PRNG records), a separate campaign hull synchronization (all 816 native hull/fitting/derived records match), six JS action-lifecycle checks and a proposed gate plug-in. Prior repairs plus both new patches also match across 16 battles / 3,616 records. Optional Saro still applies afterward: 707 model/fitting and 96 pilot records match, now with zero native fitting differences. Use the documented patch order; do not replace later files with historical full copies.

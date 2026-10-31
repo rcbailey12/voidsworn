@@ -1,0 +1,22 @@
+[
+  {
+    "path": "campaign3d.js",
+    "lines": 136,
+    "lastLineStart": "",
+    "url": "https://raw.githubusercontent.com/rcbailey12/voidsworn/355a2ac70860db4446f040a5787b19c2d746d779/campaign3d.js",
+    "sha256": "d7a997573f25f89c89c6d8c31ffe07b870907aae21c2f5351a38652fa3beec13"
+  },
+  {
+    "path": "tools/pc/jobs/g2_export.bat",
+    "lines": 31,
+    "lastLineStart": "exit /b 0",
+    "url": "https://raw.githubusercontent.com/rcbailey12/voidsworn/355a2ac70860db4446f040a5787b19c2d746d779/tools/pc/jobs/g2_export.bat",
+    "normalizedSHA256": "cc776015256a0e402b55af7de6cf46f1b362e8c67e2082113b1328f6f071b9b5"
+  },
+  {
+    "path": "tools/pc/tmo.bat",
+    "lines": 8,
+    "lastLineStart": "exit /b %ERRORLEVEL%",
+    "url": "https://raw.githubusercontent.com/rcbailey12/voidsworn/355a2ac70860db4446f040a5787b19c2d746d779/tools/pc/tmo.bat"
+  }
+]

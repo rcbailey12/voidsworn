@@ -1,0 +1,30 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: NOT PORTED: thread_test fake rule
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] np (res://rules/rules.gd:113)
+       [1] halt_check (res://rules/test/thread_test.gd:59)
+       [2] _init (res://rules/test/thread_test.gd:82)
+BATTLE HALTED (hard stop): NOT PORTED: thread_test fake rule
+ERROR: battle config kind must be a String or null, got Dictionary ({ "bad": 1 }): dropped
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _clean_cfg (res://rules/battle_api.gd:157)
+       [1] _i_new_battle (res://rules/battle_api.gd:167)
+       [2] new_battle (res://rules/battle_api.gd:165)
+       [3] halt_check (res://rules/test/thread_test.gd:72)
+       [4] _init (res://rules/test/thread_test.gd:82)
+BATTLE HALTED (hard stop): rules script error: battle config kind must be a String or null, got Dictionary ({ "bad": 1 }): dropped (variant_utility.cpp:1023 push_error)
+ERROR: battle config fac must name a faction, got <null>: the battle cannot be set up
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _clean_cfg (res://rules/battle_api.gd:157)
+       [1] _i_new_battle (res://rules/battle_api.gd:167)
+       [2] new_battle (res://rules/battle_api.gd:165)
+       [3] halt_check (res://rules/test/thread_test.gd:74)
+       [4] _init (res://rules/test/thread_test.gd:82)
+BATTLE HALTED (hard stop): battle config fac must name a faction, got <null>: the battle cannot be set up
+hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+thread test s4: PASS (over after round 6, 934 events, 61 reads during enemy steps on a worker)
+thread test s23: PASS (over after round 10, 1537 events, 97 reads during enemy steps on a worker)

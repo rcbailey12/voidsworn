@@ -1,0 +1,5 @@
+96 native JS pilot records, 40 exact unchanged controls; actual picker/save/respec/cancel and exception cleanup pass
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+96 native Godot pilot records
+96 exact cross-engine records match

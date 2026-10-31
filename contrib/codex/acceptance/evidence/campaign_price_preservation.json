@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "comparedHulls": 51,
+  "comparedPriceFields": 102,
+  "factionPriceTableUnchanged": true,
+  "boonNeedTableUnchanged": true,
+  "changedTables": 45,
+  "changedLeaves": 352
+}

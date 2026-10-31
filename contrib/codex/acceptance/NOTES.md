@@ -1,0 +1,8 @@
+# Changes and adoption limits
+
+- `campaign_current.patch`: restores the executable statement boundary at browser `campaign3d.js:56`. The `// R42` comment had absorbed both `prepBattle()` and `const setupMs`, so line 59 dereferenced an undeclared variable. This is a source repair, not a harness stub defining a missing global.
+- Campaign oracle refresh is explicit: seven files are copied from the combined repaired browser source and all campaign tables regenerated. Native campaign arithmetic/control flow is unchanged by this re-pin. The earlier repairs remain required.
+- Mechanical hull fixes, faction prices and the shield-legendary eligibility repair survive this full export. Other changed numeric values are existing current-source values, with the full before/after semantic list filed.
+- `pc_export` candidate: every timeout-wrapper call is followed by an error-level check; asset preparation failure, import failure, export failure, package validation failure and exported smoke failure return a nonzero job exit. A missing executable also fails. The original silently reached `exit /b 0` after those calls, so an older executable could be mistaken for a successful new export. This correction is statically reviewed, not Windows-executed.
+- API-only real campaigns never run a renderer or read/write a player save. Synthetic profiles select the first admiral of each faction explicitly. Thirty exact JS/Godot campaign tests remain the separate, stub-battle parity proof.
+- No runtime patch, gate baseline refresh, new save policy, ship mesh rewrite or art acceptance is installed by this work. All changes require Opus adoption from the reviewed small hunks, followed by actual PC acceptance.

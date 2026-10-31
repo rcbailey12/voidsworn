@@ -1,0 +1,5 @@
+707 JS records; 663 hull/module predicates plus full-slot rejection; 3840 legal builds queued for Godot
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+707 Godot records; 3840 legal builds accepted
+707 exact cross-engine records match

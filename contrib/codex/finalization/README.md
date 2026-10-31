@@ -1,5 +1,7 @@
 # Finalization packet for Opus
 
+Further automated acceptance is now filed in **`../acceptance/README.md`**: 200-battle sweep, full current-source campaign reconciliation and entry repair, threaded checks and six-faction real-battle campaign smoke. Those results supersede this packet's original remaining-automated-check list. Actual Windows/Blender/GPU acceptance remains unverified.
+
 October 31, 2026. Runtime source: main **355a2ac70860db4446f040a5787b19c2d746d779**. Prepared after PR #1 at **5bac75b2**. All changes are Contrib candidates; no runtime files, player saves or cutover baseline have been installed or refreshed.
 
 ## What this adds

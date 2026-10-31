@@ -1,0 +1,17 @@
+campaign_bundle.js:3296
+  try{ FRAMES.reset(); fxMark('setup'); }catch(e){} tel('battle_start',{cond:B.cond||null,arch:c.arch||null,mod:c.mod||null,setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
+                                                                                                                            ^
+
+ReferenceError: setupMs is not defined
+    at battleScreen (campaign_bundle.js:3296:125)
+    at campaign_bundle.js:3381:1
+    at Script.runInThisContext (node:vm:137:12)
+    at Object.runInThisContext (node:vm:317:38)
+    at Object.load (/workspace/scratch/5f56c97c87da/work/godot/campaign/test/node/env.js:49:6)
+    at Object.<anonymous> (/workspace/scratch/5f56c97c87da/work/contrib/codex/acceptance/tools/entry_probe.js:4:5)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+
+Node.js v24.22.1

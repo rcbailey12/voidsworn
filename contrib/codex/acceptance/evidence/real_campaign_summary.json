@@ -1,0 +1,483 @@
+{
+  "status": "PASS",
+  "scope": "Native campaign choices feed actual battle API outcomes through finish_battle. This is a six-faction headless integration smoke, not a JS parity comparison, rendered UI test or balance forecast.",
+  "project": "/tmp/voidsworn-final-combined-OfB7h4/godot",
+  "runs": [
+    {
+      "admiral": "vex",
+      "battles": [
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 4,
+          "sector": 1,
+          "seed": 1943988339,
+          "units": 5
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1,
+          "seed": 1404084848,
+          "units": 6
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "loss",
+          "rounds": 8,
+          "sector": 1,
+          "seed": 2885214600,
+          "units": 10
+        }
+      ],
+      "clicks": 16,
+      "ended": true,
+      "fac": "voidsworn",
+      "failure": null,
+      "seed": 43101,
+      "stats": {
+        "best": 1,
+        "runs": 1,
+        "wins": 0
+      }
+    },
+    {
+      "admiral": "kassar",
+      "battles": [
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1,
+          "seed": 82984204,
+          "units": 6
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 4,
+          "sector": 1,
+          "seed": 2260261894,
+          "units": 6
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1,
+          "seed": 65865998,
+          "units": 8
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 8,
+          "sector": 1,
+          "seed": 3723612135,
+          "units": 9
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1,
+          "seed": 2023371796,
+          "units": 9
+        },
+        {
+          "kind": "boss",
+          "phase": "over",
+          "result": "win",
+          "rounds": 7,
+          "sector": 1,
+          "seed": 2738129728,
+          "units": 7
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 1,
+          "sector": 2,
+          "seed": 430101076,
+          "units": 14
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "win",
+          "rounds": 5,
+          "sector": 2,
+          "seed": 1752684091,
+          "units": 15
+        },
+        {
+          "kind": "boss",
+          "phase": "over",
+          "result": "win",
+          "rounds": 14,
+          "sector": 2,
+          "seed": 3283243217,
+          "units": 16
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 6,
+          "sector": 3,
+          "seed": 944136204,
+          "units": 17
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 12,
+          "sector": 3,
+          "seed": 2429897286,
+          "units": 24
+        },
+        {
+          "kind": "boss",
+          "phase": "over",
+          "result": "win",
+          "rounds": 26,
+          "sector": 3,
+          "seed": 3413863341,
+          "units": 21
+        }
+      ],
+      "clicks": 97,
+      "ended": true,
+      "fac": "hegemony",
+      "failure": null,
+      "seed": 43102,
+      "stats": {
+        "best": 3,
+        "runs": 1,
+        "wins": 1,
+        "wonFacs": [
+          "hegemony"
+        ]
+      }
+    },
+    {
+      "admiral": "grax",
+      "battles": [
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1,
+          "seed": 872581522,
+          "units": 7
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1,
+          "seed": 3031473750,
+          "units": 7
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1,
+          "seed": 685766034,
+          "units": 9
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "win",
+          "rounds": 4,
+          "sector": 1,
+          "seed": 2961589058,
+          "units": 10
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "loss",
+          "rounds": 6,
+          "sector": 1,
+          "seed": 3172642072,
+          "units": 8
+        }
+      ],
+      "clicks": 32,
+      "ended": true,
+      "fac": "corsair",
+      "failure": null,
+      "seed": 43103,
+      "stats": {
+        "best": 1,
+        "runs": 1,
+        "wins": 0
+      }
+    },
+    {
+      "admiral": "matriarch",
+      "battles": [
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 2,
+          "sector": 1,
+          "seed": 94852693,
+          "units": 13
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1,
+          "seed": 4079517867,
+          "units": 15
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 7,
+          "sector": 1,
+          "seed": 4114469881,
+          "units": 15
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "loss",
+          "rounds": 10,
+          "sector": 1,
+          "seed": 3808624554,
+          "units": 18
+        }
+      ],
+      "clicks": 22,
+      "ended": true,
+      "fac": "chorus",
+      "failure": null,
+      "seed": 43104,
+      "stats": {
+        "best": 1,
+        "runs": 1,
+        "wins": 0
+      }
+    },
+    {
+      "admiral": "aelith",
+      "battles": [
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1,
+          "seed": 1568695056,
+          "units": 14
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1,
+          "seed": 2814749752,
+          "units": 19
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1,
+          "seed": 1562977819,
+          "units": 10
+        },
+        {
+          "kind": "boss",
+          "phase": "over",
+          "result": "win",
+          "rounds": 10,
+          "sector": 1,
+          "seed": 3017686993,
+          "units": 15
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 4,
+          "sector": 2,
+          "seed": 1488341098,
+          "units": 9
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "loss",
+          "rounds": 5,
+          "sector": 2,
+          "seed": 1419134922,
+          "units": 11
+        }
+      ],
+      "clicks": 65,
+      "ended": true,
+      "fac": "ithar",
+      "failure": null,
+      "seed": 43105,
+      "stats": {
+        "best": 2,
+        "runs": 1,
+        "wins": 0
+      }
+    },
+    {
+      "admiral": "nekhet",
+      "battles": [
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1,
+          "seed": 1109540338,
+          "units": 6
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1,
+          "seed": 98523338,
+          "units": 10
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1,
+          "seed": 4292438932,
+          "units": 7
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "win",
+          "rounds": 3,
+          "sector": 1,
+          "seed": 2499176978,
+          "units": 9
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "win",
+          "rounds": 5,
+          "sector": 1,
+          "seed": 2613992947,
+          "units": 8
+        },
+        {
+          "kind": "boss",
+          "phase": "over",
+          "result": "win",
+          "rounds": 6,
+          "sector": 1,
+          "seed": 1113908480,
+          "units": 5
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 1,
+          "sector": 2,
+          "seed": 3974318758,
+          "units": 7
+        },
+        {
+          "kind": "elite",
+          "phase": "over",
+          "result": "loss",
+          "rounds": 5,
+          "sector": 2,
+          "seed": 3108888100,
+          "units": 15
+        },
+        {
+          "kind": "boss",
+          "phase": "over",
+          "result": "win",
+          "rounds": 7,
+          "sector": 2,
+          "seed": 2452749912,
+          "units": 6
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 7,
+          "sector": 3,
+          "seed": 2619790562,
+          "units": 13
+        },
+        {
+          "kind": "battle",
+          "phase": "over",
+          "result": "win",
+          "rounds": 8,
+          "sector": 3,
+          "seed": 2300322261,
+          "units": 11
+        },
+        {
+          "kind": "boss",
+          "phase": "over",
+          "result": "loss",
+          "rounds": 3,
+          "sector": 3,
+          "seed": 213916387,
+          "units": 8
+        }
+      ],
+      "clicks": 124,
+      "ended": true,
+      "fac": "deathless",
+      "failure": null,
+      "seed": 43106,
+      "stats": {
+        "best": 3,
+        "runs": 1,
+        "wins": 0
+      }
+    }
+  ],
+  "battles": 42,
+  "limits": [
+    "API-only integration with no scene, animations, graphics, audio or persistent player save.",
+    "The starting admiral for each faction is chosen explicitly, and the bot uses the existing parity-choice weights."
+  ]
+}

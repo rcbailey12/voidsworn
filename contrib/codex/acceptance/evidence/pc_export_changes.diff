@@ -1,0 +1,34 @@
+diff --git a/tools/pc/jobs/g2_export.bat b/tools/pc/jobs/g2_export.bat
+index 9314493..edbf328 100644
+--- a/tools/pc/jobs/g2_export.bat
++++ b/tools/pc/jobs/g2_export.bat
+@@ -17,15 +17,27 @@ if not exist "%TPL%\windows_release_x86_64.exe" (
+   echo FAIL: no export templates in %TPL% >> "%LOG%"
+   exit /b 1
+ )
+-if not exist "%ROOT%godot\gen\v3.txt" call "%TMO%" 900 "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" --max-seconds 600 >> "%LOG%" 2>&1
++if not exist "%ROOT%godot\gen\v3.txt" (
++  call "%TMO%" 900 "%G%" --headless --path "%ROOT%godot" --script res://render/build_assets.gd -- --repo "%ROOT%." --hi "%ROOT%..\enginetest\assets\hi" --env "%ROOT%..\enginetest\assets\env" --max-seconds 600 >> "%LOG%" 2>&1
++  if errorlevel 1 goto failed
++)
+ echo importing >> "%LOG%"
+ call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --import >> "%LOG%" 2>&1
++if errorlevel 1 goto failed
+ if not exist "%ROOT%export" mkdir "%ROOT%export"
+ echo exporting >> "%LOG%"
+ call "%TMO%" 1800 "%G%" --headless --path "%ROOT%godot" --export-release "Windows Desktop" "%ROOT%export\Voidsworn.exe" >> "%LOG%" 2>&1
+-if exist "%ROOT%export\Voidsworn.exe" (echo OK: %ROOT%export\Voidsworn.exe >> "%LOG%") else (echo FAIL: no exe >> "%LOG%")
++if errorlevel 1 goto failed
++if not exist "%ROOT%export\Voidsworn.exe" goto failed
++echo OK: %ROOT%export\Voidsworn.exe >> "%LOG%"
+ rem what is in the package: no test folders, the real campaign UI, fx, story and music player
+ call "%TMO%" 300 "%ROOT%export\Voidsworn.console.exe" --headless -- --check-export >> "%LOG%" 2>&1
++if errorlevel 1 goto failed
+ rem a quick headless smoke of the exported build: 2 bot battles
+ call "%TMO%" 900 "%ROOT%export\Voidsworn.console.exe" --headless -- --bot-runs 2 --fast 40 --report "%ROOT%..\shots\g2_export_smoke.json" >> "%LOG%" 2>&1
++if errorlevel 1 goto failed
+ exit /b 0
++
++:failed
++echo FAIL: export or validation step failed; previous files are not a fresh accepted build. >> "%LOG%"
++exit /b 1

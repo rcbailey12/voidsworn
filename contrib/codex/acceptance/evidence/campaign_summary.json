@@ -1,0 +1,307 @@
+{
+  "status": "PASS",
+  "scope": "Full current-source campaign logic and saved-state replay through the existing UI-action bot. Battles remain deterministic stubs in this campaign harness.",
+  "work": "/tmp/voidsworn-final-combined-OfB7h4",
+  "inputs": [
+    {
+      "path": "data.js",
+      "sha256": "4fc1009a71707ccb4319e11fab61eb5589a314fc3eeb662adead2898eb52b8f3",
+      "bytes": 95390,
+      "lines": 697,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'"
+    },
+    {
+      "path": "core.js",
+      "sha256": "a9ee64d9c25ad9abe6c650c533a3b3900c3f157aa30e831f287715dfa4fdd56c",
+      "bytes": 38312,
+      "lines": 370,
+      "lastLineStart": "function findNode(id){ for(const c of RU"
+    },
+    {
+      "path": "battle.js",
+      "sha256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "bytes": 171701,
+      "lines": 1402,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "campaign_meta.js",
+      "sha256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "bytes": 32334,
+      "lines": 216,
+      "lastLineStart": "ACT.nextFac=f=>{ pickedFaction=f; META.o"
+    },
+    {
+      "path": "campaign_run.js",
+      "sha256": "040510a8160e5d23f75c36b50c73dcb38ac0df85dddb92f0cdfc6ffbd819453b",
+      "bytes": 78027,
+      "lines": 551,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "campaign3d.js",
+      "sha256": "06aaac8c1b939a95f40102603e8e80696c1213aaa3dac09612289c100f1d5a24",
+      "bytes": 23268,
+      "lines": 136,
+      "lastLineStart": ""
+    },
+    {
+      "path": "ui3d.js",
+      "sha256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "bytes": 115935,
+      "lines": 747,
+      "lastLineStart": "addEventListener('keydown',e=>{ if(e.shi"
+    }
+  ],
+  "cases": [
+    {
+      "seed": 1,
+      "pass": true,
+      "recordsJS": 175,
+      "recordsGodot": 175,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 2,
+      "pass": true,
+      "recordsJS": 201,
+      "recordsGodot": 201,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 3,
+      "pass": true,
+      "recordsJS": 53,
+      "recordsGodot": 53,
+      "first": null,
+      "reloads": 1
+    },
+    {
+      "seed": 4,
+      "pass": true,
+      "recordsJS": 189,
+      "recordsGodot": 189,
+      "first": null,
+      "reloads": 2
+    },
+    {
+      "seed": 5,
+      "pass": true,
+      "recordsJS": 220,
+      "recordsGodot": 220,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 6,
+      "pass": true,
+      "recordsJS": 197,
+      "recordsGodot": 197,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 7,
+      "pass": true,
+      "recordsJS": 184,
+      "recordsGodot": 184,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 8,
+      "pass": true,
+      "recordsJS": 207,
+      "recordsGodot": 207,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 9,
+      "pass": true,
+      "recordsJS": 198,
+      "recordsGodot": 198,
+      "first": null,
+      "reloads": 2
+    },
+    {
+      "seed": 10,
+      "pass": true,
+      "recordsJS": 215,
+      "recordsGodot": 215,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 11,
+      "pass": true,
+      "recordsJS": 20,
+      "recordsGodot": 20,
+      "first": null,
+      "reloads": 0
+    },
+    {
+      "seed": 12,
+      "pass": true,
+      "recordsJS": 43,
+      "recordsGodot": 43,
+      "first": null,
+      "reloads": 0
+    },
+    {
+      "seed": 13,
+      "pass": true,
+      "recordsJS": 115,
+      "recordsGodot": 115,
+      "first": null,
+      "reloads": 2
+    },
+    {
+      "seed": 14,
+      "pass": true,
+      "recordsJS": 193,
+      "recordsGodot": 193,
+      "first": null,
+      "reloads": 2
+    },
+    {
+      "seed": 15,
+      "pass": true,
+      "recordsJS": 195,
+      "recordsGodot": 195,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 16,
+      "pass": true,
+      "recordsJS": 93,
+      "recordsGodot": 93,
+      "first": null,
+      "reloads": 0
+    },
+    {
+      "seed": 17,
+      "pass": true,
+      "recordsJS": 200,
+      "recordsGodot": 200,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 18,
+      "pass": true,
+      "recordsJS": 196,
+      "recordsGodot": 196,
+      "first": null,
+      "reloads": 1
+    },
+    {
+      "seed": 19,
+      "pass": true,
+      "recordsJS": 51,
+      "recordsGodot": 51,
+      "first": null,
+      "reloads": 1
+    },
+    {
+      "seed": 20,
+      "pass": true,
+      "recordsJS": 222,
+      "recordsGodot": 222,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 21,
+      "pass": true,
+      "recordsJS": 214,
+      "recordsGodot": 214,
+      "first": null,
+      "reloads": 1
+    },
+    {
+      "seed": 22,
+      "pass": true,
+      "recordsJS": 195,
+      "recordsGodot": 195,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 23,
+      "pass": true,
+      "recordsJS": 65,
+      "recordsGodot": 65,
+      "first": null,
+      "reloads": 1
+    },
+    {
+      "seed": 24,
+      "pass": true,
+      "recordsJS": 10,
+      "recordsGodot": 10,
+      "first": null,
+      "reloads": 0
+    },
+    {
+      "seed": 25,
+      "pass": true,
+      "recordsJS": 209,
+      "recordsGodot": 209,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 26,
+      "pass": true,
+      "recordsJS": 178,
+      "recordsGodot": 178,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 27,
+      "pass": true,
+      "recordsJS": 13,
+      "recordsGodot": 13,
+      "first": null,
+      "reloads": 0
+    },
+    {
+      "seed": 28,
+      "pass": true,
+      "recordsJS": 196,
+      "recordsGodot": 196,
+      "first": null,
+      "reloads": 3
+    },
+    {
+      "seed": 29,
+      "pass": true,
+      "recordsJS": 196,
+      "recordsGodot": 196,
+      "first": null,
+      "reloads": 0
+    },
+    {
+      "seed": 30,
+      "pass": true,
+      "recordsJS": 77,
+      "recordsGodot": 77,
+      "first": null,
+      "reloads": 0
+    }
+  ],
+  "pass": 30,
+  "fail": 0,
+  "records": 4520,
+  "reloads": 55,
+  "limits": [
+    "Does not render the campaign UI or compare telemetry, which the existing harness excludes.",
+    "Does not migrate browser saves or access player data.",
+    "Real battle execution is covered separately; this campaign harness substitutes battles."
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "work": "/tmp/voidsworn-final-combined-OfB7h4",
+  "project": "/tmp/voidsworn-final-combined-OfB7h4/godot",
+  "files": [
+    {
+      "path": "campaign3d.js",
+      "baseSHA256": "08ce0d96fd7221d7ed6029e90d788050d68431476d0a908e7634967d6e8293e1",
+      "candidateSHA256": "06aaac8c1b939a95f40102603e8e80696c1213aaa3dac09612289c100f1d5a24"
+    },
+    {
+      "path": "godot/campaign/test/oracle/data.js",
+      "baseSHA256": "5ae0ef68b26be4ac2d87502c2dace1b7c076a49c01fe311a03eb6e5cd2b66521",
+      "candidateSHA256": "4fc1009a71707ccb4319e11fab61eb5589a314fc3eeb662adead2898eb52b8f3"
+    },
+    {
+      "path": "godot/campaign/test/oracle/battle.js",
+      "baseSHA256": "070077bd39baf06de0a34bef3d5c1c26ae6dc43943420ee443a14b6f2db4c19f",
+      "candidateSHA256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2"
+    },
+    {
+      "path": "godot/campaign/test/oracle/campaign_meta.js",
+      "baseSHA256": "5813c3ca6d395ccd11b8ab7539e348c0941366de480a0a3d8479d3d19ae26c4e",
+      "candidateSHA256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c"
+    },
+    {
+      "path": "godot/campaign/test/oracle/campaign_run.js",
+      "baseSHA256": "53fcc42496b85d49dfc648519d8748a09154e705b35b7a9bed7a2e25b65b4bcf",
+      "candidateSHA256": "040510a8160e5d23f75c36b50c73dcb38ac0df85dddb92f0cdfc6ffbd819453b"
+    },
+    {
+      "path": "godot/campaign/test/oracle/campaign3d.js",
+      "baseSHA256": "df4e6d9efa8c14d0da2f324030f28ef678c2de48bf7774506bf52d32b09db5f8",
+      "candidateSHA256": "06aaac8c1b939a95f40102603e8e80696c1213aaa3dac09612289c100f1d5a24"
+    },
+    {
+      "path": "godot/campaign/test/oracle/ui3d.js",
+      "baseSHA256": "3a6ff4ba64be59675d94bcfb21c98742ef4f65a4e404a65905586766b1fb2356",
+      "candidateSHA256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16"
+    },
+    {
+      "path": "godot/campaign/data/campaign_tables.json",
+      "baseSHA256": "c5e47cb4725460ae9fd6ad1dd45e9f7451ef3934fb1541485ae2b304409ef1b9",
+      "candidateSHA256": "51fa00640ee7ba92e1802a7f8d15681f8ce0ff2a532556f346903ad7a43e1ec2"
+    },
+    {
+      "path": "godot/campaign/test/oracle/README.md",
+      "baseSHA256": "29d23174f56c4a368feffefcfb364b4bad82f6d08ae14ed481edb4774e89f3a6",
+      "candidateSHA256": "b83cdab7e27d3414917e5269b18f5a35f0cb376331b19468e4286b6f57b959e5"
+    }
+  ],
+  "sourceInputs": [
+    {
+      "path": "data.js",
+      "sha256": "4fc1009a71707ccb4319e11fab61eb5589a314fc3eeb662adead2898eb52b8f3",
+      "bytes": 95390,
+      "lines": 697,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'"
+    },
+    {
+      "path": "core.js",
+      "sha256": "a9ee64d9c25ad9abe6c650c533a3b3900c3f157aa30e831f287715dfa4fdd56c",
+      "bytes": 38312,
+      "lines": 370,
+      "lastLineStart": "function findNode(id){ for(const c of RU"
+    },
+    {
+      "path": "battle.js",
+      "sha256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "bytes": 171701,
+      "lines": 1402,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "campaign_meta.js",
+      "sha256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "bytes": 32334,
+      "lines": 216,
+      "lastLineStart": "ACT.nextFac=f=>{ pickedFaction=f; META.o"
+    },
+    {
+      "path": "campaign_run.js",
+      "sha256": "040510a8160e5d23f75c36b50c73dcb38ac0df85dddb92f0cdfc6ffbd819453b",
+      "bytes": 78027,
+      "lines": 551,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "campaign3d.js",
+      "sha256": "06aaac8c1b939a95f40102603e8e80696c1213aaa3dac09612289c100f1d5a24",
+      "bytes": 23268,
+      "lines": 136,
+      "lastLineStart": ""
+    },
+    {
+      "path": "ui3d.js",
+      "sha256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "bytes": 115935,
+      "lines": 747,
+      "lastLineStart": "addEventListener('keydown',e=>{ if(e.shi"
+    }
+  ]
+}

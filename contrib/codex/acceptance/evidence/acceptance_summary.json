@@ -1,0 +1,29 @@
+{
+  "status": "PASS for automated candidate checks; PC acceptance blocked",
+  "sourcePin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "prStartingHead": "4651c690a290ffd825add71d7fe8c77fdf88c410",
+  "results": {
+    "randomBattles": 200,
+    "randomBattleRecords": 36462,
+    "campaignSeeds": 30,
+    "campaignRecords": 4520,
+    "saveReloads": 55,
+    "realCampaignFactions": 6,
+    "realCampaignBattles": 42,
+    "threadedBattles": 2,
+    "saroModelRecords": 707,
+    "saroPilotRecords": 96
+  },
+  "blocked": [
+    "No PC staging/commit bridge exposed; no relevant plugin found in capability search.",
+    "No Windows/PowerShell runtime, Blender runtime or GPU device in this session.",
+    "Windows export/launch, Blender fixture and production renders, 20-ship RTX measurement and rendered interaction sign-off remain NOT RUN."
+  ],
+  "unchanged": [
+    "Runtime main",
+    "Player saves",
+    "Cutover gate baseline",
+    "Shipping save policy"
+  ],
+  "aggregateRunner": "Syntax checked; constituent commands executed individually."
+}

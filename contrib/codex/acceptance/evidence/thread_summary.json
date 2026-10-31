@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "scope": "Existing native API thread and hard-stop test, with current-source refreshed tables and the earlier repairs.",
+  "project": "/tmp/voidsworn-final-combined-OfB7h4/godot",
+  "tests": [
+    {
+      "id": "s4",
+      "phase": "over",
+      "round": 6,
+      "events": 934,
+      "workerReads": 61
+    },
+    {
+      "id": "s23",
+      "phase": "over",
+      "round": 10,
+      "events": 1537,
+      "workerReads": 97
+    }
+  ],
+  "limits": [
+    "Intentional NOT PORTED and bad-config probes in this test must halt; their expected diagnostics are not normal-game failures.",
+    "No rendered scene, GPU work or native scene teardown is exercised by this API test."
+  ]
+}

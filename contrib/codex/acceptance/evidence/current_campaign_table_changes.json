@@ -1,0 +1,5688 @@
+{
+  "sourcePin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "tables": [
+    "ABILITIES",
+    "ADMIRALS",
+    "ARCHETYPES",
+    "ASPECTS",
+    "BEVENTS",
+    "BOONS",
+    "BOSS_CMD",
+    "CAPTAINS",
+    "CAP_FIRST",
+    "CAP_LAST",
+    "CAUSE_WORD",
+    "CHORUS_BITE",
+    "CLS_NAME",
+    "EVENTS",
+    "FACTIONS",
+    "FAC_GATES",
+    "FAC_RULES",
+    "FAC_VERBS",
+    "FAC_WNAMES",
+    "FAVOUR_TIERS",
+    "FNAMES",
+    "HULLS",
+    "HULL_VARIANTS",
+    "KILL_CAUSES",
+    "KIND_NAME",
+    "LEGACY",
+    "MODULES",
+    "MOD_NAMES",
+    "MORE_SHIP_NAMES",
+    "MOVE_RULES",
+    "NEM_ADAPT_FAC",
+    "NEM_FAC",
+    "NEM_TRAITS",
+    "NODE_INFO",
+    "PATRONS",
+    "PERKS",
+    "RAMP",
+    "RELICS",
+    "RELIC_NAMES",
+    "REWARD_DEF",
+    "RUN_WORD",
+    "SHAPES",
+    "SHIP_NAMES",
+    "W",
+    "WIN_TITLE"
+  ],
+  "changes": [
+    {
+      "path": "ABILITIES.nova.n",
+      "before": "Nova cannon",
+      "after": "Spinal cannon"
+    },
+    {
+      "path": "ABILITIES.phase.n",
+      "before": "Dimensional shift",
+      "after": "Fold skip"
+    },
+    {
+      "path": "ABILITIES.reclaim.n",
+      "before": "Reanimation beam",
+      "after": "Repair swarm"
+    },
+    {
+      "path": "ADMIRALS.aelith.n",
+      "before": "Aelith Dawnsail",
+      "after": "Tamsa of the Clear Aperture"
+    },
+    {
+      "path": "ADMIRALS.anuket.cmd.n",
+      "before": "Tomb-blade strike",
+      "after": "Out of the shadow"
+    },
+    {
+      "path": "ADMIRALS.anuket.n",
+      "before": "Cryptlord Anuket",
+      "after": "Ostrel of the Long Copy"
+    },
+    {
+      "path": "ADMIRALS.ashgrove.d",
+      "before": "Squadrons deal +25% damage and carriers hold +1 wing.",
+      "after": "Squadrons deal +40% damage and carriers hold +1 wing."
+    },
+    {
+      "path": "ADMIRALS.ashgrove.fx.sqPct",
+      "before": "#d:3fd0000000000000",
+      "after": "#d:3fd999999999999a"
+    },
+    {
+      "path": "ADMIRALS.grax.n",
+      "before": "Warlord Grax Ironjaw",
+      "after": "Warlord Grax Steelgrin"
+    },
+    {
+      "path": "ADMIRALS.grax.start",
+      "before": [
+        "c_marauder",
+        "c_reaver",
+        "c_raider"
+      ],
+      "after": [
+        "c_marauder",
+        "c_reaver",
+        "c_reaver"
+      ]
+    },
+    {
+      "path": "ADMIRALS.kassar.n",
+      "before": "Grand Admiral Ilsa Kassar",
+      "after": "First Admiral Ilsa Kassar"
+    },
+    {
+      "path": "ADMIRALS.kassar.start",
+      "before": [
+        "h_vanguard",
+        "h_interdictor"
+      ],
+      "after": [
+        "h_vanguard",
+        "h_picket"
+      ]
+    },
+    {
+      "path": "ADMIRALS.khepra.cmd.n",
+      "before": "Living stone",
+      "after": "Sunshade wall"
+    },
+    {
+      "path": "ADMIRALS.khepra.doc",
+      "before": "Living stone",
+      "after": "Layered plates"
+    },
+    {
+      "path": "ADMIRALS.khepra.n",
+      "before": "Khepra the Patient",
+      "after": "Seveth, Twice-Restored"
+    },
+    {
+      "path": "ADMIRALS.malek.d",
+      "before": "Torpedoes reload a turn faster. +20% damage on rear-arc hits.",
+      "after": "Torpedoes reload a turn faster. +50% damage on rear-arc hits."
+    },
+    {
+      "path": "ADMIRALS.malek.fx.rearPct",
+      "before": "#d:3fc999999999999a",
+      "after": "#d:3fe0000000000000"
+    },
+    {
+      "path": "ADMIRALS.malek.n",
+      "before": "Inquisitor-Captain Malek Draven",
+      "after": "Oath-Captain Malek Draven"
+    },
+    {
+      "path": "ADMIRALS.maren.cmd.n",
+      "before": "Shield wall protocol",
+      "after": "Shield wall order"
+    },
+    {
+      "path": "ADMIRALS.maren.start",
+      "before": [
+        "h_dominion",
+        "h_picket",
+        "h_picket"
+      ],
+      "after": [
+        "h_dominion",
+        "h_picket"
+      ]
+    },
+    {
+      "path": "ADMIRALS.matriarch.start",
+      "before": [
+        "b_brood",
+        "b_drone"
+      ],
+      "after": [
+        "b_brood",
+        "b_drone",
+        "b_drone"
+      ]
+    },
+    {
+      "path": "ADMIRALS.mending.d",
+      "before": "Ships regrow 6% of their hull each round.",
+      "after": "Ships regrow 4% of their hull each round."
+    },
+    {
+      "path": "ADMIRALS.mending.fx.hullRegenPct",
+      "before": "#d:3faeb851eb851eb8",
+      "after": "#d:3fa47ae147ae147b"
+    },
+    {
+      "path": "ADMIRALS.mending.n",
+      "before": "The Mending Choir",
+      "after": "The Mending Throng"
+    },
+    {
+      "path": "ADMIRALS.mending.start",
+      "before": [
+        "b_razor",
+        "b_spitter"
+      ],
+      "after": [
+        "b_razor",
+        "b_drone"
+      ]
+    },
+    {
+      "path": "ADMIRALS.mirelle.n",
+      "before": "Mirelle Starwarden",
+      "after": "Brin of the Fourth Lens"
+    },
+    {
+      "path": "ADMIRALS.mott.n",
+      "before": "Old Mott Brannigan",
+      "after": "Old Mott"
+    },
+    {
+      "path": "ADMIRALS.nekhet.cmd.n",
+      "before": "Reanimation protocol",
+      "after": "Release the repair swarms"
+    },
+    {
+      "path": "ADMIRALS.nekhet.d",
+      "before": "Ships regrow 6% of their hull each round.",
+      "after": "Ships regrow 4% of their hull each round."
+    },
+    {
+      "path": "ADMIRALS.nekhet.doc",
+      "before": "Eternal legion",
+      "after": "Endless restoration"
+    },
+    {
+      "path": "ADMIRALS.nekhet.fx.hullRegenPct",
+      "before": "#d:3faeb851eb851eb8",
+      "after": "#d:3fa47ae147ae147b"
+    },
+    {
+      "path": "ADMIRALS.nekhet.n",
+      "before": "Overlord Nekhet the Undying",
+      "after": "Nadir Aurex, Ninth Frame"
+    },
+    {
+      "path": "ADMIRALS.reyes.d",
+      "before": "Squadrons deal +25% damage and star cruisers hold +1 wing.",
+      "after": "Squadrons deal +10% damage and cruisers hold +1 wing."
+    },
+    {
+      "path": "ADMIRALS.reyes.fx.sqPct",
+      "before": "#d:3fd0000000000000",
+      "after": "#d:3fb999999999999a"
+    },
+    {
+      "path": "ADMIRALS.sable.d",
+      "before": "+20% damage on rear-arc hits and +10% crit chance.",
+      "after": "+50% damage on rear-arc hits and +10% crit chance."
+    },
+    {
+      "path": "ADMIRALS.sable.fx.rearPct",
+      "before": "#d:3fc999999999999a",
+      "after": "#d:3fe0000000000000"
+    },
+    {
+      "path": "ADMIRALS.sable.n",
+      "before": "Sable Venn, the Smiling Knife",
+      "after": "Sable the Smiling Knife"
+    },
+    {
+      "path": "ADMIRALS.sekhmar.cmd.n",
+      "before": "Harvest of souls",
+      "after": "Noon volley"
+    },
+    {
+      "path": "ADMIRALS.sekhmar.d",
+      "before": "Doom arcs deal +20% damage and every weapon +10%.",
+      "after": "Corona arcs deal +20% damage and every weapon +10%."
+    },
+    {
+      "path": "ADMIRALS.sekhmar.doc",
+      "before": "Reaping arcs",
+      "after": "Corona strikes"
+    },
+    {
+      "path": "ADMIRALS.sekhmar.n",
+      "before": "Sekhmar the Reaper",
+      "after": "Umbra Vessane, Third-Housed"
+    },
+    {
+      "path": "ADMIRALS.thorne.cmd.n",
+      "before": "Phase drift",
+      "after": "Scatter the light"
+    },
+    {
+      "path": "ADMIRALS.thorne.doc",
+      "before": "Veil tactics",
+      "after": "Refraction tactics"
+    },
+    {
+      "path": "ADMIRALS.thorne.n",
+      "before": "Thorne of the Veil",
+      "after": "Vell of the Third Mirror"
+    },
+    {
+      "path": "ADMIRALS.vaelen.cmd.n",
+      "before": "Chord of light",
+      "after": "Burning glass"
+    },
+    {
+      "path": "ADMIRALS.vaelen.doc",
+      "before": "Lance choir",
+      "after": "Focused lances"
+    },
+    {
+      "path": "ADMIRALS.vaelen.n",
+      "before": "Seraph Vaelen",
+      "after": "Saro of Long Focus"
+    },
+    {
+      "path": "ADMIRALS.vesh.cmd.n",
+      "before": "Patch and pray",
+      "after": "Patch and weld"
+    },
+    {
+      "path": "ADMIRALS.vex.n",
+      "before": "Admiral Castellan Vex",
+      "after": "Admiral Roderic Vex"
+    },
+    {
+      "path": "ADMIRALS.voice.cmd.n",
+      "before": "Discordant volley",
+      "after": "Spitting volley"
+    },
+    {
+      "path": "ADMIRALS.voice.doc",
+      "before": "Acid chorus",
+      "after": "Acid tide"
+    },
+    {
+      "path": "ARCHETYPES.carrier.names.chorus",
+      "before": "Hive cluster",
+      "after": "Brood cluster"
+    },
+    {
+      "path": "ARCHETYPES.carrier.names.corsair",
+      "before": "Raider nest",
+      "after": "Hulk den"
+    },
+    {
+      "path": "ARCHETYPES.carrier.names.deathless",
+      "before": "Harvest ark",
+      "after": "Repair host"
+    },
+    {
+      "path": "ARCHETYPES.carrier.names.ithar",
+      "before": "Wraith host",
+      "after": "Aperture host"
+    },
+    {
+      "path": "ARCHETYPES.carrier.names.voidsworn",
+      "before": "Reliquary group",
+      "after": "Hearth group"
+    },
+    {
+      "path": "ARCHETYPES.heavy.names.chorus",
+      "before": "Titan pod",
+      "after": "Bloat pod"
+    },
+    {
+      "path": "ARCHETYPES.heavy.names.ithar",
+      "before": "Songline",
+      "after": "Prism line"
+    },
+    {
+      "path": "ARCHETYPES.heavy.names.voidsworn",
+      "before": "Cathedral line",
+      "after": "Bastion line"
+    },
+    {
+      "path": "ARCHETYPES.swarm.names.deathless",
+      "before": "Scythe harvest",
+      "after": "Mote cloud"
+    },
+    {
+      "path": "ARCHETYPES.swarm.names.ithar",
+      "before": "Wisp flight",
+      "after": "Sliver flight"
+    },
+    {
+      "path": "ARCHETYPES.swarm.names.voidsworn",
+      "before": "Zealot flotilla",
+      "after": "Frontier flotilla"
+    },
+    {
+      "path": "ASPECTS.hive.n",
+      "before": "Aspect of the Hive",
+      "after": "Aspect of the Brood"
+    },
+    {
+      "path": "BEVENTS.reinf_ally.go",
+      "before": "A friendly ship drops out of warp to help. It returns to its own patrol after the battle.",
+      "after": "A friendly ship jumps in to help. It returns to its own patrol after the battle."
+    },
+    {
+      "path": "BEVENTS.reinf_enemy.go",
+      "before": "Enemy reinforcements drop out of warp.",
+      "after": "Enemy reinforcements jump in."
+    },
+    {
+      "path": "BEVENTS.reinf_enemy.warn",
+      "before": "Long-range scan: enemy reinforcements will drop out of warp at the start of round {r}, on their side of the field.",
+      "after": "Long-range scan: enemy reinforcements will jump in at the start of round {r}, on their side of the field."
+    },
+    {
+      "path": "BOONS.d_bastion.n",
+      "before": "Bastion",
+      "after": "Fortress"
+    },
+    {
+      "path": "BOONS.e_reload.n",
+      "before": "Hymn of Reloading",
+      "after": "Hot Tubes"
+    },
+    {
+      "path": "BOONS.e_war.n",
+      "before": "Choir Warheads",
+      "after": "Incendiary Warheads"
+    },
+    {
+      "path": "BOONS.h_brood.n",
+      "before": "Brood Tithe",
+      "after": "Brood Harvest"
+    },
+    {
+      "path": "BOONS.i_plate.n",
+      "before": "Saint's Plating",
+      "after": "Unbent Plating"
+    },
+    {
+      "path": "BOSS_CMD.chorus.n",
+      "before": "Hive regrowth",
+      "after": "Brood regrowth"
+    },
+    {
+      "path": "BOSS_CMD.deathless.n",
+      "before": "Rise again",
+      "after": "Restore from the Archive"
+    },
+    {
+      "path": "BOSS_CMD.hegemony.n",
+      "before": "Imperial broadside",
+      "after": "Registry broadside"
+    },
+    {
+      "path": "CAPTAINS.chorus.names",
+      "before": [
+        "Seventh Mouth",
+        "Hollow Song",
+        "Deep Murmur",
+        "Thrumming Coil",
+        "Pale Bloom",
+        "Wet Whisper",
+        "Ninefold",
+        "Grieving Tide",
+        "Brine Hymn",
+        "Moult",
+        "Ashk-of-Many",
+        "Sallow Choir",
+        "Undertow",
+        "Last Spore",
+        "Coiled Psalm",
+        "Lantern Gut"
+      ],
+      "after": [
+        "Seventh Mouth",
+        "Hollow Gut",
+        "Deep Murmur",
+        "Thrumming Coil",
+        "Pale Bloom",
+        "Wet Whisper",
+        "Ninth Tooth",
+        "Gnawing Tide",
+        "Brine Mouth",
+        "Moult",
+        "Ashk-of-Many",
+        "Sallow Rasp",
+        "Undertow",
+        "Last Spore",
+        "Coiled Gullet",
+        "Lantern Gut"
+      ]
+    },
+    {
+      "path": "CAPTAINS.chorus.ranks",
+      "before": [
+        "Spawn-mind",
+        "Brood-node",
+        "Throat",
+        "Elder throat",
+        "Matriarch"
+      ],
+      "after": [
+        "Spawn-mind",
+        "Node",
+        "Throat",
+        "Elder throat",
+        "Great throat"
+      ]
+    },
+    {
+      "path": "CAPTAINS.corsair.first",
+      "before": [
+        "Rusty",
+        "Grim",
+        "Mad",
+        "One-Eye",
+        "Lucky",
+        "Red",
+        "Scrap",
+        "Knuckles",
+        "Salt",
+        "Patch",
+        "Dutch",
+        "Sly",
+        "Bones",
+        "Tiny",
+        "Hooks",
+        "Jinx"
+      ],
+      "after": [
+        "Krogg",
+        "Gash",
+        "Rorr",
+        "Brak",
+        "Hulg",
+        "Drask",
+        "Olk",
+        "Thrag",
+        "Grisk",
+        "Vorg",
+        "Gnarl",
+        "Karsk",
+        "Bruk",
+        "Ulm",
+        "Rask",
+        "Tusk"
+      ]
+    },
+    {
+      "path": "CAPTAINS.corsair.last",
+      "before": [
+        "Krogg",
+        "Brannigan",
+        "Mallory",
+        "Blackwater",
+        "Rook",
+        "Sharkey",
+        "Gutter",
+        "Varrick",
+        "the Knife",
+        "Two-Guns",
+        "Tallow",
+        "Ironjaw",
+        "Spatchcock",
+        "Quill",
+        "Rattigan",
+        "Slade"
+      ],
+      "after": [
+        "the Gutter",
+        "Rattlebone",
+        "Two-Claws",
+        "Scrapback",
+        "Longjaw",
+        "Gristle",
+        "Chainback",
+        "Ashfur",
+        "Red-Muzzle",
+        "Torn-Ear",
+        "Rustcoat",
+        "the Quiet",
+        "Bent-Tooth",
+        "Boltneck",
+        "Greyback",
+        "the Tracker"
+      ]
+    },
+    {
+      "path": "CAPTAINS.corsair.ranks",
+      "before": [
+        "Mate",
+        "Skipper",
+        "Captain",
+        "Reaver-captain",
+        "Warlord"
+      ],
+      "after": [
+        "Claw",
+        "Fang",
+        "Howler",
+        "Ripper",
+        "Warlord"
+      ]
+    },
+    {
+      "path": "CAPTAINS.deathless.epithets",
+      "before": [
+        "the Hollow",
+        "the Patient",
+        "the Silent",
+        "the Undying",
+        "of the Ninth Tomb",
+        "the Unbroken",
+        "the Pale",
+        "the Ever-Watching",
+        "the Iron-Hearted",
+        "of the Sunless Court"
+      ],
+      "after": [
+        "of the Second Frame",
+        "of the Fifth Frame",
+        "the Thrice-Copied",
+        "of the Old Copy",
+        "the Seventh-Housed",
+        "the Once-Restored",
+        "of the Clean Copy",
+        "of the Twelfth Frame",
+        "the Never-Dark",
+        "of the Last Backup"
+      ]
+    },
+    {
+      "path": "CAPTAINS.deathless.names",
+      "before": [
+        "Imhoten",
+        "Setekh",
+        "Amuneth",
+        "Rahotep",
+        "Tauret",
+        "Menkara",
+        "Khepset",
+        "Nefrah",
+        "Osirak",
+        "Ptahmet",
+        "Sobekar",
+        "Thutem",
+        "Wadjen",
+        "Hekamun"
+      ],
+      "after": [
+        "Quorel",
+        "Benth",
+        "Ivess",
+        "Toran",
+        "Odrun",
+        "Desmae",
+        "Selith",
+        "Vantor",
+        "Imra",
+        "Caddex",
+        "Rhosse",
+        "Altheve",
+        "Keshet",
+        "Pallun"
+      ]
+    },
+    {
+      "path": "CAPTAINS.deathless.ranks",
+      "before": [
+        "Warden",
+        "Overseer",
+        "Cryptlord",
+        "Overlord",
+        "Dynast"
+      ],
+      "after": [
+        "Shade",
+        "Gloam",
+        "Umbra",
+        "Midnight",
+        "Nadir"
+      ]
+    },
+    {
+      "path": "CAPTAINS.hegemony.first",
+      "before": [
+        "Konrad",
+        "Ilsa",
+        "Dace",
+        "Mara",
+        "Oskar",
+        "Rhea",
+        "Viktor",
+        "Lena",
+        "Aldric",
+        "Petra",
+        "Gerold",
+        "Sanne",
+        "Halvar",
+        "Ines",
+        "Ruprecht",
+        "Katrin"
+      ],
+      "after": [
+        "Konrad",
+        "Marit",
+        "Joost",
+        "Mara",
+        "Anders",
+        "Rhea",
+        "Viktor",
+        "Lena",
+        "Aldric",
+        "Petra",
+        "Gerold",
+        "Sanne",
+        "Halvar",
+        "Ines",
+        "Ruprecht",
+        "Katrin"
+      ]
+    },
+    {
+      "path": "CAPTAINS.hegemony.last",
+      "before": [
+        "Reiter",
+        "Kassel",
+        "Brandt",
+        "Vorn",
+        "Hollis",
+        "Strand",
+        "Varga",
+        "Kessler",
+        "Drexel",
+        "Moran",
+        "Falk",
+        "Lindqvist",
+        "Achterberg",
+        "Roth",
+        "Vandermeer",
+        "Haldane"
+      ],
+      "after": [
+        "Reiter",
+        "Kassel",
+        "Brandt",
+        "Vollmer",
+        "Hollis",
+        "Strand",
+        "Varga",
+        "Kessler",
+        "Drexel",
+        "Moran",
+        "Falk",
+        "Lindqvist",
+        "Achterberg",
+        "Roth",
+        "Vandermeer",
+        "Haldane"
+      ]
+    },
+    {
+      "path": "CAPTAINS.ithar.first",
+      "before": [
+        "Siriel",
+        "Aelith",
+        "Vaelen",
+        "Thandor",
+        "Ilyra",
+        "Caelis",
+        "Ithrien",
+        "Nyssa",
+        "Orrin",
+        "Saelune",
+        "Talvar",
+        "Eluned",
+        "Faewyn",
+        "Liraen",
+        "Corvel",
+        "Ysolde"
+      ],
+      "after": [
+        "Oskel",
+        "Ilvy",
+        "Teo",
+        "Kesh",
+        "Lun",
+        "Pell",
+        "Ressa",
+        "Taro",
+        "Imre",
+        "Nell",
+        "Tobin",
+        "Avin",
+        "Sefa",
+        "Davin",
+        "Orra",
+        "Fen"
+      ]
+    },
+    {
+      "path": "CAPTAINS.ithar.last",
+      "before": [
+        "Starglass",
+        "Dawnsail",
+        "Veilborn",
+        "Moonreach",
+        "Sunward",
+        "Lightwhisper",
+        "Skyhollow",
+        "Silverwake",
+        "Brightmere",
+        "Glasswing",
+        "Nightbloom",
+        "Farcall"
+      ],
+      "after": [
+        "of the Second Lens",
+        "of the Bright Collector",
+        "of the Long Beamline",
+        "of the Quiet Mirror",
+        "of the Ninth Facet",
+        "of the Cold Lens",
+        "of the Far Collector",
+        "of the First Prism",
+        "of the Split Beam",
+        "of the Slow Focus",
+        "of the Silver Array",
+        "of the Deep Mirror"
+      ]
+    },
+    {
+      "path": "CAPTAINS.ithar.ranks",
+      "before": [
+        "Wing",
+        "Sail",
+        "Seraph",
+        "High seraph",
+        "Starwarden"
+      ],
+      "after": [
+        "Glimmer",
+        "Glint",
+        "Facet",
+        "Mirror",
+        "Lens-keeper"
+      ]
+    },
+    {
+      "path": "CAPTAINS.voidsworn.first",
+      "before": [
+        "Ilse",
+        "Corvin",
+        "Maren",
+        "Tobias",
+        "Anselm",
+        "Vera",
+        "Casimir",
+        "Odile",
+        "Lucan",
+        "Serafine",
+        "Aurek",
+        "Helka",
+        "Brannoc",
+        "Isolde",
+        "Garrick",
+        "Mireille",
+        "Dagan",
+        "Thessaly",
+        "Rourke",
+        "Elsbeth",
+        "Konrad",
+        "Yara",
+        "Osric",
+        "Ninette",
+        "Halvard",
+        "Petra",
+        "Lysander",
+        "Calla"
+      ],
+      "after": [
+        "Ilse",
+        "Corvin",
+        "Mathilde",
+        "Tobias",
+        "Anselm",
+        "Vera",
+        "Casimir",
+        "Odile",
+        "Lucan",
+        "Sabine",
+        "Emeric",
+        "Helka",
+        "Brannoc",
+        "Rosalind",
+        "Garrick",
+        "Margery",
+        "Dagan",
+        "Thessaly",
+        "Rourke",
+        "Elsbeth",
+        "Aldous",
+        "Yara",
+        "Osric",
+        "Ninette",
+        "Hadrian",
+        "Clemence",
+        "Lysander",
+        "Calla"
+      ]
+    },
+    {
+      "path": "CAPTAINS.voidsworn.last",
+      "before": [
+        "Varrow",
+        "Kade",
+        "Morrow",
+        "Ashdown",
+        "Quell",
+        "Harrowgate",
+        "Vane",
+        "Stroud",
+        "Rennick",
+        "Draeger",
+        "Holloway",
+        "Sable",
+        "Wyndham",
+        "Corvane",
+        "Ostrava",
+        "Marchetti",
+        "Blackwood",
+        "Ferro",
+        "Vashti",
+        "Kellan",
+        "Maddox",
+        "Serrano",
+        "Ivers",
+        "Lachance",
+        "Okonkwo",
+        "Brandt",
+        "Salo",
+        "Teague"
+      ],
+      "after": [
+        "Varrow",
+        "Kade",
+        "Morrow",
+        "Ashdown",
+        "Quell",
+        "Harrowgate",
+        "Vane",
+        "Stroud",
+        "Rennick",
+        "Draeger",
+        "Holloway",
+        "Sedley",
+        "Wyndham",
+        "Corvane",
+        "Ostrava",
+        "Marchetti",
+        "Blackwood",
+        "Ferro",
+        "Vashti",
+        "Kellan",
+        "Maddox",
+        "Serrano",
+        "Ivers",
+        "Lachance",
+        "Okonkwo",
+        "Ashby",
+        "Salo",
+        "Teague"
+      ]
+    },
+    {
+      "path": "CAP_FIRST",
+      "before": [
+        "Ilse",
+        "Corvin",
+        "Maren",
+        "Tobias",
+        "Anselm",
+        "Vera",
+        "Casimir",
+        "Odile",
+        "Lucan",
+        "Serafine",
+        "Aurek",
+        "Helka",
+        "Brannoc",
+        "Isolde",
+        "Garrick",
+        "Mireille",
+        "Dagan",
+        "Thessaly",
+        "Rourke",
+        "Elsbeth",
+        "Konrad",
+        "Yara",
+        "Osric",
+        "Ninette",
+        "Halvard",
+        "Petra",
+        "Lysander",
+        "Calla"
+      ],
+      "after": [
+        "Ilse",
+        "Corvin",
+        "Mathilde",
+        "Tobias",
+        "Anselm",
+        "Vera",
+        "Casimir",
+        "Odile",
+        "Lucan",
+        "Sabine",
+        "Emeric",
+        "Helka",
+        "Brannoc",
+        "Rosalind",
+        "Garrick",
+        "Margery",
+        "Dagan",
+        "Thessaly",
+        "Rourke",
+        "Elsbeth",
+        "Aldous",
+        "Yara",
+        "Osric",
+        "Ninette",
+        "Hadrian",
+        "Clemence",
+        "Lysander",
+        "Calla"
+      ]
+    },
+    {
+      "path": "CAP_LAST",
+      "before": [
+        "Varrow",
+        "Kade",
+        "Morrow",
+        "Ashdown",
+        "Quell",
+        "Harrowgate",
+        "Vane",
+        "Stroud",
+        "Rennick",
+        "Draeger",
+        "Holloway",
+        "Sable",
+        "Wyndham",
+        "Corvane",
+        "Ostrava",
+        "Marchetti",
+        "Blackwood",
+        "Ferro",
+        "Vashti",
+        "Kellan",
+        "Maddox",
+        "Serrano",
+        "Ivers",
+        "Lachance",
+        "Okonkwo",
+        "Brandt",
+        "Salo",
+        "Teague"
+      ],
+      "after": [
+        "Varrow",
+        "Kade",
+        "Morrow",
+        "Ashdown",
+        "Quell",
+        "Harrowgate",
+        "Vane",
+        "Stroud",
+        "Rennick",
+        "Draeger",
+        "Holloway",
+        "Sedley",
+        "Wyndham",
+        "Corvane",
+        "Ostrava",
+        "Marchetti",
+        "Blackwood",
+        "Ferro",
+        "Vashti",
+        "Kellan",
+        "Maddox",
+        "Serrano",
+        "Ivers",
+        "Lachance",
+        "Okonkwo",
+        "Ashby",
+        "Salo",
+        "Teague"
+      ]
+    },
+    {
+      "path": "CAUSE_WORD.flay",
+      "before": "flayed by gauss fire",
+      "after": "unmade by null fire"
+    },
+    {
+      "path": "CAUSE_WORD.tidal",
+      "before": "torn apart by the dead star",
+      "after": "torn apart by the Hollow Sun"
+    },
+    {
+      "path": "CHORUS_BITE",
+      "before": "#d:3fbeb851eb851eb8",
+      "after": "#d:3fb47ae147ae147b"
+    },
+    {
+      "path": "CLS_NAME",
+      "before": null,
+      "after": {
+        "Battle-barge": "War-barge",
+        "Bio-titan": "Colossus",
+        "Ark": "Lattice-ship",
+        "Tomb-ark": "Archive-ship"
+      }
+    },
+    {
+      "path": "EVENTS",
+      "before": [
+        {
+          "id": "derelict",
+          "t": "A derelict in the dark",
+          "b": "Your auspex finds an ancient gothic warship drifting without power, its hull etched with prayers no one has spoken in ten thousand years.",
+          "o": [
+            {
+              "l": "Send boarding parties",
+              "s": "Risky. Could hold archeotech, could hold something awake.",
+              "r": "derelictBoard"
+            },
+            {
+              "l": "Strip the hull from range",
+              "s": "+35 credits, no risk.",
+              "r": {
+                "cred": 35
+              }
+            },
+            {
+              "k": "cut",
+              "l": "Cut out its core with lances",
+              "s": "A clean cut: archeotech and salvage, nothing wakes.",
+              "need": {
+                "kind": "lance"
+              },
+              "r": {
+                "mod": 1,
+                "cred": 40
+              }
+            },
+            {
+              "l": "Leave it to its prayers",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "beacon",
+          "not": [
+            "hegemony"
+          ],
+          "t": "Hegemony distress beacon",
+          "b": "A Hegemony supply tender is limping home with a shattered drive. Its captain is broadcasting on every band.",
+          "o": [
+            {
+              "l": "Offer aid",
+              "s": "Your crews patch their drive. They pay in kind.",
+              "r": {
+                "cred": 50,
+                "xp": 10
+              }
+            },
+            {
+              "k": "tow",
+              "l": "Tow them home with a carrier",
+              "s": "Their captain pays well and owes you a favour: +70 credits, a Nemesis weakness revealed.",
+              "need": {
+                "carrier": 1
+              },
+              "r": {
+                "cred": 70,
+                "nemIntel": 1
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "l": "Seize the cargo",
+              "s": "+100 credits. Their escort might remember your colours.",
+              "r": {
+                "cred": 100,
+                "ambush": true,
+                "nemClock": 1
+              },
+              "fl": {
+                "greed": 1
+              }
+            },
+            {
+              "l": "Ignore it",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "astropath",
+          "t": "The astropath’s vision",
+          "b": "Your fleet astropath wakes screaming. She has seen where a relic lies, but reaching it means sailing through a warp-rift.",
+          "v": {
+            "hegemony": {
+              "t": "A ghost signal",
+              "b": "Your sensor officer has decoded a ghost signal: an old Navy relic cache, deep inside a hyperspace rift."
+            },
+            "corsair": {
+              "t": "The navigator’s hunch",
+              "b": "Your half-mad navigator swears she can smell treasure on the far side of a rift. She is usually right. Usually."
+            },
+            "chorus": {
+              "t": "A scent in the void",
+              "b": "The brood-mind tastes something ancient and delicious beyond a rift in space."
+            },
+            "ithar": {
+              "t": "A seer’s dream",
+              "b": "Your seer dreams of a lost treasure of your people, sleeping beyond a rift."
+            },
+            "deathless": {
+              "t": "A dynastic beacon",
+              "b": "An old dynastic beacon pulses from beyond a rift. Something of the dynasty is still out there."
+            }
+          },
+          "o": [
+            {
+              "l": "Go after it",
+              "s": "Gain a relic. A random ship takes heavy damage.",
+              "r": {
+                "relic": 1,
+                "dmgOne": "#d:3fd3333333333333"
+              }
+            },
+            {
+              "k": "shield",
+              "l": "Shield the route with a spare refit",
+              "s": "Gain a relic. A refit from the hold burns out instead of a hull.",
+              "need": {
+                "mod": 1
+              },
+              "r": {
+                "relic": 1,
+                "payMod": 1
+              }
+            },
+            {
+              "l": "Move on",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "merc",
+          "t": "A mercenary captain",
+          "b": "A scarred destroyer captain hails you. Her crew has been paid off and she wants a new cause, for a price.",
+          "o": [
+            {
+              "l": "Hire her (80 credits)",
+              "s": "A destroyer of your own kind, with a veteran captain, joins the fleet.",
+              "r": {
+                "cost": 80,
+                "ship": "harrow",
+                "vet": 1
+              }
+            },
+            {
+              "k": "oath",
+              "l": "Offer her a place in the line, no pay",
+              "s": "She takes the oath. A destroyer of your own kind joins with a veteran captain.",
+              "need": {
+                "fac": "voidsworn"
+              },
+              "r": {
+                "ship": "harrow",
+                "vet": 1
+              }
+            },
+            {
+              "l": "Decline",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "storm",
+          "t": "Warp storm",
+          "b": "A storm front rolls across your jump route, lightning the colour of old blood.",
+          "o": [
+            {
+              "l": "Punch straight through",
+              "s": "Every ship takes 10% hull damage.",
+              "r": {
+                "dmgAll": "#d:3fb999999999999a"
+              }
+            },
+            {
+              "k": "shields",
+              "l": "Angle every shield into the front",
+              "s": "No damage, and your captains learn from it: +10 experience each.",
+              "need": {
+                "shields": 1
+              },
+              "r": {
+                "xp": 10
+              }
+            },
+            {
+              "l": "Chart a way around (40 credits)",
+              "s": "Burn fuel and time instead.",
+              "r": {
+                "cost": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "seer",
+          "not": [
+            "ithar"
+          ],
+          "t": "An Ithar seer",
+          "b": "A lone Ithar vessel matches your course. Its seer offers a trade: one of your refits for one of their treasures.",
+          "o": [
+            {
+              "l": "Trade a module for a relic",
+              "s": "Lose a random installed module. Gain a relic.",
+              "r": {
+                "loseMod": 1,
+                "relic": 1
+              }
+            },
+            {
+              "k": "song",
+              "l": "Sing back to her",
+              "s": "She trades a relic for a song. No refit lost.",
+              "need": {
+                "fac": "ithar"
+              },
+              "r": {
+                "relic": 1
+              }
+            },
+            {
+              "l": "Refuse politely",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "wright",
+          "t": "The rogue shipwright",
+          "b": "A hermit shipwright on an asteroid forge offers to rework one of your hulls. He asks only for the stories of your battles.",
+          "o": [
+            {
+              "l": "Let him work",
+              "s": "Your most damaged ship is fully repaired and upgraded one Mark.",
+              "r": {
+                "upgradeOne": 1
+              }
+            },
+            {
+              "k": "pay",
+              "l": "Pay him in refits too (one from the hold)",
+              "s": "Your most damaged ship is repaired and upgraded, and a second ship is fully repaired.",
+              "need": {
+                "mod": 1
+              },
+              "r": {
+                "upgradeOne": 1,
+                "repairOne": 1,
+                "payMod": 1
+              }
+            },
+            {
+              "l": "Move on",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "moon",
+          "not": [
+            "chorus"
+          ],
+          "t": "The infested moon",
+          "b": "Chorus spores have taken a mining moon. Survivors are signalling from the deep shafts, but a brood is gestating.",
+          "o": [
+            {
+              "l": "Purge the moon",
+              "s": "Fight an elite Chorus battle. Win a relic.",
+              "r": {
+                "fight": "chorus"
+              }
+            },
+            {
+              "k": "flak",
+              "l": "Sweep the shafts with point defense",
+              "s": "Rescue the survivors before the brood hatches: +60 credits, +15 experience for every captain.",
+              "need": {
+                "kind": "flak"
+              },
+              "r": {
+                "cred": 60,
+                "xp": 15
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "l": "Bombard from orbit and leave",
+              "s": "+20 captain experience for every captain.",
+              "r": {
+                "xp": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "shrine",
+          "not": [
+            "chorus",
+            "deathless"
+          ],
+          "t": "A void-shrine",
+          "b": "An orbital shrine to a forgotten saint hangs over a dead world. Your crews ask to make an offering.",
+          "v": {
+            "hegemony": {
+              "b": "An old orbital shrine hangs over a dead world. Spacers are a superstitious lot, and your crews ask to leave an offering."
+            },
+            "corsair": {
+              "b": "An orbital shrine to some forgotten saint hangs over a dead world. Even pirates hedge their bets: your crews ask to leave an offering."
+            },
+            "ithar": {
+              "t": "A shrine of the old world",
+              "b": "A shrine from before your people’s fall hangs over a dead world. Your crews ask to leave an offering."
+            }
+          },
+          "o": [
+            {
+              "l": "Offer 50 credits",
+              "s": "Every ship repairs 30% hull.",
+              "r": {
+                "cost": 50,
+                "healAll": "#d:3fd3333333333333"
+              }
+            },
+            {
+              "l": "Pray and hope",
+              "s": "Even odds: repair 30%, or nothing.",
+              "r": {
+                "gamble": true
+              }
+            },
+            {
+              "k": "relic",
+              "l": "Leave one of your relics as an offering",
+              "s": "Every ship is fully repaired and every captain gains 20 experience.",
+              "need": {
+                "relic": 1
+              },
+              "r": {
+                "payRelic": 1,
+                "healAll": 1,
+                "xp": 20
+              }
+            },
+            {
+              "l": "Leave",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "deserters",
+          "not": [
+            "hegemony"
+          ],
+          "t": "Hegemony deserters",
+          "b": "A lifeboat of Hegemony officers begs for asylum. They know how the Navy fights.",
+          "o": [
+            {
+              "l": "Take them in",
+              "s": "Your least experienced captain gains 60 experience.",
+              "r": {
+                "xpLow": 60
+              }
+            },
+            {
+              "k": "question",
+              "l": "Question them about the enemy commander",
+              "s": "Your least experienced captain gains 30 experience and a Nemesis weakness is revealed.",
+              "need": {
+                "vet": 2
+              },
+              "r": {
+                "xpLow": 30,
+                "nemIntel": 1
+              }
+            },
+            {
+              "l": "Hand them back for the bounty",
+              "s": "+60 credits.",
+              "r": {
+                "cred": 60
+              }
+            }
+          ]
+        },
+        {
+          "id": "cache",
+          "not": [
+            "corsair"
+          ],
+          "t": "Smuggler cache",
+          "b": "A corsair cache hidden in the rings of a gas giant. The locks are primitive.",
+          "o": [
+            {
+              "l": "Crack it open",
+              "s": "Gain a random module.",
+              "r": {
+                "mod": 1
+              }
+            },
+            {
+              "k": "both",
+              "l": "Crack it with a torpedo, then strip the fuel",
+              "s": "A refit and the credits.",
+              "need": {
+                "kind": "torp"
+              },
+              "r": {
+                "mod": 1,
+                "cred": 45
+              }
+            },
+            {
+              "l": "Take the fuel and credits",
+              "s": "+45 credits.",
+              "r": {
+                "cred": 45
+              }
+            }
+          ]
+        },
+        {
+          "id": "tithe",
+          "t": "The tithe vault",
+          "b": "An abandoned tithe station turns slowly in the dark, its vault still sealed. The alarm circuits look old, but alive.",
+          "o": [
+            {
+              "k": "crack",
+              "l": "Blow the vault",
+              "s": "+70 credits. The alarm will reach someone: the Nemesis clock moves on.",
+              "r": {
+                "cred": 70,
+                "nemClock": 1
+              },
+              "fl": {
+                "greed": 1,
+                "loud": 1
+              }
+            },
+            {
+              "k": "lance",
+              "l": "Cut the vault open with a lance",
+              "s": "+70 credits, quietly.",
+              "need": {
+                "kind": "lance"
+              },
+              "r": {
+                "cred": 70
+              },
+              "fl": {
+                "greed": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Leave it sealed",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "pilot",
+          "t": "A stranded pilot",
+          "b": "A lone life pod drifts across your course. Inside, a fighter pilot clutches the logbook of a wing that no longer exists.",
+          "o": [
+            {
+              "k": "take",
+              "l": "Take her aboard",
+              "s": "Your least experienced captain gains 40 experience from her stories.",
+              "r": {
+                "xpLow": 40
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "k": "wing",
+              "l": "Give her a wing on your carrier",
+              "s": "Your best carrier’s wings gain a veteran perk.",
+              "need": {
+                "carrier": 1
+              },
+              "r": {
+                "wingPerk": 1
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Leave her to the rescue buoys",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "reactor",
+          "t": "A cracked reactor",
+          "b": "Engineers report a hairline crack in a reactor housing. It will hold for a battle, perhaps two.",
+          "o": [
+            {
+              "k": "vent",
+              "l": "Vent and patch it",
+              "s": "Your largest ship takes 20% hull damage.",
+              "r": {
+                "dmgBig": "#d:3fc999999999999a"
+              }
+            },
+            {
+              "k": "refit",
+              "l": "Rebuild it around a spare refit",
+              "s": "A refit from the hold is used up. No damage.",
+              "need": {
+                "mod": 1
+              },
+              "r": {
+                "payMod": 1
+              }
+            },
+            {
+              "k": "metal",
+              "l": "Let the living metal knit it",
+              "s": "No cost.",
+              "need": {
+                "fac": "deathless"
+              },
+              "r": {}
+            },
+            {
+              "k": "pay",
+              "l": "Buy parts from a passing hauler (45 credits)",
+              "s": "No damage.",
+              "r": {
+                "cost": 45
+              }
+            }
+          ]
+        },
+        {
+          "id": "squall",
+          "t": "Ion squall",
+          "b": "A wall of ion static rolls toward the fleet. It will scour paint, sensors and anything not shielded.",
+          "o": [
+            {
+              "k": "ride",
+              "l": "Ride it out",
+              "s": "Every ship takes 8% hull damage.",
+              "r": {
+                "dmgAll": "#d:3fb47ae147ae147b"
+              }
+            },
+            {
+              "k": "shield",
+              "l": "Bring the shields up and push through",
+              "s": "No damage; captains learn from it: +10 experience each.",
+              "need": {
+                "shields": 1
+              },
+              "r": {
+                "xp": 10
+              }
+            },
+            {
+              "k": "round",
+              "l": "Go around (35 credits of fuel)",
+              "s": "No damage.",
+              "r": {
+                "cost": 35
+              }
+            }
+          ]
+        },
+        {
+          "id": "broker",
+          "t": "An information broker",
+          "b": "A soft-spoken broker hails you from a cloaked yacht. She claims to know the enemy commander who has been shadowing your fleet.",
+          "o": [
+            {
+              "k": "buy",
+              "l": "Buy what she knows (60 credits)",
+              "s": "A Nemesis weakness is revealed.",
+              "r": {
+                "cost": 60,
+                "nemIntel": 1
+              },
+              "fl": {
+                "intel": 1
+              }
+            },
+            {
+              "k": "debt",
+              "l": "Remind her of an old debt",
+              "s": "She pays it in secrets: a Nemesis weakness, free.",
+              "need": {
+                "fac": "corsair"
+              },
+              "r": {
+                "nemIntel": 1
+              },
+              "fl": {
+                "intel": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Send her away",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "bait",
+          "t": "A distress call that sounds wrong",
+          "b": "A freighter screams for help on every band. Your signals officer thinks the voice is a recording.",
+          "o": [
+            {
+              "k": "loud",
+              "l": "Go in loud and take the cargo",
+              "s": "+80 credits, but your next fight starts as an ambush.",
+              "r": {
+                "cred": 80,
+                "ambush": true
+              },
+              "fl": {
+                "greed": 1,
+                "loud": 1
+              }
+            },
+            {
+              "k": "sweep",
+              "l": "Sweep it with point defense first",
+              "s": "You find the mines and take the cargo: +80 credits.",
+              "need": {
+                "kind": "flak"
+              },
+              "r": {
+                "cred": 80
+              },
+              "fl": {
+                "greed": 1
+              }
+            },
+            {
+              "k": "ignore",
+              "l": "Ignore it",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "spawn",
+          "t": "A spawning field",
+          "b": "Thousands of translucent egg-sacs drift between two moons, pulsing in time with something far away.",
+          "o": [
+            {
+              "k": "burn",
+              "l": "Burn them",
+              "s": "+20 experience for every captain.",
+              "r": {
+                "xp": 20
+              },
+              "fl": {
+                "purge": 1
+              }
+            },
+            {
+              "k": "harvest",
+              "l": "Harvest the membranes",
+              "s": "Gain a damage control refit.",
+              "r": {
+                "modId": "damcon"
+              }
+            },
+            {
+              "k": "feed",
+              "l": "Let the fleet feed",
+              "s": "Every ship regrows 30% of its hull.",
+              "need": {
+                "fac": "chorus"
+              },
+              "r": {
+                "healAll": "#d:3fd3333333333333"
+              },
+              "fl": {
+                "fed": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "lament",
+          "t": "A song in the dark",
+          "b": "A dying Ithar songship is singing its own lament. The melody carries old star charts in it, for those who can hear.",
+          "o": [
+            {
+              "k": "listen",
+              "l": "Listen",
+              "s": "Every captain gains 15 experience.",
+              "r": {
+                "xp": 15
+              }
+            },
+            {
+              "k": "join",
+              "l": "Join the song",
+              "s": "Gain a relic, and the charts show you the enemy commander’s routes: Nemesis clock back one.",
+              "need": {
+                "fac": "ithar"
+              },
+              "r": {
+                "relic": 1,
+                "nemClock": -1
+              }
+            },
+            {
+              "k": "archive",
+              "l": "Trade a relic for its archive",
+              "s": "Lose a relic. Reveal a Nemesis weakness and gain 120 credits.",
+              "need": {
+                "relic": 1
+              },
+              "r": {
+                "payRelic": 1,
+                "nemIntel": 1,
+                "cred": 120
+              },
+              "fl": {
+                "intel": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "tomb",
+          "not": [
+            "deathless"
+          ],
+          "t": "A sealed tomb-world",
+          "b": "A planet of black glass hums under your keels. Deep below, something counts the seconds until it wakes.",
+          "o": [
+            {
+              "k": "wake",
+              "l": "Wake it and take what it guards",
+              "s": "Fight an elite Deathless battle. Win a relic.",
+              "r": {
+                "fight": "deathless"
+              },
+              "fl": {
+                "loud": 1
+              }
+            },
+            {
+              "k": "map",
+              "l": "Map it from orbit and leave",
+              "s": "+30 credits for the charts.",
+              "r": {
+                "cred": 30
+              }
+            }
+          ]
+        },
+        {
+          "id": "tombhome",
+          "not": [
+            "hegemony",
+            "voidsworn",
+            "corsair",
+            "chorus",
+            "ithar"
+          ],
+          "t": "A sleeping tomb-world",
+          "b": "A tomb-world of your own dynasty, its legions dormant. A word from you would wake one of them.",
+          "o": [
+            {
+              "k": "wake",
+              "l": "Wake one scythe",
+              "s": "A Deathless scythe joins the fleet at full hull.",
+              "need": {
+                "fac": "deathless"
+              },
+              "r": {
+                "shipRaw": "d_scythe"
+              }
+            },
+            {
+              "k": "tithe",
+              "l": "Take its tithe instead",
+              "s": "+60 credits.",
+              "r": {
+                "cred": 60
+              }
+            }
+          ]
+        },
+        {
+          "id": "mutiny",
+          "t": "Mutters below decks",
+          "b": "The crew of one of your ships has gone quiet in the wrong way. Their captain asks for orders.",
+          "o": [
+            {
+              "k": "pay",
+              "l": "Pay a bonus (50 credits)",
+              "s": "The mood lifts.",
+              "r": {
+                "cost": 50
+              }
+            },
+            {
+              "k": "discipline",
+              "l": "Make an example",
+              "s": "Your flagship captain loses 20 experience; the fleet falls in line.",
+              "r": {
+                "payXp": 20
+              }
+            },
+            {
+              "k": "talk",
+              "l": "Send your most senior captain to talk",
+              "s": "Free, and that captain gains 15 experience.",
+              "need": {
+                "vet": 2
+              },
+              "r": {
+                "xpTop": 15
+              },
+              "fl": {
+                "mercy": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "convoy",
+          "t": "A merchant convoy",
+          "b": "A slow convoy of ore haulers asks for safe passage through the next system.",
+          "o": [
+            {
+              "k": "escort",
+              "l": "Escort them",
+              "s": "+45 credits from the grateful masters.",
+              "r": {
+                "cred": 45
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "k": "trade",
+              "l": "Trade with them (60 credits)",
+              "s": "Gain a random refit.",
+              "r": {
+                "cost": 60,
+                "mod": 1
+              }
+            },
+            {
+              "k": "shake",
+              "l": "Shake them down",
+              "s": "+100 credits. Word spreads: the Nemesis clock moves on.",
+              "need": {
+                "fac": "corsair"
+              },
+              "r": {
+                "cred": 100,
+                "nemClock": 1
+              },
+              "fl": {
+                "greed": 1,
+                "loud": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "battlefield",
+          "t": "The old battlefield",
+          "b": "Hulls from a war nobody remembers drift in a slow ring, still bristling with unexploded ordnance.",
+          "o": [
+            {
+              "k": "salvage",
+              "l": "Salvage carefully",
+              "s": "Gain a random refit. One ship takes 12% hull damage from old mines.",
+              "r": {
+                "mod": 1,
+                "dmgOne": "#d:3fbeb851eb851eb8"
+              }
+            },
+            {
+              "k": "wings",
+              "l": "Send the wings in first",
+              "s": "They find the mines: a random refit, no damage.",
+              "need": {
+                "carrier": 1
+              },
+              "r": {
+                "mod": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Leave it to the dead",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "scout",
+          "t": "A scout in your wake",
+          "b": "Long-range scans show a small, fast ship holding exactly at the edge of your sensor range. It carries the enemy commander’s colours.",
+          "o": [
+            {
+              "k": "hunt",
+              "l": "Turn and hunt it down",
+              "s": "Every ship takes 5% hull damage in the chase. Nemesis clock back one, and a weakness revealed.",
+              "r": {
+                "dmgAll": "#d:3fa999999999999a",
+                "nemClock": -1,
+                "nemIntel": 1
+              }
+            },
+            {
+              "k": "torp",
+              "l": "Torpedo it from range",
+              "s": "Nemesis clock back one, and a weakness revealed. No damage.",
+              "need": {
+                "kind": "torp"
+              },
+              "r": {
+                "nemClock": -1,
+                "nemIntel": 1
+              }
+            },
+            {
+              "k": "ignore",
+              "l": "Let it watch",
+              "s": "The Nemesis clock moves on.",
+              "r": {
+                "nemClock": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "defector",
+          "t": "A defector",
+          "b": "An officer from the enemy commander’s own fleet surrenders his shuttle to you. He wants asylum and he wants revenge.",
+          "o": [
+            {
+              "k": "question",
+              "l": "Interrogate him",
+              "s": "A Nemesis weakness is revealed.",
+              "r": {
+                "nemIntel": 1
+              },
+              "fl": {
+                "intel": 1
+              }
+            },
+            {
+              "k": "ransom",
+              "l": "Sell him back",
+              "s": "+70 credits. The Nemesis clock moves on.",
+              "r": {
+                "cred": 70,
+                "nemClock": 1
+              },
+              "fl": {
+                "greed": 1
+              }
+            },
+            {
+              "k": "enlist",
+              "l": "Give him a commission",
+              "s": "Your least experienced captain gains 50 experience and a weakness is revealed.",
+              "need": {
+                "fac": "hegemony"
+              },
+              "r": {
+                "xpLow": 50,
+                "nemIntel": 1
+              },
+              "fl": {
+                "intel": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "dock",
+          "t": "A drifting drydock",
+          "b": "An automated drydock still runs on its last power cells. Its arms twitch as your fleet comes alongside.",
+          "o": [
+            {
+              "k": "use",
+              "l": "Use it (30 credits)",
+              "s": "Your most damaged ship is fully repaired.",
+              "r": {
+                "cost": 30,
+                "repairOne": 1
+              }
+            },
+            {
+              "k": "frame",
+              "l": "Buy its last frame (100 credits)",
+              "s": "Your most damaged ship is repaired and upgraded one Mark.",
+              "need": {
+                "cred": 100
+              },
+              "r": {
+                "cost": 100,
+                "upgradeOne": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Leave it running",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "well",
+          "t": "A gravity slingshot",
+          "b": "A dead star bends the route ahead. A tight slingshot would save fuel, if the hulls can take the stress.",
+          "o": [
+            {
+              "k": "sling",
+              "l": "Take the slingshot",
+              "s": "Every ship takes 5% hull damage; you save 35 credits of fuel.",
+              "r": {
+                "dmgAll": "#d:3fa999999999999a",
+                "cred": 35
+              }
+            },
+            {
+              "k": "sails",
+              "l": "Ride the solar wind instead",
+              "s": "No damage, and you save the fuel: +35 credits.",
+              "need": {
+                "fac": "ithar"
+              },
+              "r": {
+                "cred": 35
+              }
+            },
+            {
+              "k": "round",
+              "l": "Go the long way",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "auction",
+          "t": "A relic auction",
+          "b": "A neutral station is auctioning relics recovered from a dead crusade. The bidding is slow and the buyers are armed.",
+          "o": [
+            {
+              "k": "bid",
+              "l": "Bid 120 credits",
+              "s": "Gain a relic.",
+              "r": {
+                "cost": 120,
+                "relic": 1
+              }
+            },
+            {
+              "k": "swap",
+              "l": "Trade one of your relics for one of theirs",
+              "s": "Lose a relic, gain a different one and 40 credits.",
+              "need": {
+                "relic": 1
+              },
+              "r": {
+                "payRelic": 1,
+                "relic": 1,
+                "cred": 40
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Watch and leave",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "saboteur",
+          "t": "A saboteur aboard",
+          "b": "Small failures keep happening on one of your ships. Someone aboard is working for the enemy commander.",
+          "o": [
+            {
+              "k": "search",
+              "l": "Search the ship",
+              "s": "A firefight: that ship takes 10% hull damage. A weakness is revealed from his notes.",
+              "r": {
+                "dmgOne": "#d:3fb999999999999a",
+                "nemIntel": 1
+              }
+            },
+            {
+              "k": "face",
+              "l": "You know his face",
+              "s": "The defector you questioned named him. Caught quietly: Nemesis clock back one, and a weakness revealed.",
+              "need": {
+                "flag": "defector"
+              },
+              "r": {
+                "nemClock": -1,
+                "nemIntel": 1
+              }
+            },
+            {
+              "k": "ignore",
+              "l": "Ignore it",
+              "s": "The Nemesis clock moves on twice.",
+              "r": {
+                "nemClock": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "veterans",
+          "t": "A retired admiral",
+          "b": "An old admiral in a ruined hab offers to teach your captains everything she learned, for a price.",
+          "o": [
+            {
+              "k": "pay",
+              "l": "Pay her (50 credits)",
+              "s": "Every captain gains 25 experience.",
+              "r": {
+                "cost": 50,
+                "xp": 25
+              }
+            },
+            {
+              "k": "oath",
+              "l": "Swear her old oath",
+              "s": "She teaches for free: every captain gains 25 experience.",
+              "need": {
+                "fac": "voidsworn"
+              },
+              "r": {
+                "xp": 25
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Thank her and leave",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "haven",
+          "t": "A pirate haven",
+          "b": "A rock riddled with docking tunnels and gun ports. Half the sector’s stolen goods pass through here.",
+          "o": [
+            {
+              "k": "raid",
+              "l": "Raid it",
+              "s": "Fight an elite Corsair battle. Win a relic.",
+              "r": {
+                "fight": "corsair"
+              },
+              "fl": {
+                "loud": 1
+              }
+            },
+            {
+              "k": "tribute",
+              "l": "Pay them to hide your trail (40 credits)",
+              "s": "Nemesis clock back one.",
+              "r": {
+                "cost": 40,
+                "nemClock": -1
+              }
+            },
+            {
+              "k": "recruit",
+              "l": "Recruit a crew there",
+              "s": "A Corsair raider joins with a veteran captain.",
+              "need": {
+                "fac": "corsair"
+              },
+              "r": {
+                "shipRaw": "c_raider",
+                "vet": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "quiet",
+          "t": "Quiet void",
+          "b": "Nothing on the scopes for light-hours in every direction. The crews sleep for the first time in weeks.",
+          "o": [
+            {
+              "k": "rest",
+              "l": "Rest",
+              "s": "Every ship repairs 10% of its hull.",
+              "r": {
+                "healAll": "#d:3fb999999999999a"
+              }
+            },
+            {
+              "k": "drill",
+              "l": "Drill the crews",
+              "s": "Every captain gains 10 experience.",
+              "r": {
+                "xp": 10
+              }
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "derelict",
+          "t": "A derelict in the dark",
+          "b": "Your scanners find an ancient warship drifting without power, its hull etched with Starwright script no one has read in a thousand years.",
+          "o": [
+            {
+              "l": "Send boarding parties",
+              "s": "Risky. Could hold founders’ tech, could hold something awake.",
+              "r": "derelictBoard"
+            },
+            {
+              "l": "Strip the hull from range",
+              "s": "+35 credits, no risk.",
+              "r": {
+                "cred": 35
+              }
+            },
+            {
+              "k": "cut",
+              "l": "Cut out its core with lances",
+              "s": "A clean cut: founders’ tech and salvage, nothing wakes.",
+              "need": {
+                "kind": "lance"
+              },
+              "r": {
+                "mod": 1,
+                "cred": 40
+              }
+            },
+            {
+              "l": "Leave it to the dark",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "beacon",
+          "not": [
+            "hegemony"
+          ],
+          "t": "Hegemony distress beacon",
+          "b": "A Hegemony supply tender is limping home with a shattered drive. Its captain is broadcasting on every band.",
+          "o": [
+            {
+              "l": "Offer aid",
+              "s": "Your crews patch their drive. They pay in kind.",
+              "r": {
+                "cred": 50,
+                "xp": 10
+              }
+            },
+            {
+              "k": "tow",
+              "l": "Tow them home with a carrier",
+              "s": "Their captain pays well and owes you one: +70 credits, a Nemesis weakness revealed.",
+              "need": {
+                "carrier": 1
+              },
+              "r": {
+                "cred": 70,
+                "nemIntel": 1
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "l": "Seize the cargo",
+              "s": "+100 credits. Their escort might remember your colours.",
+              "r": {
+                "cred": 100,
+                "ambush": true,
+                "nemClock": 1
+              },
+              "fl": {
+                "greed": 1
+              }
+            },
+            {
+              "l": "Ignore it",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "astropath",
+          "t": "A signal in the static",
+          "b": "Your signals officer has pulled an old founders’ beacon out of the static. Old salvage lies beyond it, but reaching it means crossing a rift.",
+          "v": {
+            "hegemony": {
+              "t": "A ghost signal",
+              "b": "Your sensor officer has decoded a ghost signal: an old Navy salvage cache, deep inside a rift."
+            },
+            "corsair": {
+              "t": "The tracker’s nose",
+              "b": "Your best tracker swears she can smell old metal on the far side of a rift. She is usually right. Usually."
+            },
+            "chorus": {
+              "t": "A scent in the dark",
+              "b": "The swarm tastes something old and delicious beyond a rift."
+            },
+            "ithar": {
+              "t": "A glint beyond the rift",
+              "b": "Your mirrors catch a glint of old Starwright glass beyond a rift: a lost treasure of your people."
+            },
+            "deathless": {
+              "t": "An Archive beacon",
+              "b": "An Archive beacon from before the collapse pulses beyond a rift. Something of Ardent is still out there."
+            }
+          },
+          "o": [
+            {
+              "l": "Go after it",
+              "s": "Gain salvage. A random ship takes heavy damage.",
+              "r": {
+                "relic": 1,
+                "dmgOne": "#d:3fd3333333333333"
+              }
+            },
+            {
+              "k": "shield",
+              "l": "Shield the route with a spare refit",
+              "s": "Gain salvage. A refit from the hold burns out instead of a hull.",
+              "need": {
+                "mod": 1
+              },
+              "r": {
+                "relic": 1,
+                "payMod": 1
+              }
+            },
+            {
+              "l": "Move on",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "merc",
+          "t": "A mercenary captain",
+          "b": "A scarred destroyer captain hails you. Her crew has been paid off and she wants a new cause, for a price.",
+          "o": [
+            {
+              "l": "Hire her (80 credits)",
+              "s": "A destroyer of your own kind, with a veteran captain, joins the fleet.",
+              "r": {
+                "cost": 80,
+                "ship": "harrow",
+                "vet": 1
+              }
+            },
+            {
+              "k": "oath",
+              "l": "Offer her a place in the line, no pay",
+              "s": "She takes the oath. A destroyer of your own kind joins with a veteran captain.",
+              "need": {
+                "fac": "voidsworn"
+              },
+              "r": {
+                "ship": "harrow",
+                "vet": 1
+              }
+            },
+            {
+              "l": "Decline",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "storm",
+          "t": "Rift storm",
+          "b": "A storm front rolls across your jump route, lightning the colour of old blood.",
+          "o": [
+            {
+              "l": "Punch straight through",
+              "s": "Every ship takes 10% hull damage.",
+              "r": {
+                "dmgAll": "#d:3fb999999999999a"
+              }
+            },
+            {
+              "k": "shields",
+              "l": "Angle every shield into the front",
+              "s": "No damage, and your captains learn from it: +10 experience each.",
+              "need": {
+                "shields": 1
+              },
+              "r": {
+                "xp": 10
+              }
+            },
+            {
+              "l": "Chart a way around (40 credits)",
+              "s": "Burn fuel and time instead.",
+              "r": {
+                "cost": 40
+              }
+            }
+          ]
+        },
+        {
+          "id": "seer",
+          "not": [
+            "ithar"
+          ],
+          "t": "A Glasswright wanderer",
+          "b": "A lone Glasswright vessel matches your course. Its keeper offers a trade: one of your refits for one of their treasures.",
+          "o": [
+            {
+              "l": "Trade a module for salvage",
+              "s": "Lose a random installed module. Gain salvage.",
+              "r": {
+                "loseMod": 1,
+                "relic": 1
+              }
+            },
+            {
+              "k": "song",
+              "l": "Answer her tone in glass",
+              "s": "She trades salvage for the courtesy. No refit lost.",
+              "need": {
+                "fac": "ithar"
+              },
+              "r": {
+                "relic": 1
+              }
+            },
+            {
+              "l": "Refuse politely",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "wright",
+          "t": "The rogue shipwright",
+          "b": "A hermit shipwright on an asteroid forge offers to rework one of your hulls. He asks only for the stories of your battles.",
+          "o": [
+            {
+              "l": "Let him work",
+              "s": "Your most damaged ship is fully repaired and upgraded one Mark.",
+              "r": {
+                "upgradeOne": 1
+              }
+            },
+            {
+              "k": "pay",
+              "l": "Pay him in refits too (one from the hold)",
+              "s": "Your most damaged ship is repaired and upgraded, and a second ship is fully repaired.",
+              "need": {
+                "mod": 1
+              },
+              "r": {
+                "upgradeOne": 1,
+                "repairOne": 1,
+                "payMod": 1
+              }
+            },
+            {
+              "l": "Move on",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "moon",
+          "not": [
+            "chorus"
+          ],
+          "t": "The infested moon",
+          "b": "Chorus spores have taken a mining moon. Survivors are signalling from the deep shafts, but a brood is gestating.",
+          "o": [
+            {
+              "l": "Purge the moon",
+              "s": "Fight an elite Chorus battle. Win salvage.",
+              "r": {
+                "fight": "chorus"
+              }
+            },
+            {
+              "k": "flak",
+              "l": "Sweep the shafts with point defense",
+              "s": "Rescue the survivors before the brood hatches: +60 credits, +15 experience for every captain.",
+              "need": {
+                "kind": "flak"
+              },
+              "r": {
+                "cred": 60,
+                "xp": 15
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "l": "Bombard from orbit and leave",
+              "s": "+20 captain experience for every captain.",
+              "r": {
+                "xp": 20
+              }
+            }
+          ]
+        },
+        {
+          "id": "shrine",
+          "not": [
+            "chorus",
+            "deathless"
+          ],
+          "t": "A wall of names",
+          "b": "A memorial station hangs over a dead world, its walls chalked with the names of a crusade that never came home. Your crews ask to leave an offering.",
+          "v": {
+            "hegemony": {
+              "b": "An old memorial station hangs over a dead world. Spacers are a superstitious lot, and your crews ask to leave an offering."
+            },
+            "corsair": {
+              "b": "An old memorial station hangs over a dead world, heaped with other packs’ trophies. Your crews want to leave one of their own."
+            },
+            "ithar": {
+              "t": "A mirror of the old world",
+              "b": "A mirror array from before your people’s fall still turns over a dead world. Your crews ask to leave an offering."
+            }
+          },
+          "o": [
+            {
+              "l": "Offer 50 credits",
+              "s": "Every ship repairs 30% hull.",
+              "r": {
+                "cost": 50,
+                "healAll": "#d:3fd3333333333333"
+              }
+            },
+            {
+              "l": "Chalk your names and hope",
+              "s": "Even odds: repair 30%, or nothing.",
+              "r": {
+                "gamble": true
+              }
+            },
+            {
+              "k": "relic",
+              "l": "Leave a piece of salvage as an offering",
+              "s": "Every ship is fully repaired and every captain gains 20 experience.",
+              "need": {
+                "relic": 1
+              },
+              "r": {
+                "payRelic": 1,
+                "healAll": 1,
+                "xp": 20
+              }
+            },
+            {
+              "l": "Leave",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "deserters",
+          "not": [
+            "hegemony"
+          ],
+          "t": "Hegemony deserters",
+          "b": "An escape pod of Hegemony officers begs for asylum. They know how the Navy fights.",
+          "o": [
+            {
+              "l": "Take them in",
+              "s": "Your least experienced captain gains 60 experience.",
+              "r": {
+                "xpLow": 60
+              }
+            },
+            {
+              "k": "question",
+              "l": "Question them about the enemy commander",
+              "s": "Your least experienced captain gains 30 experience and a Nemesis weakness is revealed.",
+              "need": {
+                "vet": 2
+              },
+              "r": {
+                "xpLow": 30,
+                "nemIntel": 1
+              }
+            },
+            {
+              "l": "Hand them back for the bounty",
+              "s": "+60 credits.",
+              "r": {
+                "cred": 60
+              }
+            }
+          ]
+        },
+        {
+          "id": "cache",
+          "not": [
+            "corsair"
+          ],
+          "t": "Smuggler cache",
+          "b": "A Hullbreaker cache hidden in the rings of a gas giant. The locks are primitive.",
+          "o": [
+            {
+              "l": "Crack it open",
+              "s": "Gain a random module.",
+              "r": {
+                "mod": 1
+              }
+            },
+            {
+              "k": "both",
+              "l": "Crack it with a torpedo, then strip the fuel",
+              "s": "A refit and the credits.",
+              "need": {
+                "kind": "torp"
+              },
+              "r": {
+                "mod": 1,
+                "cred": 45
+              }
+            },
+            {
+              "l": "Take the fuel and credits",
+              "s": "+45 credits.",
+              "r": {
+                "cred": 45
+              }
+            }
+          ]
+        },
+        {
+          "id": "tithe",
+          "t": "The toll vault",
+          "b": "An abandoned toll station turns slowly in the dark, its vault still sealed. The alarm circuits look old, but alive.",
+          "o": [
+            {
+              "k": "crack",
+              "l": "Blow the vault",
+              "s": "+70 credits. The alarm will reach someone: the Nemesis clock moves on.",
+              "r": {
+                "cred": 70,
+                "nemClock": 1
+              },
+              "fl": {
+                "greed": 1,
+                "loud": 1
+              }
+            },
+            {
+              "k": "lance",
+              "l": "Cut the vault open with a lance",
+              "s": "+70 credits, quietly.",
+              "need": {
+                "kind": "lance"
+              },
+              "r": {
+                "cred": 70
+              },
+              "fl": {
+                "greed": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Leave it sealed",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "pilot",
+          "t": "A stranded pilot",
+          "b": "A lone life pod drifts across your course. Inside, a fighter pilot clutches the logbook of a wing that no longer exists.",
+          "o": [
+            {
+              "k": "take",
+              "l": "Take her aboard",
+              "s": "Your least experienced captain gains 40 experience from her stories.",
+              "r": {
+                "xpLow": 40
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "k": "wing",
+              "l": "Give her a wing on your carrier",
+              "s": "Your best carrier’s wings gain a veteran perk.",
+              "need": {
+                "carrier": 1
+              },
+              "r": {
+                "wingPerk": 1
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Leave her to the rescue buoys",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "reactor",
+          "t": "A cracked reactor",
+          "b": "Engineers report a hairline crack in a reactor housing. It will hold for a battle, perhaps two.",
+          "o": [
+            {
+              "k": "vent",
+              "l": "Vent and patch it",
+              "s": "Your largest ship takes 20% hull damage.",
+              "r": {
+                "dmgBig": "#d:3fc999999999999a"
+              }
+            },
+            {
+              "k": "refit",
+              "l": "Rebuild it around a spare refit",
+              "s": "A refit from the hold is used up. No damage.",
+              "need": {
+                "mod": 1
+              },
+              "r": {
+                "payMod": 1
+              }
+            },
+            {
+              "k": "metal",
+              "l": "Let the repair drones knit it",
+              "s": "No cost.",
+              "need": {
+                "fac": "deathless"
+              },
+              "r": {}
+            },
+            {
+              "k": "pay",
+              "l": "Buy parts from a passing hauler (45 credits)",
+              "s": "No damage.",
+              "r": {
+                "cost": 45
+              }
+            }
+          ]
+        },
+        {
+          "id": "squall",
+          "t": "Ion squall",
+          "b": "A wall of ion static rolls toward the fleet. It will scour paint, sensors and anything not shielded.",
+          "o": [
+            {
+              "k": "ride",
+              "l": "Ride it out",
+              "s": "Every ship takes 8% hull damage.",
+              "r": {
+                "dmgAll": "#d:3fb47ae147ae147b"
+              }
+            },
+            {
+              "k": "shield",
+              "l": "Bring the shields up and push through",
+              "s": "No damage; captains learn from it: +10 experience each.",
+              "need": {
+                "shields": 1
+              },
+              "r": {
+                "xp": 10
+              }
+            },
+            {
+              "k": "round",
+              "l": "Go around (35 credits of fuel)",
+              "s": "No damage.",
+              "r": {
+                "cost": 35
+              }
+            }
+          ]
+        },
+        {
+          "id": "broker",
+          "t": "An information broker",
+          "b": "A soft-spoken broker hails you from a cloaked yacht. She claims to know the enemy commander who has been shadowing your fleet.",
+          "o": [
+            {
+              "k": "buy",
+              "l": "Buy what she knows (60 credits)",
+              "s": "A Nemesis weakness is revealed.",
+              "r": {
+                "cost": 60,
+                "nemIntel": 1
+              },
+              "fl": {
+                "intel": 1
+              }
+            },
+            {
+              "k": "debt",
+              "l": "Remind her of an old debt",
+              "s": "She pays it in secrets: a Nemesis weakness, free.",
+              "need": {
+                "fac": "corsair"
+              },
+              "r": {
+                "nemIntel": 1
+              },
+              "fl": {
+                "intel": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Send her away",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "bait",
+          "t": "A distress call that sounds wrong",
+          "b": "A freighter screams for help on every band. Your signals officer thinks the voice is a recording.",
+          "o": [
+            {
+              "k": "loud",
+              "l": "Go in loud and take the cargo",
+              "s": "+80 credits, but your next fight starts as an ambush.",
+              "r": {
+                "cred": 80,
+                "ambush": true
+              },
+              "fl": {
+                "greed": 1,
+                "loud": 1
+              }
+            },
+            {
+              "k": "sweep",
+              "l": "Sweep it with point defense first",
+              "s": "You find the mines and take the cargo: +80 credits.",
+              "need": {
+                "kind": "flak"
+              },
+              "r": {
+                "cred": 80
+              },
+              "fl": {
+                "greed": 1
+              }
+            },
+            {
+              "k": "ignore",
+              "l": "Ignore it",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "spawn",
+          "t": "A spawning field",
+          "b": "Thousands of translucent egg-sacs drift between two moons, pulsing in time with something far away.",
+          "o": [
+            {
+              "k": "burn",
+              "l": "Burn them",
+              "s": "+20 experience for every captain.",
+              "r": {
+                "xp": 20
+              },
+              "fl": {
+                "purge": 1
+              }
+            },
+            {
+              "k": "harvest",
+              "l": "Harvest the membranes",
+              "s": "Gain a damage control refit.",
+              "r": {
+                "modId": "damcon"
+              }
+            },
+            {
+              "k": "feed",
+              "l": "Let the fleet feed",
+              "s": "Every ship regrows 30% of its hull.",
+              "need": {
+                "fac": "chorus"
+              },
+              "r": {
+                "healAll": "#d:3fd3333333333333"
+              },
+              "fl": {
+                "fed": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "lament",
+          "t": "A tone in the dark",
+          "b": "A dying Glasswright prism rings with one long clear tone as its light fades. The tone carries old star charts in it, for those who can read it.",
+          "o": [
+            {
+              "k": "listen",
+              "l": "Listen",
+              "s": "Every captain gains 15 experience.",
+              "r": {
+                "xp": 15
+              }
+            },
+            {
+              "k": "join",
+              "l": "Answer the tone",
+              "s": "Gain salvage, and the charts show you the enemy commander’s routes: Nemesis clock back one.",
+              "need": {
+                "fac": "ithar"
+              },
+              "r": {
+                "relic": 1,
+                "nemClock": -1
+              }
+            },
+            {
+              "k": "archive",
+              "l": "Trade salvage for its charts",
+              "s": "Lose a piece of salvage. Reveal a Nemesis weakness and gain 120 credits.",
+              "need": {
+                "relic": 1
+              },
+              "r": {
+                "payRelic": 1,
+                "nemIntel": 1,
+                "cred": 120
+              },
+              "fl": {
+                "intel": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "tomb",
+          "not": [
+            "deathless"
+          ],
+          "t": "A siphon array",
+          "b": "A ring of black collectors circles a dimming star, drinking its energy. Something aboard counts the seconds until you come in range.",
+          "o": [
+            {
+              "k": "wake",
+              "l": "Break the array and take what it guards",
+              "s": "Fight an elite Eclipse battle. Win salvage.",
+              "r": {
+                "fight": "deathless"
+              },
+              "fl": {
+                "loud": 1
+              }
+            },
+            {
+              "k": "map",
+              "l": "Chart it and leave",
+              "s": "+30 credits for the charts.",
+              "r": {
+                "cred": 30
+              }
+            }
+          ]
+        },
+        {
+          "id": "tombhome",
+          "not": [
+            "hegemony",
+            "voidsworn",
+            "corsair",
+            "chorus",
+            "ithar"
+          ],
+          "t": "A dormant hull yard",
+          "b": "An Eclipse yard from before the collapse drifts in the dark, its hulls stored without minds. A copy from the Archive would wake one of them.",
+          "o": [
+            {
+              "k": "wake",
+              "l": "Wake one mote",
+              "s": "An Eclipse mote joins the fleet at full hull.",
+              "need": {
+                "fac": "deathless"
+              },
+              "r": {
+                "shipRaw": "d_scythe"
+              }
+            },
+            {
+              "k": "tithe",
+              "l": "Strip it for parts instead",
+              "s": "+60 credits.",
+              "r": {
+                "cred": 60
+              }
+            }
+          ]
+        },
+        {
+          "id": "mutiny",
+          "t": "Mutters below decks",
+          "b": "The crew of one of your ships has gone quiet in the wrong way. Their captain asks for orders.",
+          "o": [
+            {
+              "k": "pay",
+              "l": "Pay a bonus (50 credits)",
+              "s": "The mood lifts.",
+              "r": {
+                "cost": 50
+              }
+            },
+            {
+              "k": "discipline",
+              "l": "Make an example",
+              "s": "Your flagship captain loses 20 experience; the fleet falls in line.",
+              "r": {
+                "payXp": 20
+              }
+            },
+            {
+              "k": "talk",
+              "l": "Send your most senior captain to talk",
+              "s": "Free, and that captain gains 15 experience.",
+              "need": {
+                "vet": 2
+              },
+              "r": {
+                "xpTop": 15
+              },
+              "fl": {
+                "mercy": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "convoy",
+          "t": "A merchant convoy",
+          "b": "A slow convoy of ore haulers asks for safe passage through the next system.",
+          "o": [
+            {
+              "k": "escort",
+              "l": "Escort them",
+              "s": "+45 credits from the grateful masters.",
+              "r": {
+                "cred": 45
+              },
+              "fl": {
+                "mercy": 1
+              }
+            },
+            {
+              "k": "trade",
+              "l": "Trade with them (60 credits)",
+              "s": "Gain a random refit.",
+              "r": {
+                "cost": 60,
+                "mod": 1
+              }
+            },
+            {
+              "k": "shake",
+              "l": "Shake them down",
+              "s": "+100 credits. Word spreads: the Nemesis clock moves on.",
+              "need": {
+                "fac": "corsair"
+              },
+              "r": {
+                "cred": 100,
+                "nemClock": 1
+              },
+              "fl": {
+                "greed": 1,
+                "loud": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "battlefield",
+          "t": "The old battlefield",
+          "b": "Hulls from a war nobody remembers drift in a slow ring, still bristling with unexploded ordnance.",
+          "o": [
+            {
+              "k": "salvage",
+              "l": "Salvage carefully",
+              "s": "Gain a random refit. One ship takes 12% hull damage from old mines.",
+              "r": {
+                "mod": 1,
+                "dmgOne": "#d:3fbeb851eb851eb8"
+              }
+            },
+            {
+              "k": "wings",
+              "l": "Send the wings in first",
+              "s": "They find the mines: a random refit, no damage.",
+              "need": {
+                "carrier": 1
+              },
+              "r": {
+                "mod": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Leave it to the dead",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "scout",
+          "t": "A scout in your wake",
+          "b": "Long-range scans show a small, fast ship holding exactly at the edge of your sensor range. It carries the enemy commander’s colours.",
+          "o": [
+            {
+              "k": "hunt",
+              "l": "Turn and hunt it down",
+              "s": "Every ship takes 5% hull damage in the chase. Nemesis clock back one, and a weakness revealed.",
+              "r": {
+                "dmgAll": "#d:3fa999999999999a",
+                "nemClock": -1,
+                "nemIntel": 1
+              }
+            },
+            {
+              "k": "torp",
+              "l": "Torpedo it from range",
+              "s": "Nemesis clock back one, and a weakness revealed. No damage.",
+              "need": {
+                "kind": "torp"
+              },
+              "r": {
+                "nemClock": -1,
+                "nemIntel": 1
+              }
+            },
+            {
+              "k": "ignore",
+              "l": "Let it watch",
+              "s": "The Nemesis clock moves on.",
+              "r": {
+                "nemClock": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "defector",
+          "t": "A defector",
+          "b": "An officer from the enemy commander’s own fleet surrenders his shuttle to you. He wants asylum and he wants revenge.",
+          "o": [
+            {
+              "k": "question",
+              "l": "Interrogate him",
+              "s": "A Nemesis weakness is revealed.",
+              "r": {
+                "nemIntel": 1
+              },
+              "fl": {
+                "intel": 1
+              }
+            },
+            {
+              "k": "ransom",
+              "l": "Sell him back",
+              "s": "+70 credits. The Nemesis clock moves on.",
+              "r": {
+                "cred": 70,
+                "nemClock": 1
+              },
+              "fl": {
+                "greed": 1
+              }
+            },
+            {
+              "k": "enlist",
+              "l": "Give him a commission",
+              "s": "Your least experienced captain gains 50 experience and a weakness is revealed.",
+              "need": {
+                "fac": "hegemony"
+              },
+              "r": {
+                "xpLow": 50,
+                "nemIntel": 1
+              },
+              "fl": {
+                "intel": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "dock",
+          "t": "A drifting drydock",
+          "b": "An automated drydock still runs on its last power cells. Its arms twitch as your fleet comes alongside.",
+          "o": [
+            {
+              "k": "use",
+              "l": "Use it (30 credits)",
+              "s": "Your most damaged ship is fully repaired.",
+              "r": {
+                "cost": 30,
+                "repairOne": 1
+              }
+            },
+            {
+              "k": "frame",
+              "l": "Buy its last frame (100 credits)",
+              "s": "Your most damaged ship is repaired and upgraded one Mark.",
+              "need": {
+                "cred": 100
+              },
+              "r": {
+                "cost": 100,
+                "upgradeOne": 1
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Leave it running",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "well",
+          "t": "A gravity slingshot",
+          "b": "A dead star bends the route ahead. A tight slingshot would save fuel, if the hulls can take the stress.",
+          "o": [
+            {
+              "k": "sling",
+              "l": "Take the slingshot",
+              "s": "Every ship takes 5% hull damage; you save 35 credits of fuel.",
+              "r": {
+                "dmgAll": "#d:3fa999999999999a",
+                "cred": 35
+              }
+            },
+            {
+              "k": "sails",
+              "l": "Ride the solar wind instead",
+              "s": "No damage, and you save the fuel: +35 credits.",
+              "need": {
+                "fac": "ithar"
+              },
+              "r": {
+                "cred": 35
+              }
+            },
+            {
+              "k": "round",
+              "l": "Go the long way",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "auction",
+          "t": "A salvage auction",
+          "b": "A neutral station is auctioning salvage recovered from a dead crusade. The bidding is slow and the buyers are armed.",
+          "o": [
+            {
+              "k": "bid",
+              "l": "Bid 120 credits",
+              "s": "Gain salvage.",
+              "r": {
+                "cost": 120,
+                "relic": 1
+              }
+            },
+            {
+              "k": "swap",
+              "l": "Trade a piece of your salvage for one of theirs",
+              "s": "Lose a piece of salvage, gain a different piece and 40 credits.",
+              "need": {
+                "relic": 1
+              },
+              "r": {
+                "payRelic": 1,
+                "relic": 1,
+                "cred": 40
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Watch and leave",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "saboteur",
+          "t": "A saboteur aboard",
+          "b": "Small failures keep happening on one of your ships. Someone aboard is working for the enemy commander.",
+          "o": [
+            {
+              "k": "search",
+              "l": "Search the ship",
+              "s": "A firefight: that ship takes 10% hull damage. A weakness is revealed from his notes.",
+              "r": {
+                "dmgOne": "#d:3fb999999999999a",
+                "nemIntel": 1
+              }
+            },
+            {
+              "k": "face",
+              "l": "You know his face",
+              "s": "The defector you questioned named him. Caught quietly: Nemesis clock back one, and a weakness revealed.",
+              "need": {
+                "flag": "defector"
+              },
+              "r": {
+                "nemClock": -1,
+                "nemIntel": 1
+              }
+            },
+            {
+              "k": "ignore",
+              "l": "Ignore it",
+              "s": "The Nemesis clock moves on twice.",
+              "r": {
+                "nemClock": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "veterans",
+          "t": "A retired admiral",
+          "b": "An old admiral in a ruined hab offers to teach your captains everything she learned, for a price.",
+          "o": [
+            {
+              "k": "pay",
+              "l": "Pay her (50 credits)",
+              "s": "Every captain gains 25 experience.",
+              "r": {
+                "cost": 50,
+                "xp": 25
+              }
+            },
+            {
+              "k": "oath",
+              "l": "Swear her old oath",
+              "s": "She teaches for free: every captain gains 25 experience.",
+              "need": {
+                "fac": "voidsworn"
+              },
+              "r": {
+                "xp": 25
+              }
+            },
+            {
+              "k": "leave",
+              "l": "Thank her and leave",
+              "s": "Nothing happens.",
+              "r": {}
+            }
+          ]
+        },
+        {
+          "id": "haven",
+          "t": "A raider den",
+          "b": "A rock riddled with docking tunnels and gun ports. Half the sector’s stolen goods pass through here.",
+          "o": [
+            {
+              "k": "raid",
+              "l": "Raid it",
+              "s": "Fight an elite Hullbreaker battle. Win salvage.",
+              "r": {
+                "fight": "corsair"
+              },
+              "fl": {
+                "loud": 1
+              }
+            },
+            {
+              "k": "tribute",
+              "l": "Pay them to hide your trail (40 credits)",
+              "s": "Nemesis clock back one.",
+              "r": {
+                "cost": 40,
+                "nemClock": -1
+              }
+            },
+            {
+              "k": "recruit",
+              "l": "Recruit a crew there",
+              "s": "A Hullbreaker raider joins with a veteran captain.",
+              "need": {
+                "fac": "corsair"
+              },
+              "r": {
+                "shipRaw": "c_raider",
+                "vet": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "quiet",
+          "t": "Quiet void",
+          "b": "Nothing on the scopes for light-hours in every direction. The crews sleep for the first time in weeks.",
+          "o": [
+            {
+              "k": "rest",
+              "l": "Rest",
+              "s": "Every ship repairs 10% of its hull.",
+              "r": {
+                "healAll": "#d:3fb999999999999a"
+              }
+            },
+            {
+              "k": "drill",
+              "l": "Drill the crews",
+              "s": "Every captain gains 10 experience.",
+              "r": {
+                "xp": 10
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "FACTIONS.chorus.blurb",
+      "before": "A hungering bio-swarm. No shields at all, but their flesh knits back together every round.",
+      "after": "A living weapon that ate its makers. No shields at all, but their flesh knits back together every round."
+    },
+    {
+      "path": "FACTIONS.corsair.blurb",
+      "before": "Pirate raiders in stolen hulls. Fast, thin shields, and far too many torpedoes.",
+      "after": "Furred pack hunters in ships that run dark, stripping every wreck. Fast, thin shields, and far too many rockets."
+    },
+    {
+      "path": "FACTIONS.corsair.n",
+      "before": "Ashfall Corsairs",
+      "after": "Ashfall Hullbreakers"
+    },
+    {
+      "path": "FACTIONS.deathless.blurb",
+      "before": "Machine necropolis-ships. Gauss weapons tear through shields, and wrecks sometimes stand back up.",
+      "after": "Starwright minds in machine bodies, stealing starlight to light a new sun. Null weapons cut through shields and armor, and wrecks rebuild themselves."
+    },
+    {
+      "path": "FACTIONS.deathless.n",
+      "before": "The Deathless Dynasty",
+      "after": "Eclipse"
+    },
+    {
+      "path": "FACTIONS.hegemony.blurb",
+      "before": "An imperial war-machine of wedge-hulled destroyers. Ion cannons strip shields; carriers launch fighter screens.",
+      "after": "The Registry’s navy: linked crews, wedge hulls and drone escorts. Ion cannons strip shields; carriers launch fighter screens."
+    },
+    {
+      "path": "FACTIONS.ithar.blurb",
+      "before": "An ancient, dying elder race. Blindingly fast, heavily shielded, fragile once the shields fall.",
+      "after": "Few, long-lived masters of light and crystal. Blindingly fast, heavily shielded, fragile once the shields fall."
+    },
+    {
+      "path": "FACTIONS.ithar.n",
+      "before": "The Ithar",
+      "after": "The Glasswrights"
+    },
+    {
+      "path": "FACTIONS.voidsworn.blurb",
+      "before": "Gothic crusader battleships. Heavy armor, lance batteries and broadsides that hit like a cathedral falling.",
+      "after": "The frontier the Hegemony wrote off, come to stop the Siphoning. Black-iron battleships: heavy armor, lances, and broadsides that hit harder on the move."
+    },
+    {
+      "path": "FACTIONS.voidsworn.n",
+      "before": "Voidsworn Crusade",
+      "after": "Sunward Crusade"
+    },
+    {
+      "path": "FAC_GATES.corsair.d",
+      "before": "Corsairs field no lance weapons (no long-range beams): they win up close.",
+      "after": "Hullbreakers field no lance weapons (no long-range beams): they win up close."
+    },
+    {
+      "path": "FAC_GATES.ithar.d",
+      "before": "Ithar hulls cannot Brace for impact: they live by shields and speed.",
+      "after": "Glasswright hulls cannot Brace for impact: they live by shields and speed."
+    },
+    {
+      "path": "FAC_RULES.chorus.d",
+      "before": "When an enemy ship dies, the Chorus ship that killed it regrows 12% of its hull and every other Chorus ship within 2 hexes regrows 6%, up to 15% per ship each round.",
+      "after": "When an enemy ship dies, the Chorus ship that killed it regrows 12% of its hull and every other Chorus ship within 2 hexes regrows 6%, up to 12% per ship each round."
+    },
+    {
+      "path": "FAC_RULES.corsair.d",
+      "before": "Corsairs field no lance weapons, and their rocket pods fire salvos that point defense can thin.",
+      "after": "Hullbreakers field no lance weapons, and their rocket pods fire salvos that point defense can thin."
+    },
+    {
+      "path": "FAC_RULES.deathless.d",
+      "before": "The first Deathless ship to fall each battle (never the flagship) reassembles at the start of the next round with 35% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it.",
+      "after": "The first Eclipse ship to fall each battle (never the flagship) reassembles at the start of the next round with 35% hull and cannot fire that round; a fleet of 6 or more gets two returns. Funeral Pyre stops it."
+    },
+    {
+      "path": "FAC_RULES.deathless.n",
+      "before": "Endless legion",
+      "after": "Archive restore"
+    },
+    {
+      "path": "FAC_RULES.ithar.d",
+      "before": "At the start of its turn, a shield facing that was not hit since its last turn recharges to full, and a facing that was hit recharges twice. Ithar hulls cannot Brace.",
+      "after": "At the start of its turn, a shield facing that was not hit since its last turn recharges to full, and a facing that was hit recharges twice. Glasswright hulls cannot Brace."
+    },
+    {
+      "path": "FAC_VERBS.deathless.d",
+      "before": "Next battle, the endless legion has one more return.",
+      "after": "Next battle, Archive restore brings back one more ship."
+    },
+    {
+      "path": "FAC_VERBS.deathless.freeD",
+      "before": "free once a tomb-world has woken for you",
+      "after": "free once a dormant yard has woken a hull for you"
+    },
+    {
+      "path": "FAC_VERBS.deathless.n",
+      "before": "Waken the legion",
+      "after": "Back up the fleet"
+    },
+    {
+      "path": "FAC_VERBS.ithar.freeD",
+      "before": "free once you have joined the song",
+      "after": "free once you have answered the tone"
+    },
+    {
+      "path": "FAC_VERBS.voidsworn.freeD",
+      "before": "free after an offering at a void-shrine",
+      "after": "free after an offering at a wall of names"
+    },
+    {
+      "path": "FAC_VERBS.voidsworn.n",
+      "before": "Hold a vigil",
+      "after": "Keep the dawn watch"
+    },
+    {
+      "path": "FAC_WNAMES.deathless.doom",
+      "before": "Doom arc",
+      "after": "Corona arc"
+    },
+    {
+      "path": "FAC_WNAMES.deathless.flak",
+      "before": "Gauss shredder",
+      "after": "Null shredder"
+    },
+    {
+      "path": "FAC_WNAMES.deathless.gauss",
+      "before": "Gauss flayer",
+      "after": "Null cannon"
+    },
+    {
+      "path": "FAC_WNAMES.deathless.gsentry",
+      "before": "Gauss pylon",
+      "after": "Null spire"
+    },
+    {
+      "path": "FAC_WNAMES.ithar.pulsar",
+      "before": "Pulsar lance",
+      "after": "Prism lance"
+    },
+    {
+      "path": "FAC_WNAMES.voidsworn.autocannon",
+      "before": "Las-repeater",
+      "after": "Sear repeater"
+    },
+    {
+      "path": "FAC_WNAMES.voidsworn.battery",
+      "before": "Las-battery",
+      "after": "Sear battery"
+    },
+    {
+      "path": "FAC_WNAMES.voidsworn.flak",
+      "before": "Censer flak",
+      "after": "Spark flak"
+    },
+    {
+      "path": "FAC_WNAMES.voidsworn.hbattery",
+      "before": "Heavy las-broadside",
+      "after": "Heavy sear broadside"
+    },
+    {
+      "path": "FAC_WNAMES.voidsworn.lance",
+      "before": "Penance lance",
+      "after": "Oath lance"
+    },
+    {
+      "path": "FAC_WNAMES.voidsworn.torp",
+      "before": "Hellfire torpedo",
+      "after": "Cinder torpedo"
+    },
+    {
+      "path": "FAC_WNAMES.voidsworn.turret",
+      "before": "Las-turret",
+      "after": "Sear turret"
+    },
+    {
+      "path": "FAVOUR_TIERS",
+      "before": [
+        {
+          "at": 0,
+          "n": "Watching"
+        },
+        {
+          "at": 4,
+          "n": "Favoured",
+          "d": "Their boons are rare more often."
+        },
+        {
+          "at": 12,
+          "n": "Devoted",
+          "d": "If they watch your run, you start with one of their boons."
+        },
+        {
+          "at": 25,
+          "n": "Chosen",
+          "d": "Their boons are never common."
+        }
+      ],
+      "after": [
+        {
+          "at": 0,
+          "n": "Listening"
+        },
+        {
+          "at": 4,
+          "n": "Partial sync",
+          "d": "Its protocols are rare more often."
+        },
+        {
+          "at": 12,
+          "n": "Synced",
+          "d": "If it is in range of your run, you start with one of its protocols."
+        },
+        {
+          "at": 25,
+          "n": "Full sync",
+          "d": "Its protocols are never common."
+        }
+      ]
+    },
+    {
+      "path": "FNAMES.chorus",
+      "before": [
+        "Hive-node Ashk",
+        "Brood Vessel Ul",
+        "Shrieker",
+        "Mawling",
+        "Gorefeather",
+        "Sac-mother",
+        "Thornback",
+        "Tidehunger",
+        "Wet Choir",
+        "Crawling Hymn"
+      ],
+      "after": [
+        "Node Ashk",
+        "Brood Vessel Ul",
+        "Shrieker",
+        "Mawling",
+        "Gorebloom",
+        "Sac-mother",
+        "Thornback",
+        "Tidehunger",
+        "Wet Maw",
+        "Crawling Gut"
+      ]
+    },
+    {
+      "path": "FNAMES.corsair",
+      "before": [
+        "Rust Maw",
+        "Gutter Queen",
+        "Red Tithe",
+        "Scrapjaw",
+        "Ashen Grin",
+        "Last Laugh",
+        "Cinder Wolf",
+        "Bad Omen",
+        "Salvage Right",
+        "Hollow Crown"
+      ],
+      "after": [
+        "Rust Maw",
+        "Gutter Queen",
+        "Red Tally",
+        "Scrapjaw",
+        "Ashen Grin",
+        "Last Laugh",
+        "Cinder Wolf",
+        "Bad Omen",
+        "Salvage Right",
+        "Bent Crown"
+      ]
+    },
+    {
+      "path": "FNAMES.deathless",
+      "before": [
+        "Eternal Vigil",
+        "The Unbroken",
+        "Sepulchre",
+        "Tomb of Ashes",
+        "Grave Sovereign",
+        "Ossuary",
+        "Never-Ending",
+        "Obelisk",
+        "Dust Throne",
+        "Silent Heir"
+      ],
+      "after": [
+        "Long Noon",
+        "The Unbroken",
+        "Last Light Kept",
+        "Copy of Ardent",
+        "Ninth Shade",
+        "Cold Memory",
+        "Never-Ending",
+        "Gnomon",
+        "Dust of Noon",
+        "Silent Heir"
+      ]
+    },
+    {
+      "path": "FNAMES.hegemony",
+      "before": [
+        "HNS Dominator",
+        "HNS Relentless",
+        "HNS Sovereign",
+        "HNS Executor",
+        "HNS Imperious",
+        "HNS Harbinger",
+        "HNS Adjudicator",
+        "HNS Vigilance",
+        "HNS Tyrant",
+        "HNS Resolute"
+      ],
+      "after": [
+        "HNS Dominator",
+        "HNS Relentless",
+        "HNS Sovereign",
+        "HNS Comptroller",
+        "HNS Allocation",
+        "HNS Forecast",
+        "HNS Adjudicator",
+        "HNS Vigilance",
+        "HNS Tyrant",
+        "HNS Resolute"
+      ]
+    },
+    {
+      "path": "FNAMES.ithar",
+      "before": [
+        "Silverthorn",
+        "Dawnwhisper",
+        "Lament of Stars",
+        "Glass Heron",
+        "Moonveil",
+        "Farsinger",
+        "Pale Current",
+        "Starfall",
+        "Quiet Blade",
+        "Evening Tide"
+      ],
+      "after": [
+        "Silverthorn",
+        "Clear Whisper",
+        "Lament of Stars",
+        "Glass Heron",
+        "Moonveil",
+        "Far Focus",
+        "Pale Current",
+        "Starfall",
+        "Quiet Prism",
+        "Evening Tide"
+      ]
+    },
+    {
+      "path": "HULLS.ascendant.n",
+      "before": "Ascendant-class dreadnought",
+      "after": "Daybreak-class dreadnought"
+    },
+    {
+      "path": "HULLS.b_boss.n",
+      "before": "Hive Leviathan",
+      "after": "The Ninefold Maw"
+    },
+    {
+      "path": "HULLS.b_brood.n",
+      "before": "Chorus brood-mother",
+      "after": "Chorus brood-sac"
+    },
+    {
+      "path": "HULLS.b_razor.n",
+      "before": "Chorus razorfiend",
+      "after": "Chorus bladeback"
+    },
+    {
+      "path": "HULLS.b_razor_e.n",
+      "before": "Sun-eater razorfiend",
+      "after": "Sun-eater bladeback"
+    },
+    {
+      "path": "HULLS.b_razor_s.n",
+      "before": "Razorfiend stalker",
+      "after": "Bladeback stalker"
+    },
+    {
+      "path": "HULLS.c_hulk.n",
+      "before": "Corsair hulk-carrier",
+      "after": "Hullbreaker hulk-carrier"
+    },
+    {
+      "path": "HULLS.c_marauder.n",
+      "before": "Corsair marauder",
+      "after": "Hullbreaker wrecker"
+    },
+    {
+      "path": "HULLS.c_marauder_g.n",
+      "before": "Gilded marauder",
+      "after": "Trophy wrecker"
+    },
+    {
+      "path": "HULLS.c_raider.n",
+      "before": "Corsair raider",
+      "after": "Hullbreaker raider"
+    },
+    {
+      "path": "HULLS.c_reaver.n",
+      "before": "Corsair reaver",
+      "after": "Hullbreaker gutship"
+    },
+    {
+      "path": "HULLS.c_reaver_t.n",
+      "before": "Reaver gunboat",
+      "after": "Turret gutship"
+    },
+    {
+      "path": "HULLS.cathedral.n",
+      "before": "Cathedral-class battleship",
+      "after": "Bastion-class battleship"
+    },
+    {
+      "path": "HULLS.d_boss.n",
+      "before": "The Undying Throne",
+      "after": "The Unsetting"
+    },
+    {
+      "path": "HULLS.d_harvester.n",
+      "before": "Deathless harvester",
+      "after": "Eclipse zenith"
+    },
+    {
+      "path": "HULLS.d_harvester_t.n",
+      "before": "Harvester tomb-turret",
+      "after": "Turreted zenith"
+    },
+    {
+      "path": "HULLS.d_jackal.n",
+      "before": "Deathless jackal",
+      "after": "Eclipse flare"
+    },
+    {
+      "path": "HULLS.d_jackal_h.n",
+      "before": "Jackal court guard",
+      "after": "Archive guard flare"
+    },
+    {
+      "path": "HULLS.d_scythe.n",
+      "before": "Deathless scythe",
+      "after": "Eclipse mote"
+    },
+    {
+      "path": "HULLS.d_scythe_s.n",
+      "before": "Scythe sentinel",
+      "after": "Mote sentinel"
+    },
+    {
+      "path": "HULLS.h_dominion.n",
+      "before": "Dominion star dreadnought",
+      "after": "Dominion dreadnought"
+    },
+    {
+      "path": "HULLS.h_interdictor.n",
+      "before": "Interdictor destroyer",
+      "after": "Cordon destroyer"
+    },
+    {
+      "path": "HULLS.h_interdictor_e.n",
+      "before": "Interdictor column escort",
+      "after": "Cordon column escort"
+    },
+    {
+      "path": "HULLS.h_vanguard.n",
+      "before": "Vanguard star cruiser",
+      "after": "Vanguard cruiser"
+    },
+    {
+      "path": "HULLS.i_blade.n",
+      "before": "Ithar shadowblade",
+      "after": "Glasswright lancet"
+    },
+    {
+      "path": "HULLS.i_boss.n",
+      "before": "Worldsong Ark",
+      "after": "The Unfinished"
+    },
+    {
+      "path": "HULLS.i_carrier.n",
+      "before": "Ithar wraithcarrier",
+      "after": "Glasswright aperture"
+    },
+    {
+      "path": "HULLS.i_carrier_a.n",
+      "before": "Archive wraithcarrier",
+      "after": "Ringing aperture"
+    },
+    {
+      "path": "HULLS.i_song.n",
+      "before": "Ithar songship",
+      "after": "Glasswright prism"
+    },
+    {
+      "path": "HULLS.i_song_w.n",
+      "before": "Songship warden",
+      "after": "Warded prism"
+    },
+    {
+      "path": "HULLS.i_wisp.n",
+      "before": "Ithar wisp",
+      "after": "Glasswright sliver"
+    },
+    {
+      "path": "HULLS.i_wisp_l.n",
+      "before": "Wisp lancer",
+      "after": "Sliver lancer"
+    },
+    {
+      "path": "HULLS.penitent.n",
+      "before": "Penitent-class cruiser",
+      "after": "Vigil-class cruiser"
+    },
+    {
+      "path": "HULLS.reliquary.n",
+      "before": "Reliquary-class carrier",
+      "after": "Hearth-class carrier"
+    },
+    {
+      "path": "HULLS.vs_penitent_g.n",
+      "before": "Penitent gun-cruiser",
+      "after": "Vigil gun-cruiser"
+    },
+    {
+      "path": "HULLS.vs_penitent_l.n",
+      "before": "Penitent lantern-cruiser",
+      "after": "Vigil lance-cruiser"
+    },
+    {
+      "path": "HULL_VARIANTS.b_razor_e.n",
+      "before": "Sun-eater razorfiend",
+      "after": "Sun-eater bladeback"
+    },
+    {
+      "path": "HULL_VARIANTS.b_razor_s.n",
+      "before": "Razorfiend stalker",
+      "after": "Bladeback stalker"
+    },
+    {
+      "path": "HULL_VARIANTS.c_marauder_g.n",
+      "before": "Gilded marauder",
+      "after": "Trophy wrecker"
+    },
+    {
+      "path": "HULL_VARIANTS.c_reaver_t.n",
+      "before": "Reaver gunboat",
+      "after": "Turret gutship"
+    },
+    {
+      "path": "HULL_VARIANTS.d_harvester_t.d",
+      "before": "Its doom arc sits on a turret: it no longer has to turn to fire.",
+      "after": "Its corona arc sits on a turret: it no longer has to turn to fire."
+    },
+    {
+      "path": "HULL_VARIANTS.d_harvester_t.n",
+      "before": "Harvester tomb-turret",
+      "after": "Turreted zenith"
+    },
+    {
+      "path": "HULL_VARIANTS.d_jackal_h.n",
+      "before": "Jackal court guard",
+      "after": "Archive guard flare"
+    },
+    {
+      "path": "HULL_VARIANTS.d_scythe_s.d",
+      "before": "Adds gauss sentries: shoots down squadrons and boarders’ craft.",
+      "after": "Adds a null spire: shoots down squadrons and boarders’ craft."
+    },
+    {
+      "path": "HULL_VARIANTS.d_scythe_s.n",
+      "before": "Scythe sentinel",
+      "after": "Mote sentinel"
+    },
+    {
+      "path": "HULL_VARIANTS.h_interdictor_e.n",
+      "before": "Interdictor column escort",
+      "after": "Cordon column escort"
+    },
+    {
+      "path": "HULL_VARIANTS.h_vanguard_g.d",
+      "before": "No hangar; a third turbolaser turret instead.",
+      "after": "No hangar; a third plasma lance turret instead."
+    },
+    {
+      "path": "HULL_VARIANTS.i_carrier_a.n",
+      "before": "Archive wraithcarrier",
+      "after": "Ringing aperture"
+    },
+    {
+      "path": "HULL_VARIANTS.i_song_w.n",
+      "before": "Songship warden",
+      "after": "Warded prism"
+    },
+    {
+      "path": "HULL_VARIANTS.i_wisp_l.d",
+      "before": "A pulsar lance in place of the shuriken cannon.",
+      "after": "A prism lance in place of the prism shards."
+    },
+    {
+      "path": "HULL_VARIANTS.i_wisp_l.n",
+      "before": "Wisp lancer",
+      "after": "Sliver lancer"
+    },
+    {
+      "path": "HULL_VARIANTS.vs_penitent_g.d",
+      "before": "Swaps the prow lance for a dorsal macro battery: guns in every arc.",
+      "after": "Swaps the prow lance for a dorsal sear battery: guns in every arc."
+    },
+    {
+      "path": "HULL_VARIANTS.vs_penitent_g.n",
+      "before": "Penitent gun-cruiser",
+      "after": "Vigil gun-cruiser"
+    },
+    {
+      "path": "HULL_VARIANTS.vs_penitent_l.n",
+      "before": "Penitent lantern-cruiser",
+      "after": "Vigil lance-cruiser"
+    },
+    {
+      "path": "KILL_CAUSES.flay.w",
+      "before": "flayed by gauss fire",
+      "after": "unmade by null fire"
+    },
+    {
+      "path": "KILL_CAUSES.tidal.w",
+      "before": "torn apart by the dead star",
+      "after": "torn apart by the Hollow Sun"
+    },
+    {
+      "path": "KIND_NAME.gauss",
+      "before": "Gauss",
+      "after": "Null"
+    },
+    {
+      "path": "LEGACY.founder.d",
+      "before": "Begin each run with a random relic.",
+      "after": "Begin each run with a random piece of salvage."
+    },
+    {
+      "path": "LEGACY.founder.n",
+      "before": "Relic of the founders",
+      "after": "Founders’ salvage"
+    },
+    {
+      "path": "LEGACY.salvagers.n",
+      "before": "Salvage protocols",
+      "after": "Recovery crews"
+    },
+    {
+      "path": "LEGACY.u_dread.d",
+      "before": "Voidsworn fleets may take one Ascendant-class dreadnought.",
+      "after": "Sunward Crusade fleets may take one Daybreak-class dreadnought."
+    },
+    {
+      "path": "MODULES.auspex.n",
+      "before": "Auspex array",
+      "after": "Scanner array"
+    },
+    {
+      "path": "MODULES.capacitor.n",
+      "before": "Void shield capacitor",
+      "after": "Screen capacitor"
+    },
+    {
+      "path": "MODULES.cogitator.n",
+      "before": "Targeting cogitator",
+      "after": "Targeting reckoner"
+    },
+    {
+      "path": "MODULES.loaders.n",
+      "before": "Macro loaders",
+      "after": "Battery loaders"
+    },
+    {
+      "path": "MOD_NAMES.chorus.auspex",
+      "before": "Hunting eyes",
+      "after": "Tasting pores"
+    },
+    {
+      "path": "MOD_NAMES.corsair.magazine",
+      "before": "Extra torpedo racks",
+      "after": "Extra rocket racks"
+    },
+    {
+      "path": "MOD_NAMES.deathless.auspex",
+      "before": "Tomb sight",
+      "after": "Long-memory sight"
+    },
+    {
+      "path": "MOD_NAMES.deathless.capacitor",
+      "before": "Quantum shield node",
+      "after": "Corona-ward node"
+    },
+    {
+      "path": "MOD_NAMES.deathless.cogitator",
+      "before": "Calculus lattice",
+      "after": "Long-count reckoner"
+    },
+    {
+      "path": "MOD_NAMES.deathless.crystal",
+      "before": "Doom-arc focus",
+      "after": "Corona-arc focus"
+    },
+    {
+      "path": "MOD_NAMES.deathless.damcon",
+      "before": "Repair scarabs",
+      "after": "Repair drones"
+    },
+    {
+      "path": "MOD_NAMES.deathless.drive",
+      "before": "Inertialess drive",
+      "after": "Fold engine"
+    },
+    {
+      "path": "MOD_NAMES.deathless.gyro",
+      "before": "Gravitic vanes",
+      "after": "Gravitic stabilisers"
+    },
+    {
+      "path": "MOD_NAMES.deathless.hangar",
+      "before": "Scarab hive",
+      "after": "Drone bay"
+    },
+    {
+      "path": "MOD_NAMES.deathless.loaders",
+      "before": "Gauss accelerators",
+      "after": "Null accelerators"
+    },
+    {
+      "path": "MOD_NAMES.deathless.prow",
+      "before": "Living-metal plating",
+      "after": "Sunshade plating"
+    },
+    {
+      "path": "MOD_NAMES.deathless.regen",
+      "before": "Quantum regenerator",
+      "after": "Corona-ward regenerator"
+    },
+    {
+      "path": "MOD_NAMES.hegemony.loaders",
+      "before": "Turbolaser cyclers",
+      "after": "Pulse cyclers"
+    },
+    {
+      "path": "MOD_NAMES.hegemony.magazine",
+      "before": "Proton magazine",
+      "after": "Fusion magazine"
+    },
+    {
+      "path": "MOD_NAMES.ithar.auspex",
+      "before": "Farsight crystal",
+      "after": "Interferometer lens"
+    },
+    {
+      "path": "MOD_NAMES.ithar.cogitator",
+      "before": "Seer’s sight",
+      "after": "Clear eye"
+    },
+    {
+      "path": "MOD_NAMES.ithar.damcon",
+      "before": "Song of mending",
+      "after": "Annealing kilns"
+    },
+    {
+      "path": "MOD_NAMES.ithar.drive",
+      "before": "Solar sail extension",
+      "after": "Solar vane extension"
+    },
+    {
+      "path": "MOD_NAMES.ithar.loaders",
+      "before": "Shuriken feeders",
+      "after": "Shard hoppers"
+    },
+    {
+      "path": "MOD_NAMES.ithar.prow",
+      "before": "Wraithbone keel",
+      "after": "Waveguide spine"
+    },
+    {
+      "path": "MOD_NAMES.ithar.regen",
+      "before": "Dawnlight lattice",
+      "after": "Stored-light reservoir"
+    },
+    {
+      "path": "MORE_SHIP_NAMES.chorus",
+      "before": [
+        "Shrieking Coil",
+        "Brood Vessel Om",
+        "Mournful Gut",
+        "Spine Choir",
+        "Hive-node Vesk",
+        "Crawling Hymn",
+        "Wet Psalm",
+        "Gnawing Bloom",
+        "Tide of Teeth",
+        "Hollowsong"
+      ],
+      "after": [
+        "Shrieking Coil",
+        "Brood Vessel Om",
+        "Sour Gut",
+        "Spine Gullet",
+        "Node Vesk",
+        "Crawling Maw",
+        "Wet Mouth",
+        "Gnawing Bloom",
+        "Tide of Teeth",
+        "Hollowgut"
+      ]
+    },
+    {
+      "path": "MORE_SHIP_NAMES.corsair",
+      "before": [
+        "Bilge Rat",
+        "Salt Debt",
+        "Last Laugh",
+        "Nine Lives",
+        "Scrapjaw",
+        "Black Ledger",
+        "Gilded Liar",
+        "Rattletrap",
+        "Widow’s Wager",
+        "Low Tide"
+      ],
+      "after": [
+        "No Quarter",
+        "Gut Hook",
+        "Chain of Teeth",
+        "Forty Captains",
+        "Second Death",
+        "Scrapjaw",
+        "Cold Trail",
+        "Rattletrap",
+        "Long Howl",
+        "Last Scent"
+      ]
+    },
+    {
+      "path": "MORE_SHIP_NAMES.deathless",
+      "before": [
+        "Tomb of Nine Kings",
+        "Ankh of Ash",
+        "Silent Procession",
+        "Dust Eternal",
+        "The Unsleeping",
+        "Obelisk of Night",
+        "Crypt of Teeth",
+        "Sunless Barge",
+        "Pale Sovereign",
+        "Ever-Watch"
+      ],
+      "after": [
+        "Remembered Noon",
+        "Warmth Recalled",
+        "Silent Procession",
+        "Long Night",
+        "The Unsleeping",
+        "Shade of Noon",
+        "Ninth Winter",
+        "Sunless Hours",
+        "Cold Archive",
+        "Noon Kept"
+      ]
+    },
+    {
+      "path": "MORE_SHIP_NAMES.hegemony",
+      "before": [
+        "HNS Steadfast",
+        "HNS Arbiter",
+        "HNS Ironclad",
+        "HNS Resolute",
+        "HNS Bastion",
+        "HNS Ascendancy",
+        "HNS Vindicator",
+        "HNS Castellan",
+        "HNS Paragon",
+        "HNS Unflinching"
+      ],
+      "after": [
+        "HNS Steadfast",
+        "HNS Arbiter",
+        "HNS Optimal",
+        "HNS Resolute",
+        "HNS Consensus",
+        "HNS Ascendancy",
+        "HNS Projection",
+        "HNS Punctual",
+        "HNS Paragon",
+        "HNS Unflinching"
+      ]
+    },
+    {
+      "path": "MORE_SHIP_NAMES.ithar",
+      "before": [
+        "Glass Requiem",
+        "Morningveil",
+        "Starfall",
+        "Quiet Wing",
+        "Lumen Arc",
+        "Silver Lament",
+        "Aurora’s Grace",
+        "Farlight",
+        "Moonsorrow",
+        "Petal Storm"
+      ],
+      "after": [
+        "Last Reflection",
+        "Morningveil",
+        "Starfall",
+        "Quiet Wing",
+        "Lumen Arc",
+        "Silver Lament",
+        "Held Spectrum",
+        "Farlight",
+        "Moonsorrow",
+        "What We Built"
+      ]
+    },
+    {
+      "path": "MOVE_RULES.deathless.n",
+      "before": "Phase drive",
+      "after": "Fold drive"
+    },
+    {
+      "path": "MOVE_RULES.ithar.d",
+      "before": "After moving 2+ hexes, enemies get −14 to hit it (others need 3 hexes for −5).",
+      "after": "After moving 2+ hexes, enemies get −18 to hit it (others need 3 hexes for −5)."
+    },
+    {
+      "path": "MOVE_RULES.ithar.evade",
+      "before": 14,
+      "after": 18
+    },
+    {
+      "path": "MOVE_RULES.ithar.n",
+      "before": "Fan sails",
+      "after": "Crystal vanes"
+    },
+    {
+      "path": "MOVE_RULES.voidsworn.d",
+      "before": "Port and starboard guns hit 30% harder after moving 2+ hexes (others get 10%).",
+      "after": "Port and starboard guns hit 40% harder after moving 2+ hexes (others get 10%)."
+    },
+    {
+      "path": "MOVE_RULES.voidsworn.rake",
+      "before": "#d:3fd3333333333333",
+      "after": "#d:3fd999999999999a"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.chorus.aim",
+      "before": "Hunting eyes",
+      "after": "Tasting pores"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.deathless.aim",
+      "before": "Barrow sight",
+      "after": "Long-memory sight"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.deathless.armor",
+      "before": "Grave-alloy shell",
+      "after": "Sunshade shell"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.deathless.evasion",
+      "before": "Phase drift",
+      "after": "Fold skips"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.deathless.pd",
+      "before": "Gauss pylons",
+      "after": "Null spires"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.deathless.shields",
+      "before": "Quantum ward",
+      "after": "Corona ward"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.deathless.special.n",
+      "before": "Wider legion",
+      "after": "Deeper backups"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.ithar.aim",
+      "before": "Farsight crystals",
+      "after": "Interferometer lenses"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.ithar.armor",
+      "before": "Dawnglass spine",
+      "after": "Waveguide spine"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.ithar.shields",
+      "before": "Prism lattice",
+      "after": "Prism matrix"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.voidsworn.aim",
+      "before": "Augury rites",
+      "after": "Hand-laid sights"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.voidsworn.armor",
+      "before": "Blessed plate",
+      "after": "Riveted plate"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.voidsworn.evasion",
+      "before": "Litany of speed",
+      "after": "Oath of speed"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.voidsworn.pd",
+      "before": "Censer flak",
+      "after": "Spark flak"
+    },
+    {
+      "path": "NEM_ADAPT_FAC.voidsworn.shields",
+      "before": "Ward rites",
+      "after": "Screen drills"
+    },
+    {
+      "path": "NEM_FAC.chorus.pre",
+      "before": [
+        "Seventh",
+        "Hollow",
+        "Wet",
+        "Grieving",
+        "Ninefold",
+        "Brine",
+        "Pale",
+        "Deep",
+        "Thrumming",
+        "Gnawing"
+      ],
+      "after": [
+        "Seventh",
+        "Hollow",
+        "Wet",
+        "Sour",
+        "Bloated",
+        "Brine",
+        "Pale",
+        "Deep",
+        "Thrumming",
+        "Gnawing"
+      ]
+    },
+    {
+      "path": "NEM_FAC.chorus.titles",
+      "before": [
+        "Spawn-mother",
+        "Elder Throat",
+        "Gorge-mind",
+        "Brood-queen"
+      ],
+      "after": [
+        "Spawn-mother",
+        "Elder Throat",
+        "Gorge-mind",
+        "Maw-mother"
+      ]
+    },
+    {
+      "path": "NEM_FAC.corsair.post",
+      "before": [
+        "Tooth",
+        "Maw",
+        "Gut",
+        "Vane",
+        "Hook",
+        "Knuckle",
+        "Rot",
+        "Grin",
+        "Spur",
+        "Wreck"
+      ],
+      "after": [
+        "Tooth",
+        "Maw",
+        "Gut",
+        "Vise",
+        "Hook",
+        "Knuckle",
+        "Rot",
+        "Grin",
+        "Spur",
+        "Wreck"
+      ]
+    },
+    {
+      "path": "NEM_FAC.corsair.pre",
+      "before": [
+        "Krag",
+        "Vash",
+        "Rusk",
+        "Gor",
+        "Snag",
+        "Black",
+        "Red",
+        "Mad",
+        "Skarn",
+        "Jagg"
+      ],
+      "after": [
+        "Krag",
+        "Drog",
+        "Rusk",
+        "Gor",
+        "Snag",
+        "Hask",
+        "Grul",
+        "Murg",
+        "Skarn",
+        "Jagg"
+      ]
+    },
+    {
+      "path": "NEM_FAC.corsair.scarBy.wound",
+      "before": [
+        "Ironjaw",
+        "Patchwork",
+        "One-Eye"
+      ],
+      "after": [
+        "Broken-Jaw",
+        "Patchwork",
+        "One-Eye"
+      ]
+    },
+    {
+      "path": "NEM_FAC.corsair.scars",
+      "before": [
+        "the Burned",
+        "Ironjaw",
+        "Half-Face",
+        "the Uncaught",
+        "Patchwork",
+        "One-Eye"
+      ],
+      "after": [
+        "the Burned",
+        "Broken-Jaw",
+        "Half-Face",
+        "the Uncaught",
+        "Patchwork",
+        "One-Eye"
+      ]
+    },
+    {
+      "path": "NEM_FAC.corsair.titles",
+      "before": [
+        "Reaver-king",
+        "Warlord",
+        "Scrap-baron",
+        "Pirate prince"
+      ],
+      "after": [
+        "Apex",
+        "First Claw",
+        "Den-alpha",
+        "Warlord"
+      ]
+    },
+    {
+      "path": "NEM_FAC.deathless.fem",
+      "before": [
+        "Esm",
+        "Ed",
+        "Sig"
+      ],
+      "after": [
+        "Ess",
+        "Kae",
+        "Iv"
+      ]
+    },
+    {
+      "path": "NEM_FAC.deathless.post",
+      "before": [
+        "ric",
+        "mar",
+        "wyn",
+        "gar",
+        "wine",
+        "mund",
+        "red",
+        "ith",
+        "helm",
+        "wold"
+      ],
+      "after": [
+        "un",
+        "lo",
+        "vane",
+        "eth",
+        "ane",
+        "ix",
+        "or",
+        "ael",
+        "en",
+        "ast"
+      ]
+    },
+    {
+      "path": "NEM_FAC.deathless.pre",
+      "before": [
+        "Ald",
+        "Cor",
+        "Esm",
+        "Hal",
+        "Ord",
+        "Gyr",
+        "Wulf",
+        "Sig",
+        "Mor",
+        "Ed"
+      ],
+      "after": [
+        "Mar",
+        "Kae",
+        "Hal",
+        "Tor",
+        "Ess",
+        "Ul",
+        "Vor",
+        "Iv",
+        "Sar",
+        "Den"
+      ]
+    },
+    {
+      "path": "NEM_FAC.deathless.scarBy.fled",
+      "before": [
+        "the Patient",
+        "the Unfinished"
+      ],
+      "after": [
+        "of the Late Copy",
+        "Half-Restored"
+      ]
+    },
+    {
+      "path": "NEM_FAC.deathless.scarBy.wound",
+      "before": [
+        "the Twice-Dead",
+        "Cracked-Crown",
+        "the Rebuilt"
+      ],
+      "after": [
+        "the Twice-Dead",
+        "Cracked-Visor",
+        "the Rebuilt"
+      ]
+    },
+    {
+      "path": "NEM_FAC.deathless.scars",
+      "before": [
+        "the Twice-Dead",
+        "the Rebuilt",
+        "Cracked-Crown",
+        "the Unfinished",
+        "Hollow-Eye",
+        "the Patient"
+      ],
+      "after": [
+        "the Twice-Dead",
+        "the Rebuilt",
+        "Cracked-Visor",
+        "Half-Restored",
+        "Hollow-Eye",
+        "of the Late Copy"
+      ]
+    },
+    {
+      "path": "NEM_FAC.deathless.titles",
+      "before": [
+        "Ash-king",
+        "Regent",
+        "Barrow-king",
+        "Dust-sovereign"
+      ],
+      "after": [
+        "High Nadir",
+        "Eclipse-prime",
+        "Archivist",
+        "Nadir"
+      ]
+    },
+    {
+      "path": "NEM_FAC.hegemony.fem",
+      "before": [
+        "Ilsa",
+        "Petra",
+        "Katrin",
+        "Sanne"
+      ],
+      "after": [
+        "Marit",
+        "Petra",
+        "Katrin",
+        "Sanne"
+      ]
+    },
+    {
+      "path": "NEM_FAC.hegemony.pre",
+      "before": [
+        "Konrad",
+        "Ilsa",
+        "Viktor",
+        "Aldric",
+        "Petra",
+        "Halvar",
+        "Ruprecht",
+        "Katrin",
+        "Sanne",
+        "Gerold"
+      ],
+      "after": [
+        "Konrad",
+        "Marit",
+        "Viktor",
+        "Aldric",
+        "Petra",
+        "Halvar",
+        "Ruprecht",
+        "Katrin",
+        "Sanne",
+        "Gerold"
+      ]
+    },
+    {
+      "path": "NEM_FAC.hegemony.scarBy.burn",
+      "before": [
+        "the Burned Admiral",
+        "Scarface"
+      ],
+      "after": [
+        "the Burned Admiral",
+        "Scar-Cheek"
+      ]
+    },
+    {
+      "path": "NEM_FAC.hegemony.scarBy.wound",
+      "before": [
+        "One-Arm",
+        "Ironside",
+        "Scarface"
+      ],
+      "after": [
+        "One-Arm",
+        "Ironside",
+        "Scar-Cheek"
+      ]
+    },
+    {
+      "path": "NEM_FAC.hegemony.scars",
+      "before": [
+        "the Burned Admiral",
+        "Ironside",
+        "One-Arm",
+        "the Unbroken",
+        "Scarface",
+        "the Survivor"
+      ],
+      "after": [
+        "the Burned Admiral",
+        "Ironside",
+        "One-Arm",
+        "the Unbroken",
+        "Scar-Cheek",
+        "the Survivor"
+      ]
+    },
+    {
+      "path": "NEM_FAC.hegemony.titles",
+      "before": [
+        "Grand Admiral",
+        "Fleet Marshal",
+        "Line Admiral",
+        "High Commodore"
+      ],
+      "after": [
+        "First Admiral",
+        "Fleet Marshal",
+        "Line Admiral",
+        "High Commodore"
+      ]
+    },
+    {
+      "path": "NEM_FAC.ithar.fem",
+      "before": [
+        "Ael",
+        "Sae",
+        "Fae",
+        "Ely",
+        "Lir"
+      ],
+      "after": [
+        "Ves",
+        "Ish",
+        "Ny",
+        "Dre"
+      ]
+    },
+    {
+      "path": "NEM_FAC.ithar.post",
+      "before": [
+        "wyn",
+        "riel",
+        "thas",
+        "lune",
+        "vael",
+        "dris",
+        "eth",
+        "nor",
+        "iel",
+        "ane"
+      ],
+      "after": [
+        "ek",
+        "is",
+        "oro",
+        "an",
+        "et",
+        "ul",
+        "ith",
+        "im",
+        "os",
+        "ae"
+      ]
+    },
+    {
+      "path": "NEM_FAC.ithar.pre",
+      "before": [
+        "Ael",
+        "Ith",
+        "Sae",
+        "Ny",
+        "Cael",
+        "Lir",
+        "Tal",
+        "Fae",
+        "Ely",
+        "Ors"
+      ],
+      "after": [
+        "Kor",
+        "Sev",
+        "Tal",
+        "Ol",
+        "Ves",
+        "Dre",
+        "Ish",
+        "Ren",
+        "Cal",
+        "Ny"
+      ]
+    },
+    {
+      "path": "NEM_FAC.ithar.scarBy.wound",
+      "before": [
+        "the Scarred Sail",
+        "Thornwing",
+        "the Cracked Prism"
+      ],
+      "after": [
+        "the Scarred Vane",
+        "Thornwing",
+        "the Cracked Prism"
+      ]
+    },
+    {
+      "path": "NEM_FAC.ithar.scars",
+      "before": [
+        "the Cracked Prism",
+        "Dimmed",
+        "the Scarred Sail",
+        "Thornwing",
+        "the Unbowed",
+        "Ashwake"
+      ],
+      "after": [
+        "the Cracked Prism",
+        "Dimmed",
+        "the Scarred Vane",
+        "Thornwing",
+        "the Unbowed",
+        "Ashwake"
+      ]
+    },
+    {
+      "path": "NEM_FAC.ithar.titles",
+      "before": [
+        "Seraph",
+        "Starwarden",
+        "Duelist",
+        "Wing-lord"
+      ],
+      "after": [
+        "Lens-keeper",
+        "First Mirror",
+        "Keeper of Astra",
+        "Duelist"
+      ]
+    },
+    {
+      "path": "NEM_FAC.voidsworn.fem",
+      "before": [
+        "Sister"
+      ],
+      "after": [
+        "Margit",
+        "Ida",
+        "Hedda",
+        "Agathe",
+        "Edda"
+      ]
+    },
+    {
+      "path": "NEM_FAC.voidsworn.masc",
+      "before": [
+        "Brother"
+      ],
+      "after": [
+        "Leofric",
+        "Osmund",
+        "Berthold",
+        "Wendel",
+        "Gunther"
+      ]
+    },
+    {
+      "path": "NEM_FAC.voidsworn.pre",
+      "before": [
+        "Saint",
+        "Brother",
+        "Censor",
+        "Provost",
+        "Shriver",
+        "Votary",
+        "Arch-deacon",
+        "Cantor",
+        "Sister",
+        "Lector"
+      ],
+      "after": [
+        "Leofric",
+        "Margit",
+        "Osmund",
+        "Ida",
+        "Berthold",
+        "Hedda",
+        "Wendel",
+        "Agathe",
+        "Gunther",
+        "Edda"
+      ]
+    },
+    {
+      "path": "NEM_FAC.voidsworn.scarBy.burn",
+      "before": [
+        "the Branded",
+        "Burnt-Psalm",
+        "Ashface"
+      ],
+      "after": [
+        "the Branded",
+        "Burnt-Oath",
+        "Ashface"
+      ]
+    },
+    {
+      "path": "NEM_FAC.voidsworn.scarBy.fled",
+      "before": [
+        "the Unrepentant"
+      ],
+      "after": [
+        "the Debt-Bound"
+      ]
+    },
+    {
+      "path": "NEM_FAC.voidsworn.scarBy.wound",
+      "before": [
+        "Ironhand",
+        "the Martyr-Scarred"
+      ],
+      "after": [
+        "Iron-Armed",
+        "the Frost-Scarred"
+      ]
+    },
+    {
+      "path": "NEM_FAC.voidsworn.scars",
+      "before": [
+        "the Branded",
+        "Ironhand",
+        "the Martyr-Scarred",
+        "Burnt-Psalm",
+        "the Unrepentant",
+        "Ashface"
+      ],
+      "after": [
+        "the Branded",
+        "Iron-Armed",
+        "the Frost-Scarred",
+        "Burnt-Oath",
+        "the Debt-Bound",
+        "Ashface"
+      ]
+    },
+    {
+      "path": "NEM_FAC.voidsworn.titles",
+      "before": [
+        "Crusade-master",
+        "High Votary",
+        "Lord Censor",
+        "Arch-shriver"
+      ],
+      "after": [
+        "High Warden",
+        "Warden of the Roll",
+        "Dawnwarden",
+        "Oath-warden"
+      ]
+    },
+    {
+      "path": "NEM_TRAITS.undying.n",
+      "before": "Endless dead",
+      "after": "Spare frames"
+    },
+    {
+      "path": "NODE_INFO.elite.d",
+      "before": "Tougher enemies with veteran captains. Drops a relic.",
+      "after": "Tougher enemies with veteran captains. Drops salvage."
+    },
+    {
+      "path": "PATRONS.ember.glyph",
+      "before": "E",
+      "after": "S"
+    },
+    {
+      "path": "PATRONS.ember.n",
+      "before": "The Ember Choir",
+      "after": "S-6 Seren, the Last Flame"
+    },
+    {
+      "path": "PATRONS.ember.quote",
+      "before": "Sing, and let the void burn with you.",
+      "after": "Burn, and let the dark burn with you."
+    },
+    {
+      "path": "PATRONS.ember.short",
+      "before": "The Choir",
+      "after": "Seren"
+    },
+    {
+      "path": "PATRONS.hunger.n",
+      "before": "The Hunger Below",
+      "after": "H-3 Crucible, \"the Hunger Below\""
+    },
+    {
+      "path": "PATRONS.hunger.short",
+      "before": "The Hunger",
+      "after": "Crucible"
+    },
+    {
+      "path": "PATRONS.iron.n",
+      "before": "Kharon, the Iron Saint",
+      "after": "K-1 Kharon, the Unbent"
+    },
+    {
+      "path": "PATRONS.rook.n",
+      "before": "Rook, the Breaker",
+      "after": "R-5 Rook, the Breaker"
+    },
+    {
+      "path": "PATRONS.star.n",
+      "before": "Astra, the Silent Star",
+      "after": "A-4 Astra, the Silent Star"
+    },
+    {
+      "path": "PATRONS.storm.n",
+      "before": "Vyre, the Storm Queen",
+      "after": "V-2 Vyre, the Storm Queen"
+    },
+    {
+      "path": "PERKS.deflector.n",
+      "before": "Deflector savant",
+      "after": "Shield savant"
+    },
+    {
+      "path": "PERKS.lanceadept.n",
+      "before": "Lance adept",
+      "after": "Lance savant"
+    },
+    {
+      "path": "RAMP.boss",
+      "before": [
+        0,
+        "#d:3fd3333333333333",
+        "#d:3fe199999999999a",
+        "#d:3fe4cccccccccccd"
+      ],
+      "after": [
+        0,
+        "#d:3fd3333333333333",
+        "#d:3fdc28f5c28f5c29",
+        "#d:3fe0f5c28f5c28f6"
+      ]
+    },
+    {
+      "path": "RAMP.grow",
+      "before": [
+        0,
+        "#d:3ff3333333333333",
+        "#d:3ff4000000000000",
+        "#d:3ff599999999999a"
+      ],
+      "after": [
+        0,
+        "#d:3ff3333333333333",
+        "#d:3ff3d70a3d70a3d7",
+        "#d:3ff428f5c28f5c29"
+      ]
+    },
+    {
+      "path": "RAMP.thin",
+      "before": [
+        0,
+        "#d:3fe75c28f5c28f5c",
+        "#d:3fe5c28f5c28f5c3",
+        "#d:3fe47ae147ae147b"
+      ],
+      "after": [
+        0,
+        "#d:3fe75c28f5c28f5c",
+        "#d:3fe599999999999a",
+        "#d:3fe3d70a3d70a3d7"
+      ]
+    },
+    {
+      "path": "RELICS.cogitator.n",
+      "before": "Archeotech rangefinder",
+      "after": "Founders’ rangefinder"
+    },
+    {
+      "path": "RELICS.coils.n",
+      "before": "Blessed plasma coils",
+      "after": "Hand-wound plasma coils"
+    },
+    {
+      "path": "RELICS.compass.n",
+      "before": "Wraithbone compass",
+      "after": "Founders’ compass"
+    },
+    {
+      "path": "RELICS.lattice.n",
+      "before": "Xeno shield lattice",
+      "after": "Alien shield matrix"
+    },
+    {
+      "path": "RELICS.martyr.n",
+      "before": "Reliquary of the Martyr",
+      "after": "The Chalked Roll"
+    },
+    {
+      "path": "RELICS.phylactery.n",
+      "before": "Deathless phylactery",
+      "after": "Eclipse backup frame"
+    },
+    {
+      "path": "RELICS.salvage.n",
+      "before": "Salvage rig",
+      "after": "Scrap rig"
+    },
+    {
+      "path": "RELIC_NAMES.chorus.cogitator",
+      "before": "Compound eye cluster",
+      "after": "Heat-tasting pits"
+    },
+    {
+      "path": "RELIC_NAMES.chorus.lattice",
+      "before": "Stolen shield lattice",
+      "after": "Swallowed shield cells"
+    },
+    {
+      "path": "RELIC_NAMES.chorus.logbook",
+      "before": "Memory of the hive",
+      "after": "Taste of old prey"
+    },
+    {
+      "path": "RELIC_NAMES.corsair.compass",
+      "before": "Wraithbone compass",
+      "after": "Wake-tracker"
+    },
+    {
+      "path": "RELIC_NAMES.corsair.lattice",
+      "before": "Ithar shield shard",
+      "after": "Glasswright shield shard"
+    },
+    {
+      "path": "RELIC_NAMES.corsair.logbook",
+      "before": "Pirate king’s logbook",
+      "after": "Warlord’s kill tally"
+    },
+    {
+      "path": "RELIC_NAMES.corsair.martyr",
+      "before": "Captain’s lucky skull",
+      "after": "Dead captain’s harness"
+    },
+    {
+      "path": "RELIC_NAMES.corsair.salvage",
+      "before": "Salvage rig",
+      "after": "Scrap rig"
+    },
+    {
+      "path": "RELIC_NAMES.deathless.armourweave",
+      "before": "Living-metal weave",
+      "after": "Sunshade weave"
+    },
+    {
+      "path": "RELIC_NAMES.deathless.coils",
+      "before": "Chronometron",
+      "after": "Long clock"
+    },
+    {
+      "path": "RELIC_NAMES.deathless.ledger",
+      "before": "Tithe ledger",
+      "after": "Siphon ledger"
+    },
+    {
+      "path": "RELIC_NAMES.deathless.logbook",
+      "before": "Annals of the dynasty",
+      "after": "The Archive"
+    },
+    {
+      "path": "RELIC_NAMES.deathless.martyr",
+      "before": "Crown of the first dynasty",
+      "after": "Last image of Ardent"
+    },
+    {
+      "path": "RELIC_NAMES.deathless.phylactery",
+      "before": "Phylactery of the Undying",
+      "after": "Second Ignition"
+    },
+    {
+      "path": "RELIC_NAMES.deathless.salvage",
+      "before": "Harvest engine",
+      "after": "Salvage swarm"
+    },
+    {
+      "path": "RELIC_NAMES.hegemony.armourweave",
+      "before": "Durasteel weave",
+      "after": "Hardsteel weave"
+    },
+    {
+      "path": "RELIC_NAMES.hegemony.cogitator",
+      "before": "Imperial targeting array",
+      "after": "Registry targeting array"
+    },
+    {
+      "path": "RELIC_NAMES.hegemony.compass",
+      "before": "Hyperdrive motivator",
+      "after": "Jump-drive regulator"
+    },
+    {
+      "path": "RELIC_NAMES.hegemony.salvage",
+      "before": "Salvage rig",
+      "after": "Scrap rig"
+    },
+    {
+      "path": "RELIC_NAMES.ithar.banner",
+      "before": "Banner of the lost world",
+      "after": "Banner of Ardent"
+    },
+    {
+      "path": "RELIC_NAMES.ithar.cogitator",
+      "before": "Seer’s eye",
+      "after": "Ancestral lens"
+    },
+    {
+      "path": "RELIC_NAMES.ithar.lattice",
+      "before": "Prism lattice",
+      "after": "Prism matrix"
+    },
+    {
+      "path": "REWARD_DEF.boon",
+      "before": "A boon is a bonus from a patron that lasts for the rest of this run. Rarity sets how strong it is.",
+      "after": "A protocol is a bonus from a core that lasts for the rest of this run. Rarity sets how strong it is."
+    },
+    {
+      "path": "REWARD_DEF.relic",
+      "before": "A relic is a fleet-wide effect that lasts for the rest of this run.",
+      "after": "Salvage is a fleet-wide effect that lasts for the rest of this run."
+    },
+    {
+      "path": "REWARD_DEF.salvage",
+      "before": "Salvage: work one wreck from this fight. Strip it for a refit, scrap it for credits, or (Corsairs) tow a small hull home.",
+      "after": "Strip: work one wreck from this fight. Strip it for a refit, scrap it for credits, or (Hullbreakers) tow a small hull home."
+    },
+    {
+      "path": "RUN_WORD.deathless",
+      "before": "reclamation",
+      "after": "Homecoming"
+    },
+    {
+      "path": "SHAPES.colossus",
+      "before": "Colossus",
+      "after": "Giant wreck"
+    },
+    {
+      "path": "SHAPES.deadstar",
+      "before": "Dead star",
+      "after": "Hollow Sun"
+    },
+    {
+      "path": "SHAPES.shoals",
+      "before": "Shoals",
+      "after": "Rock shoals"
+    },
+    {
+      "path": "SHIP_NAMES",
+      "before": [
+        "Unyielding Oath",
+        "Saint Vesper’s Wrath",
+        "Ashen Vigil",
+        "Lament of Iron",
+        "Bright Censure",
+        "Hymn of Ruin",
+        "Oathkeeper",
+        "Merciless Litany",
+        "Cinder Psalm",
+        "Pale Crusader",
+        "Everwatch",
+        "Grave Tithe",
+        "Sanctified Fury",
+        "Iron Requiem",
+        "Dawn of Cinders",
+        "Martyr’s Resolve",
+        "Judgement Bell",
+        "Votive Flame",
+        "Sorrow’s Edge",
+        "Penance Undying",
+        "Relentless Canticle",
+        "Obsidian Choir",
+        "Hallowed Anvil",
+        "Last Benediction",
+        "Wrathful Seraph",
+        "Cold Absolution",
+        "Thorn of Heaven",
+        "Vigilant Censer"
+      ],
+      "after": [
+        "Unyielding Oath",
+        "Wrath of Vesper",
+        "Ashen Vigil",
+        "Long Watch",
+        "Bright Censure",
+        "Banked Fire",
+        "Oathkeeper",
+        "Merciless Frost",
+        "Cinder Vow",
+        "Pale Crusader",
+        "Everwatch",
+        "Debt of Vesper",
+        "Cold Fury",
+        "Iron Dusk",
+        "Dawn of Cinders",
+        "Resolve of the Reach",
+        "Judgement Bell",
+        "Oath Flame",
+        "Edge of Winter",
+        "Unpaid Debt",
+        "Relentless Ember",
+        "Obsidian Brand",
+        "Black Anvil",
+        "Acceptable Loss",
+        "Burning Spire",
+        "Cold Reckoning",
+        "Thorn of the Reach",
+        "Vigilant Ash"
+      ]
+    },
+    {
+      "path": "W.battery.n",
+      "before": "Macro battery",
+      "after": "Gun battery"
+    },
+    {
+      "path": "W.bioplasma.n",
+      "before": "Bio-plasma",
+      "after": "Bile spray"
+    },
+    {
+      "path": "W.doom.n",
+      "before": "Doom arc",
+      "after": "Corona arc"
+    },
+    {
+      "path": "W.gauss.n",
+      "before": "Gauss flayer",
+      "after": "Null cannon"
+    },
+    {
+      "path": "W.gsentry.n",
+      "before": "Gauss sentries",
+      "after": "Null sentries"
+    },
+    {
+      "path": "W.hbattery.n",
+      "before": "Heavy macro battery",
+      "after": "Heavy gun battery"
+    },
+    {
+      "path": "W.hturbo.n",
+      "before": "Heavy turbolaser",
+      "after": "Heavy pulse laser"
+    },
+    {
+      "path": "W.pulsar.n",
+      "before": "Pulsar lance",
+      "after": "Prism lance"
+    },
+    {
+      "path": "W.shard.n",
+      "before": "Shuriken cannon",
+      "after": "Shard cannon"
+    },
+    {
+      "path": "W.spores.n",
+      "before": "Spore mines",
+      "after": "Spore drifts"
+    },
+    {
+      "path": "W.turbo.n",
+      "before": "Turbolaser",
+      "after": "Pulse laser"
+    },
+    {
+      "path": "WIN_TITLE.corsair",
+      "before": "The loot is yours",
+      "after": "Strongest keeps it"
+    },
+    {
+      "path": "WIN_TITLE.deathless",
+      "before": "The Dynasty rises",
+      "after": "Noon returns"
+    },
+    {
+      "path": "WIN_TITLE.ithar",
+      "before": "The Ithar endure",
+      "after": "The light is kept"
+    }
+  ]
+}
