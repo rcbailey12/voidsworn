@@ -1,3 +1,5 @@
+> Subsequent verification: both proposed fixes now pass Godot 4.7.2 compilation and scoped runtime/parity. See [the current validation record](../godot_validation_2026_10_31/README.md). The unverified labels below describe this candidate's earlier preparation stage.
+
 # Elite guarantee candidate for Opus
 
 Prepared against main `17268efa081059a6923daa9e19e8b345a437714d`, October 31, 2026.

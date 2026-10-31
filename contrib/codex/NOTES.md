@@ -7,7 +7,7 @@ and separates prepared copies from unfinished implementation work.
 The added `proposed/campaign_run.js` is a shipwright fix candidate only. An isolated
 run of all 80 assertions changes exactly TXT-2 from FAIL to PASS (9 pass / 71 fail),
 with the other 79 outcomes unchanged. Its evidence is under
-`reviews/opus_ready_2026_10_31/`. Godot adoption and parity are still required.
+`reviews/opus_ready_2026_10_31/`. Godot adoption remains required; the subsequent checks below now cover compilation and scoped runtime/parity.
 
 ## Elite guarantee candidate added
 
@@ -18,14 +18,27 @@ failures across 4,500 maps and 1,920 battle setups. Elite-only changes exactly W
 (9 pass / 71 fail); together with shipwright, exactly W3-1 and TXT-2 change
 (10 pass / 70 fail).
 
-`proposed/godot/campaign/campaign.gd` prepares both matching changes, but Godot
-compilation/runtime/parity have NOT been tested. It combines jobs 2 and 3, so use
+`proposed/godot/campaign/campaign.gd` prepares both matching changes. Subsequent Godot 4.7.2 compilation, 30-seed campaign parity, 64 Nemesis records and 4,506 targeted cross-engine vectors all pass; see the newer validation record below. It combines jobs 2 and 3, so use
 selected hunks when adopting separately. Details, source proof and logs:
 `reviews/opus_ready_2026_10_31/elite_candidate.md`.
 
 The red-team claim that the later field conversion can turn the elite into a
 field is false for the current predicate: that predicate excludes elites. No
 extra field-conversion guard is proposed.
+
+## Godot checks completed
+
+`reviews/godot_validation_2026_10_31/README.md` is the current verification record
+for the elite and shipwright candidates. Both original and candidate compile in
+official Godot 4.7.2; both match their own JS oracles across 30 campaign seeds,
+64 Nemesis records and 4,506 targeted vectors. The control reproduces 84 elite-map
+and three shipwright contract failures; the candidate has zero. All 4,416 previously
+valid maps and their RNG states remain identical.
+
+The two narrow oracle update proposals and their explicit provenance README are
+now under `proposed/godot/campaign/test/oracle/`. No generated tables change.
+These are tested candidates for adoption, not a whole-main oracle re-pin or release
+clearance. Main remains untouched.
 
 ## Current start point after the Oct 30 upload
 

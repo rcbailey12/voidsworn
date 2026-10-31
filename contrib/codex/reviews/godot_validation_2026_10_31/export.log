@@ -1,0 +1,3 @@
+exported 133 tables, sha256 a5bcd2bb62a5c253
+  skipped (state or code): RNG_S SPEED UID UNKNOWN_IDS META SAVED_RUN RUN ARENA B CUT SOLID TERRAIN_META ACT AI_LEVEL ERRS PERF
+  code fields left out (carried as evaluated tables or as GDScript): WTRAITS.*.f BOONS.*.d BOONS.*.fx

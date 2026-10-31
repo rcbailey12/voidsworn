@@ -1,3 +1,5 @@
+> Later implementation verification: elite and shipwright candidates now pass their Godot compilation and scoped runtime/parity checks. See [the validation record](godot_validation_2026_10_31/README.md). This closing audit otherwise retains its original coverage limits.
+
 # Closing review after Muse's staged upload
 
 Reviewed main **17268efa081059a6923daa9e19e8b345a437714d**, October 31, 2026. This is the current addendum to `pre_opus_reset_2026_10_31.md`, whose original source pin and results remain historical. The PR now incorporates this main head; its proposed files are copies for review, not edits to Muse or the game.

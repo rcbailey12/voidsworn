@@ -1,0 +1,315 @@
+{
+  "source_pin": "17268efa081059a6923daa9e19e8b345a437714d",
+  "godot_version": "4.7.2.stable.official.ed1daf0bf",
+  "runtime_release": "https://github.com/godotengine/godot/releases/tag/4.7.2-stable",
+  "runtime_archive_sha256": "cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4",
+  "node_version": "v24.22.1",
+  "projects": {
+    "baseline": {
+      "compile_passed": true,
+      "campaign_seed_passes": 30,
+      "campaign_steps": 4803,
+      "campaign_completion": "single existing runner log",
+      "nemesis_records_equal": 64,
+      "vectors_equal": 4506,
+      "map_vectors_equal": 4500,
+      "map_elite_failures": 84,
+      "shipwright_cases": [
+        {
+          "contractHolds": false,
+          "hash": "7fc4d49b332184df2f3e565b11b3c93d87abdca642a72bd55d8d414a41af6aaa",
+          "kind": "shipwright",
+          "label": "three identical names",
+          "rng": 3599280639,
+          "state": [
+            {
+              "hp": 54.0,
+              "maxHp": 54.0,
+              "mk": 2.0,
+              "uid": "x01"
+            },
+            {
+              "hp": 23.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            },
+            {
+              "hp": 45.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x03"
+            }
+          ]
+        },
+        {
+          "contractHolds": false,
+          "hash": "b7b4ea30fb7d1ee8f91526e9045ef7d1c4880813864b16a1844e6fc584ccc986",
+          "kind": "shipwright",
+          "label": "two ships",
+          "rng": 2399550497,
+          "state": [
+            {
+              "hp": 54.0,
+              "maxHp": 54.0,
+              "mk": 2.0,
+              "uid": "x01"
+            },
+            {
+              "hp": 23.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            }
+          ]
+        },
+        {
+          "contractHolds": true,
+          "hash": "e7494735df3dee864abbbb20060fd9df6970a233c0ce3d3b8f1fc88163c0fe64",
+          "kind": "shipwright",
+          "label": "single ship",
+          "rng": 1199820355,
+          "state": [
+            {
+              "hp": 54.0,
+              "maxHp": 54.0,
+              "mk": 2.0,
+              "uid": "x01"
+            }
+          ]
+        },
+        {
+          "contractHolds": true,
+          "hash": "c9e27c1baa0b95fced30da66ae41916f606ebc60b63d443b7274dc31afeb9f67",
+          "kind": "shipwright",
+          "label": "repair only",
+          "rng": 2399550499,
+          "state": [
+            {
+              "hp": 45.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x01"
+            },
+            {
+              "hp": 23.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            }
+          ]
+        },
+        {
+          "contractHolds": true,
+          "hash": "b7b4ea30fb7d1ee8f91526e9045ef7d1c4880813864b16a1844e6fc584ccc986",
+          "kind": "shipwright",
+          "label": "upgrade only",
+          "rng": 2399550500,
+          "state": [
+            {
+              "hp": 54.0,
+              "maxHp": 54.0,
+              "mk": 2.0,
+              "uid": "x01"
+            },
+            {
+              "hp": 23.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            }
+          ]
+        },
+        {
+          "contractHolds": false,
+          "hash": "e81c177ea8d7f1bf204e6205ae2d9dd4f42e622127ecb4b0ae96a6e530f6ffe3",
+          "kind": "shipwright",
+          "label": "max Mark",
+          "rng": 3599280644,
+          "state": [
+            {
+              "hp": 63.0,
+              "maxHp": 63.0,
+              "mk": 3,
+              "uid": "x01"
+            },
+            {
+              "hp": 23.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            },
+            {
+              "hp": 45.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x03"
+            }
+          ]
+        }
+      ],
+      "vector_js_sha256": "e13934b88b5b1df94c62221047725197a6a8c0d3129c18e7a91a8ca90ff7199f",
+      "vector_gd_sha256": "b7a1b8ba55ba891c61d55f6c8c89c081b478505596c6a63b48bf054f08d03b17",
+      "source_sha256": {
+        "campaign/campaign.gd": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+        "campaign/test/oracle/core.js": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+        "campaign/test/oracle/campaign_run.js": "993c7d61ccdb4418cee51e470405e83d58e11fe86a6e4065a9f94c71d3f34ecb",
+        "campaign/data/campaign_tables.json": "e8b047b9b45363191ff5eb9d41668a7f66902ecc995ffe0f944bf4a69a701b99"
+      }
+    },
+    "candidate": {
+      "compile_passed": true,
+      "campaign_seed_passes": 30,
+      "campaign_steps": 4655,
+      "campaign_completion": "existing runner log seeds 1-28 plus explicit successful comparisons for seeds 29-30; all 30 Godot records were generated in one engine run",
+      "nemesis_records_equal": 64,
+      "vectors_equal": 4506,
+      "map_vectors_equal": 4500,
+      "map_elite_failures": 0,
+      "shipwright_cases": [
+        {
+          "contractHolds": true,
+          "hash": "32442f1b6fc8cb75672d7ab2c53d5480574d34d854e78865bc0c19d21d929e02",
+          "kind": "shipwright",
+          "label": "three identical names",
+          "rng": 3599280639,
+          "state": [
+            {
+              "hp": 54.0,
+              "maxHp": 54.0,
+              "mk": 2.0,
+              "uid": "x01"
+            },
+            {
+              "hp": 45.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            },
+            {
+              "hp": 36.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x03"
+            }
+          ]
+        },
+        {
+          "contractHolds": true,
+          "hash": "b50b2a11912fdff8462568ccd768ce3d9878e4832b33569e9789692212708aea",
+          "kind": "shipwright",
+          "label": "two ships",
+          "rng": 2399550497,
+          "state": [
+            {
+              "hp": 54.0,
+              "maxHp": 54.0,
+              "mk": 2.0,
+              "uid": "x01"
+            },
+            {
+              "hp": 45.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            }
+          ]
+        },
+        {
+          "contractHolds": true,
+          "hash": "e7494735df3dee864abbbb20060fd9df6970a233c0ce3d3b8f1fc88163c0fe64",
+          "kind": "shipwright",
+          "label": "single ship",
+          "rng": 1199820355,
+          "state": [
+            {
+              "hp": 54.0,
+              "maxHp": 54.0,
+              "mk": 2.0,
+              "uid": "x01"
+            }
+          ]
+        },
+        {
+          "contractHolds": true,
+          "hash": "c9e27c1baa0b95fced30da66ae41916f606ebc60b63d443b7274dc31afeb9f67",
+          "kind": "shipwright",
+          "label": "repair only",
+          "rng": 2399550499,
+          "state": [
+            {
+              "hp": 45.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x01"
+            },
+            {
+              "hp": 23.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            }
+          ]
+        },
+        {
+          "contractHolds": true,
+          "hash": "b7b4ea30fb7d1ee8f91526e9045ef7d1c4880813864b16a1844e6fc584ccc986",
+          "kind": "shipwright",
+          "label": "upgrade only",
+          "rng": 2399550500,
+          "state": [
+            {
+              "hp": 54.0,
+              "maxHp": 54.0,
+              "mk": 2.0,
+              "uid": "x01"
+            },
+            {
+              "hp": 23.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            }
+          ]
+        },
+        {
+          "contractHolds": true,
+          "hash": "65bba090b8ed9386cffd5038a511492cc7761885ccee1eca323d93e5ce494d40",
+          "kind": "shipwright",
+          "label": "max Mark",
+          "rng": 3599280644,
+          "state": [
+            {
+              "hp": 63.0,
+              "maxHp": 63.0,
+              "mk": 3,
+              "uid": "x01"
+            },
+            {
+              "hp": 45.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x02"
+            },
+            {
+              "hp": 36.0,
+              "maxHp": 45.0,
+              "mk": 1,
+              "uid": "x03"
+            }
+          ]
+        }
+      ],
+      "vector_js_sha256": "dcd1deb1049d0d01b5d8cb2a5b59e9cd14d3ab31c6dbdcd639e547b31bc67aaf",
+      "vector_gd_sha256": "45febeb38e6b0d59a88ce8dccf899d1e79277f79d284d75abb8276046c086643",
+      "source_sha256": {
+        "campaign/campaign.gd": "0ccc0565f20757b39f67c7c2a87a8930b9ba9d45803fcec92a9969722632f551",
+        "campaign/test/oracle/core.js": "081d807bec8d6f28c1cb64fb2d565a7d7bf1aedc762d2c24497140f2fd90e108",
+        "campaign/test/oracle/campaign_run.js": "08a1c9e1eb9bfbdb058aabeef55e959a64ecdd1118847aaa33bbdd155ecef172",
+        "campaign/data/campaign_tables.json": "e8b047b9b45363191ff5eb9d41668a7f66902ecc995ffe0f944bf4a69a701b99"
+      }
+    }
+  },
+  "previously_valid_maps_and_rng_unchanged": 4416,
+  "table_checksum_unchanged": true
+}
