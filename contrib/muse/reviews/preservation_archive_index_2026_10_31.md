@@ -27,6 +27,12 @@ Two bodies of Voidsworn work product were deliberately excluded from the GitHub 
    - SHA-256: shards 3e7b727716464cb43473fa1c379f8aeb5e76f54a6df88562d343a8f2be0fa906; workdir 01b26aee34459ccf7185ac16590faa5cd9a3ac8e76a87179ed1bc3c3aa67b71b.
    - The addendum itself is filed on GitHub at contrib/muse/reviews/price_grid_correction_2026_10_31.md and the patched driver at contrib/muse/tools/montecarlo/driver.js; these tarballs preserve the primary outputs behind it.
 
+4. montecarlo_a3_highn_shard_2026_10_31.tar.gz
+   - What: the raw shard behind the Chorus A3 high-n confirmation rerun (raw/fix_chorus_p80cp_n1800.json; 1,800 runs, seeds 21000 to 22799, chorus, prices x0.8, CP cap +4, Veteran, fixed harness). Verdict CONFIRMED: 89.2 percent [87.7, 90.6] against the 85.0 percent [83.0, 87.0] baseline.
+   - Files: 1. Uncompressed: 17.6 MB. Compressed: 1.6 MB.
+   - SHA-256: 89d1feadd4777db56647e5f71b5d251e1a8aa746d7d0f57441b9129953552bac
+   - The addendum is filed on GitHub at contrib/muse/reviews/chorus_a3_highn_2026_10_31.md.
+
 ## Verification and restore
 
 - Verify: cd into the archive folder and run: sha256sum -c SHA256SUMS.txt (both entries must report OK; verified at creation on Oct 31, 2026).
