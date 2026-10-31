@@ -1,0 +1,59 @@
+{
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "jobs": {
+    "battle_refresh": [
+      {
+        "path": "godot/rules/rules.gd",
+        "baseSHA256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+        "candidateSHA256": "22656e73a73a4f768bdd9d1d8f7f0dcbba1a6ed744e1912a4e62a24c338755e7"
+      },
+      {
+        "path": "godot/rules/data/tables.json",
+        "baseSHA256": "60d8d1e488c647e4de53641cabee002f06bf66b8cf9279bf590b7d242976afde",
+        "candidateSHA256": "b4dd51a3539c74ff4000f3eabc6696b95536b0c0791ab935e343ebc32a1c6256"
+      },
+      {
+        "path": "godot/rules/test/oracle/data.js",
+        "baseSHA256": "5c26700b7a5c4ed8af991047af300374a17da4003685521d9afcc007adb395ef",
+        "candidateSHA256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a"
+      },
+      {
+        "path": "godot/rules/test/oracle/battle.js",
+        "baseSHA256": "9e9e14cbfb2a1aefd8ece99de4d551d389d0ef150cf78347323e2805d0547e7b",
+        "candidateSHA256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2"
+      },
+      {
+        "path": "godot/rules/test/oracle/fnames.js",
+        "baseSHA256": "46a123a554ed6737321b2a802a813a71e99b530e431baf30f4b8971f9b243a6e",
+        "candidateSHA256": "eb395b38994d88e87af2e208058c84100d428e5daa8901aba1e922d392101eb4"
+      },
+      {
+        "path": "godot/rules/test/oracle/campaign_hooks.js",
+        "baseSHA256": "4b48c8b70ff9c5f18f9fc51ab1b76c965851979224200492887b0a2cb9a586c2",
+        "candidateSHA256": "1d903fbfa86ecc37f4224b1a6b09ea4cbb49ae35269cb1696ad6088f692cb9c0"
+      },
+      {
+        "path": "godot/rules/test/oracle/README.md",
+        "baseSHA256": "5ec66c06170b1adc582d56fbee53a4108418b3509576af196d1046d9da2a20ee",
+        "candidateSHA256": "547a4fd25ecfb12434842430f7a8eab90db8612703c1711c307e1d889d8cf9b7"
+      }
+    ],
+    "campaign_hulls_after_integration": [
+      {
+        "path": "godot/campaign/test/oracle/data.js",
+        "baseSHA256": "b4cfb0077c2ab2f2659d595e39fec2f1717bb2cc72fc0a7b7ca0d52d32062e24",
+        "candidateSHA256": "5ae0ef68b26be4ac2d87502c2dace1b7c076a49c01fe311a03eb6e5cd2b66521"
+      },
+      {
+        "path": "godot/campaign/data/campaign_tables.json",
+        "baseSHA256": "9313bc234d8a3f935de7784d42b833b11560f22ae814a54d7fdd8a212b8ec0b2",
+        "candidateSHA256": "c5e47cb4725460ae9fd6ad1dd45e9f7451ef3934fb1541485ae2b304409ef1b9"
+      },
+      {
+        "path": "godot/campaign/test/oracle/README.md",
+        "baseSHA256": "92d4db17c68ee0bf6af51daf7654cef62809f5ed9e4f37ee86643bd5ee23c522",
+        "candidateSHA256": "29d23174f56c4a368feffefcfb364b4bad82f6d08ae14ed481edb4774e89f3a6"
+      }
+    ]
+  }
+}

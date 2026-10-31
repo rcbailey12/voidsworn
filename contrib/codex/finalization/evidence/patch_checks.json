@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "work": "/tmp/voidsworn-final-combined-I3cH0I",
+  "order": [
+    "integration.patch",
+    "campaign_hulls_after_integration.patch",
+    "battle_refresh.patch"
+  ],
+  "verifiedFiles": 18,
+  "hashes": {
+    "campaign3d.js": "08ce0d96fd7221d7ed6029e90d788050d68431476d0a908e7634967d6e8293e1",
+    "campaign_run.js": "040510a8160e5d23f75c36b50c73dcb38ac0df85dddb92f0cdfc6ffbd819453b",
+    "core.js": "a9ee64d9c25ad9abe6c650c533a3b3900c3f157aa30e831f287715dfa4fdd56c",
+    "data.js": "4fc1009a71707ccb4319e11fab61eb5589a314fc3eeb662adead2898eb52b8f3",
+    "godot/campaign/campaign.gd": "e6ef19c59e92831542716e9e1c752b6790f3ce71554dd524528b15417d468c1e",
+    "godot/campaign/data/campaign_tables.json": "c5e47cb4725460ae9fd6ad1dd45e9f7451ef3934fb1541485ae2b304409ef1b9",
+    "godot/campaign/test/oracle/README.md": "29d23174f56c4a368feffefcfb364b4bad82f6d08ae14ed481edb4774e89f3a6",
+    "godot/campaign/test/oracle/campaign3d.js": "df4e6d9efa8c14d0da2f324030f28ef678c2de48bf7774506bf52d32b09db5f8",
+    "godot/campaign/test/oracle/campaign_run.js": "53fcc42496b85d49dfc648519d8748a09154e705b35b7a9bed7a2e25b65b4bcf",
+    "godot/campaign/test/oracle/core.js": "a9ee64d9c25ad9abe6c650c533a3b3900c3f157aa30e831f287715dfa4fdd56c",
+    "godot/campaign/test/oracle/data.js": "5ae0ef68b26be4ac2d87502c2dace1b7c076a49c01fe311a03eb6e5cd2b66521",
+    "godot/rules/rules.gd": "22656e73a73a4f768bdd9d1d8f7f0dcbba1a6ed744e1912a4e62a24c338755e7",
+    "godot/rules/data/tables.json": "b4dd51a3539c74ff4000f3eabc6696b95536b0c0791ab935e343ebc32a1c6256",
+    "godot/rules/test/oracle/data.js": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a",
+    "godot/rules/test/oracle/battle.js": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+    "godot/rules/test/oracle/fnames.js": "eb395b38994d88e87af2e208058c84100d428e5daa8901aba1e922d392101eb4",
+    "godot/rules/test/oracle/campaign_hooks.js": "1d903fbfa86ecc37f4224b1a6b09ea4cbb49ae35269cb1696ad6088f692cb9c0",
+    "godot/rules/test/oracle/README.md": "547a4fd25ecfb12434842430f7a8eab90db8612703c1711c307e1d889d8cf9b7"
+  }
+}

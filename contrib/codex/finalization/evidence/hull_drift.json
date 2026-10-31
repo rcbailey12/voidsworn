@@ -1,0 +1,154 @@
+{
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "comparedHulls": 51,
+  "campaignMechanicalDifferences": [
+    {
+      "path": "HULLS.b_brood.regen",
+      "before": 10,
+      "after": 8
+    },
+    {
+      "path": "HULLS.b_drone.regen",
+      "before": 5,
+      "after": 4
+    },
+    {
+      "path": "HULLS.b_razor.regen",
+      "before": 9,
+      "after": 7
+    },
+    {
+      "path": "HULLS.b_razor_e.regen",
+      "before": 13,
+      "after": 9
+    },
+    {
+      "path": "HULLS.b_razor_e.w",
+      "before": [
+        [
+          "tendril",
+          "T"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ]
+      ],
+      "after": [
+        [
+          "bioplasma",
+          "T"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ]
+      ]
+    },
+    {
+      "path": "HULLS.b_razor_s.regen",
+      "before": 9,
+      "after": 7
+    },
+    {
+      "path": "HULLS.b_spitter.regen",
+      "before": 6,
+      "after": 5
+    },
+    {
+      "path": "HULLS.b_spitter_s.regen",
+      "before": 6,
+      "after": 5
+    },
+    {
+      "path": "HULLS.c_marauder_g.hp",
+      "before": 140,
+      "after": 120
+    },
+    {
+      "path": "HULLS.d_jackal_h.hp",
+      "before": 120,
+      "after": 100
+    },
+    {
+      "path": "HULLS.h_interdictor_e.hp",
+      "before": 74,
+      "after": 60
+    },
+    {
+      "path": "HULLS.h_interdictor_e.sh",
+      "before": 24,
+      "after": 18
+    },
+    {
+      "path": "HULLS.i_carrier_a.sh",
+      "before": 30,
+      "after": 22
+    },
+    {
+      "path": "HULLS.i_carrier_a.sp",
+      "before": 4,
+      "after": 3
+    },
+    {
+      "path": "HULLS.i_carrier_a.w",
+      "before": [
+        [
+          "turret",
+          "T"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "after": [
+        [
+          "pulsar",
+          "F"
+        ],
+        [
+          "turret",
+          "T"
+        ]
+      ]
+    },
+    {
+      "path": "HULLS.vs_penitent_l.w",
+      "before": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "after": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "battery",
+          "T"
+        ]
+      ]
+    }
+  ],
+  "rulesMechanicalDifferences": [],
+  "note": "Only display field n is excluded from the mechanical hull comparison. Full exports remain unchanged in runtime."
+}

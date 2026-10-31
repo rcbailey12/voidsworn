@@ -1,5 +1,11 @@
 # Opus: current integration packet
 
+## Latest: current-source battle and hull finalization
+
+Read [finalization/README.md](finalization/README.md) after the integration packet below. It adds an explicit battle oracle/table refresh (48 scenarios / 10,670 exact state and PRNG records), a separate campaign hull synchronization (all 816 native hull/fitting/derived records match), six JS action-lifecycle checks and a proposed gate plug-in. Prior repairs plus both new patches also match across 16 battles / 3,616 records. Optional Saro still applies afterward: 707 model/fitting and 96 pilot records match, now with zero native fitting differences. Use the documented patch order; do not replace later files with historical full copies.
+
+The original native build fails all 16 focused current-source controls. Those failures are preserved. Earlier statements that no general corpus was prepared or that hull drift was wholly unaddressed describe the pre-finalization packet; the actual runtime still needs adoption. No cutover baseline is refreshed or clearance claimed. The migration boundary now locates the plan's fresh-save default without inferring a new wipe/import ruling. PC/Windows/Blender execution remains unverified. See the finalization packet for the exact remaining checks.
+
 Reconciled against main `355a2ac7`, October 31, 2026. Start with `../muse/OPUS_HANDOFF.md`; its first section is the current work order. This packet proposes technical sequencing and does not create owner rulings.
 
 Muse's price correction, A3 high-n confirmation, canonical corrections and red-team closure are complete. Canonical tool repairs are now on draft PR #1 at `contrib/muse/tools/`, with 24 adversarial checks in `tools/verification_repairs_test.js`. Retired tool/index overlays were removed. Do not restore the old driver copy or old entrypoint copies.

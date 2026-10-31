@@ -1,0 +1,111 @@
+{
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "files": [
+    {
+      "path": "data.js",
+      "fnv": "958660d0fe0ed3a9",
+      "bytes": 95372,
+      "lines": 697,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'",
+      "sha256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a"
+    },
+    {
+      "path": "battle.js",
+      "fnv": "67a9d750435340a6",
+      "bytes": 171701,
+      "lines": 1402,
+      "lastLineStart": "}",
+      "sha256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2"
+    },
+    {
+      "path": "core.js",
+      "fnv": "03603696fb9ad7da",
+      "bytes": 37674,
+      "lines": 349,
+      "lastLineStart": "function findNode(id){ for(const c of RU",
+      "sha256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836"
+    },
+    {
+      "path": "godot/campaign/campaign.gd",
+      "fnv": "8942712849958981",
+      "bytes": 150939,
+      "lines": 2626,
+      "lastLineStart": "\t\t\"events\": tel_log.slice(max(0, tel_log",
+      "sha256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8"
+    },
+    {
+      "path": "godot/rules/rules.gd",
+      "fnv": "78c9a09d390583c9",
+      "bytes": 209548,
+      "lines": 3979,
+      "lastLineStart": "\tB[\"aiActive\"] = null; u[\"activated\"] = ",
+      "sha256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4"
+    },
+    {
+      "path": "godot/rules/battle_api.gd",
+      "fnv": "fa2566324b6a0886",
+      "bytes": 44820,
+      "lines": 856,
+      "lastLineStart": "\tphase = \"over\"; _queue.clear(); R.emit(",
+      "sha256": "6ab92710ada9d2a549bcf57a44e4b452c36333ae0d60cc818b52d5d094fa5e60"
+    },
+    {
+      "path": "godot/rules/test/node/golden.js",
+      "fnv": "aab3e1ee92c847f1",
+      "bytes": 26266,
+      "lines": 252,
+      "lastLineStart": "})().catch(e => { console.error(e); proc",
+      "sha256": "b1e90d47338e083d5b01d97d491ce295376b4b25644e07f8737facdb422f1ae8"
+    },
+    {
+      "path": "godot/rules/test/parity_main.gd",
+      "fnv": "a862fe36c03b23d6",
+      "bytes": 10279,
+      "lines": 206,
+      "lastLineStart": "\treturn 0",
+      "sha256": "12d99ebadd76ce8c1eaab4abf3a0739347c5ce24b0bab732c3402e99f94fbef6"
+    },
+    {
+      "path": "godot/campaign/test/oracle/data.js",
+      "fnv": "27b655d254661cce",
+      "bytes": 94163,
+      "lines": 694,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'",
+      "sha256": "50e1fdc16cd184e221711f97101d35354aa4b5487fd59ab204a2fd1d467b77ca"
+    },
+    {
+      "path": "godot/rules/test/oracle/data.js",
+      "fnv": "213531fa9105b681",
+      "bytes": 94512,
+      "lines": 695,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'",
+      "sha256": "5c26700b7a5c4ed8af991047af300374a17da4003685521d9afcc007adb395ef"
+    },
+    {
+      "path": "contrib/opus/go-forward-plan.md",
+      "fnv": "848091221229cf4a",
+      "bytes": 44247,
+      "lines": 560,
+      "lastLineStart": "```",
+      "sha256": "cedd73d5ee827efa17737f97e9dad3a837827e5421654f0d476e2873df561f6b"
+    },
+    {
+      "path": "contrib/opus/FINDINGS.md",
+      "fnv": "9ade2c47364ecb2a",
+      "bytes": 71352,
+      "lines": 231,
+      "lastLineStart": "| X17 | Muse follow-up pass over unasses",
+      "sha256": "7afc4ac8a3207a63e6e951b41e48fafe00ff9246a5dc4860a683d219aad592b3"
+    },
+    {
+      "path": "contrib/muse/tools/importer_reference/README.md",
+      "fnv": "590f02b9eed540bf",
+      "bytes": 13883,
+      "lines": 279,
+      "lastLineStart": "   or passes through this intermediate s",
+      "sha256": "a6f1c483e313ec6afae3b27a741da765e1287f65a1db6b76335673bf1aa318b3"
+    }
+  ],
+  "rawByteChecks": 13,
+  "scope": "Function windows, data rows and cited plan passages only. Line counts are inventories, not claims of complete large-file review."
+}

@@ -1,0 +1,543 @@
+{
+  "status": "PASS",
+  "work": "/tmp/voidsworn-hulls-vT8NwB",
+  "scope": "Prepared integration, then campaign hull synchronization; no native table replacement by fixture input.",
+  "integration_control": {
+    "total": 816,
+    "matched": 776,
+    "differences": [
+      {
+        "id": "b_brood:hull",
+        "browser": {
+          "id": "b_brood:hull",
+          "state": "{\"ab\":\"launch\",\"ar\":\"d:3fc999999999999a\",\"cls\":\"Carrier\",\"cost\":370,\"cost0\":310,\"cp\":5,\"ev\":0,\"fac\":\"chorus\",\"hangar\":3,\"hp\":200,\"regen\":8,\"rg\":0,\"sh\":0,\"size\":\"d:3feccccccccccccd\",\"slots\":3,\"sp\":2,\"tn\":1,\"w\":[[\"bioplasma\",\"F\"],[\"spores\",\"T\"]]}"
+        },
+        "godot": {
+          "id": "b_brood:hull",
+          "state": "{\"ab\":\"launch\",\"ar\":\"d:3fc999999999999a\",\"cls\":\"Carrier\",\"cost\":370,\"cost0\":310,\"cp\":5,\"ev\":0,\"fac\":\"chorus\",\"hangar\":3,\"hp\":200,\"regen\":10,\"rg\":0,\"sh\":0,\"size\":\"d:3feccccccccccccd\",\"slots\":3,\"sp\":2,\"tn\":1,\"w\":[[\"bioplasma\",\"F\"],[\"spores\",\"T\"]]}"
+        }
+      },
+      {
+        "id": "b_brood:derive:1",
+        "browser": {
+          "id": "b_brood:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":0,\"fx\":{},\"hangar\":3,\"hullRegen\":8,\"maxHp\":200,\"regen\":0,\"shMax\":0,\"speed\":2,\"turns\":1,\"weapons\":[{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":78,\"arc\":\"T\",\"cd\":0,\"dmg\":4,\"fall\":8,\"id\":\"spores\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        },
+        "godot": {
+          "id": "b_brood:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":0,\"fx\":{},\"hangar\":3,\"hullRegen\":10,\"maxHp\":200,\"regen\":0,\"shMax\":0,\"speed\":2,\"turns\":1,\"weapons\":[{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":78,\"arc\":\"T\",\"cd\":0,\"dmg\":4,\"fall\":8,\"id\":\"spores\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "b_brood:derive:3",
+        "browser": {
+          "id": "b_brood:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":0,\"fx\":{},\"hangar\":3,\"hullRegen\":11,\"maxHp\":280,\"regen\":0,\"shMax\":0,\"speed\":2,\"turns\":1,\"weapons\":[{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":78,\"arc\":\"T\",\"cd\":0,\"dmg\":4,\"fall\":8,\"id\":\"spores\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        },
+        "godot": {
+          "id": "b_brood:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":0,\"fx\":{},\"hangar\":3,\"hullRegen\":14,\"maxHp\":280,\"regen\":0,\"shMax\":0,\"speed\":2,\"turns\":1,\"weapons\":[{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":78,\"arc\":\"T\",\"cd\":0,\"dmg\":4,\"fall\":8,\"id\":\"spores\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "b_drone:hull",
+        "browser": {
+          "id": "b_drone:hull",
+          "state": "{\"ab\":\"regrow\",\"ar\":\"d:3fa999999999999a\",\"cls\":\"Frigate\",\"cost\":45,\"cost0\":70,\"cp\":1,\"ev\":15,\"fac\":\"chorus\",\"hp\":46,\"regen\":4,\"rg\":0,\"sh\":0,\"size\":\"d:3fdeb851eb851eb8\",\"slots\":1,\"sp\":5,\"tn\":3,\"w\":[[\"tendril\",\"T\"]]}"
+        },
+        "godot": {
+          "id": "b_drone:hull",
+          "state": "{\"ab\":\"regrow\",\"ar\":\"d:3fa999999999999a\",\"cls\":\"Frigate\",\"cost\":45,\"cost0\":70,\"cp\":1,\"ev\":15,\"fac\":\"chorus\",\"hp\":46,\"regen\":5,\"rg\":0,\"sh\":0,\"size\":\"d:3fdeb851eb851eb8\",\"slots\":1,\"sp\":5,\"tn\":3,\"w\":[[\"tendril\",\"T\"]]}"
+        }
+      },
+      {
+        "id": "b_drone:derive:1",
+        "browser": {
+          "id": "b_drone:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fa999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":15,\"fx\":{},\"hangar\":0,\"hullRegen\":4,\"maxHp\":46,\"regen\":0,\"shMax\":0,\"speed\":5,\"turns\":3,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        },
+        "godot": {
+          "id": "b_drone:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fa999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":15,\"fx\":{},\"hangar\":0,\"hullRegen\":5,\"maxHp\":46,\"regen\":0,\"shMax\":0,\"speed\":5,\"turns\":3,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        }
+      },
+      {
+        "id": "b_drone:derive:3",
+        "browser": {
+          "id": "b_drone:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fa999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":15,\"fx\":{},\"hangar\":0,\"hullRegen\":6,\"maxHp\":64,\"regen\":0,\"shMax\":0,\"speed\":5,\"turns\":3,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        },
+        "godot": {
+          "id": "b_drone:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fa999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":15,\"fx\":{},\"hangar\":0,\"hullRegen\":7,\"maxHp\":64,\"regen\":0,\"shMax\":0,\"speed\":5,\"turns\":3,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        }
+      },
+      {
+        "id": "b_razor:hull",
+        "browser": {
+          "id": "b_razor:hull",
+          "state": "{\"ab\":\"frenzy\",\"ar\":\"d:3fc999999999999a\",\"cls\":\"Cruiser\",\"cost\":190,\"cp\":3,\"ev\":4,\"fac\":\"chorus\",\"hp\":150,\"regen\":7,\"rg\":0,\"sh\":0,\"size\":\"d:3fe851eb851eb852\",\"slots\":2,\"sp\":4,\"tn\":2,\"w\":[[\"tendril\",\"T\"],[\"bioplasma\",\"F\"]]}"
+        },
+        "godot": {
+          "id": "b_razor:hull",
+          "state": "{\"ab\":\"frenzy\",\"ar\":\"d:3fc999999999999a\",\"cls\":\"Cruiser\",\"cost\":190,\"cp\":3,\"ev\":4,\"fac\":\"chorus\",\"hp\":150,\"regen\":9,\"rg\":0,\"sh\":0,\"size\":\"d:3fe851eb851eb852\",\"slots\":2,\"sp\":4,\"tn\":2,\"w\":[[\"tendril\",\"T\"],[\"bioplasma\",\"F\"]]}"
+        }
+      },
+      {
+        "id": "b_razor:derive:1",
+        "browser": {
+          "id": "b_razor:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":4,\"fx\":{},\"hangar\":0,\"hullRegen\":7,\"maxHp\":150,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        },
+        "godot": {
+          "id": "b_razor:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":4,\"fx\":{},\"hangar\":0,\"hullRegen\":9,\"maxHp\":150,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        }
+      },
+      {
+        "id": "b_razor:derive:3",
+        "browser": {
+          "id": "b_razor:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":4,\"fx\":{},\"hangar\":0,\"hullRegen\":10,\"maxHp\":210,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        },
+        "godot": {
+          "id": "b_razor:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":4,\"fx\":{},\"hangar\":0,\"hullRegen\":13,\"maxHp\":210,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        }
+      },
+      {
+        "id": "b_razor_e:hull",
+        "browser": {
+          "id": "b_razor_e:hull",
+          "state": "{\"ab\":\"frenzy\",\"ar\":\"d:3fc999999999999a\",\"base\":\"b_razor\",\"cls\":\"Cruiser\",\"cost\":190,\"cp\":3,\"ev\":4,\"fac\":\"chorus\",\"hp\":150,\"regen\":9,\"rg\":0,\"sh\":0,\"size\":\"d:3fe851eb851eb852\",\"slots\":2,\"sp\":3,\"tn\":2,\"variant\":\"b_razor_e\",\"w\":[[\"bioplasma\",\"T\"],[\"bioplasma\",\"F\"]]}"
+        },
+        "godot": {
+          "id": "b_razor_e:hull",
+          "state": "{\"ab\":\"frenzy\",\"ar\":\"d:3fc999999999999a\",\"base\":\"b_razor\",\"cls\":\"Cruiser\",\"cost\":190,\"cp\":3,\"ev\":4,\"fac\":\"chorus\",\"hp\":150,\"regen\":13,\"rg\":0,\"sh\":0,\"size\":\"d:3fe851eb851eb852\",\"slots\":2,\"sp\":3,\"tn\":2,\"variant\":\"b_razor_e\",\"w\":[[\"tendril\",\"T\"],[\"bioplasma\",\"F\"],[\"bioplasma\",\"F\"]]}"
+        }
+      },
+      {
+        "id": "b_razor_e:derive:1",
+        "browser": {
+          "id": "b_razor_e:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":4,\"fx\":{},\"hangar\":0,\"hullRegen\":9,\"maxHp\":150,\"regen\":0,\"shMax\":0,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        },
+        "godot": {
+          "id": "b_razor_e:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":4,\"fx\":{},\"hangar\":0,\"hullRegen\":13,\"maxHp\":150,\"regen\":0,\"shMax\":0,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        }
+      },
+      {
+        "id": "b_razor_e:derive:3",
+        "browser": {
+          "id": "b_razor_e:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":4,\"fx\":{},\"hangar\":0,\"hullRegen\":13,\"maxHp\":210,\"regen\":0,\"shMax\":0,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        },
+        "godot": {
+          "id": "b_razor_e:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":4,\"fx\":{},\"hangar\":0,\"hullRegen\":18,\"maxHp\":210,\"regen\":0,\"shMax\":0,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        }
+      },
+      {
+        "id": "b_razor_s:hull",
+        "browser": {
+          "id": "b_razor_s:hull",
+          "state": "{\"ab\":\"frenzy\",\"ar\":\"d:3fc999999999999a\",\"base\":\"b_razor\",\"cls\":\"Cruiser\",\"cost\":190,\"cp\":3,\"ev\":12,\"fac\":\"chorus\",\"hp\":150,\"regen\":7,\"rg\":0,\"sh\":0,\"size\":\"d:3fe851eb851eb852\",\"slots\":2,\"sp\":5,\"tn\":2,\"variant\":\"b_razor_s\",\"w\":[[\"tendril\",\"T\"],[\"tendril\",\"T\"]]}"
+        },
+        "godot": {
+          "id": "b_razor_s:hull",
+          "state": "{\"ab\":\"frenzy\",\"ar\":\"d:3fc999999999999a\",\"base\":\"b_razor\",\"cls\":\"Cruiser\",\"cost\":190,\"cp\":3,\"ev\":12,\"fac\":\"chorus\",\"hp\":150,\"regen\":9,\"rg\":0,\"sh\":0,\"size\":\"d:3fe851eb851eb852\",\"slots\":2,\"sp\":5,\"tn\":2,\"variant\":\"b_razor_s\",\"w\":[[\"tendril\",\"T\"],[\"tendril\",\"T\"]]}"
+        }
+      },
+      {
+        "id": "b_razor_s:derive:1",
+        "browser": {
+          "id": "b_razor_s:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":12,\"fx\":{},\"hangar\":0,\"hullRegen\":7,\"maxHp\":150,\"regen\":0,\"shMax\":0,\"speed\":5,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        },
+        "godot": {
+          "id": "b_razor_s:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":12,\"fx\":{},\"hangar\":0,\"hullRegen\":9,\"maxHp\":150,\"regen\":0,\"shMax\":0,\"speed\":5,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        }
+      },
+      {
+        "id": "b_razor_s:derive:3",
+        "browser": {
+          "id": "b_razor_s:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":12,\"fx\":{},\"hangar\":0,\"hullRegen\":10,\"maxHp\":210,\"regen\":0,\"shMax\":0,\"speed\":5,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        },
+        "godot": {
+          "id": "b_razor_s:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":12,\"fx\":{},\"hangar\":0,\"hullRegen\":13,\"maxHp\":210,\"regen\":0,\"shMax\":0,\"speed\":5,\"turns\":2,\"weapons\":[{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"},{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        }
+      },
+      {
+        "id": "b_spitter:hull",
+        "browser": {
+          "id": "b_spitter:hull",
+          "state": "{\"ab\":\"regrow\",\"ar\":\"d:3fb999999999999a\",\"cls\":\"Destroyer\",\"cost\":100,\"cost0\":130,\"cp\":2,\"ev\":8,\"fac\":\"chorus\",\"hp\":82,\"regen\":5,\"rg\":0,\"sh\":0,\"size\":\"d:3fe3333333333333\",\"slots\":1,\"sp\":4,\"tn\":2,\"w\":[[\"bioplasma\",\"T\"],[\"bioplasma\",\"F\"]]}"
+        },
+        "godot": {
+          "id": "b_spitter:hull",
+          "state": "{\"ab\":\"regrow\",\"ar\":\"d:3fb999999999999a\",\"cls\":\"Destroyer\",\"cost\":100,\"cost0\":130,\"cp\":2,\"ev\":8,\"fac\":\"chorus\",\"hp\":82,\"regen\":6,\"rg\":0,\"sh\":0,\"size\":\"d:3fe3333333333333\",\"slots\":1,\"sp\":4,\"tn\":2,\"w\":[[\"bioplasma\",\"T\"],[\"bioplasma\",\"F\"]]}"
+        }
+      },
+      {
+        "id": "b_spitter:derive:1",
+        "browser": {
+          "id": "b_spitter:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fb999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":8,\"fx\":{},\"hangar\":0,\"hullRegen\":5,\"maxHp\":82,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        },
+        "godot": {
+          "id": "b_spitter:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fb999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":8,\"fx\":{},\"hangar\":0,\"hullRegen\":6,\"maxHp\":82,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        }
+      },
+      {
+        "id": "b_spitter:derive:3",
+        "browser": {
+          "id": "b_spitter:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fb999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":8,\"fx\":{},\"hangar\":0,\"hullRegen\":7,\"maxHp\":115,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        },
+        "godot": {
+          "id": "b_spitter:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fb999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":8,\"fx\":{},\"hangar\":0,\"hullRegen\":8,\"maxHp\":115,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":74,\"arc\":\"F\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"}]}"
+        }
+      },
+      {
+        "id": "b_spitter_s:hull",
+        "browser": {
+          "id": "b_spitter_s:hull",
+          "state": "{\"ab\":\"regrow\",\"ar\":\"d:3fb999999999999a\",\"base\":\"b_spitter\",\"cls\":\"Destroyer\",\"cost\":100,\"cost0\":130,\"cp\":2,\"ev\":8,\"fac\":\"chorus\",\"hp\":82,\"regen\":5,\"rg\":0,\"sh\":0,\"size\":\"d:3fe3333333333333\",\"slots\":1,\"sp\":4,\"tn\":2,\"variant\":\"b_spitter_s\",\"w\":[[\"bioplasma\",\"T\"],[\"tendril\",\"T\"]]}"
+        },
+        "godot": {
+          "id": "b_spitter_s:hull",
+          "state": "{\"ab\":\"regrow\",\"ar\":\"d:3fb999999999999a\",\"base\":\"b_spitter\",\"cls\":\"Destroyer\",\"cost\":100,\"cost0\":130,\"cp\":2,\"ev\":8,\"fac\":\"chorus\",\"hp\":82,\"regen\":6,\"rg\":0,\"sh\":0,\"size\":\"d:3fe3333333333333\",\"slots\":1,\"sp\":4,\"tn\":2,\"variant\":\"b_spitter_s\",\"w\":[[\"bioplasma\",\"T\"],[\"tendril\",\"T\"]]}"
+        }
+      },
+      {
+        "id": "b_spitter_s:derive:1",
+        "browser": {
+          "id": "b_spitter_s:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fb999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":8,\"fx\":{},\"hangar\":0,\"hullRegen\":5,\"maxHp\":82,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        },
+        "godot": {
+          "id": "b_spitter_s:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fb999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":8,\"fx\":{},\"hangar\":0,\"hullRegen\":6,\"maxHp\":82,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        }
+      },
+      {
+        "id": "b_spitter_s:derive:3",
+        "browser": {
+          "id": "b_spitter_s:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fb999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":8,\"fx\":{},\"hangar\":0,\"hullRegen\":7,\"maxHp\":115,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        },
+        "godot": {
+          "id": "b_spitter_s:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fb999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":8,\"fx\":{},\"hangar\":0,\"hullRegen\":8,\"maxHp\":115,\"regen\":0,\"shMax\":0,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":8,\"dmg\":12,\"fall\":8,\"id\":\"bioplasma\",\"k\":\"bio\",\"opt\":3,\"pierce\":\"d:3fc999999999999a\",\"r\":4,\"shots\":2,\"shred\":\"d:3f9eb851eb851eb8\",\"trait\":\"spines\"},{\"acc\":85,\"acid\":1,\"arc\":\"T\",\"cd\":0,\"crit\":12,\"dmg\":13,\"fall\":0,\"id\":\"tendril\",\"k\":\"bio\",\"opt\":1,\"pierce\":\"d:3fe0000000000000\",\"r\":1,\"shots\":2,\"trait\":\"acid\"}]}"
+        }
+      },
+      {
+        "id": "c_marauder_g:hull",
+        "browser": {
+          "id": "c_marauder_g:hull",
+          "state": "{\"ab\":\"overburn\",\"ar\":\"d:3fc3333333333333\",\"base\":\"c_marauder\",\"cls\":\"Cruiser\",\"cost\":200,\"cost0\":190,\"cp\":3,\"ev\":6,\"fac\":\"corsair\",\"hp\":120,\"rg\":7,\"sh\":16,\"size\":\"d:3fe7ae147ae147ae\",\"slots\":2,\"sp\":3,\"tn\":2,\"variant\":\"c_marauder_g\",\"w\":[[\"scatter\",\"P\"],[\"scatter\",\"S\"],[\"torp\",\"F\"],[\"torp\",\"F\"]]}"
+        },
+        "godot": {
+          "id": "c_marauder_g:hull",
+          "state": "{\"ab\":\"overburn\",\"ar\":\"d:3fc3333333333333\",\"base\":\"c_marauder\",\"cls\":\"Cruiser\",\"cost\":200,\"cost0\":190,\"cp\":3,\"ev\":6,\"fac\":\"corsair\",\"hp\":140,\"rg\":7,\"sh\":16,\"size\":\"d:3fe7ae147ae147ae\",\"slots\":2,\"sp\":3,\"tn\":2,\"variant\":\"c_marauder_g\",\"w\":[[\"scatter\",\"P\"],[\"scatter\",\"S\"],[\"torp\",\"F\"],[\"torp\",\"F\"]]}"
+        }
+      },
+      {
+        "id": "c_marauder_g:derive:1",
+        "browser": {
+          "id": "c_marauder_g:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc3333333333333\",\"crit\":0,\"dmg\":1,\"ev\":6,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":120,\"regen\":7,\"shMax\":16,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":66,\"arc\":\"P\",\"cd\":0,\"crit\":9,\"dmg\":5,\"fall\":10,\"id\":\"scatter\",\"k\":\"battery\",\"opt\":2,\"r\":3,\"shots\":6,\"trait\":\"scrap\"},{\"acc\":66,\"arc\":\"S\",\"cd\":0,\"crit\":9,\"dmg\":5,\"fall\":10,\"id\":\"scatter\",\"k\":\"battery\",\"opt\":2,\"r\":3,\"shots\":6,\"trait\":\"scrap\"},{\"acc\":66,\"arc\":\"F\",\"cd\":2,\"crit\":15,\"dmg\":14,\"evMult\":\"d:3ff8000000000000\",\"fall\":0,\"id\":\"torp\",\"k\":\"torp\",\"opt\":6,\"pierce\":\"d:3fd3333333333333\",\"r\":6,\"rockets\":1,\"shots\":3,\"trait\":\"rockets\"},{\"acc\":66,\"arc\":\"F\",\"cd\":2,\"crit\":15,\"dmg\":14,\"evMult\":\"d:3ff8000000000000\",\"fall\":0,\"id\":\"torp\",\"k\":\"torp\",\"opt\":6,\"pierce\":\"d:3fd3333333333333\",\"r\":6,\"rockets\":1,\"shots\":3,\"trait\":\"rockets\"}]}"
+        },
+        "godot": {
+          "id": "c_marauder_g:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc3333333333333\",\"crit\":0,\"dmg\":1,\"ev\":6,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":140,\"regen\":7,\"shMax\":16,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":66,\"arc\":\"P\",\"cd\":0,\"crit\":9,\"dmg\":5,\"fall\":10,\"id\":\"scatter\",\"k\":\"battery\",\"opt\":2,\"r\":3,\"shots\":6,\"trait\":\"scrap\"},{\"acc\":66,\"arc\":\"S\",\"cd\":0,\"crit\":9,\"dmg\":5,\"fall\":10,\"id\":\"scatter\",\"k\":\"battery\",\"opt\":2,\"r\":3,\"shots\":6,\"trait\":\"scrap\"},{\"acc\":66,\"arc\":\"F\",\"cd\":2,\"crit\":15,\"dmg\":14,\"evMult\":\"d:3ff8000000000000\",\"fall\":0,\"id\":\"torp\",\"k\":\"torp\",\"opt\":6,\"pierce\":\"d:3fd3333333333333\",\"r\":6,\"rockets\":1,\"shots\":3,\"trait\":\"rockets\"},{\"acc\":66,\"arc\":\"F\",\"cd\":2,\"crit\":15,\"dmg\":14,\"evMult\":\"d:3ff8000000000000\",\"fall\":0,\"id\":\"torp\",\"k\":\"torp\",\"opt\":6,\"pierce\":\"d:3fd3333333333333\",\"r\":6,\"rockets\":1,\"shots\":3,\"trait\":\"rockets\"}]}"
+        }
+      },
+      {
+        "id": "c_marauder_g:derive:3",
+        "browser": {
+          "id": "c_marauder_g:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc3333333333333\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":6,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":168,\"regen\":10,\"shMax\":22,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":66,\"arc\":\"P\",\"cd\":0,\"crit\":9,\"dmg\":5,\"fall\":10,\"id\":\"scatter\",\"k\":\"battery\",\"opt\":2,\"r\":3,\"shots\":6,\"trait\":\"scrap\"},{\"acc\":66,\"arc\":\"S\",\"cd\":0,\"crit\":9,\"dmg\":5,\"fall\":10,\"id\":\"scatter\",\"k\":\"battery\",\"opt\":2,\"r\":3,\"shots\":6,\"trait\":\"scrap\"},{\"acc\":66,\"arc\":\"F\",\"cd\":2,\"crit\":15,\"dmg\":14,\"evMult\":\"d:3ff8000000000000\",\"fall\":0,\"id\":\"torp\",\"k\":\"torp\",\"opt\":6,\"pierce\":\"d:3fd3333333333333\",\"r\":6,\"rockets\":1,\"shots\":3,\"trait\":\"rockets\"},{\"acc\":66,\"arc\":\"F\",\"cd\":2,\"crit\":15,\"dmg\":14,\"evMult\":\"d:3ff8000000000000\",\"fall\":0,\"id\":\"torp\",\"k\":\"torp\",\"opt\":6,\"pierce\":\"d:3fd3333333333333\",\"r\":6,\"rockets\":1,\"shots\":3,\"trait\":\"rockets\"}]}"
+        },
+        "godot": {
+          "id": "c_marauder_g:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc3333333333333\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":6,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":196,\"regen\":10,\"shMax\":22,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":66,\"arc\":\"P\",\"cd\":0,\"crit\":9,\"dmg\":5,\"fall\":10,\"id\":\"scatter\",\"k\":\"battery\",\"opt\":2,\"r\":3,\"shots\":6,\"trait\":\"scrap\"},{\"acc\":66,\"arc\":\"S\",\"cd\":0,\"crit\":9,\"dmg\":5,\"fall\":10,\"id\":\"scatter\",\"k\":\"battery\",\"opt\":2,\"r\":3,\"shots\":6,\"trait\":\"scrap\"},{\"acc\":66,\"arc\":\"F\",\"cd\":2,\"crit\":15,\"dmg\":14,\"evMult\":\"d:3ff8000000000000\",\"fall\":0,\"id\":\"torp\",\"k\":\"torp\",\"opt\":6,\"pierce\":\"d:3fd3333333333333\",\"r\":6,\"rockets\":1,\"shots\":3,\"trait\":\"rockets\"},{\"acc\":66,\"arc\":\"F\",\"cd\":2,\"crit\":15,\"dmg\":14,\"evMult\":\"d:3ff8000000000000\",\"fall\":0,\"id\":\"torp\",\"k\":\"torp\",\"opt\":6,\"pierce\":\"d:3fd3333333333333\",\"r\":6,\"rockets\":1,\"shots\":3,\"trait\":\"rockets\"}]}"
+        }
+      },
+      {
+        "id": "d_jackal_h:hull",
+        "browser": {
+          "id": "d_jackal_h:hull",
+          "state": "{\"ab\":\"phase\",\"ar\":\"d:3fd0000000000000\",\"base\":\"d_jackal\",\"cls\":\"Destroyer\",\"cost\":195,\"cost0\":130,\"cp\":2,\"ev\":6,\"fac\":\"deathless\",\"hp\":100,\"reanimate\":true,\"regen\":3,\"rg\":0,\"sh\":0,\"size\":\"d:3fe3d70a3d70a3d7\",\"slots\":1,\"sp\":3,\"tn\":2,\"variant\":\"d_jackal_h\",\"w\":[[\"gauss\",\"T\"],[\"gauss\",\"T\"],[\"gsentry\",\"T\"]]}"
+        },
+        "godot": {
+          "id": "d_jackal_h:hull",
+          "state": "{\"ab\":\"phase\",\"ar\":\"d:3fd0000000000000\",\"base\":\"d_jackal\",\"cls\":\"Destroyer\",\"cost\":195,\"cost0\":130,\"cp\":2,\"ev\":6,\"fac\":\"deathless\",\"hp\":120,\"reanimate\":true,\"regen\":3,\"rg\":0,\"sh\":0,\"size\":\"d:3fe3d70a3d70a3d7\",\"slots\":1,\"sp\":3,\"tn\":2,\"variant\":\"d_jackal_h\",\"w\":[[\"gauss\",\"T\"],[\"gauss\",\"T\"],[\"gsentry\",\"T\"]]}"
+        }
+      },
+      {
+        "id": "d_jackal_h:derive:1",
+        "browser": {
+          "id": "d_jackal_h:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fd0000000000000\",\"crit\":0,\"dmg\":1,\"ev\":6,\"fx\":{},\"hangar\":0,\"hullRegen\":3,\"maxHp\":100,\"regen\":0,\"shMax\":0,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"armorPierce\":\"d:3fe0000000000000\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":8,\"id\":\"gauss\",\"k\":\"gauss\",\"opt\":3,\"pierce\":\"d:3fe3333333333333\",\"r\":5,\"shots\":3,\"trait\":\"gauss\"},{\"acc\":74,\"arc\":\"T\",\"armorPierce\":\"d:3fe0000000000000\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":8,\"id\":\"gauss\",\"k\":\"gauss\",\"opt\":3,\"pierce\":\"d:3fe3333333333333\",\"r\":5,\"shots\":3,\"trait\":\"gauss\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"gsentry\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        },
+        "godot": {
+          "id": "d_jackal_h:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fd0000000000000\",\"crit\":0,\"dmg\":1,\"ev\":6,\"fx\":{},\"hangar\":0,\"hullRegen\":3,\"maxHp\":120,\"regen\":0,\"shMax\":0,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"armorPierce\":\"d:3fe0000000000000\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":8,\"id\":\"gauss\",\"k\":\"gauss\",\"opt\":3,\"pierce\":\"d:3fe3333333333333\",\"r\":5,\"shots\":3,\"trait\":\"gauss\"},{\"acc\":74,\"arc\":\"T\",\"armorPierce\":\"d:3fe0000000000000\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":8,\"id\":\"gauss\",\"k\":\"gauss\",\"opt\":3,\"pierce\":\"d:3fe3333333333333\",\"r\":5,\"shots\":3,\"trait\":\"gauss\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"gsentry\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "d_jackal_h:derive:3",
+        "browser": {
+          "id": "d_jackal_h:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fd0000000000000\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":6,\"fx\":{},\"hangar\":0,\"hullRegen\":4,\"maxHp\":140,\"regen\":0,\"shMax\":0,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"armorPierce\":\"d:3fe0000000000000\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":8,\"id\":\"gauss\",\"k\":\"gauss\",\"opt\":3,\"pierce\":\"d:3fe3333333333333\",\"r\":5,\"shots\":3,\"trait\":\"gauss\"},{\"acc\":74,\"arc\":\"T\",\"armorPierce\":\"d:3fe0000000000000\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":8,\"id\":\"gauss\",\"k\":\"gauss\",\"opt\":3,\"pierce\":\"d:3fe3333333333333\",\"r\":5,\"shots\":3,\"trait\":\"gauss\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"gsentry\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        },
+        "godot": {
+          "id": "d_jackal_h:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fd0000000000000\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":6,\"fx\":{},\"hangar\":0,\"hullRegen\":4,\"maxHp\":168,\"regen\":0,\"shMax\":0,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":74,\"arc\":\"T\",\"armorPierce\":\"d:3fe0000000000000\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":8,\"id\":\"gauss\",\"k\":\"gauss\",\"opt\":3,\"pierce\":\"d:3fe3333333333333\",\"r\":5,\"shots\":3,\"trait\":\"gauss\"},{\"acc\":74,\"arc\":\"T\",\"armorPierce\":\"d:3fe0000000000000\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":8,\"id\":\"gauss\",\"k\":\"gauss\",\"opt\":3,\"pierce\":\"d:3fe3333333333333\",\"r\":5,\"shots\":3,\"trait\":\"gauss\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"gsentry\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "h_interdictor_e:hull",
+        "browser": {
+          "id": "h_interdictor_e:hull",
+          "state": "{\"ab\":\"ionpulse\",\"ar\":\"d:3fc3333333333333\",\"base\":\"h_interdictor\",\"cls\":\"Destroyer\",\"cost\":130,\"cp\":2,\"ev\":10,\"fac\":\"hegemony\",\"hp\":60,\"rg\":7,\"sh\":18,\"size\":\"d:3fe3333333333333\",\"slots\":1,\"sp\":3,\"tn\":2,\"variant\":\"h_interdictor_e\",\"w\":[[\"ion\",\"F\"],[\"turbo\",\"T\"],[\"flak\",\"T\"]]}"
+        },
+        "godot": {
+          "id": "h_interdictor_e:hull",
+          "state": "{\"ab\":\"ionpulse\",\"ar\":\"d:3fc3333333333333\",\"base\":\"h_interdictor\",\"cls\":\"Destroyer\",\"cost\":130,\"cp\":2,\"ev\":10,\"fac\":\"hegemony\",\"hp\":74,\"rg\":7,\"sh\":24,\"size\":\"d:3fe3333333333333\",\"slots\":1,\"sp\":3,\"tn\":2,\"variant\":\"h_interdictor_e\",\"w\":[[\"ion\",\"F\"],[\"turbo\",\"T\"],[\"flak\",\"T\"]]}"
+        }
+      },
+      {
+        "id": "h_interdictor_e:derive:1",
+        "browser": {
+          "id": "h_interdictor_e:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc3333333333333\",\"crit\":0,\"dmg\":1,\"ev\":10,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":60,\"regen\":7,\"shMax\":18,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":80,\"arc\":\"F\",\"cd\":0,\"crit\":4,\"dmg\":12,\"fall\":6,\"id\":\"ion\",\"ion\":\"d:4004000000000000\",\"k\":\"lance\",\"opt\":5,\"r\":6,\"shots\":1},{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":5,\"dmg\":10,\"fall\":8,\"id\":\"turbo\",\"k\":\"battery\",\"opt\":3,\"pierce\":\"d:3fd0000000000000\",\"r\":5,\"shots\":2,\"trait\":\"plasma\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"flak\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        },
+        "godot": {
+          "id": "h_interdictor_e:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc3333333333333\",\"crit\":0,\"dmg\":1,\"ev\":10,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":74,\"regen\":7,\"shMax\":24,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":80,\"arc\":\"F\",\"cd\":0,\"crit\":4,\"dmg\":12,\"fall\":6,\"id\":\"ion\",\"ion\":\"d:4004000000000000\",\"k\":\"lance\",\"opt\":5,\"r\":6,\"shots\":1},{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":5,\"dmg\":10,\"fall\":8,\"id\":\"turbo\",\"k\":\"battery\",\"opt\":3,\"pierce\":\"d:3fd0000000000000\",\"r\":5,\"shots\":2,\"trait\":\"plasma\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"flak\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "h_interdictor_e:derive:3",
+        "browser": {
+          "id": "h_interdictor_e:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc3333333333333\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":10,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":84,\"regen\":10,\"shMax\":25,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":80,\"arc\":\"F\",\"cd\":0,\"crit\":4,\"dmg\":12,\"fall\":6,\"id\":\"ion\",\"ion\":\"d:4004000000000000\",\"k\":\"lance\",\"opt\":5,\"r\":6,\"shots\":1},{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":5,\"dmg\":10,\"fall\":8,\"id\":\"turbo\",\"k\":\"battery\",\"opt\":3,\"pierce\":\"d:3fd0000000000000\",\"r\":5,\"shots\":2,\"trait\":\"plasma\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"flak\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        },
+        "godot": {
+          "id": "h_interdictor_e:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc3333333333333\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":10,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":104,\"regen\":10,\"shMax\":34,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":80,\"arc\":\"F\",\"cd\":0,\"crit\":4,\"dmg\":12,\"fall\":6,\"id\":\"ion\",\"ion\":\"d:4004000000000000\",\"k\":\"lance\",\"opt\":5,\"r\":6,\"shots\":1},{\"acc\":74,\"arc\":\"T\",\"cd\":0,\"crit\":5,\"dmg\":10,\"fall\":8,\"id\":\"turbo\",\"k\":\"battery\",\"opt\":3,\"pierce\":\"d:3fd0000000000000\",\"r\":5,\"shots\":2,\"trait\":\"plasma\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"flak\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "i_carrier_a:hull",
+        "browser": {
+          "id": "i_carrier_a:hull",
+          "state": "{\"ab\":\"launch\",\"ar\":\"d:3fa999999999999a\",\"base\":\"i_carrier\",\"cls\":\"Carrier\",\"cost\":340,\"cost0\":310,\"cp\":5,\"ev\":12,\"fac\":\"ithar\",\"hangar\":3,\"hp\":140,\"rg\":10,\"sh\":22,\"size\":\"d:3feae147ae147ae1\",\"slots\":3,\"sp\":3,\"tn\":2,\"variant\":\"i_carrier_a\",\"w\":[[\"pulsar\",\"F\"],[\"turret\",\"T\"]]}"
+        },
+        "godot": {
+          "id": "i_carrier_a:hull",
+          "state": "{\"ab\":\"launch\",\"ar\":\"d:3fa999999999999a\",\"base\":\"i_carrier\",\"cls\":\"Carrier\",\"cost\":340,\"cost0\":310,\"cp\":5,\"ev\":12,\"fac\":\"ithar\",\"hangar\":3,\"hp\":140,\"rg\":10,\"sh\":30,\"size\":\"d:3feae147ae147ae1\",\"slots\":3,\"sp\":4,\"tn\":2,\"variant\":\"i_carrier_a\",\"w\":[[\"turret\",\"T\"],[\"flak\",\"T\"]]}"
+        }
+      },
+      {
+        "id": "i_carrier_a:fit:crystal",
+        "browser": {
+          "id": "i_carrier_a:fit:crystal",
+          "allowed": true
+        },
+        "godot": {
+          "allowed": false,
+          "id": "i_carrier_a:fit:crystal"
+        }
+      },
+      {
+        "id": "i_carrier_a:fit:flakplus",
+        "browser": {
+          "id": "i_carrier_a:fit:flakplus",
+          "allowed": false
+        },
+        "godot": {
+          "allowed": true,
+          "id": "i_carrier_a:fit:flakplus"
+        }
+      },
+      {
+        "id": "i_carrier_a:derive:1",
+        "browser": {
+          "id": "i_carrier_a:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fa999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":12,\"fx\":{},\"hangar\":3,\"hullRegen\":0,\"maxHp\":140,\"regen\":10,\"shMax\":22,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":80,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":12,\"fall\":6,\"id\":\"pulsar\",\"k\":\"lance\",\"opt\":5,\"pierce\":\"d:3fe3333333333333\",\"r\":6,\"shots\":2},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"crit\":13,\"dmg\":8,\"fall\":8,\"id\":\"turret\",\"k\":\"battery\",\"opt\":3,\"r\":5,\"shots\":2,\"trait\":\"needle\"}]}"
+        },
+        "godot": {
+          "id": "i_carrier_a:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fa999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":12,\"fx\":{},\"hangar\":3,\"hullRegen\":0,\"maxHp\":140,\"regen\":10,\"shMax\":30,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"crit\":13,\"dmg\":8,\"fall\":8,\"id\":\"turret\",\"k\":\"battery\",\"opt\":3,\"r\":5,\"shots\":2,\"trait\":\"needle\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"flak\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "i_carrier_a:derive:3",
+        "browser": {
+          "id": "i_carrier_a:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fa999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":12,\"fx\":{},\"hangar\":3,\"hullRegen\":0,\"maxHp\":196,\"regen\":14,\"shMax\":31,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":80,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":12,\"fall\":6,\"id\":\"pulsar\",\"k\":\"lance\",\"opt\":5,\"pierce\":\"d:3fe3333333333333\",\"r\":6,\"shots\":2},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"crit\":13,\"dmg\":8,\"fall\":8,\"id\":\"turret\",\"k\":\"battery\",\"opt\":3,\"r\":5,\"shots\":2,\"trait\":\"needle\"}]}"
+        },
+        "godot": {
+          "id": "i_carrier_a:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fa999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":12,\"fx\":{},\"hangar\":3,\"hullRegen\":0,\"maxHp\":196,\"regen\":14,\"shMax\":42,\"speed\":4,\"turns\":2,\"weapons\":[{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"crit\":13,\"dmg\":8,\"fall\":8,\"id\":\"turret\",\"k\":\"battery\",\"opt\":3,\"r\":5,\"shots\":2,\"trait\":\"needle\"},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"flak\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "vs_penitent_l:hull",
+        "browser": {
+          "id": "vs_penitent_l:hull",
+          "state": "{\"ab\":\"focus\",\"ar\":\"d:3fc999999999999a\",\"base\":\"penitent\",\"cls\":\"Cruiser\",\"cost\":200,\"cp\":3,\"ev\":5,\"fac\":\"voidsworn\",\"hp\":120,\"rg\":8,\"sh\":20,\"size\":\"d:3fe851eb851eb852\",\"slots\":2,\"sp\":3,\"tn\":2,\"variant\":\"vs_penitent_l\",\"w\":[[\"lance\",\"F\"],[\"lance\",\"F\"],[\"battery\",\"T\"]]}"
+        },
+        "godot": {
+          "id": "vs_penitent_l:hull",
+          "state": "{\"ab\":\"focus\",\"ar\":\"d:3fc999999999999a\",\"base\":\"penitent\",\"cls\":\"Cruiser\",\"cost\":200,\"cp\":3,\"ev\":5,\"fac\":\"voidsworn\",\"hp\":120,\"rg\":8,\"sh\":20,\"size\":\"d:3fe851eb851eb852\",\"slots\":2,\"sp\":3,\"tn\":2,\"variant\":\"vs_penitent_l\",\"w\":[[\"lance\",\"F\"],[\"lance\",\"F\"],[\"flak\",\"T\"]]}"
+        }
+      },
+      {
+        "id": "vs_penitent_l:fit:flakplus",
+        "browser": {
+          "id": "vs_penitent_l:fit:flakplus",
+          "allowed": false
+        },
+        "godot": {
+          "allowed": true,
+          "id": "vs_penitent_l:fit:flakplus"
+        }
+      },
+      {
+        "id": "vs_penitent_l:fit:loaders",
+        "browser": {
+          "id": "vs_penitent_l:fit:loaders",
+          "allowed": true
+        },
+        "godot": {
+          "allowed": false,
+          "id": "vs_penitent_l:fit:loaders"
+        }
+      },
+      {
+        "id": "vs_penitent_l:derive:1",
+        "browser": {
+          "id": "vs_penitent_l:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":5,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":120,\"regen\":8,\"shMax\":20,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":82,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":20,\"fall\":6,\"id\":\"lance\",\"k\":\"lance\",\"opt\":6,\"pierce\":\"d:3fe3333333333333\",\"r\":7,\"shots\":1},{\"acc\":82,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":20,\"fall\":6,\"id\":\"lance\",\"k\":\"lance\",\"opt\":6,\"pierce\":\"d:3fe3333333333333\",\"r\":7,\"shots\":1},{\"acc\":76,\"arc\":\"T\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":4,\"id\":\"battery\",\"k\":\"battery\",\"opt\":3,\"r\":5,\"shots\":4,\"trait\":\"las\"}]}"
+        },
+        "godot": {
+          "id": "vs_penitent_l:derive:1",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":1,\"ev\":5,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":120,\"regen\":8,\"shMax\":20,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":82,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":20,\"fall\":6,\"id\":\"lance\",\"k\":\"lance\",\"opt\":6,\"pierce\":\"d:3fe3333333333333\",\"r\":7,\"shots\":1},{\"acc\":82,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":20,\"fall\":6,\"id\":\"lance\",\"k\":\"lance\",\"opt\":6,\"pierce\":\"d:3fe3333333333333\",\"r\":7,\"shots\":1},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"flak\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      },
+      {
+        "id": "vs_penitent_l:derive:3",
+        "browser": {
+          "id": "vs_penitent_l:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":5,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":168,\"regen\":11,\"shMax\":28,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":82,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":20,\"fall\":6,\"id\":\"lance\",\"k\":\"lance\",\"opt\":6,\"pierce\":\"d:3fe3333333333333\",\"r\":7,\"shots\":1},{\"acc\":82,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":20,\"fall\":6,\"id\":\"lance\",\"k\":\"lance\",\"opt\":6,\"pierce\":\"d:3fe3333333333333\",\"r\":7,\"shots\":1},{\"acc\":76,\"arc\":\"T\",\"cd\":0,\"crit\":5,\"dmg\":6,\"fall\":4,\"id\":\"battery\",\"k\":\"battery\",\"opt\":3,\"r\":5,\"shots\":4,\"trait\":\"las\"}]}"
+        },
+        "godot": {
+          "id": "vs_penitent_l:derive:3",
+          "state": "{\"aim\":0,\"armor\":\"d:3fc999999999999a\",\"crit\":0,\"dmg\":\"d:3ff4cccccccccccd\",\"ev\":5,\"fx\":{},\"hangar\":0,\"hullRegen\":0,\"maxHp\":168,\"regen\":11,\"shMax\":28,\"speed\":3,\"turns\":2,\"weapons\":[{\"acc\":82,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":20,\"fall\":6,\"id\":\"lance\",\"k\":\"lance\",\"opt\":6,\"pierce\":\"d:3fe3333333333333\",\"r\":7,\"shots\":1},{\"acc\":82,\"arc\":\"F\",\"cd\":0,\"crit\":10,\"dmg\":20,\"fall\":6,\"id\":\"lance\",\"k\":\"lance\",\"opt\":6,\"pierce\":\"d:3fe3333333333333\",\"r\":7,\"shots\":1},{\"acc\":80,\"arc\":\"T\",\"cd\":0,\"dmg\":3,\"fall\":10,\"id\":\"flak\",\"k\":\"flak\",\"opt\":2,\"r\":2,\"shots\":3,\"vsCap\":\"d:3fe3333333333333\",\"vsSq\":3}]}"
+        }
+      }
+    ],
+    "nodeFileSHA256": "9f49438fe1911851b3da93e996bc6a671c5ba54a79a5b481167bff40efbb14e8",
+    "godotFileSHA256": "4e382be3fde86738df9486850ed3391a067e93d88b570467171659ba26e24679"
+  },
+  "hull_candidate": {
+    "total": 816,
+    "matched": 816,
+    "differences": [],
+    "nodeFileSHA256": "9f49438fe1911851b3da93e996bc6a671c5ba54a79a5b481167bff40efbb14e8",
+    "godotFileSHA256": "4e3267eed5f65eae5c4a9dc7fb7dfc6c2b017f3239bdbc6bb5bebbbc79af1807"
+  },
+  "sourceInputs": [
+    {
+      "path": "campaign3d.js",
+      "sha256": "d7a997573f25f89c89c6d8c31ffe07b870907aae21c2f5351a38652fa3beec13",
+      "bytes": 23247,
+      "lines": 136,
+      "lastLineStart": ""
+    },
+    {
+      "path": "campaign_run.js",
+      "sha256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "bytes": 76939,
+      "lines": 544,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "core.js",
+      "sha256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "bytes": 37674,
+      "lines": 349,
+      "lastLineStart": "function findNode(id){ for(const c of RU"
+    },
+    {
+      "path": "data.js",
+      "sha256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a",
+      "bytes": 95372,
+      "lines": 697,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'"
+    },
+    {
+      "path": "godot/campaign/campaign.gd",
+      "sha256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "bytes": 150939,
+      "lines": 2626,
+      "lastLineStart": "\t\t\"events\": tel_log.slice(max(0, tel_log"
+    },
+    {
+      "path": "godot/campaign/data/campaign_tables.json",
+      "sha256": "e8b047b9b45363191ff5eb9d41668a7f66902ecc995ffe0f944bf4a69a701b99",
+      "bytes": 134414,
+      "lines": 1,
+      "lastLineStart": "{\"sha256\":\"a5bcd2bb62a5c253a058a7516d47c"
+    },
+    {
+      "path": "godot/campaign/test/oracle/README.md",
+      "sha256": "e16e00c398b77c3932e5079851366a74820e2bf3ec2228ef01bb51e4087fbd1b",
+      "bytes": 1778,
+      "lines": 12,
+      "lastLineStart": "**Catching up:** when stream B changes a"
+    },
+    {
+      "path": "godot/campaign/test/oracle/campaign3d.js",
+      "sha256": "7f7025ddcffbfcbc2921e7f985678f4960b44cbfff191fdd4098bab18f4710d9",
+      "bytes": 23243,
+      "lines": 136,
+      "lastLineStart": ""
+    },
+    {
+      "path": "godot/campaign/test/oracle/campaign_run.js",
+      "sha256": "993c7d61ccdb4418cee51e470405e83d58e11fe86a6e4065a9f94c71d3f34ecb",
+      "bytes": 76858,
+      "lines": 544,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "godot/campaign/test/oracle/core.js",
+      "sha256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "bytes": 37674,
+      "lines": 349,
+      "lastLineStart": "function findNode(id){ for(const c of RU"
+    },
+    {
+      "path": "godot/campaign/test/oracle/data.js",
+      "sha256": "50e1fdc16cd184e221711f97101d35354aa4b5487fd59ab204a2fd1d467b77ca",
+      "bytes": 94163,
+      "lines": 694,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'"
+    }
+  ],
+  "limits": [
+    "Display names and weapon labels are deliberately excluded in this mechanical inventory fixture.",
+    "Both native campaign and browser derive are executed on synthetic Mark I/III ships with no admiral, perks, refits, boons or relics. This is not whole-campaign parity."
+  ]
+}

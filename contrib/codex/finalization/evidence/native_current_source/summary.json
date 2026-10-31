@@ -1,0 +1,1584 @@
+{
+  "status": "FAIL",
+  "lane": "native_current_source",
+  "work": "/tmp/voidsworn-combat-corpus-Suy1bJ",
+  "sourceRepo": "/workspace/scratch/5f56c97c87da/work",
+  "scope": "Current browser battle.js and core.js with no-op presentation, versus native battle API. Headless rules evidence only.",
+  "cases": [
+    {
+      "id": "s1",
+      "seed": 1001,
+      "note": "Sector 1 engagement: a Voidsworn destroyer and two frigates (torpedoes, a turret, autocannons, flak) against a Hegemony destroyer and two pickets (plasma lasers and turbolasers), shields, ship deaths",
+      "pass": false,
+      "recordsJS": 160,
+      "recordsGodot": 160,
+      "differingRecords": 160,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1993085205
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1993085205
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "Long Watch",
+          "after": "Lament of Iron"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 480
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 960
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 3544
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 14
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 143
+        }
+      ],
+      "terminalJS": "end loss",
+      "terminalGodot": "end loss",
+      "nodeFileSHA256": "acf438e2f390d9a42951c7153ba2890c281d8babb68b1eee7ed7eab1608b4cfe",
+      "godotFileSHA256": "1be0f4da6184621eaa00bdd46c17ef15d06dbb8d663ce7e10a9efadee424144f"
+    },
+    {
+      "id": "s2",
+      "seed": 2002,
+      "note": "Sector 1 flagship fight: the Hegemony flagship and two escorts against a Voidsworn cruiser, destroyer and two frigates (batteries, lance, torpedoes, turret, autocannons, flak); boss scaling, boss Command, escorts breaking, wrecks left as terrain",
+      "pass": false,
+      "recordsJS": 144,
+      "recordsGodot": 144,
+      "differingRecords": 144,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 2177333497
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 2177333497
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "Merciless Frost",
+          "after": "Merciless Litany"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 576
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 1296
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 4373
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 34
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 92
+        }
+      ],
+      "terminalJS": "end loss",
+      "terminalGodot": "end loss",
+      "nodeFileSHA256": "b01c1a512084271f86a2c03cd86329b8108d294a08fb822ad6ce907c5d422821",
+      "godotFileSHA256": "fc97b184d591d067b5a2ebbabb400ed1b71f3826252e192aea8bd5cab820e66b"
+    },
+    {
+      "id": "s4",
+      "seed": 4004,
+      "note": "Timing test, sector 3 size: 10 Voidsworn ships against 10 Hegemony ships, veteran AI (carriers left out: squadrons are not ported yet)",
+      "pass": false,
+      "recordsJS": 281,
+      "recordsGodot": 281,
+      "differingRecords": 281,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 522440677
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 522440677
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "Burning Spire",
+          "after": "Wrathful Seraph"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 3372
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 6744
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 18991
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 157
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 1097
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "ad7a772cb9aaf19bf9937fa7d8f11ed3f59d390f7fd4146f04aeb9d3830c118b",
+      "godotFileSHA256": "5d72e0163725647299809da420e889f6d18b4be64cece7f54d1eaf8500704e31"
+    },
+    {
+      "id": "s6",
+      "seed": 6006,
+      "note": "Carriers: Ashgrove (Scramble Command, squadron damage) with a Reliquary carrier against a Corsair hulk-carrier fleet; opening wings, launches, bombers and the flak gauntlet, enemy wings, full bot (Command, abilities, rams, boarding, brace, turning in place); a campaign battle with a random mid-battle event",
+      "pass": false,
+      "recordsJS": 183,
+      "recordsGodot": 183,
+      "differingRecords": 183,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1857631516
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1857631516
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "Cinder Vow",
+          "after": "Cinder Psalm"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 2360
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 2013
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 8823
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 1019
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 53
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "ca2d1e6750169df87f05f968e418f26dd60843d0d83a9ffd8835e9b62abe3b03",
+      "godotFileSHA256": "f70a9873a357d47e7a8cb32ee3a5c580b2038cf7d8c66c47a64e6e60326654e3"
+    },
+    {
+      "id": "s7",
+      "seed": 7007,
+      "note": "Generated enemy fleet (carrier archetype, exact V8 pow in the budget) against two Voidsworn carriers: carrier adaptation (point-defence refits, B-20, and the adaptive fighter screen), Hegemony fighters, flank deployment; attack-move (fire during the burn) when no gun bears",
+      "pass": false,
+      "recordsJS": 420,
+      "recordsGodot": 351,
+      "differingRecords": 420,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 3696774630
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 3696774630
+        },
+        "field": {
+          "path": "state.units[0].weapons[0].n",
+          "before": "Sear turret",
+          "after": "Las-turret"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 3149
+        },
+        {
+          "path": "state.units[].name",
+          "records": 4245
+        },
+        {
+          "path": "state.units[].dmg",
+          "records": 3159
+        },
+        {
+          "path": "state.units[].hp",
+          "records": 2473
+        },
+        {
+          "path": "state.units[].maxHp",
+          "records": 692
+        },
+        {
+          "path": "state.units[].sec.mid.hp",
+          "records": 1003
+        },
+        {
+          "path": "state.units[].sec.mid.max",
+          "records": 351
+        },
+        {
+          "path": "state.units[].sec.prow.hp",
+          "records": 1479
+        },
+        {
+          "path": "state.units[].sec.prow.max",
+          "records": 351
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 29023
+        },
+        {
+          "path": "state.units[].hexMoved",
+          "records": 3109
+        },
+        {
+          "path": "state.units[].mp",
+          "records": 3127
+        },
+        {
+          "path": "state.units[].q",
+          "records": 4923
+        },
+        {
+          "path": "state.units[].r",
+          "records": 5286
+        },
+        {
+          "path": "state.b.aiActive",
+          "records": 158
+        },
+        {
+          "path": "state.b.fstat.hegemony.shots",
+          "records": 246
+        },
+        {
+          "path": "state.b.fstat.hegemony.syncShots",
+          "records": 305
+        },
+        {
+          "path": "state.units[].activated",
+          "records": 1776
+        },
+        {
+          "path": "state.units[].aiLastT",
+          "records": 1962
+        },
+        {
+          "path": "state.units[].postFire",
+          "records": 1349
+        },
+        {
+          "path": "state.units[].weapons[].fired",
+          "records": 2202
+        },
+        {
+          "path": "state.b.log[]",
+          "records": 1471
+        },
+        {
+          "path": "state.b.syncMark.enemy.x08.ids[]",
+          "records": 883
+        },
+        {
+          "path": "state.units[]._calledUsed",
+          "records": 1
+        },
+        {
+          "path": "state.units[].aiHurt",
+          "records": 1
+        },
+        {
+          "path": "state.units[].moved",
+          "records": 188
+        },
+        {
+          "path": "state.units[].dealt",
+          "records": 5307
+        },
+        {
+          "path": "state.units[].crew",
+          "records": 1813
+        },
+        {
+          "path": "state.b.resolve.player",
+          "records": 7
+        },
+        {
+          "path": "state.b.round",
+          "records": 62
+        },
+        {
+          "path": "state.b.side",
+          "records": 111
+        },
+        {
+          "path": "state.units[].abCd",
+          "records": 1331
+        },
+        {
+          "path": "state.units[].evBuff",
+          "records": 115
+        },
+        {
+          "path": "state.units[].regenLock",
+          "records": 275
+        },
+        {
+          "path": "state.b.resolve.enemy",
+          "records": 22
+        },
+        {
+          "path": "state.units[].sh[]",
+          "records": 4019
+        },
+        {
+          "path": "state.units[].facing",
+          "records": 3641
+        },
+        {
+          "path": "state.b.busy",
+          "records": 30
+        },
+        {
+          "path": "state.b.cmd",
+          "records": 1
+        },
+        {
+          "path": "state.b.cmdUsed",
+          "records": 1
+        },
+        {
+          "path": "state.b.log[].c",
+          "records": 7774
+        },
+        {
+          "path": "state.b.usage.cmd",
+          "records": 1
+        },
+        {
+          "path": "state.g.uid",
+          "records": 183
+        },
+        {
+          "path": "state.units[]",
+          "records": 274
+        },
+        {
+          "path": "state.b.usage.kind.sq",
+          "records": 280
+        },
+        {
+          "path": "state.units[].intercepts",
+          "records": 1415
+        },
+        {
+          "path": "state.units[].sec.mid.broken",
+          "records": 231
+        },
+        {
+          "path": "state.units[].st.shieldOff",
+          "records": 236
+        },
+        {
+          "path": "state.units[].kills",
+          "records": 3261
+        },
+        {
+          "path": "state.units[].dead",
+          "records": 1031
+        },
+        {
+          "path": "state.units[].killCause",
+          "records": 1829
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 3260
+        },
+        {
+          "path": "state.b.aiFocus",
+          "records": 124
+        },
+        {
+          "path": "state.b.activeUnit",
+          "records": 53
+        },
+        {
+          "path": "state.b.fstat.voidsworn.shots",
+          "records": 202
+        },
+        {
+          "path": "state.b.fstat.voidsworn.torpLaunch",
+          "records": 72
+        },
+        {
+          "path": "state.b.torpSeq",
+          "records": 72
+        },
+        {
+          "path": "state.b.torps[]",
+          "records": 57
+        },
+        {
+          "path": "state.b.usage.fire.Prow",
+          "records": 253
+        },
+        {
+          "path": "state.b.usage.fire.Turret (all arcs)",
+          "records": 99
+        },
+        {
+          "path": "state.b.usage.kind.battery",
+          "records": 192
+        },
+        {
+          "path": "state.b.usage.kind.torp",
+          "records": 72
+        },
+        {
+          "path": "state.b.usage.moves",
+          "records": 261
+        },
+        {
+          "path": "state.units[].sureUsed",
+          "records": 543
+        },
+        {
+          "path": "state.units[].weapons[].cdLeft",
+          "records": 123
+        },
+        {
+          "path": "state.b.torps[].aim.r",
+          "records": 76
+        },
+        {
+          "path": "state.b.torps[].tid",
+          "records": 76
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 76
+        },
+        {
+          "path": "state.b.usage.ab.reload",
+          "records": 26
+        },
+        {
+          "path": "state.units[].shHit",
+          "records": 825
+        },
+        {
+          "path": "state.b.torps[].aim.q",
+          "records": 43
+        },
+        {
+          "path": "state.units[].sec.prow.broken",
+          "records": 868
+        },
+        {
+          "path": "state.units[].weapons[].off",
+          "records": 1173
+        },
+        {
+          "path": "state.units[].turnsLeft",
+          "records": 1268
+        },
+        {
+          "path": "state.b.syncMark.enemy.x018",
+          "records": 260
+        },
+        {
+          "path": "state.b.syncMark.enemy.x023",
+          "records": 259
+        },
+        {
+          "path": "state.b.syncMark.enemy.x08.r",
+          "records": 256
+        },
+        {
+          "path": "state.units[].regenLock[]",
+          "records": 553
+        },
+        {
+          "path": "state.units[].shHit[]",
+          "records": 1462
+        },
+        {
+          "path": "state.b.syncMark.enemy.x028",
+          "records": 52
+        },
+        {
+          "path": "state.b.syncMark.enemy.x05",
+          "records": 6
+        },
+        {
+          "path": "state.b.syncMark.enemy.x019",
+          "records": 1
+        },
+        {
+          "path": "state.b.syncMark.enemy.x019.ids[]",
+          "records": 245
+        },
+        {
+          "path": "state.b.syncMark.enemy.x05.ids[]",
+          "records": 648
+        },
+        {
+          "path": "state.units[].boarded",
+          "records": 175
+        },
+        {
+          "path": "state.units[].emerg",
+          "records": 175
+        },
+        {
+          "path": "state.units[].pivotUsed",
+          "records": 175
+        },
+        {
+          "path": "state.units[].postMp",
+          "records": 175
+        },
+        {
+          "path": "state.units[].ramBoost",
+          "records": 175
+        },
+        {
+          "path": "state.units[].rammed",
+          "records": 310
+        },
+        {
+          "path": "state.units[].repel",
+          "records": 175
+        },
+        {
+          "path": "state.units[].st.fire",
+          "records": 436
+        },
+        {
+          "path": "state.units[].st.fireDmg",
+          "records": 229
+        },
+        {
+          "path": "state.b.fstat.voidsworn.torpDodge",
+          "records": 154
+        },
+        {
+          "path": "state.b.fstat.voidsworn.torpHit",
+          "records": 228
+        },
+        {
+          "path": "state.units[].ev",
+          "records": 883
+        },
+        {
+          "path": "state.units[].sec.eng.broken",
+          "records": 576
+        },
+        {
+          "path": "state.units[].sec.eng.hp",
+          "records": 720
+        },
+        {
+          "path": "state.units[].secSave",
+          "records": 576
+        },
+        {
+          "path": "state.units[].st.engine",
+          "records": 576
+        },
+        {
+          "path": "state.units[].turns",
+          "records": 542
+        },
+        {
+          "path": "state.b.usage.ram",
+          "records": 209
+        },
+        {
+          "path": "state.b.syncMark.enemy.x028.ids[]",
+          "records": 560
+        },
+        {
+          "path": "state.b.syncMark.enemy.x028.r",
+          "records": 9
+        },
+        {
+          "path": "state.b.syncMark.enemy.x05.r",
+          "records": 201
+        },
+        {
+          "path": "state.b.usage.ab.launch",
+          "records": 178
+        },
+        {
+          "path": "state.units[].spare",
+          "records": 272
+        },
+        {
+          "path": "state.b.syncMark.enemy.x019.r",
+          "records": 195
+        },
+        {
+          "path": "state.b.syncMark.enemy.x022",
+          "records": 51
+        },
+        {
+          "path": "state.b.syncMark.enemy.x027",
+          "records": 127
+        },
+        {
+          "path": "state.units[].stance",
+          "records": 286
+        },
+        {
+          "path": "state.units[].stanceRound",
+          "records": 354
+        },
+        {
+          "path": "state.units[].speed",
+          "records": 341
+        },
+        {
+          "path": "state.units[].sqKind",
+          "records": 341
+        },
+        {
+          "path": "state.units[].tpl",
+          "records": 341
+        },
+        {
+          "path": "state.units[].weapons[].acc",
+          "records": 341
+        },
+        {
+          "path": "state.units[].weapons[].crit",
+          "records": 341
+        },
+        {
+          "path": "state.units[].weapons[].dmg",
+          "records": 341
+        },
+        {
+          "path": "state.units[].weapons[].id",
+          "records": 341
+        },
+        {
+          "path": "state.units[].weapons[].pierce",
+          "records": 341
+        },
+        {
+          "path": "state.units[].weapons[].shots",
+          "records": 341
+        },
+        {
+          "path": "state.units[].weapons[].vsCap",
+          "records": 341
+        },
+        {
+          "path": "state.units[].weapons[].vsSq",
+          "records": 341
+        },
+        {
+          "path": "state.b.terrain.8,10",
+          "records": 145
+        },
+        {
+          "path": "state.units[].hulk",
+          "records": 106
+        },
+        {
+          "path": "state.b.syncMark.enemy.x022.ids[]",
+          "records": 143
+        },
+        {
+          "path": "state.b.syncMark.enemy.x022.r",
+          "records": 143
+        },
+        {
+          "path": "state.b.syncMark.enemy.x06",
+          "records": 136
+        },
+        {
+          "path": "state.b.syncMark.enemy.x07",
+          "records": 107
+        },
+        {
+          "path": "state.b.torps[].from.q",
+          "records": 12
+        },
+        {
+          "path": "state.b.torps[].from.r",
+          "records": 12
+        },
+        {
+          "path": "state.b.syncMark.enemy.x030",
+          "records": 116
+        },
+        {
+          "path": "state.b.syncMark.enemy.x029",
+          "records": 115
+        },
+        {
+          "path": "state.b.syncMark.enemy.x031",
+          "records": 76
+        },
+        {
+          "path": "state.b.syncMark.enemy.x027.ids[]",
+          "records": 123
+        },
+        {
+          "path": "state.units[].parent",
+          "records": 48
+        },
+        {
+          "path": "state.b.terrain.7,13",
+          "records": 39
+        },
+        {
+          "path": "state.b.syncMark.enemy.x027.r",
+          "records": 20
+        },
+        {
+          "path": "state.b.syncMark.enemy.x07.ids[]",
+          "records": 35
+        },
+        {
+          "path": "state.b.syncMark.enemy.x07.r",
+          "records": 18
+        },
+        {
+          "path": "state.b.over",
+          "records": 2
+        }
+      ],
+      "terminalJS": "end loss",
+      "terminalGodot": "end loss",
+      "nodeFileSHA256": "e2e2b58782cfbb9ded701c6eddef16d4d6bf40e9a9b902305fe0255953fcb9e8",
+      "godotFileSHA256": "1aa1786745459ef4e14d31fa0e75d5ea7755a69801605cdb60924c9393c80bb9"
+    },
+    {
+      "id": "s8",
+      "seed": 8008,
+      "note": "Boons, relics, aspect and heat: twelve boons at all three rarities, five relics, the bulwark aspect, veteran captains, Veteran escorts, Undying foes and Slow orders against an Ithar elite fleet (phase jumps, a wraithcarrier); Thale (Iron Command)",
+      "pass": false,
+      "recordsJS": 155,
+      "recordsGodot": 155,
+      "differingRecords": 155,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 3512528340
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 3512528340
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "Relentless Ember",
+          "after": "Relentless Canticle"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 1782
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 1860
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 6406
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 489
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 63
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "44cbbe9382311c3d4a77cbc1f5fed1b8732dca3d69da4637d07185da5bb9e5fe",
+      "godotFileSHA256": "43eee0f17e51ab4b4a61ce432cd27b2c1032fb5837300b71950e1e7e5fa1fcc3"
+    },
+    {
+      "id": "s10",
+      "seed": 10010,
+      "note": "Campaign battle with a solar flare (forced event), generated Chorus swarm fleet against the hive aspect (counts as a second carrier: spore refits), Vex (Barrage Command); the last twelve boons",
+      "pass": false,
+      "recordsJS": 312,
+      "recordsGodot": 312,
+      "differingRecords": 312,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1417623441
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1417623441
+        },
+        "field": {
+          "path": "state.units[0].weapons[0].n",
+          "before": "Sear turret",
+          "after": "Las-turret"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 2808
+        },
+        {
+          "path": "state.units[].name",
+          "records": 624
+        },
+        {
+          "path": "state.units[].dmg",
+          "records": 3120
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 12259
+        },
+        {
+          "path": "state.units[].sh[]",
+          "records": 365
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 1076
+        },
+        {
+          "path": "state.units[].hp",
+          "records": 33
+        },
+        {
+          "path": "state.units[].dealt",
+          "records": 389
+        },
+        {
+          "path": "state.units[].sec.prow.hp",
+          "records": 140
+        }
+      ],
+      "terminalJS": "end loss",
+      "terminalGodot": "end loss",
+      "nodeFileSHA256": "04fe988a9c57bad73875152c4fbef9e0826fe490d981c7f53fbcff61d5359759",
+      "godotFileSHA256": "186cf1b6cf756ee2c2667f4397240e7cb52a481448f5835298db87c83137c7d8"
+    },
+    {
+      "id": "s14",
+      "seed": 14014,
+      "note": "Fight type: Breakthrough. Get half the fleet off the far edge past an Ithar blocking line (veterans block the lead ship's lane); attack-move (fire during the burn) when no gun bears",
+      "pass": false,
+      "recordsJS": 103,
+      "recordsGodot": 103,
+      "differingRecords": 103,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 450933190
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 450933190
+        },
+        "field": {
+          "path": "state.units[0].weapons[0].n",
+          "before": "Sear battery",
+          "after": "Las-battery"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 1133
+        },
+        {
+          "path": "state.units[].name",
+          "records": 618
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 2805
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 66
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 44
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "a9dc6b5e42b206ce4f576a4c02845ef0872315412d24f6b3c6204cdda8508872",
+      "godotFileSHA256": "15eaa2f574c1c01a14b72414444e884a991fb4a8fd8b4327e05618e7983cc868"
+    },
+    {
+      "id": "s21",
+      "seed": 21021,
+      "note": "Classic mode (whole turns, battle.js aiTurn: squadrons first, then each ship picked by opportunity) with the full bot; carriers on both sides; attack-move (fire during the burn) when no gun bears",
+      "pass": false,
+      "recordsJS": 220,
+      "recordsGodot": 220,
+      "differingRecords": 220,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 2673729492
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 2673729492
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "Burning Spire",
+          "after": "Wrathful Seraph"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 1960
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 1980
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 13185
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 100
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 831
+        }
+      ],
+      "terminalJS": "end loss",
+      "terminalGodot": "end loss",
+      "nodeFileSHA256": "333505cdd4f033ab0d6b6c92f4f2030ff32b4d0d2ceb3ec64013c763fc527532",
+      "godotFileSHA256": "87d17e02183f2a26c3c02ff41629f74f6b1fb95201c3613cab772ce368c79b2c"
+    },
+    {
+      "id": "s26",
+      "seed": 26026,
+      "note": "Stream B step 1: Hegemony synchronized fire on both sides (anchors, the sync mark, losing the anchor), Hegemony ion locking shield regen, the drill verb (sync radius 4, +20%), class refit track",
+      "pass": false,
+      "recordsJS": 185,
+      "recordsGodot": 185,
+      "differingRecords": 185,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 2632522200
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 2632522200
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "HNS Comptroller",
+          "after": "HNS Executor"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 1057
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 6931
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 74
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "505ed7fecbcf62304b77752911b4471f4600fb43b1bf0f61607b59aa9b293422",
+      "godotFileSHA256": "ea9bd5ce6747a55d4b95e822b5f045a25d4805dfe6ea613e1dce269768450669"
+    },
+    {
+      "id": "s27",
+      "seed": 27027,
+      "note": "Ithar prism charge, Ithar cannot brace, the Ithar fade after firing (AI and bot), against Chorus feed and bite regrowth; the attune verb",
+      "pass": false,
+      "recordsJS": 245,
+      "recordsGodot": 245,
+      "differingRecords": 245,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 3696794650
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 3696794650
+        },
+        "field": {
+          "path": "state.units[0].weapons[0].n",
+          "before": "Prism lance",
+          "after": "Pulsar lance"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 735
+        },
+        {
+          "path": "state.units[].name",
+          "records": 2172
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 9225
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 359
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "c32d26ffd089584fe2963d82a43cc705e4457f091562a63bd46a398dfdc96a06",
+      "godotFileSHA256": "74321c6fe8a420bc6ccbe7ef08b98e8a74f67eced9217f5f90dfad3aede25dc0"
+    },
+    {
+      "id": "s28",
+      "seed": 28028,
+      "note": "Deathless endless legion on both sides (6+ hulls: two returns, the waken verb adds one), travelling torpedoes against a Deathless line, Corsair rockets into point defense",
+      "pass": false,
+      "recordsJS": 360,
+      "recordsGodot": 360,
+      "differingRecords": 360,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1417641459
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1417641459
+        },
+        "field": {
+          "path": "state.b.log[0].m",
+          "before": "Back up the fleet: Archive restore brings back one more ship.",
+          "after": "Waken the legion: the endless legion has one more return."
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.b.log[].m",
+          "records": 31648
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 9360
+        },
+        {
+          "path": "state.units[].name",
+          "records": 3600
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 1088
+        }
+      ],
+      "terminalJS": "end loss",
+      "terminalGodot": "end loss",
+      "nodeFileSHA256": "d11950769f4b9fccb1f43605534f228328977cc330888826ffe2ff49fb4cd8d4",
+      "godotFileSHA256": "3019f419080cb986d291abd724acef2664d461810da5429d63eb66473277edd0"
+    },
+    {
+      "id": "s30",
+      "seed": 30030,
+      "note": "The Nemesis with the other weaknesses (ion, torp, board, slow, brawl) and adaptations (shields, evasion, aim) on a Chorus fleet; Ashgrove carriers with wing stances (strike, screen, hunt), Brood Tithe, The Endless Swarm, screening wings against torpedoes",
+      "pass": false,
+      "recordsJS": 344,
+      "recordsGodot": 344,
+      "differingRecords": 344,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 2688891101
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 2688891101
+        },
+        "field": {
+          "path": "state.b.log[0].m",
+          "before": "Hive-lord Skrell commands this fleet: your Nemesis. He has adapted: membrane bloom, fin clusters, tasting pores.",
+          "after": "Hive-lord Skrell commands this fleet: your Nemesis. He has adapted: membrane bloom, fin clusters, hunting eyes."
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.b.log[].m",
+          "records": 20828
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 3784
+        },
+        {
+          "path": "state.units[].name",
+          "records": 5474
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 2032
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 14
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "65a35cea59a156904c135e434bf5c5b905fac3ca2a53085ab609cdeac03ed68c",
+      "godotFileSHA256": "8c87b08a73ded818827d00aecf31392a1f80d8cca7e33bbebdc1b09d47afe022"
+    },
+    {
+      "id": "s33",
+      "seed": 7,
+      "note": "Rift board (X20 verifier): a jagged chasm splits the field, crossed by two or three bridges (VOID.rift, riftCells as board cut-outs); Ithar in an asteroid belt, the full bot",
+      "pass": false,
+      "recordsJS": 208,
+      "recordsGodot": 208,
+      "differingRecords": 208,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 259095592
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 259095592
+        },
+        "field": {
+          "path": "state.units[0].weapons[0].n",
+          "before": "Heavy sear broadside",
+          "after": "Heavy las-broadside"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 2496
+        },
+        {
+          "path": "state.units[].name",
+          "records": 2394
+        },
+        {
+          "path": "state.units[].dmg",
+          "records": 1248
+        },
+        {
+          "path": "state.units[].hp",
+          "records": 850
+        },
+        {
+          "path": "state.units[].maxHp",
+          "records": 1040
+        },
+        {
+          "path": "state.units[].sec.eng.hp",
+          "records": 832
+        },
+        {
+          "path": "state.units[].sec.eng.max",
+          "records": 832
+        },
+        {
+          "path": "state.units[].sec.mid.hp",
+          "records": 615
+        },
+        {
+          "path": "state.units[].sec.mid.max",
+          "records": 832
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 10428
+        },
+        {
+          "path": "state.units[].sh[]",
+          "records": 340
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 58
+        },
+        {
+          "path": "state.b.torps[].base",
+          "records": 77
+        },
+        {
+          "path": "state.units[].crew",
+          "records": 185
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 176
+        },
+        {
+          "path": "state.b.log[]",
+          "records": 10
+        },
+        {
+          "path": "state.units[].sec.mid.broken",
+          "records": 10
+        },
+        {
+          "path": "state.units[].st.shieldOff",
+          "records": 10
+        },
+        {
+          "path": "state.b.log[].c",
+          "records": 71
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "805e7242840cde0354154cb70a19e60b4e40713ae7d6b55f0ff493f1a83855f3",
+      "godotFileSHA256": "fb26f1d9e72b11b780fcc75567c0dc414a6b9a281f965e5f3f89a286c249b3d9"
+    },
+    {
+      "id": "s45",
+      "seed": 45045,
+      "note": "Stream B step 6: the Sun-eater razorfiend (bio-plasma turret and prow spitter, regrows 11) in your Chorus brood against the Archive wraithcarrier (pulsar lance and turret, three wings, shields 24, speed 3) in an Ithar fleet",
+      "pass": false,
+      "recordsJS": 147,
+      "recordsGodot": 147,
+      "differingRecords": 147,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1744940761
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1744940761
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "Hollowgut",
+          "after": "Hollowsong"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 2064
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 147
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 4272
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 242
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "c24f25ca9b4fd37a1cac29c3bb5d9a034b78d30ca70994e5a0f1967b0a9a0f29",
+      "godotFileSHA256": "005f184b53b543201e80254b2cb69bed52685f5a4ebbbd478fd62ec37354a616"
+    },
+    {
+      "id": "s46",
+      "seed": 46046,
+      "note": "Stream B step 6: the unchanged arc rows, the Voidsworn lance penitent in your fleet against the Hegemony interdictor variant (ion prow, turbo turret)",
+      "pass": false,
+      "recordsJS": 149,
+      "recordsGodot": 149,
+      "differingRecords": 149,
+      "first": {
+        "record": 0,
+        "node": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1368870880
+        },
+        "godot": {
+          "turn": 0,
+          "round": 1,
+          "actor": "tick player",
+          "rng": 1368870880
+        },
+        "field": {
+          "path": "state.units[0].name",
+          "before": "Cold Reckoning",
+          "after": "Cold Absolution"
+        }
+      },
+      "differingFields": [
+        {
+          "path": "state.units[].name",
+          "records": 447
+        },
+        {
+          "path": "state.units[].weapons[].n",
+          "records": 1341
+        },
+        {
+          "path": "state.b.log[].m",
+          "records": 4955
+        },
+        {
+          "path": "state.b.torps[].w.n",
+          "records": 20
+        },
+        {
+          "path": "state.units[].killedBy",
+          "records": 99
+        }
+      ],
+      "terminalJS": "end win",
+      "terminalGodot": "end win",
+      "nodeFileSHA256": "c1fd0e8a2711188dc776038357eb9e4147a3285ed2bbf87c1ebc3b12394e3f3d",
+      "godotFileSHA256": "e0a7109746b48caf59e2f8ac0a0277cd45d3b96e4b616724aa21c1146e6391ef"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "data.js",
+      "sha256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a",
+      "bytes": 95372,
+      "lines": 697,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'"
+    },
+    {
+      "path": "core.js",
+      "sha256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "bytes": 37674,
+      "lines": 349,
+      "lastLineStart": "function findNode(id){ for(const c of RU"
+    },
+    {
+      "path": "battle.js",
+      "sha256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "bytes": 171701,
+      "lines": 1402,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "ui3d.js",
+      "sha256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "bytes": 115935,
+      "lines": 747,
+      "lastLineStart": "addEventListener('keydown',e=>{ if(e.shi"
+    },
+    {
+      "path": "campaign_run.js",
+      "sha256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "bytes": 76939,
+      "lines": 544,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "godot/rules/rules.gd",
+      "sha256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+      "bytes": 209548,
+      "lines": 3979,
+      "lastLineStart": "\tB[\"aiActive\"] = null; u[\"activated\"] = "
+    },
+    {
+      "path": "godot/rules/battle_api.gd",
+      "sha256": "6ab92710ada9d2a549bcf57a44e4b452c36333ae0d60cc818b52d5d094fa5e60",
+      "bytes": 44820,
+      "lines": 856,
+      "lastLineStart": "\tphase = \"over\"; _queue.clear(); R.emit("
+    },
+    {
+      "path": "godot/rules/jsm.gd",
+      "sha256": "ed2105319bce8d3828b63f8ccb1d45c0f63c1611278687f025b807f6b4c093aa",
+      "bytes": 30367,
+      "lines": 654,
+      "lastLineStart": "\treturn s if i < 0 else s.substr(0, i) +"
+    },
+    {
+      "path": "godot/rules/data/tables.json",
+      "sha256": "60d8d1e488c647e4de53641cabee002f06bf66b8cf9279bf590b7d242976afde",
+      "bytes": 106727,
+      "lines": 1,
+      "lastLineStart": "{\"sha256\":\"bd6677a8f04c003b1f81d09f882a5"
+    },
+    {
+      "path": "godot/rules/test/node/golden.js",
+      "sha256": "b1e90d47338e083d5b01d97d491ce295376b4b25644e07f8737facdb422f1ae8",
+      "bytes": 26266,
+      "lines": 252,
+      "lastLineStart": "})().catch(e => { console.error(e); proc"
+    },
+    {
+      "path": "godot/rules/test/parity_main.gd",
+      "sha256": "12d99ebadd76ce8c1eaab4abf3a0739347c5ce24b0bab732c3402e99f94fbef6",
+      "bytes": 10279,
+      "lines": 206,
+      "lastLineStart": "\treturn 0"
+    },
+    {
+      "path": "godot/rules/test/scenarios.json",
+      "sha256": "b769059cb58449b86eb8c88adb40b5d026b0228fe73ac91ef2fdbd1a820386ae",
+      "bytes": 33331,
+      "lines": 1642,
+      "lastLineStart": "}"
+    }
+  ],
+  "godotVersion": "4.7.2.stable.official.ed1daf0bf",
+  "scenariosSHA256": "82353ed6606963bdfebf9e4d5fa1e3b4027c7e22fc1d3b191a99b96192d85176",
+  "pass": 0,
+  "fail": 16,
+  "total": 16,
+  "comparedRecords": 3547,
+  "limits": [
+    "No rendered UI, animation playback, Windows execution, GPU timing, save migration or cutover clearance.",
+    "The native lane retains installed tables and strings. The candidate lane explicitly replaces only the filed battle-refresh files in a temporary project.",
+    "No field, log string or numeric difference is normalized away.",
+    "The 16-case default is a focused corpus, not the complete 48-scenario suite or a random sweep.",
+    "The golden harness terminal end none is an explicit round limit, not a victory."
+  ]
+}

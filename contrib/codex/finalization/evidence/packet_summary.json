@@ -1,0 +1,24 @@
+{
+  "status": "PASS for bounded prepared candidates only",
+  "runtimeSourcePin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "prStartingHead": "5bac75b2b4248ea53803c5bffc651d2e5e2848aa",
+  "counts": {
+    "currentSourceBattles": 48,
+    "exactBattleRecords": 10670,
+    "combinedBattles": 16,
+    "exactCombinedRecords": 3616,
+    "hullNativeRecords": 816,
+    "jsLifecycleContracts": 6,
+    "comparatorChecks": 11,
+    "saroModelRecords": 707,
+    "saroPilotRecords": 96,
+    "nativeFittingDifferencesAfterHullPatch": 0
+  },
+  "execution": "Individual constituent commands executed. Aggregate Node orchestration syntax-checked. Windows and Blender/GPU not run.",
+  "limits": [
+    "Contrib candidates only; runtime/main and player saves unchanged.",
+    "No cutover baseline update or release clearance.",
+    "No new randomized 200-battle sweep, complete campaign re-pin or current thread test.",
+    "R33 shipping migration intent unresolved; located plan default does not authorize a wipe."
+  ]
+}

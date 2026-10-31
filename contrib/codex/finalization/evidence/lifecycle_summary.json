@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "scope": "Six current-JS asynchronous action contracts. No renderer, timer-driven stallGuard or native async-equivalence claim.",
+  "results": [
+    {
+      "id": "previews-preserve-state-and-rng",
+      "pass": true
+    },
+    {
+      "id": "duplicate-pending-fire-rejected",
+      "pass": true
+    },
+    {
+      "id": "epoch-abandoned-shot-restores-gun",
+      "pass": true
+    },
+    {
+      "id": "old-shot-cannot-damage-new-battle",
+      "pass": true
+    },
+    {
+      "id": "epoch-abandoned-move-does-not-commit",
+      "pass": true
+    },
+    {
+      "id": "stale-late-fire-callback-does-not-run",
+      "pass": true
+    }
+  ],
+  "limits": [
+    "Only the listed authoritative fields are compared. Preview caches and the B.prog watchdog counter are excluded.",
+    "An abandoned shot may already have consumed RNG and usage telemetry; no rollback of those fields is asserted.",
+    "This does not cover GPU animation playback, native scene cancellation, every ability/Command or rejected animation promises."
+  ]
+}

@@ -1,3 +1,9 @@
+# Current-source finalization prepared (October 31, 2026)
+
+Continue at `finalization/README.md`: real-battle current-source evidence (48 scenarios / 10,670 exact records), separate campaign hull synchronization (16 mechanical fields across 12 entries; 816 native inventory/fitting/derived checks pass), six JS lifecycle contracts, hardened record comparison, gate adapter candidate, R33 boundary and PC acceptance checklist. Prior integration plus both new patches passes 16 battles / 3,616 records. Existing optional Saro applies afterward and retains 707 / 96 exact records with zero native fitting differences. The native control still fails 16 of 16 current-source battles. Runtime/main, player saves and the cutover baseline remain unchanged. No randomized re-pin sweep, full campaign re-pin, Windows/Blender/GPU acceptance or release clearance is claimed.
+
+---
+
 # Final pre-reset integration prepared (October 31, 2026)
 
 Read `pre_opus/README.md` first. One combined patch retains the earlier elite/shipwright/module repairs and adds tested Nemesis loss-learning/clash and boon-offer fixes. Optional Saro layers onto that integrated source. Exact native checks and 30 seeded campaign/save-reload comparisons pass; the control changes only eight assertion identities, to 16 PASS / 64 FAIL. Blender support is prepared with explicit unrun-runtime status. No root or native runtime source is installed. Older separate candidate copies remain provenance and must not overwrite this integration.

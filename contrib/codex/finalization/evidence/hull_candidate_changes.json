@@ -1,0 +1,298 @@
+{
+  "changes": [
+    {
+      "path": "HULLS.b_brood.regen",
+      "before": 10,
+      "after": 8
+    },
+    {
+      "path": "HULLS.b_drone.regen",
+      "before": 5,
+      "after": 4
+    },
+    {
+      "path": "HULLS.b_razor.regen",
+      "before": 9,
+      "after": 7
+    },
+    {
+      "path": "HULLS.b_razor_e.regen",
+      "before": 13,
+      "after": 9
+    },
+    {
+      "path": "HULLS.b_razor_e.w",
+      "before": [
+        [
+          "tendril",
+          "T"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ]
+      ],
+      "after": [
+        [
+          "bioplasma",
+          "T"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ]
+      ]
+    },
+    {
+      "path": "HULLS.b_razor_s.regen",
+      "before": 9,
+      "after": 7
+    },
+    {
+      "path": "HULLS.b_spitter.regen",
+      "before": 6,
+      "after": 5
+    },
+    {
+      "path": "HULLS.b_spitter_s.regen",
+      "before": 6,
+      "after": 5
+    },
+    {
+      "path": "HULLS.c_marauder_g.hp",
+      "before": 140,
+      "after": 120
+    },
+    {
+      "path": "HULLS.d_jackal_h.hp",
+      "before": 120,
+      "after": 100
+    },
+    {
+      "path": "HULLS.h_interdictor_e.hp",
+      "before": 74,
+      "after": 60
+    },
+    {
+      "path": "HULLS.h_interdictor_e.sh",
+      "before": 24,
+      "after": 18
+    },
+    {
+      "path": "HULLS.i_carrier_a.sh",
+      "before": 30,
+      "after": 22
+    },
+    {
+      "path": "HULLS.i_carrier_a.sp",
+      "before": 4,
+      "after": 3
+    },
+    {
+      "path": "HULLS.i_carrier_a.w",
+      "before": [
+        [
+          "turret",
+          "T"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "after": [
+        [
+          "pulsar",
+          "F"
+        ],
+        [
+          "turret",
+          "T"
+        ]
+      ]
+    },
+    {
+      "path": "HULLS.vs_penitent_l.w",
+      "before": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "after": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "battery",
+          "T"
+        ]
+      ]
+    },
+    {
+      "path": "HULL_VARIANTS.b_razor_e.d",
+      "before": "Regrows 13 a round and spits a second bio-plasma volley forward; one hex slower.",
+      "after": "Its tendril cluster becomes a second spine volley on a turret; regrows 9 a round (2 more than the base), one hex slower."
+    },
+    {
+      "path": "HULL_VARIANTS.b_razor_e.mod.regen",
+      "before": 13,
+      "after": 9
+    },
+    {
+      "path": "HULL_VARIANTS.b_razor_e.w",
+      "before": [
+        [
+          "tendril",
+          "T"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ]
+      ],
+      "after": [
+        [
+          "bioplasma",
+          "T"
+        ],
+        [
+          "bioplasma",
+          "F"
+        ]
+      ]
+    },
+    {
+      "path": "HULL_VARIANTS.c_marauder_g.d",
+      "before": "A second prow torpedo instead of flak, 20 more hull, one hex slower.",
+      "after": "A second prow torpedo instead of flak, and one hex slower."
+    },
+    {
+      "path": "HULL_VARIANTS.c_marauder_g.mod.hp",
+      "before": 140,
+      "after": null
+    },
+    {
+      "path": "HULL_VARIANTS.d_jackal_h.d",
+      "before": "Both gauss guns on turrets, a gauss sentry, 10 more hull.",
+      "after": "Both null cannons on turrets and a null spire, 10 less hull."
+    },
+    {
+      "path": "HULL_VARIANTS.d_jackal_h.mod.hp",
+      "before": 120,
+      "after": 100
+    },
+    {
+      "path": "HULL_VARIANTS.h_interdictor_e.d",
+      "before": "Adds a flak turret and heavier shields; one hex slower.",
+      "after": "Adds a flak turret, paid for with a lighter hull (60) and one hex of speed."
+    },
+    {
+      "path": "HULL_VARIANTS.h_interdictor_e.mod.hp",
+      "before": null,
+      "after": 60
+    },
+    {
+      "path": "HULL_VARIANTS.h_interdictor_e.mod.sh",
+      "before": 24,
+      "after": null
+    },
+    {
+      "path": "HULL_VARIANTS.i_carrier_a.d",
+      "before": "Three wings and a flak turret instead of its lance.",
+      "after": "A third wing, paid for with lighter shields (22) and one hex of speed."
+    },
+    {
+      "path": "HULL_VARIANTS.i_carrier_a.mod.sh",
+      "before": 30,
+      "after": 22
+    },
+    {
+      "path": "HULL_VARIANTS.i_carrier_a.mod.sp",
+      "before": null,
+      "after": 3
+    },
+    {
+      "path": "HULL_VARIANTS.i_carrier_a.w",
+      "before": [
+        [
+          "turret",
+          "T"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "after": [
+        [
+          "pulsar",
+          "F"
+        ],
+        [
+          "turret",
+          "T"
+        ]
+      ]
+    },
+    {
+      "path": "HULL_VARIANTS.vs_penitent_l.d",
+      "before": "Two prow lances and a flak turret instead of the broadsides: all its punch points one way.",
+      "after": "Two prow lances and a dorsal battery turret instead of the broadsides: its heavy punch points one way."
+    },
+    {
+      "path": "HULL_VARIANTS.vs_penitent_l.w",
+      "before": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "after": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "battery",
+          "T"
+        ]
+      ]
+    }
+  ],
+  "retainedBoonGate": "shields",
+  "remainingMechanicalDifferences": []
+}

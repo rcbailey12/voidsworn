@@ -1,0 +1,67 @@
+[
+  {
+    "path": "data.js",
+    "bytes": 95372,
+    "fnv": "958660d0fe0ed3a9"
+  },
+  {
+    "path": "battle.js",
+    "bytes": 171701,
+    "fnv": "67a9d750435340a6"
+  },
+  {
+    "path": "core.js",
+    "bytes": 37674,
+    "fnv": "03603696fb9ad7da"
+  },
+  {
+    "path": "godot/campaign/campaign.gd",
+    "bytes": 150939,
+    "fnv": "8942712849958981"
+  },
+  {
+    "path": "godot/rules/rules.gd",
+    "bytes": 209548,
+    "fnv": "78c9a09d390583c9"
+  },
+  {
+    "path": "godot/rules/battle_api.gd",
+    "bytes": 44820,
+    "fnv": "fa2566324b6a0886"
+  },
+  {
+    "path": "godot/rules/test/node/golden.js",
+    "bytes": 26266,
+    "fnv": "aab3e1ee92c847f1"
+  },
+  {
+    "path": "godot/rules/test/parity_main.gd",
+    "bytes": 10279,
+    "fnv": "a862fe36c03b23d6"
+  },
+  {
+    "path": "godot/campaign/test/oracle/data.js",
+    "bytes": 94163,
+    "fnv": "27b655d254661cce"
+  },
+  {
+    "path": "godot/rules/test/oracle/data.js",
+    "bytes": 94512,
+    "fnv": "213531fa9105b681"
+  },
+  {
+    "path": "contrib/opus/go-forward-plan.md",
+    "bytes": 44247,
+    "fnv": "848091221229cf4a"
+  },
+  {
+    "path": "contrib/opus/FINDINGS.md",
+    "bytes": 71352,
+    "fnv": "9ade2c47364ecb2a"
+  },
+  {
+    "path": "contrib/muse/tools/importer_reference/README.md",
+    "bytes": 13883,
+    "fnv": "590f02b9eed540bf"
+  }
+]

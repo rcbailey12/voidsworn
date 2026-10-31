@@ -1,0 +1,4 @@
+{
+  "status": "PASS",
+  "check": "Missing Godot returns 2, INCOMPLETE and no parity-count summary"
+}
