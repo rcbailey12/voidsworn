@@ -1,0 +1,45 @@
+softlock_sweep part 1: 4500 sector maps, 84 failures so far
+softlock_sweep part 2: 1920 battle setups, 0 failures
+softlock_sweep total: 84 failures
+KIND 84x column N offers no elite
+FAIL sector seed 9 s2: column 4 offers no elite
+FAIL sector seed 18 s1: column 4 offers no elite
+FAIL sector seed 18 s3: column 4 offers no elite
+FAIL sector seed 22 s3: column 4 offers no elite
+FAIL sector seed 27 s1: column 4 offers no elite
+FAIL sector seed 49 s3: column 4 offers no elite
+FAIL sector seed 53 s3: column 4 offers no elite
+FAIL sector seed 57 s3: column 4 offers no elite
+FAIL sector seed 64 s3: column 4 offers no elite
+FAIL sector seed 66 s3: column 4 offers no elite
+FAIL sector seed 77 s3: column 4 offers no elite
+FAIL sector seed 79 s2: column 4 offers no elite
+FAIL sector seed 116 s2: column 4 offers no elite
+FAIL sector seed 151 s1: column 4 offers no elite
+FAIL sector seed 152 s3: column 4 offers no elite
+FAIL sector seed 213 s1: column 4 offers no elite
+FAIL sector seed 220 s1: column 4 offers no elite
+FAIL sector seed 221 s3: column 4 offers no elite
+FAIL sector seed 227 s3: column 4 offers no elite
+FAIL sector seed 228 s3: column 4 offers no elite
+FAIL sector seed 230 s2: column 4 offers no elite
+FAIL sector seed 273 s3: column 4 offers no elite
+FAIL sector seed 278 s2: column 4 offers no elite
+FAIL sector seed 281 s3: column 4 offers no elite
+FAIL sector seed 300 s1: column 4 offers no elite
+FAIL sector seed 316 s2: column 4 offers no elite
+FAIL sector seed 324 s2: column 4 offers no elite
+FAIL sector seed 348 s1: column 4 offers no elite
+FAIL sector seed 370 s1: column 4 offers no elite
+FAIL sector seed 374 s2: column 4 offers no elite
+FAIL sector seed 375 s3: column 4 offers no elite
+FAIL sector seed 411 s1: column 4 offers no elite
+FAIL sector seed 430 s1: column 4 offers no elite
+FAIL sector seed 437 s1: column 4 offers no elite
+FAIL sector seed 453 s3: column 4 offers no elite
+FAIL sector seed 509 s2: column 4 offers no elite
+FAIL sector seed 512 s3: column 4 offers no elite
+FAIL sector seed 515 s2: column 4 offers no elite
+FAIL sector seed 570 s2: column 4 offers no elite
+FAIL sector seed 581 s1: column 4 offers no elite
+... and 44 more

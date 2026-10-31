@@ -1,0 +1,16 @@
+Unknown admiral id skipped: zzz_unknown
+Unknown heat id skipped: zzz_unknown
+Unknown boon id skipped: zzz_unknown
+Unknown patron id skipped: zzz_unknown
+Unknown perk id skipped: zzz_unknown
+Unknown perk id skipped: 9
+Unknown refit id skipped: zzz_unknown
+Unknown relic id skipped: zzz_unknown
+Unknown ship hull id skipped: zzz_unknown
+Unknown relic id skipped: WARDEN
+Unknown relic id skipped: 42
+Unknown relic id skipped: []
+Unknown relic id skipped: {}
+Unknown relic id skipped: null
+Unknown ship hull id skipped: warhen
+save_fuzz: 300 seeded rounds + garbage + round-trip, 0 failures
