@@ -1,0 +1,19 @@
+[
+ null,
+ {
+  "n": "Alternate fleet",
+  "d": "Choose a second starting fleet for this admiral."
+ },
+ {
+  "n": "Wider counsel",
+  "d": "Your flagship is offered four aspects instead of three."
+ },
+ {
+  "n": "Second Command",
+  "d": "Choose between two Commands before the run."
+ },
+ {
+  "n": "Flag captain",
+  "d": "Your flagship starts at Mk II, its captain a Captain with a perk."
+ }
+]

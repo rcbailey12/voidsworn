@@ -1,0 +1,63 @@
+# VFX and graphic designer leg, red team audit (blind Rey leg, Oct 30, 2026)
+
+Seat: visual effects and graphic design. Evidence: the persona pack (core pack, a5 effects sheets synthesis, fx implementation review, Godot desktop 3D brief, palette safety check, hull surface diagnosis, damage marks reference, PERFCAP and fx3d.js excerpts), plus direct reads of the playable build's code in the local clone (fx3d.js, wfx3d.js, gfx3d.js, ships3d.js, scene3d.js, perf3d.js, main3d.js, data.js), cited by file and line. The playable build is the Babylon browser build; the Godot tree is the migration target. Where the two disagree, the browser build is what a player sees today.
+
+## What survives the attack
+
+Volleys ripple instead of firing as one blob (wfx3d.js:406 staggers impacts across the volley span with jitter). The Corsair cough and ragged off-axis gunfire from the SPEC are implemented (fx3d.js:10-14). Exposure discipline holds: exposure is fixed and blast flare rides bloom weight, not exposure (scene3d.js:30, gfx3d.js:405-406). The light grammar is one warm key plus a dim cool fill (scene3d.js:22-23). Death staging in the playable build is genuinely built: hulls break into section nodes with wreck materials, hulks persist, vent, and burn out (fx3d.js:430-519). Transient weapon identity is real: twelve effect families with distinct fire and impact behaviour (wfx3d.js:202-295). None of that saves the findings below.
+
+## Findings
+
+### 1. The 3-flash cap is law in the spec and absent in both builds (OBSERVED)
+
+The a5 spine states it plainly: "Accessibility: hard cap 3 flashes per second, plus a reduce-flashing option." In the playable build there is no counter anywhere. flash() at fx3d.js:293 fires unconditionally; the reduced mode only shrinks and dims it. A capital death stacks a reactor sprite, two pooled flashes, a fireball, up to two delayed extra fireballs, a 45 percent chance of a second delayed flash, a light flash, 160 sparks, and the xl juice tier's fullscreen screen flash at alpha .3 (fx3d.js:473-479, wfx3d.js:87-97). In the Godot build the fx review reaches the same hole from the other side: the budget "certifies a gated subset" while "a budget the brightest emitters bypass does not meet the spec it claims to implement". Two engines, one unenforced safety rule, and the two candidate definitions of a counted flash are still unresolved in the synthesis (disagreement 3). Cost: the one accessibility commitment the council wrote as a hard cap is currently a hope, and photosensitive players meet the worst case exactly at capital deaths, the game's showcase moment.
+
+### 2. In the playable build, every weapon leaves the same mark (OBSERVED)
+
+The R43 ruling and the merged damage marks reference specify ten distinct marks with four-way convergence behind them. The browser build implements one: a single generic scorch texture (fx3d.js:335-340), instanced flat planes, placed with a per-family probability (wfx3d.js:310), flak at probability 0 (wfx3d.js:284), capped at 28 per ship with the oldest silently disposed (fx3d.js:348, 355). A lance slot, a torpedo crater, an ion tree, acid spread: none exist where players play. The Godot tree has more, and the fx review still scores ion MISSES SPEC, flak NOT IMPLEMENTED, ram and boarding MISSES SPEC against that same reference. Cost: a ship's damage history, the reference's whole point ("a ship's history reads at a glance"), is illegible in the shipped build; hit feedback teaches the player nothing about what hit them.
+
+### 3. Living ships have no staged damage ladder in the playable build (OBSERVED)
+
+The a5 ladder runs stages 0 to 5 as hull states: scorch, dents, exposed structure, breach, wreck. Ryan's bar: "damage reads as holes with streaming parts, fire, and other damage states, not orange lines". In the browser build, a ship at 95 percent hull and a ship at 5 percent hull differ only in scorch-plane count. There are no HP-driven states, no dents, no exposed structure, no holes; a knocked-out section's "burning breach" is three large copies of the same scorch sprite (fx3d.js:602-604), and damaged living ships never smoke, vent, or shed parts (streaming exists only on dying hulks, fx3d.js:504-515). The ladder's middle, where ships spend almost all of their fighting lives, is missing; only the death performs, and it performs well (fx3d.js:458: "the hull dies in stages"). Cost: damage readability during play, the exact thing the R16 bar was set against, rests on a HUD bar while the hull itself stays cosmetically binary: smudged, then spectacularly dead.
+
+### 4. The Godot brief never budgets its own headline feature (OBSERVED arithmetic, INFERRED consequence)
+
+The brief's renderer case rests partly on decals, and it states the constraint itself: Forward+ clustered elements are "a shared budget" of 512 covering decals, omni and spot lights, and reflection probes, "a budgeting fact the effects pass must plan around". The damage spec wants up to 3 signature marks per section with repeat merging, per ship, across fleets of 20 to 60, plus explosion lights drawn from the same pool. The Godot fx build already caps decals at 10 per ship ship-wide (fx review, fx_ship_gd.txt:816-826). Sixty ships at that cap is 600 decals against a 512 pool before a single explosion light, shield light, or probe exists. No number in the brief or the review reconciles pool size, fleet size, and mark budget. Cost: the effects pass will hit this ceiling mid-build and resolve it the bad way, by quietly shrinking the mark language the whole damage spec exists to protect.
+
+### 5. Palette safety was measured on the table nobody plays (OBSERVED)
+
+The only contrast evidence on file computes godot/fx/faction_looks.json, the unshipped renderer. The playable build's own table, FAC3D at ships3d.js:2-8, has never been run through the same check, and it has its own pale cluster: Hegemony shield (.38,.68,1) against Glasswright shield (.72,1,.86), Eclipse shield green (.18,1,.36) against the friendly IFF green (.42,1,.55) at fx3d.js:4, Chorus shield (.9,.82,.22) against Chorus engine (.8,.9,.28). Even on the measured table the margin is thin: weapon against own glow sits at 1.02:1 to 1.40:1 for all six factions, so "a faction's weapon colour and its own glow colour are never separable by brightness, only by hue". Cost: faction identity in the shipped build rides on hue distinctions that are unmeasured in the shipped table, including under the colour-vision simulations the palette job exists to run.
+
+### 6. Cinematic cut-ins ship on by default and take the board away (OBSERVED)
+
+The a5 synthesis records the council position: "No forced camera by default", camera treatment "optional and off by default". The shipped default is the reverse. Cut-ins default to key-moments mode (main3d.js:11), cineWants returns true for every command activation and, on desktop, for lance, torp, and nova shots against routine targets (fx3d.js:385-391), and while a cut-in plays the letterbox bars hide the HUD, the plates, the grid, and the board overlay (fx3d.js:392-395). Cost: at the biggest moments of a tactics battle, the game removes the information surface the player is planning on, by default, in the build whose ruled UI direction is player-controlled phased activation. The Godot brief's director layer (section 5) plans the shot stack without revisiting the default, so the migration is set to inherit the argument instead of settling it.
+
+### 7. The wavy hull rides the primary visual path, and its decisive test is still a proposal (OBSERVED)
+
+Concept hulls are the default ship path: aiHulls is on unless settings turn it off (main3d.js:11), and hullPath() reports "concept" when the set loads (ships3d.js:762). The hull diagnosis leans geometry-first for the main wavy read on silhouette evidence (the H8 underside outline sags), warns "If A4 fixes only the material, the sag in the outline stays", and names one cheap flat-colour re-render that would settle geometry against paint. In the pack, that test is still a proposal, not a result. The same sheets show V1b's bow fix leaving the two profiles telling different stories: pointed from above, a blunt drooping snout from the side, the only one of three fixed hulls whose views disagree. Cost: material and paint work continues to land on hulls whose underlying fairness is unproven, and profile consistency between views has no check except a human reading sheets side by side.
+
+### 8. Beauty has no budget, and the default tier is the designer's desk (OBSERVED, INFERRED cost)
+
+Desktop quality defaults to ultra (scene3d.js:4): 1.25x supersampling below 4K, god rays, SSAO at 16 samples, bloom kernel 96 (setQuality, scene3d.js:104-118). Nothing adapts: setQuality is called from init and settings only, so a struggling machine holds ultra until the player goes looking. PERFCAP exists (perf3d.js:37-53) but is opt-in via a URL flag, summarises at battle end, and gates nothing. The Godot brief sets the audience floor honestly (RTX 3060 most common, 8 GB VRAM), yet the claims register concedes the real effects budget "gets set by the effects-pass performance budget item using PERFCAP on Ryan's PC", and Ryan's PC runs an RTX 5080. Cost: the performance cost of the visual target is unmeasured on anything resembling the median customer's hardware, in both engines, while the default keeps being authored on the strongest GPU in the room.
+
+### 9. Plasma changes colour at the moment it lands (OBSERVED)
+
+The transient honours the Oct 26 ruling: an electric-blue bolt, C3(.18,.48,1), with the author taking care that "additive overlap kept low so it stays blue" (wfx3d.js:215-217). The impact does not: the splash is orange (OR = C3(1,.55,.16)), the hull glow is orange (C3(1,.62,.22)), the light flash is orange (C3(1,.6,.3)), and the persistent trace is the generic black scorch (wfx3d.js plasma impact, fx3d.js:335). The one weapon colour the designer ruled on personally reads blue in flight and generic fire at the moment of consequence. Cost: plasma's identity, the Hegemony's signature, survives only while the shot is in the air.
+
+### 10. The hero hull is a bolt-on, and the fallback hull wears the wrong faction (OBSERVED)
+
+The Warlord's Pyre-Barge, the Corsair boss and the one hull its sign-off is still withheld on pending a much stronger graphical upgrade, ships in the primary path as concept C19_51, described in the map comment at ships3d.js:707 as a "round 10 bolt-on B pass over the round 8 B set". The most important silhouette in the game is an iteration of the fleet set it commands, not a bespoke boss read. Underneath, the procedural safety net has the same disease in miniature: buildGeneric returns buildWedge (ships3d.js:461), so any hull that misses both pipelines falls back to the Hegemony's wedge profile and reads as the wrong faction. Cost: boss identity and fallback identity both borrow another hull's silhouette, at the two moments (the set-piece meeting, the degraded load) where silhouette clarity matters most.
+
+## Verdict
+
+VISUALLY AMBITIOUS, LEGALLY BLIND: the transient craft is real and the deaths are cinema, but the game's own written laws, the flash cap, per-weapon marks, the staged ladder, are unenforced or unbuilt in the build players actually see. The single most important attack: finding 1, the 3-flash hard cap exists in no code path in either engine, while capital deaths stack a dozen uncounted flash sources at the game's showcase moment.
+
+## Not checked
+
+- How any of this reads in motion: no screenshots, captures, or playtest footage were in the pack, so every readability claim above is from code and sheets, not from watching a battle. The fx review reserves visual verdicts to Ryan's playtest for the same reason.
+- The Godot tree's current fx state beyond the fx review's snapshot (godot/fx/ as reviewed Oct 26, 2026); the migration may have moved since.
+- Whether Chorus and Eclipse ships actually carry zero shields in data (their FAC3D shield colours exist at ships3d.js:6-8); the a5 rule says they take hull hits, and ship shield values live in data.js beyond the excerpts read.
+- Squadron craft visuals (buildCraft, ships3d.js:563+) and station/object meshes; read only in passing.
+- Damage numbers, hit text, and iconography (fxText and the UI layer) as graphic design; outside the excerpts examined.
+- The nebula and planet backdrop art as composition (scene3d.js:169-267 read for structure only); judging the sky as a picture needs renders, not code.
+- Audio-reactive visuals and music synchronisation; the a5 sound cues are design descriptions, and no audio evidence was in this pack.

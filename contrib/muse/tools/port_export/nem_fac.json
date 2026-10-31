@@ -1,0 +1,508 @@
+{
+ "corsair": {
+  "pre": [
+   "Krag",
+   "Drog",
+   "Rusk",
+   "Gor",
+   "Snag",
+   "Hask",
+   "Grul",
+   "Murg",
+   "Skarn",
+   "Jagg"
+  ],
+  "post": [
+   "Tooth",
+   "Maw",
+   "Gut",
+   "Vise",
+   "Hook",
+   "Knuckle",
+   "Rot",
+   "Grin",
+   "Spur",
+   "Wreck"
+  ],
+  "titles": [
+   "Apex",
+   "First Claw",
+   "Den-alpha",
+   "Warlord"
+  ],
+  "personas": [
+   "cunning",
+   "greedy",
+   "proud",
+   "cruel"
+  ],
+  "g": null,
+  "fem": [],
+  "traits": [
+   "boarders",
+   "swift",
+   "rockets",
+   "deadeye",
+   "gunnery",
+   "veterans"
+  ],
+  "scars": [
+   "the Burned",
+   "Broken-Jaw",
+   "Half-Face",
+   "the Uncaught",
+   "Patchwork",
+   "One-Eye"
+  ],
+  "scarBy": {
+   "fled": [
+    "the Uncaught"
+   ],
+   "burn": [
+    "the Burned",
+    "Half-Face"
+   ],
+   "wound": [
+    "Broken-Jaw",
+    "Patchwork",
+    "One-Eye"
+   ]
+  },
+  "beh": {
+   "clock": 1,
+   "flee": {
+    "hull": 0.35
+   },
+   "strike": "raid",
+   "fleet": "swarm",
+   "d": "Raids your path. When his clock fills he takes 25% of your credits (or, if you have under 30 credits, a ship under 25% hull from a fleet of three or more); he holds what he took, and it all comes back to you when he dies. He flees a fight he is losing and comes back richer, with an extra ship each time."
+  }
+ },
+ "deathless": {
+  "pre": [
+   "Mar",
+   "Kae",
+   "Hal",
+   "Tor",
+   "Ess",
+   "Ul",
+   "Vor",
+   "Iv",
+   "Sar",
+   "Den"
+  ],
+  "post": [
+   "un",
+   "lo",
+   "vane",
+   "eth",
+   "ane",
+   "ix",
+   "or",
+   "ael",
+   "en",
+   "ast"
+  ],
+  "titles": [
+   "High Nadir",
+   "Eclipse-prime",
+   "Archivist",
+   "Nadir"
+  ],
+  "personas": [
+   "patient",
+   "proud",
+   "cruel",
+   "methodical"
+  ],
+  "g": null,
+  "fem": [
+   "Ess",
+   "Kae",
+   "Iv"
+  ],
+  "traits": [
+   "undying",
+   "armored",
+   "veterans",
+   "regrowth",
+   "gunnery",
+   "deadeye"
+  ],
+  "scars": [
+   "the Twice-Dead",
+   "the Rebuilt",
+   "Cracked-Visor",
+   "Half-Restored",
+   "Hollow-Eye",
+   "of the Late Copy"
+  ],
+  "scarBy": {
+   "fled": [
+    "of the Late Copy",
+    "Half-Restored"
+   ],
+   "burn": [
+    "Hollow-Eye",
+    "the Rebuilt"
+   ],
+   "wound": [
+    "the Twice-Dead",
+    "Cracked-Visor",
+    "the Rebuilt"
+   ]
+  },
+  "beh": {
+   "clock": 0.5,
+   "revive": 1,
+   "strike": "tithe",
+   "fleet": "heavy",
+   "d": "Patient: his clock moves at half speed. He never retreats. Destroyed early, he simply reassembles; destroyed in the last sector, he rises once more for one final fight. When his clock fills, the hunt drains 6% hull from every ship you have (never below 1 hull)."
+  }
+ },
+ "ithar": {
+  "pre": [
+   "Kor",
+   "Sev",
+   "Tal",
+   "Ol",
+   "Ves",
+   "Dre",
+   "Ish",
+   "Ren",
+   "Cal",
+   "Ny"
+  ],
+  "post": [
+   "ek",
+   "is",
+   "oro",
+   "an",
+   "et",
+   "ul",
+   "ith",
+   "im",
+   "os",
+   "ae"
+  ],
+  "titles": [
+   "Lens-keeper",
+   "First Mirror",
+   "Keeper of Astra",
+   "Duelist"
+  ],
+  "personas": [
+   "cunning",
+   "proud",
+   "patient",
+   "cruel"
+  ],
+  "g": null,
+  "fem": [
+   "Ves",
+   "Ish",
+   "Ny",
+   "Dre"
+  ],
+  "traits": [
+   "veil",
+   "shielded",
+   "swift",
+   "deadeye",
+   "gunnery",
+   "artillery"
+  ],
+  "scars": [
+   "the Cracked Prism",
+   "Dimmed",
+   "the Scarred Vane",
+   "Thornwing",
+   "the Unbowed",
+   "Ashwake"
+  ],
+  "scarBy": {
+   "fled": [
+    "the Unbowed",
+    "Ashwake"
+   ],
+   "burn": [
+    "Dimmed",
+    "the Cracked Prism"
+   ],
+   "wound": [
+    "the Scarred Vane",
+    "Thornwing",
+    "the Cracked Prism"
+   ]
+  },
+  "beh": {
+   "clock": 1,
+   "flee": {
+    "shields": 1,
+    "hull": 0.6
+   },
+   "strike": "duel",
+   "fleet": "duel",
+   "ai": {
+    "range": 3,
+    "focusWeak": 1
+   },
+   "d": "A duelist: he keeps his range, picks off your most damaged ships, and withdraws to fight again once his flagship has no shields left on any side and its hull is under 60%. His fleet is small and elite, and each time he escapes it comes back honed (better shields and aim), never bigger."
+  }
+ },
+ "chorus": {
+  "pre": [
+   "Seventh",
+   "Hollow",
+   "Wet",
+   "Sour",
+   "Bloated",
+   "Brine",
+   "Pale",
+   "Deep",
+   "Thrumming",
+   "Gnawing"
+  ],
+  "post": [
+   "Mouth",
+   "Gullet",
+   "Tide",
+   "Coil",
+   "Throat",
+   "Bloom",
+   "Rasp",
+   "Murmur",
+   "Maw",
+   "Spawn"
+  ],
+  "titles": [
+   "Spawn-mother",
+   "Elder Throat",
+   "Gorge-mind",
+   "Maw-mother"
+  ],
+  "personas": [
+   "ravenous",
+   "cruel",
+   "cunning",
+   "patient"
+  ],
+  "g": "n",
+  "fem": [],
+  "traits": [
+   "regrowth",
+   "brood",
+   "veterans",
+   "swift",
+   "boarders",
+   "deadeye"
+  ],
+  "scars": [
+   "the Scarred Maw",
+   "Half-Eaten",
+   "the Burned Throat",
+   "Rotflesh",
+   "the Gnawed",
+   "Scabhide"
+  ],
+  "scarBy": {
+   "fled": [
+    "Half-Eaten"
+   ],
+   "burn": [
+    "the Burned Throat",
+    "Scabhide"
+   ],
+   "wound": [
+    "the Scarred Maw",
+    "Rotflesh",
+    "the Gnawed"
+   ]
+  },
+  "beh": {
+   "clock": 1,
+   "feeds": 1,
+   "adaptFast": 1,
+   "strike": "swarm",
+   "fleet": "swarm",
+   "d": "Grows from your losses: every ship you lose anywhere makes his fleet 4% tougher (up to 32%). He swarms, and adapts after every meeting, not just every sector."
+  }
+ },
+ "hegemony": {
+  "pre": [
+   "Konrad",
+   "Marit",
+   "Viktor",
+   "Aldric",
+   "Petra",
+   "Halvar",
+   "Ruprecht",
+   "Katrin",
+   "Sanne",
+   "Gerold"
+  ],
+  "post": [
+   "Steiner",
+   "Valk",
+   "Morgan",
+   "Hale",
+   "Draxen",
+   "Kolb",
+   "Reiter",
+   "Vos",
+   "Brandt",
+   "Ostrander"
+  ],
+  "titles": [
+   "First Admiral",
+   "Fleet Marshal",
+   "Line Admiral",
+   "High Commodore"
+  ],
+  "personas": [
+   "methodical",
+   "proud",
+   "patient",
+   "cunning"
+  ],
+  "g": null,
+  "fem": [
+   "Marit",
+   "Petra",
+   "Katrin",
+   "Sanne"
+  ],
+  "traits": [
+   "artillery",
+   "shielded",
+   "gunnery",
+   "armored",
+   "veterans",
+   "deadeye"
+  ],
+  "scars": [
+   "the Burned Admiral",
+   "Ironside",
+   "One-Arm",
+   "the Unbroken",
+   "Scar-Cheek",
+   "the Survivor"
+  ],
+  "scarBy": {
+   "fled": [
+    "the Survivor",
+    "the Unbroken"
+   ],
+   "burn": [
+    "the Burned Admiral",
+    "Scar-Cheek"
+   ],
+   "wound": [
+    "One-Arm",
+    "Ironside",
+    "Scar-Cheek"
+   ]
+  },
+  "beh": {
+   "clock": 1,
+   "strike": "reinforce",
+   "fleet": "heavy",
+   "line": 1,
+   "d": "Methodical: his escorts hold an artillery line around his flagship (their guns lose less aim at range, and they keep close to it), and his fights always bring reinforcements in round 3. He adapts by drilling his formation tighter."
+  }
+ },
+ "voidsworn": {
+  "pre": [
+   "Leofric",
+   "Margit",
+   "Osmund",
+   "Ida",
+   "Berthold",
+   "Hedda",
+   "Wendel",
+   "Agathe",
+   "Gunther",
+   "Edda"
+  ],
+  "post": [
+   "Varrow",
+   "Ashdown",
+   "Quell",
+   "Harrowgate",
+   "Vane",
+   "Stroud",
+   "Draeger",
+   "Holloway",
+   "Blackwood",
+   "Corvane"
+  ],
+  "titles": [
+   "High Warden",
+   "Warden of the Roll",
+   "Dawnwarden",
+   "Oath-warden"
+  ],
+  "personas": [
+   "zealous",
+   "proud",
+   "cruel",
+   "methodical"
+  ],
+  "g": null,
+  "fem": [
+   "Margit",
+   "Ida",
+   "Hedda",
+   "Agathe",
+   "Edda"
+  ],
+  "masc": [
+   "Leofric",
+   "Osmund",
+   "Berthold",
+   "Wendel",
+   "Gunther"
+  ],
+  "traits": [
+   "zeal",
+   "boarders",
+   "armored",
+   "veterans",
+   "gunnery",
+   "artillery"
+  ],
+  "scars": [
+   "the Branded",
+   "Iron-Armed",
+   "the Frost-Scarred",
+   "Burnt-Oath",
+   "the Debt-Bound",
+   "Ashface"
+  ],
+  "scarBy": {
+   "fled": [
+    "the Debt-Bound"
+   ],
+   "burn": [
+    "the Branded",
+    "Burnt-Oath",
+    "Ashface"
+   ],
+   "wound": [
+    "Iron-Armed",
+    "the Frost-Scarred"
+   ]
+  },
+  "beh": {
+   "clock": 1.5,
+   "noFlee": 1,
+   "strike": "challenge",
+   "fleet": "line",
+   "ai": {
+    "hunt": 1,
+    "charge": 1
+   },
+   "d": "A zealot: his clock moves fast, he never flees, and his flagship charges yours and challenges it to single combat (the two deal 20% more damage to each other; if your flagship falls, he turns on your strongest ship)."
+  }
+ }
+}

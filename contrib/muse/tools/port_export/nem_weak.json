@@ -1,0 +1,30 @@
+{
+ "flank": {
+  "n": "Thin stern plating",
+  "d": "His ships take 25% more damage on rear-arc hits."
+ },
+ "ion": {
+  "n": "Brittle shield emitters",
+  "d": "Ion and lance hits strip 50% more shield from his ships."
+ },
+ "torp": {
+  "n": "Poor point defense",
+  "d": "Torpedoes are 15 easier to land on his ships."
+ },
+ "board": {
+  "n": "Green boarding crews",
+  "d": "His ships carry 30% fewer crew to repel boarders."
+ },
+ "brawl": {
+  "n": "Long-gun doctrine",
+  "d": "His ships aim 10 worse at targets 2 hexes away or closer."
+ },
+ "anchor": {
+  "n": "A proud flagship",
+  "d": "His escorts break and flee once his flagship falls below 60% hull."
+ },
+ "slow": {
+  "n": "Worn engines",
+  "d": "His ships have 1 less movement."
+ }
+}

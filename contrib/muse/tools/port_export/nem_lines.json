@@ -1,0 +1,19 @@
+{
+ "meet": {
+  "cunning": "I have watched you. I know where you are thin.",
+  "zealous": "Face me and be judged.",
+  "cruel": "I will take your fleet apart one ship at a time.",
+  "patient": "I have waited longer than your kind has lived.",
+  "proud": "You are not worthy of my guns. You will have them anyway.",
+  "greedy": "Your flagship will look fine in my yards.",
+  "methodical": "Every move you can make, I have already drilled against.",
+  "ravenous": "More. Always more."
+ },
+ "again": "Last time you beat me with {beat}. It will not work twice.",
+ "remember": "Last time you beat me with {beat}. I have not forgotten.",
+ "gloat": {
+  "flagship": "I broke your flagship last time. I will finish the job.",
+  "retreat": "You ran from me last time. Run again.",
+  "loss": "I beat you once already. Nothing has changed."
+ }
+}

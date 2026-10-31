@@ -7,22 +7,42 @@
 // matching test should flip to PASS without edits; if a fix takes a different shape than the
 // finding assumed, update the test and the ledger row together.
 // Run: node findings_tests.js [repoDir]   (exit 1 while any pinned defect is unfixed)
+// Round 2 (Oct 30, 2026) added eight tests at the end of the file, behind two
+// new harnesses in this folder: battle_probe.js (sim3d-style animation hooks,
+// so aiUnit runs headlessly) and ui_loader.js (ui3d.js behind a DOM stub, so
+// its state functions run headlessly). The runner now also accepts async
+// tests; sync tests behave exactly as before.
 const path = require('path');
 const vm = require('vm');
-const { loadGame } = require(path.join(__dirname, '..', '..', 'voidsworn-harness', 'game_loader.js'));
+const fs0 = require('fs');
+const LOADER_CANDIDATES = [
+  path.join(__dirname, '..', '..', 'voidsworn-harness', 'game_loader.js'),
+  path.join(__dirname, '..', 'harness', 'game_loader.js'),
+  path.join(__dirname, 'game_loader.js'),
+  path.join(process.env.HOME || '', 'workspace', 'voidsworn-harness', 'game_loader.js'),
+];
+const loaderPath = LOADER_CANDIDATES.find(p => fs0.existsSync(p));
+if (!loaderPath) throw new Error('game_loader.js not found in any candidate path');
+const { loadGame } = require(loaderPath);
 const repoDir = process.argv[2] || path.join(__dirname, '..', '..', 'voidsworn-fresh');
 const G = loadGame(repoDir);
 const runIn = (code) => vm.runInContext(code, G._sandbox);
 
 let checks = 0, failures = 0;
 const results = [];
-function test(id, fn) {
-  checks++;
-  let detail = '';
-  try { detail = fn() || ''; }
-  catch (e) { detail = 'threw: ' + e.message; }
+function record(id, detail) {
   if (detail) { failures++; results.push([id, 'FAIL', detail]); console.log('FAIL ' + id + ': ' + detail); }
   else { results.push([id, 'PASS', '']); console.log('PASS ' + id); }
+}
+// Tests queue and run strictly in file order from the summary block at the
+// end of the file. Round 1's tests are synchronous and behave exactly as
+// they did when test() ran them inline; round 2's battle-probe tests are
+// async and MUST NOT interleave, because they share one battle context and
+// each replaces B for the next.
+const queue = [];
+function test(id, fn) {
+  checks++;
+  queue.push([id, fn]);
 }
 const canon = (o) => { const r = {}; for (const k of Object.keys(o || {}).sort()) r[k] = o[k]; return JSON.stringify(r); };
 const cnt = (w) => { const m = {}; for (const pair of w || []) m[pair[0]] = (m[pair[0]] || 0) + 1; return m; };
@@ -484,6 +504,376 @@ test('VAR-1c the pre-boss column is all rest stops', () => sweepFail(sweep.drydo
 test('VAR-1d every fight column (1 to 4) offers a fight', () => sweepFail(sweep.fightCol, 'fight-per-column guarantee'));
 test('VAR-1e encounter variety guarantees hold', () => sweepFail(sweep.encounter, 'encounter guarantee'));
 
+// ---------- Campaign-layer tests (Oct 30 extension) ----------
+// These rows were TESTABLE-NOT-WRITTEN because the harness loaded only
+// data.js, core.js and battle.js. campaign_loader.js (same folder) now loads
+// campaign_meta.js and campaign_run.js into the same context with a DOM stub,
+// which unlocks the event, Nemesis, reward, shipyard and progression rows.
+// BF-2 and BF-7 stay on the battle loader; PROG-2 and UI-7 are static source
+// scans in the validator style. Every test below was probed against the pin
+// before being written; the failure messages quote the observed behavior.
+
+const fs = require('fs');
+const { loadCampaign } = require(path.join(__dirname, 'campaign_loader.js'));
+let GC = null, gcError = '';
+try { GC = loadCampaign(repoDir); } catch (e) { gcError = e.message; }
+const needGC = () => GC ? '' : 'campaign loader failed to load: ' + gcError;
+
+function cRun(fac, fleetTpls, sector) {
+  const run = GC.runDefaults();
+  run.fac = fac || 'voidsworn'; run.admiral = 'vex'; run.sector = sector || 1; run.foes = null;
+  run.fleet = (fleetTpls || ['warden', 'harrow']).map(t => GC.newShip(t));
+  run.flagUid = run.fleet.length ? run.fleet[0].uid : null;
+  run.credits = 500; run.flags = {};
+  GC.RUN = run; GC.META = GC.defaultMeta();
+  return run;
+}
+function nemFixture(fac, sector, extra) {
+  const run = cRun('voidsworn', ['warden', 'harrow', 'penitent'], sector);
+  run.nem = Object.assign({
+    fac, name: 'Test Nem', title: 'First Admiral', persona: 'proud', traits: [], portrait: 'nem_x_1', g: 'm',
+    weak: ['ion', 'torp'], revealed: [], adapt: [], clock: 0, met: 0, beaten: 0, scars: 0, scarKinds: [],
+    epithets: [], epithet: null, last_beat: null, fed: 0, riches: 0, loot: 0, held: null, gloat: null,
+    honed: 0, revived: false, dead: false, strike: false, seen: {}, signatures: [],
+  }, extra || {});
+  return run;
+}
+
+// ---------- Oct 27 program: campaign rows ----------
+
+test('EVT-1 a defector flag records which option wrote it', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('hegemony', ['h_picket', 'h_vanguard'], 1);
+  const def = GC.EVENTS.find(e => e.id === 'defector');
+  if (!def) return 'defector event not found in EVENTS';
+  GC.eventFlags(def, def.o.find(o => o.k === 'ransom'), 1);
+  const ransomNeed = GC.needMet({ flag: 'defector' }), ransomVerb = GC.verbFree(GC.FAC_VERBS.hegemony);
+  run.flags = {};
+  GC.eventFlags(def, def.o.find(o => o.k === 'question'), 0);
+  const questionNeed = GC.needMet({ flag: 'defector' }), questionVerb = GC.verbFree(GC.FAC_VERBS.hegemony);
+  if (!questionNeed || !questionVerb) return 'control case broke: questioning the defector no longer satisfies the flag gates';
+  return (ransomNeed || ransomVerb)
+    ? 'ransoming the defector (he leaves with 70 credits) still satisfies the saboteur intel gate (' + ransomNeed + ') and the Hegemony free verb (' + ransomVerb + '): the flag records presence, not the option that wrote it'
+    : '';
+});
+
+test('TXT-2 the shipwright option repairs the second most damaged ship', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('voidsworn', ['warden', 'warden', 'warden'], 1);
+  const [A, B, C] = run.fleet;
+  const setF = (s, f) => { s.hp = Math.round(GC.derive(s).maxHp * f); };
+  setF(A, 0.2); setF(B, 0.5); setF(C, 0.8);
+  GC.applyOutcome({ upgradeOne: 1, repairOne: 1 }); // the wright event's pay option, data.js
+  const full = s => s.hp >= GC.derive(s).maxHp;
+  if (!full(A)) return 'control case broke: the most damaged ship was not upgraded and healed';
+  return full(B) ? '' : 'the option text promises the second ship is fully repaired, but repairOne re-sorts after upgradeOne healed the first ship, so the repair landed on the third ship instead (second ship left at ' + Math.round(100 * B.hp / GC.derive(B).maxHp) + '%)';
+});
+
+test('TXT-8 no NaN reaches a player-facing label', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('voidsworn', [], 1);
+  const full = GC.newShip('warden'), hurt = GC.newShip('warden'), boss = GC.newShip('h_boss'); // h_boss has no cost field
+  hurt.hp = Math.round(GC.derive(hurt).maxHp * 0.3);
+  run.fleet = [full, hurt, boss]; run.flagUid = full.uid; run.credits = 1000;
+  GC.shipyardScreen({ id: 'y1', type: 'shipyard', stock: { hulls: [], mods: [], sold: [] } });
+  const html = GC.appEl().innerHTML;
+  return html.includes('NaN') ? 'the shipyard renders a NaN for a cost-less hull (Decommission (+NaN)): the label path does not reuse the shipValue guard' : '';
+});
+
+// ---------- Oct 28 progression program: campaign rows ----------
+
+test('PROG-2 every purchasable thing has a reachable purchase path', () => {
+  const files = ['campaign_meta.js', 'campaign_run.js', 'campaign3d.js', 'ui3d.js', 'voidsworn-3d.html'];
+  const src = files.map(f => { try { return fs.readFileSync(path.join(repoDir, f), 'utf8'); } catch (e) { return ''; } }).join('\n');
+  const missing = ['buyAdmiral', 'buyLegacy'].filter(a => !src.includes('data-act="' + a + '"'));
+  return missing.length ? 'ACT.' + missing.join(' and ACT.') + ' charge renown and grant, but no screen renders a button for them (the handlers are dead code; locked admirals point at a Legacy screen that no longer exists under that name)' : '';
+});
+
+test('PROG-5 mastery does not double count elite and flagship battles', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('hegemony', ['h_picket'], 3);
+  run.admiral = 'malek';
+  run.stats = { battles: 1, elites: 1, bosses: 0, kills: 5, lost: 0 }; // one elite battle, nothing else
+  run.fallen = []; run.t0 = Date.now();
+  GC.META.mastery = {};
+  GC.endRun(false, false);
+  const got = GC.META.mastery.malek || 0;
+  // The Progression screen states the rates as per-type totals (1 per battle
+  // won, 2 per elite, 5 per flagship): one elite battle should pay 2. The
+  // chair synthesis reads the formula's 3 as the double count; see README.
+  return got === 2 ? '' : 'one elite battle paid ' + got + ' mastery, not 2: rewardFlow counts the battle in stats.battles and again in stats.elites, and mxGain adds both';
+});
+
+test('PROG-6 an unowned admiral cannot be launched', () => {
+  const bad = needGC(); if (bad) return bad;
+  GC.META = GC.defaultMeta();
+  GC.META.admirals = { vex: true }; // owns only the starter; malek is a renown purchase
+  GC.runIn("newRun('malek','hegemony',{})");
+  return GC.RUN && GC.RUN.admiral === 'malek'
+    ? 'newRun launched the unowned admiral malek: neither the launch path nor newRun checks META.admirals ownership (the UI auto-assigns an owned admiral, the rules function does not)'
+    : '';
+});
+
+test('RWD-5 credit nodes are not dominated by the boon decline value', () => {
+  const bad = needGC(); if (bad) return bad;
+  const mkSummary = () => ({ cfg: { kind: 'battle', col: 0, node: 'n1' }, xp: [], lost: [], kills: 1, rounds: 3, wrecks: [], prizes: [] });
+  const measure = (rw) => {
+    const run = cRun('voidsworn', ['warden', 'harrow'], 2);
+    run.map = { cols: [[{ id: 'n1', type: 'battle', rw }]], edges: [], fac: 'hegemony' };
+    run.curNode = 'n1'; run.credits = 0;
+    run.stats = { battles: 0, elites: 0, bosses: 0, kills: 0, lost: 0 };
+    GC.rewardFlow(mkSummary());
+    return run.credits;
+  };
+  const credNode = measure({ k: 'cred' }), boonNode = measure({ k: 'boon', p: 'iron' });
+  cRun('voidsworn', ['warden'], 2);
+  const decline = GC.boonDeclineCred();
+  const premium = (credNode - boonNode) - decline;
+  // Chair-set bar (see README): a credit node must beat the decline value by
+  // at least 15 for the map choice to be a choice. At the pin the premium is
+  // exactly 5 at every sector (55 node vs 50 decline at sector 2).
+  return premium >= 15 ? '' : 'at sector 2 a credit node beats declining a boon by only ' + premium + ' credits (node premium ' + (credNode - boonNode) + ' over the same battle, decline pays ' + decline + '): a boon node dominates a credit node by arithmetic';
+});
+
+test('RWD-6 a reroll that cannot change the offer is refused', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('voidsworn', ['warden', 'harrow', 'reliquary', 'penitent', 'h_picket', 'h_vanguard'], 1);
+  run.patrons = ['iron']; run.credits = 100; run.boonRerolls = 0;
+  const leave = ['i_broad', 'i_still', 'i_plate'];
+  run.boons = Object.keys(GC.BOONS).filter(id => GC.BOONS[id].p === 'iron' && !GC.BOONS[id].leg && !leave.includes(id)).map(id => ({ id, r: 0 }));
+  run.reward = { boonOffer: leave.map(id => ({ id, r: 0 })), rerolled: false };
+  const before = run.credits;
+  GC.boonReroll('iron', 0);
+  return run.credits < before
+    ? 'with exactly three eligible protocols in the whole pool, boonReroll charged ' + (before - run.credits) + ' credits and returned the same three: no pool-depth check before charging'
+    : '';
+});
+
+test('RWD-7 every module is reachable as salvage', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('corsair', ['warden', 'reliquary', 'i_song', 'c_reaver', 'b_brood'], 1);
+  run.flagUid = run.fleet[0].uid;
+  const tries = [
+    { wk: ['lance'] }, { wk: ['torp'] }, { wk: ['battery'] }, { wk: ['flak'] },
+    { ab: 'launch' }, { wk: ['gauss'] }, { regen: 5 }, { sh: 24 }, { wk: ['turret'] }, { wk: ['autocannon'] },
+  ];
+  const reach = {};
+  for (const w of tries) { const y = GC.salvageYield(Object.assign({ cp: 3, cause: 'gun' }, w)); if (y.mod) reach[y.mod] = true; }
+  const never = Object.keys(GC.MODULES).filter(m => !reach[m]);
+  return never.length ? 'salvageYield reads a fixed nine-module table keyed to the wreck, so these modules can never drop as salvage: ' + never.join(', ') : '';
+});
+
+// ---------- Oct 28 battle-layer program: Nemesis rows ----------
+
+test('NEM-2 an adaptation never counters a revealed weakness', () => {
+  const bad = needGC(); if (bad) return bad;
+  nemFixture('hegemony', 2, { revealed: ['ion'], seen: { lance: 10, ion: 10 } });
+  const a1 = GC.nemAdapt();
+  nemFixture('hegemony', 2, { revealed: ['torp'], seen: { torp: 10, sq: 10 } });
+  const a2 = GC.nemAdapt();
+  const hits = [];
+  if (a1 === 'shields') hits.push('with the ion weakness revealed, heavy lance and ion fire still earned shields (the direct counter)');
+  if (a2 === 'pd') hits.push('with the torp weakness revealed, heavy torpedo fire still earned pd (the direct counter)');
+  return hits.length ? hits.join('; ') + ': nemAdapt scores counters without reading N.revealed, against the Oct 29 Q4 ruling' : '';
+});
+
+test('NEM-3 at most one adaptation is earned per sector', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = nemFixture('hegemony', 3, {});
+  const got = [];
+  for (let i = 0; i < 4; i++) { run.nem.seen = { lance: 10, ion: 10, torp: 9, ram: 9 }; const a = GC.nemAdapt(); if (a) got.push(a); }
+  return got.length <= 1 ? '' : 'a single sector 3 visit granted ' + got.length + ' adaptations (' + got.join(', ') + '): the cap compares total adaptations against a cumulative sector budget instead of one per sector';
+});
+
+test('NEM-4 every faction strike does something', () => {
+  const bad = needGC(); if (bad) return bad;
+  const silent = [];
+  { const run = nemFixture('corsair', 1, {}); run.credits = 100; GC.nemStrike(); if (run.credits >= 100 && run.fleet.length === 3) silent.push('corsair raid took nothing from a rich fleet'); }
+  { const run = nemFixture('deathless', 1, {}); const hp = run.fleet.reduce((s, x) => s + x.hp, 0); GC.nemStrike(); if (run.fleet.reduce((s, x) => s + x.hp, 0) >= hp) silent.push('deathless tithe cost no hull'); }
+  for (const fac of ['ithar', 'chorus', 'hegemony', 'voidsworn']) {
+    nemFixture(fac, 1, {});
+    if (!GC.nemStrike()) silent.push(fac);
+  }
+  return silent.length ? 'nemStrike is a no-op for: ' + silent.join(', ') + ' (their strike kinds fall through to return an empty string; only raid and tithe are implemented)' : '';
+});
+
+test('NEM-5 a raid warning matches what the strike can take', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = nemFixture('corsair', 1, { clock: 3 });
+  run.credits = 10; // too poor for the credit raid: the warning evaluates the crippled-ship branch
+  run.fleet.forEach(s => { s.hp = GC.derive(s).maxHp; });
+  const warn = GC.nemWarnLine(run.nem).replace(/<[^>]+>/g, '');
+  run.fleet[1].hp = Math.floor(GC.derive(run.fleet[1]).maxHp * 0.2); // the clock fight itself cripples a ship
+  GC.nemClockAdd(1);
+  const promisedNothing = /nothing to take/.test(warn);
+  return (promisedNothing && run.fleet.length < 3)
+    ? 'the warning said the raid would "find nothing to take", but the strike then towed away a ship crippled in the clock fight itself: the warning is computed at warn time, the strike re-evaluates at strike time'
+    : '';
+});
+
+test('NEM-6 a no-retreat Nemesis flagship kill registers the kill', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = nemFixture('voidsworn', 1, {}); // NEM_FAC.voidsworn has beh.noFlee: the card says he never retreats
+  const lines = GC.nemAfterBattle('win', true, {});
+  const escaped = lines.some(l => /escapes/.test(l));
+  return (!run.nem.dead || escaped)
+    ? 'sector 1, flagship destroyed: dead=' + run.nem.dead + ' and the debrief says he escapes. In sectors 1 and 2 a flagship kill can never register as a death, even for the no-retreat Nemesis'
+    : '';
+});
+
+test('NEM-7 legacy Nemesis migration preserves accumulated state', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('voidsworn', ['warden', 'harrow'], 2);
+  run.nem = { weak: ['ion', 'slow'], revealed: ['ion'], adapt: ['riches'], clock: 2, met: 1, beaten: 1, scars: 1, dead: false, strike: false, seen: {}, loot: 500, riches: 2, fed: 3, honed: 1, held: run.fleet[1], last_beat: 'lance' };
+  const N = GC.ensureNemesis();
+  const lost = [];
+  if (N.loot !== 500) lost.push('loot ' + N.loot);
+  if (N.riches !== 2) lost.push('riches ' + N.riches);
+  if (N.fed !== 3) lost.push('fed ' + N.fed);
+  if (N.honed !== 1) lost.push('honed ' + N.honed);
+  if (!N.held) lost.push('held ship dropped');
+  if (!(N.adapt || []).includes('riches')) lost.push('faction special adaptation filtered out of adapt');
+  return lost.length ? 'migrating a pre-persona save zeroed or dropped: ' + lost.join(', ') + ' (ensureNemesis copies a fixed field list and filters adapt to the generic table)' : '';
+});
+
+test('FR-2 a lost Nemesis meeting reveals exactly one weakness', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = nemFixture('hegemony', 1, {});
+  GC.nemAfterBattle('loss', false, {});
+  const grew = run.nem.revealed.length;
+  const run2 = nemFixture('hegemony', 1, { revealed: ['ion', 'torp'] });
+  GC.nemAfterBattle('loss', false, {});
+  const stable = run2.nem.revealed.length === 2;
+  if (!stable) return 'control case broke: a loss with both weaknesses revealed changed the revealed set';
+  return grew === 1 ? '' : 'a lost meeting revealed ' + grew + ' weaknesses: nemReveal is called only in the win branch of nemAfterBattle, against the Oct 29 Q5 ruling (a loss still teaches one)';
+});
+
+// ---------- Oct 28 battle-layer program: terrain probes (battle loader) ----------
+
+test('BF-2 boss fights keep the map terrain budget', () => {
+  const rocks = () => Object.values(G.B.terrain).filter(t => t === 'rock').length;
+  let battle = 0, boss = 0; const N = 12;
+  for (let s = 1; s <= N; s++) {
+    const run = G.runDefaults();
+    run.fac = 'voidsworn'; run.admiral = 'vex'; run.sector = 2; run.foes = null;
+    run.fleet = ['warden', 'harrow', 'penitent', 'h_picket'].map(t => G.newShip(t));
+    run.flagUid = run.fleet[0].uid; G.RUN = run;
+    G.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, obj: 'rout', shape: 'dense', map: 'storm', seed: 5000 + s });
+    battle += rocks();
+    const run2 = G.runDefaults();
+    run2.fac = 'voidsworn'; run2.admiral = 'vex'; run2.sector = 2; run2.foes = null;
+    run2.fleet = ['warden', 'harrow', 'penitent', 'h_picket'].map(t => G.newShip(t));
+    run2.flagUid = run2.fleet[0].uid; G.RUN = run2;
+    G.startBattle({ kind: 'boss', fac: 'hegemony', col: 6, obj: 'rout', shape: 'dense', map: 'storm', seed: 5000 + s });
+    boss += rocks();
+  }
+  const ratio = boss / Math.max(1, battle);
+  return ratio >= 0.8 ? '' : 'across ' + N + ' seed pairs the boss board keeps only ' + Math.round(ratio * 100) + '% of the rock a normal dense board has (' + (boss / N).toFixed(1) + ' vs ' + (battle / N).toFixed(1) + '): startBattle deletes 45% of rock for kind boss after generation';
+});
+
+test('BF-7 the lanes barrier crosses the advance axis', () => {
+  let rowSum = 0, colSum = 0; const N = 12;
+  const BH = runIn('BH'), midR = Math.floor(BH / 2);
+  for (let s = 1; s <= N; s++) {
+    G.rndSeed(s * 101);
+    const T = runIn("genTerrain('storm','lanes',{})");
+    const rows = {}, cols = {};
+    for (const k of Object.keys(T)) {
+      if (T[k] !== 'rock') continue;
+      const [q, r] = k.split(',').map(Number);
+      rows[r] = (rows[r] || 0) + 1;
+      const c = q + Math.floor(r / 2); cols[c] = (cols[c] || 0) + 1;
+    }
+    rowSum += rows[midR] || 0;
+    colSum += Math.max(...Object.values(cols));
+  }
+  return colSum > rowSum ? '' : 'the lanes barrier runs along the middle row (avg ' + (rowSum / N).toFixed(1) + ' rock) while no single column holds more than ' + (colSum / N).toFixed(1) + ': on a left-to-right strip the wall is parallel to the advance, not across it';
+});
+
+test('BF-8 reinforcements arrive on their own side of the field', () => {
+  const errs = [];
+  for (let s = 1; s <= 12; s++) {
+    const run = G.runDefaults();
+    run.fac = 'voidsworn'; run.admiral = 'vex'; run.sector = 2; run.foes = null;
+    run.fleet = ['warden', 'harrow', 'penitent'].map(t => G.newShip(t));
+    run.flagUid = run.fleet[0].uid; G.RUN = run;
+    G.rndSeed(31000 + s);
+    G.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, obj: 'rout', shape: 'open', map: 'storm', arena: 'round', approach: 'headon', seed: 31000 + s });
+    const B = G.B;
+    if (!B || B.arena !== 'round' || !B.approach) continue;
+    const cen = runIn('(()=>{ const hs=boardHexes(); let x=0,z=0; for(const h of hs){ const p=hexXZ(h); x+=p.x; z+=p.z; } return {x:x/hs.length, z:z/hs.length}; })()');
+    const ang = (u) => { const p = runIn('hexXZ({q:' + u.q + ',r:' + u.r + '})'); return Math.atan2(p.z - cen.z, p.x - cen.x); };
+    const es = B.units.filter(u => u.side === 'enemy' && !u.isSq && !u.transport);
+    if (!es.length) continue;
+    const ea = Math.atan2(es.reduce((a, u) => a + Math.sin(ang(u)), 0), es.reduce((a, u) => a + Math.cos(ang(u)), 0));
+    B.event = { k: 'reinf_enemy', r: 1, warnR: 0, warned: true, done: false }; B.round = 2;
+    const before = B.units.length;
+    runIn('eventTick()');
+    const nu = B.units.slice(before).find(u => u.reinf);
+    if (!nu) continue;
+    let d = Math.abs(ang(nu) - ea) * 180 / Math.PI; if (d > 180) d = 360 - d;
+    errs.push(d);
+  }
+  if (errs.length < 8) return 'probe produced too few reinforcement spawns (' + errs.length + ')';
+  const mean = errs.reduce((a, b) => a + b, 0) / errs.length;
+  return mean < 60 ? '' : 'on round arenas the enemy reinforcement spawns on average ' + Math.round(mean) + ' degrees away from the direction the enemy fleet approached from (' + errs.filter(x => x > 90).length + ' of ' + errs.length + ' in the wrong half): edgeHex reads the board bounding columns and never the approach angle';
+});
+
+// ---------- Oct 29 program: campaign rows ----------
+
+test('MOD-3 a module cannot be fitted to a ship it cannot affect', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('voidsworn', ['warden'], 1); // warden mounts battery and turret kinds, no lance
+  run.inventory = ['crystal']; // Lance focusing crystal: fx lancePct, no only field, no kind field
+  const s = run.fleet[0];
+  GC.ACT.equip('0:' + s.uid);
+  return s.mods.includes('crystal')
+    ? 'ACT.equip fitted the Lance focusing crystal to a ship with no lance: equip has no guard at all, and the fit filter cannot see weapon-kind modules because they carry no only field'
+    : '';
+});
+
+test('ECO-3 decommission value scales with the ship condition', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('voidsworn', [], 1);
+  const full = GC.newShip('warden'), hurt = GC.newShip('warden');
+  hurt.hp = Math.round(GC.derive(hurt).maxHp * 0.3);
+  run.fleet = [full, hurt]; run.flagUid = full.uid; run.credits = 1000;
+  GC.shipyardScreen({ id: 'y1', type: 'shipyard', stock: { hulls: [], mods: [], sold: [] } });
+  const sells = [...GC.appEl().innerHTML.matchAll(/Decommission \(\+([0-9]+)\)/g)].map(m => +m[1]);
+  if (sells.length < 2) return 'could not read two decommission labels from the shipyard render';
+  return sells[1] < sells[0] ? '' : 'a warden at 30% hull decommissions for ' + sells[1] + ', the same as a full-hull warden (' + sells[0] + '): the payout is prizeScrap, a function of template only';
+});
+
+test('ECO-4 prize money uses the same price rules as the shop', () => {
+  const bad = needGC(); if (bad) return bad;
+  const run = cRun('voidsworn', ['warden'], 1);
+  run.heat = ['h_coffers']; // Coffers heat: shop prices x1.25 through priceMult
+  const pm = GC.runIn('priceMult()');
+  if (!(pm > 1)) return 'control case broke: priceMult did not rise under the coffers heat';
+  const prize = { tpl: 'warden', hpf: 1, cp: 4, wk: [], ab: null, regen: 0, sh: 10 };
+  const got = GC.prizeRansom(prize, 0);
+  const want = Math.round(GC.runIn("shipValue('warden')") * 0.55 * pm);
+  return got === want ? '' : 'with shop prices scaled x' + pm + ', a full-hull warden prize ransoms for ' + got + ' instead of ' + want + ': prizeRansom never passes through priceMult, so the two directions of the same market price differently';
+});
+
+test('DRIFT-5 touch text variants are reachable', () => {
+  const bad = needGC(); if (bad) return bad;
+  GC.setGlobal('G', { mobile: true });
+  const out = GC.touchWords('Click a gold hex to move');
+  GC.setGlobal('G', undefined);
+  return out === 'Tap a gold hex twice to move' ? '' : 'on touch, "Click a gold hex to move" becomes ' + JSON.stringify(out) + ': the chain looks for the already-tapped wording before the generic Click replacement runs, so the double-tap instruction can never be produced';
+});
+
+test('UI-7 the help line lists every working key', () => {
+  const src = fs.readFileSync(path.join(repoDir, 'ui3d.js'), 'utf8');
+  const handled = [...new Set([...src.matchAll(/k==='([a-z])'/g)].map(m => m[1]))];
+  const helpM = src.match(/function keysHelp\(\)\{ return `([\s\S]*?)`; \}/);
+  if (!helpM) return 'could not locate keysHelp() in ui3d.js';
+  const help = helpM[1].toLowerCase();
+  const missing = handled.filter(k => !help.includes('<kbd>' + k + '</kbd>'));
+  return missing.length ? 'the in-battle help line omits working keys: ' + missing.join(', ') + ' (handled in onKey; some are discoverable only from button titles or not at all)' : '';
+});
+
 // ---------- Wave 5 patch pack section 2: hive wings and point defense ----------
 
 test('PP-2 hive wings count toward the enemy point-defense adaptation', () => {
@@ -499,9 +889,264 @@ test('PP-2 hive wings count toward the enemy point-defense adaptation', () => {
   return (B.adapt || pd > 0) ? '' : 'a pure-hive fleet (wings only from the flagship aspect) counted as zero carriers: no point-defense adaptation armed';
 });
 
+// ---------- round 2 (Oct 30, 2026): battle-probe and UI-state harnesses ----------
+//
+// The two harnesses round 1 lacked, built the same day. battle_probe.js
+// installs sim3d-style animation hooks into the base context so aiUnit can
+// run headlessly; ui_loader.js loads ui3d.js behind a registry DOM stub so
+// its state functions run for real. The probe install happens at load, so
+// the hooks are live while the queued tests run; the round 1 tests were
+// re-run against this exact setup and their results are unchanged (the same
+// 8 passes), because none of them drive animated movement. Every fixture
+// below was validated as a standalone probe first (probes_r2 in the wave 5
+// working papers): each scenario either pins its defect at this pin or
+// reports that it did not construct, never a silent pass.
+
+const { installBattleProbe, setAiLevel, probeBattle, place, clearTerrain, activateEnemy } = require(path.join(__dirname, 'battle_probe.js'));
+const { loadUI } = require(path.join(__dirname, 'ui_loader.js'));
+installBattleProbe(G);
+setAiLevel(G, 'veteran');
+let GU = null, guError = '';
+try { GU = loadUI(repoDir); } catch (e) { guError = e.message; }
+const needGU = () => GU ? '' : 'UI loader failed to load: ' + guError;
+
+const offH = (c, r) => runIn('offToAx(' + c + ',' + r + ')');
+const hdist2 = (a, b) => runIn('hdist({q:' + a.q + ',r:' + a.r + '},{q:' + b.q + ',r:' + b.r + '})');
+function faceTowardG(u, t) {
+  let bf = 0, bd = 1e9;
+  for (let f = 0; f < 6; f++) { const d = runIn('hdist({q:' + (u.q + runIn('DIRS[' + f + '][0]')) + ',r:' + (u.r + runIn('DIRS[' + f + '][1]')) + '},{q:' + t.q + ',r:' + t.r + '})'); if (d < bd) { bd = d; bf = f; } }
+  u.facing = bf;
+}
+function mkWG(id, arc, cdLeft) {
+  G._sandbox.__wid = id; G._sandbox.__arc = arc;
+  const w = runIn('mkWeapon(__wid, __arc, {})');
+  w.fired = false; w.cdLeft = cdLeft || 0; w.off = 0;
+  return w;
+}
+
+test('BF-1 clearSpawns preserves shape-defining center terrain', () => {
+  const BW2 = runIn('BW'), BH2 = runIn('BH'), midR2 = Math.floor(BH2 / 2);
+  const mid = runIn('offToAx(' + Math.floor(BW2 / 2) + ',' + midR2 + ')');
+  const setup = (dep, shape, map, seed) => {
+    const run = G.runDefaults();
+    run.fac = 'voidsworn'; run.admiral = 'vex'; run.sector = 2; run.foes = null;
+    run.fleet = ['cathedral', 'penitent', 'penitent', 'harrow', 'warden', 'warden'].map(t => G.newShip(t));
+    run.flagUid = run.fleet[0].uid; G.RUN = run;
+    G.startBattle({ kind: 'battle', fac: 'hegemony', col: 3, obj: 'rout', shape, map, seed, arena: 'strip', dep, enemies: ['h_dominion', 'h_vanguard', 'h_vanguard', 'h_interdictor', 'h_picket', 'h_picket'].map(tpl => ({ tpl })) });
+    return G.B;
+  };
+  const survival = (shape, map, dep, defFn) => {
+    let sum = 0, n = 0;
+    for (let s = 1; s <= 16; s++) {
+      const seed = 4000 + s;
+      G.rndSeed(seed);
+      const T0 = runIn("genTerrain('" + map + "','" + shape + "',{enc:'rout'})");
+      const def = Object.keys(T0).filter(k => T0[k] === 'rock' && defFn(k));
+      const B = setup(dep, shape, map, seed);
+      if (B.shape !== shape || !def.length) continue;
+      sum += def.filter(k => B.terrain[k] === 'rock').length / def.length; n++;
+    }
+    return n >= 12 ? sum / n : null;
+  };
+  const ringDef = (k) => { const [q, r] = k.split(',').map(Number); return hdist2({ q, r }, mid) <= 2; };
+  const lanesDef = (k) => { const r = +k.split(',')[1]; return r === midR2 || r === midR2 - 1; };
+  const ctrl = survival('ring', 'storm', 'line', ringDef);
+  const amb = survival('ring', 'storm', 'ambush', ringDef);
+  const lanes = survival('lanes', 'storm', 'line', lanesDef);
+  if (ctrl == null || amb == null || lanes == null) return 'probe produced too few shape-verified trials';
+  if (ctrl < 0.9) return 'control case broke: even line deployment keeps only ' + Math.round(ctrl * 100) + '% of the ring center, so the probe no longer isolates the clearing step';
+  const bad = [];
+  if (amb < 0.9) bad.push('under ambush deployment the ring center keeps only ' + Math.round(amb * 100) + '% of its defining rock through startBattle (same-seed line control: ' + Math.round(ctrl * 100) + '%)');
+  if (lanes < 0.9) bad.push('the lanes barrier keeps only ' + Math.round(lanes * 100) + '% of its rock through startBattle under plain line deployment, eaten from both deployment ends inward');
+  return bad.length ? bad.join('; ') + ': clearSpawns deletes terrain around and ahead of wherever the fleets start, so the shapes whose defining terrain sits near a start zone lose it (the Oct 29 Q11 shape-aware clearing is unimplemented)' : '';
+});
+
+test('AI-1 veteran brace decision survives the mid-move volley path', async () => {
+  setAiLevel(G, 'veteran');
+  const B = probeBattle(G, { player: ['penitent', 'penitent', 'penitent'], enemies: ['d_jackal'], fac: 'deathless', seed: 11, arena: 'strip' });
+  clearTerrain(G);
+  const pens = B.units.filter(u => u.side === 'player');
+  [[6, 5], [6, 7], [6, 9]].forEach((p, i) => { const h = offH(p[0], p[1]); place(pens[i], h.q, h.r); });
+  const m = B.units.find(u => u.side === 'enemy');
+  const mh = offH(14, 7); place(m, mh.q, mh.r);
+  pens.forEach(p => faceTowardG(p, m));
+  // one spent scattergun (never ready this activation), shields stripped, hull 60%:
+  // the ship must move to engage, its volley can never fire, and its numbers meet
+  // the veteran brace rule (threat over 45% of hp, no offense, hp under 70%)
+  // while missing the volley-path fallback's hp-under-50% gate.
+  m.weapons = [mkWG('scatter', 'T', 2)]; m.ab = null; m.maxHp = 100; m.hp = 60; m.sh = [0, 0, 0, 0]; m.shMax = 0;
+  const d0 = Math.min(...pens.map(p => hdist2(m, p)));
+  await activateEnemy(G, m);
+  const d1 = Math.min(...pens.map(p => hdist2(m, p)));
+  if (!(d1 < d0)) return 'scenario did not construct: the veteran ship never moved (distance ' + d0 + ' to ' + d1 + '), so the mid-move volley path was not taken';
+  if (m.weapons.some(w => w.fired)) return 'scenario did not construct: the ship fired on the move, after which brace is legally impossible in both paths';
+  if (m.braced) return '';
+  G._sandbox.__u = m;
+  const threat = runIn('evalThreat(__u, alive("player"))');
+  return 'a veteran ship at ' + Math.round(m.hp / m.maxHp * 100) + '% hull moved ' + d0 + ' to ' + d1 + ' hexes from the enemy line, fired nothing, and ended unbraced under ' + Math.round(threat) + ' expected threat: the mid-move volley path returns before the veteran brace decision, whose conditions its numbers meet (threat over 45% of its ' + m.hp + ' hp, own offense nil), and the volley path\'s own fallback brace demands hp under 50%';
+});
+
+test('AI-3 death-cliff weight scales with ship value', async () => {
+  setAiLevel(G, 'veteran');
+  const C = offH(10, 7);
+  const sweep = async (tpl) => {
+    let first = null;
+    for (const M of [0, 40, 80, 120, 200, 300]) {
+      const B = probeBattle(G, { player: ['penitent', 'penitent', 'penitent', 'cathedral'], enemies: [tpl], fac: 'voidsworn', seed: 14, arena: 'strip' });
+      clearTerrain(G);
+      const p0 = B.units.find(u => u.side === 'player' && u.tpl === 'cathedral');
+      const p0h = offH(6, 7); place(p0, p0h.q, p0h.r);
+      p0.weapons = []; p0.maxHp = M; p0.hp = 1; p0.ev = 0; p0.ab = null; p0.sh = [0, 0, 0, 0]; p0.shMax = 0;
+      const escs = B.units.filter(u => u.side === 'player' && u.tpl === 'penitent');
+      [[-3, -2], [-2, -3], [5, -3]].forEach((o, i) => { place(escs[i], C.q + o[0], C.r + o[1]); faceTowardG(escs[i], C); escs[i].ab = null; });
+      const m = B.units.find(u => u.side === 'enemy');
+      const mh = offH(13, 7); place(m, mh.q, mh.r); faceTowardG(m, C);
+      // identical normalised hull numbers for both movers (same gun, speed, hp,
+      // shields, armor, evasion): the only difference left is the hull's value
+      m.weapons = [mkWG('battery', 'T', 0)]; m.speed = 3; m.maxHp = 100; m.hp = 30; m.sh = [0, 0, 0, 0]; m.shMax = 0; m.armor = .1; m.ev = 10; m.ab = null;
+      await activateEnemy(G, m);
+      if (first == null && m.q === C.q && m.r === C.r) first = M;
+    }
+    return first;
+  };
+  const cheap = await sweep('warden');
+  const expensive = await sweep('cathedral');
+  if (cheap == null) return 'scenario did not construct: even the cp1 frigate never took the death-cliff hex in the sweep, so there is no switch point to compare';
+  if (expensive == null || expensive > cheap) return '';
+  return 'the death-cliff switch point is identical for a cp1 frigate and a cp5 battleship (both first accept a hex where expected fire exceeds their hull once the kill behind it is worth ' + cheap + '): the cliff weight is a flat 25, unscaled to the value of the hull put at risk';
+});
+
+test('AI-4 a ship with no bearing guns kites instead of closing', async () => {
+  setAiLevel(G, 'veteran');
+  const B = probeBattle(G, { player: ['warden', 'warden'], enemies: ['warden'], fac: 'voidsworn', seed: 12, arena: 'strip' });
+  clearTerrain(G);
+  const ps = B.units.filter(u => u.side === 'player');
+  ps.forEach((p, i) => { const h = offH(5, 6 + i * 2); place(p, h.q, h.r); p.weapons = []; });
+  const m = B.units.find(u => u.side === 'enemy');
+  const mh = offH(14, 7); place(m, mh.q, mh.r);
+  m.weapons = [mkWG('torp', 'F', 2)]; m.ab = null;
+  const d0 = Math.min(...ps.map(p => hdist2(m, p)));
+  await activateEnemy(G, m);
+  const d1 = Math.min(...ps.map(p => hdist2(m, p)));
+  if (m.weapons[0].cdLeft <= 0 && !m.weapons[0].fired) return 'scenario did not construct: the torpedo became ready during the activation, so the ship had a bearing gun after all';
+  if (d1 >= d0) return '';
+  return 'a ship whose only gun is a reloading torpedo closed from ' + d0 + ' to ' + d1 + ' hexes against unarmed targets: the approach leash (-4 per hex beyond the spent gun\'s minimum range) drags a ship with no bearing guns toward the enemy instead of letting it kite while it reloads';
+});
+
+test('AI-5 wing launches account for the launch hex threat', async () => {
+  setAiLevel(G, 'veteran');
+  const B = probeBattle(G, { player: ['penitent', 'penitent'], enemies: ['reliquary'], fac: 'voidsworn', seed: 13, arena: 'strip' });
+  clearTerrain(G);
+  const ps = B.units.filter(u => u.side === 'player');
+  ps.forEach((p, i) => { const h = offH(6, 6 + i * 2); place(p, h.q, h.r); });
+  const c = B.units.find(u => u.side === 'enemy');
+  const ch = offH(13, 7); place(c, ch.q, ch.r);
+  ps.forEach(p => faceTowardG(p, c));
+  B.units.filter(u => u.isSq && u.side === 'enemy').forEach(w => { w.dead = true; }); // the opening wings are gone; this launch replaces them
+  G._sandbox.__u = c;
+  const hexes = runIn('launchHexes(__u)').map(h => ({ q: h.q, r: h.r, th: runIn('evalThreat(stateView(__u, {q:' + h.q + ',r:' + h.r + ',f:__u.facing}), alive("player"))') }));
+  if (!hexes.length) return 'scenario did not construct: the carrier has no launch hexes';
+  if (!hexes.some(h => h.th <= 0.01)) return 'scenario did not construct: every launch hex is under fire, so there is no safe choice to prefer';
+  await activateEnemy(G, c);
+  const wing = B.units.find(u => u.isSq && u.side === 'enemy' && !u.dead);
+  if (!wing) return 'scenario did not construct: the carrier never launched during its activation';
+  const chosen = hexes.find(h => h.q === wing.q && h.r === wing.r);
+  if (!chosen) return 'scenario did not construct: the wing did not launch from a launch hex of the carrier\'s start position';
+  if (chosen.th <= 0.01) return '';
+  return 'the carrier launched its wing into ' + Math.round(chosen.th) + ' expected threat while launch hexes with no incoming fire existed: aiAbilities launches before moving, from the launch hex nearest the enemy, sorted by distance only, so a launch can be baited into a kill zone';
+});
+
+function uiBattle(playerTpls, enemyTpls) {
+  const run = GU.runDefaults();
+  run.fac = 'voidsworn'; run.admiral = 'vex'; run.sector = 1; run.foes = null;
+  run.fleet = playerTpls.map(t => GU.newShip(t));
+  run.flagUid = run.fleet[0].uid; GU.RUN = run;
+  GU._sandbox.__cfg = { kind: 'battle', fac: 'hegemony', col: 3, obj: 'rout', shape: 'open', map: 'storm', dep: 'line', arena: 'strip', seed: 99, enemies: enemyTpls.map(tpl => ({ tpl })) };
+  GU.runInUI('startBattle(__cfg);');
+  return GU.B;
+}
+
+test('UI-5 cancel paths clear the sticky wing selection', () => {
+  const bad = needGU(); if (bad) return bad;
+  const B = uiBattle(['reliquary', 'warden', 'warden'], ['h_picket']);
+  const wing = B.units.find(u => u.isSq && u.side === 'player');
+  const ship = B.units.find(u => !u.isSq && u.side === 'player' && u.tpl === 'warden');
+  if (!wing || !ship) return 'scenario did not construct: no player wing or ship in the fixture battle';
+  const stuck = [];
+  B.wingSel = wing;
+  GU.runInUI('selectUnit(B.units.find(u => u.tpl === "warden" && u.side === "player"))');
+  if (B.wingSel) stuck.push('selectUnit');
+  B.wingSel = wing;
+  GU.ACT.rosterPick(ship.id);
+  if (B.wingSel) stuck.push('rosterPick');
+  B.wingSel = wing; B.sel = ship; B.mode = null; B.armed = null;
+  for (let i = 0; i < 3; i++) GU.runInUI('onKey({ key: "Escape", target: { tagName: "DIV" }, preventDefault() {} })');
+  if (B.wingSel) stuck.push('Escape through the full cancelAction chain');
+  return stuck.length ? 'wingSel survives ' + stuck.join(', ') + ': with a wing selected, switching ships or cancelling leaves the wing order armed, so the next board tap assigns a wing order the player no longer means to give' : '';
+});
+
+test('UI-6 the hint line never declares a ship finished while it can still act', () => {
+  const bad = needGU(); if (bad) return bad;
+  const B = uiBattle(['warden'], ['h_picket', 'h_picket']);
+  const u = B.units.find(x => x.side === 'player');
+  B.units.filter(x => x.side === 'enemy').forEach((e, i) => { e.q = 20; e.r = 3 + i; });
+  GU.runInUI('OV.targets = [];');
+  B.reach = null; B.wingSel = null; B.why = null; B.mode = null; B.sel = u;
+  const hint = () => { const h = GU.runInUI('actionStrip(B.units.find(x => x.side === "player"))'); const mm = h.match(/<div class="striphint">([\s\S]*?)<\/div>/); return mm ? mm[1] : ''; };
+  const badCases = [];
+  u.mp = 2; // moved some, most of its 6 movement remains, nothing in range
+  if (hint().includes('Nothing left to do') && u.mp > 0) badCases.push('movement remaining (' + u.mp + ' of ' + u.speed + ' points)');
+  u.mp = 0; // fully moved, weapons unfired, Brace still open
+  if (hint().includes('Nothing left to do') && GU.runInUI('canOrder(B.units.find(x => x.side === "player"), "brace")')) badCases.push('an unspent Brace');
+  return badCases.length ? "the hint line reads 'Nothing left to do: tap Done with ship.' while the ship still has " + badCases.join(' and ') + ': the hint chain checks ram, targets and first-move only, never remaining movement or the Brace order' : '';
+});
+
+test('UI-8 auto-facing weighs shield facings, and arming recomputes reach', () => {
+  const bad = needGU(); if (bad) return bad;
+  const parts = [];
+  {
+    const B = uiBattle(['penitent'], ['h_picket']);
+    B.terrain = {};
+    const u = B.units.find(x => x.side === 'player');
+    const foe = B.units.find(x => x.side === 'enemy');
+    GU._sandbox.__wid = 'turret'; GU._sandbox.__arc = 'T';
+    const w = GU.runInUI('mkWeapon(__wid, __arc, {})'); w.fired = false; w.cdLeft = 0; w.off = 0;
+    u.weapons = [w]; // a turret bears from every facing, so gun count ties across facings
+    u.sh = [40, 4, 40, 40]; u.shMax = 40;
+    const dest = { q: u.q + 2, r: u.r }; foe.q = dest.q + 2; foe.r = dest.r;
+    let fWeak = -1, fStrong = -1;
+    for (let f = 0; f < 6; f++) {
+      GU._sandbox.__f = f; GU._sandbox.__d = dest;
+      const q = GU.runInUI('shieldQuad(stateView(B.units.find(x => x.side === "player"), { q: __d.q, r: __d.r, f: __f }), B.units.find(x => x.side === "enemy"))');
+      if (q === 1 && fWeak < 0) fWeak = f;
+      if (q === 0 && fStrong < 0) fStrong = f;
+    }
+    if (fWeak < 0 || fStrong < 0) return 'scenario did not construct: no facing pair exposes the weak and strong shields to the enemy';
+    GU._sandbox.__R = { states: [{ q: dest.q, r: dest.r, f: fWeak, cost: 2, t: 0, path: [] }, { q: dest.q, r: dest.r, f: fStrong, cost: 2, t: 0, path: [] }], map: new Map() };
+    const chosenF = GU.runInUI('bestFacingReach(B.units.find(x => x.side === "player"), __R).map.get(hkey(__R.states[0].q, __R.states[0].r)).f');
+    if (chosenF !== fStrong) parts.push('on a gun-count tie bestFacingReach keeps the facing that exposes the 4-point shield over the one presenting the 40-point shield: its score is gun count, cost and turns only, never the ship\'s own shield facings');
+  }
+  {
+    uiBattle(['penitent'], ['h_picket']);
+    GU.runInUI('selectUnit(B.units.find(x => x.side === "player"))');
+    const before = GU.B.reach;
+    GU.ACT.arm(1);
+    if (GU.B.reach === before) parts.push('ACT.arm leaves B.reach as the same object, so after arming a single weapon the reach overlay still shows gun counts computed for the whole battery');
+  }
+  return parts.join('; ');
+});
+
 // ---------- summary ----------
 
-console.log('---');
-console.log(checks + ' tests, ' + (checks - failures) + ' pass, ' + failures + ' fail');
-console.log(failures ? 'Failing tests pin defects that are still unfixed at this pin; see the ledger README.' : 'All pinned findings are fixed at this pin.');
-process.exit(failures ? 1 : 0);
+(async () => {
+  for (const [id, fn] of queue) {
+    let detail;
+    try { detail = await fn(); }
+    catch (e) { detail = 'threw: ' + e.message; }
+    record(id, detail || '');
+  }
+  console.log('---');
+  console.log(checks + ' tests, ' + (checks - failures) + ' pass, ' + failures + ' fail');
+  console.log(failures ? 'Failing tests pin defects that are still unfixed at this pin; see the ledger README.' : 'All pinned findings are fixed at this pin.');
+  process.exit(failures ? 1 : 0);
+})();

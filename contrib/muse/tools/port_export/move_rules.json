@@ -1,0 +1,33 @@
+{
+ "voidsworn": {
+  "rake": 0.4,
+  "n": "Broadside doctrine",
+  "d": "Port and starboard guns hit 40% harder after moving 2+ hexes (others get 10%)."
+ },
+ "hegemony": {
+  "rev": 1,
+  "n": "Retro thrusters",
+  "d": "Backing off one hex costs 1 movement instead of 2."
+ },
+ "corsair": {
+  "slip": 1,
+  "n": "Bolted burners",
+  "d": "Sideslips cost 1 movement instead of 2."
+ },
+ "chorus": {
+  "pivot": 1,
+  "n": "Living hull",
+  "d": "The first turn each round costs no movement."
+ },
+ "ithar": {
+  "evadeAt": 2,
+  "evade": 18,
+  "n": "Crystal vanes",
+  "d": "After moving 2+ hexes, enemies get −18 to hit it (others need 3 hexes for −5)."
+ },
+ "deathless": {
+  "over": 0,
+  "n": "Fold drive",
+  "d": "Passes through rocks, wrecks and enemy ships at no extra cost."
+ }
+}

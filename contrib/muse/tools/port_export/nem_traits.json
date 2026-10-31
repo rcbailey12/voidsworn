@@ -1,0 +1,58 @@
+{
+ "gunnery": {
+  "n": "Master gunners",
+  "d": "His ships aim 6 better."
+ },
+ "armored": {
+  "n": "Heavy plating",
+  "d": "His ships have 8% more armor."
+ },
+ "swift": {
+  "n": "Hot engines",
+  "d": "His ships have 1 more movement."
+ },
+ "veterans": {
+  "n": "Veteran crews",
+  "d": "His ships have 12% more hull."
+ },
+ "deadeye": {
+  "n": "Deadeyes",
+  "d": "His ships have 10% more critical chance."
+ },
+ "shielded": {
+  "n": "Overcharged shields",
+  "d": "His ships have 20% more shields."
+ },
+ "boarders": {
+  "n": "Boarding gangs",
+  "d": "His ships carry 30% more crew."
+ },
+ "regrowth": {
+  "n": "Deep regrowth",
+  "d": "His ships regrow 4 more hull each turn."
+ },
+ "brood": {
+  "n": "Swollen broods",
+  "d": "His carriers field one more wing."
+ },
+ "undying": {
+  "n": "Spare frames",
+  "d": "One more of his ships reassembles after falling."
+ },
+ "veil": {
+  "n": "Veil-dancers",
+  "d": "His ships are 8 harder to hit."
+ },
+ "artillery": {
+  "n": "Artillery line",
+  "d": "His guns reach 1 hex further."
+ },
+ "zeal": {
+  "n": "Zealots",
+  "d": "His ships deal 12% more damage to a ship next to them."
+ },
+ "rockets": {
+  "n": "Rocket hoarders",
+  "d": "His torpedoes reload a turn faster."
+ }
+}

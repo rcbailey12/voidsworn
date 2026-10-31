@@ -1,0 +1,13 @@
+{"v":1,"ts":1761900060,"session":"sess_run1","run":"run_0001","run_number":1,"event":"run_start","faction":"sunward","admiral":"adm_halden","renown":0,"starting_credits":120}
+{"v":1,"ts":1761900120,"session":"sess_run1","run":"run_0001","run_number":1,"event":"nemesis_meeting","sector":2,"nemesis_id":"nem_vex","meeting_number":1,"adaptations_count":0,"weaknesses_known":0,"weaknesses_total":2,"nemesis_lineage":"nl_4f8c2a"}
+{"v":1,"ts":1761900180,"session":"sess_run1","run":"run_0001","run_number":1,"event":"battle_start","sector":2,"node_kind":"nemesis","player_cp":18,"enemy_cp":24}
+{"v":1,"ts":1761900240,"session":"sess_run1","run":"run_0001","run_number":1,"event":"battle_end","result":"loss","rounds":7,"player_ships_lost":["h_covenant"]}
+{"v":1,"ts":1761900300,"session":"sess_run1","run":"run_0001","run_number":1,"event":"weakness_revealed","nemesis_id":"nem_vex","weakness_id":"weak_rear_arc","source":"loss debrief","nemesis_lineage":"nl_4f8c2a"}
+{"v":1,"ts":1761900360,"session":"sess_run1","run":"run_0001","run_number":1,"event":"run_end","sector":2,"cause":"fleet destroyed","battles_fought":5,"lessons_named":1,"nothing_learned_shown":false}
+{"v":1,"ts":1761900420,"session":"sess_run2","run":"run_0002","run_number":2,"event":"run_start","faction":"sunward","admiral":"adm_halden","renown":40,"starting_credits":120}
+{"v":1,"ts":1761900480,"session":"sess_run2","run":"run_0002","run_number":2,"event":"nemesis_meeting","sector":2,"nemesis_id":"nem_vex","meeting_number":1,"adaptations_count":0,"weaknesses_known":1,"weaknesses_total":2,"nemesis_lineage":"nl_4f8c2a"}
+{"v":1,"ts":1761900540,"session":"sess_run2","run":"run_0002","run_number":2,"event":"nemesis_adaptation","nemesis_id":"nem_vex","adaptation_id":"adapt_rear_screen","clashed":false,"nemesis_lineage":"nl_4f8c2a"}
+{"v":1,"ts":1761900600,"session":"sess_run2","run":"run_0002","run_number":2,"event":"nemesis_adaptation","nemesis_id":"nem_vex","adaptation_id":"adapt_ion_plating","clashed":false,"nemesis_lineage":"nl_4f8c2a"}
+{"v":1,"ts":1761900660,"session":"sess_run2","run":"run_0002","run_number":2,"event":"battle_start","sector":2,"node_kind":"nemesis","player_cp":26,"enemy_cp":27}
+{"v":1,"ts":1761900720,"session":"sess_run2","run":"run_0002","run_number":2,"event":"battle_end","result":"win","rounds":9,"player_ships_lost":[]}
+{"v":1,"ts":1761900780,"session":"sess_run2","run":"run_0002","run_number":2,"event":"run_end","sector":3,"cause":"abandoned","battles_fought":8,"lessons_named":1,"nothing_learned_shown":false}

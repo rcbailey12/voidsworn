@@ -1,0 +1,110 @@
+{
+ "prow": {
+  "n": "Reinforced prow",
+  "d": "+15% hull, +5% armor.",
+  "fx": {
+   "hpPct": 0.15,
+   "armor": 0.05
+  },
+  "cost": 70
+ },
+ "auspex": {
+  "n": "Scanner array",
+  "d": "+10 aim for every weapon.",
+  "fx": {
+   "aim": 10
+  },
+  "cost": 80
+ },
+ "drive": {
+  "n": "Plasma drive",
+  "d": "+1 speed.",
+  "fx": {
+   "speed": 1
+  },
+  "cost": 75
+ },
+ "gyro": {
+  "n": "Gyro-stabilisers",
+  "d": "+1 turn allowance, +5 evasion.",
+  "fx": {
+   "turns": 1,
+   "ev": 5
+  },
+  "cost": 60
+ },
+ "capacitor": {
+  "n": "Screen capacitor",
+  "d": "+30% shield strength.",
+  "fx": {
+   "shPct": 0.3
+  },
+  "cost": 80
+ },
+ "regen": {
+  "n": "Shield regenerator",
+  "d": "+50% shield regeneration.",
+  "fx": {
+   "regenPct": 0.5
+  },
+  "cost": 70
+ },
+ "loaders": {
+  "n": "Battery loaders",
+  "d": "Battery weapons fire +1 shot.",
+  "fx": {
+   "battShots": 1
+  },
+  "cost": 90
+ },
+ "crystal": {
+  "n": "Lance focusing crystal",
+  "d": "Lance damage +25%.",
+  "fx": {
+   "lancePct": 0.25
+  },
+  "cost": 80
+ },
+ "magazine": {
+  "n": "Torpedo magazine",
+  "d": "Torpedo reload time −1 turn, +15% torpedo damage.",
+  "fx": {
+   "torpCd": 1,
+   "torpPct": 0.15
+  },
+  "cost": 85
+ },
+ "flakplus": {
+  "n": "Flak batteries",
+  "d": "Point defense +2 shots and +1 range.",
+  "fx": {
+   "flakPlus": 1
+  },
+  "cost": 55
+ },
+ "damcon": {
+  "n": "Damage control crews",
+  "d": "Repair 4% hull at the start of each of your turns.",
+  "fx": {
+   "hullRegenPct": 0.04
+  },
+  "cost": 85
+ },
+ "hangar": {
+  "n": "Hangar expansion",
+  "d": "Carriers only: +1 squadron in flight.",
+  "fx": {
+   "hangar": 1
+  },
+  "cost": 90,
+  "only": "launch"
+ },
+ "cogitator": {
+  "n": "Targeting reckoner",
+  "d": "+10% critical chance.",
+  "fx": {
+   "crit": 10
+  },
+  "cost": 75
+ }
+}

@@ -1,0 +1,101 @@
+{
+ "gunnery": {
+  "n": "Gunnery master",
+  "d": "+10 aim.",
+  "fx": {
+   "aim": 10
+  }
+ },
+ "killer": {
+  "n": "Killer instinct",
+  "d": "+10% critical chance.",
+  "fx": {
+   "crit": 10
+  }
+ },
+ "deflector": {
+  "n": "Shield savant",
+  "d": "+40% shield regeneration.",
+  "fx": {
+   "regenPct": 0.4
+  }
+ },
+ "ironhull": {
+  "n": "Iron hull",
+  "d": "+15% max hull.",
+  "fx": {
+   "hpPct": 0.15
+  }
+ },
+ "helm": {
+  "n": "Born helmsman",
+  "d": "+1 speed.",
+  "fx": {
+   "speed": 1
+  }
+ },
+ "steady": {
+  "n": "Steady hand",
+  "d": "Ignore the first 2 hexes of long-range penalty.",
+  "fx": {
+   "longAim": 2
+  }
+ },
+ "broad": {
+  "n": "Broadside specialist",
+  "d": "Broadside weapons +15% damage.",
+  "fx": {
+   "broadPct": 0.15
+  }
+ },
+ "lanceadept": {
+  "n": "Lance savant",
+  "d": "Lance and torpedo damage +15%.",
+  "fx": {
+   "lancePct": 0.15,
+   "torpPct": 0.15
+  }
+ },
+ "stubborn": {
+  "n": "Stubborn",
+  "d": "Brace for impact blocks an extra 15%.",
+  "fx": {
+   "bracePlus": 0.15
+  }
+ },
+ "rapid": {
+  "n": "Rapid cycling",
+  "d": "Ability cooldowns −1.",
+  "fx": {
+   "cdMod": 1
+  }
+ },
+ "wing": {
+  "n": "Wing commander",
+  "d": "Squadrons launched by this ship deal +30% damage.",
+  "fx": {
+   "sqPct": 0.3
+  }
+ },
+ "hunter": {
+  "n": "Hunter",
+  "d": "+20% damage against ships below half hull.",
+  "fx": {
+   "huntPct": 0.2
+  }
+ },
+ "laststand": {
+  "n": "Last stand",
+  "d": "Once per battle, survive a killing blow at 1 hull.",
+  "fx": {
+   "lastStand": 1
+  }
+ },
+ "flanker": {
+  "n": "Flanker",
+  "d": "+20% damage on rear-arc hits.",
+  "fx": {
+   "rearPct": 0.2
+  }
+ }
+}
