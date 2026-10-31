@@ -1,0 +1,17 @@
+/workspace/scratch/bde335e632ab/voidsworn/contrib/muse/tools/findings_tests/campaign_loader.js:32
+if (!loaderPath) throw new Error('game_loader.js not found in any candidate path');
+                 ^
+
+Error: game_loader.js not found in any candidate path
+    at Object.<anonymous> (/workspace/scratch/bde335e632ab/voidsworn/contrib/muse/tools/findings_tests/campaign_loader.js:32:24)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.require (node:internal/modules/cjs/loader:1674:12)
+    at require (node:internal/modules/helpers:157:16)
+    at Object.<anonymous> (/workspace/scratch/bde335e632ab/voidsworn/contrib/muse/tools/findings_tests/findings_tests.js:517:26)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+
+Node.js v24.22.1

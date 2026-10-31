@@ -1,0 +1,2 @@
+[/workspace/scratch/bde335e632ab/mc_smoke.json] 2/2 runs, 1.2s, wins 0, errors 0
+wrote /workspace/scratch/bde335e632ab/mc_smoke.json in 1.2s

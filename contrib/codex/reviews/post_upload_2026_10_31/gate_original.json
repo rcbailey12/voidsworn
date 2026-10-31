@@ -1,0 +1,289 @@
+{
+  "gate": "voidsworn cutover gate",
+  "version": 1,
+  "ranAt": "2026-10-31T13:09:36.134Z",
+  "repo": "/workspace/scratch/bde335e632ab/voidsworn",
+  "head": "1bc7bf2182454dedb0e002999c423fbf355fba14",
+  "baselineRecordedAt": "2026-10-31T01:20:34.975Z",
+  "baselineHead": "cbffcafef9d3bb1c653feb72430f7a125871e315",
+  "baselineUpdatedThisRun": false,
+  "overall": "INCOMPLETE (a component did not run)",
+  "totalMs": 1288,
+  "components": [
+    {
+      "id": "findings_tests",
+      "title": "Findings regression suite",
+      "proves": "Every BLOCKER/FIX finding from the audit programs stays pinned by a test that fails while the defect is unfixed and flips when a fix lands.",
+      "verdict": "NOT RUN",
+      "reason": "suite produced no summary line (exit 1)",
+      "ms": 215
+    },
+    {
+      "id": "oracle_drift",
+      "title": "Oracle drift guard",
+      "proves": "The Godot port's vendored JS oracles and hand-copied constants have not drifted beyond the recorded staleness, and every README pin claim still holds against git history.",
+      "verdict": "KNOWN-FAIL",
+      "ms": 293,
+      "summary": "oracle pins 10/10 held, 6 of 9 vendored pairs differ, constants 95/120 matched (25 differed, 25 browser-only): the recorded state is staleness, not corruption",
+      "signature": {
+        "vendoredPairs": 9,
+        "vendoredDiffering": 6,
+        "pinClaimsChecked": 10,
+        "pinClaimsHeld": 10,
+        "pinClaimsFailed": 0,
+        "constCompared": 120,
+        "constMatched": 95,
+        "constDiffered": 25,
+        "constOnlyBrowser": 25,
+        "constOnlyGodot": 0
+      },
+      "badSet": [
+        "battle.js:root-vs-campaign-oracle",
+        "battle.js:root-vs-rules-oracle",
+        "battle.js:rules-oracle-vs-campaign-oracle",
+        "const:BIOMES:chorus",
+        "const:BIOMES:corsair",
+        "const:BIOMES:deathless",
+        "const:BIOMES:ithar",
+        "const:BIOMES:voidsworn",
+        "const:PLANETS (map3d_system.gd):entry 0",
+        "const:PLANETS (map3d_system.gd):entry 1",
+        "const:PLANETS (map3d_system.gd):entry 2",
+        "const:PLANETS (map3d_system.gd):entry 3",
+        "const:PLANETS (map3d_system.gd):entry 4",
+        "const:PLANETS (map3d_system.gd):entry 5",
+        "const:PLANETS (map3d_system.gd):entry 6",
+        "const:PLANETS (world.gd):entry 0",
+        "const:PLANETS (world.gd):entry 1",
+        "const:PLANETS (world.gd):entry 2",
+        "const:PLANETS (world.gd):entry 3",
+        "const:PLANETS (world.gd):entry 4",
+        "const:PLANETS (world.gd):entry 5",
+        "const:PLANETS (world.gd):entry 6",
+        "const:PLANETS (world.gd):entry 7",
+        "const:ROCKS (ROCK_KINDS col vs world ROCKS albedo):carbon",
+        "const:ROCKS (ROCK_KINDS col vs world ROCKS albedo):crystal",
+        "const:ROCKS (ROCK_KINDS col vs world ROCKS albedo):ice",
+        "const:ROCKS (ROCK_KINDS col vs world ROCKS albedo):iron",
+        "const:ROCKS (ROCK_KINDS col vs world ROCKS albedo):stone",
+        "data.js:root-vs-campaign-oracle",
+        "data.js:root-vs-rules-oracle",
+        "data.js:rules-oracle-vs-campaign-oracle"
+      ],
+      "goodSet": [],
+      "watchSet": [],
+      "deltas": {
+        "newFailures": [],
+        "fixed": [],
+        "lostPassing": [],
+        "newPassing": [],
+        "watchNew": [],
+        "watchGone": []
+      }
+    },
+    {
+      "id": "table_xref",
+      "title": "Validator: table cross-references",
+      "proves": "No id in the game data tables dangles: rosters, weapons, patrons, relic names, price and gate rows all resolve.",
+      "verdict": "PASS",
+      "ms": 106,
+      "summary": "0 dangling-reference failures, 11 warnings (warnings are the known watch list)",
+      "signature": {
+        "failures": 0,
+        "warnings": 11
+      },
+      "badSet": [],
+      "goodSet": [],
+      "watchSet": [
+        "chorus FAC_PRICE has no Bio-titan key; its capital hulls price at the x1 fallback while the row prices the rest of the line",
+        "corsair FAC_PRICE has no Battle-barge key; its capital hulls price at the x1 fallback while the row prices the rest of the line",
+        "deathless FAC_PRICE has no Tomb-ark key; its capital hulls price at the x1 fallback while the row prices the rest of the line",
+        "id collision: spore exists in both HULLS and RELICS",
+        "ithar FAC_PRICE has no Ark key; its capital hulls price at the x1 fallback while the row prices the rest of the line",
+        "relic display-name coverage: chorus 11 of 12",
+        "relic display-name coverage: corsair 10 of 12",
+        "relic display-name coverage: deathless 10 of 12",
+        "relic display-name coverage: hegemony 11 of 12",
+        "relic display-name coverage: ithar 8 of 12",
+        "relic display-name coverage: voidsworn 0 of 12"
+      ],
+      "deltas": {
+        "newFailures": [],
+        "fixed": [],
+        "lostPassing": [],
+        "newPassing": [],
+        "watchNew": [],
+        "watchGone": []
+      }
+    },
+    {
+      "id": "naming_lint",
+      "title": "Validator: naming linter",
+      "proves": "Current-voice documents do not use retired display names (hard hits), and old faction labels are triaged (candidates).",
+      "verdict": "KNOWN-FAIL",
+      "ms": 124,
+      "summary": "1 hard hits (retired display names in current-voice docs), 100 label candidates for human triage, 13 historical/id mentions (info)",
+      "signature": {
+        "hard": 1,
+        "candidates": 100,
+        "historical": 13
+      },
+      "badSet": [
+        "Mending Choir @ BACKLOG.md"
+      ],
+      "goodSet": [],
+      "watchSet": [
+        "Corsair (faction label) @ AGENTS.md",
+        "Corsair (faction label) @ BACKLOG.md",
+        "Corsair (faction label) @ CLAUDE.md",
+        "Corsair (faction label) @ HANDOFF.md",
+        "Corsair (faction label) @ NEXT.md",
+        "Corsair (faction label) @ PROGRESS.md",
+        "Corsair (faction label) @ docs/ship_pipeline/AUDIT_BRIEF.md",
+        "Corsair (faction label) @ docs/ship_pipeline/BLOB_SWEEP.md",
+        "Corsair (faction label) @ docs/ship_pipeline/SHIP_QUEUE.md",
+        "Deathless (faction label) @ HANDOFF.md",
+        "Deathless (faction label) @ NEXT.md",
+        "Deathless (faction label) @ PROGRESS.md",
+        "Ithar (faction label) @ BACKLOG.md",
+        "Ithar (faction label) @ HANDOFF.md",
+        "Ithar (faction label) @ NEXT.md",
+        "Ithar (faction label) @ PROGRESS.md",
+        "Ithar (faction label) @ docs/ship_pipeline/AUDIT_BRIEF.md",
+        "Ithar (faction label) @ docs/ship_pipeline/AUDIT_SYNTHESIS.md",
+        "Ithar (faction label) @ docs/ship_pipeline/SHIP_QUEUE.md"
+      ],
+      "deltas": {
+        "newFailures": [],
+        "fixed": [],
+        "lostPassing": [],
+        "newPassing": [],
+        "watchNew": [],
+        "watchGone": []
+      }
+    },
+    {
+      "id": "importer_fixtures",
+      "title": "Importer fixture loader checks",
+      "proves": "All 21 recorded browser save stores still load through the game's own loadLocal, pass saneSave, and produce exactly their recorded loaded state.",
+      "verdict": "PASS",
+      "ms": 218,
+      "summary": "21/21 fixture stores load through the game's own loadLocal, pass saneSave, and match their recorded loaded state",
+      "signature": {
+        "passed": 21,
+        "total": 21
+      },
+      "badSet": [],
+      "goodSet": [
+        "absent_store.json",
+        "corrupt pair",
+        "corrupt2 pair",
+        "early_run.json",
+        "fleet_edges.json",
+        "fresh.json",
+        "half_meta.json",
+        "half_run.json",
+        "longlived_meta.json",
+        "meta_junk.json",
+        "midrun.json",
+        "nemesis_late.json",
+        "partial_grant.json",
+        "repaired pair",
+        "reward_mod.json",
+        "reward_prize.json",
+        "reward_promo.json",
+        "reward_salvage.json",
+        "sector3_run.json",
+        "settled_run.json",
+        "unlocked.json"
+      ],
+      "watchSet": [],
+      "deltas": {
+        "newFailures": [],
+        "fixed": [],
+        "lostPassing": [],
+        "newPassing": [],
+        "watchNew": [],
+        "watchGone": []
+      }
+    },
+    {
+      "id": "importer_reference",
+      "title": "Importer reference converter tests",
+      "proves": "The reference browser-to-portable save converter converts every fixture with complete accounting: no id or value disappears unreported.",
+      "verdict": "PASS",
+      "ms": 230,
+      "summary": "22/22 converter checks pass (21 fixture cases plus the synthetic repaired-copy fallback)",
+      "signature": {
+        "passed": 22,
+        "total": 22
+      },
+      "badSet": [],
+      "goodSet": [
+        "absent_store",
+        "corrupt",
+        "corrupt2",
+        "early_run",
+        "fleet_edges",
+        "fresh",
+        "half_meta",
+        "half_run",
+        "longlived_meta",
+        "meta_junk",
+        "midrun",
+        "nemesis_late",
+        "partial_grant",
+        "repaired",
+        "reward_mod",
+        "reward_prize",
+        "reward_promo",
+        "reward_salvage",
+        "sector3_run",
+        "settled_run",
+        "synthetic:repaired-copy-fallback",
+        "unlocked"
+      ],
+      "watchSet": [],
+      "deltas": {
+        "newFailures": [],
+        "fixed": [],
+        "lostPassing": [],
+        "newPassing": [],
+        "watchNew": [],
+        "watchGone": []
+      }
+    },
+    {
+      "id": "telemetry_reference",
+      "title": "Telemetry reference demonstration",
+      "proves": "The telemetry spec addendum's lineage join catches the cross-run Nemesis adaptation clash that the filed same-run join misses.",
+      "verdict": "PASS",
+      "ms": 94,
+      "summary": "reference logger demonstration passes: the filed same-run join misses the inherited-weakness violation, the lineage join catches it with no false positive",
+      "signature": {
+        "demonstrationPasses": true
+      },
+      "badSet": [],
+      "goodSet": [
+        "telemetry:lineage-join-demonstration"
+      ],
+      "watchSet": [],
+      "deltas": {
+        "newFailures": [],
+        "fixed": [],
+        "lostPassing": [],
+        "newPassing": [],
+        "watchNew": [],
+        "watchGone": []
+      }
+    },
+    {
+      "id": "parity_vectors",
+      "title": "Parity vector corpus (plug-in slot)",
+      "proves": "When built (beyond-scope slate 3 item): deterministic battle-layer behavior vectors captured from the browser engine match the Godot port's replays.",
+      "verdict": "NOT RUN",
+      "reason": "parity vector corpus not built yet (beyond-scope slate 3 item); this slot activates automatically when parity_vectors/run_vectors.js exists",
+      "ms": 0
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "case": "missing_vector",
+    "exit_code": 1,
+    "rejected": true
+  },
+  {
+    "case": "cross_engine_state_mismatch",
+    "exit_code": 1,
+    "rejected": true
+  },
+  {
+    "case": "matching_but_broken_contract",
+    "exit_code": 1,
+    "rejected": true
+  }
+]

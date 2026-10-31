@@ -1,0 +1,751 @@
+{
+  "root": "/workspace/scratch/bde335e632ab/voidsworn",
+  "vendored": {
+    "files": {
+      "battle.js": {
+        "locations": {
+          "root": {
+            "sha256": "61f8a0678283d3d7",
+            "bytes": 171701,
+            "lines": 1403
+          },
+          "rules-oracle": {
+            "sha256": "9e9e14cbfb2a1aef",
+            "bytes": 171486,
+            "lines": 1403
+          },
+          "campaign-oracle": {
+            "sha256": "070077bd39baf06d",
+            "bytes": 171442,
+            "lines": 1403
+          }
+        },
+        "pairs": [
+          {
+            "a": "root",
+            "b": "rules-oracle",
+            "equal": false,
+            "diff": {
+              "added": 17,
+              "removed": 17,
+              "firstDiffs": [
+                {
+                  "aLine": 18,
+                  "bLine": 18,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 19,
+                  "bLine": 18,
+                  "kind": "added"
+                },
+                {
+                  "aLine": 23,
+                  "bLine": 23,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 24,
+                  "bLine": 23,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 25,
+                  "bLine": 23,
+                  "kind": "added"
+                }
+              ],
+              "aLines": 1403,
+              "bLines": 1403
+            }
+          },
+          {
+            "a": "root",
+            "b": "campaign-oracle",
+            "equal": false,
+            "diff": {
+              "added": 19,
+              "removed": 19,
+              "firstDiffs": [
+                {
+                  "aLine": 18,
+                  "bLine": 18,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 19,
+                  "bLine": 18,
+                  "kind": "added"
+                },
+                {
+                  "aLine": 23,
+                  "bLine": 23,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 24,
+                  "bLine": 23,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 25,
+                  "bLine": 23,
+                  "kind": "added"
+                }
+              ],
+              "aLines": 1403,
+              "bLines": 1403
+            }
+          },
+          {
+            "a": "rules-oracle",
+            "b": "campaign-oracle",
+            "equal": false,
+            "diff": {
+              "added": 2,
+              "removed": 2,
+              "firstDiffs": [
+                {
+                  "aLine": 474,
+                  "bLine": 474,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 475,
+                  "bLine": 474,
+                  "kind": "added"
+                },
+                {
+                  "aLine": 510,
+                  "bLine": 510,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 511,
+                  "bLine": 510,
+                  "kind": "added"
+                }
+              ],
+              "aLines": 1403,
+              "bLines": 1403
+            }
+          }
+        ]
+      },
+      "data.js": {
+        "locations": {
+          "root": {
+            "sha256": "81772d491c900726",
+            "bytes": 95372,
+            "lines": 698
+          },
+          "rules-oracle": {
+            "sha256": "5c26700b7a5c4ed8",
+            "bytes": 94512,
+            "lines": 696
+          },
+          "campaign-oracle": {
+            "sha256": "50e1fdc16cd184e2",
+            "bytes": 94163,
+            "lines": 695
+          }
+        },
+        "pairs": [
+          {
+            "a": "root",
+            "b": "rules-oracle",
+            "equal": false,
+            "diff": {
+              "added": 196,
+              "removed": 198,
+              "firstDiffs": [
+                {
+                  "aLine": 5,
+                  "bLine": 5,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 6,
+                  "bLine": 5,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 7,
+                  "bLine": 5,
+                  "kind": "added"
+                },
+                {
+                  "aLine": 7,
+                  "bLine": 6,
+                  "kind": "added"
+                },
+                {
+                  "aLine": 11,
+                  "bLine": 11,
+                  "kind": "removed"
+                }
+              ],
+              "aLines": 698,
+              "bLines": 696
+            }
+          },
+          {
+            "a": "root",
+            "b": "campaign-oracle",
+            "equal": false,
+            "diff": {
+              "added": 201,
+              "removed": 204,
+              "firstDiffs": [
+                {
+                  "aLine": 5,
+                  "bLine": 5,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 6,
+                  "bLine": 5,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 7,
+                  "bLine": 5,
+                  "kind": "added"
+                },
+                {
+                  "aLine": 7,
+                  "bLine": 6,
+                  "kind": "added"
+                },
+                {
+                  "aLine": 11,
+                  "bLine": 11,
+                  "kind": "removed"
+                }
+              ],
+              "aLines": 698,
+              "bLines": 695
+            }
+          },
+          {
+            "a": "rules-oracle",
+            "b": "campaign-oracle",
+            "equal": false,
+            "diff": {
+              "added": 22,
+              "removed": 23,
+              "firstDiffs": [
+                {
+                  "aLine": 84,
+                  "bLine": 84,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 85,
+                  "bLine": 84,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 86,
+                  "bLine": 84,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 87,
+                  "bLine": 84,
+                  "kind": "removed"
+                },
+                {
+                  "aLine": 88,
+                  "bLine": 84,
+                  "kind": "added"
+                }
+              ],
+              "aLines": 696,
+              "bLines": 695
+            }
+          }
+        ]
+      },
+      "core.js": {
+        "locations": {
+          "root": {
+            "sha256": "05df6a9b140ea1ad",
+            "bytes": 37674,
+            "lines": 350
+          },
+          "rules-oracle": {
+            "sha256": "05df6a9b140ea1ad",
+            "bytes": 37674,
+            "lines": 350
+          },
+          "campaign-oracle": {
+            "sha256": "05df6a9b140ea1ad",
+            "bytes": 37674,
+            "lines": 350
+          }
+        },
+        "pairs": [
+          {
+            "a": "root",
+            "b": "rules-oracle",
+            "equal": true
+          },
+          {
+            "a": "root",
+            "b": "campaign-oracle",
+            "equal": true
+          },
+          {
+            "a": "rules-oracle",
+            "b": "campaign-oracle",
+            "equal": true
+          }
+        ]
+      }
+    }
+  },
+  "pins": {
+    "head": "1bc7bf2182454dedb0e002999c423fbf355fba14",
+    "suites": [
+      {
+        "id": "rules-oracle",
+        "readmes": [
+          "README.md"
+        ],
+        "claims": [
+          {
+            "readme": "README.md",
+            "allCommitTokens": [
+              "cb55ec9",
+              "d8b47c6",
+              "c7b1a78",
+              "b71c8d7",
+              "6b1571e",
+              "59f13a5",
+              "bcc7e47"
+            ],
+            "pin": "cb55ec9",
+            "files": {
+              "battle.js": {
+                "matchesRootWorkingTree": false,
+                "matchesPinContent": true
+              },
+              "campaign_hooks.js": {
+                "matchesRootWorkingTree": null,
+                "matchesPinContent": null
+              },
+              "core.js": {
+                "matchesRootWorkingTree": true,
+                "matchesPinContent": true
+              },
+              "data.js": {
+                "matchesRootWorkingTree": false,
+                "matchesPinContent": true
+              },
+              "fnames.js": {
+                "matchesRootWorkingTree": null,
+                "matchesPinContent": null
+              }
+            },
+            "coreUnchangedSince": {
+              "commit": "d8b47c6",
+              "holds": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "campaign-oracle",
+        "readmes": [
+          "README.md"
+        ],
+        "claims": [
+          {
+            "readme": "README.md",
+            "allCommitTokens": [
+              "d8b47c6",
+              "c88567c",
+              "b71c8d7",
+              "29d431c",
+              "c7b1a78"
+            ],
+            "pin": "d8b47c6",
+            "files": {
+              "battle.js": {
+                "matchesRootWorkingTree": false,
+                "matchesPinContent": true
+              },
+              "campaign3d.js": {
+                "matchesRootWorkingTree": false,
+                "matchesPinContent": false,
+                "disclosedException": true
+              },
+              "campaign_meta.js": {
+                "matchesRootWorkingTree": false,
+                "matchesPinContent": true
+              },
+              "campaign_run.js": {
+                "matchesRootWorkingTree": false,
+                "matchesPinContent": true
+              },
+              "core.js": {
+                "matchesRootWorkingTree": true,
+                "matchesPinContent": true
+              },
+              "data.js": {
+                "matchesRootWorkingTree": false,
+                "matchesPinContent": true
+              },
+              "ui3d.js": {
+                "matchesRootWorkingTree": false,
+                "matchesPinContent": true
+              }
+            },
+            "campaign3dFix": {
+              "disclosedFix": "campaign3d.js line 56 comment move",
+              "vsPin": {
+                "added": 1,
+                "removed": 1,
+                "firstDiffLines": [
+                  56,
+                  57
+                ]
+              },
+              "vsRootWorkingTree": {
+                "added": 2,
+                "removed": 2,
+                "firstDiffLines": [
+                  56,
+                  56,
+                  58,
+                  58
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "constantsCheck": {
+    "defSites": {
+      "FAC3D": [
+        "godot/render/hull_table.gd:37"
+      ],
+      "AI_HULLS": [
+        "godot/render/hull_table.gd:8"
+      ],
+      "CLS_LEN": [
+        "godot/render/hull_table.gd:27"
+      ],
+      "FINISH": [
+        "godot/render/hull_table.gd:31"
+      ],
+      "BIOMES": [],
+      "ROCKS": [
+        "godot/world/world.gd:16"
+      ],
+      "PLANETS": [
+        "godot/ui/campaign/map3d_system.gd:31",
+        "godot/world/world.gd:23"
+      ],
+      "ROCK_SET": [
+        "godot/render/hull_table.gd:47"
+      ],
+      "ROCK_TINT": [
+        "godot/render/hull_table.gd:48"
+      ]
+    },
+    "constants": [
+      {
+        "name": "FAC3D",
+        "browserSource": "ships3d.js",
+        "godotSource": "godot/render/hull_table.gd",
+        "compared": 30,
+        "matched": 30,
+        "differed": [],
+        "onlyBrowser": [
+          "chorus.dark",
+          "chorus.hull",
+          "chorus.tip",
+          "chorus.trim",
+          "corsair.dark",
+          "corsair.hull",
+          "corsair.tip",
+          "corsair.trim",
+          "deathless.dark",
+          "deathless.hull",
+          "deathless.tip",
+          "deathless.trim",
+          "hegemony.dark",
+          "hegemony.hull",
+          "hegemony.tip",
+          "hegemony.trim",
+          "ithar.dark",
+          "ithar.hull",
+          "ithar.tip",
+          "ithar.trim",
+          "voidsworn.dark",
+          "voidsworn.hull",
+          "voidsworn.tip",
+          "voidsworn.trim"
+        ],
+        "onlyGodot": [],
+        "notes": [
+          "Browser FAC3D also carries hull/dark/trim hex strings per faction; the Godot FAC3D carries only win/eng/bolt/beam/shield. The hull hex is cross-checked under FINISH below; dark and trim have no counterpart in hull_table.gd."
+        ]
+      },
+      {
+        "name": "AI_HULLS",
+        "browserSource": "ships3d.js",
+        "godotSource": "godot/render/hull_table.gd",
+        "compared": 36,
+        "matched": 36,
+        "differed": [],
+        "onlyBrowser": [],
+        "onlyGodot": [],
+        "notes": []
+      },
+      {
+        "name": "CLS_LEN",
+        "browserSource": "ships3d.js",
+        "godotSource": "godot/render/hull_table.gd",
+        "compared": 13,
+        "matched": 13,
+        "differed": [],
+        "onlyBrowser": [],
+        "onlyGodot": [],
+        "notes": []
+      },
+      {
+        "name": "FINISH",
+        "browserSource": "ships3d.js FAC3D hull hex (no FINISH table in the browser)",
+        "godotSource": "godot/render/hull_table.gd",
+        "compared": 6,
+        "matched": 6,
+        "differed": [],
+        "onlyBrowser": [],
+        "onlyGodot": [],
+        "notes": [
+          "chorus: Godot-only finish fields metal=0.05, roughness=0.38 (the browser has no per-faction metal/roughness table to copy from).",
+          "corsair: Godot-only finish fields metal=0.35, roughness=0.62 (the browser has no per-faction metal/roughness table to copy from).",
+          "deathless: Godot-only finish fields metal=0.55, roughness=0.5 (the browser has no per-faction metal/roughness table to copy from).",
+          "hegemony: Godot-only finish fields metal=0.4, roughness=0.48 (the browser has no per-faction metal/roughness table to copy from).",
+          "ithar: Godot-only finish fields metal=0.25, roughness=0.42 (the browser has no per-faction metal/roughness table to copy from).",
+          "voidsworn: Godot-only finish fields metal=0.3, roughness=0.55 (the browser has no per-faction metal/roughness table to copy from)."
+        ]
+      },
+      {
+        "name": "BIOMES",
+        "browserSource": "scene3d.js",
+        "godotSource": "godot/fx/faction_looks.json (nebula field; world.gd names this file as its source)",
+        "compared": 6,
+        "matched": 1,
+        "differed": [
+          {
+            "key": "chorus",
+            "browser": "[0.16, 0.36, 0.16] [0.6, 0.18, 0.56] [0.9, 1, 0.5]",
+            "godot": "[0.14, 0.16, 0.06] [0.55, 0.38, 0.12] [0.8, 0.9, 0.35]"
+          },
+          {
+            "key": "corsair",
+            "browser": "[0.32, 0.12, 0.06] [0.8, 0.32, 0.1] [1, 0.74, 0.34]",
+            "godot": "[0.18, 0.08, 0.05] [0.5, 0.18, 0.08] [1, 0.32, 0.12]"
+          },
+          {
+            "key": "deathless",
+            "browser": "[0.06, 0.22, 0.15] [0.16, 0.52, 0.34] [0.6, 1, 0.72]",
+            "godot": "[0.1, 0.04, 0.16] [0.34, 0.14, 0.52] [1, 0.84, 0.55]"
+          },
+          {
+            "key": "ithar",
+            "browser": "[0.04, 0.26, 0.32] [0.38, 0.18, 0.7] [0.7, 0.95, 1]",
+            "godot": "[0.05, 0.08, 0.18] [0.42, 0.48, 0.7] [0.85, 0.9, 1]"
+          },
+          {
+            "key": "voidsworn",
+            "browser": "[0.13, 0.26, 0.6] [0.62, 0.22, 0.45] [1, 0.64, 0.36]",
+            "godot": "[0.1, 0.16, 0.3] [0.5, 0.6, 0.75] [1, 0.55, 0.22]"
+          }
+        ],
+        "onlyBrowser": [],
+        "onlyGodot": [],
+        "notes": [
+          "No const BIOMES exists in the Godot tree; the values live in the faction look JSON."
+        ]
+      },
+      {
+        "name": "ROCKS (ROCK_SET / ROCK_TINT)",
+        "browserSource": "scene3d.js",
+        "godotSource": "godot/render/hull_table.gd",
+        "compared": 9,
+        "matched": 9,
+        "differed": [],
+        "onlyBrowser": [],
+        "onlyGodot": [],
+        "notes": []
+      },
+      {
+        "name": "ROCKS (ROCK_KINDS col vs world ROCKS albedo)",
+        "browserSource": "battle.js ROCK_KINDS",
+        "godotSource": "godot/world/world.gd ROCKS",
+        "compared": 5,
+        "matched": 0,
+        "differed": [
+          {
+            "key": "carbon",
+            "browser": "[0.36, 0.34, 0.33]",
+            "godot": "[0.045, 0.04, 0.036]"
+          },
+          {
+            "key": "crystal",
+            "browser": "[0.82, 1, 0.95]",
+            "godot": "[0.075, 0.085, 0.085]"
+          },
+          {
+            "key": "ice",
+            "browser": "[0.78, 0.92, 1.18]",
+            "godot": "[0.2, 0.24, 0.29]"
+          },
+          {
+            "key": "iron",
+            "browser": "[0.62, 0.58, 0.56]",
+            "godot": "[0.11, 0.09, 0.078]"
+          },
+          {
+            "key": "stone",
+            "browser": "[1, 1, 1]",
+            "godot": "[0.085, 0.068, 0.055]"
+          }
+        ],
+        "onlyBrowser": [],
+        "onlyGodot": [],
+        "notes": [
+          "The browser col is a tint multiplied into the rock material; the Godot value is an absolute albedo. They are the same table in two different quantities, so every entry differing is expected unless one side is re-derived from the other. The browser spec and em fields have no Godot counterpart in this table."
+        ]
+      },
+      {
+        "name": "PLANETS (world.gd)",
+        "browserSource": "gfx3d.js PLANET_LOOKS",
+        "godotSource": "godot/world/world.gd PLANETS",
+        "compared": 8,
+        "matched": 0,
+        "differed": [
+          {
+            "key": "entry 0",
+            "browser": "kind=0 pa=[0.83, 0.66, 0.46] pb=[0.6, 0.42, 0.28] atmo=[1, 0.72, 0.45]",
+            "godot": "a: browser [0.83, 0.66, 0.46] vs godot [0.55, 0.42, 0.3]; b: browser [0.6, 0.42, 0.28] vs godot [0.25, 0.17, 0.12]; atmo: browser [1, 0.72, 0.45] vs godot [0.9, 0.6, 0.35]"
+          },
+          {
+            "key": "entry 1",
+            "browser": "kind=0 pa=[0.38, 0.55, 0.78] pb=[0.2, 0.32, 0.55] atmo=[0.45, 0.7, 1]",
+            "godot": "a: browser [0.38, 0.55, 0.78] vs godot [0.3, 0.45, 0.6]; b: browser [0.2, 0.32, 0.55] vs godot [0.12, 0.2, 0.32]; atmo: browser [0.45, 0.7, 1] vs godot [0.4, 0.65, 1]"
+          },
+          {
+            "key": "entry 2",
+            "browser": "kind=0 pa=[0.7, 0.45, 0.7] pb=[0.4, 0.22, 0.45] atmo=[0.9, 0.55, 1]",
+            "godot": "a: browser [0.7, 0.45, 0.7] vs godot [0.45, 0.35, 0.55]; b: browser [0.4, 0.22, 0.45] vs godot [0.18, 0.12, 0.25]; atmo: browser [0.9, 0.55, 1] vs godot [0.7, 0.5, 1]"
+          },
+          {
+            "key": "entry 3",
+            "browser": "kind=1 pa=[0.3, 0.4, 0.2] pb=[0.5, 0.42, 0.3] atmo=[0.45, 0.68, 1]",
+            "godot": "a: browser [0.3, 0.4, 0.2] vs godot [0.25, 0.4, 0.22]; b: browser [0.5, 0.42, 0.3] vs godot [0.12, 0.18, 0.3]; atmo: browser [0.45, 0.68, 1] vs godot [0.45, 0.7, 1]"
+          },
+          {
+            "key": "entry 4",
+            "browser": "kind=1 pa=[0.62, 0.36, 0.2] pb=[0.42, 0.22, 0.14] atmo=[1, 0.55, 0.35]",
+            "godot": "a: browser [0.62, 0.36, 0.2] vs godot [0.5, 0.3, 0.2]; b: browser [0.42, 0.22, 0.14] vs godot [0.22, 0.12, 0.08]; atmo: browser [1, 0.55, 0.35] vs godot [1, 0.5, 0.3]"
+          },
+          {
+            "key": "entry 5",
+            "browser": "kind=1 pa=[0.22, 0.24, 0.26] pb=[0.36, 0.33, 0.3] atmo=[0.6, 0.75, 0.9]",
+            "godot": "a: browser [0.22, 0.24, 0.26] vs godot [0.35, 0.33, 0.32]; b: browser [0.36, 0.33, 0.3] vs godot [0.15, 0.14, 0.14]; atmo: browser [0.6, 0.75, 0.9] vs godot [0.6, 0.6, 0.7]"
+          },
+          {
+            "key": "entry 6",
+            "browser": "kind=2 pa=[0.7, 0.78, 0.86] pb=[0.42, 0.56, 0.7] atmo=[0.6, 0.85, 1]",
+            "godot": "a: browser [0.7, 0.78, 0.86] vs godot [0.6, 0.6, 0.65]; b: browser [0.42, 0.56, 0.7] vs godot [0.3, 0.35, 0.45]; atmo: browser [0.6, 0.85, 1] vs godot [0.6, 0.8, 1]"
+          },
+          {
+            "key": "entry 7",
+            "browser": "kind=2 pa=[0.6, 0.76, 0.72] pb=[0.32, 0.5, 0.5] atmo=[0.5, 1, 0.85]",
+            "godot": "a: browser [0.6, 0.76, 0.72] vs godot [0.2, 0.5, 0.45]; b: browser [0.32, 0.5, 0.5] vs godot [0.08, 0.2, 0.25]; atmo: browser [0.5, 1, 0.85] vs godot [0.3, 1, 0.8]; gas-giant flag: browser kind=2 vs godot flag=1"
+          }
+        ],
+        "onlyBrowser": [],
+        "onlyGodot": [],
+        "notes": [
+          "Browser PLANET_LOOKS also carries pc and pd fields per entry; neither Godot table has them.",
+          "FAC_PLANETS (gfx3d.js, per-faction planet picks) has no Godot namesake; the Godot world code indexes planets by biome.planet instead."
+        ]
+      },
+      {
+        "name": "PLANETS (map3d_system.gd)",
+        "browserSource": "gfx3d.js PLANET_LOOKS",
+        "godotSource": "godot/ui/campaign/map3d_system.gd PLANETS",
+        "compared": 7,
+        "matched": 0,
+        "differed": [
+          {
+            "key": "entry 0",
+            "browser": "kind=0 pa=[0.83, 0.66, 0.46] pb=[0.6, 0.42, 0.28] atmo=[1, 0.72, 0.45]",
+            "godot": "a: browser [0.83, 0.66, 0.46] vs godot [0.55, 0.42, 0.3]; b: browser [0.6, 0.42, 0.28] vs godot [0.24, 0.16, 0.11]; atmo: browser [1, 0.72, 0.45] vs godot [1, 0.62, 0.38]"
+          },
+          {
+            "key": "entry 1",
+            "browser": "kind=0 pa=[0.38, 0.55, 0.78] pb=[0.2, 0.32, 0.55] atmo=[0.45, 0.7, 1]",
+            "godot": "a: browser [0.38, 0.55, 0.78] vs godot [0.36, 0.42, 0.26]; b: browser [0.2, 0.32, 0.55] vs godot [0.06, 0.16, 0.32]; kind: browser 0 vs godot 1"
+          },
+          {
+            "key": "entry 2",
+            "browser": "kind=0 pa=[0.7, 0.45, 0.7] pb=[0.4, 0.22, 0.45] atmo=[0.9, 0.55, 1]",
+            "godot": "a: browser [0.7, 0.45, 0.7] vs godot [0.78, 0.62, 0.44]; b: browser [0.4, 0.22, 0.45] vs godot [0.42, 0.26, 0.18]; atmo: browser [0.9, 0.55, 1] vs godot [1, 0.75, 0.5]; kind: browser 0 vs godot 2"
+          },
+          {
+            "key": "entry 3",
+            "browser": "kind=1 pa=[0.3, 0.4, 0.2] pb=[0.5, 0.42, 0.3] atmo=[0.45, 0.68, 1]",
+            "godot": "a: browser [0.3, 0.4, 0.2] vs godot [0.52, 0.6, 0.72]; b: browser [0.5, 0.42, 0.3] vs godot [0.2, 0.26, 0.4]; atmo: browser [0.45, 0.68, 1] vs godot [0.55, 0.75, 1]; kind: browser 1 vs godot 2"
+          },
+          {
+            "key": "entry 4",
+            "browser": "kind=1 pa=[0.62, 0.36, 0.2] pb=[0.42, 0.22, 0.14] atmo=[1, 0.55, 0.35]",
+            "godot": "a: browser [0.62, 0.36, 0.2] vs godot [0.8, 0.86, 0.92]; b: browser [0.42, 0.22, 0.14] vs godot [0.42, 0.52, 0.62]; atmo: browser [1, 0.55, 0.35] vs godot [0.65, 0.85, 1]; kind: browser 1 vs godot 3"
+          },
+          {
+            "key": "entry 5",
+            "browser": "kind=1 pa=[0.22, 0.24, 0.26] pb=[0.36, 0.33, 0.3] atmo=[0.6, 0.75, 0.9]",
+            "godot": "a: browser [0.22, 0.24, 0.26] vs godot [0.2, 0.15, 0.13]; b: browser [0.36, 0.33, 0.3] vs godot [0.06, 0.04, 0.04]; atmo: browser [0.6, 0.75, 0.9] vs godot [1, 0.45, 0.2]; kind: browser 1 vs godot 4"
+          },
+          {
+            "key": "entry 6",
+            "browser": "kind=2 pa=[0.7, 0.78, 0.86] pb=[0.42, 0.56, 0.7] atmo=[0.6, 0.85, 1]",
+            "godot": "a: browser [0.7, 0.78, 0.86] vs godot [0.5, 0.36, 0.44]; b: browser [0.42, 0.56, 0.7] vs godot [0.2, 0.12, 0.18]; atmo: browser [0.6, 0.85, 1] vs godot [0.85, 0.55, 1]; kind: browser 2 vs godot 0"
+          }
+        ],
+        "onlyBrowser": [
+          "entry 7"
+        ],
+        "onlyGodot": [],
+        "notes": [
+          "Browser PLANET_LOOKS also carries pc and pd fields per entry; neither Godot table has them.",
+          "FAC_PLANETS (gfx3d.js, per-faction planet picks) has no Godot namesake; the Godot world code indexes planets by biome.planet instead."
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "vendoredPairs": 9,
+    "vendoredEqual": 3,
+    "vendoredDiffering": 6,
+    "pinClaimsChecked": 10,
+    "pinClaimsHeld": 10,
+    "pinClaimsFailed": 0,
+    "constCompared": 120,
+    "constMatched": 95,
+    "constDiffered": 25,
+    "constOnlyBrowser": 25,
+    "constOnlyGodot": 0,
+    "pinExceptions": 1
+  }
+}

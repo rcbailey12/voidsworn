@@ -1,0 +1,184 @@
+[
+  {
+    "id": "FS-5",
+    "status": "REFUTED",
+    "detail": {
+      "killerHp": 42,
+      "nearbyHp": 36,
+      "biteOn100HullDamage": 8
+    }
+  },
+  {
+    "id": "ADM-KASSAR",
+    "status": "REFUTED",
+    "detail": {
+      "text": "Batteries fire one extra shot per volley, but every gun hits 5% lighter.",
+      "fx": {
+        "battShots": 1,
+        "dmgPct": -0.05
+      }
+    }
+  },
+  {
+    "id": "MOD-4",
+    "status": "DOMINANCE_REFUTED",
+    "detail": {
+      "prow": {
+        "maxHp": 253,
+        "regen": 0,
+        "hpAfter": 165
+      },
+      "damcon": {
+        "maxHp": 220,
+        "regen": 9,
+        "hpAfter": 204
+      }
+    }
+  },
+  {
+    "id": "EVT-1",
+    "status": "CONFIRMED_MECHANISM",
+    "detail": {
+      "picked": "ransom",
+      "flags": {
+        "defector": "ransom",
+        "greed": 1
+      },
+      "needMetDespiteDifferentChoice": true
+    }
+  },
+  {
+    "id": "TXT-2",
+    "status": "CONFIRMED_BUG_CORRECTED_MECHANISM",
+    "detail": {
+      "before": [
+        {
+          "tpl": "warden",
+          "hp": 10,
+          "max": 45
+        },
+        {
+          "tpl": "harrow",
+          "hp": 20,
+          "max": 78
+        }
+      ],
+      "after": [
+        {
+          "tpl": "warden",
+          "hp": 54,
+          "max": 54
+        },
+        {
+          "tpl": "harrow",
+          "hp": 20,
+          "max": 78
+        }
+      ],
+      "lines": [
+        "The Pale Crusader leaves the forge fully repaired at Mk II.",
+        "The Pale Crusader is fully repaired."
+      ]
+    }
+  },
+  {
+    "id": "NEM-2",
+    "status": "SOURCE_CHECK_REQUIRED",
+    "detail": {
+      "weak": [
+        "flank",
+        "ion",
+        "torp",
+        "board",
+        "brawl",
+        "anchor",
+        "slow"
+      ],
+      "adapt": [
+        "shields",
+        "pd",
+        "armor",
+        "evasion",
+        "aim"
+      ]
+    }
+  },
+  {
+    "id": "ECO-3",
+    "status": "CONFIRMED_MECHANISM_DESIGN_CHOICE",
+    "detail": {
+      "lowHp": 1,
+      "scrap": 25,
+      "fullHpScrap": 25
+    }
+  },
+  {
+    "id": "FR-2",
+    "status": "SOURCE_CHECK",
+    "detail": false
+  },
+  {
+    "id": "BATTLESHIP-RENDER",
+    "status": "MISSING_MAPPING_CONFIRMED"
+  },
+  {
+    "id": "GODOT-PRICES",
+    "status": "PRICE_LOSS_REFUTED",
+    "detail": {
+      "browser": {
+        "drone": 45,
+        "scythe": 100,
+        "harvester": 390
+      },
+      "godot": {
+        "drone": 45,
+        "scythe": 100,
+        "harvester": 390
+      }
+    }
+  },
+  {
+    "id": "L_STORM",
+    "status": "CONFIRMED",
+    "detail": {
+      "gate": null,
+      "effect": {
+        "stormRegen": 1
+      }
+    }
+  },
+  {
+    "id": "HUNT",
+    "status": "TEXT_MISMATCH_CONFIRMED",
+    "detail": true
+  },
+  {
+    "id": "DRIFT-5",
+    "status": "ORDERING_CLAIM_REFUTED",
+    "detail": "Tap again to fire"
+  },
+  {
+    "id": "BN-4-partial",
+    "status": "GUARANTEE_CONFIRMED",
+    "detail": {
+      "sabotageCalls": 1,
+      "captured": false
+    }
+  },
+  {
+    "id": "BN-4-bridge",
+    "status": "GUARANTEE_CONFIRMED",
+    "detail": {
+      "sabotageCalls": 2,
+      "captured": false
+    }
+  },
+  {
+    "id": "BN-4-capture",
+    "status": "SUCCESS_NOT_FAILED",
+    "detail": {
+      "sabotageCalls": 0,
+      "captured": true
+    }
+  }
+]

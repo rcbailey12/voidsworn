@@ -1,0 +1,274 @@
+[
+  {
+    "path": "contrib/muse/tools/cutover_gate/gate.js",
+    "total_lines": 539,
+    "last_line_first40": "main();",
+    "direct_semantic_windows": [
+      [
+        1,
+        220
+      ],
+      [
+        221,
+        539
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/montecarlo/driver.js",
+    "total_lines": 212,
+    "last_line_first40": "var MC={runOne:mcRunOne,sampleBoons:mcSa",
+    "direct_semantic_windows": [
+      [
+        1,
+        212
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/montecarlo/loader_main.js",
+    "total_lines": 97,
+    "last_line_first40": "module.exports = { loadGame };",
+    "direct_semantic_windows": [
+      [
+        1,
+        97
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/montecarlo/shard.js",
+    "total_lines": 49,
+    "last_line_first40": "main().catch(e => { console.error(e); pr",
+    "direct_semantic_windows": [
+      [
+        1,
+        49
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/montecarlo/aggregate.js",
+    "total_lines": 106,
+    "last_line_first40": "console.log(JSON.stringify({ totalRuns: ",
+    "direct_semantic_windows": [
+      [
+        1,
+        106
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/montecarlo/aggregate_profiles.js",
+    "total_lines": 113,
+    "last_line_first40": "console.log(JSON.stringify({ totalRuns: ",
+    "direct_semantic_windows": [
+      [
+        1,
+        90
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/godot_port_spec_2026_10_30.md",
+    "total_lines": 1165,
+    "last_line_first40": "- Presentation-only files (fx3d.js, gfx3",
+    "direct_semantic_windows": [
+      [
+        1,
+        20
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/importer_reference/run_tests.js",
+    "total_lines": 306,
+    "last_line_first40": "process.exit(passed === results.length ?",
+    "direct_semantic_windows": [
+      [
+        1,
+        150
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/port_export/tools/export_data.js",
+    "total_lines": 107,
+    "last_line_first40": "for (const f of fnPaths) console.log('  ",
+    "direct_semantic_windows": [
+      [
+        1,
+        107
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/port_export/tools/validate_export.js",
+    "total_lines": 181,
+    "last_line_first40": "for (const f of findings) console.log('[",
+    "direct_semantic_windows": [
+      [
+        1,
+        130
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/findings_tests/findings_tests.js",
+    "total_lines": 1152,
+    "last_line_first40": "})();",
+    "direct_semantic_windows": [
+      [
+        1,
+        80
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/findings_tests/campaign_loader.js",
+    "total_lines": 111,
+    "last_line_first40": "module.exports = { loadCampaign, CAMPAIG",
+    "direct_semantic_windows": [
+      [
+        1,
+        111
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/findings_tests/ui_loader.js",
+    "total_lines": 88,
+    "last_line_first40": "module.exports = { loadUI };",
+    "direct_semantic_windows": [
+      [
+        1,
+        88
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/tools/findings_tests/battle_probe.js",
+    "total_lines": 77,
+    "last_line_first40": "module.exports = { installBattleProbe, s",
+    "direct_semantic_windows": [
+      [
+        1,
+        77
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/text_dryrun_report_2026_10_30.md",
+    "total_lines": 190,
+    "last_line_first40": "Not covered: visual fit of any string in",
+    "direct_semantic_windows": [
+      [
+        1,
+        100
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/event_expansion_pack_2026_10_30.md",
+    "total_lines": 137,
+    "last_line_first40": "4. **EV is a stated convention, not a si",
+    "direct_semantic_windows": [
+      [
+        1,
+        137
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/redteam_final_synthesis_2026_10_30.md",
+    "total_lines": 80,
+    "last_line_first40": "No prong played either build live at thi",
+    "direct_semantic_windows": [
+      [
+        1,
+        80
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/redteam_gamedev_synthesis_2026_10_30.md",
+    "total_lines": 55,
+    "last_line_first40": "Argon findings 3, 4, and 6 are carried a",
+    "direct_semantic_windows": [
+      [
+        1,
+        40
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/balance_design_bible_2026_10_30.md",
+    "total_lines": 214,
+    "last_line_first40": "- The findings-to-tests ledger at distil",
+    "direct_semantic_windows": [
+      [
+        1,
+        30
+      ],
+      [
+        49,
+        99
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/policy_sensitivity_2026_10_30.md",
+    "total_lines": 194,
+    "last_line_first40": "Files: policies.js (profile definitions,",
+    "direct_semantic_windows": [
+      [
+        1,
+        194
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/montecarlo_evidence_2026_10_30.md",
+    "total_lines": 114,
+    "last_line_first40": "- Harness errors: 1 of 60 validation run",
+    "direct_semantic_windows": [
+      [
+        1,
+        114
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  },
+  {
+    "path": "contrib/muse/reviews/tuning_grids_2026_10_30.md",
+    "total_lines": 72,
+    "last_line_first40": "3. Grid (b) row B1: deleting the post-wi",
+    "direct_semantic_windows": [
+      [
+        1,
+        72
+      ]
+    ],
+    "other_access": "complete bytes for inventory; targeted literal searches and execution where recorded. No claim all other lines semantically reviewed."
+  }
+]

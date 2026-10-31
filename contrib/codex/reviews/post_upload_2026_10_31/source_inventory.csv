@@ -1,0 +1,177 @@
+path,bytes,lines,last_line_first40,git_blob_sha,verified,coverage
+contrib/deepseek/redteam_audio_raw_2026_10_30.md,4464,35,Actual loudness and spectral balance by ,6bee4c55bd75dd80c32cb1ecdff9f30d5e6fa1ce,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/redteam_engineer_raw_2026_10_30.md,7191,41,Runtime frame times and draw-call counts,0d9b4c91262902795372884a68eeeb67bed0a20e,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/redteam_gamedev_raw_2026_10_30.md,6397,29,I could not judge skill tree mechanics f,0895025b2a76554c412c339b3d34a3d045ba173f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/redteam_narrative_raw_2026_10_30.md,5373,23,Not checked: I could not judge the full ,365049049caa31e692959e800bfba7df2f982649,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/redteam_player_raw_2026_10_30.md,5479,31,My seat cannot judge the feel of the 80 ,0f1c61d75020a4373fe915f197d4f0559cbe9b5c,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/redteam_producer_raw_2026_10_30.md,5389,25,Not checked: actual team capacity and bu,6004484366a2f237e4824a6a4ea6fa4bf8b7f58d,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/redteam_qa_raw_2026_10_30.md,4427,29,I did not run the browser or Godot build,9e29eb0bff2d0dfd9b4e4044b80ae49432db4d55,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/redteam_uiux_raw_2026_10_30.md,14344,103,I could not judge whether the assembled ,6ca0ef67c6317c6cd986cb5e68b39ea9f9daf75f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/redteam_vfx_raw_2026_10_30.md,6463,23,Not checked: I could not judge in-motion,fc5ef4b376f9007b25347901e236ad42da56a6a5,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_audio_2026_10_30.md,4464,35,Actual loudness and spectral balance by ,6bee4c55bd75dd80c32cb1ecdff9f30d5e6fa1ce,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_engineer_2026_10_30.md,7191,41,Runtime frame times and draw-call counts,0d9b4c91262902795372884a68eeeb67bed0a20e,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_gamedev_2026_10_30.md,6397,29,I could not judge skill tree mechanics f,0895025b2a76554c412c339b3d34a3d045ba173f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_narrative_2026_10_30.md,5373,23,Not checked: I could not judge the full ,365049049caa31e692959e800bfba7df2f982649,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_player_2026_10_30.md,5479,31,My seat cannot judge the feel of the 80 ,0f1c61d75020a4373fe915f197d4f0559cbe9b5c,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_producer_2026_10_30.md,5389,25,Not checked: actual team capacity and bu,6004484366a2f237e4824a6a4ea6fa4bf8b7f58d,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_qa_2026_10_30.md,4427,29,I did not run the browser or Godot build,9e29eb0bff2d0dfd9b4e4044b80ae49432db4d55,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_uiux_2026_10_30.md,14344,103,I could not judge whether the assembled ,6ca0ef67c6317c6cd986cb5e68b39ea9f9daf75f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/deepseek/reviews/redteam_vfx_2026_10_30.md,6463,23,Not checked: I could not judge in-motion,fc5ef4b376f9007b25347901e236ad42da56a6a5,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_audio_2026_10_30.md,15417,177,"Call sites in battle.js, wfx3d.js, fx3d.",9e8ca2f5cd5985fc25a872d2e46b0444a2e8de40,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_engineer_2026_10_30.md,20948,241,"Runtime frame times, cloud sync, and Ste",644bc0c152c402aee90c12ed44c97a6beeb36fcc,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_gamedev_2026_10_30.md,22764,230,The Oct 30 b_razor_s silent weapon delet,e3495ddae1209dfc48146d9fe820d09a09ccf884,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_narrative_2026_10_30.md,18022,201,The actual portrait image files for Matr,55b1dc36e743dbde914586e3053ee44c1e75f89b,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_player_2026_10_30.md,19663,184,Godot 4.7 migration tree (godot/): The p,aee35bdc163fb64c180ae3959b41ce4b96528699,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_producer_2026_10_30.md,14042,90,Reading order and task breakdown in READ,29095df6f891698adeec7685f99846ea7a6087a5,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_qa_2026_10_30.md,20194,189,Unbounded save growth and secondary .rep,3b85b21966b2698a1ec7e06c0e9c10288dbd15c5,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_uiux_2026_10_30.md,17923,99,Unattached content assemblies: The 216 s,4eb3a2ae778d9640ecacb01d6ca3a9181f7422a7,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/gemini/reviews/redteam_vfx_2026_10_30.md,19290,123,Actual shield and shield_edge RGB triple,cee8a6635a779b119059ccb5cb5faf52effbf8ae,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/balance_design_bible_2026_10_30.md,59454,214,- The findings-to-tests ledger at distil,8aafe57e91ec31c6f1b33846fd0da3059ef4d4fa,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/codex_pack_2026_10_30.md,123696,1123,,860374db0a724c12ae8e1787f0eddd2118127412,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/event_expansion_pack_2026_10_30.md,17836,137,"4. **EV is a stated convention, not a si",15475ac3f886c026665b932b51ab1b5480b9fa0a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/firstrun_framing_recommended_2026_10_29.md,9124,74,One part of the same finding is NOT reso,3321f4dd442064e2daa2e91f0c00c1b7fb7bb526,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/godot_port_spec_2026_10_30.md,305239,1165,"- Presentation-only files (fx3d.js, gfx3",e877a6dcb869e2b12fb93120eda7809b67ea2d96,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/montecarlo_evidence_2026_10_30.md,18002,114,- Harness errors: 1 of 60 validation run,0cdae3463e76d605e2c50e0c7251abafb8264e0b,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/nemesis_lines_correction_2026_10_30.md,4183,33,"When a content pack keys a pool, the key",15cdb671c72db4d9889d6663e99e97bbf67d75b3,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/policy_sensitivity_2026_10_30.md,27064,194,"Files: policies.js (profile definitions,",62385da05f990d50e03ffcd1db6748c11c041887,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_audio_rey_2026_10_30.md,10646,45,- Audio CPU and memory cost on the targe,0cafd9c3df896fd78d96dcfe23870dbea6221b5b,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_audio_synthesis_2026_10_30.md,12537,40,Nothing in this seat was listened to; ev,8f017655a4720c2fa5bb1594a2f65b060f2341e5,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_engineer_rey_2026_10_30.md,12989,60,- Whether R33 is a designer ruling recor,dc181f9ce45271af6743dfcab8858860940b6af2,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_engineer_synthesis_2026_10_30.md,14807,50,No prong ran the parity suites at the pi,62781dbadfede1d694d2c007f6c18847abd49c64,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_final_synthesis_2026_10_30.md,22903,80,No prong played either build live at thi,44cbd36b726929189d10ba1e9da0b74e98a458be,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_gamedev_rey_2026_10_30.md,11622,58,- The remaining patch pack sections (3 t,dfb2cad7a9f92624d001b05eda11dfc69ca8248f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_gamedev_synthesis_2026_10_30.md,14904,55,"Argon findings 3, 4, and 6 are carried a",85b00ba44d4b1bdd1c26f6e73ed0a37e50d64f61,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_narrative_rey_2026_10_30.md,12333,79,"- Portrait art, audio and music text, an",0fbc23f4d18184faf5448d5923cbc04f8ae49f30,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_narrative_synthesis_2026_10_30.md,16428,49,Tree tiers 1 to 3 line by line (spot che,aff27a9851d33e159643ccad94a455931bf09bdd,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_player_rey_2026_10_30.md,12036,65,- The alternate fleets and mastery perks,46a8f6e317130528e2c090cd1d010aad7f319796,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_player_synthesis_2026_10_30.md,12173,48,All win-rate figures are bot-piloted; no,1a309262dbc4db515ce8fb26cbe67c3bc1e92934,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_producer_rey_2026_10_30.md,9984,39,- The other eight personas' domains (fee,7bc0349696ae35bb028e20f59952c69c037e5009,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_producer_synthesis_2026_10_30.md,11989,50,No prong had hours or cost records; the ,e5db206ee72c7d7b1c1f8e4a4dbeedd1a6e4b7a4,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_qa_rey_2026_10_30.md,9598,38,- Whether the findings suite runs anywhe,fb48a4daaa2616dca8e1f8d77e172ce2a993bca6,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_qa_synthesis_2026_10_30.md,14669,44,"Live cloud conflict behavior was read, n",97921e3f32b471f82e20121b25b06e9a9af7dcf9,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_uiux_rey_2026_10_30.md,12544,58,- The Godot UI code beyond the excerpts ,f5ccfc6f7c392465a7e5cc271cef270160be4651,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_uiux_synthesis_2026_10_30.md,15095,48,No prong played either build live at thi,08f1b79dbf6dccdb3d4c922f6707433ced6879fc,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_vfx_rey_2026_10_30.md,12630,63,- Audio-reactive visuals and music synch,019f34fb0f851196e585d8fbb4d3a4535fe0ad33,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/redteam_vfx_synthesis_2026_10_30.md,14688,47,Nothing in this seat was judged in motio,9491459ea7548eb053de204fa96f9fe6f3ac2e55,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/relics_synthesis_2026_10_29.md,8733,51,No prong priced the relics against each ,8dbe4223fd85935ae0500e5749c4f506546c4ceb,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/story_pack_2026_10_30.md,49275,571,"Any hit kept, with reason, is listed in ",0d54c8eee48528d4c90b1ef198c2615a7f76325b,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/telemetry_spec_addendum_2026_10_30.md,8957,75,"3. The spec's hedge on nemesis id (""Ther",e605c54cdcb16f6bb2aaaf600ebe2dd291839a28,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/text_dryrun_report_2026_10_30.md,21203,190,Not covered: visual fit of any string in,accd83417f6a8a31c7d5121a289917bb6cd60d2a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/text_overhaul_pack_2026_10_30.md,42823,274,"**Counts.** Inventory: 1,685 strings. Se",0ac6b6e51595374e522d07603818e60333e9f78a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/reviews/tuning_grids_2026_10_30.md,9604,72,3. Grid (b) row B1: deleting the post-wi,ebb3c46548307ea09455c7f26b524aa3046f906c,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/codex/codex_entries.json,129630,1721,],15cebb481d033c78220262ace1a1d6a7e8e9c466,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/README.md,7178,114,The gate never modifies the repo it chec,8d001e59e60cff4cfaab080b762969d1ccf9c6dd,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/baseline.json,7849,276,},44d79fadfbb20daf8287fb2477c451b8b039a268,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/fixture_check.js,3679,88,process.exit(passed === total ? 0 : 1);,dc29aaa4de1236308e8677e664d488f2312f80f9,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/gate.js,27356,539,main();,53813b4a3073ce08ce4358de2c4171b96615d13b,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/gate_report.json,12358,387,},85049186b7f75da3d68d49a1900124708b3cb602,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/gate_report.md,5042,77,Verdict key: PASS = clean and unchanged.,e4f594ee83910ae91676cdebda31cf6d094f8f1e,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/run_gate.bat,2420,76,exit /b %GATE_EXIT%,0f4ff7f20c02e2fce823041c3c811efefce32e07,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/scratch/telemetry_reference/audit.js,2175,65,"module.exports = { oldJoinAudit, newJoin",8906697704bee6d81ebfcdf96e230464908fecfd,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/scratch/telemetry_reference/dataset.js,4448,132,"module.exports = { buildDataset, ADAPTAT",e11cfe47c24318a2c6a23d54b5e89c3bb0a8b10f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/scratch/telemetry_reference/dataset.jsonl,2519,13,"{""v"":1,""ts"":1761900780,""session"":""sess_r",c54f604eb76e3353ca08bf3ed256f9a88b2cb8ca,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/scratch/telemetry_reference/logger.js,2672,84,"module.exports = { createLogger, SCHEMA_",770b6ca8e35617cbdd70b66c10ac3e6b2e64a46c,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/cutover_gate/scratch/telemetry_reference/run_demo.js,2866,78,main();,745cc40dac37fa8390e31f2e7d3fc1896b0bba18,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/event_expansion/new_events_data.js,22835,178,];,e057a2adb272e1c92c7ea7b16d8b5d583f4425f2,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/findings_tests/README.md,57645,407,- BF-7 and BF-8 entered the ledger as Ar,cfe6eca3afb5648ea64352625066fa5f9a821852,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/findings_tests/battle_probe.js,3594,77,"module.exports = { installBattleProbe, s",9e2b8071cb97ccebe29ac6ad984cf293f02f5cdd,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/findings_tests/campaign_loader.js,5001,111,"module.exports = { loadCampaign, CAMPAIG",b52edcedf7d3869400f7ae2f7e11a08b9e9cbffa,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/findings_tests/findings_tests.js,67746,1152,})();,3e12f54a584f4a024631cc2da23c20efef1acaf1,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/findings_tests/ui_loader.js,4093,88,module.exports = { loadUI };,9d6f207f7928d2832310d89e451d692816398c33,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/harness/game_loader.js,4083,96,"module.exports = { loadGame, EXPORTS };",575288e4d33845f117159000f95d6cb4ca2a8202,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/importer_reference/README.md,13883,279,   or passes through this intermediate s,61a5956ca287d91cbf2a088707898059f87d1aff,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/importer_reference/converter.js,33220,646,"module.exports = { convert, loadGameCore",151f1e0ea6e919509c5c73aac6903eac8e0e9278,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/importer_reference/run_tests.js,16449,306,process.exit(passed === results.length ?,a7583c6af23694525ad70ddec3606f22d2c62b9f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/aggregate.js,8710,106,console.log(JSON.stringify({ totalRuns: ,7ae42cad0cab6d4e88d447a5065cac1cea5524ec,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/aggregate.json,22886,1530,},7b07cb34efc8f0944349f33bf2d86c5d189afce9,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/aggregate_profiles.js,9549,113,console.log(JSON.stringify({ totalRuns: ,29d3f61cb5bff9c229b056190e2bfd9706d4a27b,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/boongrid.js,3359,53,"console.log(which, 'cells', cells.length",06204b40e89ef3d3d4760e0b5d3c0d4d735e755e,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/bot.js,4095,47,},ee2323d9a8cc297865861f4472433bfb9e48640e,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/driver.js,16644,212,"var MC={runOne:mcRunOne,sampleBoons:mcSa",ac8c492bee88fd79224472b949f4a70d0cbbbb08,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/gen_tables.js,4316,68,"console.log('\nTimeouts:', a.timeouts, '",45c19a182c4da508dd7faa47ff6000d06e4b6f5b,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/grid_shards.sh,1955,20,fi,a34361e61c132f77c278f1a181ea3addc797ea96,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/loader.js,5840,124,module.exports = { loadGame };,e8f564c6a0e80bb6958edc1d5e8e2a27a01a05c3,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/loader_main.js,4729,97,module.exports = { loadGame };,9286b81738fa7931ccdbae22897977c204c62dfc,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/policies.js,11877,171,};,61a8cb16c97ce09d4ca0959cc2514c2f9d7a5945,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/profiles_aggregate.json,63872,4013,},0c8586b7c48b0970f6bf0561a197cd28b8963c0d,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/run_queue1.sh,679,17,"echo ""QUEUE1 DONE $(date +%H:%M:%S)""",7748512ec59d96a234727ded3abe92f777dfa594,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/run_queue2.sh,675,17,"echo ""QUEUE2 DONE $(date +%H:%M:%S)""",7245e150185eab96528d6a24cdfe81be6bbfde12,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/montecarlo/shard.js,2812,49,main().catch(e => { console.error(e); pr,1a68b7e0dc2fb8b6ac3954e823523edf1d87869a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/oracle_drift/DRIFT_REPORT_2026_10_30.md,8612,127,picture.,0b84ff3a5f10558de28a51bb5e7971eb1d172127,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/oracle_drift/README.md,6140,118,  carries the interpretation; this tool ,b3045212cebdedc2a9ba4ffd3af3d3b238c70470,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/oracle_drift/oracle_drift_guard.js,36785,833,main();,747d03d2748b86580c93c8e62a1a953020a151fa,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/abilities.json,1723,69,},291724bbdc96bb2ecbd51b97c6a52694e39bca28,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/admirals.json,10396,501,},c5f87019c16b245d127fdf31e85f7e1a86d4c3ef,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/arc_name.json,111,7,},6a33c324357b68b93a979c34315119b89f873ad2,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/arc_variant.json,171,8,},34490df251a55d1093e7857e44b5bc734f13d114,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/archetypes.json,856,35,},62bbbe108d7ce08d37e463834d533b8825003630,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/aspects.json,1447,55,},06b1f212525f5cab50ac58d1aa10d24924773b2c,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/boon_need.json,429,22,},f6ed6dbdfe136ae34546ad07769ea35423380d25,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/boons.json,5171,314,},ba3331a6b1130649fee5bc6d597a5c9b9d9f446d,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/boons_evaluated.json,41132,2204,},37d59f6b6a9431072d4db9a1165cbfaa146a1f8f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/cap_first.json,316,30,],b297c201d68a82a17330ef2dedf3ab80e6c9c0ef,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/cap_last.json,323,30,],a847b52642cdaaa3149cd79b2f94c52188516dbd,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/captains.json,3612,266,},fe0fa4e7813dfb633fd84166b3841d6207cb14fb,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/cls_name.json,112,6,},3952870d79eac570578accdb5ebc13cf81e11731,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/event_fallback.json,8,1,"""quiet""",cbce0fa6330fe86fb6534cdfab330af368d3fce1,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/events.json,25210,1247,],c689634b5c15b218553b240458e926cd7c4e407f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/fac_gates.json,254,12,},d3f065e1497b5af3243e14eddf67242d1b0e448a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/fac_price.json,409,29,},5dd2d38cecdc42e82d6a1f661ba127f95bb889e4,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/fac_verbs.json,1429,62,},ae250f6df1ebe1bc9efa4391908408f71493d65d,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/fac_wnames.json,984,45,},5c4b89f9d26421272cc669bc104d45606ffe858f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/fac_wpool.json,473,45,},a1f4ec8dda30205981c53065e0147ca001420c06,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/fac_wtrait.json,557,35,},ae75855ee9617f05a22f150a2b15ea234be2bc68,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/factions.json,2276,97,},884b5845acc15e7218748cc27b81d8987af758fd,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/favour_tiers.json,318,21,],aeb936682fadc23757fa157198df690e17c8f033,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/fit_slots.json,189,5,},4a0afc185f3cae264b53a671dfc0a0a8c489ea4d,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/heat.json,705,37,},d0e4f8de8860b55b79ed4d6227a3602d79460172,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/hull_variants.json,5073,370,},79e69cc16f2ec470953fcd8eebd84f413252f8ce,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/hulls.json,18909,1567,},a5ca6f357b6ef72f5f10053d3bd7940dc43cdd51,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/kind_name.json,150,9,},a09f1778d1ff416f3309b3c0abc66825c56008f1,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/legacy.json,1584,78,},7105713987454975bc975d34f50b7f032631c03f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/manifest.json,7654,433,},9e58bf71a820942fb71fea2836f985b3ba9e1812,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/mastery_perks.json,387,19,],d6603c7bee80a8eb9b6bc2afa16f25d6f34630ae,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/mastery_xp.json,26,7,],e4825a932c717651de6959f0fb4a4ad8932ea28f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/mod_names.json,2198,77,},da92145e2fbddfd4c2602b6a6d1b40c093159612,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/mod_need.json,154,9,},b3d389f0770848cd76a748678341b7428456f218,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/modules.json,1750,110,},846daad3b7480632820958b50086b68be19e4568,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/more_ship_names.json,973,62,},9b8dce228065f825812ce8c78584666cb65df56a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/move_rules.json,773,33,},9b2a6ab68c8e8ef6efe6c8f4032e18cc9ae4b10f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_adapt.json,638,27,},792a8bc78b2828c144dbf5452915efd70a8faf5c,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_adapt_fac.json,1627,74,},4324bd8c139ba524bb5a4ac35c655760c0530920,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_beat_word.json,177,9,},8eaa1fddbc11764e4a1bc7a4906c584710cc8b95,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_clock.json,2,1,4,b8626c4cff2849624fb67f87cd0ad72b163671ad,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_fac.json,7875,508,},0713b53d2860c76c5e6f481c3dbf50dde34f9324,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_lines.json,832,19,},edf33fc4a7f4a94c52584edf442d5804b11e9f1a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_persona.json,961,62,},aed4d9ba2a85102a29605c26fd5d28b724ba5ca3,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_traits.json,1206,58,},28416d2a59a1e98d23907158a4f90c82d546e8d7,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/nem_weak.json,735,30,},a6248837ba81a8cee5b92ff5e71ffd57581b34ec,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/node_mods.json,251,12,},611f94f209bfd4226ef7c4cfcb923a21527cda37,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/orders.json,205,6,},df7a3e9deb91a5d88d48b5afb27d043057a47aad,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/patrons.json,1232,50,},29db7db4342b147ef9c048c5fc4bfe5c7d71a33c,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/perks.json,1592,101,},40806e7c9f78b0eef5f6c658b65cbd139636c3d7,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/rank_xp.json,29,7,],d5514011d53df64dea6fae0a908a692ca5fb2da5,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/ranks.json,76,7,],8a9353714a310bd6a9896029a0f7ec757b092288,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/rarity.json,216,22,],7e5c3140b2367c9fd4546b6d255327180f39306f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/relic_names.json,1829,62,},ae2f2e616f06daa05c7aec9b6762a5f01ba7b5a7,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/relics.json,1674,86,},93d5609fe5d4acb75464f5411522094f20b77f3a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/run_word.json,140,8,},5fca0b69580ac37efd57441f19f263ef38173722,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/sector_conds.json,891,32,},ddeb01478a2285f74c51fd0aae35a9f9c4ed6e58,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/sector_pool.json,123,16,],798166918faf3608f91077ba7dd93f8f6241de35,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/ship_names.json,505,30,],87a65e65eef9a32df27078c9632520a606d6c38d,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/tools/export_data.js,5315,107,for (const f of fnPaths) console.log('  ,143fdf9aff7c1176104b190a2bf83730faa317e0,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/tools/validate_export.js,12414,181,for (const f of findings) console.log('[,dda864d7ca7ad2e99712ce1fd54613ede9735a33,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/validation.json,9857,274,},f5bbea8419f70604981520b25438acace75120e8,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/validation_report.md,7720,55,godot/rules/data/tables.json and godot/c,649e9fcf74b7556fa1138bb339869409bbe7304f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/w.json,3985,303,},54edc94ddf988797c7948c5e57c68a06ff50469b,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/wing_perks.json,492,26,},1e3869118712c4f40cb4ee055ab9c4a0803db54f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/wing_stances.json,440,14,},29a9629013b36778e98d5afe3630653fe2023d34,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/wing_xp.json,16,5,],a30059923326d6075acd8392428ed09054e773d5,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/wtraits.json,868,42,},1f6853df6a34c250147307a95d3de1012816363a,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/port_export/wtraits_source.json,1314,52,},04c4b3a41a294c4bb16e86b245c621498ed71a07,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/telemetry_reference/README.md,3660,69,that it should.,48df3efa9da48667b1be8e3104962351f88c1bbf,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/telemetry_reference/audit.js,2175,65,"module.exports = { oldJoinAudit, newJoin",8906697704bee6d81ebfcdf96e230464908fecfd,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/telemetry_reference/dataset.js,4448,132,"module.exports = { buildDataset, ADAPTAT",e11cfe47c24318a2c6a23d54b5e89c3bb0a8b10f,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/telemetry_reference/dataset.jsonl,2519,13,"{""v"":1,""ts"":1761900780,""session"":""sess_r",c54f604eb76e3353ca08bf3ed256f9a88b2cb8ca,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/telemetry_reference/logger.js,2672,84,"module.exports = { createLogger, SCHEMA_",770b6ca8e35617cbdd70b66c10ac3e6b2e64a46c,True,complete byte/hash inventory; semantic coverage listed in closing review
+contrib/muse/tools/telemetry_reference/run_demo.js,2866,78,main();,745cc40dac37fa8390e31f2e7d3fc1896b0bba18,True,complete byte/hash inventory; semantic coverage listed in closing review

@@ -1,0 +1,31 @@
+{
+  "source_pin": "17268efa081059a6923daa9e19e8b345a437714d",
+  "before": {
+    "tests": 80,
+    "pass": 8,
+    "fail": 72
+  },
+  "after": {
+    "tests": 80,
+    "pass": 9,
+    "fail": 71
+  },
+  "changed": [
+    "TXT-2 FAIL -> PASS"
+  ],
+  "other_79_results_unchanged": true,
+  "godot_runtime_tested": false,
+  "source": {
+    "path": "campaign_run.js",
+    "git_blob_sha": "bf85b681fc1f41fe9e021ceddf57dbdb839b6f79",
+    "lines": 544,
+    "last_line_first40": "}"
+  },
+  "candidate": {
+    "path": "contrib/codex/proposed/campaign_run.js",
+    "git_blob_sha": "0038261b918765979f869497884c7cbe6dae858f",
+    "lines": 545,
+    "last_line_first40": "}"
+  },
+  "browser_edge_cases": "6/6 pass: same display names, two ships, single ship, repair-only, upgrade-only, max Mark"
+}

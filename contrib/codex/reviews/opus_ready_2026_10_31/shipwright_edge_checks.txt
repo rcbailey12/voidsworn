@@ -1,0 +1,7 @@
+PASS three same-named ships repair the two worst hulls
+PASS two ships both repaired
+PASS single ship remains safe
+PASS repair-only keeps its original target
+PASS upgrade-only leaves the companion untouched
+PASS max-Mark upgrade still repairs a distinct companion
+6/6 shipwright scenarios passed

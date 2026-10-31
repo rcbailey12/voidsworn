@@ -1,0 +1,71 @@
+wrote fresh.json
+wrote midrun.json
+wrote unlocked.json
+wrote repaired_input.json
+Unknown admiral id skipped: zzz_admiral
+Unknown relic id skipped: zzz_relic
+Unknown refit id skipped: zzz_mod
+Unknown heat id skipped: zzz_heat
+Unknown boon id skipped: zzz_boon
+Unknown patron id skipped: zzz_patron
+Unknown aspect id skipped: zzz_aspect
+Unknown boon id skipped: zzz_gift
+Unknown ship hull id skipped: zzz_hull
+Unknown perk id skipped: zzz_perk
+Unknown refit id skipped: zzz_mod2
+Unknown relic id skipped: zzz_relic2
+wrote repaired_output.json
+wrote corrupt_input.json
+wrote corrupt_output.json
+wrote partial_grant.json
+wrote longlived_meta.json
+wrote early_run.json
+wrote reward_mod.json
+wrote reward_prize.json
+wrote reward_salvage.json
+wrote reward_promo.json
+wrote meta_junk.json
+wrote nemesis_late.json
+wrote fleet_edges.json
+wrote sector3_run.json
+wrote settled_run.json
+wrote corrupt2_input.json
+wrote corrupt2_output.json
+wrote half_meta.json
+wrote half_run.json
+wrote absent_store.json
+verify fresh.json: loadLocal ok, sane, recovered=false
+verify midrun.json: loadLocal ok, sane, recovered=false
+verify unlocked.json: loadLocal ok, sane, recovered=false
+verify partial_grant.json: loadLocal ok, sane, recovered=false
+verify longlived_meta.json: loadLocal ok, sane, recovered=false
+verify early_run.json: loadLocal ok, sane, recovered=false
+verify reward_mod.json: loadLocal ok, sane, recovered=false
+verify reward_prize.json: loadLocal ok, sane, recovered=false
+verify reward_salvage.json: loadLocal ok, sane, recovered=false
+verify reward_promo.json: loadLocal ok, sane, recovered=false
+verify meta_junk.json: loadLocal ok, sane, recovered=false
+verify nemesis_late.json: loadLocal ok, sane, recovered=false
+verify fleet_edges.json: loadLocal ok, sane, recovered=false
+verify sector3_run.json: loadLocal ok, sane, recovered=false
+verify settled_run.json: loadLocal ok, sane, recovered=false
+verify half_meta.json: loadLocal ok, sane, recovered=false
+verify half_run.json: loadLocal ok, sane, recovered=false
+verify absent_store.json: loadLocal ok, sane, recovered=false
+Unknown admiral id skipped: zzz_admiral
+Unknown relic id skipped: zzz_relic
+Unknown refit id skipped: zzz_mod
+Unknown heat id skipped: zzz_heat
+Unknown boon id skipped: zzz_boon
+Unknown patron id skipped: zzz_patron
+Unknown aspect id skipped: zzz_aspect
+Unknown boon id skipped: zzz_gift
+Unknown ship hull id skipped: zzz_hull
+Unknown perk id skipped: zzz_perk
+Unknown refit id skipped: zzz_mod2
+Unknown relic id skipped: zzz_relic2
+verify repaired pair: loadLocal ok, sane, recovered=false
+verify corrupt pair: loadLocal ok, sane, recovered=true
+verify corrupt2 pair: loadLocal ok, sane, recovered=false
+verify corrupt second save: backup preserved, new primary parses
+All fixtures verified: every store loads through loadLocal without throwing.

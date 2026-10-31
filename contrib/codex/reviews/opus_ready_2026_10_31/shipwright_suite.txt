@@ -1,0 +1,83 @@
+FAIL KIT-1 chorus repair gate exists in FAC_GATES: FAC_GATES has no chorus entry; the approved Chorus shipyard repair prohibition is coded nowhere
+FAIL KIT-2 ionpulse not dead against two whole factions: ionpulse only strips shields, and chorus + deathless have no shielded hull at all
+FAIL KIT-3 eclipse not in banned green tomb styling: FACTIONS.deathless still uses banned styling: glow #3dff6a, trim #1fbf4a, style 'tomb'
+FAIL KIT-4 lance-named renames are lance-kind weapons: hegemony renames turbo 'Plasma lance' but its kind is 'battery'; hegemony renames hturbo 'Heavy plasma lance' but its kind is 'battery'
+FAIL ADM-1 no duplicate admiral passives: identical fx objects shared by: thale = maren; mott = matriarch = aelith; mending = nekhet
+FAIL ADM-2 hunt Command text consistent across admirals: one 'hunt' Command id, two effects: torpedo reload promised by Oath-Captain Malek Draven, Sable the Smiling Knife but not by Commodore Dace Vorn, Ostrel of the Long Copy
+FAIL ADM-5 shield-refill Command only on shielded factions: shield-refill Command text on a shieldless faction: khepra (deathless)
+FAIL ADM-6 hidden squadron-hull bonus disclosed in admiral text: fx.sqHp present but not disclosed in the card text for: ashgrove, reyes, mott, matriarch, aelith
+FAIL EVT-2 no event option requires a faction the event excludes: seer option 'Answer her tone in glass' needs fac ithar which the event excludes
+FAIL EVT-3 ambush and clock outcomes disclosed in option text: beacon 'Seize the cargo' hides ambush:true; beacon 'Seize the cargo' hides nemClock +1
+FAIL EVT-5 every fight-start event has a free exit: fight-start events with no free exit: haven
+FAIL RWD-2 rarity multiplier scales every core protocol: i_wall ignores m; s_chain ignores m; h_brood ignores m; a_mark ignores m; r_slip ignores m; e_spread ignores m; h_hatch caps at the Rare tier; e_reload caps at the Rare tier
+FAIL RWD-3 shield legendary gated like its shield siblings: BOON_NEED has no 'shields' gate for L_storm, so a shieldless fleet can be offered a shield legendary
+FAIL RWD-4 legendary does not deterministically overwrite the duo slot: in 300 offers with a duo and the patron legendary both eligible, the duo never survives: the legendary always takes the slot
+FAIL RWD-8 off-patron backfill picks get the favour rarity treatment: 378 of 600 off-patron backfill picks rolled Common at favour tier 3, where on-patron picks can never roll Common
+PASS RWD-9 module pool offers only fleet-usable modules
+FAIL BF-3 blocker terrain colors are distinct: hulk shares #bda088 with rock; planet shares #9a948a with station
+FAIL BF-6 every encounter can reach strip arenas: encounters whose arena weights exclude strip shapes entirely: hold
+FAIL BF-9 debris is not strictly dominated by nebula: same rule shape, worse number: debris 10 points harder to hit vs nebula 15
+FAIL BF-10 no encounter lists a shape twice: rout (Engagement) lists archipelago twice
+FAIL FGT-1 boss fights never roll the Decapitation objective: bossEncounter rolled flagship (Decapitation) in 91 of 400 seeded calls; ruled Oct 29: boss fights get their own objective table
+PASS FGT-4 carrier preview resolves through the effective archetype
+FAIL ROS-1 ascendant can move far enough to trigger Broadside: ascendant speed is 1 but Broadside doctrine needs a 2+ hex move; ruled fix is speed 2
+FAIL ROS-2 variant weapon deletions are disclosed: b_razor_s silently drops a bioplasma; i_song_w silently drops a pulsar; d_harvester_t silently drops a gauss
+FAIL ROS-3 no variant deletes the hull ability undisclosed: h_vanguard_g deletes ability launch; c_hulk_g deletes ability launch
+FAIL ROS-4 eclipse boss is not a rescaled harvester without reanimate: d_boss is the only deathless hull without reanimate; d_boss repeats 3 of its 4 mounts from d_harvester at 12 CP vs 4 CP
+FAIL ROS-5 every variant carries a real trade: strict-upgrade variants with no trade: h_picket_i, c_reaver_t, d_scythe_s
+FAIL ROS-6 warden and picket are not the same ship: warden and h_picket agree on cp, shields, range, armour, speed, turns, ability and weapon kinds; only hp, evasion and the battery weapon id differ
+FAIL ROS-9 orphan combat abilities are spread beyond one hull: abilities still on exactly one hull (ruled: spread these three; reclaim stays signature): focus x1, ionpulse x1, frenzy x1
+FAIL WPN-1 no two weapons are field-for-field identical: identical weapon stat blocks: flak = gsentry
+FAIL WPN-2 turbo and gauss are not one damage line split by pierce: turbo and gauss share shots x dmg (18), accuracy, range, falloff and crit; gauss differs only by kind and pierce 0.6
+PASS WPN-3 guard: no hull mounts both battery and hbattery
+FAIL WPN-5 no dead rear arc and no overwritten evMult on startorp: ARC_NAME still defines a 'Rear' arc no weapon can use (guns never face backward); startorp still carries evMult:2, overwritten by the Ithar trait in live play
+FAIL SQ-1 spore wing is not a bomber reskin: sporeb and bombs agree on kind, shots, range, accuracy, falloff and pierce; only damage, vsSq and crit differ
+FAIL MOD-2 modules do not duplicate perks or collide with relics: key collision: cogitator exists in both MODULES and RELICS; MODULES.auspex duplicates PERKS.gunnery; MODULES.cogitator duplicates PERKS.killer; MODULES.prow duplicates PERKS.ironhull; MODULES.drive duplicates PERKS.helm
+FAIL MOD-4 damcon is not dominated by prow on price: damcon costs 85 for a slow conditional regen while prow costs 70 for an upfront 15% hull buffer plus armour
+FAIL BN-1 the ram block is not one job sold three times: r_prow, d_jugg and L_rook all draw exclusively on ramPct/ramCap/ramGuard with no distinguishing effect
+FAIL BN-2 the legendary explosion is not worse than the epic: L_ember explodes for 40, the same as e_chain at Epic tier (40), and the epic also sets fires while the legendary does not
+FAIL BN-5 every patron appears in at least two duos: patrons in fewer than two duos: hunger x1
+FAIL ECO-2 the swarm faction carrier is not the most expensive carrier: b_brood prices at 370, the highest carrier price in the game, against a best rival of 340
+FAIL FS-2 a cp6 eclipse battleship would not price below the eclipse cruiser: FAC_PRICE.deathless has no Battleship key, so a cp6 battleship falls back to 370, below d_harvester at 390: the price ladder inverts
+FAIL W3-1 elite guarantee holds in the pre-boss approach column: elite guarantee failed on 25 of 900 maps (first: 9/2, 18/1, 18/3)
+PASS VAR-1a exactly one boss in the final column
+PASS VAR-1b column 3 always offers a shipyard
+PASS VAR-1c the pre-boss column is all rest stops
+PASS VAR-1d every fight column (1 to 4) offers a fight
+PASS VAR-1e encounter variety guarantees hold
+FAIL EVT-1 a defector flag records which option wrote it: ransoming the defector (he leaves with 70 credits) still satisfies the saboteur intel gate (true) and the Hegemony free verb (true): the flag records presence, not the option that wrote it
+PASS TXT-2 the shipwright option repairs the second most damaged ship
+FAIL TXT-8 no NaN reaches a player-facing label: the shipyard renders a NaN for a cost-less hull (Decommission (+NaN)): the label path does not reuse the shipValue guard
+FAIL PROG-2 every purchasable thing has a reachable purchase path: ACT.buyAdmiral and ACT.buyLegacy charge renown and grant, but no screen renders a button for them (the handlers are dead code; locked admirals point at a Legacy screen that no longer exists under that name)
+FAIL PROG-5 mastery does not double count elite and flagship battles: one elite battle paid 3 mastery, not 2: rewardFlow counts the battle in stats.battles and again in stats.elites, and mxGain adds both
+FAIL PROG-6 an unowned admiral cannot be launched: newRun launched the unowned admiral malek: neither the launch path nor newRun checks META.admirals ownership (the UI auto-assigns an owned admiral, the rules function does not)
+FAIL RWD-5 credit nodes are not dominated by the boon decline value: at sector 2 a credit node beats declining a boon by only 5 credits (node premium 55 over the same battle, decline pays 50): a boon node dominates a credit node by arithmetic
+FAIL RWD-6 a reroll that cannot change the offer is refused: with exactly three eligible protocols in the whole pool, boonReroll charged 25 credits and returned the same three: no pool-depth check before charging
+FAIL RWD-7 every module is reachable as salvage: salvageYield reads a fixed nine-module table keyed to the wreck, so these modules can never drop as salvage: prow, drive, gyro, regen
+FAIL NEM-2 an adaptation never counters a revealed weakness: with the ion weakness revealed, heavy lance and ion fire still earned shields (the direct counter); with the torp weakness revealed, heavy torpedo fire still earned pd (the direct counter): nemAdapt scores counters without reading N.revealed, against the Oct 29 Q4 ruling
+FAIL NEM-3 at most one adaptation is earned per sector: a single sector 3 visit granted 2 adaptations (shields, armor): the cap compares total adaptations against a cumulative sector budget instead of one per sector
+FAIL NEM-4 every faction strike does something: nemStrike is a no-op for: ithar, chorus, hegemony, voidsworn (their strike kinds fall through to return an empty string; only raid and tithe are implemented)
+FAIL NEM-5 a raid warning matches what the strike can take: the warning said the raid would "find nothing to take", but the strike then towed away a ship crippled in the clock fight itself: the warning is computed at warn time, the strike re-evaluates at strike time
+FAIL NEM-6 a no-retreat Nemesis flagship kill registers the kill: sector 1, flagship destroyed: dead=false and the debrief says he escapes. In sectors 1 and 2 a flagship kill can never register as a death, even for the no-retreat Nemesis
+FAIL NEM-7 legacy Nemesis migration preserves accumulated state: migrating a pre-persona save zeroed or dropped: loot 0, riches 0, fed 0, honed 0, held ship dropped, faction special adaptation filtered out of adapt (ensureNemesis copies a fixed field list and filters adapt to the generic table)
+FAIL FR-2 a lost Nemesis meeting reveals exactly one weakness: a lost meeting revealed 0 weaknesses: nemReveal is called only in the win branch of nemAfterBattle, against the Oct 29 Q5 ruling (a loss still teaches one)
+FAIL BF-2 boss fights keep the map terrain budget: across 12 seed pairs the boss board keeps only 46% of the rock a normal dense board has (6.2 vs 13.4): startBattle deletes 45% of rock for kind boss after generation
+FAIL BF-7 the lanes barrier crosses the advance axis: the lanes barrier runs along the middle row (avg 12.1 rock) while no single column holds more than 2.7: on a left-to-right strip the wall is parallel to the advance, not across it
+FAIL BF-8 reinforcements arrive on their own side of the field: on round arenas the enemy reinforcement spawns on average 118 degrees away from the direction the enemy fleet approached from (8 of 12 in the wrong half): edgeHex reads the board bounding columns and never the approach angle
+FAIL MOD-3 a module cannot be fitted to a ship it cannot affect: ACT.equip fitted the Lance focusing crystal to a ship with no lance: equip has no guard at all, and the fit filter cannot see weapon-kind modules because they carry no only field
+FAIL ECO-3 decommission value scales with the ship condition: a warden at 30% hull decommissions for 25, the same as a full-hull warden (25): the payout is prizeScrap, a function of template only
+FAIL ECO-4 prize money uses the same price rules as the shop: with shop prices scaled x1.25, a full-hull warden prize ransoms for 39 instead of 48: prizeRansom never passes through priceMult, so the two directions of the same market price differently
+FAIL DRIFT-5 touch text variants are reachable: on touch, "Click a gold hex to move" becomes "Tap a gold hex to move": the chain looks for the already-tapped wording before the generic Click replacement runs, so the double-tap instruction can never be produced
+FAIL UI-7 the help line lists every working key: the in-battle help line omits working keys: r, t, f, x, g (handled in onKey; some are discoverable only from button titles or not at all)
+FAIL PP-2 hive wings count toward the enemy point-defense adaptation: a pure-hive fleet (wings only from the flagship aspect) counted as zero carriers: no point-defense adaptation armed
+FAIL BF-1 clearSpawns preserves shape-defining center terrain: under ambush deployment the ring center keeps only 31% of its defining rock through startBattle (same-seed line control: 100%); the lanes barrier keeps only 34% of its rock through startBattle under plain line deployment, eaten from both deployment ends inward: clearSpawns deletes terrain around and ahead of wherever the fleets start, so the shapes whose defining terrain sits near a start zone lose it (the Oct 29 Q11 shape-aware clearing is unimplemented)
+FAIL AI-1 veteran brace decision survives the mid-move volley path: a veteran ship at 63% hull moved 8 to 4 hexes from the enemy line, fired nothing, and ended unbraced under 32 expected threat: the mid-move volley path returns before the veteran brace decision, whose conditions its numbers meet (threat over 45% of its 63 hp, own offense nil), and the volley path's own fallback brace demands hp under 50%
+FAIL AI-3 death-cliff weight scales with ship value: the death-cliff switch point is identical for a cp1 frigate and a cp5 battleship (both first accept a hex where expected fire exceeds their hull once the kill behind it is worth 40): the cliff weight is a flat 25, unscaled to the value of the hull put at risk
+FAIL AI-4 a ship with no bearing guns kites instead of closing: a ship whose only gun is a reloading torpedo closed from 10 to 6 hexes against unarmed targets: the approach leash (-4 per hex beyond the spent gun's minimum range) drags a ship with no bearing guns toward the enemy instead of letting it kite while it reloads
+FAIL AI-5 wing launches account for the launch hex threat: the carrier launched its wing into 9 expected threat while launch hexes with no incoming fire existed: aiAbilities launches before moving, from the launch hex nearest the enemy, sorted by distance only, so a launch can be baited into a kill zone
+FAIL UI-5 cancel paths clear the sticky wing selection: wingSel survives selectUnit, rosterPick, Escape through the full cancelAction chain: with a wing selected, switching ships or cancelling leaves the wing order armed, so the next board tap assigns a wing order the player no longer means to give
+FAIL UI-6 the hint line never declares a ship finished while it can still act: the hint line reads 'Nothing left to do: tap Done with ship.' while the ship still has movement remaining (2 of 6 points) and an unspent Brace: the hint chain checks ram, targets and first-move only, never remaining movement or the Brace order
+FAIL UI-8 auto-facing weighs shield facings, and arming recomputes reach: on a gun-count tie bestFacingReach keeps the facing that exposes the 4-point shield over the one presenting the 40-point shield: its score is gun count, cost and turns only, never the ship's own shield facings; ACT.arm leaves B.reach as the same object, so after arming a single weapon the reach overlay still shows gun counts computed for the whole battery
+---
+80 tests, 9 pass, 71 fail
+Failing tests pin defects that are still unfixed at this pin; see the ledger README.

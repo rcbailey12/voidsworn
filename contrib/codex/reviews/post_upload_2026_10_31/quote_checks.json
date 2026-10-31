@@ -1,0 +1,62 @@
+[
+  {
+    "path": "contrib/muse/tools/montecarlo/driver.js",
+    "line": 166,
+    "quote": "h.cost*cfg.priceMult/5",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/tools/cutover_gate/gate.js",
+    "line": 465,
+    "quote": "else if (verdicts.includes('IMPROVEMENT'))",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/tools/cutover_gate/gate.js",
+    "line": 98,
+    "quote": "const fixedBad = diff(base.badSet || [], cur.badSet);",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/tools/findings_tests/campaign_loader.js",
+    "line": 26,
+    "quote": "const LOADER_CANDIDATES = [",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/reviews/redteam_final_synthesis_2026_10_30.md",
+    "line": 68,
+    "quote": "nothing in battle or campaign feeds, grows, or converts for it",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/reviews/redteam_final_synthesis_2026_10_30.md",
+    "line": 36,
+    "quote": "the true rate is unmeasured and certainly lower",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/reviews/balance_design_bible_2026_10_30.md",
+    "line": 99,
+    "quote": "damcon at 85 credits is mathematically dominated by prow at 70",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/reviews/text_overhaul_pack_2026_10_30.md",
+    "line": 203,
+    "quote": "${fl.name}",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/tools/montecarlo/aggregate.js",
+    "line": 17,
+    "quote": "const f2 = x => +x.toFixed(2);",
+    "verified": true
+  },
+  {
+    "path": "contrib/muse/tools/montecarlo/aggregate.js",
+    "line": 24,
+    "quote": "out.byFaction[r.fac]",
+    "verified": true
+  }
+]

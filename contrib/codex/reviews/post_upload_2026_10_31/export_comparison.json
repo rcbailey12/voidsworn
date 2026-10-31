@@ -1,0 +1,396 @@
+{
+  "generated_files": 65,
+  "all_identical": true,
+  "files": [
+    {
+      "file": "abilities.json",
+      "bytes": 1723,
+      "sha256": "459ee6d1d0642a1e050635670c61cd3057b400a3893751d02d0c85ec751e82ea",
+      "matches_filed": true
+    },
+    {
+      "file": "admirals.json",
+      "bytes": 10396,
+      "sha256": "08ff051fe6d83938ccc6cf572fccc0bcab982313cf980f421df49a3371a32702",
+      "matches_filed": true
+    },
+    {
+      "file": "arc_name.json",
+      "bytes": 111,
+      "sha256": "2edf74a6d09499bcd05993fedab6d7eed4c9772875e98edda4957d985c41f520",
+      "matches_filed": true
+    },
+    {
+      "file": "arc_variant.json",
+      "bytes": 171,
+      "sha256": "bf5b13eb6483e8d890be1cf9555a7047283755d46ad945613ead91fc69b51abc",
+      "matches_filed": true
+    },
+    {
+      "file": "archetypes.json",
+      "bytes": 856,
+      "sha256": "914acd21b443fbe1a3ff6dda598e83d7703b4d8a5396858d2e413799cb6c782d",
+      "matches_filed": true
+    },
+    {
+      "file": "aspects.json",
+      "bytes": 1447,
+      "sha256": "a1b819cdbd78733d6f7c7ff59d04ff7471b25c9e5675e175ec418a10f4f58673",
+      "matches_filed": true
+    },
+    {
+      "file": "boon_need.json",
+      "bytes": 429,
+      "sha256": "fda4f997c51f610a600b7eaf7433df7d04e7b6f26a8352db7d4e238c12bf81af",
+      "matches_filed": true
+    },
+    {
+      "file": "boons.json",
+      "bytes": 5171,
+      "sha256": "e8a40e567ed4663120d30ff8964ad255e59c0961f82c7e3c5b1693ffb75da715",
+      "matches_filed": true
+    },
+    {
+      "file": "boons_evaluated.json",
+      "bytes": 41132,
+      "sha256": "6ec996430783190586e1eb3c887b702d96efad860051f751f577e771adc24748",
+      "matches_filed": true
+    },
+    {
+      "file": "cap_first.json",
+      "bytes": 316,
+      "sha256": "656043c0e91667ee1c10543189ae7c96e920f118d326822bf442a6cf6f5c6437",
+      "matches_filed": true
+    },
+    {
+      "file": "cap_last.json",
+      "bytes": 323,
+      "sha256": "96b3a697eafa8ca9209fbecc61229c1f7d7113a844af98369e84872685047d12",
+      "matches_filed": true
+    },
+    {
+      "file": "captains.json",
+      "bytes": 3612,
+      "sha256": "469087ac1154d1d93ec8eb5b7f9b64f1a52061a8d18c54dddb8f7f84f9e844ee",
+      "matches_filed": true
+    },
+    {
+      "file": "cls_name.json",
+      "bytes": 112,
+      "sha256": "8a81df87ab2ad7e0321e1fc310484709a47a9376b88a35fe7ff778867bf25764",
+      "matches_filed": true
+    },
+    {
+      "file": "event_fallback.json",
+      "bytes": 8,
+      "sha256": "30cf9367ef3311b16fd5c4c82fee6220b6227a228a4aa428e3a5f0b8f2dc0204",
+      "matches_filed": true
+    },
+    {
+      "file": "events.json",
+      "bytes": 25210,
+      "sha256": "e2c92c7f42d5d100476ad57a2a62f60bcf369c203da3115db582702b9552d247",
+      "matches_filed": true
+    },
+    {
+      "file": "fac_gates.json",
+      "bytes": 254,
+      "sha256": "21fa2ddeb5951c7e08ab10f28047ae930c98d68bfa868663282811ff6f8f9ff2",
+      "matches_filed": true
+    },
+    {
+      "file": "fac_price.json",
+      "bytes": 409,
+      "sha256": "6e88ae3f0642ae7f4bdb5509bc19458066ab8128efbe68aec9383c16c57b5e51",
+      "matches_filed": true
+    },
+    {
+      "file": "fac_verbs.json",
+      "bytes": 1429,
+      "sha256": "88561db47f0e11cb2758143ff558cf14dba1e0c25e10a5384d4eecd946d2e667",
+      "matches_filed": true
+    },
+    {
+      "file": "fac_wnames.json",
+      "bytes": 984,
+      "sha256": "3e356e5809621821e0320cb77fb96393c2211946973e7bc276b6580cb78c2576",
+      "matches_filed": true
+    },
+    {
+      "file": "fac_wpool.json",
+      "bytes": 473,
+      "sha256": "bf458fb5c8545087ae6259988ae804cefd146fa8c759d9d8f24ab585c621e1e0",
+      "matches_filed": true
+    },
+    {
+      "file": "fac_wtrait.json",
+      "bytes": 557,
+      "sha256": "e2343e65a1e006719e71651e9bdd46b7ad14a9a6a4f38858656eb86638d7e1c7",
+      "matches_filed": true
+    },
+    {
+      "file": "factions.json",
+      "bytes": 2276,
+      "sha256": "d71173042d9fb6feda81ca72b25ca51cefda86b6d5e32a6220dadf0282c382ed",
+      "matches_filed": true
+    },
+    {
+      "file": "favour_tiers.json",
+      "bytes": 318,
+      "sha256": "abea183919ee147cb9ca511b60b14e9a36a8d1d22d71e8868909a7b317251d5d",
+      "matches_filed": true
+    },
+    {
+      "file": "fit_slots.json",
+      "bytes": 189,
+      "sha256": "82088a61bc759466b644ba01c2efc6a3a4a56e5d14980f17f7aeed7e49b5b9a8",
+      "matches_filed": true
+    },
+    {
+      "file": "heat.json",
+      "bytes": 705,
+      "sha256": "9d21b55ce70d0438a324dba8d7320e6ebc4369b5be594bcf02540943c53e87f7",
+      "matches_filed": true
+    },
+    {
+      "file": "hull_variants.json",
+      "bytes": 5073,
+      "sha256": "ebee1ba391c4c3f94a4c7007088ea525fe7de4eeb87448ca8357a42b822268bb",
+      "matches_filed": true
+    },
+    {
+      "file": "hulls.json",
+      "bytes": 18909,
+      "sha256": "14f0649f665dad543d79104f8a804272ee37ee3c7fbb3c884606af8288fb7821",
+      "matches_filed": true
+    },
+    {
+      "file": "kind_name.json",
+      "bytes": 150,
+      "sha256": "8f01c606b779983085972dca208e2bbe1bef536b130ce79515c42589ca1eb2fc",
+      "matches_filed": true
+    },
+    {
+      "file": "legacy.json",
+      "bytes": 1584,
+      "sha256": "1b957e732f50b264be6f0c8496af7aceab35f36d669b99c4579061b934d2ed63",
+      "matches_filed": true
+    },
+    {
+      "file": "manifest.json",
+      "bytes": 7654,
+      "sha256": "3129378f00c862fd55807572d1d0fd1d2ecabeccf67f4e24c89098597b747302",
+      "matches_filed": true
+    },
+    {
+      "file": "mastery_perks.json",
+      "bytes": 387,
+      "sha256": "db1f5c06417a7237d06aefd39c81df841fcff7ea06ea76e8647fa41486f7a28f",
+      "matches_filed": true
+    },
+    {
+      "file": "mastery_xp.json",
+      "bytes": 26,
+      "sha256": "ff9d2d1f87720aaea95cfb5236b2214d7b75baa157acfdc180525aa60ce84423",
+      "matches_filed": true
+    },
+    {
+      "file": "mod_names.json",
+      "bytes": 2198,
+      "sha256": "d150f75a87dd7b5556f9b6573b59545211dc5854ad97d358d303f2496920bd45",
+      "matches_filed": true
+    },
+    {
+      "file": "mod_need.json",
+      "bytes": 154,
+      "sha256": "709dac9652c30f51a1733b95929447307c8a06fcf7d485a1c24b498a84f645b8",
+      "matches_filed": true
+    },
+    {
+      "file": "modules.json",
+      "bytes": 1750,
+      "sha256": "1ee876a5952a46342c225cbd8121fe29cdaea1d3060faf88dc8a6fa08c5230f5",
+      "matches_filed": true
+    },
+    {
+      "file": "more_ship_names.json",
+      "bytes": 973,
+      "sha256": "986b5a2f743c9913bdd3f9aaa0590ee5a4d7861add4253ca49d7879e5133eb69",
+      "matches_filed": true
+    },
+    {
+      "file": "move_rules.json",
+      "bytes": 773,
+      "sha256": "fa45d518293bb89528aba8837c9f8903b5099c3026d1d8c2dafd8c1eba6c8a67",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_adapt.json",
+      "bytes": 638,
+      "sha256": "6684e26850bfa37e7c28a69e4c6d8220b939f1e4f086332c6fa99bcbbb42f105",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_adapt_fac.json",
+      "bytes": 1627,
+      "sha256": "8d64b63dad9a5b07d51d5a3f38484e08806eee343c40e3e484ff6f1fe5df0bad",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_beat_word.json",
+      "bytes": 177,
+      "sha256": "b40238791040b2ed6454a630dacfaea56eebdc0911aa61a1eb452eac47160986",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_clock.json",
+      "bytes": 2,
+      "sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_fac.json",
+      "bytes": 7875,
+      "sha256": "76e46170f49d16cccb3fa2044699b52597ae0a53f49bef6196470b0d1e747d29",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_lines.json",
+      "bytes": 832,
+      "sha256": "63ac2ab0ca4863fa5cf5e5586894553f323208b59a88302bf4bce67d31459f39",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_persona.json",
+      "bytes": 961,
+      "sha256": "fb57a1ba46fcd3a3c7f3fd71a312d0069cc9d03d5651ad29af0d8b5894614a1c",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_traits.json",
+      "bytes": 1206,
+      "sha256": "35cb2e76d999accc7810493ef4aa15dc7fbea3a046aea7df432b4ff792c65ba5",
+      "matches_filed": true
+    },
+    {
+      "file": "nem_weak.json",
+      "bytes": 735,
+      "sha256": "dcc0bd6045eb69b8547309e884d58dcb442149441e34528a91adfbba2c764966",
+      "matches_filed": true
+    },
+    {
+      "file": "node_mods.json",
+      "bytes": 251,
+      "sha256": "6f98089302bef620ab0fa2c344976f671a83608fb8fd5b76ccfc7e113de892f2",
+      "matches_filed": true
+    },
+    {
+      "file": "orders.json",
+      "bytes": 205,
+      "sha256": "c8e521d0c1ae74fec28f6475f2c30e0e897ccf395cb08ed2a4edc2678b162e87",
+      "matches_filed": true
+    },
+    {
+      "file": "patrons.json",
+      "bytes": 1232,
+      "sha256": "bb970dcc53291be2bca848859f1093a5536fd060454c02679941ffce7528c69a",
+      "matches_filed": true
+    },
+    {
+      "file": "perks.json",
+      "bytes": 1592,
+      "sha256": "20eac10bf4a5dcc13e9f2b442d3567dacb75b3f42b2709d5ac96a7f81265d3f5",
+      "matches_filed": true
+    },
+    {
+      "file": "rank_xp.json",
+      "bytes": 29,
+      "sha256": "575ddf18500251a59ae3f1531c981c0007775bbd720854a70441040c331e6d2c",
+      "matches_filed": true
+    },
+    {
+      "file": "ranks.json",
+      "bytes": 76,
+      "sha256": "4475a59f4396050879193e5487352d490cb92a4db81f51054bbf2bcde9c5625c",
+      "matches_filed": true
+    },
+    {
+      "file": "rarity.json",
+      "bytes": 216,
+      "sha256": "f02ddf4bcd22841e893021f7dc9220007f1906a1486ba877d3ab443b7da5c28e",
+      "matches_filed": true
+    },
+    {
+      "file": "relic_names.json",
+      "bytes": 1829,
+      "sha256": "a00b506a6772dc12aeebc7f9f3e5945405f7cd5e97ed9eba58c4723ee31a995e",
+      "matches_filed": true
+    },
+    {
+      "file": "relics.json",
+      "bytes": 1674,
+      "sha256": "dbf19422fa6ff7d4b8841206ff70ef3a5fd33ae156c3fe6428d2df343d32629a",
+      "matches_filed": true
+    },
+    {
+      "file": "run_word.json",
+      "bytes": 140,
+      "sha256": "167645a57843c9178e72e2269cb514596b6c3193f1dc30b30852c2060b55c23a",
+      "matches_filed": true
+    },
+    {
+      "file": "sector_conds.json",
+      "bytes": 891,
+      "sha256": "fc7e871e7a5ff243ef4f0e2cef0134bcadaa374a7924b87268fd5fa18a1ff5f7",
+      "matches_filed": true
+    },
+    {
+      "file": "sector_pool.json",
+      "bytes": 123,
+      "sha256": "f6e6c9581d4ee31965b43a8207a606f2268a2153e94244589dae485e63387f68",
+      "matches_filed": true
+    },
+    {
+      "file": "ship_names.json",
+      "bytes": 505,
+      "sha256": "2a1708110180d0b5c61fdf6a29ae8f863c1fa238e52beccd00ba27d1cab268d1",
+      "matches_filed": true
+    },
+    {
+      "file": "w.json",
+      "bytes": 3985,
+      "sha256": "6b63034edb06a7cdc264623637f996192ea13fcf446fad06cd3bd3dbd5703a13",
+      "matches_filed": true
+    },
+    {
+      "file": "wing_perks.json",
+      "bytes": 492,
+      "sha256": "f40ffe0ad4c2bf680c0cd1169796e7f7bb24cf9fda4beda69c3dc23d5d2b8099",
+      "matches_filed": true
+    },
+    {
+      "file": "wing_stances.json",
+      "bytes": 440,
+      "sha256": "e28929d8dc95e2c55ebf97dd0c9cfe2b96ffaef62356352c9c281b3afa098609",
+      "matches_filed": true
+    },
+    {
+      "file": "wing_xp.json",
+      "bytes": 16,
+      "sha256": "223f1db885982fa2b37832753f8c0a93890aad7a45b101c4df62ce01bf5b0f83",
+      "matches_filed": true
+    },
+    {
+      "file": "wtraits.json",
+      "bytes": 868,
+      "sha256": "b5a533e34ed4d78c0a86bf584c5ef0eaf593a1f00536eb533dee39e7b6198915",
+      "matches_filed": true
+    },
+    {
+      "file": "wtraits_source.json",
+      "bytes": 1314,
+      "sha256": "c67fd5d75c527269a586468fe624133ad3a9dcea4cb42b982386ba52cf1fd326",
+      "matches_filed": true
+    }
+  ]
+}

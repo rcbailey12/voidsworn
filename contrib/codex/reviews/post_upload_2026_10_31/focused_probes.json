@@ -1,0 +1,31 @@
+{
+  "originalGate": {
+    "disappearingFailure": "IMPROVEMENT",
+    "missingPlusImprovement": "IMPROVEMENT (review, then refresh the baseline)",
+    "exitCode": 0
+  },
+  "proposedGate": {
+    "disappearingFailure": "REGRESSION",
+    "missingPlusImprovement": "INCOMPLETE (a component did not run)",
+    "exitCode": 1
+  },
+  "priceGrid": {
+    "hull": "d_scythe",
+    "multiplier": 1.25,
+    "costsAcrossRuns": [
+      100,
+      125,
+      155,
+      195
+    ]
+  },
+  "proposedPriceGrid": {
+    "costsAcrossRuns": [
+      100,
+      125,
+      125,
+      125
+    ],
+    "baselineRestored": 100
+  }
+}

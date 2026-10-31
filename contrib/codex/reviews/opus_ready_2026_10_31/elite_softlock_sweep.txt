@@ -1,0 +1,3 @@
+softlock_sweep part 1: 4500 sector maps, 0 failures so far
+softlock_sweep part 2: 1920 battle setups, 0 failures
+softlock_sweep total: 0 failures
