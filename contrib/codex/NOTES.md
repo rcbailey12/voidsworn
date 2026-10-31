@@ -1,5 +1,14 @@
 # Codex pre-reset review and proposed cleanup
 
+**For the next Opus session, start at [OPUS_START_HERE.md](OPUS_START_HERE.md).**
+It assigns the Monte Carlo replacement to Muse, gives an ordered integration queue,
+and separates prepared copies from unfinished implementation work.
+
+The added `proposed/campaign_run.js` is a shipwright fix candidate only. An isolated
+run of all 80 assertions changes exactly TXT-2 from FAIL to PASS (9 pass / 71 fail),
+with the other 79 outcomes unchanged. Its evidence is under
+`reviews/opus_ready_2026_10_31/`. Godot adoption and parity are still required.
+
 ## Current start point after the Oct 30 upload
 
 Reviewed main **17268efa081059a6923daa9e19e8b345a437714d**. Start with
