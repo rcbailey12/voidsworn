@@ -1,0 +1,27 @@
+{
+ "shields": {
+  "n": "Reinforced shields",
+  "d": "His ships have 20% more shields.",
+  "why": "you leaned on lances and ion fire"
+ },
+ "pd": {
+  "n": "Extra point defense",
+  "d": "Two of his ships bolt on point defense.",
+  "why": "you leaned on torpedoes and wings"
+ },
+ "armor": {
+  "n": "Ram plating",
+  "d": "His ships have 10% more armor.",
+  "why": "you rammed and boarded"
+ },
+ "evasion": {
+  "n": "Evasive drills",
+  "d": "His ships have 8 more evasion.",
+  "why": "you leaned on broadsides and batteries"
+ },
+ "aim": {
+  "n": "Gunnery drills",
+  "d": "His ships aim 8 better.",
+  "why": "you won by staying hard to hit"
+ }
+}

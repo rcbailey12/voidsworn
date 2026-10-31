@@ -1,0 +1,45 @@
+{
+ "voidsworn": {
+  "autocannon": "Sear repeater",
+  "battery": "Sear battery",
+  "hbattery": "Heavy sear broadside",
+  "turret": "Sear turret",
+  "lance": "Oath lance",
+  "torp": "Cinder torpedo",
+  "flak": "Spark flak"
+ },
+ "hegemony": {
+  "laser": "Plasma cannon",
+  "turbo": "Plasma lance",
+  "hturbo": "Heavy plasma lance",
+  "ion": "Ion cannon",
+  "flak": "Picket lasers"
+ },
+ "corsair": {
+  "autocannon": "Autocannon",
+  "scatter": "Scrap scatter gun",
+  "turret": "Junk turret",
+  "torp": "Rattle-rocket pod",
+  "htorp": "Heavy rocket pod",
+  "flak": "Chaff guns"
+ },
+ "chorus": {
+  "bioplasma": "Spine volley",
+  "tendril": "Boarding tendrils",
+  "spores": "Spore cloud",
+  "sporeb": "Acid sacs"
+ },
+ "ithar": {
+  "shard": "Prism shards",
+  "pulsar": "Prism lance",
+  "startorp": "Star torpedo",
+  "turret": "Needle beam",
+  "flak": "Mirror veil"
+ },
+ "deathless": {
+  "gauss": "Null cannon",
+  "doom": "Corona arc",
+  "gsentry": "Null spire",
+  "flak": "Null shredder"
+ }
+}

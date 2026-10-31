@@ -1,0 +1,21 @@
+[
+ {
+  "at": 0,
+  "n": "Listening"
+ },
+ {
+  "at": 4,
+  "n": "Partial sync",
+  "d": "Its protocols are rare more often."
+ },
+ {
+  "at": 12,
+  "n": "Synced",
+  "d": "If it is in range of your run, you start with one of its protocols."
+ },
+ {
+  "at": 25,
+  "n": "Full sync",
+  "d": "Its protocols are never common."
+ }
+]

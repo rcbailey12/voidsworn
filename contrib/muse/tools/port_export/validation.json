@@ -1,0 +1,274 @@
+{
+ "pin": "264f441d43a54e3679950dcc4457133b40811807",
+ "counts": {
+  "W": 25,
+  "ARC_NAME": 5,
+  "KIND_NAME": 7,
+  "FAC_WNAMES": 6,
+  "WTRAITS": 10,
+  "CLS_NAME": 4,
+  "HULLS": 51,
+  "MOVE_RULES": 6,
+  "FACTIONS": 6,
+  "SECTOR_POOL": 3,
+  "ABILITIES": 13,
+  "ORDERS": 1,
+  "MODULES": 13,
+  "PERKS": 14,
+  "RANKS": 5,
+  "RANK_XP": 5,
+  "RELICS": 12,
+  "ADMIRALS": 24,
+  "LEGACY": 12,
+  "SHIP_NAMES": 28,
+  "CAP_FIRST": 28,
+  "CAP_LAST": 28,
+  "MOD_NEED": 7,
+  "MOD_NAMES": 5,
+  "RELIC_NAMES": 5,
+  "RUN_WORD": 6,
+  "EVENTS": 33,
+  "EVENT_FALLBACK": null,
+  "NEM_CLOCK": null,
+  "NEM_WEAK": 7,
+  "NEM_ADAPT": 5,
+  "NEM_TRAITS": 14,
+  "NEM_PERSONA": 8,
+  "NEM_FAC": 6,
+  "NEM_ADAPT_FAC": 6,
+  "NEM_LINES": 4,
+  "NEM_BEAT_WORD": 7,
+  "FAC_VERBS": 6,
+  "WING_STANCES": 3,
+  "WING_PERKS": 6,
+  "WING_XP": 3,
+  "CAPTAINS": 6,
+  "MORE_SHIP_NAMES": 5,
+  "FAC_PRICE": 6,
+  "FAC_GATES": 2,
+  "HULL_VARIANTS": 18,
+  "ARC_VARIANT": 6,
+  "FIT_SLOTS": 3,
+  "FAC_WPOOL": 6,
+  "MASTERY_XP": 5,
+  "MASTERY_PERKS": 5,
+  "FAVOUR_TIERS": 4,
+  "ARCHETYPES": 3,
+  "NODE_MODS": 2,
+  "SECTOR_CONDS": 5,
+  "HEAT": 7,
+  "RARITY": 4,
+  "PATRONS": 6,
+  "BOONS": 48,
+  "BOON_NEED": 20,
+  "ASPECTS": 6,
+  "FAC_WTRAIT": 6,
+  "BOONS_EVALUATED": 48,
+  "WTRAITS_SOURCE": 10
+ },
+ "passes": [
+  {
+   "check": "counts",
+   "detail": "{\"W\":25,\"ARC_NAME\":5,\"KIND_NAME\":7,\"FAC_WNAMES\":6,\"WTRAITS\":10,\"CLS_NAME\":4,\"HULLS\":51,\"MOVE_RULES\":6,\"FACTIONS\":6,\"SECTOR_POOL\":3,\"ABILITIES\":13,\"ORDERS\":1,\"MODULES\":13,\"PERKS\":14,\"RANKS\":5,\"RANK_XP\":5,\"RELICS\":12,\"ADMIRALS\":24,\"LEGACY\":12,\"SHIP_NAMES\":28,\"CAP_FIRST\":28,\"CAP_LAST\":28,\"MOD_NEED\":7,\"MOD_NAMES\":5,\"RELIC_NAMES\":5,\"RUN_WORD\":6,\"EVENTS\":33,\"EVENT_FALLBACK\":null,\"NEM_CLOCK\":null,\"NEM_WEAK\":7,\"NEM_ADAPT\":5,\"NEM_TRAITS\":14,\"NEM_PERSONA\":8,\"NEM_FAC\":6,\"NEM_ADAPT_FAC\":6,\"NEM_LINES\":4,\"NEM_BEAT_WORD\":7,\"FAC_VERBS\":6,\"WING_STANCES\":3,\"WING_PERKS\":6,\"WING_XP\":3,\"CAPTAINS\":6,\"MORE_SHIP_NAMES\":5,\"FAC_PRICE\":6,\"FAC_GATES\":2,\"HULL_VARIANTS\":18,\"ARC_VARIANT\":6,\"FIT_SLOTS\":3,\"FAC_WPOOL\":6,\"MASTERY_XP\":5,\"MASTERY_PERKS\":5,\"FAVOUR_TIERS\":4,\"ARCHETYPES\":3,\"NODE_MODS\":2,\"SECTOR_CONDS\":5,\"HEAT\":7,\"RARITY\":4,\"PATRONS\":6,\"BOONS\":48,\"BOON_NEED\":20,\"ASPECTS\":6,\"FAC_WTRAIT\":6,\"BOONS_EVALUATED\":48,\"WTRAITS_SOURCE\":10}"
+  },
+  {
+   "check": "SHIP_NAMES unique",
+   "detail": "28 entries"
+  },
+  {
+   "check": "CAP_FIRST unique",
+   "detail": "28 entries"
+  },
+  {
+   "check": "CAP_LAST unique",
+   "detail": "28 entries"
+  },
+  {
+   "check": "EVENTS ids unique",
+   "detail": "33 events"
+  },
+  {
+   "check": "weapons defined",
+   "detail": "25 weapons: autocannon, battery, bioplasma, bombs, doom, flak, gauss, gsentry, guns, hbattery, htorp, hturbo, ion, lance, laser, pulsar, scatter, shard, sporeb, spores, startorp, tendril, torp, turbo, turret"
+  },
+  {
+   "check": "factionless squadron template (intentional)",
+   "detail": "fighter is a generic wing template (data.js:70-71); the port must not assume every HULLS entry has fac"
+  },
+  {
+   "check": "factionless squadron template (intentional)",
+   "detail": "bomber is a generic wing template (data.js:70-71); the port must not assume every HULLS entry has fac"
+  },
+  {
+   "check": "hull faction refs",
+   "detail": "all 51 hulls name a defined faction"
+  },
+  {
+   "check": "hull weapon refs",
+   "detail": "every mount resolves to a defined weapon"
+  },
+  {
+   "check": "hull ability refs",
+   "detail": "every hull ability resolves to ABILITIES"
+  },
+  {
+   "check": "faction rosters checked",
+   "detail": "voidsworn, hegemony, corsair, chorus, ithar, deathless"
+  },
+  {
+   "check": "admirals checked",
+   "detail": "24 admirals"
+  },
+  {
+   "check": "variants checked",
+   "detail": "18 variants, 11 with weapon removals"
+  },
+  {
+   "check": "boons checked",
+   "detail": "48 boons, patrons: iron, storm, hunger, star, rook, ember"
+  },
+  {
+   "check": "relic name coverage",
+   "detail": "{\"voidsworn\":\"NO RELIC_NAMES ROW\",\"hegemony\":\"11 of 12\",\"corsair\":\"10 of 12\",\"chorus\":\"11 of 12\",\"ithar\":\"8 of 12\",\"deathless\":\"10 of 12\"}"
+  },
+  {
+   "check": "nemesis tables checked",
+   "detail": "weaknesses: 7, adaptations: 5, traits: 14"
+  },
+  {
+   "check": "FAC_WPOOL recomputed",
+   "detail": "matches shipped table for all factions unless flagged above"
+  },
+  {
+   "check": "modules checked",
+   "detail": "13 modules, 14 perks"
+  }
+ ],
+ "findings": [
+  {
+   "level": "FIX",
+   "check": "weapon definitions identical except name",
+   "detail": "flak == gsentry : {\"k\":\"flak\",\"shots\":3,\"dmg\":3,\"r\":2,\"opt\":2,\"acc\":80,\"fall\":10,\"vsSq\":3,\"vsCap\":0.6}"
+  },
+  {
+   "level": "NOTE",
+   "check": "deathless hulls without reanimate field",
+   "detail": "d_boss"
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "vs_harrow_t (base harrow) removes: turret x1; adds: torp x1 | d: \"Twin prow torpedo tubes and no turret: a one-shot assassin.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "vs_penitent_g (base penitent) removes: lance x1; adds: battery x1 | d: \"Swaps the prow lance for a dorsal sear battery: guns in every arc.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "c_hulk_g (base c_hulk) removes: turret x1; adds: scatter x2 | d: \"No hangar; scatter broadsides, a turret and 20 more hull.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "b_spitter_s (base b_spitter) removes: bioplasma x1; adds: tendril x1 | d: \"Trades a prow gun for boarding tendrils: brutal up close.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "b_razor_s (base b_razor) removes: bioplasma x1; adds: tendril x1 | d: \"Two tendril clusters, +1 speed and +8 evasion.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "i_wisp_l (base i_wisp) removes: shard x1; adds: pulsar x1 | d: \"A prism lance in place of the prism shards.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "i_song_w (base i_song) removes: pulsar x1 | d: \"One lance on a turret, 30% more shields.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "d_harvester_t (base d_harvester) removes: gauss x1 | d: \"Its corona arc sits on a turret: it no longer has to turn to fire.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "vs_penitent_l (base penitent) removes: battery x1; adds: lance x1 | d: \"Two prow lances and a dorsal battery turret instead of the broadsides: its heavy punch points one way.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "c_marauder_g (base c_marauder) removes: flak x1; adds: torp x1 | d: \"A second prow torpedo instead of flak, and one hex slower.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "variant weapon removal vs base (disclosure judged in spec)",
+   "detail": "b_razor_e (base b_razor) removes: tendril x1; adds: bioplasma x1 | d: \"Its tendril cluster becomes a second spine volley on a turret; regrows 9 a round (2 more than the base), one hex slower.\""
+  },
+  {
+   "level": "NOTE",
+   "check": "RELIC_NAMES coverage",
+   "detail": "voidsworn has no RELIC_NAMES row at all (all relic names fall back to base names)"
+  },
+  {
+   "level": "NOTE",
+   "check": "FAC_PRICE missing class keys (falls back to x1.0)",
+   "detail": "voidsworn: Frigate, Destroyer, Cruiser, Battleship, Dreadnought"
+  },
+  {
+   "level": "NOTE",
+   "check": "FAC_PRICE missing class keys (falls back to x1.0)",
+   "detail": "hegemony: Frigate, Destroyer, Cruiser, Battleship, Super-dreadnought"
+  },
+  {
+   "level": "NOTE",
+   "check": "FAC_PRICE missing class keys (falls back to x1.0)",
+   "detail": "corsair: Battle-barge"
+  },
+  {
+   "level": "NOTE",
+   "check": "FAC_PRICE missing class keys (falls back to x1.0)",
+   "detail": "chorus: Squadron, Bio-titan"
+  },
+  {
+   "level": "NOTE",
+   "check": "FAC_PRICE missing class keys (falls back to x1.0)",
+   "detail": "ithar: Ark"
+  },
+  {
+   "level": "NOTE",
+   "check": "FAC_PRICE missing class keys (falls back to x1.0)",
+   "detail": "deathless: Tomb-ark"
+  },
+  {
+   "level": "NOTE",
+   "check": "KNOWN: flak vs gsentry",
+   "detail": "field-identical except name: true | flak={\"n\":\"Flak battery\",\"k\":\"flak\",\"shots\":3,\"dmg\":3,\"r\":2,\"opt\":2,\"acc\":80,\"fall\":10,\"vsSq\":3,\"vsCap\":0.6} gsentry={\"n\":\"Null sentries\",\"k\":\"flak\",\"shots\":3,\"dmg\":3,\"r\":2,\"opt\":2,\"acc\":80,\"fall\":10,\"vsSq\":3,\"vsCap\":0.6}"
+  },
+  {
+   "level": "NOTE",
+   "check": "KNOWN: d_boss reanimate",
+   "detail": "d_boss.reanimate = undefined; deathless hulls WITH reanimate: d_scythe, d_jackal, d_harvester, d_scythe_s, d_harvester_t, d_jackal_h"
+  },
+  {
+   "level": "NOTE",
+   "check": "KNOWN: ascendant vs cathedral",
+   "detail": "ascendant cp8 sp1 cost 520 w=[[\"hbattery\",\"P\"],[\"hbattery\",\"S\"],[\"turret\",\"T\"],[\"flak\",\"T\"]] | cathedral cp5 sp2 cost 340 w=[[\"hbattery\",\"P\"],[\"hbattery\",\"S\"],[\"lance\",\"F\"],[\"flak\",\"T\"]]"
+  },
+  {
+   "level": "NOTE",
+   "check": "KNOWN: d_meridian in HULLS",
+   "detail": "false (battleship entry filed Oct 29 is a proposal, not in data.js at the pin)"
+  },
+  {
+   "level": "NOTE",
+   "check": "KNOWN: Acceptable Loss in Crusade SHIP_NAMES",
+   "detail": "true (Oct 28 ruling swapped it out; still present at pin)"
+  }
+ ]
+}

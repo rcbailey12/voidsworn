@@ -1,0 +1,97 @@
+{
+ "voidsworn": {
+  "n": "Sunward Crusade",
+  "boss": "ascendant",
+  "roster": [
+   "warden",
+   "harrow",
+   "penitent",
+   "reliquary",
+   "cathedral"
+  ],
+  "hull": "#4a4440",
+  "trim": "#c8501f",
+  "glow": "#ff7a2a",
+  "style": "gothic",
+  "blurb": "The frontier the Hegemony wrote off, come to stop the Siphoning. Black-iron battleships: heavy armor, lances, and broadsides that hit harder on the move."
+ },
+ "hegemony": {
+  "n": "Hegemony Navy",
+  "hull": "#c4ccd5",
+  "trim": "#3a78d0",
+  "glow": "#5fa0ff",
+  "style": "wedge",
+  "blurb": "The Registry’s navy: linked crews, wedge hulls and drone escorts. Ion cannons strip shields; carriers launch fighter screens.",
+  "roster": [
+   "h_picket",
+   "h_interdictor",
+   "h_vanguard",
+   "h_dominion"
+  ],
+  "boss": "h_boss",
+  "sq": "fighter"
+ },
+ "corsair": {
+  "n": "Ashfall Hullbreakers",
+  "hull": "#6a2c22",
+  "trim": "#b8402a",
+  "glow": "#e0402c",
+  "style": "junk",
+  "blurb": "Furred pack hunters in ships that run dark, stripping every wreck. Fast, thin shields, and far too many rockets.",
+  "roster": [
+   "c_raider",
+   "c_reaver",
+   "c_marauder",
+   "c_hulk"
+  ],
+  "boss": "c_boss",
+  "sq": "bomber"
+ },
+ "chorus": {
+  "n": "The Chorus",
+  "hull": "#57364c",
+  "trim": "#a4913a",
+  "glow": "#d6d24a",
+  "style": "bio",
+  "blurb": "A living weapon that ate its makers. No shields at all, but their flesh knits back together every round.",
+  "roster": [
+   "b_drone",
+   "b_spitter",
+   "b_razor",
+   "b_brood"
+  ],
+  "boss": "b_boss",
+  "sq": "spore"
+ },
+ "ithar": {
+  "n": "The Glasswrights",
+  "hull": "#eef3f1",
+  "trim": "#d7c88a",
+  "glow": "#9fffd2",
+  "style": "sail",
+  "blurb": "Few, long-lived masters of light and crystal. Blindingly fast, heavily shielded, fragile once the shields fall.",
+  "roster": [
+   "i_wisp",
+   "i_blade",
+   "i_song",
+   "i_carrier"
+  ],
+  "boss": "i_boss",
+  "sq": "fighter"
+ },
+ "deathless": {
+  "n": "Eclipse",
+  "hull": "#1d2220",
+  "trim": "#1fbf4a",
+  "glow": "#3dff6a",
+  "style": "tomb",
+  "blurb": "Starwright minds in machine bodies, stealing starlight to light a new sun. Null weapons cut through shields and armor, and wrecks rebuild themselves.",
+  "roster": [
+   "d_scythe",
+   "d_jackal",
+   "d_harvester"
+  ],
+  "boss": "d_boss",
+  "sq": null
+ }
+}

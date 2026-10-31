@@ -1,3 +1,5 @@
+> Historical initial review at cc2d35fd. For current main 17268efa and the uploaded work, start with [the closing addendum](post_upload_closing_2026_10_31.md). In particular, the missing relics synthesis and 48-test coverage descriptions below are superseded.
+
 # Contribution review before the Opus reset
 
 Reviewed main **cc2d35fd7054458c1e5707561bb9c6a5da2e4227**, October 31, 2026. Scope: the past week's Muse, Qwen, DeepSeek and Google/Argon work, with current handoff consistency and the accuracy of synthesized findings as the priority. Argon is filed under `contrib/gemini/`.

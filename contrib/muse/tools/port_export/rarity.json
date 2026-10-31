@@ -1,0 +1,22 @@
+[
+ {
+  "n": "Common",
+  "m": 1,
+  "col": "#cfc6b0"
+ },
+ {
+  "n": "Rare",
+  "m": 1.5,
+  "col": "#62ccff"
+ },
+ {
+  "n": "Epic",
+  "m": 2,
+  "col": "#c58bff"
+ },
+ {
+  "n": "Legendary",
+  "m": 1,
+  "col": "#ff8a3d"
+ }
+]

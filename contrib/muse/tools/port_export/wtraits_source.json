@@ -1,0 +1,52 @@
+{
+ "las": {
+  "n": null,
+  "d": "holds its aim at long range",
+  "f_source": "w=>{ w.fall=Math.ceil(w.fall/2); w.acc+=4; }"
+ },
+ "hellfire": {
+  "n": null,
+  "d": "sets the target burning",
+  "f_source": "w=>{ w.ignite=1; }"
+ },
+ "plasma": {
+  "n": null,
+  "d": "a quarter burns through shields",
+  "f_source": "w=>{ w.pierce=Math.max(w.pierce||0,.25); w.dmg+=1; }"
+ },
+ "scrap": {
+  "n": null,
+  "d": "an extra shot, wild aim, lucky crits",
+  "f_source": "w=>{ w.shots+=1; w.acc-=12; w.crit=(w.crit||0)+3; }"
+ },
+ "rockets": {
+  "n": null,
+  "d": "a rocket salvo: hard to dodge, but point defense can shoot rockets down",
+  "f_source": "w=>{ w.shots*=3; w.dmg=Math.round(w.dmg/2.9); w.acc+=2; w.evMult=1.5; w.rockets=1; }"
+ },
+ "spines": {
+  "n": null,
+  "d": "each hit strips 3% armor (down to 15% less)",
+  "f_source": "w=>{ w.shred=.03; }"
+ },
+ "acid": {
+  "n": null,
+  "d": "acid eats 4 hull a turn for 2 turns, through shields and armor",
+  "f_source": "w=>{ w.acid=1; }"
+ },
+ "needle": {
+  "n": null,
+  "d": "precise: better aim and more criticals",
+  "f_source": "w=>{ w.acc+=6; w.crit=(w.crit||0)+8; }"
+ },
+ "star": {
+  "n": null,
+  "d": "fast: hard to dodge",
+  "f_source": "w=>{ w.evMult=1.2; }"
+ },
+ "gauss": {
+  "n": null,
+  "d": "ignores half of armor",
+  "f_source": "w=>{ w.armorPierce=.5; }"
+ }
+}

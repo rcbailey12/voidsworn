@@ -1,0 +1,25 @@
+PASS fresh
+PASS midrun
+PASS unlocked
+PASS partial_grant
+PASS longlived_meta
+PASS early_run
+PASS reward_mod
+PASS reward_prize
+PASS reward_salvage
+PASS reward_promo
+PASS meta_junk
+PASS nemesis_late
+PASS fleet_edges
+PASS sector3_run
+PASS settled_run
+PASS half_meta
+PASS half_run
+PASS absent_store
+PASS repaired
+PASS corrupt
+PASS corrupt2
+PASS synthetic:repaired-copy-fallback
+
+Fixtures: 21/21 cases passing (18 single-file cases, 3 input/output pair cases; 24 fixture JSON files, 26 files in the fixtures directory including README and generator)
+All checks (fixtures + synthetic): 22/22 passing

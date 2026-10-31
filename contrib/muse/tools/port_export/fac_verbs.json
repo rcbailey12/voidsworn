@@ -1,0 +1,62 @@
+{
+ "voidsworn": {
+  "id": "vigil",
+  "n": "Keep the dawn watch",
+  "d": "Next battle, ships next to an ally take 15% less hull damage.",
+  "cost": {
+   "cred": 40
+  },
+  "free": "shrine",
+  "freeD": "free after an offering at a wall of names",
+  "next": 1
+ },
+ "hegemony": {
+  "id": "drill",
+  "n": "Fleet drill",
+  "d": "Next battle, synchronized fire reaches 4 hexes from the flagship and its bonus rises to +20%.",
+  "cost": {
+   "cred": 35
+  },
+  "free": "defector",
+  "freeD": "free once a defector has briefed you",
+  "next": 1
+ },
+ "corsair": {
+  "id": "shake",
+  "n": "Shake down the lanes",
+  "d": "Gain 30 credits, plus 10 for every greedy choice this run. The Nemesis clock moves on.",
+  "cost": {},
+  "next": 0
+ },
+ "chorus": {
+  "id": "gorge",
+  "n": "Gorge",
+  "d": "Consume a refit from the hold: every ship regrows 20% of its hull (30% if the fleet has fed at a spawning field).",
+  "cost": {
+   "mod": 1
+  },
+  "next": 0
+ },
+ "ithar": {
+  "id": "attune",
+  "n": "Prism attunement",
+  "d": "Next battle, every shield is 25% stronger.",
+  "cost": {
+   "xp": 25
+  },
+  "free": "lament",
+  "freeD": "free once you have answered the tone",
+  "next": 1
+ },
+ "deathless": {
+  "id": "waken",
+  "n": "Back up the fleet",
+  "d": "Next battle, Archive restore brings back one more ship.",
+  "cost": {
+   "cred": 45
+  },
+  "free": "tombhome",
+  "freeD": "free once a dormant yard has woken a hull for you",
+  "next": 1
+ }
+}

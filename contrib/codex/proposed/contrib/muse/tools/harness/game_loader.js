@@ -29,7 +29,7 @@ const EXPORTS = [
   'FAC_GATES', 'ENCOUNTERS', 'SHAPES',
   // fleet generation + ramp (battle.js / core.js)
   'genEnemyFleet', 'effArch', 'RAMP', 'fleetPower',
-  'genSector', 'startBattle', 'terrainConnected', 'onBoard',
+  'genSector', 'startBattle', 'terrainConnected', 'onBoard', 'alive',
   // persistence (core.js)
   'Persist', 'STORE_KEY', 'SAVE_VERSION', 'defaultMeta', 'migrateMeta',
   'migrateRun', 'runDefaults', 'normalizeRun', 'repairRunIds',

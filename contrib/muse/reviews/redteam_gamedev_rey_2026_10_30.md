@@ -1,0 +1,58 @@
+# Red team audit: Game dev seat (Rey leg, blind)
+
+Seat: systems designer and implementer. Target: Voidsworn at the audit pin. Prior verdicts are treated as claims; where this leg confirms one, the confirming evidence is named. Code checks against the local clone are cited by file and line.
+
+## Findings
+
+### 1. The ruled Eclipse battleship is a reskinned cruiser wearing the arsenal's known dead slot, and it is not in the data yet (OBSERVED)
+
+The battleship entry's weapon kit is "w:[['gauss','T'],['gauss','T'],['doom','F'],['gsentry','T'],['flak','T']]" (battleship entry, section 1). The harvester it extends carries "w:[['gauss','T'],['gauss','T'],['doom','F'],['gsentry','T']]" (data.js, d_harvester). The capstone hull of the Eclipse ladder is the cruiser's kit plus one flak mount, with the frigate's ability (phase) unchanged. Worse, it mounts gsentry and flak side by side. Those two weapons are field-identical: flak at data.js:4 and gsentry at data.js:22 both read "shots:3,dmg:3,r:2,opt:2,acc:80,fall:10,vsSq:3,vsCap:.6". Eclipse is triple-exposed to the duplicate, because its rename table maps gauss to Null cannon, gsentry to "Null spire," and flak to "Null shredder" (data.js:40), so one gun occupies three slots in the faction's list. And the hull itself is still a proposal: a grep for d_meridian in data.js returns nothing. Cost: the one concrete deliverable of the faction shape program, the hull Ryan's Q7 ruling added, currently exists as a document, and as drafted it repeats the exact failure the faction shape synthesis flagged in d_boss, a top end that "reads as a scaled cruiser, not a capstone."
+
+### 2. Every system pours into one uncapped additive pool, so the game has itemization without buildcraft (OBSERVED)
+
+The weapons, modules, and boons syntheses each found duplication from a different door. The mechanism underneath all three is one function: sumFx at core.js:171 folds effects with "o[k]=(o[k]||0)+fx[k]", no caps, no maximums, no overwrites. derive() at core.js:207 pours fleet effects, module effects, captain perk effects, and aspect effects through that single fold. The design layer has a constitution (no duplication across doctrines and the skill tree); the runtime layer has no mechanism that could even detect a violation, let alone enforce one. The 216 drafted skill tree texts are next in line for the same pool. Cost: stacking is the only interaction any two systems can have, balance can only be tuned through prices, and every content wave adds levers that multiply existing ones. This is the structural cause; the four DUPLICATES WITH PAINT verdicts are its symptoms.
+
+### 3. Phased activation is a core-loop rewrite currently priced like a UI change (INFERRED, from OBSERVED structure)
+
+Phased activation is a settled ruling, and this finding attacks its cost accounting, not the ruling. The shipped activation model is per-unit and interleaved: the patch pack documents a veteran unit firing mid-move through an onLate callback (battle.js:1385) and a brace order whose legality closes once any weapon has fired. A side-wide move beat followed by a fire beat changes when every decision in the activation (brace, boarding, abilities, torpedo resolution, which the round-start code interleaves per side) becomes legal. It also invalidates the parity strategy: the Godot oracle is a line-for-line mirror of the browser file, the NOMIDFIRE read sits at battle.js:1385 in both, so parity tests encode the old activation model and will fight the redesign test by test. Cost: if this is scheduled as presentation work in the Godot port, it will arrive as an unbudgeted rules rewrite in the middle of a port whose whole safety case is parity.
+
+### 4. Turn start is an accreting pipeline of about fifteen subsystems, two of which fail silently by design (OBSERVED)
+
+startSideTurn (battle.js:365 onward, in the pack's excerpt) sequences event ticks, objective ticks, sticky focus refresh, boss command ticks, escort breaks, Nemesis flee and trip checks, wing stance selection, resolve gain, Deathless reassembly, per-unit state resets, four-facing shield regeneration, the Ithar shield charge, hull regeneration, acid and fire ticks, ion storm terrain, crew-death disabling, the gravity well tick, and flare events. The enemy-turn entry to two of these runs inside "try{ aiRefreshFocus(); }catch(e){} try{ bossCmdTick(); }catch(e){}" (battle.js:368), so a broken focus refresh or boss command tick throws, is swallowed, and fails forever with no signal. The version tags in the comments (v50, v53, B3, B4, R42) show rules layered in by patch. Cost: the real ruleset is the order of operations in this one function, nobody can state it in full, and the Godot port must replicate behavior it cannot read as a specification.
+
+### 5. Weapon progression is linear replacement, not choice (OBSERVED)
+
+Confirmed and sharpened from the weapons synthesis. hbattery strictly dominates battery on every field in the table: same range, optimal, accuracy, and falloff, with +1 shot, +1 damage, +1 crit (data.js, battery and hbattery rows). turbo and gauss sit on the identical expected-damage line, 2 x 9 x 0.74 = 3 x 6 x 0.74 = 13.32, with gauss adding pierce .6 for free. Hulls separate the pairs by tier (the penitent carries battery, the cathedral carries hbattery), so the player's decision is which hull they can afford, never which gun behavior they want. Cost: a 25-weapon table produces almost no fitting decisions, which is why the module layer's missing build layer (modules synthesis, finding 1) hurts so much: there is no second system where weapon choice could live.
+
+### 6. Enemy generation cannot express the game's own faction design (OBSERVED via the syntheses' chair-verified code reads)
+
+The faction shape synthesis records that genEnemyFleet spends CP only and FAC_PRICE is never consulted; the AI synthesis records that composition is one seeded intent (a carrier, a big hull, a swarm filter) plus weighted random fill with no role logic. The CP principle Ryan ruled, Eclipse stronger and more expensive, Chorus the opposite, across stats, price, and CP, is therefore implemented only on the player-facing side. The opponent a player actually fights expresses faction through hull stats and traits alone. Cost: half of the faction shape system is cosmetic from the player's seat, and any future CP or price rebalancing changes shop numbers without changing a single enemy fleet, so playtesting balance against the AI cannot validate the principle the design is built on.
+
+### 7. CP is flat exactly where battles are fought, then jumps without a stated principle (OBSERVED)
+
+Every frigate in all six factions costs cp1 and every destroyer cp2 (HULLS table: warden, h_picket, c_raider, b_drone, i_wisp, d_scythe at 1; harrow, h_interdictor, c_reaver, b_spitter, i_blade, d_jackal at 2). At the same cp1, d_scythe carries hp56 and armor .2 while i_wisp carries hp30 and armor 0, so CP does not encode hull power at the bottom either. Cruiser CP then varies 3 or 4 by faction (penitent 3, c_marauder 3, b_razor 3, h_vanguard 4, i_song 4, d_harvester 4) with no pattern a player could learn. Cost: the currency that limits fleet size carries no faction shape signal in the early game, where first impressions and the near-impossible run 1 are decided, and starts carrying it later in a code the player was never taught.
+
+### 8. Verified defect knowledge is being produced faster than any lane lands fixes (OBSERVED)
+
+The veteran brace bypass is the emblem: mechanism verified by two independent legs and the chair, a patch diff written and test-applied to a scratch copy (patch pack, section 1), and the shipped behavior unchanged, because the browser is frozen and the diff is written against browser line numbers. NOMIDFIRE, the flag that gates the buggy path, is set nowhere in the repo: one read at battle.js:1385 plus its two Godot oracle mirrors, nothing else. The findings-to-tests ledger closes the loop: 8 PASS and 40 FAIL at the pin, where every failure is a correct regression test against an unfixed defect. Cost: the audit program's output is compounding as documentation while the game's defect count stays flat; unless each patch spec is carried into the Godot port as behavior (with its acceptance check, which the patch pack does supply), the port inherits all 40 knowingly.
+
+### 9. Dead and contradictory design records will be ported as truth (OBSERVED)
+
+The torpedo comment promises off-center penalties of 10 and 25 at range 6; the live constant is "const TORP_RING=[0,5,15]" (battle.js:536) and the weapons synthesis verifies range 5. ARC_NAME defines "R:'Rear'" (data.js:29) under the standing rule that guns never face backward, and no mount in the hull table uses it. startorp carries "evMult:2" (data.js:20) that the Ithar trait overwrites in live play. Each is trivial alone. As a class they are the port's requirements documents, because parity is enforced against mirrors of these exact files. Cost: every stale comment and dead field is a future parity argument waiting to happen, and the cheapest time to delete them is before the oracle freezes them.
+
+### 10. The Chorus has a stat block where the other factions have systems (OBSERVED)
+
+Eclipse reanimation is a real state machine in the turn code: ships rise at turn start through legionTurn, and "for(const u of risen) for(const w of u.weapons) w.fired=true" keeps a reassembled ship from firing the round it rises. The Ithar shield charge gets its own turn-start step (ithChargeTurn). The Chorus, the faction whose fiction is grown fleets that feed, has regeneration numbers (regen 4 on b_drone up to 20 on b_boss) and a signature wing that the squadrons synthesis verified is a bomber reskin, but no feed or grow mechanic anywhere in the evidence. Cost: the faction with the strongest mechanical hook in its fiction plays as numbers with a regen tick, and because of finding 6 its swarm identity cannot even be expressed by enemy generation. Of the six factions, it is the one a player cannot describe after a run.
+
+## Verdict
+
+Verdict: NOT COMPOSED: the content is real and several subsystems are genuinely good, but the game is a pile of well-made parts pouring into one uncapped additive pool (core.js:171), with no build layer, no composition logic, and no enforcement of its own design constitution. The single most important attack: fix the fold before adding the forest. The 216 skill tree texts are about to land in the same sumFx pool that already made weapons, modules, and boons read as duplicates with paint; if caps, overwrites, or exclusivity do not exist by then, the tree will inherit the duplication verdict on arrival.
+
+## Not checked
+
+- aiVolley, evalOffense, and evalThreat internals: the pack names them as one-read checks and does not slice them, so targeting quality is judged only through the AI synthesis.
+- campaign_run.js and campaign_meta.js economy and offer code directly: economy and boon tax claims rest on the syntheses and the chair's code answers, not on this leg's own read.
+- The Godot tree beyond the oracle mirrors: parity structure is inferred from the mirrored battle.js, not from reading the Godot implementation.
+- Whether the 216 tree texts are wired to any runtime structure yet: no tree implementation appears in the pack's evidence.
+- Hands-on feel: turn length, decision weight in play, and whether the additive stacking is actually visible to a player are playtest questions this pack cannot settle.
+- The remaining patch pack sections (3 to 6) and the telemetry spec: referenced in the evidence base but not sliced into this pack.

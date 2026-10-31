@@ -1,0 +1,12 @@
+{
+ "bounty": {
+  "n": "Bounty",
+  "short": "Bounty",
+  "d": "A price on this fleet: +50% credits, and they bring 10% more ships."
+ },
+ "veteran": {
+  "n": "Veteran captain",
+  "short": "Veteran",
+  "d": "Their largest ship has an elite captain."
+ }
+}

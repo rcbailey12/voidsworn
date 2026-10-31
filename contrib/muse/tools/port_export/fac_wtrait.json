@@ -1,0 +1,35 @@
+{
+ "voidsworn": {
+  "autocannon": "las",
+  "battery": "las",
+  "hbattery": "las",
+  "turret": "las",
+  "torp": "hellfire"
+ },
+ "hegemony": {
+  "laser": "plasma",
+  "turbo": "plasma",
+  "hturbo": "plasma"
+ },
+ "corsair": {
+  "autocannon": "scrap",
+  "scatter": "scrap",
+  "turret": "scrap",
+  "torp": "rockets",
+  "htorp": "rockets"
+ },
+ "chorus": {
+  "bioplasma": "spines",
+  "tendril": "acid",
+  "sporeb": "acid"
+ },
+ "ithar": {
+  "shard": "needle",
+  "turret": "needle",
+  "startorp": "star"
+ },
+ "deathless": {
+  "gauss": "gauss",
+  "doom": "gauss"
+ }
+}

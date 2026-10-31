@@ -1,0 +1,62 @@
+{
+ "cunning": {
+  "n": "Cunning",
+  "d": "Strikes your flanks and your weakest ship.",
+  "ai": {
+   "focusWeak": 1,
+   "rear": 1
+  }
+ },
+ "zealous": {
+  "n": "Zealous",
+  "d": "Charges in and never backs off.",
+  "ai": {
+   "tw": 0.6,
+   "range": -2
+  }
+ },
+ "cruel": {
+  "n": "Cruel",
+  "d": "Finishes crippled ships first.",
+  "ai": {
+   "focusWeak": 1
+  }
+ },
+ "patient": {
+  "n": "Patient",
+  "d": "Waits for you to come to him.",
+  "ai": {
+   "tw": 1.3,
+   "range": 2
+  }
+ },
+ "proud": {
+  "n": "Proud",
+  "d": "Leads from the front with his flagship.",
+  "ai": {
+   "flagFront": 1
+  }
+ },
+ "greedy": {
+  "n": "Greedy",
+  "d": "Goes for your richest prize, your flagship.",
+  "ai": {
+   "focusFlag": 1
+  }
+ },
+ "methodical": {
+  "n": "Methodical",
+  "d": "Holds his line and advances only in formation.",
+  "ai": {
+   "tw": 1.2
+  }
+ },
+ "ravenous": {
+  "n": "Ravenous",
+  "d": "Swarms whatever is closest.",
+  "ai": {
+   "tw": 0.5,
+   "range": -1
+  }
+ }
+}

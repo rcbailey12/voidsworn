@@ -1,0 +1,9 @@
+{
+ "loaders": "batt",
+ "crystal": "lance",
+ "magazine": "torp",
+ "flakplus": "flak",
+ "capacitor": "shields",
+ "regen": "shields",
+ "hangar": "carrier"
+}

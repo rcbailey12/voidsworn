@@ -1,0 +1,370 @@
+{
+ "vs_harrow_t": {
+  "base": "harrow",
+  "n": "Harrow torpedo-destroyer",
+  "d": "Twin prow torpedo tubes and no turret: a one-shot assassin.",
+  "w": [
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "torp",
+    "F"
+   ]
+  ],
+  "cost": 20
+ },
+ "vs_penitent_g": {
+  "base": "penitent",
+  "n": "Vigil gun-cruiser",
+  "d": "Swaps the prow lance for a dorsal sear battery: guns in every arc.",
+  "w": [
+   [
+    "battery",
+    "P"
+   ],
+   [
+    "battery",
+    "S"
+   ],
+   [
+    "battery",
+    "T"
+   ]
+  ],
+  "cost": 25
+ },
+ "h_picket_i": {
+  "base": "h_picket",
+  "n": "Picket interceptor",
+  "d": "Turret laser and +6 evasion: screens wherever it points.",
+  "w": [
+   [
+    "laser",
+    "T"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "mod": {
+   "ev": 24
+  },
+  "cost": 15
+ },
+ "h_vanguard_g": {
+  "base": "h_vanguard",
+  "n": "Vanguard gunship",
+  "d": "No hangar; a third plasma lance turret instead.",
+  "w": [
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "ion",
+    "F"
+   ]
+  ],
+  "mod": {
+   "ab": null,
+   "hangar": 0
+  },
+  "cost": 25
+ },
+ "c_reaver_t": {
+  "base": "c_reaver",
+  "n": "Turret gutship",
+  "d": "Scatter cannons on a turret instead of one broadside.",
+  "w": [
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "scatter",
+    "T"
+   ]
+  ],
+  "cost": 15
+ },
+ "c_hulk_g": {
+  "base": "c_hulk",
+  "n": "Gun-hulk",
+  "d": "No hangar; scatter broadsides, a turret and 20 more hull.",
+  "w": [
+   [
+    "scatter",
+    "P"
+   ],
+   [
+    "scatter",
+    "S"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "mod": {
+   "ab": null,
+   "hangar": 0,
+   "hp": 190
+  },
+  "cost": 25
+ },
+ "b_spitter_s": {
+  "base": "b_spitter",
+  "n": "Spitter stinger",
+  "d": "Trades a prow gun for boarding tendrils: brutal up close.",
+  "w": [
+   [
+    "bioplasma",
+    "T"
+   ],
+   [
+    "tendril",
+    "T"
+   ]
+  ],
+  "cost": 15
+ },
+ "b_razor_s": {
+  "base": "b_razor",
+  "n": "Bladeback stalker",
+  "d": "Two tendril clusters, +1 speed and +8 evasion.",
+  "w": [
+   [
+    "tendril",
+    "T"
+   ],
+   [
+    "tendril",
+    "T"
+   ]
+  ],
+  "mod": {
+   "sp": 5,
+   "ev": 12
+  },
+  "cost": 25
+ },
+ "i_wisp_l": {
+  "base": "i_wisp",
+  "n": "Sliver lancer",
+  "d": "A prism lance in place of the prism shards.",
+  "w": [
+   [
+    "pulsar",
+    "F"
+   ]
+  ],
+  "cost": 15
+ },
+ "i_song_w": {
+  "base": "i_song",
+  "n": "Warded prism",
+  "d": "One lance on a turret, 30% more shields.",
+  "w": [
+   [
+    "pulsar",
+    "T"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "mod": {
+   "sh": 34
+  },
+  "cost": 25
+ },
+ "d_scythe_s": {
+  "base": "d_scythe",
+  "n": "Mote sentinel",
+  "d": "Adds a null spire: shoots down squadrons and boarders’ craft.",
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gsentry",
+    "T"
+   ]
+  ],
+  "cost": 15
+ },
+ "d_harvester_t": {
+  "base": "d_harvester",
+  "n": "Turreted zenith",
+  "d": "Its corona arc sits on a turret: it no longer has to turn to fire.",
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "doom",
+    "T"
+   ],
+   [
+    "gsentry",
+    "T"
+   ]
+  ],
+  "cost": 30
+ },
+ "vs_penitent_l": {
+  "base": "penitent",
+  "arc": "voidsworn",
+  "n": "Vigil lance-cruiser",
+  "d": "Two prow lances and a dorsal battery turret instead of the broadsides: its heavy punch points one way.",
+  "w": [
+   [
+    "lance",
+    "F"
+   ],
+   [
+    "lance",
+    "F"
+   ],
+   [
+    "battery",
+    "T"
+   ]
+  ],
+  "cost": 0
+ },
+ "h_interdictor_e": {
+  "base": "h_interdictor",
+  "arc": "hegemony",
+  "n": "Cordon column escort",
+  "d": "Adds a flak turret, paid for with a lighter hull (60) and one hex of speed.",
+  "w": [
+   [
+    "ion",
+    "F"
+   ],
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "mod": {
+   "hp": 60,
+   "sp": 3
+  },
+  "cost": 0
+ },
+ "c_marauder_g": {
+  "base": "c_marauder",
+  "arc": "corsair",
+  "n": "Trophy wrecker",
+  "d": "A second prow torpedo instead of flak, and one hex slower.",
+  "w": [
+   [
+    "scatter",
+    "P"
+   ],
+   [
+    "scatter",
+    "S"
+   ],
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "torp",
+    "F"
+   ]
+  ],
+  "mod": {
+   "sp": 3
+  },
+  "cost": 0
+ },
+ "b_razor_e": {
+  "base": "b_razor",
+  "arc": "chorus",
+  "n": "Sun-eater bladeback",
+  "d": "Its tendril cluster becomes a second spine volley on a turret; regrows 9 a round (2 more than the base), one hex slower.",
+  "w": [
+   [
+    "bioplasma",
+    "T"
+   ],
+   [
+    "bioplasma",
+    "F"
+   ]
+  ],
+  "mod": {
+   "regen": 9,
+   "sp": 3
+  },
+  "cost": 0
+ },
+ "i_carrier_a": {
+  "base": "i_carrier",
+  "arc": "ithar",
+  "n": "Ringing aperture",
+  "d": "A third wing, paid for with lighter shields (22) and one hex of speed.",
+  "w": [
+   [
+    "pulsar",
+    "F"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "mod": {
+   "hangar": 3,
+   "sh": 22,
+   "sp": 3
+  },
+  "cost": 0
+ },
+ "d_jackal_h": {
+  "base": "d_jackal",
+  "arc": "deathless",
+  "n": "Archive guard flare",
+  "d": "Both null cannons on turrets and a null spire, 10 less hull.",
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gsentry",
+    "T"
+   ]
+  ],
+  "mod": {
+   "hp": 100
+  },
+  "cost": 0
+ }
+}

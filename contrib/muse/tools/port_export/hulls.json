@@ -1,0 +1,1567 @@
+{
+ "warden": {
+  "n": "Warden-class frigate",
+  "cls": "Frigate",
+  "fac": "voidsworn",
+  "size": 0.5,
+  "cp": 1,
+  "hp": 45,
+  "sh": 10,
+  "rg": 5,
+  "ar": 0.1,
+  "sp": 5,
+  "tn": 3,
+  "ev": 20,
+  "w": [
+   [
+    "autocannon",
+    "F"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "evasive",
+  "slots": 1,
+  "cost": 70
+ },
+ "harrow": {
+  "n": "Harrow-class destroyer",
+  "cls": "Destroyer",
+  "fac": "voidsworn",
+  "size": 0.6,
+  "cp": 2,
+  "hp": 78,
+  "sh": 14,
+  "rg": 6,
+  "ar": 0.15,
+  "sp": 4,
+  "tn": 2,
+  "ev": 12,
+  "w": [
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "ab": "reload",
+  "slots": 1,
+  "cost": 130
+ },
+ "penitent": {
+  "n": "Vigil-class cruiser",
+  "cls": "Cruiser",
+  "fac": "voidsworn",
+  "size": 0.76,
+  "cp": 3,
+  "hp": 120,
+  "sh": 20,
+  "rg": 8,
+  "ar": 0.2,
+  "sp": 3,
+  "tn": 2,
+  "ev": 5,
+  "w": [
+   [
+    "battery",
+    "P"
+   ],
+   [
+    "battery",
+    "S"
+   ],
+   [
+    "lance",
+    "F"
+   ]
+  ],
+  "ab": "focus",
+  "slots": 2,
+  "cost": 200
+ },
+ "reliquary": {
+  "n": "Hearth-class carrier",
+  "cls": "Carrier",
+  "fac": "voidsworn",
+  "size": 0.84,
+  "cp": 4,
+  "hp": 130,
+  "sh": 22,
+  "rg": 9,
+  "ar": 0.15,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "turret",
+    "T"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 2,
+  "slots": 2,
+  "cost": 325,
+  "cost0": 260
+ },
+ "cathedral": {
+  "n": "Bastion-class battleship",
+  "cls": "Battleship",
+  "fac": "voidsworn",
+  "size": 0.95,
+  "cp": 5,
+  "hp": 220,
+  "sh": 30,
+  "rg": 12,
+  "ar": 0.3,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "hbattery",
+    "P"
+   ],
+   [
+    "hbattery",
+    "S"
+   ],
+   [
+    "lance",
+    "F"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "surge",
+  "slots": 3,
+  "cost": 340
+ },
+ "ascendant": {
+  "n": "Daybreak-class dreadnought",
+  "cls": "Dreadnought",
+  "fac": "voidsworn",
+  "size": 1.18,
+  "cp": 8,
+  "hp": 370,
+  "sh": 32,
+  "rg": 15,
+  "ar": 0.35,
+  "sp": 1,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "hbattery",
+    "P"
+   ],
+   [
+    "hbattery",
+    "S"
+   ],
+   [
+    "turret",
+    "T"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "nova",
+  "slots": 3,
+  "cost": 520,
+  "unique": true,
+  "boss": true
+ },
+ "fighter": {
+  "n": "Fighter wing",
+  "cls": "Squadron",
+  "size": 0.34,
+  "cp": 0,
+  "hp": 18,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0,
+  "sp": 6,
+  "tn": 9,
+  "ev": 35,
+  "w": [
+   [
+    "guns",
+    "T"
+   ]
+  ],
+  "sq": "fighter"
+ },
+ "bomber": {
+  "n": "Bomber wing",
+  "cls": "Squadron",
+  "size": 0.34,
+  "cp": 0,
+  "hp": 28,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0,
+  "sp": 5,
+  "tn": 9,
+  "ev": 25,
+  "w": [
+   [
+    "bombs",
+    "T"
+   ]
+  ],
+  "sq": "bomber"
+ },
+ "spore": {
+  "n": "Spore swarm",
+  "cls": "Squadron",
+  "fac": "chorus",
+  "size": 0.34,
+  "cp": 0,
+  "hp": 26,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0,
+  "sp": 5,
+  "tn": 9,
+  "ev": 25,
+  "w": [
+   [
+    "sporeb",
+    "T"
+   ]
+  ],
+  "sq": "bomber"
+ },
+ "h_picket": {
+  "n": "Hegemony picket",
+  "cls": "Frigate",
+  "fac": "hegemony",
+  "size": 0.5,
+  "cp": 1,
+  "hp": 40,
+  "sh": 10,
+  "rg": 5,
+  "ar": 0.1,
+  "sp": 5,
+  "tn": 3,
+  "ev": 18,
+  "w": [
+   [
+    "laser",
+    "F"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "evasive",
+  "cost": 70,
+  "slots": 1
+ },
+ "h_interdictor": {
+  "n": "Cordon destroyer",
+  "cls": "Destroyer",
+  "fac": "hegemony",
+  "size": 0.6,
+  "cp": 2,
+  "hp": 74,
+  "sh": 18,
+  "rg": 7,
+  "ar": 0.15,
+  "sp": 4,
+  "tn": 2,
+  "ev": 10,
+  "w": [
+   [
+    "ion",
+    "F"
+   ],
+   [
+    "turbo",
+    "T"
+   ]
+  ],
+  "ab": "ionpulse",
+  "cost": 130,
+  "slots": 1
+ },
+ "h_vanguard": {
+  "n": "Vanguard cruiser",
+  "cls": "Cruiser",
+  "fac": "hegemony",
+  "size": 0.78,
+  "cp": 4,
+  "hp": 140,
+  "sh": 24,
+  "rg": 10,
+  "ar": 0.2,
+  "sp": 3,
+  "tn": 1,
+  "ev": 4,
+  "w": [
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "ion",
+    "F"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 1,
+  "cost": 250,
+  "slots": 2
+ },
+ "h_dominion": {
+  "n": "Dominion dreadnought",
+  "cls": "Battleship",
+  "fac": "hegemony",
+  "size": 0.98,
+  "cp": 6,
+  "hp": 230,
+  "sh": 32,
+  "rg": 12,
+  "ar": 0.25,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "hturbo",
+    "P"
+   ],
+   [
+    "hturbo",
+    "S"
+   ],
+   [
+    "ion",
+    "F"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 1,
+  "cost": 370,
+  "slots": 3
+ },
+ "h_boss": {
+  "n": "The Iron Mandate",
+  "cls": "Super-dreadnought",
+  "fac": "hegemony",
+  "size": 1.3,
+  "cp": 12,
+  "hp": 560,
+  "sh": 40,
+  "rg": 10,
+  "ar": 0.3,
+  "sp": 1,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "hturbo",
+    "P"
+   ],
+   [
+    "hturbo",
+    "S"
+   ],
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "ion",
+    "F"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "nova",
+  "boss": true
+ },
+ "c_raider": {
+  "n": "Hullbreaker raider",
+  "cls": "Frigate",
+  "fac": "corsair",
+  "size": 0.48,
+  "cp": 1,
+  "hp": 46,
+  "sh": 8,
+  "rg": 4,
+  "ar": 0.05,
+  "sp": 6,
+  "tn": 3,
+  "ev": 28,
+  "w": [
+   [
+    "autocannon",
+    "T"
+   ]
+  ],
+  "ab": "overburn",
+  "cost": 55,
+  "slots": 1,
+  "cost0": 70
+ },
+ "c_reaver": {
+  "n": "Hullbreaker gutship",
+  "cls": "Destroyer",
+  "fac": "corsair",
+  "size": 0.6,
+  "cp": 2,
+  "hp": 68,
+  "sh": 10,
+  "rg": 5,
+  "ar": 0.1,
+  "sp": 5,
+  "tn": 2,
+  "ev": 15,
+  "w": [
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "scatter",
+    "S"
+   ]
+  ],
+  "ab": "reload",
+  "cost": 110,
+  "slots": 1,
+  "cost0": 130
+ },
+ "c_marauder": {
+  "n": "Hullbreaker wrecker",
+  "cls": "Cruiser",
+  "fac": "corsair",
+  "size": 0.74,
+  "cp": 3,
+  "hp": 120,
+  "sh": 16,
+  "rg": 7,
+  "ar": 0.15,
+  "sp": 4,
+  "tn": 2,
+  "ev": 6,
+  "w": [
+   [
+    "scatter",
+    "P"
+   ],
+   [
+    "scatter",
+    "S"
+   ],
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "overburn",
+  "cost": 200,
+  "slots": 2,
+  "cost0": 190
+ },
+ "c_hulk": {
+  "n": "Hullbreaker hulk-carrier",
+  "cls": "Carrier",
+  "fac": "corsair",
+  "size": 0.86,
+  "cp": 4,
+  "hp": 170,
+  "sh": 16,
+  "rg": 6,
+  "ar": 0.2,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "turret",
+    "T"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 2,
+  "cost": 290,
+  "slots": 2,
+  "cost0": 250
+ },
+ "c_boss": {
+  "n": "Warlord's Pyre-Barge",
+  "cls": "Battle-barge",
+  "fac": "corsair",
+  "size": 1.22,
+  "cp": 10,
+  "hp": 600,
+  "sh": 30,
+  "rg": 8,
+  "ar": 0.25,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "scatter",
+    "P"
+   ],
+   [
+    "scatter",
+    "S"
+   ],
+   [
+    "htorp",
+    "F"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 2,
+  "boss": true
+ },
+ "b_drone": {
+  "n": "Chorus drone-spawn",
+  "cls": "Frigate",
+  "fac": "chorus",
+  "size": 0.48,
+  "cp": 1,
+  "hp": 46,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.05,
+  "sp": 5,
+  "tn": 3,
+  "ev": 15,
+  "w": [
+   [
+    "tendril",
+    "T"
+   ]
+  ],
+  "ab": "regrow",
+  "regen": 4,
+  "cost": 45,
+  "slots": 1,
+  "cost0": 70
+ },
+ "b_spitter": {
+  "n": "Chorus spitter",
+  "cls": "Destroyer",
+  "fac": "chorus",
+  "size": 0.6,
+  "cp": 2,
+  "hp": 82,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.1,
+  "sp": 4,
+  "tn": 2,
+  "ev": 8,
+  "w": [
+   [
+    "bioplasma",
+    "T"
+   ],
+   [
+    "bioplasma",
+    "F"
+   ]
+  ],
+  "ab": "regrow",
+  "regen": 5,
+  "cost": 100,
+  "slots": 1,
+  "cost0": 130
+ },
+ "b_razor": {
+  "n": "Chorus bladeback",
+  "cls": "Cruiser",
+  "fac": "chorus",
+  "size": 0.76,
+  "cp": 3,
+  "hp": 150,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.2,
+  "sp": 4,
+  "tn": 2,
+  "ev": 4,
+  "w": [
+   [
+    "tendril",
+    "T"
+   ],
+   [
+    "bioplasma",
+    "F"
+   ]
+  ],
+  "ab": "frenzy",
+  "regen": 7,
+  "cost": 190,
+  "slots": 2
+ },
+ "b_brood": {
+  "n": "Chorus brood-sac",
+  "cls": "Carrier",
+  "fac": "chorus",
+  "size": 0.9,
+  "cp": 5,
+  "hp": 200,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.2,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "bioplasma",
+    "F"
+   ],
+   [
+    "spores",
+    "T"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 3,
+  "regen": 8,
+  "cost": 370,
+  "slots": 3,
+  "cost0": 310
+ },
+ "b_boss": {
+  "n": "The Ninefold Maw",
+  "cls": "Bio-titan",
+  "fac": "chorus",
+  "size": 1.3,
+  "cp": 12,
+  "hp": 650,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.25,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "bioplasma",
+    "F"
+   ],
+   [
+    "bioplasma",
+    "F"
+   ],
+   [
+    "tendril",
+    "T"
+   ],
+   [
+    "spores",
+    "T"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 3,
+  "regen": 20,
+  "boss": true
+ },
+ "i_wisp": {
+  "n": "Glasswright sliver",
+  "cls": "Frigate",
+  "fac": "ithar",
+  "size": 0.46,
+  "cp": 1,
+  "hp": 30,
+  "sh": 12,
+  "rg": 6,
+  "ar": 0,
+  "sp": 7,
+  "tn": 3,
+  "ev": 28,
+  "w": [
+   [
+    "shard",
+    "F"
+   ]
+  ],
+  "ab": "blink",
+  "cost": 90,
+  "slots": 1,
+  "cost0": 70
+ },
+ "i_blade": {
+  "n": "Glasswright lancet",
+  "cls": "Destroyer",
+  "fac": "ithar",
+  "size": 0.58,
+  "cp": 2,
+  "hp": 60,
+  "sh": 16,
+  "rg": 8,
+  "ar": 0,
+  "sp": 6,
+  "tn": 3,
+  "ev": 24,
+  "w": [
+   [
+    "shard",
+    "F"
+   ],
+   [
+    "startorp",
+    "F"
+   ]
+  ],
+  "ab": "blink",
+  "cost": 170,
+  "slots": 1,
+  "cost0": 130
+ },
+ "i_song": {
+  "n": "Glasswright prism",
+  "cls": "Cruiser",
+  "fac": "ithar",
+  "size": 0.74,
+  "cp": 4,
+  "hp": 90,
+  "sh": 26,
+  "rg": 10,
+  "ar": 0.05,
+  "sp": 5,
+  "tn": 2,
+  "ev": 16,
+  "w": [
+   [
+    "pulsar",
+    "F"
+   ],
+   [
+    "pulsar",
+    "F"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "ab": "surge",
+  "cost": 290,
+  "slots": 2,
+  "cost0": 250
+ },
+ "i_carrier": {
+  "n": "Glasswright aperture",
+  "cls": "Carrier",
+  "fac": "ithar",
+  "size": 0.84,
+  "cp": 5,
+  "hp": 140,
+  "sh": 28,
+  "rg": 10,
+  "ar": 0.05,
+  "sp": 4,
+  "tn": 2,
+  "ev": 12,
+  "w": [
+   [
+    "pulsar",
+    "F"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 2,
+  "cost": 340,
+  "slots": 3,
+  "cost0": 310
+ },
+ "i_boss": {
+  "n": "The Unfinished",
+  "cls": "Ark",
+  "fac": "ithar",
+  "size": 1.26,
+  "cp": 11,
+  "hp": 470,
+  "sh": 34,
+  "rg": 14,
+  "ar": 0.2,
+  "sp": 3,
+  "tn": 2,
+  "ev": 6,
+  "w": [
+   [
+    "pulsar",
+    "F"
+   ],
+   [
+    "pulsar",
+    "F"
+   ],
+   [
+    "pulsar",
+    "T"
+   ],
+   [
+    "turret",
+    "T"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "surge",
+  "boss": true
+ },
+ "d_scythe": {
+  "n": "Eclipse mote",
+  "cls": "Frigate",
+  "fac": "deathless",
+  "size": 0.5,
+  "cp": 1,
+  "hp": 56,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.2,
+  "sp": 4,
+  "tn": 2,
+  "ev": 14,
+  "w": [
+   [
+    "gauss",
+    "T"
+   ]
+  ],
+  "ab": "phase",
+  "regen": 3,
+  "reanimate": true,
+  "cost": 100,
+  "slots": 1,
+  "cost0": 70
+ },
+ "d_jackal": {
+  "n": "Eclipse flare",
+  "cls": "Destroyer",
+  "fac": "deathless",
+  "size": 0.62,
+  "cp": 2,
+  "hp": 110,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.25,
+  "sp": 3,
+  "tn": 2,
+  "ev": 6,
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gauss",
+    "F"
+   ]
+  ],
+  "ab": "phase",
+  "regen": 3,
+  "reanimate": true,
+  "cost": 195,
+  "slots": 1,
+  "cost0": 130
+ },
+ "d_harvester": {
+  "n": "Eclipse zenith",
+  "cls": "Cruiser",
+  "fac": "deathless",
+  "size": 0.82,
+  "cp": 4,
+  "hp": 145,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.3,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "doom",
+    "F"
+   ],
+   [
+    "gsentry",
+    "T"
+   ]
+  ],
+  "ab": "reclaim",
+  "regen": 4,
+  "reanimate": true,
+  "cost": 390,
+  "slots": 2,
+  "cost0": 250
+ },
+ "d_boss": {
+  "n": "The Unsetting",
+  "cls": "Tomb-ark",
+  "fac": "deathless",
+  "size": 1.3,
+  "cp": 12,
+  "hp": 480,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.35,
+  "sp": 1,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "doom",
+    "F"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "nova",
+  "regen": 8,
+  "boss": true
+ },
+ "vs_harrow_t": {
+  "n": "Harrow torpedo-destroyer",
+  "cls": "Destroyer",
+  "fac": "voidsworn",
+  "size": 0.6,
+  "cp": 2,
+  "hp": 78,
+  "sh": 14,
+  "rg": 6,
+  "ar": 0.15,
+  "sp": 4,
+  "tn": 2,
+  "ev": 12,
+  "w": [
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "torp",
+    "F"
+   ]
+  ],
+  "ab": "reload",
+  "slots": 1,
+  "cost": 130,
+  "variant": "vs_harrow_t",
+  "base": "harrow"
+ },
+ "vs_penitent_g": {
+  "n": "Vigil gun-cruiser",
+  "cls": "Cruiser",
+  "fac": "voidsworn",
+  "size": 0.76,
+  "cp": 3,
+  "hp": 120,
+  "sh": 20,
+  "rg": 8,
+  "ar": 0.2,
+  "sp": 3,
+  "tn": 2,
+  "ev": 5,
+  "w": [
+   [
+    "battery",
+    "P"
+   ],
+   [
+    "battery",
+    "S"
+   ],
+   [
+    "battery",
+    "T"
+   ]
+  ],
+  "ab": "focus",
+  "slots": 2,
+  "cost": 200,
+  "variant": "vs_penitent_g",
+  "base": "penitent"
+ },
+ "h_picket_i": {
+  "n": "Picket interceptor",
+  "cls": "Frigate",
+  "fac": "hegemony",
+  "size": 0.5,
+  "cp": 1,
+  "hp": 40,
+  "sh": 10,
+  "rg": 5,
+  "ar": 0.1,
+  "sp": 5,
+  "tn": 3,
+  "ev": 24,
+  "w": [
+   [
+    "laser",
+    "T"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "evasive",
+  "cost": 70,
+  "slots": 1,
+  "variant": "h_picket_i",
+  "base": "h_picket"
+ },
+ "h_vanguard_g": {
+  "n": "Vanguard gunship",
+  "cls": "Cruiser",
+  "fac": "hegemony",
+  "size": 0.78,
+  "cp": 4,
+  "hp": 140,
+  "sh": 24,
+  "rg": 10,
+  "ar": 0.2,
+  "sp": 3,
+  "tn": 1,
+  "ev": 4,
+  "w": [
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "ion",
+    "F"
+   ]
+  ],
+  "hangar": 0,
+  "cost": 250,
+  "slots": 2,
+  "variant": "h_vanguard_g",
+  "base": "h_vanguard"
+ },
+ "c_reaver_t": {
+  "n": "Turret gutship",
+  "cls": "Destroyer",
+  "fac": "corsair",
+  "size": 0.6,
+  "cp": 2,
+  "hp": 68,
+  "sh": 10,
+  "rg": 5,
+  "ar": 0.1,
+  "sp": 5,
+  "tn": 2,
+  "ev": 15,
+  "w": [
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "scatter",
+    "T"
+   ]
+  ],
+  "ab": "reload",
+  "cost": 110,
+  "slots": 1,
+  "cost0": 130,
+  "variant": "c_reaver_t",
+  "base": "c_reaver"
+ },
+ "c_hulk_g": {
+  "n": "Gun-hulk",
+  "cls": "Carrier",
+  "fac": "corsair",
+  "size": 0.86,
+  "cp": 4,
+  "hp": 190,
+  "sh": 16,
+  "rg": 6,
+  "ar": 0.2,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "scatter",
+    "P"
+   ],
+   [
+    "scatter",
+    "S"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "hangar": 0,
+  "cost": 290,
+  "slots": 2,
+  "cost0": 250,
+  "variant": "c_hulk_g",
+  "base": "c_hulk"
+ },
+ "b_spitter_s": {
+  "n": "Spitter stinger",
+  "cls": "Destroyer",
+  "fac": "chorus",
+  "size": 0.6,
+  "cp": 2,
+  "hp": 82,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.1,
+  "sp": 4,
+  "tn": 2,
+  "ev": 8,
+  "w": [
+   [
+    "bioplasma",
+    "T"
+   ],
+   [
+    "tendril",
+    "T"
+   ]
+  ],
+  "ab": "regrow",
+  "regen": 5,
+  "cost": 100,
+  "slots": 1,
+  "cost0": 130,
+  "variant": "b_spitter_s",
+  "base": "b_spitter"
+ },
+ "b_razor_s": {
+  "n": "Bladeback stalker",
+  "cls": "Cruiser",
+  "fac": "chorus",
+  "size": 0.76,
+  "cp": 3,
+  "hp": 150,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.2,
+  "sp": 5,
+  "tn": 2,
+  "ev": 12,
+  "w": [
+   [
+    "tendril",
+    "T"
+   ],
+   [
+    "tendril",
+    "T"
+   ]
+  ],
+  "ab": "frenzy",
+  "regen": 7,
+  "cost": 190,
+  "slots": 2,
+  "variant": "b_razor_s",
+  "base": "b_razor"
+ },
+ "i_wisp_l": {
+  "n": "Sliver lancer",
+  "cls": "Frigate",
+  "fac": "ithar",
+  "size": 0.46,
+  "cp": 1,
+  "hp": 30,
+  "sh": 12,
+  "rg": 6,
+  "ar": 0,
+  "sp": 7,
+  "tn": 3,
+  "ev": 28,
+  "w": [
+   [
+    "pulsar",
+    "F"
+   ]
+  ],
+  "ab": "blink",
+  "cost": 90,
+  "slots": 1,
+  "cost0": 70,
+  "variant": "i_wisp_l",
+  "base": "i_wisp"
+ },
+ "i_song_w": {
+  "n": "Warded prism",
+  "cls": "Cruiser",
+  "fac": "ithar",
+  "size": 0.74,
+  "cp": 4,
+  "hp": 90,
+  "sh": 34,
+  "rg": 10,
+  "ar": 0.05,
+  "sp": 5,
+  "tn": 2,
+  "ev": 16,
+  "w": [
+   [
+    "pulsar",
+    "T"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "ab": "surge",
+  "cost": 290,
+  "slots": 2,
+  "cost0": 250,
+  "variant": "i_song_w",
+  "base": "i_song"
+ },
+ "d_scythe_s": {
+  "n": "Mote sentinel",
+  "cls": "Frigate",
+  "fac": "deathless",
+  "size": 0.5,
+  "cp": 1,
+  "hp": 56,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.2,
+  "sp": 4,
+  "tn": 2,
+  "ev": 14,
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gsentry",
+    "T"
+   ]
+  ],
+  "ab": "phase",
+  "regen": 3,
+  "reanimate": true,
+  "cost": 100,
+  "slots": 1,
+  "cost0": 70,
+  "variant": "d_scythe_s",
+  "base": "d_scythe"
+ },
+ "d_harvester_t": {
+  "n": "Turreted zenith",
+  "cls": "Cruiser",
+  "fac": "deathless",
+  "size": 0.82,
+  "cp": 4,
+  "hp": 145,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.3,
+  "sp": 2,
+  "tn": 1,
+  "ev": 0,
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "doom",
+    "T"
+   ],
+   [
+    "gsentry",
+    "T"
+   ]
+  ],
+  "ab": "reclaim",
+  "regen": 4,
+  "reanimate": true,
+  "cost": 390,
+  "slots": 2,
+  "cost0": 250,
+  "variant": "d_harvester_t",
+  "base": "d_harvester"
+ },
+ "vs_penitent_l": {
+  "n": "Vigil lance-cruiser",
+  "cls": "Cruiser",
+  "fac": "voidsworn",
+  "size": 0.76,
+  "cp": 3,
+  "hp": 120,
+  "sh": 20,
+  "rg": 8,
+  "ar": 0.2,
+  "sp": 3,
+  "tn": 2,
+  "ev": 5,
+  "w": [
+   [
+    "lance",
+    "F"
+   ],
+   [
+    "lance",
+    "F"
+   ],
+   [
+    "battery",
+    "T"
+   ]
+  ],
+  "ab": "focus",
+  "slots": 2,
+  "cost": 200,
+  "variant": "vs_penitent_l",
+  "base": "penitent"
+ },
+ "h_interdictor_e": {
+  "n": "Cordon column escort",
+  "cls": "Destroyer",
+  "fac": "hegemony",
+  "size": 0.6,
+  "cp": 2,
+  "hp": 60,
+  "sh": 18,
+  "rg": 7,
+  "ar": 0.15,
+  "sp": 3,
+  "tn": 2,
+  "ev": 10,
+  "w": [
+   [
+    "ion",
+    "F"
+   ],
+   [
+    "turbo",
+    "T"
+   ],
+   [
+    "flak",
+    "T"
+   ]
+  ],
+  "ab": "ionpulse",
+  "cost": 130,
+  "slots": 1,
+  "variant": "h_interdictor_e",
+  "base": "h_interdictor"
+ },
+ "c_marauder_g": {
+  "n": "Trophy wrecker",
+  "cls": "Cruiser",
+  "fac": "corsair",
+  "size": 0.74,
+  "cp": 3,
+  "hp": 120,
+  "sh": 16,
+  "rg": 7,
+  "ar": 0.15,
+  "sp": 3,
+  "tn": 2,
+  "ev": 6,
+  "w": [
+   [
+    "scatter",
+    "P"
+   ],
+   [
+    "scatter",
+    "S"
+   ],
+   [
+    "torp",
+    "F"
+   ],
+   [
+    "torp",
+    "F"
+   ]
+  ],
+  "ab": "overburn",
+  "cost": 200,
+  "slots": 2,
+  "cost0": 190,
+  "variant": "c_marauder_g",
+  "base": "c_marauder"
+ },
+ "b_razor_e": {
+  "n": "Sun-eater bladeback",
+  "cls": "Cruiser",
+  "fac": "chorus",
+  "size": 0.76,
+  "cp": 3,
+  "hp": 150,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.2,
+  "sp": 3,
+  "tn": 2,
+  "ev": 4,
+  "w": [
+   [
+    "bioplasma",
+    "T"
+   ],
+   [
+    "bioplasma",
+    "F"
+   ]
+  ],
+  "ab": "frenzy",
+  "regen": 9,
+  "cost": 190,
+  "slots": 2,
+  "variant": "b_razor_e",
+  "base": "b_razor"
+ },
+ "i_carrier_a": {
+  "n": "Ringing aperture",
+  "cls": "Carrier",
+  "fac": "ithar",
+  "size": 0.84,
+  "cp": 5,
+  "hp": 140,
+  "sh": 22,
+  "rg": 10,
+  "ar": 0.05,
+  "sp": 3,
+  "tn": 2,
+  "ev": 12,
+  "w": [
+   [
+    "pulsar",
+    "F"
+   ],
+   [
+    "turret",
+    "T"
+   ]
+  ],
+  "ab": "launch",
+  "hangar": 3,
+  "cost": 340,
+  "slots": 3,
+  "cost0": 310,
+  "variant": "i_carrier_a",
+  "base": "i_carrier"
+ },
+ "d_jackal_h": {
+  "n": "Archive guard flare",
+  "cls": "Destroyer",
+  "fac": "deathless",
+  "size": 0.62,
+  "cp": 2,
+  "hp": 100,
+  "sh": 0,
+  "rg": 0,
+  "ar": 0.25,
+  "sp": 3,
+  "tn": 2,
+  "ev": 6,
+  "w": [
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gauss",
+    "T"
+   ],
+   [
+    "gsentry",
+    "T"
+   ]
+  ],
+  "ab": "phase",
+  "regen": 3,
+  "reanimate": true,
+  "cost": 195,
+  "slots": 1,
+  "cost0": 130,
+  "variant": "d_jackal_h",
+  "base": "d_jackal"
+ }
+}

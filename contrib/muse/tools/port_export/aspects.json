@@ -1,0 +1,55 @@
+{
+ "lancer": {
+  "n": "Aspect of the Spear",
+  "d": "Your flagship’s forward guns deal +50% damage and reach 1 hex further, and it can turn once more each round to bring them to bear.",
+  "fx": {
+   "prowPct": 0.5,
+   "prowRange": 1,
+   "turns": 1
+  }
+ },
+ "hive": {
+  "n": "Aspect of the Brood",
+  "d": "Your flagship launches a squadron wing at the start of every battle (+1 wing if it is already a carrier), and its wings deal +30% damage.",
+  "fx": {
+   "hive": 1,
+   "sqPct": 0.3
+  }
+ },
+ "ram": {
+  "n": "Aspect of the Ram",
+  "d": "Your flagship rams for +60% damage, can take up to 60% of a ship’s hull, takes no recoil, and has +1 speed.",
+  "fx": {
+   "ramPct": 0.6,
+   "ramCap": 0.2,
+   "ramGuard": 1,
+   "speed": 1
+  }
+ },
+ "bulwark": {
+  "n": "Aspect of the Bulwark",
+  "d": "Your flagship has +70% hull and shields, ships next to it take 25% less hull damage, and enemy ships within 4 hexes that can fire on it must.",
+  "fx": {
+   "hpPct": 0.7,
+   "shPct": 0.7,
+   "guardAura": 0.25,
+   "taunt": 4
+  }
+ },
+ "storm": {
+  "n": "Aspect of the Storm",
+  "d": "Your flagship’s weapons strip 50% more shield per hit, and its shields recharge twice as fast.",
+  "fx": {
+   "ionPlus": 0.5,
+   "regenPct": 1
+  }
+ },
+ "admiral": {
+  "n": "Aspect of the Admiral",
+  "d": "Your Admiral’s Command starts one power level higher (full power from round 2), and your flagship gets +10 aim.",
+  "fx": {
+   "cmdTier": 1,
+   "aim": 10
+  }
+ }
+}

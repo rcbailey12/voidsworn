@@ -29,6 +29,8 @@ const EXPORTS = [
   'FAC_GATES', 'ENCOUNTERS', 'SHAPES',
   // fleet generation + ramp (battle.js / core.js)
   'genEnemyFleet', 'effArch', 'RAMP', 'fleetPower',
+  // campaign map + battle setup (core.js / battle.js)
+  'genSector', 'terrainConnected', 'startBattle', 'onBoard', 'alive',
   // persistence (core.js)
   'Persist', 'STORE_KEY', 'SAVE_VERSION', 'defaultMeta', 'migrateMeta',
   'migrateRun', 'runDefaults', 'normalizeRun', 'repairRunIds',

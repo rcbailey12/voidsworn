@@ -1,0 +1,74 @@
+{
+ "corsair": {
+  "shields": "Stolen shield cells",
+  "pd": "Chaff launchers",
+  "armor": "Scrap ram plating",
+  "evasion": "Overbored burners",
+  "aim": "Stolen gun sights",
+  "special": {
+   "id": "riches",
+   "n": "Bigger crew",
+   "d": "One more ship joins his fleet."
+  }
+ },
+ "deathless": {
+  "shields": "Corona ward",
+  "pd": "Null spires",
+  "armor": "Sunshade shell",
+  "evasion": "Fold skips",
+  "aim": "Long-memory sight",
+  "special": {
+   "id": "legion",
+   "n": "Deeper backups",
+   "d": "One more of his ships reassembles."
+  }
+ },
+ "ithar": {
+  "shields": "Prism matrix",
+  "pd": "Mirror veil",
+  "armor": "Waveguide spine",
+  "evasion": "Starwind vanes",
+  "aim": "Interferometer lenses",
+  "special": {
+   "id": "veil",
+   "n": "Deeper veil",
+   "d": "His ships are 6 more harder to hit."
+  }
+ },
+ "chorus": {
+  "shields": "Membrane bloom",
+  "pd": "Spore curtains",
+  "armor": "Chitin layers",
+  "evasion": "Fin clusters",
+  "aim": "Tasting pores",
+  "special": {
+   "id": "hunger",
+   "n": "Hunger",
+   "d": "His ships regrow 3 more hull each turn."
+  }
+ },
+ "hegemony": {
+  "shields": "Deflector drills",
+  "pd": "Picket screens",
+  "armor": "Bow plating",
+  "evasion": "Attitude drills",
+  "aim": "Fire-control drills",
+  "special": {
+   "id": "formation",
+   "n": "Tight formation",
+   "d": "His synchronized fire reaches one hex further."
+  }
+ },
+ "voidsworn": {
+  "shields": "Screen drills",
+  "pd": "Spark flak",
+  "armor": "Riveted plate",
+  "evasion": "Oath of speed",
+  "aim": "Hand-laid sights",
+  "special": {
+   "id": "zeal",
+   "n": "Fervour",
+   "d": "His ships deal 8% more damage."
+  }
+ }
+}

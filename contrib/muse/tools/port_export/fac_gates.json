@@ -1,0 +1,12 @@
+{
+ "corsair": {
+  "noKind": [
+   "lance"
+  ],
+  "d": "Hullbreakers field no lance weapons (no long-range beams): they win up close."
+ },
+ "ithar": {
+  "noBrace": 1,
+  "d": "Glasswright hulls cannot Brace for impact: they live by shields and speed."
+ }
+}

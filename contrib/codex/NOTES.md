@@ -1,5 +1,46 @@
 # Codex pre-reset review and proposed cleanup
 
+## Current start point after the Oct 30 upload
+
+Reviewed main **17268efa081059a6923daa9e19e8b345a437714d**. Start with
+`reviews/post_upload_closing_2026_10_31.md` and the refreshed proposed
+`contrib/muse/RETURN_INDEX.md`. The original review below is historical.
+
+The PR now incorporates the uploaded main head. The new closing packet inventories
+176 changed paths (149 Muse, 18 DeepSeek, 9 Gemini), records a current 125-row
+register supplement, and preserves all 80 assertions in the repaired proposed suite.
+It reproduces 8 pass / 72 fail without changing gameplay assertions. The new
+shared-loader exports are preserved.
+
+Additional proposed full copies:
+
+- Campaign/UI/battle test helpers accompany the new suite; the campaign loader
+  now resolves its committed sibling harness.
+- The cutover gate refuses missing-required-check success and treats a vanished
+  tracked test as a regression. It also validates converter/fixture result counts.
+  The proposed gate still ends INCOMPLETE because parity vectors are absent.
+- The Monte Carlo driver restores source hull prices before every run. The
+  original compounds a nominal x1.25 price across runs; do not use A2/A3/A4/A5
+  for balance decisions until corrected reruns. Shard/boon-grid repository defaults
+  are repaired for adoption; these copies need the original companion files.
+- Consolidated text and Nemesis assemblies carry the already-filed explicit
+  corrections. Four text anchors match source; full text application is not certified.
+
+Reproduce the focused gate and price-isolation checks:
+
+```sh
+node contrib/codex/reviews/post_upload_2026_10_31/probes.js .
+node contrib/codex/proposed/contrib/muse/tools/findings_tests/findings_tests.js .
+node contrib/codex/proposed/contrib/muse/tools/cutover_gate/gate.js . --out /tmp/voidsworn-reviewed-gate
+```
+
+All originals, gameplay code and assets remain unchanged by the proposed overlay.
+The affected price cells were not rerun, so this packet contains no replacement
+balance recommendations. Large campaign results, visuals and raw external claims
+remain scoped as the closing review says.
+
+## Initial packet at cc2d35fd (historical)
+
 October 31, 2026. Reviewed source: cc2d35fd7054458c1e5707561bb9c6a5da2e4227. Requested scope: Muse, Qwen, Google/Argon and DeepSeek contributions from the past week; verify the findings and syntheses, and propose solutions.
 
 ## Deliverables

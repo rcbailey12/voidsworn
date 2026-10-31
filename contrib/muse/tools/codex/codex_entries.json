@@ -1,0 +1,1721 @@
+[
+ {
+  "id": "faction:corsair",
+  "category": "faction",
+  "name": "Ashfall Hullbreakers",
+  "hook": "Furred pack hunters in ships that run dark, stripping every wreck they make.",
+  "body": "The Hullbreakers are an alien raider species from the Ashfall belt, big furred predators who live in packs ruled by whoever can beat the rest. They do not raid for riches; they raid for the fight, for scrap, and for Rook, the core they believe makes its holder unstoppable. Their ships run silent, hunt by wake and engine noise, and strip every wreck down to the frame. Faction rule, Close in: Hullbreakers field no lance weapons at all, winning up close instead, and their rocket pods fire salvos that point defense can thin out. Their drive rule, Bolted burners, makes sideslips cost 1 movement instead of 2. Their line runs from the Hullbreaker raider, Hullbreaker gutship, Hullbreaker wrecker, Hullbreaker hulk-carrier, under the flagship Warlord's Pyre-Barge, with Bomber wing flown from their carriers.",
+  "note": "Close fast from the flanks and behind; at long range this fleet is only a promise.",
+  "source": "data.js FACTIONS.corsair; battle.js FAC_RULES.corsair, MOVE_RULES.corsair; lore bible r8"
+ },
+ {
+  "id": "faction:deathless",
+  "category": "faction",
+  "name": "Eclipse",
+  "hook": "Starwright minds in machine bodies, stealing starlight to light a new sun.",
+  "body": "Eclipse are the Starwrights who uploaded: billions of separate minds in machine bodies, backed up in one shared Archive, who seized the Lattice and overdrove it and killed their own star in the doing. A thousand years in the dark later, they are no longer sure permanence was worth the price, and their answer is a new sun at the heart of the Ardent system, fed by energy siphoned from neighbouring stars. They know what the Siphoning costs other worlds. They do it anyway. Faction rule, Archive restore: the first Eclipse ship to fall each battle, never the flagship, reassembles at the start of the next round with 35% hull and cannot fire that round, and a fleet of 6 or more reanimate-capable hulls gets two returns. Their drive rule, Fold drive, passes through rocks, wrecks and enemy ships at no extra cost. Their line runs from the Eclipse mote, Eclipse flare, Eclipse zenith, under the flagship The Unsetting.",
+  "note": "Kill Eclipse hulls in bunches or not at all; a lone kill is a loan, and it comes back.",
+  "source": "data.js FACTIONS.deathless; battle.js FAC_RULES.deathless, MOVE_RULES.deathless; lore bible r8"
+ },
+ {
+  "id": "faction:hegemony",
+  "category": "faction",
+  "name": "Hegemony Navy",
+  "hook": "The Registry navy: linked crews, wedge hulls, and losses within acceptable limits.",
+  "body": "The Hegemony is the largest human state in the region, run by the Registry, a vast intelligence at Meridian that every citizen, ship and officer is linked to. It does not rule by force; it optimises, predicts every loss, and keeps the losses acceptable. It wrote off the Vesper Reach seventy years ago, and it holds one of the six cores, Vyre, taken by a survey fleet and studied ever since. Faction rule, Synchronized fire: ships within 3 hexes of their flagship fire as one, and a target another synced ship already fired on this round is 6 easier to hit and takes +12% damage. Lose the flagship and sync is gone for the rest of the battle. Their drive rule, Retro thrusters, makes backing off one hex cost 1 movement instead of 2. Their line runs from the Hegemony picket, Cordon destroyer, Vanguard cruiser, Dominion dreadnought, under the flagship The Iron Mandate, with Fighter wing flown from their carriers.",
+  "note": "Fight as a cluster around the flagship; a Hegemony ship alone is just a ship.",
+  "source": "data.js FACTIONS.hegemony; battle.js FAC_RULES.hegemony, MOVE_RULES.hegemony; lore bible r8"
+ },
+ {
+  "id": "faction:voidsworn",
+  "category": "faction",
+  "name": "Sunward Crusade",
+  "hook": "The frontier the Hegemony wrote off, come sunward to take its stars back.",
+  "body": "The Vesper Reach was the Hegemony frontier until its stars began to dim and the Registry priced the evacuation of billions as not worth doing. The Reach seceded, pooled its navies, and traced the theft of its light to the Hollow Sun. Every generation since has sworn the same oath and chalked the names of the fallen on the hull: go sunward, burn out what is stealing the light, and pay for it in names. Faction rule, Line of battle: port and starboard guns hit 40% harder after the ship has moved 2 or more hexes, where other factions gain 10%. Their carriers cost 25% more than the same hull elsewhere. Their line runs from the Warden-class frigate, Harrow-class destroyer, Vigil-class cruiser, Hearth-class carrier, Bastion-class battleship, under the flagship Daybreak-class dreadnought.",
+  "note": "Brace and hold the line; the broadside bonus pays for the advance, not for sitting still at range.",
+  "source": "data.js FACTIONS.voidsworn; battle.js FAC_RULES.voidsworn, MOVE_RULES.voidsworn; lore bible r8"
+ },
+ {
+  "id": "faction:chorus",
+  "category": "faction",
+  "name": "The Chorus",
+  "hook": "A living weapon that ate its makers, coming home hungry. We are the Chorus.",
+  "body": "The Chorus is not a people. It is a weapon the Fleshwrights grew in living tissue to destroy Eclipse, powered by the core Crucible, and it worked too well: it merged, multiplied, and consumed its makers, and became one swarm with one appetite. Inside it two throats argue: Hunger, which is the swarm, and Memory, which is what is left of the Fleshwrights it ate. It has no shields at all, and it is coming to the Sun to eat what is left. Faction rule, Feed: when an enemy ship dies, the Chorus ship that killed it regrows 12% of its hull, and every other Chorus ship within 2 hexes regrows 6%, up to 12% per ship each round. On top of that, every Chorus line hull regrows on its own each round, and its drive rule, Living hull, makes the first turn each round cost no movement. Their line runs from the Chorus drone-spawn, Chorus spitter, Chorus bladeback, Chorus brood-sac, under the flagship The Ninefold Maw, with Spore swarm flown from their carriers.",
+  "note": "Trade hull freely and finish kills near your wounded; a Chorus fleet that is feeding is very hard to put down.",
+  "source": "data.js FACTIONS.chorus; battle.js FAC_RULES.chorus, MOVE_RULES.chorus; lore bible r8"
+ },
+ {
+  "id": "faction:ithar",
+  "category": "faction",
+  "name": "The Glasswrights",
+  "hook": "Few, long-lived masters of light and crystal, flying a caged star to hunt the rest.",
+  "body": "The Glasswrights descend from the Starwrights who refused the Upload: the Lattice engineers who built the collectors and beam lines that once carried a star across a system. They live three to four hundred years, so the guilt of the collapse is only two or three generations old, and the Fleshwrights who made the Chorus were their own splinter. They fly one core, Astra, caged and throttled, used only to hunt the other five, and theirs will be the last one shut down. Faction rule, Prism charge: at the start of a Glasswright ship turn, a shield facing that was not hit since its last turn recharges to full, and a facing that was hit recharges twice. Glasswright hulls cannot Brace for impact. Their drive rule, Crystal vanes, makes a ship that moved 2 or more hexes 18 harder to hit until its next turn. Their line runs from the Glasswright sliver, Glasswright lancet, Glasswright prism, Glasswright aperture, under the flagship The Unfinished, with Fighter wing flown from their carriers.",
+  "note": "Keep moving and keep shields up; once the shields fall, the hull underneath is glass in truth.",
+  "source": "data.js FACTIONS.ithar; battle.js FAC_RULES.ithar, MOVE_RULES.ithar; lore bible r8"
+ },
+ {
+  "id": "hull:d_jackal_h",
+  "category": "hull",
+  "name": "Archive guard flare",
+  "hook": "Both cannons turreted, plus a spire, at 10 hull cost.",
+  "body": "A variant of the Eclipse flare. Destroyer class, 2 command points, 195 credits. Hull 100, shields 0, armor 25%, speed 3, turn 2, evasion 6. Carries Null cannon (turret), Null cannon (turret), Null spire (turret). Regrows 3 hull at the end of each round. Fits 1 module. Its mind re-streams from the Archive when it falls, so the hull can reassemble and return (see Archive restore, under Eclipse). Ability, Fold skip (cooldown 3): +25 evasion until its next turn and +2 movement at once. It is earned by finishing the story arc of Eclipse, never sold for renown.",
+  "note": "Its jump makes it a flanker and a thief of objectives; rear arcs are where it earns.",
+  "source": "data.js HULL_VARIANTS.d_jackal_h; HULLS.d_jackal_h (derived from HULLS.d_jackal)"
+ },
+ {
+  "id": "hull:cathedral",
+  "category": "hull",
+  "name": "Bastion-class battleship",
+  "hook": "The Bastion: a black-iron wall with heavy broadsides.",
+  "body": "The Bastion is a black-iron wall with guns: the ship a sector thinks of when it thinks of the Crusade arriving. Battleship class, 5 command points, 340 credits. Hull 220, shields 30 recharging 12 a round, armor 30%, speed 2, turn 1, evasion 0. Carries Heavy sear broadside (port broadside), Heavy sear broadside (starboard broadside), Oath lance (prow), Spark flak (turret). Fits 3 modules. Ability, Shield surge (cooldown 4): every shield facing restored to full.",
+  "note": "The center of a line: slow enough that the battle must come to it, so make sure it does.",
+  "source": "data.js HULLS.cathedral; ABILITIES.surge; faction Sunward Crusade"
+ },
+ {
+  "id": "hull:b_razor_s",
+  "category": "hull",
+  "name": "Bladeback stalker",
+  "hook": "Two tendril clusters, quicker and harder to hold.",
+  "body": "A variant of the Chorus bladeback. Cruiser class, 3 command points, 190 credits. Hull 150, shields 0, armor 20%, speed 5, turn 2, evasion 12. Carries Boarding tendrils (turret), Boarding tendrils (turret). Regrows 7 hull at the end of each round. Fits 2 modules. Ability, Blood frenzy (cooldown 3): all of its weapons deal +30% damage this turn. It is bought once with 25 renown, then sold in the shipyards of The Chorus beside the standard hull at the same 190 credits.",
+  "note": "No shields at all: every point of damage is hull, and every round some of it grows back.",
+  "source": "data.js HULL_VARIANTS.b_razor_s; HULLS.b_razor_s (derived from HULLS.b_razor)"
+ },
+ {
+  "id": "hull:bomber",
+  "category": "hull",
+  "name": "Bomber wing",
+  "hook": "Carrier wing: slow weight aimed at capital hulls.",
+  "body": "Bomber wings carry the weight their carriers cannot: slow, heavy, and aimed at things much bigger than them. Squadron class, 0 command points. Hull 28, shields 0, armor 0%, speed 5, turn 9, evasion 25. Carries Bomb payload (turret). It flies as a squadron wing from a carrier hangar rather than as a ship of the line.",
+  "note": "Launched from carriers, not bought: protect the carrier and the wing keeps coming back.",
+  "source": "data.js HULLS.bomber; faction Unaligned"
+ },
+ {
+  "id": "hull:b_razor",
+  "category": "hull",
+  "name": "Chorus bladeback",
+  "hook": "The bladeback: tendrils, spines, and a temper.",
+  "body": "A bladeback is the swarm at its most honest: tendrils, spines, and a temper, all pointed at the nearest hull. Cruiser class, 3 command points, 190 credits. Hull 150, shields 0, armor 20%, speed 4, turn 2, evasion 4. Carries Boarding tendrils (turret), Spine volley (prow). Regrows 7 hull at the end of each round. Fits 2 modules. Ability, Blood frenzy (cooldown 3): all of its weapons deal +30% damage this turn.",
+  "note": "No shields at all: every point of damage is hull, and every round some of it grows back.",
+  "source": "data.js HULLS.b_razor; ABILITIES.frenzy; faction The Chorus"
+ },
+ {
+  "id": "hull:b_brood",
+  "category": "hull",
+  "name": "Chorus brood-sac",
+  "hook": "The brood-sac: a mother carrying swarms.",
+  "body": "A brood-sac is a mother the size of a cruiser, carrying swarms the way other ships carry ammunition. Carrier class, 5 command points, 370 credits. Hull 200, shields 0, armor 20%, speed 2, turn 1, evasion 0. Carries Spine volley (prow), Spore cloud (turret). Regrows 8 hull at the end of each round. Hangar for 3 wings. Fits 3 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
+  "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
+  "source": "data.js HULLS.b_brood; ABILITIES.launch; faction The Chorus"
+ },
+ {
+  "id": "hull:b_drone",
+  "category": "hull",
+  "name": "Chorus drone-spawn",
+  "hook": "Drone-spawn: a mouth that will not stay broken.",
+  "body": "A drone-spawn is the swarm smallest true ship: a mouth, a tendril, and flesh that will not stay broken. Frigate class, 1 command points, 45 credits. Hull 46, shields 0, armor 5%, speed 5, turn 3, evasion 15. Carries Boarding tendrils (turret). Regrows 4 hull at the end of each round. Fits 1 module. Ability, Rapid regrowth (cooldown 3): regrows 25% of its hull at once.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULLS.b_drone; ABILITIES.regrow; faction The Chorus"
+ },
+ {
+  "id": "hull:b_spitter",
+  "category": "hull",
+  "name": "Chorus spitter",
+  "hook": "A gland with a hull around it. It spits spines.",
+  "body": "The spitter is a gland with a hull around it, grown to throw spine volleys until something stops it. Destroyer class, 2 command points, 100 credits. Hull 82, shields 0, armor 10%, speed 4, turn 2, evasion 8. Carries Spine volley (turret), Spine volley (prow). Regrows 5 hull at the end of each round. Fits 1 module. Ability, Rapid regrowth (cooldown 3): regrows 25% of its hull at once.",
+  "note": "No shields at all: every point of damage is hull, and every round some of it grows back.",
+  "source": "data.js HULLS.b_spitter; ABILITIES.regrow; faction The Chorus"
+ },
+ {
+  "id": "hull:h_interdictor_e",
+  "category": "hull",
+  "name": "Cordon column escort",
+  "hook": "Flak added, hull lightened: an escort for the column.",
+  "body": "A variant of the Cordon destroyer. Destroyer class, 2 command points, 130 credits. Hull 60, shields 18 recharging 7 a round, armor 15%, speed 3, turn 2, evasion 10. Carries Ion cannon (prow), Plasma lance (turret), Picket lasers (turret). Fits 1 module. Ability, Ion pulse (cooldown 3): every enemy ship within 4 hexes loses half of each shield facing. It is earned by finishing the story arc of Hegemony Navy, never sold for renown.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.h_interdictor_e; HULLS.h_interdictor_e (derived from HULLS.h_interdictor)"
+ },
+ {
+  "id": "hull:h_interdictor",
+  "category": "hull",
+  "name": "Cordon destroyer",
+  "hook": "The Cordon: ion fire that says no to shields.",
+  "body": "The Cordon exists to say no: no shields, no approach, no exceptions, delivered by ion fire. Destroyer class, 2 command points, 130 credits. Hull 74, shields 18 recharging 7 a round, armor 15%, speed 4, turn 2, evasion 10. Carries Ion cannon (prow), Plasma lance (turret). Fits 1 module. Ability, Ion pulse (cooldown 3): every enemy ship within 4 hexes loses half of each shield facing.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULLS.h_interdictor; ABILITIES.ionpulse; faction Hegemony Navy"
+ },
+ {
+  "id": "hull:ascendant",
+  "category": "hull",
+  "name": "Daybreak-class dreadnought",
+  "hook": "The Daybreak: one per fleet, and worth every point.",
+  "body": "The Daybreak is the Reach answer to a flagship: one per fleet at most, a dawn other fleets navigate by. Dreadnought class, 8 command points, 520 credits. Hull 370, shields 32 recharging 15 a round, armor 35%, speed 1, turn 1, evasion 0. Carries Heavy sear broadside (port broadside), Heavy sear broadside (starboard broadside), Sear turret (turret), Spark flak (turret). Fits 3 modules. Ability, Spinal cannon (cooldown 3): 40 damage to a hex 3 to 9 away and 20 to everything beside that hex, friends included. It flies as the Crusade flagship at a sector end, and Crusade fleets that earn the Dreadnought hulls legacy may field one of their own (see Legacy). Unique: a fleet may field only one.",
+  "note": "A flagship and a battle objective in itself; build the fleet around killing or protecting it.",
+  "source": "data.js HULLS.ascendant; ABILITIES.nova; faction Sunward Crusade"
+ },
+ {
+  "id": "hull:h_dominion",
+  "category": "hull",
+  "name": "Dominion dreadnought",
+  "hook": "The Dominion: capital plasma on both flanks.",
+  "body": "The Dominion is the wedge grown to capital scale: plasma on both flanks and the patience of a state behind it. Battleship class, 6 command points, 370 credits. Hull 230, shields 32 recharging 12 a round, armor 25%, speed 2, turn 1, evasion 0. Carries Heavy plasma lance (port broadside), Heavy plasma lance (starboard broadside), Ion cannon (prow), Picket lasers (turret). Hangar for 1 wings. Fits 3 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
+  "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
+  "source": "data.js HULLS.h_dominion; ABILITIES.launch; faction Hegemony Navy"
+ },
+ {
+  "id": "hull:d_jackal",
+  "category": "hull",
+  "name": "Eclipse flare",
+  "hook": "A flare: two null cannons and no fear of death.",
+  "body": "A flare is a mote grown ambitious: two null cannons and the patience of something that has died before. Destroyer class, 2 command points, 195 credits. Hull 110, shields 0, armor 25%, speed 3, turn 2, evasion 6. Carries Null cannon (turret), Null cannon (prow). Regrows 3 hull at the end of each round. Fits 1 module. Its mind re-streams from the Archive when it falls, so the hull can reassemble and return (see Archive restore, under Eclipse). Ability, Fold skip (cooldown 3): +25 evasion until its next turn and +2 movement at once.",
+  "note": "Its jump makes it a flanker and a thief of objectives; rear arcs are where it earns.",
+  "source": "data.js HULLS.d_jackal; ABILITIES.phase; faction Eclipse"
+ },
+ {
+  "id": "hull:d_scythe",
+  "category": "hull",
+  "name": "Eclipse mote",
+  "hook": "A mote: an old mind in a replaceable body.",
+  "body": "A mote is the smallest Eclipse frame: a mind older than nations in a body built to be replaced. Frigate class, 1 command points, 100 credits. Hull 56, shields 0, armor 20%, speed 4, turn 2, evasion 14. Carries Null cannon (turret). Regrows 3 hull at the end of each round. Fits 1 module. Its mind re-streams from the Archive when it falls, so the hull can reassemble and return (see Archive restore, under Eclipse). Ability, Fold skip (cooldown 3): +25 evasion until its next turn and +2 movement at once.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULLS.d_scythe; ABILITIES.phase; faction Eclipse"
+ },
+ {
+  "id": "hull:d_harvester",
+  "category": "hull",
+  "name": "Eclipse zenith",
+  "hook": "The zenith: null turrets and a corona arc.",
+  "body": "The zenith is the Eclipse line ship: null fire on turrets, a corona arc in the prow, and a crew that streams back from the Archive. Cruiser class, 4 command points, 390 credits. Hull 145, shields 0, armor 30%, speed 2, turn 1, evasion 0. Carries Null cannon (turret), Null cannon (turret), Corona arc (prow), Null spire (turret). Regrows 4 hull at the end of each round. Fits 2 modules. Its mind re-streams from the Archive when it falls, so the hull can reassemble and return (see Archive restore, under Eclipse). Ability, Repair swarm (cooldown 3): restores 20% hull to the most damaged friendly ship within 3 hexes, itself included.",
+  "note": "Heavy armor and no shields: lances and torpedoes are the honest way through.",
+  "source": "data.js HULLS.d_harvester; ABILITIES.reclaim; faction Eclipse"
+ },
+ {
+  "id": "hull:fighter",
+  "category": "hull",
+  "name": "Fighter wing",
+  "hook": "Carrier wing: fast, fragile, first to die well.",
+  "body": "A fighter wing is a handful of small arguments with engines, flown by pilots too young to know better and too fast to argue with. Squadron class, 0 command points. Hull 18, shields 0, armor 0%, speed 6, turn 9, evasion 35. Carries Interceptor guns (turret). It flies as a squadron wing from a carrier hangar rather than as a ship of the line.",
+  "note": "Launched from carriers, not bought: protect the carrier and the wing keeps coming back.",
+  "source": "data.js HULLS.fighter; faction Unaligned"
+ },
+ {
+  "id": "hull:i_carrier",
+  "category": "hull",
+  "name": "Glasswright aperture",
+  "hook": "The aperture: wings pass through it like light.",
+  "body": "The aperture is a carrier built like an eye: wings pass through it the way light passes through glass. Carrier class, 5 command points, 340 credits. Hull 140, shields 28 recharging 10 a round, armor 5%, speed 4, turn 2, evasion 12. Carries Prism lance (prow), Needle beam (turret). Hangar for 2 wings. Fits 3 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
+  "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
+  "source": "data.js HULLS.i_carrier; ABILITIES.launch; faction The Glasswrights"
+ },
+ {
+  "id": "hull:i_blade",
+  "category": "hull",
+  "name": "Glasswright lancet",
+  "hook": "The lancet: shards, then one star torpedo.",
+  "body": "The lancet is the sliver grown deliberate: shards for the approach, a star torpedo for the sentence. Destroyer class, 2 command points, 170 credits. Hull 60, shields 16 recharging 8 a round, armor 0%, speed 6, turn 3, evasion 24. Carries Prism shards (prow), Star torpedo (prow). Fits 1 module. Ability, Phase jump (cooldown 3): jumps to any open hex within 3, straight past rocks and ships.",
+  "note": "Its jump makes it a flanker and a thief of objectives; rear arcs are where it earns.",
+  "source": "data.js HULLS.i_blade; ABILITIES.blink; faction The Glasswrights"
+ },
+ {
+  "id": "hull:i_song",
+  "category": "hull",
+  "name": "Glasswright prism",
+  "hook": "A prism: a lens that returns light as beams.",
+  "body": "A prism is a lens that learned to fight: it gathers light, argues with it, and returns it as beams. Cruiser class, 4 command points, 290 credits. Hull 90, shields 26 recharging 10 a round, armor 5%, speed 5, turn 2, evasion 16. Carries Prism lance (prow), Prism lance (prow), Needle beam (turret). Fits 2 modules. Ability, Shield surge (cooldown 4): every shield facing restored to full.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULLS.i_song; ABILITIES.surge; faction The Glasswrights"
+ },
+ {
+  "id": "hull:i_wisp",
+  "category": "hull",
+  "name": "Glasswright sliver",
+  "hook": "A sliver: almost nothing there, and it is fast.",
+  "body": "A sliver is a knife of crystal that thinks it is a ship: almost nothing there, and what is there is fast. Frigate class, 1 command points, 90 credits. Hull 30, shields 12 recharging 6 a round, armor 0%, speed 7, turn 3, evasion 28. Carries Prism shards (prow). Fits 1 module. Ability, Phase jump (cooldown 3): jumps to any open hex within 3, straight past rocks and ships.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULLS.i_wisp; ABILITIES.blink; faction The Glasswrights"
+ },
+ {
+  "id": "hull:c_hulk_g",
+  "category": "hull",
+  "name": "Gun-hulk",
+  "hook": "The hangar welded shut, guns welded on, 20 more hull.",
+  "body": "A variant of the Hullbreaker hulk-carrier. Carrier class, 4 command points, 290 credits. Hull 190, shields 16 recharging 6 a round, armor 20%, speed 2, turn 1, evasion 0. Carries Scrap scatter gun (port broadside), Scrap scatter gun (starboard broadside), Junk turret (turret). Fits 2 modules. It is bought once with 25 renown, then sold in the shipyards of Ashfall Hullbreakers beside the standard hull at the same 290 credits.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.c_hulk_g; HULLS.c_hulk_g (derived from HULLS.c_hulk)"
+ },
+ {
+  "id": "hull:vs_harrow_t",
+  "category": "hull",
+  "name": "Harrow torpedo-destroyer",
+  "hook": "Twin torpedo tubes, no turret: a one-shot assassin.",
+  "body": "A variant of the Harrow-class destroyer. Destroyer class, 2 command points, 130 credits. Hull 78, shields 14 recharging 6 a round, armor 15%, speed 4, turn 2, evasion 12. Carries Cinder torpedo (prow), Cinder torpedo (prow). Fits 1 module. Ability, Reload torpedoes (cooldown 3): its torpedo tubes are ready to fire again at once. It is bought once with 20 renown, then sold in the shipyards of Sunward Crusade beside the standard hull at the same 130 credits.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.vs_harrow_t; HULLS.vs_harrow_t (derived from HULLS.harrow)"
+ },
+ {
+  "id": "hull:harrow",
+  "category": "hull",
+  "name": "Harrow-class destroyer",
+  "hook": "Crusade destroyer with a torpedo and a promise.",
+  "body": "A working destroyer of the Reach, built around one torpedo tube and one promise: get close enough once. Destroyer class, 2 command points, 130 credits. Hull 78, shields 14 recharging 6 a round, armor 15%, speed 4, turn 2, evasion 12. Carries Cinder torpedo (prow), Sear turret (turret). Fits 1 module. Ability, Reload torpedoes (cooldown 3): its torpedo tubes are ready to fire again at once.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULLS.harrow; ABILITIES.reload; faction Sunward Crusade"
+ },
+ {
+  "id": "hull:reliquary",
+  "category": "hull",
+  "name": "Hearth-class carrier",
+  "hook": "The Hearth: a carrier that brings its wings home.",
+  "body": "The Hearth carries the fleet children of the sky: wings in its hangars and room for the names of everyone they bring home. Carrier class, 4 command points, 325 credits. Hull 130, shields 22 recharging 9 a round, armor 15%, speed 2, turn 1, evasion 0. Carries Sear turret (turret), Spark flak (turret). Hangar for 2 wings. Fits 2 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
+  "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
+  "source": "data.js HULLS.reliquary; ABILITIES.launch; faction Sunward Crusade"
+ },
+ {
+  "id": "hull:h_picket",
+  "category": "hull",
+  "name": "Hegemony picket",
+  "hook": "Hegemony frigate: one identical node of the wedge.",
+  "body": "A Registry picket: one node of the wedge, identical to its sisters, exactly where the projection says it should be. Frigate class, 1 command points, 70 credits. Hull 40, shields 10 recharging 5 a round, armor 10%, speed 5, turn 3, evasion 18. Carries Plasma cannon (prow), Picket lasers (turret). Fits 1 module. Ability, Evasive burn (cooldown 3): +25 evasion until its next turn and +2 movement at once.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULLS.h_picket; ABILITIES.evasive; faction Hegemony Navy"
+ },
+ {
+  "id": "hull:c_reaver",
+  "category": "hull",
+  "name": "Hullbreaker gutship",
+  "hook": "The gutship: cracks shells, argues with insides.",
+  "body": "The gutship is built to open things: a torpedo to crack the shell, scatter guns to argue with what is inside. Destroyer class, 2 command points, 110 credits. Hull 68, shields 10 recharging 5 a round, armor 10%, speed 5, turn 2, evasion 15. Carries Rattle-rocket pod (prow), Scrap scatter gun (starboard broadside). Fits 1 module. Ability, Reload torpedoes (cooldown 3): its torpedo tubes are ready to fire again at once.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULLS.c_reaver; ABILITIES.reload; faction Ashfall Hullbreakers"
+ },
+ {
+  "id": "hull:c_hulk",
+  "category": "hull",
+  "name": "Hullbreaker hulk-carrier",
+  "hook": "The hulk-carrier: a den that flies, wings in its ribs.",
+  "body": "The hulk-carrier is a welded-together den that happens to fly, with bomber wings nesting in its ribs. Carrier class, 4 command points, 290 credits. Hull 170, shields 16 recharging 6 a round, armor 20%, speed 2, turn 1, evasion 0. Carries Junk turret (turret), Junk turret (turret). Hangar for 2 wings. Fits 2 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
+  "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
+  "source": "data.js HULLS.c_hulk; ABILITIES.launch; faction Ashfall Hullbreakers"
+ },
+ {
+  "id": "hull:c_raider",
+  "category": "hull",
+  "name": "Hullbreaker raider",
+  "hook": "Hullbreaker frigate: fast, dark, already behind you.",
+  "body": "A raider is the pack in miniature: fast, dark, thin-skinned, and already behind you. Frigate class, 1 command points, 55 credits. Hull 46, shields 8 recharging 4 a round, armor 5%, speed 6, turn 3, evasion 28. Carries Autocannon (turret). Fits 1 module. Ability, Overburn (cooldown 3): +3 movement at once, and a ram this turn hits 50% harder.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULLS.c_raider; ABILITIES.overburn; faction Ashfall Hullbreakers"
+ },
+ {
+  "id": "hull:c_marauder",
+  "category": "hull",
+  "name": "Hullbreaker wrecker",
+  "hook": "The wrecker: scatter broadsides and a rocket pod.",
+  "body": "A wrecker is a flying scrapyard with intent: scatter broadsides, a rocket pod, and claws for whatever survives. Cruiser class, 3 command points, 200 credits. Hull 120, shields 16 recharging 7 a round, armor 15%, speed 4, turn 2, evasion 6. Carries Scrap scatter gun (port broadside), Scrap scatter gun (starboard broadside), Rattle-rocket pod (prow), Chaff guns (turret). Fits 2 modules. Ability, Overburn (cooldown 3): +3 movement at once, and a ram this turn hits 50% harder.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULLS.c_marauder; ABILITIES.overburn; faction Ashfall Hullbreakers"
+ },
+ {
+  "id": "hull:d_scythe_s",
+  "category": "hull",
+  "name": "Mote sentinel",
+  "hook": "A mote with a null spire: a sentinel against wings.",
+  "body": "A variant of the Eclipse mote. Frigate class, 1 command points, 100 credits. Hull 56, shields 0, armor 20%, speed 4, turn 2, evasion 14. Carries Null cannon (turret), Null spire (turret). Regrows 3 hull at the end of each round. Fits 1 module. Its mind re-streams from the Archive when it falls, so the hull can reassemble and return (see Archive restore, under Eclipse). Ability, Fold skip (cooldown 3): +25 evasion until its next turn and +2 movement at once. It is bought once with 15 renown, then sold in the shipyards of Eclipse beside the standard hull at the same 100 credits.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULL_VARIANTS.d_scythe_s; HULLS.d_scythe_s (derived from HULLS.d_scythe)"
+ },
+ {
+  "id": "hull:h_picket_i",
+  "category": "hull",
+  "name": "Picket interceptor",
+  "hook": "A turret laser and quicker feet for the picket screen.",
+  "body": "A variant of the Hegemony picket. Frigate class, 1 command points, 70 credits. Hull 40, shields 10 recharging 5 a round, armor 10%, speed 5, turn 3, evasion 24. Carries Plasma cannon (turret), Picket lasers (turret). Fits 1 module. Ability, Evasive burn (cooldown 3): +25 evasion until its next turn and +2 movement at once. It is bought once with 15 renown, then sold in the shipyards of Hegemony Navy beside the standard hull at the same 70 credits.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULL_VARIANTS.h_picket_i; HULLS.h_picket_i (derived from HULLS.h_picket)"
+ },
+ {
+  "id": "hull:i_carrier_a",
+  "category": "hull",
+  "name": "Ringing aperture",
+  "hook": "A third wing, paid for in shields and speed.",
+  "body": "A variant of the Glasswright aperture. Carrier class, 5 command points, 340 credits. Hull 140, shields 22 recharging 10 a round, armor 5%, speed 3, turn 2, evasion 12. Carries Prism lance (prow), Needle beam (turret). Hangar for 3 wings. Fits 3 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot. It is earned by finishing the story arc of The Glasswrights, never sold for renown.",
+  "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
+  "source": "data.js HULL_VARIANTS.i_carrier_a; HULLS.i_carrier_a (derived from HULLS.i_carrier)"
+ },
+ {
+  "id": "hull:i_wisp_l",
+  "category": "hull",
+  "name": "Sliver lancer",
+  "hook": "A prism lance where the shard cannon was.",
+  "body": "A variant of the Glasswright sliver. Frigate class, 1 command points, 90 credits. Hull 30, shields 12 recharging 6 a round, armor 0%, speed 7, turn 3, evasion 28. Carries Prism lance (prow). Fits 1 module. Ability, Phase jump (cooldown 3): jumps to any open hex within 3, straight past rocks and ships. It is bought once with 15 renown, then sold in the shipyards of The Glasswrights beside the standard hull at the same 90 credits.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULL_VARIANTS.i_wisp_l; HULLS.i_wisp_l (derived from HULLS.i_wisp)"
+ },
+ {
+  "id": "hull:b_spitter_s",
+  "category": "hull",
+  "name": "Spitter stinger",
+  "hook": "A prow gun traded for tendrils: brutal up close.",
+  "body": "A variant of the Chorus spitter. Destroyer class, 2 command points, 100 credits. Hull 82, shields 0, armor 10%, speed 4, turn 2, evasion 8. Carries Spine volley (turret), Boarding tendrils (turret). Regrows 5 hull at the end of each round. Fits 1 module. Ability, Rapid regrowth (cooldown 3): regrows 25% of its hull at once. It is bought once with 15 renown, then sold in the shipyards of The Chorus beside the standard hull at the same 100 credits.",
+  "note": "No shields at all: every point of damage is hull, and every round some of it grows back.",
+  "source": "data.js HULL_VARIANTS.b_spitter_s; HULLS.b_spitter_s (derived from HULLS.b_spitter)"
+ },
+ {
+  "id": "hull:spore",
+  "category": "hull",
+  "name": "Spore swarm",
+  "hook": "Chorus swarm wing: shed, not flown.",
+  "body": "A spore swarm is not flown. It is shed, a cloud of hungry mouths that drifts toward warmth. Squadron class, 0 command points. Hull 26, shields 0, armor 0%, speed 5, turn 9, evasion 25. Carries Acid sacs (turret). It flies as a squadron wing from a carrier hangar rather than as a ship of the line.",
+  "note": "Launched from carriers, not bought: protect the carrier and the wing keeps coming back.",
+  "source": "data.js HULLS.spore; faction The Chorus"
+ },
+ {
+  "id": "hull:b_razor_e",
+  "category": "hull",
+  "name": "Sun-eater bladeback",
+  "hook": "A second spine volley, faster regrowth, one hex slower.",
+  "body": "A variant of the Chorus bladeback. Cruiser class, 3 command points, 190 credits. Hull 150, shields 0, armor 20%, speed 3, turn 2, evasion 4. Carries Spine volley (turret), Spine volley (prow). Regrows 9 hull at the end of each round. Fits 2 modules. Ability, Blood frenzy (cooldown 3): all of its weapons deal +30% damage this turn. It is earned by finishing the story arc of The Chorus, never sold for renown.",
+  "note": "No shields at all: every point of damage is hull, and every round some of it grows back.",
+  "source": "data.js HULL_VARIANTS.b_razor_e; HULLS.b_razor_e (derived from HULLS.b_razor)"
+ },
+ {
+  "id": "hull:h_boss",
+  "category": "hull",
+  "name": "The Iron Mandate",
+  "hook": "The Iron Mandate: the Registry final word.",
+  "body": "The Iron Mandate is the Registry final word in a battle: a super-dreadnought named like an order, because it is one. Super-dreadnought class, 12 command points. Hull 560, shields 40 recharging 10 a round, armor 30%, speed 1, turn 1, evasion 0. Carries Heavy plasma lance (port broadside), Heavy plasma lance (starboard broadside), Plasma lance (turret), Ion cannon (prow), Picket lasers (turret). Ability, Spinal cannon (cooldown 3): 40 damage to a hex 3 to 9 away and 20 to everything beside that hex, friends included. It is a boss hull: the enemy flagship of its faction, met at the end of a sector, not a shipyard purchase.",
+  "note": "A flagship and a battle objective in itself; build the fleet around killing or protecting it.",
+  "source": "data.js HULLS.h_boss; ABILITIES.nova; faction Hegemony Navy"
+ },
+ {
+  "id": "hull:b_boss",
+  "category": "hull",
+  "name": "The Ninefold Maw",
+  "hook": "The Ninefold Maw: nine throats, one appetite.",
+  "body": "The Ninefold Maw is the swarm grown to titan scale: nine throats, one appetite, and a hangar full of hunger. Colossus class, 12 command points. Hull 650, shields 0, armor 25%, speed 2, turn 1, evasion 0. Carries Spine volley (prow), Spine volley (prow), Boarding tendrils (turret), Spore cloud (turret). Regrows 20 hull at the end of each round. Hangar for 3 wings. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot. It is a boss hull: the enemy flagship of its faction, met at the end of a sector, not a shipyard purchase.",
+  "note": "A flagship and a battle objective in itself; build the fleet around killing or protecting it.",
+  "source": "data.js HULLS.b_boss; ABILITIES.launch; faction The Chorus"
+ },
+ {
+  "id": "hull:i_boss",
+  "category": "hull",
+  "name": "The Unfinished",
+  "hook": "The Unfinished: an apology with guns, Lattice-built.",
+  "body": "The Unfinished is built around the largest surviving piece of the Lattice, and the Glasswrights fly it like an apology with guns. Lattice-ship class, 11 command points. Hull 470, shields 34 recharging 14 a round, armor 20%, speed 3, turn 2, evasion 6. Carries Prism lance (prow), Prism lance (prow), Prism lance (turret), Needle beam (turret), Mirror veil (turret). Ability, Shield surge (cooldown 4): every shield facing restored to full. It is a boss hull: the enemy flagship of its faction, met at the end of a sector, not a shipyard purchase.",
+  "note": "A flagship and a battle objective in itself; build the fleet around killing or protecting it.",
+  "source": "data.js HULLS.i_boss; ABILITIES.surge; faction The Glasswrights"
+ },
+ {
+  "id": "hull:d_boss",
+  "category": "hull",
+  "name": "The Unsetting",
+  "hook": "The Unsetting: the fleet memory, made hull.",
+  "body": "The Unsetting is an archive that fights: the fleet memory made hull, named for the sun that never sets because it never rose again. Archive-ship class, 12 command points. Hull 480, shields 0, armor 35%, speed 1, turn 1, evasion 0. Carries Null cannon (turret), Null cannon (turret), Corona arc (prow), Null shredder (turret). Regrows 8 hull at the end of each round. Ability, Spinal cannon (cooldown 3): 40 damage to a hex 3 to 9 away and 20 to everything beside that hex, friends included. It is a boss hull: the enemy flagship of its faction, met at the end of a sector, not a shipyard purchase.",
+  "note": "A flagship and a battle objective in itself; build the fleet around killing or protecting it.",
+  "source": "data.js HULLS.d_boss; ABILITIES.nova; faction Eclipse"
+ },
+ {
+  "id": "hull:c_marauder_g",
+  "category": "hull",
+  "name": "Trophy wrecker",
+  "hook": "A second rocket pod where the flak was. Slower, meaner.",
+  "body": "A variant of the Hullbreaker wrecker. Cruiser class, 3 command points, 200 credits. Hull 120, shields 16 recharging 7 a round, armor 15%, speed 3, turn 2, evasion 6. Carries Scrap scatter gun (port broadside), Scrap scatter gun (starboard broadside), Rattle-rocket pod (prow), Rattle-rocket pod (prow). Fits 2 modules. Ability, Overburn (cooldown 3): +3 movement at once, and a ram this turn hits 50% harder. It is earned by finishing the story arc of Ashfall Hullbreakers, never sold for renown.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.c_marauder_g; HULLS.c_marauder_g (derived from HULLS.c_marauder)"
+ },
+ {
+  "id": "hull:c_reaver_t",
+  "category": "hull",
+  "name": "Turret gutship",
+  "hook": "Scatter on a turret: the gutship stops caring about facing.",
+  "body": "A variant of the Hullbreaker gutship. Destroyer class, 2 command points, 110 credits. Hull 68, shields 10 recharging 5 a round, armor 10%, speed 5, turn 2, evasion 15. Carries Rattle-rocket pod (prow), Scrap scatter gun (turret). Fits 1 module. Ability, Reload torpedoes (cooldown 3): its torpedo tubes are ready to fire again at once. It is bought once with 15 renown, then sold in the shipyards of Ashfall Hullbreakers beside the standard hull at the same 110 credits.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.c_reaver_t; HULLS.c_reaver_t (derived from HULLS.c_reaver)"
+ },
+ {
+  "id": "hull:d_harvester_t",
+  "category": "hull",
+  "name": "Turreted zenith",
+  "hook": "The corona arc on a turret: it need not turn to fire.",
+  "body": "A variant of the Eclipse zenith. Cruiser class, 4 command points, 390 credits. Hull 145, shields 0, armor 30%, speed 2, turn 1, evasion 0. Carries Null cannon (turret), Corona arc (turret), Null spire (turret). Regrows 4 hull at the end of each round. Fits 2 modules. Its mind re-streams from the Archive when it falls, so the hull can reassemble and return (see Archive restore, under Eclipse). Ability, Repair swarm (cooldown 3): restores 20% hull to the most damaged friendly ship within 3 hexes, itself included. It is bought once with 30 renown, then sold in the shipyards of Eclipse beside the standard hull at the same 390 credits.",
+  "note": "Heavy armor and no shields: lances and torpedoes are the honest way through.",
+  "source": "data.js HULL_VARIANTS.d_harvester_t; HULLS.d_harvester_t (derived from HULLS.d_harvester)"
+ },
+ {
+  "id": "hull:h_vanguard",
+  "category": "hull",
+  "name": "Vanguard cruiser",
+  "hook": "A cruiser that carries a wing and holds the line.",
+  "body": "A vanguard cruiser is a carrier that refused to be only a carrier: guns forward, a wing in reserve, a place in the line. Cruiser class, 4 command points, 250 credits. Hull 140, shields 24 recharging 10 a round, armor 20%, speed 3, turn 1, evasion 4. Carries Plasma lance (turret), Plasma lance (turret), Ion cannon (prow). Hangar for 1 wings. Fits 2 modules. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot.",
+  "note": "Keep it behind the line and let the wings spend themselves; the hull is the investment.",
+  "source": "data.js HULLS.h_vanguard; ABILITIES.launch; faction Hegemony Navy"
+ },
+ {
+  "id": "hull:h_vanguard_g",
+  "category": "hull",
+  "name": "Vanguard gunship",
+  "hook": "The hangar traded for a third plasma turret.",
+  "body": "A variant of the Vanguard cruiser. Cruiser class, 4 command points, 250 credits. Hull 140, shields 24 recharging 10 a round, armor 20%, speed 3, turn 1, evasion 4. Carries Plasma lance (turret), Plasma lance (turret), Plasma lance (turret), Ion cannon (prow). Fits 2 modules. It is bought once with 25 renown, then sold in the shipyards of Hegemony Navy beside the standard hull at the same 250 credits.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.h_vanguard_g; HULLS.h_vanguard_g (derived from HULLS.h_vanguard)"
+ },
+ {
+  "id": "hull:vs_penitent_g",
+  "category": "hull",
+  "name": "Vigil gun-cruiser",
+  "hook": "The lance traded for a third battery: guns in every arc.",
+  "body": "A variant of the Vigil-class cruiser. Cruiser class, 3 command points, 200 credits. Hull 120, shields 20 recharging 8 a round, armor 20%, speed 3, turn 2, evasion 5. Carries Sear battery (port broadside), Sear battery (starboard broadside), Sear battery (turret). Fits 2 modules. Ability, Concentrated fire (cooldown 3): all of its weapons deal +30% damage this turn. It is bought once with 25 renown, then sold in the shipyards of Sunward Crusade beside the standard hull at the same 200 credits.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.vs_penitent_g; HULLS.vs_penitent_g (derived from HULLS.penitent)"
+ },
+ {
+  "id": "hull:vs_penitent_l",
+  "category": "hull",
+  "name": "Vigil lance-cruiser",
+  "hook": "Two prow lances: the heavy punch points one way.",
+  "body": "A variant of the Vigil-class cruiser. Cruiser class, 3 command points, 200 credits. Hull 120, shields 20 recharging 8 a round, armor 20%, speed 3, turn 2, evasion 5. Carries Oath lance (prow), Oath lance (prow), Sear battery (turret). Fits 2 modules. Ability, Concentrated fire (cooldown 3): all of its weapons deal +30% damage this turn. It is earned by finishing the story arc of Sunward Crusade, never sold for renown.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.vs_penitent_l; HULLS.vs_penitent_l (derived from HULLS.penitent)"
+ },
+ {
+  "id": "hull:penitent",
+  "category": "hull",
+  "name": "Vigil-class cruiser",
+  "hook": "The Vigil: broadsides both flanks, lance in the prow.",
+  "body": "The Vigil is the line made solid: broadsides on both flanks and an oath lance in the prow, built to move up and stay. Cruiser class, 3 command points, 200 credits. Hull 120, shields 20 recharging 8 a round, armor 20%, speed 3, turn 2, evasion 5. Carries Sear battery (port broadside), Sear battery (starboard broadside), Oath lance (prow). Fits 2 modules. Ability, Concentrated fire (cooldown 3): all of its weapons deal +30% damage this turn.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULLS.penitent; ABILITIES.focus; faction Sunward Crusade"
+ },
+ {
+  "id": "hull:i_song_w",
+  "category": "hull",
+  "name": "Warded prism",
+  "hook": "Warded: stronger shields, one lance on a turret.",
+  "body": "A variant of the Glasswright prism. Cruiser class, 4 command points, 290 credits. Hull 90, shields 34 recharging 10 a round, armor 5%, speed 5, turn 2, evasion 16. Carries Prism lance (turret), Needle beam (turret). Fits 2 modules. Ability, Shield surge (cooldown 4): every shield facing restored to full. It is bought once with 25 renown, then sold in the shipyards of The Glasswrights beside the standard hull at the same 290 credits.",
+  "note": "A line hull: it earns its points in formation, firing with its squadron, not alone.",
+  "source": "data.js HULL_VARIANTS.i_song_w; HULLS.i_song_w (derived from HULLS.i_song)"
+ },
+ {
+  "id": "hull:warden",
+  "category": "hull",
+  "name": "Warden-class frigate",
+  "hook": "Crusade frigate: cheap, quick, and first into the line.",
+  "body": "The smallest oath-bound hull on the Cinder Line: a picket with a chalked roll of names along its spine and guns laid by hand. Frigate class, 1 command points, 70 credits. Hull 45, shields 10 recharging 5 a round, armor 10%, speed 5, turn 3, evasion 20. Carries Sear repeater (prow), Spark flak (turret). Fits 1 module. Ability, Evasive burn (cooldown 3): +25 evasion until its next turn and +2 movement at once.",
+  "note": "Screens, scouts and finishes wounded ships; do not ask it to hold a line alone.",
+  "source": "data.js HULLS.warden; ABILITIES.evasive; faction Sunward Crusade"
+ },
+ {
+  "id": "hull:c_boss",
+  "category": "hull",
+  "name": "Warlord's Pyre-Barge",
+  "hook": "The Pyre-Barge: welded from beaten enemies.",
+  "body": "The Pyre-Barge is welded from the hulls of beaten enemies, and its warlord intends to add yours. War-barge class, 10 command points. Hull 600, shields 30 recharging 8 a round, armor 25%, speed 2, turn 1, evasion 0. Carries Scrap scatter gun (port broadside), Scrap scatter gun (starboard broadside), Heavy rocket pod (prow), Chaff guns (turret). Hangar for 2 wings. Ability, Launch squadron (cooldown 1): launches a replacement wing into a free hex beside it; a carrier starts each battle with its wings already in flight and holds one spare wing per hangar slot. It is a boss hull: the enemy flagship of its faction, met at the end of a sector, not a shipyard purchase.",
+  "note": "A flagship and a battle objective in itself; build the fleet around killing or protecting it.",
+  "source": "data.js HULLS.c_boss; ABILITIES.launch; faction Ashfall Hullbreakers"
+ },
+ {
+  "id": "weapon:autocannon",
+  "category": "weapon",
+  "name": "Autocannon",
+  "hook": "Three light shots, honest range: the frontier repeater.",
+  "body": "A rapid repeater, the oldest gun on the frontier: cheap, honest, and always loaded. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 3 shots of 5 damage. Range 4, most accurate inside 2 hexes: base accuracy 80, losing 8 per hex beyond that. Critical chance 5%. Names vary by fleet: Sunward Crusade call it the sear repeater; Ashfall Hullbreakers call it the autocannon.",
+  "note": "",
+  "source": "data.js W.autocannon; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:bioplasma",
+  "category": "weapon",
+  "name": "Bile spray",
+  "hook": "The spine volley: two living shots that bite past armor.",
+  "body": "A volley of living spines and bile, spat from glands along the hull. Chorus crews call it the spine volley. Bio-weapon: grown armament, carried by Chorus hulls. Fires 2 shots of 12 damage. Range 4, most accurate inside 3 hexes: base accuracy 74, losing 8 per hex beyond that. Critical chance 8%. 20% of its damage passes straight through shields. Names vary by fleet: The Chorus call it the spine volley.",
+  "note": "",
+  "source": "data.js W.bioplasma; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:tendril",
+  "category": "weapon",
+  "name": "Boarding tendrils",
+  "hook": "Range one: tendrils hold the target and open it.",
+  "body": "Boarding tendrils do not shoot a ship; they hold it and open it. Bio-weapon: grown armament, carried by Chorus hulls. Fires 2 shots of 13 damage. Range 1, most accurate inside 1 hexes: base accuracy 85, losing 0 per hex beyond that. Critical chance 12%. 50% of its damage passes straight through shields. Names vary by fleet: The Chorus call it the boarding tendrils.",
+  "note": "",
+  "source": "data.js W.tendril; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:bombs",
+  "category": "weapon",
+  "name": "Bomb payload",
+  "hook": "Bomber weight: slow damage that ignores most armor.",
+  "body": "A bomb payload is dropped, not fired: weight, falling toward a hull. Squadron weapon: only carrier wings carry it, and it is worked into their strike, not a ship volley. Fires 2 shots of 9 damage. Range 1, most accurate inside 1 hexes: base accuracy 78, losing 0 per hex beyond that. Critical chance 10%. 60% of its damage passes straight through shields. Damage is multiplied 0.2x against squadrons.",
+  "note": "",
+  "source": "data.js W.bombs; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:doom",
+  "category": "weapon",
+  "name": "Corona arc",
+  "hook": "The corona arc: one enormous hit, then a reload.",
+  "body": "The corona arc is a piece of a star, held in a ring and let go once, hard. Lance weapon: a single heavy beam built to punch through to the hull of big ships. Fires 1 shot of 40 damage. Range 5, most accurate inside 4 hexes: base accuracy 78, losing 6 per hex beyond that. Critical chance 12%. 60% of its damage passes straight through shields. After firing it needs 2 turns before it can fire again. Names vary by fleet: Eclipse call it the corona arc.",
+  "note": "",
+  "source": "data.js W.doom; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:turret",
+  "category": "weapon",
+  "name": "Dorsal turret",
+  "hook": "Two steady shots that cover every arc.",
+  "body": "A dorsal turret, the gun that covers the arcs the broadsides cannot. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 2 shots of 8 damage. Range 5, most accurate inside 3 hexes: base accuracy 74, losing 8 per hex beyond that. Critical chance 5%. Names vary by fleet: Sunward Crusade call it the sear turret; Ashfall Hullbreakers call it the junk turret; The Glasswrights call it the needle beam.",
+  "note": "",
+  "source": "data.js W.turret; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:flak",
+  "category": "weapon",
+  "name": "Flak battery",
+  "hook": "Point defense. It never fires on ships; it guards against wings.",
+  "body": "A spray of short-fused shells meant to fill the space a squadron has to cross. Point-defense kind: the guard kind. The flak battery, the null sentries and the spore cloud are the same kind under three names, and every rule that speaks of one speaks of all three. Point defense: this mount never fires in a volley and never shoots at ships. It stands guard instead, shooting at incoming squadrons, rockets and boarding craft with 3 shots of 3 damage out to range 2, dealing 3x damage against squadrons and only 60% against capital ships. One point-defense mount is enough to keep the guard; a second adds nothing to it. Names vary by fleet: Sunward Crusade call it the spark flak; Hegemony Navy call it the picket lasers; Ashfall Hullbreakers call it the chaff guns; The Glasswrights call it the mirror veil; Eclipse call it the null shredder.",
+  "note": "",
+  "source": "data.js W.flak; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:battery",
+  "category": "weapon",
+  "name": "Gun battery",
+  "hook": "The standard broadside gun: four shots, mid range.",
+  "body": "The standard broadside gun of the line, laid by hand on Crusade decks. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 4 shots of 6 damage. Range 5, most accurate inside 3 hexes: base accuracy 72, losing 8 per hex beyond that. Critical chance 5%. Names vary by fleet: Sunward Crusade call it the sear battery.",
+  "note": "",
+  "source": "data.js W.battery; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:hbattery",
+  "category": "weapon",
+  "name": "Heavy gun battery",
+  "hook": "Five heavy shots per volley: the battleship argument.",
+  "body": "The heavy broadside: more barrels, heavier shells, the argument a battleship makes. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 5 shots of 7 damage. Range 5, most accurate inside 3 hexes: base accuracy 72, losing 8 per hex beyond that. Critical chance 6%. Names vary by fleet: Sunward Crusade call it the heavy sear broadside.",
+  "note": "",
+  "source": "data.js W.hbattery; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:hturbo",
+  "category": "weapon",
+  "name": "Heavy pulse laser",
+  "hook": "Three heavy pulses at the longest laser reach.",
+  "body": "The heavy pulse laser: the pulse beaten bigger, for capital work. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 3 shots of 9 damage. Range 6, most accurate inside 4 hexes: base accuracy 72, losing 7 per hex beyond that. Critical chance 6%. Names vary by fleet: Hegemony Navy call it the heavy plasma lance.",
+  "note": "",
+  "source": "data.js W.hturbo; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:htorp",
+  "category": "weapon",
+  "name": "Heavy torpedoes",
+  "hook": "Two heavy torpedoes per salvo, then a reload.",
+  "body": "Heavy torpedoes: two tubes of the biggest argument a Hullbreaker can bolt on. Torpedo weapon: a slow, heavy strike that has to reload between shots. Fires 2 shots of 34 damage. Range 6, most accurate inside 6 hexes: base accuracy 60, losing 0 per hex beyond that. Critical chance 15%. 30% of its damage passes straight through shields. After firing it needs 2 turns before it can fire again. A target evasion counts 2x against it, so nimble ships dodge it well. Names vary by fleet: Ashfall Hullbreakers call it the heavy rocket pod.",
+  "note": "",
+  "source": "data.js W.htorp; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:guns",
+  "category": "weapon",
+  "name": "Interceptor guns",
+  "hook": "Fighter guns: light, close, and cruel to other wings.",
+  "body": "Interceptor guns: the quick, light cannon a fighter wing strafes with. Squadron weapon: only carrier wings carry it, and it is worked into their strike, not a ship volley. Fires 3 shots of 4 damage. Range 1, most accurate inside 1 hexes: base accuracy 82, losing 0 per hex beyond that. Damage is multiplied 2.2x against squadrons. It manages only 50% of its damage against capital ships.",
+  "note": "",
+  "source": "data.js W.guns; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:ion",
+  "category": "weapon",
+  "name": "Ion cannon",
+  "hook": "Built to strip shields: two and a half times shield damage.",
+  "body": "An ion cannon does not wound a ship; it unmakes the shield standing in front of it. Lance weapon: a single heavy beam built to punch through to the hull of big ships. Fires 1 shot of 12 damage. Range 6, most accurate inside 5 hexes: base accuracy 80, losing 6 per hex beyond that. Critical chance 4%. It deals 2.5x damage to shields. Names vary by fleet: Hegemony Navy call it the ion cannon.",
+  "note": "",
+  "source": "data.js W.ion; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:lance",
+  "category": "weapon",
+  "name": "Lance array",
+  "hook": "One beam, long reach, most of it through shields.",
+  "body": "A beam that arrives before its sound would: one line of light, one hole. Lance weapon: a single heavy beam built to punch through to the hull of big ships. Fires 1 shot of 20 damage. Range 7, most accurate inside 6 hexes: base accuracy 82, losing 6 per hex beyond that. Critical chance 10%. 60% of its damage passes straight through shields. Names vary by fleet: Sunward Crusade call it the oath lance.",
+  "note": "",
+  "source": "data.js W.lance; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:laser",
+  "category": "weapon",
+  "name": "Laser cannon",
+  "hook": "Two accurate shots at short to mid range.",
+  "body": "A plain, dependable cannon of light, standard across a dozen fleets. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 2 shots of 7 damage. Range 4, most accurate inside 3 hexes: base accuracy 80, losing 8 per hex beyond that. Critical chance 5%. Names vary by fleet: Hegemony Navy call it the plasma cannon.",
+  "note": "",
+  "source": "data.js W.laser; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:gauss",
+  "category": "weapon",
+  "name": "Null cannon",
+  "hook": "Three null shots, over half of each straight through shields.",
+  "body": "A null cannon fires mass that is barely there, and arrives the same way through shields and plate. Null weapon: its damage is built to pass through defenses that stop ordinary fire. Fires 3 shots of 6 damage. Range 5, most accurate inside 3 hexes: base accuracy 74, losing 8 per hex beyond that. Critical chance 5%. 60% of its damage passes straight through shields. Names vary by fleet: Eclipse call it the null cannon.",
+  "note": "",
+  "source": "data.js W.gauss; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:gsentry",
+  "category": "weapon",
+  "name": "Null sentries",
+  "hook": "Point defense, Eclipse style: null sentries on watch.",
+  "body": "Null sentries are small patient guns that wait for something small to come close. Point-defense kind: the guard kind. The flak battery, the null sentries and the spore cloud are the same kind under three names, and every rule that speaks of one speaks of all three. Point defense: this mount never fires in a volley and never shoots at ships. It stands guard instead, shooting at incoming squadrons, rockets and boarding craft with 3 shots of 3 damage out to range 2, dealing 3x damage against squadrons and only 60% against capital ships. One point-defense mount is enough to keep the guard; a second adds nothing to it. Names vary by fleet: Eclipse call it the null spire.",
+  "note": "",
+  "source": "data.js W.gsentry; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:pulsar",
+  "category": "weapon",
+  "name": "Prism lance",
+  "hook": "Two prism beams that cut deep past shields.",
+  "body": "A prism lance: a white core beam that splits into a rainbow fringe and leaves glassy scars. Lance weapon: a single heavy beam built to punch through to the hull of big ships. Fires 2 shots of 12 damage. Range 6, most accurate inside 5 hexes: base accuracy 80, losing 6 per hex beyond that. Critical chance 10%. 60% of its damage passes straight through shields. Names vary by fleet: The Glasswrights call it the prism lance.",
+  "note": "",
+  "source": "data.js W.pulsar; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:turbo",
+  "category": "weapon",
+  "name": "Pulse laser",
+  "hook": "Two heavier pulses, light blue over Hegemony hulls.",
+  "body": "A pulse laser, firing in hard beats; Hegemony ships light theirs light blue. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 2 shots of 9 damage. Range 5, most accurate inside 3 hexes: base accuracy 74, losing 8 per hex beyond that. Critical chance 5%. Names vary by fleet: Hegemony Navy call it the plasma lance.",
+  "note": "",
+  "source": "data.js W.turbo; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:scatter",
+  "category": "weapon",
+  "name": "Scatter cannons",
+  "hook": "Five pellets at knife range. No reach, no apology.",
+  "body": "Scatter cannons are sawn-off violence: many pellets, no manners, no range. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 5 shots of 5 damage. Range 3, most accurate inside 2 hexes: base accuracy 78, losing 10 per hex beyond that. Critical chance 6%. Names vary by fleet: Ashfall Hullbreakers call it the scrap scatter gun.",
+  "note": "",
+  "source": "data.js W.scatter; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:shard",
+  "category": "weapon",
+  "name": "Shard cannon",
+  "hook": "Three crystal shots that also trouble squadrons.",
+  "body": "A shard cannon fires slivers of the hull own crystal kin, ground to edges. Battery weapon, the standard gun kind: it fires in the broadside and turret volleys that most hulls are built around. Fires 3 shots of 6 damage. Range 4, most accurate inside 2 hexes: base accuracy 80, losing 8 per hex beyond that. Critical chance 6%. Damage is multiplied 1.6x against squadrons. Names vary by fleet: The Glasswrights call it the prism shards.",
+  "note": "",
+  "source": "data.js W.shard; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:sporeb",
+  "category": "weapon",
+  "name": "Spore burst",
+  "hook": "Acid sacs: a wing weapon that keeps eating.",
+  "body": "Acid sacs burst on contact and keep eating after the swarm has passed. Squadron weapon: only carrier wings carry it, and it is worked into their strike, not a ship volley. Fires 2 shots of 10 damage. Range 1, most accurate inside 1 hexes: base accuracy 78, losing 0 per hex beyond that. Critical chance 8%. 60% of its damage passes straight through shields. Damage is multiplied 0.3x against squadrons. Names vary by fleet: The Chorus call it the acid sacs.",
+  "note": "",
+  "source": "data.js W.sporeb; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:spores",
+  "category": "weapon",
+  "name": "Spore drifts",
+  "hook": "Point defense, grown: a spore cloud that bursts on wings.",
+  "body": "A drifting cloud of spores that bursts around anything small enough to fly through it. Point-defense kind: the guard kind. The flak battery, the null sentries and the spore cloud are the same kind under three names, and every rule that speaks of one speaks of all three. Point defense: this mount never fires in a volley and never shoots at ships. It stands guard instead, shooting at incoming squadrons, rockets and boarding craft with 3 shots of 4 damage out to range 2, dealing 3x damage against squadrons and only 60% against capital ships. One point-defense mount is enough to keep the guard; a second adds nothing to it. Names vary by fleet: The Chorus call it the spore cloud.",
+  "note": "",
+  "source": "data.js W.spores; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:startorp",
+  "category": "weapon",
+  "name": "Star torpedo",
+  "hook": "One star torpedo: hard to dodge, deep through shields.",
+  "body": "A star torpedo rides a sliver of stored starlight, and is very hard to shake off. Torpedo weapon: a slow, heavy strike that has to reload between shots. Fires 1 shot of 38 damage. Range 5, most accurate inside 5 hexes: base accuracy 66, losing 0 per hex beyond that. Critical chance 15%. 40% of its damage passes straight through shields. After firing it needs 2 turns before it can fire again. A target evasion counts 2x against it, so nimble ships dodge it well. Names vary by fleet: The Glasswrights call it the star torpedo.",
+  "note": "",
+  "source": "data.js W.startorp; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "weapon:torp",
+  "category": "weapon",
+  "name": "Torpedo salvo",
+  "hook": "One huge hit, then a reload. Evasion counts double against it.",
+  "body": "A torpedo is a small ship that hates one other ship very much, briefly. Torpedo weapon: a slow, heavy strike that has to reload between shots. Fires 1 shot of 42 damage. Range 6, most accurate inside 6 hexes: base accuracy 64, losing 0 per hex beyond that. Critical chance 15%. 30% of its damage passes straight through shields. After firing it needs 2 turns before it can fire again. A target evasion counts 2x against it, so nimble ships dodge it well. Names vary by fleet: Sunward Crusade call it the cinder torpedo; Ashfall Hullbreakers call it the rattle-rocket pod.",
+  "note": "",
+  "source": "data.js W.torp; FAC_WNAMES; battle.js weapon resolution"
+ },
+ {
+  "id": "boon:r_burn",
+  "category": "boon",
+  "name": "Afterburners",
+  "hook": "Rook protocol: the whole fleet, one step faster.",
+  "body": "A protocol of R-5 Rook, the Breaker. Rook, the Breaker, drifts in the wreck fields, hunted by the Hullbreakers who think it makes its holder unstoppable. Its protocols arrive first. Effect: +1 speed across the fleet. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.r_burn; PATRONS.rook"
+ },
+ {
+  "id": "boon:i_still",
+  "category": "boon",
+  "name": "Anchored Volley",
+  "hook": "Kharon protocol: hold still, hit harder.",
+  "body": "A protocol of K-1 Kharon, the Unbent. Kharon, the Unbent, never left the dead system, and Eclipse learned endurance from it. Its protocols hold. Effect: A ship that has not moved this activation deals +25% damage with broadsides and batteries. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.i_still; PATRONS.iron"
+ },
+ {
+  "id": "boon:s_arc",
+  "category": "boon",
+  "name": "Arc Discharge",
+  "hook": "Vyre protocol: broken shields bite their owners.",
+  "body": "A protocol of V-2 Vyre, the Storm Queen. Vyre, the Storm Queen, is the core the Registry captured and studied. Its protocols are shields, kept and broken. Effect: When your fire knocks out an enemy shield facing, its generator shorts and the ship takes 9 hull damage. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.s_arc; PATRONS.storm"
+ },
+ {
+  "id": "boon:r_prow",
+  "category": "boon",
+  "name": "Battering Prow",
+  "hook": "Rook protocol: rams that take half a hull.",
+  "body": "A protocol of R-5 Rook, the Breaker. Rook, the Breaker, drifts in the wreck fields, hunted by the Hullbreakers who think it makes its holder unstoppable. Its protocols arrive first. Effect: Rams deal +35% damage and can take up to 50% of a target hull, and the rammer recoil is halved. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.r_prow; PATRONS.rook"
+ },
+ {
+  "id": "boon:a_rear",
+  "category": "boon",
+  "name": "Blind Spot",
+  "hook": "Astra protocol: rear arcs are where ships die.",
+  "body": "A protocol of A-4 Astra, the Silent Star. Astra, the Silent Star, is the core the Glasswrights keep caged and throttled. Its protocols are one clean line of light. Effect: Hits on an enemy rear arc deal +25% damage. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.a_rear; PATRONS.star"
+ },
+ {
+  "id": "boon:h_board",
+  "category": "boon",
+  "name": "Boarding Frenzy",
+  "hook": "Crucible protocol: boarders that always leave a mark.",
+  "body": "A protocol of H-3 Crucible, \"the Hunger Below\". Crucible, the Hunger Below, powered the Fleshwrights vats; the swarm grew around it and feeds on it still. Its protocols feed. Effect: Boarding parties fight as 25% more crew, and a failed boarding always sabotages a system on the target. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.h_board; PATRONS.hunger"
+ },
+ {
+  "id": "boon:d_inferno",
+  "category": "boon",
+  "name": "Broadside Inferno",
+  "hook": "Duo, Seren and Kharon: broadsides that burn.",
+  "body": "A duo protocol of S-6 Seren, the Last Flame and K-1 Kharon, the Unbent, offered when a fleet runs in sync with both cores at once. Effect: Broadside hits have a 40% chance to start a fire, and your fires burn hotter, 10 a turn, and a turn longer. Duo protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.d_inferno; PATRONS.ember+iron"
+ },
+ {
+  "id": "boon:h_brood",
+  "category": "boon",
+  "name": "Brood Harvest",
+  "hook": "Crucible gift: capital kills hatch free wings.",
+  "body": "A protocol of H-3 Crucible, \"the Hunger Below\". Crucible, the Hunger Below, powered the Fleshwrights vats; the swarm grew around it and feeds on it still. Its protocols feed. Effect: Each enemy capital ship your fleet destroys lets your nearest carrier launch a free wing, if it has a free hex beside it. A fixed gift protocol: it does not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.h_brood; PATRONS.hunger"
+ },
+ {
+  "id": "boon:d_burnswarm",
+  "category": "boon",
+  "name": "Burning Swarm",
+  "hook": "Duo, Crucible and Seren: wings that set fires.",
+  "body": "A duo protocol of H-3 Crucible, \"the Hunger Below\" and S-6 Seren, the Last Flame, offered when a fleet runs in sync with both cores at once. Effect: Squadron hits have a 30% chance to start a fire. Duo protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.d_burnswarm; PATRONS.hunger+ember"
+ },
+ {
+  "id": "boon:s_cap",
+  "category": "boon",
+  "name": "Capacitor Surge",
+  "hook": "Vyre protocol: bigger shields, fleet-wide.",
+  "body": "A protocol of V-2 Vyre, the Storm Queen. Vyre, the Storm Queen, is the core the Registry captured and studied. Its protocols are shields, kept and broken. Effect: Shields +20% across the fleet. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.s_cap; PATRONS.storm"
+ },
+ {
+  "id": "boon:s_chain",
+  "category": "boon",
+  "name": "Chain Lightning",
+  "hook": "Vyre gift: a broken facing takes its neighbors down.",
+  "body": "A protocol of V-2 Vyre, the Storm Queen. Vyre, the Storm Queen, is the core the Registry captured and studied. Its protocols are shields, kept and broken. Effect: When your fire knocks out an enemy shield facing, the two facings beside it lose a third of their strength. A fixed gift protocol: it does not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.s_chain; PATRONS.storm"
+ },
+ {
+  "id": "boon:e_chain",
+  "category": "boon",
+  "name": "Chain Reaction",
+  "hook": "Seren protocol: the dead explode.",
+  "body": "A protocol of S-6 Seren, the Last Flame. Seren, the Last Flame, drifted to the Reach outer belt, and the Crusade weapons came from studying it. Its protocols burn. Effect: Enemy ships you destroy explode, dealing 20 damage to every enemy within 2 hexes. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.e_chain; PATRONS.ember"
+ },
+ {
+  "id": "boon:r_jink",
+  "category": "boon",
+  "name": "Evasive Burn",
+  "hook": "Rook protocol: move hard, become a rumor.",
+  "body": "A protocol of R-5 Rook, the Breaker. Rook, the Breaker, drifts in the wreck fields, hunted by the Hullbreakers who think it makes its holder unstoppable. Its protocols arrive first. Effect: Ships that moved 3 or more hexes are 15 harder to hit until their next turn. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.r_jink; PATRONS.rook"
+ },
+ {
+  "id": "boon:L_storm",
+  "category": "boon",
+  "name": "Eye of the Storm",
+  "hook": "Legendary Vyre: shields reborn every turn.",
+  "body": "The legendary protocol of V-2 Vyre, the Storm Queen. Vyre, the Storm Queen, is the core the Registry captured and studied. Its protocols are shields, kept and broken. Effect: Every shield facing on every ship refills completely at the start of each of your turns. Legendary protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.L_storm; PATRONS.storm"
+ },
+ {
+  "id": "boon:h_feast",
+  "category": "boon",
+  "name": "Feast on the Fallen",
+  "hook": "Crucible protocol: kills feed the carrier.",
+  "body": "A protocol of H-3 Crucible, \"the Hunger Below\". Crucible, the Hunger Below, powered the Fleshwrights vats; the swarm grew around it and feeds on it still. Its protocols feed. Effect: When your squadron destroys a target, its carrier gains a spare wing and repairs 5% of its hull. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.h_feast; PATRONS.hunger"
+ },
+ {
+  "id": "boon:d_bastion",
+  "category": "boon",
+  "name": "Fortress",
+  "hook": "Duo, Kharon and Vyre: brace, and be whole.",
+  "body": "A duo protocol of K-1 Kharon, the Unbent and V-2 Vyre, the Storm Queen, offered when a fleet runs in sync with both cores at once. Effect: Bracing also refills every shield facing and blocks an extra 10% of hull damage. Duo protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.d_bastion; PATRONS.iron+storm"
+ },
+ {
+  "id": "boon:e_hunt",
+  "category": "boon",
+  "name": "Funeral Pyre",
+  "hook": "Seren protocol: the wounded stay wounded, and die.",
+  "body": "A protocol of S-6 Seren, the Last Flame. Seren, the Last Flame, drifted to the Reach outer belt, and the Crusade weapons came from studying it. Its protocols burn. Effect: +20% damage against ships below half hull, and ships you hit while they are below half hull can no longer regrow hull or reanimate. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.e_hunt; PATRONS.ember"
+ },
+ {
+  "id": "boon:h_chitin",
+  "category": "boon",
+  "name": "Hardened Chitin",
+  "hook": "Crucible protocol: tougher wings.",
+  "body": "A protocol of H-3 Crucible, \"the Hunger Below\". Crucible, the Hunger Below, powered the Fleshwrights vats; the swarm grew around it and feeds on it still. Its protocols feed. Effect: Squadrons have +30% hull. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.h_chitin; PATRONS.hunger"
+ },
+ {
+  "id": "boon:e_reload",
+  "category": "boon",
+  "name": "Hot Tubes",
+  "hook": "Seren protocol: hotter tubes, faster reloads.",
+  "body": "A protocol of S-6 Seren, the Last Flame. Seren, the Last Flame, drifted to the Reach outer belt, and the Crusade weapons came from studying it. Its protocols burn. Effect: Torpedoes reload 1 turn faster. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.e_reload; PATRONS.ember"
+ },
+ {
+  "id": "boon:d_hunter",
+  "category": "boon",
+  "name": "Hunter's Line",
+  "hook": "Duo, Astra and Rook: speed becomes crits.",
+  "body": "A duo protocol of A-4 Astra, the Silent Star and R-5 Rook, the Breaker, offered when a fleet runs in sync with both cores at once. Effect: Ships that moved 3 or more hexes gain +25% critical chance. Duo protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.d_hunter; PATRONS.star+rook"
+ },
+ {
+  "id": "boon:e_war",
+  "category": "boon",
+  "name": "Incendiary Warheads",
+  "hook": "Seren protocol: torpedoes, a quarter harder.",
+  "body": "A protocol of S-6 Seren, the Last Flame. Seren, the Last Flame, drifted to the Reach outer belt, and the Crusade weapons came from studying it. Its protocols burn. Effect: Torpedoes deal +25% damage. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.e_war; PATRONS.ember"
+ },
+ {
+  "id": "boon:d_ionlance",
+  "category": "boon",
+  "name": "Ion Lance",
+  "hook": "Duo, Vyre and Astra: lances that unshield.",
+  "body": "A duo protocol of V-2 Vyre, the Storm Queen and A-4 Astra, the Silent Star, offered when a fleet runs in sync with both cores at once. Effect: Lances strip double the shield per hit. Duo protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.d_ionlance; PATRONS.storm+star"
+ },
+ {
+  "id": "boon:s_ion",
+  "category": "boon",
+  "name": "Ion Lash",
+  "hook": "Vyre protocol: every hit strips more shield.",
+  "body": "A protocol of V-2 Vyre, the Storm Queen. Vyre, the Storm Queen, is the core the Registry captured and studied. Its protocols are shields, kept and broken. Effect: Your weapons strip 22% more shield per hit. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.s_ion; PATRONS.storm"
+ },
+ {
+  "id": "boon:i_brace",
+  "category": "boon",
+  "name": "Iron Discipline",
+  "hook": "Kharon protocol: brace, and bite back.",
+  "body": "A protocol of K-1 Kharon, the Unbent. Kharon, the Unbent, never left the dead system, and Eclipse learned endurance from it. Its protocols hold. Effect: Bracing blocks an extra 10% of damage, and braced ships strike back: every enemy attack that hits one deals 18 damage to the attacker in return. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.i_brace; PATRONS.iron"
+ },
+ {
+  "id": "boon:d_jugg",
+  "category": "boon",
+  "name": "Juggernaut",
+  "hook": "Duo, Kharon and Rook: the unstoppable ram.",
+  "body": "A duo protocol of K-1 Kharon, the Unbent and R-5 Rook, the Breaker, offered when a fleet runs in sync with both cores at once. Effect: Rams deal +50% damage and the rammer takes no recoil. Duo protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.d_jugg; PATRONS.iron+rook"
+ },
+ {
+  "id": "boon:a_crit",
+  "category": "boon",
+  "name": "Killing Light",
+  "hook": "Astra protocol: crits that wreck systems.",
+  "body": "A protocol of A-4 Astra, the Silent Star. Astra, the Silent Star, is the core the Glasswrights keep caged and throttled. Its protocols are one clean line of light. Effect: +6% critical chance, critical hits deal x1.75 damage, and every critical hit wrecks a system on the target ship. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.a_crit; PATRONS.star"
+ },
+ {
+  "id": "boon:e_kindle",
+  "category": "boon",
+  "name": "Kindling",
+  "hook": "Seren protocol: some hits simply catch.",
+  "body": "A protocol of S-6 Seren, the Last Flame. Seren, the Last Flame, drifted to the Reach outer belt, and the Crusade weapons came from studying it. Its protocols burn. Effect: Hull hits have a 12% chance to start a fire. Fires burn 10 a turn for 2 turns. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.e_kindle; PATRONS.ember"
+ },
+ {
+  "id": "boon:s_ev",
+  "category": "boon",
+  "name": "Lightning Reflex",
+  "hook": "Vyre protocol: the whole fleet gets harder to hold.",
+  "body": "A protocol of V-2 Vyre, the Storm Queen. Vyre, the Storm Queen, is the core the Registry captured and studied. Its protocols are shields, kept and broken. Effect: +6 evasion across the fleet. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.s_ev; PATRONS.storm"
+ },
+ {
+  "id": "boon:a_long",
+  "category": "boon",
+  "name": "Long Silence",
+  "hook": "Astra protocol: range stops taxing the first hex.",
+  "body": "A protocol of A-4 Astra, the Silent Star. Astra, the Silent Star, is the core the Glasswrights keep caged and throttled. Its protocols are one clean line of light. Effect: Your fire ignores the first hex of long-range accuracy penalty. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.a_long; PATRONS.star"
+ },
+ {
+  "id": "boon:a_mark",
+  "category": "boon",
+  "name": "Marked for Death",
+  "hook": "Astra gift: the first lance hit paints the target.",
+  "body": "A protocol of A-4 Astra, the Silent Star. Astra, the Silent Star, is the core the Glasswrights keep caged and throttled. Its protocols are one clean line of light. Effect: Each round, the first enemy ship your lances hit is marked: your whole fleet aims 10 better against it until the round ends. A fixed gift protocol: it does not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.a_mark; PATRONS.star"
+ },
+ {
+  "id": "boon:r_mom",
+  "category": "boon",
+  "name": "Momentum",
+  "hook": "Rook protocol: movement becomes damage.",
+  "body": "A protocol of R-5 Rook, the Breaker. Rook, the Breaker, drifts in the wreck fields, hunted by the Hullbreakers who think it makes its holder unstoppable. Its protocols arrive first. Effect: Ships deal +5% damage for each hex they moved this activation, up to 4 hexes. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.r_mom; PATRONS.rook"
+ },
+ {
+  "id": "boon:L_star",
+  "category": "boon",
+  "name": "One Clean Line",
+  "hook": "Legendary Astra: lances that cannot miss the dark.",
+  "body": "The legendary protocol of A-4 Astra, the Silent Star. Astra, the Silent Star, is the core the Glasswrights keep caged and throttled. Its protocols are one clean line of light. Effect: Lances hit 95% of the time and pass straight through shields. Legendary protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.L_star; PATRONS.star"
+ },
+ {
+  "id": "boon:L_ember",
+  "category": "boon",
+  "name": "Pyre of Stars",
+  "hook": "Legendary Seren: every kill is a second weapon.",
+  "body": "The legendary protocol of S-6 Seren, the Last Flame. Seren, the Last Flame, drifted to the Reach outer belt, and the Crusade weapons came from studying it. Its protocols burn. Effect: Every enemy ship you destroy explodes for 40 damage to every enemy within 2 hexes. Legendary protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.L_ember; PATRONS.ember"
+ },
+ {
+  "id": "boon:h_wings",
+  "category": "boon",
+  "name": "Ravenous Wings",
+  "hook": "Crucible protocol: wings that bite harder.",
+  "body": "A protocol of H-3 Crucible, \"the Hunger Below\". Crucible, the Hunger Below, powered the Fleshwrights vats; the swarm grew around it and feeds on it still. Its protocols feed. Effect: Squadrons deal +25% damage. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.h_wings; PATRONS.hunger"
+ },
+ {
+  "id": "boon:i_wall",
+  "category": "boon",
+  "name": "Shield Wall",
+  "hook": "Kharon gift: your brace covers your neighbors.",
+  "body": "A protocol of K-1 Kharon, the Unbent. Kharon, the Unbent, never left the dead system, and Eclipse learned endurance from it. Its protocols hold. Effect: Bracing covers every ship beside the braced ship too: they take the brace hull cut until its next turn. A fixed gift protocol: it does not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.i_wall; PATRONS.iron"
+ },
+ {
+  "id": "boon:r_shock",
+  "category": "boon",
+  "name": "Shockwave",
+  "hook": "Rook protocol: the ram splashes.",
+  "body": "A protocol of R-5 Rook, the Breaker. Rook, the Breaker, drifts in the wreck fields, hunted by the Hullbreakers who think it makes its holder unstoppable. Its protocols arrive first. Effect: Rams also hit every other enemy beside the target for 25% of the ram damage. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.r_shock; PATRONS.rook"
+ },
+ {
+  "id": "boon:a_aim",
+  "category": "boon",
+  "name": "Silent Aim",
+  "hook": "Astra protocol: every gun aims truer.",
+  "body": "A protocol of A-4 Astra, the Silent Star. Astra, the Silent Star, is the core the Glasswrights keep caged and throttled. Its protocols are one clean line of light. Effect: +5 aim for every weapon. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.a_aim; PATRONS.star"
+ },
+ {
+  "id": "boon:r_slip",
+  "category": "boon",
+  "name": "Slip the Net",
+  "hook": "Rook gift: fire, then move away.",
+  "body": "A protocol of R-5 Rook, the Breaker. Rook, the Breaker, drifts in the wreck fields, hunted by the Hullbreakers who think it makes its holder unstoppable. Its protocols arrive first. Effect: Your ships may move after firing, up to half the movement they had left, without climbing or diving. A fixed gift protocol: it does not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.r_slip; PATRONS.rook"
+ },
+ {
+  "id": "boon:e_spread",
+  "category": "boon",
+  "name": "Spread Pattern",
+  "hook": "Seren gift: even missed torpedoes burst.",
+  "body": "A protocol of S-6 Seren, the Last Flame. Seren, the Last Flame, drifted to the Reach outer belt, and the Crusade weapons came from studying it. Its protocols burn. Effect: Torpedoes that run wide still burst: every enemy within 1 hex of the aim hex takes 30% of one torpedo damage. A fixed gift protocol: it does not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.e_spread; PATRONS.ember"
+ },
+ {
+  "id": "boon:a_lance",
+  "category": "boon",
+  "name": "Starlight Lances",
+  "hook": "Astra protocol: lances, a third harder again.",
+  "body": "A protocol of A-4 Astra, the Silent Star. Astra, the Silent Star, is the core the Glasswrights keep caged and throttled. Its protocols are one clean line of light. Effect: Lances deal +35% damage. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.a_lance; PATRONS.star"
+ },
+ {
+  "id": "boon:s_regen",
+  "category": "boon",
+  "name": "Storm Mantle",
+  "hook": "Vyre protocol: shields that mend themselves faster.",
+  "body": "A protocol of V-2 Vyre, the Storm Queen. Vyre, the Storm Queen, is the core the Registry captured and studied. Its protocols are shields, kept and broken. Effect: Each turn, every shield facing on every ship restores an extra 18% of its strength. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.s_regen; PATRONS.storm"
+ },
+ {
+  "id": "boon:h_hatch",
+  "category": "boon",
+  "name": "Swarm Hatch",
+  "hook": "Crucible protocol: one more wing in the air.",
+  "body": "A protocol of H-3 Crucible, \"the Hunger Below\". Crucible, the Hunger Below, powered the Fleshwrights vats; the swarm grew around it and feeds on it still. Its protocols feed. Effect: Carriers field an extra wing. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.h_hatch; PATRONS.hunger"
+ },
+ {
+  "id": "boon:L_hunger",
+  "category": "boon",
+  "name": "The Endless Swarm",
+  "hook": "Legendary Crucible: the swarm does not end.",
+  "body": "The legendary protocol of H-3 Crucible, \"the Hunger Below\". Crucible, the Hunger Below, powered the Fleshwrights vats; the swarm grew around it and feeds on it still. Its protocols feed. Effect: Carriers field two more wings and never run out of spare wings. Legendary protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.L_hunger; PATRONS.hunger"
+ },
+ {
+  "id": "boon:i_broad",
+  "category": "boon",
+  "name": "Thunder Broadside",
+  "hook": "Kharon protocol: broadsides hit a fifth harder.",
+  "body": "A protocol of K-1 Kharon, the Unbent. Kharon, the Unbent, never left the dead system, and Eclipse learned endurance from it. Its protocols hold. Effect: Broadside guns deal +20% damage. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.i_broad; PATRONS.iron"
+ },
+ {
+  "id": "boon:i_plate",
+  "category": "boon",
+  "name": "Unbent Plating",
+  "hook": "Kharon protocol: armor for the whole fleet.",
+  "body": "A protocol of K-1 Kharon, the Unbent. Kharon, the Unbent, never left the dead system, and Eclipse learned endurance from it. Its protocols hold. Effect: +8% armor across the fleet. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.i_plate; PATRONS.iron"
+ },
+ {
+  "id": "boon:L_iron",
+  "category": "boon",
+  "name": "Unbreakable",
+  "hook": "Legendary Kharon: death, declined once per ship.",
+  "body": "The legendary protocol of K-1 Kharon, the Unbent. Kharon, the Unbent, never left the dead system, and Eclipse learned endurance from it. Its protocols hold. Effect: Every ship survives its first killing blow each battle at 1 hull. Legendary protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.L_iron; PATRONS.iron"
+ },
+ {
+  "id": "boon:i_line",
+  "category": "boon",
+  "name": "Unbroken Line",
+  "hook": "Kharon protocol: neighbors in the line share the load.",
+  "body": "A protocol of K-1 Kharon, the Unbent. Kharon, the Unbent, never left the dead system, and Eclipse learned endurance from it. Its protocols hold. Effect: Ships next to another of your ships take 12% less hull damage. Shown at base strength; rarer copies of the protocol scale the effect up.",
+  "note": "",
+  "source": "data.js BOONS.i_line; PATRONS.iron"
+ },
+ {
+  "id": "boon:L_rook",
+  "category": "boon",
+  "name": "Unstoppable",
+  "hook": "Legendary Rook: the ram that takes most of a hull.",
+  "body": "The legendary protocol of R-5 Rook, the Breaker. Rook, the Breaker, drifts in the wreck fields, hunted by the Hullbreakers who think it makes its holder unstoppable. Its protocols arrive first. Effect: Rams deal 50% more damage, can take 70% of a target hull, and the rammer takes no recoil. Legendary protocols are fixed: they do not scale with rarity.",
+  "note": "",
+  "source": "data.js BOONS.L_rook; PATRONS.rook"
+ },
+ {
+  "id": "relic:armourweave",
+  "category": "relic",
+  "name": "Adamant armourweave",
+  "hook": "Adamant woven like cloth, behaving like a wall.",
+  "body": "Adamant armourweave is plate that thinks it is fabric: it flexes with the hull and stops fire like a fortress. Effect: +6% armor across the fleet. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Hardsteel weave; Ashfall Hullbreakers call it Scrap armor weave; The Chorus call it Carapace weave; The Glasswrights call it Sunstone weave; Eclipse call it Sunshade weave.",
+  "note": "",
+  "source": "data.js RELICS.armourweave; RELIC_NAMES"
+ },
+ {
+  "id": "relic:lattice",
+  "category": "relic",
+  "name": "Alien shield matrix",
+  "hook": "Alien geometry, worn as a second skin of light.",
+  "body": "A shield matrix built on geometry no living engineer fully follows, looted or traded out of the dark. Effect: Shields +15% across the fleet. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Deflector matrix prototype; Ashfall Hullbreakers call it Glasswright shield shard; The Chorus call it Swallowed shield cells; The Glasswrights call it Prism matrix.",
+  "note": "",
+  "source": "data.js RELICS.lattice; RELIC_NAMES"
+ },
+ {
+  "id": "relic:banner",
+  "category": "relic",
+  "name": "Captured war banner",
+  "hook": "Kills make the killer hungrier, visibly.",
+  "body": "A captured war banner, flown from the flagship aerial so every ship in the fleet can see what it is for. Effect: Every enemy ship one of your ships destroys gives that ship +15% damage for the rest of the battle, up to +45%. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Captured war banner; Ashfall Hullbreakers call it Trophy war banner; The Chorus call it Prey’s war banner; The Glasswrights call it Banner of Ardent; Eclipse call it Standard of the conquered.",
+  "note": "",
+  "source": "data.js RELICS.banner; RELIC_NAMES"
+ },
+ {
+  "id": "relic:phylactery",
+  "category": "relic",
+  "name": "Eclipse backup frame",
+  "hook": "A spare body, kept warm against the day a mind needs it.",
+  "body": "An Eclipse backup frame: a hull kept empty and ready, so that a fall is an interruption, not an end. Effect: The first of your ships destroyed each battle reawakens at 25% hull. The same piece of salvage wears other names in other fleets: Eclipse call it Second Ignition.",
+  "note": "",
+  "source": "data.js RELICS.phylactery; RELIC_NAMES"
+ },
+ {
+  "id": "relic:compass",
+  "category": "relic",
+  "name": "Founders’ compass",
+  "hook": "It points at where you meant to go.",
+  "body": "A founders compass that does not care about north, because there is no north out here; it cares about intent. Effect: +1 speed across the fleet. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Jump-drive regulator; Ashfall Hullbreakers call it Wake-tracker; The Chorus call it Migration current; Eclipse call it Gravitic compass.",
+  "note": "",
+  "source": "data.js RELICS.compass; RELIC_NAMES"
+ },
+ {
+  "id": "relic:cogitator",
+  "category": "relic",
+  "name": "Founders’ rangefinder",
+  "hook": "A founders sight: the first shot never lies.",
+  "body": "Founders tech from before the collapse, a rangefinder that remembers where things are going to be. Effect: Each ship first attack in every battle hits 95% of the time. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Registry targeting array; Ashfall Hullbreakers call it Stolen Navy rangefinder; The Chorus call it Heat-tasting pits; The Glasswrights call it Ancestral lens; Eclipse call it Calculus engine.",
+  "note": "",
+  "source": "data.js RELICS.cogitator; RELIC_NAMES"
+ },
+ {
+  "id": "relic:coils",
+  "category": "relic",
+  "name": "Hand-wound plasma coils",
+  "hook": "Hand-wound, and they run light blue, as plasma should.",
+  "body": "Plasma coils wound by hand because the Reach trusts hands, and they burn light blue, the colour plasma runs when it is honest. Effect: Ability cooldowns come back 1 turn sooner across the fleet. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Overclocked reactors; Ashfall Hullbreakers call it Hot-rodded reactor; The Chorus call it Quickening gland; The Glasswrights call it Starlight coils; Eclipse call it Long clock.",
+  "note": "",
+  "source": "data.js RELICS.coils; RELIC_NAMES"
+ },
+ {
+  "id": "relic:logbook",
+  "category": "relic",
+  "name": "Log of Admiral Rhel",
+  "hook": "An admiral who survived long enough to be worth reading.",
+  "body": "The campaign log of Admiral Rhel, annotated in three hands, two of them successors who died proving a margin note wrong. Effect: +30% captain experience. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Admiralty logbook; Ashfall Hullbreakers call it Warlord’s kill tally; The Chorus call it Taste of old prey; The Glasswrights call it Log of the last voyage; Eclipse call it The Archive.",
+  "note": "",
+  "source": "data.js RELICS.logbook; RELIC_NAMES"
+ },
+ {
+  "id": "relic:salvage",
+  "category": "relic",
+  "name": "Scrap rig",
+  "hook": "Nothing in a wreck is waste.",
+  "body": "A scrap rig of clamps, cutters and stubbornness, worked by crews who see a battlefield as a warehouse that fought back. Effect: After each battle, gain 15 credits and repair 8% of hull. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Scrap rig; Ashfall Hullbreakers call it Scrap rig; The Chorus call it Scavenger gut; Eclipse call it Salvage swarm.",
+  "note": "",
+  "source": "data.js RELICS.salvage; RELIC_NAMES"
+ },
+ {
+  "id": "relic:ledger",
+  "category": "relic",
+  "name": "Smuggler’s ledger",
+  "hook": "Every debt the dark owes you, collected at gunpoint.",
+  "body": "A smuggler ledger, half accounting and half threat, that somehow always settles in your favor after a fight. Effect: +25% credits from battles. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Smuggler’s ledger; Ashfall Hullbreakers call it Smuggler’s ledger; The Chorus call it Hoard of the deep; The Glasswrights call it Ledger of the exiles; Eclipse call it Siphon ledger.",
+  "note": "",
+  "source": "data.js RELICS.ledger; RELIC_NAMES"
+ },
+ {
+  "id": "relic:spore",
+  "category": "relic",
+  "name": "Tamed spore culture",
+  "hook": "The swarm own growth, persuaded to knit your hulls.",
+  "body": "A tamed spore culture that grows over damage the way its wild kin grow over everything. Effect: Every ship regenerates 3 hull per turn. On a shieldless fleet this is the closest thing to a second hull. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Captured Chorus culture; The Chorus call it Ancestral spore culture.",
+  "note": "",
+  "source": "data.js RELICS.spore; RELIC_NAMES"
+ },
+ {
+  "id": "relic:martyr",
+  "category": "relic",
+  "name": "The Chalked Roll",
+  "hook": "When one of ours dies, the rest of us mend.",
+  "body": "A record of the fallen that refuses to let a death be only a loss: the names are read, and the fleet closes up around the gap. Effect: When one of your ships is destroyed, every other ship repairs 15% of its hull. The same piece of salvage wears other names in other fleets: Hegemony Navy call it Medal of the Grand Fleet; Ashfall Hullbreakers call it Dead captain’s harness; The Chorus call it Heart of the first brood; The Glasswrights call it Tear of the dying star; Eclipse call it Last image of Ardent.",
+  "note": "",
+  "source": "data.js RELICS.martyr; RELIC_NAMES"
+ },
+ {
+  "id": "module:loaders",
+  "category": "module",
+  "name": "Battery loaders",
+  "hook": "Every battery fires one more shot.",
+  "body": "Battery loaders drill the gun crews and rebuild the hoists until another shot fits in the volley. Effect: Battery weapons fire +1 shot. Costs 90 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Pulse cyclers; Ashfall Hullbreakers fit it as Ammo hoppers.",
+  "note": "",
+  "source": "data.js MODULES.loaders; MOD_NAMES"
+ },
+ {
+  "id": "module:damcon",
+  "category": "module",
+  "name": "Damage control crews",
+  "hook": "Crews that patch 4% of the hull every turn.",
+  "body": "Damage control crews with foam, plate and no respect for the concept of a lost cause. Effect: Repairs 4% of hull at the start of each of your turns. Costs 85 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Damage control teams; Ashfall Hullbreakers fit it as Welding gangs.",
+  "note": "",
+  "source": "data.js MODULES.damcon; MOD_NAMES"
+ },
+ {
+  "id": "module:flakplus",
+  "category": "module",
+  "name": "Flak batteries",
+  "hook": "Point defense with more shots and longer reach.",
+  "body": "Extra point-defense mounts and the fire control to use them: the guard gets louder and longer. Effect: Point defense fires +2 shots and reaches +1 hex further. Costs 55 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Point-defense array; Ashfall Hullbreakers fit it as Bolted-on flak.",
+  "note": "",
+  "source": "data.js MODULES.flakplus; MOD_NAMES"
+ },
+ {
+  "id": "module:gyro",
+  "category": "module",
+  "name": "Gyro-stabilisers",
+  "hook": "Turn easier, drift harder to hit.",
+  "body": "Gyro-stabilisers let a hull swing its facing without spending its soul on the turn. Effect: +1 turn allowance and +5 evasion. Costs 60 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Attitude thrusters; Ashfall Hullbreakers fit it as Jury-rigged gyros.",
+  "note": "",
+  "source": "data.js MODULES.gyro; MOD_NAMES"
+ },
+ {
+  "id": "module:hangar",
+  "category": "module",
+  "name": "Hangar expansion",
+  "hook": "Carriers only: one more wing in flight.",
+  "body": "A hangar expansion carves room for one more wing and the crews to keep it flying. Effect: Carriers only: +1 squadron in flight. Costs 90 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Expanded hangar bay; Ashfall Hullbreakers fit it as Welded-on hangar.",
+  "note": "",
+  "source": "data.js MODULES.hangar; MOD_NAMES"
+ },
+ {
+  "id": "module:crystal",
+  "category": "module",
+  "name": "Lance focusing crystal",
+  "hook": "Lances focused to a quarter more damage.",
+  "body": "A focusing crystal sits in the lance path and argues the beam into a finer point. Effect: Lance damage +25%. Costs 80 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Ion focus lens; Ashfall Hullbreakers fit it as Cracked lens array.",
+  "note": "",
+  "source": "data.js MODULES.crystal; MOD_NAMES"
+ },
+ {
+  "id": "module:drive",
+  "category": "module",
+  "name": "Plasma drive",
+  "hook": "One more hex of speed, everywhere it matters.",
+  "body": "A plasma drive tuned past its handbook limits, burning light blue and hot. Effect: +1 speed. Costs 75 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Ion drive upgrade; Ashfall Hullbreakers fit it as Overbored thrusters.",
+  "note": "",
+  "source": "data.js MODULES.drive; MOD_NAMES"
+ },
+ {
+  "id": "module:prow",
+  "category": "module",
+  "name": "Reinforced prow",
+  "hook": "More hull, more armor, at the pointy end.",
+  "body": "Extra plate worked into the prow and frame, where a ship meets the fight first. Effect: +15% hull and +5% armor. Costs 70 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Reinforced bow plating; Ashfall Hullbreakers fit it as Scrap ram plating.",
+  "note": "",
+  "source": "data.js MODULES.prow; MOD_NAMES"
+ },
+ {
+  "id": "module:auspex",
+  "category": "module",
+  "name": "Scanner array",
+  "hook": "A scanner array: every gun aims 10 truer.",
+  "body": "A proper scanner array, replacing guesswork and prayer with ranges and bearings. Effect: +10 aim for every weapon. Costs 80 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Fire-control computer; Ashfall Hullbreakers fit it as Stolen gun sights.",
+  "note": "",
+  "source": "data.js MODULES.auspex; MOD_NAMES"
+ },
+ {
+  "id": "module:capacitor",
+  "category": "module",
+  "name": "Screen capacitor",
+  "hook": "Shields a third again as strong.",
+  "body": "A screen capacitor banks charge so the shields stand thicker when the fire starts. Effect: +30% shield strength. Costs 80 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Deflector capacitor; Ashfall Hullbreakers fit it as Salvaged shield cells.",
+  "note": "",
+  "source": "data.js MODULES.capacitor; MOD_NAMES"
+ },
+ {
+  "id": "module:regen",
+  "category": "module",
+  "name": "Shield regenerator",
+  "hook": "Shields that come back half again as fast.",
+  "body": "A shield regenerator cycles the facings back up before the enemy finishes reloading. Effect: +50% shield regeneration. Costs 70 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Deflector regenerator; Ashfall Hullbreakers fit it as Hot-wired regenerator.",
+  "note": "",
+  "source": "data.js MODULES.regen; MOD_NAMES"
+ },
+ {
+  "id": "module:cogitator",
+  "category": "module",
+  "name": "Targeting reckoner",
+  "hook": "A reckoner that finds the weak point 10% more often.",
+  "body": "A targeting reckoner, a ship computer that does nothing but study where ships break. Effect: +10% critical chance. Costs 75 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Targeting computer; Ashfall Hullbreakers fit it as Gunner’s lucky charm.",
+  "note": "",
+  "source": "data.js MODULES.cogitator; MOD_NAMES"
+ },
+ {
+  "id": "module:magazine",
+  "category": "module",
+  "name": "Torpedo magazine",
+  "hook": "Torpedoes reload sooner and hit harder.",
+  "body": "A torpedo magazine moves the reload path inside the armor and adds sting to every tube. Effect: Torpedo reload time 1 turn shorter, and torpedo damage +15%. Costs 85 credits, and a hull needs a free module slot to fit it. The same works wear other names abroad: Hegemony Navy fit it as Fusion magazine; Ashfall Hullbreakers fit it as Extra rocket racks.",
+  "note": "",
+  "source": "data.js MODULES.magazine; MOD_NAMES"
+ },
+ {
+  "id": "admiral:vex",
+  "category": "admiral",
+  "name": "Admiral Roderic Vex",
+  "hook": "Line of battle: broadsides hit harder under Vex.",
+  "body": "Roderic Vex holds a line the way other men hold a grudge: completely, and at ruinous expense to anyone who tests it. Doctrine, Line of battle: Broadside weapons deal +15% damage. Command, Fire for effect: Every ship fires a free volley at the best target its guns can reach, right now. Opens with Vigil-class cruiser, Harrow-class destroyer, Warden-class frigate. A starting admiral, available from your first run.",
+  "note": "Spend the Command when the whole fleet can bear on targets; a volley fired at empty arcs is a volley lost.",
+  "source": "data.js ADMIRALS.vex; faction Sunward Crusade"
+ },
+ {
+  "id": "admiral:mirelle",
+  "category": "admiral",
+  "name": "Brin of the Fourth Lens",
+  "hook": "Prism hulls: shields thick and quick to return.",
+  "body": "Brin of the Fourth Lens builds prisms the way others build walls, and then stands behind the light. Doctrine, Prism hulls: All ships gain +15% shields, and shields recharge 20% faster. Command, Prism ward: All shields refill and your ships take 40% less hull damage this round. Opens with Glasswright prism, Glasswright sliver, Glasswright sliver. Unlocked with 80 renown.",
+  "note": "Spend it at the start of the round you expect to be hit hardest, not after.",
+  "source": "data.js ADMIRALS.mirelle; faction The Glasswrights"
+ },
+ {
+  "id": "admiral:vorn",
+  "category": "admiral",
+  "name": "Commodore Dace Vorn",
+  "hook": "Interdiction: aim and crits, Registry style.",
+  "body": "Dace Vorn interdicts. He decides where the enemy fleet is allowed to be, and then fines it for being there. Doctrine, Interdiction: +10 aim and +10% critical chance. Command, Interdiction strike: Every ship deals +30% damage this round. Opens with Cordon destroyer, Cordon destroyer, Hegemony picket, Hegemony picket. Unlocked with 30 renown.",
+  "note": "Spend it on the round you have already lined up; the bonus does not carry to the next.",
+  "source": "data.js ADMIRALS.vorn; faction Hegemony Navy"
+ },
+ {
+  "id": "admiral:ashgrove",
+  "category": "admiral",
+  "name": "Commodore Sera Ashgrove",
+  "hook": "Carrier doctrine: tougher wings that hit harder.",
+  "body": "Sera Ashgrove counts her fleet in wings, and brings every one of them home, or goes back and gets them. Doctrine, Carrier doctrine: Squadrons deal +40% damage, carriers hold +1 wing, and squadrons have +25% hull. Command, Scramble all wings: Every carrier launches an extra wing, even past its hangar limit, then all squadrons strike again at once with +50% damage this round. Opens with Hearth-class carrier, Harrow-class destroyer, Warden-class frigate. Unlocked with 45 renown.",
+  "note": "Spend it when your wings are already out and in reach of targets worth striking twice.",
+  "source": "data.js ADMIRALS.ashgrove; faction Sunward Crusade"
+ },
+ {
+  "id": "admiral:kassar",
+  "category": "admiral",
+  "name": "First Admiral Ilsa Kassar",
+  "hook": "Fire discipline: more shots, each a touch lighter.",
+  "body": "Ilsa Kassar runs her fleet the way the Registry runs its accounts: every shot entered, every loss acceptable, barely. Doctrine, Fire discipline: Batteries fire one extra shot per volley, but every gun hits 5% lighter. Command, Synchronized broadside: Every ship fires a free volley at the best target its guns can reach, right now. Opens with Vanguard cruiser, Hegemony picket. A starting admiral, available from your first run.",
+  "note": "Spend the Command when the whole fleet can bear on targets; a volley fired at empty arcs is a volley lost.",
+  "source": "data.js ADMIRALS.kassar; faction Hegemony Navy"
+ },
+ {
+  "id": "admiral:reyes",
+  "category": "admiral",
+  "name": "Fleet Marshal Corin Reyes",
+  "hook": "Strike group: wings up, cruisers carrying.",
+  "body": "Corin Reyes commands a strike group the way the Registry plans a quarter: wings out, margins kept, nothing wasted. Doctrine, Strike group: Squadrons deal +10% damage, cruisers hold +1 wing, and squadrons have +25% hull. Command, Launch the strike group: Every carrier launches an extra wing, even past its hangar limit, then all squadrons strike again at once with +50% damage this round. Opens with Vanguard cruiser, Hegemony picket, Hegemony picket. Unlocked with 45 renown.",
+  "note": "Spend it when your wings are already out and in reach of targets worth striking twice.",
+  "source": "data.js ADMIRALS.reyes; faction Hegemony Navy"
+ },
+ {
+  "id": "admiral:thale",
+  "category": "admiral",
+  "name": "High Admiral Oryn Thale",
+  "hook": "Iron doctrine: hull and shields for everyone.",
+  "body": "Oryn Thale is the Crusade made patient: iron, endurance, and the names chalked after the battle, not before. Doctrine, Iron doctrine: All ships gain +15% hull and +10% shields. Command, Iron wall: All shields refill and your ships take 40% less hull damage this round. Opens with Bastion-class battleship, Warden-class frigate. Unlocked with 80 renown.",
+  "note": "Spend it at the start of the round you expect to be hit hardest, not after.",
+  "source": "data.js ADMIRALS.thale; faction Sunward Crusade"
+ },
+ {
+  "id": "admiral:maren",
+  "category": "admiral",
+  "name": "Line Admiral Oskar Maren",
+  "hook": "Armored column: the fleet as a wall.",
+  "body": "Oskar Maren is a column of armor with a flag on it, and the Registry projection for his battles is one word: favourable. Doctrine, Armored column: All ships gain +15% hull and +10% shields. Command, Shield wall order: All shields refill and your ships take 40% less hull damage this round. Opens with Dominion dreadnought, Hegemony picket. Unlocked with 80 renown.",
+  "note": "Spend it at the start of the round you expect to be hit hardest, not after.",
+  "source": "data.js ADMIRALS.maren; faction Hegemony Navy"
+ },
+ {
+  "id": "admiral:nekhet",
+  "category": "admiral",
+  "name": "Nadir Aurex, Ninth Frame",
+  "hook": "Endless restoration: the fleet rebuilds itself.",
+  "body": "Nadir Aurex is on his ninth frame, and speaks of the previous eight the way other admirals speak of previous postings. Doctrine, Endless restoration: Ships regrow 4% of their hull each round. Command, Release the repair swarms: Every ship repairs 25% of its hull and patches damaged sections, even destroyed ones. Opens with Eclipse zenith, Eclipse flare. A starting admiral, available from your first run.",
+  "note": "Spend it after the damage, not before: it patches even destroyed sections back into the fight.",
+  "source": "data.js ADMIRALS.nekhet; faction Eclipse"
+ },
+ {
+  "id": "admiral:malek",
+  "category": "admiral",
+  "name": "Oath-Captain Malek Draven",
+  "hook": "Hunter-killer: fast torpedoes, cruel rear arcs.",
+  "body": "Malek Draven swore the oath as a boy in the Reach and hunts the way the Reach taught him: from behind, once. Doctrine, Hunter-killer: Torpedoes reload a turn faster, and rear-arc hits deal +50% damage. Command, Hunter's salvo: Torpedoes reload at once and every ship deals +30% damage this round. Opens with Harrow-class destroyer, Harrow-class destroyer, Warden-class frigate, Warden-class frigate. Unlocked with 30 renown.",
+  "note": "Spend it on the round you have already lined up; the bonus does not carry to the next.",
+  "source": "data.js ADMIRALS.malek; faction Sunward Crusade"
+ },
+ {
+  "id": "admiral:mott",
+  "category": "admiral",
+  "name": "Old Mott",
+  "hook": "Junkyard carriers: wings from welded dens.",
+  "body": "Old Mott has outlived forty captains, mostly by killing them, and keeps his carriers welded, fed, and pointed at the fight. Doctrine, Junkyard carriers: Squadrons deal +25% damage, hulks hold +1 wing, and squadrons have +25% hull. Command, Release the swarm: Every carrier launches an extra wing, even past its hangar limit, then all squadrons strike again at once with +50% damage this round. Opens with Hullbreaker hulk-carrier, Hullbreaker gutship. Unlocked with 45 renown.",
+  "note": "Spend it when your wings are already out and in reach of targets worth striking twice.",
+  "source": "data.js ADMIRALS.mott; faction Ashfall Hullbreakers"
+ },
+ {
+  "id": "admiral:anuket",
+  "category": "admiral",
+  "name": "Ostrel of the Long Copy",
+  "hook": "Silent hunters: rear arcs and a low profile.",
+  "body": "Ostrel of the Long Copy has been copied so often that the Archive keeps the original under guard. The copy hunts just fine. Doctrine, Silent hunters: +20% damage on rear-arc hits and +10 evasion. Command, Out of the shadow: Every ship deals +30% damage this round. Opens with Eclipse flare, Eclipse flare, Eclipse mote, Eclipse mote. Unlocked with 45 renown.",
+  "note": "Spend it on the round you have already lined up; the bonus does not carry to the next.",
+  "source": "data.js ADMIRALS.anuket; faction Eclipse"
+ },
+ {
+  "id": "admiral:razormaw",
+  "category": "admiral",
+  "name": "Razormaw",
+  "hook": "Hunter pack: speed and rear-arc teeth.",
+  "body": "Razormaw is the pack instinct of the swarm given a single throat: if it bleeds and it is slower than us, it is food. Doctrine, Hunter pack: +1 speed and +15% damage on rear-arc hits. Command, Blood frenzy: Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round. Opens with Chorus bladeback, Chorus spitter, Chorus drone-spawn. Unlocked with 30 renown.",
+  "note": "Spend it to arrive a round early; position bought with the Command is position the enemy must answer.",
+  "source": "data.js ADMIRALS.razormaw; faction The Chorus"
+ },
+ {
+  "id": "admiral:sable",
+  "category": "admiral",
+  "name": "Sable the Smiling Knife",
+  "hook": "Knife work: rear arcs and criticals.",
+  "body": "Sable the Smiling Knife hunts the way her namesake does: quiet, low, and finished before the noise starts. Doctrine, Knife work: +50% damage on rear-arc hits and +10% critical chance. Command, Knife in the dark: Torpedoes reload at once and every ship deals +30% damage this round. Opens with Hullbreaker gutship, Hullbreaker gutship, Hullbreaker raider, Hullbreaker raider. Unlocked with 30 renown.",
+  "note": "Spend it on the round you have already lined up; the bonus does not carry to the next.",
+  "source": "data.js ADMIRALS.sable; faction Ashfall Hullbreakers"
+ },
+ {
+  "id": "admiral:vaelen",
+  "category": "admiral",
+  "name": "Saro of Long Focus",
+  "hook": "Focused lances: beams with patience behind them.",
+  "body": "Saro of Long Focus has waited out duels longer than most species live, and then fired once. Doctrine, Focused lances: Lances deal +20% damage and gain +10 aim. Command, Burning glass: Every ship fires a free volley at the best target its guns can reach, right now. Opens with Glasswright prism, Glasswright lancet. Unlocked with 30 renown.",
+  "note": "Spend the Command when the whole fleet can bear on targets; a volley fired at empty arcs is a volley lost.",
+  "source": "data.js ADMIRALS.vaelen; faction The Glasswrights"
+ },
+ {
+  "id": "admiral:khepra",
+  "category": "admiral",
+  "name": "Seveth, Twice-Restored",
+  "hook": "Layered plates: hull, and then more hull.",
+  "body": "Seveth has been restored twice, and has armored for a third death he does not intend to have. Doctrine, Layered plates: All ships gain +20% hull. Command, Sunshade wall: All shields refill and your ships take 40% less hull damage this round. Opens with Eclipse flare, Eclipse flare, Eclipse flare. Unlocked with 80 renown.",
+  "note": "Spend it at the start of the round you expect to be hit hardest, not after.",
+  "source": "data.js ADMIRALS.khepra; faction Eclipse"
+ },
+ {
+  "id": "admiral:aelith",
+  "category": "admiral",
+  "name": "Tamsa of the Clear Aperture",
+  "hook": "Wing-mistress: carriers and wings, refined.",
+  "body": "Tamsa of the Clear Aperture keeps her carriers the way her ancestors kept lenses: clean, aligned, and aimed at the light. Doctrine, Wing-mistress: Squadrons deal +25% damage, carriers hold +1 wing, and squadrons have +25% hull. Command, Starling flight: Every carrier launches an extra wing, even past its hangar limit, then all squadrons strike again at once with +50% damage this round. Opens with Glasswright aperture, Glasswright sliver. A starting admiral, available from your first run.",
+  "note": "Spend it when your wings are already out and in reach of targets worth striking twice.",
+  "source": "data.js ADMIRALS.aelith; faction The Glasswrights"
+ },
+ {
+  "id": "admiral:matriarch",
+  "category": "admiral",
+  "name": "The Matriarch of Nine Throats",
+  "hook": "Brood swarm: more swarms, hitting harder.",
+  "body": "The Matriarch of Nine Throats is the swarm grown a general: nine mouths, and every one of them giving the same order. Eat. Doctrine, Brood swarm: Spore swarms deal +25% damage, broods hold +1 swarm, and squadrons have +25% hull. Command, Spawning surge: Every carrier launches an extra wing, even past its hangar limit, then all squadrons strike again at once with +50% damage this round. Opens with Chorus brood-sac, Chorus drone-spawn, Chorus drone-spawn. A starting admiral, available from your first run.",
+  "note": "Spend it when your wings are already out and in reach of targets worth striking twice.",
+  "source": "data.js ADMIRALS.matriarch; faction The Chorus"
+ },
+ {
+  "id": "admiral:mending",
+  "category": "admiral",
+  "name": "The Mending Throng",
+  "hook": "Regrowth: the fleet knits itself closed.",
+  "body": "The Mending Throng is the swarm remembering, through Memory, that flesh can be persuaded to close. Doctrine, Regrowth: Ships regrow 4% of their hull each round. Command, Regrowth tide: Every ship repairs 25% of its hull and patches damaged sections, even destroyed ones. Opens with Chorus bladeback, Chorus drone-spawn. Unlocked with 45 renown.",
+  "note": "Spend it after the damage, not before: it patches even destroyed sections back into the fight.",
+  "source": "data.js ADMIRALS.mending; faction The Chorus"
+ },
+ {
+  "id": "admiral:sekhmar",
+  "category": "admiral",
+  "name": "Umbra Vessane, Third-Housed",
+  "hook": "Corona strikes: arcs first, everything second.",
+  "body": "Umbra Vessane, third-housed, keeps her corona arcs the way Eclipse keeps everything: counted, cold, and ready. Doctrine, Corona strikes: Corona arcs deal +20% damage, and every weapon deals +10% more. Command, Noon volley: Every ship fires a free volley at the best target its guns can reach, right now. Opens with Eclipse zenith, Eclipse mote, Eclipse mote. Unlocked with 30 renown.",
+  "note": "Spend the Command when the whole fleet can bear on targets; a volley fired at empty arcs is a volley lost.",
+  "source": "data.js ADMIRALS.sekhmar; faction Eclipse"
+ },
+ {
+  "id": "admiral:thorne",
+  "category": "admiral",
+  "name": "Vell of the Third Mirror",
+  "hook": "Refraction tactics: nobody can hold a firing solution.",
+  "body": "Vell of the Third Mirror fights in reflections: by the time you have found the real ship, it has moved twice. Doctrine, Refraction tactics: +8 evasion for every ship. Command, Scatter the light: Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round. Opens with Glasswright lancet, Glasswright lancet, Glasswright sliver, Glasswright sliver. Unlocked with 45 renown.",
+  "note": "Spend it to arrive a round early; position bought with the Command is position the enemy must answer.",
+  "source": "data.js ADMIRALS.thorne; faction The Glasswrights"
+ },
+ {
+  "id": "admiral:vesh",
+  "category": "admiral",
+  "name": "Vesh the Collector",
+  "hook": "Scrap armor: the fleet patches itself.",
+  "body": "Vesh the Collector takes ships apart to learn how they died, then wears the lesson as armor. Doctrine, Scrap armor: Ships patch 5% of their hull each round and have +10% armor. Command, Patch and weld: Every ship repairs 25% of its hull and patches damaged sections, even destroyed ones. Opens with Hullbreaker hulk-carrier, Hullbreaker gutship. Unlocked with 80 renown.",
+  "note": "Spend it after the damage, not before: it patches even destroyed sections back into the fight.",
+  "source": "data.js ADMIRALS.vesh; faction Ashfall Hullbreakers"
+ },
+ {
+  "id": "admiral:voice",
+  "category": "admiral",
+  "name": "Voice of the Deep",
+  "hook": "Acid tide: every weapon bites harder.",
+  "body": "Voice of the Deep is the throat that speaks first for the dark between stars, and what it says is usually a menu. Doctrine, Acid tide: +15% damage with every weapon. Command, Spitting volley: Every ship fires a free volley at the best target its guns can reach, right now. Opens with Chorus bladeback, Chorus spitter, Chorus drone-spawn. Unlocked with 80 renown.",
+  "note": "Spend the Command when the whole fleet can bear on targets; a volley fired at empty arcs is a volley lost.",
+  "source": "data.js ADMIRALS.voice; faction The Chorus"
+ },
+ {
+  "id": "admiral:grax",
+  "category": "admiral",
+  "name": "Warlord Grax Ironmaw",
+  "hook": "Ram and board: speed and damage, pack style.",
+  "body": "Grax Ironmaw earned the name the Hullbreaker way, in a challenge, and the pack has not questioned it since. Doctrine, Ram and board: +1 speed for every ship and +10% damage. Command, Full burn: Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round. Opens with Hullbreaker wrecker, Hullbreaker gutship, Hullbreaker gutship. A starting admiral, available from your first run.",
+  "note": "Spend it to arrive a round early; position bought with the Command is position the enemy must answer.",
+  "source": "data.js ADMIRALS.grax; faction Ashfall Hullbreakers; display name per text overhaul pack T-03 (Oct 27 rollout ruling)"
+ },
+ {
+  "id": "legacy:u_battleship",
+  "category": "legacy",
+  "name": "Battleship hulls",
+  "hook": "Battleship hulls join your shipyards.",
+  "body": "Renown spent at the yards changes what the yards can build for you, on every run after. Effect: Battleship-class hulls appear in shipyards. Costs 60 renown, bought once, in the Shipyards line.",
+  "note": "",
+  "source": "data.js LEGACY.u_battleship"
+ },
+ {
+  "id": "legacy:u_carrier",
+  "category": "legacy",
+  "name": "Carrier hulls",
+  "hook": "Carrier hulls join your shipyards.",
+  "body": "Renown spent at the yards changes what the yards can build for you, on every run after. Effect: Carrier hulls appear in shipyards. Costs 30 renown, bought once, in the Shipyards line.",
+  "note": "",
+  "source": "data.js LEGACY.u_carrier"
+ },
+ {
+  "id": "legacy:cmd1",
+  "category": "legacy",
+  "name": "Command authority I",
+  "hook": "+2 fleet command points, every run.",
+  "body": "Command authority is the paperwork of trust: more of the fleet answers to one plan. Effect: +2 fleet command points. Costs 35 renown, bought once, in the Command line.",
+  "note": "",
+  "source": "data.js LEGACY.cmd1"
+ },
+ {
+  "id": "legacy:cmd2",
+  "category": "legacy",
+  "name": "Command authority II",
+  "hook": "+2 more fleet command points, every run.",
+  "body": "Wider command authority, earned the slow way, in fleets that came home. Effect: +2 more fleet command points. Costs 70 renown, bought once, in the Command line. Requires Command authority I first.",
+  "note": "",
+  "source": "data.js LEGACY.cmd2"
+ },
+ {
+  "id": "legacy:u_dread",
+  "category": "legacy",
+  "name": "Dreadnought hulls",
+  "hook": "One Daybreak dreadnought, for Crusade fleets.",
+  "body": "The biggest permission the yards can give: a dreadnought of the Reach, one per fleet. Effect: Sunward Crusade fleets may take one Daybreak-class dreadnought. Costs 120 renown, bought once, in the Shipyards line. Requires Battleship hulls first.",
+  "note": "",
+  "source": "data.js LEGACY.u_dread"
+ },
+ {
+  "id": "legacy:founder",
+  "category": "legacy",
+  "name": "Founders’ salvage",
+  "hook": "Begin each run with a random piece of salvage.",
+  "body": "The founders left a great deal lying around the dark; some of it still works. Effect: Begin each run with a random piece of salvage. Costs 60 renown, bought once, in the Supply line.",
+  "note": "",
+  "source": "data.js LEGACY.founder"
+ },
+ {
+  "id": "legacy:wrights",
+  "category": "legacy",
+  "name": "Master shipwrights",
+  "hook": "Shipyard prices 15% lower, every run.",
+  "body": "Master shipwrights do not charge less because they like you. They charge less because they waste nothing. Effect: Shipyard prices are 15% lower. Costs 45 renown, bought once, in the Supply line.",
+  "note": "",
+  "source": "data.js LEGACY.wrights"
+ },
+ {
+  "id": "legacy:salvagers",
+  "category": "legacy",
+  "name": "Recovery crews",
+  "hook": "+20% credits from battles, every run.",
+  "body": "Recovery crews are the difference between a wreck and a payday. Effect: +20% credits from battles. Costs 40 renown, bought once, in the Supply line.",
+  "note": "",
+  "source": "data.js LEGACY.salvagers"
+ },
+ {
+  "id": "legacy:vets",
+  "category": "legacy",
+  "name": "Veteran officers",
+  "hook": "Starting captains begin ranked and perked.",
+  "body": "Veteran officers are what a fleet keeps when it cannot keep ships. Effect: Starting captains begin at Commander rank with a perk. Costs 50 renown, bought once, in the Command line.",
+  "note": "",
+  "source": "data.js LEGACY.vets"
+ },
+ {
+  "id": "legacy:chest1",
+  "category": "legacy",
+  "name": "War chest I",
+  "hook": "+75 starting credits, every run.",
+  "body": "A war chest is the fleet remembering to pack for the war it actually got. Effect: +75 starting credits. Costs 20 renown, bought once, in the Supply line.",
+  "note": "",
+  "source": "data.js LEGACY.chest1"
+ },
+ {
+  "id": "legacy:chest2",
+  "category": "legacy",
+  "name": "War chest II",
+  "hook": "+75 more starting credits, every run.",
+  "body": "A deeper war chest, packed by people who have seen the first one run out. Effect: +75 more starting credits. Costs 40 renown, bought once, in the Supply line. Requires War chest I first.",
+  "note": "",
+  "source": "data.js LEGACY.chest2"
+ },
+ {
+  "id": "legacy:chest3",
+  "category": "legacy",
+  "name": "War chest III",
+  "hook": "+75 more starting credits, every run.",
+  "body": "The deepest war chest: the difference between a plan and a hope, in credits. Effect: +75 more starting credits. Costs 65 renown, bought once, in the Supply line. Requires War chest II first.",
+  "note": "",
+  "source": "data.js LEGACY.chest3"
+ }
+]
