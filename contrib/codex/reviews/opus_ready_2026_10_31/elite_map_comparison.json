@@ -1,0 +1,1066 @@
+{
+  "totalMaps": 4500,
+  "previouslyValidMapsByteIdentical": 4416,
+  "previouslyValidRngStatesIdentical": 4416,
+  "repairedMaps": 84,
+  "remainingEliteFailures": 0,
+  "patchChangesOnlyFallback": true,
+  "repaired": [
+    {
+      "seed": 9,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 18,
+      "sector": 1,
+      "original": [
+        "battle",
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "battle",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 18,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "event",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 22,
+      "sector": 3,
+      "original": [
+        "event",
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "field",
+        "battle"
+      ]
+    },
+    {
+      "seed": 27,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 49,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 53,
+      "sector": 3,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 57,
+      "sector": 3,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 64,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 66,
+      "sector": 3,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 77,
+      "sector": 3,
+      "original": [
+        "field",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 79,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "field",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "field",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 116,
+      "sector": 2,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 151,
+      "sector": 1,
+      "original": [
+        "battle",
+        "field"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 152,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "field",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event",
+        "field"
+      ]
+    },
+    {
+      "seed": 213,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 220,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle",
+        "battle",
+        "field"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard",
+        "battle",
+        "field"
+      ]
+    },
+    {
+      "seed": 221,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 227,
+      "sector": 3,
+      "original": [
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 228,
+      "sector": 3,
+      "original": [
+        "battle",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 230,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 273,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 278,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 281,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "battle",
+        "event"
+      ]
+    },
+    {
+      "seed": 300,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 316,
+      "sector": 2,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 324,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 348,
+      "sector": 1,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 370,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 374,
+      "sector": 2,
+      "original": [
+        "battle",
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard",
+        "battle"
+      ]
+    },
+    {
+      "seed": 375,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 411,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 430,
+      "sector": 1,
+      "original": [
+        "field",
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "battle",
+        "field"
+      ]
+    },
+    {
+      "seed": 437,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 453,
+      "sector": 3,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 509,
+      "sector": 2,
+      "original": [
+        "battle",
+        "field"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 512,
+      "sector": 3,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 515,
+      "sector": 2,
+      "original": [
+        "event",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 570,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "battle",
+        "event"
+      ]
+    },
+    {
+      "seed": 581,
+      "sector": 1,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 611,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "event",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 613,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 637,
+      "sector": 3,
+      "original": [
+        "field",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 646,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 685,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 695,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "battle",
+        "event"
+      ]
+    },
+    {
+      "seed": 713,
+      "sector": 2,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 757,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 808,
+      "sector": 3,
+      "original": [
+        "event",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 809,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 818,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 823,
+      "sector": 3,
+      "original": [
+        "battle",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 829,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 843,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 885,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 887,
+      "sector": 1,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 931,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 940,
+      "sector": 1,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 1005,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 1014,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard",
+        "battle"
+      ]
+    },
+    {
+      "seed": 1025,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 1037,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle",
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard",
+        "battle",
+        "event"
+      ]
+    },
+    {
+      "seed": 1076,
+      "sector": 3,
+      "original": [
+        "event",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 1098,
+      "sector": 3,
+      "original": [
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 1103,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle",
+        "field"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard",
+        "field"
+      ]
+    },
+    {
+      "seed": 1131,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 1161,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "battle"
+      ]
+    },
+    {
+      "seed": 1187,
+      "sector": 3,
+      "original": [
+        "event",
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard",
+        "battle"
+      ]
+    },
+    {
+      "seed": 1259,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard",
+        "battle"
+      ]
+    },
+    {
+      "seed": 1262,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 1266,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "event",
+        "battle",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event",
+        "shipyard",
+        "battle"
+      ]
+    },
+    {
+      "seed": 1280,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 1321,
+      "sector": 2,
+      "original": [
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 1343,
+      "sector": 1,
+      "original": [
+        "event",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 1346,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 1351,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 1382,
+      "sector": 3,
+      "original": [
+        "battle",
+        "event",
+        "field"
+      ],
+      "candidate": [
+        "elite",
+        "battle",
+        "field"
+      ]
+    },
+    {
+      "seed": 1383,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "event",
+        "event"
+      ]
+    },
+    {
+      "seed": 1398,
+      "sector": 1,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 1411,
+      "sector": 1,
+      "original": [
+        "battle",
+        "event"
+      ],
+      "candidate": [
+        "elite",
+        "field"
+      ]
+    },
+    {
+      "seed": 1427,
+      "sector": 1,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 1460,
+      "sector": 2,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "event"
+      ]
+    },
+    {
+      "seed": 1465,
+      "sector": 3,
+      "original": [
+        "battle",
+        "shipyard"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    },
+    {
+      "seed": 1497,
+      "sector": 3,
+      "original": [
+        "shipyard",
+        "battle"
+      ],
+      "candidate": [
+        "elite",
+        "shipyard"
+      ]
+    }
+  ]
+}

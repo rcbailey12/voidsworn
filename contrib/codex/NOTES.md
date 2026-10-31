@@ -9,6 +9,24 @@ run of all 80 assertions changes exactly TXT-2 from FAIL to PASS (9 pass / 71 fa
 with the other 79 outcomes unchanged. Its evidence is under
 `reviews/opus_ready_2026_10_31/`. Godot adoption and parity are still required.
 
+## Elite guarantee candidate added
+
+`proposed/core.js` adds only the missing rest-node fallback. On the existing
+4,500-map sample it repairs all 84 failures; all 4,416 previously valid maps and
+their ending RNG states are identical. The full map/setup sweep reports zero
+failures across 4,500 maps and 1,920 battle setups. Elite-only changes exactly W3-1
+(9 pass / 71 fail); together with shipwright, exactly W3-1 and TXT-2 change
+(10 pass / 70 fail).
+
+`proposed/godot/campaign/campaign.gd` prepares both matching changes, but Godot
+compilation/runtime/parity have NOT been tested. It combines jobs 2 and 3, so use
+selected hunks when adopting separately. Details, source proof and logs:
+`reviews/opus_ready_2026_10_31/elite_candidate.md`.
+
+The red-team claim that the later field conversion can turn the elite into a
+field is false for the current predicate: that predicate excludes elites. No
+extra field-conversion guard is proposed.
+
 ## Current start point after the Oct 30 upload
 
 Reviewed main **17268efa081059a6923daa9e19e8b345a437714d**. Start with

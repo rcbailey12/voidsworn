@@ -1,0 +1,76 @@
+[
+  {
+    "path": "core.js",
+    "source_pin": "17268efa081059a6923daa9e19e8b345a437714d",
+    "lines": 349,
+    "last_line_first40": "function findNode(id){ for(const c of RU",
+    "git_blob_sha": "bc93e450fb8c0e0c3bf73371eda788052245d9e2",
+    "semantic_ranges": [
+      [
+        245,
+        310
+      ]
+    ]
+  },
+  {
+    "path": "godot/campaign/campaign.gd",
+    "source_pin": "17268efa081059a6923daa9e19e8b345a437714d",
+    "lines": 2626,
+    "last_line_first40": "\t\t\"events\": tel_log.slice(max(0, tel_log",
+    "git_blob_sha": "9e2d640eaaa525e52d236c31981ff249405ef242",
+    "semantic_ranges": [
+      [
+        800,
+        898
+      ],
+      [
+        1933,
+        1983
+      ],
+      [
+        2626,
+        2626
+      ]
+    ]
+  },
+  {
+    "path": "contrib/muse/reviews/patch_pack_2026_10_29.md",
+    "source_pin": "17268efa081059a6923daa9e19e8b345a437714d",
+    "lines": 132,
+    "last_line_first40": "- Nothing in this pack edits the clone, ",
+    "git_blob_sha": "a6291e3ab3663316555c953adfb2c56002778e8a",
+    "semantic_ranges": [
+      [
+        74,
+        95
+      ]
+    ]
+  },
+  {
+    "path": "contrib/muse/reviews/redteam_qa_synthesis_2026_10_30.md",
+    "source_pin": "17268efa081059a6923daa9e19e8b345a437714d",
+    "lines": 44,
+    "last_line_first40": "Live cloud conflict behavior was read, n",
+    "git_blob_sha": "97921e3f32b471f82e20121b25b06e9a9af7dcf9",
+    "semantic_ranges": [
+      [
+        1,
+        44
+      ]
+    ]
+  },
+  {
+    "path": "contrib/codex/proposed/core.js",
+    "lines": 349,
+    "last_line_first40": "function findNode(id){ for(const c of RU",
+    "git_blob_sha": "6e244e21f52ac0ec1b86288a1c32d245a54eca3d",
+    "candidate": true
+  },
+  {
+    "path": "contrib/codex/proposed/godot/campaign/campaign.gd",
+    "lines": 2633,
+    "last_line_first40": "\t\t\"events\": tel_log.slice(max(0, tel_log",
+    "git_blob_sha": "065d6c082ef6b016fd7a27348b14fb8c243f513b",
+    "candidate": true
+  }
+]
