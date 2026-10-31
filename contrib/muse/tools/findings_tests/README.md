@@ -181,7 +181,7 @@ Numbering note: the text program's variant-card batch is counted once as ROS-2, 
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| PROG-1 | The boot grant in main3d.js hands over all 12 legacy unlocks and all 24 admirals (1,565 renown of sinks) unless an option defaults the other way; progression is bypassed as shipped | BLOCKER | NOT-TESTABLE: main3d.js is browser shell code outside the rules harness. The same grant in the Godot parity oracle is DRIFT-1 |
+| PROG-1 | The boot grant in main3d.js hands over all 12 legacy unlocks and all 24 admirals (1,565 renown of sinks) unless an option defaults the other way; progression is bypassed as shipped | BLOCKER | NOT-TESTABLE: main3d.js is browser shell code outside the rules harness. Its claimed Godot parity-oracle counterpart was DRIFT-1, refuted Oct 31, 2026 |
 | PROG-2 | The purchase path is doubly dead: ACT.buyLegacy and ACT.buyAdmiral are implemented with zero UI call sites, and locked admiral cards point to a 'Legacy' screen that no longer exists under that name | FIX | TESTED (PROG-2, fails): static call-site scan over the campaign, shell and HTML sources, in the wave 2 validator style; no rendered data-act call site exists for either handler. Merges the text program's locked-card finding |
 | PROG-3 | The unlock-everything settings toggle is dead code: the handler exists but no settings button renders it | FIX | NOT-TESTABLE: DOM rendering in the shell files |
 | PROG-4 | The end-of-run summary omits core sync entirely (renown and mastery only), so the learning frame's central quantity is invisible where it should pay off | FIX | NOT-TESTABLE: summary screen rendering. See also LOOP-1 |
@@ -291,7 +291,7 @@ Numbering note: the nemesis program's top finding, the intel drought, is counted
 | MOD-1 | Fitting is free, instant and fully reversible, which collapses modules into a pre-battle checklist | BLOCKER | NOT-TESTABLE: the defect is absent friction in campaign UI flow, and no target state has been ruled; a test written now would assert a design nobody chose |
 | MOD-2 | Five modules duplicate five captain perks effect for effect through one additive pool, and MODULES.cogitator collides with RELICS.cogitator on the same key | FIX | TESTED (MOD-2, fails: the collision plus four pairs). The fifth pair, regen vs deflector, shares the regenPct key at .5 vs .4, a near-duplicate the subset rule does not flag |
 | MOD-3 | Weapon-kind modules can be fitted for zero effect with no warning: only hangar carries an `only` guard, and the campaign fit guard keys on ability, not weapon kind | FIX | TESTED (MOD-3, fails): the campaign loader drives ACT.equip; the Lance focusing crystal fits a lance-less warden. Patch pack section 3 carries the diff and acceptance check; enforcement sits at campaign_run.js:128 |
-| MOD-4 | damcon (85 credits) is mathematically dominated by prow (70 credits) | FIX | TESTED (MOD-4, fails) |
+| MOD-4 | damcon (85 credits) versus prow (70 credits) is a balance question (sustain repair versus upfront buffer). The earlier dominance wording was refuted Oct 31, 2026: the assertion compares prices only and cannot establish dominance | BALANCE | TESTED (MOD-4, fails on price comparison only; dominance not established). See canonical_corrections_2026_10_31.md section 4 |
 | MOD-5 | The FIT_SLOTS schema has no mechanical consumer anywhere (dead data audit: DEAD EVERYWHERE), and its flagship reserve collides with the universal slot ladder | FIX | NOT-TESTABLE: absence of a consumer across the whole codebase, including the Godot port, cannot be proven from the three files the rules harness loads; the collision itself is a design decision. Also filed by the variety program; counted once here |
 
 ### Oct 29 program: AI (ai_synthesis_2026_10_29.md)
@@ -337,10 +337,10 @@ Numbering note: BN-3, the L_storm gate, is counted once as RWD-3.
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| FS-1 | Credit shape never reaches enemy fleets: genEnemyFleet spends CP only and never consults FAC_PRICE | FIX | TESTABLE-NOT-WRITTEN: Ryan ruled the principle on Oct 29 (Eclipse stronger and pricier, Chorus the opposite, across stats, price and CP); the assertion shape depends on the mechanism chosen (budget multiplier or ladder re-base), sims first. Re-confirmed Oct 30 round 2: FAC_PRICE's only consumer is still the data.js cost fold (player-facing prices); genEnemyFleet reads budget, roster CP and RAMP only. The Oct 30 Monte Carlo grids inform the mechanism choice (price-first collapses Eclipse at x1.25; the Chorus discount expresses only with a CP allowance) but no mechanism has been picked |
+| FS-1 | Credit shape never reaches enemy fleets: genEnemyFleet spends CP only and never consults FAC_PRICE | FIX | TESTABLE-NOT-WRITTEN: Ryan ruled the principle on Oct 29 (Eclipse stronger and pricier, Chorus the opposite, across stats, price and CP); the assertion shape depends on the mechanism chosen (budget multiplier or ladder re-base), sims first. Re-confirmed Oct 30 round 2: FAC_PRICE's only consumer is still the data.js cost fold (player-facing prices); genEnemyFleet reads budget, roster CP and RAMP only. The Oct 30 Monte Carlo grids inform the mechanism choice (the Oct 30 price-grid rows behind this note's earlier grid remark were withdrawn Oct 31, 2026: the harness compounded price multipliers across runs; corrected rows land in price_grid_correction_2026_10_31.md) but no mechanism has been picked |
 | FS-2 | FAC_PRICE.deathless has no Battleship key, so the ruled cp6 Eclipse battleship prices by fallback at 370, below the faction's own cp4 cruiser at 390 | FIX | TESTED (FS-2, fails) |
 | FS-3 | CP is symmetric at the ladder bottom: every frigate costs 1 CP and every destroyer 2 CP across factions | FIX | TESTABLE-NOT-WRITTEN: if the chosen mechanism is budget-level, hull CP stays symmetric by design, so a hull-CP assertion written now could be wrong by construction. Re-confirmed Oct 30 round 2: every faction's frigates cost exactly 1 CP and its destroyers exactly 2 CP at this pin, no exceptions |
-| FS-5 | Chorus has regeneration but no feed or grow mechanic, so the swarm identity is numeric only | FIX | NOT-TESTABLE: absence of a mechanic is a design gap; the fix is new content, not an assertable state |
+| FS-5 | REFUTED Oct 31, 2026: chorusFeed and chorusBite are implemented (battle.js:502-513, one shared per-round cap). What is absent is a max-HP growth mechanic and feed visibility; that narrower question stays open separately | CLOSED (refuted) | See canonical_corrections_2026_10_31.md section 1 |
 
 Numbering note: FS-4 is counted once as ROS-4.
 
@@ -348,7 +348,7 @@ Numbering note: FS-4 is counted once as ROS-4.
 
 | ID | Finding | Severity | Status |
 |---|---|---|---|
-| DRIFT-1 | The Godot parity oracle copy of the campaign shell carries the same unlockAll boot grant as PROG-1, so parity tests compare against a fully unlocked state | FIX | NOT-TESTABLE: the oracle is a Godot-side fixture the browser harness cannot load |
+| DRIFT-1 | REFUTED Oct 31, 2026: the parity oracle loader (godot/campaign/test/node/env.js:14) loads six files and excludes main3d.js, so the boot grant never executes in parity runs; a fresh parity load is unlocked {} / admirals {vex:true}. PROG-1 (the browser grant itself) stands | CLOSED (refuted) | See canonical_corrections_2026_10_31.md section 2 |
 | DRIFT-2 | The retired mobile layer is live and can fire on real PCs (coarse pointer plus a small window), forcing quality medium and fxReduced off at boot | FIX | NOT-TESTABLE: the detection lives in scene3d.js and main3d.js, outside the rules harness; patch pack section 5 carries the diff and a browser-load acceptance check |
 | DRIFT-4 | The guidance documents are a stratigraphy: NEXT.md carries superseded phone-era gates, PROGRESS.md describes a 'mobile map' and an old working directory, BACKLOG.md sits mid-retirement | FIX | NOT-TESTABLE: repository documents, not runtime state; the fix is editorial |
 | DRIFT-5 | touchWords carries regexes that can never match, because the generic Click-to-Tap replacement runs before the specific one in the same chain | FIX | TESTED (DRIFT-5, fails): touchWords over the shipped movement tip under the mobile flag returns the single-tap wording; the double-tap variant is unreachable |
@@ -388,7 +388,7 @@ Patch pack sections 1, 3, 4 and 5 are counted once as AI-1, MOD-3, W3-1 and DRIF
 - RWD-3 = the boons program's L_storm gate finding (BN-3).
 - FR-2 = the nemesis program's intel drought (NEM-1) and ruled fixes spec Fix 2; RWD-8 = the Q7 spillover defect, ruled fixes spec Fix 1, and measurements item M2.
 - ROS-2 = the text program's variant-card batch (TXT-4). PROG-2 includes the text program's locked-card finding (TXT-6). MOD-5 = the variety program's FIT_SLOTS item. ROS-4 = the faction shape program's FS-4. WPN-4 = the drift program's DRIFT-3.
-- PP-1 = AI-1, PP-3 = MOD-3, PP-4 = W3-1, PP-5 = DRIFT-2, PP-6 = FGT-4. DRIFT-1 is PROG-1's grant on a second surface (the Godot oracle), kept as its own row because the fix and the test surface differ.
+- PP-1 = AI-1, PP-3 = MOD-3, PP-4 = W3-1, PP-5 = DRIFT-2, PP-6 = FGT-4. DRIFT-1 was written as PROG-1's grant on a second surface (the Godot oracle); that premise was refuted Oct 31, 2026 (see its row).
 - Wave 1 open checks: item 2 resolved BN-4's mechanism, item 3 is MOD-3, item 4 shaped WPN-3's guard, item 5 is PP-2, item 6 is AI-2, item 7 is DRIFT-1.
 
 ## Honesty notes

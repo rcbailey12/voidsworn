@@ -16,6 +16,8 @@ The 13 modules mostly do separable jobs. The system's problem is not the catalog
 
 4. Strict takes and dominated picks (Qwen, Argon, Rey agree in substance): prow and auspex are strict takes at their prices; damcon at 85 credits is mathematically dominated by prow at 70 (the Rey leg prices damcon needing about four turns to match prow's upfront buffer). DeepSeek's arithmetic frames the whole layer: the hull cost formula puts a cp1 hull at 70 credits, so a top module at 80-90 credits costs more than a frigate.
 
+CORRECTION (Oct 31, 2026): the dominance claim in this finding is withdrawn. Prow is an upfront buffer (+15% hull, +5% armor, data.js:154); damcon is sustain repair (4% of hull per own turn, data.js:164). Under sustained armor-bypassing damage damcon out-values prow; under burst, prow wins. The register test only compared prices. MOD-4 is reclassified as a balance question (burst versus sustain). See canonical_corrections_2026_10_31.md section 4.
+
 5. The slot ladder is coarse and the flagship reserve collides with it (all legs in some form). One, two, or three slots across all hulls gives 13 to 286 possible fits with little middle; FIT_SLOTS reserves a flagship module slot that stacks on the normal ladder, and the customization work from Oct 26 leaned flagship-only, so the reserve and the universal ladder cannot both ship as designed without a decision about which layer is real. The trims are the only zero-sum element in the whole customization system (Rey).
 
 ## Chair corrections applied

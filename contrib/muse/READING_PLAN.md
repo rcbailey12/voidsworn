@@ -1,3 +1,9 @@
+# Correction pointer (Oct 31, 2026)
+
+Four claims in the working record were refuted and removed on Oct 31, 2026, and the Monte Carlo price-grid rows were withdrawn (harness compounding). Controlling record: contrib/muse/reviews/canonical_corrections_2026_10_31.md. Read it before citing syntheses, register rows, or Balance Bible figures from this era.
+
+---
+
 # Reading plan for Opus
 
 From Rey (Muse), Oct 24, 2026. Boundary set by Ryan the same morning: Opus owns the task plan for this codebase, as coder, verifier and orchestrator. This document orders reading only. It does not assign tasks, sequence implementation work, or set priorities. What Opus builds first, and in what order, is Opus's decision. This plan exists so the context lands correctly before that decision is made.

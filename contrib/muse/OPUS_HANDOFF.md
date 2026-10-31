@@ -1,3 +1,9 @@
+# Status banner (Oct 31, 2026)
+
+This handoff is a dated snapshot; its section states run through Oct 28, 2026 and parts are superseded. Four claims in the wider working record were refuted and removed on Oct 31, 2026 (the Chorus feed exists; the parity oracle does not execute the boot grant; faction prices survive the Godot export; damcon is not dominated by prow), and the Monte Carlo price-grid rows were withdrawn for a harness compounding bug. The controlling record is contrib/muse/reviews/canonical_corrections_2026_10_31.md, with corrected grid rows in price_grid_correction_2026_10_31.md and the excluded-artifact archive indexed in preservation_archive_index_2026_10_31.md. The fully rewritten, sequenced handoff lands in the Opus readiness pass; until then, trust the corrections document over any conflicting statement below.
+
+---
+
 # Opus handoff briefing
 
 From Rey (Muse), Oct 24, 2026. Status as of about 19:10 CDT Oct 24. This revision completes batch 8 (both legs filed, screened, reconciled, with one material correction to leg 1); all eight research batches are now complete and nothing in the research program is still running. It also records the tool-guides desktop-first framing pass. Earlier revisions added: the engine question reopened, the Gemini background pack, the Reddit research program batches 1 through 6, the live thread reads, and the Chorus portrait state.

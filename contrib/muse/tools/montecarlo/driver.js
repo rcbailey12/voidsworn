@@ -7,6 +7,16 @@
 // and ACT.enterNode's dispatch, minus all rendering; (2) the bot policies
 // (node choice, reward picks, shipyard spending, event choices), each stated
 // in the evidence report; (3) statistics recording.
+// PRICE-GRID CORRECTION (Oct 31, 2026): the priceMult line in mcRunOne
+// multiplies the shared HULLS costs in place, and a shard process runs
+// hundreds of campaigns, so in the original grid runs the multiplier
+// compounded run over run. Snapshot the shipped (post-load) base costs
+// once, here at harness load, and restore them at the start of every run
+// before the multiplier is applied, so each run sees base cost times
+// priceMult exactly. Nothing else in the driver changes.
+const MC_BASE_HULL_COSTS = {};
+for (const id of Object.keys(HULLS)) MC_BASE_HULL_COSTS[id] = HULLS[id].cost;
+function mcRestoreBaseHullCosts(){ for (const id of Object.keys(HULLS)) { if (id in MC_BASE_HULL_COSTS) HULLS[id].cost = MC_BASE_HULL_COSTS[id]; } }
 function mcFleetHpFrac(){ if(!RUN||!RUN.fleet.length) return 1; const mx=RUN.fleet.reduce((a,s)=>a+derive(s).maxHp,0); return mx?RUN.fleet.reduce((a,s)=>a+Math.max(0,s.hp),0)/mx:1; }
 function mcMissing(){ return RUN.fleet.reduce((a,s)=>a+derive(s).maxHp-s.hp,0); }
 function mcFxScore(fx){ if(!fx) return 0; let sc=0; for(const k in fx){ const v=fx[k]; if(!v) continue; sc+=Math.abs(v)*(k.includes('Pct')?30:2); } return sc; }
@@ -163,6 +173,7 @@ async function mcRunOne(cfg){
   const S=mcFreshStats(cfg);
   try{
     META=defaultMeta(); AI_LEVEL=cfg.ai; SPEED=0;
+    mcRestoreBaseHullCosts();
     if(cfg.priceMult&&cfg.priceMult!==1) for(const id of Object.keys(HULLS)){ const h=HULLS[id]; if(h.cost!=null&&factionOfTpl(id)===cfg.fac) h.cost=Math.max(5,Math.round(h.cost*cfg.priceMult/5)*5); }
     rndSeed(cfg.seed>>>0);
     newRun(cfg.admiral,cfg.fac,{});

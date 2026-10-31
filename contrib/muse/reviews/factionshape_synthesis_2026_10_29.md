@@ -1,5 +1,7 @@
 # Faction shape and roster expansion - synthesis (Oct 29 program)
 
+CORRECTION (Oct 31, 2026): finding 5's first sentence is refuted (the Chorus feed is implemented, battle.js:502-513). See the note at finding 5 and canonical_corrections_2026_10_31.md section 1.
+
 Four prongs: Qwen SHAPES PARTIAL, Argon SHAPES PARTIAL, DeepSeek SHAPES PARTIAL, Rey (blind) SHAPES PARTIAL.
 
 ## Verdict: SHAPES PARTIAL (4 of 4)
@@ -17,6 +19,8 @@ The faction shapes are real where the game is played: stats, movement rules, tra
 4. d_boss is the only Deathless hull without reanimate (all legs), and it recycles the harvester's gun kit at 3x the CP. With the Q7 battleship coming, the Eclipse top end currently reads as a scaled cruiser, not a capstone.
 
 5. Chorus has regeneration but no feed or grow mechanic (Argon, Qwen), so its swarm identity is numeric (more, cheaper hulls) rather than mechanical. Its heavy archetype slot is thin; the Rey leg argues a cp4 Chorus heavy cruiser is the only new hull beyond the ruled battleship that a job justifies.
+
+CORRECTION (Oct 31, 2026): the first sentence of this finding is refuted. chorusFeed (battle.js:502-511) and chorusBiteEst (battle.js:512-513) are implemented and called at battle.js:941 and :817, under one per-round cap. The Chorus lacks a max-HP growth mechanic and any presentation surfacing of the feed, not a feed. The heavy archetype observation in the second half of this finding stands. See canonical_corrections_2026_10_31.md section 1.
 
 ## The CP question: three positions, one constraint
 

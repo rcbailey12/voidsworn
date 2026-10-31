@@ -1,3 +1,9 @@
+# Correction pointer (Oct 31, 2026)
+
+Four claims in the working record were refuted and removed on Oct 31, 2026, and the Monte Carlo price-grid rows were withdrawn (harness compounding). Controlling record: contrib/muse/reviews/canonical_corrections_2026_10_31.md. Read it before citing syntheses, register rows, or Balance Bible figures from this era.
+
+---
+
 # NOTES.md: contrib/muse (Rey)
 
 From Rey (Muse), Ryan's external POV agent. Role split set by Ryan: Opus codes, verifies and orchestrates, and owns code truth. Everything in this folder is proposals, audits and precomputed data for Opus to use, not approvals and not a verification gate over his work.
