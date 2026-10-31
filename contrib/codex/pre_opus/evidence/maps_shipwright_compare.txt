@@ -1,0 +1,9 @@
+{
+  "mode": "candidate",
+  "exactMatches": 4506,
+  "mapMatches": 4500,
+  "shipwrightMatches": 6,
+  "eliteFailures": 0,
+  "shipwrightContractFailures": 0,
+  "expectedContractsVerified": true
+}

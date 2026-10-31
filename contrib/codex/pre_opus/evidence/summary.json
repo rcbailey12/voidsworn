@@ -1,0 +1,651 @@
+{
+  "status": "PASS for bounded integration and repair packet",
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "work": "/tmp/voidsworn-pre-opus-TKYOmG",
+  "counts": {
+    "nemesis": {
+      "assertions": 80,
+      "pass": 10,
+      "delta": [
+        "FR-2",
+        "NEM-2"
+      ],
+      "repairRecords": 522,
+      "repairHashes": {
+        "js": "88979d93841dc33a239f49a6014c00cad4c9ae4f72fae9a99e98079c89c93d3c",
+        "godot": "cdb89c2a88f0dba064ca50b2ae5f114ad4b0fc9a55719fc57984fb618e39c009"
+      }
+    },
+    "boons": {
+      "assertions": 80,
+      "pass": 11,
+      "delta": [
+        "RWD-3",
+        "RWD-4",
+        "RWD-8"
+      ],
+      "repairRecords": 2521,
+      "repairHashes": {
+        "js": "1b7063b395959d8289d2717f796a2dcacc4e1653c2f6478d5dd1a1827ac9e583",
+        "godot": "343e40e1334de029831060e63a06156070564f80490859af3a277f6bb715d36f"
+      }
+    },
+    "integration": {
+      "assertions": 80,
+      "pass": 16,
+      "delta": [
+        "FR-2",
+        "MOD-3",
+        "NEM-2",
+        "RWD-3",
+        "RWD-4",
+        "RWD-8",
+        "TXT-2",
+        "W3-1"
+      ],
+      "repairRecords": 3043,
+      "repairHashes": {
+        "js": "a041879b948c99d1f2bf108a09ffa5ff178c8c3b13051b2d23ee1f72b0c20ff8",
+        "godot": "3f9e60da2fb0f9c64bcf672b7ee341552c311533164735eb32842be21dadf2f3"
+      }
+    },
+    "saro": {
+      "assertions": 80,
+      "pass": 16,
+      "delta": [
+        "FR-2",
+        "MOD-3",
+        "NEM-2",
+        "RWD-3",
+        "RWD-4",
+        "RWD-8",
+        "TXT-2",
+        "W3-1"
+      ]
+    },
+    "finishFlow": 18,
+    "mapsAndShipwright": 4506,
+    "campaign": {
+      "seeds": 30,
+      "steps": 4572,
+      "scope": "Existing stub-battle campaign/save-reload harness, not real battle parity"
+    },
+    "nemScenarios": 64,
+    "saro_model": 707,
+    "saro_pilot": 96,
+    "finishFlowFastAdaptExercised": true
+  },
+  "results": [
+    {
+      "label": "godot_version",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "prepare",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "apply_integration",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "apply_saro",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_control",
+      "exit": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_nemesis",
+      "exit": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_boons",
+      "exit": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_integration",
+      "exit": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_saro",
+      "exit": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_js_nemesis",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_godot_nemesis",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_compare_nemesis",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_js_boons",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_godot_boons",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_compare_boons",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_js_integration",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_godot_integration",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "repairs_compare_integration",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "finish_flow_js",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "finish_flow_godot",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "finish_flow_compare",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "maps_shipwright_js",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "maps_shipwright_godot",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "maps_shipwright_compare",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_1",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_2",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_3",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_4",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_5",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_6",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_7",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_8",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_9",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_10",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_11",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_12",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_13",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_14",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_15",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_16",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_17",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_18",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_19",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_20",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_21",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_22",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_23",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_24",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_25",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_26",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_27",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_28",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_29",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_js_30",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_godot",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_1",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_2",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_3",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_4",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_5",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_6",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_7",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_8",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_9",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_10",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_11",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_12",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_13",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_14",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_15",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_16",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_17",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_18",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_19",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_20",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_21",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_22",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_23",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_24",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_25",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_26",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_27",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_28",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_29",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "campaign_compare_30",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "nem_scenarios_js",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "nem_scenarios_godot",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "saro_model_js",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "saro_model_godot",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "saro_model_compare",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "saro_pilot_js",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "saro_pilot_godot",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "saro_pilot_compare",
+      "exit": 0,
+      "ok": true,
+      "error": null
+    }
+  ],
+  "limits": [
+    "General real-battle parity corpus is still absent; no cutover clearance.",
+    "Saro native picker/Command dialogs are not implemented; no full campaign-UI parity claim for that optional layer.",
+    "Existing native hull-table drift is not cleared.",
+    "The 3:1 ordinary-pool weights, duo45/legendary55 special-slot weights and one-new-weakness debrief cap are explicit candidate tuning.",
+    "The battle can reveal two weaknesses; the debrief preserves that knowledge and adds none if a valid battle discovery was supplied.",
+    "Blender/Windows/GPU acceptance is separate from this headless check."
+  ],
+  "supplementaryChecks": {
+    "patches": "patch_checks.json",
+    "staticAndBlenderLimits": "static_checks.json",
+    "notes": "Repair-vector counts and actual loss-flow fixtures were extended after the full campaign run; those affected checks were rerun exactly. No runtime code changed afterward."
+  }
+}

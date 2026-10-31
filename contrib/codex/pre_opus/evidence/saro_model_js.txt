@@ -1,0 +1,1 @@
+707 JS records; 663 hull/module predicates plus full-slot rejection; 3840 legal builds queued for Godot

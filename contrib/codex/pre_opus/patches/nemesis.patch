@@ -1,0 +1,148 @@
+diff --git a/campaign3d.js b/campaign3d.js
+index cef4acc..121b6e1 100644
+--- a/campaign3d.js
++++ b/campaign3d.js
+@@ -71,7 +71,7 @@ function finishBattle(result){
+   // B4: the Nemesis learns from how you fought; a used faction verb is spent; his own fight settles here
+   try{ const pl=B.units.filter(u=>u.side==='player'&&!u.isSq), ev=pl.reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,pl.length); nemLearn(B.usage,ev>=20?1:0); }catch(e){}
+   if(B.cfg&&B.cfg.verb) RUN.verbNext=null;
+-  if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled),{fled:!!B.nemFled,beat:nemBeatOf(B.usage,(B.units.filter(u=>u.side==='player'&&!u.isSq).reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,B.units.filter(u=>u.side==='player'&&!u.isSq).length))>=20),cause:fl&&fl.killCause,myFlagDead:B.units.some(u=>u.pflag&&u.dead)}); } else if(result==='win'&&RUN.nem){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
++  if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled),{found:B.nemFound||[],fled:!!B.nemFled,beat:nemBeatOf(B.usage,(B.units.filter(u=>u.side==='player'&&!u.isSq).reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,B.units.filter(u=>u.side==='player'&&!u.isSq).length))>=20),cause:fl&&fl.killCause,myFlagDead:B.units.some(u=>u.pflag&&u.dead)}); } else if(result==='win'&&RUN.nem){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
+   { const lostN=B.units.filter(u=>u.side==='player'&&u.ship&&u.dead&&!u.exited).length; if(lostN){ const fm=nemFeedLosses(lostN); if(fm) summary.nemFeed=fm; } } // R42: a Chorus Nemesis grows from your losses (and says so)
+   { const fw=nemFoundMerge(B.nemFound); if(fw.length) summary.nemFound=`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`; } // R42: weaknesses you triggered in battle stay known
+   for(const sh of RUN.fleet){ const k=wingK[sh.uid]; if(k){ const g=wingVetAfter(sh,k); if(g.length) (summary.wingPerks=summary.wingPerks||[]).push({ship:sh.name,perks:g}); } }
+diff --git a/campaign_run.js b/campaign_run.js
+index bf85b68..8217202 100644
+--- a/campaign_run.js
++++ b/campaign_run.js
+@@ -287,8 +287,9 @@ function nemBattleCfg(){ const N=ensureNemesis(); return {gloat:N.gloat||null,ho
+ function nemAdapt(force){ const N=RUN&&RUN.nem; if(!N||N.dead) return null; const fast=nemBeh().adaptFast, cap=Math.max(0,RUN.sector-1)+(fast?N.beaten+N.scars:0);
+   if(N.adapt.length>=Math.min(cap,6)&&!force) return null; const s=N.seen||{}, sp=NEM_ADAPT_FAC[N.fac]&&NEM_ADAPT_FAC[N.fac].special;
+   const score={shields:(s.lance||0)*2+(s.ion||0)*2,pd:(s.torp||0)*2+(s.sq||0),armor:(s.ram||0)*4+(s.board||0)*4,evasion:(s.battery||0)+(s.broad||0),aim:(s.evaded||0)*3};
+-  let pickA=Object.keys(score).filter(k=>!N.adapt.includes(k)&&score[k]>0).sort((a,b)=>score[b]-score[a])[0];
+-  if(!pickA&&sp&&!N.adapt.includes(sp.id)) pickA=sp.id; if(!pickA) pickA=Object.keys(score).filter(k=>!N.adapt.includes(k))[0]; if(!pickA) return null; N.adapt.push(pickA); N.seen={}; return pickA; }
++  const blocked=new Set(); if((N.revealed||[]).includes('ion')) blocked.add('shields'); if((N.revealed||[]).includes('torp')) blocked.add('pd');
++  let pickA=Object.keys(score).filter(k=>!blocked.has(k)&&!N.adapt.includes(k)&&score[k]>0).sort((a,b)=>score[b]-score[a])[0];
++  if(!pickA&&sp&&!N.adapt.includes(sp.id)) pickA=sp.id; if(!pickA) pickA=Object.keys(score).filter(k=>!blocked.has(k)&&!N.adapt.includes(k))[0]; if(!pickA) return null; N.adapt.push(pickA); N.seen={}; return pickA; }
+ function nemAdaptName(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.n; return T[a]||(NEM_ADAPT[a]&&NEM_ADAPT[a].n)||a; }
+ function nemAdaptDesc(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.d; return (NEM_ADAPT[a]&&NEM_ADAPT[a].d)||''; }
+ function nemAdaptWhy(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return 'his own way of war'; return (NEM_ADAPT[a]&&NEM_ADAPT[a].why)||''; }
+@@ -306,7 +307,12 @@ function nemAfterBattle(result,flagDead,o){ const N=RUN.nem; if(!N) return []; o
+     if(N.dead&&N.loot){ RUN.credits+=N.loot; out.push(`You take back ${N.loot} credits from his hold.`); N.loot=0; }
+     if(N.dead&&N.held){ RUN.fleet.push(N.held); out.push(`You take back the ${N.held.name}.`); N.held=null; }
+     if(RUN.sector>=3&&!back){ const u=arcComplete(RUN.fac); if(u) out.push(u); } } // R41: the last meeting won (dead, fled or withdrawn) ends the arc
+-  else { N.clock=1; N.gloat=o.myFlagDead?'flagship':result==='retreat'?'retreat':'loss'; out.push(say(`${nemFull()} drove you off. He will remember this.`)); }
++  else { N.clock=1; N.gloat=o.myFlagDead?'flagship':result==='retreat'?'retreat':'loss'; out.push(say(`${nemFull()} drove you off. He will remember this.`));
++    const found=Array.isArray(o.found)?o.found.filter(k=>N.weak.includes(k)):[]; nemFoundMerge(found);
++    const learned=[...new Set(found)]; const w=learned[0]||nemReveal();
++    if(w) out.push(`Your analysts piece together the engagement: ${N.name} is vulnerable to ${(learned.length?learned:[w]).map(k=>NEM_WEAK[k].n).join(', ')}.`);
++    else out.push(`The engagement confirms what your analysts already held: the file on ${N.name} is complete.`); }
++  if(result==='win'){ const fw=nemFoundMerge(o.found); if(fw.length) out.push(`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`); }
+   if(beh.adaptFast){ const a=nemAdapt(); if(a){ nemSignature('fast_adapt'); out.push(`${P.He} learns from it at once: ${nemAdaptName(a,N.fac)} (${say(nemAdaptWhy(a,N.fac))}).`); } }
+   return out; }
+ // R42: when you beat him with something, his next adaptation counters it (so "it will not work twice" is true when he says it)
+diff --git a/godot/campaign/campaign.gd b/godot/campaign/campaign.gd
+index 9e2d640..96886d0 100644
+--- a/godot/campaign/campaign.gd
++++ b/godot/campaign/campaign.gd
+@@ -1689,11 +1689,14 @@ func nemAdapt(force: bool = false) -> Variant:
+ 	var sp = NEM_ADAPT_FAC[N["fac"]].get("special") if NEM_ADAPT_FAC.has(N["fac"]) else null
+ 	var score = {"shields": float(z0(s.get("lance"))) * 2 + float(z0(s.get("ion"))) * 2, "pd": float(z0(s.get("torp"))) * 2 + float(z0(s.get("sq"))), "armor": float(z0(s.get("ram"))) * 4 + float(z0(s.get("board"))) * 4,
+ 		"evasion": float(z0(s.get("battery"))) + float(z0(s.get("broad"))), "aim": float(z0(s.get("evaded"))) * 3}
+-	var ks = ssort(score.keys().filter(func(k): return not N["adapt"].has(k) and score[k] > 0), func(a, b): return score[b] - score[a])
++	var blocked = []
++	if or_(N.get("revealed"), []).has("ion"): blocked.append("shields")
++	if or_(N.get("revealed"), []).has("torp"): blocked.append("pd")
++	var ks = ssort(score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k) and score[k] > 0), func(a, b): return score[b] - score[a])
+ 	var pickA = ks[0] if ks.size() > 0 else null
+ 	if pickA == null and jt(sp) and not N["adapt"].has(sp["id"]): pickA = sp["id"]
+ 	if pickA == null:
+-		var rest = score.keys().filter(func(k): return not N["adapt"].has(k))
++		var rest = score.keys().filter(func(k): return not blocked.has(k) and not N["adapt"].has(k))
+ 		if rest.size() > 0: pickA = rest[0]
+ 	if pickA == null: return null
+ 	N["adapt"].append(pickA); N["seen"] = {}; return pickA
+@@ -1756,6 +1759,19 @@ func nemAfterBattle(result: String, flagDead: bool, o: Dictionary = {}) -> Array
+ 	else:
+ 		N["clock"] = 1; N["gloat"] = "flagship" if jt(o.get("myFlagDead")) else ("retreat" if result == "retreat" else "loss")
+ 		out.append(nemSay(nemFull() + " drove you off. He will remember this.", N))
++		var found = o["found"].filter(func(k): return N["weak"].has(k)) if o.get("found") is Array else []
++		nemFoundMerge(found)
++		var learned = []
++		for k in found:
++			if not learned.has(k): learned.append(k)
++		var w = learned[0] if not learned.is_empty() else nemReveal()
++		if w != null:
++			var names = (learned if not learned.is_empty() else [w]).map(func(k): return str(NEM_WEAK[k]["n"]))
++			out.append("Your analysts piece together the engagement: " + str(N["name"]) + " is vulnerable to " + ", ".join(PackedStringArray(names)) + ".")
++		else: out.append("The engagement confirms what your analysts already held: the file on " + str(N["name"]) + " is complete.")
++	if result == "win":
++		var fw = nemFoundMerge(o.get("found"))
++		if not fw.is_empty(): out.append("Weakness confirmed: " + ", ".join(PackedStringArray(fw.map(func(k): return str(NEM_WEAK[k]["n"])))) + ".")
+ 	if jt(beh.get("adaptFast")):
+ 		var a = nemAdapt()
+ 		if a != null:
+@@ -2460,7 +2476,7 @@ func finishBattle(result: String) -> void:
+ 			if jt(u.get("nemFlag")):
+ 				fl = u; break
+ 		var evasive = evs / max(1.0, float(pl.size())) >= 20
+-		summary["nem"] = nemAfterBattle(result, fl != null and jt(fl.get("dead")) and not jt(fl.get("fled")), {"fled": jt(B.get("nemFled")), "beat": nemBeatOf(B.get("usage"), evasive), "cause": fl.get("killCause") if fl != null else null, "myFlagDead": B["units"].any(func(u): return jt(u.get("pflag")) and jt(u.get("dead")))})
++		summary["nem"] = nemAfterBattle(result, fl != null and jt(fl.get("dead")) and not jt(fl.get("fled")), {"found": or_(B.get("nemFound"), []), "fled": jt(B.get("nemFled")), "beat": nemBeatOf(B.get("usage"), evasive), "cause": fl.get("killCause") if fl != null else null, "myFlagDead": B["units"].any(func(u): return jt(u.get("pflag")) and jt(u.get("dead")))})
+ 	elif result == "win" and jt(RUN.get("nem")):
+ 		var m = nemClockAdd(1)
+ 		if m != "": summary["nemWarn"] = m
+diff --git a/godot/campaign/test/oracle/README.md b/godot/campaign/test/oracle/README.md
+index fd3ee1a..452b76e 100644
+--- a/godot/campaign/test/oracle/README.md
++++ b/godot/campaign/test/oracle/README.md
+@@ -10,3 +10,7 @@ These are the game's JS files, copied unchanged, that the campaign parity test r
+ The parity harness and the campaign table exporter read these files, not the live ones at the repo root, so stream B can change the JS rules during the sprint without breaking the campaign port's golden test.
+ 
+ **Catching up:** when stream B changes a campaign rule, port the change to `godot/campaign/`, re-copy the six files from the new commit, run `node godot/campaign/test/node/export_campaign.js` to refresh `godot/campaign/data/campaign_tables.json`, run the parity test, and update the commit numbers above.
++
++## Proposed pre-Opus exceptions (Codex, Oct 31, 2026)
++
++Source pin remains 355a2ac70860db4446f040a5787b19c2d746d779. Only loss-learning and known-weakness clash repairs are changed. Other pinned oracle behavior is retained. The exported campaign table changes only BOON_NEED.L_storm when the boon repair is selected; checksums are regenerated from this candidate oracle. Full general battle parity is not claimed.
+diff --git a/godot/campaign/test/oracle/campaign3d.js b/godot/campaign/test/oracle/campaign3d.js
+index 94ba1e5..0844a16 100644
+--- a/godot/campaign/test/oracle/campaign3d.js
++++ b/godot/campaign/test/oracle/campaign3d.js
+@@ -71,7 +71,7 @@ function finishBattle(result){
+   // B4: the Nemesis learns from how you fought; a used faction verb is spent; his own fight settles here
+   try{ const pl=B.units.filter(u=>u.side==='player'&&!u.isSq), ev=pl.reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,pl.length); nemLearn(B.usage,ev>=20?1:0); }catch(e){}
+   if(B.cfg&&B.cfg.verb) RUN.verbNext=null;
+-  if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled),{fled:!!B.nemFled,beat:nemBeatOf(B.usage,(B.units.filter(u=>u.side==='player'&&!u.isSq).reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,B.units.filter(u=>u.side==='player'&&!u.isSq).length))>=20),cause:fl&&fl.killCause,myFlagDead:B.units.some(u=>u.pflag&&u.dead)}); } else if(result==='win'&&RUN.nem){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
++  if(cfg.nemesis){ const fl=B.units.find(u=>u.nemFlag); summary.nem=nemAfterBattle(result,!!(fl&&fl.dead&&!fl.fled),{found:B.nemFound||[],fled:!!B.nemFled,beat:nemBeatOf(B.usage,(B.units.filter(u=>u.side==='player'&&!u.isSq).reduce((a,u)=>a+(u.ev||0),0)/Math.max(1,B.units.filter(u=>u.side==='player'&&!u.isSq).length))>=20),cause:fl&&fl.killCause,myFlagDead:B.units.some(u=>u.pflag&&u.dead)}); } else if(result==='win'&&RUN.nem){ const m=nemClockAdd(1); if(m) summary.nemWarn=m; }
+   { const lostN=B.units.filter(u=>u.side==='player'&&u.ship&&u.dead&&!u.exited).length; if(lostN){ const fm=nemFeedLosses(lostN); if(fm) summary.nemFeed=fm; } } // R42: a Chorus Nemesis grows from your losses (and says so)
+   { const fw=nemFoundMerge(B.nemFound); if(fw.length) summary.nemFound=`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`; } // R42: weaknesses you triggered in battle stay known
+   for(const sh of RUN.fleet){ const k=wingK[sh.uid]; if(k){ const g=wingVetAfter(sh,k); if(g.length) (summary.wingPerks=summary.wingPerks||[]).push({ship:sh.name,perks:g}); } }
+diff --git a/godot/campaign/test/oracle/campaign_run.js b/godot/campaign/test/oracle/campaign_run.js
+index 48d60cd..8683f19 100644
+--- a/godot/campaign/test/oracle/campaign_run.js
++++ b/godot/campaign/test/oracle/campaign_run.js
+@@ -287,8 +287,9 @@ function nemBattleCfg(){ const N=ensureNemesis(); return {gloat:N.gloat||null,ho
+ function nemAdapt(force){ const N=RUN&&RUN.nem; if(!N||N.dead) return null; const fast=nemBeh().adaptFast, cap=Math.max(0,RUN.sector-1)+(fast?N.beaten+N.scars:0);
+   if(N.adapt.length>=Math.min(cap,6)&&!force) return null; const s=N.seen||{}, sp=NEM_ADAPT_FAC[N.fac]&&NEM_ADAPT_FAC[N.fac].special;
+   const score={shields:(s.lance||0)*2+(s.ion||0)*2,pd:(s.torp||0)*2+(s.sq||0),armor:(s.ram||0)*4+(s.board||0)*4,evasion:(s.battery||0)+(s.broad||0),aim:(s.evaded||0)*3};
+-  let pickA=Object.keys(score).filter(k=>!N.adapt.includes(k)&&score[k]>0).sort((a,b)=>score[b]-score[a])[0];
+-  if(!pickA&&sp&&!N.adapt.includes(sp.id)) pickA=sp.id; if(!pickA) pickA=Object.keys(score).filter(k=>!N.adapt.includes(k))[0]; if(!pickA) return null; N.adapt.push(pickA); N.seen={}; return pickA; }
++  const blocked=new Set(); if((N.revealed||[]).includes('ion')) blocked.add('shields'); if((N.revealed||[]).includes('torp')) blocked.add('pd');
++  let pickA=Object.keys(score).filter(k=>!blocked.has(k)&&!N.adapt.includes(k)&&score[k]>0).sort((a,b)=>score[b]-score[a])[0];
++  if(!pickA&&sp&&!N.adapt.includes(sp.id)) pickA=sp.id; if(!pickA) pickA=Object.keys(score).filter(k=>!blocked.has(k)&&!N.adapt.includes(k))[0]; if(!pickA) return null; N.adapt.push(pickA); N.seen={}; return pickA; }
+ function nemAdaptName(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.n; return T[a]||(NEM_ADAPT[a]&&NEM_ADAPT[a].n)||a; }
+ function nemAdaptDesc(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.d; return (NEM_ADAPT[a]&&NEM_ADAPT[a].d)||''; }
+ function nemAdaptWhy(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return 'his own way of war'; return (NEM_ADAPT[a]&&NEM_ADAPT[a].why)||''; }
+@@ -306,7 +307,12 @@ function nemAfterBattle(result,flagDead,o){ const N=RUN.nem; if(!N) return []; o
+     if(N.dead&&N.loot){ RUN.credits+=N.loot; out.push(`You take back ${N.loot} credits from his hold.`); N.loot=0; }
+     if(N.dead&&N.held){ RUN.fleet.push(N.held); out.push(`You take back the ${N.held.name}.`); N.held=null; }
+     if(RUN.sector>=3&&!back){ const u=arcComplete(RUN.fac); if(u) out.push(u); } } // R41: the last meeting won (dead, fled or withdrawn) ends the arc
+-  else { N.clock=1; N.gloat=o.myFlagDead?'flagship':result==='retreat'?'retreat':'loss'; out.push(say(`${nemFull()} drove you off. He will remember this.`)); }
++  else { N.clock=1; N.gloat=o.myFlagDead?'flagship':result==='retreat'?'retreat':'loss'; out.push(say(`${nemFull()} drove you off. He will remember this.`));
++    const found=Array.isArray(o.found)?o.found.filter(k=>N.weak.includes(k)):[]; nemFoundMerge(found);
++    const learned=[...new Set(found)]; const w=learned[0]||nemReveal();
++    if(w) out.push(`Your analysts piece together the engagement: ${N.name} is vulnerable to ${(learned.length?learned:[w]).map(k=>NEM_WEAK[k].n).join(', ')}.`);
++    else out.push(`The engagement confirms what your analysts already held: the file on ${N.name} is complete.`); }
++  if(result==='win'){ const fw=nemFoundMerge(o.found); if(fw.length) out.push(`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`); }
+   if(beh.adaptFast){ const a=nemAdapt(); if(a){ nemSignature('fast_adapt'); out.push(`${P.He} learns from it at once: ${nemAdaptName(a,N.fac)} (${say(nemAdaptWhy(a,N.fac))}).`); } }
+   return out; }
+ // R42: when you beat him with something, his next adaptation counters it (so "it will not work twice" is true when he says it)

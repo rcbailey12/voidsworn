@@ -1,0 +1,15 @@
+{
+  "nodeSyntax": [
+    "contrib/codex/pre_opus/tools/prepare.js",
+    "contrib/codex/pre_opus/tools/finish_flow.js",
+    "contrib/codex/pre_opus/tools/check_patches.js",
+    "contrib/codex/pre_opus/tools/run_checks.js",
+    "contrib/codex/pre_opus/tools/repair_vectors.js",
+    "contrib/codex/pre_opus/tools/transforms.js"
+  ],
+  "pythonSyntax": "PASS",
+  "geometryTests": 3,
+  "blenderRuntime": "NOT RUN",
+  "windowsPowerShell": "NOT RUN",
+  "renders": "NOT RUN"
+}

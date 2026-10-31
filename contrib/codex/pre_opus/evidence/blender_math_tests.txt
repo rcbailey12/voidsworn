@@ -1,0 +1,8 @@
+test_coordinate_frames (test_qa_math.GeometryContracts.test_coordinate_frames) ... ok
+test_declared_pair_uses_ship_center (test_qa_math.GeometryContracts.test_declared_pair_uses_ship_center) ... ok
+test_tagged_weapon_direction (test_qa_math.GeometryContracts.test_tagged_weapon_direction) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK

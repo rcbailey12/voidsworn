@@ -1,0 +1,1 @@
+96 native JS pilot records, 40 exact unchanged controls; actual picker/save/respec/cancel and exception cleanup pass

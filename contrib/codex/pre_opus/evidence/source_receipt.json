@@ -1,0 +1,432 @@
+{
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "scope": "Inventory and hashes; only touched function windows were reviewed. Not a full audit of these files.",
+  "files": [
+    {
+      "path": "battle.js",
+      "sha256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "lines": 1402,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "campaign3d.js",
+      "sha256": "d7a997573f25f89c89c6d8c31ffe07b870907aae21c2f5351a38652fa3beec13",
+      "lines": 135,
+      "lastLineStart": "  const ins=new BABYLON.SceneInstrumenta"
+    },
+    {
+      "path": "campaign_meta.js",
+      "sha256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "lines": 216,
+      "lastLineStart": "ACT.nextFac=f=>{ pickedFaction=f; META.o"
+    },
+    {
+      "path": "campaign_run.js",
+      "sha256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "lines": 544,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "core.js",
+      "sha256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "lines": 349,
+      "lastLineStart": "function findNode(id){ for(const c of RU"
+    },
+    {
+      "path": "data.js",
+      "sha256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a",
+      "lines": 697,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'"
+    },
+    {
+      "path": "fx3d.js",
+      "sha256": "76033ff4b92726a9f850b098feec23c5936ff93bcef3483790ab2a2a9efcf13d",
+      "lines": 633,
+      "lastLineStart": "function fxGravPull(u,from){ const v=G.v"
+    },
+    {
+      "path": "gfx3d.js",
+      "sha256": "0feccb4b36aa263c2ae4e18c60bdf2fb11071021086404b5b8514bdaa4f44d12",
+      "lines": 489,
+      "lastLineStart": "    const t0=G.time, D=1.15*Math.max(.4,"
+    },
+    {
+      "path": "godot/campaign/README.md",
+      "sha256": "11051eb5f5cc0a0de9e4968ffd6942e44af8ed601d0194ab30a2b18f05059ed2",
+      "lines": 85,
+      "lastLineStart": "What the harness leaves out, on both sid"
+    },
+    {
+      "path": "godot/campaign/campaign.gd",
+      "sha256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "lines": 2626,
+      "lastLineStart": "\t\t\"events\": tel_log.slice(max(0, tel_log"
+    },
+    {
+      "path": "godot/campaign/data/campaign_tables.json",
+      "sha256": "e8b047b9b45363191ff5eb9d41668a7f66902ecc995ffe0f944bf4a69a701b99",
+      "lines": 1,
+      "lastLineStart": "{\"sha256\":\"a5bcd2bb62a5c253a058a7516d47c"
+    },
+    {
+      "path": "godot/campaign/test/README.md",
+      "sha256": "1f4f0dff48f47f3bf5cca6166a644b04b7566c8b419a1ae12c8ccf49923c810d",
+      "lines": 40,
+      "lastLineStart": "- **Real battles**: both sides use the s"
+    },
+    {
+      "path": "godot/campaign/test/RECORD.md",
+      "sha256": "743f79b1aa9299fa0a3a4baf44086a1997b2f82f0ae1fd6f788b71791ec97da3",
+      "lines": 113,
+      "lastLineStart": "The screens live in `godot/ui/campaign/`"
+    },
+    {
+      "path": "godot/campaign/test/arc_hook_test.gd",
+      "sha256": "5f7750b6817d15b8e4d7c07d980506298b93a86814347f7c99ee436e2b0581ea",
+      "lines": 87,
+      "lastLineStart": "\tquit(1 if fails > 0 else 0)"
+    },
+    {
+      "path": "godot/campaign/test/nem_scenarios.gd",
+      "sha256": "dcb505c67759266f4fd5e934e82062f29d903447465e732227b34e647aba60c0",
+      "lines": 44,
+      "lastLineStart": "\tquit()"
+    },
+    {
+      "path": "godot/campaign/test/node/compare_campaign.js",
+      "sha256": "16d0e9e6d6971b4ff1b12e1960bbb8532a1567316a69f1f657f52d25274852db",
+      "lines": 34,
+      "lastLineStart": "console.log('PASS: ' + ga.length + ' ste"
+    },
+    {
+      "path": "godot/campaign/test/node/coverage.js",
+      "sha256": "d6adde764086c25bbaa5260897f565a3ee8d635cd7f0af0f1f41299a497d4094",
+      "lines": 15,
+      "lastLineStart": "console.log(Object.keys(acts).sort().map"
+    },
+    {
+      "path": "godot/campaign/test/node/env.js",
+      "sha256": "cc1aed785bcb752183d504ef5f80b8a8f8ddf871968ff6bac17b44e89d09b5a3",
+      "lines": 51,
+      "lastLineStart": "module.exports = { load, ORACLE, FILES }"
+    },
+    {
+      "path": "godot/campaign/test/node/export_campaign.js",
+      "sha256": "ceb67ea5c94bb733d5b01f17caf596a911b5bce1f1b1faf1b808cf855ab3138b",
+      "lines": 48,
+      "lastLineStart": "console.log('  code fields left out (car"
+    },
+    {
+      "path": "godot/campaign/test/node/golden_campaign.js",
+      "sha256": "86562f5bd6a4c2a56f20829c5a980b38f2ef64f3f7ec41d560e27617fd5b6073",
+      "lines": 125,
+      "lastLineStart": "if (n < 0) process.exit(1);"
+    },
+    {
+      "path": "godot/campaign/test/node/nem_scenarios.js",
+      "sha256": "626d8ba043ccf196155b5e0a5ba0e16e32ce55ef61608eceee17bbf5ac410dce",
+      "lines": 46,
+      "lastLineStart": "console.log(__OUT.length + ' records');"
+    },
+    {
+      "path": "godot/campaign/test/oracle/README.md",
+      "sha256": "e16e00c398b77c3932e5079851366a74820e2bf3ec2228ef01bb51e4087fbd1b",
+      "lines": 12,
+      "lastLineStart": "**Catching up:** when stream B changes a"
+    },
+    {
+      "path": "godot/campaign/test/oracle/battle.js",
+      "sha256": "070077bd39baf06de0a34bef3d5c1c26ae6dc43943420ee443a14b6f2db4c19f",
+      "lines": 1402,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "godot/campaign/test/oracle/campaign3d.js",
+      "sha256": "7f7025ddcffbfcbc2921e7f985678f4960b44cbfff191fdd4098bab18f4710d9",
+      "lines": 135,
+      "lastLineStart": "  const ins=new BABYLON.SceneInstrumenta"
+    },
+    {
+      "path": "godot/campaign/test/oracle/campaign_meta.js",
+      "sha256": "5813c3ca6d395ccd11b8ab7539e348c0941366de480a0a3d8479d3d19ae26c4e",
+      "lines": 216,
+      "lastLineStart": "ACT.nextFac=f=>{ pickedFaction=f; META.o"
+    },
+    {
+      "path": "godot/campaign/test/oracle/campaign_run.js",
+      "sha256": "993c7d61ccdb4418cee51e470405e83d58e11fe86a6e4065a9f94c71d3f34ecb",
+      "lines": 544,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "godot/campaign/test/oracle/core.js",
+      "sha256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "lines": 349,
+      "lastLineStart": "function findNode(id){ for(const c of RU"
+    },
+    {
+      "path": "godot/campaign/test/oracle/data.js",
+      "sha256": "50e1fdc16cd184e221711f97101d35354aa4b5487fd59ab204a2fd1d467b77ca",
+      "lines": 694,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'"
+    },
+    {
+      "path": "godot/campaign/test/oracle/ui3d.js",
+      "sha256": "3a6ff4ba64be59675d94bcfb21c98742ef4f65a4e404a65905586766b1fb2356",
+      "lines": 746,
+      "lastLineStart": "addEventListener('keydown',e=>{ if(e.shi"
+    },
+    {
+      "path": "godot/campaign/test/parity_campaign.gd",
+      "sha256": "e4653ed1b7960d10f4d469da943cf9898f3c751ffa344c2f902434cf77300af6",
+      "lines": 148,
+      "lastLineStart": "\tlines.append(JSON.stringify({\"i\": 4001,"
+    },
+    {
+      "path": "godot/campaign/test/run_nem_scenarios.sh",
+      "sha256": "4f9da041cc78e08dbf06a08afa0097e95f3120dd9996e76c15367f8993027979",
+      "lines": 7,
+      "lastLineStart": "if cmp -s out/nem_js.txt out/nem_gd.txt;"
+    },
+    {
+      "path": "godot/campaign/test/run_parity_campaign.sh",
+      "sha256": "a27e4ddc03b120287d5ea5399a1e0d7957218d04b4c1c28bddf8917940e4f75e",
+      "lines": 20,
+      "lastLineStart": "if [ $F -eq 0 ]; then echo \"PASS: the Go"
+    },
+    {
+      "path": "godot/campaign/test/save_test.gd",
+      "sha256": "c12f337b0d4d5c412b5f313f9d2140b2983f2a40523d92f5ea49f395fe0fd396",
+      "lines": 25,
+      "lastLineStart": "\tquit(1 if fails > 0 else 0)"
+    },
+    {
+      "path": "godot/project.godot",
+      "sha256": "981b3f5a341507e6e3336fec8fe8cbd5c5c33340b9d0dcc4def570372344c8e6",
+      "lines": 64,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "godot/rules/API.md",
+      "sha256": "01d26917a07090519c3352d4cf48a943323df22fc2ce80a270bfc033f630cbb1",
+      "lines": 182,
+      "lastLineStart": "- **Maths:** sin, cos, atan2, exp, hypot"
+    },
+    {
+      "path": "godot/rules/battle_api.gd",
+      "sha256": "6ab92710ada9d2a549bcf57a44e4b452c36333ae0d60cc818b52d5d094fa5e60",
+      "lines": 856,
+      "lastLineStart": "\tphase = \"over\"; _queue.clear(); R.emit("
+    },
+    {
+      "path": "godot/rules/data/tables.json",
+      "sha256": "60d8d1e488c647e4de53641cabee002f06bf66b8cf9279bf590b7d242976afde",
+      "lines": 1,
+      "lastLineStart": "{\"sha256\":\"bd6677a8f04c003b1f81d09f882a5"
+    },
+    {
+      "path": "godot/rules/jsm.gd",
+      "sha256": "ed2105319bce8d3828b63f8ccb1d45c0f63c1611278687f025b807f6b4c093aa",
+      "lines": 654,
+      "lastLineStart": "\treturn s if i < 0 else s.substr(0, i) +"
+    },
+    {
+      "path": "godot/rules/rules.gd",
+      "sha256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+      "lines": 3979,
+      "lastLineStart": "\tB[\"aiActive\"] = null; u[\"activated\"] = "
+    },
+    {
+      "path": "godot/rules/test/README.md",
+      "sha256": "e60130deec45e6a3f4e9bfadc9a1a30a605b54f114691e09571a3a3bba2e4b5a",
+      "lines": 93,
+      "lastLineStart": "  - `tr` is taken by `Object.tr`."
+    },
+    {
+      "path": "godot/rules/test/api_smoke.gd",
+      "sha256": "0b1e00e226b8c556fde1d2f73605cfc33e31566cb0375dde138244c1bcbe5fbf",
+      "lines": 34,
+      "lastLineStart": "\tquit(0 if api.R.not_ported == \"\" else 3"
+    },
+    {
+      "path": "godot/rules/test/node/compare.js",
+      "sha256": "e3140440a5eb3180168485f940ac14ed680eaf150ed126366b2617f2392769e4",
+      "lines": 43,
+      "lastLineStart": "console.log('PASS');"
+    },
+    {
+      "path": "godot/rules/test/node/export_data.js",
+      "sha256": "5952dedf84e6b59b99d22b60e75841635ca6ff622c8256de6478423385388350",
+      "lines": 56,
+      "lastLineStart": "console.log('exported', Object.keys(out)"
+    },
+    {
+      "path": "godot/rules/test/node/golden.js",
+      "sha256": "b1e90d47338e083d5b01d97d491ce295376b4b25644e07f8737facdb422f1ae8",
+      "lines": 252,
+      "lastLineStart": "})().catch(e => { console.error(e); proc"
+    },
+    {
+      "path": "godot/rules/test/node/summary.js",
+      "sha256": "22390126007427788b67611aa439c2c9aa7b9cb0fd89facb6e366bd1529d74b6",
+      "lines": 16,
+      "lastLineStart": "console.log('  ' + Object.entries(seen)."
+    },
+    {
+      "path": "godot/rules/test/node/sweep_check.js",
+      "sha256": "0fa721e767486642517393170bd8f605c6844c739a5b2614b935cab52a5c18fc",
+      "lines": 15,
+      "lastLineStart": "console.log(bad ? 'FAIL' : 'PASS'); proc"
+    },
+    {
+      "path": "godot/rules/test/node/sweep_gen.js",
+      "sha256": "6acd05de6bac2006588ddd9d4c5576932f50157bd875c65e9ea69fdb47c59950",
+      "lines": 46,
+      "lastLineStart": "fs.writeFileSync(out, JSON.stringify(res"
+    },
+    {
+      "path": "godot/rules/test/node/timing.js",
+      "sha256": "1c44fd64dd48e912088d4ddf0570f286fdf190b786e2b6a08d3e05bc6d4465c0",
+      "lines": 13,
+      "lastLineStart": "console.log(`    Godot/Node: ${(G.avg / "
+    },
+    {
+      "path": "godot/rules/test/oracle/README.md",
+      "sha256": "5ec66c06170b1adc582d56fbee53a4108418b3509576af196d1046d9da2a20ee",
+      "lines": 12,
+      "lastLineStart": "**Catching up:** when stream B changes t"
+    },
+    {
+      "path": "godot/rules/test/oracle/battle.js",
+      "sha256": "9e9e14cbfb2a1aefd8ece99de4d551d389d0ef150cf78347323e2805d0547e7b",
+      "lines": 1402,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "godot/rules/test/oracle/campaign_hooks.js",
+      "sha256": "4b48c8b70ff9c5f18f9fc51ab1b76c965851979224200492887b0a2cb9a586c2",
+      "lines": 3,
+      "lastLineStart": "function nemAdaptName(a,fac){ const T=NE"
+    },
+    {
+      "path": "godot/rules/test/oracle/core.js",
+      "sha256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "lines": 349,
+      "lastLineStart": "function findNode(id){ for(const c of RU"
+    },
+    {
+      "path": "godot/rules/test/oracle/data.js",
+      "sha256": "5c26700b7a5c4ed8af991047af300374a17da4003685521d9afcc007adb395ef",
+      "lines": 695,
+      "lastLineStart": "  admiral:{n:'Aspect of the Admiral',d:'"
+    },
+    {
+      "path": "godot/rules/test/oracle/fnames.js",
+      "sha256": "46a123a554ed6737321b2a802a813a71e99b530e431baf30f4b8971f9b243a6e",
+      "lines": 6,
+      "lastLineStart": "  deathless:['Eternal Vigil','The Unbrok"
+    },
+    {
+      "path": "godot/rules/test/parity_main.gd",
+      "sha256": "12d99ebadd76ce8c1eaab4abf3a0739347c5ce24b0bab732c3402e99f94fbef6",
+      "lines": 206,
+      "lastLineStart": "\treturn 0"
+    },
+    {
+      "path": "godot/rules/test/run_parity.sh",
+      "sha256": "992e2b7d3cc7efe37f353601d9a452249c071536394f7c288f3806241743441e",
+      "lines": 18,
+      "lastLineStart": "if [ $F -eq 0 ]; then echo \"PASS: the Go"
+    },
+    {
+      "path": "godot/rules/test/run_sweep.sh",
+      "sha256": "839a2487c9dd3579e5868a2ff605749ab5a34191168ae41bc67b2426e2a55a2f",
+      "lines": 11,
+      "lastLineStart": "node node/sweep_check.js out/sweep.json "
+    },
+    {
+      "path": "godot/rules/test/scenarios.json",
+      "sha256": "b769059cb58449b86eb8c88adb40b5d026b0228fe73ac91ef2fdbd1a820386ae",
+      "lines": 1642,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "godot/rules/test/thread_test.gd",
+      "sha256": "ae40f42e2e46e5fe42abccbb77ce4d7fb9a7383825a7e5149f7a872da499f7e0",
+      "lines": 92,
+      "lastLineStart": "\tquit(0 if bad == 0 else 1)"
+    },
+    {
+      "path": "main3d.js",
+      "sha256": "e9ecab6e49afc9eada3d93ae7d9db63818658eefd43eef8573b555c9b9511dc9",
+      "lines": 20,
+      "lastLineStart": "window.addEventListener('pagehide',()=>{"
+    },
+    {
+      "path": "meshopt3d.js",
+      "sha256": "30d20cf59d84d8d2918f1dc1515ac0e81dd8db69092332510cf0adef924a3c19",
+      "lines": 195,
+      "lastLineStart": "})();"
+    },
+    {
+      "path": "perf3d.js",
+      "sha256": "97018100d94c8e13192fe51d225074ca5e59586c545221f86876aa52d5cce97e",
+      "lines": 113,
+      "lastLineStart": "{ const _b=buildBattleEnv; buildBattleEn"
+    },
+    {
+      "path": "scene3d.js",
+      "sha256": "ce2dc1da8dd7ff23aa6e34c9f002beb0c5254679b4cbf48ea9748f98e3c60833",
+      "lines": 686,
+      "lastLineStart": "  const fg=FAC_GRADE[fac]; cc.highlights"
+    },
+    {
+      "path": "sfx.js",
+      "sha256": "ff52e481e3b4cf55a02fce7badc088fb4bf3e8cc7d7a88194b02e6b81ac64dbf",
+      "lines": 364,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "sfx_data.js",
+      "sha256": "161e414652cd5453990090d8d8d5e1615e50fd3cf475d5aacdca341ac15dfb78",
+      "lines": 2,
+      "lastLineStart": "const SFX_DATA={\"boomBig\":[\"T2dnUwACAAAA"
+    },
+    {
+      "path": "ships3d.js",
+      "sha256": "eaf4a0057a2c44d129ae2983a49e1aad98a1f3c2fc54e5d37f2f72bc4573f48b",
+      "lines": 983,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "sim3d.js",
+      "sha256": "90c575628695edde115a7718a3c5bbe792e379b8061ef649b54cabed0cd26da1",
+      "lines": 659,
+      "lastLineStart": "})();"
+    },
+    {
+      "path": "tbot3.js",
+      "sha256": "48eabbcfed9ac369bc2ec42a157878d0cbac35cbfa1a76d31f3e3753125a16b4",
+      "lines": 21,
+      "lastLineStart": "}"
+    },
+    {
+      "path": "ui3d.js",
+      "sha256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "lines": 747,
+      "lastLineStart": "addEventListener('keydown',e=>{ if(e.shi"
+    },
+    {
+      "path": "vfx3d.js",
+      "sha256": "6a29d4b0ef8eecf52834a7b6e552e5d76fd49d0e0abe70f12bab1d137090b27e",
+      "lines": 219,
+      "lastLineStart": "    if(typeof MODEL_CACHE!=='undefined')"
+    },
+    {
+      "path": "wfx3d.js",
+      "sha256": "e6357d124adfeddcce7263d05be7c46fced37dd0de36a5245e69d5357275052f",
+      "lines": 471,
+      "lastLineStart": "    const dist=Math.max(5,V3.Distance(G."
+    }
+  ]
+}

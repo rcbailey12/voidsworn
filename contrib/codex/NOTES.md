@@ -1,3 +1,9 @@
+# Final pre-reset integration prepared (October 31, 2026)
+
+Read `pre_opus/README.md` first. One combined patch retains the earlier elite/shipwright/module repairs and adds tested Nemesis loss-learning/clash and boon-offer fixes. Optional Saro layers onto that integrated source. Exact native checks and 30 seeded campaign/save-reload comparisons pass; the control changes only eight assertion identities, to 16 PASS / 64 FAIL. Blender support is prepared with explicit unrun-runtime status. No root or native runtime source is installed. Older separate candidate copies remain provenance and must not overwrite this integration.
+
+---
+
 # Build/progression packet prepared (October 31, 2026)
 
 The newly authorized work is now in `build_system/README.md`: source-preserving tree catalog, targeted audit, exact-quarter JS/Godot progression model, variable-outcome calculator, separate MOD-3 guard, opt-in two-effect Saro prototype, and 19 proposed Chorus slot copy edits. Evidence and job patches are included. This is Contrib work; no runtime/main adoption occurred. Rendered browser QA and native Godot picker dialogs remain unverified/unimplemented respectively. Earlier reconciliation records follow.

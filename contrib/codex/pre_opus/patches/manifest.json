@@ -1,0 +1,246 @@
+{
+  "sourcePin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "saroPatchBase": "integration",
+  "files": [
+    {
+      "job": "nemesis",
+      "path": "campaign3d.js",
+      "baseSHA256": "d7a997573f25f89c89c6d8c31ffe07b870907aae21c2f5351a38652fa3beec13",
+      "candidateSHA256": "08ce0d96fd7221d7ed6029e90d788050d68431476d0a908e7634967d6e8293e1"
+    },
+    {
+      "job": "nemesis",
+      "path": "campaign_run.js",
+      "baseSHA256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "candidateSHA256": "332bef341704f5ff72e04cd945b519aa89b4cb543af55cb1752f45b0d00f0940"
+    },
+    {
+      "job": "nemesis",
+      "path": "godot/campaign/campaign.gd",
+      "baseSHA256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "candidateSHA256": "5050062f7928ffb43de102e85f5220a5d2f3a480d9e3a4ff915c6902dda3247e"
+    },
+    {
+      "job": "nemesis",
+      "path": "godot/campaign/test/oracle/README.md",
+      "baseSHA256": "e16e00c398b77c3932e5079851366a74820e2bf3ec2228ef01bb51e4087fbd1b",
+      "candidateSHA256": "eac8d7d7585590a6bf72c22a886de5d8246b5928f6ca5797e2889bf2ab2b33d3"
+    },
+    {
+      "job": "nemesis",
+      "path": "godot/campaign/test/oracle/campaign3d.js",
+      "baseSHA256": "7f7025ddcffbfcbc2921e7f985678f4960b44cbfff191fdd4098bab18f4710d9",
+      "candidateSHA256": "df4e6d9efa8c14d0da2f324030f28ef678c2de48bf7774506bf52d32b09db5f8"
+    },
+    {
+      "job": "nemesis",
+      "path": "godot/campaign/test/oracle/campaign_run.js",
+      "baseSHA256": "993c7d61ccdb4418cee51e470405e83d58e11fe86a6e4065a9f94c71d3f34ecb",
+      "candidateSHA256": "6d95a85748225826e242190212b408cf4a8ed5871fc2d512afb8479b7f8335e5"
+    },
+    {
+      "job": "boons",
+      "path": "core.js",
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "948ed185a0554b426ab6c66b8bf81bc987677e784fa5e98145972be66c628145"
+    },
+    {
+      "job": "boons",
+      "path": "data.js",
+      "baseSHA256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a",
+      "candidateSHA256": "4fc1009a71707ccb4319e11fab61eb5589a314fc3eeb662adead2898eb52b8f3"
+    },
+    {
+      "job": "boons",
+      "path": "godot/campaign/campaign.gd",
+      "baseSHA256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "candidateSHA256": "8a435df150444689f25067a437f3a3e17fc3e888fa0c2d71a19d09645f74eff9"
+    },
+    {
+      "job": "boons",
+      "path": "godot/campaign/data/campaign_tables.json",
+      "baseSHA256": "e8b047b9b45363191ff5eb9d41668a7f66902ecc995ffe0f944bf4a69a701b99",
+      "candidateSHA256": "9313bc234d8a3f935de7784d42b833b11560f22ae814a54d7fdd8a212b8ec0b2"
+    },
+    {
+      "job": "boons",
+      "path": "godot/campaign/test/oracle/README.md",
+      "baseSHA256": "e16e00c398b77c3932e5079851366a74820e2bf3ec2228ef01bb51e4087fbd1b",
+      "candidateSHA256": "005018290e145490a6ba804cd67928506d27045a989fe0bf8059c1c6807bd7a4"
+    },
+    {
+      "job": "boons",
+      "path": "godot/campaign/test/oracle/core.js",
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "948ed185a0554b426ab6c66b8bf81bc987677e784fa5e98145972be66c628145"
+    },
+    {
+      "job": "boons",
+      "path": "godot/campaign/test/oracle/data.js",
+      "baseSHA256": "50e1fdc16cd184e221711f97101d35354aa4b5487fd59ab204a2fd1d467b77ca",
+      "candidateSHA256": "b4cfb0077c2ab2f2659d595e39fec2f1717bb2cc72fc0a7b7ca0d52d32062e24"
+    },
+    {
+      "job": "integration",
+      "path": "campaign3d.js",
+      "baseSHA256": "d7a997573f25f89c89c6d8c31ffe07b870907aae21c2f5351a38652fa3beec13",
+      "candidateSHA256": "08ce0d96fd7221d7ed6029e90d788050d68431476d0a908e7634967d6e8293e1"
+    },
+    {
+      "job": "integration",
+      "path": "campaign_run.js",
+      "baseSHA256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "candidateSHA256": "040510a8160e5d23f75c36b50c73dcb38ac0df85dddb92f0cdfc6ffbd819453b"
+    },
+    {
+      "job": "integration",
+      "path": "core.js",
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "a9ee64d9c25ad9abe6c650c533a3b3900c3f157aa30e831f287715dfa4fdd56c"
+    },
+    {
+      "job": "integration",
+      "path": "data.js",
+      "baseSHA256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a",
+      "candidateSHA256": "4fc1009a71707ccb4319e11fab61eb5589a314fc3eeb662adead2898eb52b8f3"
+    },
+    {
+      "job": "integration",
+      "path": "godot/campaign/campaign.gd",
+      "baseSHA256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "candidateSHA256": "e6ef19c59e92831542716e9e1c752b6790f3ce71554dd524528b15417d468c1e"
+    },
+    {
+      "job": "integration",
+      "path": "godot/campaign/data/campaign_tables.json",
+      "baseSHA256": "e8b047b9b45363191ff5eb9d41668a7f66902ecc995ffe0f944bf4a69a701b99",
+      "candidateSHA256": "9313bc234d8a3f935de7784d42b833b11560f22ae814a54d7fdd8a212b8ec0b2"
+    },
+    {
+      "job": "integration",
+      "path": "godot/campaign/test/oracle/README.md",
+      "baseSHA256": "e16e00c398b77c3932e5079851366a74820e2bf3ec2228ef01bb51e4087fbd1b",
+      "candidateSHA256": "92d4db17c68ee0bf6af51daf7654cef62809f5ed9e4f37ee86643bd5ee23c522"
+    },
+    {
+      "job": "integration",
+      "path": "godot/campaign/test/oracle/campaign3d.js",
+      "baseSHA256": "7f7025ddcffbfcbc2921e7f985678f4960b44cbfff191fdd4098bab18f4710d9",
+      "candidateSHA256": "df4e6d9efa8c14d0da2f324030f28ef678c2de48bf7774506bf52d32b09db5f8"
+    },
+    {
+      "job": "integration",
+      "path": "godot/campaign/test/oracle/campaign_run.js",
+      "baseSHA256": "993c7d61ccdb4418cee51e470405e83d58e11fe86a6e4065a9f94c71d3f34ecb",
+      "candidateSHA256": "53fcc42496b85d49dfc648519d8748a09154e705b35b7a9bed7a2e25b65b4bcf"
+    },
+    {
+      "job": "integration",
+      "path": "godot/campaign/test/oracle/core.js",
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "a9ee64d9c25ad9abe6c650c533a3b3900c3f157aa30e831f287715dfa4fdd56c"
+    },
+    {
+      "job": "integration",
+      "path": "godot/campaign/test/oracle/data.js",
+      "baseSHA256": "50e1fdc16cd184e221711f97101d35354aa4b5487fd59ab204a2fd1d467b77ca",
+      "candidateSHA256": "b4cfb0077c2ab2f2659d595e39fec2f1717bb2cc72fc0a7b7ca0d52d32062e24"
+    },
+    {
+      "job": "saro",
+      "path": "battle.js",
+      "baseSHA256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "candidateSHA256": "4cf6942b98e2b8db1e88016416c4ce3945871422a06cfe9b72fed9d355642626"
+    },
+    {
+      "job": "saro",
+      "path": "campaign_meta.js",
+      "baseSHA256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "candidateSHA256": "3365db6f12835dcba8893a1b4ca47d536c1bc7d32021f1738fc89e8a6114692a"
+    },
+    {
+      "job": "saro",
+      "path": "core.js",
+      "baseSHA256": "a9ee64d9c25ad9abe6c650c533a3b3900c3f157aa30e831f287715dfa4fdd56c",
+      "candidateSHA256": "773dc9e3530fb23a9f2b34e1dfe491012a545c82efa24bde29febb3b644138b1"
+    },
+    {
+      "job": "saro",
+      "path": "godot/campaign/campaign.gd",
+      "baseSHA256": "e6ef19c59e92831542716e9e1c752b6790f3ce71554dd524528b15417d468c1e",
+      "candidateSHA256": "737ded50f048553c964260e1b711584999d4b27da5c92894131186d660c65dcf"
+    },
+    {
+      "job": "saro",
+      "path": "godot/campaign/data/lineage_pilot.json",
+      "baseSHA256": null,
+      "candidateSHA256": "985e957adfe0e33774ec27c93f6a8202faeae60185dd3efb9f1619dbfef21caf"
+    },
+    {
+      "job": "saro",
+      "path": "godot/campaign/lineage_model.gd",
+      "baseSHA256": null,
+      "candidateSHA256": "c78373f29d92d45b79b334b5ab4f2639e533f490a008484e144c21e38f50d5d9"
+    },
+    {
+      "job": "saro",
+      "path": "godot/campaign/test/oracle/README.md",
+      "baseSHA256": "92d4db17c68ee0bf6af51daf7654cef62809f5ed9e4f37ee86643bd5ee23c522",
+      "candidateSHA256": "825d4ca666abbcfd1bce42059374c6891d6a7ce972ee8f3392c38643e428a2a6"
+    },
+    {
+      "job": "saro",
+      "path": "godot/campaign/test/oracle/battle.js",
+      "baseSHA256": "070077bd39baf06de0a34bef3d5c1c26ae6dc43943420ee443a14b6f2db4c19f",
+      "candidateSHA256": "7699386fccf522b23dff79f0314e24c09524a0e177318d4ca6d5819d71ff654a"
+    },
+    {
+      "job": "saro",
+      "path": "godot/campaign/test/oracle/campaign_meta.js",
+      "baseSHA256": "5813c3ca6d395ccd11b8ab7539e348c0941366de480a0a3d8479d3d19ae26c4e",
+      "candidateSHA256": "ebedf708534ec6b68f5d956baf648255c077be99d58dabb296ed924153bd515e"
+    },
+    {
+      "job": "saro",
+      "path": "godot/campaign/test/oracle/core.js",
+      "baseSHA256": "a9ee64d9c25ad9abe6c650c533a3b3900c3f157aa30e831f287715dfa4fdd56c",
+      "candidateSHA256": "773dc9e3530fb23a9f2b34e1dfe491012a545c82efa24bde29febb3b644138b1"
+    },
+    {
+      "job": "saro",
+      "path": "godot/rules/lineage_pilot.gd",
+      "baseSHA256": null,
+      "candidateSHA256": "02f287777f5f206c68f78b6141ad4c25b27c62010b613416f566227ea22b460d"
+    },
+    {
+      "job": "saro",
+      "path": "godot/rules/rules.gd",
+      "baseSHA256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+      "candidateSHA256": "2fa8dfbf55ade923eabb96bc82c3d8df5814839ca5270f86613c9bc971a758c9"
+    },
+    {
+      "job": "saro",
+      "path": "godot/rules/test/oracle/README.md",
+      "baseSHA256": "5ec66c06170b1adc582d56fbee53a4108418b3509576af196d1046d9da2a20ee",
+      "candidateSHA256": "a53ffc5b6e43cfda0527eca704ba7ca04fa4d33ed3ad2c48871e168ae7ecf82d"
+    },
+    {
+      "job": "saro",
+      "path": "godot/rules/test/oracle/battle.js",
+      "baseSHA256": "9e9e14cbfb2a1aefd8ece99de4d551d389d0ef150cf78347323e2805d0547e7b",
+      "candidateSHA256": "5ee89dbe9659b69ff86fd33043728889fda0bf986a38401cb38d5a90c4933894"
+    },
+    {
+      "job": "saro",
+      "path": "godot/rules/test/oracle/core.js",
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "418eed2d12741f373732322d194e279315b822a93069106be6b3dadfbed638f5"
+    },
+    {
+      "job": "saro",
+      "path": "ui3d.js",
+      "baseSHA256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "candidateSHA256": "ce3608f349fbc0987c30dd9928574464272088ecd4b7d6f4117ce50385c6fe66"
+    }
+  ]
+}

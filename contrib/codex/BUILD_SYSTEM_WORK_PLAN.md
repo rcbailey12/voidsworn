@@ -54,7 +54,7 @@ Opus verifies: screenshots and asset manifest, with visual assets separated from
 
 ## Small coding jobs Codex can also own
 
-The module kind-fit guard (MOD-3) is now a separately verified browser/Godot candidate in `build_system/candidates/module_fit/`. Loss-debrief reveal/adaptation clash fixes and boon backfill corrections remain bounded follow-up jobs. Each can be delivered separately as browser/Godot candidates with fixtures and expected assertion changes. They do not require a new balance or art direction decision. Keep fitting friction, migration intent and broader economy changes outside those bug fixes unless a ruling settles them.
+The module kind-fit guard (MOD-3) is separately prepared in `build_system/candidates/module_fit/`. Loss-debrief reveal/adaptation clash and boon-offer repairs are now in `pre_opus/`, with an integrated patch retaining elite/shipwright/module fixes and an optional Saro layer. That packet's adoption note controls current status and candidate tuning. A Blender inspection/render launcher is prepared but unrun in Blender/Windows. Keep fitting friction, migration intent and broader economy changes outside these fixes unless a ruling settles them.
 
 ## Delivery format for every packet
 

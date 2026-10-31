@@ -1,0 +1,27 @@
+{
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "checks": [
+    {
+      "jobs": [
+        "nemesis"
+      ],
+      "files": 6,
+      "status": "PASS"
+    },
+    {
+      "jobs": [
+        "boons"
+      ],
+      "files": 7,
+      "status": "PASS"
+    },
+    {
+      "jobs": [
+        "integration",
+        "saro"
+      ],
+      "files": 23,
+      "status": "PASS"
+    }
+  ]
+}

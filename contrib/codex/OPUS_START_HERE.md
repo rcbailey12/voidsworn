@@ -4,6 +4,10 @@ Reconciled against main `355a2ac7`, October 31, 2026. Start with `../muse/OPUS_H
 
 Muse's price correction, A3 high-n confirmation, canonical corrections and red-team closure are complete. Canonical tool repairs are now on draft PR #1 at `contrib/muse/tools/`, with 24 adversarial checks in `tools/verification_repairs_test.js`. Retired tool/index overlays were removed. Do not restore the old driver copy or old entrypoint copies.
 
+## Final pre-reset integration packet
+
+Start with [pre_opus/README.md](pre_opus/README.md). It combines elite, shipwright and module-fit candidates with new Nemesis learning/clash and boon-offer repairs in one patch. Exactly eight assertion identities change, for 16 PASS / 64 FAIL. The optional Saro patch layers on top. Native repair/actual-battle-finish fixtures, 30 seeded campaign/save-reload comparisons and an unverified Blender diagnostic launcher are included. Earlier separate candidates below remain provenance, not additional patches to stack onto this integration.
+
 ## New executable build packet
 
 Read [build_system/README.md](build_system/README.md) before implementing module fitting or lineage. The separate module-fit candidate changes exactly MOD-3 (9 PASS / 71 FAIL). The packet also preserves all 360 tree texts, validates 3,840 complete builds, calculates progression from actual reward statistics, and prepares an opt-in two-effect Saro prototype with browser/Godot logic and native save/reward checks. Native Godot picker dialogs and 358 other effects remain unimplemented. Proposed Chorus copy edits are separate.

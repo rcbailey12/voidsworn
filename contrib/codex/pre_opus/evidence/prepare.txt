@@ -1,0 +1,1 @@
+{"control":"/tmp/voidsworn-pre-opus-TKYOmG/control","nemesis":"/tmp/voidsworn-pre-opus-TKYOmG/nemesis","boons":"/tmp/voidsworn-pre-opus-TKYOmG/boons","integration":"/tmp/voidsworn-pre-opus-TKYOmG/integration","saro":"/tmp/voidsworn-pre-opus-TKYOmG/saro"}
