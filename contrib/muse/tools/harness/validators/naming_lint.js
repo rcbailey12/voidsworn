@@ -60,10 +60,12 @@ if (allowPath && fs.existsSync(allowPath)) allow = JSON.parse(fs.readFileSync(al
 
 let targets = args;
 if (!targets.length) {
-  const root = path.join(__dirname, '..', '..', 'voidsworn-fresh');
+  const root = path.resolve(__dirname, '..', '..', '..', '..', '..');
   targets = ['NEXT.md', 'PROGRESS.md', 'BACKLOG.md', 'HANDOFF.md', 'CLAUDE.md', 'AGENTS.md', 'docs']
     .map(t => path.join(root, t)).filter(t => fs.existsSync(t));
 }
+
+if (!targets.length) { console.error('naming_lint: no existing targets; refusing an empty scan'); process.exit(2); }
 
 function filesOf(t) {
   const st = fs.statSync(t);
@@ -79,9 +81,14 @@ function filesOf(t) {
 }
 const exempt = (file, patName) => Object.entries(allow).some(([sub, pats]) => file.includes(sub) && pats.includes(patName));
 
+let files;
+try { files = [...new Set(targets.flatMap(filesOf))]; }
+catch (e) { console.error('naming_lint: cannot read target: ' + e.message); process.exit(2); }
+if (!files.length) { console.error('naming_lint: no documents found; refusing an empty scan'); process.exit(2); }
+console.log('naming_lint: scanned ' + files.length + ' documents');
 let hard = 0, cand = 0, hist = 0;
-for (const t of targets) {
-  for (const f of filesOf(t)) {
+{
+  for (const f of files) {
     const lines = fs.readFileSync(f, 'utf8').split('\n');
     lines.forEach((line, i) => {
       const where = f + ':' + (i + 1);

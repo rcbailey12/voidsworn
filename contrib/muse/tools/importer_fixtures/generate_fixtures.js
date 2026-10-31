@@ -20,10 +20,11 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { loadGame } = require(path.join(__dirname, '..', '..', 'voidsworn-harness', 'game_loader.js'));
+const { loadGame } = require(path.join(__dirname, '..', 'harness', 'game_loader.js'));
 
-const REPO = path.join(__dirname, '..', '..', 'voidsworn-fresh');
-const OUT = __dirname;
+const REPO = path.resolve(process.argv[2] || path.resolve(__dirname, '..', '..', '..', '..'));
+const OUT = path.resolve(process.argv[3] || __dirname);
+fs.mkdirSync(OUT, {recursive:true});
 const T0 = 1793200000000; // fixed stamp so fixtures stay reproducible
 
 const deep = x => (x == null ? x : JSON.parse(JSON.stringify(x)));

@@ -24,7 +24,7 @@
 const { loadGame } = require('./game_loader');
 const path = require('path');
 
-const repoDir = process.argv[2] || path.join(__dirname, '..', 'voidsworn-fresh');
+const repoDir = process.argv[2] || require('path').resolve(__dirname, '..', '..', '..', '..');
 const ROUNDS = parseInt(process.argv[3] || '300', 10);
 const SEED = parseInt(process.argv[4] || '4242', 10);
 const G = loadGame(repoDir);
@@ -70,7 +70,7 @@ const MUTATORS = [
   (s, R) => { const o = JSON.parse(s); if (o.run && o.run.fleet && o.run.fleet[0]) { o.run.fleet[0].cap = { perks: ['zzz_unknown', 9], xp: 'x' }; o.run.fleet[0].mods = ['zzz_unknown']; o.run.fleet[0].hp = -3; } return JSON.stringify(o); },
   (s, R) => { const o = JSON.parse(s); if (o.run) { o.run.reward = { stage: 'bogus', prizes: [{ tpl: 'zzz_unknown' }], relics: ['zzz_unknown'], wrecks: [{ tpl: 'zzz_unknown', yield: { mod: 'zzz_unknown' } }] }; } return JSON.stringify(o); },
   // Whole-envelope garbage.
-  () => ['', 'null', '[]', '{}', '"x"', '123', '{"meta":null,"run":null}'][Math.floor(Math.random() * 7)],
+  (s, R) => ['', 'null', '[]', '{}', '"x"', '123', '{"meta":null,"run":null}'][Math.floor(R() * 7)],
 ];
 
 function checkLoaded(round) {
@@ -100,10 +100,10 @@ for (let round = 0; round < ROUNDS; round++) {
   try { G.Persist.loadLocal(); } catch (e) { fail(round, 'loadLocal threw: ' + e.message); continue; }
   checkLoaded(round);
 }
-// Fixed garbage envelopes (unseeded list, still deterministic).
+// Enumerate every fixed garbage envelope once, without replacement.
 for (let i = 0; i < 7; i++) {
   G.store.clear();
-  G.store.set(G.STORE_KEY, MUTATORS[MUTATORS.length - 1]());
+  G.store.set(G.STORE_KEY, ['', 'null', '[]', '{}', '"x"', '123', '{"meta":null,"run":null}'][i]);
   try { G.Persist.loadLocal(); } catch (e) { fail('garbage ' + i, 'loadLocal threw: ' + e.message); continue; }
   checkLoaded('garbage ' + i);
 }

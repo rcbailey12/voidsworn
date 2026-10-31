@@ -46,3 +46,7 @@ The 80 percent loss rate is not the problem. The problem is that the game never 
 ## Not checked by the chair
 
 All win-rate figures are bot-piloted; no prong had human play, and the packs themselves flag that an informed human likely sits above the bot at full strength and below it when battered. The Chorus carrier and capture items rest on the economy synthesis's data reads as cited by the legs. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+The Qwen prong for this seat remains OPEN. The Oct 31, 2026 attempt hit the Qwen3.8-Max daily limit: the composer Send control was disabled and nothing was submitted, so no leg exists to fold in. On Oct 31, 2026 Ryan directed closing the audit out with the legs in hand. This seat therefore stands on three prongs (blind Rey, DeepSeek, Argon), and its verdict is unchanged: the loss rate is not the problem; the untaught contract and the one-direction Nemesis intel loop are. If a Qwen player leg is ever run, it will be addended here under the standing rule.

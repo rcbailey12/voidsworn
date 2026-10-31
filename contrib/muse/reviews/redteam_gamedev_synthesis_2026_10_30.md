@@ -1,10 +1,12 @@
 # Red team audit synthesis: game dev seat (Oct 30, 2026)
 
-Chair synthesis of the game dev persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802; code checks against the local clone at the pin state.
+Chair synthesis of the game dev persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: NOT RUN (blocked by the Access Verification slider on both attempts; audit closed with the legs in hand by Ryan's direction, Oct 31, 2026; see the addendum at the end). Pin: main head b3a3b802; code checks against the local clone at the pin state.
 
 ## Seat verdict
 
 NOT COMPOSED (Rey), do not cut over (DeepSeek), SYSTEMS FRACTURED AT TURN AND TABLE BOUNDARIES (Argon). Three independent seats converge: the parts are well made, the composition layer is missing. Every system folds into one uncapped additive pool, fitting carries no commitment, and the two wave 5 deliverables that were cleared to land (the Eclipse battleship entry and patch pack section 1) are both mechanically broken against the live code. The game dev seat's claims register mostly survives; its two newest clearances do not.
+
+CORRECTION (Oct 31, 2026): finding 6 and action item 1 rest on the claim that the Chorus has no feed mechanic. That claim is refuted: chorusFeed and chorusBite are implemented (battle.js:502-513). The surviving substance is narrower: the Chorus has no max-HP growth system and the feed is invisible in its presentation, while every other faction definer is both implemented and visible. Recommendations to build a feed system are withdrawn; growth and visibility remain open design choices. See canonical_corrections_2026_10_31.md section 1.
 
 ## Claims register: disposition
 
@@ -32,7 +34,7 @@ NOT COMPOSED (Rey), do not cut over (DeepSeek), SYSTEMS FRACTURED AT TURN AND TA
 3. **Turn start is a fifteen-subsystem pipeline with silent failure built in (Rey finding 4).** startSideTurn (battle.js:365 onward) sequences event ticks, objective ticks, focus refresh, boss ticks, escort breaks, Nemesis checks, wing stances, resolve gain, reassembly, shield and hull regen, status ticks, terrain, and the gravity well. On the enemy entry, aiRefreshFocus and bossCmdTick run inside empty try/catch blocks (battle.js:368): a throw there fails forever with no signal. The real ruleset is the order of operations in this one function, and nobody can state it in full.
 4. **Defect knowledge is compounding faster than fixes land (Rey finding 8, DeepSeek finding 9).** NOMIDFIRE, the flag gating the brace bug path, is read once at battle.js:1385 (plus two Godot oracle mirrors) and set nowhere. The findings-to-tests ledger stands at 8 PASS and 40 FAIL at the pin, every failure a correct regression test against an unfixed defect. Unless each patch spec is carried into the Godot port as behavior with its acceptance check, the port inherits all 40 knowingly.
 5. **Dead and contradictory records will be ported as truth (Rey finding 9, DeepSeek finding 9, Argon finding 5).** TORP_RING is [0,5,15] at battle.js:536 while the torpedo comment promises 10 and 25 at range 6 and data.js still lists torp and htorp at r:6 against startorp at r:5. ARC_NAME defines a Rear arc (data.js:29) under the standing rule that guns never face backward; no mount uses it. startorp carries evMult:2 that the Ithar trait overwrites in play. Each item is trivial alone; as a class they are the port's requirements documents, because parity is enforced against mirrors of these exact files. Cheapest deletion window is before the oracle freezes them.
-6. **The Chorus has a stat block where the other factions have systems (Rey finding 10).** Eclipse reanimation is a real state machine in the turn code; the Ithar shield charge has its own turn-start step. The Chorus, whose fiction is grown fleets that feed, has regen numbers and a bomber-reskin signature wing, and no feed or grow mechanic anywhere in the evidence. Combined with finding 6 of the claims register (enemy generation cannot express faction design), it is the one faction a player cannot describe after a run.
+6. **FS-5 closed as refuted (Oct 31, 2026).** The Chorus has kill-feed and bite healing (battle.js:502-513). A max-HP growth system and presentation of the existing feed remain open design choices. Do not commission another feed implementation from the original Rey claim.
 
 ## Ranked actions: Opus lane (technical)
 
@@ -47,9 +49,13 @@ NOT COMPOSED (Rey), do not cut over (DeepSeek), SYSTEMS FRACTURED AT TURN AND TA
 
 ## Ranked actions: Ryan lane (human direction)
 
-1. **The Chorus needs a system or an admitted exception.** Story: every other faction has a mechanic you can name (reanimation, shield charge, synchronized fire); the Chorus has regen numbers and a reskinned wing. Stakes: it is the swarm faction, the one new players are most likely to try first for the fantasy, and right now the fantasy is not in the game. Cost: a feed or grow mechanic is real design and code work in the Godot build; the alternative is accepting the Chorus as a stat faction and letting its fiction carry what its mechanics do not. Full treatment in the final synthesis.
+1. **Chorus: decide growth and surface the existing feed.** The missing-feed premise is refuted. Any new work is a separate max-HP growth or presentation choice, not a repair of an absent feed system. See final synthesis decision 5 and canonical_corrections_2026_10_31.md.
 2. **Veteran AI gating works against the learning loop.** Story: fresh profiles start on Standard AI with focus fire, the death-cliff check, and veteran bracing off (Argon finding 10), while the game's fiction says each generation learns from the last. Stakes: run 1 is near-impossible by your ruling, so new players lose their first run to stat and economy walls while fighting an AI that does not use the tactics they are supposed to learn to counter; when Veteran unlocks, the rules change under them. Cost: ungating or softening the gate is a small change; the question is whether the lobotomized first opponent is a deliberate on-ramp you want to keep.
 
 ## Not checked by the chair
 
 Argon findings 3, 4, and 6 are carried as leg-reported with quoted code; the chair verified the battleship mechanics, the flak kind system, and the capital inversion directly, and did not re-read startSideTurn line by line. aiVolley, evalOffense, and evalThreat internals were not sliced in any gamedev pack. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+The Qwen prong for this seat was never run, and the audit closes without it. On Oct 30, 2026 the attempt was blocked before any send: the Access Verification slider defeated the automated attempts, the sign-in session was lost, and the saved-login consent timed out unanswered. On Oct 31, 2026, after the daily cap reset, the retry reached further: Gate 1 passed (selector verified Qwen3.8-Max before send), both files were attached to the message, and the Access Verification slider then defeated more than 29 automated solve attempts across two challenge passes. No message was ever sent, no model fallback was used, and no output exists to file. On Oct 31, 2026 Ryan directed closing the red team audit with the legs in hand. This seat therefore stands on three prongs (blind Rey, DeepSeek, Argon), and its verdict is unchanged.

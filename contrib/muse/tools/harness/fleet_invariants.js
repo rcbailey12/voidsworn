@@ -30,7 +30,7 @@
 'use strict';
 const { loadGame } = require('./game_loader');
 
-const repoDir = process.argv[2] || require('path').join(__dirname, '..', 'voidsworn-fresh');
+const repoDir = process.argv[2] || require('path').resolve(__dirname, '..', '..', '..', '..');
 const SEEDS = parseInt(process.argv[3] || '12', 10);
 const G = loadGame(repoDir);
 const { HULLS, FACTIONS, RAMP } = G;

@@ -1,0 +1,17 @@
+{
+  "checked": [
+    "contrib/muse/tools/cutover_gate/gate.js",
+    "contrib/muse/tools/findings_tests/campaign_loader.js",
+    "contrib/muse/tools/findings_tests/findings_tests.js",
+    "contrib/muse/tools/harness/fleet_invariants.js",
+    "contrib/muse/tools/harness/fleet_scaling.js",
+    "contrib/muse/tools/harness/save_fuzz.js",
+    "contrib/muse/tools/harness/softlock_sweep.js",
+    "contrib/muse/tools/harness/validators/naming_lint.js",
+    "contrib/muse/tools/harness/validators/table_xref.js",
+    "contrib/muse/tools/importer_fixtures/generate_fixtures.js",
+    "contrib/muse/tools/montecarlo/boongrid.js",
+    "contrib/muse/tools/montecarlo/shard.js"
+  ],
+  "all_passed": true
+}

@@ -1,5 +1,7 @@
 # Red team audit: Game dev seat (Rey leg, blind)
 
+CORRECTION (Oct 31, 2026): this leg's Chorus finding (no feed or grow mechanic) is refuted in its feed half: chorusFeed and chorusBite are implemented (battle.js:502-513). The growth half stands (no max-HP growth system). See canonical_corrections_2026_10_31.md section 1.
+
 Seat: systems designer and implementer. Target: Voidsworn at the audit pin. Prior verdicts are treated as claims; where this leg confirms one, the confirming evidence is named. Code checks against the local clone are cited by file and line.
 
 ## Findings

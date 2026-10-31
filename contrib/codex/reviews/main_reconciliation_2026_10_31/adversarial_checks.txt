@@ -1,0 +1,25 @@
+PASS missing baseline stays NOT RUN
+PASS removed failing test is REGRESSION
+PASS observed failing-to-passing test is IMPROVEMENT
+PASS lost passing test is REGRESSION
+PASS unchanged failure never becomes PASS
+PASS missing check outranks improvement
+PASS shrinking drift coverage is REGRESSION
+PASS complete findings accepted
+PASS duplicate findings identities rejected
+PASS truncated findings rejected
+PASS findings abnormal exit rejected
+PASS empty findings rejected
+PASS complete parity accepted
+PASS truncated parity rejected
+PASS duplicate parity rejected
+PASS parity exit mismatch rejected
+PASS xref abnormal exit rejected
+PASS xref truncated failure rejected
+PASS lint without coverage rejected
+PASS importer duplicate identities rejected
+PASS fixtures abnormal exit rejected
+PASS real lint rejects empty directory
+PASS real lint rejects missing target
+PASS drift rejects missing source before child execution
+24 verification repair checks passed

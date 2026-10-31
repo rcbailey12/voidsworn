@@ -40,7 +40,7 @@
 const { loadGame } = require('../game_loader');
 const path = require('path');
 
-const repoDir = process.argv[2] || path.join(__dirname, '..', '..', 'voidsworn-fresh');
+const repoDir = process.argv[2] || path.resolve(__dirname, '..', '..', '..', '..', '..');
 const G = loadGame(repoDir);
 const { HULLS, FACTIONS, ADMIRALS, RELICS, MODULES, BOONS, PATRONS, W, HULL_VARIANTS, FAC_PRICE, RELIC_NAMES, BOON_NEED, ARC_NAME, FAC_GATES } = G;
 

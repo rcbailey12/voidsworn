@@ -1,6 +1,6 @@
 # Red team audit synthesis: software engineer seat (Oct 30, 2026)
 
-Chair synthesis of the engineer persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802. This seat required the most chair adjudication of the nine: two prongs worked from pack excerpts containing the Oct 26 migration synthesis, the Rey leg read the clone directly, and the chair re-read the contested files. Where a direct read at the pin conflicts with a pack-based read, the direct read governs and this synthesis says so.
+Chair synthesis of the engineer persona legs. Prongs in hand: blind Rey, DeepSeek, Argon, Qwen (4 of 4). Qwen prong: FOLDED IN Oct 31, 2026 (Qwen leg filed Oct 31, 2026; four prongs complete for this seat; see the Qwen fold-in addendum at the end of this synthesis). Pin: main head b3a3b802. This seat required the most chair adjudication of the nine: two prongs worked from pack excerpts containing the Oct 26 migration synthesis, the Rey leg read the clone directly, and the chair re-read the contested files. Where a direct read at the pin conflicts with a pack-based read, the direct read governs and this synthesis says so.
 
 ## Seat verdict
 
@@ -48,3 +48,17 @@ The port's engineering is better than its paperwork, and the program steers by t
 ## Not checked by the chair
 
 No prong ran the parity suites at the pin; all code claims are reads, not executions, and the chair's verifications above are reads as well. The export presets and built .pck contents were not inspected. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+Qwen leg: redteam_engineer_2026_10_30.md, filed Oct 31, 2026. This seat is now at four prongs.
+
+Qwen verdict, in its own words: SOUND WITH RISKS trending toward NOT READY FOR CUTOVER, with the importer as the top attack: "Fixtures without an importer is a test plan without a product."
+
+Agreement: finding 2 (the importer BLOCKER is not resolved by fixtures) matches this synthesis and the QA seat. Finding 8 (fx_stub and NOT PORTED paths degrade silently in live play) matches ranked action 2. Finding 6 (a clean checkout cannot build the shippable game) matches ranked action 3. Finding 7 (the third silent weapon deletion as a defect class with no guard) and finding 10 (the telemetry spec unimplemented in the Godot tree) also converge.
+
+Refinements and disagreements: findings 1, 4, and 9 revive pack claims this synthesis already adjudicated at the pin: the non-atomic save write, the shared static scratch buffer and threading exposure, and the silenced trap warnings are pre-fix states in the Oct 26 pack excerpts, and the chair's direct reads found them repaired. Under this synthesis's own rule, the direct read governs over the pack-based read, so those three findings do not overturn the seat verdict. Finding 5 (the CUT and SOLID hash coverage divergence between the pack and rules_test_README.md:34) is a distinct document conflict from the oracle-copy divergence in claim 1, and it names the settling artifact neither side fetched: the golden writer code (golden.js, parity_main.gd). Finding 3 attacks the framing of the failing regression tests rather than their facts.
+
+New items: none that displace the synthesis. The leg's value is convergence on the importer, the silent fallbacks, and build reproducibility, plus the finding 5 pointer above.
+
+Chair screening notes: the leg argues partly from the pack's 48-test figures (8 pass / 40 fail), superseded Oct 31, 2026 by the 80-test suite (8 pass / 72 fail) per canonical_corrections_2026_10_31.md. That is pack staleness, not a leg error, and its architectural argument is unaffected. The retained engineer chat had been deleted on Qwen's side; the leg ran in a fresh chat under both gates.

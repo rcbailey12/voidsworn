@@ -1,6 +1,6 @@
 # Red team audit synthesis: producer seat (Oct 30, 2026)
 
-Chair synthesis of the producer persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802.
+Chair synthesis of the producer persona legs. Prongs in hand: blind Rey, DeepSeek, Argon, Qwen (4 of 4). Qwen prong: FOLDED IN Oct 31, 2026 (Qwen leg filed Oct 31, 2026; four prongs complete for this seat; see the Qwen fold-in addendum at the end of this synthesis). Pin: main head b3a3b802.
 
 ## Seat verdict
 
@@ -48,3 +48,15 @@ FREEZE THE AUDITS AND SHIP THE RUN. All three prongs converge, from different di
 ## Not checked by the chair
 
 No prong had hours or cost records; the audit-to-build ratio is measured in files and commits, not effort. The Godot playable battle's real runtime state was in no pack and no leg ran it. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+Qwen leg: redteam_producer_2026_10_30.md, filed Oct 31, 2026. This seat is now at four prongs.
+
+Qwen verdict, in its own words: "The team is producing excellent audit documents faster than it can build the game they describe." That is the synthesis verdict (FREEZE THE AUDITS AND SHIP THE RUN) reached from the production seat, and the fold-in confirms it.
+
+Agreement: Qwen finding 2 (the review apparatus outproduces the build), finding 1 (the regression-tested defects have no scheduled fix), finding 4 (the importer is a BLOCKER with fixtures and no code), finding 3 (the critical path is serial and gated on an unmeasured PERFCAP budget), and finding 5 (the content pipeline runs ahead of the build that consumes it) all land on the synthesis's own claims.
+
+Refinements: finding 7 prices the Forward+ ruling as resting on a single shipped-game data point, so the effects pass carries a mid-pass re-scope risk the synthesis did not state. Finding 6 adds a parity dilemma for the silent weapon deletions: replicate the defect for parity, or fix it and eat false divergence flags. Finding 9 attacks the three review rounds spent on the 3D brief itself as schedule cost.
+
+Chair screening notes: the leg converges with the synthesis on every load-bearing point (apparatus ahead of the Godot build, regression-tested defects unscheduled, importer BLOCKER, and no artifact converting the syntheses into a sequenced, dated build plan). No contradiction with this synthesis was found.

@@ -28,7 +28,7 @@
 const { loadGame } = require('./game_loader');
 const path = require('path');
 
-const repoDir = process.argv[2] || path.join(__dirname, '..', 'voidsworn-fresh');
+const repoDir = process.argv[2] || require('path').resolve(__dirname, '..', '..', '..', '..');
 const SECTOR_SEEDS = parseInt(process.argv[3] || '1500', 10);
 const BATTLE_SEEDS = parseInt(process.argv[4] || '4', 10);
 const G = loadGame(repoDir);

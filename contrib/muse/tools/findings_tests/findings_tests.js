@@ -24,7 +24,7 @@ const LOADER_CANDIDATES = [
 const loaderPath = LOADER_CANDIDATES.find(p => fs0.existsSync(p));
 if (!loaderPath) throw new Error('game_loader.js not found in any candidate path');
 const { loadGame } = require(loaderPath);
-const repoDir = process.argv[2] || path.join(__dirname, '..', '..', 'voidsworn-fresh');
+const repoDir = process.argv[2] || path.resolve(__dirname, '../../../..');
 const G = loadGame(repoDir);
 const runIn = (code) => vm.runInContext(code, G._sandbox);
 
@@ -1147,6 +1147,6 @@ test('UI-8 auto-facing weighs shield facings, and arming recomputes reach', () =
   }
   console.log('---');
   console.log(checks + ' tests, ' + (checks - failures) + ' pass, ' + failures + ' fail');
-  console.log(failures ? 'Failing tests pin defects that are still unfixed at this pin; see the ledger README.' : 'All pinned findings are fixed at this pin.');
+  console.log(failures ? 'Failing assertions require their ledger dispositions; see the ledger README.' : 'All current assertions pass; review ledger scope before release.');
   process.exit(failures ? 1 : 0);
 })();

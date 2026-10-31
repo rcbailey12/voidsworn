@@ -1,3 +1,5 @@
+> Historical review. The current reconciliation is [main_reconciliation_2026_10_31.md](main_reconciliation_2026_10_31.md), pinned to 355a2ac7. Tool/index overlays referenced below have been retired after canonical PR repairs; gameplay candidates remain proposed. Muse's corrections, grids, A3 confirmation and audit closure supersede earlier pending-work notes.
+
 > Historical initial review at cc2d35fd. For current main 17268efa and the uploaded work, start with [the closing addendum](post_upload_closing_2026_10_31.md). In particular, the missing relics synthesis and 48-test coverage descriptions below are superseded.
 
 # Contribution review before the Opus reset

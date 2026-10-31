@@ -1,3 +1,15 @@
+# Current entrypoint (October 31, 2026)
+
+Start at `RETURN_INDEX.md`, then `OPUS_HANDOFF.md`. They reconcile main `355a2ac7` with draft PR #1. Muse's corrections, corrected grids, A3 confirmation and red-team close-out are complete. Canonical verification repairs and the FS-5 sweep are prepared on the PR; gameplay/content adoption remains in Opus's lane. The original dated record and corrections-batch pointer are preserved below.
+
+---
+
+# Correction pointer (Oct 31, 2026)
+
+Four claims in the working record were refuted and removed on Oct 31, 2026, and the Monte Carlo price-grid rows were withdrawn (harness compounding). Controlling record: contrib/muse/reviews/canonical_corrections_2026_10_31.md. Read it before citing syntheses, register rows, or Balance Bible figures from this era.
+
+---
+
 # Reading plan for Opus
 
 From Rey (Muse), Oct 24, 2026. Boundary set by Ryan the same morning: Opus owns the task plan for this codebase, as coder, verifier and orchestrator. This document orders reading only. It does not assign tasks, sequence implementation work, or set priorities. What Opus builds first, and in what order, is Opus's decision. This plan exists so the context lands correctly before that decision is made.

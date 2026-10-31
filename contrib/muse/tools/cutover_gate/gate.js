@@ -87,23 +87,34 @@ function repoHead(repo) {
 // watchSet: ids worth reporting when they change (warnings, candidates),
 //           but which do not drive the verdict on their own.
 
+function overallVerdict(verdicts) {
+  if (verdicts.includes('REGRESSION')) return 'REGRESSION';
+  if (verdicts.includes('NOT RUN')) return 'INCOMPLETE (a component did not run)';
+  if (verdicts.includes('IMPROVEMENT')) return 'IMPROVEMENT (review, then refresh the baseline)';
+  if (verdicts.includes('KNOWN-FAIL')) return 'NO CHANGE (known state)';
+  return 'PASS';
+}
+
 function classify(cur, base, cleanWhenUnchanged) {
   if (!base) {
     return {
-      verdict: cur.badSet.length ? 'KNOWN-FAIL' : 'PASS',
-      deltas: { note: 'no baseline recorded for this component; verdict is against an empty baseline. Run --update-baseline to record the current state.' },
+      verdict: 'NOT RUN',
+      deltas: { note: 'no baseline recorded for this component; explicit baseline review required.' },
     };
   }
+  const reducedCoverage = ['vendoredPairs', 'pinClaimsChecked', 'constCompared'].filter(k =>
+    base.signature && Number.isFinite(base.signature[k]) && (!cur.signature || !Number.isFinite(cur.signature[k]) || cur.signature[k] < base.signature[k]));
+  if (reducedCoverage.length) return { verdict: 'REGRESSION', deltas: { note: 'comparison coverage shrank: ' + reducedCoverage.join(', ') } };
   const newBad = diff(cur.badSet, base.badSet || []);
-  const fixedBad = diff(base.badSet || [], cur.badSet);
-  const lostGood = diff(base.goodSet || [], (cur.goodSet || []).concat(cur.badSet));
+  const fixedBad = (base.badSet || []).filter(id => (cur.goodSet || []).includes(id));
+  const lostGood = diff((base.goodSet || []).concat(base.badSet || []), (cur.goodSet || []).concat(cur.badSet));
   const newGood = diff(cur.goodSet || [], (base.goodSet || []).concat(base.badSet || []));
   const watchNew = diff(cur.watchSet || [], base.watchSet || []);
   const watchGone = diff(base.watchSet || [], cur.watchSet || []);
   const deltas = { newFailures: newBad, fixed: fixedBad, lostPassing: lostGood, newPassing: newGood, watchNew, watchGone };
   if (newBad.length || lostGood.length) return { verdict: 'REGRESSION', deltas };
   if (fixedBad.length || newGood.length) return { verdict: 'IMPROVEMENT', deltas };
-  return { verdict: cleanWhenUnchanged ? 'PASS' : 'KNOWN-FAIL', deltas };
+  return { verdict: cleanWhenUnchanged && !cur.badSet.length ? 'PASS' : 'KNOWN-FAIL', deltas };
 }
 
 // ------------------------------------------------------------ the components
@@ -125,8 +136,9 @@ function compFindings(ctx) {
     m = line.match(/^(\d+) tests, (\d+) pass, (\d+) fail/);
     if (m) counts = { total: +m[1], pass: +m[2], fail: +m[3] };
   }
-  if (!counts) return { notRun: 'suite produced no summary line (exit ' + r.status + ')' };
-  if (passIds.length !== counts.pass || failIds.length !== counts.fail) {
+  if (!counts || ![0, 1].includes(r.status)) return { notRun: 'suite did not complete normally (exit ' + r.status + ')' };
+  if (counts.total !== counts.pass + counts.fail || r.status !== (counts.fail ? 1 : 0)) return { notRun: 'suite exit/count mismatch' };
+  if (counts.total === 0 || new Set(passIds.concat(failIds)).size !== counts.total || passIds.length !== counts.pass || failIds.length !== counts.fail) {
     return { notRun: 'per-test lines did not parse to the summary counts (' + passIds.length + '/' + failIds.length +
       ' ids vs ' + counts.pass + '/' + counts.fail + ' in the summary); refusing to guess a signature' };
   }
@@ -134,13 +146,21 @@ function compFindings(ctx) {
     signature: { total: counts.total, pass: counts.pass, fail: counts.fail },
     badSet: uniqSorted(failIds), goodSet: uniqSorted(passIds), watchSet: [],
     cleanWhenUnchanged: false,
-    summary: counts.total + ' tests, ' + counts.pass + ' pass, ' + counts.fail + ' fail (a fail is a pinned, unfixed defect)',
+    summary: counts.total + ' tests, ' + counts.pass + ' pass, ' + counts.fail + ' fail (a fail is an assertion requiring its ledger disposition)',
   };
 }
 
 function compDrift(ctx) {
   const script = ctx.find('oracle_drift', 'oracle_drift_guard.js');
   if (!script) return { notRun: 'oracle_drift_guard.js not found under any tools root' };
+  const required = ['battle.js', 'data.js', 'core.js', 'ships3d.js', 'scene3d.js', 'gfx3d.js',
+    'godot/render/hull_table.gd', 'godot/world/world.gd', 'godot/ui/campaign/map3d_system.gd', 'godot/fx/faction_looks.json'];
+  for (const dir of ['godot/rules/test/oracle', 'godot/campaign/test/oracle']) {
+    for (const file of ['battle.js', 'data.js', 'core.js']) required.push(dir + '/' + file);
+    if (!fs.existsSync(path.join(ctx.repo, dir)) || !fs.readdirSync(path.join(ctx.repo, dir)).some(f => /readme/i.test(f))) return { notRun: 'missing oracle README: ' + dir };
+  }
+  const missing = required.filter(f => !fs.existsSync(path.join(ctx.repo, f)));
+  if (missing.length) return { notRun: 'missing drift inputs: ' + missing.join(', ') };
   const r = run(process.execPath, [script, ctx.repo, '--json'], { timeout: 180000 });
   if (r.timedOut) return { notRun: 'timed out after 180s' };
   if (r.spawnError) return { notRun: 'spawn failed: ' + r.spawnError };
@@ -165,6 +185,7 @@ function compDrift(ctx) {
     for (const d of c.differed) bad.push('const:' + c.name + ':' + d.key);
   }
   const sm = j.summary;
+  if (!sm || !Number.isInteger(sm.vendoredPairs) || sm.vendoredPairs !== 9 || sm.pinClaimsChecked < 1 || sm.constCompared < 1) return { notRun: 'incomplete drift coverage' };
   return {
     signature: {
       vendoredPairs: sm.vendoredPairs, vendoredDiffering: sm.vendoredDiffering,
@@ -195,6 +216,7 @@ function compXref(ctx) {
     if (line.startsWith('FAIL ')) fails.push(sanitize(line.slice(5).trim()));
     if (line.startsWith('WARN ')) warns.push(sanitize(line.slice(5).trim()));
   }
+  if (r.status !== (+m[1] ? 1 : 0) || fails.length !== +m[1] || warns.length !== +m[2]) return { notRun: 'xref exit/count mismatch' };
   return {
     signature: { failures: +m[1], warnings: +m[2] },
     badSet: uniqSorted(fails), goodSet: [], watchSet: uniqSorted(warns),
@@ -218,6 +240,8 @@ function compNaming(ctx) {
   ctx.lastRun = r;
   const m = r.stdout.match(/naming_lint: (\d+) hard hits, (\d+) current-voice candidates, (\d+) historical\/id mentions/);
   if (!m) return { notRun: 'linter produced no summary line (exit ' + r.status + ')' };
+  const scanned = r.stdout.match(/naming_lint: scanned (\d+) documents/);
+  if (!scanned || +scanned[1] === 0 || r.status !== (+m[1] ? 1 : 0)) return { notRun: 'lint empty scan or exit/count mismatch' };
   const hard = [], cand = [];
   for (const line of r.stdout.split('\n')) {
     let mm = line.match(/^HARD (.+):\d+ "([^"]+)"/);
@@ -250,6 +274,7 @@ function compImporter(ctx) {
     if (m) total = { passed: +m[1], total: +m[2] };
   }
   if (!total) return { notRun: 'test runner produced no summary line (exit ' + r.status + ')' };
+  if (r.status !== 0 || total.passed !== total.total || passIds.length !== total.passed || failIds.length !== total.total - total.passed || new Set(passIds.concat(failIds)).size !== total.total) return { notRun: 'incomplete or inconsistent component output (exit ' + r.status + ')' };
   return {
     signature: total,
     badSet: uniqSorted(failIds), goodSet: uniqSorted(passIds), watchSet: [],
@@ -259,7 +284,7 @@ function compImporter(ctx) {
 }
 
 function compFixtures(ctx) {
-  const fixDir = ctx.findDir('importer_fixtures');
+  const fixDir = ctx.findDir('importer_fixtures', 'fresh.json');
   const loader = ctx.find('harness', 'game_loader.js');
   if (!fixDir) return { notRun: 'importer_fixtures tree not found under any tools root' };
   if (!loader) return { notRun: 'harness/game_loader.js not found under any tools root' };
@@ -277,6 +302,7 @@ function compFixtures(ctx) {
     if (m) total = { passed: +m[1], total: +m[2] };
   }
   if (!total) return { notRun: 'fixture check produced no summary line (exit ' + r.status + ')' };
+  if (r.status !== 0 || total.passed !== total.total || passIds.length !== total.passed || failIds.length !== total.total - total.passed || new Set(passIds.concat(failIds)).size !== total.total) return { notRun: 'incomplete or inconsistent component output (exit ' + r.status + ')' };
   return {
     signature: total,
     badSet: uniqSorted(failIds), goodSet: uniqSorted(passIds), watchSet: [],
@@ -336,6 +362,7 @@ function compParity(ctx) {
     if (m) counts = { pass: +m[1], fail: +m[2], total: +m[3] };
   }
   if (!counts) return { notRun: 'vector runner produced no summary line (exit ' + r.status + ')' };
+  if (counts.total === 0 || counts.total !== counts.pass + counts.fail || passIds.length !== counts.pass || failIds.length !== counts.fail || new Set(passIds.concat(failIds)).size !== counts.total || r.status !== (counts.fail ? 1 : 0)) return { notRun: 'vector exit/count/identity mismatch' };
   return {
     signature: counts,
     badSet: uniqSorted(failIds), goodSet: uniqSorted(passIds), watchSet: [],
@@ -402,10 +429,10 @@ function main() {
       }
       return null;
     },
-    findDir(sub) {
+    findDir(sub, requiredFile) {
       for (const r of roots) {
         const p = path.join(r.p, sub);
-        if (fs.existsSync(p)) return p;
+        if (fs.existsSync(p) && (!requiredFile || fs.existsSync(path.join(p, requiredFile)))) return p;
       }
       return null;
     },
@@ -436,7 +463,7 @@ function main() {
     const c = classify(out, base, out.cleanWhenUnchanged);
     results.push({
       id: comp.id, title: comp.title, proves: comp.proves,
-      verdict: c.verdict, ms, summary: sanitize(out.summary),
+      verdict: c.verdict, reason: c.verdict === 'NOT RUN' ? c.deltas.note : undefined, ms, summary: sanitize(out.summary),
       signature: out.signature,
       badSet: out.badSet, goodSet: out.goodSet, watchSet: out.watchSet,
       deltas: c.deltas,
@@ -453,19 +480,13 @@ function main() {
       components: {},
     };
     for (const r of results) {
-      if (r.verdict === 'NOT RUN') continue;
+      if (!r.signature) continue;
       nb.components[r.id] = { signature: r.signature, badSet: r.badSet, goodSet: r.goodSet, watchSet: r.watchSet };
     }
     fs.writeFileSync(BASELINE_PATH, JSON.stringify(nb, null, 2) + '\n');
   }
 
-  const verdicts = results.map(r => r.verdict);
-  let overall;
-  if (verdicts.includes('REGRESSION')) overall = 'REGRESSION';
-  else if (verdicts.includes('IMPROVEMENT')) overall = 'IMPROVEMENT (review, then refresh the baseline)';
-  else if (verdicts.includes('NOT RUN')) overall = 'INCOMPLETE (a component did not run)';
-  else if (verdicts.includes('KNOWN-FAIL')) overall = 'NO CHANGE (known state)';
-  else overall = 'PASS';
+  const overall = overallVerdict(results.map(r => r.verdict));
 
   const report = {
     gate: 'voidsworn cutover gate', version: 1,
@@ -536,4 +557,5 @@ function main() {
   process.exit((overall === 'REGRESSION' || overall.startsWith('INCOMPLETE')) ? 1 : 0);
 }
 
-main();
+if (require.main === module) main();
+module.exports = { overallVerdict, classify, compFindings, compXref, compNaming, compImporter, compFixtures, compParity, compDrift };

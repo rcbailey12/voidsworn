@@ -1,0 +1,683 @@
+{
+  "from": "17268efa",
+  "to": "355a2ac7",
+  "file_count": 42,
+  "files": [
+    {
+      "path": "contrib/muse/NOTES.md",
+      "sha256": "6a6ce66448f369615e4e713c4981e835a2ba0aa94a4b008ef70281dc99ef8965",
+      "lines": 69,
+      "last_line_first40": "- Fifteen of the 24 admiral portraits ar",
+      "changed_new_line_ranges": [
+        [
+          1,
+          6
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/NOTES.md"
+    },
+    {
+      "path": "contrib/muse/OPUS_HANDOFF.md",
+      "sha256": "8499e97b5aa52bbbce365bdeee0d3b1f44b3b86b3d2cd732e0b77037239dbcc4",
+      "lines": 148,
+      "last_line_first40": "- Work only inside contrib/muse/ (Rey) a",
+      "changed_new_line_ranges": [
+        [
+          1,
+          6
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/OPUS_HANDOFF.md"
+    },
+    {
+      "path": "contrib/muse/READING_PLAN.md",
+      "sha256": "1178cf92584195fa73c9cf791a3b83386fb9842ea6617f8fc58bcbdc5f7e3297",
+      "lines": 96,
+      "last_line_first40": "- Rey: external point of view only (audi",
+      "changed_new_line_ranges": [
+        [
+          1,
+          6
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/READING_PLAN.md"
+    },
+    {
+      "path": "contrib/muse/RETURN_INDEX.md",
+      "sha256": "a841af846d2227e698c4bfc64f92c6c04bddfdb1efb97bb43a431a9ebe6cbda1",
+      "lines": 49,
+      "last_line_first40": "- Items this pile does not cover and a l",
+      "changed_new_line_ranges": [
+        [
+          1,
+          13
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/RETURN_INDEX.md"
+    },
+    {
+      "path": "contrib/muse/reviews/balance_design_bible_2026_10_30.md",
+      "sha256": "f1fa9b59678cb4e49669b5e0839b975b58fdcc8ccf4309d815a5544c2a2caeeb",
+      "lines": 214,
+      "last_line_first40": "- The findings-to-tests ledger at distil",
+      "changed_new_line_ranges": [
+        [
+          26,
+          26
+        ],
+        [
+          44,
+          44
+        ],
+        [
+          199,
+          199
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/balance_design_bible_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/canonical_corrections_2026_10_31.md",
+      "sha256": "ebf255926de4b4cfbf4e7e1217f5bff386b4cc093c28a5f4589f27707c213fb7",
+      "lines": 41,
+      "last_line_first40": "factionshape_synthesis_2026_10_29.md; re",
+      "changed_new_line_ranges": [
+        [
+          1,
+          41
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/canonical_corrections_2026_10_31.md"
+    },
+    {
+      "path": "contrib/muse/reviews/chorus_a3_highn_2026_10_31.md",
+      "sha256": "1a40013bf4aff62ea03f58eca33545ac9985c189ebe110a8b01befc9a15e59a2",
+      "lines": 30,
+      "last_line_first40": "Scope note: this confirms A3 against the",
+      "changed_new_line_ranges": [
+        [
+          1,
+          30
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/chorus_a3_highn_2026_10_31.md"
+    },
+    {
+      "path": "contrib/muse/reviews/dead_data_audit_2026_10_27.md",
+      "sha256": "8b4ddfdad6ee4acb8ad4c7ee7922649b57c89ee431c35a361508569efef70acb",
+      "lines": 104,
+      "last_line_first40": "FAC_PRICE row: the conclusion is withdra",
+      "changed_new_line_ranges": [
+        [
+          49,
+          49
+        ],
+        [
+          100,
+          104
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/dead_data_audit_2026_10_27.md"
+    },
+    {
+      "path": "contrib/muse/reviews/factionshape_synthesis_2026_10_29.md",
+      "sha256": "44578500d32ab8343d125aef6a510a868668ec53044cfa5fdb04b31ab53583f6",
+      "lines": 49,
+      "last_line_first40": "Ryan's follow-up the same evening soften",
+      "changed_new_line_ranges": [
+        [
+          3,
+          4
+        ],
+        [
+          23,
+          24
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/factionshape_synthesis_2026_10_29.md"
+    },
+    {
+      "path": "contrib/muse/reviews/modules_synthesis_2026_10_29.md",
+      "sha256": "fd3d4d464f73e65535e3d370a277ef8043a71540106234fbc1f628fd76c60ec5",
+      "lines": 35,
+      "last_line_first40": "One, for Ryan, in the program report: wh",
+      "changed_new_line_ranges": [
+        [
+          19,
+          20
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/modules_synthesis_2026_10_29.md"
+    },
+    {
+      "path": "contrib/muse/reviews/montecarlo_evidence_provenance_2026_10_31.md",
+      "sha256": "cdd44df94331cf2286e3c37005ed83c86cbbb858ed22da3e6c4720bcb74198c4",
+      "lines": 25,
+      "last_line_first40": "- Any figure in the Balance and Design B",
+      "changed_new_line_ranges": [
+        [
+          1,
+          25
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/montecarlo_evidence_provenance_2026_10_31.md"
+    },
+    {
+      "path": "contrib/muse/reviews/open_checks_resolved_2026_10_29.md",
+      "sha256": "bea2c9010b4a2921666972dc190521a1de318822d8abab7d5224f1ebc58a682c",
+      "lines": 41,
+      "last_line_first40": "It did not re-run sims (the CP and repai",
+      "changed_new_line_ranges": [
+        [
+          37,
+          38
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/open_checks_resolved_2026_10_29.md"
+    },
+    {
+      "path": "contrib/muse/reviews/preservation_archive_index_2026_10_31.md",
+      "sha256": "e0f82abc82a9aab3625b7d6fbc0c21f2ae2799fb36581aff0f4aff64be00dc22",
+      "lines": 44,
+      "last_line_first40": "Created Oct 31, 2026 by Rey (Muse) on Ry",
+      "changed_new_line_ranges": [
+        [
+          1,
+          44
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/preservation_archive_index_2026_10_31.md"
+    },
+    {
+      "path": "contrib/muse/reviews/price_grid_correction_2026_10_31.md",
+      "sha256": "e56866ccbba439260d9e6e9582defd1a46c19da31ccc3f80393cd7086ad77db9",
+      "lines": 35,
+      "last_line_first40": "The defect fired only when a price multi",
+      "changed_new_line_ranges": [
+        [
+          1,
+          35
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/price_grid_correction_2026_10_31.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_audio_synthesis_2026_10_30.md",
+      "sha256": "9addb9978fc39b0f433dc54be108aea84f3d63f36b94478fdbfdb9f56235cdee",
+      "lines": 54,
+      "last_line_first40": "Chair screening notes: the leg confirms ",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          41,
+          54
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_audio_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_engineer_synthesis_2026_10_30.md",
+      "sha256": "08c3898e8a5f9676baf47bd9b10e8b4f99d20734fb37a893fd2fda9da60e6557",
+      "lines": 64,
+      "last_line_first40": "Chair screening notes: the leg argues pa",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          51,
+          64
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_engineer_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_final_synthesis_2026_10_30.md",
+      "sha256": "6457c98143ec1e8947f90ec0dde09f4c568e66a8c7e5e043c820d7afee7dd2e2",
+      "lines": 90,
+      "last_line_first40": "Player remains three-prong: the Oct 31, ",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          69,
+          70
+        ],
+        [
+          82,
+          90
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_final_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_gamedev_rey_2026_10_30.md",
+      "sha256": "4e6ca609b5c2511468e2738d0d0c7e452ed8872ea9caeb197ac02804aa2097b5",
+      "lines": 60,
+      "last_line_first40": "- The remaining patch pack sections (3 t",
+      "changed_new_line_ranges": [
+        [
+          3,
+          4
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_gamedev_rey_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_gamedev_synthesis_2026_10_30.md",
+      "sha256": "e3b2640999b5a94a115aa542be2b518d439e69ea19c2cb1d19bdabb227231049",
+      "lines": 61,
+      "last_line_first40": "The Qwen prong for this seat was never r",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          58,
+          61
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_gamedev_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_narrative_synthesis_2026_10_30.md",
+      "sha256": "850309c82add4c26c66cbfdc002b5021c5d42c76318d1319f3b8e337511af70a",
+      "lines": 63,
+      "last_line_first40": "Chair screening notes: a deviation is re",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          50,
+          63
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_narrative_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_player_synthesis_2026_10_30.md",
+      "sha256": "e154f2e631ca5132b5f1089dcebdacd85dd5a2d9d40b955a0a05ef3546a4c43e",
+      "lines": 52,
+      "last_line_first40": "The Qwen prong for this seat remains OPE",
+      "changed_new_line_ranges": [
+        [
+          49,
+          52
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_player_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_producer_synthesis_2026_10_30.md",
+      "sha256": "37dcf4c2640d943d011143c0b6b1f72d65d034282b15bcb25ac552ba60c55d99",
+      "lines": 62,
+      "last_line_first40": "Chair screening notes: the leg converges",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          51,
+          62
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_producer_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_qa_synthesis_2026_10_30.md",
+      "sha256": "9e09c8258099861a7343a9b3ce20a30733bb03b69e94c374c89091e6730d4dc4",
+      "lines": 58,
+      "last_line_first40": "Chair screening notes: like the engineer",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          45,
+          58
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_qa_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_uiux_synthesis_2026_10_30.md",
+      "sha256": "c591de611ab7e161be13169b0ebe206182212b3243f711bfd2f794171c98f218",
+      "lines": 62,
+      "last_line_first40": "Chair screening notes: finding 3 repeats",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          49,
+          62
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_uiux_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/redteam_vfx_synthesis_2026_10_30.md",
+      "sha256": "5a1d74bdcf0b279aefbd9b3c4288cf0e3f2c4af38a86f97fb7b1ce6c9b779018",
+      "lines": 61,
+      "last_line_first40": "Chair screening notes: none. No caveats ",
+      "changed_new_line_ranges": [
+        [
+          3,
+          3
+        ],
+        [
+          48,
+          61
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/redteam_vfx_synthesis_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/reviews/tuning_grids_2026_10_30.md",
+      "sha256": "28eaffff9647b57e0404c3a4e1655d98c44f9715eabace3b54ad7838abd60ec3",
+      "lines": 76,
+      "last_line_first40": "3. Grid (b) row B1: deleting the post-wi",
+      "changed_new_line_ranges": [
+        [
+          7,
+          8
+        ],
+        [
+          22,
+          23
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/tuning_grids_2026_10_30.md"
+    },
+    {
+      "path": "contrib/muse/tools/findings_tests/README.md",
+      "sha256": "19d0cc7d9f48faded2271e72edb9de2bf780cf927f55b7206268e69fdfe77cd6",
+      "lines": 407,
+      "last_line_first40": "- BF-7 and BF-8 entered the ledger as Ar",
+      "changed_new_line_ranges": [
+        [
+          184,
+          184
+        ],
+        [
+          294,
+          294
+        ],
+        [
+          340,
+          340
+        ],
+        [
+          343,
+          343
+        ],
+        [
+          351,
+          351
+        ],
+        [
+          391,
+          391
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/tools/findings_tests/README.md"
+    },
+    {
+      "path": "contrib/muse/tools/montecarlo/driver.js",
+      "sha256": "9febe8a74b9f6811cf1dc37ad35673291c3230cdd69fe36322307508969cfce8",
+      "lines": 223,
+      "last_line_first40": "var MC={runOne:mcRunOne,sampleBoons:mcSa",
+      "changed_new_line_ranges": [
+        [
+          10,
+          19
+        ],
+        [
+          176,
+          176
+        ]
+      ],
+      "read_scope": "changed hunks and relevant context",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/tools/montecarlo/driver.js"
+    },
+    {
+      "path": "contrib/qwen/redteam_audio_raw_2026_10_30.md",
+      "sha256": "23cfcff105bcb7a8da30d5d5aa31dea50ab7b6821bb3923e7d19bd27527c3861",
+      "lines": 49,
+      "last_line_first40": "- No accessibility audit was possible: n",
+      "changed_new_line_ranges": [
+        [
+          1,
+          49
+        ]
+      ],
+      "read_scope": "identical raw duplicate; bytes compared with reviewed copy",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/redteam_audio_raw_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/redteam_engineer_raw_2026_10_30.md",
+      "sha256": "4e45b9f29eb3c08c26b37809a16575ee72a27c441f819a98502d1379ca5546df",
+      "lines": 46,
+      "last_line_first40": "- Whether a Babylon 9.30 build of the ga",
+      "changed_new_line_ranges": [
+        [
+          1,
+          46
+        ]
+      ],
+      "read_scope": "identical raw duplicate; bytes compared with reviewed copy",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/redteam_engineer_raw_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/redteam_narrative_raw_2026_10_30.md",
+      "sha256": "d64e5752e4b533b0b7773668b1650c8f626a5bac6ee51c30188150e0a5f8005b",
+      "lines": 77,
+      "last_line_first40": "Whether the Argon prong for event varian",
+      "changed_new_line_ranges": [
+        [
+          1,
+          77
+        ]
+      ],
+      "read_scope": "identical raw duplicate; bytes compared with reviewed copy",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/redteam_narrative_raw_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/redteam_producer_raw_2026_10_30.md",
+      "sha256": "68d5d477def7bc242c108c5ae89e0413dbe2e94c457543679d73607894caefd4",
+      "lines": 36,
+      "last_line_first40": "This seat could not judge: the actual ru",
+      "changed_new_line_ranges": [
+        [
+          1,
+          36
+        ]
+      ],
+      "read_scope": "identical raw duplicate; bytes compared with reviewed copy",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/redteam_producer_raw_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/redteam_qa_raw_2026_10_30.md",
+      "sha256": "34cb601cbdeb9b8322d2412981467ae0d885317500ad4f05ae9e91e9e62bb380",
+      "lines": 45,
+      "last_line_first40": "Whether the Godot battle scene persists ",
+      "changed_new_line_ranges": [
+        [
+          1,
+          45
+        ]
+      ],
+      "read_scope": "identical raw duplicate; bytes compared with reviewed copy",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/redteam_qa_raw_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/redteam_uiux_raw_2026_10_30.md",
+      "sha256": "1952228c2ca03ff1615224cf511f6d227803146d0d0660b8fdcf6211c725628c",
+      "lines": 86,
+      "last_line_first40": "- Sound and caption interaction: the acc",
+      "changed_new_line_ranges": [
+        [
+          1,
+          86
+        ]
+      ],
+      "read_scope": "identical raw duplicate; bytes compared with reviewed copy",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/redteam_uiux_raw_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/redteam_vfx_raw_2026_10_30.md",
+      "sha256": "17031d43ceb8b5999c8863e82e9aa0febd29c92dd2ab87ffc39fe76b71353749",
+      "lines": 83,
+      "last_line_first40": "- Whether the third silent weapon deleti",
+      "changed_new_line_ranges": [
+        [
+          1,
+          83
+        ]
+      ],
+      "read_scope": "identical raw duplicate; bytes compared with reviewed copy",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/redteam_vfx_raw_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/reviews/redteam_audio_2026_10_30.md",
+      "sha256": "23cfcff105bcb7a8da30d5d5aa31dea50ab7b6821bb3923e7d19bd27527c3861",
+      "lines": 49,
+      "last_line_first40": "- No accessibility audit was possible: n",
+      "changed_new_line_ranges": [
+        [
+          1,
+          49
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/reviews/redteam_audio_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/reviews/redteam_engineer_2026_10_30.md",
+      "sha256": "4e45b9f29eb3c08c26b37809a16575ee72a27c441f819a98502d1379ca5546df",
+      "lines": 46,
+      "last_line_first40": "- Whether a Babylon 9.30 build of the ga",
+      "changed_new_line_ranges": [
+        [
+          1,
+          46
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/reviews/redteam_engineer_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/reviews/redteam_narrative_2026_10_30.md",
+      "sha256": "d64e5752e4b533b0b7773668b1650c8f626a5bac6ee51c30188150e0a5f8005b",
+      "lines": 77,
+      "last_line_first40": "Whether the Argon prong for event varian",
+      "changed_new_line_ranges": [
+        [
+          1,
+          77
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/reviews/redteam_narrative_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/reviews/redteam_producer_2026_10_30.md",
+      "sha256": "68d5d477def7bc242c108c5ae89e0413dbe2e94c457543679d73607894caefd4",
+      "lines": 36,
+      "last_line_first40": "This seat could not judge: the actual ru",
+      "changed_new_line_ranges": [
+        [
+          1,
+          36
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/reviews/redteam_producer_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/reviews/redteam_qa_2026_10_30.md",
+      "sha256": "34cb601cbdeb9b8322d2412981467ae0d885317500ad4f05ae9e91e9e62bb380",
+      "lines": 45,
+      "last_line_first40": "Whether the Godot battle scene persists ",
+      "changed_new_line_ranges": [
+        [
+          1,
+          45
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/reviews/redteam_qa_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/reviews/redteam_uiux_2026_10_30.md",
+      "sha256": "1952228c2ca03ff1615224cf511f6d227803146d0d0660b8fdcf6211c725628c",
+      "lines": 86,
+      "last_line_first40": "- Sound and caption interaction: the acc",
+      "changed_new_line_ranges": [
+        [
+          1,
+          86
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/reviews/redteam_uiux_2026_10_30.md"
+    },
+    {
+      "path": "contrib/qwen/reviews/redteam_vfx_2026_10_30.md",
+      "sha256": "17031d43ceb8b5999c8863e82e9aa0febd29c92dd2ab87ffc39fe76b71353749",
+      "lines": 83,
+      "last_line_first40": "- Whether the third silent weapon deleti",
+      "changed_new_line_ranges": [
+        [
+          1,
+          83
+        ]
+      ],
+      "read_scope": "full new file",
+      "raw_url": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/qwen/reviews/redteam_vfx_2026_10_30.md"
+    }
+  ]
+}

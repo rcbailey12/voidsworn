@@ -1,3 +1,36 @@
+# Current return index (October 31, 2026)
+
+Pinned to main `355a2ac7`, reconciled on draft PR #1. Start with `OPUS_HANDOFF.md` for the current integration order. The older Oct 25 index below is retained as history, not today's task queue.
+
+| Read | Purpose |
+|---|---|
+| `reviews/canonical_corrections_2026_10_31.md` | Controlling claim corrections; do not rebuild Chorus feed or double-apply faction prices. |
+| `reviews/price_grid_correction_2026_10_31.md` and `reviews/montecarlo_evidence_provenance_2026_10_31.md` | Corrected price rows and provenance. Original affected grid rows are withdrawn. |
+| `reviews/chorus_a3_highn_2026_10_31.md` | A3 confirmed at n=1,800; no pending rerun. |
+| `reviews/redteam_final_synthesis_2026_10_30.md` | CLOSED audit, seven four-prong seats and two three-prong seats. |
+| `reviews/preservation_archive_index_2026_10_31.md` | Muse's recorded archive locations and checksums for excluded artifacts. |
+| `../codex/reviews/main_reconciliation_2026_10_31.md` | Current main-vs-PR review, tooling fixes, checks and limitations. |
+| `../codex/OPUS_START_HERE.md` | Remaining candidate integration details and playable-battle acceptance checklist. |
+
+Canonical tooling repairs are on this PR in `contrib/muse/tools/`; gameplay and content candidates remain proposed. Keep PR #1 draft until integration is reviewed. No replacement Qwen legs, new price grids or A3 confirmation jobs are pending.
+
+---
+
+## Preserved Muse correction pointers and historical index
+
+# Current status and corrections (Oct 31, 2026)
+
+This index and the entrypoints under it are the Oct 25-era return record, kept as history. Four claims that later entered the working record have been refuted and removed; the controlling record is contrib/muse/reviews/canonical_corrections_2026_10_31.md:
+
+1. The Chorus feed exists (chorusFeed and chorusBite, battle.js:502-513). The missing-feed claim (register FS-5 and its syntheses) is closed as refuted; only a max-HP growth system and feed visibility are absent.
+2. The Godot parity oracle does not execute the boot grant: its loader (godot/campaign/test/node/env.js:14) loads six files and excludes main3d.js. Register DRIFT-1 is closed as refuted. The browser boot grant itself (PROG-1) stands.
+3. Faction prices are not lost in the Godot export: FAC_PRICE is folded into HULLS.cost inside data.js before export, and the Godot tables carry the derived costs.
+4. Damcon is not mathematically dominated by prow: the pair is a burst-versus-sustain balance question (register MOD-4 reclassified).
+
+Superseded measurements are registered in the corrections document, section 5: the retired wave 3 loss-rate figures (about 80 percent lost / 20 percent won), the withdrawn Monte Carlo price-grid rows A2 to A5 (harness compounding; corrected rows in price_grid_correction_2026_10_31.md), and the 48-assertion suite counts (current suite: 80 assertions, 8 pass / 72 fail). Artifacts excluded from GitHub (raw simulation shards, wave 5 phase 2 visuals) are preserved under a durable local archive indexed at contrib/muse/reviews/preservation_archive_index_2026_10_31.md. Read the corrections document before citing any synthesis, register row, or Balance Bible figure.
+
+---
+
 # Opus return index: the Oct 25 pile, in reading order
 
 Written Oct 25, 2026, after Jobs A, B, C, and D of the Oct 25b brief landed, plus the three Gemini shelves. Opus was paused while this pile was built. This page is a reading order, not a ruling and not a task plan: the task plan stays Opus's to own. Read the syntheses first; the legs behind them are reference only, and the shelf files are leads only.

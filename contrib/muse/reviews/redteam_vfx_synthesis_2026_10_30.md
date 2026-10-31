@@ -1,6 +1,6 @@
 # Red team audit synthesis: VFX seat (Oct 30, 2026)
 
-Chair synthesis of the vfx persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802.
+Chair synthesis of the vfx persona legs. Prongs in hand: blind Rey, DeepSeek, Argon, Qwen (4 of 4). Qwen prong: FOLDED IN Oct 31, 2026 (Qwen leg filed Oct 31, 2026; four prongs complete for this seat; see the Qwen fold-in addendum at the end of this synthesis). Pin: main head b3a3b802.
 
 ## Seat verdict
 
@@ -45,3 +45,17 @@ None new from this seat. The seat's two judgment calls are already governed: pla
 ## Not checked by the chair
 
 Nothing in this seat was judged in motion: no renders, captures, or frame-time traces were in any pack, and the legs' readability claims are code and sheet reads. The Godot fx tree's state beyond the Oct 26 fx review snapshot is unverified. Whether the Compatibility fallback can actually trigger in the shipped export configuration was asserted from engine documentation in the legs, not tested. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+Qwen leg: redteam_vfx_2026_10_30.md, filed Oct 31, 2026. This seat is now at four prongs.
+
+Qwen verdict, in its own words: MISS, leaning structural, because "the counted-flash budget does not cover what is on screen," which makes the accessibility ceiling unenforceable and every downstream flash test a measurement of the wrong system.
+
+Agreement: finding 1 (the counted-flash budget certifies a gated subset while the brightest emitters bypass it) is this synthesis's flash-cap claim with the accounting mechanism named. Finding 2 (per-weapon persistent marks mostly absent; of ten families, one MEETS, the rest PARTIAL, MISSES, or NOT IMPLEMENTED), finding 4 (Chorus and Hegemony weapon colours sit at 1.02:1 and 1.03:1 against their own damage glow), and finding 5 (flak chip damage drives stage 3 and 4 structural breaches, against the flak spec's core rule) all confirm the synthesis.
+
+Refinements: finding 3 extends the mark problem to the Compatibility renderer path, which draws zero persistent marks at all, with no gate in the fx code; on that path the Finding 2 verdicts are not degraded but invisible. Finding 6 adds the repair asymmetry: stage geometry reverses on repair while hit decals are never removed, so hull language and game state disagree after the game's core survival verb. Finding 7 confirms the gauss companion cue (stress ring or petaled collar) is absent, leaving the smallest persistent mark unreadable at fleet distance. Finding 10 prices the ladder's UNSURE thresholds as a budgeting blocker: PERFCAP cannot be scoped until the stage numbers are locked.
+
+New items: finding 8, engine trail colours under colour-vision deficiency. Hegemony against Eclipse engine colours fall to 14.6 under deuteranopia, the smallest distance computed in the pack, and engine trails are the primary motion signature in battle. This synthesis did not carry engine trails as a faction-identification channel; the fold-in adds it.
+
+Chair screening notes: none. No caveats attach to this leg, and nothing in it contradicts this synthesis.

@@ -1,3 +1,5 @@
+> Historical review. The current reconciliation is [main_reconciliation_2026_10_31.md](main_reconciliation_2026_10_31.md), pinned to 355a2ac7. Tool/index overlays referenced below have been retired after canonical PR repairs; gameplay candidates remain proposed. Muse's corrections, grids, A3 confirmation and audit closure supersede earlier pending-work notes.
+
 > Later implementation verification: elite and shipwright candidates now pass their Godot compilation and scoped runtime/parity checks. See [the validation record](godot_validation_2026_10_31/README.md). This closing audit otherwise retains its original coverage limits.
 
 # Closing review after Muse's staged upload

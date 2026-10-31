@@ -1,0 +1,41 @@
+# Canonical corrections (Oct 31, 2026)
+
+Chair: Rey (Muse). Trigger: the Codex pre-Opus review (PR #1, findings 3, 4, 6, 7) and its closing review of main 17268efa, each refutation re-verified by the chair against the code at the pin (264f441d) before being entered here. This document is the controlling correction record. Where a filed document disagrees with this one, this one governs, and the filed document carries a dated correction note pointing here. Filed external legs are verbatim records and are not edited; corrections to claims that originated in legs live here and in the chair syntheses.
+
+## 1. The Chorus feed exists (FS-5 refuted)
+
+- Filed claim (factionshape_synthesis_2026_10_29.md, finding 5; findings register FS-5; repeated in redteam_gamedev_synthesis_2026_10_30.md, redteam_final_synthesis_2026_10_30.md decision 5, and balance_design_bible_2026_10_30.md): "Chorus has regeneration but no feed or grow mechanic."
+- Verdict: FALSE as written. battle.js:502-511 implements chorusFeed (an enemy capital ship death regrows hull on the killing side's Chorus ships, killer share FEED_KILL, nearby share FEED_NEAR, one per-round cap FEED_CAP shared with biting), and battle.js:512-513 implements chorusBiteEst (a Chorus hull dealing hull damage at 1 to 2 hexes regrows CHORUS_BITE of it). Call sites: battle.js:817 (bite) and battle.js:941 (feed). The Godot rules carry both (rules.gd:1651, :2741). This is also consistent with Ryan's Oct 24, 2026 ruling approving the Chorus feed.
+- Corrected statement: the Chorus feed system is implemented. What does not exist is a max-HP growth mechanic, and the feed is not surfaced in the faction's presentation. Any remaining design question is about growth, visibility, and tuning, not about a missing feed.
+- Disposition: FS-5 is closed as refuted. Documents that built recommendations on the missing-feed premise (a new feed mechanic as design work) have those recommendations withdrawn; the narrower questions (growth system, feed visibility) remain open as design choices, undecided.
+
+## 2. The Godot parity oracle does not execute the boot grant (DRIFT-1 refuted)
+
+- Filed claim (findings register DRIFT-1; open_checks_resolved_2026_10_29.md item 7): the Godot campaign parity oracle carries the unlockAll boot grant, "so parity tests compare against a fully unlocked state."
+- Verdict: FALSE as stated. The parity oracle loader (godot/campaign/test/node/env.js:14) loads exactly six files: data.js, core.js, battle.js, campaign_meta.js, campaign_run.js, campaign3d.js. main3d.js, the only place the grant executes (main3d.js:11), is not loaded, so the grant never runs in a parity load. A fresh parity load produces unlocked {} and admirals {vex:true}. The copied campaign3d.js contains the settings toggle handler; a handler definition is not an execution.
+- What stands: PROG-1, the browser boot grant itself (main3d.js:11 fills LEGACY unlocks and admirals unless opts.unlockAll is false; Ryan confirmed Oct 28, 2026 it is a testing leftover). The importer strip-or-ratify decision also stands, because real browser profiles do carry the grant in saved META. Only the parity-contamination claim is withdrawn.
+- Disposition: DRIFT-1 is closed as refuted. Any instruction to scrub the oracle for grant contamination is cancelled; no oracle state needs deleting on this premise.
+
+## 3. Faction prices are not lost in the Godot export (dead-data FAC_PRICE row corrected)
+
+- Filed claim (dead_data_audit_2026_10_27.md, FAC_PRICE row): "No Godot reader found, so the Godot campaign prices without it."
+- Verdict: FALSE. FAC_PRICE is applied inside data.js before export (the roster fold at data.js:~546 multiplies h.cost by the faction/class multiplier and preserves the base as h.cost0), and the Godot tables consume the derived HULLS.cost. Spot checks against godot/rules/data/tables.json: b_drone cost 45 (base 70 x chorus Frigate 0.65), d_harvester cost 390 (base 250 x deathless Cruiser 1.55). Prices match the browser.
+- Corrected statement: no Godot reader for the FAC_PRICE table itself is needed, because its effect is already folded into the exported costs. Reapplying the multiplier on the Godot side would double-charge. Pruning the unused exported FAC_PRICE table is optional hygiene, separate from pricing correctness.
+- Disposition: the row's conclusion and its open pricing question are withdrawn. Validation should compare exported final costs against source, which the Oct 31 closing review did (65 regenerated export files match exactly).
+
+## 4. Damcon is not mathematically dominated by prow (MOD-4 reclassified)
+
+- Filed claim (modules_synthesis_2026_10_29.md, finding 4; findings register MOD-4): "damcon at 85 credits is mathematically dominated by prow at 70."
+- Verdict: NOT ESTABLISHED, and false as a universal claim. The two modules do different jobs (data.js:154 prow: +15% hull and +5% armor buffer for 70; data.js:164 damcon: repair 4% of hull at the start of each of your turns for 85). The register's test only asserted that 85 exceeds 70, which cannot establish dominance. Under sustained armor-bypassing damage over a long fight, damcon's cumulative repair exceeds prow's one-time buffer; under burst damage prow is better. DeepSeek's own framing in the same program was burst versus sustain, not duplication.
+- Disposition: MOD-4 is reclassified from a defect to a balance question. The dominance wording is removed from the working record. Any future test must compare burst and sustain profiles over real battle durations. The separate, verified module findings (kind-fit installs with zero effect; the shared compatibility predicate) are unaffected.
+
+## 5. Superseded measurements register
+
+- RETIRED (already recorded Oct 30, 2026, restated here so the index carries it): the wave 3 "about 80 percent of runs lost / 20 percent win rate" figures. They were an artifact of an undocumented driver policy. Measured campaign bot rates (12,600 runs): 63.0 percent Veteran, 80.0 percent Standard, bot-relative. The policy sensitivity program (26,400 runs) adds that the absolute rate is policy-fragile (36.8 to 66.4 percent across four policies); quote the range and the policy, never a single number.
+- WITHDRAWN (Oct 31, 2026): tuning grid price rows A2, A3, A4, A5 in tuning_grids_2026_10_30.md and every downstream citation of their figures (including the Eclipse x1.25 "collapse" at 32.3 percent and the Chorus x0.8 + CP +4 row at 91.3 percent / 4.53 ships). The Monte Carlo harness compounded the price multiplier across runs inside a shard (driver.js, mcRunOne mutating HULLS costs in place), so those rows measured a drifting price schedule. Corrected rows at the original n and seeds land in price_grid_correction_2026_10_31.md. Rows A0, A1 (CP only), the healing grid (b), and the boon grid are unaffected, as are the baseline evidence and policy sensitivity programs (all priceMult 1).
+- SUPERSEDED COUNTS: the findings-to-tests baseline of 48 assertions (8 pass / 40 fail) describes the suite as first filed. The current suite is 80 assertions, 8 pass / 72 fail (findings_tests round 2), reproduced independently in the Oct 31 closing review after packaging repairs. The 72 failures are regression pins and design assertions, not 72 confirmed bugs.
+- STALENESS, NOT CORRUPTION: the two parity oracle suites certify two different snapshots (Oct 26 and Oct 27) and neither matches current HEAD. Re-pin both to one agreed commit before cutover (oracle drift guard report, Oct 30, 2026).
+
+## 6. Documents amended by this correction
+
+factionshape_synthesis_2026_10_29.md; redteam_gamedev_synthesis_2026_10_30.md; redteam_gamedev_rey_2026_10_30.md; redteam_final_synthesis_2026_10_30.md; modules_synthesis_2026_10_29.md; dead_data_audit_2026_10_27.md; open_checks_resolved_2026_10_29.md; tools/findings_tests/README.md (register rows FS-5, DRIFT-1, MOD-4, PROG-1 note, FS-1 note); balance_design_bible_2026_10_30.md (Chorus row, grid verdicts, open decision 21); tuning_grids_2026_10_30.md (grid (a) banner). Each carries a dated Oct 31, 2026 note at the corrected passage. The Balance Bible's grid-dependent recommendations were marked superseded where they stood and have been rewritten from the corrected rows in price_grid_correction_2026_10_31.md (rerun completed Oct 31, 2026).

@@ -1,0 +1,12 @@
+Voidsworn cutover gate
+Repo: /workspace/scratch/bde335e632ab/voidsworn @ 6436b2e92a1687187e36b420527683c42bd65a72
+  KNOWN-FAIL  Findings regression suite (4.5s)
+  KNOWN-FAIL  Oracle drift guard (0.6s)
+  PASS        Validator: table cross-references (0.1s)
+  KNOWN-FAIL  Validator: naming linter (0.1s)
+  PASS        Importer fixture loader checks (0.5s)
+  PASS        Importer reference converter tests (0.3s)
+  PASS        Telemetry reference demonstration (0.1s)
+  NOT RUN     Parity vector corpus (plug-in slot) (0.0s)
+Overall: INCOMPLETE (a component did not run) in 6.1s
+Report: /tmp/voidsworn_gate_final/gate_report.md

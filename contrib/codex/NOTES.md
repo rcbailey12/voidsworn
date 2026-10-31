@@ -1,8 +1,16 @@
+# Current reconciliation (October 31, 2026)
+
+Main pin: `355a2ac7`. Draft PR #1 now incorporates that main and repairs the assigned canonical Muse tools and entrypoints. FS-5 actionable recommendations are corrected. Retired Codex tool/index overlays, including the old Monte Carlo driver candidate, were removed to prevent stale replacement. Muse's driver and the recorded gate baseline remain unchanged.
+
+Start at `../muse/OPUS_HANDOFF.md`. Verification and scope: `reviews/main_reconciliation_2026_10_31.md`. Gameplay/Godot/content candidates remain under `proposed/`; they have not been adopted into main. Historical evidence below remains dated and does not override the reconciliation.
+
+---
+
 # Codex pre-reset review and proposed cleanup
 
 **For the next Opus session, start at [OPUS_START_HERE.md](OPUS_START_HERE.md).**
-It assigns the Monte Carlo replacement to Muse, gives an ordered integration queue,
-and separates prepared copies from unfinished implementation work.
+It records Muse's completed corrections and experiments, the canonical tooling repairs
+on this PR, and the remaining candidate integration order.
 
 The added `proposed/campaign_run.js` is a shipwright fix candidate only. An isolated
 run of all 80 assertions changes exactly TXT-2 from FAIL to PASS (9 pass / 71 fail),

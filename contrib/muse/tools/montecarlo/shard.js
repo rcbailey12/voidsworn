@@ -6,7 +6,7 @@
 const fs = require('fs');
 const { loadGame } = require('./loader_main');
 
-const REPO = process.env.MC_REPO || require('path').join(__dirname, '..', 'voidsworn-fresh');
+const REPO = process.env.MC_REPO || require('path').resolve(__dirname, '../../../..');
 const args = {};
 const replace = [];
 for (let i = 2; i < process.argv.length; i++) {

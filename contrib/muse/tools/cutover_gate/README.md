@@ -1,3 +1,13 @@
+# Gate repair status (October 31, 2026)
+
+Reconciled with main `355a2ac7` on PR #1. Normal runs preserve the baseline. Missing baselines/components, empty scans, duplicate test identities, truncated output and abnormal exits cannot count as passing checks. A tracked failing item must explicitly pass to count as an improvement; disappearance is regression. Missing checks outrank improvements in the overall verdict. Drift input presence and comparison coverage are checked conservatively; an intentional coverage reduction requires explicit review.
+
+Current control: 80 findings assertions (8 PASS / 72 FAIL), unchanged drift and naming state, four passing components, parity corpus NOT RUN, overall INCOMPLETE (exit 1). This is a baseline-tracking tool, not release approval. The current ledger governs the meaning of each assertion. Targeted campaign parity evidence does not fill the general battle corpus slot.
+
+Regression probes: `node contrib/codex/tools/verification_repairs_test.js` (24 adversarial checks). Ryan's launcher remains `run_gate.bat`; Windows double-click execution has not been exercised in this environment.
+
+---
+
 # Voidsworn cutover gate
 
 Status: built Oct 30, 2026 (beyond-scope slate, item 4). Plain Node, no
@@ -23,7 +33,7 @@ or INCOMPLETE, so a script can gate on it.
 
 | Component | What it proves |
 |---|---|
-| Findings regression suite | Every BLOCKER/FIX finding from the Oct 27 to Oct 29 audit programs, the wave 3 deep QA sweep, and the wave 5 patch pack stays pinned by a test. A FAIL is a defect that is still unfixed; the test flips to PASS when a real fix lands. Baseline at recording: 80 tests, 8 pass, 72 fail. |
+| Findings regression suite | Every BLOCKER/FIX finding from the Oct 27 to Oct 29 audit programs, the wave 3 deep QA sweep, and the wave 5 patch pack stays pinned by a test. A FAIL is an assertion requiring its ledger disposition; disputed premises and design questions are not automatically accepted defects. Baseline at recording: 80 tests, 8 pass, 72 fail. |
 | Oracle drift guard | The Godot port's vendored JS oracles have not drifted beyond the recorded staleness, every oracle README pin claim still holds against git history, and the hand-copied render/world constants match the recorded comparison (120 entries: 95 matched, 25 differed, 25 browser-only at recording; the differing set is the known, documented staleness, worst in the PLANETS tables). |
 | Validator: table cross-references | No id in the game data tables dangles: faction rosters and bosses, hull and variant weapons and arcs, admiral starts, boon patrons, module gates, relic name rows, price and gate rows. Baseline: 0 failures, 11 warnings (the warnings are the standing watch list: relic display-name coverage, four capital-class price gaps, the spore id collision). |
 | Validator: naming linter | Current-voice docs (root docs plus docs/) do not use retired display names. Baseline: 1 hard hit ("Mending Choir" in BACKLOG.md), 100 label candidates for human triage, 13 historical/id mentions. |

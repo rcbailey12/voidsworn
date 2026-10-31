@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { loadGame } = require('./loader_main');
-const REPO = process.env.MC_REPO || path.join(__dirname, '..', 'voidsworn-fresh');
+const REPO = process.env.MC_REPO || path.resolve(__dirname, '../../../..');
 
 const VARIANTS = {
   base: {},

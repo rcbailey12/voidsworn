@@ -1,0 +1,4 @@
+s1: mean enemy CP strong 8.0, baseline 8.0, battered 8.0, ratio 1.00 (band 1.98)
+s2: mean enemy CP strong 16.4, baseline 15.0, battered 14.8, ratio 1.11 (band 1.98)
+s3: mean enemy CP strong 26.3, baseline 21.4, battered 16.0, ratio 1.64 (band 1.98)
+fleet_scaling: 0 failures

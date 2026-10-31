@@ -24,6 +24,7 @@ const vm = require('vm');
 // game_loader.js lives in the harness folder; resolve it from either home of
 // this file (the wave 5 working folder or the staged tools tree).
 const LOADER_CANDIDATES = [
+  path.join(__dirname, '..', 'harness', 'game_loader.js'),
   path.join(__dirname, '..', '..', 'voidsworn-harness', 'game_loader.js'),
   path.join(__dirname, 'game_loader.js'),
   path.join(process.env.HOME || '', 'workspace', 'voidsworn-harness', 'game_loader.js'),

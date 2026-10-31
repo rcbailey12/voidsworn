@@ -1,0 +1,175 @@
+{
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "verifiedFiles": 42,
+  "method": "Pinned raw GitHub retrieval matched local Git content by UTF-16 code-unit length and FNV-1a64; raw-byte SHA-256 and end-of-file proof are in review_inventory.json.",
+  "files": {
+    "contrib/muse/NOTES.md": [
+      9646,
+      "2466905352254478550"
+    ],
+    "contrib/muse/OPUS_HANDOFF.md": [
+      40279,
+      "12391770655172636979"
+    ],
+    "contrib/muse/READING_PLAN.md": [
+      13698,
+      "3920628405833962413"
+    ],
+    "contrib/muse/RETURN_INDEX.md": [
+      9713,
+      "18089554966912052054"
+    ],
+    "contrib/muse/reviews/balance_design_bible_2026_10_30.md": [
+      61210,
+      "3587694437952804900"
+    ],
+    "contrib/muse/reviews/canonical_corrections_2026_10_31.md": [
+      8285,
+      "1558627532771384042"
+    ],
+    "contrib/muse/reviews/chorus_a3_highn_2026_10_31.md": [
+      3741,
+      "807750278698925528"
+    ],
+    "contrib/muse/reviews/dead_data_audit_2026_10_27.md": [
+      15254,
+      "13061119885584608601"
+    ],
+    "contrib/muse/reviews/factionshape_synthesis_2026_10_29.md": [
+      7287,
+      "9683978912151202629"
+    ],
+    "contrib/muse/reviews/modules_synthesis_2026_10_29.md": [
+      4725,
+      "12639914474287058745"
+    ],
+    "contrib/muse/reviews/montecarlo_evidence_provenance_2026_10_31.md": [
+      4176,
+      "8010227156547547638"
+    ],
+    "contrib/muse/reviews/open_checks_resolved_2026_10_29.md": [
+      9772,
+      "3370257941111026077"
+    ],
+    "contrib/muse/reviews/preservation_archive_index_2026_10_31.md": [
+      4676,
+      "4744794092493266875"
+    ],
+    "contrib/muse/reviews/price_grid_correction_2026_10_31.md": [
+      6184,
+      "1365101555487365365"
+    ],
+    "contrib/muse/reviews/redteam_audio_synthesis_2026_10_30.md": [
+      15326,
+      "17872180134248323508"
+    ],
+    "contrib/muse/reviews/redteam_engineer_synthesis_2026_10_30.md": [
+      17088,
+      "14408086775226378401"
+    ],
+    "contrib/muse/reviews/redteam_final_synthesis_2026_10_30.md": [
+      26092,
+      "18291382686223117056"
+    ],
+    "contrib/muse/reviews/redteam_gamedev_rey_2026_10_30.md": [
+      11896,
+      "3277297155595804878"
+    ],
+    "contrib/muse/reviews/redteam_gamedev_synthesis_2026_10_30.md": [
+      16414,
+      "15964235241983675973"
+    ],
+    "contrib/muse/reviews/redteam_narrative_synthesis_2026_10_30.md": [
+      18811,
+      "16477481752010172139"
+    ],
+    "contrib/muse/reviews/redteam_player_synthesis_2026_10_30.md": [
+      12775,
+      "13641839048373266157"
+    ],
+    "contrib/muse/reviews/redteam_producer_synthesis_2026_10_30.md": [
+      13591,
+      "1873764954838838272"
+    ],
+    "contrib/muse/reviews/redteam_qa_synthesis_2026_10_30.md": [
+      17002,
+      "3593054982952150364"
+    ],
+    "contrib/muse/reviews/redteam_uiux_synthesis_2026_10_30.md": [
+      17736,
+      "11094823060167142105"
+    ],
+    "contrib/muse/reviews/redteam_vfx_synthesis_2026_10_30.md": [
+      16860,
+      "3942130264500424205"
+    ],
+    "contrib/muse/reviews/tuning_grids_2026_10_30.md": [
+      10260,
+      "2305391780591559870"
+    ],
+    "contrib/muse/tools/findings_tests/README.md": [
+      58239,
+      "13908967023346362775"
+    ],
+    "contrib/muse/tools/montecarlo/driver.js": [
+      17420,
+      "14756790725113652247"
+    ],
+    "contrib/qwen/redteam_audio_raw_2026_10_30.md": [
+      11109,
+      "16446009038230555179"
+    ],
+    "contrib/qwen/redteam_engineer_raw_2026_10_30.md": [
+      12063,
+      "17601639557818661991"
+    ],
+    "contrib/qwen/redteam_narrative_raw_2026_10_30.md": [
+      13780,
+      "17698355034853406442"
+    ],
+    "contrib/qwen/redteam_producer_raw_2026_10_30.md": [
+      11039,
+      "47449762569965611"
+    ],
+    "contrib/qwen/redteam_qa_raw_2026_10_30.md": [
+      12802,
+      "3982917367145696423"
+    ],
+    "contrib/qwen/redteam_uiux_raw_2026_10_30.md": [
+      13878,
+      "3197614752349078660"
+    ],
+    "contrib/qwen/redteam_vfx_raw_2026_10_30.md": [
+      15137,
+      "2972512156893491287"
+    ],
+    "contrib/qwen/reviews/redteam_audio_2026_10_30.md": [
+      11109,
+      "16446009038230555179"
+    ],
+    "contrib/qwen/reviews/redteam_engineer_2026_10_30.md": [
+      12063,
+      "17601639557818661991"
+    ],
+    "contrib/qwen/reviews/redteam_narrative_2026_10_30.md": [
+      13780,
+      "17698355034853406442"
+    ],
+    "contrib/qwen/reviews/redteam_producer_2026_10_30.md": [
+      11039,
+      "47449762569965611"
+    ],
+    "contrib/qwen/reviews/redteam_qa_2026_10_30.md": [
+      12802,
+      "3982917367145696423"
+    ],
+    "contrib/qwen/reviews/redteam_uiux_2026_10_30.md": [
+      13878,
+      "3197614752349078660"
+    ],
+    "contrib/qwen/reviews/redteam_vfx_2026_10_30.md": [
+      15137,
+      "2972512156893491287"
+    ]
+  }
+}

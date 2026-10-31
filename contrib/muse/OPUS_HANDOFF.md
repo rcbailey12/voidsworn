@@ -1,3 +1,43 @@
+# Opus return: current work order (October 31, 2026)
+
+Reconciled against main `355a2ac70860db4446f040a5787b19c2d746d779` on draft PR #1. This is the proposed integration order for Ryan's assigned repairs, not a new owner ruling. Main is unchanged by this PR until adoption. Read this section before the dated briefing below.
+
+## Settled work
+
+- Muse's canonical corrections control: Chorus feed exists; DRIFT-1 is refuted while PROG-1 stands; exported hull costs already include faction pricing; MOD-4 is a burst/sustain balance question.
+- Corrected price grids are filed. Eclipse x1.25 is 60.7%, not 32.3%. Chorus A3 is confirmed at n=1,800: 89.2% [87.7, 90.6], 4.15 sector-1 ships. Do not rerun these jobs.
+- Red-team audit CLOSED: seven Qwen seats completed, player/gamedev closed with three prongs each. Preserve the engineer disagreement under the direct-read rule. Do not commission missing legs.
+- Raw shards and wave-5 visuals have a preservation index with checksums. Those archives were filed in Muse's workspace; this review checked the index, not the archived bytes.
+
+## Integration order
+
+| Order | Owner | Work and acceptance |
+|---|---|---|
+| 1 | Codex, prepared on this PR | Canonical `contrib/muse/tools/` portability and fail-closed gate repairs. The full unchanged game suite runs: 80 assertions, 8 PASS / 72 FAIL. The ledger distinguishes defects, disputed premises and design questions. Naming lint scans documents and rejects empty scans. Removed checks cannot count as improvements. Missing parity vectors keep the gate INCOMPLETE. Review and adopt this tooling commit; do not copy retired tool overlays. |
+| 2 | Opus | Adopt the verified shipwright and elite-map candidates using their small diffs. Full copies remain under `contrib/codex/proposed/`; browser, combined Godot campaign and narrow oracle exceptions are prepared. Both fixes together produce 10 PASS / 70 FAIL, changing only TXT-2 and W3-1. Prior evidence: 4,500 maps, 1,920 battle setups, six shipwright edge cases; headless Godot compile, 30 campaign seeds, 64 Nemesis records and 4,506 focused vectors. Repeat the scoped checks after integration. Field conversion already excludes elites; do not add the audit's redundant guard. |
+| 3 | Opus | Make module fitting reject invalid weapon-kind and shieldless-hull fits at mutation time, preserving valid fits and slot/ability gates. Use MOD-3 and the existing kind-fit proposal; do not delete damcon based on MOD-4. |
+| 4 | Opus | Implement Q5 loss-debrief learning and prevent adaptations countering known weaknesses. Use FR-2/NEM-2 and the lineage telemetry amendment. One reveal per lost meeting is the chair's recommended cap, not an independently confirmed owner ruling. Mirror behavior and disclose oracle changes. |
+| 5 | Opus | Repair boon offer construction, then apply corrected text in a scratch build. Preserve favour on backfill and the ruled duo/legendary policy. Text proposal has four corrected anchors and Nemesis withdrawals; assertions and UI inspection still gate adoption. |
+| 6 | Opus | Deliver one playable phased-activation battle before wider content expansion: movement rehearsal/ghost, enemy inspection, explicit fire, brace/pass/cancel, truthful odds and hint text. Show Ryan screenshots or a short capture at the intended fleet density. The interaction checklist is in `contrib/codex/OPUS_START_HERE.md`. |
+
+## Decisions and limits
+
+R33 migration intent still needs reconciliation before building the shipping browser-to-Godot data path. The reference converter and fixtures do not establish a transport or integrated importer. Preserve saves while that decision is resolved. Do not infer a wipe or an importer mandate from a test count.
+
+The general battle parity corpus remains absent. The targeted campaign validation above does not fill that gate slot, and INCOMPLETE is not cutover approval. Windows double-click execution, rendered gameplay, audio, archive restoration and content/text sign-off remain unverified here. No balance or content overhaul is authorized by this repair packet.
+
+Evidence and review: `contrib/codex/reviews/main_reconciliation_2026_10_31.md`. The older closing review at 17268efa is historical; use it only alongside the new reconciliation.
+
+---
+
+## Preserved Muse briefing and corrections-batch header
+
+# Status banner (Oct 31, 2026)
+
+This handoff is a dated snapshot; its section states run through Oct 28, 2026 and parts are superseded. Four claims in the wider working record were refuted and removed on Oct 31, 2026 (the Chorus feed exists; the parity oracle does not execute the boot grant; faction prices survive the Godot export; damcon is not dominated by prow), and the Monte Carlo price-grid rows were withdrawn for a harness compounding bug. The controlling record is contrib/muse/reviews/canonical_corrections_2026_10_31.md, with corrected grid rows in price_grid_correction_2026_10_31.md and the excluded-artifact archive indexed in preservation_archive_index_2026_10_31.md. The fully rewritten, sequenced handoff lands in the Opus readiness pass; until then, trust the corrections document over any conflicting statement below.
+
+---
+
 # Opus handoff briefing
 
 From Rey (Muse), Oct 24, 2026. Status as of about 19:10 CDT Oct 24. This revision completes batch 8 (both legs filed, screened, reconciled, with one material correction to leg 1); all eight research batches are now complete and nothing in the research program is still running. It also records the tool-guides desktop-first framing pass. Earlier revisions added: the engine question reopened, the Gemini background pack, the Reddit research program batches 1 through 6, the live thread reads, and the Chorus portrait state.

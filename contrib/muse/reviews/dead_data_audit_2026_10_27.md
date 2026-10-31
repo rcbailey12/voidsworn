@@ -46,7 +46,7 @@ Classifications: READER FOUND (a reader of the rules tables exists outside godot
 | CLASS_TRACK_MAX | RULES-DEAD ONLY | campaign.gd REQUIRED_TABLES plus TB reads, campaign_ui.gd reads; browser campaign_run.js and core.js read it | 1 |
 | EVENTS | RULES-DEAD ONLY | campaign.gd REQUIRED_TABLES plus TB reads; browser data.js and campaign_run.js read it. The single biggest table of the 41 | 18727 |
 | EVENT_FALLBACK | RULES-DEAD ONLY | campaign.gd REQUIRED_TABLES plus TB reads; browser campaign_run.js reads it | 7 |
-| FAC_PRICE | RULES-DEAD ONLY | Browser only: defined data.js line 538, applied at data.js line 546 (faction price multipliers). No Godot reader found, so the Godot campaign prices without it | 576 |
+| FAC_PRICE | RULES-DEAD ONLY | Browser only: defined data.js line 538, applied at data.js line 546 (faction price multipliers). No Godot reader found, so the Godot campaign prices without it [CORRECTED Oct 31, 2026: false, see the Corrections section at the end of this file] | 576 |
 | FAVOUR_TIERS | RULES-DEAD ONLY | campaign.gd REQUIRED_TABLES plus TB reads, campaign_ui.gd reads; browser campaign_meta.js, campaign_run.js and core.js read it | 236 |
 | HEAT | RULES-DEAD ONLY | campaign.gd REQUIRED_TABLES plus TB reads, campaign_ui.gd reads; browser campaign_meta.js and core.js read it. Also named once in godot/rules/test/node/sweep_gen.js (scenario field), which is test scaffolding on top of a live table | 584 |
 | HULL_VARIANTS | RULES-DEAD ONLY | campaign.gd REQUIRED_TABLES plus TB reads, campaign_ui.gd reads; browser campaign_meta.js, campaign_run.js, data.js and sim3d.js read it. Matches the README note: variants reach battle merged into HULLS | 3609 |
@@ -97,3 +97,8 @@ Split the 41 three ways rather than treating the README list as one drop set:
 - Fully dynamic table access (a name built by string concatenation at runtime) would evade a word grep. The scan covered the TB.NAME, TB["NAME"], TB.get("NAME") and TBL.get("NAME") styles the codebase actually uses, and plain word search would still catch a quoted full name, but a split-string construction cannot be excluded by this method.
 - Whether the Godot campaign's pricing should also apply FAC_PRICE (browser-only today) is a G3 parity question this audit only surfaces; no judgement made.
 - The campaign parity test and sweep generator references were recorded where they occur, but test scaffolding never decided a classification on its own: no table came out TEST-ONLY, because every test-referenced candidate also has a campaign or browser reader.
+
+
+## Corrections (Oct 31, 2026)
+
+FAC_PRICE row: the conclusion is withdrawn. FAC_PRICE is applied inside data.js before export (the roster fold multiplies h.cost and preserves the base as h.cost0, data.js:~546), and the Godot tables consume the derived HULLS.cost. Spot checks: b_drone cost 45 (base 70 x chorus Frigate 0.65) and d_harvester cost 390 (base 250 x deathless Cruiser 1.55) in godot/rules/data/tables.json match the browser. No Godot reader for FAC_PRICE itself is needed, and reapplying it on the Godot side would double-charge. See canonical_corrections_2026_10_31.md section 3.
