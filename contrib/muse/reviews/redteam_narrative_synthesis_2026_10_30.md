@@ -1,6 +1,6 @@
 # Red team audit synthesis: narrative and lore seat (Oct 30, 2026)
 
-Chair synthesis of the narrative persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802. This seat produced the audit's only attacks on the chair's own Oct 29 assemblies; both were verified against the filed files and both held. The corrections are recorded below and in the tracker, with the chair's misses owned.
+Chair synthesis of the narrative persona legs. Prongs in hand: blind Rey, DeepSeek, Argon, Qwen (4 of 4). Qwen prong: FOLDED IN Oct 31, 2026 (Qwen leg filed Oct 31, 2026; four prongs complete for this seat; see the Qwen fold-in addendum at the end of this synthesis). Pin: main head b3a3b802. This seat produced the audit's only attacks on the chair's own Oct 29 assemblies; both were verified against the filed files and both held. The corrections are recorded below and in the tracker, with the chair's misses owned.
 
 ## Seat verdict
 
@@ -47,3 +47,17 @@ NOT READY, on the bible's own testimony. Lore bible r8 gave the game a sharp, di
 ## Not checked by the chair
 
 Tree tiers 1 to 3 line by line (spot checks only); the full 33 event variants (the pack elided most); portrait art against the embodying-feature lists (the reword-versus-regenerate question stays art-dependent). The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+Qwen leg: redteam_narrative_2026_10_30.md, filed Oct 31, 2026. This seat is now at four prongs.
+
+Qwen verdict, in its own words: the fiction's architecture is sound and the faction voices are the strongest asset in the pack, but "the rival speaks the same words regardless of what the player did," so the adaptive hunter exists only in mechanics and never in language. The leg registers that as a CRITICAL finding (finding 1), which converges with the player synthesis's one-direction Nemesis loop from the narrative side. NOT READY stands.
+
+Agreement: finding 3 (six of twelve Beat 1 flags are never referenced again), finding 4 (the scripted rival scenes assume a humanoid actor a Chorus swarm cannot be), finding 5 (the Crusade rank table leaks into promotion text and event requirements for factions with no such ranks), finding 6 (the 40k shadow concentrated in the Eclipse and Crusade clusters), finding 7 (the help screen teaches a wrong game), finding 8 (the rival's gender is hardcoded male in a system that rolls both), and finding 10 (voice family leaks across faction boundaries) all confirm this synthesis's account of content drifting off bible r8.
+
+Refinements: finding 2 ranks Beat 3 as the least argued moment in every arc (three of six finales are the identical reward pair), which sharpens the synthesis's drift account into a structural point about endings. Finding 9 adds a second Chorus axis: the outlines' own header states the voice as short lines while the body prose runs long, an internal contradiction distinct from the bible's song ban this synthesis adjudicated.
+
+New items: none beyond the finding 1 ranking. Giving the Nemesis finding CRITICAL severity, above every drift item in this seat, is the leg's main act, and the chair adopts the ranking.
+
+Chair screening notes: a deviation is recorded for this leg. Qwen presented a two-response comparison view; the runner selected Response 1 to proceed and Response 2 was not captured, contrary to the file-both convention. The filed leg is Response 1, a genuine Qwen3.8-Max report produced under both gates. Finding 1's cost paragraph also uses the retired 80 percent loss premise (see canonical_corrections_2026_10_31.md section 5); the finding itself does not depend on the rate.

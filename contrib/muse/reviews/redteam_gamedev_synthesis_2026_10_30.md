@@ -1,6 +1,6 @@
 # Red team audit synthesis: game dev seat (Oct 30, 2026)
 
-Chair synthesis of the game dev persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802; code checks against the local clone at the pin state.
+Chair synthesis of the game dev persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: NOT RUN (blocked by the Access Verification slider on both attempts; audit closed with the legs in hand by Ryan's direction, Oct 31, 2026; see the addendum at the end). Pin: main head b3a3b802; code checks against the local clone at the pin state.
 
 ## Seat verdict
 
@@ -55,3 +55,7 @@ CORRECTION (Oct 31, 2026): finding 6 and action item 1 rest on the claim that th
 ## Not checked by the chair
 
 Argon findings 3, 4, and 6 are carried as leg-reported with quoted code; the chair verified the battleship mechanics, the flak kind system, and the capital inversion directly, and did not re-read startSideTurn line by line. aiVolley, evalOffense, and evalThreat internals were not sliced in any gamedev pack. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+The Qwen prong for this seat was never run, and the audit closes without it. On Oct 30, 2026 the attempt was blocked before any send: the Access Verification slider defeated the automated attempts, the sign-in session was lost, and the saved-login consent timed out unanswered. On Oct 31, 2026, after the daily cap reset, the retry reached further: Gate 1 passed (selector verified Qwen3.8-Max before send), both files were attached to the message, and the Access Verification slider then defeated more than 29 automated solve attempts across two challenge passes. No message was ever sent, no model fallback was used, and no output exists to file. On Oct 31, 2026 Ryan directed closing the red team audit with the legs in hand. This seat therefore stands on three prongs (blind Rey, DeepSeek, Argon), and its verdict is unchanged.

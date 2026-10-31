@@ -1,6 +1,6 @@
 # Red team audit synthesis: UI/UX seat (Oct 30, 2026)
 
-Chair synthesis of the uiux persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802. Accessibility is carried as a named sub-lens throughout, per the charter.
+Chair synthesis of the uiux persona legs. Prongs in hand: blind Rey, DeepSeek, Argon, Qwen (4 of 4). Qwen prong: FOLDED IN Oct 31, 2026 (Qwen leg filed Oct 31, 2026; four prongs complete for this seat; see the Qwen fold-in addendum at the end of this synthesis). Pin: main head b3a3b802. Accessibility is carried as a named sub-lens throughout, per the charter.
 
 ## Seat verdict
 
@@ -46,3 +46,17 @@ FRICTION and NOT READY both stand, 3 of 3 prongs, and the seat sharpens both. Th
 ## Not checked by the chair
 
 No prong played either build live at this pin; visual claims rest on the Godot captures and code reads, and the browser build's battle-start framing is unverified either way. Browser contrast ratios are inferred from the Godot measurements plus the browser palette, not computed from the browser CSS. Screen reader behavior and keyboard-only completion of a full battle are untested. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+Qwen leg: redteam_uiux_2026_10_30.md, filed Oct 31, 2026. This seat is now at four prongs.
+
+Qwen verdict: FRICTION CONFIRMED on the battle UI, NOT READY confirmed on HUD readability and player-facing text, accessibility FAIL on text, and remapping NOT PRESENT. Its sharpest line is the teaching grade: "the battle is taught, the run is not."
+
+Agreement: all ten findings confirm this synthesis. Finding 1 (attack-move fires and relocates on one unpreviewed click), finding 3 (fire-all irreversible while the rare Command gets the two-tap confirm), finding 7 (inspect and fire share one gesture), finding 4 (text size and contrast FAIL, worst on the controls help line), finding 5 (the tutorial card teaches a wrong gold-glow cue), finding 6 (no input remapping), finding 8 (sticky wing selection escapes cancel paths), finding 9 (the hint line declares a ship finished while options remain), and finding 10 (zone colours carry opposite meanings by hue alone at failing contrast) each restate a synthesis claim with the leg's own evidence pass.
+
+Refinements: finding 2 grades the teaching failure down on one axis. Where three prongs graded the firstrun failure LOST IN THE VOID, Qwen holds that the battle layer is taught (ten tips fire, the hint line teaches, the Carried forward panel itemizes the loss) and the failure is concentrated in the campaign and meta layers. The chair adopts the refinement: SYSTEMIC TEACHING FAILURE stands for the campaign layer, with the battle layer exempted. Finding 1 also prices phased activation honestly: two beats per engagement doubles the per-round interaction count at the 20-ship target.
+
+New items: the phased-activation interaction spec gap. The ruling names the direction (move beat, fire beat, rehearsal, ghost), but no spec in the pack shows how rehearsal, inspect-only clicks, and the fire beat sequence on a 20-ship board while preserving the hover-tooltip speed the current UI earns its praise from. That spec is named here as a missing artifact for the Godot build. Finding 10 also proposes crest shapes, already in crest.gd, as a second channel on the selected ship panel and ship markers.
+
+Chair screening notes: finding 3 repeats the retired "80 percent loss by design" premise (retired by the campaign Monte Carlo; see canonical_corrections_2026_10_31.md section 5). The premise is not load-bearing for the finding, which is about misclick cost. The leg's distinctive additions are the teaching grade refinement and the phased-activation spec gap recorded above.

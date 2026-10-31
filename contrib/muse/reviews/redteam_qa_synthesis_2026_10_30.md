@@ -1,6 +1,6 @@
 # Red team audit synthesis: QA seat (Oct 30, 2026)
 
-Chair synthesis of the qa persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802. Where a leg conflicts with a chair adjudication in the red team tracker, the tracker governs and this synthesis says so.
+Chair synthesis of the qa persona legs. Prongs in hand: blind Rey, DeepSeek, Argon, Qwen (4 of 4). Qwen prong: FOLDED IN Oct 31, 2026 (Qwen leg filed Oct 31, 2026; four prongs complete for this seat; see the Qwen fold-in addendum at the end of this synthesis). Pin: main head b3a3b802. Where a leg conflicts with a chair adjudication in the red team tracker, the tracker governs and this synthesis says so.
 
 ## Seat verdict
 
@@ -42,3 +42,17 @@ The EVT-5 reconciliation (item 6) and the save recovery confirmation (item 2) ar
 ## Not checked by the chair
 
 Live cloud conflict behavior was read, never exercised, by every prong. Godot-side test existence and battle persistence were outside the QA pack (the Rey leg notes the gap). Save growth and quota behavior over long profiles are unmeasured. Whether the findings suite runs anywhere automatically was not evidenced either way. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+Qwen leg: redteam_qa_2026_10_30.md, filed Oct 31, 2026. This seat is now at four prongs.
+
+Qwen verdict, in its own words: NOT READY, because at cutover "the cutover is not a migration; it is a wipe." That confirms this synthesis's NOT READY FOR CUTOVER at four prongs.
+
+Agreement: F1 (the cutover is a save-extinction event with no importer in the tree, no exporter in the browser build, and a Godot loader that reads only its own format), F3 (the third silent weapon deletion is a missing validation layer, not three isolated bugs), F9 (the elite guarantee breaks on 84 of 4,500 maps), and F10 (the module fit guard checks ability but not weapon kind, so six module types can be fitted as silent no-ops) all land on synthesis claims.
+
+Refinements and escalations: F4 escalates the unlockAll boot grant from a browser defect to a data-poisoning event: every save written between now and cutover carries a fully unlocked META, so the grant propagates into any future importer, whose strip-or-ratify decision is the last clean place to settle it. F2 attacks the framing of the failing regression suite as a release gate with no stated criteria (when a fix lands, who re-runs the suite, what target count gates cutover). F5 (mid-reward resume can silently skip unclaimed prize, salvage, or pick stages after id repair, with the node already banked) and F6 (settings writes never reach the cloud mirror, so a second device resolves by stamps and loses them) each sharpen saves-audit material into named loss paths.
+
+New items: F8 for this seat. The NOMIDFIRE brace bypass is stated as a pure code defect with no harness dependency: nothing in the repo assigns the variable, so the fix does not need to preserve a harness behavior nobody uses, and the Godot oracle copies carry the same reference. The synthesis register did not carry this item; the wider program knows it from the wave 5 patch pack.
+
+Chair screening notes: like the engineer leg, this leg argues from the pack's 48-test counts (8 pass / 40 fail), superseded Oct 31, 2026 by the 80-test suite (8 pass / 72 fail) per canonical_corrections_2026_10_31.md. Pack staleness, not a leg error. Its unlockAll data-poisoning escalation stands and is adopted.

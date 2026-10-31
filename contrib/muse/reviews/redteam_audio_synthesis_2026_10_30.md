@@ -1,6 +1,6 @@
 # Red team audit synthesis: audio seat (Oct 30, 2026)
 
-Chair synthesis of the audio persona legs. Prongs in hand: blind Rey, DeepSeek, Argon (3 of 4). Qwen prong: PENDING FOLD-IN (daily cap at send; folds in as an addendum when it lands). Pin: main head b3a3b802. This seat had no claims register to attack (no prior audio verdict exists, itself a finding), so the register below is built from the legs' targets: the shipped sound surface, the Godot audio state, and the program's open music credits question.
+Chair synthesis of the audio persona legs. Prongs in hand: blind Rey, DeepSeek, Argon, Qwen (4 of 4). Qwen prong: FOLDED IN Oct 31, 2026 (Qwen leg filed Oct 31, 2026; four prongs complete for this seat; see the Qwen fold-in addendum at the end of this synthesis). Pin: main head b3a3b802. This seat had no claims register to attack (no prior audio verdict exists, itself a finding), so the register below is built from the legs' targets: the shipped sound surface, the Godot audio state, and the program's open music credits question.
 
 ## Seat verdict
 
@@ -38,3 +38,17 @@ NOT READY on sound. The SFX engine is genuinely well built (buses with reverb se
 ## Not checked by the chair
 
 Nothing in this seat was listened to; every claim is a code or file read, and mix quality by ear (loudness balance, fatigue over a real hour, whether the levelled loops sit right under SFX) remains untested by any prong. The Sonniss bundle's licence terms rest on a code comment's assertion. Whether the Godot adaptive intensity feels right in play is unjudged. The Qwen fold-in may add or contest findings; this synthesis will be addended, not rewritten, when it lands.
+
+## Qwen fold-in addendum (Oct 31, 2026)
+
+Qwen leg: redteam_audio_2026_10_30.md, filed Oct 31, 2026. This seat is now at four prongs.
+
+Qwen verdict: the shipped game is sonically incomplete. It has a competent, well-engineered SFX system and no music at all, and finding 1 is the single most important attack. That confirms this synthesis's NOT READY on sound.
+
+Agreement: finding 1 (the browser build, the playable truth today, has no music: no playback system, no sequencer, no loop manager, and no reference to any music file, while the Godot tree holds 27 OGG tracks) is the synthesis's central claim restated with the inventory behind it. Finding 3 (SFX repetition fatigue across long sessions, from a 27-key browser pool with small variant counts), finding 5 (no adaptive or reactive music in either build's playable state, so the Nemesis has no musical counterpart), finding 7 (the ambient bus rests on one clip at half gain), and finding 9 (faction identity has no sonic signature in the shipped build) all converge with the synthesis's coverage account.
+
+Refinements: finding 10 frames the Godot audio pipeline as present but unverified: build scripts, a clips index, and a music test exist, with no evidence any of it has been exercised in a playable Godot session, so bus routing, voice limit, or timing conflicts would surface late in the migration. Finding 6 (spatial audio limited to stereo pan and distance attenuation against a 3D scene) and finding 8 (all browser audio loaded as base64 inside a single JS file) price smaller synthesis points.
+
+New items: finding 4, the voice budget saturation analysis. The cap reads maxVoices 20 on mobile and 34 on desktop; against a 20-ship battle with overlapping broadsides, impacts, shield breaks, and UI cues, the stealing logic fades or drops cues at exactly the moments of peak tactical load. This synthesis carried the voice cap as a mobile-flag defect; the saturation pricing against the typical-battle target is the leg's addition.
+
+Chair screening notes: the leg confirms the synthesis on the credits question: it stays open and unauditable from the pack, because the contents of godot/music/CREDITS.md are not reproduced in the evidence, which matches the known state that the credits material has been blocked on Opus artifacts. Reverb and master routing, a synthesis finding, is not addressed in this leg; the fold-in neither confirms nor contests it from the Qwen prong. Finding 1 and the verdict repeat the retired "80 percent loss rate" premise (retired by the campaign Monte Carlo; see canonical_corrections_2026_10_31.md section 5). The premise is rhetorical there, not load-bearing: the no-music finding stands on the inventory alone.
