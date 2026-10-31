@@ -1,0 +1,220 @@
+{
+  "status": "PASS for this bounded packet",
+  "sourcePin": "355a2ac7",
+  "godot": "4.7.2.stable.official.ed1daf0bf",
+  "workDirectory": "/tmp/voidsworn-build-system-cal4k7",
+  "legalBuilds": 3840,
+  "modelRecords": 707,
+  "pilotRecords": 96,
+  "moduleAssertionDelta": [
+    "MOD-3 FAIL -> PASS"
+  ],
+  "prototypeDisabledAssertionDelta": [],
+  "results": [
+    {
+      "label": "source_guard",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "compile_catalog",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "prepare_module_fit",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "prepare_pilot",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "prepare_tree_copy",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "check_contract",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "calculate_progression",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "check_patches",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "godot_version",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "prepare_model",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "model_js",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "model_godot",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "model_compare",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "prepare_pilot",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "pilot_js",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "pilot_godot",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "pilot_compare",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_baseline",
+      "status": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_module_fit",
+      "status": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_pilot_disabled",
+      "status": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "prepare_combined",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "combined_model_js",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "combined_model_godot",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "combined_model_compare",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "combined_pilot_js",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "combined_pilot_godot",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "combined_pilot_compare",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "suite_combined",
+      "status": 1,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "build_preview",
+      "status": 0,
+      "ok": true,
+      "error": null
+    },
+    {
+      "label": "preview_code",
+      "status": 0,
+      "ok": true,
+      "error": null
+    }
+  ],
+  "limits": [
+    "General cutover parity corpus remains NOT RUN.",
+    "Rendered browser/layout and Windows launcher verification remain NOT RUN.",
+    "Native module inventories have four recorded compatibility differences from two pre-existing weapon-loadout discrepancies. Shared-input predicate parity does not clear that drift.",
+    "The browser picker/Command dialogs are prepared; native Godot equivalents are not in this packet.",
+    "Two operational skill candidates are implemented; 358 other authored entries remain source contracts, not implemented effects.",
+    "Shadow allocation/overflow/respec policy choices are documented candidates, not new owner rulings."
+  ],
+  "hashes": {
+    "modelJS": "d1b8c4438a3b962959c39ddb229eea96f12fe3d304dc47bd40e4b438d39f3535",
+    "modelGodot": "f975d58664108af602e73ae9cbcccd58b1bb055da705a2752ae864ee5656d6d1",
+    "pilotJS": "47e71294c97440c22b60da354f72bcd6da150bc6e035b4c167b770ccd3943af5",
+    "pilotGodot": "3d56d25265e046d6f8f119bfa31c7d15b51a47e6f88347518e0b978406f50614",
+    "combinedModelJS": "d1b8c4438a3b962959c39ddb229eea96f12fe3d304dc47bd40e4b438d39f3535",
+    "combinedModelGodot": "f975d58664108af602e73ae9cbcccd58b1bb055da705a2752ae864ee5656d6d1",
+    "combinedPilotJS": "47e71294c97440c22b60da354f72bcd6da150bc6e035b4c167b770ccd3943af5",
+    "combinedPilotGodot": "3d56d25265e046d6f8f119bfa31c7d15b51a47e6f88347518e0b978406f50614"
+  },
+  "combinedRuntime": {
+    "modelRecords": 707,
+    "pilotRecords": 96,
+    "moduleAssertionDelta": [
+      "MOD-3 FAIL -> PASS"
+    ]
+  }
+}

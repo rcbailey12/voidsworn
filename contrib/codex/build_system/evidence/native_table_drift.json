@@ -1,0 +1,125 @@
+{
+  "differences": [
+    {
+      "browserAllowed": true,
+      "browserWeapons": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "battery",
+          "T"
+        ]
+      ],
+      "godotAllowed": false,
+      "godotWeapons": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "mod": "loaders",
+      "tpl": "vs_penitent_l"
+    },
+    {
+      "browserAllowed": false,
+      "browserWeapons": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "battery",
+          "T"
+        ]
+      ],
+      "godotAllowed": true,
+      "godotWeapons": [
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "lance",
+          "F"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "mod": "flakplus",
+      "tpl": "vs_penitent_l"
+    },
+    {
+      "browserAllowed": true,
+      "browserWeapons": [
+        [
+          "pulsar",
+          "F"
+        ],
+        [
+          "turret",
+          "T"
+        ]
+      ],
+      "godotAllowed": false,
+      "godotWeapons": [
+        [
+          "turret",
+          "T"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "mod": "crystal",
+      "tpl": "i_carrier_a"
+    },
+    {
+      "browserAllowed": false,
+      "browserWeapons": [
+        [
+          "pulsar",
+          "F"
+        ],
+        [
+          "turret",
+          "T"
+        ]
+      ],
+      "godotAllowed": true,
+      "godotWeapons": [
+        [
+          "turret",
+          "T"
+        ],
+        [
+          "flak",
+          "T"
+        ]
+      ],
+      "mod": "flakplus",
+      "tpl": "i_carrier_a"
+    }
+  ],
+  "note": "Native inventories are retained separately. Shared-input predicate vectors do not clear existing table drift."
+}

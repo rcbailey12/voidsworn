@@ -1,0 +1,19 @@
+PASS 360 unique slots and 216/48/96 source coverage
+PASS all source hashes, exact option text and owner mappings retained
+PASS all 24 admirals expose 20 slots and 160 distinct complete builds
+PASS skipped tier, both sides of a pair, wrong owner and premature capstone rejected
+PASS pick is immutable; duplicate and unimplemented picks fail
+PASS no mid-run choices or respec; cancel keeps identical save
+PASS respec costs escalate per transaction, preserves XP and refunds no currency
+PASS insufficient funds and missing dependency removal are atomic
+PASS 100 save/load cycles preserve pending picks, quarters and unknown same-version fields
+PASS corrupt/future saves fail without silently dropping records
+PASS native XP gives 0/1/11/16/27 on losses and 43 on defined win
+PASS Heat, exact-quarter bench/heir and pending pool accounting
+PASS settlement replay is idempotent and conflicting replay rejected
+PASS four 1-XP runs bank exactly one ordinary shadow XP
+PASS cap overflow preserved separately; pending choices do not destroy XP
+PASS source mastery above 600 is preserved as overflow
+PASS first-passage distributions match deterministic controls and retain tail mass
+PASS vector comparator rejects equal truncated prefixes, duplicates, missing newline and changed state
+18 contract/progression checks passed

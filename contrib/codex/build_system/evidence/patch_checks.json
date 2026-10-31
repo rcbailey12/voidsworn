@@ -1,0 +1,34 @@
+{
+  "sourcePin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "results": [
+    {
+      "jobs": [
+        "module_fit"
+      ],
+      "files": 6,
+      "status": "PASS: applies without whitespace errors and all candidate hashes match"
+    },
+    {
+      "jobs": [
+        "lineage_pilot"
+      ],
+      "files": 16,
+      "status": "PASS: applies without whitespace errors and all candidate hashes match"
+    },
+    {
+      "jobs": [
+        "tree_copy"
+      ],
+      "files": 2,
+      "status": "PASS: applies without whitespace errors and all candidate hashes match"
+    },
+    {
+      "jobs": [
+        "combined_runtime",
+        "tree_copy"
+      ],
+      "files": 20,
+      "status": "PASS: applies without whitespace errors and all candidate hashes match"
+    }
+  ]
+}

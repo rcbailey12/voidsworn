@@ -1,0 +1,1274 @@
+diff --git a/battle.js b/battle.js
+--- a/battle.js
++++ b/battle.js
+@@ -1090,14 +1090,40 @@
+ function cmdActive(side,id){ const c=cmdRec(side); return !!(c&&c.id===id&&c.round===B.round); }
+ function canCommand(side){ return !!B&&!B.over&&side==='player'&&!!commandFor(side)&&B.round>=1&&!B.cmdUsed; } // ready from round 1, once per battle
+ function cmdTaken(t){ return cmdActive(t.side,'iron')?1-cmdPow('iron',null,t.side)-(t.shMax?0:.1):1; } // shieldless hulls get a deeper cut, since the shield refill does nothing for them
+-async function useCommand(side){ if(!canCommand(side)) return false; const c=commandFor(side); const tier=cmdTier(); B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
++async function useCommand(side){ if(!canCommand(side)) return false; const c=commandFor(side); const tier=cmdTier(); if(!lineageCommandIntent(side,c).ok) return false; B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
+   log(`Admiral's Command${tier?` at power ${tier+1} of 3`:''}: ${c.n}. ${cmdDesc(c,tier,(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn')}`,side==='player'?'p':'e'); try{ if(typeof tel==='function') tel('command',{id:c.id,round:B.round,tier}); }catch(e){}
+   return runCommand(side,c,tier); }
++function lineageCommandIntent(side,c){
++  const lp=VSLineagePilot.intent(typeof RUN==='undefined'?null:RUN,side,c,B);
++  if(!lp.ok) return lp;
++  if(lp.mode==='adm.vaelen.A1.1') for(const [id,index] of Object.entries(lp.weapons)) if(index!==null){const u=B.units.find(x=>x.id===id);if(!alive(side==='player'?'enemy':'player').some(t=>inReach(u,u.weapons[index],t))) return {ok:false};}
++  return lp;
++}
+ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'player', bStart=B;
+   for(const u of alive(side)) if(!u.isSq) fxText(u,c.n,side==='player'?'#e8c66a':'#ff8a6a',-44);
+-  if(c.id==='barrage'){ const b0=B, live=liveFrom(null); B.volleyMul={side,m:1+cmdPow('barrage',tier)}; try{ for(const u of alive(side).filter(x=>!x.isSq)){ if(B.over||!live()) break; const keep=u.weapons.map(w=>[w.fired,w.cdLeft]), pf=[u.postFire,u.postMp]; u.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; });
+-      for(let i=0;i<u.weapons.length;i++){ if(B.over||!live()||u.dead) break; const w=u.weapons[i]; const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue; const val=t=>{ const e=expectedVs(u,w,t); return e.hull+e.shield*.3+(e.hull>=t.hp?25:0); }; ts.sort((a,b2)=>val(b2)-val(a)); await fireWeapon(u,i,ts[0]); }
+-      u.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); u.postFire=pf[0]; u.postMp=pf[1]; } } finally{ if(B===b0) B.volleyMul=null; } } // the free volley leaves movement as it was
++  if(c.id==='barrage'){
++    const b0=B, live=liveFrom(null), lp=lineageCommandIntent(side,c);
++    if(!lp.ok) return false;
++    const previous=B.volleyMul; B.volleyMul={side,m:1+cmdPow('barrage',tier)};
++    if(lp.mode==='adm.vaelen.A1.1') delete B.lineageIntent;
++    try{ for(const u of alive(side).filter(x=>!x.isSq)){
++      if(B.over||!live()) break;
++      const keep=u.weapons.map(w=>({w,fired:w.fired,cdLeft:w.cdLeft,shots:w.shots})), pf=[u.postFire,u.postMp];
++      try{ u.weapons.forEach(w=>{w.fired=false;w.cdLeft=0;});
++        for(let i=0;i<u.weapons.length;i++){
++          if(B.over||!live()||u.dead) break;
++          if(!VSLineagePilot.allows(lp,u,i)) continue;
++          const w=u.weapons[i], single=lp.mode==='adm.vaelen.A1.1'&&lp.weapons[u.id]!=null;
++          if(single) w.shots=1;
++          const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue;
++          const val=t=>{const prior=b0.volleyMul;b0.volleyMul={side,m:prior.m*VSLineagePilot.factor(lp,u,w,t,hdist(u,t))};try{const e=expectedVs(u,w,t);return e.hull+e.shield*.3+(e.hull>=t.hp?25:0);}finally{b0.volleyMul=prior;}};
++          ts.sort((a,b2)=>val(b2)-val(a)); const target=ts[0], prior=b0.volleyMul;
++          b0.volleyMul={side,m:prior.m*VSLineagePilot.factor(lp,u,w,target,hdist(u,target))};
++          try{await fireWeapon(u,i,target);}finally{b0.volleyMul=prior;}
++        }
++      }finally{for(const k of keep){k.w.fired=k.fired;k.w.cdLeft=k.cdLeft;k.w.shots=k.shots;}u.postFire=pf[0];u.postMp=pf[1];}
++    }}finally{b0.volleyMul=previous==null?null:previous;}
++  }
+   if(c.id==='hunt') for(const u of alive(side)) for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; }
+   if(c.id==='iron') for(const u of alive(side)) if(u.shMax) u.sh=u.sh.map(()=>u.shMax);
+   if(c.id==='restore') for(const u of alive(side).filter(x=>!x.isSq)){ const rp=cmdPow('restore',tier); u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*rp)); if(u.sec){ let fixed=0; for(const k of Object.keys(u.sec)) if(repairSection(u,k,rp)) fixed++; if(fixed) fxText(u,fixed>1?fixed+' sections restored':'Section restored','#8ff0a0',-34); } fxText(u,'+'+Math.round(u.maxHp*rp)+' hull','#8ff0a0',-20); }
+diff --git a/campaign_meta.js b/campaign_meta.js
+--- a/campaign_meta.js
++++ b/campaign_meta.js
+@@ -85,7 +85,7 @@
+ // ---------- run options: mastery unlocks and Heat ----------
+ const runOpt={alt:false,cmdAlt:false,heat:[]};
+ function masteryBar(id){ const l=masteryLevel(id), x=masteryXP(id), nx=MASTERY_XP[l+1]; const f=nx?Math.min(1,(x-MASTERY_XP[l])/(nx-MASTERY_XP[l])):1;
+-  return `<div style="margin:6px 0 2px;font-size:13px"><span class="gilt">Mastery ${l}/4</span> <span class="dim num">${nx?`${x}/${nx}: next ${esc(MASTERY_PERKS[l+1].n.toLowerCase())}`:'mastered'}</span><div class="bar" style="margin-top:3px"><i style="width:${Math.round(f*100)}%;background:var(--gilt)"></i></div></div>`; }
++  return `<div style="margin:6px 0 2px;font-size:13px"><span class="gilt">Mastery ${l}/4</span> <span class="dim num">${nx?`${x}/${nx}: next ${esc(MASTERY_PERKS[l+1].n.toLowerCase())}`:'mastered'}</span><div class="bar" style="margin-top:3px"><i style="width:${Math.round(f*100)}%;background:var(--gilt)"></i></div></div>`+(id==='vaelen'?'<button class="small" data-act="lineagePilot">Saro lineage prototype</button>':''); }
+ function runOptionsHtml(){ const id=pickedAdmiral, a=ADMIRALS[id], ml=masteryLevel(id), parts=[];
+   if(ml>=1){ const ap=altFleetPlan(id,pickedFaction), alt=ap.fleet.map(t=>HULLS[t].n).join(', ')+(ap.mod?` (the carrier starts with a ${MODULES[ap.mod].n.toLowerCase()})`:''), std=a.start.map(t=>HULLS[equivHull(t,pickedFaction)].n).join(', ');
+     parts.push(`<div class="card"><h3>Starting fleet</h3><button class="choice ${!runOpt.alt?'sel':''}" data-act="optAlt" data-arg="0"><b>Standard</b><small>${esc(std)}</small></button><button class="choice ${runOpt.alt?'sel':''}" data-act="optAlt" data-arg="1"><b>Alternate</b><small>${esc(alt)}</small></button></div>`); }
+@@ -192,7 +192,7 @@
+   try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl)}); }catch(e){}
+   // what carries forward: renown (more with Heat), admiral mastery, and a Heat record for this faction
+   const hl=heatLevel(RUN.heat), ren=Math.round((typeof runRenown==='function'?runRenown():0)*(1+.1*hl)); META.renown=(META.renown||0)+ren;
+-  const mx0=masteryLevel(RUN.admiral), mxGain=s.battles+s.elites*2+s.bosses*5+(victory?10:0); META.mastery=META.mastery||{}; META.mastery[RUN.admiral]=(META.mastery[RUN.admiral]||0)+mxGain; const mx1=masteryLevel(RUN.admiral);
++  const mx0=masteryLevel(RUN.admiral), lx=lineagePilotAward(META,RUN,s,!!victory,hl), mxGain=lx===null?s.battles+s.elites*2+s.bosses*5+(victory?10:0):lx; META.mastery=META.mastery||{}; META.mastery[RUN.admiral]=(META.mastery[RUN.admiral]||0)+mxGain; const mx1=masteryLevel(RUN.admiral);
+   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
+   RUN.carry={ren,mxGain,mx0,mx1,hl};
+   RUN.over=true; SAVED_RUN=null; Persist.save();
+@@ -214,3 +214,17 @@
+   RUN=null;
+ }
+ ACT.nextFac=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };
++
++// Prototype picker: between runs only; preserves the original META fields.
++function lineagePilotBetweenRuns(){ return !(RUN&&!RUN.over)&&!(SAVED_RUN&&!SAVED_RUN.over); }
++function lineagePilotMenu(){
++  if(!lineagePilotBetweenRuns()){toast('Finish or abandon the current run before changing lineage.');return;}
++  try{const state=lineagePilotState(META),line=state.lines.vaelen;
++    modal('<h2>Saro: lineage prototype</h2><p>Two tier-1 effects are implemented. Other tree effects are not selectable in this prototype.</p><p>'+line.xpQ/4+' XP; first choice at 75 XP. Renown: '+(META.renown||0)+'.</p>'+LINEAGE_PILOT_SPEC.catalog.skills.map(s=>'<button class="choice" data-act="lineagePilotChoose" data-arg="'+s.id+'" '+(line.picks.length||line.xpQ<300?'disabled':'')+'><b>'+esc(s.name)+'</b><small>'+esc(s.effect)+'</small></button>').join('')+'<p>Current: '+esc(line.picks.map(id=>LINEAGE_PILOT_SPEC.catalog.skills.find(s=>s.id===id).name).join(', ')||'none')+'</p>'+(line.picks.length?'<button data-act="lineagePilotRespec">Respec ('+(25+10*line.respecs)+' renown)</button>':'')+'<button data-act="lineagePilotToggle">'+(META.opts.lineagePilot?'Disable':'Enable')+' for future Saro runs</button><button data-act="lineagePilotClose">Back to mastery</button><p class="dim">Focus Drawn Long measures each weapon’s printed range. One Lens fires one projectile from a selected weapon; normal volley remains available per ship. Heat shadow pools and overflow are banked by the documented prototype policy.</p>');
++  }catch(e){toast('Lineage save preserved: '+e.message);}
++}
++ACT.lineagePilot=()=>lineagePilotMenu();
++ACT.lineagePilotClose=()=>{closeModal();progTab='mastery';legacyScreen();};
++ACT.lineagePilotChoose=key=>{if(!lineagePilotBetweenRuns())return;try{const state=LINEAGE_PILOT_ENGINE.choose(lineagePilotState(META),'vaelen',key);META.lineageV1=state;META.opts.lineagePilot=true;Persist.save();lineagePilotMenu();}catch(e){toast(e.message);}};
++ACT.lineagePilotRespec=()=>{if(!lineagePilotBetweenRuns())return;try{const state=lineagePilotState(META),r=LINEAGE_PILOT_ENGINE.respec(state,'vaelen',state.lines.vaelen.picks,META.renown||0);META.lineageV1=r.state;META.renown=r.wallet;Persist.save();lineagePilotMenu();}catch(e){toast(e.message);}};
++ACT.lineagePilotToggle=()=>{if(!lineagePilotBetweenRuns())return;META.lineageV1=JSON.parse(JSON.stringify(lineagePilotState(META)));META.opts.lineagePilot=!META.opts.lineagePilot;Persist.save();lineagePilotMenu();};
+diff --git a/campaign_run.js b/campaign_run.js
+--- a/campaign_run.js
++++ b/campaign_run.js
+@@ -125,7 +125,7 @@
+     ${opts.extra||''}</div>`;
+ }
+ function fleetScreen(back){
+-  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>s.mods.length<HULLS[s.tpl].slots && (!MODULES[m].only||HULLS[s.tpl].ab===MODULES[m].only));
++  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>canFitModule(s,m));
+     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot row wrap">${opts.length?opts.map(s=>`<button class="small" data-act="equip" data-arg="${i}:${s.uid}">Fit to ${esc(s.name)}</button>`).join(''):'<span class="dim">No free compatible slot. Remove a refit first.</span>'}</div></div>`; }).join('');
+   show(`<div class="screen"><div class="page">
+     <div class="row"><h2 class="gothic">Fleet</h2><span class="spacer"></span><button class="primary" data-act="${back==='shipyard'?'backShipyard':'backMap'}">Done</button></div>
+@@ -137,7 +137,7 @@
+ }
+ ACT.fleetScreen=()=>fleetScreen('map');
+ ACT.backMap=()=>{ saveRun(); mapScreen(); };
+-ACT.equip=arg=>{ const [i,uid]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[+i]; if(!s||!m) return;
++ACT.equip=arg=>{ if(!RUN||typeof arg!=='string') return false; const parts=arg.split(':'); if(parts.length!==2||parts[0].length>15||!/^(0|[1-9][0-9]*)$/.test(parts[0])) return false; const [i,uid]=parts; const index=Number(i); if(!Number.isSafeInteger(index)||index>=RUN.inventory.length) return false; const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[index]; if(!canFitModule(s,m)) return false;
+   changeShip(s,sh=>sh.mods.push(m)); RUN.inventory.splice(+i,1); fleetScreen(RUN._fleetBack); };
+ ACT.unequip=arg=>{ const [uid,i]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; let m; changeShip(s,sh=>{ m=sh.mods.splice(+i,1)[0]; }); if(m) RUN.inventory.push(m); fleetScreen(RUN._fleetBack); };
+ ACT.promote=uid=>promoteModal(uid, ()=>fleetScreen(RUN._fleetBack));
+diff --git a/core.js b/core.js
+--- a/core.js
++++ b/core.js
+@@ -231,6 +231,17 @@
+ function addXp(ship, n){ const c=ship.cap; c.xp+=Math.round(n*(1+(runFx().xpPct||0)));
+   while(c.rank<RANKS.length-1 && c.xp>=RANK_XP[c.rank+1]){ c.rank++; c.pending++; } }
+ // refits your fleet can actually use: no lance crystals for a fleet without lances, no shield parts for a shieldless one
++function canFitModule(ship,id){
++  const mod=typeof id==='string'&&Object.hasOwn(MODULES,id)?MODULES[id]:null, hull=ship&&Object.hasOwn(HULLS,ship.tpl)?HULLS[ship.tpl]:null;
++  if(!mod||!hull||!Array.isArray(ship.mods)||ship.mods.length>=(hull.slots||0)) return false;
++  if(mod.only&&hull.ab!==mod.only) return false;
++  const need=MOD_NEED[id];
++  if(need==='shields') return (hull.sh||0)>0;
++  if(need==='carrier') return hull.ab==='launch'&&(hull.hangar||0)>0;
++  const kind={batt:'battery',lance:'lance',torp:'torp',flak:'flak'}[need];
++  if(kind) return (hull.w||[]).some(([wid])=>W[wid]&&W[wid].k===kind);
++  return !need;
++}
+ function modulePool(){ const kit=fleetKit(), all=Object.keys(MODULES), ok=all.filter(m=>!MOD_NEED[m]||kit[MOD_NEED[m]]); return ok.length>=3?ok:all; }
+ function randomModule(){ return pick(modulePool()); }
+ function modName(m){ const f=(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'; return (MOD_NAMES[f]&&MOD_NAMES[f][m])||MODULES[m].n; }
+@@ -298,7 +309,7 @@
+ function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.map.cond; return k&&SECTOR_CONDS[k]?SECTOR_CONDS[k]:null; }catch(e){ return null; } }
+ 
+ // ---------- progression helpers ----------
+-function masteryXP(id){ return (META.mastery&&META.mastery[id])||0; }
++function masteryXP(id){ const x=lineagePilotMasteryXP(META,id); return x===null?((META.mastery&&META.mastery[id])||0):x; }
+ function masteryLevel(id){ const x=masteryXP(id); let l=0; for(let i=1;i<MASTERY_XP.length;i++) if(x>=MASTERY_XP[i]) l=i; return l; }
+ function favourOf(p){ return (META.favour&&META.favour[p])||0; }
+ function favourTier(p){ const f=favourOf(p); let t=0; FAVOUR_TIERS.forEach((x,i)=>{ if(f>=x.at) t=i; }); return t; }
+@@ -326,6 +337,7 @@
+   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
+   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
+   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }
++  RUN.lineagePilot=VSLineagePilot.snapshot(META,admiralId);
+   RUN.heat=(opt.heat||[]).filter(k=>HEAT[k]); RUN.mastery=masteryLevel(admiralId);
+   const plan=opt.alt&&RUN.mastery>=1?altFleetPlan(admiralId,fac):null, start=plan?plan.fleet:adm.start.map(t=>equivHull(t,fac)); RUN.altFleet=!!plan;
+   for(const t of start) RUN.fleet.push(newShip(t, !!META.unlocked.vets));
+@@ -347,3 +359,150 @@
+   return m.edges.filter(e=>e[0]===RUN.pos).map(e=>e[1]);
+ }
+ function findNode(id){ for(const c of RUN.map.cols) for(const n of c) if(n.id===id) return n; return null; }
++
++// Opt-in, two-effect lineage prototype. Original source rules remain the default.
++  (function(root,factory){const api=factory();root.VSLineage=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
++  'use strict';
++  const LEVEL_XP=[0,6,16,30,50,75,110,160,230],MASTERY_XP=[320,440,600];
++  const clone=x=>JSON.parse(JSON.stringify(x));
++  function integer(n,label){if(!Number.isSafeInteger(n)||n<0)throw Error(label+' must be a nonnegative safe integer');return n;}
++  function create(catalog,roster){
++   const skills=new Map(catalog.skills.map(s=>[s.id,s])),admirals=new Map(roster.admirals.map(a=>[a.id,a]));
++   if(skills.size!==catalog.skills.length||admirals.size!==roster.admirals.length)throw Error('duplicate catalog/roster id');
++   function adm(id){const a=admirals.get(id);if(!a)throw Error('unknown admiral '+id);return a;}
++   function level(xpQ){integer(xpQ,'XP quarters');let n=0;for(let i=1;i<LEVEL_XP.length;i++)if(xpQ>=LEVEL_XP[i]*4)n=i;return n;}
++   function validateBuild(id,xpQ,picks,capstone){
++    adm(id);integer(xpQ,'XP quarters');if(!Array.isArray(picks)||new Set(picks).size!==picks.length)throw Error('duplicate/non-array picks');
++    if(picks.length>Math.max(0,Math.min(3,level(xpQ)-4)))throw Error('too many picks for XP');
++    const tiers={A:[],B:[],C:[]};
++    for(const key of picks){const s=skills.get(key);if(!s||!s.owner.members.includes(id)||!tiers[s.branch])throw Error('wrong owner or branch '+key);tiers[s.branch].push(s.tier);}
++    for(const ts of Object.values(tiers)){ts.sort((a,b)=>a-b);if(ts.some((t,i)=>t!==i+1))throw Error('exclusive pair or skipped branch tier');}
++    if(capstone!==null&&capstone!==''){const c=skills.get(capstone);if(!c||c.branch!=='CAP'||!c.owner.members.includes(id)||level(xpQ)<8)throw Error('invalid capstone');}
++    return true;
++   }
++   function newState(masteries={}){
++    const lines={};for(const a of admirals.values()){
++     const xp=masteries[a.id]===undefined?0:masteries[a.id];if(!Number.isFinite(xp)||xp<0||!Number.isSafeInteger(xp*4))throw Error('invalid native mastery');
++     lines[a.id]={xpQ:Math.min(2400,xp*4),overflowQ:Math.max(0,xp*4-2400),picks:[],capstone:'',respecs:0};
++    }
++    return {version:1,lines,shadowPoolQ:{},awards:{}};
++   }
++   function validate(state){
++    if(!state||state.version!==1||!state.lines||typeof state.lines!=='object'||Array.isArray(state.lines))throw Error('unsupported lineage save');
++    if(!state.shadowPoolQ||typeof state.shadowPoolQ!=='object'||Array.isArray(state.shadowPoolQ)||!state.awards||typeof state.awards!=='object'||Array.isArray(state.awards))throw Error('invalid pools/awards');
++    const knownFacs=new Set([...admirals.values()].map(a=>a.fac));
++    for(const [fac,q] of Object.entries(state.shadowPoolQ)){if(!knownFacs.has(fac))throw Error('unknown shadow pool');integer(q,'pool quarters');}
++    for(const [id,l] of Object.entries(state.lines)){adm(id);if(!l||typeof l!=='object')throw Error('invalid line');integer(l.xpQ,'XP quarters');if(l.xpQ>2400)throw Error('XP cap exceeded');integer(l.overflowQ,'overflow quarters');integer(l.respecs,'respec count');if(typeof l.capstone!=='string')throw Error('capstone must use the empty-string sentinel');validateBuild(id,l.xpQ,l.picks,l.capstone);}
++    if([...admirals.keys()].some(id=>!Object.hasOwn(state.lines,id)))throw Error('missing admiral line');
++    for(const [id,value] of Object.entries(state.awards))if(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(id)||typeof value!=='string')throw Error('invalid settlement receipt');
++    return true;
++   }
++   function deserialize(text){const s=JSON.parse(text);validate(s);return s;}
++   function serialize(state){validate(state);return JSON.stringify(state);}
++   function choose(state,id,key,options={}){
++    validate(state);if(options.liveRun)throw Error('choices are between runs');const a=adm(id),s=skills.get(key);
++    if(!s||!s.owner.members.includes(a.id))throw Error('unknown/wrong-owner skill');
++    if(options.implementedOnly!==false&&s.availability!=='pilot_candidate')throw Error('effect not implemented in pilot');
++    const next=clone(state),line=next.lines[id];if(s.branch==='CAP'){if(line.capstone!=='')throw Error('capstone already chosen');line.capstone=key;}else line.picks.push(key);
++    validate(next);return next;
++   }
++   function respec(state,id,keys,wallet,options={}){
++    validate(state);adm(id);integer(wallet,'renown');if(options.liveRun)throw Error('respec is between runs');
++    if(!Array.isArray(keys)||!keys.length||new Set(keys).size!==keys.length)throw Error('respec needs unique owned picks');
++    const next=clone(state),line=next.lines[id],owned=line.picks.concat(line.capstone===''?[]:[line.capstone]);
++    if(keys.some(k=>!owned.includes(k)))throw Error('cannot refund unowned pick');
++    const cost=keys.length*(25+10*line.respecs);integer(cost,'respec cost');if(wallet<cost)throw Error('not enough renown');
++    line.picks=line.picks.filter(k=>!keys.includes(k));if(keys.includes(line.capstone))line.capstone='';line.respecs++;
++    validate(next);return {state:next,wallet:wallet-cost,cost};
++   }
++   function baseXp(stats,victory){
++    if(!stats||typeof victory!=='boolean')throw Error('stats and boolean victory required');
++    for(const k of ['battles','elites','bosses'])integer(stats[k],k);
++    if(stats.elites+stats.bosses>stats.battles)throw Error('elite/boss wins must be subsets of battles');
++    return integer(stats.battles+2*stats.elites+5*stats.bosses+(victory?10:0),'base XP');
++   }
++   function award(state,{id,stats,victory,heat=0,heirLines=[],settlementId}){
++    validate(state);const active=adm(id);integer(heat,'weighted Heat');if(heat>1000)throw Error('Heat outside calculator bounds');
++    if(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(settlementId||''))throw Error('explicit settlement id required');
++    if(!Array.isArray(heirLines)||new Set(heirLines).size!==heirLines.length||heirLines.some(k=>adm(k).fac!==active.fac||k===id))throw Error('heir lines must be unique benched same-faction lines');
++    const base=baseXp(stats,victory),fingerprint=[id,stats.battles,stats.elites,stats.bosses,victory?1:0,heat,heirLines.slice().sort().join(',')].join('|');
++    if(Object.hasOwn(state.awards,settlementId)){
++     if(state.awards[settlementId]!==fingerprint)throw Error('settlement id reused for a different outcome');
++     return {state:clone(state),duplicate:true,report:null};
++    }
++    const next=clone(state),report={baseXp:base,heatXp:2*heat,creditedQ:{},overflowQ:{},shadowPoolQ:heat*4};
++    const grant=(key,q)=>{integer(q,'grant quarters');const l=next.lines[key],credit=Math.min(q,2400-l.xpQ);l.xpQ+=credit;l.overflowQ+=q-credit;integer(l.overflowQ,'overflow quarters');report.creditedQ[key]=credit;report.overflowQ[key]=q-credit;};
++    const flown=(base+2*heat)*4;grant(id,flown);
++    for(const a of admirals.values())if(a.id!==id&&a.fac===active.fac)grant(a.id,flown/4*(heirLines.includes(a.id)?2:1));
++    next.shadowPoolQ[active.fac]=(next.shadowPoolQ[active.fac]||0)+heat*4;
++    next.awards[settlementId]=fingerprint;validate(next);return {state:next,duplicate:false,report};
++   }
++   function available(state,id,options={}){
++    validate(state);adm(id);const result=[];
++    for(const s of skills.values())if(s.owner.members.includes(id))try{choose(state,id,s.id,options);result.push(s.id);}catch(_){}
++    return result;
++   }
++   function enumerate(id){
++    adm(id);let states=new Map([['',[]]]);
++    for(let n=0;n<3;n++){
++     const next=new Map();for(const picks of states.values())for(const s of skills.values())if(s.branch!=='CAP'&&s.owner.members.includes(id)){
++      const p=picks.concat(s.id);try{validateBuild(id,920,p,null);const k=p.slice().sort().join('|');next.set(k,p.slice().sort());}catch(_){}
++     }states=next;
++    }
++    const builds=[];for(const picks of states.values())for(const c of skills.values())if(c.branch==='CAP'&&c.owner.members.includes(id))builds.push({picks,capstone:c.id});
++    return builds;
++   }
++   return {level,validateBuild,newState,validate,serialize,deserialize,choose,respec,baseXp,award,available,enumerate,thresholds:LEVEL_XP.slice(),masteryThresholds:MASTERY_XP.slice()};
++  }
++  return {create,LEVEL_XP,MASTERY_XP};
++  });
++
++  (function(root,factory){const api=factory();root.VSLineagePilot=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
++  'use strict';
++  const KEYS=['adm.vaelen.A1.0','adm.vaelen.A1.1'];
++  function snapshot(meta,id){
++   if(id!=='vaelen'||!meta||!meta.opts||meta.opts.lineagePilot!==true)return null;
++   const state=meta.lineageV1,line=state&&state.lines&&state.lines.vaelen;
++   if(!state||state.version!==1||!line||!Number.isSafeInteger(line.xpQ)||line.xpQ<0||line.xpQ>2400||!Array.isArray(line.picks)||line.picks.length>1||line.capstone!=='')return null;
++   if(line.picks.length&&(line.xpQ<300||!KEYS.includes(line.picks[0])))return null;
++   return {version:1,admiral:id,xpQ:line.xpQ,picks:line.picks.slice()};
++  }
++  function mode(run,side,c){
++   const s=run&&run.lineagePilot;
++   if(side!=='player'||!run||run.admiral!=='vaelen'||run.cmdOverride||!c||c.id!=='barrage'||!s||s.version!==1||s.admiral!=='vaelen'||!Number.isSafeInteger(s.xpQ)||s.xpQ<300||s.xpQ>2400||!Array.isArray(s.picks)||s.picks.length!==1)return null;
++   return KEYS.includes(s.picks[0])?s.picks[0]:null;
++  }
++  function intent(run,side,c,battle){
++   const selected=mode(run,side,c),raw=battle&&battle.lineageIntent;
++   if(selected!==KEYS[1])return {ok:true,mode:selected,weapons:{}};
++   if(raw===undefined||raw===null)return {ok:true,mode:selected,weapons:{}};
++   if(typeof raw!=='object'||Array.isArray(raw))return {ok:false};
++   const weapons={};
++   for(const [id,index] of Object.entries(raw)){
++    const u=battle.units.find(x=>x.id===id&&x.side==='player'&&!x.dead&&!x.isSq);
++    if(!u||index!==null&&(!Number.isSafeInteger(index)||index<0||index>=u.weapons.length||u.weapons[index].k==='flak'||(u.weapons[index].off||0)>0))return {ok:false};
++    weapons[id]=index;
++   }
++   return {ok:true,mode:selected,weapons};
++  }
++  function allows(context,u,index){return context.mode!==KEYS[1]||context.weapons[u.id]===undefined||context.weapons[u.id]===null||context.weapons[u.id]===index;}
++  function factor(context,u,w,t,distance){
++   if(context.mode===KEYS[0])return distance>w.r/2?1.2:1;
++   if(context.mode===KEYS[1]&&context.weapons[u.id]!==undefined&&context.weapons[u.id]!==null)return 1.25;
++   return 1;
++  }
++  return {KEYS,snapshot,mode,intent,allows,factor};
++  });
++
++const LINEAGE_PILOT_SPEC={"catalog":{"version":1,"skills":[{"id":"adm.vaelen.A1.0","owner":{"scope":"admiral","key":"adm.vaelen","members":["vaelen"]},"branch":"A","tier":1,"option":0,"name":"Focus Drawn Long","effect":"volley shots at targets beyond half the firing ship's range gain +20% damage.","original":"Focus Drawn Long - volley shots at targets beyond half the firing ship's range gain +20% damage.","source":{"path":"contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md","line":186,"sha256":"644e01aa19d552589c31f104a12b05314edb4255c4efdcef6c153a6df991aba0"},"primaryCommandOnly":true,"availability":"pilot_candidate","contract":{"status":"candidate_interpretation_requires_adoption","evidence":{"trigger":[],"timing":[],"duration":[],"limit":[],"playerInput":[],"actor":["ship"],"target":[]},"actor":"Each player non-squadron ship firing the primary Burning glass Command","target":"The actual target chosen for this weapon by the existing Command targeting","trigger":"Immediately before a primary-Command weapon resolves","resolution":"Multiply that weapon shot damage by 1.20 only if hex distance is strictly greater than half its printed maximum range","duration":"Only this Command weapon resolution","limit":"Once as a damage multiplier per eligible weapon; not an extra shot","stacking":"Multiply the existing Command multiplier once; no effect on normal fire, boss Commands or alternate Command","cleanup":"Restore the original battle multiplier in finally, including aborted or thrown actions","playerInput":"Weapon eligibility follows the existing Command; no additional target override","engineHooks":["command_volley_weapon"],"note":"Evidence is verbatim extraction; hook tags are suggestions. Null fields must not be defaulted into game behavior."},"interpretationNote":"A single shot means one projectile from a selected weapon entry; “ship range” is interpreted as that weapon’s printed maximum r. These terms are proposed clarifications, not silent edits to the source."},{"id":"adm.vaelen.A1.1","owner":{"scope":"admiral","key":"adm.vaelen","members":["vaelen"]},"branch":"A","tier":1,"option":1,"name":"One Lens, One Target","effect":"a ship may fire its volley as a single shot at +25% damage instead of firing every gun.","original":"One Lens, One Target - a ship may fire its volley as a single shot at +25% damage instead of firing every gun.","source":{"path":"contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md","line":186,"sha256":"644e01aa19d552589c31f104a12b05314edb4255c4efdcef6c153a6df991aba0"},"primaryCommandOnly":true,"availability":"pilot_candidate","contract":{"status":"candidate_interpretation_requires_adoption","evidence":{"trigger":[],"timing":[],"duration":[],"limit":[],"playerInput":["may"],"actor":["ship"],"target":[]},"actor":"Each player non-squadron ship with an explicit focused-weapon selection","target":"The actual legal target chosen by the existing Command for that weapon","trigger":"Before iterating a ship’s primary-Command weapons","resolution":"For a ship choosing one weapon index, fire a single projectile from that weapon during the Command at 1.25 damage; null/omitted selection keeps its normal volley","duration":"Only this Command resolution","limit":"One projectile from one chosen weapon per ship; native shot count restored afterward","stacking":"Multiply existing Command damage once; only one A1 option can be owned","cleanup":"Restore normal weapons/cooldowns/post-fire movement and the original battle multiplier; consume intent with Command","playerInput":"Per ship: normal volley, or one weapon index. Cancel does not spend Command","engineHooks":["command_volley_weapon"],"note":"Evidence is verbatim extraction; hook tags are suggestions. Null fields must not be defaulted into game behavior."},"interpretationNote":"A single shot means one projectile from a selected weapon entry; “ship range” is interpreted as that weapon’s printed maximum r. These terms are proposed clarifications, not silent edits to the source."}]},"roster":{"version":1,"admirals":[{"id":"vex","sourceName":"Admiral Roderic Vex","displayName":"Admiral Roderic Vex","fac":"voidsworn","primaryCommand":"barrage"},{"id":"malek","sourceName":"Oath-Captain Malek Draven","displayName":"Oath-Captain Malek Draven","fac":"voidsworn","primaryCommand":"hunt"},{"id":"ashgrove","sourceName":"Commodore Sera Ashgrove","displayName":"Commodore Sera Ashgrove","fac":"voidsworn","primaryCommand":"scramble"},{"id":"thale","sourceName":"High Admiral Oryn Thale","displayName":"High Admiral Oryn Thale","fac":"voidsworn","primaryCommand":"iron"},{"id":"kassar","sourceName":"First Admiral Ilsa Kassar","displayName":"First Admiral Ilsa Kassar","fac":"hegemony","primaryCommand":"barrage"},{"id":"vorn","sourceName":"Commodore Dace Vorn","displayName":"Commodore Dace Vorn","fac":"hegemony","primaryCommand":"hunt"},{"id":"reyes","sourceName":"Fleet Marshal Corin Reyes","displayName":"Fleet Marshal Corin Reyes","fac":"hegemony","primaryCommand":"scramble"},{"id":"maren","sourceName":"Line Admiral Oskar Maren","displayName":"Line Admiral Oskar Maren","fac":"hegemony","primaryCommand":"iron"},{"id":"grax","sourceName":"Warlord Grax Steelgrin","displayName":"Warlord Grax Ironmaw","fac":"corsair","primaryCommand":"surge"},{"id":"sable","sourceName":"Sable the Smiling Knife","displayName":"Sable the Smiling Knife","fac":"corsair","primaryCommand":"hunt"},{"id":"mott","sourceName":"Old Mott","displayName":"Old Mott","fac":"corsair","primaryCommand":"scramble"},{"id":"vesh","sourceName":"Vesh the Collector","displayName":"Vesh the Collector","fac":"corsair","primaryCommand":"restore"},{"id":"matriarch","sourceName":"The Matriarch of Nine Throats","displayName":"The Matriarch of Nine Throats","fac":"chorus","primaryCommand":"scramble"},{"id":"razormaw","sourceName":"Razormaw","displayName":"Razormaw","fac":"chorus","primaryCommand":"surge"},{"id":"mending","sourceName":"The Mending Throng","displayName":"The Mending Throng","fac":"chorus","primaryCommand":"restore"},{"id":"voice","sourceName":"Voice of the Deep","displayName":"Voice of the Deep","fac":"chorus","primaryCommand":"barrage"},{"id":"aelith","sourceName":"Tamsa of the Clear Aperture","displayName":"Tamsa of the Clear Aperture","fac":"ithar","primaryCommand":"scramble"},{"id":"vaelen","sourceName":"Saro of Long Focus","displayName":"Saro of Long Focus","fac":"ithar","primaryCommand":"barrage"},{"id":"thorne","sourceName":"Vell of the Third Mirror","displayName":"Vell of the Third Mirror","fac":"ithar","primaryCommand":"surge"},{"id":"mirelle","sourceName":"Brin of the Fourth Lens","displayName":"Brin of the Fourth Lens","fac":"ithar","primaryCommand":"iron"},{"id":"nekhet","sourceName":"Nadir Aurex, Ninth Frame","displayName":"Nadir Aurex, Ninth Frame","fac":"deathless","primaryCommand":"restore"},{"id":"sekhmar","sourceName":"Umbra Vessane, Third-Housed","displayName":"Umbra Vessane, Third-Housed","fac":"deathless","primaryCommand":"barrage"},{"id":"anuket","sourceName":"Ostrel of the Long Copy","displayName":"Ostrel of the Long Copy","fac":"deathless","primaryCommand":"hunt"},{"id":"khepra","sourceName":"Seveth, Twice-Restored","displayName":"Seveth, Twice-Restored","fac":"deathless","primaryCommand":"iron"}],"pairs":[{"key":"pair.01","scope":"pair","members":["vex","vaelen"],"declaredFamily":"barrage","sourceLine":7},{"key":"pair.02","scope":"pair","members":["kassar","sekhmar"],"declaredFamily":"barrage","sourceLine":12},{"key":"pair.03","scope":"pair","members":["ashgrove","aelith"],"declaredFamily":"scramble","sourceLine":17},{"key":"pair.04","scope":"pair","members":["reyes","matriarch"],"declaredFamily":"scramble","sourceLine":22},{"key":"pair.05","scope":"pair","members":["malek","anuket"],"declaredFamily":"hunt","sourceLine":27},{"key":"pair.06","scope":"pair","members":["vorn","sable"],"declaredFamily":"hunt","sourceLine":32},{"key":"pair.07","scope":"pair","members":["thale","khepra"],"declaredFamily":"iron","sourceLine":37},{"key":"pair.08","scope":"pair","members":["maren","mirelle"],"declaredFamily":"iron","sourceLine":42},{"key":"pair.09","scope":"pair","members":["grax","razormaw"],"declaredFamily":"surge","sourceLine":47},{"key":"pair.10","scope":"pair","members":["mending","nekhet"],"declaredFamily":"restore","sourceLine":52},{"key":"pair.11","scope":"pair","members":["voice","mott"],"declaredFamily":"burst release","sourceLine":57},{"key":"pair.12","scope":"pair","members":["thorne","vesh"],"declaredFamily":"reposition and patch","sourceLine":62}]}};
++const LINEAGE_PILOT_ENGINE=VSLineage.create(LINEAGE_PILOT_SPEC.catalog,LINEAGE_PILOT_SPEC.roster);
++function lineagePilotState(meta){ const state=meta.lineageV1||LINEAGE_PILOT_ENGINE.newState(meta.mastery||{}); LINEAGE_PILOT_ENGINE.validate(state); return state; }
++function lineagePilotMasteryXP(meta,id){ const s=VSLineagePilot.snapshot(meta,id); return s?s.xpQ/4:null; }
++function lineagePilotAward(meta,run,stats,victory,heat){
++  if(run.admiral!=='vaelen'||!meta.opts||meta.opts.lineagePilot!==true) return null;
++  try{ const id='run:'+String(run.t0||0)+':'+run.admiral+':'+String(meta.stats.runs||0);
++    const heirLines=Object.keys(meta.lineageHeirs||{}).filter(k=>meta.lineageHeirs[k]===true&&k!=='vaelen'&&LINEAGE_PILOT_SPEC.roster.admirals.some(a=>a.id===k&&a.fac==='ithar'));
++    const r=LINEAGE_PILOT_ENGINE.award(lineagePilotState(meta),{id:'vaelen',stats,victory,heat,heirLines,settlementId:id});
++    meta.lineageV1=r.state; return r.duplicate?0:r.report.baseXp+r.report.heatXp;
++  }catch(e){ console.warn('Lineage pilot kept the original save and used native XP: '+e.message); return null; }
++}
+diff --git a/godot/campaign/campaign.gd b/godot/campaign/campaign.gd
+--- a/godot/campaign/campaign.gd
++++ b/godot/campaign/campaign.gd
+@@ -14,6 +14,8 @@
+ signal battle_requested   # a battle page is up (external mode): the battle side reads pending_battle and calls finish_battle()
+ 
+ const BattleAPI = preload("res://rules/battle_api.gd")   # the rules are reached only through the battle API (rules/API.md)
++const LineagePilot = preload("res://rules/lineage_pilot.gd")
++const LineageModel = preload("res://campaign/lineage_model.gd")
+ const JSM = BattleAPI.JSM   # the shared JS maths and the one PRNG the rules and the campaign both draw from
+ const TABLES_PATH := "res://campaign/data/campaign_tables.json"
+ 
+@@ -697,6 +699,21 @@
+ 	var c = ship["cap"]; c["xp"] = float(c["xp"]) + jsround(float(n) * (1.0 + float(z0(runFx().get("xpPct")))))
+ 	while float(c["rank"]) < RANKS.size() - 1 and float(c["xp"]) >= float(RANK_XP[int(c["rank"]) + 1]):
+ 		c["rank"] = float(c["rank"]) + 1; c["pending"] = float(c["pending"]) + 1
++func canFitModule(sh, m) -> bool:
++	if not (sh is Dictionary) or not (m is String) or not MODULES.has(m): return false
++	var t = HULLS.get(sh.get("tpl"))
++	if t == null or not (sh.get("mods") is Array) or sh["mods"].size() >= int(t.get("slots", 0)): return false
++	var md = MODULES[m]
++	if jt(md.get("only")) and t.get("ab") != md["only"]: return false
++	var need = MOD_NEED.get(m)
++	if need == "shields": return float(z0(t.get("sh"))) > 0.0
++	if need == "carrier": return t.get("ab") == "launch" and float(z0(t.get("hangar"))) > 0.0
++	var kind = {"batt":"battery", "lance":"lance", "torp":"torp", "flak":"flak"}.get(need)
++	if kind != null:
++		for pair in t.get("w", []):
++			if W_.has(pair[0]) and W_[pair[0]].get("k") == kind: return true
++		return false
++	return not jt(need)
+ func modulePool() -> Array:
+ 	var kit = fleetKit(); var all = MODULES.keys(); var ok = []
+ 	for m in all:
+@@ -899,7 +916,10 @@
+ 	return SECTOR_CONDS[k] if jt(k) and SECTOR_CONDS.has(k) else null
+ 
+ # ---------------- progression helpers ----------------
+-func masteryXP(id) -> float: return float(z0(META["mastery"].get(id))) if META.get("mastery") != null else 0.0
++func masteryXP(id) -> float:
++	var snap = LineagePilot.snapshot(META, id)
++	if snap != null: return float(snap["xpQ"]) / 4.0
++	return float(z0(META["mastery"].get(id))) if META.get("mastery") != null else 0.0
+ func masteryLevel(id) -> int:
+ 	var x = masteryXP(id); var l = 0
+ 	for i in range(1, MASTERY_XP.size()):
+@@ -975,6 +995,7 @@
+ 	if jt(META["unlocked"].get("founder")):
+ 		var r = randomRelic()
+ 		if r != null: RUN["relics"].append(r)
++	RUN["lineagePilot"] = LineagePilot.snapshot(META, admiralId)
+ 	RUN["heat"] = or_(opt.get("heat"), []).filter(func(k): return HEAT.has(k)); RUN["mastery"] = masteryLevel(admiralId)
+ 	var plan = altFleetPlan(admiralId, fac) if (jt(opt.get("alt")) and RUN["mastery"] >= 1) else null
+ 	var start = []
+@@ -1224,7 +1245,8 @@
+ 	if META["fallen"].size() > 80: META["fallen"] = META["fallen"].slice(META["fallen"].size() - 80)
+ 	tel("run_end", {"victory": victory, "abandoned": abandoned, "fac": RUN["fac"], "stats": s})
+ 	var hl = heatLevel(RUN.get("heat")); var ren = jsround(runRenown() * (1.0 + 0.1 * hl)); META["renown"] = float(z0(META.get("renown"))) + ren
+-	var mx0 = masteryLevel(RUN["admiral"]); var mxGain = float(s["battles"]) + float(s["elites"]) * 2 + float(s["bosses"]) * 5 + (10.0 if victory else 0.0)
++	var mx0 = masteryLevel(RUN["admiral"]); var pilot_gain = lineagePilotAward(s, victory, hl)
++	var mxGain = float(pilot_gain) if pilot_gain != null else float(s["battles"]) + float(s["elites"]) * 2 + float(s["bosses"]) * 5 + (10.0 if victory else 0.0)
+ 	META["mastery"] = or_(META.get("mastery"), {}); META["mastery"][RUN["admiral"]] = float(z0(META["mastery"].get(RUN["admiral"]))) + mxGain
+ 	var mx1 = masteryLevel(RUN["admiral"])
+ 	if victory and hl > 0:
+@@ -1309,16 +1331,19 @@
+ 	for i in range(RUN["inventory"].size()):
+ 		var m = RUN["inventory"][i]
+ 		for s in RUN["fleet"]:
+-			if s["mods"].size() < int(HULLS[s["tpl"]]["slots"]) and (not jt(MODULES[m].get("only")) or HULLS[s["tpl"]].get("ab") == MODULES[m]["only"]): A(acts, "equip", str(i) + ":" + s["uid"])
++			if canFitModule(s, m): A(acts, "equip", str(i) + ":" + s["uid"])
+ 	for s in RUN["fleet"]: shipCardActs(acts, s, true)
+ 	show_page("fleet", {"back": back}, acts)
+ 	RUN["_fleetBack"] = back
+ func _fleet_back() -> void: fleetScreen(RUN.get("_fleetBack"))   # undefined in the JS when the fleet screen was never opened this session
+ func _push_mod(sh, m) -> void: sh["mods"].append(m)
+ func ACT_equip(arg: String) -> void:
+-	var p = arg.split(":"); var s = _ship(p[1]); var i = int(p[0])
++	if RUN == null: return
++	var p = arg.split(":")
++	if p.size() != 2 or p[0].length() > 15 or not p[0].is_valid_int() or p[0].begins_with("-") or p[0].begins_with("+") or (p[0].length() > 1 and p[0].begins_with("0")): return
++	var i = int(p[0]); var s = _ship(p[1])
+ 	var m = RUN["inventory"][i] if i >= 0 and i < RUN["inventory"].size() else null
+-	if s == null or not jt(m): return
++	if not canFitModule(s, m): return
+ 	changeShip(s, _push_mod.bind(m))
+ 	RUN["inventory"].remove_at(i); _fleet_back()
+ func _pop_mod(sh, i, got: Array) -> void:
+@@ -2624,3 +2649,20 @@
+ 		run = {"fac": RUN["fac"], "admiral": RUN["admiral"], "sector": RUN["sector"], "fleet": fl}
+ 	return JSON.stringify({"build": build_id, "at": Time.get_datetime_string_from_system(true), "os": OS.get_name(), "opts": META.get("opts"), "run": run, "battle": battle,
+ 		"events": tel_log.slice(max(0, tel_log.size() - 200))})
++
++# Native UI can call this model through a reviewed between-run screen; browser picker is prepared separately.
++func lineagePilotAward(stats: Dictionary, victory: bool, heat) -> Variant:
++	if RUN.get("admiral") != "vaelen" or not (META.get("opts") is Dictionary) or META["opts"].get("lineagePilot") != true: return null
++	var spec = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/data/lineage_pilot.json"))
++	var model = LineageModel.new()
++	if spec == null or not model.configure(spec["catalog"], spec["roster"]): return null
++	var state = META.get("lineageV1", model.new_state(META.get("mastery", {})))
++	if not model.validate(state): return null
++	var heirs = []
++	for id in META.get("lineageHeirs", {}):
++		if META["lineageHeirs"][id] == true and id != "vaelen" and model.admirals.has(id) and model.admirals[id]["fac"] == "ithar": heirs.append(id)
++	var receipt = "run:%d:%s:%d" % [RUN.get("t0", 0), RUN["admiral"], META["stats"].get("runs", 0)]
++	var result = model.award(state, {"id":"vaelen", "stats":stats, "victory":victory, "heat":heat, "heirLines":heirs, "settlementId":receipt})
++	if result == null: return null
++	META["lineageV1"] = result["state"]
++	return 0 if result["duplicate"] else result["report"]["baseXp"] + result["report"]["heatXp"]
+diff --git a/godot/campaign/data/lineage_pilot.json b/godot/campaign/data/lineage_pilot.json
+new file mode 100644
+--- /dev/null
++++ b/godot/campaign/data/lineage_pilot.json
+@@ -0,0 +1 @@
++{"catalog":{"version":1,"skills":[{"id":"adm.vaelen.A1.0","owner":{"scope":"admiral","key":"adm.vaelen","members":["vaelen"]},"branch":"A","tier":1,"option":0,"name":"Focus Drawn Long","effect":"volley shots at targets beyond half the firing ship's range gain +20% damage.","original":"Focus Drawn Long - volley shots at targets beyond half the firing ship's range gain +20% damage.","source":{"path":"contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md","line":186,"sha256":"644e01aa19d552589c31f104a12b05314edb4255c4efdcef6c153a6df991aba0"},"primaryCommandOnly":true,"availability":"pilot_candidate","contract":{"status":"candidate_interpretation_requires_adoption","evidence":{"trigger":[],"timing":[],"duration":[],"limit":[],"playerInput":[],"actor":["ship"],"target":[]},"actor":"Each player non-squadron ship firing the primary Burning glass Command","target":"The actual target chosen for this weapon by the existing Command targeting","trigger":"Immediately before a primary-Command weapon resolves","resolution":"Multiply that weapon shot damage by 1.20 only if hex distance is strictly greater than half its printed maximum range","duration":"Only this Command weapon resolution","limit":"Once as a damage multiplier per eligible weapon; not an extra shot","stacking":"Multiply the existing Command multiplier once; no effect on normal fire, boss Commands or alternate Command","cleanup":"Restore the original battle multiplier in finally, including aborted or thrown actions","playerInput":"Weapon eligibility follows the existing Command; no additional target override","engineHooks":["command_volley_weapon"],"note":"Evidence is verbatim extraction; hook tags are suggestions. Null fields must not be defaulted into game behavior."},"interpretationNote":"A single shot means one projectile from a selected weapon entry; “ship range” is interpreted as that weapon’s printed maximum r. These terms are proposed clarifications, not silent edits to the source."},{"id":"adm.vaelen.A1.1","owner":{"scope":"admiral","key":"adm.vaelen","members":["vaelen"]},"branch":"A","tier":1,"option":1,"name":"One Lens, One Target","effect":"a ship may fire its volley as a single shot at +25% damage instead of firing every gun.","original":"One Lens, One Target - a ship may fire its volley as a single shot at +25% damage instead of firing every gun.","source":{"path":"contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md","line":186,"sha256":"644e01aa19d552589c31f104a12b05314edb4255c4efdcef6c153a6df991aba0"},"primaryCommandOnly":true,"availability":"pilot_candidate","contract":{"status":"candidate_interpretation_requires_adoption","evidence":{"trigger":[],"timing":[],"duration":[],"limit":[],"playerInput":["may"],"actor":["ship"],"target":[]},"actor":"Each player non-squadron ship with an explicit focused-weapon selection","target":"The actual legal target chosen by the existing Command for that weapon","trigger":"Before iterating a ship’s primary-Command weapons","resolution":"For a ship choosing one weapon index, fire a single projectile from that weapon during the Command at 1.25 damage; null/omitted selection keeps its normal volley","duration":"Only this Command resolution","limit":"One projectile from one chosen weapon per ship; native shot count restored afterward","stacking":"Multiply existing Command damage once; only one A1 option can be owned","cleanup":"Restore normal weapons/cooldowns/post-fire movement and the original battle multiplier; consume intent with Command","playerInput":"Per ship: normal volley, or one weapon index. Cancel does not spend Command","engineHooks":["command_volley_weapon"],"note":"Evidence is verbatim extraction; hook tags are suggestions. Null fields must not be defaulted into game behavior."},"interpretationNote":"A single shot means one projectile from a selected weapon entry; “ship range” is interpreted as that weapon’s printed maximum r. These terms are proposed clarifications, not silent edits to the source."}]},"roster":{"version":1,"admirals":[{"id":"vex","sourceName":"Admiral Roderic Vex","displayName":"Admiral Roderic Vex","fac":"voidsworn","primaryCommand":"barrage"},{"id":"malek","sourceName":"Oath-Captain Malek Draven","displayName":"Oath-Captain Malek Draven","fac":"voidsworn","primaryCommand":"hunt"},{"id":"ashgrove","sourceName":"Commodore Sera Ashgrove","displayName":"Commodore Sera Ashgrove","fac":"voidsworn","primaryCommand":"scramble"},{"id":"thale","sourceName":"High Admiral Oryn Thale","displayName":"High Admiral Oryn Thale","fac":"voidsworn","primaryCommand":"iron"},{"id":"kassar","sourceName":"First Admiral Ilsa Kassar","displayName":"First Admiral Ilsa Kassar","fac":"hegemony","primaryCommand":"barrage"},{"id":"vorn","sourceName":"Commodore Dace Vorn","displayName":"Commodore Dace Vorn","fac":"hegemony","primaryCommand":"hunt"},{"id":"reyes","sourceName":"Fleet Marshal Corin Reyes","displayName":"Fleet Marshal Corin Reyes","fac":"hegemony","primaryCommand":"scramble"},{"id":"maren","sourceName":"Line Admiral Oskar Maren","displayName":"Line Admiral Oskar Maren","fac":"hegemony","primaryCommand":"iron"},{"id":"grax","sourceName":"Warlord Grax Steelgrin","displayName":"Warlord Grax Ironmaw","fac":"corsair","primaryCommand":"surge"},{"id":"sable","sourceName":"Sable the Smiling Knife","displayName":"Sable the Smiling Knife","fac":"corsair","primaryCommand":"hunt"},{"id":"mott","sourceName":"Old Mott","displayName":"Old Mott","fac":"corsair","primaryCommand":"scramble"},{"id":"vesh","sourceName":"Vesh the Collector","displayName":"Vesh the Collector","fac":"corsair","primaryCommand":"restore"},{"id":"matriarch","sourceName":"The Matriarch of Nine Throats","displayName":"The Matriarch of Nine Throats","fac":"chorus","primaryCommand":"scramble"},{"id":"razormaw","sourceName":"Razormaw","displayName":"Razormaw","fac":"chorus","primaryCommand":"surge"},{"id":"mending","sourceName":"The Mending Throng","displayName":"The Mending Throng","fac":"chorus","primaryCommand":"restore"},{"id":"voice","sourceName":"Voice of the Deep","displayName":"Voice of the Deep","fac":"chorus","primaryCommand":"barrage"},{"id":"aelith","sourceName":"Tamsa of the Clear Aperture","displayName":"Tamsa of the Clear Aperture","fac":"ithar","primaryCommand":"scramble"},{"id":"vaelen","sourceName":"Saro of Long Focus","displayName":"Saro of Long Focus","fac":"ithar","primaryCommand":"barrage"},{"id":"thorne","sourceName":"Vell of the Third Mirror","displayName":"Vell of the Third Mirror","fac":"ithar","primaryCommand":"surge"},{"id":"mirelle","sourceName":"Brin of the Fourth Lens","displayName":"Brin of the Fourth Lens","fac":"ithar","primaryCommand":"iron"},{"id":"nekhet","sourceName":"Nadir Aurex, Ninth Frame","displayName":"Nadir Aurex, Ninth Frame","fac":"deathless","primaryCommand":"restore"},{"id":"sekhmar","sourceName":"Umbra Vessane, Third-Housed","displayName":"Umbra Vessane, Third-Housed","fac":"deathless","primaryCommand":"barrage"},{"id":"anuket","sourceName":"Ostrel of the Long Copy","displayName":"Ostrel of the Long Copy","fac":"deathless","primaryCommand":"hunt"},{"id":"khepra","sourceName":"Seveth, Twice-Restored","displayName":"Seveth, Twice-Restored","fac":"deathless","primaryCommand":"iron"}],"pairs":[{"key":"pair.01","scope":"pair","members":["vex","vaelen"],"declaredFamily":"barrage","sourceLine":7},{"key":"pair.02","scope":"pair","members":["kassar","sekhmar"],"declaredFamily":"barrage","sourceLine":12},{"key":"pair.03","scope":"pair","members":["ashgrove","aelith"],"declaredFamily":"scramble","sourceLine":17},{"key":"pair.04","scope":"pair","members":["reyes","matriarch"],"declaredFamily":"scramble","sourceLine":22},{"key":"pair.05","scope":"pair","members":["malek","anuket"],"declaredFamily":"hunt","sourceLine":27},{"key":"pair.06","scope":"pair","members":["vorn","sable"],"declaredFamily":"hunt","sourceLine":32},{"key":"pair.07","scope":"pair","members":["thale","khepra"],"declaredFamily":"iron","sourceLine":37},{"key":"pair.08","scope":"pair","members":["maren","mirelle"],"declaredFamily":"iron","sourceLine":42},{"key":"pair.09","scope":"pair","members":["grax","razormaw"],"declaredFamily":"surge","sourceLine":47},{"key":"pair.10","scope":"pair","members":["mending","nekhet"],"declaredFamily":"restore","sourceLine":52},{"key":"pair.11","scope":"pair","members":["voice","mott"],"declaredFamily":"burst release","sourceLine":57},{"key":"pair.12","scope":"pair","members":["thorne","vesh"],"declaredFamily":"reposition and patch","sourceLine":62}]}}
+diff --git a/godot/campaign/lineage_model.gd b/godot/campaign/lineage_model.gd
+new file mode 100644
+--- /dev/null
++++ b/godot/campaign/lineage_model.gd
+@@ -0,0 +1,148 @@
++extends RefCounted
++# Exact-quarter counterpart of lineage.js. Public failures return null/false and set error.
++const LEVEL_XP = [0, 6, 16, 30, 50, 75, 110, 160, 230]
++const MASTERY_XP = [320, 440, 600]
++var skills: Dictionary = {}
++var admirals: Dictionary = {}
++var error: String = ""
++
++func configure(catalog: Dictionary, roster: Dictionary) -> bool:
++	for s in catalog["skills"]:
++		if skills.has(s["id"]): return fail("duplicate catalog id")
++		skills[s["id"]] = s
++	for a in roster["admirals"]:
++		if admirals.has(a["id"]): return fail("duplicate admiral id")
++		admirals[a["id"]] = a
++	return true
++func fail(message: String) -> bool:
++	error = message
++	return false
++func integer(n: Variant) -> bool:
++	return (n is int or n is float) and is_finite(float(n)) and float(n) >= 0.0 and float(n) <= 9007199254740991.0 and floor(float(n)) == float(n)
++func level(xp_q: Variant) -> int:
++	if not integer(xp_q): fail("invalid XP quarters"); return -1
++	var n = 0
++	for i in range(1, LEVEL_XP.size()):
++		if xp_q >= LEVEL_XP[i] * 4: n = i
++	return n
++func validate_build(id: String, xp_q: Variant, picks: Variant, capstone: Variant) -> bool:
++	if not admirals.has(id) or not integer(xp_q) or not (picks is Array): return fail("invalid build")
++	if picks.size() > maxi(0, mini(3, level(xp_q) - 4)): return fail("too many picks for XP")
++	var seen = {}; var tiers = {"A": [], "B": [], "C": []}
++	for key in picks:
++		if seen.has(key): return fail("duplicate pick")
++		seen[key] = true
++		var s = skills.get(key)
++		if s == null or not s["owner"]["members"].has(id) or not tiers.has(s["branch"]): return fail("wrong owner or branch")
++		tiers[s["branch"]].append(s["tier"])
++	for ts in tiers.values():
++		ts.sort()
++		for i in range(ts.size()):
++			if ts[i] != i + 1: return fail("exclusive pair or skipped branch tier")
++	if capstone != null and capstone != "":
++		var c = skills.get(capstone)
++		if c == null or c["branch"] != "CAP" or not c["owner"]["members"].has(id) or level(xp_q) < 8: return fail("invalid capstone")
++	return true
++func new_state(masteries: Dictionary = {}) -> Variant:
++	var lines = {}
++	for a in admirals.values():
++		var xp = masteries.get(a["id"], 0)
++		if not (xp is int or xp is float) or not integer(float(xp) * 4.0): fail("invalid native mastery"); return null
++		lines[a["id"]] = {"xpQ": minf(2400.0, float(xp) * 4.0), "overflowQ": maxf(0.0, float(xp) * 4.0 - 2400.0), "picks": [], "capstone": "", "respecs": 0}
++	return {"version": 1, "lines": lines, "shadowPoolQ": {}, "awards": {}}
++func valid_settlement_id(id: Variant) -> bool:
++	if not (id is String) or id.length() < 1 or id.length() > 128: return false
++	var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
++	if not letters.contains(id[0]): return false
++	for c in id:
++		if not (letters + "._:-").contains(c): return false
++	return true
++func validate(state: Variant) -> bool:
++	if not (state is Dictionary) or state.get("version") != 1 or not (state.get("lines") is Dictionary) or not (state.get("shadowPoolQ") is Dictionary) or not (state.get("awards") is Dictionary): return fail("unsupported lineage save")
++	var facs = {}
++	for a in admirals.values(): facs[a["fac"]] = true
++	for fac in state["shadowPoolQ"]:
++		if not facs.has(fac) or not integer(state["shadowPoolQ"][fac]): return fail("invalid shadow pool")
++	for id in state["lines"]:
++		if not admirals.has(id): return fail("unknown admiral line")
++		var l = state["lines"][id]
++		if not (l is Dictionary) or not (l.get("capstone") is String) or not integer(l.get("xpQ")) or l["xpQ"] > 2400 or not integer(l.get("overflowQ")) or not integer(l.get("respecs")): return fail("invalid line")
++		if not validate_build(id, l["xpQ"], l.get("picks"), l.get("capstone")): return false
++	for id in admirals:
++		if not state["lines"].has(id): return fail("missing admiral line")
++	for id in state["awards"]:
++		if not valid_settlement_id(id) or not (state["awards"][id] is String): return fail("invalid settlement receipt")
++	return true
++func deserialize(text: String) -> Variant:
++	var parsed = JSON.parse_string(text)
++	return parsed if validate(parsed) else null
++func serialize(state: Dictionary) -> String:
++	return JSON.stringify(state) if validate(state) else ""
++func choose(state: Dictionary, id: String, key: String, options: Dictionary = {}) -> Variant:
++	if not validate(state): return null
++	if options.get("liveRun", false): fail("choices are between runs"); return null
++	var s = skills.get(key)
++	if s == null or not admirals.has(id) or not s["owner"]["members"].has(id): fail("wrong owner"); return null
++	if options.get("implementedOnly", true) and s["availability"] != "pilot_candidate": fail("effect not implemented in pilot"); return null
++	var next = state.duplicate(true); var line = next["lines"][id]
++	if s["branch"] == "CAP":
++		if line["capstone"] != "": fail("capstone already chosen"); return null
++		line["capstone"] = key
++	else: line["picks"].append(key)
++	return next if validate(next) else null
++func respec(state: Dictionary, id: String, keys: Array, wallet: Variant, options: Dictionary = {}) -> Variant:
++	if not validate(state) or not admirals.has(id) or not integer(wallet): fail("invalid respec"); return null
++	if options.get("liveRun", false) or keys.is_empty(): fail("respec is between runs and needs picks"); return null
++	var next = state.duplicate(true); var line = next["lines"][id]; var seen = {}; var owned = line["picks"].duplicate()
++	if line["capstone"] != "": owned.append(line["capstone"])
++	for key in keys:
++		if seen.has(key) or not owned.has(key): fail("invalid refund"); return null
++		seen[key] = true
++	var cost = keys.size() * (25.0 + 10.0 * line["respecs"])
++	if not integer(cost) or wallet < cost: fail("not enough renown"); return null
++	var kept = []
++	for key in line["picks"]:
++		if not keys.has(key): kept.append(key)
++	line["picks"] = kept
++	if keys.has(line["capstone"]): line["capstone"] = ""
++	line["respecs"] += 1
++	return {"state": next, "wallet": wallet - cost, "cost": cost} if validate(next) else null
++func base_xp(stats: Variant, victory: Variant) -> Variant:
++	if not (stats is Dictionary) or not (victory is bool): fail("invalid reward stats"); return null
++	for k in ["battles", "elites", "bosses"]:
++		if not integer(stats.get(k)): fail("invalid reward count"); return null
++	if stats["elites"] + stats["bosses"] > stats["battles"]: fail("elite/boss subsets invalid"); return null
++	var xp = stats["battles"] + 2.0 * stats["elites"] + 5.0 * stats["bosses"] + (10.0 if victory else 0.0)
++	if not integer(xp): fail("XP overflow"); return null
++	return xp
++func grant(state: Dictionary, report: Dictionary, id: String, q: Variant) -> bool:
++	if not integer(q): return fail("invalid grant quarters")
++	var l = state["lines"][id]; var credit = minf(float(q), 2400.0 - l["xpQ"])
++	l["xpQ"] += credit; l["overflowQ"] += q - credit
++	if not integer(l["overflowQ"]): return fail("overflow bank out of range")
++	report["creditedQ"][id] = credit; report["overflowQ"][id] = q - credit
++	return true
++func award(state: Dictionary, event: Dictionary) -> Variant:
++	if not validate(state): return null
++	var id = event.get("id"); var heat = event.get("heat", 0); var heirs = event.get("heirLines", []); var receipt = event.get("settlementId")
++	if not admirals.has(id) or not integer(heat) or heat > 1000 or not valid_settlement_id(receipt) or not (heirs is Array): fail("invalid reward event"); return null
++	var active = admirals[id]; var seen = {}
++	for h in heirs:
++		if seen.has(h) or not admirals.has(h) or admirals[h]["fac"] != active["fac"] or h == id: fail("invalid heir line"); return null
++		seen[h] = true
++	var base = base_xp(event.get("stats"), event.get("victory"))
++	if base == null: return null
++	var stats = event["stats"]; var ordered = heirs.duplicate(); ordered.sort()
++	var fingerprint = "%s|%d|%d|%d|%d|%d|%s" % [id, stats["battles"], stats["elites"], stats["bosses"], 1 if event["victory"] else 0, heat, ",".join(ordered)]
++	if state["awards"].has(receipt):
++		if state["awards"][receipt] != fingerprint: fail("conflicting settlement replay"); return null
++		return {"state": state.duplicate(true), "duplicate": true, "report": null}
++	var next = state.duplicate(true); var report = {"baseXp": base, "heatXp": 2.0 * heat, "creditedQ": {}, "overflowQ": {}, "shadowPoolQ": heat * 4.0}
++	var flown = (base + 2.0 * heat) * 4.0
++	if not grant(next, report, id, flown): return null
++	for a in admirals.values():
++		if a["id"] != id and a["fac"] == active["fac"]:
++			if not grant(next, report, a["id"], flown / 4.0 * (2.0 if heirs.has(a["id"]) else 1.0)): return null
++	next["shadowPoolQ"][active["fac"]] = next["shadowPoolQ"].get(active["fac"], 0) + heat * 4.0
++	next["awards"][receipt] = fingerprint
++	return {"state": next, "duplicate": false, "report": report} if validate(next) else null
+diff --git a/godot/campaign/test/oracle/README.md b/godot/campaign/test/oracle/README.md
+--- a/godot/campaign/test/oracle/README.md
++++ b/godot/campaign/test/oracle/README.md
+@@ -10,3 +10,11 @@
+ The parity harness and the campaign table exporter read these files, not the live ones at the repo root, so stream B can change the JS rules during the sprint without breaking the campaign port's golden test.
+ 
+ **Catching up:** when stream B changes a campaign rule, port the change to `godot/campaign/`, re-copy the six files from the new commit, run `node godot/campaign/test/node/export_campaign.js` to refresh `godot/campaign/data/campaign_tables.json`, run the parity test, and update the commit numbers above.
++
++## Proposed module-fit exception (Codex, Oct 31, 2026)
++
++The pinned oracle above remains the baseline. This candidate changes only module compatibility in core.js and its fleet-screen/action consumers in campaign_run.js, matching the browser/Godot candidate. It does not re-pin the rest of either file or adopt unrelated gameplay candidates.
++
++## Proposed Saro lineage exception (Codex, Oct 31, 2026)
++
++The original pin above is preserved. This candidate adds the opt-in Saro lineage module/snapshot and mastery getter to core.js, and the corresponding guarded primary-barrage resolver to battle.js. The campaign oracle also carries the matching guarded reward/getter and browser picker changes in campaign_meta.js. The Godot campaign candidate carries the native reward adapter. All other oracle content remains at its original pin. This is a scoped prototype, not a whole-oracle re-pin or a whole-port clearance.
+diff --git a/godot/campaign/test/oracle/battle.js b/godot/campaign/test/oracle/battle.js
+--- a/godot/campaign/test/oracle/battle.js
++++ b/godot/campaign/test/oracle/battle.js
+@@ -1090,14 +1090,40 @@
+ function cmdActive(side,id){ const c=cmdRec(side); return !!(c&&c.id===id&&c.round===B.round); }
+ function canCommand(side){ return !!B&&!B.over&&side==='player'&&!!commandFor(side)&&B.round>=1&&!B.cmdUsed; } // ready from round 1, once per battle
+ function cmdTaken(t){ return cmdActive(t.side,'iron')?1-cmdPow('iron',null,t.side)-(t.shMax?0:.1):1; } // shieldless hulls get a deeper cut, since the shield refill does nothing for them
+-async function useCommand(side){ if(!canCommand(side)) return false; const c=commandFor(side); const tier=cmdTier(); B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
++async function useCommand(side){ if(!canCommand(side)) return false; const c=commandFor(side); const tier=cmdTier(); if(!lineageCommandIntent(side,c).ok) return false; B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
+   log(`Admiral's Command${tier?` at power ${tier+1} of 3`:''}: ${c.n}. ${cmdDesc(c,tier,(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn')}`,side==='player'?'p':'e'); try{ if(typeof tel==='function') tel('command',{id:c.id,round:B.round,tier}); }catch(e){}
+   return runCommand(side,c,tier); }
++function lineageCommandIntent(side,c){
++  const lp=VSLineagePilot.intent(typeof RUN==='undefined'?null:RUN,side,c,B);
++  if(!lp.ok) return lp;
++  if(lp.mode==='adm.vaelen.A1.1') for(const [id,index] of Object.entries(lp.weapons)) if(index!==null){const u=B.units.find(x=>x.id===id);if(!alive(side==='player'?'enemy':'player').some(t=>inReach(u,u.weapons[index],t))) return {ok:false};}
++  return lp;
++}
+ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'player', bStart=B;
+   for(const u of alive(side)) if(!u.isSq) fxText(u,c.n,side==='player'?'#e8c66a':'#ff8a6a',-44);
+-  if(c.id==='barrage'){ const b0=B, live=liveFrom(null); B.volleyMul={side,m:1+cmdPow('barrage',tier)}; try{ for(const u of alive(side).filter(x=>!x.isSq)){ if(B.over||!live()) break; const keep=u.weapons.map(w=>[w.fired,w.cdLeft]), pf=[u.postFire,u.postMp]; u.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; });
+-      for(let i=0;i<u.weapons.length;i++){ if(B.over||!live()||u.dead) break; const w=u.weapons[i]; const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue; const val=t=>{ const e=expectedVs(u,w,t); return e.hull+e.shield*.3+(e.hull>=t.hp?25:0); }; ts.sort((a,b2)=>val(b2)-val(a)); await fireWeapon(u,i,ts[0]); }
+-      u.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); u.postFire=pf[0]; u.postMp=pf[1]; } } finally{ if(B===b0) B.volleyMul=null; } } // the free volley leaves movement as it was
++  if(c.id==='barrage'){
++    const b0=B, live=liveFrom(null), lp=lineageCommandIntent(side,c);
++    if(!lp.ok) return false;
++    const previous=B.volleyMul; B.volleyMul={side,m:1+cmdPow('barrage',tier)};
++    if(lp.mode==='adm.vaelen.A1.1') delete B.lineageIntent;
++    try{ for(const u of alive(side).filter(x=>!x.isSq)){
++      if(B.over||!live()) break;
++      const keep=u.weapons.map(w=>({w,fired:w.fired,cdLeft:w.cdLeft,shots:w.shots})), pf=[u.postFire,u.postMp];
++      try{ u.weapons.forEach(w=>{w.fired=false;w.cdLeft=0;});
++        for(let i=0;i<u.weapons.length;i++){
++          if(B.over||!live()||u.dead) break;
++          if(!VSLineagePilot.allows(lp,u,i)) continue;
++          const w=u.weapons[i], single=lp.mode==='adm.vaelen.A1.1'&&lp.weapons[u.id]!=null;
++          if(single) w.shots=1;
++          const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue;
++          const val=t=>{const prior=b0.volleyMul;b0.volleyMul={side,m:prior.m*VSLineagePilot.factor(lp,u,w,t,hdist(u,t))};try{const e=expectedVs(u,w,t);return e.hull+e.shield*.3+(e.hull>=t.hp?25:0);}finally{b0.volleyMul=prior;}};
++          ts.sort((a,b2)=>val(b2)-val(a)); const target=ts[0], prior=b0.volleyMul;
++          b0.volleyMul={side,m:prior.m*VSLineagePilot.factor(lp,u,w,target,hdist(u,target))};
++          try{await fireWeapon(u,i,target);}finally{b0.volleyMul=prior;}
++        }
++      }finally{for(const k of keep){k.w.fired=k.fired;k.w.cdLeft=k.cdLeft;k.w.shots=k.shots;}u.postFire=pf[0];u.postMp=pf[1];}
++    }}finally{b0.volleyMul=previous==null?null:previous;}
++  }
+   if(c.id==='hunt') for(const u of alive(side)) for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; }
+   if(c.id==='iron') for(const u of alive(side)) if(u.shMax) u.sh=u.sh.map(()=>u.shMax);
+   if(c.id==='restore') for(const u of alive(side).filter(x=>!x.isSq)){ const rp=cmdPow('restore',tier); u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*rp)); if(u.sec){ let fixed=0; for(const k of Object.keys(u.sec)) if(repairSection(u,k,rp)) fixed++; if(fixed) fxText(u,fixed>1?fixed+' sections restored':'Section restored','#8ff0a0',-34); } fxText(u,'+'+Math.round(u.maxHp*rp)+' hull','#8ff0a0',-20); }
+diff --git a/godot/campaign/test/oracle/campaign_meta.js b/godot/campaign/test/oracle/campaign_meta.js
+--- a/godot/campaign/test/oracle/campaign_meta.js
++++ b/godot/campaign/test/oracle/campaign_meta.js
+@@ -85,7 +85,7 @@
+ // ---------- run options: mastery unlocks and Heat ----------
+ const runOpt={alt:false,cmdAlt:false,heat:[]};
+ function masteryBar(id){ const l=masteryLevel(id), x=masteryXP(id), nx=MASTERY_XP[l+1]; const f=nx?Math.min(1,(x-MASTERY_XP[l])/(nx-MASTERY_XP[l])):1;
+-  return `<div style="margin:6px 0 2px;font-size:13px"><span class="gilt">Mastery ${l}/4</span> <span class="dim num">${nx?`${x}/${nx}: next ${esc(MASTERY_PERKS[l+1].n.toLowerCase())}`:'mastered'}</span><div class="bar" style="margin-top:3px"><i style="width:${Math.round(f*100)}%;background:var(--gilt)"></i></div></div>`; }
++  return `<div style="margin:6px 0 2px;font-size:13px"><span class="gilt">Mastery ${l}/4</span> <span class="dim num">${nx?`${x}/${nx}: next ${esc(MASTERY_PERKS[l+1].n.toLowerCase())}`:'mastered'}</span><div class="bar" style="margin-top:3px"><i style="width:${Math.round(f*100)}%;background:var(--gilt)"></i></div></div>`+(id==='vaelen'?'<button class="small" data-act="lineagePilot">Saro lineage prototype</button>':''); }
+ function runOptionsHtml(){ const id=pickedAdmiral, a=ADMIRALS[id], ml=masteryLevel(id), parts=[];
+   if(ml>=1){ const ap=altFleetPlan(id,pickedFaction), alt=ap.fleet.map(t=>HULLS[t].n).join(', ')+(ap.mod?` (the carrier starts with a ${MODULES[ap.mod].n.toLowerCase()})`:''), std=a.start.map(t=>HULLS[equivHull(t,pickedFaction)].n).join(', ');
+     parts.push(`<div class="card"><h3>Starting fleet</h3><button class="choice ${!runOpt.alt?'sel':''}" data-act="optAlt" data-arg="0"><b>Standard</b><small>${esc(std)}</small></button><button class="choice ${runOpt.alt?'sel':''}" data-act="optAlt" data-arg="1"><b>Alternate</b><small>${esc(alt)}</small></button></div>`); }
+@@ -192,7 +192,7 @@
+   try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl)}); }catch(e){}
+   // what carries forward: renown (more with Heat), admiral mastery, and a Heat record for this faction
+   const hl=heatLevel(RUN.heat), ren=Math.round((typeof runRenown==='function'?runRenown():0)*(1+.1*hl)); META.renown=(META.renown||0)+ren;
+-  const mx0=masteryLevel(RUN.admiral), mxGain=s.battles+s.elites*2+s.bosses*5+(victory?10:0); META.mastery=META.mastery||{}; META.mastery[RUN.admiral]=(META.mastery[RUN.admiral]||0)+mxGain; const mx1=masteryLevel(RUN.admiral);
++  const mx0=masteryLevel(RUN.admiral), lx=lineagePilotAward(META,RUN,s,!!victory,hl), mxGain=lx===null?s.battles+s.elites*2+s.bosses*5+(victory?10:0):lx; META.mastery=META.mastery||{}; META.mastery[RUN.admiral]=(META.mastery[RUN.admiral]||0)+mxGain; const mx1=masteryLevel(RUN.admiral);
+   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
+   RUN.carry={ren,mxGain,mx0,mx1,hl};
+   RUN.over=true; SAVED_RUN=null; Persist.save();
+@@ -214,3 +214,17 @@
+   RUN=null;
+ }
+ ACT.nextFac=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };
++
++// Prototype picker: between runs only; preserves the original META fields.
++function lineagePilotBetweenRuns(){ return !(RUN&&!RUN.over)&&!(SAVED_RUN&&!SAVED_RUN.over); }
++function lineagePilotMenu(){
++  if(!lineagePilotBetweenRuns()){toast('Finish or abandon the current run before changing lineage.');return;}
++  try{const state=lineagePilotState(META),line=state.lines.vaelen;
++    modal('<h2>Saro: lineage prototype</h2><p>Two tier-1 effects are implemented. Other tree effects are not selectable in this prototype.</p><p>'+line.xpQ/4+' XP; first choice at 75 XP. Renown: '+(META.renown||0)+'.</p>'+LINEAGE_PILOT_SPEC.catalog.skills.map(s=>'<button class="choice" data-act="lineagePilotChoose" data-arg="'+s.id+'" '+(line.picks.length||line.xpQ<300?'disabled':'')+'><b>'+esc(s.name)+'</b><small>'+esc(s.effect)+'</small></button>').join('')+'<p>Current: '+esc(line.picks.map(id=>LINEAGE_PILOT_SPEC.catalog.skills.find(s=>s.id===id).name).join(', ')||'none')+'</p>'+(line.picks.length?'<button data-act="lineagePilotRespec">Respec ('+(25+10*line.respecs)+' renown)</button>':'')+'<button data-act="lineagePilotToggle">'+(META.opts.lineagePilot?'Disable':'Enable')+' for future Saro runs</button><button data-act="lineagePilotClose">Back to mastery</button><p class="dim">Focus Drawn Long measures each weapon’s printed range. One Lens fires one projectile from a selected weapon; normal volley remains available per ship. Heat shadow pools and overflow are banked by the documented prototype policy.</p>');
++  }catch(e){toast('Lineage save preserved: '+e.message);}
++}
++ACT.lineagePilot=()=>lineagePilotMenu();
++ACT.lineagePilotClose=()=>{closeModal();progTab='mastery';legacyScreen();};
++ACT.lineagePilotChoose=key=>{if(!lineagePilotBetweenRuns())return;try{const state=LINEAGE_PILOT_ENGINE.choose(lineagePilotState(META),'vaelen',key);META.lineageV1=state;META.opts.lineagePilot=true;Persist.save();lineagePilotMenu();}catch(e){toast(e.message);}};
++ACT.lineagePilotRespec=()=>{if(!lineagePilotBetweenRuns())return;try{const state=lineagePilotState(META),r=LINEAGE_PILOT_ENGINE.respec(state,'vaelen',state.lines.vaelen.picks,META.renown||0);META.lineageV1=r.state;META.renown=r.wallet;Persist.save();lineagePilotMenu();}catch(e){toast(e.message);}};
++ACT.lineagePilotToggle=()=>{if(!lineagePilotBetweenRuns())return;META.lineageV1=JSON.parse(JSON.stringify(lineagePilotState(META)));META.opts.lineagePilot=!META.opts.lineagePilot;Persist.save();lineagePilotMenu();};
+diff --git a/godot/campaign/test/oracle/campaign_run.js b/godot/campaign/test/oracle/campaign_run.js
+--- a/godot/campaign/test/oracle/campaign_run.js
++++ b/godot/campaign/test/oracle/campaign_run.js
+@@ -125,7 +125,7 @@
+     ${opts.extra||''}</div>`;
+ }
+ function fleetScreen(back){
+-  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>s.mods.length<HULLS[s.tpl].slots && (!MODULES[m].only||HULLS[s.tpl].ab===MODULES[m].only));
++  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>canFitModule(s,m));
+     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot row wrap">${opts.length?opts.map(s=>`<button class="small" data-act="equip" data-arg="${i}:${s.uid}">Fit to ${esc(s.name)}</button>`).join(''):'<span class="dim">No free compatible slot. Remove a refit first.</span>'}</div></div>`; }).join('');
+   show(`<div class="screen"><div class="page">
+     <div class="row"><h2 class="gothic">Fleet</h2><span class="spacer"></span><button class="primary" data-act="${back==='shipyard'?'backShipyard':'backMap'}">Done</button></div>
+@@ -137,7 +137,7 @@
+ }
+ ACT.fleetScreen=()=>fleetScreen('map');
+ ACT.backMap=()=>{ saveRun(); mapScreen(); };
+-ACT.equip=arg=>{ const [i,uid]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[+i]; if(!s||!m) return;
++ACT.equip=arg=>{ if(!RUN||typeof arg!=='string') return false; const parts=arg.split(':'); if(parts.length!==2||parts[0].length>15||!/^(0|[1-9][0-9]*)$/.test(parts[0])) return false; const [i,uid]=parts; const index=Number(i); if(!Number.isSafeInteger(index)||index>=RUN.inventory.length) return false; const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[index]; if(!canFitModule(s,m)) return false;
+   changeShip(s,sh=>sh.mods.push(m)); RUN.inventory.splice(+i,1); fleetScreen(RUN._fleetBack); };
+ ACT.unequip=arg=>{ const [uid,i]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; let m; changeShip(s,sh=>{ m=sh.mods.splice(+i,1)[0]; }); if(m) RUN.inventory.push(m); fleetScreen(RUN._fleetBack); };
+ ACT.promote=uid=>promoteModal(uid, ()=>fleetScreen(RUN._fleetBack));
+diff --git a/godot/campaign/test/oracle/core.js b/godot/campaign/test/oracle/core.js
+--- a/godot/campaign/test/oracle/core.js
++++ b/godot/campaign/test/oracle/core.js
+@@ -231,6 +231,17 @@
+ function addXp(ship, n){ const c=ship.cap; c.xp+=Math.round(n*(1+(runFx().xpPct||0)));
+   while(c.rank<RANKS.length-1 && c.xp>=RANK_XP[c.rank+1]){ c.rank++; c.pending++; } }
+ // refits your fleet can actually use: no lance crystals for a fleet without lances, no shield parts for a shieldless one
++function canFitModule(ship,id){
++  const mod=typeof id==='string'&&Object.hasOwn(MODULES,id)?MODULES[id]:null, hull=ship&&Object.hasOwn(HULLS,ship.tpl)?HULLS[ship.tpl]:null;
++  if(!mod||!hull||!Array.isArray(ship.mods)||ship.mods.length>=(hull.slots||0)) return false;
++  if(mod.only&&hull.ab!==mod.only) return false;
++  const need=MOD_NEED[id];
++  if(need==='shields') return (hull.sh||0)>0;
++  if(need==='carrier') return hull.ab==='launch'&&(hull.hangar||0)>0;
++  const kind={batt:'battery',lance:'lance',torp:'torp',flak:'flak'}[need];
++  if(kind) return (hull.w||[]).some(([wid])=>W[wid]&&W[wid].k===kind);
++  return !need;
++}
+ function modulePool(){ const kit=fleetKit(), all=Object.keys(MODULES), ok=all.filter(m=>!MOD_NEED[m]||kit[MOD_NEED[m]]); return ok.length>=3?ok:all; }
+ function randomModule(){ return pick(modulePool()); }
+ function modName(m){ const f=(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'; return (MOD_NAMES[f]&&MOD_NAMES[f][m])||MODULES[m].n; }
+@@ -298,7 +309,7 @@
+ function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.map.cond; return k&&SECTOR_CONDS[k]?SECTOR_CONDS[k]:null; }catch(e){ return null; } }
+ 
+ // ---------- progression helpers ----------
+-function masteryXP(id){ return (META.mastery&&META.mastery[id])||0; }
++function masteryXP(id){ const x=lineagePilotMasteryXP(META,id); return x===null?((META.mastery&&META.mastery[id])||0):x; }
+ function masteryLevel(id){ const x=masteryXP(id); let l=0; for(let i=1;i<MASTERY_XP.length;i++) if(x>=MASTERY_XP[i]) l=i; return l; }
+ function favourOf(p){ return (META.favour&&META.favour[p])||0; }
+ function favourTier(p){ const f=favourOf(p); let t=0; FAVOUR_TIERS.forEach((x,i)=>{ if(f>=x.at) t=i; }); return t; }
+@@ -326,6 +337,7 @@
+   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
+   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
+   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }
++  RUN.lineagePilot=VSLineagePilot.snapshot(META,admiralId);
+   RUN.heat=(opt.heat||[]).filter(k=>HEAT[k]); RUN.mastery=masteryLevel(admiralId);
+   const plan=opt.alt&&RUN.mastery>=1?altFleetPlan(admiralId,fac):null, start=plan?plan.fleet:adm.start.map(t=>equivHull(t,fac)); RUN.altFleet=!!plan;
+   for(const t of start) RUN.fleet.push(newShip(t, !!META.unlocked.vets));
+@@ -347,3 +359,150 @@
+   return m.edges.filter(e=>e[0]===RUN.pos).map(e=>e[1]);
+ }
+ function findNode(id){ for(const c of RUN.map.cols) for(const n of c) if(n.id===id) return n; return null; }
++
++// Opt-in, two-effect lineage prototype. Original source rules remain the default.
++  (function(root,factory){const api=factory();root.VSLineage=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
++  'use strict';
++  const LEVEL_XP=[0,6,16,30,50,75,110,160,230],MASTERY_XP=[320,440,600];
++  const clone=x=>JSON.parse(JSON.stringify(x));
++  function integer(n,label){if(!Number.isSafeInteger(n)||n<0)throw Error(label+' must be a nonnegative safe integer');return n;}
++  function create(catalog,roster){
++   const skills=new Map(catalog.skills.map(s=>[s.id,s])),admirals=new Map(roster.admirals.map(a=>[a.id,a]));
++   if(skills.size!==catalog.skills.length||admirals.size!==roster.admirals.length)throw Error('duplicate catalog/roster id');
++   function adm(id){const a=admirals.get(id);if(!a)throw Error('unknown admiral '+id);return a;}
++   function level(xpQ){integer(xpQ,'XP quarters');let n=0;for(let i=1;i<LEVEL_XP.length;i++)if(xpQ>=LEVEL_XP[i]*4)n=i;return n;}
++   function validateBuild(id,xpQ,picks,capstone){
++    adm(id);integer(xpQ,'XP quarters');if(!Array.isArray(picks)||new Set(picks).size!==picks.length)throw Error('duplicate/non-array picks');
++    if(picks.length>Math.max(0,Math.min(3,level(xpQ)-4)))throw Error('too many picks for XP');
++    const tiers={A:[],B:[],C:[]};
++    for(const key of picks){const s=skills.get(key);if(!s||!s.owner.members.includes(id)||!tiers[s.branch])throw Error('wrong owner or branch '+key);tiers[s.branch].push(s.tier);}
++    for(const ts of Object.values(tiers)){ts.sort((a,b)=>a-b);if(ts.some((t,i)=>t!==i+1))throw Error('exclusive pair or skipped branch tier');}
++    if(capstone!==null&&capstone!==''){const c=skills.get(capstone);if(!c||c.branch!=='CAP'||!c.owner.members.includes(id)||level(xpQ)<8)throw Error('invalid capstone');}
++    return true;
++   }
++   function newState(masteries={}){
++    const lines={};for(const a of admirals.values()){
++     const xp=masteries[a.id]===undefined?0:masteries[a.id];if(!Number.isFinite(xp)||xp<0||!Number.isSafeInteger(xp*4))throw Error('invalid native mastery');
++     lines[a.id]={xpQ:Math.min(2400,xp*4),overflowQ:Math.max(0,xp*4-2400),picks:[],capstone:'',respecs:0};
++    }
++    return {version:1,lines,shadowPoolQ:{},awards:{}};
++   }
++   function validate(state){
++    if(!state||state.version!==1||!state.lines||typeof state.lines!=='object'||Array.isArray(state.lines))throw Error('unsupported lineage save');
++    if(!state.shadowPoolQ||typeof state.shadowPoolQ!=='object'||Array.isArray(state.shadowPoolQ)||!state.awards||typeof state.awards!=='object'||Array.isArray(state.awards))throw Error('invalid pools/awards');
++    const knownFacs=new Set([...admirals.values()].map(a=>a.fac));
++    for(const [fac,q] of Object.entries(state.shadowPoolQ)){if(!knownFacs.has(fac))throw Error('unknown shadow pool');integer(q,'pool quarters');}
++    for(const [id,l] of Object.entries(state.lines)){adm(id);if(!l||typeof l!=='object')throw Error('invalid line');integer(l.xpQ,'XP quarters');if(l.xpQ>2400)throw Error('XP cap exceeded');integer(l.overflowQ,'overflow quarters');integer(l.respecs,'respec count');if(typeof l.capstone!=='string')throw Error('capstone must use the empty-string sentinel');validateBuild(id,l.xpQ,l.picks,l.capstone);}
++    if([...admirals.keys()].some(id=>!Object.hasOwn(state.lines,id)))throw Error('missing admiral line');
++    for(const [id,value] of Object.entries(state.awards))if(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(id)||typeof value!=='string')throw Error('invalid settlement receipt');
++    return true;
++   }
++   function deserialize(text){const s=JSON.parse(text);validate(s);return s;}
++   function serialize(state){validate(state);return JSON.stringify(state);}
++   function choose(state,id,key,options={}){
++    validate(state);if(options.liveRun)throw Error('choices are between runs');const a=adm(id),s=skills.get(key);
++    if(!s||!s.owner.members.includes(a.id))throw Error('unknown/wrong-owner skill');
++    if(options.implementedOnly!==false&&s.availability!=='pilot_candidate')throw Error('effect not implemented in pilot');
++    const next=clone(state),line=next.lines[id];if(s.branch==='CAP'){if(line.capstone!=='')throw Error('capstone already chosen');line.capstone=key;}else line.picks.push(key);
++    validate(next);return next;
++   }
++   function respec(state,id,keys,wallet,options={}){
++    validate(state);adm(id);integer(wallet,'renown');if(options.liveRun)throw Error('respec is between runs');
++    if(!Array.isArray(keys)||!keys.length||new Set(keys).size!==keys.length)throw Error('respec needs unique owned picks');
++    const next=clone(state),line=next.lines[id],owned=line.picks.concat(line.capstone===''?[]:[line.capstone]);
++    if(keys.some(k=>!owned.includes(k)))throw Error('cannot refund unowned pick');
++    const cost=keys.length*(25+10*line.respecs);integer(cost,'respec cost');if(wallet<cost)throw Error('not enough renown');
++    line.picks=line.picks.filter(k=>!keys.includes(k));if(keys.includes(line.capstone))line.capstone='';line.respecs++;
++    validate(next);return {state:next,wallet:wallet-cost,cost};
++   }
++   function baseXp(stats,victory){
++    if(!stats||typeof victory!=='boolean')throw Error('stats and boolean victory required');
++    for(const k of ['battles','elites','bosses'])integer(stats[k],k);
++    if(stats.elites+stats.bosses>stats.battles)throw Error('elite/boss wins must be subsets of battles');
++    return integer(stats.battles+2*stats.elites+5*stats.bosses+(victory?10:0),'base XP');
++   }
++   function award(state,{id,stats,victory,heat=0,heirLines=[],settlementId}){
++    validate(state);const active=adm(id);integer(heat,'weighted Heat');if(heat>1000)throw Error('Heat outside calculator bounds');
++    if(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(settlementId||''))throw Error('explicit settlement id required');
++    if(!Array.isArray(heirLines)||new Set(heirLines).size!==heirLines.length||heirLines.some(k=>adm(k).fac!==active.fac||k===id))throw Error('heir lines must be unique benched same-faction lines');
++    const base=baseXp(stats,victory),fingerprint=[id,stats.battles,stats.elites,stats.bosses,victory?1:0,heat,heirLines.slice().sort().join(',')].join('|');
++    if(Object.hasOwn(state.awards,settlementId)){
++     if(state.awards[settlementId]!==fingerprint)throw Error('settlement id reused for a different outcome');
++     return {state:clone(state),duplicate:true,report:null};
++    }
++    const next=clone(state),report={baseXp:base,heatXp:2*heat,creditedQ:{},overflowQ:{},shadowPoolQ:heat*4};
++    const grant=(key,q)=>{integer(q,'grant quarters');const l=next.lines[key],credit=Math.min(q,2400-l.xpQ);l.xpQ+=credit;l.overflowQ+=q-credit;integer(l.overflowQ,'overflow quarters');report.creditedQ[key]=credit;report.overflowQ[key]=q-credit;};
++    const flown=(base+2*heat)*4;grant(id,flown);
++    for(const a of admirals.values())if(a.id!==id&&a.fac===active.fac)grant(a.id,flown/4*(heirLines.includes(a.id)?2:1));
++    next.shadowPoolQ[active.fac]=(next.shadowPoolQ[active.fac]||0)+heat*4;
++    next.awards[settlementId]=fingerprint;validate(next);return {state:next,duplicate:false,report};
++   }
++   function available(state,id,options={}){
++    validate(state);adm(id);const result=[];
++    for(const s of skills.values())if(s.owner.members.includes(id))try{choose(state,id,s.id,options);result.push(s.id);}catch(_){}
++    return result;
++   }
++   function enumerate(id){
++    adm(id);let states=new Map([['',[]]]);
++    for(let n=0;n<3;n++){
++     const next=new Map();for(const picks of states.values())for(const s of skills.values())if(s.branch!=='CAP'&&s.owner.members.includes(id)){
++      const p=picks.concat(s.id);try{validateBuild(id,920,p,null);const k=p.slice().sort().join('|');next.set(k,p.slice().sort());}catch(_){}
++     }states=next;
++    }
++    const builds=[];for(const picks of states.values())for(const c of skills.values())if(c.branch==='CAP'&&c.owner.members.includes(id))builds.push({picks,capstone:c.id});
++    return builds;
++   }
++   return {level,validateBuild,newState,validate,serialize,deserialize,choose,respec,baseXp,award,available,enumerate,thresholds:LEVEL_XP.slice(),masteryThresholds:MASTERY_XP.slice()};
++  }
++  return {create,LEVEL_XP,MASTERY_XP};
++  });
++
++  (function(root,factory){const api=factory();root.VSLineagePilot=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
++  'use strict';
++  const KEYS=['adm.vaelen.A1.0','adm.vaelen.A1.1'];
++  function snapshot(meta,id){
++   if(id!=='vaelen'||!meta||!meta.opts||meta.opts.lineagePilot!==true)return null;
++   const state=meta.lineageV1,line=state&&state.lines&&state.lines.vaelen;
++   if(!state||state.version!==1||!line||!Number.isSafeInteger(line.xpQ)||line.xpQ<0||line.xpQ>2400||!Array.isArray(line.picks)||line.picks.length>1||line.capstone!=='')return null;
++   if(line.picks.length&&(line.xpQ<300||!KEYS.includes(line.picks[0])))return null;
++   return {version:1,admiral:id,xpQ:line.xpQ,picks:line.picks.slice()};
++  }
++  function mode(run,side,c){
++   const s=run&&run.lineagePilot;
++   if(side!=='player'||!run||run.admiral!=='vaelen'||run.cmdOverride||!c||c.id!=='barrage'||!s||s.version!==1||s.admiral!=='vaelen'||!Number.isSafeInteger(s.xpQ)||s.xpQ<300||s.xpQ>2400||!Array.isArray(s.picks)||s.picks.length!==1)return null;
++   return KEYS.includes(s.picks[0])?s.picks[0]:null;
++  }
++  function intent(run,side,c,battle){
++   const selected=mode(run,side,c),raw=battle&&battle.lineageIntent;
++   if(selected!==KEYS[1])return {ok:true,mode:selected,weapons:{}};
++   if(raw===undefined||raw===null)return {ok:true,mode:selected,weapons:{}};
++   if(typeof raw!=='object'||Array.isArray(raw))return {ok:false};
++   const weapons={};
++   for(const [id,index] of Object.entries(raw)){
++    const u=battle.units.find(x=>x.id===id&&x.side==='player'&&!x.dead&&!x.isSq);
++    if(!u||index!==null&&(!Number.isSafeInteger(index)||index<0||index>=u.weapons.length||u.weapons[index].k==='flak'||(u.weapons[index].off||0)>0))return {ok:false};
++    weapons[id]=index;
++   }
++   return {ok:true,mode:selected,weapons};
++  }
++  function allows(context,u,index){return context.mode!==KEYS[1]||context.weapons[u.id]===undefined||context.weapons[u.id]===null||context.weapons[u.id]===index;}
++  function factor(context,u,w,t,distance){
++   if(context.mode===KEYS[0])return distance>w.r/2?1.2:1;
++   if(context.mode===KEYS[1]&&context.weapons[u.id]!==undefined&&context.weapons[u.id]!==null)return 1.25;
++   return 1;
++  }
++  return {KEYS,snapshot,mode,intent,allows,factor};
++  });
++
++const LINEAGE_PILOT_SPEC={"catalog":{"version":1,"skills":[{"id":"adm.vaelen.A1.0","owner":{"scope":"admiral","key":"adm.vaelen","members":["vaelen"]},"branch":"A","tier":1,"option":0,"name":"Focus Drawn Long","effect":"volley shots at targets beyond half the firing ship's range gain +20% damage.","original":"Focus Drawn Long - volley shots at targets beyond half the firing ship's range gain +20% damage.","source":{"path":"contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md","line":186,"sha256":"644e01aa19d552589c31f104a12b05314edb4255c4efdcef6c153a6df991aba0"},"primaryCommandOnly":true,"availability":"pilot_candidate","contract":{"status":"candidate_interpretation_requires_adoption","evidence":{"trigger":[],"timing":[],"duration":[],"limit":[],"playerInput":[],"actor":["ship"],"target":[]},"actor":"Each player non-squadron ship firing the primary Burning glass Command","target":"The actual target chosen for this weapon by the existing Command targeting","trigger":"Immediately before a primary-Command weapon resolves","resolution":"Multiply that weapon shot damage by 1.20 only if hex distance is strictly greater than half its printed maximum range","duration":"Only this Command weapon resolution","limit":"Once as a damage multiplier per eligible weapon; not an extra shot","stacking":"Multiply the existing Command multiplier once; no effect on normal fire, boss Commands or alternate Command","cleanup":"Restore the original battle multiplier in finally, including aborted or thrown actions","playerInput":"Weapon eligibility follows the existing Command; no additional target override","engineHooks":["command_volley_weapon"],"note":"Evidence is verbatim extraction; hook tags are suggestions. Null fields must not be defaulted into game behavior."},"interpretationNote":"A single shot means one projectile from a selected weapon entry; “ship range” is interpreted as that weapon’s printed maximum r. These terms are proposed clarifications, not silent edits to the source."},{"id":"adm.vaelen.A1.1","owner":{"scope":"admiral","key":"adm.vaelen","members":["vaelen"]},"branch":"A","tier":1,"option":1,"name":"One Lens, One Target","effect":"a ship may fire its volley as a single shot at +25% damage instead of firing every gun.","original":"One Lens, One Target - a ship may fire its volley as a single shot at +25% damage instead of firing every gun.","source":{"path":"contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md","line":186,"sha256":"644e01aa19d552589c31f104a12b05314edb4255c4efdcef6c153a6df991aba0"},"primaryCommandOnly":true,"availability":"pilot_candidate","contract":{"status":"candidate_interpretation_requires_adoption","evidence":{"trigger":[],"timing":[],"duration":[],"limit":[],"playerInput":["may"],"actor":["ship"],"target":[]},"actor":"Each player non-squadron ship with an explicit focused-weapon selection","target":"The actual legal target chosen by the existing Command for that weapon","trigger":"Before iterating a ship’s primary-Command weapons","resolution":"For a ship choosing one weapon index, fire a single projectile from that weapon during the Command at 1.25 damage; null/omitted selection keeps its normal volley","duration":"Only this Command resolution","limit":"One projectile from one chosen weapon per ship; native shot count restored afterward","stacking":"Multiply existing Command damage once; only one A1 option can be owned","cleanup":"Restore normal weapons/cooldowns/post-fire movement and the original battle multiplier; consume intent with Command","playerInput":"Per ship: normal volley, or one weapon index. Cancel does not spend Command","engineHooks":["command_volley_weapon"],"note":"Evidence is verbatim extraction; hook tags are suggestions. Null fields must not be defaulted into game behavior."},"interpretationNote":"A single shot means one projectile from a selected weapon entry; “ship range” is interpreted as that weapon’s printed maximum r. These terms are proposed clarifications, not silent edits to the source."}]},"roster":{"version":1,"admirals":[{"id":"vex","sourceName":"Admiral Roderic Vex","displayName":"Admiral Roderic Vex","fac":"voidsworn","primaryCommand":"barrage"},{"id":"malek","sourceName":"Oath-Captain Malek Draven","displayName":"Oath-Captain Malek Draven","fac":"voidsworn","primaryCommand":"hunt"},{"id":"ashgrove","sourceName":"Commodore Sera Ashgrove","displayName":"Commodore Sera Ashgrove","fac":"voidsworn","primaryCommand":"scramble"},{"id":"thale","sourceName":"High Admiral Oryn Thale","displayName":"High Admiral Oryn Thale","fac":"voidsworn","primaryCommand":"iron"},{"id":"kassar","sourceName":"First Admiral Ilsa Kassar","displayName":"First Admiral Ilsa Kassar","fac":"hegemony","primaryCommand":"barrage"},{"id":"vorn","sourceName":"Commodore Dace Vorn","displayName":"Commodore Dace Vorn","fac":"hegemony","primaryCommand":"hunt"},{"id":"reyes","sourceName":"Fleet Marshal Corin Reyes","displayName":"Fleet Marshal Corin Reyes","fac":"hegemony","primaryCommand":"scramble"},{"id":"maren","sourceName":"Line Admiral Oskar Maren","displayName":"Line Admiral Oskar Maren","fac":"hegemony","primaryCommand":"iron"},{"id":"grax","sourceName":"Warlord Grax Steelgrin","displayName":"Warlord Grax Ironmaw","fac":"corsair","primaryCommand":"surge"},{"id":"sable","sourceName":"Sable the Smiling Knife","displayName":"Sable the Smiling Knife","fac":"corsair","primaryCommand":"hunt"},{"id":"mott","sourceName":"Old Mott","displayName":"Old Mott","fac":"corsair","primaryCommand":"scramble"},{"id":"vesh","sourceName":"Vesh the Collector","displayName":"Vesh the Collector","fac":"corsair","primaryCommand":"restore"},{"id":"matriarch","sourceName":"The Matriarch of Nine Throats","displayName":"The Matriarch of Nine Throats","fac":"chorus","primaryCommand":"scramble"},{"id":"razormaw","sourceName":"Razormaw","displayName":"Razormaw","fac":"chorus","primaryCommand":"surge"},{"id":"mending","sourceName":"The Mending Throng","displayName":"The Mending Throng","fac":"chorus","primaryCommand":"restore"},{"id":"voice","sourceName":"Voice of the Deep","displayName":"Voice of the Deep","fac":"chorus","primaryCommand":"barrage"},{"id":"aelith","sourceName":"Tamsa of the Clear Aperture","displayName":"Tamsa of the Clear Aperture","fac":"ithar","primaryCommand":"scramble"},{"id":"vaelen","sourceName":"Saro of Long Focus","displayName":"Saro of Long Focus","fac":"ithar","primaryCommand":"barrage"},{"id":"thorne","sourceName":"Vell of the Third Mirror","displayName":"Vell of the Third Mirror","fac":"ithar","primaryCommand":"surge"},{"id":"mirelle","sourceName":"Brin of the Fourth Lens","displayName":"Brin of the Fourth Lens","fac":"ithar","primaryCommand":"iron"},{"id":"nekhet","sourceName":"Nadir Aurex, Ninth Frame","displayName":"Nadir Aurex, Ninth Frame","fac":"deathless","primaryCommand":"restore"},{"id":"sekhmar","sourceName":"Umbra Vessane, Third-Housed","displayName":"Umbra Vessane, Third-Housed","fac":"deathless","primaryCommand":"barrage"},{"id":"anuket","sourceName":"Ostrel of the Long Copy","displayName":"Ostrel of the Long Copy","fac":"deathless","primaryCommand":"hunt"},{"id":"khepra","sourceName":"Seveth, Twice-Restored","displayName":"Seveth, Twice-Restored","fac":"deathless","primaryCommand":"iron"}],"pairs":[{"key":"pair.01","scope":"pair","members":["vex","vaelen"],"declaredFamily":"barrage","sourceLine":7},{"key":"pair.02","scope":"pair","members":["kassar","sekhmar"],"declaredFamily":"barrage","sourceLine":12},{"key":"pair.03","scope":"pair","members":["ashgrove","aelith"],"declaredFamily":"scramble","sourceLine":17},{"key":"pair.04","scope":"pair","members":["reyes","matriarch"],"declaredFamily":"scramble","sourceLine":22},{"key":"pair.05","scope":"pair","members":["malek","anuket"],"declaredFamily":"hunt","sourceLine":27},{"key":"pair.06","scope":"pair","members":["vorn","sable"],"declaredFamily":"hunt","sourceLine":32},{"key":"pair.07","scope":"pair","members":["thale","khepra"],"declaredFamily":"iron","sourceLine":37},{"key":"pair.08","scope":"pair","members":["maren","mirelle"],"declaredFamily":"iron","sourceLine":42},{"key":"pair.09","scope":"pair","members":["grax","razormaw"],"declaredFamily":"surge","sourceLine":47},{"key":"pair.10","scope":"pair","members":["mending","nekhet"],"declaredFamily":"restore","sourceLine":52},{"key":"pair.11","scope":"pair","members":["voice","mott"],"declaredFamily":"burst release","sourceLine":57},{"key":"pair.12","scope":"pair","members":["thorne","vesh"],"declaredFamily":"reposition and patch","sourceLine":62}]}};
++const LINEAGE_PILOT_ENGINE=VSLineage.create(LINEAGE_PILOT_SPEC.catalog,LINEAGE_PILOT_SPEC.roster);
++function lineagePilotState(meta){ const state=meta.lineageV1||LINEAGE_PILOT_ENGINE.newState(meta.mastery||{}); LINEAGE_PILOT_ENGINE.validate(state); return state; }
++function lineagePilotMasteryXP(meta,id){ const s=VSLineagePilot.snapshot(meta,id); return s?s.xpQ/4:null; }
++function lineagePilotAward(meta,run,stats,victory,heat){
++  if(run.admiral!=='vaelen'||!meta.opts||meta.opts.lineagePilot!==true) return null;
++  try{ const id='run:'+String(run.t0||0)+':'+run.admiral+':'+String(meta.stats.runs||0);
++    const heirLines=Object.keys(meta.lineageHeirs||{}).filter(k=>meta.lineageHeirs[k]===true&&k!=='vaelen'&&LINEAGE_PILOT_SPEC.roster.admirals.some(a=>a.id===k&&a.fac==='ithar'));
++    const r=LINEAGE_PILOT_ENGINE.award(lineagePilotState(meta),{id:'vaelen',stats,victory,heat,heirLines,settlementId:id});
++    meta.lineageV1=r.state; return r.duplicate?0:r.report.baseXp+r.report.heatXp;
++  }catch(e){ console.warn('Lineage pilot kept the original save and used native XP: '+e.message); return null; }
++}
+diff --git a/godot/rules/lineage_pilot.gd b/godot/rules/lineage_pilot.gd
+new file mode 100644
+--- /dev/null
++++ b/godot/rules/lineage_pilot.gd
+@@ -0,0 +1,39 @@
++extends RefCounted
++const KEYS = ["adm.vaelen.A1.0", "adm.vaelen.A1.1"]
++static func snapshot(meta: Dictionary, id: String) -> Variant:
++	if id != "vaelen" or not (meta.get("opts") is Dictionary) or meta["opts"].get("lineagePilot") != true: return null
++	var state = meta.get("lineageV1")
++	if not (state is Dictionary) or state.get("version") != 1 or not (state.get("lines") is Dictionary): return null
++	var line = state["lines"].get("vaelen")
++	if not (line is Dictionary): return null
++	var q = line.get("xpQ"); var picks = line.get("picks")
++	if not (q is int or q is float) or not is_finite(q) or floor(q) != q or q < 0 or q > 2400 or not (picks is Array) or picks.size() > 1 or not line.has("capstone") or line["capstone"] != "": return null
++	if picks.size() > 0 and (q < 300 or not KEYS.has(picks[0])): return null
++	return {"version": 1, "admiral": id, "xpQ": q, "picks": picks.duplicate()}
++static func mode(run: Variant, side: String, c: Dictionary) -> Variant:
++	if side != "player" or not (run is Dictionary) or run.get("admiral") != "vaelen" or run.get("cmdOverride") != null or c.get("id") != "barrage": return null
++	var s = run.get("lineagePilot")
++	if not (s is Dictionary) or s.get("version") != 1 or s.get("admiral") != "vaelen": return null
++	var q = s.get("xpQ"); var picks = s.get("picks")
++	if not (q is int or q is float) or not is_finite(q) or floor(q) != q or q < 300 or q > 2400 or not (picks is Array) or picks.size() != 1: return null
++	return picks[0] if KEYS.has(picks[0]) else null
++static func intent(run: Variant, side: String, c: Dictionary, battle: Dictionary) -> Dictionary:
++	var selected = mode(run, side, c); var raw = battle.get("lineageIntent")
++	if selected != KEYS[1] or raw == null: return {"ok": true, "mode": selected, "weapons": {}}
++	if not (raw is Dictionary): return {"ok": false}
++	var weapons = {}
++	for id in raw:
++		var unit = null; var index = raw[id]
++		for u in battle["units"]:
++			if u.get("id") == id and u.get("side") == "player" and not u.get("dead", false) and not u.get("isSq", false): unit = u; break
++		if unit == null: return {"ok": false}
++		if index != null and (not (index is int or index is float) or not is_finite(index) or floor(index) != index or index < 0 or index >= unit["weapons"].size()): return {"ok": false}
++		if index != null and (unit["weapons"][int(index)].get("k") == "flak" or unit["weapons"][int(index)].get("off", 0) > 0): return {"ok": false}
++		weapons[id] = index
++	return {"ok": true, "mode": selected, "weapons": weapons}
++static func allows(context: Dictionary, u: Dictionary, index: int) -> bool:
++	return context["mode"] != KEYS[1] or context["weapons"].get(u["id"]) == null or context["weapons"][u["id"]] == index
++static func factor(context: Dictionary, u: Dictionary, w: Dictionary, _target: Dictionary, distance: float) -> float:
++	if context["mode"] == KEYS[0]: return 1.2 if distance > float(w["r"]) / 2.0 else 1.0
++	if context["mode"] == KEYS[1] and context["weapons"].get(u["id"]) != null: return 1.25
++	return 1.0
+diff --git a/godot/rules/rules.gd b/godot/rules/rules.gd
+--- a/godot/rules/rules.gd
++++ b/godot/rules/rules.gd
+@@ -13,6 +13,7 @@
+ # because they are the JS shapes themselves (2,676 call arguments, 1,097 method calls, 68 discarded results at Oct 26): unsafe_call_argument
+ # (Variant into a typed float), unsafe_method_access (calls on untyped values) and return_value_discarded (JS ignores results the same way).
+ @warning_ignore_start("inference_on_variant", "untyped_declaration", "unsafe_method_access", "unsafe_cast", "unsafe_call_argument", "shadowed_variable", "shadowed_variable_base_class", "shadowed_global_identifier", "unused_variable", "unused_parameter", "confusable_local_declaration", "confusable_local_usage", "return_value_discarded", "incompatible_ternary")
++const LineagePilot = preload("res://rules/lineage_pilot.gd")
+ const JSM = preload("res://rules/jsm.gd")
+ 
+ var TB: Dictionary = {}
+@@ -3101,7 +3102,9 @@
+ func canCommand(side) -> bool: return B != null and not jt(B.get("over")) and side == "player" and commandFor(side) != null and B["round"] >= 1 and not jt(B.get("cmdUsed"))
+ func useCommand(side) -> bool:
+ 	if not canCommand(side): return false
+-	var c = commandFor(side); var tier = cmdTier(); B["cmdUsed"] = true; B["cmd"] = {"id": c["id"], "side": side, "round": B["round"], "tier": tier}
++	var c = commandFor(side); var tier = cmdTier()
++	if not lineageCommandIntent(side, c)["ok"]: return false
++	B["cmdUsed"] = true; B["cmd"] = {"id": c["id"], "side": side, "round": B["round"], "tier": tier}
+ 	if jt(B.get("usage")) and side == "player": B["usage"]["cmd"] = B["usage"]["cmd"] + 1
+ 	logm("Admiral's Command" + ((" at power " + ns(tier + 1) + " of 3") if jt(tier) else "") + ": " + String(c["n"]) + ". " + cmdDesc(c, tier, RUN["fac"] if (RUN != null and jt(RUN.get("fac"))) else "voidsworn"), "p" if side == "player" else "e")
+ 	emit({"t": "command", "side": side, "id": c["id"], "tier": tier, "unit": null})
+@@ -3144,32 +3147,51 @@
+ 	B["cmdEUsed"] = true; B["cmdE"] = {"id": c["id"], "side": "enemy", "round": B["round"], "tier": 1}; logm(String(boss["name"]) + ": " + String(c["n"]) + "!", "e")
+ 	emit({"t": "command", "side": "enemy", "id": c["id"], "tier": 1, "unit": boss["id"]})
+ 	runCommand("enemy", c, 1)
++func lineageCommandIntent(side, c) -> Dictionary:
++	var lp = LineagePilot.intent(RUN, side, c, B)
++	if not lp["ok"]: return lp
++	if lp["mode"] == "adm.vaelen.A1.1":
++		for id in lp["weapons"]:
++			var index = lp["weapons"][id]
++			if index == null: continue
++			var u = null
++			for unit in B["units"]:
++				if unit["id"] == id: u = unit; break
++			var reaches = false
++			for t in alive("enemy" if side == "player" else "player"):
++				if inReach(u, u["weapons"][int(index)], t): reaches = true; break
++			if not reaches: return {"ok":false}
++	return lp
+ func runCommand(side, c, tier) -> bool:
+ 	var foe = "enemy" if side == "player" else "player"; var bStart = B
+ 	for u in caps(side): flt(u, String(c["n"]), "#e8c66a" if side == "player" else "#ff8a6a", -44)
+ 	if c["id"] == "barrage":
+-		var b0 = B; var live = liveFrom(null); B["volleyMul"] = {"side": side, "m": 1.0 + cmdPow("barrage", tier)}
++		var b0 = B; var live = liveFrom(null); var lp = lineageCommandIntent(side, c)
++		if not lp["ok"]: return false
++		var previous = B.get("volleyMul"); B["volleyMul"] = {"side":side, "m":1.0 + cmdPow("barrage", tier)}
++		if lp["mode"] == "adm.vaelen.A1.1": B.erase("lineageIntent")
+ 		for u in caps(side):
+ 			if jt(B.get("over")) or not live.call(): break
+-			var keep = []
+-			for w in u["weapons"]: keep.append([w.get("fired"), w.get("cdLeft")])   # B-20 refits lack both; restored as undefined
+-			var pf = [u.get("postFire"), u.get("postMp")]
+-			for w in u["weapons"]:
+-				w["fired"] = false; w["cdLeft"] = 0
++			var keep = []; var pf = [u.get("postFire"), u.get("postMp")]
++			for w in u["weapons"]: keep.append([w, w.get("fired"), w.get("cdLeft"), w["shots"]]); w["fired"] = false; w["cdLeft"] = 0
+ 			for i in range(u["weapons"].size()):
+ 				if jt(B.get("over")) or not live.call() or jt(u.get("dead")): break
+-				var w = u["weapons"][i]; var ts = []
++				if not LineagePilot.allows(lp, u, i): continue
++				var w = u["weapons"][i]
++				if lp["mode"] == "adm.vaelen.A1.1" and lp["weapons"].get(u["id"]) != null: w["shots"] = 1
++				var ts = []
+ 				for t in alive(foe):
+ 					if canFire(u, w, t): ts.append(t)
+-				if ts.size() == 0: continue
++				if ts.is_empty(): continue
+ 				var val = func(t):
+-					var e = expectedVs(u, w, t); return e.hull + e.shield * 0.3 + (25.0 if e.hull >= t["hp"] else 0.0)
+-				JSM.ssort(ts, func(a, b2): return val.call(b2) - val.call(a))
+-				fireWeapon(u, i, ts[0])
+-			for i in range(u["weapons"].size()):
+-				u["weapons"][i]["fired"] = keep[i][0]; u["weapons"][i]["cdLeft"] = keep[i][1]
++					var prior = b0["volleyMul"]; b0["volleyMul"] = {"side":side, "m":prior["m"] * LineagePilot.factor(lp, u, w, t, hdist(u, t))}
++					var e = expectedVs(u, w, t); var value = e.hull + e.shield * 0.3 + (25.0 if e.hull >= t["hp"] else 0.0); b0["volleyMul"] = prior; return value
++				JSM.ssort(ts, func(a,b2): return val.call(b2) - val.call(a))
++				var prior = b0["volleyMul"]; b0["volleyMul"] = {"side":side, "m":prior["m"] * LineagePilot.factor(lp, u, w, ts[0], hdist(u,ts[0]))}
++				fireWeapon(u, i, ts[0]); b0["volleyMul"] = prior
++			for item in keep: item[0]["fired"] = item[1]; item[0]["cdLeft"] = item[2]; item[0]["shots"] = item[3]
+ 			u["postFire"] = pf[0]; u["postMp"] = pf[1]
+-		if is_same(B, b0): B["volleyMul"] = null
++		b0["volleyMul"] = previous
+ 	if c["id"] == "hunt":
+ 		for u in alive(side):
+ 			for w in u["weapons"]:
+diff --git a/godot/rules/test/oracle/README.md b/godot/rules/test/oracle/README.md
+--- a/godot/rules/test/oracle/README.md
++++ b/godot/rules/test/oracle/README.md
+@@ -10,3 +10,7 @@
+ History: b71c8d7 (Oct 25, the sprint start), c7b1a78 (Oct 26), d8b47c6 (Oct 27), 6b1571e, 59f13a5 and bcc7e47 (Oct 27, data.js only), cb55ec9 (Oct 27, pass 3 tuning).
+ 
+ **Catching up:** when stream B changes the rules (`contrib/opus/compute/port_notes.md` lists each step), the change is ported to `godot/rules/` with a new golden scenario, then these files are re-copied from the new commit and this note is updated.
++
++## Proposed Saro lineage exception (Codex, Oct 31, 2026)
++
++The original pin above is preserved. This candidate adds the opt-in Saro lineage module/snapshot and mastery getter to core.js, and the corresponding guarded primary-barrage resolver to battle.js. The campaign oracle also carries the matching guarded reward/getter and browser picker changes in campaign_meta.js. The Godot campaign candidate carries the native reward adapter. All other oracle content remains at its original pin. This is a scoped prototype, not a whole-oracle re-pin or a whole-port clearance.
+diff --git a/godot/rules/test/oracle/battle.js b/godot/rules/test/oracle/battle.js
+--- a/godot/rules/test/oracle/battle.js
++++ b/godot/rules/test/oracle/battle.js
+@@ -1090,14 +1090,40 @@
+ function cmdActive(side,id){ const c=cmdRec(side); return !!(c&&c.id===id&&c.round===B.round); }
+ function canCommand(side){ return !!B&&!B.over&&side==='player'&&!!commandFor(side)&&B.round>=1&&!B.cmdUsed; } // ready from round 1, once per battle
+ function cmdTaken(t){ return cmdActive(t.side,'iron')?1-cmdPow('iron',null,t.side)-(t.shMax?0:.1):1; } // shieldless hulls get a deeper cut, since the shield refill does nothing for them
+-async function useCommand(side){ if(!canCommand(side)) return false; const c=commandFor(side); const tier=cmdTier(); B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
++async function useCommand(side){ if(!canCommand(side)) return false; const c=commandFor(side); const tier=cmdTier(); if(!lineageCommandIntent(side,c).ok) return false; B.cmdUsed=true; B.cmd={id:c.id,side,round:B.round,tier}; if(B.usage&&side==='player') B.usage.cmd++;
+   log(`Admiral's Command${tier?` at power ${tier+1} of 3`:''}: ${c.n}. ${cmdDesc(c,tier,(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn')}`,side==='player'?'p':'e'); try{ if(typeof tel==='function') tel('command',{id:c.id,round:B.round,tier}); }catch(e){}
+   return runCommand(side,c,tier); }
++function lineageCommandIntent(side,c){
++  const lp=VSLineagePilot.intent(typeof RUN==='undefined'?null:RUN,side,c,B);
++  if(!lp.ok) return lp;
++  if(lp.mode==='adm.vaelen.A1.1') for(const [id,index] of Object.entries(lp.weapons)) if(index!==null){const u=B.units.find(x=>x.id===id);if(!alive(side==='player'?'enemy':'player').some(t=>inReach(u,u.weapons[index],t))) return {ok:false};}
++  return lp;
++}
+ async function runCommand(side,c,tier){ const foe=side==='player'?'enemy':'player', bStart=B;
+   for(const u of alive(side)) if(!u.isSq) fxText(u,c.n,side==='player'?'#e8c66a':'#ff8a6a',-44);
+-  if(c.id==='barrage'){ const b0=B, live=liveFrom(null); B.volleyMul={side,m:1+cmdPow('barrage',tier)}; try{ for(const u of alive(side).filter(x=>!x.isSq)){ if(B.over||!live()) break; const keep=u.weapons.map(w=>[w.fired,w.cdLeft]), pf=[u.postFire,u.postMp]; u.weapons.forEach(w=>{ w.fired=false; w.cdLeft=0; });
+-      for(let i=0;i<u.weapons.length;i++){ if(B.over||!live()||u.dead) break; const w=u.weapons[i]; const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue; const val=t=>{ const e=expectedVs(u,w,t); return e.hull+e.shield*.3+(e.hull>=t.hp?25:0); }; ts.sort((a,b2)=>val(b2)-val(a)); await fireWeapon(u,i,ts[0]); }
+-      u.weapons.forEach((w,i)=>{ w.fired=keep[i][0]; w.cdLeft=keep[i][1]; }); u.postFire=pf[0]; u.postMp=pf[1]; } } finally{ if(B===b0) B.volleyMul=null; } } // the free volley leaves movement as it was
++  if(c.id==='barrage'){
++    const b0=B, live=liveFrom(null), lp=lineageCommandIntent(side,c);
++    if(!lp.ok) return false;
++    const previous=B.volleyMul; B.volleyMul={side,m:1+cmdPow('barrage',tier)};
++    if(lp.mode==='adm.vaelen.A1.1') delete B.lineageIntent;
++    try{ for(const u of alive(side).filter(x=>!x.isSq)){
++      if(B.over||!live()) break;
++      const keep=u.weapons.map(w=>({w,fired:w.fired,cdLeft:w.cdLeft,shots:w.shots})), pf=[u.postFire,u.postMp];
++      try{ u.weapons.forEach(w=>{w.fired=false;w.cdLeft=0;});
++        for(let i=0;i<u.weapons.length;i++){
++          if(B.over||!live()||u.dead) break;
++          if(!VSLineagePilot.allows(lp,u,i)) continue;
++          const w=u.weapons[i], single=lp.mode==='adm.vaelen.A1.1'&&lp.weapons[u.id]!=null;
++          if(single) w.shots=1;
++          const ts=alive(foe).filter(t=>canFire(u,w,t)); if(!ts.length) continue;
++          const val=t=>{const prior=b0.volleyMul;b0.volleyMul={side,m:prior.m*VSLineagePilot.factor(lp,u,w,t,hdist(u,t))};try{const e=expectedVs(u,w,t);return e.hull+e.shield*.3+(e.hull>=t.hp?25:0);}finally{b0.volleyMul=prior;}};
++          ts.sort((a,b2)=>val(b2)-val(a)); const target=ts[0], prior=b0.volleyMul;
++          b0.volleyMul={side,m:prior.m*VSLineagePilot.factor(lp,u,w,target,hdist(u,target))};
++          try{await fireWeapon(u,i,target);}finally{b0.volleyMul=prior;}
++        }
++      }finally{for(const k of keep){k.w.fired=k.fired;k.w.cdLeft=k.cdLeft;k.w.shots=k.shots;}u.postFire=pf[0];u.postMp=pf[1];}
++    }}finally{b0.volleyMul=previous==null?null:previous;}
++  }
+   if(c.id==='hunt') for(const u of alive(side)) for(const w of u.weapons) if(w.k==='torp'){ w.cdLeft=0; w.fired=false; }
+   if(c.id==='iron') for(const u of alive(side)) if(u.shMax) u.sh=u.sh.map(()=>u.shMax);
+   if(c.id==='restore') for(const u of alive(side).filter(x=>!x.isSq)){ const rp=cmdPow('restore',tier); u.hp=Math.min(u.maxHp,u.hp+Math.round(u.maxHp*rp)); if(u.sec){ let fixed=0; for(const k of Object.keys(u.sec)) if(repairSection(u,k,rp)) fixed++; if(fixed) fxText(u,fixed>1?fixed+' sections restored':'Section restored','#8ff0a0',-34); } fxText(u,'+'+Math.round(u.maxHp*rp)+' hull','#8ff0a0',-20); }
+diff --git a/godot/rules/test/oracle/core.js b/godot/rules/test/oracle/core.js
+--- a/godot/rules/test/oracle/core.js
++++ b/godot/rules/test/oracle/core.js
+@@ -298,7 +298,7 @@
+ function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.map.cond; return k&&SECTOR_CONDS[k]?SECTOR_CONDS[k]:null; }catch(e){ return null; } }
+ 
+ // ---------- progression helpers ----------
+-function masteryXP(id){ return (META.mastery&&META.mastery[id])||0; }
++function masteryXP(id){ const x=lineagePilotMasteryXP(META,id); return x===null?((META.mastery&&META.mastery[id])||0):x; }
+ function masteryLevel(id){ const x=masteryXP(id); let l=0; for(let i=1;i<MASTERY_XP.length;i++) if(x>=MASTERY_XP[i]) l=i; return l; }
+ function favourOf(p){ return (META.favour&&META.favour[p])||0; }
+ function favourTier(p){ const f=favourOf(p); let t=0; FAVOUR_TIERS.forEach((x,i)=>{ if(f>=x.at) t=i; }); return t; }
+@@ -326,6 +326,7 @@
+   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
+   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
+   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }
++  RUN.lineagePilot=VSLineagePilot.snapshot(META,admiralId);
+   RUN.heat=(opt.heat||[]).filter(k=>HEAT[k]); RUN.mastery=masteryLevel(admiralId);
+   const plan=opt.alt&&RUN.mastery>=1?altFleetPlan(admiralId,fac):null, start=plan?plan.fleet:adm.start.map(t=>equivHull(t,fac)); RUN.altFleet=!!plan;
+   for(const t of start) RUN.fleet.push(newShip(t, !!META.unlocked.vets));
+@@ -347,3 +348,150 @@
+   return m.edges.filter(e=>e[0]===RUN.pos).map(e=>e[1]);
+ }
+ function findNode(id){ for(const c of RUN.map.cols) for(const n of c) if(n.id===id) return n; return null; }
++
++// Opt-in, two-effect lineage prototype. Original source rules remain the default.
++  (function(root,factory){const api=factory();root.VSLineage=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
++  'use strict';
++  const LEVEL_XP=[0,6,16,30,50,75,110,160,230],MASTERY_XP=[320,440,600];
++  const clone=x=>JSON.parse(JSON.stringify(x));
++  function integer(n,label){if(!Number.isSafeInteger(n)||n<0)throw Error(label+' must be a nonnegative safe integer');return n;}
++  function create(catalog,roster){
++   const skills=new Map(catalog.skills.map(s=>[s.id,s])),admirals=new Map(roster.admirals.map(a=>[a.id,a]));
++   if(skills.size!==catalog.skills.length||admirals.size!==roster.admirals.length)throw Error('duplicate catalog/roster id');
++   function adm(id){const a=admirals.get(id);if(!a)throw Error('unknown admiral '+id);return a;}
++   function level(xpQ){integer(xpQ,'XP quarters');let n=0;for(let i=1;i<LEVEL_XP.length;i++)if(xpQ>=LEVEL_XP[i]*4)n=i;return n;}
++   function validateBuild(id,xpQ,picks,capstone){
++    adm(id);integer(xpQ,'XP quarters');if(!Array.isArray(picks)||new Set(picks).size!==picks.length)throw Error('duplicate/non-array picks');
++    if(picks.length>Math.max(0,Math.min(3,level(xpQ)-4)))throw Error('too many picks for XP');
++    const tiers={A:[],B:[],C:[]};
++    for(const key of picks){const s=skills.get(key);if(!s||!s.owner.members.includes(id)||!tiers[s.branch])throw Error('wrong owner or branch '+key);tiers[s.branch].push(s.tier);}
++    for(const ts of Object.values(tiers)){ts.sort((a,b)=>a-b);if(ts.some((t,i)=>t!==i+1))throw Error('exclusive pair or skipped branch tier');}
++    if(capstone!==null&&capstone!==''){const c=skills.get(capstone);if(!c||c.branch!=='CAP'||!c.owner.members.includes(id)||level(xpQ)<8)throw Error('invalid capstone');}
++    return true;
++   }
++   function newState(masteries={}){
++    const lines={};for(const a of admirals.values()){
++     const xp=masteries[a.id]===undefined?0:masteries[a.id];if(!Number.isFinite(xp)||xp<0||!Number.isSafeInteger(xp*4))throw Error('invalid native mastery');
++     lines[a.id]={xpQ:Math.min(2400,xp*4),overflowQ:Math.max(0,xp*4-2400),picks:[],capstone:'',respecs:0};
++    }
++    return {version:1,lines,shadowPoolQ:{},awards:{}};
++   }
++   function validate(state){
++    if(!state||state.version!==1||!state.lines||typeof state.lines!=='object'||Array.isArray(state.lines))throw Error('unsupported lineage save');
++    if(!state.shadowPoolQ||typeof state.shadowPoolQ!=='object'||Array.isArray(state.shadowPoolQ)||!state.awards||typeof state.awards!=='object'||Array.isArray(state.awards))throw Error('invalid pools/awards');
++    const knownFacs=new Set([...admirals.values()].map(a=>a.fac));
++    for(const [fac,q] of Object.entries(state.shadowPoolQ)){if(!knownFacs.has(fac))throw Error('unknown shadow pool');integer(q,'pool quarters');}
++    for(const [id,l] of Object.entries(state.lines)){adm(id);if(!l||typeof l!=='object')throw Error('invalid line');integer(l.xpQ,'XP quarters');if(l.xpQ>2400)throw Error('XP cap exceeded');integer(l.overflowQ,'overflow quarters');integer(l.respecs,'respec count');if(typeof l.capstone!=='string')throw Error('capstone must use the empty-string sentinel');validateBuild(id,l.xpQ,l.picks,l.capstone);}
++    if([...admirals.keys()].some(id=>!Object.hasOwn(state.lines,id)))throw Error('missing admiral line');
++    for(const [id,value] of Object.entries(state.awards))if(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(id)||typeof value!=='string')throw Error('invalid settlement receipt');
++    return true;
++   }
++   function deserialize(text){const s=JSON.parse(text);validate(s);return s;}
++   function serialize(state){validate(state);return JSON.stringify(state);}
++   function choose(state,id,key,options={}){
++    validate(state);if(options.liveRun)throw Error('choices are between runs');const a=adm(id),s=skills.get(key);
++    if(!s||!s.owner.members.includes(a.id))throw Error('unknown/wrong-owner skill');
++    if(options.implementedOnly!==false&&s.availability!=='pilot_candidate')throw Error('effect not implemented in pilot');
++    const next=clone(state),line=next.lines[id];if(s.branch==='CAP'){if(line.capstone!=='')throw Error('capstone already chosen');line.capstone=key;}else line.picks.push(key);
++    validate(next);return next;
++   }
++   function respec(state,id,keys,wallet,options={}){
++    validate(state);adm(id);integer(wallet,'renown');if(options.liveRun)throw Error('respec is between runs');
++    if(!Array.isArray(keys)||!keys.length||new Set(keys).size!==keys.length)throw Error('respec needs unique owned picks');
++    const next=clone(state),line=next.lines[id],owned=line.picks.concat(line.capstone===''?[]:[line.capstone]);
++    if(keys.some(k=>!owned.includes(k)))throw Error('cannot refund unowned pick');
++    const cost=keys.length*(25+10*line.respecs);integer(cost,'respec cost');if(wallet<cost)throw Error('not enough renown');
++    line.picks=line.picks.filter(k=>!keys.includes(k));if(keys.includes(line.capstone))line.capstone='';line.respecs++;
++    validate(next);return {state:next,wallet:wallet-cost,cost};
++   }
++   function baseXp(stats,victory){
++    if(!stats||typeof victory!=='boolean')throw Error('stats and boolean victory required');
++    for(const k of ['battles','elites','bosses'])integer(stats[k],k);
++    if(stats.elites+stats.bosses>stats.battles)throw Error('elite/boss wins must be subsets of battles');
++    return integer(stats.battles+2*stats.elites+5*stats.bosses+(victory?10:0),'base XP');
++   }
++   function award(state,{id,stats,victory,heat=0,heirLines=[],settlementId}){
++    validate(state);const active=adm(id);integer(heat,'weighted Heat');if(heat>1000)throw Error('Heat outside calculator bounds');
++    if(!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(settlementId||''))throw Error('explicit settlement id required');
++    if(!Array.isArray(heirLines)||new Set(heirLines).size!==heirLines.length||heirLines.some(k=>adm(k).fac!==active.fac||k===id))throw Error('heir lines must be unique benched same-faction lines');
++    const base=baseXp(stats,victory),fingerprint=[id,stats.battles,stats.elites,stats.bosses,victory?1:0,heat,heirLines.slice().sort().join(',')].join('|');
++    if(Object.hasOwn(state.awards,settlementId)){
++     if(state.awards[settlementId]!==fingerprint)throw Error('settlement id reused for a different outcome');
++     return {state:clone(state),duplicate:true,report:null};
++    }
++    const next=clone(state),report={baseXp:base,heatXp:2*heat,creditedQ:{},overflowQ:{},shadowPoolQ:heat*4};
++    const grant=(key,q)=>{integer(q,'grant quarters');const l=next.lines[key],credit=Math.min(q,2400-l.xpQ);l.xpQ+=credit;l.overflowQ+=q-credit;integer(l.overflowQ,'overflow quarters');report.creditedQ[key]=credit;report.overflowQ[key]=q-credit;};
++    const flown=(base+2*heat)*4;grant(id,flown);
++    for(const a of admirals.values())if(a.id!==id&&a.fac===active.fac)grant(a.id,flown/4*(heirLines.includes(a.id)?2:1));
++    next.shadowPoolQ[active.fac]=(next.shadowPoolQ[active.fac]||0)+heat*4;
++    next.awards[settlementId]=fingerprint;validate(next);return {state:next,duplicate:false,report};
++   }
++   function available(state,id,options={}){
++    validate(state);adm(id);const result=[];
++    for(const s of skills.values())if(s.owner.members.includes(id))try{choose(state,id,s.id,options);result.push(s.id);}catch(_){}
++    return result;
++   }
++   function enumerate(id){
++    adm(id);let states=new Map([['',[]]]);
++    for(let n=0;n<3;n++){
++     const next=new Map();for(const picks of states.values())for(const s of skills.values())if(s.branch!=='CAP'&&s.owner.members.includes(id)){
++      const p=picks.concat(s.id);try{validateBuild(id,920,p,null);const k=p.slice().sort().join('|');next.set(k,p.slice().sort());}catch(_){}
++     }states=next;
++    }
++    const builds=[];for(const picks of states.values())for(const c of skills.values())if(c.branch==='CAP'&&c.owner.members.includes(id))builds.push({picks,capstone:c.id});
++    return builds;
++   }
++   return {level,validateBuild,newState,validate,serialize,deserialize,choose,respec,baseXp,award,available,enumerate,thresholds:LEVEL_XP.slice(),masteryThresholds:MASTERY_XP.slice()};
++  }
++  return {create,LEVEL_XP,MASTERY_XP};
++  });
++
++  (function(root,factory){const api=factory();root.VSLineagePilot=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
++  'use strict';
++  const KEYS=['adm.vaelen.A1.0','adm.vaelen.A1.1'];
++  function snapshot(meta,id){
++   if(id!=='vaelen'||!meta||!meta.opts||meta.opts.lineagePilot!==true)return null;
++   const state=meta.lineageV1,line=state&&state.lines&&state.lines.vaelen;
++   if(!state||state.version!==1||!line||!Number.isSafeInteger(line.xpQ)||line.xpQ<0||line.xpQ>2400||!Array.isArray(line.picks)||line.picks.length>1||line.capstone!=='')return null;
++   if(line.picks.length&&(line.xpQ<300||!KEYS.includes(line.picks[0])))return null;
++   return {version:1,admiral:id,xpQ:line.xpQ,picks:line.picks.slice()};
++  }
++  function mode(run,side,c){
++   const s=run&&run.lineagePilot;
++   if(side!=='player'||!run||run.admiral!=='vaelen'||run.cmdOverride||!c||c.id!=='barrage'||!s||s.version!==1||s.admiral!=='vaelen'||!Number.isSafeInteger(s.xpQ)||s.xpQ<300||s.xpQ>2400||!Array.isArray(s.picks)||s.picks.length!==1)return null;
++   return KEYS.includes(s.picks[0])?s.picks[0]:null;
++  }
++  function intent(run,side,c,battle){
++   const selected=mode(run,side,c),raw=battle&&battle.lineageIntent;
++   if(selected!==KEYS[1])return {ok:true,mode:selected,weapons:{}};
++   if(raw===undefined||raw===null)return {ok:true,mode:selected,weapons:{}};
++   if(typeof raw!=='object'||Array.isArray(raw))return {ok:false};
++   const weapons={};
++   for(const [id,index] of Object.entries(raw)){
++    const u=battle.units.find(x=>x.id===id&&x.side==='player'&&!x.dead&&!x.isSq);
++    if(!u||index!==null&&(!Number.isSafeInteger(index)||index<0||index>=u.weapons.length||u.weapons[index].k==='flak'||(u.weapons[index].off||0)>0))return {ok:false};
++    weapons[id]=index;
++   }
++   return {ok:true,mode:selected,weapons};
++  }
++  function allows(context,u,index){return context.mode!==KEYS[1]||context.weapons[u.id]===undefined||context.weapons[u.id]===null||context.weapons[u.id]===index;}
++  function factor(context,u,w,t,distance){
++   if(context.mode===KEYS[0])return distance>w.r/2?1.2:1;
++   if(context.mode===KEYS[1]&&context.weapons[u.id]!==undefined&&context.weapons[u.id]!==null)return 1.25;
++   return 1;
++  }
++  return {KEYS,snapshot,mode,intent,allows,factor};
++  });
++
++const LINEAGE_PILOT_SPEC={"catalog":{"version":1,"skills":[{"id":"adm.vaelen.A1.0","owner":{"scope":"admiral","key":"adm.vaelen","members":["vaelen"]},"branch":"A","tier":1,"option":0,"name":"Focus Drawn Long","effect":"volley shots at targets beyond half the firing ship's range gain +20% damage.","original":"Focus Drawn Long - volley shots at targets beyond half the firing ship's range gain +20% damage.","source":{"path":"contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md","line":186,"sha256":"644e01aa19d552589c31f104a12b05314edb4255c4efdcef6c153a6df991aba0"},"primaryCommandOnly":true,"availability":"pilot_candidate","contract":{"status":"candidate_interpretation_requires_adoption","evidence":{"trigger":[],"timing":[],"duration":[],"limit":[],"playerInput":[],"actor":["ship"],"target":[]},"actor":"Each player non-squadron ship firing the primary Burning glass Command","target":"The actual target chosen for this weapon by the existing Command targeting","trigger":"Immediately before a primary-Command weapon resolves","resolution":"Multiply that weapon shot damage by 1.20 only if hex distance is strictly greater than half its printed maximum range","duration":"Only this Command weapon resolution","limit":"Once as a damage multiplier per eligible weapon; not an extra shot","stacking":"Multiply the existing Command multiplier once; no effect on normal fire, boss Commands or alternate Command","cleanup":"Restore the original battle multiplier in finally, including aborted or thrown actions","playerInput":"Weapon eligibility follows the existing Command; no additional target override","engineHooks":["command_volley_weapon"],"note":"Evidence is verbatim extraction; hook tags are suggestions. Null fields must not be defaulted into game behavior."},"interpretationNote":"A single shot means one projectile from a selected weapon entry; “ship range” is interpreted as that weapon’s printed maximum r. These terms are proposed clarifications, not silent edits to the source."},{"id":"adm.vaelen.A1.1","owner":{"scope":"admiral","key":"adm.vaelen","members":["vaelen"]},"branch":"A","tier":1,"option":1,"name":"One Lens, One Target","effect":"a ship may fire its volley as a single shot at +25% damage instead of firing every gun.","original":"One Lens, One Target - a ship may fire its volley as a single shot at +25% damage instead of firing every gun.","source":{"path":"contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md","line":186,"sha256":"644e01aa19d552589c31f104a12b05314edb4255c4efdcef6c153a6df991aba0"},"primaryCommandOnly":true,"availability":"pilot_candidate","contract":{"status":"candidate_interpretation_requires_adoption","evidence":{"trigger":[],"timing":[],"duration":[],"limit":[],"playerInput":["may"],"actor":["ship"],"target":[]},"actor":"Each player non-squadron ship with an explicit focused-weapon selection","target":"The actual legal target chosen by the existing Command for that weapon","trigger":"Before iterating a ship’s primary-Command weapons","resolution":"For a ship choosing one weapon index, fire a single projectile from that weapon during the Command at 1.25 damage; null/omitted selection keeps its normal volley","duration":"Only this Command resolution","limit":"One projectile from one chosen weapon per ship; native shot count restored afterward","stacking":"Multiply existing Command damage once; only one A1 option can be owned","cleanup":"Restore normal weapons/cooldowns/post-fire movement and the original battle multiplier; consume intent with Command","playerInput":"Per ship: normal volley, or one weapon index. Cancel does not spend Command","engineHooks":["command_volley_weapon"],"note":"Evidence is verbatim extraction; hook tags are suggestions. Null fields must not be defaulted into game behavior."},"interpretationNote":"A single shot means one projectile from a selected weapon entry; “ship range” is interpreted as that weapon’s printed maximum r. These terms are proposed clarifications, not silent edits to the source."}]},"roster":{"version":1,"admirals":[{"id":"vex","sourceName":"Admiral Roderic Vex","displayName":"Admiral Roderic Vex","fac":"voidsworn","primaryCommand":"barrage"},{"id":"malek","sourceName":"Oath-Captain Malek Draven","displayName":"Oath-Captain Malek Draven","fac":"voidsworn","primaryCommand":"hunt"},{"id":"ashgrove","sourceName":"Commodore Sera Ashgrove","displayName":"Commodore Sera Ashgrove","fac":"voidsworn","primaryCommand":"scramble"},{"id":"thale","sourceName":"High Admiral Oryn Thale","displayName":"High Admiral Oryn Thale","fac":"voidsworn","primaryCommand":"iron"},{"id":"kassar","sourceName":"First Admiral Ilsa Kassar","displayName":"First Admiral Ilsa Kassar","fac":"hegemony","primaryCommand":"barrage"},{"id":"vorn","sourceName":"Commodore Dace Vorn","displayName":"Commodore Dace Vorn","fac":"hegemony","primaryCommand":"hunt"},{"id":"reyes","sourceName":"Fleet Marshal Corin Reyes","displayName":"Fleet Marshal Corin Reyes","fac":"hegemony","primaryCommand":"scramble"},{"id":"maren","sourceName":"Line Admiral Oskar Maren","displayName":"Line Admiral Oskar Maren","fac":"hegemony","primaryCommand":"iron"},{"id":"grax","sourceName":"Warlord Grax Steelgrin","displayName":"Warlord Grax Ironmaw","fac":"corsair","primaryCommand":"surge"},{"id":"sable","sourceName":"Sable the Smiling Knife","displayName":"Sable the Smiling Knife","fac":"corsair","primaryCommand":"hunt"},{"id":"mott","sourceName":"Old Mott","displayName":"Old Mott","fac":"corsair","primaryCommand":"scramble"},{"id":"vesh","sourceName":"Vesh the Collector","displayName":"Vesh the Collector","fac":"corsair","primaryCommand":"restore"},{"id":"matriarch","sourceName":"The Matriarch of Nine Throats","displayName":"The Matriarch of Nine Throats","fac":"chorus","primaryCommand":"scramble"},{"id":"razormaw","sourceName":"Razormaw","displayName":"Razormaw","fac":"chorus","primaryCommand":"surge"},{"id":"mending","sourceName":"The Mending Throng","displayName":"The Mending Throng","fac":"chorus","primaryCommand":"restore"},{"id":"voice","sourceName":"Voice of the Deep","displayName":"Voice of the Deep","fac":"chorus","primaryCommand":"barrage"},{"id":"aelith","sourceName":"Tamsa of the Clear Aperture","displayName":"Tamsa of the Clear Aperture","fac":"ithar","primaryCommand":"scramble"},{"id":"vaelen","sourceName":"Saro of Long Focus","displayName":"Saro of Long Focus","fac":"ithar","primaryCommand":"barrage"},{"id":"thorne","sourceName":"Vell of the Third Mirror","displayName":"Vell of the Third Mirror","fac":"ithar","primaryCommand":"surge"},{"id":"mirelle","sourceName":"Brin of the Fourth Lens","displayName":"Brin of the Fourth Lens","fac":"ithar","primaryCommand":"iron"},{"id":"nekhet","sourceName":"Nadir Aurex, Ninth Frame","displayName":"Nadir Aurex, Ninth Frame","fac":"deathless","primaryCommand":"restore"},{"id":"sekhmar","sourceName":"Umbra Vessane, Third-Housed","displayName":"Umbra Vessane, Third-Housed","fac":"deathless","primaryCommand":"barrage"},{"id":"anuket","sourceName":"Ostrel of the Long Copy","displayName":"Ostrel of the Long Copy","fac":"deathless","primaryCommand":"hunt"},{"id":"khepra","sourceName":"Seveth, Twice-Restored","displayName":"Seveth, Twice-Restored","fac":"deathless","primaryCommand":"iron"}],"pairs":[{"key":"pair.01","scope":"pair","members":["vex","vaelen"],"declaredFamily":"barrage","sourceLine":7},{"key":"pair.02","scope":"pair","members":["kassar","sekhmar"],"declaredFamily":"barrage","sourceLine":12},{"key":"pair.03","scope":"pair","members":["ashgrove","aelith"],"declaredFamily":"scramble","sourceLine":17},{"key":"pair.04","scope":"pair","members":["reyes","matriarch"],"declaredFamily":"scramble","sourceLine":22},{"key":"pair.05","scope":"pair","members":["malek","anuket"],"declaredFamily":"hunt","sourceLine":27},{"key":"pair.06","scope":"pair","members":["vorn","sable"],"declaredFamily":"hunt","sourceLine":32},{"key":"pair.07","scope":"pair","members":["thale","khepra"],"declaredFamily":"iron","sourceLine":37},{"key":"pair.08","scope":"pair","members":["maren","mirelle"],"declaredFamily":"iron","sourceLine":42},{"key":"pair.09","scope":"pair","members":["grax","razormaw"],"declaredFamily":"surge","sourceLine":47},{"key":"pair.10","scope":"pair","members":["mending","nekhet"],"declaredFamily":"restore","sourceLine":52},{"key":"pair.11","scope":"pair","members":["voice","mott"],"declaredFamily":"burst release","sourceLine":57},{"key":"pair.12","scope":"pair","members":["thorne","vesh"],"declaredFamily":"reposition and patch","sourceLine":62}]}};
++const LINEAGE_PILOT_ENGINE=VSLineage.create(LINEAGE_PILOT_SPEC.catalog,LINEAGE_PILOT_SPEC.roster);
++function lineagePilotState(meta){ const state=meta.lineageV1||LINEAGE_PILOT_ENGINE.newState(meta.mastery||{}); LINEAGE_PILOT_ENGINE.validate(state); return state; }
++function lineagePilotMasteryXP(meta,id){ const s=VSLineagePilot.snapshot(meta,id); return s?s.xpQ/4:null; }
++function lineagePilotAward(meta,run,stats,victory,heat){
++  if(run.admiral!=='vaelen'||!meta.opts||meta.opts.lineagePilot!==true) return null;
++  try{ const id='run:'+String(run.t0||0)+':'+run.admiral+':'+String(meta.stats.runs||0);
++    const heirLines=Object.keys(meta.lineageHeirs||{}).filter(k=>meta.lineageHeirs[k]===true&&k!=='vaelen'&&LINEAGE_PILOT_SPEC.roster.admirals.some(a=>a.id===k&&a.fac==='ithar'));
++    const r=LINEAGE_PILOT_ENGINE.award(lineagePilotState(meta),{id:'vaelen',stats,victory,heat,heirLines,settlementId:id});
++    meta.lineageV1=r.state; return r.duplicate?0:r.report.baseXp+r.report.heatXp;
++  }catch(e){ console.warn('Lineage pilot kept the original save and used native XP: '+e.message); return null; }
++}
+diff --git a/ui3d.js b/ui3d.js
+--- a/ui3d.js
++++ b/ui3d.js
+@@ -502,7 +502,7 @@
+   if(!B||e.target.tagName==='INPUT'||document.body.classList.contains('app-on')) return; const k=e.key.toLowerCase();
+   if(document.querySelector('.intro')) return;
+   if(B.busy&&B.side==='enemy'&&(k==='enter'||k===' ')){ e.preventDefault&&e.preventDefault(); if(!G.skipTurn){ G.skipTurn=true; SPEED=Math.min(SPEED,PACE.skip); } return; } // B2: Enter or Space hurries the rest of the enemy's turn (presentation only)
+-  if(document.getElementById('modal')){ if(k==='escape'){ if(document.getElementById('retreatAsk')) ACT.c3retreatNo(); else closeModal(); } return; } // B1: no battle keys while a dialog is open (the retreat question let the fight play on behind it)
++  if(document.getElementById('modal')){ if(k==='escape'){ if(document.getElementById('retreatAsk')) ACT.c3retreatNo(); else if(document.getElementById('lineageCommandAsk')) ACT.lineageCommandCancel(); else closeModal(); } return; } // B1: no battle keys while a dialog is open (the retreat question let the fight play on behind it)
+   if(k==='v'){ B.showArcs=!B.showArcs; bRefresh(); return; }
+   if(k==='r'){ ACT.threat(); return; }
+   if(k==='t'){ G.ctl.toggleTop(); refreshTop(); return; }
+@@ -668,7 +668,7 @@
+   const ramSpots=!ri&&use&&B.reach?[...B.reach.map.values()].some(s=>s.ram):false;
+   const hint=B.wingSel&&!B.wingSel.dead?'Wing selected: tap an enemy ship to strike it, or one of your ships to guard it. Tap the wing again to cancel.':B.why?B.why:B.mode?'Tap a hex to place your ability, or tap the ship again to cancel.':!use?'This ship has acted. Pick another ship, or wait for your turn.':ri?`Ram ready: ${esc(ri.t.name)} is dead ahead (red lane). Tap Ram, or move and fire instead.`:ramSpots?'Red-ringed gold hexes line up a ram. Move there, then tap Ram.':canHit&&!moved?'Tap a gold hex to move, or a red-ringed enemy to fire.':canHit?'Tap a red-ringed enemy to fire.':!moved?'Tap a gold hex to move. Nothing is in range yet.':'Nothing left to do: tap Done with ship.';
+   return `<div class="striphint">${touchWords(hint)}</div><div class="actstrip">${btn('endTurn','','Done with ship',use,'primary')}${A&&u.ab==='launch'&&u.fac==='voidsworn'?btn('launchKind','fighter','Launch fighters'+(u.spare!=null?` <span class="dim">(${u.spare} spare)</span>`:''),use&&canAbility(u),'abil')+btn('launchKind','bomber','Launch bombers',use&&canAbility(u),'abil'):A?btn('ability','',(u.ab==='launch'?esc('Launch '+HULLS[wingKind(u)].n.toLowerCase()):esc(A.n))+(u.ab==='launch'&&u.spare!=null?` <span class="dim">(${u.spare} spare)</span>`:''),use&&canAbility(u)&&!B.mode,'abil'):''}${(()=>{ const c=commandFor('player'); return c&&!B.cmdUsed?btn('command','',`${B.cmdArm?`Tap again (${Math.max(1,Math.ceil(((G.cmdConfirmMs||6000)-(performance.now()-B.cmdArm))/1000))}s): `:''}${esc(c.n)}${canCommand('player')?` <span class="gilt">${'\u25CF'.repeat(cmdTier()+1)}${'\u25CB'.repeat(2-cmdTier())}</span>`:' <span class="dim">(used)</span>'}`,use&&canCommand('player'),'cmd'):''; })()}${ri?btn('ram','',`Ram <span class="dim">(~${ramEstimate(u,ri.t,ri.path.length).dmg})</span>`,use,'abil'):''}${bt.length?btn('board','',`Board <span class="dim">(${captureChance(u,bt[0])}% capture)</span>`,use):''}${(u.ab==='launch'||(u.fx&&u.fx.hive))?btn('stance','',`Wings: ${esc(WING_STANCES[u.stance||'strike'].n)} <span class="dim">(change)</span>`,use&&canStance(u),'abil'):''}${btn('brace','','Brace',use&&canOrder(u,'brace'))}${btn('center','','Center',true)}${btn('stripHelp','','?',true)}</div>`; }
+-ACT.command=()=>{ if(!B||B.busy||B.side!=='player'||!canCommand('player')) return; const now=performance.now(), win=G.cmdConfirmMs||6000; if(!(B.cmdArm&&now-B.cmdArm<win)){ B.cmdArm=now; bRefresh(); clearInterval(G.cmdTick); G.cmdTick=setInterval(()=>{ if(!B||B.cmdArm!==now){ clearInterval(G.cmdTick); return; } bRefresh(); },1000); /* v45: visible countdown, 6 s window */ setTimeout(()=>{ if(B&&B.cmdArm===now){ B.cmdArm=0; bRefresh(); } },win); return; } B.cmdArm=0; act(()=>useCommand('player')); }; // v41: once per battle, so it takes a confirming second tap
++ACT.command=()=>{ if(!B||B.busy||B.side!=='player'||!canCommand('player')) return; const now=performance.now(), win=G.cmdConfirmMs||6000; if(!(B.cmdArm&&now-B.cmdArm<win)){ B.cmdArm=now; bRefresh(); clearInterval(G.cmdTick); G.cmdTick=setInterval(()=>{ if(!B||B.cmdArm!==now){ clearInterval(G.cmdTick); return; } bRefresh(); },1000); /* v45: visible countdown, 6 s window */ setTimeout(()=>{ if(B&&B.cmdArm===now){ B.cmdArm=0; bRefresh(); } },win); return; } B.cmdArm=0; lineageCommandPrompt(); }; // v41: once per battle, so it takes a confirming second tap
+ // strip buttons call actions directly (synthetic key presses went through extra keyboard gates)
+ ACT.stance=()=>{ const s=B&&B.sel; if(!s||B.busy||B.over||B.side!=='player'||!canStance(s)) return; const order=['strike','screen','hunt'], nx=order[(order.indexOf(s.stance||'strike')+1)%3]; setStance(s,nx); bRefresh(); }; // B4 wing doctrines: one free change per round
+ ACT.brace=()=>{ const s=B&&B.sel; if(!s||B.busy||B.over||B.side!=='player') return; if(canOrder(s,'brace')&&guard(s)) act(()=>giveOrder(s,'brace')); };
+@@ -745,3 +745,14 @@
+   document.body.appendChild(el); DIAG.el=el; diagRender(); DIAG.t=setInterval(()=>{ const st=document.getElementById('diagStats'); if(st) try{ st.innerHTML=diagStats(); }catch(e){} },1000); }
+ ACT.diag=()=>diagToggle();
+ addEventListener('keydown',e=>{ if(e.shiftKey&&(e.key==='D'||e.key==='d')&&!/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||'')){ e.preventDefault(); diagToggle(); } });
++
++// Called after the existing two-tap Command confirmation.
++function lineageCommandPrompt(preserveDraft=false){
++  if(!B||B.busy||!canCommand('player')) return;
++  const c=commandFor('player');if(VSLineagePilot.mode(RUN,'player',c)!=='adm.vaelen.A1.1'){act(()=>useCommand('player'));return;}
++  if(!preserveDraft) B.lineageDraft={};
++  modal('<h2 id="lineageCommandAsk">One Lens, One Target</h2><p>For each ship, keep its normal volley or fire one projectile from one weapon at +25% damage. Cancel spends nothing.</p>'+alive('player').filter(u=>!u.isSq).map(u=>'<div><b>'+esc(u.name)+'</b><button data-act="lineageWeapon" data-arg="'+u.id+':normal">Normal volley</button>'+u.weapons.map((w,i)=>'<button data-act="lineageWeapon" data-arg="'+u.id+':'+i+'" '+(w.k==='flak'||w.off||!alive('enemy').some(t=>inReach(u,w,t))?'disabled':'')+'>'+esc(w.n)+' ('+((B.lineageDraft[u.id]===i)?'selected':'single shot')+')</button>').join('')+'</div>').join('')+'<button class="primary" data-act="lineageCommandFire">Fire Command</button><button data-act="lineageCommandCancel">Cancel</button>');
++}
++ACT.lineageWeapon=arg=>{if(!B||B.busy)return;const p=arg.split(':');if(p.length!==2)return;B.lineageDraft=B.lineageDraft||{};B.lineageDraft[p[0]]=p[1]==='normal'?null:Number(p[1]);lineageCommandPrompt(true);};
++ACT.lineageCommandFire=()=>{if(!B||B.busy)return;B.lineageIntent=JSON.parse(JSON.stringify(B.lineageDraft||{}));if(!lineageCommandIntent('player',commandFor('player')).ok){delete B.lineageIntent;toast('Choose a weapon with a legal target, or keep the normal volley.');return;}delete B.lineageDraft;closeModal();act(()=>useCommand('player'));};
++ACT.lineageCommandCancel=()=>{if(!B||B.busy)return;delete B.lineageDraft;delete B.lineageIntent;closeModal();bRefresh();};

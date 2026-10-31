@@ -1,0 +1,1 @@
+module-fit candidate: UI and action guard, five source copies plus explicit oracle exception

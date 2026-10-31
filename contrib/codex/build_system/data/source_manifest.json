@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+      "sha256": "ad5b860e11385a97f6139a6d5f3d13a25b4693aadfb628913d88e6db8883186a",
+      "lines": 256,
+      "lastLineFirst40": "- The Argon draft prong, when it lands, ",
+      "compiled": 216,
+      "readRanges": [
+        [
+          1,
+          256
+        ]
+      ]
+    },
+    {
+      "path": "contrib/muse/reviews/skill_tree_tier2_assembled_2026_10_29.md",
+      "sha256": "c08780dd60b46b1612550bf3dbad27ff0875c9e02707fe6165735ea056e2fcc8",
+      "lines": 72,
+      "lastLineFirst40": "4. The pairing table itself remains a ch",
+      "compiled": 48,
+      "readRanges": [
+        [
+          1,
+          72
+        ]
+      ]
+    },
+    {
+      "path": "contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md",
+      "sha256": "bdab562fcd17e68a7a25b1e88d1621138abf9f4130a52b583658413493348201",
+      "lines": 137,
+      "lastLineFirst40": "Flags for Opus (unchanged from earlier t",
+      "compiled": 96,
+      "readRanges": [
+        [
+          1,
+          137
+        ]
+      ]
+    }
+  ]
+}

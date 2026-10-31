@@ -1,0 +1,1 @@
+{"work":"/tmp/voidsworn-build-system-cal4k7/model","overlay":"/tmp/voidsworn-build-system-cal4k7/model/browser","project":"/tmp/voidsworn-build-system-cal4k7/model/godot"}

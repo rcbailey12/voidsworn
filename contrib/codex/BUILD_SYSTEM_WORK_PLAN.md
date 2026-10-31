@@ -1,12 +1,12 @@
 # Build-system work Codex can take off Opus
 
-Prepared October 31, 2026 against main `355a2ac7` and the reconciled draft PR #1. This is a proposed work order, not an implementation claim or a new owner ruling. The five games in Ryan's linked CBR article were verified from its HTML: Wasteland 3, Baldur's Gate 3, Battle Brothers, Warhammer 40,000: Rogue Trader, and Tactics Ogre: Reborn.
+Prepared October 31, 2026 against main `355a2ac7` and the reconciled draft PR #1. This began as a proposed work order. The initial executable packet is now in `build_system/README.md`; its evidence and explicit limits control implementation status. It creates no new owner rulings. The five games in Ryan's linked CBR article were verified from its HTML: Wasteland 3, Baldur's Gate 3, Battle Brothers, Warhammer 40,000: Rogue Trader, and Tactics Ogre: Reborn.
 
 Recommendation: finish the existing build design as a testable subsystem, beginning with the tree contract and progression calculator. Preserve the ruled admiral/lineage structure and existing 360 authored skill texts. Any replacement text must identify the original slot, defect, reason and proposed replacement. Do not commission another general review round or add a new progression currency.
 
 ## 1. Tree audit and implementation contract
 
-Status: proposed, not started. Inputs: Muse's final tree proposal and Phase 1 / tier-2 / tier-3 assemblies. Those assemblies total 216 + 48 + 96 authored entries. The primary Command, faction tier-1 sharing, Command-family tier-2 sharing, admiral-specific tier-3 skills, and two capstone options must remain traceable.
+Status: source-preserving catalog and targeted audit completed. Two pilot effects have operational contracts; 358 other effects remain explicit source contracts with unresolved implementation terms. Inputs: Muse's final tree proposal and Phase 1 / tier-2 / tier-3 assemblies. Those assemblies total 216 + 48 + 96 authored entries. The primary Command, faction tier-1 sharing, Command-family tier-2 sharing, admiral-specific tier-3 skills, and two capstone options must remain traceable.
 
 Codex deliverables:
 - Structured skill data with stable ids and original source anchors; a round-trip check that no authored slot vanished or was duplicated.
@@ -18,7 +18,7 @@ Opus verifies: source-slot coverage, the short list of actual changes, and a val
 
 ## 2. Progression calculator and legal-build validator
 
-Status: proposed, not started. First concrete planning issue: `skill_tree_proposal_final_2026_10_28.md:9,66-70` derives its run-5/10/15 examples from win XP 43, loss XP 10 and a fixed 80% loss assumption. Model that scenario alongside other outcome/depth profiles; bot win rates are not human loss probabilities. Verify actual reward code before treating 10 XP as a universal implemented loss payout.
+Status: calculator, legal-build validator, JS/Godot state model and regression fixtures implemented. First concrete planning issue: `skill_tree_proposal_final_2026_10_28.md:9,66-70` derives its run-5/10/15 examples from win XP 43, loss XP 10 and a fixed 80% loss assumption. Model that scenario alongside other outcome/depth profiles; bot win rates are not human loss probabilities. Verify actual reward code before treating 10 XP as a universal implemented loss payout.
 
 Codex deliverables:
 - Deterministic traces for trunk unlocks, three branch picks, capstone, capstone mastery, Heat, shadow XP, overflow and respec accounting.
@@ -30,7 +30,7 @@ Opus verifies: formulas, assumptions, boundary fixtures and expected output. Rev
 
 ## 3. One-admiral working implementation
 
-Status: proposed, depends on packets 1-2. Select an admiral whose existing hooks support two clearly different paths without first redesigning the combat engine.
+Status: bounded Saro prototype prepared and tested. Two alternative A1 effects, browser picker/Command dialogs, native reward/save/snapshot adapters and matching Godot logic are implemented as candidates. Native Godot dialogs and the other 358 effects are not implemented. See `build_system/README.md` before adoption.
 
 Codex deliverables: isolated browser and Godot proposed patches for choice eligibility, persistence, respec and a bounded selection of verified effects; before/after state fixtures; explicit oracle changes where behavior changes; a small adoption diff. First demonstrate two genuinely different builds for the same admiral. Do not claim that a selectable tree UI means every effect is implemented.
 
@@ -46,7 +46,7 @@ Opus verifies: ids resolve, prerequisites can be obtained, the examples produce 
 
 ## 5. Build UI and graphics packet
 
-Status: proposed, depends on a settled data contract. Tactics Ogre's constrained equipped skills are a useful reference for presenting a few meaningful choices clearly; Rogue Trader's specialization tiers are a reference for communicating future paths.
+Status: a functional offline Saro workbench is prepared, with code-level control tests. Rendered browser verification was blocked; the full 24-admiral graphics packet remains planned. Tactics Ogre's constrained equipped skills are a useful reference for presenting a few meaningful choices clearly; Rogue Trader's specialization tiers are a reference for communicating future paths.
 
 Codex deliverables: rendered tree, comparison and build-summary mockups; locked/available/chosen/excluded/implemented-state treatments; editable vector assets and consistent export names; actual long-text and dense-layout examples using Voidsworn's existing faction palette and crests. Show unlock cost, benefit, prerequisite, affected ship/weapon and what is given up. Reuse existing preserved artwork before creating another competing asset set.
 
@@ -54,7 +54,7 @@ Opus verifies: screenshots and asset manifest, with visual assets separated from
 
 ## Small coding jobs Codex can also own
 
-The module kind-fit guard (MOD-3), loss-debrief reveal/adaptation clash fixes, and boon backfill corrections are already bounded in the current handoff. Each can be delivered separately as browser/Godot candidates with fixtures and expected assertion changes. They do not require a new balance or art direction decision. Keep fitting friction, migration intent and broader economy changes outside those bug fixes unless a ruling settles them.
+The module kind-fit guard (MOD-3) is now a separately verified browser/Godot candidate in `build_system/candidates/module_fit/`. Loss-debrief reveal/adaptation clash fixes and boon backfill corrections remain bounded follow-up jobs. Each can be delivered separately as browser/Godot candidates with fixtures and expected assertion changes. They do not require a new balance or art direction decision. Keep fitting friction, migration intent and broader economy changes outside those bug fixes unless a ruling settles them.
 
 ## Delivery format for every packet
 
@@ -73,4 +73,4 @@ The recommendations above are Codex's adaptations, not claims made by the articl
 
 ## Not checked
 
-This work plan is not a completed 360-skill audit, a balance verdict, a new gameplay implementation or a visual sign-off. Current tree texts were inspected for structure and timing assumptions; effect-by-effect verification belongs to packet 1. None of the proposed packets has been executed yet.
+The current packet includes a complete source-slot catalog, a targeted audit, calculator/state model, module-fit candidate, two-effect Saro prototype and proposed Chorus copy edits. It is not a 360-effect implementation, a balance verdict, a whole-port clearance or a rendered visual sign-off. See `build_system/evidence/verification_summary.json` and `reviews/build_system_audit_2026_10_31.md`. Fleet recipes and the full graphics rollout remain planned.

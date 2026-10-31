@@ -4,6 +4,12 @@ Reconciled against main `355a2ac7`, October 31, 2026. Start with `../muse/OPUS_H
 
 Muse's price correction, A3 high-n confirmation, canonical corrections and red-team closure are complete. Canonical tool repairs are now on draft PR #1 at `contrib/muse/tools/`, with 24 adversarial checks in `tools/verification_repairs_test.js`. Retired tool/index overlays were removed. Do not restore the old driver copy or old entrypoint copies.
 
+## New executable build packet
+
+Read [build_system/README.md](build_system/README.md) before implementing module fitting or lineage. The separate module-fit candidate changes exactly MOD-3 (9 PASS / 71 FAIL). The packet also preserves all 360 tree texts, validates 3,840 complete builds, calculates progression from actual reward statistics, and prepares an opt-in two-effect Saro prototype with browser/Godot logic and native save/reward checks. Native Godot picker dialogs and 358 other effects remain unimplemented. Proposed Chorus copy edits are separate.
+
+Use the job patches and one-command check; do not copy competing full files over earlier elite/shipwright fixes. This packet remains pinned to 355a2ac7. Read the policy/serialization notes and recorded native table drift before adoption. The offline workbench has code-level tests; rendered browser QA is unverified.
+
 ## Ready gameplay candidates
 
 | Candidate | Files after stripping `contrib/codex/proposed/` | Acceptance |

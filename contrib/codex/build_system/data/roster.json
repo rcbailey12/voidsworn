@@ -1,0 +1,295 @@
+{
+  "version": 1,
+  "admirals": [
+    {
+      "id": "vex",
+      "sourceName": "Admiral Roderic Vex",
+      "displayName": "Admiral Roderic Vex",
+      "fac": "voidsworn",
+      "primaryCommand": "barrage"
+    },
+    {
+      "id": "malek",
+      "sourceName": "Oath-Captain Malek Draven",
+      "displayName": "Oath-Captain Malek Draven",
+      "fac": "voidsworn",
+      "primaryCommand": "hunt"
+    },
+    {
+      "id": "ashgrove",
+      "sourceName": "Commodore Sera Ashgrove",
+      "displayName": "Commodore Sera Ashgrove",
+      "fac": "voidsworn",
+      "primaryCommand": "scramble"
+    },
+    {
+      "id": "thale",
+      "sourceName": "High Admiral Oryn Thale",
+      "displayName": "High Admiral Oryn Thale",
+      "fac": "voidsworn",
+      "primaryCommand": "iron"
+    },
+    {
+      "id": "kassar",
+      "sourceName": "First Admiral Ilsa Kassar",
+      "displayName": "First Admiral Ilsa Kassar",
+      "fac": "hegemony",
+      "primaryCommand": "barrage"
+    },
+    {
+      "id": "vorn",
+      "sourceName": "Commodore Dace Vorn",
+      "displayName": "Commodore Dace Vorn",
+      "fac": "hegemony",
+      "primaryCommand": "hunt"
+    },
+    {
+      "id": "reyes",
+      "sourceName": "Fleet Marshal Corin Reyes",
+      "displayName": "Fleet Marshal Corin Reyes",
+      "fac": "hegemony",
+      "primaryCommand": "scramble"
+    },
+    {
+      "id": "maren",
+      "sourceName": "Line Admiral Oskar Maren",
+      "displayName": "Line Admiral Oskar Maren",
+      "fac": "hegemony",
+      "primaryCommand": "iron"
+    },
+    {
+      "id": "grax",
+      "sourceName": "Warlord Grax Steelgrin",
+      "displayName": "Warlord Grax Ironmaw",
+      "fac": "corsair",
+      "primaryCommand": "surge"
+    },
+    {
+      "id": "sable",
+      "sourceName": "Sable the Smiling Knife",
+      "displayName": "Sable the Smiling Knife",
+      "fac": "corsair",
+      "primaryCommand": "hunt"
+    },
+    {
+      "id": "mott",
+      "sourceName": "Old Mott",
+      "displayName": "Old Mott",
+      "fac": "corsair",
+      "primaryCommand": "scramble"
+    },
+    {
+      "id": "vesh",
+      "sourceName": "Vesh the Collector",
+      "displayName": "Vesh the Collector",
+      "fac": "corsair",
+      "primaryCommand": "restore"
+    },
+    {
+      "id": "matriarch",
+      "sourceName": "The Matriarch of Nine Throats",
+      "displayName": "The Matriarch of Nine Throats",
+      "fac": "chorus",
+      "primaryCommand": "scramble"
+    },
+    {
+      "id": "razormaw",
+      "sourceName": "Razormaw",
+      "displayName": "Razormaw",
+      "fac": "chorus",
+      "primaryCommand": "surge"
+    },
+    {
+      "id": "mending",
+      "sourceName": "The Mending Throng",
+      "displayName": "The Mending Throng",
+      "fac": "chorus",
+      "primaryCommand": "restore"
+    },
+    {
+      "id": "voice",
+      "sourceName": "Voice of the Deep",
+      "displayName": "Voice of the Deep",
+      "fac": "chorus",
+      "primaryCommand": "barrage"
+    },
+    {
+      "id": "aelith",
+      "sourceName": "Tamsa of the Clear Aperture",
+      "displayName": "Tamsa of the Clear Aperture",
+      "fac": "ithar",
+      "primaryCommand": "scramble"
+    },
+    {
+      "id": "vaelen",
+      "sourceName": "Saro of Long Focus",
+      "displayName": "Saro of Long Focus",
+      "fac": "ithar",
+      "primaryCommand": "barrage"
+    },
+    {
+      "id": "thorne",
+      "sourceName": "Vell of the Third Mirror",
+      "displayName": "Vell of the Third Mirror",
+      "fac": "ithar",
+      "primaryCommand": "surge"
+    },
+    {
+      "id": "mirelle",
+      "sourceName": "Brin of the Fourth Lens",
+      "displayName": "Brin of the Fourth Lens",
+      "fac": "ithar",
+      "primaryCommand": "iron"
+    },
+    {
+      "id": "nekhet",
+      "sourceName": "Nadir Aurex, Ninth Frame",
+      "displayName": "Nadir Aurex, Ninth Frame",
+      "fac": "deathless",
+      "primaryCommand": "restore"
+    },
+    {
+      "id": "sekhmar",
+      "sourceName": "Umbra Vessane, Third-Housed",
+      "displayName": "Umbra Vessane, Third-Housed",
+      "fac": "deathless",
+      "primaryCommand": "barrage"
+    },
+    {
+      "id": "anuket",
+      "sourceName": "Ostrel of the Long Copy",
+      "displayName": "Ostrel of the Long Copy",
+      "fac": "deathless",
+      "primaryCommand": "hunt"
+    },
+    {
+      "id": "khepra",
+      "sourceName": "Seveth, Twice-Restored",
+      "displayName": "Seveth, Twice-Restored",
+      "fac": "deathless",
+      "primaryCommand": "iron"
+    }
+  ],
+  "pairs": [
+    {
+      "key": "pair.01",
+      "scope": "pair",
+      "members": [
+        "vex",
+        "vaelen"
+      ],
+      "declaredFamily": "barrage",
+      "sourceLine": 7
+    },
+    {
+      "key": "pair.02",
+      "scope": "pair",
+      "members": [
+        "kassar",
+        "sekhmar"
+      ],
+      "declaredFamily": "barrage",
+      "sourceLine": 12
+    },
+    {
+      "key": "pair.03",
+      "scope": "pair",
+      "members": [
+        "ashgrove",
+        "aelith"
+      ],
+      "declaredFamily": "scramble",
+      "sourceLine": 17
+    },
+    {
+      "key": "pair.04",
+      "scope": "pair",
+      "members": [
+        "reyes",
+        "matriarch"
+      ],
+      "declaredFamily": "scramble",
+      "sourceLine": 22
+    },
+    {
+      "key": "pair.05",
+      "scope": "pair",
+      "members": [
+        "malek",
+        "anuket"
+      ],
+      "declaredFamily": "hunt",
+      "sourceLine": 27
+    },
+    {
+      "key": "pair.06",
+      "scope": "pair",
+      "members": [
+        "vorn",
+        "sable"
+      ],
+      "declaredFamily": "hunt",
+      "sourceLine": 32
+    },
+    {
+      "key": "pair.07",
+      "scope": "pair",
+      "members": [
+        "thale",
+        "khepra"
+      ],
+      "declaredFamily": "iron",
+      "sourceLine": 37
+    },
+    {
+      "key": "pair.08",
+      "scope": "pair",
+      "members": [
+        "maren",
+        "mirelle"
+      ],
+      "declaredFamily": "iron",
+      "sourceLine": 42
+    },
+    {
+      "key": "pair.09",
+      "scope": "pair",
+      "members": [
+        "grax",
+        "razormaw"
+      ],
+      "declaredFamily": "surge",
+      "sourceLine": 47
+    },
+    {
+      "key": "pair.10",
+      "scope": "pair",
+      "members": [
+        "mending",
+        "nekhet"
+      ],
+      "declaredFamily": "restore",
+      "sourceLine": 52
+    },
+    {
+      "key": "pair.11",
+      "scope": "pair",
+      "members": [
+        "voice",
+        "mott"
+      ],
+      "declaredFamily": "burst release",
+      "sourceLine": 57
+    },
+    {
+      "key": "pair.12",
+      "scope": "pair",
+      "members": [
+        "thorne",
+        "vesh"
+      ],
+      "declaredFamily": "reposition and patch",
+      "sourceLine": 62
+    }
+  ]
+}

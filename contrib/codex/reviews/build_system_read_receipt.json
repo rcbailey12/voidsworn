@@ -1,0 +1,323 @@
+{
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "retrieval": "Local semantic reading plus all 11 pinned raw GitHub files retrieved and verified against local Git content by UTF-16 length and FNV-1a64; local raw-byte SHA-256 below.",
+  "files": [
+    {
+      "path": "contrib/muse/reviews/skill_tree_proposal_final_2026_10_28.md",
+      "sha256": "112863247a96de8a4eb7a1bf27460f603d06caed67720519c232184afff9dff8",
+      "lineCount": 85,
+      "lastLineFirst40": "Q13 RULED: the Heat rule in section 8 is",
+      "scope": "full",
+      "readWindows": [
+        [
+          1,
+          85
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/skill_tree_proposal_final_2026_10_28.md"
+    },
+    {
+      "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+      "sha256": "ad5b860e11385a97f6139a6d5f3d13a25b4693aadfb628913d88e6db8883186a",
+      "lineCount": 256,
+      "lastLineFirst40": "- The Argon draft prong, when it lands, ",
+      "scope": "full",
+      "readWindows": [
+        [
+          1,
+          90
+        ],
+        [
+          91,
+          180
+        ],
+        [
+          181,
+          256
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md"
+    },
+    {
+      "path": "contrib/muse/reviews/skill_tree_tier2_assembled_2026_10_29.md",
+      "sha256": "c08780dd60b46b1612550bf3dbad27ff0875c9e02707fe6165735ea056e2fcc8",
+      "lineCount": 72,
+      "lastLineFirst40": "4. The pairing table itself remains a ch",
+      "scope": "full",
+      "readWindows": [
+        [
+          1,
+          72
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/skill_tree_tier2_assembled_2026_10_29.md"
+    },
+    {
+      "path": "contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md",
+      "sha256": "bdab562fcd17e68a7a25b1e88d1621138abf9f4130a52b583658413493348201",
+      "lineCount": 137,
+      "lastLineFirst40": "Flags for Opus (unchanged from earlier t",
+      "scope": "full",
+      "readWindows": [
+        [
+          1,
+          67
+        ],
+        [
+          68,
+          137
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md"
+    },
+    {
+      "path": "contrib/opus/compute/lore_bible_r8.md",
+      "sha256": "04e6e57de40f8ba9a78f246bb33d70b078107a00c54d0867f13d949b69dfe3d3",
+      "lineCount": 518,
+      "lastLineFirst40": "*End of round 8. Comment as before, or t",
+      "scope": "song-register and Chorus passages only",
+      "readWindows": [
+        [
+          90,
+          100
+        ],
+        [
+          328,
+          334
+        ],
+        [
+          399,
+          399
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/contrib/opus/compute/lore_bible_r8.md"
+    },
+    {
+      "path": "core.js",
+      "sha256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "lineCount": 349,
+      "lastLineFirst40": "function findNode(id){ for(const c of RU",
+      "scope": "targeted native consumers",
+      "readWindows": [
+        [
+          1,
+          18
+        ],
+        [
+          179,
+          179
+        ],
+        [
+          206,
+          246
+        ],
+        [
+          301,
+          346
+        ],
+        [
+          349,
+          349
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/core.js"
+    },
+    {
+      "path": "campaign_meta.js",
+      "sha256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "lineCount": 216,
+      "lastLineFirst40": "ACT.nextFac=f=>{ pickedFaction=f; META.o",
+      "scope": "targeted native consumers",
+      "readWindows": [
+        [
+          1,
+          11
+        ],
+        [
+          85,
+          101
+        ],
+        [
+          120,
+          130
+        ],
+        [
+          188,
+          216
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/campaign_meta.js"
+    },
+    {
+      "path": "campaign_run.js",
+      "sha256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "lineCount": 544,
+      "lastLineFirst40": "}",
+      "scope": "targeted fitting consumer",
+      "readWindows": [
+        [
+          118,
+          150
+        ],
+        [
+          544,
+          544
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/campaign_run.js"
+    },
+    {
+      "path": "battle.js",
+      "sha256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "lineCount": 1402,
+      "lastLineFirst40": "}",
+      "scope": "targeted combat consumers",
+      "readWindows": [
+        [
+          97,
+          110
+        ],
+        [
+          634,
+          646
+        ],
+        [
+          672,
+          686
+        ],
+        [
+          722,
+          724
+        ],
+        [
+          750,
+          782
+        ],
+        [
+          857,
+          865
+        ],
+        [
+          886,
+          901
+        ],
+        [
+          1090,
+          1115
+        ],
+        [
+          1402,
+          1402
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/battle.js"
+    },
+    {
+      "path": "godot/campaign/campaign.gd",
+      "sha256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "lineCount": 2626,
+      "lastLineFirst40": "\t\t\"events\": tel_log.slice(max(0, tel_log",
+      "scope": "targeted native mirror",
+      "readWindows": [
+        [
+          16,
+          17
+        ],
+        [
+          66,
+          86
+        ],
+        [
+          352,
+          383
+        ],
+        [
+          514,
+          525
+        ],
+        [
+          696,
+          709
+        ],
+        [
+          902,
+          905
+        ],
+        [
+          963,
+          975
+        ],
+        [
+          982,
+          1000
+        ],
+        [
+          1217,
+          1234
+        ],
+        [
+          1300,
+          1338
+        ],
+        [
+          2626,
+          2626
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/godot/campaign/campaign.gd"
+    },
+    {
+      "path": "godot/rules/rules.gd",
+      "sha256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+      "lineCount": 3979,
+      "lastLineFirst40": "\tB[\"aiActive\"] = null; u[\"activated\"] = ",
+      "scope": "targeted native mirror",
+      "readWindows": [
+        [
+          1,
+          35
+        ],
+        [
+          65,
+          83
+        ],
+        [
+          150,
+          154
+        ],
+        [
+          1024,
+          1039
+        ],
+        [
+          2321,
+          2321
+        ],
+        [
+          3093,
+          3180
+        ],
+        [
+          3217,
+          3217
+        ],
+        [
+          3979,
+          3979
+        ]
+      ],
+      "rawVerified": true,
+      "rawURL": "https://github.com/rcbailey12/voidsworn/raw/355a2ac70860db4446f040a5787b19c2d746d779/godot/rules/rules.gd"
+    }
+  ]
+}

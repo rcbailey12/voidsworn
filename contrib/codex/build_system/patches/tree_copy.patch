@@ -1,0 +1,96 @@
+diff --git a/contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md b/contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md
+--- a/contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md
++++ b/contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md
+@@ -1,3 +1,5 @@
++> Codex proposed copy edit against main 355a2ac7. Slot/header edits are enumerated in contrib/codex/build_system/data/tree_copy_edits.json. Mechanics and original provenance notes are retained; this is not the canonical Muse file.
++
+ # Skill tree Phase 1, assembled texts (Oct 29, 2026)
+ 
+ Status: COMPLETE. All six faction sections assembled from the three draft prongs in hand (DeepSeek, Qwen, Rey). The Argon draft prong (rate-limit retry) files separately as a fourth verbatim draft when it lands; see the assembly notes at the end.
+@@ -135,40 +137,40 @@
+ ## The Chorus
+ 
+ ### The Matriarch of Nine Throats (The Chorus) - Command: Spawning surge
+-Branch A - The Verse of Too Many Mouths
++Branch A - The Hunger of Too Many Mouths
+ T1: Choose the Brood That Swells - one brood releases two extra swarms instead of one, and the other broods release none extra. || Spores on the Tide - extra swarms may be placed up to 2 hexes from their brood instead of adjacent to it.
+-T2: The Song Splits - each extra swarm may strike a different target than the rest of its brood's swarms. || Sung Before the Strike - spawning happens before your ships move, so the new swarms can screen your movement this round.
+-T3: Every Throat Opens - a brood that did not move this round releases one more extra swarm. || The Verse Bites Twice - a swarm striking a target already hit by another swarm this round gains +25% damage.
+-Capstone: Nine Throats, One Verse - Spawning surge releases an extra swarm from every ship that carries swarms, not only from broods. || The Song Does Not End - the extra swarms remain after the Command and strike once more at the start of next round before fading.
++T2: The Brood Splits - each extra swarm may strike a different target than the rest of its brood's swarms. || Spawn Before the Strike - spawning happens before your ships move, so the new swarms can screen your movement this round.
++T3: Every Throat Opens - a brood that did not move this round releases one more extra swarm. || The Brood Bites Twice - a swarm striking a target already hit by another swarm this round gains +25% damage.
++Capstone: Nine Throats, One Hunger - Spawning surge releases an extra swarm from every ship that carries swarms, not only from broods. || The Brood Remains - the extra swarms remain after the Command and strike once more at the start of next round before fading.
+ Provenance: Rey draft throughout.
+ 
+ ### Razormaw (The Chorus) - Command: Blood frenzy
+-Branch A - The Hunting Verse
++Branch A - The Hunting Instinct
+ T1: Run Down the Slowest - during the frenzy, your ships gain +20% damage against targets slower than themselves. || Teeth at the Throat - a ship that ends its frenzy movement behind an enemy strikes that enemy's rear arc with its first shot this round.
+-T2: The Pack Sings One Prey - name one prey when the frenzy begins; ships moving toward the prey gain +1 movement. || Blood in the Water - during the frenzy, a ship may change targets freely after each kill without losing the frenzy's accuracy protection.
+-T3: Frenzy Feeds the Verse - a ship that lands a rear-arc hit during the frenzy may immediately move 2 more hexes. || Howl Before the Bite - during the frenzy, an enemy adjacent to two or more of your ships loses a further 20 accuracy.
+-Capstone: The Verse Turns Red - the frenzy's movement and accuracy protection last through next round, but only for ships that end this round adjacent to an enemy. || One Prey, Every Mouth - when the frenzy is declared, every ship may move directly toward the named prey, ignoring its turn limit once.
++T2: The Pack Names One Prey - name one prey when the frenzy begins; ships moving toward the prey gain +1 movement. || Blood in the Water - during the frenzy, a ship may change targets freely after each kill without losing the frenzy's accuracy protection.
++T3: Frenzy Feeds the Pack - a ship that lands a rear-arc hit during the frenzy may immediately move 2 more hexes. || Howl Before the Bite - during the frenzy, an enemy adjacent to two or more of your ships loses a further 20 accuracy.
++Capstone: The Brood Turns Red - the frenzy's movement and accuracy protection last through next round, but only for ships that end this round adjacent to an enemy. || One Prey, Every Mouth - when the frenzy is declared, every ship may move directly toward the named prey, ignoring its turn limit once.
+ Provenance: Rey draft throughout.
+ 
+ ### The Mending Throng (The Chorus) - Command: Regrowth tide
+-Branch A - The Mending Verse
+-T1: Grow Where It Hurts - you may assign one ship's entire regrowth to a single damaged section. || Skin Before Song - a ship may take its regrowth as temporary extra hull, up to +15%, instead of repairing damage.
+-T2: The Tide Comes Early - Regrowth tide may be sung at the start of the round, before any fire is taken. || Growth Remembers the Wound - a section healed by the tide regrows at double rate again next round.
+-T3: Flesh Knit for War - a ship the tide brings above three quarters hull gains +20% damage next round. || The Verse Refuses Holes - while any of your ships is below half hull, the most damaged ship regrows 10% at each round start until it passes half.
+-Capstone: Tide Without a Shore - Regrowth tide heals a second time at the end of the round, at half strength. || What Was Sung Grows Back - the tide restores destroyed sections to full function, and a section restored this way cannot be destroyed again this battle.
++Branch A - The Mending Instinct
++T1: Grow Where It Hurts - you may assign one ship's entire regrowth to a single damaged section. || Skin Before Scars - a ship may take its regrowth as temporary extra hull, up to +15%, instead of repairing damage.
++T2: The Tide Comes Early - Regrowth tide may be released at the start of the round, before any fire is taken. || Growth Remembers the Wound - a section healed by the tide regrows at double rate again next round.
++T3: Flesh Knit for War - a ship the tide brings above three quarters hull gains +20% damage next round. || The Flesh Refuses Holes - while any of your ships is below half hull, the most damaged ship regrows 10% at each round start until it passes half.
++Capstone: Tide Without a Shore - Regrowth tide heals a second time at the end of the round, at half strength. || What Was Cut Grows Back - the tide restores destroyed sections to full function, and a section restored this way cannot be destroyed again this battle.
+ Provenance: Rey draft throughout.
+ 
+ ### Voice of the Deep (The Chorus) - Command: Spitting volley
+-Branch A - The Acid Verse
++Branch A - The Acid Instinct
+ T1: Acid Before Aim - each ship may spit its volley at the nearest enemy instead of the best target. || Every Throat Spits - a ship whose guns cannot bear may still spit once at half damage at the nearest enemy in range.
+-T2: The Burn Stays - an enemy hit by the volley takes acid damage at the start of next round equal to 15% of the volley damage it took. || Sung in Rounds - you may fire the volley in two halves, the second half after your ships move.
++T2: The Burn Stays - an enemy hit by the volley takes acid damage at the start of next round equal to 15% of the volley damage it took. || Spit in Two Waves - you may fire the volley in two halves, the second half after your ships move.
+ T3: Acid Finds the Seams - volley hits ignore armor on targets below half hull. || Chorus of Mouths - before the volley resolves, each ship may switch its target once; if four or more ships spit at one target, that target loses 20 accuracy next round as acid eats at its sensors.
+ Capstone: The Volley That Grows - after the volley, every ship that hit with its first spit spits again at half damage. || Mouth of the Deep - choose one ship; it spits with every weapon it carries, twice, at any single target in range.
+ Provenance: Rey draft throughout.
+ 
+ ### The Chorus shared tier-1 sets
+-Branch B T1: Verses Assigned at Hatching - at battle start, give each ship a verse (strike, screen, or mend); a ship may change its verse once per battle. || Broods in Reserve - hold one brood off the field; it enters, grown and ready, at the start of round 2.
+-Branch C T1: The Flagship Sings First - once per battle, one other ship may act immediately after the flagship finishes its activation. || Throat of the Deep Song - ships within 2 hexes of the flagship gain +10 aim.
++Branch B T1: Instincts Assigned at Hatching - at battle start, give each ship an instinct (strike, screen, or mend); a ship may change its instinct once per battle. || Broods in Reserve - hold one brood off the field; it enters, grown and ready, at the start of round 2.
++Branch C T1: The Flagship Acts First - once per battle, one other ship may act immediately after the flagship finishes its activation. || Throat of the Deep - ships within 2 hexes of the flagship gain +10 aim.
+ Provenance: Rey draft.
+ 
+ ## The Glasswrights
+diff --git a/contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md b/contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md
+--- a/contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md
++++ b/contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md
+@@ -1,3 +1,5 @@
++> Codex proposed copy edit against main 355a2ac7. Slot/header edits are enumerated in contrib/codex/build_system/data/tree_copy_edits.json. Mechanics and original provenance notes are retained; this is not the canonical Muse file.
++
+ # Skill tree tier 3 (Branch B and C) assembled set (savings pass wave 4, Oct 29, 2026)
+ 
+ Chair assembly from the three filed prongs: the blind Rey draft (primary text), the Qwen draft, and the DeepSeek draft, all filed verbatim under contrib/muse/reviews/, contrib/qwen/reviews/, and contrib/deepseek/reviews/. Method matches the tier 2 assembly: Rey text is the base, swaps are marked per admiral with the source leg, and nothing is silently edited. The one wording fix is marked where it occurs. The Argon prong is still outstanding; if it lands stronger picks, they arrive as an addendum for Opus, not a rewrite.
+@@ -63,7 +65,7 @@
+ ## The Chorus
+ 
+ ### The Matriarch of Nine Throats
+-Branch B T3: Broods Sing the Strike Order - you choose the order in which broods release; the last brood to release has its extra swarms strike at +25% damage. || Swarms Seed the Field - extra swarms may be placed on empty hexes instead of striking; the first enemy to move through such a hex takes a strike at half damage.
++Branch B T3: Broods Set the Strike Order - you choose the order in which broods release; the last brood to release has its extra swarms strike at +25% damage. || Swarms Seed the Field - extra swarms may be placed on empty hexes instead of striking; the first enemy to move through such a hex takes a strike at half damage.
+ Branch C T3: The First Throat Opens Alone - once per battle, the flagship brood releases its extra swarms before any ship moves, and they strike immediately. || Nine Voices, One Hunger - the flagship's extra swarms deal +20% damage when they strike a target no other swarm struck this round.
+ 
+ ### Razormaw
+@@ -71,8 +73,8 @@
+ Branch C T3: Razormaw Takes the Throat - once per battle, the flagship may move through an enemy's hex during the frenzy and strike that enemy's rear arc from the far side. || The Maw Does Not Close - the flagship keeps the frenzy's damage bonus into the next round if it ended this round behind an enemy.
+ 
+ ### The Mending Throng
+-Branch B T3: The Tide Chooses One Shore - when the tide is sung, you may double the regrowth of every ship below half hull and give none to ships above three quarters hull. || Growth That Fights First - a ship may take its regrowth before it fires this round, at half strength, instead of at the tide's normal time.
+-Branch C T3: The Throng Sings the Flagship Whole - once per battle, the flagship may take the entire fleet's regrowth share for one round. || The Flagship Grows Deepest - the flagship regrows 25% more from every tide.
++Branch B T3: The Tide Chooses One Shore - when the tide is released, you may double the regrowth of every ship below half hull and give none to ships above three quarters hull. || Growth That Fights First - a ship may take its regrowth before it fires this round, at half strength, instead of at the tide's normal time.
++Branch C T3: The Throng Grows the Flagship Whole - once per battle, the flagship may take the entire fleet's regrowth share for one round. || The Flagship Grows Deepest - the flagship regrows 25% more from every tide.
+ 
+ ### Voice of the Deep
+ Branch B T3: Every Mouth Aims Where It Pleases - during the volley, each ship may split its spit between two targets, the second at half damage. || Acid Rains Sideways - during the volley, each ship may spit once at a target in its side arc at full effect.

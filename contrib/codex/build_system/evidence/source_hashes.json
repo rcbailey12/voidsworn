@@ -1,0 +1,100 @@
+{
+  "pin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "hashes": {
+    "data.js": {
+      "gitSHA256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a",
+      "checkoutSHA256": "81772d491c90072637ea3d09698725ce944173d5532226f240ee6f387aaec42a",
+      "lineEndingNormalizedMatch": true
+    },
+    "core.js": {
+      "gitSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "checkoutSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "lineEndingNormalizedMatch": true
+    },
+    "battle.js": {
+      "gitSHA256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "checkoutSHA256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "lineEndingNormalizedMatch": true
+    },
+    "campaign_meta.js": {
+      "gitSHA256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "checkoutSHA256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "lineEndingNormalizedMatch": true
+    },
+    "campaign_run.js": {
+      "gitSHA256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "checkoutSHA256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "lineEndingNormalizedMatch": true
+    },
+    "ui3d.js": {
+      "gitSHA256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "checkoutSHA256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/campaign/campaign.gd": {
+      "gitSHA256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "checkoutSHA256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/rules/rules.gd": {
+      "gitSHA256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+      "checkoutSHA256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/campaign/data/campaign_tables.json": {
+      "gitSHA256": "e8b047b9b45363191ff5eb9d41668a7f66902ecc995ffe0f944bf4a69a701b99",
+      "checkoutSHA256": "e8b047b9b45363191ff5eb9d41668a7f66902ecc995ffe0f944bf4a69a701b99",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/rules/data/tables.json": {
+      "gitSHA256": "60d8d1e488c647e4de53641cabee002f06bf66b8cf9279bf590b7d242976afde",
+      "checkoutSHA256": "60d8d1e488c647e4de53641cabee002f06bf66b8cf9279bf590b7d242976afde",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/campaign/test/oracle/core.js": {
+      "gitSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "checkoutSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/campaign/test/oracle/battle.js": {
+      "gitSHA256": "070077bd39baf06de0a34bef3d5c1c26ae6dc43943420ee443a14b6f2db4c19f",
+      "checkoutSHA256": "070077bd39baf06de0a34bef3d5c1c26ae6dc43943420ee443a14b6f2db4c19f",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/campaign/test/oracle/campaign_meta.js": {
+      "gitSHA256": "5813c3ca6d395ccd11b8ab7539e348c0941366de480a0a3d8479d3d19ae26c4e",
+      "checkoutSHA256": "5813c3ca6d395ccd11b8ab7539e348c0941366de480a0a3d8479d3d19ae26c4e",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/rules/test/oracle/core.js": {
+      "gitSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "checkoutSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "lineEndingNormalizedMatch": true
+    },
+    "godot/rules/test/oracle/battle.js": {
+      "gitSHA256": "9e9e14cbfb2a1aefd8ece99de4d551d389d0ef150cf78347323e2805d0547e7b",
+      "checkoutSHA256": "9e9e14cbfb2a1aefd8ece99de4d551d389d0ef150cf78347323e2805d0547e7b",
+      "lineEndingNormalizedMatch": true
+    },
+    "contrib/muse/reviews/skill_tree_proposal_final_2026_10_28.md": {
+      "gitSHA256": "112863247a96de8a4eb7a1bf27460f603d06caed67720519c232184afff9dff8",
+      "checkoutSHA256": "112863247a96de8a4eb7a1bf27460f603d06caed67720519c232184afff9dff8",
+      "lineEndingNormalizedMatch": true
+    },
+    "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md": {
+      "gitSHA256": "ad5b860e11385a97f6139a6d5f3d13a25b4693aadfb628913d88e6db8883186a",
+      "checkoutSHA256": "ad5b860e11385a97f6139a6d5f3d13a25b4693aadfb628913d88e6db8883186a",
+      "lineEndingNormalizedMatch": true
+    },
+    "contrib/muse/reviews/skill_tree_tier2_assembled_2026_10_29.md": {
+      "gitSHA256": "c08780dd60b46b1612550bf3dbad27ff0875c9e02707fe6165735ea056e2fcc8",
+      "checkoutSHA256": "c08780dd60b46b1612550bf3dbad27ff0875c9e02707fe6165735ea056e2fcc8",
+      "lineEndingNormalizedMatch": true
+    },
+    "contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md": {
+      "gitSHA256": "bdab562fcd17e68a7a25b1e88d1621138abf9f4130a52b583658413493348201",
+      "checkoutSHA256": "bdab562fcd17e68a7a25b1e88d1621138abf9f4130a52b583658413493348201",
+      "lineEndingNormalizedMatch": true
+    }
+  }
+}

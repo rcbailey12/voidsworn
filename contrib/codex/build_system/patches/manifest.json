@@ -1,0 +1,299 @@
+{
+  "sourcePin": "355a2ac70860db4446f040a5787b19c2d746d779",
+  "files": [
+    {
+      "job": "module_fit",
+      "path": "campaign_run.js",
+      "newFile": false,
+      "baseSHA256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "candidateSHA256": "3b0edccd2a8dcc8b1a049c6d6db0911d9837d88f3312bdb2fd653785149b447e"
+    },
+    {
+      "job": "module_fit",
+      "path": "core.js",
+      "newFile": false,
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "c13c4e3aca0d50f4de16ca371873e3bae12c8e7f2e8b376727cb795c34b8465b"
+    },
+    {
+      "job": "module_fit",
+      "path": "godot/campaign/campaign.gd",
+      "newFile": false,
+      "baseSHA256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "candidateSHA256": "1edbb49a26ae90782d5609e49786a61ffc846ad3ca4b89cb86c4723adb0c22da"
+    },
+    {
+      "job": "module_fit",
+      "path": "godot/campaign/test/oracle/README.md",
+      "newFile": false,
+      "baseSHA256": "e16e00c398b77c3932e5079851366a74820e2bf3ec2228ef01bb51e4087fbd1b",
+      "candidateSHA256": "f16911043fcc3047a7bc7cbef96c89ed9ab298489aee503133850643749bdab6"
+    },
+    {
+      "job": "module_fit",
+      "path": "godot/campaign/test/oracle/campaign_run.js",
+      "newFile": false,
+      "baseSHA256": "993c7d61ccdb4418cee51e470405e83d58e11fe86a6e4065a9f94c71d3f34ecb",
+      "candidateSHA256": "ac88c68c467b67df9527fd695c27619319e40baabfc5e46e44e9bae677216ea9"
+    },
+    {
+      "job": "module_fit",
+      "path": "godot/campaign/test/oracle/core.js",
+      "newFile": false,
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "c13c4e3aca0d50f4de16ca371873e3bae12c8e7f2e8b376727cb795c34b8465b"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "battle.js",
+      "newFile": false,
+      "baseSHA256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "candidateSHA256": "4cf6942b98e2b8db1e88016416c4ce3945871422a06cfe9b72fed9d355642626"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "campaign_meta.js",
+      "newFile": false,
+      "baseSHA256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "candidateSHA256": "3365db6f12835dcba8893a1b4ca47d536c1bc7d32021f1738fc89e8a6114692a"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "core.js",
+      "newFile": false,
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "418eed2d12741f373732322d194e279315b822a93069106be6b3dadfbed638f5"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/campaign/campaign.gd",
+      "newFile": false,
+      "baseSHA256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "candidateSHA256": "b5e726df85f7dea67ca9e47844985d1ab0000884bf2a275ad957a9fc1f622f89"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/campaign/data/lineage_pilot.json",
+      "newFile": true,
+      "baseSHA256": null,
+      "candidateSHA256": "985e957adfe0e33774ec27c93f6a8202faeae60185dd3efb9f1619dbfef21caf"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/campaign/lineage_model.gd",
+      "newFile": true,
+      "baseSHA256": null,
+      "candidateSHA256": "c78373f29d92d45b79b334b5ab4f2639e533f490a008484e144c21e38f50d5d9"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/campaign/test/oracle/README.md",
+      "newFile": false,
+      "baseSHA256": "e16e00c398b77c3932e5079851366a74820e2bf3ec2228ef01bb51e4087fbd1b",
+      "candidateSHA256": "85f762ffa176473e7b3b7cfa6fe35cc8f4d86fe97069222998c33ed9268ae6a0"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/campaign/test/oracle/battle.js",
+      "newFile": false,
+      "baseSHA256": "070077bd39baf06de0a34bef3d5c1c26ae6dc43943420ee443a14b6f2db4c19f",
+      "candidateSHA256": "7699386fccf522b23dff79f0314e24c09524a0e177318d4ca6d5819d71ff654a"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/campaign/test/oracle/campaign_meta.js",
+      "newFile": false,
+      "baseSHA256": "5813c3ca6d395ccd11b8ab7539e348c0941366de480a0a3d8479d3d19ae26c4e",
+      "candidateSHA256": "ebedf708534ec6b68f5d956baf648255c077be99d58dabb296ed924153bd515e"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/campaign/test/oracle/core.js",
+      "newFile": false,
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "418eed2d12741f373732322d194e279315b822a93069106be6b3dadfbed638f5"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/rules/lineage_pilot.gd",
+      "newFile": true,
+      "baseSHA256": null,
+      "candidateSHA256": "02f287777f5f206c68f78b6141ad4c25b27c62010b613416f566227ea22b460d"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/rules/rules.gd",
+      "newFile": false,
+      "baseSHA256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+      "candidateSHA256": "2fa8dfbf55ade923eabb96bc82c3d8df5814839ca5270f86613c9bc971a758c9"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/rules/test/oracle/README.md",
+      "newFile": false,
+      "baseSHA256": "5ec66c06170b1adc582d56fbee53a4108418b3509576af196d1046d9da2a20ee",
+      "candidateSHA256": "b9cacac8a2cee7cf6bbf4adf86fe5a0e5ff5e0ce6b3d98be062071ff1096cdcb"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/rules/test/oracle/battle.js",
+      "newFile": false,
+      "baseSHA256": "9e9e14cbfb2a1aefd8ece99de4d551d389d0ef150cf78347323e2805d0547e7b",
+      "candidateSHA256": "5ee89dbe9659b69ff86fd33043728889fda0bf986a38401cb38d5a90c4933894"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "godot/rules/test/oracle/core.js",
+      "newFile": false,
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "418eed2d12741f373732322d194e279315b822a93069106be6b3dadfbed638f5"
+    },
+    {
+      "job": "lineage_pilot",
+      "path": "ui3d.js",
+      "newFile": false,
+      "baseSHA256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "candidateSHA256": "ce3608f349fbc0987c30dd9928574464272088ecd4b7d6f4117ce50385c6fe66"
+    },
+    {
+      "job": "tree_copy",
+      "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+      "newFile": false,
+      "baseSHA256": "ad5b860e11385a97f6139a6d5f3d13a25b4693aadfb628913d88e6db8883186a",
+      "candidateSHA256": "1e2f97e20023e1c2e25088f025889d9134da2612f8767d47783911dfb2b4b85b"
+    },
+    {
+      "job": "tree_copy",
+      "path": "contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md",
+      "newFile": false,
+      "baseSHA256": "bdab562fcd17e68a7a25b1e88d1621138abf9f4130a52b583658413493348201",
+      "candidateSHA256": "48d9eb455b2422ad48bf111b0b3443dcd45f187a5c2ba48c78e05f4328c34450"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "battle.js",
+      "newFile": false,
+      "baseSHA256": "61f8a0678283d3d76769641a35892ed35a08b872daf8d93307d25b0b78d635d2",
+      "candidateSHA256": "4cf6942b98e2b8db1e88016416c4ce3945871422a06cfe9b72fed9d355642626"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "campaign_meta.js",
+      "newFile": false,
+      "baseSHA256": "49a5044cfb248d91aad27e9d7c9e717030d06a79b68d06883279ef39cb69481c",
+      "candidateSHA256": "3365db6f12835dcba8893a1b4ca47d536c1bc7d32021f1738fc89e8a6114692a"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "campaign_run.js",
+      "newFile": false,
+      "baseSHA256": "0b97f419791a9e2c1253963348ffef6ab44a1e5e9d6cbddc255b7870d8408b17",
+      "candidateSHA256": "3b0edccd2a8dcc8b1a049c6d6db0911d9837d88f3312bdb2fd653785149b447e"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "core.js",
+      "newFile": false,
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "94bf748b5ce4432d6071194e1131990c788233df60aaf58e42722633acb48493"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/campaign/campaign.gd",
+      "newFile": false,
+      "baseSHA256": "6ea6dd1a0b77dda74097157441f6b93b7751d7e492a1e669f58b11983f6af8a8",
+      "candidateSHA256": "1db2b21f2a1eea4b455c6fe103718211e029ce78a5b9e5ff8c1e8717145a560a"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/campaign/data/lineage_pilot.json",
+      "newFile": true,
+      "baseSHA256": null,
+      "candidateSHA256": "985e957adfe0e33774ec27c93f6a8202faeae60185dd3efb9f1619dbfef21caf"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/campaign/lineage_model.gd",
+      "newFile": true,
+      "baseSHA256": null,
+      "candidateSHA256": "c78373f29d92d45b79b334b5ab4f2639e533f490a008484e144c21e38f50d5d9"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/campaign/test/oracle/README.md",
+      "newFile": false,
+      "baseSHA256": "e16e00c398b77c3932e5079851366a74820e2bf3ec2228ef01bb51e4087fbd1b",
+      "candidateSHA256": "896b4bc05fbb3b144b3b04f11483d530bab26b6fdd3534446c08f0ae03c9e4d8"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/campaign/test/oracle/battle.js",
+      "newFile": false,
+      "baseSHA256": "070077bd39baf06de0a34bef3d5c1c26ae6dc43943420ee443a14b6f2db4c19f",
+      "candidateSHA256": "7699386fccf522b23dff79f0314e24c09524a0e177318d4ca6d5819d71ff654a"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/campaign/test/oracle/campaign_meta.js",
+      "newFile": false,
+      "baseSHA256": "5813c3ca6d395ccd11b8ab7539e348c0941366de480a0a3d8479d3d19ae26c4e",
+      "candidateSHA256": "ebedf708534ec6b68f5d956baf648255c077be99d58dabb296ed924153bd515e"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/campaign/test/oracle/campaign_run.js",
+      "newFile": false,
+      "baseSHA256": "993c7d61ccdb4418cee51e470405e83d58e11fe86a6e4065a9f94c71d3f34ecb",
+      "candidateSHA256": "ac88c68c467b67df9527fd695c27619319e40baabfc5e46e44e9bae677216ea9"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/campaign/test/oracle/core.js",
+      "newFile": false,
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "94bf748b5ce4432d6071194e1131990c788233df60aaf58e42722633acb48493"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/rules/lineage_pilot.gd",
+      "newFile": true,
+      "baseSHA256": null,
+      "candidateSHA256": "02f287777f5f206c68f78b6141ad4c25b27c62010b613416f566227ea22b460d"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/rules/rules.gd",
+      "newFile": false,
+      "baseSHA256": "74f4c88f5713e0cd9c11d3c2bc51dc5fb924ba9355e7ce82f93ee894c2bf2aa4",
+      "candidateSHA256": "2fa8dfbf55ade923eabb96bc82c3d8df5814839ca5270f86613c9bc971a758c9"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/rules/test/oracle/README.md",
+      "newFile": false,
+      "baseSHA256": "5ec66c06170b1adc582d56fbee53a4108418b3509576af196d1046d9da2a20ee",
+      "candidateSHA256": "b9cacac8a2cee7cf6bbf4adf86fe5a0e5ff5e0ce6b3d98be062071ff1096cdcb"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/rules/test/oracle/battle.js",
+      "newFile": false,
+      "baseSHA256": "9e9e14cbfb2a1aefd8ece99de4d551d389d0ef150cf78347323e2805d0547e7b",
+      "candidateSHA256": "5ee89dbe9659b69ff86fd33043728889fda0bf986a38401cb38d5a90c4933894"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "godot/rules/test/oracle/core.js",
+      "newFile": false,
+      "baseSHA256": "05df6a9b140ea1ad1dd1ab8c0ed8aba0cad24849da5cf45c0ac5794ac3d96836",
+      "candidateSHA256": "418eed2d12741f373732322d194e279315b822a93069106be6b3dadfbed638f5"
+    },
+    {
+      "job": "combined_runtime",
+      "path": "ui3d.js",
+      "newFile": false,
+      "baseSHA256": "aa93b9bd0d431a7ba72e488e372d708d3d7af48e7c5f8050f4ac3dbbca5c8e16",
+      "candidateSHA256": "ce3608f349fbc0987c30dd9928574464272088ecd4b7d6f4117ce50385c6fe66"
+    }
+  ]
+}

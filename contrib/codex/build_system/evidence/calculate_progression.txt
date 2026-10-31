@@ -1,0 +1,7 @@
+| Stated outcome cycle | Heat | First tree pick (75 XP) | Third pick (160 XP) | Capstone (230 XP) |
+|---|---:|---:|---:|---:|
+| all victories | 0 | 2 | 4 | 6 |
+| all early losses | 0 | 75 | not within 100 runs | not within 100 runs |
+| four sector-1 losses then victory | 0 | 5 | 10 | 15 |
+| four midrun losses then victory | 0 | 5 | 9 | 11 |
+| four sector-1 losses then victory, Heat 4 | 4 | 4 | 7 | 10 |

@@ -1,0 +1,143 @@
+diff --git a/campaign_run.js b/campaign_run.js
+--- a/campaign_run.js
++++ b/campaign_run.js
+@@ -125,7 +125,7 @@
+     ${opts.extra||''}</div>`;
+ }
+ function fleetScreen(back){
+-  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>s.mods.length<HULLS[s.tpl].slots && (!MODULES[m].only||HULLS[s.tpl].ab===MODULES[m].only));
++  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>canFitModule(s,m));
+     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot row wrap">${opts.length?opts.map(s=>`<button class="small" data-act="equip" data-arg="${i}:${s.uid}">Fit to ${esc(s.name)}</button>`).join(''):'<span class="dim">No free compatible slot. Remove a refit first.</span>'}</div></div>`; }).join('');
+   show(`<div class="screen"><div class="page">
+     <div class="row"><h2 class="gothic">Fleet</h2><span class="spacer"></span><button class="primary" data-act="${back==='shipyard'?'backShipyard':'backMap'}">Done</button></div>
+@@ -137,7 +137,7 @@
+ }
+ ACT.fleetScreen=()=>fleetScreen('map');
+ ACT.backMap=()=>{ saveRun(); mapScreen(); };
+-ACT.equip=arg=>{ const [i,uid]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[+i]; if(!s||!m) return;
++ACT.equip=arg=>{ if(!RUN||typeof arg!=='string') return false; const parts=arg.split(':'); if(parts.length!==2||parts[0].length>15||!/^(0|[1-9][0-9]*)$/.test(parts[0])) return false; const [i,uid]=parts; const index=Number(i); if(!Number.isSafeInteger(index)||index>=RUN.inventory.length) return false; const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[index]; if(!canFitModule(s,m)) return false;
+   changeShip(s,sh=>sh.mods.push(m)); RUN.inventory.splice(+i,1); fleetScreen(RUN._fleetBack); };
+ ACT.unequip=arg=>{ const [uid,i]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; let m; changeShip(s,sh=>{ m=sh.mods.splice(+i,1)[0]; }); if(m) RUN.inventory.push(m); fleetScreen(RUN._fleetBack); };
+ ACT.promote=uid=>promoteModal(uid, ()=>fleetScreen(RUN._fleetBack));
+diff --git a/core.js b/core.js
+--- a/core.js
++++ b/core.js
+@@ -231,6 +231,17 @@
+ function addXp(ship, n){ const c=ship.cap; c.xp+=Math.round(n*(1+(runFx().xpPct||0)));
+   while(c.rank<RANKS.length-1 && c.xp>=RANK_XP[c.rank+1]){ c.rank++; c.pending++; } }
+ // refits your fleet can actually use: no lance crystals for a fleet without lances, no shield parts for a shieldless one
++function canFitModule(ship,id){
++  const mod=typeof id==='string'&&Object.hasOwn(MODULES,id)?MODULES[id]:null, hull=ship&&Object.hasOwn(HULLS,ship.tpl)?HULLS[ship.tpl]:null;
++  if(!mod||!hull||!Array.isArray(ship.mods)||ship.mods.length>=(hull.slots||0)) return false;
++  if(mod.only&&hull.ab!==mod.only) return false;
++  const need=MOD_NEED[id];
++  if(need==='shields') return (hull.sh||0)>0;
++  if(need==='carrier') return hull.ab==='launch'&&(hull.hangar||0)>0;
++  const kind={batt:'battery',lance:'lance',torp:'torp',flak:'flak'}[need];
++  if(kind) return (hull.w||[]).some(([wid])=>W[wid]&&W[wid].k===kind);
++  return !need;
++}
+ function modulePool(){ const kit=fleetKit(), all=Object.keys(MODULES), ok=all.filter(m=>!MOD_NEED[m]||kit[MOD_NEED[m]]); return ok.length>=3?ok:all; }
+ function randomModule(){ return pick(modulePool()); }
+ function modName(m){ const f=(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'; return (MOD_NAMES[f]&&MOD_NAMES[f][m])||MODULES[m].n; }
+diff --git a/godot/campaign/campaign.gd b/godot/campaign/campaign.gd
+--- a/godot/campaign/campaign.gd
++++ b/godot/campaign/campaign.gd
+@@ -697,6 +697,21 @@
+ 	var c = ship["cap"]; c["xp"] = float(c["xp"]) + jsround(float(n) * (1.0 + float(z0(runFx().get("xpPct")))))
+ 	while float(c["rank"]) < RANKS.size() - 1 and float(c["xp"]) >= float(RANK_XP[int(c["rank"]) + 1]):
+ 		c["rank"] = float(c["rank"]) + 1; c["pending"] = float(c["pending"]) + 1
++func canFitModule(sh, m) -> bool:
++	if not (sh is Dictionary) or not (m is String) or not MODULES.has(m): return false
++	var t = HULLS.get(sh.get("tpl"))
++	if t == null or not (sh.get("mods") is Array) or sh["mods"].size() >= int(t.get("slots", 0)): return false
++	var md = MODULES[m]
++	if jt(md.get("only")) and t.get("ab") != md["only"]: return false
++	var need = MOD_NEED.get(m)
++	if need == "shields": return float(z0(t.get("sh"))) > 0.0
++	if need == "carrier": return t.get("ab") == "launch" and float(z0(t.get("hangar"))) > 0.0
++	var kind = {"batt":"battery", "lance":"lance", "torp":"torp", "flak":"flak"}.get(need)
++	if kind != null:
++		for pair in t.get("w", []):
++			if W_.has(pair[0]) and W_[pair[0]].get("k") == kind: return true
++		return false
++	return not jt(need)
+ func modulePool() -> Array:
+ 	var kit = fleetKit(); var all = MODULES.keys(); var ok = []
+ 	for m in all:
+@@ -1309,16 +1324,19 @@
+ 	for i in range(RUN["inventory"].size()):
+ 		var m = RUN["inventory"][i]
+ 		for s in RUN["fleet"]:
+-			if s["mods"].size() < int(HULLS[s["tpl"]]["slots"]) and (not jt(MODULES[m].get("only")) or HULLS[s["tpl"]].get("ab") == MODULES[m]["only"]): A(acts, "equip", str(i) + ":" + s["uid"])
++			if canFitModule(s, m): A(acts, "equip", str(i) + ":" + s["uid"])
+ 	for s in RUN["fleet"]: shipCardActs(acts, s, true)
+ 	show_page("fleet", {"back": back}, acts)
+ 	RUN["_fleetBack"] = back
+ func _fleet_back() -> void: fleetScreen(RUN.get("_fleetBack"))   # undefined in the JS when the fleet screen was never opened this session
+ func _push_mod(sh, m) -> void: sh["mods"].append(m)
+ func ACT_equip(arg: String) -> void:
+-	var p = arg.split(":"); var s = _ship(p[1]); var i = int(p[0])
++	if RUN == null: return
++	var p = arg.split(":")
++	if p.size() != 2 or p[0].length() > 15 or not p[0].is_valid_int() or p[0].begins_with("-") or p[0].begins_with("+") or (p[0].length() > 1 and p[0].begins_with("0")): return
++	var i = int(p[0]); var s = _ship(p[1])
+ 	var m = RUN["inventory"][i] if i >= 0 and i < RUN["inventory"].size() else null
+-	if s == null or not jt(m): return
++	if not canFitModule(s, m): return
+ 	changeShip(s, _push_mod.bind(m))
+ 	RUN["inventory"].remove_at(i); _fleet_back()
+ func _pop_mod(sh, i, got: Array) -> void:
+diff --git a/godot/campaign/test/oracle/README.md b/godot/campaign/test/oracle/README.md
+--- a/godot/campaign/test/oracle/README.md
++++ b/godot/campaign/test/oracle/README.md
+@@ -10,3 +10,7 @@
+ The parity harness and the campaign table exporter read these files, not the live ones at the repo root, so stream B can change the JS rules during the sprint without breaking the campaign port's golden test.
+ 
+ **Catching up:** when stream B changes a campaign rule, port the change to `godot/campaign/`, re-copy the six files from the new commit, run `node godot/campaign/test/node/export_campaign.js` to refresh `godot/campaign/data/campaign_tables.json`, run the parity test, and update the commit numbers above.
++
++## Proposed module-fit exception (Codex, Oct 31, 2026)
++
++The pinned oracle above remains the baseline. This candidate changes only module compatibility in core.js and its fleet-screen/action consumers in campaign_run.js, matching the browser/Godot candidate. It does not re-pin the rest of either file or adopt unrelated gameplay candidates.
+diff --git a/godot/campaign/test/oracle/campaign_run.js b/godot/campaign/test/oracle/campaign_run.js
+--- a/godot/campaign/test/oracle/campaign_run.js
++++ b/godot/campaign/test/oracle/campaign_run.js
+@@ -125,7 +125,7 @@
+     ${opts.extra||''}</div>`;
+ }
+ function fleetScreen(back){
+-  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>s.mods.length<HULLS[s.tpl].slots && (!MODULES[m].only||HULLS[s.tpl].ab===MODULES[m].only));
++  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>canFitModule(s,m));
+     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot row wrap">${opts.length?opts.map(s=>`<button class="small" data-act="equip" data-arg="${i}:${s.uid}">Fit to ${esc(s.name)}</button>`).join(''):'<span class="dim">No free compatible slot. Remove a refit first.</span>'}</div></div>`; }).join('');
+   show(`<div class="screen"><div class="page">
+     <div class="row"><h2 class="gothic">Fleet</h2><span class="spacer"></span><button class="primary" data-act="${back==='shipyard'?'backShipyard':'backMap'}">Done</button></div>
+@@ -137,7 +137,7 @@
+ }
+ ACT.fleetScreen=()=>fleetScreen('map');
+ ACT.backMap=()=>{ saveRun(); mapScreen(); };
+-ACT.equip=arg=>{ const [i,uid]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[+i]; if(!s||!m) return;
++ACT.equip=arg=>{ if(!RUN||typeof arg!=='string') return false; const parts=arg.split(':'); if(parts.length!==2||parts[0].length>15||!/^(0|[1-9][0-9]*)$/.test(parts[0])) return false; const [i,uid]=parts; const index=Number(i); if(!Number.isSafeInteger(index)||index>=RUN.inventory.length) return false; const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[index]; if(!canFitModule(s,m)) return false;
+   changeShip(s,sh=>sh.mods.push(m)); RUN.inventory.splice(+i,1); fleetScreen(RUN._fleetBack); };
+ ACT.unequip=arg=>{ const [uid,i]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; let m; changeShip(s,sh=>{ m=sh.mods.splice(+i,1)[0]; }); if(m) RUN.inventory.push(m); fleetScreen(RUN._fleetBack); };
+ ACT.promote=uid=>promoteModal(uid, ()=>fleetScreen(RUN._fleetBack));
+diff --git a/godot/campaign/test/oracle/core.js b/godot/campaign/test/oracle/core.js
+--- a/godot/campaign/test/oracle/core.js
++++ b/godot/campaign/test/oracle/core.js
+@@ -231,6 +231,17 @@
+ function addXp(ship, n){ const c=ship.cap; c.xp+=Math.round(n*(1+(runFx().xpPct||0)));
+   while(c.rank<RANKS.length-1 && c.xp>=RANK_XP[c.rank+1]){ c.rank++; c.pending++; } }
+ // refits your fleet can actually use: no lance crystals for a fleet without lances, no shield parts for a shieldless one
++function canFitModule(ship,id){
++  const mod=typeof id==='string'&&Object.hasOwn(MODULES,id)?MODULES[id]:null, hull=ship&&Object.hasOwn(HULLS,ship.tpl)?HULLS[ship.tpl]:null;
++  if(!mod||!hull||!Array.isArray(ship.mods)||ship.mods.length>=(hull.slots||0)) return false;
++  if(mod.only&&hull.ab!==mod.only) return false;
++  const need=MOD_NEED[id];
++  if(need==='shields') return (hull.sh||0)>0;
++  if(need==='carrier') return hull.ab==='launch'&&(hull.hangar||0)>0;
++  const kind={batt:'battery',lance:'lance',torp:'torp',flak:'flak'}[need];
++  if(kind) return (hull.w||[]).some(([wid])=>W[wid]&&W[wid].k===kind);
++  return !need;
++}
+ function modulePool(){ const kit=fleetKit(), all=Object.keys(MODULES), ok=all.filter(m=>!MOD_NEED[m]||kit[MOD_NEED[m]]); return ok.length>=3?ok:all; }
+ function randomModule(){ return pick(modulePool()); }
+ function modName(m){ const f=(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'; return (MOD_NAMES[f]&&MOD_NAMES[f][m])||MODULES[m].n; }

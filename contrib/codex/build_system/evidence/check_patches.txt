@@ -1,0 +1,1 @@
+PASS: all three individual patches, plus combined runtime followed by tree copy; resulting SHA-256 hashes match

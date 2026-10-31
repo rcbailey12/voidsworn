@@ -1,3 +1,9 @@
+# Build/progression packet prepared (October 31, 2026)
+
+The newly authorized work is now in `build_system/README.md`: source-preserving tree catalog, targeted audit, exact-quarter JS/Godot progression model, variable-outcome calculator, separate MOD-3 guard, opt-in two-effect Saro prototype, and 19 proposed Chorus slot copy edits. Evidence and job patches are included. This is Contrib work; no runtime/main adoption occurred. Rendered browser QA and native Godot picker dialogs remain unverified/unimplemented respectively. Earlier reconciliation records follow.
+
+---
+
 # Current reconciliation (October 31, 2026)
 
 Main pin: `355a2ac7`. Draft PR #1 now incorporates that main and repairs the assigned canonical Muse tools and entrypoints. FS-5 actionable recommendations are corrected. Retired Codex tool/index overlays, including the old Monte Carlo driver candidate, were removed to prevent stale replacement. Muse's driver and the recorded gate baseline remain unchanged.

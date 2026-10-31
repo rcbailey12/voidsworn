@@ -1,0 +1,279 @@
+{
+  "authority": "contrib/opus/compute/lore_bible_r8.md:333",
+  "sourcePin": "355a2ac7",
+  "changes": [
+    {
+      "id": "adm.matriarch.A2.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 140,
+        "sha256": "b86aa194e4b53315530c6e0832080c9241eb9d3c2d4d03df36ed4aad91eb22b2"
+      },
+      "before": "The Song Splits - each extra swarm may strike a different target than the rest of its brood's swarms.",
+      "after": "The Brood Splits - each extra swarm may strike a different target than the rest of its brood's swarms.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.matriarch.A2.1",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 140,
+        "sha256": "b86aa194e4b53315530c6e0832080c9241eb9d3c2d4d03df36ed4aad91eb22b2"
+      },
+      "before": "Sung Before the Strike - spawning happens before your ships move, so the new swarms can screen your movement this round.",
+      "after": "Spawn Before the Strike - spawning happens before your ships move, so the new swarms can screen your movement this round.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.matriarch.A3.1",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 141,
+        "sha256": "24e706dcf496b6052808fa586961035968c0ed1ca782bb3798f919564a49f2a2"
+      },
+      "before": "The Verse Bites Twice - a swarm striking a target already hit by another swarm this round gains +25% damage.",
+      "after": "The Brood Bites Twice - a swarm striking a target already hit by another swarm this round gains +25% damage.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.matriarch.CAP.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 142,
+        "sha256": "8f881be3291588b89129e7932fabd18ba22ce84befced358e1a44bae3cb841f2"
+      },
+      "before": "Nine Throats, One Verse - Spawning surge releases an extra swarm from every ship that carries swarms, not only from broods.",
+      "after": "Nine Throats, One Hunger - Spawning surge releases an extra swarm from every ship that carries swarms, not only from broods.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.matriarch.CAP.1",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 142,
+        "sha256": "8f881be3291588b89129e7932fabd18ba22ce84befced358e1a44bae3cb841f2"
+      },
+      "before": "The Song Does Not End - the extra swarms remain after the Command and strike once more at the start of next round before fading.",
+      "after": "The Brood Remains - the extra swarms remain after the Command and strike once more at the start of next round before fading.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.razormaw.A2.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 148,
+        "sha256": "36630a030e03b30c6adb37282cf859dde12facd0ef12032f60f00f5cd9db3980"
+      },
+      "before": "The Pack Sings One Prey - name one prey when the frenzy begins; ships moving toward the prey gain +1 movement.",
+      "after": "The Pack Names One Prey - name one prey when the frenzy begins; ships moving toward the prey gain +1 movement.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.razormaw.A3.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 149,
+        "sha256": "78ae3be1e4a391ca01e9bea71fcaaae51935eaf12bce4e80d6a323f62fa13335"
+      },
+      "before": "Frenzy Feeds the Verse - a ship that lands a rear-arc hit during the frenzy may immediately move 2 more hexes.",
+      "after": "Frenzy Feeds the Pack - a ship that lands a rear-arc hit during the frenzy may immediately move 2 more hexes.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.razormaw.CAP.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 150,
+        "sha256": "029c12f38e9531ff4fa1bca2194a289ae85b16395f7f91fdd67a5ac71f18a31d"
+      },
+      "before": "The Verse Turns Red - the frenzy's movement and accuracy protection last through next round, but only for ships that end this round adjacent to an enemy.",
+      "after": "The Brood Turns Red - the frenzy's movement and accuracy protection last through next round, but only for ships that end this round adjacent to an enemy.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.mending.A1.1",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 155,
+        "sha256": "396bb7ecff7045fb207b56881af5e96b0e50932bbd4bcbced20c7eb79b1834b6"
+      },
+      "before": "Skin Before Song - a ship may take its regrowth as temporary extra hull, up to +15%, instead of repairing damage.",
+      "after": "Skin Before Scars - a ship may take its regrowth as temporary extra hull, up to +15%, instead of repairing damage.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.mending.A2.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 156,
+        "sha256": "f0d1ad7176db9c907d43ca7e719a9983785d58a56a83291d4fd81a5c4363868d"
+      },
+      "before": "The Tide Comes Early - Regrowth tide may be sung at the start of the round, before any fire is taken.",
+      "after": "The Tide Comes Early - Regrowth tide may be released at the start of the round, before any fire is taken.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.mending.A3.1",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 157,
+        "sha256": "c093e8a3d721b80c03b4b1aadd55f2de66b4fbd66d763299c26e7ae1754e0853"
+      },
+      "before": "The Verse Refuses Holes - while any of your ships is below half hull, the most damaged ship regrows 10% at each round start until it passes half.",
+      "after": "The Flesh Refuses Holes - while any of your ships is below half hull, the most damaged ship regrows 10% at each round start until it passes half.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.mending.CAP.1",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 158,
+        "sha256": "f781230917b6115971968fb08a0d5c90750c8793fb0213c8ac451ba6fbc36810"
+      },
+      "before": "What Was Sung Grows Back - the tide restores destroyed sections to full function, and a section restored this way cannot be destroyed again this battle.",
+      "after": "What Was Cut Grows Back - the tide restores destroyed sections to full function, and a section restored this way cannot be destroyed again this battle.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.voice.A2.1",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 164,
+        "sha256": "a3d97dbc19632698b6d94b0691709db821e707f1fd0c00481a575401f99af57f"
+      },
+      "before": "Sung in Rounds - you may fire the volley in two halves, the second half after your ships move.",
+      "after": "Spit in Two Waves - you may fire the volley in two halves, the second half after your ships move.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "faction.chorus.B1.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 170,
+        "sha256": "323efe50567925832231d8695d4abbdd12a3a6b8b349e3db5e864966da26ff28"
+      },
+      "before": "Verses Assigned at Hatching - at battle start, give each ship a verse (strike, screen, or mend); a ship may change its verse once per battle.",
+      "after": "Instincts Assigned at Hatching - at battle start, give each ship an instinct (strike, screen, or mend); a ship may change its instinct once per battle.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "faction.chorus.C1.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 171,
+        "sha256": "a75f4d5a51fbdddf5a987a3b3036b86b88df5a539d0b9eab665bfef9091e68f5"
+      },
+      "before": "The Flagship Sings First - once per battle, one other ship may act immediately after the flagship finishes its activation.",
+      "after": "The Flagship Acts First - once per battle, one other ship may act immediately after the flagship finishes its activation.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "faction.chorus.C1.1",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+        "line": 171,
+        "sha256": "a75f4d5a51fbdddf5a987a3b3036b86b88df5a539d0b9eab665bfef9091e68f5"
+      },
+      "before": "Throat of the Deep Song - ships within 2 hexes of the flagship gain +10 aim.",
+      "after": "Throat of the Deep - ships within 2 hexes of the flagship gain +10 aim.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.matriarch.B3.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md",
+        "line": 66,
+        "sha256": "ec2f1ea2c5e732e4905fc25df579215944c377d376c6a9ecfc1c56ba6e9ecf40"
+      },
+      "before": "Broods Sing the Strike Order - you choose the order in which broods release; the last brood to release has its extra swarms strike at +25% damage.",
+      "after": "Broods Set the Strike Order - you choose the order in which broods release; the last brood to release has its extra swarms strike at +25% damage.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.mending.B3.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md",
+        "line": 74,
+        "sha256": "ee69f0b797f2a719f2ad7f0b70a59bff234efa5d58732b00a98b07537566460f"
+      },
+      "before": "The Tide Chooses One Shore - when the tide is sung, you may double the regrowth of every ship below half hull and give none to ships above three quarters hull.",
+      "after": "The Tide Chooses One Shore - when the tide is released, you may double the regrowth of every ship below half hull and give none to ships above three quarters hull.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    },
+    {
+      "id": "adm.mending.C3.0",
+      "source": {
+        "path": "contrib/muse/reviews/skill_tree_tier3_assembled_2026_10_29.md",
+        "line": 75,
+        "sha256": "fe1f5ef084ed87b7d2987ce3a8f6704e2bebca374089c62a48725a0449339fc8"
+      },
+      "before": "The Throng Sings the Flagship Whole - once per battle, the flagship may take the entire fleet's regrowth share for one round.",
+      "after": "The Throng Grows the Flagship Whole - once per battle, the flagship may take the entire fleet's regrowth share for one round.",
+      "reason": "Lore Bible r8:333 forbids song words in Chorus names/lines.",
+      "mechanicsChanged": false,
+      "status": "proposed_copy_edit"
+    }
+  ],
+  "headerChanges": [
+    {
+      "file": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+      "line": 138,
+      "before": "Branch A - The Verse of Too Many Mouths",
+      "after": "Branch A - The Hunger of Too Many Mouths"
+    },
+    {
+      "file": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+      "line": 146,
+      "before": "Branch A - The Hunting Verse",
+      "after": "Branch A - The Hunting Instinct"
+    },
+    {
+      "file": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+      "line": 154,
+      "before": "Branch A - The Mending Verse",
+      "after": "Branch A - The Mending Instinct"
+    },
+    {
+      "file": "contrib/muse/reviews/skill_tree_phase1_assembled_2026_10_29.md",
+      "line": 162,
+      "before": "Branch A - The Acid Verse",
+      "after": "Branch A - The Acid Instinct"
+    }
+  ]
+}
