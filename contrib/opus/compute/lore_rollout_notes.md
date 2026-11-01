@@ -123,3 +123,69 @@ Ids, save keys, CSS classes, action names, telemetry names and comments were cla
    - T-05 drops the name "Archive restore" from the Eclipse verb text: disagree. Keep the name, because the battle rule and the ship panel use it. A clearer form would be "Next battle, Archive restore brings back one more of your destroyed ships."
    - T-30 to T-60 ("His ships" to "Enemy ships"): agree. The Nemesis can be she or it.
    - The pack's "Lantern Gut" question: keep it. The bible's lantern ban is in the Crusade's list only (map 14).
+
+## 4. Story source: L's rewrite against the Muse story pack (a next-phase choice for Ryan)
+
+**Opus's ruling (Oct 31):** `godot/story/` (L's round 8 rewrite) stays the story source. `contrib/muse/reviews/story_pack_2026_10_30.md` calls itself the source, but Ryan never approved it as one, so it was not merged. This section compares the two so Ryan can choose what to take into the next phase.
+
+**Two notes on the pack's own claims.**
+- Its "departures" D1 to D3 criticise the pre-round-8 outlines: the Crusade relights a guiding fire, the Eclipse arc is a court case, the Glasswrights sing. L's Oct 31 rewrite already fixed all three. The Crusade burns out the siphon relay, the Eclipse arc is about the Archive and the keys, and no faction sings.
+- Its D7 still uses Grax Steelgrin. Ryan ruled that rename on Oct 27, so the pack's spotlight would need the swap either way.
+
+### Where the pack is stronger
+
+1. **Faction-specific finales.** All six finales have their own battle mechanic, drawn from each faction's Nemesis rules in the bible:
+   - Crusade: flagship duel.
+   - Hegemony: Registry reallocation with a protocol from Vyre.
+   - Hullbreakers: a credit raid, with the stolen ship returned when he dies.
+   - Chorus: regrowth that scales with the ships you lost.
+   - Glasswrights: release Astra's throttle for one round.
+   - Eclipse: your flagship restored once.
+
+   L's arcs close on a plain win or loss of the sector III fight, with ending lines that change with your choices. The pack's finales feel more like each faction. They are also new rules work.
+2. **Beat 3 decisions that touch the cores.** The pack's beat 3s put a core in play, priced with a real cost:
+   - Seren's deep burn (Crusade).
+   - Vyre and the unlogged minute costing sync (Hegemony).
+   - Rook in the Nemesis's hold: kill or core (Hullbreakers).
+   - Memory speaking to Crucible (Chorus).
+   - Astra caged (Glasswrights).
+
+   This ties the story to the round 8 cores more tightly than L's beats do.
+3. **Learning fiction and admiral spotlights.**
+   - Every beat carries a "learning payoff" line that follows the Oct 28 progression rulings: faction arcs (option B) and per-faction learning fiction. One example is the Glasswrights' "parallel procession" of castings, which L's lens-retrieval arc does not use.
+   - The pack has 24 one-line admiral spotlights. L's arcs have neither the learning lines nor the spotlights.
+4. **Lines worth lifting under either source:**
+   - The Crusade colony world going dark ahead of its projections (Beat 2, "The Dimming").
+   - The "PAID" line chalked under the last crusade in the Crusade win ending.
+   - The Hullbreaker Ripper's mid-run challenge for a ship (Beat 2).
+   - The Chorus drowned Fleshwright vat holding Memory's record. L's variant 2B uses a similar vat, but the pack gives it more weight.
+   - Astra as a prisoner who knows its place on the shutdown list.
+   - The Eclipse siphon array draining a named star with named worlds.
+
+### Where L's rewrite is stronger, or the only one that fits today's engine
+
+1. **It runs now.** L's arcs use the shipped arc engine (`arc.gd`), the outcome keys the campaign already applies (`cred`, `xp`, `healAll`, `dmgOne`, `nemClock`, `nemIntel`, `shipRaw`, `mod` and the rest), the conditional lines, and blue options with their needs. They also have B versions, skim cards and the shared rival incidents. The story tests and the outline checker cover them.
+2. **Dilemmas that carry through.** L's beats have three or four options each, and every beat 1 choice is read again in beat 2 and beat 3. The pack's beats are mostly two options each.
+3. **The Nemesis inside every beat.** L's cards carry his calling card, his line and what he remembers (Tables A and B). The pack has a fixed introduction and rematch line per faction.
+
+### What merging the pack would touch
+
+- **Outcome keys.** The pack uses keys the campaign does not have, or has under other names:
+  - Different names for existing keys: `credits` (shipped: `cred`), `clock` (shipped: `nemClock`), `repair` (shipped: `healAll` or `repairOne`).
+  - New keys: `dmgFlag`, `dmgShip`, `dmgPctUp`, `dmgPctDown`, `power`, `syncDown`, `core`, `weak`.
+
+  Each new key needs code in `campaign_run.js` `applyOutcome` (B) and its Godot mirror in `campaign.gd` (G3), and the campaign parity tests must be re-run.
+- **Finale mechanics.** These are six new battle rules in `battle.js` and `rules.gd` (B and G1): the duel, reallocation, the raid payback, scaled regrowth, the throttle round and the player-side restore. That means parity goldens, sims and balance passes.
+- **Core and protocol offers outside battle rewards.** Free protocols from Vyre, Crucible and the Archive, and "sync closure", touch the core offer code in `campaign_run.js` and `campaign.gd`.
+- **Event ids and the arc hook.** The pack's nodes have their own ids (`arc_vs_roll` and others) in the `EVENTS` shape, while L's arcs come through `story.arc_beat(n)`. The hook that shows the beats (G3 with B) is not built yet for either version, so this is a choice of shape, not a rewrite of built code.
+- **Flags.** The pack defines no flag names. L's flags (`vs_hand`, `hg_offbook`, `cs_party`, `ch_ate`, `it_song`, `dd_writ` and the rest) and the shared counters (mercy, greed, loud) would need to be mapped onto the pack's choices, or replaced.
+- **Story tests and checks.** `story_test.gd`, `check_outlines.py`, the fixtures and the arc unlock rewards in `arcs.json` would follow whichever text is chosen.
+
+### L's suggestion
+
+Keep L's arcs as the playable story now. Next phase, take the pack's strongest parts in this order:
+1. The beat 3 core decisions, expressed with existing outcome keys where they fit.
+2. The learning payoff lines and admiral spotlights, which are text only.
+3. The faction finales, one at a time, each as a balanced rules change with its own parity record.
+
+That gets most of the pack's value without a big-bang rewrite of the outcome keys.
