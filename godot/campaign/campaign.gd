@@ -154,6 +154,15 @@ func tel(ev: String, d: Dictionary = {}) -> void:
 	for k in d.keys(): e[k] = d[k]
 	tel_log.append(e)
 	if tel_log.size() > 600: tel_log = tel_log.slice(tel_log.size() - 600)
+# F1 play log (feel pass; announced in contrib/opus/compute/port_notes.md): the battle scene hands over one entry per battle
+# with every player activation (scenes/battle/play_log.gd); only the newest 40 battles keep their activations (save size)
+func tel_battle(pl: Dictionary) -> void:
+	tel("battle_play", pl)
+	var n = 0
+	for i in range(tel_log.size() - 1, -1, -1):
+		if tel_log[i].get("ev") == "battle_play":
+			n += 1
+			if n > 40: tel_log[i].erase("acts")
 func unknown_id(_kind, _id) -> Variant: return null
 
 # ======================= screens (the JS show/modal) =======================

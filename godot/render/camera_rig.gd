@@ -56,6 +56,24 @@ func focus(p: Vector3, rr := -1.0) -> void:
 		r = rr
 
 
+# F1: a slow glide to a point on the board (the next ship handed over, a reinforcement arriving): the target moves
+# there with the camera's slow easing for dur seconds; the zoom is kept unless rr is given (then only pulled in, never out)
+func glide(p: Vector3, dur := 1.1, rr := -1.0) -> void:
+	t = Vector3(clampf(p.x, -bounds.x, bounds.x), 0, clampf(p.z, -bounds.y, bounds.y))
+	if rr > 0.0 and rr < r:
+		r = rr
+	slow_until = _clock + dur
+
+
+# true when a board point is well inside the view (so a hand-over needs no glide)
+func sees(p: Vector3, margin := 0.22) -> bool:
+	if is_position_behind(p):
+		return false
+	var vs := get_viewport().get_visible_rect().size
+	var sp := unproject_position(p)
+	return sp.x > vs.x * margin and sp.x < vs.x * (1.0 - margin) and sp.y > vs.y * margin and sp.y < vs.y * (1.0 - margin)
+
+
 func toggle_top() -> void:
 	if topdown:
 		b = prev_b

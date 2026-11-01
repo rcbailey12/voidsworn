@@ -14,6 +14,7 @@ extends Node3D
 # left-drag or WASD pan, wheel zoom.
 
 signal finished(result: Dictionary)
+signal arrival(units: Array)   # F1: reinforcements are arriving (the acceptance trace films it)
 
 const API := preload("res://rules/battle_api.gd")
 const Board := preload("res://render/board.gd")
@@ -29,10 +30,15 @@ const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
 const FILL_DIR := Vector3(0.6, -0.2, 0.75)
 const FILL_COL := Color(0.55, 0.65, 0.85)
-const REACH_C := Color(0.82, 0.65, 0.29, 0.16)
-const REACH_RING := Color(0.95, 0.75, 0.35, 0.55)
-const REACH_HOT := Color(1.0, 0.8, 0.35, 0.55)
+const PlayLog := preload("res://scenes/battle/play_log.gd")
+# F1: move hexes are blue (board.gd REACH_*: a colour no terrain uses); targets red; a target that would bear from the
+# planned hex orange; the targeted enemy white-hot
+const REACH_C := Board.REACH_FILL
+const REACH_RING := Board.REACH_RING
+const REACH_HOT := Board.REACH_HOT
 const TARGET_RING := Color(1.0, 0.25, 0.2, 0.95)
+const TARGET_PLAN := Color(1.0, 0.62, 0.22, 0.9)
+const TARGET_ON := Color(1.0, 0.85, 0.75, 1.0)
 const QUAD_NAME := ["prow", "starboard", "rear", "port"]
 const SEC_NAME := {"prow": "prow", "mid": "midships", "eng": "engines"}
 const MOVE_PER := {"voidsworn": 1.25, "hegemony": 0.75, "corsair": 0.85, "chorus": 1.1, "ithar": 1.0, "deathless": 0.6}
@@ -46,12 +52,12 @@ const MOVE_ROT := [0.6, 1.1]
 const MOVE_SQUAD := 0.35
 const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex time; building and bleeding speed fill the rest
 const TIPS := [
-	["start", "Your fleet", "Select one of your ships: it has a green ring underneath. Gold hexes show where it can move, and the fans show its firing arcs."],
+	["start", "Your fleet", "The game hands you one ship at a time: the one marked UP, with the gold ring. Blue hexes show where it can move, and the fans show its firing arcs. The card at the bottom says what it can still do."],
 	["turns", "Turns alternate", "You and the enemy take turns one ship at a time: activate one of yours, then the enemy activates one of theirs, until every ship has acted. Then a new round starts."],
-	["select", "Moving and facing", "Hover a gold hex to preview the move: the arrow shows where you will end up and which way you will face. Q and E turn in place. Moving matters: a ship that ends its activation in the same hex is easier to hit (enemies get +10), and turning in place does not count. Moving 3 or more hexes makes it harder to hit (−5). Bracing cancels the sitting-still penalty."],
+	["select", "Moving and facing", "Click a blue hex to plan a move: a ghost of the ship shows where it will end up and which way it will face. Click the same hex again (or Enter) to go; Esc drops the plan. A move can't be taken back once made. Q and E turn in place. Moving matters: a ship that ends its activation in the same hex is easier to hit (enemies get +10), and turning in place does not count. Moving 3 or more hexes makes it harder to hit (−5). Bracing cancels the sitting-still penalty."],
 	["move", "Shields and hull", "The cyan bars on the ship panel are its shields: four facings that soak hits and recharge each turn. Amber is hull: damage that stays. Keep your strongest shield facing the enemy."],
-	["target", "Firing", "Enemies you can hit have a red ring. Hover one for hit odds and expected damage, then click to fire every weapon that bears. Keys 1 to 6 pick a single weapon."],
-	["fired", "Alternating activations", "Each ship acts once per round. When this ship is done, press End activation (Enter) and the enemy moves one of theirs."],
+	["target", "Firing", "Enemies you can hit have a red ring. Click one to target it: the odds and expected damage show. Click it again (or Enter) to fire every weapon that bears. Clicking an enemy never fires by itself. Keys 1 to 6 pick a single weapon."],
+	["fired", "Alternating activations", "Each ship acts once per round. When this ship is done, press End ship (Space) and the enemy moves one of theirs. A ship with nothing left to do ends by itself."],
 	["resolve", "Admiral's Command", "Your admiral's signature move is ready: it glows gold in the top bar. You get it once per battle. It grows each round you wait and when you lose a ship, so pick your moment."],
 	["close", "Close action", "Ramming speed (X) charges the first enemy dead ahead. Boarding (G) sends crews into an adjacent enemy; win and the ship is yours."],
 	["threat", "Threat map", "Before you end a move, check where the enemy can reach. Press R, or Threat in the top bar, to shade every hex their guns can hit next turn: the darker the hex, the more damage is waiting there."],
@@ -137,6 +143,18 @@ var boss_fight := false    # a sector flagship fight or the finale (battle kind 
 var external := false      # run by godot/main (campaign or quick battle): no own restart, the end card says Continue
 var last_progress := 0.0   # real time of the last event batch (softlock watchdog for bot runs)
 var softlock_s := 60.0
+# ---- F1 activation layer (UI only; the rules are untouched): the ship that is up, a rehearsed move, a target
+var plan = null               # a rehearsed move: the reach state the ghost shows; nothing goes to the rules until it is confirmed
+var plan_k := ""              # its hex
+var target := ""              # the enemy the ship that is up has targeted: the odds show; a second click, Enter or Fire commits
+var atk = null                # a rehearsed attack-move on that target: {st, n, of} (the target is out of reach from here)
+var up_idx := -1              # fleet-list index of the last ship handed over (the next hand-over goes on from there)
+var handed_t := -9.0          # real time of the last hand-over: Space cannot end a ship in its first half second
+var ghost: Node3D             # the planned position: a see-through copy of the hull
+var ghost_for := ""
+var ending := false           # the game is ending a ship that has nothing left to do
+var arrived := {}             # reinforcements: id -> round they arrived (NEW in the fleet list, a pulse on the board)
+var plog = PlayLog.new()
 
 
 func _ready() -> void:
@@ -148,6 +166,8 @@ func _ready() -> void:
 		shots_dir = str(args["breach-shots"])
 	if args.has("move-frames"):
 		shots_dir = str(args["move-frames"])
+	if args.has("f1-trace"):
+		shots_dir = str(args["f1-trace"])
 	_load_opts()
 	if shots_dir != "" or args.has("sheet-check"):
 		tips_off = true   # screenshot jobs: no onboarding tip card covering the top of the screen
@@ -176,6 +196,12 @@ func _ready() -> void:
 		_sheet_check()
 	elif args.has("planet-shot"):
 		_planet_shot()
+	elif args.has("f1-trace"):
+		# F1 acceptance trace (scenes/battle/f1_trace.gd): the phased-activation checklist through the real input handlers
+		var tr: Node = load("res://scenes/battle/f1_trace.gd").new()
+		tr.name = "F1Trace"
+		add_child(tr)
+		tr.run(self)
 	elif shots_dir != "":
 		_shots()
 
@@ -424,6 +450,15 @@ func _begin(a) -> void:
 	sel = ""
 	inspect = ""
 	armed = -1
+	plan = null
+	plan_k = ""
+	target = ""
+	atk = null
+	up_idx = -1
+	ending = false
+	arrived.clear()
+	plog = PlayLog.new()
+	_ghost_clear()
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
 	if key_light != null:
 		board.sun_dir = key_light.global_transform.basis.z   # a directional light shines along its -Z: the sun is +Z
@@ -709,6 +744,7 @@ func _runner() -> void:
 			busy = false
 			if api.phase == "over" and not ended:
 				await _end_flow()
+			_after_batches()
 			_refresh_ui()
 			return
 		var bt: Dictionary = batches.pop_front()
@@ -920,11 +956,21 @@ func _play_batch(bt: Dictionary) -> void:
 	var evs: Array = bt["events"]
 	var enemy := false
 	dying.clear()
+	var wings := {}
 	for e in evs:
 		if e["t"] == "activation" and e["side"] == "enemy":
 			enemy = true
 		if e["t"] == "death" and e.get("unit") != null:
 			dying[str(e["unit"])] = true
+		if e["t"] == "wing":
+			wings[str(e["unit"])] = true
+	# F1: reinforcements are ships that appear in the next view without a launch (the rules' mid-battle event, R42's
+	# Nemesis reinforcements): they get a banner, a camera nudge and a pulse when their round begins
+	var arrivals: Array = []
+	if not VU.is_empty() and not showcase:
+		for u in (bt["view"] as Dictionary).get("units", []):
+			if not VU.has(u["id"]) and not views.has(u["id"]) and not u["squadron"] and not wings.has(str(u["id"])) and not u["dead"]:
+				arrivals.append(u)
 	speed = user_speed
 	var t_batch := game_t
 	if enemy:
@@ -950,12 +996,17 @@ func _play_batch(bt: Dictionary) -> void:
 			continue
 		var te := game_t
 		await _play_event(e)
+		if e["t"] == "round" and not arrivals.is_empty():
+			await _arrive(arrivals)
+			arrivals = []
 		if enemy:
 			pace_kind[str(e["t"])] = float(pace_kind.get(str(e["t"]), 0.0)) + game_t - te
 			speed = base_speed * _round_budget_k(float(pace_enemy.get(int(V.get("round", 0)), 0.0)) + game_t - t_batch - float(move_s_round.get(int(V.get("round", 0)), 0.0)))
 		if skip and enemy:
 			speed = minf(speed, float(PACE["skip"]))
 		i += 1
+	if not arrivals.is_empty():
+		await _arrive(arrivals)
 	if enemy:
 		var ta := game_t
 		await wait(float(PACE["aiEnd"]))
@@ -964,6 +1015,8 @@ func _play_batch(bt: Dictionary) -> void:
 			cam.t = cam_saved["t"]
 			cam_saved = {}
 		hud.set_chip("")
+		if skip:
+			plog.hurries += 1
 		skip = false
 		var rk := int(V.get("round", 0))
 		pace_enemy[rk] = float(pace_enemy.get(rk, 0.0)) + game_t - t_batch
@@ -1070,10 +1123,13 @@ func _play_event(e: Dictionary) -> void:
 		"side":
 			if e["side"] == "player":
 				hud.set_chip("")
+			elif not bot and not showcase:
+				_enemy_phase("")
 		"activation":
 			fired_in_act.erase(e["unit"])
 			if e["side"] == "enemy":
-				hud.set_chip("▼ Enemy acting: %s (Enter to hurry)" % _name(e["unit"]))
+				if not bot and not showcase:
+					_enemy_phase(str(e["unit"]))
 				if views.has(e["unit"]):
 					for sv in views.values():
 						sv.set_selected(false)
@@ -1770,6 +1826,7 @@ func _end_flow() -> void:
 	result = {"result": "win" if win else "loss", "rounds": int(V["round"]), "killed": killed, "lost": lost, "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V,
 		"pipeline_compiles": _pipe_count() - pipe_base if pipe_base >= 0 else -1, "pace": pace_stats()}
 	var body := "%d enemy ship%s destroyed, %d of yours lost, in %d round%s." % [killed, "" if killed == 1 else "s", lost, int(V["round"]), "" if int(V["round"]) == 1 else "s"]
+	_play_log_out("win" if win else "loss")
 	if args.has("pace-report"):
 		# --pace-report (with --bot): the battle's report with the enemy's time per round by event kind, then quit
 		_quit_report()
@@ -1838,11 +1895,19 @@ func _usable(u: Dictionary) -> bool:
 	return true
 
 
-func select(id: String) -> void:
+func select(id: String, how := "pick") -> void:
+	var su: Dictionary = VU.get(id, {})
+	if api != null and api.phase == "player" and _usable(su):
+		plog.open(su, int(V.get("round", 0)), how)   # a different ship picked before acting closes the last entry as "switched"
 	sel = id
 	inspect = ""
 	armed = -1
 	mode = ""
+	wing_sel = ""
+	plan = null
+	plan_k = ""
+	target = ""
+	atk = null
 	hover_pick.clear()
 	_update_reach()
 	sfx.play("ui_select")
@@ -1925,23 +1990,24 @@ var fan_key := ""
 const ARC_SPAN := {"F": [-60.5, 60.5], "R": [119.5, 240.5], "S": [29.5, 150.5], "P": [-150.5, -29.5]}
 
 
-func _fans(id: String) -> void:
+func _fans(id: String, host: Node3D = null) -> void:
 	var ru = VU.get(id) if id != "" else null
 	var k := ""
 	if ru != null:
-		k = "%s|%d|%d|%d" % [id, int(ru["q"]), int(ru["r"]), int(ru["facing"])]
+		k = "%s|%d|%d|%d|%s" % [id, int(ru["q"]), int(ru["r"]), int(ru["facing"]), str(host.get_instance_id()) + str(host.position) + str(host.rotation.y) if host != null else ""]
 		for w in ru["weapons"]:
 			k += "1" if w["ready"] else "0"
 	if k == fan_key:
 		return
 	fan_key = k
 	if fan_root != null:
-		fan_root.queue_free()
+		if is_instance_valid(fan_root):
+			fan_root.queue_free()
 		fan_root = null
 	if ru == null or not views.has(id):
 		return
 	fan_root = Node3D.new()
-	views[id].add_child(fan_root)
+	(host if host != null else views[id]).add_child(fan_root)
 	fan_root.position.y = -0.35
 	var done := {}
 	for w in ru["weapons"]:
@@ -1955,6 +2021,7 @@ func _fans(id: String) -> void:
 		done[dk] = true
 		var col: Color = {"lance": Color(1.0, 0.45, 0.3), "torp": Color(1.0, 0.75, 0.3), "gauss": Color(0.5, 1.0, 0.6)}.get(str(w["kind"]), Color(1.0, 0.62, 0.3))
 		fan_root.add_child(_fan_mesh(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col))
+		fan_root.add_child(_fan_edge(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col))
 
 
 func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
@@ -1967,9 +2034,9 @@ func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 		# ship frame: bow +X, starboard +Z (relAng > 0 is starboard)
 		var p0 := Vector3(cos(t0), 0, sin(t0)) * rad
 		var p1 := Vector3(cos(t1), 0, sin(t1)) * rad
-		st.set_color(Color(col.r, col.g, col.b, 0.0))
+		st.set_color(Color(col.r, col.g, col.b, 0.05))
 		st.add_vertex(Vector3.ZERO)
-		st.set_color(Color(col.r, col.g, col.b, 0.16))
+		st.set_color(Color(col.r, col.g, col.b, 0.13))
 		st.add_vertex(p0)
 		st.add_vertex(p1)
 	var mi := MeshInstance3D.new()
@@ -1985,11 +2052,51 @@ func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 	return mi
 
 
+# F1: the outline of a firing fan: a bright line along its range and its two sides, so arc and range read at a glance
+func _fan_edge(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var w := 0.55
+	var n := 28
+	var c := Color(col.r, col.g, col.b, 0.75)
+	for i in n:
+		var t0 := deg_to_rad(lerpf(a0, a1, float(i) / n))
+		var t1 := deg_to_rad(lerpf(a0, a1, float(i + 1) / n))
+		var o0 := Vector3(cos(t0), 0, sin(t0))
+		var o1 := Vector3(cos(t1), 0, sin(t1))
+		for v in [o0 * rad, o1 * rad, o1 * (rad - w), o0 * rad, o1 * (rad - w), o0 * (rad - w)]:
+			st.set_color(c)
+			st.add_vertex(v)
+	if a1 - a0 < 300.0:
+		for a in [a0, a1]:
+			var d := Vector3(cos(deg_to_rad(a)), 0, sin(deg_to_rad(a)))
+			var sd := Vector3(-d.z, 0, d.x) * (w * 0.5)
+			var near := d * 6.0
+			var far := d * rad
+			for v in [[near - sd, 0.0], [far - sd, 0.5], [far + sd, 0.5], [near - sd, 0.0], [far + sd, 0.5], [near + sd, 0.0]]:
+				st.set_color(Color(col.r, col.g, col.b, v[1]))
+				st.add_vertex(v[0])
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.vertex_color_use_as_albedo = true
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return mi
+
+
 func _clear_overlay() -> void:
 	_fans("")
 	board.set_overlay({}, {})
+	board.set_outline({})
 	arrow.visible = false
 	path_dots.multimesh.instance_count = 0
+	if ghost != null:
+		ghost.visible = false
 
 
 func _overlay() -> void:
@@ -2000,50 +2107,151 @@ func _overlay() -> void:
 		return
 	var fills := {}
 	var rings := {}
+	var styles := {}
 	if threat_on:
 		fills = _threat_fills()
 	var u := _sel_unit()
-	if _usable(u):
+	var ability_mode := mode in ["nova", "blink", "launch"]
+	if _usable(u) and not ability_mode:
+		# F1: every reachable hex blue with a lit edge (style 1) and one bright line around the whole area
 		for k in reach_map:
 			if not fills.has(k):
 				fills[k] = REACH_C
 			rings[k] = REACH_RING
+			styles[k] = 1
+		var out := reach_map.duplicate()
+		out[board.key(u["q"], u["r"])] = true
+		board.set_outline(out if reach_map.size() > 0 else {})
 		for e in V["units"]:
 			if e["side"] == "enemy" and not e["dead"] and not _firing_set(e["id"]).is_empty():
 				rings[board.key(e["q"], e["r"])] = TARGET_RING
-	_fans(sel if (arcs_on and _usable(u)) else "")
-	if mode in ["nova", "blink", "launch"]:
+	else:
+		board.set_outline({})
+	if ability_mode:
 		for h in _ability_hexes():
-			fills[board.key(h["q"], h["r"])] = Color(0.55, 0.8, 1.0, 0.3)
-			rings[board.key(h["q"], h["r"])] = Color(0.6, 0.85, 1.0, 0.8)
+			fills[board.key(h["q"], h["r"])] = Color(0.92, 0.92, 1.0, 0.26)
+			rings[board.key(h["q"], h["r"])] = Color(1.0, 1.0, 1.0, 0.85)
 	if mode == "board" and not u.is_empty():
 		for b in _ui(sel).get("board", []):
 			var tu: Dictionary = VU.get(b["target"], {})
 			if not tu.is_empty():
 				rings[board.key(tu["q"], tu["r"])] = Color(1, 0.75, 0.3, 1)
-	var hk: String = board.key(hover.x, hover.y)
+	# the rehearsed position (a planned move, or the attack-move's stopping hex): the ghost, its path, arcs from there,
+	# and orange rings on enemies its guns would reach from there
+	var pst = plan if plan != null else (atk["st"] if atk != null else null)
+	var mm := path_dots.multimesh
 	arrow.visible = false
-	path_dots.multimesh.instance_count = 0
-	if reach_map.has(hk) and _unit_at(hover.x, hover.y).is_empty():
+	mm.instance_count = 0
+	if pst != null and _usable(u):
+		var pk: String = board.key(pst.q, pst.r)
+		fills[pk] = REACH_HOT
+		styles[pk] = 2
+		_ghost_show(u, pst)
+		_path_dots(u, pst)
+		for e in V["units"]:
+			if e["side"] != "enemy" or e["dead"]:
+				continue
+			var ek: String = board.key(e["q"], e["r"])
+			if rings.get(ek) == TARGET_RING:
+				continue
+			for w in u["weapons"]:
+				if w["ready"] and w["kind"] != "flak" and api.in_reach(sel, int(w["i"]), e["id"], pst):
+					rings[ek] = TARGET_PLAN
+					break
+	elif ghost != null:
+		ghost.visible = false
+	if target != "" and VU.has(target) and not VU[target]["dead"]:
+		rings[board.key(VU[target]["q"], VU[target]["r"])] = TARGET_ON
+	_fans(sel if (arcs_on and _usable(u)) else "", ghost if (pst != null and ghost != null and ghost.visible) else null)
+	var hk: String = board.key(hover.x, hover.y)
+	if reach_map.has(hk) and _unit_at(hover.x, hover.y).is_empty() and _usable(u) and not ability_mode and hk != plan_k:
 		var st = _hover_state(hk)
 		fills[hk] = REACH_HOT
+		styles[hk] = 2
 		arrow.visible = true
 		arrow.position = board.hex_world(st.q, st.r, 0.6)
 		arrow.rotation.y = ShipView.yaw_of(st.f)
-		var pts: Array = []
-		var prev: Vector3 = board.hex_world(u["q"], u["r"], 0.5)
-		for p in st.path:
-			if _jt(p.get("rot")):
-				continue
-			var c: Vector3 = board.hex_world(p["q"], p["r"], 0.5)
-			for j in 3:
-				pts.append(prev.lerp(c, (j + 1) / 3.0))
-			prev = c
-		var mm := path_dots.multimesh
-		mm.instance_count = pts.size()
-		for j in pts.size():
-			mm.set_instance_transform(j, Transform3D(Basis(), pts[j]))
-	board.set_overlay(fills, rings)
+		if pst == null:
+			_path_dots(u, st)
+	board.set_overlay(fills, rings, styles)
+	board.set_focus(_pos(sel) if sel != "" and views.has(sel) else cam.t)
+
+
+func _path_dots(u: Dictionary, st) -> void:
+	var pts: Array = []
+	var prev: Vector3 = board.hex_world(u["q"], u["r"], 0.5)
+	for p in st.path:
+		if _jt(p.get("rot")):
+			continue
+		var c: Vector3 = board.hex_world(p["q"], p["r"], 0.5)
+		for j in 3:
+			pts.append(prev.lerp(c, (j + 1) / 3.0))
+		prev = c
+	var mm := path_dots.multimesh
+	mm.instance_count = pts.size()
+	for j in pts.size():
+		mm.set_instance_transform(j, Transform3D(Basis(), pts[j]))
+
+
+# the planned position: a see-through blue copy of the ship's hull standing on the planned hex, facing the planned way
+const GHOST_COL := Color(0.45, 0.78, 1.0, 0.32)
+
+
+func _ghost_show(u: Dictionary, st) -> void:
+	var sv = views.get(u["id"])
+	if sv == null:
+		return
+	if ghost == null or ghost_for != str(u["id"]) or not is_instance_valid(ghost):
+		_ghost_clear()
+		ghost = Node3D.new()
+		ghost.name = "PlanGhost"
+		add_child(ghost)
+		ghost_for = str(u["id"])
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.albedo_color = GHOST_COL
+		m.cull_mode = BaseMaterial3D.CULL_BACK
+		m.no_depth_test = false
+		if sv.hull != null:
+			var h: Node3D = sv.hull.duplicate(0)
+			ghost.add_child(h)
+			for n in h.find_children("*", "", true, false):
+				if n is GeometryInstance3D and not (n is MeshInstance3D):
+					n.queue_free()
+				elif n is MeshInstance3D:
+					(n as MeshInstance3D).material_override = m
+					(n as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+					for i in (n as MeshInstance3D).get_surface_override_material_count():
+						(n as MeshInstance3D).set_surface_override_material(i, null)
+				elif n is Light3D or n is GPUParticles3D or n is CPUParticles3D or n is Decal:
+					n.queue_free()
+		# a footprint ring under the ghost in the same blue
+		var ring := MeshInstance3D.new()
+		var tm := TorusMesh.new()
+		var rr := maxf(8.0, float(sv.L) * 0.52)
+		tm.inner_radius = rr
+		tm.outer_radius = rr + 0.5
+		tm.rings = 48
+		tm.ring_segments = 4
+		ring.mesh = tm
+		var rm := StandardMaterial3D.new()
+		rm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rm.albedo_color = Color(0.6, 0.85, 1.0)
+		ring.material_override = rm
+		ring.position.y = -0.3
+		ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		ghost.add_child(ring)
+	ghost.visible = true
+	ghost.position = board.hex_world(st.q, st.r)
+	ghost.rotation.y = ShipView.yaw_of(st.f)
+
+
+func _ghost_clear() -> void:
+	if ghost != null and is_instance_valid(ghost):
+		ghost.queue_free()
+	ghost = null
+	ghost_for = ""
 
 
 func _hover_state(k: String):
@@ -2152,23 +2360,38 @@ func _on_key(k: int) -> void:
 			if hud.menu != null:
 				hud.hide_menu()
 				return
-			if mode == "" and armed < 0 and sel == "" and inspect == "":
-				_open_menu()
-				return
+			# F1: Esc drops the newest thing first (an ability or boarding pick, a wing pick, the plan or target, the armed
+			# weapon, the ship you were looking at); the ship that is up stays up. With nothing to drop it opens the menu.
 			if mode != "":
 				mode = ""
+			elif wing_sel != "":
+				wing_sel = ""
+				hud.toast("Wing order cancelled.")
+			elif plan != null or target != "":
+				_cancel("esc")
+				return
 			elif armed >= 0:
 				armed = -1
-			else:
-				sel = ""
+			elif inspect != "":
 				inspect = ""
-				reach_map.clear()
+			else:
+				_open_menu()
+				return
 			sfx.play("ui_cancel")
 			_refresh_ui()
 		KEY_TAB:
 			_next_ship()
 		KEY_ENTER, KEY_KP_ENTER:
-			_end_activation()
+			# F1: Enter confirms what is planned (the move, the fire, the attack-move); it never ends a ship
+			if plan != null or target != "":
+				_confirm()
+			elif _can_act():
+				hud.toast("Nothing planned. Click a blue hex to plan a move, or an enemy to target it. Space ends the ship.")
+		KEY_SPACE:
+			# F1 (Ryan, Nov 1): Space ends the ship. Not in its first half second, so a Space pressed to hurry the enemy
+			# never ends the ship handed over right after.
+			if Time.get_ticks_msec() / 1000.0 - handed_t > 0.5:
+				_end_ship("space")
 		KEY_T:
 			cam.toggle_top()
 		KEY_HOME:
@@ -2212,6 +2435,13 @@ func _rotate(d: int) -> void:
 	var u := _sel_unit()
 	if not _can_act() or u.is_empty():
 		return
+	if plan != null and reach_alt.has(plan_k):
+		# F1: turning a planned move: the next facing the planned hex can be reached in (nothing is sent to the rules)
+		var alts: Array = reach_alt[plan_k]
+		var i := maxi(0, alts.find(plan))
+		plan = alts[posmod(i + (1 if d > 0 else -1), alts.size())]
+		_refresh_ui()
+		return
 	var hk: String = board.key(hover.x, hover.y)
 	if reach_alt.has(hk) and hk != board.key(u["q"], u["r"]):
 		# turning the preview on a hovered hex: pick the next facing that hex can be reached in
@@ -2221,7 +2451,9 @@ func _rotate(d: int) -> void:
 	# turning in place: the rules' own rotate (G1) when present
 	if api.has_method("rotate"):
 		var rid := sel
-		if not _cmd(func(): return api.rotate(rid, d)):
+		if _cmd(func(): return api.rotate(rid, d)):
+			plog.act("rotate", {"d": d})
+		else:
 			hud.toast("No turn left this activation.")
 		return
 	var want := posmod(int(u["facing"]) + d, 6)
@@ -2248,40 +2480,87 @@ func _order(o: String) -> void:
 		return
 	var id := sel
 	if not bool(_ui(id).get("orders", {}).get(o, false)):
-		hud.toast("Can't brace after firing.")
+		hud.toast("Can't brace after firing." if _sel_unit().get("fired", false) else "This ship can't brace now.")
 		return
+	plan = null
+	target = ""
+	atk = null
+	plog.act(o)
+	if o == "brace":
+		plog.close("brace")
 	_cmd(func(): return api.order(id, o))
 
 
-func _next_ship() -> void:
-	var mine: Array = []
-	for u in V["units"]:
-		if _usable(u) and not u["squadron"]:
-			mine.append(u["id"])
+func _next_ship(how := "tab") -> void:
+	var act := _active_id()
+	if act != "":
+		hud.toast("The %s has already started its turn: finish it first (Space ends the ship)." % _name(act))
+		return
+	var mine := _ready_ships()
 	if mine.is_empty():
 		return
 	var i := mine.find(sel)
-	select(mine[(i + 1) % mine.size()])
-	cam.focus(_pos(sel))
+	var nid: String = mine[(i + 1) % mine.size()]
+	if nid == sel:
+		hud.toast("No other ship is ready this round.")
+		return
+	select(nid, how)
+	up_idx = _fleet_index(nid)
+	handed_t = Time.get_ticks_msec() / 1000.0
+	if not cam.sees(_pos(nid)):
+		cam.glide(_pos(nid))
 
 
-func _end_activation() -> void:
+# your ships that can still act this round, in fleet-list order
+func _ready_ships() -> Array:
+	var out: Array = []
+	for u in V.get("units", []):
+		if _usable(u) and not u["squadron"]:
+			out.append(u["id"])
+	return out
+
+
+func _fleet_index(id: String) -> int:
+	var n := 0
+	for u in V.get("units", []):
+		if u["side"] == "player" and not u["squadron"]:
+			if u["id"] == id:
+				return n
+			n += 1
+	return -1
+
+
+func _active_id() -> String:
+	for u in V.get("units", []):
+		if u["active"]:
+			return str(u["id"])
+	return ""
+
+
+# End ship (Space, the card's button, the top bar): the ship that is up stops (it holds position if it did nothing)
+func _end_ship(how: String) -> void:
 	if not _can_act():
 		return
-	var active := ""
-	for u in V["units"]:
-		if u["active"]:
-			active = u["id"]
+	var active := _active_id()
 	var id := sel
 	if _classic():
 		_cmd(func(): api.end_turn(); return true)
 	elif active == "" and sel != "" and _usable(_sel_unit()):
+		plog.close(how if plog.has_acted() else how + "_pass")
 		_cmd(func(): api.end_activation(id); return true)
 	else:
+		plog.close(how)
 		_cmd(func(): api.end_activation(); return true)
 	sfx.play("ui_confirm")
 	sel = ""
 	armed = -1
+	plan = null
+	target = ""
+	atk = null
+
+
+func _end_activation() -> void:
+	_end_ship("button")
 
 
 func _classic() -> bool:
@@ -2324,6 +2603,7 @@ func _on_click() -> void:
 		if ok:
 			var id := sel
 			var hx := {"q": hover.x, "r": hover.y}
+			plog.act("ability", {"ab": m})
 			_cmd(func(): return api.ability(id, {"hex": hx}))
 		else:
 			_refresh_ui()
@@ -2333,6 +2613,7 @@ func _on_click() -> void:
 		if not u.is_empty() and u["side"] == "enemy":
 			var id := sel
 			var tid: String = u["id"]
+			plog.act("board", {"target": str(u.get("cls", ""))})
 			_cmd(func(): return api.board(id, tid))
 		_refresh_ui()
 		return
@@ -2351,49 +2632,267 @@ func _on_click() -> void:
 			hud.toast("Wing selected. Click an enemy ship to strike it, or one of your ships to guard it.")
 		return
 	if not u.is_empty() and u["side"] == "player":
-		select(u["id"])
+		if u["id"] == sel:
+			if plan != null or target != "":
+				_cancel("click")
+			return
+		var act := _active_id()
+		if act != "" and act != u["id"]:
+			# the rules keep the acting ship up until it ends: show the other ship, and say how to finish this one
+			inspect = u["id"]
+			plog.note("inspects")
+			hud.toast("The %s is mid-turn: finish it first (Space ends the ship)." % _name(act))
+			_refresh_ui()
+			return
+		if not _usable(u):
+			inspect = u["id"]
+			_refresh_ui()
+			return
+		select(u["id"], "pick")
+		up_idx = _fleet_index(u["id"])
+		handed_t = Time.get_ticks_msec() / 1000.0
 		return
 	if not u.is_empty() and u["side"] == "enemy":
+		# F1 (R63, Ryan Nov 1): clicking an enemy never fires. The first click targets it (or only inspects it when the
+		# ship that is up cannot reach it); a second click on the same enemy, Enter, or the card's Fire button commits.
 		if _usable(s):
-			var set := _firing_set(u["id"])
-			if not set.is_empty():
-				var id := sel
-				var tid: String = u["id"]
-				_cmd(func():
-					var any := false
-					for i in set:
-						if api.fire(id, i, tid):
-							any = true
-						var tu = api.unit(tid)
-						if tu == null or _jt(tu.get("dead")) or api.phase != "player":
-							break
-					return any)
-				armed = -1
+			if target == u["id"]:
+				_confirm()
 				return
-			var am = _attack_move(u["id"])
-			if am != null:
-				var id := sel
-				var tid: String = u["id"]
-				var wsel = [armed] if armed >= 0 else null
-				_cmd(func(): return api.attack_move(id, tid, wsel))
-				armed = -1
-				return
-			hud.toast(_cant_fire_reason(u["id"]))
+			_target(u["id"])
 			return
 		inspect = u["id"]
-		sel = ""
-		reach_map.clear()
+		plog.note("inspects")
 		_refresh_ui()
 		return
 	var hk: String = board.key(hover.x, hover.y)
-	if not s.is_empty() and reach_map.has(hk):
-		var st = _hover_state(hk)
-		var id := sel
-		_cmd(func(): return api.move(id, st))
+	if not s.is_empty() and reach_map.has(hk) and _usable(s):
+		# F1: the first click plans the move (the ghost); a second click on the same hex, Enter or Move here commits it
+		if plan != null and plan_k == hk:
+			_confirm()
+			return
+		plan = _hover_state(hk)
+		plan_k = hk
+		target = ""
+		atk = null
+		plog.note("plans")
+		sfx.play("ui_click")
+		_refresh_ui()
+		return
+	if plan != null or target != "":
+		_cancel("click")
 		return
 	if inspect != "":
 		inspect = ""
 		_refresh_ui()
+
+
+# F1: target an enemy with the ship that is up (no rules call that changes anything)
+func _target(tid: String) -> void:
+	plan = null
+	plan_k = ""
+	atk = null
+	inspect = tid
+	plog.note("targets")
+	if not _firing_set(tid).is_empty():
+		target = tid
+		sfx.play("ui_select")
+	else:
+		var u := _sel_unit()
+		var am = _attack_move(tid) if int(u.get("moveLeft", 0)) > 0 else null
+		if am != null:
+			# out of reach from here: offer the attack-move, previewed (the ghost at the hex it would stop on, its path)
+			target = tid
+			atk = am
+			sfx.play("ui_select")
+		else:
+			target = ""
+			hud.toast(_cant_fire_reason(tid))
+	_refresh_ui()
+
+
+# F1: drop the plan or the target; nothing was sent to the rules, so nothing changes
+func _cancel(why: String) -> void:
+	if plan != null or target != "":
+		plog.note("cancels")
+	plan = null
+	plan_k = ""
+	target = ""
+	atk = null
+	sfx.play("ui_cancel")
+	_refresh_ui()
+
+
+# F1: commit what is planned, once: the move, the attack-move, or the fire on the target
+func _confirm() -> void:
+	if not _can_act() or not _usable(_sel_unit()) or not _api_join():
+		return
+	var id := sel
+	if plan != null:
+		var st = plan
+		plan = null
+		plan_k = ""
+		plog.act("move", {"cost": int(st.cost), "to": "%d,%d" % [int(st.q), int(st.r)], "f": int(st.f)})
+		_cmd(func(): return api.move(id, st))
+		return
+	if target == "":
+		return
+	var tid := target
+	if atk != null:
+		var wsel = [armed] if armed >= 0 else null
+		plog.act("attack_move", {"cost": int(atk["st"].cost), "guns": int(atk["n"]), "target": str(VU.get(tid, {}).get("cls", "")), "tid": tid})
+		atk = null
+		armed = -1
+		_cmd(func(): return api.attack_move(id, tid, wsel))
+		return
+	var set := _firing_set(tid)
+	if set.is_empty():
+		hud.toast(_cant_fire_reason(tid))
+		return
+	plog.act("fire", {"guns": set.size(), "target": str(VU.get(tid, {}).get("cls", "")), "tid": tid, "armed": armed >= 0})
+	_cmd(func():
+		var any := false
+		for i in set:
+			if api.fire(id, i, tid):
+				any = true
+			var tu = api.unit(tid)
+			if tu == null or _jt(tu.get("dead")) or api.phase != "player":
+				break
+		return any)
+	armed = -1
+
+
+# F1: after the picture has caught up with the rules in the player's phase: keep the acting ship up, end a ship that has
+# nothing left to do, or hand over the next ready ship (the camera glides to it when it is not already in view)
+func _after_batches() -> void:
+	if bot or showcase or ended or api == null or warming or api.phase != "player":
+		return
+	var active := _active_id()
+	# the play log: an entry whose ship stopped without our End (the rules ended it, or it died)
+	if plog.is_open() and plog.open_for() != active:
+		var lu: Dictionary = VU.get(plog.open_for(), {})
+		if lu.is_empty() or lu.get("dead", false):
+			plog.close("died")
+		elif lu.get("activated", false):
+			plog.close("rules")
+	if target != "" and (not VU.has(target) or VU[target]["dead"]):
+		target = ""
+		atk = null
+	if active != "":
+		if sel != active:
+			sel = active
+			_update_reach()
+		if _nothing_left(active):
+			_auto_end(active)
+		return
+	if sel != "" and _usable(_sel_unit()):
+		return
+	_hand_over()
+
+
+func _hand_over() -> void:
+	var ready := _ready_ships()
+	if ready.is_empty():
+		return
+	var pick: String = ready[0]
+	for id in ready:
+		if _fleet_index(id) > up_idx:
+			pick = id
+			break
+	select(pick, "auto")
+	up_idx = _fleet_index(pick)
+	handed_t = Time.get_ticks_msec() / 1000.0
+	sfx.turn("player")
+	if not cam.sees(_pos(pick)):
+		cam.glide(_pos(pick))
+
+
+# true when the acting ship cannot do anything more this round: no movement left, no gun that can fire at any enemy,
+# no ability, boarding or ram, and no brace (turning in place is not counted: see docs/shots/f1 README, vetoable)
+func _nothing_left(id: String) -> bool:
+	var u: Dictionary = VU.get(id, {})
+	if u.is_empty() or u["dead"] or not u["active"]:
+		return false
+	if int(u.get("moveLeft", 0)) > 0:
+		return false
+	var ui := _ui(id)
+	if ui.is_empty():
+		return false
+	for w in ui.get("weapons", []):
+		for t in w.get("targets", []):
+			if t.get("can", false):
+				return false
+	if bool(ui.get("ability", {}).get("ready", false)):
+		return false
+	if not (ui.get("board", []) as Array).is_empty() or ui.get("ram") != null:
+		return false
+	if bool(ui.get("orders", {}).get("brace", false)):
+		return false
+	return true
+
+
+func _auto_end(id: String) -> void:
+	if ending:
+		return
+	ending = true
+	hud.toast("The %s has nothing left to do this round: next ship." % _name(id))
+	_refresh_ui()
+	await get_tree().create_timer(0.8).timeout
+	ending = false
+	if is_inside_tree() and not ended and _can_act() and _active_id() == id and _nothing_left(id):
+		_end_ship("nothing_left")
+
+
+# F1: the enemy's turn strip: whose ship is acting and how far through their ships this round the enemy is
+func _enemy_phase(uid: String) -> void:
+	var total := 0
+	var done := 0
+	for u in V.get("units", []):
+		if u["side"] == "enemy" and not u["squadron"] and not u["dead"]:
+			total += 1
+			if u["activated"]:
+				done += 1
+	var F = TBL.get("FACTIONS", {}).get(_enemy_fac(), {})
+	var fname := str(F.get("n", "Enemy")) if F is Dictionary else "Enemy"
+	var who := ""
+	if uid != "" and VU.has(uid):
+		if VU[uid]["squadron"]:
+			who = "  ·  their wings attack"
+		else:
+			done = mini(done + 1, maxi(total, 1))
+			who = "  ·  [color=#e2d2ff]%s[/color]  ·  ship %d of %d" % [_name(uid), done, total]
+	hud.set_phase("enemy", "[b][color=#c9a3ff]ENEMY TURN[/color][/b]  ·  %s%s  ·  [color=#8d86a0]Enter hurries[/color]" % [fname, who], float(done) / maxf(1.0, float(total)))
+
+
+# F1: reinforcements arrive: the ship appears with a flash, a banner names it, the camera nudges over and back
+func _arrive(list: Array) -> void:
+	for u in list:
+		_make_view(u)
+		arrived[str(u["id"])] = int(V.get("round", 0))
+	if bot:
+		return
+	arrival.emit(list)
+	var mine: Array = list.filter(func(x): return x["side"] == "player")
+	var c := Vector3.ZERO
+	for u in list:
+		var p: Vector3 = board.hex_world(int(u["q"]), int(u["r"]))
+		c += p
+		_flash(p + Vector3(0, 2, 0), 24.0, Color(0.6, 0.9, 1.0) if u["side"] == "player" else Color(1.0, 0.5, 0.4), 0.6)
+		_float(u["id"], "Arrived", Color("#8ff0a0") if u["side"] == "player" else Color("#e27f74"), -30)
+	c /= float(list.size())
+	var names: Array = list.map(func(x): return str(x["name"]))
+	if not mine.is_empty():
+		hud.banner("Reinforcements", Color("#8ff0a0"), 1.4)
+		hud.toast("Reinforcements: the %s joins your fleet." % " and the ".join(PackedStringArray(names)))
+	else:
+		hud.banner("Enemy reinforcements", Color("#ff8a6a"), 1.4)
+		hud.toast("Enemy reinforcements: the %s %s arrived." % [" and the ".join(PackedStringArray(names)), "has" if list.size() == 1 else "have"])
+	sfx.play("ui_alert")
+	var keep := {"t": cam.t}
+	cam.glide(c, 1.0)
+	await get_tree().create_timer(1.6).timeout
+	if follow or mine.is_empty():
+		cam.glide(keep["t"], 0.9)
 
 
 func _cant_fire_reason(t_id: String) -> String:
@@ -2434,11 +2933,11 @@ func _tip() -> String:
 		return _ship_tip(u)
 	var hk: String = board.key(hover.x, hover.y)
 	if reach_map.has(hk):
-		var st = _hover_state(hk)
-		var t := "[b][color=#d0a64b]Move here[/color][/b]\n%d movement%s." % [int(st.cost), (", %d turn%s" % [int(st.get("t", 0)), "" if int(st.get("t", 0)) == 1 else "s"]) if int(st.get("t", 0)) > 0 else ""]
+		var st = plan if (plan != null and hk == plan_k) else _hover_state(hk)
+		var t := "[b][color=#7fc4ff]%s[/color][/b]\n%d movement%s." % ["Planned move" if hk == plan_k else "Move here", int(st.cost), (", %d turn%s" % [int(st.get("t", 0)), "" if int(st.get("t", 0)) == 1 else "s"]) if int(st.get("t", 0)) > 0 else ""]
 		if int(st.get("gunsOf", 0)) > 0:
 			t += "\n%d of %d guns bear on an enemy from here." % [int(st.get("guns", 0)), int(st.get("gunsOf", 0))]
-		t += "\n[color=#7d7768]Q/E change the facing. Click to move.[/color]"
+		t += "\n[color=#7d7768]Q/E change the facing. %s[/color]" % ("Click again or Enter to go. Esc cancels." if hk == plan_k else "Click to plan the move (nothing moves yet).")
 		return t
 	if board.zone_of.has(hk):
 		var zi := {"exit": ["Exit", "A ship that ends its move here jumps clear of the battle."], "texit": ["Transport exit", "An enemy transport that reaches this edge gets through."],
@@ -2554,11 +3053,12 @@ func _attack_tip(t_id: String) -> String:
 		t += " [color=#f0b35a]Rear arc: armor halved, +15% crit.[/color]"
 	t += "\n" + rows
 	if n > 0:
-		t += "Expected: about [color=#62ccff]%d shield[/color] and [color=#ffae42]%d hull[/color] damage.%s\n[color=#d0a64b]Click to fire %d weapon%s.[/color]" % [int(round(sh)), int(round(hull)), " [color=#f0b35a]Likely kill.[/color]" if hull >= float(tv["hp"]) else "", n, "s" if n > 1 else ""]
+		t += "Expected: about [color=#62ccff]%d shield[/color] and [color=#ffae42]%d hull[/color] damage.%s\n[color=#d0a64b]%s[/color]" % [int(round(sh)), int(round(hull)), " [color=#f0b35a]Likely kill.[/color]" if hull >= float(tv["hp"]) else "",
+			("Targeted. Click again or Enter to fire %d weapon%s." % [n, "s" if n > 1 else ""]) if target == t_id else "Click to target (nothing fires yet)."]
 	else:
-		var am = _attack_move(t_id)
+		var am = (atk if (target == t_id and atk != null) else (_attack_move(t_id) if int(su.get("moveLeft", 0)) > 0 else null))
 		if am != null:
-			t += "[color=#d0a64b]Click to burn %d movement into position and fire %d weapon%s on the way.[/color]" % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]
+			t += "[color=#d0a64b]Out of reach from here. %s[/color]" % (("Planned: burn %d movement to the ghost and fire %d weapon%s on the way. Click again or Enter to go." % [int(am["st"].cost), int(am["n"]), "s" if int(am["n"]) > 1 else ""]) if target == t_id else "Click to see the attack-move: where the ship would stop and what would fire.")
 		else:
 			t += "[color=#7d7768]No ready weapon can reach this target.[/color]"
 	return t
@@ -2568,13 +3068,27 @@ func _on_action(name: String, arg) -> void:
 	sfx.play("ui_click")
 	match name:
 		"end":
-			_end_activation()
+			_end_ship("button")
+		"next":
+			_next_ship("next_button")
+		"confirm":
+			_confirm()
+		"cancel":
+			_cancel("button")
 		"pick":
-			if _can_act() or true:
-				var u: Dictionary = VU.get(arg, {})
-				if not u.is_empty():
-					select(arg)
-					cam.focus(_pos(arg))
+			var u: Dictionary = VU.get(arg, {})
+			if not u.is_empty():
+				var act := _active_id()
+				if act != "" and act != str(arg):
+					inspect = str(arg)
+					hud.toast("The %s is mid-turn: finish it first (Space ends the ship)." % _name(act))
+					_refresh_ui()
+				else:
+					select(arg, "roster")
+					if _usable(u):
+						up_idx = _fleet_index(str(arg))
+						handed_t = Time.get_ticks_msec() / 1000.0
+				cam.glide(_pos(arg), 0.8)
 		"arm":
 			_arm(int(arg))
 		"brace":
@@ -2588,10 +3102,12 @@ func _on_action(name: String, arg) -> void:
 					hud.toast({"nova": "Click a hex 3 to 9 ahead for the nova shell.", "blink": "Click an open hex within 3 to jump to.", "launch": "Click an open hex next to the carrier."}[ab])
 					_refresh_ui()
 				else:
+					plog.act("ability", {"ab": ab})
 					_cmd(func(): return api.ability(id))
 		"ram":
 			if sel != "" and _can_act():
 				var id := sel
+				plog.act("ram")
 				_cmd(func(): return api.ram(id))
 		"board":
 			mode = "" if mode == "board" else "board"
@@ -2626,6 +3142,7 @@ func _on_action(name: String, arg) -> void:
 				hud.toast("Click Command again to give the order: %s" % _command_label())
 			else:
 				cmd_armed_t = -9.0
+				plog.act("command")
 				_cmd(func(): return api.command())
 		"stance":
 			var sid := sel
@@ -2648,6 +3165,7 @@ func _on_action(name: String, arg) -> void:
 			hud.hide_menu()
 			ended = true
 			result = {"result": "quit", "rounds": int(V.get("round", 0)), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+			_play_log_out("quit")
 			finished.emit(result)
 		"continue":
 			hud.hide_end()
@@ -2656,6 +3174,7 @@ func _on_action(name: String, arg) -> void:
 			if can_retreat and _can_act():
 				ended = true
 				result = {"result": "retreat", "rounds": int(V["round"]), "errors": errors.duplicate(), "secs": Time.get_ticks_msec() / 1000.0 - t_start, "view": V}
+				_play_log_out("retreat")
 				finished.emit(result)
 		"restart":
 			hud.hide_end()
@@ -2744,8 +3263,8 @@ func _refresh_ui() -> void:
 		if u["active"]:
 			active = u["id"]
 	var mine: bool = api.phase == "player" and not ended
-	var turn := "Battle over" if ended or api.phase == "over" else ("Your activation (%d ready)" % pend if mine else "Enemy activation")
-	var end_text := "End activation" if active != "" else ("Pass" if pend > 0 else "Continue")
+	var turn := "Battle over" if ended or api.phase == "over" else ("Your turn (%d ready)" % pend if mine else "Enemy turn")
+	var end_text := "End ship (Space)" if (active != "" or pend > 0) else "Continue"
 	if _classic():
 		end_text = "End turn"
 		turn = "Battle over" if ended or api.phase == "over" else ("Your turn" if mine else "Enemy turn")
@@ -2758,15 +3277,163 @@ func _refresh_ui() -> void:
 		if u["side"] != "player" or u["squadron"] or (u["dead"] and not views.has(u["id"])):
 			continue
 		var d: Dictionary = disp.get(u["id"], {"hp": u["hp"], "sh": u["sh"]})
-		var status := "Lost" if u["dead"] else ("Active" if u["active"] else ("Done" if u["activated"] else "Ready"))
-		rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "status": status, "sel": u["id"] == sel, "done": u["activated"] or u["dead"], "flag": u["flagship"]})
+		var status := "Lost" if u["dead"] else ("Acting" if u["active"] else ("Done" if u["activated"] else ("Up" if u["id"] == sel and mine else "Ready")))
+		rows.append({"id": u["id"], "name": u["name"], "cls": u["cls"], "hp": d["hp"], "maxHp": u["maxHp"], "sh": d["sh"], "shMax": u["shMax"], "status": status, "sel": u["id"] == sel, "done": u["activated"] or u["dead"], "flag": u["flagship"],
+			"new": arrived.has(str(u["id"])) and int(arrived[str(u["id"])]) >= int(V.get("round", 0)) - 1})
 	hud.set_roster(rows)
 	hud.set_panel(_panel_info())
+	# F1: the activation card (the ship that is up and how to finish it) and the phase strip
+	hud.set_card(_card_info() if mine and not busy and not bot and not showcase else {})
+	if showcase or bot or ended or api.phase == "over":
+		hud.set_phase("", "")
+	elif mine and not busy:
+		var up := sel if sel != "" else ""
+		hud.set_phase("player", "[b][color=#d0a64b]YOUR TURN[/color][/b]  ·  Round %d%s  ·  [color=#b3aa95]%d more ready[/color]" % [int(V["round"]),
+			("  ·  [color=#e6dcc4]%s[/color] is up" % _name(up)) if up != "" else "", maxi(0, pend - (1 if up != "" and not VU.get(up, {}).get("active", false) else 0))])
 	for id in views:
 		var sv = views[id]
 		sv.set_selected(id == sel, Color(0.82, 0.65, 0.29))
 	_overlay()
 	_tutorial()
+
+
+# F1: the activation card. Which ship is up, its three steps (move, fire, end) with what is left of each, one plain
+# sentence on what to do next (never "done" while something is left: the same test as the automatic end), and the buttons.
+func _card_info() -> Dictionary:
+	if _classic() or api == null or api.phase != "player" or ended:
+		return {}
+	var id := _active_id()
+	if id == "":
+		id = sel
+	if id == "" or not VU.has(id) or not _usable(VU[id]):
+		var pend0 := _player_pending()
+		if pend0 == 0:
+			return {}
+		return {"name": "Pick a ship", "tag": "YOUR TURN", "cls": "", "more": "%d ready" % pend0, "steps": [], "hint": "Click one of your ships (green ring) or press Tab.",
+			"buttons": [{"text": "Next ship (Tab)", "act": "next", "on": true, "big": true}]}
+	var u: Dictionary = VU[id]
+	var ui := _ui(id)
+	var ru = api.unit(id)
+	var mleft := int(u.get("moveLeft", u["mp"]))
+	var speed_v := int(_z0(ru.get("speed"))) if ru != null else mleft
+	var moved := ru != null and (int(_z0(ru.get("hexMoved"))) > 0 or float(ru.get("mp", 0)) < float(speed_v))
+	var fired := bool(u.get("fired", false))
+	var guns := 0
+	var ready := 0
+	var bear := 0
+	for w in u["weapons"]:
+		if w["kind"] == "flak":
+			continue
+		guns += 1
+		if w["ready"]:
+			ready += 1
+	for w in ui.get("weapons", []):
+		for t in w.get("targets", []):
+			if t.get("can", false):
+				bear += 1
+				break
+	var nothing := _nothing_left(id)
+	var braced: bool = u["braced"]
+	var mv_st := "now"
+	var fi_st := "todo"
+	var en_st := "todo"
+	if braced:
+		mv_st = "done" if moved else "off"
+		fi_st = "off"
+		en_st = "now"
+	elif target != "":
+		mv_st = "done" if moved else ("todo" if mleft > 0 else "off")
+		fi_st = "now"
+	elif plan != null:
+		mv_st = "now"
+	elif fired:
+		mv_st = "now" if mleft > 0 else ("done" if moved else "off")
+		fi_st = "now" if bear > 0 else "done"
+		en_st = "now" if bear == 0 and mleft == 0 else "todo"
+	elif mleft <= 0:
+		mv_st = "done" if moved else "off"
+		fi_st = "now" if bear > 0 else "off"
+		en_st = "now" if bear == 0 else "todo"
+	var steps := [
+		{"n": 1, "label": "Move", "detail": "%d of %d left" % [maxi(mleft, 0), maxi(speed_v, mleft)] if not fired or mleft > 0 else ("moved" if moved else "held"), "st": mv_st},
+		{"n": 2, "label": "Fire", "detail": ("braced" if braced else ("%d of %d guns ready" % [ready, guns] + (", %d can fire now" % bear if ready > 0 else ""))), "st": fi_st},
+		{"n": 3, "label": "End ship", "detail": "Space", "st": en_st}]
+	var hint := ""
+	var btns: Array = []
+	if nothing or ending:
+		hint = "[color=#b3aa95]Nothing left to do this round: handing over to the next ship.[/color]"
+	elif braced:
+		hint = "Braced: hull damage −40% until its next turn. End the ship (Space)."
+	elif plan != null:
+		hint = "[color=#7fc4ff]Planned move:[/color] %d movement%s, the ghost shows where it ends and which way it faces (Q/E turn it). [b]Click the hex again or press Enter to go.[/b] Esc cancels. A move can't be taken back once made." % [int(plan.cost), (", %d turn%s" % [int(plan.get("t", 0)), "" if int(plan.get("t", 0)) == 1 else "s"]) if int(plan.get("t", 0)) > 0 else ""]
+		btns.append({"text": "Move here (Enter)", "act": "confirm", "on": true, "primary": true})
+		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
+	elif target != "" and atk != null:
+		hint = "[color=#f0b35a]%s is out of reach from here.[/color] The ghost shows where the ship would stop: it burns %d movement and fires %d of %d guns on the way. [b]Click it again or press Enter to go.[/b] Esc cancels." % [_name(target), int(atk["st"].cost), int(atk["n"]), int(atk["of"])]
+		btns.append({"text": "Burn and fire (Enter)", "act": "confirm", "on": true, "primary": true})
+		btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
+	elif target != "":
+		var set := _firing_set(target)
+		var sh := 0.0
+		var hl := 0.0
+		for i in set:
+			var tg := _wtarget(id, int(i), target)
+			sh += float(tg.get("shield", 0))
+			hl += float(tg.get("hull", 0))
+		if set.is_empty():
+			hint = _cant_fire_reason(target)
+		else:
+			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#62ccff]%d shield[/color] and [color=#ffae42]%d hull[/color] damage%s. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl)), " (likely kill)" if hl >= float(VU[target]["hp"]) else ""]
+			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
+			btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
+	elif fired and bear > 0:
+		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
+	elif fired:
+		hint = "Fired. %s or end the ship (Space)." % ("It can still slip %d hex%s: click a blue hex," % [mleft, "" if mleft == 1 else "es"] if mleft > 0 else "Use its ability, board, ram")
+	elif bear > 0 and mleft > 0:
+		hint = "Click a blue hex to plan a move, or an enemy with a red ring to target it (ships move, then fire). B braces instead."
+	elif bear > 0:
+		hint = "No movement left. Click an enemy with a red ring to target it, or brace (B), or end the ship (Space)."
+	elif mleft > 0:
+		hint = "Click a blue hex to plan a move. No gun bears from here yet: an orange ring on an enemy means it would from the planned hex. B braces instead."
+	else:
+		hint = "No movement left and no gun bears. Turn with Q/E, brace (B) or end the ship (Space)."
+	if not braced and bool(ui.get("orders", {}).get("brace", false)):
+		btns.append({"text": "Brace (B)", "act": "brace", "on": true, "tip": str(TBL.get("ORDERS", {}).get("brace", {}).get("d", ""))})
+	if u.get("ab") != null and bool(u.get("abReady", false)) and bool(ui.get("ability", {}).get("ready", false)):
+		var A = TBL.get("ABILITIES", {}).get(str(u["ab"]), {})
+		btns.append({"text": str(A.get("n", u["ab"])), "act": "ability", "on": true, "tip": str(A.get("d", ""))})
+	var pend := _player_pending()
+	var more := pend - (0 if u["active"] else 1)
+	btns.append({"text": "Next ship (Tab)", "act": "next", "on": not u["active"] and more > 0, "big": true,
+		"tip": "Switch to another ready ship. Once a ship has moved or fired it stays up until it ends."})
+	btns.append({"text": "End ship (Space)", "act": "end", "on": true, "big": true, "primary": plan == null and target == "",
+		"tip": "This ship is done for the round%s; the enemy moves one of theirs." % ("" if u["active"] else " (it holds position)")})
+	return {"name": str(u["name"]), "cls": str(u["cls"]), "flag": u["flagship"], "tag": "ACTING" if u["active"] else "UP",
+		"more": ("%d more ready" % more) if more > 0 else "last ship this round", "steps": steps, "hint": hint, "buttons": btns}
+
+
+# F1: the play log goes three places: the battle result (campaign_host hands results to the campaign), the campaign's
+# run log through tel (campaign.gd tel_battle, kept in the save), and a file per battle in user://play_logs/ for helpers
+func _play_log_out(res: String) -> void:
+	if showcase:
+		return
+	var pl: Dictionary = plog.summary(res, int(V.get("round", 0)), pace_enemy)
+	result["play"] = pl
+	if bot:
+		return
+	var host = get_parent().get("campaign") if get_parent() != null else null
+	var C = host.get("C") if host != null and is_instance_valid(host) else null
+	if C != null and C.has_method("tel_battle"):
+		C.tel_battle(pl)
+	DirAccess.make_dir_recursive_absolute("user://play_logs")
+	var stamp := Time.get_datetime_string_from_system().replace(":", "-")
+	var f := FileAccess.open("user://play_logs/battle_%s.json" % stamp, FileAccess.WRITE)
+	if f != null:
+		var meta := {"seed": api.world_info().get("seed") if api != null else null, "obj": (V.get("obj") as Dictionary).get("type") if V.get("obj") is Dictionary else "rout",
+			"enemy": _enemy_fac(), "campaign": in_campaign}
+		pl["battle"] = meta
+		f.store_string(JSON.stringify(pl, " "))
 
 
 func _command_label() -> String:
@@ -3059,7 +3726,15 @@ func _process(dt: float) -> void:
 		var shs := 0.0
 		for x in d["sh"]:
 			shs += float(x)
-		hud.set_plate(str(id), sp, on, str(u["name"]), u["side"] == "player", u["flagship"], float(d["hp"]), float(u["maxHp"]), shs, float(u["shMax"]) * 4.0)
+		var is_up: bool = str(id) == sel and api.phase == "player" and not ended and not bot and u["side"] == "player"
+		hud.set_plate(str(id), sp, on, str(u["name"]), u["side"] == "player", u["flagship"], float(d["hp"]), float(u["maxHp"]), shs, float(u["shMax"]) * 4.0, is_up)
+		# the gold ring under the ship that is up breathes, so the eye finds it; a reinforcement's ring flashes on arrival
+		if sv.ring != null:
+			if is_up:
+				var k := 1.0 + 0.07 * sin(game_t * 4.0)
+				sv.ring.scale = Vector3(k, 1.0, k)
+			elif sv.ring.scale.x != 1.0:
+				sv.ring.scale = Vector3.ONE
 	for i in range(floats.size() - 1, -1, -1):
 		var f: Dictionary = floats[i]
 		f.t += dt
@@ -3150,7 +3825,7 @@ func _load_opts() -> void:
 			tips = o.get("tips", {})
 			tips_off = bool(o.get("tipsOff", false))
 			user_speed = float(o.get("speed", 1.0))
-	if args.has("no-tips") or args.has("shots") or args.has("breach-shots"):
+	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace"):
 		tips_off = true
 
 

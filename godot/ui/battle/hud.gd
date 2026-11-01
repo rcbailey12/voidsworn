@@ -94,6 +94,8 @@ func _ready() -> void:
 	_build_chip()
 	_build_hint()
 	_build_legend()
+	_build_phase()
+	_build_card()
 
 
 # true when the project has been imported (or exported) and the imported data for this file is really there; a project
@@ -379,7 +381,10 @@ func set_roster(rows: Array) -> void:
 		nm.custom_minimum_size.x = s(130)
 		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(nm)
-		row.add_child(_label(str(r["status"]), 13, GILT if r["status"] == "Active" else BONE2))
+		var stc := GILT if r["status"] in ["Up", "Acting"] else (VERD if r["status"] == "Ready" else BONE2)
+		row.add_child(_label(str(r["status"]), 13, stc, font_semi if stc != BONE2 else null))
+		if r.get("new", false):
+			row.add_child(_label(" NEW", 12, EMBER, font_semi))
 		v.add_child(row)
 		v.add_child(_label(str(r["cls"]), 13, BONE2))
 		v.add_child(_hull_bar(float(r["hp"]), float(r["maxHp"]), 5))
@@ -492,7 +497,7 @@ func set_panel(info: Dictionary) -> void:
 
 
 func keys_text() -> String:
-	return "[font_size=%d][color=#b3aa95]Click a gold hex to move, an enemy to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick a weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]Tab[/b] next ship, [b]Enter[/b] end activation, [b]Space[/b] hurry the enemy, [b]Esc[/b] cancel. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Home[/b] reset view.[/color][/font_size]" % s(12)
+	return "[font_size=%d][color=#b3aa95]Click a blue hex to plan a move, click it again (or [b]Enter[/b]) to go. Click an enemy to target it and see the odds, click it again (or [b]Enter[/b]) to fire. [b]Q[/b]/[b]E[/b] turn, [b]1[/b]-[b]6[/b] pick one weapon, [b]B[/b] brace, [b]X[/b] ram, [b]G[/b] board, [b]Tab[/b] next ship, [b]Space[/b] end ship, [b]Esc[/b] cancel the plan. In the enemy turn [b]Enter[/b] or [b]Space[/b] hurries. Right-drag orbit, left-drag or WASD pan, wheel zoom, [b]T[/b] top-down, [b]R[/b] threat map, [b]V[/b] firing arcs, [b]F[/b] focus, [b]Home[/b] reset view.[/color][/font_size]" % s(12)
 
 
 func _sect(t: String) -> Control:
@@ -591,11 +596,11 @@ func _build_banner() -> void:
 	banner_lbl.modulate.a = 0.0
 	root.add_child(banner_lbl)
 	toast_lbl = _label("", 16, EMBER, font_semi)
-	toast_lbl.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	toast_lbl.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	toast_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	toast_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	toast_lbl.offset_top = -s(90)
-	toast_lbl.offset_bottom = -s(60)
+	toast_lbl.offset_top = s(124)
+	toast_lbl.offset_bottom = s(150)
 	toast_lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
 	toast_lbl.modulate.a = 0.0
 	root.add_child(toast_lbl)
@@ -673,7 +678,7 @@ func set_chip(txt: String) -> void:
 
 
 func _build_hint() -> void:
-	hint = _label("Right-drag orbit   Left-drag or WASD pan   Wheel zoom   T top-down   R threat   Enter end activation", 13, BONE2)
+	hint = _label("Right-drag orbit   Left-drag or WASD pan   Wheel zoom   T top-down   R threat   V arcs   Tab next ship   Space end ship", 13, BONE2)
 	hint.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -800,14 +805,16 @@ func plate(id: String) -> Control:
 	return c
 
 
-func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: bool, flag: bool, hp: float, mx: float, sh: float, shmx: float) -> void:
+func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: bool, flag: bool, hp: float, mx: float, sh: float, shmx: float, up := false) -> void:
 	var c := plate(id)
 	c.visible = on
 	if not on:
 		return
 	var nm := c.get_node("nm") as Label
-	nm.text = ("★ " if flag else "") + name_txt
-	nm.add_theme_color_override("font_color", FRIEND if friend else FOE)
+	# F1: the ship that is up reads at a glance: a gold marker and a bigger name
+	nm.text = ("▼ UP  " if up else "") + ("★ " if flag else "") + name_txt
+	nm.add_theme_color_override("font_color", GILT if up else (FRIEND if friend else FOE))
+	nm.add_theme_font_size_override("font_size", s(17) if up else s(14))
 	var hf := c.get_node("hb/f") as ColorRect
 	var f := clampf(hp / maxf(mx, 1.0), 0.0, 1.0)
 	hf.anchor_right = f
@@ -998,7 +1005,203 @@ func _process(dt: float) -> void:
 
 
 func over_ui(p: Vector2) -> bool:
-	for c in [top, roster, panel, log_panel, tipcard, endcard, menu, legend]:
+	for c in [top, roster, panel, log_panel, tipcard, endcard, menu, legend, card]:
 		if c != null and is_instance_valid(c) and c.visible and c.get_global_rect().has_point(p):
 			return true
 	return false
+
+
+# ---------------------------------------------------------------- F1: the phase strip and the activation card
+
+var phase: PanelContainer
+var phase_lbl: RichTextLabel
+var phase_bar: ColorRect
+var phase_fill: ColorRect
+var _phase_sb: StyleBoxFlat
+
+
+# the strip under the top bar: whose turn it is, and in the enemy's turn how far along it is
+func _build_phase() -> void:
+	phase = PanelContainer.new()
+	_phase_sb = StyleBoxFlat.new()
+	_phase_sb.bg_color = Color(0.05, 0.07, 0.12, 0.88)
+	_phase_sb.border_color = GILT
+	_phase_sb.set_border_width_all(1)
+	_phase_sb.set_corner_radius_all(s(14))
+	_phase_sb.content_margin_left = s(18)
+	_phase_sb.content_margin_right = s(18)
+	_phase_sb.content_margin_top = s(5)
+	_phase_sb.content_margin_bottom = s(6)
+	phase.add_theme_stylebox_override("panel", _phase_sb)
+	phase.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	phase.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	phase.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	phase.offset_top = s(72)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", s(4))
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	phase.add_child(v)
+	phase_lbl = RichTextLabel.new()
+	phase_lbl.bbcode_enabled = true
+	phase_lbl.fit_content = true
+	phase_lbl.autowrap_mode = TextServer.AUTOWRAP_OFF
+	phase_lbl.scroll_active = false
+	phase_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	phase_lbl.add_theme_font_size_override("normal_font_size", s(16))
+	phase_lbl.add_theme_font_size_override("bold_font_size", s(16))
+	v.add_child(phase_lbl)
+	phase_bar = ColorRect.new()
+	phase_bar.color = Color(0.2, 0.12, 0.3, 0.9)
+	phase_bar.custom_minimum_size = Vector2(0, s(4))
+	phase_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	phase_fill = ColorRect.new()
+	phase_fill.color = Color("#b98cff")
+	phase_fill.anchor_bottom = 1.0
+	phase_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	phase_bar.add_child(phase_fill)
+	v.add_child(phase_bar)
+	phase.visible = false
+	root.add_child(phase)
+
+
+# kind: "player", "enemy" or "" (hidden); bb: the strip's text; progress 0..1 (enemy turn only, negative hides the bar)
+func set_phase(kind: String, bb: String, progress := -1.0) -> void:
+	phase.visible = kind != ""
+	if kind == "":
+		return
+	_phase_sb.border_color = GILT if kind == "player" else Color("#a64dff")
+	_phase_sb.bg_color = Color(0.06, 0.07, 0.10, 0.9) if kind == "player" else Color(0.086, 0.04, 0.157, 0.9)
+	if phase_lbl.text != bb:
+		phase_lbl.text = bb
+	phase_bar.visible = progress >= 0.0
+	phase_fill.anchor_right = clampf(progress, 0.0, 1.0)
+	phase.reset_size()
+	phase.offset_left = -phase.size.x * 0.5
+	phase.offset_right = phase.size.x * 0.5
+
+
+var card: PanelContainer
+var card_box: VBoxContainer
+var _card_sig := ""
+
+
+func _build_card() -> void:
+	card = PanelContainer.new()
+	var g := _glass(8)
+	g.border_color = Color(0.816, 0.651, 0.294, 0.55)
+	g.content_margin_left = s(16)
+	g.content_margin_right = s(16)
+	g.content_margin_top = s(10)
+	g.content_margin_bottom = s(12)
+	card.add_theme_stylebox_override("panel", g)
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	card.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	card.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	card.offset_bottom = -s(42)
+	card_box = VBoxContainer.new()
+	card_box.add_theme_constant_override("separation", s(7))
+	card_box.custom_minimum_size = Vector2(s(660), 0)
+	card.add_child(card_box)
+	card.visible = false
+	root.add_child(card)
+
+
+# The ship that is up and how to finish it. info: {name, cls, flag, more (ready ships after this one), steps: [{n, label,
+# detail, st: done | now | todo | off}], hint (bbcode), buttons: [{text, act, arg, on, primary, big, tip}]}; {} hides it
+func set_card(info: Dictionary) -> void:
+	var sig := JSON.stringify(info)
+	if sig == _card_sig:
+		return
+	_card_sig = sig
+	for c in card_box.get_children():
+		card_box.remove_child(c)
+		c.queue_free()
+	card.visible = not info.is_empty()
+	if info.is_empty():
+		return
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", s(10))
+	var nm := _label(("★ " if info.get("flag", false) else "") + str(info.get("name", "")), 22, GILT, font_semi)
+	head.add_child(_label(str(info.get("tag", "UP")), 13, INK, font_caps))
+	(head.get_child(0) as Label).add_theme_stylebox_override("normal", _chip_sb(GILT, GILT))
+	head.add_child(nm)
+	var cl := _label(str(info.get("cls", "")), 15, BONE2)
+	cl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	head.add_child(cl)
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(sp)
+	var more := _label(str(info.get("more", "")), 14, BONE2)
+	more.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	head.add_child(more)
+	card_box.add_child(head)
+	var steps := HBoxContainer.new()
+	steps.add_theme_constant_override("separation", s(6))
+	var first := true
+	for st in info.get("steps", []):
+		if not first:
+			var ar := _label("›", 18, BONE3)
+			ar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			steps.add_child(ar)
+		first = false
+		steps.add_child(_step_chip(st))
+	card_box.add_child(steps)
+	if str(info.get("hint", "")) != "":
+		var h := _rich(str(info["hint"]))
+		h.add_theme_font_size_override("normal_font_size", s(15))
+		h.add_theme_font_size_override("bold_font_size", s(15))
+		card_box.add_child(h)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", s(8))
+	var spacer_done := false
+	for b in info.get("buttons", []):
+		if b.get("big", false) and not spacer_done:
+			var sp2 := Control.new()
+			sp2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(sp2)
+			spacer_done = true
+		var bt := _button(str(b["text"]), str(b["act"]), b.get("arg"), bool(b.get("primary", false)))
+		bt.disabled = not bool(b.get("on", true))
+		bt.tooltip_text = str(b.get("tip", ""))
+		bt.custom_minimum_size.y = s(40) if b.get("big", false) else s(34)
+		bt.add_theme_font_size_override("font_size", s(17) if b.get("big", false) else s(15))
+		if b.get("name", "") != "":
+			bt.name = str(b["name"])
+		row.add_child(bt)
+	card_box.add_child(row)
+	card.reset_size()
+	card.offset_left = -card.size.x * 0.5
+	card.offset_right = card.size.x * 0.5
+	card.offset_top = card.offset_bottom - card.size.y
+
+
+func _chip_sb(bg: Color, border: Color) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = bg
+	sb.border_color = border
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(s(4))
+	sb.content_margin_left = s(7)
+	sb.content_margin_right = s(7)
+	sb.content_margin_top = s(2)
+	sb.content_margin_bottom = s(2)
+	return sb
+
+
+# one step of the activation: "1 MOVE  4 of 5 left", lit when it is the step you are on, ticked when done, dim when gone
+func _step_chip(st: Dictionary) -> Control:
+	var p := PanelContainer.new()
+	var now: bool = st.get("st", "") == "now"
+	var off: bool = st.get("st", "") == "off"
+	var done: bool = st.get("st", "") == "done"
+	p.add_theme_stylebox_override("panel", _chip_sb(Color(0.30, 0.24, 0.10, 0.85) if now else Color(0.10, 0.13, 0.20, 0.7), GILT if now else IRON3))
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	p.modulate.a = 0.45 if off else 1.0
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", s(6))
+	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	h.add_child(_label(("✓ " if done else "%s " % str(st.get("n", ""))) + str(st.get("label", "")).to_upper(), 14, GILT if now else (VERD if done else BONE), font_caps))
+	h.add_child(_label(str(st.get("detail", "")), 14, BONE if now else BONE2))
+	p.add_child(h)
+	return p

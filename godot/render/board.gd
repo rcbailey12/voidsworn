@@ -29,6 +29,7 @@ var rings: MultiMeshInstance3D
 var base_fill := {}          # "q,r" -> Color (terrain zone tints)
 var overlay := {}            # "q,r" -> Color
 var ring_over := {}          # "q,r" -> Color
+var style_over := {}         # "q,r" -> 1 move hex, 2 hovered or planned move hex (F1: drawn with a lit edge, never a terrain look)
 var hover_key := ""
 var props: Node3D
 var rock_meshes: Array = []
@@ -39,16 +40,49 @@ shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 varying vec4 vcol;
 varying vec2 vp;
-void vertex() { vcol = COLOR; vp = VERTEX.xz; }
+varying float style;
+void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; }
 void fragment() {
 	// soft inner falloff so a lit hex reads as a glow, not a flat plate
 	float r = length(vp) / 10.0;
 	float k = mix(0.75, 1.0, smoothstep(0.2, 0.95, r));
-	ALBEDO = vcol.rgb;
-	ALPHA = vcol.a * k;
+	vec3 c = vcol.rgb;
+	float a = vcol.a * k;
+	if (style > 0.5) {
+		// F1: a hex the ship can move to. Terrain tints are flat; a reach hex has a lit inner edge and breathes slowly,
+		// so it never reads as terrain (style 2: the hovered or planned hex, brighter and steady)
+		vec2 q = abs(vp);
+		float d = max(q.x, 0.5 * q.x + 0.8660254 * q.y) / 8.53;
+		float band = smoothstep(0.78, 0.98, d);
+		float pulse = style > 1.5 ? 1.0 : 0.82 + 0.18 * sin(TIME * 2.2);
+		a = vcol.a * (0.55 + 1.1 * band) * pulse;
+		c = mix(c, vec3(0.85, 0.95, 1.0), band * 0.4);
+	}
+	ALBEDO = c;
+	ALPHA = clamp(a, 0.0, 1.0);
 }
 """
 const RING_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+// F1: the plain grid (style 0) fades with distance from the ship that is up, so the board is quiet away from the action
+uniform vec3 focus = vec3(0.0);
+uniform float near_r = 70.0;
+uniform float far_r = 190.0;
+uniform float far_k = 0.3;
+varying vec4 vcol;
+varying float style;
+varying vec3 wp;
+void vertex() { vcol = COLOR; style = INSTANCE_CUSTOM.r; wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	float k = 1.0;
+	if (style < 0.5) {
+		k = mix(1.0, far_k, smoothstep(near_r, far_r, distance(wp.xz, focus.xz)));
+	}
+	ALBEDO = vcol.rgb * vcol.a * k;
+}
+"""
+const OUTLINE_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 varying vec4 vcol;
@@ -112,6 +146,16 @@ func build(rules) -> void:
 		index[key(cells[i].q, cells[i].r)] = i
 	fills = _mm(_hex_mesh(HS * 0.985, false), FILL_SHADER)
 	rings = _mm(_hex_mesh(HS, true), RING_SHADER)
+	outline = MeshInstance3D.new()
+	outline.name = "ReachOutline"
+	var om := ShaderMaterial.new()
+	var osh := Shader.new()
+	osh.code = OUTLINE_SHADER
+	om.shader = osh
+	outline.material_override = om
+	outline.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(outline)
+	outline_key = ""
 	props = Node3D.new()
 	props.name = "Terrain"
 	add_child(props)
@@ -132,6 +176,7 @@ func _mm(mesh: Mesh, code: String) -> MultiMeshInstance3D:
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_colors = true
+	mm.use_custom_data = true
 	mm.mesh = mesh
 	mm.instance_count = cells.size()
 	for i in cells.size():
@@ -178,7 +223,14 @@ func _hex_mesh(rad: float, ring: bool) -> ArrayMesh:
 
 const ZONE_TINT := {"neb": Color(0.69, 0.49, 1.0, 0.16), "debris": Color(0.83, 0.75, 0.53, 0.12), "storm": Color(1.0, 0.91, 0.4, 0.13)}
 const BASE_FILL := Color(0.04, 0.06, 0.09, 0.18)
-const BASE_RING := Color(0.45, 0.65, 1.0, 0.07)
+# F1: a neutral grey grid (was a pale blue that blended with the move hexes); it fades away from the ship that is up
+const BASE_RING := Color(0.66, 0.70, 0.78, 0.075)
+# F1: the hexes a ship can move to are blue, a colour no terrain, zone or marker uses (nebula violet, debris sand, storm
+# yellow, exits green, perimeters red, the relay gold, your ships green, enemies violet, the selection gold)
+const REACH_FILL := Color(0.22, 0.58, 1.0, 0.24)
+const REACH_HOT := Color(0.45, 0.78, 1.0, 0.42)
+const REACH_RING := Color(0.45, 0.75, 1.0, 0.30)
+const REACH_EDGE := Color(0.62, 0.86, 1.0, 1.0)
 
 
 # objective zones (ui3d.js ZONE_INFO): the exit edge green, the transports' exit and the station perimeter red; the relay
@@ -208,15 +260,20 @@ func refresh() -> void:
 		var k := key(cells[i].q, cells[i].r)
 		var c: Color = overlay.get(k, base_fill.get(k, BASE_FILL))
 		fm.set_instance_color(i, c)
+		var stl := float(style_over.get(k, 0))
+		fm.set_instance_custom_data(i, Color(stl, 0, 0, 0))
 		var rc: Color = ring_over.get(k, BASE_RING)
 		if k == hover_key:
 			rc = Color(1.0, 0.82, 0.4, 0.9)
 		rm.set_instance_color(i, rc)
+		rm.set_instance_custom_data(i, Color(1.0 if (ring_over.has(k) or k == hover_key) else 0.0, 0, 0, 0))
 
 
-func set_overlay(o: Dictionary, rings_o := {}) -> void:
+# fills and rings per hex ("q,r" -> Color); styles "q,r" -> 1 (a move hex) or 2 (the hovered or planned move hex)
+func set_overlay(o: Dictionary, rings_o := {}, styles := {}) -> void:
 	overlay = o
 	ring_over = rings_o
+	style_over = styles
 	refresh()
 
 
@@ -225,6 +282,62 @@ func set_hover(q: int, r: int) -> void:
 	if k != hover_key:
 		hover_key = k
 		refresh()
+
+
+# where the plain grid is brightest (the ship that is up, or the camera target)
+func set_focus(p: Vector3) -> void:
+	if rings != null and rings.material_override is ShaderMaterial:
+		(rings.material_override as ShaderMaterial).set_shader_parameter("focus", p)
+
+
+# F1: one bright line around the whole area a ship can reach (keys: "q,r" -> anything), drawn on the board just inside
+# the outer hex edges, with a soft glow band; an empty dictionary clears it
+var outline: MeshInstance3D
+var outline_key := ""
+
+
+func set_outline(keys: Dictionary, col := REACH_EDGE) -> void:
+	if outline == null:
+		return
+	var ks: Array = keys.keys()
+	ks.sort()
+	var sig := ",".join(PackedStringArray(ks)) + str(col)
+	if sig == outline_key:
+		return
+	outline_key = sig
+	if ks.is_empty():
+		outline.mesh = null
+		return
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var corners: Array = []
+	for i in 6:
+		var an := deg_to_rad(60.0 * i + 30.0)
+		corners.append(Vector3(cos(an), 0, sin(an)))
+	for k in ks:
+		var qr: PackedStringArray = str(k).split(",")
+		var c := hex_world(int(qr[0]), int(qr[1]), -0.32)
+		for i in 6:
+			var a: Vector3 = corners[i]
+			var b: Vector3 = corners[(i + 1) % 6]
+			var mid := (a + b) * 0.5 * HS
+			var nb := world_hex(c + mid * 2.0)
+			if keys.has(key(nb.x, nb.y)):
+				continue
+			# the line (0.9 wide) and a glow band inside it (2.6 wide, fading inward)
+			for band in [[HS * 0.985, HS * 0.985 - 0.9, col.a, col.a], [HS * 0.985 - 0.9, HS * 0.985 - 3.5, col.a * 0.35, 0.0]]:
+				var r0: float = band[0]
+				var r1: float = band[1]
+				var c0 := Color(col.r, col.g, col.b, band[2])
+				var c1 := Color(col.r, col.g, col.b, band[3])
+				var p0 := c + a * r0
+				var p1 := c + b * r0
+				var p2 := c + b * r1
+				var p3 := c + a * r1
+				for v in [[p0, c0], [p1, c0], [p2, c1], [p0, c0], [p2, c1], [p3, c1]]:
+					st.set_color(v[1])
+					st.add_vertex(v[0])
+	outline.mesh = st.commit()
 
 
 func on_board(q: int, r: int) -> bool:
