@@ -460,3 +460,4 @@ Boon offers change in every seeded run (draw count and order). Sector 1 maps and
 ### Godot-side UI still to do (not R1's folders)
 - `godot/ui/campaign/campaign_ui.gd`: show the new `buyAdmiral` act on locked admiral cards (line 352 shows "Unlock for N renown in Legacy" text only), a Legacy tab with `buyLegacy` buttons (the acts are already in the page's list), and the decommission label from `C.prizeScrap(s["tpl"])` (line 876 reads `HULLS[tpl]["cost"]`, which a cost-less hull lacks).
 - Godot battle hint wording (UI-6) belongs to F1's turn-flow work.
+- Landed Nov 1 (d2efec0, 80b679a, dc9e467): only the hunks listed above changed in battle.gd; parity PASS. Record: docs/shots/f2/dc9e467/README.md.
