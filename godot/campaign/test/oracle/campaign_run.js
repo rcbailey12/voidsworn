@@ -1,5 +1,5 @@
 // ======================= UI: run (map, fleet, shipyard, events, rewards) =======================
-const NODE_INFO={battle:{n:'Battle',d:'A standard engagement.'},elite:{n:'Elite fleet',d:'Tougher enemies with veteran captains. Drops a relic.'},
+const NODE_INFO={battle:{n:'Battle',d:'A standard engagement.'},elite:{n:'Elite fleet',d:'Tougher enemies with veteran captains. Drops salvage.'},
   shipyard:{n:'Shipyard',d:'Buy hulls and refits, repair, upgrade Marks.'},drydock:{n:'Drydock',d:'Free repairs for the whole fleet.'},field:{n:'Field repairs',d:'Every ship patches 20% of its hull, no cost.'},
   event:{n:'Unknown signal',d:'Something is out there. Could be anything.'},boss:{n:'Sector flagship',d:'The sector\u2019s command ship and its escort.'}};
 function nodeIcon(type,x,y,col){
@@ -15,7 +15,7 @@ function nodeIcon(type,x,y,col){
 }
 // a node's payout, shown on the map: a patron's sigil for a boon, a small tag otherwise
 function archLabel(n,fac){ const A=n&&n.arch&&ARCHETYPES[effArch(n.arch,fac)]; return A?(A.names[fac]||A.names.hegemony):''; }
-function rewardLabel(rw){ if(!rw) return ''; if(rw.k==='boon'&&PATRONS[rw.p]) return 'Boon of '+PATRONS[rw.p].short; return rw.k==='mod'?'Refit':rw.k==='cred'?'Credits':rw.k==='repair'?'Repairs':''; }
+function rewardLabel(rw){ if(!rw) return ''; if(rw.k==='boon'&&PATRONS[rw.p]) return 'Signal of '+PATRONS[rw.p].short; return rw.k==='mod'?'Refit':rw.k==='cred'?'Credits':rw.k==='repair'?'Repairs':''; }
 function rewardBadge(n,x,y,r,av){ const rw=n.rw; if(!rw||n.done) return ''; const bx=x+r*.78, by=y-r*.78, ty=n.enc&&ENCOUNTERS[n.enc]?y+r+29:y+r+15;
   if(rw.k==='boon'&&PATRONS[rw.p]){ const P=PATRONS[rw.p]; return `<circle cx="${bx}" cy="${by}" r="10" fill="${P.col}" stroke="#0f1626" stroke-width="2"/><text x="${bx}" y="${by+4.5}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f1626" font-family="var(--ui)">${P.glyph}</text><text x="${x}" y="${ty}" text-anchor="middle" font-size="11.5" fill="${av?P.col:'#8a8474'}" font-family="var(--ui)">${esc(P.short)}${rw.min?' \u2605':''}</text>`; }
   const lab=rewardLabel(rw); return lab?`<text x="${x}" y="${ty}" text-anchor="middle" font-size="11.5" fill="${av?'#bfb6a0':'#6f6a5e'}" font-family="var(--ui)">${lab}</text>`:''; }
@@ -42,7 +42,7 @@ function mapScreen(){
       ${av?`<circle cx="${x}" cy="${y}" r="${r+6}" fill="none" stroke="rgba(208,166,75,.35)" stroke-width="1"><animate attributeName="r" values="${r+3};${r+9};${r+3}" dur="2.4s" repeatCount="indefinite"/></circle>`:''}
       ${nodeIcon(n.type,x,y,col)}${n.enc&&ENCOUNTERS[n.enc]&&!n.done?`<text x="${x}" y="${y+r+15}" text-anchor="middle" font-size="12.5" fill="${av?'#e6dcc4':'#8a8474'}" font-family="var(--ui)">${ENCOUNTERS[n.enc].n}${n.mod&&NODE_MODS[n.mod]?' \u00b7 '+NODE_MODS[n.mod].short:''}</text>`:''}${n.map&&MAP_NAME[n.map]&&!n.done&&(n.type==='battle'||n.type==='elite'||n.type==='boss')?`<text x="${x}" y="${y-r-7}" text-anchor="middle" font-size="10.5" fill="#7f8fa6" font-family="var(--ui)">${MAP_NAME[n.map]}</text>`:''}${rewardBadge(n,x,y,r,av)}${!n.done&&nemNodeIs(n)?`<text x="${x}" y="${y-r-20}" text-anchor="middle" font-size="12" font-weight="700" fill="#ff6b5a" font-family="var(--ui)">Nemesis</text>`:''}</g>`; }).join('');
   const fleet=RUN.fleet.map(s=>{ const d=derive(s); return `<div class="shiprow"><span>${esc(s.name)}</span><span class="dim num">${s.hp}/${d.maxHp}</span>
-    <span class="dim" style="grid-column:1/-1;font-size:13px">${HULLS[s.tpl].cls} Mk ${roman(s.mk)}, ${rankName(s.cap)} ${esc(s.cap.name)}${s.cap.pending?' <span class="gilt">(promotion ready)</span>':''}</span>${hpBar(s.hp,d.maxHp)}</div>`; }).join('');
+    <span class="dim" style="grid-column:1/-1;font-size:13px">${clsName(HULLS[s.tpl].cls)} Mk ${roman(s.mk)}, ${rankName(s.cap)} ${esc(s.cap.name)}${s.cap.pending?' <span class="gilt">(promotion ready)</span>':''}</span>${hpBar(s.hp,d.maxHp)}</div>`; }).join('');
   const relics=RUN.relics.length?RUN.relics.map(r=>`<div style="margin-bottom:6px"><b>${esc(relicName(r))}</b><div class="muted" style="font-size:14px">${esc(RELICS[r].d)}</div></div>`).join(''):'<p class="dim">None yet. Elite fleets and flagships carry them.</p>';
   const pend=RUN.fleet.some(s=>s.cap.pending);
   show(`<div class="mapwrap">
@@ -63,9 +63,9 @@ function mapScreen(){
       <button class="${pend?'primary':''}" style="width:100%;margin-top:12px" data-act="fleetScreen">${pend?'Promote captains and refit':'Manage fleet and refits'}</button>
       ${RUN.inventory.length?`<p class="dim" style="font-size:14px">${RUN.inventory.length} refit${RUN.inventory.length>1?'s':''} in the hold.</p>`:''}
       ${RUN.aspect&&ASPECTS[RUN.aspect]?`<h3>Flagship</h3><p style="margin:0 0 4px"><b>${esc((flagshipOf()||{}).name||'')}</b> <span class="gilt">${esc(ASPECTS[RUN.aspect].n)}</span></p><p class="muted" style="font-size:14px;margin:0">${esc(ASPECTS[RUN.aspect].d)}</p>`:''}
-      <h3>Boons</h3>${(RUN.boons||[]).length?RUN.boons.map(b=>boonLine(b,true)).join(''):'<p class="dim">None yet. Win at a node with a patron\u2019s sigil to earn one.</p>'}
-      <p class="dim" style="font-size:13px">Patrons this run: ${RUN.patrons.map(p=>`<span style="color:${PATRONS[p].col}">${esc(PATRONS[p].short)}</span>`).join(', ')}</p>
-      <h3>Relics</h3>${relics}
+      <h3>Protocols</h3>${(RUN.boons||[]).length?RUN.boons.map(b=>boonLine(b,true)).join(''):'<p class="dim">None yet. Win at a node carrying a core\u2019s signal to earn one.</p>'}
+      <p class="dim" style="font-size:13px">Cores in range: ${RUN.patrons.map(p=>`<span style="color:${PATRONS[p].col}">${esc(PATRONS[p].short)}</span>`).join(', ')}</p>
+      <h3>Salvage</h3>${relics}
     </aside></div>`);
 }
 // B4: the Nemesis card on the map (clock, known weaknesses, adaptations) and the faction verb button
@@ -186,10 +186,10 @@ function shipyardScreen(n){
     <h3 style="margin:26px 0 10px">Hulls for sale</h3><div class="cards">${hulls}</div>
     <h3 style="margin:26px 0 10px">Refits for sale</h3><div class="cards">${mods}</div>
     <h3 style="margin:26px 0 10px">Class refits</h3><p class="muted" style="margin:0 0 8px">A class refit upgrades every ship of that class you own now or later: +6% hull and +6% damage per level, up to ${CLASS_TRACK_MAX}.</p>
-    <div class="row wrap">${[...new Set(RUN.fleet.map(s=>HULLS[s.tpl].cls))].map(cls=>{ const lv=classTrack(cls), c=classTrackCost(cls), max=lv>=CLASS_TRACK_MAX; return `<button ${!max&&RUN.credits>=c?'':'disabled'} data-act="buyTrack" data-arg="${esc(cls)}">${esc(cls)} ${'●'.repeat(lv)}${'○'.repeat(CLASS_TRACK_MAX-lv)} ${max?'(full)':`for ${c}`}</button>`; }).join('')}</div>
+    <div class="row wrap">${[...new Set(RUN.fleet.map(s=>HULLS[s.tpl].cls))].map(cls=>{ const lv=classTrack(cls), c=classTrackCost(cls), max=lv>=CLASS_TRACK_MAX; return `<button ${!max&&RUN.credits>=c?'':'disabled'} data-act="buyTrack" data-arg="${esc(cls)}">${esc(clsName(cls))} ${'●'.repeat(lv)}${'○'.repeat(CLASS_TRACK_MAX-lv)} ${max?'(full)':`for ${c}`}</button>`; }).join('')}</div>
   </div></div>`);
 }
-ACT.buyTrack=cls=>{ if(!buyClassTrack(cls)) return; try{ tel('shop',{k:'track',id:cls,lv:classTrack(cls)}); }catch(e){} toast(`${cls} refit level ${classTrack(cls)}: every ${cls.toLowerCase()} gains.`); shipyardScreen(yardNode); };
+ACT.buyTrack=cls=>{ if(!buyClassTrack(cls)) return; try{ tel('shop',{k:'track',id:cls,lv:classTrack(cls)}); }catch(e){} toast(`${clsName(cls)} refit level ${classTrack(cls)}: every ${clsName(cls).toLowerCase()} gains.`); shipyardScreen(yardNode); };
 ACT.yardFleet=()=>fleetScreen('shipyard');
 ACT.backShipyard=()=>shipyardScreen(yardNode);
 ACT.leaveYard=()=>{ completeNode(); mapScreen(); };
@@ -223,7 +223,7 @@ function needMet(nd){ if(!nd) return true; const kit=fleetKit();
   if(nd.flag&&!(RUN.flags&&RUN.flags[nd.flag]!=null)) return false; if(nd.intel&&((RUN.nem&&RUN.nem.revealed)||[]).length<nd.intel) return false; return true; }
 function needText(nd){ if(!nd) return ''; const p=[];
   if(nd.fac){ const fs=Array.isArray(nd.fac)?nd.fac:[nd.fac]; p.push(fs.map(f=>FACTIONS[f]?FACTIONS[f].n:f).join(' or ')); }
-  if(nd.kind) p.push((KIND_WORD[nd.kind]||nd.kind)+' in the fleet'); if(nd.carrier) p.push('a carrier'); if(nd.shields) p.push('a shielded ship'); if(nd.relic) p.push(nd.relic===1?'a relic':relicName(nd.relic));
+  if(nd.kind) p.push((KIND_WORD[nd.kind]||nd.kind)+' in the fleet'); if(nd.carrier) p.push('a carrier'); if(nd.shields) p.push('a shielded ship'); if(nd.relic) p.push(nd.relic===1?'a piece of salvage':relicName(nd.relic));
   if(nd.mod) p.push('a refit in the hold'); if(nd.cred) p.push(nd.cred+' credits'); if(nd.vet) p.push('a '+RANKS[nd.vet]+' or better'); if(nd.flag) p.push('an earlier choice'); if(nd.intel) p.push(nd.intel+' Nemesis weakness'+(nd.intel>1?'es':'')+' known');
   return 'Needs '+p.join(', '); }
 // the next event at an event node: never one already seen this run (B4), never one barred for your faction; a quiet stretch once all are seen
@@ -352,14 +352,14 @@ function applyOutcome(r){
   if(r.cred){ RUN.credits+=r.cred; out.push(`+${r.cred} credits.`); }
   if(r.xp){ RUN.fleet.forEach(s=>addXp(s,r.xp)); out.push(`Every captain gains ${r.xp} experience.`); }
   if(r.xpLow){ const s=[...RUN.fleet].sort((a,b)=>a.cap.xp-b.cap.xp)[0]; addXp(s,r.xpLow); out.push(`${s.cap.name} of the ${s.name} gains ${r.xpLow} experience.`); }
-  if(r.loseMod){ const withMod=RUN.fleet.filter(s=>s.mods.length); if(withMod.length){ const s=pick(withMod); let m; changeShip(s,sh=>{ m=sh.mods.splice(Math.floor(rnd()*sh.mods.length),1)[0]; }); out.push(`The ${s.name} gives up its ${modName(m)}.`); } else if(RUN.inventory.length){ const m=RUN.inventory.splice(0,1)[0]; out.push(`You hand over the ${modName(m)} from the hold.`); } else out.push('You have no refits to give. The seer smiles and gives anyway.'); }
-  if(r.relic){ const rl=randomRelic(); if(rl){ RUN.relics.push(rl); changeFleet(()=>{}); out.push(`Relic gained: ${relicName(rl)}. ${RELICS[rl].d}`); } else { RUN.credits+=80; out.push('No relics left to find. +80 credits instead.'); } }
+  if(r.loseMod){ const withMod=RUN.fleet.filter(s=>s.mods.length); if(withMod.length){ const s=pick(withMod); let m; changeShip(s,sh=>{ m=sh.mods.splice(Math.floor(rnd()*sh.mods.length),1)[0]; }); out.push(`The ${s.name} gives up its ${modName(m)}.`); } else if(RUN.inventory.length){ const m=RUN.inventory.splice(0,1)[0]; out.push(`You hand over the ${modName(m)} from the hold.`); } else out.push('You have no refits to give. The keeper smiles and gives anyway.'); }
+  if(r.relic){ const rl=randomRelic(); if(rl){ RUN.relics.push(rl); changeFleet(()=>{}); out.push(`Salvage gained: ${relicName(rl)}. ${RELICS[rl].d}`); } else { RUN.credits+=80; out.push('No salvage left to find. +80 credits instead.'); } }
   if(r.dmgOne){ const s=randShip(), d=derive(s), dm=Math.round(d.maxHp*r.dmgOne); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); }
   if(r.dmgAll){ RUN.fleet.forEach(s=>{ s.hp=Math.max(1,s.hp-Math.round(derive(s).maxHp*r.dmgAll)); }); out.push(`Every ship takes ${pct(r.dmgAll)} hull damage.`); }
   if(r.ship){ const tp=equivHull(r.ship,RUN.fac); if(fleetCP()+HULLS[tp].cp<=RUN.cpCap){ const s=newShip(tp,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=r.cost||0; out.push('You don\u2019t have the command points to take her on. Your credits are returned.'); } }
   if(r.upgradeOne){ const s=[...RUN.fleet].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; changeShip(s,sh=>{ if(sh.mk<3) sh.mk++; }); s.hp=derive(s).maxHp; out.push(`The ${s.name} leaves the forge fully repaired at Mk ${roman(s.mk)}.`); }
   if(r.healAll){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*r.healAll)); }); out.push(r.healAll>=1?'Every ship is fully repaired.':`Every ship repairs ${pct(r.healAll)} of its hull.`); }
-  if(r.gamble){ if(rnd()<.5){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.3)); }); out.push('The saint answers. Every ship repairs 30% of its hull.'); } else out.push('Silence. The void keeps its own counsel.'); }
+  if(r.gamble){ if(rnd()<.5){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.3)); }); out.push('Luck holds. Every ship repairs 30% of its hull.'); } else out.push('Silence. The void keeps its own counsel.'); }
   if(r.mod){ const m=randomModule(); RUN.inventory.push(m); out.push(`Found: ${modName(m)}. It\u2019s in the hold.`); }
   if(r.ambush){ RUN.ambush=true; }
   // B4 outcome kinds: more currencies and the Nemesis
@@ -387,10 +387,10 @@ ACT.eventChoice=i=>{
 
 // ---------- rewards ----------
 // B1 onboarding fix 4: one plain line on each reward screen saying what the reward is
-const REWARD_DEF={salvage:'Salvage: work one wreck from this fight. Strip it for a refit, scrap it for credits, or (Corsairs) tow a small hull home.',
-  boon:'A boon is a bonus from a patron that lasts for the rest of this run. Rarity sets how strong it is.',
+const REWARD_DEF={salvage:'Strip: work one wreck from this fight. Strip it for a refit, scrap it for credits, or (Hullbreakers) tow a small hull home.',
+  boon:'A protocol is a bonus from a core that lasts for the rest of this run. Rarity sets how strong it is.',
   refit:'A refit is a module you fit to one ship for a lasting upgrade. It waits in the hold until you fit it.',
-  relic:'A relic is a fleet-wide effect that lasts for the rest of this run.',
+  relic:'Salvage is a fleet-wide effect that lasts for the rest of this run.',
   promotion:'A promotion lets a captain with enough experience pick a perk. Perks stay with the captain, even on a new ship.'};
 function rewardDef(k){ return REWARD_DEF[k]?`<p class="dim rdef" style="font-size:13.5px;margin:2px 0 10px">${REWARD_DEF[k]}</p>`:''; }
 function rewardFlow(summary){
@@ -404,7 +404,7 @@ function rewardFlow(summary){
   // the node's payout: a patron's boon (pick 1 of 3), a refit (pick 1 of 3), or credits or repairs
   const node=cfg.node&&findNode(cfg.node); ensurePatrons(); const rw=(node&&node.rw)||(cfg.kind==='battle'?{k:'boon',p:pick(RUN.patrons)}:{k:'boon',p:pick(RUN.patrons),min:1});
   const fl0=RUN.flagUid; ensureFlagship(); const flagMoved=fl0&&RUN.flagUid!==fl0&&flagshipOf();
-  let extra=''; if(rw.k==='cred'){ const v=35+10*s; RUN.credits+=v; extra=`<p class="gilt">Salvage: +${v} credits.</p>`; }
+  let extra=''; if(rw.k==='cred'){ const v=35+10*s; RUN.credits+=v; extra=`<p class="gilt">Spoils: +${v} credits.</p>`; }
   if(rw.k==='repair'){ RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.25*repairMult())); }); extra='<p class="verd">Field repairs: every ship repairs 25% of its hull.</p>'; }
   window._rewardCfg=cfg; window._rw=rw; window._boonOffer=null; window._modOffer=null;
   window._relicChoice=(cfg.kind==='elite'||cfg.kind==='boss')?shuffle(Object.keys(RELICS).filter(r=>!RUN.relics.includes(r)&&relicUseful(r))).slice(0,cfg.kind==='boss'?3:2):[];
@@ -415,10 +415,10 @@ function rewardFlow(summary){
   // A reload then resumes the chain (resumeReward) instead of losing the boon, refit or relic, or replaying the node for double pay.
   const prizes=(summary.prizes||[]).filter(p=>p&&HULLS[p.tpl]);
   RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'pick',boonOffer:null,modOffer:null}; completeNode();
-  const next=RUN.reward.prizes.length?`<button class="primary" data-act="prizeStep">Decide on the prize ship${RUN.reward.prizes.length>1?'s':''}</button>`:window._wrecks.length?'<button class="primary" data-act="salvageStep">Salvage the field</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a boon</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
+  const next=RUN.reward.prizes.length?`<button class="primary" data-act="prizeStep">Decide on the prize ship${RUN.reward.prizes.length>1?'s':''}</button>`:window._wrecks.length?'<button class="primary" data-act="salvageStep">Strip the wrecks</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a protocol</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
   modal(`<h2>${cfg.kind==='boss'?'Flagship destroyed':'Victory'}</h2>
     <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra}
-    ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Boons in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No boon triggered this battle. Check the Fleet boons section on a ship to see what sets each one off.</p>':''; })()}
+    ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Protocols in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.</p>':''; })()}
     ${flagMoved?`<p class="gilt">The admiral transfers the flag to the ${esc(flagMoved.name)}. Its aspect goes with it.</p>`:''}
     ${xpLines?`<ul class="num" style="padding-left:18px">${xpLines}</ul>`:''}${next}`);
 }
@@ -469,8 +469,8 @@ ACT.prizeConfirm=()=>{ const R=RUN.reward; if(!R||!(R.prizes||[]).length) return
     try{ tel('prize_pick',{k:r.k,tpl:p.tpl,def:!r.mine}); }catch(e){} }
   R.prizes=[]; R.prizeSel=null; saveRun(); const t=got.join(', '); toast(t.charAt(0).toUpperCase()+t.slice(1)+'.'); ACT.prizeStep(); };
 ACT.salvageStep=()=>{ closeModal(); const ws=window._wrecks||[];
-  modal(`<h2>Salvage the field</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${rewardDef('salvage')}${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
-    return `<div class="choice" style="cursor:default"><b>${esc(w.name)}</b> <span class="dim">${esc(w.cls||'')}${F?', '+esc(F.n):''}</span><small>${esc(CAUSE_WORD[w.cause]||'destroyed')}${w.by?` by the ${esc(w.by)}`:''}.</small>
+  modal(`<h2>Strip the wrecks</h2><p class="muted">Your crews have time to work one wreck before the fleet moves on.</p>${rewardDef('salvage')}${ws.map((w,i)=>{ const y=w.yield, F=FACTIONS[w.fac];
+    return `<div class="choice" style="cursor:default"><b>${esc(w.name)}</b> <span class="dim">${esc(clsName(w.cls||''))}${F?', '+esc(F.n):''}</span><small>${esc(CAUSE_WORD[w.cause]||'destroyed')}${w.by?` by the ${esc(w.by)}`:''}.</small>
       <div class="orders" style="margin-top:6px">${y.mod?`<button data-act="takeSalvage" data-arg="${i}:mod">Strip it: <b>${esc(modName(y.mod))}</b><small>${esc(MODULES[y.mod].d)}</small></button>`:''}<button data-act="takeSalvage" data-arg="${i}:cred">Scrap it<small>+${y.cred} credits</small></button>${y.tow?`<button data-act="takeSalvage" data-arg="${i}:tow">Tow it home<small>Joins your fleet at 35% hull</small></button>`:''}</div></div>`; }).join('')}`); };
 ACT.takeSalvage=a=>{ const [i,k]=String(a).split(':'), w=(window._wrecks||[])[+i]; if(!w){ closeModal(); if(RUN.reward) RUN.reward.stage='pick'; return ACT.rewardNext(); } const y=w.yield;
   if(k==='mod'&&y.mod){ RUN.inventory.push(y.mod); toast(`${modName(y.mod)} stripped from the ${w.name} and stowed in the hold.`); }
@@ -481,7 +481,7 @@ ACT.takeSalvage=a=>{ const [i,k]=String(a).split(':'), w=(window._wrecks||[])[+i
 ACT.rewardNext=()=>{ const rw=window._rw||{}; closeModal();
   if(rw.k==='boon') return boonStep(rw.p,rw.min||0);
   if(rw.k==='mod'){ const opts=(RUN.reward&&RUN.reward.modOffer)||shuffle(modulePool()).slice(0,3); window._modOffer=opts; if(RUN.reward&&!RUN.reward.modOffer){ RUN.reward.modOffer=opts; saveRun(); }
-    modal(`<h2>Salvaged refits</h2>${rewardDef('refit')}<p>Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.</p>${opts.map(m=>`<button class="choice" data-act="takeMod" data-arg="${m}"><b>${esc(modName(m))}</b><small>${esc(MODULES[m].d)}</small></button>`).join('')}`); return; }
+    modal(`<h2>Recovered refits</h2>${rewardDef('refit')}<p>Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.</p>${opts.map(m=>`<button class="choice" data-act="takeMod" data-arg="${m}"><b>${esc(modName(m))}</b><small>${esc(MODULES[m].d)}</small></button>`).join('')}`); return; }
   relicStep(); };
 ACT.takeMod=m=>{ RUN.inventory.push(m); try{ tel('reward_pick',{k:'mod',id:m,offered:window._modOffer}); }catch(e){} toast(`${modName(m)} stowed in the hold.`); closeModal(); relicStep(); };
 // a patron offers three boons; rarity shows how strong each one is
@@ -537,7 +537,7 @@ function afterBattle(){
     saveRun(); mapScreen();
     const F=FACTIONS[RUN.map.fac];
     modal(`<h2>Sector ${roman(RUN.sector)}${RUN.map.region&&REGIONS[RUN.map.region]?`: ${esc(REGIONS[RUN.map.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
-      <p>Auspex confirms <b>${esc(F.n)}</b> ahead.</p>${na&&RUN.nem?`<p class="blood">Intelligence: ${esc(nemFull())} has adapted to you: <b>${esc(nemAdaptName(na,RUN.nem.fac))}</b> (${esc(nemAdaptWhy(na,RUN.nem.fac))}). ${esc(nemAdaptDesc(na,RUN.nem.fac))}</p>`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
+      <p>Scanners confirm <b>${esc(F.n)}</b> ahead.</p>${na&&RUN.nem?`<p class="blood">Intelligence: ${esc(nemFull())} has adapted to you: <b>${esc(nemAdaptName(na,RUN.nem.fac))}</b> (${esc(nemAdaptWhy(na,RUN.nem.fac))}). ${esc(nemAdaptDesc(na,RUN.nem.fac))}</p>`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
     return;
   }
   mapScreen();

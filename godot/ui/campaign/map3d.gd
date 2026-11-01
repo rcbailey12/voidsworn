@@ -809,7 +809,7 @@ func _card_bb(n: Dictionary) -> String:
 	# the routes through this node to the flagship
 	if not _routes.is_empty() and not C.jt(n.get("done")):
 		t += "\n\n[b]" + _cc("ROUTES TO THE FLAGSHIP", ui.GILT) + "[/b]"
-		t += "\n" + _cc("Safest: the mildest worst fight, then the least danger in all (repair stops count in its favour). Richest: the most rewards (" + ui.term("relic") + " 4, " + ui.term("boon") + " 3, refit 2, shipyard 2, credits 1, event 1).", ui.BONE3)
+		t += "\n" + _cc("Safest: the mildest worst fight, then the least danger in all (repair stops count toward it). Richest: the most rewards (" + ui.term("relic") + " 4, " + ui.term("boon") + " 3, refit 2, shipyard 2, credits 1, event 1).", ui.BONE3)
 		var fc = intel.fleet_condition()
 		for r in _routes:
 			var st = r["st"]

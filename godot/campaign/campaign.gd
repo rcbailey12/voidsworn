@@ -1395,6 +1395,8 @@ func shipyardScreen(n) -> void:
 	for cls in fleetClasses():
 		A(acts, "buyTrack", cls, classTrack(cls) < float(CLASS_TRACK_MAX) and float(RUN["credits"]) >= classTrackCost(cls))
 	show_page("shipyard", {"node": n, "pm": pm}, acts)
+# a class as players see it (data.js clsName, lore round 8 row 4.0): cls stays the lookup key
+func clsName(c) -> String: return str(TB.get("CLS_NAME", {}).get(str(c), str(c)))
 func fleetClasses() -> Array:
 	var out = []
 	for s in RUN["fleet"]:
@@ -1404,7 +1406,7 @@ func fleetClasses() -> Array:
 func ACT_buyTrack(cls: String) -> void:
 	if not buyClassTrack(cls): return
 	tel("shop", {"k": "track", "id": cls, "lv": classTrack(cls)})
-	toast(cls + " refit level " + numstr(classTrack(cls)) + ": every " + cls.to_lower() + " gains."); shipyardScreen(yard_node)
+	toast(clsName(cls) + " refit level " + numstr(classTrack(cls)) + ": every " + clsName(cls).to_lower() + " gains."); shipyardScreen(yard_node)
 func ACT_buyHull(h: String) -> void:
 	var t = HULLS[h]; var cost = jsround(float(t["cost"]) * priceMult())
 	if float(RUN["credits"]) < cost or fleetCP() + float(t["cp"]) > float(RUN["cpCap"]): return
@@ -1501,7 +1503,7 @@ func needText(nd) -> String:
 	if jt(nd.get("kind")): p.append(str(or_(KIND_WORD.get(nd["kind"]), nd["kind"])) + " in the fleet")
 	if jt(nd.get("carrier")): p.append("a carrier")
 	if jt(nd.get("shields")): p.append("a shielded ship")
-	if jt(nd.get("relic")): p.append("a relic" if ((nd["relic"] is float or nd["relic"] is int) and float(nd["relic"]) == 1.0) else relicName(nd["relic"]))
+	if jt(nd.get("relic")): p.append("a piece of salvage" if ((nd["relic"] is float or nd["relic"] is int) and float(nd["relic"]) == 1.0) else relicName(nd["relic"]))
 	if jt(nd.get("mod")): p.append("a refit in the hold")
 	if jt(nd.get("cred")): p.append(numstr(nd["cred"]) + " credits")
 	if jt(nd.get("vet")): p.append("a " + str(RANKS[int(nd["vet"])]) + " or better")
@@ -1917,13 +1919,13 @@ func applyOutcome(r) -> Array:
 			out.append("The " + str(s["name"]) + " gives up its " + modName(got[0]) + ".")
 		elif RUN["inventory"].size() > 0:
 			var m = RUN["inventory"].pop_at(0); out.append("You hand over the " + modName(m) + " from the hold.")
-		else: out.append("You have no refits to give. The seer smiles and gives anyway.")
+		else: out.append("You have no refits to give. The keeper smiles and gives anyway.")
 	if jt(r.get("relic")):
 		var rl = randomRelic()
 		if rl != null:
-			RUN["relics"].append(rl); changeFleet(_noop); out.append("Relic gained: " + relicName(rl) + ". " + str(RELICS[rl]["d"]))
+			RUN["relics"].append(rl); changeFleet(_noop); out.append("Salvage gained: " + relicName(rl) + ". " + str(RELICS[rl]["d"]))
 		else:
-			RUN["credits"] = float(RUN["credits"]) + 80; out.append("No relics left to find. +80 credits instead.")
+			RUN["credits"] = float(RUN["credits"]) + 80; out.append("No salvage left to find. +80 credits instead.")
 	if jt(r.get("dmgOne")):
 		var s = randShip(); var d = derive(s); var dm = jsround(float(d["maxHp"]) * float(r["dmgOne"])); s["hp"] = max(1.0, float(s["hp"]) - dm)
 		out.append("The " + str(s["name"]) + " takes " + numstr(dm) + " hull damage.")
@@ -1949,7 +1951,7 @@ func applyOutcome(r) -> Array:
 		if rnd() < 0.5:
 			for s in RUN["fleet"]:
 				var d = derive(s); s["hp"] = min(float(d["maxHp"]), float(s["hp"]) + jsround(float(d["maxHp"]) * 0.3))
-			out.append("The saint answers. Every ship repairs 30% of its hull.")
+			out.append("Luck holds. Every ship repairs 30% of its hull.")
 		else: out.append("Silence. The void keeps its own counsel.")
 	if jt(r.get("mod")):
 		var m = randomModule(); RUN["inventory"].append(m); out.append("Found: " + modName(m) + ". It’s in the hold.")
@@ -2072,7 +2074,7 @@ func rewardFlow(summary: Dictionary) -> void:
 	var flagMoved = flagshipOf() if (jt(fl0) and RUN.get("flagUid") != fl0) else null
 	var extra = ""
 	if rw["k"] == "cred":
-		var v = 35.0 + 10.0 * s; RUN["credits"] = float(RUN["credits"]) + v; extra = "Salvage: +" + numstr(v) + " credits."
+		var v = 35.0 + 10.0 * s; RUN["credits"] = float(RUN["credits"]) + v; extra = "Spoils: +" + numstr(v) + " credits."
 	if rw["k"] == "repair":
 		for sh in RUN["fleet"]:
 			var d = derive(sh); sh["hp"] = min(float(d["maxHp"]), float(sh["hp"]) + jsround(float(d["maxHp"]) * 0.25 * repairMult()))

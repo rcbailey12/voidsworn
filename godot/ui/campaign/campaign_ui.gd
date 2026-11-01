@@ -23,10 +23,9 @@ const VERD := Color("#5fb3a6")
 const BLOOD := Color("#e27f74")
 const GLASS := Color(0.047, 0.07, 0.12, 0.80)
 const BLUE := Color("#62a8ff")   # B4 blue event options
-# Words Ryan has ruled will change once the lore is signed off (patron to core, sigil to signal, boon to protocol,
-# favour to sync; Opus's veto on rename_map_final V14: the relic item type becomes salvage). No text changes before sign-off; the map screen's own strings read these so the swap is one edit
-# here (the texts ported from the browser game follow the project-wide rename). Ids never change.
-const TERMS := {"patron": "patron", "patrons": "patrons", "sigil": "sigil", "boon": "boon", "boons": "boons", "favour": "favour", "relic": "relic", "relics": "relics"}
+# The approved words (lore round 8, R59; rename_map_final.md): core, signal, protocol, sync, and salvage for the relic
+# item type (Opus's veto of V14). The map screen's own strings read these. Ids never change.
+const TERMS := {"patron": "core", "patrons": "cores", "sigil": "signal", "boon": "protocol", "boons": "protocols", "favour": "sync", "relic": "salvage", "relics": "salvage"}
 static func term(k: String, cap: bool = false) -> String:
 	var t: String = TERMS.get(k, k)
 	return (t.substr(0, 1).to_upper() + t.substr(1)) if cap else t
@@ -300,7 +299,7 @@ func _title() -> Control:
 	var title_txt = "VOIDSWORN"   # the game's name from G2's brand.gd (one place for the title, R59)
 	if ResourceLoader.exists("res://ui/battle/brand.gd"): title_txt = str(load("res://ui/battle/brand.gd").TITLE).to_upper()
 	var h = lbl(title_txt, 96 if title_txt.length() <= 12 else 58, BONE, font_goth, false); h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(h)
-	var s = lbl("Command a crusade of gothic capital ships through three hostile sectors. Every hull you lose stays lost, and so does its captain.", 20, BONE2)
+	var s = lbl("Command a fleet through three contested sectors to the Hollow Sun. Every hull you lose stays lost, and so does its captain.", 20, BONE2)
 	s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(s)
 	var menu = vbox(10); menu.custom_minimum_size.x = px(260)
 	var saved = C.SAVED_RUN != null
@@ -434,14 +433,14 @@ func _aspect() -> Control:
 	v.add_child(cards)
 	var R = C.RUN
 	if C.jt(R.get("giftBoon")):
-		var gb = R["giftBoon"]; v.add_child(rich(c("A gift from " + esc(C.PATRONS[C.BOONS[gb]["p"]]["n"]) + ", who counts you Devoted: [b]" + esc(C.BOONS[gb]["n"]) + "[/b].", GILT), 17))
+		var gb = R["giftBoon"]; v.add_child(rich(c("A gift from " + esc(C.PATRONS[C.BOONS[gb]["p"]]["n"]) + ", now Synced with you: [b]" + esc(C.BOONS[gb]["n"]) + "[/b].", GILT), 17))
 	if R.get("heat") is Array and R["heat"].size() > 0:
 		var hn = []
 		for kk in R["heat"]: hn.append(C.HEAT[kk]["n"])
 		v.add_child(lbl("Heat " + C.numstr(C.heatLevel(R["heat"])) + ": " + ", ".join(PackedStringArray(hn)) + ".", 17, BLOOD))
 	var ps = []
 	for p in R["patrons"]: ps.append("[b]" + c(esc(C.PATRONS[p]["n"]), Color(C.PATRONS[p]["col"])) + "[/b] (" + esc(str(C.PATRONS[p]["theme"]).to_lower()) + ")")
-	v.add_child(rich(c("Patrons watching this " + C.runWord() + ": ", BONE3) + "; ".join(PackedStringArray(ps)) + c(". Win battles marked with their sigil to earn their boons.", BONE3), 16))
+	v.add_child(rich(c("Cores in range of this " + C.runWord() + ": ", BONE3) + "; ".join(PackedStringArray(ps)) + c(". Win battles carrying their signal to earn their protocols.", BONE3), 16))
 	return v
 
 # ---------------- the sector map ----------------
@@ -572,7 +571,7 @@ func _intel_strip() -> Control:
 		row.add_child(box.call("Sector condition", "[b]" + c(esc(cond["n"]), GILT) + "[/b] " + c(esc(cond["d"]), BONE2), GILT, "", 340.0))
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
-	row.add_child(box.call(term("patrons", true) + " watching", ", ".join(PackedStringArray(ps)) + c(" · win at a " + term("sigil") + " for a " + term("boon"), BONE3), Color(0.7, 0.6, 1.0), "Win at a stop with a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + ".", 250.0))
+	row.add_child(box.call(term("patrons", true) + " in range", ", ".join(PackedStringArray(ps)) + c(" · win at a " + term("sigil") + " for a " + term("boon"), BONE3), Color(0.7, 0.6, 1.0), "Win at a stop carrying a " + term("patron") + "'s " + term("sigil") + " and that " + term("patron") + " offers a " + term("boon") + ".", 250.0))
 	if R.get("heat") is Array and R["heat"].size() > 0:   # the run's Heat rules, which also feed the danger estimate
 		var hs = []
 		for kk in R["heat"]:
@@ -581,7 +580,7 @@ func _intel_strip() -> Control:
 	return row
 func _reward_label(rw) -> String:
 	if rw == null or not (rw is Dictionary): return ""
-	if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")): return "Boon of " + str(C.PATRONS[rw["p"]]["short"])
+	if rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")): return "Signal of " + str(C.PATRONS[rw["p"]]["short"])
 	match rw.get("k"):
 		"mod": return "Refit"
 		"cred": return "Credits"
@@ -633,7 +632,7 @@ func _side() -> Control:
 		var r1 = hbox(6)
 		if fs != null and fs["uid"] == s["uid"]: r1.add_child(lbl("★", 14, GILT, null, false))
 		r1.add_child(lbl(s["name"], 16, BONE, font_semi, false)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 14, BONE2, null, false)); rv.add_child(r1)
-		rv.add_child(rich(c(esc(C.HULLS[s["tpl"]]["cls"]) + " Mk " + C.roman(s["mk"]) + ", " + esc(C.rankName(s["cap"])) + " " + esc(s["cap"]["name"]), BONE3) + (" " + c("(promotion ready)", GILT) if C.jt(s["cap"].get("pending")) else ""), 13))
+		rv.add_child(rich(c(esc(C.clsName(C.HULLS[s["tpl"]]["cls"])) + " Mk " + C.roman(s["mk"]) + ", " + esc(C.rankName(s["cap"])) + " " + esc(s["cap"]["name"]), BONE3) + (" " + c("(promotion ready)", GILT) if C.jt(s["cap"].get("pending")) else ""), 13))
 		rv.add_child(_seg_bar(float(s["hp"]) / float(d["maxHp"])))
 		var ready = []
 		var hf = float(s["hp"]) / float(d["maxHp"])
@@ -659,10 +658,10 @@ func _side() -> Control:
 	v.add_child(_wr_head(term("boons", true)))
 	if R["boons"].size() > 0:
 		for b in R["boons"]: v.add_child(_boon_line(b))
-	else: v.add_child(lbl("None yet. Win at a node with a " + term("patron") + "\u2019s " + term("sigil") + " to earn one.", 14, BONE3))
+	else: v.add_child(lbl("None yet. Win at a node carrying a " + term("patron") + "\u2019s " + term("sigil") + " to earn one.", 14, BONE3))
 	var ps = []
 	for pp in R["patrons"]: ps.append(c(esc(C.PATRONS[pp]["short"]), Color(C.PATRONS[pp]["col"])))
-	v.add_child(rich(c(term("patrons", true) + " this run: ", BONE3) + ", ".join(PackedStringArray(ps)), 13))
+	v.add_child(rich(c(term("patrons", true) + " in range: ", BONE3) + ", ".join(PackedStringArray(ps)), 13))
 	v.add_child(_wr_head(term("relics", true)))
 	if R["relics"].size() > 0:
 		for r in R["relics"]: v.add_child(rich("[b]" + esc(C.relicName(r)) + "[/b]\n" + c(esc(C.RELICS[r]["d"]), BONE2), 14))
@@ -912,7 +911,7 @@ func _shipyard() -> Control:
 	var tr = flow(8)
 	for cls in C.fleetClasses():
 		var lv = int(C.classTrack(cls)); var mx = lv >= int(C.CLASS_TRACK_MAX)
-		add(tr, abtn(str(cls) + " " + "●".repeat(lv) + "○".repeat(int(C.CLASS_TRACK_MAX) - lv) + " " + ("(full)" if mx else "for " + C.numstr(C.classTrackCost(cls))), "buyTrack", cls))
+		add(tr, abtn(C.clsName(cls) + " " + "●".repeat(lv) + "○".repeat(int(C.CLASS_TRACK_MAX) - lv) + " " + ("(full)" if mx else "for " + C.numstr(C.classTrackCost(cls))), "buyTrack", cls))
 	v.add_child(tr)
 	return v
 
@@ -936,7 +935,7 @@ func _legacy() -> Control:
 	v.add_child(gothic("Progression"))
 	v.add_child(rich(c("Runs launched: " + C.numstr(st["runs"]) + ". Deepest sector reached: " + C.numstr(C.z0(st.get("best"))) + ". Runs won: " + C.numstr(st["wins"]) + ". Renown: ", BONE2) + c(C.numstr(C.z0(M.get("renown"))), GILT) + c(".", BONE2), 17))
 	var tabs = hbox(6)
-	for t in [["variants", "Hull variants"], ["mastery", "Admiral mastery"], ["favour", "Patron favour"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]: add(tabs, abtn(t[1], "progTab", t[0], C.prog_tab == t[0]))
+	for t in [["variants", "Hull variants"], ["mastery", "Admiral mastery"], ["favour", "Core sync"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]: add(tabs, abtn(t[1], "progTab", t[0], C.prog_tab == t[0]))
 	var stc = _story()
 	if stc != null:   # story layer: the Career screen (records, medals, titles, history)
 		var cb = Button.new(); cb.text = "Career"; cb.focus_mode = Control.FOCUS_ALL; cb.pressed.connect(func(): stc.open_career()); tabs.add_child(cb)
@@ -975,7 +974,7 @@ func _legacy() -> Control:
 					var cv2 = card(false, 300); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 15, GILT)); cv2[1].add_child(_mastery_bar(id)); ac.add_child(cv2[0])
 				v.add_child(ac)
 		"favour":
-			v.add_child(lbl("Every boon you take raises that patron's favour (rare boons count double, epic triple).", 17, BONE2))
+			v.add_child(lbl("Every protocol you take raises your sync with that core (rare protocols count double, epic triple).", 17, BONE2))
 			var fc = flow()
 			for i in range(1, C.FAVOUR_TIERS.size()):
 				var cv = card(false, 300); cv[1].add_child(rich("[b]" + esc(C.FAVOUR_TIERS[i]["n"]) + "[/b] " + c(C.numstr(C.FAVOUR_TIERS[i]["at"]) + "+", BONE3), 19)); cv[1].add_child(lbl(C.FAVOUR_TIERS[i].get("d", ""), 16, BONE2)); fc.add_child(cv[0])
@@ -1007,19 +1006,19 @@ func _legacy() -> Control:
 	add(v, abtn("Back to title", "title", "", true))
 	return v
 const HELP := [
-	["", "Voidsworn is a roguelite. Each run crosses three sectors, each ending in a flagship battle. Ships and captains you lose are gone for the run; every faction, admiral and ship is available from the start."],
-	["", "What carries between runs (Progression, on the title screen): renown buys hull variants for your shipyards; each admiral levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; patrons grow fond of you as you take their boons, offering rarer boons and eventually a gift at the start of a run; and after your first victory, Heat lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight."],
+	["", "Embers of the Hollow Sun is a roguelite. Each run crosses three sectors, each ending in a flagship battle. Ships and captains you lose are gone for the run; every faction, admiral and ship is available from the start."],
+	["", "What carries between runs (Progression, on the title screen): renown buys hull variants for your shipyards; each admiral levels up as you fly with them, unlocking an alternate fleet, a fourth aspect, a second Command and a veteran flag captain; cores sync with you as you take their protocols, offering rarer protocols and eventually a gift at the start of a run; and after your first victory, Heat lets you add harder rules for more renown. After each sector flagship falls, the fleet docks at a shipyard before its next fight."],
 	["Your turn", "Every ship can move, turn and fire each of its weapons once per turn, in any order. Click a ship, then click a highlighted hex to move. Moving forward costs 1 movement. Turning 60° also costs 1 movement and uses one of the ship’s turns; big ships only get one turn per round, so plan their heading early. Press Q and E to turn in place."],
 	["", "Thrusters keep you from getting boxed in. A ship can slip into either forward-diagonal hex, or back off one hex, without changing its heading (2 movement each; a slow ship can always spend its whole move on one hop). It can climb over a rock or wreck, or dive under an enemy ship, for +1 movement, but cannot stop there. Each faction bends one of these rules: see the Helm panel."],
 	["", "Ships fight on the move. Click an enemy your guns can't reach yet and the ship burns to the best spot and fires as it arrives."],
 	["", "Moving matters. A ship that did not move last turn gets hit more easily (+10 to hit). One that moved 3+ hexes is harder to hit (−5). Port and starboard guns hit 10% harder on a raking pass, after moving 2+ hexes."],
 	["Firing arcs", "Weapons only fire into their arc. Prow weapons cover the 120° in front, port and starboard broadsides each cover a wide 120° cone to the side, and turrets fire anywhere. The tinted hexes around a selected ship show where its guns reach: amber for the prow, teal for broadsides. Click an enemy to fire everything that can reach it, or press a number key to fire a single weapon."],
-	["Shields and flanking", "Each ship has four shield facings: prow, port, starboard and rear. Damage hits the facing that points at the attacker, and shields regenerate at the start of each of your turns. Rear hits halve armor and are far more likely to crit, so getting behind a battleship matters. Lances and bombers punch partly or fully through shields. Ion cannons shred shields; gauss weapons mostly ignore them."],
+	["Shields and flanking", "Each ship has four shield facings: prow, port, starboard and rear. Damage hits the facing that points at the attacker, and shields regenerate at the start of each of your turns. Rear hits halve armor and are far more likely to crit, so getting behind a battleship matters. Lances and bombers punch partly or fully through shields. Ion cannons shred shields; null weapons mostly ignore them."],
 	["Different fights", "Each fight on the sector map is labelled with its goal. Engagements and ambushes end when one fleet breaks. In Hold the station you keep enemies off a friendly station until round 6 ends. In a Hunt their flagship runs and jumps out after round 6. In an Intercept you destroy transports before they cross the field. In a Breakthrough you get half your fleet off the far edge. Missing a Hunt or Intercept still pays half; losing the station or a breakthrough means a retreat, not the end of the run. Click the chip under the top bar in battle for the rules and the coloured hexes."],
 	["", "Some fights change partway through: reinforcements for either side, or a solar flare that knocks out every shield for a round. You always get a round of warning."],
-	["Brace, abilities and Command", "Brace is the alternative to firing: a ship that hasn’t fired can brace to take 40% less hull damage until your next turn (it can still move first). To ram, point your bow at an enemy ship with at least one clear hex between you and enough movement left to cross the gap: a red lane shows when a ram is ready, and red-ringed move hexes line one up. A longer run-up hits harder; a ram can’t take more than 40% of a healthy ship’s hull without boons. Boarding an adjacent enemy can capture it for your fleet; enemy boarders can cripple your ships, but never take them. Carriers start every battle with their wings already flying; the wings fight on their own unless you order them: click a wing, then click an enemy ship to strike it or one of your ships to guard it. The carrier’s launch only replaces wings you lose. Most hulls have an ability with a cooldown, and each faction has its own. Enemy flagships carry a Command too: they announce it a round ahead, so you can brace or scatter. Once per battle, your admiral’s Command is a fleet-wide signature move. It gets stronger each round you hold it (power 1 in round 1, 2 in round 2, full power from round 3, and losing a ship charges it a level), so the choice is a smaller boost now or a bigger one later, if the fight lasts that long. The ship panel shows exactly what the next level adds."],
-	["Patrons, boons and your flagship", "Each run, four of six patrons watch your run. Battles on the map carry a patron’s sigil: win there and that patron offers three boons, and you take one. Boons change the rules (fires, chain explosions, rams that shake the whole formation) and come in Common, Rare and Epic strength. Hold boons from two patrons and a duo boon can appear. At the start of a run you also pick one of three aspects for your flagship, which shapes how it fights for the whole run. Each sector’s enemies have a set strength, so a stronger fleet feels stronger; a battered fleet meets slightly smaller ones."],
-	["Between battles", "Hull damage carries between battles. Shipyards sell hulls, refits and repairs, and can upgrade a ship’s Mark. Captains earn experience and pick a perk at each promotion. Relics are fleet-wide bonuses that last for the run."],
+	["Brace, abilities and Command", "Brace is the alternative to firing: a ship that hasn’t fired can brace to take 40% less hull damage until your next turn (it can still move first). To ram, point your bow at an enemy ship with at least one clear hex between you and enough movement left to cross the gap: a red lane shows when a ram is ready, and red-ringed move hexes line one up. A longer run-up hits harder; a ram can’t take more than 40% of a healthy ship’s hull without protocols. Boarding an adjacent enemy can capture it for your fleet; enemy boarders can cripple your ships, but never take them. Carriers start every battle with their wings already flying; the wings fight on their own unless you order them: click a wing, then click an enemy ship to strike it or one of your ships to guard it. The carrier’s launch only replaces wings you lose. Most hulls have an ability with a cooldown, and each faction has its own. Enemy flagships carry a Command too: they announce it a round ahead, so you can brace or scatter. Once per battle, your admiral’s Command is a fleet-wide signature move. It gets stronger each round you hold it (power 1 in round 1, 2 in round 2, full power from round 3, and losing a ship charges it a level), so the choice is a smaller boost now or a bigger one later, if the fight lasts that long. The ship panel shows exactly what the next level adds."],
+	["Cores, protocols and your flagship", "Each run, four of the six cores are in range. Battles on the map carry a core’s signal: win there and that core offers three protocols, and you take one. Protocols change the rules (fires, chain explosions, rams that shake the whole formation) and come in Common, Rare and Epic strength. Hold protocols from two cores and a duo protocol can appear. At the start of a run you also pick one of three aspects for your flagship, which shapes how it fights for the whole run. Each sector’s enemies have a set strength, so a stronger fleet feels stronger; a battered fleet meets slightly smaller ones."],
+	["Between battles", "Hull damage carries between battles. Shipyards sell hulls, refits and repairs, and can upgrade a ship’s Mark. Captains earn experience and pick a perk at each promotion. Salvage gives fleet-wide bonuses that last for the run."],
 	["Keys", "Tab next ship, Q/E turn, 1 to 6 arm a weapon, B brace, A toggle arcs, Esc or right-click to cancel, Enter end turn. On campaign screens: Tab and the arrow keys move between buttons, Enter presses, Esc closes a dialog, 1 to 9 pick a dialog's choices."]]
 func _help() -> Control:
 	var v = vbox(10); v.add_child(gothic("How to play"))
@@ -1113,18 +1112,18 @@ func _modal(md: Dictionary) -> void:
 		"intro", "sector":
 			var F = C.FACTIONS[d["fac"]]
 			if md["kind"] == "intro":
-				h2.call("Sector I"); v.add_child(rich("The " + C.runWord() + " crosses into contested space. Long-range auspex confirms [b]" + esc(F["n"]) + "[/b] activity along every jump route.", 17))
+				h2.call("Sector I"); v.add_child(rich("The " + C.runWord() + " crosses into contested space. Long-range scans confirm [b]" + esc(F["n"]) + "[/b] activity along every jump route.", 17))
 			else:
 				h2.call("Sector " + C.roman(R["sector"]) + ((": " + str(C.REGIONS[d["region"]]["n"])) if d.get("region") != null and C.REGIONS.has(d["region"]) else ""))
 				v.add_child(rich("With the flagship broken, the fleet jumps deeper. Fleet command expands: [b]" + c("+3 command points", GILT) + "[/b], and crews patch 40% of every hull during the transit.", 17))
-				v.add_child(rich("Auspex confirms [b]" + esc(F["n"]) + "[/b] ahead.", 17))
+				v.add_child(rich("Scanners confirm [b]" + esc(F["n"]) + "[/b] ahead.", 17))
 			if md["kind"] == "intro": p.call(F.get("blurb", ""), BONE2)
 			if md["kind"] == "sector" and d.get("adapt") != null and C.jt(R.get("nem")):
 				var na = d["adapt"]; var nf = R["nem"]["fac"]
 				v.add_child(rich(c("Intelligence: " + esc(C.nemFull()) + " has adapted to you: [b]" + esc(C.nemAdaptName(na, nf)) + "[/b] (" + esc(C.nemAdaptWhy(na, nf)) + "). " + esc(C.nemAdaptDesc(na, nf)), BLOOD), 17))
 			if d["cond"] != null: v.add_child(rich(c("Sector condition: [b]" + esc(d["cond"]["n"]) + "[/b].", GILT) + " " + c(esc(d["cond"]["d"]), BONE2), 17))
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)
-			if md["kind"] == "intro": p.call("Pick a route across the sector map. Battles marked with a patron’s sigil pay out that patron’s boons, so the route you choose shapes your build. The flagship of the sector waits at the far end.", BONE2)
+			if md["kind"] == "intro": p.call("Pick a route across the sector map. Battles carrying a core’s signal pay out that core’s protocols, so the route you choose shapes your build. The flagship of the sector waits at the far end.", BONE2)
 			_story_line(v)
 			add(v, abtn("Plot a course", "closeModal", "", true, false, acts))
 		"abandon":
@@ -1158,13 +1157,13 @@ func _modal(md: Dictionary) -> void:
 				for l in sm["lost"]: ls.append("the " + str(l["ship"]) + " and " + str(l["cap"]))
 				p.call("Lost: " + ", ".join(PackedStringArray(ls)) + ".", BLOOD)
 			if d["extra"] != "": p.call(d["extra"], GILT)
-			if (R.get("boons") as Array).size() > 0 and (sm.get("boonStats", {}) as Dictionary).is_empty(): p.call("No boon triggered this battle. Check the Fleet boons section on a ship to see what sets each one off.", BONE3)
+			if (R.get("boons") as Array).size() > 0 and (sm.get("boonStats", {}) as Dictionary).is_empty(): p.call("No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.", BONE3)
 			if d["flagMoved"] != null: p.call("The admiral transfers the flag to the " + str(d["flagMoved"]["name"]) + ". Its aspect goes with it.", GILT)
 			for x in sm["xp"]: v.add_child(rich("• " + esc(x["cap"]) + " of the " + esc(x["ship"]) + ": +" + C.numstr(x["xp"]) + " experience" + ((" " + c("promoted to " + str(C.RANKS[int(x["rank"])]), GILT)) if x["up"] else ""), 16))
 			var rw = d["rw"]
 			if _find(acts, "prizeStep", "").size() > 0: add(v, abtn("Decide on the prize ship" + ("s" if R["reward"]["prizes"].size() > 1 else ""), "prizeStep", "", true, false, acts))
-			elif _find(acts, "salvageStep", "").size() > 0: add(v, abtn("Salvage the field", "salvageStep", "", true, false, acts))
-			elif rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")): add(v, abtn(str(C.PATRONS[rw["p"]]["short"]) + " offers a boon", "rewardNext", "", true, false, acts))
+			elif _find(acts, "salvageStep", "").size() > 0: add(v, abtn("Strip the wrecks", "salvageStep", "", true, false, acts))
+			elif rw.get("k") == "boon" and C.PATRONS.has(rw.get("p")): add(v, abtn(str(C.PATRONS[rw["p"]]["short"]) + " offers a protocol", "rewardNext", "", true, false, acts))
 			elif rw.get("k") == "mod": add(v, abtn("Choose a refit", "rewardNext", "", true, false, acts))
 			else: add(v, abtn("Continue", "rewardNext", "", true, false, acts))
 		"prize":
@@ -1196,19 +1195,19 @@ func _modal(md: Dictionary) -> void:
 			p.call("You get: " + (", ".join(PackedStringArray(parts)) if parts.size() > 0 else "Nothing") + ".", BONE2)
 			add(v, abtn("Confirm", "prizeConfirm", "", true, false, acts))
 		"salvage":
-			h2.call("Salvage the field"); p.call("Your crews have time to work one wreck before the fleet moves on.", BONE2); p.call(str(C.REWARD_DEF["salvage"]), BONE3)
+			h2.call("Strip the wrecks"); p.call("Your crews have time to work one wreck before the fleet moves on.", BONE2); p.call(str(C.REWARD_DEF["salvage"]), BONE3)
 			var ws = d["wrecks"]
 			for i in range(ws.size()):
 				var w = ws[i]; var y = w["yield"]; var F = C.FACTIONS.get(w.get("fac"))
 				var pp = panel(IRON3, IRON2, 10); var pv = vbox(6); pp.add_child(pv)
-				pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.or_(w.get("cls"), "")) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 16))
+				pv.add_child(rich("[b]" + esc(w["name"]) + "[/b] " + c(esc(C.clsName(C.or_(w.get("cls"), ""))) + ((", " + esc(F["n"])) if F != null else ""), BONE3) + "\n" + c(esc(C.CAUSE_WORD.get(w.get("cause"), "destroyed")) + ((" by the " + esc(w["by"])) if C.jt(w.get("by")) else "") + ".", BONE2), 16))
 				var g = GridContainer.new(); g.columns = 3; g.add_theme_constant_override("h_separation", px(6))
 				if C.jt(y.get("mod")): add(g, choice("Strip it: " + C.modName(y["mod"]), C.MODULES[y["mod"]]["d"], "takeSalvage", str(i) + ":mod", acts))
 				add(g, choice("Scrap it", "+" + C.numstr(y["cred"]) + " credits", "takeSalvage", str(i) + ":cred", acts))
 				if C.jt(y.get("tow")): add(g, choice("Tow it home", "Joins your fleet at 35% hull", "takeSalvage", str(i) + ":tow", acts))
 				pv.add_child(g); v.add_child(pp)
 		"mod":
-			h2.call("Salvaged refits"); p.call(str(C.REWARD_DEF["refit"]), BONE3); p.call("Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.")
+			h2.call("Recovered refits"); p.call(str(C.REWARD_DEF["refit"]), BONE3); p.call("Take one. It goes in the hold; fit it at a shipyard or from the fleet screen.")
 			for m in d["opts"]: add(v, choice(C.modName(m), C.MODULES[m]["d"], "takeMod", m, acts))
 		"boon":
 			var P = C.PATRONS[d["patron"]]; var pc = Color(P["col"])
