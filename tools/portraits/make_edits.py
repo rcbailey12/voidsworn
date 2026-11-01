@@ -140,6 +140,12 @@ BG_KEEP = " The smooth dark background stays exactly as it is: plain, dark and u
 # f64 picks (Nov 1, vetoable): burn s23 (a healed burn on cheek and neck; s51 too raw), cyber s37 (fewest red vein lines), eye s23
 # (a white blind eye and one scar, like the other Crusade eye scars); published with nemesis_publish.py as the s11 files.
 F64_PICK = {'burn': 23, 'cyber': 37, 'eye': 23}
+# f64b: the same glitch, milder, on Crusade Nemesis 2 (pixel-grid background), 4 (teal and purple flecks) and 5 (green-purple
+# speckle on the hood and armour); same rerun, -> comfy_io\\PORTRAITS\\f64\\ too.
+def f64b_items():
+    return [{'id': 'nem_voidsworn_%d' % n, 'kind': k, 'seed': sd, 'src': 'ncrop8/nem_voidsworn_%d.png' % n,
+             'prompt': (SCAR[k]['human'] if isinstance(SCAR[k], dict) else SCAR[k]) + KEEP + BG_KEEP}
+            for n in (2, 4, 5) for k in KINDS['voidsworn'] for sd in (23, 37, 51)]
 def f64_items():
     return [{'id': 'nem_voidsworn_3', 'kind': k, 'seed': sd, 'src': 'ncrop8/nem_voidsworn_3.png', 'prompt': SCAR[k]['human'] + KEEP + BG_KEEP
              if isinstance(SCAR[k], dict) else SCAR[k] + KEEP + BG_KEEP} for k in KINDS['voidsworn'] for sd in (23, 37, 51)]
@@ -181,3 +187,5 @@ if __name__ == '__main__':
         print('r8s_' + tag, len(part))
     json.dump({'out': 'f64', 'budget_s': 900, 'items': f64_items()}, open(os.path.join(B, 'f64.json'), 'w'), indent=1)
     print('f64', len(f64_items()))
+    json.dump({'out': 'f64', 'budget_s': 1100, 'items': f64b_items()}, open(os.path.join(B, 'f64b.json'), 'w'), indent=1)
+    print('f64b', len(f64b_items()))
