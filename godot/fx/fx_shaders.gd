@@ -106,11 +106,15 @@ void vertex() {
 		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
 		else if (k == 12) { g = t * t; }
 		float size = mix(a3.x, a3.y, g);
+		// F3 round 2: a3.w carries the seed in its fraction and, in its whole part, an explicit on-screen floor in pixels
+		// for this one sprite (impact, muzzle and kill flashes that must read from the battle camera); 0 means the kind's
+		float sd = fract(a3.w);
+		float fpx = floor(a3.w);
 		vec3 disp = pDisp(a1.xyz, a4.z, a4.y, age);
 		vec3 lp = a0.xyz + disp;
-		if (k == 15) { lp += vec3(sin(age * 9.0 + a3.w * 20.0), cos(age * 7.0 + a3.w * 13.0), sin(age * 8.0 + a3.w * 5.0)) * size * 0.12; }
+		if (k == 15) { lp += vec3(sin(age * 9.0 + sd * 20.0), cos(age * 7.0 + sd * 13.0), sin(age * 8.0 + sd * 5.0)) * size * 0.12; }
 		vec3 c = (MODEL_MATRIX * vec4(lp, 1.0)).xyz;
-		float ang = a3.w * 6.2831853 + age * a4.w;
+		float ang = sd * 6.2831853 + age * a4.w;
 		vec4 vp = VIEW_MATRIX * vec4(c, 1.0);
 		// F3: a minimum on-screen size per kind (diameter in pixels at 1080 lines), so a frigate's muzzle flash, a bolt or a
 		// spark never shrinks below a few pixels (sub-pixel quads drop out of the raster and vanish at distance). A sprite
@@ -125,14 +129,18 @@ void vertex() {
 		else if (k == 22) { flo = 6.0; }
 		else if (k == 19 || k == 21) { flo = 4.5; }
 		else if (k == 4 || k == 11) { flo = 3.0; }
+		bool own = fpx > flo;
+		flo = max(flo, fpx);
 		float boost = 1.0;
 		if (flo > 0.0) {
 			float mn = px_world(flo, -vp.z, PROJECTION_MATRIX);
 			if (size < mn) {
 				float gf = mn / max(size, 1e-5);
 				// pops and bolts keep their brightness per pixel falling only as 1/f (their total light grows with the
-				// floor); the rest dims a little faster (f^-1.2)
+				// floor); the rest dims a little faster (f^-1.2). A sprite with its own floor (round 2: the moments that
+				// must land) dims only as f^-0.5, so a far hit is a big bright flash, not a big faint one.
 				float dimx = (k == 0 || k == 2 || k == 5 || k == 13 || k == 14 || k == 16 || k == 17) ? -1.0 : -1.2;
+				if (own) { dimx = -0.5; }
 				boost = (k == 15 || k == 23) ? 1.0 : clamp(spow(gf, dimx), 0.03, 1.0);
 				size = mn;
 			}
@@ -156,7 +164,7 @@ void vertex() {
 		POSITION = PROJECTION_MATRIX * vp;
 		vUv = VERTEX.xy * 2.0;
 		vCol = vec4(a2.rgb, a2.a * gate * boost);
-		vInfo = vec4(t, a3.z, a3.w, age);
+		vInfo = vec4(t, a3.z, sd, age);
 	}
 }
 void fragment() {
@@ -326,11 +334,16 @@ void vertex() {
 		float dv = max(-(VIEW_MATRIX * vec4(0.5 * (head + tail), 1.0)).z, 0.01);
 		float wf = (k == 0 || k == 4) ? 2.6 : (k == 5 ? 1.4 : 2.0);
 		float lf = (k == 0 || k == 4) ? 14.0 : ((k == 1 || k == 6 || k == 7) ? 4.0 : 0.0);
+		// round 2: a4.z and a4.w carry this streak's own width and length floors (pixels), for fatter tracer cores and
+		// bolder sparks; a line grown to its own floor dims only as f^-0.3
+		bool own = a4.z > wf;
+		wf = max(wf, a4.z);
+		lf = max(lf, a4.w);
 		float sw = a3.y;
 		float bw = 1.0;
 		float wmin = px_world(wf, dv, PROJECTION_MATRIX);
 		if (sw < wmin) {
-			bw = clamp(spow(wmin / max(sw, 1e-5), -0.7), 0.05, 1.0);
+			bw = clamp(spow(wmin / max(sw, 1e-5), own ? -0.3 : -0.7), 0.05, 1.0);
 			sw = wmin;
 		}
 		float lmin = px_world(lf, dv, PROJECTION_MATRIX);
@@ -417,10 +430,13 @@ void vertex() {
 		float rb = 1.0;
 		int rk = int(a3.z + 0.5);
 		if (rk >= 1 && rk <= 3) {
+			// round 2: a4.w is this ring's own final size in pixels (kill shock rings, shield ripples): the floor grows with
+			// the ring's own easing (15% to 100% of it), so a far ring still visibly expands; grown to it, it dims as f^-0.5
 			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
 			float mn = px_world(12.0, dv, PROJECTION_MATRIX);
+			if (a4.w > 12.0) { mn = max(mn, px_world(a4.w, dv, PROJECTION_MATRIX) * mix(0.15, 1.0, g)); }
 			if (size < mn) {
-				rb = clamp(spow(mn / max(size, 1e-5), -1.0), 0.05, 1.0);
+				rb = clamp(spow(mn / max(size, 1e-5), a4.w > 12.0 ? -0.5 : -1.0), 0.05, 1.0);
 				size = mn;
 			}
 		}
@@ -1366,18 +1382,94 @@ void fragment() {
 # Death pieces: an overlay on each piece of the broken hull. Front faces glow along the break (distance to the
 # boundary between this piece's seed and its nearest neighbour's); back faces seen through the open cut draw as a dark,
 # charred interior with embers, so the pieces read as solid. heat cools from 1 to 0 over the wreck's life.
+# F3 round 2 (Ryan, Nov 1 16:12: "a ship can explode and it's just empty inside so it's clearly a shell. same with the
+# holes in ships"): what an opened hull shows inside, drawn on the hull's own back faces wherever the shell is open
+# (back faces only show through an opening: everywhere else the front faces cover them). Interior mapping in the
+# hull's own frame: from the point E where the view ray enters the opening, the ray runs on to the first deck, bulkhead
+# or frame plane of a compartment grid sized to the hull, and that surface is shaded: deck grating, ceiling light
+# strips, bulkheads with frame ribs, a few compartments burning or lit red, the rest dark and sooty, darker the deeper
+# it lies. At E itself the decks and bulkheads the opening cut through show as thick torn members, glowing hot when
+# fresh. No geometry and no CPU work: a ship cut open reads as solid decks and rooms, not an empty skin.
+const INTERIOR := """
+float ih(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+vec3 hull_inside(vec3 Pe, vec3 D, float tP, vec3 cell, float heat, vec3 glow, float tm) {
+	vec3 c = max(cell, vec3(1e-3));
+	vec3 Dn = vec3(abs(D.x) < 1e-4 ? 1e-4 : D.x, abs(D.y) < 1e-4 ? 1e-4 : D.y, abs(D.z) < 1e-4 ? 1e-4 : D.z);
+	vec3 g = Pe / c;
+	vec3 nxt = (floor(g) + step(vec3(0.0), Dn)) * c;
+	vec3 tt = max((nxt - Pe) / Dn, vec3(0.0));
+	float th = min(tt.x, min(tt.y, tt.z));
+	float t = clamp(min(th, tP), 0.0, 1e4);
+	vec3 H = Pe + Dn * t;
+	vec3 room = floor((Pe + Dn * (t * 0.5 + 1e-3)) / c);
+	float id = ih(room);
+	float id2 = ih(room + 17.3);
+	// which surface: 0 the hull's inner wall (behind everything), 1 deck or ceiling, 2 bulkhead or frame wall
+	float surf = tP <= th ? 0.0 : (th == tt.y ? 1.0 : 2.0);
+	vec3 hq = H / c;
+	float pat;
+	vec3 base;
+	if (surf == 1.0) {
+		if (Dn.y < 0.0) {
+			// a deck seen from above: grating and walkway plates
+			float gr = smoothstep(0.42, 0.5, abs(fract(hq.x * 6.0) - 0.5)) + smoothstep(0.42, 0.5, abs(fract(hq.z * 6.0) - 0.5));
+			base = vec3(0.075, 0.072, 0.068) * (0.7 + 0.4 * gr);
+			pat = gr;
+		} else {
+			// a ceiling: dark, with conduits and a light strip down each room
+			float strip = exp(-spow((fract(hq.z) - 0.5) / 0.05, 2.0));
+			base = vec3(0.035, 0.034, 0.033) + vec3(0.9, 0.85, 0.7) * strip * step(0.55, id2) * 0.35;
+			pat = strip;
+		}
+	} else {
+		// bulkheads and the hull's inner wall: plating with frame ribs and stiffeners
+		float rib = smoothstep(0.38, 0.5, abs(fract((th == tt.x ? hq.z : hq.x) * 4.0) - 0.5));
+		float rail = smoothstep(0.44, 0.5, abs(fract(hq.y * 3.0) - 0.5));
+		base = vec3(0.058, 0.056, 0.054) * (0.75 + 0.5 * max(rib, rail));
+		pat = rib;
+	}
+	float soot = smoothstep(0.35, 0.75, vnoise(H.xz / c.xz * 1.7 + H.y / c.y * 0.9 + id * 9.0));
+	base *= mix(1.0, 0.35, soot);
+	// the room's own light: some burn, some show red emergency light, most are dark
+	float depth = exp(-t / max(c.x * 1.6, 1e-3));
+	float fl = flick(0.65 + 0.35 * vnoise(vec2(tm * 7.0, id * 31.0)), tm, id);
+	vec3 lit = vec3(0.0);
+	if (id < 0.3) {
+		float fire = smoothstep(0.0, 0.8, 1.0 - fract(hq.y + 0.001)) * (0.6 + 0.6 * vnoise(H.xz / c.xz * 3.0 + vec2(0.0, -tm * 1.5)));
+		lit = glow * (0.5 + 1.6 * fire) * fl * max(heat, 0.45);
+	} else if (id < 0.45) {
+		lit = vec3(0.55, 0.05, 0.03) * (0.45 + 0.25 * sin(tm * 2.5 + id * 20.0));
+	} else {
+		lit = vec3(0.12, 0.13, 0.15) * 0.25;
+	}
+	vec3 col = base * (0.35 + 2.4 * lit) + lit * 0.12 * (1.0 - soot * 0.6);
+	col *= 0.25 + 0.75 * depth;
+	// the structure the opening cut through: deck plates and bulkheads end at Pe as thick torn members
+	vec3 fr = abs(fract(g + 0.5) - 0.5) * c;
+	float mem = min(fr.y / (c.y * 0.08), min(fr.x / (c.x * 0.05), fr.z / (c.z * 0.05)));
+	float edge = 1.0 - smoothstep(0.7, 1.0, mem);
+	float torn = vnoise(Pe.xz / c.xz * 9.0 + Pe.y / c.y * 5.0);
+	// members: dark torn metal; only stretches of them still glow, cooling faster than the cut's rim
+	vec3 member = vec3(0.075, 0.072, 0.068) * (0.6 + 0.6 * torn) + glow * spow(heat, 2.5) * 2.6 * smoothstep(0.5, 0.75, torn) * smoothstep(0.3, 1.0, 1.0 - mem);
+	col = mix(col, member, edge);
+	return col;
+}
+"""
+
 const CHUNK := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-""" + COMMON + """
+""" + COMMON + INTERIOR + """
 uniform vec4 seeds[8];
 uniform int n_seeds = 2;
 uniform int me = 0;
 uniform float heat = 1.0;
 uniform float width = 0.4;
 uniform vec3 glow = vec3(1.0, 0.45, 0.1);
+uniform vec3 cell = vec3(0.6, 0.4, 0.5);
 varying vec3 vL;
-void vertex() { vL = VERTEX; }
+varying vec3 vW;
+void vertex() { vL = VERTEX; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 void fragment() {
 	vec3 s1 = seeds[me].xyz;
 	float best = 1e9;
@@ -1393,12 +1485,34 @@ void fragment() {
 	float x = best / width;
 	float fl = flick(0.55 + 0.9 * vnoise(vec2(dot(vL, vec3(3.1, 1.7, 2.3)), scene_t * 3.0)), scene_t, 1.0);
 	if (!FRONT_FACING) {
+		// round 2: the piece's inside through its cut face: where the view ray enters this piece's cell (the cut planes
+		// are the bisectors between its seed and the others'), decks and rooms behind it (INTERIOR above)
+		vec3 Dw = vW - CAMERA_POSITION_WORLD;
+		float dw = max(length(Dw), 1e-4);
+		float sc = max(length(MODEL_MATRIX[0].xyz), 1e-5);
+		vec3 D = snorm(transpose(mat3(MODEL_MATRIX)) * (Dw / dw));
+		float dist = dw / sc;
+		vec3 C = vL - D * dist;
+		float tE = -1.0;
+		for (int i = 0; i < 8; i++) {
+			if (i >= n_seeds || i == me) { continue; }
+			vec3 dv = seeds[i].xyz - s1;
+			float l = length(dv);
+			if (l < 1e-4) { continue; }
+			vec3 nn = dv / l;
+			float den = dot(D, nn);
+			if (den < -1e-4) {
+				tE = max(tE, dot(0.5 * (s1 + seeds[i].xyz) - C, nn) / den);
+			}
+		}
+		float near = min(cell.x, min(cell.y, cell.z)) * 0.6;
+		if (tE <= 0.0 || tE > dist) { tE = max(dist - near, 0.0); }
+		vec3 Pe = C + D * tE;
+		vec3 ins = hull_inside(Pe, D, dist - tE, cell, heat, glow, scene_t);
+		// embers along the break on the inner skin too
 		float n = fbm(vL.xy * 1.3 + vL.zx * 0.9);
-		// embers only near the break: elsewhere a back face is just the hull's dark inside (r2: glowing specks round the
-		// silhouette, where back faces show past the front at grazing angles)
-		float near_cut = exp(-x * 1.2);
-		float emb = smoothstep(0.62, 0.8, n) * heat * near_cut;
-		ALBEDO = vec3(0.012, 0.010, 0.009) * (0.6 + n) + (glow * emb * 1.6 * fl + glow * exp(-x * 3.0) * heat * 1.0) * fx_gain;
+		float emb = smoothstep(0.62, 0.8, n) * heat * exp(-x * 1.2);
+		ALBEDO = clamp((ins + glow * emb * 1.2 * fl + glow * exp(-x * 3.0) * heat * 0.6) * fx_gain, 0.0, 64.0);
 		ALPHA = 1.0;
 	} else {
 		if (x > 3.0 || heat <= 0.01) { discard; }
@@ -1407,6 +1521,49 @@ void fragment() {
 		ALBEDO = clamp(c * 3.0 * heat * fl * fx_gain, 0.0, 64.0);
 		ALPHA = clamp(g * (0.4 + 0.6 * heat), 0.0, 1.0);
 	}
+}
+"""
+
+# The live hull's inside through its holes (round 2): an overlay on a damaged hull's meshes that draws only back faces
+# (cull_front), so it shows only where a breach, slot or gauss hole opened the shell (and on any AI gap). The view ray
+# enters at the nearest hole's plane (up to 8 holes, in the mesh's own frame, set by fx_breach.apply); the rest as INTERIOR.
+const HULLIN := """
+shader_type spatial;
+render_mode unshaded, cull_front, depth_draw_opaque, shadows_disabled, fog_disabled;
+""" + COMMON + INTERIOR + """
+uniform vec4 holes[8];
+uniform vec4 hnrm[8];
+uniform int n_holes = 0;
+uniform vec3 cell = vec3(0.6, 0.4, 0.5);
+uniform vec3 glow = vec3(1.0, 0.45, 0.12);
+uniform float heat = 0.5;
+varying vec3 vL;
+varying vec3 vW;
+void vertex() { vL = VERTEX; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	vec3 Dw = vW - CAMERA_POSITION_WORLD;
+	float dw = max(length(Dw), 1e-4);
+	float sc = max(length(MODEL_MATRIX[0].xyz), 1e-5);
+	vec3 D = snorm(transpose(mat3(MODEL_MATRIX)) * (Dw / dw));
+	float dist = dw / sc;
+	vec3 C = vL - D * dist;
+	float near = min(cell.x, min(cell.y, cell.z)) * 0.6;
+	float tE = max(dist - near, 0.0);
+	float best = 1e9;
+	for (int i = 0; i < 8; i++) {
+		if (i >= n_holes) { break; }
+		vec3 hc = holes[i].xyz;
+		vec3 hn = snorm(hnrm[i].xyz);
+		float den = dot(D, hn);
+		if (den > -0.02) { continue; }
+		float t = dot(hc - C, hn) / den;
+		if (t <= 0.0 || t > dist) { continue; }
+		float q = length(C + D * t - hc) / max(holes[i].w, 1e-3);
+		if (q < 2.2 && q < best) { best = q; tE = t; }
+	}
+	vec3 Pe = C + D * tE;
+	vec3 ins = hull_inside(Pe, D, dist - tE, cell, heat, glow, scene_t);
+	ALBEDO = clamp(ins * fx_gain, 0.0, 64.0);
 }
 """
 

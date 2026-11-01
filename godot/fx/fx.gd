@@ -291,29 +291,40 @@ func _p(a0: Vector4, a1: Vector4, a2: Vector4, a3: Vector4, a4: Vector4) -> Pack
 const SMOKY := {3: true, 7: true, 8: true, 15: true, 20: true, 23: true}
 
 
+# `px` (F3 round 2): this sprite's own minimum size on screen, in pixels on a 1080-line screen (0: the kind's floor).
+# Used for the moments that must read from the battle camera: impact, muzzle, shield and kill flashes.
 func spr(p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int, vel := Vector3.ZERO,
-		drag := 0.0, spin := 0.0, acc := 0.0) -> void:
+		drag := 0.0, spin := 0.0, acc := 0.0, px := 0.0) -> void:
 	# every bright, short, flash-like sprite goes through the flash budget here, whoever calls it (muzzle cores, beam
 	# contact, secondary pops, death flames): refused or in reduce-flashing mode it becomes a soft lift with no peak
-	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or (_flash_sized(p, maxf(s0, s1)) and not flash_ok(t))):
+	if i >= FLASH_I and life <= 0.6 and FLASH_KINDS.has(kind) and (reduce_flashing or (_flash_sized(p, maxf(s0, s1), px) and not flash_ok(t))):
 		kind = 18
 		i = minf(i, 3.0) * 0.4
 		life = maxf(life * 3.0, 0.4)
 	var pool: POOLS.Pool = pools["smk"] if SMOKY.has(kind) else pools["spr"]
 	pool.emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life), Vector4(col.r, col.g, col.b, i),
-		Vector4(s0 * unit, s1 * unit, kind, rng.randf()), Vector4(0.0, acc, drag, spin)))
+		Vector4(s0 * unit, s1 * unit, kind, minf(rng.randf(), 0.999) + floorf(clampf(px, 0.0, 4000.0))), Vector4(0.0, acc, drag, spin)))
 
 
+# A sprite with its own pixel floor (the same as spr with px; shorter to call).
+func sprx(px: float, p: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int,
+		vel := Vector3.ZERO, drag := 0.0) -> void:
+	spr(p, t, life, col, i, s0, s1, kind, vel, drag, 0.0, 0.0, px)
+
+
+# `wpx`, `lpx` (F3 round 2): this streak's own minimum width and length on screen (pixels at 1080 lines; 0: the kind's).
 func stk(p: Vector3, t: float, life: float, col: Color, i: float, length: float, w: float, kind: int, vel: Vector3,
-		drag := 0.0, acc := 0.0) -> void:
+		drag := 0.0, acc := 0.0, wpx := 0.0, lpx := 0.0) -> void:
 	(pools["stk"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(vel.x, vel.y, vel.z, life),
-		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, 0.0, 0.0)))
+		Vector4(col.r, col.g, col.b, i), Vector4(length, w * unit, drag, kind), Vector4(0.0, acc, wpx, lpx)))
 
 
+# `px` (F3 round 2): the ring's own final size on screen in pixels (shock rings and ripples, kinds 1 to 3); the floor
+# grows with the ring, so a far ring still expands.
 func ring(p: Vector3, n: Vector3, t: float, life: float, col: Color, i: float, s0: float, s1: float, kind: int,
-		speed := 0.0, drag := 0.0) -> void:
+		speed := 0.0, drag := 0.0, px := 0.0) -> void:
 	(pools["rng"] as POOLS.Pool).emit(POOLS.pack(Vector4(p.x, p.y, p.z, t), Vector4(n.x, n.y, n.z, life),
-		Vector4(col.r, col.g, col.b, i), Vector4(s0 * unit, s1 * unit, kind, rng.randf()), Vector4(0.0, speed, drag, 0.0)))
+		Vector4(col.r, col.g, col.b, i), Vector4(s0 * unit, s1 * unit, kind, rng.randf()), Vector4(0.0, speed, drag, px)))
 
 
 func rib(p: Vector3, dir: Vector3, length: float, t: float, life: float, col: Color, i: float, w0: float, w1: float, kind: int) -> void:
@@ -396,12 +407,16 @@ func flash_ok(T: float) -> bool:
 
 
 # A bright pop (impact flash, explosion core) through the budget: the full flash, or a ring and a gentle lift.
-func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.UP, life := 0.14) -> void:
-	if flash_ok(T):
-		spr(p, T, life, col, i, size * 0.6, size, 0)
+# F3 round 2: a pop smaller on screen than the WCAG area threshold (6% of the screen height, `_flash_sized`, the same
+# rule spr uses) is not a counted flash and never waits on the budget; before, every pop booked a flash, so in a busy
+# fight most hits (and a dying ship's cook-off) used up the 3 a second and drew as faint lifts, and the kill's own blast
+# was refused. `px` is the pop's own pixel floor (see spr).
+func pop(p: Vector3, T: float, col: Color, size: float, i: float, n := Vector3.UP, life := 0.14, px := 0.0) -> void:
+	if not reduce_flashing and (not _flash_sized(p, size, px) or flash_ok(T)):
+		spr(p, T, life, col, i, size * 0.6, size, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 	else:
-		spr(p, T, maxf(life * 3.0, 0.4), col, minf(i, 3.0) * 0.4, size * 0.5, size * 1.2, 18)
-		ring(p, n, T, 0.5, col, 1.2, size * 0.3, size * 1.4, 2)
+		spr(p, T, maxf(life * 3.0, 0.4), col, minf(i, 3.0) * 0.4, size * 0.5, size * 1.2, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
+		ring(p, n, T, 0.5, col, 1.2, size * 0.3, size * 1.4, 2, 0.0, 0.0, px)
 
 
 # ---------------------------------------------------------------- lights
@@ -425,12 +440,14 @@ func light(p: Vector3, t: float, life: float, peak: float, col: Color, shape := 
 
 # Whether a sprite of this size at p is big enough on screen to count as a flash (WCAG counts flashes by area; small
 # muzzle flashes and sparks at battle zoom are below it). With no camera every bright sprite counts.
-func _flash_sized(p: Vector3, size: float) -> bool:
+func _flash_sized(p: Vector3, size: float, px := 0.0) -> bool:
 	if camera == null or not is_instance_valid(camera):
 		return true
 	var d := maxf(camera.global_position.distance_to(p), 0.01)
 	var h := 2.0 * d * tan(deg_to_rad(camera.fov) * 0.5)
-	return size * unit / h >= FLASH_SCREEN
+	# the shaders' pixel floors grow a sprite on screen: count the size it is drawn at (round 2)
+	var shown := maxf(size * unit / h, maxf(px, 14.0) * min_px / 1080.0)
+	return shown >= FLASH_SCREEN
 
 
 func light_source(node: Node3D, off: Vector3, col: Color, base: float, flick := 0.3) -> Dictionary:
@@ -825,7 +842,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		tmp.add_child(hmi)
 	# overlays (death pieces and cracks) over a plain lit material, and a debris body
 	var base = StandardMaterial3D.new()
-	for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1)]:
+	for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1), mat(SH.HULLIN, 1)]:
 		var mi = MeshInstance3D.new()
 		mi.mesh = box
 		mi.material_override = base
@@ -842,7 +859,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			if smi == null or smi.mesh == null or seen.has(smi.mesh.get_instance_id()):
 				continue
 			seen[smi.mesh.get_instance_id()] = true
-			for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1)]:
+			for ov in [mat(SH.CHUNK, 1), mat(SH.CRACKS, 1), mat(SH.HULLIN, 1)]:
 				var wm := MeshInstance3D.new()
 				wm.mesh = smi.mesh
 				for si in smi.mesh.get_surface_count():

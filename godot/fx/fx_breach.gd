@@ -1570,6 +1570,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var ents: Array = job["ents"]
 	var ends_by: Array = res.get("ends", [])
 	var glow: Color = s.fac.get("damage_glow", Color(1.0, 0.45, 0.12))
+	_inside_overlay(fx, s, by_mi.keys(), ents, glow)
 	var b := POOLS.Batch.new()
 	var bs := POOLS.Batch.new()
 	var r := RandomNumberGenerator.new()
@@ -1613,6 +1614,49 @@ static func apply(fx, s, job: Dictionary) -> void:
 	s._hole_nodes.append(hb)
 	b.build(fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else ""), hb, "fx_breach_sprites")
 	bs.build(fx.mat(SH.STREAK, 1), hb, "fx_breach_sparks")
+
+
+# F3 round 2 (Ryan, Nov 1: holes showed the hull's empty inside): every damaged hull mesh gets the HULLIN overlay
+# (fx_shaders.gd), which draws the hull's back faces as decks and rooms seen through the openings; up to 8 openings
+# (holes and burn-through slots, biggest first) in each mesh's own frame tell it where the view enters. A hull with no
+# opening keeps no overlay (it costs a second pass over the mesh's vertices).
+static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void:
+	var open: Array = []
+	for E in ents:
+		var e: Ent = E
+		if e.kind == K_HOLE or (e.kind == K_SLOT and e.through):
+			open.append(e)
+	open.sort_custom(func(a: Ent, b: Ent) -> bool: return maxf(a.R, a.hl) > maxf(b.R, b.hl))
+	for m in mis:
+		if not is_instance_valid(m):
+			continue
+		var mi: MeshInstance3D = m
+		if open.is_empty():
+			if mi.material_overlay != null and mi.has_meta("fx_inside"):
+				mi.material_overlay = null
+			continue
+		var inv: Transform3D = mi.global_transform.affine_inverse() * s._dmg_root.global_transform
+		var sc: float = inv.basis.get_scale().x
+		var hs: Array = []
+		var hn: Array = []
+		for i in mini(open.size(), 8):
+			var e: Ent = open[i]
+			var c: Vector3 = inv * e.c
+			var n: Vector3 = (inv.basis * e.n).normalized()
+			hs.append(Vector4(c.x, c.y, c.z, maxf(e.R, e.hl) * sc))
+			hn.append(Vector4(n.x, n.y, n.z, 0.0))
+		while hs.size() < 8:
+			hs.append(Vector4.ZERO)
+			hn.append(Vector4(0, 1, 0, 0))
+		var om: ShaderMaterial = mi.get_meta("fx_inside") if mi.has_meta("fx_inside") else fx.mat(SH.HULLIN, 1)
+		var L: float = s.hull.L * sc
+		om.set_shader_parameter("holes", hs)
+		om.set_shader_parameter("hnrm", hn)
+		om.set_shader_parameter("n_holes", mini(open.size(), 8))
+		om.set_shader_parameter("cell", Vector3(L * 0.07, L * 0.045, L * 0.06))
+		om.set_shader_parameter("glow", Vector3(glow.r, glow.g, glow.b))
+		mi.set_meta("fx_inside", om)
+		mi.material_overlay = om
 
 
 static func _restore_overrides(mi: MeshInstance3D, orig: Array, ks: Array) -> void:

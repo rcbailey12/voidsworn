@@ -664,8 +664,8 @@ static func _cook_burst(fx, s, lp: Vector3, ln: Vector3, k: float, tint: Color, 
 	var wp: Vector3 = s.to_world(lp)
 	var wn: Vector3 = s.dir_world(ln)
 	var sz: float = s.hull.L * 0.08
-	fx.pop(wp + wn * 0.3, T, tint.lerp(Color.WHITE, 0.3), sz * 2.0, 8.0, wn, 0.14)
-	fx.spr(wp + wn * 0.4, T, 0.45, tint, 5.0, sz * 0.4, sz * 1.6, 2)
+	fx.pop(wp + wn * 0.3, T, tint.lerp(Color.WHITE, 0.3), sz * 2.0, 8.0, wn, 0.16, 30.0)
+	fx.spr(wp + wn * 0.4, T, 0.5, tint, 5.0, sz * 0.4, sz * 1.6, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 20.0)
 	for i in 4:
 		fx.spr(wp + fx.rdir() * sz * 0.3, T + fx.rng.randf() * 0.06, 0.6 + fx.rng.randf() * 0.4, tint, 2.6, sz * 0.5, sz * 1.4, 1, fx.rcone(wn, 0.7) * 2.5 * k)
 	for i in 16:
@@ -686,8 +686,8 @@ static func _craft_death(fx, s, T: float) -> void:
 	var p: Vector3 = s.to_world(s.hull.c)
 	var c: Color = s.fac["engine"]
 	var sz: float = maxf(s.hull.L, 1.0)
-	fx.pop(p, T, Color(1, 0.75, 0.45), sz * 2.0, 6.0)
-	fx.spr(p, T, 0.5, Color(1, 0.6, 0.3), 4.0, sz * 0.5, sz * 1.8, 2)
+	fx.pop(p, T, Color(1, 0.75, 0.45), sz * 2.0, 6.0, Vector3.UP, 0.16, 26.0)
+	fx.spr(p, T, 0.5, Color(1, 0.6, 0.3), 4.0, sz * 0.5, sz * 1.8, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 18.0)
 	for i in 6:
 		fx.stk(p, T + fx.rng.randf() * 0.04, 0.3 + fx.rng.randf() * 0.3, Color(1, 0.6, 0.25), 6.0, 0.05, 0.1, 1, fx.rdir() * (6 + fx.rng.randf() * 10), 2.0)
 	fx.spr(p, T + 0.1, 1.2, Color(0.12, 0.11, 0.1), 0.45, sz * 0.6, sz * 2.0, 3, Vector3.ZERO, 0.5)
@@ -743,28 +743,41 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	# the final blast (bigger for heavy ships and torpedo or ram kills; quiet for burn-outs)
 	var big = 1.0 + (0.6 if cause == "big" else 0.0) - (0.6 if cause == "dark" else 0.0) + (0.4 if s.flagship else 0.0)
 	var R: float = h.L * 0.35 * big
+	# F3 round 2: a kill is the biggest moment on screen, whatever the ship's size: every part of the blast has its own
+	# size on screen by weight (frigate to capital), so a frigate's death is a clear pop from the battle camera and a
+	# capital's fills a good part of it. The core flash is a counted flash (the budget keeps it to 3 a second; the
+	# cook-off pops before it no longer use the budget up at battle zoom, so the blast itself is not refused).
+	var kp: float = [40.0, 90.0, 120.0, 150.0, 190.0][w] * (1.0 + 0.25 * (big - 1.0))
 	if fx.flash_ok(T):
-		fx.spr(center, T, 0.3, Color(1, 0.9, 0.75), 18.0 * big, R * 0.8, R * 2.4, 0)
+		fx.spr(center, T, 0.4, Color(1, 0.9, 0.75), 18.0 * big, R * 0.8, R * 2.4, 0, Vector3.ZERO, 0.0, 0.0, 0.0, kp)
 	else:
-		fx.spr(center, T, 0.9, Color(1, 0.8, 0.6), 3.0, R * 0.6, R * 2.0, 18)
-	fx.spr(center, T, 0.6, tint.lerp(Color(1, 0.8, 0.55), 0.5), 8.0 * big, R * 0.3, R * 0.9, 2)
-	fx.ring(center, s.dir_world(Vector3(0.12, 1, 0.08)), T, 1.0, Color(0.45, 0.6, 1.0), 0.8 * big, R * 0.1, R * 4.5, 1)
+		fx.spr(center, T, 0.9, Color(1, 0.8, 0.6), 3.0, R * 0.6, R * 2.0, 18, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.8)
+	fx.spr(center, T, 0.9, tint.lerp(Color(1, 0.8, 0.55), 0.5), 8.0 * big, R * 0.3, R * 0.9, 2, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.55)
+	# the shock ring: a bright front of hot gas racing out to several times the ship's size on screen, then a second,
+	# slower one at an angle
+	fx.ring(center, s.dir_world(Vector3(0.12, 1, 0.08)), T, 1.25, Color(0.55, 0.7, 1.0), 1.7 * big, R * 0.1, R * 4.5, 1, 0.0, 0.0, kp * 3.0)
+	fx.ring(center, s.dir_world(Vector3(0.6, 0.5, -0.4)), T + 0.06, 1.0, Color(1.0, 0.6, 0.3), 1.0 * big, R * 0.1, R * 2.6, 1, 0.0, 0.0, kp * 1.9)
 	if w >= 2:
-		fx.ring(center, s.dir_world(Vector3(0.6, 0.5, -0.4)), T + 0.05, 0.8, Color(1.0, 0.6, 0.3), 0.45 * big, R * 0.1, R * 2.2, 1)
 		fx.dst(center, T, 0.9, R * 0.3, R * 4.0, 0, 1.0 * big)
 	fireball(fx, center, R * 2.2, T, 4.0 + w * 0.5, tint)
 	# a rolling fireball of flame sprites too (reads at any zoom, and on high quality without volumes)
 	for i in 10 + w * 3:
-		fx.spr(center + fx.rdir() * R * 0.35, T + fx.rng.randf() * 0.25, 1.4 + fx.rng.randf() * 0.8, tint, 3.0, R * 0.4, R * 1.2, 1, fx.rdir() * (2.0 + fx.rng.randf() * 4.0) * k, 0.5)
+		fx.spr(center + fx.rdir() * R * 0.35, T + fx.rng.randf() * 0.25, 1.4 + fx.rng.randf() * 0.8, tint, 3.0, R * 0.4, R * 1.2, 1, fx.rdir() * (2.0 + fx.rng.randf() * 4.0) * k, 0.5, 0.0, 0.0, kp * 0.3)
+	# burning pieces thrown clear: flaming chunks (a flame with its own size on screen) trailing fire and sparks
+	for i in 6 + w * 2:
+		var bv: Vector3 = fx.rdir() * (8.0 + fx.rng.randf() * 14.0) * maxf(k, 0.6)
+		var bl: float = 1.6 + fx.rng.randf() * 1.4
+		fx.spr(center, T + fx.rng.randf() * 0.08, bl, tint, 3.2, R * 0.2, R * 0.12, 1, bv, 0.35, 0.0, 0.0, 9.0 + w * 2.0)
+		fx.stk(center, T, bl * 0.8, Color(1, 0.55, 0.2), 3.5, 0.12, 0.12, 1, bv, 0.35, 0.0, 3.0, 16.0)
 	if fx.quality != "max":
 		for i in 10:
 			fx.spr(center + fx.rdir() * R * 0.3, T + 0.2 + fx.rng.randf() * 0.4, 3.0 + fx.rng.randf(), Color(0.07, 0.065, 0.06), 0.75, R * 0.4, R * 1.4, 3, fx.rdir() * 2.0 * k, 0.35)
 	for i in int(14 * big) + w * 3:
 		fx.spr(center + fx.rdir() * R * 0.25, T + fx.rng.randf() * 0.15, 1.3 + fx.rng.randf(), tint, 2.4, R * 0.25, R * 0.7, 1, fx.rdir() * (3 + fx.rng.randf() * 5) * k, 0.6, (fx.rng.randf() - 0.5) * 1.5)
 	for i in int(60 * big) + w * 20:
-		fx.stk(center + fx.rdir() * R * 0.15, T + fx.rng.randf() * 0.2, 1.0 + fx.rng.randf() * 2.0, Color(1, 0.55 + fx.rng.randf() * 0.15, 0.22), 6.0, 0.05, 0.16, 1, fx.rdir() * (15 + fx.rng.randf() * 35) * k, 0.5)
+		fx.stk(center + fx.rdir() * R * 0.15, T + fx.rng.randf() * 0.2, 1.0 + fx.rng.randf() * 2.0, Color(1, 0.55 + fx.rng.randf() * 0.15, 0.22), 6.0, 0.05, 0.16, 1, fx.rdir() * (15 + fx.rng.randf() * 35) * maxf(k, 0.7), 0.5, 0.0, 2.6, 10.0)
 	for i in 30 + w * 10:
-		fx.spr(center + fx.rdir() * R * 0.3, T + fx.rng.randf() * 0.3, 2.0 + fx.rng.randf() * 2.0, Color(1, 0.5, 0.15), 2.0, 0.3 * k, 0.1 * k, 19, fx.rdir() * (4 + fx.rng.randf() * 10) * k, 0.3)
+		fx.spr(center + fx.rdir() * R * 0.3, T + fx.rng.randf() * 0.3, 2.0 + fx.rng.randf() * 2.0, Color(1, 0.5, 0.15), 2.0, 0.3 * k, 0.1 * k, 19, fx.rdir() * (4 + fx.rng.randf() * 10) * maxf(k, 0.7), 0.3, 0.0, 0.0, 6.0)
 	for i in 20 + w * 8:
 		fx.shd(center + fx.rdir() * R * 0.2, T + fx.rng.randf() * 0.1, 6.0, fx.rdir() * (4 + fx.rng.randf() * 14) * k, h.L * (0.01 + fx.rng.randf() * 0.03), 1.0, 3.0, 0.15)
 	spawn_debris(fx, center, Vector3.ZERO, 6 + w * 6, h.L * 0.03)
@@ -773,7 +786,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	# F3: the kill lands: a slow glow where the ship was (below the flash budget's brightness) that marks the spot from
 	# any zoom for a couple of seconds, and a zoom punch by weight
 	# (k1: R * 3 washed a beige haze over a capital's wreck pieces; R * 1.8 marks the spot and leaves the wreck clear)
-	fx.spr(center, T + 0.15, 2.4 + w * 0.3, tint.lerp(Color(1, 0.8, 0.55), 0.3), 2.2, R * 0.6, R * 1.8, 18)
+	fx.spr(center, T + 0.15, 3.2 + w * 0.4, tint.lerp(Color(1, 0.8, 0.55), 0.3), 2.6, R * 0.6, R * 1.8, 18, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.9)
 	fx.punch(T, [0.0, 0.01, 0.016, 0.024, 0.034][w] * big, center)
 	fx.shake(T, [0.2, 0.3, 0.45, 0.7, 0.9][w] * big, center)
 	fx.hit_pause(T, [0, 2, 4, 8, 10][w])
@@ -834,6 +847,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		cm.set_shader_parameter("n_seeds", seeds.size())
 		cm.set_shader_parameter("me", i)
 		cm.set_shader_parameter("width", h.L * 0.02)
+		cm.set_shader_parameter("cell", Vector3(h.L * 0.07, h.L * 0.045, h.L * 0.06))
 		cm.set_shader_parameter("glow", Vector3(tint.r, tint.g, tint.b))
 		mi.material_overlay = cm
 		wreck["mats"].append(cm)
@@ -853,6 +867,33 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		_wreck_fx(fx, wreck, node, pc, cen, h.L, k, is_main, tint)
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
+	# round 2: secondary explosions on the pieces as they drift apart (fuel and magazines cooking off), the smaller
+	# pieces first
+	var nodes: Array = wreck["nodes"]
+	var ns: int = mini(nodes.size(), 2 + w)
+	for i in ns:
+		var nd: Node3D = nodes[nodes.size() - 1 - i]
+		var ts: float = T + 0.45 + i * (0.35 + fx.rng.randf() * 0.35)
+		fx.later(ts, func() -> void: _secondary(fx, nd, h.L, maxf(k, 0.65), tint, w))
+
+
+# A secondary blast on a drifting wreck piece (round 2).
+static func _secondary(fx, nd: Node3D, L: float, k: float, tint: Color, w: int) -> void:
+	if not is_instance_valid(nd) or not nd.is_inside_tree():
+		return
+	var T: float = fx.now
+	var p: Vector3 = nd.global_position + fx.rdir() * L * 0.04
+	var sz: float = L * 0.1
+	fx.pop(p, T, tint.lerp(Color.WHITE, 0.35), sz * 1.6, 7.0, Vector3.UP, 0.16, 26.0 + w * 4.0)
+	fx.spr(p, T, 0.7, tint, 4.0, sz * 0.4, sz * 1.4, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 18.0 + w * 3.0)
+	for i in 5:
+		fx.spr(p + fx.rdir() * sz * 0.3, T + fx.rng.randf() * 0.1, 0.9 + fx.rng.randf() * 0.6, tint, 2.6, sz * 0.4, sz * 1.2, 1, fx.rdir() * 3.0 * k, 0.6, 0.0, 0.0, 10.0)
+	for i in 14:
+		fx.stk(p, T + fx.rng.randf() * 0.05, 0.4 + fx.rng.randf() * 0.5, Color(1, 0.6, 0.25), 6.0, 0.05, 0.12, 1, fx.rdir() * (10 + fx.rng.randf() * 18) * k, 1.6, 0.0, 2.4, 9.0)
+	fx.spr(p, T + 0.1, 2.2, Color(0.1, 0.09, 0.085), 0.5, sz * 0.6, sz * 2.4, 3, Vector3.ZERO, 0.6)
+	fx.light(p, T, 0.4, 7.5, tint, 0)
+	fx.shake(T, 0.06 + 0.03 * w, p)
+	spawn_debris(fx, p, fx.rdir() * 3.0 * k, 2, L * 0.015)
 
 
 # Fires, smoke, embers and sparks riding a wreck piece, near its broken edge.
@@ -883,6 +924,11 @@ static func _wreck_fx(fx, wreck: Dictionary, node: Node3D, pc: Dictionary, cen: 
 		for kk in 6:
 			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.7 + r.randf()), Vector4((r.randf() - 0.5) * 3.0, (r.randf() - 0.5) * 3.0, (r.randf() - 0.5) * 3.0, 2.0),
 				Vector4(1, 0.5, 0.15, 1.8), Vector4(0.25 * k, 0.08 * k, 19, r.randf()), Vector4(4.2, 0, 0.4, 0)))
+		# round 2: atmosphere venting from the torn edge, a pale jet that keeps coming for the wreck's life (gated down)
+		for kk in 5:
+			var vv = (n * (4.0 + r.randf() * 3.0) + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 1.5) * k
+			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.24), Vector4(vv.x, vv.y, vv.z, 1.1), Vector4(0.62, 0.66, 0.74, 0.3),
+				Vector4(s * 0.3, s * 2.2, 7, r.randf()), Vector4(1.2, 0, 1.2, 0)))
 		var per = 2.5 + r.randf() * 2.0
 		for kk in 10:
 			var v = (n + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (5 + r.randf() * 9) * k
