@@ -155,6 +155,8 @@ var ghost_for := ""
 var ending := false           # the game is ending a ship that has nothing left to do
 var arrived := {}             # reinforcements: id -> round they arrived (NEW in the fleet list, a pulse on the board)
 var plog = PlayLog.new()
+var tail_round := -1          # the round whose enemy tail (every one of your ships done) got its "Enemy turn" banner
+var chime_round := -1         # the round whose first hand-over played the "your turn" cue
 
 
 func _ready() -> void:
@@ -457,6 +459,8 @@ func _begin(a) -> void:
 	up_idx = -1
 	ending = false
 	arrived.clear()
+	tail_round = -1
+	chime_round = -1
 	plog = PlayLog.new()
 	_ghost_clear()
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
@@ -973,6 +977,10 @@ func _play_batch(bt: Dictionary) -> void:
 				arrivals.append(u)
 	speed = user_speed
 	var t_batch := game_t
+	if enemy and not bot and not showcase and _player_pending() == 0 and tail_round != int(V.get("round", 0)):
+		# F1: every one of your ships has acted and the enemy plays out the rest of the round: say so once, big
+		tail_round = int(V.get("round", 0))
+		hud.banner("Enemy turn", Color("#c9a3ff"), 0.8)
 	if enemy:
 		speed = minf(speed, float(PACE["skip"]) if skip else (float(PACE["enemy"]) if _player_pending() > 0 else float(PACE["tail"])) * _enemy_pace_k())
 	var base_speed := speed
@@ -2802,7 +2810,9 @@ func _hand_over() -> void:
 	select(pick, "auto")
 	up_idx = _fleet_index(pick)
 	handed_t = Time.get_ticks_msec() / 1000.0
-	sfx.turn("player")
+	if chime_round != int(V.get("round", 0)):
+		chime_round = int(V.get("round", 0))
+		sfx.turn("player")
 	if not cam.sees(_pos(pick)):
 		cam.glide(_pos(pick))
 
