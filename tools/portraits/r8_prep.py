@@ -25,6 +25,7 @@ FACE8 = {
  'nem_deathless_4': (0.50, 0.16, 0.15), 'nem_deathless_5': (0.49, 0.24, 0.15), 'nem_deathless_6': None,
 }
 TOUCHED = ('voidsworn', 'hegemony', 'chorus')
+FIXED = ['nem_corsair_3', 'nem_corsair_5'] + ['nem_ithar_%d' % n for n in range(1, 7)] + ['nem_voidsworn_%d' % n for n in range(1, 7)]
 
 def main(root, out):
     os.makedirs(out, exist_ok=True); A = {}
@@ -48,6 +49,11 @@ def main(root, out):
             if not os.path.exists(src): print('missing', src); continue
             shutil.copyfile(src, os.path.join(out, nid + '.png'))
             A[nid] = {'anchor': old.get(nid, {}).get('anchor', [0.5, 0.42, 0.3]), 'crop': [0, 0, 1], 'source': 'r8e/%s_r8_s11_00001_.png' % nid}
+    # the r8f fix pass replaces these sources (already bust crops, so the anchor stays as computed above)
+    for nid in FIXED:
+        src = os.path.join(root, 'r8f', '%s_r8f_s11_00001_.png' % nid)
+        if not os.path.exists(src): print('missing', src); continue
+        shutil.copyfile(src, os.path.join(out, nid + '.png')); A[nid]['source'] = 'r8f/%s_r8f_s11_00001_.png' % nid
     json.dump(A, open(os.path.join(out, 'anchors.json'), 'w'), indent=1)
     print(len(A), 'sources in', out)
 

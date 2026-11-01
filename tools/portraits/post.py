@@ -7,7 +7,7 @@ import os, sys, json, glob, re
 from PIL import Image, ImageDraw, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.dirname(os.path.dirname(HERE))
 PD = os.path.join(REPO, 'godot', 'portraits'); SHEETS = os.path.join(PD, 'sheets')
-TRIM = {'voidsworn': '#c8501f', 'hegemony': '#3a78d0', 'corsair': '#b8402a', 'chorus': '#a4913a', 'ithar': '#d7c88a', 'deathless': '#1fbf4a'}
+TRIM = {'voidsworn': '#ff8a2a', 'hegemony': '#3a78d0', 'corsair': '#b8402a', 'chorus': '#b8893a', 'ithar': '#c9d2da', 'deathless': '#f0d690'}   # round 8 palettes (R59)
 FACORDER = ['chorus', 'voidsworn', 'hegemony', 'corsair', 'ithar', 'deathless']
 def font(sz, bold=False):
     try: return ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans%s.ttf' % ('-Bold' if bold else ''), sz)
