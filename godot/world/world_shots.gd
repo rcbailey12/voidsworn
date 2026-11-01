@@ -24,6 +24,10 @@ const CASES := [
 	["deep_storm", "deathless", "storm", "open", {"rock": "carbon", "planet": 6, "station": "spire"}, 4108],
 	["open_iron", "corsair", "open", "open", {"rock": "iron", "planet": 0, "station": "rig"}, 4109],
 	["deadstar", "ithar", "storm", "deadstar", {"rock": "ice", "planet": 7, "station": "ring"}, 4110],
+	# the brief's frame-rate bar: 20 ships (ten a side) on a belt map, the heaviest rock count; its bench is the 1% low
+	["bench20_belt", "hegemony", "belt", "open", {"rock": "stone", "planet": 0, "station": "rig"}, 4120,
+		{"sector": 3, "fleet": ["penitent", "penitent", "harrow", "harrow", "harrow", "warden", "warden", "warden", "warden", "warden"],
+		"enemies": ["h_boss", "h_interdictor", "h_interdictor", "h_interdictor", "h_picket", "h_picket", "h_picket", "h_picket", "h_picket", "h_picket"]}],
 ]
 
 var args := {}
@@ -78,6 +82,9 @@ func _case(c: Array) -> void:
 	b.tips_off = true
 	var sc := {"seed": int(c[5]), "sector": 1, "admiral": "vex", "fleet": ["penitent", "harrow", "warden", "warden"], "fac": c[1],
 		"obj": "rout", "shape": c[3], "map": c[2], "dep": "line", "kind": "battle"}
+	if c.size() > 6:
+		for k in c[6]:
+			sc[k] = c[6][k]
 	var api = API.new()
 	var e: String = api.load_rules()
 	if e != "":
