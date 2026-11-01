@@ -1,0 +1,132 @@
+{
+ "out": "v64b",
+ "budget_s": 1000,
+ "items": [
+  {
+   "id": "corsair_grax",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/corsair_grax_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_grax",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/corsair_grax_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_sable",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/corsair_sable_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_sable",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/corsair_sable_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_mott",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/corsair_mott_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_mott",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/corsair_mott_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_vesh",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/corsair_vesh_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "corsair_vesh",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/corsair_vesh_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_1_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_1_horn_s23_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_2_horn_s11_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_2_horn_s11_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_4_horn_s11_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_4_horn_s11_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_5_horn_s11_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_5_horn_s11_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "nohorn",
+   "seed": 11,
+   "src": "v64b/nem_corsair_6_horn_s11_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "nohorn",
+   "seed": 23,
+   "src": "v64b/nem_corsair_6_horn_s11_00001_.png",
+   "prompt": "Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels."
+  }
+ ]
+}

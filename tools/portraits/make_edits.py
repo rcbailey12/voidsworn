@@ -280,6 +280,19 @@ def s68_e64(facs):
     for f in facs: out += s68_items(f, [n for n in E64_PICK if n.split('_')[1] == f], src=E64_SRC)
     return out
 
+# v64h5 (Nov 1, P helper 3): v64h4 review. The head plates now read as matte living scales (pangolin-like, no rivets), but the word
+# "horn" also grew literal bull or ram horns on six of them (Sable, Mott, Vesh, Nemesis 2, 5, 6), a demon look the design never had.
+# Only Nemesis 3 s11 came out clean at full size (Grax s23 has horns curling past the cheeks and a tusk, Nemesis 1 s23 and 4 s11
+# small horns). v64h5 takes the horns (and Grax's tusk) off the other nine.
+H5_SRC = {'corsair_grax': 23, 'corsair_sable': 23, 'corsair_mott': 23, 'corsair_vesh': 23, 'nem_corsair_1': 23, 'nem_corsair_2': 11,
+          'nem_corsair_4': 11, 'nem_corsair_5': 11, 'nem_corsair_6': 11}
+NOHORN = ("Remove every horn and tusk from this creature's head completely; the scaled head is smooth and rounded where they "
+          "were, covered in the same matte scales. Keep the same creature, face, eyes, jaw, teeth, mane, harness, pose, setting, lighting "
+          "and oil-painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle or pixels.")
+def v64h5_items(seeds=(11, 23)):
+    return [{'id': t, 'kind': 'nohorn', 'seed': sd, 'src': 'v64b/%s_horn_s%d_00001_.png' % (t, s), 'prompt': NOHORN}
+            for t, s in H5_SRC.items() for sd in seeds]
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -345,3 +358,4 @@ if __name__ == '__main__':
     s68c += s68_items('deathless', ['nem_deathless_2'])
     json.dump({'out': 's68', 'budget_s': 1150, 'items': s68c}, open(os.path.join(B, 's68c.json'), 'w'), indent=1)
     print('s68c', len(s68c))
+    json.dump({'out': 'v64b', 'budget_s': 1000, 'items': v64h5_items()}, open(os.path.join(B, 'v64h5.json'), 'w'), indent=1)
