@@ -1,0 +1,105 @@
+# R68 varied portraits (Ryan, Nov 1 07:37): publish the v64 round, every faction, from the PC renders.
+#   python3 tools/portraits/v64_publish.py admirals <render_root>            painted/<adm>.webp (cropped to head and shoulders, framed), index.json
+#   python3 tools/portraits/v64_publish.py crops <render_root> <out> [fac]   Nemesis bust crops + anchors.json (upload to comfy_io\PORTRAITS\ncrop68\)
+#   python3 tools/portraits/v64_publish.py scars <render_root> <out>         picked scar seeds copied as the s11 files nemesis_publish.py reads
+#   python3 tools/portraits/nemesis_publish.py <crops_dir> <scars_dir>
+#   python3 tools/portraits/v64_publish.py sheet <render_root> <out.webp> <fac>   review sheet: admirals and Nemesis as the game frames them
+# render_root holds the PC's comfy_io\PORTRAITS\ subfolders (v64\, v64b\, e64\, s68\). Picks are vetoable calls, read by eye at full size.
+# The admiral card draws the painting at 84 px, so a full-figure render is cropped to head and shoulders here (CROP box: centre x,
+# centre y, side, as fractions of the render); the setting still shows round the figure. The painting it replaces is kept in alts\.
+import os, sys, json, shutil
+from PIL import Image, ImageFilter, ImageDraw
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from post import framed, PD, font
+
+# admiral -> (faction, render (relative to render_root, without _00001_.png), crop box or None, note)
+ADM = {
+}
+# Nemesis -> (render, face box (centre x, centre y, face height) as fractions of the render)
+NEM = {
+}
+# Nemesis scar picks: nid -> {kind: seed} in SCAR_DIR
+SCAR = {
+}
+SCAR_DIR = 's68'
+FACE_IN_CROP = 0.36   # the face's height as a share of the bust crop (the round 8 and p64 pools sit at 0.33 to 0.39)
+
+
+def _png(root, rel): return os.path.join(root, rel + '_00001_.png')
+
+
+def crop_box(im, box):
+    if not box: return im
+    w, h = im.size; cx, cy, s = box; s = min(s, 1.0)
+    l = min(max(cx - s / 2, 0), 1 - s); t = min(max(cy - s / 2, 0), 1 - s)
+    return im.crop((int(l * w), int(t * h), int((l + s) * w), int((t + s) * h))).resize((1024, 1024), Image.LANCZOS)
+
+
+def admirals(root, only=None):
+    idx_path = os.path.join(PD, 'index.json'); idx = json.load(open(idx_path))
+    for adm, (fac, rel, box, note) in ADM.items():
+        if only and fac != only: continue
+        old = os.path.join(PD, 'painted', adm + '.webp'); prev = idx['painted'].get(adm, {})
+        A = [a for a in prev.get('alts', []) if os.path.exists(os.path.join(PD, a))]
+        if os.path.exists(old):
+            keep = 'alts/%s_pre68.webp' % adm
+            if not os.path.exists(os.path.join(PD, keep)): shutil.copyfile(old, os.path.join(PD, keep))
+            if keep not in A: A.insert(0, keep)
+        im = crop_box(Image.open(_png(root, rel)).convert('RGB'), box)
+        framed(im, fac).save(old, 'WEBP', quality=88, method=6)
+        idx['painted'][adm] = {'faction': fac, 'pick': 'painted/%s.webp' % adm, 'alts': A, 'source': rel + '_00001_.png',
+                               'crop': list(box) if box else None, 'note': note}
+        print('published', adm)
+    json.dump(idx, open(idx_path, 'w'), indent=1)
+
+
+def crops(root, out, fac=None):
+    os.makedirs(out, exist_ok=True); A = {}
+    for nid, (rel, (fx, fy, fh)) in NEM.items():
+        if fac and nid.split('_')[1] != fac: continue
+        im = Image.open(_png(root, rel)).convert('RGB'); w, h = im.size
+        S = min(1.0, max(0.42, fh / FACE_IN_CROP))
+        left = min(max(fx - S / 2, 0), 1 - S); top = min(max(fy - S / 3, 0), 1 - S)
+        c = im.crop((int(left * w), int(top * h), int((left + S) * w), int((top + S) * h))).resize((1024, 1024), Image.LANCZOS)
+        if S < 0.9: c = c.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
+        c.save(os.path.join(out, nid + '.png'))
+        A[nid] = {'anchor': [round((fx - left) / S, 3), round((fy - top) / S, 3), round(fh / S, 3)], 'crop': [round(left, 3), round(top, 3), round(S, 3)],
+                  'source': rel + '_00001_.png'}
+    json.dump(A, open(os.path.join(out, 'anchors.json'), 'w'), indent=1)
+    print(len(A), 'crops in', out)
+
+
+def scar_dir(root, out):
+    os.makedirs(out, exist_ok=True)
+    for nid, P in SCAR.items():
+        for k, sd in P.items():
+            shutil.copyfile(os.path.join(root, SCAR_DIR, '%s_%s_s%d_00001_.png' % (nid, k, sd)), os.path.join(out, '%s_%s_s11_00001_.png' % (nid, k)))
+
+
+def sheet(root, out, fac, crops_dir=None, title=None):
+    """the faction's admirals (cropped and framed as published) and its Nemesis bust crops (with the red Nemesis frame)"""
+    cells = []
+    for adm, (f, rel, box, _n) in ADM.items():
+        if f == fac: cells.append((adm, framed(crop_box(Image.open(_png(root, rel)).convert('RGB'), box), f)))
+    fr = Image.open(os.path.join(PD, 'nemesis', 'frame_%s.png' % fac)).convert('RGBA')
+    for nid in NEM:
+        if nid.split('_')[1] != fac: continue
+        p = os.path.join(crops_dir, nid + '.png') if crops_dir else None
+        im = Image.open(p).convert('RGBA').resize((1024, 1024)) if p and os.path.exists(p) else None
+        if im is None: continue
+        cells.append(('Nemesis ' + nid.split('_')[-1], Image.alpha_composite(im, fr).convert('RGB')))
+    c = 330; cols = 5; rows = (len(cells) + cols - 1) // cols
+    W = Image.new('RGB', (cols * c, 64 + rows * (c + 28)), (14, 14, 18)); d = ImageDraw.Draw(W)
+    d.text((14, 16), title or fac, fill=(240, 240, 240), font=font(24, True)); f = font(17)
+    for i, (lab, im) in enumerate(cells):
+        x, y = (i % cols) * c, 64 + (i // cols) * (c + 28)
+        W.paste(im.resize((c - 14, c - 14), Image.LANCZOS), (x + 7, y)); d.text((x + 10, y + c - 10), lab, fill=(255, 214, 90), font=f)
+    W.save(out, 'WEBP', quality=86); print('sheet', out)
+
+
+if __name__ == '__main__':
+    a = sys.argv[1:]
+    if a[0] == 'admirals': admirals(a[1], a[2] if len(a) > 2 else None)
+    elif a[0] == 'crops': crops(a[1], a[2], a[3] if len(a) > 3 else None)
+    elif a[0] == 'scars': scar_dir(a[1], a[2])
+    elif a[0] == 'sheet': sheet(a[1], a[2], a[3], a[4] if len(a) > 4 else None, a[5] if len(a) > 5 else None)
