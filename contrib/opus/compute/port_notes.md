@@ -386,3 +386,11 @@ Display strings only; no id, key, rule, number or random draw changed (same seed
 - G3: if `godot/campaign/test/oracle/campaign3d.js` mirrors this line, re-pin it. No rule, number or random draw changed (`prepBattle` is browser scene setup; the rules state is built by `startBattle` before it).
 - New unit test `contrib/opus/tools/campaign_start_test.js`: loads the real campaign3d.js on top of the rules files with the browser parts stubbed and drives `battleScreen()` for a battle, an elite, a Hegemony Nemesis fight and a boss (no throw, prepBattle ran once, the start telemetry carries setupMs). It also scans every top-level JS file for a `//` comment followed by statements on the same line. On the old file it fails 5 of 6; on the fix 6 of 6.
 - B-18 (`animExplode` stall check in `killUnit`) was already fixed in beae728; the scan finds no other swallowed code.
+
+## Step 12: STRINGS ONLY, rename map sections 16 and 17 (Oct 31; rename_map_final.md at a9ec373; commit in the next line of this file's history)
+
+Display strings only; same seeded sim output before and after (`SEED=5 ADMS=grax bossmatrix 4`: 85% r8.3). G1 and G3: one re-pin and re-export covers steps 11 and 12.
+- Section 16 (Ryan's rulings of Oct 27 and 28): Warlord Grax Ironmaw (was Steelgrin); the Eclipse blurb says "siphoning stellar energy to light a new sun"; Eclipse Nemesis titles back to the three of the bible (High Nadir, Eclipse-prime, Archivist; the fourth entry 'Nadir' removed, so that `titles` list is now 3 long); crew ship name Acceptable Loss becomes Debt Paid; skirmish names Thornback becomes Sour Spine (Chorus) and Moonveil becomes Still Glass (Glasswrights) in ui3d.js FNAMES.
+- Section 17: Founders' cache (legacy unlock, was Founders' salvage), Archive extract (Eclipse logbook item), Backup frame (generic phylactery name); 30 Nemesis card sentences in neutral words ("His ships ..." becomes "Enemy ships ...", "his fleet" becomes "the fleet"), and the Hullbreaker special "Bigger crew" becomes "Bigger fleet". 40 replacements in data.js and ui3d.js.
+- Random draws: the Eclipse Nemesis title pick now draws from 3 titles instead of 4 (same number of draws, different values for Eclipse rivals).
+- Checks: check pack 0 FAIL; b1 39, b3 17, b4 29, backlog 11, campaign start 6, all ok; no em dashes.
