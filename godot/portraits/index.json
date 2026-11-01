@@ -168,10 +168,10 @@
    "pick": "nemesis/pool/nem_corsair_3.webp",
    "anchor": [
     0.5,
-    0.333,
-    0.258
+    0.29,
+    0.323
    ],
-   "source": "n1/nem_corsair_3_zit_s23_00001_.png",
+   "source": "r8f/nem_corsair_3_r8f_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_corsair_3_burn.webp",
     "cyber": "nemesis/pool/nem_corsair_3_cyber.webp",
@@ -180,21 +180,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_corsair_3_burn_patch.webp",
-     "x": 0.2943,
-     "y": 0.181,
-     "area": 0.085
+     "x": 0.3242,
+     "y": 0.1641,
+     "area": 0.103
     },
     "cyber": {
      "file": "nemesis/pool/nem_corsair_3_cyber_patch.webp",
-     "x": 0.306,
-     "y": 0.1836,
-     "area": 0.071
+     "x": 0.3398,
+     "y": 0.151,
+     "area": 0.063
     },
     "eye": {
      "file": "nemesis/pool/nem_corsair_3_eye_patch.webp",
-     "x": 0.3724,
-     "y": 0.1992,
-     "area": 0.045
+     "x": 0.3711,
+     "y": 0.1237,
+     "area": 0.052
     }
    }
   },
@@ -238,10 +238,10 @@
    "pick": "nemesis/pool/nem_corsair_5.webp",
    "anchor": [
     0.5,
-    0.333,
-    0.29
+    0.323,
+    0.323
    ],
-   "source": "n1/nem_corsair_5_zit_s23_00001_.png",
+   "source": "r8f/nem_corsair_5_r8f_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_corsair_5_burn.webp",
     "cyber": "nemesis/pool/nem_corsair_5_cyber.webp",
@@ -250,21 +250,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_corsair_5_burn_patch.webp",
-     "x": 0.3607,
-     "y": 0.1784,
-     "area": 0.079
+     "x": 0.2031,
+     "y": 0.2005,
+     "area": 0.107
     },
     "cyber": {
      "file": "nemesis/pool/nem_corsair_5_cyber_patch.webp",
-     "x": 0.4023,
-     "y": 0.1771,
-     "area": 0.068
+     "x": 0.3646,
+     "y": 0.1302,
+     "area": 0.067
     },
     "eye": {
      "file": "nemesis/pool/nem_corsair_5_eye_patch.webp",
-     "x": 0.4219,
-     "y": 0.1992,
-     "area": 0.03
+     "x": 0.3854,
+     "y": 0.125,
+     "area": 0.056
     }
    }
   },
@@ -521,7 +521,7 @@
     0.274,
     0.274
    ],
-   "source": "n1/nem_voidsworn_1_zit_s23_00001_.png",
+   "source": "r8f/nem_voidsworn_1_r8f_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_voidsworn_1_burn.webp",
     "cyber": "nemesis/pool/nem_voidsworn_1_cyber.webp",
@@ -530,21 +530,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_1_burn_patch.webp",
-     "x": 0.3659,
-     "y": 0.1406,
-     "area": 0.074
+     "x": 0.3177,
+     "y": 0.2917,
+     "area": 0.044
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_1_cyber_patch.webp",
-     "x": 0.3685,
-     "y": 0.1549,
-     "area": 0.065
+     "x": 0.3177,
+     "y": 0.2188,
+     "area": 0.039
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_1_eye_patch.webp",
-     "x": 0.3854,
-     "y": 0.138,
-     "area": 0.053
+     "x": 0.3177,
+     "y": 0.1432,
+     "area": 0.042
     }
    }
   },
@@ -556,7 +556,7 @@
     0.333,
     0.226
    ],
-   "source": "n1/nem_voidsworn_2_zit_s11_00001_.png",
+   "source": "r8f/nem_voidsworn_2_r8f_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_voidsworn_2_burn.webp",
     "cyber": "nemesis/pool/nem_voidsworn_2_cyber.webp",
@@ -565,21 +565,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_2_burn_patch.webp",
-     "x": 0.3464,
-     "y": 0.2057,
-     "area": 0.059
+     "x": 0.0,
+     "y": 0.0404,
+     "area": 0.081
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_2_cyber_patch.webp",
-     "x": 0.3398,
-     "y": 0.1693,
-     "area": 0.094
+     "x": 0.0,
+     "y": 0.0404,
+     "area": 0.075
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_2_eye_patch.webp",
-     "x": 0.4232,
-     "y": 0.1953,
-     "area": 0.022
+     "x": 0.0,
+     "y": 0.0404,
+     "area": 0.083
     }
    }
   },
@@ -591,7 +591,7 @@
     0.274,
     0.258
    ],
-   "source": "n1/nem_voidsworn_3_zit_s11_00001_.png",
+   "source": "r8f/nem_voidsworn_3_r8f_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_voidsworn_3_burn.webp",
     "cyber": "nemesis/pool/nem_voidsworn_3_cyber.webp",
@@ -600,21 +600,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_3_burn_patch.webp",
-     "x": 0.3555,
-     "y": 0.2383,
-     "area": 0.052
+     "x": 0.0885,
+     "y": 0.0,
+     "area": 0.129
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_3_cyber_patch.webp",
-     "x": 0.3438,
-     "y": 0.2148,
-     "area": 0.054
+     "x": 0.0508,
+     "y": 0.0,
+     "area": 0.127
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_3_eye_patch.webp",
-     "x": 0.4206,
-     "y": 0.2005,
-     "area": 0.026
+     "x": 0.0898,
+     "y": 0.0,
+     "area": 0.133
     }
    }
   },
@@ -626,7 +626,7 @@
     0.306,
     0.274
    ],
-   "source": "n1/nem_voidsworn_4_zit_s11_00001_.png",
+   "source": "r8f/nem_voidsworn_4_r8f_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_voidsworn_4_burn.webp",
     "cyber": "nemesis/pool/nem_voidsworn_4_cyber.webp",
@@ -635,21 +635,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_4_burn_patch.webp",
-     "x": 0.3203,
-     "y": 0.1289,
-     "area": 0.057
+     "x": 0.0755,
+     "y": 0.25,
+     "area": 0.079
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_4_cyber_patch.webp",
-     "x": 0.3411,
-     "y": 0.1315,
-     "area": 0.049
+     "x": 0.0768,
+     "y": 0.1875,
+     "area": 0.085
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_4_eye_patch.webp",
-     "x": 0.3932,
-     "y": 0.1289,
-     "area": 0.024
+     "x": 0.0755,
+     "y": 0.2279,
+     "area": 0.078
     }
    }
   },
@@ -661,7 +661,7 @@
     0.333,
     0.274
    ],
-   "source": "n1/nem_voidsworn_5_zit_s11_00001_.png",
+   "source": "r8f/nem_voidsworn_5_r8f_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_voidsworn_5_burn.webp",
     "cyber": "nemesis/pool/nem_voidsworn_5_cyber.webp",
@@ -670,21 +670,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_5_burn_patch.webp",
-     "x": 0.3047,
-     "y": 0.138,
-     "area": 0.069
+     "x": 0.1823,
+     "y": 0.0,
+     "area": 0.084
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_5_cyber_patch.webp",
-     "x": 0.3086,
-     "y": 0.0951,
-     "area": 0.069
+     "x": 0.1823,
+     "y": 0.0,
+     "area": 0.074
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_5_eye_patch.webp",
-     "x": 0.362,
-     "y": 0.0964,
-     "area": 0.031
+     "x": 0.1836,
+     "y": 0.0,
+     "area": 0.094
     }
    }
   },
@@ -696,7 +696,7 @@
     0.333,
     0.274
    ],
-   "source": "nfix/nem_voidsworn_6_fix_s11_00001_.png",
+   "source": "r8f/nem_voidsworn_6_r8f_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_voidsworn_6_burn.webp",
     "cyber": "nemesis/pool/nem_voidsworn_6_cyber.webp",
@@ -705,21 +705,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_6_burn_patch.webp",
-     "x": 0.3164,
-     "y": 0.2018,
-     "area": 0.117
+     "x": 0.3411,
+     "y": 0.3464,
+     "area": 0.024
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_6_cyber_patch.webp",
-     "x": 0.2734,
-     "y": 0.1654,
-     "area": 0.082
+     "x": 0.2956,
+     "y": 0.2174,
+     "area": 0.041
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_6_eye_patch.webp",
-     "x": 0.3711,
-     "y": 0.1497,
-     "area": 0.049
+     "x": 0.3815,
+     "y": 0.1966,
+     "area": 0.023
     }
    }
   },
@@ -1038,6 +1038,168 @@
      "x": 0.1211,
      "y": 0.1094,
      "area": 0.111
+    }
+   }
+  },
+  "nem_ithar_1": {
+   "faction": "ithar",
+   "pick": "nemesis/pool/nem_ithar_1.webp",
+   "anchor": [
+    0.5,
+    0.306,
+    0.274
+   ],
+   "source": "r8f/nem_ithar_1_r8f_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_ithar_1_burn.webp",
+    "porcelain": "nemesis/pool/nem_ithar_1_porcelain.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_ithar_1_burn_patch.webp",
+     "x": 0.3893,
+     "y": 0.2474,
+     "area": 0.044
+    },
+    "porcelain": {
+     "file": "nemesis/pool/nem_ithar_1_porcelain_patch.webp",
+     "x": 0.6055,
+     "y": 0.3594,
+     "area": 0.016
+    }
+   }
+  },
+  "nem_ithar_2": {
+   "faction": "ithar",
+   "pick": "nemesis/pool/nem_ithar_2.webp",
+   "anchor": [
+    0.5,
+    0.323,
+    0.274
+   ],
+   "source": "r8f/nem_ithar_2_r8f_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_ithar_2_burn.webp",
+    "porcelain": "nemesis/pool/nem_ithar_2_porcelain.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_ithar_2_burn_patch.webp",
+     "x": 0.4271,
+     "y": 0.276,
+     "area": 0.034
+    },
+    "porcelain": {
+     "file": "nemesis/pool/nem_ithar_2_porcelain_patch.webp",
+     "x": 0.3555,
+     "y": 0.1615,
+     "area": 0.015
+    }
+   }
+  },
+  "nem_ithar_3": {
+   "faction": "ithar",
+   "pick": "nemesis/pool/nem_ithar_3.webp",
+   "anchor": [
+    0.5,
+    0.258,
+    0.274
+   ],
+   "source": "r8f/nem_ithar_3_r8f_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_ithar_3_burn.webp",
+    "porcelain": "nemesis/pool/nem_ithar_3_porcelain.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_ithar_3_burn_patch.webp",
+     "x": 0.5,
+     "y": 0.3971,
+     "area": 0.008
+    }
+   }
+  },
+  "nem_ithar_4": {
+   "faction": "ithar",
+   "pick": "nemesis/pool/nem_ithar_4.webp",
+   "anchor": [
+    0.5,
+    0.274,
+    0.274
+   ],
+   "source": "r8f/nem_ithar_4_r8f_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_ithar_4_burn.webp",
+    "porcelain": "nemesis/pool/nem_ithar_4_porcelain.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_ithar_4_burn_patch.webp",
+     "x": 0.4023,
+     "y": 0.2174,
+     "area": 0.028
+    },
+    "porcelain": {
+     "file": "nemesis/pool/nem_ithar_4_porcelain_patch.webp",
+     "x": 0.4844,
+     "y": 0.2461,
+     "area": 0.006
+    }
+   }
+  },
+  "nem_ithar_5": {
+   "faction": "ithar",
+   "pick": "nemesis/pool/nem_ithar_5.webp",
+   "anchor": [
+    0.5,
+    0.274,
+    0.274
+   ],
+   "source": "r8f/nem_ithar_5_r8f_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_ithar_5_burn.webp",
+    "porcelain": "nemesis/pool/nem_ithar_5_porcelain.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_ithar_5_burn_patch.webp",
+     "x": 0.3997,
+     "y": 0.2656,
+     "area": 0.012
+    },
+    "porcelain": {
+     "file": "nemesis/pool/nem_ithar_5_porcelain_patch.webp",
+     "x": 0.4466,
+     "y": 0.3945,
+     "area": 0.004
+    }
+   }
+  },
+  "nem_ithar_6": {
+   "faction": "ithar",
+   "pick": "nemesis/pool/nem_ithar_6.webp",
+   "anchor": [
+    0.5,
+    0.258,
+    0.274
+   ],
+   "source": "r8f/nem_ithar_6_r8f_s11_00001_.png",
+   "baked": {
+    "burn": "nemesis/pool/nem_ithar_6_burn.webp",
+    "porcelain": "nemesis/pool/nem_ithar_6_porcelain.webp"
+   },
+   "patch": {
+    "burn": {
+     "file": "nemesis/pool/nem_ithar_6_burn_patch.webp",
+     "x": 0.3776,
+     "y": 0.2552,
+     "area": 0.022
+    },
+    "porcelain": {
+     "file": "nemesis/pool/nem_ithar_6_porcelain_patch.webp",
+     "x": 0.332,
+     "y": 0.1198,
+     "area": 0.03
     }
    }
   }
