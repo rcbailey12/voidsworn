@@ -162,7 +162,10 @@ static func _target(fx, Tg, to_c: Vector3, from: Vector3, hit: bool, hd: Diction
 	var on_shield: bool = Tg.shielded and Tg._shield_mat != null and float(hd.get("shield", 0)) > 0.0 and float(hd.get("hull", 0)) <= 0.0
 	var sec: int = {"eng": 0, "mid": 1, "prow": 2}.get(String(hd.get("section", "")), -1)
 	var inv: Transform3D = Tg.xf().affine_inverse()
-	var hp: Dictionary = Tg.hull.hit_point(inv * from, sec, quad)
+	var view := Vector3.ZERO
+	if fx.camera != null and is_instance_valid(fx.camera):
+		view = (inv.basis * (fx.camera.global_position - to_c)).normalized()
+	var hp: Dictionary = Tg.hull.hit_point(inv * from, sec, quad, view)
 	if on_shield:
 		var sp: Dictionary = Tg.shield_point(from, hp["p"])
 		return {"p": sp["p"], "n": sp["n"], "shield": true, "local": sp["local"], "miss": false}

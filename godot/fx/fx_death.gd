@@ -716,7 +716,8 @@ static func _break_up(fx, s, cause: String, tint: Color) -> void:
 	fx.light(center, T + 0.2, 4.0, 5.0, tint, 1)
 	# F3: the kill lands: a slow glow where the ship was (below the flash budget's brightness) that marks the spot from
 	# any zoom for a couple of seconds, and a zoom punch by weight
-	fx.spr(center, T + 0.15, 2.4 + w * 0.3, tint.lerp(Color(1, 0.8, 0.55), 0.3), 2.6, R * 0.8, R * 3.0, 18)
+	# (k1: R * 3 washed a beige haze over a capital's wreck pieces; R * 1.8 marks the spot and leaves the wreck clear)
+	fx.spr(center, T + 0.15, 2.4 + w * 0.3, tint.lerp(Color(1, 0.8, 0.55), 0.3), 2.2, R * 0.6, R * 1.8, 18)
 	fx.punch(T, [0.0, 0.01, 0.016, 0.024, 0.034][w] * big, center)
 	fx.shake(T, [0.2, 0.3, 0.45, 0.7, 0.9][w] * big, center)
 	fx.hit_pause(T, [0, 2, 4, 8, 10][w])

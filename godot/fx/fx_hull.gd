@@ -265,7 +265,10 @@ func mounts_for(target_local: Vector3, n: int) -> Array:
 
 
 # A point on the struck section, on the side facing `from` (ship frame).
-func hit_point(from: Vector3, sec: int, quad: int = -1) -> Dictionary:
+# view (ship frame, optional): the direction toward the camera. F3: a hit also favours plating the camera can see, so a
+# blast never goes off wholly behind the hull (d2: a torpedo on the underside of the Eclipse Tomb-ark's ring, facing
+# down and away from the battle camera, was hidden by the ring itself).
+func hit_point(from: Vector3, sec: int, quad: int = -1, view := Vector3.ZERO) -> Dictionary:
 	var want = (from - c).normalized()
 	if quad >= 0:
 		want = quad_dir(quad)
@@ -273,7 +276,7 @@ func hit_point(from: Vector3, sec: int, quad: int = -1) -> Dictionary:
 	var bs = -1e9
 	for k in 24:
 		var i = _rng.randi() % sp.size()
-		var s = sn[i].dot(want) + _rng.randf() * 0.5
+		var s = sn[i].dot(want) + _rng.randf() * 0.5 + maxf(sn[i].dot(view), -0.2) * 0.6
 		if sec >= 0 and ssec[i] != sec:
 			s -= 2.0
 		if s > bs:
