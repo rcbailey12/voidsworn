@@ -286,7 +286,8 @@ func update(fx, dt: float) -> void:
 	# the drive glows full only while the ship thrusts (moving, or a burn G2 asks for with set_engine above cruise); a
 	# parked ship keeps a dim pilot glow and a short, faint trail (Ryan, r12: engines glowed and trailed at rest)
 	var want = 0.0 if dead else ((engine_level if absf(engine_level - 1.0) > 0.05 else 1.6) if _moving > 0.0 else (engine_level if engine_level > 1.05 else IDLE_GLOW * engine_level))
-	_eng_cur = lerpf(_eng_cur, want, clampf(dt * 4.0, 0.0, 1.0))
+	# rise gently, drop fast: a burn's plume cuts off within about 0.1 s instead of fading over half a second (G2)
+	_eng_cur = lerpf(_eng_cur, want, clampf(dt * (4.0 if want > _eng_cur else 14.0), 0.0, 1.0))
 	if _eng_mat != null:
 		var g := clampf(_eng_cur, 0.0, 2.0)
 		if fx.now < _stutter_until:
