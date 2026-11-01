@@ -15,7 +15,7 @@
   - Thruster-true movement with smooth stops (flip-and-burn off).
   - Battle pace under 15 s per round even at 28 ships.
   - 36 of 36 six-faction bot campaigns clean.
-  - The exe rebuilt on Ryan's PC by the fail-closed export job (c5c0d27); the previous build is kept in `export\previous`.
+  - The playtest exe was built Nov 1 00:41 CDT from d78cce0 (lore strings plus the refreshed ships) by the fail-closed export job: exit 0, package check passed, bot smoke clean. To play, double-click play_godot.bat in Downloads\voidsworn_test (play_godot_safe.bat if it won't start); the previous build is in build\export\previous.
 - **Effects (G4).**
   - At 20 ships the 1% low is 43 to 65 fps on Forward+, and the death freeze is gone.
   - Weapon marks read at battle distance; round 8 palettes are in.
