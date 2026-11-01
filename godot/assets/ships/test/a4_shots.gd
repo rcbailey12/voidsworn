@@ -8,6 +8,8 @@ extends Node3D
 #   <fac>_battle_near.jpg  the same line zoomed in the way a player zooms to look at a ship
 #   <code>_q.jpg, <code>_s.jpg, <code>_b.jpg  one ship close: three-quarter from above the bow, side, three-quarter from below
 #   <code>_t.jpg, <code>_d.jpg  from straight above, and the deck close (half the distance; V1b's spine patch, Nov 1)
+#   props_old.jpg, props_a4.jpg  (set props) the board's station and three derelict hulks as board.gd draws them today (the
+#                          old AI meshes in a flat grey or black) and as assets/ships/a4_props.gd draws them (the painted A4 ships)
 #   <code>_bare.jpg        (set bare) the same three-quarter view with every texture map taken off: if it looks the same as
 #                          <code>_q.jpg, the maps are not reaching the screen
 # and prints one "[a4diag]" line per ship: each material's maps (class, size, format, mipmaps, path), metal, roughness.
@@ -15,6 +17,7 @@ extends Node3D
 
 const HT := preload("res://render/hull_table.gd")
 const ShipView := preload("res://render/ship_view.gd")
+const A4P := preload("res://assets/ships/a4_props.gd")
 const CamRig := preload("res://render/camera_rig.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
@@ -156,6 +159,9 @@ func _spawn(code: String, fac: String, cls: String, pos: Vector3, facing := 0) -
 
 
 func _run() -> void:
+	if sets.has("props"):
+		await _props(false)
+		await _props(true)
 	for f in facs:
 		var ships := _ships_of(f)
 		if ships.is_empty():
@@ -210,6 +216,72 @@ func _battle_line(fac: String, ships: Array) -> void:
 	await _snap("%s_battle_near" % fac)
 	for n in nodes:
 		(n as Node).free()
+	cam.current = true
+	await get_tree().process_frame
+
+
+# the board's props from the battle camera: a big station (46 across, as a 5-hex station cluster) and three hulks (scale 11),
+# old = board.gd's _station and _hulk as they are today, a4 = assets/ships/a4_props.gd
+func _props(a4: bool) -> void:
+	var root := Node3D.new()
+	add_child(root)
+	var c0 := Vector3(-20.0, 0.0, -10.0)
+	var rot := Basis.from_euler(Vector3(0.06, 2.2, 0.04))
+	if a4:
+		var st := A4P.station(46.0)
+		if st:
+			st.transform = Transform3D(rot, c0 + Vector3(0, 3, 0))
+			root.add_child(st)
+	elif ResourceLoader.exists("res://gen/hulls/O1_37.res"):
+		var mi := MeshInstance3D.new()
+		mi.mesh = load("res://gen/hulls/O1_37.res")
+		var m := StandardMaterial3D.new()
+		m.albedo_color = Color(0.36, 0.38, 0.42)
+		m.metallic = 0.55
+		m.roughness = 0.5
+		var src = (mi.mesh as Mesh).surface_get_material(0)
+		if src is StandardMaterial3D:
+			m.normal_enabled = (src as StandardMaterial3D).normal_enabled
+			m.normal_texture = (src as StandardMaterial3D).normal_texture
+			m.ao_enabled = (src as StandardMaterial3D).ao_enabled
+			m.ao_texture = (src as StandardMaterial3D).ao_texture
+			m.ao_texture_channel = (src as StandardMaterial3D).ao_texture_channel
+		mi.material_override = m
+		mi.transform = Transform3D(rot.scaled(Vector3(46, 46, -46)), c0 + Vector3(0, 3, 0))
+		root.add_child(mi)
+	var hk := [["H8_23", Vector3(45, 0, -30), Vector3(0.3, 0.8, -0.4)], ["V15_37", Vector3(55, 0, 15), Vector3(-0.2, 2.6, 0.5)],
+		["D20_23", Vector3(15, 0, 35), Vector3(0.4, 4.4, 0.2)]]
+	for h in hk:
+		var b := Basis.from_euler(h[2])
+		if a4:
+			var n := A4P.hulk(h[0])
+			if n:
+				n.transform = Transform3D(b.scaled(Vector3.ONE * 11.0), h[1])
+				root.add_child(n)
+		elif ResourceLoader.exists("res://gen/hulls/%s.res" % h[0]):
+			var mi := MeshInstance3D.new()
+			mi.mesh = load("res://gen/hulls/%s.res" % h[0])
+			var m := StandardMaterial3D.new()
+			m.albedo_color = Color(0.09, 0.08, 0.075)
+			m.roughness = 0.85
+			m.metallic = 0.3
+			mi.material_override = m
+			mi.transform = Transform3D(b.scaled(Vector3(11, 11, -11)), h[1])
+			root.add_child(mi)
+	rig.current = true
+	rig.a = -PI / 2.0
+	rig.b = 0.98
+	rig.r = 150.0
+	rig.t = Vector3(15.0, 0.0, 0.0)
+	rig.snap()
+	await _settle()
+	await _snap("props_a4" if a4 else "props_old")
+	rig.r = 75.0
+	rig.t = c0
+	rig.snap()
+	await _settle()
+	await _snap("props_a4_near" if a4 else "props_old_near")
+	root.free()
 	cam.current = true
 	await get_tree().process_frame
 

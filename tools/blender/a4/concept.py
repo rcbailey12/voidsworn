@@ -20,6 +20,9 @@ import numpy as np
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# the PC runs this with ComfyUI's embedded Python, whose ._pth file leaves the script's folder off sys.path: without this line
+# apply()'s "import pack" failed on every ship (Nov 1 jobs ec2 and repaint*_cp1), so no concept paint ever reached the game
+if HERE not in sys.path: sys.path.insert(0, HERE)
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 CONCEPTS = os.path.join(REPO, 'docs', 'ship_pipeline', 'concepts')
 if not os.path.isdir(CONCEPTS): CONCEPTS = os.path.join(HERE, '..', 'concepts')  # on the PC: a4tools\concepts (stage.py copies them)
@@ -366,5 +369,14 @@ if __name__ == '__main__':
     if '--res' in a: kw['res'] = int(a[a.index('--res') + 1])
     if '--albedo' in a: kw['albedo_path'] = a[a.index('--albedo') + 1]
     if '--fixed' in a: az_, el_ = a[a.index('--fixed') + 1].split(','); kw['fixed'] = dict(az=float(az_), el=float(el_))
-    op, rep = paint(a[0], sheet='--sheet' in a, **kw)
+    op = rep = None
+    if '--reuse' in a:  # apply a concept paint made earlier (same ship build), skipping the 1 to 2 minute projection
+        meta_ = json.load(open(a[0])); code_ = meta_['code']; base_ = os.path.dirname(os.path.abspath(a[0]))
+        d_ = os.path.abspath(kw.get('out_dir') or os.path.join(base_, 'tex'))
+        op_, js_ = os.path.join(d_, f'{code_}_albedo_concept.png'), os.path.join(d_, f'{code_}_concept.json')
+        src_ = meta_['maps'].get('albedo_proc') or meta_['maps']['albedo']
+        if not os.path.exists(src_): src_ = os.path.join(base_, 'tex', os.path.basename(src_.replace('\\', '/')))
+        if os.path.exists(op_) and os.path.exists(js_) and (not os.path.exists(src_) or os.path.getmtime(op_) >= os.path.getmtime(src_)):
+            op, rep = op_, json.load(open(js_)); print('[concept] reuse', code_, op, flush=True)
+    if op is None: op, rep = paint(a[0], sheet='--sheet' in a, **kw)
     if '--apply' in a: apply(a[0], op, rep, [a[i + 1] for i, x in enumerate(a) if x == '--base'])
