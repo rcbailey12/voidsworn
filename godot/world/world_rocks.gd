@@ -97,9 +97,12 @@ void fragment() {
 		a = mix(a, fresh, fr * 0.3);
 		rough = 0.96;
 	} else if (kind == 3) {
-		float ice = clamp(fr * 1.1 + smoothstep(0.55, 0.72, n1) * 0.55 - crat * 0.3, 0.0, 1.0);
-		a = mix(a, fresh * (0.85 + 0.25 * n2), ice);
-		rough = mix(0.85, 0.2, ice);
+		// r2: dark dusty crust, clean ice only in the fresh breaks and a few patches, frosty rather than glossy (r1's ice
+		// covered most faces at roughness 0.2 and read as pale blue plastic)
+		float ice = clamp(fr * 0.85 + smoothstep(0.64, 0.8, n1) * 0.4 - crat * 0.4, 0.0, 1.0);
+		ice *= ice;
+		a = mix(a, fresh * (0.8 + 0.3 * n2), ice);
+		rough = mix(0.88, 0.42, ice);
 		float crack = smoothstep(0.93, 0.985, 1.0 - abs(n2 * 2.0 - 1.0));
 		em = glow_col * crack * ice * 0.05;
 	} else {
@@ -195,7 +198,7 @@ const KINDS := {
 	"stone": {"base": Vector3(0.12, 0.098, 0.078), "fresh": Vector3(0.27, 0.235, 0.2), "k": 0},
 	"iron": {"base": Vector3(0.085, 0.066, 0.054), "fresh": Vector3(0.44, 0.41, 0.38), "k": 1},
 	"carbon": {"base": Vector3(0.045, 0.041, 0.038), "fresh": Vector3(0.09, 0.085, 0.08), "k": 2},
-	"ice": {"base": Vector3(0.1, 0.11, 0.125), "fresh": Vector3(0.62, 0.74, 0.86), "k": 3},
+	"ice": {"base": Vector3(0.085, 0.086, 0.092), "fresh": Vector3(0.5, 0.62, 0.74), "k": 3},
 	"crystal": {"base": Vector3(0.06, 0.058, 0.064), "fresh": Vector3(0.14, 0.14, 0.16), "k": 4},
 }
 

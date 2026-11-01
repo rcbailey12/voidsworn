@@ -283,6 +283,11 @@ uniform vec3 sun_dir = vec3(0.45, 0.7, 0.55);
 uniform vec3 sun_col = vec3(1.0, 0.93, 0.82);
 uniform float px = 0.0008;   // one screen pixel in radians (fov / height)
 uniform mat3 turn = mat3(1.0); // the battle's small turn of the whole sky
+// the dead-star board's painted sky (R2: its backdrop; A3's 8K dead-star panorama, with its dim red dead sun where the
+// key light comes from), under the gas; and how bright this sky's own sun is (none on the dead-star board)
+uniform sampler2D pano : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform float has_pano = 0.0;
+uniform float sun_k = 1.0;
 
 float sh31(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 vec3 sh33(vec3 p) { p = fract(p * vec3(0.1031, 0.103, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
@@ -318,17 +323,21 @@ void sky() {
 	vec3 d = turn * EYEDIR;
 	vec3 col = vec3(0.0);
 	float T = 1.0;
+	if (has_pano > 0.5) {
+		// the painting as the old battle sky drew it (battle.gd: x0.8, capped), the gas over it
+		col = min(texture(pano, SKY_COORDS).rgb * 0.8, vec3(0.6));
+	}
 	if (has_neb > 0.5) {
 		vec2 uv = vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359);
 		vec4 t = texture(neb_tex, uv);
-		col = pow(t.rgb, vec3(2.2)) * neb_gain;
+		col += pow(t.rgb, vec3(2.2)) * neb_gain;
 		T = t.a;
 	}
 	if (!AT_CUBEMAP_PASS) {
 		float y = dot(d, band_n);
 		float bd = exp(-pow(y / 0.25, 2.0)) * band;
 		vec3 st = star_layer(d, 120.0, 0.955, 1.0, bd * 0.03) + star_layer(d, 300.0, 0.985, 0.55, bd * 0.012) + star_layer(d, 650.0, 0.994, 0.35, bd * 0.004);
-		col += st * star_k * mix(0.15, 1.0, T);
+		col += st * star_k * mix(0.15, 1.0, T) * (1.0 - 0.6 * has_pano);
 		// the stars inside the gas, with halos
 		for (int k = 0; k < 6; k++) {
 			if (lamp[k].w <= 0.0) continue;
@@ -337,7 +346,7 @@ void sky() {
 		}
 		// the sun the key light comes from
 		float sa = acos(clamp(dot(EYEDIR, normalize(sun_dir)), -1.0, 1.0));
-		col += sun_col * (smoothstep(0.012, 0.009, sa) * 30.0 + exp(-sa * sa / 0.0012) * 1.2 + 0.002 / (0.001 + sa * sa) * 0.12);
+		col += sun_k * sun_col * (smoothstep(0.012, 0.009, sa) * 30.0 + exp(-sa * sa / 0.0012) * 1.2 + 0.002 / (0.001 + sa * sa) * 0.12);
 	}
 	COLOR = col;
 }

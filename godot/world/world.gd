@@ -31,6 +31,9 @@ var _well := Vector3.INF
 var _rng := RandomNumberGenerator.new()
 var _planet_dir := Vector3.ZERO
 var _planet_ang := 0.0
+var _planet_pos := Vector3.ZERO
+var _planet_R := 0.0
+var _ring_n := Vector3.ZERO      # the planet's ring plane normal (zero: no rings)
 # degrees about x. F4: the default camera looks down 34 degrees from +z; a tilt of -25 shows it the disc nearly edge on
 # (about 9 degrees), the classic lensed look (the far side of the disc bent up over the shadow); -12 showed it face on.
 var disc_tilt := -25.0
@@ -44,6 +47,7 @@ var _lo := Vector3.ZERO
 var _hi := Vector3.ZERO
 var _yaw := 0.0
 var _sky_tex: Texture2D = null
+var _pano: Texture2D = null     # the battle's painted panorama (battle.gd passes it; the dead-star board shows it, R2)
 
 
 func _sky_into(m: ShaderMaterial) -> void:
@@ -111,6 +115,10 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_baker.name = "Baker"
 	add_child(_baker)
 	var env: Environment = opts.get("environment", null)
+	if opts.get("pano") is Texture2D:
+		_pano = opts["pano"]
+	elif env != null and env.sky != null and env.sky.sky_material is ShaderMaterial and (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano") is Texture2D:
+		_pano = (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano")
 	if env != null:
 		_make_sky(env)
 	if deadstar:
@@ -221,6 +229,17 @@ func _make_sky(env: Environment) -> void:
 	m.set_shader_parameter("star_k", float(setting["stars"]))
 	m.set_shader_parameter("sun_dir", SUN.normalized())
 	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
+	# the panorama always rides on the sky material (shown only on the dead-star board): the battle keeps one Environment
+	# and finds the painting on its sky's "pano" for the next battle
+	if _pano != null:
+		m.set_shader_parameter("pano", _pano)
+	if bool(setting.get("deadstar", false)):
+		# R2: the dead-star board keeps its painted sky; the gas goes over it at half strength, and no bright sun (the
+		# painting's dim red dead sun is the light's source)
+		m.set_shader_parameter("sun_k", 0.0)
+		if _pano != null:
+			m.set_shader_parameter("has_pano", 1.0)
+			m.set_shader_parameter("neb_gain", 0.55)
 	var h := float(ProjectSettings.get_setting("display/window/size/viewport_height", 1080))
 	if is_inside_tree():
 		h = maxf(h, float(get_viewport().get_visible_rect().size.y))
@@ -284,8 +303,11 @@ func system(with_planet: bool) -> void:
 		var R := DIST * sin(ang)
 		var tilt := Basis(Vector3(0, 0, 1), side * r.randf_range(0.18, 0.42)) * Basis(Vector3(1, 0, 0), r.randf_range(-0.25, 0.1))
 		var node := _sphere(_center + dir * DIST, R, tilt, P, int(setting["seed"]), bake_q, r.randf_range(0.002, 0.006), Vector3.ONE, true)
+		_planet_pos = node.position
+		_planet_R = R
 		if bool(P.get("rings", false)):
 			_rings(node.position, R, tilt, P, r)
+			_ring_n = (tilt * Vector3.UP).normalized()
 	# moons: none alike (size, surface, tint and turn all differ), never over the planet
 	var moons := int(P.get("moons", 1)) if with_planet else 1 + r.randi() % 2
 	var placed: Array = []
@@ -756,6 +778,8 @@ uniform float k = 0.66;
 uniform vec3 col = vec3(0.008, 0.011, 0.018);
 uniform vec3 well = vec3(0.0);
 uniform float well_r = 0.0;
+uniform vec4 planet = vec4(0.0);    // xyz centre, w radius (0: none)
+uniform vec3 ring_n = vec3(0.0);
 varying vec3 vW;
 void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 void fragment() {
@@ -764,7 +788,27 @@ void fragment() {
 	// thicker at grazing angles, like smoked glass seen edge on: when the camera tips low, the far half of the board
 	// would otherwise show the planet and far rocks below the horizon right through the hexes
 	float graze = 1.0 - abs(dot(normalize(CAMERA_POSITION_WORLD - vW), vec3(0.0, 1.0, 0.0)));
-	float a = mix(k, 0.94, graze * graze) * (1.0 - smoothstep(-fade * 0.25, fade, sd));
+	float a = mix(k, 0.94, graze * graze);
+	// where the view ray goes on to the system's planet or its rings, the board is all but opaque: the planet shows past
+	// the board's edges, never through the hexes (it lies below the board's plane, beyond its far side)
+	if (planet.w > 0.0) {
+		vec3 ro = CAMERA_POSITION_WORLD;
+		vec3 rd = normalize(vW - ro);
+		vec3 oc = planet.xyz - ro;
+		float tc = dot(oc, rd);
+		float dperp = length(oc - rd * tc) / planet.w;
+		float hit = (tc > 0.0) ? smoothstep(1.12, 0.98, dperp) : 0.0;
+		if (dot(ring_n, ring_n) > 0.5) {
+			float den = dot(rd, ring_n);
+			if (abs(den) > 1e-4) {
+				float t = dot(oc, ring_n) / den;
+				float rr = length(ro + rd * t - planet.xyz) / planet.w;
+				hit = max(hit, (t > 0.0 ? smoothstep(1.2, 1.32, rr) * smoothstep(2.42, 2.28, rr) : 0.0));
+			}
+		}
+		a = mix(a, 0.97, hit);
+	}
+	a *= 1.0 - smoothstep(-fade * 0.25, fade, sd);
 	if (well_r > 0.0) {
 		a *= smoothstep(well_r, well_r * 1.5, length(vW.xz - well.xz));
 	}
@@ -788,6 +832,9 @@ func underlay() -> void:
 	m.set_shader_parameter("centre", _center)
 	# a hint of the setting's own colour, so it reads as deep space and not a black sheet
 	m.set_shader_parameter("col", Vector3(0.006, 0.009, 0.016).lerp(setting.get("haze", Vector3.ZERO) as Vector3, 0.35))
+	if _planet_R > 0.0:
+		m.set_shader_parameter("planet", Vector4(_planet_pos.x, _planet_pos.y, _planet_pos.z, _planet_R))
+		m.set_shader_parameter("ring_n", _ring_n)
 	if _well != Vector3.INF:
 		m.set_shader_parameter("well", _well)
 		m.set_shader_parameter("well_r", 15.0 * 4.4)
