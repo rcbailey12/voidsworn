@@ -11,7 +11,7 @@ from PIL import Image, ImageFilter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from post import framed, PD
 
-# admiral -> (faction, picked render stem, alternate stems, note); stems are p64\<stem>_00001_.png
+# admiral -> (faction, picked render stem, alternate stems, note); a stem without a folder means p64\<stem>, else <folder>/<stem>
 PICKS = {
  'grax': ('corsair', 'corsair_grax_s11_oil50_zi2i_s11', ['corsair_grax_s51_oil50_zi2i_s51'],
           'R64 void hunter (Nov 1): grey-streaked black mane, iron maw plate, chain harness, boarding hook. s23 and s37 showed a bare chest.'),
@@ -37,7 +37,13 @@ S64_PICK = {  # Nov 1 review: the burn that stays a burn (N6 s11 and N3 s11 repa
  'nem_corsair_3': {'burn': 23, 'cyber': 23, 'eye': 23}, 'nem_corsair_4': {'burn': 11, 'cyber': 23, 'eye': 11},
  'nem_corsair_5': {'burn': 11, 'cyber': 11, 'eye': 11}, 'nem_corsair_6': {'burn': 23, 'cyber': 11, 'eye': 11},
 }
+SCAR_DIR = 's64'
 S_CROP = 0.62   # same bust crop as the round 8 pools (nemesis_crop.S_HUMAN): the face a third of the way down
+
+
+def _src(root, stem):
+    rel = stem if '/' in stem else 'p64/' + stem
+    return os.path.join(root, rel + '_00001_.png'), rel + '_00001_.png'
 
 
 def admirals(root):
@@ -46,15 +52,15 @@ def admirals(root):
         old = os.path.join(PD, 'painted', adm + '.webp')
         if os.path.exists(old) and not os.path.exists(os.path.join(PD, 'alts', adm + '_r8.webp')):
             shutil.copyfile(old, os.path.join(PD, 'alts', adm + '_r8.webp'))
-        framed(Image.open(os.path.join(root, 'p64', pick + '_00001_.png')), fac).save(old, 'WEBP', quality=88, method=6)
+        framed(Image.open(_src(root, pick)[0]), fac).save(old, 'WEBP', quality=88, method=6)
         A = []
         for n, a in enumerate(alts):
             fn = 'alts/%s_p64alt%d.webp' % (adm, n + 1)
-            framed(Image.open(os.path.join(root, 'p64', a + '_00001_.png')), fac).save(os.path.join(PD, fn), 'WEBP', quality=80, method=6)
+            framed(Image.open(_src(root, a)[0]), fac).save(os.path.join(PD, fn), 'WEBP', quality=80, method=6)
             A.append(fn)
         if os.path.exists(os.path.join(PD, 'alts', adm + '_r8.webp')): A.append('alts/%s_r8.webp' % adm)
-        idx['painted'][adm] = {'faction': fac, 'pick': 'painted/%s.webp' % adm, 'alts': A, 'source': 'p64/' + pick + '_00001_.png',
-                               'alt_sources': ['p64/' + a + '_00001_.png' for a in alts], 'note': note}
+        idx['painted'][adm] = {'faction': fac, 'pick': 'painted/%s.webp' % adm, 'alts': A, 'source': _src(root, pick)[1],
+                               'alt_sources': [_src(root, a)[1] for a in alts], 'note': note}
         print('published', adm)
     json.dump(idx, open(idx_path, 'w'), indent=1)
 
@@ -63,12 +69,12 @@ def crops(root, out, fac=None):
     os.makedirs(out, exist_ok=True); A = {}
     for nid, (stem, (fx, fy, fh)) in NEM.items():
         if fac and nid.split('_')[1] != fac: continue
-        im = Image.open(os.path.join(root, 'p64', stem + '_00001_.png')).convert('RGB'); w, h = im.size; S = S_CROP
+        im = Image.open(_src(root, stem)[0]).convert('RGB'); w, h = im.size; S = S_CROP
         left = min(max(fx - S / 2, 0), 1 - S); top = min(max(fy - S / 3, 0), 1 - S)
         c = im.crop((int(left * w), int(top * h), int((left + S) * w), int((top + S) * h))).resize((1024, 1024), Image.LANCZOS)
         c.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2)).save(os.path.join(out, nid + '.png'))
         A[nid] = {'anchor': [round((fx - left) / S, 3), round((fy - top) / S, 3), round(fh / S, 3)], 'crop': [round(left, 3), round(top, 3), S],
-                  'source': 'p64/%s_00001_.png' % stem}
+                  'source': _src(root, stem)[1]}
     json.dump(A, open(os.path.join(out, 'anchors.json'), 'w'), indent=1)
     print(len(A), 'crops in', out)
 
@@ -78,7 +84,7 @@ def scar_dir(root, out):
     os.makedirs(out, exist_ok=True)
     for nid, P in S64_PICK.items():
         for k, sd in P.items():
-            shutil.copyfile(os.path.join(root, 's64', '%s_%s_s%d_00001_.png' % (nid, k, sd)), os.path.join(out, '%s_%s_s11_00001_.png' % (nid, k)))
+            shutil.copyfile(os.path.join(root, SCAR_DIR, '%s_%s_s%d_00001_.png' % (nid, k, sd)), os.path.join(out, '%s_%s_s11_00001_.png' % (nid, k)))
 
 
 if __name__ == '__main__':
