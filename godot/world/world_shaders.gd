@@ -240,10 +240,18 @@ void fragment() {
 	float dsrc = texture(depth_tex, suv).r;
 	vec4 vsrc = INV_PROJECTION_MATRIX * vec4(suv * 2.0 - 1.0, dsrc, 1.0);
 	float src_z = -vsrc.z / vsrc.w;
-	if (src_z < hole_z + disc_reach) { suv = SCREEN_UV; }
+	// F4 r8: nor is a pixel that is itself near (a rock or ship beside or in front of the hole): it was overwritten by bent
+	// sky whenever its borrowed pixel was far, which sliced the rocks round the dead star in half
+	float dcur = texture(depth_tex, SCREEN_UV).r;
+	vec4 vcur = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, dcur, 1.0);
+	float cur_z = -vcur.z / vcur.w;
+	bool near_px = cur_z < hole_z + disc_reach;
+	if (src_z < hole_z + disc_reach || near_px) { suv = SCREEN_UV; }
+	// whatever stands in front of the hole hides its shadow, ring and lensed arcs (a ship crossing the dead star)
+	float front = 1.0 - smoothstep(hole_z - r_sh_w * 1.6, hole_z - r_sh_w * 1.1, cur_z);
 	vec3 col = textureLod(screen_tex, suv, 0.0).rgb;
 	// a little extra brightening near the Einstein ring (lensing magnifies)
-	float mag = 1.0 + 0.6 * exp(-pow((th - r_einstein) / (r_einstein * 0.35), 2.0)) * edge;
+	float mag = 1.0 + 0.6 * exp(-pow((th - r_einstein) / (r_einstein * 0.35), 2.0)) * edge * (near_px ? 0.0 : 1.0);
 	col *= mag;
 	// the disc's far side, lensed: a broad arc over the shadow and a thin secondary arc under it (the same recipe as
 	// G3's map, BH_LENSED), with Doppler beaming (the side turning toward the camera brighter and bluer)
@@ -281,7 +289,8 @@ void fragment() {
 	// the shadow and the photon ring: thin, sharp, hugging the shadow, a little brighter on the approaching side
 	float sh = smoothstep(1.02, 0.98, ts);
 	float ring = (exp(-pow((ts - 1.02) / 0.011, 2.0)) * 3.2 * (1.0 + 0.25 * beam) + exp(-pow((ts - 1.06) / 0.05, 2.0)) * 0.35) * photon;
-	col = mix(col, vec3(0.0), sh) + (c * arc * arc_gain + ring_col * ring) * (0.95 + 0.05 * sin(scene_t * 0.7));
+	vec3 lensed = mix(col, vec3(0.0), sh) + (c * arc * arc_gain + ring_col * ring) * (0.95 + 0.05 * sin(scene_t * 0.7));
+	col = mix(lensed, col, front);
 	ALBEDO = col;
 	ALPHA = smoothstep(1.0, 0.85, r);
 }

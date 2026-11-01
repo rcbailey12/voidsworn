@@ -5,6 +5,7 @@ extends Node
 #
 #   godot --path godot --resolution 1920x1080 res://world/world_shots.tscn -- --out DIR [--only a,b] [--quality max]
 #         [--bench S]   also orbit the camera for S seconds per case and write DIR/bench.json (frame times)
+#         [--novsync]   measure without the screen's frame cap
 #
 # Every case is a fixed scenario dictionary (the same fields as rules/test/scenarios.json) with its seed, and the biome
 # the campaign would give that region (biome is visual only, R63), written into the rules' battle before the scene builds.
@@ -49,6 +50,10 @@ func _ready() -> void:
 				args[k] = true
 		i += 1
 	out = str(args.get("out", "user://world_shots"))
+	# --novsync: the project syncs to the screen (60 fps on Ryan's monitor), which hides how much room is left; the bench
+	# can turn it off to measure the real frame times
+	if args.has("novsync"):
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 	DirAccess.make_dir_recursive_absolute(out)
 	_run.call_deferred()
 
