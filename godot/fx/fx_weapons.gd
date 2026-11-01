@@ -80,6 +80,13 @@ static func default_shots(lk: String) -> int:
 # ---------------------------------------------------------------- the volley
 
 static func volley(fx, aid: String, kind: String, tid: String, opts: Dictionary) -> Dictionary:
+	var t0 := Time.get_ticks_usec()
+	var r = _volley_entry(fx, aid, kind, tid, opts)
+	fx.pend("volley", t0)
+	return r
+
+
+static func _volley_entry(fx, aid: String, kind: String, tid: String, opts: Dictionary) -> Dictionary:
 	var A = fx.ship(aid)
 	var Tg = fx.ship(tid)
 	if A == null or Tg == null:

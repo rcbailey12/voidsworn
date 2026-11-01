@@ -890,7 +890,9 @@ func _dmg_request(fx) -> void:
 	if ents.is_empty() and _orig.is_empty():
 		return
 	if _orig.is_empty():
+		var t_g := Time.get_ticks_usec()
 		_orig = BREACH.gather(self)
+		fx.pend("hull_gather", t_g)
 		if _orig.is_empty():
 			return
 	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "cell": hull.L / 16.0, "ovl": hull.L * 0.0006, "out": {}, "hull": hull,
@@ -920,6 +922,7 @@ func flush_damage(fx) -> void:
 		return
 	var t_ap := Time.get_ticks_usec()
 	BREACH.apply(fx, self, _dmg_job)
+	fx.pend("breach_apply", t_ap)
 	mark_ms.append([(_dmg_job["ents"] as Array).size(), int(_dmg_job.get("out", {}).get("ms", -1)), (Time.get_ticks_usec() - t_ap) / 1000.0])
 	# the death pieces are cut from the hull as it is now, holes and all. r18 (20-ship bench: 1% lows of 15 fps and a
 	# 4 s stall): at most one fresh cut every CUT_REFRESH seconds per ship, not one per hit (each cut is seconds of
@@ -952,7 +955,9 @@ func _cut_refresh(fx) -> void:
 	_cut_stale = false
 	set_meta("cut_prev", get_meta("cut_job"))
 	remove_meta("cut_job")
+	var t_c := Time.get_ticks_usec()
 	DEATH.precompute(fx, self)
+	fx.pend("cut_start", t_c)
 
 
 # A weapon's own mark on the hull where a shot landed (R43): look and weight pick it (fx_breach.marks_for); lp, ln and

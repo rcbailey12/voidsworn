@@ -188,6 +188,12 @@ static func _fold(v: Vector3, crease: float, bend: float) -> Vector3:
 
 
 static func spawn_debris(fx, pos: Vector3, vel: Vector3, count: int, size: float) -> void:
+	var t0 := Time.get_ticks_usec()
+	_spawn_debris_inner(fx, pos, vel, count, size)
+	fx.pend("debris", t0)
+
+
+static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size: float) -> void:
 	var st: Dictionary = fx.dstate
 	if not bool(st.get("physics_on", false)) or count <= 0:
 		return
@@ -396,10 +402,12 @@ static func _prebuild(fx, s) -> void:
 	WorkerThreadPool.wait_for_task_completion(tid)
 	s.remove_meta("cut_task")
 	var job: Dictionary = s.get_meta("cut_job", {})
+	var t0 := Time.get_ticks_usec()
 	var meshes: Array = []
 	for pc in job.get("out", []) if job.get("out") != null else []:
 		meshes.append(_piece_mesh(pc))
 	job["meshes"] = meshes
+	fx.pend("piece_meshes", t0)
 
 
 # A piece's mesh with the hull's own materials and vertex format (no copies, same compression: anything else would be
@@ -529,6 +537,13 @@ static func _cut(job: Dictionary) -> Array:
 # ---------------------------------------------------------------- the death
 
 static func death(fx, s, cause: String) -> float:
+	var t0 := Time.get_ticks_usec()
+	var r = _death_inner(fx, s, cause)
+	fx.pend("death", t0)
+	return r
+
+
+static func _death_inner(fx, s, cause: String) -> float:
 	if s.dead:
 		return 0.0
 	s.dead = true
@@ -664,6 +679,12 @@ static func _hide_ship(s) -> void:
 
 
 static func _break_up(fx, s, cause: String, tint: Color) -> void:
+	var t0 := Time.get_ticks_usec()
+	_break_up_inner(fx, s, cause, tint)
+	fx.pend("break_up", t0)
+
+
+static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	var T: float = fx.now
 	var h = s.hull
 	var w: int = s.weight

@@ -68,7 +68,16 @@ var holding := false
 var moments := {}
 var waiting: Array = []      # stills waiting for their moment: [name, file, eye, look, fov, offset]
 var fleet: Array = []        # the --fleet bench's line ships
-var hitches: Array = []      # bench frames over 33 ms: [clock, ms]
+var hitches: Array = []      # bench frames over 33 ms: [clock, ms, details]
+var prof_prev := {}
+
+
+static func _prof_ms(p: Dictionary) -> Dictionary:
+	var o := {}
+	for k in p:
+		if int(p[k]) >= 300:
+			o[k] = snappedf(int(p[k]) / 1000.0, 0.1)
+	return o
 
 
 func _ready() -> void:
@@ -611,11 +620,24 @@ func _process_bench() -> void:
 		return
 	if bench_ms.is_empty() and gpu_n == 0:
 		RenderingServer.viewport_set_measure_render_time(vp.get_viewport_rid(), true)
+		if fx != null:
+			fx.prof_take()
 		for m in ["DRAW", "SURFACE", "SPECIALIZATION", "MESH"]:
 			pc0[m] = Performance.get_monitor(Performance.get("PIPELINE_COMPILATIONS_" + m))
 	var fms := (now - bench_last) / 1000.0
+	# F3: what each hitch frame (and the frame before it) spent: fx's own main-thread sections (fx.prof, ms), the
+	# engine's process and physics time and the viewport's render CPU and GPU time (the previous frame's, as measured)
+	var fp: Dictionary = fx.prof_take() if fx != null else {}
 	if fms > 33.0 and hitches.size() < 60:
-		hitches.append([snappedf(clock, 0.01), snappedf(fms, 0.1)])
+		var det := {"fx": _prof_ms(fp), "fx_prev": _prof_ms(prof_prev),
+			"process_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.1),
+			"physics_ms": snappedf(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, 0.1),
+			"render_cpu_ms": snappedf(RenderingServer.viewport_get_measured_render_time_cpu(vp.get_viewport_rid()), 0.1),
+			"render_gpu_ms": snappedf(RenderingServer.viewport_get_measured_render_time_gpu(vp.get_viewport_rid()), 0.1),
+			"objects": int(Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME)),
+			"bodies": int(Performance.get_monitor(Performance.PHYSICS_3D_ACTIVE_OBJECTS))}
+		hitches.append([snappedf(clock, 0.01), snappedf(fms, 0.1), det])
+	prof_prev = fp
 	if fms > worst_ms:
 		worst_ms = fms
 		worst_t = clock

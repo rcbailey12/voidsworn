@@ -222,15 +222,37 @@ func step(delta: float) -> void:
 	var dt = delta * _speed
 	now += dt
 	RenderingServer.global_shader_parameter_set(&"scene_t", now)
+	var t0 := Time.get_ticks_usec()
 	_run_later()
+	t0 = pend("later", t0)
 	_update_feel(delta)
 	for id in ships:
 		(ships[id] as SHIP).update(self, dt)
+	t0 = pend("ships", t0)
 	WEAP.update(self, dt)
 	DEATH.update(self, dt)
+	t0 = pend("weap_death", t0)
 	_update_lights()
 	for k in pools:
 		(pools[k] as POOLS.Pool).flush()
+	pend("lights_pools", t0)
+
+
+# F3 profiling (the 20-ship bench's hitch frames): microseconds of main-thread fx work per named section since the last
+# prof_take(). pend adds the time since t0 to `name` and returns now (chain it). Cheap enough to leave on.
+var prof := {}
+
+
+func pend(name: String, t0: int) -> int:
+	var t1 := Time.get_ticks_usec()
+	prof[name] = int(prof.get(name, 0)) + (t1 - t0)
+	return t1
+
+
+func prof_take() -> Dictionary:
+	var p := prof
+	prof = {}
+	return p
 
 
 func anim_speed() -> float:
