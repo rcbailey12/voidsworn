@@ -649,6 +649,11 @@ func show_tip(bb: String, at: Vector2) -> void:
 		p.x = at.x - tip.size.x - s(18)
 	if p.y + tip.size.y > vs.y:
 		p.y = vs.y - tip.size.y - s(8)
+	# F1: never over the side panels (the panel's text showed through the tip): move it beside them
+	if panel != null and panel.visible and Rect2(p, tip.size).intersects(panel.get_global_rect()):
+		p.x = panel.get_global_rect().position.x - tip.size.x - s(8)
+	if roster != null and roster.visible and Rect2(p, tip.size).intersects(roster.get_global_rect()):
+		p.x = roster.get_global_rect().end.x + s(8)
 	# F1: never under the activation card: lift the tip above it
 	if card != null and card.visible:
 		var cr := card.get_global_rect()

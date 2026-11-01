@@ -105,6 +105,9 @@ func _shot(name: String) -> void:
 	if b.hud.tip.visible and b.hud.card.visible:
 		var tr: Rect2 = b.hud.tip.get_global_rect()
 		_check(not tr.intersects(b.hud.card.get_global_rect()), "%s: the hover tip is clear of the card" % name)
+	if b.hud.tip.visible and DisplayServer.get_name() != "headless":  # judged in a real window
+		var tr2: Rect2 = b.hud.tip.get_global_rect()
+		_check(not tr2.intersects(b.hud.panel.get_global_rect()) and not tr2.intersects(b.hud.roster.get_global_rect()), "%s: the hover tip is clear of the side panels" % name)
 	await b._snap("%02d_%s" % [step_n, name])
 
 
