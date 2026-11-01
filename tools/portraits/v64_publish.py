@@ -86,7 +86,7 @@ SCAR = {
  # s68h (Glasswright Nemesis 2; Hullbreaker Nemesis 1, 2, 3, 5: their implant plates grew into riveted face masks on 1, 3 and 5,
  # redone in s68i with a small eye-socket ring; Crusade Nemesis 3)
  'nem_ithar_2': {'burn': 23, 'porcelain': 23},
- 'nem_corsair_1': {'burn': 11, 'cyber': 51, 'eye': 11}, 'nem_corsair_2': {'burn': 11, 'cyber': 23, 'eye': 11},
+ 'nem_corsair_1': {'burn': 11, 'cyber': 51, 'eye': 11}, 'nem_corsair_2': {'burn': 11, 'cyber': 51, 'eye': 11}  # cyber from s68j,
  'nem_corsair_3': {'burn': 11, 'cyber': 37, 'eye': 23}, 'nem_corsair_5': {'burn': 11, 'cyber': 37, 'eye': 11},
  'nem_corsair_4': {'burn': 11, 'cyber': 11, 'eye': 11}, 'nem_corsair_6': {'burn': 11, 'cyber': 11, 'eye': 23},  # s68i
  'nem_voidsworn_3': {'burn': 23, 'eye': 11},
