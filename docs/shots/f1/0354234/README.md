@@ -1,6 +1,6 @@
 # F1: turn flow, move hexes and the play log (feel pass, Nov 1)
 
-Captured in the running game on Ryan's PC (RTX 5080, Forward+), lane A job `f1_shots_0354234`. The F1 code in these pictures is main commits ad8521a, fe4a459, 545ec46 and 0354234 (the job ran the same tree before the push).
+Captured in the running game on Ryan's PC (RTX 5080, Forward+), lane A job `f1_shots_0354234`. The F1 code in these pictures is on main as f257691 to 36740da; the PC job ran the same code as commit 0354234, before it was rebased onto main (the folder keeps that name). The wing change (f6789d3) came after these pictures.
 
 ## What you'll see in a battle now
 
