@@ -36,6 +36,14 @@ const TARGET_RING := Color(1.0, 0.25, 0.2, 0.95)
 const QUAD_NAME := ["prow", "starboard", "rear", "port"]
 const SEC_NAME := {"prow": "prow", "mid": "midships", "eng": "engines"}
 const MOVE_PER := {"voidsworn": 1.25, "hegemony": 0.75, "corsair": 0.85, "chorus": 1.1, "ithar": 1.0, "deathless": 0.6}
+# F2 move pace (R64, Nov 1: about twice as slow, one ship at a time): ms per hex for an escort and for a battleship or
+# bigger (in between by size; the faction factor above enters as its square root), the build-and-bleed allowance, the cap
+# on one move, the weight of a 60 degree turn in hexes (escort, battleship), strike craft against a hull their size
+const MOVE_HEX := [560.0, 860.0]
+const MOVE_LEAD := [250.0, 450.0]
+const MOVE_CAP := 7000.0
+const MOVE_ROT := [0.6, 1.1]
+const MOVE_SQUAD := 0.5
 const TIPS := [
 	["start", "Your fleet", "Select one of your ships: it has a green ring underneath. Gold hexes show where it can move, and the fans show its firing arcs."],
 	["turns", "Turns alternate", "You and the enemy take turns one ship at a time: activate one of yours, then the enemy activates one of theirs, until every ship has acted. Then a new round starts."],
@@ -73,6 +81,8 @@ var speed := 1.0           # the game's SPEED (duration multiplier)
 var user_speed := 1.0      # Speed: normal (1) or fast (0.45)
 var movement := "cinematic"  # Movement: cinematic (heavy ships, R50) or brisk (the earlier motion)
 var move_frames := ""        # --move-frames <dir>: a frame per rendered frame while ships burn (before and after captures)
+var burns_live := 0          # moves under way (F2 pace check: ships move one at a time)
+var move_s_round := {}       # round -> game seconds of enemy moves (F2: moves play at their own pace, outside the round budget)
 var game_t := 0.0             # game-clock seconds since the battle scene started (scaled by --fast like every animation)
 var pace_kind := {}           # event kind -> game seconds spent playing it in enemy batches (where the wait goes)
 var pace_enemy := {}          # round -> game seconds spent playing the enemy's activations (the player's wait, B2 target 12 s, limit 15 s)
@@ -932,7 +942,7 @@ func _play_batch(bt: Dictionary) -> void:
 			await _play_fire(e, grp)
 			if enemy:
 				pace_kind["fire"] = float(pace_kind.get("fire", 0.0)) + game_t - tf
-				speed = base_speed * _round_budget_k(float(pace_enemy.get(int(V.get("round", 0)), 0.0)) + game_t - t_batch)
+				speed = base_speed * _round_budget_k(float(pace_enemy.get(int(V.get("round", 0)), 0.0)) + game_t - t_batch - float(move_s_round.get(int(V.get("round", 0)), 0.0)))
 				if skip:
 					speed = minf(speed, float(PACE["skip"]))
 			i = j
@@ -941,7 +951,7 @@ func _play_batch(bt: Dictionary) -> void:
 		await _play_event(e)
 		if enemy:
 			pace_kind[str(e["t"])] = float(pace_kind.get(str(e["t"]), 0.0)) + game_t - te
-			speed = base_speed * _round_budget_k(float(pace_enemy.get(int(V.get("round", 0)), 0.0)) + game_t - t_batch)
+			speed = base_speed * _round_budget_k(float(pace_enemy.get(int(V.get("round", 0)), 0.0)) + game_t - t_batch - float(move_s_round.get(int(V.get("round", 0)), 0.0)))
 		if skip and enemy:
 			speed = minf(speed, float(PACE["skip"]))
 		i += 1
@@ -1236,13 +1246,39 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		la = a
 	if float(keys[-1]["s"]) < s:
 		keys.append({"s": s, "pos": keys[-1]["pos"]})
-	var per := (430.0 if size > 0.8 else 350.0 if size > 0.6 else 280.0) * float(MOVE_PER.get(str(u.get("fac", "")), 1.0))
-	var dur := minf((per * maxf(s, 0.001) + 260.0) * (0.72 if charge else 1.0) * float(PACE["move"]), 3600.0) / 1000.0
-	sv.speed_k = 1.0
+	var t_move := game_t
+	burns_live += 1
+	if burns_live > 1 and args.has("move-trace"):
+		print("[move] overlap: %s starts while %d other move(s) burn" % [str(id), burns_live - 1])
+	var sk := clampf((size - 0.5) / 0.45, 0.0, 1.0)   # escort 0 .. battleship and up 1 (F2: speed, spin and ramps by size)
+	var fk := pow(float(MOVE_PER.get(str(u.get("fac", "")), 1.0)), 0.35)   # a faction flavour, kept inside the ruled range
+	# F2 (R64, Ryan Nov 1): about twice as slow, every ship at its own true pace on both sides; only Enter or Space (or the
+	# Speed: fast setting) hurries a move. The old B2 timing stays behind --movement segments for before and after shots.
+	var per := lerpf(MOVE_HEX[0], MOVE_HEX[1], sk) * fk * (MOVE_SQUAD if bool(u.get("squadron", false)) else 1.0)
+	var gsteps: Array = _glide_steps(sv, path, sk) if cin else []
+	var mv_s := s
 	if cin:
-		sv.play_moves(_move_segments(sv, path, mass, args.has("flip-burn") and str(u.get("cls", "")) in FLIP_CLASSES), dur * speed, {"mass": mass})
+		mv_s = 0.0
+		for g in gsteps:
+			mv_s += float(g["w"])
+	var dur := minf((per * maxf(mv_s, 0.001) + lerpf(MOVE_LEAD[0], MOVE_LEAD[1], sk)) * (0.72 if charge else 1.0), MOVE_CAP) / 1000.0
+	var mv_speed := minf(user_speed, float(PACE["skip"])) if skip else user_speed
+	if movement == "segments":
+		per = (430.0 if size > 0.8 else 350.0 if size > 0.6 else 280.0) * float(MOVE_PER.get(str(u.get("fac", "")), 1.0))
+		dur = minf((per * maxf(s, 0.001) + 260.0) * (0.72 if charge else 1.0) * float(PACE["move"]), 3600.0) / 1000.0
+		mv_speed = speed
+	sv.speed_k = 1.0
+	if movement == "segments" and not bool(u.get("squadron", false)):
+		sv.play_moves(_move_segments(sv, path, mass, args.has("flip-burn") and str(u.get("cls", "")) in FLIP_CLASSES), dur * mv_speed, {"mass": mass})
+	elif cin:
+		sv.play_glide(gsteps, dur * mv_speed, {"mass": sk})
 	else:
-		sv.play_path(keys, yaws, alts, s, dur * speed, {"mass": mass})
+		sv.play_path(keys, yaws, alts, s, dur * mv_speed, {"mass": mass})
+	if args.has("move-trace"):
+		var n_rot := 0
+		for st in path:
+			n_rot += 1 if _jt(st.get("rot")) else 0
+		print("[move] %s %s %s size %.2f hexes %d turns %d dur %.2f s, %.0f ms a hex, speed %.2f" % [str(id), _side(id), str(u.get("cls", "")), size, path.size() - n_rot, n_rot, dur * mv_speed, per * mv_speed, mv_speed])
 	if size > 0.3:
 		sfx.play("engine", {"pos": sv.position, "gain": minf(1.0, 0.55 + size * 0.6)})
 	var eng_on: bool = gfx != null and gfx.has_method("set_engine")
@@ -1258,6 +1294,9 @@ func _play_move(id, path: Array, charge: bool) -> void:
 			await get_tree().process_frame
 	if eng_on:
 		gfx.set_engine(str(id), ENGINE_IDLE if cin else 1.0)
+	burns_live -= 1
+	if _side(id) == "enemy" and movement != "segments":
+		move_s_round[int(V.get("round", 0))] = float(move_s_round.get(int(V.get("round", 0)), 0.0)) + game_t - t_move
 
 
 # Cinematic moves as segments from rest to rest (ship_view.gd play_moves): consecutive turn steps make one turn about
@@ -1307,6 +1346,25 @@ func _move_segments(sv, path: Array, mass: float, flip_ok := false) -> Array:
 			var last: Vector3 = g["pts"][-1]
 			if absf(last.y) > 0.01:
 				g["pts"].append(Vector3(last.x, 0, last.z))
+	return out
+
+
+# F2: the path as glide steps for ship_view.gd play_glide (one continuous motion): each turn step a target heading and
+# its weight (a 60 degree turn weighs MOVE_ROT hexes, more for a bigger hull, so it spins slower), each translation step
+# its hex (with the height of a climb over a rock or a dive under a ship) and a weight of one hex
+func _glide_steps(sv, path: Array, sk: float) -> Array:
+	var out: Array = []
+	var la: float = sv.cur_yaw
+	for st in path:
+		var a: float = la + angle_difference(la, ShipView.yaw_of(st["f"]))
+		if _jt(st.get("rot")):
+			out.append({"kind": "turn", "yaw": a, "w": lerpf(MOVE_ROT[0], MOVE_ROT[1], sk) * maxf(absf(angle_difference(la, a)) / (PI / 3.0), 0.5)})
+		else:
+			var ov := float(st.get("over", 0)) if st.get("over") != null else 0.0
+			var p: Vector3 = board.hex_world(st["q"], st["r"])
+			p.y = (9.0 if ov > 0 else -7.5) if ov != 0.0 else 0.0
+			out.append({"kind": "move", "p": p, "w": 1.0})
+		la = a
 	return out
 
 
@@ -3439,7 +3497,7 @@ func _sheet_check() -> void:
 	_quit_report()
 
 
-# --maneuver straight|turn|side|back (with --move-frames): how well a path shows one maneuver; -1e9 when it does not
+# --maneuver straight|turn|side|back|long (with --move-frames): how well a path shows one maneuver; -1e9 when it does not
 #   straight: ahead only, the longer the better; turn: turns in place then ahead (rotate, then burn);
 #   side: sidesteps only; back: backing off only
 func _maneuver_score(path: Array, want: String) -> float:
@@ -3470,6 +3528,12 @@ func _maneuver_score(path: Array, want: String) -> float:
 			return float(n_slip) if n_slip > 0 and n_rot + n_fwd + n_rev == 0 else -1e9
 		"back":
 			return float(n_rev) if n_rev > 0 and n_rot + n_fwd + n_slip == 0 else -1e9
+		"long":
+			# F2: the longest move with turns, a turn after the hull is already moving counting most (a straight run
+			# when the ship has no turn to spare)
+			if n_rev > 0 or n_fwd + n_slip == 0:
+				return -1e9
+			return float(n_fwd) + float(n_slip) * 0.8 + float(n_rot) * 1.5 + (2.0 if rot_after_move else 0.0)
 	return -1e9
 
 

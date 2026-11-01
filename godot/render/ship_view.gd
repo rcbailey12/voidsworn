@@ -726,31 +726,37 @@ func _emit(kind: String, f: Callable) -> void:
 # ---------------------------------------------------------------- one continuous motion per move (F2, Ryan Nov 1, R64)
 # Ryan after his first Godot playtest: "Ship movement feels way too jerky and fast still ... It feels rushed and
 # frenzied." The segments above stop dead between every turn and run. A glide plays the whole move as one motion:
-#   - the hull follows one smooth curve through its hexes (corners rounded), its progress along the curve set by a
-#     monotone cubic over the move's weights, so it slows into a corner and through a turn but never stops between
-#     pieces (it only comes to rest where it truly must: the start, the end, and a reversal of course);
-#   - each run of turn steps is one spin, eased (smootherstep), overlapping the runs either side: the bow starts to come
-#     round while the hull is still moving, and the next run builds while the spin finishes;
-#   - the whole move eases in at the start and out at the end; a heavier hull spends more of it building and bleeding
-#     speed (and its turns weigh more, so it spins slower);
+#   - the hull follows one smooth curve through its hexes (corners rounded) with a real speed profile along it: it
+#     builds speed at its own acceleration (a heavier hull takes longer), cruises, slows into a corner or a turn and
+#     builds again out of it, and bleeds speed into the last hex; it only comes to rest at the start, at the end and where
+#     its course truly reverses. The profile is smoothed in time, so the pushes come on and off gently (no jolts);
+#   - each run of turn steps is one spin with its own eased build, coast and bleed (sine ramps, longer for a heavier
+#     hull), timed to the hull's passage through its corner, so the bow comes round while the hull is still moving; a spin
+#     before the first run sets the hull moving as it nears its end, a spin after the last run starts as the hull arrives;
 #   - every thruster follows the hull's real acceleration in its own frame (R50): the main drive only while it pushes the
 #     ship ahead, the bow's retro jets to brake, aft jets to stop a back-off, matched side jets for any sideways push
 #     (sidesteps, and the pull into a curved corner), the bow-and-stern couple while the spin builds or bleeds. No banking.
 # steps: [{"kind": "turn", "yaw": target (unwrapped), "w"} | {"kind": "move", "p": Vector3 (height included), "w"}], w in
-# hex units of the move's time; dur the whole move in seconds.
+# hexes of the move's time (one hex at cruise is one unit); dur the whole move in seconds (the battle's pace).
 var glide := false
-var gl_W: Array = []          # progress knots: move weight -> arc length along the curve (monotone cubic)
-var gl_D: Array = []
-var gl_M: Array = []
-var gl_turns: Array = []      # [{"a", "b", "d"}]: a spin of d radians eased over move weights a..b
+var gl_ds: PackedFloat32Array = PackedFloat32Array()   # distance along the curve on an even time grid (motion time)
+var gl_dtg := 1.0 / 60.0      # that grid's step, in units
+var gl_tm0 := 0.0             # when the motion starts on the move's timeline (units)
+var gl_turns: Array = []      # [{"t0", "t1", "d"}]: a spin of d radians over timeline units t0..t1
+var gl_T := 1.0               # the move's timeline length (units); p in 0..1 runs it in dur seconds
 var gl_yaw0 := 0.0
-var gl_Wt := 1.0
 var gl_ta := 0.3
 var gl_p := 0.0
 var gl_apk := 0.0             # the move's peak acceleration and spin acceleration (thruster thresholds are shares of it)
 var gl_ypk := 0.0
 var gl_vpk := 0.0
-const GL_BLEND := 0.45        # how far (in hexes of move time) a spin reaches into the runs either side
+var gl_fpk := 0.0             # peaks along the bow axis and across it
+var gl_spk := 0.0
+var _gl_run := {}
+const GL_BLEND := 0.45        # how far (units) a mid-path spin reaches either side of its corner
+const GL_LEAD := 0.55         # a spin before the first run: the hull sets off this far through it
+const GL_TRAIL := 0.6         # a spin after the last run starts this far (of its own length) before the hull arrives
+const GL_SPIN := 1.6          # a turn step's weight to units of the move's timeline (the motion's own ramps add as much)
 
 
 func play_glide(steps: Array, dur: float, opts := {}) -> void:
@@ -760,98 +766,107 @@ func play_glide(steps: Array, dur: float, opts := {}) -> void:
 	segs = []
 	path_yaws = []
 	var p0 := Vector3(position.x, 0.0, position.z)
-	# 1. the curve's points and the move weight at which the hull is at each one; the spins as weight windows
+	# 1. the curve's points; the spins (consecutive turn steps) with the point they turn at
 	var pts: Array = [p0]
-	var kw: Array = [0.0]
-	var groups: Array = []    # turn groups: [{"a", "b", "d", "lead", "trail"}]
-	var W := 0.0
+	var groups: Array = []    # {"k": point index, "w": weight, "d": radians}
 	var la := cur_yaw
-	var moved := false
-	var last_dir := Vector3.ZERO
+	var last_turn := false
 	for st in steps:
 		if st["kind"] == "turn":
 			var a1 := float(st["yaw"])
-			if groups.is_empty() or float(groups[-1]["b"]) < W - 1e-6:
-				groups.append({"a": W, "b": W, "d": 0.0, "lead": not moved})
-			W += float(st["w"])
-			groups[-1]["b"] = W
+			if not last_turn:
+				groups.append({"k": pts.size() - 1, "w": 0.0, "d": 0.0})
+			groups[-1]["w"] = float(groups[-1]["w"]) + float(st["w"])
 			groups[-1]["d"] = float(groups[-1]["d"]) + angle_difference(la, a1)
 			la = a1
+			last_turn = true
 		else:
-			var p: Vector3 = st["p"]
-			var dvec: Vector3 = p - (pts[-1] as Vector3)
-			dvec.y = 0.0
-			if moved and dvec.length() > 0.01 and last_dir.length() > 0.01:
-				var cth := clampf(last_dir.normalized().dot(dvec.normalized()), -1.0, 1.0)
-				# a change of course with no turn before it (ahead into a sidestep): slow for it (a turn already does)
-				if groups.is_empty() or float(groups[-1]["b"]) < W - 1e-6:
-					W += 0.5 * (1.0 - cth)
-				if cth < -0.7:   # a reversal of course: the hull must come to rest at the cusp
-					pts.append(pts[-1])
-					kw.append(W)
-			W += float(st["w"])
-			pts.append(p)
-			kw.append(W)
-			if dvec.length() > 0.01:
-				last_dir = dvec
-			moved = true
-	if absf((pts[-1] as Vector3).y) > 0.01:   # a move that ends over or under an obstacle comes back to the board plane
+			pts.append(st["p"])
+			last_turn = false
+	if pts.size() > 1 and absf((pts[-1] as Vector3).y) > 0.01:   # a move that ends over an obstacle comes back down
 		var lp: Vector3 = pts[-1]
-		W += 0.5
 		pts.append(Vector3(lp.x, 0.0, lp.z))
-		kw.append(W)
-	gl_Wt = maxf(W, 1e-3)
-	# 2. the spins: lead spins (before any run) hold the hull until near their end; trail spins (after the last run) let
-	#    it arrive while they start; every spin reaches GL_BLEND into the runs either side (no more than half of them)
-	gl_turns = []
-	var hold_w := 0.0
-	var end_run := float(kw[-1]) if kw.size() > 1 else 0.0   # where the last run ends (the trail spins come after)
-	var arrive_late := 0.0
-	for gi in groups.size():
-		var g: Dictionary = groups[gi]
-		var a := float(g["a"])
-		var b := float(g["b"])
-		var span := b - a
-		var lead := bool(g["lead"]) and kw.size() > 1
-		var trail := kw.size() > 1 and a >= end_run - 1e-6
-		# the run weight either side of this spin, up to the neighbouring spin (or the start, or the last run's end)
-		var pre := a - (float(groups[gi - 1]["b"]) if gi > 0 else 0.0)
-		var post := (float(groups[gi + 1]["a"]) if gi + 1 < groups.size() else end_run) - b
-		var ext_a := minf(GL_BLEND, maxf(pre, 0.0) * 0.5)
-		var ext_b := minf(GL_BLEND, maxf(post, 0.0) * 0.5)
-		if lead:
-			hold_w = b - minf(GL_BLEND, span * 0.6)   # the hull sets off as the spin nears its end
-		if trail:
-			ext_b = 0.0
-			arrive_late = minf(GL_BLEND, span * 0.6) * 0.5   # the hull arrives a little after the spin starts
-		gl_turns.append({"a": maxf(0.0, a - ext_a), "b": minf(gl_Wt, b + ext_b), "d": float(g["d"])})
-	if arrive_late > 0.0:
-		kw[-1] = float(kw[-1]) + arrive_late
-	# 3. the curve (Catmull-Rom through the points, by arc length) and the progress knots along it
+	var n_pts := pts.size()
+	# 2. the curve and its speed limits: cruise everywhere, slower at a corner (by how far the course or the heading
+	#    swings there), zero at the ends and where the course reverses
 	var run := {"pts": pts}
 	_prep_run(run)
-	var cum: Array = run["cum"]
-	gl_W = []
-	gl_D = []
-	var seg_n := 16
-	if hold_w > 0.0 and hold_w < float(kw[1]):
-		gl_W.append(0.0)
-		gl_D.append(0.0)
-		gl_W.append(hold_w)
-		gl_D.append(0.0)
-	else:
-		gl_W.append(0.0)
-		gl_D.append(0.0)
-	for i in range(1, kw.size()):
-		gl_W.append(float(kw[i]))
-		gl_D.append(float(cum[mini(i * seg_n, cum.size() - 1)]))
-	if float(gl_W[-1]) < gl_Wt - 1e-6:
-		gl_W.append(gl_Wt)
-		gl_D.append(gl_D[-1])
-	gl_M = _fc_slopes(gl_W, gl_D)
 	_gl_run = run
-	gl_yaw0 = cur_yaw
+	var cum: Array = run["cum"]
+	var hexd := 0.0
+	for i in n_pts - 1:
+		hexd += Vector2((pts[i + 1] as Vector3).x - (pts[i] as Vector3).x, (pts[i + 1] as Vector3).z - (pts[i] as Vector3).z).length()
+	hexd = maxf(hexd / maxf(n_pts - 1, 1), 1.0)   # the hex spacing: the cruise speed is one hex a unit
+	var tr := lerpf(0.8, 1.6, mass)             # units to build cruise speed from rest
+	var amax := hexd / tr
+	var ns := cum.size()
+	var vl := PackedFloat32Array()
+	vl.resize(ns)
+	for i in ns:
+		vl[i] = hexd
+	vl[0] = 0.0
+	vl[ns - 1] = 0.0
+	for k in range(1, n_pts - 1):
+		var din: Vector3 = (pts[k] as Vector3) - (pts[k - 1] as Vector3)
+		var dout: Vector3 = (pts[k + 1] as Vector3) - (pts[k] as Vector3)
+		din.y = 0.0
+		dout.y = 0.0
+		var r := 1.0
+		if din.length() > 0.01 and dout.length() > 0.01:
+			var cth := clampf(din.normalized().dot(dout.normalized()), -1.0, 1.0)
+			r = 0.0 if cth < -0.7 else clampf((cth + 0.2) / 1.2, 0.15, 1.0)
+		for g in groups:
+			if int(g["k"]) == k:
+				r = minf(r, lerpf(1.0, 0.3, clampf(absf(float(g["d"])) / (TAU / 3.0), 0.0, 1.0)))
+		vl[k * 16] = minf(vl[k * 16], hexd * r)
+	# 3. the speed profile, leg by leg (a reversal of course splits the move: the hull comes to rest there)
+	gl_ds = PackedFloat32Array()
+	var cuts: Array = [0]
+	for k in range(1, n_pts - 1):
+		if vl[k * 16] <= 0.0:
+			cuts.append(k * 16)
+	cuts.append(ns - 1)
+	if n_pts > 1 and float(cum[ns - 1]) > 1e-4:
+		for ci in cuts.size() - 1:
+			var leg := _gl_leg(cum, vl, int(cuts[ci]), int(cuts[ci + 1]), amax, tr)
+			var off: float = gl_ds[gl_ds.size() - 1] if gl_ds.size() > 0 else 0.0
+			for i in range(0 if gl_ds.is_empty() else 1, leg.size()):
+				gl_ds.append(off + leg[i])
+	var t_motion := float(maxi(gl_ds.size() - 1, 0)) * gl_dtg
+	# 4. the timeline: a spin before the first run, the motion, a spin after the last run; spins at a corner are timed to
+	#    the hull's passage through it
 	gl_ta = lerpf(0.3, 0.45, mass)
+	gl_turns = []
+	var lead_u := 0.0
+	var trail_u := 0.0
+	for g in groups:
+		if int(g["k"]) == 0 and n_pts > 1:
+			lead_u = float(g["w"]) * GL_SPIN
+		elif int(g["k"]) == n_pts - 1 and n_pts > 1:
+			trail_u += float(g["w"]) * GL_SPIN
+	gl_tm0 = lead_u * GL_LEAD
+	var t_end := gl_tm0 + t_motion
+	# a spin after the last run starts while the hull is still braking into its hex
+	var t_trail0 := maxf(t_end - minf(trail_u * GL_TRAIL, minf(tr, t_motion * 0.5)), gl_tm0)
+	var t_cursor := 0.0   # (rotation only: spins one after another)
+	for g in groups:
+		var k := int(g["k"])
+		var su := float(g["w"]) * GL_SPIN
+		if n_pts == 1:
+			gl_turns.append({"t0": t_cursor, "t1": t_cursor + su, "d": float(g["d"])})
+			t_cursor += su
+		elif k == 0:
+			gl_turns.append({"t0": 0.0, "t1": su, "d": float(g["d"])})
+		elif k == n_pts - 1:
+			gl_turns.append({"t0": t_trail0, "t1": t_trail0 + su, "d": float(g["d"])})
+		else:
+			var tc := gl_tm0 + _gl_time_at(float(cum[mini(k * 16, ns - 1)]))
+			var half := su * 0.5 + GL_BLEND
+			gl_turns.append({"t0": maxf(tc - half, 0.0), "t1": tc + half, "d": float(g["d"])})
+	gl_T = maxf(t_end, 1e-3)
+	for t in gl_turns:
+		gl_T = maxf(gl_T, float(t["t1"]))
+	gl_yaw0 = cur_yaw
 	gl_p = 0.0
 	path_dur = maxf(dur, 0.05)
 	_prev_pos = position
@@ -860,99 +875,154 @@ func play_glide(steps: Array, dur: float, opts := {}) -> void:
 	_prev_yaw = cur_yaw
 	_yaw_v = 0.0
 	_yaw_a = 0.0
-	# 4. the move's peak accelerations, so the jets fire on the real pushes of this move and stay quiet while it coasts
+	# 5. the move's peak accelerations, so the jets fire on the real pushes of this move and stay quiet while it coasts
 	gl_apk = 0.0
 	gl_ypk = 0.0
 	gl_vpk = 0.0
-	for k in range(1, 160):
-		var dd := _gl_deriv(k / 160.0)
+	gl_fpk = 0.0
+	gl_spk = 0.0
+	for k in range(1, 200):
+		var dd := _gl_deriv(k / 200.0)
+		var al: Vector3 = Basis(Vector3.UP, float((dd[0] as Array)[1])).inverse() * (dd[2] as Vector3)
 		gl_apk = maxf(gl_apk, (dd[2] as Vector3).length())
+		gl_fpk = maxf(gl_fpk, absf(al.x))
+		gl_spk = maxf(gl_spk, absf(al.z))
 		gl_vpk = maxf(gl_vpk, (dd[1] as Vector3).length())
 		gl_ypk = maxf(gl_ypk, absf(float(dd[4])))
 
 
-var _gl_run := {}
+# one leg's distance along the curve on the time grid (from rest to rest between samples i0 and i1): cruise one hex a
+# unit under the limits vl, accel-limited both ways (forward and backward passes), then the speed through a box filter
+# twice over zero padding (the total distance is kept), so every push builds and fades instead of switching on and off
+func _gl_leg(cum: Array, vl: PackedFloat32Array, i0: int, i1: int, amax: float, tr: float) -> PackedFloat32Array:
+	var n := i1 - i0 + 1
+	var v := PackedFloat32Array()
+	v.resize(n)
+	for i in n:
+		v[i] = vl[i0 + i]
+	v[0] = 0.0
+	v[n - 1] = 0.0
+	for i in range(1, n):
+		v[i] = minf(v[i], sqrt(v[i - 1] * v[i - 1] + 2.0 * amax * (float(cum[i0 + i]) - float(cum[i0 + i - 1]))))
+	for i in range(n - 2, -1, -1):
+		v[i] = minf(v[i], sqrt(v[i + 1] * v[i + 1] + 2.0 * amax * (float(cum[i0 + i + 1]) - float(cum[i0 + i]))))
+	var ts := PackedFloat32Array()
+	ts.resize(n)
+	ts[0] = 0.0
+	for i in range(1, n):
+		var ds := float(cum[i0 + i]) - float(cum[i0 + i - 1])
+		ts[i] = ts[i - 1] + (2.0 * ds / maxf(v[i] + v[i - 1], 1e-4) if ds > 1e-6 else 0.0)
+	var t_raw: float = ts[n - 1]
+	var dtg := gl_dtg
+	var box := maxi(int(round(0.3 * tr / dtg)), 1)
+	var pad := 2 * box + 2
+	var m := int(ceil(t_raw / dtg)) + 1
+	var vel := PackedFloat32Array()
+	vel.resize(m + 2 * pad)
+	var j := 0
+	var d_prev := 0.0
+	var d0 := float(cum[i0])
+	var leg_len := float(cum[i1]) - d0
+	for gi in m:
+		var t := minf(gi * dtg, t_raw)
+		while j < n - 2 and ts[j + 1] < t:
+			j += 1
+		var span := maxf(ts[mini(j + 1, n - 1)] - ts[j], 1e-6)
+		var d := float(cum[i0 + j]) - d0 + (float(cum[i0 + mini(j + 1, n - 1)]) - float(cum[i0 + j])) * clampf((t - ts[j]) / span, 0.0, 1.0)
+		if gi > 0:
+			vel[pad + gi - 1] = (d - d_prev) / dtg
+		d_prev = d
+	for _pass in 2:
+		var acc := 0.0
+		var out := PackedFloat32Array()
+		out.resize(vel.size())
+		for i in vel.size():
+			acc += vel[i]
+			if i >= box:
+				acc -= vel[i - box]
+			out[i] = acc / box
+		vel = out
+	var first := vel.size()
+	var last := -1
+	for i in vel.size():
+		if vel[i] > 1e-5:
+			first = mini(first, i)
+			last = i
+	var res := PackedFloat32Array()
+	res.append(0.0)
+	if last < first or leg_len <= 1e-5:
+		return res
+	var dsum := 0.0
+	for i in range(first, last + 1):
+		dsum += vel[i] * dtg
+		res.append(dsum)
+	var kd := leg_len / maxf(dsum, 1e-6)
+	for i in res.size():
+		res[i] = res[i] * kd
+	return res
 
 
-# Fritsch-Carlson slopes: a C1 curve through (x, y) that never overshoots and is flat wherever the hull holds
-static func _fc_slopes(xs: Array, ys: Array) -> Array:
-	var n := xs.size()
-	var dl: Array = []
-	for i in n - 1:
-		dl.append((float(ys[i + 1]) - float(ys[i])) / maxf(float(xs[i + 1]) - float(xs[i]), 1e-6))
-	var m: Array = []
-	m.resize(n)
-	if n < 2:
-		m[0] = 0.0
-		return m
-	m[0] = float(dl[0])
-	m[n - 1] = float(dl[n - 2])
-	for i in range(1, n - 1):
-		var d0 := float(dl[i - 1])
-		var d1 := float(dl[i])
-		if d0 * d1 <= 0.0:
-			m[i] = 0.0
+# motion time (units) at which the hull has gone d along the curve
+func _gl_time_at(d: float) -> float:
+	var lo := 0
+	var hi := gl_ds.size() - 1
+	if hi <= 0:
+		return 0.0
+	if d >= gl_ds[hi]:
+		return hi * gl_dtg
+	while hi - lo > 1:
+		var mid := (lo + hi) >> 1
+		if gl_ds[mid] < d:
+			lo = mid
 		else:
-			var h0 := float(xs[i]) - float(xs[i - 1])
-			var h1 := float(xs[i + 1]) - float(xs[i])
-			var w1 := 2.0 * h1 + h0
-			var w2 := h1 + 2.0 * h0
-			m[i] = (w1 + w2) / (w1 / d0 + w2 / d1)
-	# a hold at either end of a knot: flat there
-	for i in n - 1:
-		if absf(float(dl[i])) < 1e-9:
-			m[i] = 0.0
-			m[i + 1] = 0.0
-	return m
+			hi = mid
+	var span := maxf(gl_ds[hi] - gl_ds[lo], 1e-6)
+	return (lo + clampf((d - gl_ds[lo]) / span, 0.0, 1.0)) * gl_dtg
 
 
-func _gl_dist(w: float) -> float:
-	var n := gl_W.size()
-	if w <= float(gl_W[0]):
-		return float(gl_D[0])
-	if w >= float(gl_W[n - 1]):
-		return float(gl_D[n - 1])
-	var i := 0
-	while i < n - 2 and w > float(gl_W[i + 1]):
-		i += 1
-	var h := maxf(float(gl_W[i + 1]) - float(gl_W[i]), 1e-6)
-	var t := (w - float(gl_W[i])) / h
-	var t2 := t * t
-	var t3 := t2 * t
-	return (2 * t3 - 3 * t2 + 1) * float(gl_D[i]) + (t3 - 2 * t2 + t) * h * float(gl_M[i]) + (-2 * t3 + 3 * t2) * float(gl_D[i + 1]) + (t3 - t2) * h * float(gl_M[i + 1])
-
-
-static func _smoother(x: float) -> float:
-	var t := clampf(x, 0.0, 1.0)
-	return t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
-
-
-# the whole move's time ramp (time fraction p -> move weight): a sine build over gl_ta of the move, a coast, a bleed
-func _gl_w(p: float) -> float:
-	var ta := gl_ta
-	var vmax := 1.0 / (1.0 - ta)
-	var f := 0.0
-	if p <= 0.0:
-		f = 0.0
-	elif p >= 1.0:
-		f = 1.0
-	elif p < ta:
-		f = vmax * (p * 0.5 - ta / (2.0 * PI) * sin(PI * p / ta))
-	elif p > 1.0 - ta:
-		var q := 1.0 - p
-		f = 1.0 - vmax * (q * 0.5 - ta / (2.0 * PI) * sin(PI * q / ta))
-	else:
-		f = vmax * (ta * 0.5 + (p - ta))
-	return f * gl_Wt
+func _gl_dist(t: float) -> float:
+	var n := gl_ds.size()
+	if n == 0:
+		return 0.0
+	var x := t / gl_dtg
+	if x <= 0.0:
+		return gl_ds[0]
+	if x >= n - 1:
+		return gl_ds[n - 1]
+	var i := int(x)
+	# a smooth read between grid points (Catmull-Rom), so the second difference the jets read is not stepped
+	var f := x - i
+	var a: float = gl_ds[maxi(i - 1, 0)]
+	var b: float = gl_ds[i]
+	var c: float = gl_ds[mini(i + 1, n - 1)]
+	var e: float = gl_ds[mini(i + 2, n - 1)]
+	return 0.5 * ((2.0 * b) + (-a + c) * f + (2.0 * a - 5.0 * b + 4.0 * c - e) * f * f + (-a + 3.0 * b - 3.0 * c + e) * f * f * f)
 
 
 func _gl_pose(p: float) -> Array:
-	var w := _gl_w(p)
-	var pos := _curve_at(_gl_run, _gl_dist(w))
+	var t := p * gl_T
+	var pos: Vector3 = _curve_at(_gl_run, _gl_dist(t - gl_tm0)) if gl_ds.size() > 0 else (_gl_run["pts"][0] as Vector3)
 	var yaw := gl_yaw0
-	for t in gl_turns:
-		yaw += float(t["d"]) * _smoother((w - float(t["a"])) / maxf(float(t["b"]) - float(t["a"]), 1e-4))
+	for tn in gl_turns:
+		yaw += float(tn["d"]) * _spin((t - float(tn["t0"])) / maxf(float(tn["t1"]) - float(tn["t0"]), 1e-4))
 	return [pos, yaw]
+
+
+# a spin over its window: the couple builds the spin over gl_ta of it (a heavier hull longer), it coasts, the
+# counter-couple bleeds it over the same share (sine ramps: the spin never snaps on or off)
+func _spin(x: float) -> float:
+	if x <= 0.0:
+		return 0.0
+	if x >= 1.0:
+		return 1.0
+	var ta := gl_ta
+	var vmax := 1.0 / (1.0 - ta)
+	if x < ta:
+		return vmax * (x * 0.5 - ta / (2.0 * PI) * sin(PI * x / ta))
+	if x > 1.0 - ta:
+		var q := 1.0 - x
+		return 1.0 - vmax * (q * 0.5 - ta / (2.0 * PI) * sin(PI * q / ta))
+	return vmax * (ta * 0.5 + (x - ta))
 
 
 # pose, velocity and acceleration (per unit of move time fraction), yaw rate and yaw acceleration at p
@@ -968,7 +1038,6 @@ func _gl_deriv(p: float) -> Array:
 	var yv := (float(a2[1]) - float(a0[1])) / (2.0 * e)
 	var ya := (float(a2[1]) - 2.0 * float(a1[1]) + float(a0[1])) / (e * e)
 	return [a1, v, ac, yv, ya]
-
 
 func _glide_step(dt: float) -> void:
 	var dts := dt / maxf(speed_k, 0.05)   # Enter or Space hurries a move already under way
@@ -1009,17 +1078,20 @@ func _glide_thrusters(d: Array, dts: float) -> void:
 	var al: Vector3 = inv * (d[2] as Vector3)
 	var vl: Vector3 = inv * (d[1] as Vector3)
 	if gl_apk > 1e-4:
-		var thr := gl_apk * GL_JET
-		var kf := clampf(absf(al.x) / gl_apk, 0.35, 1.0)
-		if al.x > thr:
-			if vl.x >= -0.05 * gl_vpk:
-				thrust = clampf(al.x / (gl_apk * 0.6), 0.0, 1.0)       # the main drive pushes the ship ahead
+		# each axis against its own peak in this move (a corner's sideways pull does not hide the drive), never below a
+		# floor of the whole move's peak (no jets for rounding noise on a straight run)
+		var thr_f := maxf(gl_fpk * GL_JET, gl_apk * 0.05)
+		var thr_s := maxf(gl_spk * GL_JET, gl_apk * 0.05)
+		var kf := clampf(absf(al.x) / maxf(gl_fpk, 1e-4), 0.35, 1.0)
+		if al.x > thr_f:
+			if vl.x > -1e-3 * gl_vpk:
+				thrust = clampf(al.x / (gl_fpk * 0.6), 0.0, 1.0)       # the main drive pushes the ship ahead
 			else:
 				_emit("aft", _aft_puffs.bind(kf))                      # stopping a back-off: aft jets, never the drive
-		elif al.x < -thr:
+		elif al.x < -thr_f:
 			_emit("retro", _retro_puffs.bind(kf))                      # braking or backing off: the bow's retro jets
-		if absf(al.z) > thr:
-			_emit("side", _side_puffs.bind(signf(al.z), clampf(absf(al.z) / gl_apk, 0.35, 1.0)))
+		if absf(al.z) > thr_s:
+			_emit("side", _side_puffs.bind(signf(al.z), clampf(absf(al.z) / maxf(gl_spk, 1e-4), 0.35, 1.0)))
 	if gl_ypk > 1e-4 and absf(float(d[4])) > gl_ypk * GL_JET:
 		_emit("couple", _couple_puffs.bind(signf(float(d[4])), clampf(absf(float(d[4])) / gl_ypk, 0.35, 1.0)))
 
