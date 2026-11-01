@@ -418,3 +418,12 @@ By player faction (seeds 7105 to 7108, 400 runs, about 66 per faction; noise abo
 | Glasswrights (ithar) | 17% | 22% | 36% |
 | Eclipse (deathless) | 9% | 22% | 33% |
 Spread 9 to 28 under step 9, 15 to 22 under step 9b. The Crusade is not an outlier in either (G2's Godot bot 0 of 6 is likely at a 15 to 19% rate: about one time in three). `runsim` now prints this as a `byfac` line.
+
+## F2 movement: battle.gd move hunks (Nov 1, feel pass; announcement for F1 and anyone else in battle.gd)
+
+F2 edits only these parts of `godot/scenes/battle/battle.gd`, in small hunks, rebased often:
+- `_play_move` (the per and dur lines, the call into ship_view.gd, the move's own speed) and `_move_segments` (plus a new `_glide_steps` next to it);
+- one constant block next to `MOVE_PER` (the move pace numbers);
+- in `_play_batch`, only the two `_round_budget_k(...)` arguments: enemy move time stops counting toward the round budget (moves are no longer squeezed by it; everything else keeps today's budget);
+- `_move_frames` (the before and after capture switch).
+Rules and parity are untouched. Questions: F2's report.
