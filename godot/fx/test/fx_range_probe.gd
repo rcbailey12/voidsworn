@@ -47,6 +47,8 @@ const FAMILIES := [
 	["tendril", "chorus", "bio", "tendril", "hegemony"],
 	["gauss", "deathless", "gauss", "gauss", "voidsworn"],
 	["craft", "voidsworn", "sq", "guns", "corsair"],
+	# a kill: the torpedo lands and the target dies ("big"); the sheet shows the moments round the break-up
+	["kill", "voidsworn", "torp", "torp", "hegemony"],
 ]
 const SIZE := {"Frigate": 0.55, "capital": 1.25}
 
@@ -139,8 +141,13 @@ func _run() -> void:
 				await fx.warmup(cam)
 				warmed = true
 			await _wait(0.6)
-			var res := await _volley(fam, idx, sz)
+			var res: Array = []
+			if fam[0] == "kill":
+				res = await _kill(fam, idx, sz)
+			else:
+				res = await _volley(fam, idx, sz)
 			print("[range] %02d %s %s attacker=%s %s target=%s %s impacts=%s" % [idx, fam[0], sz, fam[1], a_cls, fam[4], t_cls, str(res)])
+			fx.clear_wreck("T")
 			fx.remove_ship("A")
 			fx.remove_ship("T")
 			a.queue_free()
@@ -250,6 +257,29 @@ func _trace(fam: Array, idx: int, sz: String) -> void:
 	_home()
 	img.save_jpg("%s/trace_%02d_%s_%s.jpg" % [out, idx, fam[0], sz], 0.9)
 	print("[trace] wrote trace_%02d_%s_%s.jpg" % [idx, fam[0], sz])
+
+
+# The kill sheet: a torpedo volley, the target's death called as it lands (cause "big", as the rules' torpedo kill), and
+# the columns: just before the death, the break-up, 0.6 s after it and 2 s after it.
+func _kill(fam: Array, idx: int, sz: String) -> Array:
+	var shots := [true]
+	fx.rng.seed = 1000 + idx
+	fx.ship("T").hull._rng.seed = 7 + idx
+	var cols: Array = []
+	var T0: float = fx.now
+	var r: Dictionary = fx.volley("A", fam[2], "T", {"weapon_id": fam[3], "shots": shots, "hits": _hits(1, false)})
+	var imp: Array = r["impacts"]
+	var i0: float = float(imp[0]) if not imp.is_empty() else 0.4
+	await _wait_until(T0 + i0 - 0.05)
+	cols.append(await _grab())
+	await _wait_until(T0 + i0)
+	var tb: float = fx.death("T", "big")
+	var Tb: float = fx.now + tb
+	for m in [0.08, 0.6, 2.0]:
+		await _wait_until(Tb + m)
+		cols.append(await _grab())
+	_sheet(cols, "%s/%02d_%s_%s.jpg" % [out, idx, fam[0], sz])
+	return [i0, tb]
 
 
 func _home() -> void:
