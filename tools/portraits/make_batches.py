@@ -406,7 +406,48 @@ def c64b(i, model, seeds):
     fac, p = C64B[i]
     return {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
 BATCHES['c64b'] = [c64b(k, 'zit', S4) for k in C64B] + [c64b(k, 'qie', [11, 51]) for k in C64B]
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b'}
+# c64b review (Nov 1, not shown to Ryan): the Hullbreakers turned plainly alien but swung to a film-monster look (a long domed
+# head, cable dreadlocks for a mane, no bear or wolf left in them); the Glasswrights read right (glass, prism light, robes) but a
+# faint human face with closed eyes and lips still sits inside most glass heads. c64c: a real fur mane, a shoulder hump and a
+# blunt short plated face sunk into it (no dome, no cables); for the Glasswrights the front of the head is one blank mirror facet
+# and the glass is living, soft flesh.
+VOID3 = ("Close-up head-and-shoulders portrait of a Hullbreaker, a massive alien predator from a cold heavy-gravity world, with the "
+         "heavy build of a great hunting beast: a huge muscular shoulder hump and thick forearms with long claws. A thick shaggy mane of "
+         "coarse {mane} fur covers the shoulder hump, the neck and the back of the head and frames the face. The face inside the mane is "
+         "bare, short, blunt and broad, armoured in overlapping horn-like plates like a pangolin's scales, set low between the shoulders. "
+         "Its jaw is two heavy plated halves split down the middle of the chin and hinged at the sides, opening sideways, each half lined "
+         "with rows of small sharp teeth. Four small glowing {eye} eyes sit in one straight row across the plated brow, with rows of small "
+         "dark heat-sensing pits along the cheeks. Thick dark leathery hide on the arms. Ridged armour plates show through the mane along "
+         "the spine. A scrap armour harness of rusty riveted hull plates and leather straps is strapped across the chest, hung with machine "
+         "trophies: a cracked sensor lens, a torn circuit board, a bent antenna.")
+PRISM3 = ("Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien whose flesh is soft, clear and see-through "
+          "like the living glass body of a jellyfish, faintly pulsing. Inside its transparent neck and shoulders run crystal structures and "
+          "fine glowing threads that carry light like fibre optics, and the light splits into rainbow colours at every edge. Its head is a "
+          "tall smooth faceted crystal shape like a long cut gemstone; the whole front of the head is one large flat blank polished facet "
+          "like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. A long slender neck. It wears a "
+          "high-collared layered robe of crystal plates and silver mirror-thread fabric that covers the body.")
+C64C = {
+ 'hb_a': ('corsair', VOID3.format(eye='amber', mane='grey and black') + " The two jaw halves are closed, the split seam plain down the "
+          "chin, a calm and patient menace."),
+ 'hb_b': ('corsair', VOID3.format(eye='red', mane='black') + " The two jaw halves are spread wide apart sideways in a snarl, showing "
+          "rows of inner teeth."),
+ 'hb_c': ('corsair', VOID3.format(eye='pale blue', mane='rust-brown') + " Seen from behind and to the side, looking back over its "
+          "shoulder, white frost on the mane and on the ridged spine plates."),
+ 'hb_d': ('corsair', VOID3.format(eye='amber', mane='grey') + " An old pack-lord: the face plates scarred and chipped with pale worn "
+          "edges, the heat pits glowing faint orange, a harness of dark violet machine plates with a small listening dish on one shoulder."),
+ 'gw_a': ('ithar', PRISM3 + " Soft bands of coloured light pulse across the mirror facet of its head as it speaks."),
+ 'gw_b': ('ithar', PRISM3 + " The facets of its head rise into a tall tapering crystal crest; white light enters the crest and fans "
+          "out behind the head as a rainbow."),
+ 'gw_c': ('ithar', PRISM3 + " Its glass flesh is milky and soft, clusters of clear crystal growing along the neck and shoulders, a warm "
+          "light glowing deep inside the chest."),
+ 'gw_d': ('ithar', PRISM3 + " One hand is raised beside the head, its very long tapering glass fingers shaping a glowing shard of "
+          "glass, threads of light running down into the fingertips, a ripple of colour across the mirror facet."),
+}
+def c64c(i, model, seeds):
+    fac, p = C64C[i]
+    return {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
+BATCHES['c64c'] = [c64c(k, 'zit', S4) for k in C64C] + [c64c(k, 'qie', [11, 51]) for k in C64C]
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():
