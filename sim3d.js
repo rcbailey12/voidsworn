@@ -469,12 +469,12 @@ async function rsFight(cfg){ startBattle(cfg); let r=0; B.alt=true; for(const x 
     if(B.over) break; B.round++; for(const x of B.units) x.activated=false; await roundStart(); r++; }
   for(const u of B.units){ if(!u.ship) continue; if((u.dead&&!u.exited)||u.side!=='player') RUN.fleet=RUN.fleet.filter(x=>x!==u.ship); else u.ship.hp=Math.max(1,Math.round(u.hp)); }
   return {win:B.over==='win', lost:Math.max(0,n0-RUN.fleet.length), pcp, ecp, rounds:B.round}; }
-async function runSim(n){ const agg={}, reach={1:0,2:0,3:0,won:0}; const add=(k,f)=>{ const a=agg[k]||(agg[k]={n:0,w:0,lost:0,ratio:0,rounds:0}); a.n++; a.w+=f.win?1:0; a.lost+=f.lost; a.ratio+=f.ecp/Math.max(1,f.pcp); a.rounds+=f.rounds; };
+async function runSim(n){ const agg={}, reach={1:0,2:0,3:0,won:0}, byFac={}; /* byFac (Oct 31): runs, reached sectors 2 and 3, and wins per player faction */ const add=(k,f)=>{ const a=agg[k]||(agg[k]={n:0,w:0,lost:0,ratio:0,rounds:0}); a.n++; a.w+=f.win?1:0; a.lost+=f.lost; a.ratio+=f.ecp/Math.max(1,f.pcp); a.rounds+=f.rounds; };
   const facs=(process.env.FACS||'voidsworn,hegemony,corsair,chorus,ithar,deathless').split(',');
   for(let i=0;i<n;i++){ const fac=facs[i%facs.length], adms=Object.keys(ADMIRALS).filter(a=>(ADMIRALS[a].fac||'voidsworn')===fac), adm=process.env.ADM||adms[(i/facs.length|0)%adms.length];
     RUN={fac,foes:shuffle(RUN_FACTIONS.filter(f=>f!==fac)),admiral:adm,credits:345,cpCap:14,sector:1,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0,lost:0},fallen:[],boons:[],patrons:shuffle(Object.keys(PATRONS)).slice(0,4),aspect:pick(Object.keys(ASPECTS)),flagUid:null};
     for(const t of ADMIRALS[adm].start) RUN.fleet.push(newShip(equivHull(t,fac),true)); RUN.cpCap=Math.max(RUN.cpCap,fleetCP()+3); RUN.flagUid=RUN.fleet[0].uid; simFit();
-    let alive1=true;
+    let alive1=true; const bf=byFac[fac]||(byFac[fac]={runs:0,s2:0,s3:0,won:0}); bf.runs++;
     for(let s=1;s<=3&&alive1;s++){ RUN.sector=s; reach[s]++; const map=genSector(s); RUN.map=map;
       for(const col of map.cols){ if(!RUN.fleet.length){ alive1=false; break; } const nd=pick(col);
         if(RUN.fleet.length<=1&&(RUN.reinf||0)<s){ RUN.reinf=s; RUN.fleet.push(newShip('warden')); }
@@ -483,7 +483,7 @@ async function runSim(n){ const agg={}, reach={1:0,2:0,3:0,won:0}; const add=(k,
           if(!f.win||!RUN.fleet.length){ alive1=false; break; }
           RUN.credits+=Math.round((25+12*s+3*nd.col)*(kind==='boss'?3:kind==='elite'?1.6:1));
           const rw=nd.rw||rollNodeReward(kind); if(rw.k==='boon'){ const off=rollBoonOffer(rw.p,rw.min); if(off.length){ const b=pick(off); RUN.boons.push(b); } } else if(rw.k==='cred') RUN.credits+=35+10*s; else if(rw.k==='repair') RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.25)); });
-          if(kind!=='battle'){ const rl=randomRelic(); if(rl) RUN.relics.push(rl); } if(kind==='boss'){ RUN.cpCap+=3; RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.4)); }); if(s===3) reach.won++; } }
+          if(kind!=='battle'){ const rl=randomRelic(); if(rl) RUN.relics.push(rl); } if(kind==='boss'){ RUN.cpCap+=3; RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.4)); }); if(s===3){ reach.won++; bf.won++; } else if(s===1) bf.s2++; else bf.s3++; } }
         else if(nd.type==='shipyard'){ for(const sh of RUN.fleet){ const d=derive(sh), miss=d.maxHp-sh.hp, c=Math.ceil(miss/2); if(RUN.credits>=c){ RUN.credits-=c; sh.hp=d.maxHp; } }
           const ros=FACTIONS[fac].roster.filter(h=>!HULLS[h].unique&&HULLS[h].cost&&fleetCP()+HULLS[h].cp<=RUN.cpCap&&HULLS[h].cost<=RUN.credits);
           if(ros.length){ const h=ros.sort((a,b)=>HULLS[b].cp-HULLS[a].cp)[0]; RUN.credits-=HULLS[h].cost; RUN.fleet.push(newShip(h)); }
@@ -492,7 +492,7 @@ async function runSim(n){ const agg={}, reach={1:0,2:0,3:0,won:0}; const add=(k,
         else if(nd.type==='field'){ RUN.fleet.forEach(sh=>{ const d=derive(sh); sh.hp=Math.min(d.maxHp,sh.hp+Math.round(d.maxHp*.2)); }); }
       } } }
   const out={}; for(const [k,a] of Object.entries(agg).sort()) out[k]=a.n+' battles, won '+Math.round(a.w/a.n*100)+'%, lost/fight '+(a.lost/a.n).toFixed(2)+', e/p cp '+(a.ratio/a.n).toFixed(2)+', rounds '+(a.rounds/a.n).toFixed(1);
-  console.log('RUNSIM '+JSON.stringify(out,null,1)); console.log('reach', JSON.stringify(reach)); }
+  console.log('RUNSIM '+JSON.stringify(out,null,1)); console.log('reach', JSON.stringify(reach)); console.log('byfac', JSON.stringify(byFac)); }
 async function bossCmdCheck(n){ const out={}; for(const bf of ['hegemony','corsair','chorus','ithar','deathless','voidsworn']){ let ann=0,fired=0,wins=0;
   for(let i=0;i<n;i++){ RUN={admiral:'vex',fac:'voidsworn',credits:0,cpCap:40,sector:2,relics:[],inventory:[],fleet:[],stats:{battles:0,elites:0,bosses:0,kills:0},fallen:[],boons:[],patrons:[]};
     for(const t of ['cathedral','penitent','harrow','warden','warden']) RUN.fleet.push(newShip(t,false));

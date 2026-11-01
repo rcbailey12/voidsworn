@@ -54,7 +54,7 @@ if (!loadErr) {
   for (const f of files) { read(f).split('\n').forEach((l, i) => {
     const t = l.replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`/g, 'S').replace(/https?:\/\/\S+/g, 'U');
     const m = /(?<![:\\/*])\/\/(?!\/)/.exec(t); if (!m) return; const com = t.slice(m.index + 2);
-    if (/\b[a-zA-Z_]\w*\([^)]*\);\s*(const|let|var|if|for|return|await)\b/.test(com) || /;\s*(const|let|var)\s+\w+\s*=/.test(com)) bad.push(f + ':' + (i + 1));
+    if (/\b[a-zA-Z_]\w*\([^)]*\);\s*(const|let|var|if|for|return|await)\b/.test(com) || /\b(const|let|var)\s+\w+\s*=[^=]/.test(com) || /=>\s*\{/.test(com)) bad.push(f + ':' + (i + 1));
   }); }
   ok('no // comment swallows code on the same line (' + files.length + ' JS files)', !bad.length, bad.slice(0, 6).join(', '));
 }
