@@ -189,7 +189,7 @@ Line of battle. Broadsides hit 40% harder after moving two or more hexes, lances
 
 - **People:** old European given names (Anselm, Casimir, Odile, Margit, Brannoc, Thessaly) plus hard English surnames (Varrow, Harrowgate, Ashdown, Holloway, Blackwood).
 - **Titles:** Dawnwarden, Oath-warden, Provost, Roll-master; top titles High Warden, Warden of the Roll. Malek Draven becomes Oath-Captain.
-- **Ship names:** oath, fire and cold (Unyielding Oath, Ashen Vigil, Banked Fire, Long Watch, Debt of Vesper, Acceptable Loss).
+- **Ship names:** oath, fire and cold (Unyielding Oath, Ashen Vigil, Banked Fire, Long Watch, Debt of Vesper, Debt Paid).
 
 ### 2.11 Ranks, ships, weapons, places
 
@@ -299,7 +299,7 @@ Fast, thin shields, pack hunters that close from the flanks and behind, far too 
 
 ### 4.9 Naming rules
 
-- **People:** harsh one- or two-syllable names plus an epithet earned in a fight (Krogg the Gutter, Vesh the Collector, Grax Steelgrin, Skarn Rot, Old Mott). No human surnames.
+- **People:** harsh one- or two-syllable names plus an epithet earned in a fight (Krogg the Gutter, Vesh the Collector, Grax Ironmaw, Skarn Rot, Old Mott). No human surnames.
 - **Ships:** threats and kills (No Quarter, Gut Hook, Chain of Teeth, Forty Captains, Second Death).
 - **Nemesis parts:** harsh one-syllable fronts (Krag, Rusk, Gor, Snag, Skarn) plus body or tool words (Tooth, Maw, Hook, Knuckle, Spur).
 - **Titles are translations.** Hullbreaker ranks are growls and howls; the words below are what outsiders call them.
