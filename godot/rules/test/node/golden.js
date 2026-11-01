@@ -154,7 +154,7 @@ async function runScenario(S){
   const rec=[]; let turn=0; TM={acts:[],rounds:{}}; SNAPMS=0;
   HOOK=(kind,u)=>{ if(B) rec.push(snap(turn++,kind+(u?' '+u.id:''))); };
   const cfg={kind:S.kind,fac:S.fac,col:S.col==null?3:S.col,seed:S.seed,obj:S.obj,shape:S.shape,map:S.map,dep:S.dep,enemies:S.enemies?S.enemies.map(tpl=>({tpl})):undefined};
-  if(S.arch) cfg.arch=S.arch; if(S.mod) cfg.mod=S.mod; if(S.nemesis) cfg.nemesis=JSON.parse(JSON.stringify(S.nemesis)); if(S.verb) cfg.verb=S.verb;
+  if(S.arch) cfg.arch=S.arch; if(S.mod) cfg.mod=S.mod; if(S.nemesis) cfg.nemesis=JSON.parse(JSON.stringify(S.nemesis)); if(S.verb) cfg.verb=S.verb; if(S.noStar) cfg.noStar=true;
   startBattle(cfg);
   if(S.campaign){ B.campaign=true; B.event=rollBattleEvent(cfg,S.event_war?(cfg.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null):(S.event_force||null)); } // campaign3d.js battleScreen (event_war: the sector at war)
   hook('start',null);

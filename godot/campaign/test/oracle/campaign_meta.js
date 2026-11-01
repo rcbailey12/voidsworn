@@ -65,7 +65,7 @@ function admiralScreen(){
       <h3>${esc(a.n)}</h3><p class="gilt">${esc(a.doc)}</p><p>${esc(a.d)}</p>
       ${masteryBar(id)}
       <p><span class="dim">Starting fleet:</span> ${esc(fleet)}</p>${a.cmd?`<p><span class="dim">Command:</span> <b class="gilt">${esc(a.cmd.n)}</b>. ${esc(cmdDesc(a.cmd,0,pickedFaction))} <span class="dim">Gets stronger each round you hold it.</span></p>`:''}
-      <div class="foot">${un?`<button class="${pickedAdmiral===id?'primary':''}" data-act="pickAdmiral" data-arg="${id}">${pickedAdmiral===id?'Selected':'Select'}</button>`:`<span class="muted">Unlock for ${a.cost} renown in Legacy</span>`}</div></div>`; }).join('');
+      <div class="foot">${un?`<button class="${pickedAdmiral===id?'primary':''}" data-act="pickAdmiral" data-arg="${id}">${pickedAdmiral===id?'Selected':'Select'}</button>`:`<button ${(META.renown||0)>=a.cost?'':'disabled'} data-act="buyAdmiral" data-arg="${id}">Unlock for ${a.cost} renown</button>`}</div></div>`; }).join('');
   show(`<div class="screen"><div class="page">
     <h2 class="gothic">Choose your faction</h2>
     <p class="lede">Your faction sets your ships and shipyards. Each run you face three of the other five, in a random order, with rival raiders along the way.</p>
@@ -117,11 +117,14 @@ function introModal(){
 let progTab='variants';
 function favFirst(){ const lf=(META.opts&&META.opts.lastFac)||'voidsworn'; return [lf,...RUN_FACTIONS.filter(f=>f!==lf)]; } // your current faction first
 function legacyScreen(){
-  const tabs=[['variants','Hull variants'],['mastery','Admiral mastery'],['favour','Core sync'],['heat','Heat'],['fallen','Hall of the fallen']];
+  const tabs=[['variants','Hull variants'],['legacy','Legacy'],['mastery','Admiral mastery'],['favour','Core sync'],['heat','Heat'],['fallen','Hall of the fallen']];
   let body='';
   if(progTab==='variants'){ body=`<p class="lede">Spend renown to add a variant hull to your faction's shipyards. It sits beside the standard hull whenever that hull is in stock. <span class="gilt num">You have ${META.renown||0} renown.</span> Renown comes from every run: battles, elites, flagships and sectors reached, plus 10% per Heat level.</p>`+
       favFirst().map(f=>{ const vs=Object.entries(HULL_VARIANTS).filter(([vid,v])=>HULLS[v.base].fac===f); return `<h3 style="margin:20px 0 8px">${esc(FACTIONS[f].n)}</h3><div class="cards">${vs.map(([vid,v])=>{ const own=!!(META.variants||{})[vid], t=HULLS[vid];
         return `<div class="card ${own?'sel':''}"><h3>${esc(v.n)}</h3><p class="dim" style="font-size:13.5px">Variant of the ${esc(HULLS[v.base].n)}</p><p>${esc(v.d)}</p><p class="num" style="font-size:13.5px">${t.cp} CP. Hull ${t.hp}, shields ${t.sh}, speed ${t.sp}. ${t.w.map(([id,a])=>W[id].n+' ('+(a==='T'?'turret':ARC_NAME[a].toLowerCase())+')').join(', ')}.</p><div class="foot">${own?'<span class="verd">In your shipyards</span>':v.arc?`<span class="dim">Finish the ${esc(FACTIONS[v.arc].n)} story to unlock</span>`:`<button ${(META.renown||0)>=v.cost?'':'disabled'} data-act="buyVariant" data-arg="${vid}">Unlock for ${v.cost} renown</button>`}</div></div>`; }).join('')}</div>`; }).join(''); }
+  // R1 (PROG-2): the Legacy unlocks get a screen again (the purchase handler had no button since the screen was folded into Progression)
+  if(progTab==='legacy'){ body=`<p class="lede">Spend renown on lasting advantages for every later run. <span class="gilt num">You have ${META.renown||0} renown.</span></p><div class="cards">${Object.entries(LEGACY).map(([id,u])=>{ const own=!!META.unlocked[id], lock=u.req&&!META.unlocked[u.req];
+      return `<div class="card ${own?'sel':''}"><h3>${esc(u.n)}</h3><p class="dim" style="font-size:13.5px">${esc(u.group)}</p><p>${esc(u.d)}</p><div class="foot">${own?'<span class="verd">Unlocked</span>':lock?`<span class="dim">Needs ${esc(LEGACY[u.req].n)} first</span>`:`<button ${(META.renown||0)>=u.cost?'':'disabled'} data-act="buyLegacy" data-arg="${id}">Unlock for ${u.cost} renown</button>`}</div></div>`; }).join('')}</div>`; }
   if(progTab==='mastery'){ body=`<p class="lede">Every run levels up the admiral who led it: 1 per battle won, 2 per elite, 5 per flagship and 10 for a victory.</p><div class="cards">${MASTERY_PERKS.slice(1).map((m,i)=>`<div class="card"><h3>Level ${i+1}: ${esc(m.n)}</h3><p>${esc(m.d)}</p><p class="dim num">${MASTERY_XP[i+1]} mastery</p></div>`).join('')}</div>`+
       favFirst().map(f=>`<h3 style="margin:20px 0 8px">${esc(FACTIONS[f].n)}</h3><div class="cards">${Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===f).map(([id,a])=>`<div class="card"><h3>${esc(a.n)}</h3><p class="gilt" style="font-size:14px">${esc(a.doc)}</p>${masteryBar(id)}</div>`).join('')}</div>`).join(''); }
   if(progTab==='favour'){ body=`<p class="lede">Every protocol you take raises your sync with that core (rare protocols count double, epic triple).</p><div class="cards">${FAVOUR_TIERS.slice(1).map(t=>`<div class="card"><h3>${esc(t.n)} <span class="dim num">${t.at}+</span></h3><p>${esc(t.d)}</p></div>`).join('')}</div><div style="margin-top:14px">`+
@@ -140,8 +143,8 @@ function legacyScreen(){
 ACT.legacy=()=>legacyScreen();
 ACT.progTab=k=>{ progTab=k; legacyScreen(); };
 ACT.buyVariant=id=>{ const v=HULL_VARIANTS[id]; META.variants=META.variants||{}; if(!v||v.arc||META.variants[id]||(META.renown||0)<v.cost) return; /* R41: arc variants are earned, never bought */ META.renown-=v.cost; META.variants[id]=true; try{ tel('variant_buy',{id,cost:v.cost}); }catch(e){} Persist.save({meta:true}); legacyScreen(); };
-ACT.buyLegacy=id=>{ const u=LEGACY[id]; if(META.unlocked[id]||META.renown<u.cost) return; META.renown-=u.cost; META.unlocked[id]=true; Persist.save({meta:true}); legacyScreen(); };
-ACT.buyAdmiral=id=>{ const a=ADMIRALS[id]; if(META.admirals[id]||META.renown<a.cost) return; META.renown-=a.cost; META.admirals[id]=true; Persist.save({meta:true}); legacyScreen(); };
+ACT.buyLegacy=id=>{ const u=LEGACY[id]; if(!u||META.unlocked[id]||(u.req&&!META.unlocked[u.req])||(META.renown||0)<u.cost) return; META.renown-=u.cost; META.unlocked[id]=true; Persist.save({meta:true}); legacyScreen(); };
+ACT.buyAdmiral=id=>{ const a=ADMIRALS[id]; if(!a||META.admirals[id]||(META.renown||0)<a.cost) return; META.renown-=a.cost; META.admirals[id]=true; try{ tel('admiral_buy',{id,cost:a.cost}); }catch(e){} Persist.save({meta:true}); ACT.pickAdmiral(id); }; // R1 (PROG-2): bought on the admiral screen, where locked admirals show
 
 // ---------- help ----------
 function helpScreen(){
@@ -192,7 +195,7 @@ function endRun(victory, abandoned){
   try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl)}); }catch(e){}
   // what carries forward: renown (more with Heat), admiral mastery, and a Heat record for this faction
   const hl=heatLevel(RUN.heat), ren=Math.round((typeof runRenown==='function'?runRenown():0)*(1+.1*hl)); META.renown=(META.renown||0)+ren;
-  const mx0=masteryLevel(RUN.admiral), mxGain=s.battles+s.elites*2+s.bosses*5+(victory?10:0); META.mastery=META.mastery||{}; META.mastery[RUN.admiral]=(META.mastery[RUN.admiral]||0)+mxGain; const mx1=masteryLevel(RUN.admiral);
+  const mx0=masteryLevel(RUN.admiral), mxGain=(s.battles-s.elites-s.bosses)+s.elites*2+s.bosses*5+(victory?10:0); /* R1 (PROG-5): stats.battles already counts elites and flagships */ META.mastery=META.mastery||{}; META.mastery[RUN.admiral]=(META.mastery[RUN.admiral]||0)+mxGain; const mx1=masteryLevel(RUN.admiral);
   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
   RUN.carry={ren,mxGain,mx0,mx1,hl};
   RUN.over=true; SAVED_RUN=null; Persist.save();

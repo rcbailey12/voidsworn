@@ -50,8 +50,10 @@ const REGION_BIOME={frontier:{rock:['stone','iron'],planet:[4,5,0],station:['rig
 function rollBiome(region){ const R=REGION_BIOME[region]||{rock:Object.keys(ROCK_KINDS),planet:[0,1,2,3,4,5,6,7],station:['ring','rig','spire']}; return {rock:pick(R.rock),planet:pick(R.planet),station:pick(R.station)}; }
 // fights fit their place: a station defence happens at a station; a dead star only appears out in the dark (storm and graveyard fields)
 const DEEP_MAPS=['storm','graveyard'];
-function fitEncounter(n){ if(!n||!n.enc) return; if(n.enc==='defend') n.map='station';
-  if(n.shape==='deadstar'&&n.map&&!DEEP_MAPS.includes(n.map)){ const sh=ENCOUNTERS[n.enc].shapes.filter(x=>x!=='deadstar'); n.shape=pick(sh.length?sh:['open']); } }
+// R1 (Nov 1, Ryan): never the dead star in sector 1; it stays a set piece for later sectors (sec defaults to the run's sector)
+function fitEncounter(n,sec){ if(!n||!n.enc) return; if(n.enc==='defend') n.map='station';
+  const s1=(sec!=null?sec:((typeof RUN!=='undefined'&&RUN&&RUN.sector)||1))===1;
+  if(n.shape==='deadstar'&&(s1||(n.map&&!DEEP_MAPS.includes(n.map)))){ const sh=ENCOUNTERS[n.enc].shapes.filter(x=>x!=='deadstar'); n.shape=pick(sh.length?sh:['open']); } }
 // which arenas suit each objective: line battles on the strip, a relay fought over from every side on round fields, decapitations at an angle
 const ENC_ARENA={rout:[['strip',.3],['square',.35],['round',.35]],hold:[['round',.6],['square',.4]],flagship:[['square',.45],['round',.35],['strip',.2]]};
 const FAC_MAP={hegemony:['station'],corsair:['belt','graveyard'],chorus:['storm','planet'],ithar:['storm'],deathless:['graveyard'],voidsworn:['planet','station']};
@@ -303,8 +305,8 @@ function startBattle(cfg){
   const axisFree=['rout','hold','flagship'].includes(enc)&&cfg.kind!=='boss'&&shape!=='compact'&&!(cfg.dep==='ambush');
   const wpick=l=>{ let x=rnd()*l.reduce((a,e)=>a+e[1],0); for(const [k,w] of l){ x-=w; if(x<=0) return k; } return l[0][0]; };
   const ak=ARENAS[cfg.arena]?cfg.arena:(axisFree&&ENC_ARENA[enc]?wpick(ENC_ARENA[enc]):'strip'); ARENA=Object.assign({kind:ak},ARENAS[ak]);
-  if(shape==='deadstar'&&['belt','station','planet'].includes(map)&&!cfg.keepShape){ const sh=(ENCOUNTERS[enc]||ENCOUNTERS.rout).shapes.filter(x=>x!=='deadstar'); shape=pick(sh.length?sh:['open']); }
-  if(ak!=='strip'&&AXIS_SHAPES.includes(shape)) shape=pick(['open','dense','deadstar','shoals','archipelago','colossus','ring']);
+  if(shape==='deadstar'&&(cfg.noStar||['belt','station','planet'].includes(map))&&!cfg.keepShape){ const sh=(ENCOUNTERS[enc]||ENCOUNTERS.rout).shapes.filter(x=>x!=='deadstar'); shape=pick(sh.length?sh:['open']); } // R1: cfg.noStar (campaign sector 1) never fields the dead star
+  if(ak!=='strip'&&AXIS_SHAPES.includes(shape)) shape=pick(cfg.noStar?['open','dense','shoals','archipelago','colossus','ring']:['open','dense','deadstar','shoals','archipelago','colossus','ring']);
   let approach=null; if(ak==='square') approach={k:rnd()<.6?'diagonal':'cross'}; else if(ak==='round') approach={k:rnd()<.4?'headon':rnd()<.5?'cross':'pincer'};
   if(approach){ approach.th=ak==='square'?(approach.k==='diagonal'?(rnd()<.5?1:-1)*(Math.PI/4+(rnd()-.5)*.35):(rnd()<.5?0:Math.PI/2)*(rnd()<.5?1:-1)):rnd()*Math.PI*2; if(cfg.approach) approach.k=cfg.approach; }
   const topt={cond:cfg.kind==='boss'?null:sectorCond(),stationAt:enc==='defend'?offToAx(9+CX,midR):null,enc,pieces:{belt:['asteroid','asteroid','comet','station'],graveyard:['hulk','hulk','station','asteroid'],planet:['moon','moon','asteroid','station'],station:['station','station','hulk','asteroid'],storm:['comet','asteroid','asteroid','moon']}[map]||null};
@@ -1346,6 +1348,8 @@ async function fadeMove(u){ if(!u||u.dead||u.isSq||!u.postFire||postFireMp(u)<1)
   const here=evalThreat(u,foes)+torpThreat(u,u); if(here<5) return false; let best=null,bv=here; for(const s of computeReach(u).states){ if(s.q===u.q&&s.r===u.r) continue; const v=stateView(u,s), th=evalThreat(v,foes)+torpThreat(u,v); if(th<bv){ bv=th; best=s; } }
   if(!best||bv>here*.75) return false; await moveUnit(u,best); fstat(u.fac,'fade'); return true; }
 function enemyPaceK(){ const n=B?B.units.filter(x=>x.side==='enemy'&&!x.isSq&&!x.dead).length:1; return Math.min(1,Math.max(PACE.bigMin,Math.sqrt(PACE.bigRef/Math.max(1,n)))); } // B2: bigger enemy fleets play their phase quicker
+// veteran AI: brace instead of firing when the incoming fire is heavy, our own guns can do little and the hull is already down
+function aiVetBrace(u){ if(!(aiVet()&&!u.isSq&&!u.t.boss&&canOrder(u,'brace'))) return false; const pf=alive('player'), myOff=evalOffense(u,u.weapons.filter(weaponReady),pf), thr=evalThreat(u,pf); return thr>u.hp*.45&&myOff<thr*.35&&u.hp<u.maxHp*.7; }
 async function aiUnit(u){
   if(u.isSq){ if(!B.over&&!u.dead&&u.side==='enemy') await sqAct(u); return; } // squadrons follow the swarm rules
   if(u.side==='enemy'&&!B.cmdEUsed&&B.cmdENext!=null){ await bossCmdFire(); if(B.over||u.dead) return; }
@@ -1381,9 +1385,12 @@ async function aiUnit(u){
       score+=aiObjScore(u,v); score+=aiWellScore(u,v);
       if(score>bestScore){ bestScore=score; best=s; }
     }
-    let volleyP=null;
+    let volleyP=null, braceMid=false;
     if(best && best.path.length){ const midFire=!u.isSq&&!runner&&!(u.ab==='nova'&&canAbility(u))&&!(typeof animPath==='function'&&typeof process!=='undefined'&&process.env&&process.env.NOMIDFIRE);
-      await moveUnit(u,best,midFire?{onLate:()=>{ if(boardTargets(u).length) return; volleyP=(async()=>{ if(!await aiAbilities(u,live,'aim')||u.dead) return null; return aiVolley(u,live); })(); return volleyP; }}:undefined); if(!live()) return; }
+      // R1 (AI-1, Muse patch pack 1 as adjusted by its addendum): the veteran brace decision runs on the mid-move path too, after the boarding deferral and before
+      // the volley (once a gun fires, Brace is closed); on a brace call the ship finishes its move, fires nothing and braces
+      await moveUnit(u,best,midFire?{onLate:()=>{ if(boardTargets(u).length) return; if(aiVetBrace(u)){ braceMid=true; return; } volleyP=(async()=>{ if(!await aiAbilities(u,live,'aim')||u.dead) return null; return aiVolley(u,live); })(); return volleyP; }}:undefined); if(!live()) return; }
+    if(braceMid){ if(!u.dead) giveOrder(u,'brace'); B.aiActive=null; u.activated=true; return; }
     if(volleyP){ const fired=await volleyP; if(!live()||B.over) return; if(!await aiAfterFire(u,live,runner)) return; if(!fired && !u.dead && u.hp<u.maxHp*.5 && canOrder(u,'brace') && evalThreat(u,alive('player'))>10){ giveOrder(u,'brace'); } B.aiActive=null; u.activated=true; return; }
     // nova
     if(u.ab==='nova' && canAbility(u)){
@@ -1393,7 +1400,7 @@ async function aiUnit(u){
     }
     if(!u.isSq && !runner && await tacticBoard(u)){ if(live()){ B.aiActive=null; u.activated=true; } return; }
     if(!live()) return;
-    if(aiVet()&&!u.isSq&&!u.t.boss&&canOrder(u,'brace')){ const pf=alive('player'), myOff=evalOffense(u,u.weapons.filter(weaponReady),pf), thr=evalThreat(u,pf); if(thr>u.hp*.45&&myOff<thr*.35&&u.hp<u.maxHp*.7){ giveOrder(u,'brace'); B.aiActive=null; u.activated=true; return; } }
+    if(aiVetBrace(u)){ giveOrder(u,'brace'); B.aiActive=null; u.activated=true; return; }
     if(!await aiAbilities(u,live,'aim')) return;
     const fired=await aiVolley(u,live); if(fired===null) return;
     if(!await aiAfterFire(u,live,runner)) return;

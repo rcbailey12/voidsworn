@@ -40,6 +40,10 @@ setup(106,'hegemony'); rec('f1',nemFoundMerge(['flank',RUN.nem.weak[0],RUN.nem.w
 RUN.nem.g='f'; rec('f2',nemSay('He holds his line; his guns follow him.',RUN.nem)); RUN.nem.g='n'; rec('f3',nemSay('He holds his line; his guns follow him.',RUN.nem));
 // 7 every faction's warning line at clock 3, and the tithe
 for(const [i,f] of ['voidsworn','hegemony','ithar','deathless','chorus','corsair'].entries()){ setup(110+i,f); RUN.nem.clock=f==='deathless'?3.5:3; rec('g '+f,nemWarnLine(RUN.nem).replace(/<[^>]+>/g,'')); rec('g2 '+f,nemClockAdd(1)); state('g '+f); }
+// 8 R1 (Nov 1): a lost meeting teaches one weakness, a battle find counts as it, a full file says so; the clash check; a pre-persona save keeps its state
+setup(120,'hegemony'); rec('h1',nemAfterBattle('loss',false,{})); state('h1'); rec('h2',nemAfterBattle('retreat',false,{found:[RUN.nem.weak[1],'nonsense']})); state('h2'); rec('h3',nemAfterBattle('loss',false,{})); state('h3');
+setup(121,'chorus'); RUN.nem.revealed=['ion','torp']; RUN.nem.seen={lance:9,ion:9,torp:9,sq:9}; RUN.sector=2; rec('h4',nemAdapt()); rec('h5',nemAdapt(true)); state('h5');
+setup(122,'corsair'); RUN.nem={weak:['ion','slow'],revealed:['ion'],adapt:['riches'],clock:2,met:1,beaten:1,scars:1,dead:false,strike:false,seen:{},loot:500,riches:2,fed:3,honed:1,held:RUN.fleet[1],last_beat:'lance'}; rec('h6',ensureNemesis()); state('h6');
 globalThis.__OUT=OUT;
 `);
 fs.writeFileSync(process.argv[2], __OUT.join('\n') + '\n');

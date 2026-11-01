@@ -178,14 +178,24 @@ function rollRarity(minR,s,p){ const ft=p?favourTier(p):0, x=rnd(), rare=.24+.06
 // three boons from one patron; a duo boon can take a slot once you hold boons from both of its patrons
 function fleetKit(){ const k={}; for(const sh of (RUN&&RUN.fleet)||[]){ const d=derive(sh); for(const w of d.weapons){ if(w.k==='torp') k.torp=1; if(w.k==='lance') k.lance=1; if(w.k==='battery') k.batt=1; if(w.k==='flak') k.flak=1; if(w.arc==='P'||w.arc==='S') k.broad=1; if(w.arc==='P'||w.arc==='S'||w.k==='battery') k.still=1; } if((HULLS[sh.tpl].sh||0)>0) k.shields=1; if(HULLS[sh.tpl].hangar) k.carrier=1; if(d.hangar) k.sq=1; } return k; }
 function boonUseful(id,kit){ const n=BOON_NEED[id]; return !n||!!kit[n]; }
-function rollBoonOffer(p,minR){ ensurePatrons(); const s=(RUN&&RUN.sector)||1, have=boonPatrons(), kit=fleetKit();
-  let pool=Object.keys(BOONS).filter(id=>BOONS[id].p===p&&!BOONS[id].leg&&!hasBoon(id)); pool=shuffle(pool); const junk=pool.filter(id=>!boonUseful(id,kit)); pool=pool.filter(id=>boonUseful(id,kit));
-  const duos=Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.duo&&!hasBoon(id)&&boonUseful(id,kit)&&b.duo.includes(p)&&b.duo.every(q=>have.has(q)||q===p)&&b.duo.some(q=>q!==p&&have.has(q)); });
-  const out=pool.slice(0,3).map(id=>({id,r:rollRarity(minR,s,p)}));
-  if(duos.length&&(out.length<3||rnd()<.45)){ const d={id:pick(duos),r:0}; if(out.length>=3) out[2]=d; else out.push(d); }
-  if(out.length<3){ const extra=shuffle(Object.keys(BOONS).filter(id=>BOONS[id].p&&!BOONS[id].leg&&BOONS[id].p!==p&&RUN.patrons.includes(BOONS[id].p)&&!hasBoon(id)&&boonUseful(id,kit)&&!out.some(o=>o.id===id))); while(out.length<3&&extra.length) out.push({id:extra.pop(),r:rollRarity(minR,s)}); while(out.length<3&&junk.length) out.push({id:junk.pop(),r:rollRarity(minR,s)}); }
-  { const L=legendaryFor(p,minR); if(L){ if(out.length>=3) out[2]={id:L,r:3}; else out.push({id:L,r:3}); } } // B4 step 3: the patron's legendary, at elite and flagship rewards, once you hold two of its boons
+// R1 (Nov 1, Codex PR #1 boon fix, Ryan's ruling R64): one pool of useful ordinary protocols from the offering core and the run's other cores,
+// the offering core's picks weighted 3 to 1, drawn without replacement, every pick rolled with the offering core's sync (no off-core rarity tax);
+// no owned, duplicate or useless fillers, so an exhausted pool gives a short offer (boonStep pays 60 credits for it). One special slot:
+// the core's legendary or a duo; when both qualify the duo takes it 45% of the time.
+function boonOfferPool(p){ const kit=fleetKit(); return Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.p&&!b.leg&&(b.p===p||RUN.patrons.includes(b.p))&&!hasBoon(id)&&boonUseful(id,kit); }); }
+function boonOfferDuos(p){ const have=boonPatrons(), kit=fleetKit(); return Object.keys(BOONS).filter(id=>{ const b=BOONS[id]; return b.duo&&!hasBoon(id)&&boonUseful(id,kit)&&b.duo.includes(p)&&b.duo.every(q=>have.has(q)||q===p)&&b.duo.some(q=>q!==p&&have.has(q)); }); }
+function rollBoonOffer(p,minR){ ensurePatrons(); const s=(RUN&&RUN.sector)||1;
+  const pool=boonOfferPool(p), out=[];
+  while(out.length<3&&pool.length){ const total=pool.reduce((n,id)=>n+(BOONS[id].p===p?3:1),0); let x=rnd()*total, at=0;
+    for(;at<pool.length-1;at++){ const w=BOONS[pool[at]].p===p?3:1; if(x<w) break; x-=w; }
+    const id=pool.splice(at,1)[0]; out.push({id,r:rollRarity(minR,s,p)}); }
+  const duos=boonOfferDuos(p), L=legendaryFor(p,minR); let special=null;
+  if(L) special=duos.length&&rnd()<.45?{id:pick(duos),r:0}:{id:L,r:3};
+  else if(duos.length&&(out.length<3||rnd()<.45)) special={id:pick(duos),r:0};
+  if(special){ if(out.length>=3) out[2]=special; else out.push(special); }
   return out; }
+// R1 (RWD-6): every protocol an offer from this core could show, so a reroll that cannot change the offer is refused before it charges
+function boonOfferCan(p,minR){ ensurePatrons(); const L=legendaryFor(p,minR); return [...new Set(boonOfferPool(p).concat(boonOfferDuos(p),L?[L]:[]))]; }
 function legendaryFor(p,minR){ if(!(minR>=1)) return null; const L=Object.keys(BOONS).find(id=>BOONS[id].leg&&BOONS[id].p===p); if(!L||hasBoon(L)||!boonUseful(L,fleetKit())) return null; const n=(RUN.boons||[]).filter(b=>BOONS[b.id]&&BOONS[b.id].p===p&&!BOONS[b.id].leg).length; return n>=2?L:null; }
 // what a map node pays out: usually a patron's boon (its sigil shows on the map), sometimes a refit, credits or repairs
 function rollNodeReward(type){ ensurePatrons(); const p=pick(RUN.patrons); if(type==='elite'||type==='boss') return {k:'boon',p,min:1}; const x=rnd(); return x<.62?{k:'boon',p}:x<.78?{k:'mod'}:x<.9?{k:'cred'}:{k:'repair'}; }
@@ -231,12 +241,26 @@ function mkCost(s){ return Math.round((40*HULLS[s.tpl].cp*s.mk+30)*priceMult());
 function addXp(ship, n){ const c=ship.cap; c.xp+=Math.round(n*(1+(runFx().xpPct||0)));
   while(c.rank<RANKS.length-1 && c.xp>=RANK_XP[c.rank+1]){ c.rank++; c.pending++; } }
 // refits your fleet can actually use: no lance crystals for a fleet without lances, no shield parts for a shieldless one
+// R1 (MOD-3, Codex PR #1): a refit fits only where it can do something: a free slot, the hull type it is for, and the weapon or system it improves
+function canFitModule(ship,id){
+  const mod=typeof id==='string'&&Object.hasOwn(MODULES,id)?MODULES[id]:null, hull=ship&&Object.hasOwn(HULLS,ship.tpl)?HULLS[ship.tpl]:null;
+  if(!mod||!hull||!Array.isArray(ship.mods)||ship.mods.length>=(hull.slots||0)) return false;
+  if(mod.only&&hull.ab!==mod.only) return false;
+  const need=MOD_NEED[id];
+  if(need==='shields') return (hull.sh||0)>0;
+  if(need==='carrier') return hull.ab==='launch'&&(hull.hangar||0)>0;
+  const kind={batt:'battery',lance:'lance',torp:'torp',flak:'flak'}[need];
+  if(kind) return (hull.w||[]).some(([wid])=>W[wid]&&W[wid].k===kind);
+  return !need; }
 function modulePool(){ const kit=fleetKit(), all=Object.keys(MODULES), ok=all.filter(m=>!MOD_NEED[m]||kit[MOD_NEED[m]]); return ok.length>=3?ok:all; }
 function randomModule(){ return pick(modulePool()); }
 function modName(m){ const f=(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'; return (MOD_NAMES[f]&&MOD_NAMES[f][m])||MODULES[m].n; }
 function relicName(r){ const f=(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn'; return (RELIC_NAMES[f]&&RELIC_NAMES[f][r])||RELICS[r].n; }
 function runWord(fac){ return RUN_WORD[fac||(typeof RUN!=='undefined'&&RUN&&RUN.fac)||'voidsworn']||'run'; }
-function relicUseful(r){ return !(r==='lattice'&&!fleetKit().shields); } // no shield relic for a shieldless fleet
+// no shield relic for a shieldless fleet; R1 (relics synthesis fix 4): none that can never do anything either: the cooldown coils for a fleet
+// with no ability, the logbook when every captain is at the top rank, the chalked roll (heals the others when one dies) for a lone ship
+function relicUseful(r){ const F=(RUN&&RUN.fleet)||[]; if(r==='lattice') return !!fleetKit().shields; if(r==='coils') return F.some(s=>HULLS[s.tpl]&&HULLS[s.tpl].ab);
+  if(r==='logbook') return F.some(s=>s.cap&&(s.cap.rank||0)<RANKS.length-1); if(r==='martyr') return F.length>1; return true; }
 function randomRelic(){ const pool=Object.keys(RELICS).filter(r=>!RUN.relics.includes(r)&&relicUseful(r)); return pool.length?pick(pool):null; }
 
 // ---------- factions in a campaign ----------
@@ -265,7 +289,7 @@ function genSector(s){
     cols.push(col);
   }
   // the column before the rest stop always offers an elite: a step up before the flagship, for those who want it
-  { const c4=cols[COLS-3]; if(!c4.some(n=>n.type==='elite')){ const b=c4.find(n=>n.type==='battle')||c4.find(n=>n.type==='event'); if(b) b.type='elite'; } }
+  { const c4=cols[COLS-3]; if(!c4.some(n=>n.type==='elite')){ const b=c4.find(n=>n.type==='battle')||c4.find(n=>n.type==='event')||c4.find(n=>n.type==='shipyard'||n.type==='drydock'); if(b) b.type='elite'; } }
   // guarantee a shipyard in the middle and a rest stop before the boss
   if(!cols[3].some(n=>n.type==='shipyard')) pick(cols[3]).type='shipyard';
   if(!cols[COLS-2].some(n=>n.type==='drydock'||n.type==='shipyard')) cols[COLS-2][0].type='drydock';
@@ -291,7 +315,7 @@ function genSector(s){
   for(const col of cols) for(const n of col) if(n.type==='battle'||n.type==='elite'){ const x=rnd(); n.arch=x<.25?'swarm':x<.47?'heavy':x<.62?'carrier':null; const y=rnd(); n.mod=n.col>=2&&y<.14?'bounty':n.col>=2&&n.type==='battle'&&y<.26?'veteran':null; }
   // one condition per sector, never the same twice in a run
   let cond=null; try{ const used=(RUN&&RUN.condsUsed)||[], pool=Object.keys(SECTOR_CONDS).filter(k=>!used.includes(k)); cond=pick(pool.length?pool:Object.keys(SECTOR_CONDS)); if(RUN){ RUN.condsUsed=used.concat(cond); } }catch(e){ cond=null; }
-  let region=null; try{ region=pickRegion(fac); for(const col of cols) for(const n of col){ n.map=regionMap(region,n.col,COLS); fitEncounter(n); } }catch(e){ region=null; }
+  let region=null; try{ region=pickRegion(fac); for(const col of cols) for(const n of col){ n.map=regionMap(region,n.col,COLS); fitEncounter(n,s); } }catch(e){ region=null; }
   let biome=null; try{ biome=rollBiome(region); }catch(e){}
   return {fac, cols, edges, cond, region, biome};
 }

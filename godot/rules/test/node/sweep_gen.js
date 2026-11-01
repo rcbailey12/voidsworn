@@ -41,6 +41,7 @@ for (let i = 0; i < n; i++) {
   if (chance(0.3) && T.FAC_VERBS[pf] && T.FAC_VERBS[pf].next) S.verb = T.FAC_VERBS[pf].id;
   if (chance(0.25)) { const cls = ['Frigate', 'Destroyer', 'Cruiser', 'Carrier']; S.class_track = {}; for (const c of some(cls, 2)) S.class_track[c] = 1 + Math.floor(r() * 3); }
   if (chance(0.5)) { S.campaign = true; if (chance(0.3)) S.event_force = pick(Object.keys(T.BEVENTS)); else if (chance(0.3)) S.event_war = true; }
+  if (sector === 1 && chance(0.5)) S.noStar = true; // R1 (Nov 1): campaign sector 1 never fields the dead star
   res['w' + (i + 1)] = S;
 }
 fs.writeFileSync(out, JSON.stringify(res, null, 1)); console.log('sweep', n, 'battles ->', out);

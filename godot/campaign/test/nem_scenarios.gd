@@ -38,6 +38,10 @@ func _init() -> void:
 	for i in facs.size():
 		var f = facs[i]; setup(110 + i, f); C.RUN["nem"]["clock"] = 3.5 if f == "deathless" else 3.0
 		rec("g " + f, C.nemWarnLine(C.RUN["nem"])); rec("g2 " + f, C.nemClockAdd(1)); state("g " + f)
+	# 8 R1 (Nov 1): loss reveals, the clash check, the pre-persona migration (node/nem_scenarios.js section 8)
+	setup(120, "hegemony"); rec("h1", C.nemAfterBattle("loss", false, {})); state("h1"); rec("h2", C.nemAfterBattle("retreat", false, {"found": [C.RUN["nem"]["weak"][1], "nonsense"]})); state("h2"); rec("h3", C.nemAfterBattle("loss", false, {})); state("h3")
+	setup(121, "chorus"); C.RUN["nem"]["revealed"] = ["ion", "torp"]; C.RUN["nem"]["seen"] = {"lance": 9, "ion": 9, "torp": 9, "sq": 9}; C.RUN["sector"] = 2; rec("h4", C.nemAdapt()); rec("h5", C.nemAdapt(true)); state("h5")
+	setup(122, "corsair"); C.RUN["nem"] = {"weak": ["ion", "slow"], "revealed": ["ion"], "adapt": ["riches"], "clock": 2, "met": 1, "beaten": 1, "scars": 1, "dead": false, "strike": false, "seen": {}, "loot": 500, "riches": 2, "fed": 3, "honed": 1, "held": C.RUN["fleet"][1], "last_beat": "lance"}; rec("h6", C.ensureNemesis()); state("h6")
 	var a := OS.get_cmdline_user_args()
 	var fo = FileAccess.open(a[0], FileAccess.WRITE); fo.store_string("\n".join(OUT) + "\n"); fo.close()
 	print(OUT.size(), " records")

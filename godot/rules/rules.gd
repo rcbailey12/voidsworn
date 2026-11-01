@@ -1089,12 +1089,12 @@ func startBattle(cfg: Dictionary) -> void:
 	var ak = cfg["arena"] if ARENAS.has(cfg.get("arena")) else (wpick.call(ENC_ARENA[enc]) if axisFree and ENC_ARENA.has(enc) else "strip")
 	ARENA = {"kind": ak}
 	for k in ARENAS[ak].keys(): ARENA[k] = ARENAS[ak][k]
-	if shape == "deadstar" and ["belt", "station", "planet"].has(map) and not jt(cfg.get("keepShape")):
+	if shape == "deadstar" and (jt(cfg.get("noStar")) or ["belt", "station", "planet"].has(map)) and not jt(cfg.get("keepShape")):   # R1: cfg.noStar (campaign sector 1) never fields the dead star
 		var sh = []
 		for x in (ENCOUNTERS[enc] if ENCOUNTERS.has(enc) else ENCOUNTERS["rout"])["shapes"]:
 			if x != "deadstar": sh.append(x)
 		shape = pick(sh if sh.size() > 0 else ["open"])
-	if ak != "strip" and AXIS_SHAPES.has(shape): shape = pick(["open", "dense", "deadstar", "shoals", "archipelago", "colossus", "ring"])
+	if ak != "strip" and AXIS_SHAPES.has(shape): shape = pick(["open", "dense", "shoals", "archipelago", "colossus", "ring"] if jt(cfg.get("noStar")) else ["open", "dense", "deadstar", "shoals", "archipelago", "colossus", "ring"])
 	var approach: Variant = null
 	if ak == "square": approach = {"k": "diagonal" if rnd() < 0.6 else "cross"}
 	elif ak == "round":
@@ -3852,6 +3852,11 @@ func aiAfterFire(u, live: Callable, runner) -> bool:
 		fadeMove(u)
 		if jt(B.get("over")) or jt(u.get("dead")) or not live.call(): return false
 	return aiAbilities(u, live, "escape") and not jt(B.get("over"))
+# veteran AI: brace instead of firing when the incoming fire is heavy, our own guns can do little and the hull is already down
+func aiVetBrace(u) -> bool:
+	if not (aiVet() and not jt(u.get("isSq")) and not jt(u["t"].get("boss")) and canOrder(u, "brace")): return false
+	var pf = alive("player"); var myOff = evalOffense(u, readyList(u), pf); var thr = evalThreat(u, pf)
+	return thr > u["hp"] * 0.45 and myOff < thr * 0.35 and u["hp"] < u["maxHp"] * 0.7
 func aiUnit(u) -> void:
 	if jt(u.get("isSq")):
 		if not jt(B.get("over")) and not jt(u.get("dead")) and u["side"] == "enemy": sqAct(u)
@@ -3928,13 +3933,15 @@ func aiUnit(u) -> void:
 		if score > bestScore:
 			bestScore = score; best = s
 	eval_end()
-	var vctx = {"started": false, "result": null}
+	var vctx = {"started": false, "result": null, "brace": false}
 	if best != null and best.path.size() > 0:
 		var midFire: bool = not jt(u.get("isSq")) and not jt(runner) and not (u.get("ab") == "nova" and canAbility(u))
 		var mopts: Variant = null
 		if midFire:
 			var on_late = func():
 				if boardTargets(u).size() > 0: return
+				if aiVetBrace(u):   # R1 (AI-1): the veteran brace decision on the mid-move path, after the boarding deferral, before the volley
+					vctx.brace = true; return
 				vctx.started = true
 				if not aiAbilities(u, live, "aim") or jt(u.get("dead")):
 					vctx.result = null; return
@@ -3942,6 +3949,9 @@ func aiUnit(u) -> void:
 			mopts = {"onLate": on_late}
 		moveUnit(u, best, mopts)
 		if not live.call(): return
+	if vctx.brace:
+		if not jt(u.get("dead")): giveOrder(u, "brace")
+		B["aiActive"] = null; u["activated"] = true; return
 	if vctx.started:
 		var fired = vctx.result
 		if not live.call() or jt(B.get("over")): return
@@ -3967,10 +3977,8 @@ func aiUnit(u) -> void:
 			B["aiActive"] = null; u["activated"] = true
 		return
 	if not live.call(): return
-	if aiVet() and not jt(u.get("isSq")) and not jt(u["t"].get("boss")) and canOrder(u, "brace"):
-		var pf = alive("player"); var myOff = evalOffense(u, readyList(u), pf); var thr = evalThreat(u, pf)
-		if thr > u["hp"] * 0.45 and myOff < thr * 0.35 and u["hp"] < u["maxHp"] * 0.7:
-			giveOrder(u, "brace"); B["aiActive"] = null; u["activated"] = true; return
+	if aiVetBrace(u):
+		giveOrder(u, "brace"); B["aiActive"] = null; u["activated"] = true; return
 	if not aiAbilities(u, live, "aim"): return
 	var fired2 = aiVolley(u, live)
 	if fired2 == null: return
