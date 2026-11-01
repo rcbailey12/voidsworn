@@ -152,6 +152,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	fields(mk, rock_kind)
 	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
 	dust(mk)
+	wisps()
 	underlay()
 	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
 		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], fac])
@@ -759,6 +760,105 @@ func fields(mk: String, kind: String) -> void:
 				continue
 			_batch.add(names[r.randi() % names.size()], _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * r.randf_range(2.0, 6.0)), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
 	notes.append("fields: %d edge rocks, %d deep, %d belt, %d mountains" % [placed, deep, belt, mts])
+
+
+# ---------------------------------------------------------------- gas wisps (depth and parallax)
+
+# F4 r4: the sky's nebula is infinitely far, so it never moves against the board. A few dozen large, faint clouds of the
+# setting's gas at middle distance (round and below the board, never behind its hexes) slide past each other and past
+# the sky whenever the camera turns or zooms, which gives the space its depth. Noise comes from one small pre-made
+# texture (two reads per pixel), so the overdraw stays cheap.
+const WISP_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform sampler2D noise : filter_linear_mipmap, repeat_enable;
+uniform vec3 c_a = vec3(0.4, 0.2, 0.1);
+uniform vec3 c_b = vec3(0.1, 0.15, 0.3);
+uniform float gain = 0.06;
+varying vec4 vI;
+varying vec2 vQ;
+void vertex() {
+	vI = INSTANCE_CUSTOM;
+	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
+	float a = vI.y * 6.2831;
+	vec2 q = mat2(vec2(cos(a), sin(a)), vec2(-sin(a), cos(a))) * VERTEX.xy;
+	vQ = VERTEX.xy * 2.0;
+	c.xy += q * vI.x;
+	POSITION = PROJECTION_MATRIX * c;
+}
+void fragment() {
+	float r = length(vQ);
+	if (r > 1.0) { discard; }
+	vec2 uv = vQ * 0.35 + vI.zw * 7.0 + vec2(TIME * 0.0015, 0.0);
+	float n = texture(noise, uv).r;
+	float m = texture(noise, uv * 2.3 + n * 0.25 + 0.5).r;
+	float d = smoothstep(0.42, 0.85, n * 0.65 + m * 0.35) * smoothstep(1.0, 0.25, r);
+	ALBEDO = mix(c_b, c_a, smoothstep(0.3, 0.7, m)) * d * gain;
+}
+"""
+
+
+func wisps() -> void:
+	if quality == "low":
+		return
+	var r := RandomNumberGenerator.new()
+	r.seed = int(setting.get("seed", 7)) + 313
+	var n := int(26 + 34 * float(setting.get("neb", 0.5)))
+	var mm := _quad_mm(n)
+	var i := 0
+	var tries := 0
+	while i < n and tries < n * 30:
+		tries += 1
+		var a := r.randf() * TAU
+		var rad := r.randf_range(300.0, 1500.0)
+		var p := _center + Vector3(cos(a) * rad * 1.2, -r.randf_range(80.0, 520.0), sin(a) * rad)
+		var sz := r.randf_range(180.0, 520.0)
+		if _seen_on_board(p, sz * 0.45) or _through_board(p, sz * 0.45):
+			continue
+		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p))
+		mm.set_instance_custom_data(i, Color(sz, r.randf(), r.randf(), r.randf()))
+		i += 1
+	mm.visible_instance_count = i
+	var mi := MultiMeshInstance3D.new()
+	mi.multimesh = mm
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = WISP_SHADER
+	m.shader = sh
+	m.set_shader_parameter("noise", _wisp_noise())
+	m.set_shader_parameter("c_a", setting["c1"])
+	m.set_shader_parameter("c_b", setting["c2"])
+	m.set_shader_parameter("gain", 0.05 + 0.07 * float(setting.get("neb", 0.5)))
+	m.render_priority = -25
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.extra_cull_margin = 600.0
+	add_child(mi)
+	notes.append("wisps: %d gas clouds at middle distance" % i)
+
+
+static var _wnoise: Texture2D = null
+
+
+static func _wisp_noise() -> Texture2D:
+	if _wnoise != null:
+		return _wnoise
+	var t := NoiseTexture2D.new()
+	t.width = 512
+	t.height = 512
+	t.seamless = true
+	t.generate_mipmaps = true
+	var fn := FastNoiseLite.new()
+	fn.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	fn.frequency = 0.008
+	fn.fractal_type = FastNoiseLite.FRACTAL_FBM
+	fn.fractal_octaves = 5
+	fn.domain_warp_enabled = true
+	fn.domain_warp_amplitude = 40.0
+	t.noise = fn
+	t.normalize = true
+	_wnoise = t
+	return t
 
 
 # ---------------------------------------------------------------- the board's underlay
