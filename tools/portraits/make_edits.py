@@ -215,6 +215,54 @@ def v64h4_items(seeds=(11, 23)):
              'prompt': HORN + HORN_EXTRA.get(t, '') + ' The paint surface stays smooth and even, with no noise, speckle or pixels.'}
             for t, s in H4_SRC.items() for sd in seeds]
 
+# v64g3 (Nov 1, P helper 3): v64g2 review. The 0.30 and 0.40 oil passes keep the faceless designs faceless (Tamsa, Thorne, Mirelle,
+# Nemesis 1, 3, 4, 5, 6), but Vaelen and Nemesis 2 have no faceless take: drawn facing the viewer, every seed put a human face under
+# the gem as if it were a visor. Two edit routes for those two: FACELESS removes the face below the gem on the best renders; GW_FROM
+# repaints a faceless Glasswright (Nemesis 6's design) into their setting and pose. -> comfy_io\\PORTRAITS\\v64b\\.
+FACELESS = ("Change only the head of this being: remove every trace of a face. The faceted crystal gem is its whole head and grows "
+            "straight out of the top of its long neck of milky translucent flesh and pink sinew; there is no chin, mouth, lips, nose, eyes "
+            "or ears below or beside the crystal, only smooth neck flesh with glowing glass threads rising up into the gem. Keep the same "
+            "body, robe, hands, pose, setting, lighting and oil-painting style; change nothing else.")
+GW_FROM = ("Repaint this same being as a new character in a new picture. Keep its species exactly: the faceless faceted crystal gem head "
+           "growing straight out of a long neck of milky translucent flesh with pink sinew and glowing glass threads, no face anywhere, "
+           "long tapering fingers, a robe of silver mirror-thread and crystal plates. {who} New setting: {setting}. New pose and framing: "
+           "{pose}. Key light: {light}. Oil painting with visible loose brushstrokes, dramatic chiaroscuro, muted palette of {palette}. "
+           "No text, no letters, no border, no frame.")
+G3_FACELESS = {'ithar_vaelen': ['v64b/ithar_vaelen_f_s73_oil30_zi2i_s73', 'v64b/ithar_vaelen_f_s11_oil30_zi2i_s11'],
+               'nem_ithar_2': ['v64b/nem_ithar_2_f_s73_oil30_zi2i_s73', 'v64b/nem_ithar_2_s11_oil30_zi2i_s11']}
+G3_WHO = {'vaelen': "It is Saro of Long Focus, a Glasswright lance-master, holding up a large clear lens that focuses a thin white beam of light.",
+          'nem_ithar_2': "It is a Nemesis, a rival Glasswright commander, with a veil of fine mirror-thread hanging from the crown of its head."}
+def v64g3_items():
+    import portrait_specs as PS
+    out = []
+    for t, srcs in G3_FACELESS.items():
+        for j, src in enumerate(srcs):
+            out += [{'id': '%s_nf%d' % (t, j + 1), 'kind': 'edit', 'seed': sd, 'src': src + '_00001_.png', 'prompt': FACELESS} for sd in (11, 23)]
+    for cid, who in G3_WHO.items():
+        st, po, li = PS.SPEC[cid]
+        pr = GW_FROM.format(who=who, setting=st, pose=po, light=li, palette=PS.PALETTE['ithar'])
+        tag = cid if cid.startswith('nem_') else 'ithar_' + cid
+        out += [{'id': tag + '_from6', 'kind': 'edit', 'seed': sd, 'src': 'v64/nem_ithar_6_qie_s11_00001_.png', 'prompt': pr} for sd in (11, 23)]
+    return out
+
+# s68 (Nov 1, P helper 3): scars re-derived on the new R68 bases (bust crops from v64_publish.py crops -> comfy_io\\PORTRAITS\\ncrop68\\).
+# A crop that needs a fix first (S68_FIX) is edited at the head of the same job and its scars are painted on the fixed crop
+# (portrait_edit.py checks each source when it reaches it). Two seeds per scar; picks in v64_publish.py SCAR.
+S68_FIX = {'nem_ithar_3': "Replace the glowing map of continents on the screen behind with a glowing star chart of a planetary system: "
+                          "rings of orbits, small planets and lines of light, no land shapes.",
+           'nem_ithar_1': "Remove the thin red curved line in the top left corner; that corner becomes the same dark workshop as around it."}
+CLEAN_E = " The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+def s68_items(fac, ids, seeds=(11, 23)):
+    out = []
+    for nid in ids:
+        src = 'ncrop68/%s.png' % nid
+        if nid in S68_FIX:
+            out.append({'id': nid, 'kind': 'fix', 'seed': 11, 'src': src, 'prompt': S68_FIX[nid] + (KEEP if fac in ('voidsworn', 'hegemony', 'corsair') else KEEP_OBJ) + CLEAN_E})
+            src = 's68/%s_fix_s11_00001_.png' % nid
+        out += [{'id': nid, 'kind': k, 'seed': sd, 'src': src, 'prompt': SCAR64[fac][k] + (KEEP if fac == 'corsair' else KEEP_OBJ) + CLEAN_E}
+                for k in KINDS[fac] for sd in seeds]
+    return out
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -264,3 +312,8 @@ if __name__ == '__main__':
     print('e64c', len(e64c_items()))
     json.dump({'out': 'v64b', 'budget_s': 1100, 'items': v64h4_items()}, open(os.path.join(B, 'v64h4.json'), 'w'), indent=1)
     print('v64h4', len(v64h4_items()))
+    json.dump({'out': 'v64b', 'budget_s': 1100, 'items': v64g3_items()}, open(os.path.join(B, 'v64g3.json'), 'w'), indent=1)
+    print('v64g3', len(v64g3_items()))
+    json.dump({'out': 's68', 'budget_s': 1100, 'items': s68_items('ithar', ['nem_ithar_1', 'nem_ithar_3', 'nem_ithar_4', 'nem_ithar_5', 'nem_ithar_6'])},
+              open(os.path.join(B, 's68g.json'), 'w'), indent=1)
+    print('s68g', len(s68_items('ithar', ['nem_ithar_1', 'nem_ithar_3', 'nem_ithar_4', 'nem_ithar_5', 'nem_ithar_6'])))

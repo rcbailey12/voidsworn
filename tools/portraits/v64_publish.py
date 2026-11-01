@@ -14,9 +14,21 @@ from post import framed, PD, font
 
 # admiral -> (faction, render (relative to render_root, without _00001_.png), crop box or None, note)
 ADM = {
+ # Glasswrights (v64g faceless Qwen designs, light oil pass from v64g2; faceless checked at full size)
+ 'aelith': ('ithar', 'v64b/ithar_aelith_s11_oil30_zi2i_s11', (0.5, 0.375, 0.75),
+            'R68 (Nov 1): Tamsa in the carrier hangar launching her glass starlings; faceless gem head; oil 0.30 (0.5 painted a face in).'),
+ 'thorne': ('ithar', 'v64b/ithar_thorne_s11_oil30_zi2i_s11', (0.5, 0.375, 0.75),
+            'R68: Vell in the hall of mirrors, looking back over its shoulder; oil 0.30 (0.40 drew a face profile).'),
+ 'mirelle': ('ithar', 'v64b/ithar_mirelle_s11_oil40_zi2i_s11', (0.5, 0.375, 0.75),
+             'R68: Brin on its command chair before the Hollow Sun; oil 0.40.'),
 }
 # Nemesis -> (render, face box (centre x, centre y, face height) as fractions of the render)
 NEM = {
+ 'nem_ithar_1': ('v64b/nem_ithar_1_s11_oil40_zi2i_s11', (0.55, 0.17, 0.30)),
+ 'nem_ithar_3': ('v64b/nem_ithar_3_s11_oil40_zi2i_s11', (0.44, 0.14, 0.25)),
+ 'nem_ithar_4': ('v64b/nem_ithar_4_s11_oil40_zi2i_s11', (0.47, 0.14, 0.24)),
+ 'nem_ithar_5': ('v64b/nem_ithar_5_s11_oil40_zi2i_s11', (0.56, 0.18, 0.30)),
+ 'nem_ithar_6': ('v64b/nem_ithar_6_s23_oil40_zi2i_s23', (0.49, 0.15, 0.25)),
 }
 # Nemesis scar picks: nid -> {kind: seed} in SCAR_DIR
 SCAR = {

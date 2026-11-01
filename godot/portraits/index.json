@@ -69,14 +69,17 @@
    "faction": "ithar",
    "pick": "painted/aelith.webp",
    "alts": [
+    "alts/aelith_pre68.webp",
     "alts/aelith_r8alt1.webp",
     "alts/aelith_r7.webp"
    ],
-   "source": "r8f/aelith_r8f_s11_00001_.png",
-   "alt_sources": [
-    "r8/ithar_aelith_r8_qie_s11_00001_.png"
+   "source": "v64b/ithar_aelith_s11_oil30_zi2i_s11_00001_.png",
+   "crop": [
+    0.5,
+    0.375,
+    0.75
    ],
-   "note": "Glasswright: long neck, large dark eyes, light-storing skin patterns, crystal and mirror-thread robe, light-core in hand; pointed ears removed in the r8f pass."
+   "note": "R68 (Nov 1): Tamsa in the carrier hangar launching her glass starlings; faceless gem head; oil 0.30 (0.5 painted a face in)."
   },
   "nekhet": {
    "faction": "deathless",
@@ -126,6 +129,30 @@
     "p64/corsair_vesh_s51_oil50_zi2i_s51_00001_.png"
    ],
    "note": "R64 void hunter: rust mane, a harness of collected plates (crystal, violet machine plating), welding torch. s11 face read as a metal helmet."
+  },
+  "thorne": {
+   "faction": "ithar",
+   "pick": "painted/thorne.webp",
+   "alts": [],
+   "source": "v64b/ithar_thorne_s11_oil30_zi2i_s11_00001_.png",
+   "crop": [
+    0.5,
+    0.375,
+    0.75
+   ],
+   "note": "R68: Vell in the hall of mirrors, looking back over its shoulder; oil 0.30 (0.40 drew a face profile)."
+  },
+  "mirelle": {
+   "faction": "ithar",
+   "pick": "painted/mirelle.webp",
+   "alts": [],
+   "source": "v64b/ithar_mirelle_s11_oil40_zi2i_s11_00001_.png",
+   "crop": [
+    0.5,
+    0.375,
+    0.75
+   ],
+   "note": "R68: Brin on its command chair before the Hollow Sun; oil 0.40."
   }
  },
  "nemesis": {
