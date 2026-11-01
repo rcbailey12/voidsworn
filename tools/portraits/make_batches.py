@@ -447,7 +447,56 @@ def c64c(i, model, seeds):
     fac, p = C64C[i]
     return {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
 BATCHES['c64c'] = [c64c(k, 'zit', S4) for k in C64C] + [c64c(k, 'qie', [11, 51]) for k in C64C]
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c'}
+# ---------- R64 picks (Ryan, Nov 1 06:02): Hullbreakers A1, Glasswrights A; lore_bible_r8.md 4.3 and 6.3 ----------
+# Hullbreakers A1 (c64c/hb_b_qie_s51), "but careful about them looking too much like the Predator": the prompt says only what is
+# there (a fur mane, a beast's hunched bulk with the chest under a harness, bony scale plates growing from the hide, a chin split
+# into two halves) so no Predator tell gets drawn (quills, tusks, mesh, a domed helmet head, a bodybuilder's bare torso).
+# Glasswrights A (c64c/gw_a_qie_s51), "not literally glass": living skin, sinew and soft flesh with glass threads and crystal
+# inlays grown into it; the faceless front of the head stays one blank crystal facet (the line that kept faces away in c64c).
+# Both are pushed toward the oil paint of the other portraits: the Qwen render fixes the design, then Z-Image repaints it at
+# partial strength (zi2i in portrait_run.py) so the design holds and the finish turns to oil paint.
+VOID4 = ("Close-up head-and-shoulders portrait of a Hullbreaker, a huge alien hunting beast from a cold heavy-gravity world, hunched "
+         "forward with the heavy rounded bulk of a great predator: a tall shoulder hump, a thick short neck, a broad barrel body and "
+         "thick forearms ending in heavy curved claws. A thick coarse shaggy mane of {mane} fur covers the hump, the shoulders, the neck "
+         "and the back of the head and frames the face; the arms are thick dark leathery hide with coarse hair. The head is low, broad "
+         "and blunt, sunk into the mane between the shoulders. The face is bare: overlapping grey bony plates like a pangolin's scales "
+         "grow out of the hide, worn and chipped at the edges. The jaw is split down the middle of the chin into two plated halves "
+         "hinged at the sides, {jaw}. A row of four small glowing {eye} eyes sits in one straight line across the plated brow, and "
+         "rows of small dark heat-sensing pits run along the cheeks below them. A heavy scrap armour harness of rusty riveted hull "
+         "plates from other ships and thick leather straps covers the chest and belly{gear}.")
+JAW_OPEN = "the two halves spread apart to the left and right in a snarl, rows of small sharp teeth lining the inner edges"
+JAW_SHUT = "the two halves closed, a deep seam running down the middle of the chin"
+TROPHY = ", hung with machine trophies: a cracked sensor lens, a torn circuit board, a bent antenna"
+PRISM4 = ("Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into "
+          "its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh "
+          "and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are "
+          "grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; "
+          "light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. "
+          "A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the "
+          "skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished "
+          "crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. {gear}")
+ROBE = "It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric."
+K64 = {
+ 'hb_snarl': ('corsair', VOID4.format(mane='black', jaw=JAW_OPEN, eye='red', gear=TROPHY)),
+ 'hb_calm': ('corsair', VOID4.format(mane='grey and black', jaw=JAW_SHUT, eye='amber', gear=TROPHY) + " The heat pits glow faint "
+             "orange; a calm, patient menace."),
+ 'gw_speak': ('ithar', PRISM4.format(gear=ROBE) + " Soft bands of coloured light pulse across the crystal of its head and down the "
+              "glass threads of its neck as it speaks."),
+ 'gw_hand': ('ithar', PRISM4.format(gear=ROBE) + " One hand is raised beside the head, its very long tapering fingers of pale skin "
+             "inlaid with glass threads shaping a glowing shard of glass, light running down the threads into the fingertips."),
+}
+def k64(i, model, seeds, ref=None, denoise=None, tag=None):
+    fac, p = K64[i]
+    it = {'id': tag or i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
+    if ref: it['ref'] = ref; it['denoise'] = denoise
+    return it
+# check round k64 (one sheet per species, seed 51): the Qwen design, Z-Image alone, the Qwen design repainted by Z-Image at
+# 0.50 and 0.65 strength, and Ryan's pick itself repainted at 0.55
+BATCHES['k64'] = ([k64(k, 'qie', [51]) for k in K64] + [k64(k, 'zit', [51]) for k in K64] +
+                  [k64(k, 'zi2i', [51], 'k64/%s_qie_s51_00001_.png' % k, d, '%s_p%d' % (k, d * 100)) for k in K64 for d in (0.5, 0.65)] +
+                  [k64('hb_snarl', 'zi2i', [51], 'c64c/hb_b_qie_s51_00001_.png', 0.55, 'hb_a1_p55'),
+                   k64('gw_speak', 'zi2i', [51], 'c64c/gw_a_qie_s51_00001_.png', 0.55, 'gw_a1_p55')])
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

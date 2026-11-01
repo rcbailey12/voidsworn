@@ -5,6 +5,9 @@
 #   zit : Z-Image Turbo text to image (official ComfyUI template settings: lumina2 text encoder, AuraFlow shift 3, 8 steps, cfg 1, res_multistep)
 #   qie : Qwen-Image-Edit 2511 used as text to image (empty latent, Lightning 8-step LoRA), the model already on the PC for ship views
 #   qref: Qwen-Image-Edit 2511 painting onto a reference image (item key 'ref': a background plate PNG in comfy_io\PORTRAITS\)
+#   zi2i: Z-Image Turbo image to image (item keys 'ref': a render under comfy_io\PORTRAITS\, 'denoise': 0..1): repaints a render
+#         in Z-Image's oil-paint finish while keeping its design; runs after every zit and qie item, so 'ref' may be a render
+#         made earlier in the same batch (Nov 1, R64 repaint)
 # Batch json: {"out": "b1", "suffix": "...", "items": [{"id": "mending", "model": "zit", "prompt": "...", "seeds": [11, 23], "w": 1024, "h": 1024}]}
 import os, sys, json, time, subprocess, urllib.request, urllib.error
 DL = os.path.join(os.environ['USERPROFILE'], 'Downloads'); R = os.path.join(DL, 'ComfyUI_windows_portable'); C = os.path.join(R, 'ComfyUI')
@@ -73,6 +76,13 @@ def qie(prompt, seed, prefix, w=1024, h=1024, steps=8, cfg=1.0):
       '16': {'class_type': 'VAEDecode', 'inputs': {'samples': ['15', 0], 'vae': ['9', 0]}},
       '17': {'class_type': 'SaveImage', 'inputs': {'images': ['16', 0], 'filename_prefix': prefix}}}
 
+def zi2i(prompt, seed, prefix, img, denoise=0.55, steps=8, cfg=1.0, shift=3.0):
+    p = zit(prompt, seed, prefix, steps=steps, cfg=cfg, shift=shift)
+    p['11'] = {'class_type': 'LoadImage', 'inputs': {'image': img}}
+    p['7'] = {'class_type': 'VAEEncode', 'inputs': {'pixels': ['11', 0], 'vae': ['3', 0]}}
+    p['8']['inputs']['denoise'] = denoise
+    return p
+
 def qref(prompt, seed, prefix, img, w=1024, h=1024, steps=8, cfg=1.0):
     # Qwen-Image-Edit 2511 painting onto a reference image (a dark faction background plate made in the sandbox):
     # the same chain as comfy_run.py qwen_prompt (proven on this PC), without the angles LoRA
@@ -112,8 +122,8 @@ def probe():
 
 def gen(path):
     B = json.load(open(path, encoding='utf-8')); out = B['out']; suf = B.get('suffix', '')
-    items = B['items']; order = sorted(range(len(items)), key=lambda i: ({'zit': 0, 'qie': 1, 'qref': 1}.get(items[i].get('model', 'zit'), 2), i))  # one model load per family
-    ok = {m: ready(m) for m in NEEDS}; ok['qref'] = ok['qie']; p = start(); n = 0; t0 = time.time(); man = []
+    items = B['items']; order = sorted(range(len(items)), key=lambda i: ({'zit': 0, 'qie': 1, 'qref': 1, 'zi2i': 2}.get(items[i].get('model', 'zit'), 2), i))  # one model load per family
+    ok = {m: ready(m) for m in NEEDS}; ok['qref'] = ok['qie']; ok['zi2i'] = ok['zit']; p = start(); n = 0; t0 = time.time(); man = []
     try:
         for i in order:
             it = items[i]; m = it.get('model', 'zit')
@@ -125,6 +135,11 @@ def gen(path):
                 if m == 'qref':
                     if not os.path.exists(os.path.join(IO_, it['ref'])): log('missing ref', it['ref']); break
                     r = run(qref(txt, sd, pre, it['ref'], it.get('w', 1024), it.get('h', 1024)), pre)
+                elif m == 'zi2i':   # LoadImage only lists the input folder's top level: copy the ref there first
+                    src = os.path.join(IO_, it['ref'].replace('/', os.sep))
+                    if not os.path.exists(src): log('missing ref', it['ref']); continue
+                    import shutil; flat = 'ref_%s.png' % it['id']; shutil.copyfile(src, os.path.join(IO_, flat))
+                    r = run(zi2i(txt, sd, pre, flat, it.get('denoise', 0.55)), pre)
                 else:
                     fn = zit if m == 'zit' else qie
                     r = run(fn(txt, sd, pre, it.get('w', 1024), it.get('h', 1024)), pre)
