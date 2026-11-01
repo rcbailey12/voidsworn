@@ -9,6 +9,15 @@ if HERE not in sys.path: sys.path.insert(0, HERE)
 import gio
 
 
+def _name(code, ex):
+    """the display name from ships.py (round 8 names, rename_map_final.md); the glb extras keep the name the ship was built under"""
+    try:
+        import ships
+        return ships.SHIPS.get(code, {}).get('name') or ex.get('name', code)
+    except Exception:
+        return ex.get('name', code)
+
+
 def sha(p):
     h = hashlib.sha256()
     with open(p, 'rb') as f:
@@ -36,7 +45,7 @@ def main(gdir, odir, dest):
         dmg = os.path.join(d, f'{code}_damage.glb'); nb = 0
         if os.path.exists(dmg):
             jd, _ = gio.read_glb(dmg); nb = len([n for n in jd['nodes'] if n.get('name', '').endswith('_hole')])
-        man[code] = dict(name=ex.get('name', code), faction=ex.get('faction'), cls=ex.get('cls'), band=ex.get('band'), length_world=ex.get('length_world'),
+        man[code] = dict(name=_name(code, ex), faction=ex.get('faction'), cls=ex.get('cls'), band=ex.get('band'), length_world=ex.get('length_world'),
                          hardpoints=hp, breaches=nb, skins=len([x for x in names if x.startswith('skin_')]), files=files,
                          pc_path=f'Downloads\\voidsworn_test\\build\\godot\\assets\\ships\\{code}\\')
         v = os.path.join(odir, code, 'checks', f'{code}_views.webp')

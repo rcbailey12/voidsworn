@@ -2,7 +2,7 @@
  "note": "A4 ships: the glb files and maps live on Ryan's PC (pc_path, copied there by every ship job) and stay out of git until large-file storage is decided; sizes and sha256 here identify the reviewed build.",
  "ships": {
   "B16_23": {
-   "name": "Bio-titan",
+   "name": "The Ninefold Maw",
    "faction": "chorus",
    "cls": "Bio-titan",
    "band": "XL",
@@ -50,7 +50,7 @@
    "damage_preview": "previews/B16_23_damage.jpg"
   },
   "B19_11": {
-   "name": "Drone",
+   "name": "Chorus drone-spawn",
    "faction": "chorus",
    "cls": "Frigate",
    "band": "S",
@@ -98,7 +98,7 @@
    "damage_preview": "previews/B19_11_damage.jpg"
   },
   "B20_11": {
-   "name": "Spitter",
+   "name": "Chorus spitter",
    "faction": "chorus",
    "cls": "Destroyer",
    "band": "M",
@@ -146,7 +146,7 @@
    "damage_preview": "previews/B20_11_damage.jpg"
   },
   "B21_11": {
-   "name": "Razorfiend",
+   "name": "Chorus bladeback",
    "faction": "chorus",
    "cls": "Cruiser",
    "band": "M",
@@ -194,7 +194,7 @@
    "damage_preview": "previews/B21_11_damage.jpg"
   },
   "B22_11": {
-   "name": "Brood-carrier",
+   "name": "Chorus brood-sac",
    "faction": "chorus",
    "cls": "Carrier",
    "band": "L",
@@ -288,7 +288,7 @@
    "preview": "previews/B23_51.jpg"
   },
   "C13s_23": {
-   "name": "Raider-class frigate",
+   "name": "Hullbreaker raider",
    "faction": "corsair",
    "cls": "Frigate",
    "band": "S",
@@ -336,7 +336,7 @@
    "damage_preview": "previews/C13s_23_damage.jpg"
   },
   "C14s_23": {
-   "name": "Reaver-class destroyer",
+   "name": "Hullbreaker gutship",
    "faction": "corsair",
    "cls": "Destroyer",
    "band": "M",
@@ -384,7 +384,7 @@
    "damage_preview": "previews/C14s_23_damage.jpg"
   },
   "C15s_23": {
-   "name": "Marauder-class cruiser",
+   "name": "Hullbreaker wrecker",
    "faction": "corsair",
    "cls": "Cruiser",
    "band": "M",
@@ -432,7 +432,7 @@
    "damage_preview": "previews/C15s_23_damage.jpg"
   },
   "C16s_23": {
-   "name": "Hulk-carrier",
+   "name": "Hullbreaker hulk-carrier",
    "faction": "corsair",
    "cls": "Carrier",
    "band": "L",
@@ -529,7 +529,7 @@
    "damage_preview": "previews/C19_51_damage.jpg"
   },
   "D20_23": {
-   "name": "Revenant destroyer",
+   "name": "Eclipse flare",
    "faction": "deathless",
    "cls": "Destroyer",
    "band": "M",
@@ -577,7 +577,7 @@
    "damage_preview": "previews/D20_23_damage.jpg"
   },
   "D21_23": {
-   "name": "Monolith cruiser",
+   "name": "Eclipse zenith",
    "faction": "deathless",
    "cls": "Cruiser",
    "band": "M",
@@ -625,7 +625,7 @@
    "damage_preview": "previews/D21_23_damage.jpg"
   },
   "D22_23": {
-   "name": "Necropolis tomb-ark",
+   "name": "The Unsetting",
    "faction": "deathless",
    "cls": "Tomb-ark",
    "band": "XL",
@@ -673,7 +673,7 @@
    "damage_preview": "previews/D22_23_damage.jpg"
   },
   "D9_23": {
-   "name": "Ossuary frigate",
+   "name": "Eclipse mote",
    "faction": "deathless",
    "cls": "Frigate",
    "band": "S",
@@ -769,7 +769,7 @@
    "damage_preview": "previews/H10_23_damage.jpg"
   },
   "H4_11": {
-   "name": "Dominion super-dreadnought",
+   "name": "Dominion dreadnought",
    "faction": "hegemony",
    "cls": "Super-dreadnought",
    "band": "XL",
@@ -817,7 +817,7 @@
    "damage_preview": "previews/H4_11_damage.jpg"
   },
   "H7_23": {
-   "name": "Picket-class frigate",
+   "name": "Hegemony picket",
    "faction": "hegemony",
    "cls": "Frigate",
    "band": "S",
@@ -865,7 +865,7 @@
    "damage_preview": "previews/H7_23_damage.jpg"
   },
   "H8_23": {
-   "name": "Interdictor-class destroyer",
+   "name": "Cordon destroyer",
    "faction": "hegemony",
    "cls": "Destroyer",
    "band": "M",
@@ -913,7 +913,7 @@
    "damage_preview": "previews/H8_23_damage.jpg"
   },
   "H9_23": {
-   "name": "Vanguard-class cruiser",
+   "name": "Vanguard cruiser",
    "faction": "hegemony",
    "cls": "Cruiser",
    "band": "M",
@@ -961,7 +961,7 @@
    "damage_preview": "previews/H9_23_damage.jpg"
   },
   "I11_37": {
-   "name": "Seraph-class destroyer",
+   "name": "Glasswright lancet",
    "faction": "ithar",
    "cls": "Destroyer",
    "band": "M",
@@ -1009,7 +1009,7 @@
    "damage_preview": "previews/I11_37_damage.jpg"
   },
   "I14_23": {
-   "name": "Gleam-class frigate",
+   "name": "Glasswright sliver",
    "faction": "ithar",
    "cls": "Frigate",
    "band": "S",
@@ -1057,7 +1057,7 @@
    "damage_preview": "previews/I14_23_damage.jpg"
   },
   "I15_11": {
-   "name": "Aurora-class cruiser",
+   "name": "Glasswright prism",
    "faction": "ithar",
    "cls": "Cruiser",
    "band": "M",
@@ -1105,7 +1105,7 @@
    "damage_preview": "previews/I15_11_damage.jpg"
   },
   "I16_11": {
-   "name": "Zenith-class carrier",
+   "name": "Glasswright aperture",
    "faction": "ithar",
    "cls": "Carrier",
    "band": "L",
@@ -1154,7 +1154,7 @@
    "damage_preview": "previews/I16_11_damage.jpg"
   },
   "I8_37": {
-   "name": "Empyrean ark",
+   "name": "The Unfinished",
    "faction": "ithar",
    "cls": "Ark",
    "band": "XL",
@@ -1529,7 +1529,7 @@
    "damage_preview": "previews/V15_37_damage.jpg"
   },
   "V16_37": {
-   "name": "Penitent-class cruiser",
+   "name": "Vigil-class cruiser",
    "faction": "voidsworn",
    "cls": "Cruiser",
    "band": "M",
@@ -1577,7 +1577,7 @@
    "damage_preview": "previews/V16_37_damage.jpg"
   },
   "V17_37": {
-   "name": "Cathedral-class battleship",
+   "name": "Bastion-class battleship",
    "faction": "voidsworn",
    "cls": "Battleship",
    "band": "L",
@@ -1625,7 +1625,7 @@
    "damage_preview": "previews/V17_37_damage.jpg"
   },
   "V18_51": {
-   "name": "Reliquary-class carrier",
+   "name": "Hearth-class carrier",
    "faction": "voidsworn",
    "cls": "Carrier",
    "band": "L",
@@ -1674,7 +1674,7 @@
    "damage_preview": "previews/V18_51_damage.jpg"
   },
   "V1b_r_23": {
-   "name": "Ascendant-class dreadnought",
+   "name": "Daybreak-class dreadnought",
    "faction": "voidsworn",
    "cls": "Dreadnought",
    "band": "XL",
@@ -1722,4 +1722,4 @@
    "damage_preview": "previews/V1b_r_23_damage.jpg"
   }
  }
-}
+}
