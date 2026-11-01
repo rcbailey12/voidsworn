@@ -124,6 +124,30 @@ SPEC.update({
  'nem_deathless_5': ("a long corridor of violet light panels", "", "violet light panels on both sides"),
  'nem_deathless_6': ("deep space with a dim dying star behind", "", "the faint red glow of the dying star"),
 })
+# e64 review (Nov 1, P helper 3): redraws for e64c. Kassar's holo map came out as Earth; Vex's paper map grew a text-like legend;
+# the Crusade gun deck drew a sailing ship with rigging and the Hegemony fleet sea ships on an ocean; Crusade 3's window view and
+# Eclipse 1's data plates turned to blocky pixels and text lines; Crusade 5 and 6, Hegemony 5 and Eclipse 2 shrank to small full
+# figures (their pose lines dropped so the head stays where it was); Chorus 1 hardly moved (s11) or grew a human face (s23).
+SPEC.update({
+ 'vex': ("a war room of frost-rimed black iron walls around a table that glows with a star chart drawn in lines of ember light",
+         "leaning forward on the table with both fists, half-body", "warm ember light from the star chart below"),
+ 'kassar': ("a briefing room with a glowing blue holographic star map of planets, orbit rings and small fleet markers",
+            "mid-gesture, one hand pointing into the map, three-quarter, half-body", "the blue glow of the holo-map from the front"),
+ 'nem_voidsworn_3': ("an observation deck aboard a black iron warship, a dim orange sun in black space beyond frosted glass", "glancing back over one shoulder",
+                     "low orange sunlight from the window at the side"),
+ 'nem_voidsworn_4': ("the enclosed gun deck inside a black iron starship, a low steel ceiling, huge ember-glowing gun breeches along the steel wall",
+                     "one hand resting on a gun breech", "ember glow from the gun breech beside him"),
+ 'nem_voidsworn_5': ("a dark frozen corridor of black iron lit by a single ember lamp", "", "a single ember lamp from above"),
+ 'nem_voidsworn_6': ("the bridge of a black iron warship, frost on the viewports, stars outside, the high back of a command chair behind him", "",
+                     "cold starlight from the viewports and ember instrument light from below"),
+ 'nem_hegemony_5': ("the bridge of a pale grey dreadnought, sleek grey starships in formation in black space beyond the viewport", "",
+                    "white light from the viewport behind"),
+ 'nem_chorus_1': ("the hollow inside of a broken warship hull overgrown with flesh and sinew, torn bulkheads and cables all around", "",
+                  "bile-green glow from below and a shaft of cold light from above"),
+ 'nem_deathless_1': ("a cold archive of floating blank glass plates glowing faintly", "", "faint white light from the glass plates"),
+ 'nem_deathless_2': ("a siphon platform over a star being drained into a thin stream of light", "", "blazing starlight from below"),
+})
+CLEAN = " The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
 KEEP_WHAT = {'voidsworn': 'person, face, scars, hair and clothing', 'hegemony': 'person, face, implants, hair and uniform',
              'chorus': 'organism, its shape and colours', 'deathless': 'machine, its shape and colours'}
 EDIT = ("Move this same {what} into a new setting: {setting}.{pose} Key light: {light}. Keep the same {what}, and keep the oil-painting "

@@ -1,0 +1,146 @@
+{
+ "out": "e64",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "vex",
+   "kind": "v64",
+   "seed": 37,
+   "src": "r8/voidsworn_vex_r8_zit_s37_00001_.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a war room of frost-rimed black iron walls around a table that glows with a star chart drawn in lines of ember light. New pose and framing: leaning forward on the table with both fists, half-body. Key light: warm ember light from the star chart below. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "vex",
+   "kind": "v64",
+   "seed": 51,
+   "src": "r8/voidsworn_vex_r8_zit_s37_00001_.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a war room of frost-rimed black iron walls around a table that glows with a star chart drawn in lines of ember light. New pose and framing: leaning forward on the table with both fists, half-body. Key light: warm ember light from the star chart below. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 37,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a briefing room with a glowing blue holographic star map of planets, orbit rings and small fleet markers. New pose and framing: mid-gesture, one hand pointing into the map, three-quarter, half-body. Key light: the blue glow of the holo-map from the front. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 51,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a briefing room with a glowing blue holographic star map of planets, orbit rings and small fleet markers. New pose and framing: mid-gesture, one hand pointing into the map, three-quarter, half-body. Key light: the blue glow of the holo-map from the front. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "v64",
+   "seed": 37,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: an observation deck aboard a black iron warship, a dim orange sun in black space beyond frosted glass. Keep the head and face in the same place in the frame; glancing back over one shoulder. Key light: low orange sunlight from the window at the side. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "v64",
+   "seed": 51,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: an observation deck aboard a black iron warship, a dim orange sun in black space beyond frosted glass. Keep the head and face in the same place in the frame; glancing back over one shoulder. Key light: low orange sunlight from the window at the side. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "v64",
+   "seed": 37,
+   "src": "ncrop8/nem_voidsworn_4.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: the enclosed gun deck inside a black iron starship, a low steel ceiling, huge ember-glowing gun breeches along the steel wall. Keep the head and face in the same place in the frame; one hand resting on a gun breech. Key light: ember glow from the gun breech beside him. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "v64",
+   "seed": 51,
+   "src": "ncrop8/nem_voidsworn_4.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: the enclosed gun deck inside a black iron starship, a low steel ceiling, huge ember-glowing gun breeches along the steel wall. Keep the head and face in the same place in the frame; one hand resting on a gun breech. Key light: ember glow from the gun breech beside him. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "v64",
+   "seed": 37,
+   "src": "ncrop8/nem_voidsworn_5.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a dark frozen corridor of black iron lit by a single ember lamp. Keep the head and face in the same place in the frame. Key light: a single ember lamp from above. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "v64",
+   "seed": 51,
+   "src": "ncrop8/nem_voidsworn_5.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a dark frozen corridor of black iron lit by a single ember lamp. Keep the head and face in the same place in the frame. Key light: a single ember lamp from above. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "v64",
+   "seed": 37,
+   "src": "ncrop8/nem_voidsworn_6.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: the bridge of a black iron warship, frost on the viewports, stars outside, the high back of a command chair behind him. Keep the head and face in the same place in the frame. Key light: cold starlight from the viewports and ember instrument light from below. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "v64",
+   "seed": 51,
+   "src": "ncrop8/nem_voidsworn_6.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: the bridge of a black iron warship, frost on the viewports, stars outside, the high back of a command chair behind him. Keep the head and face in the same place in the frame. Key light: cold starlight from the viewports and ember instrument light from below. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "v64",
+   "seed": 37,
+   "src": "ncrop8/nem_hegemony_5.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: the bridge of a pale grey dreadnought, sleek grey starships in formation in black space beyond the viewport. Keep the head and face in the same place in the frame. Key light: white light from the viewport behind. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "v64",
+   "seed": 51,
+   "src": "ncrop8/nem_hegemony_5.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: the bridge of a pale grey dreadnought, sleek grey starships in formation in black space beyond the viewport. Keep the head and face in the same place in the frame. Key light: white light from the viewport behind. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_1",
+   "kind": "v64",
+   "seed": 37,
+   "src": "ncrop8/nem_chorus_1.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: the hollow inside of a broken warship hull overgrown with flesh and sinew, torn bulkheads and cables all around. Keep the head and face in the same place in the frame. Key light: bile-green glow from below and a shaft of cold light from above. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_chorus_1",
+   "kind": "v64",
+   "seed": 51,
+   "src": "ncrop8/nem_chorus_1.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: the hollow inside of a broken warship hull overgrown with flesh and sinew, torn bulkheads and cables all around. Keep the head and face in the same place in the frame. Key light: bile-green glow from below and a shaft of cold light from above. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "v64",
+   "seed": 37,
+   "src": "ncrop8/nem_deathless_1.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a cold archive of floating blank glass plates glowing faintly. Keep the head and face in the same place in the frame. Key light: faint white light from the glass plates. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "v64",
+   "seed": 51,
+   "src": "ncrop8/nem_deathless_1.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a cold archive of floating blank glass plates glowing faintly. Keep the head and face in the same place in the frame. Key light: faint white light from the glass plates. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "v64",
+   "seed": 37,
+   "src": "ncrop8/nem_deathless_2.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a siphon platform over a star being drained into a thin stream of light. Keep the head and face in the same place in the frame. Key light: blazing starlight from below. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "v64",
+   "seed": 51,
+   "src": "ncrop8/nem_deathless_2.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a siphon platform over a star being drained into a thin stream of light. Keep the head and face in the same place in the frame. Key light: blazing starlight from below. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  }
+ ]
+}

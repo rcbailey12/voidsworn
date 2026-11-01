@@ -184,6 +184,21 @@ def e64_items(facs, admirals=True):
              'prompt': PS.edit_prompt('nem_%s_%d' % (f, n), f, True)} for f in facs for n in range(1, 7) for sd in (11, 23)]
     return out
 
+# e64c (Nov 1, P helper 3): the e64 misses redrawn from the same sources with portrait_specs' corrected entries and its CLEAN line,
+# new seeds 37 and 51 -> comfy_io\\PORTRAITS\\e64\\ (same names, so the picks just name a seed).
+E64C = ['vex', 'kassar', 'nem_voidsworn_3', 'nem_voidsworn_4', 'nem_voidsworn_5', 'nem_voidsworn_6', 'nem_hegemony_5', 'nem_chorus_1',
+        'nem_deathless_1', 'nem_deathless_2']
+def e64c_items(seeds=(37, 51)):
+    import portrait_specs as PS
+    out = []
+    for i in E64C:
+        if i.startswith('nem_'):
+            f = i.split('_')[1]; src = 'ncrop8/%s.png' % i; nem = True
+        else:
+            f, src = E64_ADM[i]; nem = False
+        out += [{'id': i, 'kind': 'v64', 'seed': sd, 'src': src, 'prompt': PS.edit_prompt(i, f, nem) + PS.CLEAN} for sd in seeds]
+    return out
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -229,3 +244,5 @@ if __name__ == '__main__':
     for tag, facs in (('e64a', ['voidsworn', 'hegemony']), ('e64b', ['chorus', 'deathless'])):
         json.dump({'out': 'e64', 'budget_s': 1100, 'items': e64_items(facs)}, open(os.path.join(B, tag + '.json'), 'w'), indent=1)
         print(tag, len(e64_items(facs)))
+    json.dump({'out': 'e64', 'budget_s': 1100, 'items': e64c_items()}, open(os.path.join(B, 'e64c.json'), 'w'), indent=1)
+    print('e64c', len(e64c_items()))

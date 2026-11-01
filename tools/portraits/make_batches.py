@@ -731,7 +731,7 @@ BATCHES['v64h'] = v64_items('corsair'); BATCHES['v64g'] = v64_items('ithar')
 # already in the Qwen design, and Mott s11 a riveted face mask. The settings and poses landed. Glasswrights: the Qwen designs keep the
 # gem head faceless on about half the seeds, but the 0.5 oil pass paints a face profile into any head seen from the side (Opus ruling:
 # faceless wins, lighter oil). v64b (out v64b\):
-#   v64h2: VOID8, Ryan's A1 face wording back (a short, blunt, broad muzzle armoured in horn scales; "bone", "skull" and "hollows"
+#   v64h2: VOID8, Ryan's A1 face wording back (a short, blunt, broad face armoured in horn scales, no snout or nose (bible 4.3); "bone", "skull" and "hollows"
 #          never appear), matte horn so the scales do not turn to polished metal, and the head kept large in the frame (84 px card).
 #   v64h3: the same ten characters made by editing Ryan's A1 picture itself (c64c/hb_b_qie_s51) into each setting, pose and light.
 #   v64g2: the faceless Glasswright designs repainted at 0.30 and 0.40 instead of 0.5; Vaelen, Tamsa and Nemesis 2 redrawn facing
@@ -739,9 +739,9 @@ BATCHES['v64h'] = v64_items('corsair'); BATCHES['v64g'] = v64_items('ithar')
 VOID8 = VOID7.replace(
     "The face is a living head: grown plates of rough grey-brown bone and horn follow the curves of the skull like a pangolin's scales, "
     "uneven and organic, worn and chipped, with dark leathery hide and coarse bristles between them; the small eyes sit in hollows of the bone.",
-    "The face inside the mane is bare, short, blunt and broad, a heavy living muzzle armoured in overlapping matte grey-brown horn plates "
-    "like a pangolin's scales, dull and dusty with no shine, dark leathery skin showing in the creases between them, a broad dark "
-    "leathery nose pad at the front of the muzzle.").replace(
+    "The face inside the mane is bare, short, blunt and broad, a heavy living face armoured in overlapping matte grey-brown horn plates "
+    "like a pangolin's scales, dull and dusty, dark leathery skin showing in the creases between them, set low between the "
+    "shoulders.").replace(
     "A heavy scrap armour harness of rusty riveted hull plates from other ships and thick leather straps covers the chest and belly{gear}.",
     "A scrap armour harness of rusty hull plates from other ships and thick leather straps is strapped across the chest and belly{gear}.")
 assert VOID8 != VOID7 and 'bone' not in VOID8 and 'skull' not in VOID8
@@ -763,7 +763,7 @@ def v64h2_items(seeds=(11, 51, 61)):
                  'ref': 'v64b/%s_v8_qie_s%d_00001_.png' % (tag, sd), 'denoise': 0.45} for sd in seeds]
     return out
 A1_REF = 'c64c/hb_b_qie_s51_00001_.png'
-A1_EDIT = ("Repaint this same creature as a new character in a new picture. Keep its species exactly: the short, blunt, broad muzzle "
+A1_EDIT = ("Repaint this same creature as a new character in a new picture. Keep its species exactly: the short, blunt, broad face "
            "armoured in overlapping matte grey-brown horn scales, the jaw split into two halves down the chin, the row of four small "
            "glowing eyes across the brow, the shaggy mane over the shoulder hump, the thick clawed arms. Change its mane to {mane} fur "
            "and its eyes to {eye}. {who} New setting: {setting}. New pose and framing: {pose}, the head large in the upper middle of the "
