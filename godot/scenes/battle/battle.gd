@@ -1064,6 +1064,8 @@ func _play_event(e: Dictionary) -> void:
 	match e["t"]:
 		"round":
 			_log("Round %d." % int(e["round"]), "x")
+			if not bot and not showcase:
+				hud.set_phase("", "")
 			fired_in_act.clear()
 			if int(e["round"]) > 1 or not bot:
 				sfx.turn("round")
@@ -2042,9 +2044,10 @@ func _fan_mesh(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 		# ship frame: bow +X, starboard +Z (relAng > 0 is starboard)
 		var p0 := Vector3(cos(t0), 0, sin(t0)) * rad
 		var p1 := Vector3(cos(t1), 0, sin(t1)) * rad
-		st.set_color(Color(col.r, col.g, col.b, 0.05))
+		# F1: a faint fill (the old 0.16 washed half the board tan over the move hexes); the bright edge carries the shape
+		st.set_color(Color(col.r, col.g, col.b, 0.0))
 		st.add_vertex(Vector3.ZERO)
-		st.set_color(Color(col.r, col.g, col.b, 0.13))
+		st.set_color(Color(col.r, col.g, col.b, 0.045))
 		st.add_vertex(p0)
 		st.add_vertex(p1)
 	var mi := MeshInstance3D.new()
@@ -3274,7 +3277,7 @@ func _refresh_ui() -> void:
 			active = u["id"]
 	var mine: bool = api.phase == "player" and not ended
 	var turn := "Battle over" if ended or api.phase == "over" else ("Your turn (%d ready)" % pend if mine else "Enemy turn")
-	var end_text := "End ship (Space)" if (active != "" or pend > 0) else "Continue"
+	var end_text := "End ship (Space)"
 	if _classic():
 		end_text = "End turn"
 		turn = "Battle over" if ended or api.phase == "over" else ("Your turn" if mine else "Enemy turn")

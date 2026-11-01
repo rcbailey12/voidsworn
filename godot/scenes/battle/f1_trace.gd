@@ -108,6 +108,8 @@ func _key(k: int) -> void:
 
 
 func _frame_on(p: Vector3) -> void:
+	if b.sel != "" and b.views.has(b.sel):
+		p = p.lerp(b._pos(b.sel), 0.5)
 	b.cam.glide(p, 0.3)
 	await get_tree().create_timer(0.8 / maxf(Engine.time_scale, 1.0)).timeout
 
@@ -216,6 +218,7 @@ func run(battle) -> void:
 	if tgt != "" and b._usable(b._sel_unit()):
 		var set: Array = b._firing_set(tgt)
 		var hb := _hash()
+		await _frame_on(b._pos(tgt))
 		_click_hex(int(b.VU[tgt]["q"]), int(b.VU[tgt]["r"]))
 		await _idle()
 		var ha := _hash()
@@ -249,9 +252,12 @@ func run(battle) -> void:
 		b.handed_t = -9.0
 		_clip("end_ship_enemy_turn_handover", 9.0)
 		_key(KEY_SPACE)
-		await get_tree().create_timer(1.4 / maxf(Engine.time_scale, 1.0)).timeout
-		if b.api.phase == "enemy" or b.busy:
-			await b._snap("%02d_enemy_turn" % (step_n + 1))
+		for i in 40:
+			await get_tree().process_frame
+			if b.hud.phase.visible and b.hud.phase_lbl.text.contains("ENEMY TURN") and b.hud.phase_lbl.text.contains("ship"):
+				break
+		await get_tree().create_timer(0.3 / maxf(Engine.time_scale, 1.0)).timeout
+		await b._snap("%02d_enemy_turn" % (step_n + 1))
 		await _idle()
 		var ha := _hash()
 		_rec("Space (end ship)", hb, ha)

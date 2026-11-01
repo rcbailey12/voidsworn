@@ -53,10 +53,10 @@ void fragment() {
 		// so it never reads as terrain (style 2: the hovered or planned hex, brighter and steady)
 		vec2 q = abs(vp);
 		float d = max(q.x, 0.5 * q.x + 0.8660254 * q.y) / 8.53;
-		float band = smoothstep(0.78, 0.98, d);
-		float pulse = style > 1.5 ? 1.0 : 0.82 + 0.18 * sin(TIME * 2.2);
-		a = vcol.a * (0.55 + 1.1 * band) * pulse;
-		c = mix(c, vec3(0.85, 0.95, 1.0), band * 0.4);
+		float band = smoothstep(0.86, 0.99, d);
+		float pulse = style > 1.5 ? 1.0 : 0.85 + 0.15 * sin(TIME * 2.2);
+		a = vcol.a * (0.8 + 0.6 * band) * pulse;
+		c = mix(c, vec3(0.55, 0.85, 1.0), band * 0.35);
 	}
 	ALBEDO = c;
 	ALPHA = clamp(a, 0.0, 1.0);
@@ -227,10 +227,10 @@ const BASE_FILL := Color(0.04, 0.06, 0.09, 0.18)
 const BASE_RING := Color(0.66, 0.70, 0.78, 0.075)
 # F1: the hexes a ship can move to are blue, a colour no terrain, zone or marker uses (nebula violet, debris sand, storm
 # yellow, exits green, perimeters red, the relay gold, your ships green, enemies violet, the selection gold)
-const REACH_FILL := Color(0.22, 0.58, 1.0, 0.24)
-const REACH_HOT := Color(0.45, 0.78, 1.0, 0.42)
-const REACH_RING := Color(0.45, 0.75, 1.0, 0.30)
-const REACH_EDGE := Color(0.62, 0.86, 1.0, 1.0)
+const REACH_FILL := Color(0.10, 0.45, 1.0, 0.36)
+const REACH_HOT := Color(0.30, 0.70, 1.0, 0.55)
+const REACH_RING := Color(0.25, 0.55, 1.0, 0.22)
+const REACH_EDGE := Color(0.45, 0.85, 1.0, 1.0)
 
 
 # objective zones (ui3d.js ZONE_INFO): the exit edge green, the transports' exit and the station perimeter red; the relay

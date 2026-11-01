@@ -1095,10 +1095,17 @@ func _build_card() -> void:
 	g.content_margin_bottom = s(12)
 	card.add_theme_stylebox_override("panel", g)
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
-	card.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	# anchored at the bottom centre with a zero-size rect: Godot grows it upward and to both sides to fit what it holds
+	card.anchor_left = 0.5
+	card.anchor_right = 0.5
+	card.anchor_top = 1.0
+	card.anchor_bottom = 1.0
 	card.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	card.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	card.offset_bottom = -s(42)
+	card.offset_left = 0
+	card.offset_right = 0
+	card.offset_bottom = -s(16)
+	card.offset_top = -s(16)
 	card_box = VBoxContainer.new()
 	card_box.add_theme_constant_override("separation", s(7))
 	card_box.custom_minimum_size = Vector2(s(660), 0)
@@ -1118,6 +1125,7 @@ func set_card(info: Dictionary) -> void:
 		card_box.remove_child(c)
 		c.queue_free()
 	card.visible = not info.is_empty()
+	hint.visible = info.is_empty()   # the card carries the keys while it shows; the old hint line sat under it
 	if info.is_empty():
 		return
 	var head := HBoxContainer.new()
@@ -1170,10 +1178,10 @@ func set_card(info: Dictionary) -> void:
 			bt.name = str(b["name"])
 		row.add_child(bt)
 	card_box.add_child(row)
+	card.offset_left = 0
+	card.offset_right = 0
+	card.offset_top = card.offset_bottom
 	card.reset_size()
-	card.offset_left = -card.size.x * 0.5
-	card.offset_right = card.size.x * 0.5
-	card.offset_top = card.offset_bottom - card.size.y
 
 
 func _chip_sb(bg: Color, border: Color) -> StyleBoxFlat:
