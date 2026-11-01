@@ -15,6 +15,26 @@ $root = Join-Path $env:USERPROFILE 'Downloads\voidsworn_test'
 $logDir = Join-Path $root 'queue\logs'
 if (-not (Test-Path $logDir)) { $logDir = $PSScriptRoot }
 $log = Join-Path $logDir 'timeouts.log'
+# Nov 1: a test job ran all through Ryan's first Godot playtest, slowing the PC and overwriting the game's log.
+# Wait while Ryan is playing: the game is Voidsworn.exe or a windowed Godot started with no job arguments
+# (play_godot.bat passes none; every job passes --headless, --script, --bot or similar). Waiting is not timed.
+function Test-RyanPlaying {
+  try { $ps = Get-CimInstance Win32_Process -Filter "Name LIKE 'Voidsworn%.exe' OR Name LIKE 'Godot%.exe'" } catch { return $false }
+  foreach ($q in $ps) {
+    if ($q.Name -like '*_console.exe') { continue }
+    $cl = [string]$q.CommandLine
+    $rest = [regex]::Replace($cl, '^\s*("[^"]*"|\S+)', '')
+    $rest = [regex]::Replace($rest, '--path\s+("[^"]*"|\S+)', '')
+    if ($rest -notmatch '--?\w') { return $true }
+  }
+  return $false
+}
+$w0 = Get-Date; $said = $false
+while ((Test-RyanPlaying) -and ((Get-Date) - $w0).TotalHours -lt 8) {
+  if (-not $said) { Write-Output "run_timeout: the game is open, waiting until it closes"; "$(Get-Date -Format s) WAIT game open: $Exe" | Out-File $log -Append -Encoding utf8; $said = $true }
+  Start-Sleep -Seconds 20
+}
+if ($said) { "$(Get-Date -Format s) RESUME after $([int]((Get-Date) - $w0).TotalMinutes) min: $Exe" | Out-File $log -Append -Encoding utf8 }
 $t0 = Get-Date
 try {
   if ($argLine -ne '') { $p = Start-Process -FilePath $Exe -ArgumentList $argLine -NoNewWindow -PassThru }

@@ -1,8 +1,8 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 1, 2026)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 1, 2026, 01:30 CDT)
 
 ## 0. Status at Nov 1, 2026 (read this first)
 
-**This is the planning handoff for a fresh chat.** The starting point is Opus's recommendation: [contrib/opus/next_phase_recommendation_2026_10_31.md](contrib/opus/next_phase_recommendation_2026_10_31.md). Read it, then FINDINGS R59 to R63 and G-14.
+**Current phase: the feel pass** ([contrib/opus/briefs/feel_pass_2026-11-01.md](contrib/opus/briefs/feel_pass_2026-11-01.md)). Ryan played the Godot game for the first time on Nov 1 (FINDINGS R65) and ruled that battle feel comes before more playtest data (R64). Seven streams: F1 turn flow, board and play log; F2 movement; F3 effects at distance; F4 backdrops and asteroids; A4 ships in game plus the H4 rebuild; R1 rules fix batch plus re-pins; P Hullbreaker and Glasswright redesign. Done = a new exe Ryan plays. The planning doc behind it: [contrib/opus/next_phase_recommendation_2026_10_31.md](contrib/opus/next_phase_recommendation_2026_10_31.md) (its section 7 decisions are now answered in R64).
 
 **The game:** *Embers of the Hollow Sun* (repo name voidsworn). The Godot 4 port is the product; the browser JS game is the rules oracle and is frozen except for rules fixes. Lore round 8 is approved and rolled out everywhere (R59 to R61).
 
@@ -27,7 +27,7 @@
 - **Portraits.** Seven admirals, 36 Nemesis with scars, six faction crests.
 - **Story.** Six arcs rewritten to round 8 (L). The story tests pass.
 
-**Not yet seen by a human:** a full rendered Godot run. Ryan's first playtest is step 1 of the recommended phase.
+**First human playtest:** Nov 1, part of one run (R65). The next one waits for the feel pass.
 
 **Known issues:**
 - **Art:**
@@ -39,7 +39,7 @@
   - The V1b deck-fan fix needs an in-game re-shoot.
 - **Balance:** full-run wins are known only for bots (19% in stream B's sim, 63% in Muse's campaign driver). The skirmish mode favours the player-side bot.
 - **Rules bugs:** about 20 small confirmed ones, listed in the recommendation, section 3. None crashes.
-- **Open owner decisions:** recommendation section 7.
+- **Owner decisions:** recommendation section 7 answered Nov 1 (R64).
 
 **External material** (Oct 28 to 31: Muse, ChatGPT/Codex PR #1, Qwen, DeepSeek, Argon) has been reviewed. The verdicts are in the recommendation, sections 3 and 4.
 - **PR #1** only adds contrib files; it isn't merged. The useful parts are named and the stale parts discarded.
@@ -54,9 +54,11 @@
 - After every rules step, G1 and G3 re-pin their oracles.
 - Helpers watch port_notes.md for steps rather than waiting for a ping.
 
-**PC runner.** Lane A (GPU) and lane B (CPU), always through tools\pc\tmo.bat. Inspect only through device_list_dir and device_stage_files. Never drive the PC by computer control. Large downloads need Ryan's OK.
+**PC runner.** Lane A (GPU) and lane B (CPU), always through tools\pc\tmo.bat, which now waits while Ryan has the game open (Nov 1). Inspect only through device_list_dir and device_stage_files. Never drive the PC by computer control. Large downloads need Ryan's OK.
 
 ## 1. What and where
+
+*Sections 1 to 6 are the Oct 26 to 27 record, kept for history; section 0 and the feel pass brief are current. Agent ids and the Babylon details below are stale.*
 
 **The game.** Voidsworn: Fleet Tactics, a Babylon.js 8.20 single-HTML hex fleet-tactics roguelite. PC-only: the phone target was dropped Oct 24.
 
@@ -201,5 +203,5 @@ None blocking. He weighs in next at:
 
 Starter line:
 ```
-Read HANDOFF.md, then contrib/opus/go-forward-plan.md (section 4 "G. The move to Godot") and contrib/opus/FINDINGS.md in github.com/rcbailey12/voidsworn (main). Voidsworn is moving to Godot (R32, R33). Keep G1 (rules, parity.bat PASS) and G2 (first playable battle) moving, run their milestones on Ryan's PC, and get Ryan's first Godot battle.
+Read HANDOFF.md section 0 and contrib/opus/briefs/feel_pass_2026-11-01.md in github.com/rcbailey12/voidsworn (main), then FINDINGS R64 and R65. We're in the feel pass for Embers of the Hollow Sun: check each stream's progress, run their PC jobs, show me shots, then build the playtest exe.
 ```
