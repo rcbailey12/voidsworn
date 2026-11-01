@@ -158,6 +158,8 @@ void fragment() {
 	}
 	// r8: fresh, lighter rock on crater rims, a little dust darkening their floors
 	a *= (1.0 + c_rim * 0.35) * (1.0 - c_fl * 0.12);
+	// r11: a warm cast on stone, iron crust and carbon (the cool ambient and fill light turned them blue-grey)
+	if (kind != 3 && kind != 4) { a *= vec3(1.12, 1.0, 0.84); }
 	a *= mix(0.4, 1.0, cav) * lift;
 	// height in world units (object units times the rock's scale): craters plus grit, so the bump reads the same on a
 	// pebble and on a mountain
@@ -167,7 +169,8 @@ void fragment() {
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	// r2: a dull dielectric sheen (the default 0.5 caught the cold fill light and turned brown rock grey-blue)
-	SPECULAR = kind == 3 ? 0.5 : 0.25;
+	// r11: less for plain rock (its dull sheen picked up the blue of the sky and the fill light and read as frost)
+	SPECULAR = kind == 3 ? 0.5 : (kind == 1 ? 0.3 : 0.12);
 	// r8: the flat ambient (and the sky's reflection) cut on rock, more in its hollows; the key light keeps full strength,
 	// so a rock has a lit side and a dark side like the ships do, instead of an evenly grey-blue lump
 	AO = mix(0.35, 1.0, cav) * amb;

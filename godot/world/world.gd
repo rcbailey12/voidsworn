@@ -590,12 +590,14 @@ func _mat(kind: String) -> ShaderMaterial:
 
 
 # r6: the board's own blockers get a lifted copy of the kind's material (a little brighter, a stronger rim, no haze), so
-# terrain reads at a glance against the dark board while the far rocks stay dark and quiet
+# terrain reads at a glance against the dark board while the far rocks stay dark and quiet. r11: lift 1.55 to 1.2 (under
+# the front key light 1.55 turned stone into pale blue plaster; F1's terrain fill now marks rock hexes, so the rock itself
+# can stay rock-dark)
 func _hero_mat(kind: String) -> ShaderMaterial:
 	var key := kind + "|hero"
 	if not _mats.has(key):
 		var m: ShaderMaterial = WR.material(kind, _look)
-		m.set_shader_parameter("lift", 1.55)
+		m.set_shader_parameter("lift", 1.2)
 		m.set_shader_parameter("haze_max", 0.0)
 		# r8: the blockers keep a little more of the ambient than the far rocks, so their dark side still reads on the board
 		m.set_shader_parameter("amb", 0.65)
@@ -682,10 +684,14 @@ func _seen_on_board(p: Vector3, margin: float) -> bool:
 		return true
 	# the default camera (34 degrees down) and, r6, the camera tipped low (12 degrees: rocks under the near half of the
 	# board showed through it as dark ghosts)
+	# r11: and the camera orbited up to about 50 degrees either way (a close look from the side showed rocks under the
+	# board as pale ghosts through its hexes)
 	for k in [1.48, 4.7]:
-		var cz: float = p.z + h * k
-		if p.x > _lo.x - margin and p.x < _hi.x + margin and cz > _lo.z - margin and cz < _hi.z + margin:
-			return true
+		for yaw in [0.0, -0.45, 0.45, -0.9, 0.9]:
+			var cx: float = p.x + h * k * sin(yaw)
+			var cz: float = p.z + h * k * cos(yaw)
+			if cx > _lo.x - margin and cx < _hi.x + margin and cz > _lo.z - margin and cz < _hi.z + margin:
+				return true
 	return false
 
 
