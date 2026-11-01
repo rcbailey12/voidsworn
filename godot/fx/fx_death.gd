@@ -752,11 +752,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		fx.spr(center, T, 0.4, Color(1, 0.9, 0.75), 18.0 * big, R * 0.8, R * 2.4, 0, Vector3.ZERO, 0.0, 0.0, 0.0, kp)
 	else:
 		fx.spr(center, T, 0.9, Color(1, 0.8, 0.6), 3.0, R * 0.6, R * 2.0, 18, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.8)
-	fx.spr(center, T, 0.9, tint.lerp(Color(1, 0.8, 0.55), 0.5), 8.0 * big, R * 0.3, R * 0.9, 2, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.55)
+	fx.spr(center, T, 0.6, tint.lerp(Color(1, 0.8, 0.55), 0.5), 8.0 * big, R * 0.3, R * 0.9, 2, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.55)
 	# the shock ring: a bright front of hot gas racing out to several times the ship's size on screen, then a second,
 	# slower one at an angle
-	fx.ring(center, s.dir_world(Vector3(0.12, 1, 0.08)), T, 1.25, Color(0.55, 0.7, 1.0), 1.7 * big, R * 0.1, R * 4.5, 1, 0.0, 0.0, kp * 3.0)
-	fx.ring(center, s.dir_world(Vector3(0.6, 0.5, -0.4)), T + 0.06, 1.0, Color(1.0, 0.6, 0.3), 1.0 * big, R * 0.1, R * 2.6, 1, 0.0, 0.0, kp * 1.9)
+	fx.ring(center, s.dir_world(Vector3(0.12, 1, 0.08)), T, 1.25, Color(0.75, 0.75, 0.85), 1.0 * big, R * 0.1, R * 4.5, 1, 0.0, 0.0, kp * 2.6)
+	fx.ring(center, s.dir_world(Vector3(0.6, 0.5, -0.4)), T + 0.06, 1.0, Color(1.0, 0.6, 0.3), 0.6 * big, R * 0.1, R * 2.6, 1, 0.0, 0.0, kp * 1.7)
 	if w >= 2:
 		fx.dst(center, T, 0.9, R * 0.3, R * 4.0, 0, 1.0 * big)
 	fireball(fx, center, R * 2.2, T, 4.0 + w * 0.5, tint)
@@ -786,7 +786,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	# F3: the kill lands: a slow glow where the ship was (below the flash budget's brightness) that marks the spot from
 	# any zoom for a couple of seconds, and a zoom punch by weight
 	# (k1: R * 3 washed a beige haze over a capital's wreck pieces; R * 1.8 marks the spot and leaves the wreck clear)
-	fx.spr(center, T + 0.15, 3.2 + w * 0.4, tint.lerp(Color(1, 0.8, 0.55), 0.3), 2.6, R * 0.6, R * 1.8, 18, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.9)
+	fx.spr(center, T + 0.15, 2.8 + w * 0.3, tint.lerp(Color(1, 0.8, 0.55), 0.3), 2.0, R * 0.6, R * 1.8, 18, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.9)
 	fx.punch(T, [0.0, 0.01, 0.016, 0.024, 0.034][w] * big, center)
 	fx.shake(T, [0.2, 0.3, 0.45, 0.7, 0.9][w] * big, center)
 	fx.hit_pause(T, [0, 2, 4, 8, 10][w])

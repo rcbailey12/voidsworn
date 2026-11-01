@@ -1621,6 +1621,8 @@ static func apply(fx, s, job: Dictionary) -> void:
 # (holes and burn-through slots, biggest first) in each mesh's own frame tell it where the view enters. A hull with no
 # opening keeps no overlay (it costs a second pass over the mesh's vertices).
 static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void:
+	if s.dead:
+		return   # (the death's cracks own the overlay now)
 	var open: Array = []
 	for E in ents:
 		var e: Ent = E

@@ -1515,10 +1515,11 @@ void fragment() {
 		ALBEDO = clamp((ins + glow * emb * 1.2 * fl + glow * exp(-x * 3.0) * heat * 0.6) * fx_gain, 0.0, 64.0);
 		ALPHA = 1.0;
 	} else {
-		if (x > 3.0 || heat <= 0.01) { discard; }
-		float g = exp(-x * x * 1.5);
-		vec3 c = mix(vec3(0.9, 0.12, 0.02), vec3(1.0, 0.75, 0.35), clamp(heat * fl - 0.2, 0.0, 1.0));
-		ALBEDO = clamp(c * 3.0 * heat * fl * fx_gain, 0.0, 64.0);
+		// round 2: a narrower rim that cools faster (r1 wide band read as a peach wash over the pieces)
+		if (x > 2.0 || heat <= 0.01) { discard; }
+		float g = exp(-x * x * 3.0);
+		vec3 c = mix(vec3(0.9, 0.12, 0.02), vec3(1.0, 0.75, 0.35), clamp(heat * fl - 0.3, 0.0, 1.0));
+		ALBEDO = clamp(c * 3.0 * heat * heat * fl * fx_gain, 0.0, 64.0);
 		ALPHA = clamp(g * (0.4 + 0.6 * heat), 0.0, 1.0);
 	}
 }

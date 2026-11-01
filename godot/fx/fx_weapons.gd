@@ -907,7 +907,7 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 	# two-stage: a sympathetic pop a moment later
 	fx.spr(p + n * 0.6 * k + fx.rdir() * R * 0.3, T + 0.3, 0.55, hot, 5.0, R * 0.3, R * 1.0, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
 	DEATH.fireball(fx, p + n * R * 0.4, R * 2.0, T, 3.0, hot)
-	fx.ring(p, n, T, 1.1, Color(0.9, 0.84, 0.78) if not star else col, 1.1, R * 0.2, R * 3.6, 1, 0.0, 0.0, 130.0)
+	fx.ring(p, n, T, 1.1, Color(0.95, 0.8, 0.65) if not star else col, 0.7, R * 0.2, R * 3.6, 1, 0.0, 0.0, 110.0)
 	fx.dst(p, T, 0.7, R * 0.3, R * 4.0, 0, 1.0)
 	for s in 8:
 		fx.spr(p + n * 0.5 * k, T + fx.rng.randf() * 0.1, 1.0 + fx.rng.randf() * 0.6, hot, 2.6, R * 0.3, R * 0.9, 1, fx.rcone(n, 0.8) * (2 + fx.rng.randf() * 4) * k)
