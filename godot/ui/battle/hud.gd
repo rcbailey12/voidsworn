@@ -831,6 +831,85 @@ func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: 
 	c.position = screen - Vector2(c.size.x * 0.5, c.size.y)
 
 
+# F1: nameplate declutter, once a frame after every plate is placed. prio: id -> 3 (up, targeted), 2 (hovered, acting),
+# 1 (flagship), 0. Highest first, then nearer the camera (lower on screen); a name of rank under 2 that would overlap a
+# name or bars already shown is hidden, and if its bars would overlap too, the whole plate is.
+var plates_hidden := 0
+
+
+func declutter_plates(prio: Dictionary) -> void:
+	var items: Array = []
+	for id in plates:
+		var c: Control = plates[id]
+		c.modulate.a = 1.0
+		(c.get_node("nm") as Control).modulate.a = 1.0
+		if c.visible:
+			items.append([int(prio.get(id, 0)), c.position.y + c.size.y, id])
+	items.sort_custom(func(a, b): return a[0] > b[0] if a[0] != b[0] else a[1] > b[1])
+	var shown: Array = []
+	plates_hidden = 0
+	for it in items:
+		var c: Control = plates[it[2]]
+		var nm := c.get_node("nm") as Label
+		var tw := nm.get_minimum_size().x
+		var nr := Rect2(c.position + Vector2((c.size.x - tw) * 0.5, 0), Vector2(tw, nm.size.y)).grow(s(2))
+		var bw := float(s(90))
+		var br := Rect2(c.position + Vector2((c.size.x - bw) * 0.5, nm.size.y), Vector2(bw, maxf(c.size.y - nm.size.y, 1.0)))
+		if int(it[0]) >= 2:
+			# a name that must stay: lift its plate above whatever it would cover (at most a few steps)
+			for k in 4:
+				var hit := Rect2()
+				var any := false
+				for x in shown:
+					if nr.intersects(x) or br.intersects(x):
+						hit = x
+						any = true
+						break
+				if not any:
+					break
+				var dy: float = (nr.position.y + nr.size.y + br.size.y) - hit.position.y + s(2)
+				c.position.y -= dy
+				nr.position.y -= dy
+				br.position.y -= dy
+			shown.append(nr)
+			shown.append(br)
+			continue
+		if _hits_any(br, shown):
+			c.modulate.a = 0.0
+			plates_hidden += 1
+			continue
+		if _hits_any(nr, shown):
+			nm.modulate.a = 0.0
+			plates_hidden += 1
+		else:
+			shown.append(nr)
+		shown.append(br)
+
+
+func _hits_any(r: Rect2, rs: Array) -> bool:
+	for x in rs:
+		if r.intersects(x):
+			return true
+	return false
+
+
+# for the trace: visible names that overlap another visible name (0 after the declutter)
+func plate_name_overlaps() -> int:
+	var rs: Array = []
+	for id in plates:
+		var c: Control = plates[id]
+		var nm := c.get_node("nm") as Label
+		if c.visible and c.modulate.a > 0.5 and nm.modulate.a > 0.5 and nm.text != "":
+			var tw := nm.get_minimum_size().x
+			rs.append(Rect2(c.position + Vector2((c.size.x - tw) * 0.5, 0), Vector2(tw, nm.size.y)))
+	var n := 0
+	for i in rs.size():
+		for j in range(i + 1, rs.size()):
+			if (rs[i] as Rect2).intersects(rs[j]):
+				n += 1
+	return n
+
+
 # a floating callout over a ship ("-12 shield", "Miss", "Critical"); the battle scene moves and fades it
 func make_float(text: String, col: Color) -> Label:
 	var l := _label(text, 16, col, font_semi)

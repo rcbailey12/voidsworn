@@ -71,6 +71,18 @@ func _clip(name: String, secs: float) -> void:
 		img.save_jpg(d.path_join("%04d.jpg" % i), 0.82)
 
 
+var wing_runs := 0
+
+
+func _on_wings(n: int) -> void:
+	wing_runs += 1
+	if wing_runs == 1:
+		_check(n >= 2 and b.burns_live >= 2, "your strike craft start their moves together (%d wings, %d burning at once)" % [n, b.burns_live])
+		_clip("wings_together", 6.0)
+		await get_tree().create_timer(1.0 / maxf(Engine.time_scale, 1.0)).timeout
+		await b._snap("wings_together")
+
+
 func _on_arrival(units: Array) -> void:
 	arrivals += 1
 	_check(true, "reinforcements arrived (%s): banner, camera nudge, NEW in the fleet list" % ", ".join(PackedStringArray(units.map(func(u): return str(u["name"])))))
@@ -85,6 +97,12 @@ var arrivals := 0
 
 func _shot(name: String) -> void:
 	await get_tree().create_timer(0.6 / maxf(Engine.time_scale, 1.0)).timeout
+	# every still: no two ship names overlap, and a hover tip never sits on the activation card
+	var ov: int = b.hud.plate_name_overlaps()
+	_check(ov == 0, "%s: no ship names overlap (%d hidden by the declutter)" % [name, b.hud.plates_hidden])
+	if b.hud.tip.visible and b.hud.card.visible:
+		var tr: Rect2 = b.hud.tip.get_global_rect()
+		_check(not tr.intersects(b.hud.card.get_global_rect()), "%s: the hover tip is clear of the card" % name)
 	await b._snap("%02d_%s" % [step_n, name])
 
 
@@ -118,6 +136,7 @@ func run(battle) -> void:
 	b = battle
 	dir = str(b.args.get("f1-trace", "user://f1_trace"))
 	b.arrival.connect(_on_arrival)
+	b.wings_together.connect(_on_wings)
 	Engine.time_scale = float(b.args.get("fast", 1.0))
 	while b.api == null or b.busy or b.warming:
 		await get_tree().process_frame

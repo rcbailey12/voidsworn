@@ -15,6 +15,7 @@ extends Node3D
 
 signal finished(result: Dictionary)
 signal arrival(units: Array)   # F1: reinforcements are arriving (the acceptance trace films it)
+signal wings_together(n: int)   # F1: your strike craft just started their moves together (the trace films it)
 
 const API := preload("res://rules/battle_api.gd")
 const Board := preload("res://render/board.gd")
@@ -2036,7 +2037,10 @@ func _fans(id: String, host: Node3D = null) -> void:
 			continue
 		done[dk] = true
 		var col: Color = {"lance": Color(1.0, 0.45, 0.3), "torp": Color(1.0, 0.75, 0.3), "gauss": Color(0.5, 1.0, 0.6)}.get(str(w["kind"]), Color(1.0, 0.62, 0.3))
-		fan_root.add_child(_fan_mesh(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col))
+		# F1: the edge only. Even a 4.5% fill washed half the board tan: it blends in linear light over a near-black board,
+		# which the tonemapper lifts to about a quarter brightness. --arc-fill brings the fill back for comparisons.
+		if args.has("arc-fill"):
+			fan_root.add_child(_fan_mesh(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col))
 		fan_root.add_child(_fan_edge(ARC_SPAN[arc][0], ARC_SPAN[arc][1], rad, col))
 
 
@@ -2893,6 +2897,7 @@ func _wings_together(evs: Array, i: int, pre: Dictionary) -> void:
 		pre[k] = true
 		ids.append(evs[k]["unit"])
 		_play_move(evs[k]["unit"], evs[k]["path"], false)   # not awaited: the burns overlap
+	wings_together.emit(ids.size())
 	var t0 := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - t0 < 12000:
 		await get_tree().process_frame
@@ -3800,6 +3805,24 @@ func _process(dt: float) -> void:
 				sv.ring.scale = Vector3(k, 1.0, k)
 			elif sv.ring.scale.x != 1.0:
 				sv.ring.scale = Vector3.ONE
+	# F1: names never pile up. The ship that is up and the target keep theirs, then the ship under the mouse and the enemy
+	# acting now, then the flagship; any other name that would overlap one already shown is hidden (hover shows it).
+	var prio := {}
+	for u in V.get("units", []):
+		if u["dead"]:
+			continue
+		var pr := 1 if u.get("flagship", false) else 0
+		if u["active"] and u["side"] == "enemy":
+			pr = 2
+		prio[str(u["id"])] = pr
+	var hu := _unit_at(hover.x, hover.y)
+	if not hu.is_empty():
+		prio[str(hu["id"])] = 2
+	if sel != "":
+		prio[sel] = 3
+	if target != "":
+		prio[target] = 3
+	hud.declutter_plates(prio)
 	for i in range(floats.size() - 1, -1, -1):
 		var f: Dictionary = floats[i]
 		f.t += dt
