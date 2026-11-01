@@ -2,7 +2,7 @@
 #   python3 stage.py STAGE_DIR TAG CODE [CODE ...]     -> STAGE_DIR/a4tools/... and STAGE_DIR/a4_<CODE>_<TAG>.bat (one queued job per ship)
 #   python3 stage.py STAGE_DIR TAG --jobs-only CODE ...  (only the job files, when the tools are already on the PC)
 #   python3 stage.py STAGE_DIR TAG --jobs-only --lineups  (the seven faction lineup jobs: voidsworn_test\a4\lineups\<faction>.webp)
-#   python3 stage.py STAGE_DIR TAG --jobs-only --repaint [--per 3] CODE ...  (concept paint on built ships: a4_repaint.bat)
+#   python3 stage.py STAGE_DIR TAG --jobs-only --repaint [--per 3] [--recompose] CODE ...  (concept paint on built ships: a4_repaint.bat)
 #   python3 stage.py STAGE_DIR TAG --jobs-only --regen    (refresh godot\gen\ships on the PC after ship jobs; build_assets.gd)
 import os, sys, shutil
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
@@ -45,7 +45,8 @@ def main():
         n_ = int(a[a.index('--per') + 1]) if '--per' in a else 3
         for k in range(0, len(codes), n_):
             open(os.path.join(out, f'a4_repaint{k // n_:02d}_{tag}.bat'), 'w', newline='').write(crlf(
-                f'@echo off\nset A4CODES={" ".join(codes[k:k + n_])}\ncall a4tools\\a4_repaint.bat\nset A4CODES=\nexit /b\n'))
+                f'@echo off\nset A4CODES={" ".join(codes[k:k + n_])}\nset A4CONCEPT={"--recompose" if "--recompose" in a else ""}\n'
+                f'call a4tools\\a4_repaint.bat\nset A4CODES=\nset A4CONCEPT=\nexit /b\n'))
         codes = []
     if '--lineups' in a:
         for k, (ftag, title, ships) in enumerate(LINEUPS):

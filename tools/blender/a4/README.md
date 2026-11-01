@@ -94,6 +94,14 @@ Decisions this rests on: `K1_DECISIONS.md` (Claude's calls, Ryan can veto).
 
 ## Running it
 
+- Concept paint re-mix without projecting again: `concept.py META --recompose --apply --base ...` (seconds; for a MODE, DETAIL or tone
+  change); on the PC `stage.py --repaint --recompose CODE ...`. Hegemony uses a tone curve (MODE `tone`): the projection carried the
+  concept's painted shading in as paint (25 to 45% darker than the concept itself, "near black navy" in the game), so the hull's lightest
+  fifth is pinned to the concept's lit grey and darker livery stays charcoal, not black; undersides rise to a mid grey.
+- Hand livery (`livery.py`): ships listed there skip the projection; their large shapes come from rules on each texel's 3D point and
+  normal (H4: light slate plates, darker lower hull, a blue line where they meet, red deck-edge pinstripes and side ticks).
+- Long PC work as a chain (`chain.py`): one short job in the queue at a time, each queuing the next with a fresh timestamp, so other
+  streams' jobs (the watcher runs the oldest first) slot in between.
 - Cloud, shape only: `python3 tools/blender/a4/a4_ship.py CODE OUTDIR --nobake --look` (Workbench sheets `CODE_a4look.png` and
   `CODE_a4close.png`, hard points drawn as cones: red weapons, orange engines, green bays, blue breach anchors).
 - Height profiles for setting cut boxes: `python3 tools/blender/a4/probe.py CODE top|below|port|stbd x0 x1 dx [rows]`.

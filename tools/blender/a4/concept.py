@@ -14,7 +14,7 @@
 #      small ones (panel lines, photo grain, hatches, AO, edge wear) as a ratio to its own blur.
 # Factions whose lore changed after the concepts (R59: Chorus olive and ochre, Eclipse violet-black with no green, Glasswright ice-blue
 # crystal) take only the concept's light-and-dark pattern, recoloured through their lore palette.
-#   python concept.py META.json [--concept PNG] [--out DIR] [--res 2048] [--sheet]
+#   python concept.py META.json [--concept PNG] [--out DIR] [--res 2048] [--sheet] [--reuse | --recompose] [--apply --base DIR ...]
 import sys, os, json, math, time
 import numpy as np
 from PIL import Image
@@ -29,10 +29,15 @@ if not os.path.isdir(CONCEPTS): CONCEPTS = os.path.join(HERE, '..', 'concepts') 
 
 # how much of the concept each faction takes (vetoable): col = concept colour share, lum = concept value pattern share in palette mode
 MODE = {
-    'hegemony': dict(kind='colour', k=1.0), 'voidsworn': dict(kind='colour', k=.9), 'corsair': dict(kind='colour', k=.9),
+    'hegemony': dict(kind='colour', k=1.0, tone=dict(D=.09, hi=.42, belly=.55)), 'voidsworn': dict(kind='colour', k=.9), 'corsair': dict(kind='colour', k=.9),
     'obj': dict(kind='colour', k=1.0), 'craft': dict(kind='colour', k=.9),
     'chorus': dict(kind='palette', k=.75), 'deathless': dict(kind='palette', k=.70), 'ithar': dict(kind='palette', k=.70),
 }
+# tone (Hegemony, Nov 1 2026; Opus after the first in-game sheet: "near black navy", where Ryan's direction is clean futuristic, light grey and
+# blue). The concept is a lit render: its shaded sides and painted shadows came through as paint, so the projection averaged 25 to 45%
+# darker than the concept picture itself (H4 0.10 vs 0.19 linear luminance). A power curve on the projected value pins the hull's lightest
+# fifth to the concept's lit grey (its 75th percentile, at least `hi`) and keeps darker livery darker (charcoal floor D, not black); hue is
+# kept, chroma damped where a dark texel is lifted hard; undersides the concept never shows rise to at least belly x hi.
 DETAIL = {'hegemony': .55, 'voidsworn': .8, 'corsair': .9, 'obj': .6, 'craft': .7, 'chorus': .8, 'deathless': .7, 'ithar': .5}
 # which side of the concept picture the bow points to (read off docs/ship_pipeline/concepts, Nov 1): a silhouette alone cannot tell bow
 # from stern on a long hull (H4 and C14s fitted back to front). None: discs, rings, towers and blobs, the fit decides.
@@ -240,7 +245,21 @@ def fill_empty(img, mask):
 
 
 
-def compose(A, Cimg, mask, fac, mode, detail=None, k=None, rows=512, vk=1.0):
+def tone_map(Cl, L, info):
+    """Cl linear rgb rows, L their luminance (...,1); info from tone_fit"""
+    Ln = np.clip(info['hi'] * (L / info['b']) ** info['e'], info['D'] * .6, .8)
+    s = np.clip((Ln / L) ** -.5, .35, 1.0)
+    return Ln, np.clip(Ln * (1 + (Cl / L - 1) * s), 0, 1)
+
+
+def tone_fit(Lc, mk, t, hi):
+    """Lc: projected luminance over the hull (1-D, after vk); returns the curve: p80 -> hi, p20 -> t['D'] where the exponent allows"""
+    a, b = float(np.percentile(Lc[mk], 20)), float(np.percentile(Lc[mk], 80))
+    e = float(np.clip(np.log(hi / t['D']) / np.log(max(b / max(a, 1e-4), 1.05)), .55, 1.25))
+    return dict(b=max(b, 1e-4), e=e, hi=hi, D=t['D'], belly=t.get('belly', 0) * hi, p20=a, p80=b)
+
+
+def compose(A, Cimg, mask, fac, mode, detail=None, k=None, rows=512, vk=1.0, tone_hi=None, under=None):
     """A: the baked procedural albedo (sRGB, uint8 or 0..1 float), Cimg: the projected concept colour (sRGB, padded). The concept carries
     the large shapes; the procedural paint's small-scale value (panel lines, grain, hatches, AO, wear) rides on it as a ratio to its own
     blur, softened by `detail` (an exponent: 1 keeps it all; the AI hull's dress plates otherwise read as blotches over the concept's clean
@@ -263,6 +282,13 @@ def compose(A, Cimg, mask, fac, mode, detail=None, k=None, rows=512, vk=1.0):
     if vk < 1.0:
         q0 = max(1, C8.shape[0] // 512); Lc0 = (s2l(C8[::q0, ::q0].astype(np.float32) / 255.) * W3).sum(-1)
         mk0 = np.asarray(Image.fromarray(mask.astype(np.uint8) * 255).resize(Lc0.shape[::-1], Image.NEAREST)) > 127; Lm = float(Lc0[mk0].mean()); del Lc0
+    tinfo = None
+    if mode.get('tone') and mode['kind'] == 'colour':
+        q0 = max(1, C8.shape[0] // 512); Lc0 = np.maximum((s2l(C8[::q0, ::q0].astype(np.float32) / 255.) * W3).sum(-1), 1e-4)
+        mk0 = np.asarray(Image.fromarray(mask.astype(np.uint8) * 255).resize(Lc0.shape[::-1], Image.NEAREST)) > 127
+        if Lm is not None: Lc0 = Lm + (Lc0 - Lm) * vk
+        tinfo = tone_fit(Lc0, mk0, mode['tone'], max(float(tone_hi or 0), mode['tone']['hi'])); del Lc0
+    if under is not None and under.shape[0] != res: under = np.asarray(Image.fromarray(under.astype(np.float32), mode='F').resize((res, res), Image.BILINEAR))
     if C8.shape[0] != res: C8 = np.asarray(Image.fromarray(C8).resize((res, res), Image.BILINEAR))
     if mask.shape[0] != res: mask = np.asarray(Image.fromarray(mask.astype(np.uint8) * 255).resize((res, res), Image.NEAREST)) > 127
     # the procedural paint's own large shapes: a masked blur of its luminance at 1024
@@ -278,12 +304,56 @@ def compose(A, Cimg, mask, fac, mode, detail=None, k=None, rows=512, vk=1.0):
         if Lm is not None:
             Lc_ = np.maximum((Cl * W3).sum(-1, keepdims=True), 1e-4); Cl = Cl * ((Lm + (Lc_ - Lm) * vk) / Lc_)
         if tint is not None: Cl = (Cl * W3).sum(-1, keepdims=True) * tint
+        if tinfo is not None:
+            L_ = np.maximum((Cl * W3).sum(-1, keepdims=True), 1e-4); Ln, Cl = tone_map(Cl, L_, tinfo)
+            if under is not None and tinfo['belly'] > 0:
+                u = under[r0:r0 + rows][..., None]; Lu = np.maximum(Ln, tinfo['belly']); Lu = Ln + (Lu - Ln) * u
+                Cl = Cl * (Lu / np.maximum(Ln, 1e-4))
         o = Al * (1 - k) + Cl * ratio * k
         out[r0:r0 + rows] = (l2s(o) * 255 + .5).astype(np.uint8)
+    compose.last_tone = tinfo
     return out
 
 
+def concept_hi(code, concept=None):
+    """the concept picture's lit hull value: the 75th percentile of its linear luminance inside the cut-out"""
+    cr = concept_rgba(code, concept); a = cr[..., 3] > .5; rgb = cr[..., :3][a]
+    if rgb.max() > 1.5: rgb = rgb / 255.
+    return float(np.percentile((s2l(rgb) * np.array([.2126, .7152, .0722], np.float32)).sum(-1), 75))
+
+
+def under_map(N, I, res):
+    """per-texel underside weight (1 facing straight down), at res"""
+    u = np.zeros(res * res, np.float32); u[I] = np.clip((-N[:, 1] - .2) / .5, 0, 1); return u.reshape(res, res)
+
+
+def livery_paint(meta_path, res=2048, out_dir=None, log=print, albedo_path=None):
+    """ships in livery.LIVERY: the large shapes come from hand rules on each texel's 3D point and normal instead of the concept picture
+    (no registration, no projection); the procedural bake's small scale rides on top exactly as for a projected ship"""
+    import livery
+    t0 = time.time(); meta = json.load(open(meta_path)); code = meta['code']; fac = meta['faction']; base = os.path.dirname(os.path.abspath(meta_path))
+    mp = meta['mesh'] if os.path.exists(meta['mesh']) else os.path.join(base, os.path.basename(meta['mesh'].replace('\\', '/')))
+    m = np.load(mp); nor = m['nor'] / np.maximum(np.linalg.norm(m['nor'], axis=1, keepdims=True), 1e-9)
+    ap = albedo_path or meta['maps'].get('albedo_proc') or meta['maps']['albedo']
+    if not os.path.exists(ap): ap = os.path.join(base, 'tex', os.path.basename(ap.replace('\\', '/')))
+    A = np.asarray(Image.open(ap).convert('RGB'))
+    I, P, N = rasterise(m['pos'], nor, m['idx'].astype(np.int64), m['uv'], res); del m
+    Cimg, mask = livery.image(code, I, P, N, res); del P, N
+    Cimg = blur_masked(Cimg, mask, .8)
+    out_dir = os.path.abspath(out_dir or os.path.join(base, 'tex')); os.makedirs(out_dir, exist_ok=True)
+    Image.fromarray((np.clip(fill_empty(Cimg, mask), 0, 1) * 255 + .5).astype(np.uint8)).save(os.path.join(out_dir, f'{code}_concept_col.png'))
+    Image.fromarray(mask.astype(np.uint8) * 255).save(os.path.join(out_dir, f'{code}_concept_mask.png'))
+    mode = dict(kind='colour', k=1.0)
+    out = compose(A, Cimg, mask, fac, mode, vk=1.0)
+    op = os.path.join(out_dir, f'{code}_albedo_concept.png'); Image.fromarray(out).save(op)
+    rep = dict(code=code, faction=fac, mode=mode, livery=livery.LIVERY[code], reg=dict(livery=True, vk=1.0), texels=int(len(I)), s=round(time.time() - t0, 1))
+    json.dump(rep, open(os.path.join(out_dir, f'{code}_concept.json'), 'w'), indent=1)
+    log('[concept] livery', code, 'wrote', op, round(time.time() - t0, 1), 's'); return op, rep
+
+
 def paint(meta_path, concept=None, res=2048, out_dir=None, sheet=False, log=print, fixed=None, albedo_path=None):
+    import livery
+    if livery.has(json.load(open(meta_path))['code']): return livery_paint(meta_path, res, out_dir, log, albedo_path)
     t0 = time.time(); meta = json.load(open(meta_path)); code = meta['code']; fac = meta['faction']; base = os.path.dirname(meta_path)
     if meta.get('cls') == 'Squadron' or code.startswith('S'): fac_m = 'craft'
     elif code.startswith('O'): fac_m = 'obj'
@@ -330,9 +400,13 @@ def paint(meta_path, concept=None, res=2048, out_dir=None, sheet=False, log=prin
     # the projected colour alone (sRGB, padded), so the mix can be re-tuned without projecting again
     Image.fromarray((np.clip(fill_empty(Cimg, mask), 0, 1) * 255 + .5).astype(np.uint8)).save(os.path.join(out_dir, f'{code}_concept_col.png'))
     Image.fromarray(mask.astype(np.uint8) * 255).save(os.path.join(out_dir, f'{code}_concept_mask.png'))
-    del P, N, Pm, Nm, c1, c2, w1, w2, Cc, Cfill, Cp
+    N_u = N if mode.get('tone') else None
+    del P, Pm, Nm, c1, c2, w1, w2, Cc, Cfill, Cp
     vk = float(np.clip((reg['iou'] - .76) / (.90 - .76), .35, 1.0)); reg['vk'] = vk
-    out = compose(A, Cimg, mask, fac, mode, vk=vk)
+    tone_hi = concept_hi(code, concept) if mode.get('tone') else None
+    und = under_map(N_u, I, res) if mode.get('tone') else None
+    out = compose(A, Cimg, mask, fac, mode, vk=vk, tone_hi=tone_hi, under=und); del und
+    if compose.last_tone: reg['tone'] = compose.last_tone
     op = os.path.join(out_dir, f'{code}_albedo_concept.png'); Image.fromarray(out).save(op)
     rep = dict(code=code, faction=fac, mode=mode, reg={k_: v_ for k_, v_ in reg.items() if k_ != 'sim'}, seen=float(seen.mean()), texels=int(len(I)), s=round(time.time() - t0, 1))
     json.dump(rep, open(os.path.join(out_dir, f'{code}_concept.json'), 'w'), indent=1)
@@ -341,6 +415,36 @@ def paint(meta_path, concept=None, res=2048, out_dir=None, sheet=False, log=prin
         ov = np.zeros((reg['R'], reg['R'], 3), np.uint8); ov[..., 0] = S * 255; ov[..., 1] = M * 255
         Image.fromarray(ov).save(os.path.join(out_dir, f'{code}_concept_fit.png'))
     return op, rep
+
+
+def recompose(meta_path, out_dir=None, log=print):
+    """re-mix a ship from its saved projection (CODE_concept_col.png, _mask.png, _concept.json) and its procedural bake, without
+    projecting again (seconds, not minutes): for a change to MODE, DETAIL or the tone curve"""
+    import livery
+    if livery.has(json.load(open(meta_path))['code']): return livery_paint(meta_path, out_dir=out_dir, log=log)
+    t0 = time.time(); meta = json.load(open(meta_path)); code = meta['code']; fac = meta['faction']; base = os.path.dirname(os.path.abspath(meta_path))
+    fac_m = 'craft' if (meta.get('cls') == 'Squadron' or code.startswith('S')) else 'obj' if code.startswith('O') else fac
+    mode = MODE.get(fac_m, MODE.get(fac))
+    d = os.path.abspath(out_dir or os.path.join(base, 'tex'))
+    rep = json.load(open(os.path.join(d, f'{code}_concept.json')))
+    Cimg = np.asarray(Image.open(os.path.join(d, f'{code}_concept_col.png')).convert('RGB'))
+    mask = np.asarray(Image.open(os.path.join(d, f'{code}_concept_mask.png'))) > 127
+    ap = meta['maps'].get('albedo_proc') or meta['maps']['albedo']
+    if not os.path.exists(ap): ap = os.path.join(base, 'tex', os.path.basename(ap.replace('\\', '/')))
+    A = np.asarray(Image.open(ap).convert('RGB'))
+    und = tone_hi = None
+    if mode.get('tone'):
+        tone_hi = concept_hi(code)
+        mp = meta['mesh'] if os.path.exists(meta['mesh']) else os.path.join(base, os.path.basename(meta['mesh'].replace('\\', '/')))
+        m = np.load(mp); nor = m['nor'] / np.maximum(np.linalg.norm(m['nor'], axis=1, keepdims=True), 1e-9)
+        I, _, N = rasterise(m['pos'], nor, m['idx'].astype(np.int64), m['uv'], 1024); und = under_map(N, I, 1024); del m, N
+    reg = rep['reg']; out = compose(A, Cimg, mask, fac, mode, vk=float(reg.get('vk', 1.0)), tone_hi=tone_hi, under=und)
+    reg.pop('tone', None)
+    if compose.last_tone: reg['tone'] = compose.last_tone
+    rep['mode'] = mode; rep['recomposed'] = time.strftime('%Y-%m-%d %H:%M')
+    op = os.path.join(d, f'{code}_albedo_concept.png'); Image.fromarray(out).save(op)
+    json.dump(rep, open(os.path.join(d, f'{code}_concept.json'), 'w'), indent=1)
+    log('[concept] recompose', code, 'tone', reg.get('tone'), 'wrote', op, round(time.time() - t0, 1), 's'); return op, rep
 
 
 def apply(meta_path, op, rep, base_dirs):
@@ -370,7 +474,8 @@ if __name__ == '__main__':
     if '--albedo' in a: kw['albedo_path'] = a[a.index('--albedo') + 1]
     if '--fixed' in a: az_, el_ = a[a.index('--fixed') + 1].split(','); kw['fixed'] = dict(az=float(az_), el=float(el_))
     op = rep = None
-    if '--reuse' in a:  # apply a concept paint made earlier (same ship build), skipping the 1 to 2 minute projection
+    if '--recompose' in a: op, rep = recompose(a[0], kw.get('out_dir'))
+    elif '--reuse' in a:  # apply a concept paint made earlier (same ship build), skipping the 1 to 2 minute projection
         meta_ = json.load(open(a[0])); code_ = meta_['code']; base_ = os.path.dirname(os.path.abspath(a[0]))
         d_ = os.path.abspath(kw.get('out_dir') or os.path.join(base_, 'tex'))
         op_, js_ = os.path.join(d_, f'{code_}_albedo_concept.png'), os.path.join(d_, f'{code_}_concept.json')
