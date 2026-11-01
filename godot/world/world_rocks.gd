@@ -216,14 +216,25 @@ static func mesh(name: String) -> Mesh:
 		return _meshes[name]
 	var m: Mesh = null
 	var p := LIB_DIR + name + ".glb"
+	var n: Node = null
 	if ResourceLoader.exists(p):
 		var ps = load(p)
 		if ps is PackedScene:
-			var n: Node = (ps as PackedScene).instantiate()
-			var mi := _find_mesh(n)
-			if mi != null:
-				m = mi.mesh
-			n.free()
+			n = (ps as PackedScene).instantiate()
+	elif FileAccess.file_exists(p):
+		# not imported (the PC's shared build had its import stop part way on Nov 1, so every rock went missing): read
+		# the glTF file itself at run time
+		var doc := GLTFDocument.new()
+		var st := GLTFState.new()
+		if doc.append_from_buffer(FileAccess.get_file_as_bytes(p), "", st) == OK:
+			n = doc.generate_scene(st)
+	if n != null:
+		var mi := _find_mesh(n)
+		if mi != null:
+			m = mi.mesh
+		n.free()
+	if m == null:
+		push_warning("[world] rock mesh missing: " + p)
 	_meshes[name] = m
 	return m
 

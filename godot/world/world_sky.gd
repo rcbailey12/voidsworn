@@ -325,7 +325,9 @@ void sky() {
 	float T = 1.0;
 	if (has_pano > 0.5) {
 		// the painting as the old battle sky drew it (battle.gd: x0.8, capped), the gas over it
-		col = min(texture(pano, SKY_COORDS).rgb * 0.8, vec3(0.6));
+		// read from a blurred level: the painting's colour, clouds and dim dead sun, without its soft blobby stars (they
+		// showed as speckle through the board on the PC; this sky's own stars are drawn per pixel below)
+		col = min(textureLod(pano, SKY_COORDS, 4.5).rgb * 0.9, vec3(0.6));
 	}
 	if (has_neb > 0.5) {
 		vec2 uv = vec2(atan(d.x, -d.z) / 6.28318530718 + 0.5, acos(clamp(d.y, -1.0, 1.0)) / 3.14159265359);
