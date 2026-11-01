@@ -8,6 +8,7 @@ extends Node3D
 #   <fac>_battle_near.jpg  the same line zoomed in the way a player zooms to look at a ship
 #   <code>_q.jpg, <code>_s.jpg, <code>_b.jpg  one ship close: three-quarter from above the bow, side, three-quarter from below
 #   <code>_t.jpg, <code>_d.jpg  from straight above, and the deck close (half the distance; V1b's spine patch, Nov 1)
+#   <code>_u.jpg           from straight below (bow to the left as in _t and _s): with _t and _s, the 9-cell blob sweep
 #   props_old.jpg, props_a4.jpg  (set props) the board's station and three derelict hulks as board.gd draws them today (the
 #                          old AI meshes in a flat grey or black) and as assets/ships/a4_props.gd draws them (the painted A4 ships)
 #   <code>_bare.jpg        (set bare) the same three-quarter view with every texture map taken off: if it looks the same as
@@ -183,6 +184,7 @@ func _run() -> void:
 					await _close(e[0], L, "b", -0.40, -2.2)
 					await _close(e[0], L, "t", 1.30, -1.5708)
 					await _close(e[0], L, "d", 0.80, -1.10, 0.5)
+					await _close(e[0], L, "u", -1.30, -1.5708)
 				if sets.has("bare"):
 					_strip(sv)
 					await _close(e[0], L, "bare", 0.45, -0.62)
