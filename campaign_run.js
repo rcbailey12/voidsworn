@@ -125,7 +125,7 @@ function shipCard(s, opts={}){
     ${opts.extra||''}</div>`;
 }
 function fleetScreen(back){
-  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>s.mods.length<HULLS[s.tpl].slots && (!MODULES[m].only||HULLS[s.tpl].ab===MODULES[m].only));
+  const inv=RUN.inventory.map((m,i)=>{ const opts=RUN.fleet.filter(s=>canFitModule(s,m)); // R1 (MOD-3)
     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot row wrap">${opts.length?opts.map(s=>`<button class="small" data-act="equip" data-arg="${i}:${s.uid}">Fit to ${esc(s.name)}</button>`).join(''):'<span class="dim">No free compatible slot. Remove a refit first.</span>'}</div></div>`; }).join('');
   show(`<div class="screen"><div class="page">
     <div class="row"><h2 class="gothic">Fleet</h2><span class="spacer"></span><button class="primary" data-act="${back==='shipyard'?'backShipyard':'backMap'}">Done</button></div>
@@ -137,7 +137,7 @@ function fleetScreen(back){
 }
 ACT.fleetScreen=()=>fleetScreen('map');
 ACT.backMap=()=>{ saveRun(); mapScreen(); };
-ACT.equip=arg=>{ const [i,uid]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[+i]; if(!s||!m) return;
+ACT.equip=arg=>{ if(!RUN||typeof arg!=='string') return false; const parts=arg.split(':'); if(parts.length!==2||parts[0].length>15||!/^(0|[1-9][0-9]*)$/.test(parts[0])) return false; const [i,uid]=parts; const index=Number(i); if(!Number.isSafeInteger(index)||index>=RUN.inventory.length) return false; const s=RUN.fleet.find(x=>x.uid===uid); const m=RUN.inventory[index]; if(!canFitModule(s,m)) return false; // R1 (MOD-3, Codex PR #1)
   changeShip(s,sh=>sh.mods.push(m)); RUN.inventory.splice(+i,1); fleetScreen(RUN._fleetBack); };
 ACT.unequip=arg=>{ const [uid,i]=arg.split(':'); const s=RUN.fleet.find(x=>x.uid===uid); if(!s) return; let m; changeShip(s,sh=>{ m=sh.mods.splice(+i,1)[0]; }); if(m) RUN.inventory.push(m); fleetScreen(RUN._fleetBack); };
 ACT.promote=uid=>promoteModal(uid, ()=>fleetScreen(RUN._fleetBack));
@@ -171,7 +171,7 @@ function shipyardScreen(n){
       <div class="foot"><button ${RUN.credits>=cost&&fits&&!uniq?'':'disabled'} data-act="buyHull" data-arg="${h}">Buy for ${cost}</button> ${!fits?'<span class="dim">Not enough command points</span>':uniq?'<span class="dim">Only one allowed</span>':''}</div></div>`; }).join('');
   const mods=st.mods.map((m,i)=>{ const sold=st.sold.includes(i), cost=Math.round(MODULES[m].cost*pm);
     return `<div class="card"><h3>${esc(modName(m))}</h3><p>${esc(MODULES[m].d)}</p><div class="foot">${sold?'<span class="verd">Bought</span>':`<button ${RUN.credits>=cost?'':'disabled'} data-act="buyMod" data-arg="${i}">Buy for ${cost}</button>`}</div></div>`; }).join('');
-  const ships=RUN.fleet.map(s=>{ const d=derive(s), miss=d.maxHp-s.hp, rc=Math.ceil(miss/2*pm), mc=mkCost(s), sell=Math.round(HULLS[s.tpl].cost*.35);
+  const ships=RUN.fleet.map(s=>{ const d=derive(s), miss=d.maxHp-s.hp, rc=Math.ceil(miss/2*pm), mc=mkCost(s), sell=prizeScrap(s.tpl); // R1 (TXT-8): the label pays what the button pays (no NaN for hulls without a shop price)
     return shipCard(s,{extra:`<div class="sect row wrap">
       <button class="small" ${miss>0&&RUN.credits>=rc?'':'disabled'} data-act="repair" data-arg="${s.uid}">${miss>0?`Repair ${miss} for ${rc}`:'Fully repaired'}</button>
       <button class="small" ${s.mk<3&&RUN.credits>=mc?'':'disabled'} data-act="upgradeMk" data-arg="${s.uid}">${s.mk<3?`Mk ${roman(s.mk+1)} for ${mc}`:'Max Mark'}</button>
@@ -220,7 +220,7 @@ function needMet(nd){ if(!nd) return true; const kit=fleetKit();
   if(nd.kind&&!kit[nd.kind]) return false; if(nd.carrier&&!kit.carrier) return false; if(nd.shields&&!kit.shields) return false;
   if(nd.relic&&!(nd.relic===1?RUN.relics.length>0:RUN.relics.includes(nd.relic))) return false; if(nd.mod&&!RUN.inventory.length) return false;
   if(nd.cred&&RUN.credits<nd.cred) return false; if(nd.vet&&!RUN.fleet.some(s=>(s.cap.rank||0)>=nd.vet)) return false;
-  if(nd.flag&&!(RUN.flags&&RUN.flags[nd.flag]!=null)) return false; if(nd.intel&&((RUN.nem&&RUN.nem.revealed)||[]).length<nd.intel) return false; return true; }
+  if(nd.flag&&!flagIs(nd.flag,nd.flagK)) return false; if(nd.intel&&((RUN.nem&&RUN.nem.revealed)||[]).length<nd.intel) return false; return true; }
 function needText(nd){ if(!nd) return ''; const p=[];
   if(nd.fac){ const fs=Array.isArray(nd.fac)?nd.fac:[nd.fac]; p.push(fs.map(f=>FACTIONS[f]?FACTIONS[f].n:f).join(' or ')); }
   if(nd.kind) p.push((KIND_WORD[nd.kind]||nd.kind)+' in the fleet'); if(nd.carrier) p.push('a carrier'); if(nd.shields) p.push('a shielded ship'); if(nd.relic) p.push(nd.relic===1?'a piece of salvage':relicName(nd.relic));
@@ -236,6 +236,8 @@ function eventScreen(n){
   modal(`<h2>${esc(curEvent.t)}</h2><p>${esc(curEvent.b)}</p>${curEvent.o.map((o,i)=>{ const cost=o.r&&o.r.cost, ok=eventOptOk(o), blue=!!o.need;
     return `<button class="choice" ${ok?'':'disabled'} ${blue?'style="border-color:#62a8ff;color:#9fcbff"':''} data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b><small>${blue?`<span style="color:#62a8ff">[${esc(needText(o.need))}]</span> `:''}${esc(o.s)}${cost&&RUN.credits<cost?' (not enough credits)':''}</small></button>`; }).join('')}`);
 }
+// R1 (EVT-1): a flag gate can name the choices that open it (flagK), not only that the event happened
+function flagIs(id,ks){ const v=RUN&&RUN.flags?RUN.flags[id]:null; return v!=null&&(!ks||ks.includes(v)); }
 // B4: every event choice writes a flag later systems read (faction verbs, the Nemesis): RUN.flags[event id] = the option's key, plus any counters
 function eventFlags(ev,o,i){ RUN.flags=RUN.flags||{}; RUN.flags[ev.id]=o.k||String(i); for(const [k,v] of Object.entries(o.fl||{})) RUN.flags[k]=(RUN.flags[k]||0)+v; }
 // ---------- B4 the Nemesis (campaign rules; battle.js applyNemesis applies his weaknesses and adaptations in the fight) ----------
@@ -244,12 +246,16 @@ function eventFlags(ev,o,i){ RUN.flags=RUN.flags||{}; RUN.flags[ev.id]=o.k||Stri
 // R42 (Oct 26): a fresh identity every run from the faction's own pools (never a CAPTAINS or ADMIRALS name), a personality, two strength
 // traits, a portrait id (nem_<faction>_1..6) with scar overlays, and faction behaviour (NEM_FAC[fac].beh) on the map and in battle.
 function nemName(fac){ const F=NEM_FAC[fac]; for(let k=0;k<12;k++){ const a=pick(F.pre), b=pick(F.post), n=/^[a-z]/.test(b)?a+b:a+' '+b; if(!Object.values(ADMIRALS).some(x=>x.n.includes(n))) return n; } return pick(F.pre)+' '+pick(F.post); }
-function newNemesis(){ const fac=(RUN.foes&&RUN.foes[3])||pick(RUN_FACTIONS.filter(f=>f!==RUN.fac)), F=NEM_FAC[fac];
+function newNemesis(fac0){ const fac=fac0||(RUN.foes&&RUN.foes[3])||pick(RUN_FACTIONS.filter(f=>f!==RUN.fac)), F=NEM_FAC[fac];
   const beh=F.beh, name=nemName(fac), title=pick(F.titles), persona=pick(F.personas), traits=shuffle(F.traits.slice()).slice(0,2), portrait='nem_'+fac+'_'+(1+Math.floor(rnd()*6));
   const clash={slow:'swift',board:'boarders',ion:'shielded'}, weakPool=Object.keys(NEM_WEAK).filter(k=>!(k==='anchor'&&(beh.noFlee||beh.revive))&&!traits.includes(clash[k])); // zealots and the Deathless never break; no strength and weakness that cancel out
   return {fac,name,g:nemGender(fac,name),title,persona,traits,portrait,
     weak:shuffle(weakPool).slice(0,2),revealed:[],adapt:[],clock:0,met:0,beaten:0,scars:0,scarKinds:[],epithets:[],epithet:null,last_beat:null,fed:0,riches:0,loot:0,held:null,gloat:null,honed:0,revived:false,dead:false,strike:false,seen:{},signatures:[]}; }
-function ensureNemesis(){ if(RUN&&RUN.fleet&&(!RUN.nem||!RUN.nem.persona)){ const old=RUN.nem; RUN.nem=newNemesis(); if(old){ for(const k of ['weak','revealed','adapt','clock','met','beaten','scars','dead','strike','seen']) if(old[k]!=null) RUN.nem[k]=old[k]; if(old.beat) RUN.nem.last_beat=old.beat; RUN.nem.adapt=RUN.nem.adapt.filter(a=>NEM_ADAPT[a]); } }
+// R1 (NEM-7): what a pre-persona save keeps when it gets its new identity: everything the rival has built up, not only the first ten fields
+const NEM_CARRY=['weak','revealed','adapt','clock','met','beaten','scars','dead','strike','seen','loot','riches','fed','honed','held','revived','gloat','last_beat'];
+// a pre-persona rival keeps his faction: the stored one, else the one whose own adaptation he already carries
+function nemOldFac(old){ if(old.fac&&NEM_FAC[old.fac]) return old.fac; const a=old.adapt||[]; return Object.keys(NEM_ADAPT_FAC).find(f=>NEM_FAC[f]&&NEM_ADAPT_FAC[f].special&&a.includes(NEM_ADAPT_FAC[f].special.id))||null; }
+function ensureNemesis(){ if(RUN&&RUN.fleet&&(!RUN.nem||!RUN.nem.persona)){ const old=RUN.nem; RUN.nem=newNemesis(old&&nemOldFac(old)); if(old){ for(const k of NEM_CARRY) if(old[k]!=null) RUN.nem[k]=old[k]; if(old.beat&&!old.last_beat) RUN.nem.last_beat=old.beat; const sp=NEM_ADAPT_FAC[RUN.nem.fac]&&NEM_ADAPT_FAC[RUN.nem.fac].special; RUN.nem.adapt=RUN.nem.adapt.filter(a=>NEM_ADAPT[a]||(sp&&sp.id===a)); } }
   const N=RUN&&RUN.nem; if(N&&N.persona){ // older R42 saves: story-helper field names (last_beat, g, scarKinds)
     if(N.beat&&!N.last_beat){ N.last_beat=N.beat==='ion'?'battery':N.beat; } delete N.beat;
     if(!N.g) N.g=nemGender(N.fac,N.name||''); delete N.pronoun;
@@ -287,8 +293,9 @@ function nemBattleCfg(){ const N=ensureNemesis(); return {gloat:N.gloat||null,ho
 function nemAdapt(force){ const N=RUN&&RUN.nem; if(!N||N.dead) return null; const fast=nemBeh().adaptFast, cap=Math.max(0,RUN.sector-1)+(fast?N.beaten+N.scars:0);
   if(N.adapt.length>=Math.min(cap,6)&&!force) return null; const s=N.seen||{}, sp=NEM_ADAPT_FAC[N.fac]&&NEM_ADAPT_FAC[N.fac].special;
   const score={shields:(s.lance||0)*2+(s.ion||0)*2,pd:(s.torp||0)*2+(s.sq||0),armor:(s.ram||0)*4+(s.board||0)*4,evasion:(s.battery||0)+(s.broad||0),aim:(s.evaded||0)*3};
-  let pickA=Object.keys(score).filter(k=>!N.adapt.includes(k)&&score[k]>0).sort((a,b)=>score[b]-score[a])[0];
-  if(!pickA&&sp&&!N.adapt.includes(sp.id)) pickA=sp.id; if(!pickA) pickA=Object.keys(score).filter(k=>!N.adapt.includes(k))[0]; if(!pickA) return null; N.adapt.push(pickA); N.seen={}; return pickA; }
+  const blocked=new Set(); if((N.revealed||[]).includes('ion')) blocked.add('shields'); if((N.revealed||[]).includes('torp')) blocked.add('pd'); // R1 (NEM-2, R63 clash check, Codex PR #1): never a direct counter to a known weakness
+  let pickA=Object.keys(score).filter(k=>!blocked.has(k)&&!N.adapt.includes(k)&&score[k]>0).sort((a,b)=>score[b]-score[a])[0];
+  if(!pickA&&sp&&!N.adapt.includes(sp.id)) pickA=sp.id; if(!pickA) pickA=Object.keys(score).filter(k=>!blocked.has(k)&&!N.adapt.includes(k))[0]; if(!pickA) return null; N.adapt.push(pickA); N.seen={}; return pickA; }
 function nemAdaptName(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.n; return T[a]||(NEM_ADAPT[a]&&NEM_ADAPT[a].n)||a; }
 function nemAdaptDesc(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return T.special.d; return (NEM_ADAPT[a]&&NEM_ADAPT[a].d)||''; }
 function nemAdaptWhy(a,fac){ const T=NEM_ADAPT_FAC[fac]||{}; if(T.special&&T.special.id===a) return 'his own way of war'; return (NEM_ADAPT[a]&&NEM_ADAPT[a].why)||''; }
@@ -306,7 +313,13 @@ function nemAfterBattle(result,flagDead,o){ const N=RUN.nem; if(!N) return []; o
     if(N.dead&&N.loot){ RUN.credits+=N.loot; out.push(`You take back ${N.loot} credits from his hold.`); N.loot=0; }
     if(N.dead&&N.held){ RUN.fleet.push(N.held); out.push(`You take back the ${N.held.name}.`); N.held=null; }
     if(RUN.sector>=3&&!back){ const u=arcComplete(RUN.fac); if(u) out.push(u); } } // R41: the last meeting won (dead, fled or withdrawn) ends the arc
-  else { N.clock=1; N.gloat=o.myFlagDead?'flagship':result==='retreat'?'retreat':'loss'; out.push(say(`${nemFull()} drove you off. He will remember this.`)); }
+  else { N.clock=1; N.gloat=o.myFlagDead?'flagship':result==='retreat'?'retreat':'loss'; out.push(say(`${nemFull()} drove you off. He will remember this.`));
+    // R1 (FR-2, Ryan's Q5 ruling, Codex PR #1): a lost meeting still teaches: what the fight itself uncovered, else one new weakness, never more
+    const found=Array.isArray(o.found)?o.found.filter(k=>N.weak.includes(k)):[]; nemFoundMerge(found);
+    const learned=[...new Set(found)]; const w=learned[0]||nemReveal();
+    if(w){ const ws=learned.length?learned:[w]; out.push(`Your analysts piece together the engagement. ${ws.length>1?'Weaknesses':'Weakness'} found: ${ws.map(k=>NEM_WEAK[k].n).join(', ')}.`); }
+    else out.push(`The engagement confirms what your analysts already held: the file on ${N.name} is complete.`); }
+  if(result==='win'){ const fw=nemFoundMerge(o.found); if(fw.length) out.push(`Weakness confirmed: ${fw.map(k=>NEM_WEAK[k].n).join(', ')}.`); }
   if(beh.adaptFast){ const a=nemAdapt(); if(a){ nemSignature('fast_adapt'); out.push(`${P.He} learns from it at once: ${nemAdaptName(a,N.fac)} (${say(nemAdaptWhy(a,N.fac))}).`); } }
   return out; }
 // R42: when you beat him with something, his next adaptation counters it (so "it will not work twice" is true when he says it)
@@ -327,7 +340,7 @@ function nemLearn(usage,evadedShare){ const N=RUN&&RUN.nem; if(!N||!usage) retur
   s.broad=(s.broad||0)+((usage.fire&&((usage.fire['Port broadside']||0)+(usage.fire['Starboard broadside']||0)))||0); s.evaded=(s.evaded||0)+(evadedShare||0); }
 // ---------- B4 faction campaign verbs ----------
 function verbFor(){ return RUN&&FAC_VERBS[RUN.fac]||null; }
-function verbFree(V){ return !!(V&&V.free&&RUN.flags&&RUN.flags[V.free]!=null); }
+function verbFree(V){ return !!(V&&V.free&&flagIs(V.free,V.freeK)); } // R1 (EVT-1): only the choices freeK names
 function verbCanUse(){ const V=verbFor(); if(!V||(RUN.verbUsed||0)>=RUN.sector) return false; if(verbFree(V)) return true; const c=V.cost||{};
   if(c.cred&&RUN.credits<c.cred) return false; if(c.mod&&!RUN.inventory.length) return false; if(c.xp){ const f=flagshipOf()||RUN.fleet[0]; if(!f||f.cap.xp<c.xp) return false; } return true; }
 function verbCostText(V){ if(verbFree(V)) return 'Free ('+V.freeD+')'; const c=V.cost||{}, p=[]; if(c.cred) p.push(c.cred+' credits'); if(c.mod) p.push('a refit from the hold'); if(c.xp) p.push(c.xp+' experience from your flagship captain'); return p.length?'Costs '+p.join(', '):'No cost'; }
@@ -357,7 +370,8 @@ function applyOutcome(r){
   if(r.dmgOne){ const s=randShip(), d=derive(s), dm=Math.round(d.maxHp*r.dmgOne); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); }
   if(r.dmgAll){ RUN.fleet.forEach(s=>{ s.hp=Math.max(1,s.hp-Math.round(derive(s).maxHp*r.dmgAll)); }); out.push(`Every ship takes ${pct(r.dmgAll)} hull damage.`); }
   if(r.ship){ const tp=equivHull(r.ship,RUN.fac); if(fleetCP()+HULLS[tp].cp<=RUN.cpCap){ const s=newShip(tp,r.vet); RUN.fleet.push(s); out.push(`The ${s.name} joins the fleet under ${rankName(s.cap)} ${s.cap.name}.`); } else { RUN.credits+=r.cost||0; out.push('You don\u2019t have the command points to take her on. Your credits are returned.'); } }
-  if(r.upgradeOne){ const s=[...RUN.fleet].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; changeShip(s,sh=>{ if(sh.mk<3) sh.mk++; }); s.hp=derive(s).maxHp; out.push(`The ${s.name} leaves the forge fully repaired at Mk ${roman(s.mk)}.`); }
+  let upgradedUid=null; // R1 (TXT-2, Codex PR #1): the shipwright's repair goes to the next most damaged ship, not back to the one he just upgraded
+  if(r.upgradeOne){ const s=[...RUN.fleet].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; upgradedUid=s.uid; changeShip(s,sh=>{ if(sh.mk<3) sh.mk++; }); s.hp=derive(s).maxHp; out.push(`The ${s.name} leaves the forge fully repaired at Mk ${roman(s.mk)}.`); }
   if(r.healAll){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*r.healAll)); }); out.push(r.healAll>=1?'Every ship is fully repaired.':`Every ship repairs ${pct(r.healAll)} of its hull.`); }
   if(r.gamble){ if(rnd()<.5){ RUN.fleet.forEach(s=>{ const d=derive(s); s.hp=Math.min(d.maxHp,s.hp+Math.round(d.maxHp*.3)); }); out.push('Luck holds. Every ship repairs 30% of its hull.'); } else out.push('Silence. The void keeps its own counsel.'); }
   if(r.mod){ const m=randomModule(); RUN.inventory.push(m); out.push(`Found: ${modName(m)}. It\u2019s in the hold.`); }
@@ -366,7 +380,7 @@ function applyOutcome(r){
   if(r.payMod){ if(RUN.inventory.length){ const m=RUN.inventory.splice(0,1)[0]; out.push(`The ${modName(m)} from the hold is used up.`); } }
   if(r.payXp){ const f=flagshipOf()||RUN.fleet[0]; if(f){ f.cap.xp=Math.max(RANK_XP[f.cap.rank]||0,f.cap.xp-r.payXp); out.push(`${f.cap.name} loses ${r.payXp} experience.`); } }
   if(r.payRelic){ if(RUN.relics.length){ const rl=RUN.relics.splice(RUN.relics.length-1,1)[0]; changeFleet(()=>{}); out.push(`You give up ${relicName(rl)}.`); } }
-  if(r.repairOne){ const s=[...RUN.fleet].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[r.upgradeOne&&RUN.fleet.length>1?1:0]; if(s){ s.hp=derive(s).maxHp; out.push(`The ${s.name} is fully repaired.`); } }
+  if(r.repairOne){ const candidates=upgradedUid&&RUN.fleet.length>1?RUN.fleet.filter(s=>s.uid!==upgradedUid):RUN.fleet; const s=[...candidates].sort((a,b)=>(a.hp/derive(a).maxHp)-(b.hp/derive(b).maxHp))[0]; if(s){ s.hp=derive(s).maxHp; out.push(`The ${s.name} is fully repaired.`); } }
   if(r.dmgBig){ const s=[...RUN.fleet].sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1))[0]; if(s){ const dm=Math.round(derive(s).maxHp*r.dmgBig); s.hp=Math.max(1,s.hp-dm); out.push(`The ${s.name} takes ${dm} hull damage.`); } }
   if(r.xpTop){ const s=[...RUN.fleet].sort((a,b)=>b.cap.xp-a.cap.xp)[0]; if(s){ addXp(s,r.xpTop); out.push(`${s.cap.name} of the ${s.name} gains ${r.xpTop} experience.`); } }
   if(r.modId&&MODULES[r.modId]){ RUN.inventory.push(r.modId); out.push(`Found: ${modName(r.modId)}. It’s in the hold.`); }
@@ -486,17 +500,19 @@ ACT.rewardNext=()=>{ const rw=window._rw||{}; closeModal();
 ACT.takeMod=m=>{ RUN.inventory.push(m); try{ tel('reward_pick',{k:'mod',id:m,offered:window._modOffer}); }catch(e){} toast(`${modName(m)} stowed in the hold.`); closeModal(); relicStep(); };
 // a patron offers three boons; rarity shows how strong each one is
 function boonStep(p,minR){ const P=PATRONS[p]; if(!P){ relicStep(); return; } const offer=(RUN.reward&&RUN.reward.boonOffer)||rollBoonOffer(p,minR); window._boonOffer=offer; if(RUN.reward&&!RUN.reward.boonOffer){ RUN.reward.boonOffer=offer; saveRun(); }
-  if(!offer.length){ RUN.credits+=60; toast('Nothing left to offer. +60 credits.'); relicStep(); return; }
+  if(offer.length<3&&!(RUN.reward&&RUN.reward.shortPaid)){ RUN.credits+=60; if(RUN.reward){ RUN.reward.shortPaid=1; saveRun(); } if(offer.length) toast(`Only ${offer.length} on offer: +60 credits.`); } // R1 (R64): a short offer pays 60 credits, once per reward
+  if(!offer.length){ toast('Nothing left to offer. +60 credits.'); relicStep(); return; }
   modal(`<div class="boonhead" style="border-color:${P.col}"><span class="sigil" style="background:${P.col}">${P.glyph}</span><div><h2 style="margin:0;color:${P.col}">${esc(P.n)}</h2><div class="muted" style="font-size:14px">${esc(P.theme)}</div></div></div>
     <p class="muted" style="font-style:italic;margin:8px 0 12px">“${esc(P.quote)}”</p>${rewardDef('boon')}
     ${offer.map((o,i)=>{ const b=BOONS[o.id], R=RARITY[o.r||0], duo=b.duo; return `<button class="choice boon" data-act="takeBoon" data-arg="${i}" style="border-left:4px solid ${duo?PATRONS[duo[0]].col:P.col}">
       <span class="rar" style="color:${duo?'#ffd27a':R.col}">${duo?'Duo: '+duo.map(q=>esc(PATRONS[q].short)).join(' + '):R.n}</span><b>${esc(b.n)}</b><small>${esc(b.d(R.m))}</small></button>`; }).join('')}
-    <div class="row" style="margin-top:10px"><button ${boonRerollOk()?'':'disabled'} data-act="boonReroll" data-arg="${p}:${minR||0}">Reroll the offer (${boonRerollCost()} credits, once)</button><button data-act="boonDecline">Decline: take ${boonDeclineCred()} credits</button></div>`); }
+    <div class="row" style="margin-top:10px"><button ${boonRerollOk(p,minR)?'':'disabled'} data-act="boonReroll" data-arg="${p}:${minR||0}">Reroll the offer (${boonRerollCost()} credits, once)</button><button data-act="boonDecline">Decline: take ${boonDeclineCred()} credits</button></div>`); }
 // B4 step 3 (v54): decline a boon offer for credits, or reroll it once per reward for a price that grows each time you reroll in a run
 function boonDeclineCred(){ return 30+10*((RUN&&RUN.sector)||1); }
 function boonRerollCost(){ return 25+15*((RUN&&RUN.boonRerolls)||0); }
-function boonRerollOk(){ return !!(RUN&&RUN.reward&&!RUN.reward.rerolled&&RUN.credits>=boonRerollCost()); }
-function boonReroll(p,minR){ if(!boonRerollOk()) return null; RUN.credits-=boonRerollCost(); RUN.boonRerolls=(RUN.boonRerolls||0)+1; RUN.reward.rerolled=true; const old=(RUN.reward.boonOffer||[]).map(o=>o.id);
+// R1 (RWD-6): no reroll (and no charge) when the core has nothing beyond what is already on offer
+function boonRerollOk(p,minR){ if(!(RUN&&RUN.reward&&!RUN.reward.rerolled&&RUN.credits>=boonRerollCost())) return false; if(p==null) return true; const cur=(RUN.reward.boonOffer||[]).map(o=>o.id); return boonOfferCan(p,minR).some(id=>!cur.includes(id)); }
+function boonReroll(p,minR){ if(!boonRerollOk(p,minR)) return null; RUN.credits-=boonRerollCost(); RUN.boonRerolls=(RUN.boonRerolls||0)+1; RUN.reward.rerolled=true; const old=(RUN.reward.boonOffer||[]).map(o=>o.id);
   let off=rollBoonOffer(p,minR); for(let k=0;k<4&&off.length&&off.every(o=>old.includes(o.id));k++) off=rollBoonOffer(p,minR); RUN.reward.boonOffer=off; return off; }
 function boonDecline(){ const c=boonDeclineCred(); RUN.credits+=c; return c; }
 ACT.boonReroll=a=>{ const [p,m]=String(a).split(':'); if(!boonReroll(p,+m||0)) return; saveRun(); closeModal(); boonStep(p,+m||0); };

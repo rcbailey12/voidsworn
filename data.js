@@ -19,7 +19,7 @@ const W = {
   pulsar:{n:'Prism lance',k:'lance',shots:2,dmg:12,r:6,opt:5,acc:80,fall:6,pierce:.6,crit:10},
   startorp:{n:'Star torpedo',k:'torp',shots:1,dmg:38,r:5,opt:5,acc:66,fall:0,pierce:.4,crit:15,cd:2,evMult:2},
   gauss:{n:'Null cannon',k:'gauss',shots:3,dmg:6,r:5,opt:3,acc:74,fall:8,pierce:0.6,crit:5},
-  gsentry:{n:'Null sentries',k:'flak',shots:3,dmg:3,r:2,opt:2,acc:80,fall:10,vsSq:3,vsCap:.6},
+  gsentry:{n:'Null sentries',k:'flak',shots:2,dmg:4,r:3,opt:3,acc:80,fall:10,vsSq:3,vsCap:.6}, // R1 (Nov 1, WPN-1): no longer a copy of flak: one fewer shot, a heavier hit and one hex more reach
   doom:{n:'Corona arc',k:'lance',shots:1,dmg:40,r:5,opt:4,acc:78,fall:6,pierce:.6,crit:12,cd:2},
   shard:{n:'Shard cannon',k:'battery',shots:3,dmg:6,r:4,opt:2,acc:80,fall:8,crit:6,vsSq:1.6},
   guns:{n:'Interceptor guns',k:'sq',shots:3,dmg:4,r:1,opt:1,acc:82,fall:0,vsSq:2.2,vsCap:.5},
@@ -290,7 +290,7 @@ const EVENTS = [
   {id:'storm',t:'Rift storm',b:'A storm front rolls across your jump route, lightning the colour of old blood.',
    o:[{l:'Punch straight through',s:'Every ship takes 10% hull damage.',r:{dmgAll:.1}},
       {l:'Chart a way around (40 credits)',s:'Burn fuel and time instead.',r:{cost:40}}]},
-  {id:'seer',not:['ithar'],t:'A Glasswright wanderer',b:'A lone Glasswright vessel matches your course. Its keeper offers a trade: one of your refits for one of their treasures.',
+  {id:'seer',t:'A Glasswright wanderer',b:'A lone Glasswright vessel matches your course. Its keeper offers a trade: one of your refits for one of their treasures.',
    o:[{l:'Trade a module for salvage',s:'Lose a random installed module. Gain salvage.',r:{loseMod:1,relic:1}},
       {l:'Refuse politely',s:'Nothing happens.',r:{}}]},
   {id:'wright',t:'The rogue shipwright',b:'A hermit shipwright on an asteroid forge offers to rework one of your hulls. He asks only for the stories of your battles.',
@@ -300,9 +300,9 @@ const EVENTS = [
    o:[{l:'Purge the moon',s:'Fight an elite Chorus battle. Win salvage.',r:{fight:'chorus'}},
       {l:'Bombard from orbit and leave',s:'+20 captain experience for every captain.',r:{xp:20}}]},
   {id:'shrine',not:['chorus','deathless'],t:'A wall of names',b:'A memorial station hangs over a dead world, its walls chalked with the names of a crusade that never came home. Your crews ask to leave an offering.',v:{hegemony:{b:'An old memorial station hangs over a dead world. Spacers are a superstitious lot, and your crews ask to leave an offering.'},corsair:{b:'An old memorial station hangs over a dead world, heaped with other packs’ trophies. Your crews want to leave one of their own.'},ithar:{t:'A mirror of the old world',b:'A mirror array from before your people\u2019s fall still turns over a dead world. Your crews ask to leave an offering.'}},
-   o:[{l:'Offer 50 credits',s:'Every ship repairs 30% hull.',r:{cost:50,healAll:.3}},
-      {l:'Chalk your names and hope',s:'Even odds: repair 30%, or nothing.',r:{gamble:true}},
-      {l:'Leave',s:'Nothing happens.',r:{}}]},
+   o:[{k:'offer',l:'Offer 50 credits',s:'Every ship repairs 30% hull.',r:{cost:50,healAll:.3}},
+      {k:'chalk',l:'Chalk your names and hope',s:'Even odds: repair 30%, or nothing.',r:{gamble:true}},
+      {k:'leave',l:'Leave',s:'Nothing happens.',r:{}}]},
   {id:'deserters',not:['hegemony'],t:'Hegemony deserters',b:'An escape pod of Hegemony officers begs for asylum. They know how the Navy fights.',
    o:[{l:'Take them in',s:'Your least experienced captain gains 60 experience.',r:{xpLow:60}},
       {l:'Hand them back for the bounty',s:'+60 credits.',r:{cred:60}}]},
@@ -405,7 +405,7 @@ EVENTS.push(
       {k:'leave',l:'Watch and leave',s:'Nothing happens.',r:{}}]},
   {id:'saboteur',t:'A saboteur aboard',b:'Small failures keep happening on one of your ships. Someone aboard is working for the enemy commander.',
    o:[{k:'search',l:'Search the ship',s:'A firefight: that ship takes 10% hull damage. A weakness is revealed from his notes.',r:{dmgOne:.1,nemIntel:1}},
-      {k:'face',l:'You know his face',s:'The defector you questioned named him. Caught quietly: Nemesis clock back one, and a weakness revealed.',need:{flag:'defector'},r:{nemClock:-1,nemIntel:1}},
+      {k:'face',l:'You know his face',s:'The defector you questioned named him. Caught quietly: Nemesis clock back one, and a weakness revealed.',need:{flag:'defector',flagK:['question','enlist']},r:{nemClock:-1,nemIntel:1}},
       {k:'ignore',l:'Ignore it',s:'The Nemesis clock moves on twice.',r:{nemClock:2}}]},
   {id:'veterans',t:'A retired admiral',b:'An old admiral in a ruined hab offers to teach your captains everything she learned, for a price.',
    o:[{k:'pay',l:'Pay her (50 credits)',s:'Every captain gains 25 experience.',r:{cost:50,xp:25}},
@@ -414,7 +414,8 @@ EVENTS.push(
   {id:'haven',t:'A raider den',b:'A rock riddled with docking tunnels and gun ports. Half the sector’s stolen goods pass through here.',
    o:[{k:'raid',l:'Raid it',s:'Fight an elite Hullbreaker battle. Win salvage.',r:{fight:'corsair'},fl:{loud:1}},
       {k:'tribute',l:'Pay them to hide your trail (40 credits)',s:'Nemesis clock back one.',r:{cost:40,nemClock:-1}},
-      {k:'recruit',l:'Recruit a crew there',s:'A Hullbreaker raider joins with a veteran captain.',need:{fac:'corsair'},r:{shipRaw:'c_raider',vet:1}}]},
+      {k:'recruit',l:'Recruit a crew there',s:'A Hullbreaker raider joins with a veteran captain.',need:{fac:'corsair'},r:{shipRaw:'c_raider',vet:1}},
+      {k:'leave',l:'Give the den a wide berth',s:'Nothing happens.',r:{}}]},
   {id:'quiet',t:'Quiet void',b:'Nothing on the scopes for light-hours in every direction. The crews sleep for the first time in weeks.',
    o:[{k:'rest',l:'Rest',s:'Every ship repairs 10% of its hull.',r:{healAll:.1}},
       {k:'drill',l:'Drill the crews',s:'Every captain gains 10 experience.',r:{xp:10}}]});
@@ -496,12 +497,12 @@ const NEM_BEAT_WORD={lance:'lances',torp:'torpedoes',sq:'your wings',ram:'rams',
 // cost: cred (credits), mod (a refit from the hold), xp (flagship captain experience). free: an earlier event flag that waives the cost.
 // next: an effect on your next battle (battle.js applyVerb). Each use writes the flag verb_<id>.
 const FAC_VERBS={
-  voidsworn:{id:'vigil',n:'Keep the dawn watch',d:'Next battle, ships next to an ally take 15% less hull damage.',cost:{cred:40},free:'shrine',freeD:'free after an offering at a wall of names',next:1},
-  hegemony:{id:'drill',n:'Fleet drill',d:'Next battle, synchronized fire reaches 4 hexes from the flagship and its bonus rises to +20%.',cost:{cred:35},free:'defector',freeD:'free once a defector has briefed you',next:1},
+  voidsworn:{id:'vigil',n:'Keep the dawn watch',d:'Next battle, ships next to an ally take 15% less hull damage.',cost:{cred:40},free:'shrine',freeK:['offer','chalk','relic'],freeD:'free after an offering at a wall of names',next:1},
+  hegemony:{id:'drill',n:'Fleet drill',d:'Next battle, synchronized fire reaches 4 hexes from the flagship and its bonus rises to +20%.',cost:{cred:35},free:'defector',freeK:['question','enlist'],freeD:'free once a defector has briefed you',next:1},
   corsair:{id:'shake',n:'Shake down the lanes',d:'Gain 30 credits, plus 10 for every greedy choice this run. The Nemesis clock moves on.',cost:{},next:0},
   chorus:{id:'gorge',n:'Gorge',d:'Consume a refit from the hold: every ship regrows 20% of its hull (30% if the fleet has fed at a spawning field).',cost:{mod:1},next:0},
-  ithar:{id:'attune',n:'Prism attunement',d:'Next battle, every shield is 25% stronger.',cost:{xp:25},free:'lament',freeD:'free once you have answered the tone',next:1},
-  deathless:{id:'waken',n:'Back up the fleet',d:'Next battle, Archive restore brings back one more ship.',cost:{cred:45},free:'tombhome',freeD:'free once a dormant yard has woken a hull for you',next:1}};
+  ithar:{id:'attune',n:'Prism attunement',d:'Next battle, every shield is 25% stronger.',cost:{xp:25},free:'lament',freeK:['join'],freeD:'free once you have answered the tone',next:1},
+  deathless:{id:'waken',n:'Back up the fleet',d:'Next battle, Archive restore brings back one more ship.',cost:{cred:45},free:'tombhome',freeK:['wake'],freeD:'free once a dormant yard has woken a hull for you',next:1}};
 // ---------- B4 wing doctrines: a stance per carrier, one free switch per round; up to three veteran perks per carrier's wings ----------
 const WING_STANCES={
   strike:{n:'Strike',d:'Default. Wings hit the best target in reach, ships first for bombers.'},
@@ -536,7 +537,7 @@ const MORE_SHIP_NAMES={
 // Voidsworn keep their carriers (Ashgrove's whole kit) at a 25% premium. Shipyard prices, ransom, strip and scrap values all follow h.cost.
 // Enemy fleets are still built by command points, so battle difficulty does not move with this table.
 const FAC_PRICE={hegemony:{},voidsworn:{Carrier:1.25},corsair:{Frigate:.8,Destroyer:.85,Cruiser:1.05,Carrier:1.15},chorus:{Frigate:.65,Destroyer:.75,Cruiser:1,Carrier:1.2},
-  ithar:{Frigate:1.3,Destroyer:1.3,Cruiser:1.15,Carrier:1.1},deathless:{Frigate:1.45,Destroyer:1.5,Cruiser:1.55}};
+  ithar:{Frigate:1.3,Destroyer:1.3,Cruiser:1.15,Carrier:1.1},deathless:{Frigate:1.45,Destroyer:1.5,Cruiser:1.55,Battleship:1.6}}; // R1 (FS-2): a future Eclipse battleship never prices below the Eclipse cruiser
 // B3 roster gates and prohibitions: what each faction cannot field or do. Checked by canOrder (brace), the prize screen and towing (weapon kinds).
 const FAC_GATES={corsair:{noKind:['lance'],d:'Hullbreakers field no lance weapons (no long-range beams): they win up close.'},ithar:{noBrace:1,d:'Glasswright hulls cannot Brace for impact: they live by shields and speed.'}};
 function factionGate(fac,tpl){ const G=FAC_GATES[fac], h=HULLS[tpl]; if(!G||!h) return null; if(G.noKind&&h.w.some(([id])=>W[id]&&G.noKind.includes(W[id].k))) return G.d; return null; }
@@ -551,15 +552,15 @@ const HULL_VARIANTS={
   vs_harrow_t:{base:'harrow',n:'Harrow torpedo-destroyer',d:'Twin prow torpedo tubes and no turret: a one-shot assassin.',w:[['torp','F'],['torp','F']],cost:20},
   vs_penitent_g:{base:'penitent',n:'Vigil gun-cruiser',d:'Swaps the prow lance for a dorsal sear battery: guns in every arc.',w:[['battery','P'],['battery','S'],['battery','T']],cost:25},
   h_picket_i:{base:'h_picket',n:'Picket interceptor',d:'Turret laser and +6 evasion: screens wherever it points.',w:[['laser','T'],['flak','T']],mod:{ev:24},cost:15},
-  h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar; a third plasma lance turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
+  h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar and no Launch squadron ability; a third plasma lance turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
   c_reaver_t:{base:'c_reaver',n:'Turret gutship',d:'Scatter cannons on a turret instead of one broadside.',w:[['torp','F'],['scatter','T']],cost:15},
-  c_hulk_g:{base:'c_hulk',n:'Gun-hulk',d:'No hangar; scatter broadsides, a turret and 20 more hull.',w:[['scatter','P'],['scatter','S'],['turret','T']],mod:{ab:null,hangar:0,hp:190},cost:25},
+  c_hulk_g:{base:'c_hulk',n:'Gun-hulk',d:'No hangar and no Launch squadron ability; scatter broadsides, a turret and 20 more hull.',w:[['scatter','P'],['scatter','S'],['turret','T']],mod:{ab:null,hangar:0,hp:190},cost:25},
   b_spitter_s:{base:'b_spitter',n:'Spitter stinger',d:'Trades a prow gun for boarding tendrils: brutal up close.',w:[['bioplasma','T'],['tendril','T']],cost:15},
-  b_razor_s:{base:'b_razor',n:'Bladeback stalker',d:'Two tendril clusters, +1 speed and +8 evasion.',w:[['tendril','T'],['tendril','T']],mod:{sp:5,ev:12},cost:25},
+  b_razor_s:{base:'b_razor',n:'Bladeback stalker',d:'Trades its spine volley for a second tendril cluster: +1 speed and +8 evasion.',w:[['tendril','T'],['tendril','T']],mod:{sp:5,ev:12},cost:25},
   i_wisp_l:{base:'i_wisp',n:'Sliver lancer',d:'A prism lance in place of the prism shards.',w:[['pulsar','F']],cost:15},
-  i_song_w:{base:'i_song',n:'Warded prism',d:'One lance on a turret, 30% more shields.',w:[['pulsar','T'],['turret','T']],mod:{sh:34},cost:25},
+  i_song_w:{base:'i_song',n:'Warded prism',d:'One prism lance on a turret in place of the two prow lances, and 30% more shields.',w:[['pulsar','T'],['turret','T']],mod:{sh:34},cost:25},
   d_scythe_s:{base:'d_scythe',n:'Mote sentinel',d:'Adds a null spire: shoots down squadrons and boarders’ craft.',w:[['gauss','T'],['gsentry','T']],cost:15},
-  d_harvester_t:{base:'d_harvester',n:'Turreted zenith',d:'Its corona arc sits on a turret: it no longer has to turn to fire.',w:[['gauss','T'],['doom','T'],['gsentry','T']],cost:30}};
+  d_harvester_t:{base:'d_harvester',n:'Turreted zenith',d:'Its corona arc sits on a turret, so it no longer has to turn to fire, but it carries one null cannon instead of two.',w:[['gauss','T'],['doom','T'],['gsentry','T']],cost:30}};
 // R41 arc unlocks (story helper draft godot/story/unlocks.md, Oct 26): one sidegrade per faction, earned by finishing that faction's story arc
 // (its Nemesis's last fight), never sold for renown (cost 0, arc field). Numbers sim-checked against the base hulls in stream B.
 Object.assign(HULL_VARIANTS,{
@@ -611,7 +612,7 @@ const HEAT={
   h_elite:{n:'Veteran escorts',d:'One ship in every enemy fleet is an elite.',w:1},
   h_undying:{n:'Undying foes',d:'Any enemy ship may reassemble once when destroyed.',w:2},
   h_coffers:{n:'Lean coffers',d:'Shipyard prices are 25% higher.',w:1},
-  h_repair:{n:'Short supplies',d:'Every repair restores half as much.',w:1},
+  h_repair:{n:'Thin repair crews',d:'Free repairs (drydocks, field repairs, repair rewards and the regroup after a flagship) restore half as much. Shipyard repairs are unaffected.',w:1},
   h_cmd:{n:'Slow orders',d:'Your Command reaches full power a round later.',w:1}};
 
 // ---------- Patrons, boons and flagship aspects ----------
@@ -686,7 +687,7 @@ Object.assign(BOONS,{
   L_star:{p:'star',leg:1,n:'One Clean Line',d:()=>'Legendary. Lances always hit (95%) and pass straight through shields.',fx:()=>({lanceSure:1})},
   L_rook:{p:'rook',leg:1,n:'Unstoppable',d:()=>'Legendary. Rams deal 50% more, can take 70% of a ship’s hull, and the rammer takes no recoil.',fx:()=>({ramPct:.5,ramCap:.3,ramGuard:1})},
   L_ember:{p:'ember',leg:1,n:'Pyre of Stars',d:()=>'Legendary. Every enemy ship you destroy explodes for 40 damage to every enemy within 2 hexes.',fx:()=>({chainBoom:40})}});
-const BOON_NEED={h_brood:'carrier',a_mark:'lance',e_spread:'torp',L_hunger:'carrier',L_star:'lance',i_still:'still',s_cap:'shields',s_regen:'shields',d_bastion:'shields',i_broad:'broad',d_inferno:'broad',e_war:'torp',e_reload:'torp',a_lance:'lance',d_ionlance:'lance',h_hatch:'carrier',h_wings:'sq',h_chitin:'sq',h_feast:'sq',d_burnswarm:'sq'};
+const BOON_NEED={L_storm:'shields',h_brood:'carrier',a_mark:'lance',e_spread:'torp',L_hunger:'carrier',L_star:'lance',i_still:'still',s_cap:'shields',s_regen:'shields',d_bastion:'shields',i_broad:'broad',d_inferno:'broad',e_war:'torp',e_reload:'torp',a_lance:'lance',d_ionlance:'lance',h_hatch:'carrier',h_wings:'sq',h_chitin:'sq',h_feast:'sq',d_burnswarm:'sq'};
 // the flagship's aspect is picked at the start of a run, from three offered at random
 const ASPECTS={
   lancer:{n:'Aspect of the Spear',d:'Your flagship’s forward guns deal +50% damage and reach 1 hex further, and it can turn once more each round to bring them to bear.',fx:{prowPct:.5,prowRange:1,turns:1}},
