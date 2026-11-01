@@ -28,7 +28,9 @@ ADM = {
  'sable': ('corsair', 'v64b/corsair_sable_nohorn_s23', (0.71, 0.33, 0.58), 'R68: Sable in a red-lit airlock corridor with a long knife (v64h5 s23).'),
  'mott': ('corsair', 'v64b/corsair_mott_nohorn_s11', (0.70, 0.35, 0.60), 'R68: Mott in a hangar of salvage, sparks and a gutted hull (v64h5 s11).'),
  'vesh': ('corsair', 'v64b/corsair_vesh_nohorn_s11', (0.69, 0.33, 0.60), 'R68: Vesh at a forge bench welding with a blue arc (v64h5 s11).'),
- # Hegemony (e64e) and Crusade, Chorus and Eclipse: their approved paintings moved into new settings by an edit (e64)
+ 'kassar': ('hegemony', 'e64/kassar_v64_s83', (0.5, 0.36, 0.62),
+            'R68: Kassar in a white council chamber high in orbit, hands behind her back before a ringed gas giant (e64e s83).'),
+ # Crusade, Chorus and Eclipse: their approved paintings moved into new settings by an edit (e64)
  'matriarch': ('chorus', 'e64/matriarch_v64_s11', None, 'R68: the Matriarch above a planet it is consuming, spores falling into the air.'),
  'mending': ('chorus', 'e64/mending_v64_s11', None, 'R68: the Mending nested in the gutted hull of a captured warship.'),
  'nekhet': ('deathless', 'e64/nekhet_v64_s11', None, 'R68: Nekhet in a machine hall of siphon arrays draining a star.'),
@@ -63,6 +65,8 @@ NEM = {
  'nem_corsair_2': ('v64b/nem_corsair_2_nohorn_s11', (0.60, 0.27, 0.30)),
  'nem_corsair_3': ('v64b/nem_corsair_3_horn_s11', (0.27, 0.26, 0.27)),
  'nem_corsair_5': ('v64b/nem_corsair_5_nohorn_s11', (0.66, 0.26, 0.30)),
+ 'nem_corsair_4': ('v64b/nem_corsair_4_h6scale_s23', (0.63, 0.21, 0.25)),
+ 'nem_corsair_6': ('v64b/nem_corsair_6_h6fix_s23', (0.50, 0.21, 0.24)),
  'nem_ithar_2': ('v64b/nem_ithar_2_nf2_edit_s23', (0.53, 0.23, 0.30)),
  'nem_voidsworn_3': ('e64/nem_voidsworn_3_v64_s73', (0.53, 0.35, 0.23)),
  # e64c redraws (seeds 37, 51)

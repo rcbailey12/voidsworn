@@ -44,14 +44,17 @@
    "faction": "hegemony",
    "pick": "painted/kassar.webp",
    "alts": [
+    "alts/kassar_pre68.webp",
     "alts/kassar_r8alt1.webp",
     "alts/kassar_r7.webp"
    ],
-   "source": "r8e/kassar_r8_s23_00001_.png",
-   "alt_sources": [
-    "r8e/kassar_r8_s11_00001_.png"
+   "source": "e64/kassar_v64_s83_00001_.png",
+   "crop": [
+    0.5,
+    0.36,
+    0.62
    ],
-   "note": "Restyle of the round 7 painting: blue temple port, data in the iris."
+   "note": "R68: Kassar in a white council chamber high in orbit, hands behind her back before a ringed gas giant (e64e s83)."
   },
   "grax": {
    "faction": "corsair",

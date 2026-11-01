@@ -318,6 +318,25 @@ def v64h6_items(seeds=(11, 23)):
                 for sd in seeds]
     return out
 
+# s68i (Nov 1, P helper 4): s68h review. The Hullbreaker implant scar ("bolted-on iron plate") grew into a riveted face mask on
+# Nemesis 1, 3 and 5 (Ryan's A1 ruling: no riveted mask or helmet), so it is narrowed to one small eye-socket ring; Glasswright
+# Nemesis 1's burn painted a human face on both seeds, so it is told the head stays a faceless crystal.
+CYBER_HB = ("Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a "
+            "single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the "
+            "head keeps its own matte scales; no plate, mask or helmet over the face.")
+BURN_GW_NOFACE = (SCAR64['ithar']['burn'] + " It has no face: the head stays a faceless faceted crystal growing straight out of the "
+                  "neck, with no eyes, nose, mouth, skin or hair on or under it.")
+def s68i_items(hb_new=(), seeds=(11, 23)):
+    out = [{'id': n, 'kind': 'cyber', 'seed': sd, 'src': 'ncrop68/%s.png' % n, 'prompt': CYBER_HB + KEEP + CLEAN_E}
+           for n in ('nem_corsair_1', 'nem_corsair_3', 'nem_corsair_5') for sd in (37, 51)]   # new seeds: s11, s23 exist
+    out += [{'id': 'nem_ithar_1', 'kind': 'burn', 'seed': sd, 'src': 's68/nem_ithar_1_fix_s11_00001_.png',
+             'prompt': BURN_GW_NOFACE + KEEP_OBJ + CLEAN_E} for sd in (37, 51)]
+    for n in hb_new:   # Hullbreaker Nemesis 4 and 6 on their v64h6 picks: all three scars
+        for k in KINDS['corsair']:
+            pr = (CYBER_HB if k == 'cyber' else SCAR64['corsair'][k]) + KEEP + CLEAN_E
+            out += [{'id': n, 'kind': k, 'seed': sd, 'src': 'ncrop68/%s.png' % n, 'prompt': pr} for sd in seeds]
+    return out
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -394,3 +413,7 @@ if __name__ == '__main__':
         + s68_items('voidsworn', ['nem_voidsworn_3'])
     json.dump({'out': 's68', 'budget_s': 1150, 'items': s68h}, open(os.path.join(B, 's68h.json'), 'w'), indent=1)
     print('v64h6', len(v64h6_items()), 'e64e', len(e64e), 's68h', len(s68h))
+    # s68i: Hullbreaker implant scar narrowed, Glasswright Nemesis 1 burn kept faceless, all scars for Hullbreaker Nemesis 4 and 6
+    s68i = s68i_items(('nem_corsair_4', 'nem_corsair_6'))
+    json.dump({'out': 's68', 'budget_s': 1150, 'items': s68i}, open(os.path.join(B, 's68i.json'), 'w'), indent=1)
+    print('s68i', len(s68i))

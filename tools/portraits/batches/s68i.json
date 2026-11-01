@@ -1,0 +1,146 @@
+{
+ "out": "s68",
+ "budget_s": 1150,
+ "items": [
+  {
+   "id": "nem_corsair_1",
+   "kind": "cyber",
+   "seed": 37,
+   "src": "ncrop68/nem_corsair_1.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "cyber",
+   "seed": 51,
+   "src": "ncrop68/nem_corsair_1.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "cyber",
+   "seed": 37,
+   "src": "ncrop68/nem_corsair_3.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "cyber",
+   "seed": 51,
+   "src": "ncrop68/nem_corsair_3.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "cyber",
+   "seed": 37,
+   "src": "ncrop68/nem_corsair_5.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "cyber",
+   "seed": 51,
+   "src": "ncrop68/nem_corsair_5.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_ithar_1",
+   "kind": "burn",
+   "seed": 37,
+   "src": "s68/nem_ithar_1_fix_s11_00001_.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. It has no face: the head stays a faceless faceted crystal growing straight out of the neck, with no eyes, nose, mouth, skin or hair on or under it. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_ithar_1",
+   "kind": "burn",
+   "seed": 51,
+   "src": "s68/nem_ithar_1_fix_s11_00001_.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. It has no face: the head stays a faceless faceted crystal growing straight out of the neck, with no eyes, nose, mouth, skin or hair on or under it. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_4.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_4.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_4.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_4.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_4.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_4.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_6.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_6.png",
+   "prompt": "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_6.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "cyber",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_6.png",
+   "prompt": "Set one small crude iron ring into the scales around one of this creature's eyes, no bigger than the eye socket, holding a single small glowing red lens in place of that eye, with raw scarred hide puckered round its edge. Every other part of the head keeps its own matte scales; no plate, mask or helmet over the face. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop68/nem_corsair_6.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "eye",
+   "seed": 23,
+   "src": "ncrop68/nem_corsair_6.png",
+   "prompt": "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else. The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
+  }
+ ]
+}
