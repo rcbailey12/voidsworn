@@ -346,6 +346,20 @@ func system(with_planet: bool) -> void:
 	notes.append("system: %s, %d moons" % [("planet %d" % int(setting["planet_i"])) if with_planet else "no backdrop planet (the board has one)", placed.size()])
 
 
+# r9: the light on a planet or moon. The battle's key light comes from behind the default camera, which lit every planet
+# full face on (a flat disc, no terminator, its night lights and limb glow never seen). Far bodies take their own sun
+# from the key light's side of the screen, about 70 degrees round from the viewer, so each shows a lit face, a soft
+# terminator and a night side. Nobody can check the angle against the ships 3,000 units away; the side stays true.
+func _body_sun(pos: Vector3) -> Vector3:
+	var to_view := (_center - pos).normalized()
+	var right := (-to_view).cross(Vector3.UP)
+	if right.length() < 1e-3:
+		return SUN.normalized()
+	right = right.normalized()
+	var s := 1.0 if SUN.dot(right) >= 0.0 else -1.0
+	return (to_view * 0.34 + right * s * 0.88 + Vector3.UP * 0.33).normalized()
+
+
 func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int, bake_size: Vector2i, spin: float, tint: Vector3, main: bool) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	var sm := SphereMesh.new()
@@ -359,7 +373,7 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 	sh.code = PL.SPHERE
 	m.shader = sh
 	m.set_shader_parameter("flat_col", (P["a"] as Vector3) * 0.6)
-	m.set_shader_parameter("sun", SUN.normalized())
+	m.set_shader_parameter("sun", _body_sun(pos))
 	var atmo: Vector3 = P.get("atmo", Vector3.ZERO)
 	m.set_shader_parameter("atmo", atmo)
 	m.set_shader_parameter("atmo_k", 0.0 if atmo.length() < 0.01 else (0.8 if int(P["kind"]) == 2 else 0.55))
@@ -388,7 +402,7 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 		ash.code = PL.ATMO
 		am.shader = ash
 		am.set_shader_parameter("atmo", atmo)
-		am.set_shader_parameter("sun", SUN.normalized())
+		am.set_shader_parameter("sun", _body_sun(pos))
 		am.set_shader_parameter("shell", 1.035)
 		am.set_shader_parameter("k", 0.9 if int(P["kind"]) == 2 else 0.6)
 		# far things draw first among the see-through ones, so the board's underlay covers them (r6: the glow's rim
@@ -424,7 +438,7 @@ func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumber
 	var sh := Shader.new()
 	sh.code = PL.RING
 	m.shader = sh
-	m.set_shader_parameter("sun", SUN.normalized())
+	m.set_shader_parameter("sun", _body_sun(pos))
 	m.set_shader_parameter("col_a", (P["c"] as Vector3) * 0.9)
 	m.set_shader_parameter("col_b", (P["b"] as Vector3) * 1.2)
 	m.set_shader_parameter("seed", r.randf() * 50.0)
