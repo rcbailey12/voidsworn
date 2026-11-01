@@ -1,7 +1,7 @@
 # A4 in-game before/after sheets (feel pass, Nov 1): from two a4_shots.tscn capture folders (Downloads\voidsworn_test\a4\ingame\<tag>),
 # one WebP per faction: the battle-camera line and the zoomed line, before over after, then each ship's three-quarter, side and below views
 # (before left, after right) beside its concept. Phone-width friendly (1600 px), labelled in plain words.
-#   python3 ingame_sheet.py BEFORE_DIR AFTER_DIR OUT_DIR [--facs hegemony,voidsworn] [--concepts DIR]
+#   python3 ingame_sheet.py BEFORE_DIR AFTER_DIR OUT_DIR [--facs hegemony,voidsworn] [--concepts DIR] [--labels 'LEFT TEXT|RIGHT TEXT']
 #   python3 ingame_sheet.py --battle BEFORE_SHOTS AFTER_SHOTS OUT.webp   (the real battle scene, shots\a4_cp2_*\<before|after>\<fac>\)
 #   python3 ingame_sheet.py --props AFTER_DIR OUT.webp                    (board station and hulks: today against a4_props.gd)
 #   python3 ingame_sheet.py --sweep DIR CODE OUT.webp [--label TEXT]      (9-cell blob sweep: bow, middle, stern from above, side, below)
@@ -18,6 +18,7 @@ FACS = [('hegemony', 'Hegemony Navy', 'H4_11 H10_23 H9_23 H8_23 H7_23'),
         ('deathless', 'Eclipse', 'D22_23 D21_23 D20_23 D9_23'),
         ('other', 'Objectives and craft', 'O1_37 O2_37 O3_11 S2_23 S1_51 B23_51')]
 W = 1600
+LABELS = ['before (paint v1, as Ryan played it)', 'after (concept paint)']  # --labels 'LEFT|RIGHT'
 
 
 def font(sz):
@@ -43,7 +44,7 @@ def sheet(bdir, adir, fac, title, codes, out, views=('q', 's', 'b')):
     f1, f2 = font(34), font(22); rows = []
     head = Image.new('RGB', (W, 96), (18, 18, 22)); d = ImageDraw.Draw(head)
     d.text((24, 12), f'{title}: in the game, before and after', font=f1, fill=(240, 236, 228))
-    d.text((24, 58), 'Left: before (paint v1, as Ryan played it).  Right: after (concept paint).  Battle lights and camera.', font=f2, fill=(190, 190, 196))
+    d.text((24, 58), f'Left: {LABELS[0]}.  Right: {LABELS[1]}.  Battle lights and camera.', font=f2, fill=(190, 190, 196))
     rows.append(head)
     if fac != 'other':
         for nm, lab in ((f'{fac}_battle', 'the line at the battle camera'), (f'{fac}_battle_near', 'zoomed in')):
@@ -143,6 +144,7 @@ if __name__ == '__main__':
     bdir, adir, odir = a[:3]; os.makedirs(odir, exist_ok=True)
     only = a[a.index('--facs') + 1].split(',') if '--facs' in a else None
     if '--concepts' in a: CONCEPTS = a[a.index('--concepts') + 1]
+    if '--labels' in a: LABELS = a[a.index('--labels') + 1].split('|')
     for fac, title, codes in FACS:
         if only and fac not in only: continue
         sheet(bdir, adir, fac, title, codes, os.path.join(odir, f'{fac}_ingame_before_after.webp'))
