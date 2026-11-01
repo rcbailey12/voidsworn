@@ -833,10 +833,11 @@ func set_plate(id: String, screen: Vector2, on: bool, name_txt: String, friend: 
 
 # F1: nameplate declutter, once a frame after every plate is placed. prio: id -> 3 (up, targeted), 2 (hovered, acting),
 # 1 (flagship), 0. Highest first, then nearer the camera (lower on screen); a name of rank under 2 that would overlap a
-# name or bars already shown, or sit under a HUD panel (the panels are see-through, so a name under one printed across
-# the panel's own text), is hidden, and if its bars would too, the whole plate is.
+# name or bars already shown is hidden, and if its bars would overlap too, the whole plate is. A plate of rank under 3
+# whose name or bars would sit under a HUD panel is hidden whole (the panels are see-through, so a name under one printed
+# across the panel's own text, and a lone bar beside a panel reads as a glitch).
 var plates_hidden := 0
-var _plates_kept := {}              # ids of rank 2 or more in the last declutter (always shown)
+var _plates_kept := {}              # ids of rank 3 in the last declutter (the up ship and the target: always shown)
 
 
 # screen rects of the HUD panels a ship name must not sit under
@@ -868,6 +869,10 @@ func declutter_plates(prio: Dictionary) -> void:
 		var nr := Rect2(c.position + Vector2((c.size.x - tw) * 0.5, 0), Vector2(tw, nm.size.y)).grow(s(2))
 		var bw := float(s(90))
 		var br := Rect2(c.position + Vector2((c.size.x - bw) * 0.5, nm.size.y), Vector2(bw, maxf(c.size.y - nm.size.y, 1.0)))
+		if int(it[0]) < 3 and (_hits_any(nr, blockers) or _hits_any(br, blockers)):
+			c.modulate.a = 0.0
+			plates_hidden += 1
+			continue
 		if int(it[0]) >= 2:
 			# a name that must stay: lift its plate above whatever it would cover (at most a few steps)
 			for k in 4:
@@ -884,15 +889,20 @@ func declutter_plates(prio: Dictionary) -> void:
 				c.position.y -= dy
 				nr.position.y -= dy
 				br.position.y -= dy
+			if int(it[0]) < 3 and (_hits_any(nr, blockers) or _hits_any(br, blockers)):
+				c.modulate.a = 0.0
+				plates_hidden += 1
+				continue
 			shown.append(nr)
 			shown.append(br)
-			_plates_kept[it[2]] = true
+			if int(it[0]) >= 3:
+				_plates_kept[it[2]] = true
 			continue
-		if _hits_any(br, shown) or _hits_any(br, blockers):
+		if _hits_any(br, shown):
 			c.modulate.a = 0.0
 			plates_hidden += 1
 			continue
-		if _hits_any(nr, shown) or _hits_any(nr, blockers):
+		if _hits_any(nr, shown):
 			nm.modulate.a = 0.0
 			plates_hidden += 1
 		else:
@@ -924,17 +934,20 @@ func plate_name_overlaps() -> int:
 	return n
 
 
-# for the trace: visible names (other than the up, targeted, hovered or acting ship's) that sit under a HUD panel
+# for the trace: visible names or bars (other than the up ship's and the target's) that sit under a HUD panel
 func plate_names_under_panels() -> int:
 	var blockers := hud_blockers()
 	var n := 0
 	for id in plates:
 		var c: Control = plates[id]
 		var nm := c.get_node("nm") as Label
-		if _plates_kept.has(id) or not c.visible or c.modulate.a <= 0.5 or nm.modulate.a <= 0.5 or nm.text == "":
+		if _plates_kept.has(id) or not c.visible or c.modulate.a <= 0.5:
 			continue
 		var tw := nm.get_minimum_size().x
-		if _hits_any(Rect2(c.position + Vector2((c.size.x - tw) * 0.5, 0), Vector2(tw, nm.size.y)), blockers):
+		var bw := float(s(90))
+		var nr := Rect2(c.position + Vector2((c.size.x - tw) * 0.5, 0), Vector2(tw, nm.size.y))
+		var br := Rect2(c.position + Vector2((c.size.x - bw) * 0.5, nm.size.y), Vector2(bw, maxf(c.size.y - nm.size.y, 1.0)))
+		if (nm.modulate.a > 0.5 and nm.text != "" and _hits_any(nr, blockers)) or _hits_any(br, blockers):
 			n += 1
 	return n
 
