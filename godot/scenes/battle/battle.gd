@@ -3512,11 +3512,14 @@ func _maneuver_score(path: Array, want: String) -> float:
 	var n_rev := 0
 	var n_fwd := 0
 	var rot_after_move := false
+	var mid_turn := false        # a turn with runs both before and after it
 	for st in path:
 		if _jt(st.get("rot")):
 			n_rot += 1
 			if n_fwd + n_slip + n_rev > 0:
 				rot_after_move = true
+		elif rot_after_move:
+			mid_turn = true
 		elif _jt(st.get("slip")):
 			n_slip += 1
 		elif _jt(st.get("rev")):
@@ -3535,11 +3538,11 @@ func _maneuver_score(path: Array, want: String) -> float:
 		"back":
 			return float(n_rev) if n_rev > 0 and n_rot + n_fwd + n_slip == 0 else -1e9
 		"long":
-			# F2: the longest move with turns, a turn after the hull is already moving counting most (a straight run
-			# when the ship has no turn to spare)
+			# F2: the longest move with turns, a turn between two runs counting most (a straight run when the ship has
+			# no turn to spare)
 			if n_rev > 0 or n_fwd + n_slip == 0:
 				return -1e9
-			return float(n_fwd) + float(n_slip) * 0.8 + float(n_rot) * 1.5 + (2.0 if rot_after_move else 0.0)
+			return float(n_fwd) + float(n_slip) * 0.8 + float(n_rot) * 1.5 + (6.0 if mid_turn else 0.0)
 	return -1e9
 
 
