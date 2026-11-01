@@ -57,14 +57,17 @@
    "faction": "corsair",
    "pick": "painted/grax.webp",
    "alts": [
+    "alts/grax_pre68.webp",
     "alts/grax_p64alt1.webp",
     "alts/grax_r8.webp"
    ],
-   "source": "p64/corsair_grax_s11_oil50_zi2i_s11_00001_.png",
-   "alt_sources": [
-    "p64/corsair_grax_s51_oil50_zi2i_s51_00001_.png"
+   "source": "v64b/corsair_grax_nohorn_s11_00001_.png",
+   "crop": [
+    0.55,
+    0.37,
+    0.72
    ],
-   "note": "R64 void hunter (Nov 1): grey-streaked black mane, iron maw plate, chain harness, boarding hook. s23 and s37 showed a bare chest."
+   "note": "R68: Grax slumped on a scrap throne under hanging trophies (v64h5 s11)."
   },
   "aelith": {
    "faction": "ithar",
@@ -98,37 +101,46 @@
    "faction": "corsair",
    "pick": "painted/sable.webp",
    "alts": [
+    "alts/sable_pre68.webp",
     "alts/sable_p64alt1.webp"
    ],
-   "source": "p64/corsair_sable_s11_oil50_zi2i_s11_00001_.png",
-   "alt_sources": [
-    "p64/corsair_sable_s51_oil50_zi2i_s51_00001_.png"
+   "source": "v64b/corsair_sable_nohorn_s23_00001_.png",
+   "crop": [
+    0.71,
+    0.33,
+    0.58
    ],
-   "note": "R64 void hunter: lean, glossy black mane, green eyes, scrap blade held low, close black harness."
+   "note": "R68: Sable in a red-lit airlock corridor with a long knife (v64h5 s23)."
   },
   "mott": {
    "faction": "corsair",
    "pick": "painted/mott.webp",
    "alts": [
+    "alts/mott_pre68.webp",
     "alts/mott_p64alt1.webp"
    ],
-   "source": "p64/corsair_mott_s11_oil50_zi2i_s11_00001_.png",
-   "alt_sources": [
-    "p64/corsair_mott_s51_oil50_zi2i_s51_00001_.png"
+   "source": "v64b/corsair_mott_nohorn_s11_00001_.png",
+   "crop": [
+    0.7,
+    0.35,
+    0.6
    ],
-   "note": "R64 void hunter: ragged white mane, worn pale face plates, junk fighter craft hung from chains."
+   "note": "R68: Mott in a hangar of salvage, sparks and a gutted hull (v64h5 s11)."
   },
   "vesh": {
    "faction": "corsair",
    "pick": "painted/vesh.webp",
    "alts": [
+    "alts/vesh_pre68.webp",
     "alts/vesh_p64alt1.webp"
    ],
-   "source": "p64/corsair_vesh_s23_oil50_zi2i_s23_00001_.png",
-   "alt_sources": [
-    "p64/corsair_vesh_s51_oil50_zi2i_s51_00001_.png"
+   "source": "v64b/corsair_vesh_nohorn_s11_00001_.png",
+   "crop": [
+    0.69,
+    0.33,
+    0.6
    ],
-   "note": "R64 void hunter: rust mane, a harness of collected plates (crystal, violet machine plating), welding torch. s11 face read as a metal helmet."
+   "note": "R68: Vesh at a forge bench welding with a blue arc (v64h5 s11)."
   },
   "thorne": {
    "faction": "ithar",

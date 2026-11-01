@@ -25,9 +25,9 @@ ADM = {
             'R68: Saro (vaelen) in the observatory, focusing a beam through a lens; faceless edit of the s73 render (v64g3 nf1 s23).'),
  # Hullbreakers (v64h2 bodies and settings, v64h4 matte living scales on the head, v64h5 horns and tusks taken off)
  'grax': ('corsair', 'v64b/corsair_grax_nohorn_s11', (0.55, 0.37, 0.72), 'R68: Grax slumped on a scrap throne under hanging trophies (v64h5 s11).'),
- 'sable': ('corsair', 'v64b/corsair_sable_nohorn_s23', (0.64, 0.34, 0.72), 'R68: Sable in a red-lit airlock corridor with a long knife (v64h5 s23).'),
- 'mott': ('corsair', 'v64b/corsair_mott_nohorn_s11', (0.62, 0.37, 0.72), 'R68: Mott in a hangar of salvage, sparks and a gutted hull (v64h5 s11).'),
- 'vesh': ('corsair', 'v64b/corsair_vesh_nohorn_s11', (0.62, 0.34, 0.72), 'R68: Vesh at a forge bench welding with a blue arc (v64h5 s11).'),
+ 'sable': ('corsair', 'v64b/corsair_sable_nohorn_s23', (0.71, 0.33, 0.58), 'R68: Sable in a red-lit airlock corridor with a long knife (v64h5 s23).'),
+ 'mott': ('corsair', 'v64b/corsair_mott_nohorn_s11', (0.70, 0.35, 0.60), 'R68: Mott in a hangar of salvage, sparks and a gutted hull (v64h5 s11).'),
+ 'vesh': ('corsair', 'v64b/corsair_vesh_nohorn_s11', (0.69, 0.33, 0.60), 'R68: Vesh at a forge bench welding with a blue arc (v64h5 s11).'),
  # Hegemony (e64e) and Crusade, Chorus and Eclipse: their approved paintings moved into new settings by an edit (e64)
  'matriarch': ('chorus', 'e64/matriarch_v64_s11', None, 'R68: the Matriarch above a planet it is consuming, spores falling into the air.'),
  'mending': ('chorus', 'e64/mending_v64_s11', None, 'R68: the Mending nested in the gutted hull of a captured warship.'),
