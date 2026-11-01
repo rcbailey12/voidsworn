@@ -199,6 +199,22 @@ def e64c_items(seeds=(37, 51)):
         out += [{'id': i, 'kind': 'v64', 'seed': sd, 'src': src, 'prompt': PS.edit_prompt(i, f, nem) + PS.CLEAN} for sd in seeds]
     return out
 
+# v64h4 (Nov 1, P helper 3): v64h2 has the right beast bodies, settings and poses, but the head plates paint as rusty riveted metal
+# caps (the palette's "rust" and the riveted harness bleed onto the face); v64h3 (Ryan's A1 picture edited into each setting) kept
+# the A1 face but gave every character a bare bodybuilder chest and the same snarl, so it is dropped. v64h4 edits the best v64h2
+# render of each character so only the head plates turn to matte living horn. -> comfy_io\\PORTRAITS\\v64b\\<id>_horn_s<seed>.
+H4_SRC = {'corsair_grax': 11, 'corsair_sable': 51, 'corsair_mott': 51, 'corsair_vesh': 51, 'nem_corsair_1': 11, 'nem_corsair_2': 51,
+          'nem_corsair_3': 61, 'nem_corsair_4': 11, 'nem_corsair_5': 51, 'nem_corsair_6': 51}
+HORN = ("Change only the head of this creature: every plate on its face and head becomes living horn, dull and matte grey-brown like a "
+        "pangolin's scales or old tortoiseshell, uneven and organic, grown from the skin, with dark leathery skin in the creases between "
+        "the plates. No rivets, bolts or shine on the head. Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, "
+        "lighting and oil-painting style; change nothing else.")
+HORN_EXTRA = {'nem_corsair_4': " Also turn the bright white moon behind it into a black disc ringed by a thin band of pale light."}
+def v64h4_items(seeds=(11, 23)):
+    return [{'id': t, 'kind': 'horn', 'seed': sd, 'src': 'v64b/%s_v8_s%d_oil_zi2i_s%d_00001_.png' % (t, s, s),
+             'prompt': HORN + HORN_EXTRA.get(t, '') + ' The paint surface stays smooth and even, with no noise, speckle or pixels.'}
+            for t, s in H4_SRC.items() for sd in seeds]
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -246,3 +262,5 @@ if __name__ == '__main__':
         print(tag, len(e64_items(facs)))
     json.dump({'out': 'e64', 'budget_s': 1100, 'items': e64c_items()}, open(os.path.join(B, 'e64c.json'), 'w'), indent=1)
     print('e64c', len(e64c_items()))
+    json.dump({'out': 'v64b', 'budget_s': 1100, 'items': v64h4_items()}, open(os.path.join(B, 'v64h4.json'), 'w'), indent=1)
+    print('v64h4', len(v64h4_items()))
