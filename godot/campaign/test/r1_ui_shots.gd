@@ -3,6 +3,7 @@
 # Same profile, seed and steps every time: 100 renown, only Vex bought, War chest I unlocked.
 # a1/a2 the admiral screen (Hegemony, then the Sunward Crusade), b1 Progression on the Legacy tab,
 # c1 a shipyard with the starting fleet, c2 the same shipyard with a sector flagship hull in the fleet (no shop price).
+# t1, a0, t2 (when the build has the playtest switch): the title and the admiral screen with "everything unlocked" on, then the title with it off.
 extends SceneTree
 const CampaignScript = preload("res://campaign/campaign.gd")
 const UIScript = preload("res://ui/campaign/campaign_ui.gd")
@@ -39,6 +40,11 @@ func _run() -> void:
 	BattleAPI.JSM.rnd_seed(4242)
 	var M = C.META
 	M["renown"] = 100; M["admirals"] = {"vex": true}; M["unlocked"] = {"chest1": true}
+	if C.has_method("set_playtest_all"):   # Ryan's Nov 1 playtest switch: first with it on (the game's default), then off for the progression shots
+		C.set_playtest_all(true)
+		C.titleScreen(); await _shot("t1_title_playtest_on")
+		C.act("newRunScreen"); C.act("pickFaction", "hegemony"); await _shot("a0_admiral_hegemony_playtest_on")
+		C.act("title"); C.set_playtest_all(false); C.titleScreen(); await _shot("t2_title_playtest_off")
 	C.titleScreen(); C.act("newRunScreen"); C.act("pickFaction", "hegemony"); await _shot("a1_admiral_hegemony")
 	C.act("pickFaction", "voidsworn"); await _shot("a2_admiral_crusade")
 	C.act("title"); C.act("legacy"); C.act("progTab", "legacy"); await _shot("b1_progression_legacy")

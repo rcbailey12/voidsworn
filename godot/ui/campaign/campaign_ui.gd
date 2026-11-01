@@ -94,6 +94,7 @@ func _font(p: String) -> Font:
 
 func bind(campaign) -> void:
 	C = campaign
+	if "playtest_default" in C: C.playtest_default = true   # R1 (Ryan, Nov 1): the real game opens with everything unlocked for playtests; the player can switch it off
 	C.changed.connect(func(): _dirty = true)
 	_dirty = true
 
@@ -312,6 +313,14 @@ func _title() -> Control:
 	for b in menu.get_children():
 		if b is Button: b.add_theme_font_size_override("font_size", px(18)); b.custom_minimum_size.y = px(46)
 	var mc = CenterContainer.new(); mc.add_child(menu); v.add_child(mc)
+	if C.has_method("playtestAll"):   # R1 (Ryan, Nov 1): the playtest switch, one plain line and a toggle (not a campaign act, so parity is untouched)
+		var on = C.playtestAll()
+		var pl = lbl("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants). " + ("On." if on else "Off: unlock them with renown."), 16, GILT if on else BONE3)
+		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(pl)
+		var pb = Button.new(); pb.text = "Switch playtest unlocks " + ("off" if on else "on"); pb.focus_mode = Control.FOCUS_ALL
+		pb.add_theme_font_size_override("font_size", px(15))
+		pb.pressed.connect(func(): C.set_playtest_all(not C.playtestAll()); C.titleScreen())
+		var pc = CenterContainer.new(); pc.add_child(pb); v.add_child(pc)
 	var st = C.META["stats"]; var best = float(C.z0(st.get("best"))); var wins = int(C.z0(st.get("wins")))
 	if best > 0:
 		var t = "Best: sector " + C.roman(min(3, best)) + ((" · " + str(wins) + " full victor" + ("ies" if wins > 1 else "y")) if wins > 0 else "")

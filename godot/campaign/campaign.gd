@@ -1182,7 +1182,22 @@ func _mine() -> Array:
 # R1 (PROG-6): an admiral is yours when bought or when it costs nothing (each faction's first admiral); only yours can be picked or launched
 func admiralOwned(id) -> bool:
 	var a = ADMIRALS.get(id)
-	return a != null and (jt(META["admirals"].get(id)) or not (float(z0(a.get("cost"))) > 0))
+	return a != null and (playtestAll() or jt(META["admirals"].get(id)) or not (float(z0(a.get("cost"))) > 0))
+# R1 (Ryan, Nov 1 11:54: "A for now for play tests"): the playtest switch. On, every admiral, the Legacy hull unlocks (carriers,
+# battleships, the dreadnought) and every hull variant count as owned; renown, the unlock buttons and META underneath are untouched,
+# so switching it off restores the R62 progression. Godot only: the browser oracle has no switch, so playtest_default stays false
+# for the parity harnesses; campaign_ui.gd (the real game) turns the default on. The player's choice lives in META.opts.playtestAll.
+var playtest_default := false
+const PLAYTEST_HULLS = ["u_carrier", "u_battleship", "u_dread"]
+func playtestAll() -> bool:
+	if META == null: return false
+	var o = META.get("opts") if META.get("opts") is Dictionary else {}
+	return jt(o.get("playtestAll")) if o.has("playtestAll") else playtest_default
+func set_playtest_all(on: bool) -> void:
+	if not (META.get("opts") is Dictionary): META["opts"] = {}
+	META["opts"]["playtestAll"] = on; persist_save(true)
+func legacyHullOn(id) -> bool: return jt(META["unlocked"].get(id)) or (playtestAll() and PLAYTEST_HULLS.has(id))
+func variantOwned(vid) -> bool: return playtestAll() or (META.get("variants") != null and jt(META["variants"].get(vid)))
 func admiralScreen() -> void:
 	var mine = _mine()
 	if not mine.has(picked_admiral) or not admiralOwned(picked_admiral):
@@ -1424,9 +1439,9 @@ func _has_num(arr: Array, x) -> bool:
 func shipyardStock(n: Dictionary) -> Dictionary:
 	if jt(n.get("stock")): return n["stock"]
 	var hulls = ["warden", "harrow", "penitent"]
-	if jt(META["unlocked"].get("u_carrier")): hulls.append("reliquary")
-	if jt(META["unlocked"].get("u_battleship")): hulls.append("cathedral")
-	if jt(META["unlocked"].get("u_dread")): hulls.append("ascendant")
+	if legacyHullOn("u_carrier"): hulls.append("reliquary")
+	if legacyHullOn("u_battleship"): hulls.append("cathedral")
+	if legacyHullOn("u_dread"): hulls.append("ascendant")
 	var own = []
 	for h in hulls:
 		var e = equivHull(h, RUN["fac"])
@@ -1435,7 +1450,7 @@ func shipyardStock(n: Dictionary) -> Dictionary:
 	var pickH = ssort(shuffle(hulls.duplicate()).slice(0, 3), func(a, b): return float(or_(HULLS[a].get("cp"), 1)) - float(or_(HULLS[b].get("cp"), 1)))
 	for h in pickH.duplicate():
 		for vid in HULL_VARIANTS.keys():
-			if HULL_VARIANTS[vid]["base"] == h and META.get("variants") != null and jt(META["variants"].get(vid)): pickH.insert(pickH.find(h) + 1, vid)
+			if HULL_VARIANTS[vid]["base"] == h and variantOwned(vid): pickH.insert(pickH.find(h) + 1, vid)
 	n["stock"] = {"hulls": pickH, "mods": shuffle(modulePool()).slice(0, 3), "sold": []}
 	return n["stock"]
 func shipyardScreen(n) -> void:
