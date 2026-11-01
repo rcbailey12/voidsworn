@@ -2,7 +2,7 @@
 
 Written by L (lore rollout helper). Source of truth: `lore_bible_r8.md` and the canonical table in `contrib/opus/briefs/lore_rollout_2026-10-27.md`. This file supersedes `rename_map.md` (Oct 26): its inventory of where strings live was reused, its new names were not (Brand, Flux, Verdict arc, Chord lance, Deathless Court, writ/warrant/edict, the Court words and others are all retired).
 
-**Read at:** main `72b1535` (first written at `e243729`; Where cells re-grepped at `72b1535`, and a cell starting "applied:" means the owner has already made that change) (every Where cell below was produced by grepping the exact Old string at that commit; `(not found)` would mean the row is stale). Generated files are not listed and follow by re-export: `godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`, the oracle copies under `godot/*/test/oracle/`, and `voidsworn-3d.html`.
+**Read at:** main `10c9c65` (first written at `e243729`; Where cells re-grepped at `10c9c65`, and a cell starting "applied:" means the owner has already made that change) (every Where cell below was produced by grepping the exact Old string at that commit; `(not found)` would mean the row is stale). Generated files are not listed and follow by re-export: `godot/rules/data/tables.json`, `godot/campaign/data/campaign_tables.json`, the oracle copies under `godot/*/test/oracle/`, and `voidsworn-3d.html`.
 
 ## Rules for whoever applies a row
 
@@ -490,7 +490,7 @@ L rewrites `godot/story/` to round 8 in Job 2 (arcs, outlines, titles, unlocks, 
 | `"unlock_name": "Archive wraithcarrier"` | "unlock_name": "Ringing aperture" | applied: godot/story/data/arcs.json:106 | L | |
 | `"unlock_name": "Court guard destroyer"` | "unlock_name": "Archive guard flare" | applied: godot/story/data/arcs.json:127 | L | Already differed from data.js ("Jackal court guard"); both now say Archive guard flare. |
 | `Lances and gauss guns make up` | Lances and null guns make up | applied: godot/story/data/titles.json:10 | L | Title rule text. |
-| `"Warlord Grax Ironjaw` | "Warlord Grax Steelgrin | (the owner reworded this line since the map was written: recheck by hand) | see note | Test fixtures and README sample. |
+| `"Warlord Grax Ironjaw` | "Warlord Grax Steelgrin | applied (now "Warlord Grax Ironmaw", section 16) | L | Test fixtures and README sample. |
 | `Admiral Castellan Vex` | Admiral Roderic Vex | applied: data.js:205; tools/portraits/make_batches.py:41; godot/story/story.gd:155,181; godot/story/test/story_test.gd:233,235 | B, P, L | Test fixtures and comments (data.js row is in 6). |
 | `const FEMININE := [` | (list rewritten to the new pools) | godot/story/tokens.gd:19 | L | tokens.gd pronoun fallback: drop Isolde, Mireille, Serafine, Maren, Ilsa, Aelith, Ilyra, Nyssa, Saelune, Eluned, Faewyn, Liraen, Ysolde, Tauret, Nefrah, Khepset; add Mathilde, Sabine, Rosalind, Margery, Clemence, Marit, Margit, Ida, Hedda, Agathe, Edda, Tamsa, Ilvy, Ressa, Nell, Sefa, Orra, Desmae, Imra, Rhosse, Altheve, plus the Nemesis prefixes from NEM_FAC fem lists. |
 
@@ -524,6 +524,53 @@ Source: contrib/muse/reviews/rollout_audit_2026_10_27.md, "Ryan's rulings" and t
 | `'Sac-mother','Thornback','Tidehunger'` | 'Sac-mother','Sour Spine','Tidehunger' | ui3d.js:21 | B | Ruling 6: Thornback is a Tyranid name. |
 | `'Glass Heron','Moonveil','Far Focus'` | 'Glass Heron','Still Glass','Far Focus' | ui3d.js:22 | B | Ruling 6: Moonveil is an Elden Ring sword. |
 | `'Black Anvil','Acceptable Loss','Burning Spire'` | 'Black Anvil','Debt Paid','Burning Spire' | data.js:254 | B | Oct 28 ruling: swap it out; "Debt Paid" is the chair's suggestion on record (vetoable). Bible 2.10's sample list still names Acceptable Loss: Opus's file. |
+
+## 17. Small renames accepted by Opus (Oct 31)
+
+From L's read of the Muse reviews (lore_rollout_notes.md section 3), accepted by Opus. B applies them in data.js; G1 and G3 get them by re-exporting the tables.
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `n:'Founders’ salvage'` | n:'Founders\u2019 cache' | data.js:249 | B | Legacy unlock; the item-type word stays out of item names. |
+| `logbook:'The Archive'` | logbook:'Archive extract' | data.js:271 | B | Eclipse logbook item; "the Archive" stays the place. |
+| `phylactery:{n:'Eclipse backup frame'` | phylactery:{n:'Backup frame' | data.js:193 | B | Text pack T-07: the base name shows for every faction. Eclipse's own name stays Second Ignition. |
+
+Nemesis cards in neutral words (text pack T-30 to T-60), because the Nemesis can be he, she or it. Repeated sentences are listed once and apply at every place they occur:
+
+| Old | New | Where | Owner | Note |
+|---|---|---|---|---|
+| `His ships take 25% more damage on rear-arc hits.` | Enemy ships take 25% more damage on rear-arc hits. | data.js:429 | B | Text pack T-30 (INV-0899). |
+| `Ion and lance hits strip 50% more shield from his ships.` | Ion and lance hits strip 50% more shield from enemy ships. | data.js:430 | B | Text pack T-31 (INV-0901). |
+| `Torpedoes are 15 easier to land on his ships.` | Torpedoes are 15 easier to land on enemy ships. | data.js:431 | B | Text pack T-32 (INV-0903). |
+| `His ships carry 30% fewer crew to repel boarders.` | Enemy ships carry 30% fewer crew to repel boarders. | data.js:432 | B | Text pack T-33 (INV-0905). |
+| `His ships aim 10 worse at targets 2 hexes away or closer.` | Enemy ships aim 10 worse at targets 2 hexes away or closer. | data.js:433 | B | Text pack T-34 (INV-0907). |
+| `His escorts break and flee once his flagship falls below 60% hull.` | Enemy escorts break and flee once the flagship falls below 60% hull. | data.js:434 | B | Text pack T-35 (INV-0909). |
+| `His ships have 1 less movement.` | Enemy ships have 1 less movement. | data.js:435 | B | Text pack T-36 (INV-0911). |
+| `His ships aim 6 better.` | Enemy ships aim 6 better. | data.js:450 | B | Text pack T-37 (INV-0913). |
+| `His ships have 8% more armor.` | Enemy ships have 8% more armor. | data.js:450 | B | Text pack T-38 (INV-0915). |
+| `His ships have 1 more movement.` | Enemy ships have 1 more movement. | data.js:450 | B | Text pack T-39 (INV-0917). |
+| `His ships have 12% more hull.` | Enemy ships have 12% more hull. | data.js:451 | B | Text pack T-40 (INV-0919). |
+| `His ships have 10% more critical chance.` | Enemy ships have 10% more critical chance. | data.js:451 | B | Text pack T-41 (INV-0921). |
+| `His ships have 20% more shields.` | Enemy ships have 20% more shields. | data.js:437,451 | B | Text pack T-42 (INV-0923). |
+| `His ships carry 30% more crew.` | Enemy ships carry 30% more crew. | data.js:452 | B | Text pack T-43 (INV-0925). |
+| `His ships regrow 4 more hull each turn.` | Enemy ships regrow 4 more hull each turn. | data.js:452 | B | Text pack T-44 (INV-0927). |
+| `His carriers field one more wing.` | Enemy carriers field one more wing. | data.js:452 | B | Text pack T-45 (INV-0929). |
+| `One more of his ships reassembles after falling.` | One more enemy ship reassembles after falling. | data.js:453 | B | Text pack T-46 (INV-0931). |
+| `His ships are 8 harder to hit.` | Enemy ships are 8 harder to hit. | data.js:453 | B | Text pack T-47 (INV-0933). |
+| `His guns reach 1 hex further.` | Enemy guns reach 1 hex further. | data.js:453 | B | Text pack T-48 (INV-0935). |
+| `His ships deal 12% more damage to a ship next to them.` | Enemy ships deal 12% more damage to a ship next to them. | data.js:454 | B | Text pack T-49 (INV-0937). |
+| `His torpedoes reload a turn faster.` | Enemy torpedoes reload a turn faster. | data.js:454 | B | Text pack T-50 (INV-0939). |
+| `Two of his ships bolt on point defense.` | Two enemy ships bolt on point defense. | data.js:438 | B | Text pack T-52 (INV-0944). |
+| `His ships have 10% more armor.` | Enemy ships have 10% more armor. | data.js:439 | B | Text pack T-53 (INV-0947). |
+| `His ships have 8 more evasion.` | Enemy ships have 8 more evasion. | data.js:440 | B | Text pack T-54 (INV-0950). |
+| `His ships aim 8 better.` | Enemy ships aim 8 better. | data.js:441 | B | Text pack T-55 (INV-0953). |
+| `Bigger crew` | Bigger fleet | data.js:482 | B | Text pack T-56 (INV-1157 (corsair special, name)). |
+| `One more ship joins his fleet.` | One more ship joins the fleet. | data.js:482 | B | Text pack T-57 (INV-1158 (corsair special)). |
+| `One more of his ships reassembles.` | One more enemy ship reassembles. | data.js:483 | B | Text pack T-58 (INV-1160 (deathless special)). |
+| `His ships are 6 more harder to hit.` | Enemy ships are 6 harder to hit. | data.js:484 | B | Text pack T-59 (INV-1162 (ithar special)). |
+| `His ships regrow 3 more hull each turn.` | Enemy ships regrow 3 more hull each turn. | data.js:485 | B | Text pack T-60 (INV-1164 (chorus special)). |
+
+Kept on purpose (Opus, Oct 31): the Eclipse rule name "Archive restore" in the verb text (text pack T-05 not taken), and the Chorus captain name Lantern Gut.
 
 ## 13. Vetoable calls (L's picks where the bible is silent)
 
