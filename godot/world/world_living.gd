@@ -232,8 +232,10 @@ func _gas(ps: Array, storm: bool) -> void:
 		_set_flashes([])
 	else:
 		var b: Array = FLOOK.of(W._fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
-		var c1: Vector3 = b[1]
-		var c2: Vector3 = b[2]
+		# the setting's own nebula colours, pulled toward the violet every nebula hex carries (its edge, its tactical fill)
+		var vio := Vector3(0.62, 0.42, 1.0)
+		var c1: Vector3 = (b[1] as Vector3).lerp(vio * (b[1] as Vector3).length() / vio.length(), 0.5)
+		var c2: Vector3 = (b[2] as Vector3).lerp(vio * (b[2] as Vector3).length() / vio.length(), 0.45)
 		m.set_shader_parameter("c_dark", c1 * 0.18)
 		m.set_shader_parameter("c_lit", c1.lerp(c2, 0.4) * 0.9)
 		m.set_shader_parameter("c_glow", c2)
