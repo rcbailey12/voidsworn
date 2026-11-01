@@ -42,7 +42,7 @@ WEAPONS = {
     'craft|fighter': [('guns', 'T')], 'craft|bomber': [('bombs', 'T')], 'craft|spore': [('sporeb', 'T')],
     'obj|station': [], 'obj|transport': [], 'obj|beacon': [],
 }
-KEYS = {'refine', 'plates', 'compose', 'reshape', 'loft', 'pitch', 'roll_deg', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
+KEYS = {'refine', 'plates', 'compose', 'reshape', 'straighten', 'loft', 'pitch', 'roll_deg', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
        'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_array', 'hook_prow', 'boom', 'prow_face', 'command_block', 'radiator_bank', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
 SIZES = {'S', 'M', 'L', 'XL'}
@@ -204,7 +204,10 @@ SHIPS['C16s_23'] = dict(
 # Voidsworn (grimdark black steel, ember glow; bilateral). Flagship first: V1b_r_23 is the K1 "Basilica" proof manifest.
 SHIPS['V1b_r_23'] = dict(
     fac='voidsworn', cls='Dreadnought', name='Daybreak-class dreadnought', sym='bilateral',
-    reshape=[dict(x0=0.25, tip=.50, power=2.5, fair=12, cut=.47)],   # pass 5: faired, deck nearly level, square-cut prow (no droop)   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
+    reshape=[dict(x0=0.25, tip=.50, power=2.5, fair=12, cut=.47, beam=.45)],   # Oct 31 (Ryan, Muse audit: blunt from the side, still pointed from
+    # the top): beam holds the top view to a taper ending in a prow face about 45% of the hull's width at x0
+    straighten=dict(iters=16, sigma=.005),   # Oct 31 (Ryan: 'a weird wavy effect'): the AI hull's lengthwise wobble evened out (reshape.straighten)
+   # pass 5: faired, deck nearly level, square-cut prow (no droop)   # Oct 27 (Opus, owner Oct 24 hull-shape ruling): raked stem, sheer deck and forefoot become a chisel wedge
     spires=dict(zmin=-.03, exclude_x=.40, style='radiator'),                     # the A2 rebuild: melted AI pinnacles cut and rebuilt crisp
     cuts=[dict(name='domes', box=(-.215, .035, -.042, .042, -.046, .12)),        # AI dome turrets along the spine
           dict(name='bowspike', box=(.400, .432, -.012, .012, -.036, .30)),     # pass 3: the thin upright spike on the prow read as a jackstaff
@@ -228,6 +231,7 @@ SHIPS['V1b_r_23'] = dict(
 
 SHIPS['V17_37'] = dict(
     fac='voidsworn', cls='Battleship', name='Bastion-class battleship', sym='bilateral',
+    straighten=dict(iters=16, sigma=.005),   # Oct 31 (Ryan: 'a weird wavy effect'): the AI hull's lengthwise wobble evened out
     cuts=[dict(name='horns', dir='aft', level=.36, max_w=.035, min_ratio=1.5),   # thin curved AI horns trailing off the stern
           dict(name='hornsup', dir='up', level=.03, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03),
           dict(name='hornsdn', dir='down', level=.05, box=(-.52, -.28, -.2, .2, -1, 1), max_w=.03),
@@ -245,6 +249,7 @@ SHIPS['V17_37'] = dict(
 
 SHIPS['V14_23'] = dict(
     fac='voidsworn', cls='Frigate', name='Warden-class frigate', sym='bilateral',
+    straighten=dict(iters=16, sigma=.005),   # Oct 31 (Ryan: 'a weird wavy effect'): the AI hull's lengthwise wobble evened out
     yaw=2,  # meshed back to front: the twin ring nozzles sat at +x (the bow) in hulls_hi; the concept has them aft
     spires=dict(zmin=.035, style='radiator'),
     cuts=[dict(name='basin', box=(.09, .29, -.056, .056, -.03, .12)),          # pass 5 (Muse audit): the rippled AI basin round the turret,
@@ -257,6 +262,7 @@ SHIPS['V14_23'] = dict(
 
 SHIPS['V15_37'] = dict(
     fac='voidsworn', cls='Destroyer', name='Harrow-class destroyer', sym='bilateral',
+    straighten=dict(iters=16, sigma=.005),   # Oct 31 (Ryan: 'a weird wavy effect'): the AI hull's lengthwise wobble evened out
     cuts=[dict(name='sticks', dir='aft', level=.36, max_w=.03, min_ratio=1.5),   # thin AI prongs trailing off the stern
           dict(name='sternblob', box=(-.52, -.40, -.065, .065, -.055, .05))],     # melted engine block: rebuilt as bells
     kit=[('spinal', 'torp', .25, 0, 0, 'top', dict(size='M', slot=0, wkind='torp', arc='F', tubes=2)),
@@ -267,6 +273,7 @@ SHIPS['V15_37'] = dict(
 
 SHIPS['V16_37'] = dict(
     fac='voidsworn', cls='Cruiser', name='Vigil-class cruiser', sym='bilateral',
+    straighten=dict(iters=16, sigma=.005),   # Oct 31 (Ryan: 'a weird wavy effect'): the AI hull's lengthwise wobble evened out
     yaw=2,  # meshed back to front: the twin engine nacelles sat at +x and the fins swept toward +x; the concept flies the dart point first
     kit=[('casemate', 'bt', .06, 0, -.01, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='battery', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'bt2', -.08, 0, -.01, 'port', dict(size='M', barrels=2, slot=0, slot_m=1, wkind='battery', arc='P', aim=(.26, .97, 0), pair=True)),
@@ -277,6 +284,7 @@ SHIPS['V16_37'] = dict(
 
 SHIPS['V18_51'] = dict(
     fac='voidsworn', cls='Carrier', name='Hearth-class carrier', sym='bilateral',
+    straighten=dict(iters=16, sigma=.005),   # Oct 31 (Ryan: 'a weird wavy effect'): the AI hull's lengthwise wobble evened out
     spires=dict(zmin=.035, style='radiator'),                                       # the melted tine racks rebuilt as crisp pinnacles
     kit=[('turret', 'tt', .22, 0, 0, 'top', dict(size='M', barrels=2, slot=0, wkind='turret', arc='T', lift=.004)),
          ('turret', 'fl', -.12, .07, 0, 'top', dict(size='S', barrels=2, slot=1, wkind='flak', arc='T', pair=True)),
@@ -289,7 +297,9 @@ SHIPS['V18_51'] = dict(
 # Hegemony (clean light-grey navy with blue trim; parade finish; bilateral)
 SHIPS['H4_11'] = dict(
     fac='hegemony', cls='Super-dreadnought', name='Dominion dreadnought', sym='bilateral',
-    reshape=[dict(x0=0.22, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
+    reshape=[dict(x0=0.22, tip=.50, power=2.5, cut=.465)],   # pass 5
+    straighten=dict(iters=16, sigma=.005),   # Oct 31: lengthwise wobble evened out
+    #   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='tfore', box=(.195, .325, -.052, .052, -.084, .10)),          # AI U-shaped turret blobs: rebuilt as turrets
           dict(name='taft', box=(-.365, -.235, -.052, .052, -.090, .10)),
           dict(name='tower', box=(-.135, .015, -.046, .046, -.022, .40))],      # pass 5 (Opus): the stacked tower with antenna crossbars (pagoda mast)
@@ -310,7 +320,9 @@ SHIPS['H4_11'] = dict(
 
 SHIPS['H10_23'] = dict(
     fac='hegemony', cls='Battleship', name='Dominion-class battleship', sym='bilateral',
-    reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
+    reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5
+    straighten=dict(iters=16, sigma=.005),   # Oct 31: lengthwise wobble evened out
+    #   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='tiers', box=(-.275, .005, -.052, .052, .031, .40))],      # pass 5 (Opus): the tiered wedding-cake bridge above its first deck
     kit=[('casemate', 'ht', .0, 0, -.045, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
          ('casemate', 'ht2', .17, 0, -.045, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),  # pass 2: on the side band (probe)
@@ -327,7 +339,9 @@ SHIPS['H10_23'] = dict(
 
 SHIPS['H7_23'] = dict(
     fac='hegemony', cls='Frigate', name='Hegemony picket', sym='bilateral',
-    reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
+    reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5
+    straighten=dict(iters=16, sigma=.005),   # Oct 31: lengthwise wobble evened out
+    #   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='mast', box=(-.185, -.035, -.036, .036, .060, .40))],      # pass 5 (Opus): the small mast tower
     kit=[('spinal', 'las', .30, 0, 0, 'top', dict(size='M', slot=0, wkind='laser', arc='F', length=3.0)),
          ('turret', 'fl', -.05, .075, 0, 'top', dict(size='S', barrels=2, slot=1, wkind='flak', arc='T', pair=True)),
@@ -339,7 +353,9 @@ SHIPS['H7_23'] = dict(
 
 SHIPS['H8_23'] = dict(
     fac='hegemony', cls='Destroyer', name='Cordon destroyer', sym='bilateral',
-    reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
+    reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5
+    straighten=dict(iters=16, sigma=.005),   # Oct 31: lengthwise wobble evened out
+    #   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='aftgun', box=(-.52, -.235, -.045, .045, .0, .12)),           # AI turret whose long barrel aimed aft (no ship fires backward)
           dict(name='mast', box=(-.20, -.075, -.04, .04, .052, .40))],          # pass 5 (Opus): the small mast tower
     kit=[('turret', 'tb', -.29, 0, 0, 'top', dict(size='M', barrels=2, slot=1, wkind='turbo', arc='T', lift=.004)),
@@ -352,7 +368,9 @@ SHIPS['H8_23'] = dict(
 
 SHIPS['H9_23'] = dict(
     fac='hegemony', cls='Cruiser', name='Vanguard cruiser', sym='bilateral',
-    reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
+    reshape=[dict(x0=0.2, tip=.50, power=2.5, cut=.465)],   # pass 5
+    straighten=dict(iters=16, sigma=.005),   # Oct 31: lengthwise wobble evened out
+    #   # pass 5 (Ryan: the straight slope drooped): deck nearly level, square-cut prow
     cuts=[dict(name='aftguns', box=(-.43, -.245, -.05, .05, .062, .20)),         # AI twin-gun block aimed aft (no ship fires backward); pass 2: floor
                                                                                     # at the deck (z .03 cut through it and the patch came out a stretched fan)
           dict(name='bridge', box=(-.245, -.035, -.056, .056, .064, .20))],       # pass 2: the melted AI bridge lump, rebuilt by hand

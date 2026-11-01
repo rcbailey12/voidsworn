@@ -51,6 +51,12 @@ def build_hull(root, code, cfg):
             nm = reshape.flat_bow(h['pos'], idx, **spec); x0_ = spec['x0'] - .02
             vn = reshape.vertex_normals(h['pos'], idx); sel_ = h['pos'][:, 0] > x0_; h['nor'][sel_] = vn[sel_]
             log('reshaped bow from x', spec['x0'], nm, 'vertices')
+    if cfg.get('straighten'):  # Oct 31: even out the AI hull's lengthwise wobble (reshape.straighten), then fresh normals where it moved
+        import reshape
+        p_before = h['pos'].copy(); p99, pmax = reshape.straighten(h['pos'], idx, **cfg['straighten'])
+        mv_ = np.linalg.norm(h['pos'] - p_before, axis=1) > 2e-5  # keep the AI's own normals (and hard edges) where nothing moved
+        vn = reshape.vertex_normals(h['pos'], idx); h['nor'][mv_] = vn[mv_]
+        log(f'straightened: 99% of vertices moved under {p99:.4f}, most {pmax:.4f}')
     p, n, i, u = hullio.pn_refine(h['pos'], h['nor'], idx, [h['uv2']], **cfg.get('refine', {}))  # refine: lighter for a welded composite
     uv = u[0].copy(); uv[:, 1] = 1 - uv[:, 1]
     o = blmesh.mesh_from_arrays('hull', p, i, nor=n, uvs={'atlas': uv})
@@ -381,6 +387,7 @@ def main():
         log('built (no bake)', round(time.time() - t0), 's'); return
     a2_ship.make_uv0(ship)
     info = dict(lo=tuple(H.lo), hi=tuple(H.hi), up=(0, 0, 1), needle=cfg.get('needle', .06), engine=not any(x['extras']['kind'] == 'engine' for x in hps))
+    if cfg.get('reshape'): info['fresh_x0'] = min(r_['x0'] for r_ in cfg['reshape']) + .02  # the AI maps fade out over the reshaped bow
     mat, socks = bakemat4.build(ship, fac, h['tex'][0], h['tex'][1], info)
     tex_dir = os.path.join(outdir, 'tex'); os.makedirs(tex_dir, exist_ok=True)
     maps = a2_ship.bake_all(ship, mat, socks, res, tex_dir, code, samples); meta['maps'] = maps

@@ -110,12 +110,17 @@ def build(o, fac, nmap, mmap, info):
     X, Y, Z = g.sep(obj); NX, NY, NZ = g.sep(gn)
     # occlusion: hull = baked AO from the full-detail mesh; everything also gets Cycles AO (parts sitting on the hull, plates on plates)
     ao_node = g.n('ShaderNodeAmbientOcclusion'); ao_node.inputs['Distance'].default_value = .012; ao_node.samples = 16
-    ao_h = g.add(g.mul(hull, g.rng(sm.outputs[0], 0, 1, LOOK[fac].get('ao_floor', 0.0), 1)), part)  # 1 on parts
+    # Oct 31 (Ryan: 'a weird wavy effect'): where reshape.flat_bow moved the hull, the AI's baked AO, curvature and normal maps no longer
+    # match the surface (ghost ripples painted onto a faired bow). 'fresh' fades those maps out there; the bow keeps the procedural seams
+    fx0 = info.get('fresh_x0')
+    fresh = g.mul(hull, g.smooth(X, fx0, fx0 + .05)) if fx0 is not None else 0.0
+    keep = g.math('SUBTRACT', 1.0, fresh)
+    ao_h = g.add(g.mul(hull, g.add(g.mul(g.rng(sm.outputs[0], 0, 1, LOOK[fac].get('ao_floor', 0.0), 1), keep), fresh)), part)  # 1 on parts
     ao = g.mul(ao_h, g.rng(ao_node.outputs['AO'], 0, 1, .35, 1.0))
     # curvature: hull from the map (G - .5); parts from the bevel normal (worn plate edges)
     bv = g.n('ShaderNodeBevel'); bv.inputs['Radius'].default_value = .0006; bv.samples = 8
     edge_p = g.rng(g.vmath('DOT_PRODUCT', bv.outputs[0], gn), .99, .80, 0, .2)
-    curv = g.add(g.mul(hull, g.math('SUBTRACT', sm.outputs[1], .5)), g.mul(part, edge_p))
+    curv = g.add(g.mul(g.mul(hull, keep), g.math('SUBTRACT', sm.outputs[1], .5)), g.mul(part, edge_p))
     wear = g.mul(g.smooth(curv, .03, .18), g.rng(g.noise(obj, 60, 3), .35, .65, .2, 1.0))
     cavity = g.smooth(g.mul(curv, -1.0), .02, .15)
     # ---------------- albedo ----------------
@@ -236,7 +241,7 @@ def build(o, fac, nmap, mmap, info):
     # the baked hull shades black in patches; fade those texels back toward the true surface normal
     tame = g.smooth(g.vmath('DOT_PRODUCT', nm.outputs[0], gn), .30, .62)
     nmap_t = g.vmath('NORMALIZE', g.vmix(tame, gn, nm.outputs[0]))
-    nbase = g.vmix(hull, gn, nmap_t)
+    nbase = g.vmix(g.mul(hull, keep), gn, nmap_t)
     if fac in ('voidsworn', 'hegemony', 'corsair'):
         s1 = seams(g, obj, {'hegemony': 24, 'voidsworn': 20, 'corsair': 17}[fac], (1.0, 2.2, 2.2), 'CHEBYCHEV', .025)
         s2 = seams(g, obj, 60, (1.0, 1.8, 1.8), 'CHEBYCHEV', .03)
