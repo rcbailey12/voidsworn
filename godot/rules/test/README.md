@@ -18,8 +18,8 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
    - It fails (exit 1, nothing written) when a table the port reads is missing: it scans `godot/rules/*.gd` for `TB.NAME`, `TB["NAME"]` and `TB.get("NAME")` and checks each was exported (a table renamed, removed or turned into a function in the JS). The list goes into the file, and the Godot loader refuses a file that lacks one.
    - Non-integer numbers are written as exact IEEE hex.
    - The Godot loader recomputes a SHA-256 of the tables and refuses to run if it differs.
-   - What this check does not cover (Muse audit B1, Oct 27): it only proves that the tables the port reads exist. 131 tables are exported and the port reads 90. The other 41 are read by nothing in `godot/rules/`:
-     - JS-only battle UI text, which the port does not carry: `TERRAIN_INFO` (terrain legend), `FAC_RULES` (faction rule text), `CMD_HOLD` (Command tooltip), `WING_PERKS` (wing tooltip). G2's battle scene writes its own text.
+   - What this check does not cover (Muse audit B1, Oct 27): it only proves that the tables the port reads exist. 132 tables are exported and the port reads 90. The other 42 are read by nothing in `godot/rules/`:
+     - JS-only battle UI text, which the port does not carry: `CLS_NAME` (class display labels, Oct 31), `TERRAIN_INFO` (terrain legend), `FAC_RULES` (faction rule text), `CMD_HOLD` (Command tooltip), `WING_PERKS` (wing tooltip). G2's battle scene writes its own text.
      - battle.js encounter rolls, which G3 owns (`godot/campaign/campaign.gd`): `DEEP_MAPS`, `ENC_POOL`, `ENC_SPECIAL`, `FAC_REGION`, `REGIONS`.
      - Campaign data, read by G3's campaign from its own export and never by battle.js: `ARCHETYPES`, `ARC_VARIANT`, `BOON_NEED`, `CAP_FIRST`, `CAP_LAST`, `CLASS_TRACK_MAX`, `EVENTS`, `EVENT_FALLBACK`, `FAC_PRICE`, `FAC_WPOOL`, `FAVOUR_TIERS`, `FIT_SLOTS`, `HEAT`, `HULL_VARIANTS` (the variants reach battle merged into `HULLS`), `KILL_CAUSES`, `KIND_NAME`, `LEGACY`, `MASTERY_PERKS`, `MASTERY_XP`, `MOD_NAMES`, `MOD_NEED`, `NEM_CLOCK`, `NEM_TRAITS`, `NODE_MODS`, `RANKS`, `RELIC_NAMES`, `RUN_FACTIONS`, `RUN_WORD`, `SAVE_VERSION`, `SECTOR_POOL`, `STORE_KEY`, `WING_XP`.
      - `FNAMES` is read, but it is optional: the browser defines it, and the port falls back to `{}`.
@@ -61,7 +61,7 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 
 ## Latest record
 
-`contrib/opus/enginetest/results/g1_parity_2026-10-27/README.md`, headline at bdb1a9d. The oracle (battle.js, core.js, data.js) is byte-identical to cb55ec9. On Ryan's PC (lane B) and in the cloud: 48 of 48 golden battles, maths (316,090 inputs), PRNG, threat maps, threads and hard stop all PASS. The seed 9 sweep (200 battles) has 0 differences. On the PC, every enemy think time is inside the 0.5 s bar (worst 0.469 s, s23). Not covered, by design: the JS-only tooltip helpers and the encounter rolls, which G3 owns. Sweeps so far: 1,900 unique battles, 0 differences.
+`contrib/opus/enginetest/results/g1_parity_2026-10-27/README.md`, headline at a166af8. The oracle is byte-identical to main e80a6a0 (stream B steps 0 to 12, lore round 8 strings included). On Ryan's PC (lane B) and in the cloud: 48 of 48 golden battles, maths (316,090 inputs), PRNG, threat maps, threads and hard stop all PASS. The seed 10 sweep (200 battles) has 0 differences. On the PC, every enemy think time is inside the 0.5 s bar (worst 0.470 s, s23). Not covered, by design: the JS-only tooltip helpers and the encounter rolls, which G3 owns. Sweeps so far: 2,100 unique battles, 0 differences.
 
 ## Files
 

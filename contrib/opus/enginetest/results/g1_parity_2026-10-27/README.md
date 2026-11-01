@@ -2,7 +2,29 @@
 
 The Godot 4.7.2 rules port (`godot/rules/`) checked against the pinned JS oracle (`godot/rules/test/oracle/`). The PC logs are copied unchanged from `Downloads\voidsworn_test\queue_b\logs\`; only the line endings were changed.
 
-## Headline: bdb1a9d, PC lane B and cloud (Oct 27)
+## Headline: a166af8, PC lane B and cloud (Oct 31)
+
+**Commit:** a166af8. **Oracle:** `godot/rules/test/oracle/` battle.js, core.js and data.js are byte-identical to the game's files at a166af8 (main e80a6a0; the rules last changed in stream B f770e06, steps 0 to 12: pass 3 tuning, step 9's RAMP easing, and the lore round 8 strings steps 10 and 12). **Tables:** sha256 fdb2a4a21f76fc06, 132 exported, 90 read by the port. The godot/rules rows of `rename_map_final.md` are applied. The battle log is in every record's state, so the goldens check the new wording word for word.
+
+| Check | PC lane B (`g1_lb_parity_a166af8`, `g1_lb_sweep_a166af8`) | Cloud |
+|---|---|---|
+| PRNG, 10,000 draws from each of 3 seeds | 3 of 3 PASS | 3 of 3 PASS |
+| Maths, 316,090 inputs (26,030 of them big-argument sin and cos) | PASS, 0 differences | PASS, 0 differences |
+| Golden battles s1 to s48 (state hash and PRNG after every action) | 48 of 48 PASS | 48 of 48 PASS |
+| Threat overlay for s4, s19 and s23 | 3 of 3 PASS | 3 of 3 PASS |
+| Threads and the hard stop | PASS | PASS |
+| 200-battle random sweep, seed 10 | 200 of 200 identical, 33,988 records, 0 differ (14 min 56 s) | the same 200 battles and the same 33,988 records, 0 differ |
+| G3 campaign parity (G3's own check, against G3's own pinned JS) | 30 of 30 PASS | not run |
+
+PC enemy think time per activation (report only; the bar is about 0.5 s). All three are inside the bar: s4 0.115 s average / 0.312 s worst, s5 0.111 / 0.292 s, s23 0.092 / 0.470 s.
+
+**What this does not cover (JS-only by design):**
+- The battle tooltip and legend helpers: `factionTraitLines`, `cantFireReason`, `cmdNext`, `ramFrom`, `terrainPresent` and their tables (`TERRAIN_INFO`, `FAC_RULES`, `CMD_HOLD`, `WING_PERKS`). G2 writes its own text.
+- The encounter rolls in battle.js (`pickRegion`, `regionMap`, `fitEncounter`, `rollEncounter`, `bossEncounter`, and `DEEP_MAPS`, `ENC_POOL`, `ENC_SPECIAL`, `FAC_REGION`, `REGIONS`). G3 owns these.
+- `export_data.js` only checks that the tables the port reads exist. The tables nothing in `godot/rules/` reads (now 42, with the new `CLS_NAME`, which shows class labels in the UI) are listed in `godot/rules/test/README.md`.
+- G3's campaign check compares against G3's own pinned copy, which it updates on its own schedule.
+
+## Previous headline: bdb1a9d (Oct 27)
 
 **Commit:** bdb1a9d. **Oracle:** `godot/rules/test/oracle/` battle.js, core.js and data.js are all byte-identical to the game's files at cb55ec9 (stream B steps 0 to 7b), which are also the files at the root of bdb1a9d. **Tables:** sha256 bd6677a8f04c003b, 131 exported, 90 read by the port.
 
@@ -117,5 +139,6 @@ Each seed makes a different set of 200 battles (300 for seed 7). A seed run twic
 | 7 | 48638ef (oracle 59f13a5) | cloud | 300 | 54,785 | 0 |
 | 8 | f7789b1 (oracle cb55ec9) | PC and cloud (same battles) | 200 | 35,596 | 0 |
 | 9 | bdb1a9d (oracle cb55ec9) | PC and cloud (same battles) | 200 | 38,235 | 0 |
+| 10 | a166af8 (oracle e80a6a0) | PC and cloud (same battles) | 200 | 33,988 | 0 |
 
-Total: 1,900 unique battles, 347,096 records, 0 differences. Only seeds 8 and 9 ran against the current rules (cb55ec9): 400 battles, 73,831 records. The earlier seeds ran against older oracles, as named.
+Total: 2,100 unique battles, 381,084 records, 0 differences. Only seed 10 ran against the current rules (e80a6a0): 200 battles, 33,988 records. The earlier seeds ran against older oracles, as named.
