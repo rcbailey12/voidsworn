@@ -3329,6 +3329,7 @@ func _move_frames() -> void:
 	follow = false  # the camera stays on the burn
 	tips_off = true
 	hud.hide_tipcard()
+	hud.visible = false  # the panels and the battle log covered ships at the frame's edges (R55 A/B)
 	print("[moves] movement %s, ships %s" % [movement, str(picks)])
 	for id in picks:
 		while not _can_act():
