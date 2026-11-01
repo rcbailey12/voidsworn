@@ -9,7 +9,7 @@ extends RefCounted
 #             gravity well become real things in space, with only a faint edge for the hex footprint
 #   cine      C "tactical toggle": A's grid and footprint with B's terrain, plus one key (Z) or the Grid button that
 #             brings up a full tactical grid (tactical = true)
-# F8 in battle cycles the four; the choice is kept between runs (user://board_look.cfg). Default: today.
+# F8 in battle cycles the four; the choice is kept between runs (user://board_look.cfg). Default: cine (look C, Ryan picked it Nov 1 17:54; "today" stays for comparisons via F8 or VS_BOARD_LOOK=today).
 
 const LOOKS := ["today", "holo", "living", "cine"]
 const NAMES := {"today": "Today", "holo": "A  Holo war-table", "living": "B  Living terrain", "cine": "C  Cinematic + tactical toggle"}
@@ -21,14 +21,14 @@ static var tactical := false
 
 static func current() -> String:
 	if look == "":
-		look = "today"
+		look = "cine"
 		var env := OS.get_environment("VS_BOARD_LOOK")
 		if env != "" and LOOKS.has(env):
 			look = env
 		else:
 			var cf := ConfigFile.new()
 			if cf.load(CFG) == OK:
-				var v := str(cf.get_value("board", "look", "today"))
+				var v := str(cf.get_value("board", "look", "cine"))
 				if LOOKS.has(v):
 					look = v
 	return look
