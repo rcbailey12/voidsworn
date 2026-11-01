@@ -1,0 +1,79 @@
+{
+  "bench20_belt": {
+    "avg_ms": 4.91,
+    "build_ms": 1989.8,
+    "frames": 1630,
+    "low1_ms": 22.11,
+    "worst_ms": 31.2
+  },
+  "boneyard_graveyard": {
+    "avg_ms": 3.88,
+    "build_ms": 1151.3,
+    "frames": 2061,
+    "low1_ms": 5.98,
+    "worst_ms": 19.05
+  },
+  "deadstar": {
+    "avg_ms": 3.67,
+    "build_ms": 1346.2,
+    "frames": 2178,
+    "low1_ms": 4.48,
+    "worst_ms": 4.59
+  },
+  "deep_storm": {
+    "avg_ms": 3.21,
+    "build_ms": 1204.6,
+    "frames": 2489,
+    "low1_ms": 6.9,
+    "worst_ms": 21.74
+  },
+  "frontier_belt": {
+    "avg_ms": 4.13,
+    "build_ms": 2114.3,
+    "frames": 1939,
+    "low1_ms": 6.88,
+    "worst_ms": 8.93
+  },
+  "frontier_station": {
+    "avg_ms": 3.42,
+    "build_ms": 1453.1,
+    "frames": 2340,
+    "low1_ms": 4.54,
+    "worst_ms": 14.37
+  },
+  "nebula_crystal_belt": {
+    "avg_ms": 3.77,
+    "build_ms": 1276.9,
+    "frames": 2124,
+    "low1_ms": 5.81,
+    "worst_ms": 18.13
+  },
+  "nebula_storm": {
+    "avg_ms": 3.19,
+    "build_ms": 1467.3,
+    "frames": 2512,
+    "low1_ms": 3.77,
+    "worst_ms": 3.9
+  },
+  "open_iron": {
+    "avg_ms": 3.53,
+    "build_ms": 1439.4,
+    "frames": 2265,
+    "low1_ms": 7.21,
+    "worst_ms": 43.48
+  },
+  "world_belt_ice": {
+    "avg_ms": 3.78,
+    "build_ms": 1018.0,
+    "frames": 2119,
+    "low1_ms": 5.73,
+    "worst_ms": 16.04
+  },
+  "world_planet": {
+    "avg_ms": 3.36,
+    "build_ms": 1146.7,
+    "frames": 2379,
+    "low1_ms": 6.67,
+    "worst_ms": 16.24
+  }
+}
