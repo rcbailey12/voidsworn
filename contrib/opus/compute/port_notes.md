@@ -427,7 +427,7 @@ F2 edits only these parts of `godot/scenes/battle/battle.gd`, in small hunks, re
 - in `_play_batch`, only the two `_round_budget_k(...)` arguments: enemy move time stops counting toward the round budget (moves are no longer squeezed by it; everything else keeps today's budget);
 - `_move_frames` (the before and after capture switch).
 Rules and parity are untouched. Questions: F2's report.
-## Step 13: R1 rules fix batch (Nov 1, feel pass stream R1; browser commit b8258c5, Godot port and re-pin in the same push)
+## Step 13: R1 rules fix batch (Nov 1, feel pass stream R1; browser commit 53531b2, Godot port c4c1431, both oracles re-pinned to e3bff1e)
 
 One stream B step for everything in recommendation section 3 ("Adopt" and "Adapt") plus two new rulings. G1 and G3 work is done by R1 itself this time: godot/rules/ and godot/campaign/ are ported, both oracles re-pinned to this step, and the tables re-exported. Test file: `contrib/opus/tools/r1_tests.js` (25 checks; every one fails on the code before this step).
 
