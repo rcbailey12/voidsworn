@@ -453,6 +453,10 @@ One stream B step for everything in recommendation section 3 ("Adopt" and "Adapt
 ### Random draws, summary
 Boon offers change in every seeded run (draw count and order). Sector 1 maps and battles that would have shown the dead star draw one more pick. Glasswright event picks change (the seer is in their pool). gsentry volleys draw fewer rolls. Everything else is a logic change on existing draws.
 
+### Checks and sims (PC lane B unless named)
+- Re-pin at 222b492 (oracles e3bff1e): parity.bat 48 of 48, maths, PRNG, threat maps, threads PASS, worst think 0.456 s; sweep seed 13 200 of 200 (36,628 records, noStar on half the sector 1 battles). Campaign parity 30 of 30 (PC and cloud); Nemesis scenarios 78 records (14 new: loss reveals, clash check, legacy migration) identical; save and arc hook tests pass. Cloud: 48 of 48.
+- Sims, same seeds before (207759e) and after: runsim 80 on seeds 7105 to 7108, full-run wins 18.4% to 15.0% of 320 (noise about 2 points), reach sector 2 62% to 68%, sector 3 31% to 34%, sector 3 flagship fights won 83% to 73%. fmatrix 48 (seed 6201): all cells 60.2 to 59.0, Crusade row 55.5 to 47.5; with the AI-1 hunk removed, 61.3 overall and Crusade 55.8, so AI-1 carries the drop. bossmatrix 16 sector 1: admiral band 55 to 90 before, 56 to 84 after. fuzz 500: 0 exceptions. No tuning in this step.
+
 ### Godot-side UI still to do (not R1's folders)
 - `godot/ui/campaign/campaign_ui.gd`: show the new `buyAdmiral` act on locked admiral cards (line 352 shows "Unlock for N renown in Legacy" text only), a Legacy tab with `buyLegacy` buttons (the acts are already in the page's list), and the decommission label from `C.prizeScrap(s["tpl"])` (line 876 reads `HULLS[tpl]["cost"]`, which a cost-less hull lacks).
 - Godot battle hint wording (UI-6) belongs to F1's turn-flow work.
