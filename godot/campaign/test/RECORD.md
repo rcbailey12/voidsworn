@@ -5,7 +5,7 @@ Newest first. Each row names the commit the run used and where its log lives.
 
 ## What the oracle is
 
-- The game's own JS campaign files, pinned and unchanged except one comment fix: `godot/campaign/test/oracle/`, copied from **d8b47c6** (Oct 26 2026, stream B steps 0 to 4). See `oracle/README.md`.
+- The game's own JS campaign files, pinned unchanged: `godot/campaign/test/oracle/`, copied from **f770e06** (Oct 31 2026: stream B steps 10 to 12, the lore round 8 strings and the campaign battle-start fix; before that d8b47c6, steps 0 to 4, with one local comment fix). See `oracle/README.md`.
 - The campaign rules in Godot last changed at **ae6073b** (port of stream B step 4, oracle d8b47c6). Everything after that in `godot/campaign/` is the test harness or notes; the screens (`godot/ui/campaign/`) never change campaign state (every button calls `campaign.act()`), so map and panel work cannot move parity.
 - The tables (`data/campaign_tables.json`) are exported from the oracle by `node/export_campaign.js`; every parity run first re-exports them and checks the checksum.
 
@@ -13,6 +13,11 @@ Newest first. Each row names the commit the run used and where its log lives.
 
 | When (UTC) | Commit | Where | Check | Result | Log |
 |---|---|---|---|---|---|
+| Oct 31 | 6033f97 (oracle f770e06, lore round 8 strings) | Ryan's PC, lane A job `queue\g3_lore_6033f97.bat` | `parity_campaign.bat`, 30 seeded runs | pending (filled in when the job lands) | `docs/shots/g3_campaign/6033f97/parity_campaign_log.txt` |
+| Oct 31 | 6033f97 (oracle f770e06) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS) | session |
+| Oct 31 | 6033f97 | cloud | `run_nem_scenarios.sh`; `save_test.gd`; `arc_hook_test.gd` | **PASS** (64 records); **PASS**; **PASS** | session |
+| Oct 31 | 6033f97 | cloud | bot through every screen, 3 runs | 3 runs ended, 0 script errors | session |
+| Oct 31 | rehearsals at 5a99602 and 257de44 | cloud | `run_parity_campaign.sh 1 30` | PASS, 30 of 30 each | session |
 | Oct 27 | 9711a7e | Ryan's PC (RTX 5080), lane A job `queue\g3_r51i_9711a7e.bat` | `tools\pc\parity_campaign.bat`, 30 seeded runs | **PASS, 30 of 30** (tables PASS; same step counts as the cloud run, seed by seed) | `voidsworn_test\shots\g3_r51i_9711a7e\parity_campaign_log.txt`, copied to `docs/shots/g3_campaign/9711a7e/` |
 | Oct 27 | 9711a7e (rules as at ae6073b) | cloud sandbox, Godot 4.7.2 Linux headless | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS; seeds 1 to 30, 10 to 239 steps each) | below |
 | Oct 27 | 9711a7e | cloud | `run_nem_scenarios.sh` | **PASS** (64 records identical) | below |
