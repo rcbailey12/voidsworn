@@ -147,6 +147,14 @@ SPEC.update({
  'nem_deathless_1': ("a cold archive of floating blank glass plates glowing faintly", "", "faint white light from the glass plates"),
  'nem_deathless_2': ("a siphon platform over a star being drained into a thin stream of light", "", "blazing starlight from below"),
 })
+# e64c review: Kassar's holo map came out as Earth twice and Crusade 3's "warship" deck grew sailing-ship rigging twice (black iron
+# and frost read as the age of sail), so e64d gives both settings with no map and no ship deck.
+SPEC.update({
+ 'kassar': ("an orbital dock gallery, a huge pale grey dreadnought under construction beyond the long window, work lights along its hull",
+            "mid-gesture, one hand raised toward the window, three-quarter, half-body", "cold white light from the window and blue implant glow"),
+ 'nem_voidsworn_3': ("a small round observation pod of black iron and frosted glass in deep space, a dim orange sun beyond the glass",
+                     "glancing back over one shoulder", "low orange sunlight from the window at the side"),
+})
 CLEAN = " The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
 KEEP_WHAT = {'voidsworn': 'person, face, scars, hair and clothing', 'hegemony': 'person, face, implants, hair and uniform',
              'chorus': 'organism, its shape and colours', 'deathless': 'machine, its shape and colours'}

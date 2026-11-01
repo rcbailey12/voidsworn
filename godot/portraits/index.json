@@ -28,14 +28,17 @@
    "faction": "voidsworn",
    "pick": "painted/vex.webp",
    "alts": [
+    "alts/vex_pre68.webp",
     "alts/vex_r8alt1.webp",
     "alts/vex_r7.webp"
    ],
-   "source": "r8/voidsworn_vex_r8_zit_s37_00001_.png",
-   "alt_sources": [
-    "r8/voidsworn_vex_r8_zit_s23_00001_.png"
+   "source": "e64/vex_v64_s51_00001_.png",
+   "crop": [
+    0.5,
+    0.42,
+    0.84
    ],
-   "note": "Fresh r8c repaint: frost-scarred, implant-removal scars, black iron void-coat, ember radiator spires outside. The restyle edits kept wax seals or drew a sailing ship and lettering; the Qwen takes put naval-looking ships in the window."
+   "note": "R68: Vex in a frost-rimed war room, fists on a table lit by an ember star chart (e64c)."
   },
   "kassar": {
    "faction": "hegemony",

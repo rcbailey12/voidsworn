@@ -1,0 +1,34 @@
+{
+ "out": "e64",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 61,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: an orbital dock gallery, a huge pale grey dreadnought under construction beyond the long window, work lights along its hull. New pose and framing: mid-gesture, one hand raised toward the window, three-quarter, half-body. Key light: cold white light from the window and blue implant glow. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 73,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: an orbital dock gallery, a huge pale grey dreadnought under construction beyond the long window, work lights along its hull. New pose and framing: mid-gesture, one hand raised toward the window, three-quarter, half-body. Key light: cold white light from the window and blue implant glow. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "v64",
+   "seed": 61,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a small round observation pod of black iron and frosted glass in deep space, a dim orange sun beyond the glass. Keep the head and face in the same place in the frame; glancing back over one shoulder. Key light: low orange sunlight from the window at the side. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "v64",
+   "seed": 73,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a small round observation pod of black iron and frosted glass in deep space, a dim orange sun beyond the glass. Keep the head and face in the same place in the frame; glancing back over one shoulder. Key light: low orange sunlight from the window at the side. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters. The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
+  }
+ ]
+}

@@ -25,6 +25,7 @@ ADM = {
  'matriarch': ('chorus', 'e64/matriarch_v64_s11', None, 'R68: the Matriarch above a planet it is consuming, spores falling into the air.'),
  'mending': ('chorus', 'e64/mending_v64_s11', None, 'R68: the Mending nested in the gutted hull of a captured warship.'),
  'nekhet': ('deathless', 'e64/nekhet_v64_s11', None, 'R68: Nekhet in a machine hall of siphon arrays draining a star.'),
+ 'vex': ('voidsworn', 'e64/vex_v64_s51', (0.5, 0.42, 0.84), 'R68: Vex in a frost-rimed war room, fists on a table lit by an ember star chart (e64c).'),
 }
 # Nemesis -> (render, face box (centre x, centre y, face height) as fractions of the render[, crop side])
 NEM = {
@@ -50,6 +51,14 @@ NEM = {
  'nem_deathless_4': ('e64/nem_deathless_4_v64_s11', (0.5, 0.258, 0.242), 1.0),
  'nem_deathless_5': ('e64/nem_deathless_5_v64_s23', (0.5, 0.333, 0.242), 1.0),
  'nem_deathless_6': ('e64/nem_deathless_6_v64_s11', (0.5, 0.5, 0.333), 1.0),
+ # e64c redraws (seeds 37, 51)
+ 'nem_voidsworn_4': ('e64/nem_voidsworn_4_v64_s51', (0.5, 0.306, 0.274), 1.0),
+ 'nem_voidsworn_5': ('e64/nem_voidsworn_5_v64_s51', (0.5, 0.333, 0.274), 1.0),
+ 'nem_voidsworn_6': ('e64/nem_voidsworn_6_v64_s51', (0.5, 0.333, 0.274), 1.0),
+ 'nem_hegemony_5': ('e64/nem_hegemony_5_v64_s51', (0.43, 0.33, 0.29), 1.0),
+ 'nem_chorus_1': ('e64/nem_chorus_1_v64_s37', (0.5, 0.5, 0.333), 1.0),
+ 'nem_deathless_1': ('e64/nem_deathless_1_v64_s37', (0.5, 0.21, 0.242), 1.0),
+ 'nem_deathless_2': ('e64/nem_deathless_2_v64_s37', (0.5, 0.23, 0.12), 0.6),
 }
 # Nemesis scar picks: nid -> {kind: seed} in SCAR_DIR
 SCAR = {

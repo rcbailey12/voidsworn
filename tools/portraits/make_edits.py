@@ -188,10 +188,10 @@ def e64_items(facs, admirals=True):
 # new seeds 37 and 51 -> comfy_io\\PORTRAITS\\e64\\ (same names, so the picks just name a seed).
 E64C = ['vex', 'kassar', 'nem_voidsworn_3', 'nem_voidsworn_4', 'nem_voidsworn_5', 'nem_voidsworn_6', 'nem_hegemony_5', 'nem_chorus_1',
         'nem_deathless_1', 'nem_deathless_2']
-def e64c_items(seeds=(37, 51)):
+def e64c_items(seeds=(37, 51), ids=None):
     import portrait_specs as PS
     out = []
-    for i in E64C:
+    for i in ids or E64C:
         if i.startswith('nem_'):
             f = i.split('_')[1]; src = 'ncrop8/%s.png' % i; nem = True
         else:
@@ -272,6 +272,9 @@ E64_PICK = {'nem_voidsworn_1': 23, 'nem_voidsworn_2': 23, 'nem_hegemony_1': 11, 
             'nem_hegemony_4': 23, 'nem_hegemony_6': 11, 'nem_chorus_2': 23, 'nem_chorus_3': 23, 'nem_chorus_4': 23, 'nem_chorus_5': 23,
             'nem_chorus_6': 23, 'nem_deathless_3': 23, 'nem_deathless_4': 11, 'nem_deathless_5': 23, 'nem_deathless_6': 11}
 E64_SRC = {n: 'e64/%s_v64_s%d_00001_.png' % (n, sd) for n, sd in E64_PICK.items()}
+# e64c picks (s68c); Eclipse 2 shrank, so its source is the bust crop from v64_publish.py (ncrop68)
+E64C_PICK = {'nem_voidsworn_4': 51, 'nem_voidsworn_5': 51, 'nem_voidsworn_6': 51, 'nem_hegemony_5': 51, 'nem_chorus_1': 37, 'nem_deathless_1': 37}
+E64_SRC.update({n: 'e64/%s_v64_s%d_00001_.png' % (n, sd) for n, sd in E64C_PICK.items()})
 def s68_e64(facs):
     out = []
     for f in facs: out += s68_items(f, [n for n in E64_PICK if n.split('_')[1] == f], src=E64_SRC)
@@ -324,6 +327,8 @@ if __name__ == '__main__':
         print(tag, len(e64_items(facs)))
     json.dump({'out': 'e64', 'budget_s': 1100, 'items': e64c_items()}, open(os.path.join(B, 'e64c.json'), 'w'), indent=1)
     print('e64c', len(e64c_items()))
+    # e64d: the two e64c misses again with portrait_specs' newer entries, seeds 61 and 73
+    json.dump({'out': 'e64', 'budget_s': 1100, 'items': e64c_items((61, 73), ['kassar', 'nem_voidsworn_3'])}, open(os.path.join(B, 'e64d.json'), 'w'), indent=1)
     json.dump({'out': 'v64b', 'budget_s': 1100, 'items': v64h4_items()}, open(os.path.join(B, 'v64h4.json'), 'w'), indent=1)
     print('v64h4', len(v64h4_items()))
     json.dump({'out': 'v64b', 'budget_s': 1100, 'items': v64g3_items()}, open(os.path.join(B, 'v64g3.json'), 'w'), indent=1)
@@ -334,3 +339,9 @@ if __name__ == '__main__':
     for tag, facs in (('s68a', ['voidsworn', 'hegemony']), ('s68b', ['chorus', 'deathless'])):
         json.dump({'out': 's68', 'budget_s': 1150, 'items': s68_e64(facs)}, open(os.path.join(B, tag + '.json'), 'w'), indent=1)
         print(tag, len(s68_e64(facs)))
+    s68c = []
+    for f in ('voidsworn', 'hegemony', 'chorus', 'deathless'):
+        s68c += s68_items(f, [n for n in E64C_PICK if n.split('_')[1] == f], src=E64_SRC)
+    s68c += s68_items('deathless', ['nem_deathless_2'])
+    json.dump({'out': 's68', 'budget_s': 1150, 'items': s68c}, open(os.path.join(B, 's68c.json'), 'w'), indent=1)
+    print('s68c', len(s68c))
