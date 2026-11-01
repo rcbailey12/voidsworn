@@ -1,0 +1,174 @@
+{
+ "out": "n8s",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "nem_corsair_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_1.png",
+   "prompt": "Add one large old healed burn to this furred creature: a patch of fur burned away on one side of the face and neck, scorched bare puckered skin beneath. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_1.png",
+   "prompt": "Replace one of this creature's eyes with a crude bolted-on iron plate with rivets and a small glowing red lens, raw scarred skin and torn fur round it. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_1",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_1.png",
+   "prompt": "Add a deep old claw scar running through one of this creature's eyes from brow to muzzle, the fur parted along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_2.png",
+   "prompt": "Add one large old healed burn to this furred creature: a patch of fur burned away on one side of the face and neck, scorched bare puckered skin beneath. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_2.png",
+   "prompt": "Replace one of this creature's eyes with a crude bolted-on iron plate with rivets and a small glowing red lens, raw scarred skin and torn fur round it. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_2",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_2.png",
+   "prompt": "Add a deep old claw scar running through one of this creature's eyes from brow to muzzle, the fur parted along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_4.png",
+   "prompt": "Add one large old healed burn to this furred creature: a patch of fur burned away on one side of the face and neck, scorched bare puckered skin beneath. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_4.png",
+   "prompt": "Replace one of this creature's eyes with a crude bolted-on iron plate with rivets and a small glowing red lens, raw scarred skin and torn fur round it. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_4",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_4.png",
+   "prompt": "Add a deep old claw scar running through one of this creature's eyes from brow to muzzle, the fur parted along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_6.png",
+   "prompt": "Add one large old healed burn to this furred creature: a patch of fur burned away on one side of the face and neck, scorched bare puckered skin beneath. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "cyber",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_6.png",
+   "prompt": "Replace one of this creature's eyes with a crude bolted-on iron plate with rivets and a small glowing red lens, raw scarred skin and torn fur round it. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_6",
+   "kind": "eye",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_6.png",
+   "prompt": "Add a deep old claw scar running through one of this creature's eyes from brow to muzzle, the fur parted along it; that eye is milky white and blind. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_1.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "machine",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_1.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_2.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "machine",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_2.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_3.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_3",
+   "kind": "machine",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_3.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_4.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_4",
+   "kind": "machine",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_4.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_5.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_5",
+   "kind": "machine",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_5.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_6.png",
+   "prompt": "Add burn damage to this machine: one side of the violet-black plating scorched, heat-blistered and discoloured, edges melted. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_deathless_6",
+   "kind": "machine",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_6.png",
+   "prompt": "Tear a jagged hole in this machine's violet-black plating on one side, exposing white-gold lit circuitry and tangled cables inside, the torn edges scorched. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  }
+ ]
+}

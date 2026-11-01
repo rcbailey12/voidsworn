@@ -11,8 +11,19 @@ import nemesis_crop as NC
 
 # picked r8 render seed per new Nemesis, and its face box (centre x, centre y, face height, as fractions of the render) read
 # off a gridded sheet; None = a machine or ring composed to fill the frame (light crop round the centre)
-PICK8 = {}
-FACE8 = {}
+PICK8 = {  # Oct 31 review of r8a and r8b (vetoable): fewest skull trophies, no Egyptian headdress, clearest silhouettes
+ 'nem_corsair_1': 11, 'nem_corsair_2': 11, 'nem_corsair_3': 11, 'nem_corsair_4': 23, 'nem_corsair_5': 23, 'nem_corsair_6': 23,
+ 'nem_ithar_1': 11, 'nem_ithar_2': 23, 'nem_ithar_3': 11, 'nem_ithar_4': 11, 'nem_ithar_5': 23, 'nem_ithar_6': 11,
+ 'nem_deathless_1': 23, 'nem_deathless_2': 23, 'nem_deathless_3': 23, 'nem_deathless_4': 37, 'nem_deathless_5': 23, 'nem_deathless_6': 23,
+}
+FACE8 = {
+ 'nem_corsair_1': (0.58, 0.18, 0.2), 'nem_corsair_2': (0.53, 0.21, 0.2), 'nem_corsair_3': (0.54, 0.18, 0.2),
+ 'nem_corsair_4': (0.56, 0.21, 0.2), 'nem_corsair_5': (0.55, 0.20, 0.2), 'nem_corsair_6': (0.54, 0.20, 0.2),
+ 'nem_ithar_1': (0.50, 0.19, 0.17), 'nem_ithar_2': (0.52, 0.20, 0.17), 'nem_ithar_3': (0.49, 0.16, 0.17),
+ 'nem_ithar_4': (0.50, 0.17, 0.17), 'nem_ithar_5': (0.50, 0.17, 0.17), 'nem_ithar_6': (0.50, 0.16, 0.17),
+ 'nem_deathless_1': (0.50, 0.13, 0.15), 'nem_deathless_2': (0.50, 0.15, 0.15), 'nem_deathless_3': (0.51, 0.15, 0.15),
+ 'nem_deathless_4': (0.50, 0.16, 0.15), 'nem_deathless_5': (0.49, 0.24, 0.15), 'nem_deathless_6': None,
+}
 TOUCHED = ('voidsworn', 'hegemony', 'chorus')
 
 def main(root, out):

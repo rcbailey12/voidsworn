@@ -116,6 +116,23 @@ def r8_scar_items(facs, src_dir='ncrop8'):
                             'prompt': pr + (KEEP_OBJ if f == 'chorus' or (f == 'deathless' and n == 6) else KEEP)})
     return out
 
+# Oct 31 fix pass on the round 8 sources (batches/r8f.json -> comfy_io\PORTRAITS\r8f\<id>_r8f_s11_00001_.png):
+# Crusade redone from the original crops (the first pass painted gibberish writing for "names chalked" and glyph-like brands),
+# the two Hullbreakers that kept a skull trophy, and the Glasswrights' pointed ears (bible 6.3: light-storing skin, second eyelid).
+CRUSADE2 = ("Make this a plain unaugmented human soldier: remove any glowing eyes, implants, religious ornaments, wax seals, parchment, "
+            "scripture, writing, tattoos, censers, candles, crosses, flags and skulls; plain black iron armour with a few frost-white paint "
+            "stripes and no writing; pale frost scars on the exposed skin.")
+GLASS_FIX = ("Remove the pointed ears: smooth rounded sides of the head with no ears. Give the pale skin faint glowing patterns of stored "
+             "light along the temples and neck, and give the large dark eyes a clear glassy second eyelid.")
+CR2_EXTRA = {1: ' The eyes become plain hard tired human eyes.', 2: ' The brass rebreather becomes a battered black iron rebreather.',
+             3: ' The head tattoos become a smooth old burn scar; the red sash and flag go.', 5: ' The skull visor becomes a plain black iron visor.',
+             6: ' The glowing eyes become plain hard tired human eyes; the brow piercings become a smooth old burn scar.'}
+R8F = {'nem_voidsworn_%d' % n: ('ncrop/nem_voidsworn_%d.png' % n, CRUSADE2 + CR2_EXTRA.get(n, '') + KEEP) for n in range(1, 7)}
+R8F.update({'nem_corsair_%d' % n: ('ncrop8/nem_corsair_%d.png' % n, "Replace the skull trophy on the chest with a torn piece of machinery "
+            "bolted to the harness; no skulls or bones anywhere." + KEEP) for n in (3, 5)})
+R8F.update({'nem_ithar_%d' % n: ('ncrop8/nem_ithar_%d.png' % n, GLASS_FIX + KEEP) for n in range(1, 7)})
+R8F['aelith'] = ('r8/ithar_aelith_r8_zit_s23_00001_.png', GLASS_FIX + KEEP_P)
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -139,3 +156,15 @@ if __name__ == '__main__':
     r8e = [{'id': i, 'kind': 'r8', 'seed': sd, 'src': src, 'prompt': p} for i, (src, p, seeds) in R8E.items() for sd in seeds]
     json.dump({'out': 'r8e', 'budget_s': 1100, 'items': r8e}, open(os.path.join(B, 'r8e.json'), 'w'), indent=1)
     print('r8e', len(r8e))
+    r8f = [{'id': i, 'kind': 'r8f', 'seed': 11, 'src': src, 'prompt': p} for i, (src, p) in R8F.items()]
+    json.dump({'out': 'r8f', 'budget_s': 1100, 'items': r8f}, open(os.path.join(B, 'r8f.json'), 'w'), indent=1)
+    print('r8f', len(r8f))
+    # round 8 scars into ..\n8s\, painted on ncrop8\ (the final round 8 sources); c waits for the r8f fix pass
+    allsc = r8_scar_items(['corsair', 'deathless', 'chorus', 'hegemony', 'ithar', 'voidsworn'])
+    later = {'nem_corsair_3', 'nem_corsair_5'} | {'nem_ithar_%d' % n for n in range(1, 7)} | {'nem_voidsworn_%d' % n for n in range(1, 7)}
+    parts = {'a': [i for i in allsc if i['id'].split('_')[1] in ('corsair', 'deathless') and i['id'] not in later],
+             'b': [i for i in allsc if i['id'].split('_')[1] in ('chorus', 'hegemony')],
+             'c': [i for i in allsc if i['id'] in later]}
+    for tag, part in parts.items():
+        json.dump({'out': 'n8s', 'budget_s': 1100, 'items': part}, open(os.path.join(B, 'r8s_%s.json' % tag), 'w'), indent=1)
+        print('r8s_' + tag, len(part))

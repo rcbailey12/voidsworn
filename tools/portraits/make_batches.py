@@ -314,12 +314,21 @@ def r8_nem(fac, n, d):
 def r8_poster(i, model, seeds):
     fac, style, p = R8[i]
     return {'id': i, 'model': model, 'prompt': p + ' ' + style.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
+# Oct 31 review: the Vex restyle edits kept wax seals and a church window, or drew a sailing ship and lettering, so Vex is
+# repainted fresh. No chalked names in any prompt: the models turn them into gibberish writing.
+R8['voidsworn_vex_r8'] = ('voidsworn', STYLE,
+  "Portrait of a Sunward Crusade fleet admiral, a stern weathered unaugmented human man in his late fifties, a shaved head, pale "
+  "frost-scarred skin, old surgical scars at the temple and neck where implants were cut out, an old burn scar on the brow, grey stubble, "
+  "hard tired eyes, a high-collared dark void-coat with heavy black iron shoulder plates striped with frost-white paint, behind him through a "
+  "frosted viewport black iron space warships with glowing ember-orange heat radiator spires firing into the void. No writing, no letters, "
+  "no candles, no church windows, no seals, no sailing ships.")
+BATCHES['r8c'] = [r8_poster('voidsworn_vex_r8', 'zit', S4), r8_poster('voidsworn_vex_r8', 'qie', S4[:2])]
 # r8a about 9 minutes (Hullbreakers and Glasswrights), r8b about 8 minutes (Eclipse, plus the Qwen poster takes); out r8\
 BATCHES['r8a'] = [r8_poster(k, 'zit', S4) for k in ('corsair_grax_r8', 'ithar_aelith_r8')] + \
                  [r8_nem(f, n, d) for f in ('corsair', 'ithar') for n, d in enumerate(NEM8[f], 1)]
 BATCHES['r8b'] = [r8_poster('deathless_nekhet_r8', 'zit', S4)] + [r8_nem('deathless', n, d) for n, d in enumerate(NEM8['deathless'], 1)] + \
                  [r8_poster(k, 'qie', S4[:2]) for k in ('corsair_grax_r8', 'ithar_aelith_r8')]
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8'}
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

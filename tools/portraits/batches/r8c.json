@@ -1,0 +1,28 @@
+{
+ "out": "r8",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "voidsworn_vex_r8",
+   "model": "zit",
+   "prompt": "Portrait of a Sunward Crusade fleet admiral, a stern weathered unaugmented human man in his late fifties, a shaved head, pale frost-scarred skin, old surgical scars at the temple and neck where implants were cut out, an old burn scar on the brow, grey stubble, hard tired eyes, a high-collared dark void-coat with heavy black iron shoulder plates striped with frost-white paint, behind him through a frosted viewport black iron space warships with glowing ember-orange heat radiator spires firing into the void. No writing, no letters, no candles, no church windows, no seals, no sailing ships. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by warm ember-orange light, deep soft shadow on the right side, a dark painterly black-iron warship bridge with frost on the viewports and ember-orange radiator spires glowing outside background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "voidsworn_vex_r8",
+   "model": "qie",
+   "prompt": "Portrait of a Sunward Crusade fleet admiral, a stern weathered unaugmented human man in his late fifties, a shaved head, pale frost-scarred skin, old surgical scars at the temple and neck where implants were cut out, an old burn scar on the brow, grey stubble, hard tired eyes, a high-collared dark void-coat with heavy black iron shoulder plates striped with frost-white paint, behind him through a frosted viewport black iron space warships with glowing ember-orange heat radiator spires firing into the void. No writing, no letters, no candles, no church windows, no seals, no sailing ships. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by warm ember-orange light, deep soft shadow on the right side, a dark painterly black-iron warship bridge with frost on the viewports and ember-orange radiator spires glowing outside background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23
+   ]
+  }
+ ]
+}

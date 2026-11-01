@@ -1,0 +1,111 @@
+{
+ "out": "r8f",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_1.png",
+   "prompt": "Make this a plain unaugmented human soldier: remove any glowing eyes, implants, religious ornaments, wax seals, parchment, scripture, writing, tattoos, censers, candles, crosses, flags and skulls; plain black iron armour with a few frost-white paint stripes and no writing; pale frost scars on the exposed skin. The eyes become plain hard tired human eyes. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_2.png",
+   "prompt": "Make this a plain unaugmented human soldier: remove any glowing eyes, implants, religious ornaments, wax seals, parchment, scripture, writing, tattoos, censers, candles, crosses, flags and skulls; plain black iron armour with a few frost-white paint stripes and no writing; pale frost scars on the exposed skin. The brass rebreather becomes a battered black iron rebreather. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_3.png",
+   "prompt": "Make this a plain unaugmented human soldier: remove any glowing eyes, implants, religious ornaments, wax seals, parchment, scripture, writing, tattoos, censers, candles, crosses, flags and skulls; plain black iron armour with a few frost-white paint stripes and no writing; pale frost scars on the exposed skin. The head tattoos become a smooth old burn scar; the red sash and flag go. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_4.png",
+   "prompt": "Make this a plain unaugmented human soldier: remove any glowing eyes, implants, religious ornaments, wax seals, parchment, scripture, writing, tattoos, censers, candles, crosses, flags and skulls; plain black iron armour with a few frost-white paint stripes and no writing; pale frost scars on the exposed skin. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_5.png",
+   "prompt": "Make this a plain unaugmented human soldier: remove any glowing eyes, implants, religious ornaments, wax seals, parchment, scripture, writing, tattoos, censers, candles, crosses, flags and skulls; plain black iron armour with a few frost-white paint stripes and no writing; pale frost scars on the exposed skin. The skull visor becomes a plain black iron visor. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop/nem_voidsworn_6.png",
+   "prompt": "Make this a plain unaugmented human soldier: remove any glowing eyes, implants, religious ornaments, wax seals, parchment, scripture, writing, tattoos, censers, candles, crosses, flags and skulls; plain black iron armour with a few frost-white paint stripes and no writing; pale frost scars on the exposed skin. The glowing eyes become plain hard tired human eyes; the brow piercings become a smooth old burn scar. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_3",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_3.png",
+   "prompt": "Replace the skull trophy on the chest with a torn piece of machinery bolted to the harness; no skulls or bones anywhere. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_corsair_5",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop8/nem_corsair_5.png",
+   "prompt": "Replace the skull trophy on the chest with a torn piece of machinery bolted to the harness; no skulls or bones anywhere. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_1",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_1.png",
+   "prompt": "Remove the pointed ears: smooth rounded sides of the head with no ears. Give the pale skin faint glowing patterns of stored light along the temples and neck, and give the large dark eyes a clear glassy second eyelid. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_2.png",
+   "prompt": "Remove the pointed ears: smooth rounded sides of the head with no ears. Give the pale skin faint glowing patterns of stored light along the temples and neck, and give the large dark eyes a clear glassy second eyelid. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_3",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_3.png",
+   "prompt": "Remove the pointed ears: smooth rounded sides of the head with no ears. Give the pale skin faint glowing patterns of stored light along the temples and neck, and give the large dark eyes a clear glassy second eyelid. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_4",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_4.png",
+   "prompt": "Remove the pointed ears: smooth rounded sides of the head with no ears. Give the pale skin faint glowing patterns of stored light along the temples and neck, and give the large dark eyes a clear glassy second eyelid. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_5",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_5.png",
+   "prompt": "Remove the pointed ears: smooth rounded sides of the head with no ears. Give the pale skin faint glowing patterns of stored light along the temples and neck, and give the large dark eyes a clear glassy second eyelid. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_6",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "ncrop8/nem_ithar_6.png",
+   "prompt": "Remove the pointed ears: smooth rounded sides of the head with no ears. Give the pale skin faint glowing patterns of stored light along the temples and neck, and give the large dark eyes a clear glassy second eyelid. Keep the same character, face, pose, clothing, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "aelith",
+   "kind": "r8f",
+   "seed": 11,
+   "src": "r8/ithar_aelith_r8_zit_s23_00001_.png",
+   "prompt": "Remove the pointed ears: smooth rounded sides of the head with no ears. Give the pale skin faint glowing patterns of stored light along the temples and neck, and give the large dark eyes a clear glassy second eyelid. Keep the same face, pose, composition, lighting direction and painting style."
+  }
+ ]
+}
