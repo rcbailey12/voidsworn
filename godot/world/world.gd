@@ -118,7 +118,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		dead_star(hw.call(int(ds["q"]), int(ds["r"])) + Vector3(0, -10, 0), 1.0)
 		if opts.has("fx") and opts["fx"] != null:
 			opts["fx"].well = _well
-	_look = {"board_c": _center, "haze": setting["haze"], "haze_r": Vector2(340.0, 2400.0), "haze_max": 0.88, "quality": quality,
+	_look = {"board_c": _center, "haze": setting["haze"], "haze_r": Vector2(420.0, 2800.0), "haze_max": 0.62, "quality": quality,
 		"glow": Vector3(0.3, 0.75, 1.0)}
 	if _well != Vector3.INF:
 		_look["rim_pos"] = _well
@@ -144,6 +144,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	fields(mk, rock_kind)
 	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
 	dust(mk)
+	underlay()
 	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
 		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], fac])
 	notes.append("rocks: %d in all (%d rock hexes, %d debris hexes); clouds on %d nebula and %d storm hexes; built in %.0f ms" % [n_rocks,
@@ -189,7 +190,7 @@ func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 	_make_sky(env)
 	disc_tilt = -24.0
 	dead_star(opts.get("deadstar", Vector3(0, -20, -150)), 1.0)
-	_look = {"board_c": _center, "haze": setting["haze"], "haze_r": Vector2(340.0, 2400.0), "haze_max": 0.88, "quality": quality, "rim_pos": _well}
+	_look = {"board_c": _center, "haze": setting["haze"], "haze_r": Vector2(420.0, 2800.0), "haze_max": 0.62, "quality": quality, "rim_pos": _well}
 	_batch = WR.Batch.new()
 	for i in 3:
 		blocker(Vector3(-40 + i * 70, -2, -95 + (i % 2) * 20), ["stone", "ice", "crystal"][i])
@@ -303,8 +304,10 @@ func system(with_planet: bool) -> void:
 				bad = true
 		if bad:
 			continue
-		placed.append([mdir, mang])
 		var dist := DIST * r.randf_range(0.8, 1.15)
+		if _through_board(_center + mdir * dist, 40.0 + dist * sin(mang)):
+			continue
+		placed.append([mdir, mang])
 		var mkind := 4 if r.randf() < 0.65 else 5
 		var tints := [Vector3(1.0, 0.95, 0.88), Vector3(0.85, 0.82, 0.8), Vector3(1.0, 0.86, 0.7), Vector3(0.9, 0.95, 1.05)]
 		var MP := {"kind": mkind, "a": Vector3(0.5, 0.48, 0.45) if mkind == 4 else Vector3(0.8, 0.84, 0.88), "b": Vector3(0.22, 0.21, 0.2) if mkind == 4 else Vector3(0.5, 0.4, 0.32),
@@ -607,6 +610,22 @@ func _seen_on_board(p: Vector3, margin: float) -> bool:
 	return p.x > _lo.x - margin and p.x < _hi.x + margin and cz > _lo.z - margin and cz < _hi.z + margin
 
 
+# Would the battle camera (default or zoomed out) see a far point through the board? r2: moons and mountains seen
+# through the hexes read as balls and boulders sitting on the board, so they keep out of that cone.
+func _through_board(p: Vector3, pad: float) -> bool:
+	for r in [170.0, 260.0, 640.0]:
+		var cam := _center + Vector3(0.0, 0.557, 0.83) * float(r)
+		if p.y >= _center.y - 1.0:
+			continue
+		var t := (cam.y - _center.y) / (cam.y - p.y)
+		var hit := cam.lerp(p, t)
+		# the pad is a world size at p: scale it to the board's distance along the ray
+		var pd := pad * t
+		if hit.x > _lo.x - pd - 30.0 and hit.x < _hi.x + pd + 30.0 and hit.z > _lo.z - pd - 30.0 and hit.z < _hi.z + pd + 30.0:
+			return true
+	return false
+
+
 # Is a direction (seen from the board's centre) on the planet's disc?
 func _on_planet(p: Vector3, pad: float) -> bool:
 	if _planet_dir == Vector3.ZERO:
@@ -633,16 +652,21 @@ func fields(mk: String, kind: String) -> void:
 	var lowq := quality == "low"
 	var mat := _mat(kind)
 	var ext := (_hi - _lo) * 0.5
-	# 1. the edge scatter
+	# 1. the edge scatter. r2: beyond the far edge the rocks may ride at the board's height (they stand against the sky
+	# there and frame the battle); along the sides they sit well below it, so from the battle camera none of them seems to
+	# rest on a hex; on the camera's side (+z) they keep low and far out, so none passes in front of the board.
 	var placed := 0
 	var tries := 0
-	while placed < int(N[0] * dens) and tries < 2000:
+	while placed < int(N[0] * dens) and tries < 3000:
 		tries += 1
 		var a := r.randf() * TAU
 		var k := r.randf_range(1.0, 2.2)
-		var p := _center + Vector3(cos(a) * (ext.x + 40.0) * k, r.randf_range(-36.0, 14.0), sin(a) * (ext.z + 40.0) * k)
+		var p := _center + Vector3(cos(a) * (ext.x + 60.0) * k, 0.0, sin(a) * (ext.z + 60.0) * k)
+		var far := p.z < _lo.z - 30.0
+		var near := p.z > _hi.z - 20.0
+		p.y = _center.y + (r.randf_range(-40.0, 12.0) if far else (r.randf_range(-140.0, -90.0) if near else r.randf_range(-75.0, -28.0)))
 		var s := 1.6 + 7.0 * pow(r.randf(), 2.5) + (8.0 if r.randf() < 0.06 else 0.0)
-		if _seen_on_board(p, 24.0 + s) or _on_planet(p, 0.03):
+		if _seen_on_board(p, 40.0 + s) or _on_planet(p, 0.05):
 			continue
 		var nm := _pick(kind, r)
 		_batch.add(nm if s > 5.0 else nm + "_lo", mat, true, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.07) * (3.0 / (2.0 + s)), r.randf())
@@ -699,7 +723,7 @@ func fields(mk: String, kind: String) -> void:
 		var s := r.randf_range(70.0, 220.0) * (dist / 1600.0)
 		if _on_planet(p, 0.08 + s / dist):
 			continue
-		if Vector2(p.x - _center.x, p.z - _center.z).length() < 520.0:
+		if Vector2(p.x - _center.x, p.z - _center.z).length() < 520.0 or _through_board(p, s):
 			continue
 		_batch.add(_pick(kind, r), mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.0015, 0.006), r.randf())
 		mts += 1
@@ -713,6 +737,67 @@ func fields(mk: String, kind: String) -> void:
 				continue
 			_batch.add(names[r.randi() % names.size()], _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * r.randf_range(2.0, 6.0)), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
 	notes.append("fields: %d edge rocks, %d deep, %d belt, %d mountains" % [placed, deep, belt, mts])
+
+
+# ---------------------------------------------------------------- the board's underlay
+
+# F4 r2: the board's hexes are mostly see-through (board.gd BASE_FILL is 18% opaque), so whatever lies under the board
+# showed through them: bright nebula, the planet in low views, far rocks as pale ghosts. That fought the move hexes
+# (Ryan, Nov 1: "Hard to tell what's movement squares versus other map hexes"). A dark, smoked layer a little under the
+# board calms the space behind the play area, fading out softly past its edges so the sky round the board stays rich.
+# On the dead-star board it opens round the well, so the hole, its disc and its lensing are never dimmed.
+const UNDERLAY_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec2 half_ext = vec2(150.0, 100.0);
+uniform vec3 centre = vec3(0.0);
+uniform float fade = 90.0;
+uniform float k = 0.66;
+uniform vec3 col = vec3(0.008, 0.011, 0.018);
+uniform vec3 well = vec3(0.0);
+uniform float well_r = 0.0;
+varying vec3 vW;
+void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	vec2 q = abs(vW.xz - centre.xz) - half_ext;
+	float sd = length(max(q, vec2(0.0))) + min(max(q.x, q.y), 0.0);
+	// thicker at grazing angles, like smoked glass seen edge on: when the camera tips low, the far half of the board
+	// would otherwise show the planet and far rocks below the horizon right through the hexes
+	float graze = 1.0 - abs(dot(normalize(CAMERA_POSITION_WORLD - vW), vec3(0.0, 1.0, 0.0)));
+	float a = mix(k, 0.94, graze * graze) * (1.0 - smoothstep(-fade * 0.25, fade, sd));
+	if (well_r > 0.0) {
+		a *= smoothstep(well_r, well_r * 1.5, length(vW.xz - well.xz));
+	}
+	ALBEDO = col;
+	ALPHA = a;
+}
+"""
+
+
+func underlay() -> void:
+	var ext := (_hi - _lo) * 0.5
+	var mi := MeshInstance3D.new()
+	var pm := PlaneMesh.new()
+	pm.size = Vector2(ext.x * 2.0 + 260.0, ext.z * 2.0 + 260.0)
+	mi.mesh = pm
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = UNDERLAY_SHADER
+	m.shader = sh
+	m.set_shader_parameter("half_ext", Vector2(ext.x + 10.0, ext.z + 10.0))
+	m.set_shader_parameter("centre", _center)
+	# a hint of the setting's own colour, so it reads as deep space and not a black sheet
+	m.set_shader_parameter("col", Vector3(0.006, 0.009, 0.016).lerp(setting.get("haze", Vector3.ZERO) as Vector3, 0.35))
+	if _well != Vector3.INF:
+		m.set_shader_parameter("well", _well)
+		m.set_shader_parameter("well_r", 15.0 * 4.4)
+	# drawn after the lens (which copies the screen, render_priority -30) and before the board's own fills
+	m.render_priority = -20
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# below the feet of the board's rocks and debris, above anything deep
+	mi.position = Vector3(_center.x, _center.y - 9.0, _center.z)
+	add_child(mi)
 
 
 # ---------------------------------------------------------------- clouds and dust
@@ -749,8 +834,10 @@ void fragment() {
 		// ion storm: now and then a cloud lights from inside, a branching flash
 		float ph = fract(TIME * (0.11 + vI.w * 0.07) + vI.w * 13.0);
 		float fl = smoothstep(0.0, 0.01, ph) * smoothstep(0.08, 0.02, ph) * (0.6 + 0.4 * sin(TIME * 41.0 + vI.w * 9.0));
-		float vein = smoothstep(0.86, 0.97, 1.0 - abs(wfbm(p * 2.4 + vI.w * 5.0) * 2.0 - 1.0));
-		col += bolt * (vein * 1.6 + a * 0.6) * fl * smoothstep(1.0, 0.3, r);
+		// r2: the cloud lights from inside as one soft glow, with only faint brighter folds where it is densest (r1's
+		// sharp veins drew white wire scribbles over the hexes)
+		float vein = smoothstep(0.8, 0.97, 1.0 - abs(wfbm(p * 1.6 + vI.w * 5.0) * 2.0 - 1.0));
+		col += bolt * a * (1.1 + vein * 0.5) * fl * smoothstep(1.0, 0.2, r);
 	}
 	ALBEDO = col;
 }

@@ -104,16 +104,19 @@ void fragment() {
 		em = glow_col * crack * ice * 0.05;
 	} else {
 		a = mix(a, fresh, fr * 0.5);
-		float vein = smoothstep(0.94, 0.99, 1.0 - abs(n1 * 2.0 - 1.0));
-		em = glow_col * vein * 0.6;
+		// r2: thinner and dimmer veins, only in the fresh faces (r1 laced every rock with a bright net)
+		float vein = smoothstep(0.965, 0.995, 1.0 - abs(n1 * 2.0 - 1.0)) * smoothstep(0.2, 0.7, fr);
+		em = glow_col * vein * 0.3;
 		rough = mix(0.85, 0.4, fr);
 	}
 	a *= mix(0.4, 1.0, cav);
-	float ht = n2 * 0.55 + n3 * 0.45 - crat * 0.2;
+	float ht = n2 * 0.65 + n3 * 0.25 - crat * 0.2;
 	NORMAL = bump_normal(NORMAL, VERTEX, ht, q > 0.5 ? 0.9 : 0.5);
 	ALBEDO = a;
 	ROUGHNESS = rough;
 	METALLIC = metal;
+	// r2: a dull dielectric sheen (the default 0.5 caught the cold fill light and turned brown rock grey-blue)
+	SPECULAR = kind == 3 ? 0.5 : 0.3;
 	AO = cav;
 	AO_LIGHT_AFFECT = 0.4;
 	if (rim_k > 0.0) {
@@ -126,12 +129,13 @@ void fragment() {
 		float fall = 1.0 / (1.0 + dl * dl / 40000.0);
 		em += rim_col * rim_k * face * (0.06 + 0.9 * fres) * fall;
 	}
-	EMISSION = em;
 	// far rocks sink into the sky behind them (its own colour, read from the baked nebula along the view ray): by distance
 	// from the board, and more by how far below its plane they lie, so nothing deep can pass for a rock on a hex
 	float dist = length(vW - board_c);
 	float below = -(vW.y - board_c.y);
-	float hz = smoothstep(haze_r.x, haze_r.y, dist) * 0.7 + depth_haze * smoothstep(20.0, 420.0, below) * 0.8;
+	// r2: weaker than r1, whose far rocks turned into pale see-through ghosts; a far rock now stays a dark solid shape
+	// against the gas, which reads as far away without reading as a hole in the sky
+	float hz = smoothstep(haze_r.x, haze_r.y, dist) * 0.55 + depth_haze * smoothstep(60.0, 700.0, below) * 0.4;
 	vec3 hc = haze_col;
 	if (has_sky > 0.5) {
 		vec3 d = turn * normalize(vW - CAMERA_POSITION_WORLD);
@@ -139,6 +143,8 @@ void fragment() {
 		hc = pow(textureLod(sky_tex, uv, 0.0).rgb, vec3(2.2)) * sky_gain + haze_col * 0.5;
 	}
 	FOG = vec4(hc, clamp(hz, 0.0, 1.0) * haze_max);
+	// glow fades with the haze too (fog does not dim emission enough: deep rocks kept bright veins)
+	EMISSION = em * (1.0 - clamp(hz, 0.0, 1.0));
 }
 """
 
@@ -180,15 +186,15 @@ void fragment() {
 	EMISSION = (glow * (0.12 + 0.9 * up * up) + mix(glow, edge, f) * f * 0.9) * pulse;
 	float dist = length(vW - board_c);
 	float below = -(vW.y - board_c.y);
-	FOG = vec4(haze_col, clamp(smoothstep(haze_r.x, haze_r.y, dist) * 0.7 + smoothstep(20.0, 420.0, below) * 0.8, 0.0, 1.0) * haze_max);
+	FOG = vec4(haze_col, clamp(smoothstep(haze_r.x, haze_r.y, dist) * 0.55 + smoothstep(60.0, 700.0, below) * 0.4, 0.0, 1.0) * haze_max);
 }
 """
 
 # per kind: base albedo (linear), fresh fracture colour, shader kind, crystal glow
 const KINDS := {
-	"stone": {"base": Vector3(0.085, 0.072, 0.06), "fresh": Vector3(0.2, 0.185, 0.165), "k": 0},
-	"iron": {"base": Vector3(0.07, 0.058, 0.05), "fresh": Vector3(0.42, 0.4, 0.38), "k": 1},
-	"carbon": {"base": Vector3(0.032, 0.03, 0.029), "fresh": Vector3(0.07, 0.068, 0.066), "k": 2},
+	"stone": {"base": Vector3(0.12, 0.098, 0.078), "fresh": Vector3(0.27, 0.235, 0.2), "k": 0},
+	"iron": {"base": Vector3(0.085, 0.066, 0.054), "fresh": Vector3(0.44, 0.41, 0.38), "k": 1},
+	"carbon": {"base": Vector3(0.045, 0.041, 0.038), "fresh": Vector3(0.09, 0.085, 0.08), "k": 2},
 	"ice": {"base": Vector3(0.1, 0.11, 0.125), "fresh": Vector3(0.62, 0.74, 0.86), "k": 3},
 	"crystal": {"base": Vector3(0.06, 0.058, 0.064), "fresh": Vector3(0.14, 0.14, 0.16), "k": 4},
 }
