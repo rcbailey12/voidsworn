@@ -20,6 +20,8 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 - [ ] Music credits: the eight CC BY tracks need a visible credits screen before the game is shared (coverage triage gap; no credits screen found in godot/main).
 - [ ] The rest of the coverage triage gaps (contrib/opus/compute/coverage_triage.md, Gaps section): turn-boundary state checks, native save fixtures, audio mix checks, admiral Command card text, text overhaul accuracy fixes, the in-game codex, tutorial clock tip and retreat gloat, Steam release checklist. Each to be checked against the code before work.
 
+- [ ] Hullbreaker portraits round 2 (Ryan, Nov 1 17:32: fine for now, after ships and the battlefield work): matte dark grown hide instead of silver scales, a heavier wolf-bear skull and muzzle, clear differences between individuals (age, scars, fur colour, build). Also clear the unused grey-alien Glasswright alternates under Tamsa (godot/portraits/alts).
+
 ## 1. Ships: finish the Pyre-Barge (C19_51), the worked example
 - [ ] [A1] Real material texture: CC0 scanned sets (downloaded to `Downloads\voidsworn_test\textures`) blended in by world position. `docs/ship_pipeline/TEXTURE_PASS.md`
 - [ ] [A1] Dress the big plain parts: sponson boxes and hoods, front armour slabs, side gun tanks and drums, engine block (`docs/feedback/2026-10-22/`)
