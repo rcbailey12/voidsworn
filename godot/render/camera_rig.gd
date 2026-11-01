@@ -65,6 +65,16 @@ func glide(p: Vector3, dur := 1.1, rr := -1.0) -> void:
 	slow_until = _clock + dur
 
 
+# true when a board point falls inside a part of the screen given as fractions (x0, y0, x1, y1), for framing a view
+# inside the part the HUD panels leave clear
+func sees_in(p: Vector3, x0: float, y0: float, x1: float, y1: float) -> bool:
+	if is_position_behind(p):
+		return false
+	var vs := get_viewport().get_visible_rect().size
+	var sp := unproject_position(p)
+	return sp.x > vs.x * x0 and sp.x < vs.x * x1 and sp.y > vs.y * y0 and sp.y < vs.y * y1
+
+
 # true when a board point is well inside the view (so a hand-over needs no glide)
 func sees(p: Vector3, margin := 0.22) -> bool:
 	if is_position_behind(p):

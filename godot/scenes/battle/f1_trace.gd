@@ -140,9 +140,16 @@ func run(battle) -> void:
 	b.arrival.connect(_on_arrival)
 	b.wings_together.connect(_on_wings)
 	Engine.time_scale = float(b.args.get("fast", 1.0))
-	while b.api == null or b.busy or b.warming:
+	while b.api == null or b.warming:
 		await get_tree().process_frame
+	# 0. the opening beat (R62): a wide view of both fleets and the objective, then the glide to the ship that is up
+	if DisplayServer.get_name() != "headless":  # the headless window is 64 pixels square: framing is judged on the PC
+		_check(b.opening_framed, "the battle opens on a wide view: every ship of both sides and the objective fit between the panels")
+	if b.opening:
+		await _shot("opening_wide")
 	await _idle()
+	while b.opening:
+		await get_tree().process_frame
 	await get_tree().create_timer(1.5 / maxf(Engine.time_scale, 1.0)).timeout
 	var h0 := _hash()
 	_rec("start", h0, h0, "%d ships on the board" % (b.V["units"] as Array).size())
@@ -376,8 +383,29 @@ func run(battle) -> void:
 	_rec("round %d played out%s" % [r0, (" (and %d more)" % (rounds - 1)) if rounds > 1 else ""], hz, hz, "now round %d" % int(b.V.get("round", 0)))
 	_check(int(b.V.get("round", 0)) > r0 or b.ended, "a full round completes: every ship of both sides acted, no stall")
 	await _shot("round_two")
+	await _station_shot()
 	_check(b.errors.is_empty(), "no errors in the battle (%s)" % ", ".join(PackedStringArray(b.errors)))
 	_finish()
+
+
+# a still of the station up close when the board has one (A4's painted station, switched on in render/board.gd)
+func _station_shot() -> void:
+	var sum := Vector3.ZERO
+	var n := 0
+	for k in b.V.get("terrain", {}):
+		if str(b.V["terrain"][k]) == "station":
+			var qr: PackedStringArray = str(k).split(",")
+			sum += b.board.hex_world(float(qr[0]), float(qr[1]))
+			n += 1
+	if n == 0 or b.ended:
+		return
+	var props: Node = b.board.props
+	if FileAccess.file_exists("res://gen/manifest.json"):  # A4's painted ships are built on the PC only
+		_check(props != null and props.find_child("station", true, false) != null, "the station on the board is A4's painted one")
+	b.cam.b = 0.9
+	b.cam.glide(sum / float(n), 0.3, 120.0)
+	await get_tree().create_timer(1.6 / maxf(Engine.time_scale, 1.0)).timeout
+	await _shot("station")
 
 
 func _finish() -> void:

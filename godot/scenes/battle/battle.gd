@@ -567,8 +567,81 @@ func _begin(a) -> void:
 					n.visible = false
 		showcase_ready = true
 		return
+	if not bot and not args.has("shots") and not args.has("breach-shots"):
+		_start_opening()
 	if not busy:
 		_runner()
+
+
+# F1 (R62, battles start zoomed out): the opening beat. After the warm-up the camera frames both fleets and the objective
+# inside the part of the screen the panels leave clear, holds about 1.75 s (or until the first key or click), then glides to
+# the ship that is up (or back to the home view if the enemy moves first). The first hand-over happens underneath; only its
+# camera glide waits for the beat to end.
+# the clear part of the screen: right of the fleet list, left of the info panel, under the top bar, above the card
+const OPEN_FRAME := [0.16, 0.13, 0.80, 0.80]
+const OPEN_HOLD := 1.75
+var opening := false
+var opening_framed := false   # every ship and objective hex fitted in the clear part of the screen (for the trace)
+
+
+func _opening_points() -> Array:
+	var pts: Array = []
+	for u in V["units"]:
+		if not u["dead"]:
+			pts.append(board.hex_world(u["q"], u["r"]))
+	var keys: Array = board.zone_of.keys()
+	for k in V.get("terrain", {}):
+		if str(V["terrain"][k]) == "station":
+			keys.append(k)
+	for k in keys:
+		var qr: PackedStringArray = str(k).split(",")
+		if qr.size() == 2:
+			pts.append(board.hex_world(float(qr[0]), float(qr[1])))
+	return pts
+
+
+func _fits_open(pts: Array) -> bool:
+	for p in pts:
+		if not cam.sees_in(p, OPEN_FRAME[0], OPEN_FRAME[1], OPEN_FRAME[2], OPEN_FRAME[3]):
+			return false
+	return true
+
+
+func _start_opening() -> void:
+	var pts := _opening_points()
+	if pts.is_empty():
+		return
+	var lo: Vector3 = pts[0]
+	var hi: Vector3 = pts[0]
+	for p in pts:
+		lo = Vector3(minf(lo.x, p.x), 0, minf(lo.z, p.z))
+		hi = Vector3(maxf(hi.x, p.x), 0, maxf(hi.z, p.z))
+	cam.reset_view()
+	cam.t = (lo + hi) * 0.5
+	cam.r = cam.home_r
+	cam.snap()
+	var cap := maxf(cam.bounds.x, cam.bounds.y) * 3.0
+	for i in 30:
+		if _fits_open(pts) or cam.r >= cap:
+			break
+		cam.r = minf(cam.r * 1.08, cap)
+		cam.snap()
+	opening_framed = _fits_open(pts)
+	opening = true
+	var tm := get_tree().create_timer(OPEN_HOLD)
+	while opening and tm.time_left > 0.0 and is_inside_tree():
+		await get_tree().process_frame
+	_end_opening()
+
+
+func _end_opening() -> void:
+	if not opening:
+		return
+	opening = false
+	if api != null and api.phase == "player" and sel != "" and views.has(sel):
+		cam.glide(_pos(sel), 1.4, cam.home_r)
+	else:
+		cam.glide(cam.home, 1.4, cam.home_r)
 
 
 # Loading-screen warm-up (Muse shipping review): compile every pipeline the battle will use before play starts, so the
@@ -2355,6 +2428,8 @@ func _unit_at(q: int, r: int) -> Dictionary:
 func _unhandled_input(e: InputEvent) -> void:
 	if api == null:
 		return
+	if opening and ((e is InputEventMouseButton and (e as InputEventMouseButton).pressed) or (e is InputEventKey and (e as InputEventKey).pressed)):
+		_end_opening()
 	if e is InputEventMouseButton or e is InputEventMouseMotion:
 		if e is InputEventMouseButton and hud.over_ui((e as InputEventMouseButton).position) and (e as InputEventMouseButton).pressed:
 			return
@@ -2826,7 +2901,7 @@ func _hand_over() -> void:
 	if chime_round != int(V.get("round", 0)):
 		chime_round = int(V.get("round", 0))
 		sfx.turn("player")
-	if not cam.sees(_pos(pick)):
+	if not opening and not cam.sees(_pos(pick)):
 		cam.glide(_pos(pick))
 
 

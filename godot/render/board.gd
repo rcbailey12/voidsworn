@@ -4,6 +4,7 @@ extends Node3D
 # whole board); overlays (move range, targets, hover, zones) only change instance colours.
 
 const HT := preload("res://render/hull_table.gd")
+const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 
@@ -427,6 +428,12 @@ func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float
 func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	var codes := ["H8_23", "V15_37", "C14s_23", "D20_23"]
 	var code: String = codes[rng.randi() % codes.size()]
+	# A4's painted hull, burnt (same random draws as the old path, so the rest of the board does not shift)
+	var a4 := A4P.hulk(code)
+	if a4 != null:
+		a4.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3.ONE * 11.0), c)
+		props.add_child(a4)
+		return
 	var p := "res://gen/hulls/%s.res" % code
 	if not ResourceLoader.exists(p):
 		return
@@ -442,6 +449,12 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 
 
 func _station(c: Vector3, rng: RandomNumberGenerator, size := 46.0) -> void:
+	# A4's painted station (O1_37 in its own paint); the flat grey clay below stays as the fallback
+	var a4 := A4P.station(size)
+	if a4 != null:
+		a4.transform = Transform3D(Basis.from_euler(Vector3(0.06, rng.randf() * 6.0, 0.04)), c + Vector3(0, 3, 0))
+		props.add_child(a4)
+		return
 	var p := "res://gen/hulls/O1_37.res"
 	if not ResourceLoader.exists(p):
 		return
