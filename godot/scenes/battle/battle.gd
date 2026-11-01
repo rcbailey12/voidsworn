@@ -3347,14 +3347,27 @@ func _move_frames() -> void:
 			print("[moves] %s (%s) path: %d steps, score %.1f" % [str(id), str(u["cls"]), (best.path as Array).size(), bsc])
 		if best == null:
 			continue
+		# frame the whole burn: every hex on the path plus the hull's length, with a wide margin (R55: wider framing)
 		var a: Vector3 = views[id].position
-		var b: Vector3 = board.hex_world(best.q, best.r)
+		var lo := Vector2(a.x, a.z)
+		var hi := lo
+		for st in best.path:
+			var pp: Vector3 = board.hex_world(st["q"], st["r"])
+			lo = Vector2(minf(lo.x, pp.x), minf(lo.y, pp.z))
+			hi = Vector2(maxf(hi.x, pp.x), maxf(hi.y, pp.z))
+		var hl := float(views[id].L)
+		var ext := (hi - lo) + Vector2(hl, hl) * 1.2
 		cam.a = -PI / 2.0
 		cam.b = 0.85
-		cam.r = maxf(float(views[id].L) * 3.0, a.distance_to(b) * 2.4)
-		cam.t = (a + b) * 0.5
+		# about 1.47 r of board shows across a 16:9 frame and 1.26 r deep at this pitch; keep the burn in the middle 60%
+		cam.r = clampf(maxf(ext.x / 1.47, ext.y / 1.26) / 0.6, 50.0, 320.0)
+		var mid2 := (lo + hi) * 0.5
+		cam.t = Vector3(mid2.x, 0, mid2.y)
 		cam.snap()
 		await get_tree().create_timer(0.4).timeout
+		var b: Vector3 = board.hex_world(best.q, best.r)
+		var vs := get_viewport().get_visible_rect().size
+		print("[moves] %s frame r %.0f, start on screen %s, end %s (of %s)" % [str(id), cam.r, str(cam.unproject_position(a).round()), str(cam.unproject_position(b).round()), str(vs)])
 		move_frames = shots_dir.path_join(str(id))
 		var n0 := shot_n
 		var sid: String = id
@@ -3365,7 +3378,7 @@ func _move_frames() -> void:
 		for k in 42:  # the settle, 1.4 s at 30 frames a second
 			await _snap("f")
 		move_frames = ""
-		print("[moves] %s done: %d frames" % [str(id), shot_n - n0])
+		print("[moves] %s done: %d frames, at rest on screen %s, camera target %s r %.0f" % [str(id), shot_n - n0, str(cam.unproject_position(views[id].position).round()), str(cam.t.round()), cam.r])
 		if _can_act():
 			if _classic():
 				_cmd(func(): api.end_turn(); return true)
