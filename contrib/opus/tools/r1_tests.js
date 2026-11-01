@@ -142,6 +142,12 @@ check('PROG-6 only an owned admiral (bought, or free) can be picked or launched;
   const firsts = ['voidsworn', 'hegemony', 'corsair', 'chorus', 'ithar', 'deathless'].every(f => Object.entries(T.ADMIRALS).some(([id, a]) => (a.fac || 'voidsworn') === f && !(a.cost > 0)));
   return freeOk && stayed && firsts; });
 check('the Hullbreaker surname pool has no Greyback', () => !/Greyback/.test(fs.readFileSync(path.join(ROOT, 'data.js'), 'utf8')));
+check('naming lint: 0 hard hits in R1 files (JS game files, godot/rules, godot/campaign, godot/ui/campaign); the three clashing Hullbreaker surnames are gone', () => {
+  const out = require('child_process').spawnSync(process.execPath, [path.join(ROOT, 'contrib/opus/tools/naming_lint_game.js')], { cwd: ROOT, encoding: 'utf8' }).stdout || '';
+  const mine = out.split('\n').filter(l => / HARD /.test(l) && (/^[a-z0-9_]+\.(js|html):/.test(l) || /^godot\/(rules|campaign|ui\/campaign)\//.test(l)));
+  if (mine.length) console.log('   ' + mine.join('\n   '));
+  const d = fs.readFileSync(path.join(ROOT, 'data.js'), 'utf8');
+  return /naming_lint_game:/.test(out) && mine.length === 0 && !/Red-Muzzle|Ashfur|Rustcoat/.test(d); });
 check('UI-6 the battle hint never says "nothing left" while the ship can move or brace (ui3d.js)', () => {
   const s = fs.readFileSync(path.join(ROOT, 'ui3d.js'), 'utf8'); return /u\.mp>0\?'Tap a gold hex to keep moving/.test(s) && /canOrder\(u,'brace'\)\?'Nothing in range\. Tap Brace/.test(s); });
 

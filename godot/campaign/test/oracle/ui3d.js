@@ -17,7 +17,7 @@ const ARENA_OPTS=[['random','Random'],['strip','Classic strip'],['square','Squar
 const MAPS=[['random','Random'],['belt','Asteroid belt'],['station','Derelict station'],['planet','Planet edge'],['storm','Ion storm'],['graveyard','Ship graveyard']], DEPS=[['line','Line'],['flank','Flank'],['ambush','Ambush']];
 const SEC_LBL={prow:'Prow',mid:'Midships',eng:'Engines'};
 const FNAMES={hegemony:['HNS Dominator','HNS Relentless','HNS Sovereign','HNS Comptroller','HNS Allocation','HNS Forecast','HNS Adjudicator','HNS Vigilance','HNS Tyrant','HNS Resolute'],
-  corsair:['Rust Maw','Gutter Queen','Red Tally','Scrapjaw','Ashen Grin','Last Laugh','Cinder Wolf','Bad Omen','Salvage Right','Bent Crown'],
+  corsair:['Rust Maw','Gutter Queen','Red Tally','Scrapjaw','Ashen Grin','Cold Trail','Cinder Wolf','Bad Omen','Salvage Right','Bent Crown'],
   chorus:['Node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorebloom','Sac-mother','Sour Spine','Tidehunger','Wet Maw','Crawling Gut'],
   ithar:['Silverthorn','Clear Whisper','Lament of Stars','Glass Heron','Still Glass','Far Focus','Pale Current','Starfall','Quiet Prism','Evening Tide'],
   deathless:['Long Noon','The Unbroken','Last Light Kept','Copy of Ardent','Ninth Shade','Cold Memory','Never-Ending','Gnomon','Dust of Noon','Silent Heir']};

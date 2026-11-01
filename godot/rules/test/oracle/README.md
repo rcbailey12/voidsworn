@@ -2,7 +2,7 @@
 
 These are the game's `data.js`, `core.js` and `battle.js`, copied unchanged from main e3bff1e (Nov 1: stream B step 13, the R1 rules fix batch of the feel pass, commit 53531b2, plus the Hullbreaker blurb string e3bff1e; before that 8e81d75, steps 0 to 12 and 9b), plus:
 
-- `fnames.js`, the `FNAMES` table from `ui3d.js` at e80a6a0, with the lore round 8 ship names (the browser defines it and `core.js` shipName reads it);
+- `fnames.js`, the `FNAMES` table from `ui3d.js` (lore round 8 ship names; Nov 1 R1 follow-up: the retired Hullbreaker name Last Laugh became Cold Trail, as in ui3d.js) (the browser defines it and `core.js` shipName reads it);
 - `campaign_hooks.js`, `nemAdaptName` from `campaign_run.js` at e80a6a0 (unchanged since d8b47c6) (battle.js calls it when it exists, and the browser always loads it).
 
 The parity harness runs these files, not the live ones at the repo root, so stream B can change the JS rules without breaking the port's golden test.

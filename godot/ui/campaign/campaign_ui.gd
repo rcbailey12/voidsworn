@@ -334,7 +334,6 @@ func _admiral() -> Control:
 	for id in C.page["data"]["mine"]:
 		var a = C.ADMIRALS[id]; var un = C.admiralOwned(id)   # R1 (PROG-6): bought, or free (each faction's first admiral)
 		var cv = card(C.picked_admiral == id, 330); var col = cv[1]
-		if not un: cv[0].modulate.a = 0.55
 		var face = _face(id)
 		if face != null:   # godot/portraits: the painting when one is picked, else the crest
 			var hr = hbox(10); var tr = TextureRect.new(); tr.texture = face; tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -349,8 +348,10 @@ func _admiral() -> Control:
 		if C.jt(a.get("cmd")):
 			col.add_child(rich(c("Command:", BONE3) + " [b]" + c(esc(a["cmd"]["n"]), GILT) + "[/b]. " + esc(_cmd_text(a["cmd"], C.picked_faction)) + " " + c("Gets stronger each round you hold it.", BONE3), 16))
 		if un: add(col, abtn("Selected" if C.picked_admiral == id else "Select", "pickAdmiral", id, C.picked_admiral == id))
-		else:   # R1 (PROG-2): unlock it here with renown
-			var ub = abtn("Unlock for " + C.numstr(a.get("cost")) + " renown", "buyAdmiral", id)
+		else:   # R1 (PROG-2): unlock it here with renown; the card reads locked (dimmed), the button stays bright and gilt when you can afford it
+			for ch in col.get_children(): ch.modulate.a = 0.55
+			var can = float(C.z0(C.META.get("renown"))) >= float(C.z0(a.get("cost")))
+			var ub = abtn("Unlock for " + C.numstr(a.get("cost")) + " renown", "buyAdmiral", id, can)
 			if ub != null: col.add_child(ub)
 			else: col.add_child(lbl("Unlock for " + C.numstr(a.get("cost")) + " renown", 15, BONE2))
 		cards.add_child(cv[0])
