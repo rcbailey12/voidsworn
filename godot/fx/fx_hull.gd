@@ -280,8 +280,10 @@ func hit_point(from: Vector3, sec: int, quad: int = -1) -> Dictionary:
 			bs = s
 			best = i
 	var p = sp[best]
+	# the shot strikes the first plating on its line (F3: before, a point more than a quarter of the length behind other
+	# hull was kept, so on a ring hull such as the Eclipse Tomb-ark a torpedo's whole blast went off hidden behind the rim)
 	var h = ray(from, p - from)
-	if not h.is_empty() and h["p"].distance_to(p) < 0.25 * L:
+	if not h.is_empty():
 		return h
 	return {"p": p, "n": sn[best]}
 
