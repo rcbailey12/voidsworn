@@ -417,3 +417,7 @@ if __name__ == '__main__':
     s68i = s68i_items(('nem_corsair_4', 'nem_corsair_6'))
     json.dump({'out': 's68', 'budget_s': 1150, 'items': s68i}, open(os.path.join(B, 's68i.json'), 'w'), indent=1)
     print('s68i', len(s68i))
+    # s68j: Hullbreaker Nemesis 2's implant (s68h s23) is a riveted plate over half the face; redone as the small eye ring
+    s68j = [{'id': 'nem_corsair_2', 'kind': 'cyber', 'seed': sd, 'src': 'ncrop68/nem_corsair_2.png', 'prompt': CYBER_HB + KEEP + CLEAN_E}
+            for sd in (37, 51, 61)]
+    json.dump({'out': 's68', 'budget_s': 300, 'items': s68j}, open(os.path.join(B, 's68j.json'), 'w'), indent=1)
