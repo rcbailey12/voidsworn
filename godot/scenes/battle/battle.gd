@@ -985,8 +985,14 @@ func _play_batch(bt: Dictionary) -> void:
 		speed = minf(speed, float(PACE["skip"]) if skip else (float(PACE["enemy"]) if _player_pending() > 0 else float(PACE["tail"])) * _enemy_pace_k())
 	var base_speed := speed
 	var i := 0
+	var pre := {}   # F1: event indexes already played (your wings' moves, flown together)
 	while i < evs.size():
 		var e: Dictionary = evs[i]
+		if pre.has(i):
+			i += 1
+			continue
+		if e["t"] == "activation" and str(e.get("side", "")) == "player" and _is_wing(e["unit"]) and not args.has("wings-apart"):
+			await _wings_together(evs, i, pre)
 		if e["t"] == "fire":
 			var grp: Array = []
 			var j := i + 1
@@ -2854,6 +2860,49 @@ func _auto_end(id: String) -> void:
 	ending = false
 	if is_inside_tree() and not ended and _can_act() and _active_id() == id and _nothing_left(id):
 		_end_ship("nothing_left")
+
+
+# F1 (Opus, Nov 1, vetoable): in a swarm phase your strike craft fly together. From a run of your squadrons'
+# activations, every wing's first move starts at once; their shots then play in the rules' order. Presentation only:
+# the events and their order in the rules are unchanged, the picture just overlaps the burns.
+func _is_wing(id) -> bool:
+	var u: Dictionary = VU.get(id, {})
+	if u.is_empty() and views.has(id):
+		u = views[id].u
+	return bool(u.get("squadron", false))
+
+
+func _wings_together(evs: Array, i: int, pre: Dictionary) -> void:
+	var picks: Array = []
+	var seen := {}
+	var j := i
+	while j < evs.size():
+		var x: Dictionary = evs[j]
+		if x["t"] in ["round", "side", "end"]:
+			break
+		if x["t"] == "activation" and not (str(x.get("side", "")) == "player" and _is_wing(x["unit"])):
+			break
+		if x["t"] == "move" and not pre.has(j) and _is_wing(x["unit"]) and _side(x["unit"]) == "player" and not seen.has(str(x["unit"])):
+			seen[str(x["unit"])] = true
+			picks.append(j)
+		j += 1
+	if picks.size() < 2:
+		return
+	var ids: Array = []
+	for k in picks:
+		pre[k] = true
+		ids.append(evs[k]["unit"])
+		_play_move(evs[k]["unit"], evs[k]["path"], false)   # not awaited: the burns overlap
+	var t0 := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t0 < 12000:
+		await get_tree().process_frame
+		var any := false
+		for id in ids:
+			var sv = views.get(id)
+			if sv != null and not sv.dead and sv.busy():
+				any = true
+		if not any:
+			break
 
 
 # F1: the enemy's turn strip: whose ship is acting and how far through their ships this round the enemy is

@@ -12,6 +12,7 @@ Captured in the running game on Ryan's PC (RTX 5080, Forward+), lane A job `f1_s
 - **The enemy's turn is marked.** A violet strip at the top says ENEMY TURN, which ship is acting and how far through their ships they are ("ship 3 of 7"), with a progress bar. When all your ships are done and the enemy plays out the rest of the round, a big "Enemy turn" banner shows once. Enter or Space still hurries them.
 - **Reinforcements are announced.** A banner (Reinforcements, or Enemy reinforcements), a line naming the ship, a flash and an "Arrived" tag where it appears, a camera nudge over to it and back, and NEW next to it in your fleet list.
 - **The board.** The hexes your ship can reach are blue, with a lit edge and one bright outline around the whole area. No terrain, zone or marker uses blue, so they can't be mixed up with nebula (violet), debris (sand), storms (yellow), exits (green) or the relay (gold). The rest of the grid is a quiet grey that fades away from the ship that is up. The firing arcs are now thin bright edges with almost no fill, so they no longer wash half the board tan.
+- **Your strike craft fly together** (added after F2 slowed the moves; Opus's call, vetoable). At the start of a round your wings used to move one after another; now all their moves start at once and their shots follow in the usual order. In a carrier-heavy 20-ship fight (s23, three rounds) the wing moves took 28 s a round instead of 36 s, and a whole round 46 s instead of 51 s. Nothing in the rules changes; `--wings-apart` brings back the old picture for comparisons.
 - **The play log.** Every one of your ship turns is recorded: which ship, how it was picked (handed over or picked by you), how long until the first action, what it did (moves, fire, brace, abilities), plans and targets dropped, and how it ended. It goes into the campaign save's run log and into a file per battle in the game's user folder (`play_logs`), so the next playtest gives real data.
 
 ## Pictures
@@ -49,6 +50,7 @@ The clips are driven by the test script, which clicks at machine speed; a person
 8. Mid-move fire as its own declared step (Muse's option) is not built; the attack-move preview covers that case.
 9. Classic mode (whole turns, a setup option) keeps its old controls; the card does not show there.
 10. The play log keeps every activation for the newest 40 battles in the save; older battles keep only their summary.
+11. Only your wings fly together; the enemy's wings still move one by one in their swarm phase. Doing the same for theirs would save more time; say if you want it.
 
 ## For other streams
 

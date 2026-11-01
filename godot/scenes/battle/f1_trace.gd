@@ -372,5 +372,6 @@ func _finish() -> void:
 	var t := FileAccess.open(dir.path_join("trace.txt"), FileAccess.WRITE)
 	if t != null:
 		t.store_string("F1 acceptance trace: %d checks, %d failed\n\n%s\n" % [lines.size(), fails, "\n".join(PackedStringArray(lines))])
+	print("[f1-trace] pace ", JSON.stringify(b.pace_stats()))
 	print("[f1-trace] %d checks, %d failed" % [lines.size(), fails])
 	b.get_tree().quit(1 if fails > 0 else 0)
