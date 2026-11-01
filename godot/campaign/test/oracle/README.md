@@ -2,10 +2,10 @@
 
 These are the game's JS files, copied unchanged, that the campaign parity test runs against:
 
-- All seven files from commit **f770e06** (Oct 31 2026: stream B step 12, the rename map sections 16 and 17 strings, on top of step 11, the campaign battle-start fix (5a99602), and step 10, the lore round 8 strings, R59; display strings only, no rule or number changed; it also carries steps 5 to 9: pass 3 tuning, the admiral band, skirmish lists and the RAMP easing). Before that: d8b47c6 (steps 0 to 4).
+- All seven files from commit **8e81d75** (Nov 1 2026: stream B step 9b, the RAMP sector 2 budget in battle.js: grow 1.2/1.24, thin .67/.62, boss escorts .5/.6; the last rules change). Before that **f770e06** (Oct 31 2026: stream B step 12, the rename map sections 16 and 17 strings, on top of step 11, the campaign battle-start fix (5a99602), and step 10, the lore round 8 strings, R59; display strings only, no rule or number changed; it also carries steps 5 to 9: pass 3 tuning, the admiral band, skirmish lists and the RAMP easing). Before that: d8b47c6 (steps 0 to 4).
 - No local edits: the `campaign3d.js` line 56 comment that swallowed `prepBattle()` (patched here until now) is fixed at the source in 5a99602.
 - `ui3d.js` is presentation; only two of its tables are evaluated: `FNAMES` (ship names for non-Voidsworn fleets, which the browser's `shipName` uses) and `TIPS` (the battle onboarding tips, exported for the battle UI).
-- History: b71c8d7 / 29d431c (the first port), then c7b1a78, then c88567c, then d8b47c6, then f770e06 (strings 90aaf85, the battle-start fix 5a99602, strings step 12).
+- History: b71c8d7 / 29d431c (the first port), then c7b1a78, then c88567c, then d8b47c6, then f770e06 (strings 90aaf85, the battle-start fix 5a99602, strings step 12), then 8e81d75 (RAMP step 9b).
 
 The parity harness and the campaign table exporter read these files, not the live ones at the repo root, so stream B can change the JS rules during the sprint without breaking the campaign port's golden test.
 

@@ -5,14 +5,17 @@ Newest first. Each row names the commit the run used and where its log lives.
 
 ## What the oracle is
 
-- The game's own JS campaign files, pinned unchanged: `godot/campaign/test/oracle/`, copied from **f770e06** (Oct 31 2026: stream B steps 10 to 12, the lore round 8 strings and the campaign battle-start fix; before that d8b47c6, steps 0 to 4, with one local comment fix). See `oracle/README.md`.
-- The campaign rules in Godot last changed at **ae6073b** (port of stream B step 4, oracle d8b47c6). Everything after that in `godot/campaign/` is the test harness or notes; the screens (`godot/ui/campaign/`) never change campaign state (every button calls `campaign.act()`), so map and panel work cannot move parity.
+- The game's own JS campaign files, pinned unchanged: `godot/campaign/test/oracle/`, copied from **8e81d75** (Nov 1 2026: stream B step 9b, the RAMP sector 2 budget, the last rules change; before that f770e06, steps 10 to 12, the lore round 8 strings and the campaign battle-start fix; before that d8b47c6, steps 0 to 4, with one local comment fix). See `oracle/README.md`.
+- The campaign rules in Godot last changed at **ae6073b** (port of stream B step 4, oracle d8b47c6). Step 9b is a number change inside the RAMP table only, so it reaches Godot through the re-exported tables with no code change. Everything after that in `godot/campaign/` is the test harness or notes; the screens (`godot/ui/campaign/`) never change campaign state (every button calls `campaign.act()`), so map and panel work cannot move parity.
 - The tables (`data/campaign_tables.json`) are exported from the oracle by `node/export_campaign.js`; every parity run first re-exports them and checks the checksum.
 
 ## Runs
 
 | When (UTC) | Commit | Where | Check | Result | Log |
 |---|---|---|---|---|---|
+| Nov 1 | (this commit; oracle 8e81d75, RAMP step 9b) | Ryan's PC, lane A job `queue\g3_p9b.bat` | `parity_campaign.bat`, 30 seeded runs | pending (filled in when the job lands) | `docs/shots/g3_campaign/p9b/parity_campaign_log.txt` |
+| Nov 1 | (this commit; oracle 8e81d75) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS, sha256 661f15043e87c5a3) | session |
+| Nov 1 | (this commit) | cloud | `run_nem_scenarios.sh`; `save_test.gd`; `arc_hook_test.gd` | **PASS** (64 records); **PASS**; **PASS** | session |
 | Oct 31 | 6033f97 (oracle f770e06, lore round 8 strings) | Ryan's PC, lane A job `queue\g3_lore_6033f97.bat` | `parity_campaign.bat`, 30 seeded runs | **PASS, 30 of 30** (tables PASS; same step counts as the cloud run) | `docs/shots/g3_campaign/6033f97/parity_campaign_log.txt` |
 | Oct 31 | 6033f97 (oracle f770e06) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS) | session |
 | Oct 31 | 6033f97 | cloud | `run_nem_scenarios.sh`; `save_test.gd`; `arc_hook_test.gd` | **PASS** (64 records); **PASS**; **PASS** | session |
