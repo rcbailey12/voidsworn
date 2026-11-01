@@ -27,8 +27,25 @@ SPECIES = {
     ['c64b/gw_b_zit_s51', 'c64b/gw_a_zit_s11', 'c64b/gw_d_zit_s11'])]),
 }
 
-def sheet(src, out, sp):
-    title, sub, takes = SPECIES[sp]
+# R64 check round (k64, k64b) after Ryan's picks (Nov 1 06:02): Hullbreakers A1, Glasswrights A made organic, pushed to oil paint.
+#   python3 tools/portraits/concept_sheets.py <PORTRAITS_dir> <out_dir> check      PORTRAITS_dir holds c64c\, k64\ and k64b\
+CHECK = {
+ 'hullbreakers': ('Hullbreakers check: A1 in oil paint', 'Gold = seed 51. Row B is what every Hullbreaker gets repainted in.', [
+   ('A', 'Your pick A1, pushed toward oil paint', ['the same creature, brushwork and darker oil tones', 'still a bare grey chest (A1 had it); new paintings cover it'],
+    ['c64c/hb_b_qie_s51', 'k64/hb_a1_p55_zi2i_s51', 'k64b/hb_a1_p45_zi2i_s51']),
+   ('B', 'The repaint look', ['mane, hunched bulk, plated face, chest under the harness', 'face plates still a bit metallic; split jaw shows only in a snarl'],
+    ['k64b/hb_snarl2_qie_s51', 'k64b/hb_snarl2_p50_zi2i_s51', 'k64b/hb_calm2_p50_zi2i_s51']),
+   ('C', 'Too far, not used', ['more oil paint than B', 'the head turns into a long domed film-monster head'],
+    ['k64/hb_snarl_zit_s51', 'k64/hb_calm_p65_zi2i_s51', 'k64/hb_calm_zit_s51'])]),
+ 'glasswrights': ('Glasswrights check: organic, not glass', 'Gold = seed 51. Row B is what every Glasswright gets repainted in.', [
+   ('A', 'Your pick A, and two misses', ['A (left) is all glass; the fix adds living flesh', 'middle: an elf face under a visor; right: lips under the gem'],
+    ['c64c/gw_a_qie_s51', 'k64/gw_speak_p50_zi2i_s51', 'k64b/gw_speak2_qie_s51']),
+   ('B', 'The repaint look', ['milky living flesh, pink sinew, glass threads; a faceless gem head', 'seed 51 drew lips under the gem, so the repaint picks clean seeds'],
+    ['k64b/gw_speak2_qie_s11', 'k64b/gw_hand2_qie_s11'])]),
+}
+
+def sheet(src, out, sp, table=SPECIES, tag='c64'):
+    title, sub, takes = table[sp]
     lab = 104; blk = lab + C + GAP; top = 130
     im = Image.new('RGB', (W, top + len(takes) * blk + GAP), BG); d = ImageDraw.Draw(im)
     d.text((28, 24), title, fill=(240, 240, 240), font=font(40, True)); d.text((28, 78), sub, fill=(170, 170, 170), font=font(22))
@@ -45,9 +62,12 @@ def sheet(src, out, sp):
             if gold: d.rectangle((x, y, x + C - 1, y + C - 1), outline=(255, 200, 60), width=5)
             d.text((x + 10, y + 8), '%s%d' % (letter, j + 1) + ('  s51' if gold else ''), fill=(255, 214, 90) if gold else (255, 255, 255),
                    font=font(24, True), stroke_width=3, stroke_fill=(0, 0, 0))
-    p = os.path.join(out, 'c64_%s.webp' % sp)
+    p = os.path.join(out, '%s_%s.webp' % (tag, sp))
     im.save(p, 'WEBP', quality=84, method=6); print(p, im.size)
 
 if __name__ == '__main__':
     src, out = sys.argv[1], sys.argv[2]; os.makedirs(out, exist_ok=True)
-    for sp in SPECIES: sheet(src, out, sp)
+    if sys.argv[3:] == ['check']:
+        for sp in CHECK: sheet(src, out, sp, CHECK, 'k64')
+    else:
+        for sp in SPECIES: sheet(src, out, sp)

@@ -540,24 +540,27 @@ BATCHES['k64b'] = ([k64(k, 'qie', [51]) for k in ('hb_snarl2', 'hb_calm2')] + [k
 
 # ---------- full repaint p64 (after the k64 check): every Hullbreaker and Glasswright admiral and Nemesis ----------
 # Admiral ids are the data.js ADMIRALS keys (display names from rename_map_final.md); Nemesis ids never change. Each subject is
-# drawn by Qwen at seeds 11 and 51 (the design), then repainted by Z-Image at P64_DENOISE (the oil paint). Nemesis add NEM_STYLE.
-P64_DENOISE = 0.5
+# drawn by Qwen at four seeds (the design), then repainted by Z-Image (the oil paint: 0.50 for the Hullbreakers, 0.45 for the
+# Glasswrights, the strengths that held the design in k64 and k64b). Nemesis add NEM_STYLE. Uses the k64b wording (VOID5, PRISM5):
+# the Glasswright face only stays away on some seeds (k64b: s11 clean, s51 kept lips and a chin), so the picks skip faced seeds.
+P64_DENOISE = {'corsair': 0.5, 'ithar': 0.45}
+P64_SEEDS = [11, 23, 37, 51]
 HB_ADM = {  # (mane, jaw, eyes, who)
- 'grax': ('black streaked with grey', JAW_SHUT, 'amber', "This is Warlord Grax Ironmaw, the biggest and oldest pack-lord: a riveted iron "
+ 'grax': ('black streaked with grey', JAW_SHUT2, 'amber', "This is Warlord Grax Ironmaw, the biggest and oldest pack-lord: a riveted iron "
           "plate bolted across the two halves of the jaw like an iron maw, one huge clawed hand resting on a heavy boarding hook, harness "
           "plates in clashing colours torn from three different fleets, chains across the chest."),
- 'sable': ('glossy black', JAW_OPEN, 'pale green', "This is Sable the Smiling Knife, a lean, sleek hunter, the two halves of the jaw "
+ 'sable': ('glossy black', JAW_OPEN2, 'pale green', "This is Sable the Smiling Knife, a lean, sleek hunter, the two halves of the jaw "
            "parted a little in a thin cruel grin, a long curved blade of sharpened scrap held low in one claw, a close-fitting harness of "
            "matte black plates."),
- 'mott': ('ragged white-grey', JAW_SHUT, 'dim amber', "This is Old Mott, an ancient pack-lord who has outlived forty captains: the face "
+ 'mott': ('ragged white-grey', JAW_SHUT2, 'dim amber', "This is Old Mott, an ancient pack-lord who has outlived forty captains: the face "
           "plates cracked, pitted and worn pale with age, a heavy slow bulk, a harness of mismatched junk plates, small scrap fighter craft "
           "hanging from chains behind the shoulders."),
- 'vesh': ('rust-brown', JAW_SHUT, 'red', "This is Vesh the Collector: a harness built from collected plates of every faction, pale grey "
+ 'vesh': ('rust-brown', JAW_SHUT2, 'red', "This is Vesh the Collector: a harness built from collected plates of every faction, pale grey "
           "panels, clear crystal and dark violet machine plating, fresh weld seams glowing across them, a welding torch burning in one claw."),
 }
 GW_ADM = {
  'aelith': "This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round "
-           "her raised hand, a wide collar shaped like an opening aperture ring.",
+           "her raised hand of long tapering fingers, a wide collar shaped like an opening aperture ring.",
  'vaelen': "This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a "
            "thin white beam of light to a burning point, the beam splitting into a rainbow fringe.",
  'thorne': "This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a "
@@ -566,12 +569,12 @@ GW_ADM = {
             "chest like a lens, glowing at the edges.",
 }
 HB_NEM = [  # (mane, jaw, eyes, who), Nemesis 1..6, the round 8 subjects carried over to the new species
- ('grey', JAW_SHUT, 'amber', "a grizzled pack-alpha, a harness of pale grey hull panels and chains across the chest"),
- ('black', JAW_SHUT, 'red', "a brute with a welded iron guard bolted over the split jaw"),
- ('rust-brown', JAW_OPEN, 'pale blue', "a lean tracker with small listening dishes strapped to its harness, the heat pits glowing orange"),
- ('grey', JAW_OPEN, 'amber', "a huge old den-alpha, shards of clear crystal strapped into its harness"),
- ('black', JAW_OPEN, 'red', "a scarred hunter baring its split jaw, a harness of dark violet machine plates"),
- ('rust-brown and grey', JAW_SHUT, 'amber', "a young hunter with chains wrapped round its forearms and a boarding hook on its back"),
+ ('grey', JAW_SHUT2, 'amber', "a grizzled pack-alpha, a harness of pale grey hull panels and chains across the chest"),
+ ('black', JAW_SHUT2, 'red', "a brute with a welded iron guard bolted over the split jaw"),
+ ('rust-brown', JAW_OPEN2, 'pale blue', "a lean tracker with small listening dishes strapped to its harness, the heat pits glowing orange"),
+ ('grey', JAW_OPEN2, 'amber', "a huge old den-alpha, shards of clear crystal strapped into its harness"),
+ ('black', JAW_OPEN2, 'red', "a scarred hunter baring its split jaw, a harness of dark violet machine plates"),
+ ('rust-brown and grey', JAW_SHUT2, 'amber', "a young hunter with chains wrapped round its forearms and a boarding hook on its back"),
 ]
 GW_NEM = [
  "a gaunt keeper with a tall collar of sharp crystal shards, cold white light behind the facet of its head",
@@ -584,28 +587,29 @@ GW_NEM = [
 def p64_subjects():
     S = {}
     for k, (mane, jaw, eye, who) in HB_ADM.items():
-        S['corsair_' + k] = ('corsair', VOID4.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' ' + who)
+        S['corsair_' + k] = ('corsair', VOID5.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' ' + who)
     for k, who in GW_ADM.items():
-        S['ithar_' + k] = ('ithar', PRISM4.format(gear=ROBE) + ' ' + who)
+        S['ithar_' + k] = ('ithar', PRISM5.format(gear=ROBE2) + ' ' + who)
     for n, (mane, jaw, eye, who) in enumerate(HB_NEM, 1):
-        S['nem_corsair_%d' % n] = ('corsair', VOID4.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' A Nemesis, a rival enemy '
+        S['nem_corsair_%d' % n] = ('corsair', VOID5.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' A Nemesis, a rival enemy '
                                    'warlord of the Hullbreakers: ' + who + '.' + NEM_STYLE)
     for n, who in enumerate(GW_NEM, 1):
-        S['nem_ithar_%d' % n] = ('ithar', PRISM4.format(gear=ROBE) + ' A Nemesis, a rival enemy commander of the Glasswrights: ' + who + '.' + NEM_STYLE)
+        S['nem_ithar_%d' % n] = ('ithar', PRISM5.format(gear=ROBE2) + ' A Nemesis, a rival enemy commander of the Glasswrights: ' + who + '.' + NEM_STYLE)
     return S
 P64 = p64_subjects()
-def p64_items(fac, seeds=(11, 51)):
+def p64_items(fac, which=None, seeds=P64_SEEDS):
     out = []
     for i, (f, p) in P64.items():
-        if f != fac: continue
+        if f != fac or (which and not i.startswith(which)): continue
         full = p + ' ' + STYLE.format(**F8[f])
         out.append({'id': i, 'model': 'qie', 'prompt': full, 'nosuffix': True, 'seeds': list(seeds)})
         for sd in seeds:
             out.append({'id': '%s_s%d_oil' % (i, sd), 'model': 'zi2i', 'prompt': full, 'nosuffix': True, 'seeds': [sd],
-                        'ref': 'p64/%s_qie_s%d_00001_.png' % (i, sd), 'denoise': P64_DENOISE})
+                        'ref': 'p64/%s_qie_s%d_00001_.png' % (i, sd), 'denoise': P64_DENOISE[f]})
     return out
-BATCHES['p64h'] = p64_items('corsair'); BATCHES['p64g'] = p64_items('ithar')
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'p64h': 'p64', 'p64g': 'p64'}
+BATCHES['p64ha'] = p64_items('corsair', 'corsair_'); BATCHES['p64hn'] = p64_items('corsair', 'nem_')
+BATCHES['p64ga'] = p64_items('ithar', 'ithar_'); BATCHES['p64gn'] = p64_items('ithar', 'nem_')
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

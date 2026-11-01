@@ -1,0 +1,230 @@
+{
+ "out": "p64",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "ithar_aelith",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand of long tapering fingers, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "ithar_aelith_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand of long tapering fingers, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/ithar_aelith_qie_s11_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_aelith_s23_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand of long tapering fingers, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "p64/ithar_aelith_qie_s23_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_aelith_s37_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand of long tapering fingers, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "p64/ithar_aelith_qie_s37_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_aelith_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand of long tapering fingers, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/ithar_aelith_qie_s51_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_vaelen",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "ithar_vaelen_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/ithar_vaelen_qie_s11_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_vaelen_s23_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "p64/ithar_vaelen_qie_s23_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_vaelen_s37_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "p64/ithar_vaelen_qie_s37_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_vaelen_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/ithar_vaelen_qie_s51_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_thorne",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a broken reflection of it. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "ithar_thorne_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a broken reflection of it. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/ithar_thorne_qie_s11_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_thorne_s23_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a broken reflection of it. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "p64/ithar_thorne_qie_s23_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_thorne_s37_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a broken reflection of it. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "p64/ithar_thorne_qie_s37_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_thorne_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a broken reflection of it. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/ithar_thorne_qie_s51_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_mirelle",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its chest like a lens, glowing at the edges. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    23,
+    37,
+    51
+   ]
+  },
+  {
+   "id": "ithar_mirelle_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its chest like a lens, glowing at the edges. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/ithar_mirelle_qie_s11_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_mirelle_s23_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its chest like a lens, glowing at the edges. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "p64/ithar_mirelle_qie_s23_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_mirelle_s37_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its chest like a lens, glowing at the edges. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "p64/ithar_mirelle_qie_s37_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "ithar_mirelle_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its chest like a lens, glowing at the edges. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/ithar_mirelle_qie_s51_00001_.png",
+   "denoise": 0.45
+  }
+ ]
+}
