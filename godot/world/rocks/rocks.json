@@ -1,0 +1,235 @@
+{
+ "rocks": [
+  {
+   "name": "frag_00",
+   "family": "fragment",
+   "ext": [
+    2.0,
+    1.503,
+    1.019
+   ]
+  },
+  {
+   "name": "frag_01",
+   "family": "fragment",
+   "ext": [
+    2.0,
+    1.42,
+    1.269
+   ]
+  },
+  {
+   "name": "frag_02",
+   "family": "fragment",
+   "ext": [
+    2.0,
+    1.454,
+    1.221
+   ]
+  },
+  {
+   "name": "frag_03",
+   "family": "fragment",
+   "ext": [
+    2.0,
+    1.279,
+    0.999
+   ]
+  },
+  {
+   "name": "frag_04",
+   "family": "fragment",
+   "ext": [
+    2.0,
+    1.332,
+    0.929
+   ]
+  },
+  {
+   "name": "frag_05",
+   "family": "fragment",
+   "ext": [
+    2.0,
+    1.465,
+    0.887
+   ]
+  },
+  {
+   "name": "rubble_00",
+   "family": "rubble",
+   "ext": [
+    2.0,
+    1.276,
+    1.415
+   ]
+  },
+  {
+   "name": "rubble_01",
+   "family": "rubble",
+   "ext": [
+    2.0,
+    1.525,
+    1.538
+   ]
+  },
+  {
+   "name": "rubble_02",
+   "family": "rubble",
+   "ext": [
+    2.0,
+    1.579,
+    1.766
+   ]
+  },
+  {
+   "name": "rubble_03",
+   "family": "rubble",
+   "ext": [
+    2.0,
+    1.468,
+    1.409
+   ]
+  },
+  {
+   "name": "rubble_04",
+   "family": "rubble",
+   "ext": [
+    2.0,
+    1.317,
+    1.642
+   ]
+  },
+  {
+   "name": "binary_00",
+   "family": "binary",
+   "ext": [
+    2.0,
+    1.283,
+    1.123
+   ]
+  },
+  {
+   "name": "binary_01",
+   "family": "binary",
+   "ext": [
+    2.0,
+    1.302,
+    1.357
+   ]
+  },
+  {
+   "name": "binary_02",
+   "family": "binary",
+   "ext": [
+    2.0,
+    1.294,
+    1.273
+   ]
+  },
+  {
+   "name": "binary_03",
+   "family": "binary",
+   "ext": [
+    2.0,
+    1.414,
+    1.431
+   ]
+  },
+  {
+   "name": "slab_00",
+   "family": "slab",
+   "ext": [
+    2.0,
+    1.474,
+    0.737
+   ]
+  },
+  {
+   "name": "slab_01",
+   "family": "slab",
+   "ext": [
+    2.0,
+    1.113,
+    0.545
+   ]
+  },
+  {
+   "name": "slab_02",
+   "family": "slab",
+   "ext": [
+    2.0,
+    1.584,
+    0.584
+   ]
+  },
+  {
+   "name": "shard_00",
+   "family": "shard",
+   "ext": [
+    2.0,
+    0.941,
+    0.741
+   ]
+  },
+  {
+   "name": "shard_01",
+   "family": "shard",
+   "ext": [
+    2.0,
+    0.811,
+    0.642
+   ]
+  },
+  {
+   "name": "shard_02",
+   "family": "shard",
+   "ext": [
+    2.0,
+    0.822,
+    0.842
+   ]
+  },
+  {
+   "name": "shard_03",
+   "family": "shard",
+   "ext": [
+    2.0,
+    0.817,
+    0.677
+   ]
+  }
+ ],
+ "crystals": [
+  "crystal_00",
+  "crystal_01",
+  "crystal_02"
+ ],
+ "kinds": {
+  "stone": [
+   "fragment",
+   "binary",
+   "slab",
+   "rubble"
+  ],
+  "iron": [
+   "fragment",
+   "slab",
+   "binary"
+  ],
+  "carbon": [
+   "rubble",
+   "binary",
+   "fragment"
+  ],
+  "ice": [
+   "shard",
+   "fragment",
+   "binary"
+  ],
+  "crystal": [
+   "fragment",
+   "slab",
+   "shard"
+  ]
+ }
+}
