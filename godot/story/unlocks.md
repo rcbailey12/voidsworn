@@ -1,6 +1,6 @@
 # Arc unlocks: one hull variant per faction (draft for stream B)
 
-Status: DRAFT. Ryan (Oct 26) wants finishing a faction arc to give both a cosmetic reward and a gameplay unlock. The cosmetic side (medal, Chronicle entry, arc title, flagship paint) is built in the story layer (`godot/story/data/arcs.json`). The gameplay unlock below changes rules and balance, so **stream B owns it**: the numbers here are a starting point to be sim-checked (playtest-and-balance skill), not final.
+Status: built by stream B (data.js HULL_VARIANTS, arc field); names updated to lore round 8 on Oct 31. Ryan (Oct 26) wants finishing a faction arc to give both a cosmetic reward and a gameplay unlock. The cosmetic side (medal, Chronicle entry, arc title, flagship paint) is built in the story layer (`godot/story/data/arcs.json`). The gameplay unlock below changes rules and balance, so **stream B owns it**: the numbers here are a starting point to be sim-checked (playtest-and-balance skill), not final.
 
 ## How it would work
 
@@ -11,14 +11,16 @@ Status: DRAFT. Ryan (Oct 26) wants finishing a faction arc to give both a cosmet
 
 ## The six
 
-| Faction | Unlock (id) | Base hull | What changes | Why it fits the arc | Rough power vs the base |
-|---|---|---|---|---|---|
-| Voidsworn | **Penitent lantern-cruiser** (`vs_penitent_l`) | Penitent cruiser (cp 3, 120 hull, prow lance + two 6-damage broadsides) | Both broadsides give way to a second prow lance; a flak turret is added. `w: [['lance','F'],['lance','F'],['flak','T']]` | The relit beacon: two beams of light from the prow, like the first oath-fleet. | Twice the prow punch (2 x 20 against 20 + 2 x 6), but every big gun points one way, so it needs good facing and is weak to flankers. Even overall, sharper in skilled hands. |
-| Hegemony | **Interdictor column escort** (`h_interdictor_e`) | Interdictor destroyer (cp 2, 74 hull, 18 shields, ion prow + turbolaser turret) | Adds a flak turret; shields 18 to 24; speed 4 to 3. `w: [['ion','F'],['turbo','T'],['flak','T']]`, `mod: {sh: 24, sp: 3}` | The nineteen-year-old lieutenant who held the column: a ship built to stand beside the line, not to chase. | Tougher and better at stopping torpedoes and wings; slower, so worse at interdiction runs. Slightly defensive sidegrade. |
-| Corsair | **Gilded marauder** (`c_marauder_g`) | Corsair marauder (cp 3, 120 hull, two scatter broadsides, torpedo, flak) | Swaps the flak for a second prow torpedo; plated in saints' gold: hull 120 to 140, speed 4 to 3. `w: [['scatter','P'],['scatter','S'],['torp','F'],['torp','F']]`, `mod: {hp: 140, sp: 3}` | Bought with the treasure fleet's gold, and far too many torpedoes, as Corsairs like it. | A huge opening salvo and more hull, but no point defense and slower to close. Even; strong against big slow targets, weak against carrier fleets. |
-| Chorus | **Sun-eater razorfiend** (`b_razor_e`) | Chorus razorfiend (cp 3, 150 hull, regrows 9 a round, tendril turret + bioplasma prow, speed 4) | Regrowth 9 to 13; a second bioplasma spitter on the prow; speed 4 to 3. `w: [['tendril','T'],['bioplasma','F'],['bioplasma','F']]`, `mod: {regen: 13, sp: 3}` | Fed on the dead star's heart: heavier, hotter, slower. | More staying power and forward damage; loses the speed a razorfiend uses to reach the back line. Sidegrade, better in long brawls. |
-| Ithar | **Archive wraithcarrier** (`i_carrier_a`) | Ithar wraithcarrier (cp 5, 140 hull, 28 shields, 2 wings, pulsar lance + turret) | Carries the light-archive instead of its lance: 3 wings instead of 2, shields 28 to 30, the prow lance removed, a flak turret added. `w: [['turret','T'],['flak','T']]`, `mod: {hangar: 3, sh: 30}` | The houses' memory carried home, guarded by starlings (Aelith's arc of wings). | More wings, no lance of its own. Pure carrier: stronger with carrier admirals and wing doctrines, weaker alone. Even. |
-| Deathless | **Court guard destroyer** (`d_jackal_h`; the hull is data.js `d_jackal`, which stream B's rename map may rename) | Deathless destroyer (cp 2, 110 hull, gauss turret + gauss prow) | The prow gauss moves to a turret; a gauss sentry is added; hull 110 to 120. `w: [['gauss','T'],['gauss','T'],['gsentry','T']]`, `mod: {hp: 120}` | The first court's honour guard, standing watch on every side. | Fires in every direction and shoots down craft, with a little more hull; no extra damage. Mild defensive upgrade; watch it in sims, since turrets on a cheap hull add up. |
+Names follow lore round 8 (R59, `contrib/opus/compute/rename_map_final.md` section 8). The live numbers are stream B's rows in data.js `HULL_VARIANTS` (they were sim-tuned after this draft: cb55ec9, 47a101a); this table keeps the idea behind each one.
+
+| Faction | Unlock (id) | Base hull | Idea | Why it fits the arc |
+|---|---|---|---|---|
+| Sunward Crusade | **Vigil lance-cruiser** (`vs_penitent_l`) | Vigil-class cruiser | Two prow lances and a dorsal battery turret instead of the broadsides: its heavy punch points one way. | The siphon burned out: two beams of fire from the prow. |
+| Hegemony | **Cordon column escort** (`h_interdictor_e`) | Cordon destroyer | Adds a flak turret, paid for with a lighter hull and one hex of speed. | The nineteen-year-old lieutenant who held the column: built to stand beside the line, not to chase. |
+| Hullbreakers | **Trophy wrecker** (`c_marauder_g`) | Hullbreaker wrecker | A second prow torpedo instead of flak, and one hex slower. | Plated with trophies from the hunt for Rook, and far too many rockets. |
+| Chorus | **Sun-eater bladeback** (`b_razor_e`) | Chorus bladeback | Its tendril cluster becomes a second spine volley on a turret; regrows more, one hex slower. | Fed on the warm keys: heavier, hotter, slower. |
+| Glasswrights | **Ringing aperture** (`i_carrier_a`) | Glasswright aperture | A third wing, paid for with lighter shields and one hex of speed. | Built from Ringing Field glass on the voyage home with the last lens. |
+| Eclipse | **Archive guard flare** (`d_jackal_h`) | Eclipse flare | Both null cannons on turrets and a null spire, 10 less hull. | The array's guard frames, standing watch on every side. |
 
 ## For stream B (rules side)
 

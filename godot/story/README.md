@@ -22,7 +22,7 @@ Owner: the story and career stream (travel sprint, R37). Folders: `godot/story/`
 | `data/titles.json` | 12 titles earned from how you fight, plus a fallback, each worded per faction, with the rules in plain words. |
 | `data/medals.json` | 12 medals. |
 | `data/arcs.json` | What finishing each arc pays: medal, arc title, flagship paint, and the hull unlock id. |
-| `outlines.md`, `outlines_variants.md` | The six faction story outlines (REVISED after two reviews) and their B versions, skims and rival incidents; waiting for Ryan's approval. |
+| `outlines.md`, `outlines_variants.md` | The six faction story outlines, rewritten Oct 31 to the approved lore round 8 (R59; same beats, flags and effects), and their B versions, skims and rival incidents. |
 | `unlocks.md` | Draft hull unlock per faction, for stream B (rules and balance). |
 | `test/story_test.gd` | Headless checks (below). `test/check_outlines.py` checks outline word counts, pronoun tokens and dashes. `test/fixture_arc.json` is test data for `arc.gd`. |
 | `../ui/career/career_screen.gd` | The Career screen: Records, Medals, Titles, History, Chronicle tabs. |
@@ -93,7 +93,7 @@ if line != "": v.add_child(lbl(line, 17, GILT))     # plain text, no BBCode
 | page `end` | your admiral's win or loss line, then "Title earned: ..." on a new line |
 
 Also available:
-- `st.titled_name(admiral_id)`: "Warlord Grax Ironjaw the Breaker" (the latest title earned), for the admiral card and the map sidebar.
+- `st.titled_name(admiral_id)`: "Warlord Grax Steelgrin the Render" (the latest title earned), for the admiral card and the map sidebar.
 - `st.open_rename()`: opens "Name your flagship" (a "Rename" button on the fleet screen's flagship card would call this). The story already opens it once by itself over the first sector intro of every run.
 - `st.open_career()`: opens the Career screen (a "Career" tab beside the Progression tabs would call this).
 - Signals `st.medal_earned(id, name)` and `st.title_earned(row)`, for a toast if wanted.
@@ -111,7 +111,7 @@ Per battle, from the rules' own `B` after `finish_battle` (no new rules fields):
 
 Per run, at the end screen: the title earned, the run's line in the history, the admiral's record (runs, wins, best sector, battles, kills, losses, titles, flagship names) and the totals.
 
-**Titles** (`data/titles.json`, rules in plain words in each row): brawler (rams and boardings), prize taker (captures), lancer (lance and gauss share), torpedoer, carrier, broadside (port and starboard share), gunline (battery share), marksman (aimed shots), anvil (braces), unscarred (battles with no loss), butcher (kills per battle), tactician (abilities per battle). A run needs 3 battles. The strongest score wins; otherwise the fallback (the Steadfast).
+**Titles** (`data/titles.json`, rules in plain words in each row): brawler (rams and boardings), prize taker (captures), lancer (lance and null share; the rules id is still `gauss`), torpedoer, carrier, broadside (port and starboard share), gunline (battery share), marksman (aimed shots), anvil (braces), unscarred (battles with no loss), butcher (kills per battle), tactician (abilities per battle). A run needs 3 battles. The strongest score wins; otherwise the fallback (the Steadfast).
 
 **Medals** (`data/medals.json`): First Blood, Flagship Breaker, Lightning Strike, Last Stand, Unbroken, Prize Master, Nemesis Slain, Victor, Forged in Heat, Centurion, Long Service, Six Banners.
 
@@ -124,7 +124,7 @@ The plumbing is built and tested (`arc.gd`, `tokens.gd`, `rival.gd`); the arc fi
 - Outcome keys used by the outlines: `cred`, `cost`, `relic`, `payRelic`, `xp`, `healAll`, `dmgAll`, `dmgOne`, `dmgBig`, `shipRaw` (+`vet`), `mod`, `payMod`, `payXp`, `nemIntel`, `nemClock`, `ambush`. Counters written for the rival's memory: `mercy`, `greed`, `loud`.
 - **Hook wanted (G3 with stream B):** show `story.arc_beat(1)` after the sector I intro, and `arc_beat(2)` and `arc_beat(3)` when sectors II and III begin, through the event screen. Until then the arcs do not appear.
 - **Stream B's Nemesis (R42, now in data.js):** the story reads `RUN.nem.persona` (stream B's eight ids, four per faction; `test/check_personas.py` checks the pools match `NEM_FAC`), `beat` (how you beat him; `broad` maps to battery, `ion` to lance, `evaded` to evasive), `epithet` (part of his full name), `scars` and `beaten`. Still asked: a gender field on `RUN.nem` (`g`: `m`, `f` or `n`; until then `tokens.gd` guesses from feminine names in the pools, and a Chorus rival is `it`); `beaten`, `scars`, `persona`, `beat` and `epithet` carried into the battle's `B.nem`; and an event `{t: "nem_signature"}` when his faction behaviour fires, so the battle voice can speak it.
-- **Arc end rule:** close the arc on his sector III fight; if he reassembles (Deathless `revive`), on the second fight. If he flees or withdraws, the win still finishes the arc, with the escape line from outlines.md.
+- **Arc end rule:** close the arc on his sector III fight; if he is restored (Eclipse, rules field `revive`), on the second fight. If he flees or withdraws, the win still finishes the arc, with the escape line from outlines.md.
 
 ## Checks
 

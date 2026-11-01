@@ -1,5 +1,7 @@
 # Story review incorporation (R45): the four-way blind review, checked and applied
 
+> History (Oct 26, round 3). The names and lore here are pre-round-8; the current story is in `outlines.md` (rewritten Oct 31 to lore round 8, R59). Kept as a record.
+
 Owner: story stream. Date: Oct 26, 2026.
 
 **Inputs:**
