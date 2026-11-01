@@ -241,9 +241,9 @@
     },
     "cyber": {
      "file": "nemesis/pool/nem_corsair_2_cyber_patch.webp",
-     "x": 0.2904,
-     "y": 0.1185,
-     "area": 0.104
+     "x": 0.3594,
+     "y": 0.2656,
+     "area": 0.022
     },
     "eye": {
      "file": "nemesis/pool/nem_corsair_2_eye_patch.webp",
