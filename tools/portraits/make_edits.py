@@ -133,6 +133,14 @@ R8F.update({'nem_corsair_%d' % n: ('ncrop8/nem_corsair_%d.png' % n, "Replace the
 R8F.update({'nem_ithar_%d' % n: ('ncrop8/nem_ithar_%d.png' % n, GLASS_FIX + KEEP) for n in range(1, 7)})
 R8F['aelith'] = ('r8/ithar_aelith_r8_zit_s23_00001_.png', GLASS_FIX + KEEP_P)
 
+# Nov 1 (R64 brief): Crusade Nemesis 3's three scar edits (n8s, seed 11) came back with the plain dark background turned into
+# coloured block noise and the paint style drifted. Rerun on the same source with three other seeds and a line that pins the
+# background; batches/f64.json -> comfy_io\PORTRAITS\f64\.
+BG_KEEP = " The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+def f64_items():
+    return [{'id': 'nem_voidsworn_3', 'kind': k, 'seed': sd, 'src': 'ncrop8/nem_voidsworn_3.png', 'prompt': SCAR[k]['human'] + KEEP + BG_KEEP
+             if isinstance(SCAR[k], dict) else SCAR[k] + KEEP + BG_KEEP} for k in KINDS['voidsworn'] for sd in (23, 37, 51)]
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -168,3 +176,5 @@ if __name__ == '__main__':
     for tag, part in parts.items():
         json.dump({'out': 'n8s', 'budget_s': 1100, 'items': part}, open(os.path.join(B, 'r8s_%s.json' % tag), 'w'), indent=1)
         print('r8s_' + tag, len(part))
+    json.dump({'out': 'f64', 'budget_s': 900, 'items': f64_items()}, open(os.path.join(B, 'f64.json'), 'w'), indent=1)
+    print('f64', len(f64_items()))

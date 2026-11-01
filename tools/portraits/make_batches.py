@@ -328,7 +328,47 @@ BATCHES['r8a'] = [r8_poster(k, 'zit', S4) for k in ('corsair_grax_r8', 'ithar_ae
                  [r8_nem(f, n, d) for f in ('corsair', 'ithar') for n, d in enumerate(NEM8[f], 1)]
 BATCHES['r8b'] = [r8_poster('deathless_nekhet_r8', 'zit', S4)] + [r8_nem('deathless', n, d) for n, d in enumerate(NEM8['deathless'], 1)] + \
                  [r8_poster(k, 'qie', S4[:2]) for k in ('corsair_grax_r8', 'ithar_aelith_r8')]
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8'}
+# ---------- R64 redesign (Ryan, Nov 1): Hullbreakers "void hunters", Glasswrights "living prism" (lore_bible_r8.md 4.3, 6.3) ----------
+# Concept round c64: four takes per species, Z-Image seeds 11/23/37/51 plus Qwen seeds 11/51 (Ryan leans to s51). Ryan picks one take,
+# then every Hullbreaker and Glasswright admiral and Nemesis is repainted in it. The words "bear" and "wolf" are kept out of the
+# prompts on purpose: the round 8 renders show the models draw a literal bear or werewolf as soon as either word appears.
+VOID = ("A Hullbreaker, a huge hunched alien predator, plainly an alien and not an animal from Earth: no snout, no muzzle, no nose, "
+        "no round furry ears, no fur on the face. Massive heavy rounded shoulders and thick forearms ending in heavy claws. A coarse shaggy "
+        "mane of {mane} fur only over the neck and shoulders; the rest of the body is tough dark leathery hide. The face is bare and armoured "
+        "in overlapping bony plates. The jaw is split vertically down the middle into two hinged halves that open sideways like mandibles, "
+        "lined with teeth. Four small glowing eyes sit in one straight row across the brow, with small heat-sensing pits beside them. "
+        "Ridged armour plates run down the back and over the shoulders. A scrap armour harness of hull plates torn from other ships is "
+        "strapped over the body. Trophies are machine parts and hull plates, never skulls or bones. Not a bear, not a wolf, not a werewolf, "
+        "not a human in a costume.")
+PRISM = ("A Glasswright, a living alien whose flesh is clear and see-through like glass, plainly not human: the body is transparent, laced "
+         "inside with crystal structures and fine glowing threads that carry light through it like fibre optics, and the light splits into "
+         "rainbow colours at every edge. Tall and slender with a long neck. The head is faceted like a cut crystal gem, with no eyes, no "
+         "mouth, no nose and no ears. Long tapering fingers. Not a grey alien, not a green alien, no big black eyes, no smooth grey skin, "
+         "not a robot, not a statue, not an elf, nothing aquatic.")
+C64 = {
+ 'hb_a': ('corsair', "Portrait of a Hullbreaker hunter. " + VOID.format(mane='grey and black') + " The two jaw halves are closed, the "
+          "split seam plain down the chin, four amber eyes in a row, calm and patient menace."),
+ 'hb_b': ('corsair', "Portrait of a Hullbreaker raider mid-snarl. " + VOID.format(mane='black') + " The two jaw halves are spread wide "
+          "apart sideways, showing rows of inner teeth, the four eyes in a row glowing red."),
+ 'hb_c': ('corsair', "Portrait of a Hullbreaker seen from behind and to the side, looking back over its shoulder. " + VOID.format(mane='rust-brown') +
+          " The ridged back plates are the clearest thing in the picture, rimed with frost; the four eyes in a row glint over the shoulder."),
+ 'hb_d': ('corsair', "Portrait of an old Hullbreaker pack-lord. " + VOID.format(mane='grey') + " Slate-dark hide, the face plates scarred "
+          "and chipped with pale worn edges, the heat pits glowing faint orange, a harness of dark violet machine plates and a small "
+          "listening dish strapped to one shoulder."),
+ 'gw_a': ('ithar', "Portrait of a Glasswright elder. " + PRISM + " The faceted head is long and smooth, soft bands of coloured light "
+          "pulsing across its facets as it speaks, wearing layered robes of crystal plates and mirror-thread fabric."),
+ 'gw_b': ('ithar', "Portrait of a Glasswright keeper. " + PRISM + " The facets of the head rise into a tall tapering crystal crest; "
+          "white light enters the crest and fans out behind the head as a rainbow, a high collar of mirror-thread."),
+ 'gw_c': ('ithar', "Portrait of a Glasswright. " + PRISM + " The flesh is milky and soft like a jellyfish rather than hard glass, "
+          "clusters of clear crystal growing along the neck and shoulders, a warm light glowing deep inside the chest, the face a few soft facets."),
+ 'gw_d': ('ithar', "Portrait of a Glasswright light-shaper. " + PRISM + " One hand is raised, its long tapering fingers shaping a "
+          "glowing shard of glass, threads of light running down the arm into the fingertips, a ripple of colour running across the faceted head."),
+}
+def c64(i, model, seeds):
+    fac, p = C64[i]
+    return {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
+BATCHES['c64'] = [c64(k, 'zit', S4) for k in C64] + [c64(k, 'qie', [11, 51]) for k in C64]
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():
