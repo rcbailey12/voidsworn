@@ -388,6 +388,9 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 		am.set_shader_parameter("sun", SUN.normalized())
 		am.set_shader_parameter("shell", 1.035)
 		am.set_shader_parameter("k", 0.9 if int(P["kind"]) == 2 else 0.6)
+		# far things draw first among the see-through ones, so the board's underlay covers them (r6: the glow's rim
+		# showed across the board)
+		am.render_priority = -60
 		sh2.material_override = am
 		sh2.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		sh2.transform = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * R * 1.035), pos)
@@ -424,6 +427,7 @@ func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumber
 	m.set_shader_parameter("seed", r.randf() * 50.0)
 	m.set_shader_parameter("ring_r", Vector2(1.3, 2.3))
 	m.set_shader_parameter("light", 0.55)
+	m.render_priority = -60
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.transform = Transform3D(basis.scaled(Vector3.ONE * R), pos)
@@ -568,6 +572,18 @@ func _mat(kind: String) -> ShaderMaterial:
 	return _mats[kind]
 
 
+# r6: the board's own blockers get a lifted copy of the kind's material (a little brighter, a stronger rim, no haze), so
+# terrain reads at a glance against the dark board while the far rocks stay dark and quiet
+func _hero_mat(kind: String) -> ShaderMaterial:
+	var key := kind + "|hero"
+	if not _mats.has(key):
+		var m: ShaderMaterial = WR.material(kind, _look)
+		m.set_shader_parameter("lift", 1.55)
+		m.set_shader_parameter("haze_max", 0.0)
+		_mats[key] = m
+	return _mats[key]
+
+
 func _crystal_mat() -> ShaderMaterial:
 	if not _mats.has("_crystal"):
 		_mats["_crystal"] = WR.crystal_material(_look)
@@ -597,7 +613,7 @@ func blocker(p: Vector3, kind: String) -> void:
 	var name := _pick(kind, _rng)
 	if name == "":
 		return
-	var mat := _mat(kind)
+	var mat := _hero_mat(kind)
 	# the longest half-length stays under the hex's inner radius (8.66), so a blocker never seems to fill a free neighbour
 	var s := _rng.randf_range(6.4, 7.6)
 	var b := _rand_basis(_rng)
@@ -645,8 +661,13 @@ func _seen_on_board(p: Vector3, margin: float) -> bool:
 		return _over_board(p, margin)
 	if _over_board(p, margin):
 		return true
-	var cz := p.z + h * 1.48
-	return p.x > _lo.x - margin and p.x < _hi.x + margin and cz > _lo.z - margin and cz < _hi.z + margin
+	# the default camera (34 degrees down) and, r6, the camera tipped low (12 degrees: rocks under the near half of the
+	# board showed through it as dark ghosts)
+	for k in [1.48, 4.7]:
+		var cz: float = p.z + h * k
+		if p.x > _lo.x - margin and p.x < _hi.x + margin and cz > _lo.z - margin and cz < _hi.z + margin:
+			return true
+	return false
 
 
 # Would the battle camera (default or zoomed out) see a far point through the board? r2: moons and mountains seen
@@ -890,7 +911,7 @@ render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabl
 uniform vec2 half_ext = vec2(150.0, 100.0);
 uniform vec3 centre = vec3(0.0);
 uniform float fade = 90.0;
-uniform float k = 0.66;
+uniform float k = 0.76;
 uniform vec3 col = vec3(0.008, 0.011, 0.018);
 uniform vec3 well = vec3(0.0);
 uniform float well_r = 0.0;
@@ -1051,7 +1072,7 @@ func cloud_hexes(ps: Array, t: String, fac: String) -> void:
 	var i := 0
 	for p in ps:
 		for k in per:
-			var off := Vector3(_rng.randf_range(-5, 5), _rng.randf_range(1.0, 7.0), _rng.randf_range(-5, 5))
+			var off := Vector3(_rng.randf_range(-5, 5), _rng.randf_range(0.5, 4.0), _rng.randf_range(-5, 5))
 			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p + off))
 			mm.set_instance_custom_data(i, Color(_rng.randf_range(11.0, 17.0), _rng.randf(), _rng.randf_range(0.6, 1.0), _rng.randf()))
 			i += 1
@@ -1066,11 +1087,11 @@ func cloud_hexes(ps: Array, t: String, fac: String) -> void:
 		m.set_shader_parameter("c_a", Vector3(0.22, 0.26, 0.55))
 		m.set_shader_parameter("c_b", Vector3(0.42, 0.3, 0.7))
 		m.set_shader_parameter("storm", 1.0)
-		m.set_shader_parameter("gain", 0.32)
+		m.set_shader_parameter("gain", 0.2)
 	else:
 		m.set_shader_parameter("c_a", b[1])
 		m.set_shader_parameter("c_b", (b[2] as Vector3) * 0.7)
-		m.set_shader_parameter("gain", 0.26)
+		m.set_shader_parameter("gain", 0.19)
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = 20.0

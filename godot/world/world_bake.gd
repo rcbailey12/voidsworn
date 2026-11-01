@@ -48,6 +48,9 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 		for attempt in 3:
 			vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 			await RenderingServer.frame_post_draw
+			# r6: one more frame before reading back (a strip read straight after its draw came back with a dark block
+			# missing from the gas on the PC)
+			await RenderingServer.frame_post_draw
 			img = vp.get_texture().get_image()
 			if img == null or img.is_empty():
 				vp.queue_free()
@@ -61,6 +64,8 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 	if _cache.size() >= CACHE_MAX:
 		_cache.erase(_cache.keys()[0])
 	_cache[key] = full
+	if OS.has_environment("VS_WORLD_DUMP"):
+		full.save_jpg(OS.get_environment("VS_WORLD_DUMP").path_join(key.replace("|", "_") + ".jpg"), 0.9)
 	print("[world] baked %s %dx%d in %d ms" % [key, size.x, size.y, Time.get_ticks_msec() - t0])
 	return full
 

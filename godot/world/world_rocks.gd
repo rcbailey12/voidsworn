@@ -40,6 +40,7 @@ uniform sampler2D sky_tex : filter_linear, repeat_enable;
 uniform float has_sky = 0.0;
 uniform float sky_gain = 1.0;
 uniform mat3 turn = mat3(1.0);
+uniform float lift = 1.0;      // the board's own blockers are lifted a little so terrain reads at a glance
 varying vec3 vL;
 varying vec4 vC;
 varying vec3 vW;
@@ -112,7 +113,7 @@ void fragment() {
 		em = glow_col * vein * 0.3;
 		rough = mix(0.85, 0.4, fr);
 	}
-	a *= mix(0.4, 1.0, cav);
+	a *= mix(0.4, 1.0, cav) * lift;
 	float ht = n2 * 0.65 + n3 * 0.25 - crat * 0.2;
 	NORMAL = bump_normal(NORMAL, VERTEX, ht, q > 0.5 ? 0.9 : 0.5);
 	ALBEDO = a;
@@ -146,6 +147,8 @@ void fragment() {
 		hc = pow(textureLod(sky_tex, uv, 0.0).rgb, vec3(2.2)) * sky_gain + haze_col * 0.5;
 	}
 	FOG = vec4(hc, clamp(hz, 0.0, 1.0) * haze_max);
+	// lifted rocks (the board's blockers) catch a soft cool rim from the sky, which separates them from the dark board
+	em += vec3(0.05, 0.065, 0.09) * (lift - 1.0) * pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0);
 	// glow fades with the haze too (fog does not dim emission enough: deep rocks kept bright veins)
 	EMISSION = em * (1.0 - clamp(hz, 0.0, 1.0));
 }
