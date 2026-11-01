@@ -2,6 +2,7 @@
 #   python3 stage.py STAGE_DIR TAG CODE [CODE ...]     -> STAGE_DIR/a4tools/... and STAGE_DIR/a4_<CODE>_<TAG>.bat (one queued job per ship)
 #   python3 stage.py STAGE_DIR TAG --jobs-only CODE ...  (only the job files, when the tools are already on the PC)
 #   python3 stage.py STAGE_DIR TAG --jobs-only --lineups  (the seven faction lineup jobs: voidsworn_test\a4\lineups\<faction>.webp)
+#   python3 stage.py STAGE_DIR TAG --jobs-only --repaint [--per 3] CODE ...  (concept paint on built ships: a4_repaint.bat)
 #   python3 stage.py STAGE_DIR TAG --jobs-only --regen    (refresh godot\gen\ships on the PC after ship jobs; build_assets.gd)
 import os, sys, shutil
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
@@ -20,7 +21,7 @@ LINEUPS = [('corsair', 'Ashfall Hullbreakers line', 'C19_51 C16s_23 C15s_23 C14s
 
 
 def main():
-    a = sys.argv[1:]; out, tag = a[0], a[1]; codes = [c for c in a[2:] if not c.startswith('--')]
+    a = sys.argv[1:]; out, tag = a[0], a[1]; codes = [c for i, c in enumerate(a) if i > 1 and not c.startswith('--') and a[i - 1] != '--per']
     if os.path.exists(out): raise SystemExit(f'{out} exists: use a fresh folder')
     os.makedirs(out)
     if '--jobs-only' not in a:
@@ -30,7 +31,8 @@ def main():
                 if f.endswith(pat): shutil.copy(os.path.join(src, f), d)
         d = os.path.join(out, 'a4tools', 'hs'); os.makedirs(d)
         for f in ('hs_lib.py', 'detail_lib.py'): shutil.copy(os.path.join(REPO, 'tools/blender/hs', f), d)
-        for b in ('a4_ship.bat', 'a4_looks.bat', 'a4_lineup.bat', 'a4_barge.bat', 'a4_damage.bat', 'a4_regen.bat'):
+        shutil.copytree(os.path.join(REPO, 'docs/ship_pipeline/concepts'), os.path.join(out, 'a4tools', 'concepts'))  # concept.py (Nov 1)
+        for b in ('a4_ship.bat', 'a4_looks.bat', 'a4_lineup.bat', 'a4_barge.bat', 'a4_damage.bat', 'a4_regen.bat', 'a4_repaint.bat'):
             if os.path.exists(os.path.join(REPO, 'tools/pc/jobs', b)):
                 open(os.path.join(out, 'a4tools', b), 'w', newline='').write(crlf(open(os.path.join(REPO, 'tools/pc/jobs', b)).read()))
     if '--looks' in a:
@@ -38,6 +40,12 @@ def main():
         codes = []
     if '--regen' in a:  # refresh the Godot build's gen\ships from the re-exported glb files (queue after the ship jobs)
         open(os.path.join(out, f'a4_regen_{tag}.bat'), 'w', newline='').write(crlf('@echo off\ncall a4tools\\a4_regen.bat\nexit /b\n'))
+        codes = []
+    if '--repaint' in a:  # concept paint on built ships, a few per job (each about 2 to 4 minutes): a4_repaint.bat
+        n_ = int(a[a.index('--per') + 1]) if '--per' in a else 3
+        for k in range(0, len(codes), n_):
+            open(os.path.join(out, f'a4_repaint{k // n_:02d}_{tag}.bat'), 'w', newline='').write(crlf(
+                f'@echo off\nset A4CODES={" ".join(codes[k:k + n_])}\ncall a4tools\\a4_repaint.bat\nset A4CODES=\nexit /b\n'))
         codes = []
     if '--lineups' in a:
         for k, (ftag, title, ships) in enumerate(LINEUPS):

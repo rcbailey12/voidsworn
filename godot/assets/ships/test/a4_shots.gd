@@ -274,10 +274,10 @@ func _diag(sv: Node3D, code: String) -> void:
 				continue
 			shown[mat.resource_name + str(mat.get_instance_id())] = true
 			var fm: int = mi.mesh.surface_get_format(s)
-			print("[a4diag] %s mesh=%s surf=%d mat=%s tangents=%s albedo_col=%s metal=%.2f rough=%.2f normal_on=%s ao_on=%s emis_on=%s emis_x=%.1f rim=%s" % [
+			print("[a4diag] %s mesh=%s surf=%d mat=%s tangents=%s albedo_col=%s metal=%.2f rough=%.2f normal_on=%s ao_on=%s emis_on=%s emis_x=%.1f rim=%s filter=%d" % [
 				code, mi.name, s, mat.resource_name, str((fm & Mesh.ARRAY_FORMAT_TANGENT) != 0), mat.albedo_color.to_html(false),
 				mat.metallic, mat.roughness, str(mat.normal_enabled), str(mat.ao_enabled), str(mat.emission_enabled),
-				mat.emission_energy_multiplier, str(mat.rim_enabled)])
+				mat.emission_energy_multiplier, str(mat.rim_enabled), mat.texture_filter])
 			print("[a4diag] %s   albedo  %s" % [code, _tex_info(mat.albedo_texture)])
 			print("[a4diag] %s   normal  %s" % [code, _tex_info(mat.normal_texture)])
 			print("[a4diag] %s   metal   %s ch=%d" % [code, _tex_info(mat.metallic_texture), mat.metallic_texture_channel])

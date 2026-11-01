@@ -326,7 +326,9 @@ def build(o, fac, nmap, mmap, info):
         e_col = g.mix(g.mul(g.mul(rad_l, sail), .55), e_col, (.75, .85, 1.0))  # Oct 31: light runs out along the vane ribs
     if fac == 'deathless':  # Oct 31: violet-white inner glow seeping from the seams between the shield plates
         if V2:  # v2: the glow runs in the big plate seams (clean lines), not in the AI's cavity map (it came out as scribbles)
-            e_col = g.mix(g.mul(g.mul(hull, g.math('SUBTRACT', 1.0, s1v)), .16), e_col, (.70, .55, 1.0))
+            # Nov 1 seam-glow check (in game, paint v2): at .16 (times the game's emissive strength 4) every plate edge came out as a bright
+            # violet-white line, the hull read as cracked crazy paving; .05 is a faint glow in the seams that blooms only up close
+            e_col = g.mix(g.mul(g.mul(hull, g.math('SUBTRACT', 1.0, s1v)), .05), e_col, (.70, .55, 1.0))
         else:
             e_col = g.mix(g.mul(g.mul(hull, g.smooth(cavity, .70, .98)), .12), e_col, (.70, .55, 1.0))  # Nov 1: .40 streaked the whole hull; only the deepest seams now
     e_col = g.mix(emit, e_col, col)  # lenses, glowing sacs and veins carry their own colour
