@@ -1,0 +1,8 @@
+{
+  "data.js": ["Colossus", "Matriarch"],
+  "campaign_tables.json": ["Colossus", "Matriarch"],
+  "godot/rules/data/tables.json": ["Colossus", "Matriarch", "relic"],
+  "godot/campaign/campaign.gd": ["relic"],
+  "godot/story/data/titles.json": ["the Patient"],
+  "godot/world/world_sky.gd": ["warp"]
+}
