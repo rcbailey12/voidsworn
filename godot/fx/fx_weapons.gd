@@ -694,8 +694,8 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 			hc = col.lerp(Color.WHITE, 0.25)
 		# F3 round 2: the hit flash has its own size on screen by weight, with a hot core under it, so a hit reads as a
 		# bright burst on the plate from the battle camera, small ships included
-		fx.pop(p + n * 0.2 * k, T, hc.lerp(Color.WHITE, 0.3), sz * 1.8, 9.0 if not light else 8.0, n, 0.18, hpx)
-		fx.spr(p + n * 0.3 * k, T, 0.32 if not light else 0.2, hc, 4.0, sz * 0.4, sz * 1.0, 2, Vector3.ZERO, 0.0, 0.0, 0.0, hpx * 0.55)
+		fx.pop(p + n * 0.2 * k, T, hc.lerp(Color.WHITE, 0.3), sz * 1.8, 9.0 if not light else 8.0, n, 0.3 if not light else 0.24, hpx)
+		fx.spr(p + n * 0.3 * k, T, 0.45 if not light else 0.3, hc, 5.0, sz * 0.4, sz * 1.0, 2, Vector3.ZERO, 0.0, 0.0, 0.0, hpx * 0.55)
 		if lk == "prism":
 			# glass shatters into colour: spectral glints thrown off the hit
 			for s in 4:
@@ -740,7 +740,7 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 # F3: what a hit leaves for a second after the pop: a soft glow that rises and falls (kind 18, below the flash budget's
 # brightness), and for shells and bolts a hot spot on the plate cooling white to red (kind 21)
 static func _afterglow(fx, p: Vector3, T: float, col: Color, sz: float, light: bool, px := 0.0) -> void:
-	fx.spr(p, T + 0.04, 0.7 if light else 1.1, col, 1.8 if light else 2.6, sz * 0.5, sz * (1.2 if light else 1.6), 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
+	fx.spr(p, T + 0.04, 0.8 if light else 1.1, col, 2.4 if light else 3.0, sz * 0.5, sz * (1.2 if light else 1.6), 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
 	fx.spr(p, T, 1.0 if light else 1.6, col, 1.8, sz * 0.32, sz * 0.32, 21, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.3)
 
 
