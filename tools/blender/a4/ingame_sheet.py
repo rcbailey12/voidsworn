@@ -6,7 +6,7 @@
 #   python3 ingame_sheet.py --props AFTER_DIR OUT.webp                    (board station and hulks: today against a4_props.gd)
 #   python3 ingame_sheet.py --sweep DIR CODE OUT.webp [--label TEXT]      (9-cell blob sweep: bow, middle, stern from above, side, below)
 import sys, os
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONCEPTS = os.path.join(HERE, '..', '..', '..', 'docs', 'ship_pipeline', 'concepts')
@@ -111,17 +111,16 @@ def sweep_sheet(dir_, code, out, label=''):
     for v, lab in (('t', 'from above'), ('s', 'from the side'), ('u', 'from below')):
         p = os.path.join(dir_, f'{code}_{v}.jpg')
         if not os.path.exists(p): continue
-        im = Image.open(p).convert('RGB'); g = im.convert('L').point(lambda x: 255 if x > 40 else 0)
-        # the ship's extent: columns with enough lit pixels (stars are single dots)
-        cols = [x for x in range(im.size[0]) if sum(1 for y in range(0, im.size[1], 4) if g.getpixel((x, y))) > 6]
-        rws = [y for y in range(im.size[1]) if sum(1 for x in range(0, im.size[0], 4) if g.getpixel((x, y))) > 6]
-        if not cols or not rws: continue
-        x0, x1, y0, y1 = cols[0], cols[-1], max(0, rws[0] - 20), min(im.size[1], rws[-1] + 20)
+        im = Image.open(p).convert('RGB'); w_, h_ = im.size
+        # a4_shots._close frames the ship from its own length: half the screen height is .62 * .62 = .384 of the length, so at 16:9
+        # the length spans .73 of the width, centred (13.4% to 86.6%); a little margin either side
+        x0, x1 = int(.11 * w_), int(.89 * w_)
+        y0, y1 = (int(.30 * h_), int(.70 * h_)) if v == 's' else (int(.22 * h_), int(.78 * h_))
         cw = (x1 - x0) / 3; tw = W // 3; r = Image.new('RGB', (W, 0), (18, 18, 22)); cells = []
         for k in range(3):
-            c = im.crop((int(x0 + k * cw) - 10, y0, int(x0 + (k + 1) * cw) + 10, y1)); c = c.resize((tw, round(c.size[1] * tw / c.size[0])), Image.LANCZOS); cells.append(c)
+            c = im.crop((int(x0 + k * cw) - 10, y0, int(x0 + (k + 1) * cw) + 10, y1)); c = c.resize((tw - 8, round(c.size[1] * (tw - 8) / c.size[0])), Image.LANCZOS); cells.append(c)
         h = max(c.size[1] for c in cells); r = Image.new('RGB', (W, h + 30), (18, 18, 22)); d = ImageDraw.Draw(r); d.text((12, 2), lab, font=f2, fill=(220, 220, 225))
-        for k, c in enumerate(cells): r.paste(c, (k * tw, 30))
+        for k, c in enumerate(cells): r.paste(c, (k * tw + 4, 30)); d.text((k * tw + 14, 36), ('bow', 'middle', 'stern')[k], font=f2, fill=(255, 210, 120))
         rows.append(r)
     stack(rows, out)
 
