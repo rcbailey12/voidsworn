@@ -538,12 +538,28 @@ BATCHES['k64b'] = ([k64(k, 'qie', [51]) for k in ('hb_snarl2', 'hb_calm2')] + [k
                     {'id': 'gw_aorg', 'model': 'qref', 'prompt': ORGANIC, 'nosuffix': True, 'seeds': [51], 'ref': 'c64c/gw_a_qie_s51_00001_.png'},
                     k64('gw_speak2', 'zi2i', [51], 'k64b/gw_aorg_qref_s51_00001_.png', 0.45, 'gw_aorg_p45')])
 
+# Opus review of the check sheets (Nov 1): Hullbreaker row B approved, but push the face plates further toward hide; Glasswright
+# row B still reads as a gem helmet (a hard rim and a flat front plane sitting on a skull) and as clean digital paint. p64 uses
+# VOID6 (dull, porous bone plates with hide between them) and PRISM6 (the crystal grows out of the skull: skin and sinew wrap its
+# edges, ridges run down the brow and neck, an uneven outline) and repaints the Glasswrights harder (0.55 and 0.65).
+VOID6 = VOID5.replace("rough, ridged and chipped, dark leathery skin showing in the creases between them.",
+                      "dull, rough and porous like old weathered bone, ridged and chipped, with patches of dark leathery hide and coarse "
+                      "bristles between them.")
+PRISM6 = PRISM5.replace("Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, "
+                        "the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished "
+                        "facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it.",
+                        "Its head is a living skull overgrown by crystal: from the crown down to the throat the whole front of the head is "
+                        "one uneven cluster of large blank polished crystal facets, like a geode growing out of the bone, with glowing colour "
+                        "moving deep inside it. Pale skin and pink sinew wrap over the edges of the crystal and creep between the facets, "
+                        "ridges of smaller crystals continue down over the brow and in rows along the back of the neck, and the outline of "
+                        "the head is irregular and organic, grown rather than made.")
+assert PRISM6 != PRISM5 and VOID6 != VOID5
 # ---------- full repaint p64 (after the k64 check): every Hullbreaker and Glasswright admiral and Nemesis ----------
 # Admiral ids are the data.js ADMIRALS keys (display names from rename_map_final.md); Nemesis ids never change. Each subject is
-# drawn by Qwen at four seeds (the design), then repainted by Z-Image (the oil paint: 0.50 for the Hullbreakers, 0.45 for the
-# Glasswrights, the strengths that held the design in k64 and k64b). Nemesis add NEM_STYLE. Uses the k64b wording (VOID5, PRISM5):
+# drawn by Qwen at four seeds (the design), then repainted by Z-Image (the oil paint: 0.50 for the Hullbreakers; 0.55 and 0.65 for
+# the Glasswrights, picked per subject where the faceless head survives). Nemesis add NEM_STYLE. Wording VOID6, PRISM6 (above):
 # the Glasswright face only stays away on some seeds (k64b: s11 clean, s51 kept lips and a chin), so the picks skip faced seeds.
-P64_DENOISE = {'corsair': 0.5, 'ithar': 0.45}
+P64_DENOISE = {'corsair': [0.5], 'ithar': [0.55, 0.65]}
 P64_SEEDS = [11, 23, 37, 51]
 HB_ADM = {  # (mane, jaw, eyes, who)
  'grax': ('black streaked with grey', JAW_SHUT2, 'amber', "This is Warlord Grax Ironmaw, the biggest and oldest pack-lord: a riveted iron "
@@ -587,14 +603,14 @@ GW_NEM = [
 def p64_subjects():
     S = {}
     for k, (mane, jaw, eye, who) in HB_ADM.items():
-        S['corsair_' + k] = ('corsair', VOID5.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' ' + who)
+        S['corsair_' + k] = ('corsair', VOID6.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' ' + who)
     for k, who in GW_ADM.items():
-        S['ithar_' + k] = ('ithar', PRISM5.format(gear=ROBE2) + ' ' + who)
+        S['ithar_' + k] = ('ithar', PRISM6.format(gear=ROBE2) + ' ' + who)
     for n, (mane, jaw, eye, who) in enumerate(HB_NEM, 1):
-        S['nem_corsair_%d' % n] = ('corsair', VOID5.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' A Nemesis, a rival enemy '
+        S['nem_corsair_%d' % n] = ('corsair', VOID6.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' A Nemesis, a rival enemy '
                                    'warlord of the Hullbreakers: ' + who + '.' + NEM_STYLE)
     for n, who in enumerate(GW_NEM, 1):
-        S['nem_ithar_%d' % n] = ('ithar', PRISM5.format(gear=ROBE2) + ' A Nemesis, a rival enemy commander of the Glasswrights: ' + who + '.' + NEM_STYLE)
+        S['nem_ithar_%d' % n] = ('ithar', PRISM6.format(gear=ROBE2) + ' A Nemesis, a rival enemy commander of the Glasswrights: ' + who + '.' + NEM_STYLE)
     return S
 P64 = p64_subjects()
 def p64_items(fac, which=None, seeds=P64_SEEDS):
@@ -604,8 +620,9 @@ def p64_items(fac, which=None, seeds=P64_SEEDS):
         full = p + ' ' + STYLE.format(**F8[f])
         out.append({'id': i, 'model': 'qie', 'prompt': full, 'nosuffix': True, 'seeds': list(seeds)})
         for sd in seeds:
-            out.append({'id': '%s_s%d_oil' % (i, sd), 'model': 'zi2i', 'prompt': full, 'nosuffix': True, 'seeds': [sd],
-                        'ref': 'p64/%s_qie_s%d_00001_.png' % (i, sd), 'denoise': P64_DENOISE[f]})
+            for dn in P64_DENOISE[f]:
+                out.append({'id': '%s_s%d_oil%d' % (i, sd, round(dn * 100)), 'model': 'zi2i', 'prompt': full, 'nosuffix': True,
+                            'seeds': [sd], 'ref': 'p64/%s_qie_s%d_00001_.png' % (i, sd), 'denoise': dn})
     return out
 BATCHES['p64ha'] = p64_items('corsair', 'corsair_'); BATCHES['p64hn'] = p64_items('corsair', 'nem_')
 BATCHES['p64ga'] = p64_items('ithar', 'ithar_'); BATCHES['p64gn'] = p64_items('ithar', 'nem_')
