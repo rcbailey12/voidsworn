@@ -14,3 +14,7 @@ Muse material to build from (contrib/muse/reviews/):
 Also contrib/muse/RETURN_INDEX.md and READING_PLAN.md for the map of everything else.
 
 Order (recommendation section 6 step 7, adjusted): plan with Ryan's 3 to 5 scope questions first; then the effect pool cap; one faction's admiral tree; the generational learning and debrief tie-in; story pieces; then the rest. The "Playtest: everything unlocked" switch stays on until Ryan says progression is ready to test.
+
+## Faction design packages (Ryan, Nov 1 17:35)
+"I also want to rework glasswrights but I think we just do a full pass when we're doing progression where we write out and review the full design package for factions with their lore, everything else for admirals. It's not landing now but it falls behind priority for the others."
+So the progression phase includes, per faction, one written design package for Ryan to review before anything is built or painted: lore and identity, look (people, ships, palette), admirals (who they are, play style, skill tree, story spotlight), Nemesis, and how progression and story land for that faction. The Glasswrights get a full rework there (the Nov 1 portraits are a placeholder), and the Hullbreaker portrait round 2 in BACKLOG 0a can fold into its package if it has not run by then.
