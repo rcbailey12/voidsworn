@@ -192,7 +192,7 @@ func t_career() -> void:
 	run["sector"] = 3
 	c.record_battle(run, _B("battle", true, 0, 2, us), "win")
 	ok(c.P["medals"].has("unbroken"), "career: Unbroken for sector II cleared without a loss")
-	var row: Dictionary = c.record_run_end(run, true, "Warlord Grax Steelgrin")
+	var row: Dictionary = c.record_run_end(run, true, "Warlord Grax Ironmaw")
 	ok(str(row.get("title", "")) == "brawler" and str(row.get("title_name", "")) == "the Render", "career: run title (got %s %s)" % [row.get("title"), row.get("title_name")])
 	ok(c.P["medals"].has("victor") and c.P["medals"].has("heat_victor"), "career: victor and heat medals")
 	ok(int(c.P["admirals"]["grax"]["runs"]) == 1 and int(c.P["admirals"]["grax"]["wins"]) == 1 and c.P["admirals"]["grax"]["flagships"] == ["Rust Bucket"], "career: admiral record")
@@ -273,7 +273,7 @@ func t_voice() -> void:
 	ok(kinds.size() == 3, "rival: a later meeting mixes memory (rammed him last time), scar ({scars} filled: twice) and rematch lines %s" % str(kinds.keys()))
 	ok(R.memory_key({"seen": {"torp": 3, "lance": 9}}) == "lance" and R.memory_key({"beat": "board"}) == "board" and R.memory_key({"beat": "broad"}) == "battery" and R.memory_key({"beat": "evaded"}) == "evasive", "rival: memory key from stream B's nem.beat (broad to battery, evaded to evasive) or from seen counts")
 	var vs = Voice.new()
-	vs.setup(view, {"admiral": "grax", "admiral_name": "Warlord Grax Steelgrin", "kind": "elite", "enemy_fac": "ithar", "sector": 2, "seed": 4, "nem": {"name": "Korek", "title": "Lens-keeper", "fac": "ithar"}})
+	vs.setup(view, {"admiral": "grax", "admiral_name": "Warlord Grax Ironmaw", "kind": "elite", "enemy_fac": "ithar", "sector": 2, "seed": 4, "nem": {"name": "Korek", "title": "Lens-keeper", "fac": "ithar"}})
 	var sl: Array = vs.on_event({"t": "nem_signature"})
 	sl += vs.on_event({"t": "nem_signature"})
 	ok(sl.size() == 1 and str(sl[0]["text"]).begins_with("Lens-keeper Korek:"), "voice: his faction signature speaks once")

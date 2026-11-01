@@ -152,7 +152,7 @@ func line(admiral_id: String, moment: String, run = null, seed := 0) -> String:
 	return _fill(str(t), run) if t != null else ""
 
 
-# The same line with its speaker, ready for a text box: Admiral Castellan Vex: "Form the line."
+# The same line with its speaker, ready for a text box: Admiral Roderic Vex: "Form the line."
 func said(admiral_id: String, moment: String, run = null) -> String:
 	var t := line(admiral_id, moment, run)
 	return "%s: \"%s\"" % [admiral_name(admiral_id), t] if t != "" else ""
@@ -178,7 +178,7 @@ func campaign_line() -> String:
 	return ""
 
 
-# "Title earned: Admiral Castellan Vex the Breaker (4 or more rams and boarding actions in the run)."
+# "Title earned: Admiral Roderic Vex the Breaker (4 or more rams and boarding actions in the run)."
 func earned_title_text(run: Dictionary) -> String:
 	var h: Array = career.P.get("history", [])
 	if h.is_empty():

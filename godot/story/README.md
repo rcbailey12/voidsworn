@@ -93,7 +93,7 @@ if line != "": v.add_child(lbl(line, 17, GILT))     # plain text, no BBCode
 | page `end` | your admiral's win or loss line, then "Title earned: ..." on a new line |
 
 Also available:
-- `st.titled_name(admiral_id)`: "Warlord Grax Steelgrin the Render" (the latest title earned), for the admiral card and the map sidebar.
+- `st.titled_name(admiral_id)`: "Warlord Grax Ironmaw the Render" (the latest title earned), for the admiral card and the map sidebar.
 - `st.open_rename()`: opens "Name your flagship" (a "Rename" button on the fleet screen's flagship card would call this). The story already opens it once by itself over the first sector intro of every run.
 - `st.open_career()`: opens the Career screen (a "Career" tab beside the Progression tabs would call this).
 - Signals `st.medal_earned(id, name)` and `st.title_earned(row)`, for a toast if wanted.
