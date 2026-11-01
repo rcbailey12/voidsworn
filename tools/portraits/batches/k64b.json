@@ -1,0 +1,120 @@
+{
+ "out": "k64b",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "hb_snarl2",
+   "model": "qie",
+   "prompt": "Close-up portrait of the head, neck and shoulders of a Hullbreaker, a huge alien hunting beast from a cold heavy-gravity world, hunched forward with the heavy rounded bulk of a great predator: a tall shoulder hump, a thick short neck, a broad barrel body and thick forearms ending in heavy curved claws. A thick coarse shaggy mane of black fur covers the hump, the shoulders, the neck and the back of the head and frames the face; the arms are thick dark leathery hide with coarse hair. The head is low, broad and blunt, sunk into the mane between the shoulders. The face is bare living hide armoured with thick matte bony plates of dark grey-brown horn, like the scales of a pangolin or the shell of a tortoise, rough, ridged and chipped, dark leathery skin showing in the creases between them. The jaw is split down the middle of the chin into two plated halves hinged at the sides, the left and right halves spread apart sideways in a snarl, a gap down the middle of the chin, rows of small sharp teeth along the inner edge of each half. A row of four small glowing red eyes sits in one straight line across the plated brow, and rows of small dark heat-sensing pits run along the cheeks below them. A heavy scrap armour harness of rusty riveted hull plates from other ships and thick leather straps covers the chest and belly, hung with machine trophies: a cracked sensor lens, a torn circuit board, a bent antenna. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ]
+  },
+  {
+   "id": "hb_calm2",
+   "model": "qie",
+   "prompt": "Close-up portrait of the head, neck and shoulders of a Hullbreaker, a huge alien hunting beast from a cold heavy-gravity world, hunched forward with the heavy rounded bulk of a great predator: a tall shoulder hump, a thick short neck, a broad barrel body and thick forearms ending in heavy curved claws. A thick coarse shaggy mane of grey and black fur covers the hump, the shoulders, the neck and the back of the head and frames the face; the arms are thick dark leathery hide with coarse hair. The head is low, broad and blunt, sunk into the mane between the shoulders. The face is bare living hide armoured with thick matte bony plates of dark grey-brown horn, like the scales of a pangolin or the shell of a tortoise, rough, ridged and chipped, dark leathery skin showing in the creases between them. The jaw is split down the middle of the chin into two plated halves hinged at the sides, the left and right halves closed, meeting in a deep dark seam straight down the middle of the chin. A row of four small glowing amber eyes sits in one straight line across the plated brow, and rows of small dark heat-sensing pits run along the cheeks below them. A heavy scrap armour harness of rusty riveted hull plates from other ships and thick leather straps covers the chest and belly, hung with machine trophies: a cracked sensor lens, a torn circuit board, a bent antenna. The heat pits glow faint orange; a calm, patient menace. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ]
+  },
+  {
+   "id": "gw_speak2",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the facet of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "gw_hand2",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. One hand is raised beside the head, its very long tapering fingers of milky flesh inlaid with glass threads shaping a glowing shard of glass, light running down the threads into the fingertips. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "hb_snarl2_p50",
+   "model": "zi2i",
+   "prompt": "Close-up portrait of the head, neck and shoulders of a Hullbreaker, a huge alien hunting beast from a cold heavy-gravity world, hunched forward with the heavy rounded bulk of a great predator: a tall shoulder hump, a thick short neck, a broad barrel body and thick forearms ending in heavy curved claws. A thick coarse shaggy mane of black fur covers the hump, the shoulders, the neck and the back of the head and frames the face; the arms are thick dark leathery hide with coarse hair. The head is low, broad and blunt, sunk into the mane between the shoulders. The face is bare living hide armoured with thick matte bony plates of dark grey-brown horn, like the scales of a pangolin or the shell of a tortoise, rough, ridged and chipped, dark leathery skin showing in the creases between them. The jaw is split down the middle of the chin into two plated halves hinged at the sides, the left and right halves spread apart sideways in a snarl, a gap down the middle of the chin, rows of small sharp teeth along the inner edge of each half. A row of four small glowing red eyes sits in one straight line across the plated brow, and rows of small dark heat-sensing pits run along the cheeks below them. A heavy scrap armour harness of rusty riveted hull plates from other ships and thick leather straps covers the chest and belly, hung with machine trophies: a cracked sensor lens, a torn circuit board, a bent antenna. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64b/hb_snarl2_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "hb_calm2_p50",
+   "model": "zi2i",
+   "prompt": "Close-up portrait of the head, neck and shoulders of a Hullbreaker, a huge alien hunting beast from a cold heavy-gravity world, hunched forward with the heavy rounded bulk of a great predator: a tall shoulder hump, a thick short neck, a broad barrel body and thick forearms ending in heavy curved claws. A thick coarse shaggy mane of grey and black fur covers the hump, the shoulders, the neck and the back of the head and frames the face; the arms are thick dark leathery hide with coarse hair. The head is low, broad and blunt, sunk into the mane between the shoulders. The face is bare living hide armoured with thick matte bony plates of dark grey-brown horn, like the scales of a pangolin or the shell of a tortoise, rough, ridged and chipped, dark leathery skin showing in the creases between them. The jaw is split down the middle of the chin into two plated halves hinged at the sides, the left and right halves closed, meeting in a deep dark seam straight down the middle of the chin. A row of four small glowing amber eyes sits in one straight line across the plated brow, and rows of small dark heat-sensing pits run along the cheeks below them. A heavy scrap armour harness of rusty riveted hull plates from other ships and thick leather straps covers the chest and belly, hung with machine trophies: a cracked sensor lens, a torn circuit board, a bent antenna. The heat pits glow faint orange; a calm, patient menace. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64b/hb_calm2_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "gw_speak2_p45",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the facet of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64b/gw_speak2_qie_s51_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "gw_hand2_p45",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. One hand is raised beside the head, its very long tapering fingers of milky flesh inlaid with glass threads shaping a glowing shard of glass, light running down the threads into the fingertips. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64b/gw_hand2_qie_s51_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "hb_a1_p45",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Hullbreaker, a huge alien hunting beast from a cold heavy-gravity world, hunched forward with the heavy rounded bulk of a great predator: a tall shoulder hump, a thick short neck, a broad barrel body and thick forearms ending in heavy curved claws. A thick coarse shaggy mane of black fur covers the hump, the shoulders, the neck and the back of the head and frames the face; the arms are thick dark leathery hide with coarse hair. The head is low, broad and blunt, sunk into the mane between the shoulders. The face is bare: overlapping grey bony plates like a pangolin's scales grow out of the hide, worn and chipped at the edges. The jaw is split down the middle of the chin into two plated halves hinged at the sides, the two halves spread apart to the left and right in a snarl, rows of small sharp teeth lining the inner edges. A row of four small glowing red eyes sits in one straight line across the plated brow, and rows of small dark heat-sensing pits run along the cheeks below them. A heavy scrap armour harness of rusty riveted hull plates from other ships and thick leather straps covers the chest and belly, hung with machine trophies: a cracked sensor lens, a torn circuit board, a bent antenna. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by dim red running lights and a red-orange engine glow, deep soft shadow on the right side, a dark painterly dark soot-black ship interior hung with chains, scrap and hull plates background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "c64c/hb_b_qie_s51_00001_.png",
+   "denoise": 0.45
+  },
+  {
+   "id": "gw_aorg",
+   "model": "qref",
+   "prompt": "Make this being organic: its clear glass neck, throat and shoulders become soft milky translucent living flesh with pale pink strands of sinew inside, the glowing threads and small crystal inlays grown into the flesh like veins; the soft flesh of the neck rises a little way around the base of the head. The faceted crystal head stays exactly as it is, with no face. Keep the robe, pose, lighting and background, and paint it as an oil painting with visible brushstrokes.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "c64c/gw_a_qie_s51_00001_.png"
+  },
+  {
+   "id": "gw_aorg_p45",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside the head behind it. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. Soft bands of coloured light pulse across the facet of its head and down the glass threads of its neck as it speaks. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "k64b/gw_aorg_qref_s51_00001_.png",
+   "denoise": 0.45
+  }
+ ]
+}

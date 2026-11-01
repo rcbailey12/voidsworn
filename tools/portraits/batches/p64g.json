@@ -1,0 +1,326 @@
+{
+ "out": "p64",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "ithar_aelith",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "ithar_aelith_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/ithar_aelith_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "ithar_aelith_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/ithar_aelith_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "ithar_vaelen",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "ithar_vaelen_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/ithar_vaelen_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "ithar_vaelen_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/ithar_vaelen_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "ithar_thorne",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a broken reflection of it. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "ithar_thorne_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a broken reflection of it. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/ithar_thorne_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "ithar_thorne_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a broken reflection of it. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/ithar_thorne_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "ithar_mirelle",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its chest like a lens, glowing at the edges. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "ithar_mirelle_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its chest like a lens, glowing at the edges. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/ithar_mirelle_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "ithar_mirelle_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its chest like a lens, glowing at the edges. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/ithar_mirelle_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_1",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a gaunt keeper with a tall collar of sharp crystal shards, cold white light behind the facet of its head. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "nem_ithar_1_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a gaunt keeper with a tall collar of sharp crystal shards, cold white light behind the facet of its head. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/nem_ithar_1_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_1_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a gaunt keeper with a tall collar of sharp crystal shards, cold white light behind the facet of its head. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/nem_ithar_1_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_2",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a keeper with a veil of fine mirror-thread hanging from the crown of its head, long fingers cupping a glowing light-core. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "nem_ithar_2_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a keeper with a veil of fine mirror-thread hanging from the crown of its head, long fingers cupping a glowing light-core. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/nem_ithar_2_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_2_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a keeper with a veil of fine mirror-thread hanging from the crown of its head, long fingers cupping a glowing light-core. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/nem_ithar_2_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_3",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a war-leader in armour of overlapping crystal plates that split light into rainbow fringes. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "nem_ithar_3_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a war-leader in armour of overlapping crystal plates that split light into rainbow fringes. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/nem_ithar_3_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_3_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a war-leader in armour of overlapping crystal plates that split light into rainbow fringes. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/nem_ithar_3_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_4",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: an exile whose glass threads have gone dark and cracked, wearing a ragged mirror-thread robe. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "nem_ithar_4_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: an exile whose glass threads have gone dark and cracked, wearing a ragged mirror-thread robe. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/nem_ithar_4_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_4_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: an exile whose glass threads have gone dark and cracked, wearing a ragged mirror-thread robe. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/nem_ithar_4_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_5",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a keeper with a caged light-core worn at the chest, the crystal of its head flaring with light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "nem_ithar_5_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a keeper with a caged light-core worn at the chest, the crystal of its head flaring with light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/nem_ithar_5_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_5_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: a keeper with a caged light-core worn at the chest, the crystal of its head flaring with light. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/nem_ithar_5_qie_s51_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_6",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: an ancient one with an extremely long neck, the glass threads in its skin blazing bright. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    51
+   ]
+  },
+  {
+   "id": "nem_ithar_6_s11_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: an ancient one with an extremely long neck, the glass threads in its skin blazing bright. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "p64/nem_ithar_6_qie_s11_00001_.png",
+   "denoise": 0.5
+  },
+  {
+   "id": "nem_ithar_6_s51_oil",
+   "model": "zi2i",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of flesh and blood that grows glass into its own body. Its skin is pearl-white and soft with a warm pink flush, thin and faintly translucent like wax, so soft flesh and fine pink sinew show through at the neck and throat. Fine threads of clear glass and small faceted crystal inlays are grown into the skin in flowing lines along the neck, the collarbones and the hands, like veins of glass in living flesh; light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. A long slender neck. The head is a long smooth living head of pale skin, plated with grown crystal facets fused into the skin, skin and sinew showing at the seams between the plates; the whole front of the head is one large flat blank polished crystal facet like a mirror, with soft coloured light moving deep behind it. Long tapering fingers. It wears a high-collared layered robe of crystal plates and silver mirror-thread fabric. A Nemesis, a rival enemy commander of the Glasswrights: an ancient one with an extremely long neck, the glass threads in its skin blazing bright. Villain portrait: low camera angle looking slightly up at the subject, menacing and threatening presence, a thin blood-red rim light from the right edge cutting through the shadow. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition, three-quarter bust view, the subject lit hard from the left by clear white light split into faint rainbow fringes, deep soft shadow on the right side, a dark painterly dark space seen through faceted crystal and silver mirrors background softly out of focus, muted desaturated palette with one strong glow colour, museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    51
+   ],
+   "ref": "p64/nem_ithar_6_qie_s51_00001_.png",
+   "denoise": 0.5
+  }
+ ]
+}

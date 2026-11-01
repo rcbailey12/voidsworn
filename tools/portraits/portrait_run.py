@@ -133,8 +133,11 @@ def gen(path):
                 pre = f"{out}/{it['id']}_{m}_s{sd}"
                 if os.path.exists(os.path.join(IO_, pre + '_00001_.png')): continue
                 if m == 'qref':
-                    if not os.path.exists(os.path.join(IO_, it['ref'])): log('missing ref', it['ref']); break
-                    r = run(qref(txt, sd, pre, it['ref'], it.get('w', 1024), it.get('h', 1024)), pre)
+                    if not os.path.exists(os.path.join(IO_, it['ref'].replace('/', os.sep))): log('missing ref', it['ref']); break
+                    ref = it['ref']
+                    if '/' in ref:   # a render in a subfolder: LoadImage only lists the top level
+                        import shutil; ref = 'ref_%s.png' % it['id']; shutil.copyfile(os.path.join(IO_, it['ref'].replace('/', os.sep)), os.path.join(IO_, ref))
+                    r = run(qref(txt, sd, pre, ref, it.get('w', 1024), it.get('h', 1024)), pre)
                 elif m == 'zi2i':   # LoadImage only lists the input folder's top level: copy the ref there first
                     src = os.path.join(IO_, it['ref'].replace('/', os.sep))
                     if not os.path.exists(src): log('missing ref', it['ref']); continue

@@ -496,7 +496,116 @@ BATCHES['k64'] = ([k64(k, 'qie', [51]) for k in K64] + [k64(k, 'zit', [51]) for 
                   [k64(k, 'zi2i', [51], 'k64/%s_qie_s51_00001_.png' % k, d, '%s_p%d' % (k, d * 100)) for k in K64 for d in (0.5, 0.65)] +
                   [k64('hb_snarl', 'zi2i', [51], 'c64c/hb_b_qie_s51_00001_.png', 0.55, 'hb_a1_p55'),
                    k64('gw_speak', 'zi2i', [51], 'c64c/gw_a_qie_s51_00001_.png', 0.55, 'gw_a1_p55')])
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64'}
+# k64 review (Nov 1): Hullbreakers right in build (mane, hunched bulk, chest under the harness; no quills, tusks, mesh or bare
+# torso) but the face plates came out as polished riveted metal that reads like a helmet, and the sideways jaw did not show; the
+# Z-Image repaint at 0.65 and Z-Image alone drift back to a domed film-monster head, 0.50 holds. Glasswrights missed: "pearl-white
+# skin" and "a head of pale skin" drew a human elf face (lips, eyes, pointed ears) with the crystal as a visor over it. k64b: matte
+# horn face plates; for the Glasswrights the c64c head wording that kept faces away (the head is a cut gem growing out of the neck)
+# with the flesh only on the neck, throat and hands, milky and translucent, plus a Qwen edit that turns Ryan's A pick organic.
+VOID5 = VOID4.replace("The face is bare: overlapping grey bony plates like a pangolin's scales grow out of the hide, worn and chipped at "
+                      "the edges.", "The face is bare living hide armoured with thick matte bony plates of dark grey-brown horn, like the "
+                      "scales of a pangolin or the shell of a tortoise, rough, ridged and chipped, dark leathery skin showing in the creases "
+                      "between them.").replace("Close-up head-and-shoulders portrait", "Close-up portrait of the head, neck and shoulders")
+JAW_OPEN2 = ("the left and right halves spread apart sideways in a snarl, a gap down the middle of the chin, rows of small sharp teeth "
+             "along the inner edge of each half")
+JAW_SHUT2 = "the left and right halves closed, meeting in a deep dark seam straight down the middle of the chin"
+PRISM5 = ("Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its "
+          "body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly "
+          "pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal "
+          "inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and "
+          "splits into rainbow colours where it leaves the crystal inlays. Its head is a tall smooth faceted crystal shape like a long "
+          "cut gemstone growing out of the top of the soft neck, the milky flesh rising a little way up around its base; the whole front "
+          "of the head is one large flat blank polished facet like a mirror, reflecting the light, with glowing colour moving deep inside "
+          "the head behind it. {gear}")
+ROBE2 = "It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat."
+ORGANIC = ("Make this being organic: its clear glass neck, throat and shoulders become soft milky translucent living flesh with pale "
+           "pink strands of sinew inside, the glowing threads and small crystal inlays grown into the flesh like veins; the soft flesh "
+           "of the neck rises a little way around the base of the head. The faceted crystal head stays exactly as it is, with no face. "
+           "Keep the robe, pose, lighting and background, and paint it as an oil painting with visible brushstrokes.")
+K64.update({
+ 'hb_snarl2': ('corsair', VOID5.format(mane='black', jaw=JAW_OPEN2, eye='red', gear=TROPHY)),
+ 'hb_calm2': ('corsair', VOID5.format(mane='grey and black', jaw=JAW_SHUT2, eye='amber', gear=TROPHY) + " The heat pits glow faint "
+              "orange; a calm, patient menace."),
+ 'gw_speak2': ('ithar', PRISM5.format(gear=ROBE2) + " Soft bands of coloured light pulse across the facet of its head and down the "
+               "glass threads of its neck as it speaks."),
+ 'gw_hand2': ('ithar', PRISM5.format(gear=ROBE2) + " One hand is raised beside the head, its very long tapering fingers of milky "
+              "flesh inlaid with glass threads shaping a glowing shard of glass, light running down the threads into the fingertips."),
+})
+BATCHES['k64b'] = ([k64(k, 'qie', [51]) for k in ('hb_snarl2', 'hb_calm2')] + [k64(k, 'qie', [11, 51]) for k in ('gw_speak2', 'gw_hand2')] +
+                   [k64(k, 'zi2i', [51], 'k64b/%s_qie_s51_00001_.png' % k, 0.5, k + '_p50') for k in ('hb_snarl2', 'hb_calm2')] +
+                   [k64(k, 'zi2i', [51], 'k64b/%s_qie_s51_00001_.png' % k, 0.45, k + '_p45') for k in ('gw_speak2', 'gw_hand2')] +
+                   [k64('hb_snarl', 'zi2i', [51], 'c64c/hb_b_qie_s51_00001_.png', 0.45, 'hb_a1_p45'),
+                    {'id': 'gw_aorg', 'model': 'qref', 'prompt': ORGANIC, 'nosuffix': True, 'seeds': [51], 'ref': 'c64c/gw_a_qie_s51_00001_.png'},
+                    k64('gw_speak2', 'zi2i', [51], 'k64b/gw_aorg_qref_s51_00001_.png', 0.45, 'gw_aorg_p45')])
+
+# ---------- full repaint p64 (after the k64 check): every Hullbreaker and Glasswright admiral and Nemesis ----------
+# Admiral ids are the data.js ADMIRALS keys (display names from rename_map_final.md); Nemesis ids never change. Each subject is
+# drawn by Qwen at seeds 11 and 51 (the design), then repainted by Z-Image at P64_DENOISE (the oil paint). Nemesis add NEM_STYLE.
+P64_DENOISE = 0.5
+HB_ADM = {  # (mane, jaw, eyes, who)
+ 'grax': ('black streaked with grey', JAW_SHUT, 'amber', "This is Warlord Grax Ironmaw, the biggest and oldest pack-lord: a riveted iron "
+          "plate bolted across the two halves of the jaw like an iron maw, one huge clawed hand resting on a heavy boarding hook, harness "
+          "plates in clashing colours torn from three different fleets, chains across the chest."),
+ 'sable': ('glossy black', JAW_OPEN, 'pale green', "This is Sable the Smiling Knife, a lean, sleek hunter, the two halves of the jaw "
+           "parted a little in a thin cruel grin, a long curved blade of sharpened scrap held low in one claw, a close-fitting harness of "
+           "matte black plates."),
+ 'mott': ('ragged white-grey', JAW_SHUT, 'dim amber', "This is Old Mott, an ancient pack-lord who has outlived forty captains: the face "
+          "plates cracked, pitted and worn pale with age, a heavy slow bulk, a harness of mismatched junk plates, small scrap fighter craft "
+          "hanging from chains behind the shoulders."),
+ 'vesh': ('rust-brown', JAW_SHUT, 'red', "This is Vesh the Collector: a harness built from collected plates of every faction, pale grey "
+          "panels, clear crystal and dark violet machine plating, fresh weld seams glowing across them, a welding torch burning in one claw."),
+}
+GW_ADM = {
+ 'aelith': "This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round "
+           "her raised hand, a wide collar shaped like an opening aperture ring.",
+ 'vaelen': "This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a "
+           "thin white beam of light to a burning point, the beam splitting into a rainbow fringe.",
+ 'thorne': "This is Vell of the Third Mirror, a Glasswright tactician: floating mirror shards drift around it, each throwing back a "
+           "broken reflection of it.",
+ 'mirelle': "This is Brin of the Fourth Lens, a Glasswright warden: a curved shimmering ward of prism light hangs in front of its "
+            "chest like a lens, glowing at the edges.",
+}
+HB_NEM = [  # (mane, jaw, eyes, who), Nemesis 1..6, the round 8 subjects carried over to the new species
+ ('grey', JAW_SHUT, 'amber', "a grizzled pack-alpha, a harness of pale grey hull panels and chains across the chest"),
+ ('black', JAW_SHUT, 'red', "a brute with a welded iron guard bolted over the split jaw"),
+ ('rust-brown', JAW_OPEN, 'pale blue', "a lean tracker with small listening dishes strapped to its harness, the heat pits glowing orange"),
+ ('grey', JAW_OPEN, 'amber', "a huge old den-alpha, shards of clear crystal strapped into its harness"),
+ ('black', JAW_OPEN, 'red', "a scarred hunter baring its split jaw, a harness of dark violet machine plates"),
+ ('rust-brown and grey', JAW_SHUT, 'amber', "a young hunter with chains wrapped round its forearms and a boarding hook on its back"),
+]
+GW_NEM = [
+ "a gaunt keeper with a tall collar of sharp crystal shards, cold white light behind the facet of its head",
+ "a keeper with a veil of fine mirror-thread hanging from the crown of its head, long fingers cupping a glowing light-core",
+ "a war-leader in armour of overlapping crystal plates that split light into rainbow fringes",
+ "an exile whose glass threads have gone dark and cracked, wearing a ragged mirror-thread robe",
+ "a keeper with a caged light-core worn at the chest, the crystal of its head flaring with light",
+ "an ancient one with an extremely long neck, the glass threads in its skin blazing bright",
+]
+def p64_subjects():
+    S = {}
+    for k, (mane, jaw, eye, who) in HB_ADM.items():
+        S['corsair_' + k] = ('corsair', VOID4.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' ' + who)
+    for k, who in GW_ADM.items():
+        S['ithar_' + k] = ('ithar', PRISM4.format(gear=ROBE) + ' ' + who)
+    for n, (mane, jaw, eye, who) in enumerate(HB_NEM, 1):
+        S['nem_corsair_%d' % n] = ('corsair', VOID4.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' A Nemesis, a rival enemy '
+                                   'warlord of the Hullbreakers: ' + who + '.' + NEM_STYLE)
+    for n, who in enumerate(GW_NEM, 1):
+        S['nem_ithar_%d' % n] = ('ithar', PRISM4.format(gear=ROBE) + ' A Nemesis, a rival enemy commander of the Glasswrights: ' + who + '.' + NEM_STYLE)
+    return S
+P64 = p64_subjects()
+def p64_items(fac, seeds=(11, 51)):
+    out = []
+    for i, (f, p) in P64.items():
+        if f != fac: continue
+        full = p + ' ' + STYLE.format(**F8[f])
+        out.append({'id': i, 'model': 'qie', 'prompt': full, 'nosuffix': True, 'seeds': list(seeds)})
+        for sd in seeds:
+            out.append({'id': '%s_s%d_oil' % (i, sd), 'model': 'zi2i', 'prompt': full, 'nosuffix': True, 'seeds': [sd],
+                        'ref': 'p64/%s_qie_s%d_00001_.png' % (i, sd), 'denoise': P64_DENOISE})
+    return out
+BATCHES['p64h'] = p64_items('corsair'); BATCHES['p64g'] = p64_items('ithar')
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'p64h': 'p64', 'p64g': 'p64'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():
