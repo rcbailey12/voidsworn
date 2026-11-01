@@ -374,7 +374,7 @@
     0.274,
     0.274
    ],
-   "source": "r8e/nem_hegemony_1_r8_s11_00001_.png",
+   "source": "e64/nem_hegemony_1_v64_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_hegemony_1_burn.webp",
     "cyber": "nemesis/pool/nem_hegemony_1_cyber.webp",
@@ -383,21 +383,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_hegemony_1_burn_patch.webp",
-     "x": 0.3398,
-     "y": 0.2891,
-     "area": 0.026
+     "x": 0.2422,
+     "y": 0.1198,
+     "area": 0.119
     },
     "cyber": {
      "file": "nemesis/pool/nem_hegemony_1_cyber_patch.webp",
-     "x": 0.3424,
-     "y": 0.1706,
-     "area": 0.03
+     "x": 0.2617,
+     "y": 0.1172,
+     "area": 0.116
     },
     "eye": {
      "file": "nemesis/pool/nem_hegemony_1_eye_patch.webp",
-     "x": 0.5156,
-     "y": 0.1458,
-     "area": 0.018
+     "x": 0.2526,
+     "y": 0.1549,
+     "area": 0.111
     }
    }
   },
@@ -409,7 +409,7 @@
     0.333,
     0.29
    ],
-   "source": "r8e/nem_hegemony_2_r8_s11_00001_.png",
+   "source": "e64/nem_hegemony_2_v64_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_hegemony_2_burn.webp",
     "cyber": "nemesis/pool/nem_hegemony_2_cyber.webp",
@@ -418,21 +418,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_hegemony_2_burn_patch.webp",
-     "x": 0.3164,
-     "y": 0.3698,
-     "area": 0.052
+     "x": 0.3958,
+     "y": 0.3854,
+     "area": 0.066
     },
     "cyber": {
      "file": "nemesis/pool/nem_hegemony_2_cyber_patch.webp",
-     "x": 0.401,
-     "y": 0.2148,
-     "area": 0.071
+     "x": 0.4062,
+     "y": 0.2096,
+     "area": 0.078
     },
     "eye": {
      "file": "nemesis/pool/nem_hegemony_2_eye_patch.webp",
-     "x": 0.3164,
-     "y": 0.2357,
-     "area": 0.057
+     "x": 0.0,
+     "y": 0.0065,
+     "area": 0.139
     }
    }
   },
@@ -444,7 +444,7 @@
     0.29,
     0.258
    ],
-   "source": "r8e/nem_hegemony_3_r8_s11_00001_.png",
+   "source": "e64/nem_hegemony_3_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_hegemony_3_burn.webp",
     "cyber": "nemesis/pool/nem_hegemony_3_cyber.webp",
@@ -453,21 +453,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_hegemony_3_burn_patch.webp",
-     "x": 0.2266,
-     "y": 0.3138,
-     "area": 0.062
+     "x": 0.306,
+     "y": 0.1094,
+     "area": 0.051
     },
     "cyber": {
      "file": "nemesis/pool/nem_hegemony_3_cyber_patch.webp",
-     "x": 0.3151,
-     "y": 0.151,
-     "area": 0.063
+     "x": 0.0508,
+     "y": 0.1797,
+     "area": 0.08
     },
     "eye": {
      "file": "nemesis/pool/nem_hegemony_3_eye_patch.webp",
-     "x": 0.2266,
-     "y": 0.1328,
-     "area": 0.065
+     "x": 0.306,
+     "y": 0.1094,
+     "area": 0.046
     }
    }
   },
@@ -479,7 +479,7 @@
     0.333,
     0.274
    ],
-   "source": "r8e/nem_hegemony_4_r8_s11_00001_.png",
+   "source": "e64/nem_hegemony_4_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_hegemony_4_burn.webp",
     "cyber": "nemesis/pool/nem_hegemony_4_cyber.webp",
@@ -488,21 +488,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_hegemony_4_burn_patch.webp",
-     "x": 0.4049,
-     "y": 0.2305,
-     "area": 0.042
+     "x": 0.4076,
+     "y": 0.2318,
+     "area": 0.061
     },
     "cyber": {
      "file": "nemesis/pool/nem_hegemony_4_cyber_patch.webp",
-     "x": 0.3646,
-     "y": 0.2422,
-     "area": 0.057
+     "x": 0.0872,
+     "y": 0.0,
+     "area": 0.132
     },
     "eye": {
      "file": "nemesis/pool/nem_hegemony_4_eye_patch.webp",
-     "x": 0.4414,
-     "y": 0.2344,
-     "area": 0.021
+     "x": 0.4362,
+     "y": 0.2331,
+     "area": 0.027
     }
    }
   },
@@ -510,11 +510,11 @@
    "faction": "hegemony",
    "pick": "nemesis/pool/nem_hegemony_5.webp",
    "anchor": [
-    0.5,
-    0.333,
-    0.274
+    0.43,
+    0.33,
+    0.29
    ],
-   "source": "r8e/nem_hegemony_5_r8_s11_00001_.png",
+   "source": "e64/nem_hegemony_5_v64_s51_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_hegemony_5_burn.webp",
     "cyber": "nemesis/pool/nem_hegemony_5_cyber.webp",
@@ -523,21 +523,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_hegemony_5_burn_patch.webp",
-     "x": 0.2005,
-     "y": 0.2917,
-     "area": 0.069
+     "x": 0.2812,
+     "y": 0.2878,
+     "area": 0.051
     },
     "cyber": {
      "file": "nemesis/pool/nem_hegemony_5_cyber_patch.webp",
-     "x": 0.1992,
-     "y": 0.2005,
-     "area": 0.074
+     "x": 0.2409,
+     "y": 0.1172,
+     "area": 0.122
     },
     "eye": {
      "file": "nemesis/pool/nem_hegemony_5_eye_patch.webp",
-     "x": 0.2969,
-     "y": 0.1406,
-     "area": 0.054
+     "x": 0.2826,
+     "y": 0.1081,
+     "area": 0.069
     }
    }
   },
@@ -549,7 +549,7 @@
     0.333,
     0.29
    ],
-   "source": "r8e/nem_hegemony_6_r8_s11_00001_.png",
+   "source": "e64/nem_hegemony_6_v64_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_hegemony_6_burn.webp",
     "cyber": "nemesis/pool/nem_hegemony_6_cyber.webp",
@@ -558,21 +558,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_hegemony_6_burn_patch.webp",
-     "x": 0.3164,
-     "y": 0.2031,
-     "area": 0.065
+     "x": 0.0234,
+     "y": 0.0,
+     "area": 0.125
     },
     "cyber": {
      "file": "nemesis/pool/nem_hegemony_6_cyber_patch.webp",
      "x": 0.3307,
-     "y": 0.1914,
-     "area": 0.059
+     "y": 0.1484,
+     "area": 0.078
     },
     "eye": {
      "file": "nemesis/pool/nem_hegemony_6_eye_patch.webp",
-     "x": 0.3307,
-     "y": 0.2031,
-     "area": 0.057
+     "x": 0.319,
+     "y": 0.1484,
+     "area": 0.085
     }
    }
   },
