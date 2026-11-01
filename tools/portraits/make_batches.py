@@ -626,7 +626,38 @@ def p64_items(fac, which=None, seeds=P64_SEEDS):
     return out
 BATCHES['p64ha'] = p64_items('corsair', 'corsair_'); BATCHES['p64hn'] = p64_items('corsair', 'nem_')
 BATCHES['p64ga'] = p64_items('ithar', 'ithar_'); BATCHES['p64gn'] = p64_items('ithar', 'nem_')
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
+# p64ga review (Nov 1): PRISM6 failed. "A living skull overgrown by crystal" drew literal bone skulls, or human and elf faces under a
+# crystal crown, on all 16 renders; the oil pass sharpened the faces. The p64gn job is turned into this head test (k64c) instead.
+# What kept faces away in k64b was a head that is not head-shaped (a long cut gem on the neck). k64c keeps that and answers Opus
+# (no flat front plane, no rim, flesh climbing over the crystal) three ways: H1 the k64b gem with an uneven curved front and flesh
+# over its lower edges; H2 a long crystal bud on the stalk of the neck; H3 a cluster of quartz points. "Skull" and "skin" stay out.
+HEAD7 = {
+ 'h1': ("Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is "
+        "one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky "
+        "flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim "
+        "or seam, and small crystals continue in rows down the back of the neck."),
+ 'h2': ("Its head is a long narrow bud of grown crystal on the stalk of its neck, like a flower bud made of quartz, every side of it "
+        "blank polished facets of uneven sizes with soft coloured light glowing deep inside. The milky flesh and pink sinew of the neck "
+        "rise up around the base of the bud and wrap over its lowest facets, and small crystals run in rows down the back of the neck."),
+ 'h3': ("Its head is a tall cluster of clear quartz points of different sizes growing upward from the top of its neck, like a geode "
+        "cluster, every point blank and polished, with soft coloured light glowing deep inside them. The milky flesh and pink sinew of "
+        "the neck rise up around the base of the cluster and between its lowest points, and small crystals run in rows down the back "
+        "of the neck."),
+}
+_P5HEAD = PRISM5[PRISM5.index("Its head is"):PRISM5.index(" {gear}")]
+def prism7(h): return PRISM5.replace(_P5HEAD, HEAD7[h])
+K64C = {'gw_%s' % h: ('ithar', prism7(h).format(gear=ROBE2) + " Soft bands of coloured light pulse across the crystal of its head and "
+        "down the glass threads of its neck as it speaks.") for h in HEAD7}
+def k64c(i, model, seeds, ref=None, denoise=None, tag=None):
+    fac, p = K64C[i]
+    it = {'id': tag or i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
+    if ref: it['ref'] = ref; it['denoise'] = denoise
+    return it
+BATCHES['k64c'] = ([k64c(k, 'qie', [11, 23, 51]) for k in K64C] +
+                   [k64c(k, 'zi2i', [sd], 'k64c/%s_qie_s%d_00001_.png' % (k, sd), d, '%s_s%d_p%d' % (k, sd, d * 100))
+                    for k in K64C for sd in (11, 23, 51) for d in (0.55, 0.65)])
+
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'k64c': 'k64c', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

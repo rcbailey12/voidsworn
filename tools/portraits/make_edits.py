@@ -153,6 +153,21 @@ def f64_items():
     return [{'id': 'nem_voidsworn_3', 'kind': k, 'seed': sd, 'src': 'ncrop8/nem_voidsworn_3.png', 'prompt': SCAR[k]['human'] + KEEP + BG_KEEP
              if isinstance(SCAR[k], dict) else SCAR[k] + KEEP + BG_KEEP} for k in KINDS['voidsworn'] for sd in (23, 37, 51)]
 
+# R64 repaint (Nov 1): scars for the new Hullbreaker (void hunter) and Glasswright (living prism) Nemesis, painted on the bust crops
+# of the p64 picks (comfy_io\PORTRAITS\ncrop64\, made by p64_publish.py crops). Kinds and ids unchanged (corsair burn, cyber,
+# eye; ithar burn, porcelain). Two seeds each; the background line is the plain KEEP, and a seed whose background turns to block
+# noise (the n8s fault) is not picked. batches/s64h.json and s64g.json -> comfy_io\PORTRAITS\s64\.
+SCAR64 = {
+ 'corsair': {'burn': "Add one large old healed burn to this creature: on one side of the head the mane is burned away to scorched bare hide, and the bony face plates there are blackened and blistered, with puckered scar tissue between them.",
+             'cyber': "Replace two of this creature's row of small eyes with a crude bolted-on iron plate with rivets and one small glowing red lens, raw scarred hide round its edges.",
+             'eye': "Add a deep old claw scar running down through one of this creature's small eyes and across its bony face plates, the plates cracked and split along it; that eye is milky white and blind."},
+ 'ithar': {'burn': "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky.",
+           'porcelain': "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks."},
+}
+def s64_items(fac, seeds=(11, 23)):
+    return [{'id': 'nem_%s_%d' % (fac, n), 'kind': k, 'seed': sd, 'src': 'ncrop64/nem_%s_%d.png' % (fac, n),
+             'prompt': SCAR64[fac][k] + (KEEP if fac == 'corsair' else KEEP_OBJ)} for n in range(1, 7) for k in KINDS[fac] for sd in seeds]
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -192,3 +207,6 @@ if __name__ == '__main__':
     print('f64', len(f64_items()))
     json.dump({'out': 'f64', 'budget_s': 1100, 'items': f64b_items()}, open(os.path.join(B, 'f64b.json'), 'w'), indent=1)
     print('f64b', len(f64b_items()))
+    for tag, fac in (('s64h', 'corsair'), ('s64g', 'ithar')):
+        json.dump({'out': 's64', 'budget_s': 1100, 'items': s64_items(fac)}, open(os.path.join(B, tag + '.json'), 'w'), indent=1)
+        print(tag, len(s64_items(fac)))

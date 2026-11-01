@@ -56,14 +56,14 @@
    "faction": "corsair",
    "pick": "painted/grax.webp",
    "alts": [
-    "alts/grax_r8alt1.webp",
-    "alts/grax_r7.webp"
+    "alts/grax_p64alt1.webp",
+    "alts/grax_r8.webp"
    ],
-   "source": "r8/corsair_grax_r8_qie_s11_00001_.png",
+   "source": "p64/corsair_grax_s11_oil50_zi2i_s11_00001_.png",
    "alt_sources": [
-    "r8/corsair_grax_r8_zit_s11_00001_.png"
+    "p64/corsair_grax_s51_oil50_zi2i_s51_00001_.png"
    ],
-   "note": "Bear-heavy, wolf-jawed, matted fur, chain harness, eyeshine. The Z-Image takes read as werewolves in power armour and two carried skull trophies."
+   "note": "R64 void hunter (Nov 1): grey-streaked black mane, iron maw plate, chain harness, boarding hook. s23 and s37 showed a bare chest."
   },
   "aelith": {
    "faction": "ithar",
@@ -90,6 +90,42 @@
     "r8/deathless_nekhet_r8_zit_s23_00001_.png"
    ],
    "note": "The broken ring mind (Nadir Aurex, Ninth Frame): violet-black plates round a white-gold core, repair drones. The Qwen recolour of the round 7 ring kept a green circuit background."
+  },
+  "sable": {
+   "faction": "corsair",
+   "pick": "painted/sable.webp",
+   "alts": [
+    "alts/sable_p64alt1.webp"
+   ],
+   "source": "p64/corsair_sable_s11_oil50_zi2i_s11_00001_.png",
+   "alt_sources": [
+    "p64/corsair_sable_s51_oil50_zi2i_s51_00001_.png"
+   ],
+   "note": "R64 void hunter: lean, glossy black mane, green eyes, scrap blade held low, close black harness."
+  },
+  "mott": {
+   "faction": "corsair",
+   "pick": "painted/mott.webp",
+   "alts": [
+    "alts/mott_p64alt1.webp"
+   ],
+   "source": "p64/corsair_mott_s11_oil50_zi2i_s11_00001_.png",
+   "alt_sources": [
+    "p64/corsair_mott_s51_oil50_zi2i_s51_00001_.png"
+   ],
+   "note": "R64 void hunter: ragged white mane, worn pale face plates, junk fighter craft hung from chains."
+  },
+  "vesh": {
+   "faction": "corsair",
+   "pick": "painted/vesh.webp",
+   "alts": [
+    "alts/vesh_p64alt1.webp"
+   ],
+   "source": "p64/corsair_vesh_s23_oil50_zi2i_s23_00001_.png",
+   "alt_sources": [
+    "p64/corsair_vesh_s51_oil50_zi2i_s51_00001_.png"
+   ],
+   "note": "R64 void hunter: rust mane, a harness of collected plates (crystal, violet machine plating), welding torch. s11 face read as a metal helmet."
   }
  },
  "nemesis": {

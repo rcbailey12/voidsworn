@@ -1,0 +1,174 @@
+{
+ "out": "s64",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "nem_ithar_1",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_1.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_1",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_1.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_1",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_1.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_1",
+   "kind": "porcelain",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_1.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_2.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_2.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_2.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_2",
+   "kind": "porcelain",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_2.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_3",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_3.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_3",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_3.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_3",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_3.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_3",
+   "kind": "porcelain",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_3.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_4",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_4.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_4",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_4.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_4",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_4.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_4",
+   "kind": "porcelain",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_4.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_5",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_5.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_5",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_5.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_5",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_5.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_5",
+   "kind": "porcelain",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_5.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_6",
+   "kind": "burn",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_6.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_6",
+   "kind": "burn",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_6.png",
+   "prompt": "Add an old burn scar to this being: a patch of scorched, darkened flesh on one side of the neck and throat, the glass threads there blackened and broken, the crystal on that side of the head clouded and smoky. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_6",
+   "kind": "porcelain",
+   "seed": 11,
+   "src": "ncrop64/nem_ithar_6.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  },
+  {
+   "id": "nem_ithar_6",
+   "kind": "porcelain",
+   "seed": 23,
+   "src": "ncrop64/nem_ithar_6.png",
+   "prompt": "Add a web of fine cracks across one side of this being's crystal head, a small chip broken out of one facet, soft light leaking from the cracks. Keep the same organism, its shape, colours, lighting, background and painting style; change nothing else."
+  }
+ ]
+}
