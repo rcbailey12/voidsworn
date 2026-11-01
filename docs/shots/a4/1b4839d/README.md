@@ -36,7 +36,7 @@ draws them, under the battle's lights. The code is 1b4839d (the tools) and the s
 - **All 36 ships after the rebuild:** all 28 rebuilt ships passed the build audit (nothing floating, no gun aimed backward, every
   weapon slot mounted) and the re-import check, and the game loads all 36 with their breach parts and wreck pieces. C13s, C15s and
   one wreck piece each on H8 and H10 were flagged for a few zero-length surface normals (no visible effect); the exporter now fixes
-  those (d79e42f), so they come out clean on those ships' next build.
+  those (7e283b6), so they come out clean on those ships' next build.
 - **No regressions:** outside the Hegemony, the before and after views of every ship match in brightness and colour (measured on the
   sheets, within about 1% everywhere), so no ship lost its paint or textures in the rebuild.
 
