@@ -12,7 +12,7 @@ from post import font
 from make_edits import KINDS
 W = 1080; BG = (14, 14, 18)
 NAME = {'matriarch': 'The Matriarch', 'mending': 'The Mending Throng', 'vex': 'Admiral Roderic Vex', 'kassar': 'First Admiral Ilsa Kassar',
-        'grax': 'Grax Steelgrin', 'aelith': 'Tamsa of the Clear Aperture', 'nekhet': 'Nadir Aurex, Ninth Frame'}   # rename_map_final.md section 6
+        'grax': 'Grax Ironmaw', 'aelith': 'Tamsa of the Clear Aperture', 'nekhet': 'Nadir Aurex, Ninth Frame'}   # rename_map_final.md section 6
 FAC = {'voidsworn': 'Sunward Crusade', 'hegemony': 'Hegemony Navy', 'corsair': 'Ashfall Hullbreakers', 'chorus': 'The Chorus', 'ithar': 'The Glasswrights', 'deathless': 'Eclipse'}
 IN_REVIEW = set()   # lore approved Oct 27 (R59): every look is final; admiral names follow rename_map_final.md when it lands
 

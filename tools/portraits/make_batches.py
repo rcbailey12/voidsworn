@@ -46,7 +46,7 @@ SUBJECT = {
   "a pale grey high-collared space-fleet dress uniform with rows of flat blue enamel rank bars and clean geometric shoulder boards, gloved hands clasped behind her back, "
   "faint blue targeting grids reflected on her face, behind her a pale clinical bridge where many identical firing-solution displays glow in perfect rows."),
  'corsair_grax': ('corsair',
-  "Portrait of Warlord Grax Steelgrin of the Ashfall Hullbreakers, a hulking scarred human space pirate warlord, a crude riveted iron prosthetic lower jaw, "
+  "Portrait of Warlord Grax Ironmaw of the Ashfall Hullbreakers, a hulking scarred human space pirate warlord, a crude riveted iron prosthetic lower jaw, "
   "a grin of steel, one cybernetic red eye, a shaved head with old burn scars, patchwork armour welded together from three different fleets' salvaged plates in clashing colours, "
   "mismatched stolen medals and torn insignia, grease and rust, a heavy boarding axe resting on his shoulder, sparks raining behind him in a cramped junk-built space-ship cockpit."),
  'ithar_aelith': ('ithar',
