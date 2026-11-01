@@ -14,6 +14,9 @@ extends Node
 #   --fleet N              (with --bench) N ships in all: the six flagships plus line ships of every class, a running
 #                          battle of random volleys and three deaths, seen from the battle camera (170 units, fov 45);
 #                          the 20-ship performance record (Muse audit B4.6)
+#   --clip DIR             (with --fleet N, give the engine --fixed-fps 60) the same running battle from the battle
+#                          camera, a JPG every second frame (30 fps) from --clip-from S (default 3) for --clip-len S
+#                          (default 9), then quit; no frame times (saving the frames would skew them)
 
 const FX := preload("res://fx/fx.gd")
 const LOOK := preload("res://render/look.gd")
@@ -72,7 +75,7 @@ func _ready() -> void:
 	_parse_args()
 	if args.has("shots"):
 		mode = "shots"
-	elif args.has("bench"):
+	elif args.has("bench") or args.has("clip"):
 		mode = "bench"
 	quality = String(args.get("quality", "max"))
 	if args.has("res"):
@@ -599,6 +602,9 @@ func _process_bench() -> void:
 		# the battle camera: 170 units out, fov 45, turning slowly round the board
 		var a := deg_to_rad(180.0 + 40.0 * sin(clock * 0.08))
 		_cam_at(Vector3(sin(a) * 105.0, 134.0, cos(a) * 105.0), Vector3(0, 0, 0), 45.0)
+	if args.has("clip"):
+		_process_clip()
+		return
 	var now := Time.get_ticks_usec()
 	if clock < warm:
 		bench_last = now
@@ -621,6 +627,28 @@ func _process_bench() -> void:
 		gpu_n += 1
 	if clock >= float(args.get("seconds", REEL_LEN)):
 		_finish_bench()
+
+
+var clip_n := 0
+
+
+# --clip: a JPG every second frame of the running battle (F3's 20-ship clip), then quit
+func _process_clip() -> void:
+	var t0 := float(args.get("clip-from", "3"))
+	var t1 := t0 + float(args.get("clip-len", "9"))
+	if clock >= t0 and clock <= t1 and frame_n % 2 == 0:
+		var dir := _abs(String(args["clip"]))
+		if clip_n == 0:
+			DirAccess.make_dir_recursive_absolute(dir)
+		var img := vp.get_texture().get_image()
+		if img != null and not img.is_empty():
+			img.convert(Image.FORMAT_RGB8)
+			img.save_jpg(dir.path_join("f%04d.jpg" % clip_n), 0.88)
+			clip_n += 1
+	if clock > t1:
+		print("[gallery] clip: %d frames" % clip_n)
+		started = false
+		get_tree().quit()
 
 
 func _finish_bench() -> void:

@@ -1455,9 +1455,14 @@ static func emitters(b: POOLS.Batch, bs: POOLS.Batch, E: Ent, ents: Array, ends:
 
 static func gather(s) -> Array:
 	var out: Array = []
+	# (F3: a ship whose node was freed before its first rebuild came round has nothing to gather)
+	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
+		return out
 	# in the hull's pose when the ship was added (the frame of its analysis and of the damage root, which follows it)
 	var inv: Transform3D = s.hull_motion().affine_inverse() * s.root.global_transform.affine_inverse()
 	for m in s.meshes:
+		if not is_instance_valid(m):
+			continue
 		var mi := m as MeshInstance3D
 		if mi == null or not (mi.mesh is ArrayMesh) or not mi.is_inside_tree():
 			continue
@@ -1535,9 +1540,11 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var by_mi := {}
 	for k in orig.size():
 		var sd: Dictionary = orig[k]
-		var mi: MeshInstance3D = sd["mi"]
-		if not is_instance_valid(mi):
+		# (F3: untyped first, so a hull freed while its rebuild ran is skipped instead of erroring on the typed assign)
+		var mi0 = sd["mi"]
+		if not is_instance_valid(mi0):
 			continue
+		var mi: MeshInstance3D = mi0
 		if not by_mi.has(mi):
 			by_mi[mi] = []
 		(by_mi[mi] as Array).append(k)

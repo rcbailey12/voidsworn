@@ -15,8 +15,16 @@ const COMMON := """
 global uniform float scene_t;
 global uniform float fx_gain;
 global uniform float fx_calm;
+global uniform float fx_px;
 float spow(float b, float e) { return pow(max(b, 0.0), e); }
 vec3 snorm(vec3 v) { float l = length(v); return l > 1e-6 ? v / l : vec3(0.0, 1.0, 0.0); }
+// F3 (effects at distance): the world size of `px` screen pixels at view distance d, counted on a 1080-line screen so the
+// floor looks the same at any resolution (fx_px scales every floor; 0 turns them off). Works for both projections.
+float px_world(float px, float d, mat4 P) {
+	float p11 = max(abs(P[1][1]), 1e-4);
+	float dd = P[3][3] > 0.5 ? 1.0 : max(d, 0.01);
+	return px * fx_px * 2.0 * dd / (p11 * 1080.0);
+}
 float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float vnoise(vec2 p) {
 	vec2 i = floor(p);
@@ -104,6 +112,31 @@ void vertex() {
 		vec3 c = (MODEL_MATRIX * vec4(lp, 1.0)).xyz;
 		float ang = a3.w * 6.2831853 + age * a4.w;
 		vec4 vp = VIEW_MATRIX * vec4(c, 1.0);
+		// F3: a minimum on-screen size per kind (diameter in pixels at 1080 lines), so a frigate's muzzle flash, a bolt or a
+		// spark never shrinks below a few pixels (sub-pixel quads drop out of the raster and vanish at distance). A sprite
+		// grown to the floor dims as it grows, but by less than its area (pops and bolts get f times their light, the rest
+		// f^0.8), so distant and small effects read brighter without blowing out. Smoke, soot and gas have no floor (no haze).
+		float flo = 0.0;
+		if (k == 0 || k == 17) { flo = 14.0; }
+		else if (k == 2 || k == 13 || k == 14) { flo = 12.0; }
+		else if (k == 12 || k == 15 || k == 18) { flo = 10.0; }
+		else if (k == 5 || k == 16 || k == 23) { flo = 9.0; }
+		else if (k == 1) { flo = 8.0; }
+		else if (k == 22) { flo = 6.0; }
+		else if (k == 19 || k == 21) { flo = 4.5; }
+		else if (k == 4 || k == 11) { flo = 3.0; }
+		float boost = 1.0;
+		if (flo > 0.0) {
+			float mn = px_world(flo, -vp.z, PROJECTION_MATRIX);
+			if (size < mn) {
+				float gf = mn / max(size, 1e-5);
+				// pops and bolts keep their brightness per pixel falling only as 1/f (their total light grows with the
+				// floor); the rest dims a little faster (f^-1.2)
+				float dimx = (k == 0 || k == 2 || k == 5 || k == 13 || k == 14 || k == 16 || k == 17) ? -1.0 : -1.2;
+				boost = (k == 15 || k == 23) ? 1.0 : clamp(spow(gf, dimx), 0.03, 1.0);
+				size = mn;
+			}
+		}
 		vec2 q = VERTEX.xy;
 		if (k == 14 || k == 15 || k == 23) {
 			// stretched along the screen-space motion (bolts and globs read as moving, not as dots)
@@ -122,7 +155,7 @@ void vertex() {
 		vp.xy += q * size;
 		POSITION = PROJECTION_MATRIX * vp;
 		vUv = VERTEX.xy * 2.0;
-		vCol = vec4(a2.rgb, a2.a * gate);
+		vCol = vec4(a2.rgb, a2.a * gate * boost);
 		vInfo = vec4(t, a3.z, a3.w, age);
 	}
 }
@@ -286,14 +319,32 @@ void vertex() {
 		}
 		head = (MODEL_MATRIX * vec4(head, 1.0)).xyz;
 		tail = (MODEL_MATRIX * vec4(tail, 1.0)).xyz;
+		vec3 wdir = snorm((MODEL_MATRIX * vec4(dir, 0.0)).xyz);
+		// F3: a minimum on-screen width and length (pixels at 1080 lines): tracers and bolts at least 2.6 px wide and 14 px
+		// long, sparks and drips 2 px by 4 px, so small ships' fire and every impact's sparks still draw at distance.
+		// A line widened to the floor dims by less than it grows (f^0.3 times its light).
+		float dv = max(-(VIEW_MATRIX * vec4(0.5 * (head + tail), 1.0)).z, 0.01);
+		float wf = (k == 0 || k == 4) ? 2.6 : (k == 5 ? 1.4 : 2.0);
+		float lf = (k == 0 || k == 4) ? 14.0 : ((k == 1 || k == 6 || k == 7) ? 4.0 : 0.0);
+		float sw = a3.y;
+		float bw = 1.0;
+		float wmin = px_world(wf, dv, PROJECTION_MATRIX);
+		if (sw < wmin) {
+			bw = clamp(spow(wmin / max(sw, 1e-5), -0.7), 0.05, 1.0);
+			sw = wmin;
+		}
+		float lmin = px_world(lf, dv, PROJECTION_MATRIX);
+		if (lf > 0.0 && length(head - tail) < lmin) {
+			tail = head - wdir * lmin;
+		}
 		vec3 mid = 0.5 * (head + tail);
 		vec3 wd = snorm(head - tail);
 		vec3 side = snorm(cross(wd, CAMERA_POSITION_WORLD - mid));
-		vec3 p = mix(tail, head, VERTEX.x) + side * VERTEX.y * a3.y;
+		vec3 p = mix(tail, head, VERTEX.x) + side * VERTEX.y * sw;
 		vUv = VERTEX.xy;
 		vK = a3.w;
 		vU = u;
-		vCol = a2.rgb * a2.a * fade;
+		vCol = a2.rgb * a2.a * fade * bw;
 		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(p, 1.0));
 	}
 }
@@ -362,10 +413,21 @@ void vertex() {
 		vec3 t2 = cross(n, t1);
 		float g = a3.z < 0.5 ? 1.0 - spow(1.0 - t, 2.0) : 1.0 - spow(1.0 - t, 3.0);
 		float size = mix(a3.x, a3.y, g);
+		// F3: shock fronts, soft pops and pale shock rings keep at least 12 px across (1080 lines), dimming as they grow
+		float rb = 1.0;
+		int rk = int(a3.z + 0.5);
+		if (rk >= 1 && rk <= 3) {
+			float dv = max(-(VIEW_MATRIX * (MODEL_MATRIX * vec4(c, 1.0))).z, 0.01);
+			float mn = px_world(12.0, dv, PROJECTION_MATRIX);
+			if (size < mn) {
+				rb = clamp(spow(mn / max(size, 1e-5), -1.0), 0.05, 1.0);
+				size = mn;
+			}
+		}
 		vec3 p = c + (t1 * VERTEX.x + t2 * VERTEX.y) * size;
 		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * (MODEL_MATRIX * vec4(p, 1.0)));
 		vUv = VERTEX.xy * 2.0;
-		vCol = vec4(a2.rgb, a2.a);
+		vCol = vec4(a2.rgb, a2.a * rb);
 		vInfo = vec4(t, a3.z, a3.w, age);
 	}
 }
@@ -473,11 +535,22 @@ void vertex() {
 		vec3 wp = (MODEL_MATRIX * vec4(p, 1.0)).xyz;
 		vec3 wdir = snorm((MODEL_MATRIX * vec4(dir, 0.0)).xyz);
 		vec3 side = snorm(cross(wdir, CAMERA_POSITION_WORLD - wp));
+		// F3: beams, arcs and lashes keep at least 3.5 px across (needle 2.5 px; engine plumes 2 px), dimming by less than
+		// they grow, so a small ship's lance still reads as a beam from the zoomed-out camera
+		float rf = (k == 2 || k == 5 || k == 6 || k == 7 || k == 9) ? 3.5 : (k == 8 ? 2.5 : ((k == 0 || k == 3) ? 2.0 : 0.0));
+		float bw = 1.0;
+		if (rf > 0.0) {
+			float wmin = px_world(rf, max(-(VIEW_MATRIX * vec4(wp, 1.0)).z, 0.01), PROJECTION_MATRIX);
+			if (w < wmin) {
+				bw = clamp(spow(wmin / max(w, 1e-5), -0.6), 0.05, 1.0);
+				w = wmin;
+			}
+		}
 		wp += side * VERTEX.y * w;
 		vInfo2 = vec2(L, w);
 		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(wp, 1.0));
 		vSide = VERTEX.y * 2.0;
-		vCol = vec4(a2.rgb, a2.a * gate);
+		vCol = vec4(a2.rgb, a2.a * gate * bw);
 		vInfo = vec3(s, a0.w, seed);
 		vAge = vec2(age, a4.y);
 	}
@@ -696,25 +769,32 @@ void fragment() {
 	vec3 lp = vL * rad;
 	float I = 0.0;
 	float maxR = length(rad);
+	// F3: hits read at distance and on small ships: the hot core, the ripple and its spread never shrink below a few
+	// pixels (wpx = world units per pixel here), and every hit lights the whole bubble faintly in the faction's colour
+	// and pattern for half a second (more when the camera is far out), so a shield hit reads as that ship's shield
+	float wpx = px_world(1.0, -VERTEX.z, PROJECTION_MATRIX);
+	float far = smoothstep(0.08, 0.45, wpx);
 	for (int i = 0; i < 6; i++) {
 		vec4 h = hits[i];
 		float age = scene_t - h.w;
-		float life = hitw[i].y;
+		float life = max(hitw[i].y, 1e-3);   // (F3: an empty or zero-life slot never divides by zero)
 		if (age < 0.0 || age > life) { continue; }
 		float f = age / life;
 		float fade = (1.0 - f) * (1.0 - f) * smoothstep(0.0, 0.025, age);
 		float d = length(lp - h.xyz);
 		float S = hitw[i].x;
-		float spread = hitw[i].z;
+		float spread = max(hitw[i].z, wpx * 22.0);
 		float mask = 1.0 - smoothstep(spread * 0.35, spread, d);
-		float hd = d / (0.9 + S * 0.4);
+		float hd = d / max(0.9 + S * 0.4, wpx * 5.0);
 		float core = exp(-hd * hd) * 4.0 * (1.0 - f) * mix(1.0, 0.25, fx_calm);
 		float rg = 0.0;
 		for (int j = 0; j < 3; j++) {
 			float aj = age - float(j) * 0.08;
-			if (aj > 0.0) { float rd = (d - aj * spread * 1.6) / (0.5 + aj * 2.0); rg += exp(-rd * rd) * (j == 0 ? 1.7 : 0.8); }
+			if (aj > 0.0) { float rd = (d - aj * spread * 1.6) / max(0.5 + aj * 2.0, wpx * 3.0); rg += exp(-rd * rd) * (j == 0 ? 1.7 : 0.8); }
 		}
-		I += (core + rg * mask * (0.6 + 0.4 * S)) * fade * S;
+		float ga = clamp(age / min(life, 0.55), 0.0, 1.0);
+		float glow_all = (1.0 - ga) * (1.0 - ga) * smoothstep(0.0, 0.04, age) * (0.10 + 0.22 * far) * mix(1.0, 0.5, fx_calm);
+		I += ((core + rg * mask * (0.6 + 0.4 * S)) * fade + glow_all) * S;
 	}
 	// regen shimmer: a band sweeping the bubble from stern to bow
 	float ra = scene_t - regen_t;

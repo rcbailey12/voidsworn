@@ -49,6 +49,13 @@ const REACT_IMPULSE := {"torp": 6.0, "star": 6.5, "ram": 8.0, "rockets": 2.0, "m
 	"gflak": 0.25, "spores": 0.1, "spine": 0.45, "tendril": 0.7, "sporeb": 0.2, "bombs": 0.8, "lance": 0.08, "needle": 0.05,
 	"pulsar": 0.05, "ion": 0.03, "doom": 0.1}
 const PLASMA_HOT := Color(0.86, 0.95, 1.0)
+# F3 (feel pass, Ryan Nov 1: "effects looked very weak, especially at a distance and for smaller ships"): the size every
+# effect is drawn at follows the ship (scale_k, a frigate 0.43, a super-dreadnought 2.07), which left a frigate's fire
+# and the hits on it a fifth of a capital's. Fire and impact visuals now use at least these scales (geometry such as
+# gun mounts and hull marks keeps the true one); the shader floors (fx_shaders px_world) then keep them readable at
+# distance. Claude's calls, vetoable.
+const VIS_K_FIRE := 0.75
+const VIS_K_HIT := 0.85
 
 
 static func look_of(kind: String, wid: String, faction: String) -> String:
@@ -98,18 +105,19 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 	var hits: Array = opts.get("hits", [])
 	var quad = int(opts.get("quad", -1))
 	var T0: float = fx.now
-	var ka: float = A.scale_k() if A != null else 1.0
-	var kt: float = Tg.scale_k() if Tg != null else 1.0
+	var ka_geo: float = A.scale_k() if A != null else 1.0
+	var ka: float = maxf(ka_geo, VIS_K_FIRE)
+	var kt: float = maxf(Tg.scale_k() if Tg != null else 1.0, VIS_K_HIT)
 	var col: Color = fac["weapon"] if lk != "plasma" else PLASMA_COL
 	# mounts: the guns that can bear (never backward)
 	var mounts: Array = []
 	if A != null:
 		var tl: Vector3 = A.xf().affine_inverse() * to_c
 		for m in A.hull.mounts_for(tl, maxi(shots.size(), 1)):
-			mounts.append({"p": A.to_world((m["p"] as Vector3) + (m["n"] as Vector3) * 0.15 * ka), "n": A.dir_world(m["n"])})
+			mounts.append({"p": A.to_world((m["p"] as Vector3) + (m["n"] as Vector3) * 0.15 * ka_geo), "n": A.dir_world(m["n"])})
 		if lk in ["lance", "ion", "pulsar", "doom", "torp", "star", "gauss"] and (A.xf().affine_inverse() * to_c - A.hull.c).normalized().x > 0.5:
 			for i in mounts.size():
-				mounts[i] = {"p": A.to_world(A.hull.bow + Vector3(0.3 * ka, 0, 0)), "n": A.dir_world(Vector3(1, 0, 0))}
+				mounts[i] = {"p": A.to_world(A.hull.bow + Vector3(0.3 * ka_geo, 0, 0)), "n": A.dir_world(Vector3(1, 0, 0))}
 	else:
 		for i in maxi(shots.size(), 1):
 			mounts.append({"p": from_c, "n": (to_c - from_c).normalized()})
@@ -176,7 +184,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			_muzzle_blast(fx, from, dir, tf, col, ka * (1.25 if w >= 3 else 1.0))
 			var spd = SHELL_SPEED * fx.unit
 			ti = tf + dist / spd
-			fx.stk(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 16.0, 9.0 * ka, 0.6 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd)
+			fx.stk(from, tf, dist / spd, col.lerp(Color.WHITE, 0.3), 18.0, 9.0 * ka, 0.75 * ka * (1.2 if w >= 3 else 1.0), 0, dir * spd)
 			fx.light(from + mn * 1.5 * ka, tf, 0.14, 7.0, col.lerp(Color.WHITE, 0.4), 0)
 			fx.shake(tf, 0.03, from)
 		"auto":
@@ -186,7 +194,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var tb = tf + b * 0.05
 				var jit = fx.rdir() * 0.3 * kt
 				fx.spr(from + dir * 0.4 * ka, tb, 0.05, Color(1, 0.8, 0.45), 6.0, 0.8 * ka, 1.4 * ka, 0)
-				fx.stk(from, tb, dist / spd, Color(1, 0.78, 0.4), 9.0, 3.5 * ka, 0.3 * ka, 0, (dir + jit / dist) * spd)
+				fx.stk(from, tb, dist / spd, Color(1, 0.78, 0.4), 11.0, 4.0 * ka, 0.4 * ka, 0, (dir + jit / dist) * spd)
 				if A != null and A.faction == "corsair":
 					fx.spr(from + dir * 0.8 * ka, tb + 0.02, 0.9, Color(0.07, 0.06, 0.05), 0.4, 0.5 * ka, 1.8 * ka, 8, dir * 2.0, 0.8)
 			fx.light(from + mn * 1.2 * ka, tf, 0.25, 3.5, Color(1, 0.75, 0.4), 1)
@@ -195,7 +203,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			tf = T0 + 0.05 + i * 0.12
 			var spd = 280.0 * fx.unit
 			fx.spr(from + dir * 0.3 * ka, tf, 0.06, col.lerp(Color.WHITE, 0.5), 7.0, 0.8 * ka, 1.6 * ka, 0)
-			fx.stk(from, tf, dist / spd, col, 10.0, 5.0 * ka, 0.55 * ka, 4, dir * spd)
+			fx.stk(from, tf, dist / spd, col, 12.0, 5.5 * ka, 0.7 * ka, 4, dir * spd)
 			fx.light(from, tf, 0.1, 4.0, col, 0)
 			ti = tf + dist / spd
 		"plasma":
@@ -217,7 +225,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			_muzzle_blast(fx, from, dir, tf, Color(1, 0.6, 0.3), ka * 0.7)
 			for b in 6:
 				var d2 = (dir + fx.rdir() * 0.06).normalized()
-				fx.stk(from, tf + fx.rng.randf() * 0.03, dist / spd, Color(1, 0.65, 0.35), 8.0, 2.5 * ka, 0.3 * ka, 0, d2 * spd)
+				fx.stk(from, tf + fx.rng.randf() * 0.03, dist / spd, Color(1, 0.65, 0.35), 9.0, 3.0 * ka, 0.38 * ka, 0, d2 * spd)
 			ti = tf + dist / spd
 		"prism":
 			tf = T0 + 0.08 + i * 0.1
@@ -225,7 +233,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			fx.spr(from, tf, 0.25, col, 3.0, 0.6 * ka, 1.8 * ka, 16)
 			for b in 3:
 				var d2 = (dir + fx.rdir() * 0.02).normalized()
-				fx.stk(from, tf + b * 0.03, dist / spd, col.lerp(Color.WHITE, 0.4), 8.0, 3.0 * ka, 0.25 * ka, 4, d2 * spd)
+				fx.stk(from, tf + b * 0.03, dist / spd, col.lerp(Color.WHITE, 0.4), 10.0, 3.5 * ka, 0.32 * ka, 4, d2 * spd)
 				fx.spr(from, tf + b * 0.03, dist / spd, col, 1.6, 0.7 * ka, 0.7 * ka, 16, d2 * spd)
 			ti = tf + dist / spd
 		"needle":
@@ -524,7 +532,7 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 		var c2 = col
 		match lk:
 			"pflak":
-				fx.stk(from, tb, ft, col.lerp(Color.WHITE, 0.4), 7.0, 3.0 * ka, 0.25 * ka, 4, (bp - from).normalized() * spd)
+				fx.stk(from, tb, ft, col.lerp(Color.WHITE, 0.4), 8.0, 3.5 * ka, 0.32 * ka, 4, (bp - from).normalized() * spd)
 			"gflak":
 				fx.stk(from, tb, 0.15, col.lerp(Color.WHITE, 0.3), 2.0, from.distance_to(bp), 0.06 * ka, 5, (bp - from).normalized())
 				ft = 0.02
@@ -533,7 +541,7 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 				fx.spr(from, tb, ft, col, 1.4, 0.7 * ka, 0.7 * ka, 15, (bp - from) / ft)
 			_:
 				fx.spr(from + dir * 0.4 * ka, tb, 0.04, Color(1, 0.85, 0.5), 3.0, 0.6 * ka, 1.0 * ka, 0)
-				fx.stk(from, tb, ft, Color(1, 0.8, 0.5), 5.0, 2.5 * ka, 0.25 * ka, 0, (bp - from).normalized() * spd)
+				fx.stk(from, tb, ft, Color(1, 0.8, 0.5), 6.0, 3.0 * ka, 0.32 * ka, 0, (bp - from).normalized() * spd)
 		var t_b = tb + ft
 		last = maxf(last, t_b)
 		match lk:
@@ -587,7 +595,7 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 					if s == 0:
 						fx.spr(ps, tsh, (to - ps).length() / 45.0, col, 1.4, 0.7, 0.7, 15, dd * 45.0)
 				_:
-					fx.stk(ps, tsh, (to - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 9.0, 3.0, 0.25, 0, dd * 260.0)
+					fx.stk(ps, tsh, (to - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 10.0, 3.5, 0.35, 0, dd * 260.0)
 	return timp + (0.3 if lk == "bombs" else 0.1)
 
 
@@ -638,11 +646,14 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		if lk == "plasma":
 			sz *= 1.3
 			hc = PLASMA_COL.lerp(PLASMA_HOT, 0.5)
-		fx.pop(p + n * 0.2 * k, T, hc.lerp(Color.WHITE, 0.3), sz * 1.6, 9.0 if not light else 5.0, n, 0.12)
-		var ns = 8 if light else (14 if w <= 2 else 22)
+		fx.pop(p + n * 0.2 * k, T, hc.lerp(Color.WHITE, 0.3), sz * 1.8, 9.0 if not light else 5.0, n, 0.16)
+		# F3: the hit lingers: a soft afterglow round the hit (below the flash budget's brightness, so never a counted
+		# flash) and a hot spot on the plate that cools over a second and a half, so a hit still reads after the pop
+		_afterglow(fx, p + n * 0.3 * k, T, hc, sz, light)
+		var ns = 11 if light else (18 if w <= 2 else 28)
 		for s in ns:
-			fx.stk(p, T + fx.rng.randf() * 0.03, 0.25 + fx.rng.randf() * 0.35, Color(1, 0.6, 0.25), 7.0, 0.04, 0.12 * k, 1,
-				fx.rcone(n + dir * -0.3, 0.9) * (9 + fx.rng.randf() * 16) * k, 2.2)
+			fx.stk(p, T + fx.rng.randf() * 0.03, 0.4 + fx.rng.randf() * 0.5, Color(1, 0.6, 0.25), 7.0, 0.04, 0.12 * k, 1,
+				fx.rcone(n + dir * -0.3, 0.9) * (9 + fx.rng.randf() * 16) * k, 1.6)
 		if not light:
 			for s in (4 if w <= 2 else 10):
 				fx.shd(p, T, 2.4, fx.rcone(n, 0.8) * (3 + fx.rng.randf() * 7) * k, (0.12 + fx.rng.randf() * 0.18) * k, 1.0)
@@ -662,10 +673,18 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 			for s in 10:
 				fx.stk(p + n * 0.1 * k, T + fx.rng.randf() * 0.04, 0.35 + fx.rng.randf() * 0.3, PLASMA_HOT, 4.0, 0.06, 0.09 * k, 1,
 					(fan * 1.4 + n * 0.5 + fx.rdir() * 0.35).normalized() * (8 + fx.rng.randf() * 10) * k, 2.4)
-		fx.light(p + n * 1.5 * k, T, 0.2, 6.0 if not light else 2.5, hc, 0)
+		fx.light(p + n * 1.5 * k, T, 0.32, 7.5 if not light else 3.5, hc, 0)
 		fx.shake(T, 0.04 if light else (0.08 if w <= 2 else 0.14), p)
 	if crit:
 		_crit(fx, Tg, tg, T + 0.12, k)
+
+
+# F3: what a hit leaves for a second after the pop: a soft glow that rises and falls (kind 18, below the flash budget's
+# brightness), and for shells and bolts a hot spot on the plate cooling white to red (kind 21)
+static func _afterglow(fx, p: Vector3, T: float, col: Color, sz: float, light: bool) -> void:
+	fx.spr(p, T + 0.04, 0.7 if light else 1.1, col, 1.8 if light else 2.6, sz * 0.5, sz * (1.2 if light else 1.6), 18)
+	if not light:
+		fx.spr(p, T, 1.6, col, 1.8, sz * 0.32, sz * 0.32, 21)
 
 
 static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, dir: Vector3, k: float, sustain: float, torp: bool, beam: bool, bio: bool, light: bool) -> void:
@@ -690,6 +709,7 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 		strength = 0.35
 		spread = 4.0 * k
 		life = 0.3
+	strength *= 1.3
 	if Tg != null:
 		Tg.shield_hit(fx, tg["local"], T, strength, spread, life)
 		if beam and sustain > 0.3:
@@ -699,10 +719,12 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 				Tg.shield_hit(fx, tg["local"], t, 0.6, spread * 0.8, 0.6)
 				t += 0.35
 	if lk in ["flak", "pflak", "gflak", "mflak", "spores", "guns"]:
-		fx.spr(p, T, 0.18, sc, 1.6, 0.6 * k, 1.6 * k, 18)
+		fx.spr(p, T, 0.35, sc, 2.0, 0.8 * k, 2.0 * k, 18)
 		return
-	fx.pop(p, T, sc.lerp(Color.WHITE, 0.25), (3.2 if not torp else 10.0) * k, 3.5 if not torp else 9.0, n, 0.14 if not torp else 0.28)
-	var ns = 10 if not torp else 60
+	fx.pop(p, T, sc.lerp(Color.WHITE, 0.25), (4.0 if not torp else 10.0) * k, 3.8 if not torp else 9.0, n, 0.18 if not torp else 0.28)
+	# F3: the shield keeps glowing in its own colour where it was struck, for most of a second
+	fx.spr(p, T + 0.03, 0.8 if not torp else 1.3, sc, 2.4, 1.2 * k, (4.0 if not torp else 9.0) * k, 18)
+	var ns = 14 if not torp else 60
 	if beam:
 		ns = int(30 * maxf(sustain, 0.4))
 	for s in ns:
@@ -711,7 +733,7 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 		var v = (tang * 0.8 + n * 0.4).normalized() if beam else fx.rcone(n, 0.9)
 		if lk == "gauss":
 			v = (dir * (1.0 if s % 2 == 0 else -1.0) + fx.rdir() * 0.25).normalized()
-		fx.stk(p, ts, 0.25 + fx.rng.randf() * 0.3, sc.lerp(Color.WHITE, 0.5), 6.0, 0.04, 0.12 * k, 1, v * (10 + fx.rng.randf() * 14) * k, 2.5)
+		fx.stk(p, ts, 0.35 + fx.rng.randf() * 0.4, sc.lerp(Color.WHITE, 0.5), 6.0, 0.04, 0.12 * k, 1, v * (10 + fx.rng.randf() * 14) * k, 1.9)
 	if bio:
 		for s in 5:
 			fx.spr(p + fx.rdir() * 0.5 * k, T + s * 0.04, 0.9, Tg.fac["weapon"] if false else Color(0.6, 0.9, 0.25), 1.2, 0.6 * k, 2.2 * k, 15, n * 0.5 + Vector3(0, -2, 0), 0.6)
@@ -722,7 +744,7 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 		fx.hit_pause(T, 3)
 	elif lk == "gauss":
 		fx.shake(T, 0.12, p)
-	fx.light(p + n * 2.0 * k, T, 0.35 if not beam else sustain + 0.2, 6.0, sc, 0 if not beam else 1)
+	fx.light(p + n * 2.0 * k, T, 0.45 if not beam else sustain + 0.3, 7.5, sc, 0 if not beam else 1)
 
 
 static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: float, col: Color, k: float) -> void:
@@ -753,7 +775,8 @@ static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: fl
 	if lk == "doom":
 		for s in 10:
 			fx.rib(p, fx.rcone(n, 1.2), (2.0 + fx.rng.randf() * 3.0) * k, T + fx.rng.randf() * dur, 0.1, col, 1.2, 0.25 * k, 0.15 * k, 6)
-	fx.light(p + n * 1.5 * k, T, dur, 5.0, col, 1)
+	fx.spr(p + n * 0.3 * k, T + dur * 0.5, dur + 0.9, col.lerp(Color(1, 0.7, 0.4), 0.4), 2.2, 2.0 * k, 5.0 * k, 18)
+	fx.light(p + n * 1.5 * k, T, dur + 0.15, 6.0, col, 1)
 	fx.shake(T, 0.12, p)
 	DEATH.spawn_debris(fx, p + n * 0.5 * k, n * 3.0 * k, 2, 0.3 * k)
 
@@ -770,7 +793,8 @@ static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, l
 		fx.spr(p + n * 0.3 * k + fx.rdir() * 0.6 * k, T + 0.1 + s * 0.25, 2.5, Color(0.42, 0.46, 0.12), 0.45, 0.8 * k, 3.0 * k, 20, n * 1.0 * k + Vector3(0, 0.5, 0), 0.5)
 	for s in 6:
 		fx.spr(p + fx.rdir() * 0.8 * k, T + 0.2 + s * 0.2, 1.8, Color(0.66, 0.95, 0.2), 1.0, 0.5 * k, 0.4 * k, 21)
-	fx.light(p + n * 1.5 * k, T, 0.6, 2.0, col, 1)
+	fx.spr(p + n * 0.3 * k, T + 0.05, 1.4, col, 2.0, 1.2 * k, 3.6 * k, 18)
+	fx.light(p + n * 1.5 * k, T, 0.9, 3.0, col, 1)
 	fx.shake(T, 0.05 if not lash else 0.1, p)
 
 
@@ -798,10 +822,12 @@ static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Co
 				fx.shd(xp, tx, 3.0, fx.rcone(dir, 0.5) * (6 + fx.rng.randf() * 10) * k, (0.15 + fx.rng.randf() * 0.25) * k, 1.0)
 			fx.spr(xp + xn * 0.8 * k, tx + 0.05, 2.0, Color(0.6, 0.65, 0.72), 0.3, 0.6 * k, 3.0 * k, 7, xn * 6.0 * k, 0.6)
 			DEATH.spawn_debris(fx, xp + xn * 0.5 * k, dir * 8.0 * k, 3, 0.35 * k)
-	fx.light(p + n * 1.5 * k, T, 0.25, 7.0, Color(0.85, 0.95, 1.0), 0)
+	_afterglow(fx, p + n * 0.3 * k, T, Color(0.85, 0.95, 1.0), 2.6 * k, false)
+	fx.light(p + n * 1.5 * k, T, 0.32, 7.5, Color(0.85, 0.95, 1.0), 0)
 	fx.shake(T, 0.2 if w >= 3 else 0.12, p)
 	if w >= 3:
 		fx.hit_pause(T, 3)
+		fx.punch(T, 0.008, p)
 
 
 static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, star: bool) -> void:
@@ -829,9 +855,12 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 		for s in 4:
 			fx.spr(p + n * k, T + 0.15 + s * 0.1, 3.0, Color(0.08, 0.075, 0.07), 0.6, R * 0.5, R * 1.8, 3, n * 2.0 * k, 0.5)
 	DEATH.spawn_debris(fx, p + n * k, n * 5.0 * k, 6, 0.5 * k)
+	fx.spr(p + n * R * 0.3, T + 0.1, 2.2, hot, 2.6, R * 0.8, R * 2.6, 18)
 	fx.light(p + n * 2.5 * k, T, 0.7, 14.0, Color(1, 0.75, 0.45), 0)
+	fx.light(p + n * 2.5 * k, T + 0.15, 1.6, 4.0, hot, 1)
 	fx.shake(T, 0.45, p)
 	fx.hit_pause(T, 4)
+	fx.punch(T, 0.014, p)
 
 
 static func _crit(fx, Tg, tg: Dictionary, T: float, k: float) -> void:
@@ -844,8 +873,10 @@ static func _crit(fx, Tg, tg: Dictionary, T: float, k: float) -> void:
 	for s in 6:
 		fx.shd(p, T, 3.0, fx.rcone(n, 0.8) * (3 + fx.rng.randf() * 7) * k, (0.15 + fx.rng.randf() * 0.3) * k, 1.0)
 	fx.light(p + n * 2.0 * k, T, 0.4, 8.0, Color(1, 0.65, 0.3), 0)
+	_afterglow(fx, p + n * 0.6 * k, T, Color(1, 0.65, 0.3), 3.0 * k, false)
 	fx.shake(T, 0.15, p)
 	fx.hit_pause(T, 2)
+	fx.punch(T, 0.006, p)
 	DEATH.spawn_debris(fx, p + n * 0.6 * k, n * 4.0 * k, 3, 0.35 * k)
 
 

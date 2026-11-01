@@ -12,7 +12,7 @@ godot --path . --fixed-fps 60 res://fx/gallery/gallery.tscn -- --shots DIR --res
 godot --path . --disable-vsync res://fx/gallery/gallery.tscn -- --bench OUT.json --res 3840x2160  frame times, then quit
 ```
 
-Options after `--`: `--quality max|high|low`, `--tonemap agx|aces`, `--reduce-flashing`, `--no-fx`, `--no-world`, `--no-physics`, `--only a,b` (stills whose names contain a or b), `--seconds S`, `--lo` (game-detail hulls even where the 8K flagships exist).
+Options after `--`: `--quality max|high|low`, `--tonemap agx|aces`, `--reduce-flashing`, `--no-fx`, `--no-world`, `--no-physics`, `--only a,b` (stills whose names contain a or b), `--seconds S`, `--lo` (game-detail hulls even where the 8K flagships exist). `--fleet N` with `--bench` or `--clip DIR` (F3: the 20-ship battle filmed from the battle camera, a JPG every second frame, `--clip-from S`, `--clip-len S`; give the engine `--fixed-fps 60`).
 
 Breach close-ups on one ship, outside the reel: `godot --path . --script res://fx/test/fx_breach_probe.gd` with PROBE_FAC, PROBE_CLS, PROBE_STAGE (2 to 4), PROBE_OUT (a folder), PROBE_W and PROBE_H; it prints the hull rebuild time.
 
@@ -52,6 +52,8 @@ Each still is keyed to the moment its effect really lands on the effect clock (t
 | g24 | The wrecks drifting at the end of the reel |
 
 ## Look decisions (vetoable)
+
+- **Effects at distance (F3, feel pass, Nov 1; fx/API.md section 16).** Ryan's first playtest found effects "very weak, especially at a distance and for smaller ships". Every effect kind now keeps a minimum size on screen (pixels on a 1080-line screen), dimming as it grows by less than its area; small ships' fire and hits draw at no less than 0.75 and 0.85 of the standard size; hits linger (afterglows, hot spots, longer sparks and lights); a shield hit lights the whole bubble faintly in its faction colour; kills leave a glow and a zoom punch; glow level 4 at 0.25. Proof: `fx/test/fx_range_probe.gd` sheets and the gallery's `--clip` 20-ship film, before and after, in `docs/shots/f3/`.
 
 - **Weapon marks read from the battle camera (r5).** r4's close-ups showed most marks invisible or barely there: big kit plates and AI panels are a few large triangles, so a mark smaller than a triangle could neither cut the hull nor get its overlay (the overlay took only triangles whose centre lay inside it). Now coarse triangles near a mark are split first (conforming, all attributes interpolated) and the overlay takes every triangle that reaches into the mark. Each mark also lays a halo in its own signature, at least HALO_MIN world units (0.75 to 2.1; the battle camera sees about 7.7 pixels a unit at 1080p), so a mark is a readable patch from the battle camera and its detail shows when zoomed in. Fresh glow trimmed (plasma 3.0 to 1.8, shells 1.5 to 1.1) so the shape shows instead of a bloom blob.
 - **Hit reactions (r5):** onset, thruster arrest, slow recovery (API.md 7), instead of a spring out and back. Peaks kept near r4's (frigate torpedo about 6.6 degrees, super-dreadnought 1.4) but they come later and leave slower.

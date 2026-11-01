@@ -6,7 +6,8 @@ extends RefCounted
 # Calls (vetoable, measured in godot/fx/gallery/README.md "Look"):
 #   - Tonemapper: see TONEMAP below and the README for the colour-faithfulness numbers behind the pick.
 #   - Exposure fixed (effects add light, they never change exposure: A5 SPEC grammar). No auto exposure.
-#   - Glow: threshold 0.8, a tight kernel (levels 2 to 4), so bright effects bloom without turning into white blobs.
+#   - Glow: threshold 0.8, a tight kernel (levels 1 to 3) plus a little of level 4 (F3), so bright effects bloom and
+#     small far ones get a halo, without turning into white blobs.
 #   - Dark hulls (Chorus, Deathless): a Fresnel rim in the faction tint plus a small albedo lift, instead of more key light,
 #     so they read against black space without washing the others out (A2: "too dark in Godot"; R31 fixed most of it by
 #     turning SDFGI off).
@@ -54,8 +55,10 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 	env.glow_strength = 1.0
 	env.glow_bloom = 0.0
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SCREEN
+	# F3 (effects at distance): a little of the wider level 4 (and a touch more of level 3), so a small bright effect far
+	# out gets a soft halo a few pixels wider than itself and reads; the tight levels 1 and 2 still carry the shape
 	for lv in 7:
-		env.set_glow_level(lv, [0.0, 0.6, 1.0, 0.5, 0.0, 0.0, 0.0][lv])
+		env.set_glow_level(lv, [0.0, 0.6, 1.0, 0.6, 0.25, 0.0, 0.0][lv])
 	if q == "max":
 		env.ssao_enabled = true
 		env.ssao_radius = 1.2

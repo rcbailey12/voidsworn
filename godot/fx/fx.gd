@@ -33,6 +33,11 @@ var reduce_flashing = false:
 		reduce_flashing = v
 		RenderingServer.global_shader_parameter_set(&"fx_calm", 1.0 if v else 0.0)
 var shake_scale = 1.0
+# F3: scale of every effect's minimum on-screen size (fx_shaders px_world): 1 on (default), 0 off (the r19 look)
+var min_px = 1.0:
+	set(v):
+		min_px = maxf(0.0, v)
+		RenderingServer.global_shader_parameter_set(&"fx_px", min_px)
 var unit = 1.0
 var starboard_z = 1
 var compat := false
@@ -71,6 +76,10 @@ var flash_log: PackedFloat64Array = []   # every counted flash (tests check the 
 var _refused: PackedFloat64Array = []    # flashes the budget turned down (their lights stay dark)
 var _later: Array = []      # [t, callable]
 var _shake_off = Vector2.ZERO
+var _punches: Array = []    # [t, amount] (F3 zoom punch)
+var _kick = 0.0             # the zoom punch now (share of the field of view taken off)
+var _fov_base = -1.0        # the camera's own field of view, under the punch
+var _fov_set = -1.0         # what the punch last wrote
 
 static var _globals_added := false
 static var _live_ids: Array = []    # instance ids of live fx nodes (ids, not references, so nothing is kept alive)
@@ -80,7 +89,7 @@ static func register_globals() -> void:
 	if _globals_added:
 		return
 	_globals_added = true
-	for g in [[&"scene_t", 0.0], [&"fx_gain", 0.5556], [&"fx_calm", 0.0]]:
+	for g in [[&"scene_t", 0.0], [&"fx_gain", 0.5556], [&"fx_calm", 0.0], [&"fx_px", 1.0]]:
 		if not ProjectSettings.has_setting("shader_globals/" + String(g[0])):
 			RenderingServer.global_shader_parameter_add(g[0], RenderingServer.GLOBAL_VAR_TYPE_FLOAT, g[1])
 
@@ -143,6 +152,7 @@ func setup(opts := {}) -> void:
 	unit = float(opts.get("unit", 1.0))
 	starboard_z = 1 if int(opts.get("starboard_z", 1)) >= 0 else -1
 	reduce_flashing = bool(opts.get("reduce_flashing", false))
+	min_px = float(opts.get("min_px", 1.0))
 	var rich = quality != "low"
 	var soft = "#define SOFT\n" if rich else ""
 	var big = quality == "max"
@@ -477,6 +487,21 @@ func shake_offset() -> Vector2:
 	return _shake_off
 
 
+# F3: a short zoom punch for the moments that should land (heavy hits, kills): the view narrows by `amount` (a share of
+# the field of view, 0.01 is 1%) in about 0.05 s and eases back over about 0.4 s. Motion, not light: no flash budget,
+# halved with reduce flashing, scaled by the shake setting (off with shake off), smaller far from the camera, and never
+# more than 6% at once. Applied to camera.fov (fx owns only the punch; it puts the camera's own value back after).
+func punch(t: float, amount: float, pos := Vector3.INF) -> void:
+	var a := amount
+	if pos != Vector3.INF and camera != null and is_instance_valid(camera):
+		a /= 1.0 + pos.distance_to(camera.global_position) / (400.0 * unit)
+	_punches.append([t, a])
+
+
+func punch_now() -> float:
+	return _kick
+
+
 func _update_feel(delta: float) -> void:
 	var cp = camera.global_position if camera != null else Vector3.ZERO
 	var keep: Array = []
@@ -496,6 +521,7 @@ func _update_feel(delta: float) -> void:
 		else:
 			keep.append(p)
 	_pauses = keep
+	_update_punch()
 	# trauma decays in about 0.3 s from a normal hit, about 0.45 s from the heaviest (A5 ranges)
 	_trauma = maxf(0.0, _trauma - delta * 2.4)
 	var k = _trauma * _trauma * shake_scale * (0.5 if reduce_flashing else 1.0)
@@ -505,6 +531,37 @@ func _update_feel(delta: float) -> void:
 	if apply_shake and camera != null and is_instance_valid(camera):
 		camera.h_offset = _shake_off.x * unit * 10.0
 		camera.v_offset = _shake_off.y * unit * 10.0
+
+
+func _update_punch() -> void:
+	var k := 0.0
+	var keep: Array = []
+	for p in _punches:
+		var a: float = now - float(p[0])
+		if a > 0.6:
+			continue
+		keep.append(p)
+		if a < 0.0:
+			continue
+		var env: float = smoothstep(0.0, 0.05, a) * (1.0 - smoothstep(0.05, 0.6, a))
+		k += float(p[1]) * env
+	_punches = keep
+	k = minf(k * shake_scale * (0.5 if reduce_flashing else 1.0), 0.06)
+	_kick = k
+	if not apply_shake or camera == null or not is_instance_valid(camera):
+		return
+	if _fov_set >= 0.0 and absf(camera.fov - _fov_set) > 1e-3:
+		# someone else set the field of view while a punch was on: theirs is the new base
+		_fov_base = camera.fov
+		_fov_set = -1.0
+	if k > 1e-4:
+		if _fov_set < 0.0:
+			_fov_base = camera.fov
+		_fov_set = clampf(_fov_base * (1.0 - k), 1.0, 179.0)
+		camera.fov = _fov_set
+	elif _fov_set >= 0.0:
+		camera.fov = _fov_base
+		_fov_set = -1.0
 
 
 # ---------------------------------------------------------------- ships (API.md 2)

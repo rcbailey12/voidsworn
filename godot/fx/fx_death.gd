@@ -355,6 +355,8 @@ static func seeds_for(s, cause: String, r: RandomNumberGenerator) -> PackedVecto
 static func precompute(fx, s, cause := "blast") -> void:
 	if s.weight <= 0 or s.has_meta("cut_task") or s.has_meta("cut_job"):
 		return
+	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
+		return   # F3: the ship's node was freed before its staggered cut came round
 	var r = RandomNumberGenerator.new()
 	r.seed = hash(s.id) + 3
 	var seeds = seeds_for(s, cause, r)
@@ -567,7 +569,8 @@ static func death(fx, s, cause: String) -> float:
 		var hp: Dictionary = h.random_sample(-1, 0.3)
 		var lp: Vector3 = hp["p"]
 		var ln: Vector3 = hp["n"]
-		fx.later(ti, func() -> void: _cook_burst(fx, s, lp, ln, k * (0.6 if cause == "flay" else 1.0), tint, cause))
+		# F3: a frigate's cook-off pops at no less than 0.65 of the standard size, so a small ship's death reads
+		fx.later(ti, func() -> void: _cook_burst(fx, s, lp, ln, maxf(k, 0.65) * (0.6 if cause == "flay" else 1.0), tint, cause))
 	# the cut: a glowing line grows across the hull before it parts
 	if cause == "cut":
 		var a: Dictionary = h.random_sample(-1, 0.8)
@@ -711,6 +714,10 @@ static func _break_up(fx, s, cause: String, tint: Color) -> void:
 	spawn_debris(fx, center, Vector3.ZERO, 6 + w * 6, h.L * 0.03)
 	fx.light(center, T, 1.6, 26.0 * big, Color(1, 0.8, 0.55), 0)
 	fx.light(center, T + 0.2, 4.0, 5.0, tint, 1)
+	# F3: the kill lands: a slow glow where the ship was (below the flash budget's brightness) that marks the spot from
+	# any zoom for a couple of seconds, and a zoom punch by weight
+	fx.spr(center, T + 0.15, 2.4 + w * 0.3, tint.lerp(Color(1, 0.8, 0.55), 0.3), 2.6, R * 0.8, R * 3.0, 18)
+	fx.punch(T, [0.0, 0.01, 0.016, 0.024, 0.034][w] * big, center)
 	fx.shake(T, [0.2, 0.3, 0.45, 0.7, 0.9][w] * big, center)
 	fx.hit_pause(T, [0, 2, 4, 8, 10][w])
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
