@@ -134,6 +134,12 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 		var m: Dictionary = mounts[i % mounts.size()]
 		var from: Vector3 = m["p"]
 		var tgt = _target(fx, Tg, to_c, from, hit, hd, quad, kt)
+		if bool(opts.get("debug", false)):
+			# (tests: where each shot strikes, in world space and relative to the target's centre)
+			var tp: Vector3 = Tg.root.global_position if Tg != null else to_c
+			print("[fx] shot %d %s from %s hit %s (rel %s) n %s shield %s miss %s sec %s" % [i, lk, str(from), str(tgt["p"]),
+				str((tgt["p"] as Vector3) - tp), str(tgt["n"]), str(tgt.get("shield", false)), str(tgt.get("miss", false)),
+				str(hd.get("section", ""))])
 		var r = _shot(fx, lk, kind, w, i, total, from, m["n"], tgt, T0, col, fac, A, Tg, hd, ka, kt)
 		impacts.append(float(r[0]) - T0)
 		done = maxf(done, float(r[1]) - T0)

@@ -192,10 +192,12 @@ func _volley(fam: Array, idx: int, sz: String) -> Array:
 		shots.append(true)
 	var shielded: bool = fx.ship("T").shielded
 	fx.rng.seed = 1000 + idx
+	fx.ship("T").hull._rng.seed = 7 + idx   # the same hit points in the sheet and in its trace
 	var cols: Array = []
 	cols.append(await _grab())
 	var T0: float = fx.now
-	var r: Dictionary = fx.volley("A", fam[2], "T", {"weapon_id": fam[3], "shots": shots, "hits": _hits(n, shielded)})
+	var r: Dictionary = fx.volley("A", fam[2], "T", {"weapon_id": fam[3], "shots": shots, "hits": _hits(n, shielded),
+		"debug": _env("PROBE_TRACE", "") == "1"})
 	var imp: Array = r["impacts"]
 	var i0: float = float(imp[0]) if not imp.is_empty() else 0.4
 	for m in [i0 * 0.6, i0 + 0.08, i0 + 0.45]:
@@ -207,7 +209,7 @@ func _volley(fam: Array, idx: int, sz: String) -> Array:
 	return imp
 
 
-# PROBE_TRACE=1: the same volley again, and the frames round its first impact (0.1 s before to 1.2 s after) from three
+# PROBE_TRACE=1: the same volley again (same hit points: the hull's sampler is seeded the same; each shot's hit printed), and the frames round its first impact (0.1 s before to 1.2 s after) from three
 # views (the battle camera, straight down, low from the side), each cropped round the target: one sheet per volley.
 # For finding an effect that does not show (is it hidden behind the hull, or not drawn at all?).
 func _trace(fam: Array, idx: int, sz: String) -> void:
@@ -218,8 +220,10 @@ func _trace(fam: Array, idx: int, sz: String) -> void:
 	for i in n:
 		shots.append(true)
 	fx.rng.seed = 1000 + idx
+	fx.ship("T").hull._rng.seed = 7 + idx
 	var T0: float = fx.now
-	var r: Dictionary = fx.volley("A", fam[2], "T", {"weapon_id": fam[3], "shots": shots, "hits": _hits(n, fx.ship("T").shielded)})
+	var r: Dictionary = fx.volley("A", fam[2], "T", {"weapon_id": fam[3], "shots": shots, "hits": _hits(n, fx.ship("T").shielded),
+		"debug": true})
 	var imp: Array = r["impacts"]
 	var i0: float = float(imp[0]) if not imp.is_empty() else 0.4
 	var tp: Vector3 = fx.ship("T").root.global_position
