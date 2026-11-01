@@ -91,10 +91,10 @@ const BOLT_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 instance uniform float flash = 0.0;
-uniform vec3 col = vec3(0.72, 0.82, 1.0);
+uniform vec3 col = vec3(0.62, 0.74, 1.0);
 varying vec4 vc;
 void vertex() { vc = COLOR; }
-void fragment() { ALBEDO = col * vc.a * flash * 4.0; }
+void fragment() { ALBEDO = col * vc.a * flash * 2.6; }
 """
 
 const DUST_SHADER := """
@@ -152,7 +152,7 @@ void fragment() {
 	vec3 c = textureLod(screen_tex, suv, 0.0).rgb;
 	float rip = 0.5 + 0.5 * sin(d * 0.42 + TIME * 1.5);
 	c *= 1.0 + 0.12 * w * rip;
-	c += vec3(0.05, 0.03, 0.10) * w * (0.4 + 0.6 * rip);
+	c += vec3(0.035, 0.02, 0.07) * w * (0.4 + 0.6 * rip);
 	ALBEDO = c;
 	ALPHA = w * k;
 }
@@ -223,11 +223,12 @@ func _gas(ps: Array, storm: bool) -> void:
 	m.set_shader_parameter("sun_v", Vector3(0.45, 0.70, 0.55))   # world.gd SUN
 	var g := 1.0
 	if storm:
-		m.set_shader_parameter("c_dark", Vector3(0.03, 0.04, 0.10))
-		m.set_shader_parameter("c_lit", Vector3(0.20, 0.25, 0.52))
-		m.set_shader_parameter("c_glow", Vector3(0.35, 0.42, 0.95))
+		# a dark, heavy mass (it must stand out from bright blue skies) that the lightning lights from inside
+		m.set_shader_parameter("c_dark", Vector3(0.012, 0.014, 0.03))
+		m.set_shader_parameter("c_lit", Vector3(0.10, 0.12, 0.24))
+		m.set_shader_parameter("c_glow", Vector3(0.22, 0.3, 0.75))
 		m.set_shader_parameter("storm", 1.0)
-		m.set_shader_parameter("dens", 0.75)
+		m.set_shader_parameter("dens", 0.95)
 		storm_mat = m
 		_set_flashes([])
 	else:
@@ -267,21 +268,26 @@ func _bolts(ps: Array) -> void:
 	bsh.code = BOLT_SHADER
 	bm.shader = bsh
 	for b in n:
+		# a short strike inside one storm hex and its neighbour (r1: bolts between far hexes drew long white wires)
 		var a: Vector3 = ps[rng.randi() % ps.size()]
-		var z: Vector3 = ps[rng.randi() % ps.size()]
-		if a.distance_to(z) < 8.0:
-			z = a + Vector3(rng.randf_range(-14, 14), 0, rng.randf_range(-14, 14))
-		a += Vector3(rng.randf_range(-4, 4), rng.randf_range(1.0, 6.0), rng.randf_range(-4, 4))
-		z += Vector3(rng.randf_range(-4, 4), rng.randf_range(-2.0, 3.0), rng.randf_range(-4, 4))
+		var near: Array = []
+		for q in ps:
+			if (q as Vector3).distance_to(a) < 19.0 and (q as Vector3).distance_to(a) > 1.0:
+				near.append(q)
+		var z: Vector3 = near[rng.randi() % near.size()] if not near.is_empty() else a + Vector3(rng.randf_range(-8, 8), 0, rng.randf_range(-8, 8))
+		a += Vector3(rng.randf_range(-3, 3), rng.randf_range(2.0, 5.0), rng.randf_range(-3, 3))
+		z += Vector3(rng.randf_range(-3, 3), rng.randf_range(-3.0, 0.5), rng.randf_range(-3, 3))
+		if a.distance_to(z) > 18.0:
+			z = a + (z - a).normalized() * 18.0
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var path := _jag(a, z, 10, 0.16)
-		_ribbon(st, path, 0.28, 2.4)
+		var path := _jag(a, z, 9, 0.09)
+		_ribbon(st, path, 0.12, 1.3)
 		for k in rng.randi_range(1, 2):
 			var j := rng.randi_range(2, path.size() - 3)
 			var from: Vector3 = path[j]
-			var to := from + (z - a).normalized().rotated(Vector3.UP, rng.randf_range(-1.2, 1.2)) * rng.randf_range(4.0, 8.0) + Vector3(0, rng.randf_range(-2, 2), 0)
-			_ribbon(st, _jag(from, to, 5, 0.22), 0.18, 1.5)
+			var to := from + (z - a).normalized().rotated(Vector3.UP, rng.randf_range(-1.2, 1.2)) * rng.randf_range(3.0, 6.0) + Vector3(0, rng.randf_range(-2, 1), 0)
+			_ribbon(st, _jag(from, to, 5, 0.12), 0.08, 0.9)
 		var mi := MeshInstance3D.new()
 		mi.mesh = st.commit()
 		mi.material_override = bm
