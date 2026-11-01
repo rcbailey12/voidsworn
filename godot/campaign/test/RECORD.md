@@ -13,9 +13,9 @@ Newest first. Each row names the commit the run used and where its log lives.
 
 | When (UTC) | Commit | Where | Check | Result | Log |
 |---|---|---|---|---|---|
-| Nov 1 | (this commit; oracle 8e81d75, RAMP step 9b) | Ryan's PC, lane A job `queue\g3_p9b.bat` | `parity_campaign.bat`, 30 seeded runs | pending (filled in when the job lands) | `docs/shots/g3_campaign/p9b/parity_campaign_log.txt` |
-| Nov 1 | (this commit; oracle 8e81d75) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS, sha256 661f15043e87c5a3) | session |
-| Nov 1 | (this commit) | cloud | `run_nem_scenarios.sh`; `save_test.gd`; `arc_hook_test.gd` | **PASS** (64 records); **PASS**; **PASS** | session |
+| Nov 1 | 5552c96 (oracle 8e81d75, RAMP step 9b) | Ryan's PC, lane A job `queue\g3_p9b.bat` | `parity_campaign.bat`, 30 seeded runs | **PASS, 30 of 30** (tables PASS, sha256 75169c2bb58dc7f4; same step counts as the cloud run) | `docs/shots/g3_campaign/p9b/parity_campaign_log.txt` |
+| Nov 1 | 5552c96 (oracle 8e81d75) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS, sha256 75169c2bb58dc7f4) | session |
+| Nov 1 | 5552c96 | cloud | `run_nem_scenarios.sh`; `save_test.gd`; `arc_hook_test.gd` | **PASS** (64 records); **PASS**; **PASS** | session |
 | Oct 31 | 6033f97 (oracle f770e06, lore round 8 strings) | Ryan's PC, lane A job `queue\g3_lore_6033f97.bat` | `parity_campaign.bat`, 30 seeded runs | **PASS, 30 of 30** (tables PASS; same step counts as the cloud run) | `docs/shots/g3_campaign/6033f97/parity_campaign_log.txt` |
 | Oct 31 | 6033f97 (oracle f770e06) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS) | session |
 | Oct 31 | 6033f97 | cloud | `run_nem_scenarios.sh`; `save_test.gd`; `arc_hook_test.gd` | **PASS** (64 records); **PASS**; **PASS** | session |

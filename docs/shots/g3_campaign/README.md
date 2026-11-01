@@ -2,6 +2,10 @@
 
 Taken by the campaign screenshot tour (`godot/scenes/campaign/campaign.tscn -- shots`) and the 3D map probe (`map3d_probe.tscn`). Each folder is named for the commit that drew it. Converted to WebP (quality 82) to keep the repo small; the PNGs stay on the PC in `voidsworn_test\shots\`.
 
+## p9b (oracle re-pin to 8e81d75, RAMP step 9b; parity only, no shots)
+
+PC job `queue\g3_p9b.bat` at 5552c96: campaign parity 30 of 30 PASS with the oracle at 8e81d75 (`parity_campaign_log.txt`). A rules number change only, so the map was not re-shot.
+
 ## 6033f97 (lore round 8 names, R59)
 
 One PC job (`queue\g3_lore_6033f97.bat`, 3840x2066 window, resized to 2560 wide): `before_*` is 0a375ae (the campaign folders just before the rename), `after_*` is 6033f97 (oracle re-pinned to f770e06, the rename map's G3 rows and section 5c, TERMS switched). Wide `m1_map`, hover card `m2_hover`, zoomed `m3b_zoom_mid`, sector II `m5_sector2`. On screen: Ashfall Hullbreakers, Cores in range (Crucible, Kharon, Astra, Seren), "win at a signal for a protocol", Signal of Seren, Den-alpha titles, Keep the dawn watch, the Hegemony crest on the briefing. The same job ran campaign parity on the PC: 30 of 30 PASS (`parity_campaign_log.txt`). The full PNG set (with every stop close-up) stays on the PC in `voidsworn_test\shots\g3_lore_6033f97\`. After the shots: the legend reads "drops salvage" (was "drops a salvage").
