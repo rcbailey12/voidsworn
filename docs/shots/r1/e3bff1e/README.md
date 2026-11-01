@@ -22,7 +22,7 @@ Commits on main: 53531b2 (browser rules and tests), c4c1431 (Godot port and the 
 ## Checks
 - New test file `contrib/opus/tools/r1_tests.js`: 25 checks, all pass; all 25 fail on the code before this batch.
 - Check pack 0 FAIL; unit tests b1 39, b3 17, b4 29, backlog 11, campaign start 6, all ok. Muse's findings suite 8 to 28 passing (EVT-1 and AI-1 are fixed but their tests assume a different shape; see the report). Softlock sweep, fleet invariants and save fuzz: 0 failures.
-- Rules parity, Ryan's PC (lane B, 222b492): 48 of 48 battles, maths, random numbers, threat maps, threads: PASS. Worst enemy think 0.456 s (bar 0.5 s). Sweep seed 13: 200 of 200 identical (36,628 records). Cloud: 48 of 48.
+- Rules parity, Ryan's PC (lane B, 222b492): 48 of 48 battles, maths, random numbers, threat maps, threads: PASS. Worst enemy think 0.456 s (bar 0.5 s). Sweep seed 13: 200 of 200 identical (36,628 records). Cloud: 48 of 48 (that run began before the blurb string commit e3bff1e; the PC run is the clean record at the final pin), and the same seed 13 sweep 200 of 200 (36,628 records).
 - Campaign parity: 30 of 30 on the PC and in the cloud; Nemesis scenarios 78 of 78 records identical (14 new); save and story hook tests pass.
 
 ## Balance (bot sims, Ryan's PC, same seeds before and after)
