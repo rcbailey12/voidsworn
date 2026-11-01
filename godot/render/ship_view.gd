@@ -737,7 +737,8 @@ func _emit(kind: String, f: Callable) -> void:
 #     ship ahead, the bow's retro jets to brake, aft jets to stop a back-off, matched side jets for any sideways push
 #     (sidesteps, and the pull into a curved corner), the bow-and-stern couple while the spin builds or bleeds. No banking.
 # steps: [{"kind": "turn", "yaw": target (unwrapped), "w"} | {"kind": "move", "p": Vector3 (height included), "w"}], w in
-# hexes of the move's time (one hex at cruise is one unit); dur the whole move in seconds (the battle's pace).
+# hexes of the move's time (one hex at cruise is one unit); unit_s the seconds a unit takes (the battle's pace), opts.cap
+# the longest a move may take. path_dur is the move's length once set up.
 var glide := false
 var gl_ds: PackedFloat32Array = PackedFloat32Array()   # distance along the curve on an even time grid (motion time)
 var gl_dtg := 1.0 / 60.0      # that grid's step, in units
@@ -756,10 +757,10 @@ var _gl_run := {}
 const GL_BLEND := 0.45        # how far (units) a mid-path spin reaches either side of its corner
 const GL_LEAD := 0.55         # a spin before the first run: the hull sets off this far through it
 const GL_TRAIL := 0.6         # a spin after the last run starts this far (of its own length) before the hull arrives
-const GL_SPIN := 1.6          # a turn step's weight to units of the move's timeline (the motion's own ramps add as much)
+const GL_SPIN := 2.4          # a turn step's weight to units of the move's timeline (the motion's own ramps add as much)
 
 
-func play_glide(steps: Array, dur: float, opts := {}) -> void:
+func play_glide(steps: Array, unit_s: float, opts := {}) -> void:
 	mass = clampf(float(opts.get("mass", 0.5)), 0.0, 1.0)
 	cinematic = true
 	glide = true
@@ -868,7 +869,9 @@ func play_glide(steps: Array, dur: float, opts := {}) -> void:
 		gl_T = maxf(gl_T, float(t["t1"]))
 	gl_yaw0 = cur_yaw
 	gl_p = 0.0
-	path_dur = maxf(dur, 0.05)
+	# the move takes as long as its own physics needs at the battle's pace (one unit = unit_s seconds), so a spin or a
+	# ramp lasts the same whatever else is in the move; only a move past the cap is played faster as a whole
+	path_dur = clampf(gl_T * unit_s, 0.05, float(opts.get("cap", 7.0)))
 	_prev_pos = position
 	_vel = Vector3.ZERO
 	_acc = Vector3.ZERO

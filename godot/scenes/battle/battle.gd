@@ -43,7 +43,8 @@ const MOVE_HEX := [560.0, 860.0]
 const MOVE_LEAD := [250.0, 450.0]
 const MOVE_CAP := 7000.0
 const MOVE_ROT := [0.6, 1.1]
-const MOVE_SQUAD := 0.5
+const MOVE_SQUAD := 0.35
+const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex time; building and bleeding speed fill the rest
 const TIPS := [
 	["start", "Your fleet", "Select one of your ships: it has a green ring underneath. Gold hexes show where it can move, and the fans show its firing arcs."],
 	["turns", "Turns alternate", "You and the enemy take turns one ship at a time: activate one of yours, then the enemy activates one of theirs, until every ship has acted. Then a new round starts."],
@@ -1271,7 +1272,10 @@ func _play_move(id, path: Array, charge: bool) -> void:
 	if movement == "segments" and not bool(u.get("squadron", false)):
 		sv.play_moves(_move_segments(sv, path, mass, args.has("flip-burn") and str(u.get("cls", "")) in FLIP_CLASSES), dur * mv_speed, {"mass": mass})
 	elif cin:
-		sv.play_glide(gsteps, dur * mv_speed, {"mass": sk})
+		# the glide sets its own length from its physics at this pace (cruise MOVE_CRUISE of the hex time; ramps, corners
+		# and spins add to it), capped
+		sv.play_glide(gsteps, per * MOVE_CRUISE * (0.72 if charge else 1.0) * mv_speed / 1000.0, {"mass": sk, "cap": MOVE_CAP / 1000.0 * mv_speed})
+		dur = sv.path_dur / maxf(mv_speed, 1e-3)
 	else:
 		sv.play_path(keys, yaws, alts, s, dur * mv_speed, {"mass": mass})
 	if args.has("move-trace"):
@@ -1288,6 +1292,8 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		if eng_on:
 			# the main drive glows only while it pushes the ship ahead (G4 fx engine level: idle, 2 full burn)
 			gfx.set_engine(str(id), lerpf(ENGINE_IDLE, 2.0, float(sv.thrust)) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
+		if args.has("speed-trace"):   # F2 proof: the hull's speed (hexes a second), spin (degrees a second) and drive
+			print("[speed] %s %.3f %.2f %.0f %.2f" % [str(id), game_t - t_move, sv._vel.length() / board.HW, rad_to_deg(sv._yaw_v), float(sv.thrust)])
 		if move_frames != "":
 			await _snap("f")
 		else:
