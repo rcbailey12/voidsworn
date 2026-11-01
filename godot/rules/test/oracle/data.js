@@ -65,7 +65,7 @@ const HULLS = {
   penitent:{n:'Vigil-class cruiser',cls:'Cruiser',fac:'voidsworn',size:.76,cp:3,hp:120,sh:20,rg:8,ar:.2,sp:3,tn:2,ev:5,w:[['battery','P'],['battery','S'],['lance','F']],ab:'focus',slots:2,cost:200},
   reliquary:{n:'Hearth-class carrier',cls:'Carrier',fac:'voidsworn',size:.84,cp:4,hp:130,sh:22,rg:9,ar:.15,sp:2,tn:1,ev:0,w:[['turret','T'],['flak','T']],ab:'launch',hangar:2,slots:2,cost:260},
   cathedral:{n:'Bastion-class battleship',cls:'Battleship',fac:'voidsworn',size:.95,cp:5,hp:220,sh:30,rg:12,ar:.3,sp:2,tn:1,ev:0,w:[['hbattery','P'],['hbattery','S'],['lance','F'],['flak','T']],ab:'surge',slots:3,cost:340},
-  ascendant:{n:'Daybreak-class dreadnought',cls:'Dreadnought',fac:'voidsworn',size:1.18,cp:8,hp:370,sh:32,rg:15,ar:.35,sp:1,tn:1,ev:0,w:[['hbattery','P'],['hbattery','S'],['turret','T'],['flak','T']],ab:'nova',slots:3,cost:520,unique:true},
+  ascendant:{n:'Daybreak-class dreadnought',cls:'Dreadnought',fac:'voidsworn',size:1.18,cp:8,hp:370,sh:32,rg:15,ar:.35,sp:2,tn:1,ev:0,w:[['hbattery','P'],['hbattery','S'],['turret','T'],['flak','T']],ab:'nova',slots:3,cost:520,unique:true},
   // ---- squadrons (shared)
   fighter:{n:'Fighter wing',cls:'Squadron',size:.34,cp:0,hp:18,sh:0,rg:0,ar:0,sp:6,tn:9,ev:35,w:[['guns','T']],sq:'fighter'},
   bomber:{n:'Bomber wing',cls:'Squadron',size:.34,cp:0,hp:28,sh:0,rg:0,ar:0,sp:5,tn:9,ev:25,w:[['bombs','T']],sq:'bomber'},

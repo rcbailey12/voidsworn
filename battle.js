@@ -68,7 +68,10 @@ const ENCOUNTERS={
   flagship:{n:'Decapitation',d:'Destroy their flagship and the rest of their fleet scatters.',shapes:['open','corridor','lanes','ring','dense','deadstar','rift','shoals','hourglass','archipelago','colossus']}};
 const ENC_POOL=['rout','ambush','defend','hunt','intercept','break','hold','flagship']; const ENC_SPECIAL=['defend','hunt','intercept','break','ambush','hold','flagship']; // v41: Relay and Decapitation can roll again
 // v41: sector flagships no longer always fight a plain Engagement: sometimes they spring an ambush, sometimes the fight is decided by their death alone
-function bossEncounter(){ const enc=pick(['rout','rout','ambush','flagship']); const sh=['ring','open','hourglass'].filter(s=>ENCOUNTERS[enc].shapes.includes(s)); return {enc,shape:pick(sh.length?sh:['open'])}; }
+// R63 (Ryan, Oct 29): sector flagships get their own objective table. Step one (R1, Nov 1): no Decapitation, which made the hand-built escort pointless;
+// the same single pick as before (rout twice as likely as ambush). Boss-only objectives beyond this wait on a design call.
+const BOSS_ENC=['rout','rout','ambush'];
+function bossEncounter(){ const enc=pick(BOSS_ENC); const sh=['ring','open','hourglass'].filter(s=>ENCOUNTERS[enc].shapes.includes(s)); return {enc,shape:pick(sh.length?sh:['open'])}; }
 function rollEncounter(kind,col){ if(kind==='boss') return bossEncounter(); const enc=col===0?'rout':pick(ENC_POOL); return {enc,shape:pick(ENCOUNTERS[enc].shapes)}; }
 function terrainConnected(T){
   const ok=h=>onBoard(h.q,h.r)&&!BLOCKING[T[hkey(h.q,h.r)]], all=boardHexes(), col=h=>h.q+Math.floor(h.r/2), bb=boardBounds();
