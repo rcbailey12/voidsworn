@@ -4,27 +4,25 @@
    "faction": "chorus",
    "pick": "painted/matriarch.webp",
    "alts": [
+    "alts/matriarch_pre68.webp",
     "alts/matriarch_r8alt1.webp",
     "alts/matriarch_r7.webp"
    ],
-   "source": "r8e/matriarch_r8_s23_00001_.png",
-   "alt_sources": [
-    "r8e/matriarch_r8_s11_00001_.png"
-   ],
-   "note": "Round 7 painting recoloured: olive flesh, ochre chitin, bile light."
+   "source": "e64/matriarch_v64_s11_00001_.png",
+   "crop": null,
+   "note": "R68: the Matriarch above a planet it is consuming, spores falling into the air."
   },
   "mending": {
    "faction": "chorus",
    "pick": "painted/mending.webp",
    "alts": [
+    "alts/mending_pre68.webp",
     "alts/mending_r8alt1.webp",
     "alts/mending_r7.webp"
    ],
-   "source": "r8e/mending_r8_s23_00001_.png",
-   "alt_sources": [
-    "r8e/mending_r8_s11_00001_.png"
-   ],
-   "note": "Round 7 painting recoloured: olive flesh, ochre bone needles, bile light."
+   "source": "e64/mending_v64_s11_00001_.png",
+   "crop": null,
+   "note": "R68: the Mending nested in the gutted hull of a captured warship."
   },
   "vex": {
    "faction": "voidsworn",
@@ -85,14 +83,13 @@
    "faction": "deathless",
    "pick": "painted/nekhet.webp",
    "alts": [
+    "alts/nekhet_pre68.webp",
     "alts/nekhet_r8alt1.webp",
     "alts/nekhet_r7.webp"
    ],
-   "source": "r8/deathless_nekhet_r8_zit_s37_00001_.png",
-   "alt_sources": [
-    "r8/deathless_nekhet_r8_zit_s23_00001_.png"
-   ],
-   "note": "The broken ring mind (Nadir Aurex, Ninth Frame): violet-black plates round a white-gold core, repair drones. The Qwen recolour of the round 7 ring kept a green circuit background."
+   "source": "e64/nekhet_v64_s11_00001_.png",
+   "crop": null,
+   "note": "R68: Nekhet in a machine hall of siphon arrays draining a star."
   },
   "sable": {
    "faction": "corsair",

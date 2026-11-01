@@ -252,15 +252,29 @@ S68_FIX = {'nem_ithar_3': "Replace the glowing map of continents on the screen b
                           "rings of orbits, small planets and lines of light, no land shapes.",
            'nem_ithar_1': "Remove the thin red curved line in the top left corner; that corner becomes the same dark workshop as around it."}
 CLEAN_E = " The paint surface stays smooth and even, with no noise, speckle, pixels, writing or lettering."
-def s68_items(fac, ids, seeds=(11, 23)):
+def scar68(fac, k, nid):
+    if fac in SCAR64: return SCAR64[fac][k] + (KEEP if fac == 'corsair' else KEEP_OBJ)
+    pr = SCAR8.get(fac, {}).get(k) or (SCAR[k].get(fac, SCAR[k]['human']) if isinstance(SCAR[k], dict) else SCAR[k])
+    return pr + (KEEP_OBJ if fac == 'chorus' or nid == 'nem_deathless_6' else KEEP)
+# R1 (Nov 1): no implant scar for the Crusade Nemesis, so their cyber kind is not painted
+KINDS68 = dict(KINDS, voidsworn=['burn', 'eye'])
+def s68_items(fac, ids, seeds=(11, 23), src=None):
     out = []
     for nid in ids:
-        src = 'ncrop68/%s.png' % nid
+        sp = (src or {}).get(nid, 'ncrop68/%s.png' % nid)
         if nid in S68_FIX:
-            out.append({'id': nid, 'kind': 'fix', 'seed': 11, 'src': src, 'prompt': S68_FIX[nid] + (KEEP if fac in ('voidsworn', 'hegemony', 'corsair') else KEEP_OBJ) + CLEAN_E})
-            src = 's68/%s_fix_s11_00001_.png' % nid
-        out += [{'id': nid, 'kind': k, 'seed': sd, 'src': src, 'prompt': SCAR64[fac][k] + (KEEP if fac == 'corsair' else KEEP_OBJ) + CLEAN_E}
-                for k in KINDS[fac] for sd in seeds]
+            out.append({'id': nid, 'kind': 'fix', 'seed': 11, 'src': sp, 'prompt': S68_FIX[nid] + (KEEP if fac in ('voidsworn', 'hegemony', 'corsair') else KEEP_OBJ) + CLEAN_E})
+            sp = 's68/%s_fix_s11_00001_.png' % nid
+        out += [{'id': nid, 'kind': k, 'seed': sd, 'src': sp, 'prompt': scar68(fac, k, nid) + CLEAN_E} for k in KINDS68[fac] for sd in seeds]
+    return out
+# e64 picks used as they are (the edit kept each head where the round 8 crop had it, so the old anchors hold)
+E64_PICK = {'nem_voidsworn_1': 23, 'nem_voidsworn_2': 23, 'nem_hegemony_1': 11, 'nem_hegemony_2': 11, 'nem_hegemony_3': 23,
+            'nem_hegemony_4': 23, 'nem_hegemony_6': 11, 'nem_chorus_2': 23, 'nem_chorus_3': 23, 'nem_chorus_4': 23, 'nem_chorus_5': 23,
+            'nem_chorus_6': 23, 'nem_deathless_3': 23, 'nem_deathless_4': 11, 'nem_deathless_5': 23, 'nem_deathless_6': 11}
+E64_SRC = {n: 'e64/%s_v64_s%d_00001_.png' % (n, sd) for n, sd in E64_PICK.items()}
+def s68_e64(facs):
+    out = []
+    for f in facs: out += s68_items(f, [n for n in E64_PICK if n.split('_')[1] == f], src=E64_SRC)
     return out
 
 if __name__ == '__main__':
@@ -317,3 +331,6 @@ if __name__ == '__main__':
     json.dump({'out': 's68', 'budget_s': 1100, 'items': s68_items('ithar', ['nem_ithar_1', 'nem_ithar_3', 'nem_ithar_4', 'nem_ithar_5', 'nem_ithar_6'])},
               open(os.path.join(B, 's68g.json'), 'w'), indent=1)
     print('s68g', len(s68_items('ithar', ['nem_ithar_1', 'nem_ithar_3', 'nem_ithar_4', 'nem_ithar_5', 'nem_ithar_6'])))
+    for tag, facs in (('s68a', ['voidsworn', 'hegemony']), ('s68b', ['chorus', 'deathless'])):
+        json.dump({'out': 's68', 'budget_s': 1150, 'items': s68_e64(facs)}, open(os.path.join(B, tag + '.json'), 'w'), indent=1)
+        print(tag, len(s68_e64(facs)))

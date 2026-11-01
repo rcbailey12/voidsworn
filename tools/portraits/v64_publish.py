@@ -21,14 +21,35 @@ ADM = {
             'R68: Vell in the hall of mirrors, looking back over its shoulder; oil 0.30 (0.40 drew a face profile).'),
  'mirelle': ('ithar', 'v64b/ithar_mirelle_s11_oil40_zi2i_s11', (0.5, 0.375, 0.75),
              'R68: Brin on its command chair before the Hollow Sun; oil 0.40.'),
+ # Chorus and Eclipse: their approved paintings moved into new settings by an edit (e64)
+ 'matriarch': ('chorus', 'e64/matriarch_v64_s11', None, 'R68: the Matriarch above a planet it is consuming, spores falling into the air.'),
+ 'mending': ('chorus', 'e64/mending_v64_s11', None, 'R68: the Mending nested in the gutted hull of a captured warship.'),
+ 'nekhet': ('deathless', 'e64/nekhet_v64_s11', None, 'R68: Nekhet in a machine hall of siphon arrays draining a star.'),
 }
-# Nemesis -> (render, face box (centre x, centre y, face height) as fractions of the render)
+# Nemesis -> (render, face box (centre x, centre y, face height) as fractions of the render[, crop side])
 NEM = {
  'nem_ithar_1': ('v64b/nem_ithar_1_s11_oil40_zi2i_s11', (0.55, 0.17, 0.30)),
  'nem_ithar_3': ('v64b/nem_ithar_3_s11_oil40_zi2i_s11', (0.44, 0.14, 0.25)),
  'nem_ithar_4': ('v64b/nem_ithar_4_s11_oil40_zi2i_s11', (0.47, 0.14, 0.24)),
  'nem_ithar_5': ('v64b/nem_ithar_5_s11_oil40_zi2i_s11', (0.56, 0.18, 0.30)),
  'nem_ithar_6': ('v64b/nem_ithar_6_s23_oil40_zi2i_s23', (0.49, 0.15, 0.25)),
+ # e64 edits of the round 8 bust crops: the head stayed where it was, so the full frame is the crop and the old anchor holds
+ 'nem_voidsworn_1': ('e64/nem_voidsworn_1_v64_s23', (0.5, 0.274, 0.274), 1.0),
+ 'nem_voidsworn_2': ('e64/nem_voidsworn_2_v64_s23', (0.5, 0.333, 0.226), 1.0),
+ 'nem_hegemony_1': ('e64/nem_hegemony_1_v64_s11', (0.5, 0.274, 0.274), 1.0),
+ 'nem_hegemony_2': ('e64/nem_hegemony_2_v64_s11', (0.5, 0.333, 0.29), 1.0),
+ 'nem_hegemony_3': ('e64/nem_hegemony_3_v64_s23', (0.5, 0.29, 0.258), 1.0),
+ 'nem_hegemony_4': ('e64/nem_hegemony_4_v64_s23', (0.5, 0.333, 0.274), 1.0),
+ 'nem_hegemony_6': ('e64/nem_hegemony_6_v64_s11', (0.5, 0.333, 0.29), 1.0),
+ 'nem_chorus_2': ('e64/nem_chorus_2_v64_s23', (0.5, 0.5, 0.333), 1.0),
+ 'nem_chorus_3': ('e64/nem_chorus_3_v64_s23', (0.5, 0.5, 0.333), 1.0),
+ 'nem_chorus_4': ('e64/nem_chorus_4_v64_s23', (0.5, 0.5, 0.333), 1.0),
+ 'nem_chorus_5': ('e64/nem_chorus_5_v64_s23', (0.5, 0.5, 0.333), 1.0),
+ 'nem_chorus_6': ('e64/nem_chorus_6_v64_s23', (0.5, 0.5, 0.333), 1.0),
+ 'nem_deathless_3': ('e64/nem_deathless_3_v64_s23', (0.5, 0.242, 0.242), 1.0),
+ 'nem_deathless_4': ('e64/nem_deathless_4_v64_s11', (0.5, 0.258, 0.242), 1.0),
+ 'nem_deathless_5': ('e64/nem_deathless_5_v64_s23', (0.5, 0.333, 0.242), 1.0),
+ 'nem_deathless_6': ('e64/nem_deathless_6_v64_s11', (0.5, 0.5, 0.333), 1.0),
 }
 # Nemesis scar picks: nid -> {kind: seed} in SCAR_DIR
 SCAR = {
@@ -67,10 +88,11 @@ def admirals(root, only=None):
 
 def crops(root, out, fac=None):
     os.makedirs(out, exist_ok=True); A = {}
-    for nid, (rel, (fx, fy, fh)) in NEM.items():
+    for nid, e in NEM.items():
         if fac and nid.split('_')[1] != fac: continue
+        rel, (fx, fy, fh) = e[0], e[1]
         im = Image.open(_png(root, rel)).convert('RGB'); w, h = im.size
-        S = min(1.0, max(0.42, fh / FACE_IN_CROP))
+        S = e[2] if len(e) > 2 else min(1.0, max(0.42, fh / FACE_IN_CROP))
         left = min(max(fx - S / 2, 0), 1 - S); top = min(max(fy - S / 3, 0), 1 - S)
         c = im.crop((int(left * w), int(top * h), int((left + S) * w), int((top + S) * h))).resize((1024, 1024), Image.LANCZOS)
         if S < 0.9: c = c.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
