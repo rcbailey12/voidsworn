@@ -1534,6 +1534,9 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var res: Dictionary = job.get("out", {})
 	if res.is_empty():
 		return
+	# (F3: the ship's nodes were freed while its rebuild ran on the worker: nothing left to show it on)
+	if not is_instance_valid(s.root) or not s.root.is_inside_tree() or not is_instance_valid(s._dmg_root):
+		return
 	build_meshes(res)
 	var orig: Array = job["surfs"]
 	var meshes: Dictionary = res.get("meshes", {})
