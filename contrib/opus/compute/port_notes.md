@@ -394,3 +394,27 @@ Display strings only; same seeded sim output before and after (`SEED=5 ADMS=grax
 - Section 17: Founders' cache (legacy unlock, was Founders' salvage), Archive extract (Eclipse logbook item), Backup frame (generic phylactery name); 30 Nemesis card sentences in neutral words ("His ships ..." becomes "Enemy ships ...", "his fleet" becomes "the fleet"), and the Hullbreaker special "Bigger crew" becomes "Bigger fleet". 40 replacements in data.js and ui3d.js.
 - Random draws: the Eclipse Nemesis title pick now draws from 3 titles instead of 4 (same number of draws, different values for Eclipse rivals).
 - Checks: check pack 0 FAIL; b1 39, b3 17, b4 29, backlog 11, campaign start 6, all ok; no em dashes.
+
+## Step 9b: RAMP retune after the PC confirmation (Nov 1; battle.js `RAMP` only)
+
+PC lane B confirmation of step 9 on fresh seeds showed step 9 slightly short of the target (17.4% over 8 seeds) and made the bosses near certain in the fixed-fleet campaign sim (sector 2 boss 68 to 98, sector 3 boss 78 to 100). Step 9b moves easing from the boss escorts into the sector 2 budget:
+- `grow` [0,1.2,1.24,1.26] to [0,1.2,1.2,1.24]; `thin` [0,.73,.675,.62] to [0,.73,.67,.62]; `boss` [0,.3,.44,.53] to [0,.3,.5,.6]. Sector 1 unchanged. Random draws: none added or moved.
+- Unaffected by construction, checked with the same seed before and after (identical output): sector 1 bossmatrix (admiral band) and fmatrix (faction strength).
+
+Full runs, `runsim 100` per seed (seeds 7101 to 7104 PC and cloud, 7105 to 7108 PC):
+| Code | Wins per seed (7101 to 7108) | All 800 runs |
+|---|---|---|
+| cb55ec9 (before step 9) | 17, 10, 9, 10 (first four seeds) | 11.5% of 400 |
+| step 9 (d551697) | 20, 19, 21, 11, 18, 20, 13, 17 | 17.4% |
+| step 9b (this step) | 20, 20, 23, 15, 24, 16, 17, 17 | 19.0% |
+
+By player faction (seeds 7105 to 7108, 400 runs, about 66 per faction; noise about 5 points per row):
+| Faction | Step 9 wins | Step 9b wins | Step 9b reach sector 3 |
+|---|---|---|---|
+| Sunward Crusade (voidsworn) | 19% | 15% | 29% |
+| Hegemony | 13% | 18% | 26% |
+| Hullbreakers (corsair) | 15% | 18% | 25% |
+| Chorus | 28% | 18% | 38% |
+| Glasswrights (ithar) | 17% | 22% | 36% |
+| Eclipse (deathless) | 9% | 22% | 33% |
+Spread 9 to 28 under step 9, 15 to 22 under step 9b. The Crusade is not an outlier in either (G2's Godot bot 0 of 6 is likely at a 15 to 19% rate: about one time in three). `runsim` now prints this as a `byfac` line.
