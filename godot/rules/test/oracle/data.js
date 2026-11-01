@@ -115,7 +115,7 @@ const FACTIONS = {
     blurb:'The Registry’s navy: linked crews, wedge hulls and drone escorts. Ion cannons strip shields; carriers launch fighter screens.',
     roster:['h_picket','h_interdictor','h_vanguard','h_dominion'],boss:'h_boss',sq:'fighter'},
   corsair:{n:'Ashfall Hullbreakers',hull:'#6a2c22',trim:'#b8402a',glow:'#e0402c',style:'junk',
-    blurb:'Furred pack hunters in ships that run dark, stripping every wreck. Fast, thin shields, and far too many rockets.',
+    blurb:'Plated alien pack hunters who track by heat and sound, in ships that run dark, stripping every wreck. Fast, thin shields, and far too many rockets.',
     roster:['c_raider','c_reaver','c_marauder','c_hulk'],boss:'c_boss',sq:'bomber'},
   chorus:{n:'The Chorus',hull:'#57364c',trim:'#a4913a',glow:'#d6d24a',style:'bio',
     blurb:'A living weapon that ate its makers. No shields at all, but their flesh knits back together every round.',
