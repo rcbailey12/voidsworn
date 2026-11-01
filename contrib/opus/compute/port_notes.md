@@ -379,3 +379,10 @@ Display strings only; no id, key, rule, number or random draw changed (same seed
 - Test strings updated to the new text: b1_tests (Strip the wrecks; reward definitions "Strip:", "A protocol is", "Salvage is", "Recovered refits").
 - Checks: check pack 0 FAIL (14 CHECK); b1 39 ok, b3 17 ok, b4 29 ok, backlog 11 ok; build.py test builds; no em dashes.
 - Not applied by B (other owners): godot/ rows (G1, G2, G3, L), tools/portraits (P). Ids that read like old names (`voidsworn`, `ithar`, `boon`, `relic`, `patron`, `favour` and the rest) stay by rule.
+
+## Step 11: campaign3d.js battle start fix (Oct 31; browser only, G3 oracle mirror)
+
+- **Bug (found by Codex, confirmed by Opus):** campaign3d.js `battleScreen`, the line that starts the battle ended with a line comment ("// R42: a Hegemony Nemesis always brings reinforcements in round 3") placed before `prepBattle(); const setupMs=...`, so both statements were comment text. Every browser campaign battle start threw a ReferenceError on `setupMs` (two lines down, in the start telemetry), and `prepBattle()` never ran. The comment now sits after the code. It came in with the R42 work on Oct 26.
+- G3: if `godot/campaign/test/oracle/campaign3d.js` mirrors this line, re-pin it. No rule, number or random draw changed (`prepBattle` is browser scene setup; the rules state is built by `startBattle` before it).
+- New unit test `contrib/opus/tools/campaign_start_test.js`: loads the real campaign3d.js on top of the rules files with the browser parts stubbed and drives `battleScreen()` for a battle, an elite, a Hegemony Nemesis fight and a boss (no throw, prepBattle ran once, the start telemetry carries setupMs). It also scans every top-level JS file for a `//` comment followed by statements on the same line. On the old file it fails 5 of 6; on the fix 6 of 6.
+- B-18 (`animExplode` stall check in `killUnit`) was already fixed in beae728; the scan finds no other swallowed code.
