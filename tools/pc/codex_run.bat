@@ -16,10 +16,10 @@ if exist "%W%" (echo work folder %W% already exists, use a new tag & exit /b 3)
 mkdir "%W%"
 powershell -NoProfile -Command "Expand-Archive -LiteralPath '%B%\cx_%TAG%_src.zip' -DestinationPath '%W%'" || exit /b 4
 pushd "%W%"
-git init -q && git add -A && git -c user.name=codex -c user.email=codex@local commit -q -m base
+git init -q && git config core.autocrlf false && git add -A && git -c user.name=codex -c user.email=codex@local commit -q -m base
 copy /y "%B%\cx_%TAG%_brief.md" "%W%\CODEX_TASK.md" >nul
 rem Codex works only inside this folder; 25 minutes at most (tmo.bat)
-call "%B%\tools\pc\tmo.bat" 1500 "%APPDATA%\npm\codex.cmd" exec --full-auto --skip-git-repo-check -C "%W%" -o "%B%\cx_%TAG%_last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Work only inside this folder. Do not commit." > "%B%\cx_%TAG%_log.txt" 2>&1
+call "%B%\tools\pc\tmo.bat" 1500 "%APPDATA%\npm\codex.cmd" exec --approve-for-me --ephemeral --color never --skip-git-repo-check -C "%W%" -o "%B%\cx_%TAG%_last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Work only inside this folder. Do not commit." > "%B%\cx_%TAG%_log.txt" 2>&1
 set "RC=%ERRORLEVEL%"
 del /q CODEX_TASK.md 2>nul
 git add -A
