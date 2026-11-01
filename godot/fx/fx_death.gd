@@ -240,29 +240,43 @@ const _HULL_DIRS := 50
 static var _dirs: PackedVector3Array = PackedVector3Array()
 
 
-static func safe_convex(src: PackedVector3Array) -> Shape3D:
+# F3 perf: each piece's centre and its collider points (at most _HULL_DIRS extreme points), worked out on the cut's
+# worker thread; the break-up used to do this in GDScript on the main thread for every vertex of every piece.
+static func _piece_hulls(pieces: Array) -> void:
+	for pc in pieces:
+		var pts: PackedVector3Array = pc["pts"]
+		var cen := Vector3.ZERO
+		for p in pts:
+			cen += p
+		cen /= maxf(pts.size(), 1)
+		pc["cen"] = cen
+		var hp := _extreme_points(pts)
+		for i in hp.size():
+			hp[i] -= cen
+		pc["hull"] = hp
+
+
+static func _init_dirs() -> void:
+	if not _dirs.is_empty():
+		return
+	# Fibonacci sphere: evenly spread directions
+	var d := PackedVector3Array()
+	for i in _HULL_DIRS:
+		var y := 1.0 - 2.0 * (float(i) + 0.5) / _HULL_DIRS
+		var rr := sqrt(maxf(0.0, 1.0 - y * y))
+		var a := float(i) * 2.399963
+		d.append(Vector3(cos(a) * rr, y, sin(a) * rr))
+	_dirs = d
+
+
+# The finite points of src that are extreme along any of the fixed directions (thread-safe once _init_dirs has run).
+static func _extreme_points(src: PackedVector3Array) -> PackedVector3Array:
 	var pts := PackedVector3Array()
 	for p in src:
 		if is_finite(p.x) and is_finite(p.y) and is_finite(p.z):
 			pts.append(p)
-	if pts.is_empty():
-		var b0 := BoxShape3D.new()
-		b0.size = Vector3.ONE * 0.1
-		return b0
-	var lo := pts[0]
-	var hi := pts[0]
-	for p in pts:
-		lo = lo.min(p)
-		hi = hi.max(p)
-	var ext := hi - lo
-	var size := maxf(ext.x, maxf(ext.y, ext.z))
-	if _dirs.is_empty():
-		# Fibonacci sphere: evenly spread directions
-		for i in _HULL_DIRS:
-			var y := 1.0 - 2.0 * (float(i) + 0.5) / _HULL_DIRS
-			var rr := sqrt(maxf(0.0, 1.0 - y * y))
-			var a := float(i) * 2.399963
-			_dirs.append(Vector3(cos(a) * rr, y, sin(a) * rr))
+	if pts.size() <= 4:
+		return pts
 	var keep := {}
 	for d in _dirs:
 		var bi := 0
@@ -276,6 +290,23 @@ static func safe_convex(src: PackedVector3Array) -> Shape3D:
 	var out := PackedVector3Array()
 	for i in keep:
 		out.append(pts[i])
+	return out
+
+
+static func safe_convex(src: PackedVector3Array) -> Shape3D:
+	_init_dirs()
+	var out := _extreme_points(src)
+	if out.is_empty():
+		var b0 := BoxShape3D.new()
+		b0.size = Vector3.ONE * 0.1
+		return b0
+	var lo := out[0]
+	var hi := out[0]
+	for p in out:
+		lo = lo.min(p)
+		hi = hi.max(p)
+	var ext := hi - lo
+	var size := maxf(ext.x, maxf(ext.y, ext.z))
 	# degenerate (a point, a line or a flat sheet): a box from the bounds, never thinner than 2% of the largest side
 	var flat := out.size() < 4 or size < 1e-4
 	if not flat:
@@ -378,7 +409,11 @@ static func precompute(fx, s, cause := "blast") -> void:
 			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0})
 	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "out": null}
 	s.set_meta("cut_job", job)
-	var tid = WorkerThreadPool.add_task(func() -> void: job["out"] = _cut(job))
+	_init_dirs()
+	var tid = WorkerThreadPool.add_task(func() -> void:
+		var pieces := _cut(job)
+		_piece_hulls(pieces)
+		job["out"] = pieces)
 	s.set_meta("cut_task", tid)
 	fx.later(fx.now + 0.5, func() -> void: _prebuild(fx, s))
 
@@ -757,10 +792,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			continue
 		var pre: Array = job.get("meshes", [])
 		var am: ArrayMesh = pre[i] if i < pre.size() else _piece_mesh(pc)
-		var cen = Vector3.ZERO
-		for p in (pc["pts"] as PackedVector3Array):
-			cen += p
-		cen /= maxf((pc["pts"] as PackedVector3Array).size(), 1)
+		var cen: Vector3 = pc["cen"] if pc.has("cen") else Vector3.ZERO
+		if not pc.has("cen"):
+			for p in (pc["pts"] as PackedVector3Array):
+				cen += p
+			cen /= maxf((pc["pts"] as PackedVector3Array).size(), 1)
 		var node: Node3D
 		var is_main = i == main_i
 		if phys:
@@ -772,9 +808,10 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			rb.collision_layer = DEBRIS_LAYER
 			rb.collision_mask = HULL_LAYER | DEBRIS_LAYER
 			rb.physics_material_override = fx.dstate["bounce"]
-			var pts = PackedVector3Array()
-			for p in (pc["pts"] as PackedVector3Array):
-				pts.append(p - cen)
+			var pts: PackedVector3Array = pc["hull"] if pc.has("hull") else PackedVector3Array()
+			if not pc.has("hull"):
+				for p in (pc["pts"] as PackedVector3Array):
+					pts.append(p - cen)
 			if pts.size() >= 4:
 				var cs = CollisionShape3D.new()
 				cs.shape = safe_convex(pts)

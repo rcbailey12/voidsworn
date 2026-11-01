@@ -860,6 +860,31 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		db.mesh = dstate["debris_meshes"][0][0]
 		db.material_override = dstate["debris_mat"]
 		tmp.add_child(db)
+	# F3 perf (first-use stalls): an omni light over all of the above, so every material here also draws once lit by a
+	# point light (on the Compatibility renderer each lit material compiles its omni-light pass the first time a light
+	# touches it: the first big death light did that mid-fight); and the physics a death first uses, a wreck piece's
+	# convex body and pooled debris bodies (Jolt's first bodies and shapes), far below the board and out of view
+	var wl := OmniLight3D.new()
+	wl.shadow_enabled = false
+	wl.light_energy = 2.0
+	wl.omni_range = 20.0 * unit
+	tmp.add_child(wl)
+	var deep: Vector3 = at + Vector3(0, -2000.0 * unit, 0)
+	if bool(dstate.get("physics_on", false)) and phys_root != null:
+		var rb := RigidBody3D.new()
+		rb.name = "fx_warmup_body"
+		rb.gravity_scale = 0.0
+		var cs := CollisionShape3D.new()
+		cs.shape = DEATH.safe_convex(PackedVector3Array([Vector3(-1, -1, -1), Vector3(1, -1, -1), Vector3(-1, 1, -1), Vector3(1, 1, -1),
+			Vector3(-1, -1, 1), Vector3(1, -1, 1), Vector3(-1, 1, 1), Vector3(0.8, 1.1, 0.9)]))
+		rb.add_child(cs)
+		phys_root.add_child(rb)
+		rb.global_position = deep
+		rb.linear_velocity = Vector3(0.1, 0, 0)
+		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
+		get_tree().create_timer(0.5).timeout.connect(func() -> void:
+			if is_instance_valid(rb):
+				rb.queue_free())
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	tmp.queue_free()
