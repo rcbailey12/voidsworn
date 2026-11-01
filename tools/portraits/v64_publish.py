@@ -21,7 +21,7 @@ ADM = {
             'R68: Vell in the hall of mirrors, looking back over its shoulder; oil 0.30 (0.40 drew a face profile).'),
  'mirelle': ('ithar', 'v64b/ithar_mirelle_s11_oil40_zi2i_s11', (0.5, 0.375, 0.75),
              'R68: Brin on its command chair before the Hollow Sun; oil 0.40.'),
- 'vaelen': ('ithar', 'v64b/ithar_vaelen_nf1_edit_s23', (0.56, 0.38, 0.76),
+ 'vaelen': ('ithar', 'v64b/ithar_vaelen_nf1_edit_s23', (0.5, 0.42, 0.86),
             'R68: Saro (vaelen) in the observatory, focusing a beam through a lens; faceless edit of the s73 render (v64g3 nf1 s23).'),
  # Hullbreakers (v64h2 bodies and settings, v64h4 matte living scales on the head, v64h5 horns and tusks taken off)
  'grax': ('corsair', 'v64b/corsair_grax_nohorn_s11', (0.55, 0.37, 0.72), 'R68: Grax slumped on a scrap throne under hanging trophies (v64h5 s11).'),
@@ -79,6 +79,12 @@ SCAR = {
  # s68g (Glasswrights; Nemesis 1 burn painted a human face on both seeds, redone in s68i)
  'nem_ithar_1': {'porcelain': 23}, 'nem_ithar_3': {'burn': 11, 'porcelain': 11}, 'nem_ithar_4': {'burn': 23, 'porcelain': 23},
  'nem_ithar_5': {'burn': 23, 'porcelain': 11}, 'nem_ithar_6': {'burn': 23, 'porcelain': 23},
+ # s68h (Glasswright Nemesis 2; Hullbreaker Nemesis 1, 2, 3, 5: their implant plates grew into riveted face masks on 1, 3 and 5,
+ # redone in s68i with a small eye-socket ring; Crusade Nemesis 3)
+ 'nem_ithar_2': {'burn': 23, 'porcelain': 23},
+ 'nem_corsair_1': {'burn': 11, 'eye': 11}, 'nem_corsair_2': {'burn': 11, 'cyber': 23, 'eye': 11},
+ 'nem_corsair_3': {'burn': 11, 'eye': 23}, 'nem_corsair_5': {'burn': 11, 'eye': 11},
+ 'nem_voidsworn_3': {'burn': 23, 'eye': 11},
  # s68a, s68c (Sunward Crusade: burn and eye, no implant scar)
  'nem_voidsworn_1': {'burn': 11, 'eye': 23}, 'nem_voidsworn_2': {'burn': 23, 'eye': 23}, 'nem_voidsworn_4': {'burn': 23, 'eye': 23},
  'nem_voidsworn_5': {'burn': 23, 'eye': 11}, 'nem_voidsworn_6': {'burn': 23, 'eye': 23},
@@ -94,6 +100,8 @@ SCAR = {
  'nem_deathless_4': {'burn': 23, 'machine': 23}, 'nem_deathless_5': {'burn': 11, 'machine': 11}, 'nem_deathless_6': {'burn': 23, 'machine': 23},
 }
 SCAR_DIR = 's68'
+# crops whose scars were painted on a fixed crop (S68_FIX in make_edits.py): the fixed crop is the pool portrait
+FIXED = {'nem_ithar_1': 's68/nem_ithar_1_fix_s11', 'nem_ithar_3': 's68/nem_ithar_3_fix_s11'}
 FACE_IN_CROP = 0.36   # the face's height as a share of the bust crop (the round 8 and p64 pools sit at 0.33 to 0.39)
 
 
@@ -137,6 +145,7 @@ def crops(root, out, fac=None):
         left = min(max(fx - S / 2, 0), 1 - S); top = min(max(fy - S / 3, 0), 1 - S)
         c = im.crop((int(left * w), int(top * h), int((left + S) * w), int((top + S) * h))).resize((1024, 1024), Image.LANCZOS)
         if S < 0.9: c = c.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
+        if nid in FIXED: c = Image.open(_png(root, FIXED[nid])).convert('RGB').resize((1024, 1024), Image.LANCZOS)
         c.save(os.path.join(out, nid + '.png'))
         A[nid] = {'anchor': [round((fx - left) / S, 3), round((fy - top) / S, 3), round(fh / S, 3)], 'crop': [round(left, 3), round(top, 3), round(S, 3)],
                   'source': rel + '_00001_.png'}
