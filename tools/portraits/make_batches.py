@@ -657,7 +657,24 @@ BATCHES['k64c'] = ([k64c(k, 'qie', [11, 23, 51]) for k in K64C] +
                    [k64c(k, 'zi2i', [sd], 'k64c/%s_qie_s%d_00001_.png' % (k, sd), d, '%s_s%d_p%d' % (k, sd, d * 100))
                     for k in K64C for sd in (11, 23, 51) for d in (0.55, 0.65)])
 
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'k64c': 'k64c', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
+# k64c review (Nov 1): only H1 (the k64b gem with an uneven front and flesh over its edges) keeps the face away, and only on
+# some seeds (s11 clean; s23 and s51 drew lips). H2 and H3 drew a human face under a crystal crown. Every Z-Image repaint at 0.55
+# or more paints an elf face and ear into even a faceless source: the portrait wording ("character portrait", "three-quarter bust")
+# asks for a face. k64d: the oil pass gets its own prompt, creature concept art with the head named as a blank gem (PAINT_GW), at
+# 0.45 to 0.60 on three faceless sources; and the four Glasswright admirals in H1 at seeds 11, 37 and 61 with that oil pass at 0.5.
+PRISM_H1 = prism7('h1')
+PAINT_GW = ("Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is "
+            "a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; "
+            "the gem head is smooth crystal all over. Long tapering fingers of milky flesh. " + CREATURE.format(**F8['ithar']))
+K64D_SRC = {'k64b/gw_speak2_qie_s11': 'src_speak', 'k64b/gw_hand2_qie_s11': 'src_hand', 'k64c/gw_h1_qie_s11': 'src_h1'}
+BATCHES['k64d'] = ([{'id': 'gw_%s' % k, 'model': 'qie', 'prompt': PRISM_H1.format(gear=ROBE2) + ' ' + GW_ADM[k] + ' ' + STYLE.format(**F8['ithar']),
+                     'nosuffix': True, 'seeds': [11, 37, 61]} for k in GW_ADM] +
+                   [{'id': 'gw_%s_s%d_paint50' % (k, sd), 'model': 'zi2i', 'prompt': PAINT_GW, 'nosuffix': True, 'seeds': [sd],
+                     'ref': 'k64d/gw_%s_qie_s%d_00001_.png' % (k, sd), 'denoise': 0.5} for k in GW_ADM for sd in (11, 37, 61)] +
+                   [{'id': '%s_paint%d' % (t, round(d * 100)), 'model': 'zi2i', 'prompt': PAINT_GW, 'nosuffix': True, 'seeds': [11],
+                     'ref': r + '_00001_.png', 'denoise': d} for r, t in K64D_SRC.items() for d in (0.45, 0.55, 0.6)])
+
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'k64c': 'k64c', 'k64d': 'k64d', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():
