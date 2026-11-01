@@ -1088,6 +1088,7 @@ func act(name: String, arg = "") -> void:
 		"buyLegacy": ACT_buyLegacy(a)
 		"buyAdmiral": ACT_buyAdmiral(a)
 		"pickAdmiral":
+			if not admiralOwned(a): return
 			if picked_admiral != a:
 				run_opt["alt"] = false; run_opt["cmdAlt"] = false
 			picked_admiral = a; admiralScreen()
@@ -1178,18 +1179,22 @@ func _mine() -> Array:
 	for id in ADMIRALS.keys():
 		if or_(ADMIRALS[id].get("fac"), "voidsworn") == picked_faction: out.append(id)
 	return out
+# R1 (PROG-6): an admiral is yours when bought or when it costs nothing (each faction's first admiral); only yours can be picked or launched
+func admiralOwned(id) -> bool:
+	var a = ADMIRALS.get(id)
+	return a != null and (jt(META["admirals"].get(id)) or not (float(z0(a.get("cost"))) > 0))
 func admiralScreen() -> void:
 	var mine = _mine()
-	if not mine.has(picked_admiral) or not jt(META["admirals"].get(picked_admiral)):
+	if not mine.has(picked_admiral) or not admiralOwned(picked_admiral):
 		var pa = null
 		for id in mine:
-			if jt(META["admirals"].get(id)):
+			if admiralOwned(id):
 				pa = id; break
 		picked_admiral = pa if pa != null else mine[0]
 	var acts = []
 	for f in RUN_FACTIONS: A(acts, "pickFaction", f)
 	for id in mine:
-		if jt(META["admirals"].get(id)): A(acts, "pickAdmiral", id)
+		if admiralOwned(id): A(acts, "pickAdmiral", id)
 		else: A(acts, "buyAdmiral", id, float(z0(META.get("renown"))) >= float(ADMIRALS[id]["cost"]))   # R1 (PROG-2): locked admirals can be bought here
 	var id0 = picked_admiral; var a = ADMIRALS[id0]; var ml = masteryLevel(id0)
 	var opts = {"ml": ml, "alt": null, "cmd2": null, "heat": float(z0(META["stats"].get("wins"))) > 0}
@@ -1201,9 +1206,10 @@ func admiralScreen() -> void:
 			opts["cmd2"] = c2; A(acts, "optCmd", "0"); A(acts, "optCmd", "1")
 	if opts["heat"]:
 		for k in HEAT.keys(): A(acts, "optHeat", k)
-	A(acts, "startRun"); A(acts, "title")
+	A(acts, "startRun", "", admiralOwned(picked_admiral)); A(acts, "title")
 	show_page("admiral", {"mine": mine, "opts": opts}, acts)
 func ACT_startRun() -> void:
+	if not admiralOwned(picked_admiral): return
 	var ml = masteryLevel(picked_admiral)
 	newRun(picked_admiral, picked_faction, {"alt": run_opt["alt"] and ml >= 1, "cmdAlt": run_opt["cmdAlt"] and ml >= 3, "heat": run_opt["heat"].duplicate() if float(z0(META["stats"].get("wins"))) > 0 else []})
 	tel("run_start", {"fac": RUN["fac"], "admiral": picked_admiral})
@@ -1254,7 +1260,7 @@ func ACT_buyLegacy(id: String) -> void:   # R1 (PROG-2)
 	persist_save(true); legacyScreen()
 func ACT_buyAdmiral(id: String) -> void:   # R1 (PROG-2): bought on the admiral screen, where locked admirals show
 	var a = ADMIRALS.get(id)
-	if a == null or jt(META["admirals"].get(id)) or float(z0(META.get("renown"))) < float(a["cost"]): return
+	if a == null or admiralOwned(id) or float(z0(META.get("renown"))) < float(a["cost"]): return
 	META["renown"] = float(META["renown"]) - float(a["cost"]); META["admirals"][id] = true
 	tel("admiral_buy", {"id": id, "cost": a["cost"]}); persist_save(true); act("pickAdmiral", id)
 func ACT_buyVariant(id: String) -> void:

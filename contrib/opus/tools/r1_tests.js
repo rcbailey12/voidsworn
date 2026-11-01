@@ -27,7 +27,7 @@ global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; 
   derive, applyOutcome, genSector, canFitModule, ACT, rollBoonOffer, boonStep, boonReroll, boonRerollOk, boonOfferCan, rndSeed, META, needMet, eventFlags, verbFree, FAC_VERBS,
   ensureNemesis, nemAdapt, nemAfterBattle, NEM_ADAPT_FAC, relicUseful, shipyardScreen, endRun, admiralScreen, legacyScreen, ADMIRALS, LEGACY, HEAT, FAC_PRICE, HULL_VARIANTS,
   fitEncounter, rollEncounter, ENCOUNTERS, offToAx, hdist, mkWeapon, DIRS, turnStart, aiUnit, alive, evalThreat, defaultMeta, prizeScrap,
-  setProg(t){ progTab=t; }, get html(){ return LAST_HTML; }, get toasts(){ return TOASTS; } };
+  setProg(t){ progTab=t; }, ownedPick(){ return pickedAdmiral; }, setFac(f){ pickedFaction=f; }, get html(){ return LAST_HTML; }, get toasts(){ return TOASTS; } };
 `);
 const fresh = (fac, tpls, sector) => { const R = T.runDefaults(); R.fac = fac || 'voidsworn'; R.admiral = 'vex'; R.sector = sector || 1; R.foes = null;
   R.fleet = (tpls || ['warden', 'harrow']).map(t => T.newShip(t)); R.flagUid = R.fleet[0] && R.fleet[0].uid; R.credits = 500; R.flags = {}; T.RUN = R; return R; };
@@ -135,6 +135,13 @@ check('PROG-2 locked admirals and Legacy unlocks have a working purchase button'
   T.setProg('legacy'); T.legacyScreen(); const lb = /data-act="buyLegacy" data-arg="chest1"/.test(T.html) && !/data-arg="chest2"/.test(T.html);
   const r0 = T.META.renown; T.ACT.buyLegacy('chest2'); const reqHeld = !T.META.unlocked.chest2 && T.META.renown === r0; T.ACT.buyLegacy('chest1');
   return btn && bought && lb && reqHeld && T.META.unlocked.chest1 && T.META.renown === r0 - T.LEGACY.chest1.cost; });
+check('PROG-6 only an owned admiral (bought, or free) can be picked or launched; every faction keeps a free first admiral', () => {
+  T.META.renown = 0; T.META.admirals = { vex: true }; T.setFac('hegemony'); T.admiralScreen();
+  const freeOk = /data-act="pickAdmiral" data-arg="kassar"/.test(T.html) && !/data-act="pickAdmiral" data-arg="vorn"/.test(T.html) && /data-act="buyAdmiral" data-arg="vorn"/.test(T.html);
+  T.ACT.pickAdmiral('vorn'); T.admiralScreen(); const stayed = T.ownedPick() === 'kassar'; T.setFac('voidsworn');
+  const firsts = ['voidsworn', 'hegemony', 'corsair', 'chorus', 'ithar', 'deathless'].every(f => Object.entries(T.ADMIRALS).some(([id, a]) => (a.fac || 'voidsworn') === f && !(a.cost > 0)));
+  return freeOk && stayed && firsts; });
+check('the Hullbreaker surname pool has no Greyback', () => !/Greyback/.test(fs.readFileSync(path.join(ROOT, 'data.js'), 'utf8')));
 check('UI-6 the battle hint never says "nothing left" while the ship can move or brace (ui3d.js)', () => {
   const s = fs.readFileSync(path.join(ROOT, 'ui3d.js'), 'utf8'); return /u\.mp>0\?'Tap a gold hex to keep moving/.test(s) && /canOrder\(u,'brace'\)\?'Nothing in range\. Tap Brace/.test(s); });
 

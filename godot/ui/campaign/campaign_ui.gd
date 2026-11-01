@@ -332,7 +332,7 @@ func _admiral() -> Control:
 	v.add_child(lbl("Your admiral sets the fleet you start with and a doctrine that shapes every battle.", 18, BONE2))
 	var cards = flow()
 	for id in C.page["data"]["mine"]:
-		var a = C.ADMIRALS[id]; var un = C.jt(C.META["admirals"].get(id))
+		var a = C.ADMIRALS[id]; var un = C.admiralOwned(id)   # R1 (PROG-6): bought, or free (each faction's first admiral)
 		var cv = card(C.picked_admiral == id, 330); var col = cv[1]
 		if not un: cv[0].modulate.a = 0.55
 		var face = _face(id)
@@ -349,7 +349,10 @@ func _admiral() -> Control:
 		if C.jt(a.get("cmd")):
 			col.add_child(rich(c("Command:", BONE3) + " [b]" + c(esc(a["cmd"]["n"]), GILT) + "[/b]. " + esc(_cmd_text(a["cmd"], C.picked_faction)) + " " + c("Gets stronger each round you hold it.", BONE3), 16))
 		if un: add(col, abtn("Selected" if C.picked_admiral == id else "Select", "pickAdmiral", id, C.picked_admiral == id))
-		else: col.add_child(lbl("Unlock for " + C.numstr(a.get("cost")) + " renown in Legacy", 15, BONE2))
+		else:   # R1 (PROG-2): unlock it here with renown
+			var ub = abtn("Unlock for " + C.numstr(a.get("cost")) + " renown", "buyAdmiral", id)
+			if ub != null: col.add_child(ub)
+			else: col.add_child(lbl("Unlock for " + C.numstr(a.get("cost")) + " renown", 15, BONE2))
 		cards.add_child(cv[0])
 	v.add_child(cards)
 	_story_line(v)
@@ -823,7 +826,7 @@ func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 	add(sect, abtn("Choose promotion perk", "promote", s["uid"], true, true))
 	v.add_child(sect)
 	var rs = vbox(4); rs.add_child(HSeparator.new()); rs.add_child(lbl("Refits", 16, GILT, font_semi))
-	for i in range(int(t["slots"])):
+	for i in range(int(C.z0(t.get("slots")))):   # R1: hulls without refit slots (sector flagships) show none
 		if i < s["mods"].size() and C.jt(s["mods"][i]):
 			var m = s["mods"][i]; var rr = hbox(6)
 			rr.add_child(rich("[b]" + esc(C.modName(m)) + "[/b] " + c(esc(C.MODULES[m]["d"]), BONE3), 14))
@@ -873,7 +876,7 @@ func _shipyard() -> Control:
 	add(v, abtn(("Repair entire fleet for " + C.numstr(ceil(allMiss / 2.0 * pm))) if allMiss > 0 else "Fleet fully repaired", "repairAll"))
 	var cards = flow()
 	for s in R["fleet"]:
-		var d = C.derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var rc = ceil(miss / 2.0 * pm); var mc = C.mkCost(s); var sell = C.jsround(float(C.HULLS[s["tpl"]]["cost"]) * 0.35)
+		var d = C.derive(s); var miss = float(d["maxHp"]) - float(s["hp"]); var rc = ceil(miss / 2.0 * pm); var mc = C.mkCost(s); var sell = C.prizeScrap(s["tpl"])   # R1 (TXT-8): what the button pays; hulls without a shop price too
 		var ex = [abtn(("Repair " + C.numstr(miss) + " for " + C.numstr(rc)) if miss > 0 else "Fully repaired", "repair", s["uid"], false, true),
 			abtn(("Mk " + C.roman(float(s["mk"]) + 1) + " for " + C.numstr(mc)) if float(s["mk"]) < 3 else "Max Mark", "upgradeMk", s["uid"], false, true),
 			abtn("Decommission (+" + C.numstr(sell) + ")", "sellShip", s["uid"], false, true)]
@@ -935,7 +938,7 @@ func _legacy() -> Control:
 	v.add_child(gothic("Progression"))
 	v.add_child(rich(c("Runs launched: " + C.numstr(st["runs"]) + ". Deepest sector reached: " + C.numstr(C.z0(st.get("best"))) + ". Runs won: " + C.numstr(st["wins"]) + ". Renown: ", BONE2) + c(C.numstr(C.z0(M.get("renown"))), GILT) + c(".", BONE2), 17))
 	var tabs = hbox(6)
-	for t in [["variants", "Hull variants"], ["mastery", "Admiral mastery"], ["favour", "Core sync"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]: add(tabs, abtn(t[1], "progTab", t[0], C.prog_tab == t[0]))
+	for t in [["variants", "Hull variants"], ["legacy", "Legacy"], ["mastery", "Admiral mastery"], ["favour", "Core sync"], ["heat", "Heat"], ["fallen", "Hall of the fallen"]]: add(tabs, abtn(t[1], "progTab", t[0], C.prog_tab == t[0]))
 	var stc = _story()
 	if stc != null:   # story layer: the Career screen (records, medals, titles, history)
 		var cb = Button.new(); cb.text = "Career"; cb.focus_mode = Control.FOCUS_ALL; cb.pressed.connect(func(): stc.open_career()); tabs.add_child(cb)
@@ -961,6 +964,17 @@ func _legacy() -> Control:
 					else: add(cv[1], abtn("Unlock for " + C.numstr(hv["cost"]) + " renown", "buyVariant", vid))
 					cards.add_child(cv[0])
 				v.add_child(cards)
+		"legacy":   # R1 (PROG-2): lasting unlocks bought with renown (campaign.gd legacyScreen lists the buyLegacy buttons)
+			v.add_child(rich(c("Spend renown on lasting advantages for every later run. ", BONE2) + c("You have " + C.numstr(C.z0(M.get("renown"))) + " renown.", GILT), 17))
+			var lc = flow()
+			for id in C.LEGACY.keys():
+				var u = C.LEGACY[id]; var own = C.jt(M["unlocked"].get(id)); var lock = C.jt(u.get("req")) and not C.jt(M["unlocked"].get(u["req"]))
+				var cv = card(own, 300); cv[1].add_child(lbl(u["n"], 20, BONE, font_semi)); cv[1].add_child(lbl(u.get("group", ""), 14, BONE3)); cv[1].add_child(lbl(u["d"], 16, BONE2))
+				if own: cv[1].add_child(lbl("Unlocked", 16, VERD))
+				elif lock: cv[1].add_child(lbl("Needs " + str(C.LEGACY[u["req"]]["n"]) + " first", 15, BONE3))
+				else: add(cv[1], abtn("Unlock for " + C.numstr(u["cost"]) + " renown", "buyLegacy", id))
+				lc.add_child(cv[0])
+			v.add_child(lc)
 		"mastery":
 			v.add_child(lbl("Every run levels up the admiral who led it: 1 per battle won, 2 per elite, 5 per flagship and 10 for a victory.", 17, BONE2))
 			var mc = flow()

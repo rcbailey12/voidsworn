@@ -48,6 +48,7 @@ One list so nothing is lost between chats. Details live in the linked docs. Orde
 - [ ] AI polish: response curves, hysteresis, debug score overlay
 - [ ] [B2] Sector 1 balance (owner won 4/4 with no losses on v53.2)
 - [ ] Music: adaptive layered score (style still to pick), recorded sound packs are OK
+- [ ] Salvage (relic) design questions, deferred by Opus Nov 1 until after Ryan's next playtest (contrib/muse/reviews/relics_synthesis_2026_10_29.md): cap the Chalked Roll's heal (per battle, or keyed to the lost ship's hull); let relic rewards be declined for credits (events already pay 80 for an empty pool); payRelic events: let the player choose which piece to give up, or name it on the button; whether Backup frame should be spent before Eclipse's own legion on an Eclipse death; whether the five fx relics get their own hooks instead of sharing keys with perks and boons. The structural part (never offer a relic that cannot act) shipped in R1.
 
 ## 4b. Career and story mode (owner, Oct 22: "make it into a mini-career and story mode")
 - [ ] Progression that feels rewarding: meta-unlocks between runs, ranks and medals, persistent upgrades, clearer reward moments after battles

@@ -56,10 +56,12 @@ ACT.closeModal=()=>closeModal();
 ACT.abandonRun=()=>{ RUN=JSON.parse(JSON.stringify(SAVED_RUN)); endRun(false,true); };
 
 let pickedAdmiral='vex';
+// R1 (PROG-6): an admiral is yours when bought or when it costs nothing (each faction's first admiral); only yours can be picked or launched
+function admiralOwned(id){ const a=ADMIRALS[id]; return !!a&&(!!META.admirals[id]||!(a.cost>0)); }
 function admiralScreen(){
   const mine=Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===pickedFaction);
-  if(!mine.some(([id])=>id===pickedAdmiral)||!META.admirals[pickedAdmiral]) pickedAdmiral=(mine.find(([id])=>META.admirals[id])||mine[0])[0];
-  const cards=mine.map(([id,a])=>{ const un=!!META.admirals[id];
+  if(!mine.some(([id])=>id===pickedAdmiral)||!admiralOwned(pickedAdmiral)) pickedAdmiral=(mine.find(([id])=>admiralOwned(id))||mine[0])[0];
+  const cards=mine.map(([id,a])=>{ const un=admiralOwned(id);
     const fleet=a.start.map(t=>HULLS[equivHull(t,pickedFaction)].n).join(', ');
     return `<div class="card ${pickedAdmiral===id?'sel':''} ${un?'':'locked'}">
       <h3>${esc(a.n)}</h3><p class="gilt">${esc(a.doc)}</p><p>${esc(a.d)}</p>
@@ -74,13 +76,13 @@ function admiralScreen(){
     <p class="lede">Your admiral sets the fleet you start with and a doctrine that shapes every battle.</p>
     <div class="cards">${cards}</div>
     ${runOptionsHtml()}
-    <div class="row" style="margin-top:22px"><button class="primary" data-act="startRun">Launch the ${runWord(pickedFaction)}</button><button data-act="title">Back</button></div>
+    <div class="row" style="margin-top:22px"><button class="primary" ${admiralOwned(pickedAdmiral)?'':'disabled'} data-act="startRun">Launch the ${runWord(pickedFaction)}</button><button data-act="title">Back</button></div>
   </div></div>`);
 }
-ACT.pickAdmiral=a=>{ if(pickedAdmiral!==a){ runOpt.alt=false; runOpt.cmdAlt=false; } pickedAdmiral=a; admiralScreen(); };
+ACT.pickAdmiral=a=>{ if(!admiralOwned(a)) return; if(pickedAdmiral!==a){ runOpt.alt=false; runOpt.cmdAlt=false; } pickedAdmiral=a; admiralScreen(); };
 let pickedFaction=(META.opts&&META.opts.lastFac)||'voidsworn';
 ACT.pickFaction=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };
-ACT.startRun=()=>{ const ml=masteryLevel(pickedAdmiral); newRun(pickedAdmiral,pickedFaction,{alt:runOpt.alt&&ml>=1,cmdAlt:runOpt.cmdAlt&&ml>=3,heat:(META.stats.wins||0)>0?runOpt.heat.slice():[]});
+ACT.startRun=()=>{ if(!admiralOwned(pickedAdmiral)) return; const ml=masteryLevel(pickedAdmiral); newRun(pickedAdmiral,pickedFaction,{alt:runOpt.alt&&ml>=1,cmdAlt:runOpt.cmdAlt&&ml>=3,heat:(META.stats.wins||0)>0?runOpt.heat.slice():[]});
   try{ tel('run_start',{fac:RUN.fac,foes:RUN.foes,admiral:pickedAdmiral,patrons:RUN.patrons,mastery:RUN.mastery,alt:!!RUN.altFleet,cmd:RUN.cmdOverride?RUN.cmdOverride.id:null,heat:RUN.heat,gift:RUN.giftBoon||null}); }catch(e){} aspectScreen(); };
 // ---------- run options: mastery unlocks and Heat ----------
 const runOpt={alt:false,cmdAlt:false,heat:[]};
@@ -144,7 +146,7 @@ ACT.legacy=()=>legacyScreen();
 ACT.progTab=k=>{ progTab=k; legacyScreen(); };
 ACT.buyVariant=id=>{ const v=HULL_VARIANTS[id]; META.variants=META.variants||{}; if(!v||v.arc||META.variants[id]||(META.renown||0)<v.cost) return; /* R41: arc variants are earned, never bought */ META.renown-=v.cost; META.variants[id]=true; try{ tel('variant_buy',{id,cost:v.cost}); }catch(e){} Persist.save({meta:true}); legacyScreen(); };
 ACT.buyLegacy=id=>{ const u=LEGACY[id]; if(!u||META.unlocked[id]||(u.req&&!META.unlocked[u.req])||(META.renown||0)<u.cost) return; META.renown-=u.cost; META.unlocked[id]=true; Persist.save({meta:true}); legacyScreen(); };
-ACT.buyAdmiral=id=>{ const a=ADMIRALS[id]; if(!a||META.admirals[id]||(META.renown||0)<a.cost) return; META.renown-=a.cost; META.admirals[id]=true; try{ tel('admiral_buy',{id,cost:a.cost}); }catch(e){} Persist.save({meta:true}); ACT.pickAdmiral(id); }; // R1 (PROG-2): bought on the admiral screen, where locked admirals show
+ACT.buyAdmiral=id=>{ const a=ADMIRALS[id]; if(!a||admiralOwned(id)||(META.renown||0)<a.cost) return; META.renown-=a.cost; META.admirals[id]=true; try{ tel('admiral_buy',{id,cost:a.cost}); }catch(e){} Persist.save({meta:true}); ACT.pickAdmiral(id); }; // R1 (PROG-2): bought on the admiral screen, where locked admirals show
 
 // ---------- help ----------
 function helpScreen(){
