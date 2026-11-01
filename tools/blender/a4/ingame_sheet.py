@@ -1,7 +1,7 @@
 # A4 in-game before/after sheets (feel pass, Nov 1): from two a4_shots.tscn capture folders (Downloads\voidsworn_test\a4\ingame\<tag>),
 # one WebP per faction: the battle-camera line and the zoomed line, before over after, then each ship's three-quarter, side and below views
 # (before left, after right) beside its concept. Phone-width friendly (1600 px), labelled in plain words.
-#   python3 ingame_sheet.py BEFORE_DIR AFTER_DIR OUT_DIR [--facs hegemony,voidsworn] [--concepts DIR] [--labels 'LEFT TEXT|RIGHT TEXT']
+#   python3 ingame_sheet.py BEFORE_DIR AFTER_DIR OUT_DIR [--facs hegemony,voidsworn] [--concepts DIR] [--labels cp2|played]
 #   python3 ingame_sheet.py --battle BEFORE_SHOTS AFTER_SHOTS OUT.webp   (the real battle scene, shots\a4_cp2_*\<before|after>\<fac>\)
 #   python3 ingame_sheet.py --props AFTER_DIR OUT.webp                    (board station and hulks: today against a4_props.gd)
 #   python3 ingame_sheet.py --sweep DIR CODE OUT.webp [--label TEXT]      (9-cell blob sweep: bow, middle, stern from above, side, below)
@@ -18,7 +18,10 @@ FACS = [('hegemony', 'Hegemony Navy', 'H4_11 H10_23 H9_23 H8_23 H7_23'),
         ('deathless', 'Eclipse', 'D22_23 D21_23 D20_23 D9_23'),
         ('other', 'Objectives and craft', 'O1_37 O2_37 O3_11 S2_23 S1_51 B23_51')]
 W = 1600
-LABELS = ['before (paint v1, as Ryan played it)', 'after (concept paint)']  # --labels 'LEFT|RIGHT'
+LABELS = ['before (paint v1, as Ryan played it)', 'after (concept paint)']
+# --labels KEY (a preset: the PC jobs pass arguments through tmo.bat, which loses quotes, so no spaces or | on the command line)
+LABEL_SETS = {'cp2': ['the last pass (53a348d)', 'now (detail rebuilt, Hegemony lighter, H4 livery)'],
+              'played': ['as Ryan played it', 'now']}
 
 
 def font(sz):
@@ -144,7 +147,7 @@ if __name__ == '__main__':
     bdir, adir, odir = a[:3]; os.makedirs(odir, exist_ok=True)
     only = a[a.index('--facs') + 1].split(',') if '--facs' in a else None
     if '--concepts' in a: CONCEPTS = a[a.index('--concepts') + 1]
-    if '--labels' in a: LABELS = a[a.index('--labels') + 1].split('|')
+    if '--labels' in a: LABELS = LABEL_SETS[a[a.index('--labels') + 1]]
     for fac, title, codes in FACS:
         if only and fac not in only: continue
         sheet(bdir, adir, fac, title, codes, os.path.join(odir, f'{fac}_ingame_before_after.webp'))
