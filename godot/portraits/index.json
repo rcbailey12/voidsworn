@@ -565,21 +565,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_2_burn_patch.webp",
-     "x": 0.0,
-     "y": 0.0404,
-     "area": 0.081
+     "x": 0.3646,
+     "y": 0.1602,
+     "area": 0.045
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_2_cyber_patch.webp",
-     "x": 0.0,
-     "y": 0.0404,
-     "area": 0.075
+     "x": 0.3581,
+     "y": 0.1484,
+     "area": 0.051
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_2_eye_patch.webp",
-     "x": 0.0,
-     "y": 0.0404,
-     "area": 0.083
+     "x": 0.3906,
+     "y": 0.1484,
+     "area": 0.022
     }
    }
   },
@@ -635,21 +635,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_4_burn_patch.webp",
-     "x": 0.0755,
-     "y": 0.25,
-     "area": 0.079
+     "x": 0.3424,
+     "y": 0.1094,
+     "area": 0.12
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_4_cyber_patch.webp",
-     "x": 0.0768,
-     "y": 0.1875,
-     "area": 0.085
+     "x": 0.1862,
+     "y": 0.0417,
+     "area": 0.098
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_4_eye_patch.webp",
-     "x": 0.0755,
-     "y": 0.2279,
-     "area": 0.078
+     "x": 0.0078,
+     "y": 0.0339,
+     "area": 0.116
     }
    }
   },
@@ -670,21 +670,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_5_burn_patch.webp",
-     "x": 0.1823,
-     "y": 0.0,
-     "area": 0.084
+     "x": 0.3737,
+     "y": 0.1055,
+     "area": 0.113
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_5_cyber_patch.webp",
-     "x": 0.1823,
-     "y": 0.0,
-     "area": 0.074
+     "x": 0.3672,
+     "y": 0.1211,
+     "area": 0.118
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_5_eye_patch.webp",
-     "x": 0.1836,
-     "y": 0.0,
-     "area": 0.094
+     "x": 0.3841,
+     "y": 0.1042,
+     "area": 0.102
     }
    }
   },

@@ -142,6 +142,9 @@ BG_KEEP = " The smooth dark background stays exactly as it is: plain, dark and u
 F64_PICK = {'burn': 23, 'cyber': 37, 'eye': 23}
 # f64b: the same glitch, milder, on Crusade Nemesis 2 (pixel-grid background), 4 (teal and purple flecks) and 5 (green-purple
 # speckle on the hood and armour); same rerun, -> comfy_io\\PORTRAITS\\f64\\ too.
+# f64b picks (Nov 1, vetoable): no block noise on any of the 27; per Nemesis the healed-looking burn, the cyber plate with the
+# fewest red vein lines, and the eye scar that whitens one eye only (N4 s23 and N5 s23 whitened both). Published like f64.
+F64B_PICK = {2: {'burn': 37, 'cyber': 37, 'eye': 23}, 4: {'burn': 23, 'cyber': 37, 'eye': 51}, 5: {'burn': 37, 'cyber': 37, 'eye': 37}}
 def f64b_items():
     return [{'id': 'nem_voidsworn_%d' % n, 'kind': k, 'seed': sd, 'src': 'ncrop8/nem_voidsworn_%d.png' % n,
              'prompt': (SCAR[k]['human'] if isinstance(SCAR[k], dict) else SCAR[k]) + KEEP + BG_KEEP}
