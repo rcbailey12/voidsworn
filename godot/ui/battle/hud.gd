@@ -649,6 +649,11 @@ func show_tip(bb: String, at: Vector2) -> void:
 		p.x = at.x - tip.size.x - s(18)
 	if p.y + tip.size.y > vs.y:
 		p.y = vs.y - tip.size.y - s(8)
+	# F1: never under the activation card: lift the tip above it
+	if card != null and card.visible:
+		var cr := card.get_global_rect()
+		if Rect2(p, tip.size).intersects(cr):
+			p.y = cr.position.y - tip.size.y - s(8)
 	tip.position = p
 
 

@@ -3308,6 +3308,9 @@ func _refresh_ui() -> void:
 		sv.set_selected(id == sel, Color(0.82, 0.65, 0.29))
 	_overlay()
 	_tutorial()
+	# F1: a click changes what the hovered thing means (targeted, planned): refresh its tip without waiting for the mouse
+	if hud.tip.visible and DisplayServer.get_name() != "headless":
+		hud.show_tip(_tip(), get_viewport().get_mouse_position())
 
 
 # F1: the activation card. Which ship is up, its three steps (move, fire, end) with what is left of each, one plain
