@@ -21,7 +21,14 @@ ADM = {
             'R68: Vell in the hall of mirrors, looking back over its shoulder; oil 0.30 (0.40 drew a face profile).'),
  'mirelle': ('ithar', 'v64b/ithar_mirelle_s11_oil40_zi2i_s11', (0.5, 0.375, 0.75),
              'R68: Brin on its command chair before the Hollow Sun; oil 0.40.'),
- # Chorus and Eclipse: their approved paintings moved into new settings by an edit (e64)
+ 'vaelen': ('ithar', 'v64b/ithar_vaelen_nf1_edit_s23', (0.56, 0.38, 0.76),
+            'R68: Saro (vaelen) in the observatory, focusing a beam through a lens; faceless edit of the s73 render (v64g3 nf1 s23).'),
+ # Hullbreakers (v64h2 bodies and settings, v64h4 matte living scales on the head, v64h5 horns and tusks taken off)
+ 'grax': ('corsair', 'v64b/corsair_grax_nohorn_s11', (0.55, 0.37, 0.72), 'R68: Grax slumped on a scrap throne under hanging trophies (v64h5 s11).'),
+ 'sable': ('corsair', 'v64b/corsair_sable_nohorn_s23', (0.64, 0.34, 0.72), 'R68: Sable in a red-lit airlock corridor with a long knife (v64h5 s23).'),
+ 'mott': ('corsair', 'v64b/corsair_mott_nohorn_s11', (0.62, 0.37, 0.72), 'R68: Mott in a hangar of salvage, sparks and a gutted hull (v64h5 s11).'),
+ 'vesh': ('corsair', 'v64b/corsair_vesh_nohorn_s11', (0.62, 0.34, 0.72), 'R68: Vesh at a forge bench welding with a blue arc (v64h5 s11).'),
+ # Hegemony (e64e) and Crusade, Chorus and Eclipse: their approved paintings moved into new settings by an edit (e64)
  'matriarch': ('chorus', 'e64/matriarch_v64_s11', None, 'R68: the Matriarch above a planet it is consuming, spores falling into the air.'),
  'mending': ('chorus', 'e64/mending_v64_s11', None, 'R68: the Mending nested in the gutted hull of a captured warship.'),
  'nekhet': ('deathless', 'e64/nekhet_v64_s11', None, 'R68: Nekhet in a machine hall of siphon arrays draining a star.'),
@@ -51,6 +58,13 @@ NEM = {
  'nem_deathless_4': ('e64/nem_deathless_4_v64_s11', (0.5, 0.258, 0.242), 1.0),
  'nem_deathless_5': ('e64/nem_deathless_5_v64_s23', (0.5, 0.333, 0.242), 1.0),
  'nem_deathless_6': ('e64/nem_deathless_6_v64_s11', (0.5, 0.5, 0.333), 1.0),
+ # Hullbreakers (v64h5 picks; Nemesis 3 from v64h4) and the two v64g3 / e64d late picks
+ 'nem_corsair_1': ('v64b/nem_corsair_1_nohorn_s11', (0.38, 0.25, 0.32)),
+ 'nem_corsair_2': ('v64b/nem_corsair_2_nohorn_s11', (0.60, 0.27, 0.30)),
+ 'nem_corsair_3': ('v64b/nem_corsair_3_horn_s11', (0.27, 0.26, 0.27)),
+ 'nem_corsair_5': ('v64b/nem_corsair_5_nohorn_s11', (0.66, 0.26, 0.30)),
+ 'nem_ithar_2': ('v64b/nem_ithar_2_nf2_edit_s23', (0.53, 0.23, 0.30)),
+ 'nem_voidsworn_3': ('e64/nem_voidsworn_3_v64_s73', (0.53, 0.35, 0.23)),
  # e64c redraws (seeds 37, 51)
  'nem_voidsworn_4': ('e64/nem_voidsworn_4_v64_s51', (0.5, 0.306, 0.274), 1.0),
  'nem_voidsworn_5': ('e64/nem_voidsworn_5_v64_s51', (0.5, 0.333, 0.274), 1.0),
@@ -97,8 +111,10 @@ def admirals(root, only=None):
 
 def crops(root, out, fac=None):
     os.makedirs(out, exist_ok=True); A = {}
+    only = fac.split(',') if fac and fac.startswith('nem_') else None
     for nid, e in NEM.items():
-        if fac and nid.split('_')[1] != fac: continue
+        if only and nid not in only: continue
+        if fac and not only and nid.split('_')[1] != fac: continue
         rel, (fx, fy, fh) = e[0], e[1]
         im = Image.open(_png(root, rel)).convert('RGB'); w, h = im.size
         S = e[2] if len(e) > 2 else min(1.0, max(0.42, fh / FACE_IN_CROP))

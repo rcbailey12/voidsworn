@@ -293,6 +293,31 @@ def v64h5_items(seeds=(11, 23)):
     return [{'id': t, 'kind': 'nohorn', 'seed': sd, 'src': 'v64b/%s_horn_s%d_00001_.png' % (t, s), 'prompt': NOHORN}
             for t, s in H5_SRC.items() for sd in seeds]
 
+# v64h6 (Nov 1, P helper 4): v64h5 review. Grax s11, Sable s23, Mott s11, Vesh s11 and Nemesis 1, 2, 5 (s11) come out with no horns
+# or tusks; Nemesis 3 keeps v64h4 s11. Nemesis 4 still has a small crest spike and round riveted discs on the cheek (both seeds), and
+# Nemesis 6 kept its horns on s11 and turned into a smooth mask on s23. Two routes each: a narrower edit of the v64h5 render, and the
+# v64h2 render re-scaled with wording that never says "horn".
+H6_FIX = {'nem_corsair_4': ('v64b/nem_corsair_4_nohorn_s23_00001_.png',
+                            "Change only the head of this creature: take away the small spike on the crown of its head and the round metal discs and "
+                            "rivets on its cheek and jaw. The whole head is covered in the same dull matte grey-brown scales grown from the skin, like a "
+                            "pangolin's, with dark leathery skin in the creases; the crown of the head is smooth and rounded. "),
+          'nem_corsair_6': ('v64b/nem_corsair_6_nohorn_s11_00001_.png',
+                            "Take away both curved growths on top of this creature's head and the hooked metal fitting above it, so the crown of the head is "
+                            "smooth and rounded under the same dull matte grey-brown scales. Keep its scaled face, glowing eyes and bared teeth exactly. ")}
+SCALES = ("Change only the head of this creature: every plate on its face and head becomes dull matte grey-brown scales grown from the "
+          "skin, like a pangolin's or old tortoiseshell, uneven and organic, with dark leathery skin in the creases between them. The crown "
+          "of the head is smooth and rounded and the mouth is framed only by its own jaw and teeth. No rivets, bolts or shine on the head. ")
+H6_KEEP = ("Keep the same creature, pose, mane, eyes, jaw, teeth, harness, claws, setting, lighting and oil-painting style; change nothing "
+           "else. The paint surface stays smooth and even, with no noise, speckle or pixels.")
+def v64h6_items(seeds=(11, 23)):
+    out = []
+    for t, (src, pr) in H6_FIX.items():
+        out += [{'id': t, 'kind': 'h6fix', 'seed': sd, 'src': src, 'prompt': pr + H6_KEEP} for sd in seeds]
+        s = H4_SRC[t]
+        out += [{'id': t, 'kind': 'h6scale', 'seed': sd, 'src': 'v64b/%s_v8_s%d_oil_zi2i_s%d_00001_.png' % (t, s, s), 'prompt': SCALES + H6_KEEP}
+                for sd in seeds]
+    return out
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -359,3 +384,13 @@ if __name__ == '__main__':
     json.dump({'out': 's68', 'budget_s': 1150, 'items': s68c}, open(os.path.join(B, 's68c.json'), 'w'), indent=1)
     print('s68c', len(s68c))
     json.dump({'out': 'v64b', 'budget_s': 1000, 'items': v64h5_items()}, open(os.path.join(B, 'v64h5.json'), 'w'), indent=1)
+    # e64e: Kassar again in a council chamber over a gas giant (portrait_specs), plus the two Hullbreaker Nemesis heads (v64h6)
+    e64e = e64c_items((83, 97, 109, 127), ['kassar'])
+    for it in e64e: it['src'] = 'r8e/kassar_r8_s23_00001_.png'
+    json.dump({'out': 'v64b', 'budget_s': 1000, 'items': v64h6_items()}, open(os.path.join(B, 'v64h6.json'), 'w'), indent=1)
+    json.dump({'out': 'e64', 'budget_s': 600, 'items': e64e}, open(os.path.join(B, 'e64e.json'), 'w'), indent=1)
+    # s68h: scars on the new Hullbreaker Nemesis 1, 2, 3, 5, Glasswright Nemesis 2 and Crusade Nemesis 3 (crops from v64_publish.py)
+    s68h = s68_items('corsair', ['nem_corsair_1', 'nem_corsair_2', 'nem_corsair_3', 'nem_corsair_5']) + s68_items('ithar', ['nem_ithar_2']) \
+        + s68_items('voidsworn', ['nem_voidsworn_3'])
+    json.dump({'out': 's68', 'budget_s': 1150, 'items': s68h}, open(os.path.join(B, 's68h.json'), 'w'), indent=1)
+    print('v64h6', len(v64h6_items()), 'e64e', len(e64e), 's68h', len(s68h))

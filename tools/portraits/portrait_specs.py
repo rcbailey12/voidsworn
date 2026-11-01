@@ -155,6 +155,14 @@ SPEC.update({
  'nem_voidsworn_3': ("a small round observation pod of black iron and frosted glass in deep space, a dim orange sun beyond the glass",
                      "glancing back over one shoulder", "low orange sunlight from the window at the side"),
 })
+# e64d review (Nov 1, P helper 4): the orbital dock drew a sea ship in a harbour on both seeds (s61, s73), so e64e gives Kassar a
+# council chamber over a banded gas giant (no ship, no dock, no map, no land); Crusade 3 takes e64d s73 (the round pod reads as a
+# viewport frame once the bust is cropped).
+SPEC.update({
+ 'kassar': ("a stark white war council chamber high in orbit, a tall arched window onto black space and a pale blue banded gas giant with soft cloud stripes",
+            "standing straight with her hands clasped behind her back, turned three-quarter from the window, half-body",
+            "cold white light from the gas giant at her side and blue implant glow"),
+})
 CLEAN = " The paint surface is smooth and even everywhere, with no noise, speckle, pixels, writing or lettering."
 KEEP_WHAT = {'voidsworn': 'person, face, scars, hair and clothing', 'hegemony': 'person, face, implants, hair and uniform',
              'chorus': 'organism, its shape and colours', 'deathless': 'machine, its shape and colours'}
