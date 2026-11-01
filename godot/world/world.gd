@@ -465,9 +465,23 @@ func dead_star(c: Vector3, s: float) -> void:
 	dm.set_shader_parameter("r_out", Rsh * 3.8)
 	dm.set_shader_parameter("spin", 0.35)
 	dm.set_shader_parameter("gain", 0.62)
+	dm.set_shader_parameter("inner", 1.0)
 	disc.material_override = dm
 	disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	tilt.add_child(disc)
+	# the outer, thinning gas: see-through, drawn after the lens (render priority above it)
+	var disc2 := MeshInstance3D.new()
+	disc2.mesh = disc.mesh
+	var dm2 := ShaderMaterial.new()
+	var dsh2 := Shader.new()
+	dsh2.code = WS.disc_soft()
+	dm2.shader = dsh2
+	for pn in ["r_in", "r_out", "spin", "gain"]:
+		dm2.set_shader_parameter(pn, dm.get_shader_parameter(pn))
+	dm2.render_priority = -10
+	disc2.material_override = dm2
+	disc2.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	tilt.add_child(disc2)
 	# r18: thin glowing haze just above and below the disc, so it has thickness up close (Muse audit B4.5)
 	if quality != "low":
 		var hsh := Shader.new()
@@ -503,6 +517,8 @@ func dead_star(c: Vector3, s: float) -> void:
 		lm.set_shader_parameter("disc_r_mid", Rsh * 2.2)
 		lm.set_shader_parameter("disc_reach", Rsh * 4.2)
 		lm.set_shader_parameter("spin", 0.35)
+		# F4: the lensed far side of the disc over the shadow a little stronger (it read faint and smeared in r1)
+		lm.set_shader_parameter("arc_gain", 1.15)
 		lm.render_priority = -30   # drawn first among the see-through things: it copies the opaque picture, so later effects (beams, trails in front of it) draw over it, not under it
 		lens.material_override = lm
 		lens.scale = Vector3.ONE * half

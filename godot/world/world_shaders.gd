@@ -37,6 +37,7 @@ uniform vec3 warm = vec3(1.0, 0.55, 0.2);
 uniform vec3 cool = vec3(0.55, 0.12, 0.04);
 uniform float front_only = 0.0;
 uniform vec3 hole_center = vec3(0.0);
+uniform float inner = 0.0;     // 1: draw only the inner, dense part (the outer part is DISC_SOFT)
 varying vec3 vL;
 varying vec3 vW;
 void vertex() { vL = VERTEX; vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
@@ -79,10 +80,28 @@ void fragment() {
 	vec3 Nw = normalize((MODEL_MATRIX * vec4(0.0, 1.0, 0.0, 0.0)).xyz);
 	float graz = 1.0 - abs(dot(Nw, V));
 	c *= 1.0 + 0.6 * graz * graz;
+	// F4: the disc in two parts. The inner, dense part is opaque (the lens copies it); the outer, thinning gas is
+	// see-through and fades by thinning, not by darkening (r1's opaque fade drew a near-black lip round the disc)
+	float u0 = clamp((rr - r_in) / (r_out - r_in), 0.0, 1.0);
+	float ramp = smoothstep(0.0, 0.06, u0) * (1.0 - smoothstep(0.7, 1.0, u0));
+#ifdef DISC_SOFT
+	if (u0 < 0.6) { discard; }
+	float body = dens / max(ramp, 1e-3);
+	ALBEDO = c * body * gain;
+	ALPHA = clamp(ramp * smoothstep(0.04, 0.5, body), 0.0, 1.0);
+#else
+	if (inner > 0.5 && u0 > 0.64) { discard; }
 	if (dens < 0.035) { discard; }
 	ALBEDO = c * dens * gain;
+#endif
 }
 """
+
+# F4: the outer, see-through part of the disc (DISC with DISC_SOFT defined)
+static func disc_soft() -> String:
+	return DISC.replace("render_mode unshaded, cull_disabled, shadows_disabled, fog_disabled;",
+		"render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;\n#define DISC_SOFT")
+
 
 # r18: a haze of thinner glowing gas just above and below the disc (two annuli), drawn additively, stronger when seen
 # edge-on, turning at its own rate, so the disc has thickness and depth up close.
