@@ -8,7 +8,7 @@
 
 **State of main (final commit: see the G-14 row in FINDINGS):**
 - **Rules.** Frozen at 8e81d75 (stream B step 9b). The browser check pack has 0 FAIL, and every unit test passes, including the new campaign start test.
-- **Godot rules parity.** 48 of 48 goldens and 2,100 random battles with 0 differences (G1, a166af8, oracle e80a6a0). The step 9b re-pin is recorded in G-14.
+- **Godot rules parity.** 48 of 48 goldens and 2,100 random battles with 0 differences (G1, a166af8, oracle e80a6a0). Final re-pin to 8e81d75 (step 9b) at 7b7f398: cloud 48 of 48.
 - **Godot campaign parity.** 30 of 30, PC and cloud, oracle 8e81d75 (G3, 65797bc). Nemesis, save and arc tests pass.
 - **Godot game (G2).**
   - Title "Embers of the Hollow Sun".

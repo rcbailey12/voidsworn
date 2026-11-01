@@ -54,7 +54,7 @@ Main at the time of writing: see HANDOFF.md section 0 for the final commit.
   - 2,100 unique battles across all sweeps, 0 differences;
   - worst enemy think 0.47 s.
 
-  The final re-pin for step 9b is in HANDOFF section 0.
+  Final re-pin to 8e81d75 (step 9b) at 7b7f398: cloud 48 of 48, maths and PRNG clean.
 - **G3 campaign** at 65797bc (oracle 8e81d75, final rules), VERIFIED: 30 of 30 seeds on the PC and in the cloud; Nemesis (64 records), save and arc tests pass.
 
 ---
@@ -205,7 +205,7 @@ Goal: you play full Godot runs and the game responds to what you find. Order and
 
 | Step | What | Who | Effort | Depends on |
 |---|---|---|---|---|
-| 0 | Done Nov 1, except G1's step 9b re-pin (see HANDOFF). Rollout, re-pins, repaints, portraits, a fresh exe through the fail-closed export job | G1 | S | none |
+| 0 | Done Nov 1: rollout, re-pins on the final rules, repaints, portraits, a fresh exe through the fail-closed export job | done | none | none |
 | 1 | **Playtest build and your first runs:** one or two full runs, notes in your own words (a short template provided) | You | 1 to 2 hours | 0 |
 | 2 | **Rules fix batch:** the Codex five, the confirmed bugs and the small ruled fixes, as one stream B step. Then one G1/G3 re-pin, with tests for each fix | B, G1, G3 | M | 0 (in parallel with 1) |
 | 3 | **Phased activation in the Godot battle UI:** inspect, rehearse, commit move, fire, brace and pass, cancel. Acceptance is Codex's checklist with a capture for you | G2 | M to L | 0. Shaped by 1 |
