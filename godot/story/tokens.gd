@@ -16,10 +16,14 @@ const TIMES := ["never", "once", "twice", "three times", "four times", "five tim
 
 # Pronouns when stream B's Nemesis carries no gender field yet: feminine first names in the game's captain pools
 # (data.js CAPTAINS and CAP_FIRST). Stream B is asked to add nem.g = "m" | "f" | "n"; this list is only the fallback.
-const FEMININE := ["Ilse", "Vera", "Odile", "Serafine", "Helka", "Isolde", "Mireille", "Thessaly", "Elsbeth", "Yara", "Ninette", "Petra", "Calla", "Maren",
-	"Ilsa", "Mara", "Rhea", "Lena", "Sanne", "Ines", "Katrin",
-	"Aelith", "Ilyra", "Nyssa", "Saelune", "Eluned", "Faewyn", "Liraen", "Ysolde",
-	"Tauret", "Nefrah", "Khepset"]
+const FEMININE := ["Ilse", "Vera", "Odile", "Sabine", "Helka", "Rosalind", "Margery", "Thessaly", "Elsbeth", "Yara", "Ninette", "Clemence", "Calla", "Mathilde",
+	"Marit", "Mara", "Rhea", "Lena", "Petra", "Sanne", "Ines", "Katrin",
+	"Margit", "Ida", "Hedda", "Agathe", "Edda",
+	"Tamsa", "Ilvy", "Ressa", "Nell", "Sefa", "Orra",
+	"Desmae", "Imra", "Rhosse", "Altheve"]
+# Nemesis names are built from parts (data.js NEM_FAC pre + post); a name that starts with one of these feminine fronts is "she"
+# (the same fronts as NEM_FAC[fac].fem, used by campaign_run.js nemGender).
+const FEMININE_FRONTS := ["Marit", "Petra", "Katrin", "Sanne", "Margit", "Ida", "Hedda", "Agathe", "Edda", "Ves", "Ish", "Ny", "Dre", "Ess", "Kae", "Iv"]
 
 const FALLBACK := {"first_lost": "a ship of the line", "best_captain": "your senior captain", "fallen_name": "a captain long gone", "prior_flagship": "a flagship you once knew",
 	"flagship": "the flagship", "you": "the admiral", "rival": "the enemy commander", "rival_short": "the enemy commander", "rival_line": "", "rival_deed": ""}
@@ -33,13 +37,20 @@ static func pronouns(nem) -> Dictionary:
 			g = "n"
 		if g == "":
 			var first := str(nem.get("name", "")).split(" ")[0]
-			g = "f" if FEMININE.has(first) else "m"
+			g = "f" if FEMININE.has(first) or _fem_front(first) else "m"
 	match g:
 		"f", "she":
 			return {"he": "she", "him": "her", "his": "her"}
 		"n", "it":
 			return {"he": "it", "him": "it", "his": "its"}
 	return {"he": "he", "him": "him", "his": "his"}
+
+
+static func _fem_front(first: String) -> bool:
+	for p in FEMININE_FRONTS:
+		if first.begins_with(p):
+			return true
+	return false
 
 
 # His full name as the campaign shows it (campaign_run.js nemFull): title, name, and the epithet his scars earned.

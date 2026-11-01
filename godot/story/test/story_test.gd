@@ -158,7 +158,7 @@ func t_titles() -> void:
 		if str(t["id"]) != str(cs[1]):
 			bad.append("%s got %s" % [cs[1], t["id"]])
 	ok(bad.is_empty(), "titles: %d hand-made runs earn the expected title %s" % [cases.size(), str(bad)])
-	ok(c.title_for(_L({"kind": {"sq": 40, "battery": 30}}), "corsair")["name"] == "the Beekeeper", "titles: faction wording (Corsair carriers are the Beekeeper)")
+	ok(c.title_for(_L({"kind": {"sq": 40, "battery": 30}}), "corsair")["name"] == "the Packmaster", "titles: faction wording (Hullbreaker carriers are the Packmaster)")
 
 
 # ---------------------------------------------------------------- 3. career
@@ -192,8 +192,8 @@ func t_career() -> void:
 	run["sector"] = 3
 	c.record_battle(run, _B("battle", true, 0, 2, us), "win")
 	ok(c.P["medals"].has("unbroken"), "career: Unbroken for sector II cleared without a loss")
-	var row: Dictionary = c.record_run_end(run, true, "Warlord Grax Ironjaw")
-	ok(str(row.get("title", "")) == "brawler" and str(row.get("title_name", "")) == "the Breaker", "career: run title (got %s %s)" % [row.get("title"), row.get("title_name")])
+	var row: Dictionary = c.record_run_end(run, true, "Warlord Grax Steelgrin")
+	ok(str(row.get("title", "")) == "brawler" and str(row.get("title_name", "")) == "the Render", "career: run title (got %s %s)" % [row.get("title"), row.get("title_name")])
 	ok(c.P["medals"].has("victor") and c.P["medals"].has("heat_victor"), "career: victor and heat medals")
 	ok(int(c.P["admirals"]["grax"]["runs"]) == 1 and int(c.P["admirals"]["grax"]["wins"]) == 1 and c.P["admirals"]["grax"]["flagships"] == ["Rust Bucket"], "career: admiral record")
 	ok(int(c.P["totals"]["kills"]) == 17 and int(c.P["totals"]["lost"]) == 3 and int(c.P["totals"]["battles"]) == 4, "career: totals (kills %s, lost %s)" % [c.P["totals"]["kills"], c.P["totals"]["lost"]])
@@ -213,8 +213,8 @@ func t_career() -> void:
 	# arc rewards (cosmetic side)
 	c3.record_arc_end("chorus", "matriarch", "Rear admiral Petra Lindqvist", {"1": "ate"}, false)
 	ok(not c3.P["medals"].has("arc_chorus") and c3.flagship_paint("chorus").is_empty(), "arcs: a lost arc pays nothing but is in the Chronicle")
-	c3.record_arc_end("ithar", "aelith", "Warlord Bones Sharkey", {"1": "song", "2": "song", "3": "sails"}, true)
-	ok(c3.P["medals"].has("arc_ithar") and c3.arc_title("ithar") == "Keeper of the Houses", "arcs: arc medal and title")
+	c3.record_arc_end("ithar", "aelith", "Apex Krag Tooth", {"1": "song", "2": "lament", "3": "archive"}, true)
+	ok(c3.P["medals"].has("arc_ithar") and c3.arc_title("ithar") == "Keeper of the Last Lens", "arcs: arc medal and title")
 	ok(str(c3.flagship_paint("ithar").get("id", "")) == "mourning_pearl" and c3.arc_unlocks() == ["i_carrier_a"], "arcs: paint switched on and unlock reported")
 	c3.set_paint("ithar", false)
 	ok(c3.flagship_paint("ithar").is_empty() and c3.P["chronicle"].size() == 2, "arcs: paint switched off; two Chronicle rows")
@@ -230,9 +230,9 @@ func t_voice() -> void:
 	var v = Voice.new()
 	var view := {"units": [{"id": "a", "side": "player", "flagship": true, "hp": 100, "maxHp": 100, "name": "Oathkeeper"}, {"id": "b", "side": "player", "hp": 50, "maxHp": 50, "name": "Vigil"},
 		{"id": "x", "side": "enemy", "flagship": true, "hp": 200, "maxHp": 200, "name": "Dominion Prime"}, {"id": "y", "side": "enemy", "hp": 40, "maxHp": 40, "name": "Picket"}]}
-	v.setup(view, {"admiral": "vex", "admiral_name": "Admiral Castellan Vex", "fac": "voidsworn", "kind": "boss", "enemy_fac": "hegemony", "sector": 1, "seed": 3, "nem": null})
+	v.setup(view, {"admiral": "vex", "admiral_name": "Admiral Roderic Vex", "fac": "voidsworn", "kind": "boss", "enemy_fac": "hegemony", "sector": 1, "seed": 3, "nem": null})
 	var op: Array = v.opening()
-	ok(op.size() == 2 and str(op[0]["text"]).begins_with("Dominion Prime:") and str(op[1]["text"]).begins_with("Admiral Castellan Vex:"), "voice: boss opening is the enemy hail then your admiral")
+	ok(op.size() == 2 and str(op[0]["text"]).begins_with("Dominion Prime:") and str(op[1]["text"]).begins_with("Admiral Roderic Vex:"), "voice: boss opening is the enemy hail then your admiral")
 	var lines: Array = []
 	lines += v.on_event({"t": "hit", "target": "a", "hull": 65})
 	lines += v.on_event({"t": "hit", "target": "a", "hull": 5})
@@ -244,15 +244,15 @@ func t_voice() -> void:
 	ok(str(lines[0]["text"]).contains("Oathkeeper"), "voice: {flagship} filled in")
 	ok(v.closing(true).ends_with("\"The line held. It always holds.\""), "voice: closing line")
 	var vn = Voice.new()
-	vn.setup(view, {"admiral": "kassar", "admiral_name": "Grand Admiral Ilsa Kassar", "fac": "hegemony", "kind": "elite", "enemy_fac": "deathless", "sector": 3, "seed": 1,
-		"nem": {"name": "Halvane", "title": "Justiciar", "epithet": "the Unpardoning", "fac": "deathless"}})
+	vn.setup(view, {"admiral": "kassar", "admiral_name": "First Admiral Ilsa Kassar", "fac": "hegemony", "kind": "elite", "enemy_fac": "deathless", "sector": 3, "seed": 1,
+		"nem": {"name": "Halvane", "title": "High Nadir", "epithet": "of the Late Copy", "fac": "deathless"}})
 	var op2: Array = vn.opening()
 	var RL = JSON.parse_string(_read("res://story/data/rival_lines.json"))
 	var said_final := false
 	for l in RL["deathless"]["final"]:
 		said_final = said_final or str(op2[0]["text"]).contains(str(l))
-	ok(op2.size() == 2 and said_final and str(op2[1]["text"]).contains("Justiciar Halvane the Unpardoning"), "voice: Nemesis opening in sector III uses his final line and his full name with epithet")
-	ok(vn.closing(false).begins_with("Justiciar Halvane the Unpardoning:"), "voice: Nemesis gloats on a loss")
+	ok(op2.size() == 2 and said_final and str(op2[1]["text"]).contains("High Nadir Halvane of the Late Copy"), "voice: Nemesis opening in sector III uses his final line and his full name with epithet")
+	ok(vn.closing(false).begins_with("High Nadir Halvane of the Late Copy:"), "voice: Nemesis gloats on a loss")
 	# variety: the same moment across many generated Nemeses and seeds
 	var R = load("res://story/rival.gd").new()
 	var seen := {}
@@ -260,7 +260,7 @@ func t_voice() -> void:
 		var nem := {"name": "Name%d" % i, "title": "Warlord", "fac": "corsair", "persona": ["cunning", "greedy", "proud", "cruel"][i % 4], "beaten": 0, "scars": 0}
 		seen[R.opening(nem, 1, i)] = true
 	ok(seen.size() >= 6, "rival: first-meeting hails vary across Nemeses (%d different lines from 60)" % seen.size())
-	var again := {"name": "Scarface", "title": "Warlord", "fac": "corsair", "beaten": 1, "scars": 2, "adapt": ["armor"]}
+	var again := {"name": "Krag Tooth", "title": "Warlord", "fac": "corsair", "beaten": 1, "scars": 2, "adapt": ["armor"]}
 	var kinds := {}
 	for sd in 40:
 		var l: String = R.opening(again, 2, sd)
@@ -273,10 +273,10 @@ func t_voice() -> void:
 	ok(kinds.size() == 3, "rival: a later meeting mixes memory (rammed him last time), scar ({scars} filled: twice) and rematch lines %s" % str(kinds.keys()))
 	ok(R.memory_key({"seen": {"torp": 3, "lance": 9}}) == "lance" and R.memory_key({"beat": "board"}) == "board" and R.memory_key({"beat": "broad"}) == "battery" and R.memory_key({"beat": "evaded"}) == "evasive", "rival: memory key from stream B's nem.beat (broad to battery, evaded to evasive) or from seen counts")
 	var vs = Voice.new()
-	vs.setup(view, {"admiral": "grax", "admiral_name": "Warlord Grax Ironjaw", "kind": "elite", "enemy_fac": "ithar", "sector": 2, "seed": 4, "nem": {"name": "Ilyra Glasswing", "title": "Starwarden", "fac": "ithar"}})
+	vs.setup(view, {"admiral": "grax", "admiral_name": "Warlord Grax Steelgrin", "kind": "elite", "enemy_fac": "ithar", "sector": 2, "seed": 4, "nem": {"name": "Korek", "title": "Lens-keeper", "fac": "ithar"}})
 	var sl: Array = vs.on_event({"t": "nem_signature"})
 	sl += vs.on_event({"t": "nem_signature"})
-	ok(sl.size() == 1 and str(sl[0]["text"]).begins_with("Starwarden Ilyra Glasswing:"), "voice: his faction signature speaks once")
+	ok(sl.size() == 1 and str(sl[0]["text"]).begins_with("Lens-keeper Korek:"), "voice: his faction signature speaks once")
 	# a real rules battle, both sides on the game's AI, every event through the voice
 	var api = API.new()
 	var e: String = api.load_rules()
@@ -320,11 +320,11 @@ func t_voice() -> void:
 func t_arc() -> void:
 	var T = load("res://story/tokens.gd")
 	var she := {"name": "Petra Lindqvist", "title": "Rear admiral", "fac": "hegemony", "persona": "methodical", "scars": 2}
-	var it := {"name": "Hollow Song", "title": "Matriarch", "fac": "chorus"}
-	var he := {"name": "Grim Rattigan", "title": "Warlord", "fac": "corsair", "g": "m"}
+	var it := {"name": "Hollow Gut", "title": "Spawn-mother", "fac": "chorus"}
+	var he := {"name": "Grul Hook", "title": "Warlord", "fac": "corsair", "g": "m"}
 	ok(T.fill("{He} lost {his} fleet; {he} blames {him}self. Scarred {scars}.", {"nem": she}) == "She lost her fleet; she blames herself. Scarred twice.", "tokens: she/her from the name pool")
 	ok(T.fill("{He} ate {his} fill.", {"nem": it}) == "It ate its fill.", "tokens: a Chorus rival is it")
-	ok(T.fill("{rival} meets {best_captain} near {first_lost}.", {"nem": he}) == "Warlord Grim Rattigan meets your senior captain near a ship of the line.", "tokens: missing run facts fall back to plain words")
+	ok(T.fill("{rival} meets {best_captain} near {first_lost}.", {"nem": he}) == "Warlord Grul Hook meets your senior captain near a ship of the line.", "tokens: missing run facts fall back to plain words")
 	var a = load("res://story/arc.gd").new()
 	ok(a.load_arc("voidsworn", "res://story/test/fixture_arc.json"), "arc: fixture loads")
 	var ctx := {"nem": she, "flags": {}, "seed": 3, "seen": {"arc_voidsworn_1B": 1}, "first_lost": "", "arcs_finished": 0}
@@ -350,8 +350,8 @@ func t_arc() -> void:
 	ctx["nem"] = {"name": "Petra Lindqvist", "title": "Rear admiral", "fac": "hegemony"}
 	var b3: Dictionary = a.render(3, ctx)
 	ok(str(b3["b"]).contains("You left people behind for a bonus"), "arc: beat 3 hail follows the run's lean (ruthless)")
-	ctx["nem"] = {"name": "Grim Rattigan", "title": "Warlord", "fac": "corsair", "beaten": 1}
-	ok(str(a.render(3, ctx)["b"]).contains("I had the dents framed"), "arc: beat 3 hail when he remembers you")
+	ctx["nem"] = {"name": "Grul Hook", "title": "Warlord", "fac": "corsair", "beaten": 1}
+	ok(str(a.render(3, ctx)["b"]).contains("I kept your dents as trophies"), "arc: beat 3 hail when he remembers you")
 	ok(a.cond("flag:fx_keep|flag:fx_sell", {"flags": {"fx_sell": 1}}) and not a.cond("flag:fx_keep|flag:zz", {"flags": {"fx_sell": 1}}) and a.cond("!flag:zz&flag:fx_sell|flag:q", {"flags": {"fx_sell": 1}}), "arc: conditions with & and |")
 	ok(a.ending(true, ctx) == "WIN. WIN-SELL" and a.ending(false, {"flags": {"fx_keep": 1}}) == "LOSS. LOSS-KEEP", "arc: endings follow the choices")
 	ctx["arcs_finished"] = 2
@@ -370,8 +370,8 @@ func t_ui() -> void:
 	S.career.P = Career.default_profile()
 	var run := {"t0": 5, "admiral": "aelith", "fac": "ithar", "sector": 3, "flagUid": "u", "fleet": [{"uid": "u", "name": "Glasswing"}]}
 	S.career.record_battle(run, _B("boss", true, 0, 5, {"kind": {"sq": 9, "lance": 2}}), "win")
-	S.career.record_run_end(run, true, "Aelith Dawnsail")
-	S.career.record_arc_end("ithar", "aelith", "Warlord Bones Sharkey", {}, true)
+	S.career.record_run_end(run, true, "Tamsa of the Clear Aperture")
+	S.career.record_arc_end("ithar", "aelith", "Apex Krag Tooth", {}, true)
 	var scr = S.open_career()
 	ok(scr != null, "ui: career screen opens")
 	if scr != null:
