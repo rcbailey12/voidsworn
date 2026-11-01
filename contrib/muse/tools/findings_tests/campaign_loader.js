@@ -21,16 +21,32 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-// game_loader.js lives in the harness folder; resolve it from either home of
-// this file (the wave 5 working folder or the staged tools tree).
-const LOADER_CANDIDATES = [
-  path.join(__dirname, '..', '..', 'voidsworn-harness', 'game_loader.js'),
-  path.join(__dirname, 'game_loader.js'),
-  path.join(process.env.HOME || '', 'workspace', 'voidsworn-harness', 'game_loader.js'),
-];
-const loaderPath = LOADER_CANDIDATES.find(p => fs.existsSync(p));
-if (!loaderPath) throw new Error('game_loader.js not found in any candidate path');
-const { loadGame } = require(loaderPath);
+// Resolve both game sources and the shared harness from one repository root.
+function resolveRepo(repoDir) {
+  const args = process.argv.slice(2);
+  const flag = args.indexOf('--repo');
+  if (flag !== -1 && (!args[flag + 1] || args[flag + 1].startsWith('--'))) {
+    throw new Error('--repo requires a path');
+  }
+  const explicit = repoDir || (flag !== -1 ? args[flag + 1] : process.env.VOIDSWORN_REPO);
+  if (explicit) {
+    const root = path.resolve(explicit);
+    if (!fs.existsSync(path.join(root, 'data.js'))) throw new Error('data.js not found in repo: ' + root);
+    return root;
+  }
+  let root = __dirname;
+  while (!fs.existsSync(path.join(root, 'data.js'))) {
+    const parent = path.dirname(root);
+    if (parent === root) throw new Error('Could not find repository containing data.js');
+    root = parent;
+  }
+  return root;
+}
+
+function loadGame(repoDir) {
+  const root = resolveRepo(repoDir);
+  return require(path.join(root, 'contrib/muse/tools/harness/game_loader.js')).loadGame(root);
+}
 
 const CAMPAIGN_EXPORTS = [
   // shell + progression (campaign_meta.js)
@@ -67,6 +83,7 @@ function makeEl() {
 }
 
 function loadCampaign(repoDir) {
+  repoDir = resolveRepo(repoDir);
   const out = loadGame(repoDir);
   const sandbox = out._sandbox;
   const runIn = (code) => vm.runInContext(code, sandbox);
@@ -108,4 +125,4 @@ function loadCampaign(repoDir) {
   return out;
 }
 
-module.exports = { loadCampaign, CAMPAIGN_EXPORTS };
+module.exports = { loadCampaign, loadGame, resolveRepo, CAMPAIGN_EXPORTS };

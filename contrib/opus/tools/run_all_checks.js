@@ -22,7 +22,7 @@ add(OPUS + 'naming_lint_game.test.js');
 add(OPUS + 'naming_lint_game.js', [], 'naming');
 add(OPUS + 'checkpack/checks.js', [], 'pack');
 for (const file of ['fleet_invariants.js', 'save_fuzz.js', 'softlock_sweep.js', 'validators/table_xref.js']) add(MUSE + 'harness/' + file, [ROOT]);
-add(MUSE + 'findings_tests/findings_tests.js', [ROOT], 'findings');
+add(MUSE + 'findings_tests/findings_tests.js', ['--repo', ROOT], 'findings');
 add(MUSE + 'oracle_drift/oracle_drift_guard.js', [ROOT], 'optional');
 add(MUSE + 'cutover_gate/fixture_check.js', [ROOT, path.join(ROOT, MUSE, 'importer_fixtures'), path.join(ROOT, MUSE, 'harness/game_loader.js')], 'optional');
 if (only && !checks.some(c => c.name === only || c.file === only)) { console.error('Unknown check: ' + only + '\nNames: ' + checks.map(c => c.name).join(', ')); process.exit(1); }
@@ -83,15 +83,8 @@ async function execute(c) {
       row.detail = `${m[1]} FAIL, ${m[2]} CHECK`;
     } else if (c.kind === 'findings') {
       const summary = /(\d+) tests, (\d+) pass, (\d+) fail/.exec(run.output);
-      if (!summary) {
-        if (/game_loader\.js not found in any candidate path/.test(run.output)) {
-          row.result = 'SKIP';
-          row.detail = 'campaign_loader.js hard-coded loader paths omit harness/game_loader.js; no usable argument or environment override; passed/failed counts unavailable';
-          return row;
-        }
-        throw new Error('Missing findings summary');
-      }
-      const failures = [...run.output.matchAll(/^FAIL\s+([^:]+):/gm)].map(m => m[1].trim());
+      if (!summary) throw new Error('Missing findings summary');
+      const failures = [...run.output.matchAll(/^FAIL\s+(\S+)[^:]*:/gm)].map(m => m[1].trim());
       row.passed = +summary[2]; row.failed = +summary[3];
       row.knownFailures = failures.filter(id => baseline.knownFindingsFailures.includes(id));
       row.unexpectedFailures = failures.filter(id => !baseline.knownFindingsFailures.includes(id));

@@ -28,7 +28,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { loadCampaign } = require(path.join(__dirname, 'campaign_loader.js'));
+const { loadCampaign, resolveRepo } = require(path.join(__dirname, 'campaign_loader.js'));
 
 function makeEl() {
   return {
@@ -45,6 +45,7 @@ function makeEl() {
 }
 
 function loadUI(repoDir) {
+  repoDir = resolveRepo(repoDir);
   const out = loadCampaign(repoDir);
   const sandbox = out._sandbox;
   const runIn = (code) => vm.runInContext(code, sandbox);

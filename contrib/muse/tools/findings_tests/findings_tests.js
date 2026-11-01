@@ -6,7 +6,7 @@
 // unfixed in the game data/code. Tests were not weakened to pass. When Opus lands a fix, the
 // matching test should flip to PASS without edits; if a fix takes a different shape than the
 // finding assumed, update the test and the ledger row together.
-// Run: node findings_tests.js [repoDir]   (exit 1 while any pinned defect is unfixed)
+// Run: node findings_tests.js [--repo <path>]   (exit 1 while any pinned defect is unfixed)
 // Round 2 (Oct 30, 2026) added eight tests at the end of the file, behind two
 // new harnesses in this folder: battle_probe.js (sim3d-style animation hooks,
 // so aiUnit runs headlessly) and ui_loader.js (ui3d.js behind a DOM stub, so
@@ -14,17 +14,8 @@
 // tests; sync tests behave exactly as before.
 const path = require('path');
 const vm = require('vm');
-const fs0 = require('fs');
-const LOADER_CANDIDATES = [
-  path.join(__dirname, '..', '..', 'voidsworn-harness', 'game_loader.js'),
-  path.join(__dirname, '..', 'harness', 'game_loader.js'),
-  path.join(__dirname, 'game_loader.js'),
-  path.join(process.env.HOME || '', 'workspace', 'voidsworn-harness', 'game_loader.js'),
-];
-const loaderPath = LOADER_CANDIDATES.find(p => fs0.existsSync(p));
-if (!loaderPath) throw new Error('game_loader.js not found in any candidate path');
-const { loadGame } = require(loaderPath);
-const repoDir = process.argv[2] || path.join(__dirname, '..', '..', 'voidsworn-fresh');
+const { loadGame, resolveRepo } = require('./campaign_loader.js');
+const repoDir = resolveRepo();
 const G = loadGame(repoDir);
 const runIn = (code) => vm.runInContext(code, G._sandbox);
 
