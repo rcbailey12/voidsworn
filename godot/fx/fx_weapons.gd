@@ -61,8 +61,8 @@ const VIS_K_HIT := 0.85
 # weapon's weight: the impact flash, the muzzle flash, the hull light. All stay under the 65 px (6% of the screen
 # height) that would make them counted flashes at the battle camera, so they never wait on the flash budget there.
 # Claude's calls, vetoable.
-const HIT_PX := [0.0, 26.0, 36.0, 46.0]     # impact flash by weight (light, medium, heavy)
-const MUZ_PX := [0.0, 15.0, 21.0, 28.0]     # muzzle flash by weight
+const HIT_PX := [0.0, 34.0, 46.0, 56.0]     # impact flash by weight (light, medium, heavy)
+const MUZ_PX := [0.0, 20.0, 26.0, 32.0]     # muzzle flash by weight
 const HULL_LIGHT := 7.9                    # a hit's light on the plate (just under the 8 that counts as a flash)
 
 
@@ -687,14 +687,14 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var hpx: float = HIT_PX[clampi(w, 1, 3)] if not light else HIT_PX[1]
 		if lk == "plasma":
 			sz *= 1.3
-			hpx += 8.0
+			hpx = minf(hpx + 6.0, 62.0)
 			hc = PLASMA_COL.lerp(PLASMA_HOT, 0.5)
 		elif lk == "las" or lk == "prism":
 			# energy bolts flash in their own colour (a laser hit is not a shell's orange)
 			hc = col.lerp(Color.WHITE, 0.25)
 		# F3 round 2: the hit flash has its own size on screen by weight, with a hot core under it, so a hit reads as a
 		# bright burst on the plate from the battle camera, small ships included
-		fx.pop(p + n * 0.2 * k, T, hc.lerp(Color.WHITE, 0.3), sz * 1.8, 9.0 if not light else 6.5, n, 0.18, hpx)
+		fx.pop(p + n * 0.2 * k, T, hc.lerp(Color.WHITE, 0.3), sz * 1.8, 9.0 if not light else 8.0, n, 0.18, hpx)
 		fx.spr(p + n * 0.3 * k, T, 0.32 if not light else 0.2, hc, 4.0, sz * 0.4, sz * 1.0, 2, Vector3.ZERO, 0.0, 0.0, 0.0, hpx * 0.55)
 		if lk == "prism":
 			# glass shatters into colour: spectral glints thrown off the hit
@@ -778,7 +778,7 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 	# F3 round 2: the bubble flashes in its faction's colour where it was struck: a ripple ring racing out along the
 	# bubble's surface and a soft coloured glow, each with its own size on screen, so a shield hit reads from the
 	# battle camera as that ship's shield
-	var spx: float = 30.0 if light else (40.0 if w <= 2 else 50.0)
+	var spx: float = 36.0 if light else (46.0 if w <= 2 else 56.0)
 	if torp:
 		spx = 64.0
 	if lk in ["flak", "pflak", "gflak", "mflak", "spores", "guns"]:
