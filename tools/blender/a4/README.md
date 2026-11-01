@@ -81,6 +81,13 @@ Decisions this rests on: `K1_DECISIONS.md` (Claude's calls, Ryan can veto).
   rainbow edges, stored light inside, ice-blue vanes with light along the ribs. Eclipse (deathless): violet-black plates with
   shield-plate armour dress, white-gold corona rings round the engines, violet-white glow from the plate seams, no green.
   Chorus: dark olive flesh, ochre chitin, bile glow. Hullbreakers and Hegemony keep their paint.
+- Waviness (Ryan, Oct 27 Muse audit; Oct 31): rendering a shipped glb three ways (shape only / shape plus baked normal map / full
+  paint) showed the waves are mostly the AI hull's shape: long bulges whose outlines wobble along the length (flat_bow squashes them
+  into bands at the bow). `reshape.straighten` (ship key `straighten`) smooths y and z along fore-and-aft edges only and skips real
+  steps; on Hegemony and Crusade hulls (Hullbreakers stay junky). Second cause: on a reshaped bow the AI's baked AO, curvature and
+  normal maps no longer match the moved surface, so `bakemat4` fades them out past `fresh_x0`. V1b's bow is also held blunt in the
+  top view (`flat_bow(beam=.45)`). The PC Godot build reads converted ships from `godot\gen\ships`: queue `stage.py --regen`
+  (a4_regen.bat) after ship jobs, or the game keeps the old ones.
 - Display names follow `contrib/opus/compute/rename_map_final.md`: ship names in `ships.py`, class labels through
   `lineup.CLS_NAME` (War-barge, Colossus, Lattice-ship, Archive-ship; `cls` itself never changes), weapon labels in
   `lineup.WNAME`, lineup titles in `stage.LINEUPS`.

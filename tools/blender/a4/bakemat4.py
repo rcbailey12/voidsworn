@@ -233,7 +233,7 @@ def build(o, fac, nmap, mmap, info):
         e_col = g.mix(g.mul(edge_i, .60), e_col, rb); e_col = g.mix(g.mul(hull, .16), e_col, (.80, .86, 1.0))
         e_col = g.mix(g.mul(g.mul(rad_l, sail), .55), e_col, (.75, .85, 1.0))  # Oct 31: light runs out along the vane ribs
     if fac == 'deathless':  # Oct 31: violet-white inner glow seeping from the seams between the shield plates
-        e_col = g.mix(g.mul(g.mul(hull, g.smooth(cavity, .45, .85)), .40), e_col, (.70, .55, 1.0))
+        e_col = g.mix(g.mul(g.mul(hull, g.smooth(cavity, .70, .98)), .12), e_col, (.70, .55, 1.0))  # Nov 1: .40 streaked the whole hull; only the deepest seams now
     e_col = g.mix(emit, e_col, col)  # lenses, glowing sacs and veins carry their own colour
     # ---------------- normal ----------------
     nm = g.n('ShaderNodeNormalMap', uv_map='atlas'); g.link(tn.outputs[0], nm.inputs['Color'])
