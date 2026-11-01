@@ -2,6 +2,7 @@
 #   python3 stage.py STAGE_DIR TAG CODE [CODE ...]     -> STAGE_DIR/a4tools/... and STAGE_DIR/a4_<CODE>_<TAG>.bat (one queued job per ship)
 #   python3 stage.py STAGE_DIR TAG --jobs-only CODE ...  (only the job files, when the tools are already on the PC)
 #   python3 stage.py STAGE_DIR TAG --jobs-only --lineups  (the seven faction lineup jobs: voidsworn_test\a4\lineups\<faction>.webp)
+#   python3 stage.py STAGE_DIR TAG --jobs-only --regen    (refresh godot\gen\ships on the PC after ship jobs; build_assets.gd)
 import os, sys, shutil
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 
@@ -29,11 +30,14 @@ def main():
                 if f.endswith(pat): shutil.copy(os.path.join(src, f), d)
         d = os.path.join(out, 'a4tools', 'hs'); os.makedirs(d)
         for f in ('hs_lib.py', 'detail_lib.py'): shutil.copy(os.path.join(REPO, 'tools/blender/hs', f), d)
-        for b in ('a4_ship.bat', 'a4_looks.bat', 'a4_lineup.bat', 'a4_barge.bat', 'a4_damage.bat'):
+        for b in ('a4_ship.bat', 'a4_looks.bat', 'a4_lineup.bat', 'a4_barge.bat', 'a4_damage.bat', 'a4_regen.bat'):
             if os.path.exists(os.path.join(REPO, 'tools/pc/jobs', b)):
                 open(os.path.join(out, 'a4tools', b), 'w', newline='').write(crlf(open(os.path.join(REPO, 'tools/pc/jobs', b)).read()))
     if '--looks' in a:
         open(os.path.join(out, f'a4_looks_{tag}.bat'), 'w', newline='').write(crlf(f'@echo off\nset A4LOOK={" ".join(codes)}\ncall a4tools\\a4_looks.bat\nset A4LOOK=\nexit /b\n'))
+        codes = []
+    if '--regen' in a:  # refresh the Godot build's gen\ships from the re-exported glb files (queue after the ship jobs)
+        open(os.path.join(out, f'a4_regen_{tag}.bat'), 'w', newline='').write(crlf('@echo off\ncall a4tools\\a4_regen.bat\nexit /b\n'))
         codes = []
     if '--lineups' in a:
         for k, (ftag, title, ships) in enumerate(LINEUPS):

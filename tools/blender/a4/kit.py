@@ -31,12 +31,12 @@ def palette(fac):
     """part colours (linear) per faction, from FAC3D (ships3d.js) like bakemat: base hull, dark, trim, gun metal, lens (win), engine (eng)"""
     F = {'voidsworn': ('#2b2d31', '#111214', '#dfe6ec', (1, .42, .12), (1, .50, .16)), 'hegemony': ('#c4ccd5', '#5a6573', '#3a78d0', (.78, .9, 1), (.45, .72, 1)),
          'corsair': ('#6a2c22', '#28140f', '#a3542c', (1, .4, .2), (1, .38, .16)), 'chorus': ('#3b3a22', '#17160c', '#b5852f', (.78, .92, .22), (.75, .90, .25)),
-         'ithar': ('#cfe0ea', '#7d8f9c', '#c8ccd2', (.85, .90, 1.0), (.80, .86, 1.0)), 'deathless': ('#1e1726', '#0d0a12', '#e9d9a6', (.85, .75, 1.0), (1.0, .86, .58))}[fac]
+         'ithar': ('#a3b8ca', '#5e7082', '#d4d8de', (.85, .90, 1.0), (.80, .86, 1.0)), 'deathless': ('#1e1726', '#0d0a12', '#e9d9a6', (.85, .75, 1.0), (1.0, .86, .58))}[fac]
     # Oct 27, lore approved (R59): Crusade black iron and frost white, Glasswrights crystal and silver, Eclipse violet-black and white-gold,
     # Chorus dark olive and ochre; Hullbreakers and Hegemony unchanged
     base, dark, trim = srgb(F[0]), srgb(F[1]), srgb(F[2])
-    gun = {'voidsworn': (.045, .046, .050), 'hegemony': (.30, .33, .37), 'corsair': (.07, .07, .075), 'chorus': mul(dark, 1.4), 'ithar': (.66, .69, .74), 'deathless': (.05, .04, .06)}[fac]
-    finish = {'voidsworn': (.50, .42), 'hegemony': (.46, .16), 'corsair': (.62, .35), 'chorus': (.4, .02), 'ithar': (.16, .35), 'deathless': (.45, .42)}[fac]
+    gun = {'voidsworn': (.045, .046, .050), 'hegemony': (.30, .33, .37), 'corsair': (.07, .07, .075), 'chorus': mul(dark, 1.4), 'ithar': (.55, .60, .68), 'deathless': (.05, .04, .06)}[fac]
+    finish = {'voidsworn': (.50, .42), 'hegemony': (.46, .16), 'corsair': (.62, .35), 'chorus': (.4, .02), 'ithar': (.12, .55), 'deathless': (.45, .42)}[fac]
     return dict(base=base, dark=dark, trim=trim, gun=gun, lens=tuple(F[3]), eng=tuple(F[4]), rgh=finish[0], met=finish[1])
 
 

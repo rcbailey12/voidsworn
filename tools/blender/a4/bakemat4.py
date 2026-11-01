@@ -17,7 +17,7 @@ FAC = {  # from ships3d.js FAC3D (hull, dark, trim as sRGB hex; win and eng as l
     'voidsworn': dict(hull='#2b2d31', dark='#111214', trim='#dfe6ec', win=(1, .42, .12), eng=(1, .50, .16), met=.40, rgh=.50),
     'hegemony': dict(hull='#c4ccd5', dark='#5a6573', trim='#3a78d0', win=(.78, .9, 1), eng=(.45, .72, 1), met=.14, rgh=.50),
     'chorus': dict(hull='#3b3a22', dark='#17160c', trim='#b5852f', win=(.78, .92, .22), eng=(.75, .90, .25), met=.02, rgh=.40),  # dark olive flesh, ochre chitin, bile glow
-    'ithar': dict(hull='#cfe0ea', dark='#7d8f9c', trim='#c8ccd2', win=(.85, .90, 1.0), eng=(.80, .86, 1.0), met=.35, rgh=.14),  # Glasswrights: crystal, silver, stored light
+    'ithar': dict(hull='#9fb5c8', dark='#5e7082', trim='#d4d8de', win=(.85, .90, 1.0), eng=(.80, .86, 1.0), met=.55, rgh=.10),  # Glasswrights: crystal, silver, stored light
     'deathless': dict(hull='#1e1726', dark='#0d0a12', trim='#e9d9a6', win=(.85, .75, 1.0), eng=(1.0, .86, .58), met=.42, rgh=.42),  # Eclipse: violet-black, white-gold corona, violet-white glow
     'corsair': dict(hull='#5c2a1c', dark='#28140f', trim='#a3542c', win=(1, .4, .2), eng=(1, .38, .16), met=.30, rgh=.62),
 }
@@ -166,17 +166,25 @@ def build(o, fac, nmap, mmap, info):
         ang = g.math('ARCTAN2', Z, g.math('SUBTRACT', X, 0.0)); rad_l = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.math('FRACT', g.mul(ang, 22)), .5)), .04)
         sail = g.smooth(g.math('SQRT', g.add(g.mul(Y, Y), g.mul(Z, Z))), info['needle'], info['needle'] * 1.6)
         base = g.mix(g.mul(g.mul(rad_l, sail), .5), base, (.86, .88, .92))
-        base = g.mix(g.mul(sail, .10), base, (.88, .92, 1.0))  # the vane reads faintly ice-blue (crystal, lore r8)
+        base = g.mix(g.mul(sail, .45), base, (.62, .74, .90))  # Oct 31: the vane is ice-blue crystal (it read as white porcelain)
     if fac == 'voidsworn':  # frost-white markings (lore r8): paired bow chevrons and a frost dusting on worn upward edges
         side_v = g.smooth(g.math('ABSOLUTE', NY), .55, .8); zc_v = (info['lo'][2] + info['hi'][2]) / 2; h_v = info['hi'][2] - info['lo'][2]
-        chev_v = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.math('FRACT', g.mul(g.add(X, g.mul(g.math('ABSOLUTE', Z), .6)), 26)), .5)), .10)
-        chev_v = g.mul(g.mul(chev_v, g.math('GREATER_THAN', X, info['hi'][0] - .14)), g.mul(side_v, g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', Z, zc_v)), h_v * .06)))
+        # Oct 31: bigger and bolder (at lineup distance the first pass did not show at all)
+        chev_v = g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', g.math('FRACT', g.mul(g.add(X, g.mul(g.math('ABSOLUTE', Z), .6)), 14)), .5)), .15)
+        chev_v = g.mul(g.mul(chev_v, g.math('GREATER_THAN', X, info['hi'][0] - .22)), g.mul(side_v, g.math('LESS_THAN', g.math('ABSOLUTE', g.math('SUBTRACT', Z, zc_v)), h_v * .15)))
         base = g.mix(g.mul(hull, chev_v), base, trim)
-        base = g.mix(g.mul(g.mul(wear, g.smooth(NZ, .3, .9)), .45), base, (.80, .85, .90))
+        base = g.mix(g.mul(g.mul(wear, g.smooth(NZ, .3, .9)), .70), base, (.80, .85, .90))
     if fac == 'ithar':  # Glasswrights: faceted rainbow edges (hue running with position), the rest clear pale crystal
         ph = g.mul(g.add(g.add(X, g.mul(Y, 1.7)), g.mul(Z, 2.3)), 21.0)
         rb = g.comb(g.add(.5, g.mul(g.math('SINE', ph), .5)), g.add(.5, g.mul(g.math('SINE', g.add(ph, 2.09)), .5)), g.add(.5, g.mul(g.math('SINE', g.add(ph, 4.19)), .5)))
         edge_i = g.mul(hull, g.smooth(curv, .03, .16))
+        # Oct 31: facets. Each Voronoi cell is one crystal face: its own brightness and a faint hue of its own, and a small height step
+        # (used in the normal below) so the faces catch the light separately
+        fc = g.sep(g.voro(g.vmath('MULTIPLY', obj, (1.0, 2.2, 2.2)), 26, out='Color'))[0]
+        fv = g.rng(fc, 0, 1, .74, 1.20); base = g.mix(hull, base, g.comb(fv, fv, fv), 'MULTIPLY')
+        phf = g.mul(fc, 19.0)
+        rbf = g.comb(g.add(.5, g.mul(g.math('SINE', phf), .5)), g.add(.5, g.mul(g.math('SINE', g.add(phf, 2.09)), .5)), g.add(.5, g.mul(g.math('SINE', g.add(phf, 4.19)), .5)))
+        base = g.mix(g.mul(hull, .16), base, rbf)
         base = g.mix(g.mul(edge_i, .65), base, rb)
     albedo = base
     # ---------------- roughness / metal / occlusion ----------------
@@ -217,7 +225,10 @@ def build(o, fac, nmap, mmap, info):
         eng = g.mul(g.mul(aft, hull), g.rng(sm.outputs[0], .8, .45, 0, 1))
         e_col = g.mix(eng, e_col, F['eng'])
     if fac == 'ithar':  # stored light: the rainbow edges glow softly, the crystal body holds a faint pale light
-        e_col = g.mix(g.mul(edge_i, .45), e_col, rb); e_col = g.mix(g.mul(hull, .10), e_col, (.80, .86, 1.0))
+        e_col = g.mix(g.mul(edge_i, .60), e_col, rb); e_col = g.mix(g.mul(hull, .16), e_col, (.80, .86, 1.0))
+        e_col = g.mix(g.mul(g.mul(rad_l, sail), .55), e_col, (.75, .85, 1.0))  # Oct 31: light runs out along the vane ribs
+    if fac == 'deathless':  # Oct 31: violet-white inner glow seeping from the seams between the shield plates
+        e_col = g.mix(g.mul(g.mul(hull, g.smooth(cavity, .45, .85)), .40), e_col, (.70, .55, 1.0))
     e_col = g.mix(emit, e_col, col)  # lenses, glowing sacs and veins carry their own colour
     # ---------------- normal ----------------
     nm = g.n('ShaderNodeNormalMap', uv_map='atlas'); g.link(tn.outputs[0], nm.inputs['Color'])
@@ -233,7 +244,7 @@ def build(o, fac, nmap, mmap, info):
     elif fac == 'deathless':
         s1 = seams(g, obj, 18, (1.0, 1.0, 2.5), 'CHEBYCHEV', .03); ht = s1
     elif fac == 'ithar':
-        ht = g.add(g.mul(seams(g, obj, 9, (1.0, 2.0, 2.0), 'EUCLIDEAN', .02), .6), .4)
+        ht = g.add(g.add(g.mul(seams(g, obj, 9, (1.0, 2.0, 2.0), 'EUCLIDEAN', .02), .45), g.mul(fc, .35)), .25)  # facet steps
     else:  # chorus: wrinkles and pores
         wr = g.noise(g.vmath('MULTIPLY', obj, (1, 1, 2.5)), 55, 6, .6); po = g.smooth(g.voro(obj, 140), 0.0, .25)
         ht = g.add(g.mul(wr, .7), g.mul(po, .3))

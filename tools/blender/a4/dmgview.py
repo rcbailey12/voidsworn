@@ -76,6 +76,7 @@ def compose(lay_path):
     L = json.load(open(lay_path)); ims = []
     for s in L['shots']:
         im = Image.open(s['path']).convert('RGB'); ImageDraw.Draw(im).text((6, 4), s['label'], fill=(240, 240, 240)); ims.append(im)
+    if not ims: print('dmgview: no breach shots (small craft), no sheet'); return
     w, h = ims[0].size; c = L['cols']; rows = (len(ims) + c - 1) // c
     sheet = Image.new('RGB', (c * (w + 4) + 4, rows * (h + 4) + 34), (18, 18, 22)); ImageDraw.Draw(sheet).text((8, 10), L['title'], fill=(240, 240, 240))
     for i, im in enumerate(ims): sheet.paste(im, (4 + (i % c) * (w + 4), 30 + (i // c) * (h + 4)))

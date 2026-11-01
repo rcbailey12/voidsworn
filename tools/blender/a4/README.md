@@ -70,6 +70,21 @@ Decisions this rests on: `K1_DECISIONS.md` (Claude's calls, Ryan can veto).
 - I16: the two upright masts are emitter booms laid along the deck (`kit.boom`); the fan vane stays.
 - Cut holes with a simple rim are filled by a beauty triangulation (a radial fan on V1b's spine showed in G4's marks sheet).
 
+## Pass 5 (Oct 27 to 31: Hegemony prows, V1b windows, V14 mount, lore repaint)
+
+- Hegemony prows: level deck, top-view taper, a short armoured square prow face (`kit.prow_face`), flat belly; the towers are
+  `kit.command_block`s. V1b: faired bow, windows in clusters (no porthole rows), command tower. V14: turret on a clean plate.
+  Barge trimmed to about 256k triangles (`compose.drop_hidden` drops buried faces).
+- Lore approved (FINDINGS R59): repaint with shapes kept, in `bakemat4.FAC`, `kit.py` palettes and `damage.INTERIOR`.
+  Sunward Crusade (voidsworn): black iron, frost-white bow chevrons and frost on upper worn edges, ember radiators, no rust.
+  Glasswrights (ithar): glassy silver-blue crystal with Voronoi facets (own brightness, faint hue and a height step each),
+  rainbow edges, stored light inside, ice-blue vanes with light along the ribs. Eclipse (deathless): violet-black plates with
+  shield-plate armour dress, white-gold corona rings round the engines, violet-white glow from the plate seams, no green.
+  Chorus: dark olive flesh, ochre chitin, bile glow. Hullbreakers and Hegemony keep their paint.
+- Display names follow `contrib/opus/compute/rename_map_final.md`: ship names in `ships.py`, class labels through
+  `lineup.CLS_NAME` (War-barge, Colossus, Lattice-ship, Archive-ship; `cls` itself never changes), weapon labels in
+  `lineup.WNAME`, lineup titles in `stage.LINEUPS`.
+
 ## Running it
 
 - Cloud, shape only: `python3 tools/blender/a4/a4_ship.py CODE OUTDIR --nobake --look` (Workbench sheets `CODE_a4look.png` and

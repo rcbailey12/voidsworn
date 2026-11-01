@@ -17,10 +17,10 @@ CARD = (1080, 640)        # card render size
 ARC = {'F': 'forward', 'T': 'turret', 'P': 'port', 'S': 'starboard'}
 # Oct 27, lore approved: class and weapon display names (rename_map_final.md 4.0; the cls keys stay)
 CLS_NAME = {'Battle-barge': 'War-barge', 'Bio-titan': 'Colossus', 'Ark': 'Lattice-ship', 'Tomb-ark': 'Archive-ship'}
-WNAME = {'hbattery': 'heavy battery', 'battery': 'battery', 'hturbo': 'heavy pulse laser', 'turbo': 'pulse laser', 'torp': 'torpedoes',
+WNAME = {'hbattery': 'heavy gun battery', 'battery': 'gun battery', 'hturbo': 'heavy pulse laser', 'turbo': 'pulse laser', 'torp': 'torpedoes',
          'htorp': 'heavy torpedoes', 'autocannon': 'autocannon', 'flak': 'flak', 'lance': 'lance', 'ion': 'ion cannon', 'laser': 'laser',
-         'scatter': 'scatter guns', 'gauss': 'null cannon', 'doom': 'corona arc', 'gsentry': 'null sentry', 'pulsar': 'prism lance', 'shard': 'shard',
-         'startorp': 'star torpedo', 'bioplasma': 'bioplasma', 'tendril': 'tendrils', 'spores': 'spores', 'turret': 'turret', 'guns': 'guns',
+         'scatter': 'scatter guns', 'gauss': 'null cannon', 'doom': 'corona arc', 'gsentry': 'null sentry', 'pulsar': 'prism lance', 'shard': 'shard cannon',
+         'startorp': 'star torpedo', 'bioplasma': 'bile spray', 'tendril': 'tendrils', 'spores': 'spore drifts', 'turret': 'turret', 'guns': 'guns',
          'bombs': 'bombs', 'sporeb': 'spore bombs'}
 
 
