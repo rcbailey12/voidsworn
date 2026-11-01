@@ -726,7 +726,86 @@ def v64_items(fac):
     return out
 BATCHES['v64h'] = v64_items('corsair'); BATCHES['v64g'] = v64_items('ithar')
 
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'k64c': 'k64c', 'k64d': 'k64d', 'v64h': 'v64', 'v64g': 'v64', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
+# v64h review (Nov 1, P helper 3): VOID7 failed. "Grown plates of bone ... follow the curves of the skull ... eyes in hollows of the
+# bone" drew literal bare skulls on all 30 renders (empty eye sockets, nose holes, skeletal grins; Nemesis 6 a horned cow skull),
+# already in the Qwen design, and Mott s11 a riveted face mask. The settings and poses landed. Glasswrights: the Qwen designs keep the
+# gem head faceless on about half the seeds, but the 0.5 oil pass paints a face profile into any head seen from the side (Opus ruling:
+# faceless wins, lighter oil). v64b (out v64b\):
+#   v64h2: VOID8, Ryan's A1 face wording back (a short, blunt, broad muzzle armoured in horn scales; "bone", "skull" and "hollows"
+#          never appear), matte horn so the scales do not turn to polished metal, and the head kept large in the frame (84 px card).
+#   v64h3: the same ten characters made by editing Ryan's A1 picture itself (c64c/hb_b_qie_s51) into each setting, pose and light.
+#   v64g2: the faceless Glasswright designs repainted at 0.30 and 0.40 instead of 0.5; Vaelen, Tamsa and Nemesis 2 redrawn facing
+#          the viewer; the Nemesis rim-light line drew red rings round the frame, so the redraws use a plain red edge light.
+VOID8 = VOID7.replace(
+    "The face is a living head: grown plates of rough grey-brown bone and horn follow the curves of the skull like a pangolin's scales, "
+    "uneven and organic, worn and chipped, with dark leathery hide and coarse bristles between them; the small eyes sit in hollows of the bone.",
+    "The face inside the mane is bare, short, blunt and broad, a heavy living muzzle armoured in overlapping matte grey-brown horn plates "
+    "like a pangolin's scales, dull and dusty with no shine, dark leathery skin showing in the creases between them, a broad dark "
+    "leathery nose pad at the front of the muzzle.").replace(
+    "A heavy scrap armour harness of rusty riveted hull plates from other ships and thick leather straps covers the chest and belly{gear}.",
+    "A scrap armour harness of rusty hull plates from other ships and thick leather straps is strapped across the chest and belly{gear}.")
+assert VOID8 != VOID7 and 'bone' not in VOID8 and 'skull' not in VOID8
+HB_FRAME = " The head is large in the upper middle of the picture, close to the viewer."
+HB_WHO8 = {k: v.replace(' grown into the bone', '') for k, v in HB_WHO.items()}
+HB_NEM_WHO8 = [w.replace('the bone plates', 'the horn plates') for w in HB_NEM_WHO]
+def v64h2_items(seeds=(11, 51, 61)):
+    out = []
+    for cid, (f, tag, _p) in V64.items():
+        if f != 'corsair': continue
+        if cid.startswith('nem_'):
+            n = int(cid[-1]); mane, jaw, eye, _w = HB_NEM[n - 1]
+            p = VOID8.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' A Nemesis, a rival enemy warlord of the Hullbreakers: ' + HB_NEM_WHO8[n - 1] + '.' + NEMV
+        else:
+            mane, jaw, eye, _w = HB_ADM[cid]; p = VOID8.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' ' + HB_WHO8[cid]
+        full = p + HB_FRAME + ' ' + PS.style(cid, f)
+        out.append({'id': tag + '_v8', 'model': 'qie', 'prompt': full, 'nosuffix': True, 'seeds': list(seeds)})
+        out += [{'id': '%s_v8_s%d_oil' % (tag, sd), 'model': 'zi2i', 'prompt': full, 'nosuffix': True, 'seeds': [sd],
+                 'ref': 'v64b/%s_v8_qie_s%d_00001_.png' % (tag, sd), 'denoise': 0.45} for sd in seeds]
+    return out
+A1_REF = 'c64c/hb_b_qie_s51_00001_.png'
+A1_EDIT = ("Repaint this same creature as a new character in a new picture. Keep its species exactly: the short, blunt, broad muzzle "
+           "armoured in overlapping matte grey-brown horn scales, the jaw split into two halves down the chin, the row of four small "
+           "glowing eyes across the brow, the shaggy mane over the shoulder hump, the thick clawed arms. Change its mane to {mane} fur "
+           "and its eyes to {eye}. {who} New setting: {setting}. New pose and framing: {pose}, the head large in the upper middle of the "
+           "picture. Key light: {light}. Oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, "
+           "muted palette of {palette}. No text, no letters, no border, no frame.")
+def v64h3_items(seeds=(11, 23)):
+    out = []
+    for cid, (f, tag, _p) in V64.items():
+        if f != 'corsair': continue
+        if cid.startswith('nem_'):
+            n = int(cid[-1]); mane, _j, eye, _w = HB_NEM[n - 1]; who = 'It is a Nemesis, a rival enemy warlord: ' + HB_NEM_WHO8[n - 1] + '.'
+        else:
+            mane, _j, eye, _w = HB_ADM[cid]; who = HB_WHO8[cid].replace('This is ', 'It is ')
+        st, po, li = PS.SPEC[cid]
+        pr = A1_EDIT.format(mane=mane, eye=eye, who=who, setting=st, pose=po, light=li, palette=PS.PALETTE[f])
+        out.append({'id': tag + '_a1', 'model': 'qref', 'prompt': pr, 'nosuffix': True, 'seeds': list(seeds), 'ref': A1_REF})
+        out += [{'id': '%s_a1_s%d_oil' % (tag, sd), 'model': 'zi2i', 'prompt': pr, 'nosuffix': True, 'seeds': [sd],
+                 'ref': 'v64b/%s_a1_qref_s%d_00001_.png' % (tag, sd), 'denoise': 0.4} for sd in seeds]
+    return out
+# faceless Qwen designs from v64g (read by eye at full size; Tamsa s11 and Nemesis 2 s11 show an ear, kept as fallbacks)
+GW_FACELESS = {'ithar_aelith': [11], 'ithar_thorne': [11], 'ithar_mirelle': [11, 37], 'nem_ithar_1': [11], 'nem_ithar_2': [11],
+               'nem_ithar_3': [11, 23], 'nem_ithar_4': [11], 'nem_ithar_5': [11], 'nem_ithar_6': [11, 23]}
+NEMV_GW = " A deep red edge light glints along one side of its robe."
+def v64g2_items():
+    out = []
+    for tag, seeds in GW_FACELESS.items():
+        cid = tag.replace('ithar_', '') if not tag.startswith('nem_') else tag
+        sp = PAINT_V.format(setting=PS.SPEC[cid][0], light=PS.SPEC[cid][2], palette=PS.PALETTE['ithar'])
+        out += [{'id': '%s_s%d_oil%d' % (tag, sd, dn), 'model': 'zi2i', 'prompt': sp, 'nosuffix': True, 'seeds': [sd],
+                 'ref': 'v64/%s_qie_s%d_00001_.png' % (tag, sd), 'denoise': dn / 100} for sd in seeds for dn in (30, 40)]
+    for cid, tag in (('vaelen', 'ithar_vaelen'), ('aelith', 'ithar_aelith'), ('nem_ithar_2', 'nem_ithar_2')):
+        p = V64[cid][2].replace(NEMV, NEMV_GW)
+        full = p + ' ' + PS.style(cid, 'ithar')
+        sp = PAINT_V.format(setting=PS.SPEC[cid][0], light=PS.SPEC[cid][2], palette=PS.PALETTE['ithar'])
+        seeds = [11, 37, 61, 73]
+        out.append({'id': tag + '_f', 'model': 'qie', 'prompt': full, 'nosuffix': True, 'seeds': seeds})
+        out += [{'id': '%s_f_s%d_oil30' % (tag, sd), 'model': 'zi2i', 'prompt': sp, 'nosuffix': True, 'seeds': [sd],
+                 'ref': 'v64b/%s_f_qie_s%d_00001_.png' % (tag, sd), 'denoise': 0.3} for sd in seeds]
+    return out
+BATCHES['v64h2'] = v64h2_items(); BATCHES['v64h3'] = v64h3_items(); BATCHES['v64g2'] = v64g2_items()
+
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'k64c': 'k64c', 'k64d': 'k64d', 'v64h': 'v64', 'v64g': 'v64', 'v64h2': 'v64b', 'v64h3': 'v64b', 'v64g2': 'v64b', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

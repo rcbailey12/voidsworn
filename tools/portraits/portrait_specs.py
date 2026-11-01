@@ -3,6 +3,9 @@
 # Nemesis id. Each faction keeps its palette (PALETTE) so the set still reads as one faction; the setting, pose, framing and the
 # direction and colour of the key light change per character. The face and eyes stay in the upper middle of the frame so the
 # in-game crop (portrait frame and Nemesis bust crop) keeps them readable. Used by make_batches.py (v64 batches).
+# v64 review (Nov 1): side and three-quarter heads grow a face on the Glasswright gem (Vaelen in profile on every seed), so Vaelen,
+# Tamsa (aelith) and Glasswright Nemesis 2 now face the viewer; Hullbreaker Nemesis 4's 'hull of its ship' drew a sea ship with a
+# mast and a white moon, so it stands in an airlock with the Hollow Sun described as a dark disc in a ring of light.
 PALETTE = {
  'corsair': 'soot black, rust brown, dried-blood red and a red-orange glow',
  'ithar': 'clear crystal, silver and white light splitting into faint rainbow fringes',
@@ -32,7 +35,7 @@ SPEC = {
                    "leaning on a console with both claws, tight head-and-shoulders bust", "fire glow from the viewport behind, as a rim light"),
  'nem_corsair_3': ("a listening room full of dish antennas and dim screens showing engine traces",
                    "head tilted, listening, seen in profile, tight bust", "dim amber screen light from below"),
- 'nem_corsair_4': ("outside on the frost-covered hull of its ship, the glowing ring of the Hollow Sun far behind",
+ 'nem_corsair_4': ("an open airlock of a scrap raider, black space beyond with a dark disc ringed by a thin band of pale light far away",
                    "standing tall, looking back over its shoulder, half-body", "pale cold ring light from behind and a red running light from the side"),
  'nem_corsair_5': ("a den hung with harnesses and machine plates, a fire pit",
                    "seated on a heap of scrap, one claw raised mid-gesture, half-body", "low firelight from the right"),
@@ -40,10 +43,10 @@ SPEC = {
                    "hunched in the pilot seat, looking forward out of frame, tight bust", "red cockpit instrument light from below"),
  # Glasswrights (living prism)
  'aelith': ("the hangar of a crystal carrier, rows of small crystal starling craft resting in glass cradles",
-            "one arm raised, launching a flock of tiny glass craft from her hand, three-quarter view, half-body",
+            "facing the viewer, one arm raised, launching a flock of tiny glass craft from her hand, half-body",
             "cool white light streaming through the open hangar doors behind her"),
  'vaelen': ("a dark observatory with a huge lens array overhead",
-            "seen in profile, holding up a clear lens that focuses a thin white beam, half-body", "the bright beam itself, from the side"),
+            "facing the viewer, holding up a clear lens at arm's length to one side that focuses a thin white beam, half-body", "the bright beam itself, from the side"),
  'thorne': ("a hall of angled mirrors that repeat its figure many times",
             "turned away, looking back over its shoulder, tight bust", "fractured light bouncing between the mirrors"),
  'mirelle': ("the bridge of a crystal warship, the dark disc and glowing ring of the Hollow Sun through a faceted window behind",
@@ -52,7 +55,7 @@ SPEC = {
  'nem_ithar_1': ("a glass workshop with furnaces and half-made crystal vanes",
                  "shaping a glowing gather of molten glass with its long fingers, three-quarter view, half-body", "orange-white furnace glow from below"),
  'nem_ithar_2': ("a viewport onto the Ringing Field, crystal wrecks drifting outside",
-                 "one hand on the viewport glass, looking out, seen in profile, half-body", "cold blue-white starlight from the viewport"),
+                 "standing beside the viewport facing the viewer, one hand resting on the glass, half-body", "cold blue-white starlight from the viewport"),
  'nem_ithar_3': ("a war room over a glowing holographic map of a star system",
                  "leaning over the map table, tight bust seen from slightly below", "the map's glow from below"),
  'nem_ithar_4': ("a dim ruined chamber of cracked mirrors",

@@ -1,0 +1,438 @@
+{
+ "out": "v64b",
+ "budget_s": 960,
+ "items": [
+  {
+   "id": "ithar_aelith_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the hangar of a crystal carrier, rows of small crystal starling craft resting in glass cradles. Key light: cool white light streaming through the open hangar doors behind her. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/ithar_aelith_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_aelith_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the hangar of a crystal carrier, rows of small crystal starling craft resting in glass cradles. Key light: cool white light streaming through the open hangar doors behind her. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/ithar_aelith_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "ithar_thorne_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a hall of angled mirrors that repeat its figure many times. Key light: fractured light bouncing between the mirrors. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/ithar_thorne_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_thorne_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a hall of angled mirrors that repeat its figure many times. Key light: fractured light bouncing between the mirrors. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/ithar_thorne_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "ithar_mirelle_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the bridge of a crystal warship, the dark disc and glowing ring of the Hollow Sun through a faceted window behind. Key light: white-gold ring light from the window behind and a soft prism glow in front. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/ithar_mirelle_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_mirelle_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the bridge of a crystal warship, the dark disc and glowing ring of the Hollow Sun through a faceted window behind. Key light: white-gold ring light from the window behind and a soft prism glow in front. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/ithar_mirelle_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "ithar_mirelle_s37_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the bridge of a crystal warship, the dark disc and glowing ring of the Hollow Sun through a faceted window behind. Key light: white-gold ring light from the window behind and a soft prism glow in front. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "v64/ithar_mirelle_qie_s37_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_mirelle_s37_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the bridge of a crystal warship, the dark disc and glowing ring of the Hollow Sun through a faceted window behind. Key light: white-gold ring light from the window behind and a soft prism glow in front. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "v64/ithar_mirelle_qie_s37_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "nem_ithar_1_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a glass workshop with furnaces and half-made crystal vanes. Key light: orange-white furnace glow from below. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_1_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_1_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a glass workshop with furnaces and half-made crystal vanes. Key light: orange-white furnace glow from below. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_1_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "nem_ithar_2_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a viewport onto the Ringing Field, crystal wrecks drifting outside. Key light: cold blue-white starlight from the viewport. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_2_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_2_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a viewport onto the Ringing Field, crystal wrecks drifting outside. Key light: cold blue-white starlight from the viewport. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_2_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "nem_ithar_3_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a war room over a glowing holographic map of a star system. Key light: the map's glow from below. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_3_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_3_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a war room over a glowing holographic map of a star system. Key light: the map's glow from below. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_3_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "nem_ithar_3_s23_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a war room over a glowing holographic map of a star system. Key light: the map's glow from below. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "v64/nem_ithar_3_qie_s23_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_3_s23_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a war room over a glowing holographic map of a star system. Key light: the map's glow from below. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "v64/nem_ithar_3_qie_s23_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "nem_ithar_4_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a dim ruined chamber of cracked mirrors. Key light: a single thin dim beam of light from high on the left. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_4_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_4_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a dim ruined chamber of cracked mirrors. Key light: a single thin dim beam of light from high on the left. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_4_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "nem_ithar_5_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a vault holding a caged core of blazing light. Key light: strong white light from the cage at its side. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_5_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_5_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a vault holding a caged core of blazing light. Key light: strong white light from the cage at its side. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_5_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "nem_ithar_6_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: an ancient archive of glowing glass tablets. Key light: soft glow from the glass tablets all around. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_6_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_6_s11_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: an ancient archive of glowing glass tablets. Key light: soft glow from the glass tablets all around. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64/nem_ithar_6_qie_s11_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "nem_ithar_6_s23_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: an ancient archive of glowing glass tablets. Key light: soft glow from the glass tablets all around. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "v64/nem_ithar_6_qie_s23_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_6_s23_oil40",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: an ancient archive of glowing glass tablets. Key light: soft glow from the glass tablets all around. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    23
+   ],
+   "ref": "v64/nem_ithar_6_qie_s23_00001_.png",
+   "denoise": 0.4
+  },
+  {
+   "id": "ithar_vaelen_f",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Saro of Long Focus, a Glasswright lance-master: one long-fingered hand holds up a large clear lens that focuses a thin white beam of light to a burning point, the beam splitting into a rainbow fringe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition. Pose and framing: facing the viewer, holding up a clear lens at arm's length to one side that focuses a thin white beam, half-body. Setting: a dark observatory with a huge lens array overhead, painterly and softly out of focus behind the subject. Key light: the bright beam itself, from the side; deep shadow elsewhere; muted desaturated palette of clear crystal, silver and white light splitting into faint rainbow fringes. Museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    37,
+    61,
+    73
+   ]
+  },
+  {
+   "id": "ithar_vaelen_f_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a dark observatory with a huge lens array overhead. Key light: the bright beam itself, from the side. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64b/ithar_vaelen_f_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_vaelen_f_s37_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a dark observatory with a huge lens array overhead. Key light: the bright beam itself, from the side. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "v64b/ithar_vaelen_f_qie_s37_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_vaelen_f_s61_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a dark observatory with a huge lens array overhead. Key light: the bright beam itself, from the side. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    61
+   ],
+   "ref": "v64b/ithar_vaelen_f_qie_s61_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_vaelen_f_s73_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a dark observatory with a huge lens array overhead. Key light: the bright beam itself, from the side. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    73
+   ],
+   "ref": "v64b/ithar_vaelen_f_qie_s73_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_aelith_f",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. This is Tamsa of the Clear Aperture, a Glasswright wing-mistress: a flock of tiny glass craft like starlings swirls round her raised hand of long tapering fingers, a wide collar shaped like an opening aperture ring. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition. Pose and framing: facing the viewer, one arm raised, launching a flock of tiny glass craft from her hand, half-body. Setting: the hangar of a crystal carrier, rows of small crystal starling craft resting in glass cradles, painterly and softly out of focus behind the subject. Key light: cool white light streaming through the open hangar doors behind her; deep shadow elsewhere; muted desaturated palette of clear crystal, silver and white light splitting into faint rainbow fringes. Museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    37,
+    61,
+    73
+   ]
+  },
+  {
+   "id": "ithar_aelith_f_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the hangar of a crystal carrier, rows of small crystal starling craft resting in glass cradles. Key light: cool white light streaming through the open hangar doors behind her. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64b/ithar_aelith_f_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_aelith_f_s37_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the hangar of a crystal carrier, rows of small crystal starling craft resting in glass cradles. Key light: cool white light streaming through the open hangar doors behind her. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "v64b/ithar_aelith_f_qie_s37_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_aelith_f_s61_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the hangar of a crystal carrier, rows of small crystal starling craft resting in glass cradles. Key light: cool white light streaming through the open hangar doors behind her. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    61
+   ],
+   "ref": "v64b/ithar_aelith_f_qie_s61_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "ithar_aelith_f_s73_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: the hangar of a crystal carrier, rows of small crystal starling craft resting in glass cradles. Key light: cool white light streaming through the open hangar doors behind her. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    73
+   ],
+   "ref": "v64b/ithar_aelith_f_qie_s73_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_2_f",
+   "model": "qie",
+   "prompt": "Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien of soft flesh that grows glass inside its body. Its long neck, throat, shoulders and hands are soft milky translucent living flesh like the body of a jellyfish, faintly pulsing, with pale pink strands of sinew and muscle visible inside; fine threads of clear glass and small faceted crystal inlays are grown into the flesh in flowing lines like veins, and light runs along the glass threads like fibre optics and splits into rainbow colours where it leaves the crystal inlays. Its head is a tall faceted crystal shape like a long rough-cut gemstone growing out of the top of the soft neck; its front is one large blank polished facet, gently curved and uneven like natural crystal, with glowing colour moving deep inside. The milky flesh and pink sinew of the neck climb up over the lower edges of the crystal and between its lower facets, so there is no rim or seam, and small crystals continue in rows down the back of the neck. It wears a layered robe of crystal plates and silver mirror-thread fabric, open at the throat. A Nemesis, a rival enemy commander of the Glasswrights: a keeper with a veil of fine mirror-thread hanging from the crown of its head, long fingers cupping a glowing light-core. A deep red edge light glints along one side of its robe. Painted grimdark science-fiction character portrait, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro, square composition. Pose and framing: standing beside the viewport facing the viewer, one hand resting on the glass, half-body. Setting: a viewport onto the Ringing Field, crystal wrecks drifting outside, painterly and softly out of focus behind the subject. Key light: cold blue-white starlight from the viewport; deep shadow elsewhere; muted desaturated palette of clear crystal, silver and white light splitting into faint rainbow fringes. Museum-quality concept art for a dark space-opera strategy game. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11,
+    37,
+    61,
+    73
+   ]
+  },
+  {
+   "id": "nem_ithar_2_f_s11_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a viewport onto the Ringing Field, crystal wrecks drifting outside. Key light: cold blue-white starlight from the viewport. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    11
+   ],
+   "ref": "v64b/nem_ithar_2_f_qie_s11_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_2_f_s37_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a viewport onto the Ringing Field, crystal wrecks drifting outside. Key light: cold blue-white starlight from the viewport. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    37
+   ],
+   "ref": "v64b/nem_ithar_2_f_qie_s37_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_2_f_s61_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a viewport onto the Ringing Field, crystal wrecks drifting outside. Key light: cold blue-white starlight from the viewport. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    61
+   ],
+   "ref": "v64b/nem_ithar_2_f_qie_s61_00001_.png",
+   "denoise": 0.3
+  },
+  {
+   "id": "nem_ithar_2_f_s73_oil30",
+   "model": "zi2i",
+   "prompt": "Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: a viewport onto the Ringing Field, crystal wrecks drifting outside. Key light: cold blue-white starlight from the viewport. Muted palette of clear crystal, silver and white light splitting into faint rainbow fringes. No text, no letters, no logo, no border, no frame, no watermark.",
+   "nosuffix": true,
+   "seeds": [
+    73
+   ],
+   "ref": "v64b/nem_ithar_2_f_qie_s73_00001_.png",
+   "denoise": 0.3
+  }
+ ]
+}
