@@ -13,7 +13,7 @@ Newest first. Each row names the commit the run used and where its log lives.
 
 | When (UTC) | Commit | Where | Check | Result | Log |
 |---|---|---|---|---|---|
-| Oct 31 | 6033f97 (oracle f770e06, lore round 8 strings) | Ryan's PC, lane A job `queue\g3_lore_6033f97.bat` | `parity_campaign.bat`, 30 seeded runs | pending (filled in when the job lands) | `docs/shots/g3_campaign/6033f97/parity_campaign_log.txt` |
+| Oct 31 | 6033f97 (oracle f770e06, lore round 8 strings) | Ryan's PC, lane A job `queue\g3_lore_6033f97.bat` | `parity_campaign.bat`, 30 seeded runs | **PASS, 30 of 30** (tables PASS; same step counts as the cloud run) | `docs/shots/g3_campaign/6033f97/parity_campaign_log.txt` |
 | Oct 31 | 6033f97 (oracle f770e06) | cloud | `run_parity_campaign.sh 1 30` | **PASS, 30 of 30** (tables PASS) | session |
 | Oct 31 | 6033f97 | cloud | `run_nem_scenarios.sh`; `save_test.gd`; `arc_hook_test.gd` | **PASS** (64 records); **PASS**; **PASS** | session |
 | Oct 31 | 6033f97 | cloud | bot through every screen, 3 runs | 3 runs ended, 0 script errors | session |

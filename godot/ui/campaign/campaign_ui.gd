@@ -502,7 +502,7 @@ func _map() -> Control:
 	for ctl in [hb, mm, main, head, tv]: ctl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var legend = flow(18); legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# the key: what each kind of stop gives, and the danger bands the chart prints on every fight (map_intel.gd)
-	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops a " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
+	var LEG = {"battle": "a fight, pays its reward", "elite": "veteran fleet, drops " + term("relic"), "shipyard": "buy, repair, upgrade", "drydock": "free repairs", "field": "every ship patches 20%", "event": "anything can happen", "boss": "ends the sector"}
 	for kk in C.NODE_INFO.keys():
 		var gl = STOP_GLYPH.get(kk, ["●", "#b3aa95"])
 		legend.add_child(rich_inline(c(gl[0], Color(gl[1])) + " [b]" + c(esc(C.NODE_INFO[kk]["n"]), BLOOD if kk == "elite" or kk == "boss" else BONE) + "[/b] " + c(LEG.get(kk, ""), BONE3), 13))

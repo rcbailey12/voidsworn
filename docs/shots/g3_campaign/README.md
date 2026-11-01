@@ -2,6 +2,10 @@
 
 Taken by the campaign screenshot tour (`godot/scenes/campaign/campaign.tscn -- shots`) and the 3D map probe (`map3d_probe.tscn`). Each folder is named for the commit that drew it. Converted to WebP (quality 82) to keep the repo small; the PNGs stay on the PC in `voidsworn_test\shots\`.
 
+## 6033f97 (lore round 8 names, R59)
+
+One PC job (`queue\g3_lore_6033f97.bat`, 3840x2066 window, resized to 2560 wide): `before_*` is 0a375ae (the campaign folders just before the rename), `after_*` is 6033f97 (oracle re-pinned to f770e06, the rename map's G3 rows and section 5c, TERMS switched). Wide `m1_map`, hover card `m2_hover`, zoomed `m3b_zoom_mid`, sector II `m5_sector2`. On screen: Ashfall Hullbreakers, Cores in range (Crucible, Kharon, Astra, Seren), "win at a signal for a protocol", Signal of Seren, Den-alpha titles, Keep the dawn watch, the Hegemony crest on the briefing. The same job ran campaign parity on the PC: 30 of 30 PASS (`parity_campaign_log.txt`). The full PNG set (with every stop close-up) stays on the PC in `voidsworn_test\shots\g3_lore_6033f97\`. After the shots: the legend reads "drops salvage" (was "drops a salvage").
+
 ## 9711a7e (Muse full audit B3 fixes; wide and zoomed)
 
 One PC job (`queue\g3_r51i_9711a7e.bat`): `before_*` is 8a12941, `after_*` is 9711a7e. Wide view: `m1_map`; zoomed: `m3_zoom` (toward the first jump) and the new `m3b_zoom_mid` (zoomed on the middle of the sector). Changes: the sidebar says "Admiral Castellan Vex, line of battle" (no doubled rank) and the Nemesis's unknown weaknesses once with a count; zoomed, labels that would run under the panels are hidden, crowded label stacks keep to name and tags, and the place type (asteroid belt, ion storm) shows only on hover, so it no longer repeats; stop rings ahead are tinted by kind; the shipyard has a plated cradle, control towers, a service module and plating going onto the frame (`s_shipyard`). The same job ran campaign parity on the PC with the after files: 30 of 30 PASS (`parity_campaign_log.txt` here).
