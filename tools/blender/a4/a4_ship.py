@@ -30,6 +30,11 @@ def build_hull(root, code, cfg):
         import tempfile; h = ithar.loft(cfg['loft'], os.environ.get('A4_TMP') or os.path.join(tempfile.gettempdir(), 'a4tmp'))
         o = blmesh.mesh_from_arrays('hull', h['pos'], h['idx'], nor=h['nor'], uvs={'atlas': h['uv']})
         h['fingers'] = []; return o, h, {}, len(h['idx']), len(h['idx'])
+    if cfg.get('faired'):  # Nov 1 (R64): a hull rebuilt by hand as a hard-chine loft (faired.py): H4, whose AI hull stayed lumpy
+        import faired, tempfile
+        h = faired.loft(cfg['faired'], os.environ.get('A4_TMP') or os.path.join(tempfile.gettempdir(), 'a4tmp'))
+        o = blmesh.mesh_from_arrays('hull', h['pos'], h['idx'], nor=h['nor'], uvs={'atlas': h['uv']})
+        h['fingers'] = []; return o, h, {}, len(h['idx']), len(h['idx'])
     if cfg.get('compose'):  # a war-barge welded from captured hulls of its own line (compose.py)
         import compose, tempfile
         h = compose.load(root, cfg, os.path.join(os.environ.get('A4_TMP') or os.path.join(tempfile.gettempdir(), 'a4tmp'), code), ships)
@@ -386,6 +391,13 @@ def main():
         json.dump(rep, open(os.path.join(outdir, code + '_report.json'), 'w'), indent=1); json.dump(meta, open(os.path.join(outdir, code + '_meta.json'), 'w'), indent=1)
         log('built (no bake)', round(time.time() - t0), 's'); return
     a2_ship.make_uv0(ship)
+    if cfg.get('faired'):  # the faired hull's strips carry true proportions: even the texel density over every island, then pack again
+        bpy.ops.object.select_all(action='DESELECT'); ship.select_set(True); bpy.context.view_layer.objects.active = ship
+        bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT'); bpy.ops.uv.select_all(action='SELECT')
+        bpy.ops.uv.average_islands_scale()
+        try: bpy.ops.uv.pack_islands(rotate=True, margin_method='FRACTION', margin=0.0012, shape_method='CONCAVE')
+        except TypeError: bpy.ops.uv.pack_islands(rotate=True, margin=0.0012)
+        bpy.ops.object.mode_set(mode='OBJECT'); log('faired: island scale evened and re-packed')
     info = dict(lo=tuple(H.lo), hi=tuple(H.hi), up=(0, 0, 1), needle=cfg.get('needle', .06), engine=not any(x['extras']['kind'] == 'engine' for x in hps), L=float(kit.CLS_LEN.get(cls) or 20.0))  # L: world length, for the paint's photo grain scale (bakemat4 paint v2)
     if cfg.get('reshape'): info['fresh_x0'] = min(r_['x0'] for r_ in cfg['reshape']) + .02  # the AI maps fade out over the reshaped bow
     mat, socks = bakemat4.build(ship, fac, h['tex'][0], h['tex'][1], info)

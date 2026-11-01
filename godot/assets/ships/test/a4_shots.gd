@@ -7,6 +7,7 @@ extends Node3D
 #   <fac>_battle.jpg       the faction's line at the default battle camera (the camera rig at its home angle and distance)
 #   <fac>_battle_near.jpg  the same line zoomed in the way a player zooms to look at a ship
 #   <code>_q.jpg, <code>_s.jpg, <code>_b.jpg  one ship close: three-quarter from above the bow, side, three-quarter from below
+#   <code>_t.jpg, <code>_d.jpg  from straight above, and the deck close (half the distance; V1b's spine patch, Nov 1)
 #   <code>_bare.jpg        (set bare) the same three-quarter view with every texture map taken off: if it looks the same as
 #                          <code>_q.jpg, the maps are not reaching the screen
 # and prints one "[a4diag]" line per ship: each material's maps (class, size, format, mipmaps, path), metal, roughness.
@@ -174,6 +175,8 @@ func _run() -> void:
 					await _close(e[0], L, "q", 0.45, -0.62)
 					await _close(e[0], L, "s", 0.12, -1.5708)
 					await _close(e[0], L, "b", -0.40, -2.2)
+					await _close(e[0], L, "t", 1.30, -1.5708)
+					await _close(e[0], L, "d", 0.80, -1.10, 0.5)
 				if sets.has("bare"):
 					_strip(sv)
 					await _close(e[0], L, "bare", 0.45, -0.62)
@@ -213,9 +216,9 @@ func _battle_line(fac: String, ships: Array) -> void:
 
 # one ship alone, framed to fill most of the screen: el = camera elevation (radians, + above), az = azimuth around the ship
 # (0 = looking from the bow, -PI/2 = from port)
-func _close(code: String, L: float, view: String, el: float, az: float) -> void:
+func _close(code: String, L: float, view: String, el: float, az: float, k := 1.0) -> void:
 	cam.current = true
-	var d := L * 0.62 / tan(deg_to_rad(cam.fov * 0.5)) * 0.62
+	var d := L * 0.62 / tan(deg_to_rad(cam.fov * 0.5)) * 0.62 * k
 	var dir := Vector3(cos(el) * cos(az), sin(el), cos(el) * sin(az))
 	cam.look_at_from_position(dir * d, Vector3.ZERO, Vector3.UP)
 	await _settle()

@@ -42,7 +42,7 @@ WEAPONS = {
     'craft|fighter': [('guns', 'T')], 'craft|bomber': [('bombs', 'T')], 'craft|spore': [('sporeb', 'T')],
     'obj|station': [], 'obj|transport': [], 'obj|beacon': [],
 }
-KEYS = {'refine', 'plates', 'compose', 'reshape', 'straighten', 'loft', 'pitch', 'roll_deg', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
+KEYS = {'refine', 'faired', 'plates', 'compose', 'reshape', 'straighten', 'loft', 'pitch', 'roll_deg', 'scatter', 'roll', 'spires', 'fac', 'cls', 'name', 'sym', 'yaw', 'cuts', 'kit', 'dress', 'breach', 'wreck', 'notes', 'snap', 'needle', 'wkey', 'keep_islands'}
 FNS = {  # kwargs common to all: pair, aim, align ('axis' default: stand square to the side; 'surface': follow the local normal)
        'turret', 'casemate', 'spinal', 'launcher', 'emitter', 'engine_at', 'thruster_pod', 'radiators', 'antenna', 'sensor_array', 'hook_prow', 'boom', 'prow_face', 'command_block', 'radiator_bank', 'sensor_dome', 'bridge', 'tank', 'bay', 'cover', 'sail', 'orifice', 'tendril', 'horn', 'brood'}
 SIZES = {'S', 'M', 'L', 'XL'}
@@ -295,7 +295,31 @@ SHIPS['V18_51'] = dict(
 
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # Hegemony (clean light-grey navy with blue trim; parade finish; bilateral)
+# Nov 1 (R64, Ryan approved): H4 rebuilt with a hand-faired hull (faired.py). The pass 5 AI-hull version stays below as H4_AI for reference.
 SHIPS['H4_11'] = dict(
+    fac='hegemony', cls='Super-dreadnought', name='Dominion dreadnought', sym='bilateral',
+    # numbers off the AI hull (half-beam .083 to .135, belly -.165, deck -.065) and the concept (long parallel hull, stepped
+    # superstructure amidships, square armoured prow), with the AI's bulges and dips left out
+    faired=dict(x=(-.49, .465), zb=-.165, depth=.100, deck_drop=(.34, .68, 2.0), deck=.80, belly=.50,
+                plan=[(-.49, .092), (-.40, .106), (-.30, .114), (-.10, .120), (.14, .120), (.24, .112), (.34, .098), (.40, .080), (.465, .050)],
+                tiers=[dict(x=(-.24, .18), w=.056, h=.026, end=.035),               # the long raised spine deck
+                       dict(x=(-.16, .06), w=.044, h=.020, end=.03, base=.026)]),   # the second tier, the command block's seat
+    kit=[('casemate', 'ht', .0, 0, -.085, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('casemate', 'ht2', -.16, 0, -.085, 'port', dict(size='L', barrels=2, slot=0, slot_m=1, wkind='hturbo', arc='P', aim=(.26, .97, 0), pair=True)),
+         ('turret', 'tb', .27, 0, 0, 'top', dict(size='L', barrels=2, slot=2, wkind='turbo', arc='T', lift=.004)),
+         ('turret', 'tb2', -.31, 0, 0, 'top', dict(size='L', barrels=2, slot=2, wkind='turbo', arc='T', lift=.004)),
+         ('spinal', 'ion', .39, 0, 0, 'top', dict(size='L', slot=3, wkind='ion', arc='F', length=3.5)),
+         ('turret', 'fl', .12, .077, 0, 'top', dict(size='S', barrels=2, slot=4, wkind='flak', arc='T', pair=True)),
+         ('engine_at', 'eC', 0, 0, -.112, 'stern', dict(r=.03, L=.04)),
+         ('engine_at', 'eP', 0, .052, -.120, 'stern', dict(r=.022, L=.034, pair=True)),
+         ('command_block', 'cmd', -.05, 0, 0, 'top', dict(length=.15, width=.085, height=.030)),
+         ('sensor_dome', 'sdA', -.09, .022, 0, 'top', dict(r=.010, pair=True)),
+         ('sensor_array', 'saA', -.02, 0, 0, 'top', dict(w=.036)),
+         ('prow_face', 'prow', .45, 0, 0, 'top', dict())],
+    notes='feel pass (Nov 1): hand-faired hull (faired.py): hard-chine loft, slab sides with an armour belt, flat belly, square prow, '
+          'two raised tiers; the kit as pass 5 re-seated on the new hull')
+
+H4_AI = dict(
     fac='hegemony', cls='Super-dreadnought', name='Dominion dreadnought', sym='bilateral',
     reshape=[dict(x0=0.22, tip=.50, power=2.5, cut=.465)],   # pass 5
     straighten=dict(iters=16, sigma=.005),   # Oct 31: lengthwise wobble evened out

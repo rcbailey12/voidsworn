@@ -725,7 +725,7 @@ def breach_anchors(Hd, count, min_sep=None, seed=3):
     if len(ok) < count: ok = np.arange(len(Hd.sp))
     pick = [int(rng.choice(ok))]; d = np.linalg.norm(Hd.sp[ok] - Hd.sp[pick[0]], axis=1)
     PT = detail_lib.bvh_of(hs_lib.PARTS) if hs_lib.PARTS else None
-    while len(pick) < count * 3 and len(pick) < len(ok):
+    while len(pick) < count * 8 and len(pick) < len(ok):  # Nov 1: *8 (was *3): densely dressed hulls (H4 faired) found only 3 of 10 clear spots
         i = int(ok[int(np.argmax(d))]); pick.append(i); d = np.minimum(d, np.linalg.norm(Hd.sp[ok] - Hd.sp[i], axis=1))
     made = 0
     for i in pick:
