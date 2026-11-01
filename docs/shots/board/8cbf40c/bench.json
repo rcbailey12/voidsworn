@@ -1,0 +1,74 @@
+{
+  "bench20_belt_cine": {
+    "avg_ms": 4.7,
+    "frames": 1278,
+    "low1_ms": 6.01,
+    "worst_ms": 7.27
+  },
+  "bench20_belt_holo": {
+    "avg_ms": 4.57,
+    "frames": 1314,
+    "low1_ms": 5.83,
+    "worst_ms": 6.52
+  },
+  "bench20_belt_living": {
+    "avg_ms": 4.69,
+    "frames": 1281,
+    "low1_ms": 5.9,
+    "worst_ms": 6.04
+  },
+  "bench20_belt_today": {
+    "avg_ms": 4.9,
+    "frames": 1225,
+    "low1_ms": 26.34,
+    "worst_ms": 38.69
+  },
+  "deadstar_cine": {
+    "avg_ms": 3.86,
+    "frames": 1555,
+    "low1_ms": 5.06,
+    "worst_ms": 5.21
+  },
+  "deadstar_holo": {
+    "avg_ms": 3.61,
+    "frames": 1662,
+    "low1_ms": 4.64,
+    "worst_ms": 4.85
+  },
+  "deadstar_living": {
+    "avg_ms": 3.85,
+    "frames": 1558,
+    "low1_ms": 5.06,
+    "worst_ms": 5.22
+  },
+  "deadstar_today": {
+    "avg_ms": 3.68,
+    "frames": 1632,
+    "low1_ms": 4.74,
+    "worst_ms": 4.9
+  },
+  "nebula_storm_cine": {
+    "avg_ms": 3.61,
+    "frames": 1663,
+    "low1_ms": 4.52,
+    "worst_ms": 4.69
+  },
+  "nebula_storm_holo": {
+    "avg_ms": 3.4,
+    "frames": 1764,
+    "low1_ms": 6.81,
+    "worst_ms": 9.01
+  },
+  "nebula_storm_living": {
+    "avg_ms": 3.6,
+    "frames": 1669,
+    "low1_ms": 4.55,
+    "worst_ms": 4.67
+  },
+  "nebula_storm_today": {
+    "avg_ms": 3.44,
+    "frames": 1742,
+    "low1_ms": 4.34,
+    "worst_ms": 4.44
+  }
+}
