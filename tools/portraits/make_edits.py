@@ -168,6 +168,22 @@ def s64_items(fac, seeds=(11, 23)):
     return [{'id': 'nem_%s_%d' % (fac, n), 'kind': k, 'seed': sd, 'src': 'ncrop64/nem_%s_%d.png' % (fac, n),
              'prompt': SCAR64[fac][k] + (KEEP if fac == 'corsair' else KEEP_OBJ)} for n in range(1, 7) for k in KINDS[fac] for sd in seeds]
 
+# v64 (Ryan, Nov 1 07:37: varied backgrounds and poses): the Crusade, Hegemony, Chorus and Eclipse portraits move into their own
+# settings (portrait_specs.SPEC) by an edit of the approved painting, seeds 11 and 23; -> comfy_io\PORTRAITS\e64\<id>_v64_s<seed>.
+# The admiral sources are their published round 8 renders, the Nemesis sources their bust crops (ncrop8).
+E64_ADM = {'vex': ('voidsworn', 'r8/voidsworn_vex_r8_zit_s37_00001_.png'), 'kassar': ('hegemony', 'r8e/kassar_r8_s23_00001_.png'),
+           'matriarch': ('chorus', 'r8e/matriarch_r8_s23_00001_.png'), 'mending': ('chorus', 'r8e/mending_r8_s23_00001_.png'),
+           'nekhet': ('deathless', 'r8/deathless_nekhet_r8_zit_s37_00001_.png')}
+def e64_items(facs, admirals=True):
+    import portrait_specs as PS
+    out = []
+    if admirals:
+        out += [{'id': a, 'kind': 'v64', 'seed': sd, 'src': src, 'prompt': PS.edit_prompt(a, f, False)}
+                for a, (f, src) in E64_ADM.items() if f in facs for sd in (11, 23)]
+    out += [{'id': 'nem_%s_%d' % (f, n), 'kind': 'v64', 'seed': sd, 'src': 'ncrop8/nem_%s_%d.png' % (f, n),
+             'prompt': PS.edit_prompt('nem_%s_%d' % (f, n), f, True)} for f in facs for n in range(1, 7) for sd in (11, 23)]
+    return out
+
 if __name__ == '__main__':
     B = os.path.join(HERE, 'batches')
     fix = [{'id': nid, 'kind': 'fix', 'seed': 11, 'prompt': p + KEEP, 'src': pick_path(nid)} for nid, p in FIXES.items()]
@@ -210,3 +226,6 @@ if __name__ == '__main__':
     for tag, fac in (('s64h', 'corsair'), ('s64g', 'ithar')):
         json.dump({'out': 's64', 'budget_s': 1100, 'items': s64_items(fac)}, open(os.path.join(B, tag + '.json'), 'w'), indent=1)
         print(tag, len(s64_items(fac)))
+    for tag, facs in (('e64a', ['voidsworn', 'hegemony']), ('e64b', ['chorus', 'deathless'])):
+        json.dump({'out': 'e64', 'budget_s': 1100, 'items': e64_items(facs)}, open(os.path.join(B, tag + '.json'), 'w'), indent=1)
+        print(tag, len(e64_items(facs)))

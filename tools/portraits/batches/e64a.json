@@ -1,0 +1,202 @@
+{
+ "out": "e64",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "vex",
+   "kind": "v64",
+   "seed": 11,
+   "src": "r8/voidsworn_vex_r8_zit_s37_00001_.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a war room of frost-rimed black iron walls around a map table lit by ember lamps. New pose and framing: leaning forward on the map table with both fists, half-body. Key light: warm ember lamplight from below the table. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "vex",
+   "kind": "v64",
+   "seed": 23,
+   "src": "r8/voidsworn_vex_r8_zit_s37_00001_.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a war room of frost-rimed black iron walls around a map table lit by ember lamps. New pose and framing: leaning forward on the map table with both fists, half-body. Key light: warm ember lamplight from below the table. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 11,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a briefing room with a glowing blue holographic map of fleet positions. New pose and framing: mid-gesture, one hand pointing into the map, three-quarter, half-body. Key light: the blue glow of the holo-map from the front. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "kassar",
+   "kind": "v64",
+   "seed": 23,
+   "src": "r8e/kassar_r8_s23_00001_.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a briefing room with a glowing blue holographic map of fleet positions. New pose and framing: mid-gesture, one hand pointing into the map, three-quarter, half-body. Key light: the blue glow of the holo-map from the front. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_1.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a frozen hangar deck, black iron gunships behind, snow drifting in through the open bay doors. Keep the head and face in the same place in the frame; arms folded across the chest. Key light: cold white light from the open bay doors behind. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_1",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_1.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a frozen hangar deck, black iron gunships behind, snow drifting in through the open bay doors. Keep the head and face in the same place in the frame; arms folded across the chest. Key light: cold white light from the open bay doors behind. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_2.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a smoke-filled engine room, ember-orange radiator coils glowing behind. Keep the head and face in the same place in the frame; turned a little to one side. Key light: orange radiator glow from behind and below. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_2",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_2.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a smoke-filled engine room, ember-orange radiator coils glowing behind. Keep the head and face in the same place in the frame; turned a little to one side. Key light: orange radiator glow from behind and below. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: an observation deck, a dim orange sun beyond frosted glass. Keep the head and face in the same place in the frame; glancing back over one shoulder. Key light: low orange sunlight from the window at the side. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_3",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_3.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: an observation deck, a dim orange sun beyond frosted glass. Keep the head and face in the same place in the frame; glancing back over one shoulder. Key light: low orange sunlight from the window at the side. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_4.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: the gun deck of a black iron warship, huge ember-glowing gun breeches. Keep the head and face in the same place in the frame; one hand resting on a gun breech. Key light: ember glow from the gun breech beside him. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_4",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_4.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: the gun deck of a black iron warship, huge ember-glowing gun breeches. Keep the head and face in the same place in the frame; one hand resting on a gun breech. Key light: ember glow from the gun breech beside him. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_5.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a dark frozen corridor lit by a single ember lamp. Keep the head and face in the same place in the frame; stepping toward the viewer. Key light: a single ember lamp from above. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_5",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_5.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: a dark frozen corridor lit by a single ember lamp. Keep the head and face in the same place in the frame; stepping toward the viewer. Key light: a single ember lamp from above. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_voidsworn_6.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: the bridge of a black iron warship, frost on the viewports, stars outside. Keep the head and face in the same place in the frame; seated in a high-backed command chair. Key light: cold starlight from the viewports and ember instrument light from below. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_voidsworn_6",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_voidsworn_6.png",
+   "prompt": "Move this same person, face, scars, hair and clothing into a new setting: the bridge of a black iron warship, frost on the viewports, stars outside. Keep the head and face in the same place in the frame; seated in a high-backed command chair. Key light: cold starlight from the viewports and ember instrument light from below. Keep the same person, face, scars, hair and clothing, and keep the oil-painting style with loose brushstrokes; muted palette of black iron, frost white and ember orange. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_1",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_hegemony_1.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a sterile corridor of white wall panels. Keep the head and face in the same place in the frame; hands clasped behind the back. Key light: flat cold white ceiling light. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_1",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_hegemony_1.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a sterile corridor of white wall panels. Keep the head and face in the same place in the frame; hands clasped behind the back. Key light: flat cold white ceiling light. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_2",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_hegemony_2.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a drone bay with rows of sleek grey combat drones. Keep the head and face in the same place in the frame; standing among the drones, chin raised. Key light: blue indicator light from the drones. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_2",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_hegemony_2.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a drone bay with rows of sleek grey combat drones. Keep the head and face in the same place in the frame; standing among the drones, chin raised. Key light: blue indicator light from the drones. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_3",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_hegemony_3.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: an orbital station window above a blue planet. Keep the head and face in the same place in the frame; turned in three-quarter view toward the window. Key light: blue planet-light from the window. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_3",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_hegemony_3.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: an orbital station window above a blue planet. Keep the head and face in the same place in the frame; turned in three-quarter view toward the window. Key light: blue planet-light from the window. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_4",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_hegemony_4.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a server vault of tall racks with rows of small blue lights. Keep the head and face in the same place in the frame; head tilted, listening to an earpiece. Key light: rows of small blue lights all around. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_4",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_hegemony_4.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a server vault of tall racks with rows of small blue lights. Keep the head and face in the same place in the frame; head tilted, listening to an earpiece. Key light: rows of small blue lights all around. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_hegemony_5.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: the bridge of a pale grey dreadnought, a fleet in formation outside. Keep the head and face in the same place in the frame; standing at a railing. Key light: white light from the viewport behind. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_5",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_hegemony_5.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: the bridge of a pale grey dreadnought, a fleet in formation outside. Keep the head and face in the same place in the frame; standing at a railing. Key light: white light from the viewport behind. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_6",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_hegemony_6.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a quiet office with a tall window onto a capital city at night. Keep the head and face in the same place in the frame; seated at a desk, fingers steepled. Key light: city glow through the window. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  },
+  {
+   "id": "nem_hegemony_6",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_hegemony_6.png",
+   "prompt": "Move this same person, face, implants, hair and uniform into a new setting: a quiet office with a tall window onto a capital city at night. Keep the head and face in the same place in the frame; seated at a desk, fingers steepled. Key light: city glow through the window. Keep the same person, face, implants, hair and uniform, and keep the oil-painting style with loose brushstrokes; muted palette of pale grey, steel blue and soft implant-blue light. No text, no letters."
+  }
+ ]
+}

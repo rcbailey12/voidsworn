@@ -674,7 +674,59 @@ BATCHES['k64d'] = ([{'id': 'gw_%s' % k, 'model': 'qie', 'prompt': PRISM_H1.forma
                    [{'id': '%s_paint%d' % (t, round(d * 100)), 'model': 'zi2i', 'prompt': PAINT_GW, 'nosuffix': True, 'seeds': [11],
                      'ref': r + '_00001_.png', 'denoise': d} for r, t in K64D_SRC.items() for d in (0.45, 0.55, 0.6)])
 
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'k64c': 'k64c', 'k64d': 'k64d', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
+# ---------- v64 (Ryan, Nov 1 07:37): every portrait gets its own setting, pose, framing and light (portrait_specs.py) ----------
+# k64d review: the H1 gem head with the no-portrait oil pass (PAINT_GW) at 0.5 stays faceless on seeds 11 and 37 for all four
+# Glasswright admirals (s61 drew faces on two); Opus ruling: faceless first, lighter oil. Opus on the p64 Hullbreakers: Nemesis 2 (and
+# 1, 6) read as a riveted metal mask; VOID7 makes the face plates grown bone and horn that follow the skull, and the Grax and Nemesis 2
+# lines lose their bolted jaw plates. All Hullbreakers and Glasswrights are redrawn in their own settings (v64h, v64g -> v64\).
+import portrait_specs as PS
+VOID7 = VOID6.replace("Close-up portrait of the head, neck and shoulders of a Hullbreaker", "Portrait of a Hullbreaker").replace(
+    "The face is bare living hide armoured with thick matte bony plates of dark grey-brown horn, like the scales of a pangolin or the "
+    "shell of a tortoise, dull, rough and porous like old weathered bone, ridged and chipped, with patches of dark leathery hide and "
+    "coarse bristles between them.",
+    "The face is a living head: grown plates of rough grey-brown bone and horn follow the curves of the skull like a pangolin's scales, "
+    "uneven and organic, worn and chipped, with dark leathery hide and coarse bristles between them; the small eyes sit in hollows of the bone.")
+assert VOID7 != VOID6 and 'living head' in VOID7
+HB_WHO = {k: v[3] for k, v in HB_ADM.items()}
+HB_WHO['grax'] = ("This is Warlord Grax Ironmaw, the biggest and oldest pack-lord: the tips of both jaw halves capped with old dark iron "
+                  "grown into the bone, harness plates in clashing colours torn from three different fleets, chains across the chest.")
+HB_NEM_WHO = [v[3] for v in HB_NEM]
+HB_NEM_WHO[1] = "a scarred brute whose split jaw healed crooked, the bone plates of one cheek broken and grown back rough"
+NEMV = " Menacing presence; a thin blood-red rim light from the edge of the frame cuts through the shadow."
+PAINT_V = ("Oil painting of a Glasswright, a tall slender alien in a layered robe of silver mirror-thread and crystal plates. Its head is "
+           "a blank faceted crystal gem growing from a long neck of milky translucent flesh with pink sinew and glowing glass threads; "
+           "the gem head is smooth crystal all over. Long tapering fingers of milky flesh. Painted grimdark science-fiction concept art, oil "
+           "painting with visible loose brushstrokes and palette-knife texture, dramatic chiaroscuro. Setting: {setting}. Key light: {light}. "
+           "Muted palette of {palette}. No text, no letters, no logo, no border, no frame, no watermark.")
+def v64_subjects():
+    S = {}
+    for k, (mane, jaw, eye, _w) in HB_ADM.items():
+        S[k] = ('corsair', 'corsair_' + k, VOID7.format(mane=mane, jaw=jaw, eye=eye, gear='') + ' ' + HB_WHO[k])
+    for n, (mane, jaw, eye, _w) in enumerate(HB_NEM, 1):
+        S['nem_corsair_%d' % n] = ('corsair', 'nem_corsair_%d' % n, VOID7.format(mane=mane, jaw=jaw, eye=eye, gear='') +
+                                   ' A Nemesis, a rival enemy warlord of the Hullbreakers: ' + HB_NEM_WHO[n - 1] + '.' + NEMV)
+    for k, who in GW_ADM.items():
+        S[k] = ('ithar', 'ithar_' + k, PRISM_H1.format(gear=ROBE2) + ' ' + who)
+    for n, who in enumerate(GW_NEM, 1):
+        S['nem_ithar_%d' % n] = ('ithar', 'nem_ithar_%d' % n, PRISM_H1.format(gear=ROBE2) +
+                                 ' A Nemesis, a rival enemy commander of the Glasswrights: ' + who + '.' + NEMV)
+    return S
+V64 = v64_subjects()
+V64_SEEDS = {'corsair': [11, 51, 61], 'ithar': [11, 37, 23]}
+def v64_items(fac):
+    out = []
+    for cid, (f, tag, p) in V64.items():
+        if f != fac: continue
+        full = p + ' ' + PS.style(cid, f)
+        out.append({'id': tag, 'model': 'qie', 'prompt': full, 'nosuffix': True, 'seeds': V64_SEEDS[f]})
+        sp = full if f == 'corsair' else PAINT_V.format(setting=PS.SPEC[cid][0], light=PS.SPEC[cid][2], palette=PS.PALETTE[f])
+        for sd in V64_SEEDS[f]:
+            out.append({'id': '%s_s%d_oil' % (tag, sd), 'model': 'zi2i', 'prompt': sp, 'nosuffix': True, 'seeds': [sd],
+                        'ref': 'v64/%s_qie_s%d_00001_.png' % (tag, sd), 'denoise': 0.5})
+    return out
+BATCHES['v64h'] = v64_items('corsair'); BATCHES['v64g'] = v64_items('ithar')
+
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b', 'c64c': 'c64c', 'k64': 'k64', 'k64b': 'k64b', 'k64c': 'k64c', 'k64d': 'k64d', 'v64h': 'v64', 'v64g': 'v64', 'p64ha': 'p64', 'p64hn': 'p64', 'p64ga': 'p64', 'p64gn': 'p64'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():

@@ -1,0 +1,216 @@
+{
+ "out": "e64",
+ "budget_s": 1100,
+ "items": [
+  {
+   "id": "matriarch",
+   "kind": "v64",
+   "seed": 11,
+   "src": "r8e/matriarch_r8_s23_00001_.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: open space above a planet being consumed, clouds of spores drifting down into its atmosphere. New pose and framing: the organism seen from below, filling the frame. Key light: the planet's pale light from below and bile glow from within. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "matriarch",
+   "kind": "v64",
+   "seed": 23,
+   "src": "r8e/matriarch_r8_s23_00001_.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: open space above a planet being consumed, clouds of spores drifting down into its atmosphere. New pose and framing: the organism seen from below, filling the frame. Key light: the planet's pale light from below and bile glow from within. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "mending",
+   "kind": "v64",
+   "seed": 11,
+   "src": "r8e/mending_r8_s23_00001_.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: the gutted hull of a captured warship overgrown with flesh and sinew. New pose and framing: the organism nestled among broken bulkheads. Key light: a shaft of cold light through a hole in the hull. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "mending",
+   "kind": "v64",
+   "seed": 23,
+   "src": "r8e/mending_r8_s23_00001_.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: the gutted hull of a captured warship overgrown with flesh and sinew. New pose and framing: the organism nestled among broken bulkheads. Key light: a shaft of cold light through a hole in the hull. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nekhet",
+   "kind": "v64",
+   "seed": 11,
+   "src": "r8/deathless_nekhet_r8_zit_s37_00001_.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a vast dark machine hall of siphon arrays draining a star seen through an opening. New pose and framing: the ring seen at an angle. Key light: white-gold starlight pouring through the opening. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nekhet",
+   "kind": "v64",
+   "seed": 23,
+   "src": "r8/deathless_nekhet_r8_zit_s37_00001_.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a vast dark machine hall of siphon arrays draining a star seen through an opening. New pose and framing: the ring seen at an angle. Key light: white-gold starlight pouring through the opening. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_1",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_chorus_1.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: the inside of a wreck being overgrown by flesh. Keep the head and face in the same place in the frame. Key light: bile glow from below. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_1",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_chorus_1.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: the inside of a wreck being overgrown by flesh. Keep the head and face in the same place in the frame. Key light: bile glow from below. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_2",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_chorus_2.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: a dim olive nebula with drifting spores. Keep the head and face in the same place in the frame. Key light: soft diffuse light from the nebula behind. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_2",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_chorus_2.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: a dim olive nebula with drifting spores. Keep the head and face in the same place in the frame. Key light: soft diffuse light from the nebula behind. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_3",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_chorus_3.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: an asteroid hollowed into a hive, honeycomb chambers. Keep the head and face in the same place in the frame. Key light: light from glowing egg sacs in the walls. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_3",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_chorus_3.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: an asteroid hollowed into a hive, honeycomb chambers. Keep the head and face in the same place in the frame. Key light: light from glowing egg sacs in the walls. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_4",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_chorus_4.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: the surface of a moon covered in fleshy growth, a ringed planet in the sky. Keep the head and face in the same place in the frame. Key light: cold light from the ringed planet. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_4",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_chorus_4.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: the surface of a moon covered in fleshy growth, a ringed planet in the sky. Keep the head and face in the same place in the frame. Key light: cold light from the ringed planet. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_5",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_chorus_5.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: a swamp of bile under a low ceiling of membrane. Keep the head and face in the same place in the frame. Key light: yellow-green glow rising from the bile. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_5",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_chorus_5.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: a swamp of bile under a low ceiling of membrane. Keep the head and face in the same place in the frame. Key light: yellow-green glow rising from the bile. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_6",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_chorus_6.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: open space with the dark ring of the Hollow Sun far behind. Keep the head and face in the same place in the frame. Key light: a pale rim of light from the distant ring. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_chorus_6",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_chorus_6.png",
+   "prompt": "Move this same organism, its shape and colours into a new setting: open space with the dark ring of the Hollow Sun far behind. Keep the head and face in the same place in the frame. Key light: a pale rim of light from the distant ring. Keep the same organism, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of dark olive-brown flesh, ochre chitin and bile yellow-green light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_1.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a cold archive of floating data plates. Keep the head and face in the same place in the frame. Key light: faint white light from the data plates. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_1",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_deathless_1.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a cold archive of floating data plates. Keep the head and face in the same place in the frame. Key light: faint white light from the data plates. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_2.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a siphon platform over a star being drained into a thin stream of light. Keep the head and face in the same place in the frame. Key light: blazing starlight from below. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_2",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_deathless_2.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a siphon platform over a star being drained into a thin stream of light. Keep the head and face in the same place in the frame. Key light: blazing starlight from below. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_3",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_3.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a repair dock, small drones refitting plates. Keep the head and face in the same place in the frame. Key light: the white beams of the repair drones. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_3",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_deathless_3.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a repair dock, small drones refitting plates. Keep the head and face in the same place in the frame. Key light: the white beams of the repair drones. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_4",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_4.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: the surface of a dead grey planet under a black sky. Keep the head and face in the same place in the frame. Key light: a low white-gold sun at the horizon. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_4",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_deathless_4.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: the surface of a dead grey planet under a black sky. Keep the head and face in the same place in the frame. Key light: a low white-gold sun at the horizon. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_5",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_5.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a long corridor of violet light panels. Keep the head and face in the same place in the frame. Key light: violet light panels on both sides. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_5",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_deathless_5.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: a long corridor of violet light panels. Keep the head and face in the same place in the frame. Key light: violet light panels on both sides. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_6",
+   "kind": "v64",
+   "seed": 11,
+   "src": "ncrop8/nem_deathless_6.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: deep space with a dim dying star behind. Keep the head and face in the same place in the frame. Key light: the faint red glow of the dying star. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  },
+  {
+   "id": "nem_deathless_6",
+   "kind": "v64",
+   "seed": 23,
+   "src": "ncrop8/nem_deathless_6.png",
+   "prompt": "Move this same machine, its shape and colours into a new setting: deep space with a dim dying star behind. Keep the head and face in the same place in the frame. Key light: the faint red glow of the dying star. Keep the same machine, its shape and colours, and keep the oil-painting style with loose brushstrokes; muted palette of violet-black plating and white-gold corona light. No text, no letters."
+  }
+ ]
+}
