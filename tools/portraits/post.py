@@ -66,6 +66,8 @@ def cmd_publish(png_dir, picks_path):
     json.dump(idx, open(idx_path, 'w'), indent=1)
     cmd_phone_sheets(idx)
 
+FACNAME = {'voidsworn': 'Sunward Crusade', 'corsair': 'Ashfall Hullbreakers', 'ithar': 'Glasswright', 'deathless': 'Eclipse',
+           'chorus': 'Chorus', 'hegemony': 'Hegemony Navy'}  # display names (lore bible r8); ids never change
 def cmd_phone_sheets(idx=None):
     """one tall WebP per faction for Ryan's phone: each painted admiral big (framed as in game) with its alternates under it,
     then the crests of the faction's other admirals. 1080 px wide."""
@@ -98,7 +100,7 @@ def cmd_phone_sheets(idx=None):
             blocks.append((34 + ((len(others) + 3) // 4) * (cw + 40) + 20, drawc))
         H = 90 + sum(h for h, _ in blocks)
         im = Image.new('RGB', (W, H), (14, 14, 18)); d = ImageDraw.Draw(im)
-        d.rectangle([0, 0, W, 8], fill=TRIM[fac]); d.text((24, 24), fac.capitalize() + ' admirals', fill=(255, 255, 255), font=tf)
+        d.rectangle([0, 0, W, 8], fill=TRIM[fac]); d.text((24, 24), FACNAME.get(fac, fac.capitalize()) + ' admirals', fill=(255, 255, 255), font=tf)
         y = 90
         for h, fn in blocks: fn(im, d, y); y += h
         out = os.path.join(SHEETS, fac + '_portraits.webp'); im.save(out, 'WEBP', quality=82, method=6); print(out, im.size)

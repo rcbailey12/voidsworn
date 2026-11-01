@@ -67,12 +67,13 @@ def sheets(nem):
     """per faction: each Nemesis as pool portrait, then each painted scar, framed as in game"""
     sys.path.insert(0, HERE); import nemesis_fx as N
     from post import font
+    import post as P
     f = font(22, True); c = 300
     for fac in ['voidsworn', 'hegemony', 'corsair', 'chorus', 'ithar', 'deathless']:
         ids = sorted(k for k, v in nem.items() if v['faction'] == fac)
         if not ids: continue
         cols = 1 + len(KINDS[fac]); W = Image.new('RGB', (cols * c, 60 + len(ids) * c), (14, 14, 18)); d = ImageDraw.Draw(W)
-        d.text((14, 16), '%s Nemesis pool: portrait, then each painted scar' % fac.capitalize(), fill=(255, 255, 255), font=f)
+        d.text((14, 16), '%s Nemesis pool: portrait, then each painted scar' % P.FACNAME.get(fac, fac), fill=(255, 255, 255), font=f)
         fr = Image.open(os.path.join(PD, 'nemesis', 'frame_%s.png' % fac)).convert('RGBA')
         for r, nid in enumerate(ids):
             e = nem[nid]; cells = [('', e['pick'])] + [(k, e['baked'][k]) for k in KINDS[fac] if k in e['baked']]

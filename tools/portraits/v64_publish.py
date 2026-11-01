@@ -76,6 +76,22 @@ NEM = {
 }
 # Nemesis scar picks: nid -> {kind: seed} in SCAR_DIR
 SCAR = {
+ # s68g (Glasswrights; Nemesis 1 burn painted a human face on both seeds, redone in s68i)
+ 'nem_ithar_1': {'porcelain': 23}, 'nem_ithar_3': {'burn': 11, 'porcelain': 11}, 'nem_ithar_4': {'burn': 23, 'porcelain': 23},
+ 'nem_ithar_5': {'burn': 23, 'porcelain': 11}, 'nem_ithar_6': {'burn': 23, 'porcelain': 23},
+ # s68a, s68c (Sunward Crusade: burn and eye, no implant scar)
+ 'nem_voidsworn_1': {'burn': 11, 'eye': 23}, 'nem_voidsworn_2': {'burn': 23, 'eye': 23}, 'nem_voidsworn_4': {'burn': 23, 'eye': 23},
+ 'nem_voidsworn_5': {'burn': 23, 'eye': 11}, 'nem_voidsworn_6': {'burn': 23, 'eye': 23},
+ # s68a, s68c (Hegemony)
+ 'nem_hegemony_1': {'burn': 23, 'cyber': 23, 'eye': 23}, 'nem_hegemony_2': {'burn': 23, 'cyber': 23, 'eye': 11},
+ 'nem_hegemony_3': {'burn': 11, 'cyber': 23, 'eye': 11}, 'nem_hegemony_4': {'burn': 11, 'cyber': 23, 'eye': 11},
+ 'nem_hegemony_5': {'burn': 11, 'cyber': 23, 'eye': 11}, 'nem_hegemony_6': {'burn': 11, 'cyber': 23, 'eye': 23},
+ # s68b, s68c (Chorus; seeds that kept the background clean, no block noise or speckle)
+ 'nem_chorus_1': {'burn': 23, 'carapace': 11}, 'nem_chorus_2': {'burn': 23, 'carapace': 23}, 'nem_chorus_3': {'burn': 11, 'carapace': 11},
+ 'nem_chorus_4': {'burn': 11, 'carapace': 11}, 'nem_chorus_5': {'burn': 23, 'carapace': 11}, 'nem_chorus_6': {'burn': 11, 'carapace': 11},
+ # s68b, s68c (Eclipse)
+ 'nem_deathless_1': {'burn': 11, 'machine': 23}, 'nem_deathless_2': {'burn': 11, 'machine': 23}, 'nem_deathless_3': {'burn': 11, 'machine': 11},
+ 'nem_deathless_4': {'burn': 23, 'machine': 23}, 'nem_deathless_5': {'burn': 11, 'machine': 11}, 'nem_deathless_6': {'burn': 23, 'machine': 23},
 }
 SCAR_DIR = 's68'
 FACE_IN_CROP = 0.36   # the face's height as a share of the bust crop (the round 8 and p64 pools sit at 0.33 to 0.39)

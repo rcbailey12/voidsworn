@@ -794,7 +794,7 @@
     0.5,
     0.333
    ],
-   "source": "r8e/nem_chorus_1_r8_s11_00001_.png",
+   "source": "e64/nem_chorus_1_v64_s37_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_chorus_1_burn.webp",
     "carapace": "nemesis/pool/nem_chorus_1_carapace.webp"
@@ -802,15 +802,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_chorus_1_burn_patch.webp",
-     "x": 0.3503,
-     "y": 0.3424,
-     "area": 0.04
+     "x": 0.0521,
+     "y": 0.0326,
+     "area": 0.164
     },
     "carapace": {
      "file": "nemesis/pool/nem_chorus_1_carapace_patch.webp",
-     "x": 0.3516,
-     "y": 0.3424,
-     "area": 0.042
+     "x": 0.2383,
+     "y": 0.0,
+     "area": 0.124
     }
    }
   },
@@ -822,7 +822,7 @@
     0.5,
     0.333
    ],
-   "source": "r8e/nem_chorus_2_r8_s11_00001_.png",
+   "source": "e64/nem_chorus_2_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_chorus_2_burn.webp",
     "carapace": "nemesis/pool/nem_chorus_2_carapace.webp"
@@ -830,15 +830,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_chorus_2_burn_patch.webp",
-     "x": 0.138,
-     "y": 0.0781,
-     "area": 0.089
+     "x": 0.1211,
+     "y": 0.1589,
+     "area": 0.121
     },
     "carapace": {
      "file": "nemesis/pool/nem_chorus_2_carapace_patch.webp",
-     "x": 0.138,
-     "y": 0.0781,
-     "area": 0.093
+     "x": 0.1211,
+     "y": 0.1654,
+     "area": 0.13
     }
    }
   },
@@ -850,7 +850,7 @@
     0.5,
     0.333
    ],
-   "source": "r8e/nem_chorus_3_r8_s11_00001_.png",
+   "source": "e64/nem_chorus_3_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_chorus_3_burn.webp",
     "carapace": "nemesis/pool/nem_chorus_3_carapace.webp"
@@ -858,15 +858,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_chorus_3_burn_patch.webp",
-     "x": 0.1406,
-     "y": 0.0352,
-     "area": 0.103
+     "x": 0.1367,
+     "y": 0.2786,
+     "area": 0.055
     },
     "carapace": {
      "file": "nemesis/pool/nem_chorus_3_carapace_patch.webp",
-     "x": 0.1419,
-     "y": 0.0,
-     "area": 0.108
+     "x": 0.4128,
+     "y": 0.293,
+     "area": 0.035
     }
    }
   },
@@ -878,7 +878,7 @@
     0.5,
     0.333
    ],
-   "source": "r8e/nem_chorus_4_r8_s11_00001_.png",
+   "source": "e64/nem_chorus_4_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_chorus_4_burn.webp",
     "carapace": "nemesis/pool/nem_chorus_4_carapace.webp"
@@ -886,15 +886,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_chorus_4_burn_patch.webp",
-     "x": 0.0,
-     "y": 0.0,
-     "area": 0.078
+     "x": 0.1367,
+     "y": 0.3216,
+     "area": 0.069
     },
     "carapace": {
      "file": "nemesis/pool/nem_chorus_4_carapace_patch.webp",
-     "x": 0.0,
-     "y": 0.0,
-     "area": 0.075
+     "x": 0.5898,
+     "y": 0.4557,
+     "area": 0.026
     }
    }
   },
@@ -906,7 +906,7 @@
     0.5,
     0.333
    ],
-   "source": "r8e/nem_chorus_5_r8_s11_00001_.png",
+   "source": "e64/nem_chorus_5_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_chorus_5_burn.webp",
     "carapace": "nemesis/pool/nem_chorus_5_carapace.webp"
@@ -914,15 +914,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_chorus_5_burn_patch.webp",
-     "x": 0.0495,
-     "y": 0.3086,
-     "area": 0.045
+     "x": 0.0977,
+     "y": 0.4167,
+     "area": 0.055
     },
     "carapace": {
      "file": "nemesis/pool/nem_chorus_5_carapace_patch.webp",
-     "x": 0.0495,
-     "y": 0.3086,
-     "area": 0.049
+     "x": 0.2096,
+     "y": 0.4531,
+     "area": 0.082
     }
    }
   },
@@ -934,7 +934,7 @@
     0.5,
     0.333
    ],
-   "source": "r8e/nem_chorus_6_r8_s11_00001_.png",
+   "source": "e64/nem_chorus_6_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_chorus_6_burn.webp",
     "carapace": "nemesis/pool/nem_chorus_6_carapace.webp"
@@ -942,15 +942,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_chorus_6_burn_patch.webp",
-     "x": 0.0143,
-     "y": 0.0495,
-     "area": 0.075
+     "x": 0.1719,
+     "y": 0.0182,
+     "area": 0.173
     },
     "carapace": {
      "file": "nemesis/pool/nem_chorus_6_carapace_patch.webp",
-     "x": 0.0456,
-     "y": 0.0495,
-     "area": 0.066
+     "x": 0.1719,
+     "y": 0.0182,
+     "area": 0.167
     }
    }
   },
@@ -962,7 +962,7 @@
     0.21,
     0.242
    ],
-   "source": "r8/nem_deathless_1_zit_s23_00001_.png",
+   "source": "e64/nem_deathless_1_v64_s37_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_deathless_1_burn.webp",
     "machine": "nemesis/pool/nem_deathless_1_machine.webp"
@@ -970,15 +970,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_deathless_1_burn_patch.webp",
-     "x": 0.2773,
-     "y": 0.2552,
-     "area": 0.017
+     "x": 0.1966,
+     "y": 0.1589,
+     "area": 0.059
     },
     "machine": {
      "file": "nemesis/pool/nem_deathless_1_machine_patch.webp",
-     "x": 0.4531,
-     "y": 0.2747,
-     "area": 0.003
+     "x": 0.2995,
+     "y": 0.237,
+     "area": 0.015
     }
    }
   },
@@ -987,10 +987,10 @@
    "pick": "nemesis/pool/nem_deathless_2.webp",
    "anchor": [
     0.5,
-    0.242,
-    0.242
+    0.333,
+    0.2
    ],
-   "source": "r8/nem_deathless_2_zit_s23_00001_.png",
+   "source": "e64/nem_deathless_2_v64_s37_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_deathless_2_burn.webp",
     "machine": "nemesis/pool/nem_deathless_2_machine.webp"
@@ -998,9 +998,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_deathless_2_burn_patch.webp",
-     "x": 0.1654,
-     "y": 0.2292,
-     "area": 0.045
+     "x": 0.026,
+     "y": 0.1914,
+     "area": 0.12
+    },
+    "machine": {
+     "file": "nemesis/pool/nem_deathless_2_machine_patch.webp",
+     "x": 0.1628,
+     "y": 0.2812,
+     "area": 0.109
     }
    }
   },
@@ -1012,7 +1018,7 @@
     0.242,
     0.242
    ],
-   "source": "r8/nem_deathless_3_zit_s23_00001_.png",
+   "source": "e64/nem_deathless_3_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_deathless_3_burn.webp",
     "machine": "nemesis/pool/nem_deathless_3_machine.webp"
@@ -1020,9 +1026,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_deathless_3_burn_patch.webp",
-     "x": 0.1159,
-     "y": 0.4141,
-     "area": 0.01
+     "x": 0.2122,
+     "y": 0.1784,
+     "area": 0.128
+    },
+    "machine": {
+     "file": "nemesis/pool/nem_deathless_3_machine_patch.webp",
+     "x": 0.2383,
+     "y": 0.3424,
+     "area": 0.057
     }
    }
   },
@@ -1034,7 +1046,7 @@
     0.258,
     0.242
    ],
-   "source": "r8/nem_deathless_4_zit_s37_00001_.png",
+   "source": "e64/nem_deathless_4_v64_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_deathless_4_burn.webp",
     "machine": "nemesis/pool/nem_deathless_4_machine.webp"
@@ -1042,9 +1054,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_deathless_4_burn_patch.webp",
-     "x": 0.2891,
-     "y": 0.4466,
-     "area": 0.013
+     "x": 0.4193,
+     "y": 0.2057,
+     "area": 0.015
+    },
+    "machine": {
+     "file": "nemesis/pool/nem_deathless_4_machine_patch.webp",
+     "x": 0.4193,
+     "y": 0.2201,
+     "area": 0.007
     }
    }
   },
@@ -1056,7 +1074,7 @@
     0.333,
     0.242
    ],
-   "source": "r8/nem_deathless_5_zit_s23_00001_.png",
+   "source": "e64/nem_deathless_5_v64_s23_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_deathless_5_burn.webp",
     "machine": "nemesis/pool/nem_deathless_5_machine.webp"
@@ -1064,15 +1082,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_deathless_5_burn_patch.webp",
-     "x": 0.0898,
-     "y": 0.1146,
-     "area": 0.117
+     "x": 0.0859,
+     "y": 0.1719,
+     "area": 0.127
     },
     "machine": {
      "file": "nemesis/pool/nem_deathless_5_machine_patch.webp",
-     "x": 0.1055,
-     "y": 0.4805,
-     "area": 0.113
+     "x": 0.2201,
+     "y": 0.2214,
+     "area": 0.124
     }
    }
   },
@@ -1084,7 +1102,7 @@
     0.5,
     0.333
    ],
-   "source": "r8/nem_deathless_6_zit_s23_00001_.png",
+   "source": "e64/nem_deathless_6_v64_s11_00001_.png",
    "baked": {
     "burn": "nemesis/pool/nem_deathless_6_burn.webp",
     "machine": "nemesis/pool/nem_deathless_6_machine.webp"
@@ -1092,15 +1110,15 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_deathless_6_burn_patch.webp",
-     "x": 0.4245,
-     "y": 0.0768,
-     "area": 0.124
+     "x": 0.1536,
+     "y": 0.0833,
+     "area": 0.158
     },
     "machine": {
      "file": "nemesis/pool/nem_deathless_6_machine_patch.webp",
-     "x": 0.1211,
-     "y": 0.1094,
-     "area": 0.111
+     "x": 0.1693,
+     "y": 0.1302,
+     "area": 0.143
     }
    }
   },
