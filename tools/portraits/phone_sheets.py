@@ -26,7 +26,7 @@ def admirals(out):
     idx = json.load(open(os.path.join(PD, 'index.json')))['painted']
     keys = list(idx); cols, gap = 2, 16; c = (W - gap * (cols + 1)) // cols; lab = 92; top = 130
     rows = (len(keys) + cols - 1) // cols
-    im, d = header(top + rows * (c + lab + gap), 'Painted admirals', 'As the game shows them today. Amber tag: that faction\'s look is changing.')
+    im, d = header(top + rows * (c + lab + gap), 'Painted admirals', 'Round 8 looks (lore approved Oct 27). Names from rename_map_final.')
     for i, k in enumerate(keys):
         e = idx[k]; x = gap + (i % cols) * (c + gap); y = top + (i // cols) * (c + lab + gap)
         im.paste(Image.open(os.path.join(PD, e['pick'])).convert('RGB').resize((c, c), Image.LANCZOS), (x, y))
