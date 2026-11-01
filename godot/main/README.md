@@ -132,6 +132,6 @@ Technical calls made without Ryan; any of them can be reversed.
 - The concept-art hulls toggle is not carried over (Godot has the game hulls only). Temporal AA is a setting, off by default.
 - The ship sheet leaves out the enemy reach line (it needs a threat pass per hover; R shows the threat map).
 - The ambient bed plays at the browser's levels: room tone 0.032 over the synth bed.
-- The round budget: past 8 s of a round's enemy time the rest of its turn speeds up smoothly (to 0.35 of the pace by 13 s), so long rounds stay near 15 s.
+- The round budget: past 5 s of a round's enemy time the rest of its turn speeds up smoothly (to 0.3 of the pace by 9 s), so the 20-ship sector 3 fight's worst round is about 12 s (Oct 31; was 8 s to 0.35 by 13 s). An ordinary 8 s enemy round now plays in about 7.3 s.
 - Under the round budget a killing volley lets go halfway to its last impact and a big hull's death hold shrinks.
 - The new game name (Embers of the Hollow Sun) shows on the title, the window title and the exe properties, but the exe file stays Voidsworn.exe and saves stay in the old Voidsworn user folder (project.godot pins custom_user_dir_name), so nothing Ryan has saved is lost.

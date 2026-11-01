@@ -872,12 +872,18 @@ func wait(ms: float) -> void:
 	await get_tree().create_timer(maxf(ms, 1.0) / 1000.0 * speed).timeout
 
 
-# The round budget (B2: a round's enemy time under 15 s at worst): once the enemy has used 8 s of a round, everything it
-# still plays speeds up smoothly, reaching 0.35 of its pace by 13 s, like an automatic hurry at the end of a long round.
+# The round budget (presentation only, outcomes unchanged): past 5 s of a round's enemy time the rest of its turn speeds
+# up smoothly, to 0.3 of the pace by 9 s. Stream B (806233f): the sector 3 excess is the enemy phase of 12 to 14 ships,
+# so the 20-ship sector 3 fight's worst round comes down toward 12 s (was 8 s to 0.35 by 13 s: 14.3 s worst).
+const BUDGET_FROM := 5.0
+const BUDGET_FULL := 9.0
+const BUDGET_FLOOR := 0.3
+
+
 static func _round_budget_k(used: float) -> float:
-	if used <= 8.0:
+	if used <= BUDGET_FROM:
 		return 1.0
-	return lerpf(1.0, 0.35, clampf((used - 8.0) / 5.0, 0.0, 1.0))
+	return lerpf(1.0, BUDGET_FLOOR, clampf((used - BUDGET_FROM) / (BUDGET_FULL - BUDGET_FROM), 0.0, 1.0))
 
 
 func _enemy_pace_k() -> float:
