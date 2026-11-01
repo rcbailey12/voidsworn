@@ -1,40 +1,60 @@
-# Voidsworn (Embers of the Hollow Sun): handoff (updated Oct 27, 2026, evening)
+# Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 1, 2026)
 
-## 0. Status at Oct 27 evening (read this first)
+## 0. Status at Nov 1, 2026 (read this first)
 
-**Opus is offline from about Oct 27 16:00 PT (weekly usage cap).** Ryan is running audits with Muse and the other LLMs meanwhile. Audit brief: contrib/opus/briefs/muse_2026-10-27c_rollout_audit.md. Whoever picks this up next (Opus, or a fresh Claude session): read this section, then FINDINGS R51 to R60, then the briefs named below.
+**This is the planning handoff for a fresh chat.** The starting point is Opus's recommendation: [contrib/opus/next_phase_recommendation_2026_10_31.md](contrib/opus/next_phase_recommendation_2026_10_31.md). Read it, then FINDINGS R59 to R63 and G-14.
 
-**Lore: APPROVED Oct 27 (R59).** The game is *Embers of the Hollow Sun*.
-- Source of truth: contrib/opus/compute/lore_bible_r8.md (live doc https://claude.ai/artifact/SKyQf2QcJSXGmXfmxKxFpJ, marked approved).
-- Rollout brief: contrib/opus/briefs/lore_rollout_2026-10-27.md (canonical names, who does what).
-- Final map: contrib/opus/compute/rename_map_final.md (L; 348+ rows with file:line and owner).
-  - Opus accepted every vetoable call except V14: relic becomes **salvage**.
-  - The wreck step becomes **Strip the wrecks**, Salvage rig becomes **Scrap rig**, Salvaged refits becomes **Recovered refits**, and "Salvage: +N credits" becomes **"Spoils: +N credits"** (R60, section 5c).
-- Ids never change.
+**The game:** *Embers of the Hollow Sun* (repo name voidsworn). The Godot 4 port is the product; the browser JS game is the rules oracle and is frozen except for rules fixes. Lore round 8 is approved and rolled out everywhere (R59 to R61).
 
-**Rollout status (as of 144dc71):**
+**State of main (final commit: see the G-14 row in FINDINGS):**
+- **Rules.** Frozen at 8e81d75 (stream B step 9b). The browser check pack has 0 FAIL, and every unit test passes, including the new campaign start test.
+- **Godot rules parity.** 48 of 48 goldens and 2,100 random battles with 0 differences (G1, a166af8, oracle e80a6a0). The step 9b re-pin is recorded in G-14.
+- **Godot campaign parity.** 30 of 30, PC and cloud, oracle 8e81d75 (G3, 65797bc). Nemesis, save and arc tests pass.
+- **Godot game (G2).**
+  - Title "Embers of the Hollow Sun".
+  - Thruster-true movement with smooth stops (flip-and-burn off).
+  - Battle pace under 15 s per round even at 28 ships.
+  - 36 of 36 six-faction bot campaigns clean.
+  - The exe rebuilt on Ryan's PC by the fail-closed export job (c5c0d27); the previous build is kept in `export\previous`.
+- **Effects (G4).**
+  - At 20 ships the 1% low is 43 to 65 fps on Forward+, and the death freeze is gone.
+  - Weapon marks read at battle distance; round 8 palettes are in.
+  - Engine glow drops right after a burn.
+- **Ships (A4).**
+  - All 36 repainted to round 8.
+  - The PC build's ship assets are refreshed (they were stale since Oct 26; `a4_regen.bat` keeps them fresh).
+  - V1b bow fixed; waviness partly fixed.
+- **Portraits.** Seven admirals, 36 Nemesis with scars, six faction crests.
+- **Story.** Six arcs rewritten to round 8 (L). The story tests pass.
 
-| Stream | Done | Still to do |
-|---|---|---|
-| L (lore rollout) | rename_map_final.md (1695ea4 to 144dc71) | Job 2: rewrite godot/story to round 8. Job 3: final sweep for retired words, reported in contrib/opus/compute/lore_rollout_notes.md. |
-| B (rules) | Pass 3 balance (G-13); full-run wins eased back toward about 20% (d551697, port_notes step 9) | The strings step: data.js and JS rows of the map, as its own port_notes step. Deathless skirmish matchups; sector 3 round time; start fleets reaching battles. |
-| G1 (rules port) | Parity headline at bdb1a9d: 48 of 48 goldens on the PC and in the cloud, seed 9 sweep 200 of 200 (803f72d) | Port step 9, then B's strings step: re-pin, re-export, godot/rules rows, re-run parity. |
-| G2 (game) | Title "Embers of the Hollow Sun", window and exe product name (49f0d85; exe file stays Voidsworn.exe, the save folder is pinned); tagline and G2 rows (239fdeb); exe launch test (ef5cab2); Career and Settings opaque; board planets | Movement A/B clips (current, smooth stop, flip-and-burn; R55) into docs/shots/g2/3be2896/; the 36-run bot re-run on current main (clean so far); title re-shoot. |
-| G3 (campaign) | Crest hook and round 8 map palettes (0dacdc0); title reads brand.gd (6dc30ee); campaign parity 30/30 PC and cloud at 9711a7e | B's strings step, then in ONE commit: oracle re-pin, campaign.gd string port, its 29 map rows and section 5c (parity compares event text and button lists, so they can't land apart). Re-run parity, re-shoot the map. |
-| G4 (effects) | Round 8 palettes (5b4b732); marks at battle distance (fbd22e7); 20-ship bench (2aac0ca) | The bench found a 1% low of 15 fps and a 4.3 s freeze on a death at 20 ships; the fix landed in 2aac0ca, but a re-bench is needed to confirm. Then the black-hole disc. |
-| A4 (ships) | Pass 5 (b1e7f54): Hegemony and V1b blunt level prows; Pyre-Barge at 256k triangles (was 475k); twelve ships audit PASS | Faction repaints: Crusade black iron, frost and ember; Glasswrights crystal; Eclipse violet-black and white-gold; Chorus olive and bile. Then V17's radiator bank, V1b's vents and porthole rows, the Warden mount if not done. |
-| Portraits | Six faction crests (e243729, crests/faction_<id>.svg); round 8 prompts and scar prompts (494c000) | Admiral and Nemesis repaints on PC lane A (jobs r8a, r8b, r8e) and contact sheets. Display names follow the map. |
+**Not yet seen by a human:** a full rendered Godot run. Ryan's first playtest is step 1 of the recommended phase.
 
-**Helpers.** These are Opus's background agents, and they stop when Opus's usage stops. A fresh session can't message them; it relaunches each stream with contrib/opus/briefs/takeover_2026-10-27.md plus that stream's row above. Each stream's worktree is under .claude/worktrees/ (vs_g2 is at /home/claude/vs_g2); check for uncommitted work first.
+**Known issues:**
+- **Art:**
+  - The Eclipse seam-glow rebuild hasn't been checked.
+  - The converted ship files are about a tenth of their old size (pck 3.9 GB, was 5.5 GB). Check textures in play.
+  - The Hegemony super-dreadnought (H4) is still lumpy.
+  - One Crusade Nemesis portrait has glitched scars.
+  - Crusade Nemesis can earn an implant scar, which contradicts the lore.
+  - The V1b deck-fan fix needs an in-game re-shoot.
+- **Balance:** full-run wins are known only for bots (19% in stream B's sim, 63% in Muse's campaign driver). The skirmish mode favours the player-side bot.
+- **Rules bugs:** about 20 small confirmed ones, listed in the recommendation, section 3. None crashes.
+- **Open owner decisions:** recommendation section 7.
 
-**PC runner.** Lane A (`queue\`, GPU) and lane B (`queue_b\`, CPU), always through tools\pc\tmo.bat. Inspect with device_list_dir and device_stage_files only. Never drive the PC by computer control to unstick jobs. Large downloads need Ryan's OK.
+**External material** (Oct 28 to 31: Muse, ChatGPT/Codex PR #1, Qwen, DeepSeek, Argon) has been reviewed. The verdicts are in the recommendation, sections 3 and 4.
+- **PR #1** only adds contrib files; it isn't merged. The useful parts are named and the stale parts discarded.
+- **Ryan's rulings made in Muse sessions** are now FINDINGS R61 to R63.
 
-**Earlier today, settled:**
-- Muse full audit verified (R56): no blockers, every fix routed.
-- Thruster-true movement: dim pilot glow, turn then burn, agile strike craft (R54, R55).
-- Pyre-Barge rebuilt from welded Hullbreaker hulls.
-- Campaign map audit fixes.
-- 24 Nemesis portraits and 24 music tracks confirmed in the repo.
+**Helpers.** All finished their queues. They were Opus's background agents and don't carry over to a new chat. Relaunch streams with [contrib/opus/briefs/takeover_2026-10-27.md](contrib/opus/briefs/takeover_2026-10-27.md) plus the next-phase step they own.
+
+**Process rules learned this sprint:**
+- Never use `git stash` in the shared worktrees; it swapped two helpers' work. Use WIP commits.
+- Don't bulk-delete the shared scratchpad while helpers run.
+- The cloud disk fills up; clean your own scratch.
+- After every rules step, G1 and G3 re-pin their oracles.
+- Helpers watch port_notes.md for steps rather than waiting for a ping.
+
+**PC runner.** Lane A (GPU) and lane B (CPU), always through tools\pc\tmo.bat. Inspect only through device_list_dir and device_stage_files. Never drive the PC by computer control. Large downloads need Ryan's OK.
 
 ## 1. What and where
 

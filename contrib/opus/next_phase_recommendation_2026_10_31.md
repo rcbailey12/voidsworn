@@ -1,4 +1,4 @@
-# Opus final recommendation (Oct 31, 2026): DRAFT, finalized when the last helpers report
+# Opus final recommendation (Oct 31 to Nov 1, 2026)
 
 For Ryan, and the starting point for the next planning chat. Plain words, links to the evidence. Status labels used throughout:
 - **IMPLEMENTED:** on main.
@@ -10,9 +10,9 @@ Main at the time of writing: see HANDOFF.md section 0 for the final commit.
 
 ---
 
-## 1. What my existing work and helpers completed (Oct 27 to 31)
+## 1. What my existing work and helpers completed (Oct 27 to Nov 1)
 
-### Lore rollout (R59 to R61): IMPLEMENTED on main, Godot finishing
+### Lore rollout (R59 to R61): IMPLEMENTED on main, browser and Godot
 - **Rename map:** 424 rows with file:line and owner (L). See [rename_map_final.md](compute/rename_map_final.md) and the sweep report in [lore_rollout_notes.md](compute/lore_rollout_notes.md).
 - **Browser game data:**
   - display strings at 90aaf85 (step 10);
@@ -20,34 +20,42 @@ Main at the time of writing: see HANDOFF.md section 0 for the final commit.
   - Ids are unchanged, and a seeded sim gives identical output before and after both steps.
 - **Title:** "Embers of the Hollow Sun" in the Godot title, window and exe product name (49f0d85). The save folder is pinned, so your saves don't move. Tagline and G2 strings at 239fdeb.
 - **Story:** six arcs rewritten to round 8 (b56269f, 72b1535, fcae7f6). Story tests: 72 checks, 0 failed.
+- **Godot rules strings** with the oracle re-pinned to e80a6a0 (a166af8). Battle log text is part of the parity check, so the new wording is checked word for word.
+- **Godot campaign strings** with the oracle re-pinned to 8e81d75 (6033f97, then 5552c96 and 65797bc).
 - **Art:**
-  - Six faction crests (e243729).
-  - Portrait prompts (257de44) and the seven admiral paintings in the approved looks (c33f18d).
-  - Hull repaint code (7fb50db).
-- **FINISHING (see section 0 of HANDOFF for the outcome):**
-  - Godot rules strings with an oracle re-pin and parity re-run (G1);
-  - campaign strings with an oracle re-pin and parity re-run (G3);
-  - repaint builds and the refresh of the PC ship assets (A4);
-  - the remaining portraits.
+  - Six faction crests (e243729), now shown on the campaign map.
+  - Seven admiral paintings (c33f18d) and all 36 Nemesis portraits with painted scars (7f4790d, ff88185). Sheets: [docs/shots/portraits/ff88185/](../../docs/shots/portraits/ff88185/).
+  - All 36 hulls repainted (7fb50db, 423ef19, fc9b347). The PC Godot build's ship assets are refreshed: they had been stale since Oct 26, and `a4_regen.bat` now refreshes them. Lineups: [docs/shots/a4/8aaf4ea/](../../docs/shots/a4/8aaf4ea/).
+  - V1b bow blunt from the top and side; the waviness is partly fixed (8aaf4ea).
 
 ### Fixes and features: IMPLEMENTED and VERIFIED
 - **Browser campaign crash.** Every browser campaign battle crashed at the start from Oct 26: a code comment had swallowed `prepBattle()` (campaign3d.js:56). Codex found it and I confirmed it. Fixed in 5a99602, with a new test ([campaign_start_test.js](tools/campaign_start_test.js)) that drives real battle starts and scans every JS file for the same mistake.
-- **Windows export job.** It now stops on any failed step and keeps the previous build (c5c0d27, adopted from Codex). The PC run is queued.
+- **Windows export job.** It now stops on any failed step and keeps the previous build in `export\previous` (c5c0d27, adopted from Codex). PC test (lane A): a bad path fails with exit 1; the real run passes `--check-export` and a 2-run bot smoke. **Your exe is rebuilt from current code under the new name.**
 - **20-ship performance.** The 4.3 s death freeze is gone. The 1% low went from 15 fps to 65 fps (1080p) and 43 fps (4K) on Forward+, measured on the RTX 5080 in runs r18 and r19 (2aac0ca; [gallery README](../../godot/fx/gallery/README.md)).
 - **Weapon marks** read at battle distance; the round 8 faction palettes are in the effects (df30bc4, 5b4b732).
-- **Thruster-true movement** (680324c). Smooth braking, an engine glow that drops fast after a burn (273bd1a), and a wider capture camera (e5ef5d0).
+- **Thruster-true movement** (680324c). Smooth braking is the default; flip-and-burn stays off as a test option. The engine glow drops a few frames after a burn (273bd1a). Clips: [docs/shots/g2/7828506/](../../docs/shots/g2/7828506/).
 - **Battle pace** (e80a6a0). Worst enemy round 14.35 to 12.07 s at 20 ships and 17.25 to 13.97 s at 28 ships. Outcomes are identical (headless, fixed 60 fps).
 - **Balance.**
   - Pass 3 (G-13) held.
-  - Full-run easing in d551697 took the toy sim from 13.5% to 19.5%.
+  - Full-run easing (step 9b, 8e81d75, now final): the toy sim went from 11.5% to 19.0% over 800 runs, and bosses still fight back.
+  - Per faction, from Crusade 15% to Eclipse and Glasswrights 22%; the noise is about 5 points.
+  - The admiral band (53 to 85%) and the 9-point faction spread are unchanged.
+  - Eclipse's worst skirmish matchup went from 6% to 56% (9b30668).
   - The bot measurement turned out to be bot-specific (section 4).
 - **Godot reliability.**
   - 36 of 36 six-faction bot campaigns clean at 3be2896.
   - The exe opens through play_godot.bat to the title and a battle (ef5cab2).
 
 ### Parity records
-- **G1 rules:** 48 of 48 goldens plus a 200-battle sweep at bdb1a9d (803f72d), VERIFIED. G1 is re-pinning to the strings steps now.
-- **G3 campaign:** 30 of 30 seeds, PC and cloud, at 9711a7e, VERIFIED. G3 is re-pinning now.
+- **G1 rules** at a166af8 (oracle e80a6a0, lore strings included), PC and cloud, VERIFIED:
+  - 48 of 48 goldens;
+  - maths: 316,090 values, 0 differences;
+  - seed 10 sweep: 200 of 200;
+  - 2,100 unique battles across all sweeps, 0 differences;
+  - worst enemy think 0.47 s.
+
+  The final re-pin for step 9b is in HANDOFF section 0.
+- **G3 campaign** at 65797bc (oracle 8e81d75, final rules), VERIFIED: 30 of 30 seeds on the PC and in the cloud; Nemesis (64 records), save and arc tests pass.
 
 ---
 
@@ -60,8 +68,13 @@ Main at the time of writing: see HANDOFF.md section 0 for the final commit.
 ### Acceptance gaps
 Honest list, most important first.
 1. **Nobody has played a full Godot run with the new names, rendered, on your PC.** Everything since Oct 27 has been checked headless, by bot runs or by stills. The exe launch test opened the title and one battle, and that's all.
-2. **The movement comparison clips** (smooth stop against flip-and-burn) were still rendering on lane A at the time of writing.
-3. **Hull repaints aren't in the PC build yet.** The Chorus still shows pink and Eclipse green in effect shots. The V1b deck-fan fix and your V1b bow and "waviness" notes are unconfirmed in game.
+2. **Art is only checked in studio renders, not in the running game.**
+   - The repainted ships reached the PC build on Nov 1, and nobody has seen them in game yet.
+   - The converted ship files came out about a tenth of their old size, and the new pck is 3.9 GB, down from 5.5 GB. Both checks passed, but your first playtest should look for missing textures.
+   - The Eclipse rebuild with a softer seam glow wasn't checked by anyone.
+   - The V1b deck-fan fix needs one in-game re-shoot.
+   - The Hegemony super-dreadnought (H4) is still lumpy; a clean finish means hand-faired hull sections.
+   - One Crusade Nemesis portrait has glitched scars.
 4. **Balance is only known for bots.** Pass 3 tuned per-battle sims. Full-run win rates depend on the bot: 19.5% for the toy sim, 63% for Muse's campaign driver. Neither is a player rate.
 5. **Compatibility renderer:** one 0.53 s frame at the first line-ship death, plus single 60 to 80 ms frames at the first heavy hits on Forward+.
 6. **Save carry-over (browser to Godot)** is undecided. The Godot code cites R33 for "not carried over", but R33 says nothing about saves.
@@ -170,9 +183,12 @@ Muse's "four of four" agreement is weaker than it looks: every prong worked from
 1. **No human playtest of the Godot game.** The biggest unknown, and it decides what the rest of the list should be.
 2. **Battle controls.** Clicking an enemy to inspect it also fires, attack-move can move a ship somewhere you never saw, and phased activation (ruled) isn't built. This is the core feel of every battle.
 3. **Known rules bugs:** about 20 small, confirmed ones (section 3), including two that touch your rulings (Q5 and the off-core value). None crash; all are cheap.
-4. **Balance for real players is unknown,** and faction strength differs by instrument. The Crusade is weakest in every measure: 0 of 6 Godot bot runs, and about 50% in Muse's driver against 85 to 89% for the Chorus.
+4. **Balance for real players is unknown,** and faction strength differs by instrument. Stream B's sim puts every faction at 15 to 22% of full runs (the Crusade lowest, within noise). Muse's campaign driver shows a much wider spread: Crusade about 50% against Chorus 85 to 89%. The skirmish mode still favours the player-side bot heavily (mirror matches 63 to 100%).
 5. **The save carry-over decision** (browser to Godot) is open.
-6. **The art isn't on the PC build:** hull repaints, the V1b bow and waviness, the remaining portraits. Plus the ruled content not yet built: the Eclipse battleship hull, Daybreak at speed 2, the boss objective table.
+6. **Art polish, plus ruled content not yet built.**
+   - Art to confirm in game: the Eclipse glow, H4's lumpiness, the strength of the Crusade frost patches, one Crusade Nemesis portrait to re-paint.
+   - A lore clash to fix: Crusade and Hegemony Nemesis can earn the "implant" scar, but the Crusade is unaugmented. My call: no implant scar for the Crusade (vetoable).
+   - Ruled content not yet built: the Eclipse battleship hull, Daybreak at speed 2, the boss objective table.
 7. **Progression depth:** admiral skill trees are ruled but not built, and the story finales are thin.
 8. **Process risk:**
    - Oracle drift means re-pins after every rules step.
@@ -189,7 +205,7 @@ Goal: you play full Godot runs and the game responds to what you find. Order and
 
 | Step | What | Who | Effort | Depends on |
 |---|---|---|---|---|
-| 0 | Finish the rollout: G1 and G3 re-pins and parity, A4 repaint builds and the PC asset refresh, portraits. A fresh exe through the fail-closed export job | G1, G3, A4, P, G2 | S (in progress) | none |
+| 0 | Done Nov 1, except G1's step 9b re-pin (see HANDOFF). Rollout, re-pins, repaints, portraits, a fresh exe through the fail-closed export job | G1 | S | none |
 | 1 | **Playtest build and your first runs:** one or two full runs, notes in your own words (a short template provided) | You | 1 to 2 hours | 0 |
 | 2 | **Rules fix batch:** the Codex five, the confirmed bugs and the small ruled fixes, as one stream B step. Then one G1/G3 re-pin, with tests for each fix | B, G1, G3 | M | 0 (in parallel with 1) |
 | 3 | **Phased activation in the Godot battle UI:** inspect, rehearse, commit move, fire, brace and pass, cancel. Acceptance is Codex's checklist with a capture for you | G2 | M to L | 0. Shaped by 1 |
@@ -221,7 +237,11 @@ Keep running the Muse program only for targeted checks you ask for (for example 
 6. **Order of steps 3 and 7:**
    - **PICK:** battle controls before progression.
 7. **Vetoable names** (map section 13). Anything you want changed? Examples: Admiral Roderic Vex, the Glasswright admirals Tamsa, Saro, Vell and Brin, the sync tiers Listening to Full sync, Spinal cannon.
-8. **Small design questions,** answerable later, after play:
+8. **Art calls,** from the lineups and portrait sheets:
+   - Is the remaining hull lumpiness (mostly the Hegemony super-dreadnought) acceptable, or do you want the hand-faired rebuild? That's M effort.
+   - Are the Crusade frost-white patches too strong?
+   - Do the Glasswright portraits read too much like classic grey aliens?
+9. **Small design questions,** answerable later, after play:
    - should refitting cost something;
    - should the spore wing get its own job;
    - should Veteran AI be locked for new players.
