@@ -61,7 +61,7 @@ The battle rules in `godot/rules/` are a GDScript port of the game's `battle.js`
 
 ## Latest record
 
-`contrib/opus/enginetest/results/g1_parity_2026-10-27/README.md`, headline at a166af8. The oracle is byte-identical to main e80a6a0 (stream B steps 0 to 12, lore round 8 strings included). On Ryan's PC (lane B) and in the cloud: 48 of 48 golden battles, maths (316,090 inputs), PRNG, threat maps, threads and hard stop all PASS. The seed 10 sweep (200 battles) has 0 differences. On the PC, every enemy think time is inside the 0.5 s bar (worst 0.470 s, s23). Not covered, by design: the JS-only tooltip helpers and the encounter rolls, which G3 owns. Sweeps so far: 2,100 unique battles, 0 differences.
+`contrib/opus/enginetest/results/g1_parity_2026-10-27/README.md`, headline at 7b7f398, the final pin. The oracle is byte-identical to stream B 8e81d75 (steps 0 to 12 and 9b, lore round 8 strings included; B is frozen). On Ryan's PC (lane B) and in the cloud: 48 of 48 golden battles, maths (316,090 inputs), PRNG, threat maps, threads and hard stop all PASS. The seed 11 sweep (200 battles) has 0 differences. On the PC, every enemy think time is inside the 0.5 s bar (worst 0.405 s, s23). Not covered, by design: the JS-only tooltip helpers and the encounter rolls, which G3 owns. Sweeps so far: 2,300 unique battles, 0 differences.
 
 ## Files
 
