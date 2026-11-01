@@ -268,6 +268,9 @@ func _bake_sky(lamps: Array) -> void:
 	if img == null or _sky_mat == null:
 		notes.append("sky: stars only (no renderer for the nebula bake)")
 		return
+	# mip levels for the rocks' haze (a blurred read of the sky); the sky itself samples level 0
+	if not img.has_mipmaps():
+		img.generate_mipmaps()
 	var tex := ImageTexture.create_from_image(img)
 	_sky_mat.set_shader_parameter("neb_tex", tex)
 	_sky_mat.set_shader_parameter("has_neb", 1.0)
