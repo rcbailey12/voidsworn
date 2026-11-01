@@ -45,9 +45,41 @@ varying vec3 vL;
 varying vec4 vC;
 varying vec3 vW;
 varying float vSeed;
+varying float vScale;
+uniform float amb = 0.5;       // r8: how much of the scene's flat ambient a rock takes (space rock is dark on its night side)
 vec3 rot(vec3 v, vec3 ax, float a) { float c = cos(a); float s = sin(a); return v * c + cross(ax, v) * s + ax * dot(ax, v) * (1.0 - c); }
+vec3 h33(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
+// r8: impact craters in the rock's own space (they ride with its tumble): a bowl, a raised rim and a little ejecta, in
+// cells of a 3D grid (about half the cells hold one). x: height (object units per cell), y: crater floor, z: rim
+vec3 craters(vec3 p, float dens) {
+	vec3 i = floor(p);
+	vec3 f = fract(p);
+	vec3 o = vec3(0.0);
+	for (int z = -1; z <= 1; z++) {
+		for (int y = -1; y <= 1; y++) {
+			for (int x = -1; x <= 1; x++) {
+				vec3 g = vec3(float(x), float(y), float(z));
+				vec3 hs = h33(i + g);
+				if (hs.z > dens) { continue; }
+				vec3 c = g + 0.2 + 0.6 * h33(i + g + 17.3);
+				float rad = 0.22 + 0.3 * hs.x * hs.x;
+				float d = length(c - f) / rad;
+				if (d < 1.8) {
+					float bowl = d < 1.0 ? d * d - 1.0 : 0.0;
+					float rim = exp(-pow((d - 1.0) / 0.2, 2.0));
+					float ej = d > 1.0 ? exp(-(d - 1.0) * 4.0) * 0.12 : 0.0;
+					o.x += (bowl * 0.55 + rim * 0.22 + ej) * rad * (0.6 + 0.6 * hs.y);
+					o.y = max(o.y, d < 1.0 ? 1.0 - d * d : 0.0);
+					o.z = max(o.z, rim);
+				}
+			}
+		}
+	}
+	return o;
+}
 void vertex() {
 	vL = VERTEX;
+	vScale = length(MODEL_MATRIX[0].xyz);
 	vC = COLOR;
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
@@ -77,6 +109,17 @@ void fragment() {
 	float n3 = mix(texture(detail, p * 2.6 + 0.57).r, 0.5, clamp(fw * 1.2, 0.0, 1.0));
 	float cav = vC.r;
 	float crat = vC.g;
+	// r8: shader craters at two sizes, faded out where they would be smaller than a few pixels (no shimmer far away)
+	vec3 cp = vL + vSeed * 7.31;
+	float fwc = length(fwidth(cp));
+	vec3 c1 = craters(cp * 2.6, 0.55);
+	vec3 c2 = craters(cp * 7.5 + 3.1, 0.6);
+	float k1 = 1.0 - smoothstep(0.05, 0.14, fwc * 2.6);
+	float k2 = 1.0 - smoothstep(0.04, 0.1, fwc * 7.5);
+	float c_h = c1.x / 2.6 * k1 + c2.x / 7.5 * k2;
+	float c_fl = max(c1.y * k1, c2.y * k2 * 0.7);
+	float c_rim = max(c1.z * k1, c2.z * k2 * 0.7);
+	crat = max(crat, c_fl * 0.8);
 	float facet = vC.b;
 	float patchv = vC.a;
 	vec3 a = base * mix(0.72, 1.25, patchv) * (0.78 + 0.45 * n1) * (0.86 + 0.28 * n2);
@@ -113,16 +156,22 @@ void fragment() {
 		em = glow_col * vein * 0.3;
 		rough = mix(0.85, 0.4, fr);
 	}
+	// r8: fresh, lighter rock on crater rims, a little dust darkening their floors
+	a *= (1.0 + c_rim * 0.35) * (1.0 - c_fl * 0.12);
 	a *= mix(0.4, 1.0, cav) * lift;
-	float ht = n2 * 0.65 + n3 * 0.25 - crat * 0.2;
-	NORMAL = bump_normal(NORMAL, VERTEX, ht, q > 0.5 ? 0.9 : 0.5);
+	// height in world units (object units times the rock's scale): craters plus grit, so the bump reads the same on a
+	// pebble and on a mountain
+	float ht = (c_h + (n2 - 0.5) * 0.05 + (n3 - 0.5) * 0.02 - crat * 0.01) * vScale;
+	NORMAL = bump_normal(NORMAL, VERTEX, ht, q > 0.5 ? 1.0 : 0.6);
 	ALBEDO = a;
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	// r2: a dull dielectric sheen (the default 0.5 caught the cold fill light and turned brown rock grey-blue)
-	SPECULAR = kind == 3 ? 0.5 : 0.3;
-	AO = cav;
-	AO_LIGHT_AFFECT = 0.4;
+	SPECULAR = kind == 3 ? 0.5 : 0.25;
+	// r8: the flat ambient (and the sky's reflection) cut on rock, more in its hollows; the key light keeps full strength,
+	// so a rock has a lit side and a dark side like the ships do, instead of an evenly grey-blue lump
+	AO = mix(0.35, 1.0, cav) * amb;
+	AO_LIGHT_AFFECT = 0.0;
 	if (rim_k > 0.0) {
 		vec3 nw = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
 		vec3 L = rim_pos - vW;

@@ -583,6 +583,8 @@ func _hero_mat(kind: String) -> ShaderMaterial:
 		var m: ShaderMaterial = WR.material(kind, _look)
 		m.set_shader_parameter("lift", 1.55)
 		m.set_shader_parameter("haze_max", 0.0)
+		# r8: the blockers keep a little more of the ambient than the far rocks, so their dark side still reads on the board
+		m.set_shader_parameter("amb", 0.65)
 		_mats[key] = m
 	return _mats[key]
 

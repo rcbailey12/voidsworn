@@ -225,6 +225,11 @@ void fragment() {
 	float beta = th - re2 / max(th, 1e-3);
 	// fade the bending out toward the quad edge so there is no seam
 	float edge = smoothstep(1.0, 0.6, r);
+	// F4 r8: and as the camera comes near the hole (zoomed in on a ship beside it): within about three shadow radii the
+	// bent picture sampled the disc itself and folded it into hard-edged slabs; up close the plain view is cleaner
+	float cam_d = length(CAMERA_POSITION_WORLD - (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz);
+	float r_sh_w = r_shadow * vHalf;
+	edge *= smoothstep(3.6 * r_sh_w, 5.0 * r_sh_w, cam_d);
 	float b = mix(th, beta, edge);
 	vec2 suv = cs + dir * b * k;
 	// only the far background is bent: a source pixel nearer than the far edge of the disc (a ship, the disc itself) is
