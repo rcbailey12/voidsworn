@@ -100,6 +100,8 @@ func _shot(name: String) -> void:
 	# every still: no two ship names overlap, and a hover tip never sits on the activation card
 	var ov: int = b.hud.plate_name_overlaps()
 	_check(ov == 0, "%s: no ship names overlap (%d hidden by the declutter)" % [name, b.hud.plates_hidden])
+	var up: int = b.hud.plate_names_under_panels()
+	_check(up == 0, "%s: no ship name sits under a side panel (%d found)" % [name, up])
 	if b.hud.tip.visible and b.hud.card.visible:
 		var tr: Rect2 = b.hud.tip.get_global_rect()
 		_check(not tr.intersects(b.hud.card.get_global_rect()), "%s: the hover tip is clear of the card" % name)
