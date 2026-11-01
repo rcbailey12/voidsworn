@@ -29,7 +29,8 @@ def write_textures(meta, d, code, res):
     # normal maps as high-quality JPEG too: Godot re-compresses every texture to a VRAM format on import anyway, and a PNG normal map is 4
     # to 5 times the size in the repo
     for slot, key, kind, q in (('base', 'albedo', 'jpg', 90), ('orm', 'orm', 'jpg', 90), ('normal', 'normal', 'jpg', 95), ('emissive', 'emit', 'jpg', 90)):
-        fn = f'{code}_{slot}.{kind}'; open(os.path.join(d, fn), 'wb').write(gio.img_bytes(mp[key], kind, quality=q, size=res)); files[slot] = fn
+        r_ = res.get(slot, 2048) if isinstance(res, dict) else res  # res: one size, or one per map (feel pass, Nov 1)
+        fn = f'{code}_{slot}.{kind}'; open(os.path.join(d, fn), 'wb').write(gio.img_bytes(mp[key], kind, quality=q, size=r_)); files[slot] = fn
     return files
 
 
@@ -149,9 +150,13 @@ def write_damage(dmg, meta, files, d, code):
 if __name__ == '__main__':
     a = sys.argv[1:]
     r_ = a[a.index('--res') + 1] if '--res' in a else 'auto'
-    if r_ == 'auto':  # K1 decision 1: 1024 for frigates and the beacon (small on the board), 512 for squadron craft, 2048 for the rest
-        m_ = json.load(open(a[0])); res = {'S': 1024}.get(m_.get('band'), 2048)
-        if m_.get('cls') == 'Squadron' or m_['code'] in ('S1_51', 'S2_23', 'B23_51'): res = 512
+    if r_ == 'auto':
+        # Nov 1 (feel pass, in-game check): K1 decision 1 had frigates and the beacon at 1024 and craft at 512; in game a frigate zoomed in
+        # came out blotchy, and the big hulls' 2048 atlas gives a capital ship about 1300 texels along its whole length. Now: colour and
+        # normal 4096 for the big hulls (L, XL), 2048 for everything else including frigates, 1024 for squadron craft; ORM and glow 2048.
+        m_ = json.load(open(a[0])); big = m_.get('band') in ('L', 'XL') and m_['code'] not in ('O1_37',)
+        res = dict(base=4096 if big else 2048, normal=4096 if big else 2048, orm=2048, emissive=2048)
+        if m_.get('cls') == 'Squadron' or m_['code'] in ('S1_51', 'S2_23', 'B23_51'): res = dict(base=1024, normal=1024, orm=1024, emissive=1024)
     else: res = int(r_)
     dmg = None
     if '--nodamage' not in a:

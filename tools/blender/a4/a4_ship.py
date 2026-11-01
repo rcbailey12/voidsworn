@@ -386,7 +386,7 @@ def main():
         json.dump(rep, open(os.path.join(outdir, code + '_report.json'), 'w'), indent=1); json.dump(meta, open(os.path.join(outdir, code + '_meta.json'), 'w'), indent=1)
         log('built (no bake)', round(time.time() - t0), 's'); return
     a2_ship.make_uv0(ship)
-    info = dict(lo=tuple(H.lo), hi=tuple(H.hi), up=(0, 0, 1), needle=cfg.get('needle', .06), engine=not any(x['extras']['kind'] == 'engine' for x in hps))
+    info = dict(lo=tuple(H.lo), hi=tuple(H.hi), up=(0, 0, 1), needle=cfg.get('needle', .06), engine=not any(x['extras']['kind'] == 'engine' for x in hps), L=float(kit.CLS_LEN.get(cls) or 20.0))  # L: world length, for the paint's photo grain scale (bakemat4 paint v2)
     if cfg.get('reshape'): info['fresh_x0'] = min(r_['x0'] for r_ in cfg['reshape']) + .02  # the AI maps fade out over the reshaped bow
     mat, socks = bakemat4.build(ship, fac, h['tex'][0], h['tex'][1], info)
     tex_dir = os.path.join(outdir, 'tex'); os.makedirs(tex_dir, exist_ok=True)
