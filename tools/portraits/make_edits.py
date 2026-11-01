@@ -137,6 +137,9 @@ R8F['aelith'] = ('r8/ithar_aelith_r8_zit_s23_00001_.png', GLASS_FIX + KEEP_P)
 # coloured block noise and the paint style drifted. Rerun on the same source with three other seeds and a line that pins the
 # background; batches/f64.json -> comfy_io\PORTRAITS\f64\.
 BG_KEEP = " The smooth dark background stays exactly as it is: plain, dark and unchanged, no noise, no pattern, no pixels."
+# f64 picks (Nov 1, vetoable): burn s23 (a healed burn on cheek and neck; s51 too raw), cyber s37 (fewest red vein lines), eye s23
+# (a white blind eye and one scar, like the other Crusade eye scars); published with nemesis_publish.py as the s11 files.
+F64_PICK = {'burn': 23, 'cyber': 37, 'eye': 23}
 def f64_items():
     return [{'id': 'nem_voidsworn_3', 'kind': k, 'seed': sd, 'src': 'ncrop8/nem_voidsworn_3.png', 'prompt': SCAR[k]['human'] + KEEP + BG_KEEP
              if isinstance(SCAR[k], dict) else SCAR[k] + KEEP + BG_KEEP} for k in KINDS['voidsworn'] for sd in (23, 37, 51)]

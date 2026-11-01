@@ -600,21 +600,21 @@
    "patch": {
     "burn": {
      "file": "nemesis/pool/nem_voidsworn_3_burn_patch.webp",
-     "x": 0.0885,
-     "y": 0.0,
-     "area": 0.129
+     "x": 0.3516,
+     "y": 0.2266,
+     "area": 0.059
     },
     "cyber": {
      "file": "nemesis/pool/nem_voidsworn_3_cyber_patch.webp",
-     "x": 0.0508,
-     "y": 0.0,
-     "area": 0.127
+     "x": 0.3607,
+     "y": 0.2031,
+     "area": 0.056
     },
     "eye": {
      "file": "nemesis/pool/nem_voidsworn_3_eye_patch.webp",
-     "x": 0.0898,
-     "y": 0.0,
-     "area": 0.133
+     "x": 0.4023,
+     "y": 0.2188,
+     "area": 0.026
     }
    }
   },
