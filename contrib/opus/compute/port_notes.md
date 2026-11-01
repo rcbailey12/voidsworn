@@ -387,7 +387,7 @@ Display strings only; no id, key, rule, number or random draw changed (same seed
 - New unit test `contrib/opus/tools/campaign_start_test.js`: loads the real campaign3d.js on top of the rules files with the browser parts stubbed and drives `battleScreen()` for a battle, an elite, a Hegemony Nemesis fight and a boss (no throw, prepBattle ran once, the start telemetry carries setupMs). It also scans every top-level JS file for a `//` comment followed by statements on the same line. On the old file it fails 5 of 6; on the fix 6 of 6.
 - B-18 (`animExplode` stall check in `killUnit`) was already fixed in beae728; the scan finds no other swallowed code.
 
-## Step 12: STRINGS ONLY, rename map sections 16 and 17 (Oct 31; rename_map_final.md at a9ec373; commit in the next line of this file's history)
+## Step 12: STRINGS ONLY, rename map sections 16 and 17 (Oct 31; commit f770e06; rename_map_final.md at a9ec373)
 
 Display strings only; same seeded sim output before and after (`SEED=5 ADMS=grax bossmatrix 4`: 85% r8.3). G1 and G3: one re-pin and re-export covers steps 11 and 12.
 - Section 16 (Ryan's rulings of Oct 27 and 28): Warlord Grax Ironmaw (was Steelgrin); the Eclipse blurb says "siphoning stellar energy to light a new sun"; Eclipse Nemesis titles back to the three of the bible (High Nadir, Eclipse-prime, Archivist; the fourth entry 'Nadir' removed, so that `titles` list is now 3 long); crew ship name Acceptable Loss becomes Debt Paid; skirmish names Thornback becomes Sour Spine (Chorus) and Moonveil becomes Still Glass (Glasswrights) in ui3d.js FNAMES.
