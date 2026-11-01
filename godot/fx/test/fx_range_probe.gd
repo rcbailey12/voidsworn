@@ -11,6 +11,7 @@ extends SceneTree
 # Run (Ryan's PC, from the job; needs --fixed-fps 60 so the clock is the same on every run):
 #   godot --path godot --fixed-fps 60 --resolution 1920x1080 --script res://fx/test/fx_range_probe.gd
 # Env: PROBE_OUT (folder), PROBE_ONLY (families, comma list), PROBE_SIZES (small,big), PROBE_CALM=1 (reduce flashing),
+#      PROBE_QUALITY (max, high, low), PROBE_TRACE=1 (frames round the first impact from three views, see _trace),
 #      PROBE_W, PROBE_H (render size, default 1920x1080). Prints [range] lines and FLASH_MAX (the most counted flashes
 #      in any rolling second, which must stay at 3 or under).
 
@@ -95,7 +96,7 @@ func _run() -> void:
 	world.add_child(key)
 	var fill := DirectionalLight3D.new()
 	world.add_child(fill)
-	LOOK.apply(env, key, fill, {"quality": "max"})
+	LOOK.apply(env, key, fill, {"quality": _env("PROBE_QUALITY", "max")})
 	key.directional_shadow_max_distance = 600.0
 	cam = CAMRIG.new()
 	world.add_child(cam)
@@ -113,7 +114,8 @@ func _run() -> void:
 	world.add_child(fx)
 	fx.manual = true
 	var calm := _env("PROBE_CALM", "") == "1"
-	fx.setup({"camera": cam, "quality": "max", "reduce_flashing": calm, "shake": 1.0, "unit": 1.0})
+	var qual := _env("PROBE_QUALITY", "max")
+	fx.setup({"camera": cam, "quality": qual, "reduce_flashing": calm, "shake": 1.0, "unit": 1.0})
 	print("[range] renderer=%s adapter=%s res=%dx%d calm=%s" % [RenderingServer.get_current_rendering_method(),
 		RenderingServer.get_video_adapter_name(), W, H, str(calm)])
 	_home()
@@ -200,7 +202,50 @@ func _volley(fam: Array, idx: int, sz: String) -> Array:
 		await _wait_until(T0 + m)
 		cols.append(await _grab())
 	_sheet(cols, "%s/%02d_%s_%s.jpg" % [out, idx, fam[0], sz])
+	if _env("PROBE_TRACE", "") == "1":
+		await _trace(fam, idx, sz)
 	return imp
+
+
+# PROBE_TRACE=1: the same volley again, and the frames round its first impact (0.1 s before to 1.2 s after) from three
+# views (the battle camera, straight down, low from the side), each cropped round the target: one sheet per volley.
+# For finding an effect that does not show (is it hidden behind the hull, or not drawn at all?).
+func _trace(fam: Array, idx: int, sz: String) -> void:
+	await _wait(4.5)
+	var lk: String = WEAP.look_of(fam[2], fam[3], fam[1])
+	var n: int = WEAP.default_shots(lk)
+	var shots := []
+	for i in n:
+		shots.append(true)
+	fx.rng.seed = 1000 + idx
+	var T0: float = fx.now
+	var r: Dictionary = fx.volley("A", fam[2], "T", {"weapon_id": fam[3], "shots": shots, "hits": _hits(n, fx.ship("T").shielded)})
+	var imp: Array = r["impacts"]
+	var i0: float = float(imp[0]) if not imp.is_empty() else 0.4
+	var tp: Vector3 = fx.ship("T").root.global_position
+	print("[trace] %02d %s %s target at %s length %.1f impacts %s" % [idx, fam[0], sz, str(tp), fx.ship("T").hull.L, str(imp)])
+	var times := [-0.1, 0.02, 0.1, 0.25, 0.5, 1.2]
+	var views := [0.98, 0.05, 1.36]
+	var cw := 640
+	var chh := 360
+	var img := Image.create(cw * times.size(), chh * views.size(), false, Image.FORMAT_RGB8)
+	for ti in times.size():
+		await _wait_until(T0 + i0 + float(times[ti]))
+		for vi in views.size():
+			_home()
+			cam.b = float(views[vi])
+			cam.snap()
+			await RenderingServer.frame_post_draw
+			await RenderingServer.frame_post_draw
+			var fr := vp.get_texture().get_image()
+			fr.convert(Image.FORMAT_RGB8)
+			var sp: Vector2 = cam.unproject_position(tp)
+			var x0 := clampi(int(sp.x) - cw / 2, 0, W - cw)
+			var y0 := clampi(int(sp.y) - chh / 2, 0, H - chh)
+			img.blit_rect(fr, Rect2i(x0, y0, cw, chh), Vector2i(ti * cw, vi * chh))
+	_home()
+	img.save_jpg("%s/trace_%02d_%s_%s.jpg" % [out, idx, fam[0], sz], 0.9)
+	print("[trace] wrote trace_%02d_%s_%s.jpg" % [idx, fam[0], sz])
 
 
 func _home() -> void:
