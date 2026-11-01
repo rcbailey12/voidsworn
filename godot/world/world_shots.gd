@@ -6,12 +6,16 @@ extends Node
 #   godot --path godot --resolution 1920x1080 res://world/world_shots.tscn -- --out DIR [--only a,b] [--quality max]
 #         [--bench S]   also orbit the camera for S seconds per case and write DIR/bench.json (frame times)
 #         [--novsync]   measure without the screen's frame cap
+#         [--looks today,holo,living,cine,tac]   the board look trial (world/board_look.gd): each look in turn on the same
+#                       battle, from the default camera and zoomed out, with a move hex hovered (tac: look C with the
+#                       tactical grid up); names <case>_<look>_1_default.jpg and _2_zoomed_out.jpg
 #
 # Every case is a fixed scenario dictionary (the same fields as rules/test/scenarios.json) with its seed, and the biome
 # the campaign would give that region (biome is visual only, R63), written into the rules' battle before the scene builds.
 
 const BattleScene := preload("res://scenes/battle/battle.tscn")
 const API := preload("res://rules/battle_api.gd")
+const BL := preload("res://world/board_look.gd")
 
 # name, enemy faction, map, shape, biome {rock, planet, station}, seed
 const CASES := [
@@ -114,6 +118,12 @@ func _case(c: Array) -> void:
 	print("[world_shots] %s: scene build %.0f ms; %s" % [name, t_build, notes])
 	var cam = b.cam
 	var home := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
+	if args.has("looks"):
+		await _looks(b, name, home)
+		b.queue_free()
+		await get_tree().process_frame
+		await get_tree().process_frame
+		return
 	await _snap(name + "_1_default")
 	cam.r = 640.0
 	cam.t = Vector3.ZERO
@@ -179,6 +189,49 @@ func _case(c: Array) -> void:
 	b.queue_free()
 	await get_tree().process_frame
 	await get_tree().process_frame
+
+
+# the board look trial: every look on the same battle, a move hex two or three out hovered so the planned-move state shows
+func _looks(b, name: String, home: Dictionary) -> void:
+	var cam = b.cam
+	var hk := ""
+	var u: Dictionary = b._sel_unit() if b.has_method("_sel_unit") else {}
+	if not u.is_empty():
+		var ks: Array = b.reach_map.keys()
+		ks.sort()
+		var best := -1
+		for k in ks:
+			var qr: PackedStringArray = str(k).split(",")
+			var d: int = b.board._hdist(int(qr[0]), int(qr[1]), int(u["q"]), int(u["r"]))
+			if d <= 3 and d > best:
+				best = d
+				hk = k
+	print("[world_shots] %s: selected %s, hover %s, %d move hexes" % [name, str(u.get("id", "?")), hk, b.reach_map.size()])
+	for l in str(args["looks"]).split(",", false):
+		var look := "cine" if l == "tac" else l
+		BL.set_look(look, false)
+		BL.tactical = l == "tac"
+		b.board.apply_look(false)
+		if hk != "":
+			var qr2: PackedStringArray = hk.split(",")
+			b.hover = Vector2i(int(qr2[0]), int(qr2[1]))
+			b.board.set_hover(int(qr2[0]), int(qr2[1]))
+			b._overlay()
+		cam.a = home["a"]
+		cam.b = home["b"]
+		cam.r = home["r"]
+		cam.t = home["t"]
+		cam.snap()
+		await _settle()
+		await _snap("%s_%s_1_default" % [name, l])
+		cam.r = 640.0
+		cam.t = Vector3.ZERO
+		cam.snap()
+		await _settle()
+		await _snap("%s_%s_2_zoomed_out" % [name, l])
+	if b.world != null:
+		print("[world_shots] %s: %s" % [name, "; ".join(b.world.notes)])
+	BL.set_look("today", false)
 
 
 func _settle() -> void:

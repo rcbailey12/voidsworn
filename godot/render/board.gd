@@ -4,6 +4,7 @@ extends Node3D
 # whole board); overlays (move range, targets, hover, zones) only change instance colours.
 
 const HT := preload("res://render/hull_table.gd")
+const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
 const HS := 10.0
 var HW := HS * sqrt(3.0)
@@ -39,10 +40,14 @@ var props_world := false     # G4 world draws the rocks, debris and nebula; the 
 const FILL_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+// board look trial (world/board_look.gd): 0 the reach hexes as today, 1 a holo footprint (see-through, a lit rim, scan
+// lines drifting across it)
+uniform int reach_mode = 0;
 varying vec4 vcol;
 varying vec2 vp;
 varying float style;
-void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; }
+varying vec3 wp;
+void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 void fragment() {
 	// soft inner falloff so a lit hex reads as a glow, not a flat plate
 	float r = length(vp) / 10.0;
@@ -54,10 +59,21 @@ void fragment() {
 		// so it never reads as terrain (style 2: the hovered or planned hex, brighter and steady)
 		vec2 q = abs(vp);
 		float d = max(q.x, 0.5 * q.x + 0.8660254 * q.y) / 8.53;
-		float band = smoothstep(0.86, 0.99, d);
-		float pulse = style > 1.5 ? 1.0 : 0.85 + 0.15 * sin(TIME * 2.2);
-		a = vcol.a * (0.8 + 0.6 * band) * pulse;
-		c = mix(c, vec3(0.55, 0.85, 1.0), band * 0.35);
+		float hot = style > 1.5 ? 1.0 : 0.0;
+		if (reach_mode == 1) {
+			// holo footprint: light thrown up from the table, so space shows through the middle of each hex
+			float rim = smoothstep(0.78, 0.97, d);
+			float scan = smoothstep(0.6, 1.0, 0.5 + 0.5 * sin(wp.z * 1.7 - TIME * 3.0));
+			float sweep = smoothstep(0.9, 1.0, sin((wp.x * 0.6 + wp.z) * 0.03 - TIME * 1.2));
+			float body = 0.34 + 0.22 * scan + 0.3 * sweep + hot * 0.55;
+			a = vcol.a * (body + 1.25 * rim);
+			c = mix(c, vec3(0.6, 0.9, 1.0), rim * 0.5 + hot * 0.2);
+		} else {
+			float band = smoothstep(0.86, 0.99, d);
+			float pulse = hot > 0.5 ? 1.0 : 0.85 + 0.15 * sin(TIME * 2.2);
+			a = vcol.a * (0.8 + 0.6 * band) * pulse;
+			c = mix(c, vec3(0.55, 0.85, 1.0), band * 0.35);
+		}
 	}
 	ALBEDO = c;
 	ALPHA = clamp(a, 0.0, 1.0);
@@ -67,18 +83,49 @@ const RING_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 // F1: the plain grid (style 0) fades with distance from the ship that is up, so the board is quiet away from the action
+// board look trial: mode 0 today, 1 holo (corner ticks and faint edges near the ship that is up and the cursor, nothing
+// far away), 2 ghost (only round the cursor), 3 tactical (the whole grid, even)
+uniform int mode = 0;
 uniform vec3 focus = vec3(0.0);
+uniform vec3 cursor = vec3(100000.0);
 uniform float near_r = 70.0;
 uniform float far_r = 190.0;
 uniform float far_k = 0.3;
+// the gravity well: xyz its centre, w how deep the holo grid dips toward it (0: flat)
+uniform vec4 well = vec4(0.0);
 varying vec4 vcol;
 varying float style;
 varying vec3 wp;
-void vertex() { vcol = COLOR; style = INSTANCE_CUSTOM.r; wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+varying vec2 vuv;
+void vertex() {
+	vcol = COLOR;
+	style = INSTANCE_CUSTOM.r;
+	vuv = UV;
+	wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	if (well.w > 0.0 && style < 0.5) {
+		float d = distance(wp.xz, well.xz);
+		float f = 1.0 - smoothstep(10.0, 105.0, d);
+		float dy = -well.w * f * f;
+		VERTEX.y += dy;
+		wp.y += dy;
+	}
+}
 void fragment() {
 	float k = 1.0;
 	if (style < 0.5) {
-		k = mix(1.0, far_k, smoothstep(near_r, far_r, distance(wp.xz, focus.xz)));
+		if (mode == 0) {
+			k = mix(1.0, far_k, smoothstep(near_r, far_r, distance(wp.xz, focus.xz)));
+		} else if (mode == 1) {
+			float kf = 1.0 - smoothstep(28.0, 118.0, distance(wp.xz, focus.xz));
+			float kc = 1.0 - smoothstep(12.0, 52.0, distance(wp.xz, cursor.xz));
+			k = max(kf, 0.85 * kc);
+			float e = min(vuv.x, 1.0 - vuv.x);
+			float tick = 1.0 - smoothstep(0.07, 0.2, e);
+			k *= mix(0.3, 1.0, tick);
+			k *= 1.0 + 0.9 * smoothstep(0.95, 1.0, sin(dot(wp.xz, vec2(0.018, 0.03)) - TIME * 0.9));
+		} else if (mode == 2) {
+			k = (1.0 - smoothstep(9.0, 30.0, distance(wp.xz, cursor.xz))) * 0.9;
+		}
 	}
 	ALBEDO = vcol.rgb * vcol.a * k;
 }
@@ -89,6 +136,19 @@ render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabl
 varying vec4 vcol;
 void vertex() { vcol = COLOR; }
 void fragment() { ALBEDO = vcol.rgb * vcol.a; }
+"""
+# board look trial: the edge round each patch of terrain (nebula, storm, debris, rock, zones, the well's rim and pull)
+const EDGE_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform float gain = 1.0;
+varying vec4 vcol;
+varying vec3 wp;
+void vertex() { vcol = COLOR; wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void fragment() {
+	float sh = 0.82 + 0.18 * sin(TIME * 1.3 + wp.x * 0.05 + wp.z * 0.04);
+	ALBEDO = vcol.rgb * vcol.a * gain * sh;
+}
 """
 
 
@@ -162,7 +222,9 @@ func build(rules) -> void:
 	add_child(props)
 	_terrain()
 	_zones()
-	refresh()
+	_well_info()
+	_terrain_edges()
+	apply_look(false)
 
 
 func bounds() -> Vector2:
@@ -211,8 +273,10 @@ func _hex_mesh(rad: float, ring: bool) -> ArrayMesh:
 			var b0 := Vector3(b.x * rad, 0, b.y * rad)
 			var a1 := Vector3(a.x * (rad - w), 0, a.y * (rad - w))
 			var b1 := Vector3(b.x * (rad - w), 0, b.y * (rad - w))
-			for v in [a0, b0, b1, a0, b1, a1]:
-				st.add_vertex(v)
+			# UV.x runs 0 to 1 along each edge (the holo grid brightens the corners)
+			for v in [[a0, 0.0], [b0, 1.0], [b1, 1.0], [a0, 0.0], [b1, 1.0], [a1, 0.0]]:
+				st.set_uv(Vector2(v[1], 0.0))
+				st.add_vertex(v[0])
 	else:
 		for i in 6:
 			var a: Vector2 = pts[i]
@@ -257,13 +321,25 @@ func _zones() -> void:
 func refresh() -> void:
 	var fm := fills.multimesh
 	var rm := rings.multimesh
+	var sp := BL.spec()
+	var base_ring: Color = LOOK_RING.get(str(sp["grid"]), BASE_RING)
+	var soft_reach: bool = str(sp["grid"]) != "today" and str(sp["grid"]) != "tactical"
 	for i in cells.size():
 		var k := key(cells[i].q, cells[i].r)
-		var c: Color = overlay.get(k, base_fill.get(k, BASE_FILL))
+		var c: Color
+		if overlay.has(k):
+			c = overlay[k]
+		elif sp["fills"]:
+			c = base_fill.get(k, BASE_FILL if sp["plate"] else Color(0, 0, 0, 0))
+		else:
+			c = Color(0, 0, 0, 0)
 		fm.set_instance_color(i, c)
 		var stl := float(style_over.get(k, 0))
 		fm.set_instance_custom_data(i, Color(stl, 0, 0, 0))
-		var rc: Color = ring_over.get(k, BASE_RING)
+		var rc: Color = ring_over.get(k, base_ring)
+		# the holo and living looks: the reach hexes' own outlines quieter (the footprint and its one outline carry them)
+		if soft_reach and ring_over.has(k) and style_over.has(k):
+			rc.a *= 0.5
 		if k == hover_key:
 			rc = Color(1.0, 0.82, 0.4, 0.9)
 		rm.set_instance_color(i, rc)
@@ -282,6 +358,8 @@ func set_hover(q: int, r: int) -> void:
 	var k := key(q, r) if index.has(key(q, r)) else ""
 	if k != hover_key:
 		hover_key = k
+		if rings != null and rings.material_override is ShaderMaterial:
+			(rings.material_override as ShaderMaterial).set_shader_parameter("cursor", hex_world(q, r) if k != "" else Vector3(100000, 0, 100000))
 		refresh()
 
 
@@ -343,6 +421,212 @@ func set_outline(keys: Dictionary, col := REACH_EDGE) -> void:
 
 func on_board(q: int, r: int) -> bool:
 	return index.has(key(q, r))
+
+
+# ---------------------------------------------------------------- board look trial (world/board_look.gd)
+# Ryan, Nov 1 16:12: "it almost ends up just looking like a board game on top of a cool background with the gray and 2d
+# plane aspect". Four looks, switchable while playing: F8 cycles them, Z (or the Grid button) brings up the tactical grid
+# in look C. Default stays today's board until Ryan picks. None of this changes the rules or which hexes a ship can reach.
+
+# the plain grid's colour per look (alpha is its strength where it shows)
+const LOOK_RING := {"today": BASE_RING, "holo": Color(0.55, 0.85, 1.0, 0.2), "ghost": Color(0.6, 0.82, 1.0, 0.16), "tactical": Color(0.6, 0.8, 0.95, 0.13)}
+# the terrain edge colours (rgb) and strength (a)
+const EDGE_C := {"neb": Color(0.72, 0.52, 1.0, 0.75), "storm": Color(1.0, 0.88, 0.45, 0.7), "debris": Color(0.86, 0.77, 0.56, 0.6),
+	"rock": Color(0.72, 0.76, 0.84, 0.45), "exit": Color(0.49, 1.0, 0.61, 0.85), "texit": Color(0.95, 0.5, 0.45, 0.85),
+	"guard": Color(0.95, 0.5, 0.45, 0.8), "hold": Color(1.0, 0.78, 0.35, 0.9), "rim": Color(0.8, 0.55, 1.0, 0.8), "pull": Color(0.62, 0.48, 0.95, 0.45)}
+var edges: MeshInstance3D
+var well_c := Vector3.INF      # the gravity well's centre on the board (the dead star), INF when none
+var _look_btn: Button = null
+var _look_layer: CanvasLayer = null
+var _toast: Label = null
+var _toast_t := 0.0
+var _edge_gain := 0.0
+
+
+func _well_info() -> void:
+	well_c = Vector3.INF
+	var meta = VW.get("map")
+	if meta is Dictionary and meta.get("deadstar") is Dictionary:
+		well_c = hex_world(int(meta["deadstar"]["q"]), int(meta["deadstar"]["r"]))
+
+
+static func _hdist(q0: int, r0: int, q1: int, r1: int) -> int:
+	var dq := q0 - q1
+	var dr := r0 - r1
+	return int((absi(dq) + absi(dq + dr) + absi(dr)) / 2)
+
+
+# one mesh with the outer edge of every patch of terrain, objective zone and the well's rim and pull rings: a thin line
+# and a soft band fading inward, coloured by kind; how strong it shows is the look's terrain_edge
+func _terrain_edges() -> void:
+	edges = MeshInstance3D.new()
+	edges.name = "TerrainEdges"
+	var em := ShaderMaterial.new()
+	var esh := Shader.new()
+	esh.code = EDGE_SHADER
+	em.shader = esh
+	edges.material_override = em
+	edges.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(edges)
+	var groups := {}
+	var T: Dictionary = VW.get("terrain", {})
+	for k in T:
+		var t := str(T[k])
+		if t == "hulk" or t == "station":
+			t = "rock"
+		if EDGE_C.has(t) and index.has(k):
+			if not groups.has(t):
+				groups[t] = {}
+			groups[t][k] = true
+	for k in zone_of:
+		var z := str(zone_of[k])
+		if not groups.has(z):
+			groups[z] = {}
+		groups[z][k] = true
+	var o = VW.get("obj")
+	if o is Dictionary and str(o.get("type", "")) == "hold" and o.get("hex") is Dictionary:
+		groups["hold"] = {key(o["hex"]["q"], o["hex"]["r"]): true}
+	var meta = VW.get("map")
+	if well_c != Vector3.INF and meta is Dictionary:
+		var wq := int(meta["deadstar"]["q"])
+		var wr := int(meta["deadstar"]["r"])
+		groups["rim"] = {}
+		groups["pull"] = {}
+		for h in cells:
+			var d := _hdist(h.q, h.r, wq, wr)
+			if d <= 3:
+				groups["rim"][key(h.q, h.r)] = true
+			if d <= 5:
+				groups["pull"][key(h.q, h.r)] = true
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var n := 0
+	for g in groups:
+		n += _edge_into(st, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
+	edges.mesh = st.commit() if n > 0 else null
+
+
+# the outer edges of a set of hexes into a SurfaceTool: a line (w_line wide) and a band inside it fading out (w_glow)
+func _edge_into(st: SurfaceTool, keys: Dictionary, col: Color, w_line: float, w_glow: float, y: float) -> int:
+	var corners: Array = []
+	for i in 6:
+		var an := deg_to_rad(60.0 * i + 30.0)
+		corners.append(Vector3(cos(an), 0, sin(an)))
+	var n := 0
+	for k in keys:
+		var qr: PackedStringArray = str(k).split(",")
+		var c := hex_world(int(qr[0]), int(qr[1]), y)
+		for i in 6:
+			var a: Vector3 = corners[i]
+			var b: Vector3 = corners[(i + 1) % 6]
+			var nb := world_hex(c + (a + b) * 0.5 * HS * 2.0)
+			if keys.has(key(nb.x, nb.y)):
+				continue
+			n += 1
+			var r0 := HS * 0.97
+			for band in [[r0, r0 - w_line, col.a, col.a], [r0 - w_line, r0 - w_line - w_glow, col.a * 0.3, 0.0]]:
+				var c0 := Color(col.r, col.g, col.b, band[2])
+				var c1 := Color(col.r, col.g, col.b, band[3])
+				var p0: Vector3 = c + a * float(band[0])
+				var p1: Vector3 = c + b * float(band[0])
+				var p2: Vector3 = c + b * float(band[1])
+				var p3: Vector3 = c + a * float(band[1])
+				for v in [[p0, c0], [p1, c0], [p2, c1], [p0, c0], [p2, c1], [p3, c1]]:
+					st.set_color(v[1])
+					st.add_vertex(v[0])
+	return n
+
+
+# push the current look into the board's shaders, its colours and the world (gas, debris, the well, the dark floor)
+func apply_look(toast := true) -> void:
+	if fills == null:
+		return
+	var sp := BL.spec()
+	var g := str(sp["grid"])
+	var rm := rings.material_override as ShaderMaterial
+	rm.set_shader_parameter("mode", {"today": 0, "holo": 1, "ghost": 2, "tactical": 3}.get(g, 0))
+	rm.set_shader_parameter("well", Vector4(well_c.x, well_c.y, well_c.z, 9.0) if (sp["funnel"] and well_c != Vector3.INF) else Vector4.ZERO)
+	(fills.material_override as ShaderMaterial).set_shader_parameter("reach_mode", 1 if str(sp["reach"]) == "holo" else 0)
+	if edges != null:
+		_edge_gain = float(sp["terrain_edge"])
+		(edges.material_override as ShaderMaterial).set_shader_parameter("gain", _edge_gain)
+		edges.visible = _edge_gain > 0.0
+	refresh()
+	if is_inside_tree():
+		get_tree().call_group("vs_world", "set_look")
+	_look_ui(toast)
+
+
+func _look_ui(toast: bool) -> void:
+	if not is_inside_tree():
+		return
+	if _look_layer == null:
+		_look_layer = CanvasLayer.new()
+		_look_layer.layer = 5
+		add_child(_look_layer)
+		_look_btn = Button.new()
+		_look_btn.text = "Grid  (Z)"
+		_look_btn.toggle_mode = true
+		_look_btn.focus_mode = Control.FOCUS_NONE
+		_look_btn.tooltip_text = "Show the full tactical grid"
+		_look_btn.add_theme_font_size_override("font_size", 18)
+		_look_btn.anchor_left = 1.0
+		_look_btn.anchor_right = 1.0
+		_look_btn.offset_left = -150.0
+		_look_btn.offset_right = -18.0
+		_look_btn.offset_top = 120.0
+		_look_btn.offset_bottom = 160.0
+		_look_btn.toggled.connect(func(on: bool) -> void:
+			if BL.tactical != on:
+				BL.tactical = on
+				apply_look(false))
+		_look_layer.add_child(_look_btn)
+		_toast = Label.new()
+		_toast.add_theme_font_size_override("font_size", 26)
+		_toast.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+		_toast.add_theme_constant_override("outline_size", 6)
+		_toast.anchor_left = 0.5
+		_toast.anchor_right = 0.5
+		_toast.offset_left = -400.0
+		_toast.offset_right = 400.0
+		_toast.offset_top = 90.0
+		_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_toast.visible = false
+		_look_layer.add_child(_toast)
+	_look_btn.set_pressed_no_signal(BL.tactical)
+	_look_btn.visible = BL.current() == "cine"
+	if toast:
+		_toast.text = "Board look: " + str(BL.NAMES.get(BL.current(), BL.current())) + ("  (F8: next look)" if BL.current() != "cine" else "  (Z: tactical grid, F8: next look)")
+		_toast.visible = true
+		_toast_t = 3.0
+
+
+func _process(dt: float) -> void:
+	if _toast != null and _toast.visible:
+		_toast_t -= dt
+		if _toast_t <= 0.0:
+			_toast.visible = false
+	# the title screen's showcase hides the grid: the edges and the button go with it
+	if fills != null:
+		if edges != null:
+			edges.visible = fills.visible and _edge_gain > 0.0
+		if _look_layer != null:
+			_look_layer.visible = fills.visible
+
+
+func _unhandled_input(e: InputEvent) -> void:
+	if fills == null or not fills.visible:
+		return
+	if e is InputEventKey and e.pressed and not e.echo:
+		var k := (e as InputEventKey).keycode
+		if k == KEY_F8:
+			BL.next()
+			apply_look(true)
+			get_viewport().set_input_as_handled()
+		elif k == KEY_Z and BL.current() == "cine":
+			BL.tactical = not BL.tactical
+			apply_look(false)
+			get_viewport().set_input_as_handled()
 
 
 # ---------------------------------------------------------------- terrain props

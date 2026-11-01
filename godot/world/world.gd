@@ -21,6 +21,8 @@ const PL := preload("res://world/world_planet.gd")
 const WR := preload("res://world/world_rocks.gd")
 const BAKER := preload("res://world/world_bake.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
+const BL := preload("res://world/board_look.gd")
+const LIV := preload("res://world/world_living.gd")
 const SUN := Vector3(0.45, 0.70, 0.55)   # toward the sun: the battle's key light shines along -SUN (look.gd KEY_DIR)
 
 var quality := "max"
@@ -47,6 +49,12 @@ var _lo := Vector3.ZERO
 var _hi := Vector3.ZERO
 var _yaw := 0.0
 var _sky_tex: Texture2D = null
+var _old_clouds: Array = []     # today's faint cloud billboards on nebula and storm hexes
+var _under_mat: ShaderMaterial = null
+var _terr_pts := {"neb": [], "storm": [], "debris": []}   # board positions of those hexes (the living look builds on them)
+var _rock_kind := "stone"
+var _fac := "voidsworn"
+var _living = null              # world_living.gd: B's gas, storm, debris and well (built the first time a look needs it)
 var _pano: Texture2D = null     # the battle's painted panorama (battle.gd passes it; the dead-star board shows it, R2)
 
 
@@ -142,8 +150,12 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		var t := String(terrain[k])
 		match t:
 			"rock": blocker(p, rock_kind)
-			"debris": debris_field(p, rock_kind)
-			"neb", "storm": clouds[t].append(p)
+			"debris":
+				debris_field(p, rock_kind)
+				_terr_pts["debris"].append(p)
+			"neb", "storm":
+				clouds[t].append(p)
+				_terr_pts[t].append(p)
 		if counts.has(t):
 			counts[t] += 1
 	for t in clouds:
@@ -158,6 +170,31 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], fac])
 	notes.append("rocks: %d in all (%d rock hexes, %d debris hexes); clouds on %d nebula and %d storm hexes; built in %.0f ms" % [n_rocks,
 		counts["rock"], counts["debris"], counts["neb"], counts["storm"], (Time.get_ticks_usec() - t0) / 1000.0])
+	_rock_kind = rock_kind
+	_fac = fac
+	add_to_group("vs_world")
+	set_look()
+
+
+# The board look trial (world/board_look.gd): the dark floor under the board, today's faint clouds, and B's living
+# terrain (gas, storm, debris, the well) shown or hidden for the current look. Called by the board when the look changes.
+func set_look() -> void:
+	var sp := BL.spec()
+	if _under_mat != null:
+		_under_mat.set_shader_parameter("vis", float(sp["underlay"]))
+	for c in _old_clouds:
+		if is_instance_valid(c):
+			(c as Node3D).visible = bool(sp["old_clouds"])
+	if bool(sp["living"]) and _living == null:
+		var t0 := Time.get_ticks_usec()
+		_living = LIV.new()
+		_living.name = "Living"
+		add_child(_living)
+		_living.build(self)
+		notes.append("living terrain built in %.0f ms" % ((Time.get_ticks_usec() - t0) / 1000.0))
+	if _living != null:
+		_living.visible = bool(sp["living"])
+		_living.set_gas_k(float(sp["gas_k"]))
 
 
 # The map's kind from what is on it (the rules do not hand the map name to the scene): planet, station, graveyard (wrecks),
@@ -942,6 +979,7 @@ uniform vec3 well = vec3(0.0);
 uniform float well_r = 0.0;
 uniform vec4 planet = vec4(0.0);    // xyz centre, w radius (0: none)
 uniform vec3 ring_n = vec3(0.0);
+uniform float vis = 1.0;    // the board look trial: 0 hides the floor (looks A, B, C), a part of it in C's tactical grid
 varying vec3 vW;
 void vertex() { vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 void fragment() {
@@ -975,7 +1013,7 @@ void fragment() {
 		a *= smoothstep(well_r, well_r * 1.5, length(vW.xz - well.xz));
 	}
 	ALBEDO = col;
-	ALPHA = a;
+	ALPHA = a * vis;
 }
 """
 
@@ -1002,6 +1040,7 @@ func underlay() -> void:
 		m.set_shader_parameter("well_r", 15.0 * 4.4)
 	# drawn after the lens (which copies the screen, render_priority -30) and before the board's own fills
 	m.render_priority = -20
+	_under_mat = m
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# below the feet of the board's rocks and debris, above anything deep
@@ -1121,6 +1160,7 @@ func cloud_hexes(ps: Array, t: String, fac: String) -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = 20.0
 	add_child(mi)
+	_old_clouds.append(mi)
 
 
 # Dust specks through the space round and below the board (never over it at ship height): they slide past at different
