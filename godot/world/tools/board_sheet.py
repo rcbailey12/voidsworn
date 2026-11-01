@@ -3,7 +3,7 @@
     python3 board_sheet.py SHOTS_DIR OUT_DIR [setting ...]
 
 SHOTS_DIR holds world_shots.gd --looks captures (<setting>_<look>_1_default.jpg and _2_zoomed_out.jpg). Writes, per
-setting, <setting>_looks.jpg (five rows: today, A, B, C, C tactical; battle camera left, zoomed out right) and
+setting, <setting>_looks.jpg (five rows: today, A, B, C, C tactical; close, battle camera, zoomed out) and
 all_battle_camera.jpg (every setting side by side, battle camera only).
 """
 import os
@@ -44,13 +44,14 @@ def main():
     src, out = sys.argv[1], sys.argv[2]
     sets = sys.argv[3:] or SETTINGS
     os.makedirs(out, exist_ok=True)
-    W, H = 960, 540
+    W, H = 800, 450
+    shots = [("3_close", "close"), ("1_default", "battle camera"), ("2_zoomed_out", "zoomed out")]
     for s in sets:
-        sheet = Image.new("RGB", (W * 2, H * len(LOOKS)))
+        sheet = Image.new("RGB", (W * len(shots), H * len(LOOKS)))
         for row, (lk, name) in enumerate(LOOKS):
-            for col, (sh, cam) in enumerate([("1_default", "battle camera"), ("2_zoomed_out", "zoomed out")]):
+            for col, (sh, cam) in enumerate(shots):
                 im = cell(os.path.join(src, "%s_%s_%s.jpg" % (s, lk, sh)), W, H)
-                label(im, "%s   %s" % (name, cam), 24)
+                label(im, "%s   %s" % (name.split("(")[0].strip(), cam), 20)
                 sheet.paste(im, (col * W, row * H))
         sheet.save(os.path.join(out, "%s_looks.jpg" % s), quality=88)
     w, h = 640, 360

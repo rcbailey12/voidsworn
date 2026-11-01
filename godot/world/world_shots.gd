@@ -7,8 +7,9 @@ extends Node
 #         [--bench S]   also orbit the camera for S seconds per case and write DIR/bench.json (frame times)
 #         [--novsync]   measure without the screen's frame cap
 #         [--looks today,holo,living,cine,tac]   the board look trial (world/board_look.gd): each look in turn on the same
-#                       battle, from the default camera and zoomed out, with a move hex hovered (tac: look C with the
-#                       tactical grid up); names <case>_<look>_1_default.jpg and _2_zoomed_out.jpg
+#                       battle, from the default camera, zoomed out and close over the ship that is up, with a move hex
+#                       hovered (tac: look C with the tactical grid up); names <case>_<look>_1_default.jpg, _2_zoomed_out.jpg
+#                       and _3_close.jpg
 #
 # Every case is a fixed scenario dictionary (the same fields as rules/test/scenarios.json) with its seed, and the biome
 # the campaign would give that region (biome is visual only, R63), written into the rules' battle before the scene builds.
@@ -229,6 +230,14 @@ func _looks(b, name: String, home: Dictionary) -> void:
 		cam.snap()
 		await _settle()
 		await _snap("%s_%s_2_zoomed_out" % [name, l])
+		# close over the ship that is up (where the grid, the footprint and the terrain meet)
+		if not u.is_empty():
+			cam.t = b.board.hex_world(int(u["q"]), int(u["r"]))
+			cam.r = 120.0
+			cam.b = home["b"]
+			cam.snap()
+			await _settle()
+			await _snap("%s_%s_3_close" % [name, l])
 	if b.world != null:
 		print("[world_shots] %s: %s" % [name, "; ".join(b.world.notes)])
 	BL.set_look("today", false)
