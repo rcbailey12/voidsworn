@@ -4,6 +4,12 @@ import io, os, json, struct, math
 import numpy as np
 
 
+
+def unit_normals(n):
+    """normals scaled to length 1; zero-length or non-finite ones become +z (degenerate faces, where any direction shades the same)"""
+    n = np.asarray(n, np.float32); L = np.linalg.norm(n, axis=1, keepdims=True); bad = ~np.isfinite(L[:, 0]) | (L[:, 0] < 1e-8)
+    out = n / np.where(bad[:, None], 1., L); out[bad] = (0., 0., 1.); return out
+
 class GLB:
     def __init__(self, generator='voidsworn a4'):
         self.blobs = []; self.views = []; self.acc = []; self.meshes = []; self.nodes = []; self.mats = []; self.imgs = []; self.tex = []
@@ -53,6 +59,7 @@ class GLB:
         """prims: list of dict(pos, nor, idx, uv=None, tan=None, mat); quant=True writes KHR_mesh_quantization attributes"""
         out = []
         for p in prims:
+            p = dict(p, nor=unit_normals(p['nor']))  # glTF wants unit normals (C13s, C15s and two wreck chunks had zero-length ones, Nov 1)
             if quant:
                 at = {'POSITION': self.qaccessor(p['pos'], 'pos'), 'NORMAL': self.qaccessor(p['nor'], 'nor')}
                 if p.get('uv') is not None: at['TEXCOORD_0'] = self.qaccessor(p['uv'], 'uv')
