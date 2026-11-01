@@ -234,7 +234,8 @@ void fragment() {
 	vec2 pd = r > 1e-4 ? vUv / r : vec2(0.0, 1.0);
 	float ts = th / max(r_shadow, 1e-4);         // in shadow radii
 	float across = abs(pd.x * ax2.y - pd.y * ax2.x);
-	float up = step(0.0, dot(pd, up2));
+	// F4: a smooth change from the upper arc to the lower one (a hard step drew a seam at top-dead-centre, Argon 4.1)
+	float up = smoothstep(-0.35, 0.35, dot(pd, up2));
 	float w_out = mix(1.4, 1.62, up);
 	float band = smoothstep(1.035, 1.07, ts) * (1.0 - smoothstep(w_out - 0.12, w_out, ts));
 	float u = clamp((ts - 1.05) / (w_out - 1.05), 0.0, 1.0);

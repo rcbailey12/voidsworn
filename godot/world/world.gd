@@ -1,52 +1,61 @@
 extends Node3D
-# The battle world (G4, API in godot/fx/API.md section 9): sky and nebula per enemy faction, one backdrop planet at most,
-# the dead star with gravitational lensing and an accretion disc (R2, R24: the board stays; the paintings are only mood,
-# R25), faceted asteroid blockers on rock hexes, sparse dressing off the board, debris and nebula hexes.
+# The battle world (API in godot/fx/API.md section 9). F4 feel pass rebuild (Ryan, Nov 1: "Background asteroids and
+# imagery still needs a serious upgrade"), to the grand space-opera bar:
+#   - the setting (world_sky.gd): the sector's region of space and the enemy faction pick the sky and the planet, so the
+#     battles of one sector share them and each battle only turns the view a little;
+#   - the sky: a ray-marched nebula baked on the GPU once per setting (world_bake.gd), pin-sharp stars per pixel, the
+#     galaxy's band, the system's sun where the key light comes from;
+#   - the system: a planet with atmosphere, clouds, night lights, rings and moons (world_planet.gd), placed beyond the
+#     far side of the board where the default camera sees it;
+#   - asteroids (world_rocks.gd, shapes from world/tools/rockgen.py): blockers on rock hexes, debris on debris hexes, a
+#     scatter round the board's edge, a deep field and (on belt maps) a belt stream far below, a few mountain-sized rocks,
+#     all tumbling, far ones sinking into the sky's haze; dust specks for depth when the camera moves;
+#   - nebula and ion-storm clouds on their hexes; the dead star (R2, R24) with lensing and its accretion disc.
 #
-# BACKLOG section 3 oddities, and how this build avoids them: rocks never sit in front of the planet (dressing keeps out
-# of its direction); never two identical moons (one planet, chosen per battle); no "distant traffic" ships at all; no rim
-# wall (the board edge gets a sparse scatter of separate rocks below the board plane, not a slab).
+# Kept from G4's rules (BACKLOG section 3): no distant traffic ships; nothing on the board but blockers and debris on
+# their own hexes; no rim wall; no two moons alike; mountains and the deep field keep out of the planet's disc.
 
 const WS := preload("res://world/world_shaders.gd")
-
-# nebula colours per enemy faction (the browser game's BIOMES, scene3d.js) come from the faction look data
-# (fx/faction_looks.json, field nebula)
+const SKY := preload("res://world/world_sky.gd")
+const PL := preload("res://world/world_planet.gd")
+const WR := preload("res://world/world_rocks.gd")
+const BAKER := preload("res://world/world_bake.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
-# rock kinds (battle.js ROCK_KINDS): base albedo (linear), shader kind
-const ROCKS := {
-	# r10: darker, warmer regolith (real asteroids are dark; r9's lighter values read as pale cream under the key light,
-	# where G3's map rocks are dark brown)
-	"stone": [Vector3(0.085, 0.068, 0.055), 0], "ice": [Vector3(0.2, 0.24, 0.29), 1], "iron": [Vector3(0.11, 0.09, 0.078), 2],
-	"carbon": [Vector3(0.045, 0.04, 0.036), 3], "crystal": [Vector3(0.075, 0.085, 0.085), 4],
-}
-# backdrop planets (biome.planet 0..7): [colour a, colour b, atmosphere, gas giant]
-const PLANETS := [
-	[Vector3(0.55, 0.42, 0.3), Vector3(0.25, 0.17, 0.12), Vector3(0.9, 0.6, 0.35), 1.0],
-	[Vector3(0.3, 0.45, 0.6), Vector3(0.12, 0.2, 0.32), Vector3(0.4, 0.65, 1.0), 1.0],
-	[Vector3(0.45, 0.35, 0.55), Vector3(0.18, 0.12, 0.25), Vector3(0.7, 0.5, 1.0), 1.0],
-	[Vector3(0.25, 0.4, 0.22), Vector3(0.12, 0.18, 0.3), Vector3(0.45, 0.7, 1.0), 0.0],
-	[Vector3(0.5, 0.3, 0.2), Vector3(0.22, 0.12, 0.08), Vector3(1.0, 0.5, 0.3), 0.0],
-	[Vector3(0.35, 0.33, 0.32), Vector3(0.15, 0.14, 0.14), Vector3(0.6, 0.6, 0.7), 0.0],
-	[Vector3(0.6, 0.6, 0.65), Vector3(0.3, 0.35, 0.45), Vector3(0.6, 0.8, 1.0), 0.0],
-	[Vector3(0.2, 0.5, 0.45), Vector3(0.08, 0.2, 0.25), Vector3(0.3, 1.0, 0.8), 1.0],
-]
+const SUN := Vector3(0.45, 0.70, 0.55)   # toward the sun: the battle's key light shines along -SUN (look.gd KEY_DIR)
 
 var quality := "max"
 var notes: PackedStringArray = []
+var setting := {}
 var _spin: Array = []        # [node, axis, rate]
 var _well := Vector3.INF
 var _rng := RandomNumberGenerator.new()
-var _mesh_lib := {}
 var _planet_dir := Vector3.ZERO
-var disc_tilt := -12.0       # degrees; the board view looks down about 55 degrees, so a small tilt reads
+var _planet_ang := 0.0
+# degrees about x. F4: the default camera looks down 34 degrees from +z; a tilt of -25 shows it the disc nearly edge on
+# (about 9 degrees), the classic lensed look (the far side of the disc bent up over the shadow); -12 showed it face on.
+var disc_tilt := -25.0
+var _baker: Node = null
+var _sky_mat: ShaderMaterial = null
+var _look := {}
+var _mats := {}
+var _batch = null
+var _center := Vector3.ZERO
+var _lo := Vector3.ZERO
+var _hi := Vector3.ZERO
+var _yaw := 0.0
+var _sky_tex: Texture2D = null
+
+
+func _sky_into(m: ShaderMaterial) -> void:
+	if _sky_tex == null or m == null:
+		return
+	m.set_shader_parameter("sky_tex", _sky_tex)
+	m.set_shader_parameter("has_sky", 1.0)
+	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
 
 
 func well_position() -> Vector3:
 	return _well
-
-
-func _process(delta: float) -> void:
-	pass
 
 
 func step(dt: float) -> void:
@@ -59,18 +68,16 @@ func step(dt: float) -> void:
 # ---------------------------------------------------------------- battle build (API.md 9)
 
 func build(view: Dictionary, opts: Dictionary) -> void:
+	var t0 := Time.get_ticks_usec()
 	quality = String(opts.get("quality", "max"))
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		quality = "low"
-	var biome: Dictionary = opts.get("biome", {})
+	var biome: Dictionary = opts.get("biome", {}) if opts.get("biome") is Dictionary else {}
 	var fac := String(opts.get("fac", "voidsworn"))
 	var hw: Callable = opts["hex_world"]
-	_rng.seed = int(opts.get("seed", hash(str(view.get("round", 0)) + fac)))
-	var env: Environment = opts.get("environment", null)
-	if env != null:
-		sky(env, fac, opts.get("pano", null), int(_rng.randi()))
-	var rock_kind := String(biome.get("rock", "stone"))
-	var map: Dictionary = view.get("map", {})
+	var bseed := int(opts.get("seed", hash(str(view.get("round", 0)) + fac)))
+	_rng.seed = bseed
+	var map: Dictionary = view.get("map", {}) if view.get("map") is Dictionary else {}
 	var terrain: Dictionary = view.get("terrain", {})
 	# board bounds from the hexes in play
 	var lo := Vector3(1e9, 0, 1e9)
@@ -87,22 +94,85 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	if lo.x > hi.x:
 		lo = Vector3(-150, 0, -100)
 		hi = Vector3(150, 0, 100)
-	var center := (lo + hi) * 0.5
-	if biome.has("planet") and not map.has("deadstar"):
-		planet(int(biome["planet"]), center)
-	if map.has("deadstar") and map["deadstar"] != null:
+	# the board's full extent: terrain lists only special hexes, so widen to at least the camera's bounds when given
+	var cam = opts.get("camera", null)
+	if cam != null and "bounds" in cam and cam.bounds is Vector2:
+		var b: Vector2 = cam.bounds
+		lo = lo.min(Vector3(-b.x, 0, -b.y))
+		hi = hi.max(Vector3(b.x, 0, b.y))
+	_lo = lo
+	_hi = hi
+	_center = (lo + hi) * 0.5
+	var deadstar: bool = map.has("deadstar") and map["deadstar"] != null
+	var mk := map_kind(view)
+	setting = SKY.setting(biome, fac, mk, deadstar, bseed)
+	_yaw = float(setting["yaw"])
+	_baker = BAKER.new()
+	_baker.name = "Baker"
+	add_child(_baker)
+	var env: Environment = opts.get("environment", null)
+	if env != null:
+		_make_sky(env)
+	if deadstar:
 		var ds: Dictionary = map["deadstar"]
 		dead_star(hw.call(int(ds["q"]), int(ds["r"])) + Vector3(0, -10, 0), 1.0)
 		if opts.has("fx") and opts["fx"] != null:
 			opts["fx"].well = _well
+	_look = {"board_c": _center, "haze": setting["haze"], "haze_r": Vector2(340.0, 2400.0), "haze_max": 0.88, "quality": quality,
+		"glow": Vector3(0.3, 0.75, 1.0)}
+	if _well != Vector3.INF:
+		_look["rim_pos"] = _well
+	if not deadstar:
+		system(mk != "planet")
+	_batch = WR.Batch.new()
+	var rock_kind := String(setting["rock"])
+	var counts := {"rock": 0, "debris": 0, "neb": 0, "storm": 0}
+	var clouds := {"neb": [], "storm": []}
 	for k in terrain.keys():
 		var qr := String(k).split(",")
 		var p: Vector3 = hw.call(int(qr[0]), int(qr[1]))
-		match String(terrain[k]):
+		var t := String(terrain[k])
+		match t:
 			"rock": blocker(p, rock_kind)
 			"debris": debris_field(p, rock_kind)
-			"neb": nebula_hex(p, fac)
-	dressing(lo, hi, rock_kind, 70)
+			"neb", "storm": clouds[t].append(p)
+		if counts.has(t):
+			counts[t] += 1
+	for t in clouds:
+		if not (clouds[t] as Array).is_empty():
+			cloud_hexes(clouds[t], t, fac)
+	fields(mk, rock_kind)
+	var n_rocks: int = _batch.build(self, Callable(WR, "mesh"))
+	dust(mk)
+	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
+		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], fac])
+	notes.append("rocks: %d in all (%d rock hexes, %d debris hexes); clouds on %d nebula and %d storm hexes; built in %.0f ms" % [n_rocks,
+		counts["rock"], counts["debris"], counts["neb"], counts["storm"], (Time.get_ticks_usec() - t0) / 1000.0])
+
+
+# The map's kind from what is on it (the rules do not hand the map name to the scene): planet, station, graveyard (wrecks),
+# storm, belt (many rocks), open.
+static func map_kind(view: Dictionary) -> String:
+	var map: Dictionary = view.get("map", {}) if view.get("map") is Dictionary else {}
+	if map.get("planet") is Dictionary:
+		return "planet"
+	if map.get("station") != null and map.has("station"):
+		return "station"
+	if map.get("wrecks") != null and map.has("wrecks"):
+		return "graveyard"
+	var n_rock := 0
+	var n_storm := 0
+	for k in view.get("terrain", {}):
+		var t := String(view["terrain"][k])
+		if t == "rock":
+			n_rock += 1
+		elif t == "storm":
+			n_storm += 1
+	if n_storm >= 6:
+		return "storm"
+	if n_rock >= 14:
+		return "belt"
+	return "open"
 
 
 func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
@@ -110,73 +180,229 @@ func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
 		quality = "low"
 	_rng.seed = 7
-	sky(env, "corsair", null, 3)
+	_lo = Vector3(-120, 0, -70)
+	_hi = Vector3(120, 0, 70)
+	_center = Vector3.ZERO
+	setting = SKY.setting({"rock": "carbon", "planet": 5}, "corsair", "open", true, 7)
+	_baker = BAKER.new()
+	add_child(_baker)
+	_make_sky(env)
 	disc_tilt = -24.0
 	dead_star(opts.get("deadstar", Vector3(0, -20, -150)), 1.0)
+	_look = {"board_c": _center, "haze": setting["haze"], "haze_r": Vector2(340.0, 2400.0), "haze_max": 0.88, "quality": quality, "rim_pos": _well}
+	_batch = WR.Batch.new()
 	for i in 3:
 		blocker(Vector3(-40 + i * 70, -2, -95 + (i % 2) * 20), ["stone", "ice", "crystal"][i])
-	dressing(Vector3(-120, 0, -70), Vector3(120, 0, 70), "carbon", 40)
+	fields("open", "carbon")
+	_batch.build(self, Callable(WR, "mesh"))
+	dust("open")
 
 
-# ---------------------------------------------------------------- sky and planet
+# ---------------------------------------------------------------- sky
 
-func sky(env: Environment, fac: String, pano: Texture2D, seed_v: int) -> void:
+func _make_sky(env: Environment) -> void:
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = WS.SKY
+	sh.code = SKY.SKY
 	m.shader = sh
-	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
-	m.set_shader_parameter("c1", b[0])
-	m.set_shader_parameter("c2", b[1])
-	m.set_shader_parameter("c3", b[2])
-	m.set_shader_parameter("seed", float(seed_v % 97))
-	if pano == null and env.sky != null and env.sky.sky_material is PanoramaSkyMaterial:
-		pano = (env.sky.sky_material as PanoramaSkyMaterial).panorama
-	if pano == null and env.sky != null and env.sky.sky_material is ShaderMaterial:
-		var t = (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano")
-		if t is Texture2D:
-			pano = t
-	if pano != null:
-		m.set_shader_parameter("pano", pano)
-		m.set_shader_parameter("has_pano", 1.0)
-	m.set_shader_parameter("sun_dir", Vector3(0.45, 0.70, 0.55).normalized())
+	var lamps: Array = SKY.lamps(setting)
+	var lc: Array = []
+	var lr := RandomNumberGenerator.new()
+	lr.seed = int(setting["seed"]) + 9
+	for k in lamps.size():
+		var c: Vector3 = (setting["c3"] as Vector3).lerp(Vector3(0.85, 0.92, 1.0), lr.randf_range(0.3, 0.9))
+		lc.append(c)
+	m.set_shader_parameter("lamp", PackedVector4Array(lamps))
+	m.set_shader_parameter("lamp_col", PackedVector3Array(lc))
+	m.set_shader_parameter("seed", float(int(setting["seed"]) % 997))
+	m.set_shader_parameter("band_n", setting["band_n"])
+	m.set_shader_parameter("band", float(setting["band"]))
+	m.set_shader_parameter("star_k", float(setting["stars"]))
+	m.set_shader_parameter("sun_dir", SUN.normalized())
+	m.set_shader_parameter("turn", Basis(Vector3.UP, -_yaw))
+	var h := float(ProjectSettings.get_setting("display/window/size/viewport_height", 1080))
+	if is_inside_tree():
+		h = maxf(h, float(get_viewport().get_visible_rect().size.y))
+	m.set_shader_parameter("px", deg_to_rad(45.0) / h)
 	var s := Sky.new()
 	s.sky_material = m
 	s.radiance_size = Sky.RADIANCE_SIZE_256
 	s.process_mode = Sky.PROCESS_MODE_QUALITY
 	env.sky = s
 	env.background_mode = Environment.BG_SKY
-	notes.append("sky: nebula tinted for %s%s" % [fac, ", over the painted starfield" if pano != null else ""])
+	_sky_mat = m
+	_bake_sky(lamps)
 
 
-func planet(idx: int, center: Vector3) -> void:
-	var pp: Array = PLANETS[posmod(idx, PLANETS.size())]
+func _bake_sky(lamps: Array) -> void:
+	var size := Vector2i(4096, 2048) if quality != "low" else Vector2i(2048, 1024)
+	if OS.has_environment("VS_WORLD_PREVIEW"):   # software rendering in the cloud: small bakes
+		size = Vector2i(768, 384)
+	var key := "sky|%d|%s|%d" % [int(setting["seed"]), setting["region"], size.x]
+	var params := {"seed": float(int(setting["seed"]) % 997) * 0.37, "c1": setting["c1"], "c2": setting["c2"], "c3": setting["c3"],
+		"neb": float(setting["neb"]), "cover": float(setting["cover"]), "dust": float(setting["dust"]), "band": float(setting["band"]),
+		"band_n": setting["band_n"], "feature": setting["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
+		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(setting))}
+	var img: Image = await _baker.bake(key, SKY.bake_code(), params, size, 8 if size.x > 2048 else 4)
+	if img == null or _sky_mat == null:
+		notes.append("sky: stars only (no renderer for the nebula bake)")
+		return
+	var tex := ImageTexture.create_from_image(img)
+	_sky_mat.set_shader_parameter("neb_tex", tex)
+	_sky_mat.set_shader_parameter("has_neb", 1.0)
+	_sky_tex = tex
+	for k in _mats:
+		_sky_into(_mats[k])
+
+
+# ---------------------------------------------------------------- the system: planet, rings, moons
+
+const DIST := 3300.0
+
+
+# The planet beyond the far side of the board, to one side and a little below the horizon, so the default battle camera
+# (looking down about 34 degrees toward -z) has it filling an upper corner; moons elsewhere in that sky. with_planet off
+# (planet maps, where the board has its own planet): the moons only.
+func system(with_planet: bool) -> void:
+	var P: Dictionary = setting["planet"]
+	var r := RandomNumberGenerator.new()
+	r.seed = int(setting["seed"]) * 11 + 3
+	var turn := Basis(Vector3.UP, _yaw)
+	var side := -1.0 if r.randf() < 0.5 else 1.0
+	var giant: bool = int(P["kind"]) <= 1
+	var ang := r.randf_range(0.15, 0.18) if giant else r.randf_range(0.11, 0.14)
+	var az := side * r.randf_range(0.36, 0.5)
+	var el := -r.randf_range(0.17, 0.22)
+	var dir := turn * Vector3(sin(az) * cos(el), sin(el), -cos(az) * cos(el))
+	var bake_q := Vector2i(2048, 1024) if quality != "low" else Vector2i(1024, 512)
+	if OS.has_environment("VS_WORLD_PREVIEW"):
+		bake_q = Vector2i(512, 256)
+	if with_planet:
+		_planet_dir = dir
+		_planet_ang = ang
+		var R := DIST * sin(ang)
+		var tilt := Basis(Vector3(0, 0, 1), side * r.randf_range(0.18, 0.42)) * Basis(Vector3(1, 0, 0), r.randf_range(-0.25, 0.1))
+		var node := _sphere(_center + dir * DIST, R, tilt, P, int(setting["seed"]), bake_q, r.randf_range(0.002, 0.006), Vector3.ONE, true)
+		if bool(P.get("rings", false)):
+			_rings(node.position, R, tilt, P, r)
+	# moons: none alike (size, surface, tint and turn all differ), never over the planet
+	var moons := int(P.get("moons", 1)) if with_planet else 1 + r.randi() % 2
+	var placed: Array = []
+	var tries := 0
+	while placed.size() < moons and tries < 40:
+		tries += 1
+		var maz := r.randf_range(-0.95, 0.95)
+		var mel := -r.randf_range(0.04, 0.42)
+		var mdir := turn * Vector3(sin(maz) * cos(mel), sin(mel), -cos(maz) * cos(mel))
+		var mang := r.randf_range(0.012, 0.045) * (1.6 if not with_planet and placed.is_empty() else 1.0)
+		if _planet_dir != Vector3.ZERO and acos(clampf(mdir.dot(_planet_dir), -1, 1)) < _planet_ang + mang + 0.04:
+			continue
+		var bad := false
+		for q in placed:
+			if acos(clampf(mdir.dot(q[0]), -1, 1)) < mang + q[1] + 0.05:
+				bad = true
+		if bad:
+			continue
+		placed.append([mdir, mang])
+		var dist := DIST * r.randf_range(0.8, 1.15)
+		var mkind := 4 if r.randf() < 0.65 else 5
+		var tints := [Vector3(1.0, 0.95, 0.88), Vector3(0.85, 0.82, 0.8), Vector3(1.0, 0.86, 0.7), Vector3(0.9, 0.95, 1.05)]
+		var MP := {"kind": mkind, "a": Vector3(0.5, 0.48, 0.45) if mkind == 4 else Vector3(0.8, 0.84, 0.88), "b": Vector3(0.22, 0.21, 0.2) if mkind == 4 else Vector3(0.5, 0.4, 0.32),
+			"c": Vector3(0.65, 0.62, 0.58) if mkind == 4 else Vector3(0.6, 0.75, 0.9), "atmo": Vector3.ZERO, "rings": false}
+		var mq := Vector2i(1024, 512) if quality != "low" else Vector2i(512, 256)
+		if OS.has_environment("VS_WORLD_PREVIEW"):
+			mq = Vector2i(256, 128)
+		_sphere(_center + mdir * dist, dist * sin(mang), Basis(Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf() * TAU), MP,
+			mkind * 1000 + int(setting["seed"]) % 7 + placed.size() * 101, mq, r.randf_range(0.0, 0.004), tints[placed.size() % tints.size()] * r.randf_range(0.8, 1.1), false)
+	notes.append("system: %s, %d moons" % [("planet %d" % int(setting["planet_i"])) if with_planet else "no backdrop planet (the board has one)", placed.size()])
+
+
+func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int, bake_size: Vector2i, spin: float, tint: Vector3, main: bool) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	var sm := SphereMesh.new()
 	sm.radius = 1.0
 	sm.height = 2.0
-	sm.radial_segments = 96
-	sm.rings = 48
+	sm.radial_segments = 128 if main else 48
+	sm.rings = 64 if main else 24
 	mi.mesh = sm
 	var m := ShaderMaterial.new()
 	var sh := Shader.new()
-	sh.code = WS.PLANET
+	sh.code = PL.SPHERE
 	m.shader = sh
-	m.set_shader_parameter("col_a", pp[0])
-	m.set_shader_parameter("col_b", pp[1])
-	m.set_shader_parameter("atmo", pp[2])
-	m.set_shader_parameter("gas", pp[3])
-	m.set_shader_parameter("seed", float(idx) * 3.7)
+	m.set_shader_parameter("flat_col", (P["a"] as Vector3) * 0.6)
+	m.set_shader_parameter("sun", SUN.normalized())
+	var atmo: Vector3 = P.get("atmo", Vector3.ZERO)
+	m.set_shader_parameter("atmo", atmo)
+	m.set_shader_parameter("atmo_k", 0.0 if atmo.length() < 0.01 else (0.8 if int(P["kind"]) == 2 else 0.55))
+	m.set_shader_parameter("spin", spin)
+	m.set_shader_parameter("tint", tint)
+	m.set_shader_parameter("light", 0.6 if main else 0.6)
+	m.set_shader_parameter("rough", 1.0 if int(P["kind"]) >= 2 else 0.25)
+	if bool(P.get("rings", false)):
+		m.set_shader_parameter("ring", Vector4((basis * Vector3.UP).x, (basis * Vector3.UP).y, (basis * Vector3.UP).z, 1.0))
+		m.set_shader_parameter("ring_r", Vector2(1.3, 2.3))
 	mi.material_override = m
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	# behind the battle and a little above the board plane: the board camera looks down through the transparent board,
-	# so a planet below the plane showed as a huge disc right under the fleet (G2, scenario s3)
-	_planet_dir = Vector3(-0.42, 0.16, -0.89).normalized()
-	mi.position = center + _planet_dir * 2400.0
-	mi.scale = Vector3.ONE * 520.0
+	mi.transform = Transform3D(basis.scaled(Vector3.ONE * R), pos)
+	mi.extra_cull_margin = R
 	add_child(mi)
-	_spin.append([mi, Vector3.UP, 0.004])
+	if atmo.length() > 0.01:
+		var sh2 := MeshInstance3D.new()
+		var sm2 := SphereMesh.new()
+		sm2.radius = 1.0
+		sm2.height = 2.0
+		sm2.radial_segments = 96
+		sm2.rings = 48
+		sh2.mesh = sm2
+		var am := ShaderMaterial.new()
+		var ash := Shader.new()
+		ash.code = PL.ATMO
+		am.shader = ash
+		am.set_shader_parameter("atmo", atmo)
+		am.set_shader_parameter("sun", SUN.normalized())
+		am.set_shader_parameter("shell", 1.035)
+		am.set_shader_parameter("k", 0.9 if int(P["kind"]) == 2 else 0.6)
+		sh2.material_override = am
+		sh2.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		sh2.transform = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * R * 1.035), pos)
+		add_child(sh2)
+	var key := "planet|%d|%d|%d" % [int(P["kind"]), bake_seed, bake_size.x]
+	_bake_planet(m, key, P, bake_seed, bake_size)
+	return mi
 
+
+func _bake_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int, size: Vector2i) -> void:
+	var params := {"seed": float(bake_seed % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": 0}
+	var a: Image = await _baker.bake(key + "|a", PL.bake_code(), params, size, 2)
+	if a == null:
+		return
+	params["pass_id"] = 1
+	var b: Image = await _baker.bake(key + "|b", PL.bake_code(), params, size, 2)
+	if b == null:
+		return
+	m.set_shader_parameter("tex_a", ImageTexture.create_from_image(a))
+	m.set_shader_parameter("tex_b", ImageTexture.create_from_image(b))
+	m.set_shader_parameter("has_tex", 1.0)
+
+
+func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumberGenerator) -> void:
+	var mi := MeshInstance3D.new()
+	mi.mesh = _annulus(1.3, 2.3, 256, 1)
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = PL.RING
+	m.shader = sh
+	m.set_shader_parameter("sun", SUN.normalized())
+	m.set_shader_parameter("col_a", (P["c"] as Vector3) * 0.9)
+	m.set_shader_parameter("col_b", (P["b"] as Vector3) * 1.2)
+	m.set_shader_parameter("seed", r.randf() * 50.0)
+	m.set_shader_parameter("ring_r", Vector2(1.3, 2.3))
+	m.set_shader_parameter("light", 0.55)
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.transform = Transform3D(basis.scaled(Vector3.ONE * R), pos)
+	mi.extra_cull_margin = R * 2.5
+	add_child(mi)
 
 # ---------------------------------------------------------------- the dead star
 
@@ -212,7 +438,7 @@ func dead_star(c: Vector3, s: float) -> void:
 	dm.set_shader_parameter("r_in", Rsh * 1.2)
 	dm.set_shader_parameter("r_out", Rsh * 3.8)
 	dm.set_shader_parameter("spin", 0.35)
-	dm.set_shader_parameter("gain", 1.0)
+	dm.set_shader_parameter("gain", 0.62)
 	disc.material_override = dm
 	disc.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	tilt.add_child(disc)
@@ -289,223 +515,350 @@ func _annulus(r0: float, r1: float, seg: int, rings: int) -> ArrayMesh:
 	return st.commit()
 
 
+
+
 # ---------------------------------------------------------------- asteroids
 
-# An asteroid like G3's campaign map rocks (map3d_props.gd, r8, Opus: battle rocks must match the map): a fine
-# icosphere pushed by layered noise into a lumpy, elongated body, pocked by impact craters with bowls and raised rims,
-# shaded smooth. COLOR.r carries the crater depth (darker, dustier floors in the shader), COLOR.g the rim (brighter,
-# worn). r6-r7 cut flat fracture planes into it, which read as grey low-poly faceted lumps on the board.
-func rock_mesh(r: RandomNumberGenerator, elong: Vector3, sub: int) -> ArrayMesh:
-	var verts: Array = []
-	var t := (1.0 + sqrt(5.0)) / 2.0
-	for v in [Vector3(-1, t, 0), Vector3(1, t, 0), Vector3(-1, -t, 0), Vector3(1, -t, 0), Vector3(0, -1, t), Vector3(0, 1, t),
-			Vector3(0, -1, -t), Vector3(0, 1, -t), Vector3(t, 0, -1), Vector3(t, 0, 1), Vector3(-t, 0, -1), Vector3(-t, 0, 1)]:
-		verts.append(v.normalized())
-	var faces := [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
-		[3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]]
-	for it in sub:
-		var mid := {}
-		var nf: Array = []
-		for f in faces:
-			var m := []
-			for e in 3:
-				var a: int = f[e]
-				var b: int = f[(e + 1) % 3]
-				var key := Vector2i(mini(a, b), maxi(a, b))
-				if not mid.has(key):
-					verts.append(((verts[a] as Vector3) + (verts[b] as Vector3)).normalized())
-					mid[key] = verts.size() - 1
-				m.append(mid[key])
-			nf.append([f[0], m[0], m[2]])
-			nf.append([f[1], m[1], m[0]])
-			nf.append([f[2], m[2], m[1]])
-			nf.append([m[0], m[1], m[2]])
-		faces = nf
-	var nz := FastNoiseLite.new()
-	nz.seed = r.randi()
-	nz.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
-	nz.frequency = 1.1
-	nz.fractal_type = FastNoiseLite.FRACTAL_FBM
-	nz.fractal_octaves = 5
-	var craters: Array = []
-	for c in r.randi_range(5, 11):
-		craters.append([Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf_range(0.18, 0.5), r.randf_range(0.05, 0.14)])
-	# a couple of small fresh craters too, for scale
-	for c in r.randi_range(4, 8):
-		craters.append([Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf_range(0.07, 0.14), r.randf_range(0.02, 0.04)])
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for v0 in verts:
-		var v: Vector3 = v0
-		var k := 1.0 + nz.get_noise_3dv(v * 1.3) * 0.32 + nz.get_noise_3dv(v * 4.0 + Vector3(9, 1, 3)) * 0.07
-		var dep := 0.0
-		var rim := 0.0
-		for cr in craters:
-			var u: float = acos(clampf(v.dot(cr[0]), -1.0, 1.0)) / float(cr[1])
-			if u < 1.35:
-				var bowl := (1.0 - u * u) if u < 1.0 else 0.0
-				var rr := exp(-pow((u - 1.0) / 0.18, 2.0))
-				k += (-bowl + rr * 0.22) * float(cr[2])
-				dep = maxf(dep, bowl)
-				rim = maxf(rim, rr)
-		st.set_color(Color(dep, rim, 0.0))
-		st.add_vertex(v * k * elong)
-	for f in faces:
-		st.add_index(f[0])
-		st.add_index(f[2])
-		st.add_index(f[1])
-	st.generate_normals()
-	return st.commit()
+func _mat(kind: String) -> ShaderMaterial:
+	if not _mats.has(kind):
+		_mats[kind] = WR.material(kind, _look)
+		_sky_into(_mats[kind])
+	return _mats[kind]
 
 
-func _rock_mat(kind: String, seed_v: float) -> ShaderMaterial:
-	var m := ShaderMaterial.new()
-	var sh: Shader = _mesh_lib.get("rock_shader")
-	if sh == null:
-		sh = Shader.new()
-		sh.code = WS.ROCK
-		_mesh_lib["rock_shader"] = sh
-	m.shader = sh
-	var rk: Array = ROCKS.get(kind, ROCKS["stone"])
-	m.set_shader_parameter("base", rk[0])
-	m.set_shader_parameter("kind", rk[1])
-	m.set_shader_parameter("seed", seed_v)
-	m.set_shader_parameter("q", 1.0 if quality == "max" else 0.0)
-	# the dead star's disc rims the rocks near it in its own warm light (r8)
-	if _well != Vector3.INF:
-		m.set_shader_parameter("rim_pos", _well)
-		m.set_shader_parameter("rim_k", 1.6)
-	return m
+func _crystal_mat() -> ShaderMaterial:
+	if not _mats.has("_crystal"):
+		_mats["_crystal"] = WR.crystal_material(_look)
+	return _mats["_crystal"]
 
 
-func _lib(kind: String) -> Array:
-	if _mesh_lib.has(kind):
-		return _mesh_lib[kind]
-	var r := RandomNumberGenerator.new()
-	r.seed = hash(kind) + 11
-	var out: Array = []
-	for i in 10:
-		var el := Vector3(r.randf_range(0.75, 1.45), r.randf_range(0.6, 1.0), r.randf_range(0.75, 1.15))
-		out.append(rock_mesh(r, el, 4 if quality == "max" else 3))
-	_mesh_lib[kind] = out
-	return out
+func _pick(kind: String, r: RandomNumberGenerator) -> String:
+	var names: Array = WR.names_for(kind)
+	if names.is_empty():
+		return ""
+	# the kind's first family is its most typical: weight it double
+	var i := r.randi() % (names.size() + names.size() / 2)
+	return names[i % names.size()]
 
 
-# A blocker on a rock hex: a tall, sharp main rock with smaller fragments round its foot, clearly an obstacle.
+func _rand_basis(r: RandomNumberGenerator) -> Basis:
+	return Basis(Quaternion(r.randfn(), r.randfn(), r.randfn(), r.randfn()).normalized())
+
+
+func _rand_axis(r: RandomNumberGenerator) -> Vector3:
+	return Vector3(r.randfn(), r.randfn(), r.randfn()).normalized()
+
+
+# A blocker on a rock hex: one big rock filling the hex, a few smaller ones round its foot. Obviously solid terrain: lit,
+# shadow-casting, the crispest rocks on screen, and nothing like a hex fill or outline.
 func blocker(p: Vector3, kind: String) -> void:
-	var lib := _lib(kind)
-	var root := Node3D.new()
-	root.name = "Blocker"
-	root.position = p
-	add_child(root)
-	var main := MeshInstance3D.new()
-	main.mesh = lib[_rng.randi() % lib.size()]
-	main.material_override = _rock_mat(kind, _rng.randf() * 10.0)
-	var h := _rng.randf_range(7.0, 10.0)
-	main.scale = Vector3(_rng.randf_range(5.0, 6.5), h, _rng.randf_range(5.0, 6.5))
-	main.rotation = Vector3(_rng.randf_range(-0.25, 0.25), _rng.randf() * TAU, _rng.randf_range(-0.25, 0.25))
-	main.position = Vector3(0, h * 0.35, 0)
-	root.add_child(main)
+	var name := _pick(kind, _rng)
+	if name == "":
+		return
+	var mat := _mat(kind)
+	# the longest half-length stays under the hex's inner radius (8.66), so a blocker never seems to fill a free neighbour
+	var s := _rng.randf_range(6.4, 7.6)
+	var b := _rand_basis(_rng)
+	var crystal := kind == "crystal"
+	_batch.add(name, mat, true, Transform3D(b.scaled(Vector3.ONE * s), p + Vector3(0, _rng.randf_range(0.5, 2.5), 0)),
+		_rand_axis(_rng), 0.0 if crystal else _rng.randf_range(0.004, 0.012), _rng.randf())
 	for i in _rng.randi_range(2, 4):
-		var f := MeshInstance3D.new()
-		f.mesh = lib[_rng.randi() % lib.size()]
-		f.material_override = main.material_override
-		var s := _rng.randf_range(1.4, 3.0)
-		f.scale = Vector3.ONE * s
 		var a := _rng.randf() * TAU
-		f.position = Vector3(cos(a) * 6.5, _rng.randf_range(-1.0, 2.0), sin(a) * 6.5)
-		f.rotation = Vector3(_rng.randf() * TAU, _rng.randf() * TAU, _rng.randf() * TAU)
-		root.add_child(f)
-		_spin.append([f, Vector3(_rng.randf(), _rng.randf(), _rng.randf()).normalized(), _rng.randf_range(0.02, 0.08)])
-	if kind == "crystal":
-		for i in 4:
-			var cr := MeshInstance3D.new()
-			var pm := PrismMesh.new()
-			pm.size = Vector3(1.2, _rng.randf_range(4.0, 8.0), 1.2)
-			cr.mesh = pm
-			var cm := ShaderMaterial.new()
-			var csh := Shader.new()
-			csh.code = WS.CRYSTAL
-			cm.shader = csh
-			cr.material_override = cm
-			var a := _rng.randf() * TAU
-			cr.position = Vector3(cos(a) * 3.0, h * 0.6, sin(a) * 3.0)
-			cr.rotation = Vector3(_rng.randf_range(-0.6, 0.6), a, _rng.randf_range(-0.6, 0.6))
-			root.add_child(cr)
+		var rr := _rng.randf_range(4.5, 6.2)
+		var sn := _pick(kind, _rng)
+		_batch.add(sn + "_lo" if _rng.randf() < 0.5 else sn, mat, true,
+			Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * _rng.randf_range(1.0, 2.2)), p + Vector3(cos(a) * rr, _rng.randf_range(-2.0, 4.0), sin(a) * rr)),
+			_rand_axis(_rng), _rng.randf_range(0.02, 0.09), _rng.randf())
+	if crystal:
+		var names: Array = WR.lib().get("crystals", [])
+		if not names.is_empty():
+			for i in _rng.randi_range(1, 2):
+				var cb := Basis(Vector3.UP, _rng.randf() * TAU) * Basis(Vector3(1, 0, 0), _rng.randf_range(-0.4, 0.4))
+				var off := Vector3(_rng.randf_range(-3, 3), s * 0.35 + _rng.randf_range(0, 2), _rng.randf_range(-3, 3))
+				_batch.add(names[_rng.randi() % names.size()], _crystal_mat(), true, Transform3D(cb.scaled(Vector3.ONE * _rng.randf_range(3.5, 5.5)), p + off),
+					Vector3.UP, 0.0, _rng.randf())
 
 
 func debris_field(p: Vector3, kind: String) -> void:
-	var lib := _lib(kind)
-	var mat := _rock_mat(kind, _rng.randf() * 10.0)
-	for i in 6:
-		var m := MeshInstance3D.new()
-		m.mesh = lib[_rng.randi() % lib.size()]
-		m.material_override = mat
-		m.scale = Vector3.ONE * _rng.randf_range(0.5, 1.4)
-		m.position = p + Vector3(_rng.randf_range(-7, 7), _rng.randf_range(-3, 2), _rng.randf_range(-7, 7))
-		add_child(m)
-		_spin.append([m, Vector3(_rng.randf(), _rng.randf(), _rng.randf()).normalized(), _rng.randf_range(0.05, 0.3)])
+	var mat := _mat(kind)
+	for i in _rng.randi_range(8, 13):
+		var a := _rng.randf() * TAU
+		var rr := sqrt(_rng.randf()) * 7.5
+		var s := 0.35 + 1.6 * pow(_rng.randf(), 2.2)
+		_batch.add(_pick(kind, _rng) + "_lo", mat, false, Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * s), p + Vector3(cos(a) * rr, _rng.randf_range(-2.5, 3.0), sin(a) * rr)),
+			_rand_axis(_rng), _rng.randf_range(0.06, 0.35), _rng.randf())
 
 
-func nebula_hex(p: Vector3, fac: String) -> void:
-	# a soft glowing cloud: a few large additive sprites (cheap), tinted by the sector's nebula colours
-	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
-	for i in 5:
-		var s := Sprite3D.new()
-		s.texture = _soft_tex()
-		s.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		s.shaded = false
-		s.transparent = true
-		var c: Vector3 = b[i % 2]
-		s.modulate = Color(c.x, c.y, c.z, 0.18)
-		s.pixel_size = _rng.randf_range(10.0, 16.0) / 64.0
-		s.position = p + Vector3(_rng.randf_range(-5, 5), _rng.randf_range(-2, 3), _rng.randf_range(-5, 5))
-		s.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(s)
+# Is a point at the board's own height over the playable area (with a margin)? Nothing but blockers and debris goes there.
+func _over_board(p: Vector3, margin: float) -> bool:
+	return p.x > _lo.x - margin and p.x < _hi.x + margin and p.z > _lo.z - margin and p.z < _hi.z + margin
 
 
-var _soft: Texture2D = null
+# Would a point below the board be seen through the board from the default camera (which looks toward -z, 34 degrees
+# down: a point h below shows h / tan(34) nearer the camera) or from straight above? Such points are left empty, so
+# the only rocks seen through the hexes are the board's own.
+func _seen_on_board(p: Vector3, margin: float) -> bool:
+	var h := -(p.y - _center.y)
+	if h < 2.0:
+		return _over_board(p, margin)
+	if _over_board(p, margin):
+		return true
+	var cz := p.z + h * 1.48
+	return p.x > _lo.x - margin and p.x < _hi.x + margin and cz > _lo.z - margin and cz < _hi.z + margin
 
 
-func _soft_tex() -> Texture2D:
-	if _soft != null:
-		return _soft
-	var img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
-	for y in 64:
-		for x in 64:
-			var d := Vector2(x - 31.5, y - 31.5).length() / 31.5
-			img.set_pixel(x, y, Color(1, 1, 1, clampf(exp(-d * d * 3.0) - 0.05, 0.0, 1.0)))
-	_soft = ImageTexture.create_from_image(img)
-	return _soft
+# Is a direction (seen from the board's centre) on the planet's disc?
+func _on_planet(p: Vector3, pad: float) -> bool:
+	if _planet_dir == Vector3.ZERO:
+		return false
+	# seen from the default battle camera (34 degrees up, about 170 out, toward +z) and from the zoomed-out one
+	var pc := _center + _planet_dir * DIST
+	for r in [170.0, 640.0]:
+		var cam := _center + Vector3(0.0, 0.557, 0.83) * float(r)
+		var d := (p - cam).normalized()
+		var pd := (pc - cam).normalized()
+		if acos(clampf(d.dot(pd), -1, 1)) < _planet_ang + pad:
+			return true
+	return false
 
 
-# Sparse rocks round the board, below its plane, never in front of the planet, never a wall.
-func dressing(lo: Vector3, hi: Vector3, kind: String, n: int) -> void:
-	var lib := _lib(kind)
-	var mats: Array = []
-	for i in 3:
-		mats.append(_rock_mat(kind, float(i) * 3.3))
-	var groups := {}
-	var c := (lo + hi) * 0.5
-	var ext := (hi - lo) * 0.5 + Vector3(40, 0, 40)
+# The layers round and below the board, by map: an edge scatter (near the board's height, outside it), a deep field far
+# below (seen through the board, small and hazed), a belt stream on belt maps, and a few mountain-sized rocks.
+func fields(mk: String, kind: String) -> void:
+	var r := RandomNumberGenerator.new()
+	r.seed = int(setting.get("seed", 7)) * 7 + hash(mk)
+	var dens := float(setting.get("rocks", 0.8))
+	var N := {"belt": [80, 260, 420, 7], "open": [20, 110, 0, 3], "station": [34, 150, 0, 4], "planet": [26, 120, 0, 3],
+		"storm": [30, 150, 0, 4], "graveyard": [44, 190, 0, 4]}.get(mk, [24, 120, 0, 3])
+	var lowq := quality == "low"
+	var mat := _mat(kind)
+	var ext := (_hi - _lo) * 0.5
+	# 1. the edge scatter
 	var placed := 0
 	var tries := 0
-	while placed < n and tries < n * 6:
+	while placed < int(N[0] * dens) and tries < 2000:
 		tries += 1
-		var a := _rng.randf() * TAU
-		var rr := _rng.randf_range(1.0, 1.9)
-		var p := c + Vector3(cos(a) * ext.x * rr, _rng.randf_range(-70.0, -18.0), sin(a) * ext.z * rr)
-		if _planet_dir != Vector3.ZERO and (p - c).normalized().dot(_planet_dir) > 0.8:
+		var a := r.randf() * TAU
+		var k := r.randf_range(1.0, 2.2)
+		var p := _center + Vector3(cos(a) * (ext.x + 40.0) * k, r.randf_range(-36.0, 14.0), sin(a) * (ext.z + 40.0) * k)
+		var s := 1.6 + 7.0 * pow(r.randf(), 2.5) + (8.0 if r.randf() < 0.06 else 0.0)
+		if _seen_on_board(p, 24.0 + s) or _on_planet(p, 0.03):
 			continue
-		if _well != Vector3.INF and p.distance_to(_well) < 80.0:
-			continue
-		var mi := MeshInstance3D.new()
-		mi.mesh = lib[_rng.randi() % lib.size()]
-		mi.material_override = mats[placed % 3]
-		mi.scale = Vector3.ONE * _rng.randf_range(1.0, 5.0) * (1.0 + 2.0 * pow(_rng.randf(), 4.0))
-		mi.position = p
-		mi.rotation = Vector3(_rng.randf() * TAU, _rng.randf() * TAU, _rng.randf() * TAU)
-		add_child(mi)
-		_spin.append([mi, Vector3(_rng.randf(), _rng.randf(), _rng.randf()).normalized(), _rng.randf_range(0.01, 0.06)])
+		var nm := _pick(kind, r)
+		_batch.add(nm if s > 5.0 else nm + "_lo", mat, true, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.07) * (3.0 / (2.0 + s)), r.randf())
 		placed += 1
-	notes.append("world: %d dressing rocks (%s)" % [placed, kind])
+	# 2. the deep field: far below, wide, sizes growing with depth so it reads as a volume, never right under a ship's hex
+	var deep := 0
+	tries = 0
+	while deep < int(N[1] * dens * (0.6 if lowq else 1.0)) and tries < 4000:
+		tries += 1
+		var a := r.randf() * TAU
+		var rad := 120.0 + 1500.0 * sqrt(r.randf())
+		var depth := 130.0 + 650.0 * pow(r.randf(), 1.4)
+		var p := _center + Vector3(cos(a) * rad * 1.15, -depth, sin(a) * rad)
+		if _on_planet(p, 0.03):
+			continue
+		var s := (3.0 + depth * 0.035) * (0.5 + 1.6 * pow(r.randf(), 2.0))
+		if _seen_on_board(p, 30.0 + s):
+			continue
+		var nm := _pick(kind, r)
+		_batch.add(nm if s > 22.0 else nm + "_lo", mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.005, 0.04), r.randf())
+		deep += 1
+	# 3. the belt stream: a river of rock under the board, out to the horizon both ways
+	var belt := 0
+	if N[2] > 0:
+		# beyond the board's far side, running across the view to the horizon both ways
+		var th := r.randf_range(-0.35, 0.35)
+		var ax := Vector3(cos(th), 0, sin(th))
+		var side := Vector3(-ax.z, 0, ax.x)
+		var depth := r.randf_range(150.0, 240.0)
+		var o := Vector3(_center.x, _center.y - depth, _lo.z - depth * 1.48 - r.randf_range(380.0, 620.0))
+		var tilt := r.randf_range(-0.06, 0.06)
+		for i in int(N[2] * (0.6 if lowq else 1.0)):
+			var sv := r.randf_range(-2600.0, 2600.0)
+			var w := r.randfn() * 170.0
+			var p := o + ax * sv + side * w + Vector3(0, r.randfn() * 45.0 + sv * tilt, 0)
+			if _on_planet(p, 0.02):
+				continue
+			var s := 4.0 + 30.0 * pow(r.randf(), 3.0) + absf(sv) * 0.004
+			if _seen_on_board(p, 30.0 + s):
+				continue
+			var nm := _pick(kind, r)
+			_batch.add(nm if s > 22.0 else nm + "_lo", mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.004, 0.03), r.randf())
+			belt += 1
+	# 4. mountains: a few huge rocks far out, below the horizon, clear of the planet and of the board's footprint
+	var mts := 0
+	tries = 0
+	while mts < N[3] and tries < 200:
+		tries += 1
+		var az := r.randf() * TAU
+		var el := -r.randf_range(0.08, 0.6)
+		var d := Vector3(cos(az) * cos(el), sin(el), sin(az) * cos(el))
+		var dist := r.randf_range(900.0, 2300.0)
+		var p := _center + d * dist
+		var s := r.randf_range(70.0, 220.0) * (dist / 1600.0)
+		if _on_planet(p, 0.08 + s / dist):
+			continue
+		if Vector2(p.x - _center.x, p.z - _center.z).length() < 520.0:
+			continue
+		_batch.add(_pick(kind, r), mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.0015, 0.006), r.randf())
+		mts += 1
+	# crystal fields: free crystal clusters drift among the edge rocks
+	if kind == "crystal":
+		var names: Array = WR.lib().get("crystals", [])
+		for i in (12 if not names.is_empty() else 0):
+			var a := r.randf() * TAU
+			var p := _center + Vector3(cos(a) * (ext.x + 60.0) * r.randf_range(1.0, 1.8), r.randf_range(-40.0, 5.0), sin(a) * (ext.z + 60.0) * r.randf_range(1.0, 1.8))
+			if _over_board(p, 30.0):
+				continue
+			_batch.add(names[r.randi() % names.size()], _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * r.randf_range(2.0, 6.0)), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
+	notes.append("fields: %d edge rocks, %d deep, %d belt, %d mountains" % [placed, deep, belt, mts])
+
+
+# ---------------------------------------------------------------- clouds and dust
+
+const CLOUD_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + "%NOISE%" + """
+uniform vec3 c_a = vec3(0.4, 0.3, 0.7);
+uniform vec3 c_b = vec3(0.2, 0.4, 0.8);
+uniform float gain = 0.3;
+uniform float storm = 0.0;
+uniform vec3 bolt = vec3(0.75, 0.85, 1.0);
+varying vec4 vI;
+varying vec2 vQ;
+void vertex() {
+	vI = INSTANCE_CUSTOM;
+	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
+	float a = vI.y * 6.2831;
+	vec2 q = mat2(vec2(cos(a), sin(a)), vec2(-sin(a), cos(a))) * VERTEX.xy;
+	vQ = VERTEX.xy * 2.0;
+	c.xy += q * vI.x;
+	POSITION = PROJECTION_MATRIX * c;
+}
+void fragment() {
+	float r = length(vQ);
+	if (r > 1.0) { discard; }
+	vec2 p = vQ * 1.6 + vI.y * 37.0 + vec2(TIME * 0.015, TIME * 0.008);
+	float n = wfbm(p * 1.3 + wfbm(p * 0.8 + 3.0) * 1.5);
+	float a = smoothstep(1.0, 0.15, r) * smoothstep(0.3, 0.75, n) * vI.z;
+	vec3 c = mix(c_a, c_b, smoothstep(0.35, 0.7, wfbm(p * 0.7 + 9.0)));
+	vec3 col = c * a * gain;
+	if (storm > 0.5) {
+		// ion storm: now and then a cloud lights from inside, a branching flash
+		float ph = fract(TIME * (0.11 + vI.w * 0.07) + vI.w * 13.0);
+		float fl = smoothstep(0.0, 0.01, ph) * smoothstep(0.08, 0.02, ph) * (0.6 + 0.4 * sin(TIME * 41.0 + vI.w * 9.0));
+		float vein = smoothstep(0.86, 0.97, 1.0 - abs(wfbm(p * 2.4 + vI.w * 5.0) * 2.0 - 1.0));
+		col += bolt * (vein * 1.6 + a * 0.6) * fl * smoothstep(1.0, 0.3, r);
+	}
+	ALBEDO = col;
+}
+"""
+
+const DUST_SHADER := """
+shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+uniform vec3 col = vec3(0.6, 0.58, 0.55);
+uniform float px = 0.0008;
+varying float vA;
+varying vec2 vQ;
+void vertex() {
+	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
+	float size = INSTANCE_CUSTOM.x;
+	float depth = max(-c.z, 1.0);
+	float mins = depth * px * 1.6;
+	float s = max(size, mins);
+	float k = clamp(size / mins, 0.0, 1.0);
+	vA = k * k * INSTANCE_CUSTOM.y * smoothstep(1600.0, 600.0, depth);
+	vQ = VERTEX.xy * 2.0;
+	c.xy += VERTEX.xy * s;
+	POSITION = PROJECTION_MATRIX * c;
+}
+void fragment() {
+	float r = length(vQ);
+	ALBEDO = col * exp(-r * r * 4.0) * vA;
+}
+"""
+
+
+func _quad_mm(n: int) -> MultiMesh:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_custom_data = true
+	var qm := QuadMesh.new()
+	qm.size = Vector2(1, 1)
+	mm.mesh = qm
+	mm.instance_count = n
+	return mm
+
+
+# Nebula and ion-storm hexes: soft lit clouds over the hexes (a few billboards each, drifting), the storm's flickering
+# from inside. Kept faint so ships and the hex overlays stay readable through them.
+func cloud_hexes(ps: Array, t: String, fac: String) -> void:
+	var per := 4 if quality != "low" else 2
+	var mm := _quad_mm(ps.size() * per)
+	var i := 0
+	for p in ps:
+		for k in per:
+			var off := Vector3(_rng.randf_range(-5, 5), _rng.randf_range(1.0, 7.0), _rng.randf_range(-5, 5))
+			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p + off))
+			mm.set_instance_custom_data(i, Color(_rng.randf_range(11.0, 17.0), _rng.randf(), _rng.randf_range(0.6, 1.0), _rng.randf()))
+			i += 1
+	var mi := MultiMeshInstance3D.new()
+	mi.multimesh = mm
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = CLOUD_SHADER.replace("%NOISE%", WS.NOISE)
+	m.shader = sh
+	var b: Array = FLOOK.of(fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
+	if t == "storm":
+		m.set_shader_parameter("c_a", Vector3(0.22, 0.26, 0.55))
+		m.set_shader_parameter("c_b", Vector3(0.42, 0.3, 0.7))
+		m.set_shader_parameter("storm", 1.0)
+		m.set_shader_parameter("gain", 0.32)
+	else:
+		m.set_shader_parameter("c_a", b[1])
+		m.set_shader_parameter("c_b", (b[2] as Vector3) * 0.7)
+		m.set_shader_parameter("gain", 0.26)
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.extra_cull_margin = 20.0
+	add_child(mi)
+
+
+# Dust specks through the space round and below the board (never over it at ship height): they slide past at different
+# depths whenever the camera moves, which gives the scene its depth.
+func dust(mk: String) -> void:
+	var n := {"belt": 2600, "graveyard": 2000, "storm": 1600}.get(mk, 1300)
+	if quality == "low":
+		n /= 3
+	var r := RandomNumberGenerator.new()
+	r.seed = int(setting.get("seed", 7)) + 77
+	var mm := _quad_mm(n)
+	var i := 0
+	var tries := 0
+	while i < n and tries < n * 4:
+		tries += 1
+		var p := _center + Vector3(r.randf_range(-750, 750), r.randf_range(-420, 70), r.randf_range(-620, 620))
+		if p.y > -25.0 and _over_board(p, 20.0):
+			continue
+		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p))
+		mm.set_instance_custom_data(i, Color(r.randf_range(0.25, 0.9), r.randf_range(0.25, 1.0), 0, 0))
+		i += 1
+	mm.visible_instance_count = i
+	var mi := MultiMeshInstance3D.new()
+	mi.multimesh = mm
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = DUST_SHADER
+	m.shader = sh
+	m.set_shader_parameter("col", Vector3(0.55, 0.52, 0.48).lerp(setting.get("c1", Vector3(0.5, 0.5, 0.5)), 0.25) * 0.9)
+	var h := float(ProjectSettings.get_setting("display/window/size/viewport_height", 1080))
+	if is_inside_tree():
+		h = maxf(h, float(get_viewport().get_visible_rect().size.y))
+	m.set_shader_parameter("px", deg_to_rad(45.0) / h)
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.extra_cull_margin = 100.0
+	add_child(mi)
