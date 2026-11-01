@@ -136,7 +136,7 @@ Events come in order. Every event has a `t` (type) and plain fields; ids are shi
 | `system` | `unit, text` | A critical knocked out a system ("Engines hit", "Shield generator down", "<gun> knocked out", "Fire on deck"). |
 | `burning` | `unit` | The ship is set on fire. |
 | `tick` | `unit, kind, hull` | Turn-start damage: `"fire"`, `"acid"`, `"tidal"` (dead star), `"storm"` (ion storm, shields only). |
-| `pulled` | `unit, from, to` | The dead star's gravity dragged the ship one hex. |
+| `pulled` | `unit, from, to` | The Hollow Sun's gravity dragged the ship one hex. |
 | `ability` | `unit, ab, hex` | An ability fired (evasive, reload, focus, phase, frenzy, overburn, regrow, reclaim, ionpulse, blink, surge, launch, nova). |
 | `wing` | `unit, parent, kind, q, r` | A squadron appears next to its carrier (opening wings, a launch, Scramble, the enemy's fighter screen). `kind` is the hull id: fighter, bomber or spore. |
 | `blink` | `unit, from, to` | An Ithar phase jump: the ship vanishes at `from` and appears at `to` (no path). |

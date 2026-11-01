@@ -1,6 +1,6 @@
-// ui3d.js FNAMES at d8b47c6 (unchanged since c7b1a78)
-const FNAMES={hegemony:['HNS Dominator','HNS Relentless','HNS Sovereign','HNS Executor','HNS Imperious','HNS Harbinger','HNS Adjudicator','HNS Vigilance','HNS Tyrant','HNS Resolute'],
-  corsair:['Rust Maw','Gutter Queen','Red Tithe','Scrapjaw','Ashen Grin','Last Laugh','Cinder Wolf','Bad Omen','Salvage Right','Hollow Crown'],
-  chorus:['Hive-node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorefeather','Sac-mother','Thornback','Tidehunger','Wet Choir','Crawling Hymn'],
-  ithar:['Silverthorn','Dawnwhisper','Lament of Stars','Glass Heron','Moonveil','Farsinger','Pale Current','Starfall','Quiet Blade','Evening Tide'],
-  deathless:['Eternal Vigil','The Unbroken','Sepulchre','Tomb of Ashes','Grave Sovereign','Ossuary','Never-Ending','Obelisk','Dust Throne','Silent Heir']};
+// ui3d.js FNAMES at e80a6a0 (lore round 8 names)
+const FNAMES={hegemony:['HNS Dominator','HNS Relentless','HNS Sovereign','HNS Comptroller','HNS Allocation','HNS Forecast','HNS Adjudicator','HNS Vigilance','HNS Tyrant','HNS Resolute'],
+  corsair:['Rust Maw','Gutter Queen','Red Tally','Scrapjaw','Ashen Grin','Last Laugh','Cinder Wolf','Bad Omen','Salvage Right','Bent Crown'],
+  chorus:['Node Ashk','Brood Vessel Ul','Shrieker','Mawling','Gorebloom','Sac-mother','Sour Spine','Tidehunger','Wet Maw','Crawling Gut'],
+  ithar:['Silverthorn','Clear Whisper','Lament of Stars','Glass Heron','Still Glass','Far Focus','Pale Current','Starfall','Quiet Prism','Evening Tide'],
+  deathless:['Long Noon','The Unbroken','Last Light Kept','Copy of Ardent','Ninth Shade','Cold Memory','Never-Ending','Gnomon','Dust of Noon','Silent Heir']};

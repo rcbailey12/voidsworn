@@ -2,7 +2,7 @@
 # Objects stay Dictionaries with the JS field names, so the golden records compare field by field. Numbers stay doubles like JS
 # (division always with a float operand, Math.round through JSM.jsround, % on doubles through fmod).
 # Async rules functions run synchronously: in the headless game every await resolves at once and every call is awaited in turn,
-# except deaths queued by turn ticks (fire, acid, the dead star, station guns), whose tail runs later in JS; those tails are deferred
+# except deaths queued by turn ticks (fire, acid, the Hollow Sun, station guns), whose tail runs later in JS; those tails are deferred
 # here and run by flush_deferred() at the point where the game awaits them.
 # Presentation (log text, floating numbers, sounds, camera) is not ported: the harness gives it no-op stubs on both sides.
 # Anything the slice does not reach and the port does not carry stops the run with "NOT PORTED", so a gap can never pass silently.
@@ -966,7 +966,7 @@ func wellTick(u, dq) -> Variant:
 	if d <= WELL_RIM:
 		u["hp"] = u["hp"] - WELL_DMG; emit({"t": "tick", "unit": u["id"], "kind": "tidal", "hull": WELL_DMG}); flt(u, "Tidal stress −" + ns(WELL_DMG), "#c79bff")
 		if u["hp"] <= 0:
-			u["hp"] = 0; logm(String(u["name"]) + " is torn apart by the dead star's gravity.", pe(u)); u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
+			u["hp"] = 0; logm(String(u["name"]) + " is torn apart by the Hollow Sun's gravity.", pe(u)); u["killCause"] = "tidal"; queueDeath(u, dq); return "dead"
 	elif d <= WELL_PULL:
 		var occ = occMap(); var best: Variant = null
 		for dd in DIRS:
@@ -1253,8 +1253,8 @@ func startBattle(cfg: Dictionary) -> void:
 	startSideTurn("player")
 	for u in alive("enemy"): u["intercepts"] = 2 if _has_flak(u) else 0
 	var F = FACTIONS[cfg["fac"]]
-	logm("Contact: " + String(F["n"]) + ". " + ns(eList.size()) + " ship" + ("s" if eList.size() > 1 else "") + " on the auspex.", "s")
-	if jt(B.get("well")): logm("A dead star warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
+	logm("Contact: " + String(F["n"]) + ". " + ns(eList.size()) + " ship" + ("s" if eList.size() > 1 else "") + " on the scanners.", "s")
+	if jt(B.get("well")): logm("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
 	if cfg.get("kind") == "elite": logm("Elite captains command this fleet.", "e")
 	if cfg.get("kind") == "boss": logm(String(HULLS[F["boss"]]["n"]) + " is here. Everything else is escort.", "e")
 func _has_flak(u) -> bool:
@@ -2730,10 +2730,10 @@ func killUnit(t, by, defer_tail: bool = false) -> void:
 	if jt(t["fx"].get("lastStand")) and not jt(t.get("usedLastStand")):
 		t["usedLastStand"] = true; t["hp"] = 1; flt(t, "Last stand", "#f0b35a", -30); logm(String(t["name"]) + " refuses to die! (Last stand)", "s"); return
 	if t["side"] == "player" and not jt(t.get("isSq")) and jt(runFx().get("revive")) and not jt(B.get("reviveUsed")):
-		B["reviveUsed"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.25); flt(t, "Reawakens", "#7dff9b", -30); logm("The phylactery hums. " + String(t["name"]) + " reawakens at 25% hull.", "s"); return
+		B["reviveUsed"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.25); flt(t, "Restarts", "#7dff9b", -30); logm("Second ignition. " + String(t["name"]) + " restarts at 25% hull.", "s"); return
 	var legion = legionCan(t)
 	if not legion and jt(t.get("reanimate")) and not jt(t.get("reanimated")) and not jt(t.get("pyre")) and not (t.get("fac") == "deathless" and jt(t.get("t")) and jt(t["t"].get("reanimate"))) and rnd() < (0.2 if t["side"] == "enemy" else 0.35):
-		t["reanimated"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.3); flt(t, "Reanimating", "#7dff9b", -30); logm(String(t["name"]) + " reassembles itself from the wreckage.", "e"); return
+		t["reanimated"] = true; t["hp"] = JSM.jsround(t["maxHp"] * 0.3); flt(t, "Rebuilding", "#7dff9b", -30); logm(String(t["name"]) + " reassembles itself from the wreckage.", "e"); return
 	t["dead"] = true; t["hp"] = 0
 	if legion:
 		t["reanimated"] = true; t["riseAt"] = B["round"] + 1; B["legion"][t["side"]]["used"] = B["legion"][t["side"]]["used"] + 1
@@ -3474,7 +3474,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 		JSM.ssort(ts, func(p, q): return float(p["hp"]) / p["maxHp"] - float(q["hp"]) / q["maxHp"])
 		if ts.size() > 0:
 			var t = ts[0]; var h = min(t["maxHp"] - t["hp"], JSM.jsround(t["maxHp"] * 0.2)); t["hp"] = t["hp"] + h; flt(t, "+" + ns(h) + " hull", "#7dff9b", -24)
-			logm(String(u["name"]) + " reanimates " + ("its own hull" if is_same(t, u) else String(t["name"])) + " for " + ns(h) + ".", pp(u))
+			logm(String(u["name"]) + " rebuilds " + ("its own hull" if is_same(t, u) else String(t["name"])) + " for " + ns(h) + ".", pp(u))
 	if a == "ionpulse":
 		var nf = 0
 		for t in alive("enemy" if u["side"] == "player" else "player"):
@@ -3527,7 +3527,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 			var r = applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad)
 			if jt(r.shield): flt(x, "−" + ns(r.shield), "#7fd6c8", -18)
 			flt(x, "−" + ns(r.hull), "#ff7a6e", 0)
-			logm("Nova blast hits " + String(x["name"]) + " for " + ns(r.hull) + " hull" + ((" and " + ns(r.shield) + " shields") if jt(r.shield) else "") + ".", pe(x))
+			logm("Spinal shell hits " + String(x["name"]) + " for " + ns(r.hull) + " hull" + ((" and " + ns(r.shield) + " shields") if jt(r.shield) else "") + ".", pe(x))
 			if x["hp"] <= 0: killUnit(x, u)
 		return true
 	u["abCd"] = abilityCd(u)
