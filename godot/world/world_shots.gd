@@ -238,9 +238,43 @@ func _looks(b, name: String, home: Dictionary) -> void:
 			cam.snap()
 			await _settle()
 			await _snap("%s_%s_3_close" % [name, l])
+		if args.has("bench"):
+			cam.a = home["a"]
+			cam.b = home["b"]
+			cam.r = home["r"]
+			cam.t = home["t"]
+			cam.snap()
+			await _settle()
+			bench["%s_%s" % [name, l]] = await _orbit(cam, home, float(args["bench"]) if str(args["bench"]) != "true" else 8.0)
 	if b.world != null:
 		print("[world_shots] %s: %s" % [name, "; ".join(b.world.notes)])
 	BL.set_look("today", false)
+
+
+# a slow orbit and a zoom breath for S seconds: frame times (average, 1% low, worst)
+func _orbit(cam, home: Dictionary, secs: float) -> Dictionary:
+	var ms: Array = []
+	var t_start := Time.get_ticks_usec()
+	var last := t_start
+	while (Time.get_ticks_usec() - t_start) / 1e6 < secs:
+		await get_tree().process_frame
+		var now := Time.get_ticks_usec()
+		ms.append((now - last) / 1000.0)
+		last = now
+		var u := (now - t_start) / 1e6 / secs
+		cam.a = home["a"] + sin(u * TAU) * 0.9
+		cam.r = home["r"] * (1.0 + 1.2 * (0.5 - 0.5 * cos(u * TAU)))
+	ms.sort()
+	var avg := 0.0
+	for m in ms:
+		avg += m
+	avg /= maxf(1.0, ms.size())
+	var n1: int = maxi(1, int(ms.size() * 0.01))
+	var low := 0.0
+	for k in n1:
+		low += ms[ms.size() - 1 - k]
+	low /= n1
+	return {"avg_ms": snappedf(avg, 0.01), "low1_ms": snappedf(low, 0.01), "worst_ms": snappedf(ms[ms.size() - 1], 0.01), "frames": ms.size()}
 
 
 func _settle() -> void:
