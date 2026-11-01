@@ -368,7 +368,45 @@ def c64(i, model, seeds):
     fac, p = C64[i]
     return {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
 BATCHES['c64'] = [c64(k, 'zit', S4) for k in C64] + [c64(k, 'qie', [11, 51]) for k in C64]
-OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64'}
+# c64 review (Nov 1, not shown to Ryan): both models ignore negations. "Not a bear" and "never skulls" drew literal bears, werewolves
+# and skull trophies on every Hullbreaker; the Glasswright bodies were right (glass flesh, light threads, rainbow edges) but every head
+# kept eyes and a mouth, and the bodies came out nude and full length. c64b says only what should be there: a plated ankylosaur-like
+# head, named machine trophies, a faceless faceted head, a covering robe, and a close head-and-shoulders framing.
+VOID2 = ("Close-up head-and-shoulders portrait of a Hullbreaker, a massive alien predator from a cold heavy-gravity world. Its head is a "
+         "broad, low, flat-faced wedge covered in overlapping slate-grey armour plates, like the plated head of an ankylosaur. Its jaw is "
+         "two heavy plated halves split down the middle of the chin and hinged at the sides, opening sideways like mandibles, each half "
+         "lined with rows of small sharp teeth. Four small glowing {eye} eyes sit in one straight row across the plated brow, with rows of "
+         "small dark heat-sensing pits along the cheeks below them. A coarse shaggy mane of {mane} hair grows from the back of the head "
+         "down the neck and over the huge hunched shoulders. Thick dark leathery hide. Ridged armour plates rise along the spine and over "
+         "the shoulders. A scrap armour harness of rusty hull plates and cables is strapped across the chest, hung with machine trophies: "
+         "a cracked sensor lens, a torn circuit board, a bent antenna.")
+PRISM2 = ("Close-up head-and-shoulders portrait of a Glasswright, a tall slender living alien whose flesh is clear and see-through like "
+          "glass. Inside its transparent neck and shoulders run crystal structures and fine glowing threads that carry light like fibre "
+          "optics, and the light splits into rainbow colours at every edge. Its head is faceless and featureless: a smooth faceted crystal "
+          "form like a long cut gemstone, flat polished facets all over, soft light glowing inside it. A long slender neck. It wears a "
+          "high-collared layered robe of crystal plates and silver mirror-thread fabric that covers the body.")
+C64B = {
+ 'hb_a': ('corsair', VOID2.format(eye='amber', mane='grey and black') + " The two jaw halves are closed, the split seam plain down the "
+          "chin, a calm and patient menace."),
+ 'hb_b': ('corsair', VOID2.format(eye='red', mane='black') + " The two jaw halves are spread wide apart sideways in a snarl, showing "
+          "rows of inner teeth."),
+ 'hb_c': ('corsair', VOID2.format(eye='pale blue', mane='rust-brown') + " Seen from behind and to the side, looking back over its "
+          "shoulder, the ridged spine plates rimed with white frost."),
+ 'hb_d': ('corsair', VOID2.format(eye='amber', mane='grey') + " An old pack-lord: the face plates scarred and chipped with pale worn "
+          "edges, the heat pits glowing faint orange, a harness of dark violet machine plates with a small listening dish on one shoulder."),
+ 'gw_a': ('ithar', PRISM2 + " Soft bands of coloured light pulse across the facets of its faceless head as it speaks."),
+ 'gw_b': ('ithar', PRISM2 + " The facets of its head rise into a tall tapering crystal crest; white light enters the crest and fans "
+          "out behind the head as a rainbow."),
+ 'gw_c': ('ithar', PRISM2 + " Its glass flesh is milky and soft like a jellyfish, the head a rounded faceted dome of milky glass, "
+          "clusters of clear crystal growing along the neck and shoulders, a warm light glowing deep inside the chest."),
+ 'gw_d': ('ithar', PRISM2 + " One hand is raised beside the head, its very long tapering glass fingers shaping a glowing shard of "
+          "glass, threads of light running down into the fingertips, a ripple of colour across the faceted head."),
+}
+def c64b(i, model, seeds):
+    fac, p = C64B[i]
+    return {'id': i, 'model': model, 'prompt': p + ' ' + STYLE.format(**F8[fac]), 'nosuffix': True, 'seeds': seeds}
+BATCHES['c64b'] = [c64b(k, 'zit', S4) for k in C64B] + [c64b(k, 'qie', [11, 51]) for k in C64B]
+OUT = {'n1a': 'n1', 'n1b': 'n1', 'b2': 'b2', 'n2': 'n2', 'n3': 'n3', 'r8a': 'r8', 'r8b': 'r8', 'r8c': 'r8', 'c64': 'c64', 'c64b': 'c64b'}
 if __name__ == '__main__':
     os.makedirs(os.path.join(HERE, 'batches'), exist_ok=True)
     for k, items in BATCHES.items():
