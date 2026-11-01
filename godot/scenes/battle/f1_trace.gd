@@ -129,6 +129,13 @@ func run(battle) -> void:
 	# 1. the game handed over a ship by itself
 	_check(b.sel != "" and b._usable(b._sel_unit()), "at the start the game hands over a ready ship (%s)" % b._name(b.sel))
 	_check(b.plog.is_open() and str(b.plog.cur.get("how", "")) == "auto", "the play log opened the hand-over as automatic")
+	var vs: Vector2 = b.get_viewport().get_visible_rect().size
+	var cr: Rect2 = b.hud.card.get_global_rect()
+	var fits: bool = cr.size.y > 40.0 and cr.size.y <= float(b.hud.s(330)) and absf(cr.end.y - (vs.y - b.hud.s(16))) < 2.0
+	if DisplayServer.get_name() != "headless":
+		fits = fits and cr.size.y < vs.y * 0.34 and cr.position.y > vs.y * 0.6 and cr.size.x < vs.x * 0.7
+	_check(b.hud.card.visible and fits,
+		"the activation card sits at the bottom of the screen and fits (%d x %d at %d, %d on a %d x %d screen)" % [cr.size.x, cr.size.y, cr.position.x, cr.position.y, vs.x, vs.y])
 	var up: String = b.sel
 	# 2. a mistaken click on an enemy: it only targets or inspects, never fires or moves
 	var far := ""

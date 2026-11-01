@@ -1157,6 +1157,7 @@ func set_card(info: Dictionary) -> void:
 	card_box.add_child(steps)
 	if str(info.get("hint", "")) != "":
 		var h := _rich(str(info["hint"]))
+		h.custom_minimum_size.x = s(660)   # a fixed wrap width, so its height is measured right the first time
 		h.add_theme_font_size_override("normal_font_size", s(15))
 		h.add_theme_font_size_override("bold_font_size", s(15))
 		card_box.add_child(h)
@@ -1178,10 +1179,29 @@ func set_card(info: Dictionary) -> void:
 			bt.name = str(b["name"])
 		row.add_child(bt)
 	card_box.add_child(row)
-	card.offset_left = 0
-	card.offset_right = 0
-	card.offset_top = card.offset_bottom
-	card.reset_size()
+	_place_card()
+
+
+# the card's rect from what it holds, two frames after it is built (text heights settle once the width is known); never
+# taller than 320 (a container never shrinks by itself, so a bad first measure must not stick)
+var _card_gen := 0
+
+
+func _place_card() -> void:
+	_card_gen += 1
+	var g := _card_gen
+	card.modulate.a = 0.0
+	for i in 2:
+		await get_tree().process_frame
+	if g != _card_gen or not is_instance_valid(card):
+		return
+	var ms := card_box.get_combined_minimum_size() + Vector2(s(32), s(22))
+	ms.y = minf(ms.y, float(s(320)))
+	card.offset_left = -ms.x * 0.5
+	card.offset_right = ms.x * 0.5
+	card.offset_bottom = -s(16)
+	card.offset_top = -s(16) - ms.y
+	card.modulate.a = 1.0
 
 
 func _chip_sb(bg: Color, border: Color) -> StyleBoxFlat:
