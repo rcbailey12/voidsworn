@@ -24,6 +24,7 @@ Rules:
   Godot, if a check needs it: $godot (use --headless).
 - No em dashes in anything you write. Plain words.
 - Do not commit and do not push: the runner does that after you finish.
+- Keep scratch output (logs, screenshots, temp checks) in %TEMP%, not in this folder.
 - Finish with a short report: what you changed (files), the checks you ran and their result, anything you skipped and why.
   That report becomes the pull request description, so write it for a reviewer.
 
@@ -36,6 +37,12 @@ $body
   [IO.File]::WriteAllText((Join-Path $out 'title.txt'), [string]$i.title, $utf8)
   Write-Host "issue #$n prepared, effort $effort"
 } elseif ($mode -eq 'msg') {
+  # Keep Codex's scratch folders out of the commit (it sometimes leaves .codex-* check output in the repo).
+  $ErrorActionPreference = 'Continue'
+  Push-Location $repo
+  Get-ChildItem -Force -Directory -Filter '.codex*' | ForEach-Object { & 'C:\Program Files\Git\cmd\git.exe' rm -r -q --cached --ignore-unmatch -- $_.Name | Out-Null; Remove-Item -Recurse -Force $_.FullName }
+  Pop-Location
+  $ErrorActionPreference = 'Stop'
   $title = [IO.File]::ReadAllText((Join-Path $out 'title.txt'))
   $last = ''
   $lp = Join-Path $out 'last.md'
