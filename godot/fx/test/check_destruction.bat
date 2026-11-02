@@ -1,0 +1,37 @@
+@echo off
+setlocal
+cd /d "%~dp0..\..\.."
+set "G=%~1"
+if not defined G set "G=%USERPROFILE%\Downloads\voidsworn_test\godot\Godot_v4.7.2-stable_win64_console.exe"
+if not exist "%G%" (
+  echo Godot was not found. Drag its console exe onto this bat to run the checks.
+  pause
+  exit /b 2
+)
+set "RESULT=%CD%\godot\fx\test\results\dst3_rerun"
+if not exist "%RESULT%\.runtime" mkdir "%RESULT%\.runtime"
+set "APPDATA=%RESULT%\.runtime"
+set "LOCALAPPDATA=%APPDATA%"
+set "DESTRUCTION_OUT="
+"%G%" --headless --path godot --script res://fx/test/destruction_steps_check.gd --log-file "%RESULT%\geometry.log"
+if errorlevel 1 goto failed
+"%G%" --headless --path godot --script res://fx/test/destruction_staging_check.gd --log-file "%RESULT%\staging.log"
+if errorlevel 1 goto failed
+"%G%" --headless --path godot --script res://fx/test/fx_smoke.gd --log-file "%RESULT%\smoke.log"
+if errorlevel 1 goto failed
+set "PROBE_BOX=1"
+set "PROBE_OUT=%RESULT%\box"
+if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
+"%G%" --path godot --fixed-fps 60 --script res://fx/test/fx_inside_probe.gd --log-file "%PROBE_OUT%\probe.log"
+if errorlevel 1 goto failed
+set "PROBE_OUT=%RESULT%\fleet"
+if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
+"%G%" --path godot --fixed-fps 60 --script res://fx/test/destruction_fleet_probe.gd --log-file "%PROBE_OUT%\probe.log"
+if errorlevel 1 goto failed
+echo Checks finished. Logs and screenshots: %RESULT%
+pause
+exit /b 0
+:failed
+echo A check failed. See the log in %RESULT%.
+pause
+exit /b 1
