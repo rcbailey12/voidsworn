@@ -272,6 +272,11 @@ func later(t: float, f: Callable) -> void:
 	_later.append([t, f])
 
 
+func free_effect(ref: WeakRef) -> void:
+	var node = ref.get_ref()
+	if is_instance_valid(node): node.queue_free()
+
+
 func _run_later() -> void:
 	if _later.is_empty():
 		return
@@ -946,9 +951,7 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		rb.global_position = deep
 		rb.linear_velocity = Vector3(0.1, 0, 0)
 		DEATH.spawn_debris(self, deep + Vector3(10, 0, 0), Vector3.ZERO, 3, 0.2 * unit)
-		get_tree().create_timer(0.5).timeout.connect(func() -> void:
-			if is_instance_valid(rb):
-				rb.queue_free())
+		get_tree().create_timer(0.5).timeout.connect(free_effect.bind(weakref(rb)))
 	for i in frames:
 		await RenderingServer.frame_post_draw
 	tmp.queue_free()

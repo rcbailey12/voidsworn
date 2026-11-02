@@ -145,9 +145,7 @@ static func fireball(fx, p: Vector3, size: float, t0: float, life: float, tint: 
 	box.position = p
 	box.scale = Vector3.ONE * size * 1.3
 	fx.add_child(box)
-	fx.later(t0 + life + 0.1, func() -> void:
-		if is_instance_valid(box):
-			box.queue_free())
+	fx.later(t0 + life + 0.1, fx.free_effect.bind(weakref(box)))
 
 
 # ---------------------------------------------------------------- debris bodies (Jolt)
@@ -250,7 +248,10 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 		b.angular_velocity = Vector3(fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6), fx.rng.randf_range(-6, 6))
 		b.sleeping = false
 		b.visible = true
-		(b.get_node("mesh") as GeometryInstance3D).set_instance_shader_parameter("spawn_t", fx.now)
+		var mesh := b.get_node("mesh") as MeshInstance3D
+		# Headless uses the dummy server even though the configured method still says forward_plus.
+		if DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy" and mesh.material_override != null:
+			mesh.set_instance_shader_parameter("spawn_t", fx.now)
 
 
 # A convex collider Jolt can always build (G2 bot runs: a 900-point hull failed and logged an error). The point cloud is
@@ -1231,10 +1232,11 @@ static func _wreck_fx(fx, wreck: Dictionary, node: Node3D, pc: Dictionary, cen: 
 		if hull_pts.is_empty(): surface = _edge_sites(pc, cen, view, 5)
 		for j in 5:
 			var p := surface[j] + view * L * 0.025
-			fx.later(T + 0.7 + j * 0.65 + (0.2 if is_main else 0.0), func() -> void: _secondary(fx, node, p, L, tint))
+			fx.later(T + 0.7 + j * 0.65 + (0.2 if is_main else 0.0), _secondary.bind(fx, weakref(node), p, L, tint))
 
 
-static func _secondary(fx, node: Node3D, lp: Vector3, L: float, tint: Color) -> void:
+static func _secondary(fx, node_ref: WeakRef, lp: Vector3, L: float, tint: Color) -> void:
+	var node := node_ref.get_ref() as Node3D
 	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
 	var p := node.to_global(lp)
 	if not p.is_finite() or not is_finite(L): return

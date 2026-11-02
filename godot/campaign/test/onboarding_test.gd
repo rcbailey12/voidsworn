@@ -108,7 +108,33 @@ func _run() -> void:
 	check(log.tips.any(func(e): return e.k == "show") and log.tips.any(func(e): return e.k == "dismiss") and log.tips.any(func(e): return e.k == "retire"), "F1 play log contains shows, dismissals and retirements")
 	b.hud.free(); b.free()
 	var c = Campaign.new(); check(c.load_tables() == "", "campaign tables load")
-	c.RUN = {"sector": 1, "map": {"fac": "chorus"}}
+	# Ordinary callers, bots and parity never opt in, even on a fresh profile.
+	c.META = c.defaultMeta()
+	c.newRun("vex", "voidsworn")
+	check(not c.RUN.has("teachingGate"), "default campaign leaves teaching gate off")
+	var normal := {"node": "a", "kind": "battle", "fac": "chorus"}
+	check(c.teachingBattle(normal) == normal and not c.RUN.has("teachingBattles"), "gate off leaves config and run history unchanged")
+	for runs in [0, 1, 2, 3]:
+		for tips_on in [false, true]:
+			c.RUN = null; c.SAVED_RUN = null; c.META = c.defaultMeta(); c.META.stats.runs = runs
+			c.set_teaching_tips(tips_on); c.newRun("vex", "voidsworn")
+			check((c.RUN.get("teachingGate") == true) == (tips_on and runs < 2), "gate before launch: tips %s, prior runs %d" % [tips_on, runs])
+			c.set_teaching_tips(tips_on)
+			check((c.RUN.get("teachingGate") == true) == (tips_on and runs < 2), "active run excluded from limit: tips %s, prior runs %d" % [tips_on, runs])
+	c.RUN = null; c.SAVED_RUN = {"over": false}; c.META = c.defaultMeta(); c.META.stats.runs = 2
+	c.set_teaching_tips(true)
+	check(c.META.stats.finishedRuns == 1, "old profile migration excludes its saved unfinished run")
+	c.newRun("vex", "voidsworn")
+	check(c.RUN.get("teachingGate") == true and c.META.stats.finishedRuns == 1, "launching or replacing a run does not count as finishing it")
+	var generated_shape = c.RUN.map.cols[0][0].teachingShape
+	c.set_teaching_tips(false)
+	check(c.RUN.map.cols[0][0].shape == generated_shape and not c.RUN.map.cols[0][0].has("teachingShape"), "tips off restores the original map shape without rerolling")
+	c.set_teaching_tips(true)
+	c.endRun(false)
+	check(c.META.stats.finishedRuns == 2, "a loss counts as a finished run")
+	c.newRun("vex", "voidsworn")
+	check(c.RUN.get("teachingGate") != true, "two finished runs disable teaching despite more launches")
+	c.RUN = {"sector": 1, "map": {"fac": "chorus"}, "teachingGate": true}
 	check(c.nodeFaction({"id": "a", "type": "battle"}) == "hegemony", "map preview names the first teaching enemy")
 	var first = c.teachingBattle({"node": "a", "kind": "battle", "fac": "chorus"})
 	var retry = c.teachingBattle({"node": "a", "kind": "battle", "fac": "chorus"})

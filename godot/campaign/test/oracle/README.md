@@ -1,5 +1,11 @@
 # The campaign oracle, pinned
 
+Nov 2 2026, onboarding follow-up: re-copied core.js, battle.js, campaign3d.js
+and campaign_meta.js from this checkout. RUN.teachingGate controls teaching
+factions, the first map preview and battle overrides. Profile adapters enable
+it only with tips on and fewer than two finished runs. Bots and parity default
+off, including teaching-history bookkeeping. Re-exported tables are unchanged.
+
 Nov 2 2026, uncommitted onboarding task: re-copied `core.js`, `battle.js`,
 `campaign3d.js` and `ui3d.js` from this checkout. The first two teaching fights,
 their preview faction, open edge feature, arrival schedule and approved TIPS

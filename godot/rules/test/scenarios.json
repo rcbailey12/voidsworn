@@ -1657,6 +1657,7 @@
    "harrow",
    "warden"
   ],
+  "teachingGate": true,
   "teachingBattle": 1,
   "edgeFeature": true,
   "arena": "strip",
@@ -1681,6 +1682,7 @@
    "harrow",
    "warden"
   ],
+  "teachingGate": true,
   "teachingBattle": 2,
   "campaign": true,
   "event_force": "flare"

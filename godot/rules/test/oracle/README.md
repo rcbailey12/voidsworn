@@ -1,5 +1,10 @@
 # The rules oracle, pinned
 
+Nov 2 2026, onboarding follow-up: re-copied core.js and battle.js from this
+checkout. Teaching overrides now require cfg/RUN.teachingGate. Ordinary bot
+and parity callers default off; s49 and s50 explicitly enable the gate.
+Re-exported tables retain the same checksum and balance values.
+
 Nov 2 2026, uncommitted onboarding task: re-copied `core.js` and `battle.js`
 from this checkout. Teaching fight 1 uses an open field with one edge feature
 and no mid-battle arrival; fight 2 schedules an enemy arrival. Scenarios s49

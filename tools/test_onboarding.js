@@ -26,11 +26,13 @@ function gd(script, args = [], label = path.basename(script), check = false) {
   return run(godot, ['--headless', '--path', 'godot', '--log-file', path.join(out, 'engine.log'), ...(check ? ['--check-only'] : []), '--script', 'res://' + script, ...(args.length ? ['--', ...args] : [])], label);
 }
 const changedGD = ['campaign/campaign.gd', 'main/main.gd', 'main/title.gd', 'rules/battle_api.gd', 'rules/rules.gd',
+  'main/campaign_host.gd', 'audio/sfx.gd', 'fx/fx.gd', 'fx/fx_death.gd', 'world/world_living.gd',
+  'audio/test/smoke_lifetime_check.gd',
   'scenes/battle/battle.gd', 'scenes/battle/play_log.gd', 'ui/battle/hud.gd', 'ui/campaign/campaign_ui.gd', 'ui/campaign/campaign_tips.gd',
   'campaign/test/onboarding_test.gd', 'campaign/test/onboarding_visual.gd'];
 for (const file of changedGD) gd(file, [], 'parse_' + file, true);
 console.log('PASS: headless parse of all changed GDScript files');
-for (const f of ['battle.js', 'campaign3d.js', 'ui3d.js', 'contrib/opus/tools/playlog_report.js', 'tools/test_onboarding.js']) run(process.execPath, ['--check', f], 'syntax_' + f);
+for (const f of ['core.js', 'battle.js', 'campaign_meta.js', 'campaign3d.js', 'main3d.js', 'ui3d.js', 'contrib/opus/tools/playlog_report.js', 'tools/test_onboarding.js']) run(process.execPath, ['--check', f], 'syntax_' + f);
 const cards = JSON.parse(fs.readFileSync(path.join(__dirname, 'onboarding_cards.json')));
 const ui = fs.readFileSync(path.join(root, 'ui3d.js'), 'utf8');
 assert.deepEqual(JSON.parse(/const TIPS=(\[[\s\S]*?\n\]);/.exec(ui)[1]), cards);
@@ -39,11 +41,14 @@ for (const [file, name, expected] of [['godot/scenes/battle/battle.gd', 'TIPS', 
   const block = new RegExp('const ' + name + ' := (\\[[\\s\\S]*?\\n\\])').exec(source)[1];
   assert.deepEqual(JSON.parse(block.replace(/,\s*\]/g, ']')), expected);
 }
-for (const file of ['core.js', 'battle.js', 'campaign3d.js', 'ui3d.js']) assert.equal(fs.readFileSync(path.join(root, file), 'utf8'), fs.readFileSync(path.join(root, 'godot/campaign/test/oracle', file), 'utf8'));
+for (const file of ['core.js', 'battle.js', 'campaign_meta.js', 'campaign3d.js', 'ui3d.js']) assert.equal(fs.readFileSync(path.join(root, file), 'utf8'), fs.readFileSync(path.join(root, 'godot/campaign/test/oracle', file), 'utf8'));
 assert.equal(fs.readFileSync(path.join(root, 'battle.js'), 'utf8'), fs.readFileSync(path.join(root, 'godot/rules/test/oracle/battle.js'), 'utf8'));
 console.log('PASS: exact approved browser copy and oracle copies');
 assert.ok(gd('campaign/test/onboarding_test.gd', [], 'onboarding').includes('ONBOARDING PASS'));
 console.log('PASS: focused onboarding checks');
+node('tools/test_onboarding_gate.js');
+assert.ok(gd('audio/test/smoke_lifetime_check.gd', [], 'smoke_lifetime').includes('SMOKE LIFETIME PASS: 0'));
+console.log('PASS: gate-off RNG regression, browser gate and cancelled callback lifetimes');
 node('contrib/opus/tools/playlog_report.test.js');
 console.log('PASS: playlog reporter, including card counts and older logs');
 node('godot/campaign/test/node/export_campaign.js', [path.join(out, 'campaign_tables_check.json')]);

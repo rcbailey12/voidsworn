@@ -480,8 +480,8 @@ func _cmpCheap(a, b) -> float:
 	var d = _cpOf(a) - _cpOf(b)
 	return d if d != 0.0 else float(HULLS[a]["hp"]) - float(HULLS[b]["hp"])
 func rollBattleEvent(cfg, force = null): # campaign3d.js rolls this after startBattle (campaign battles only)
-	if cfg == null or cfg.get("teachingBattle") == 1 or cfg.get("kind") == "boss": return null
-	if cfg.get("teachingBattle") == 2: force = "reinf_enemy"
+	if cfg == null or (cfg.get("teachingGate") == true and cfg.get("teachingBattle") == 1) or cfg.get("kind") == "boss": return null
+	if cfg.get("teachingGate") == true and cfg.get("teachingBattle") == 2: force = "reinf_enemy"
 	if not jt(force) and rnd() > 0.45: return null
 	return {"k": force if (jt(force) and BEVENTS.has(force)) else pick(BEVENTS.keys()), "warnR": 2, "r": ri(3, 4)}
 func cheapHull(fac) -> Variant:

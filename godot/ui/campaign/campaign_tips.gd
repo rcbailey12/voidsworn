@@ -108,6 +108,7 @@ func _action(name: String, _arg) -> void:
 	if name == "tip_off":
 		_dismiss("off", false)
 		set_off(true)
+		if C != null: C.set_teaching_tips(false)
 	elif name == "tip_ok":
 		var id := current
 		_dismiss("got_it", true)
@@ -115,4 +116,5 @@ func _action(name: String, _arg) -> void:
 
 func toggle() -> void:
 	set_off(not is_off())
+	if C != null: C.set_teaching_tips(not disabled and not is_off())
 	if is_off(): _dismiss("off", false)

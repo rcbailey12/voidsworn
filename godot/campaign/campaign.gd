@@ -57,6 +57,7 @@ var battle_mode := "stub"   # "stub": act("battle", outcome) resolves fights; "e
 var pending_battle = null   # external mode: the battle config waiting for the battle scene
 var fixed_clock := false    # the parity harness pins the clock to 0, like the JS harness pins Date.now()
 var persist_on := false     # write the save file on every save (the game); the harness keeps saves in memory
+var teaching_tips := false  # supplied by the host; bots and parity leave it off
 var save_path := "user://voidsworn_campaign.json"
 var tel_log: Array = []     # a slim run log (events only), kept with the save; not part of parity
 
@@ -774,7 +775,7 @@ func equivHull(tpl, fac) -> Variant:
 	return a
 func nodeFaction(n) -> String:
 	var main = RUN["map"]["fac"]
-	if float(RUN["sector"]) == 1.0 and n["type"] in ["battle", "elite"]:
+	if RUN.get("teachingGate") == true and float(RUN["sector"]) == 1.0 and n["type"] in ["battle", "elite"]:
 		var seen = RUN.get("teachingBattles", [])
 		var old = seen.find(numstr(RUN["sector"]) + ":" + str(n["id"]))
 		var base = RUN.get("teachingBattleBase", z0(RUN.get("stats", {}).get("battles")))
@@ -788,8 +789,8 @@ func nodeFaction(n) -> String:
 
 # ---------------- battle.js helpers the campaign uses ----------------
 func rollBattleEvent(cfg, force) -> Variant:
-	if cfg == null or cfg.get("teachingBattle") == 1 or cfg.get("kind") == "boss": return null
-	if cfg.get("teachingBattle") == 2: force = "reinf_enemy"
+	if cfg == null or (cfg.get("teachingGate") == true and cfg.get("teachingBattle") == 1) or cfg.get("kind") == "boss": return null
+	if cfg.get("teachingGate") == true and cfg.get("teachingBattle") == 2: force = "reinf_enemy"
 	if not jt(force) and rnd() > 0.45: return null
 	var k = force if (jt(force) and BEVENTS.has(force)) else pick(BEVENTS.keys())
 	return {"k": k, "warnR": 2, "r": ri(3, 4)}
@@ -939,7 +940,8 @@ func genSector(s: int) -> Dictionary:
 		for n in col:
 			n["map"] = regionMap(region, n["col"], COLS); fitEncounter(n, s)
 	var biome = rollBiome(region)
-	if s == 1: cols[0][0]["shape"] = "open"
+	if RUN != null and RUN.get("teachingGate") == true and s == 1:
+		cols[0][0]["teachingShape"] = cols[0][0]["shape"]; cols[0][0]["shape"] = "open"
 	return {"fac": fac, "cols": cols, "edges": edges, "cond": cond, "region": region, "biome": biome}
 func sectorCond() -> Variant:
 	if RUN == null or RUN.get("map") == null: return null
@@ -1015,6 +1017,7 @@ func newRun(admiralId, fac, opt = {}) -> void:
 	RUN = {"fac": fac, "foes": foes, "admiral": admiralId, "credits": 120, "cpCap": 10, "sector": 1, "relics": [], "inventory": [], "fleet": [], "pos": null,
 		"stats": {"battles": 0, "elites": 0, "bosses": 0, "kills": 0, "lost": 0}, "t0": now_ms(), "fallen": [], "ambush": false, "over": false, "boons": []}
 	RUN["patrons"] = shuffle(PATRONS.keys()).slice(0, 4); RUN["aspect"] = null; RUN["flagUid"] = null
+	if teaching_tips and float(z0(META["stats"].get("finishedRuns", META["stats"].get("runs")))) < 2: RUN["teachingGate"] = true
 	if jt(META["unlocked"].get("chest1")): RUN["credits"] += 75
 	if jt(META["unlocked"].get("chest2")): RUN["credits"] += 75
 	if jt(META["unlocked"].get("chest3")): RUN["credits"] += 75
@@ -1303,6 +1306,7 @@ func nextFacPick() -> Variant:
 	return pick(pool if pool.size() > 0 else RUN_FACTIONS.filter(func(f): return f != RUN["fac"]))
 func endRun(victory: bool, abandoned: bool = false) -> void:
 	var s = RUN["stats"]
+	if META["stats"].has("finishedRuns") and not jt(RUN.get("over")): META["stats"]["finishedRuns"] += 1
 	var prevBest = float(z0(META["stats"].get("best"))); META["stats"]["best"] = max(prevBest, float(RUN["sector"]))
 	if victory:
 		META["stats"]["wins"] = float(META["stats"]["wins"]) + 1; META["stats"]["wonFacs"] = or_(META["stats"].get("wonFacs"), [])
@@ -2484,8 +2488,26 @@ func nodeSeeds(nodes: Array) -> int:
 		if nd != null and not jt(nd.get("done")) and nd.get("seed") == null and _is(nd, ["battle", "elite", "boss", "event"]):
 			nd["seed"] = floor(rnd() * 4294967296.0); n += 1
 	return n
+func initFinishedRuns() -> void:
+	# Only the real host opts in to tracking. Old profiles counted launches, including one saved active run.
+	if not META["stats"].has("finishedRuns"):
+		var active = (RUN != null and not jt(RUN.get("over"))) or (SAVED_RUN != null and not jt(SAVED_RUN.get("over")))
+		META["stats"]["finishedRuns"] = max(0, float(z0(META["stats"].get("runs"))) - (1 if active else 0))
+func set_teaching_tips(on: bool) -> void:
+	teaching_tips = on
+	if on: initFinishedRuns()
+	if RUN == null: return
+	var enabled = on and float(z0(META["stats"].get("finishedRuns"))) < 2
+	if enabled or RUN.has("teachingGate"): RUN["teachingGate"] = enabled
+	var first = RUN.get("map", {}).get("cols", [[]])[0][0] if RUN.get("sector") == 1 and RUN.get("map", {}).has("cols") else null
+	if first != null:
+		if enabled and not jt(first.get("done")):
+			if not first.has("teachingShape"): first["teachingShape"] = first.get("shape")
+			first["shape"] = "open"
+		elif first.has("teachingShape"):
+			first["shape"] = first["teachingShape"]; first.erase("teachingShape")
 func teachingBattle(cfg: Dictionary) -> Dictionary:
-	if RUN == null: return cfg
+	if RUN == null or RUN.get("teachingGate") != true: return cfg
 	var key = numstr(RUN["sector"]) + ":" + str(or_(cfg.get("node"), "event")) + (":event" if jt(cfg.get("eventRelic")) else "")
 	if not (RUN.get("teachingBattles") is Array): RUN["teachingBattles"] = []
 	if RUN.get("teachingBattleBase") == null:
@@ -2495,12 +2517,13 @@ func teachingBattle(cfg: Dictionary) -> Dictionary:
 	var i = seen.find(key)
 	if i < 0: i = seen.size(); seen.append(key)
 	var n = int(RUN["teachingBattleBase"]) + i + 1
-	cfg = cfg.duplicate(); cfg["runBattle"] = n
+	cfg = cfg.duplicate(); cfg["runBattle"] = n; cfg["teachingGate"] = true
 	if float(RUN["sector"]) != 1.0 or n > 2 or cfg.get("kind") == "boss": return cfg
 	cfg["teachingBattle"] = n; cfg["fac"] = "hegemony" if n == 1 else "corsair"
 	if n == 1: cfg.merge({"shape": "open", "arena": "strip", "dep": "line", "edgeFeature": true}, true)
 	return cfg
 func saveTeachingHistory() -> void:
+	if RUN == null or RUN.get("teachingGate") != true: return
 	if SAVED_RUN != null:
 		SAVED_RUN["teachingBattles"] = RUN["teachingBattles"].duplicate()
 		SAVED_RUN["teachingBattleBase"] = RUN["teachingBattleBase"]
@@ -2596,7 +2619,7 @@ func finishBattle(result: String) -> void:
 	if B == null or jt(B.get("finished")): return
 	B["finished"] = true
 	if result == "loss" and jt(B.get("withdraw")) and B["units"].any(func(u): return u["side"] == "player" and not jt(u.get("dead")) and not jt(u.get("isSq"))): result = "retreat"
-	if B["units"].any(func(u): return jt(u.get("reinf"))): RUN["teachingReinforced"] = true
+	if RUN.get("teachingGate") == true and B["units"].any(func(u): return jt(u.get("reinf"))): RUN["teachingReinforced"] = true
 	var cfg = B["cfg"]
 	var summary = {"cfg": cfg, "xp": [], "lost": [], "kills": 0, "rounds": B["round"], "prizes": [], "partial": jt(B.get("partial")), "boonStats": or_(B.get("boonStats"), {}).duplicate()}
 	var wingK = {}

@@ -369,7 +369,7 @@ func _bolts(ps: Array) -> void:
 		mi.mesh = st.commit()
 		mi.material_override = bm
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mi.set_instance_shader_parameter("flash", 0.0)
+		if _instance_shader_ready(mi): mi.set_instance_shader_parameter("flash", 0.0)
 		add_child(mi)
 		var light: OmniLight3D = null
 		if b < 4:
@@ -437,6 +437,10 @@ static func _flash(t: float) -> float:
 	return 0.6 * (1.0 - (t - 0.15) / 0.27)
 
 
+static func _instance_shader_ready(mi: MeshInstance3D) -> bool:
+	return DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy" and is_instance_valid(mi) and mi.material_override != null
+
+
 func _process(dt: float) -> void:
 	if bolts.is_empty() or not visible:
 		return
@@ -447,7 +451,8 @@ func _process(dt: float) -> void:
 			b["start"] = clock
 			b["next"] = clock + rng.randf_range(2.2, 6.5)
 		var v := _flash(clock - float(b["start"]))
-		(b["mi"] as MeshInstance3D).set_instance_shader_parameter("flash", v)
+		var mi := b["mi"] as MeshInstance3D
+		if _instance_shader_ready(mi): mi.set_instance_shader_parameter("flash", v)
 		if b["light"] != null:
 			(b["light"] as OmniLight3D).light_energy = v * 3.2
 		if v > 0.0 and fs.size() < 4:

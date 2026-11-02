@@ -45,19 +45,20 @@ function fieldRepairs(n){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp;
 // battleScreen seeds the pre-battle rolls from it and hands it to startBattle, so the same saved run always rebuilds the same battle
 function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss'||nd.type==='event')){ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
 function teachingBattle(cfg){
-  if(!RUN) return cfg;
+  if(!RUN||RUN.teachingGate!==true) return cfg;
   const key=RUN.sector+':'+String(cfg.node||'event')+(cfg.eventRelic?':event':'');
   const seen=RUN.teachingBattles=RUN.teachingBattles||[];
   if(RUN.teachingBattleBase==null) RUN.teachingBattleBase=Math.max(0,Number.isFinite(RUN.stats&&RUN.stats.battles)?RUN.stats.battles:0);
   let i=seen.indexOf(key); if(i<0){ i=seen.length; seen.push(key); }
   const n=RUN.teachingBattleBase+i+1;
-  cfg=Object.assign({},cfg,{runBattle:n});
+  cfg=Object.assign({},cfg,{runBattle:n,teachingGate:true});
   if(RUN.sector!==1||n>2||cfg.kind==='boss') return cfg;
   Object.assign(cfg,{teachingBattle:n,fac:n===1?'hegemony':'corsair'});
   if(n===1) Object.assign(cfg,{shape:'open',arena:'strip',dep:'line',edgeFeature:true});
   return cfg;
 }
 function saveTeachingHistory(){
+  if(!RUN||RUN.teachingGate!==true) return;
   if(SAVED_RUN){ SAVED_RUN.teachingBattles=RUN.teachingBattles.slice(); SAVED_RUN.teachingBattleBase=RUN.teachingBattleBase; }
   Persist.save(); // Preserve the existing pre-battle checkpoint, including its position.
 }
@@ -84,7 +85,7 @@ function sceneCensus(){ try{ const s=G.scene, a=s.getActiveMeshes(), act={}, all
 function finishBattle(result){
   if(!B||B.finished) return; B.finished=true; hideEnd(); // v53: once per battle, and the end card goes first so it can never be tapped twice
   if(result==='loss'&&B.withdraw&&survivorsP()) result='retreat';
-  if(B.units.some(u=>u.reinf)) RUN.teachingReinforced=true;
+  if(RUN.teachingGate===true&&B.units.some(u=>u.reinf)) RUN.teachingReinforced=true;
   const cfg=B.cfg; const summary={cfg,xp:[],lost:[],kills:0,rounds:B.round,prizes:[],partial:!!B.partial,boonStats:Object.assign({},B.boonStats||{})}; const r0=runRenown();
   const wingK={}; for(const u of B.units) if(u.parent){ const p=B.units.find(x=>x.id===u.parent); if(p){ p.dealt+=u.dealt; p.kills+=u.kills; if(p.ship) wingK[p.ship.uid]=(wingK[p.ship.uid]||0)+(u.kills||0); } }
   // B4: the Nemesis learns from how you fought; a used faction verb is spent; his own fight settles here
