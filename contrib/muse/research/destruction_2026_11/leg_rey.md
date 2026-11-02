@@ -1,0 +1,100 @@
+# Destruction and damage research leg (blind leg, Nov 1, 2026)
+
+Method note: this leg works from the evidence pack plus web research. Developer sources are cited inline. Where a point rests on gameplay observation rather than a developer source, it is labelled as observation. Claims I could not verify are marked [UNVERIFIED].
+
+## 1. Per game
+
+### Homeworld 3 (Blackbird Interactive)
+
+(a) Accumulating damage. Two systems work together. The first is Splat Damage: each hit writes into a per-ship dynamic damage texture and warps the hull geometry at the impact point, and the effect grades with severity from surface scars through hot spots and burn marks to full breaches. Blackbird reserved it for frigates and capital ships because of cost. The second system is damage sockets: points placed around the hull where effects spawn by damage stage, named light, heavy, and critical. Smoke comes first and thickens and darkens, then fire, breach effects, and sparks are added (Blackbird Interactive Fig update, "Weapons and Unit Damage in Homeworld 3", developer blog by the senior FX artist). Fighters and corvettes skip the detail work: at low speed they trail a camera-facing smoke sprite, and at speed an inky ribbon smoke trail, so their state reads at any distance (same source).
+
+(b) Breaches and internal damage. A breach is the top grade of the splat texture plus socket breach effects. There is no modelled room interior behind live damage. Interior modelling exists in this game, but it is saved for the wreck.
+
+(c) Kill and break-up. Destruction is precomputed by a procedural Ship Breaking tool built on Houdini. It simulates how a hull collapses under an internal explosion, and it also models the ship's internal rooms and mechanisms, warping and crinkling them so the wreck looks burst open from inside. Wrecks persist on the battlefield and can be salvaged (same source). Far camera: you read the explosion, then a wreck that stays. Close: a crumpled hull with guts modelled into it. The key choice is that the interior work is baked into the wreck before the game ships, not generated during play.
+
+### Sins of a Solar Empire 2 (Ironclad Games)
+
+(a) Accumulating damage. Damage reads mainly through fire, smoke, and debris effects on the hull and through the interface, because fleets run to hundreds of ships. The distinctive structural trick is at the top end: capital ships, titans, and starbases do not die at zero hull. They enter a crippled state with a second hull pool, weapons and components disabled, still able to move and be repaired (StrategyWiki, Sins of a Solar Empire II combat guide). The death of a big ship is therefore staged by rules, not just by effects.
+
+(b) Breaches and internal damage. There is no breach or interior system. Internal damage is abstract: components stop working in the crippled state, and that is shown in the UI.
+
+(c) Kill and break-up. The kill is a large explosion with debris. At launch, big ships left generic wreckage; the Ruins of War update gave every capital ship, titan, and starbase its own unique persistent wreck model, which the winner can harvest for resources (Stardock, "Ruins of War" update notes, official changelog). The weakness is documented by players: the hull model simply disappears inside the explosion, and players have asked for capital ships that break in half instead (player feedback thread, official Sins of a Solar Empire II forums, observation). At the far camera this hardly matters. Close up, it is the same complaint as this game's, from the other side: the ship vanishes before its death can be read.
+
+### Battlefleet Gothic: Armada (Tindalos Interactive)
+
+(a) Accumulating damage. Hull damage shows on the model as fires, smoke, and scorching as hull points fall (observation). The signature system is critical damage. Each critical hit lands in one of three buckets with roughly equal odds: subsystem damage, hull breach, or fire onboard (Steam community discussion quoting the official developer Q and A, game mechanics).
+
+(b) Breaches and internal damage. Breaches and fires are states first and visuals second. A fire onboard shows as flame and smoke on the hull and burns for damage over time until repaired. A hull breach adds damage. Subsystem criticals (engines, weapons, deck, generator) change how the ship fights and are tracked in the ship's status display. Temporary criticals can be repaired in battle; permanent ones cannot (TV Tropes summary of game mechanics, consistent with the Q and A above).
+
+(c) Kill and break-up. At zero hull a ship explodes or is left as a hulk. The inherited catastrophic outcomes are a drifting hulk, a blazing hulk, or a warp drive implosion that damages nearby ships (Battlefleet Gothic reference material, tabletop rules carried into the game). The hulk is the lesson: a whole, dark, drifting ship is a kill that reads at any range, and it costs one model state, not an explosion budget.
+
+### Battlefleet Gothic: Armada 2 (Tindalos Interactive)
+
+(a) and (b) The sequel keeps the same three-way critical system: subsystem damage, hull breach, fire onboard, with fires as the most visible internal state on the model (observation, supported by the Armada 2 guides cited below).
+
+(c) Kill and break-up. Armada 2 adds a second way for a ship to die without exploding. Boarding kills the crew in three steps (green, yellow, red); each step lost deals critical damage to systems, and when the last step falls the ship becomes a hulk: uncontrolled, unable to fire or move, but still on the field. Its owner can recrew it or self-destruct it on a timer for a large area blast (Steam community guide to Armada 2 boarding mechanics). Destruction by gunfire is more violent than in the first game, with ships breaking apart amid burning debris [UNVERIFIED]. The transferable point stands even without that detail: this series treats "dead" as a set of visible states (burning, breached, hulked, exploded), not a single explosion.
+
+### Star Wars: Squadrons (Motive Studios)
+
+(a) Accumulating damage. This is a cockpit game, so the camera is always close, and the read is built for arm's length. Capital ship hull sections blacken and catch fire as they take damage, and a section that has turned black and started burning is spent: it takes no more damage, which teaches the player to move to a fresh section (GamerTweak, Fleet Battles guide, gameplay guide). Starfighters carry scorch, sparks, and smoke.
+
+(b) Breaches and internal damage. Internal damage is a physical subsystem layer. Shield generators, the targeting system, and the power system are real structures on the hull that can be targeted and destroyed one by one. Destroying the power system opens weak points on the hull, glowing spots that take heavy damage (same guide; TV Tropes summary of game mechanics).
+
+(c) Kill and break-up. Once the weak points are destroyed, the flagship dies in a large staged explosion and breaks into pieces, spectacular enough that reviewers complained they were too busy flying to watch it (Game Over, review of Star Wars: Squadrons, review observation). There is no far tactical camera in this game, but the section blackening is the part that scales: it is a damage readout painted on the hull itself, readable at any distance the hull is visible.
+
+### EVE Online (CCP Games)
+
+(a) Accumulating damage. For most of its life EVE showed almost nothing on the hull itself. That changed with the 2025 Legion work described in CCP's dev blog "Smoke, Fire and Smart Lights" (CCP Games, official dev blog). When a ship enters hull damage, fires burst into existence and trail behind the ship, stretching as it boosts. The count scales by class: frigates get one fire, large relative to the ship; cruisers and battleships get two to three, appearing progressively as hull falls; structures get ten fires, roughly one per ten percent of hull damage. CCP turns the system off at lower graphics settings to protect performance in huge fleet fights (same source).
+
+(b) Breaches and internal damage. None. Hull damage is fire, smoke, and trails only. EVE is proof that a game can skip interiors entirely if its fire language is clear.
+
+(c) Kill and break-up. The kill is a bright explosion with an expanding shockwave, and then the important part: a persistent wreck that stays in space, can be looted and salvaged, and after famous battles is left in place as a memorial (observation). At fleet distances EVE ships are icons, and CCP is open that the fire system is a close and mid range read, deliberately capped so thousand-ship fights stay playable (dev blog, above). Budget honesty is the lesson.
+
+### Nebulous: Fleet Command (Eridanus Industries)
+
+(a) Accumulating damage. Damage is simulated per component. Attacks cast hitboxes through the ship, and penetration depth depends on armour thickness and an interior density stat, so a ship is hurt where the shot actually went in (Hooded Horse, official Nebulous wiki, "Component Damage"). The 3D visuals stay restrained: impact marks, fires, venting gas, including an overpenetration effect when a shell passes through (same source).
+
+(b) Breaches and internal damage. Internal damage is the game itself. Fires spread from component to component, fuel fires and magazine cookoffs cascade, and structure damage accumulates until the ship is structure broken and its crew takes extra damage (official wiki, "Component Damage" and "Damage Control"). The player reads most of this on the damage control board, a silhouette diagram of component health, rather than on the hull.
+
+(c) Kill and break-up. Kills are often quiet. Ships frequently do not explode at all: a dead ship goes dark, releases a cloud of gas, launches life pods if any crew remain, its bridge light turns orange, and the smouldering hulk stays on the field (player reports, Steam discussions, observation). Explosions happen when reactors or magazines go up. The most simulation-heavy game on this list confirms its kills with darkness, gas, and silence, not with a bigger fireball. That is directly relevant to a game whose kills feel too small: Nebulous players complain about the opposite problem, that they cannot tell a dead ship from a live one, which shows how much of the read is carried by lights and behaviour rather than by the explosion.
+
+### Highfleet (Konstantin Koshutin)
+
+(a) Accumulating damage. Ships are assemblies of physical modules, built block by block in the ship editor. Every module has its own health, and the status display reddens each module as its condition worsens (Steam community guide, "HighFleet: All you need to know in one Guide").
+
+(b) Breaches and internal damage. Internal damage is literal. Fuel tanks start burning when hit and fires spread; ammunition depots explode when damaged and destroy a large part of the ship, which for smaller ships means instant destruction (same guide).
+
+(c) Kill and break-up. There is no separate break-up system, because the ship was never one piece. Destroyed modules are blown off or tear away, the silhouette comes apart chunk by chunk under gravity and thrust, and burning wrecks fall out of the sky (observation). Highfleet's camera is a fixed side view, so there is no far or close split: the damage readout at every range is silhouette loss. You watch the ship become less of a ship.
+
+## 2. What transfers to this game
+
+**Survives, cheaply: staged socket damage (Homeworld 3, EVE Online).** Both games hang smoke, then fire, then venting on fixed points and scale the count by ship class and hull fraction. This game cannot use authored sockets, but it does not need them: the hull mesh is known at load, so sample points can be picked from the mesh surface itself (read the surface arrays once, keep a spread of points biased to the hull sides), and emitters attach there. In Godot terms: a handful of GPUParticles3D nodes per damaged ship, smoke first (dark, long-lived, low count), fire second, spark venting third. Cost is bounded by capping active emitters per ship and per scene, exactly the way CCP caps fires per class. This is the highest value per millisecond on the list because damage state at the far camera is mostly luminance and motion: dark smoke against space, one bright fire, a trail when the ship moves.
+
+**Survives, and it is the core fix: interior darkness and thickness (inverting Homeworld 3).** Homeworld bakes modelled guts into wrecks offline. That pipeline dies here: AI meshes, no offline step. But the reason Ryan calls the current interiors a shell is not missing geometry, it is lighting and depth. The current build puts lit rooms behind the opening, so the eye reads a set inside a hollow hull. The cheap inversion: make the hull material itself lie about thickness. In the hull shader, shade back faces as burnt interior (near black, with a noise-driven ember tint) instead of letting them show lit exterior colour. Any hole, breach, or cut then looks into darkness with hot spots, never into a lit shell. Cost: one branch in one shader, effectively free. Pair it with an inset throat (section 3) for real depth at the breach itself.
+
+**Survives with a method swap: break-up (Homeworld 3, Highfleet).** Pre-baked Houdini fracture dies, and Highfleet's literal modules do not exist. The swap that fits one mesh per ship: clip, do not cut. At death, render the same hull mesh two or three times with a shader clip plane per copy (discard fragments on one side of a local-space plane), each copy drifting apart as a chunk. The hollow edge this creates is hidden by a cap plug: a shared, pre-made jagged disc mesh carrying an interior material (dark metal, emissive machinery detail, a shallow cluster of boxes and cylinders behind the disc face), scaled to the cut and parented between the chunks. The chunks are the real hull surface, so they keep the ship's identity; the plug supplies the guts. Cost: two to three extra draws of one mesh per dying ship, plus one shared plug mesh. Deaths are rare and staggered by turn playback, so this is affordable at 20 ships. A CPU mesh split at load is the alternative; it gives real geometry but costs load time and code risk, and it is not needed if the plug hides the seam.
+
+**Survives as rules, not effects: the staged death (Sins 2, Armada).** The crippled state and the hulk state cost almost nothing and fix two of the three named problems. A big ship that goes weapons-dead, dark, and venting for a beat before it breaks is a sequence; a ship that sometimes stays whole as a cold hulk is a second kind of kill the far camera can read. Both are state changes plus lights-out in the shader (one uniform that kills emissive windows and engine glow).
+
+**Dies: Squadrons-style authored subsystems and weak points.** There are no modelled domes or towers to destroy on AI hulls. The transferable residue is small: after a breach, mark the breach site itself as the weak point with a glowing rim, which the game already half does with burn-through. Do not build a subsystem layer for the visuals.
+
+**Dies: Nebulous's simulation.** Component-level interiors, penetration depth, and spreading fires are a game design, not an effect, and they are far outside an effects pass. What transfers is only its kill language: lights out, a gas cloud, lifeboat sprites, silence. Cheap, and it answers the "is it dead" question that a small pop leaves open.
+
+## 3. The three named problems
+
+**(a) A breach that shows a burnt interior.** Build a breach throat kit in fx_breach.gd. Three parts. First, the back-face rule from section 2: inside the hull is dark and ember-tinted, so the hole never shows a lit shell. Second, a throat: a short open tube (a cylinder with no caps, dark double-sided material) pushed a short distance into the hull along the breach normal, with two or three small emissive ember points and a low-rate spark emitter inside it. The eye gets a metre or two of black depth with hot spots, not a room and not a sticker. Third, a rim: a jagged ring mesh, generated once and reused, carrying a heat uniform that starts white-hot at the torn edge and cools through orange to black over several seconds, plus a scorch gradient darkened into the hull shader around the breach point so the surface itself looks burnt, not marked. This fixes the exact complaint because the current breach fails on brightness: the interior is lit like the exterior. Darkness, a thick hot edge, and light coming from inside the hole are the three cues that separate a hole from a decal.
+
+**(b) A break-up whose pieces read as solid.** Use the clip-and-plug method from section 2 in fx_death.gd. Pieces read as shell when they are thin surfaces with nothing behind the cut. The plug fixes the cut face: its face is inset slightly behind the cut plane and carries a machinery texture with emissive detail, and its shallow box-and-cylinder cluster gives parallax when the chunk tumbles, so the face has depth from any angle. Give the cut rim the same cooling heat treatment as breaches, so the edge itself looks torn and thick. And slow the separation down: chunks drift apart at a walking pace for the first second before any secondary explosion, because the eye judges solidity from how a piece moves and turns, and confetti reads as paper no matter how it is textured.
+
+**(c) A small-ship kill that reads from the far camera.** Do not spend flash budget; spend time and motion. Stage it over about two and a half seconds. First a short death run: the ship tips into a spin and trails fire and smoke, Homeworld's ribbon lesson, because a moving trail is visible far beyond the ship's own size. Then the kill flash, sized in screen space so it is always the same readable size on screen (inside the existing flash budget; if three large flashes are already spoken for in that second, this kill waits a fraction or uses its smaller non-counted form [UNVERIFIED: whether the current budget code permits a smaller uncounted class]). Then leave evidence: two or three tumbling chunks with a smoke ribbon and an ember glow that cools over six to ten seconds. EVE and Nebulous agree on the principle from opposite directions: duration, darkness after brightness, and a wreck that stays are what carry a kill across a battlefield. A bigger pop carries nothing.
+
+## 4. Ranked plan
+
+1. **fx_hull.gd: interior shading rule.** Shade hull back faces as dark burnt interior with ember noise. Player sees: every hole and cut stops looking like an empty shell, everywhere, at once.
+2. **fx_breach.gd: breach throat kit.** Dark inset tube, ember points, spark vent, jagged rim with cooling heat, scorch gradient in the hull shader. Player sees: a breach is a hole into something burnt, with depth and a hot edge.
+3. **fx_hull.gd: staged socket damage.** Surface-sampled sockets per ship; smoke, then fire, then venting by hull fraction, counts capped by class. Player sees: any ship's condition from across the field, no health bar needed.
+4. **fx_death.gd: staged capital death.** Lights out, venting, a beat of drift, then break-up, then secondary explosions walking the chunks over two to three seconds. Player sees: big ships die in a sequence instead of one fireball.
+5. **fx_death.gd: clip-and-plug break-up.** Two to four clipped copies of the hull, cap plugs with inset machinery faces, cooling cut rims, slow first separation. Player sees: broken pieces with guts and thick torn edges.
+6. **fx_death.gd: small-ship kill staging.** Death spin with fire trail, screen-sized kill flash, tumbling chunks with smoke ribbon and a long ember cool-down. Player sees: small kills register from the battle camera.
+7. **fx_death.gd: hulk outcome.** Some kills stay whole: lights and engines out, one gas vent, lifeboat sprites, cold drift. Player sees: a second kind of death, and no doubt that the ship is dead.
+8. **fx_hull.gd: persistent scars.** Keep a per-ship list of hit points in the hull shader; darken and roughen the surface at each one for the rest of the battle. Player sees: ships carry their damage, and a battered ship looks battered before it is breached.
