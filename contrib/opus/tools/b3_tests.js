@@ -31,8 +31,8 @@ const pool = u => u.hp + u.sh.reduce((a, b) => a + b, 0);
 const logged = (n0, re) => T.B.log.slice(n0).some(l => re.test(l.m));
 
 // ---- data-only pass ----
-check('price ladder: Hegemony unchanged, Chorus frigates cheap, Deathless and Ithar dear, Voidsworn carriers +25%', () =>
-  T.HULLS.h_picket.cost === 70 && T.HULLS.h_vanguard.cost === 250 && T.HULLS.b_drone.cost === 45 && T.HULLS.d_harvester.cost === 390 && T.HULLS.i_wisp.cost === 90 && T.HULLS.reliquary.cost === 325 && T.HULLS.warden.cost === 70);
+check('price ladder (balance v2): Hegemony unchanged, Chorus frigates cheap, Deathless and Ithar dear, Voidsworn carriers +10%', () =>
+  T.HULLS.h_picket.cost === 70 && T.HULLS.h_vanguard.cost === 250 && T.HULLS.b_drone.cost === 45 && T.HULLS.d_harvester.cost === 415 && T.HULLS.i_wisp.cost === 90 && T.HULLS.reliquary.cost === 285 && T.HULLS.warden.cost === 70);
 check('Ithar cannot Brace; other factions still can', () => { battle('ithar', ['i_song'], 'hegemony', ['h_picket']); const it = P()[0]; battle('voidsworn', ['penitent'], 'hegemony', ['h_picket']); const vo = P()[0];
   return !T.canOrder(it, 'brace') && T.canOrder(vo, 'brace'); });
 check('Corsair gate: no lance-kind hulls (prize Add refused, tow refused), other factions unaffected', () => {
