@@ -1,5 +1,8 @@
 # The rules oracle, pinned
 
+Nov 2 2026, issue 18: re-copied core.js from this checkout for the shared
+FX_CAPS table and final-total ceilings in sumFx. Re-exported rules tables.
+
 Nov 2 2026, onboarding follow-up: re-copied core.js and battle.js from this
 checkout. Teaching overrides now require cfg/RUN.teachingGate. Ordinary bot
 and parity callers default off; s49 and s50 explicitly enable the gate.
