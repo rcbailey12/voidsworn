@@ -18,4 +18,6 @@ Ryan's real 4K screenshots (not phone photos) are in docs/shots/playtest/2026-11
    - Keep the existing breach code as the heavy-damage stage only, or retire it if the new surface damage covers it.
    Capture each stage on real hulls of two factions plus one Chorus ship.
 
+7. Engine trails behave like a string tied to the ship (Ryan: "they get wavy and will change as the ships move, it's like a string is attached to the ship rather than being a trail"). The trail must be emitted into world space: each point stays where the engine left it and fades with age, so the trail traces the path the ship actually flew, never re-bending when the ship turns. Same for every engine and thruster trail.
+
 Tests: parse-check changed .gd; rules parity PASS; the UI check (--ui-shots) passes at 1920x1080 and 3840x2160; destruction checks pass. Report capture file names. Final message: per item what changed (file:line), checks, anything left. Plain ASCII, never the em dash; no commit (the board runner commits and pushes).
