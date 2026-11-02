@@ -97,10 +97,23 @@ varying vec4 vcol;
 varying float style;
 varying vec3 wp;
 varying vec2 vuv;
+varying float thin;
 void vertex() {
 	vcol = COLOR;
 	style = INSTANCE_CUSTOM.r;
 	vuv = UV;
+	// step 2: a line never thinner than about a pixel and a quarter, so the tactical grid stays whole and crisp when zoomed
+	// out (it broke up into dashes); the inner edge (UV.y 1) moves in toward the hex centre, and the line dims to match
+	thin = 1.0;
+	if (UV.y > 0.5) {
+		vec3 wv = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+		float dist = length((VIEW_MATRIX * vec4(wv, 1.0)).xyz);
+		float px = 2.0 * dist / (PROJECTION_MATRIX[1][1] * VIEWPORT_SIZE.y);
+		float w = max(0.35, px * 1.25);
+		vec2 dir = normalize(VERTEX.xz);
+		VERTEX.xz -= dir * (w - 0.35) * 1.1547;
+		thin = 0.35 / w;
+	}
 	wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	if (well.w > 0.0 && style < 0.5) {
 		float d = distance(wp.xz, well.xz);
@@ -116,18 +129,21 @@ void fragment() {
 		if (mode == 0) {
 			k = mix(1.0, far_k, smoothstep(near_r, far_r, distance(wp.xz, focus.xz)));
 		} else if (mode == 1) {
-			float kf = 1.0 - smoothstep(28.0, 118.0, distance(wp.xz, focus.xz));
+			// step 2: the holo grid reaches further from the ship that is up (it showed only a few hexes round it), and
+			// further again as the camera pulls back; past that only the hex corners stay, faintly, out to the board's edge
+			float cd = distance(CAMERA_POSITION_WORLD, focus);
+			float sc = clamp(cd / 220.0, 1.0, 1.6);
+			float kf = 1.0 - smoothstep(55.0 * sc, 175.0 * sc, distance(wp.xz, focus.xz));
 			float kc = 1.0 - smoothstep(12.0, 52.0, distance(wp.xz, cursor.xz));
-			k = max(kf, 0.85 * kc);
 			float e = min(vuv.x, 1.0 - vuv.x);
 			float tick = 1.0 - smoothstep(0.07, 0.2, e);
-			k *= mix(0.3, 1.0, tick);
+			k = max(max(kf, 0.85 * kc) * mix(0.3, 1.0, tick), 0.3 * tick);
 			k *= 1.0 + 0.9 * smoothstep(0.95, 1.0, sin(dot(wp.xz, vec2(0.018, 0.03)) - TIME * 0.9));
 		} else if (mode == 2) {
 			k = (1.0 - smoothstep(9.0, 30.0, distance(wp.xz, cursor.xz))) * 0.9;
 		}
 	}
-	ALBEDO = vcol.rgb * vcol.a * k;
+	ALBEDO = vcol.rgb * vcol.a * k * mix(1.0, thin, 0.6);
 }
 """
 const OUTLINE_SHADER := """
@@ -274,8 +290,9 @@ func _hex_mesh(rad: float, ring: bool) -> ArrayMesh:
 			var a1 := Vector3(a.x * (rad - w), 0, a.y * (rad - w))
 			var b1 := Vector3(b.x * (rad - w), 0, b.y * (rad - w))
 			# UV.x runs 0 to 1 along each edge (the holo grid brightens the corners)
-			for v in [[a0, 0.0], [b0, 1.0], [b1, 1.0], [a0, 0.0], [b1, 1.0], [a1, 0.0]]:
-				st.set_uv(Vector2(v[1], 0.0))
+			# UV.y is 1 on the inner edge (the ring shader widens the line from there when it would draw thinner than a pixel)
+			for v in [[a0, 0.0, 0.0], [b0, 1.0, 0.0], [b1, 1.0, 1.0], [a0, 0.0, 0.0], [b1, 1.0, 1.0], [a1, 0.0, 1.0]]:
+				st.set_uv(Vector2(v[1], v[2]))
 				st.add_vertex(v[0])
 	else:
 		for i in 6:
@@ -441,6 +458,8 @@ var _look_layer: CanvasLayer = null
 var _toast: Label = null
 var _toast_t := 0.0
 var _edge_gain := 0.0
+var gas_edges: MeshInstance3D
+var _gas_edge_gain := 0.0
 
 
 func _well_info() -> void:
@@ -498,12 +517,27 @@ func _terrain_edges() -> void:
 				groups["rim"][key(h.q, h.r)] = true
 			if d <= 5:
 				groups["pull"][key(h.q, h.r)] = true
+	# step 2: the natural terrain (nebula, ion storm, debris, rock) gets its own edge mesh, so look C can drop those hex
+	# outlines (the gas, wrecks and rocks themselves show where they are) and the tactical grid still brings them back;
+	# objective zones and the dead star's rings keep theirs
+	gas_edges = MeshInstance3D.new()
+	gas_edges.name = "GasEdges"
+	gas_edges.material_override = em.duplicate()
+	gas_edges.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(gas_edges)
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var sg := SurfaceTool.new()
+	sg.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var n := 0
+	var ng := 0
 	for g in groups:
-		n += _edge_into(st, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
+		if g == "neb" or g == "storm" or g == "debris" or g == "rock":
+			ng += _edge_into(sg, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
+		else:
+			n += _edge_into(st, groups[g], EDGE_C[g], 0.32, 2.2, -0.36)
 	edges.mesh = st.commit() if n > 0 else null
+	gas_edges.mesh = sg.commit() if ng > 0 else null
 
 
 # the outer edges of a set of hexes into a SurfaceTool: a line (w_line wide) and a band inside it fading out (w_glow)
@@ -551,6 +585,10 @@ func apply_look(toast := true) -> void:
 		_edge_gain = float(sp["terrain_edge"])
 		(edges.material_override as ShaderMaterial).set_shader_parameter("gain", _edge_gain)
 		edges.visible = _edge_gain > 0.0
+	if gas_edges != null:
+		_gas_edge_gain = float(sp.get("gas_edge", sp["terrain_edge"]))
+		(gas_edges.material_override as ShaderMaterial).set_shader_parameter("gain", _gas_edge_gain)
+		gas_edges.visible = _gas_edge_gain > 0.0
 	refresh()
 	if is_inside_tree():
 		get_tree().call_group("vs_world", "set_look")
@@ -610,6 +648,8 @@ func _process(dt: float) -> void:
 	if fills != null:
 		if edges != null:
 			edges.visible = fills.visible and _edge_gain > 0.0
+		if gas_edges != null:
+			gas_edges.visible = fills.visible and _gas_edge_gain > 0.0
 		if _look_layer != null:
 			_look_layer.visible = fills.visible
 

@@ -56,12 +56,14 @@ static func next() -> String:
 static func spec() -> Dictionary:
 	var l := current()
 	if l == "cine" and tactical:
-		return {"plate": false, "underlay": 0.45, "fills": true, "grid": "tactical", "terrain_edge": 0.9, "reach": "holo", "living": true, "gas_k": 0.35, "old_clouds": false, "funnel": true}
+		return {"plate": false, "underlay": 0.45, "fills": true, "grid": "tactical", "terrain_edge": 0.9, "gas_edge": 0.9, "reach": "holo", "living": true, "gas_k": 0.3, "old_clouds": false, "funnel": true}
 	match l:
 		"holo":
 			return {"plate": false, "underlay": 0.0, "fills": false, "grid": "holo", "terrain_edge": 0.75, "reach": "holo", "living": false, "gas_k": 1.0, "old_clouds": true, "funnel": true}
 		"living":
 			return {"plate": false, "underlay": 0.0, "fills": false, "grid": "ghost", "terrain_edge": 0.3, "reach": "today", "living": true, "gas_k": 1.0, "old_clouds": false, "funnel": false}
 		"cine":
-			return {"plate": false, "underlay": 0.0, "fills": false, "grid": "holo", "terrain_edge": 0.3, "reach": "holo", "living": true, "gas_k": 1.0, "old_clouds": false, "funnel": true}
+			# step 2: no hex outline round natural terrain (nebula, ion storm, debris, rock): the gas, wrecks and rocks show it;
+			# Z shows the hexes (gas_edge: those edges; terrain_edge: objective zones and the dead star's rings)
+			return {"plate": false, "underlay": 0.0, "fills": false, "grid": "holo", "terrain_edge": 0.3, "gas_edge": 0.0, "reach": "holo", "living": true, "gas_k": 1.0, "old_clouds": false, "funnel": true}
 	return {"plate": true, "underlay": 1.0, "fills": true, "grid": "today", "terrain_edge": 0.0, "reach": "today", "living": false, "gas_k": 1.0, "old_clouds": true, "funnel": false}
