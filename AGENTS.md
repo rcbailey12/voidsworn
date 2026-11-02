@@ -16,6 +16,7 @@ It holds the goal, the full history, every piece of owner feedback word for word
 - Codex stays local on Ryan's PC (codex_run.bat). Opus collects its patch, reviews it and commits with "Fixes #<number>".
   No Codex cloud tasks or cloud reviews: they run an older model than the local one.
 - Muse's standing instructions: `contrib/opus/briefs/muse_standing_rule.md`.
+- Questions for Ryan go to him directly in the agent's own chat, not as GitHub tags or comments (Ryan, Nov 2).
 
 ## If you are not the main agent: work in your own folder
 

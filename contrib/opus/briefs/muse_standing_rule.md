@@ -12,7 +12,7 @@ When Ryan says "check the board" (or anything like it):
 4. Deliver on a branch named muse/issue-<number>, then open a pull request into main with "Closes #<number>" in its description. Do not push to main.
    If you can't open pull requests, push the branch and comment the branch name on the issue instead.
 5. Comment the PR link on the issue and say in one line what Ryan will want to look at first.
-6. If you are stuck or need Ryan, comment the question on the issue and add the label "ryan".
+6. If you are stuck or need a decision from Ryan, ask him directly here in this chat (multiple choice with your pick). Don't tag him on GitHub.
 7. Move on to the next muse issue if there is one.
 
 Opus reviews every PR, checks the claims and merges. Plain words, no em dashes.
