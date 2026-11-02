@@ -41,6 +41,17 @@ static func clear_static() -> void:
 	_gt = null
 
 
+func _exit_tree() -> void:
+	# The dummy renderer can query instance shader parameters during hull teardown,
+	# after a damaged mesh's surface materials have been freed. Detach the render
+	# instances first, while their nodes and materials are still alive.
+	if DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy":
+		return
+	for mi in meshes:
+		if is_instance_valid(mi):
+			(mi as MeshInstance3D).set_base(RID())
+
+
 static func yaw_of(f) -> float:
 	return -deg_to_rad(60.0 * float(f))
 
