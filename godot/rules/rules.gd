@@ -3404,7 +3404,7 @@ func canAbility(u) -> bool:
 	if ab == "blink": return blinkHexes(u).size() > 0
 	if ab == "ionpulse":
 		for t in alive("enemy" if u["side"] == "player" else "player"):
-			if not jt(t.get("isSq")) and hdist(t, u) <= 4: return true
+			if not jt(t.get("isSq")) and hdist(t, u) <= 4 and t["sh"].any(func(x): return x > 0): return true
 		return false
 	return true
 func novaTargets(u) -> Array:
