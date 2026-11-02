@@ -1,0 +1,184 @@
+extends Node
+# UI pass layout check (Nov 1). Run: battle.tscn (or the game, through main) with -- --ui-shots <folder> [--shots <folder>]
+# [--seed N | --scenario sN]. Plays the opening of a battle through the same handlers a player uses and, at five moments,
+# saves a still and checks the screen layout: battle start, a move hex hovered (the "Move here" tip), an enemy targeted,
+# the tip card with the terrain legend open, and the enemy's turn. At each one every visible HUD part (top bar, fleet list,
+# ship panel, log, card, turn strip, legend, tips, toasts, banner, key hint) must sit fully on screen and touch no other,
+# and every top bar button (Grid (Z) included) must sit inside the top bar. Prints [ui-check] lines and writes
+# ui_check.txt in the folder. Presentation only: it never calls the rules except to read.
+
+var b
+var dir := ""
+var lines: Array = []
+var fails := 0
+
+
+func _idle() -> void:
+	var t0 := Time.get_ticks_msec()
+	while is_inside_tree() and (b.busy or b.warming or b._threat_busy or b.thinking or b.ending) and not b.ended:
+		await get_tree().process_frame
+		if Time.get_ticks_msec() - t0 > 120000:
+			return
+	for i in 3:
+		await get_tree().process_frame
+
+
+func _note(ok: bool, what: String) -> void:
+	lines.append(("PASS  " if ok else "FAIL  ") + what)
+	if not ok:
+		fails += 1
+	print("[ui-check] ", "PASS " if ok else "FAIL ", what)
+
+
+# every HUD part that is showing, with its screen rect
+func _parts() -> Array:
+	var h = b.hud
+	var out: Array = []
+	var named := [["top bar", h.top], ["fleet list", h.roster], ["ship panel", h.panel], ["battle log", h.log_panel],
+		["activation card", h.card], ["turn strip", h.phase], ["legend", h.legend], ["hover tip", h.tip], ["tip card", h.tipcard],
+		["enemy chip", h.aichip]]
+	for n in named:
+		var c = n[1]
+		if c != null and is_instance_valid(c) and (c as Control).is_visible_in_tree() and (c as Control).modulate.a > 0.05:
+			out.append([n[0], (c as Control).get_global_rect()])
+	if h.toast_lbl.modulate.a > 0.05 and h.toast_lbl.text != "":
+		out.append(["toast", h.toast_lbl.get_global_rect()])
+	if h.banner_lbl.modulate.a > 0.05 and h.banner_lbl.text != "":
+		out.append(["banner", _text_rect(h.banner_lbl)])
+	if h.hint.is_visible_in_tree():
+		out.append(["key hint", _text_rect(h.hint)])
+	return out
+
+
+# a centred label's rect trimmed to its text (its box can be wider than the words)
+func _text_rect(l: Label) -> Rect2:
+	var r := l.get_global_rect()
+	var w := minf(r.size.x, l.get_minimum_size().x)
+	return Rect2(r.position + Vector2((r.size.x - w) * 0.5, 0), Vector2(w, r.size.y))
+
+
+func _check(name: String) -> void:
+	var vs: Vector2 = b.get_viewport().get_visible_rect().size
+	var scr := Rect2(Vector2.ZERO, vs).grow(1.0)
+	var parts := _parts()
+	var bad: Array = []
+	for p in parts:
+		if not scr.encloses(p[1]):
+			bad.append("%s runs off the screen %s" % [p[0], _r(p[1])])
+	for i in parts.size():
+		for j in range(i + 1, parts.size()):
+			var a: Rect2 = parts[i][1]
+			var c: Rect2 = parts[j][1]
+			if a.grow(-1.0).intersects(c.grow(-1.0)):
+				bad.append("%s %s overlaps %s %s" % [parts[i][0], _r(a), parts[j][0], _r(c)])
+	# every top bar button inside the top bar
+	var tr: Rect2 = b.hud.top.get_global_rect().grow(1.0)
+	var nb := 0
+	for c in b.hud.top_row.get_children():
+		if c is Button and (c as Button).visible:
+			nb += 1
+			if not tr.encloses((c as Button).get_global_rect()):
+				bad.append("top bar button \"%s\" is cut off %s" % [(c as Button).text, _r((c as Button).get_global_rect())])
+	var gb = b.board.get("_look_btn") if b.board != null else null
+	if gb != null and is_instance_valid(gb) and (gb as Button).visible and (gb as Button).get_parent() != b.hud.top_row:
+		bad.append("the Grid (Z) button is not in the top bar")
+	_note(bad.is_empty(), "%s at %dx%d (UI scale %.2f): %d parts, %d top bar buttons%s" % [name, int(vs.x), int(vs.y), b.hud.k, parts.size(), nb,
+		"" if bad.is_empty() else ": " + "; ".join(PackedStringArray(bad))])
+
+
+func _r(r: Rect2) -> String:
+	return "(%d,%d %dx%d)" % [int(r.position.x), int(r.position.y), int(r.size.x), int(r.size.y)]
+
+
+func _shot(name: String) -> void:
+	await get_tree().create_timer(0.7).timeout
+	_check(name)
+	await b._snap(name)
+
+
+func _hover_hex(q: int, r: int) -> void:
+	b.hover = Vector2i(q, r)
+	b.board.set_hover(q, r)
+	b._overlay()
+	var sp: Vector2 = b.cam.unproject_position(b.board.hex_world(q, r))
+	get_viewport().warp_mouse(sp)
+	b.hud.show_tip(b._tip(), sp)
+
+
+func run(battle) -> void:
+	b = battle
+	dir = str(b.args.get("ui-shots", "user://ui_shots"))
+	while b.api == null or b.warming:
+		await get_tree().process_frame
+	while b.opening:
+		await get_tree().process_frame
+	await _idle()
+	await get_tree().create_timer(2.0).timeout
+	# 1. the opening hand-over
+	await _shot("1_battle_start")
+	# 2. a move hex hovered: the farthest reachable hex, with its tip
+	b._update_reach()
+	var far = null
+	for key in b.reach_map:
+		var st = b.reach_map[key]
+		if not b._unit_at(int(st.q), int(st.r)).is_empty():
+			continue
+		if far == null or float(st.cost) > float(far.cost):
+			far = st
+	if far != null:
+		_hover_hex(int(far.q), int(far.r))
+		await _shot("2_move_preview")
+	# 3. an enemy targeted (one click: the odds in the card, nothing fires); out of reach, the attack-move preview
+	var tgt := ""
+	var any := ""
+	for e in b.V["units"]:
+		if e["side"] != "enemy" or e["dead"] or e["squadron"]:
+			continue
+		if any == "":
+			any = e["id"]
+		if tgt == "" and not b._firing_set(e["id"]).is_empty():
+			tgt = e["id"]
+	if tgt == "":
+		tgt = any
+	if tgt != "":
+		_hover_hex(int(b.VU[tgt]["q"]), int(b.VU[tgt]["r"]))
+		b._on_click()
+		await _idle()
+		_hover_hex(int(b.VU[tgt]["q"]), int(b.VU[tgt]["r"]))
+		await _shot("3_enemy_targeted")
+		b._on_key(KEY_ESCAPE)
+		await _idle()
+	# 4. an onboarding tip card and the terrain legend opened (both show in real play; screenshot jobs turn tips off)
+	b.hud.show_tip("", Vector2.ZERO)
+	b.hud.show_tipcard("ui_check", "Your ship is up", "The card at the bottom shows the ship that is up and what it can still do. Click a blue hex to plan a move, click an enemy to target it, Space ends the ship.")
+	if not (b.hud._legend.get("rows", []) as Array).is_empty() or str(b.hud._legend.get("title", "")) != "":
+		b.hud.legend_open = true
+		b.hud._draw_legend()
+	await _shot("4_tip_card_and_legend")
+	b.hud.hide_tipcard()
+	b.hud.legend_open = false
+	b.hud._draw_legend()
+	# 5. the enemy's turn: end the ship that is up
+	b.handed_t = -9.0
+	b._on_key(KEY_SPACE)
+	var t0 := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t0 < 20000:
+		await get_tree().process_frame
+		if b.hud.phase.visible and b.hud.phase_lbl.text.contains("ENEMY TURN"):
+			break
+	await get_tree().create_timer(0.3).timeout
+	_check("5_enemy_turn")
+	await b._snap("5_enemy_turn")
+	_finish()
+
+
+func _finish() -> void:
+	var vs: Vector2 = b.get_viewport().get_visible_rect().size
+	lines.append("%d checks, %d failed (window %dx%d, UI scale %.3f)" % [lines.size(), fails, int(vs.x), int(vs.y), b.hud.k])
+	DirAccess.make_dir_recursive_absolute(dir)
+	var f := FileAccess.open(dir.path_join("ui_check.txt"), FileAccess.WRITE)
+	if f != null:
+		f.store_string("\n".join(PackedStringArray(lines)) + "\n")
+		f.close()
+	print("[ui-check] %d checks, %d failed" % [lines.size() - 1, fails])
+	b._quit_report()

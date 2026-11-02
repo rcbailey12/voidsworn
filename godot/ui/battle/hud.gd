@@ -3,8 +3,18 @@ extends CanvasLayer
 # panel on the right (stats, weapons with hit chances, orders), the battle log bottom left, ship nameplates over the
 # board, the round banner, hover tips, the enemy-acting chip, one-at-a-time onboarding tips, and the end card.
 # Colours from the game's CSS variables. Sizes scale with the window height (designed at 1080).
+#
+# Screen layout (UI pass, Nov 1): every part has its own region, so nothing sits on anything else at any window size.
+#   top bar (full width) | under it, between the fleet list and the ship panel: the banner strip (legend chip, then the
+#   turn strip, the enemy-AI chip, toasts, the tip card) | left: fleet list, battle log under it | right: ship panel |
+#   bottom, between the log and the ship panel: the activation card (or the key hint).
+# _layout() enforces this every frame: the strip, chip, toast, card, hint and hover tip stay inside the middle column,
+# and the fleet list and ship panel get shorter (they scroll) rather than run under the log or the card.
+# The HUD is rebuilt at the new scale when the window size changes (a capture window, Full screen, un-maximise): before
+# this it kept the size of the window it was built in, so a 1920x1080 window could carry a 4K-sized HUD.
 
 signal action(name: String, arg: Variant)
+signal rescaled   # the HUD was rebuilt at a new size; the battle refreshes what it shows
 
 const Brand := preload("res://ui/battle/brand.gd")
 
@@ -75,15 +85,31 @@ func _ready() -> void:
 	font_semi = _font("BarlowSemiCondensed-SemiBold.ttf")
 	font_goth = Brand.display()
 	font_caps = Brand.caps()
-	k = clampf(get_viewport().get_visible_rect().size.y / 1080.0, 0.6, 2.2)
+	k = scale_for(get_viewport().get_visible_rect().size)
+	_built_vs = get_viewport().get_visible_rect().size
+	_build_all()
+
+
+# the UI scale for a window: its height over 1080 (the design size), within 0.6 and 2.2
+static func scale_for(vs: Vector2) -> float:
+	return clampf(vs.y / 1080.0, 0.6, 2.2)
+
+
+var _built_vs := Vector2.ZERO       # the window size the HUD was built for
+var _resize_t := -1.0               # counts down to a rebuild after the window size changes
+var _last := {}                     # the last call of each setter, replayed after a rebuild
+
+
+func _build_all() -> void:
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.theme = _theme()
 	add_child(root)
-	plates_root = Control.new()
-	plates_root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	plates_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if plates_root == null:
+		plates_root = Control.new()
+		plates_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+		plates_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(plates_root)
 	_build_top()
 	_build_roster()
@@ -96,6 +122,62 @@ func _ready() -> void:
 	_build_legend()
 	_build_phase()
 	_build_card()
+
+
+# the window changed size: build every part again at the new scale and put back what each part showed. The battle log's
+# text, the floating callouts and the grid button move across as they are; nameplates are made again on the next frame.
+func _rebuild() -> void:
+	var vs := get_viewport().get_visible_rect().size
+	_built_vs = vs
+	var nk := scale_for(vs)
+	if absf(nk - k) < 0.004 or root == null:
+		return
+	var keep := {"retreat_v": retreat_btn.visible, "retreat_d": retreat_btn.disabled, "hint": hint.visible,
+		"banner": banner_lbl.text, "banner_col": banner_lbl.get_theme_color("font_color"), "banner_a": banner_lbl.modulate.a,
+		"toast": toast_lbl.text, "toast_a": toast_lbl.modulate.a}
+	if _grid_btn != null and is_instance_valid(_grid_btn) and _grid_btn.get_parent() != null:
+		_grid_btn.get_parent().remove_child(_grid_btn)
+	plates_root.get_parent().remove_child(plates_root)
+	for id in plates:
+		(plates[id] as Control).queue_free()
+	plates.clear()
+	log_text.get_parent().remove_child(log_text)
+	remove_child(root)
+	root.queue_free()
+	menu = null
+	endcard = null
+	tipcard = null
+	bars = []
+	load_cover = null
+	_card_sig = ""
+	_card_gen += 1
+	_phase_fs = -1
+	_heights = {}
+	k = nk
+	_build_all()
+	retreat_btn.visible = keep["retreat_v"]
+	retreat_btn.disabled = keep["retreat_d"]
+	for key in ["set_crest", "set_command", "set_top", "set_roster", "set_panel", "set_legend", "set_chip", "set_phase", "set_card"]:
+		if _last.has(key):
+			callv(key, _last[key])
+	hint.visible = keep["hint"]
+	if _last.has("show_tipcard"):
+		callv("show_tipcard", _last["show_tipcard"])
+	if _last.has("show_menu"):
+		callv("show_menu", _last["show_menu"])
+	if _last.has("show_end"):
+		callv("show_end", _last["show_end"])
+	if bool(_last.get("letterbox", false)):
+		letterbox(true)
+	if bool(_last.get("loading", false)):
+		loading(true)
+	banner_lbl.text = keep["banner"]
+	banner_lbl.add_theme_color_override("font_color", keep["banner_col"])
+	banner_lbl.modulate.a = keep["banner_a"]
+	toast_lbl.text = keep["toast"]
+	toast_lbl.modulate.a = keep["toast_a"]
+	print("[hud] rebuilt for %d x %d (scale %.3f)" % [int(vs.x), int(vs.y), k])
+	rescaled.emit()
 
 
 # true when the project has been imported (or exported) and the imported data for this file is really there; a project
@@ -274,18 +356,25 @@ func _build_top() -> void:
 	turn_lbl = _label("", 17, BONE2, font_semi)
 	turn_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(turn_lbl)
+	# the objective takes the room the buttons leave and ends in "..." when there is not enough, so the buttons on the
+	# right are never pushed off the screen (the Speed and End ship buttons were cut off)
 	obj_lbl = _label("", 15, GILT)
 	obj_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	obj_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	obj_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	obj_lbl.mouse_filter = Control.MOUSE_FILTER_PASS
 	row.add_child(obj_lbl)
-	var sp := Control.new()
-	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(sp)
+	top_row = row
 	cmd_btn = _button("Command", "command")
 	cmd_btn.visible = false
 	row.add_child(cmd_btn)
 	retreat_btn = _button("Retreat", "retreat")
 	retreat_btn.visible = false
 	row.add_child(retreat_btn)
+	# board look C's "Grid (Z)" button (board.gd) lives here, in the top bar, once the battle hands it over (adopt_grid)
+	if _grid_btn != null and is_instance_valid(_grid_btn):
+		_grid_btn.add_theme_font_size_override("font_size", s(14))
+		row.add_child(_grid_btn)
 	threat_btn = _button("Threat (R)", "threat")
 	row.add_child(threat_btn)
 	row.add_child(_button("Top-down (T)", "top"))
@@ -296,23 +385,52 @@ func _build_top() -> void:
 	row.add_child(end_btn)
 
 
+var top_row: HBoxContainer
+var _grid_btn: Button
+
+
+# board look C's "Grid (Z)" toggle (board.gd makes it on its own layer at a fixed spot, where the ship panel covered it):
+# moved into the top bar before Threat, at the HUD's size. board.gd still owns its state, text and when it shows.
+func adopt_grid(b: Button) -> void:
+	if b == null or not is_instance_valid(b) or top_row == null:
+		return
+	if _grid_btn == b and b.get_parent() == top_row:
+		return
+	_grid_btn = b
+	if b.get_parent() != null:
+		b.get_parent().remove_child(b)
+	b.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	b.offset_left = 0
+	b.offset_top = 0
+	b.offset_right = 0
+	b.offset_bottom = 0
+	b.text = "Grid (Z)"
+	b.add_theme_font_size_override("font_size", s(14))
+	top_row.add_child(b)
+	top_row.move_child(b, threat_btn.get_index())
+
+
 # your admiral's crest (godot/portraits) at the left of the top bar
 func set_crest(tex: Texture2D, tip: String) -> void:
+	_last["set_crest"] = [tex, tip]
 	crest.texture = tex
 	crest.visible = tex != null
 	crest.tooltip_text = tip
 
 
 func set_command(label: String, ready: bool) -> void:
+	_last["set_command"] = [label, ready]
 	cmd_btn.visible = ready
 	cmd_btn.text = "Command: " + label
 	cmd_btn.add_theme_color_override("font_color", GILT)
 
 
 func set_top(round_n: int, turn: String, objective: String, end_text: String, end_on: bool, speed_fast: bool, threat_on: bool) -> void:
+	_last["set_top"] = [round_n, turn, objective, end_text, end_on, speed_fast, threat_on]
 	title_lbl.text = "Round %d" % round_n
 	turn_lbl.text = turn
 	obj_lbl.text = objective
+	obj_lbl.tooltip_text = objective
 	end_btn.text = end_text
 	end_btn.disabled = not end_on
 	speed_btn.text = "Speed: fast" if speed_fast else "Speed: normal"
@@ -337,14 +455,43 @@ func _build_roster() -> void:
 # a side panel is as tall as what it holds, up to max_h (then it scrolls)
 func _fit(sc: ScrollContainer, box: VBoxContainer, p: PanelContainer, max_h: float) -> void:
 	await get_tree().process_frame
-	if not is_instance_valid(box):
+	if not is_instance_valid(box) or not is_instance_valid(p):
 		return
-	var h := minf(box.get_combined_minimum_size().y, max_h)
-	sc.custom_minimum_size.y = h
-	p.reset_size()
+	_heights[p] = box.get_combined_minimum_size().y
+	_apply_heights()
+
+
+var _heights := {}                  # side panel -> the height of what it holds
+
+
+# each side panel is as tall as what it holds, but stops short of the parts below it (the log under the fleet list; the
+# activation card when it reaches under the ship panel); past that it scrolls
+func _apply_heights() -> void:
+	var vs := root.get_viewport_rect().size
+	var gap := float(s(8))
+	for p in [roster, panel]:
+		if not _heights.has(p):
+			continue
+		var pr: Rect2 = (p as Control).get_global_rect()
+		var bottom := vs.y - s(12)
+		var below: Array = [card]
+		if p == roster:
+			below.append(log_panel)
+		for c in below:
+			if c != null and c.visible and c.modulate.a > 0.01:
+				var cr: Rect2 = c.get_global_rect()
+				if cr.position.x < pr.end.x and cr.end.x > pr.position.x:
+					bottom = minf(bottom, cr.position.y - gap)
+		var sc: ScrollContainer = roster_sc if p == roster else panel_sc
+		var room := maxf(float(s(60)), bottom - pr.position.y - float(s(16)))
+		var h := minf(float(_heights[p]), room)
+		if absf(sc.custom_minimum_size.y - h) > 0.5:
+			sc.custom_minimum_size.y = h
+			(p as Control).reset_size()
 
 
 func set_roster(rows: Array) -> void:
+	_last["set_roster"] = [rows]
 	# rows: [{id, name, cls, hp, maxHp, sh: [4], shMax, status, sel, done, flag}]
 	for c in roster_box.get_children():
 		roster_box.remove_child(c)
@@ -440,6 +587,7 @@ func _build_panel() -> void:
 
 
 func set_panel(info: Dictionary) -> void:
+	_last["set_panel"] = [info]
 	for c in panel_box.get_children():
 		panel_box.remove_child(c)
 		c.queue_free()
@@ -561,6 +709,11 @@ func _rich(bb: String) -> RichTextLabel:
 
 func _build_log() -> void:
 	log_panel = _panel(12, -1, -1, 12, 430, 126)
+	if log_text != null and is_instance_valid(log_text):   # a rebuild keeps the log's text
+		log_text.add_theme_font_size_override("normal_font_size", s(13))
+		log_text.add_theme_font_size_override("bold_font_size", s(13))
+		log_panel.add_child(log_text)
+		return
 	log_text = RichTextLabel.new()
 	log_text.bbcode_enabled = true
 	log_text.scroll_following = true
@@ -608,6 +761,7 @@ func _build_banner() -> void:
 
 func banner(text: String, col := BONE, dur := 0.9) -> void:
 	banner_lbl.text = text
+	banner_lbl.add_theme_font_size_override("font_size", Brand.fit_size(text, font_goth, s(46), _column().y - _column().x - s(24)))
 	banner_lbl.add_theme_color_override("font_color", col)
 	_banner_t = 0.0
 	_banner_dur = dur
@@ -643,23 +797,52 @@ func show_tip(bb: String, at: Vector2) -> void:
 		tip_text.text = bb
 	tip.visible = true
 	tip.reset_size()
+	_tip_at = at
+	_place_tip()
+
+
+var _tip_at := Vector2.ZERO
+
+
+# the hover tip beside the cursor, kept inside the middle column (never over the fleet list or the ship panel) and off
+# the card, the log, the strip and the tip card (it moves above whichever it would cover, or below when there is no room)
+func _place_tip() -> void:
 	var vs := root.get_viewport_rect().size
-	var p := at + Vector2(s(18), s(18))
-	if p.x + tip.size.x > vs.x - s(360):
-		p.x = at.x - tip.size.x - s(18)
-	if p.y + tip.size.y > vs.y:
-		p.y = vs.y - tip.size.y - s(8)
-	# F1: never over the side panels (the panel's text showed through the tip): move it beside them
-	if panel != null and panel.visible and Rect2(p, tip.size).intersects(panel.get_global_rect()):
-		p.x = panel.get_global_rect().position.x - tip.size.x - s(8)
-	if roster != null and roster.visible and Rect2(p, tip.size).intersects(roster.get_global_rect()):
-		p.x = roster.get_global_rect().end.x + s(8)
-	# F1: never under the activation card: lift the tip above it
-	if card != null and card.visible:
-		var cr := card.get_global_rect()
-		if Rect2(p, tip.size).intersects(cr):
-			p.y = cr.position.y - tip.size.y - s(8)
-	tip.position = p
+	var col := _column()
+	var w := tip.size.x
+	var h := tip.size.y
+	var gap := float(s(8))
+	var p := _tip_at + Vector2(s(18), s(18))
+	if p.x + w > col.y:
+		p.x = _tip_at.x - w - s(18)
+	p.x = clampf(p.x, col.x, maxf(col.x, col.y - w))
+	var t := top.get_global_rect().end.y + gap
+	p.y = clampf(p.y, t, maxf(t, vs.y - h - gap))
+	for i in 3:
+		var moved := false
+		for c in [card, log_panel, tipcard, phase, legend, aichip]:
+			if c == null or not is_instance_valid(c) or not c.visible or c.modulate.a < 0.01:
+				continue
+			var cr: Rect2 = c.get_global_rect()
+			if Rect2(p, Vector2(w, h)).intersects(cr):
+				p.y = cr.position.y - h - gap if cr.position.y - h - gap >= t else cr.end.y + gap
+				moved = true
+		if not moved:
+			break
+	tip.position = p.round()
+
+
+# the middle column between the fleet list and the ship panel: Vector2(left x, right x)
+func _column() -> Vector2:
+	var vs := root.get_viewport_rect().size
+	var gap := float(s(10))
+	var l := float(s(12))
+	var r := vs.x - s(12)
+	if roster != null and roster.visible:
+		l = roster.get_global_rect().end.x + gap
+	if panel != null and panel.visible:
+		r = panel.get_global_rect().position.x - gap
+	return Vector2(l, maxf(l + s(200), r))
 
 
 func _build_chip() -> void:
@@ -683,6 +866,7 @@ func _build_chip() -> void:
 
 
 func set_chip(txt: String) -> void:
+	_last["set_chip"] = [txt]
 	aichip.text = txt
 	aichip.visible = txt != ""
 
@@ -713,6 +897,7 @@ func _build_legend() -> void:
 
 
 func set_legend(title: String, desc: String, rows: Array) -> void:
+	_last["set_legend"] = [title, desc, rows]
 	_legend = {"title": title, "desc": desc, "rows": rows}
 	_draw_legend()
 
@@ -976,6 +1161,7 @@ func remove_plate(id: String) -> void:
 
 func show_tipcard(id: String, title: String, body: String) -> void:
 	hide_tipcard()
+	_last["show_tipcard"] = [id, title, body]
 	tipcard = _panel(-1, 76, 364, -1, 360, -1)
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", s(8))
@@ -992,12 +1178,14 @@ func show_tipcard(id: String, title: String, body: String) -> void:
 
 
 func hide_tipcard() -> void:
+	_last.erase("show_tipcard")
 	if tipcard != null:
 		tipcard.queue_free()
 		tipcard = null
 
 
 func show_end(title: String, body: String, win: bool, external := false) -> void:
+	_last["show_end"] = [title, body, win, external]
 	endcard = PanelContainer.new()
 	var g := _glass(8)
 	g.content_margin_left = s(36)
@@ -1037,6 +1225,7 @@ var menu: PanelContainer
 
 func show_menu(title: String, items: Array) -> void:
 	hide_menu()
+	_last["show_menu"] = [title, items]
 	menu = PanelContainer.new()
 	var g := _glass(8)
 	g.content_margin_left = s(28)
@@ -1064,6 +1253,7 @@ var bars: Array = []
 
 
 func letterbox(on: bool) -> void:
+	_last["letterbox"] = on
 	if bars.is_empty():
 		for top_bar in [true, false]:
 			var b := ColorRect.new()
@@ -1088,6 +1278,7 @@ var load_cover: ColorRect
 
 
 func loading(on: bool) -> void:
+	_last["loading"] = on
 	if on and load_cover == null:
 		load_cover = ColorRect.new()
 		load_cover.color = Color(0.02, 0.025, 0.04, 1.0)
@@ -1105,18 +1296,30 @@ func loading(on: bool) -> void:
 
 
 func hide_menu() -> void:
+	_last.erase("show_menu")
 	if menu != null:
 		menu.queue_free()
 		menu = null
 
 
 func hide_end() -> void:
+	_last.erase("show_end")
 	if endcard != null:
 		endcard.queue_free()
 		endcard = null
 
 
 func _process(dt: float) -> void:
+	var vs := get_viewport().get_visible_rect().size
+	if vs != _built_vs:
+		if _resize_t < 0.0:
+			_resize_t = 0.12
+		_resize_t -= dt
+		if _resize_t <= 0.0 or Engine.get_process_frames() < 30:
+			_resize_t = -1.0
+			_rebuild()
+	if root != null:
+		_layout()
 	if _banner_dur > 0.0:
 		_banner_t += dt
 		var a := 1.0
@@ -1130,6 +1333,94 @@ func _process(dt: float) -> void:
 	if _toast_t > 0.0:
 		_toast_t -= dt
 		toast_lbl.modulate.a = clampf(_toast_t / 0.4, 0.0, 1.0)
+
+
+# Every frame: keep each part in its region (see the top of this file). Cheap: a handful of rects.
+var _phase_fs := -1
+
+
+func _layout() -> void:
+	var vs := root.get_viewport_rect().size
+	var gap := float(s(10))
+	var col := _column()
+	var band_top := top.get_global_rect().end.y + s(8)
+	var band_bot := band_top
+	# the legend chip sits at the left of the banner strip; the turn strip takes the room to its right
+	var avail_l := col.x
+	if legend != null and legend.visible:
+		legend.position = Vector2(col.x, band_top + s(4)).round()
+		var lr := legend.get_global_rect()
+		avail_l = lr.end.x + gap
+		if not legend_open:
+			band_bot = maxf(band_bot, lr.end.y)
+	var avail_w := maxf(float(s(200)), col.y - avail_l)
+	if phase.visible:
+		# the strip's text shrinks (down to 12) and then wraps to fit between the legend chip and the ship panel
+		var plain := phase_lbl.get_parsed_text()
+		var fs := s(16)
+		var marg := float(s(36))
+		while fs > s(12) and font_semi.get_string_size(plain, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x + marg > avail_w:
+			fs -= 1
+		if fs != _phase_fs:
+			_phase_fs = fs
+			phase_lbl.add_theme_font_size_override("normal_font_size", fs)
+			phase_lbl.add_theme_font_size_override("bold_font_size", fs)
+		var wide: bool = font_semi.get_string_size(plain, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x + marg > avail_w
+		var want_wrap := TextServer.AUTOWRAP_WORD_SMART if wide else TextServer.AUTOWRAP_OFF
+		var want_min := avail_w - marg if wide else 0.0
+		if phase_lbl.autowrap_mode != want_wrap or absf(phase_lbl.custom_minimum_size.x - want_min) > 1.0:
+			phase_lbl.autowrap_mode = want_wrap
+			phase_lbl.custom_minimum_size.x = want_min
+			phase.reset_size()
+		if phase.size.x > phase.get_combined_minimum_size().x + 1.0:
+			phase.reset_size()
+		var w := phase.size.x
+		var x := clampf(vs.x * 0.5 - w * 0.5, avail_l, maxf(avail_l, col.y - w))
+		phase.position = Vector2(x, band_top).round()
+		band_bot = maxf(band_bot, phase.position.y + phase.size.y)
+	if aichip.visible:
+		aichip.reset_size()
+		var w := aichip.size.x
+		var y := band_bot + s(6) if phase.visible else band_top
+		aichip.position = Vector2(clampf(vs.x * 0.5 - w * 0.5, avail_l, maxf(avail_l, col.y - w)), y).round()
+		band_bot = maxf(band_bot, aichip.position.y + aichip.size.y)
+	var below := band_bot + s(8)
+	# the onboarding tip card: right side of the middle column, under the strip
+	if tipcard != null and is_instance_valid(tipcard):
+		tipcard.position = Vector2(col.y - tipcard.size.x, below).round()
+	# toasts: centred under the strip, below the tip card if they would meet
+	if toast_lbl.modulate.a > 0.0:
+		toast_lbl.reset_size()
+		var w := toast_lbl.size.x
+		var p := Vector2(clampf(vs.x * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), below)
+		if tipcard != null and is_instance_valid(tipcard) and Rect2(p, toast_lbl.size).intersects(tipcard.get_global_rect()):
+			p.y = tipcard.get_global_rect().end.y + s(8)
+		toast_lbl.position = p.round()
+	# the big banner: centred in the middle column
+	if banner_lbl.modulate.a > 0.0:
+		banner_lbl.reset_size()
+		var w := banner_lbl.size.x
+		banner_lbl.position = Vector2(clampf(vs.x * 0.5 - w * 0.5, col.x, maxf(col.x, col.y - w)), vs.y * 0.5 - banner_lbl.size.y * 0.5).round()
+	# the bottom row: the card (or the key hint) between the battle log and the ship panel
+	var bl := col.x
+	if log_panel != null and log_panel.visible:
+		bl = maxf(bl, log_panel.get_global_rect().end.x + gap)
+	for c in [card, hint]:
+		if c.visible:
+			var w: float = c.size.x
+			c.position.x = roundf(clampf(vs.x * 0.5 - w * 0.5, bl, maxf(bl, col.y - w)))
+	_apply_heights()
+	if tip.visible:
+		_place_tip()
+
+
+# the widest the activation card may be: the room between the battle log and the ship panel
+func _card_room() -> float:
+	var col := _column()
+	var bl := col.x
+	if log_panel != null and log_panel.visible:
+		bl = maxf(bl, log_panel.get_global_rect().end.x + s(10))
+	return col.y - bl
 
 
 func over_ui(p: Vector2) -> bool:
@@ -1194,6 +1485,7 @@ func _build_phase() -> void:
 
 # kind: "player", "enemy" or "" (hidden); bb: the strip's text; progress 0..1 (enemy turn only, negative hides the bar)
 func set_phase(kind: String, bb: String, progress := -1.0) -> void:
+	_last["set_phase"] = [kind, bb, progress]
 	phase.visible = kind != ""
 	if kind == "":
 		return
@@ -1245,6 +1537,7 @@ func _build_card() -> void:
 # The ship that is up and how to finish it. info: {name, cls, flag, more (ready ships after this one), steps: [{n, label,
 # detail, st: done | now | todo | off}], hint (bbcode), buttons: [{text, act, arg, on, primary, big, tip}]}; {} hides it
 func set_card(info: Dictionary) -> void:
+	_last["set_card"] = [info]
 	var sig := JSON.stringify(info)
 	if sig == _card_sig:
 		return
@@ -1256,6 +1549,9 @@ func set_card(info: Dictionary) -> void:
 	hint.visible = info.is_empty()   # the card carries the keys while it shows; the old hint line sat under it
 	if info.is_empty():
 		return
+	# the card is as wide as it needs, up to the room between the battle log and the ship panel
+	var cw := minf(float(s(660)), _card_room() - s(32))
+	card_box.custom_minimum_size.x = cw
 	var head := HBoxContainer.new()
 	head.add_theme_constant_override("separation", s(10))
 	var nm := _label(("★ " if info.get("flag", false) else "") + str(info.get("name", "")), 22, GILT, font_semi)
@@ -1285,7 +1581,7 @@ func set_card(info: Dictionary) -> void:
 	card_box.add_child(steps)
 	if str(info.get("hint", "")) != "":
 		var h := _rich(str(info["hint"]))
-		h.custom_minimum_size.x = s(660)   # a fixed wrap width, so its height is measured right the first time
+		h.custom_minimum_size.x = cw   # a fixed wrap width, so its height is measured right the first time
 		h.add_theme_font_size_override("normal_font_size", s(15))
 		h.add_theme_font_size_override("bold_font_size", s(15))
 		card_box.add_child(h)

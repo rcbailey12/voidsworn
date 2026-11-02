@@ -171,6 +171,8 @@ func _ready() -> void:
 		shots_dir = str(args["move-frames"])
 	if args.has("f1-trace"):
 		shots_dir = str(args["f1-trace"])
+	if args.has("ui-shots"):
+		shots_dir = str(args["ui-shots"])
 	_load_opts()
 	if shots_dir != "" or args.has("sheet-check"):
 		tips_off = true   # screenshot jobs: no onboarding tip card covering the top of the screen
@@ -184,6 +186,7 @@ func _ready() -> void:
 	hud = HUD.new()
 	add_child(hud)
 	hud.action.connect(_on_action)
+	hud.rescaled.connect(_refresh_ui)   # UI pass: the HUD was rebuilt for a new window size
 	if showcase:
 		hud.visible = false
 		cam.input_enabled = false
@@ -199,6 +202,12 @@ func _ready() -> void:
 		_sheet_check()
 	elif args.has("planet-shot"):
 		_planet_shot()
+	elif args.has("ui-shots"):
+		# UI pass layout check (ui/battle/ui_shots.gd): five moments, a still and an overlap check each
+		var us: Node = load("res://ui/battle/ui_shots.gd").new()
+		us.name = "UiShots"
+		add_child(us)
+		us.run(self)
 	elif args.has("f1-trace"):
 		# F1 acceptance trace (scenes/battle/f1_trace.gd): the phased-activation checklist through the real input handlers
 		var tr: Node = load("res://scenes/battle/f1_trace.gd").new()
@@ -3411,6 +3420,8 @@ func _refresh_ui() -> void:
 		end_text = "End turn"
 		turn = "Battle over" if ended or api.phase == "over" else ("Your turn" if mine else "Enemy turn")
 	hud.set_command(_command_label(), api.has_method("can_command") and mine and not busy and api.can_command())
+	if board != null and board.get("_look_btn") != null:
+		hud.adopt_grid(board.get("_look_btn"))   # UI pass: board look C's Grid (Z) button goes in the top bar
 	hud.set_top(int(V["round"]), turn, _objective(), end_text, mine and not busy, user_speed < 1.0, threat_on)
 	hud.retreat_btn.visible = can_retreat and not ended
 	hud.retreat_btn.disabled = not (mine and not busy)
@@ -3988,7 +3999,7 @@ func _load_opts() -> void:
 			tips = o.get("tips", {})
 			tips_off = bool(o.get("tipsOff", false))
 			user_speed = float(o.get("speed", 1.0))
-	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace"):
+	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace") or args.has("ui-shots"):
 		tips_off = true
 
 

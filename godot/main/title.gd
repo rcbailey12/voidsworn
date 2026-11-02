@@ -35,10 +35,27 @@ func s(v: float) -> int:
 
 
 func _ready() -> void:
-	k = clampf(get_viewport().get_visible_rect().size.y / 1080.0, 0.6, 2.2)
 	font = _font("BarlowSemiCondensed-Regular.ttf")
 	font_semi = _font("BarlowSemiCondensed-SemiBold.ttf")
 	font_goth = Brand.display()  # the sci-fi display face (lore round 5); the blackletter is retired
+	_build()
+	_report.call_deferred()
+	# screenshot jobs: --title-open credits opens the Credits screen (main.gd opens Settings for --title-open settings)
+	if main != null and "args" in main and str(main.args.get("title-open", "")) == "credits":
+		get_tree().create_timer(1.5).timeout.connect(func() -> void: _credits())
+
+
+# UI pass (Nov 1): the title is built for the window it is in, and built again when the window changes size (the game
+# starts maximised and capture jobs or Full screen resize it a moment later; the title used to keep the first size, so
+# at 1920x1080 a 4K-sized title ran off both edges and the menu off the bottom)
+var _built_vs := Vector2.ZERO
+var _resize_t := -1.0
+
+
+func _build() -> void:
+	var vs := get_viewport().get_visible_rect().size
+	_built_vs = vs
+	k = clampf(vs.y / 1080.0, 0.6, 2.2)
 	root = Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
@@ -64,17 +81,32 @@ func _ready() -> void:
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
 	v.add_theme_constant_override("separation", s(14))
 	root.add_child(v)
-	# the game's name (brand.gd TITLE, the one place to rename it), one line at the largest size that fits
-	var vw := get_viewport().get_visible_rect().size.x
+	# the game's name (brand.gd TITLE, the one place to rename it): one line at the largest size that fits 88% of the
+	# window width; if that would be small (a narrow window), two centred lines at a larger size instead
+	var vw := vs.x
 	var h := _label(Brand.TITLE, 84, HUD.GILT, font_goth)
-	h.add_theme_font_size_override("font_size", Brand.fit_size(Brand.TITLE, font_goth, s(84), vw * 0.86))
+	h.text = _title_text(vw * 0.88)
+	h.add_theme_font_size_override("font_size", _title_size)
 	h.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	h.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	title_lbl = h
 	v.add_child(h)
 	var sub := _label(Brand.TAGLINE, 19, HUD.BONE2, font)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	sub.custom_minimum_size = Vector2(s(620), 0)
+	sub.custom_minimum_size = Vector2(minf(vw * 0.86, font.get_string_size(Brand.TAGLINE, HORIZONTAL_ALIGNMENT_LEFT, -1, s(19)).x + s(4)), 0)
+	sub.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	v.add_child(sub)
+	# the playtest switch (R1, Nov 1): every admiral, hull and variant unlocked; the line says so in gold on the title
+	var pt := _playtest_on()
+	if pt != null:
+		var pl := _label("Playtest: everything unlocked (all admirals, carriers, battleships and hull variants)" if pt else "Playtest unlocks are off: unlock admirals and hulls with renown", 17, HUD.GILT if pt else HUD.BONE3, font_semi)
+		pl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		pl.custom_minimum_size = Vector2(minf(vw * 0.86, font_semi.get_string_size(pl.text, HORIZONTAL_ALIGNMENT_LEFT, -1, s(17)).x + s(4)), 0)
+		pl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		playtest_lbl = pl
+		v.add_child(pl)
 	menu = VBoxContainer.new()
 	menu.add_theme_constant_override("separation", s(8))
 	menu.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -92,6 +124,7 @@ func _ready() -> void:
 		menu.add_child(_button("Career", func() -> void: load("res://story/story.gd").open_standalone(self)))
 	menu.add_child(_button("Quick battle", func() -> void: main.quick_battle()))
 	menu.add_child(_button("Settings", func() -> void: _settings()))
+	menu.add_child(_button("Credits", func() -> void: _credits()))
 	menu.add_child(_button("Quit", func() -> void: main.quit_clean()))
 	(menu.get_child(0) as Control).grab_focus.call_deferred()  # arrow keys, Enter and a controller work from the start
 	toast_lbl = _label("", 17, HUD.EMBER, font_semi)
@@ -100,6 +133,47 @@ func _ready() -> void:
 	toast_lbl.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	toast_lbl.offset_top = -s(80)
 	root.add_child(toast_lbl)
+
+
+var title_lbl: Label
+var playtest_lbl: Label
+var _title_size := 84
+
+
+# the title's text (one line, or two at the middle word) and its size, for a width in pixels
+func _title_text(w: float) -> String:
+	var one := Brand.fit_size(Brand.TITLE, font_goth, s(84), w)
+	_title_size = one
+	var words := Brand.TITLE.split(" ")
+	if one >= s(56) or words.size() < 2:
+		return Brand.TITLE
+	var best := ""
+	var best_sz := one
+	for i in range(1, words.size()):
+		var a := " ".join(words.slice(0, i))
+		var b := " ".join(words.slice(i))
+		var sz := mini(Brand.fit_size(a, font_goth, s(84), w), Brand.fit_size(b, font_goth, s(84), w))
+		if sz > best_sz:
+			best_sz = sz
+			best = a + "\n" + b
+	if best == "":
+		return Brand.TITLE
+	_title_size = best_sz
+	return best
+
+
+# the playtest switch as the campaign save has it (on unless the player switched it off; the real game defaults it on,
+# campaign_ui.gd); null when this build has no campaign
+func _playtest_on() -> Variant:
+	if main == null or not main.has_campaign():
+		return null
+	var on := true
+	var p := "user://voidsworn_campaign.json"
+	if FileAccess.file_exists(p):
+		var d = JSON.parse_string(FileAccess.get_file_as_string(p))
+		if d is Dictionary and d.get("meta") is Dictionary and d["meta"].get("opts") is Dictionary and d["meta"]["opts"].has("playtestAll"):
+			on = bool(d["meta"]["opts"]["playtestAll"])
+	return on
 
 
 func _campaign_has_save() -> bool:
@@ -156,6 +230,14 @@ func toast(t: String) -> void:
 
 
 func _process(dt: float) -> void:
+	var vs := get_viewport().get_visible_rect().size
+	if vs != _built_vs and root != null:
+		if _resize_t < 0.0:
+			_resize_t = 0.12
+		_resize_t -= dt
+		if _resize_t <= 0.0:
+			_resize_t = -1.0
+			_rebuild()
 	if _toast_t > 0.0:
 		_toast_t -= dt
 		toast_lbl.modulate.a = clampf(_toast_t / 0.4, 0.0, 1.0)
@@ -221,6 +303,106 @@ func _settings() -> void:
 		_focus_first(menu), true))
 	v.add_child(row)
 	_focus_first(settings_panel)
+
+
+# ---------------------------------------------------------------- credits (the game, and every music track's attribution)
+
+var credits_panel: PanelContainer
+
+
+# a modal like Settings: a scrolling list built from godot/music/music.json (each track's credit, the same lines as
+# godot/music/CREDITS.md; the CC BY tracks need this visible attribution), then Done. Esc or Done closes it.
+func _credits() -> void:
+	if credits_panel != null and is_instance_valid(credits_panel):
+		credits_panel.queue_free()
+	if settings_dim == null:
+		settings_dim = ColorRect.new()
+		settings_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+		settings_dim.color = Color(0.016, 0.024, 0.043, 0.93)
+		settings_dim.mouse_filter = Control.MOUSE_FILTER_STOP
+		root.add_child(settings_dim)
+	var vs := get_viewport().get_visible_rect().size
+	credits_panel = PanelContainer.new()
+	var g := StyleBoxFlat.new()
+	g.bg_color = Color(0.047, 0.07, 0.12, 1.0)
+	g.border_color = Color(0.816, 0.651, 0.294, 0.3)
+	g.set_border_width_all(1)
+	g.set_corner_radius_all(s(8))
+	g.content_margin_left = s(28)
+	g.content_margin_right = s(28)
+	g.content_margin_top = s(20)
+	g.content_margin_bottom = s(20)
+	credits_panel.add_theme_stylebox_override("panel", g)
+	credits_panel.set_anchors_preset(Control.PRESET_CENTER)
+	credits_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	credits_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	root.add_child(credits_panel)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", s(10))
+	credits_panel.add_child(v)
+	v.add_child(_label("Credits", 24, HUD.GILT, font_goth))
+	var sc := ScrollContainer.new()
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.custom_minimum_size = Vector2(minf(float(s(760)), vs.x * 0.8), minf(float(s(560)), vs.y * 0.62))
+	sc.focus_mode = Control.FOCUS_ALL   # arrow keys and a controller scroll the list
+	v.add_child(sc)
+	var t := RichTextLabel.new()
+	t.bbcode_enabled = true
+	t.fit_content = true
+	t.scroll_active = false
+	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	t.add_theme_font_override("normal_font", font)
+	t.add_theme_font_override("bold_font", font_semi)
+	t.add_theme_font_size_override("normal_font_size", s(16))
+	t.add_theme_font_size_override("bold_font_size", s(16))
+	t.add_theme_color_override("default_color", HUD.BONE2)
+	t.text = credits_bbcode()
+	sc.add_child(t)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_END
+	row.add_child(_button("Done", func() -> void: _close_credits(), true))
+	v.add_child(row)
+	(row.get_child(0) as Control).grab_focus.call_deferred()
+
+
+func _close_credits() -> void:
+	if credits_panel != null and is_instance_valid(credits_panel):
+		credits_panel.queue_free()
+	credits_panel = null
+	if settings_dim != null and (settings_panel == null or not is_instance_valid(settings_panel)):
+		settings_dim.queue_free()
+		settings_dim = null
+	_focus_first(menu)
+
+
+func _unhandled_input(e: InputEvent) -> void:
+	if credits_panel != null and is_instance_valid(credits_panel) and e.is_action_pressed("ui_cancel"):
+		_close_credits()
+		get_viewport().set_input_as_handled()
+
+
+# the credits text: the game, then every music track from music.json (title, author, licence, the attribution line)
+func credits_bbcode() -> String:
+	var out := "[b][color=#d0a64b]%s[/color][/b]\nA game by Ryan Bailey. Made with the Godot Engine (MIT licence, godotengine.org).\nFonts: Michroma, Oxanium and Barlow Semi Condensed (SIL Open Font Licence).\n\n[b][color=#d0a64b]Music[/color][/b]\nEvery track comes from OpenGameArt.org. The game plays edited versions (cut, looped, levelled, re-encoded).\n" % Brand.TITLE
+	var p := "res://music/music.json"
+	var d = JSON.parse_string(FileAccess.get_file_as_string(p)) if FileAccess.file_exists(p) else null
+	if not (d is Dictionary) or not (d.get("tracks") is Dictionary):
+		return out + "\n(The music list is missing from this build.)"
+	var seen := {}
+	for id in d["tracks"]:
+		var c = d["tracks"][id].get("credit")
+		if not (c is Dictionary):
+			continue
+		var key := str(c.get("title", "")) + "|" + str(c.get("author", ""))
+		if seen.has(key):
+			continue
+		seen[key] = true
+		var line := "\n[b][color=#e6dcc4]%s[/color][/b] by %s  [color=#7d7768](%s)[/color]" % [str(c.get("title", "")), str(c.get("author", "")), str(c.get("licence", ""))]
+		var at := str(c.get("attribution", ""))
+		if at != "":
+			line += "\n[font_size=%d]%s[/font_size]" % [s(14), at.replace("[", "(").replace("]", ")")]
+		out += line + "\n"
+	return out
 
 
 func _focus_first(n: Node) -> void:
@@ -295,11 +477,71 @@ func _slider(t: String, key: String, lo: float, hi: float) -> Control:
 # main's decorative battle is ready behind the menu: the sky picture fades out over it, the shade stays for the menu
 var _bg: TextureRect
 var _shade: ColorRect
+var _revealed := false
+var _reveal_tw: Tween
+
+
+func _rebuild() -> void:
+	var had_settings := settings_panel != null and is_instance_valid(settings_panel)
+	var had_credits := credits_panel != null and is_instance_valid(credits_panel)
+	credits_panel = null
+	var shade_a := _shade.color.a if _shade != null else 0.55
+	var bg_a := _bg.modulate.a if _bg != null else 1.0
+	if _revealed:   # the showcase is (or is fading) in: finish the fade on the new parts
+		if _reveal_tw != null and _reveal_tw.is_valid():
+			_reveal_tw.kill()
+		shade_a = 0.42
+		bg_a = 0.0
+	remove_child(root)
+	root.queue_free()
+	settings_panel = null
+	settings_dim = null
+	_build()
+	_bg.modulate.a = bg_a
+	_shade.color.a = shade_a
+	if had_settings:
+		_settings()
+	if had_credits:
+		_credits()
+	print("[title] rebuilt for %d x %d (scale %.3f, title size %d)" % [int(_built_vs.x), int(_built_vs.y), k, _title_size])
+	_report.call_deferred()
+
+
+# for screenshot jobs: where the title, the playtest line and the menu sit, and whether they fit the window
+func _report() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if root == null or not is_instance_valid(title_lbl):
+		return
+	var vs := get_viewport().get_visible_rect().size
+	var scr := Rect2(Vector2.ZERO, vs)
+	var tr := title_lbl.get_global_rect()
+	var tw := font_goth.get_multiline_string_size(title_lbl.text, HORIZONTAL_ALIGNMENT_CENTER, -1, _title_size).x
+	var ok := tw <= vs.x and scr.encloses(tr)
+	var line := "[title-layout] window %dx%d title %dpx text %d wide, %s" % [int(vs.x), int(vs.y), _title_size, int(tw), "fits" if ok else "DOES NOT FIT"]
+	if playtest_lbl != null:
+		var pr := playtest_lbl.get_global_rect()
+		var pok := scr.encloses(pr) and playtest_lbl.is_visible_in_tree()
+		ok = ok and pok
+		line += ", playtest line %s" % ("on screen" if pok else "OFF SCREEN")
+	var mr := menu.get_global_rect()
+	var mok := scr.encloses(mr)
+	ok = ok and mok
+	line += ", menu %s (bottom %d)" % ["on screen" if mok else "OFF SCREEN", int(mr.end.y)]
+	var fo := get_viewport().gui_get_focus_owner()
+	var nfocus := 0
+	for b in menu.get_children():
+		if b is Button and (b as Button).focus_mode == Control.FOCUS_ALL:
+			nfocus += 1
+	line += ", %d of %d menu buttons take keyboard focus, focus on %s" % [nfocus, menu.get_child_count(), ("\"" + (fo as Button).text + "\"") if fo is Button else "nothing"]
+	ok = ok and nfocus == menu.get_child_count() and fo != null
+	print(line + (" PASS" if ok else " FAIL"))
 
 
 func reveal_showcase() -> void:
 	if _bg == null or not is_instance_valid(_bg):
 		return
-	var tw := create_tween().set_parallel(true)
-	tw.tween_property(_bg, "modulate:a", 0.0, 2.5)
-	tw.tween_property(_shade, "color:a", 0.42, 2.5)
+	_revealed = true
+	_reveal_tw = create_tween().set_parallel(true)
+	_reveal_tw.tween_property(_bg, "modulate:a", 0.0, 2.5)
+	_reveal_tw.tween_property(_shade, "color:a", 0.42, 2.5)
