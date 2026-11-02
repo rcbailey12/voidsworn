@@ -10,7 +10,7 @@
 
 **Open, in order:**
 1. Ryan's playtest tonight on the rebuilt exe. Read it with contrib/opus/tools/playlog_report.js (Codex job cx_plog1) on %APPDATA%\Godot\app_userdata\Voidsworn\play_logs.
-2. Codex batch 2, results in build_b on the PC (cx_plog1, cx_gap1, cx_ion1, cx_txt1, cx_lore1, cx_mc1): review, apply, commit. cx_ion1 changes rules: re-pin oracles and run parity on the PC after.
+2. Codex batch 2 is reviewed and on main (c54be4a): playlog_report.js, coverage_gaps_verified.md, text_accuracy_2026_11_01.md (54 description fixes to apply), content_lint_2026_11_01.md (179 lines for the progression phase), run_montecarlo.js (bot full-run wins 61%: Crusade 34%, Chorus 80%). The ion pulse fix waits on branch codex/ion1: merge it with the next rules batch and re-pin.
 3. Board look C refinement (Claude helper, docs/shots/board/).
 4. After the playtest: a destruction-focused effects pass (Muse research brief muse_2026-11-01_destruction_research.md first), the hover-tip range mismatch in battle.gd _tip, balance with the Monte Carlo runner plus play data (Grax 49% boss sim, Crusade 47.5%), the Eclipse battleship hull, verified review gaps, Hegemony belly darker (Ryan's call), 4K frame budget, Godot save fixtures. Hullbreaker portraits round 2 is on the backlog (R71).
 5. Then the progression phase (contrib/opus/briefs/progression_next_2026-11-01.md): per-faction design packages first; Muse drafts them from muse_2026-11-01_faction_packages.md for Ryan's review. Glasswrights get a full rework there.
