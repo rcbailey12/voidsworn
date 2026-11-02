@@ -1,8 +1,8 @@
 extends Node
 # UI pass layout check (Nov 1). Run: battle.tscn (or the game, through main) with -- --ui-shots <folder> [--shots <folder>]
-# [--seed N | --scenario sN]. Plays the opening of a battle through the same handlers a player uses and, at five moments,
-# saves a still and checks the screen layout: battle start, a move hex hovered (the "Move here" tip), an enemy targeted,
-# the tip card with the terrain legend open, and the enemy's turn. At each one every visible HUD part (top bar, fleet list,
+# [--seed N | --scenario sN]. Plays the opening of a battle through the same handlers a player uses and, at six moments,
+# saves a still and checks the screen layout: battle start, a move hex hovered (the "Move here" tip), an enemy clicked,
+# the tip card with the terrain legend open, an enemy targeted after a move (the odds), and the enemy's turn. At each one every visible HUD part (top bar, fleet list,
 # ship panel, log, card, turn strip, legend, tips, toasts, banner, key hint) must sit fully on screen and touch no other,
 # and every top bar button (Grid (Z) included) must sit inside the top bar. Prints [ui-check] lines and writes
 # ui_check.txt in the folder. Presentation only: it never calls the rules except to read.
@@ -138,6 +138,7 @@ func run(battle) -> void:
 		await _shot("2_move_preview")
 	# 3. an enemy targeted (one click: the odds in the card, nothing fires); out of reach, the attack-move preview
 	var tgt := ""
+	var atk := ""
 	var any := ""
 	for e in b.V["units"]:
 		if e["side"] != "enemy" or e["dead"] or e["squadron"]:
@@ -146,14 +147,22 @@ func run(battle) -> void:
 			any = e["id"]
 		if tgt == "" and not b._firing_set(e["id"]).is_empty():
 			tgt = e["id"]
+		if atk == "" and b._attack_move(e["id"]) != null:
+			atk = e["id"]
 	if tgt == "":
-		tgt = any
+		tgt = atk if atk != "" else any
 	if tgt != "":
+		var mid: Vector3 = b._pos(tgt)
+		if b.sel != "" and b.views.has(b.sel):
+			mid = mid.lerp(b._pos(b.sel), 0.5)
+		b.cam.glide(mid, 0.3)
+		await get_tree().create_timer(0.9).timeout
 		_hover_hex(int(b.VU[tgt]["q"]), int(b.VU[tgt]["r"]))
 		b._on_click()
 		await _idle()
 		_hover_hex(int(b.VU[tgt]["q"]), int(b.VU[tgt]["r"]))
-		await _shot("3_enemy_targeted")
+		_note(true, "3_enemy_clicked: %s (%s)" % [b._name(tgt), "in reach, odds shown" if b.target == tgt else ("attack-move preview" if b.atk != null else "out of reach")])
+		await _shot("3_enemy_clicked")
 		b._on_key(KEY_ESCAPE)
 		await _idle()
 	# 4. an onboarding tip card and the terrain legend opened (both show in real play; screenshot jobs turn tips off)
@@ -166,7 +175,40 @@ func run(battle) -> void:
 	b.hud.hide_tipcard()
 	b.hud.legend_open = false
 	b.hud._draw_legend()
-	# 5. the enemy's turn: end the ship that is up
+	# 5. move to the hex where the most guns bear, then target an enemy in reach: the odds in the card and the tip
+	b._update_reach()
+	var best = null
+	for key in b.reach_map:
+		var st = b.reach_map[key]
+		if not b._unit_at(int(st.q), int(st.r)).is_empty():
+			continue
+		if best == null or int(st.get("guns", 0)) * 100 + int(st.cost) > int(best.get("guns", 0)) * 100 + int(best.cost):
+			best = st
+	if best != null and int(best.get("guns", 0)) > 0:
+		_hover_hex(int(best.q), int(best.r))
+		b._on_click()
+		await _idle()
+		_hover_hex(int(best.q), int(best.r))
+		b._on_click()
+		await _idle()
+		await get_tree().create_timer(0.5).timeout
+		var t2 := ""
+		for e in b.V["units"]:
+			if e["side"] == "enemy" and not e["dead"] and not b._firing_set(e["id"]).is_empty():
+				t2 = e["id"]
+				break
+		if t2 != "" and b.sel != "":
+			b.cam.glide(b._pos(t2).lerp(b._pos(b.sel), 0.5), 0.3)
+			await get_tree().create_timer(0.9).timeout
+			_hover_hex(int(b.VU[t2]["q"]), int(b.VU[t2]["r"]))
+			b._on_click()
+			await _idle()
+			_hover_hex(int(b.VU[t2]["q"]), int(b.VU[t2]["r"]))
+			_note(b.target == t2, "5_enemy_targeted: %s targeted after a move, %d guns bear" % [b._name(t2), b._firing_set(t2).size()])
+			await _shot("5_enemy_targeted")
+			b._on_key(KEY_ESCAPE)
+			await _idle()
+	# 6. the enemy's turn: end the ship that is up
 	b.handed_t = -9.0
 	b._on_key(KEY_SPACE)
 	var t0 := Time.get_ticks_msec()
@@ -175,8 +217,12 @@ func run(battle) -> void:
 		if b.hud.phase.visible and b.hud.phase_lbl.text.contains("ENEMY TURN"):
 			break
 	await get_tree().create_timer(0.3).timeout
-	_check("5_enemy_turn")
-	await b._snap("5_enemy_turn")
+	_check("6_enemy_turn")
+	await b._snap("6_enemy_turn")
+	# let the enemy's turn finish (hurried) before quitting, so nothing is torn down mid-move
+	Engine.time_scale = 6.0
+	await _idle()
+	Engine.time_scale = 1.0
 	_finish()
 
 
