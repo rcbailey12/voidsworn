@@ -11,12 +11,33 @@ extends RefCounted
 
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
+const HULL := preload("res://fx/fx_hull.gd")
 
 const HULL_LAYER := 1
 const DEBRIS_LAYER := 2
 const DEBRIS_CAP := 360
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
+
+const SLAG := """
+shader_type spatial;
+render_mode unshaded, cull_disabled, depth_draw_opaque;
+global uniform float fx_gain;
+uniform float heat = 1.0;
+varying vec3 slag_p;
+varying vec2 slag_band;
+void vertex() { slag_p = VERTEX; slag_band = COLOR.rg; }
+float grain(vec3 p) { return fract(sin(dot(floor(p), vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+void fragment() {
+	float n = grain(slag_p * 31.0);
+	float band = clamp(slag_band.x, 0.0, 1.0);
+	vec3 base = mix(vec3(0.025, 0.017, 0.012), vec3(0.006, 0.004, 0.003), band) * (0.7 + n * 0.5);
+	float rim = clamp(slag_band.y, 0.0, 1.0) * smoothstep(0.35, 0.8, n);
+	float hot = clamp(heat, 0.0, 1.0);
+	ALBEDO = clamp(base + vec3(0.9, 0.19, 0.025) * rim * hot * hot * 0.65 * fx_gain
+		+ vec3(0.08, 0.013, 0.002) * smoothstep(0.985, 1.0, n) * hot, 0.0, 1.0);
+}
+"""
 
 const DEBRIS_BODY := """
 shader_type spatial;
@@ -445,13 +466,21 @@ static func _prebuild(fx, s) -> void:
 	fx.pend("piece_meshes", t0)
 
 
-# A piece's mesh with the hull's own materials and vertex format (no copies, same compression: anything else would be
-# a new shader pipeline to compile mid-fight; r3 still counted 5); the death overlay draws the piece's inside faces.
+# Hull attributes keep their vertex format; private damage materials add burnt backs.
+# The opaque slag surface is built here with the piece, before death when possible.
 static func _piece_mesh(pc: Dictionary) -> ArrayMesh:
 	var am = ArrayMesh.new()
 	for sd in pc["surfs"]:
 		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"], [], {}, int(sd.get("fmt", 0)) & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES)
-		am.surface_set_material(am.get_surface_count() - 1, sd["mat"])
+		am.surface_set_material(am.get_surface_count() - 1, HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, 1.0))
+	if pc.has("cap"):
+		var mat := ShaderMaterial.new()
+		var shader := Shader.new()
+		shader.code = SLAG
+		mat.shader = shader
+		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, pc["cap"])
+		am.surface_set_material(am.get_surface_count() - 1, mat)
+		pc["cap_mat"] = mat
 	return am
 
 
@@ -566,7 +595,140 @@ static func _cut(job: Dictionary) -> Array:
 			var step = maxi(1, order.size() / 120)
 			for i in range(0, order.size(), step):
 				(pc["pts"] as PackedVector3Array).append(pv[i])
+	for pc in pieces:
+		_seal_piece(pc)
 	return pieces
+
+
+# Close the existing triangle buckets, without changing the fracture method. Every
+# exposed mesh edge gets a matching opaque slag edge, including imported AI gaps.
+# A separate fan per connected boundary keeps disjoint openings separate. Rings
+# share their positions across adjacent triangles so displacement never opens seams.
+static func _seal_piece(pc: Dictionary) -> void:
+	var all_edges := {}
+	var welds := {}
+	var positions := PackedVector3Array()
+	var bounds := AABB()
+	var first := true
+	for sd in pc["surfs"]:
+		var pts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
+		for p in pts:
+			if not p.is_finite(): continue
+			if first:
+				bounds = AABB(p, Vector3.ZERO)
+				first = false
+			else: bounds = bounds.expand(p)
+	if first: return
+	var quantum := maxf(bounds.size.length() * 0.000001, 0.000001)
+	for sd in pc["surfs"]:
+		var pts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
+		var idx: PackedInt32Array = sd["arrays"][Mesh.ARRAY_INDEX]
+		var ids := PackedInt32Array()
+		ids.resize(pts.size())
+		ids.fill(-1)
+		for i in pts.size():
+			if not pts[i].is_finite(): continue
+			var key := Vector3i((pts[i] / quantum).round())
+			if not welds.has(key):
+				welds[key] = positions.size()
+				positions.append(pts[i])
+			ids[i] = int(welds[key])
+		for t in range(0, idx.size() - 2, 3):
+			for j in 3:
+				var ka := ids[idx[t + j]]
+				var kb := ids[idx[t + (j + 1) % 3]]
+				if ka < 0 or kb < 0 or ka == kb: continue
+				var key := Vector2i(mini(ka, kb), maxi(ka, kb))
+				# Cancel shared edges immediately instead of retaining a dictionary
+				# entry for every edge of a full-detail hull throughout the cut.
+				if all_edges.has(key): all_edges.erase(key)
+				else: all_edges[key] = true
+	var adj := {}
+	var edges: Array = []
+	for key in all_edges:
+		edges.append(key)
+		for j in 2:
+			if not adj.has(key[j]): adj[key[j]] = []
+			adj[key[j]].append(key[1 - j])
+	var labels := {}
+	var centers: Array = []
+	for start in adj:
+		if labels.has(start): continue
+		var todo: Array = [start]
+		var sum := Vector3.ZERO
+		var count := 0
+		labels[start] = centers.size()
+		while not todo.is_empty():
+			var key = todo.pop_back()
+			sum += positions[key] as Vector3
+			count += 1
+			for other in adj[key]:
+				if not labels.has(other):
+					labels[other] = centers.size()
+					todo.append(other)
+		centers.append(sum / maxf(count, 1.0))
+	var radii: Array = []
+	radii.resize(centers.size())
+	radii.fill(0.0)
+	for key in adj:
+		var label: int = labels[key]
+		radii[label] = maxf(float(radii[label]), (positions[key] as Vector3).distance_to(centers[label]))
+	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
+	var ribs := {}
+	for edge in edges:
+		var centre: Vector3 = centers[int(labels[edge[0]])]
+		var inward := bounds.get_center() - centre
+		inward = inward.normalized() if inward.length_squared() > 1e-12 else Vector3.ZERO
+		var a: Vector3 = positions[edge[0]]
+		var b: Vector3 = positions[edge[1]]
+		var radius: float = radii[int(labels[edge[0]])]
+		var ring_a: Array = [a]
+		var ring_b: Array = [b]
+		for share in [0.88, 0.65]:
+			for pair in [[a, ring_a], [b, ring_b]]:
+				var p: Vector3 = pair[0]
+				var noise := sin(p.dot(Vector3(13.1, 7.7, 9.3))) * 0.008
+				pair[1].append(centre + (p - centre) * share + inward * radius * (0.06 + noise))
+		var core := centre + inward * radius * 0.09
+		for j in 2:
+			_cap_tri(cap, ring_a[j], ring_b[j], ring_b[j + 1], Color(j * 0.35, 1.0 if j == 0 else 0.16, 0, 1))
+			_cap_tri(cap, ring_a[j], ring_b[j + 1], ring_a[j + 1], Color(j * 0.35, 1.0 if j == 0 else 0.16, 0, 1))
+		_cap_tri(cap, ring_a[2], ring_b[2], core, Color(0.95, 0.04, 0, 1))
+		var label: int = labels[edge[0]]
+		var rib_count := int(ribs.get(label, 0))
+		if rib_count < 6 and a.distance_to(b) > quantum * 3.0:
+			var normal := (b - a).cross(core - a)
+			if normal.length_squared() > 1e-12:
+				_cap_rib(cap, (a + b) * 0.5, core, normal.normalized(), maxf(radius * 0.022, quantum * 2.0))
+				ribs[label] = rib_count + 1
+	pc["boundary_edges"] = edges.size()
+	if not (cap["v"] as PackedVector3Array).is_empty():
+		var arr := []
+		arr.resize(Mesh.ARRAY_MAX)
+		arr[Mesh.ARRAY_VERTEX] = cap["v"]
+		arr[Mesh.ARRAY_NORMAL] = cap["n"]
+		arr[Mesh.ARRAY_COLOR] = cap["c"]
+		pc["cap"] = arr
+
+
+static func _cap_tri(cap: Dictionary, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
+	var n := (b - a).cross(c - a)
+	if not a.is_finite() or not b.is_finite() or not c.is_finite() or n.length_squared() < 1e-20: return
+	n = n.normalized()
+	cap["v"].append_array(PackedVector3Array([a, b, c]))
+	cap["n"].append_array(PackedVector3Array([n, n, n]))
+	cap["c"].append_array(PackedColorArray([color, color, color]))
+
+
+static func _cap_rib(cap: Dictionary, a: Vector3, b: Vector3, n: Vector3, width: float) -> void:
+	var along := b - a
+	if along.length_squared() < 1e-12: return
+	var side := along.normalized().cross(n) * width
+	var lift := n * width * 1.8
+	var p := [a - side, a + side, b + side, b - side, a - side + lift, a + side + lift, b + side + lift, b - side + lift]
+	for f in [[0, 1, 2, 3], [4, 7, 6, 5], [0, 4, 5, 1], [1, 5, 6, 2], [2, 6, 7, 3], [3, 7, 4, 0]]:
+		_cap_tri(cap, p[f[0]], p[f[1]], p[f[2]], Color(0.45, 0.1, 0, 1))
+		_cap_tri(cap, p[f[0]], p[f[2]], p[f[3]], Color(0.45, 0.1, 0, 1))
 
 
 # ---------------------------------------------------------------- the death
@@ -851,6 +1013,8 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		cm.set_shader_parameter("glow", Vector3(tint.r, tint.g, tint.b))
 		mi.material_overlay = cm
 		wreck["mats"].append(cm)
+		if pc.has("cap_mat"):
+			wreck["mats"].append(pc["cap_mat"])
 		wreck["nodes"].append(node)
 		# motion: away from the centre, the main hulk barely moves (it stays on its hex as terrain)
 		var out = (cen - h.c).normalized() if (cen - h.c).length() > 0.01 else fx.rdir()
@@ -976,8 +1140,8 @@ static func update(fx, dt: float) -> void:
 		return
 	for w in fx.dstate["wrecks"]:
 		var age: float = fx.now - float(w["t0"])
-		# the cut faces cool from white-orange to a dull red glow that stays
-		var heat = 0.15 + 0.85 * exp(-age / (WRECK_COOL * 0.35))
+		# Heat fades over a few seconds. The cold opaque cap remains.
+		var heat = exp(-maxf(age, 0.0) / 1.8)
 		for m in w["mats"]:
 			(m as ShaderMaterial).set_shader_parameter("heat", heat)
 		var gate = clampf(1.0 - age / 40.0, 0.45, 1.0)

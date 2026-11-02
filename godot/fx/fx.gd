@@ -812,7 +812,8 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	var box = BoxMesh.new()
 	box.size = Vector3.ONE * 2.0
 	var mats: Array = [mat(SH.SHIELD, 2), mat(SH.SHARD, 0), mat(SH.SPRITE, 1), mat(SH.STREAK, 1),
-		mat(SH.RIBBON, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1)]
+		mat(SH.RIBBON, 1), mat(SH.TRAIL, 1), mat(WEAP.LANE, 1), mat(DEATH.SLAG, 0),
+		HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)]
 	if not compat:
 		mats.append_array([mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
 	for i in mats.size():
@@ -872,6 +873,15 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 				wm.position = Vector3((hk % 6 - 2.5) * 1.0, -2.0 - (hk / 6) * 1.0, 1.0) * unit
 				tmp.add_child(wm)
 				hk += 1
+			# Warm the actual cuttable PBR surface in this hull's vertex format too.
+			var dm := MeshInstance3D.new()
+			dm.mesh = smi.mesh
+			for si in smi.mesh.get_surface_count():
+				dm.set_surface_override_material(si, HULL.damage_material(smi.get_active_material(si), Transform3D.IDENTITY, {}, 1.0))
+			var dext := maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
+			dm.scale = Vector3.ONE * (0.6 * unit / dext)
+			dm.position = Vector3(0, -2, 1) * unit
+			tmp.add_child(dm)
 	if dstate.has("debris_meshes"):
 		var db = MeshInstance3D.new()
 		db.mesh = dstate["debris_meshes"][0][0]

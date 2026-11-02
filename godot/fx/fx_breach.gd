@@ -20,6 +20,7 @@ extends RefCounted
 # A4's pre-cut breach parts (API.md 14) replace the generic breach cut where they exist.
 
 const SH := preload("res://fx/fx_shaders.gd")
+const HULL := preload("res://fx/fx_hull.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
 
 const PART_CUP := 0.0
@@ -844,6 +845,8 @@ static func compute(job: Dictionary) -> Dictionary:
 		var E: Ent = ents[i]
 		if E.walls and not E.through:
 			_walls(parts[i], E)
+		if E.kind == K_HOLE or E.kind == K_SLOT:
+			_throat(parts[i], E)
 	# conduits and spines (they read the hull's triangle mesh only), then every mesh, all here on the worker: the main
 	# thread only swaps them in (r3 showed the 8K barge's rebuild costing a long frame when the meshes were built there)
 	var t_edges := Time.get_ticks_msec() - t_ms
@@ -1213,6 +1216,35 @@ static func _cup_tri(pt: Part, E: Ent, ents: Array, a: Vector3, b: Vector3, c: V
 
 # Frames (across the ship) and deck layers (level, when the hole faces sideways) sliced through a cavity: each slice of
 # the floor stood up as a wall to just under the skin, with a ragged top, some blown away.
+static func _throat(pt: Part, E: Ent) -> void:
+	# An opaque recessed pocket even on thin hulls. Its back hides the far shell
+	# and its tapered walls give the discarded mouth real depth from side views.
+	var depth := maxf(E.D * 0.8, E.R * 0.22)
+	var centre := E.c - E.n * depth
+	var count := 48
+	for i in count:
+		var ring: Array = []
+		for j in [i, (i + 1) % count]:
+			var a := float(j) * TAU / count
+			var dir := E.t1 * cos(a) + E.t2 * sin(a)
+			var lo := 0.0
+			var hi := E.R * 2.0 + E.hl
+			for k in 18:
+				var mid := (lo + hi) * 0.5
+				if E.edge(cos(a) * mid, sin(a) * mid) < 0.0: lo = mid
+				else: hi = mid
+			var offset := dir * hi
+			ring.append(E.c + offset * 1.035 - E.n * E.th * 0.25)
+			ring.append(centre + offset * 0.68)
+		var a: Vector3 = ring[0]
+		var b: Vector3 = ring[2]
+		var c: Vector3 = ring[3]
+		var d: Vector3 = ring[1]
+		var inward := (centre - (a + b) * 0.5).normalized()
+		_quad(pt, a, b, c, d, inward, Color(PART_CUP, 0.15, 0, 1))
+		_tri(pt, centre, d, c, E.n, E.n, E.n, E.n, Color(PART_CUP, 0.12, 0, 1))
+
+
 static func _walls(pt: Part, E: Ent) -> void:
 	var fam: Array = []
 	var ax_a := Vector3.RIGHT if absf(E.n.x) < 0.75 else Vector3.BACK
@@ -1411,13 +1443,13 @@ static func emitters(b: POOLS.Batch, bs: POOLS.Batch, E: Ent, ents: Array, ends:
 	for j in (3 if hot else 2):
 		var an := r.randf() * TAU
 		var p := E.c + (E.t1 * cos(an) + E.t2 * sin(an)) * R * r.randf() * 0.45
-		floor_pts.append(cup_at(p, E, ents) + E.n * R * 0.05 if not E.through else p)
+		floor_pts.append(p - E.n * maxf(E.D * 0.65, R * 0.18))
 	for fp in floor_pts:
 		var P: Vector3 = fp
-		for kk in 9:
+		for kk in 3:
 			var v := E.n * R * (1.3 + r.randf() * 0.9) + E.t1 * (r.randf() - 0.5) * R * 0.5 + E.t2 * (r.randf() - 0.5) * R * 0.5
 			b.add(q, POOLS.pack(Vector4(P.x, P.y, P.z, -20.0 + kk * 0.09), Vector4(v.x, v.y, v.z, 0.55 + r.randf() * 0.3),
-				Vector4(glow.r, glow.g, glow.b, 2.0), Vector4(R * 0.22, R * 0.55, 1, r.randf()), Vector4(0.8, 0, 0, 0)))
+				Vector4(0.65, 0.16, 0.025, 0.45), Vector4(R * 0.06, R * 0.15, 1, r.randf()), Vector4(0.8, 0, 0, 0)))
 	var P0: Vector3 = floor_pts[0]
 	for kk in (10 if hot else 6):
 		var v := (E.n * 1.0 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.9).normalized() * R * (0.5 + r.randf() * 0.9)
@@ -1476,7 +1508,7 @@ static func gather(s) -> Array:
 				continue
 			out.append({"mi": mi, "mid": mi.get_instance_id(), "si": si, "arrays": s.arrays_of(am, si), "xf": xf, "aabb": aabb,
 				"fmt": am.surface_get_format(si), "mat": am.surface_get_material(si), "mesh": am,
-				"ov": mi.get_surface_override_material(si), "n": am.get_surface_count()})
+				"ov": mi.get_surface_override_material(si), "global_ov": mi.material_override, "n": am.get_surface_count()})
 	return out
 
 
@@ -1583,7 +1615,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 			holder.position = E.c + E.n * E.R * 0.35
 			s._dmg_root.add_child(holder)
 			s._hole_nodes.append(holder)
-			s._hole_lights.append(fx.light_source(holder, Vector3.ZERO, Color(glow.r, glow.g * 0.9, glow.b), 1.3 + 0.7 * float(absf(E.bend) > 1.0 or E.style == S_BLAST), 0.4))
+			s._hole_lights.append(fx.light_source(holder, Vector3.ZERO, Color(0.7, 0.16, 0.025), 0.18, 0.1))
 	var inside = res.get("inside")
 	if inside != null:
 		var mi := MeshInstance3D.new()
@@ -1616,52 +1648,59 @@ static func apply(fx, s, job: Dictionary) -> void:
 	bs.build(fx.mat(SH.STREAK, 1), hb, "fx_breach_sparks")
 
 
-# F3 round 2 (Ryan, Nov 1: holes showed the hull's empty inside): every damaged hull mesh gets the HULLIN overlay
-# (fx_shaders.gd), which draws the hull's back faces as decks and rooms seen through the openings; up to 8 openings
-# (holes and burn-through slots, biggest first) in each mesh's own frame tell it where the view enters. A hull with no
-# opening keeps no overlay (it costs a second pass over the mesh's vertices).
+# The actual surface material owns discard and burnt back faces. Overlays cannot
+# remove the opaque skin below them. Work in the damage root frame, including mirrors.
 static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void:
 	if s.dead:
-		return   # (the death's cracks own the overlay now)
-	var open: Array = []
-	for E in ents:
-		var e: Ent = E
-		if e.kind == K_HOLE or (e.kind == K_SLOT and e.through):
-			open.append(e)
-	open.sort_custom(func(a: Ent, b: Ent) -> bool: return maxf(a.R, a.hl) > maxf(b.R, b.hl))
+		return
+	var mouths := _mouth_uniforms(ents)
 	for m in mis:
 		if not is_instance_valid(m):
 			continue
 		var mi: MeshInstance3D = m
-		if open.is_empty():
-			if mi.material_overlay != null and mi.has_meta("fx_inside"):
-				mi.material_overlay = null
-			continue
-		var inv: Transform3D = mi.global_transform.affine_inverse() * s._dmg_root.global_transform
-		var sc: float = inv.basis.get_scale().x
-		var hs: Array = []
-		var hn: Array = []
-		for i in mini(open.size(), 8):
-			var e: Ent = open[i]
-			var c: Vector3 = inv * e.c
-			var n: Vector3 = (inv.basis * e.n).normalized()
-			hs.append(Vector4(c.x, c.y, c.z, maxf(e.R, e.hl) * sc))
-			hn.append(Vector4(n.x, n.y, n.z, 0.0))
-		while hs.size() < 8:
-			hs.append(Vector4.ZERO)
-			hn.append(Vector4(0, 1, 0, 0))
-		var om: ShaderMaterial = mi.get_meta("fx_inside") if mi.has_meta("fx_inside") else fx.mat(SH.HULLIN, 1)
-		var L: float = s.hull.L * sc
-		om.set_shader_parameter("holes", hs)
-		om.set_shader_parameter("hnrm", hn)
-		om.set_shader_parameter("n_holes", mini(open.size(), 8))
-		om.set_shader_parameter("cell", Vector3(L * 0.07, L * 0.045, L * 0.06))
-		om.set_shader_parameter("glow", Vector3(glow.r, glow.g, glow.b))
-		mi.set_meta("fx_inside", om)
-		mi.material_overlay = om
+		var frame: Transform3D = s._dmg_root.global_transform.affine_inverse() * mi.global_transform
+		var override: Material = mi.material_override
+		mi.material_override = null
+		for si in mi.mesh.get_surface_count():
+			var src: Material = override if override != null else mi.get_active_material(si)
+			mi.set_surface_override_material(si, HULL.damage_material(src, frame, mouths, s.hull.L))
+		if mi.has_meta("fx_inside"):
+			mi.material_overlay = null
+			mi.remove_meta("fx_inside")
 
+
+static func _mouth_uniforms(ents: Array) -> Dictionary:
+	var out := {"count": 0, "mouths": [], "axes": [], "tangents": [], "shapes": [], "tears": []}
+	for e in ents:
+		var E: Ent = e
+		if not E.has_cut():
+			continue
+		var centers: Array = [[E.c, E.R, 1.0 if E.square else (2.0 if E.kind == K_SLOT else 0.0)]]
+		if E.kind == K_CLUSTER:
+			centers = []
+			for sub in E.subs:
+				if sub.z < 0.0:
+					centers.append([E.c + E.t1 * sub.x + E.t2 * sub.y, -sub.z, 3.0])
+		for spec in centers:
+			if int(out["count"]) >= HULL.MOUTHS:
+				push_error("breach shader mouth capacity exceeded")
+				break
+			var p: Vector3 = spec[0]
+			var tangent: Vector3 = E.dir if E.kind == K_SLOT else E.t1
+			out["mouths"].append(Vector4(p.x, p.y, p.z, spec[1]))
+			out["axes"].append(Vector4(E.n.x, E.n.y, E.n.z, E.cut))
+			out["tangents"].append(Vector4(tangent.x, tangent.y, tangent.z, E.hl))
+			out["shapes"].append(Vector4(spec[2], E.p[0], E.p[1], E.p[2]))
+			out["tears"].append(Vector4(E.p[5], E.p[3], E.p[4], 0.0))
+			out["count"] = int(out["count"]) + 1
+	for key in ["mouths", "axes", "tangents", "shapes", "tears"]:
+		while out[key].size() < HULL.MOUTHS:
+			out[key].append(Vector4.ZERO)
+	return out
 
 static func _restore_overrides(mi: MeshInstance3D, orig: Array, ks: Array) -> void:
+	if not ks.is_empty():
+		mi.material_override = orig[ks[0]].get("global_ov")
 	for k in ks:
 		var sd: Dictionary = orig[k]
 		if sd["ov"] != null and int(sd["si"]) < mi.get_surface_override_material_count():

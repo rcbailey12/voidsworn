@@ -955,29 +955,29 @@ void fragment() {
 	float deep = clamp(dot(centre - vL, axis) / R, 0.0, 1.5);
 	float ao = mix(1.0, 0.25, smoothstep(0.0, 0.9, deep));
 	// r3 verdict: the frames and decks inside were lost in black; a little more albedo lets the fire light pick them out
-	vec3 base = vec3(0.07, 0.066, 0.062) * (0.6 + 0.8 * vC.g) * (0.7 + 0.6 * n1);
+	vec3 base = vec3(0.012, 0.009, 0.007) * (0.6 + 0.8 * vC.g) * (0.7 + 0.6 * n1);
 	float rough = 0.72;
 	float metal = 0.25;
 	if (part > 0.2 && part < 0.3) { base *= 1.8; metal = 0.6; rough = 0.5; }
 	if (part > 0.95) { base = vec3(0.06, 0.057, 0.054) * (0.8 + 0.4 * n2); rough = 0.55; metal = 0.5; ao = 0.8; }
-	else if (part > 0.8) { base = vec3(0.62, 0.58, 0.48) * (0.75 + 0.35 * n2); rough = 0.45; metal = 0.0; ao = 1.0; }
-	else if (part > 0.6) { base = mix(vec3(0.05, 0.042, 0.034), vec3(0.03, 0.03, 0.034), vC.g) * (0.8 + 0.4 * n2); rough = 0.5; }
+	else if (part > 0.8) { base = vec3(0.025, 0.019, 0.013) * (0.75 + 0.35 * n2); rough = 0.45; metal = 0.0; ao = 1.0; }
+	else if (part > 0.6) { base = mix(vec3(0.014, 0.01, 0.007), vec3(0.008, 0.008, 0.009), vC.g) * (0.8 + 0.4 * n2); rough = 0.5; }
 	else if (part > 0.4) { float seam = smoothstep(0.9, 1.0, abs(sin(dot(vL, vec3(1.0, 1.3, 0.7)) * 9.0 / R))); base *= 1.15 - 0.4 * seam; }
 	vec3 toF = fire - vL;
 	float dist = length(toF) / R;
 	if (part < 0.8) { base *= mix(0.5, 1.0, smoothstep(0.2, 1.4, dist)); }
-	vec3 Nl = normalize(vNl) * (FRONT_FACING ? 1.0 : -1.0);
+	vec3 Nl = snorm(vNl) * (FRONT_FACING ? 1.0 : -1.0);
 	float lam = 0.25 + 0.75 * max(dot(Nl, toF / max(length(toF), 1e-4)), 0.0);
 	float fall = 1.0 / (1.0 + dist * dist * 5.0);
 	float emb = smoothstep(0.66, 0.88, fbm(p.xy * 6.0 + p.zx * 4.0 + vec2(seed, scene_t * 0.12))) * (part < 0.3 ? 1.0 : 0.3);
 	vec3 gc = glow;
 	if (style == 8) { gc = vec3(0.62, 0.95, 0.14); hot *= 0.35; }
 	if (style == 4 || style == 11) { hot *= 0.3; }
-	vec3 em = gc * (lam * fall * 0.6 * fl * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)) + emb * 0.8 * (0.6 + 0.4 * fl) * smoothstep(1.4, 0.3, dist)) * hot;
+	vec3 em = gc * (lam * fall * 0.6 * fl * (0.3 + 0.7 * smoothstep(0.1, 0.8, deep)) + emb * 0.8 * (0.6 + 0.4 * fl) * (1.0 - smoothstep(0.3, 1.4, dist))) * hot;
 	if (style == 1) {
 		// a lance cut: the metal round the burn-through is molten, white, then orange, then dull red, then black
 		float cool = exp(-age / 3.0);
-		float m = cool * (part > 0.95 ? 1.0 : 0.6) * smoothstep(2.5, 0.3, dist);
+		float m = cool * (part > 0.95 ? 1.0 : 0.6) * (1.0 - smoothstep(0.3, 2.5, dist));
 		em = heatRamp(m) * m * 4.0;
 		base *= 1.0 - 0.5 * cool;
 	} else if (style == 5 || style == 6 || style == 0) {
@@ -989,7 +989,7 @@ void fragment() {
 	AO = ao;
 	AO_LIGHT_AFFECT = 1.0;
 	SPECULAR = 0.3 * ao;
-	EMISSION = em * fx_gain;
+	EMISSION = clamp(em * 0.16 * fx_gain, vec3(0.0), vec3(0.35));
 }
 """
 
@@ -1379,82 +1379,8 @@ void fragment() {
 }
 """
 
-# Death pieces: an overlay on each piece of the broken hull. Front faces glow along the break (distance to the
-# boundary between this piece's seed and its nearest neighbour's); back faces seen through the open cut draw as a dark,
-# charred interior with embers, so the pieces read as solid. heat cools from 1 to 0 over the wreck's life.
-# F3 round 2 (Ryan, Nov 1 16:12: "a ship can explode and it's just empty inside so it's clearly a shell. same with the
-# holes in ships"): what an opened hull shows inside, drawn on the hull's own back faces wherever the shell is open
-# (back faces only show through an opening: everywhere else the front faces cover them). Interior mapping in the
-# hull's own frame: from the point E where the view ray enters the opening, the ray runs on to the first deck, bulkhead
-# or frame plane of a compartment grid sized to the hull, and that surface is shaded: deck grating, ceiling light
-# strips, bulkheads with frame ribs, a few compartments burning or lit red, the rest dark and sooty, darker the deeper
-# it lies. At E itself the decks and bulkheads the opening cut through show as thick torn members, glowing hot when
-# fresh. No geometry and no CPU work: a ship cut open reads as solid decks and rooms, not an empty skin.
-const INTERIOR := """
-float ih(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
-vec3 hull_inside(vec3 Pe, vec3 D, float tP, vec3 cell, float heat, vec3 glow, float tm) {
-	vec3 c = max(cell, vec3(1e-3));
-	vec3 Dn = vec3(abs(D.x) < 1e-4 ? 1e-4 : D.x, abs(D.y) < 1e-4 ? 1e-4 : D.y, abs(D.z) < 1e-4 ? 1e-4 : D.z);
-	vec3 g = Pe / c;
-	vec3 nxt = (floor(g) + step(vec3(0.0), Dn)) * c;
-	vec3 tt = max((nxt - Pe) / Dn, vec3(0.0));
-	float th = min(tt.x, min(tt.y, tt.z));
-	float t = clamp(min(th, tP), 0.0, 1e4);
-	vec3 H = Pe + Dn * t;
-	vec3 room = floor((Pe + Dn * (t * 0.5 + 1e-3)) / c);
-	float id = ih(room);
-	float id2 = ih(room + 17.3);
-	// which surface: 0 the hull's inner wall (behind everything), 1 deck or ceiling, 2 bulkhead or frame wall
-	float surf = tP <= th ? 0.0 : (th == tt.y ? 1.0 : 2.0);
-	vec3 hq = H / c;
-	float pat;
-	vec3 base;
-	if (surf == 1.0) {
-		if (Dn.y < 0.0) {
-			// a deck seen from above: grating and walkway plates
-			float gr = smoothstep(0.42, 0.5, abs(fract(hq.x * 6.0) - 0.5)) + smoothstep(0.42, 0.5, abs(fract(hq.z * 6.0) - 0.5));
-			base = vec3(0.075, 0.072, 0.068) * (0.7 + 0.4 * gr);
-			pat = gr;
-		} else {
-			// a ceiling: dark, with conduits and a light strip down each room
-			float strip = exp(-spow((fract(hq.z) - 0.5) / 0.05, 2.0));
-			base = vec3(0.035, 0.034, 0.033) + vec3(0.9, 0.85, 0.7) * strip * step(0.55, id2) * 0.35;
-			pat = strip;
-		}
-	} else {
-		// bulkheads and the hull's inner wall: plating with frame ribs and stiffeners
-		float rib = smoothstep(0.38, 0.5, abs(fract((th == tt.x ? hq.z : hq.x) * 4.0) - 0.5));
-		float rail = smoothstep(0.44, 0.5, abs(fract(hq.y * 3.0) - 0.5));
-		base = vec3(0.058, 0.056, 0.054) * (0.75 + 0.5 * max(rib, rail));
-		pat = rib;
-	}
-	float soot = smoothstep(0.35, 0.75, vnoise(H.xz / c.xz * 1.7 + H.y / c.y * 0.9 + id * 9.0));
-	base *= mix(1.0, 0.35, soot);
-	// the room's own light: some burn, some show red emergency light, most are dark
-	float depth = exp(-t / max(c.x * 1.6, 1e-3));
-	float fl = flick(0.65 + 0.35 * vnoise(vec2(tm * 7.0, id * 31.0)), tm, id);
-	vec3 lit = vec3(0.0);
-	if (id < 0.3) {
-		float fire = smoothstep(0.0, 0.8, 1.0 - fract(hq.y + 0.001)) * (0.6 + 0.6 * vnoise(H.xz / c.xz * 3.0 + vec2(0.0, -tm * 1.5)));
-		lit = glow * (0.5 + 1.6 * fire) * fl * max(heat, 0.45);
-	} else if (id < 0.45) {
-		lit = vec3(0.55, 0.05, 0.03) * (0.45 + 0.25 * sin(tm * 2.5 + id * 20.0));
-	} else {
-		lit = vec3(0.12, 0.13, 0.15) * 0.25;
-	}
-	vec3 col = base * (0.35 + 2.4 * lit) + lit * 0.12 * (1.0 - soot * 0.6);
-	col *= 0.25 + 0.75 * depth;
-	// the structure the opening cut through: deck plates and bulkheads end at Pe as thick torn members
-	vec3 fr = abs(fract(g + 0.5) - 0.5) * c;
-	float mem = min(fr.y / (c.y * 0.08), min(fr.x / (c.x * 0.05), fr.z / (c.z * 0.05)));
-	float edge = 1.0 - smoothstep(0.7, 1.0, mem);
-	float torn = vnoise(Pe.xz / c.xz * 9.0 + Pe.y / c.y * 5.0);
-	// members: dark torn metal; only stretches of them still glow, cooling faster than the cut's rim
-	vec3 member = vec3(0.075, 0.072, 0.068) * (0.6 + 0.6 * torn) + glow * spow(heat, 2.5) * 2.6 * smoothstep(0.5, 0.75, torn) * smoothstep(0.3, 1.0, 1.0 - mem);
-	col = mix(col, member, edge);
-	return col;
-}
-"""
+# Burnt darkness shared by live hulls and death pieces. No room lights.
+const INTERIOR := preload("res://fx/fx_hull.gd").BURNT
 
 const CHUNK := """
 shader_type spatial;
@@ -1482,11 +1408,11 @@ void fragment() {
 		float d = abs(dot(vL - 0.5 * (s1 + s2), dv / l));
 		best = min(best, d);
 	}
-	float x = best / width;
+	float x = best / max(width, 0.0001);
 	float fl = flick(0.55 + 0.9 * vnoise(vec2(dot(vL, vec3(3.1, 1.7, 2.3)), scene_t * 3.0)), scene_t, 1.0);
 	if (!FRONT_FACING) {
 		// round 2: the piece's inside through its cut face: where the view ray enters this piece's cell (the cut planes
-		// are the bisectors between its seed and the others'), decks and rooms behind it (INTERIOR above)
+		// are the bisectors between its seed and the others'), burnt darkness behind it (INTERIOR above)
 		vec3 Dw = vW - CAMERA_POSITION_WORLD;
 		float dw = max(length(Dw), 1e-4);
 		float sc = max(length(MODEL_MATRIX[0].xyz), 1e-5);
@@ -1512,7 +1438,7 @@ void fragment() {
 		// embers along the break on the inner skin too
 		float n = fbm(vL.xy * 1.3 + vL.zx * 0.9);
 		float emb = smoothstep(0.62, 0.8, n) * heat * exp(-x * 1.2);
-		ALBEDO = clamp((ins + glow * emb * 1.2 * fl + glow * exp(-x * 3.0) * heat * 0.6) * fx_gain, 0.0, 64.0);
+		ALBEDO = clamp((ins + vec3(0.12, 0.025, 0.004) * emb) * fx_gain, 0.0, 64.0);
 		ALPHA = 1.0;
 	} else {
 		// round 2: a narrower rim that cools faster (r1 wide band read as a peach wash over the pieces)
@@ -1525,7 +1451,7 @@ void fragment() {
 }
 """
 
-# The live hull's inside through its holes (round 2): an overlay on a damaged hull's meshes that draws only back faces
+# Legacy fallback/warmup overlay. Live mouths now use fx_hull.damage_material on the actual surface.
 # (cull_front), so it shows only where a breach, slot or gauss hole opened the shell (and on any AI gap). The view ray
 # enters at the nearest hole's plane (up to 8 holes, in the mesh's own frame, set by fx_breach.apply); the rest as INTERIOR.
 const HULLIN := """
