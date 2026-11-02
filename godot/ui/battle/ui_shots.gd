@@ -114,6 +114,14 @@ func run(battle) -> void:
 		await get_tree().process_frame
 	await _idle()
 	await get_tree().create_timer(2.0).timeout
+	if b.args.has("ui-rebuild-test"):
+		# the HUD rebuilt from a wrong size (what a window resize does): every part must come back at the right size
+		var nlog: int = b.hud.log_text.get_line_count()
+		b.hud.k = 1.9
+		b.hud._rebuild()
+		await get_tree().create_timer(0.8).timeout
+		_note(absf(b.hud.k - b.hud.scale_for(b.get_viewport().get_visible_rect().size)) < 0.01 and b.hud.log_text.get_line_count() == nlog and b.hud.card.visible and b.hud.plates.size() > 0,
+			"rebuild: scale %.2f, log lines %d (were %d), card shown %s, %d nameplates" % [b.hud.k, b.hud.log_text.get_line_count(), nlog, str(b.hud.card.visible), b.hud.plates.size()])
 	# 1. the opening hand-over
 	await _shot("1_battle_start")
 	# 2. a move hex hovered: the farthest reachable hex, with its tip
