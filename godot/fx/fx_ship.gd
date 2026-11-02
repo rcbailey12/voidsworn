@@ -658,8 +658,9 @@ func _react_step(fx, dt: float) -> void:
 	var shz := sh * 0.7 * sin(age * w_sh * 1.27)
 	_rcs(fx)
 	var busy: bool = root.has_method("busy") and bool(root.call("busy"))
-	# roll and pitch are fx's own: absolute
-	root.rotation.x = _ra.x + shx
+	# Keep the cinematic flight bank under the damage reaction.
+	var flight_bank := float(root.get("glide_bank")) if root.get("glide_bank") != null else 0.0
+	root.rotation.x = flight_bank + _ra.x + shx
 	root.rotation.z = _ra.z + shz
 	# yaw and drift: only while G2 is not driving the root (it sets position and yaw itself during a path)
 	if busy:
@@ -673,7 +674,7 @@ func _react_step(fx, dt: float) -> void:
 		_app_yaw = _ra.y
 	var idle: bool = _kick_v.length() < 1e-4 and _kick_p.length() < hull.L * 1e-5 and _brk == Vector3.ZERO and _brk_p == 0.0
 	if idle and _ra.length() < 6e-4 and _rv.length() < 1e-3 and _pd.length() < hull.L * 3e-4 and _pv.length() < hull.L * 3e-4 and sh < 1e-4:
-		root.rotation.x = 0.0
+		root.rotation.x = flight_bank
 		root.rotation.z = 0.0
 		if not busy:
 			root.position -= _app_pos

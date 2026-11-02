@@ -63,7 +63,13 @@ void fragment() {
 		vec2 q = abs(vp);
 		float d = max(q.x, 0.5 * q.x + 0.8660254 * q.y) / 8.53;
 		float hot = style > 1.5 ? 1.0 : 0.0;
-		if (reach_mode == 1) {
+		if (reach_mode == 2) {
+			// Cinematic: a narrow soft edge and barely tinted space, no scanning blue plate.
+			float rim = smoothstep(0.93, 0.985, d);
+			float glow = smoothstep(0.82, 0.98, d);
+			a = mix(0.012, 0.032, hot) + glow * 0.06 + rim * mix(0.22, 0.46, hot);
+			c = mix(vec3(0.30, 0.62, 0.85), vec3(0.64, 0.88, 1.0), hot);
+		} else if (reach_mode == 1) {
 			// holo footprint: light thrown up from the table, so space shows through the middle of each hex
 			float rim = smoothstep(0.78, 0.97, d);
 			float scan = smoothstep(0.6, 1.0, 0.5 + 0.5 * sin(wp.z * 1.7 - TIME * 3.0));
@@ -348,6 +354,8 @@ func refresh() -> void:
 	var fm := fills.multimesh
 	var rm := rings.multimesh
 	var sp := BL.spec()
+	if fills.material_override is ShaderMaterial:
+		(fills.material_override as ShaderMaterial).set_shader_parameter("reach_mode", 2 if BL.current() == "cine" and not BL.tactical else (1 if sp["reach"] == "holo" else 0))
 	var base_ring: Color = LOOK_RING.get(str(sp["grid"]), BASE_RING)
 	var soft_reach: bool = str(sp["grid"]) != "today" and str(sp["grid"]) != "tactical"
 	for i in cells.size():
@@ -404,6 +412,8 @@ var outline_key := ""
 func set_outline(keys: Dictionary, col := REACH_EDGE) -> void:
 	if outline == null:
 		return
+	if BL.current() == "cine" and not BL.tactical:
+		keys = {}   # the soft edge of every reachable hex carries the area in this look
 	var ks: Array = keys.keys()
 	ks.sort()
 	var sig := ",".join(PackedStringArray(ks)) + str(col)
