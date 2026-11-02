@@ -2,11 +2,14 @@ extends Node3D
 # B "living terrain" for the board look trial (world/board_look.gd): each kind of special hex becomes a thing in space
 # rather than a tinted hex (the board draws only a faint edge round it).
 #   nebula      soft gas: billboards that sample one continuous 3D noise field in world space, so neighbouring puffs read
-#               as one body; lit on the sun's side, dense cores glowing, soft where they meet hulls and rocks
-#   ion storm   darker gas with lightning: jagged bolts that flash now and then, each with a real light that catches the
-#               ships, rocks and the gas round it
-#   debris      dense rock and wreck clusters: many more rocks of mixed size, broken hull plates and girders (some still
-#               hot), and a haze of fine dust
+#               as one body; lit on the sun's side, dense cores glowing, soft where they meet hulls and rocks. Step 2:
+#               shaped by a soft footprint of its own hexes (_mask) worn by the noise, so it has no hex outline and no
+#               hex-shaped blobs, and never spills out of its hexes
+#   ion storm   the same gas, darker than the sky behind it with violet-lit cores, and lightning: jagged bolts that flash
+#               now and then, each with a light that catches the ships, rocks and the gas round it (never the fog)
+#   debris      dense rock and wreck clusters: many more rocks of mixed size, wreckage (torn hull plates with their
+#               frames, snapped hull frames, broken truss spars, gutted hull sections; some torn edges still hot, every
+#               piece tumbling slowly), and a haze of fine dust
 #   gravity well  the space round the dead star bends: a ring of lensing and slow twist out to the pull range, with faint
 #               ripples running inward
 # Built once, the first time a look needs it; the world shows or hides it. Nothing here changes the rules.
@@ -38,6 +41,7 @@ uniform vec3 c_lit = vec3(0.60, 0.40, 0.90);
 uniform vec3 c_glow = vec3(0.80, 0.60, 1.00);
 uniform vec3 sun_v = vec3(0.45, 0.70, 0.55);
 uniform float dens = 0.7;
+uniform float glow_from = 0.56;   // how dense the field must be before its core glows
 uniform float gain_a = 1.0;
 uniform float storm = 0.0;
 uniform vec3 bolt = vec3(0.70, 0.80, 1.00);
@@ -87,7 +91,7 @@ void fragment() {
 	float lit = clamp(0.5 + (n - n2) * 5.0, 0.0, 1.0);
 	vec3 col = mix(c_dark, c_lit, lit);
 	// dense cores glow; the thin fringe stays dark so the shape reads against the sky
-	col += c_glow * pow(max(n - 0.56, 0.0), 1.4) * 2.2 * foot;
+	col += c_glow * pow(max(n - glow_from, 0.0), 1.4) * 2.2 * foot;
 	float a = d * dens;
 	if (storm > 0.5) {
 		// a faint flicker deep inside now and then (r2: kept low, it made the gas pale)
@@ -254,13 +258,15 @@ func _gas(ps: Array, storm: bool) -> void:
 	var g := 1.0
 	if storm:
 		# a dark, heavy mass (it must stand out from bright blue skies) that the lightning lights from inside
-		# step 2: a bruised charcoal violet, not a pale blue (it washed out on dark skies), lit violet from inside
-		m.set_shader_parameter("c_dark", Vector3(0.012, 0.012, 0.022))
-		m.set_shader_parameter("c_lit", Vector3(0.12, 0.1, 0.2))
-		m.set_shader_parameter("c_glow", Vector3(0.3, 0.21, 0.6))
+		# step 2: a body darker than the sky behind it (r3 on the PC: a dark violet still read pale and lavender over the
+		# near-black skies, because it was lighter than them), lit violet only in its dense cores and on its sun side
+		m.set_shader_parameter("c_dark", Vector3(0.003, 0.003, 0.006))
+		m.set_shader_parameter("c_lit", Vector3(0.035, 0.028, 0.06))
+		m.set_shader_parameter("c_glow", Vector3(0.3, 0.17, 0.62))
 		m.set_shader_parameter("bolt", Vector3(0.66, 0.6, 1.0))
 		m.set_shader_parameter("storm", 1.0)
-		m.set_shader_parameter("dens", 0.8)
+		m.set_shader_parameter("dens", 1.0)
+		m.set_shader_parameter("glow_from", 0.5)
 		storm_mat = m
 		_set_flashes([])
 	else:
