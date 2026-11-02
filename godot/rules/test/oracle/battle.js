@@ -1171,7 +1171,7 @@ function canAbility(u){
   if(u.ab==='regrow') return u.hp<u.maxHp;
   if(u.ab==='reclaim') return alive(u.side).some(x=>!x.isSq&&hdist(x,u)<=3&&x.hp<x.maxHp);
   if(u.ab==='blink') return blinkHexes(u).length>0;
-  if(u.ab==='ionpulse') return alive(u.side==='player'?'enemy':'player').some(t=>!t.isSq&&hdist(t,u)<=4);
+  if(u.ab==='ionpulse') return alive(u.side==='player'?'enemy':'player').some(t=>!t.isSq&&hdist(t,u)<=4&&t.sh.some(x=>x>0));
   return true;
 }
 // Ithar phase jump: any open, playable hex within 3, straight past whatever is in the way
