@@ -5,7 +5,8 @@ space and not as tiles. Nothing here changes the rules or which hexes a ship can
 
 All shots come from your PC (RTX 5080, Forward+, max quality), lane A jobs `board_bf_e991dc6` (before) and
 `board_af5_10d76b3` (after). Before is look C exactly as the trial showed it (8cbf40c; the code was unchanged up to
-e991dc6). Same battles, seeds and cameras before and after, now in **all ten settings**, not only the three from the trial.
+e991dc6). After rebasing onto main the same code is commit 8cbc596 (the folder keeps the captured
+name). Same battles, seeds and cameras before and after, now in **all ten settings**, not only the three from the trial.
 
 ## Start here
 1. `all_before_after.jpg`: every setting at the normal battle camera, before on the left, after on the right.
