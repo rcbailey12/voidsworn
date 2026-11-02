@@ -16,7 +16,7 @@ eval(src + `
 function log(m){ if(B&&B.log) B.log.push({m}); } function fxText(){} function fxShield(){} function fxFlash(){} function tel(){} function nodeSeeds(){ return 0; }
 async function animWeapon(){} async function animExplode(){} function fxShieldBreak(){} function fxCrit(){} function fxWithdraw(){} async function fxRam(){} function fxSectionDown(){} async function fxBoard(){}
 global.T = { get RUN(){ return RUN; }, set RUN(v){ RUN=v; }, get B(){ return B; }, migrateRun, newShip, newRun, startBattle, HULLS, EVENTS, EVENT_FALLBACK, nextEvent, needMet, needText, applyOutcome, eventFlags,
-  newNemesis, ensureNemesis, nemReveal, nemClockAdd, nemNodeIs, nemBattleCfg, nemAdapt, nemAfterBattle, nemLearn, NEM_CLOCK, NEM_WEAK, FAC_VERBS, verbCanUse, useVerb, wingVetAfter, wingPerkGrant, WING_XP,
+  newNemesis, ensureNemesis, nemReveal, nemClockAdd, nemNodeIs, nemBattleCfg, nemAdapt, nemAfterBattle, nemLearn, rndSeed, NEM_CLOCK, NEM_WEAK, FAC_VERBS, verbCanUse, useVerb, wingVetAfter, wingPerkGrant, WING_XP,
   setStance, canStance, wingStance, aiStance, killUnit, dmgMult, hitChance, genSector, META, RUN_FACTIONS, ADMIRALS, mapScreen, eventScreen, shipyardScreen, boonStep, NEM_FAC, nemFull, nemFeedLosses, startSideTurn, NEM_PERSONA, NEM_BEAT_WORD, nemBeatOf, ARC_VARIANT, HULL_VARIANTS, ACT, nemTargetBonus, nemDuelTarget, nemFoundMerge, landVolley, nemScar, nemPanel, W };
 `);
 const pickAdm = fac => Object.entries(T.ADMIRALS).find(([k, a]) => (a.fac || 'voidsworn') === fac)[0];
@@ -52,7 +52,9 @@ check('Nemesis battle: his flagship named, weaknesses and adaptations applied to
   const es = T.B.units.filter(u => u.side === 'enemy' && !u.isSq), fl = es.find(u => u.nemFlag), ps = T.B.units.filter(u => u.side === 'player' && !u.isSq);
   return !!fl && fl.name.includes(N.name) && es.every(u => u.nem) && !ps.some(u => u.nem) && es.every(u => u.speed === u.t.sp + 1 - 1 || u.speed >= 1) && es.every(u => u.armor >= u.t.ar + .1 - 1e-9) && es.every(u => u.crewMax < Math.round((12 + u.size * 40) * 1.01)); });
 check('Nemesis after battle: a win reveals a weakness and resets the clock; sector 3 flagship kill ends him; one adaptation per sector', () => {
-  const R = fresh('corsair'); const N = R.nem; N.fac = 'hegemony'; N.clock = 3; const l1 = T.nemAfterBattle('win', true); const ok1 = N.revealed.length === 1 && N.clock === 0 && N.scars === 1 && !N.dead && N.met === 1;
+  T.rndSeed(37);
+  // A randomly revealed torpedo weakness correctly blocks pd (R63). Use fixed weaknesses for this pd check.
+  const R = fresh('corsair'); const N = R.nem; N.fac = 'hegemony'; N.weak = ['flank', 'slow']; N.clock = 3; const l1 = T.nemAfterBattle('win', true); const ok1 = N.revealed.length === 1 && N.revealed[0] === 'flank' && N.clock === 0 && N.scars === 1 && !N.dead && N.met === 1;
   T.nemLearn({ kind: { torp: 9 }, fire: {} }, 0); R.sector = 2; const a1 = T.nemAdapt(), a2 = T.nemAdapt(); R.sector = 3; N.met = 2; T.nemAfterBattle('win', true);
   return ok1 && a1 === 'pd' && a2 === null && N.dead && l1.length >= 1; });
 check('faction verbs: once per sector, costs paid, free with the right event flag, next-battle verbs wait for the fight', () => {
