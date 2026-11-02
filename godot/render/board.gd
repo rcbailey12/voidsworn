@@ -137,7 +137,7 @@ void fragment() {
 			float kc = 1.0 - smoothstep(12.0, 52.0, distance(wp.xz, cursor.xz));
 			float e = min(vuv.x, 1.0 - vuv.x);
 			float tick = 1.0 - smoothstep(0.07, 0.2, e);
-			k = max(max(kf, 0.85 * kc) * mix(0.3, 1.0, tick), 0.3 * tick);
+			k = max(max(kf, 0.85 * kc) * mix(0.3, 1.0, tick), 0.1 * tick);
 			k *= 1.0 + 0.9 * smoothstep(0.95, 1.0, sin(dot(wp.xz, vec2(0.018, 0.03)) - TIME * 0.9));
 		} else if (mode == 2) {
 			k = (1.0 - smoothstep(9.0, 30.0, distance(wp.xz, cursor.xz))) * 0.9;

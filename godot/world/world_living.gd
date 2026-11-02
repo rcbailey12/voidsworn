@@ -254,10 +254,10 @@ func _gas(ps: Array, storm: bool) -> void:
 		# step 2: a bruised charcoal violet, not a pale blue (it washed out on dark skies), lit violet from inside
 		m.set_shader_parameter("c_dark", Vector3(0.012, 0.012, 0.022))
 		m.set_shader_parameter("c_lit", Vector3(0.1, 0.09, 0.16))
-		m.set_shader_parameter("c_glow", Vector3(0.2, 0.16, 0.42))
+		m.set_shader_parameter("c_glow", Vector3(0.26, 0.19, 0.52))
 		m.set_shader_parameter("bolt", Vector3(0.66, 0.6, 1.0))
 		m.set_shader_parameter("storm", 1.0)
-		m.set_shader_parameter("dens", 0.6)
+		m.set_shader_parameter("dens", 0.8)
 		storm_mat = m
 		_set_flashes([])
 	else:
@@ -269,7 +269,7 @@ func _gas(ps: Array, storm: bool) -> void:
 		m.set_shader_parameter("c_dark", c1 * 0.18)
 		m.set_shader_parameter("c_lit", c1.lerp(c2, 0.4) * 0.9)
 		m.set_shader_parameter("c_glow", c2 * 0.8)
-		m.set_shader_parameter("dens", 0.42)
+		m.set_shader_parameter("dens", 0.5)
 	# drawn before the board's own fills, so a move hex inside the gas still shows on top
 	m.render_priority = -5
 	gas_mats.append([m, g])

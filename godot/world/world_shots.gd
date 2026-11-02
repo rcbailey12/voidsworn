@@ -10,6 +10,8 @@ extends Node
 #                       battle, from the default camera, zoomed out and close over the ship that is up, with a move hex
 #                       hovered (tac: look C with the tactical grid up); names <case>_<look>_1_default.jpg, _2_zoomed_out.jpg
 #                       and _3_close.jpg
+#         [--terrain]   with --looks, also a close shot over the nearest nebula, ion storm and debris hex (_4_neb.jpg,
+#                       _4_storm.jpg, _4_debris.jpg)
 #
 # Every case is a fixed scenario dictionary (the same fields as rules/test/scenarios.json) with its seed, and the biome
 # the campaign would give that region (biome is visual only, R63), written into the rules' battle before the scene builds.
@@ -238,6 +240,28 @@ func _looks(b, name: String, home: Dictionary) -> void:
 			cam.snap()
 			await _settle()
 			await _snap("%s_%s_3_close" % [name, l])
+		# board look step 2 (--terrain): close over the nearest hex of each kind of natural terrain the map has, from the
+		# battle camera's angle (the gas, the lightning, the wrecks)
+		if args.has("terrain"):
+			for kind in ["neb", "storm", "debris"]:
+				var tk := ""
+				var tb := 1e9
+				for k in b.V.get("terrain", {}):
+					if str(b.V["terrain"][k]) == kind:
+						var qr3: PackedStringArray = str(k).split(",")
+						var pw: Vector3 = b.board.hex_world(int(qr3[0]), int(qr3[1]))
+						if pw.length() < tb:
+							tb = pw.length()
+							tk = k
+				if tk != "":
+					var qr4: PackedStringArray = tk.split(",")
+					cam.t = b.board.hex_world(int(qr4[0]), int(qr4[1]))
+					cam.r = 95.0
+					cam.b = home["b"]
+					cam.a = home["a"]
+					cam.snap()
+					await _settle()
+					await _snap("%s_%s_4_%s" % [name, l, kind])
 		if args.has("bench"):
 			cam.a = home["a"]
 			cam.b = home["b"]
