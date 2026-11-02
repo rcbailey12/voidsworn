@@ -7,6 +7,8 @@ rem   cx_<tag>_src.zip   the repo files the task needs (git archive)
 rem   cx_<tag>_brief.md  the task brief (what to change, which files, how to check)
 rem Produces in build_b: cx_<tag>.patch (git diff of Codex's changes), cx_<tag>_last.md (its final message), cx_<tag>_log.txt
 setlocal
+rem Reasoning effort for Codex: xhigh by default (Ryan has ChatGPT room); set CX_EFFORT=high in the job for light sweeps.
+if not defined CX_EFFORT set "CX_EFFORT=xhigh"
 set "TAG=%~1"
 if "%TAG%"=="" (echo usage: codex_run.bat ^<tag^> & exit /b 2)
 set "PATH=C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
@@ -19,7 +21,7 @@ pushd "%W%"
 git init -q && git config core.autocrlf false && git add -A && git -c user.name=codex -c user.email=codex@local commit -q -m base
 copy /y "%B%\cx_%TAG%_brief.md" "%W%\CODEX_TASK.md" >nul
 rem Codex works only inside this folder; 25 minutes at most (tmo.bat)
-call "%B%\tools\pc\tmo.bat" 1500 "%APPDATA%\npm\codex.cmd" exec -c model_reasoning_effort=high --approve-for-me --ephemeral --color never --skip-git-repo-check -C "%W%" -o "%B%\cx_%TAG%_last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Work only inside this folder. Do not commit." > "%B%\cx_%TAG%_log.txt" 2>&1
+call "%B%\tools\pc\tmo.bat" 1500 "%APPDATA%\npm\codex.cmd" exec -c model_reasoning_effort=%CX_EFFORT% --approve-for-me --ephemeral --color never --skip-git-repo-check -C "%W%" -o "%B%\cx_%TAG%_last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Work only inside this folder. Do not commit." > "%B%\cx_%TAG%_log.txt" 2>&1
 set "RC=%ERRORLEVEL%"
 del /q CODEX_TASK.md 2>nul
 git add -A
