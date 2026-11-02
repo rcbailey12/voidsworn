@@ -8,7 +8,8 @@ if not exist "%G%" (
   pause
   exit /b 2
 )
-set "RESULT=%CD%\godot\fx\test\results\dst4"
+set "RESULT=%TEMP%\voidsworn-destruction-%RANDOM%"
+if defined FX_CHECK_OUT set "RESULT=%FX_CHECK_OUT%"
 if not exist "%RESULT%\.runtime" mkdir "%RESULT%\.runtime"
 set "APPDATA=%RESULT%\.runtime"
 set "LOCALAPPDATA=%APPDATA%"
@@ -18,6 +19,10 @@ if errorlevel 1 goto failed
 "%G%" --headless --path godot --script res://fx/test/destruction_staging_check.gd --log-file "%RESULT%\staging.log"
 if errorlevel 1 goto failed
 "%G%" --headless --path godot --script res://fx/test/fx_smoke.gd --log-file "%RESULT%\smoke.log"
+if errorlevel 1 goto failed
+"%G%" --headless --path godot --script res://fx/test/playtest_batch1_check.gd --log-file "%RESULT%\playtest_batch1.log"
+if errorlevel 1 goto failed
+"%G%" --headless --path godot --script res://world/test_blockers.gd --log-file "%RESULT%\blockers.log"
 if errorlevel 1 goto failed
 set "PROBE_BOX=1"
 set "PROBE_W=1920"

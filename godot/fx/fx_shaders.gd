@@ -736,6 +736,10 @@ void fragment() {
 	METALLIC = 0.5;
 	ROUGHNESS = 0.45;
 	EMISSION = vec3(1.0, 0.33, 0.06) * vHeat * 1.2 * fx_gain;
+	if (vTint > 1.5) {
+		ALBEDO = vec3(0.3, 0.45, 0.6); METALLIC = 0.1; ROUGHNESS = 0.08;
+		EMISSION = mix(vec3(0.2, 0.8, 1.0), vec3(0.9, 0.3, 1.0), abs(dot(NORMAL, VIEW))) * (0.08 + vHeat * 0.3) * fx_gain;
+	}
 }
 """
 
@@ -939,6 +943,7 @@ const HOLE := """
 shader_type spatial;
 render_mode cull_back;
 """ + COMMON + """
+uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
 varying vec3 vL;
 varying vec3 vNl;
@@ -994,13 +999,23 @@ void fragment() {
 	} else if (style == 5 || style == 6 || style == 0) {
 		if (part > 0.95) { em += gc * exp(-age / 0.7) * 0.35 * heat * (0.7 + 0.3 * fl); }
 	}
+	if (wound_kind == 1) {
+		base = mix(vec3(0.025, 0.035, 0.008), glow * 0.07, n1);
+		rough = 0.23; metal = 0.0;
+		em = glow * (0.16 + 0.14 * sin(scene_t * 2.3 + seed)) * (0.4 + 0.6 * n2);
+	} else if (wound_kind == 2) {
+		base = glow * 0.09; rough = 0.09; metal = 0.15;
+		em = mix(glow, vec3(0.3, 0.65, 1.0), n2) * (0.18 + 0.16 * pow(1.0 - abs(dot(NORMAL, VIEW)), 2.0));
+	}
+	if (part > 0.95) { em += glow * 0.32; }
+	if (part > 0.4 && part < 0.9) { em += glow * 0.13; }
 	ALBEDO = base;
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	AO = ao;
 	AO_LIGHT_AFFECT = 1.0;
 	SPECULAR = 0.3 * ao;
-	EMISSION = clamp(em * 0.16 * fx_gain, vec3(0.0), vec3(0.35));
+	EMISSION = clamp(em * 0.5 * fx_gain, vec3(0.0), vec3(0.35));
 }
 """
 
@@ -1047,6 +1062,7 @@ vec2 ionTree(vec2 q, float seed) {
 	}
 	return vec2(best, lev);
 }
+uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);
 uniform vec3 weapon = vec3(1.0, 0.6, 0.3);
 varying vec3 vL;
@@ -1379,6 +1395,14 @@ void fragment() {
 		}
 	}
 	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
+	if (wound_kind == 1) {
+		alb = mix(vec3(0.025, 0.04, 0.008), glow * 0.12, n1);
+		rough = 0.2;
+		em = glow * (0.12 + 0.08 * sin(scene_t * 2.3 + seed)) * a;
+	} else if (wound_kind == 2) {
+		rough = 0.08;
+		em = mix(glow, vec3(0.25, 0.5, 1.0), n1) * a * 0.22;
+	}
 	ALBEDO = alb;
 	ALPHA = clamp(a, 0.0, 1.0);
 	ROUGHNESS = rough;

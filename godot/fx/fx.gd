@@ -167,7 +167,7 @@ func setup(opts := {}) -> void:
 	pools["rib"] = POOLS.Pool.new(192, _mat(SH.RIBBON, 1), self, "fx_ribbons", POOLS.ribbon_shape(32))
 	var srng = RandomNumberGenerator.new()
 	srng.seed = 991
-	pools["shd"] = POOLS.Pool.new(3072 if big else 1536, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
+	pools["shd"] = POOLS.Pool.new(768 if big else 384, _mat(SH.SHARD, 0), self, "fx_chips", POOLS.shard_shape(srng), func() -> Array: return POOLS.shard_shape(srng))
 	if big:
 		pools["dst"] = POOLS.Pool.new(256, _mat(SH.DISTORT, -20), self, "fx_distort", POOLS.quad_shape())
 	for k in (64 if big else (24 if rich else 8)):

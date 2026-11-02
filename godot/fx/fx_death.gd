@@ -470,12 +470,13 @@ static func _prebuild(fx, s) -> void:
 
 # Hull attributes keep their vertex format; private damage materials add burnt backs.
 # The opaque slag surface is built here with the piece, before death when possible.
-static func _piece_mesh(pc: Dictionary) -> ArrayMesh:
+static func _piece_mesh(pc: Dictionary, weathered := false) -> ArrayMesh:
 	var am = ArrayMesh.new()
 	for sd in pc["surfs"]:
 		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"], [], {}, int(sd.get("fmt", 0)) & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES)
 		var hull_mat := HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, 1.0)
 		hull_mat.set_shader_parameter("fx_power", 0.0)
+		hull_mat.set_shader_parameter("fx_weather", 0.8 if weathered else 0.0)
 		am.surface_set_material(am.get_surface_count() - 1, hull_mat)
 	if pc.has("cap"):
 		var mat := ShaderMaterial.new()
@@ -778,6 +779,15 @@ static func _death_inner(fx, s, cause: String) -> float:
 	_power_down(s)
 	s.set_meta("death_start", T)
 	s.engine_level = 0.0
+	if s.faction == "chorus":
+		# Organic pressure loss: collapse the existing skin, then retain the
+		# deflated body. No metal cut, fireball, sparks or plate explosion.
+		s.set_meta("death_organic", true)
+		s.set_meta("death_hulk", true)
+		s.set_meta("death_split", T + 1.65)
+		s.set_meta("death_spore_next", T)
+		fx.later(T + 1.65, func() -> void: _hulk(fx, s))
+		return 2.25
 	# Armada/Nebulous: burn-outs and a stable fifth of ordinary blast kills
 	# leave a whole cold hulk. Explicit impact/cut deaths retain their split.
 	var hulk := cause == "dark" or cause == "hulk" or (cause == "blast" and posmod(hash(s.id), 5) == 0)
@@ -865,6 +875,22 @@ static func _update_dying(fx, s) -> void:
 	var power := 1.0 - smoothstep(0.0, 0.3, age)
 	for m in s.get_meta("death_power", []):
 		(m as ShaderMaterial).set_shader_parameter("fx_power", power)
+	if bool(s.get_meta("death_organic", false)):
+		var collapse := smoothstep(0.0, 1.65, age)
+		var scale_v := Vector3(1.0 - collapse * 0.12, 1.0 - collapse * 0.78, 1.0 - collapse * 0.18)
+		var basis := Basis.from_scale(scale_v)
+		var motion := Transform3D(basis, s.hull.c - basis * s.hull.c)
+		for pose in s.get_meta("death_poses", []):
+			if is_instance_valid(pose["mi"]):
+				(pose["mi"] as Node3D).global_transform = s.root.global_transform * motion * (pose["pose"] as Transform3D)
+		if fx.now >= float(s.get_meta("death_spore_next", INF)):
+			s.set_meta("death_spore_next", fx.now + 0.13)
+			var glow: Color = s.fac.damage_glow
+			var point: Dictionary = s.hull.random_sample(-1, 2.0)
+			var p: Vector3 = s.to_world(point.p)
+			fx.spr(p, fx.now, 2.5, glow * Color(0.4, 0.5, 0.3), 0.35,
+				s.hull.L * 0.015, s.hull.L * 0.13, 20, s.dir_world(point.n) * s.hull.L * 0.1, 0.65)
+		return
 	if s.death_big or bool(s.get_meta("death_hulk", false)): return
 	var rot := Basis.from_euler(Vector3(age * 1.4, age * 0.5, age * 0.85))
 	var shift := Vector3(age * s.hull.L * 0.22, -age * s.hull.L * 0.06, 0)
@@ -952,6 +978,17 @@ static func _hulk(fx, s) -> void:
 			var mat: ShaderMaterial = original.get_active_material(i).duplicate()
 			mat.set_shader_parameter("fx_power", 0.0)
 			copy.set_surface_override_material(i, mat)
+	# Keep the opaque wound backs and rims after the live ship is released.
+	# Do not copy pooled lights, sparks or the live ship's other emitters.
+	for child in s._dmg_root.get_children():
+		if child is MeshInstance3D and child.name in ["fx_damage_inside", "fx_damage_marks"]:
+			var copy := MeshInstance3D.new()
+			copy.name = child.name
+			copy.mesh = child.mesh
+			copy.material_override = child.material_override
+			copy.cast_shadow = child.cast_shadow
+			node.add_child(copy)
+			copy.global_transform = child.global_transform
 	_hide_ship(s)
 	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [],
 		"fires": [{"node": node, "vel": node.basis.x * 0.45, "ang": Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
@@ -963,8 +1000,8 @@ static func _hulk(fx, s) -> void:
 	for j in 9:
 		var v := n * size * 8.0
 		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now + j * 0.13),
-			Vector4(v.x, v.y, v.z, 1.7), Vector4(0.42, 0.46, 0.5, 0.5),
-			Vector4(size * 0.4, size * 3.2, 7, 16.3), Vector4(0, 0, 0.5, 0)))
+			Vector4(v.x, v.y, v.z, 1.7), Vector4(0.22, 0.32, 0.06, 0.3) if s.faction == "chorus" else Vector4(0.42, 0.46, 0.5, 0.5),
+			Vector4(size * 0.4, size * 3.2, 20 if s.faction == "chorus" else 7, 16.3), Vector4(0, 0, 0.5, 0)))
 	b.build(fx.mat(SH.SPRITE, 1), node, "fx_hulk_vent")
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)

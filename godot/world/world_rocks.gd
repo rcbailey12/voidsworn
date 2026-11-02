@@ -291,9 +291,34 @@ static func mesh(name: String) -> Mesh:
 			m = mi.mesh
 		n.free()
 	if m == null:
-		push_warning("[world] rock mesh missing: " + p)
+		m = fallback_mesh(name)
 	_meshes[name] = m
 	return m
+
+
+# A real solid blocker even in a partial install. Unit radius matches library rocks.
+static func fallback_mesh(key: String) -> ArrayMesh:
+	var sphere := SphereMesh.new()
+	sphere.radius = 1.0
+	sphere.height = 2.0
+	sphere.radial_segments = 11
+	sphere.rings = 6
+	var a := sphere.get_mesh_arrays()
+	var v: PackedVector3Array = a[Mesh.ARRAY_VERTEX]
+	var r := RandomNumberGenerator.new()
+	r.seed = hash(key)
+	var phase := r.randf() * TAU
+	for i in v.size():
+		var q := v[i]
+		v[i] *= 0.84 + 0.12 * sin(q.x * 7.0 + phase) * cos(q.z * 6.0 + q.y * 4.0)
+	a[Mesh.ARRAY_VERTEX] = v
+	var colors := PackedColorArray()
+	colors.resize(v.size())
+	colors.fill(Color(0.85, 0.1, 0.6, 0.5))
+	a[Mesh.ARRAY_COLOR] = colors
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, a)
+	return mesh
 
 
 static func _find_mesh(n: Node) -> MeshInstance3D:
@@ -310,7 +335,7 @@ static func _find_mesh(n: Node) -> MeshInstance3D:
 static func names_for(kind: String) -> Array:
 	var L := lib()
 	if L.is_empty():
-		return []
+		return ["fallback_" + kind]
 	var fams: Array = L.get("kinds", {}).get(kind, ["fragment"])
 	var out: Array = []
 	for f in fams:

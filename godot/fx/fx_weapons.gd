@@ -672,6 +672,17 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 		var lp0: Vector3 = tg["lp"]
 		var ln0: Vector3 = tg["ln"]
 		fx.later(T, func() -> void: Tg.add_mark(fx, lk, w, lp0, ln0, ld))
+	# The target's substance controls the ejecta, regardless of the incoming gun.
+	if Tg != null and Tg.faction in ["chorus", "ithar"]:
+		var glow: Color = Tg.fac.damage_glow
+		for j in 5:
+			var v: Vector3 = fx.rcone(-dir, 0.8) * (1.0 + fx.rng.randf() * 3.0) * k
+			if Tg.faction == "chorus":
+				fx.spr(p, T + j * 0.03, 1.8, glow, 0.35, 0.15 * k, 1.2 * k, 20, v, 0.7)
+				fx.spr(p, T, 0.65, glow * Color(0.4, 0.5, 0.25), 0.6, 0.16 * k, 0.09 * k, 15, v * 1.4)
+			else:
+				fx.shd(p, T, 1.8, v, 0.2 * k, 0.15, 2.0, 0.3, 2.0)
+		return
 	# --- by family
 	if beam:
 		_beam_burn(fx, lk, Tg, tg, T, sustain, col, k)
@@ -1002,7 +1013,7 @@ void fragment() {
 		// the lane: chevrons running toward the target, edges faint
 		float s = UV.x * len;
 		float x = abs(UV.y * 2.0 - 1.0);
-		float chev = fract((s - x * 2.5) / 6.0 - scene_t * mix(0.6, 1.4, warn));
+		float chev = fract((s + x * 2.5) / 6.0 - scene_t * mix(0.6, 1.4, warn));
 		float band = smoothstep(0.0, 0.15, chev) * (1.0 - smoothstep(0.35, 0.5, chev));
 		float edge = exp(-pow((x - 0.92) / 0.05, 2.0)) * 0.35;
 		float fade = smoothstep(0.0, 0.05, UV.x) * (1.0 - smoothstep(0.92, 1.0, UV.x) * 0.4);

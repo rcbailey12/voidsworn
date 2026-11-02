@@ -236,7 +236,7 @@ static func shard_shape(rng: RandomNumberGenerator) -> Array:
 	var P: Array = []
 	for q in [Vector3(1, 0, 0), Vector3(-1, 0, 0), Vector3(0, 1, 0), Vector3(0, -1, 0), Vector3(0, 0, 1), Vector3(0, 0, -1)]:
 		var j = 0.5 + rng.randf() * 0.5
-		P.append(Vector3(q.x * j * (0.5 + rng.randf() * 0.6), q.y * j * 0.35, q.z * j * (0.5 + rng.randf() * 0.6)))
+		P.append(Vector3(q.x * j * (0.5 + rng.randf() * 0.6), q.y * j * 0.65, q.z * j * (0.5 + rng.randf() * 0.6)))
 	var F = [[0, 2, 4], [4, 2, 1], [1, 2, 5], [5, 2, 0], [4, 3, 0], [1, 3, 4], [5, 3, 1], [0, 3, 5]]
 	var v = PackedVector3Array()
 	var n = PackedVector3Array()

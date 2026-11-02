@@ -102,6 +102,9 @@ class Ent:
 	var ldir := Vector3.ZERO
 	var part_i := 0
 	var grow := 1.0
+	var section_damage := 1.0
+	var hit_origin := Vector3.ZERO
+	var hit_normal := Vector3.UP
 	# local refinement (r4: coarse kit plates and AI hull panels are a few big triangles, so a hole or crater smaller
 	# than a triangle could not be cut or dented): edges longer than tess within treach of the mark get split first
 	var tess := 0.0
@@ -843,10 +846,10 @@ static func compute(job: Dictionary) -> Dictionary:
 		_quad(pt, a, b, b2, a2, -inw, col)
 	for i in ents.size():
 		var E: Ent = ents[i]
-		if E.walls and not E.through:
+		if E.walls and not E.through and not job.get("organic", false):
 			_walls(parts[i], E)
 		if E.kind == K_HOLE or E.kind == K_SLOT:
-			_throat(parts[i], E)
+			_throat(parts[i], E, job.get("organic", false))
 	# conduits and spines (they read the hull's triangle mesh only), then every mesh, all here on the worker: the main
 	# thread only swaps them in (r3 showed the 8K barge's rebuild costing a long frame when the meshes were built there)
 	var t_edges := Time.get_ticks_msec() - t_ms
@@ -857,7 +860,7 @@ static func compute(job: Dictionary) -> Dictionary:
 		var E: Ent = ents[i]
 		r.seed = int(E.seed_v * 1000.0) + 5
 		var ends: Array = []
-		if E.kind == K_HOLE and E.conduits:
+		if E.kind == K_HOLE and E.conduits and not job.get("organic", false):
 			ends = conduits(hull, parts[i], E, ents, r)
 		elif E.kind == K_CLUSTER and E.style == S_ACID:
 			spines(hull, parts[i], E, E.dir, r)
@@ -1216,10 +1219,10 @@ static func _cup_tri(pt: Part, E: Ent, ents: Array, a: Vector3, b: Vector3, c: V
 
 # Frames (across the ship) and deck layers (level, when the hole faces sideways) sliced through a cavity: each slice of
 # the floor stood up as a wall to just under the skin, with a ragged top, some blown away.
-static func _throat(pt: Part, E: Ent) -> void:
+static func _throat(pt: Part, E: Ent, organic := false) -> void:
 	# An opaque recessed pocket even on thin hulls. Its back hides the far shell
 	# and its tapered walls give the discarded mouth real depth from side views.
-	var depth := maxf(E.D * 0.8, E.R * 0.22)
+	var depth := maxf(E.D, E.R * 0.55)
 	var centre := E.c - E.n * depth
 	var count := 48
 	for i in count:
@@ -1242,7 +1245,19 @@ static func _throat(pt: Part, E: Ent) -> void:
 		var d: Vector3 = ring[1]
 		var inward := (centre - (a + b) * 0.5).normalized()
 		_quad(pt, a, b, c, d, inward, Color(PART_CUP, 0.15, 0, 1))
-		_tri(pt, centre, d, c, E.n, E.n, E.n, E.n, Color(PART_CUP, 0.12, 0, 1))
+		_tri(pt, centre - E.n * E.R * 0.15, d, c, E.n, E.n, E.n, E.n, Color(PART_CUP, 0.2, 0, 1))
+		# A continuous lit torn lip, including shader cuts on coarse hull panels.
+		_tube(pt, PackedVector3Array([a + E.n * E.th, b + E.n * E.th]), E.R * 0.035, E.R * 0.028, Color(PART_LIP, 0.7, 0, 1))
+	if organic:
+		_tissue(pt, E)
+		return
+	# Structural arcs across the recessed floor prevent a featureless black disc.
+	for j in 3:
+		var pts := PackedVector3Array()
+		for k in 9:
+			var x := (k / 8.0 - 0.5) * E.R * 1.1
+			pts.append(centre + E.t1 * x + E.t2 * (j - 1) * E.R * 0.28 + E.n * E.R * (0.12 + 0.08 * sin(k * 0.7 + j)))
+		_tube(pt, pts, E.R * 0.025, E.R * 0.02, Color(PART_WALL, 0.7, 0, 1))
 
 
 static func _walls(pt: Part, E: Ent) -> void:
@@ -1451,10 +1466,10 @@ static func emitters(b: POOLS.Batch, bs: POOLS.Batch, E: Ent, ents: Array, ends:
 			b.add(q, POOLS.pack(Vector4(P.x, P.y, P.z, -20.0 + kk * 0.09), Vector4(v.x, v.y, v.z, 0.55 + r.randf() * 0.3),
 				Vector4(0.65, 0.16, 0.025, 0.45), Vector4(R * 0.06, R * 0.15, 1, r.randf()), Vector4(0.8, 0, 0, 0)))
 	var P0: Vector3 = floor_pts[0]
-	for kk in (10 if hot else 6):
+	for kk in (3 if hot else 2):
 		var v := (E.n * 1.0 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.9).normalized() * R * (0.5 + r.randf() * 0.9)
 		b.add(q, POOLS.pack(Vector4(P0.x, P0.y, P0.z, -20.0 + kk * 0.37 + r.randf() * 0.2), Vector4(v.x, v.y, v.z, 3.2),
-			Vector4(glow.r, glow.g, glow.b, 2.0), Vector4(R * 0.07, R * 0.03, 19, r.randf()), Vector4(3.9, 0, 0.3, 0)))
+			Vector4(glow.r, glow.g, glow.b, 2.0), Vector4(R * 0.025, R * 0.015, 16, r.randf()), Vector4(3.9, 0, 0.3, 0)))
 	for kk in 3:
 		var v := E.n * R * 1.4 + Vector3(0, R * 0.2, 0)
 		b.add(q, POOLS.pack(Vector4(P0.x, P0.y, P0.z, -20.0 + kk * 0.9 + r.randf() * 0.2), Vector4(v.x, v.y, v.z, 2.7),
@@ -1608,14 +1623,14 @@ static func apply(fx, s, job: Dictionary) -> void:
 	var r := RandomNumberGenerator.new()
 	for i in ents.size():
 		var E: Ent = ents[i]
-		if E.kind == K_HOLE and E.conduits and i < ends_by.size():
+		if E.kind == K_HOLE and E.conduits and i < ends_by.size() and s.faction != "chorus":
 			r.state = ends_by[i][1]
 			emitters(b, bs, E, ents, ends_by[i][0], r, glow)
 			var holder := Node3D.new()
 			holder.position = E.c + E.n * E.R * 0.35
 			s._dmg_root.add_child(holder)
 			s._hole_nodes.append(holder)
-			s._hole_lights.append(fx.light_source(holder, Vector3.ZERO, Color(0.7, 0.16, 0.025), 0.18, 0.1))
+			s._hole_lights.append(fx.light_source(holder, Vector3.ZERO, glow, 0.5, 0.18))
 	var inside = res.get("inside")
 	if inside != null:
 		var mi := MeshInstance3D.new()
@@ -1623,6 +1638,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 		mi.mesh = inside
 		var m: ShaderMaterial = fx.mat(SH.HOLE, 0)
 		m.set_shader_parameter("glow", Vector3(glow.r, glow.g, glow.b))
+		m.set_shader_parameter("wound_kind", 1 if s.faction == "chorus" else (2 if s.faction == "ithar" else 0))
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		s._dmg_root.add_child(mi)
@@ -1634,6 +1650,7 @@ static func apply(fx, s, job: Dictionary) -> void:
 		mo.mesh = skin
 		var m2: ShaderMaterial = fx.mat(SH.MARK, 1)
 		var wc: Color = s.fac.get("weapon", Color(1, 0.6, 0.3))
+		m2.set_shader_parameter("wound_kind", 1 if s.faction == "chorus" else (2 if s.faction == "ithar" else 0))
 		m2.set_shader_parameter("glow", Vector3(glow.r, glow.g, glow.b))
 		m2.set_shader_parameter("weapon", Vector3(wc.r, wc.g, wc.b))
 		mo.material_override = m2
@@ -1721,8 +1738,8 @@ static func clear_nodes(s) -> void:
 
 # The mark a hit leaves, by look and weight, at a hull point (ship frame). dir: the shot's direction (ship frame).
 # Returns the entries to add (a gauss slug makes two: the entry and the spalled exit).
-static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: Vector3, seed_v: float, faction := "", grow := 1.0) -> Array:
-	var L: float = hull.L
+static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: Vector3, seed_v: float, faction := "", grow := 1.0, section_damage := 1.0) -> Array:
+	var L: float = hull.L * (0.12 + 0.88 * pow(clampf(section_damage, 0.0, 1.0), 0.9))
 	var out: Array = []
 	var wk: float = [0.7, 0.85, 1.0, 1.25, 1.5][clampi(w, 0, 4)]
 	var g := grow
@@ -1773,6 +1790,8 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 			out.append(hole(hull, p, n, L * 0.012 * g, 1.4, 0.06, seed_v, S_HATCH))
 	for j in out.size():
 		var e: Ent = out[j]
+		if faction == "chorus" and e.kind == K_HOLE:
+			e.bend = 0.35; e.w = e.R * 0.22; e.buckle = 0.035
 		# the halo that makes it read at battle distance: at least HALO_MIN world units, grows with the weapon's weight
 		var hm: float = minf(float(HALO_MIN.get(e.style, 0.0)) * wk * sqrt(g), L * HALO_MAX_L)
 		if hm > 0.0:
@@ -1783,4 +1802,19 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 		e.ldir = dir
 		e.part_i = j
 		e.grow = g
+		e.section_damage = section_damage
+		e.hit_origin = p
+		e.hit_normal = n
 	return out
+
+
+static func _tissue(pt: Part, e: Ent) -> void:
+	# Curved wet membrane strands replace straight metal conduits and deck walls.
+	for j in 5:
+		var points := PackedVector3Array()
+		var angle := j * TAU / 5.0
+		var radial := e.t1 * cos(angle) + e.t2 * sin(angle)
+		for k in 9:
+			var t := k / 8.0
+			points.append(e.c + radial * e.R * (0.15 + 0.8 * t) - e.n * e.R * (0.5 * (1.0 - t) + 0.12 * sin(t * PI)))
+		_tube(pt, points, e.R * 0.06, e.R * 0.018, Color(PART_BONE, 0.6, 0, 1))

@@ -3,22 +3,53 @@ extends Node
 # graphics driver), and hands back the image. The shader reads full_size, strip_y0 and strip_h and maps its UV to the
 # whole picture itself (world_sky.gd BAKE, world_planet.gd BAKE).
 #
-# A finished picture is kept for the session under its key (a setting's sky or planet), so the battles of one sector bake
-# once. Headless runs (tests, parity) have no renderer: bake() returns null at once and the world falls back.
+# Finished images persist in user://world_bakes and a bounded memory cache.
+# Headless runs can load cached images but cannot bake new ones.
 
 static var _cache := {}       # key -> Image
-const CACHE_MAX := 6
+const CACHE_MAX := 12
+const CACHE_DIR := "user://world_bakes/v2"
+var _busy := false
 
+static func cache_key(key: String, code: String, params: Dictionary, size: Vector2i) -> String:
+	# Include every shader setting, dimensions and shader source for automatic invalidation.
+	var ordered := {}
+	var keys := params.keys()
+	keys.sort()
+	for name in keys: ordered[name] = params[name]
+	return var_to_str([key, code, ordered, size]).sha256_text()
+
+static func remember(key: String, img: Image) -> void:
+	if _cache.size() >= CACHE_MAX: _cache.erase(_cache.keys()[0])
+	_cache[key] = img
+	if DirAccess.make_dir_recursive_absolute(CACHE_DIR) == OK:
+		img.save_png(CACHE_DIR.path_join(key + ".png"))
 
 static func cached(key: String) -> Image:
-	return _cache.get(key, null)
+	if _cache.has(key): return _cache[key]
+	var path := CACHE_DIR.path_join(key + ".png")
+	if FileAccess.file_exists(path):
+		var img := Image.load_from_file(path)
+		if img != null and not img.is_empty():
+			if _cache.size() >= CACHE_MAX: _cache.erase(_cache.keys()[0])
+			_cache[key] = img
+			print("[world] loaded cached bake ", key)
+			return img
+	return null
 
 
 func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips: int) -> Image:
-	if _cache.has(key):
-		return _cache[key]
+	key = cache_key(key, code, params, size)
+	var existing := cached(key)
+	if existing != null: return existing
 	if DisplayServer.get_name() == "headless" or not is_inside_tree():
 		return null
+	# GPU rendering must stay on the render thread. Serialize asynchronous strips,
+	# with a small first bake and narrow full-size strips so input keeps running.
+	while _busy: await get_tree().process_frame
+	existing = cached(key)
+	if existing != null: return existing
+	_busy = true
 	var t0 := Time.get_ticks_msec()
 	var sh := Shader.new()
 	sh.code = code
@@ -54,6 +85,7 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 			img = vp.get_texture().get_image()
 			if img == null or img.is_empty():
 				vp.queue_free()
+				_busy = false
 				return null
 			if not _blank(img):
 				break
@@ -61,9 +93,8 @@ func bake(key: String, code: String, params: Dictionary, size: Vector2i, strips:
 		var h := mini(sh_h, size.y - i * sh_h)
 		full.blit_rect(img, Rect2i(0, 0, size.x, h), Vector2i(0, i * sh_h))
 	vp.queue_free()
-	if _cache.size() >= CACHE_MAX:
-		_cache.erase(_cache.keys()[0])
-	_cache[key] = full
+	remember(key, full)
+	_busy = false
 	if OS.has_environment("VS_WORLD_DUMP"):
 		full.save_jpg(OS.get_environment("VS_WORLD_DUMP").path_join(key.replace("|", "_") + ".jpg"), 0.9)
 	print("[world] baked %s %dx%d in %d ms" % [key, size.x, size.y, Time.get_ticks_msec() - t0])
