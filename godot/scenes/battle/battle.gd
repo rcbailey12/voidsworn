@@ -1950,7 +1950,8 @@ var _ui_cache := {}
 func _ui(id: String) -> Dictionary:
 	if id == "" or not _api_join():
 		return {}
-	var k := "%s|%d|%d" % [id, batches.size(), hud.log_text.get_line_count()]
+	# Rules facts change on moves and turns, even when the log and batch count do not.
+	var k := "%s|%d" % [id, api.version]
 	if not _ui_cache.has(k):
 		if _ui_cache.size() > 16:
 			_ui_cache.clear()
@@ -2996,6 +2997,7 @@ func _wings_together(evs: Array, i: int, pre: Dictionary) -> void:
 
 # F1: the enemy's turn strip: whose ship is acting and how far through their ships this round the enemy is
 func _enemy_phase(uid: String) -> void:
+	_clear_fire_feedback()
 	var total := 0
 	var done := 0
 	for u in V.get("units", []):
@@ -3044,6 +3046,12 @@ func _arrive(list: Array) -> void:
 	await get_tree().create_timer(1.6).timeout
 	if follow or mine.is_empty():
 		cam.glide(keep["t"], 0.9)
+
+
+func _clear_fire_feedback() -> void:
+	hud.show_tip("", Vector2.ZERO)
+	if hud.toast_lbl.text == "Out of range.":
+		hud.toast("")
 
 
 func _cant_fire_reason(t_id: String) -> String:
@@ -3167,6 +3175,8 @@ func _attack_tip(t_id: String) -> String:
 	var hull := 0.0
 	var sh := 0.0
 	var n := 0
+	# Same current-position weapon set as the activation card, including while a move is planned.
+	var firing := _firing_set(t_id)
 	var idx: Array = [armed] if armed >= 0 else range(su["weapons"].size())
 	for i in idx:
 		var vw: Dictionary = su["weapons"][i]
@@ -3175,12 +3185,21 @@ func _attack_tip(t_id: String) -> String:
 		quad = int(tg.get("quad", quad))
 		rear = bool(tg.get("rear", rear))
 		var right := ""
-		if float(_z0(vw.get("off"))) > 0:
+		if i in firing:
+			tg = tg.duplicate()
+			tg.merge(api.preview_fire(sel, i, t_id), true)
+			hull += float(tg.get("hull", 0))
+			sh += float(tg.get("shield", 0))
+			n += 1
+			right = "[b][color=#f0b35a]%d%%[/color][/b] [color=#7d7768]%d\u00d7%d[/color]" % [int(tg.get("hit", 0)), int(w["shots"]), int(round(float(tg.get("dmgMult", 0))))]
+		elif float(_z0(vw.get("off"))) > 0:
 			right = "[color=#e27f74]offline[/color]"
 		elif float(_z0(vw.get("cd"))) > 0:
 			right = "[color=#7d7768]reloading[/color]"
 		elif not vw["ready"]:
 			right = "[color=#7d7768]fired[/color]"
+		elif vw["kind"] == "flak":
+			right = "[color=#7d7768]point defence[/color]"
 		elif su["braced"]:
 			right = "[color=#7d7768]braced[/color]"
 		elif not tg.get("inRange", false):
@@ -3189,11 +3208,6 @@ func _attack_tip(t_id: String) -> String:
 			right = "[color=#7d7768]out of arc[/color]"
 		elif not tg.get("los", false):
 			right = "[color=#7d7768]blocked[/color]"
-		else:
-			hull += float(tg.get("hull", 0))
-			sh += float(tg.get("shield", 0))
-			n += 1
-			right = "[b][color=#f0b35a]%d%%[/color][/b] [color=#7d7768]%d\u00d7%d[/color]" % [int(tg.get("hit", 0)), int(w["shots"]), int(round(float(tg.get("dmgMult", 0))))]
 		rows += "%s  %s\n" % [str(vw["name"]), right]
 	var t := "[b][color=#e27f74]%s[/color][/b]\n[color=#b3aa95]Hull %d/%d, armor %d%%, evasion %d[/color]\n" % [str(tv["name"]), int(tv["hp"]), int(tv["maxHp"]), int(round(float(tu.get("armor", 0)) * 100.0)), int(_z0(tu.get("ev"))) + int(_z0(tu.get("evBuff")))]
 	if float(tv["shMax"]) > 0:
@@ -3202,6 +3216,8 @@ func _attack_tip(t_id: String) -> String:
 		t += "Target is unshielded: [color=#ffae42]every hit lands on the hull[/color]."
 	if rear:
 		t += " [color=#f0b35a]Rear arc: armor halved, +15% crit.[/color]"
+	if plan != null:
+		t += "\n[color=#7fc4ff]From current position (move not taken yet).[/color]"
 	t += "\n" + rows
 	if n > 0:
 		t += "Expected: about [color=#62ccff]%d shield[/color] and [color=#ffae42]%d hull[/color] damage.%s\n[color=#d0a64b]%s[/color]" % [int(round(sh)), int(round(hull)), " [color=#f0b35a]Likely kill.[/color]" if hull >= float(tv["hp"]) else "",
@@ -3414,6 +3430,8 @@ func _refresh_ui() -> void:
 		if u["active"]:
 			active = u["id"]
 	var mine: bool = api.phase == "player" and not ended
+	if not mine:
+		_clear_fire_feedback()
 	var turn := "Battle over" if ended or api.phase == "over" else ("Your turn (%d ready)" % pend if mine else "Enemy turn")
 	var end_text := "End ship (Space)"
 	if _classic():

@@ -105,6 +105,35 @@ func _hover_hex(q: int, r: int) -> void:
 	b.hud.show_tip(b._tip(), sp)
 
 
+# Compare the displayed rows with the card/panel's live rule queries, without changing rules or RNG.
+func _check_fire_tips(moment: String) -> void:
+	var trace = preload("res://scenes/battle/f1_trace.gd").new()
+	trace.b = b
+	var before: Dictionary = trace._hash()
+	var old_armed: int = b.armed
+	var count := 0
+	var ok := true
+	var fresh: Dictionary = b.api.ui_info(b.sel)
+	for w in fresh.get("weapons", []):
+		for t in w["targets"]:
+			var tid: String = t["id"]
+			var wi: int = int(w["i"])
+			# Prime/read the scene cache and require facts from this exact battle version.
+			ok = ok and b._wtarget(b.sel, wi, tid) == t
+			if not b.api.can_fire(b.sel, wi, tid):
+				continue
+			b.armed = wi
+			var tip: String = b._attack_tip(tid)
+			var odds := "%d%%" % int(b.api.preview_fire(b.sel, wi, tid)["hit"])
+			ok = ok and b._firing_set(tid) == [wi] and tip.contains(odds) and not tip.contains("out of range") and not tip.contains("out of arc")
+			count += 1
+	b.armed = old_armed
+	var after: Dictionary = trace._hash()
+	trace.free()
+	_note(ok, "%s: hover facts match live card/panel queries (%d bearing weapons)" % [moment, count])
+	_note(before == after, "%s: checking tips leaves battle state and RNG unchanged" % moment)
+
+
 func run(battle) -> void:
 	b = battle
 	dir = str(b.args.get("ui-shots", "user://ui_shots"))
@@ -122,6 +151,7 @@ func run(battle) -> void:
 		await get_tree().create_timer(0.8).timeout
 		_note(absf(b.hud.k - b.hud.scale_for(b.get_viewport().get_visible_rect().size)) < 0.01 and b.hud.log_text.get_line_count() == nlog and b.hud.card.visible and b.hud.plates.size() > 0,
 			"rebuild: scale %.2f, log lines %d (were %d), card shown %s, %d nameplates" % [b.hud.k, b.hud.log_text.get_line_count(), nlog, str(b.hud.card.visible), b.hud.plates.size()])
+	_check_fire_tips("opening")
 	# 1. the opening hand-over
 	await _shot("1_battle_start")
 	# 2. a move hex hovered: the farthest reachable hex, with its tip
@@ -188,10 +218,12 @@ func run(battle) -> void:
 		_hover_hex(int(best.q), int(best.r))
 		b._on_click()
 		await _idle()
+		_check_fire_tips("planned move")
 		_hover_hex(int(best.q), int(best.r))
 		b._on_click()
 		await _idle()
 		await get_tree().create_timer(0.5).timeout
+		_check_fire_tips("after move")
 		var t2 := ""
 		for e in b.V["units"]:
 			if e["side"] == "enemy" and not e["dead"] and not b._firing_set(e["id"]).is_empty():
@@ -209,6 +241,7 @@ func run(battle) -> void:
 			b._on_key(KEY_ESCAPE)
 			await _idle()
 	# 6. the enemy's turn: end the ship that is up
+	b.hud.toast("Out of range.")
 	b.handed_t = -9.0
 	b._on_key(KEY_SPACE)
 	var t0 := Time.get_ticks_msec()
@@ -216,7 +249,11 @@ func run(battle) -> void:
 		await get_tree().process_frame
 		if b.hud.phase.visible and b.hud.phase_lbl.text.contains("ENEMY TURN"):
 			break
+		if b.api.phase == "player" and not b.busy and not b.ending:
+			b.handed_t = -9.0
+			b._on_key(KEY_SPACE)
 	await get_tree().create_timer(0.3).timeout
+	_note(b.hud.phase_lbl.text.contains("ENEMY TURN") and b.hud.toast_lbl.text != "Out of range." and not b.hud.tip.visible, "enemy turn clears firing warning and hover tip")
 	_check("6_enemy_turn")
 	await b._snap("6_enemy_turn")
 	# let the enemy's turn finish (hurried) before quitting, so nothing is torn down mid-move

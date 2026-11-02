@@ -769,7 +769,9 @@ func banner(text: String, col := BONE, dur := 0.9) -> void:
 
 func toast(text: String) -> void:
 	toast_lbl.text = text
-	_toast_t = 2.6
+	_toast_t = 2.6 if text != "" else 0.0
+	if text == "":
+		toast_lbl.modulate.a = 0.0
 
 
 func _build_tip() -> void:
