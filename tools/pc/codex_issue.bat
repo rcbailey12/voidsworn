@@ -29,6 +29,9 @@ if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
 call "%B%\tools\pc\tmo.bat" 3600 "%APPDATA%\npm\codex.cmd" exec -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
 echo codex exit %ERRORLEVEL% >> "%O%\result.txt"
+rem Usage limit (Nov 2): leave the issue for the board to retry on a later poll instead of marking it done.
+findstr /c:"hit your usage limit" "%O%\log.txt" >nul
+if not errorlevel 1 goto :limit
 del /q CODEX_TASK.md 2>nul
 git add -A
 git diff --cached --quiet
@@ -57,3 +60,11 @@ exit /b 5
 echo could not read the issue >> "%O%\result.txt"
 popd
 exit /b 6
+:limit
+echo usage limit hit, left on the board to retry >> "%O%\result.txt"
+del /q CODEX_TASK.md 2>nul
+git checkout -q -f -- .
+git clean -fdq
+powershell -NoProfile -Command "$f=Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\board\queued.txt'; (Get-Content $f) -ne '%N%' | Set-Content $f"
+popd
+exit /b 9
