@@ -297,6 +297,8 @@ func sumFx(list: Array) -> Dictionary:
 	for fx in list:
 		if not jt(fx): continue
 		for k in fx.keys(): o[k] = z0(o.get(k)) + fx[k]
+	for k in o.keys():
+		if TB.FX_CAPS.has(k): o[k] = min(o[k], TB.FX_CAPS[k])
 	return o
 func fleetFxList() -> Array:
 	var l = []

@@ -168,7 +168,27 @@ function newCaptain(vet,fac){ const c={fac:fac||'voidsworn',name:capName(fac), x
 function shipFit(ship){ return (ship&&ship.fit)||null; }
 function newShip(tpl, vet){ const fac=factionOfTpl(tpl); const s={uid:newId(), tpl, name:shipName(fac), mk:1, hp:0, mods:[], cap:newCaptain(vet,fac)}; s.hp=derive(s).maxHp; return s; }
 
-function sumFx(list){const o={}; for(const fx of list){ if(!fx) continue; for(const k in fx) o[k]=(o[k]||0)+fx[k]; } return o;}
+// Progression step 1: ceilings on summed bonuses, not base stats or refit levels.
+// Fractions are additive bonuses (2 = +200%); aim, ev and crit use points.
+// Keep each single effect intact. Flags stop at 1; existing combat limits still apply.
+// Godot reads this same table through both table exporters.
+const FX_CAPS={
+  hpPct:2,shPct:2,regenPct:2,armor:1,dmgPct:2,
+  speed:4,turns:3,aim:50,ev:50,crit:50,hangar:6,
+  battShots:3,flakPlus:3,torpCd:3,cdMod:3,prowRange:3,lanceRange:3,longAim:6,
+  lancePct:2,torpPct:2,broadPct:2,sqPct:2,sqHp:2,rearPct:2,prowPct:2,
+  stillPct:2,huntPct:2,boardPct:2,ramPct:2,momPct:.25,critMul:1.5,
+  hullRegen:30,hullRegenPct:.25,stormRegen:1,feast:.25,
+  bracePlus:.45,lineGuard:.5,guardAura:.5,ramCap:.3,ramGuard:1,
+  ionPlus:2,ionLance:1,riposte:100,arcShort:60,chainBoom:120,fireDmg:30,
+  lineEv:20,burnEv:50,momCrit:50,taunt:8,
+  ramSplash:1,igniteCh:1,sqIgnite:1,broadIgnite:1,spread:1,
+  lastStand:1,hive:1,cmdTier:1,critSys:1,chainFire:1,pyre:1,bastion:1,
+  fireLong:1,wallBrace:1,chainSh:1,broodTithe:1,markLance:1,fade:1,endless:1,lanceSure:1
+};
+function sumFx(list){const o={}; for(const fx of list){ if(!fx) continue; for(const k in fx) o[k]=(o[k]||0)+fx[k]; }
+  // Clamp after summing so penalties offset bonuses regardless of source order.
+  for(const k in o) if(Object.prototype.hasOwnProperty.call(FX_CAPS,k)) o[k]=Math.min(o[k],FX_CAPS[k]); return o;}
 function fleetFxList(){ const l=[]; if(RUN){ for(const r of RUN.relics) if(RELICS[r]?RELICS[r].fx:unknownId('relic',r)) l.push(RELICS[r].fx); if(ADMIRALS[RUN.admiral]) l.push(ADMIRALS[RUN.admiral].fx); for(const b of (RUN.boons||[])) if(BOONS[b.id]) l.push(BOONS[b.id].fx(RARITY[b.r||0].m)); } return l; }
 // ---------- patrons and boons ----------
 function ensurePatrons(){ if(!RUN) return; if(!RUN.patrons||!RUN.patrons.length) RUN.patrons=shuffle(Object.keys(PATRONS)).slice(0,4); if(!RUN.boons) RUN.boons=[]; }

@@ -1,5 +1,8 @@
 # The campaign oracle, pinned
 
+Nov 2 2026, issue 18: re-copied core.js from this checkout for the shared
+FX_CAPS table and final-total ceilings in sumFx. Re-exported campaign tables.
+
 Nov 2 2026, onboarding follow-up: re-copied core.js, battle.js, campaign3d.js
 and campaign_meta.js from this checkout. RUN.teachingGate controls teaching
 factions, the first map preview and battle overrides. Profile adapters enable
