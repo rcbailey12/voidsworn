@@ -119,6 +119,8 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if S.get("nemesis") != null: cfg["nemesis"] = S.nemesis.duplicate(true)
 	if R.jt(S.get("verb")): cfg["verb"] = S.verb
 	if R.jt(S.get("noStar")): cfg["noStar"] = true   # R1: campaign sector 1 never fields the dead star
+	for key in ["teachingBattle", "edgeFeature", "arena"]:
+		if S.has(key): cfg[key] = S[key]
 	if S.get("alt") != null: cfg["alt"] = S.alt   # passed through untouched, so new_battle's type-safe cfg.alt!==false is what decides (s41: a Dictionary)
 	if R.jt(S.get("campaign")):
 		cfg["campaign"] = true; cfg["event_force"] = S.get("event_force"); cfg["event_war"] = S.get("event_war")
@@ -571,6 +573,18 @@ func world_info() -> Dictionary:
 func _i_world_info() -> Dictionary:
 	var B = R.B
 	return {"biome": B["biome"].duplicate(true) if B.get("biome") is Dictionary else B.get("biome"), "seed": B.get("seed"), "shape": B.get("shape"), "well": B["well"].duplicate(true) if B.get("well") is Dictionary else B.get("well")}
+
+# Presentation-only teaching context, copied under the same lock as view().
+func teaching_info() -> Dictionary:
+	_enter()
+	var run = R.RUN if R.RUN is Dictionary else {}
+	var seen = run.get("teachingBattles", [])
+	var cfg = R.B.get("cfg", {})
+	var n = cfg.get("runBattle", cfg.get("teachingBattle", max(1, seen.size())))
+	var ev = R.B.get("event")
+	var out = {"battle": n, "arrived": R.jt(run.get("teachingReinforced")), "event": ev.duplicate(true) if ev is Dictionary else null}
+	_leave(false)
+	return out
 
 # ---------------- the game's own player-side AI ----------------
 # ai_activate(id): one player ship acts on its own, as the game's battle sim plays your side (sim3d.js botUnit: the Admiral's

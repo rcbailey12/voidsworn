@@ -44,6 +44,23 @@ function fieldRepairs(n){ for(const sh of RUN.fleet){ const mx=derive(sh).maxHp;
 // v53: owner's rule, a reload replays the same node and enemy fleet. Every fight node gets a seed when the map first shows it (saved with the run);
 // battleScreen seeds the pre-battle rolls from it and hands it to startBattle, so the same saved run always rebuilds the same battle
 function nodeSeeds(nodes){ let n=0; for(const nd of nodes) if(nd&&!nd.done&&nd.seed==null&&(nd.type==='battle'||nd.type==='elite'||nd.type==='boss'||nd.type==='event')){ nd.seed=Math.floor(rnd()*4294967296)>>>0; n++; } return n; }
+function teachingBattle(cfg){
+  if(!RUN) return cfg;
+  const key=RUN.sector+':'+String(cfg.node||'event')+(cfg.eventRelic?':event':'');
+  const seen=RUN.teachingBattles=RUN.teachingBattles||[];
+  if(RUN.teachingBattleBase==null) RUN.teachingBattleBase=Math.max(0,Number.isFinite(RUN.stats&&RUN.stats.battles)?RUN.stats.battles:0);
+  let i=seen.indexOf(key); if(i<0){ i=seen.length; seen.push(key); }
+  const n=RUN.teachingBattleBase+i+1;
+  cfg=Object.assign({},cfg,{runBattle:n});
+  if(RUN.sector!==1||n>2||cfg.kind==='boss') return cfg;
+  Object.assign(cfg,{teachingBattle:n,fac:n===1?'hegemony':'corsair'});
+  if(n===1) Object.assign(cfg,{shape:'open',arena:'strip',dep:'line',edgeFeature:true});
+  return cfg;
+}
+function saveTeachingHistory(){
+  if(SAVED_RUN){ SAVED_RUN.teachingBattles=RUN.teachingBattles.slice(); SAVED_RUN.teachingBattleBase=RUN.teachingBattleBase; }
+  Persist.save(); // Preserve the existing pre-battle checkpoint, including its position.
+}
 function battleScreen(cfg){
   closeModal(); hideTip(); hideApp(); hideEnd(); const i=document.querySelector('.intro'); if(i) i.remove(); document.body.classList.remove('intro-on');
   disposeAllViews(); clearOverlays();
@@ -52,11 +69,12 @@ function battleScreen(cfg){
   const nd=cfg.node&&findNode(cfg.node); if(nd&&!nd.enc&&cfg.kind!=='boss'){ Object.assign(nd,rollEncounter(nd.type,nd.col)); if(!nd.map&&RUN.map&&RUN.map.region) nd.map=regionMap(RUN.map.region,nd.col,7); fitEncounter(nd); }
   const ro=cfg.kind==='boss'?bossEncounter():nd&&nd.enc?{enc:nd.enc,shape:nd.shape}:rollEncounter(cfg.kind,cfg.col||1);
   const c=Object.assign({map:(nd&&nd.map)||(RUN.map&&RUN.map.region&&regionMap(RUN.map.region,cfg.kind==='boss'?6:(nd?nd.col:3),7))||(cfg.kind==='boss'&&FAC_MAP[cfg.fac]?FAC_MAP[cfg.fac][0]:'random'),dep:cfg.kind==='boss'?'line':pick(['line','line','flank']),obj:ro.enc,shape:ro.shape,arch:cfg.kind!=='boss'&&nd?nd.arch:null,mod:cfg.kind!=='boss'&&nd?nd.mod:null,noStar:RUN.sector===1},cfg); // R1: no dead star in sector 1 // bosses fight on their faction's home ground
+  Object.assign(c,teachingBattle(c)); saveTeachingHistory();
   if(RUN.verbNext&&!c.verb) c.verb=RUN.verbNext; // B4: a next-battle faction verb
   const setupT0=performance.now(); startBattle(c); B.campaign=true; B.event=c.nemesis&&NEM_FAC[c.nemesis.fac]&&NEM_FAC[c.nemesis.fac].beh.strike==='reinforce'?Object.assign(rollBattleEvent(c,'reinf_enemy'),{r:3}):rollBattleEvent(c,(sectorCond()||{}).war&&c.kind!=='boss'?(rnd()<.6?'reinf_enemy':'reinf_ally'):null); prepBattle(); const setupMs=Math.round(performance.now()-setupT0); // R42: a Hegemony Nemesis always brings reinforcements in round 3 (Oct 31: this comment used to sit before the two statements and swallowed them)
-  const E=ENCOUNTERS[B.obj.type]||ENCOUNTERS.rout; document.getElementById('scenName').textContent=`Sector ${roman(RUN.sector)}: ${cfg.kind==='boss'?'flagship battle':(cfg.kind==='elite'?'elite ':'')+E.n.toLowerCase()} against ${FACTIONS[cfg.fac].n}`;
+  const E=ENCOUNTERS[B.obj.type]||ENCOUNTERS.rout; document.getElementById('scenName').textContent=`Sector ${roman(RUN.sector)}: ${cfg.kind==='boss'?'flagship battle':(cfg.kind==='elite'?'elite ':'')+E.n.toLowerCase()} against ${FACTIONS[c.fac].n}`;
   G.ctl.attract=false; G.ctl.establish(); const f=caps('player')[0]; if(f) selectUnit(f); banner(cfg.kind==='boss'?'Sector flagship':E.n); { const bn=(RUN.boons||[]).map(b=>BOONS[b.id]&&BOONS[b.id].n).filter(Boolean), bt=bn.length?` Protocols active: ${bn.slice(0,4).join(', ')}${bn.length>4?` and ${bn.length-4} more`:''}.`:''; setTimeout(()=>{ try{ if(B&&!B.over) toast((cfg.kind!=='boss'?E.d:'The sector flagship and its escort.')+(sectorCond()?' '+sectorCond().n+' in effect.':'')+bt); }catch(e){} },1400); }
-  try{ FRAMES.reset(); fxMark('setup'); }catch(e){} tel('battle_start',{cond:B.cond||null,arch:c.arch||null,mod:c.mod||null,setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:cfg.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
+  try{ FRAMES.reset(); fxMark('setup'); }catch(e){} tel('battle_start',{cond:B.cond||null,arch:c.arch||null,mod:c.mod||null,setupMs,seed:B.seed,obj:B.obj.type,shape:B.shape,kind:cfg.kind,fac:c.fac,map:B.map.map,dep:B.deployMode,alt:B.alt,fleet:RUN.fleet.map(s=>s.tpl)});
 }
 // v46.1: what the scene holds at the end of each battle, so a slow build-up across a run shows up in telemetry
 function sceneCensus(){ try{ const s=G.scene, a=s.getActiveMeshes(), act={}, all={}; for(let i=0;i<a.length;i++){ const k=a.data[i].name.replace(/[0-9_.-]+$/,''); act[k]=(act[k]||0)+1; }
@@ -66,6 +84,7 @@ function sceneCensus(){ try{ const s=G.scene, a=s.getActiveMeshes(), act={}, all
 function finishBattle(result){
   if(!B||B.finished) return; B.finished=true; hideEnd(); // v53: once per battle, and the end card goes first so it can never be tapped twice
   if(result==='loss'&&B.withdraw&&survivorsP()) result='retreat';
+  if(B.units.some(u=>u.reinf)) RUN.teachingReinforced=true;
   const cfg=B.cfg; const summary={cfg,xp:[],lost:[],kills:0,rounds:B.round,prizes:[],partial:!!B.partial,boonStats:Object.assign({},B.boonStats||{})}; const r0=runRenown();
   const wingK={}; for(const u of B.units) if(u.parent){ const p=B.units.find(x=>x.id===u.parent); if(p){ p.dealt+=u.dealt; p.kills+=u.kills; if(p.ship) wingK[p.ship.uid]=(wingK[p.ship.uid]||0)+(u.kills||0); } }
   // B4: the Nemesis learns from how you fought; a used faction verb is spent; his own fight settles here

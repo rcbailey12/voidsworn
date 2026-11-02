@@ -1,4 +1,5 @@
 node_modules/
+.onboarding_checks/
 index_test.html
 node_modules
 tools/blender/a1/__pycache__/

@@ -23,7 +23,7 @@ const BEVENTS={
   reinf_enemy:{n:'Enemy reinforcements',warn:'Long-range scan: enemy reinforcements will jump in at the start of round {r}, on their side of the field.',go:'Enemy reinforcements jump in.'},
   reinf_ally:{n:'Friendly reinforcements',warn:'Fleet command: a friendly ship will join you at the start of round {r}, on your side of the field.',go:'A friendly ship jumps in to help. It returns to its own patrol after the battle.'},
   flare:{n:'Solar flare',warn:'The star is flaring. At the start of round {r} every ship on both sides loses its shields for that round.',go:'Solar flare! Every shield on the field is down this round.'}};
-function rollBattleEvent(cfg,force){ if(!cfg||cfg.kind==='boss') return null; if(!force&&rnd()>.45) return null; return {k:force&&BEVENTS[force]?force:pick(Object.keys(BEVENTS)),warnR:2,r:ri(3,4)}; }
+function rollBattleEvent(cfg,force){ if(!cfg||cfg.teachingBattle===1||cfg.kind==='boss') return null; if(cfg.teachingBattle===2) force='reinf_enemy'; if(!force&&rnd()>.45) return null; return {k:force&&BEVENTS[force]?force:pick(Object.keys(BEVENTS)),warnR:2,r:ri(3,4)}; }
 function edgeHex(side){ const bb=boardBounds(), mr=Math.floor((bb.r0+bb.r1)/2), occ=occMap(), c=side==='player'?bb.c0+1:bb.c1-1; let best=null,bd=1e9;
   for(const h of boardHexes()){ const hc=h.q+Math.floor(h.r/2); if(Math.abs(hc-c)>1||blocks(terr(h.q,h.r))||occ.has(hkey(h.q,h.r))) continue; const d=Math.abs(h.r-mr)+Math.abs(hc-c)*.5; if(d<bd){bd=d;best=h;} } return best; }
 function cheapHull(fac){ const F=FACTIONS[fac]||FACTIONS.voidsworn; return F.roster.filter(id=>HULLS[id]&&!HULLS[id].boss&&HULLS[id].ab!=='launch').sort((a,b)=>(HULLS[a].cp||1)-(HULLS[b].cp||1)||HULLS[a].hp-HULLS[b].hp)[0]||F.roster[0]; }
@@ -205,6 +205,12 @@ function genTerrain(map,shape,opt){
       if(holes.length){ SOLID=new Set(); VOID.holes=holes.map(comp=>{ comp.forEach(k=>SOLID.add(k)); const ds=VOID.deadstar&&comp.includes(VOID.deadstar.q+','+VOID.deadstar.r);
           return {cells:comp.map(k=>k.split(',').map(Number)),kind:ds?'deadstar':pick(opt.pieces||['asteroid','asteroid','station','moon','hulk','comet'])}; }); } } }
   const T={}, kinds=['belt','station','planet','storm','graveyard']; const m=kinds.includes(map)?map:pick(kinds); TERRAIN_META={map:m};
+  // First teaching fight: one connected feature at the top edge, clear of both fleets.
+  if(opt.edgeFeature){ const hs=boardHexes().filter(h=>onBoard(h.q,h.r)), r=Math.min(...hs.map(h=>h.r))+1, c=offToAx(Math.floor(BW/2),r);
+    const feature=opt.enc==='defend'?'station':'rock';
+    for(const h of [c,{q:c.q+1,r:c.r},{q:c.q,r:c.r+1}]) if(onBoard(h.q,h.r)) T[hkey(h.q,h.r)]=feature;
+    if(feature==='station') TERRAIN_META.station=c;
+    TERRAIN_META.shape='open'; return T; }
   const put=(h,t)=>{ if(onBoard(h.q,h.r)&&!T[hkey(h.q,h.r)]) T[hkey(h.q,h.r)]=t; };
   const blob=(type,n,c0,c1,r0=1,r1=BH-2)=>{ let cur=offToAx(ri(c0,c1),ri(r0,r1)); for(let k=0;k<n;k++){ put(cur,type); const d=pick(DIRS); cur={q:cur.q+d[0],r:cur.r+d[1]}; } };
   const all=boardHexes(), col=h=>h.q+Math.floor(h.r/2), mid=offToAx(Math.floor(BW/2),Math.floor(BH/2));
@@ -301,7 +307,7 @@ function startBattle(cfg){
   const seed=cfg.seed!=null?(cfg.seed>>>0):Math.floor(rnd()*4294967296); rndSeed(seed);
   const enc=ENCOUNTERS[cfg.obj]?cfg.obj:'rout', midR=Math.floor(BH/2);
   let shape=SHAPES[cfg.shape]?cfg.shape:'open', map=enc==='defend'?'station':cfg.map;
-  if(shape==='open'&&B0small(cfg)&&['rout','hunt','ambush'].includes(enc)) shape='compact'; // small fleets fight in close quarters
+  if(shape==='open'&&!cfg.edgeFeature&&B0small(cfg)&&['rout','hunt','ambush'].includes(enc)) shape='compact'; // small fleets fight in close quarters
   if(!['belt','station','planet','storm','graveyard'].includes(map)&&FAC_MAP[cfg.fac]&&rnd()<.55) map=pick(FAC_MAP[cfg.fac]); // each faction has home ground
   if((shape==='lanes'||shape==='ring')&&map==='belt') map=pick(['station','planet','storm','graveyard']);
   // v47 arenas and approaches: only the strip has a fixed left-to-right axis; squares and round fields bring the fleets in at an angle, crossing or in a pincer
@@ -312,7 +318,7 @@ function startBattle(cfg){
   if(ak!=='strip'&&AXIS_SHAPES.includes(shape)) shape=pick(cfg.noStar?['open','dense','shoals','archipelago','colossus','ring']:['open','dense','deadstar','shoals','archipelago','colossus','ring']);
   let approach=null; if(ak==='square') approach={k:rnd()<.6?'diagonal':'cross'}; else if(ak==='round') approach={k:rnd()<.4?'headon':rnd()<.5?'cross':'pincer'};
   if(approach){ approach.th=ak==='square'?(approach.k==='diagonal'?(rnd()<.5?1:-1)*(Math.PI/4+(rnd()-.5)*.35):(rnd()<.5?0:Math.PI/2)*(rnd()<.5?1:-1)):rnd()*Math.PI*2; if(cfg.approach) approach.k=cfg.approach; }
-  const topt={cond:cfg.kind==='boss'?null:sectorCond(),stationAt:enc==='defend'?offToAx(9+CX,midR):null,enc,pieces:{belt:['asteroid','asteroid','comet','station'],graveyard:['hulk','hulk','station','asteroid'],planet:['moon','moon','asteroid','station'],station:['station','station','hulk','asteroid'],storm:['comet','asteroid','asteroid','moon']}[map]||null};
+  const topt={edgeFeature:!!cfg.edgeFeature,cond:cfg.kind==='boss'?null:sectorCond(),stationAt:enc==='defend'?offToAx(9+CX,midR):null,enc,pieces:{belt:['asteroid','asteroid','comet','station'],graveyard:['hulk','hulk','station','asteroid'],planet:['moon','moon','asteroid','station'],station:['station','station','hulk','asteroid'],storm:['comet','asteroid','asteroid','moon']}[map]||null};
   let T=null; for(let k=0;k<6;k++){ T=genTerrain(map,shape,topt); if(terrainConnected(T)) break; T=null; }
   if(!T){ shape='open'; T=genTerrain(map,'open',topt); }
   if(cfg.kind==='boss') for(const k of Object.keys(T)) if(T[k]==='rock'&&rnd()<.45) delete T[k]; // flagship duels need firing lanes, not a maze

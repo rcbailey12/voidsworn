@@ -32,6 +32,7 @@ const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
 const KEY_COL := Color(1.0, 0.96, 0.90)
 const FILL_DIR := Vector3(0.6, -0.2, 0.75)
 const FILL_COL := Color(0.55, 0.65, 0.85)
+const Teaching := preload("res://ui/campaign/campaign_tips.gd")
 const PlayLog := preload("res://scenes/battle/play_log.gd")
 # F1: move hexes are blue (board.gd REACH_*: a colour no terrain uses); targets red; a target that would bear from the
 # planned hex orange; the targeted enemy white-hot
@@ -54,16 +55,15 @@ const MOVE_ROT := [0.6, 1.1]
 const MOVE_SQUAD := 0.35
 const MOVE_CRUISE := 0.8      # a hull cruises a hex in this share of its hex time; building and bleeding speed fill the rest
 const TIPS := [
-	["start", "Your fleet", "The game hands you one ship at a time: the one marked UP, with the gold ring. Blue hexes show where it can move, and the fans show its firing arcs. The card at the bottom says what it can still do."],
-	["turns", "Turns alternate", "You and the enemy take turns one ship at a time: activate one of yours, then the enemy activates one of theirs, until every ship has acted. Then a new round starts."],
-	["select", "Moving and facing", "Click a blue hex to plan a move: a ghost of the ship shows where it will end up and which way it will face. Click the same hex again (or Enter) to go; Esc drops the plan. A move can't be taken back once made. Q and E turn in place. Moving matters: a ship that ends its activation in the same hex is easier to hit (enemies get +10), and turning in place does not count. Moving 3 or more hexes makes it harder to hit (−5). Bracing cancels the sitting-still penalty."],
-	["move", "Shields and hull", "The cyan bars on the ship panel are its shields: four facings that soak hits and recharge each turn. Amber is hull: damage that stays. Keep your strongest shield facing the enemy."],
-	["target", "Firing", "Enemies you can hit have a red ring. Click one to target it: the odds and expected damage show. Click it again (or Enter) to fire every weapon that bears. Clicking an enemy never fires by itself. Keys 1 to 6 pick a single weapon."],
-	["fired", "Alternating activations", "Each ship acts once per round. When this ship is done, press End ship (Space) and the enemy moves one of theirs. A ship with nothing left to do ends by itself."],
-	["resolve", "Admiral's Command", "Your admiral's signature move is ready: it glows gold in the top bar. You get it once per battle. It grows each round you wait and when you lose a ship, so pick your moment."],
-	["close", "Close action", "Ramming speed (X) charges the first enemy dead ahead. Boarding (G) sends crews into an adjacent enemy; win and the ship is yours."],
-	["threat", "Threat map", "Before you end a move, check where the enemy can reach. Press R, or Threat in the top bar, to shade every hex their guns can hit next turn: the darker the hex, the more damage is waiting there."],
-	["objective", "Objectives", "Not every fight is a slugging match. The top bar shows this fight's goal."],
+	["select", "Moving and facing", "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship stays put, takes less damage, and does not take the +10, but it cannot move or fire again this turn."],
+	["target", "Firing", "The red ring means this enemy can be hit from where your ship sits. Click it once to see the hit chance and the damage expected. Click again to fire every gun that bears. Keys 1 to 6 fire one gun at a time."],
+	["fired", "Taking turns", "Sides take turns, one ship at a time, until every ship has acted. That is one round. Press Space to end this ship early, or Tab for the next ship. A ship with nothing left to do ends itself."],
+	["move", "Shields and hull", "The cyan bars are shields, one for each side of the ship. Shields soak hits and come back each round. The amber bar is hull. Hull damage stays until you pay for repairs. Keep your strongest shield side facing the guns."],
+	["threat", "Threat map", "Press R for the threat map. It shades every hex enemy guns can reach next turn. Darker means more damage waiting there."],
+	["reinforce_warn", "More ships are coming", "More enemy ships are on their way. They arrive at the map edge, and a banner will name the ship and flash where it came in. A new arrival acts in the turn order like any other ship."],
+	["close", "Close action", "Up close you have two more attacks. Press X to ram an enemy dead ahead. Press G to board an enemy next to your ship. Win a boarding and the ship is yours for the rest of the fight."],
+	["resolve", "Admiral's Command", "Your admiral's Command is ready. It fires once per battle, and it grows stronger each round you wait, and when you lose a ship. The button glows gold while it is ready."],
+	["objective", "Objectives", "The bar at the top shows this fight's goal. When the goal is not wiping the enemy out, doing the goal wins the fight even if enemy ships are left."],
 ]
 
 var args := {}
@@ -114,6 +114,14 @@ var ended := false
 var fired_in_act := {}     # unit id -> weapons fired this activation (volley pace)
 var tips := {}
 var tips_off := false
+var tip_pending := ""
+var tip_current := ""
+var tip_dismissed := {}
+var tip_slot := ""
+var tip_shown_slots := {}
+var tip_handed := false
+var tip_enemy_done := false
+var tip_shot := false
 var bot := false
 var bot_t := 0.0
 var bot_moved := {}
@@ -478,6 +486,15 @@ func _begin(a) -> void:
 	tail_round = -1
 	chime_round = -1
 	plog = PlayLog.new()
+	tip_pending = ""
+	tip_current = ""
+	tip_dismissed.clear()
+	tip_slot = ""
+	tip_shown_slots.clear()
+	tip_handed = false
+	tip_enemy_done = false
+	tip_shot = false
+	hud.hide_tipcard()
 	adaptation_heard = false
 	_ghost_clear()
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
@@ -1091,6 +1108,7 @@ func _play_batch(bt: Dictionary) -> void:
 				j += 1
 			var tf := game_t
 			await _play_fire(e, grp)
+			_tip_completed(e)
 			if enemy:
 				pace_kind["fire"] = float(pace_kind.get("fire", 0.0)) + game_t - tf
 				speed = base_speed * _round_budget_k(float(pace_enemy.get(int(V.get("round", 0)), 0.0)) + game_t - t_batch - float(move_s_round.get(int(V.get("round", 0)), 0.0)))
@@ -1100,6 +1118,7 @@ func _play_batch(bt: Dictionary) -> void:
 			continue
 		var te := game_t
 		await _play_event(e)
+		_tip_completed(e)
 		if e["t"] == "round" and not arrivals.is_empty():
 			await _arrive(arrivals)
 			arrivals = []
@@ -1112,6 +1131,7 @@ func _play_batch(bt: Dictionary) -> void:
 	if not arrivals.is_empty():
 		await _arrive(arrivals)
 	if enemy:
+		tip_enemy_done = true
 		var ta := game_t
 		await wait(float(PACE["aiEnd"]))
 		pace_kind["aiEnd"] = float(pace_kind.get("aiEnd", 0.0)) + game_t - ta
@@ -2016,8 +2036,11 @@ func _usable(u: Dictionary) -> bool:
 
 
 func select(id: String, how := "pick") -> void:
+	if id != sel:
+		tip_slot = "%s:player:%s" % [str(V.get("round", 1)), id]
 	var su: Dictionary = VU.get(id, {})
 	if api != null and api.phase == "player" and _usable(su):
+		tip_handed = true
 		plog.open(su, int(V.get("round", 0)), how)   # a different ship picked before acting closes the last entry as "switched"
 	sel = id
 	inspect = ""
@@ -2632,6 +2655,7 @@ func _next_ship(how := "tab") -> void:
 	if nid == sel:
 		hud.toast("No other ship is ready this round.")
 		return
+	_tip_retire("fired", "next_ship")
 	select(nid, how)
 	up_idx = _fleet_index(nid)
 	handed_t = Time.get_ticks_msec() / 1000.0
@@ -2671,6 +2695,7 @@ func _end_ship(how: String) -> void:
 		return
 	var active := _active_id()
 	var id := sel
+	_tip_retire("fired", "end_ship")
 	if _classic():
 		_cmd(func(): api.end_turn(); return true)
 	elif active == "" and sel != "" and _usable(_sel_unit()):
@@ -2905,6 +2930,7 @@ func _after_batches() -> void:
 		if lu.is_empty() or lu.get("dead", false):
 			plog.close("died")
 		elif lu.get("activated", false):
+			_tip_retire("fired", "activation_complete")
 			plog.close("rules")
 	if target != "" and (not VU.has(target) or VU[target]["dead"]):
 		target = ""
@@ -2930,6 +2956,7 @@ func _hand_over() -> void:
 		if _fleet_index(id) > up_idx:
 			pick = id
 			break
+	tip_handed = true
 	select(pick, "auto")
 	up_idx = _fleet_index(pick)
 	handed_t = Time.get_ticks_msec() / 1000.0
@@ -3320,13 +3347,10 @@ func _on_action(name: String, arg) -> void:
 			_save_opts()
 			_refresh_ui()
 		"tip_ok":
-			tips[str(arg)] = true
-			hud.hide_tipcard()
-			_save_opts()
-			_tutorial()
+			_tip_dismiss("got_it")
 		"tip_off":
+			_tip_dismiss("off")
 			tips_off = true
-			hud.hide_tipcard()
 			_save_opts()
 		"command":
 			# the game asks for a second tap to confirm the once-per-battle Command
@@ -3391,7 +3415,7 @@ func _open_menu() -> void:
 	items.append(["Movement: %s" % movement, "opt", "movement"])
 	items.append(["Follow enemy activations: %s" % ("on" if follow else "off"), "opt", "follow"])
 	items.append(["Cut-ins: %s" % {"key": "key moments", "all": "every attack", "off": "off"}.get(cine, cine), "opt", "cine"])
-	items.append(["Battle tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
+	items.append(["Teaching tips: %s" % ("off" if tips_off else "on"), "opt", "tips"])
 	items.append(["Reduce flashing: %s" % ("on" if reduce_flashing else "off"), "opt", "flash"])
 	items.append(["Screen shake: %s" % ("full" if shake_scale >= 1.0 else ("reduced" if shake_scale > 0.0 else "off")), "opt", "shake"])
 	items.append(["Threat map: %s" % ("on" if threat_on else "off"), "opt", "threat"])
@@ -3424,6 +3448,7 @@ func _toggle_opt(k: String) -> void:
 			option_changed.emit("cine", cine)
 		"tips":
 			tips_off = not tips_off
+			if tips_off: _tip_dismiss("off")
 			option_changed.emit("tips", not tips_off)
 		"flash":
 			set_fx_opts(not reduce_flashing, shake_scale)
@@ -3619,6 +3644,7 @@ func _card_info() -> Dictionary:
 func _play_log_out(res: String) -> void:
 	if showcase:
 		return
+	_tip_dismiss("battle_end")
 	var pl: Dictionary = plog.summary(res, int(V.get("round", 0)), pace_enemy)
 	result["play"] = pl
 	if bot:
@@ -4004,54 +4030,99 @@ func _float_hit(id, sh: float, hull: float, crit) -> void:
 
 # ---------------------------------------------------------------- onboarding (ui3d.js tutorialCheck)
 
+func _tip_log(kind: String, id: String, why := "") -> void:
+	plog.teaching(kind, id, int(V.get("round", 0)), tip_slot, why)
+
+
+func _tip_retire(id: String, why: String) -> void:
+	if bot or showcase or tips.has(id): return
+	tips[id] = true
+	if tip_pending == id: tip_pending = ""
+	_tip_log("retire", id, why)
+	_save_opts()
+
+
+func _tip_dismiss(why: String) -> void:
+	if tip_current == "": return
+	var id := tip_current
+	_tip_log("dismiss", id, why)
+	tip_dismissed[id] = true
+	if why == "got_it" and id not in Teaching.ACTION_IDS: tips[id] = true
+	tip_current = ""
+	hud.hide_tipcard()
+	_save_opts()
+
+
+# Only completed rules events count, never a click, a preview, or a rejected command.
+func _tip_completed(e: Dictionary) -> void:
+	var kind := str(e.get("t", ""))
+	if kind == "activation":
+		tip_slot = "%s:%s:%s" % [str(V.get("round", 1)), str(e.get("side", "")), str(e.get("unit", ""))]
+	var id := str(e.get("unit", ""))
+	if _side(id) != "player" or _is_wing(id): return
+	if kind == "move" or (kind == "order" and e.get("order") == "brace"):
+		_tip_retire("select", kind)
+	if kind in ["fire", "torpedo"]:
+		tip_shot = true
+		_tip_retire("target", "shot_resolved")
+	if kind in ["ram", "board"]: _tip_retire("close", kind)
+
+
 func _tutorial() -> void:
-	if tips_off or bot or ended or hud.tipcard != null or V.is_empty() or not _api_join():
-		return
-	var s := _sel_unit()
-	var moved := false
-	var fired := false
+	if tips_off or bot or showcase or ended or not tip_handed or hud.tipcard != null or V.is_empty() or not _api_join(): return
+	var info: Dictionary = api.teaching_info()
+	var battle_n := int(info.get("battle", 1))
 	var targets := false
-	for u in V["units"]:
-		if u["side"] == "player" and not u["dead"]:
-			var ru = api.unit(u["id"])
-			if ru != null and float(ru["mp"]) < float(_z0(ru.get("speed"))):
-				moved = true
-			for w in ru["weapons"]:
-				if _jt(w.get("fired")):
-					fired = true
-	if not s.is_empty() and _usable(s):
-		for e in V["units"]:
-			if e["side"] == "enemy" and not e["dead"] and not _firing_set(e["id"]).is_empty():
-				targets = true
+	for u in V.get("units", []):
+		if u["side"] != "player" or u["dead"] or u.get("squadron", false) or u["activated"]: continue
+		for w in _ui(str(u["id"])).get("weapons", []):
+			for t in w.get("targets", []):
+				if t.get("can", false): targets = true
 	var close := false
-	if not s.is_empty() and api.unit(sel) != null:
+	if sel != "" and not _sel_unit().is_empty():
 		var cu := _ui(sel)
 		close = cu.get("ram") != null or not (cu.get("board", []) as Array).is_empty()
-	var cond := {"start": true, "turns": true, "threat": int(V["round"]) >= 2, "select": not s.is_empty(), "move": moved, "target": targets, "fired": fired, "close": close,
-		"resolve": api.has_method("can_command") and api.can_command(),
-		"objective": V.get("obj") != null and str(V["obj"].get("type", "rout")) != "rout"}
+	var ev = info.get("event")
+	var warn: bool = ev is Dictionary and ev.get("k") in ["reinf_enemy", "reinf_ally"] and not ev.get("done", false) and int(ev.get("r", 0)) == int(V["round"]) + 1 and not info.get("arrived", false)
+	var cond := {"select": tip_handed, "target": targets, "fired": tip_shot, "move": tip_enemy_done,
+		"threat": int(V["round"]) >= 2, "reinforce_warn": battle_n >= 2 and warn, "close": battle_n >= 2 and close,
+		"resolve": battle_n >= 3 and api.has_method("can_command") and api.can_command(),
+		"objective": battle_n >= 3 and V.get("obj") != null and str(V["obj"].get("type", "rout")) != "rout"}
+	# One waiting condition only. It keeps its place until the next available activation.
+	if tip_pending == "":
+		for t in TIPS:
+			if not tips.has(t[0]) and not tip_dismissed.has(t[0]) and cond.get(t[0], false):
+				tip_pending = t[0]
+				break
+	if tip_pending == "" or busy or warming or opening or tip_slot == "" or tip_shown_slots.has(tip_slot): return
 	for t in TIPS:
-		if not tips.has(t[0]) and cond.get(t[0], false):
+		if t[0] == tip_pending:
+			tip_current = tip_pending
+			tip_pending = ""
+			tip_shown_slots[tip_slot] = true
 			hud.show_tipcard(t[0], t[1], t[2])
+			_tip_log("show", t[0])
 			return
 
 
 func _load_opts() -> void:
-	var p := "user://battle_opts.json"
-	if FileAccess.file_exists(p):
-		var o = JSON.parse_string(FileAccess.get_file_as_string(p))
-		if o is Dictionary:
-			tips = o.get("tips", {})
-			tips_off = bool(o.get("tipsOff", false))
-			user_speed = float(o.get("speed", 1.0))
+	var o := Teaching.load_opts()
+	tips = o["tips"]
+	tips_off = bool(o.get("tipsOff", false))
+	var sp = o.get("speed", 1.0)
+	user_speed = float(sp) if (sp is int or sp is float) and is_finite(float(sp)) and float(sp) > 0.0 else 1.0
+	Teaching.save_opts({})
+	_sync_teaching_switch()
+
+
+func _sync_teaching_switch() -> void:
+	tips_off = Teaching.is_off()
 	if args.has("no-tips") or args.has("shots") or args.has("breach-shots") or args.has("f1-trace") or args.has("ui-shots"):
 		tips_off = true
 
 
 func _save_opts() -> void:
-	var f := FileAccess.open("user://battle_opts.json", FileAccess.WRITE)
-	if f != null:
-		f.store_string(JSON.stringify({"tips": tips, "tipsOff": tips_off, "speed": user_speed}))
+	Teaching.save_opts({"tips": tips, "tipsOff": tips_off, "speed": user_speed})
 
 
 # ---------------------------------------------------------------- the bot (both sides on AI, for test runs)

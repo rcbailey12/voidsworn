@@ -1,0 +1,145 @@
+Final onboarding verification
+Node 22.11.0; Godot 4.7.2
+
+Rules s1: 138 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s2: 155 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s3: 144 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s4: 322 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s5: 369 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s6: 206 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s7: 400 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s8: 191 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s9: 423 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s10: 229 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s11: 153 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s12: 179 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s13: 200 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s14: 119 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s15: 168 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s16: 255 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s17: 159 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s18: 234 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s19: 246 records identical (state hash and PRNG state after every action, activation and round), result: end none
+Rules s20: 140 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s21: 214 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s22: 157 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s23: 580 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s24: 488 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s25: 292 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s26: 200 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s27: 277 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s28: 285 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s29: 127 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s30: 331 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s31: 193 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s32: 75 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s33: 208 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s34: 162 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s35: 198 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s36: 185 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s37: 269 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s38: 330 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s39: 546 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s40: 315 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s41: 185 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s42: 154 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s43: 194 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s44: 102 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s45: 172 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s46: 106 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s47: 125 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s48: 119 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+Rules s49: 57 records identical (state hash and PRNG state after every action, activation and round), result: end win
+Rules s50: 123 records identical (state hash and PRNG state after every action, activation and round), result: end loss
+RULES PARITY PASS: 50/50
+
+PRNG 1001: PASS, 10000 draws
+PRNG 7: PASS, 10000 draws
+PRNG 4242424242: PASS, 10000 draws
+Math: PASS, 316090 inputs
+Threat s4: PASS
+Threat s19: PASS
+Threat s23: PASS
+hard stop check: PASS (battle config fac must name a faction, got <null>: the battle cannot be set up)
+thread test s4: PASS (over after round 6, 958 events, 59 reads during enemy steps on a worker)
+thread test s23: PASS (over after round 9, 1483 events, 95 reads during enemy steps on a worker)
+
+Campaign 1: PASS: 194 steps identical, ended with "end"
+Campaign 2: PASS: 70 steps identical, ended with "end"
+Campaign 3: PASS: 181 steps identical, ended with "end"
+Campaign 4: PASS: 222 steps identical, ended with "end"
+Campaign 5: PASS: 114 steps identical, ended with "end"
+Campaign 6: PASS: 176 steps identical, ended with "end"
+Campaign 7: PASS: 195 steps identical, ended with "end"
+Campaign 8: PASS: 169 steps identical, ended with "end"
+Campaign 9: PASS: 228 steps identical, ended with "end"
+Campaign 10: PASS: 181 steps identical, ended with "end"
+Campaign 11: PASS: 20 steps identical, ended with "end"
+Campaign 12: PASS: 48 steps identical, ended with "end"
+Campaign 13: PASS: 49 steps identical, ended with "end"
+Campaign 14: PASS: 210 steps identical, ended with "end"
+Campaign 15: PASS: 181 steps identical, ended with "end"
+Campaign 16: PASS: 214 steps identical, ended with "end"
+Campaign 17: PASS: 162 steps identical, ended with "end"
+Campaign 18: PASS: 204 steps identical, ended with "end"
+Campaign 19: PASS: 107 steps identical, ended with "end"
+Campaign 20: PASS: 181 steps identical, ended with "end"
+Campaign 21: PASS: 174 steps identical, ended with "end"
+Campaign 22: PASS: 187 steps identical, ended with "end"
+Campaign 23: PASS: 189 steps identical, ended with "end"
+Campaign 24: PASS: 226 steps identical, ended with "end"
+Campaign 25: PASS: 234 steps identical, ended with "end"
+Campaign 26: PASS: 205 steps identical, ended with "end"
+Campaign 27: PASS: 247 steps identical, ended with "end"
+Campaign 28: PASS: 226 steps identical, ended with "end"
+Campaign 29: PASS: 30 steps identical, ended with "end"
+Campaign 30: PASS: 184 steps identical, ended with "end"
+CAMPAIGN PARITY PASS: 30/30
+
+PASS: shared options preserve history, speed and unrelated fields
+PASS: shared switch does not alter the battle speed
+PASS: capture and test no-tips override still wins
+PASS: deployment targets cannot pre-empt the first hand-over card
+PASS: first hand-over shows Moving and facing
+PASS: dismissal alone does not retire an action card
+PASS: same activation holds just one pending card
+PASS: pending target card shows on next activation
+PASS: completed movement retires select after dismissal
+PASS: resolved shot retires target and earns Taking turns
+PASS: returning to an earlier activation cannot show another card
+PASS: Taking turns follows the resolved shot
+PASS: Shields and hull follows completed enemy activation
+PASS: round two earns Threat map
+PASS: battle one suppresses close and Command
+PASS: warning appears one round before scheduled arrival
+PASS: battle two teaches available close action
+PASS: resolved boarding retires Close action
+PASS: battle three permits ready Command
+PASS: non-rout battle teaches Objectives
+PASS: F1 play log contains shows, dismissals and retirements
+PASS: campaign tables load
+PASS: map preview names the first teaching enemy
+PASS: map preview names the second teaching enemy
+PASS: campaign pins first two unique fights and preserves reload identity
+PASS: first fight suppresses arrivals, second forces enemy arrival
+PASS: later fights keep their generated faction
+PASS: battle count advances through bosses and sectors without re-pinning enemies
+PASS: saving teaching history preserves the pre-battle reload checkpoint
+PASS: first map opens one card
+PASS: dismissing map permits the clock exception
+PASS: ordinary cards cannot stack on one screen opening
+PASS: reward screen delivers its own card
+PASS: card off link silences all teaching cards
+PASS: shared off flag suppresses campaign cards
+PASS: campaign map switch re-enables cards
+PASS: campaign card events reach existing telemetry
+ONBOARDING PASS
+
+All 135 non-TIPS tables unchanged: PASS
+Headless parse of all 12 changed/added .gd: PASS
+Exact approved browser and Godot copy; pinned source copies: PASS
+Playlog reporter tests and JS syntax: PASS
+Actual HUD card rendering, 15 cards plus campaign map toggle: PASS
+50-seed opening edge feature check: PASS (minimum remaining cells 1, no empty features)
+git diff --check: PASS
+No commit. All generated Godot user data stayed in this checkout.

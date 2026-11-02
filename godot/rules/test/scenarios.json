@@ -1638,5 +1638,51 @@
    "b_drone",
    "b_drone"
   ]
+ },
+ "s49": {
+  "note": "First teaching fight: generated Hegemony fleet, open edge feature even with two ships, no arrival even at war.",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "vex",
+  "seed": 47047,
+  "sector": 1,
+  "obj": "rout",
+  "map": "open",
+  "fac": "hegemony",
+  "col": 0,
+  "fleet": [
+   "harrow",
+   "warden"
+  ],
+  "teachingBattle": 1,
+  "edgeFeature": true,
+  "arena": "strip",
+  "campaign": true,
+  "event_war": true
+ },
+ "s50": {
+  "note": "Second teaching fight: generated Hullbreakers and a guaranteed enemy arrival even when a flare is requested.",
+  "shape": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "bot": "full",
+  "admiral": "vex",
+  "seed": 47047,
+  "sector": 1,
+  "obj": "rout",
+  "map": "open",
+  "fac": "corsair",
+  "col": 0,
+  "fleet": [
+   "harrow",
+   "warden"
+  ],
+  "teachingBattle": 2,
+  "campaign": true,
+  "event_force": "flare"
  }
 }

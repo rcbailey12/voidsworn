@@ -774,6 +774,12 @@ func equivHull(tpl, fac) -> Variant:
 	return a
 func nodeFaction(n) -> String:
 	var main = RUN["map"]["fac"]
+	if float(RUN["sector"]) == 1.0 and n["type"] in ["battle", "elite"]:
+		var seen = RUN.get("teachingBattles", [])
+		var old = seen.find(numstr(RUN["sector"]) + ":" + str(n["id"]))
+		var base = RUN.get("teachingBattleBase", z0(RUN.get("stats", {}).get("battles")))
+		var i = float(base) + (seen.size() if old < 0 else old)
+		if i < 2: return "hegemony" if i == 0 else "corsair"
 	if not jt(RUN.get("foes")) or n["type"] != "battle": return main
 	var h = 0
 	for ch in (String(n["id"]) + numstr(RUN["sector"])): h = (h * 31 + ch.unicode_at(0)) & 0xFFFFFFFF
@@ -782,7 +788,8 @@ func nodeFaction(n) -> String:
 
 # ---------------- battle.js helpers the campaign uses ----------------
 func rollBattleEvent(cfg, force) -> Variant:
-	if cfg == null or cfg.get("kind") == "boss": return null
+	if cfg == null or cfg.get("teachingBattle") == 1 or cfg.get("kind") == "boss": return null
+	if cfg.get("teachingBattle") == 2: force = "reinf_enemy"
 	if not jt(force) and rnd() > 0.45: return null
 	var k = force if (jt(force) and BEVENTS.has(force)) else pick(BEVENTS.keys())
 	return {"k": k, "warnR": 2, "r": ri(3, 4)}
@@ -932,6 +939,7 @@ func genSector(s: int) -> Dictionary:
 		for n in col:
 			n["map"] = regionMap(region, n["col"], COLS); fitEncounter(n, s)
 	var biome = rollBiome(region)
+	if s == 1: cols[0][0]["shape"] = "open"
 	return {"fac": fac, "cols": cols, "edges": edges, "cond": cond, "region": region, "biome": biome}
 func sectorCond() -> Variant:
 	if RUN == null or RUN.get("map") == null: return null
@@ -2476,6 +2484,27 @@ func nodeSeeds(nodes: Array) -> int:
 		if nd != null and not jt(nd.get("done")) and nd.get("seed") == null and _is(nd, ["battle", "elite", "boss", "event"]):
 			nd["seed"] = floor(rnd() * 4294967296.0); n += 1
 	return n
+func teachingBattle(cfg: Dictionary) -> Dictionary:
+	if RUN == null: return cfg
+	var key = numstr(RUN["sector"]) + ":" + str(or_(cfg.get("node"), "event")) + (":event" if jt(cfg.get("eventRelic")) else "")
+	if not (RUN.get("teachingBattles") is Array): RUN["teachingBattles"] = []
+	if RUN.get("teachingBattleBase") == null:
+		var won = RUN.get("stats", {}).get("battles", 0)
+		RUN["teachingBattleBase"] = max(0, int(won)) if (won is int or won is float) and is_finite(float(won)) else 0
+	var seen = RUN["teachingBattles"]
+	var i = seen.find(key)
+	if i < 0: i = seen.size(); seen.append(key)
+	var n = int(RUN["teachingBattleBase"]) + i + 1
+	cfg = cfg.duplicate(); cfg["runBattle"] = n
+	if float(RUN["sector"]) != 1.0 or n > 2 or cfg.get("kind") == "boss": return cfg
+	cfg["teachingBattle"] = n; cfg["fac"] = "hegemony" if n == 1 else "corsair"
+	if n == 1: cfg.merge({"shape": "open", "arena": "strip", "dep": "line", "edgeFeature": true}, true)
+	return cfg
+func saveTeachingHistory() -> void:
+	if SAVED_RUN != null:
+		SAVED_RUN["teachingBattles"] = RUN["teachingBattles"].duplicate()
+		SAVED_RUN["teachingBattleBase"] = RUN["teachingBattleBase"]
+	persist_save() # Preserve the existing pre-battle checkpoint, including its position.
 func battleScreen(cfg: Dictionary) -> void:
 	close_modal()
 	var sn = findNode(cfg["node"]) if jt(cfg.get("node")) else null
@@ -2504,6 +2533,8 @@ func battleScreen(cfg: Dictionary) -> void:
 		"arch": nd.get("arch") if (cfg["kind"] != "boss" and nd != null) else null, "mod": nd.get("mod") if (cfg["kind"] != "boss" and nd != null) else null,
 		"noStar": float(RUN["sector"]) == 1.0}   # R1: no dead star in sector 1
 	c.merge(cfg, true)
+	c = teachingBattle(c)
+	saveTeachingHistory()
 	if jt(RUN.get("verbNext")) and not jt(c.get("verb")): c["verb"] = RUN["verbNext"]   # B4: a next-battle faction verb
 	var ext = battle_mode == "external" and battle_setup.is_valid()
 	start_battle(c)
@@ -2565,6 +2596,7 @@ func finishBattle(result: String) -> void:
 	if B == null or jt(B.get("finished")): return
 	B["finished"] = true
 	if result == "loss" and jt(B.get("withdraw")) and B["units"].any(func(u): return u["side"] == "player" and not jt(u.get("dead")) and not jt(u.get("isSq"))): result = "retreat"
+	if B["units"].any(func(u): return jt(u.get("reinf"))): RUN["teachingReinforced"] = true
 	var cfg = B["cfg"]
 	var summary = {"cfg": cfg, "xp": [], "lost": [], "kills": 0, "rounds": B["round"], "prizes": [], "partial": jt(B.get("partial")), "boonStats": or_(B.get("boonStats"), {}).duplicate()}
 	var wingK = {}

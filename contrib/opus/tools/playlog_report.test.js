@@ -53,6 +53,13 @@ try {
   const empty = report({ battles: [] });
   assert.ok(empty.includes('Battles played: 0.'));
   assert.ok(!empty.includes('NaN'));
+  const teaching = report({ battles: [{ source: 'tips', log: { tips: [
+    { k: 'show', id: 'select', r: 1, at: 50 }, { k: 'dismiss', id: 'select', r: 1, at: 100 },
+    { k: 'retire', id: 'select', r: 1, why: 'move', at: 200 }] } }],
+    campaignTips: [{ k: 'show', id: 'c_map', screen: 'map|1', t: 300 }] });
+  assert.ok(teaching.includes('Shows: 2; dismissals: 1; action retirements: 1.'));
+  assert.ok(teaching.includes('| retire | select | move |'));
+  assert.ok(teaching.includes('| map\\|1 | show | c_map |'));
   const trimmed = { ...summary }; delete trimmed.acts;
   assert.ok(report({ battles: [{ source: 'old', log: trimmed }] }).includes('Activation details not retained.'));
   const even = report({ battles: [{ source: 'even', log: { ...battle, acts: [battle.acts[0], battle.acts[1]] } }] });

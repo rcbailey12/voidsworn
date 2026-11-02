@@ -640,23 +640,88 @@ ACT.begin=()=>{ SFX.init(); { const it=document.querySelector('.intro'); if(it) 
 
 // ---------- onboarding: one tip at a time, each shown once ----------
 const TIPS=[
-  ['start','Your fleet','Select one of your ships: it has a green ring underneath. Gold hexes show where it can move, and the fans show its firing arcs.'],
-  ['turns','Turns alternate','You and the enemy take turns one ship at a time: activate one of yours, then the enemy activates one of theirs, until every ship has acted. Then a new round starts.'],
-  ['select','Moving and facing','Hover a gold hex to preview the move: the ghost shows where you will end up and which way you will face. Q and E turn in place. Moving matters: a ship that ends its activation in the same hex is easier to hit (enemies get +10), and turning in place does not count. Moving 3 or more hexes makes it harder to hit (\u22125). Bracing cancels the sitting-still penalty. Some factions bend these numbers; the ship panel shows each ship\'s own.'],
-  ['move','Shields and hull','The cyan bars on the ship panel are its shields: four facings that soak hits and recharge each turn. The shield bubble itself glows in its faction\'s colour. Amber is hull: damage that stays. Keep your strongest shield facing the enemy.'],
-  ['target','Firing','Enemies you can hit have a pulsing red ring. Hover one for hit odds and expected damage, then click to fire every weapon that bears. Keys 1 to 6 pick a single weapon.'],
-  ['fired','Alternating activations','Each ship acts once per round. When this ship is done, press End activation (Enter) and the enemy moves one of theirs.'],
-  ['resolve','Admiral\'s Command','Your admiral\'s signature move is ready: it glows gold on the strip. You get it once per battle. It grows each round you wait and when you lose a ship, so pick your moment.'],
-  ['close','Close action','Ramming speed (X) charges the first enemy dead ahead. Boarding (G) sends crews into an adjacent enemy; win and the ship is yours.'],
-  ['threat','Threat map','Before you end a move, check where the enemy can reach. Press R, or Threat in the top bar, to shade every hex their guns can hit next turn: the darker the hex, the more damage is waiting there.'],
-  ['objective','Objectives','Not every fight is a slugging match. The top bar shows this fight\u2019s goal; tap the map chip under it for the full rules and what the coloured hexes mean.'],
+  [
+    "select",
+    "Moving and facing",
+    "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship stays put, takes less damage, and does not take the +10, but it cannot move or fire again this turn."
+  ],
+  [
+    "target",
+    "Firing",
+    "The red ring means this enemy can be hit from where your ship sits. Click it once to see the hit chance and the damage expected. Click again to fire every gun that bears. Keys 1 to 6 fire one gun at a time."
+  ],
+  [
+    "fired",
+    "Taking turns",
+    "Sides take turns, one ship at a time, until every ship has acted. That is one round. Press Space to end this ship early, or Tab for the next ship. A ship with nothing left to do ends itself."
+  ],
+  [
+    "move",
+    "Shields and hull",
+    "The cyan bars are shields, one for each side of the ship. Shields soak hits and come back each round. The amber bar is hull. Hull damage stays until you pay for repairs. Keep your strongest shield side facing the guns."
+  ],
+  [
+    "threat",
+    "Threat map",
+    "Press R for the threat map. It shades every hex enemy guns can reach next turn. Darker means more damage waiting there."
+  ],
+  [
+    "reinforce_warn",
+    "More ships are coming",
+    "More enemy ships are on their way. They arrive at the map edge, and a banner will name the ship and flash where it came in. A new arrival acts in the turn order like any other ship."
+  ],
+  [
+    "close",
+    "Close action",
+    "Up close you have two more attacks. Press X to ram an enemy dead ahead. Press G to board an enemy next to your ship. Win a boarding and the ship is yours for the rest of the fight."
+  ],
+  [
+    "resolve",
+    "Admiral's Command",
+    "Your admiral's Command is ready. It fires once per battle, and it grows stronger each round you wait, and when you lose a ship. The button glows gold while it is ready."
+  ],
+  [
+    "objective",
+    "Objectives",
+    "The bar at the top shows this fight's goal. When the goal is not wiping the enemy out, doing the goal wins the fight even if enemy ships are left."
+  ],
+  [
+    "c_map",
+    "The sector map",
+    "This is the sector map. Pick a stop on a connected lane and work toward the boss at the end. Stops are fights, events, rest stops, and shipyards. There is at least one elite fight on a route you can choose: harder enemies, better rewards. You cannot visit every stop, so choose."
+  ],
+  [
+    "c_clock",
+    "The Nemesis clock",
+    "Every jump moves the clock at the top. When it runs out, the Nemesis catches up and the fights ahead get harder. Side stops pay, but they cost jumps."
+  ],
+  [
+    "c_reward",
+    "Rewards",
+    "Winning pays credits, and offers salvage: guns and parts you can fit at a shipyard. Sometimes you can claim a beaten enemy ship instead. If your fleet is full, a claimed ship is scrapped for credits on the spot. Rerolls are not free: when one is offered, it costs credits."
+  ],
+  [
+    "c_shipyard",
+    "Repair and refit",
+    "Here you spend credits to repair hull damage, refit (swap guns and parts between your ships), and buy ships. After a boss fight you also regroup here: repair, upgrade, or buy before the next sector."
+  ],
+  [
+    "c_loss",
+    "The next run",
+    "The run is over, and that is expected. Losing teaches your faction: renown, core progress, and what your admiral learned all carry into the next run. Your ships and credits do not."
+  ],
+  [
+    "c_tree",
+    "Your admiral's skill tree",
+    "Spend experience on your admiral's skill tree between runs. Heat is a difficulty you choose: each point of Heat gives +2 experience to the admiral you fly and +1 to your faction's shared pool, and makes the run harder."
+  ]
 ];
-function tutorialCheck(){ try{ if(!B||B.showcase||B.over||document.body.classList.contains('app-on')||document.querySelector('.intro')) return; const o=META.opts=META.opts||{}; if(o.tipsOff) return; o.tips=o.tips||{};
+function tutorialCheck(){ try{ if(!B||B.showcase||B.over||document.body.classList.contains('app-on')||document.querySelector('.intro')) return; const o=META.opts=META.opts||{}; if(o.tipsOff) return; o.tips=o.tips||{}; o.tips.start=1; o.tips.turns=1;
   if(document.getElementById('tipcard')) return; const s=B.sel, me=alive('player');
   const cond={start:true, turns:true, threat:(B.round||1)>=2, select:!!s, move:me.some(x=>!x.isSq&&x.mp<x.speed), target:OV.targets&&OV.targets.length>0, fired:me.some(x=>x.weapons.some(w=>w.fired)),
     resolve:canCommand('player'), close:!!s&&!s.isSq&&(!!ramInfo(s)||boardTargets(s).length>0), objective:B.obj&&B.obj.type!=='rout'};
   const t=TIPS.find(([id])=>!o.tips[id]&&cond[id]); if(!t) return;
-  const el=document.createElement('div'); el.id='tipcard'; el.className='hud tipcard'; el.innerHTML=touchWords(`<h4>${t[1]}</h4><p>${t[2]}</p><div class="row"><button class="primary" data-act="tipOk" data-arg="${t[0]}">Got it</button><button data-act="tipOff">Hide tips</button></div>`);
+  const el=document.createElement('div'); el.id='tipcard'; el.className='hud tipcard'; el.innerHTML=touchWords(`<h4>${t[1]}</h4><p>${t[2]}</p><div class="row"><button class="primary" data-act="tipOk" data-arg="${t[0]}">Got it</button><button data-act="tipOff">Turn off all tips</button></div>`);
   document.getElementById('stage').appendChild(el); stackTop(); }catch(e){} }
 ACT.tipOk=id=>{ const o=META.opts=META.opts||{}; o.tips=o.tips||{}; o.tips[id]=1; try{ Persist.saveLocal(); }catch(e){} const el=document.getElementById('tipcard'); if(el) el.remove(); setTimeout(tutorialCheck,400); };
 ACT.tipOff=()=>{ const o=META.opts=META.opts||{}; o.tipsOff=true; try{ Persist.saveLocal(); }catch(e){} const el=document.getElementById('tipcard'); if(el) el.remove(); };
