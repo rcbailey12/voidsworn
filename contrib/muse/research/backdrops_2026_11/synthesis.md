@@ -2,7 +2,7 @@
 
 Chair synthesis of four blind legs (DeepSeek, Qwen, Argon, blind Rey), all run from the same evidence pack built from main on Nov 2, 2026. The complaint under study is FINDINGS R76: planets look awful next to the ships, the station reads as a blob, debris looks basic next to the improved asteroids, and a background asteroid can read bigger than the planet. Verdict: GO. Every part of the complaint has a code level cause and a bounded fix, and none of the fixes touch owner ruled ship framing.
 
-Restoration note (issue 53): the version of this synthesis merged in PR #52 was truncated inside section 2, losing sections 3 to 6. This file is the complete text: sections 3 to 6 were rebuilt from the four filed legs and the chair settlements recorded in sections 2 and 7, and the Owner rulings section was added. Nothing in sections 1, 2, 7, or 8 changed.
+Restoration note (issue 53): the version of this synthesis merged in PR #52 was cut off inside section 2, losing sections 3 to 6. This file is the complete text: sections 3 to 6 were rebuilt from the four filed legs and the chair settlements recorded in sections 2 and 7, and the Owner rulings section was added. Nothing in sections 1, 2, 7, or 8 changed.
 
 ## 1. Reference study (merged, chair wording)
 
