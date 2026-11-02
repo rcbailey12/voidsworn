@@ -1,8 +1,21 @@
 # Voidsworn (Embers of the Hollow Sun): handoff (updated Nov 1, 2026, 01:30 CDT)
 
-## 0. Status at Nov 1, 2026 (read this first)
+## 0. Status at Nov 1, 2026, 19:15 CDT (read this first)
 
-**Current phase: the feel pass** ([contrib/opus/briefs/feel_pass_2026-11-01.md](contrib/opus/briefs/feel_pass_2026-11-01.md)). Ryan played the Godot game for the first time on Nov 1 (FINDINGS R65) and ruled that battle feel comes before more playtest data (R64). Seven streams: F1 turn flow, board and play log; F2 movement; F3 effects at distance; F4 backdrops and asteroids; A4 ships in game plus the H4 rebuild; R1 rules fix batch plus re-pins; P Hullbreaker and Glasswright redesign. Done = a new exe Ryan plays. The planning doc behind it: [contrib/opus/next_phase_recommendation_2026_10_31.md](contrib/opus/next_phase_recommendation_2026_10_31.md) (its section 7 decisions are now answered in R64).
+**How we work now (Ryan, Nov 1 19:11):** Claude's weekly usage is low until about Nov 6, so Claude is the orchestrator and final reviewer only. Coding, tests and read-heavy reports go to **Codex** on Ryan's PC (tools/pc/codex_run.bat; the flow is in contrib/opus/briefs/feel_pass_2026-11-01.md, "Codex worker"; Ryan's ChatGPT plan has plenty of room). Multi-model research, drafting and reviews go to **Muse** (Ryan pastes a brief from contrib/opus/briefs/muse_*.md; Muse runs its models and commits to contrib/muse/). Claude writes briefs, reviews patches and shots, runs parity, and signs off. Launch a Claude helper only for visual work that needs repeated PC captures, and keep it lean. Helper transcripts that grow too large cannot be resumed: launch a takeover instead.
+
+**Current phase: the feel pass** ([contrib/opus/briefs/feel_pass_2026-11-01.md](contrib/opus/briefs/feel_pass_2026-11-01.md)), from Ryan's first Godot playtests (FINDINGS R64 to R72).
+
+**Done on main:** turn flow and play log (F1), movement twice as slow and smooth (F2, R67: enemy at Ryan's pace), effects rounds 1 and 2 (F3; hollow interiors partly addressed), backdrops and asteroids (F4), board look C as default (R72), ships painted for real plus the 28-ship rebuild and H4 livery (A4), rules batch steps 13 and 14 with re-pins (R1: Codex five, confirmed bugs, boon fix, no dead star in sector 1, Daybreak speed 2, no Decapitation for bosses), the playtest "everything unlocked" switch (R69), varied portraits for all six factions (P, R68), screen layout fix and Credits (ui/4935f72), naming lint, one runner for all standing checks (contrib/opus/tools/run_all_checks.js, 16 PASS), the coverage triage of 572 review files. Exe e991dc6 is on Ryan's PC; a rebuild with the layout fix is in progress.
+
+**Open, in order:**
+1. Ryan's playtest tonight on the rebuilt exe. Read it with contrib/opus/tools/playlog_report.js (Codex job cx_plog1) on %APPDATA%\Godot\app_userdata\Voidsworn\play_logs.
+2. Codex batch 2, results in build_b on the PC (cx_plog1, cx_gap1, cx_ion1, cx_txt1, cx_lore1, cx_mc1): review, apply, commit. cx_ion1 changes rules: re-pin oracles and run parity on the PC after.
+3. Board look C refinement (Claude helper, docs/shots/board/).
+4. After the playtest: a destruction-focused effects pass (Muse research brief muse_2026-11-01_destruction_research.md first), the hover-tip range mismatch in battle.gd _tip, balance with the Monte Carlo runner plus play data (Grax 49% boss sim, Crusade 47.5%), the Eclipse battleship hull, verified review gaps, Hegemony belly darker (Ryan's call), 4K frame budget, Godot save fixtures. Hullbreaker portraits round 2 is on the backlog (R71).
+5. Then the progression phase (contrib/opus/briefs/progression_next_2026-11-01.md): per-faction design packages first; Muse drafts them from muse_2026-11-01_faction_packages.md for Ryan's review. Glasswrights get a full rework there.
+
+**PC rules learned today:** jobs wait while the game is open (Codex jobs excepted); never put |, &, < or > in job arguments (a4_rbs2 hung lane A; it still sits harmlessly in queue\running); re-sending a file to the same PC path can deliver a stale copy, so stage from a fresh folder and check the size; Ryan's main monitor is 4K and the game opens maximised there.
 
 **The game:** *Embers of the Hollow Sun* (repo name voidsworn). The Godot 4 port is the product; the browser JS game is the rules oracle and is frozen except for rules fixes. Lore round 8 is approved and rolled out everywhere (R59 to R61).
 
@@ -203,5 +216,5 @@ None blocking. He weighs in next at:
 
 Starter line:
 ```
-Read HANDOFF.md section 0 and contrib/opus/briefs/feel_pass_2026-11-01.md in github.com/rcbailey12/voidsworn (main), then FINDINGS R64 and R65. We're in the feel pass for Embers of the Hollow Sun: check each stream's progress, run their PC jobs, show me shots, then build the playtest exe.
+Read HANDOFF.md section 0 in github.com/rcbailey12/voidsworn (main), then contrib/opus/briefs/feel_pass_2026-11-01.md and FINDINGS R64 to R72. You are orchestrator and final reviewer only: send coding to Codex on my PC, research and drafting to Muse, and review what comes back. Start with the open list in section 0.
 ```
