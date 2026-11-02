@@ -4,4 +4,6 @@ set "S=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\voidsworn_watcher
 if exist "%S%" (del "%S%" & echo Done. The test runner no longer starts by itself.) else (echo It was already off.)
 set "C=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\voidsworn_codex_board.bat"
 if exist "%C%" (del "%C%" & echo Done. The Codex board watcher no longer starts by itself.)
+set "L=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\voidsworn_watcher_b.bat"
+if exist "%L%" (del "%L%" & echo Done. The second test runner no longer starts by itself.)
 pause
