@@ -27,9 +27,10 @@ shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + "%NOISE%" + """
 uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
-// step 2: where the gas may be. Each texel holds how far that point is from the middle of the nearest hex of this
-// terrain (hex metric: 0 at a centre, 1 at the flat edge), so the gas fills its own hexes and never spills out, and the
-// noise below wears its edge into soft, irregular shapes (no hex outline)
+// step 2: where the gas may be. Each texel holds (r) a soft round field summed over this terrain's hexes (1 near a hex
+// centre, falling to about a fifth at its edge; neighbours merge into one body) and (g) the distance to the nearest
+// hex's middle (hex metric: 1 at its flat edge), a hard stop so the gas never spills out of its hexes. The noise wears
+// the round field into soft, irregular shapes: no hex outline and no hex-shaped blobs
 uniform sampler2D mask_tex : filter_linear, repeat_disable;
 uniform vec4 mask_box = vec4(0.0, 0.0, 1.0, 1.0);   // xz of the texture's corner, 1 / its size
 uniform vec3 c_dark = vec3(0.10, 0.06, 0.20);
@@ -54,21 +55,22 @@ void vertex() {
 	vW = (INV_VIEW_MATRIX * c).xyz;
 	POSITION = PROJECTION_MATRIX * c;
 }
-float hexd(vec2 xz) { return texture(mask_tex, (xz - mask_box.xy) * mask_box.zw).r; }
+vec2 foot_at(vec2 xz) { return texture(mask_tex, (xz - mask_box.xy) * mask_box.zw).rg; }
 void fragment() {
 	float r = length(vQ);
 	if (r > 1.0) { discard; }
 	// the patch's footprint first (one texture read), so most of a puff that hangs outside costs nothing
-	float hd = hexd(vW.xz);
+	float hd = foot_at(vW.xz).g;
 	if (hd > 1.0) { discard; }
 	vec3 p = vW * 0.075 + vec3(TIME * 0.012, TIME * 0.004, TIME * 0.007);
 	float w = wfbm3(p * 0.55 + 4.0);
 	float n = wfbm3(p + vec3(w) * 0.9);
 	// the footprint read again through a slow warp, so its edge bends and frays instead of following the hexes
 	vec2 wv = vec2(w - 0.5, wfbm3(p * 0.4 - 7.0) - 0.5) * 9.0;
-	float hw = hexd(vW.xz + wv);
-	float edge = 0.5 + 0.47 * smoothstep(0.25, 0.75, n);   // where the field is dense the gas reaches further out
-	float foot = (1.0 - smoothstep(edge - 0.32, edge, hw)) * (1.0 - smoothstep(0.82, 1.0, hd));
+	float fw = foot_at(vW.xz + wv).r;
+	// the noise lowers or raises the bar the round field must clear, so the edge wanders well inside the hexes
+	float bar = 0.62 - 0.55 * smoothstep(0.3, 0.75, n);
+	float foot = smoothstep(bar, bar + 0.3, fw) * (1.0 - smoothstep(0.8, 1.0, hd));
 	// thinner near the top and bottom of the layer, so it reads as a body of gas, not a slab
 	float layer = smoothstep(-6.5, -2.5, vW.y) * (1.0 - smoothstep(3.0, 8.5, vW.y));
 	// a broad, flat-topped puff: the overlap of many hides each puff's own round edge, the field and footprint give the shape
@@ -98,10 +100,11 @@ void fragment() {
 				vec3 dd = vW - f.xyz;
 				float g = exp(-dot(dd, dd) / 260.0) * f.w;
 				// the flash lights the gas round the bolt; it never whitens it (step 2: no white blob)
-				col += bolt * g * 0.9 * (0.35 + 0.65 * smoothstep(0.35, 0.7, n));
+				// (r1 on the PC: at 0.9 the whole storm read lavender most of the time, some bolt is nearly always lit)
+				col += bolt * g * 0.32 * smoothstep(0.4, 0.75, n);
 			}
 		}
-		col = min(col, vec3(0.75, 0.8, 1.0));
+		col = min(col, vec3(0.5, 0.5, 0.8));
 	}
 	ALBEDO = col;
 	ALPHA = clamp(a * gain_a, 0.0, 0.85);
@@ -279,11 +282,13 @@ func _gas(ps: Array, storm: bool) -> void:
 	add_child(mi)
 
 
-# the patch's footprint as a small float texture over its hexes: each texel holds the hex distance (0 at a hex centre, 1
-# at its flat edge, 2 and more outside) to the nearest hex of the patch; returns [texture, Vector4(x0, z0, 1/w, 1/h)]
+# the patch's footprint as a small two-channel float texture over its hexes (one texel per world unit): r the soft
+# round field (a Gaussian round each hex centre, summed), g the hex distance to the nearest hex centre (0 at a centre, 1
+# at its flat edge, 2 and more outside); returns [texture, Vector4(x0, z0, 1/w, 1/h)]
 func _mask(ps: Array) -> Array:
 	const HIN := 8.660254          # a hex's inner radius (corner radius 10, board.gd HS)
-	const STEP := 1.0              # world units per texel
+	const STEP := 1.0
+	const SIG2 := 42.0             # the round field's spread (squared): about a fifth of a hex centre's strength at its edge
 	var lo := Vector2(1e9, 1e9)
 	var hi := Vector2(-1e9, -1e9)
 	for p in ps:
@@ -294,21 +299,24 @@ func _mask(ps: Array) -> Array:
 	var w := int(ceil((hi.x - lo.x) / STEP)) + 1
 	var h := int(ceil((hi.y - lo.y) / STEP)) + 1
 	var f := PackedFloat32Array()
-	f.resize(w * h)
-	f.fill(2.0)
+	f.resize(w * h * 2)
+	for j in w * h:
+		f[j * 2] = 0.0
+		f[j * 2 + 1] = 2.0
 	for p in ps:
 		var c := Vector2((p as Vector3).x, (p as Vector3).z)
-		var x0 := int((c.x - 12.0 - lo.x) / STEP)
-		var z0 := int((c.y - 12.0 - lo.y) / STEP)
-		for zi in range(maxi(z0, 0), mini(z0 + int(24.0 / STEP) + 2, h)):
+		var x0 := int((c.x - 14.0 - lo.x) / STEP)
+		var z0 := int((c.y - 14.0 - lo.y) / STEP)
+		for zi in range(maxi(z0, 0), mini(z0 + int(28.0 / STEP) + 2, h)):
 			var dz := absf(lo.y + zi * STEP - c.y)
-			for xi in range(maxi(x0, 0), mini(x0 + int(24.0 / STEP) + 2, w)):
+			for xi in range(maxi(x0, 0), mini(x0 + int(28.0 / STEP) + 2, w)):
 				var dx := absf(lo.x + xi * STEP - c.x)
+				var j := (zi * w + xi) * 2
+				f[j] += exp(-(dx * dx + dz * dz) / SIG2)
 				var d := maxf(dx, 0.5 * dx + 0.8660254 * dz) / HIN
-				var j := zi * w + xi
-				if d < f[j]:
-					f[j] = d
-	var img := Image.create_from_data(w, h, false, Image.FORMAT_RF, f.to_byte_array())
+				if d < f[j + 1]:
+					f[j + 1] = d
+	var img := Image.create_from_data(w, h, false, Image.FORMAT_RGF, f.to_byte_array())
 	return [ImageTexture.create_from_image(img), Vector4(lo.x - 0.5 * STEP, lo.y - 0.5 * STEP, 1.0 / (w * STEP), 1.0 / (h * STEP))]
 
 

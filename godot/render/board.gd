@@ -130,14 +130,15 @@ void fragment() {
 			k = mix(1.0, far_k, smoothstep(near_r, far_r, distance(wp.xz, focus.xz)));
 		} else if (mode == 1) {
 			// step 2: the holo grid reaches further from the ship that is up (it showed only a few hexes round it), and
-			// further again as the camera pulls back; past that only the hex corners stay, faintly, out to the board's edge
+			// further again as the camera pulls back (r1 on the PC: faint corner ticks out to the board's edge read as tiles
+			// over the sky, so past the fade there is nothing)
 			float cd = distance(CAMERA_POSITION_WORLD, focus);
 			float sc = clamp(cd / 220.0, 1.0, 1.6);
 			float kf = 1.0 - smoothstep(55.0 * sc, 175.0 * sc, distance(wp.xz, focus.xz));
 			float kc = 1.0 - smoothstep(12.0, 52.0, distance(wp.xz, cursor.xz));
 			float e = min(vuv.x, 1.0 - vuv.x);
 			float tick = 1.0 - smoothstep(0.07, 0.2, e);
-			k = max(max(kf, 0.85 * kc) * mix(0.3, 1.0, tick), 0.1 * tick);
+			k = max(kf, 0.85 * kc) * mix(0.3, 1.0, tick);
 			k *= 1.0 + 0.9 * smoothstep(0.95, 1.0, sin(dot(wp.xz, vec2(0.018, 0.03)) - TIME * 0.9));
 		} else if (mode == 2) {
 			k = (1.0 - smoothstep(9.0, 30.0, distance(wp.xz, cursor.xz))) * 0.9;
