@@ -109,7 +109,11 @@ check('ROS-2 and ROS-3 every hull variant that drops a gun or the ability says s
   const V = T.HULL_VARIANTS; return /null cannon instead of two/.test(V.d_harvester_t.d) && /in place of the two prow lances/.test(V.i_song_w.d) && /Trades its spine volley/.test(V.b_razor_s.d)
     && /no Launch squadron ability/.test(V.h_vanguard_g.d) && /no Launch squadron ability/.test(V.c_hulk_g.d); });
 check('h_repair is named and described for what it does (free repairs only)', () => T.HEAT.h_repair.n === 'Thin repair crews' && /Shipyard repairs are unaffected/.test(T.HEAT.h_repair.d));
-check('FS-2 the Eclipse price table has a battleship key above its cruiser', () => T.FAC_PRICE.deathless.Battleship > T.FAC_PRICE.deathless.Cruiser);
+check('FS-2 the Eclipse cp6 battleship costs 590, above its 415-credit cruiser (balance v2)', () => {
+  // No Eclipse battleship exists yet. Price the ruled cp6 hull with the shipyard rounding in data.js.
+  const base = Math.round((60 * 6 + 10) / 5) * 5;
+  const cost = Math.round(base * T.FAC_PRICE.deathless.Battleship / 5) * 5;
+  return cost === 590 && T.HULLS.d_harvester.cost === 415 && cost > T.HULLS.d_harvester.cost; });
 
 // ---------- the confirmed-bug list ----------
 check('TXT-8 the decommission label shows what the button pays, never NaN', () => {
