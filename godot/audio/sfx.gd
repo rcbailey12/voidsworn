@@ -1,4 +1,5 @@
 extends Node
+signal cue_started(name: String, options: Dictionary)
 const HUDRes := preload("res://ui/battle/hud.gd")
 # The game's sound (sfx.js) in Godot: the same cue table (cues.json, rendered from sfx.js by build/render_synth.js), the
 # same recorded clips (clips/, converted from sfx_data.js) and the same synth takes (synth/, rendered offline from the
@@ -25,6 +26,11 @@ var _amb: AudioStreamPlayer
 var _bed: AudioStreamPlayer
 const BED_GAIN := 0.0411      # render_ambient_bed.py prints it: the browser's bed level (0.065) over the file's normalising
 var cam: Camera3D
+var _pending_generation := 0
+var _cancelled_tags := {}
+var _beat := false
+var _ambient_duck_until := 0.0
+var _ambient_duck := 0.0
 
 
 func _ready() -> void:
@@ -48,6 +54,13 @@ func _ready() -> void:
 			if s != null:
 				a.append(s)
 		synth[k] = a
+		for variant in cues[k].get("variants", {}):
+			var va: Array = []
+			for f in cues[k]["variants"][variant].get("synth", []):
+				var vs := _load("res://audio/synth/" + f)
+				if vs != null:
+					va.append(vs)
+			synth[k + ":" + variant] = va
 	print("[sfx] %d cues, %d clip sets, loaded in %d ms" % [cues.size(), clips.size(), Time.get_ticks_msec() - t0])
 	set_volume(vol)
 
@@ -77,11 +90,23 @@ func _buses() -> void:
 	var lim := AudioEffectHardLimiter.new()
 	lim.ceiling_db = -1.0
 	AudioServer.add_bus_effect(m, lim)
+	# SFX volume must not change or mute the music on Master.
+	AudioServer.add_bus(1)
+	AudioServer.set_bus_name(1, "music_duck")
+	AudioServer.set_bus_send(1, "Master")
+	for k in ["sfx", "battle_sfx", "death"]:
+		AudioServer.add_bus()
+		var i := AudioServer.bus_count - 1
+		AudioServer.set_bus_name(i, k)
+		AudioServer.set_bus_send(i, "sfx" if k in ["battle_sfx", "death"] else "Master")
+	var music := AudioServer.get_bus_index("music")
+	if music >= 0:
+		AudioServer.set_bus_send(music, "music_duck")
 	for k in BUSES:
 		var i := AudioServer.bus_count
 		AudioServer.add_bus(i)
 		AudioServer.set_bus_name(i, k)
-		AudioServer.set_bus_send(i, "Master")
+		AudioServer.set_bus_send(i, "sfx" if k == "ui" else "battle_sfx")
 		AudioServer.set_bus_volume_db(i, linear_to_db(BUSES[k]))
 		if SENDS.has(k):
 			# the game's short dark reverb send
@@ -95,9 +120,14 @@ func _buses() -> void:
 
 
 func set_volume(v: float) -> void:
+	if not is_finite(v):
+		return
 	vol = clampf(v, 0.0, 1.0)
 	var g := 0.62 * pow(vol, 1.6) if on else 0.0
-	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(g, 1e-5)) + 2.0)
+	var i := AudioServer.get_bus_index("sfx")
+	if i >= 0:
+		AudioServer.set_bus_volume_db(i, linear_to_db(maxf(g, 1e-5)) + 2.0)
+		AudioServer.set_bus_mute(i, not on or vol <= 0.001)
 
 
 func set_on(v: bool) -> void:
@@ -115,7 +145,7 @@ func _pick(arr: Array, key: String):
 	return arr[ix]
 
 
-func _layers(name: String, cue: Dictionary) -> Array:
+func _layers(name: String, cue: Dictionary, variant := "") -> Array:
 	var out: Array = []
 	var sampled := false
 	var sl = null
@@ -125,11 +155,18 @@ func _layers(name: String, cue: Dictionary) -> Array:
 			if not a.is_empty():
 				out.append({"st": _pick(a, L["s"]), "g": float(L["g"]), "r": float(L["r"]), "d": float(L["d"]), "pj": float(L["pj"]) if L["pj"] != null else float(cue["spj"])})
 				sampled = true
+				if L.has("end_rate"):
+					out[-1]["end_rate"] = L["end_rate"]
 		elif L.has("syn"):
 			sl = L
 	var sy: Array = synth.get(name, [])
 	if not sy.is_empty() and (not sampled or sl != null):
 		out.append({"st": _pick(sy, name), "g": float(sl["g"]) if sampled else 1.0, "r": 1.0, "d": 0.0, "pj": float(cue["pj"])})
+	if cue.get("variants", {}).has(variant):
+		var vc: Dictionary = cue.duplicate()
+		vc.merge(cue["variants"][variant], true)
+		vc.erase("variants")
+		out.append_array(_layers(name + ":" + variant, vc))
 	return out
 
 
@@ -142,7 +179,7 @@ func play(name: String, o := {}) -> void:
 	if not on or not cues.has(name):
 		return
 	var cue: Dictionary = cues[name]
-	var lay := _layers(name, cue)
+	var lay := _layers(name, cue, str(o.get("variant", "")))
 	if lay.is_empty():
 		return
 	var now := _now()
@@ -155,6 +192,24 @@ func play(name: String, o := {}) -> void:
 			return
 		t = nt
 	last[name] = t
+	# Reserve the stagger now, but enforce voice caps only when it is due.
+	# Otherwise later ships steal delayed players before they have ever started.
+	var generation := _pending_generation
+	var start := t - now
+	if start <= 0.01:
+		_start(name, o, lay)
+	else:
+		get_tree().create_timer(start, false, false, true).timeout.connect(func() -> void:
+			if generation == _pending_generation:
+				_start(name, o, lay))
+
+
+func _start(name: String, o: Dictionary, lay: Array) -> void:
+	if not on or _cancelled_tags.has(o.get("tag", "")):
+		return
+	var cue: Dictionary = cues[name]
+	var now := _now()
+	var t := now
 	var gain := float(cue["g"]) * float(o.get("gain", 1.0))
 	if cue["salvo"] != null:
 		var sv: Dictionary = salvo.get(cue["salvo"], {"t": 0.0, "n": 0})
@@ -177,14 +232,13 @@ func play(name: String, o := {}) -> void:
 		var pri := int(cue["pri"])
 		var vi := -1
 		for i in active.size():
-			if int(active[i].pri) <= pri:
+			if int(active[i].pri) <= pri and (vi < 0 or int(active[i].pri) < int(active[vi].pri)):
 				vi = i
-				break
 		if vi < 0:
 			return
 		_steal(active[vi])
 	var u := randf() * 2.0 - 1.0
-	var v := {"name": name, "players": [], "end": t, "pri": int(cue["pri"])}
+	var v := {"name": name, "players": [], "end": t, "pri": int(cue["pri"]), "tag": o.get("tag", "")}
 	var dur := 0.0
 	for L in lay:
 		var rate := maxf(0.25, float(o.get("rate", 1.0)) * float(L.r) * (1.0 + u * float(L.pj)))
@@ -197,29 +251,75 @@ func play(name: String, o := {}) -> void:
 			p3.stream = L.st
 			p3.pitch_scale = rate
 			p3.volume_db = linear_to_db(maxf(gain * float(L.g), 1e-5))
-			p3.bus = cue["bus"]
+			p3.bus = "death" if o.get("death", false) else cue["bus"]
 			p = p3
 		else:
 			var p2 := AudioStreamPlayer.new()
 			p2.stream = L.st
 			p2.pitch_scale = rate
 			p2.volume_db = linear_to_db(maxf(gain * float(L.g), 1e-5))
-			p2.bus = cue["bus"]
+			p2.bus = "death" if o.get("death", false) else cue["bus"]
 			p = p2
 		add_child(p)
+		var limit := float(cue.get("duration", 0.0))
+		if limit > 0.0:
+			var envelope := create_tween()
+			envelope.tween_interval(maxf(0.0, limit - 0.06))
+			envelope.tween_property(p, "volume_db", -80.0, 0.06)
+			if L.has("end_rate"):
+				create_tween().tween_property(p, "pitch_scale", float(L.end_rate), limit)
 		var start := t + float(L.d) - now
 		if start <= 0.01:
 			p.call("play")
 		else:
-			get_tree().create_timer(start).timeout.connect(func() -> void:
-				if is_instance_valid(p):
+			get_tree().create_timer(start, false, false, true).timeout.connect(func() -> void:
+				if is_instance_valid(p) and active.has(v):
 					p.call("play"))
 		v.players.append(p)
 		dur = maxf(dur, float(L.d) + (L.st as AudioStream).get_length() / rate)
+	if cue.has("duration"):
+		dur = minf(dur, float(cue["duration"]))
 	v.end = t + dur + 0.05
 	list.append(v)
 	by_cue[name] = list
 	active.append(v)
+	if float(cue["duck"]) > 0.0:
+		_ambient_duck = maxf(_ambient_duck, float(cue["duck"]))
+		_ambient_duck_until = now + 0.5
+	cue_started.emit(name, o)
+
+
+func _process(_delta: float) -> void:
+	_reap(_now())
+	if _now() >= _ambient_duck_until:
+		_ambient_duck = 0.0
+	var i := AudioServer.get_bus_index("ambient")
+	if i >= 0:
+		AudioServer.set_bus_volume_db(i, linear_to_db(BUSES["ambient"] * (1.0 - _ambient_duck)))
+
+
+# R73 hook. The picture owns its clock; audio remains at normal pitch/speed.
+func death_beat(enabled: bool) -> void:
+	_beat = enabled
+	for bus in ["battle_sfx", "music_duck"]:
+		var i := AudioServer.get_bus_index(bus)
+		if i >= 0:
+			AudioServer.set_bus_volume_db(i, -6.0 if enabled else 0.0)
+	# Music can be created after SFX, so connect its send when the beat is sampled.
+	var music := AudioServer.get_bus_index("music")
+	if music >= 0:
+		AudioServer.set_bus_send(music, "music_duck")
+
+
+func stop_tag(tag: String) -> void:
+	_cancelled_tags[tag] = true
+	for v in active.duplicate():
+		if v.get("tag") == tag:
+			_drop(v)
+			for p in v.players:
+				if is_instance_valid(p):
+					p.stop()
+					p.queue_free()
 
 
 func _drop(v: Dictionary) -> void:
@@ -248,6 +348,9 @@ func _reap(now: float) -> void:
 
 
 func stop_all() -> void:
+	_pending_generation += 1
+	last.clear()
+	death_beat(false)
 	for v in active.duplicate():
 		_steal(v)
 

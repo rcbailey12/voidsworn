@@ -25,6 +25,7 @@ const HT := preload("res://render/hull_table.gd")
 const HUD := preload("res://ui/battle/hud.gd")
 const Fx := preload("res://scenes/battle/fx_stub.gd")
 const Sfx := preload("res://audio/sfx.gd")
+const DeathAudio := preload("res://audio/death_audio.gd")
 const Backdrop := preload("res://render/backdrop.gd")
 
 const KEY_DIR := Vector3(-0.45, -0.70, -0.55)
@@ -79,6 +80,8 @@ var cam: Camera3D
 var hud: CanvasLayer
 var fx: Node3D
 var sfx: Node
+var death_audio: Node
+var adaptation_heard := false
 var env: Environment
 var batches: Array = []
 var busy := false
@@ -183,6 +186,9 @@ func _ready() -> void:
 	sfx.name = "Sfx"
 	add_child(sfx)
 	sfx.cam = cam
+	death_audio = DeathAudio.new()
+	death_audio.sfx = sfx
+	add_child(death_audio)
 	hud = HUD.new()
 	add_child(hud)
 	hud.action.connect(_on_action)
@@ -472,6 +478,7 @@ func _begin(a) -> void:
 	tail_round = -1
 	chime_round = -1
 	plog = PlayLog.new()
+	adaptation_heard = false
 	_ghost_clear()
 	board.props_world = ResourceLoader.exists("res://world/world.gd") and not args.has("noworld")
 	if key_light != null:
@@ -1151,6 +1158,10 @@ func _play_event(e: Dictionary) -> void:
 		for l in voice.on_event(e):
 			hud.add_log(l["text"], l["kind"])
 	match e["t"]:
+		"adaptation":
+			if not adaptation_heard:
+				adaptation_heard = true
+				sfx.play("adapt_shift")
 		"round":
 			_log("Round %d." % int(e["round"]), "x")
 			if not bot and not showcase:
@@ -1301,6 +1312,7 @@ func _play_event(e: Dictionary) -> void:
 			var O = TBL.get("ORDERS", {}).get(str(e["order"]), {})
 			_log("%s: %s." % [_name(e["unit"]), str(O.get("n", e["order"]))], _who(e["unit"]))
 			if e["order"] == "brace":
+				sfx.play("brace_lock", {"pos": _pos(e["unit"])})
 				_float(e["unit"], "Braced", Color("#9fd4ff"), -24)
 			await wait(200.0)
 		"ram":
@@ -1316,6 +1328,7 @@ func _play_event(e: Dictionary) -> void:
 				d2["hp"] = float(d2["hp"]) - float(e["recoil"])
 			await wait(500.0)
 		"board":
+			sfx.play("board_grapple", {"pos": _pos(e["target"]), "variant": str(VU.get(e["unit"], {}).get("fac", ""))})
 			var res := str(e["result"])
 			var who := _who(e["unit"])
 			if res == "capture":
@@ -1879,7 +1892,8 @@ func _play_death(e: Dictionary) -> void:
 		var t: float = float(gfx.death(str(id), cause))
 		if skip and gfx.has_method("hurry_death"):
 			gfx.hurry_death()
-		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
+		death_audio.fx = gfx
+		death_audio.watch(str(id), p)
 		sv.dead = true
 		if sv.marker != null:
 			sv.marker.visible = false
@@ -1894,7 +1908,11 @@ func _play_death(e: Dictionary) -> void:
 	_flash(p, 14.0 + L * 1.6, Color(1.0, 0.65, 0.3), 0.9)
 	_flash(p + Vector3(L * 0.25, 1, 0), 8.0 + L * 0.8, Color(1.0, 0.85, 0.6), 0.5, 0.15 * speed)
 	_flash(p - Vector3(L * 0.25, 0, 1), 8.0 + L * 0.8, Color(1.0, 0.5, 0.2), 0.6, 0.3 * speed)
-	sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
+	# The fallback has no staged run. Dark/hulk outcomes still never get a boom.
+	if cause in ["dark", "hulk"]:
+		sfx.play("hulk_vent", {"pos": p})
+	else:
+		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
 	sv.die(wrecked.has(id))
 	hud.remove_plate(str(id))
 	var dk := _enemy_pace_k() if not friend else 1.0
@@ -2806,7 +2824,7 @@ func _target(tid: String) -> void:
 	plog.note("targets")
 	if not _firing_set(tid).is_empty():
 		target = tid
-		sfx.play("ui_select")
+		sfx.play("ui_confirm", {"gain": 0.707946})
 	else:
 		var u := _sel_unit()
 		var am = _attack_move(tid) if int(u.get("moveLeft", 0)) > 0 else null
@@ -2814,7 +2832,7 @@ func _target(tid: String) -> void:
 			# out of reach from here: offer the attack-move, previewed (the ghost at the hex it would stop on, its path)
 			target = tid
 			atk = am
-			sfx.play("ui_select")
+			sfx.play("ui_confirm", {"gain": 0.707946})
 		else:
 			target = ""
 			hud.toast(_cant_fire_reason(tid))
@@ -2843,6 +2861,7 @@ func _confirm() -> void:
 		plan = null
 		plan_k = ""
 		plog.act("move", {"cost": int(st.cost), "to": "%d,%d" % [int(st.q), int(st.r)], "f": int(st.f)})
+		sfx.play("ui_confirm", {"gain": 0.707946})
 		_cmd(func(): return api.move(id, st))
 		return
 	if target == "":
@@ -2853,12 +2872,14 @@ func _confirm() -> void:
 		plog.act("attack_move", {"cost": int(atk["st"].cost), "guns": int(atk["n"]), "target": str(VU.get(tid, {}).get("cls", "")), "tid": tid})
 		atk = null
 		armed = -1
+		sfx.play("ui_confirm")
 		_cmd(func(): return api.attack_move(id, tid, wsel))
 		return
 	var set := _firing_set(tid)
 	if set.is_empty():
 		hud.toast(_cant_fire_reason(tid))
 		return
+	sfx.play("ui_confirm")
 	plog.act("fire", {"guns": set.size(), "target": str(VU.get(tid, {}).get("cls", "")), "tid": tid, "armed": armed >= 0})
 	_cmd(func():
 		var any := false
@@ -3031,8 +3052,11 @@ func _arrive(list: Array) -> void:
 	arrival.emit(list)
 	var mine: Array = list.filter(func(x): return x["side"] == "player")
 	var c := Vector3.ZERO
+	var arrival_index := 0
 	for u in list:
 		var p: Vector3 = board.hex_world(int(u["q"]), int(u["r"]))
+		sfx.play("arrive_jump", {"pos": p, "rate": 0.92 if u["side"] == "enemy" else 1.0, "delay": arrival_index * 0.14})
+		arrival_index += 1
 		c += p
 		_flash(p + Vector3(0, 2, 0), 24.0, Color(0.6, 0.9, 1.0) if u["side"] == "player" else Color(1.0, 0.5, 0.4), 0.6)
 		_float(u["id"], "Arrived", Color("#8ff0a0") if u["side"] == "player" else Color("#e27f74"), -30)
@@ -3044,7 +3068,6 @@ func _arrive(list: Array) -> void:
 	else:
 		hud.banner("Enemy reinforcements", Color("#ff8a6a"), 1.4)
 		hud.toast("Enemy reinforcements: the %s %s arrived." % [" and the ".join(PackedStringArray(names)), "has" if list.size() == 1 else "have"])
-	sfx.play("ui_alert")
 	var keep := {"t": cam.t}
 	cam.glide(c, 1.0)
 	await get_tree().create_timer(1.6).timeout

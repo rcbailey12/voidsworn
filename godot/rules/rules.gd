@@ -1248,6 +1248,7 @@ func startBattle(cfg: Dictionary) -> void:
 	if jt(cfg.get("nemesis")): applyNemesis(cfg["nemesis"])
 	if jt(cfg.get("verb")): applyVerb(cfg["verb"])
 	if jt(B.get("adapt")) or jt(B.get("adaptWings")):
+		emit({"t": "adaptation", "source": "carrier_report"})
 		var ad = B.get("adapt"); var aw = B.get("adaptWings")
 		logm("Scouts report your carriers. The enemy " + (("bolted extra point defense onto " + (ns(ad) + " ships" if ad > 1 else "one ship")) if jt(ad) else "") + (" and " if (jt(ad) and jt(aw)) else "") + (("launched " + ("two fighter wings" if aw > 1 else "a fighter wing") + " to hunt your craft") if jt(aw) else "") + ".", "ember")
 	startSideTurn("player")
@@ -1841,6 +1842,7 @@ func applyNemesis(N) -> void: # battle.js applyNemesis (R42 and R49: traits, fac
 	if B.get("cp0") != null: B["cp0"]["enemy"] = sideCP("enemy")
 	var an = []
 	for a in ad: an.append(nemAdaptName(a, N.get("fac")).to_lower())
+	if ad.size() > 0: emit({"t": "adaptation", "source": "nemesis"})
 	var pron = "It" if N.get("g") == "n" else ("She" if N.get("g") == "f" else "He")
 	logm(String(fl["name"]) + " commands this fleet: your Nemesis." + ((" " + pron + " has adapted: " + ", ".join(an) + ".") if ad.size() > 0 else ""), "e")
 	var L = TB.NEM_LINES

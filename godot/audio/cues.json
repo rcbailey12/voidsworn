@@ -4,7 +4,7 @@
   "g": 0.42,
   "max": 6,
   "gap": 0.045,
-  "defer": 0.14,
+  "defer": 2.94,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -36,7 +36,7 @@
   "g": 0.26,
   "max": 4,
   "gap": 0.04,
-  "defer": 0.1,
+  "defer": 2.62,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -56,7 +56,7 @@
   "g": 0.25,
   "max": 3,
   "gap": 0.05,
-  "defer": 0.08,
+  "defer": 3.26,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -83,7 +83,7 @@
   "g": 0.3,
   "max": 6,
   "gap": 0.045,
-  "defer": 0.14,
+  "defer": 2.94,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -115,7 +115,7 @@
   "g": 0.34,
   "max": 5,
   "gap": 0.05,
-  "defer": 0.14,
+  "defer": 3.26,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -146,7 +146,7 @@
   "g": 0.3,
   "max": 5,
   "gap": 0.06,
-  "defer": 0.16,
+  "defer": 3.9,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -165,7 +165,7 @@
   "g": 0.32,
   "max": 5,
   "gap": 0.05,
-  "defer": 0.14,
+  "defer": 3.26,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -184,7 +184,7 @@
   "g": 0.32,
   "max": 6,
   "gap": 0.045,
-  "defer": 0.14,
+  "defer": 2.94,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -216,7 +216,7 @@
   "g": 0.42,
   "max": 4,
   "gap": 0.06,
-  "defer": 0.16,
+  "defer": 3.9,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -247,7 +247,7 @@
   "g": 0.3,
   "max": 5,
   "gap": 0.05,
-  "defer": 0.14,
+  "defer": 3.26,
   "pri": 1,
   "pj": 0.03,
   "spj": 0.07,
@@ -1528,5 +1528,347 @@
   "synth": [
    "ui_boss_0.ogg"
   ]
+ },
+ "death_powerdown": {
+  "bus": "death",
+  "g": 0.5,
+  "max": 2,
+  "gap": 0.04,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "ionCharge",
+    "g": 0.55,
+    "r": 0.55,
+    "d": 0,
+    "pj": 0,
+    "end_rate": 0.25
+   },
+   {
+    "s": "whoosh",
+    "g": 0.25,
+    "r": 0.7,
+    "d": 0,
+    "pj": 0,
+    "end_rate": 0.3
+   }
+  ],
+  "synth": [],
+  "duration": 0.6
+ },
+ "death_vent": {
+  "bus": "death",
+  "g": 0.42,
+  "max": 2,
+  "gap": 0.04,
+  "defer": 2,
+  "pri": 0,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "whoosh",
+    "g": 0.5,
+    "r": 1.7,
+    "d": 0,
+    "pj": 0
+   }
+  ],
+  "synth": [],
+  "duration": 0.5
+ },
+ "death_crack": {
+  "bus": "death",
+  "g": 0.52,
+  "max": 2,
+  "gap": 0.04,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "scrape",
+    "g": 0.6,
+    "r": 0.75,
+    "d": 0,
+    "pj": 0
+   },
+   {
+    "s": "hullHitBig",
+    "g": 0.45,
+    "r": 0.8,
+    "d": 0.14,
+    "pj": 0
+   }
+  ],
+  "synth": [],
+  "variants": {
+   "ithar": {
+    "layers": [
+     {
+      "s": "shieldHit",
+      "g": 0.35,
+      "r": 1.6,
+      "d": 0.1,
+      "pj": 0
+     },
+     {
+      "syn": 1,
+      "g": 0.4
+     }
+    ],
+    "synth": [
+     "hit_glass_0.ogg",
+     "hit_glass_1.ogg",
+     "hit_glass_2.ogg"
+    ]
+   }
+  },
+  "duration": 0.4
+ },
+ "death_run": {
+  "bus": "death",
+  "g": 0.32,
+  "max": 2,
+  "gap": 0.04,
+  "defer": 2,
+  "pri": 1,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "syn": 1,
+    "g": 0.65
+   }
+  ],
+  "synth": [
+   "engine_0.ogg",
+   "engine_1.ogg"
+  ],
+  "duration": 0.72
+ },
+ "chunk_cool": {
+  "bus": "death",
+  "g": 0.24,
+  "max": 2,
+  "gap": 0.04,
+  "defer": 2,
+  "pri": 0,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "debris",
+    "g": 0.3,
+    "r": 0.8,
+    "d": 0,
+    "pj": 0
+   },
+   {
+    "s": "scrape",
+    "g": 0.15,
+    "r": 0.65,
+    "d": 0.35,
+    "pj": 0
+   }
+  ],
+  "synth": [],
+  "duration": 1.5
+ },
+ "hulk_vent": {
+  "bus": "death",
+  "g": 0.25,
+  "max": 2,
+  "gap": 0.04,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "whoosh",
+    "g": 0.5,
+    "r": 1.4,
+    "d": 0,
+    "pj": 0
+   },
+   {
+    "s": "scrape",
+    "g": 0.2,
+    "r": 0.9,
+    "d": 0.45,
+    "pj": 0
+   }
+  ],
+  "synth": [],
+  "duration": 1.15
+ },
+ "arrive_jump": {
+  "bus": "impacts",
+  "g": 0.3,
+  "max": 3,
+  "gap": 0.12,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "whoosh",
+    "g": 0.6,
+    "r": 1.3,
+    "d": 0,
+    "pj": 0
+   },
+   {
+    "s": "boomLow",
+    "g": 0.22,
+    "r": 1.5,
+    "d": 0.08,
+    "pj": 0
+   }
+  ],
+  "synth": [],
+  "duration": 0.45
+ },
+ "board_grapple": {
+  "bus": "impacts",
+  "g": 0.46,
+  "max": 2,
+  "gap": 0.15,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "hullHitBig",
+    "g": 0.65,
+    "r": 0.85,
+    "d": 0,
+    "pj": 0
+   },
+   {
+    "s": "scrape",
+    "g": 0.5,
+    "r": 1.2,
+    "d": 0.12,
+    "pj": 0
+   },
+   {
+    "s": "whoosh",
+    "g": 0.2,
+    "r": 1.6,
+    "d": 0.22,
+    "pj": 0
+   }
+  ],
+  "synth": [],
+  "variants": {
+   "chorus": {
+    "layers": [
+     {
+      "syn": 1,
+      "g": 0.75
+     }
+    ],
+    "synth": [
+     "hit_wet_0.ogg",
+     "hit_wet_1.ogg",
+     "hit_wet_2.ogg"
+    ]
+   }
+  },
+  "duration": 0.7
+ },
+ "brace_lock": {
+  "bus": "impacts",
+  "g": 0.46,
+  "max": 2,
+  "gap": 0.04,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "hullHit",
+    "g": 0.65,
+    "r": 0.7,
+    "d": 0,
+    "pj": 0
+   },
+   {
+    "s": "hullHitBig",
+    "g": 0.25,
+    "r": 0.8,
+    "d": 0.1,
+    "pj": 0
+   }
+  ],
+  "synth": [],
+  "duration": 0.35
+ },
+ "adapt_shift": {
+  "bus": "ui",
+  "g": 0.22,
+  "max": 1,
+  "gap": 1,
+  "defer": 2,
+  "pri": 2,
+  "pj": 0,
+  "spj": 0,
+  "salvo": null,
+  "tail": 1,
+  "duck": 0,
+  "layers": [
+   {
+    "s": "uiSelect",
+    "g": 0.55,
+    "r": 0.8,
+    "d": 0,
+    "pj": 0
+   },
+   {
+    "s": "uiSelect",
+    "g": 0.5,
+    "r": 0.85,
+    "d": 0.24,
+    "pj": 0
+   }
+  ],
+  "synth": [],
+  "duration": 0.6
  }
 }

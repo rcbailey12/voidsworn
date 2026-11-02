@@ -46,6 +46,15 @@ function wav(file, chans, SR) {
     table[name] = e;
   }
   try { fs.unlinkSync(tmp); } catch (x) {}
-  fs.writeFileSync(path.join(repo, 'godot/audio/cues.json'), JSON.stringify(table, null, 1));
+  // Keep the Godot-only battle pass when refreshing the browser's synth takes.
+  // Those cues deliberately reuse existing clips/takes rather than adding to sfx.js.
+  const cuePath = path.join(repo, 'godot/audio/cues.json');
+  const previous = fs.existsSync(cuePath) ? JSON.parse(fs.readFileSync(cuePath, 'utf8')) : {};
+  for (const [name, cue] of Object.entries(previous)) if (!table[name]) table[name] = cue;
+  for (const [name, cue] of Object.entries(table)) if (name.startsWith('gun_')) {
+    // 20 ships, including twin barrels, plus the scheduler's maximum 60% jitter.
+    cue.defer = Math.max(cue.defer, Math.round((cue.gap * 1.6 * 40 + 0.06) * 1000) / 1000);
+  }
+  fs.writeFileSync(cuePath, JSON.stringify(table, null, 1));
   console.log('cues', Object.keys(table).length, 'synth files', Object.values(table).reduce((a, e) => a + e.synth.length, 0));
 })();
