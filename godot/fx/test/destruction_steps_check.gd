@@ -10,6 +10,12 @@ func _init() -> void:
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
 func _run() -> void:
+	DEATH._init_dirs()
+	# The cut cap can include pre-existing breach rims. A more camera-facing
+	# breach must never attract the split's core flash or edge fires.
+	var sites := DEATH._edge_sites({"edge": PackedVector3Array([Vector3(0.1, 1, 0), Vector3(8, 5, 0)]),
+		"split_at": Vector3.ZERO, "split_axis": Vector3.RIGHT, "split_width": 0.5}, Vector3.ZERO, Vector3.UP, 1)
+	_check(sites[0].x < 0.5, "split effects reject unrelated breach rims")
 	for mirrored in [false, true]:
 		for disconnected in [false, true]:
 			var bm := BoxMesh.new()
@@ -23,7 +29,10 @@ func _run() -> void:
 				surfaces.append({"arrays": bm.get_mesh_arrays(), "xf": xf, "mat": StandardMaterial3D.new(), "fmt": 0})
 			var job := {"seeds": PackedVector3Array([Vector3(-4, 0, 0), Vector3(1, 0, 0), Vector3(5, 0, 0)]), "surfs": surfaces}
 			var pieces := DEATH._cut(job)
+			DEATH._piece_hulls(pieces)
 			for pc in pieces:
+				_check(not pc["pts"].is_empty() and not pc["hull"].is_empty(), "piece retains surface samples and collider extrema")
+				_check((pc["cen"] as Vector3).is_finite(), "piece centre is finite")
 				_check(pc.has("cap"), "piece has an opaque cap")
 				if not pc.has("cap"): continue
 				var edges := {}

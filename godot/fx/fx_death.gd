@@ -529,7 +529,9 @@ static func _cut(job: Dictionary) -> Array:
 			buckets[best].append(b if flip else cc)
 			var pc: Dictionary = pieces[best]
 			if (pc["edge"] as PackedVector3Array).size() < 64 and sqrt(bd2) - sqrt(bd) < 0.6:
-				(pc["edge"] as PackedVector3Array).append(q)
+				var edge: PackedVector3Array = pc["edge"]
+				edge.append(q)
+				pc["edge"] = edge
 		for c in ns:
 			var tri: PackedInt32Array = buckets[c]
 			if tri.is_empty():
@@ -594,8 +596,10 @@ static func _cut(job: Dictionary) -> Array:
 			pc["surfs"].append({"arrays": na, "mat": sd["mat"], "fmt": int(sd.get("fmt", 0))})
 			pc["n"] = int(pc["n"]) + order.size()
 			var step = maxi(1, order.size() / 120)
+			var points: PackedVector3Array = pc["pts"]
 			for i in range(0, order.size(), step):
-				(pc["pts"] as PackedVector3Array).append(pv[i])
+				points.append(pv[i])
+			pc["pts"] = points
 	for pc in pieces:
 		_seal_piece(pc)
 	return pieces
@@ -773,6 +777,14 @@ static func _death_inner(fx, s, cause: String) -> float:
 	_power_down(s)
 	s.set_meta("death_start", T)
 	s.engine_level = 0.0
+	# Armada/Nebulous: burn-outs and a stable fifth of ordinary blast kills
+	# leave a whole cold hulk. Explicit impact/cut deaths retain their split.
+	var hulk := cause == "dark" or cause == "hulk" or (cause == "blast" and posmod(hash(s.id), 5) == 0)
+	s.set_meta("death_hulk", hulk)
+	if hulk:
+		s.set_meta("death_split", T + 0.72)
+		fx.later(T + 0.72, func() -> void: _hulk(fx, s))
+		return 1.32
 	# All heavy deaths use the same two prepared halves, regardless of damage cause.
 	# Class decides this sequence and the R73 beat; draw scale does not.
 	var split := 1.38 if s.death_big else (0.72 if s.weight > 0 else 0.55)
@@ -838,10 +850,12 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var p: Vector3 = s.to_world(lp)
 	var n: Vector3 = s.dir_world(ln)
 	var size: float = s.hull.L * 0.022
-	for j in 3:
-		fx.spr(p, fx.now + j * 0.09, 0.85, Color(0.24, 0.27, 0.3), 0.5,
-			size * 0.3, size * 1.7, 7, n * size * 5.0, 0.8)
-	fx.stk(p, fx.now, 0.65, Color(0.6, 0.22, 0.045), 1.5, size, size * 0.1, 1, n * size * 9.0, 1.2)
+	for j in 5:
+		fx.spr(p + n * size * 0.2, fx.now + j * 0.1, 1.0, Color(0.48, 0.52, 0.58), 0.65,
+			size * 0.4, size * 2.5, 7, n * size * 7.0, 0.8, 0.0, 0.0, 14.0)
+		fx.spr(p + n * size * 0.25, fx.now + j * 0.1, 0.65, Color(0.9, 0.26, 0.035), 1.8,
+			size * 0.7, size * 1.3, 25, n * size * 3.0)
+	fx.stk(p, fx.now, 0.65, Color(0.9, 0.32, 0.055), 2.5, size, size * 0.1, 1, n * size * 9.0, 1.2, 0.0, 2.5, 14.0)
 
 
 static func _update_dying(fx, s) -> void:
@@ -850,7 +864,7 @@ static func _update_dying(fx, s) -> void:
 	var power := 1.0 - smoothstep(0.0, 0.3, age)
 	for m in s.get_meta("death_power", []):
 		(m as ShaderMaterial).set_shader_parameter("fx_power", power)
-	if s.death_big: return
+	if s.death_big or bool(s.get_meta("death_hulk", false)): return
 	var rot := Basis.from_euler(Vector3(age * 1.4, age * 0.5, age * 0.85))
 	var shift := Vector3(age * s.hull.L * 0.22, -age * s.hull.L * 0.06, 0)
 	var motion := Transform3D(rot, shift + s.hull.c - rot * s.hull.c)
@@ -859,13 +873,13 @@ static func _update_dying(fx, s) -> void:
 			(pose["mi"] as Node3D).global_transform = s.root.global_transform * motion * (pose["pose"] as Transform3D)
 	if fx.now >= float(s.get_meta("death_ribbon_next", INF)):
 		s.set_meta("death_ribbon_next", fx.now + 0.045)
-		var p: Vector3 = s.to_world(s.hull.c + Vector3(-s.hull.L * 0.3, 0, s.hull.W * 0.25))
-		var size: float = maxf(s.hull.L * 0.09, 0.12)
+		var p: Vector3 = s.root.global_transform * motion * (s.hull.c + Vector3(-s.hull.L * 0.3, s.hull.H * 0.35, s.hull.W * 0.25))
+		var size: float = maxf(s.hull.L * 0.15, 0.3)
 		var back: Vector3 = -s.dir_world(Vector3.RIGHT)
-		fx.spr(p, fx.now, 1.45, Color(0.17, 0.18, 0.2), 0.85, size * 0.5, size * 1.9, 3,
-			back * s.hull.L * 1.1 + Vector3.UP * size * 0.35, 0.3, 0.0, 0.0, 48.0)
-		fx.spr(p, fx.now, 0.32, Color(0.8, 0.23, 0.035), 1.8, size * 0.45, size * 0.15, 1,
-			back * s.hull.L * 0.3, 0.0, 0.0, 0.0, 18.0)
+		fx.spr(p, fx.now, 1.65, Color(0.27, 0.28, 0.31), 0.85, size * 0.6, size * 2.2, 3,
+			back * maxf(s.hull.L * 1.1, 7.0) + Vector3.UP * size * 0.35, 0.3, 0.0, 0.0, 44.0)
+		fx.spr(p, fx.now, 0.65, Color(0.95, 0.29, 0.035), 2.6, size * 0.7, size * 0.3, 25,
+			back * maxf(s.hull.L * 0.65, 4.5), 0.3, 0.0, 0.0, 28.0)
 
 
 # An unfinished worker never blocks the death frame, even past its nominal split time.
@@ -918,6 +932,43 @@ static func _hide_ship(s) -> void:
 			(t["mi"] as Node3D).visible = false
 
 
+# One independent copy of the damaged hull, no fracture upload, fire or lights.
+# G2 may release its live ship root as soon as death()'s returned time expires.
+static func _hulk(fx, s) -> void:
+	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s or s.has_meta("death_hidden"): return
+	var node := Node3D.new()
+	node.name = "fx_hulk_" + s.id
+	fx.phys_root.add_child(node)
+	node.global_transform = s.xf()
+	for source in s.meshes:
+		var original := source as MeshInstance3D
+		if not is_instance_valid(original) or original.mesh == null: continue
+		var copy := MeshInstance3D.new()
+		copy.mesh = original.mesh
+		node.add_child(copy)
+		copy.global_transform = original.global_transform
+		for i in original.mesh.get_surface_count():
+			var mat: ShaderMaterial = original.get_active_material(i).duplicate()
+			mat.set_shader_parameter("fx_power", 0.0)
+			copy.set_surface_override_material(i, mat)
+	_hide_ship(s)
+	var wreck := {"id": s.id, "t0": fx.now, "nodes": [node], "mats": [], "lights": [],
+		"fires": [{"node": node, "vel": node.basis.x * 0.45, "ang": Vector3(0.01, 0.035, 0.015)}], "speed": 1.0, "hulk": true}
+	var hit: Dictionary = s.hull.ray(s.hull.c + Vector3.UP * maxf(s.hull.L, 1.0), Vector3.DOWN)
+	var p: Vector3 = hit.get("p", s.hull.c + Vector3.UP * s.hull.H * 0.5)
+	var n: Vector3 = hit.get("n", Vector3.UP)
+	var b := POOLS.Batch.new()
+	var size: float = maxf(s.hull.L * 0.025, 0.06)
+	for j in 9:
+		var v := n * size * 8.0
+		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, fx.now + j * 0.13),
+			Vector4(v.x, v.y, v.z, 1.7), Vector4(0.42, 0.46, 0.5, 0.5),
+			Vector4(size * 0.4, size * 3.2, 7, 16.3), Vector4(0, 0, 0.5, 0)))
+	b.build(fx.mat(SH.SPRITE, 1), node, "fx_hulk_vent")
+	fx.dstate["wrecks"].append(wreck)
+	_cap_wrecks(fx)
+
+
 static func _break_up(fx, s, cause: String, tint: Color) -> void:
 	var t0 := Time.get_ticks_usec()
 	_break_up_inner(fx, s, cause, tint)
@@ -945,10 +996,10 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
 	var xf: Transform3D = s.xf()
 	_hide_ship(s)
-	# The break is visible first. One short, small core flash follows inside one half.
-	# Smoke, ribbons and streamers carry the event; no long central fireball or haze.
+	# Capitals expose their break first. Small ships pop immediately at replacement,
+	# so the battle-camera frame catches an event rather than only a faint shard.
 	var R: float = h.L * 0.16
-	var kp: float = 52.0 if not s.death_big else 68.0
+	var kp: float = 60.0 if not s.death_big else 56.0
 	var core := center + xf.basis * Vector3(h.L * 0.12, 0, 0)
 	var core_node: Node3D = null
 	var core_local := Vector3.ZERO
@@ -961,7 +1012,12 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 				R * 0.06, R * 0.18, 3, bv * 0.12, 0.6, 0.0, 0.0, 9.0)
 	for i in 18 + w * 5:
 		fx.stk(center, T + fx.rng.randf() * 0.12, 0.5 + fx.rng.randf(), Color(1, 0.4, 0.1), 2.2,
-			0.06, 0.08, 1, fx.rdir() * (6.0 + fx.rng.randf() * 18.0) * maxf(k, 0.6), 0.65)
+			0.1, 0.08, 1, fx.rdir() * (6.0 + fx.rng.randf() * 18.0) * maxf(k, 0.6), 0.65, 0.0, 2.8, 18.0)
+	# Local smoke/debris cloud, small enough to leave the two silhouettes exposed.
+	for i in (10 if s.death_big else 6):
+		var v: Vector3 = fx.rdir() * maxf(R * 1.8, 2.5)
+		fx.spr(center + v * 0.07, T, 1.8, Color(0.24, 0.25, 0.28), 0.65,
+			R * 0.12, R * 0.7, 3, v, 0.8, 0.0, 0.0, 22.0 if s.death_big else 36.0)
 	spawn_debris(fx, center, Vector3.ZERO, 4 + w * 3, h.L * 0.025)
 	fx.punch(T, 0.018 if s.death_big else 0.006, center)
 	fx.shake(T, 0.45 if s.death_big else 0.18, center)
@@ -1010,12 +1066,18 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		node.name = "fx_wreck_%s_%d" % [s.id, i]
 		fx.phys_root.add_child(node)
 		node.global_transform = Transform3D(xf.basis, xf * cen)
+		if s.death_big and seeds.size() >= 2:
+			pc["split_at"] = (seeds[0] + seeds[1]) * 0.5
+			pc["split_axis"] = (seeds[0] - seeds[1]).normalized()
+			pc["split_width"] = h.L * 0.04
 		if core_node == null and seeds.size() >= 2:
 			core_node = node
-			var axis := (seeds[0] - seeds[1]).normalized()
-			# The recess opens toward the seam. Let light escape from the torn face
-			# of this half, rather than burying its sprite behind an opaque hull.
-			core_local = (seeds[0] + seeds[1]) * 0.5 - cen - axis * h.L * 0.01
+			# Use the camera-facing lip of the actual cut, not the centre hidden
+			# behind the opaque cap. Keep a little offset outside the torn face.
+			var view := Vector3(0, 1, 1).normalized()
+			if is_instance_valid(fx.camera):
+				view = node.to_local(fx.camera.global_position).normalized()
+			core_local = _edge_sites(pc, cen, view, 1)[0] + view * h.L * 0.035
 		var mi = MeshInstance3D.new()
 		mi.mesh = am
 		mi.position = -cen
@@ -1047,10 +1109,14 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			(node as RigidBody3D).angular_velocity = ang
 		else:
 			wreck["fires"].append({"node": node, "vel": vel, "ang": ang})
-		_wreck_fx(fx, wreck, node, pc, cen, h.L, k, is_main, tint)
+		_wreck_fx(fx, wreck, node, pc, cen, h.L, k, is_main, tint, s.death_big)
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
-	fx.later(T + 0.28, func() -> void: _core_flash(fx, core, R, kp, tint, core_node, core_local))
+	if s.death_big:
+		fx.later(T + 0.28, func() -> void:
+			if is_instance_valid(core_node): _core_flash(fx, core, R, kp, tint, core_node, core_local))
+	else:
+		_core_flash(fx, center, R, kp, tint)
 	if pieces.is_empty():
 		# Craft have no pre-cut job. Keep one pooled physical shard plus a visible ember.
 		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
@@ -1058,66 +1124,128 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 
 
 static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO) -> void:
-	# Booking and drawing share the same time, with no other death flashes before/after.
+	# Booking and drawing share the same time. Secondary pops use this same budget.
 	var T: float = fx.now
 	if is_instance_valid(node): p = node.to_global(local_p)
+	if not p.is_finite() or not is_finite(R) or R <= 0.0: return
 	if fx.flash_ok(T):
-		fx.spr(p, T, 0.12, Color(1, 0.65, 0.3), 5.0, R * 0.22, R * 0.7, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+		fx.spr(p, T, 0.22 if node == null else 0.16, Color(1, 0.52, 0.16), 6.0, R * 0.35, R * 0.8, 24, Vector3.ZERO, 0.0, 0.0, 0.0, px)
 		fx.light(p, T, 0.18, 7.0, tint, 0)
+		fireball(fx, p, R * 0.65, T, 0.42, tint)
 	else:
 		fx.spr(p, T, 0.4, tint, 1.2, R * 0.2, R * 0.55, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.7)
-	fireball(fx, p, R * 0.7, T, 0.48, tint)
 
 
-# Fires, smoke, embers and sparks riding a wreck piece, near its broken edge.
-static func _wreck_fx(fx, wreck: Dictionary, node: Node3D, pc: Dictionary, cen: Vector3, L: float, k: float, is_main: bool, tint: Color) -> void:
-	var edge: PackedVector3Array = pc["edge"]
-	if edge.is_empty():
-		edge = pc["pts"]
-	if edge.is_empty():
-		return
-	var b = POOLS.Batch.new()
-	var bs = POOLS.Batch.new()
-	var q = POOLS.quad_shape()
-	var qs = POOLS.streak_shape()
-	var r = RandomNumberGenerator.new()
+# Bounded samples from the actual cut, biased to its visible lip. No geometry work
+# or unbounded hull scan is added to a death frame.
+static func _edge_sites(pc: Dictionary, cen: Vector3, view: Vector3, count: int) -> PackedVector3Array:
+	var src: PackedVector3Array = pc.get("edge", PackedVector3Array())
+	if pc.has("cap"): src = pc["cap"][Mesh.ARRAY_VERTEX]
+	if src.is_empty(): src = pc.get("pts", PackedVector3Array())
+	var candidates := PackedVector3Array()
+	for i in range(0, src.size(), maxi(1, src.size() / 128)):
+		if src[i].is_finite(): candidates.append(src[i] - cen)
+	if pc.has("split_at") and not candidates.is_empty():
+		# A damaged hull's cap also contains old breach outlines. Keep only the
+		# new split's band, or a top-facing breach can steal the core/fire sites.
+		var axis: Vector3 = pc["split_axis"]
+		var at: Vector3 = pc["split_at"] - cen
+		var nearest := INF
+		for p in candidates: nearest = minf(nearest, absf((p - at).dot(axis)))
+		var seam := PackedVector3Array()
+		for p in candidates:
+			if absf((p - at).dot(axis)) <= nearest + maxf(float(pc["split_width"]), 0.001): seam.append(p)
+		candidates = seam
+	var sites := PackedVector3Array()
+	if candidates.is_empty():
+		sites.resize(count)
+		return sites
+	for j in count:
+		var best := candidates[0]
+		var score := -INF
+		for p in candidates:
+			var spread := INF
+			for other in sites: spread = minf(spread, p.distance_to(other))
+			var rank := p.dot(view) * (1.0 if j == 0 else 0.35) + (0.0 if j == 0 else spread)
+			if rank > score:
+				score = rank
+				best = p
+		sites.append(best)
+	return sites
+
+
+# Armada's staged split with EVE's class-capped fires. Batches follow each half;
+# finite pooled secondary pops run along both hulls, never as a central fireball.
+static func _wreck_fx(fx, wreck: Dictionary, node: Node3D, pc: Dictionary, cen: Vector3, L: float, k: float, is_main: bool, tint: Color, big: bool) -> void:
+	var view := Vector3(0, 1, 1).normalized()
+	if is_instance_valid(fx.camera): view = node.to_local(fx.camera.global_position).normalized()
+	var sites := _edge_sites(pc, cen, view, 3 if big else 1)
+	var b := POOLS.Batch.new()
+	var bs := POOLS.Batch.new()
+	var be := POOLS.Batch.new()
+	var q := POOLS.quad_shape()
+	var qs := POOLS.streak_shape()
+	var r := RandomNumberGenerator.new()
 	r.seed = hash(node.name)
-	var nf = 2 if is_main else 1
-	var s = L * 0.022
-	for j in nf:
-		var p = edge[r.randi() % edge.size()] - cen
-		var n = p.normalized() if p.length() > 0.01 else Vector3.UP
-		for kk in 10:
-			var v = n * (1.0 + r.randf()) + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)
-			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.08), Vector4(v.x, v.y, v.z, 0.55 + r.randf() * 0.3), Vector4(tint.r, tint.g * 0.9, tint.b, 2.4),
-				Vector4(s * 0.25, s * 0.7, 1, r.randf() + (10.0 if is_main else 5.0)), Vector4(0.8 + r.randf() * 0.2, 0, 0, 0)))
-		for kk in 3:
-			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.9), Vector4(n.x * 2.0, n.y * 2.0, n.z * 2.0, 2.7), Vector4(0.08, 0.075, 0.07, 0.5),
-				Vector4(s * 0.7, s * 2.3, 3, r.randf() + (20.0 if is_main else 9.0)), Vector4(2.7, 0, 0.5, 0.2)))
-		for kk in 6:
-			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.7 + r.randf()), Vector4((r.randf() - 0.5) * 3.0, (r.randf() - 0.5) * 3.0, (r.randf() - 0.5) * 3.0, 2.0),
-				Vector4(1, 0.5, 0.15, 1.8), Vector4(0.25 * k, 0.08 * k, 19, r.randf()), Vector4(4.2, 0, 0.4, 0)))
-		# round 2: atmosphere venting from the torn edge, a pale jet that keeps coming for the wreck's life (gated down)
-		for kk in 5:
-			var vv = (n * (4.0 + r.randf() * 3.0) + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 1.5) * k
-			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.24), Vector4(vv.x, vv.y, vv.z, 1.1), Vector4(0.62, 0.66, 0.74, 0.3),
-				Vector4(s * 0.3, s * 2.2, 7, r.randf()), Vector4(1.2, 0, 1.2, 0)))
-		var per = 2.5 + r.randf() * 2.0
-		for kk in 10:
-			var v = (n + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (5 + r.randf() * 9) * k
-			bs.add(qs, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + r.randf() * per), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.4),
-				Vector4(1, 0.62, 0.25, 6.0), Vector4(0.05, 0.11 * k, 1.8, 1), Vector4(per, 0, 0, 0)))
-		if j == 0:
-			var holder = Node3D.new()
-			holder.position = p + n * 1.0
-			node.add_child(holder)
-			wreck["lights"].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.35, 0.07), 0.7 if is_main else 0.4, 0.12))
-	var spm: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
-	var mi1 = b.build(spm, node, "fx_wreck_fire")
+	var size := maxf(L * 0.027, 0.08)
+	var T: float = fx.now
+	for site in sites:
+		var p := site + view * L * 0.018
+		var n := (view + Vector3.UP * 0.35).normalized()
+		for j in 8:
+			var v := (n + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.5) * size * 3.5
+			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, T - j * 0.1), Vector4(v.x, v.y, v.z, 0.8), Vector4(tint.r, tint.g, tint.b, 2.3),
+				Vector4(size * 0.8, size * 1.8, 25, r.randf()), Vector4(0.8, 0, 0.3, 0)))
+		for j in 4:
+			var v := n * size * 2.0
+			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, T - j * 0.5), Vector4(v.x, v.y, v.z, 2.0), Vector4(0.2, 0.21, 0.24, 0.55),
+				Vector4(size, size * 3.0, 3, r.randf() + 20.0), Vector4(2.0, 0, 0.6, 0.2)))
+		for j in 6:
+			var v := n * size * (7.0 + r.randf() * 3.0)
+			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, T - j * 0.2), Vector4(v.x, v.y, v.z, 1.2), Vector4(0.58, 0.62, 0.7, 0.55),
+				Vector4(size * 0.35, size * 2.3, 7, r.randf() + 16.0), Vector4(1.2, 0, 0.6, 0)))
+		for j in 6:
+			var v := (n + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * maxf(k, 0.4) * 7.0
+			bs.add(qs, POOLS.pack(Vector4(p.x, p.y, p.z, T - j * 0.3), Vector4(v.x, v.y, v.z, 0.7), Vector4(1, 0.48, 0.1, 3.0),
+				Vector4(0.08, 0.08 * k, 1.2, 1), Vector4(1.8, 0, 2.5, 12.0)))
+		# Long-lived, steady coals have their own slower cooling gate.
+		for j in 3:
+			var ep := p + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * size
+			be.add(q, POOLS.pack(Vector4(ep.x, ep.y, ep.z, T), Vector4(0, 0, 0, 22.0), Vector4(1, 0.24, 0.025, 1.8),
+				Vector4(size * 0.45, size * 0.1, 19, r.randf() + 7.0), Vector4.ZERO))
+	var spm: ShaderMaterial = fx.mat(SH.SPRITE, 1)
 	var spark_mat: ShaderMaterial = fx.mat(SH.STREAK, 1)
-	var mi2 = bs.build(spark_mat, node, "fx_wreck_sparks")
-	wreck["fires"].append({"mat": spm, "mi": mi1})
-	wreck["fires"].append({"mat": spark_mat, "mi": mi2})
+	var ember_mat: ShaderMaterial = fx.mat(SH.SPRITE, 1)
+	wreck["fires"].append({"mat": spm, "mi": b.build(spm, node, "fx_wreck_fire")})
+	wreck["fires"].append({"mat": spark_mat, "mi": bs.build(spark_mat, node, "fx_wreck_sparks")})
+	wreck["fires"].append({"mat": ember_mat, "mi": be.build(ember_mat, node, "fx_wreck_embers"), "cool": 10.0})
+	var holder := Node3D.new()
+	holder.position = sites[0] + view * size
+	node.add_child(holder)
+	wreck["lights"].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.35, 0.07), 0.7 if is_main else 0.4, 0.12))
+	if big:
+		# Prepared collider extrema give surface sites along the whole half,
+		# rather than clustering every secondary at its cut face.
+		var hull_pts: PackedVector3Array = pc.get("hull", PackedVector3Array())
+		var surface := _edge_sites({"edge": hull_pts}, Vector3.ZERO, view, 5)
+		if hull_pts.is_empty(): surface = _edge_sites(pc, cen, view, 5)
+		for j in 5:
+			var p := surface[j] + view * L * 0.025
+			fx.later(T + 0.7 + j * 0.65 + (0.2 if is_main else 0.0), func() -> void: _secondary(fx, node, p, L, tint))
+
+
+static func _secondary(fx, node: Node3D, lp: Vector3, L: float, tint: Color) -> void:
+	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
+	var p := node.to_global(lp)
+	if not p.is_finite() or not is_finite(L): return
+	var size := maxf(L * 0.055, 0.08)
+	# pop/spr book any large flash through the shared limiter; calm substitutes a
+	# slow lift. No extra volume or decaying flash light bypasses that decision.
+	fx.pop(p, fx.now, tint, size, 5.0, Vector3.UP, 0.16, 24.0)
+	fx.spr(p, fx.now, 0.75, tint, 1.8, size * 0.6, size * 1.3, 25)
+	fx.spr(p, fx.now, 1.4, Color(0.24, 0.25, 0.28), 0.5, size * 0.4, size * 2.0, 3, Vector3.UP * size, 0.4)
+	for j in 5:
+		fx.stk(p, fx.now, 0.65, Color(1, 0.46, 0.12), 2.2, 0.08, 0.08, 1, fx.rdir() * size * 7.0, 1.0, 0.0, 2.2, 12.0)
 
 
 static func _cap_wrecks(fx) -> void:
@@ -1166,7 +1294,7 @@ static func update(fx, dt: float) -> void:
 		var gate = exp(-maxf(age, 0.0) / 3.5)
 		for f in w["fires"]:
 			if f.has("mat"):
-				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", gate)
+				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", exp(-maxf(age, 0.0) / maxf(float(f.get("cool", 3.5)), 0.01)))
 			elif f.has("node") and is_instance_valid(f["node"]):
 				# no physics: the piece drifts and turns on its own, slowing down
 				var n: Node3D = f["node"]

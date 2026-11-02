@@ -111,7 +111,7 @@ func _run() -> void:
 		var zoom := cw + (Vector3(-0.35, 0.6, 0.75).normalized() * L * 1.6)
 		await _shot(zoom, cw, "%s_hole_zoom" % tag)
 		# the kill
-		var tb: float = fx.death("C", "big")
+		var tb: float = fx.death("C", "dark" if _env("PROBE_HULK", "") == "1" else "big")
 		var Tb: float = fx.now + tb - 0.6
 		if big:
 			await _until(Tb - 1.02)
@@ -148,8 +148,12 @@ func _run() -> void:
 			await _shot(pc + (cw - pc).normalized() * -0.1 + Vector3(0.3, 0.45, 0.85).normalized() * L * 0.8, pc, "%s_kill_inside" % tag)
 		await _until(Tb + 1.2)
 		await _shot(zoom, cw, "%s_kill_close_b" % tag)
+		await _until(Tb + 2.25)
+		await _shot(zoom, cw, "%s_kill_secondary" % tag)
 		await _until(Tb + 3.5)
 		await _shot(zoom, cw, "%s_kill_close_c" % tag)
+		await _until(Tb + 8.0)
+		await _shot(zoom, cw, "%s_kill_embers" % tag)
 		fx.clear_wreck("C")
 		fx.remove_ship("C")
 		sv.queue_free()

@@ -76,6 +76,7 @@ const HIDE := "POSITION = vec4(2.0, 2.0, 2.0, 1.0);"
 #  12 beam charge   13 beam impact flare   14 plasma bolt   15 bio glob   16 prism glint   17 star ball
 #  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
+#  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -100,7 +101,7 @@ void vertex() {
 		float t = age / life;
 		int k = int(a3.z + 0.5);
 		float g = t;
-		if (k == 1 || k == 20) { g = 1.0 - spow(1.0 - t, 2.2); }
+		if (k == 1 || k == 20 || k == 25) { g = 1.0 - spow(1.0 - t, 2.2); }
 		else if (k == 2 || k == 5 || k == 18) { g = sqrt(t); }
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
 		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
@@ -121,7 +122,9 @@ void vertex() {
 		// grown to the floor dims as it grows, but by less than its area (pops and bolts get f times their light, the rest
 		// f^0.8), so distant and small effects read brighter without blowing out. Smoke, soot and gas have no floor (no haze).
 		float flo = 0.0;
-		if (k == 0 || k == 17) { flo = 14.0; }
+		if (k == 24) { flo = 56.0; }
+		else if (k == 25) { flo = 24.0; }
+		else if (k == 0 || k == 17) { flo = 14.0; }
 		else if (k == 2 || k == 13 || k == 14) { flo = 12.0; }
 		else if (k == 12 || k == 15 || k == 18) { flo = 10.0; }
 		else if (k == 5 || k == 16 || k == 23) { flo = 9.0; }
@@ -145,6 +148,10 @@ void vertex() {
 				size = mn;
 			}
 		}
+		// Death cores and narrow fires keep their surface brightness at the floor.
+		// Enlarging an almost subpixel craft flame must not make it a faint dot.
+		// Explicit smoke/gas floors preserve opacity, without adding any light.
+		if (k == 24 || k == 25 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
 		if (k == 14 || k == 15 || k == 23) {
 			// stretched along the screen-space motion (bolts and globs read as moving, not as dots)
@@ -177,7 +184,10 @@ void fragment() {
 	if (k == 0) {
 		float f = (1.0 - t) * (1.0 - t) * I;
 		add = vCol.rgb * exp(-r * r * 5.0) * f + vec3(exp(-r * r * 30.0)) * f * 0.8 + vCol.rgb * f * 0.5 * star;
-	} else if (k == 1) {
+	} else if (k == 24) {
+		float f = (1.0 - smoothstep(0.18, 1.0, t)) * I;
+		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0, 0.88, 0.65) * exp(-r * r * 22.0) * 0.7) * f;
+	} else if (k == 1 || k == 25) {
 		float n = fbm(p * 1.7 + vec2(seed * 13.1, seed * 7.7) + vec2(0.0, -t * 1.2));
 		float dens = (1.0 - r) * 1.4 + (n - 0.5) * 1.15;
 		float thr = t * 1.1;
