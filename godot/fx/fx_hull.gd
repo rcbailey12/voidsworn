@@ -93,6 +93,7 @@ void fragment() {
 """
 
 const DAMAGE_UNIFORMS := """
+uniform float fx_weather = 0.0;
 uniform mat4 fx_hull_frame;
 uniform int fx_mouth_count = 0;
 uniform vec4 fx_mouths[64]; // centre, radius
@@ -178,7 +179,7 @@ for (int i = 0; i < 64; i++) {
 	fx_soot = max(fx_soot, 1.0 - smoothstep(0.0, R * 0.65, max(edge, 0.0)));
 }
 """, """
-ALBEDO *= 1.0 - fx_soot * 0.94;
+ALBEDO *= (1.0 - fx_soot * 0.94) * (1.0 - fx_weather * (0.25 + 0.65 * burnt_hash(fx_hull_p * 1.7)));
 EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0);
 // Mirrored ship models reverse raster winding; keep their outside as the outside.
 if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {

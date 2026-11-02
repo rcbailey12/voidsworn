@@ -527,6 +527,7 @@ func _begin(a) -> void:
 	for u in V["units"]:
 		_make_view(u)
 	_sync(V)
+	if world != null: world.use_ship_debris(views.values())
 	# open on your fleet, looking toward the enemy (the browser game's camera starts over the player's side)
 	var pc := Vector3.ZERO
 	var ec := Vector3.ZERO
@@ -2239,6 +2240,7 @@ func _fan_edge(a0: float, a1: float, rad: float, col: Color) -> MeshInstance3D:
 func _clear_overlay() -> void:
 	_fans("")
 	board.set_overlay({}, {})
+	board.show_blockers([])
 	board.set_outline({})
 	arrow.visible = false
 	path_dots.multimesh.instance_count = 0
@@ -2320,6 +2322,12 @@ func _overlay() -> void:
 		arrow.rotation.y = ShipView.yaw_of(st.f)
 		if pst == null:
 			_path_dots(u, st)
+	var shot_target := _unit_at(hover.x, hover.y)
+	if shot_target.is_empty() and target != "": shot_target = VU.get(target, {})
+	if not shot_target.is_empty() and shot_target.get("side") == "enemy":
+		board.show_blockers(_shot_blockers(shot_target))
+	else:
+		board.show_blockers([])
 	board.set_overlay(fills, rings, styles)
 	board.set_focus(_pos(sel) if sel != "" and views.has(sel) else cam.t)
 
@@ -2729,7 +2737,7 @@ func _ray_hex(p: Vector2) -> Vector2i:
 	if t < 0:
 		return Vector2i(99999, 99999)
 	var h: Vector2i = board.world_hex(o + d * t)
-	return h if board.on_board(h.x, h.y) else Vector2i(99999, 99999)
+	return h if board.on_board(h.x, h.y) or (board.blocker_visuals != null and board.blocker_visuals.visuals.has(board.key(h.x, h.y))) else Vector2i(99999, 99999)
 
 
 func _on_hover(p: Vector2) -> void:
@@ -3132,7 +3140,20 @@ func _cant_fire_reason(t_id: String) -> String:
 		return "Out of range."
 	if not in_arc:
 		return "No ready gun points at it. Turn the ship (Q/E) or move."
-	return "Line of sight is blocked."
+	return _blocker_text(VU.get(t_id, {}))
+
+
+func _shot_blockers(t: Dictionary) -> Array:
+	var u := _sel_unit()
+	if u.is_empty() or t.is_empty(): return []
+	return api.line_blockers(u, t)
+
+func _blocker_text(t: Dictionary) -> String:
+	var names := PackedStringArray()
+	for h in _shot_blockers(t):
+		var label: String = {"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(h.kind, h.kind)
+		names.append("the %s at %d,%d" % [label, h.q, h.r])
+	return "Blocked by %s." % ", ".join(names) if not names.is_empty() else "Line of sight is blocked."
 
 
 func _tip() -> String:
@@ -3143,7 +3164,7 @@ func _tip() -> String:
 	if not u.is_empty() and u["side"] == "enemy" and _usable(s):
 		return _attack_tip(u["id"])
 	if not u.is_empty():
-		return _ship_tip(u)
+		return _ship_tip(u) + ("\n" + api.entry_reason(sel, hover.x, hover.y) if not s.is_empty() and u.id != s.id else "")
 	var hk: String = board.key(hover.x, hover.y)
 	if reach_map.has(hk):
 		var st = plan if (plan != null and hk == plan_k) else _hover_state(hk)
@@ -3160,9 +3181,12 @@ func _tip() -> String:
 	if terr != "":
 		var info = TBL.get("TERRAIN_INFO", {}).get(terr, {})
 		if info is Dictionary and not info.is_empty():
-			return "[b]%s[/b]\n%s" % [str(info.get("n", terr)), str(info.get("fx", info.get("d", "")))]
+			var text := "[b]%s[/b]\n%s" % [str(info.get("n", terr)), str(info.get("fx", info.get("d", "")))]
+			if TBL.get("BLOCKING", {}).get(terr, false) or not s.is_empty():
+				text += "\n" + api.entry_reason(sel, hover.x, hover.y)
+			return text
 		return "[b]%s[/b]" % terr.capitalize()
-	return ""
+	return api.entry_reason(sel, hover.x, hover.y) if not s.is_empty() else ""
 
 
 # the terrain legend (ui3d.js refreshLegend): the encounter, the zones and the terrain kinds on this board; blockers share
@@ -3273,6 +3297,7 @@ func _attack_tip(t_id: String) -> String:
 	if plan != null:
 		t += "\n[color=#7fc4ff]From current position (move not taken yet).[/color]"
 	t += "\n" + rows
+	if not _shot_blockers(tv).is_empty(): t += "[color=#ffb875]%s[/color]\n" % _blocker_text(tv)
 	if n > 0:
 		t += "Expected: about [color=#62ccff]%d shield[/color] and [color=#ffae42]%d hull[/color] damage.%s\n[color=#d0a64b]%s[/color]" % [int(round(sh)), int(round(hull)), " [color=#f0b35a]Likely kill.[/color]" if hull >= float(tv["hp"]) else "",
 			("Targeted. Click again or Enter to fire %d weapon%s." % [n, "s" if n > 1 else ""]) if target == t_id else "Click to target (nothing fires yet)."]

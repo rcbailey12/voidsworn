@@ -869,3 +869,42 @@ func _next_round() -> void: # ui3d.js nextRound
 	R.emit({"t": "side", "side": "player"})
 func _finish() -> void:
 	phase = "over"; _queue.clear(); R.emit({"t": "end", "result": R.B["over"]})
+
+# Presentation queries use the same hex line and blocker predicates as combat.
+# They return copies and never consume random numbers or change battle state.
+func line_blockers(a: Dictionary, b: Dictionary) -> Array:
+	_enter()
+	var out: Array = []
+	var line: Array = R.hexLine(a, b)
+	for i in range(1, line.size() - 1):
+		var h = line[i]
+		if R.sightBlocked(h.q, h.r):
+			out.append({"q": int(h.q), "r": int(h.r), "kind": _blocker_kind(h.q, h.r)})
+	_leave(false)
+	return out
+
+func _blocker_kind(q: int, r: int) -> String:
+	var terrain = R.terr(q, r)
+	if R.blocks(terrain): return str(terrain)
+	for hole in R.B.get("map", {}).get("holes", []):
+		for cell in hole.get("cells", []):
+			if int(cell[0]) == q and int(cell[1]) == r: return str(hole.get("kind", "asteroid"))
+	return "obstacle"
+
+func entry_reason(id: String, q: int, r: int) -> String:
+	_enter()
+	var why := ""
+	var u = unit(id)
+	if (R.SOLID != null and R.SOLID.has(R.hkey(q, r))) or R.blocks(R.terr(q, r)):
+		why = "Blocked by the %s at %d,%d." % [{"rock": "asteroid", "hulk": "wreck", "deadstar": "Hollow Sun"}.get(_blocker_kind(q, r), _blocker_kind(q, r)), q, r]
+	elif not R.onBoard(q, r):
+		why = "Outside the playable area."
+	elif u != null:
+		var occupant = R.unitAt(q, r)
+		if occupant != null and occupant != u: why = "Occupied by %s." % str(occupant.get("name", "another ship"))
+		elif R.jt(u.get("activated")): why = "This ship has already acted this round."
+		elif R.jt(u.get("braced")): why = "This ship is braced."
+		elif R.postFireMp(u) <= 0: why = "No movement left for this ship."
+		else: why = "No route within the movement left, including turns and terrain costs."
+	_leave(false)
+	return why

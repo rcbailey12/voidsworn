@@ -45,6 +45,7 @@ var _hits = PackedVector4Array()
 var _hitw = PackedVector4Array()
 var _shield_until = -1.0
 var _last_sh = -1.0
+var section_fraction := [1.0, 1.0, 1.0]
 var stage = [0, 0, 0]     # eng, mid, prow
 var _sec_nodes = [[], [], []]
 var _sec_lights = [[], [], []]
@@ -748,10 +749,9 @@ func sync(fx, u: Dictionary) -> void:
 		var st = 0 if f > 0.8 else (1 if f > 0.6 else (2 if f > 0.4 else (3 if f > 0.2 else 4)))
 		if broken:
 			st = 4
-		# the whole ship's state lifts every section a little (a nearly dead ship looks it everywhere)
-		if hpf < 0.35:
-			st = maxi(st, 2)
+		section_fraction[i] = clampf(f, 0.0, 1.0)
 		want[i] = st
+	_regrade_marks(fx)
 	if squadron:
 		want = [0, 0, 0]
 	if fx.now < busy_until:
@@ -866,6 +866,8 @@ func _plan(fx, i: int, st: int) -> Array:
 	var big = st >= 4
 	var e = BREACH.hole(hull, a["p"], a["n"], L * (0.046 if big else 0.03), 1.3 if big else 0.85, 0.14 if big else 0.1, sd)
 	e.t0 = _t0(a, st, fx)
+	if faction == "chorus":
+		e.bend = 0.35; e.w = e.R * 0.22; e.buckle = 0.035
 	e.sec = i
 	out.append(e)
 	if big:
@@ -898,7 +900,7 @@ func _dmg_request(fx) -> void:
 		if _orig.is_empty():
 			return
 	var job = {"surfs": _orig, "ents": ents, "q": hull.L * 2e-4, "cell": hull.L / 16.0, "ovl": hull.L * 0.0006, "out": {}, "hull": hull,
-		"mesh_on_worker": DisplayServer.get_name() != "headless"}
+		"organic": faction == "chorus", "mesh_on_worker": DisplayServer.get_name() != "headless"}
 	_dmg_job = job
 	_dmg_task = WorkerThreadPool.add_task(func() -> void: job["out"] = BREACH.compute(job))
 	fx.later(fx.now + 0.02, func() -> void: _dmg_poll(fx))
@@ -969,7 +971,7 @@ func add_mark(fx, look: String, w: int, lp: Vector3, ln: Vector3, ldir: Vector3)
 	if squadron or weight <= 0 or dead or gone:
 		return
 	_mark_n += 1
-	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction)
+	var es: Array = BREACH.marks_for(hull, look, w, lp, ln, ldir, float(posmod(_seed, 997)) * 0.013 + _mark_n * 1.37, faction, 1.0, 1.0 - section_fraction[hull.section_of(lp.x)])
 	if es.is_empty():
 		return
 	for e in es:
@@ -991,7 +993,7 @@ func _place_mark(fx, e) -> void:
 			continue
 		if whole_sec or o.c.distance_to(e.c) < o.R * 0.8 + e.R * 0.5 + o.hl:
 			var g: float = minf(o.grow * 1.2, BREACH.GROW_MAX)
-			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.c, o.n, o.ldir, o.seed_v, faction, g)
+			var es2: Array = BREACH.marks_for(hull, o.look, maxi(o.wt, e.wt), o.hit_origin, o.hit_normal, o.ldir, o.seed_v, faction, g, 1.0 - section_fraction[o.sec])
 			if o.part_i < es2.size():
 				var n2 = es2[o.part_i]
 				n2.t0 = fx.now
@@ -1068,6 +1070,9 @@ func _build_section(fx, i: int, up: bool) -> void:
 	var st: int = stage[i]
 	_ents[i] = _plan(fx, i, st)
 	_dmg_request(fx)
+	if faction == "chorus":
+		_build_organic_section(fx, i, st)
+		return
 	if st <= 0:
 		return
 	var r = RandomNumberGenerator.new()
@@ -1115,7 +1120,7 @@ func _build_section(fx, i: int, up: bool) -> void:
 	# 3+: debris shedding from the hole
 	if st >= 3:
 		var pd: Vector3 = ap + an * 0.1
-		for kk in 3:
+		for kk in 2:
 			var v = (an + Vector3(r.randf() - 0.5, r.randf() * 0.4, r.randf() - 0.5)).normalized() * (1.5 + r.randf() * 2.0) * k
 			var ax = Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5).normalized()
 			bshard.add(POOLS.shard_shape(r), POOLS.pack(Vector4(pd.x, pd.y, pd.z, -20.0 + kk * 1.3), Vector4(v.x, v.y, v.z, 3.6),
@@ -1136,9 +1141,9 @@ func _build_section(fx, i: int, up: bool) -> void:
 		var wp = to_world(ap)
 		var wn = dir_world(an)
 		fx.pop(wp + wn * 0.3, T, Color(1, 0.7, 0.4), (2.0 + st) * k, 6.0, wn, 0.12)
-		for kk in 8 + st * 4:
+		for kk in 4 + st:
 			fx.stk(wp, T + fx.rng.randf() * 0.05, 0.3 + fx.rng.randf() * 0.4, Color(1, 0.6, 0.25), 7.0, 0.05, 0.12, 1, fx.rcone(wn, 0.9) * (8 + fx.rng.randf() * 14) * k, 2.0)
-		for kk in st * 2:
+		for kk in mini(st, 3):
 			fx.shd(wp, T, 2.5, fx.rcone(wn, 0.8) * (3 + fx.rng.randf() * 6) * k, hull.L * (0.008 + fx.rng.randf() * 0.012), 1.0)
 		DEATH.spawn_debris(fx, wp + wn * 0.6, wn * 4.0 * k, st - 1, hull.L * 0.02)
 
@@ -1149,7 +1154,7 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 	var a = _anchor(i, "a")
 	var brp: Vector3 = a["p"]
 	var bn: Vector3 = a["n"]
-	var hole = hull.L / 10.0
+	var hole = hull.L * 0.046
 	var k = scale_k()
 	var q = POOLS.quad_shape()
 	var qs = POOLS.streak_shape()
@@ -1157,7 +1162,7 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 	var P = brp - bn * hole * 0.1
 	var upv = Vector3(0, 1, 0)
 	# debris streaming out
-	for kk in 9:
+	for kk in 3:
 		var v = (bn + upv * 0.2 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.6).normalized() * (2.5 + r.randf() * 3) * k
 		var ax = Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5).normalized()
 		bshard.add(POOLS.shard_shape(r), POOLS.pack(Vector4(P.x, P.y, P.z, -20.0 + kk * 0.37), Vector4(v.x, v.y, v.z, 3.3),
@@ -1165,7 +1170,7 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 	# spark showers from inside: the first one lands the moment the hole opens (the A3 sparks were 1.2 s late), then every 2.3 s
 	var spark_per = 2.3
 	var s_off = fposmod(T0, spark_per)
-	for kk in 12:
+	for kk in 4:
 		var v = (bn + upv * 0.3 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.8).normalized() * (6 + r.randf() * 12) * k
 		bs.add(qs, POOLS.pack(Vector4(P.x, P.y, P.z, s_off + r.randf() * 0.12), Vector4(v.x, v.y, v.z, 0.35 + r.randf() * 0.5),
 			Vector4(1, 0.62, 0.25, 4.5), Vector4(0.05, 0.05 * k, 1.5, 1), Vector4(spark_per, 0, 0, 0)))
@@ -1174,7 +1179,7 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 	var p_off = fposmod(T0 + 1.3, pop_per)
 	var Pp = brp - bn * hole * 0.15
 	b.add(q, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off), Vector4(0, 0, 0, 0.3), Vector4(1, 0.6, 0.3, 2.2), Vector4(hole * 0.2, hole * 0.7, 2, r.randf()), Vector4(pop_per, 0, 0, 0)))
-	for kk in 10:
+	for kk in 3:
 		var v = (bn + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (8 + r.randf() * 14) * k
 		bs.add(qs, POOLS.pack(Vector4(Pp.x, Pp.y, Pp.z, p_off + r.randf() * 0.04), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.4),
 			Vector4(1, 0.6, 0.25, 4.0), Vector4(0.04, 0.08 * k, 2.0, 1), Vector4(pop_per, 0, 0, 0)))
@@ -1184,9 +1189,9 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 		var wn = dir_world(bn)
 		fx.pop(wp + wn * 0.5, T0, Color(1, 0.75, 0.45), hole * 2.2, 10.0, wn, 0.16)
 		fx.spr(wp + wn * 0.6, T0, 0.5, Color(1, 0.7, 0.4), 6.0, hole * 0.4, hole * 1.8, 2)
-		for kk in 30:
+		for kk in 8:
 			fx.stk(wp, T0 + fx.rng.randf() * 0.05, 0.35 + fx.rng.randf() * 0.5, Color(1, 0.6, 0.25), 8.0, 0.05, 0.13, 1, fx.rcone(wn, 1.0) * (10 + fx.rng.randf() * 18) * k, 1.8)
-		for kk in 10:
+		for kk in 3:
 			fx.shd(wp, T0, 3.0, fx.rcone(wn, 0.8) * (3 + fx.rng.randf() * 7) * k, hole * (0.08 + fx.rng.randf() * 0.12), 1.0)
 		for kk in 2:
 			fx.spr(wp + wn * 1.0, T0 + 0.08 + kk * 0.1, 1.8, Color(0.1, 0.09, 0.085), 0.45, hole * 0.4, hole * 1.6, 3, wn * 2.5 * k, 0.6)
@@ -1203,6 +1208,14 @@ func _set_burning(fx, on: bool) -> void:
 			(n as Node).queue_free()
 	_burn_nodes = []
 	if not on:
+		return
+	if faction == "chorus":
+		# Burning toggles independently of section stages. Track its emitter
+		# separately so toggling it cannot duplicate permanent wound emitters.
+		var previous: int = _sec_nodes[1].size()
+		_build_organic_section(fx, 1, 2)
+		if _sec_nodes[1].size() > previous:
+			_burn_nodes.append(_sec_nodes[1].pop_back())
 		return
 	var r = RandomNumberGenerator.new()
 	r.seed = _seed + 4242
@@ -1283,3 +1296,42 @@ func jump_out(fx) -> void:
 			_eng_node.visible = false
 		for tr in _trails:
 			(tr["mi"] as Node3D).visible = false)
+
+
+# A mark's geometry follows the section's actual damage, including repairs.
+# Recreate entries rather than mutating entries a worker may be reading.
+func _regrade_marks(fx) -> void:
+	var changed := false
+	var updated: Array = []
+	for e in _marks:
+		var damage: float = 1.0 - section_fraction[e.sec]
+		if absf(e.section_damage - damage) > 0.025:
+			var entries := BREACH.marks_for(hull, e.look, e.wt, e.hit_origin, e.hit_normal, e.ldir, e.seed_v, faction, e.grow, damage)
+			if e.part_i < entries.size():
+				var replacement = entries[e.part_i]
+				replacement.t0 = e.t0
+				replacement.sec = e.sec
+				updated.append(replacement)
+				changed = true
+		else: updated.append(e)
+	if changed:
+		_marks = updated
+		_dmg_request(fx)
+
+func _build_organic_section(fx, i: int, st: int) -> void:
+	if st <= 0: return
+	var a := _anchor(i, "a")
+	var p: Vector3 = a.p
+	var n: Vector3 = a.n
+	var glow: Color = fac.damage_glow
+	var b := POOLS.Batch.new()
+	# Soft spores and ichor. No metal shards, sparks or orange fire.
+	for j in mini(st + 1, 5):
+		var v: Vector3 = n * hull.L * 0.025 + Vector3.UP * hull.L * 0.008
+		b.add(POOLS.quad_shape(), POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + j * 0.6),
+			Vector4(v.x, v.y, v.z, 2.5), Vector4(glow.r * 0.45, glow.g * 0.55, glow.b * 0.35, 0.24),
+			Vector4(hull.L * 0.008, hull.L * 0.045, 20, j * 0.17), Vector4(3.0, 0, 0.6, 0)))
+	var holder := Node3D.new()
+	_dmg_root.add_child(holder)
+	_sec_nodes[i].append(holder)
+	b.build(fx.mat(SH.SPRITE, 1), holder, "fx_wound_spores")

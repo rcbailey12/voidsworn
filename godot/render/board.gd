@@ -6,6 +6,7 @@ extends Node3D
 const HT := preload("res://render/hull_table.gd")
 const BL := preload("res://world/board_look.gd")   # the board look trial (today, A holo, B living, C cinematic + tactical)
 const A4P := preload("res://assets/ships/a4_props.gd")  # A4's painted station and derelicts (null when not built)
+const BV := preload("res://world/blocker_visuals.gd")
 const HS := 10.0
 var HW := HS * sqrt(3.0)
 
@@ -33,6 +34,8 @@ var overlay := {}            # "q,r" -> Color
 var ring_over := {}          # "q,r" -> Color
 var style_over := {}         # "q,r" -> 1 move hex, 2 hovered or planned move hex (F1: drawn with a lit edge, never a terrain look)
 var hover_key := ""
+var blocker_visuals: Node3D
+var blocker_highlights: Node3D
 var props: Node3D
 var rock_meshes: Array = []
 var props_world := false     # G4 world draws the rocks, debris and nebula; the board keeps hulks, stations and the planet
@@ -238,6 +241,11 @@ func build(rules) -> void:
 	props.name = "Terrain"
 	add_child(props)
 	_terrain()
+	blocker_visuals = BV.new()
+	props.add_child(blocker_visuals)
+	blocker_visuals.build(VW, hex_world)
+	blocker_highlights = Node3D.new()
+	add_child(blocker_highlights)
 	_zones()
 	_well_info()
 	_terrain_edges()
@@ -740,6 +748,11 @@ func _terrain() -> void:
 
 func _rocks(c: Vector3, rng: RandomNumberGenerator, n: int, s0: float, s1: float) -> void:
 	if rock_meshes.is_empty():
+		var mi := MeshInstance3D.new()
+		mi.mesh = BV.WR.fallback_mesh("board_rock")
+		mi.scale = Vector3.ONE * minf(s1, 7.5)
+		mi.position = c + Vector3.UP
+		props.add_child(mi)
 		return
 	for i in n:
 		var mi := MeshInstance3D.new()
@@ -758,9 +771,11 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	if a4 != null:
 		a4.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3.ONE * 11.0), c)
 		props.add_child(a4)
+		BV.fit_hulk(a4, c)
 		return
 	var p := "res://gen/hulls/%s.res" % code
 	if not ResourceLoader.exists(p):
+		BV.hulk_fallback(props, c, rng)
 		return
 	var mi := MeshInstance3D.new()
 	mi.mesh = load(p)
@@ -771,6 +786,7 @@ func _hulk(c: Vector3, rng: RandomNumberGenerator) -> void:
 	mi.material_override = m
 	mi.transform = Transform3D(Basis.from_euler(Vector3(rng.randf_range(-0.5, 0.5), rng.randf() * TAU, rng.randf_range(-0.6, 0.6))).scaled(Vector3(11, 11, -11)), c)
 	props.add_child(mi)
+	BV.fit_hulk(mi, c)
 
 
 func _station(c: Vector3, rng: RandomNumberGenerator, size := 46.0) -> void:
@@ -864,3 +880,12 @@ func _planet() -> void:
 	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	shell.position = mi.position
 	props.add_child(shell)
+
+
+func show_blockers(hexes: Array) -> void:
+	if not is_instance_valid(blocker_highlights): return
+	for child in blocker_highlights.get_children():
+		blocker_highlights.remove_child(child)
+		child.queue_free()
+	for h in hexes:
+		BV.outline(blocker_highlights, hex_world(h.q, h.r), Color(1.0, 0.38, 0.08), 0.9)

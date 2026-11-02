@@ -18,6 +18,9 @@ const WR := preload("res://world/world_rocks.gd")
 const WS := preload("res://world/world_shaders.gd")
 const FLOOK := preload("res://fx/faction_look.gd")
 
+const HD := preload("res://world/hull_debris.gd")
+var _chunk_task := -1
+var _chunk_job := {}
 var W = null                 # the world (world.gd)
 var rng := RandomNumberGenerator.new()
 var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
@@ -513,6 +516,7 @@ func _debris(ps: Array) -> void:
 		for i in xs.size():
 			mm.set_instance_transform(i, xs[i])
 		var mmi := MultiMeshInstance3D.new()
+		mmi.name = "FallbackWreck"
 		mmi.multimesh = mm
 		mmi.material_override = hot if parts[1] == "1" else metal
 		mmi.extra_cull_margin = 8.0     # the shader tumbles each piece about its middle
@@ -836,3 +840,48 @@ func _well(c: Vector3) -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.position = Vector3(c.x, -1.5, c.z)
 	add_child(mi)
+
+
+func use_ship_debris(ships: Array) -> void:
+	if W._terr_pts.debris.is_empty() or _chunk_task >= 0 or has_node("HullDebris"): return
+	var sources := HD.gather(ships)
+	if sources.is_empty(): return  # keep current debris when assets are absent
+	_chunk_job = {"sources": sources, "chunks": []}
+	var job := _chunk_job
+	_chunk_task = WorkerThreadPool.add_task(func() -> void: job.chunks = HD.cut(job.sources))
+	_install_chunks()
+
+func _install_chunks() -> void:
+	while not WorkerThreadPool.is_task_completed(_chunk_task):
+		await get_tree().process_frame
+		if not is_inside_tree() or _chunk_task < 0: return
+	WorkerThreadPool.wait_for_task_completion(_chunk_task)
+	_chunk_task = -1
+	var meshes := HD.meshes(_chunk_job.chunks)
+	_chunk_job = {}
+	if meshes.is_empty(): return
+	for child in get_children():
+		if str(child.name).begins_with("FallbackWreck"): child.queue_free()
+	var holder := Node3D.new()
+	holder.name = "HullDebris"
+	add_child(holder)
+	var index := 0
+	for p in W._terr_pts.debris:
+		for j in 4:
+			var mi := MeshInstance3D.new()
+			mi.mesh = meshes[index % meshes.size()]
+			index += 1
+			var box := mi.mesh.get_aabb()
+			var scale_v := rng.randf_range(3.0, 5.4) / maxf(box.size.length(), 0.01)
+			var basis: Basis = W._rand_basis(rng).scaled(Vector3.ONE * scale_v)
+			var angle := rng.randf() * TAU
+			# All chunks stay inside the original debris hex, with room for tumble.
+			var position_v: Vector3 = p + Vector3(cos(angle) * 3.8, rng.randf_range(-1, 2), sin(angle) * 3.8)
+			mi.transform = Transform3D(basis, position_v - basis * box.get_center())
+			holder.add_child(mi)
+	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
+
+func _exit_tree() -> void:
+	if _chunk_task >= 0:
+		WorkerThreadPool.wait_for_task_completion(_chunk_task)
+		_chunk_task = -1

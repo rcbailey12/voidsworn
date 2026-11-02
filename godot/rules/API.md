@@ -119,6 +119,12 @@ All return `true` when the action happened. They do nothing (return `false`) whe
 - **Facing** `f` points at `DIRS[f]` = `[[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]]` (0 is +q, screen angle `f * 60` degrees).
 - **Hex centre:** `x = HEX_W * (q + r/2)`, `z = -1.5 * HEX_S * r`, with `HEX_S = 10` and `HEX_W = 10 * sqrt(3)` (the game's scene3d spacing).
 
+### Blocker explanations (presentation only)
+
+`api.line_blockers(a, b)` returns copied `{q, r, kind}` dictionaries for blocked intermediate hexes on the same hex line used by combat sight checks. Pass shooter and target dictionaries from `view()`. Both endpoint hexes are excluded.
+
+`api.entry_reason(id, q, r)` explains blocked terrain/set pieces, off-board cells, other ships, spent activations, brace, exhausted movement, or the lack of a route within the remaining movement costs. Use it after the reach query says a destination is unavailable. Blocker reasons include the kind and coordinates. Neither query changes rules state, consumes random numbers or bumps the API version; both hold the normal API mutex.
+
 ## The event stream: `take_events()`, and the return of `step()`
 
 Events come in order. Every event has a `t` (type) and plain fields; ids are ship ids from `view()`.

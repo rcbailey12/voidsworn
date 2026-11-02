@@ -54,6 +54,7 @@ var _under_mat: ShaderMaterial = null
 var _terr_pts := {"neb": [], "storm": [], "debris": []}   # board positions of those hexes (the living look builds on them)
 var _rock_kind := "stone"
 var _fac := "voidsworn"
+var _debris_ships: Array = []
 var _living = null              # world_living.gd: B's gas, storm, debris and well (built the first time a look needs it)
 var _pano: Texture2D = null     # the battle's painted panorama (battle.gd passes it; the dead-star board shows it, R2)
 
@@ -191,6 +192,7 @@ func set_look() -> void:
 		_living.name = "Living"
 		add_child(_living)
 		_living.build(self)
+		if not _debris_ships.is_empty(): _living.use_ship_debris(_debris_ships)
 		notes.append("living terrain built in %.0f ms" % ((Time.get_ticks_usec() - t0) / 1000.0))
 	if _living != null:
 		_living.visible = bool(sp["living"])
@@ -301,19 +303,18 @@ func _bake_sky(lamps: Array) -> void:
 		"neb": float(setting["neb"]), "cover": float(setting["cover"]), "dust": float(setting["dust"]), "band": float(setting["band"]),
 		"band_n": setting["band_n"], "feature": setting["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
 		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(setting))}
-	var img: Image = await _baker.bake(key, SKY.bake_code(), params, size, 8 if size.x > 2048 else 4)
-	if img == null or _sky_mat == null:
-		notes.append("sky: stars only (no renderer for the nebula bake)")
-		return
-	# mip levels for the rocks' haze (a blurred read of the sky); the sky itself samples level 0
-	if not img.has_mipmaps():
-		img.generate_mipmaps()
-	var tex := ImageTexture.create_from_image(img)
-	_sky_mat.set_shader_parameter("neb_tex", tex)
-	_sky_mat.set_shader_parameter("has_neb", 1.0)
-	_sky_tex = tex
-	for k in _mats:
-		_sky_into(_mats[k])
+	var code := SKY.bake_code()
+	var resolutions := [size] if BAKER.cached(BAKER.cache_key(key, code, params, size)) != null else [Vector2i(512, 256), size]
+	for resolution in resolutions:
+		if resolution == size and resolutions.size() > 1: await get_tree().create_timer(3.0).timeout
+		var img: Image = await _baker.bake(key, code, params, resolution, maxi(2, ceili(resolution.y / 64.0)))
+		if img == null or _sky_mat == null: return
+		if not img.has_mipmaps(): img.generate_mipmaps()
+		var tex := ImageTexture.create_from_image(img)
+		_sky_mat.set_shader_parameter("neb_tex", tex)
+		_sky_mat.set_shader_parameter("has_neb", 1.0)
+		_sky_tex = tex
+		for k in _mats: _sky_into(_mats[k])
 
 
 # ---------------------------------------------------------------- the system: planet, rings, moons
@@ -456,16 +457,22 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 
 func _bake_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int, size: Vector2i) -> void:
 	var params := {"seed": float(bake_seed % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": 0}
-	var a: Image = await _baker.bake(key + "|a", PL.bake_code(), params, size, 2)
-	if a == null:
-		return
-	params["pass_id"] = 1
-	var b: Image = await _baker.bake(key + "|b", PL.bake_code(), params, size, 2)
-	if b == null:
-		return
-	m.set_shader_parameter("tex_a", ImageTexture.create_from_image(a))
-	m.set_shader_parameter("tex_b", ImageTexture.create_from_image(b))
-	m.set_shader_parameter("has_tex", 1.0)
+	var code := PL.bake_code()
+	var cached_a := BAKER.cached(BAKER.cache_key(key + "|a", code, params, size))
+	params.pass_id = 1
+	var cached_b := BAKER.cached(BAKER.cache_key(key + "|b", code, params, size))
+	var resolutions := [size] if cached_a != null and cached_b != null else [Vector2i(256, 128), size]
+	for resolution in resolutions:
+		if resolution == size and resolutions.size() > 1: await get_tree().create_timer(3.0).timeout
+		params["pass_id"] = 0
+		var a: Image = await _baker.bake(key + "|a", code, params, resolution, maxi(2, ceili(resolution.y / 64.0)))
+		if a == null: return
+		params["pass_id"] = 1
+		var b: Image = await _baker.bake(key + "|b", code, params, resolution, maxi(2, ceili(resolution.y / 64.0)))
+		if b == null: return
+		m.set_shader_parameter("tex_a", ImageTexture.create_from_image(a))
+		m.set_shader_parameter("tex_b", ImageTexture.create_from_image(b))
+		m.set_shader_parameter("has_tex", 1.0)
 
 
 func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumberGenerator) -> void:
@@ -1198,3 +1205,9 @@ func dust(mk: String) -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	mi.extra_cull_margin = 100.0
 	add_child(mi)
+
+
+# ShipView scenes are already loaded by the battle; no asset path or GLB import.
+func use_ship_debris(ships: Array) -> void:
+	_debris_ships = ships
+	if _living != null: _living.use_ship_debris(ships)
