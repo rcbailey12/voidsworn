@@ -2,7 +2,9 @@
 
 ## 0. Status at Nov 1, 2026, 19:15 CDT (read this first)
 
-**How we work now (Ryan, Nov 1 19:11):** Claude's weekly usage is low until about Nov 6, so Claude is the orchestrator and final reviewer only. Coding, tests and read-heavy reports go to **Codex** on Ryan's PC (tools/pc/codex_run.bat; the flow is in contrib/opus/briefs/feel_pass_2026-11-01.md, "Codex worker"; Ryan's ChatGPT plan has plenty of room). Multi-model research, drafting and reviews go to **Muse** (Ryan pastes a brief from contrib/opus/briefs/muse_*.md; Muse runs its models and commits to contrib/muse/). Claude writes briefs, reviews patches and shots, runs parity, and signs off. Launch a Claude helper only for visual work that needs repeated PC captures, and keep it lean. Helper transcripts that grow too large cannot be resumed: launch a takeover instead.
+**How we work now (Ryan, Nov 1 19:11):** Claude's weekly usage is low until about Nov 6, so Claude is the orchestrator and final reviewer only. Coding, tests and read-heavy reports go to **Codex** on Ryan's PC (tools/pc/codex_run.bat; the flow is in contrib/opus/briefs/feel_pass_2026-11-01.md, "Codex worker"; Ryan's ChatGPT plan has plenty of room). Multi-model research, drafting and reviews go to **Muse** (Muse takes muse-labeled issues from the job board, runs its models and opens a pull request into contrib/muse/). Claude writes briefs, reviews patches and shots, runs parity, and signs off. Launch a Claude helper only for visual work that needs repeated PC captures, and keep it lean. Helper transcripts that grow too large cannot be resumed: launch a takeover instead.
+
+**Job board (Ryan, Nov 2, FINDINGS R75):** the open GitHub issues are the to-do list; labels say who has it (codex, muse, opus, ryan, blocked). Muse and other outside agents deliver pull requests from `<agent>/issue-<n>` branches, never straight to main; Opus reviews and merges. Codex stays local (no Codex cloud: older model). Ryan's only Muse step is "Rey, check the board" (standing rule: contrib/opus/briefs/muse_standing_rule.md). Start every session by reading the open issues and open PRs. The open list below was seeded into issues #2 to #7 on Nov 2; new work goes on the board, not here.
 
 **Current phase: the feel pass** ([contrib/opus/briefs/feel_pass_2026-11-01.md](contrib/opus/briefs/feel_pass_2026-11-01.md)), from Ryan's first Godot playtests (FINDINGS R64 to R72).
 
@@ -216,5 +218,5 @@ None blocking. He weighs in next at:
 
 Starter line:
 ```
-Read HANDOFF.md section 0 in github.com/rcbailey12/voidsworn (main), then contrib/opus/briefs/feel_pass_2026-11-01.md and FINDINGS R64 to R72. You are orchestrator and final reviewer only: send coding to Codex on my PC, research and drafting to Muse, and review what comes back. Start with the open list in section 0.
+Read HANDOFF.md section 0 in github.com/rcbailey12/voidsworn (main), then FINDINGS R64 to R75. You are orchestrator and final reviewer only: send coding to Codex on my PC, research and drafting to Muse, and review what comes back. Start with the open issues and open pull requests on the repo's job board.
 ```

@@ -7,6 +7,16 @@ he plays on a Pixel 10 XL and a Windows PC, and he judges work by screenshots.
 
 It holds the goal, the full history, every piece of owner feedback word for word, the open issues and the questions we want answered.
 
+## The job board (Ryan, Nov 2, 2026)
+
+- Every job is an open GitHub issue: https://github.com/rcbailey12/voidsworn/issues. The label says who has it: `codex` (Codex on
+  Ryan's PC), `muse` (Rey and its models), `opus` (Claude), `ryan` (waiting on Ryan), plus `blocked`.
+- Outside agents (Muse and any other model) deliver as a pull request from a branch named `<agent>/issue-<number>`, with
+  "Closes #<number>" in the description. Never push to main. Opus reviews, checks the claims and merges.
+- Codex stays local on Ryan's PC (codex_run.bat). Opus collects its patch, reviews it and commits with "Fixes #<number>".
+  No Codex cloud tasks or cloud reviews: they run an older model than the local one.
+- Muse's standing instructions: `contrib/opus/briefs/muse_standing_rule.md`.
+
 ## If you are not the main agent: work in your own folder
 
 - Put everything you make in `contrib/<your-agent-name>/` (for example `contrib/argon/`). Do not edit files outside it: no game

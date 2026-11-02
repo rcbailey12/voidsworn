@@ -1,7 +1,7 @@
 # Voidsworn: working rules for Claude
 
 **Start here (Oct 24 2026):**
-- Read HANDOFF.md first.
+- Read HANDOFF.md first, then the open issues and pull requests (the job board, Nov 2 2026, FINDINGS R75; rules in AGENTS.md).
 - The approved build plan is `contrib/opus/go-forward-plan.md`.
 - The findings registry is `contrib/opus/FINDINGS.md`: check it before trusting any claim in an older doc.
 - Owner rulings of Oct 24 that override older docs:
