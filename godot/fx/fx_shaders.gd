@@ -286,6 +286,7 @@ const STREAK := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + COMMON + """
+uniform float gate = 1.0;
 varying vec2 vUv;
 varying vec3 vCol;
 varying float vK;
@@ -296,7 +297,7 @@ void vertex() {
 	float age = pAge(a, a4.x);
 	float life = a1.w;
 	vUv = vec2(0.0); vCol = vec3(0.0); vK = 0.0; vU = 0.0;
-	if (a < 0.0 || age >= life) {
+	if (a < 0.0 || age >= life || gate <= 0.0) {
 		""" + HIDE + """
 	} else {
 		vec3 v = a1.xyz;
@@ -357,7 +358,7 @@ void vertex() {
 		vUv = VERTEX.xy;
 		vK = a3.w;
 		vU = u;
-		vCol = a2.rgb * a2.a * fade * bw;
+		vCol = a2.rgb * a2.a * fade * bw * clamp(gate, 0.0, 1.0);
 		POSITION = PROJECTION_MATRIX * (VIEW_MATRIX * vec4(p, 1.0));
 	}
 }
@@ -1496,30 +1497,24 @@ void fragment() {
 
 const CRACKS := """
 shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never, cull_back, shadows_disabled, fog_disabled;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + COMMON + """
 uniform float t0 = 0.0;
-uniform float dur = 1.5;
-uniform float scale = 0.5;
-uniform vec3 glow = vec3(1.0, 0.45, 0.1);
-varying vec3 vL;
-float h3(vec3 p) { p = fract(p * 0.3183099 + vec3(0.11, 0.17, 0.13)); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
-float n3(vec3 x) {
-	vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(mix(h3(i), h3(i + vec3(1.0, 0.0, 0.0)), f.x), mix(h3(i + vec3(0.0, 1.0, 0.0)), h3(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
-		mix(mix(h3(i + vec3(0.0, 0.0, 1.0)), h3(i + vec3(1.0, 0.0, 1.0)), f.x), mix(h3(i + vec3(0.0, 1.0, 1.0)), h3(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z);
-}
-void vertex() { vL = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+uniform float dur = 1.0;
+uniform mat4 frame;
+uniform vec3 cut_at = vec3(0.0);
+uniform vec3 cut_axis = vec3(1.0, 0.0, 0.0);
+uniform float width = 0.1;
+uniform vec3 glow = vec3(1.0, 0.3, 0.04);
+varying vec3 cut_p;
+void vertex() { cut_p = (frame * vec4(VERTEX, 1.0)).xyz; }
 void fragment() {
-	float u = clamp((scene_t - t0) / dur, 0.0, 1.0);
+	float u = clamp((scene_t - t0) / max(dur, 0.0001), 0.0, 1.0);
 	if (u <= 0.0) { discard; }
-	vec3 p = vL * scale;
-	float r = 1.0 - abs(n3(p) * 2.0 - 1.0);
-	float r2 = 1.0 - abs(n3(p * 2.3 + 4.0) * 2.0 - 1.0);
-	float crack = smoothstep(1.0 - 0.05 * u, 1.0, r) + smoothstep(1.0 - 0.03 * u, 1.0, r2) * 0.7;
-	float fl = flick(0.7 + 0.3 * n3(p * 3.0 + scene_t * 4.0), scene_t, 2.0);
-	vec3 c = mix(glow, vec3(1.0, 0.85, 0.6), smoothstep(0.5, 1.0, crack));
-	ALBEDO = clamp(c * crack * (1.5 + 4.0 * u) * fl * fx_gain, 0.0, 64.0);
+	float tear = sin(dot(cut_p, vec3(1.7, 8.3, 5.1))) * width * 0.32;
+	float d = abs(dot(cut_p - cut_at, cut_axis) + tear);
+	float line = 1.0 - smoothstep(width * 0.15, max(width, 0.0001), d);
+	ALBEDO = clamp(glow * line * smoothstep(0.0, 0.7, u) * 1.6 * fx_gain, 0.0, 8.0);
 }
 """
 
@@ -1564,9 +1559,9 @@ float field(vec3 pl, float age, inout vec3 em, inout vec3 alb) {
 		float nb = vn3(pl * 13.0 + vec3(-age * 0.9, P.z * 2.0, age * 0.5));
 		float d = clamp((rs - r) / rs * 1.6 + (n - 0.5) * 1.4 + (nb - 0.5) * 0.4, 0.0, 1.0) * smoothstep(0.98, 0.72, r);
 		float temp = clamp((1.0 - r / rs) * 1.3 + (n - 0.5) * 1.2 + (nb - 0.5) * 0.5, 0.0, 1.0) * exp(-age * 1.25);
-		em = mix(heatRamp(temp), heatRamp(temp) * tint * 1.4, 0.3) * temp * temp * 10.0 * (0.55 + 0.9 * nb);
+		em = mix(heatRamp(temp), heatRamp(temp) * tint * 1.4, 0.3) * temp * temp * 10.0 * (0.55 + 0.9 * nb) * mix(1.0, 0.18, fx_calm);
 		alb = vec3(0.065, 0.058, 0.052) * (0.7 + 0.6 * nb);
-		float vis = smoothstep(0.0, 0.15, age) * (1.0 - smoothstep(life - 1.0, life, age));
+		float vis = smoothstep(0.0, max(min(life * 0.25, 0.15), 0.001), age) * (1.0 - smoothstep(max(life * 0.55, life - 1.0), max(life, 0.001), age));
 		return d * d * 3.0 * vis;
 	}
 	float y = pl.y + 0.5;

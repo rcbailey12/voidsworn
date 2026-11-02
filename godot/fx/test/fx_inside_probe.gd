@@ -68,7 +68,7 @@ func _run() -> void:
 	fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
-	fx.setup({"camera": cam, "quality": "max", "shake": 0.0, "unit": 1.0})
+	fx.setup({"camera": cam, "quality": _env("PROBE_QUALITY", "max"), "reduce_flashing": _env("PROBE_CALM", "") == "1", "shake": 0.0, "unit": 1.0})
 	print("[inside] renderer=%s adapter=%s" % [RenderingServer.get_current_rendering_method(), RenderingServer.get_video_adapter_name()])
 	var box := _env("PROBE_BOX", "") == "1"
 	var warmed := false
@@ -77,7 +77,7 @@ func _run() -> void:
 		var cls: String = spec.split(":")[1]
 		var tag := ("%s_%s" % [fac, cls]).to_lower().replace("-", "")
 		var big := cls != "Frigate"
-		var sv: Node3D = _box(fac) if box else _ship(fac, cls, big)
+		var sv: Node3D = _box(fac, cls) if box else _ship(fac, cls, big)
 		if not warmed:
 			await fx.warmup(cam)
 			warmed = true
@@ -113,9 +113,34 @@ func _run() -> void:
 		# the kill
 		var tb: float = fx.death("C", "big")
 		var Tb: float = fx.now + tb - 0.6
+		if big:
+			await _until(Tb - 1.02)
+			await _shot(zoom, cw, "%s_kill_power_down" % tag)
+			await _until(Tb - 0.62)
+			await _shot(zoom, cw, "%s_kill_vent" % tag)
+			await _until(Tb - 0.08)
+			await _shot(zoom, cw, "%s_kill_crack" % tag)
+		else:
+			await _until(Tb - 0.12)
+			await _battle(cw, "%s_kill_ribbon_battle" % tag)
 		await _until(Tb + 0.15)
+		# A fresh damage cut may still be finishing. Measure captures from the
+		# actual replacement, so a delayed worker cannot label a live hull as wreckage.
+		var waited := 0
+		while fx.dstate["wrecks"].is_empty() and waited < 1800:
+			await _step()
+			waited += 1
+		if fx.dstate["wrecks"].is_empty():
+			push_error("inside probe: split never completed")
+			quit(1)
+			return
+		Tb = float(fx.dstate["wrecks"].back()["t0"])
+		print("[inside] split=%0.3f pieces=%d wait_frames=%d" % [Tb, fx.dstate["wrecks"].back()["nodes"].size(), waited])
 		await _battle(cw, "%s_kill_battle" % tag)
 		await _shot(zoom, cw, "%s_kill_close_a" % tag)
+		await _until(Tb + 0.32)
+		print("[inside] core age=%.3f counted_flashes=%s" % [fx.now - Tb, str(fx.flash_log)])
+		await _shot(zoom, cw, "%s_kill_core" % tag)
 		await _until(Tb + 0.8)
 		var piece := _biggest_piece()
 		if piece != null:
@@ -150,7 +175,7 @@ func _ship(fac: String, cls: String, big: bool) -> Node3D:
 
 
 # a closed box hull (the smoke test's stand-in), for a check without res://gen
-func _box(fac: String) -> Node3D:
+func _box(fac: String, cls: String) -> Node3D:
 	var r := Node3D.new()
 	r.name = "ship_C"
 	var model := Node3D.new()
@@ -158,7 +183,8 @@ func _box(fac: String) -> Node3D:
 	r.add_child(model)
 	var mi := MeshInstance3D.new()
 	var bm := BoxMesh.new()
-	bm.size = Vector3(24.0, 4.3, 7.2)
+	var length := 10.4 if cls == "Frigate" else 24.0
+	bm.size = Vector3(length, length * 0.18, length * 0.3)
 	bm.subdivide_width = 24
 	bm.subdivide_height = 6
 	bm.subdivide_depth = 8
@@ -170,7 +196,7 @@ func _box(fac: String) -> Node3D:
 	am.surface_set_material(0, m)
 	model.add_child(mi)
 	world.add_child(r)
-	fx.add_ship("C", r, {"faction": fac, "cls": "Cruiser", "size": 1.0, "meshes": [mi]})
+	fx.add_ship("C", r, {"faction": fac, "cls": cls, "size": 0.55 if cls == "Frigate" else 1.0, "meshes": [mi]})
 	return r
 
 
@@ -217,8 +243,10 @@ func _battle(at: Vector3, name: String) -> void:
 	rig.t = at
 	rig.snap()
 	rig.current = true
+	fx.camera = rig
 	await RenderingServer.frame_post_draw
 	await RenderingServer.frame_post_draw
 	vp.get_texture().get_image().save_jpg("%s/%s.jpg" % [out, name], 0.9)
 	print("[inside] wrote ", name)
 	cam.current = true
+	fx.camera = cam

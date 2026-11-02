@@ -36,6 +36,21 @@ func _run() -> void:
 				_check(open == 0, "sealed mesh has no unmatched edges: %d" % open)
 				_check((pc["cap"][Mesh.ARRAY_VERTEX] as PackedVector3Array).size() > int(pc["boundary_edges"]) * 3, "cap includes thickness bands and ribs")
 			print("DESTRUCTION_GEOMETRY mirror=%s disconnected=%s pieces=%d" % [mirrored, disconnected, pieces.size()])
+	# A concave cut must cover its outline, without a shared centre-point fan.
+	var outline := PackedVector3Array([Vector3(0, 0, 0), Vector3(0, 4, 0), Vector3(0, 4, 1),
+		Vector3(0, 1, 1), Vector3(0, 1, 4), Vector3(0, 0, 4)])
+	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
+	var pc := {"cap_loops": 0, "cap_fallbacks": 0}
+	DEATH._cap_outline(cap, outline, AABB(Vector3(-6, 0, 0), Vector3(6, 4, 4)), 0.000001, pc)
+	_check(pc["cap_fallbacks"] == 0, "concave outline uses polygon triangulation")
+	var area := 0.0
+	for i in range(0, (outline.size() - 2) * 3, 3):
+		var p: PackedVector3Array = cap["v"]
+		var a := Vector2(p[i].y, p[i].z)
+		var b := Vector2(p[i + 1].y, p[i + 1].z)
+		var c := Vector2(p[i + 2].y, p[i + 2].z)
+		area += absf((b - a).cross(c - a)) * 0.5
+	_check(absf(area - 7.0 * 0.982 * 0.982) < 0.001, "concave cap covers exactly the recessed outline")
 	# The material keeps actual imported texture resources and never nests wrappers.
 	var material := ORMMaterial3D.new()
 	material.albedo_color = Color(0.2, 0.3, 0.4)

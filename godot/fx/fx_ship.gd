@@ -24,6 +24,7 @@ var weight = 2            # 0 craft, 1 light, 2 medium, 3 heavy, 4 capital
 var squadron = false
 var shielded = true
 var flagship = false
+var death_big = false     # R73: class, not draw scale, decides kill slow motion
 var hull: HULL
 var dead = false
 var gone = false
@@ -104,6 +105,7 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	squadron = bool(info.get("squadron", false)) or String(info.get("cls", "")) == "Squadron"
 	shielded = bool(info.get("shielded", fac["shielded"])) and not squadron
 	flagship = bool(info.get("flagship", false))
+	death_big = flagship or String(info.get("cls", "")) in ["Cruiser", "Carrier", "Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Bio-titan", "Ark", "Tomb-ark"]
 	var sz = float(info.get("size", 0.8))
 	weight = 0 if squadron else (1 if sz < 0.65 else (2 if sz < 0.9 else (3 if sz < 1.1 else 4)))
 	if flagship:

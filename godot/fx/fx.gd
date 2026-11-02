@@ -52,6 +52,8 @@ var now = 0.0
 var _speed = 1.0
 var _pause_until = -1.0
 var _pause_depth = 1.0
+var _death_slow_left = 0.0  # real seconds, never Engine.time_scale
+var _death_hurry_until = -1.0
 
 # --- storage
 var pools = {}
@@ -126,6 +128,8 @@ func release() -> void:
 	dstate.clear()
 	pools.clear()
 	_live_ids.erase(get_instance_id())
+	if _live_ids.is_empty():
+		HULL.clear_shader_cache()
 
 
 # For a clean quit (G2's main.quit_clean calls it): release every live fx node's resources now.
@@ -190,11 +194,10 @@ func _mat(code: String, prio := 0, defines := "") -> ShaderMaterial:
 	var key := str(code.hash()) + "|" + defines
 	var s: Shader = _shaders.get(key)
 	if s == null:
-		s = Shader.new()
 		if defines != "":
 			var nl = code.find("\n", code.find("render_mode"))
 			code = code.substr(0, nl + 1) + defines + code.substr(nl + 1)
-		s.code = code
+		s = HULL.shared_shader(code)
 		_shaders[key] = s
 	var m = ShaderMaterial.new()
 	m.shader = s
@@ -218,6 +221,9 @@ func step(delta: float) -> void:
 	var spd = 1.0
 	if now < _pause_until:
 		spd = _pause_depth
+	if _death_slow_left > 0.0:
+		_death_slow_left = maxf(0.0, _death_slow_left - delta)
+		spd = minf(spd, 0.35) if _death_slow_left > 0.0 else spd
 	_speed = lerpf(_speed, spd, 0.6)
 	var dt = delta * _speed
 	now += dt
@@ -522,6 +528,20 @@ func hit_pause(t: float, frames: int) -> void:
 	_pauses.append([t, frames])
 
 
+func death_slowmo() -> void:
+	if now >= _death_hurry_until and _death_slow_left <= 0.0:
+		_death_slow_left = 0.48
+
+
+# Same presentation hurry as the battle. Also suppress a beat scheduled later in this death.
+func hurry_death() -> void:
+	_death_slow_left = 0.0
+	_death_hurry_until = now + 3.0
+	_pause_until = -1.0
+	_pauses.clear()
+	_speed = 1.0
+
+
 func shake_offset() -> Vector2:
 	return _shake_off
 
@@ -791,6 +811,9 @@ func particles_emitted() -> int:
 func warmup(cam: Camera3D, frames := 4) -> void:
 	if cam == null:
 		return
+	# The temporary PBR adapter is queried for uniforms at death too. Keep its
+	# shader alive so that query never recompiles it for each new ship.
+	_shaders["hull_exterior"] = HULL.shared_shader(HULL.EXTERIOR)
 	var at = cam.global_transform * Vector3(0, 0, -30.0 * unit)
 	var T = now
 	var c = Color(1, 0.6, 0.3)
@@ -817,6 +840,8 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	if not compat:
 		mats.append_array([mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
 	for i in mats.size():
+		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
+		_shaders["warm:" + str(mats[i].shader.code.hash())] = mats[i].shader
 		var mi = MeshInstance3D.new()
 		mi.mesh = box
 		mi.material_override = mats[i]
@@ -828,6 +853,16 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 	harr[Mesh.ARRAY_VERTEX] = PackedVector3Array([Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 0, 0)])
 	harr[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.BACK, Vector3.BACK, Vector3.BACK])
 	harr[Mesh.ARRAY_COLOR] = PackedColorArray([Color.WHITE, Color.WHITE, Color.WHITE])
+	# A cap has position/normal/colour only, unlike the textured hull. Warm its
+	# opaque pass and CHUNK overlay in that exact format before the first death.
+	var cap_arr: Array = harr.duplicate()
+	var cap_mesh := ArrayMesh.new()
+	cap_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, cap_arr)
+	var cap_mi := MeshInstance3D.new()
+	cap_mi.mesh = cap_mesh
+	cap_mi.material_override = mat(DEATH.SLAG, 0)
+	cap_mi.material_overlay = mat(SH.CHUNK, 1)
+	tmp.add_child(cap_mi)
 	var c4 = PackedFloat32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1])
 	for ci in [Mesh.ARRAY_CUSTOM0, Mesh.ARRAY_CUSTOM1, Mesh.ARRAY_CUSTOM2, Mesh.ARRAY_CUSTOM3]:
 		harr[ci] = c4
@@ -878,6 +913,8 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 			dm.mesh = smi.mesh
 			for si in smi.mesh.get_surface_count():
 				dm.set_surface_override_material(si, HULL.damage_material(smi.get_active_material(si), Transform3D.IDENTITY, {}, 1.0))
+				var hs: Shader = (dm.get_surface_override_material(si) as ShaderMaterial).shader
+				_shaders["warm:" + str(hs.code.hash())] = hs
 			var dext := maxf(smi.mesh.get_aabb().get_longest_axis_size(), 1e-3)
 			dm.scale = Vector3.ONE * (0.6 * unit / dext)
 			dm.position = Vector3(0, -2, 1) * unit

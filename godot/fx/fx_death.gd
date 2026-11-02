@@ -2,12 +2,10 @@ extends RefCounted
 # Ship deaths, drifting wrecks and the physics behind them, plus the shared hull decorations (scorch decals, breach
 # holes, bent plates, venting plumes, debris bodies). Static functions; the state lives in fx.dstate.
 #
-# A death (A5 sheets 6, in-game sequence): a held beat with lights and engines stuttering; a cook-off of internal
-# explosions rippling along the hull; the break-up, where the ship's own hull is cut into pieces (each triangle goes to
-# the nearest of a few seeds along the length, so the pieces are real parts of the model) that become Jolt rigid bodies
-# with glowing cross-sections and charred insides; a final blast for heavy ships; then burning wrecks that drift, vent and
-# cool. The cutting is done once per ship on a worker thread soon after add_ship, so the death itself costs only the
-# mesh upload.
+# Capitals lose power, vent along a thermal tear, split into two sealed halves,
+# then flash once. Small hulls spin with a pooled smoke/fire ribbon before breaking.
+# Triangle buckets and recessed boundary caps are prepared on a worker before death;
+# the wrecks drift, tumble and cool. No worker wait blocks a death frame.
 
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
@@ -30,8 +28,9 @@ void vertex() { slag_p = VERTEX; slag_band = COLOR.rg; }
 float grain(vec3 p) { return fract(sin(dot(floor(p), vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
 void fragment() {
 	float n = grain(slag_p * 31.0);
+	float coarse = 0.5 + 0.25 * sin(dot(slag_p, vec3(8.7, 3.1, 6.3))) * sin(dot(slag_p, vec3(2.3, 12.1, 4.7)));
 	float band = clamp(slag_band.x, 0.0, 1.0);
-	vec3 base = mix(vec3(0.025, 0.017, 0.012), vec3(0.006, 0.004, 0.003), band) * (0.7 + n * 0.5);
+	vec3 base = mix(vec3(0.025, 0.017, 0.012), vec3(0.006, 0.004, 0.003), band) * (0.55 + coarse * 0.65 + n * 0.25);
 	float rim = clamp(slag_band.y, 0.0, 1.0) * smoothstep(0.35, 0.8, n);
 	float hot = clamp(heat, 0.0, 1.0);
 	ALBEDO = clamp(base + vec3(0.9, 0.19, 0.025) * rim * hot * hot * 0.65 * fx_gain
@@ -415,6 +414,8 @@ static func precompute(fx, s, cause := "blast") -> void:
 		return
 	if not is_instance_valid(s.root) or not s.root.is_inside_tree():
 		return   # F3: the ship's node was freed before its staggered cut came round
+	if s.death_big:
+		cause = "cut"  # two prepared halves, and the vents/crack use this same bisector
 	var r = RandomNumberGenerator.new()
 	r.seed = hash(s.id) + 3
 	var seeds = seeds_for(s, cause, r)
@@ -449,7 +450,7 @@ static func _collect_later(fx, tid: int) -> void:
 # When the cut is done, upload the pieces' meshes while the battle is quiet, so the break-up itself only shows them
 # (the first break-up cost a 35 ms frame when it built them on the spot).
 static func _prebuild(fx, s) -> void:
-	if not s.has_meta("cut_task") or s.dead:
+	if not s.has_meta("cut_task") or s.has_meta("death_hidden"):
 		return
 	var tid: int = s.get_meta("cut_task")
 	if not WorkerThreadPool.is_task_completed(tid):
@@ -472,12 +473,12 @@ static func _piece_mesh(pc: Dictionary) -> ArrayMesh:
 	var am = ArrayMesh.new()
 	for sd in pc["surfs"]:
 		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"], [], {}, int(sd.get("fmt", 0)) & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES)
-		am.surface_set_material(am.get_surface_count() - 1, HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, 1.0))
+		var hull_mat := HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, 1.0)
+		hull_mat.set_shader_parameter("fx_power", 0.0)
+		am.surface_set_material(am.get_surface_count() - 1, hull_mat)
 	if pc.has("cap"):
 		var mat := ShaderMaterial.new()
-		var shader := Shader.new()
-		shader.code = SLAG
-		mat.shader = shader
+		mat.shader = HULL.shared_shader(SLAG)
 		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, pc["cap"])
 		am.surface_set_material(am.get_surface_count() - 1, mat)
 		pc["cap_mat"] = mat
@@ -600,10 +601,8 @@ static func _cut(job: Dictionary) -> Array:
 	return pieces
 
 
-# Close the existing triangle buckets, without changing the fracture method. Every
-# exposed mesh edge gets a matching opaque slag edge, including imported AI gaps.
-# A separate fan per connected boundary keeps disjoint openings separate. Rings
-# share their positions across adjacent triangles so displacement never opens seams.
+# Trace the actual welded boundary loops. Ear clipping uses boundary vertices only:
+# no centre vertex, radial bands or centre-point ribs can show through as spokes.
 static func _seal_piece(pc: Dictionary) -> void:
 	var all_edges := {}
 	var welds := {}
@@ -611,9 +610,8 @@ static func _seal_piece(pc: Dictionary) -> void:
 	var bounds := AABB()
 	var first := true
 	for sd in pc["surfs"]:
-		var pts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
-		for p in pts:
-			if not p.is_finite(): continue
+		for p in sd["arrays"][Mesh.ARRAY_VERTEX]:
+			if not (p as Vector3).is_finite(): continue
 			if first:
 				bounds = AABB(p, Vector3.ZERO)
 				first = false
@@ -639,69 +637,40 @@ static func _seal_piece(pc: Dictionary) -> void:
 				var kb := ids[idx[t + (j + 1) % 3]]
 				if ka < 0 or kb < 0 or ka == kb: continue
 				var key := Vector2i(mini(ka, kb), maxi(ka, kb))
-				# Cancel shared edges immediately instead of retaining a dictionary
-				# entry for every edge of a full-detail hull throughout the cut.
 				if all_edges.has(key): all_edges.erase(key)
 				else: all_edges[key] = true
+	pc["boundary_edges"] = all_edges.size()
 	var adj := {}
-	var edges: Array = []
 	for key in all_edges:
-		edges.append(key)
 		for j in 2:
 			if not adj.has(key[j]): adj[key[j]] = []
 			adj[key[j]].append(key[1 - j])
-	var labels := {}
-	var centers: Array = []
-	for start in adj:
-		if labels.has(start): continue
-		var todo: Array = [start]
-		var sum := Vector3.ZERO
-		var count := 0
-		labels[start] = centers.size()
-		while not todo.is_empty():
-			var key = todo.pop_back()
-			sum += positions[key] as Vector3
-			count += 1
-			for other in adj[key]:
-				if not labels.has(other):
-					labels[other] = centers.size()
-					todo.append(other)
-		centers.append(sum / maxf(count, 1.0))
-	var radii: Array = []
-	radii.resize(centers.size())
-	radii.fill(0.0)
-	for key in adj:
-		var label: int = labels[key]
-		radii[label] = maxf(float(radii[label]), (positions[key] as Vector3).distance_to(centers[label]))
+	var remaining := all_edges.duplicate()
 	var cap := {"v": PackedVector3Array(), "n": PackedVector3Array(), "c": PackedColorArray()}
-	var ribs := {}
-	for edge in edges:
-		var centre: Vector3 = centers[int(labels[edge[0]])]
-		var inward := bounds.get_center() - centre
-		inward = inward.normalized() if inward.length_squared() > 1e-12 else Vector3.ZERO
-		var a: Vector3 = positions[edge[0]]
-		var b: Vector3 = positions[edge[1]]
-		var radius: float = radii[int(labels[edge[0]])]
-		var ring_a: Array = [a]
-		var ring_b: Array = [b]
-		for share in [0.88, 0.65]:
-			for pair in [[a, ring_a], [b, ring_b]]:
-				var p: Vector3 = pair[0]
-				var noise := sin(p.dot(Vector3(13.1, 7.7, 9.3))) * 0.008
-				pair[1].append(centre + (p - centre) * share + inward * radius * (0.06 + noise))
-		var core := centre + inward * radius * 0.09
-		for j in 2:
-			_cap_tri(cap, ring_a[j], ring_b[j], ring_b[j + 1], Color(j * 0.35, 1.0 if j == 0 else 0.16, 0, 1))
-			_cap_tri(cap, ring_a[j], ring_b[j + 1], ring_a[j + 1], Color(j * 0.35, 1.0 if j == 0 else 0.16, 0, 1))
-		_cap_tri(cap, ring_a[2], ring_b[2], core, Color(0.95, 0.04, 0, 1))
-		var label: int = labels[edge[0]]
-		var rib_count := int(ribs.get(label, 0))
-		if rib_count < 6 and a.distance_to(b) > quantum * 3.0:
-			var normal := (b - a).cross(core - a)
-			if normal.length_squared() > 1e-12:
-				_cap_rib(cap, (a + b) * 0.5, core, normal.normalized(), maxf(radius * 0.022, quantum * 2.0))
-				ribs[label] = rib_count + 1
-	pc["boundary_edges"] = edges.size()
+	pc["cap_loops"] = 0
+	pc["cap_fallbacks"] = 0
+	for start in adj:
+		var walk: Array = [start]
+		while not walk.is_empty():
+			var at: int = walk.back()
+			var next := -1
+			for other in adj[at]:
+				var edge := Vector2i(mini(at, other), maxi(at, other))
+				if remaining.has(edge):
+					remaining.erase(edge)
+					next = other
+					break
+			if next < 0:
+				walk.pop_back()
+				continue
+			var seen := walk.find(next)
+			if seen >= 0:
+				var outline := PackedVector3Array()
+				for j in range(seen, walk.size()): outline.append(positions[walk[j]])
+				if outline.size() >= 3:
+					_cap_outline(cap, outline, bounds, quantum, pc)
+				walk.resize(seen + 1)
+			else: walk.append(next)
 	if not (cap["v"] as PackedVector3Array).is_empty():
 		var arr := []
 		arr.resize(Mesh.ARRAY_MAX)
@@ -709,6 +678,59 @@ static func _seal_piece(pc: Dictionary) -> void:
 		arr[Mesh.ARRAY_NORMAL] = cap["n"]
 		arr[Mesh.ARRAY_COLOR] = cap["c"]
 		pc["cap"] = arr
+
+
+static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: AABB, quantum: float, pc: Dictionary) -> void:
+	var centre := Vector3.ZERO
+	for p in outline: centre += p
+	centre /= outline.size()
+	var normal := Vector3.ZERO
+	var radius := 0.0
+	for i in outline.size():
+		normal += (outline[i] - centre).cross(outline[(i + 1) % outline.size()] - centre)
+		radius = maxf(radius, outline[i].distance_to(centre))
+	if normal.length_squared() < 1e-16:
+		for i in range(1, outline.size() - 1):
+			var n := (outline[i] - outline[0]).cross(outline[i + 1] - outline[0])
+			if n.length_squared() > normal.length_squared(): normal = n
+	if normal.length_squared() < 1e-20: return
+	normal = normal.normalized()
+	var inward := normal if normal.dot(bounds.get_center() - centre) >= 0.0 else -normal
+	var x := normal.cross(Vector3.UP if absf(normal.y) < 0.9 else Vector3.RIGHT).normalized()
+	var y := normal.cross(x)
+	var polygon := PackedVector2Array()
+	var inset := PackedVector3Array()
+	var depth := minf(radius * 0.075, bounds.size.length() * 0.035)
+	for p in outline:
+		polygon.append(Vector2((p - centre).dot(x), (p - centre).dot(y)))
+		# Only the narrow torn lip slopes. The whole face has one material band.
+		var rough := sin(p.dot(Vector3(3.1, 5.7, 2.3))) * sin(p.dot(Vector3(8.3, 2.1, 4.7)))
+		inset.append(p + (centre - p) * 0.018 + inward * depth * (1.0 + rough * 0.12))
+	var indices := Geometry2D.triangulate_polygon(polygon)
+	if indices.is_empty():
+		# Imported non-planar/self-overlapping loops can fail 2D ear clipping.
+		# A boundary-only zipper still seals them without a hub or radial spokes.
+		pc["cap_fallbacks"] = int(pc["cap_fallbacks"]) + 1
+		var lo := 0
+		var hi := outline.size() - 1
+		while hi - lo > 1:
+			indices.append_array(PackedInt32Array([lo, lo + 1, hi]))
+			lo += 1
+			if hi - lo > 1:
+				indices.append_array(PackedInt32Array([lo, hi - 1, hi]))
+				hi -= 1
+	for i in range(0, indices.size(), 3):
+		_cap_tri(cap, inset[indices[i]], inset[indices[i + 1]], inset[indices[i + 2]], Color(0.9, 0.015, 0, 1))
+	for i in outline.size():
+		var j := (i + 1) % outline.size()
+		_cap_tri(cap, outline[i], outline[j], inset[j], Color(0.25, 0.18, 0, 1))
+		_cap_tri(cap, outline[i], inset[j], inset[i], Color(0.25, 0.18, 0, 1))
+		# Sparse short, offset spars. Never connect them all to a common centre.
+		if i % maxi(1, outline.size() / 4) == 0 and outline[i].distance_to(outline[j]) > quantum * 3.0:
+			var a := outline[i].lerp(outline[j], 0.42) + inward * depth * 0.45
+			var tangent := (outline[j] - outline[i]).normalized()
+			_cap_rib(cap, a, a + tangent * radius * 0.12 + inward * depth * 0.35, -inward, maxf(radius * 0.012, quantum * 2.0))
+	pc["cap_loops"] = int(pc["cap_loops"]) + 1
 
 
 static func _cap_tri(cap: Dictionary, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
@@ -741,123 +763,144 @@ static func death(fx, s, cause: String) -> float:
 
 
 static func _death_inner(fx, s, cause: String) -> float:
-	if s.dead:
-		return 0.0
+	if s.dead: return 0.0
 	s.dead = true
 	var T: float = fx.now
-	var h = s.hull
-	var w: int = s.weight
-	var k: float = s.scale_k()
-	var col: Color = s.fac["weapon"]
 	if s.has_meta("collider"):
 		var cb: Node = s.get_meta("collider")
-		if is_instance_valid(cb):
-			cb.queue_free()
-	if w <= 0:
-		_craft_death(fx, s, T)
-		return 0.8
-	var hold = 0.15
-	var cook: float = [0.4, 0.8, 1.2, 1.7, 2.3][w]
-	match cause:
-		"big": cook *= 0.6
-		"dark": cook *= 1.2
-		"cut": cook *= 0.7
-		"flay": cook *= 0.8
-	var TB = T + hold + cook
-	var tint = Color(1, 0.55, 0.2)
-	if cause == "melt":
-		tint = Color(0.68, 0.92, 0.2)
-	# 1. the held beat: one dip in the engines and lights
-	fx.hit_pause(T, [2, 3, 4, 7, 9][w])
-	# 2. cook-off: internal explosions rippling along the hull
-	var nb: int = [2, 3, 5, 7, 8][w]
-	if cause == "dark":
-		nb = maxi(2, nb / 2)
-	if cause == "flay":
-		nb += 4
-	for i in nb:
-		var u = float(i) / maxf(nb - 1, 1)
-		var ti = T + hold + u * cook * (0.85 + fx.rng.randf() * 0.15)
-		var hp: Dictionary = h.random_sample(-1, 0.3)
-		var lp: Vector3 = hp["p"]
-		var ln: Vector3 = hp["n"]
-		# F3: a frigate's cook-off pops at no less than 0.65 of the standard size, so a small ship's death reads
-		fx.later(ti, func() -> void: _cook_burst(fx, s, lp, ln, maxf(k, 0.65) * (0.6 if cause == "flay" else 1.0), tint, cause))
-	# the cut: a glowing line grows across the hull before it parts
-	if cause == "cut":
-		var a: Dictionary = h.random_sample(-1, 0.8)
-		for j in 24:
-			var pj: Vector3 = s.to_world((a["p"] as Vector3) + Vector3(0, 0, (j / 23.0 - 0.5) * h.W * 1.1))
-			fx.spr(pj, T + hold + j * cook / 24.0, cook + 0.6 - j * cook / 24.0, Color(1, 0.75, 0.4), 4.0, 0.5 * k, 0.9 * k, 21)
-	fx.later(T + hold, func() -> void: s.engine_level = 0.0)
-	_cracks(fx, s, T + hold, cook, tint)
-	# 3. break-up
+		if is_instance_valid(cb): cb.queue_free()
+	var tint := Color(0.95, 0.34, 0.08) if cause != "melt" else Color(0.55, 0.65, 0.12)
+	_power_down(s)
+	s.set_meta("death_start", T)
+	s.engine_level = 0.0
+	# All heavy deaths use the same two prepared halves, regardless of damage cause.
+	# Class decides this sequence and the R73 beat; draw scale does not.
+	var split := 1.38 if s.death_big else (0.72 if s.weight > 0 else 0.55)
+	s.set_meta("death_split", T + split)
 	if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 		precompute(fx, s, cause)
-	fx.later(TB, func() -> void: _break_up_when_ready(fx, s, cause, tint, TB + 2.5))
-	return TB - T + 0.6
+	if s.death_big:
+		var job: Dictionary = s.get_meta("cut_job", {})
+		var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
+		var at: Vector3 = s.hull.c
+		var axis := Vector3.RIGHT
+		if seeds.size() >= 2:
+			at = (seeds[0] + seeds[1]) * 0.5
+			axis = (seeds[0] - seeds[1]).normalized()
+		_cracks(fx, s, T + 0.4, split - 0.4, tint, at, axis)
+		# Ray samples lie on the actual hull at its future split, not on a floating line.
+		var tangent := axis.cross(Vector3.UP if absf(axis.y) < 0.9 else Vector3.FORWARD).normalized()
+		var up := axis.cross(tangent).normalized()
+		for i in 10:
+			var angle := TAU * i / 10.0
+			var radial := tangent * cos(angle) + up * sin(angle)
+			var hit: Dictionary = s.hull.ray(at + radial * s.hull.L * 1.5, -radial)
+			if hit.is_empty(): continue
+			var lp: Vector3 = hit["p"]
+			var ln: Vector3 = hit["n"]
+			fx.later(T + 0.25 + i * 0.045, func() -> void: _split_vent(fx, s, lp, ln))
+		fx.later(T + split - 0.08, func() -> void: fx.death_slowmo())
+	else:
+		# Bounded pooled ribbon emissions follow the spinning hull each frame.
+		s.set_meta("death_ribbon_next", T)
+	fx.later(T + split, func() -> void: _break_up_when_ready(fx, s, cause, tint, T + split + 2.5))
+	return split + 0.6
 
 
-# r18: when the ship's first cut is still running on a worker (a busy 20-ship battle), the cook-off holds a little longer
-# instead of the main thread waiting for it (the 20-ship bench froze 4 s on such a death); past the deadline it waits.
+static func _power_down(s) -> void:
+	var mats: Array = []
+	var poses: Array = []
+	var inv: Transform3D = s.root.global_transform.affine_inverse()
+	for mesh in s.meshes:
+		var mi := mesh as MeshInstance3D
+		if not is_instance_valid(mi) or mi.mesh == null: continue
+		poses.append({"mi": mi, "pose": inv * mi.global_transform})
+		var prepared: Array = []
+		for i in mi.mesh.get_surface_count():
+			var source: Material = mi.get_active_material(i)
+			var mat: ShaderMaterial
+			if source is ShaderMaterial and source.has_meta("fx_hull_source"):
+				mat = source.duplicate()
+			else:
+				mat = HULL.damage_material(source, inv * mi.global_transform, {}, s.hull.L)
+			prepared.append(mat)
+			mats.append(mat)
+		mi.material_override = null
+		for i in prepared.size(): mi.set_surface_override_material(i, prepared[i])
+	s.set_meta("death_power", mats)
+	s.set_meta("death_poses", poses)
+	s._reacting = false
+	s._shield_until = -1.0
+
+
+static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
+	if not is_instance_valid(s.root) or s.has_meta("death_hidden"): return
+	var p: Vector3 = s.to_world(lp)
+	var n: Vector3 = s.dir_world(ln)
+	var size: float = s.hull.L * 0.022
+	for j in 3:
+		fx.spr(p, fx.now + j * 0.09, 0.85, Color(0.24, 0.27, 0.3), 0.5,
+			size * 0.3, size * 1.7, 7, n * size * 5.0, 0.8)
+	fx.stk(p, fx.now, 0.65, Color(0.6, 0.22, 0.045), 1.5, size, size * 0.1, 1, n * size * 9.0, 1.2)
+
+
+static func _update_dying(fx, s) -> void:
+	if not s.dead or s.has_meta("death_hidden") or not s.has_meta("death_start") or not is_instance_valid(s.root): return
+	var age: float = maxf(fx.now - float(s.get_meta("death_start")), 0.0)
+	var power := 1.0 - smoothstep(0.0, 0.3, age)
+	for m in s.get_meta("death_power", []):
+		(m as ShaderMaterial).set_shader_parameter("fx_power", power)
+	if s.death_big: return
+	var rot := Basis.from_euler(Vector3(age * 1.4, age * 0.5, age * 0.85))
+	var shift := Vector3(age * s.hull.L * 0.22, -age * s.hull.L * 0.06, 0)
+	var motion := Transform3D(rot, shift + s.hull.c - rot * s.hull.c)
+	for pose in s.get_meta("death_poses", []):
+		if is_instance_valid(pose["mi"]):
+			(pose["mi"] as Node3D).global_transform = s.root.global_transform * motion * (pose["pose"] as Transform3D)
+	if fx.now >= float(s.get_meta("death_ribbon_next", INF)):
+		s.set_meta("death_ribbon_next", fx.now + 0.045)
+		var p: Vector3 = s.to_world(s.hull.c + Vector3(-s.hull.L * 0.3, 0, s.hull.W * 0.25))
+		var size: float = maxf(s.hull.L * 0.09, 0.12)
+		var back: Vector3 = -s.dir_world(Vector3.RIGHT)
+		fx.spr(p, fx.now, 1.45, Color(0.17, 0.18, 0.2), 0.85, size * 0.5, size * 1.9, 3,
+			back * s.hull.L * 1.1 + Vector3.UP * size * 0.35, 0.3, 0.0, 0.0, 48.0)
+		fx.spr(p, fx.now, 0.32, Color(0.8, 0.23, 0.035), 1.8, size * 0.45, size * 0.15, 1,
+			back * s.hull.L * 0.3, 0.0, 0.0, 0.0, 18.0)
+
+
+# An unfinished worker never blocks the death frame, even past its nominal split time.
+# A previous completed cut is usable immediately; otherwise hold the dark dying hull.
 static func _break_up_when_ready(fx, s, cause: String, tint: Color, deadline: float) -> void:
-	if s.has_meta("cut_task") and not s.has_meta("cut_prev") and fx.now < deadline:
+	if not is_instance_valid(s.root) or fx.ships.get(s.id) != s:
+		return
+	if s.has_meta("cut_task") and not s.has_meta("cut_prev"):
 		if not WorkerThreadPool.is_task_completed(int(s.get_meta("cut_task"))):
 			fx.later(fx.now + 0.05, func() -> void: _break_up_when_ready(fx, s, cause, tint, deadline))
 			return
 	_break_up(fx, s, cause, tint)
 
 
-# Glowing fissures spreading over the hull while it cooks off (an overlay on the ship's own meshes; the ship is dying,
-# so nothing else needs the overlay slot now).
-static func _cracks(fx, s, t0: float, dur: float, tint: Color) -> void:
+# One thermal tear in ship coordinates, on the same bisector as the prepared halves.
+static func _cracks(fx, s, t0: float, dur: float, tint: Color, at: Vector3, axis: Vector3) -> void:
 	var m: ShaderMaterial = fx.mat(SH.CRACKS, 1)
 	m.set_shader_parameter("t0", t0)
 	m.set_shader_parameter("dur", maxf(dur, 0.3))
-	m.set_shader_parameter("scale", 3.5 / maxf(s.hull.L, 1.0))
+	m.set_shader_parameter("cut_at", at)
+	m.set_shader_parameter("cut_axis", axis)
+	m.set_shader_parameter("width", maxf(s.hull.L * 0.009, 0.01))
 	m.set_shader_parameter("glow", Vector3(tint.r, tint.g, tint.b))
 	for mm in s.meshes:
 		if is_instance_valid(mm):
-			(mm as GeometryInstance3D).material_overlay = m
-
-
-static func _cook_burst(fx, s, lp: Vector3, ln: Vector3, k: float, tint: Color, cause: String) -> void:
-	var T: float = fx.now
-	var wp: Vector3 = s.to_world(lp)
-	var wn: Vector3 = s.dir_world(ln)
-	var sz: float = s.hull.L * 0.08
-	fx.pop(wp + wn * 0.3, T, tint.lerp(Color.WHITE, 0.3), sz * 2.0, 8.0, wn, 0.16, 30.0)
-	fx.spr(wp + wn * 0.4, T, 0.5, tint, 5.0, sz * 0.4, sz * 1.6, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 20.0)
-	for i in 4:
-		fx.spr(wp + fx.rdir() * sz * 0.3, T + fx.rng.randf() * 0.06, 0.6 + fx.rng.randf() * 0.4, tint, 2.6, sz * 0.5, sz * 1.4, 1, fx.rcone(wn, 0.7) * 2.5 * k)
-	for i in 16:
-		fx.stk(wp, T + fx.rng.randf() * 0.05, 0.3 + fx.rng.randf() * 0.5, Color(1, 0.6, 0.25), 7.0, 0.05, 0.13, 1, fx.rcone(wn, 1.0) * (10 + fx.rng.randf() * 16) * k, 1.8)
-	for i in 2:
-		fx.spr(wp + wn * 0.8, T + 0.1 + i * 0.1, 2.2, Color(0.1, 0.09, 0.085), 0.55, sz * 0.8, sz * 2.8, 3, wn * 2.0 * k, 0.6)
-	for i in 4:
-		fx.shd(wp, T, 2.5, fx.rcone(wn, 0.8) * (3 + fx.rng.randf() * 6) * k, s.hull.L * (0.006 + fx.rng.randf() * 0.01), 1.0)
-	if cause == "melt":
-		for i in 3:
-			fx.spr(wp, T, 1.8, Color(0.5, 0.62, 0.12), 0.6, sz * 0.6, sz * 2.2, 20, wn * 1.5 * k, 0.5)
-	fx.light(wp + wn * 1.5, T, 0.4, 7.0, tint, 0)
-	fx.shake(T, 0.12, wp)
-	spawn_debris(fx, wp + wn * 0.5, wn * 4.0 * k, 2, s.hull.L * 0.02)
-
-
-static func _craft_death(fx, s, T: float) -> void:
-	var p: Vector3 = s.to_world(s.hull.c)
-	var c: Color = s.fac["engine"]
-	var sz: float = maxf(s.hull.L, 1.0)
-	fx.pop(p, T, Color(1, 0.75, 0.45), sz * 2.0, 6.0, Vector3.UP, 0.16, 26.0)
-	fx.spr(p, T, 0.5, Color(1, 0.6, 0.3), 4.0, sz * 0.5, sz * 1.8, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 18.0)
-	for i in 6:
-		fx.stk(p, T + fx.rng.randf() * 0.04, 0.3 + fx.rng.randf() * 0.3, Color(1, 0.6, 0.25), 6.0, 0.05, 0.1, 1, fx.rdir() * (6 + fx.rng.randf() * 10), 2.0)
-	fx.spr(p, T + 0.1, 1.2, Color(0.12, 0.11, 0.1), 0.45, sz * 0.6, sz * 2.0, 3, Vector3.ZERO, 0.5)
-	fx.light(p, T, 0.35, 4.0, c, 0)
-	fx.later(T + 0.08, func() -> void: _hide_ship(s))
+			var mi := mm as MeshInstance3D
+			var local: ShaderMaterial = m.duplicate()
+			local.set_shader_parameter("frame", s.root.global_transform.affine_inverse() * mi.global_transform)
+			mi.material_overlay = local
 
 
 static func _hide_ship(s) -> void:
+	s.set_meta("death_hidden", true)
+	s.remove_meta("death_power")
+	s.remove_meta("death_poses")
 	for m in s.meshes:
 		if is_instance_valid(m):
 			(m as Node3D).visible = false
@@ -900,60 +943,30 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		s.remove_meta("cut_task")
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
-	var xf: Transform3D = s.root.global_transform
+	var xf: Transform3D = s.xf()
 	_hide_ship(s)
-	# the final blast (bigger for heavy ships and torpedo or ram kills; quiet for burn-outs)
-	var big = 1.0 + (0.6 if cause == "big" else 0.0) - (0.6 if cause == "dark" else 0.0) + (0.4 if s.flagship else 0.0)
-	var R: float = h.L * 0.35 * big
-	# F3 round 2: a kill is the biggest moment on screen, whatever the ship's size: every part of the blast has its own
-	# size on screen by weight (frigate to capital), so a frigate's death is a clear pop from the battle camera and a
-	# capital's fills a good part of it. The core flash is a counted flash (the budget keeps it to 3 a second; the
-	# cook-off pops before it no longer use the budget up at battle zoom, so the blast itself is not refused).
-	var kp: float = [40.0, 90.0, 120.0, 150.0, 190.0][w] * (1.0 + 0.25 * (big - 1.0))
-	if fx.flash_ok(T):
-		fx.spr(center, T, 0.4, Color(1, 0.9, 0.75), 18.0 * big, R * 0.8, R * 2.4, 0, Vector3.ZERO, 0.0, 0.0, 0.0, kp)
-	else:
-		fx.spr(center, T, 0.9, Color(1, 0.8, 0.6), 3.0, R * 0.6, R * 2.0, 18, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.8)
-	fx.spr(center, T, 0.6, tint.lerp(Color(1, 0.8, 0.55), 0.5), 8.0 * big, R * 0.3, R * 0.9, 2, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.55)
-	# the shock ring: a bright front of hot gas racing out to several times the ship's size on screen, then a second,
-	# slower one at an angle
-	fx.ring(center, s.dir_world(Vector3(0.12, 1, 0.08)), T, 1.25, Color(0.75, 0.75, 0.85), 1.0 * big, R * 0.1, R * 4.5, 1, 0.0, 0.0, kp * 2.6)
-	fx.ring(center, s.dir_world(Vector3(0.6, 0.5, -0.4)), T + 0.06, 1.0, Color(1.0, 0.6, 0.3), 0.6 * big, R * 0.1, R * 2.6, 1, 0.0, 0.0, kp * 1.7)
-	if w >= 2:
-		fx.dst(center, T, 0.9, R * 0.3, R * 4.0, 0, 1.0 * big)
-	fireball(fx, center, R * 2.2, T, 4.0 + w * 0.5, tint)
-	# a rolling fireball of flame sprites too (reads at any zoom, and on high quality without volumes)
-	for i in 10 + w * 3:
-		fx.spr(center + fx.rdir() * R * 0.35, T + fx.rng.randf() * 0.25, 1.4 + fx.rng.randf() * 0.8, tint, 3.0, R * 0.4, R * 1.2, 1, fx.rdir() * (2.0 + fx.rng.randf() * 4.0) * k, 0.5, 0.0, 0.0, kp * 0.3)
-	# burning pieces thrown clear: flaming chunks (a flame with its own size on screen) trailing fire and sparks
-	for i in 6 + w * 2:
-		var bv: Vector3 = fx.rdir() * (8.0 + fx.rng.randf() * 14.0) * maxf(k, 0.6)
-		var bl: float = 1.6 + fx.rng.randf() * 1.4
-		fx.spr(center, T + fx.rng.randf() * 0.08, bl, tint, 3.2, R * 0.2, R * 0.12, 1, bv, 0.35, 0.0, 0.0, 9.0 + w * 2.0)
-		fx.stk(center, T, bl * 0.8, Color(1, 0.55, 0.2), 3.5, 0.12, 0.12, 1, bv, 0.35, 0.0, 3.0, 16.0)
-	if fx.quality != "max":
-		for i in 10:
-			fx.spr(center + fx.rdir() * R * 0.3, T + 0.2 + fx.rng.randf() * 0.4, 3.0 + fx.rng.randf(), Color(0.07, 0.065, 0.06), 0.75, R * 0.4, R * 1.4, 3, fx.rdir() * 2.0 * k, 0.35)
-	for i in int(14 * big) + w * 3:
-		fx.spr(center + fx.rdir() * R * 0.25, T + fx.rng.randf() * 0.15, 1.3 + fx.rng.randf(), tint, 2.4, R * 0.25, R * 0.7, 1, fx.rdir() * (3 + fx.rng.randf() * 5) * k, 0.6, (fx.rng.randf() - 0.5) * 1.5)
-	for i in int(60 * big) + w * 20:
-		fx.stk(center + fx.rdir() * R * 0.15, T + fx.rng.randf() * 0.2, 1.0 + fx.rng.randf() * 2.0, Color(1, 0.55 + fx.rng.randf() * 0.15, 0.22), 6.0, 0.05, 0.16, 1, fx.rdir() * (15 + fx.rng.randf() * 35) * maxf(k, 0.7), 0.5, 0.0, 2.6, 10.0)
-	for i in 30 + w * 10:
-		fx.spr(center + fx.rdir() * R * 0.3, T + fx.rng.randf() * 0.3, 2.0 + fx.rng.randf() * 2.0, Color(1, 0.5, 0.15), 2.0, 0.3 * k, 0.1 * k, 19, fx.rdir() * (4 + fx.rng.randf() * 10) * maxf(k, 0.7), 0.3, 0.0, 0.0, 6.0)
-	for i in 20 + w * 8:
-		fx.shd(center + fx.rdir() * R * 0.2, T + fx.rng.randf() * 0.1, 6.0, fx.rdir() * (4 + fx.rng.randf() * 14) * k, h.L * (0.01 + fx.rng.randf() * 0.03), 1.0, 3.0, 0.15)
-	spawn_debris(fx, center, Vector3.ZERO, 6 + w * 6, h.L * 0.03)
-	fx.light(center, T, 1.6, 26.0 * big, Color(1, 0.8, 0.55), 0)
-	fx.light(center, T + 0.2, 4.0, 5.0, tint, 1)
-	# F3: the kill lands: a slow glow where the ship was (below the flash budget's brightness) that marks the spot from
-	# any zoom for a couple of seconds, and a zoom punch by weight
-	# (k1: R * 3 washed a beige haze over a capital's wreck pieces; R * 1.8 marks the spot and leaves the wreck clear)
-	fx.spr(center, T + 0.15, 2.8 + w * 0.3, tint.lerp(Color(1, 0.8, 0.55), 0.3), 2.0, R * 0.6, R * 1.8, 18, Vector3.ZERO, 0.0, 0.0, 0.0, kp * 0.9)
-	fx.punch(T, [0.0, 0.01, 0.016, 0.024, 0.034][w] * big, center)
-	fx.shake(T, [0.2, 0.3, 0.45, 0.7, 0.9][w] * big, center)
-	fx.hit_pause(T, [0, 2, 4, 8, 10][w])
+	# The break is visible first. One short, small core flash follows inside one half.
+	# Smoke, ribbons and streamers carry the event; no long central fireball or haze.
+	var R: float = h.L * 0.16
+	var kp: float = 52.0 if not s.death_big else 68.0
+	var core := center + xf.basis * Vector3(h.L * 0.12, 0, 0)
+	var core_node: Node3D = null
+	var core_local := Vector3.ZERO
+	for i in (8 if not s.death_big else 14):
+		var bv: Vector3 = fx.rdir() * (5.0 + fx.rng.randf() * 8.0) * maxf(k, 0.6)
+		var life: float = 1.1 + fx.rng.randf() * 0.9
+		fx.stk(center, T, life, Color(0.9, 0.32, 0.06), 2.0, 0.16, 0.09, 1, bv, 0.4, 0.0, 4.0, 24.0)
+		for j in 4:
+			fx.spr(center + bv * j * 0.09, T + j * 0.09, 1.2, Color(0.07, 0.075, 0.08), 0.45,
+				R * 0.06, R * 0.18, 3, bv * 0.12, 0.6, 0.0, 0.0, 9.0)
+	for i in 18 + w * 5:
+		fx.stk(center, T + fx.rng.randf() * 0.12, 0.5 + fx.rng.randf(), Color(1, 0.4, 0.1), 2.2,
+			0.06, 0.08, 1, fx.rdir() * (6.0 + fx.rng.randf() * 18.0) * maxf(k, 0.6), 0.65)
+	spawn_debris(fx, center, Vector3.ZERO, 4 + w * 3, h.L * 0.025)
+	fx.punch(T, 0.018 if s.death_big else 0.006, center)
+	fx.shake(T, 0.45 if s.death_big else 0.18, center)
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
-	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": []}
+	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0}
 	var main_i = -1
 	var main_n = -1
 	for i in pieces.size():
@@ -997,6 +1010,12 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		node.name = "fx_wreck_%s_%d" % [s.id, i]
 		fx.phys_root.add_child(node)
 		node.global_transform = Transform3D(xf.basis, xf * cen)
+		if core_node == null and seeds.size() >= 2:
+			core_node = node
+			var axis := (seeds[0] - seeds[1]).normalized()
+			# The recess opens toward the seam. Let light escape from the torn face
+			# of this half, rather than burying its sprite behind an opaque hull.
+			core_local = (seeds[0] + seeds[1]) * 0.5 - cen - axis * h.L * 0.01
 		var mi = MeshInstance3D.new()
 		mi.mesh = am
 		mi.position = -cen
@@ -1018,11 +1037,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		wreck["nodes"].append(node)
 		# motion: away from the centre, the main hulk barely moves (it stays on its hex as terrain)
 		var out = (cen - h.c).normalized() if (cen - h.c).length() > 0.01 else fx.rdir()
-		var spd: float = (0.4 if is_main else [0.0, 2.6, 3.4, 4.0, 4.6][w]) * k * (1.7 if cause == "big" else (0.6 if cause == "cut" or cause == "dark" else 1.0))
+		var spd: float = (0.7 if is_main else 2.1) * maxf(k, 0.5)
 		var vel: Vector3 = xf.basis * (out * spd) + fx.rdir() * 0.3 * k
 		if cause == "tidal" and fx.well != Vector3.INF:
 			vel += (fx.well - center).normalized() * 3.0 * k
-		var ang: Vector3 = fx.rdir() * (0.05 if is_main else (0.15 + fx.rng.randf() * 0.35))
+		var ang: Vector3 = fx.rdir() * ((0.22 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
 		if node is RigidBody3D:
 			(node as RigidBody3D).linear_velocity = vel
 			(node as RigidBody3D).angular_velocity = ang
@@ -1031,33 +1050,23 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		_wreck_fx(fx, wreck, node, pc, cen, h.L, k, is_main, tint)
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
-	# round 2: secondary explosions on the pieces as they drift apart (fuel and magazines cooking off), the smaller
-	# pieces first
-	var nodes: Array = wreck["nodes"]
-	var ns: int = mini(nodes.size(), 2 + w)
-	for i in ns:
-		var nd: Node3D = nodes[nodes.size() - 1 - i]
-		var ts: float = T + 0.45 + i * (0.35 + fx.rng.randf() * 0.35)
-		fx.later(ts, func() -> void: _secondary(fx, nd, h.L, maxf(k, 0.65), tint, w))
+	fx.later(T + 0.28, func() -> void: _core_flash(fx, core, R, kp, tint, core_node, core_local))
+	if pieces.is_empty():
+		# Craft have no pre-cut job. Keep one pooled physical shard plus a visible ember.
+		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
+		fx.spr(center, T, 5.0, tint, 1.2, R * 0.3, R * 0.05, 19, xf.basis.x * 2.0, 0.25, 0.0, 0.0, 12.0)
 
 
-# A secondary blast on a drifting wreck piece (round 2).
-static func _secondary(fx, nd: Node3D, L: float, k: float, tint: Color, w: int) -> void:
-	if not is_instance_valid(nd) or not nd.is_inside_tree():
-		return
+static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO) -> void:
+	# Booking and drawing share the same time, with no other death flashes before/after.
 	var T: float = fx.now
-	var p: Vector3 = nd.global_position + fx.rdir() * L * 0.04
-	var sz: float = L * 0.1
-	fx.pop(p, T, tint.lerp(Color.WHITE, 0.35), sz * 1.6, 7.0, Vector3.UP, 0.16, 26.0 + w * 4.0)
-	fx.spr(p, T, 0.7, tint, 4.0, sz * 0.4, sz * 1.4, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 18.0 + w * 3.0)
-	for i in 5:
-		fx.spr(p + fx.rdir() * sz * 0.3, T + fx.rng.randf() * 0.1, 0.9 + fx.rng.randf() * 0.6, tint, 2.6, sz * 0.4, sz * 1.2, 1, fx.rdir() * 3.0 * k, 0.6, 0.0, 0.0, 10.0)
-	for i in 14:
-		fx.stk(p, T + fx.rng.randf() * 0.05, 0.4 + fx.rng.randf() * 0.5, Color(1, 0.6, 0.25), 6.0, 0.05, 0.12, 1, fx.rdir() * (10 + fx.rng.randf() * 18) * k, 1.6, 0.0, 2.4, 9.0)
-	fx.spr(p, T + 0.1, 2.2, Color(0.1, 0.09, 0.085), 0.5, sz * 0.6, sz * 2.4, 3, Vector3.ZERO, 0.6)
-	fx.light(p, T, 0.4, 7.5, tint, 0)
-	fx.shake(T, 0.06 + 0.03 * w, p)
-	spawn_debris(fx, p, fx.rdir() * 3.0 * k, 2, L * 0.015)
+	if is_instance_valid(node): p = node.to_global(local_p)
+	if fx.flash_ok(T):
+		fx.spr(p, T, 0.12, Color(1, 0.65, 0.3), 5.0, R * 0.22, R * 0.7, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
+		fx.light(p, T, 0.18, 7.0, tint, 0)
+	else:
+		fx.spr(p, T, 0.4, tint, 1.2, R * 0.2, R * 0.55, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.7)
+	fireball(fx, p, R * 0.7, T, 0.48, tint)
 
 
 # Fires, smoke, embers and sparks riding a wreck piece, near its broken edge.
@@ -1073,18 +1082,18 @@ static func _wreck_fx(fx, wreck: Dictionary, node: Node3D, pc: Dictionary, cen: 
 	var qs = POOLS.streak_shape()
 	var r = RandomNumberGenerator.new()
 	r.seed = hash(node.name)
-	var nf = 3 if is_main else 2
-	var s = L * 0.04
+	var nf = 2 if is_main else 1
+	var s = L * 0.022
 	for j in nf:
 		var p = edge[r.randi() % edge.size()] - cen
 		var n = p.normalized() if p.length() > 0.01 else Vector3.UP
 		for kk in 10:
 			var v = n * (1.0 + r.randf()) + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)
 			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.08), Vector4(v.x, v.y, v.z, 0.55 + r.randf() * 0.3), Vector4(tint.r, tint.g * 0.9, tint.b, 2.4),
-				Vector4(s * 0.4, s * 1.2, 1, r.randf()), Vector4(0.8 + r.randf() * 0.2, 0, 0, 0)))
+				Vector4(s * 0.25, s * 0.7, 1, r.randf() + (10.0 if is_main else 5.0)), Vector4(0.8 + r.randf() * 0.2, 0, 0, 0)))
 		for kk in 3:
 			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.9), Vector4(n.x * 2.0, n.y * 2.0, n.z * 2.0, 2.7), Vector4(0.08, 0.075, 0.07, 0.5),
-				Vector4(s * 0.8, s * 3.6, 3, r.randf()), Vector4(2.7, 0, 0.5, 0.2)))
+				Vector4(s * 0.7, s * 2.3, 3, r.randf() + (20.0 if is_main else 9.0)), Vector4(2.7, 0, 0.5, 0.2)))
 		for kk in 6:
 			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + kk * 0.7 + r.randf()), Vector4((r.randf() - 0.5) * 3.0, (r.randf() - 0.5) * 3.0, (r.randf() - 0.5) * 3.0, 2.0),
 				Vector4(1, 0.5, 0.15, 1.8), Vector4(0.25 * k, 0.08 * k, 19, r.randf()), Vector4(4.2, 0, 0.4, 0)))
@@ -1102,11 +1111,13 @@ static func _wreck_fx(fx, wreck: Dictionary, node: Node3D, pc: Dictionary, cen: 
 			var holder = Node3D.new()
 			holder.position = p + n * 1.0
 			node.add_child(holder)
-			wreck["lights"].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.5, 0.15), 2.0 if is_main else 1.2, 0.45))
+			wreck["lights"].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.35, 0.07), 0.7 if is_main else 0.4, 0.12))
 	var spm: ShaderMaterial = fx.mat(SH.SPRITE, 1, "#define SOFT\n" if fx.quality != "low" else "")
 	var mi1 = b.build(spm, node, "fx_wreck_fire")
-	var mi2 = bs.build(fx.mat(SH.STREAK, 1), node, "fx_wreck_sparks")
+	var spark_mat: ShaderMaterial = fx.mat(SH.STREAK, 1)
+	var mi2 = bs.build(spark_mat, node, "fx_wreck_sparks")
 	wreck["fires"].append({"mat": spm, "mi": mi1})
+	wreck["fires"].append({"mat": spark_mat, "mi": mi2})
 
 
 static func _cap_wrecks(fx) -> void:
@@ -1138,13 +1149,21 @@ static func clear_wreck(fx, id: String) -> void:
 static func update(fx, dt: float) -> void:
 	if not fx.dstate.has("wrecks"):
 		return
+	for ship in fx.ships.values(): _update_dying(fx, ship)
 	for w in fx.dstate["wrecks"]:
+		var speed: float = maxf(fx.anim_speed(), 0.01)
+		var prev: float = float(w.get("speed", 1.0))
+		for nd in w["nodes"]:
+			if is_instance_valid(nd) and nd is RigidBody3D:
+				(nd as RigidBody3D).linear_velocity *= speed / prev
+				(nd as RigidBody3D).angular_velocity *= speed / prev
+		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
 		# Heat fades over a few seconds. The cold opaque cap remains.
 		var heat = exp(-maxf(age, 0.0) / 1.8)
 		for m in w["mats"]:
 			(m as ShaderMaterial).set_shader_parameter("heat", heat)
-		var gate = clampf(1.0 - age / 40.0, 0.45, 1.0)
+		var gate = exp(-maxf(age, 0.0) / 3.5)
 		for f in w["fires"]:
 			if f.has("mat"):
 				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", gate)
@@ -1158,4 +1177,4 @@ static func update(fx, dt: float) -> void:
 				if a.length() > 1e-5:
 					n.global_rotate(a.normalized(), a.length() * dt)
 		for l in w["lights"]:
-			l["base"] = 2.0 * gate
+			l["base"] = 0.7 * gate

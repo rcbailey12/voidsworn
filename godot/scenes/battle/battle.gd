@@ -1877,6 +1877,8 @@ func _play_death(e: Dictionary) -> void:
 	var big := L >= 14.0
 	if gfx != null and gfx.has_method("death"):
 		var t: float = float(gfx.death(str(id), cause))
+		if skip and gfx.has_method("hurry_death"):
+			gfx.hurry_death()
 		sfx.boom(0.22 + minf(0.3, L / 90.0) if sq else (1.2 if big else 0.6), p)
 		sv.dead = true
 		if sv.marker != null:
@@ -2460,6 +2462,8 @@ func _on_key(k: int) -> void:
 		# B2: Enter or Space hurries the rest of the enemy's turn (presentation only)
 		skip = true
 		speed = minf(speed, float(PACE["skip"]))
+		if gfx != null and gfx.has_method("hurry_death"):
+			gfx.hurry_death()
 		return
 	match k:
 		KEY_ESCAPE:

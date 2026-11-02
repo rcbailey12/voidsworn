@@ -101,6 +101,7 @@ uniform vec4 fx_tangents[64]; // tangent, slot half-length
 uniform vec4 fx_shapes[64]; // round/square/slot, phases 0, 1, 2
 uniform vec4 fx_tears[64]; // square rotation, phase 3, phase 4, unused
 uniform vec3 fx_burnt_cell = vec3(1.0);
+uniform float fx_power = 1.0;
 varying vec3 fx_hull_p;
 float fx_mouth_edge(int i, vec3 p) {
 	vec3 d = p - fx_mouths[i].xyz;
@@ -132,6 +133,23 @@ float fx_mouth_edge(int i, vec3 p) {
 # Preserve hull textures, ORM, normals and faction rim in the actual surface pass.
 # Godot does not expose BaseMaterial3D's generated shader to runtime GDScript.
 # A surface overlay cannot discard the opaque skin underneath it.
+# Weak cache: identical generated PBR shaders reuse the pipelines warmed by fx.
+# Materials keep their own textures/uniforms. No static GPU resource survives shutdown.
+static var _shader_refs := {}
+
+static func shared_shader(code: String) -> Shader:
+	var shader: Shader = _shader_refs[code].get_ref() if _shader_refs.has(code) else null
+	if shader == null:
+		shader = Shader.new()
+		shader.code = code
+		_shader_refs[code] = weakref(shader)
+	return shader
+
+
+static func clear_shader_cache() -> void:
+	_shader_refs.clear()
+
+
 static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float) -> ShaderMaterial:
 	if src != null and src.has_meta("fx_hull_source"):
 		src = src.get_meta("fx_hull_source")
@@ -139,7 +157,6 @@ static func damage_material(src: Material, frame: Transform3D, mouths: Dictionar
 		src = StandardMaterial3D.new()
 	var base: ShaderMaterial = src if src is ShaderMaterial else _exterior(src)
 	var code: String = base.shader.code
-	var shader := Shader.new()
 	var cull := RegEx.new()
 	cull.compile("cull_(back|front|disabled)")
 	code = cull.sub(code, "cull_disabled", true)
@@ -162,7 +179,7 @@ for (int i = 0; i < 64; i++) {
 }
 """, """
 ALBEDO *= 1.0 - fx_soot * 0.94;
-EMISSION *= 1.0 - fx_soot;
+EMISSION *= (1.0 - fx_soot) * clamp(fx_power, 0.0, 1.0);
 // Mirrored ship models reverse raster winding; keep their outside as the outside.
 if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	ALBEDO = vec3(0.0); METALLIC = 0.0; SPECULAR = 0.0; ROUGHNESS = 1.0;
@@ -170,9 +187,8 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	EMISSION = hull_inside(fx_hull_p, vec3(0.0), 0.0, fx_burnt_cell, 0.35, vec3(1.0), 0.0);
 }
 """)
-	shader.code = code
 	var mat := ShaderMaterial.new()
-	mat.shader = shader
+	mat.shader = shared_shader(code)
 	for param in base.shader.get_shader_uniform_list():
 		var value = base.get_shader_parameter(param["name"])
 		if value != null:
@@ -189,9 +205,7 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 
 static func _exterior(src: Material) -> ShaderMaterial:
 	var mat := ShaderMaterial.new()
-	var shader := Shader.new()
-	shader.code = EXTERIOR
-	mat.shader = shader
+	mat.shader = shared_shader(EXTERIOR)
 	if not src is BaseMaterial3D: return mat
 	var m := src as BaseMaterial3D
 	for pair in [["albedo", m.albedo_color], ["uv_scale", m.uv1_scale], ["uv_offset", m.uv1_offset],
