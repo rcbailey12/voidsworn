@@ -1,0 +1,36 @@
+# Open a pull request automatically when an agent pushes a job branch (Ryan, Nov 2 2026, FINDINGS R75).
+# Codex on Ryan's PC (codex/issue-<n>) and Muse (muse/issue-<n>) only need to push; this opens the PR into main
+# and starts the checks on it. Opus reviews and merges.
+name: auto-pr
+on:
+  push:
+    branches:
+      - 'codex/issue-*'
+      - 'muse/issue-*'
+permissions:
+  contents: read
+  pull-requests: write
+  actions: write
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open the PR if there isn't one, then run the checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          TITLE: ${{ github.event.head_commit.message }}
+        run: |
+          n="${BRANCH##*issue-}"
+          open=$(gh pr list -R "$REPO" --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$open" = "0" ]; then
+            title=$(printf '%s\n' "$TITLE" | head -1)
+            body=$(printf '%s\n' "$TITLE" | tail -n +2)
+            printf '%s\n\nOpened automatically from branch %s. Opus reviews and merges.\n' "$body" "$BRANCH" > body.md
+            grep -q "Closes #$n" body.md || printf '\nCloses #%s\n' "$n" >> body.md
+            gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$title" --body-file body.md
+          else
+            echo "PR already open for $BRANCH"
+          fi
+          gh workflow run checks.yml -R "$REPO" --ref "$BRANCH"

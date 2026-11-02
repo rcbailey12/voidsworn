@@ -11,9 +11,11 @@ It holds the goal, the full history, every piece of owner feedback word for word
 
 - Every job is an open GitHub issue: https://github.com/rcbailey12/voidsworn/issues. The label says who has it: `codex` (Codex on
   Ryan's PC), `muse` (Rey and its models), `opus` (Claude), `ryan` (waiting on Ryan), plus `blocked`.
-- Outside agents (Muse and any other model) deliver as a pull request from a branch named `<agent>/issue-<number>`, with
-  "Closes #<number>" in the description. Never push to main. Opus reviews, checks the claims and merges.
-- Codex stays local on Ryan's PC (codex_run.bat). Opus collects its patch, reviews it and commits with "Fixes #<number>".
+- Agents deliver by pushing a branch named `codex/issue-<number>` or `muse/issue-<number>`. Never push to main.
+  GitHub then opens the pull request by itself (.github/workflows/auto_pr.yml) and runs the checks on it
+  (.github/workflows/checks.yml: standing checks, no em dashes in changed files, Godot rules parity). Opus reviews and merges.
+- Codex stays local on Ryan's PC. `codex_board.bat` (Downloads\voidsworn_test) checks the board every 10 minutes and
+  queues each new codex issue on lane B (tools/pc/codex_issue.bat): fresh checkout, Codex at the issue's effort, push.
   No Codex cloud tasks or cloud reviews: they run an older model than the local one.
 - Every issue opens with this fixed block, so any agent can pick it up without asking:
   ```
