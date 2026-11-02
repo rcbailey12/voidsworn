@@ -532,8 +532,8 @@ static func update(fx, dt: float) -> void:
 				else:
 					fx.spr(ps, tt, 0.14, eng, 5.0 if lk == "torp" else 4.0, (2.2 if lk == "torp" else 1.6) * k, 0.6 * k, 2)
 					if lk == "torp":
-						# the long persistent plume: the signature that keeps every torpedo trackable
-						fx.spr(ps, tt, 3.6, Color(0.62, 0.64, 0.7), 0.22, 1.0 * k, 4.2 * k, 7, fx.rdir() * 0.5 * k, 0.6, 0.3)
+						# A short smoke ribbon leaves the bright head easy to track along its lane.
+						fx.spr(ps, tt, 0.9, Color(0.62, 0.64, 0.7), 0.22, 1.0 * k, 2.8 * k, 7, fx.rdir() * 0.5 * k, 0.6, 0.3)
 					else:
 						# rattle-rockets: a hot streak and a dirty grey smoke trail each, so the swarm reads at a glance
 						fx.spr(ps, tt, 1.8, Color(0.34, 0.31, 0.28), 0.45, 0.6 * k, 2.8 * k, 8, fx.rdir() * 0.8 * k, 0.8, 0.5)
@@ -1089,7 +1089,7 @@ static func torp_launch(fx, lane_id: String) -> void:
 	var park = from.lerp(to, 0.42) + Vector3(0, 2.0 * k, 0)
 	var T: float = fx.now
 	var mn: Vector3 = A.dir_world(Vector3(1, 0, 0)) if A != null else (to - from).normalized()
-	_launch(fx, "torp", from, mn, park, T + 0.45, T + 2.0, ln["fac"]["weapon"], ln["fac"], k, 0, false)
+	_launch(fx, "torp", from, mn, park, T + 0.15, T + 1.15, ln["fac"]["weapon"], ln["fac"], k, 0, false)
 	var list: Array = fx.dstate.get("proj", [])
 	var p: Dictionary = list[list.size() - 1]
 	p["park"] = true            # holds at the end of its run instead of vanishing
@@ -1117,7 +1117,7 @@ static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary) -> Di
 	var tg = _target(fx, Tg, to_c, start, not hit.is_empty(), hd, -1, kt)
 	var k: float = ln["k"]
 	var dist = start.distance_to(tg["p"])
-	var ti = T + warn_t + dist / (70.0 * fx.unit)
+	var ti = T + warn_t + clampf(dist / (70.0 * fx.unit), 0.85, 1.25)
 	if not p.is_empty():
 		p["park"] = false
 		p["a"] = start
@@ -1131,7 +1131,7 @@ static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary) -> Di
 		if Tg != null:
 			Tg.busy_until = maxf(Tg.busy_until, ti)
 	fx.later(ti + 0.2, func() -> void: torp_lane_clear(fx, lane_id, false))
-	return {"impacts": [ti - T], "done": ti - T + 0.5}
+	return {"impacts": [ti - T], "done": ti - T + 0.5, "at": tg["p"]}
 
 
 static func torp_lane_clear(fx, lane_id: String, dodged := true) -> void:

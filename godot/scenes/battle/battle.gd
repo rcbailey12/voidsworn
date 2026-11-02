@@ -144,6 +144,7 @@ var key_light: DirectionalLight3D
 var fill_light: DirectionalLight3D
 var arrow: MeshInstance3D
 var path_dots: MultiMeshInstance3D
+var path_line: MeshInstance3D
 var errors: Array = []
 var result := {}
 var battle_cfg := {}
@@ -392,6 +393,15 @@ func _build_arrow() -> void:
 	path_dots.material_override = dm
 	path_dots.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_dots)
+	path_line = MeshInstance3D.new()
+	var lm := StandardMaterial3D.new()
+	lm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	lm.vertex_color_use_as_albedo = true
+	lm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	path_line.material_override = lm
+	path_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(path_line)
 
 
 # A sector 1 fight like the campaign's first battles (Vex's starting fleet against a sector 1 Hegemony or Corsair group),
@@ -1208,7 +1218,7 @@ func _play_event(e: Dictionary) -> void:
 				sfx.play("launch", {"pos": board.hex_world(int(e["q"]), int(e["r"]))})
 			await wait(220.0)
 		"torpedo":
-			# a salvo launches into its lane and parks short of the aim hex until the firing side's next turn
+			# A salvo launches into its lane and waits for the firing side's next turn, as the rules require.
 			var aim: Vector3 = board.hex_world(int(e["aim"]["q"]), int(e["aim"]["r"]), 1.5)
 			var fac := str(VU.get(e["unit"], {}).get("fac", "hegemony"))
 			sfx.torp(fac, _pos(e["unit"]))
@@ -1220,10 +1230,14 @@ func _play_event(e: Dictionary) -> void:
 			_float(e["unit"], "Torpedoes away", Color("#f0b35a"), -24)
 			await wait(700.0)
 		"torpedo_miss":
+			var aim: Vector3 = board.hex_world(int(e["aim"]["q"]), int(e["aim"]["r"]), 1.5) if e.get("aim") != null else Vector3.ZERO
+			if gfx != null and gfx.dstate.get("lanes", {}).has(str(e["id"])):
+				aim = gfx.dstate["lanes"][str(e["id"])]["to"]
 			if gfx != null and gfx.has_method("torp_lane_clear"):
 				gfx.torp_lane_clear(str(e["id"]))
 			_torp_clear(str(e["id"]))
-			await wait(300.0)
+			await get_tree().create_timer(1.0).timeout
+			_float_at(aim, "TORPEDO MISS", Color("#ffc781"))
 		"risen":
 			# a Deathless wreck reassembles: the ship stands up again where it lay
 			var sv = views.get(e["unit"])
@@ -1479,7 +1493,7 @@ func _play_move(id, path: Array, charge: bool) -> void:
 		if skip:
 			sv.speed_k = float(PACE["skip"])
 		if eng_on:
-			# the main drive glows only while it pushes the ship ahead (G4 fx engine level: idle, 2 full burn)
+			# The main drive follows flight speed (G4 fx engine level: idle, 2 full burn).
 			gfx.set_engine(str(id), lerpf(ENGINE_IDLE, 2.0, float(sv.thrust)) if cin else clampf(1.0 + float(sv.thrust), 0.5, 2.2))
 		if args.has("speed-trace"):   # F2 proof: the hull's speed (hexes a second), spin (degrees a second) and drive
 			print("[speed] %s %.3f %.2f %.0f %.2f" % [str(id), game_t - t_move, sv._vel.length() / board.HW, rad_to_deg(sv._yaw_v), float(sv.thrust)])
@@ -1690,6 +1704,7 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 	var L: float = tsv.L if tsv != null else 10.0
 	var shield_col: Color = HT.FAC3D.get(str(VU.get(t_id, {}).get("fac", "hegemony")), P)["shield"]
 	var total := 0.0
+	var torp_result_scheduled := false
 	var hi := 0
 	# the browser's own length for this volley (fx3d.js timing), the cap for a paced wait
 	var btot := (0.32 + n * 0.25 + 0.15) if fam in ["lance", "ion"] else ((0.32 + n * 0.12 + 0.84) if fam == "torp" else (n * 0.07 + 0.49))
@@ -1702,13 +1717,18 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			hit0 = {"shield": hits[0]["shield"], "hull": hits[0]["hull"], "section": hits[0].get("section", ""), "crit": hits[0]["crit"]}
 		var r: Dictionary = gfx.torp_strike(str(e["torpedo"]), str(t_id), hit0)
 		var imp: Array = r.get("impacts", [])
+		var result_at := float(imp[-1]) if not imp.is_empty() else 1.0
+		var result_pos: Vector3 = r.get("at", to)
+		get_tree().create_timer(maxf(result_at, 0.001)).timeout.connect(func() -> void: _torpedo_result(hits, result_pos))
+		torp_result_scheduled = true
 		for k in hits.size():
 			var at: float = float(imp[mini(k, imp.size() - 1)]) if not imp.is_empty() else 0.8
 			var h: Dictionary = hits[k]
 			get_tree().create_timer(maxf(at, 0.001)).timeout.connect(func() -> void:
 				_apply_hit(h)
 				sfx.boom(0.8, _pos(t_id)))
-		total = _fx_wait(float(r.get("done", 1.2)), imp, sp, dying.has(str(t_id)), btot)
+		# Every side sees the flight and its result before the next action, regardless of round budget.
+		total = maxf(float(r.get("done", 1.2)), result_at + 0.35) / maxf(sp, 0.01)
 	elif gfx != null and gfx.has_method("volley"):
 		var hl: Array = []
 		for h in hits:
@@ -1771,6 +1791,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		await get_tree().create_timer(total * sp * 0.45).timeout
 	else:
 		await get_tree().create_timer(total * sp).timeout
+	if e.has("torpedo") and not torp_result_scheduled:
+		_torpedo_result(hits, to)
 	# the log line and the floating numbers (battle.js fireWeapon)
 	var sh_sum := 0.0
 	var hull_sum := 0.0
@@ -1785,7 +1807,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 		parts.append("%d shot down by point defense" % int(e["pd"]))
 	if hits.is_empty():
 		parts.append("all shots miss")
-		_float(t_id, "Miss", Color("#9a9384"))
+		if not e.has("torpedo"):
+			_float(t_id, "Miss", Color("#9a9384"))
 	else:
 		if sh_sum > 0:
 			parts.append("%d to %s shields" % [int(sh_sum), QUAD_NAME[int(e["quad"])]])
@@ -1793,7 +1816,8 @@ func _play_fire(e: Dictionary, grp: Array) -> void:
 			parts.append("%d hull" % int(hull_sum))
 		if sh_sum <= 0 and hull_sum <= 0:
 			parts.append("no damage")
-		_float_hit(t_id, sh_sum, hull_sum, crits > 0)
+		if not e.has("torpedo"):
+			_float_hit(t_id, sh_sum, hull_sum, crits > 0)
 	if crits > 0:
 		parts.append("%d criticals" % crits if crits > 1 else "critical")
 	_log("%s fires %s at %s: %s.%s" % [_name(a_id), str(e["name"]), _name(t_id), ", ".join(parts), " " + sys_txt + "!" if sys_txt != "" else ""], _who(a_id))
@@ -2244,6 +2268,7 @@ func _clear_overlay() -> void:
 	board.set_outline({})
 	arrow.visible = false
 	path_dots.multimesh.instance_count = 0
+	path_line.visible = false
 	if ghost != null:
 		ghost.visible = false
 
@@ -2291,6 +2316,7 @@ func _overlay() -> void:
 	var mm := path_dots.multimesh
 	arrow.visible = false
 	mm.instance_count = 0
+	path_line.visible = false
 	if pst != null and _usable(u):
 		var pk: String = board.key(pst.q, pst.r)
 		fills[pk] = REACH_HOT
@@ -2333,6 +2359,27 @@ func _overlay() -> void:
 
 
 func _path_dots(u: Dictionary, st) -> void:
+	if board.BL.current() == "cine" and not board.BL.tactical:
+		var run := {"pts": [board.hex_world(u["q"], u["r"], 0.5)]}
+		for p in st.path:
+			if not _jt(p.get("rot")):
+				run["pts"].append(board.hex_world(p["q"], p["r"], 0.5))
+		if run["pts"].size() < 2:
+			return
+		views[u["id"]]._prep_run(run)
+		var line := SurfaceTool.new()
+		line.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var samples: Array = run["smp"]
+		for i in samples.size() - 1:
+			var a: Vector3 = samples[i]
+			var b: Vector3 = samples[i + 1]
+			var side := (b - a).cross(Vector3.UP).normalized() * 0.65
+			for v in [[a, 0.55], [b, 0.55], [b + side, 0.0], [a, 0.55], [b + side, 0.0], [a + side, 0.0], [a, 0.55], [a - side, 0.0], [b - side, 0.0], [a, 0.55], [b - side, 0.0], [b, 0.55]]:
+				line.set_color(Color(0.45, 0.78, 1.0, v[1]))
+				line.add_vertex(v[0])
+		path_line.mesh = line.commit()
+		path_line.visible = true
+		return
 	var pts: Array = []
 	var prev: Vector3 = board.hex_world(u["q"], u["r"], 0.5)
 	for p in st.path:
@@ -3265,11 +3312,14 @@ func _attack_tip(t_id: String) -> String:
 		var right := ""
 		if i in firing:
 			tg = tg.duplicate()
-			tg.merge(api.preview_fire(sel, i, t_id), true)
+			tg.merge(_fire_preview(sel, i, t_id), true)
 			hull += float(tg.get("hull", 0))
 			sh += float(tg.get("shield", 0))
 			n += 1
 			right = "[b][color=#f0b35a]%d%%[/color][/b] [color=#7d7768]%d\u00d7%d[/color]" % [int(tg.get("hit", 0)), int(w["shots"]), int(round(float(tg.get("dmgMult", 0))))]
+			if vw["kind"] == "torp":
+				right = "%d%% hit; about %d shield, %d hull" % [int(tg["hit"]), int(round(float(tg["shield"]))), int(round(float(tg["hull"])))]
+				right += "\n[color=#b3aa95]%s[/color]" % _torpedo_why()
 		elif float(_z0(vw.get("off"))) > 0:
 			right = "[color=#e27f74]offline[/color]"
 		elif float(_z0(vw.get("cd"))) > 0:
@@ -3627,15 +3677,22 @@ func _card_info() -> Dictionary:
 		var set := _firing_set(target)
 		var sh := 0.0
 		var hl := 0.0
+		var torp_rows := PackedStringArray()
+		var torp_why := ""
 		for i in set:
-			var tg := _wtarget(id, int(i), target)
+			var tg := _fire_preview(id, int(i), target)
 			sh += float(tg.get("shield", 0))
 			hl += float(tg.get("hull", 0))
+			if u["weapons"][i]["kind"] == "torp":
+				torp_rows.append("%s: %d%% hit, about %d shield / %d hull." % [str(u["weapons"][i]["name"]), int(tg["hit"]), int(round(float(tg["shield"]))), int(round(float(tg["hull"])))])
+				torp_why = _torpedo_why()
 		if set.is_empty():
 			hint = _cant_fire_reason(target)
 		else:
 			hint = "[color=#ff8a6a]Target: %s.[/color] %d gun%s bear from here: about [color=#62ccff]%d shield[/color] and [color=#ffae42]%d hull[/color] damage%s. [b]Click it again or press Enter to fire.[/b] Esc cancels." % [_name(target), set.size(), "" if set.size() == 1 else "s", int(round(sh)), int(round(hl)), " (likely kill)" if hl >= float(VU[target]["hp"]) else ""]
 			btns.append({"text": "Fire %d weapon%s (Enter)" % [set.size(), "" if set.size() == 1 else "s"], "act": "confirm", "on": true, "primary": true})
+			if not torp_rows.is_empty():
+				hint += "\n[color=#f0c58b]%s[/color]\n%s" % [" ".join(torp_rows), torp_why]
 			btns.append({"text": "Cancel (Esc)", "act": "cancel", "on": true})
 	elif fired and bear > 0:
 		hint = "%d gun%s still ready. Click an enemy with a red ring to target it, or end the ship (Space)." % [bear, "" if bear == 1 else "s"]
@@ -3740,7 +3797,7 @@ func _panel_info() -> Dictionary:
 		stats += "\n[color=#f08a4b]On fire.[/color]"
 	info["stats"] = stats
 	var ws: Array = []
-	var tgt := ""
+	var tgt := target
 	var hu := _unit_at(hover.x, hover.y)
 	if not hu.is_empty() and hu["side"] != u["side"]:
 		tgt = hu["id"]
@@ -4040,8 +4097,40 @@ func _process(dt: float) -> void:
 func _float(id, text: String, col: Color, dy := 0.0) -> void:
 	if not views.has(id):
 		return
+	_float_at(_pos(id), text, col, dy)
+
+
+func _float_at(pos: Vector3, text: String, col: Color, dy := 0.0) -> void:
 	var lbl: Label = hud.make_float(text, col)
-	floats.append({"lbl": lbl, "pos": _pos(id), "t": 0.0, "dy": dy * hud.k})
+	floats.append({"lbl": lbl, "pos": pos, "t": 0.0, "dy": dy * hud.k})
+
+
+func _torpedo_result(hits: Array, at: Vector3) -> void:
+	var shield := 0.0
+	var hull := 0.0
+	for h in hits:
+		shield += float(h["shield"])
+		hull += float(h["hull"])
+	_float_at(at, "TORPEDO MISS" if hits.is_empty() else "TORPEDO HIT: %d shield / %d hull" % [int(shield), int(hull)], Color("#ffc781"), -24)
+
+
+# Presentation query only: use the rules' own estimator with the travelling warhead multiplier.
+# No live weapon, target, RNG or battle state is changed.
+func _fire_preview(id: String, wi: int, tid: String) -> Dictionary:
+	var preview: Dictionary = api.preview_fire(id, wi, tid)
+	var u = api.unit(id)
+	var w = u["weapons"][wi]
+	if w["k"] == "torp" and not _jt(u.get("isSq")):
+		var warhead: Dictionary = w.duplicate(true)
+		warhead["dmg"] = float(w["dmg"]) * api.R.TB.TORP_WARHEAD
+		var estimate: Dictionary = api.R.expectedVs(u, warhead, api.unit(tid))
+		preview["shield"] = estimate["shield"]
+		preview["hull"] = estimate["hull"]
+	return preview
+
+
+func _torpedo_why() -> String:
+	return "More evasion means a lower hit chance; point defense can stop shots. Estimate for next turn; moving 3 hexes from aim dodges."
 
 
 func _float_hit(id, sh: float, hull: float, crit) -> void:
