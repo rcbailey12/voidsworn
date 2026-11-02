@@ -8,7 +8,7 @@ if not exist "%G%" (
   pause
   exit /b 2
 )
-set "RESULT=%CD%\godot\fx\test\results\dst3_rerun"
+set "RESULT=%CD%\godot\fx\test\results\dst4"
 if not exist "%RESULT%\.runtime" mkdir "%RESULT%\.runtime"
 set "APPDATA=%RESULT%\.runtime"
 set "LOCALAPPDATA=%APPDATA%"
@@ -20,6 +20,9 @@ if errorlevel 1 goto failed
 "%G%" --headless --path godot --script res://fx/test/fx_smoke.gd --log-file "%RESULT%\smoke.log"
 if errorlevel 1 goto failed
 set "PROBE_BOX=1"
+set "PROBE_W=1920"
+set "PROBE_H=1080"
+set "PROBE_HULK="
 set "PROBE_OUT=%RESULT%\box"
 if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
 "%G%" --path godot --fixed-fps 60 --script res://fx/test/fx_inside_probe.gd --log-file "%PROBE_OUT%\probe.log"
@@ -29,9 +32,9 @@ if not exist "%PROBE_OUT%" mkdir "%PROBE_OUT%"
 "%G%" --path godot --fixed-fps 60 --script res://fx/test/destruction_fleet_probe.gd --log-file "%PROBE_OUT%\probe.log"
 if errorlevel 1 goto failed
 echo Checks finished. Logs and screenshots: %RESULT%
-pause
+if not defined FX_CHECK_UNATTENDED pause
 exit /b 0
 :failed
 echo A check failed. See the log in %RESULT%.
-pause
+if not defined FX_CHECK_UNATTENDED pause
 exit /b 1

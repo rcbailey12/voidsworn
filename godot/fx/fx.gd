@@ -24,7 +24,7 @@ const FLASH_CAP := 3         # counted flashes in any rolling second (WCAG 2.3.1
 const FLASH_I := 4.0         # sprite intensity from which a short flash-like sprite counts (dimmer pops are free)
 const FLASH_SCREEN := 0.06   # ... and only when it covers at least this share of the screen height (small sparks are free)
 const FLASH_LIGHT := 8.0     # light peak from which a decaying event light counts (it lights a big patch of hull)
-const FLASH_KINDS := [0, 2, 12, 13]   # sprite kinds that can flash: flash, fireball core, beam charge, impact flare
+const FLASH_KINDS := [0, 2, 12, 13, 24]   # includes the distance-readable death core
 
 # --- settings (API.md 1, 8)
 var quality = "max"
