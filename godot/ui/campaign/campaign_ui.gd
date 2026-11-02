@@ -841,7 +841,8 @@ func _boon_line(b) -> Control:
 func _ship_card(s: Dictionary, refit: bool, extra: Array = []) -> Control:
 	var t = C.HULLS[s["tpl"]]; var d = C.derive(s); var cap = s["cap"]
 	var cv = card(false, 330); var v = cv[1]
-	var r0 = hbox(); r0.add_child(lbl(s["name"], 20, BONE, font_semi)); r0.add_child(spacer()); r0.add_child(lbl("Mk " + C.roman(s["mk"]), 14, GILT, null, false)); v.add_child(r0)
+	var r0 = hbox(); var name_label = lbl(s["name"], 20, BONE, font_semi); name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	r0.add_child(name_label); r0.add_child(lbl("Mk " + C.roman(s["mk"]), 14, GILT, null, false)); v.add_child(r0)
 	v.add_child(lbl(t["n"], 16, BONE2))
 	var r1 = hbox(); r1.add_child(lbl("Hull " + C.numstr(s["hp"]) + "/" + C.numstr(d["maxHp"]), 15)); r1.add_child(spacer()); r1.add_child(lbl(C.numstr(t["cp"]) + " CP", 15, BONE3, null, false)); v.add_child(r1)
 	v.add_child(bar(float(s["hp"]) / float(d["maxHp"])))
@@ -1200,7 +1201,7 @@ func _modal(md: Dictionary) -> void:
 	var box = PanelContainer.new(); var bsb = _glass(Color(0.026, 0.038, 0.066, 0.98), GILT, "top", 2, 4, 24, 30); bsb.shadow_color = Color(0, 0, 0, 0.6)
 	box.add_theme_stylebox_override("panel", bsb); _brackets(box)   # a dialog: dark glass, a gilt top edge, corner brackets, a deep shadow
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	var v = vbox(8); v.custom_minimum_size.x = px(700); sc.add_child(v); box.add_child(sc); cc.add_child(box)
+	var v = vbox(8); v.custom_minimum_size.x = px(700); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(v); box.add_child(sc); cc.add_child(box)
 	var h2 = func(t: String): v.add_child(lbl(t, 27, BONE, font_goth))
 	var p = func(t: String, col: Color = BONE): v.add_child(lbl(t, 17, col))
 	var R = C.RUN
@@ -1313,8 +1314,8 @@ func _modal(md: Dictionary) -> void:
 			for m in d["opts"]: add(v, choice(C.modName(m), C.MODULES[m]["d"], "takeMod", m, acts))
 		"boon":
 			var P = C.PATRONS[d["patron"]]; var pc = Color(P["col"])
-			var hd = hbox(12); var sg = lbl(P["glyph"], 26, INK, font_semi, false); var sgp = panel(pc, pc, 6); sgp.add_child(sg); hd.add_child(sgp)
-			var hv = vbox(0); hv.add_child(lbl(P["n"], 23, pc, font_goth)); hv.add_child(lbl(P["theme"], 15, BONE2)); hd.add_child(hv); v.add_child(hd)
+			var hd = hbox(12); var sg = lbl(P["glyph"], 26, INK, font_semi, false); var sgp = panel(pc, pc, 6); sgp.size_flags_vertical = Control.SIZE_SHRINK_BEGIN; sgp.add_child(sg); hd.add_child(sgp)
+			var hv = vbox(0); hv.size_flags_horizontal = Control.SIZE_EXPAND_FILL; hv.add_child(lbl(P["n"], 23, pc, font_goth)); hv.add_child(lbl(P["theme"], 15, BONE2)); hd.add_child(hv); v.add_child(hd)
 			p.call("“" + str(P["quote"]) + "”", BONE2); p.call(str(C.REWARD_DEF["boon"]), BONE3)
 			var offer = d["offer"]
 			for i in range(offer.size()):

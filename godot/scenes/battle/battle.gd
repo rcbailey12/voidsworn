@@ -394,11 +394,10 @@ func _build_arrow() -> void:
 	path_dots.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_dots)
 	path_line = MeshInstance3D.new()
-	var lm := StandardMaterial3D.new()
-	lm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	lm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	lm.vertex_color_use_as_albedo = true
-	lm.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var lm := ShaderMaterial.new()
+	var line_shader := Shader.new()
+	line_shader.code = Board.OUTLINE_SHADER
+	lm.shader = line_shader
 	path_line.material_override = lm
 	path_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(path_line)
@@ -2359,41 +2358,25 @@ func _overlay() -> void:
 
 
 func _path_dots(u: Dictionary, st) -> void:
-	if board.BL.current() == "cine" and not board.BL.tactical:
-		var run := {"pts": [board.hex_world(u["q"], u["r"], 0.5)]}
-		for p in st.path:
-			if not _jt(p.get("rot")):
-				run["pts"].append(board.hex_world(p["q"], p["r"], 0.5))
-		if run["pts"].size() < 2:
-			return
-		views[u["id"]]._prep_run(run)
-		var line := SurfaceTool.new()
-		line.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var samples: Array = run["smp"]
-		for i in samples.size() - 1:
-			var a: Vector3 = samples[i]
-			var b: Vector3 = samples[i + 1]
-			var side := (b - a).cross(Vector3.UP).normalized() * 0.65
-			for v in [[a, 0.55], [b, 0.55], [b + side, 0.0], [a, 0.55], [b + side, 0.0], [a + side, 0.0], [a, 0.55], [a - side, 0.0], [b - side, 0.0], [a, 0.55], [b - side, 0.0], [b, 0.55]]:
-				line.set_color(Color(0.45, 0.78, 1.0, v[1]))
-				line.add_vertex(v[0])
-		path_line.mesh = line.commit()
-		path_line.visible = true
-		return
-	var pts: Array = []
-	var prev: Vector3 = board.hex_world(u["q"], u["r"], 0.5)
+	var run := {"pts": [board.hex_world(u["q"], u["r"], 0.5)]}
 	for p in st.path:
-		if _jt(p.get("rot")):
-			continue
-		var c: Vector3 = board.hex_world(p["q"], p["r"], 0.5)
-		for j in 3:
-			pts.append(prev.lerp(c, (j + 1) / 3.0))
-		prev = c
-	var mm := path_dots.multimesh
-	mm.instance_count = pts.size()
-	for j in pts.size():
-		mm.set_instance_transform(j, Transform3D(Basis(), pts[j]))
-
+		if not _jt(p.get("rot")):
+			run["pts"].append(board.hex_world(p["q"], p["r"], 0.5))
+	if run["pts"].size() < 2:
+		return
+	views[u["id"]]._prep_run(run)
+	var line := SurfaceTool.new()
+	line.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var samples: Array = run["smp"]
+	for i in samples.size() - 1:
+		var a: Vector3 = samples[i]
+		var b: Vector3 = samples[i + 1]
+		var side := (b - a).cross(Vector3.UP).normalized() * 0.65
+		for v in [[a, 0.55], [b, 0.55], [b + side, 0.0], [a, 0.55], [b + side, 0.0], [a + side, 0.0], [a, 0.55], [a - side, 0.0], [b - side, 0.0], [a, 0.55], [b - side, 0.0], [b, 0.55]]:
+			line.set_color(Color(0.45, 0.78, 1.0, v[1]))
+			line.add_vertex(v[0])
+	path_line.mesh = line.commit()
+	path_line.visible = true
 
 # the planned position: a see-through blue copy of the ship's hull standing on the planned hex, facing the planned way
 const GHOST_COL := Color(0.45, 0.78, 1.0, 0.32)

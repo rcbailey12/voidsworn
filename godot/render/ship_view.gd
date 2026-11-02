@@ -1125,12 +1125,12 @@ func _glide_step(dt: float) -> void:
 func _glide_thrusters(d: Array, dts: float) -> void:
 	for k in _puff_cd.keys():
 		_puff_cd[k] = float(_puff_cd[k]) - dts
-	# Homeworld / Armada read: the main drive carries the flight, even at cruise. RCS only
-	# whispers during a turn, with quiet gaps between brief puffs.
+	# The main drive carries the flight. Matched RCS pairs give short visible
+	# steering puffs, with quiet gaps between bursts.
 	thrust = clampf((d[1] as Vector3).length() / maxf(gl_vpk, 1e-4), 0.0, 1.0)
 	if absf(_yaw_v) > 0.06 and float(_puff_cd.get("gl_turn", 0.0)) <= 0.0:
-		_couple_puffs(signf(_yaw_v), 0.18)
-		_puff_cd["gl_turn"] = 0.55
+		_couple_puffs(signf(_yaw_v), 0.85)
+		_puff_cd["gl_turn"] = 0.24
 
 
 func snap_to(p: Vector3, yaw: float) -> void:
@@ -1185,12 +1185,12 @@ func _puff(at: Vector3, dir: Vector3, k := 1.0) -> void:
 	sp.material_override = _puff_mat()
 	sp.modulate = Color(0.85, 0.88, 0.95, 0.75 * k)  # G4's hit-reaction RCS colour (fx_ship._rcs)
 	# a jet reads at battle zoom: about 5% of the hull's length as it leaves the nozzle, three times that as it spreads
-	sp.pixel_size = clampf(L * 0.07, 1.4, 2.8) / 64.0 * (0.6 + 0.4 * k) * (0.45 if glide else 1.0)
+	sp.pixel_size = clampf(L * 0.07, 1.4, 2.8) / 64.0 * (0.6 + 0.4 * k)
 	sp.top_level = true
 	add_child(sp)
 	sp.global_position = to_global(at + dir.normalized() * maxf(L, 6.0) * 0.03)  # just outside the hull, not inside it
 	var vw: Vector3 = global_transform.basis.orthonormalized() * dir.normalized()
-	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": 0.75 * k, "life": 0.18 if glide else 0.4})
+	puffs.append({"n": sp, "t": 0.0, "v": vw * maxf(L, 6.0) * 0.8 * (0.6 + 0.4 * k) + _vel * 0.6, "s": sp.pixel_size, "a": 0.75 * k, "life": 0.28 if glide else 0.4})
 
 
 static var _pm: StandardMaterial3D = null
@@ -1268,6 +1268,12 @@ func _process(dt: float) -> void:
 			(e as Sprite3D).visible = false
 		if sink >= 1.0:
 			visible = false
+	# Sparse matched station-keeping jets, independent of the smooth flight curve.
+	if not dead and visible and path_dur <= 0.0:
+		var idle_t := Time.get_ticks_msec() / 1000.0
+		if idle_t >= float(_puff_cd.get("idle_at", 0.0)):
+			_side_puffs(1.0 if sin(idle_t + bob_seed) > 0.0 else -1.0, 0.32)
+			_puff_cd["idle_at"] = idle_t + 1.6 + fposmod(bob_seed, 0.8)
 	# A slow idle drift, separate from the cinematic flight bank.
 	var bob := Vector3(0, sin(Time.get_ticks_msec() / 1000.0 * 0.6 + bob_seed) * 0.25, 0)
 	hull.position = hull_base + bob

@@ -40,18 +40,29 @@ var props: Node3D
 var rock_meshes: Array = []
 var props_world := false     # G4 world draws the rocks, debris and nebula; the board keeps hulks, stations and the planet
 
+# The board plane passes through the lower half of tall hulls. Depth-test alone
+# cannot protect those pixels, so mask opaque ship/terrain surfaces near the board.
+const HULL_MASK := """
+uniform sampler2D board_depth : hint_depth_texture, filter_nearest, repeat_disable;
+void under_hulls(vec2 screen_uv, mat4 inv_projection, mat4 inv_view) {
+	float z = texture(board_depth, screen_uv).r;
+	if (z <= 0.000001) { return; }
+	vec4 p = inv_projection * vec4(screen_uv * 2.0 - 1.0, z, 1.0);
+	vec3 world = (inv_view * vec4(p.xyz / p.w, 1.0)).xyz;
+	if (world.y > -20.0) { discard; }
+}
+"""
+
 const FILL_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
-// board look trial (world/board_look.gd): 0 the reach hexes as today, 1 a holo footprint (see-through, a lit rim, scan
-// lines drifting across it)
-uniform int reach_mode = 0;
+""" + HULL_MASK + """
 varying vec4 vcol;
 varying vec2 vp;
 varying float style;
-varying vec3 wp;
-void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
+void vertex() { vcol = COLOR; vp = VERTEX.xz; style = INSTANCE_CUSTOM.r; }
 void fragment() {
+	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
 	// soft inner falloff so a lit hex reads as a glow, not a flat plate
 	float r = length(vp) / 10.0;
 	float k = mix(0.75, 1.0, smoothstep(0.2, 0.95, r));
@@ -63,26 +74,11 @@ void fragment() {
 		vec2 q = abs(vp);
 		float d = max(q.x, 0.5 * q.x + 0.8660254 * q.y) / 8.53;
 		float hot = style > 1.5 ? 1.0 : 0.0;
-		if (reach_mode == 2) {
-			// Cinematic: a narrow soft edge and barely tinted space, no scanning blue plate.
-			float rim = smoothstep(0.93, 0.985, d);
-			float glow = smoothstep(0.82, 0.98, d);
-			a = mix(0.012, 0.032, hot) + glow * 0.06 + rim * mix(0.22, 0.46, hot);
-			c = mix(vec3(0.30, 0.62, 0.85), vec3(0.64, 0.88, 1.0), hot);
-		} else if (reach_mode == 1) {
-			// holo footprint: light thrown up from the table, so space shows through the middle of each hex
-			float rim = smoothstep(0.78, 0.97, d);
-			float scan = smoothstep(0.6, 1.0, 0.5 + 0.5 * sin(wp.z * 1.7 - TIME * 3.0));
-			float sweep = smoothstep(0.9, 1.0, sin((wp.x * 0.6 + wp.z) * 0.03 - TIME * 1.2));
-			float body = 0.34 + 0.22 * scan + 0.3 * sweep + hot * 0.55;
-			a = vcol.a * (body + 1.25 * rim);
-			c = mix(c, vec3(0.6, 0.9, 1.0), rim * 0.5 + hot * 0.2);
-		} else {
-			float band = smoothstep(0.86, 0.99, d);
-			float pulse = hot > 0.5 ? 1.0 : 0.85 + 0.15 * sin(TIME * 2.2);
-			a = vcol.a * (0.8 + 0.6 * band) * pulse;
-			c = mix(c, vec3(0.55, 0.85, 1.0), band * 0.35);
-		}
+		// Every board look: a narrow soft edge and barely tinted space, no scanning blue plate.
+		float rim = smoothstep(0.93, 0.985, d);
+		float glow = smoothstep(0.82, 0.98, d);
+		a = mix(0.012, 0.032, hot) + glow * 0.06 + rim * mix(0.22, 0.46, hot);
+		c = mix(vec3(0.30, 0.62, 0.85), vec3(0.64, 0.88, 1.0), hot);
 	}
 	ALBEDO = c;
 	ALPHA = clamp(a, 0.0, 1.0);
@@ -102,6 +98,7 @@ uniform float far_r = 190.0;
 uniform float far_k = 0.3;
 // the gravity well: xyz its centre, w how deep the holo grid dips toward it (0: flat)
 uniform vec4 well = vec4(0.0);
+""" + HULL_MASK + """
 varying vec4 vcol;
 varying float style;
 varying vec3 wp;
@@ -133,6 +130,7 @@ void vertex() {
 	}
 }
 void fragment() {
+	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
 	float k = 1.0;
 	if (style < 0.5) {
 		if (mode == 0) {
@@ -154,14 +152,20 @@ void fragment() {
 		}
 	}
 	ALBEDO = vcol.rgb * vcol.a * k * mix(1.0, thin, 0.6);
+	ALPHA = 1.0; // Draw after opaque hulls, with depth testing, just like the fill.
 }
 """
 const OUTLINE_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
+""" + HULL_MASK + """
 varying vec4 vcol;
 void vertex() { vcol = COLOR; }
-void fragment() { ALBEDO = vcol.rgb * vcol.a; }
+void fragment() {
+	under_hulls(SCREEN_UV, INV_PROJECTION_MATRIX, INV_VIEW_MATRIX);
+	ALBEDO = vcol.rgb * vcol.a;
+	ALPHA = 1.0;
+}
 """
 # board look trial: the edge round each patch of terrain (nebula, storm, debris, rock, zones, the well's rim and pull)
 const EDGE_SHADER := """
@@ -354,10 +358,7 @@ func refresh() -> void:
 	var fm := fills.multimesh
 	var rm := rings.multimesh
 	var sp := BL.spec()
-	if fills.material_override is ShaderMaterial:
-		(fills.material_override as ShaderMaterial).set_shader_parameter("reach_mode", 2 if BL.current() == "cine" and not BL.tactical else (1 if sp["reach"] == "holo" else 0))
 	var base_ring: Color = LOOK_RING.get(str(sp["grid"]), BASE_RING)
-	var soft_reach: bool = str(sp["grid"]) != "today" and str(sp["grid"]) != "tactical"
 	for i in cells.size():
 		var k := key(cells[i].q, cells[i].r)
 		var c: Color
@@ -372,7 +373,7 @@ func refresh() -> void:
 		fm.set_instance_custom_data(i, Color(stl, 0, 0, 0))
 		var rc: Color = ring_over.get(k, base_ring)
 		# the holo and living looks: the reach hexes' own outlines quieter (the footprint and its one outline carry them)
-		if soft_reach and ring_over.has(k) and style_over.has(k):
+		if ring_over.has(k) and style_over.has(k):
 			rc.a *= 0.5
 		if k == hover_key:
 			rc = Color(1.0, 0.82, 0.4, 0.9)
@@ -410,49 +411,9 @@ var outline_key := ""
 
 
 func set_outline(keys: Dictionary, col := REACH_EDGE) -> void:
-	if outline == null:
-		return
-	if BL.current() == "cine" and not BL.tactical:
-		keys = {}   # the soft edge of every reachable hex carries the area in this look
-	var ks: Array = keys.keys()
-	ks.sort()
-	var sig := ",".join(PackedStringArray(ks)) + str(col)
-	if sig == outline_key:
-		return
-	outline_key = sig
-	if ks.is_empty():
+	# The per-hex soft rims carry the reachable area in every look.
+	if outline != null:
 		outline.mesh = null
-		return
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var corners: Array = []
-	for i in 6:
-		var an := deg_to_rad(60.0 * i + 30.0)
-		corners.append(Vector3(cos(an), 0, sin(an)))
-	for k in ks:
-		var qr: PackedStringArray = str(k).split(",")
-		var c := hex_world(int(qr[0]), int(qr[1]), -0.32)
-		for i in 6:
-			var a: Vector3 = corners[i]
-			var b: Vector3 = corners[(i + 1) % 6]
-			var mid := (a + b) * 0.5 * HS
-			var nb := world_hex(c + mid * 2.0)
-			if keys.has(key(nb.x, nb.y)):
-				continue
-			# the line (0.9 wide) and a glow band inside it (2.6 wide, fading inward)
-			for band in [[HS * 0.985, HS * 0.985 - 0.9, col.a, col.a], [HS * 0.985 - 0.9, HS * 0.985 - 3.5, col.a * 0.35, 0.0]]:
-				var r0: float = band[0]
-				var r1: float = band[1]
-				var c0 := Color(col.r, col.g, col.b, band[2])
-				var c1 := Color(col.r, col.g, col.b, band[3])
-				var p0 := c + a * r0
-				var p1 := c + b * r0
-				var p2 := c + b * r1
-				var p3 := c + a * r1
-				for v in [[p0, c0], [p1, c0], [p2, c1], [p0, c0], [p2, c1], [p3, c1]]:
-					st.set_color(v[1])
-					st.add_vertex(v[0])
-	outline.mesh = st.commit()
 
 
 func on_board(q: int, r: int) -> bool:
@@ -599,7 +560,6 @@ func apply_look(toast := true) -> void:
 	var rm := rings.material_override as ShaderMaterial
 	rm.set_shader_parameter("mode", {"today": 0, "holo": 1, "ghost": 2, "tactical": 3}.get(g, 0))
 	rm.set_shader_parameter("well", Vector4(well_c.x, well_c.y, well_c.z, 9.0) if (sp["funnel"] and well_c != Vector3.INF) else Vector4.ZERO)
-	(fills.material_override as ShaderMaterial).set_shader_parameter("reach_mode", 1 if str(sp["reach"]) == "holo" else 0)
 	if edges != null:
 		_edge_gain = float(sp["terrain_edge"])
 		(edges.material_override as ShaderMaterial).set_shader_parameter("gain", _edge_gain)
