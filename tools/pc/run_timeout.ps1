@@ -30,7 +30,9 @@ function Test-RyanPlaying {
   return $false
 }
 $w0 = Get-Date; $said = $false
-while ((Test-RyanPlaying) -and ((Get-Date) - $w0).TotalHours -lt 8) {
+# Codex jobs are light (one model session, small node scripts) and do not touch the game's log: they run during play.
+$noWait = ($Exe -match 'codex(\.cmd|\.exe)?$')
+while ((-not $noWait) -and (Test-RyanPlaying) -and ((Get-Date) - $w0).TotalHours -lt 8) {
   if (-not $said) { Write-Output "run_timeout: the game is open, waiting until it closes"; "$(Get-Date -Format s) WAIT game open: $Exe" | Out-File $log -Append -Encoding utf8; $said = $true }
   Start-Sleep -Seconds 20
 }
