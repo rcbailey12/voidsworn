@@ -10,11 +10,11 @@ const W = {
   laser:{n:'Laser cannon',k:'battery',shots:2,dmg:7,r:4,opt:3,acc:80,fall:8,crit:5},
   turbo:{n:'Pulse laser',k:'battery',shots:2,dmg:9,r:5,opt:3,acc:74,fall:8,crit:5},
   hturbo:{n:'Heavy pulse laser',k:'battery',shots:3,dmg:9,r:6,opt:4,acc:72,fall:7,crit:6},
-  ion:{n:'Ion cannon',k:'lance',shots:1,dmg:12,r:6,opt:5,acc:80,fall:6,ion:2.5,crit:4},
+  ion:{n:'Ion cannon',k:'lance',shots:1,dmg:12,r:6,opt:5,acc:80,fall:6,ion:2.7,crit:4},
   scatter:{n:'Scatter cannons',k:'battery',shots:5,dmg:5,r:3,opt:2,acc:78,fall:10,crit:6},
   htorp:{n:'Heavy torpedoes',k:'torp',shots:2,dmg:34,r:6,opt:6,acc:60,fall:0,pierce:.3,crit:15,cd:2,evMult:2},
-  tendril:{n:'Boarding tendrils',k:'bio',shots:2,dmg:13,r:1,opt:1,acc:85,fall:0,pierce:.5,crit:12},
-  bioplasma:{n:'Bile spray',k:'bio',shots:2,dmg:12,r:4,opt:3,acc:74,fall:8,pierce:.2,crit:8},
+  tendril:{n:'Boarding tendrils',k:'bio',shots:2,dmg:11,r:1,opt:1,acc:85,fall:0,pierce:.5,crit:12},
+  bioplasma:{n:'Bile spray',k:'bio',shots:2,dmg:10,r:4,opt:3,acc:74,fall:8,pierce:.2,crit:8},
   spores:{n:'Spore drifts',k:'flak',shots:3,dmg:4,r:2,opt:2,acc:78,fall:8,vsSq:3,vsCap:.6},
   pulsar:{n:'Prism lance',k:'lance',shots:2,dmg:12,r:6,opt:5,acc:80,fall:6,pierce:.6,crit:10},
   startorp:{n:'Star torpedo',k:'torp',shots:1,dmg:38,r:5,opt:5,acc:66,fall:0,pierce:.4,crit:15,cd:2,evMult:2},
@@ -60,9 +60,9 @@ function nameWeapons(fac,list){ for(const w of list){ w.n=wName(fac,w.id); const
 const CLS_NAME={'Battle-barge':'War-barge','Bio-titan':'Colossus','Ark':'Lattice-ship','Tomb-ark':'Archive-ship'}; function clsName(c){ return CLS_NAME[c]||c; }
 const HULLS = {
   // ---- player: Voidsworn gothic fleet
-  warden:{n:'Warden-class frigate',cls:'Frigate',fac:'voidsworn',size:.5,cp:1,hp:45,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:20,w:[['autocannon','F'],['flak','T']],ab:'evasive',slots:1,cost:70},
-  harrow:{n:'Harrow-class destroyer',cls:'Destroyer',fac:'voidsworn',size:.6,cp:2,hp:78,sh:14,rg:6,ar:.15,sp:4,tn:2,ev:12,w:[['torp','F'],['turret','T']],ab:'reload',slots:1,cost:130},
-  penitent:{n:'Vigil-class cruiser',cls:'Cruiser',fac:'voidsworn',size:.76,cp:3,hp:120,sh:20,rg:8,ar:.2,sp:3,tn:2,ev:5,w:[['battery','P'],['battery','S'],['lance','F']],ab:'focus',slots:2,cost:200},
+  warden:{n:'Warden-class frigate',cls:'Frigate',fac:'voidsworn',size:.5,cp:1,hp:50,sh:10,rg:5,ar:.1,sp:5,tn:3,ev:20,w:[['autocannon','F'],['flak','T']],ab:'evasive',slots:1,cost:70},
+  harrow:{n:'Harrow-class destroyer',cls:'Destroyer',fac:'voidsworn',size:.6,cp:2,hp:85,sh:14,rg:6,ar:.15,sp:4,tn:2,ev:12,w:[['torp','F'],['turret','T']],ab:'reload',slots:1,cost:130},
+  penitent:{n:'Vigil-class cruiser',cls:'Cruiser',fac:'voidsworn',size:.76,cp:3,hp:135,sh:20,rg:8,ar:.2,sp:3,tn:2,ev:5,w:[['battery','P'],['battery','S'],['lance','F']],ab:'focus',slots:2,cost:200},
   reliquary:{n:'Hearth-class carrier',cls:'Carrier',fac:'voidsworn',size:.84,cp:4,hp:130,sh:22,rg:9,ar:.15,sp:2,tn:1,ev:0,w:[['turret','T'],['flak','T']],ab:'launch',hangar:2,slots:2,cost:260},
   cathedral:{n:'Bastion-class battleship',cls:'Battleship',fac:'voidsworn',size:.95,cp:5,hp:220,sh:30,rg:12,ar:.3,sp:2,tn:1,ev:0,w:[['hbattery','P'],['hbattery','S'],['lance','F'],['flak','T']],ab:'surge',slots:3,cost:340},
   ascendant:{n:'Daybreak-class dreadnought',cls:'Dreadnought',fac:'voidsworn',size:1.18,cp:8,hp:370,sh:32,rg:15,ar:.35,sp:2,tn:1,ev:0,w:[['hbattery','P'],['hbattery','S'],['turret','T'],['flak','T']],ab:'nova',slots:3,cost:520,unique:true},
@@ -83,27 +83,27 @@ const HULLS = {
   c_hulk:{n:'Hullbreaker hulk-carrier',cls:'Carrier',fac:'corsair',size:.86,cp:4,hp:170,sh:16,rg:6,ar:.2,sp:2,tn:1,ev:0,w:[['turret','T'],['turret','T']],ab:'launch',hangar:2},
   c_boss:{n:"Warlord's Pyre-Barge",cls:'Battle-barge',fac:'corsair',size:1.22,cp:10,hp:600,sh:30,rg:8,ar:.25,sp:2,tn:1,ev:0,w:[['scatter','P'],['scatter','S'],['htorp','F'],['flak','T']],ab:'launch',hangar:2,boss:true},
   // ---- The Chorus (bio-swarm)
-  b_drone:{n:'Chorus drone-spawn',cls:'Frigate',fac:'chorus',size:.48,cp:1,hp:46,sh:0,rg:0,ar:.05,sp:5,tn:3,ev:15,w:[['tendril','T']],ab:'regrow',regen:4},
-  b_spitter:{n:'Chorus spitter',cls:'Destroyer',fac:'chorus',size:.6,cp:2,hp:82,sh:0,rg:0,ar:.1,sp:4,tn:2,ev:8,w:[['bioplasma','T'],['bioplasma','F']],ab:'regrow',regen:5},
-  b_razor:{n:'Chorus bladeback',cls:'Cruiser',fac:'chorus',size:.76,cp:3,hp:150,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:4,w:[['tendril','T'],['bioplasma','F']],ab:'frenzy',regen:7},
-  b_brood:{n:'Chorus brood-sac',cls:'Carrier',fac:'chorus',size:.9,cp:5,hp:200,sh:0,rg:0,ar:.2,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['spores','T']],ab:'launch',hangar:3,regen:8},
+  b_drone:{n:'Chorus drone-spawn',cls:'Frigate',fac:'chorus',size:.48,cp:1,hp:46,sh:0,rg:0,ar:.05,sp:5,tn:3,ev:15,w:[['tendril','T']],ab:'regrow',regen:3},
+  b_spitter:{n:'Chorus spitter',cls:'Destroyer',fac:'chorus',size:.6,cp:2,hp:82,sh:0,rg:0,ar:.1,sp:4,tn:2,ev:8,w:[['bioplasma','T'],['bioplasma','F']],ab:'regrow',regen:4},
+  b_razor:{n:'Chorus bladeback',cls:'Cruiser',fac:'chorus',size:.76,cp:3,hp:135,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:4,w:[['tendril','T'],['bioplasma','F']],ab:'frenzy',regen:6},
+  b_brood:{n:'Chorus brood-sac',cls:'Carrier',fac:'chorus',size:.9,cp:5,hp:180,sh:0,rg:0,ar:.2,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['spores','T']],ab:'launch',hangar:3,regen:6},
   b_boss:{n:'The Ninefold Maw',cls:'Bio-titan',fac:'chorus',size:1.3,cp:12,hp:650,sh:0,rg:0,ar:.25,sp:2,tn:1,ev:0,w:[['bioplasma','F'],['bioplasma','F'],['tendril','T'],['spores','T']],ab:'launch',hangar:3,regen:20,boss:true},
   // ---- The Ithar (elder race)
   i_wisp:{n:'Glasswright sliver',cls:'Frigate',fac:'ithar',size:.46,cp:1,hp:30,sh:12,rg:6,ar:0,sp:7,tn:3,ev:28,w:[['shard','F']],ab:'blink'},
-  i_blade:{n:'Glasswright lancet',cls:'Destroyer',fac:'ithar',size:.58,cp:2,hp:60,sh:16,rg:8,ar:0,sp:6,tn:3,ev:24,w:[['shard','F'],['startorp','F']],ab:'blink'},
+  i_blade:{n:'Glasswright lancet',cls:'Destroyer',fac:'ithar',size:.58,cp:2,hp:60,sh:15,rg:8,ar:0,sp:6,tn:3,ev:24,w:[['shard','F'],['startorp','F']],ab:'blink'},
   i_song:{n:'Glasswright prism',cls:'Cruiser',fac:'ithar',size:.74,cp:4,hp:90,sh:26,rg:10,ar:.05,sp:5,tn:2,ev:16,w:[['pulsar','F'],['pulsar','F'],['turret','T']],ab:'surge'},
   i_carrier:{n:'Glasswright aperture',cls:'Carrier',fac:'ithar',size:.84,cp:5,hp:140,sh:28,rg:10,ar:.05,sp:4,tn:2,ev:12,w:[['pulsar','F'],['turret','T']],ab:'launch',hangar:2},
   i_boss:{n:'The Unfinished',cls:'Ark',fac:'ithar',size:1.26,cp:11,hp:470,sh:34,rg:14,ar:.2,sp:3,tn:2,ev:6,w:[['pulsar','F'],['pulsar','F'],['pulsar','T'],['turret','T'],['flak','T']],ab:'surge',boss:true},
   // ---- The Deathless Dynasty
-  d_scythe:{n:'Eclipse mote',cls:'Frigate',fac:'deathless',size:.5,cp:1,hp:56,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:14,w:[['gauss','T']],ab:'phase',regen:3,reanimate:true},
-  d_jackal:{n:'Eclipse flare',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:110,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['gauss','T'],['gauss','F']],ab:'phase',regen:3,reanimate:true},
-  d_harvester:{n:'Eclipse zenith',cls:'Cruiser',fac:'deathless',size:.82,cp:4,hp:145,sh:0,rg:0,ar:.3,sp:2,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['gsentry','T']],ab:'reclaim',regen:4,reanimate:true},
+  d_scythe:{n:'Eclipse mote',cls:'Frigate',fac:'deathless',size:.5,cp:1,hp:56,sh:0,rg:0,ar:.2,sp:4,tn:2,ev:14,w:[['gauss','T']],ab:'phase',regen:2,reanimate:true},
+  d_jackal:{n:'Eclipse flare',cls:'Destroyer',fac:'deathless',size:.62,cp:2,hp:110,sh:0,rg:0,ar:.25,sp:3,tn:2,ev:6,w:[['gauss','T'],['gauss','F']],ab:'phase',regen:2,reanimate:true},
+  d_harvester:{n:'Eclipse zenith',cls:'Cruiser',fac:'deathless',size:.82,cp:4,hp:145,sh:0,rg:0,ar:.3,sp:2,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['gsentry','T']],ab:'reclaim',regen:3,reanimate:true},
   d_boss:{n:'The Unsetting',cls:'Tomb-ark',fac:'deathless',size:1.3,cp:12,hp:480,sh:0,rg:0,ar:.35,sp:1,tn:1,ev:0,w:[['gauss','T'],['gauss','T'],['doom','F'],['flak','T']],ab:'nova',regen:8,boss:true},
 };
 
 // v50 drives: how each faction bends the thruster rules (battle.js MOVE_BASE). n/d show in the ship panel and codex.
 const MOVE_RULES={
-  voidsworn:{rake:.4,n:'Broadside doctrine',d:'Port and starboard guns hit 40% harder after moving 2+ hexes (others get 10%).'}, // pass 3 tuning: .3 to .4 (pass 2: .2 to .3)
+  voidsworn:{rake:.45,n:'Broadside doctrine',d:'Port and starboard guns hit 45% harder after moving 2+ hexes (others get 10%).'}, // pass 3 tuning: .3 to .4 (pass 2: .2 to .3)
   hegemony:{rev:1,n:'Retro thrusters',d:'Backing off one hex costs 1 movement instead of 2.'},
   corsair:{slip:1,n:'Bolted burners',d:'Sideslips cost 1 movement instead of 2.'},
   chorus:{pivot:1,n:'Living hull',d:'The first turn each round costs no movement.'},
@@ -536,8 +536,8 @@ const MORE_SHIP_NAMES={
 // prices its big hulls up; Corsairs go cheap small and dear heavy; Ithar tax everything (elite glass); Deathless pay most for few, durable hulls;
 // Voidsworn keep their carriers (Ashgrove's whole kit) at a 25% premium. Shipyard prices, ransom, strip and scrap values all follow h.cost.
 // Enemy fleets are still built by command points, so battle difficulty does not move with this table.
-const FAC_PRICE={hegemony:{},voidsworn:{Carrier:1.25},corsair:{Frigate:.8,Destroyer:.85,Cruiser:1.05,Carrier:1.15},chorus:{Frigate:.65,Destroyer:.75,Cruiser:1,Carrier:1.2},
-  ithar:{Frigate:1.3,Destroyer:1.3,Cruiser:1.15,Carrier:1.1},deathless:{Frigate:1.45,Destroyer:1.5,Cruiser:1.55,Battleship:1.6}}; // R1 (FS-2): a future Eclipse battleship never prices below the Eclipse cruiser
+const FAC_PRICE={hegemony:{},voidsworn:{Carrier:1.1},corsair:{Frigate:.8,Destroyer:.85,Cruiser:1.05,Carrier:1.15},chorus:{Frigate:.65,Destroyer:.75,Cruiser:1,Carrier:1.2},
+  ithar:{Frigate:1.3,Destroyer:1.3,Cruiser:1.15,Carrier:1.1},deathless:{Frigate:1.55,Destroyer:1.6,Cruiser:1.65,Battleship:1.6}}; // R1 (FS-2): a future Eclipse battleship never prices below the Eclipse cruiser
 // B3 roster gates and prohibitions: what each faction cannot field or do. Checked by canOrder (brace), the prize screen and towing (weapon kinds).
 const FAC_GATES={corsair:{noKind:['lance'],d:'Hullbreakers field no lance weapons (no long-range beams): they win up close.'},ithar:{noBrace:1,d:'Glasswright hulls cannot Brace for impact: they live by shields and speed.'}};
 function factionGate(fac,tpl){ const G=FAC_GATES[fac], h=HULLS[tpl]; if(!G||!h) return null; if(G.noKind&&h.w.some(([id])=>W[id]&&G.noKind.includes(W[id].k))) return G.d; return null; }
