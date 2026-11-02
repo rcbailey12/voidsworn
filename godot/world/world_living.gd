@@ -256,8 +256,8 @@ func _gas(ps: Array, storm: bool) -> void:
 		# a dark, heavy mass (it must stand out from bright blue skies) that the lightning lights from inside
 		# step 2: a bruised charcoal violet, not a pale blue (it washed out on dark skies), lit violet from inside
 		m.set_shader_parameter("c_dark", Vector3(0.012, 0.012, 0.022))
-		m.set_shader_parameter("c_lit", Vector3(0.1, 0.09, 0.16))
-		m.set_shader_parameter("c_glow", Vector3(0.26, 0.19, 0.52))
+		m.set_shader_parameter("c_lit", Vector3(0.12, 0.1, 0.2))
+		m.set_shader_parameter("c_glow", Vector3(0.3, 0.21, 0.6))
 		m.set_shader_parameter("bolt", Vector3(0.66, 0.6, 1.0))
 		m.set_shader_parameter("storm", 1.0)
 		m.set_shader_parameter("dens", 0.8)
@@ -371,6 +371,9 @@ func _bolts(ps: Array) -> void:
 			light.omni_range = 40.0
 			light.omni_attenuation = 1.4
 			light.shadow_enabled = false
+			# step 2: the strike lights ships, rocks and the gas, never the scene's thin volumetric fog (r1 and r2 on the PC:
+			# the fog's cells lit up round each bolt as pale, square lavender blocks, the "pale blue storm" of the trial)
+			light.light_volumetric_fog_energy = 0.0
 			light.light_energy = 0.0
 			light.position = (a + z) * 0.5
 			add_child(light)
