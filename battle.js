@@ -1071,23 +1071,23 @@ function liveFrom(u){ const b0=B, ep=(B&&B.epoch)||0; return ()=>B===b0&&((B&&B.
 // ---------- Admiral's Command: one big fleet-wide move per admiral, ready when the meter is full ----------
 const COMMANDS={vex:{id:'barrage',n:'Fire for effect',d:'Every ship fires a free volley at the best target its guns can reach, right now.'},
   malek:{id:'hunt',n:"Hunter's salvo",d:'Torpedoes reload at once and every ship deals +30% damage this round.'},
-  ashgrove:{id:'scramble',n:'Scramble all wings',d:'Every carrier launches a wing, then all squadrons strike again at once with +50% damage this round.'},
+  ashgrove:{id:'scramble',n:'Scramble all wings',d:'Every launch ship sends out an extra wing if there is room, then all squadrons strike again with +50% damage this round.'},
   thale:{id:'iron',n:'Iron wall',d:'All shields refill and your ships take 40% less hull damage this round.'}};
 // Command power grows each round you hold it: tier 0 in round 1, 1 in round 2, 2 (full) from round 3
 const CMD_POW={barrage:[0,.25,.5],hunt:[.3,.45,.6],scramble:[.5,.75,1],iron:[.4,.5,.6],restore:[.25,.35,.45],surge:[2,3,4]};
 function cmdTier(){ if(!B||B.round<1) return 0; const bonus=B.units.some(u=>u.side==='player'&&!u.dead&&u.fx&&u.fx.cmdTier)?1:0, lost=B.units.some(u=>u.side==='player'&&!u.isSq&&!u.transport&&u.dead)?1:0; return Math.max(0,Math.min(2,B.round-1+bonus+lost-(heatOn('h_cmd')?1:0))); } /* ready from round 1, full power from round 3; losing a ship charges it a level */
 function cmdRec(side){ return !B?null:side==='enemy'?B.cmdE:B.cmd; } // the enemy flagship keeps its own Command record
 function cmdPow(id,tier,side){ const p=CMD_POW[id]; if(!p) return 0; if(tier==null){ const c=cmdRec(side||'player'); tier=(c&&c.tier)||0; } return p[tier]; }
-function cmdDesc(c,tier,fac){ if(!c) return ''; const v=cmdPow(c.id,tier), car=fac==='chorus'?'brood':'carrier', sq=fac==='chorus'?'swarm':'squadron', pct=x=>Math.round(x*100)+'%';
+function cmdDesc(c,tier,fac){ if(!c) return ''; const v=cmdPow(c.id,tier), car=fac==='chorus'?'brood':'launch ship', sq=fac==='chorus'?'swarm':'squadron', pct=x=>Math.round(x*100)+'%';
   switch(c.id){
     case 'barrage': return `Every ship fires a free extra volley right now at the best target in range${v?`, with +${pct(v)} damage`:''}. Its normal shots this round still happen.`;
     case 'hunt': return `Torpedoes reload at once and every ship deals +${pct(v)} damage for the rest of this round.`;
-    case 'scramble': return `Every ${car} launches ${tier>=2?'two extra wings':'an extra wing'} right now, even past its limit. Then every ${sq} you have makes a bonus attack immediately, with +${pct(v)} damage.`;
+    case 'scramble': return `Every ${car} launches ${tier>=2?'two extra wings':'an extra wing'} right now if there are open adjacent hexes, even past its hangar limit. Then every ${sq} you have makes a bonus attack immediately, with +${pct(v)} damage.`;
     case 'iron': return fac==='chorus'||fac==='deathless'?`Your ships take ${pct(v+.1)} less hull damage for the rest of this round.`:`All shields refill and your ships take ${pct(v)} less hull damage for the rest of this round.`;
     case 'restore': return `Every ship repairs ${pct(v)} of its hull right now.`;
     case 'surge': return `Every ship gains +${v} movement and ${tier>=2?'+2 turns':'+1 turn'} this round, and enemy fire loses 20 accuracy against you.`; }
   return c.d||''; }
-function cmdNext(c,tier,fac){ const t=tier+1, v=cmdPow(c.id,t), pct=x=>Math.round(x*100)+'%', car=fac==='chorus'?'brood':'carrier';
+function cmdNext(c,tier,fac){ const t=tier+1, v=cmdPow(c.id,t), pct=x=>Math.round(x*100)+'%', car=fac==='chorus'?'brood':'launch ship';
   switch(c.id){ case 'barrage': return `+${pct(v)} damage on the free volley`; case 'hunt': return `+${pct(v)} damage`; case 'scramble': return `${t>=2?'two extra wings per '+car:'an extra wing'} and +${pct(v)} damage`;
     case 'iron': return `${pct(v)} less hull damage`; case 'restore': return `${pct(v)} of hull repaired`; case 'surge': return `+${v} movement${t>=2?' and +2 turns':''}`; } return ''; }
 const CMD_HOLD='Once per battle. Each round you hold it, it gets stronger (full power from round 3), and losing a ship charges it a level at once. Hold too long and the fight may be over.';
