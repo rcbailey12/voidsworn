@@ -150,16 +150,20 @@ check('F17 a crit never revives a weapon or shield generator a destroyed section
 // ---- B-6, B-7 abilities after a stalled animation (async) ----
 // ---- Onboarding 2 to 4 ----
 const UI = () => fs.readFileSync(path.join(ROOT, 'ui3d.js'), 'utf8');
-const tipText = id => { const m = new RegExp("\\['" + id + "','([^']*)','((?:[^'\\\\]|\\\\.)*)'\\]").exec(UI()); return m ? m[2] : null; };
+const tipText = id => {
+  const tips = new Function(grab('ui3d.js', 'const TIPS=', /\n\];/) + '\nreturn TIPS;')();
+  const tip = tips.find(([key]) => key === id); return tip ? tip[2] : null;
+};
 check('Onboarding 2: the move tip states the real motion rule (numbers from MOVE_BASE)', () => {
   const t = tipText('select'), R = T.MOVE_BASE; if (!t) throw new Error('no select tip');
-  return t.includes('+' + R.still) && t.includes(R.evadeAt + ' or more hexes') && t.includes('\\u2212' + R.evade) && /turning in place does not count/.test(t) && /Bracing cancels/.test(t);
+  return t.includes('enemy shots against it get +' + R.still + ' to their hit chance') && t.includes('Moving ' + R.evadeAt + ' or more hexes gives -' + R.evade + ' instead') && t.includes('does not take the +' + R.still) && /cannot move or fire again this turn/.test(t);
 });
-check('Onboarding 3: a "Turns alternate" tip shows at battle start, once per profile', () => {
-  const u = UI(); return !!tipText('turns') && /\['start',[^\n]*\n  \['turns',/.test(u) && /const cond=\{start:true, turns:true,/.test(u);
+check('Onboarding 3: the fired card teaches alternating ships and rounds; start and turns are retired', () => {
+  const t = tipText('fired'), u = UI();
+  return !!t && /Sides take turns, one ship at a time, until every ship has acted\. That is one round\./.test(t) && /fired:me\.some\(x=>x\.weapons\.some\(w=>w\.fired\)\)/.test(u) && !tipText('start') && !tipText('turns') && /o\.tips\.start=1; o\.tips\.turns=1;/.test(u) && /!o\.tips\[id\]&&cond\[id\]/.test(u);
 });
 check('Onboarding 5: a Threat tip points at the real Threat toggle (R and the top-bar button)', () => {
-  const t = tipText('threat'), u = UI(); return !!t && /Press R/.test(t) && /if\(k==='r'\)\{ ACT\.threat\(\); return; \}/.test(u) && /id="b_threat2"/.test(u) && /threat:\(B\.round\|\|1\)>=2/.test(u);
+  const t = tipText('threat'), u = UI(); return !!t && /Press R for the threat map/.test(t) && /if\(k==='r'\)\{ ACT\.threat\(\); return; \}/.test(u) && /<button data-act="threat" id="b_threat2"[^>]*>Threat<\/button>/.test(u) && /threat:\(B\.round\|\|1\)>=2/.test(u);
 });
 check('Onboarding 4: every reward screen carries its one-line definition', () => {
   const { summary } = rewardSetup(); T.rewardFlow(summary); T.ACT.salvageStep(); const sal = T.modalHtml; T.ACT.takeSalvage('0:cred'); const boon = T.modalHtml; T.ACT.takeBoon('0'); const relic = T.modalHtml;
