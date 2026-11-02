@@ -1,0 +1,7 @@
+PASS  1_battle_start at 3840x2160 (UI scale 2.00): 7 parts, 7 top bar buttons
+PASS  2_move_preview at 3840x2160 (UI scale 2.00): 8 parts, 7 top bar buttons
+PASS  3_enemy_clicked: Cordon destroyer (out of reach)
+PASS  3_enemy_clicked at 3840x2160 (UI scale 2.00): 9 parts, 7 top bar buttons
+PASS  4_tip_card_and_legend at 3840x2160 (UI scale 2.00): 9 parts, 7 top bar buttons
+PASS  6_enemy_turn at 3840x2160 (UI scale 2.00): 8 parts, 6 top bar buttons
+6 checks, 0 failed (window 3840x2160, UI scale 2.000)
