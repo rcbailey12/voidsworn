@@ -154,6 +154,16 @@ Option A (chair pick): On the debrief, offered whenever a run ends, win or loss.
 Option B: Only on a loss debrief. Heir naming joins the death fiction, and a winning run offers no heir choice.
 Option C: On the admiral select screen, as roster housekeeping. Calmer, but separated from the run that earned it.
 
+## Owner rulings (Ryan, Nov 2, 2026)
+
+Ryan agreed with the chair picks on all five owner questions. These are now rulings and govern the build:
+
+1. Elite and boss double count: KEPT. The double weight is intended weighting, locked with a test; the pacing traces stand.
+2. Respec pricing: PER LINE. 25 renown for a line's first respec, plus 10 per prior respec of that same line. This settles the conflict with Q14's per pick wording in favour of the per line reading; Q14's standing point, that renown is the respec and experimentation currency, is unchanged.
+3. Playtest switch: the first flip off comes after all six factions have trees and the telemetry pacing check passes (Steps 11 and 13), not after the Glasswrights slice alone.
+4. Core sync on the debrief: only the cores that ticked this run are shown.
+5. Heir naming: on the debrief, offered whenever a run ends, win or loss.
+
 ## Not checked
 
 The chair did not re-read every source synthesis behind the pack for this job; the pack's chair verified summaries, the governing rulings in FINDINGS (R62, R63, and the Q items as carried in the pack), and the code anchors named above are the basis. Whether nemAdapt already implements the Q4 clash check, and whether havens and fight start events already carry free exits, are deliberately left as verification steps (Steps 6 and 8) rather than asserted. Cap values for Step 1 do not exist yet in any source the chair read; setting them is part of that step's task, and the plan takes no position on the numbers. The 25 percent shadow rate remains a flagged tuning guess. Art and sound needs are requirements, not an audit of assets already on hand.
