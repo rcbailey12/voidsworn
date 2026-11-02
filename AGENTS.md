@@ -15,6 +15,15 @@ It holds the goal, the full history, every piece of owner feedback word for word
   "Closes #<number>" in the description. Never push to main. Opus reviews, checks the claims and merges.
 - Codex stays local on Ryan's PC (codex_run.bat). Opus collects its patch, reviews it and commits with "Fixes #<number>".
   No Codex cloud tasks or cloud reviews: they run an older model than the local one.
+- Every issue opens with this fixed block, so any agent can pick it up without asking:
+  ```
+  Owner: codex | muse | opus
+  Brief: <path to the brief, or "below">
+  Deliver to: <folder or files>
+  Branch: <agent>/issue-<number>
+  Effort (Codex): high | xhigh   or   Models (Muse): <set>
+  Done when: <the check that proves it, and what Ryan will see>
+  ```
 - Muse's standing instructions: `contrib/opus/briefs/muse_standing_rule.md`.
 - Questions for Ryan go to him directly in the agent's own chat, not as GitHub tags or comments (Ryan, Nov 2).
 
