@@ -276,8 +276,9 @@ func _gas(ps: Array, storm: bool) -> void:
 		var c1: Vector3 = (b[1] as Vector3).lerp(vio * (b[1] as Vector3).length() / vio.length(), 0.5)
 		var c2: Vector3 = (b[2] as Vector3).lerp(vio * (b[2] as Vector3).length() / vio.length(), 0.45)
 		m.set_shader_parameter("c_dark", c1 * 0.18)
-		m.set_shader_parameter("c_lit", c1.lerp(c2, 0.4) * 0.9)
-		m.set_shader_parameter("c_glow", c2 * 0.8)
+		# step 2: a little dimmer, so pale setting colours (the Glasswrights' skies) do not go cotton white
+		m.set_shader_parameter("c_lit", c1.lerp(c2, 0.4) * 0.72)
+		m.set_shader_parameter("c_glow", c2 * 0.62)
 		m.set_shader_parameter("dens", 0.5)
 	# drawn before the board's own fills, so a move hex inside the gas still shows on top
 	m.render_priority = -5
