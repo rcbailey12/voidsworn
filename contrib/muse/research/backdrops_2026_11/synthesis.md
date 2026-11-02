@@ -2,6 +2,8 @@
 
 Chair synthesis of four blind legs (DeepSeek, Qwen, Argon, blind Rey), all run from the same evidence pack built from main on Nov 2, 2026. The complaint under study is FINDINGS R76: planets look awful next to the ships, the station reads as a blob, debris looks basic next to the improved asteroids, and a background asteroid can read bigger than the planet. Verdict: GO. Every part of the complaint has a code level cause and a bounded fix, and none of the fixes touch owner ruled ship framing.
 
+Restoration note (issue 53): the version of this synthesis merged in PR #52 was truncated inside section 2, losing sections 3 to 6. This file is the complete text: sections 3 to 6 were rebuilt from the four filed legs and the chair settlements recorded in sections 2 and 7, and the Owner rulings section was added. Nothing in sections 1, 2, 7, or 8 changed.
+
 ## 1. Reference study (merged, chair wording)
 
 The legs converge on one lesson from four directions: at a tactics camera, angular size is the only honest unit, and each view needs exactly one dominant body.
@@ -39,7 +41,44 @@ Per layer numbers (proposed unless marked keep):
 **The margin.** Today a 630 long mountain at 900 away subtends about 0.61 rad against a planet diameter of 0.22 to 0.36 rad: the rock can read about twice the planet's width. Under this plan the largest single rock is 0.05 rad and the smallest planet is 0.22 rad across, so the planet is at least 4.4 times wider than any single rock, worst pairing included, and no rock can beat a moon either (0.05 under 0.06). The R76 photo is arithmetically impossible, not just unlikely.
 
 Play area planet, settled. Rey sinks the current sphere (cap about 11 high); DeepSeek shrinks the sphere to 70 diameter and a 12 high cap; Argon keeps the 50 radius chord and flattens to a 7.5 high cap on a 170.4 radius horizon dome; Qwen keeps it unchanged.
-...[truncated 9985 chars]6. **Play area planet sink.** godot/render/board.gd:805: centre from 27.5 to 39 below the board. Test: planet map screenshot with a Battleship beside the cap; cap height measures about 11 and the chord about 63. Ryan sees: a horizon that fits its footprint instead of a dome swallowing the corner.
+The chair settles on the sink: it changes one number (the centre depth at board.gd:805), keeps the radius 50 sphere and the hex footprint the map logic already uses, and lands the same read as the shrink (cap about 11 high) without touching planet radius, which other map code may lean on. The dome is new geometry bought to get a flatter cap the sink already gives. No change leaves a 22.5 high dome in the corner of the board, which is the complaint.
+
+## 3. Planets (settled: improve the procedural bake)
+
+**Route: improve the procedural bake, 3 legs to 1.** The game needs eight fictional looks (the palette table at godot/world/world_sky.gd:44), and photo textures cannot supply them: the free sources carry real bodies only, so a terran, a lava world, and an ice world would need three different real planets with no matching channel set across ocean, cloud, night lights, relief, and lava. The campaign map reuses this same planet system (Job 6), so one procedural fix upgrades both screens; a texture switch would have to be made twice. Argon's dissent (switch to pre-packed 4K textures, mainly to kill the 6 to 9 second bake) is carried as owner question 1. Bake cost is a separate Codex batch's problem per the brief; this job notes it and does not redesign the baker.
+
+Licence lines for the record, if the texture route is ever taken: Solar System Scope textures are CC BY 4.0, credit line "Textures: Solar System Scope (https://www.solarsystemscope.com/textures/), CC BY 4.0"; NASA and USGS imagery is public domain, courtesy line "Imagery: NASA / USGS" (not legally required, customary). Poly Haven and ambientCG assets are CC0. None of these ship under the settled route.
+
+**The white blotches: one ranked diagnosis, unanimous across all four legs.** The planet bakes read washed out and blotchy white, worst on terran clouds and ice. Ranked by contribution, with the fix for each:
+
+1. **Double gamma at the store, godot/world/world_planet.gd:161.** Albedo is stored as pow(albedo, 1/2.2) and the sphere shader samples it as source_color, so the image is brightened twice; mid tones lift toward white and every pale recipe below clips early. This is the multiplier on all the others. Fix, one line, two candidate forms: drop the :161 encode, or drop source_color in the shader. Which form matches the shader's actual sampling must be settled by reading the shader (see Not checked); the test is the clipped white pixel count in task 3.
+2. **Terran clouds, world_planet.gd:129.** The cloud mix runs toward (0.92, 0.94, 0.97) at 0.95 coverage, so a near white target colour covers almost the whole disc. Fix: smoothstep lower bound up to about 0.55, coverage down to about 0.75, mix target down to the 0.82 to 0.88 range, so oceans and land read through broken cloud.
+3. **Ice cap pole pinch, world_planet.gd:123.** Caps mix to (0.85, 0.88, 0.92) and pinch at the poles of the 2048x1024 bake, making two bright blobs that read as damage. Fix: cap the ice albedo at 0.78 to 0.84 and soften the pinch falloff.
+4. **Gas giant small storms, world_planet.gd:93.** Storm spots mix toward 0.97 white, the brightest value in the bake. Fix: tint down to 0.86 to 0.90 with a darker rim so a storm reads as a feature, not a hole.
+5. **Pale ice world base, godot/world/world_sky.gd:44.** The ice look starts pale before any recipe runs. Fix: base down to the 0.68 to 0.74 range.
+6. **Detail budget, amplifier only.** A 2048x1024 bake shows a 1024 px hemisphere at battle camera; at that budget the flat areas above have no texture detail to break them up. This is why the blotches read flat rather than noisy. It is an amplifier, not a cause: fixing 1 to 5 comes first, resolution is owner question 4.
+
+Explicitly excluded: the dither at world_planet.gd:165 (plus or minus 0.5/255) is three orders of magnitude too small to make a visible blotch; all four legs rule it out.
+
+## 4. Stations and debris (settled)
+
+**Station: Blender kitbash from the game's own ship parts, on the Pyre-Barge pattern** (the worked kit example at tools/blender/hs/c19_kit.py). Unanimous across the legs, and the Stellaris diary in section 1 says why: the current mesh (O1_37, AI generated, godot/assets/ships/a4_props.gd:34) is a blob because it has no long axis and no silhouette, and that is fixed at blockout with real ships beside it, not with texture. Design: a spine with radial arms and berths sized off the ships that dock there, hand built bolt-ons in matched symmetric pairs, nothing aimed backward, per the ship rules. Size stays at the shipped formula (46 long for a cluster of 5 or more hexes, else 22 plus 4 per hex): bigger than a Battleship at 33.6, smaller than a Super dreadnought at 49.6, never wider than its cluster. DeepSeek's 55 and Argon's 52 both outsize a Super dreadnought and were rejected on that line. Variants are a scope call, carried as owner question 3: the chair pick is two variants from one kit (fleet station and refinery, swap parts on the same spine), modelled together in Blender job A below.
+
+**Debris: keep the counts, raise the detail where the eye lands.** Living counts are unchanged (15 to 22 rocks plus 3 to 5 wreck pieces per hex; the plain path keeps 8 to 13). The three largest pieces per hex get full detail meshes; the _lo set stays for the small tail, which is where the poly saving actually is. Wreckage becomes a six piece ship derived set: the four existing procedural types rebuilt in Blender (hull fragment, broken frame, truss, hull section) plus an engine bell and a weapon sponson, so a wreck reads as a dead ship, not a grey rock. Long axis stays capped at 7.6 (under half the hex flat width, section 2). Tumble is capped at 0.10 rad/s, slower for larger pieces; Argon's near static 0.01 to 0.05 was rejected as making the field feel frozen.
+
+## 5. Sequencing and cost notes
+
+Order matters in one place: the scale clamp (task 1) and the bake fixes (tasks 3 and 4) are independent and can run in parallel, but the screenshot tests in tasks 3 and 4 should be judged after task 1 lands, because a capped sky changes what a planet screenshot is competing with. The play area sink (task 6) is one number and can land any time. The station work is the long pole: Blender job A (kit) must be approved by Ryan from its turntable render before task 8 swaps the blockout in, and task 9 (detail) follows the swap. Bake time is owned by the separate Codex batch working on the 6 to 9 second bake; nothing in tasks 3 and 4 is expected to make the bake slower except the optional 4096 step in owner question 4, which is why that step is optional and last.
+
+## 6. Build order (Codex tasks)
+
+1. **Angular clamp.** godot/world/world.gd:768 (fields), helper near :751: clamp every backdrop rock's length at spawn to 0.05 times its distance, with the runtime form of the check against the rolled planet diameter (smallest 0.22 rad). Test: a spawn audit over seeded battles reporting the maximum angular width per layer; none above 0.05 rad. Ryan sees: no background rock ever reads bigger than the planet again, ranges still mass on the horizon.
+2. **Planet and moon ruler.** godot/world/world.gd:321, :334, :344: moons roll angular radius 0.03 to 0.04 rad (floor raised, top trimmed); backdrop planet unchanged. Test: screenshot ladder check, rock under moon under planet in the same frame. Ryan sees: a size ladder that never overlaps.
+3. **Bake white fix, gamma.** godot/world/world_planet.gd:161 and the sphere shader: apply the one line form that matches the shader's sampling (drop the encode, or drop source_color). Test: no more than 2 percent clipped white pixels in a 1440p terran bake, before and after recorded. Ryan sees: planets stop washing out.
+4. **Bake white fix, recipes.** godot/world/world_planet.gd:129 (clouds), :123 (ice caps), :93 (storms), and godot/world/world_sky.gd:44 (ice base), to the section 3 numbers. Optional, only if the bakes still read flat: a self authored high frequency detail tile from Blender, tiled into the bake, no licence attaches. Test: one bake per look, eight total, judged at battle camera. Ryan sees: broken cloud over visible oceans, ice that reads as ice, storms as features.
+5. **Backdrop layer moves.** godot/world/world.gd:768: deep field moved out to 800 to 1500 with max length 40; belt max length 30 at minimum distance 600; edge scatter max length 20. Test: the R76 composition recreated (planet high, belt rock low in frame) as a screenshot pair, before and after. Ryan sees: a ruled sky with the fleet back on top of the size order.
+
+6. **Play area planet sink.** godot/render/board.gd:805: centre from 27.5 to 39 below the board. Test: planet map screenshot with a Battleship beside the cap; cap height measures about 11 and the chord about 63. Ryan sees: a horizon that fits its footprint instead of a dome swallowing the corner.
 7. **Debris detail pass.** godot/world/world_living.gd:466 and godot/world/world.gd:698: full detail rocks for the three largest pieces per hex, wreck set swapped in, tumble capped at 0.10 rad/s scaled by size. Test: debris hex close ups before and after on both paths, plus the no _lo mesh in the top three assertion. Ryan sees: blocker quality debris with recognisable wreckage, drifting slowly.
 8. **Station blockout in game.** godot/render/board.gd:716, :738, :776 and godot/assets/ships/a4_props.gd:34: swap the blockout in for O1_37 at the shipped sizing. Test: screenshots with a Battleship (33.6) and a Frigate (10.4) alongside at both cluster sizes; no backward facing gun in the kit. Ryan sees: a long structured silhouette with berths his ships fit, not a blob.
 9. **Station detail pass.** Finish the kit (panel, greeble, lights) at both sizes. Test: station maps at battle camera, all facings. Ryan sees: a finished station that belongs with his fleet.
@@ -80,6 +119,13 @@ Rey leg notes: adopted as the spine for the cap, the play area sink and the debr
 2. **Rock cap strictness.** A) 0.05 rad: the planet is always at least 4.4 times wider than any single rock, ranges may still span 0.15 rad. (CHAIR PICK) B) 0.08 rad: at least 2.75 times wider, slightly heavier horizon rocks. C) 0.022 rad (the Argon line): at least 10 times wider, emptiest sky.
 3. **Station variants.** A) Two variants from one kit, fleet station and refinery, modelled together. (CHAIR PICK) B) One station, higher finish. C) One per faction, six total, as a later job.
 4. **Planet detail step.** A) Stay at 2048x1024, fix gamma and recipes first, raise resolution only if screenshots still fail. (CHAIR PICK) B) 4096x2048 for the backdrop planet now, longer bakes. C) Stay at 2048x1024 no matter what the screenshots say.
+
+## Owner rulings (Ryan, Nov 2, 2026, recorded as FINDINGS R79)
+
+1. Planet route: A. Planets stay procedural and get the bake fixes in section 3; no photo textures.
+2. Cap strictness: A. No single backdrop rock wider than 0.05 rad; the planet is always at least 4.4 times wider than any single rock.
+3. Station variants: A. Two station kinds (fleet station and refinery) from one Blender kit built from the game's own ship parts.
+4. Planet detail: B, against the chair pick. The backdrop planet bake goes to 4096x2048 now; moons stay 1024x512. This promotes the optional step after task 9 from conditional to scheduled: it lands with tasks 3 and 4, accepting the longer bake on the backdrop planet only.
 
 ## Not checked
 
