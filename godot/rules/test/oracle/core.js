@@ -99,7 +99,7 @@ function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const re
   if(rep.length) r._repairs=(Array.isArray(r._repairs)?r._repairs:[]).concat(rep).slice(-20);
   return r; }
 // v53: a save is only trusted when its run has a fleet array and a map, and its meta is a plain object with the expected containers
-function saneMeta(m){ if(!m||typeof m!=='object'||Array.isArray(m)) return false; for(const k of ['unlocked','admirals','stats','opts','mastery','favour','variants','heatBest']) if(m[k]!=null&&(typeof m[k]!=='object'||Array.isArray(m[k]))) return false; for(const k of ['tel','fallen']) if(m[k]!=null&&!Array.isArray(m[k])) return false; return m.renown==null||typeof m.renown==='number'; }
+function saneMeta(m){ if(!m||typeof m!=='object'||Array.isArray(m)) return false; for(const k of ['unlocked','admirals','stats','opts','mastery','lineage','favour','variants','heatBest']) if(m[k]!=null&&(typeof m[k]!=='object'||Array.isArray(m[k]))) return false; for(const k of ['tel','fallen']) if(m[k]!=null&&!Array.isArray(m[k])) return false; return m.renown==null||typeof m.renown==='number'; }
 function saneRun(r){ return r==null||!!r.none||(typeof r==='object'&&Array.isArray(r.fleet)&&!!r.map&&Array.isArray(r.map.cols)); }
 function saneSave(o){ return !!o&&typeof o==='object'&&!Array.isArray(o)&&(o.meta==null||saneMeta(o.meta))&&saneRun(o.run); }
 // a renamed module, perk or relic id in an old save is logged once and skipped instead of throwing
@@ -346,7 +346,46 @@ function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.
 
 // ---------- progression helpers ----------
 function masteryXP(id){ return (META.mastery&&META.mastery[id])||0; }
-function masteryLevel(id){ const x=masteryXP(id); let l=0; for(let i=1;i<MASTERY_XP.length;i++) if(x>=MASTERY_XP[i]) l=i; return l; }
+function masteryLevel(id){ const x=masteryXP(id); let l=0; for(let i=1;i<masteryThresholds(id).length;i++) if(x>=masteryThresholds(id)[i]) l=i; return l; }
+// Tree choices are per admiral line. Reading a tree never mutates an old save.
+function masteryThresholds(id){ return LINEAGE_TREES[id]?LINEAGE_XP:MASTERY_XP; }
+function masteryPerk(level){ return MASTERY_PERKS[level]||(level===8?{n:'Command evolution',d:'Choose a capstone in Admiral mastery.'}:{n:'Lineage choice',d:'Choose a branch skill in Admiral mastery.'}); }
+function lineageBuild(id){
+  const tree=LINEAGE_TREES[id], raw=(META.lineage||{})[id]||{}, picks=[], ranks={A:0,B:0,C:0};
+  if(tree&&Array.isArray(raw.picks)) for(const key of raw.picks.slice(0,Math.max(0,Math.min(3,masteryLevel(id)-4)))){
+    const node=String(key).split(':'); const [b,t,c]=node;
+    if(typeof key!=='string'||node.length!==3||!tree.branches[b]||String(ranks[b])!==t||!['0','1'].includes(c)||!tree.branches[b].tiers[Number(t)]) break;
+    picks.push(key); ranks[b]++;
+  }
+  const capstone=tree&&picks.length===3&&masteryLevel(id)>=8&&[0,1].includes(raw.capstone)?raw.capstone:null;
+  return {picks,capstone,respecs:Number.isSafeInteger(raw.respecs)&&raw.respecs>0?raw.respecs:0};
+}
+function lineageBetweenRuns(){ return !SAVED_RUN&&(!RUN||RUN.over); }
+function lineageNodes(id){
+  const tree=LINEAGE_TREES[id]; if(!tree) return [];
+  const build=lineageBuild(id), ranks={A:0,B:0,C:0}, nodes=[], level=masteryLevel(id);
+  for(const key of build.picks) ranks[key[0]]++;
+  for(const [b,branch] of Object.entries(tree.branches)) branch.tiers.forEach((pair,t)=>pair.forEach((skill,c)=>{
+    const key=`${b}:${t}:${c}`, chosen=build.picks.includes(key), locked=t<ranks[b];
+    nodes.push({...skill,key:`${id}:${key}`,branch:b,tier:t+1,state:chosen?'chosen':locked?'locked':t===ranks[b]&&build.picks.length<Math.min(3,level-4)?'available':'future'});
+  }));
+  tree.capstones.forEach((skill,c)=>nodes.push({...skill,key:`${id}:cap:${c}`,branch:'cap',tier:1,state:build.capstone===c?'chosen':build.capstone!==null?'locked':level>=8&&build.picks.length===3?'available':'future'}));
+  return nodes;
+}
+function lineageCanPick(key){ const id=String(key).split(':')[0]; return lineageBetweenRuns()&&lineageNodes(id).some(n=>n.key===key&&n.state==='available'); }
+function lineagePick(key){
+  if(!lineageCanPick(key)) return false;
+  const [id,b,t]=key.split(':'), build=lineageBuild(id);
+  if(b==='cap') build.capstone=Number(t); else build.picks.push(key.slice(id.length+1));
+  META.lineage=META.lineage||{}; META.lineage[id]=build; return true;
+}
+function lineageRespecCost(id){ return 25+10*lineageBuild(id).respecs; }
+function lineageCanRespec(id){ const b=lineageBuild(id); return !!LINEAGE_TREES[id]&&lineageBetweenRuns()&&(b.picks.length>0||b.capstone!==null)&&(META.renown||0)>=lineageRespecCost(id); }
+function lineageRespec(id){
+  if(!lineageCanRespec(id)) return false;
+  const respecs=lineageBuild(id).respecs+1; META.renown-=lineageRespecCost(id);
+  META.lineage=META.lineage||{}; META.lineage[id]={picks:[],capstone:null,respecs}; return true;
+}
 function favourOf(p){ return (META.favour&&META.favour[p])||0; }
 function favourTier(p){ const f=favourOf(p); let t=0; FAVOUR_TIERS.forEach((x,i)=>{ if(f>=x.at) t=i; }); return t; }
 function heatLevel(list){ return (list||[]).reduce((a,k)=>a+((HEAT[k]&&HEAT[k].w)||0),0); }

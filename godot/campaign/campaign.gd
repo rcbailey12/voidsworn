@@ -20,7 +20,7 @@ const TABLES_PATH := "res://campaign/data/campaign_tables.json"
 # ---------------- tables ----------------
 var TB: Dictionary = {}
 var W_; var HULLS; var FACTIONS; var MODULES; var PERKS; var RELICS; var ADMIRALS; var RANKS; var RANK_XP; var PATRONS; var BOONS
-var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS
+var BOON_FX; var BOON_D; var BOON_NEED; var RARITY; var ASPECTS; var HEAT; var HULL_VARIANTS; var MASTERY_XP; var MASTERY_PERKS; var LINEAGE_XP; var LINEAGE_TREES
 var FAVOUR_TIERS; var SECTOR_CONDS; var SECTOR_POOL; var EVENTS; var CAPTAINS; var SHIP_NAMES; var MORE_SHIP_NAMES; var FNAMES
 var MOD_NEED; var MOD_NAMES; var RELIC_NAMES; var RUN_WORD; var ENCOUNTERS; var ENC_POOL; var ENC_SPECIAL; var REGIONS; var FAC_REGION
 var REGION_BIOME; var ROCK_KINDS; var DEEP_MAPS; var FAC_MAP; var BEVENTS; var KILL_CAUSES; var FAC_WNAMES; var FAC_WTRAIT; var WTRAITS
@@ -64,7 +64,7 @@ var tel_log: Array = []     # a slim run log (events only), kept with the save; 
 # ======================= setup =======================
 # Every table the campaign reads. load_tables refuses to start when one is missing, and export_campaign.js fails when the oracle
 # lacks one (it also scans the campaign scripts for every TB table they read, so a new table cannot slip past this list).
-const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
+const REQUIRED_TABLES = ["ABILITIES", "ADMIRALS", "ARCHETYPES", "ARC_NAME", "ARC_VARIANT", "ASPECTS", "BEVENTS", "BOONS", "BOON_D", "BOON_FX", "BOON_NEED", "BOSS_DMG", "BOSS_ENC", "BOSS_FAC", "BOSS_SCALE", "CAPTAINS", "CAUSE_WORD", "CLASS_TRACK_MAX", "CMD_TEXT", "DEEP_MAPS", "ENCOUNTERS", "ENC_POOL", "ENC_SPECIAL", "EVENTS", "EVENT_FALLBACK", "FACTIONS", "FAC_GATES", "FAC_MAP", "FAC_REGION", "FAC_VERBS", "FAC_WNAMES", "FAC_WTRAIT", "FAVOUR_TIERS", "FNAMES", "FX_CAPS", "HEAT", "HULLS", "HULL_VARIANTS", "KILL_CAUSES", "KIND_WORD", "LEGACY", "MAP_NAME", "MASTERY_PERKS", "MASTERY_XP", "LINEAGE_XP", "LINEAGE_TREES", "MODULES", "MOD_NAMES", "MOD_NEED", "MORE_SHIP_NAMES", "NEM_ADAPT", "NEM_ADAPT_FAC", "NEM_BEAT_WORD", "NEM_CLOCK", "NEM_FAC", "NEM_LINES", "NEM_PERSONA", "NEM_TRAITS", "NEM_WEAK", "NODE_INFO", "NODE_MODS", "PATRONS", "PERKS", "RAMP", "RANKS", "RANK_XP", "RARITY", "REGIONS", "REGION_BIOME", "RELICS", "RELIC_NAMES", "REWARD_DEF", "ROCK_KINDS", "RUN_FACTIONS", "RUN_WORD", "SECTOR_CONDS", "SECTOR_POOL", "SHAPES", "SHIP_NAMES", "W", "WING_PERKS", "WING_XP", "WIN_TITLE", "WTRAITS"]
 func load_tables(path: String = TABLES_PATH) -> String:
 	var txt = FileAccess.get_file_as_string(path)
 	var j = JSON.parse_string(txt)
@@ -79,7 +79,7 @@ func load_tables(path: String = TABLES_PATH) -> String:
 	if sum != j["sha256"]: return "campaign table checksum differs: " + sum + " vs " + str(j["sha256"])
 	W_ = TB.W; HULLS = TB.HULLS; FACTIONS = TB.FACTIONS; MODULES = TB.MODULES; PERKS = TB.PERKS; RELICS = TB.RELICS; ADMIRALS = TB.ADMIRALS
 	RANKS = TB.RANKS; RANK_XP = TB.RANK_XP; PATRONS = TB.PATRONS; BOONS = TB.BOONS; BOON_FX = TB.BOON_FX; BOON_D = TB.BOON_D; BOON_NEED = TB.BOON_NEED
-	RARITY = TB.RARITY; ASPECTS = TB.ASPECTS; HEAT = TB.HEAT; HULL_VARIANTS = TB.HULL_VARIANTS; MASTERY_XP = TB.MASTERY_XP; MASTERY_PERKS = TB.MASTERY_PERKS
+	RARITY = TB.RARITY; ASPECTS = TB.ASPECTS; HEAT = TB.HEAT; HULL_VARIANTS = TB.HULL_VARIANTS; MASTERY_XP = TB.MASTERY_XP; MASTERY_PERKS = TB.MASTERY_PERKS; LINEAGE_XP = TB.LINEAGE_XP; LINEAGE_TREES = TB.LINEAGE_TREES
 	FAVOUR_TIERS = TB.FAVOUR_TIERS; SECTOR_CONDS = TB.SECTOR_CONDS; SECTOR_POOL = TB.SECTOR_POOL; EVENTS = TB.EVENTS; CAPTAINS = TB.CAPTAINS
 	SHIP_NAMES = TB.SHIP_NAMES; MORE_SHIP_NAMES = TB.MORE_SHIP_NAMES; FNAMES = TB.FNAMES; MOD_NEED = TB.MOD_NEED; MOD_NAMES = TB.MOD_NAMES
 	RELIC_NAMES = TB.RELIC_NAMES; RUN_WORD = TB.RUN_WORD; ENCOUNTERS = TB.ENCOUNTERS; ENC_POOL = TB.ENC_POOL; ENC_SPECIAL = TB.ENC_SPECIAL
@@ -351,7 +351,7 @@ func repairRunIds(r) -> Variant:
 	return r
 func saneMeta(m) -> bool:
 	if not (m is Dictionary): return false
-	for k in ["unlocked", "admirals", "stats", "opts", "mastery", "favour", "variants", "heatBest"]:
+	for k in ["unlocked", "admirals", "stats", "opts", "mastery", "lineage", "favour", "variants", "heatBest"]:
 		if m.get(k) != null and not (m[k] is Dictionary): return false
 	for k in ["tel", "fallen"]:
 		if m.get(k) != null and not (m[k] is Array): return false
@@ -954,9 +954,61 @@ func sectorCond() -> Variant:
 func masteryXP(id) -> float: return float(z0(META["mastery"].get(id))) if META.get("mastery") != null else 0.0
 func masteryLevel(id) -> int:
 	var x = masteryXP(id); var l = 0
-	for i in range(1, MASTERY_XP.size()):
-		if x >= float(MASTERY_XP[i]): l = i
+	for i in range(1, masteryThresholds(id).size()):
+		if x >= float(masteryThresholds(id)[i]): l = i
 	return l
+func masteryThresholds(id) -> Array: return LINEAGE_XP if LINEAGE_TREES.has(id) else MASTERY_XP
+func masteryPerk(level) -> Dictionary:
+	if level < MASTERY_PERKS.size(): return MASTERY_PERKS[level]
+	return {"n": "Command evolution", "d": "Choose a capstone in Admiral mastery."} if level == 8 else {"n": "Lineage choice", "d": "Choose a branch skill in Admiral mastery."}
+func lineageBuild(id) -> Dictionary:
+	var tree = LINEAGE_TREES.get(id); var raw = or_(or_(META.get("lineage"), {}).get(id), {}); var picks = []; var ranks = {"A": 0, "B": 0, "C": 0}
+	if tree != null and raw is Dictionary and raw.get("picks") is Array:
+		for key in raw["picks"].slice(0, maxi(0, mini(3, masteryLevel(id) - 4))):
+			var node = str(key).split(":")
+			if node.size() != 3: break
+			var b = node[0]; var t = node[1]; var c = node[2]
+			if not tree["branches"].has(b) or str(ranks[b]) != t or not c in ["0", "1"] or int(t) >= tree["branches"][b]["tiers"].size(): break
+			picks.append(key); ranks[b] += 1
+	var capstone = raw.get("capstone") if raw is Dictionary else null
+	if tree == null or picks.size() != 3 or masteryLevel(id) < 8 or not (capstone is float or capstone is int) or (capstone != 0 and capstone != 1): capstone = null
+	var respecs = raw.get("respecs", 0) if raw is Dictionary else 0
+	if not (respecs is float or respecs is int) or not is_finite(float(respecs)) or float(respecs) != floor(float(respecs)) or float(respecs) <= 0 or float(respecs) > 9007199254740991: respecs = 0
+	return {"picks": picks, "capstone": capstone, "respecs": respecs}
+func lineageBetweenRuns() -> bool: return SAVED_RUN == null and (RUN == null or jt(RUN.get("over")))
+func lineageNodes(id) -> Array:
+	var tree = LINEAGE_TREES.get(id)
+	if tree == null: return []
+	var build = lineageBuild(id); var ranks = {"A": 0, "B": 0, "C": 0}; var nodes = []; var level = masteryLevel(id)
+	for key in build["picks"]: ranks[str(key).substr(0, 1)] += 1
+	for b in tree["branches"].keys():
+		var tiers = tree["branches"][b]["tiers"]
+		for t in range(tiers.size()):
+			for c in range(tiers[t].size()):
+				var key = "%s:%d:%d" % [b, t, c]; var chosen = build["picks"].has(key); var locked = t < ranks[b]
+				var state = "chosen" if chosen else ("locked" if locked else ("available" if t == ranks[b] and build["picks"].size() < mini(3, level - 4) else "future"))
+				var node = tiers[t][c].duplicate(); node.merge({"key": str(id) + ":" + key, "branch": b, "tier": t + 1, "state": state}); nodes.append(node)
+	for c in range(tree["capstones"].size()):
+		var state = "chosen" if build["capstone"] != null and build["capstone"] == c else ("locked" if build["capstone"] != null else ("available" if level >= 8 and build["picks"].size() == 3 else "future"))
+		var node = tree["capstones"][c].duplicate(); node.merge({"key": "%s:cap:%d" % [id, c], "branch": "cap", "tier": 1, "state": state}); nodes.append(node)
+	return nodes
+func lineageCanPick(key) -> bool:
+	var id = str(key).split(":")[0]
+	return lineageBetweenRuns() and lineageNodes(id).any(func(n): return n["key"] == key and n["state"] == "available")
+func lineagePick(key) -> bool:
+	if not lineageCanPick(key): return false
+	var parts = str(key).split(":"); var id = parts[0]; var build = lineageBuild(id)
+	if parts[1] == "cap": build["capstone"] = int(parts[2])
+	else: build["picks"].append(str(key).substr(id.length() + 1))
+	META["lineage"] = or_(META.get("lineage"), {}); META["lineage"][id] = build; return true
+func lineageRespecCost(id) -> float: return 25.0 + 10.0 * float(lineageBuild(id)["respecs"])
+func lineageCanRespec(id) -> bool:
+	var b = lineageBuild(id)
+	return LINEAGE_TREES.has(id) and lineageBetweenRuns() and (b["picks"].size() > 0 or b["capstone"] != null) and float(z0(META.get("renown"))) >= lineageRespecCost(id)
+func lineageRespec(id) -> bool:
+	if not lineageCanRespec(id): return false
+	var respecs = float(lineageBuild(id)["respecs"]) + 1; META["renown"] = float(META["renown"]) - lineageRespecCost(id)
+	META["lineage"] = or_(META.get("lineage"), {}); META["lineage"][id] = {"picks": [], "capstone": null, "respecs": respecs}; return true
 func favourOf(p) -> float: return float(z0(META["favour"].get(p))) if META.get("favour") != null else 0.0
 func favourTier(p) -> int:
 	var f = favourOf(p); var t = 0
@@ -1097,6 +1149,20 @@ func act(name: String, arg = "") -> void:
 		"help": helpScreen()
 		"progTab":
 			prog_tab = a; legacyScreen()
+		"lineage": lineageScreen(a)
+		"offerLineage":
+			if not lineageCanPick(a): return
+			var node = lineageNodes(a.split(":")[0]).filter(func(n): return n["key"] == a)[0]
+			var acts = []; A(acts, "confirmLineage", a); A(acts, "closeModal"); show_modal("lineagePick", node, acts)
+		"confirmLineage":
+			if not lineagePick(a): return
+			persist_save(true); lineageScreen(a.split(":")[0])
+		"offerRespec":
+			if not lineageCanRespec(a): return
+			var acts = []; A(acts, "confirmRespec", a); A(acts, "closeModal"); show_modal("lineageRespec", {"id": a, "cost": lineageRespecCost(a)}, acts)
+		"confirmRespec":
+			if not lineageRespec(a): return
+			persist_save(true); lineageScreen(a)
 		"buyVariant": ACT_buyVariant(a)
 		"buyLegacy": ACT_buyLegacy(a)
 		"buyAdmiral": ACT_buyAdmiral(a)
@@ -1222,6 +1288,7 @@ func admiralScreen() -> void:
 	var acts = []
 	for f in RUN_FACTIONS: A(acts, "pickFaction", f)
 	for id in mine:
+		if LINEAGE_TREES.has(id): A(acts, "lineage", id)
 		if admiralOwned(id): A(acts, "pickAdmiral", id)
 		else: A(acts, "buyAdmiral", id, float(z0(META.get("renown"))) >= float(ADMIRALS[id]["cost"]))   # R1 (PROG-2): locked admirals can be bought here
 	var id0 = picked_admiral; var a = ADMIRALS[id0]; var ml = masteryLevel(id0)
@@ -1279,8 +1346,18 @@ func legacyScreen() -> void:
 				var v = HULL_VARIANTS[vid]
 				if HULLS[v["base"]].get("fac") != f: continue
 				if not jt(META["variants"].get(vid)) and not jt(v.get("arc")): A(acts, "buyVariant", vid, float(z0(META.get("renown"))) >= float(v["cost"]))   # R41: arc variants are earned, never bought
+	if prog_tab == "mastery":
+		for f in favFirst():
+			for id in ADMIRALS.keys():
+				if or_(ADMIRALS[id].get("fac"), "voidsworn") == f and LINEAGE_TREES.has(id): A(acts, "lineage", id)
 	A(acts, "title")
 	show_page("legacy", {"tab": prog_tab}, acts)
+func lineageScreen(id) -> void:
+	if not LINEAGE_TREES.has(id): return
+	var acts = []
+	for n in lineageNodes(id): A(acts, "offerLineage", n["key"], lineageCanPick(n["key"]))
+	A(acts, "offerRespec", id, lineageCanRespec(id)); A(acts, "progTab", "mastery")
+	show_page("lineage", {"id": id}, acts)
 func ACT_buyLegacy(id: String) -> void:   # R1 (PROG-2)
 	var u = LEGACY.get(id)
 	if u == null or jt(META["unlocked"].get(id)) or (jt(u.get("req")) and not jt(META["unlocked"].get(u["req"]))) or float(z0(META.get("renown"))) < float(u["cost"]): return
