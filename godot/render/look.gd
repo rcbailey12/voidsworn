@@ -71,6 +71,9 @@ static func apply(env: Environment, key: DirectionalLight3D, fill: DirectionalLi
 		key.light_color = KEY_COL
 		key.light_energy = key_e
 		key.shadow_enabled = true
+		# Smooth the stippled self-shadows on the densely plated painted hulls.
+		key.shadow_normal_bias = 2.0
+		RenderingServer.directional_soft_shadow_filter_set_quality(RenderingServer.SHADOW_QUALITY_SOFT_HIGH)
 		key.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
 	if fill != null:
 		fill.transform = Transform3D(Basis.looking_at(FILL_DIR.normalized(), Vector3.UP), Vector3.ZERO)
@@ -96,6 +99,7 @@ static func hull(mat: Material, faction: String, copy := false) -> Material:
 		return mat
 	if copy:
 		m = m.duplicate()
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	var f: Array = FLOOK.of(faction).get("hull_fix", [0.1, 0.25, 1.0])
 	m.rim_enabled = true
 	m.rim = float(f[0])

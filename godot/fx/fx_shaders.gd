@@ -86,6 +86,7 @@ varying vec2 vUv;
 varying vec4 vCol;
 varying vec4 vInfo;
 varying float vLife;
+varying float vDepth;
 #ifdef SOFT
 """ + DEPTH + """
 #endif
@@ -117,6 +118,9 @@ void vertex() {
 		vec3 c = (MODEL_MATRIX * vec4(lp, 1.0)).xyz;
 		float ang = sd * 6.2831853 + age * a4.w;
 		vec4 vp = VIEW_MATRIX * vec4(c, 1.0);
+		// POSITION is projected manually. Fragment VERTEX still belongs to the
+		// batch origin, so soft particles need this particle's actual depth.
+		vDepth = -vp.z;
 		// F3: a minimum on-screen size per kind (diameter in pixels at 1080 lines), so a frigate's muzzle flash, a bolt or a
 		// spark never shrinks below a few pixels (sub-pixel quads drop out of the raster and vanish at distance). A sprite
 		// grown to the floor dims as it grows, but by less than its area (pops and bolts get f times their light, the rest
@@ -280,7 +284,7 @@ void fragment() {
 	add *= win * win;
 #ifdef SOFT
 	float scene_z = -scene_view_pos(SCREEN_UV, INV_PROJECTION_MATRIX).z;
-	float soft = clamp((scene_z + VERTEX.z) / 0.6, 0.0, 1.0);
+	float soft = clamp((scene_z - vDepth) / 0.6, 0.0, 1.0);
 	add *= soft;
 	alpha *= soft;
 #endif
@@ -668,11 +672,7 @@ void vertex() {
 	float s = UV.x;
 	float w = mix(CUSTOM1.x, CUSTOM1.y, s);
 	vec3 side = snorm(cross(wd, CAMERA_POSITION_WORLD - wp));
-	vec3 up = abs(wd.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
-	vec3 n1 = snorm(cross(wd, up));
-	vec3 n2 = cross(n1, wd);
 	float seed = CUSTOM1.z;
-	wp += (n1 * sin(s * 7.0 - scene_t * 1.3 + seed * 6.0) * 0.9 + n2 * sin(s * 5.0 - scene_t * 0.9 + seed * 3.0) * 0.7) * s * s * 2.2;
 	wp += side * UV.y * w;
 	VERTEX = (VIEW_MATRIX * vec4(wp, 1.0)).xyz;
 	vCol = CUSTOM0;
@@ -684,7 +684,7 @@ void fragment() {
 	float n2 = fbm(vec2(s * 40.0 - scene_t * 0.5, vInfo.y * 2.0 + seed * 3.0));
 	n = 0.5 * n + 0.5 * n2;
 	float across = exp(-x * x * 2.2);
-	float fade = spow(1.0 - s, 1.8) * smoothstep(0.0, 0.04, s);
+	float fade = spow(1.0 - s, 1.8);
 	vec3 col = mix(vCol.rgb, vec3(0.30, 0.38, 0.60), smoothstep(0.0, 0.55, s));
 	float m = smoothstep(0.25, 0.75, n + 0.15);
 	if (st == 1) {

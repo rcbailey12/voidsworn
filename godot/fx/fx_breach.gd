@@ -1792,6 +1792,17 @@ static func marks_for(hull, look: String, w: int, p: Vector3, n: Vector3, dir: V
 		var e: Ent = out[j]
 		if faction == "chorus" and e.kind == K_HOLE:
 			e.bend = 0.35; e.w = e.R * 0.22; e.buckle = 0.035
+		# Ordinary hits burn the real surface. The section ladder alone owns open
+		# breaks near destruction; weapon weight never punches a healthy hull open.
+		if section_damage < 0.8:
+			e.kind = K_SURFACE
+			e.depth = 0.0
+			e.bend = 0.0
+			e.buckle = 0.0
+			e.cutr2 = 0.0
+			e.through = false
+			e.conduits = false
+			e.walls = false
 		# the halo that makes it read at battle distance: at least HALO_MIN world units, grows with the weapon's weight
 		var hm: float = minf(float(HALO_MIN.get(e.style, 0.0)) * wk * sqrt(g), L * HALO_MAX_L)
 		if hm > 0.0:

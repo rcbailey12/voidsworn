@@ -1,8 +1,8 @@
 extends RefCounted
-# One ship's effects: engines (hot cores, plumes, the long cooling trail that bends behind a moving ship), the shield
+# One ship's effects: engines (hot cores, plumes and cooling exhaust left in world space), the shield
 # bubble (faction colour and style, hits, breaks, regen), and the staged damage ladder per section (A5 sheets 5):
-#   0 intact, 1 scorched, 2 dented, 3 exposed structure, 4 hull breach (5 wreck is fx_death.gd).
-# Everything attached to the ship is a child of its root, so it follows G2's moves and turns.
+#   0 intact, 1 scorched, 2 burning, 3 severe surface damage, 4 hull breach (5 wreck is fx_death.gd).
+# Attached effects follow the hull; emitted engine trails stay in world space.
 
 const SH := preload("res://fx/fx_shaders.gd")
 const POOLS := preload("res://fx/fx_pool.gd")
@@ -10,10 +10,9 @@ const HULL := preload("res://fx/fx_hull.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const BREACH := preload("res://fx/fx_breach.gd")
 
-const TRAIL_PTS := 40
-const TRAIL_LEN := 60.0
+const TRAIL_PTS := 96
+const TRAIL_LIFE := 2.6
 const IDLE_GLOW := 0.3                    # engine glow of a parked ship, as a share of cruise (r12)
-const TRAIL_RELAX := Vector2(1.6, 3.2)   # history older than this relaxes back into the straight idle trail
 
 var id = ""
 var root: Node3D
@@ -269,7 +268,7 @@ func _build_trails(fx) -> void:
 		mi.extra_cull_margin = 16384.0
 		fx.add_child(mi)
 		mi.global_transform = Transform3D.IDENTITY
-		_trails.append({"mi": mi, "hist": [], "seed": fx.rng.randf(), "r": nz["r"], "p": nz["p"], "d": nz.get("d", Vector3(-1, 0, 0)), "dirty": true})
+		_trails.append({"mi": mi, "hist": [], "seed": fx.rng.randf(), "r": nz["r"], "p": nz["p"], "d": nz.get("d", Vector3(-1, 0, 0))})
 
 
 func update(fx, dt: float) -> void:
@@ -307,72 +306,32 @@ func update(fx, dt: float) -> void:
 
 func _update_trails(fx, moved: bool) -> void:
 	var xfm = xf()
-	var back = -(xfm.basis.x).normalized()
 	var eng: Color = fac["engine"]
 	var lvl = clampf(_eng_cur, 0.0, 2.0)
 	for t in _trails:
-		var np = xfm * (t["p"] as Vector3)
 		var hist: Array = t["hist"]
 		var plume = clampf(1.5 * hull.W, 2.0, 32.0)
-		# the trail leaves along this nozzle's own plume (kit hard points can splay or angle the bells)
-		var start = np + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
-		if moved:
-			if hist.is_empty() or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit:
-				hist.push_front([start, fx.now])
-				t["dirty"] = true
-		while hist.size() > TRAIL_PTS:
+		var start: Vector3 = xfm * (t["p"] as Vector3) + (xfm.basis * (t["d"] as Vector3)).normalized() * (0.3 * plume)
+		# Each sample belongs to world space for its entire life. Turning, stopping
+		# or throttling down never drags old exhaust along with the nozzle.
+		if not dead and lvl > 0.12:
+			if hist.is_empty() or ((hist[0][0] as Vector3).distance_to(start) > 0.03 * fx.unit and (fx.now - float(hist[0][1]) >= 0.05 or (hist[0][0] as Vector3).distance_to(start) > 1.2 * fx.unit)):
+				hist.push_front([start, fx.now, lvl])
+		while not hist.is_empty() and (hist.size() > TRAIL_PTS or fx.now - float(hist.back()[1]) >= TRAIL_LIFE):
 			hist.pop_back()
-		var relaxing = false
-		for h in hist:
-			var a = fx.now - float(h[1])
-			if a > TRAIL_RELAX.x and a < TRAIL_RELAX.y + 0.5:
-				relaxing = true
-		# idle ships rebuild rarely: only while turning (the trail swings with the stern) or relaxing
-		if not (moved or relaxing or t["dirty"] or absf(float(t.get("lvl", -1.0)) - lvl) > 0.02):
-			continue
-		t["dirty"] = false
-		t["lvl"] = lvl
-		_trail_mesh(fx, t, start, back, eng, lvl)
+		_trail_mesh(fx, t, eng)
 
 
-func _trail_mesh(fx, t: Dictionary, start: Vector3, back: Vector3, eng: Color, lvl: float) -> void:
+func _trail_mesh(fx, t: Dictionary, eng: Color) -> void:
 	var hist: Array = t["hist"]
-	var total = TRAIL_LEN * fx.unit * clampf(0.4 + 0.6 * lvl, 0.0, 1.4) * clampf(scale_k() * 1.2, 0.5, 1.4)
-	if total < 0.5:
-		(t["mi"] as MeshInstance3D).visible = false
+	var mi: MeshInstance3D = t["mi"]
+	mi.visible = hist.size() >= 2
+	if not mi.visible:
 		return
-	(t["mi"] as MeshInstance3D).visible = true
-	# the centre line: from the nozzle through the (relaxing) history, then straight on to the full length
-	var pts = PackedVector3Array([start])
-	var acc = 0.0
+	var pts := PackedVector3Array()
 	for h in hist:
-		var hp: Vector3 = h[0]
-		var a = fx.now - float(h[1])
-		var s_here = acc + pts[pts.size() - 1].distance_to(hp)
-		var straight = start + back * s_here
-		var k = smoothstep(TRAIL_RELAX.x, TRAIL_RELAX.y, a)
-		var p = hp.lerp(straight, k)
-		acc += pts[pts.size() - 1].distance_to(p)
-		pts.append(p)
-		if acc >= total:
-			break
-	var last = pts[pts.size() - 1]
-	var ldir = back
-	if pts.size() >= 2:
-		ldir = (last - pts[pts.size() - 2]).normalized()
-		if ldir.length() < 0.5:
-			ldir = back
-	var steps = 0
-	while acc < total and steps < 64:
-		var segl = minf(total / 24.0, total - acc)
-		last = last + ldir * segl
-		ldir = ldir.lerp(back, 0.15).normalized()
-		pts.append(last)
-		acc += segl
-		steps += 1
+		pts.append(h[0])
 	var n = pts.size()
-	if n < 2:
-		return
 	var verts = PackedVector3Array()
 	var nrm = PackedVector3Array()
 	var uv = PackedVector2Array()
@@ -381,18 +340,15 @@ func _trail_mesh(fx, t: Dictionary, start: Vector3, back: Vector3, eng: Color, l
 	var idx = PackedInt32Array()
 	var r: float = t["r"]
 	var style: int = 1 if (String(fac.get("engine_extra", "")) == "soot" or _eng_sputter) else int(fac["trail"])
-	var s = 0.0
 	var w0 = r * 1.1
 	var w1 = r * 2.4 * clampf(scale_k(), 0.6, 1.6)
 	for i in n:
-		if i > 0:
-			s += pts[i].distance_to(pts[i - 1])
 		var d = (pts[mini(i + 1, n - 1)] - pts[maxi(i - 1, 0)]).normalized()
 		for sd in [-0.5, 0.5]:
 			verts.append(pts[i])
 			nrm.append(d)
-			uv.append(Vector2(s / acc, sd))
-			c0.append_array([eng.r, eng.g, eng.b, 0.22 * clampf(lvl, 0.0, 1.5)])
+			uv.append(Vector2(clampf((fx.now - float(hist[i][1])) / TRAIL_LIFE, 0.0, 1.0), sd))
+			c0.append_array([eng.r, eng.g, eng.b, 0.28 * clampf(float(hist[i][2]), 0.0, 1.5)])
 			c1.append_array([w0, w1, float(t["seed"]), float(style)])
 	for i in n - 1:
 		var q = i * 2
@@ -793,8 +749,6 @@ func _apply_stages(fx, want: Array) -> void:
 	if sp != _eng_sputter:
 		_eng_sputter = sp
 		_build_engines(fx)
-		for t in _trails:
-			t["dirty"] = true
 
 
 func _clear_section(i: int) -> void:
@@ -834,8 +788,7 @@ func _t0(a: Dictionary, st: int, fx) -> float:
 	return float(a["t"][st])
 
 
-# The hull damage for a section at a stage: 2 a dent, 3 a hole with its plates bent back, 4 a bigger breach plus a
-# buckled panel and (medium ships up) a bite out of an upper edge.
+# Homeworld / Armada grading: surface burns through stage 3, an open break only at stage 4.
 func _plan(fx, i: int, st: int) -> Array:
 	var out: Array = []
 	if squadron or weight <= 0 or st < 1:
@@ -859,27 +812,22 @@ func _plan(fx, i: int, st: int) -> Array:
 		s2.sec = i
 		s2.heat = 0.2
 		out.append(s2)
-	if st == 1:
+	if st < 4:
 		return out
-	if st == 2:
-		out.append(BREACH.dent(a["p"], a["n"], L * 0.05, L * 0.05 * 0.22, sd))
-		return out
-	var big = st >= 4
-	var e = BREACH.hole(hull, a["p"], a["n"], L * (0.046 if big else 0.03), 1.3 if big else 0.85, 0.14 if big else 0.1, sd)
+	var e = BREACH.hole(hull, a["p"], a["n"], L * 0.046, 1.3, 0.14, sd)
 	e.t0 = _t0(a, st, fx)
 	if faction == "chorus":
 		e.bend = 0.35; e.w = e.R * 0.22; e.buckle = 0.035
 	e.sec = i
 	out.append(e)
-	if big:
-		var d = _anchor(i, "d")
-		out.append(BREACH.dent(d["p"], d["n"], L * 0.045, L * 0.045 * 0.22, sd + 1.3))
-		if weight >= 2:
-			var bt = _anchor(i, "b")
-			var eb = BREACH.hole(hull, bt["p"], bt["n"], L * 0.032, 1.1, 0.12, sd + 2.1)
-			eb.t0 = _t0(bt, st, fx)
-			eb.sec = i
-			out.append(eb)
+	var d = _anchor(i, "d")
+	out.append(BREACH.dent(d["p"], d["n"], L * 0.045, L * 0.045 * 0.22, sd + 1.3))
+	if weight >= 2:
+		var bt = _anchor(i, "b")
+		var eb = BREACH.hole(hull, bt["p"], bt["n"], L * 0.032, 1.1, 0.12, sd + 2.1)
+		eb.t0 = _t0(bt, st, fx)
+		eb.sec = i
+		out.append(eb)
 	return out
 
 
@@ -1094,13 +1042,20 @@ func _build_section(fx, i: int, up: bool) -> void:
 	for j in 6:
 		picks.append(hull.random_sample(i, 2.5))
 	# the blackened area round the damage (fx_breach scorch overlays, planned in _plan) grows with the stage
-	# 1 and 2: a thin wisp of smoke from the struck area (from 3 the hole makes its own)
-	if st <= 2:
+	# Surface damage keeps a thin smoke wisp through stage 3.
+	if st <= 3:
 		var ps: Vector3 = ap + an * 0.1
 		for kk in 3:
 			var v = an * hull.L * 0.03 + Vector3(0, hull.L * 0.01, 0)
 			b.add(q, POOLS.pack(Vector4(ps.x, ps.y, ps.z, -20.0 + kk * 1.0 + r.randf() * 0.3), Vector4(v.x, v.y, v.z, 3.0),
 				Vector4(0.12, 0.115, 0.11, 0.16), Vector4(hull.L * 0.012, hull.L * 0.055, 3, r.randf()), Vector4(3.0, 0, 0.7, 0.3)))
+	# Small section fires sit on the actual struck plating before any hole opens.
+	if st in [2, 3]:
+		var fire_p: Vector3 = ap + an * hull.L * 0.003
+		for kk in 7:
+			var v: Vector3 = an * hull.L * 0.018 + Vector3.UP * hull.L * 0.012
+			b.add(q, POOLS.pack(Vector4(fire_p.x, fire_p.y, fire_p.z, -20.0 + kk * 0.12), Vector4(v.x, v.y, v.z, 0.7),
+				Vector4(1.0, 0.4, 0.08, 0.7 if st == 2 else 0.95), Vector4(hull.L * 0.009, hull.L * 0.028, 25, r.randf()), Vector4(0.84, 0, 0.4, 0)))
 	# 2+: sparking wires and a thin gas jet at the damaged plates
 	if st >= 2:
 		for j in (1 if st == 2 else 2):
@@ -1111,15 +1066,15 @@ func _build_section(fx, i: int, up: bool) -> void:
 				var v = (an + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * (5 + r.randf() * 9) * k
 				bs.add(qs, POOLS.pack(Vector4(p.x, p.y, p.z, -20.0 + off + r.randf() * 0.08), Vector4(v.x, v.y, v.z, 0.3 + r.randf() * 0.3),
 					Vector4(1.0, 0.7, 0.35, 3.5), Vector4(0.05, 0.07 * k, 2.2, 1), Vector4(per, 0, 0, 0)))
-		if st == 2:
+		if st in [2, 3]:
 			var pj: Vector3 = ap + at1 * hull.L * 0.02
 			for kk in 12:
 				var tk = -20.0 + kk * 0.09
 				var v: Vector3 = (an + at2 * 0.3).normalized() * (4.0 + r.randf() * 2.0) * k
 				b.add(q, POOLS.pack(Vector4(pj.x, pj.y, pj.z, tk), Vector4(v.x, v.y, v.z, 0.9), Vector4(0.62, 0.68, 0.78, 0.16),
 					Vector4(0.12 * k, 0.9 * k, 7, r.randf()), Vector4(1.26, 0, 0.8, 0.5)))
-	# 3+: debris shedding from the hole
-	if st >= 3:
+	# Near destruction: debris shedding from the open break.
+	if st >= 4:
 		var pd: Vector3 = ap + an * 0.1
 		for kk in 2:
 			var v = (an + Vector3(r.randf() - 0.5, r.randf() * 0.4, r.randf() - 0.5)).normalized() * (1.5 + r.randf() * 2.0) * k
@@ -1162,6 +1117,13 @@ func _build_breach(fx, i: int, b: POOLS.Batch, bs: POOLS.Batch, bshard: POOLS.Ba
 	var T0: float = fx.now
 	var P = brp - bn * hole * 0.1
 	var upv = Vector3(0, 1, 0)
+	# A persistent fire at the opening, instead of an empty cavity
+	# between the occasional internal pops. No additional counted flashes.
+	var fire_mouth: Vector3 = brp + bn * hole * 0.18
+	for kk in 12:
+		var v: Vector3 = bn * hole * 0.8 + upv * hole * 0.35
+		b.add(q, POOLS.pack(Vector4(fire_mouth.x, fire_mouth.y, fire_mouth.z, -20.0 + kk * 0.08), Vector4(v.x, v.y, v.z, 0.8),
+			Vector4(1.0, 0.38, 0.06, 1.8), Vector4(hole * 0.25, hole * 0.8, 25, r.randf()), Vector4(0.96, 0, 0.4, 0)))
 	# debris streaming out
 	for kk in 3:
 		var v = (bn + upv * 0.2 + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.6).normalized() * (2.5 + r.randf() * 3) * k

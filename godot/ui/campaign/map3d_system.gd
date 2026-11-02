@@ -150,16 +150,8 @@ func backdrop(parent: Node3D, fac: String, px_scale: float) -> void:
 		st.set_color(Color(c.r * (0.25 + b), c.g * (0.25 + b), c.b * (0.25 + b), 0.4 + b * 0.9)); st.add_vertex(d * r)
 	var pts = MeshInstance3D.new(); pts.mesh = st.commit(); pts.material_override = mat("STARPTS", {"px": px_scale}); pts.extra_cull_margin = 2000.0
 	pts.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF; parent.add_child(pts)
-	# big soft nebula sheets under the chart, at depth (parallax between the chart and the sky)
-	var t2 = SKIES.get(fac, SKIES["hegemony"])
-	var sheets = 4 if q > 0.5 else 2
-	for i in sheets:
-		var a = Color(t2[i % 2].x, t2[i % 2].y, t2[i % 2].z); var b2 = Color(t2[(i + 1) % 2].x, t2[(i + 1) % 2].y, t2[(i + 1) % 2].z)
-		var sz = rng.randf_range(160.0, 260.0)
-		var sh = mi(flat(sz, sz), mat("NEB_SHEET", {"a": a, "b": b2, "gain": rng.randf_range(0.22, 0.4), "seed": rng.randf() * 50.0, "oct": 5.0 if q > 0.5 else 3.0}),
-			Vector3(rng.randf_range(-90, 90), -rng.randf_range(45.0, 130.0), rng.randf_range(-120, 40)))
-		sh.rotation = Vector3(rng.randf_range(-0.2, 0.2), rng.randf() * TAU, rng.randf_range(-0.2, 0.2)); sh.extra_cull_margin = sz
-		parent.add_child(sh)
+	# The directional sky owns the nebula across the entire view. Finite sheets
+	# could end across the screen when panning or zooming past their bounds.
 
 # ---------------------------------------------------------------- the Hollow Sun
 # A black hole ringed by the accretion disc of the dead star (lore round 4), the same look as G4's dead-star board:
