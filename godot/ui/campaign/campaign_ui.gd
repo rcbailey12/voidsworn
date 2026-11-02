@@ -271,6 +271,7 @@ func render() -> void:
 		"shipyard": body = _wrap_page(_shipyard())
 		"battle": body = _battle_stub(pg["data"])
 		"legacy": body = _wrap_page(_legacy())
+		"lineage": body = _wrap_page(_lineage(pg["data"]["id"]))
 		"help": body = _wrap_page(_help(), 820)
 		"end": body = _end(pg["data"])
 		_: body = lbl("")
@@ -375,6 +376,7 @@ func _admiral() -> Control:
 		else: col.add_child(lbl(_admiral_title(id), 20, BONE, font_semi)); col.add_child(lbl(a["doc"], 16, GILT))
 		col.add_child(lbl(a["d"], 16, BONE2))
 		col.add_child(_mastery_bar(id))
+		if C.LINEAGE_TREES.has(id): add(col, abtn("View lineage tree", "lineage", id))
 		var fleet = []
 		for t in a["start"]: fleet.append(C.HULLS[C.equivHull(t, C.picked_faction)]["n"])
 		col.add_child(rich(c("Starting fleet:", BONE3) + " " + esc(", ".join(PackedStringArray(fleet))), 16))
@@ -418,10 +420,10 @@ func _cmd_text(cmd, fac) -> String:
 	var t = C.CMD_TEXT.get(cmd["id"])
 	return str(t.get(fac, "")) if t != null else ""
 func _mastery_bar(id) -> Control:
-	var l = C.masteryLevel(id); var x = C.masteryXP(id); var nx = C.MASTERY_XP[l + 1] if l + 1 < C.MASTERY_XP.size() else null
-	var f = min(1.0, (x - float(C.MASTERY_XP[l])) / (float(nx) - float(C.MASTERY_XP[l]))) if nx != null else 1.0
+	var l = C.masteryLevel(id); var x = C.masteryXP(id); var thresholds = C.masteryThresholds(id); var nx = thresholds[l + 1] if l + 1 < thresholds.size() else null
+	var f = min(1.0, (x - float(thresholds[l])) / (float(nx) - float(thresholds[l]))) if nx != null else 1.0
 	var v = vbox(3)
-	v.add_child(rich(c("Mastery " + str(l) + "/4", GILT) + " " + c((C.numstr(x) + "/" + C.numstr(nx) + ": next " + str(C.MASTERY_PERKS[l + 1]["n"]).to_lower()) if nx != null else "mastered", BONE3), 14))
+	v.add_child(rich(c("Mastery " + str(l) + "/" + str(thresholds.size() - 1), GILT) + " " + c((C.numstr(x) + "/" + C.numstr(nx) + ": next " + str(C.masteryPerk(l + 1)["n"]).to_lower()) if nx != null else "mastered", BONE3), 14))
 	var b = bar(f); b.get_child(0).color = GILT; v.add_child(b)
 	return v
 func _run_options() -> Control:
@@ -1023,7 +1025,9 @@ func _legacy() -> Control:
 				v.add_child(lbl(C.FACTIONS[f]["n"], 20, BONE, font_semi)); var ac = flow()
 				for id in C.ADMIRALS.keys():
 					if C.or_(C.ADMIRALS[id].get("fac"), "voidsworn") != f: continue
-					var cv2 = card(false, 300); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 15, GILT)); cv2[1].add_child(_mastery_bar(id)); ac.add_child(cv2[0])
+					var cv2 = card(false, 300); cv2[1].add_child(lbl(C.ADMIRALS[id]["n"], 19, BONE, font_semi)); cv2[1].add_child(lbl(C.ADMIRALS[id]["doc"], 15, GILT)); cv2[1].add_child(_mastery_bar(id))
+					if C.LINEAGE_TREES.has(id): add(cv2[1], abtn("View lineage tree", "lineage", id))
+					ac.add_child(cv2[0])
 				v.add_child(ac)
 		"favour":
 			v.add_child(lbl("Every protocol you take raises your sync with that core (rare protocols count double, epic triple).", 17, BONE2))
@@ -1100,8 +1104,8 @@ func _end(d: Dictionary) -> Control:
 	cv.add_child(lbl("CARRIED FORWARD", 12, BONE3))
 	cv.add_child(rich("[b]" + c("+" + C.numstr(cy["ren"]) + " renown", GILT) + "[/b]" + ((" " + c("(Heat " + C.numstr(cy["hl"]) + ": +" + C.numstr(cy["hl"] * 10) + "%)", BONE3)) if C.jt(cy["hl"]) else "") + " · you now have " + C.numstr(C.META["renown"]) + ". Spend it on hull variants in Progression.", 16))
 	var mx1 = int(cy["mx1"]); var ml = ""
-	if mx1 > int(cy["mx0"]): ml = " " + c("Level " + str(mx1) + " reached: " + esc(C.MASTERY_PERKS[mx1]["n"]) + ". " + esc(C.MASTERY_PERKS[mx1]["d"]), GILT)
-	elif mx1 < 4: ml = " " + c("(" + C.numstr(C.masteryXP(R["admiral"])) + "/" + C.numstr(C.MASTERY_XP[mx1 + 1]) + " to " + esc(C.MASTERY_PERKS[min(4, mx1 + 1)]["n"]) + ")", BONE3)
+	if mx1 > int(cy["mx0"]): ml = " " + c("Level " + str(mx1) + " reached: " + esc(C.masteryPerk(mx1)["n"]) + ". " + esc(C.masteryPerk(mx1)["d"]), GILT)
+	elif mx1 < C.masteryThresholds(R["admiral"]).size() - 1: ml = " " + c("(" + C.numstr(C.masteryXP(R["admiral"])) + "/" + C.numstr(C.masteryThresholds(R["admiral"])[mx1 + 1]) + " to " + esc(C.masteryPerk(mx1 + 1)["n"]) + ")", BONE3)
 	else: ml = " " + c("(mastered)", BONE3)
 	cv.add_child(rich(esc(C.ADMIRALS[R["admiral"]]["n"]) + ": [b]+" + C.numstr(cy["mxGain"]) + " mastery[/b]" + ml, 16))
 	v.add_child(carry)
@@ -1148,6 +1152,46 @@ func _end(d: Dictionary) -> Control:
 	add(menu, abtn("Title screen", "title")); v.add_child(menu)
 	return cc
 
+# ---------------- Glasswright lineage ----------------
+func _lineage_node(n) -> Control:
+	var chosen = n["state"] == "chosen"; var cv = card(chosen, 300); var col = cv[1]
+	col.add_child(lbl(n["n"], 19, GILT if chosen else BONE, font_semi)); col.add_child(lbl(n["d"], 16, BONE2))
+	var labels = {"chosen": "Recorded", "locked": "Locked until reset", "available": "Choose this skill", "future": "Not yet available"}
+	add(col, abtn(labels[n["state"]], "offerLineage", n["key"], n["state"] == "available"))
+	if n["state"] == "locked": cv[0].modulate.a = 0.55
+	return cv[0]
+func _lineage(id) -> Control:
+	var v = vbox(12); var tree = C.LINEAGE_TREES[id]; var build = C.lineageBuild(id); var nodes = C.lineageNodes(id); var level = C.masteryLevel(id)
+	v.add_child(lbl(C.ADMIRALS[id]["n"], 30, BONE, font_goth))
+	v.add_child(lbl("Recorded in the glass. One pick at each of levels 5, 6 and 7. Choose a branch, then one skill at its next tier. Its partner locks until you reset this line.", 17, BONE2))
+	v.add_child(_mastery_bar(id))
+	v.add_child(lbl(str(maxi(0, mini(3, level - 4) - build["picks"].size())) + " branch picks ready. Capstone at level 8 (230 XP).", 17, GILT))
+	v.add_child(lbl("Command skills and capstones use " + str(C.ADMIRALS[id]["cmd"]["n"]) + ", the primary Command. Fleet and flagship branches have their first tier in this test slice.", 15, BONE3))
+	if not C.lineageBetweenRuns(): v.add_child(lbl("Finish or abandon your saved run before changing this line.", 17, BLOOD))
+	var columns = flow(16); var trunk = vbox(8); trunk.custom_minimum_size.x = px(300)
+	trunk.add_child(lbl("Trunk: levels 1 to 4", 20, BONE, font_semi))
+	for i in range(1, C.MASTERY_PERKS.size()):
+		var cv = card(false, 300); cv[1].add_child(lbl(str(i) + ". " + str(C.MASTERY_PERKS[i]["n"]), 19, BONE, font_semi)); cv[1].add_child(lbl(C.MASTERY_PERKS[i]["d"], 16, BONE2)); cv[1].add_child(lbl(C.numstr(C.MASTERY_XP[i]) + " XP: " + ("earned" if level >= i else "not yet earned"), 14, BONE3)); trunk.add_child(cv[0])
+	columns.add_child(trunk)
+	for b in tree["branches"].keys():
+		var col = vbox(8); col.custom_minimum_size.x = px(300)
+		var glyph = {"A": "[+] Command", "B": "[=] Fleet", "C": "[*] Flagship and line"}
+		col.add_child(lbl(glyph[b] + ": " + str(tree["branches"][b]["n"]), 20, GILT, font_semi))
+		for t in range(tree["branches"][b]["tiers"].size()):
+			col.add_child(lbl("Tier " + str(t + 1), 16, BONE3))
+			for n in nodes:
+				if n["branch"] == b and n["tier"] == t + 1: col.add_child(_lineage_node(n))
+		columns.add_child(col)
+	v.add_child(columns)
+	var cap = panel(GILT, Color(0.37, 0.7, 0.65, 0.08), 16); var capv = vbox(8); cap.add_child(capv)
+	capv.add_child(lbl("Level 8: Command evolution", 23, GILT, font_goth)); var capnodes = flow()
+	for n in nodes:
+		if n["branch"] == "cap": capnodes.add_child(_lineage_node(n))
+	capv.add_child(capnodes); v.add_child(cap)
+	v.add_child(lbl("Reset clears all branch picks and the capstone. XP and trunk perks stay. This line has been reset " + C.numstr(build["respecs"]) + " times. You have " + C.numstr(C.z0(C.META.get("renown"))) + " renown.", 16, BONE3))
+	var row = hbox(); add(row, abtn("Reset line: " + C.numstr(C.lineageRespecCost(id)) + " renown", "offerRespec", id)); add(row, abtn("Back to Admiral mastery", "progTab", "mastery")); v.add_child(row)
+	return v
+
 # ---------------- dialogs ----------------
 func _modal(md: Dictionary) -> void:
 	_modal_acts = md["acts"]; var acts = _modal_acts; var d = md["data"]
@@ -1161,6 +1205,12 @@ func _modal(md: Dictionary) -> void:
 	var p = func(t: String, col: Color = BONE): v.add_child(lbl(t, 17, col))
 	var R = C.RUN
 	match md["kind"]:
+		"lineagePick":
+			h2.call("Record " + str(d["n"]) + "?"); p.call(d["d"]); p.call("The other skill at this tier locks until you pay to reset this line.", BONE3)
+			add(v, abtn("Confirm choice", "confirmLineage", d["key"], true, false, acts)); add(v, abtn("Back", "closeModal", "", false, false, acts))
+		"lineageRespec":
+			h2.call("Reset " + str(C.ADMIRALS[d["id"]]["n"]) + "?"); p.call("Spend " + C.numstr(d["cost"]) + " renown to clear every branch pick and the capstone. Keep all XP and trunk perks.")
+			add(v, abtn("Reset for " + C.numstr(d["cost"]) + " renown", "confirmRespec", d["id"], true, false, acts)); add(v, abtn("Back", "closeModal", "", false, false, acts))
 		"intro", "sector":
 			var F = C.FACTIONS[d["fac"]]
 			if md["kind"] == "intro":

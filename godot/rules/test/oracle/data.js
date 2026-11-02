@@ -587,6 +587,326 @@ const MASTERY_PERKS=[
   {n:'Wider counsel',d:'Your flagship is offered four aspects instead of three.'},
   {n:'Second Command',d:'Choose between two Commands before the run.'},
   {n:'Flag captain',d:'Your flagship starts at Mk II, its captain two ranks up with a perk.'}];
+// Glasswrights test slice. Content: skill_tree_phase1_assembled_2026_10_29.md.
+const LINEAGE_XP=[0,6,16,30,50,75,110,160,230];
+const LINEAGE_TREES={
+  "aelith": {
+    "branches": {
+      "A": {
+        "n": "Recorded Flight",
+        "tiers": [
+          [
+            {
+              "n": "Flight Paths in the Glass",
+              "d": "record each extra wing's strike path before launching; a wing that follows its recorded path exactly strikes at +15%."
+            },
+            {
+              "n": "Cast Twice in Light",
+              "d": "one carrier's extra wing strikes, is recorded, and strikes the same target again at half damage if that target has not moved."
+            }
+          ],
+          [
+            {
+              "n": "The Replay Corrects",
+              "d": "after the first strike resolves, each extra wing may be retargeted freely for its strike-again, using what the glass recorded."
+            },
+            {
+              "n": "Starlings in Formation",
+              "d": "extra wings that strike in the same order as their carriers are arranged gain +10 aim."
+            }
+          ],
+          [
+            {
+              "n": "Flaw in the Flight Removed",
+              "d": "extra wings ignore the point defense of one chosen enemy ship for this Command."
+            },
+            {
+              "n": "Every Lens Aloft",
+              "d": "a carrier that held still this round launches one extra wing whose strike is also recorded for next round."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Deployment Read from the Shards",
+              "d": "after seeing the enemy deployment, reposition one of your ships anywhere in your deployment zone."
+            },
+            {
+              "n": "Casting Corrected Before Battle",
+              "d": "after deployment, swap the positions of any two of your ships."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Lens",
+              "d": "once per round, the flagship may focus one enemy; your lance shots against it gain +10 aim."
+            },
+            {
+              "n": "First Light Recorded",
+              "d": "the flagship records the first enemy ship that fires each battle; your fleet gains +10 evasion against that ship for the battle."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Flight Remembered Perfectly",
+        "d": "the extra wings strike three times: the recorded strike, a corrected strike at full effect, and a final strike at half damage."
+      },
+      {
+        "n": "The Forge Casts Ahead",
+        "d": "after the Command, one extra wing per carrier stays aloft and repeats its recorded strike at the start of next round."
+      }
+    ]
+  },
+  "vaelen": {
+    "branches": {
+      "A": {
+        "n": "Long Focus",
+        "tiers": [
+          [
+            {
+              "n": "Focus Drawn Long",
+              "d": "volley shots at targets beyond half the firing ship's range gain +20% damage."
+            },
+            {
+              "n": "One Lens, One Target",
+              "d": "a ship may fire its volley as a single shot at +25% damage instead of firing every gun."
+            }
+          ],
+          [
+            {
+              "n": "Light Arrives Together",
+              "d": "you may hold the volley until all your ships have moved, and fire lance shots in any order you choose."
+            },
+            {
+              "n": "The Recorded Angle",
+              "d": "before the volley, each ship may turn once to bring its best lance to bear."
+            }
+          ],
+          [
+            {
+              "n": "Burning the Flaw Out",
+              "d": "volley hits on one target stack; the third and later hits on that target ignore its shields."
+            },
+            {
+              "n": "Long Light",
+              "d": "lance weapons in the volley gain +2 hexes of range."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Deployment Read from the Shards",
+              "d": "after seeing the enemy deployment, reposition one of your ships anywhere in your deployment zone."
+            },
+            {
+              "n": "Casting Corrected Before Battle",
+              "d": "after deployment, swap the positions of any two of your ships."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Lens",
+              "d": "once per round, the flagship may focus one enemy; your lance shots against it gain +10 aim."
+            },
+            {
+              "n": "First Light Recorded",
+              "d": "the flagship records the first enemy ship that fires each battle; your fleet gains +10 evasion against that ship for the battle."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Sun Through One Lens",
+        "d": "Burning glass may concentrate every ship's volley on one target, resolving as a single combined strike that ignores range penalties."
+      },
+      {
+        "n": "The Flaw, Corrected Forever",
+        "d": "after Burning glass, your lances keep +15% damage against the target the volley hit most, for the rest of the battle."
+      }
+    ]
+  },
+  "thorne": {
+    "branches": {
+      "A": {
+        "n": "Refraction",
+        "tiers": [
+          [
+            {
+              "n": "Two Images Appear",
+              "d": "during the scatter, the first enemy shot at each of your ships each round is aimed at a false image and loses a further 20 accuracy."
+            },
+            {
+              "n": "Angles Recorded",
+              "d": "a ship that ends its scatter movement facing a different direction than it started gains +10 evasion until next round."
+            }
+          ],
+          [
+            {
+              "n": "The Mirror Steps Aside",
+              "d": "during the scatter, a ship may pass through one enemy-held hex without stopping."
+            },
+            {
+              "n": "Light Split Three Ways",
+              "d": "during the scatter, a ship may split its movement, half before it fires and half after."
+            }
+          ],
+          [
+            {
+              "n": "Refraction Deepens",
+              "d": "during the scatter, a ship that moves its full distance cannot be targeted by weapons fired from beyond range 6 until next round."
+            },
+            {
+              "n": "Every Mirror Turns",
+              "d": "at the end of scatter movement, every ship may face any direction at no cost."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Deployment Read from the Shards",
+              "d": "after seeing the enemy deployment, reposition one of your ships anywhere in your deployment zone."
+            },
+            {
+              "n": "Casting Corrected Before Battle",
+              "d": "after deployment, swap the positions of any two of your ships."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Lens",
+              "d": "once per round, the flagship may focus one enemy; your lance shots against it gain +10 aim."
+            },
+            {
+              "n": "First Light Recorded",
+              "d": "the flagship records the first enemy ship that fires each battle; your fleet gains +10 evasion against that ship for the battle."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "The Fleet Is Elsewhere",
+        "d": "Scatter the light may be declared after the first enemy ship fires; your ships move immediately, interrupting the enemy turn."
+      },
+      {
+        "n": "A Hundred False Hulls",
+        "d": "during the scatter round, the first two enemy volleys fired each round are wasted on false images."
+      }
+    ]
+  },
+  "mirelle": {
+    "branches": {
+      "A": {
+        "n": "Prism Recasting",
+        "tiers": [
+          [
+            {
+              "n": "Light Bent to the Weak Side",
+              "d": "you may give one ship's shield refill to the friendly ship with the lowest shields instead."
+            },
+            {
+              "n": "Prisms Face the Fire",
+              "d": "a ship facing its nearest enemy refills +25% more shield during the ward."
+            }
+          ],
+          [
+            {
+              "n": "Recharge While Lit",
+              "d": "during the ward, shields recharge a second time at round end, at the prism recharge rate."
+            },
+            {
+              "n": "The Lens Rotates",
+              "d": "during the ward, a ship may change its facing after moving without losing the damage reduction."
+            }
+          ],
+          [
+            {
+              "n": "Flaw in the Glass Corrected",
+              "d": "while the ward is active, the first ship whose shields fall to zero refills to 15%, once per battle."
+            },
+            {
+              "n": "Hard Light",
+              "d": "during the ward, a ship's remaining shields also block the first section damage it would take."
+            }
+          ]
+        ]
+      },
+      "B": {
+        "n": "Fleet",
+        "tiers": [
+          [
+            {
+              "n": "Deployment Read from the Shards",
+              "d": "after seeing the enemy deployment, reposition one of your ships anywhere in your deployment zone."
+            },
+            {
+              "n": "Casting Corrected Before Battle",
+              "d": "after deployment, swap the positions of any two of your ships."
+            }
+          ]
+        ]
+      },
+      "C": {
+        "n": "Flagship and line",
+        "tiers": [
+          [
+            {
+              "n": "The Flagship Lens",
+              "d": "once per round, the flagship may focus one enemy; your lance shots against it gain +10 aim."
+            },
+            {
+              "n": "First Light Recorded",
+              "d": "the flagship records the first enemy ship that fires each battle; your fleet gains +10 evasion against that ship for the battle."
+            }
+          ]
+        ]
+      }
+    },
+    "capstones": [
+      {
+        "n": "Ward of Clear Glass",
+        "d": "Prism ward lasts two rounds, and shields refill again at the start of the second round."
+      },
+      {
+        "n": "Every Facet Lit",
+        "d": "during the ward, shield strength refilled beyond a ship's maximum becomes temporary hull of hard light, up to +20%."
+      }
+    ]
+  }
+};
 // Patron favour: grows with every boon you take from a patron
 const FAVOUR_TIERS=[{at:0,n:'Listening'},{at:4,n:'Partial sync',d:'Its protocols are rare more often.'},{at:12,n:'Synced',d:'If it is in range of your run, you start with one of its protocols.'},{at:25,n:'Full sync',d:'Its protocols are never common.'}];
 // Heat: optional rules after your first victory; each level adds 10% renown
