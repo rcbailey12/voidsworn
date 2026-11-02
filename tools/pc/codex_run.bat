@@ -7,8 +7,8 @@ rem   cx_<tag>_src.zip   the repo files the task needs (git archive)
 rem   cx_<tag>_brief.md  the task brief (what to change, which files, how to check)
 rem Produces in build_b: cx_<tag>.patch (git diff of Codex's changes), cx_<tag>_last.md (its final message), cx_<tag>_log.txt
 setlocal
-rem Reasoning effort for Codex: xhigh by default (Ryan has ChatGPT room); set CX_EFFORT=high in the job for light sweeps.
-if not defined CX_EFFORT set "CX_EFFORT=xhigh"
+rem Reasoning effort (Ryan, Nov 2): high by default; jobs for planning, long analysis or audits set CX_EFFORT=xhigh before the call.
+if not defined CX_EFFORT set "CX_EFFORT=high"
 set "TAG=%~1"
 if "%TAG%"=="" (echo usage: codex_run.bat ^<tag^> & exit /b 2)
 set "PATH=C:\Program Files\nodejs;C:\Program Files\Git\cmd;%APPDATA%\npm;%PATH%"
