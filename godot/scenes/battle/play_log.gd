@@ -11,6 +11,7 @@ extends RefCounted
 # ended it: nothing left to do), rules (the rules ended it: no movement and no gun left, or braced), died, switched (the
 # player picked another ship before acting), battle_end)}
 
+var tips: Array = []
 var acts: Array = []
 var cur: Dictionary = {}
 var hurries := 0              # Enter or Space presses that hurried the enemy's turn
@@ -19,6 +20,10 @@ var t0_battle := 0
 
 func _init() -> void:
 	t0_battle = Time.get_ticks_msec()
+
+
+func teaching(kind: String, id: String, round_n: int, activation: String, why := "") -> void:
+	tips.append({"k": kind, "id": id, "r": round_n, "activation": activation, "why": why, "at": Time.get_ticks_msec() - t0_battle})
 
 
 func is_open() -> bool:
@@ -79,4 +84,4 @@ func summary(result: String, rounds: int, enemy_s: Dictionary) -> Dictionary:
 	var es := {}
 	for k in enemy_s:
 		es[str(k)] = snappedf(float(enemy_s[k]), 0.01)
-	return {"v": 1, "result": result, "rounds": rounds, "secs": snappedf((Time.get_ticks_msec() - t0_battle) / 1000.0, 0.1), "hurries": hurries, "enemy_s": es, "acts": acts}
+	return {"v": 1, "result": result, "rounds": rounds, "secs": snappedf((Time.get_ticks_msec() - t0_battle) / 1000.0, 0.1), "hurries": hurries, "enemy_s": es, "acts": acts, "tips": tips}

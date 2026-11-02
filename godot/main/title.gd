@@ -289,7 +289,7 @@ func _settings() -> void:
 	v.add_child(_choice("Screen shake", "shake", [[1.0, "Full"], [0.5, "Reduced"], [0.0, "Off"]]))
 	v.add_child(_toggle("Follow enemy activations", "follow"))
 	v.add_child(_choice("Cut-ins", "cine", [["key", "Key moments"], ["all", "Every attack"], ["off", "Off"]]))
-	v.add_child(_toggle("Battle tips", "tips"))
+	v.add_child(_toggle("Teaching tips", "tips"))
 	v.add_child(_toggle("Full screen", "fullscreen"))
 	v.add_child(_choice("Graphics", "quality", [["max", "Max"], ["high", "High"], ["low", "Low"]]))
 	v.add_child(_toggle("Temporal AA (smoother edges, softer motion)", "taa"))
@@ -426,11 +426,13 @@ func _row(t: String) -> HBoxContainer:
 
 func _toggle(t: String, key: String) -> Control:
 	var r := _row(t)
+	if key == "tips": main.settings["tips"] = not preload("res://ui/campaign/campaign_tips.gd").is_off()
 	var b: Button
 	if not main.settings.has(key):
 		main.settings[key] = true
 	b = _button("On" if main.settings[key] else "Off", func() -> void:
 		main.settings[key] = not bool(main.settings[key])
+		if key == "tips": preload("res://ui/campaign/campaign_tips.gd").set_off(not main.settings[key])
 		b.text = "On" if main.settings[key] else "Off"
 		main.save_settings())
 	b.custom_minimum_size = Vector2(s(110), 0)

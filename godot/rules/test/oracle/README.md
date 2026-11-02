@@ -1,5 +1,15 @@
 # The rules oracle, pinned
 
+Nov 2 2026, onboarding follow-up: re-copied core.js and battle.js from this
+checkout. Teaching overrides now require cfg/RUN.teachingGate. Ordinary bot
+and parity callers default off; s49 and s50 explicitly enable the gate.
+Re-exported tables retain the same checksum and balance values.
+
+Nov 2 2026, uncommitted onboarding task: re-copied `core.js` and `battle.js`
+from this checkout. Teaching fight 1 uses an open field with one edge feature
+and no mid-battle arrival; fight 2 schedules an enemy arrival. Scenarios s49
+and s50 cover these branches. Budget, hull and weapon tables are unchanged.
+
 These are the game's `data.js`, `core.js` and `battle.js`, copied unchanged from main cf278dd (Nov 1: stream B step 14, the Daybreak at speed 2 and the boss objective table, on top of step 13, the R1 rules fix batch 53531b2, and the R1 display-string follow-ups e3bff1e, d039a7a, d72d454; before that 8e81d75, steps 0 to 12 and 9b), plus:
 
 - `fnames.js`, the `FNAMES` table from `ui3d.js` (lore round 8 ship names; Nov 1 R1 follow-up: the retired Hullbreaker name Last Laugh became Cold Trail, as in ui3d.js) (the browser defines it and `core.js` shipName reads it);

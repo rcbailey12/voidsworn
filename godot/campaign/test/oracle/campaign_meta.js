@@ -192,6 +192,7 @@ function runRecap(victory){ const s=RUN.stats, mins=RUN.t0?Math.max(1,Math.round
 function nextFacPick(){ const won=(META.stats.wonFacs||[]), pool=RUN_FACTIONS.filter(f=>f!==RUN.fac&&!won.includes(f)); return pick(pool.length?pool:RUN_FACTIONS.filter(f=>f!==RUN.fac)); }
 function endRun(victory, abandoned){
   const s=RUN.stats;
+  if(META.stats.finishedRuns!=null&&!RUN.over) META.stats.finishedRuns++;
   const prevBest=META.stats.best||0; META.stats.best=Math.max(prevBest, RUN.sector); if(victory){ META.stats.wins++; META.stats.wonFacs=META.stats.wonFacs||[]; if(!META.stats.wonFacs.includes(RUN.fac)) META.stats.wonFacs.push(RUN.fac); }
   for(const f of RUN.fallen) META.fallen.push(f); if(META.fallen.length>80) META.fallen=META.fallen.slice(-80);
   try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl)}); }catch(e){}

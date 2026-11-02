@@ -50,10 +50,10 @@ function load(folder, campaignFile, explicitCampaign = false) {
       if (e.ev === 'battle_end') start = null;
     }
   }
-  return { battles, warnings, campaignEvents: events.length };
+  return { battles, warnings, campaignEvents: events.length, campaignTips: events.filter(e => e.ev === 'teaching_tip') };
 }
 
-function report({ battles, warnings = [], campaignEvents = 0 }) {
+function report({ battles, warnings = [], campaignEvents = 0, campaignTips = [] }) {
   const out = ['# Battle play report', '', '## Overview', '',
     'Battles played: ' + battles.length + '. Campaign events available: ' + campaignEvents + '.', '',
     '| Battle | Enemy faction | Objective | Result | Rounds | Real minutes |',
@@ -89,6 +89,16 @@ function report({ battles, warnings = [], campaignEvents = 0 }) {
     out.push('', 'Enemy time per round: ' + (enemy.length ? enemy.map(([r, s]) => `round ${safe(r)}: ${fmt(s)}s`).join('; ') : 'not logged') + '.',
       'Enemy hurries: ' + safe(b.hurries) + '.');
   });
+  const tips = [...battles.flatMap(({ log: b }, i) => (b.tips || []).map(e => ({ ...e, place: `Battle ${i + 1}, round ${safe(e.r)}, ${safe(e.activation)}` }))),
+    ...campaignTips.map(e => ({ ...e, place: e.screen || 'campaign' }))];
+  out.push('', '## Teaching cards', '');
+  const counts = { show: 0, dismiss: 0, retire: 0 };
+  for (const e of tips) if (Object.hasOwn(counts, e.k)) counts[e.k]++;
+  out.push(`Shows: ${counts.show}; dismissals: ${counts.dismiss}; action retirements: ${counts.retire}.`, '');
+  if (tips.length) {
+    out.push('| Location | Event | Card | Reason | Time |', '| --- | --- | --- | --- | --- |');
+    for (const e of tips) out.push(`| ${safe(e.place)} | ${safe(e.k)} | ${safe(e.id)} | ${safe(e.why || '')} | ${number(e.at) ? fmt(e.at / 1000) + 's in battle' : number(e.t) ? safe(e.t) + 'ms timestamp' : 'not logged'} |`);
+  } else out.push('No teaching-card events recorded (older logs do not contain them).');
   out.push('', '## Where Ryan hesitated', '');
   hesitations.sort((x, y) => y.a.think_ms - x.a.think_ms).slice(0, 10).forEach(({ a, battle }, i) => {
     out.push(`${i + 1}. Battle ${battle}, round ${safe(a.r)}, ${safe(a.name || a.ship)} [${safe(a.ship)}]: ${fmt(a.think_ms / 1000)}s; first action ${safe(a.acts[0].k)}. Screen: not logged.`);

@@ -270,7 +270,9 @@ function equivHull(tpl,fac){ if(!fac||fac==='voidsworn'||HULLS[tpl].fac===fac) r
   if(!ros.length) return tpl; let pool=T.ab==='launch'?ros.filter(h=>HULLS[h].ab==='launch'):ros; if(!pool.length) pool=ros;
   return pool.reduce((a,h)=>{ const dh=Math.abs(HULLS[h].cp-T.cp), da=Math.abs(HULLS[a].cp-T.cp); return dh<da||(dh===da&&HULLS[h].cp>HULLS[a].cp)?h:a; },pool[0]); } // ties go to the stronger hull
 // about one ordinary fight in five comes from a rival faction outside the sector's main enemy
-function nodeFaction(n){ const main=RUN.map.fac; if(!RUN.foes||n.type!=='battle') return main; let h=0; for(const ch of String(n.id)+RUN.sector) h=(h*31+ch.charCodeAt(0))>>>0; return h%5===0?RUN.foes[3+(h>>3)%2]:main; }
+function nodeFaction(n){ const main=RUN.map.fac;
+  if(RUN.teachingGate===true&&RUN.sector===1&&['battle','elite'].includes(n.type)){ const seen=RUN.teachingBattles||[], old=seen.indexOf(RUN.sector+':'+String(n.id)), base=RUN.teachingBattleBase==null?((RUN.stats&&RUN.stats.battles)||0):RUN.teachingBattleBase, i=base+(old<0?seen.length:old); if(i<2) return i===0?'hegemony':'corsair'; }
+  if(!RUN.foes||n.type!=='battle') return main; let h=0; for(const ch of String(n.id)+RUN.sector) h=(h*31+ch.charCodeAt(0))>>>0; return h%5===0?RUN.foes[3+(h>>3)%2]:main; }
 // ---------- sector map generation ----------
 function genSector(s){
   const fac = (RUN&&RUN.foes&&RUN.foes[s-1]) || pick(SECTOR_POOL[s-1]);
@@ -317,6 +319,7 @@ function genSector(s){
   let cond=null; try{ const used=(RUN&&RUN.condsUsed)||[], pool=Object.keys(SECTOR_CONDS).filter(k=>!used.includes(k)); cond=pick(pool.length?pool:Object.keys(SECTOR_CONDS)); if(RUN){ RUN.condsUsed=used.concat(cond); } }catch(e){ cond=null; }
   let region=null; try{ region=pickRegion(fac); for(const col of cols) for(const n of col){ n.map=regionMap(region,n.col,COLS); fitEncounter(n,s); } }catch(e){ region=null; }
   let biome=null; try{ biome=rollBiome(region); }catch(e){}
+  if(RUN&&RUN.teachingGate===true&&s===1){ cols[0][0].teachingShape=cols[0][0].shape; cols[0][0].shape='open'; } // Keep the generated shape for tips-off.
   return {fac, cols, edges, cond, region, biome};
 }
 function sectorCond(){ try{ const k=typeof RUN!=='undefined'&&RUN&&RUN.map&&RUN.map.cond; return k&&SECTOR_CONDS[k]?SECTOR_CONDS[k]:null; }catch(e){ return null; } }
@@ -347,6 +350,7 @@ function newRun(admiralId,fac,opt){
   opt=opt||{}; const adm=ADMIRALS[admiralId]; fac=RUN_FACTIONS.includes(fac)?fac:'voidsworn';
   RUN = {fac, foes:shuffle(RUN_FACTIONS.filter(f=>f!==fac)), admiral:admiralId, credits:120, cpCap:10, sector:1, relics:[], inventory:[], fleet:[], pos:null,
     stats:{battles:0,elites:0,bosses:0,kills:0,lost:0}, t0:Date.now(), fallen:[], ambush:false, over:false, boons:[], patrons:shuffle(Object.keys(PATRONS)).slice(0,4), aspect:null, flagUid:null};
+  if(opt.teachingGate===true&&(META.stats.finishedRuns==null?(META.stats.runs||0):META.stats.finishedRuns)<2) RUN.teachingGate=true;
   if(META.unlocked.chest1) RUN.credits+=75; if(META.unlocked.chest2) RUN.credits+=75; if(META.unlocked.chest3) RUN.credits+=75;
   if(META.unlocked.cmd1) RUN.cpCap+=2; if(META.unlocked.cmd2) RUN.cpCap+=2;
   if(META.unlocked.founder){ const r=randomRelic(); if(r) RUN.relics.push(r); }

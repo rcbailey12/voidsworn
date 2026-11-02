@@ -480,7 +480,8 @@ func _cmpCheap(a, b) -> float:
 	var d = _cpOf(a) - _cpOf(b)
 	return d if d != 0.0 else float(HULLS[a]["hp"]) - float(HULLS[b]["hp"])
 func rollBattleEvent(cfg, force = null): # campaign3d.js rolls this after startBattle (campaign battles only)
-	if cfg == null or cfg.get("kind") == "boss": return null
+	if cfg == null or (cfg.get("teachingGate") == true and cfg.get("teachingBattle") == 1) or cfg.get("kind") == "boss": return null
+	if cfg.get("teachingGate") == true and cfg.get("teachingBattle") == 2: force = "reinf_enemy"
 	if not jt(force) and rnd() > 0.45: return null
 	return {"k": force if (jt(force) and BEVENTS.has(force)) else pick(BEVENTS.keys()), "warnR": 2, "r": ri(3, 4)}
 func cheapHull(fac) -> Variant:
@@ -677,6 +678,16 @@ func genTerrain(map, shape, opt) -> Dictionary:
 	var T = {}; var kinds = ["belt", "station", "planet", "storm", "graveyard"]
 	var m = map if kinds.has(map) else pick(kinds)
 	TERRAIN_META = {"map": m}
+	if jt(opt.get("edgeFeature")):
+		var hs = boardHexes().filter(func(h): return onBoard(h.q, h.r))
+		var r = hs.map(func(h): return h.r).min() + 1
+		var c = offToAx(floori(BW / 2.0), r)
+		var feature = "station" if opt.get("enc") == "defend" else "rock"
+		for h in [c, {"q": c.q + 1, "r": c.r}, {"q": c.q, "r": c.r + 1}]:
+			if onBoard(h.q, h.r): T[hkey(h.q, h.r)] = feature
+		if feature == "station": TERRAIN_META["station"] = c
+		TERRAIN_META["shape"] = "open"
+		return T
 	var put = func(h, t): _put(T, h, t)
 	var blob = func(type, n, c0, c1, r0, r1): _blob(T, type, n, c0, c1, r0, r1)
 	var all = boardHexes()
@@ -1074,7 +1085,7 @@ func startBattle(cfg: Dictionary) -> void:
 	JSM.rnd_seed(seed)
 	var enc = cfg["obj"] if ENCOUNTERS.has(cfg.get("obj")) else "rout"; var midR = floori(BH / 2.0)
 	var shape = cfg["shape"] if SHAPES.has(cfg.get("shape")) else "open"; var map = "station" if enc == "defend" else cfg.get("map")
-	if shape == "open" and B0small(cfg) and ["rout", "hunt", "ambush"].has(enc): shape = "compact"
+	if shape == "open" and not jt(cfg.get("edgeFeature")) and B0small(cfg) and ["rout", "hunt", "ambush"].has(enc): shape = "compact"
 	if not ["belt", "station", "planet", "storm", "graveyard"].has(map) and FAC_MAP.has(cfg.get("fac")) and rnd() < 0.55: map = pick(FAC_MAP[cfg["fac"]])
 	if (shape == "lanes" or shape == "ring") and map == "belt": map = pick(["station", "planet", "storm", "graveyard"])
 	var axisFree: bool = ["rout", "hold", "flagship"].has(enc) and cfg.get("kind") != "boss" and shape != "compact" and not (cfg.get("dep") == "ambush")
@@ -1109,7 +1120,7 @@ func startBattle(cfg: Dictionary) -> void:
 		else: approach["th"] = rnd() * PI * 2.0
 		if jt(cfg.get("approach")): approach["k"] = cfg["approach"]
 	var pieces_by = {"belt": ["asteroid", "asteroid", "comet", "station"], "graveyard": ["hulk", "hulk", "station", "asteroid"], "planet": ["moon", "moon", "asteroid", "station"], "station": ["station", "station", "hulk", "asteroid"], "storm": ["comet", "asteroid", "asteroid", "moon"]}
-	var topt = {"cond": null if cfg.get("kind") == "boss" else sectorCond(), "stationAt": offToAx(9 + CX, midR) if enc == "defend" else null, "enc": enc, "pieces": pieces_by.get(map) if pieces_by.has(map) else null}
+	var topt = {"edgeFeature": jt(cfg.get("edgeFeature")), "cond": null if cfg.get("kind") == "boss" else sectorCond(), "stationAt": offToAx(9 + CX, midR) if enc == "defend" else null, "enc": enc, "pieces": pieces_by.get(map) if pieces_by.has(map) else null}
 	var T: Variant = null
 	for k in range(6):
 		T = genTerrain(map, shape, topt)

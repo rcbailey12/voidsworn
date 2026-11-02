@@ -199,9 +199,12 @@ func play(name: String, o := {}) -> void:
 	if start <= 0.01:
 		_start(name, o, lay)
 	else:
-		get_tree().create_timer(start, false, false, true).timeout.connect(func() -> void:
-			if generation == _pending_generation:
-				_start(name, o, lay))
+		get_tree().create_timer(start, false, false, true).timeout.connect(_start_pending.bind(generation, name, o, lay))
+
+
+func _start_pending(generation: int, name: String, o: Dictionary, lay: Array) -> void:
+	if generation == _pending_generation:
+		_start(name, o, lay)
 
 
 func _start(name: String, o: Dictionary, lay: Array) -> void:
@@ -263,18 +266,18 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 		add_child(p)
 		var limit := float(cue.get("duration", 0.0))
 		if limit > 0.0:
-			var envelope := create_tween()
+			var envelope := p.create_tween()
 			envelope.tween_interval(maxf(0.0, limit - 0.06))
 			envelope.tween_property(p, "volume_db", -80.0, 0.06)
 			if L.has("end_rate"):
-				create_tween().tween_property(p, "pitch_scale", float(L.end_rate), limit)
+				p.create_tween().tween_property(p, "pitch_scale", float(L.end_rate), limit)
 		var start := t + float(L.d) - now
 		if start <= 0.01:
 			p.call("play")
 		else:
-			get_tree().create_timer(start, false, false, true).timeout.connect(func() -> void:
-				if is_instance_valid(p) and active.has(v):
-					p.call("play"))
+			# Voice caps can free a player before its stagger expires. A weak reference
+			# avoids a freed lambda capture, which errors before its body can guard it.
+			get_tree().create_timer(start, false, false, true).timeout.connect(_play_pending.bind(weakref(p), v))
 		v.players.append(p)
 		dur = maxf(dur, float(L.d) + (L.st as AudioStream).get_length() / rate)
 	if cue.has("duration"):
@@ -287,6 +290,12 @@ func _start(name: String, o: Dictionary, lay: Array) -> void:
 		_ambient_duck = maxf(_ambient_duck, float(cue["duck"]))
 		_ambient_duck_until = now + 0.5
 	cue_started.emit(name, o)
+
+
+func _play_pending(player: WeakRef, voice: Dictionary) -> void:
+	var p = player.get_ref()
+	if is_instance_valid(p) and active.has(voice):
+		p.call("play")
 
 
 func _process(_delta: float) -> void:

@@ -1,4 +1,28 @@
 // ======================= BOOT =======================
+// Only the real browser supplies profile preferences. Bots and parity load the rules without this boot file.
+const _teachingNewRun=newRun;
+newRun=function(admiral,fac,opt){ initFinishedRuns(); return _teachingNewRun(admiral,fac,Object.assign({},opt,{teachingGate:!(META.opts||{}).tipsOff})); };
+function initFinishedRuns(){
+  // Old profiles only counted launches. Exclude their one unfinished saved run when migrating.
+  if(META.stats.finishedRuns==null) META.stats.finishedRuns=Math.max(0,(META.stats.runs||0)-((RUN&&!RUN.over||SAVED_RUN&&!SAVED_RUN.over)?1:0));
+}
+function syncTeachingGate(){
+  if(!RUN) return;
+  initFinishedRuns();
+  const on=!(META.opts||{}).tipsOff&&META.stats.finishedRuns<2;
+  if(on||'teachingGate' in RUN) RUN.teachingGate=on;
+  const first=RUN.sector===1&&RUN.map&&RUN.map.cols&&RUN.map.cols[0][0];
+  if(first){
+    if(on&&!first.done){ if(!('teachingShape' in first)) first.teachingShape=first.shape; first.shape='open'; }
+    else if('teachingShape' in first){ first.shape=first.teachingShape; delete first.teachingShape; }
+  }
+}
+const _teachingMap=mapScreen, _teachingBattle=battleScreen;
+mapScreen=function(){ syncTeachingGate(); return _teachingMap(); };
+battleScreen=function(cfg){ syncTeachingGate(); return _teachingBattle(cfg); };
+const _teachingOff=ACT.tipOff, _teachingOpts=ACT.c3opt;
+ACT.tipOff=()=>{ _teachingOff(); syncTeachingGate(); };
+ACT.c3opt=k=>{ _teachingOpts(k); syncTeachingGate(); };
 (async function(){
   if(!window.BABYLON){ document.getElementById('loading').textContent='The 3D engine failed to load. Check your connection and reload the page.'; return; }
   const canvas=document.getElementById('c3d');

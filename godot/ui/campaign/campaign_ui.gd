@@ -6,6 +6,8 @@ extends CanvasLayer
 # Tab and the arrow keys move between buttons and map nodes, Enter or Space presses the focused one.
 # Colours and fonts match the battle HUD (godot/ui/battle/hud.gd). Sizes scale with the window height (designed at 1080).
 
+const CampaignTips = preload("res://ui/campaign/campaign_tips.gd")
+var teaching: Node
 const Map3D = preload("res://ui/campaign/map3d.gd")
 const ChoiceScript = preload("res://ui/campaign/choice_button.gd")
 const Crest = preload("res://ui/campaign/crest.gd")
@@ -94,6 +96,7 @@ func _font(p: String) -> Font:
 
 func bind(campaign) -> void:
 	C = campaign
+	teaching = CampaignTips.new(); add_child(teaching); teaching.bind(C)
 	if "playtest_default" in C: C.playtest_default = true   # R1 (Ryan, Nov 1): the real game opens with everything unlocked for playtests; the player can switch it off
 	C.changed.connect(func(): _dirty = true)
 	_dirty = true
@@ -273,7 +276,28 @@ func render() -> void:
 		_: body = lbl("")
 	page_box.add_child(body)
 	if C.modal_d != null: _modal(C.modal_d)
+	_teaching_screen()
 	call_deferred("_focus_first")
+func _teaching_screen() -> void:
+	var kind := str(C.page.get("kind", ""))
+	var modal := str(C.modal_d.get("kind", "")) if C.modal_d != null else ""
+	var sector := str(C.RUN.get("sector", 0)) if C.RUN != null else "0"
+	var pos := str(C.RUN.get("pos", "")) if C.RUN != null else ""
+	var ids: Array = []
+	if modal == "victory": ids = ["c_reward"]
+	elif modal == "drydock": ids = ["c_shipyard"]
+	elif modal == "":
+		match kind:
+			"map":
+				var n = C.findNode(pos) if pos != "" else null
+				ids = ["c_shipyard"] if n != null and n.get("type") == "field" else ["c_map", "c_clock"]
+			"shipyard": ids = ["c_shipyard"]
+			"end": ids = ["c_loss"]
+			"admiral":
+				# Automatic mastery is not spendable experience. Keep this hook ready for the skill-tree port.
+				if C.has_method("admiralXPToSpend") and float(C.call("admiralXPToSpend", C.picked_admiral)) > 0: ids = ["c_tree"]
+	teaching.open_screen(kind + "|" + sector + "|" + pos + "|" + modal, ids)
+
 func _focus_first() -> void:
 	var host = modal_box if modal_box.get_child_count() > 0 else page_box
 	var b = _first_button(host)
@@ -631,6 +655,10 @@ func _side() -> Control:
 	var sc = ScrollContainer.new(); sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED; sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var v = vbox(7); v.size_flags_horizontal = Control.SIZE_EXPAND_FILL; sc.add_child(v); p.add_child(sc)
 	v.add_child(caps("Fleet command · Sector " + C.roman(R["sector"]), 12, Color(GILT, 0.8)))
+	var tb = Button.new(); tb.text = "Teaching tips: " + ("off" if CampaignTips.is_off() else "on")
+	tb.add_theme_font_size_override("font_size", px(15))
+	tb.pressed.connect(func(): teaching.toggle(); _dirty = true)
+	v.add_child(tb)
 	var top = hbox(); top.add_child(_readout("Credits", C.numstr(R["credits"]), GILT)); top.add_child(spacer())
 	top.add_child(_readout("Command points", C.numstr(C.fleetCP()) + " / " + C.numstr(R["cpCap"]), BONE, true)); v.add_child(top)
 	var A = C.ADMIRALS[R["admiral"]]

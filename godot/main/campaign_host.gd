@@ -10,6 +10,7 @@ const API := preload("res://rules/battle_api.gd")
 const CAMPAIGN := "res://campaign/campaign.gd"
 const UI_G3 := "res://ui/campaign/campaign_ui.gd"
 const Fallback := preload("res://main/campaign_fallback_ui.gd")
+const Teaching := preload("res://ui/campaign/campaign_tips.gd")
 
 # the G3 parity bot's weights (campaign/test/parity_campaign.gd), minus the stub battle buttons: real battles decide fights
 const STAY := {"closeModal": 1, "buyHull": 1, "buyMod": 1, "repair": 1, "repairAll": 1, "upgradeMk": 1, "sellShip": 1, "sellConfirm": 1, "yardFleet": 1, "equip": 1, "unequip": 1, "promote": 1,
@@ -68,6 +69,8 @@ func start(m: Node, o: Dictionary) -> void:
 		story.name = "Story"
 		add_child(story)
 		story.attach(C, not bot)
+	if not bot: C.initFinishedRuns()
+	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	C.titleScreen()
 	if o.get("continue", false):
 		C.act("continueRun")
@@ -75,6 +78,7 @@ func start(m: Node, o: Dictionary) -> void:
 		C.act(str(o["screen"]))
 	else:
 		C.act("newRunScreen")
+	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	if bot:
 		_bot_loop.call_deferred()
 		return
@@ -105,6 +109,7 @@ var _music_page := ""
 
 
 func _on_changed() -> void:
+	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	# the map's music per sector (the music helper's player)
 	var kind := str(C.page.get("kind", ""))
 	if main.music != null and kind != _music_page:
@@ -160,6 +165,7 @@ func _play_battle() -> void:
 	in_battle = false
 	if bot:
 		log_b.append(_battle_line(a, res, r))
+	C.set_teaching_tips(not bot and not Teaching.is_off() and not main.args.has("no-tips"))
 	C.finish_battle(res if res in ["win", "loss", "retreat"] else "loss", _bstate(a))
 
 

@@ -212,7 +212,7 @@ func _settings_to_battle(b: Node) -> void:
 	b.ai_level = str(settings["ai"])
 	b.follow = bool(settings.get("follow", true))
 	b.cine = str(settings.get("cine", "key"))
-	b.tips_off = not bool(settings["tips"])
+	b._sync_teaching_switch()
 	b.set_fx_opts(bool(settings["reduce_flashing"]), float(settings["shake"]))
 
 

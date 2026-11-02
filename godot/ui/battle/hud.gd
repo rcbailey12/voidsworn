@@ -1175,7 +1175,7 @@ func show_tipcard(id: String, title: String, body: String) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", s(8))
 	row.add_child(_button("Got it", "tip_ok", id, true))
-	row.add_child(_button("Hide tips", "tip_off"))
+	row.add_child(_button("Turn off all tips", "tip_off"))
 	v.add_child(row)
 
 
