@@ -92,6 +92,18 @@ Breach code verdict, unanimous across the legs and adopted: keep fx_breach.gd, b
 
 5. Squadron damage read. A (chair pick): stage 0 surfaces plus a smoke ribbon below half total HP. B: nothing beyond the health bar. Stakes: a small readability gain against one more pooled system to maintain.
 
+## Owner rulings (Ryan, Nov 2, 2026)
+
+Ryan ruled A on all five questions, adopting the chair pick on each:
+
+1. First open break: A. Stage 4 only, at 20 percent section hull or broken.
+2. Small ship readability: A. No section tint; scorch diameter and stage 2 smoke carry the read.
+3. Repair: A, with a cost condition. Patch the break and keep the scars, as spec'd in section 2. If the patch build proves too costly inside the issue 49 pass, C (full clean restore as the stage drops) is acceptable to the owner; B (fires out, hole left open) is not.
+4. Eclipse variant: A. wound_kind 3 built in this same pass.
+5. Squadrons: A. Stage 0 surfaces plus a smoke ribbon below half total HP.
+
+Owner note on squadrons, same ruling pass: the Q5 smoke ribbon is not the whole squadron story. Ryan flags that squadrons need a separate detailing pass of their own: they read as super static in battle, some factions show the wrong craft (regular fighters on Chorus ships is his example), and they need more detailing and more views. That is follow-up scope for Opus beyond this spec and beyond issue 49 item 6; it is recorded here so it reaches the board with the rulings, not folded into the six tasks above.
+
 ## Leg screening
 
 Blind Rey leg (spine for the spec's shape): runs long at about 4,800 words against a 1,500 to 2,500 target, and its per-game sourcing is mostly secondary (guides, wikis, reviews); its true developer sources are the Homeworld 3 blog and the Nebulous wiki, and several of its budget claims are marked unverified in the leg itself. The chair weighted its game facts accordingly and used it for structure and the code-side calls, where it is grounded in the pack. Its break radius (grow to R = 0.08 x L) was not adopted; the chair took the tight throat plus wide collar instead, because the collar carries the camera read and a bigger empty throat is the original problem at larger size.
