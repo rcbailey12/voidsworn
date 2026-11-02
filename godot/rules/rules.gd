@@ -3087,12 +3087,12 @@ func liveFrom(u) -> Callable:
 	return func(): return is_same(B, b0) and (z0(B.get("epoch")) if B != null else 0) == ep and (u == null or not jt(u.get("dead")))
 func cmdDesc(c, tier, fac) -> String:
 	if c == null: return ""
-	var v = cmdPow(c["id"], tier); var car = "brood" if fac == "chorus" else "carrier"; var sq = "swarm" if fac == "chorus" else "squadron"
+	var v = cmdPow(c["id"], tier); var car = "brood" if fac == "chorus" else "launch ship"; var sq = "swarm" if fac == "chorus" else "squadron"
 	var pct = func(x): return ns(JSM.jsround(x * 100.0)) + "%"
 	match c["id"]:
 		"barrage": return "Every ship fires a free extra volley right now at the best target in range" + ((", with +" + pct.call(v) + " damage") if jt(v) else "") + ". Its normal shots this round still happen."
 		"hunt": return "Torpedoes reload at once and every ship deals +" + pct.call(v) + " damage for the rest of this round."
-		"scramble": return "Every " + car + " launches " + ("two extra wings" if tier >= 2 else "an extra wing") + " right now, even past its limit. Then every " + sq + " you have makes a bonus attack immediately, with +" + pct.call(v) + " damage."
+		"scramble": return "Every " + car + " launches " + ("two extra wings" if tier >= 2 else "an extra wing") + " right now if there are open adjacent hexes, even past its hangar limit. Then every " + sq + " you have makes a bonus attack immediately, with +" + pct.call(v) + " damage."
 		"iron": return ("Your ships take " + pct.call(v + 0.1) + " less hull damage for the rest of this round.") if (fac == "chorus" or fac == "deathless") else ("All shields refill and your ships take " + pct.call(v) + " less hull damage for the rest of this round.")
 		"restore": return "Every ship repairs " + pct.call(v) + " of its hull right now."
 		"surge": return "Every ship gains +" + ns(v) + " movement and " + ("+2 turns" if tier >= 2 else "+1 turn") + " this round, and enemy fire loses 20 accuracy against you."
