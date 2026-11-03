@@ -1,7 +1,7 @@
 extends RefCounted
 # F4 asteroids: the rock library (world/rocks/*.glb, made by world/tools/rockgen.py), a material per rock kind, and
-# instanced layers. Every rock of a layer that shares a mesh is one MultiMesh (one draw), and tumbles in the vertex shader
-# (axis and rate in the instance's custom data), so a field of hundreds costs no CPU time per frame.
+# instanced layers. Every rock of a layer that shares a mesh is one MultiMesh (one draw), with a fixed seeded pose in
+# the vertex shader (axis and seed in the instance's custom data). Time and camera movement never turn its geometry.
 #
 # Kinds (battle.js ROCK_KINDS, the sector's biome):
 #   stone   grey-brown S-type rock, lighter fresh fracture faces
@@ -49,7 +49,7 @@ varying float vScale;
 uniform float amb = 0.5;       // r8: how much of the scene's flat ambient a rock takes (space rock is dark on its night side)
 vec3 rot(vec3 v, vec3 ax, float a) { float c = cos(a); float s = sin(a); return v * c + cross(ax, v) * s + ax * dot(ax, v) * (1.0 - c); }
 vec3 h33(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
-// r8: impact craters in the rock's own space (they ride with its tumble): a bowl, a raised rim and a little ejecta, in
+// r8: impact craters in the rock's own space (they stay on its surface): a bowl, a raised rim and a little ejecta, in
 // cells of a 3D grid (about half the cells hold one). x: height (object units per cell), y: crater floor, z: rim
 vec3 craters(vec3 p, float dens) {
 	vec3 i = floor(p);
@@ -83,10 +83,10 @@ void vertex() {
 	vC = COLOR;
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
-	float rate = length(ic.xyz);
-	if (rate > 1e-6) {
-		vec3 ax = ic.xyz / rate;
-		float a = TIME * rate + ic.w * 6.2831;
+	float axis_length = length(ic.xyz);
+	if (axis_length > 1e-6) {
+		vec3 ax = ic.xyz / axis_length;
+		float a = ic.w * 6.2831; // Keep the seeded starting pose, without time-driven tumble.
 		VERTEX = rot(VERTEX, ax, a);
 		NORMAL = rot(NORMAL, ax, a);
 	}
@@ -226,10 +226,10 @@ void vertex() {
 	vC = COLOR;
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
-	float rate = length(ic.xyz);
-	if (rate > 1e-6) {
-		vec3 ax = ic.xyz / rate;
-		float a = TIME * rate + ic.w * 6.2831;
+	float axis_length = length(ic.xyz);
+	if (axis_length > 1e-6) {
+		vec3 ax = ic.xyz / axis_length;
+		float a = ic.w * 6.2831; // Crystal clusters keep the same fixed pose as their rocks.
 		VERTEX = rot(VERTEX, ax, a);
 		NORMAL = rot(NORMAL, ax, a);
 	}
@@ -433,7 +433,7 @@ class Batch:
 			mmi.multimesh = mm
 			mmi.material_override = g["mat"]
 			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if g["shadow"] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			# the rocks tumble in the shader: give the bounds room for it
+			# Give the bounds room for the shader's fixed seeded pose.
 			mmi.extra_cull_margin = 40.0
 			parent.add_child(mmi)
 			n += mm.instance_count
