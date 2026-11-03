@@ -54,6 +54,9 @@ globalThis.shadowXPTest = () => {
     fixtures.push({name, meta, xp, flown, fac, result, expected:JSON.parse(JSON.stringify(META))});
   }
   META = migrateMeta(JSON.parse(JSON.stringify(META))); ok.ok(META.shadowPool, 'shadow balance survives reload');
+  ok.equal(saneSave({meta:{heirs:'oops'},run:null}), false, 'a non-object heirs field fails the save sanity check');
+  ok.equal(saneSave({meta:{shadowPool:42},run:null}), false, 'a non-object shadowPool field fails the save sanity check');
+  ok.equal(saneSave({meta:{heirs:{},shadowPool:{}},run:null}), true, 'well-formed heirs and shadowPool pass the save sanity check');
   const old = defaultMeta(); delete old.heirs; delete old.shadowPool;
   META = migrateMeta(old); ok.deepEqual(META.heirs, {}); ok.deepEqual(META.shadowPool, {});
   return fixtures;

@@ -351,7 +351,7 @@ func repairRunIds(r) -> Variant:
 	return r
 func saneMeta(m) -> bool:
 	if not (m is Dictionary): return false
-	for k in ["unlocked", "admirals", "stats", "opts", "mastery", "lineage", "favour", "variants", "heatBest"]:
+	for k in ["unlocked", "admirals", "stats", "opts", "mastery", "lineage", "heirs", "shadowPool", "favour", "variants", "heatBest"]:
 		if m.get(k) != null and not (m[k] is Dictionary): return false
 	for k in ["tel", "fallen"]:
 		if m.get(k) != null and not (m[k] is Array): return false

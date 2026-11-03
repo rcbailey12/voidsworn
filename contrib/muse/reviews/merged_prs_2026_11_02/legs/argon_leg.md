@@ -1,0 +1,55 @@
+# Issue 86, Argon leg (ideas and risks only, R81)
+
+Chair header: Run from the main chat, Nov 3, 2026. Gates: model "4 Argon", Thinking level High; picker button and prompt bar verified "Argon High" before submitting and prompt bar verified after sending. Screening: USED in full within its lane. It stays in ideas and risks (no verdicts, no code), every item cites a file:line or a fact stated in the pack or the chair synthesis, and it invented nothing the chair could catch. Most items converge with the chair's own notes (the five-way saneMeta sync, blocker_visuals, the dead NEB_SHEET shader, the torpedo clamp, the price-test and b4-test caveats); its additions are the PR #47 renderer-gated coverage gap, the run_all_checks false-confidence framing, the FINDINGS-versus-local-docs drift risk, the PR #10 four-way text sync, and two feel risks on PR #85. Filed verbatim below.
+
+---
+
+Fragile spots a future change will trip on
+
+Five-way manual sync for save metadata containers (OBSERVED): Adding a new container field to defaultMeta in core.js:50 requires manual updates in saneMeta at core.js:102, both oracle copies of core.js, godot/campaign/campaign.gd:354, and the importer fixtures under contrib/muse/tools/importer_fixtures. PR #83 missed saneMeta in both ports when adding heirs and shadowPool, which allowed wrong types to pass saneSave and bypass migrateMeta, causing awardLineageXP in campaign_meta.js and ACT_nameHeir in godot/campaign/campaign.gd to silently fail to persist data. Any future progression PR that adds a field to defaultMeta in core.js:50 will trip on this same gap unless saneMeta derives its key and type checks directly from defaultMeta.
+
+Coincidental threshold match between MASTERY_XP and LINEAGE_XP (INFERRED): In PR #63, the lineage trunk display reads MASTERY_XP thresholds at data.js:583 instead of LINEAGE_XP thresholds. This only avoids a bug today because both tables share the exact values 0, 6, 16, 30, and 50 for levels 1 to 4 in data.js:583. Any future balance change to early LINEAGE_XP values in data.js, or any UI change that displays trunk thresholds beyond level 4, will silently desynchronize the UI display in campaign_ui from the actual progression math in campaign_meta.js and godot/campaign/campaign.gd.
+
+Global-space transform call using local coordinates on blockers (INFERRED): In PR #32, outline() at godot/world/blocker_visuals.gd:105 calls mi.look_at_from_position(mi.position, b, ...) using local coordinates, even though look_at_from_position operates in global space. This only works if build() runs before the blocker node enters the scene tree. If a future change to set-piece station or planet maps triggers build() or rebuilds blocker outlines after tree entry, every rim segment will snap its global origin to local coordinates near the world origin.
+
+Manual typeof guards on every combat FX call site (OBSERVED): PR #69 resolved headless crash flakes like the acid tick at battle.js:393 by adding manual typeof checks around every call to fxText, fxShield, fxShieldBreak, fxCrit, fxWithdraw, fxRam, fxBoard, animWeapon, animMove, and animRotate across battle.js and its two oracle copies. Because headless safety relies on call-site guards rather than default no-op stubs in the test environment, any future combat mechanic in battle.js that calls a visual hook without a typeof guard will break headless test runs again.
+
+Three-way port duplication for effect cap clamping (INFERRED): PR #38 implemented post-sum clamping for FX_CAPS across three separate files: sumFx in core.js:189, sumFx in godot/rules/rules.gd:301, and sumFx in godot/campaign/campaign.gd:486, plus REQUIRED_TABLES in godot/campaign/campaign.gd. Because penalties offset bonuses before the clamp is applied, any future effect that requires uncapped intermediate stacking or a new cap rule must be kept identical across all three sumFx implementations.
+
+Dead shader definition left in campaign map shaders (OBSERVED): PR #68 removed the NEB_SHEET shader from the campaign map backdrop, but left the unused NEB_SHEET shader string defined in godot/ui/campaign/map3d_shaders.gd. A future visual pass on the campaign map can easily mistake NEB_SHEET in godot/ui/campaign/map3d_shaders.gd for the live backdrop shader and waste time tuning dead code.
+
+Checks that give false confidence
+
+Indirect shipyard rounding check in price tests (INFERRED): In PR #14, the FS-2 check in contrib/opus/tools/r1_tests.js stopped comparing raw table entries in data.js and instead computes the Eclipse battleship price from FAC_PRICE through shipyard rounding to check 590 against the 415 cruiser. An unintended edit to FAC_PRICE or base ship prices in data.js that still rounds to 590 will pass contrib/opus/tools/r1_tests.js and contrib/opus/tools/b3_tests.js without warning while shifting prices for other hulls.
+
+Pinned RNG and hardcoded weakness state in Nemesis adaptation test (INFERRED): In PR #39, contrib/opus/tools/b4_tests.js fixed a test flake by seeding the RNG with rndSeed(37) and pinning N.weak to flank and slow so nemAfterBattle cannot randomly reveal the torp weakness and block pd adaptation. While this makes contrib/opus/tools/b4_tests.js deterministic, it bypasses the collision path between random weakness discovery and adaptation selection, giving false confidence that all nemAfterBattle branches are tested.
+
+Renderer-gated cleanup path in ship view exit smoke guard (INFERRED): In PR #47, _exit_tree in godot/render/ship_view.gd detaches render instances in the meshes array only when running under the headless or dummy renderer, and returns early under a normal GPU renderer. Automated export smoke checks will exercise the headless detachment branch in godot/render/ship_view.gd and pass, giving zero coverage for whether normal GPU sessions leak mesh instances on scene exit.
+
+Node check runner passing without Godot engine execution and with baselined failures (OBSERVED): Running contrib/opus/tools/run_all_checks.js exits 0 while findings_tests carries 46 baselined known failures, and without executing the Godot engine test scripts such as godot/campaign/test/nemesis_clash_test.gd (PR #46), godot/fx/test/death_plane_check.gd (PR #85), or godot/fx/test/check_destruction.bat (PR #85). Relying on contrib/opus/tools/run_all_checks.js in a headless Node environment gives false confidence when visual and scene-tree bugs like godot/world/blocker_visuals.gd:105 require the Godot binary to surface.
+
+Docs that will drift again
+
+Hardcoded behavior prose and ratios in FX API docs (OBSERVED): In PR #85, godot/fx/API.md:118 still claimed a deterministic fifth of blast deaths become whole hulks, godot/fx/API.md:360 still described the old Chorus deflate death instead of rupture, and the batch 1 section written in PR #32 was already invalidated on the same day by PR #85. Because godot/fx/API.md restates exact probabilities, faction animations, and check behaviors from godot/fx/fx_death.gd and godot/fx/fx_ship.gd with no automated doc check in godot/fx/test/check_destruction.bat, the next playtest FX batch will make godot/fx/API.md stale again.
+
+Split authority between FINDINGS rulings and local module docs (INFERRED): Rulings in contrib/opus/FINDINGS.md, such as R80 governing stage 4 open hull breaks in godot/fx/fx_ship.gd (PR #68) and R81 governing Muse scope, override all other documentation in the repository. When code in godot/fx/fx_ship.gd or godot/fx/fx_death.gd is updated to match a new entry in contrib/opus/FINDINGS.md, local documentation files like godot/fx/API.md have no cross-reference link or check forcing them to update in step.
+
+Four-way text synchronization for command descriptions (INFERRED): PR #10 updated Command wording across battle.js, cmdDesc in godot/rules/rules.gd, godot/rules/data/tables.json, and godot/campaign/data/campaign_tables.json. Any future wording tweak edited directly in battle.js or godot/rules/rules.gd without regenerating both JSON data tables will reintroduce text drift between the browser game and the Godot port.
+
+Pacing or feel risks in the presentation changes
+
+Point-blank torpedo sluggishness from the minimum flight time clamp (INFERRED): In PR #35, torp_strike in godot/fx/fx_weapons.gd clamps torpedo flight duration to a minimum of 0.85 seconds and a maximum of 1.25 seconds regardless of distance. When a ship fires a torpedo at an adjacent hex, forcing the projectile to take 0.85 seconds to cross a single hex makes point-blank shots appear to crawl in slow motion compared to cross-board shots that cover many hexes in 1.25 seconds.
+
+Turn-pacing drag during multi-salvo close-range brawls (INFERRED): Combining the 0.85-second minimum floor in godot/fx/fx_weapons.gd (torp_strike) with the rescaled glide timing in godot/render/ship_view.gd (play_glide, gl_ds) in PR #35 means close-range torpedo exchanges cannot resolve briskly. In battles with multiple torpedo launches or Nemesis torpedo adaptations (contrib/opus/tools/b4_tests.js), the enforced 0.85-second floor per salvo adds cumulative dead time to each combat round.
+
+Loss of post-battle silhouette variety and slower kill cadence from 100 percent blast breakup (INFERRED): In PR #85, godot/fx/fx_death.gd changed ordinary blast kills so they always break up into fragments, restricting intact hulks only to dark and hulk death causes rather than leaving a fifth of blast deaths as whole hulks (per godot/fx/API.md:118). Because ordinary blast kills make up the majority of combat deaths, removing intact hulks from standard kills means every standard destruction plays the full breakup sequence in godot/fx/fx_death.gd and leaves the battlefield visually uniform instead of mixing debris fields with intact drifting hulls.
+
+Flattened 3D explosion feel from strict board-plane locking (INFERRED): In PR #85, godot/fx/fx_death.gd and godot/render/ship_view.gd lock all debris and wreck pieces strictly to the board plane, enforced by godot/fx/test/death_plane_check.gd. While locking debris to the plane improves hex readability, eliminating vertical scatter risks making 3D ship breakups and the new Chorus rupture in godot/fx/fx_death.gd look artificially flat when viewed from angled 3D camera perspectives.
+
+Scene-exit frame hitch risk from increased worker hull-cutting load (INFERRED): PR #32 cuts real loaded ship hulls on a worker thread that is joined at tree exit (per godot/fx/API.md batch 1 section), and PR #85 forces every ordinary blast kill in godot/fx/fx_death.gd to break up rather than leaving 20 percent as uncut whole hulks. If a player triggers multiple blast kills on the final salvo and immediately exits the battle scene, joining the hull-cutting worker thread at tree exit in godot/render/ship_view.gd or the battle scene risks a noticeable pause during scene transition.
+
+Not checked
+
+Live in-engine visual feel, frame timing, and camera angles for PR #32, PR #35, PR #68, and PR #85, as only pack.md and synthesis.md were inspected.
+
+Source diffs and full file contents beyond the lines and facts reported in pack.md and synthesis.md.

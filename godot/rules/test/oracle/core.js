@@ -99,7 +99,7 @@ function repairRunIds(r){ if(!r||typeof r!=='object'||r.none) return r; const re
   if(rep.length) r._repairs=(Array.isArray(r._repairs)?r._repairs:[]).concat(rep).slice(-20);
   return r; }
 // v53: a save is only trusted when its run has a fleet array and a map, and its meta is a plain object with the expected containers
-function saneMeta(m){ if(!m||typeof m!=='object'||Array.isArray(m)) return false; for(const k of ['unlocked','admirals','stats','opts','mastery','lineage','favour','variants','heatBest']) if(m[k]!=null&&(typeof m[k]!=='object'||Array.isArray(m[k]))) return false; for(const k of ['tel','fallen']) if(m[k]!=null&&!Array.isArray(m[k])) return false; return m.renown==null||typeof m.renown==='number'; }
+function saneMeta(m){ if(!m||typeof m!=='object'||Array.isArray(m)) return false; for(const k of ['unlocked','admirals','stats','opts','mastery','lineage','heirs','shadowPool','favour','variants','heatBest']) if(m[k]!=null&&(typeof m[k]!=='object'||Array.isArray(m[k]))) return false; for(const k of ['tel','fallen']) if(m[k]!=null&&!Array.isArray(m[k])) return false; return m.renown==null||typeof m.renown==='number'; }
 function saneRun(r){ return r==null||!!r.none||(typeof r==='object'&&Array.isArray(r.fleet)&&!!r.map&&Array.isArray(r.map.cols)); }
 function saneSave(o){ return !!o&&typeof o==='object'&&!Array.isArray(o)&&(o.meta==null||saneMeta(o.meta))&&saneRun(o.run); }
 // a renamed module, perk or relic id in an old save is logged once and skipped instead of throwing
