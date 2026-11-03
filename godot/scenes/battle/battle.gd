@@ -619,6 +619,8 @@ func _begin(a) -> void:
 		return
 	if not bot and not args.has("shots") and not args.has("breach-shots"):
 		_start_opening()
+	var story_lines: Array = api.R.storyModifierLines()
+	if not story_lines.is_empty(): hud.toast(" ".join(PackedStringArray(story_lines)))
 	if not busy:
 		_runner()
 
@@ -3268,6 +3270,8 @@ func _legend() -> void:
 	var shape = api.world_info().get("shape")
 	if shape != null and str(shape) != "open" and TBL.get("SHAPES", {}).has(str(shape)):
 		desc += " Board: %s." % str(TBL["SHAPES"][str(shape)]).to_lower()
+	var mods: Array = api.R.storyModifierLines()
+	if not mods.is_empty(): desc += "\n" + " ".join(PackedStringArray(mods))
 	hud.set_legend(title, desc.strip_edges(), rows)
 
 
@@ -3895,7 +3899,7 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		var sh: Array = disp.get(u["id"], {"sh": u["sh"]})["sh"]
 		info["stats"] = str(info.get("stats", "")) + "\n[color=#62ccff]Shields[/color] of %d each, +%d a turn: prow %d, port %d, starboard %d, rear %d" % [int(u["shMax"]), int(_z0(ru.get("regen"))), int(sh[0]), int(sh[3]), int(sh[1]), int(sh[2])]
 	# state and faction lines (refreshPanel tr[] and battle.js factionTraitLines)
-	var tr: Array = []
+	var tr: Array = R.storyModifierLines(ru)
 	if _jt(ru.get("hullRegen")):
 		tr.append("Repairs %d hull each turn." % int(ru["hullRegen"]))
 	var st: Dictionary = ru.get("st", {}) if ru.get("st") is Dictionary else {}
@@ -3916,7 +3920,8 @@ func _panel_sheet(u: Dictionary, ru, info: Dictionary) -> void:
 		if fac == "hegemony":
 			var anc = R.syncAnchor(ru["side"])
 			var sr := int(TBL.get("SYNC_R", 3))
-			tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Hegemony ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
+			if not (ru["side"] == "player" and Bs["round"] == 1 and _jt(Bs.get("cfg", {}).get("storyMods", {}).get("syncDown"))):
+				tr.append("Synchronized fire lost: the flagship is gone." if not _jt(anc) else ("Sync anchor: Hegemony ships within %d hexes fire as one." % sr if _jt(ru.get("anchor")) else ("In sync with the flagship." if R.inSync(ru) else "Out of sync: more than %d hexes from the flagship." % sr)))
 		if fac == "ithar" and float(u["shMax"]) > 0.0:
 			tr.append("Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.")
 		if fac == "chorus":

@@ -389,6 +389,16 @@ function applyOutcome(r){
   if(r.wingPerk){ const c=[...RUN.fleet].filter(s=>HULLS[s.tpl].hangar).sort((a,b)=>(HULLS[b.tpl].cp||1)-(HULLS[a.tpl].cp||1))[0]; if(c){ const got=wingPerkGrant(c); out.push(got?`The ${c.name}’s wings gain a veteran perk: ${WING_PERKS[got].n}.`:`The ${c.name}’s wings already hold every perk they can.`); } }
   if(r.nemIntel){ const w=nemReveal(); out.push(w?`Nemesis weakness revealed: ${NEM_WEAK[w].n}. ${NEM_WEAK[w].d}`:'You learn nothing new about the enemy commander.'); }
   if(r.nemClock){ const m=nemClockAdd(r.nemClock); if(m) out.push(m); }
+  if(r.power||r.syncDown||r.dmgPctUp||r.dmgPctDown){
+    const m=RUN.storyNext=RUN.storyNext||{};
+    if(r.power){ m.power=true; out.push('Flagship weapon damage +25% for the next battle only.'); }
+    if(r.syncDown){ m.syncDown=true; out.push('Next battle: Synchronized fire is off in round 1 and returns in round 2.'); }
+    if(r.dmgPctUp||r.dmgPctDown){ m.dmgPct=(m.dmgPct||0)+BEAT3_REWARDS.dmgPct*((r.dmgPctUp?1:0)-(r.dmgPctDown?1:0)); out.push(`Fleet damage ${r.dmgPctUp?'+10%':'-10%'} for the next battle only.`); }
+  }
+  if(r.core){
+    const p=BEAT3_REWARDS.core[RUN.fac];
+    if(p){ RUN.reward={kind:'story',rw:{k:'boon',p},stage:'pick',relics:[],wrecks:[],prizes:[],boonOffer:null,modOffer:null}; out.push(`1 free protocol offer from ${PATRONS[p].short}. Choose 1 protocol or decline for ${boonDeclineCred()} credits.`); }
+  }
   if(!out.length && !r.fight) out.push('You move on.');
   return out;
 }
@@ -415,13 +425,14 @@ ACT.eventChoice=i=>{
   if(curEvent.beat===3){
     const lines=applyBeat3Outcome(o.r); lines.unshift(o.tx);
     saveRun(); mapScreen();
-    modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="closeModal">Continue</button>`); return;
+    modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="${RUN.reward&&RUN.reward.kind==='story'?'storyCore':'closeModal'}">Continue</button>`); return;
   }
   if(o.r&&o.r.fight){ closeModal(); battleScreen({kind:'elite',fac:o.r.fight,col:findNode(RUN.curNode).col+1,node:RUN.curNode,eventRelic:true}); return; }
   const lines=applyOutcome(o.r);
   completeNode(); mapScreen();
   modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="closeModal">Continue</button>`);
 };
+ACT.storyCore=()=>{ closeModal(); resumeReward(); };
 
 // ---------- rewards ----------
 // B1 onboarding fix 4: one plain line on each reward screen saying what the reward is
@@ -547,6 +558,7 @@ ACT.takeBoon=i=>{ const o=(window._boonOffer||[])[+i]; if(!o) return; changeFlee
   try{ tel('boon_pick',{id:o.id,r:o.r||0,p:BOONS[o.id].p||'duo',offered:(window._boonOffer||[]).map(x=>x.id+':'+(x.r||0)),sector:RUN.sector}); }catch(e){}
   toast(`${BOONS[o.id].n} gained.`); closeModal(); relicStep(); };
 function relicStep(){
+  if(RUN.reward&&RUN.reward.kind==='story'){ RUN.reward=null; window._boonOffer=null; saveRun(); mapScreen(); return; }
   if(RUN.reward&&RUN.reward.stage!=='relic'&&RUN.reward.stage!=='promo'){ RUN.reward.stage='relic'; RUN.reward.boonOffer=RUN.reward.modOffer=null; saveRun(); }
   const rc=window._relicChoice;
   if(rc && rc.length){

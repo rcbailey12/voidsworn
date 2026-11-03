@@ -1686,5 +1686,113 @@
   "teachingBattle": 2,
   "campaign": true,
   "event_force": "flare"
+ },
+ "s51": {
+  "note": "Beat 3 Burn deep: flagship weapons +25%, escorts unchanged, torpedoes keep launch damage.",
+  "seed": 11051,
+  "sector": 1,
+  "admiral": "vex",
+  "fleet": [
+   "harrow",
+   "warden",
+   "warden"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "fac_player": "voidsworn",
+  "storyMods": {
+   "power": true
+  }
+ },
+ "s52": {
+  "note": "Beat 3 links off: no player synchronized fire in round 1, normal sync from round 2, enemy sync unchanged.",
+  "seed": 11052,
+  "sector": 1,
+  "admiral": "kassar",
+  "fleet": [
+   "h_vanguard",
+   "h_picket",
+   "h_picket"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "fac_player": "hegemony",
+  "storyMods": {
+   "syncDown": true
+  }
+ },
+ "s53": {
+  "note": "Beat 3 Memory: whole player fleet damage -10% for this battle.",
+  "seed": 11053,
+  "sector": 1,
+  "admiral": "voice",
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "fac_player": "chorus",
+  "storyMods": {
+   "dmgPct": -0.1
+  }
+ },
+ "s54": {
+  "note": "Beat 3 second throat closed: whole player fleet damage +10% for this battle.",
+  "seed": 11054,
+  "sector": 1,
+  "admiral": "voice",
+  "fleet": [
+   "b_razor",
+   "b_spitter",
+   "b_drone"
+  ],
+  "fac": "hegemony",
+  "enemies": [
+   "h_interdictor",
+   "h_picket",
+   "h_picket"
+  ],
+  "obj": "rout",
+  "shape": "open",
+  "map": "open",
+  "dep": "line",
+  "kind": "battle",
+  "rounds": 12,
+  "fac_player": "chorus",
+  "storyMods": {
+   "dmgPct": 0.1
+  }
  }
 }

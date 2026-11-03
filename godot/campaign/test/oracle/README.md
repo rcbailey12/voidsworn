@@ -1,5 +1,9 @@
 # The campaign oracle, pinned
 
+Nov 3 2026, issue 110: re-copied data.js, battle.js, campaign_run.js and
+campaign3d.js for all five beat 3 rewards, free core offers, and consumption
+of next-battle modifiers on entry. Re-exported campaign tables.
+
 Nov 3 2026, issue 55: re-copied data.js, campaign_run.js and campaign_meta.js
 for the six approved beat 3 decisions, spotlights and debrief learning lines.
 Mending Throng uses the name required by the issue. Re-exported campaign tables.

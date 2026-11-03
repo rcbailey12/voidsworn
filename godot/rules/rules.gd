@@ -1271,6 +1271,19 @@ func startBattle(cfg: Dictionary) -> void:
 	if jt(B.get("well")): logm("The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.", "ember")
 	if cfg.get("kind") == "elite": logm("Elite captains command this fleet.", "e")
 	if cfg.get("kind") == "boss": logm(String(HULLS[F["boss"]]["n"]) + " is here. Everything else is escort.", "e")
+	for line in storyModifierLines(): logm(line, "ember")
+func storyDamageMult(u) -> float:
+	var m = B.get("cfg", {}).get("storyMods") if B != null else null
+	if m == null or u["side"] != "player": return 1.0
+	return (1.0 + float(z0(m.get("dmgPct")))) * (1.0 + float(TB.BEAT3_REWARDS.power) if jt(m.get("power")) and jt(u.get("pflag")) else 1.0)
+func storyModifierLines(u = null) -> Array:
+	var m = B.get("cfg", {}).get("storyMods") if B != null else null
+	var out = []
+	if m == null or (u != null and u["side"] != "player"): return out
+	if jt(m.get("power")) and (u == null or jt(u.get("pflag"))): out.append("Flagship weapon damage +25% this battle.")
+	if jt(m.get("dmgPct")): out.append("Fleet damage " + ("+" if m["dmgPct"] > 0 else "") + ns(JSM.jsround(float(m["dmgPct"]) * 100.0)) + "% this battle.")
+	if jt(m.get("syncDown")): out.append("Synchronized fire off in round 1. Returns in round 2." if B["round"] == 1 else "Synchronized fire restored from round 2.")
+	return out
 func _has_flak(u) -> bool:
 	for w in u["weapons"]:
 		if w["k"] == "flak": return true
@@ -1624,6 +1637,7 @@ func syncR(side): return B["syncR"][side] if (B != null and B.get("syncR") != nu
 func syncDmg(side): return B["syncDmg"][side] if (B != null and B.get("syncDmg") != null and jt(B["syncDmg"].get(side))) else TB.SYNC_DMG
 func inSync(u) -> bool:
 	if u == null or jt(u.get("isSq")) or u.get("fac") != "hegemony" or jt(u.get("dead")): return false
+	if u["side"] == "player" and B["round"] == 1 and jt(B.get("cfg", {}).get("storyMods", {}).get("syncDown")): return false
 	var a = syncAnchor(u["side"])
 	return a != null and hdist(u, a) <= syncR(u["side"])
 func syncOn(u, t) -> bool:
@@ -2334,7 +2348,7 @@ func dmgMult(u, w, t, rear) -> float:
 	if cmdActive(u["side"], "hunt"): base *= 1.0 + cmdPow("hunt", null, u["side"])
 	if jt(u.get("isSq")) and cmdActive(u["side"], "scramble"): base *= 1.0 + cmdPow("scramble", null, u["side"])
 	if B != null and jt(B.get("volleyMul")) and B["volleyMul"]["side"] == u["side"]: base *= B["volleyMul"]["m"]
-	return base
+	return base * storyDamageMult(u)
 # Inside a scoring window (eval_begin to eval_end) nothing in the battle changes, so expectedVs depends only on the two ships, the gun,
 # the shooter's hex and hexes moved (hit chance, sync, rake), the target's hex, facing (shield quadrant) and hexes moved. Not on the
 # shooter's facing: arcs are checked by the callers. Callers only read the result.
@@ -3537,7 +3551,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 		for x in alive():
 			if hdist(x, c) <= 1: hitList.append(x)
 		for x in hitList:
-			var dmg = (40.0 if hdist(x, c) == 0 else 20.0) * u["dmg"] * (1.5 if jt(x.get("isSq")) else 1.0)
+			var dmg = (40.0 if hdist(x, c) == 0 else 20.0) * u["dmg"] * (1.5 if jt(x.get("isSq")) else 1.0) * storyDamageMult(u)
 			var quad = shieldQuad(x, u)
 			var r = applyHit(u, {"pierce": 0.3, "crit": 5}, x, dmg, quad)
 			if jt(r.shield): flt(x, "−" + ns(r.shield), "#7fd6c8", -18)

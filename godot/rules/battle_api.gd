@@ -119,7 +119,7 @@ func _i_new_battle_scenario(sc, seed_override: int = -1) -> void:
 	if S.get("nemesis") != null: cfg["nemesis"] = S.nemesis.duplicate(true)
 	if R.jt(S.get("verb")): cfg["verb"] = S.verb
 	if R.jt(S.get("noStar")): cfg["noStar"] = true   # R1: campaign sector 1 never fields the dead star
-	for key in ["teachingGate", "teachingBattle", "edgeFeature", "arena"]:
+	for key in ["teachingGate", "teachingBattle", "edgeFeature", "arena", "storyMods"]:
 		if S.has(key): cfg[key] = S[key]
 	if S.get("alt") != null: cfg["alt"] = S.alt   # passed through untouched, so new_battle's type-safe cfg.alt!==false is what decides (s41: a Dictionary)
 	if R.jt(S.get("campaign")):

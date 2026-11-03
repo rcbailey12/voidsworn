@@ -1276,7 +1276,7 @@ func _modal(md: Dictionary) -> void:
 		"event_result":
 			h2.call(d["ev"]["t"])
 			for l in d["lines"]: p.call(l)
-			add(v, abtn("Continue", "closeModal", "", true, false, acts))
+			add(v, abtn("Continue", "storyCore" if R.get("reward") != null and R["reward"].get("kind") == "story" else "closeModal", "", true, false, acts))
 		"victory":
 			var sm = d["summary"]; var cfg = sm["cfg"]
 			h2.call("Flagship destroyed" if cfg["kind"] == "boss" else "Victory")

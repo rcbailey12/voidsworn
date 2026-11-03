@@ -1,5 +1,9 @@
 # The rules oracle, pinned
 
+Nov 3 2026, issue 110: re-copied data.js and battle.js for the beat 3
+flagship and fleet damage modifiers and round 1 sync shutdown. Re-exported
+rules tables; scenarios s51 to s54 cover the one-battle modifiers.
+
 Nov 3 2026, issue 55: re-copied data.js for the approved story beat 3 table
 and Mending Throng display name. Re-exported rules tables. Combat rules unchanged.
 

@@ -1017,6 +1017,8 @@ const ASPECTS={
   storm:{n:'Aspect of the Storm',d:'Your flagship gains +0.5 to weapon shield damage multipliers, and shields recharge twice as fast.',fx:{ionPlus:.5,regenPct:1}},
   admiral:{n:'Aspect of the Admiral',d:'Your Admiral’s Command starts one power level higher (full power from round 2), and your flagship gets +10 aim.',fx:{cmdTier:1,aim:10}}};
 
+// One-battle rewards promised by the beat 3 choices.
+const BEAT3_REWARDS={power:.25,dmgPct:.1,core:{corsair:'rook',chorus:'hunger'}};
 // Approved story beat 3 text. Source: contrib/muse/design/story_beat3_2026_11/.
 const STORY_BEAT3={
   "voidsworn": {
