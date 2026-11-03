@@ -366,6 +366,16 @@ function startBattle(cfg){
   if(B.well) log('The Hollow Sun warps this field. Ships that start a turn near it get +1 movement from the slingshot, but it drags close ships inward and tears at any hull on its rim.','ember');
   if(cfg.kind==='elite') log('Elite captains command this fleet.', 'e');
   if(cfg.kind==='boss') log(`${HULLS[F.boss].n} is here. Everything else is escort.`, 'e');
+  for(const line of storyModifierLines()) log(line,'ember');
+}
+
+function storyDamageMult(u){ const m=B&&B.cfg&&B.cfg.storyMods; return !m||u.side!=='player'?1:(1+(m.dmgPct||0))*(m.power&&u.pflag?1+BEAT3_REWARDS.power:1); }
+function storyModifierLines(u){
+  const m=B&&B.cfg&&B.cfg.storyMods, out=[]; if(!m||u&&u.side!=='player') return out;
+  if(m.power&&(!u||u.pflag)) out.push('Flagship weapon damage +25% this battle.');
+  if(m.dmgPct) out.push(`Fleet damage ${m.dmgPct>0?'+':''}${Math.round(m.dmgPct*100)}% this battle.`);
+  if(m.syncDown) out.push(B.round===1?'Synchronized fire off in round 1. Returns in round 2.':'Synchronized fire restored from round 2.');
+  return out;
 }
 
 function gainResolve(side,n){ if(!B.resolve) B.resolve={player:0,enemy:0}; B.resolve[side]=Math.min(5,(B.resolve[side]||0)+n); }
@@ -501,7 +511,7 @@ function setupFactionRules(){ B.syncMark={player:{},enemy:{}}; B.syncLost={playe
     const dl=B.units.filter(u=>u.side===side&&!u.isSq&&u.fac==='deathless'&&u.t&&u.t.reanimate).length; B.legion[side].max=dl>=6?2:dl>=1?1:0; } }
 function syncAnchor(side){ if(!B||!B.syncMark||(B.syncLost&&B.syncLost[side])) return null; return B.units.find(u=>u.anchor&&u.side===side&&!u.dead)||null; }
 function syncR(side){ return (B&&B.syncR&&B.syncR[side])||SYNC_R; } function syncDmg(side){ return (B&&B.syncDmg&&B.syncDmg[side])||SYNC_DMG; }
-function inSync(u){ if(!u||u.isSq||u.fac!=='hegemony'||u.dead) return false; const a=syncAnchor(u.side); return !!a&&hdist(u,a)<=syncR(u.side); }
+function inSync(u){ if(!u||u.isSq||u.fac!=='hegemony'||u.dead||u.side==='player'&&B.round===1&&B.cfg&&B.cfg.storyMods&&B.cfg.storyMods.syncDown) return false; const a=syncAnchor(u.side); return !!a&&hdist(u,a)<=syncR(u.side); }
 function syncOn(u,t){ if(!inSync(u)||!t) return false; const m=B.syncMark[u.side][t.id]; return !!m&&m.r===B.round&&m.ids.some(id=>id!==u.id); }
 function syncMarkShot(u,t){ if(!inSync(u)||!t) return; const M=B.syncMark[u.side]; let m=M[t.id]; if(!m||m.r!==B.round) m=M[t.id]={r:B.round,ids:[]}; if(!m.ids.includes(u.id)) m.ids.push(u.id); }
 function syncLose(t){ if(!B||!t||!t.anchor||!B.syncLost||B.syncLost[t.side]) return; B.syncLost[t.side]=true; t.anchor=false; if(B.units.some(u=>u.side===t.side&&!u.dead&&!u.isSq&&u.fac==='hegemony')){ log(`${t.name} is lost: the ${t.side==='player'?'fleet':'enemy line'} loses its synchronized fire.`,t.side==='player'?'e':'p'); } }
@@ -530,8 +540,8 @@ function legionRise(u,quiet){ const h=legionRiseHex(u); if(!h){ u.riseAt=null; i
   u.risen=B.round; fstat('deathless','revive'); if(!quiet){ log(`${u.name} reassembles from its wreck with ${u.hp} hull. It cannot fire this round.`,u.side==='player'?'p':'e'); try{ if(typeof fxText==='function') fxText(u,'Reassembled','#7dff9b',-30); }catch(e){} } return true; }
 function legionTurn(side){ if(!B||B.over) return []; const out=[]; for(const u of B.units) if(u.dead&&u.side===side&&u.riseAt!=null&&B.round>=u.riseAt&&!u.fled&&legionRise(u)) out.push(u); return out; }
 // plain-words lines for the ship panel
-function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=[];
-  if(u.fac==='hegemony'){ const a=syncAnchor(u.side); out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); }
+function factionTraitLines(u){ if(!u||u.isSq||!B) return []; const out=storyModifierLines(u);
+  if(u.fac==='hegemony'){ const a=syncAnchor(u.side); if(!(u.side==='player'&&B.round===1&&B.cfg.storyMods&&B.cfg.storyMods.syncDown)) out.push(!a?'Synchronized fire lost: the flagship is gone.':u.anchor?`Sync anchor: Hegemony ships within ${SYNC_R} hexes fire as one.`:inSync(u)?'In sync with the flagship.':`Out of sync: more than ${SYNC_R} hexes from the flagship.`); }
   if(u.fac==='ithar'&&u.shMax>0) out.push('Prism charge: facings not hit since its last turn refill to full; hit facings recharge twice.');
   if(u.fac==='chorus') out.push(`Feeds on kills nearby (up to ${Math.round(FEED_CAP*100)}% hull a round).`);
   if(u.fac==='deathless'&&u.t&&u.t.reanimate){ const L=B.legion&&B.legion[u.side]; out.push(u.risen?'Reassembled this battle.':L&&L.used<L.max&&!u.pflag&&!u.flagship&&!u.boss?'Archive restore: the first to fall reassembles next round.':'Archive restore spent.'); }
@@ -690,7 +700,7 @@ function dmgMult(u,w,t,rear){
   base*= t.isSq ? (w.vsSq||1) : (w.vsCap||1);
   // v53: bloodied, Commands and volley multipliers (were a wrapper patched on below; same order, same numbers)
   if(u.bloodied&&!u.isSq) base*=1+.15*u.bloodied; if(cmdActive(u.side,'hunt')) base*=1+cmdPow('hunt',null,u.side); if(u.isSq&&cmdActive(u.side,'scramble')) base*=1+cmdPow('scramble',null,u.side); if(B&&B.volleyMul&&B.volleyMul.side===u.side) base*=B.volleyMul.m;
-  return base;
+  return base*storyDamageMult(u);
 }
 // Expected value used for previews and AI
 function expectedVs(u,w,t){
@@ -1214,7 +1224,7 @@ async function useAbility(u,arg){
     u.abCd=abilityCd(u);
     const hitList=alive().filter(x=>hdist(x,c)<=1);
     for(const x of hitList){
-      const dmg=(hdist(x,c)===0?40:20)*u.dmg*(x.isSq?1.5:1);
+      const dmg=(hdist(x,c)===0?40:20)*u.dmg*(x.isSq?1.5:1)*storyDamageMult(u);
       const quad=shieldQuad(x,u);
       const r=applyHit(u,{pierce:.3,crit:5},x,dmg,quad);
       if(r.shield&&typeof fxText==='function') fxText(x,'\u2212'+r.shield,'#7fd6c8',-18);

@@ -1143,6 +1143,8 @@ func act(name: String, arg = "") -> void:
 			if not _arc_after(modal_d): close_modal()
 		"beat3":
 			if not showBeat3(): close_modal()
+		"storyCore":
+			close_modal(); resumeReward()
 		"continueRun": ACT_continueRun()
 		"newRunScreen": ACT_newRunScreen()
 		"abandonRun":
@@ -2280,6 +2282,21 @@ func applyOutcome(r) -> Array:
 	if jt(r.get("nemClock")):
 		var m2 = nemClockAdd(r["nemClock"])
 		if m2 != "": out.append(m2)
+	if jt(r.get("power")) or jt(r.get("syncDown")) or jt(r.get("dmgPctUp")) or jt(r.get("dmgPctDown")):
+		var m = or_(RUN.get("storyNext"), {})
+		RUN["storyNext"] = m
+		if jt(r.get("power")):
+			m["power"] = true; out.append("Flagship weapon damage +25% for the next battle only.")
+		if jt(r.get("syncDown")):
+			m["syncDown"] = true; out.append("Next battle: Synchronized fire is off in round 1 and returns in round 2.")
+		if jt(r.get("dmgPctUp")) or jt(r.get("dmgPctDown")):
+			m["dmgPct"] = float(z0(m.get("dmgPct"))) + float(TB.BEAT3_REWARDS.dmgPct) * ((1 if jt(r.get("dmgPctUp")) else 0) - (1 if jt(r.get("dmgPctDown")) else 0))
+			out.append("Fleet damage " + ("+10%" if jt(r.get("dmgPctUp")) else "-10%") + " for the next battle only.")
+	if jt(r.get("core")):
+		var p = TB.BEAT3_REWARDS.core.get(RUN["fac"])
+		if p != null:
+			RUN["reward"] = {"kind": "story", "rw": {"k": "boon", "p": p}, "stage": "pick", "relics": [], "wrecks": [], "prizes": [], "boonOffer": null, "modOffer": null}
+			out.append("1 free protocol offer from " + str(PATRONS[p]["short"]) + ". Choose 1 protocol or decline for " + numstr(boonDeclineCred()) + " credits.")
 	if out.size() == 0 and not jt(r.get("fight")): out.append("You move on.")
 	return out
 # Story arcs: after the sector intro (beat 1) and each sector change (beats 2 and 3), the arc card opens as an event.
@@ -2303,7 +2320,7 @@ func _arc_choice(o, i: int) -> void:   # an arc card's choice: its outcome and f
 	if lines.has("You move on."): lines.erase("You move on.")
 	if arc_chose_cb is Callable and (arc_chose_cb as Callable).is_valid(): arc_chose_cb.call(cur_event, k)
 	saveRun(); mapScreen()
-	var acts = []; A(acts, "closeModal")
+	var acts = []; A(acts, "storyCore" if RUN.get("reward") != null and RUN["reward"].get("kind") == "story" else "closeModal")
 	show_modal("event_result", {"ev": cur_event, "lines": lines}, acts)
 func _arc_played(beat: int) -> bool:
 	if RUN == null or not (RUN.get("flags") is Dictionary): return false
@@ -2616,6 +2633,8 @@ func ACT_takeBoon(a: String) -> void:
 	tel("boon_pick", {"id": o["id"], "r": z0(o.get("r"))})
 	toast(str(BOONS[o["id"]]["n"]) + " gained."); close_modal(); relicStep()
 func relicStep() -> void:
+	if RUN.get("reward") != null and RUN["reward"].get("kind") == "story":
+		RUN["reward"] = null; W["boonOffer"] = null; saveRun(); mapScreen(); return
 	if RUN.get("reward") != null and RUN["reward"]["stage"] != "relic" and RUN["reward"]["stage"] != "promo":
 		RUN["reward"]["stage"] = "relic"; RUN["reward"]["boonOffer"] = null; RUN["reward"]["modOffer"] = null; saveRun()
 	var rc = W.get("relicChoice")
@@ -2750,8 +2769,11 @@ func battleScreen(cfg: Dictionary) -> void:
 	c = teachingBattle(c)
 	saveTeachingHistory()
 	if jt(RUN.get("verbNext")) and not jt(c.get("verb")): c["verb"] = RUN["verbNext"]   # B4: a next-battle faction verb
+	if jt(RUN.get("storyNext")): c["storyMods"] = RUN["storyNext"].duplicate()
 	var ext = battle_mode == "external" and battle_setup.is_valid()
 	start_battle(c)
+	if jt(RUN.get("storyNext")):
+		RUN["storyNext"] = null; saveRun()
 	B["campaign"] = true
 	if not ext:   # external battles: the rules roll the mid-battle event themselves (rules/API.md, cfg.campaign), in the game's order
 		var sc = sectorCond()
