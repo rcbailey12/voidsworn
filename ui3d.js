@@ -643,7 +643,7 @@ const TIPS=[
   [
     "select",
     "Moving and facing",
-    "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship stays put, takes less damage, and does not take the +10, but it cannot move or fire again this turn."
+    "This is the ship that is up. Click a blue hex to plan its move, and turn it with Q and E before you confirm. A ship that stays in the same hex is easier to hit: enemy shots against it get +10 to their hit chance. Moving 3 or more hexes gives -5 instead. Or Brace: the ship can move first, then digs in: it takes less hull damage and does not take the +10, but bracing ends its turn, so it cannot move or fire again this turn."
   ],
   [
     "target",
@@ -693,7 +693,7 @@ const TIPS=[
   [
     "c_clock",
     "The Nemesis clock",
-    "Every jump moves the clock at the top. When it runs out, the Nemesis catches up and the fights ahead get harder. Side stops pay, but they cost jumps."
+    "The clock at the top fills when you win fights and make loud choices. When it runs out, the Nemesis catches up and the fights ahead get harder. Side stops pay, but they can fill the clock too."
   ],
   [
     "c_reward",

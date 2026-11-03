@@ -5,7 +5,7 @@ const OPTS := "user://battle_opts.json"
 const ACTION_IDS := ["select", "target", "fired", "close"]
 const CARDS := [
 	["c_map", "The sector map", "This is the sector map. Pick a stop on a connected lane and work toward the boss at the end. Stops are fights, events, rest stops, and shipyards. There is at least one elite fight on a route you can choose: harder enemies, better rewards. You cannot visit every stop, so choose."],
-	["c_clock", "The Nemesis clock", "Every jump moves the clock at the top. When it runs out, the Nemesis catches up and the fights ahead get harder. Side stops pay, but they cost jumps."],
+	["c_clock", "The Nemesis clock", "The clock at the top fills when you win fights and make loud choices. When it runs out, the Nemesis catches up and the fights ahead get harder. Side stops pay, but they can fill the clock too."],
 	["c_reward", "Rewards", "Winning pays credits, and offers salvage: guns and parts you can fit at a shipyard. Sometimes you can claim a beaten enemy ship instead. If your fleet is full, a claimed ship is scrapped for credits on the spot. Rerolls are not free: when one is offered, it costs credits."],
 	["c_shipyard", "Repair and refit", "Here you spend credits to repair hull damage, refit (swap guns and parts between your ships), and buy ships. After a boss fight you also regroup here: repair, upgrade, or buy before the next sector."],
 	["c_loss", "The next run", "The run is over, and that is expected. Losing teaches your faction: renown, core progress, and what your admiral learned all carry into the next run. Your ships and credits do not."],

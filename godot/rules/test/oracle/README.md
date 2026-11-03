@@ -37,3 +37,5 @@ The parity harness runs these files, not the live ones at the repo root, so stre
 History: b71c8d7 (Oct 25, the sprint start), c7b1a78 (Oct 26), d8b47c6 (Oct 27), 6b1571e, 59f13a5 and bcc7e47 (Oct 27, data.js only), cb55ec9 (Oct 27, pass 3 tuning), e80a6a0 (Oct 31: step 9 RAMP, strings steps 10 and 12), 8e81d75 (Nov 1: step 9b RAMP, battle.js only), cf278dd (Nov 1: step 14, ascendant sp 2 and BOSS_ENC), e3bff1e (Nov 1: step 13, the R1 batch: cfg.noStar, the veteran mid-move brace, gsentry, boon and campaign fixes; port_notes step 13).
 
 **Catching up:** when stream B changes the rules (`contrib/opus/compute/port_notes.md` lists each step), the change is ported to `godot/rules/` with a new golden scenario, then these files are re-copied from the new commit and this note is updated.
+
+Nov 3 2026, issue 88: re-copied data.js and ui3d.js for the text truth pass (one boon text corrected, two tutorial card texts corrected). No rules or numbers changed. Re-exported tables.
