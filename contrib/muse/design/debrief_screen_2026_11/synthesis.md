@@ -4,7 +4,7 @@ Chair synthesis of three legs (Rey blind leg, DeepSeek, Qwen with two responses)
 
 ## Verdict
 
-GO. The design is buildable in the order given in section 10. Cross-step dependencies are named with their owning issues (section 9); until each lands, its row renders the empty state specified here, so Step 4 can ship its slice without waiting. Of the four owner questions in section 11, only Q2 (heir doubling timing) blocks anything: Step 3 (issue 20) needs it answered before its heir logic is final. The rest are non-blocking.
+GO. The design is buildable in the order given in section 10. Cross-step dependencies are named with their owning issues (section 9); until each lands, its row renders the empty state specified here, so Step 4 can ship its slice without waiting. All four owner questions in section 11 were ruled by the owner on Nov 2, 2026 (see Owner rulings, after section 11). Nothing in this design is blocked: Q2's answer unblocks Step 3 (issue 20) heir logic.
 
 ## 1. Current state
 
@@ -73,7 +73,7 @@ The faction's authored Step 12 learning payoff line, verbatim (section 4.8), key
 
 ### 3.7 Heir naming block
 
-Its own panel() below the inheritance panel, built from choice() rows (campaign_ui.gd:226). A current-heir line is always present. When the slot is empty, the full choice rows appear: one per benched same-faction admiral, plus a "Name no heir" row, with a confirm abtn. When an heir is already named, the block shows the current-heir line and a change action; the choice rows sit behind that action. Naming is free, and changeable on any later debrief. Offered on any run end, win, loss, or abandon (owner ruling 5). Effect: the named heir's line earns shadow XP at double rate (section 5), subject to Q2's timing answer. Build item: heir state (Step 3, issue 20); no heir field exists today. The design needs, per line: which admiral (if any) is the named heir, set from this screen. Sources for the rows: ADMIRALS filtered by RUN.fac, each candidate's META.mastery totals. Empty state: no benched admiral of the faction exists; the block shows the current-heir line and one dim line, "No benched admirals of this faction to name.", with no rows and no confirm.
+Its own panel() below the inheritance panel, built from choice() rows (campaign_ui.gd:226). A current-heir line is always present. When the slot is empty, the full choice rows appear: one per benched same-faction admiral, plus a "Name no heir" row, with a confirm abtn. When an heir is already named, the block shows the current-heir line and a change action; the choice rows sit behind that action. Naming is free, and changeable on any later debrief. Offered on any run end, win, loss, or abandon (owner ruling 5). Effect: the named heir's line earns shadow XP at double rate (section 5), from the next run onward (owner ruling Q2, Nov 2, 2026). Build item: heir state (Step 3, issue 20); no heir field exists today. The design needs, per line: which admiral (if any) is the named heir, set from this screen. Sources for the rows: ADMIRALS filtered by RUN.fac, each candidate's META.mastery totals. Empty state: no benched admiral of the faction exists; the block shows the current-heir line and one dim line, "No benched admirals of this faction to name.", with no rows and no confirm.
 
 ### 3.8 Recap
 
@@ -215,6 +215,15 @@ Q2. Heir doubling timing. When an heir is named on this debrief, does the double
 Q3. Story row frequency. The authored beat line shows on every run end (chair pick), or only the first time each faction's line would appear? Stakes: every-time makes row 5 the faction's standing record, the sentence the next generation is defined by, at the cost of repetition the player will start to skim; first-time-only keeps it an event, but then most debriefs have an empty-feeling fifth row and the screen loses its closing beat.
 
 Q4. Nemesis lesson scope. Lessons (weaknesses revealed or taught) stay attached to the specific hunter they were earned against (chair pick), or follow the player across hunters, so a weakness learned on one hunter informs meetings with the next? Stakes: hunter-specific keeps each feud personal and matches the current RUN.nem shape; following the player rewards accumulated knowledge across the redesigned variable hunter pool (issue 45), but blurs whose lesson it was and needs the redesign to say how lessons transfer.
+
+## Owner rulings (Ryan, Nov 2, 2026)
+
+The owner agreed with all four chair picks. The questions in section 11 are settled as follows, and the design above reads as final on these points:
+
+- Q1 (first-loss scope): option (a). The full teaching panel fires on the literal first loss only. A faction's first loss after that gets its faction kicker and sub, no body panel. The five remaining kicker and sub pairs are a build-time authoring item (section 14).
+- Q2 (heir doubling timing): next run onward. Naming an heir does not re-pay the run that just ended; the double shadow rate applies from the next run. This unblocks Step 3 (issue 20): its heir logic is built on this timing.
+- Q3 (story row frequency): every run end. Row 5 shows the faction's authored beat line on every debrief; it is the faction's standing record, not a one-time reveal.
+- Q4 (Nemesis lesson scope): hunter-specific. Lessons stay attached to the hunter they were earned against and do not follow the player across hunters. Noted interaction: if the Nemesis redesign (issue 45) lands a shape where lessons need to transfer, this ruling is the one to revisit with the owner.
 
 ## 12. Argon leg screening
 
