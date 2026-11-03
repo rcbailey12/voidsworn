@@ -36,15 +36,15 @@ func _run() -> void:
 	var ship = fx.ship("test")
 	# This test exercises live damage and exhaust, without scheduling death cuts.
 	fx._later.clear()
-	for faction in ["hegemony", "corsair", "chorus"]:
-		for hp in [90.0, 70.0, 50.0, 30.0]:
+	for faction in ["hegemony", "corsair", "chorus", "ithar", "deathless"]:
+		for hp in [90.0, 70.0, 50.0, 30.0, 10.0]:
 			for weapon in ["lance", "ion", "macro", "plasma", "flak", "spine", "gauss", "torp", "rockets", "ram", "board"]:
 				var marks := BREACH.marks_for(ship.hull, weapon, 4, Vector3(0, 2.5, 0), Vector3.UP, Vector3.DOWN, 73.0, faction, 1.6, 1.0 - hp / 100.0)
 				for mark in marks:
-					check(not mark.has_cut() and mark.kind == BREACH.K_SURFACE, "%s %s at %.0f%% keeps the hull closed" % [faction, weapon, hp])
+					check(not mark.has_cut(), "%s %s at %.0f%% keeps the hull closed" % [faction, weapon, hp])
 	for stage in [1, 2, 3]:
 		for entry in ship._plan(fx, 1, stage):
-			check(not entry.has_cut() and entry.kind == BREACH.K_SURFACE, "section stage %d keeps its original surface" % stage)
+			check(not entry.has_cut(), "section stage %d keeps a sealed surface" % stage)
 	var heavy: Array = ship._plan(fx, 1, 4)
 	check(heavy.any(func(e): return e.has_cut()), "near-destroyed section opens a break")
 	ship._anchors["a1"] = {"p": Vector3(0, 2.5, 0), "n": Vector3.UP, "t": {}}

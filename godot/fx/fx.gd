@@ -261,6 +261,18 @@ func prof_take() -> Dictionary:
 	return p
 
 
+# Persistent damage is continuous emission and never calls flash(). Report its
+# real allocation alongside prof_take(), including faction equivalents of fire.
+func damage_counts() -> Dictionary:
+	var out := {"fire": 0, "smoke": 0, "vent": 0, "particles": 0}
+	for sid in ships:
+		var s = ships[sid]
+		if s.dead or s.gone: continue
+		var counts: Dictionary = s.damage_counts()
+		for key in out: out[key] += counts[key]
+	return out
+
+
 func anim_speed() -> float:
 	return _speed
 

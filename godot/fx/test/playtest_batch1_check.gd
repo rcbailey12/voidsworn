@@ -59,7 +59,7 @@ func _run() -> void:
 	flush(s)
 	check(s.stage[1] == 4 and s._marks[0].R > small_radius * 2.0, "heavy section damage opens the large breach")
 	s.sync(fx, state(90.0)); flush(s)
-	check(s.stage[1] == 0 and s._marks.is_empty(), "repair restores the section and removes old wounds")
+	check(s.stage[1] == 0 and not s._marks.is_empty(), "repair restores the section and keeps survivor scars")
 	s.sync(fx, state(90.0)); s.add_mark(fx, "torp", 4, Vector3(0, 2.25, 0), Vector3.UP, Vector3.DOWN); flush(s)
 	var wounded = ship("heavy_hit", "hegemony", Vector3(12, 0, 0))
 	wounded.sync(fx, state(15.0)); flush(wounded)
@@ -83,8 +83,20 @@ func _run() -> void:
 	# Cache really survives clearing the in-memory cache, and invalidates settings/code.
 	var image := Image.create_empty(8, 4, false, Image.FORMAT_RGBA8); image.fill(Color(0.2, 0.4, 0.6, 0.7))
 	var key := BAKE.cache_key("test", "shader-v1", {"seed": 7, "quality": "high"}, Vector2i(8, 4))
-	BAKE.remember(key, image); BAKE._cache.clear()
-	var disk := BAKE.cached(key)
+	# Issue 80 moved disk I/O out of remember/cached and onto the bake worker.
+	# Keep this regression on that API so it can reach the damage/death checks.
+	var scratch := OS.get_environment("TEMP") if OS.has_environment("TEMP") else "/tmp"
+	OS.set_environment("VS_WORLD_CACHE", scratch.path_join("voidsworn-fb1-cache"))
+	var writer := Thread.new()
+	writer.start(BAKE._finish_image.bind(key, image))
+	while writer.is_alive(): await process_frame
+	writer.wait_to_finish()
+	BAKE._cache.clear()
+	var reader := Thread.new()
+	reader.start(BAKE._work.bind(key, {"size": Vector2i(8, 4), "compute": false}))
+	while reader.is_alive(): await process_frame
+	var loaded: Dictionary = reader.wait_to_finish()
+	var disk: Image = loaded.image
 	check(disk != null and disk.get_size() == Vector2i(8, 4), "persistent RGBA cache loads after memory is cleared")
 	check(BAKE.cache_key("test", "shader-v2", {"seed": 7, "quality": "high"}, Vector2i(8, 4)) != key, "cache invalidates shader changes")
 	check(BAKE.cache_key("test", "shader-v1", {"seed": 8, "quality": "high"}, Vector2i(8, 4)) != key, "cache invalidates seeds")
