@@ -119,6 +119,18 @@ A) One run-level clock, paced by the active commander's faction. CHAIR PICK.
 B) One clock per commander.
 Why: the clock is an accelerant for the sector's meeting, and the sector has exactly one assigned hunter; per-commander clocks would let an inactive commander's clock tick or stall in ways the player cannot see, and would complicate nemClockAdd for no design gain.
 
+## 9. Owner rulings (Ryan, 2026-11-03)
+
+Ryan ruled on 2026-11-03: all five chair picks are adopted.
+
+1. Q1 assignment rule: A. No consecutive repeats; the SP1 hunter may return at SP3 (probability 1/4). The behaviour packages' return fiction stays live inside the run.
+2. Q2 adaptation persistence: A. Per commander, per run, resetting at run start (shipped scope). Qwen's campaign-level persistence is not adopted.
+3. Q3 lesson keying: A. Per commander, per run (the issue #71 debrief design, read through the rotation). This also settles the issue #71 revisit trigger: lessons stay hunter-specific at commander level under the #45 redesign.
+4. Q4 run 5 finale: A. Same SP3 draw as every run; no special arch-nemesis rule.
+5. Q5 clock scope: A. One run-level clock, paced by the active commander's faction.
+
+The spec Opus files build issues from now carries these rulings; the chair picks in section 8 above are the adopted text.
+
 ## Not checked
 
 - The Godot mirror was verified for newNemesis (campaign.gd:1114, :1802) and the shared data tables only; the exact Godot line numbers for nemNodeIs, nemAdapt and nemSignature were not verified and are Opus's to pin in the build issues.
