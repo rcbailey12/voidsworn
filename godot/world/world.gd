@@ -97,7 +97,7 @@ func surface_material(sun: Vector3) -> ShaderMaterial:
 
 func _planet_size() -> Vector2i:
 	if OS.has_environment("VS_WORLD_PREVIEW"): return Vector2i(512, 256)
-	return Vector2i(2048, 1024) if quality != "low" else Vector2i(1024, 512)
+	return BAKER.PLANET_SIZE
 
 
 func wait_ready() -> void:
@@ -425,7 +425,7 @@ func system(with_planet: bool) -> void:
 		var tints := [Vector3(1.0, 0.95, 0.88), Vector3(0.85, 0.82, 0.8), Vector3(1.0, 0.86, 0.7), Vector3(0.9, 0.95, 1.05)]
 		var MP := {"kind": mkind, "a": Vector3(0.5, 0.48, 0.45) if mkind == 4 else Vector3(0.8, 0.84, 0.88), "b": Vector3(0.22, 0.21, 0.2) if mkind == 4 else Vector3(0.5, 0.4, 0.32),
 			"c": Vector3(0.65, 0.62, 0.58) if mkind == 4 else Vector3(0.6, 0.75, 0.9), "atmo": Vector3.ZERO, "rings": false}
-		var mq := Vector2i(1024, 512) if quality != "low" else Vector2i(512, 256)
+		var mq := BAKER.MOON_SIZE
 		if OS.has_environment("VS_WORLD_PREVIEW"):
 			mq = Vector2i(256, 128)
 		_sphere(_center + mdir * dist, dist * sin(mang), Basis(Vector3(r.randfn(), r.randfn(), r.randfn()).normalized(), r.randf() * TAU), MP,

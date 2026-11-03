@@ -5,6 +5,10 @@ extends Node
 
 const CACHE_MAX := 24
 const CACHE_DIR := "user://world_bakes/v3"
+# R79: the sector map primes the same 4K surface the backdrop planet uses.
+# Size and shader source are part of cache_key, so older bakes cannot be reused.
+const PLANET_SIZE := Vector2i(4096, 2048)
+const MOON_SIZE := Vector2i(1024, 512)
 static var _cache := {}
 static var _textures := {}
 var _jobs := {}

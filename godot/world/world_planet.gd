@@ -3,7 +3,7 @@ extends RefCounted
 # its rings and its moons, far beyond the board.
 #
 # Each surface is baked once on the GPU (world_bake.gd) into two equirectangular pictures:
-#   A: albedo (rgb, gamma) and ocean (a)        B: clouds (r), city lights (g), relief (b), lava glow (a)
+#   A: albedo (rgb, sRGB) and ocean (a)        B: clouds (r), city lights (g), relief (b), lava glow (a)
 # and drawn by a sphere shader that lights it from the battle's key light: a soft terminator, cloud shadows, the sun's
 # glint on oceans, city lights and lava on the night side, the atmosphere's blue or amber haze on the lit limb, and the
 # rings' shadow. Rings are lit, see-through and shadowed by the planet. Moons share one baked cratered surface, each
@@ -90,10 +90,10 @@ void fragment() {
 			if (dot(d, sc) > 0.0 && sd < 1.8) {
 				float sw = atan(sq.y, sq.x) + sd * 2.5;
 				float curl = fb(vec3(cos(sw) * sd, sin(sw) * sd, float(i)) * 3.0, 4);
-				vec3 scol = i == 0 ? mix(cb * 1.3, vec3(0.78, 0.38, 0.22), 0.6) : mix(cc, vec3(0.97), 0.5);
+				vec3 scol = i == 0 ? mix(cb * 1.3, vec3(0.78, 0.38, 0.22), 0.6) : mix(cc, vec3(0.86, 0.88, 0.90), 0.5);
 				float inside = smoothstep(1.15, 0.75, sd);
-				alb = mix(alb, scol * (0.8 + 0.4 * curl), inside * (kind == 0 ? 0.9 : 0.55));
-				alb = mix(alb, cc, smoothstep(1.6, 1.1, sd) * (1.0 - inside) * 0.35 * curl);
+				alb = mix(alb, min(scol * (0.8 + 0.2 * curl), vec3(0.90)), inside * (kind == 0 ? 0.9 : 0.55));
+				alb = mix(alb, mix(cb, ca, 0.35), smoothstep(1.6, 1.1, sd) * (1.0 - inside) * 0.35 * curl);
 			}
 		}
 		relief = 0.5 + (stream - 0.5) * 0.4;
@@ -120,13 +120,14 @@ void fragment() {
 			float cl = smoothstep(0.55, 0.8, fb(q * 18.0 + 2.0, 4)) * (0.4 + coast);
 			lights = clamp(cl * smoothstep(0.75, 0.6, lat) * (0.6 + 0.6 * hh(floor(d * 900.0))), 0.0, 1.0);
 		}
-		float ice = smoothstep(0.88, 0.94, lat + (fb(q * 6.0, 3) - 0.5) * 0.1);
-		alb = mix(alb, vec3(0.85, 0.88, 0.92), ice);
+		// Latitude in radians keeps the cap's edge soft instead of pinching at the poles.
+		float ice = smoothstep(1.05, 1.40, asin(clamp(lat, 0.0, 1.0)) + (fb(q * 6.0, 3) - 0.5) * 0.1);
+		alb = mix(alb, vec3(0.78, 0.81, 0.84), ice);
 		ocean *= 1.0 - ice;
 		// clouds: swirling bands and storm cells
 		vec3 cw = vec3(fb(q * 2.0 + 13.0, 3), fb(q * 2.0 + 17.0, 3), 0.0) - 0.5;
 		float c = fb(vec3(d.x * 3.0, d.y * 7.0, d.z * 3.0) + cw * 2.5 + 19.0, 6);
-		cloud = smoothstep(0.48, 0.72, c) * 0.95;
+		cloud = smoothstep(0.55, 0.72, c) * 0.75;
 	} else if (kind == 3) {
 		// volcanic desert: rust plains, dark basalt flows, canyons, glowing fissures
 		vec3 w = vec3(fb(q * 1.5, 4), fb(q * 1.5 + 5.0, 4), 0.0) - 0.5;
@@ -158,7 +159,8 @@ void fragment() {
 	}
 	vec4 o;
 	if (pass_id == 0) {
-		o = vec4(pow(clamp(alb, 0.0, 1.0), vec3(1.0 / 2.2)), ocean);
+		// Recipes already describe sRGB albedo. The sphere's source_color sampler decodes it once.
+		o = vec4(clamp(alb, 0.0, 1.0), ocean);
 	} else {
 		o = vec4(cloud, lights, clamp(relief, 0.0, 1.0), lava);
 	}
@@ -173,6 +175,7 @@ const SPHERE := """
 shader_type spatial;
 render_mode unshaded, cull_back, shadows_disabled, fog_disabled;
 uniform sampler2D tex_a : source_color, filter_linear, repeat_enable;
+// Packed masks and relief are linear data, including the ocean mask in tex_a.a.
 uniform sampler2D tex_b : filter_linear, repeat_enable;
 uniform float has_tex = 0.0;
 uniform vec3 flat_col = vec3(0.3);
@@ -236,7 +239,7 @@ void fragment() {
 		cs = texture(tex_b, uv_of(dl)).r;
 	}
 	vec3 ground = alb * (1.0 - cs * 0.55);
-	vec3 col = mix(ground, vec3(0.92, 0.94, 0.97), b.r) * diff * sun_col;
+	vec3 col = mix(ground, vec3(0.82, 0.85, 0.88), b.r) * diff * sun_col;
 	// the sun's glint on water
 	vec3 H = normalize(L + V);
 	col += sun_col * ocean * (1.0 - b.r) * pow(max(dot(N, H), 0.0), 90.0) * 1.6 * smoothstep(0.0, 0.1, ndl);
