@@ -27,7 +27,10 @@ static func settle(tree: SceneTree) -> void:
 	var quiet := 0
 	var since := Time.get_ticks_msec()
 	var last := since
-	while quiet < 12 or Time.get_ticks_msec() - since < 500:
+	# Hard cap (Opus review, Nov 3): on a slow PC every frame can take over 100 ms,
+	# so "quiet" may never build up. The cover must lift after 12 s whatever happens.
+	var start := since
+	while (quiet < 12 or Time.get_ticks_msec() - since < 500) and Time.get_ticks_msec() - start < 12000:
 		await RenderingServer.frame_post_draw
 		var now := Time.get_ticks_msec()
 		var count := pipelines()

@@ -724,7 +724,15 @@ func _warmup() -> void:
 	for i in 3:
 		await get_tree().process_frame
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
-		await gfx.warmup(cam)
+		# at most 20 s: a warm-up that never returns must never hold the battle (Opus review, Nov 3)
+		var done := [false]
+		var run := func() -> void:
+			await gfx.warmup(cam)
+			done[0] = true
+		run.call()
+		var t0 := Time.get_ticks_msec()
+		while not done[0] and Time.get_ticks_msec() - t0 < 20000:
+			await get_tree().process_frame
 	for i in 2:
 		await get_tree().process_frame
 	cam.a = keep["a"]
