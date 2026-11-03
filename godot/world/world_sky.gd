@@ -47,7 +47,7 @@ const PLANETS := [
 	{"kind": 2, "a": Vector3(0.3, 0.36, 0.2), "b": Vector3(0.02, 0.06, 0.14), "c": Vector3(0.62, 0.55, 0.42), "atmo": Vector3(0.38, 0.62, 1.0), "rings": false, "moons": 1},
 	{"kind": 3, "a": Vector3(0.62, 0.32, 0.17), "b": Vector3(0.24, 0.1, 0.06), "c": Vector3(0.85, 0.6, 0.4), "atmo": Vector3(1.0, 0.55, 0.32), "rings": false, "moons": 2},
 	{"kind": 4, "a": Vector3(0.42, 0.4, 0.38), "b": Vector3(0.17, 0.16, 0.16), "c": Vector3(0.6, 0.58, 0.55), "atmo": Vector3(0.0, 0.0, 0.0), "rings": false, "moons": 0},
-	{"kind": 5, "a": Vector3(0.82, 0.86, 0.9), "b": Vector3(0.48, 0.38, 0.3), "c": Vector3(0.6, 0.78, 0.95), "atmo": Vector3(0.55, 0.75, 1.0), "rings": false, "moons": 1},
+	{"kind": 5, "a": Vector3(0.68, 0.71, 0.74), "b": Vector3(0.48, 0.38, 0.3), "c": Vector3(0.6, 0.78, 0.95), "atmo": Vector3(0.55, 0.75, 1.0), "rings": false, "moons": 1},
 	{"kind": 0, "a": Vector3(0.38, 0.66, 0.62), "b": Vector3(0.12, 0.3, 0.32), "c": Vector3(0.82, 0.95, 0.9), "atmo": Vector3(0.4, 0.95, 0.85), "rings": true, "moons": 2},
 ]
 
