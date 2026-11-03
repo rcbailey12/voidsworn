@@ -27,6 +27,7 @@ const World := preload("res://world/world.gd")
 const Loading := preload("res://main/load_screen.gd")
 const SHIP_VIEW := "res://render/ship_view.gd"
 const HT_PATH := "res://render/hull_table.gd"
+const CamRig := preload("res://render/camera_rig.gd")
 
 # the layout round the sun: column c of n sits at bearing ANG0 - ANG_SPAN * c / (n - 1) (degrees; 90 = far side),
 # a stop's orbit radius runs from R_OUT (y = 0) to R_IN (y = 1)
@@ -510,6 +511,7 @@ func _process(delta: float) -> void:
 	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
 	var fr = _free_rect(); var fk = str(size) + "|" + _sig + "|" + str(fr.position.round()) + str(fr.size.round())
 	if fk != _fit_key: _fit_key = fk; _fit(fr)
+	_pan_keyboard(delta)
 	# the player's zoom and pan ease in; the arrival and jump moves layer on top
 	var ke = 1.0 - exp(-delta * 7.0)
 	_uz = lerp(_uz, _uz_t, ke); _pan = _pan.lerp(_pan_t, ke)
@@ -854,6 +856,11 @@ func _set_hot(h: String) -> void:
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if _avail().has(h) else Control.CURSOR_ARROW
 const ZOOM_MIN := 0.38
 const ZOOM_MAX := 1.2
+func _pan_keyboard(delta: float) -> void:
+	if not is_visible_in_tree() or loading or _flying or backdrop or _C().modal_d != null: return
+	# Arrow keys still choose routes. WASD pans even while a side-panel button has focus.
+	var p := CamRig.keyboard_pan(get_viewport(), false)
+	if p != Vector2.ZERO: pan_by(Vector3(p.x, 0, -p.y) * delta * 45.0 * _uz_t)
 func zoom_by(f: float, at: Vector2 = Vector2(-1, -1)) -> void:   # f < 1 zooms in; toward the point under the cursor
 	var nz = clamp(_uz_t * f, ZOOM_MIN, ZOOM_MAX)
 	if at.x >= 0.0 and nz != _uz_t:
@@ -888,15 +895,10 @@ func _gui_input(e: InputEvent) -> void:
 				accept_event(); fly_to(id)
 			elif e.double_click: reset_view()
 	elif e is InputEventKey and e.pressed:
-		var step = 4.0 * _uz_t
 		match e.keycode:
 			KEY_HOME: reset_view(); accept_event(); return
 			KEY_EQUAL, KEY_PLUS, KEY_KP_ADD: zoom_by(0.88); accept_event(); return
 			KEY_MINUS, KEY_KP_SUBTRACT: zoom_by(1.0 / 0.88); accept_event(); return
-			KEY_W: pan_by(Vector3(0, 0, -step)); accept_event(); return
-			KEY_S: pan_by(Vector3(0, 0, step)); accept_event(); return
-			KEY_A: pan_by(Vector3(-step, 0, 0)); accept_event(); return
-			KEY_D: pan_by(Vector3(step, 0, 0)); accept_event(); return
 		var av = _avail()
 		if av.is_empty(): return
 		if e.keycode in [KEY_RIGHT, KEY_DOWN, KEY_TAB]:

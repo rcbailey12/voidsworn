@@ -2541,6 +2541,10 @@ func _unhandled_input(e: InputEvent) -> void:
 			if mb.button_index == MOUSE_BUTTON_LEFT and not mb.pressed and not dragged:
 				_on_click()
 		return
+	if e is InputEventKey and CamRig.is_pan_key(e):
+		# A physical pan key can have Q/E/B on a different layout. Never also issue an order.
+		get_viewport().set_input_as_handled()
+		return
 	if e is InputEventKey and (e as InputEventKey).pressed and not (e as InputEventKey).echo:
 		_on_key((e as InputEventKey).keycode)
 
@@ -4006,6 +4010,7 @@ var showcase_ready := false
 
 func _process(dt: float) -> void:
 	game_t += dt
+	cam.keyboard_enabled = not warming and (hud == null or hud.menu == null)
 	if showcase_ready:
 		cam.a += dt * 0.035
 	if world != null and world.has_method("step"):
