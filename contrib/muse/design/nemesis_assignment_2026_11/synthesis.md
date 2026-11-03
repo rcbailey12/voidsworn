@@ -125,3 +125,7 @@ Why: the clock is an accelerant for the sector's meeting, and the sector has exa
 - The exact PRNG stream layout at run start (which integers the draw consumes, and whether before or after other run-start rolls) is not specified in the shipped code the chair read; Opus confirms it at build time.
 - The chair's enumeration is a draw simulation, not a run of the game code; it verifies the assignment mechanism's probabilities, not the shipped RNG.
 - The run 5 finale's exact meeting shape beyond R62's "finale" framing was not re-verified for this job; Q4 covers the one design choice it creates.
+
+## Owner rulings (Ryan, Nov 3, 2026)
+
+Ryan agreed with all five chair picks in section 8 (FINDINGS R85). Build issues are filed from section 6.
