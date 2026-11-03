@@ -102,7 +102,9 @@ static func outline(parent: Node3D, p: Vector3, col: Color, width: float) -> Nod
 		mi.material_override = mat
 		node.add_child(mi)
 		mi.position = (a + b) * 0.5
-		mi.look_at_from_position(mi.position, b, Vector3.UP, true)
+		# Local-space aim (Muse review #86, Opus confirmed Nov 3): look_at_from_position works in
+		# global space, so inside the tree it moved every segment to near the world origin.
+		mi.basis = Basis.looking_at(b - mi.position, Vector3.UP, true)
 	return node
 
 static func hulk_fallback(parent: Node3D, p: Vector3, rng: RandomNumberGenerator) -> Node3D:
