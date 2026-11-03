@@ -9,7 +9,7 @@ extends Node3D
 #     far side of the board where the default camera sees it;
 #   - asteroids (world_rocks.gd, shapes from world/tools/rockgen.py): blockers on rock hexes, debris on debris hexes, a
 #     scatter round the board's edge, a deep field and (on belt maps) a belt stream far below, a few mountain-sized rocks,
-#     all tumbling, far ones sinking into the sky's haze; dust specks for depth when the camera moves;
+#     all holding their seeded poses, far ones sinking into the sky's haze; dust specks for depth when the camera moves;
 #   - nebula and ion-storm clouds on their hexes; the dead star (R2, R24) with lensing and its accretion disc.
 #
 # Kept from G4's rules (BACKLOG section 3): no distant traffic ships; nothing on the board but blockers and debris on
