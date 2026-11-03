@@ -5,7 +5,7 @@ extends Node3D
 #               as one body; lit on the sun's side, dense cores glowing, soft where they meet hulls and rocks. Step 2:
 #               shaped by a soft footprint of its own hexes (_mask) worn by the noise, so it has no hex outline and no
 #               hex-shaped blobs, and never spills out of its hexes
-#   ion storm   the same gas, darker than the sky behind it with violet-lit cores, and lightning: jagged bolts that flash
+#   ion storm   the same gas, darker than the sky behind it with yellow-white electric veins, and lightning: jagged bolts that flash
 #               now and then, each with a light that catches the ships, rocks and the gas round it (never the fog)
 #   debris      dense rock and wreck clusters: many more rocks of mixed size, wreckage (torn hull plates with their
 #               frames, snapped hull frames, broken truss spars, gutted hull sections; some torn edges still hot, every
@@ -24,36 +24,42 @@ var _chunk_job := {}
 var W = null                 # the world (world.gd)
 var rng := RandomNumberGenerator.new()
 var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
-var storm_mat: ShaderMaterial = null
+var storm_mats: Array[ShaderMaterial] = []
+var _storm_patches: Array = []
+var _presented_ticks := {}
+var _tick_presenter: Node = null
 var bolts: Array = []        # {mi, light, pos, next, start}
 var clock := 0.0
+
+# R82: keep the ends violet even under a warm faction sky.
+const NEBULA_FACTION_END_WEIGHT := 0.25
 
 const GAS_SHADER := """
 shader_type spatial;
 render_mode unshaded, blend_mix, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 """ + "%NOISE%" + """
 uniform sampler2D depth_tex : hint_depth_texture, filter_nearest;
-// step 2: where the gas may be. Each texel holds (r) a soft round field summed over this terrain's hexes (1 near a hex
-// centre, falling to about a fifth at its edge; neighbours merge into one body) and (g) the distance to the nearest
-// hex's middle (hex metric: 1 at its flat edge), a hard stop so the gas never spills out of its hexes. The noise wears
-// the round field into soft, irregular shapes: no hex outline and no hex-shaped blobs
+// r: the round field, g: inward feather of the union boundary, zero outside.
 uniform sampler2D mask_tex : filter_linear, repeat_disable;
-uniform vec4 mask_box = vec4(0.0, 0.0, 1.0, 1.0);   // xz of the texture's corner, 1 / its size
-uniform vec3 c_dark = vec3(0.10, 0.06, 0.20);
-uniform vec3 c_lit = vec3(0.60, 0.40, 0.90);
-uniform vec3 c_glow = vec3(0.80, 0.60, 1.00);
+uniform vec4 mask_box = vec4(0.0, 0.0, 1.0, 1.0);
+uniform vec3 c_dark = vec3(0.006, 0.002, 0.014);
+uniform vec3 c_shadow = vec3(0.055, 0.012, 0.14);
+uniform vec3 c_lit = vec3(0.43, 0.20, 0.80);
+uniform vec3 c_glow = vec3(0.88, 0.72, 1.0);
 uniform vec3 sun_v = vec3(0.45, 0.70, 0.55);
-uniform float dens = 0.7;
-uniform float glow_from = 0.56;   // how dense the field must be before its core glows
+uniform float dens = 0.5;
+uniform float gas_time = 0.0;
+uniform float glow_from = 0.56;
 uniform float gain_a = 1.0;
 uniform float storm = 0.0;
 uniform vec3 bolt = vec3(0.70, 0.80, 1.00);
 uniform vec4 flashes[4];
+uniform vec4 tick_flare = vec4(0.0);
 varying vec4 vI;
 varying vec2 vQ;
 varying vec3 vW;
 void vertex() {
-	vI = INSTANCE_CUSTOM;   // x size, y spin seed, z density, w phase
+	vI = INSTANCE_CUSTOM; // x size, y spin, z density, floor(w) layer, fract(w) phase
 	vec4 c = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
 	float a = vI.y * 6.2831;
 	vec2 q = mat2(vec2(cos(a), sin(a)), vec2(-sin(a), cos(a))) * VERTEX.xy;
@@ -66,55 +72,72 @@ vec2 foot_at(vec2 xz) { return texture(mask_tex, (xz - mask_box.xy) * mask_box.z
 void fragment() {
 	float r = length(vQ);
 	if (r > 1.0) { discard; }
-	// the patch's footprint first (one texture read), so most of a puff that hangs outside costs nothing
-	float hd = foot_at(vW.xz).g;
-	if (hd > 1.0) { discard; }
-	vec3 p = vW * 0.075 + vec3(TIME * 0.012, TIME * 0.004, TIME * 0.007);
-	float w = wfbm3(p * 0.55 + 4.0);
-	float n = wfbm3(p + vec3(w) * 0.9);
-	// the footprint read again through a slow warp, so its edge bends and frays instead of following the hexes
-	vec2 wv = vec2(w - 0.5, wfbm3(p * 0.4 - 7.0) - 0.5) * 9.0;
-	float fw = foot_at(vW.xz + wv).r;
-	// the noise lowers or raises the bar the round field must clear, so the edge wanders well inside the hexes
-	float bar = 0.62 - 0.55 * smoothstep(0.3, 0.75, n);
-	float foot = smoothstep(bar, bar + 0.3, fw) * (1.0 - smoothstep(0.8, 1.0, hd));
-	// thinner near the top and bottom of the layer, so it reads as a body of gas, not a slab
-	float layer = smoothstep(-6.5, -2.5, vW.y) * (1.0 - smoothstep(3.0, 8.5, vW.y));
-	// a broad, flat-topped puff: the overlap of many hides each puff's own round edge, the field and footprint give the shape
-	float shape = 1.0 - smoothstep(0.4, 1.0, r);
-	float d = shape * foot * layer * smoothstep(0.30, 0.70, n) * vI.z;
-	// soft where the gas meets a hull or a rock (no hard cut lines)
+	vec2 mask = foot_at(vW.xz);
+	if (mask.g <= 0.001) { discard; }
 	float dz = texture(depth_tex, SCREEN_UV).r;
 	vec4 vv = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, dz, 1.0);
-	float scene_d = -vv.z / vv.w;
-	d *= clamp((scene_d + VERTEX.z) / 5.0, 0.0, 1.0);
+	vec3 opaque_world = (INV_VIEW_MATRIX * vec4(vv.xyz / vv.w, 1.0)).xyz;
+	// All gas layers leave opaque hulls intact, even a veil in front of a ship.
+	if (dz > 0.000001 && opaque_world.y > -20.0) { discard; }
+	float band = floor(vI.w);
+	float phase = fract(vI.w);
+	float rate = band < 0.5 ? 0.6 : (band < 1.5 ? 1.0 : (band < 2.5 ? 1.6 : 0.4));
+	if (storm > 0.5) { rate *= band > 2.5 ? -1.7 : 1.7; }
+	vec3 drift = vec3(0.012, 0.004, 0.007) * gas_time * rate;
+	vec3 p = vW * 0.075 + drift;
+	float w = wfbm3(p * 0.55 + 4.0);
+	float n = wfbm3(p + vec3(w) * 0.9);
+	vec2 wv = vec2(w - 0.5, wfbm3(p * 0.4 - 7.0) - 0.5) * 9.0;
+	float fw = foot_at(vW.xz + wv).r;
+	float breath = band > 0.5 && band < 1.5 ? sin(gas_time * 0.785398 + phase) * 0.025 : 0.0;
+	float bar = 0.62 - 0.55 * smoothstep(0.3, 0.75, n);
+	float foot = smoothstep(bar, bar + 0.3, fw) * mask.g;
+	float lo = band < 0.5 ? -4.0 : (band < 1.5 ? 1.0 : (band < 2.5 ? 6.0 : 12.0));
+	float hi = band < 0.5 ? 2.0 : (band < 1.5 ? 8.0 : (band < 2.5 ? 14.0 : 18.0));
+	float layer = smoothstep(lo, lo + 1.5, vW.y) * (1.0 - smoothstep(hi - 1.5, hi, vW.y));
+	float shape = 1.0 - smoothstep(0.4, 1.0, r);
+	float field = smoothstep(0.27 + breath, 0.70 + breath, n);
+	float d = shape * foot * layer * field * vI.z;
+	// Soften contact with distant geometry below the playing surface.
+	d *= clamp((-vv.z / vv.w + VERTEX.z) / 5.0, 0.0, 1.0);
 	if (d <= 0.002) { discard; }
-	// lit from the sun's side: the field thinner toward the sun means light gets in
 	float n2 = wfbm3(p + normalize(sun_v) * 0.22 + vec3(w) * 0.9);
 	float lit = clamp(0.5 + (n - n2) * 5.0, 0.0, 1.0);
-	vec3 col = mix(c_dark, c_lit, lit);
-	// dense cores glow; the thin fringe stays dark so the shape reads against the sky
-	col += c_glow * pow(max(n - glow_from, 0.0), 1.4) * 2.2 * foot;
-	float a = d * dens;
+	float density = clamp((n - 0.18) / 0.72, 0.0, 1.0);
+	vec3 col = mix(c_dark, c_shadow, smoothstep(0.0, 0.3, density));
+	col = mix(col, c_lit, smoothstep(0.3, 0.6, density));
+	col = mix(col, c_glow, smoothstep(0.6, 0.9, density));
+	col *= 0.25 + 0.75 * lit;
+	// The same world field at 3.6x frequency: narrow ridges, with rare bright knots.
+	float fine = wfbm3(p * 3.6 + vec3(w * 0.4) + drift * 2.5);
+	float vein = (1.0 - smoothstep(mix(0.004, 0.008, storm), mix(0.014, 0.026, storm), abs(fine - 0.53))) * smoothstep(mix(0.54, 0.48, storm), mix(0.68, 0.64, storm), n);
+	float peak = smoothstep(0.67, 0.79, fine) * smoothstep(glow_from, 0.76, n);
+	vec3 energy = c_glow * (peak * 1.8 + vein * 0.35);
+	float layer_gain = band < 0.5 ? 0.50 : (band < 1.5 ? 1.0 : (band < 2.5 ? 0.55 : 0.10));
 	if (storm > 0.5) {
-		// a faint flicker deep inside now and then (r2: kept low, it made the gas pale)
-		float ph = fract(TIME * (0.09 + vI.w * 0.06) + vI.w * 13.0);
-		float fl = smoothstep(0.0, 0.01, ph) * smoothstep(0.07, 0.02, ph);
-		col += bolt * fl * 0.25 * shape * foot;
+		// Binding step-2 dark body. Yellow enters only through electrical energy.
+		col = mix(c_dark, c_lit, lit);
+		vec3 hot = vec3(1.0, 0.88, 0.40);
+		vec3 core = mix(c_glow, vec3(1.0, 0.95, 0.72), smoothstep(0.56, 0.78, density));
+		float pulse = 0.90 + 0.10 * sin(gas_time * 3.14159 + phase);
+		energy = core * peak * 2.0 * pulse + hot * vein * 1.4 * pulse;
+		float tick = tick_flare.w;
+		energy += hot * vein * tick * 1.5;
 		for (int i = 0; i < 4; i++) {
 			vec4 f = flashes[i];
-			if (f.w > 0.001) {
-				vec3 dd = vW - f.xyz;
-				float g = exp(-dot(dd, dd) / 260.0) * f.w;
-				// the flash lights the gas round the bolt; it never whitens it (step 2: no white blob)
-				// (r1 on the PC: at 0.9 the whole storm read lavender most of the time, some bolt is nearly always lit)
-				col += bolt * g * 0.32 * smoothstep(0.4, 0.75, n);
-			}
+			vec3 dd = vW - f.xyz;
+			float sheet = exp(-dot(dd, dd) / 500.0) * f.w;
+			float flash = (1.0 - smoothstep(8.0, 12.0, length(dd))) * f.w;
+			energy += mix(bolt, hot, 0.65) * (sheet * 0.10 + flash * 0.3) * field;
 		}
-		col = min(col, vec3(0.5, 0.5, 0.8));
 	}
-	ALBEDO = col;
-	ALPHA = clamp(a * gain_a, 0.0, 0.85);
+	// Optical depth accumulates across overlapping puffs rather than a flat tint.
+	float a = 1.0 - exp(-d * dens * layer_gain * 3.6);
+	float ship_band = 1.0 - smoothstep(3.0, 4.5, vW.y);
+	a = min(a, mix(0.7, 0.39, ship_band));
+	// Unshaded gas carries its internal light in the final radiance.
+	ALBEDO = col + energy;
+	ALPHA = clamp(a * gain_a, 0.0, 0.7);
 }
 """
 
@@ -193,12 +216,27 @@ void fragment() {
 
 func build(world) -> void:
 	W = world
+	# battle.gd _play_event("tick") calls _float("Ion storm") before gfx.tick.
+	# Consume those positioned presentation records, never the rules event queue.
+	var presenter: Node = W.get_parent()
+	if presenter != null and presenter.get("floats") is Array:
+		_tick_presenter = presenter
 	rng.seed = int(W.setting.get("seed", 7)) * 31 + 991
 	var pts: Dictionary = W._terr_pts
-	if not (pts["neb"] as Array).is_empty():
-		_gas(pts["neb"], false)
+	# Background specks originally drew after gas at priority 0. Put them behind it.
+	for child in W.get_children():
+		if child is MultiMeshInstance3D and child.material_override is ShaderMaterial:
+			var mat: ShaderMaterial = child.material_override
+			if mat.shader.code == W.DUST_SHADER:
+				mat.render_priority = -6
+	for kind in ["neb", "storm"]:
+		var patches := _patches(pts[kind])
+		var broad_left := (pts[kind] as Array).size() / 3
+		for j in patches.size():
+			var broad := (patches[j] as Array).size() / 3 if j < patches.size() - 1 else broad_left
+			_gas(patches[j], kind == "storm", broad)
+			broad_left -= broad
 	if not (pts["storm"] as Array).is_empty():
-		_gas(pts["storm"], true)
 		_bolts(pts["storm"])
 	if not (pts["debris"] as Array).is_empty():
 		_debris(pts["debris"])
@@ -224,28 +262,46 @@ func _quad_mm(n: int) -> MultiMesh:
 
 # ---------------------------------------------------------------- nebula and storm gas
 
-func _gas(ps: Array, storm: bool) -> void:
+# Connected components keep broad veils and materials local to each cloud.
+func _patches(ps: Array) -> Array:
+	var remaining := ps.duplicate()
+	var patches: Array = []
+	while not remaining.is_empty():
+		var patch: Array = [remaining.pop_back()]
+		var i := 0
+		while i < patch.size():
+			for j in range(remaining.size() - 1, -1, -1):
+				if (patch[i] as Vector3).distance_squared_to(remaining[j]) < 18.0 * 18.0:
+					patch.append(remaining[j])
+					remaining.remove_at(j)
+			i += 1
+		patches.append(patch)
+	return patches
+
+
+func _gas(ps: Array, storm: bool, broad_count := -1) -> void:
 	var low: bool = W.quality == "low"
 	# step 2: fewer, broader, softer puffs; their shape comes from one noise field and the patch's footprint (_mask), so
 	# the patch reads as one body of gas, not a row of cotton balls on hex tiles
 	var per := 3 if low else 5
-	var n_big := ps.size() / 3
+	var n_big := ps.size() / 3 if broad_count < 0 else broad_count
 	var mm := _quad_mm(ps.size() * per + n_big)
 	var i := 0
 	for p in ps:
 		for k in per:
 			var a := rng.randf() * TAU
 			var rr := sqrt(rng.randf()) * 6.0
-			# most of the gas low, round the ships' feet; a thin veil over them
-			var y := lerpf(-4.0, 5.5, pow(rng.randf(), 1.4))
+			# Preserve the count and size; split the existing puffs into height bands.
+			var layer: int = [0, 1, 2, 1, 2][k]
+			var y := rng.randf_range(-2.5, 0.5) if layer == 0 else (rng.randf_range(2.5, 6.5) if layer == 1 else rng.randf_range(8.0, 12.0))
 			mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, (p as Vector3) + Vector3(cos(a) * rr, y, sin(a) * rr)))
-			mm.set_instance_custom_data(i, Color(rng.randf_range(24.0, 34.0), rng.randf(), rng.randf_range(0.55, 0.85), rng.randf()))
+			mm.set_instance_custom_data(i, Color(rng.randf_range(24.0, 34.0), rng.randf(), rng.randf_range(0.55, 0.85), layer + rng.randf() * 0.9))
 			i += 1
-	# a few broad, thin puffs that tie the patch together
+	# One or two existing broad puffs become a very faint high tying veil.
 	for k in n_big:
 		var p: Vector3 = ps[rng.randi() % ps.size()]
-		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p + Vector3(rng.randf_range(-4, 4), rng.randf_range(-2, 1), rng.randf_range(-4, 4))))
-		mm.set_instance_custom_data(i, Color(rng.randf_range(36.0, 46.0), rng.randf(), rng.randf_range(0.3, 0.4), rng.randf()))
+		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, p + Vector3(rng.randf_range(-4, 4), rng.randf_range(13.5, 16.5) if k < 2 else rng.randf_range(2.5, 6.5), rng.randf_range(-4, 4))))
+		mm.set_instance_custom_data(i, Color(rng.randf_range(36.0, 46.0), rng.randf(), rng.randf_range(0.3, 0.4), (3 if k < 2 else 1) + rng.randf() * 0.9))
 		i += 1
 	var mi := MultiMeshInstance3D.new()
 	mi.name = "Storm" if storm else "Nebula"
@@ -255,7 +311,7 @@ func _gas(ps: Array, storm: bool) -> void:
 	sh.code = GAS_SHADER.replace("%NOISE%", WS.NOISE)
 	m.shader = sh
 	m.set_shader_parameter("sun_v", Vector3(0.45, 0.70, 0.55))   # world.gd SUN
-	var mk: Array = _mask(ps)
+	var mk: Array = _mask(ps, 1.5 if storm else 2.0)
 	m.set_shader_parameter("mask_tex", mk[0])
 	m.set_shader_parameter("mask_box", mk[1])
 	var g := 1.0
@@ -270,18 +326,24 @@ func _gas(ps: Array, storm: bool) -> void:
 		m.set_shader_parameter("storm", 1.0)
 		m.set_shader_parameter("dens", 1.0)
 		m.set_shader_parameter("glow_from", 0.5)
-		storm_mat = m
+		storm_mats.append(m)
+		_storm_patches.append({"mat": m, "points": ps, "tick": 0.0})
 		_set_flashes([])
 	else:
 		var b: Array = FLOOK.of(W._fac).get("nebula", FLOOK.of("voidsworn")["nebula"])
-		# the setting's own nebula colours, pulled toward the violet every nebula hex carries (its edge, its tactical fill)
-		var vio := Vector3(0.62, 0.42, 1.0)
-		var c1: Vector3 = (b[1] as Vector3).lerp(vio * (b[1] as Vector3).length() / vio.length(), 0.5)
-		var c2: Vector3 = (b[2] as Vector3).lerp(vio * (b[2] as Vector3).length() / vio.length(), 0.45)
-		m.set_shader_parameter("c_dark", c1 * 0.18)
-		# step 2: a little dimmer, so pale setting colours (the Glasswrights' skies) do not go cotton white
-		m.set_shader_parameter("c_lit", c1.lerp(c2, 0.4) * 0.72)
-		m.set_shader_parameter("c_glow", c2 * 0.62)
+		var violet := Vector3(0.434, 0.202, 1.0) # legend #b07cff in linear RGB
+		var faction: Vector3 = b[1]
+		# Match value before the hue blend, so warm skies cannot make brown gas.
+		faction /= maxf(faction.length(), 0.001)
+		var end_tint := faction
+		m.set_shader_parameter("c_dark", Vector3(0.006, 0.002, 0.014).lerp(end_tint * Vector3(0.006, 0.002, 0.014).length(), NEBULA_FACTION_END_WEIGHT))
+		m.set_shader_parameter("c_shadow", Vector3(0.055, 0.012, 0.14))
+		var body := violet.lerp(faction * violet.length(), 0.5)
+		# R82 fixes the violet family: a warm sky may shift it, never neutralise it.
+		body.y = minf(body.y, body.z * 0.24)
+		body.x = minf(body.x, body.z * 0.60)
+		m.set_shader_parameter("c_lit", body * 0.65)
+		m.set_shader_parameter("c_glow", Vector3(0.88, 0.72, 1.0).lerp(end_tint * Vector3(0.88, 0.72, 1.0).length(), NEBULA_FACTION_END_WEIGHT))
 		m.set_shader_parameter("dens", 0.5)
 	# drawn before the board's own fills, so a move hex inside the gas still shows on top
 	m.render_priority = -5
@@ -293,9 +355,8 @@ func _gas(ps: Array, storm: bool) -> void:
 
 
 # the patch's footprint as a small two-channel float texture over its hexes (one texel per world unit): r the soft
-# round field (a Gaussian round each hex centre, summed), g the hex distance to the nearest hex centre (0 at a centre, 1
-# at its flat edge, 2 and more outside); returns [texture, Vector4(x0, z0, 1/w, 1/h)]
-func _mask(ps: Array) -> Array:
+# round field (a Gaussian round each hex centre, summed), g the inward feather of the external boundary; returns [texture, Vector4(x0, z0, 1/w, 1/h)]
+func _mask(ps: Array, feather := 2.0) -> Array:
 	const HIN := 8.660254          # a hex's inner radius (corner radius 10, board.gd HS)
 	const STEP := 1.0
 	const SIG2 := 42.0             # the round field's spread (squared): about a fifth of a hex centre's strength at its edge
@@ -326,17 +387,45 @@ func _mask(ps: Array) -> Array:
 				var d := maxf(dx, 0.5 * dx + 0.8660254 * dz) / HIN
 				if d < f[j + 1]:
 					f[j + 1] = d
+	# Shared edges are not boundaries. Feather inward from only the union's outside.
+	var edges: Array = []
+	for p in ps:
+		var c := Vector2((p as Vector3).x, (p as Vector3).z)
+		for k in 6:
+			var normal := Vector2(cos(k * TAU / 6.0), sin(k * TAU / 6.0))
+			var neighbor := c + normal * HIN * 2.0
+			var shared := false
+			for q in ps:
+				if neighbor.distance_squared_to(Vector2((q as Vector3).x, (q as Vector3).z)) < 0.1:
+					shared = true
+					break
+			if not shared:
+				var tangent := Vector2(-normal.y, normal.x) * 5.0
+				edges.append([c + normal * HIN - tangent, c + normal * HIN + tangent])
+	for zi in h:
+		for xi in w:
+			var j := (zi * w + xi) * 2 + 1
+			if f[j] >= 1.0:
+				f[j] = 0.0
+				continue
+			var point := lo + Vector2(xi, zi) * STEP
+			var distance_to_edge := feather
+			for edge in edges:
+				var a: Vector2 = edge[0]
+				var ab: Vector2 = edge[1] - a
+				var near := a + ab * clampf((point - a).dot(ab) / ab.length_squared(), 0.0, 1.0)
+				distance_to_edge = minf(distance_to_edge, point.distance_to(near))
+			f[j] = smoothstep(0.0, feather, distance_to_edge)
 	var img := Image.create_from_data(w, h, false, Image.FORMAT_RGF, f.to_byte_array())
 	return [ImageTexture.create_from_image(img), Vector4(lo.x - 0.5 * STEP, lo.y - 0.5 * STEP, 1.0 / (w * STEP), 1.0 / (h * STEP))]
 
 
 func _set_flashes(fs: Array) -> void:
-	if storm_mat == null:
-		return
 	var arr: Array = []
 	for k in 4:
 		arr.append(fs[k] if k < fs.size() else Vector4.ZERO)
-	storm_mat.set_shader_parameter("flashes", arr)
+	for mat in storm_mats:
+		mat.set_shader_parameter("flashes", arr)
 
 
 # lightning: one bolt for about every two storm hexes (at most six), each a jagged line with a branch or two between two
@@ -444,10 +533,42 @@ static func _instance_shader_ready(mi: MeshInstance3D) -> bool:
 	return DisplayServer.get_name() != "headless" and RenderingServer.get_current_rendering_method() != "dummy" and is_instance_valid(mi) and mi.material_override != null
 
 
+# The positioned float is created on the actual storm tick, including shield-only
+# ticks. No inferred round timer, shield-hit guess, or duplicated damage rule.
+func _storm_tick_at(pos: Vector3) -> void:
+	for patch in _storm_patches:
+		for p in patch.points:
+			if Vector2(pos.x - p.x, pos.z - p.z).length_squared() <= 100.0:
+				patch.tick = 1.0
+				break
+
+
+func _present_storm_ticks(dt: float) -> void:
+	if is_instance_valid(_tick_presenter):
+		var live := {}
+		for record in _tick_presenter.get("floats"):
+			var label = record.get("lbl")
+			if not is_instance_valid(label) or not label is Label:
+				continue
+			if not (label as Label).text.begins_with("Ion storm"):
+				continue
+			var id: int = label.get_instance_id()
+			live[id] = true
+			if not _presented_ticks.has(id):
+				_storm_tick_at(record["pos"])
+		_presented_ticks = live
+	for patch in _storm_patches:
+		patch.tick = maxf(0.0, float(patch.tick) - dt / 0.45)
+		(patch.mat as ShaderMaterial).set_shader_parameter("tick_flare", Vector4(0, 0, 0, float(patch.tick)))
+
+
 func _process(dt: float) -> void:
-	if bolts.is_empty() or not visible:
+	if not visible:
 		return
 	clock += dt
+	for g in gas_mats:
+		(g[0] as ShaderMaterial).set_shader_parameter("gas_time", clock)
+	_present_storm_ticks(dt)
 	var fs: Array = []
 	for b in bolts:
 		if clock >= float(b["next"]):
