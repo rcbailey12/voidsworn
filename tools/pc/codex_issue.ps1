@@ -24,7 +24,9 @@ Rules:
   Godot, if a check needs it: $godot (use --headless).
 - No em dashes in anything you write. Plain words.
 - Do not commit and do not push: the runner does that after you finish.
-- Keep scratch output (logs, screenshots, temp checks) in %TEMP%, not in this folder.
+- Keep scratch output (logs, temp checks) in %TEMP%, not in this folder.
+- Save the screenshots, sheets and recordings your report links to in $out\shots (create it). Opus can only see that folder,
+  not %TEMP%; link them there in your report.
 - Finish with a short report: what you changed (files), the checks you ran and their result, anything you skipped and why.
   That report becomes the pull request description, so write it for a reviewer.
 
