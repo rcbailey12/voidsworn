@@ -16,6 +16,8 @@ set "LOCALAPPDATA=%APPDATA%"
 set "DESTRUCTION_OUT="
 "%G%" --headless --path godot --script res://fx/test/destruction_steps_check.gd --log-file "%RESULT%\geometry.log"
 if errorlevel 1 goto failed
+"%G%" --headless --path godot --script res://fx/test/death_plane_check.gd --log-file "%RESULT%\plane.log"
+if errorlevel 1 goto failed
 "%G%" --headless --path godot --script res://fx/test/destruction_staging_check.gd --log-file "%RESULT%\staging.log"
 if errorlevel 1 goto failed
 "%G%" --headless --path godot --script res://fx/test/fx_smoke.gd --log-file "%RESULT%\smoke.log"
