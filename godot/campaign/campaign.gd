@@ -1408,8 +1408,37 @@ func awardLineageXP(flown, fac, xp) -> Dictionary:
 			var gain = masteryCredit(row["id"], budget * shadowRate(row["id"]) / weight); row["xp"] += gain["xp"]; pool += gain["overflow"]
 	META["shadowPool"][fac] = pool
 	return {"mxGain": active["xp"], "mxOverflow": active["overflow"], "shadow": shadow, "shadowBank": pool}
+func inheritanceLine(id) -> Dictionary:
+	var level = masteryLevel(id); var xp = masteryXP(id); var thresholds = masteryThresholds(id)
+	var next = thresholds[level + 1] if level + 1 < thresholds.size() else null
+	return {"id": id, "xp": xp, "level": level, "next": next, "remaining": 0 if next == null else max(0.0, float(next) - xp)}
+func inheritanceSummary(run) -> Dictionary:
+	var cy = run["carry"]; var balance = float(z0(META.get("renown"))); var affordable = []
+	for id in LEGACY:
+		var u = LEGACY[id]
+		if not jt(META["unlocked"].get(id)) and (not jt(u.get("req")) or jt(META["unlocked"].get(u["req"]))) and float(u["cost"]) <= balance:
+			affordable.append({"id": id, "n": u["n"], "cost": u["cost"], "kind": "Doctrine", "fresh": float(u["cost"]) > balance - float(cy["ren"])})
+	for id in HULL_VARIANTS:
+		var u = HULL_VARIANTS[id]
+		if not jt(u.get("arc")) and not jt(META["variants"].get(id)) and float(u["cost"]) <= balance:
+			affordable.append({"id": id, "n": u["n"], "cost": u["cost"], "kind": FACTIONS[HULLS[u["base"]]["fac"]]["n"] + " hull", "fresh": float(u["cost"]) > balance - float(cy["ren"])})
+	var flown = inheritanceLine(run["admiral"]); var tree = LINEAGE_TREES.has(run["admiral"]); var build = lineageBuild(run["admiral"])
+	var nodes = lineageNodes(run["admiral"]) if tree else []; var chosen = []; var ready = false
+	for node in nodes:
+		if node["state"] == "chosen": chosen.append(node["n"])
+		if node["branch"] == "cap" and node["state"] == "available": ready = true
+	var earned = []
+	for level in range(int(cy["mx0"]) + 1, mini(4, int(cy["mx1"])) + 1): earned.append(MASTERY_PERKS[level].duplicate(true))
+	flown.merge({"tree": tree, "pending": maxi(0, mini(3, int(flown["level"]) - 4) - build["picks"].size()) if tree else 0, "capstoneReady": ready, "chosen": chosen, "earned": earned})
+	var shadow = []
+	for row in cy["shadow"]:
+		var entry = inheritanceLine(row["id"]); entry.merge(row, true); entry["total"] = masteryXP(row["id"]); shadow.append(entry)
+	return {"balance": balance, "affordable": affordable, "flown": flown, "shadow": shadow}
 func endActions(run, nf) -> Array:
 	var acts = []
+	A(acts, "progTab", "legacy"); A(acts, "progTab", "variants")
+	if LINEAGE_TREES.has(run["admiral"]): A(acts, "lineage", run["admiral"])
+	else: A(acts, "progTab", "mastery")
 	for id in shadowAdmirals(run["fac"], run["admiral"]): A(acts, "nameHeir", id, META["heirs"].get(run["fac"]) != id)
 	if nf != null:
 		A(acts, "nextFac", nf); A(acts, "newRunScreen")
@@ -1441,6 +1470,7 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	RUN["carry"] = {"ren": ren, "mx0": mx0, "mx1": mx1, "hl": hl}
 	RUN["carry"].merge(earnings)
 	if arcs_on and not abandoned and arc_end_cb is Callable and (arc_end_cb as Callable).is_valid() and _arc_played(3): arc_end_cb.call(victory)
+	RUN["carry"]["inheritance"] = inheritanceSummary(RUN)
 	RUN["over"] = true; SAVED_RUN = null; persist_save()
 	var nf = nextFacPick() if victory else null
 	var acts = endActions(RUN, nf)
