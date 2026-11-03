@@ -1,0 +1,11 @@
+{
+    "command":  "node contrib/opus/tools/run_all_checks.js",
+    "passed":  23,
+    "failed":  0,
+    "findings_baseline":  "34 passed, 46 known failures, no unexpected failures",
+    "syntax_json_whitespace":  "PASS",
+    "em_dashes":  0,
+    "game_assets_replaced":  false,
+    "committed":  false,
+    "pushed":  false
+}

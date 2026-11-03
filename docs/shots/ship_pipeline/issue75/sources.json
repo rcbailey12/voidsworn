@@ -1,0 +1,402 @@
+{
+  "work": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue75",
+  "shots": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue75\\shots",
+  "ships": {
+    "C19_51": {
+      "name": "Warlord's Pyre-Barge",
+      "faction": "corsair",
+      "length": 41.6
+    },
+    "D21_23": {
+      "name": "Eclipse zenith",
+      "faction": "deathless",
+      "length": 23.2
+    },
+    "B16_23": {
+      "name": "The Ninefold Maw",
+      "faction": "chorus",
+      "length": 44.8
+    }
+  },
+  "today": {
+    "C19_51": {
+      "packed_scene": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\build\\godot\\gen\\ships\\C19_51.scn",
+      "sha256": "431607a78724e190ced5bdad24ead58ae52c9c4df1c35367775e4f68ff832662",
+      "bytes": 22631278,
+      "maps": {
+        "C19_51_base.jpg": "9940c64a194e66fc57add22f38bb6fbc0094f50270a88aa407bf30237acb2212",
+        "C19_51_base.jpg.import": "a298113e5518b54cace85997d948a7eb3cb73947a427eabf99985b9fd1843ecc",
+        "C19_51_emissive.jpg": "380fb4b8269cb34e8ac04810438a6f8ebc486b2d3eb9d4ce0e9ef4995ecb096a",
+        "C19_51_emissive.jpg.import": "d1e6138bb2ac27cbe7659c0314285f77f2d7d413fa91300f89d51b151393a7b0",
+        "C19_51_normal.jpg": "5067bd3dd5d560fe223a1c5efb200b4af8e2ce39deee6cb70a6e7cd0860e0e14",
+        "C19_51_normal.jpg.import": "ee018023282792940faebb1f230679000d4d5c1ea22d878ff143d98c2a0588ef",
+        "C19_51_orm.jpg": "c2bc327f07e35164ac51cf8936d7d955ea6c4cecdc4df4e279cd86f011e616a1",
+        "C19_51_orm.jpg.import": "ec5778d7d1dcf889873a89a19cbd94e7ac1d4693eaa7b737987bc6bfd087f645"
+      }
+    },
+    "D21_23": {
+      "packed_scene": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\build\\godot\\gen\\ships\\D21_23.scn",
+      "sha256": "278f86954c4fa52e2b3e83f0e817778cdf330b6d61b00eab60b1e7c3be8ee745",
+      "bytes": 2451744,
+      "maps": {
+        "D21_23_base.jpg": "d5b47fa99955b4a0528a6b71f349694d8747e92cacb687ba74f30981c5605e88",
+        "D21_23_base.jpg.import": "47260a9c6272c0ba5622c35f2e5959cc51c669765285c69eda2047092c528e35",
+        "D21_23_emissive.jpg": "bbf8e139cf8b4e012fd395db1d4f54940d21662c164f3289d7de86a109335323",
+        "D21_23_emissive.jpg.import": "bd310d6372576192b7fdd739f48355b17674e56902b24af4daeeeecac7049357",
+        "D21_23_normal.jpg": "4dd5ce1c160df14c72739a42d1b13be8bbb19fe205a9af7f8983c576354ce1c2",
+        "D21_23_normal.jpg.import": "36343c4916d3499af134fae8953fd73998903026f5aae177b0c18b30fdb4fa95",
+        "D21_23_orm.jpg": "84fb79e42c7e699e2359de2a19da26f23256fa31794e1bb572e5ca9033623576",
+        "D21_23_orm.jpg.import": "fd1bfaa5cf4805784abd1351dfa0fbde622e674fd0bbf87b23a744505f0522f9"
+      }
+    },
+    "B16_23": {
+      "packed_scene": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\build\\godot\\gen\\ships\\B16_23.scn",
+      "sha256": "307e7d66954c3d7aac5062e5eb0e66237409f53366121830cb20bc418c2d15dd",
+      "bytes": 20406464,
+      "maps": {
+        "B16_23_base.jpg": "4ee54d96568574ca7b99c345c7b0b696a9a70db54a4f7481af832fbac7050b21",
+        "B16_23_base.jpg.import": "057667ce0883051c109f73d7f47721d074850dc18ed353c5fe64e26007d788bf",
+        "B16_23_emissive.jpg": "d2548df959dba84f480ebd9e9669a98c36fd46b360d0f6c33555a8088fb1b857",
+        "B16_23_emissive.jpg.import": "86a6dce036ea7af1fd9f882196fa5b788a2aaac2152a8952fbe50608fdf182e8",
+        "B16_23_normal.jpg": "a776413d1896b35443bdd8666a2840ec5ab9c8fcf351e17c212e0357b9f077dc",
+        "B16_23_normal.jpg.import": "afadac40c84b8f5a3d5e59fe494122306f5e69a6406839af83d9de54f675074a",
+        "B16_23_orm.jpg": "820aec17bdc5a78bd943b641e49fb07303fbf130f8752525698f76ab6a99f243",
+        "B16_23_orm.jpg.import": "c29de81091d8cd8600e575946b4546eebeb5718bde59ee015e2b968d1ffcdd3e"
+      }
+    }
+  },
+  "factions": {
+    "_doc": "Per-faction colours and styles for effects, hulls and backdrops (G4). Linear RGB. Read by fx/faction_look.gd. Change a faction's look here, not in code. See fx/API.md section 15. Lore round 8 palettes (approved Oct 27): Sunward Crusade (voidsworn) black iron, frost white, bright ember; Hegemony pale grey, steel blue, implant blue; Ashfall Hullbreakers (corsair) soot, rust, red running lights; the Chorus dark olive, ochre, bile yellow-green; the Glasswrights (ithar) clear crystal, silver, rainbow edge, stored light; Eclipse (deathless) violet-black, white-gold corona, violet-white inner glow, no green.",
+    "_fields": "All fields are in use. damage_glow: the fire and lit conduits inside hull damage, per faction (Crusade ember, Hegemony white-gold, Hullbreakers dirty red, Chorus bile, Glasswrights stored white light, Eclipse violet-white). accent: a corona round each engine core in a second colour (Crusade frost white, Hullbreakers red running lights, Glasswrights silver, Eclipse white-gold; Eclipse's engine embers take it too); null where a faction has none (Hegemony, Chorus). shield_edge: the shield bubble's rim (Crusade frost white, Glasswrights rainbow); null for the others. Ids never change.",
+    "voidsworn": {
+      "weapon": [
+        1.0,
+        0.55,
+        0.2
+      ],
+      "shield": [
+        1.0,
+        0.5,
+        0.18
+      ],
+      "engine": [
+        1.0,
+        0.55,
+        0.18
+      ],
+      "shield_style": 0,
+      "trail": 0,
+      "shielded": true,
+      "engine_extra": "none",
+      "damage_glow": [
+        1.0,
+        0.5,
+        0.14
+      ],
+      "hull_fix": [
+        0.12,
+        0.3,
+        1.0
+      ],
+      "nebula": [
+        [
+          0.1,
+          0.16,
+          0.3
+        ],
+        [
+          0.5,
+          0.6,
+          0.75
+        ],
+        [
+          1.0,
+          0.55,
+          0.22
+        ]
+      ],
+      "accent": [
+        0.8,
+        0.9,
+        1.0
+      ],
+      "shield_edge": [
+        0.82,
+        0.92,
+        1.0
+      ]
+    },
+    "hegemony": {
+      "weapon": [
+        0.55,
+        0.82,
+        1.0
+      ],
+      "shield": [
+        0.38,
+        0.68,
+        1.0
+      ],
+      "engine": [
+        0.45,
+        0.72,
+        1.0
+      ],
+      "shield_style": 1,
+      "trail": 0,
+      "shielded": true,
+      "engine_extra": "none",
+      "damage_glow": [
+        1.0,
+        0.72,
+        0.38
+      ],
+      "hull_fix": [
+        0.08,
+        0.2,
+        1.0
+      ],
+      "nebula": [
+        [
+          0.08,
+          0.2,
+          0.42
+        ],
+        [
+          0.22,
+          0.42,
+          0.72
+        ],
+        [
+          0.85,
+          0.93,
+          1.0
+        ]
+      ],
+      "accent": null,
+      "shield_edge": null
+    },
+    "corsair": {
+      "weapon": [
+        0.95,
+        0.22,
+        0.1
+      ],
+      "shield": [
+        0.85,
+        0.16,
+        0.1
+      ],
+      "engine": [
+        1.0,
+        0.38,
+        0.16
+      ],
+      "shield_style": 2,
+      "trail": 1,
+      "shielded": true,
+      "engine_extra": "soot",
+      "damage_glow": [
+        1.0,
+        0.3,
+        0.07
+      ],
+      "hull_fix": [
+        0.15,
+        0.3,
+        1.0
+      ],
+      "nebula": [
+        [
+          0.18,
+          0.08,
+          0.05
+        ],
+        [
+          0.5,
+          0.18,
+          0.08
+        ],
+        [
+          1.0,
+          0.32,
+          0.12
+        ]
+      ],
+      "accent": [
+        1.0,
+        0.1,
+        0.05
+      ],
+      "shield_edge": null
+    },
+    "chorus": {
+      "weapon": [
+        0.72,
+        0.88,
+        0.18
+      ],
+      "shield": null,
+      "engine": [
+        0.7,
+        0.86,
+        0.2
+      ],
+      "shield_style": 0,
+      "trail": 2,
+      "shielded": false,
+      "engine_extra": "spores",
+      "damage_glow": [
+        0.66,
+        0.92,
+        0.16
+      ],
+      "hull_fix": [
+        0.45,
+        0.55,
+        1.35
+      ],
+      "nebula": [
+        [
+          0.14,
+          0.16,
+          0.06
+        ],
+        [
+          0.55,
+          0.38,
+          0.12
+        ],
+        [
+          0.8,
+          0.9,
+          0.35
+        ]
+      ],
+      "accent": null,
+      "shield_edge": null
+    },
+    "ithar": {
+      "weapon": [
+        0.92,
+        0.96,
+        1.0
+      ],
+      "shield": [
+        0.82,
+        0.9,
+        1.0
+      ],
+      "engine": [
+        0.82,
+        0.94,
+        1.0
+      ],
+      "shield_style": 3,
+      "trail": 0,
+      "shielded": true,
+      "engine_extra": "none",
+      "damage_glow": [
+        0.85,
+        0.92,
+        1.0
+      ],
+      "hull_fix": [
+        0.1,
+        0.25,
+        1.0
+      ],
+      "nebula": [
+        [
+          0.05,
+          0.08,
+          0.18
+        ],
+        [
+          0.42,
+          0.48,
+          0.7
+        ],
+        [
+          0.85,
+          0.9,
+          1.0
+        ]
+      ],
+      "accent": [
+        0.88,
+        0.9,
+        0.96
+      ],
+      "shield_edge": "rainbow"
+    },
+    "deathless": {
+      "weapon": [
+        0.72,
+        0.55,
+        1.0
+      ],
+      "shield": null,
+      "engine": [
+        0.7,
+        0.52,
+        1.0
+      ],
+      "shield_style": 0,
+      "trail": 3,
+      "shielded": false,
+      "engine_extra": "embers",
+      "damage_glow": [
+        0.72,
+        0.5,
+        1.0
+      ],
+      "hull_fix": [
+        0.4,
+        0.5,
+        1.3
+      ],
+      "nebula": [
+        [
+          0.1,
+          0.04,
+          0.16
+        ],
+        [
+          0.34,
+          0.14,
+          0.52
+        ],
+        [
+          1.0,
+          0.84,
+          0.55
+        ]
+      ],
+      "accent": [
+        1.0,
+        0.84,
+        0.5
+      ],
+      "shield_edge": null
+    }
+  },
+  "reference_sha256": {
+    "godot/render/look.gd": "81168b97235e5266cc8fa9dab0571169a13ee5397a0104111d4c7c262df9c8c6",
+    "godot/render/camera_rig.gd": "2d1721c124b746c66144a3e5210373365ad5e5133d2d93b1cd4e0b3bc1fbf2d5",
+    "godot/render/ship_view.gd": "98e60ba30e5fdc68c071f4fcdbc972f342413f99cd79b344ffe61ba65e8963cd",
+    "godot/fx/faction_looks.json": "b5ab76e479f4d904a0a01abe4036659a9dea0d4419372b09050286c93e0c4cb0"
+  },
+  "sky_sha256": "6a3fc4e3d41899be45308dc38c6b7454529e2f3e5f40af16a354a3056b025406",
+  "prototype_scripts_sha256": {
+    "build.py": "0dd0cc58c665a4e7bb147e666f8b63a568ccc39963a217741df182c0a0e392df",
+    "probe.gd": "d56f0ba733570908f281e4da3339771d6ea62919eb3cb46393d7fefccca4c861",
+    "project.godot": "1355da5cce397198253975c479a765ddb8d064a24292b989dafaf9275df5454b",
+    "run.py": "aa8d1b9bb74fa517f2c5b2e9c2f204226b9a179d06bc905fadb5cc5f791c26c8",
+    "RUN_SURFACE_BAKEOFF.bat": "59a360f6cc768e7ee74dd8d8f325f996b29f63726ae66b60cd5f324a7c150d91",
+    "verify.py": "f2d3a36cd505b5db213161e8d9581b3bf826c01cc68d18ac0e0220e0150aa502"
+  },
+  "repo_commit": "53f1ebc76138575c18e9aa0e8083cb0952519353",
+  "created_utc": "2026-11-03T14:43:56.854484+00:00",
+  "sheet_script_sha256": "7b8c11b119b8e76b242666845339ed441fb7cfd11d210f24aaea9566c0a9fb52"
+}

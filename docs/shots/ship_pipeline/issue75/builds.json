@@ -1,0 +1,157 @@
+{
+  "C19_51_B": {
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\C19_51\\C19_51_ship.npz",
+    "source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "source_triangles": 256426,
+    "voxel_triangles": 227448,
+    "detached_components_removed": 25,
+    "quads": 10444,
+    "source_surface_coverage": 0.9777220561288456,
+    "bake_positive_z_fraction": 0.9420123100280762,
+    "occupied_texels": 1981805,
+    "gpu": "OPTIX",
+    "metallic": "paint and exposed metal",
+    "normal_method": "selected-to-active tangent bake; low-frequency removal; 12 degree cap",
+    "triangles": 20888,
+    "reimport_triangles": 20888,
+    "reimport": "PASS",
+    "bytes": 9050616,
+    "sha256": "a25749fa08fd31cf94edc5a1e5a7aecd189dfbe5cc8cff38e1dcc4d803c67932",
+    "code": "C19_51",
+    "route": "B",
+    "seconds": 32.27303240005858
+  },
+  "C19_51_A": {
+    "connected_parts": 102,
+    "floating": [],
+    "gun_directions": [
+      [
+        0.6495698094367981,
+        -0.7594970464706421,
+        0.034976836293935776
+      ],
+      [
+        0.6495698094367981,
+        -0.7594970464706421,
+        0.034976836293935776
+      ],
+      [
+        0.6495698094367981,
+        0.7594970464706421,
+        0.034976836293935776
+      ],
+      [
+        0.6495698094367981,
+        0.7594970464706421,
+        0.034976836293935776
+      ],
+      [
+        0.6495698094367981,
+        -0.7594970464706421,
+        0.034976836293935776
+      ],
+      [
+        0.6495698094367981,
+        -0.7594970464706421,
+        0.034976836293935776
+      ],
+      [
+        0.6495698094367981,
+        0.7594970464706421,
+        0.034976836293935776
+      ],
+      [
+        0.6495698094367981,
+        0.7594970464706421,
+        0.034976836293935776
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "backward_guns": 0,
+    "parts": 102,
+    "trim_sheet_bands": 8,
+    "materials": 1,
+    "geometry": "clean authored lofts and bevelled kit parts; no AI mesh",
+    "triangles": 14920,
+    "reimport_triangles": 14920,
+    "reimport": "PASS",
+    "bytes": 8653704,
+    "sha256": "b77a7d9ddc201dc6d269a11a59cf98f27b7daa4054e2f78287c94297944e4435",
+    "code": "C19_51",
+    "route": "A",
+    "seconds": 3.591723500052467
+  },
+  "D21_23_B": {
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\D21_23\\D21_23_ship.npz",
+    "source_sha256": "034d7d64e78b73626ab18a537eb4bf534bc20ab586780e480d21a29536419a64",
+    "source_triangles": 132080,
+    "voxel_triangles": 128264,
+    "detached_components_removed": 3,
+    "quads": 8989,
+    "source_surface_coverage": 0.996333815726001,
+    "bake_positive_z_fraction": 0.9985623359680176,
+    "occupied_texels": 2276779,
+    "gpu": "OPTIX",
+    "metallic": "paint and exposed metal",
+    "normal_method": "selected-to-active tangent bake; low-frequency removal; 12 degree cap",
+    "triangles": 17978,
+    "reimport_triangles": 17978,
+    "reimport": "PASS",
+    "bytes": 5618564,
+    "sha256": "491b095a3558eaa62b38374b35be45a4d4b3162c1a9cdbda9c8b5ee757f5185e",
+    "code": "D21_23",
+    "route": "B",
+    "seconds": 27.771924900007434
+  },
+  "B16_23_B": {
+    "source": "C:\\Users\\rcbai\\Downloads\\voidsworn_test\\a4\\out\\B16_23\\B16_23_ship.npz",
+    "source_sha256": "b07347e1c3dffe511ab1345d4919a7a193c465554a913c914648d75a8bd66583",
+    "source_triangles": 165616,
+    "voxel_triangles": 188540,
+    "detached_components_removed": 41,
+    "quads": 7635,
+    "source_surface_coverage": 0.9525452976704055,
+    "bake_positive_z_fraction": 0.986940860748291,
+    "occupied_texels": 1943834,
+    "gpu": "OPTIX",
+    "metallic": 0,
+    "normal_method": "selected-to-active tangent bake; low-frequency removal; 12 degree cap",
+    "triangles": 15270,
+    "reimport_triangles": 15270,
+    "reimport": "PASS",
+    "bytes": 7789328,
+    "sha256": "8fa5cda57e9683fe292eddbdb718a33a7ba003941d4053c078cc9f9fb84ea2d7",
+    "code": "B16_23",
+    "route": "B",
+    "seconds": 23.551060099969618
+  }
+}
