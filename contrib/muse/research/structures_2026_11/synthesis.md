@@ -129,6 +129,18 @@ B) Turrets track the nearest enemy in real time (the Qwen leg's pick).
 C) Turrets stay static.
 Why: stationFire fires once a round on the 2 nearest capitals. Facing the last target sells the shot; constant tracking would spin against a target set that changes every round. Turrets export separately under any answer (R82 Q3).
 
+## 11. Owner rulings (Ryan, 2026-11-03)
+
+Ryan agreed with all five chair picks:
+
+1. Q1 battleship berth: A, the axial cradle parallel to the spine (about 34 to 36 units). The scale math stands as the reason.
+2. Q2 refinery armament: B, no turrets at all; the refinery reads purely industrial. Only the defend station fires in the rules, so the refinery carries no battery mounts. This overrules the DeepSeek leg's two-turret pick.
+3. Q3 beacon height: A, 14 units with a 6-unit top ring.
+4. Q4 faction paint coverage: A, panel bands, battery cowlings, dock lips and lit accents over neutral structure; no full hull tint and no per-faction geometry kits.
+5. Q5 battery turret behaviour: A, turrets rotate to face the last-fired target, then hold. No real-time tracking, not static.
+
+These rulings are part of the spec issue #61 builds from.
+
 ## Not checked
 
 - No Blender work was run for this research; triangle counts, export behaviour and the R82 Q3 merge feasibility on station parts are for the #61 build to prove.
