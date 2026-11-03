@@ -24,6 +24,7 @@ const FLOOK := preload("res://fx/faction_look.gd")
 const BL := preload("res://world/board_look.gd")
 const LIV := preload("res://world/world_living.gd")
 const SUN := Vector3(0.45, 0.70, 0.55)   # toward the sun: the battle's key light shines along -SUN (look.gd KEY_DIR)
+const BACKDROP_ROCK_ANGLE := 0.05
 
 var quality := "max"
 var notes: PackedStringArray = []
@@ -35,6 +36,7 @@ var _planet_dir := Vector3.ZERO
 var _planet_ang := 0.0
 var _planet_pos := Vector3.ZERO
 var _planet_R := 0.0
+var _backdrop_radii := {}    # mesh radii about the shader's rotation origin
 var _ring_n := Vector3.ZERO      # the planet's ring plane normal (zero: no rings)
 # degrees about x. F4: the default camera looks down 34 degrees from +z; a tilt of -25 shows it the disc nearly edge on
 # (about 9 degrees), the classic lensed look (the far side of the disc bent up over the shadow); -12 showed it face on.
@@ -406,7 +408,7 @@ func system(with_planet: bool) -> void:
 		var maz := r.randf_range(-0.95, 0.95)
 		var mel := -r.randf_range(0.04, 0.42)
 		var mdir := turn * Vector3(sin(maz) * cos(mel), sin(mel), -cos(maz) * cos(mel))
-		var mang := r.randf_range(0.012, 0.045) * (1.6 if not with_planet and placed.is_empty() else 1.0)
+		var mang := r.randf_range(0.03, 0.04)
 		if _planet_dir != Vector3.ZERO and acos(clampf(mdir.dot(_planet_dir), -1, 1)) < _planet_ang + mang + 0.04:
 			continue
 		var bad := false
@@ -816,6 +818,32 @@ func _on_planet(p: Vector3, pad: float) -> bool:
 	return false
 
 
+# Bound the real mesh, including the shader's seeded rotation, rather than assuming every rock is two units long.
+# Use the nearest point along the default and low battle camera's zoom paths, so the cap holds between zoom stops too.
+func _backdrop_scale(nm: String, s: float, p: Vector3, max_length := INF) -> float:
+	if not _backdrop_radii.has(nm):
+		var mesh := WR.mesh(nm)
+		var radius := 0.0
+		for surface in mesh.get_surface_count():
+			var vertices: PackedVector3Array = mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]
+			for v in vertices:
+				radius = maxf(radius, v.length())
+		_backdrop_radii[nm] = maxf(radius, 0.001)
+	var diameter := 2.0 * float(_backdrop_radii[nm])
+	var dist := p.distance_to(_center)
+	for pitch in [0.98, 1.32]:
+		var axis := Vector3(0.0, cos(float(pitch)), sin(float(pitch)))
+		var rr := clampf((p - _center).dot(axis), 0.0, 900.0)
+		dist = minf(dist, p.distance_to(_center + axis * rr))
+	# The exact sphere angle stays below 0.05, including the small-angle rounding margin.
+	var length_cap := minf(max_length, 2.0 * sin(BACKDROP_ROCK_ANGLE * 0.5) * dist)
+	s = minf(s, length_cap / diameter)
+	var angle := 2.0 * asin(clampf(diameter * s / (2.0 * maxf(dist, 0.001)), 0.0, 1.0))
+	assert(angle <= BACKDROP_ROCK_ANGLE + 0.000001, "Backdrop rock exceeds 0.05 rad")
+	assert(_planet_ang == 0.0 or angle * 4.4 <= 2.0 * _planet_ang + 0.000001, "Backdrop rock exceeds planet scale margin")
+	return s
+
+
 # The layers round and below the board, by map: an edge scatter (near the board's height, outside it), a deep field far
 # below (seen through the board, small and hazed), a belt stream on belt maps, and a few mountain-sized rocks.
 func fields(mk: String, kind: String) -> void:
@@ -844,7 +872,9 @@ func fields(mk: String, kind: String) -> void:
 		if _seen_on_board(p, 40.0 + s) or _on_planet(p, 0.05):
 			continue
 		var nm := _pick(kind, r)
-		_batch.add(nm if s > 5.0 else nm + "_lo", mat, true, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.07) * (3.0 / (2.0 + s)), r.randf())
+		nm = nm if s > 5.0 else nm + "_lo"
+		s = _backdrop_scale(nm, s, p, 20.0)
+		_batch.add(nm, mat, true, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.07) * (3.0 / (2.0 + s)), r.randf())
 		placed += 1
 	# 2. the deep field: far below, wide, sizes growing with depth so it reads as a volume, never right under a ship's hex
 	var deep := 0
@@ -852,16 +882,19 @@ func fields(mk: String, kind: String) -> void:
 	while deep < int(N[1] * dens * (0.6 if lowq else 1.0)) and tries < 4000:
 		tries += 1
 		var a := r.randf() * TAU
-		var rad := 120.0 + 1500.0 * sqrt(r.randf())
-		var depth := 130.0 + 650.0 * pow(r.randf(), 1.4)
-		var p := _center + Vector3(cos(a) * rad * 1.15, -depth, sin(a) * rad)
+		var dist := r.randf_range(800.0, 1500.0)
+		var depth := dist * r.randf_range(0.35, 0.85)
+		var rad := sqrt(dist * dist - depth * depth)
+		var p := _center + Vector3(cos(a) * rad, -depth, sin(a) * rad)
 		if _on_planet(p, 0.03):
 			continue
 		var s := (3.0 + depth * 0.035) * (0.5 + 1.6 * pow(r.randf(), 2.0))
 		if _seen_on_board(p, 30.0 + s):
 			continue
 		var nm := _pick(kind, r)
-		_batch.add(nm if s > 22.0 else nm + "_lo", mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.005, 0.04), r.randf())
+		nm = nm if s > 22.0 else nm + "_lo"
+		s = _backdrop_scale(nm, s, p, 40.0)
+		_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.005, 0.04), r.randf())
 		deep += 1
 	# 3. the belt stream: a river of rock under the board, out to the horizon both ways
 	var belt := 0
@@ -877,13 +910,15 @@ func fields(mk: String, kind: String) -> void:
 			var sv := r.randf_range(-2600.0, 2600.0)
 			var w := r.randfn() * 170.0
 			var p := o + ax * sv + side * w + Vector3(0, r.randfn() * 45.0 + sv * tilt, 0)
-			if _on_planet(p, 0.02):
+			if p.distance_to(_center) < 600.0 or _on_planet(p, 0.02):
 				continue
 			var s := 4.0 + 30.0 * pow(r.randf(), 3.0) + absf(sv) * 0.004
 			if _seen_on_board(p, 30.0 + s):
 				continue
 			var nm := _pick(kind, r)
-			_batch.add(nm if s > 22.0 else nm + "_lo", mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.004, 0.03), r.randf())
+			nm = nm if s > 22.0 else nm + "_lo"
+			s = _backdrop_scale(nm, s, p, 30.0)
+			_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.004, 0.03), r.randf())
 			belt += 1
 	# 4. mountains: a few huge rocks far out, below the horizon, clear of the planet and of the board's footprint
 	var mts := 0
@@ -900,7 +935,9 @@ func fields(mk: String, kind: String) -> void:
 			continue
 		if Vector2(p.x - _center.x, p.z - _center.z).length() < 520.0 or _through_board(p, s):
 			continue
-		_batch.add(_pick(kind, r), mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.0015, 0.006), r.randf())
+		var nm := _pick(kind, r)
+		s = _backdrop_scale(nm, s, p)
+		_batch.add(nm, mat, false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.0015, 0.006), r.randf())
 		mts += 1
 	# crystal fields: free crystal clusters drift among the edge rocks
 	if kind == "crystal":
@@ -910,7 +947,9 @@ func fields(mk: String, kind: String) -> void:
 			var p := _center + Vector3(cos(a) * (ext.x + 60.0) * r.randf_range(1.0, 1.8), r.randf_range(-40.0, 5.0), sin(a) * (ext.z + 60.0) * r.randf_range(1.0, 1.8))
 			if _over_board(p, 30.0):
 				continue
-			_batch.add(names[r.randi() % names.size()], _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * r.randf_range(2.0, 6.0)), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
+			var nm: String = names[r.randi() % names.size()]
+			var s := _backdrop_scale(nm, r.randf_range(2.0, 6.0), p, 20.0)
+			_batch.add(nm, _crystal_mat(), false, Transform3D(_rand_basis(r).scaled(Vector3.ONE * s), p), _rand_axis(r), r.randf_range(0.01, 0.05), r.randf())
 	notes.append("fields: %d edge rocks, %d deep, %d belt, %d mountains" % [placed, deep, belt, mts])
 
 
