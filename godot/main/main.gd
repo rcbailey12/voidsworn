@@ -347,6 +347,8 @@ func start_battle(run: Dictionary, cfg: Dictionary, opts := {}) -> Dictionary:
 	b.external = true
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.in_campaign = campaign != null
+	if run.get("map") is Dictionary:
+		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(run)
 	b.can_retreat = campaign != null and str(cfg.get("kind", "")) != "boss"
 	b.args["quality"] = str(settings["quality"])
 	b.args["taa"] = bool(settings.get("taa", false))
@@ -371,6 +373,8 @@ func play_api(a, opts := {}) -> Dictionary:
 	b.bot = bot_mode or bool(opts.get("bot", false))
 	b.can_retreat = bool(opts.get("can_retreat", false))
 	b.in_campaign = true
+	if campaign != null and campaign.C.RUN != null:
+		b.args["sector_setting"] = load("res://world/world.gd").sector_setting(campaign.C.RUN)
 	b.args["quality"] = str(settings["quality"])
 	b.args["taa"] = bool(settings.get("taa", false))
 	add_child(b)

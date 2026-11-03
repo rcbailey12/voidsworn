@@ -23,6 +23,8 @@ extends Control
 const Intel := preload("res://ui/campaign/map_intel.gd")
 const System := preload("res://ui/campaign/map3d_system.gd")
 const Props := preload("res://ui/campaign/map3d_props.gd")
+const World := preload("res://world/world.gd")
+const Loading := preload("res://main/load_screen.gd")
 const SHIP_VIEW := "res://render/ship_view.gd"
 const HT_PATH := "res://render/hull_table.gd"
 
@@ -78,6 +80,8 @@ var _drag := false
 var _drag_at := Vector2.ZERO
 var _arrive_t := 0.0
 var _last_pos = null
+var loading := false
+var sector_world: Node3D
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -134,11 +138,29 @@ func sync() -> void:
 	var m = C.RUN["map"]
 	var sig = str(C.RUN["sector"]) + "|" + str(m.get("fac")) + "|" + str(m["edges"].hash()) + "|" + quality
 	if sig != _sig:
-		_build(sig); _last_pos = C.RUN.get("pos")
-		_arrive(true)
+		if not loading: _load_sector(sig)
+		return
 	elif token != null and C.RUN.get("pos") != _last_pos and not _flying:
 		_last_pos = C.RUN.get("pos"); _arrive(false)
 	_refresh()
+
+func _load_sector(sig: String) -> void:
+	loading = true
+	var cover := Loading.new()
+	add_child(cover)
+	# Paint the cover before building models or uploading textures.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_build(sig)
+	_last_pos = _C().RUN.get("pos")
+	_arrive(true)
+	_refresh()
+	await sector_world.wait_ready()
+	await Loading.settle(get_tree())
+	cover.queue_free()
+	loading = false
+	# Changes made during loading get their own covered rebuild.
+	sync()
 func _mat(col: Color, emit: float, metal: float = 0.3, rough: float = 0.5) -> StandardMaterial3D:
 	var mt = StandardMaterial3D.new(); mt.albedo_color = col; mt.metallic = metal; mt.roughness = rough
 	if emit > 0: mt.emission_enabled = true; mt.emission = col; mt.emission_energy_multiplier = emit
@@ -199,7 +221,11 @@ func _build(sig: String) -> void:
 	_base_sig = base_sig; _rng.seed = hash(base_sig)
 	sys = System.new(); sys.rng = _rng; sys.q = 1.0 if quality != "low" else 0.0
 	props = Props.new(sys); _spinners.clear(); _drones.clear()
-	sys.sky(env, fac, int(C.RUN["sector"]) * 13 + str(m.get("region", "")).length())
+	sector_world = World.new(); root3.add_child(sector_world)
+	var shell := get_tree().root.get_node_or_null("Main")
+	var bake_quality := str(shell.settings.get("quality", "max")) if shell != null else "max"
+	sector_world.prepare_sector(env, C.RUN, bake_quality)
+	sys.sector_world = sector_world
 	sys.backdrop(root3, fac, max(1.0, ui.k))
 	var hs = sys.hollow_sun(root3, SUN_R); _debris = hs["debris"]
 	_rng.seed = hash(base_sig) + 7
@@ -843,7 +869,7 @@ func _clamp_pan() -> void:
 	if _pan_t.length() > lim: _pan_t = _pan_t.normalized() * lim
 	if _uz_t >= 0.999: _pan_t = _pan_t.limit_length(R_OUT * 0.5)
 func _gui_input(e: InputEvent) -> void:
-	if _flying or backdrop: return
+	if loading or _flying or backdrop: return
 	if e is InputEventMouseMotion:
 		if _drag:
 			var a = _ground(_drag_at); var b = _ground(e.position); _drag_at = e.position

@@ -43,6 +43,7 @@ var rng: RandomNumberGenerator
 var sun_pos := Vector3(0, 1.0, 0)
 var _shaders := {}
 var _rock_meshes: Array = []
+var sector_world: Node3D
 
 static func look(fac) -> Dictionary: return LOOKS.get(str(fac), LOOKS["voidsworn"])
 static func text_col(fac) -> Color: return look(fac)["text"]
@@ -223,6 +224,8 @@ func planet(parent: Node3D, pal: Array, radius: float, at: Vector3, with_atmo: b
 	var body = Node3D.new(); body.position = at; body.name = "body"; parent.add_child(body)
 	var seg = 64 if q > 0.5 else 32
 	var p = mi(sphere(radius, seg, seg / 2), mat("PLANET", {"a": pal[1], "b": pal[2], "atmo": pal[3], "kind": float(pal[0]), "seed": rng.randf() * 40.0, "q": q, "sun_pos": sun_pos}))
+	if sector_world != null:
+		p.material_override = sector_world.surface_material((sun_pos - parent.global_position - at).normalized())
 	p.name = "spin"; p.rotation = Vector3(deg_to_rad(rng.randf_range(-20, 20)), 0, deg_to_rad(rng.randf_range(-25, 25))); body.add_child(p)
 	if q > 0.5: p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	if int(pal[0]) in [0, 1, 3]:   # a cloud layer drifting over rock, ocean and ice worlds

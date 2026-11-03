@@ -57,6 +57,51 @@ var _fac := "voidsworn"
 var _debris_ships: Array = []
 var _living = null              # world_living.gd: B's gas, storm, debris and well (built the first time a look needs it)
 var _pano: Texture2D = null     # the battle's painted panorama (battle.gd passes it; the dead-star board shows it, R2)
+var pending_bakes := 0
+
+
+# A sector's map and battles use the same inputs, including rival encounters and
+# dead-star boards. Battle randomness changes the viewing angle only.
+static func sector_setting(run: Dictionary) -> Dictionary:
+	var map: Dictionary = run["map"] if run.get("map") is Dictionary else {}
+	var biome: Dictionary = map["biome"] if map.get("biome") is Dictionary else {}
+	return SKY.setting(biome, str(map.get("fac", "voidsworn")), "open", false, 0)
+
+
+func prepare_sector(env: Environment, run: Dictionary, q: String) -> void:
+	quality = q
+	setting = sector_setting(run)
+	_yaw = 0.0
+	_baker = BAKER.service(get_tree())
+	_make_sky(env)
+	# Prime the surface even if this map rolled no planet stops.
+	surface_material(SUN.normalized())
+
+
+func surface_material(sun: Vector3) -> ShaderMaterial:
+	var P: Dictionary = setting["planet"]
+	var m := ShaderMaterial.new()
+	var sh := Shader.new()
+	sh.code = PL.SPHERE
+	m.shader = sh
+	m.set_shader_parameter("sun", sun)
+	m.set_shader_parameter("atmo", P["atmo"])
+	m.set_shader_parameter("flat_col", P["a"])
+	var size := _planet_size()
+	var seed := int(setting["seed"])
+	_bake_planet(m, "planet|%d|%d|%d" % [int(P["kind"]), seed, size.x], P, seed, size)
+	return m
+
+
+func _planet_size() -> Vector2i:
+	if OS.has_environment("VS_WORLD_PREVIEW"): return Vector2i(512, 256)
+	return Vector2i(2048, 1024) if quality != "low" else Vector2i(1024, 512)
+
+
+func wait_ready() -> void:
+	# Hard cap (Opus review, Nov 3): a bake that never finishes must never hold the loading cover.
+	var t0 := Time.get_ticks_msec()
+	while pending_bakes > 0 and Time.get_ticks_msec() - t0 < 20000: await get_tree().process_frame
 
 
 func _sky_into(m: ShaderMaterial) -> void:
@@ -118,11 +163,14 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	_center = (lo + hi) * 0.5
 	var deadstar: bool = map.has("deadstar") and map["deadstar"] != null
 	var mk := map_kind(view)
-	setting = SKY.setting(biome, fac, mk, deadstar, bseed)
+	# The feature direction used to contain the battle yaw. That changed the bake
+	# hash on every encounter, even when the sector's seed stayed the same.
+	setting = opts.get("sector_setting", SKY.setting(biome, fac, mk, deadstar, 0)).duplicate(true)
+	setting["yaw"] = SKY.setting(biome, fac, mk, deadstar, bseed)["yaw"]
+	setting["deadstar"] = deadstar
+	setting["map"] = mk
 	_yaw = float(setting["yaw"])
-	_baker = BAKER.new()
-	_baker.name = "Baker"
-	add_child(_baker)
+	_baker = BAKER.service(get_tree())
 	var env: Environment = opts.get("environment", null)
 	if opts.get("pano") is Texture2D:
 		_pano = opts["pano"]
@@ -168,7 +216,7 @@ func build(view: Dictionary, opts: Dictionary) -> void:
 	wisps()
 	underlay()
 	notes.append("setting: %s region, %s map, %s rock, planet %d (%s), sky for %s" % [setting["region"], mk, rock_kind, int(setting["planet_i"]),
-		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], fac])
+		["gas giant", "ice giant", "terran", "volcanic", "barren", "ice world"][int(setting["planet"]["kind"])], str(setting["fac"])])
 	notes.append("rocks: %d in all (%d rock hexes, %d debris hexes); clouds on %d nebula and %d storm hexes; built in %.0f ms" % [n_rocks,
 		counts["rock"], counts["debris"], counts["neb"], counts["storm"], (Time.get_ticks_usec() - t0) / 1000.0])
 	_rock_kind = rock_kind
@@ -233,8 +281,7 @@ func build_gallery(env: Environment, cam: Camera3D, opts: Dictionary) -> void:
 	_hi = Vector3(120, 0, 70)
 	_center = Vector3.ZERO
 	setting = SKY.setting({"rock": "carbon", "planet": 5}, "corsair", "open", true, 7)
-	_baker = BAKER.new()
-	add_child(_baker)
+	_baker = BAKER.service(get_tree())
 	_make_sky(env)
 	disc_tilt = -24.0
 	dead_star(opts.get("deadstar", Vector3(0, -20, -150)), 1.0)
@@ -295,6 +342,12 @@ func _make_sky(env: Environment) -> void:
 
 
 func _bake_sky(lamps: Array) -> void:
+	pending_bakes += 1
+	await _load_sky(lamps)
+	pending_bakes -= 1
+
+
+func _load_sky(lamps: Array) -> void:
 	var size := Vector2i(4096, 2048) if quality != "low" else Vector2i(2048, 1024)
 	if OS.has_environment("VS_WORLD_PREVIEW"):   # software rendering in the cloud: small bakes
 		size = Vector2i(768, 384)
@@ -304,17 +357,13 @@ func _bake_sky(lamps: Array) -> void:
 		"band_n": setting["band_n"], "feature": setting["feature"], "steps": 48 if quality == "max" else (40 if quality == "high" else 26),
 		"lamp": PackedVector4Array(lamps), "gal": PackedVector4Array(SKY.galaxies(setting))}
 	var code := SKY.bake_code()
-	var resolutions := [size] if BAKER.cached(BAKER.cache_key(key, code, params, size)) != null else [Vector2i(512, 256), size]
-	for resolution in resolutions:
-		if resolution == size and resolutions.size() > 1: await get_tree().create_timer(3.0).timeout
-		var img: Image = await _baker.bake(key, code, params, resolution, maxi(2, ceili(resolution.y / 64.0)))
-		if img == null or _sky_mat == null: return
-		if not img.has_mipmaps(): img.generate_mipmaps()
-		var tex := ImageTexture.create_from_image(img)
-		_sky_mat.set_shader_parameter("neb_tex", tex)
-		_sky_mat.set_shader_parameter("has_neb", 1.0)
-		_sky_tex = tex
-		for k in _mats: _sky_into(_mats[k])
+	var img: Image = await _baker.bake(key, code, params, size, 32)
+	if img == null or _sky_mat == null: return
+	var tex := BAKER.texture(img)
+	_sky_mat.set_shader_parameter("neb_tex", tex)
+	_sky_mat.set_shader_parameter("has_neb", 1.0)
+	_sky_tex = tex
+	for k in _mats: _sky_into(_mats[k])
 
 
 # ---------------------------------------------------------------- the system: planet, rings, moons
@@ -336,9 +385,7 @@ func system(with_planet: bool) -> void:
 	var az := side * r.randf_range(0.36, 0.5)
 	var el := -r.randf_range(0.17, 0.22)
 	var dir := turn * Vector3(sin(az) * cos(el), sin(el), -cos(az) * cos(el))
-	var bake_q := Vector2i(2048, 1024) if quality != "low" else Vector2i(1024, 512)
-	if OS.has_environment("VS_WORLD_PREVIEW"):
-		bake_q = Vector2i(512, 256)
+	var bake_q := _planet_size()
 	if with_planet:
 		_planet_dir = dir
 		_planet_ang = ang
@@ -456,23 +503,22 @@ func _sphere(pos: Vector3, R: float, basis: Basis, P: Dictionary, bake_seed: int
 
 
 func _bake_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int, size: Vector2i) -> void:
+	pending_bakes += 1
+	await _load_planet(m, key, P, bake_seed, size)
+	pending_bakes -= 1
+
+
+func _load_planet(m: ShaderMaterial, key: String, P: Dictionary, bake_seed: int, size: Vector2i) -> void:
 	var params := {"seed": float(bake_seed % 997) * 0.71, "kind": int(P["kind"]), "ca": P["a"], "cb": P["b"], "cc": P["c"], "pass_id": 0}
 	var code := PL.bake_code()
-	var cached_a := BAKER.cached(BAKER.cache_key(key + "|a", code, params, size))
-	params.pass_id = 1
-	var cached_b := BAKER.cached(BAKER.cache_key(key + "|b", code, params, size))
-	var resolutions := [size] if cached_a != null and cached_b != null else [Vector2i(256, 128), size]
-	for resolution in resolutions:
-		if resolution == size and resolutions.size() > 1: await get_tree().create_timer(3.0).timeout
-		params["pass_id"] = 0
-		var a: Image = await _baker.bake(key + "|a", code, params, resolution, maxi(2, ceili(resolution.y / 64.0)))
-		if a == null: return
-		params["pass_id"] = 1
-		var b: Image = await _baker.bake(key + "|b", code, params, resolution, maxi(2, ceili(resolution.y / 64.0)))
-		if b == null: return
-		m.set_shader_parameter("tex_a", ImageTexture.create_from_image(a))
-		m.set_shader_parameter("tex_b", ImageTexture.create_from_image(b))
-		m.set_shader_parameter("has_tex", 1.0)
+	var a: Image = await _baker.bake(key + "|a", code, params, size, 16)
+	if a == null: return
+	params["pass_id"] = 1
+	var b: Image = await _baker.bake(key + "|b", code, params, size, 16)
+	if b == null: return
+	m.set_shader_parameter("tex_a", BAKER.texture(a))
+	m.set_shader_parameter("tex_b", BAKER.texture(b))
+	m.set_shader_parameter("has_tex", 1.0)
 
 
 func _rings(pos: Vector3, R: float, basis: Basis, P: Dictionary, r: RandomNumberGenerator) -> void:
