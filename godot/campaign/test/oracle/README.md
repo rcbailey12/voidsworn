@@ -1,5 +1,10 @@
 # The campaign oracle, pinned
 
+Nov 3 2026, issue 22: re-copied campaign_meta.js and campaign_run.js for
+saved per-run core sync progress, tier announcements and debrief inheritance.
+Re-exported both table sets; their checksums are unchanged. No battle rule
+or R69 playtest default changed.
+
 Nov 3 2026, issue 110: re-copied data.js, battle.js, campaign_run.js and
 campaign3d.js for all five beat 3 rewards, free core offers, and consumption
 of next-battle modifiers on entry. Re-exported campaign tables.

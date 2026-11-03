@@ -553,8 +553,12 @@ function boonReroll(p,minR){ if(!boonRerollOk(p,minR)) return null; RUN.credits-
 function boonDecline(){ const c=boonDeclineCred(); RUN.credits+=c; return c; }
 ACT.boonReroll=a=>{ const [p,m]=String(a).split(':'); if(!boonReroll(p,+m||0)) return; saveRun(); closeModal(); boonStep(p,+m||0); };
 ACT.boonDecline=()=>{ const c=boonDecline(); try{ tel('boon_decline',{cred:c}); }catch(e){} toast(`You decline. +${c} credits.`); closeModal(); relicStep(); };
-ACT.takeBoon=i=>{ const o=(window._boonOffer||[])[+i]; if(!o) return; changeFleet(()=>{ RUN.boons=RUN.boons||[]; RUN.boons.push({id:o.id,r:o.r||0}); });
-  { const ps=BOONS[o.id].p?[BOONS[o.id].p]:(BOONS[o.id].duo||[]); META.favour=META.favour||{}; for(const p of ps){ const t0=favourTier(p); META.favour[p]=(META.favour[p]||0)+1+(o.r||0); const t1=favourTier(p); if(t1>t0) setTimeout(()=>toast(`${PATRONS[p].n} now counts you ${FAVOUR_TIERS[t1].n}: ${FAVOUR_TIERS[t1].d}`),900); } }
+ACT.takeBoon=i=>{ const o=(window._boonOffer||[])[+i]; if(!o) return; const syncNotices=[]; changeFleet(()=>{ RUN.boons=RUN.boons||[]; RUN.boons.push({id:o.id,r:o.r||0}); });
+  { const ps=BOONS[o.id].p?[BOONS[o.id].p]:(BOONS[o.id].duo||[]); META.favour=META.favour||{}; RUN.coreSync=RUN.coreSync||{};
+    for(const p of ps){ const before=favourOf(p), t0=favourTier(p); if(RUN.coreSync[p]==null) RUN.coreSync[p]=before;
+      META.favour[p]=before+1+(o.r||0); const t1=favourTier(p);
+      if(t1>t0) syncNotices.push(`Core sync: ${PATRONS[p].n} reached ${FAVOUR_TIERS[t1].n} (${favourOf(p)} sync). ${FAVOUR_TIERS[t1].d}`); }
+    if(syncNotices.length) setTimeout(()=>toast(syncNotices.join(' ')),900); }
   try{ tel('boon_pick',{id:o.id,r:o.r||0,p:BOONS[o.id].p||'duo',offered:(window._boonOffer||[]).map(x=>x.id+':'+(x.r||0)),sector:RUN.sector}); }catch(e){}
   toast(`${BOONS[o.id].n} gained.`); closeModal(); relicStep(); };
 function relicStep(){

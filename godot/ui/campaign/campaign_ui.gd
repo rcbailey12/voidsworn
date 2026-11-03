@@ -1127,6 +1127,11 @@ func _end(d: Dictionary) -> Control:
 		sv.add_child(lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP" + (" (heir rate)" if row["rate"] == 0.5 else "") + ". Total " + C.numstr(snapped(float(row["total"]), 0.01)) + " XP, level " + C.numstr(row["level"]) + ((", at current cap") if row["next"] == null else (", " + C.numstr(snapped(float(row["remaining"]), 0.01)) + " XP to level " + str(int(row["level"]) + 1))) + ".", 15, BONE2))
 	if cy["mxOverflow"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["mxOverflow"]), 0.01)) + " XP past this line's cap went to shadow learning.", 15, BONE3))
 	if cy["shadowBank"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["shadowBank"]), 0.01)) + " shadow XP saved for an uncapped benched line.", 15, BONE3))
+	if not receipt.get("cores", []).is_empty():
+		cv.add_child(lbl("CORE SYNC", 20, GILT, font_semi))
+		for row in receipt["cores"]:
+			cv.add_child(lbl(str(C.PATRONS[row["id"]]["n"]) + ": +" + C.numstr(row["gain"]) + " sync. " + str(C.FAVOUR_TIERS[row["tier"]]["n"]) + (" (Tier up this run)" if row["tierUp"] else "") + ".", 17, Color(C.PATRONS[row["id"]]["col"])))
+			cv.add_child(lbl((C.numstr(row["total"]) + " sync. Full sync reached.") if row["next"] == null else (C.numstr(row["total"]) + " / " + C.numstr(row["next"]) + " sync. " + C.numstr(row["remaining"]) + " to " + str(C.FAVOUR_TIERS[int(row["tier"]) + 1]["n"]) + "."), 15, BONE3))
 	var choices = flow(8)
 	add(choices, abtn("Choose doctrine", "progTab", "legacy")); add(choices, abtn("Choose hull rewards", "progTab", "variants"))
 	add(choices, abtn("View admiral line", "lineage" if flown["tree"] else "progTab", flown["id"] if flown["tree"] else "mastery")); sv.add_child(choices)
