@@ -136,3 +136,7 @@ Why: stationFire fires once a round on the 2 nearest capitals. Facing the last t
 - No 4K screenshot test exists yet; every camera number here is arithmetic from the pack's anchors (camera about 170 units, 15.4 px per unit at 4K), labelled INFERRED where the legs introduced it. The #61 turntable and in-game screenshots are the real test.
 - The beacon light-state read needs a code hook (emissive swap on contest and score) that no current code provides; scheduling it is Opus's call.
 - BFG Armada 2 station sourcing stayed thin in both legs (fandom-level); no spec point rests on BFG alone.
+
+## Owner rulings (Ryan, Nov 3, 2026)
+
+Ryan agreed with all five chair picks in section 10 (FINDINGS R84).
