@@ -11,7 +11,7 @@ How to use it:
 - The prompt sets are final as written: one set per faction, six portrait prompts and three ship prompts each, copy paste ready for ComfyUI, each with a Prompt line and a Negative line. Every prompt carries the faction palette hexes and the oil paint style.
 - The do and do not lists bind the pipelines. When a render drifts, check it against the do not list before adjusting the prompt.
 - The flags section records the pack's internal conflicts and the ruling that resolved each one, so nobody re-litigates them mid build.
-- The four owner questions at the end are non-blocking refinements, with one exception: the Lens keeper portrait prompt is written on the chair pick for Q1 (full spider body allowed for the Lens keeper as a one off). If the owner rules the other way, that one prompt changes as noted under it.
+- The four owner questions at the end were non-blocking refinements, and all four are now ruled (see Owner rulings): the Lens keeper portrait prompt stands as written on the Q1 ruling (full spider body allowed for the Lens keeper as a one off).
 
 # The Glasswrights
 
@@ -86,7 +86,7 @@ Negative: aggressive pose, grey alien, large black eyes, grey skin, elf ears, hu
 
 ### 5. The Glasswrights as Nemesis (the Lens keeper)
 
-Written on the chair pick for owner question Q1: a full spider body is allowed for the Lens keeper as an ancient elder one off. If the owner rules never, replace the body sentence with the standard weaver carriage (segmented thorax, low wide stance, support limbs) and add full spider body to the negative.
+Written on the chair pick for owner question Q1, confirmed by the owner ruling of Nov 2, 2026: a full spider body is allowed for the Lens keeper as an ancient elder one off.
 
 Prompt: oil painting portrait, full three quarter view of the Lens keeper, ancient Glasswright duellist elder and Nemesis, the oldest of the faction, tall being of pale half translucent flesh with the deepest lens eye infusion, two forward deep green lens eyes grown deep and flush under a massive segmented brow, expression quiet, precise and mournful, short reed grille mouth set flush in the face, four arms, two working and two precision, resting still, full spider weaver body as an ancient elder one off, a segmented spider lower body with jointed support legs carrying a low wide carriage, very large worn grown crystal sail vanes spread wide like a duelling cloak with bloom edged tips, layered dark mirror thread clothing, long dark glass duelling gallery setting, four distant elite crystal ships visible through a viewport behind, one thin line of focused light crossing the floor, palette clear crystal white #eef3f1, pale gold #d7c88a, mint stored light #9fffd2, oil paint style, painterly brushwork, character portrait
 Negative: grey alien, large black eyes, grey skin, elf ears, human face, crystal statue, crystal construct, robot, faceless, colour pulse speech, vertical eye stack, ring of bead eyes, secondary eye arcs, monocle, brow magnifier lens, steampunk, brass fittings, camera aperture rim, jewellers loupe, mouth tube, close range, melee, text, watermark, signature, blurry, photograph, 3d render
@@ -297,6 +297,15 @@ Q2. Bloom scope. Options: (a) Saro only (chair pick); (b) any sufficiently old G
 Q3. Nemesis portraits. Options: (a) ship portraits of the named behaviour package carriers, the Lens keeper and the raider Warlord (chair pick); (b) generic faction Nemesis portraits with no named character. Stakes: the redesign (issue 45) makes hunter assignments variable, but the behaviour packages stay attached to these carriers wherever they appear. Named portraits keep the packages visible and give the pipelines a face to build; generic portraits are safer against future reassignment but blander.
 
 Q4. Pyre Barge sign off. Options: (a) this pack refreshes the Barge's art direction (trophy plating, chains, dishes) inside the Hullbreaker ship set as direction only, and the Barge's in game graphical upgrade and sign off stay a separate owner call, per the owner's Oct 24 position (chair pick); (b) fold the Barge upgrade decision into this pack. Stakes: the Barge's look direction lands either way. What changes is whether approving this pack also approves the in game Barge upgrade the owner has held back since Oct 24.
+
+# Owner rulings (Ryan, Nov 2, 2026)
+
+Ryan agreed with all four chair picks. The pack is settled on these points:
+
+1. Q1: a full spider body is allowed for the Lens keeper as an ancient elder one off. The Lens keeper portrait prompt stands as written; no swap is needed, and the species base keeps the weaver carriage for everyone else.
+2. Q2: Bloom body clusters are Saro only. Bloom edged sail tips remain a general elder sail feature.
+3. Q3: Nemesis portraits depict the named behaviour package carriers, the Lens keeper and the raider Warlord, not generic hunter figures.
+4. Q4: the Pyre Barge material in this pack is art direction only. Its in game graphical upgrade and owner sign off stay a separate call, per the Oct 24 position.
 
 # Dissents and rejected positions
 
