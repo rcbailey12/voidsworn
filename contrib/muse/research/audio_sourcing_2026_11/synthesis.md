@@ -12,6 +12,8 @@ The sourcing plan below is settled enough to act on: a zero-download fix that re
 2. Nobody has listened to any candidate file in any leg. Every pick in this synthesis is metadata-level: pack descriptions, licence blocks, file sizes, and incumbent behaviour in cues.json. An audition and listen pass is a required intake step, not an optional extra (intake steps 3, 5 and 6).
 3. Kenney pack sizes are unverified in every leg. The download total is therefore stated as a verified core plus named unverified items, and intake records the real sizes and restates the total (intake step 2).
 
+Owner rulings (Ryan, Nov 3, 2026): all five questions in section 11 are settled on the chair picks; the full record is in the Owner rulings section after section 11. Condition 1 is met for the named sets: the CC0 core and the Little Robot library are approved for download at intake. Conditions 2 and 3 stand as written.
+
 ## 1. Premise correction: what is actually synth today
 
 The issue text says every cue is synthesised. That is wrong, and the correction changes the shape of the job.
@@ -353,6 +355,18 @@ Q3. Download approval for the CC0 core: approve downloading the rubberduck packs
 Q4. Music audition scope: the targeted 8-slot audition list (CHAIR PICK) vs fac_corsair only vs all 24 slots. Stakes: the 8 slots (fac_corsair, fac_hegemony, title_war, hot_theme_a, sting_victory, sting_fanfare, sting_champion, sting_lose) are every track built on the older soundfont or retro orchestration, which plausibly drives the "music is not good" half of the complaint. The other 16 already fit R37 and loop cleanly. Audition means incumbents stay until a candidate beats them in loopfind and by ear, so the wider list costs listening time, not stability. All 24 would re-open slots no leg found fault with.
 
 Q5. Per-file Freesound picks: resolve the remaining gap cues (glass, flesh, organic, engine set) as specific Freesound CC0 files at intake, using the two named files (break-window for hit_glass, Pound of Flesh for hit_wet) plus the Qwen leg's search list (CHAIR PICK), vs approximating them from the packs. Stakes: these are the cues with the most specific recorded character (a glass hit for Glasswright hulls, a flesh hit for Chorus hulls, an engine run-down for small ship deaths). Pack approximations are the fallback if the per-file pass finds nothing with a clean CC0 line, but they are approximations: the character the owner will actually hear lives in the per-file picks.
+
+## Owner rulings (Ryan, Nov 3, 2026)
+
+Ryan ruled "Agree with chair picks" on all five questions. Recorded exactly:
+
+1. Q1, CC BY SFX intake: YES, narrow. The Little Robot library (CC BY 3.0) is approved as the one attributed SFX source, with its attribution line filed in a new SFX credits text at intake. The Qwen and Argon hold-to-CC0 position is not adopted.
+2. Q2, synth strip scope: strip the synth layer from all 24 hybrid cues and wire the existing enemyTurn recorded set into ui_enemy immediately, as intake step 1, ahead of any download.
+3. Q3, download approval: APPROVED for the CC0 core (the rubberduck packs plus Kenney Impact, Sci-Fi and Interface). Kenney sizes are recorded at intake and the total restated in the intake commit, per condition 3.
+4. Q4, music audition scope: the targeted 8-slot audition list (fac_corsair, fac_hegemony, title_war, hot_theme_a, sting_victory, sting_fanfare, sting_champion, sting_lose). Incumbents stay until a candidate beats them on the loopfind score and by ear; the other 16 slots are not re-opened.
+5. Q5, per-file Freesound picks: the gap cues (glass, flesh, organic, engine set) are resolved as specific Freesound CC0 files at intake, starting from the two named files (break-window for hit_glass, Pound of Flesh for hit_wet) plus the Qwen leg's search list. Pack approximations are the fallback only where the per-file pass finds nothing with a clean CC0 line.
+
+Effect: intake (section 8) is unblocked. Steps 1 and 2 need no further owner approval; the listen pass (step 6) remains the owner's sign-off on what actually ships.
 
 ## 12. Not checked
 
