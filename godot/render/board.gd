@@ -804,7 +804,8 @@ func _planet() -> void:
 	sp.rings = 48
 	var mi := MeshInstance3D.new()
 	mi.mesh = sp
-	mi.position = hex_world(pl.q, pl.r, -rad * 0.55)
+	# Keep the map's radius and sink 78% of it. At radius 50: centre -39, cap 11, board-plane chord about 63.
+	mi.position = hex_world(pl.q, pl.r, -rad * 0.78)
 	props.add_child(mi)
 	planet_node = mi
 	# the campaign map's planet look (G3's map3d_shaders.gd PLANET and ATMO, which Ryan has seen on the map): surface
