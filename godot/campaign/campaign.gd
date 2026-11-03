@@ -1437,7 +1437,14 @@ func inheritanceSummary(run) -> Dictionary:
 	var shadow = []
 	for row in cy["shadow"]:
 		var entry = inheritanceLine(row["id"]); entry.merge(row, true); entry["total"] = masteryXP(row["id"]); shadow.append(entry)
-	return {"balance": balance, "affordable": affordable, "flown": flown, "shadow": shadow}
+	var cores = []
+	for id in run.get("coreSync", {}):
+		var before = run["coreSync"][id]
+		if not PATRONS.has(id) or favourOf(id) <= float(before): continue
+		var total = favourOf(id); var tier = favourTier(id); var next = FAVOUR_TIERS[tier + 1] if tier + 1 < FAVOUR_TIERS.size() else null
+		cores.append({"id": id, "before": before, "gain": total - float(before), "total": total, "tier": tier, "next": next["at"] if next != null else null,
+			"remaining": float(next["at"]) - total if next != null else 0, "tierUp": total >= float(FAVOUR_TIERS[tier]["at"]) and float(before) < float(FAVOUR_TIERS[tier]["at"])})
+	return {"balance": balance, "affordable": affordable, "flown": flown, "shadow": shadow, "cores": cores}
 func endActions(run, nf) -> Array:
 	var acts = []
 	A(acts, "progTab", "legacy"); A(acts, "progTab", "variants")
@@ -2627,9 +2634,14 @@ func ACT_takeBoon(a: String) -> void:
 	changeFleet(_add_boon.bind(o))
 	var ps = [BOONS[o["id"]]["p"]] if jt(BOONS[o["id"]].get("p")) else or_(BOONS[o["id"]].get("duo"), [])
 	META["favour"] = or_(META.get("favour"), {})
+	RUN["coreSync"] = or_(RUN.get("coreSync"), {})
+	var sync_notices = []
 	for p in ps:
-		var t0 = favourTier(p); META["favour"][p] = float(z0(META["favour"].get(p))) + 1 + float(z0(o.get("r"))); var t1 = favourTier(p)
-		if t1 > t0: toast(str(PATRONS[p]["n"]) + " now counts you " + str(FAVOUR_TIERS[t1]["n"]) + ": " + str(FAVOUR_TIERS[t1].get("d", "")))
+		var before = favourOf(p); var t0 = favourTier(p)
+		if RUN["coreSync"].get(p) == null: RUN["coreSync"][p] = before
+		META["favour"][p] = before + 1 + float(z0(o.get("r"))); var t1 = favourTier(p)
+		if t1 > t0: sync_notices.append("Core sync: " + str(PATRONS[p]["n"]) + " reached " + str(FAVOUR_TIERS[t1]["n"]) + " (" + numstr(favourOf(p)) + " sync). " + str(FAVOUR_TIERS[t1].get("d", "")))
+	if not sync_notices.is_empty(): toast(" ".join(PackedStringArray(sync_notices)))
 	tel("boon_pick", {"id": o["id"], "r": z0(o.get("r"))})
 	toast(str(BOONS[o["id"]]["n"]) + " gained."); close_modal(); relicStep()
 func relicStep() -> void:

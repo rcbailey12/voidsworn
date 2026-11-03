@@ -250,7 +250,10 @@ function inheritanceSummary(run){
   const flown=line(run.admiral), tree=!!LINEAGE_TREES[run.admiral], build=lineageBuild(run.admiral), nodes=tree?lineageNodes(run.admiral):[];
   return {balance,affordable,flown:{...flown,tree,pending:tree?Math.max(0,Math.min(3,flown.level-4)-build.picks.length):0,
     capstoneReady:tree&&nodes.some(n=>n.branch==='cap'&&n.state==='available'),chosen:nodes.filter(n=>n.state==='chosen').map(n=>n.n),earned:MASTERY_PERKS.slice(cy.mx0+1,Math.min(4,cy.mx1)+1)},
-    shadow:cy.shadow.map(row=>({...line(row.id),...row,total:masteryXP(row.id)}))};
+    shadow:cy.shadow.map(row=>({...line(row.id),...row,total:masteryXP(row.id)})),
+    cores:Object.entries(run.coreSync||{}).filter(([p,before])=>PATRONS[p]&&favourOf(p)>before).map(([id,before])=>{
+      const total=favourOf(id), tier=favourTier(id), next=FAVOUR_TIERS[tier+1];
+      return {id,before,gain:total-before,total,tier,next:next?next.at:null,remaining:next?next.at-total:0,tierUp:total>=FAVOUR_TIERS[tier].at&&before<FAVOUR_TIERS[tier].at}; })};
 }
 function inheritanceHtml(run){
   const cy=run.carry, receipt=cy.inheritance, f=receipt.flown, fmt=n=>Math.round(n*100)/100;
@@ -264,6 +267,7 @@ function inheritanceHtml(run){
     ${f.tree?`<p class="gilt">${f.pending} branch pick${f.pending===1?'':'s'} ready.${f.capstoneReady?' Command evolution ready.':''}</p><p class="dim">Recorded skills: ${f.chosen.length?f.chosen.map(esc).join(', '):'None yet'}.</p>`:''}
     <h3>Shadow learning</h3>${receipt.shadow.map(row=>`<p>${esc(ADMIRALS[row.id].n)}: +${fmt(row.xp)} shadow XP${row.rate===.5?' (heir rate)':''}. <span class="dim">Total ${fmt(row.total)} XP, level ${row.level}${row.next==null?', at current cap':`, ${fmt(row.remaining)} XP to level ${row.level+1}`}.</span></p>`).join('')}
     ${cy.mxOverflow?`<p class="dim">${fmt(cy.mxOverflow)} XP past the flown line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="dim">${fmt(cy.shadowBank)} shadow XP saved for an uncapped benched line.</p>`:''}
+    ${receipt.cores.length?`<h3>Core sync</h3>${receipt.cores.map(row=>`<p><b style="color:${PATRONS[row.id].col}">${esc(PATRONS[row.id].n)}</b>: +${row.gain} sync. <b>${esc(FAVOUR_TIERS[row.tier].n)}</b>${row.tierUp?' <span class="gilt">(Tier up this run)</span>':''}.<br><span class="dim">${row.next==null?`${row.total} sync. Full sync reached.`:`${row.total} / ${row.next} sync. ${row.remaining} to ${esc(FAVOUR_TIERS[row.tier+1].n)}.`}</span></p>`).join('')}`:''}
     <div class="row"><button data-act="progTab" data-arg="legacy">Choose doctrine</button><button data-act="progTab" data-arg="variants">Choose hull rewards</button><button data-act="${f.tree?'lineage':'progTab'}" data-arg="${f.tree?f.id:'mastery'}">View admiral line</button></div>
     <div id="heirChoice">${heirChoiceHtml(run.fac,run.admiral)}</div></section>`;
 }
