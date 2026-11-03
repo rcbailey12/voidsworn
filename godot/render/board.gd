@@ -322,7 +322,7 @@ func _hex_mesh(rad: float, ring: bool) -> ArrayMesh:
 	return st.commit()
 
 
-const ZONE_TINT := {"neb": Color(0.69, 0.49, 1.0, 0.16), "debris": Color(0.83, 0.75, 0.53, 0.12), "storm": Color(1.0, 0.91, 0.4, 0.13)}
+const ZONE_TINT := {"neb": Color(0.69, 0.49, 1.0, 0.075), "debris": Color(0.83, 0.75, 0.53, 0.065), "storm": Color(1.0, 0.91, 0.4, 0.065)}
 const BASE_FILL := Color(0.04, 0.06, 0.09, 0.18)
 # F1: a neutral grey grid (was a pale blue that blended with the move hexes); it fades away from the ship that is up
 const BASE_RING := Color(0.66, 0.70, 0.78, 0.075)
