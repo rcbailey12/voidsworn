@@ -238,6 +238,35 @@ ACT.nameHeir=id=>{
   META.heirs[heirDebrief.fac]=id; Persist.save({meta:true});
   document.getElementById('heirChoice').innerHTML=heirChoiceHtml(heirDebrief.fac,heirDebrief.admiral);
 };
+// Capture the paid profile once. Both debriefs read this receipt, not estimates.
+function inheritanceSummary(run){
+  const cy=run.carry, balance=META.renown||0, affordable=[];
+  for(const [id,u] of Object.entries(LEGACY)) if(!META.unlocked[id]&&(!u.req||META.unlocked[u.req])&&u.cost<=balance)
+    affordable.push({id,n:u.n,cost:u.cost,kind:'Doctrine',fresh:u.cost>balance-cy.ren});
+  for(const [id,u] of Object.entries(HULL_VARIANTS)) if(!u.arc&&!(META.variants||{})[id]&&u.cost<=balance)
+    affordable.push({id,n:u.n,cost:u.cost,kind:FACTIONS[HULLS[u.base].fac].n+' hull',fresh:u.cost>balance-cy.ren});
+  const line=id=>{ const level=masteryLevel(id), xp=masteryXP(id), next=masteryThresholds(id)[level+1];
+    return {id,xp,level,next:next==null?null:next,remaining:next==null?0:Math.max(0,next-xp)}; };
+  const flown=line(run.admiral), tree=!!LINEAGE_TREES[run.admiral], build=lineageBuild(run.admiral), nodes=tree?lineageNodes(run.admiral):[];
+  return {balance,affordable,flown:{...flown,tree,pending:tree?Math.max(0,Math.min(3,flown.level-4)-build.picks.length):0,
+    capstoneReady:tree&&nodes.some(n=>n.branch==='cap'&&n.state==='available'),chosen:nodes.filter(n=>n.state==='chosen').map(n=>n.n),earned:MASTERY_PERKS.slice(cy.mx0+1,Math.min(4,cy.mx1)+1)},
+    shadow:cy.shadow.map(row=>({...line(row.id),...row,total:masteryXP(row.id)}))};
+}
+function inheritanceHtml(run){
+  const cy=run.carry, receipt=cy.inheritance, f=receipt.flown, fmt=n=>Math.round(n*100)/100;
+  return `<section class="nextfac" style="border-color:var(--gilt)"><h2>Your inheritance</h2><p class="muted">What this run leaves for the next generation.</p>
+    <p><b class="gilt num">+${cy.ren} renown</b>${cy.hl?` (Heat ${cy.hl}: +${cy.hl*10}%)`:''}. Balance: ${receipt.balance} renown.</p>
+    <h3>Affordable now</h3><p class="dim">Each reward can be bought on its own. Choose how to spend your renown in Progression.</p>
+    ${receipt.affordable.length?`<ul>${receipt.affordable.map(u=>`<li>${esc(u.n)}: ${u.cost} renown <span class="dim">(${esc(u.kind)})</span>${u.fresh?' <span class="gilt">Newly affordable</span>':''}</li>`).join('')}</ul>`:'<p class="dim">No unowned doctrine or hull reward is affordable yet. Your renown stays saved.</p>'}
+    <h3>${esc(ADMIRALS[f.id].n)}: ${f.tree?'lineage tree':'admiral line'}</h3><p>+${fmt(cy.mxGain)} XP. Level ${f.level}${cy.mx1>cy.mx0?` (was ${cy.mx0})`:''}.</p>
+    ${f.earned.map(perk=>`<p class="gilt">${esc(perk.n)} earned: ${esc(perk.d)}</p>`).join('')}
+    <p class="dim">${f.next==null?`${fmt(f.xp)} XP. This line is at its current cap.`:`${fmt(f.xp)} / ${f.next} XP. ${fmt(f.remaining)} XP to level ${f.level+1}: ${esc(masteryPerk(f.level+1).n)}.`}</p>
+    ${f.tree?`<p class="gilt">${f.pending} branch pick${f.pending===1?'':'s'} ready.${f.capstoneReady?' Command evolution ready.':''}</p><p class="dim">Recorded skills: ${f.chosen.length?f.chosen.map(esc).join(', '):'None yet'}.</p>`:''}
+    <h3>Shadow learning</h3>${receipt.shadow.map(row=>`<p>${esc(ADMIRALS[row.id].n)}: +${fmt(row.xp)} shadow XP${row.rate===.5?' (heir rate)':''}. <span class="dim">Total ${fmt(row.total)} XP, level ${row.level}${row.next==null?', at current cap':`, ${fmt(row.remaining)} XP to level ${row.level+1}`}.</span></p>`).join('')}
+    ${cy.mxOverflow?`<p class="dim">${fmt(cy.mxOverflow)} XP past the flown line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="dim">${fmt(cy.shadowBank)} shadow XP saved for an uncapped benched line.</p>`:''}
+    <div class="row"><button data-act="progTab" data-arg="legacy">Choose doctrine</button><button data-act="progTab" data-arg="variants">Choose hull rewards</button><button data-act="${f.tree?'lineage':'progTab'}" data-arg="${f.tree?f.id:'mastery'}">View admiral line</button></div>
+    <div id="heirChoice">${heirChoiceHtml(run.fac,run.admiral)}</div></section>`;
+}
 function endRun(victory, abandoned){
   if(!RUN||RUN.over) return;
   const s=RUN.stats;
@@ -251,14 +280,10 @@ function endRun(victory, abandoned){
   const earnings=awardLineageXP(RUN.admiral,RUN.fac,mxEarned), mx1=masteryLevel(RUN.admiral);
   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
   RUN.carry={ren,...earnings,mx0,mx1,hl};
+  RUN.carry.inheritance=inheritanceSummary(RUN);
   RUN.over=true; SAVED_RUN=null; Persist.save();
   const nf=victory?nextFacPick():null, NF=nf&&FACTIONS[nf];
-  const cy=RUN.carry, nextLv=masteryPerk(cy.mx1+1);
-  const carryHtml=`<div class="nextfac" style="border-color:var(--gilt)"><div class="dim" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Carried forward</div>
-    <p style="margin:4px 0"><b class="gilt num">+${cy.ren} renown</b>${cy.hl?` <span class="dim">(Heat ${cy.hl}: +${cy.hl*10}%)</span>`:''} \u00b7 you now have ${META.renown}. Spend it on hull variants in Progression.</p>
-    <p style="margin:4px 0">${esc(ADMIRALS[RUN.admiral].n)}: <b class="num">+${cy.mxGain} mastery</b>${cy.mx1>cy.mx0?` <span class="gilt">Level ${cy.mx1} reached: ${esc(masteryPerk(cy.mx1).n)}. ${esc(masteryPerk(cy.mx1).d)}</span>`:cy.mx1<masteryThresholds(RUN.admiral).length-1?` <span class="dim">(${masteryXP(RUN.admiral)}/${masteryThresholds(RUN.admiral)[cy.mx1+1]} to ${esc(nextLv.n)})</span>`:' <span class="dim">(mastered)</span>'}</p></div>`;
-  const shadowHtml=`<div class="nextfac"><h3>Shadow learning</h3>${cy.shadow.map(row=>`<p>${esc(ADMIRALS[row.id].n)}: +${Math.round(row.xp*100)/100} shadow XP${row.rate===.5?' (heir rate)':''}</p>`).join('')}${cy.mxOverflow?`<p class="dim">${Math.round(cy.mxOverflow*100)/100} XP past this line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="dim">${Math.round(cy.shadowBank*100)/100} shadow XP saved for an uncapped benched line.</p>`:''}<div id="heirChoice">${heirChoiceHtml(RUN.fac,RUN.admiral)}</div></div>`;
-  const lines=`${carryHtml}${shadowHtml}${runRecap(victory)}
+  const lines=`${inheritanceHtml(RUN)}${runRecap(victory)}
     ${RUN.fallen.length?`<p class="muted">Captains lost this run: ${RUN.fallen.map(f=>esc(f.name)).join(', ')}.</p>`:''}
     ${victory?`<p class="gilt num" style="font-size:18px">${META.stats.wins>1?`Victories so far: ${META.stats.wins}`:'Your first victory.'} Won with: ${(META.stats.wonFacs||[]).map(f=>esc(FACTIONS[f].n)).join(', ')}.</p>`:`<p class="gilt num" style="font-size:20px">${RUN.sector>prevBest?`New best: sector ${roman(RUN.sector)}`:`Best so far: sector ${roman(Math.min(3,META.stats.best))}`}</p>`}
     ${NF?`<div class="nextfac"><div class="dim" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Next run</div><b>Try the ${esc(NF.n.replace(/^The /,''))}</b><p class="muted" style="margin:4px 0 0">${esc(NF.blurb||'')}</p></div>`:''}`;

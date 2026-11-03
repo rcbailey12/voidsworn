@@ -1,5 +1,9 @@
 # The rules oracle, pinned
 
+Nov 3 2026, issue 21: inheritance is in campaign_meta.js, held by the campaign
+oracle only. Rules files are unchanged. Re-exported rules tables retain the
+same checksum; the combat oracle needs no new source copy.
+
 Nov 2 2026, issue 20: re-copied core.js for the saved heirs and shadowPool
 profile fields. Re-exported rules tables; combat rules are unchanged.
 

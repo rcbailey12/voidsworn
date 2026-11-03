@@ -1,5 +1,9 @@
 # The campaign oracle, pinned
 
+Nov 3 2026, issue 21: re-copied campaign_meta.js for the paid inheritance
+receipt and debrief links. Campaign and rules tables were re-exported and
+keep their existing checksums. No combat rule or playtest default changed.
+
 Nov 2 2026, issue 20: re-copied core.js and campaign_meta.js for per-line
 shadow XP, debrief heirs and capped XP routing. Re-exported campaign tables.
 The R69 playtest default stays on in the Godot UI.

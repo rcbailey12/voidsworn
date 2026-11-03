@@ -1103,26 +1103,38 @@ func _end(d: Dictionary) -> Control:
 	if stl != "":
 		var sll = lbl(stl, 18, GILT); sll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(sll)
 	var carry = panel(GILT, Color(0.37, 0.7, 0.65, 0.08), 12); var cv = vbox(4); carry.add_child(cv)
-	cv.add_child(lbl("CARRIED FORWARD", 12, BONE3))
-	cv.add_child(rich("[b]" + c("+" + C.numstr(cy["ren"]) + " renown", GILT) + "[/b]" + ((" " + c("(Heat " + C.numstr(cy["hl"]) + ": +" + C.numstr(cy["hl"] * 10) + "%)", BONE3)) if C.jt(cy["hl"]) else "") + " · you now have " + C.numstr(C.META["renown"]) + ". Spend it on hull variants in Progression.", 16))
-	var mx1 = int(cy["mx1"]); var ml = ""
-	if mx1 > int(cy["mx0"]): ml = " " + c("Level " + str(mx1) + " reached: " + esc(C.masteryPerk(mx1)["n"]) + ". " + esc(C.masteryPerk(mx1)["d"]), GILT)
-	elif mx1 < C.masteryThresholds(R["admiral"]).size() - 1: ml = " " + c("(" + C.numstr(C.masteryXP(R["admiral"])) + "/" + C.numstr(C.masteryThresholds(R["admiral"])[mx1 + 1]) + " to " + esc(C.masteryPerk(mx1 + 1)["n"]) + ")", BONE3)
-	else: ml = " " + c("(mastered)", BONE3)
-	cv.add_child(rich(esc(C.ADMIRALS[R["admiral"]]["n"]) + ": [b]+" + C.numstr(cy["mxGain"]) + " mastery[/b]" + ml, 16))
-	v.add_child(carry)
-	var shadow_panel = panel(GILT, GLASS, 12); var sv = vbox(6); shadow_panel.add_child(sv)
+	var receipt = cy["inheritance"]; var flown = receipt["flown"]
+	cv.add_child(lbl("YOUR INHERITANCE", 24, GILT, font_semi))
+	cv.add_child(lbl("What this run leaves for the next generation.", 16, BONE2))
+	cv.add_child(rich("[b]" + c("+" + C.numstr(cy["ren"]) + " renown", GILT) + "[/b]" + ((" (Heat " + C.numstr(cy["hl"]) + ": +" + C.numstr(cy["hl"] * 10) + "%)") if C.jt(cy["hl"]) else "") + ". Balance: " + C.numstr(receipt["balance"]) + " renown.", 18))
+	cv.add_child(lbl("Affordable now", 20, GILT, font_semi))
+	cv.add_child(lbl("Each reward can be bought on its own. Choose how to spend your renown in Progression.", 15, BONE3))
+	for u in receipt["affordable"]:
+		cv.add_child(lbl(str(u["n"]) + ": " + C.numstr(u["cost"]) + " renown (" + str(u["kind"]) + ")" + (" - Newly affordable" if u["fresh"] else ""), 16, GILT if u["fresh"] else BONE2))
+	if receipt["affordable"].is_empty(): cv.add_child(lbl("No unowned doctrine or hull reward is affordable yet. Your renown stays saved.", 16, BONE3))
+	cv.add_child(lbl(str(C.ADMIRALS[flown["id"]]["n"]) + (": lineage tree" if flown["tree"] else ": admiral line"), 20, GILT, font_semi))
+	cv.add_child(lbl("+" + C.numstr(snapped(float(cy["mxGain"]), 0.01)) + " XP. Level " + str(flown["level"]) + ((" (was " + C.numstr(cy["mx0"]) + ")") if cy["mx1"] > cy["mx0"] else "") + ".", 17, BONE))
+	for perk in flown["earned"]: cv.add_child(lbl(str(perk["n"]) + " earned: " + str(perk["d"]), 16, GILT))
+	if flown["next"] == null: cv.add_child(lbl(C.numstr(flown["xp"]) + " XP. This line is at its current cap.", 16, BONE3))
+	else: cv.add_child(lbl(C.numstr(flown["xp"]) + " / " + C.numstr(flown["next"]) + " XP. " + C.numstr(flown["remaining"]) + " XP to level " + str(int(flown["level"]) + 1) + ": " + str(C.masteryPerk(int(flown["level"]) + 1)["n"]) + ".", 16, BONE3))
+	if flown["tree"]:
+		cv.add_child(lbl(str(flown["pending"]) + (" branch pick ready." if flown["pending"] == 1 else " branch picks ready.") + (" Command evolution ready." if flown["capstoneReady"] else ""), 17, GILT))
+		cv.add_child(lbl("Recorded skills: " + (", ".join(PackedStringArray(flown["chosen"])) if not flown["chosen"].is_empty() else "None yet") + ".", 15, BONE3))
+	var sv = cv
 	sv.add_child(lbl("SHADOW LEARNING", 16, GILT, font_semi))
-	for row in cy["shadow"]:
-		sv.add_child(lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP" + (" (heir rate)" if row["rate"] == 0.5 else ""), 15, BONE2))
+	for row in receipt["shadow"]:
+		sv.add_child(lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP" + (" (heir rate)" if row["rate"] == 0.5 else "") + ". Total " + C.numstr(snapped(float(row["total"]), 0.01)) + " XP, level " + C.numstr(row["level"]) + ((", at current cap") if row["next"] == null else (", " + C.numstr(snapped(float(row["remaining"]), 0.01)) + " XP to level " + str(int(row["level"]) + 1))) + ".", 15, BONE2))
 	if cy["mxOverflow"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["mxOverflow"]), 0.01)) + " XP past this line's cap went to shadow learning.", 15, BONE3))
 	if cy["shadowBank"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["shadowBank"]), 0.01)) + " shadow XP saved for an uncapped benched line.", 15, BONE3))
+	var choices = flow(8)
+	add(choices, abtn("Choose doctrine", "progTab", "legacy")); add(choices, abtn("Choose hull rewards", "progTab", "variants"))
+	add(choices, abtn("View admiral line", "lineage" if flown["tree"] else "progTab", flown["id"] if flown["tree"] else "mastery")); sv.add_child(choices)
 	sv.add_child(lbl("Name an heir", 20, GILT, font_semi))
 	sv.add_child(lbl("Benched lines of this faction earn 25% shadow XP. Your named heir earns 50% on future runs. You can replace this faction's heir after any run.", 15, BONE2))
 	for id in C.shadowAdmirals(R["fac"], R["admiral"]):
 		var heir = C.META["heirs"].get(R["fac"]) == id
 		add(sv, abtn(("Heir: " if heir else "Name ") + str(C.ADMIRALS[id]["n"]), "nameHeir", id, heir))
-	v.add_child(shadow_panel)
+	v.add_child(carry)
 	var tiles = flow(8)
 	var tl = [[s["battles"], "battles won"], [s["bosses"], "flagships destroyed"], [s["kills"], "enemy ships destroyed"], [C.z0(s.get("lost")), "ships lost"]]
 	if d.get("mins") != null: tl.append([(C.numstr(d["mins"]) + "m") if float(d["mins"]) < 90 else (str(snapped(float(d["mins"]) / 60.0, 0.1)) + "h"), "played"])
