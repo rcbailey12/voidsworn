@@ -104,5 +104,213 @@
 ],
 "ambient": [
 "ambient_0.ogg"
+],
+"boomCrunch": [
+"boomCrunch_0.ogg",
+"boomCrunch_1.ogg",
+"boomCrunch_2.ogg"
+],
+"choirBell": [
+"choirBell_0.ogg",
+"choirBell_1.ogg",
+"choirBell_2.ogg"
+],
+"cough": [
+"cough_0.ogg",
+"cough_1.ogg",
+"cough_2.ogg"
+],
+"crackGlass": [
+"crackGlass_0.ogg",
+"crackGlass_1.ogg",
+"crackGlass_2.ogg"
+],
+"crackSettle": [
+"crackSettle_0.ogg",
+"crackSettle_1.ogg",
+"crackSettle_2.ogg"
+],
+"darkLance": [
+"darkLance_0.ogg",
+"darkLance_1.ogg",
+"darkLance_2.ogg"
+],
+"deathRun": [
+"deathRun_0.ogg",
+"deathRun_1.ogg",
+"deathRun_2.ogg"
+],
+"engineLoop": [
+"engineLoop_0.ogg",
+"engineLoop_1.ogg",
+"engineLoop_2.ogg"
+],
+"grappleWet": [
+"grappleWet_0.ogg",
+"grappleWet_1.ogg",
+"grappleWet_2.ogg"
+],
+"gunFlak": [
+"gunFlak_0.ogg",
+"gunFlak_1.ogg",
+"gunFlak_2.ogg"
+],
+"gunGlob": [
+"gunGlob_0.ogg",
+"gunGlob_1.ogg",
+"gunGlob_2.ogg",
+"gunGlob_3.ogg"
+],
+"gunSpine": [
+"gunSpine_0.ogg",
+"gunSpine_1.ogg"
+],
+"gunTracer": [
+"gunTracer_0.ogg",
+"gunTracer_1.ogg"
+],
+"heavyPlate": [
+"heavyPlate_0.ogg",
+"heavyPlate_1.ogg",
+"heavyPlate_2.ogg"
+],
+"hitGlass": [
+"hitGlass_0.ogg",
+"hitGlass_1.ogg",
+"hitGlass_2.ogg",
+"hitGlass_3.ogg"
+],
+"hitWet": [
+"hitWet_0.ogg",
+"hitWet_1.ogg",
+"hitWet_2.ogg",
+"hitWet_3.ogg"
+],
+"hullTick": [
+"hullTick_0.ogg",
+"hullTick_1.ogg",
+"hullTick_2.ogg",
+"hullTick_3.ogg"
+],
+"ionField": [
+"ionField_0.ogg",
+"ionField_1.ogg",
+"ionField_2.ogg"
+],
+"ionZap": [
+"ionZap_0.ogg",
+"ionZap_1.ogg",
+"ionZap_2.ogg"
+],
+"lanceLR": [
+"lanceLR_0.ogg",
+"lanceLR_1.ogg",
+"lanceLR_2.ogg"
+],
+"lasSear": [
+"lasSear_0.ogg",
+"lasSear_1.ogg",
+"lasSear_2.ogg"
+],
+"laserLR": [
+"laserLR_0.ogg",
+"laserLR_1.ogg",
+"laserLR_2.ogg"
+],
+"needleTick": [
+"needleTick_0.ogg",
+"needleTick_1.ogg",
+"needleTick_2.ogg"
+],
+"patterHull": [
+"patterHull_0.ogg",
+"patterHull_1.ogg",
+"patterHull_2.ogg",
+"patterHull_3.ogg"
+],
+"patterShield": [
+"patterShield_0.ogg",
+"patterShield_1.ogg",
+"patterShield_2.ogg"
+],
+"plasmaHit": [
+"plasmaHit_0.ogg",
+"plasmaHit_1.ogg",
+"plasmaHit_2.ogg",
+"plasmaHit_3.ogg"
+],
+"plasmaShot": [
+"plasmaShot_0.ogg",
+"plasmaShot_1.ogg",
+"plasmaShot_2.ogg"
+],
+"puff": [
+"puff_0.ogg",
+"puff_1.ogg",
+"puff_2.ogg"
+],
+"railHit": [
+"railHit_0.ogg",
+"railHit_1.ogg",
+"railHit_2.ogg",
+"railHit_3.ogg"
+],
+"railStrike": [
+"railStrike_0.ogg",
+"railStrike_1.ogg",
+"railStrike_2.ogg",
+"railStrike_3.ogg"
+],
+"salvoBoom": [
+"salvoBoom_0.ogg",
+"salvoBoom_1.ogg",
+"salvoBoom_2.ogg",
+"salvoBoom_3.ogg"
+],
+"shellBang": [
+"shellBang_0.ogg",
+"shellBang_1.ogg",
+"shellBang_2.ogg"
+],
+"shieldShatter": [
+"shieldShatter_0.ogg",
+"shieldShatter_1.ogg",
+"shieldShatter_2.ogg"
+],
+"shieldShimmer": [
+"shieldShimmer_0.ogg",
+"shieldShimmer_1.ogg",
+"shieldShimmer_2.ogg"
+],
+"starShimmer": [
+"starShimmer_0.ogg",
+"starShimmer_1.ogg",
+"starShimmer_2.ogg"
+],
+"torpLaunch": [
+"torpLaunch_0.ogg",
+"torpLaunch_1.ogg"
+],
+"torpRocket": [
+"torpRocket_0.ogg",
+"torpRocket_1.ogg",
+"torpRocket_2.ogg",
+"torpRocket_3.ogg"
+],
+"torpSac": [
+"torpSac_0.ogg",
+"torpSac_1.ogg",
+"torpSac_2.ogg",
+"torpSac_3.ogg"
+],
+"uiRound": [
+"uiRound_0.ogg",
+"uiRound_1.ogg",
+"uiRound_2.ogg"
+],
+"wreckSettle": [
+"wreckSettle_0.ogg",
+"wreckSettle_1.ogg",
+"wreckSettle_2.ogg"
 ]
 }
