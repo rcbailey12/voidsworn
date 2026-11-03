@@ -102,23 +102,30 @@ func _run() -> void:
 	if OS.get_environment("FB1_SHOTS") != "" and DisplayServer.get_name() != "headless":
 		for i in 480: fx.step(1.0 / 60.0)
 		await captures(s, wounded, organic, crystal, meshes)
-	var before: Transform3D = organic.meshes[0].transform
+	var before: Vector3 = organic.meshes[0].scale
 	fx.death("organic", "big")
-	for i in 75: fx.step(1.0 / 60.0)
+	for i in 12: fx.step(1.0 / 60.0)
+	check(organic.meshes[0].scale.is_equal_approx(before), "Chorus keeps its volume before rupture")
+	for i in 180:
+		fx.step(1.0 / 60.0)
+		await process_frame
+		if organic.has_meta("death_hidden"): break
 	if OS.get_environment("FB1_SHOTS") != "" and DisplayServer.get_name() != "headless":
 		for i in 8: await process_frame
 		await RenderingServer.frame_post_draw
-		get_root().get_texture().get_image().save_png(OS.get_environment("FB1_SHOTS").path_join("chorus_deflating.png"))
-	check(organic.meshes[0].scale.y < before.basis.get_scale().y * 0.5, "Chorus death visibly deflates before removal")
-	check(not organic.has_meta("cut_task"), "Chorus death does not trigger metal breakup")
+		get_root().get_texture().get_image().save_png(OS.get_environment("FB1_SHOTS").path_join("chorus_rupture.png"))
+	check(organic.has_meta("death_hidden"), "Chorus live skin is replaced at rupture")
 	for i in 60: fx.step(1.0 / 60.0)
 	var remains: Array = fx.dstate.wrecks.filter(func(w): return w.id == "organic")
-	check(remains.size() == 1, "deflated organic body persists as a wreck")
+	check(remains.size() == 1, "ruptured organic pieces persist as one wreck record")
 	if not remains.is_empty():
+		check(remains[0].nodes.size() >= 4, "Chorus ruptures into several membrane pieces")
+		check(remains[0].lights.is_empty(), "organic spill has no metal fire lights")
 		var body: Node3D = remains[0].nodes[0]
-		check(body.has_node("fx_damage_inside") and body.has_node("fx_damage_marks"), "organic wreck retains wound cavities and membranes")
+		var piece := body.get_child(body.get_child_count() - 1) as MeshInstance3D
+		check(piece != null and piece.mesh.get_surface_count() > 1, "organic wreck retains painted skin and sealed torn faces")
 		fx.remove_ship("organic")
-		check(is_instance_valid(body) and body.has_node("fx_damage_inside"), "wreck cavities survive removing the live ship")
+		check(is_instance_valid(body) and is_instance_valid(piece), "organic pieces survive removing the live ship")
 	print("PLAYTEST_BATCH1 failures=%d chunks=%d" % [failures, meshes.size()])
 	fx.queue_free(); await process_frame
 	world.queue_free(); await process_frame

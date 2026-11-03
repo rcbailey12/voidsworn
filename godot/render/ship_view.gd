@@ -14,7 +14,6 @@ var engines: Array = []
 var speed_k := 1.0          # the battle's SPEED (Enter or Space hurries a burn already under way)
 var cur_yaw := 0.0
 var dead := false
-var sink := 0.0
 var bob_seed := 0.0
 var meshes: Array = []
 var fade := 1.0
@@ -297,17 +296,19 @@ func set_marker(friend: bool) -> void:
 var wreck := false
 
 
-# death: sink and fade, or stay on the board as a dark, listing wreck (blocking terrain)
+# Death effects own the hull replacement. Keep its root on the board throughout.
 func die(as_wreck: bool) -> void:
 	dead = true
 	wreck = as_wreck
+	path_dur = 0.0
+	glide = false
+	thrust = 0.0
 	if marker != null:
 		marker.visible = false
 	ring.visible = false
 	for e in engines:
 		(e as Sprite3D).visible = false
 	if as_wreck:
-		sink = 1.0
 		hull.rotation.z = 0.22
 		hull.rotation.x = 0.08
 		for m in meshes:
@@ -317,13 +318,15 @@ func die(as_wreck: bool) -> void:
 			mat.roughness = 0.9
 			mat.metallic = 0.3
 			gi.material_override = mat
+	else:
+		# Without FX, the battle's fallback flash replaces the hull immediately.
+		visible = false
 
 
 # a Deathless wreck standing up again: back to its own materials, lights and markers
 func revive() -> void:
 	dead = false
 	wreck = false
-	sink = 0.0
 	visible = true
 	hull.rotation = Vector3.ZERO
 	position.y = 0.0
@@ -1229,13 +1232,13 @@ func _puffs_step(dt: float) -> void:
 func _process(dt: float) -> void:
 	if not puffs.is_empty():
 		_puffs_step(dt)
-	if path_dur > 0.0 and glide and not dead:
-		_glide_step(dt)
-	elif path_dur > 0.0 and glide:
-		path_dur = 0.0   # died mid-move: the death animation takes over where it stands
+	if dead:
+		path_dur = 0.0
 		glide = false
 		thrust = 0.0
-	elif path_dur > 0.0 and not segs.is_empty() and not dead:
+	if path_dur > 0.0 and glide:
+		_glide_step(dt)
+	elif path_dur > 0.0 and not segs.is_empty():
 		_seg_step(dt)
 	elif path_dur > 0.0:
 		# Movement: brisk (the earlier motion): ease in and out over the whole burn, facing eased between keys
@@ -1258,16 +1261,6 @@ func _process(dt: float) -> void:
 		if fleeing > 1.5:
 			visible = false
 		return
-	if dead and not wreck and sink < 1.0:
-		sink = minf(sink + dt * 0.35, 1.0)
-		hull.rotation.z = sink * 0.5
-		position.y = -sink * 6.0
-		for m in meshes:
-			(m as GeometryInstance3D).transparency = sink
-		for e in engines:
-			(e as Sprite3D).visible = false
-		if sink >= 1.0:
-			visible = false
 	# Sparse matched station-keeping jets, independent of the smooth flight curve.
 	if not dead and visible and path_dur <= 0.0:
 		var idle_t := Time.get_ticks_msec() / 1000.0
@@ -1276,7 +1269,8 @@ func _process(dt: float) -> void:
 			_puff_cd["idle_at"] = idle_t + 1.6 + fposmod(bob_seed, 0.8)
 	# A slow idle drift, separate from the cinematic flight bank.
 	var bob := Vector3(0, sin(Time.get_ticks_msec() / 1000.0 * 0.6 + bob_seed) * 0.25, 0)
-	hull.position = hull_base + bob
+	if not dead:
+		hull.position = hull_base + bob
 	# the fallback engine glows (only when G4's fx is not drawing the real nozzles) swell only while the drive pushes
 	var eg := 0.45 + 1.1 * thrust
 	for e in engines:
