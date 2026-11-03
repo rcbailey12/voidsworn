@@ -96,7 +96,17 @@ Q3. Trim sheet timing: (A, chair pick) build one shared Hullbreaker trim sheet i
 Q4. Acceptance test for the #111 sheets: (A, chair pick) require the before and after wavy-panel crop at head-on and grazing angles, plus an in-game screenshot at battle distance and at close zoom, before any variant is called the winner. (B) Turntable renders only.
 Q5. The Starsector sprite idea: (A, chair pick) keep it out of #111 and out of the current plan; revisit only if a distant-LOD problem actually shows up in play. (B) Add a painted impostor experiment as a fourth #111 variant.
 
-## 8. Not checked
+## 8. Owner rulings (Ryan, 2026-11-03)
+
+Ryan ruled "Agree with all chair picks" on 2026-11-03. All five chair picks are adopted:
+
+Q1. Production default after #111: SPLIT DEFAULT. Variant 1 A+ for flagships and hero hulls; variant 2 (clean shell plus filtered bake) is the fleet default for the other machine hulls, escalating any hull that reads thin to A+ per hull.
+Q2. Variant 3 scope: small, hard-edged chunks only, each cleaned and re-seated on a visible mount. Anything larger gets rebuilt or folded into the greeble kit.
+Q3. Trim sheet timing: one shared Hullbreaker trim sheet is built inside #111, so all three variants wear the same detail language.
+Q4. Acceptance test: the #111 sheets require the before and after wavy-panel crop at head-on and grazing angles, plus in-game screenshots at battle distance and at close zoom, before any variant is called the winner.
+Q5. Sprite impostor: kept out of #111 and out of the current plan. Revisit only if a distant-LOD problem actually shows up in play.
+
+## 9. Not checked
 
 - The chair did not re-open every URL in the legs; pack seed URLs were verified when the pack was built, DeepSeek citations were spot-checked against its own source list (which is how the [61] and [116] cuts were confirmed), and Qwen's claims were checked against the filed leg text.
 - No Blender work was run for this research. The corrected high-pass recipe in section 4 is stated from the normal map encoding and the legs' sources; the #111 crop test is where it gets proven on the actual Pyre-Barge panel.
