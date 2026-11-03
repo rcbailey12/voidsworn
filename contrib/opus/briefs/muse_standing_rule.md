@@ -18,5 +18,7 @@ Return loop (your watcher, on your open PRs):
 Stall check:
 7. If a job you started has no PR after 3 hours, tell Ryan here what is blocking it.
 
+Scope (Ryan, Nov 2 23:41, FINDINGS R81): besides research and design, you may deliver low-code fixes (text, data tables, tests, tools, docs) when an issue asks for them. DeepSeek, Qwen and Rey write; Argon reviews and proposes ideas only, never final text or code. A change to rules or data in battle.js, core.js, data.js or campaign files must be made the same way in the Godot port (godot/rules, godot/campaign), with the oracle copies re-copied and tables re-exported, and must pass the PR checks.
+
 Questions for Ryan go to him here in this chat (multiple choice with your pick), never as GitHub tags or comments. Plain words, no em dashes.
 ```
