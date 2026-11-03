@@ -6,7 +6,7 @@ Chair synthesis of four legs (Rey blind leg, DeepSeek, Qwen, Argon as screened d
 
 GO WITH CONDITIONS.
 
-The one condition: Owner Question 1 (visible craft count tracking wing HP) needs the owner's ruling before the count piece builds, because it extends the R80 squadron damage ruling. Everything else in this spec is buildable now.
+The one condition: Owner Question 1 (visible craft count tracking wing HP) needs the owner's ruling before the count piece builds, because it extends the R80 squadron damage ruling. Everything else in this spec is buildable now. UPDATE Nov 2, 2026: the owner ruled the same evening (see Owner rulings, after section 11). Q1 adopted thinning, so the condition is lifted and section 7.2 is settled spec.
 
 ## 1. Why this spec exists: the current state
 
@@ -235,7 +235,7 @@ Trigger points: battle start, spare replacement (data.js:136), and scramble Comm
 
 Total 1.40 seconds, flown by the meshes, in three phases:
 
-- Flak approach, 0.00 to 0.45 s: craft ignite full engine trails, break formation with a 0.07 second stagger, and dive from their hex to the target hull's edge at 2.5 times ship speed, jinking laterally plus or minus 1.2 units through the point-defence flak bursts. The flak gauntlet (battle.js:774) and the run are one staged event: turret fire meets the craft during this phase. This is where a gated threshold loss would pop, if Owner Question 1 adopts thinning.
+- Flak approach, 0.00 to 0.45 s: craft ignite full engine trails, break formation with a 0.07 second stagger, and dive from their hex to the target hull's edge at 2.5 times ship speed, jinking laterally plus or minus 1.2 units through the point-defence flak bursts. The flak gauntlet (battle.js:774) and the run are one staged event: turret fire meets the craft during this phase. This is where a threshold loss pops (section 7.2, adopted by owner ruling Nov 2, 2026).
 - Ordnance pass, 0.45 to 0.90 s: role-specific delivery. Fighters skim 2.8 units above the target deck at 50 degrees bank firing tracer bursts. Bombers fly a level run 3.5 units overhead releasing visible bomb salvos. Chorus Bile-Cysts dive to 1.8 units and convulse to eject glowing spore sacs onto the hull. Weapon sprites spawn from the moving craft positions (fx_weapons.gd:609 to 640 payloads, re-anchored).
 - Breakaway, 0.90 to 1.40 s: craft execute a 65 degree banking peel-off turn, arc back to their hex, and ease back into the patrol orbit.
 
@@ -270,9 +270,9 @@ This is settled spec, buildable now, and matches the owner's actual ruling for s
 - Fixed visible craft count. A fresh wing and a mauled wing show the same number of craft; the read is surfaces plus ribbon, with the health bar as the exact read.
 - No per-craft damage states beyond the above. No formation thinning, no missing craft, no ghost craft in the baseline.
 
-### 7.2 The gated proposal: count thinning (NOT settled spec)
+### 7.2 Count thinning (SETTLED by owner ruling, Nov 2, 2026)
 
-The Rey leg and the Argon leg both propose linking visible craft count to the wing's HP ratio, with faction-varied full counts:
+Adopted by the owner Nov 2, 2026 (see Owner rulings): visible craft count tracks wing HP. This extends the R80 squadron damage ruling on the owner's own authority. The Rey leg and the Argon leg both propose linking visible craft count to the wing's HP ratio, with faction-varied full counts:
 
 - 100 to 76 percent HP: full count (4 Crusade, Hegemony, Eclipse; 5 Hullbreakers, Glasswrights; 6 Chorus).
 - 75 to 51 percent: full count minus 1; stage 0 scorches appear on survivors.
@@ -331,7 +331,7 @@ The anti-static test: at any given second, a wing is patrolling (section 6.1), t
 1. Mesh matrix and lookup. Build the 10 faction-role meshes (section 3 table, section 4 detail, triangle caps in section 8). Change hull_table to the two-key (carrier faction, wing role) lookup with no generic fallback. Flag, do not silently fix: the Crusade sq data gap (data.js:113) goes to Opus as a data note alongside this task.
 2. Formation controller and stance patrol. The parameterized controller (section 5 slots and weave), MultiMesh per wing, and the stance-keyed in-hex patrol with the 3.0 units per second motion floor (section 6.1). This task alone removes the frozen diamond.
 3. Mesh-flown events. Launch (6.2), transit whip-turn (6.3), attack run (6.4), dogfight furball (6.5), scramble presentation (6.6), death and spare replacement (6.7). Retire the sprite launch streaks and the sprite strafe as primary reads; re-anchor the weapon payload sprites to craft positions.
-4. Damage read. R80 stage 0 surfaces and the smoke ribbon (section 7.1): build now. The count-thinning piece (section 7.2) is GATED on Owner Question 1: build it only if the owner adopts thinning, and in the thresholds given there.
+4. Damage read. R80 stage 0 surfaces and the smoke ribbon (section 7.1) plus count thinning (section 7.2): build all of it. Thinning was gated on Owner Question 1 at delivery and the owner adopted it Nov 2, 2026 (see Owner rulings), in the thresholds given in section 7.2.
 5. Budget, LOD, safe mode, measurement. Distance LOD past 130 units, low-settings caps, safe mode floor (section 8), and the torture-scene measurement against the 40 fps floor on the RTX 5080 at 4K. Sign-off requires the measurement, not the caps on paper.
 
 Eclipse modelling is not in any task above: it is fenced behind Owner Question 4's answer plus a data change (a carrier hull or the Drone bay refit) that is outside issue 67.
@@ -377,6 +377,16 @@ Stakes: A keeps the design complete at zero build cost today. B risks the factio
 - B: Strictly sequential runs: 1.40 seconds each, one wing after another.
 
 Stakes: A keeps late carrier battles brisk and gives a mass-strike spectacle. B is easier to follow wing by wing but stretches a 14-wing swarm phase to nearly 20 seconds of animation.
+
+## Owner rulings (Ryan, Nov 2, 2026)
+
+Ruled in the main chat the evening the spec was delivered. Chair picks were adopted on every question he answered.
+
+- Q1, visible craft count vs HP: ADOPT THINNING. In the owner's words, he likes having a shrinking formation and thinning. Visible craft count tracks wing HP per section 7.2 (drop at 75, 50, and 25 percent down to a 2-craft floor). This extends the R80 squadron damage ruling (stage 0 surfaces plus smoke ribbon) on the owner's authority; the DeepSeek and Qwen objection (one HP pool, false-read risk) is recorded in section 12 and stands as the dissent of record. The health bar remains the precise HP read. The verdict condition is lifted: the count piece of build task 4 is ungated.
+- Q2, craft size: ADOPT the role split (fighters about 3.2 units, bombers about 4.2, faction exceptions per section 3).
+- Q3, mesh matrix: ADOPT all ten meshes (both roles for all five launching factions, two-key lookup by faction and role).
+- Q4, Eclipse: NOT RULED in this pass. The spec as delivered stands on the chair pick: Eclipse craft are specced in section 4.6 and modeling is fenced until an Eclipse carrier or the Drone bay refit ships in data. If the owner wants Eclipse left out entirely (the Qwen leg position), that is a revision to this spec, not a build decision.
+- Q5, swarm phase pacing: ADOPT staggered overlapping attack runs (about 3.2 s for ten wings), not strictly sequential.
 
 ## 12. Dissents and rejected positions
 
