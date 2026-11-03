@@ -119,6 +119,8 @@
   },
   "loaded": {
     "meta": {
+      "heirs": {},
+      "shadowPool": {},
       "v": 2,
       "renown": 460,
       "unlocked": {

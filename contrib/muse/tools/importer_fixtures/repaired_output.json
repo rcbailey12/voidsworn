@@ -3,6 +3,8 @@
   "inputPassesSaneSave": true,
   "loaded": {
     "meta": {
+      "heirs": {},
+      "shadowPool": {},
       "v": 2,
       "renown": 85,
       "unlocked": {},
