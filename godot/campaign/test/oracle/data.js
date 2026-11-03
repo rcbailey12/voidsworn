@@ -964,7 +964,7 @@ const BOONS={
   h_hatch:{p:'hunger',n:'Swarm Hatch',d:m=>`Launch ships field ${m>=1.5?'two extra wings':'an extra wing'}.`,fx:m=>({hangar:m>=1.5?2:1})},
   h_wings:{p:'hunger',n:'Ravenous Wings',d:m=>`Squadrons deal +${boonPct(.25*m)} damage.`,fx:m=>({sqPct:.25*m})},
   h_chitin:{p:'hunger',n:'Hardened Chitin',d:m=>`Squadrons have +${boonPct(.3*m)} hull.`,fx:m=>({sqHp:.3*m})},
-  h_board:{p:'hunger',n:'Boarding Frenzy',d:m=>`Boarding parties fight as ${boonPct(.25*m)} more crew, and a failed boarding always sabotages a system.`,fx:m=>({boardPct:.25*m})},
+  h_board:{p:'hunger',n:'Boarding Frenzy',d:m=>`Boarding parties fight as ${boonPct(.25*m)} more crew.`,fx:m=>({boardPct:.25*m})},
   h_feast:{p:'hunger',n:'Feast on the Fallen',d:m=>`When your squadron destroys a target, its carrier gains a spare wing and repairs ${boonPct(.05*m)} hull.`,fx:m=>({feast:.05*m})},
   // Astra
   a_lance:{p:'star',n:'Starlight Lances',d:m=>`Lances deal +${boonPct(.35*m)} damage.`,fx:m=>({lancePct:.35*m})},
