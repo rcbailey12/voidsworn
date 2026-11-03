@@ -270,6 +270,8 @@ func arc_context(run = null) -> Dictionary:
 func arc_beat(beat_no: int) -> Dictionary:
 	if C == null or not (C.RUN is Dictionary):
 		return {}
+	if beat_no == 3:
+		return C.beat3Card()
 	var a = ArcScript.new()
 	if not a.load_arc(str(C.RUN.get("fac", ""))):
 		return {}
@@ -282,7 +284,7 @@ func arc_chose(ev: Dictionary, key: String) -> void:
 	if C == null or not (C.RUN is Dictionary) or not bool(ev.get("arc", false)):
 		return
 	var id := str(ev.get("id", ""))
-	career.note_arc_choice(C.RUN, id, int(id.substr(id.length() - 2, 1)) if id.length() >= 2 else 0, key, str(ev.get("labels", {}).get(key, key)))
+	career.note_arc_choice(C.RUN, id, int(ev.get("beat", int(id.substr(id.length() - 2, 1)) if id.length() >= 2 else 0)), key, str(ev.get("labels", {}).get(key, key)))
 
 
 # Called when a faction arc's beat 3 is decided (step 3 wiring). Emits medal_earned for the arc medal.

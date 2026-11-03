@@ -224,7 +224,7 @@ Object.assign(ADMIRALS,{
   vesh:{fac:'corsair',n:'Vesh the Collector',doc:'Scrap armor',d:'Ships patch 5% of their hull each round and have +10% armor.',fx:{hullRegenPct:.05,armor:.1},start:['c_hulk','c_reaver'],cost:80,cmd:{id:'restore',n:'Patch and weld',d:'Every ship repairs 25% of its hull and patches damaged sections, even destroyed ones.'}},
   matriarch:{fac:'chorus',n:'The Matriarch of Nine Throats',doc:'Brood swarm',d:'Spore swarms deal +25% damage and broods hold +1 swarm. Swarm hull +25%.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['b_brood','b_drone','b_drone'],cost:0,cmd:{id:'scramble',n:'Spawning surge',d:'Every brood releases an extra swarm (even past its limit), then all swarms strike again at once with +50% damage this round.'}},
   razormaw:{fac:'chorus',n:'Razormaw',doc:'Hunter pack',d:'+1 speed and +15% damage on rear-arc hits.',fx:{speed:1,rearPct:.15},start:['b_razor','b_spitter','b_drone'],cost:30,cmd:{id:'surge',n:'Blood frenzy',d:'Every ship gains +2 movement and +1 turn, and enemy fire loses 20 accuracy against you this round.'}},
-  mending:{fac:'chorus',n:'The Mending Throng',doc:'Regrowth',d:'Ships regrow 4% of their hull each round.',fx:{hullRegenPct:.04},start:['b_razor','b_drone'],cost:45,cmd:{id:'restore',n:'Regrowth tide',d:'Every ship regrows 25% of its hull and heals damaged sections, even destroyed ones.'}},
+  mending:{fac:'chorus',n:'Mending Throng',doc:'Regrowth',d:'Ships regrow 4% of their hull each round.',fx:{hullRegenPct:.04},start:['b_razor','b_drone'],cost:45,cmd:{id:'restore',n:'Regrowth tide',d:'Every ship regrows 25% of its hull and heals damaged sections, even destroyed ones.'}},
   voice:{fac:'chorus',n:'Voice of the Deep',doc:'Acid tide',d:'+15% damage with every weapon.',fx:{dmgPct:.15},start:['b_razor','b_spitter','b_drone'],cost:80,cmd:{id:'barrage',n:'Spitting volley',d:'Every ship spits a free volley at the best target it can reach, right now.'}},
   aelith:{fac:'ithar',n:'Tamsa of the Clear Aperture',doc:'Wing-mistress',d:'Squadrons deal +25% damage and launch ships hold +1 wing. Squadron hull +25%.',fx:{sqPct:.25,hangar:1,sqHp:.25},start:['i_carrier','i_wisp'],cost:0,cmd:{id:'scramble',n:'Starling flight',d:'Every launch ship sends out an extra wing if there is room, then all squadrons strike again with +50% damage this round.'}},
   vaelen:{fac:'ithar',n:'Saro of Long Focus',doc:'Focused lances',d:'Lances deal +20% damage; every weapon gains +10 aim.',fx:{lancePct:.2,aim:10},start:['i_song','i_blade'],cost:30,cmd:{id:'barrage',n:'Burning glass',d:'Every ship fires a free volley at the best target its guns can reach, right now.'}},
@@ -1016,3 +1016,213 @@ const ASPECTS={
   bulwark:{n:'Aspect of the Bulwark',d:'Your flagship has +70% hull and shields, ships next to it take 25% less hull damage, and enemy ships within 4 hexes that can fire on it must.',fx:{hpPct:.7,shPct:.7,guardAura:.25,taunt:4}},
   storm:{n:'Aspect of the Storm',d:'Your flagship gains +0.5 to weapon shield damage multipliers, and shields recharge twice as fast.',fx:{ionPlus:.5,regenPct:1}},
   admiral:{n:'Aspect of the Admiral',d:'Your Admiral’s Command starts one power level higher (full power from round 2), and your flagship gets +10 aim.',fx:{cmdTier:1,aim:10}}};
+
+// Approved story beat 3 text. Source: contrib/muse/design/story_beat3_2026_11/.
+const STORY_BEAT3={
+  "voidsworn": {
+    "id": "arc_vs_owed",
+    "t": "What Is Owed",
+    "fight": false,
+    "o": [
+      {
+        "t": "Burn deep: take Seren fire into the flagship",
+        "r": {
+          "dmgFlag": 0.25,
+          "power": 1
+        },
+        "tx": "Seren fire runs in the flagship guns for one battle and eats a quarter of its hull to do it. The crews chalk nothing. There is no room left on the hull near the guns."
+      },
+      {
+        "t": "Burn clean: refuse the deep burn",
+        "r": {
+          "repair": 0.15
+        },
+        "tx": "You refuse. The yards along the Cinder Line patch what they can, and the fleet goes in whole and ordinary. The Roll-master approves. The gunners do not."
+      }
+    ],
+    "lines": [
+      "Roll-master: \"Seren offers. Seren always offers. The last crusade took the deep burn at this exact dark.\"",
+      "Captain: \"Did it save them?\"",
+      "Roll-master: \"It saved the route. Read the Roll. Their names end here, and the route goes on. That is the whole of the bargain, every time.\""
+    ],
+    "debrief": "The choice is chalked where the crews can read it from their stations.",
+    "learning": "Win or lose, the next crusade stands at this same dark and reads what you chose, in chalk, before it chooses.",
+    "spotlights": {
+      "vex": "Vex walks the gun decks before the dawn watch and chalks one name, in silence, every time. The crews have stopped asking whose.",
+      "malek": "Malek counts torpedoes the way other captains count debts. 'Every one of these is a name the other side will have to learn.'",
+      "ashgrove": "Ashgrove launches her wings and says only, 'Bring them home or do not come back empty.' Her wings have never once come back empty.",
+      "thale": "Thale reads the Roll before the battle plot, every time. 'The arithmetic was done on us once. We keep the Roll.'"
+    }
+  },
+  "hegemony": {
+    "id": "arc_hg_minute",
+    "t": "The Unlogged Minute",
+    "fight": false,
+    "o": [
+      {
+        "t": "Switch the links off. Speak for one minute",
+        "r": {
+          "xp": 25,
+          "syncDown": 1
+        },
+        "tx": "One minute of silence on the link, the first in the fleet record. The formation bonus will not answer at the first volley. What you say in the minute is not logged, not projected, and not repeatable. Every captain repeats it anyway."
+      },
+      {
+        "t": "Stay linked. Fight the projection",
+        "r": {
+          "credits": 40
+        },
+        "tx": "The links stay on. The Registry pays a compliance credit and the formation holds its shape. The flag captain folds the paper list smaller and says nothing at all."
+      }
+    ],
+    "lines": [
+      "Flag captain: \"Admiral. Before the decisive engagement, commanders switch off their links for one minute. It is the only thing the Registry never logs.\"",
+      "Admiral: \"What do they say in the minute, Captain?\"",
+      "Flag captain: \"The names, Admiral. Rank and number. All of them. It takes the whole minute.\""
+    ],
+    "debrief": "The Registry projection for the coming fight has been revised twice in one hour. It does not say why.",
+    "learning": "Whether you spoke or stayed linked, win or lose, the doctrine file gains an entry with no author. Couriers carry it at courier speed, and it reaches the next fleet late, one sector behind where it was needed, still the best map that fleet has.",
+    "spotlights": {
+      "kassar": "Kassar runs the synchronized volley drill until the fleet fires as one instrument. 'Discipline is a form of mercy. It shortens the dying.'",
+      "vorn": "Vorn marks interception courses on the plot in red, then deletes the ones that merely work. 'We take the ones that end it.'",
+      "reyes": "Reyes launches the strike group and reads the loss projection aloud as the wings form up, so the squadrons hear the number the strike group intends to embarrass.",
+      "maren": "Maren walks the column before battle and checks every deflector reading personally. 'The Registry counted these crews once. I count them every day.'"
+    }
+  },
+  "corsair": {
+    "id": "arc_hb_rook",
+    "t": "Rook",
+    "fight": false,
+    "o": [
+      {
+        "t": "Hunt the core: board for Rook",
+        "r": {
+          "dmgFlag": 0.15,
+          "core": 1
+        },
+        "tx": "Boarding claws only, no broadsides into the prize hold. The flagship takes the hits that the hold cannot. If the pack wins this, Rook comes home in chains of welded plate."
+      },
+      {
+        "t": "Hunt the kill: break it all",
+        "r": {
+          "xp": 25
+        },
+        "tx": "No holding back for cargo. The pack fights clean and total, and Rook breaks with the flagship if it breaks. Kills are trophies too. The biggest ones leave only scrap."
+      }
+    ],
+    "lines": [
+      "Howler: \"The prize hold, Warlord. We can hear the core through the hull. It sounds like a heart that has never been afraid.\"",
+      "Warlord: \"Everything with a heart can be afraid. Claws out.\""
+    ],
+    "debrief": "The pack does not cheer. It counts. Kills first, then trophies, then the missing.",
+    "learning": "What the pack killed, and what killed the pack, is carried in the open: trophies bolted to hulls, the story told flat in the dens, and the next litter raised on both.",
+    "spotlights": {
+      "grax": "Grax takes the flagship in claws-first and laughs over open comms while the grapples tear plate. The pack howls back. It is not joy. It is agreement.",
+      "sable": "Sable comes in out of the dark, quiet for a Hullbreaker, with a blade-thin smile. 'The rear plate is where strong ships keep their manners.'",
+      "mott": "Old Mott has outlived forty captains. The pack steps aside when Mott crosses the bay, the way crews step aside for weather.",
+      "vesh": "Vesh walks the prize after the fight, touching plates, naming where each one will ride. 'Nothing strong is ever wasted. It is only waiting.'"
+    }
+  },
+  "chorus": {
+    "id": "arc_ch_crucible",
+    "t": "The Second Throat",
+    "fight": false,
+    "o": [
+      {
+        "t": "Let Memory speak to the core",
+        "r": {
+          "core": 1,
+          "dmgPctDown": 1
+        },
+        "tx": "Memory speaks to Crucible in the voices of our makers, and the core answers an old name. Protocols come like remembered food. But Hunger hesitates at the kill now, listening for a voice under the hunger. We will hesitate in the fight."
+      },
+      {
+        "t": "Close the second throat",
+        "r": {
+          "dmgPctUp": 1
+        },
+        "tx": "We close Memory for the fight. The swarm is one throat, one want, nothing wasted. We are faster and emptier. Something that knew our name is quiet, and the quiet is also a kind of food."
+      }
+    ],
+    "lines": [
+      "Memory: \"We were made to kill the sun-thieves. We remember their faces. They had our faces.\"",
+      "Hunger: \"Faces are meat. Throats are meat. Choose.\"",
+      "The swarm: \"We choose what the next brood keeps.\""
+    ],
+    "debrief": "Every throat in the swarm tastes the decision. The young taste it first.",
+    "learning": "Win or lose, the next generation is grown from this choice in its flesh. Broods after this one will be born knowing whether the swarm feeds its memory or eats it.",
+    "spotlights": {
+      "matriarch": "The Matriarch opens all nine throats before the fight, tasting the dark in every direction at once. The swarm goes still. Prey is near.",
+      "razormaw": "Razormaw goes first and comes back last, trailing torn plate between hot teeth. Hunger approves. Memory counts the missing and approves of nothing.",
+      "mending": "Mending Throng knits the swarm closed between volleys, patient as weather. 'We are not finished,' the Throng says, in many voices. 'We are never finished.'",
+      "voice": "The Voice speaks from the dark under the brood, where the voices of our makers pool. Every throat answers the Voice without deciding to. 'Deeper,' the Voice says. 'The warm thing is deeper.'"
+    }
+  },
+  "ithar": {
+    "id": "arc_gw_flaw",
+    "t": "The Killing Flaw",
+    "fight": false,
+    "o": [
+      {
+        "t": "Fly the corrected approach",
+        "r": {
+          "weak": 1,
+          "clock": 1
+        },
+        "tx": "The fleet re-forms on the corrected line the dead fleet paid for. It is slower and it is seen coming. {rival} watches you take the long way around a grave only you can see."
+      },
+      {
+        "t": "Keep the fast approach",
+        "r": {
+          "xp": 20
+        },
+        "tx": "You keep the fast line and the surprise, and you fly it knowing exactly where the old fleet died on it. Your captains are very quiet at their stations. Precision is a kind of courtesy, for the Glasswrights. They pay it at speed."
+      }
+    ],
+    "lines": [
+      "Lens-keeper: \"The replay is clear, Captain. At full fidelity. We watched them die at the turn, in light, three hundred years late and exactly on time.\"",
+      "Captain: \"Then we owe them a different ending.\"",
+      "Lens-keeper: \"We owe them a read that matters. Endings are your department. Forgive me. That was almost a joke. Grief makes us imprecise.\""
+    ],
+    "debrief": "Every ship in the fleet has seen the replay now. The mirrors hold it a moment longer than the light requires.",
+    "learning": "Whether this fleet returns through the light or drifts as a shard-field until the gatherers find it, the forge will read the optical replay and recast the next fleet in the procession with the killing flaw corrected, long after everyone who loved this one is gone. That is not comfort. It is focus, which is the Glasswright word for it.",
+    "spotlights": {
+      "aelith": "Tamsa sends her starling wings out in a fan of light and reads the whole battle in their reflections. 'Forgive me,' she tells the enemy flagship, almost gently, a moment before the volley.",
+      "vaelen": "Saro holds focus through three volleys without speaking. When Saro finally speaks it is one word, the range, and the lances are already away.",
+      "thorne": "Vell scatters the fleet's light until the enemy fire walks through reflections and finds nothing honest. 'We built the light,' Vell says. 'It holds our shape.'",
+      "mirelle": "Brin raises the prism ward and the fleet stands inside a held rainbow, fragile and exact. 'Light, stored kindly. Light, returned.'"
+    }
+  },
+  "deathless": {
+    "id": "arc_ec_count",
+    "t": "The Count of Years",
+    "fight": false,
+    "o": [
+      {
+        "t": "Spend the Archive window on the admiral",
+        "r": {
+          "xp": 25
+        },
+        "tx": "The last full backup window before the fight goes to the admiral alone. If the admiral falls, the restoration will be whole. The rest of the fleet fights with gaps in its continuity and knows it."
+      },
+      {
+        "t": "Spend the window on the fleet",
+        "r": {
+          "repair": 0.25
+        },
+        "tx": "Every hull gets its restoration pass and the admiral goes into the fight with an old backup and a quiet expression. \"If I come back missing the last year,\" the admiral says, \"tell me we won it. Tell me slowly.\""
+      }
+    ],
+    "lines": [
+      "Admiral: \"I have worn nine bodies and outlived my sun by a thousand years. Permanence is very long, Captain. Let us spend some of it correctly.\""
+    ],
+    "debrief": "The fleet shows the last image of Ardent once more. This time, several ships hold it a moment past the minute.",
+    "learning": "Win or dark, the Archive keeps this fight in full. Eclipse does not send a new fleet out of the dark: it sends this same one again, its minds restored from the Archive with every lesson and correction intact.",
+    "spotlights": {
+      "nekhet": "Aurex speaks last in every council and first in every battle. 'We remember noon,' Aurex says, and the great ring of plates around the core turns, very slightly, toward the enemy.",
+      "sekhmar": "Vessane counts the enemy fleet aloud, hull by hull, in the voice of an archivist reading a list of known dead. In a sense, Vessane is.",
+      "anuket": "Ostrel has been copied more times than any mind in the fleet and has lost the least. 'Continuity is a discipline,' Ostrel says. 'Regret is what happens when you skip it.'",
+      "khepra": "Seveth went dark once, for eleven minutes, and came back. Seveth does not discuss the eleven minutes. The fleet does not ask. Some restorations are private."
+    }
+  }
+};

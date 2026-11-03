@@ -1,5 +1,8 @@
 # The rules oracle, pinned
 
+Nov 3 2026, issue 55: re-copied data.js for the approved story beat 3 table
+and Mending Throng display name. Re-exported rules tables. Combat rules unchanged.
+
 Nov 3 2026, issue 21: inheritance is in campaign_meta.js, held by the campaign
 oracle only. Rules files are unchanged. Re-exported rules tables retain the
 same checksum; the combat oracle needs no new source copy.
