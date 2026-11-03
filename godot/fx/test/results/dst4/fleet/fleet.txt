@@ -1,0 +1,1 @@
+DESTRUCTION_FLEET ships=20 renderer=forward_plus adapter=NVIDIA GeForce RTX 5080 frames=660 avg_ms=1.571 p99_ms=3.999 one_percent_low_fps=209.4 max_ms=6.209 fx_p99_ms=2.912 particles=3213 wrecks=20

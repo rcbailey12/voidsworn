@@ -288,3 +288,7 @@ Q5. Old clouds in the today and holo looks: do the minimal ramp port as the last
 - The current build's visual output. No leg ran the game for this job. Every look judgement in the pack rests on the owner's Nov 2 playtest screenshots and the cited code, and every build task is judged on fresh 4K captures for the same reason.
 - The browser build after these changes. It is frozen and out of scope; the visual gap between the two builds will grow, which is accepted and noted, not fixed here.
 - Gas patches at the board edge sitting against the backdrop planet or the sky bake boundary. The pack's boundary puts backdrop interaction out of scope; if a transition treatment is ever needed there, it is a hand-off to the backdrop work, not a task in section 7.
+
+## Owner rulings (Ryan, Nov 3, 2026)
+
+Ryan ruled "Agree with chair picks" on all five questions in section 9 (FINDINGS R82). Build order section 7 is unblocked.

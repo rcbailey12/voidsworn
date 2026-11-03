@@ -1,0 +1,24 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[inside] renderer=forward_plus adapter=NVIDIA GeForce RTX 5080
+[inside] voidsworn_frigate L=10.40 holes=6 rebuild frames=150
+[inside] wrote voidsworn_frigate_hole_a0_front
+[inside] wrote voidsworn_frigate_hole_a0_side
+[inside] wrote voidsworn_frigate_hole_a1_front
+[inside] wrote voidsworn_frigate_hole_a1_side
+[inside] wrote voidsworn_frigate_hole_zoom
+[inside] wrote voidsworn_frigate_kill_ribbon_battle
+[inside] split=3.233 pieces=2 wait_frames=0
+[inside] wrote voidsworn_frigate_kill_battle
+[inside] wrote voidsworn_frigate_kill_close_a
+[inside] core age=0.333 counted_flashes=[0.0, 3.23333333333333]
+[inside] wrote voidsworn_frigate_kill_core
+[inside] wrote voidsworn_frigate_kill_inside
+[inside] wrote voidsworn_frigate_kill_close_b
+[inside] wrote voidsworn_frigate_kill_secondary
+[inside] wrote voidsworn_frigate_kill_close_c
+[inside] wrote voidsworn_frigate_kill_embers
+[inside] done

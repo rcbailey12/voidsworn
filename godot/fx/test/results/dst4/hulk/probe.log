@@ -1,0 +1,26 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 5080
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+[inside] renderer=forward_plus adapter=NVIDIA GeForce RTX 5080
+[inside] hegemony_superdreadnought L=24.00 holes=9 rebuild frames=150
+[inside] wrote hegemony_superdreadnought_hole_a0_front
+[inside] wrote hegemony_superdreadnought_hole_a0_side
+[inside] wrote hegemony_superdreadnought_hole_b0_front
+[inside] wrote hegemony_superdreadnought_hole_b0_side
+[inside] wrote hegemony_superdreadnought_hole_zoom
+[inside] wrote hegemony_superdreadnought_kill_power_down
+[inside] wrote hegemony_superdreadnought_kill_vent
+[inside] wrote hegemony_superdreadnought_kill_crack
+[inside] split=3.233 pieces=1 wait_frames=0
+[inside] wrote hegemony_superdreadnought_kill_battle
+[inside] wrote hegemony_superdreadnought_kill_close_a
+[inside] core age=0.333 counted_flashes=[0.0]
+[inside] wrote hegemony_superdreadnought_kill_core
+[inside] wrote hegemony_superdreadnought_kill_inside
+[inside] wrote hegemony_superdreadnought_kill_close_b
+[inside] wrote hegemony_superdreadnought_kill_secondary
+[inside] wrote hegemony_superdreadnought_kill_close_c
+[inside] wrote hegemony_superdreadnought_kill_embers
+[inside] done

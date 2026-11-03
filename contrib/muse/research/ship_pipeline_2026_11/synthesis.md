@@ -256,3 +256,7 @@ Q4. Use the three issue 75 bake-off hulls as the calibration set for Route C (ch
 - The damage surface work (R80, issue 51, Codex issue 66) and the R73 break up prototype were treated as constraints with named retest points, per the pack. Neither was re-audited for this research.
 - Whether Blender's built in baker matches Marmoset quality closely enough on our hulls is unmeasured. Dev Journal 21 prefers Marmoset and names Blender as workable; Marmoset is paid and sits outside the free tools rule unless the owner changes that rule.
 - The three objective structures as a design problem in their own right. They are priced inside the machine branch in every leg, but no research was done on station or beacon art specifically, and structures are large, static and viewed from all sides, so they may deserve a separate look.
+
+## Owner rulings (Ryan, Nov 3, 2026)
+
+Ryan agreed with the chair picks on Q2 (drop projected paint permanently), Q3 (merge static kit parts at export, subject to the Opus feasibility check) and Q4 (calibrate on the three issue 75 hulls) (FINDINGS R82). Q1, the fleet route, is held until the issue 75 comparison sheets land so Ryan can judge by eye.

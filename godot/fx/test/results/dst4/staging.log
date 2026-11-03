@@ -1,0 +1,20 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+DESTRUCTION_STAGE class=Frigate size=1.5 flagship=false calm=false duration=1.32 pieces=5 flashes=1
+DESTRUCTION_STAGE class=Frigate size=1.5 flagship=false calm=true duration=1.32 pieces=5 flashes=0
+DESTRUCTION_STAGE class=Destroyer size=1.5 flagship=false calm=false duration=1.32 pieces=5 flashes=1
+DESTRUCTION_STAGE class=Destroyer size=1.5 flagship=false calm=true duration=1.32 pieces=5 flashes=0
+DESTRUCTION_STAGE class=Cruiser size=0.4 flagship=false calm=false duration=1.98 pieces=2 flashes=9
+DESTRUCTION_STAGE class=Cruiser size=0.4 flagship=false calm=true duration=1.98 pieces=2 flashes=0
+DESTRUCTION_STAGE class=Destroyer size=0.4 flagship=true calm=false duration=1.98 pieces=2 flashes=9
+DESTRUCTION_STAGE class=Destroyer size=0.4 flagship=true calm=true duration=1.98 pieces=2 flashes=0
+DESTRUCTION_STAGE class=Squadron size=0.1 flagship=false calm=false duration=1.15 pieces=0 flashes=1
+DESTRUCTION_STAGE class=Squadron size=0.1 flagship=false calm=true duration=1.15 pieces=0 flashes=0
+DESTRUCTION_HULK quality=high cold_drift=ok cleanup=ok
+DESTRUCTION_HULK quality=low cold_drift=ok cleanup=ok
+DESTRUCTION_SLOWMO hz=30 real_seconds=0.633 hurry=ok
+DESTRUCTION_SLOWMO hz=60 real_seconds=0.550 hurry=ok
+DESTRUCTION_SLOWMO hz=144 real_seconds=0.514 hurry=ok
+DESTRUCTION_STAGING failures=0
