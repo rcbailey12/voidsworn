@@ -1,0 +1,166 @@
+{
+  "adapter": "NVIDIA GeForce RTX 5080",
+  "blank": {
+    "draw_calls": 0.0,
+    "frame_median_ms": 0.6,
+    "frame_p99_ms": 1.093,
+    "frames": 360,
+    "gpu_median_ms": 0.393999993801117,
+    "label": "empty",
+    "render_cpu_median_ms": 0.130999997258186,
+    "warmup": 100
+  },
+  "fleet_layout": "5 by 4 shared copies, spacing 1.15 lengths, r=8 lengths",
+  "godot": {
+    "build": "official",
+    "hash": "ed1daf0bf001b61586d9930840f2f1394092c079",
+    "hex": 263938,
+    "major": 4,
+    "minor": 7,
+    "patch": 2,
+    "status": "stable",
+    "string": "4.7.2-stable (official)",
+    "timestamp": 0
+  },
+  "renderer": "forward_plus",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "rows": [
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 158.0,
+        "frame_median_ms": 3.652,
+        "frame_p99_ms": 3.905,
+        "frames": 360,
+        "gpu_median_ms": 3.03600001335144,
+        "label": "today_20",
+        "render_cpu_median_ms": 0.28999999165535,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          1.04101479053497,
+          0.409542322158813,
+          0.536779165267944
+        ],
+        "triangles": 256468,
+        "world_length": 41.6
+      },
+      "route": "today",
+      "single": {
+        "draw_calls": 54.0,
+        "frame_median_ms": 0.827,
+        "frame_p99_ms": 1.283,
+        "frames": 360,
+        "gpu_median_ms": 0.565999984741211,
+        "label": "today_1",
+        "render_cpu_median_ms": 0.142000004649162,
+        "warmup": 100
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 19.0,
+        "frame_median_ms": 6.262,
+        "frame_p99_ms": 6.611,
+        "frames": 360,
+        "gpu_median_ms": 5.68699979782104,
+        "label": "Aplus_20",
+        "render_cpu_median_ms": 0.195999994874001,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          0.982500076293945,
+          0.410699963569641,
+          0.554649472236633
+        ],
+        "triangles": 613864,
+        "world_length": 41.6
+      },
+      "route": "Aplus",
+      "single": {
+        "draw_calls": 6.0,
+        "frame_median_ms": 0.933,
+        "frame_p99_ms": 1.494,
+        "frames": 360,
+        "gpu_median_ms": 0.681999981403351,
+        "label": "Aplus_1",
+        "render_cpu_median_ms": 0.129999995231628,
+        "warmup": 100
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 19.0,
+        "frame_median_ms": 4.887,
+        "frame_p99_ms": 5.155,
+        "frames": 360,
+        "gpu_median_ms": 4.23199987411499,
+        "label": "Bake_20",
+        "render_cpu_median_ms": 0.180999994277954,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          0.982500076293945,
+          0.410699963569641,
+          0.554649472236633
+        ],
+        "triangles": 438732,
+        "world_length": 41.6
+      },
+      "route": "Bake",
+      "single": {
+        "draw_calls": 6.0,
+        "frame_median_ms": 0.905,
+        "frame_p99_ms": 1.272,
+        "frames": 360,
+        "gpu_median_ms": 0.609000027179718,
+        "label": "Bake_1",
+        "render_cpu_median_ms": 0.123999997973442,
+        "warmup": 100
+      }
+    },
+    {
+      "code": "C19_51",
+      "fleet": {
+        "draw_calls": 19.0,
+        "frame_median_ms": 5.037,
+        "frame_p99_ms": 5.428,
+        "frames": 360,
+        "gpu_median_ms": 4.39699983596802,
+        "label": "Reuse_20",
+        "render_cpu_median_ms": 0.179000005125999,
+        "warmup": 100
+      },
+      "geometry": {
+        "raw_bounds": [
+          0.982500076293945,
+          0.410699963569641,
+          0.554649472236633
+        ],
+        "triangles": 456460,
+        "world_length": 41.6
+      },
+      "route": "Reuse",
+      "single": {
+        "draw_calls": 6.0,
+        "frame_median_ms": 0.918,
+        "frame_p99_ms": 1.348,
+        "frames": 360,
+        "gpu_median_ms": 0.611000001430511,
+        "label": "Reuse_1",
+        "render_cpu_median_ms": 0.135000005364418,
+        "warmup": 100
+      }
+    }
+  ],
+  "textures": "BC7 colour and ORM; BC5 normal; mipmaps; 100 warm-up and 360 measured frames",
+  "vsync": "disabled"
+}
