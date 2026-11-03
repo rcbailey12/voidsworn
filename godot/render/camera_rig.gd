@@ -22,6 +22,7 @@ var _ct := Vector3.ZERO
 var _drag := 0          # 0 none, 1 pan (left), 2 orbit (right)
 var _drag_moved := 0.0
 var input_enabled := true
+var keyboard_enabled := true
 var slow_until := 0.0
 var _clock := 0.0
 var shake := Vector3.ZERO
@@ -146,21 +147,37 @@ func handle_input(e: InputEvent) -> bool:
 	return false
 
 
+# Poll held physical keys, independent of GUI focus and the OS repeat delay.
+# Text fields and modified shortcuts keep their keys. Ordinary buttons may keep focus.
+static func keyboard_pan(viewport: Viewport, arrows := true) -> Vector2:
+	if DisplayServer.get_name() != "headless" and not viewport.get_window().has_focus():
+		return Vector2.ZERO
+	var owner := viewport.gui_get_focus_owner()
+	if owner is LineEdit or owner is TextEdit or Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_ALT) or Input.is_key_pressed(KEY_META):
+		return Vector2.ZERO
+	var p := Vector2.ZERO
+	if Input.is_physical_key_pressed(KEY_W) or (arrows and Input.is_physical_key_pressed(KEY_UP)):
+		p.y += 1.0
+	if Input.is_physical_key_pressed(KEY_S) or (arrows and Input.is_physical_key_pressed(KEY_DOWN)):
+		p.y -= 1.0
+	if Input.is_physical_key_pressed(KEY_A) or (arrows and Input.is_physical_key_pressed(KEY_LEFT)):
+		p.x -= 1.0
+	if Input.is_physical_key_pressed(KEY_D) or (arrows and Input.is_physical_key_pressed(KEY_RIGHT)):
+		p.x += 1.0
+	return p.limit_length(1.0)
+
+
+static func is_pan_key(e: InputEventKey) -> bool:
+	var k := e.physical_keycode if e.physical_keycode != 0 else e.keycode
+	return not (e.ctrl_pressed or e.alt_pressed or e.meta_pressed) and k in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]
+
+
 func _process(dt: float) -> void:
 	_clock += dt
-	if input_enabled:
-		var px := 0.0
-		var pz := 0.0
-		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
-			pz += 1.0
-		if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
-			pz -= 1.0
-		if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-			px -= 1.0
-		if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-			px += 1.0
-		if px != 0.0 or pz != 0.0:
-			pan_by(px * dt * 300.0, pz * dt * 300.0)
+	if input_enabled and keyboard_enabled and is_visible_in_tree():
+		var p := keyboard_pan(get_viewport())
+		if p != Vector2.ZERO:
+			pan_by(p.x * dt * 300.0, p.y * dt * 300.0)
 	r = maxf(r, min_r)
 	var f := 1.0 - exp(-dt * (1.7 if _clock < slow_until else 7.0))
 	_ca += (a - _ca) * f
