@@ -50,3 +50,7 @@ None. All fixes are text-only corrections to match shipped rules; the one judgme
 - HEAT modifier texts (the seven run modifiers): leg-audited without flags and chair spot-checked (flagship hull and fleet size weights); their encounter-side implementations were not exhaustively traced.
 - Story, event, and flavour text with no rule claim; ship and admiral names; the Godot port's own generated strings beyond the two mirrored card sets.
 - The Godot parity test suite was not run in the chair's environment (no Godot binary); the repo checks were run in Node and the PR's own checks will run the parity gate.
+
+## Opus review correction (Nov 3, 2026)
+
+Item 1 was wrong: the rule exists. battle.js board (the non-capture branch, `if(rnd()<.5||(u.fx&&u.fx.boardPct))`) and rules.gd (`if rnd() < 0.5 or jt(g(u.get("fx"), "boardPct"))`) make every boarding that does not take the ship sabotage a system when the boon is held. The h_board clause is restored, worded as "a boarding that does not take the ship always sabotages a system". Items 2 and 3 stand.
