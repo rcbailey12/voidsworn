@@ -59,16 +59,16 @@ Call it after the events that changed a ship have been animated (or simply after
 | Stage | When (per section, hp fraction) | Look |
 |---|---|---|
 | 0 intact | above 0.8 | clean hull |
-| 1 scorched | 0.6 to 0.8 | scorch spreading over the plating round the struck area (an overlay on the hull that glows faintly, then cools dark), a thin wisp of smoke |
-| 2 dented | 0.4 to 0.6 | the hull itself dents and wrinkles; a wider blackened patch, sparking wires, a thin gas jet |
-| 3 holed | 0.2 to 0.4 | a hole cut in the real hull: plates bent back, the ring round it buckled, a recessed near-black throat with burnt frames, conduits and faint embers; embers, sparks at torn conduits, gas, thin smoke; debris shedding |
-| 4 hull breach | below 0.2, or the section is broken | the hole grows, plus a buckled panel and (medium ships up) a bite out of an upper edge, so the silhouette changes; streaming debris, spark showers, dull internal pops |
+| 1 scorched | 0.6 < f <= 0.8 | spreading scorch and secondary burns, up to 2 surface marks; transition sparks, no persistent emitter |
+| 2 dented | 0.4 < f <= 0.6 | an anchor dent or material-specific concavity, wider surface damage, up to 3 marks; smoke starts |
+| 3 fissured | 0.2 < f <= 0.4 | a deep crater and buckled sealed fissure over intact dark skin; up to 4 marks, fire and smoke, a slow vent on heavy hulls |
+| 4 hull breach | f <= 0.2, or broken | the first open break: throat radius 0.032 L, stepped torn collar, recess 0.17 L, three cross members and seated fire; medium hulls up get a second break; transition sparks and debris |
 | 5 wreck | `dead` (after `death`) | see section 5 |
 
-- Thresholds are Claude's starting values (vetoable, tuned on screen).
+- R80 owner rulings govern this ladder. Stage 3 and every weapon mark stay sealed. Squadrons keep stage 0 surfaces and trail pooled smoke below half total HP.
 - A stage that goes up while shots are still flying at that ship waits until they land, so holes open when the hit lands, not before.
-- A section whose stage falls back to 1 or 0 (repair) also loses its weapon marks (section 14), so the hull never disagrees with the game.
-- `burning` adds deck fires. A broken `eng` section makes the engines sputter and smoke. Shields rising again (`sh`) play a short faction-coloured regen shimmer.
+- Repair seals a stage 4 break with a material-specific patch and keeps dents, scorch and weapon scars. Removed emitters fade within 0.8 effect seconds. Chorus knits over 3 seconds.
+- `burning` shares the section emitter allocator. Per-ship caps (fire, smoke/vent): light (1, 2), medium (2, 3), heavy/capital (3, 4). Persistent emission spends zero counted flashes. Safe mode keeps flat marks and drops deformation, breaks and emitters. A broken `eng` section makes the engines sputter. Shields rising play a short faction-coloured regen shimmer.
 
 ## 3. Weapons
 
@@ -87,7 +87,7 @@ var r = fx.volley(attacker_id, kind, target_id, opts)
   - `late`: true when the shots are fired on the move (`move.late_fire`); fx fires from where the ship is at that moment.
 - The look per kind (A5 sheets, R16): battery ripples gun by gun with muzzle blast, flame tongue, smoke ring and tracer; flak bursts in the air; lance charges, holds a white-hot beam and cuts a molten trench; torpedo vents, flies a trackable body with a long plume and lands as the heaviest blast; bio spits wobbling globs that splash and corrode; gauss charges its coils, crosses almost invisibly and punches through with an exit spray; sq craft fly a strafing run.
 - Guns fire from mounts on the side facing the target and never backward (CLAUDE.md); a target behind the ship is engaged by turret mounts on top.
-- Every hull hit leaves its weapon's own mark in the hull itself (R43, section 14): a lance burn-through, a light blue plasma splash crater with a droplet fan, a gauss entry with a stress ring and a spalled exit, a torpedo blast hole with plates blown inward, flak pockmarks, Chorus acid pitting with spines, an ion branching burn, a ram crumple (and a smaller one on the rammer's bow). Shield-only hits leave no hull mark.
+- Every hull hit leaves its weapon's own mark in the hull itself (R43, section 14): a sealed lance trench, a light blue plasma splash crater with a droplet fan, sealed gauss entry and exit craters, a torpedo blast crater, flak pockmarks, Chorus acid pitting with spines, an ion branching burn, a ram crumple (and a smaller one on the rammer's bow). Shield-only hits leave no hull mark.
 - Every hit also moves the ship (R50, section 7): mass-scaled, by the weapon's momentum.
 - Plasma is light blue whoever fires it (Ryan, Oct 26): bolt, splash and crater.
 - `impacts` are the moments to show floating numbers; `done` is when G2 may start the next event (G2 can start earlier; effects overlap fine).
@@ -237,46 +237,52 @@ func play_event(e: Dictionary) -> float:     # returns how long to wait before t
 # each frame: your animation delta *= fx.anim_speed()
 ```
 
-## 14. Hull damage geometry and weapon marks (generic cut now, A4's pre-cut parts when present)
+## 14. Hull damage geometry and weapon marks (R80)
 
-From stage 2 the hull itself changes (fx_breach.gd). The rebuild runs on a worker thread from the hull's original arrays
-(about 0.6 s for a 38k-triangle hull on a desktop CPU, 1.5 to 3 s in the cloud sandbox) and is applied in one frame;
-the opening blast covers the gap. The rebuilt mesh keeps the vertex format. The cuttable hull material and opaque slag material are drawn during warmup.
-The death pieces are re-cut from the damaged hull afterwards.
+From stage 2 the hull itself changes (fx_breach.gd). Rebuilds run on a worker
+from the original arrays and retain the hull's vertex format and paint. The main
+thread applies the result. Use `test/damage_surface_probe.gd` for measured worker,
+apply and frame costs on real hulls; rebuild wall time is not frame cost. Death
+pieces are re-cut from the damaged hull afterwards.
 
-**Generic cut (every hull, today).** Per damaged section, at one anchor that stays put as the stage grows:
+**Generic section damage.** Anchors stay put as a wound grows:
 
 | Stage | Hull change |
 |---|---|
-| 2 | dent: the skin pushed in with wrinkles (radius 5% of the ship's length) |
-| 3 | hole, radius 3% of length: triangles inside a torn outline removed (radial tears between 4 or 5 petals), the ring round it peeled back as bent plates, a wider ring buckled in; a cavity behind it from the removed skin pushed inward (rubble floor, frames and decks sliced through it, conduits, cables, the plates' backs, the skin's cut thickness), dark with faint warm embers |
-| 4 | the hole at 4.6%, a buckled panel elsewhere in the section, and (medium ships up) a 3.2% hole on an upper edge, which through thin hull goes right through and bites the silhouette |
+| 2 | sealed dent/concavity, radius 5% of L, depth 22% of radius |
+| 3 | sealed fissure crater, radius 6% of L, depth 35% of radius, raised slot lips over dark intact skin |
+| 4 | first open throat, radius 3.2% of L; stepped curled collar about 14% of L across, recess 17% of L, three structural cross members; a second break on medium hulls up |
+
+`wound_kind` in faction_looks.json selects metal (0), living tissue (1), crystal
+(2), or Eclipse machine wounds (3). Living hulls use spores and ichor; crystal
+uses dust and vapour with no flame; Eclipse uses dead panels, violet circuits,
+slow rim arcs, coolant, dark smoke and violet plasma. Repair seals every break.
 
 **Refinement (r5).** Coarse geometry (kit plates and big AI hull panels are a few large triangles) is split locally before a mark is cut: edges longer than the mark needs, near the mark, are split (conforming on both sides, every vertex attribute interpolated, so the vertex format and materials stay), so a hole or crater smaller than a plate is still cut and dented. The overlay skin covers every triangle that reaches into the mark, not only those whose centre does.
 
-**Halo (r5).** Every weapon mark also lays a wide halo in its own signature, at least `HALO_MIN` world units (fx_breach.gd; 0.75 for a lance cut up to 2.1 for a torpedo hole), so it reads from the battle camera 170 units away, where the mark's own detail is a few pixels: soot round shells, torpedo holes and boarding breaches; soot with temper colours along a lance cut; dark blue glass freckles with a faint lasting sheen round plasma; a grey rash round flak; green-black etch round acid; a blue-black field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
+**Halo (r5).** Every weapon mark also lays a wide halo in its own signature, at least `HALO_MIN` world units (fx_breach.gd; 0.75 for a lance cut up to 2.1 for a torpedo crater), so it reads from the battle camera 170 units away, where the mark's own detail is a few pixels: soot round shells, torpedo craters and boarding pits; soot with temper colours along a lance cut; dark blue glass freckles with a faint lasting sheen round plasma; a grey rash round flak; green-black etch round acid; a blue-black field round ion burns; bright scraped metal round a ram; a pale spalled field round a gauss exit.
 
 **Weapon marks (R43).** Every hull hit adds a mark entry at the hit point (fx_breach.marks_for, by look and weight), built by the same rebuild as the breaches: the mark changes the hull geometry where its kind needs it and lays an overlay skin with its surface (char, molten metal cooling white to red to black, light blue plasma slag, spall, acid etching, electrical burns, scraped metal).
 
 | Look | Mark | Geometry | Surface |
 |---|---|---|---|
-| lance, needle, pulsar, las | burn-through | a narrow slot cut across the line of fire with raised molten lips (through thin hull) | molten lips white, then red, then black; temper colours past them |
+| lance, needle, pulsar, las | burn trench | a sealed slot with raised molten lips and a solid floor | molten lips white, then red, then black; temper colours past them |
 | plasma (laser, turbo, hturbo) | splash crater | a melted bowl, no hole | light blue slag pockets that set as dark glass, slag runs, a fan of droplets thrown out along the shot |
 | macro, battery, rockets | shell crater | a shallow crater | char fan, brief orange slag |
 | auto, scatter, guns | chips | small pits, nothing torn through | pockmarks and scratches |
-| gauss | entry and exit | a small clean hole; a bigger exit on the far side with plates spalled outward | a pale, broken stress ring with radial cracks round the entry (reads at fleet distance) |
-| torp, star | blast hole | a wide hole with its plates blown inward, a cavity with frames and decks, fire inside | char fan |
+| gauss | entry and exit | small entry crater and larger exit crater, both sealed | a pale, broken stress ring with radial cracks round the entry (reads at fleet distance) |
+| torp, star | blast crater | a broad sealed crater bowl | char fan |
 | flak variants | pockmarks | a stippled patch, never through the hull | grey rash, brief sparkle |
-| spine, tendril, spores | acid pitting | pits, a few eaten through; spines stuck in along the shot | wet green-black etching that spreads for a few seconds, then stops and goes matte |
+| spine, tendril, spores | acid pitting | shallow sealed pits; spines stuck in along the shot | wet green-black etching that spreads for a few seconds, then stops and goes matte |
 | ion, doom | electrical burn | none | a branching (Lichtenberg) burn, arcs crawling it at first, then a dark etched fern |
 | ram | crumple | a deep fold of the plating at the bow or the struck side | scraped bare metal, no glow |
-| board | boarding breach | a pried square hatch, plates bent out, lit inside | char |
+| board | boarding pits | a shallow sealed cluster | char |
 
-Budget: at most 4 marks per hull section and 12 per ship (sections 0 eng, 1 mid, 2 prow). A repeat of the same mark close by (anywhere in the section for a torpedo crater or an ion burn) rebuilds the old one bigger and fresh (up to 1.6 times) instead of placing a twin; past the section budget the oldest shell crater or pockmark goes first, then the oldest mark. A section repaired back to stage 1 or 0 loses its marks. The section breaches (stages 2 to 4) and the stage scorch come on top of the budget.
+Budget: at most 4 marks per hull section and 12 per ship (sections 0 eng, 1 mid, 2 prow). A repeat of the same mark close by (anywhere in the section for a torpedo crater or an ion burn) rebuilds the old one bigger and fresh (up to 1.6 times) instead of placing a twin; past the section budget the oldest shell crater or pockmark goes first, then the oldest mark. Repair retains bounded permanent scars. Fresh stage 1 renders up to 2 weapon marks, stage 2 up to 3, stages 3 and 4 up to 4. Only the stage 4 section entries can cut; section entries sit outside the weapon-mark budget.
 
 Cost (cloud sandbox CPU, about three times slower than Ryan's PC; the PC numbers are in the gallery README once measured): a single mark rebuilds a 38k-triangle hull in 70 to 260 ms on a worker thread; the main thread only swaps in the meshes built there (a few ms). All rebuilds start from the hull's original arrays and keep its vertex format, so nothing compiles.
 
-**A4 pre-cut parts (agreed with A4, Oct 26; fx wires them in when the first files land).** Per ship:
+**Legacy A4 pre-cut part format (Oct 26; not the live R80 ladder).** Per ship:
 
 1. The ship's glb: the root mesh is the hull minus the breach patches; children `skin_<n>` (the patch a hole replaces)
    and `skin_<n>_heavy` (the extra ring the heavy damage tears away), visible by default, identity transform, same
@@ -291,7 +297,7 @@ Cost (cloud sandbox CPU, about three times slower than Ryan's PC; the PC numbers
    normal), `r` (radius, ship units), `hides` (the skin node names to hide).
 3. Everything is in the hull mesh's own frame. fx parents `<CODE>_damage` under the hull mesh's parent with the hull
    mesh's transform, so it inherits G2's scale and mirror.
-4. Swap: stage 3 shows `breach_<n>_hole` and hides `skin_<n>`; stage 4 shows `breach_<n>_heavy` and hides
+4. Legacy swap, retired by R80: stage 3 shows `breach_<n>_hole` and hides `skin_<n>`; stage 4 shows `breach_<n>_heavy` and hides
    `breach_<n>_hole`, `skin_<n>` and `skin_<n>_heavy`. The anchor is the same n as `hp_breach_<n>`; fx picks the anchor
    for a section from `extras.section`, puts its fire, gas, sparks and embers at `p` along `n`, and keeps the generic
    cut away from that anchor. Stage 2 dents stay generic.

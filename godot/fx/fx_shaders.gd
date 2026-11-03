@@ -77,6 +77,7 @@ const HIDE := "POSITION = vec4(2.0, 2.0, 2.0, 1.0);"
 #  18 soft lift (reduce-flashing pop: a gentle glow, no peak)   19 ember   20 acid fume   21 heat glow (cooling metal)
 #  22 coil glow (gauss charge, stepped)   23 craft (a tiny strike craft silhouette with an engine dot)
 #  24 death core (counted, short plateau)   25 death fire (steady ribbon/edge flame)
+#  26 faction-coloured plasma fire (Eclipse damage, steady)
 const SPRITE := """
 shader_type spatial;
 render_mode unshaded, blend_premul_alpha, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
@@ -102,7 +103,7 @@ void vertex() {
 		float t = age / life;
 		int k = int(a3.z + 0.5);
 		float g = t;
-		if (k == 1 || k == 20 || k == 25) { g = 1.0 - spow(1.0 - t, 2.2); }
+		if (k == 1 || k == 20 || k == 25 || k == 26) { g = 1.0 - spow(1.0 - t, 2.2); }
 		else if (k == 2 || k == 5 || k == 18) { g = sqrt(t); }
 		else if (k == 3 || k == 7 || k == 8) { g = 1.0 - spow(1.0 - t, 1.6); }
 		else if (k == 4 || k == 11 || k == 13 || k == 14 || k == 15 || k == 16 || k == 17 || k == 19 || k == 21 || k == 22 || k == 23) { g = 0.0; }
@@ -127,7 +128,7 @@ void vertex() {
 		// f^0.8), so distant and small effects read brighter without blowing out. Smoke, soot and gas have no floor (no haze).
 		float flo = 0.0;
 		if (k == 24) { flo = 56.0; }
-		else if (k == 25) { flo = 24.0; }
+		else if (k == 25 || k == 26) { flo = 24.0; }
 		else if (k == 0 || k == 17) { flo = 14.0; }
 		else if (k == 2 || k == 13 || k == 14) { flo = 12.0; }
 		else if (k == 12 || k == 15 || k == 18) { flo = 10.0; }
@@ -155,7 +156,7 @@ void vertex() {
 		// Death cores and narrow fires keep their surface brightness at the floor.
 		// Enlarging an almost subpixel craft flame must not make it a faint dot.
 		// Explicit smoke/gas floors preserve opacity, without adding any light.
-		if (k == 24 || k == 25 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
+		if (k == 24 || k == 25 || k == 26 || (own && (k == 3 || k == 7 || k == 8))) { boost = 1.0; }
 		vec2 q = VERTEX.xy;
 		if (k == 14 || k == 15 || k == 23) {
 			// stretched along the screen-space motion (bolts and globs read as moving, not as dots)
@@ -191,13 +192,14 @@ void fragment() {
 	} else if (k == 24) {
 		float f = (1.0 - smoothstep(0.18, 1.0, t)) * I;
 		add = (vCol.rgb * exp(-r * r * 5.0) + vec3(1.0, 0.88, 0.65) * exp(-r * r * 22.0) * 0.7) * f;
-	} else if (k == 1 || k == 25) {
+	} else if (k == 1 || k == 25 || k == 26) {
 		float n = fbm(p * 1.7 + vec2(seed * 13.1, seed * 7.7) + vec2(0.0, -t * 1.2));
 		float dens = (1.0 - r) * 1.4 + (n - 0.5) * 1.15;
 		float thr = t * 1.1;
 		float m = smoothstep(thr, thr + 0.35, dens);
 		float heat = clamp(dens - thr, 0.0, 1.0) * (1.0 - t * 0.6);
-		add = heatRamp(heat) * mix(vec3(1.0), vCol.rgb * 1.6, 0.25) * I * (0.5 + 2.6 * heat * heat) * m * smoothstep(0.0, 0.05, t);
+		vec3 flame = k == 26 ? vCol.rgb * (0.5 + 1.8 * heat) + vec3(0.8, 0.7, 1.0) * pow(heat, 4.0) * 0.3 : heatRamp(heat) * mix(vec3(1.0), vCol.rgb * 1.6, 0.25);
+		add = flame * I * (0.5 + 2.6 * heat * heat) * m * smoothstep(0.0, 0.05, t);
 	} else if (k == 2) {
 		float f = spow(1.0 - t, 1.5) * I;
 		add = vCol.rgb * exp(-r * r * 3.0) * f + vec3(exp(-r * r * 10.0)) * f;
@@ -951,7 +953,13 @@ varying vec4 vC;
 varying vec4 vA;
 varying vec4 vB;
 varying vec4 vD;
-void vertex() { vL = VERTEX; vNl = NORMAL; vC = COLOR; vA = CUSTOM0; vB = CUSTOM1; vD = CUSTOM2; }
+void vertex() {
+	if (wound_kind == 1 && int(CUSTOM2.w + 0.5) == 14) {
+		float knit = smoothstep(0.0, 3.0, max(scene_t - CUSTOM1.w, 0.0));
+		VERTEX += CUSTOM1.xyz * CUSTOM0.w * 0.18 * (1.0 - knit) * (1.0 - COLOR.r);
+	}
+	vL = VERTEX; vNl = NORMAL; vC = COLOR; vA = CUSTOM0; vB = CUSTOM1; vD = CUSTOM2;
+}
 void fragment() {
 	vec3 centre = vA.xyz;
 	float R = max(vA.w, 1e-3);
@@ -978,7 +986,7 @@ void fragment() {
 	if (part > 0.95) { base = vec3(0.06, 0.057, 0.054) * (0.8 + 0.4 * n2); rough = 0.55; metal = 0.5; ao = 0.8; }
 	else if (part > 0.8) { base = vec3(0.025, 0.019, 0.013) * (0.75 + 0.35 * n2); rough = 0.45; metal = 0.0; ao = 1.0; }
 	else if (part > 0.6) { base = mix(vec3(0.014, 0.01, 0.007), vec3(0.008, 0.008, 0.009), vC.g) * (0.8 + 0.4 * n2); rough = 0.5; }
-	else if (part > 0.4) { float seam = smoothstep(0.9, 1.0, abs(sin(dot(vL, vec3(1.0, 1.3, 0.7)) * 9.0 / R))); base *= 1.15 - 0.4 * seam; }
+	else if (part > 0.4) { base *= 1.2; }
 	vec3 toF = fire - vL;
 	float dist = length(toF) / R;
 	if (part < 0.8) { base *= mix(0.5, 1.0, smoothstep(0.2, 1.4, dist)); }
@@ -1000,15 +1008,27 @@ void fragment() {
 		if (part > 0.95) { em += gc * exp(-age / 0.7) * 0.35 * heat * (0.7 + 0.3 * fl); }
 	}
 	if (wound_kind == 1) {
-		base = mix(vec3(0.025, 0.035, 0.008), glow * 0.07, n1);
+		base = mix(vec3(0.018, 0.002, 0.009), vec3(0.07, 0.012, 0.023), n1);
 		rough = 0.23; metal = 0.0;
-		em = glow * (0.16 + 0.14 * sin(scene_t * 2.3 + seed)) * (0.4 + 0.6 * n2);
+		float muscle = pow(abs(sin(p.x * 22.0 + n1 * 5.0)), 8.0);
+		em = glow * (0.07 + 0.04 * sin(scene_t * 2.3 + seed)) * muscle;
+		if (part > 0.8 && part < 0.9) { base = vec3(0.17, 0.13, 0.07); }
 	} else if (wound_kind == 2) {
-		base = glow * 0.09; rough = 0.09; metal = 0.15;
-		em = mix(glow, vec3(0.3, 0.65, 1.0), n2) * (0.18 + 0.16 * pow(1.0 - abs(dot(NORMAL, VIEW)), 2.0));
+		base = part < 0.3 ? vec3(0.005, 0.004, 0.022) : glow * 0.12;
+		rough = 0.09; metal = 0.15;
+		em = mix(glow, vec3(0.3, 0.65, 1.0), n2) * (part < 0.3 ? emb * 0.06 : 0.16);
+	} else if (wound_kind == 3) {
+		base = part < 0.3 ? vec3(0.004, 0.002, 0.008) : vec3(0.045, 0.035, 0.06);
+		rough = 0.48; metal = 0.7;
+		float bus = pow(abs(sin(p.x * 19.0 + floor(p.y * 4.0))), 24.0);
+		em = glow * (emb * 0.06 + bus * 0.15) * flick(0.7 + n2 * 0.3, scene_t, seed);
 	}
-	if (part > 0.95) { em += glow * 0.32; }
-	if (part > 0.4 && part < 0.9) { em += glow * 0.13; }
+	if (part > 0.95) { em += glow * 0.025; base *= 0.6 + n2 * 0.4; }
+	if (part > 0.4 && part < 0.9) { em += glow * 0.07; }
+	if (style == 14) {
+		base = wound_kind == 1 ? vec3(0.22, 0.19, 0.10) : (wound_kind == 2 ? vec3(0.48, 0.53, 0.62) : vec3(0.13, 0.15, 0.17));
+		em = glow * 0.015;
+	}
 	ALBEDO = base;
 	ROUGHNESS = rough;
 	METALLIC = metal;
@@ -1394,14 +1414,50 @@ void fragment() {
 			em += sc * edge * le * 0.6 * ha * smoothstep(0.0, 0.25, age) * exp(-age / 420.0);
 		}
 	}
+	if (style == 15) {
+		vec2 dd = vec2(dot(vE.xyz, t1), dot(vE.xyz, t2));
+		float along = clamp(dot(q, dd), -vE.w, vE.w);
+		float trench = length(q - dd * along) / R;
+		alb = vec3(0.008, 0.006, 0.009);
+		a = 1.0 - smoothstep(0.7, 1.5, trench);
+		em = glow * 0.06 * exp(-pow((trench - 0.9) / 0.2, 2.0));
+	}
 	if (a < 0.003 && dot(em, vec3(1.0)) < 0.003) { discard; }
 	if (wound_kind == 1) {
-		alb = mix(vec3(0.025, 0.04, 0.008), glow * 0.12, n1);
-		rough = 0.2;
-		em = glow * (0.12 + 0.08 * sin(scene_t * 2.3 + seed)) * a;
+		float vein = pow(abs(sin(q.x / R * 28.0 + n1 * 6.0)), 12.0);
+		alb = mix(vec3(0.06, 0.012, 0.07), vec3(0.12, 0.025, 0.045), n1);
+		rough = style == 13 ? 0.55 : 0.2;
+		em = glow * (0.025 + 0.06 * vein) * (0.8 + 0.2 * sin(scene_t * 2.3 + seed)) * a;
 	} else if (wound_kind == 2) {
-		rough = 0.08;
-		em = mix(glow, vec3(0.25, 0.5, 1.0), n1) * a * 0.22;
+		float fracture = pow(abs(sin(ang * 7.0 + n1 * 2.0)), 32.0);
+		float web = pow(abs(sin(u * 26.0 + ang * 3.0)), 24.0);
+		alb = mix(vec3(0.28, 0.36, 0.48), glow * 0.8, max(fracture, web));
+		rough = 0.14;
+		a *= 0.18 + 0.82 * max(fracture, web);
+		em = glow * max(fracture, web) * a * 0.3;
+	} else if (wound_kind == 3) {
+		vec2 grid = abs(fract(q / R * 3.0 + seed) - 0.5);
+		float circuit = smoothstep(0.46, 0.49, max(grid.x, grid.y));
+		alb = vec3(0.012, 0.006, 0.02) * (0.6 + n1 * 0.4);
+		rough = 0.48;
+		a = max(a, (1.0 - smoothstep(0.7, 1.05, max(abs(q.x), abs(q.y)) / R)) * 0.9);
+		em = glow * circuit * 0.22 * flick(0.7 + n1 * 0.3, scene_t, seed);
+		if (vD.y > 0.3) {
+			float jagged = u - 0.72 + 0.07 * sin(ang * 13.0 + seed);
+			float arc = exp(-pow(jagged / 0.018, 2.0)) * smoothstep(0.1, 0.4, sin(ang * 6.0 + scene_t * 1.6 + seed));
+			em += mix(glow, vec3(0.9, 0.85, 1.0), 0.4) * arc * 0.65 * flick(0.6 + 0.4 * n1, scene_t, seed);
+		}
+	}
+	if (style == 14) {
+		float ridge = exp(-pow((u - 0.9) / 0.05, 2.0));
+		alb = wound_kind == 1 ? vec3(0.24, 0.21, 0.12) : (wound_kind == 2 ? vec3(0.5, 0.55, 0.64) : vec3(0.16, 0.18, 0.2));
+		a = (1.0 - smoothstep(0.88, 1.0, u)) * (wound_kind == 1 ? smoothstep(0.0, 3.0, age) : 0.7);
+		em = glow * ridge * 0.035;
+		if (wound_kind == 3) {
+			float panel = floor((q.x / R + 1.0) * 2.0);
+			float reboot = smoothstep(panel * 0.3, panel * 0.3 + 0.5, age);
+			em += glow * ridge * reboot * 0.05;
+		}
 	}
 	ALBEDO = alb;
 	ALPHA = clamp(a, 0.0, 1.0);

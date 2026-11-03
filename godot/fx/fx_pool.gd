@@ -178,12 +178,14 @@ class Pool:
 # ---------------------------------------------------------------- Batch (static, built once)
 
 class Batch:
+	var particle_count := 0
 	var verts = PackedVector3Array()
 	var nrm = PackedVector3Array()
 	var idx = PackedInt32Array()
 	var data = PackedFloat32Array()
 
 	func add(shape: Array, p: PackedFloat32Array) -> void:
+		particle_count += 1
 		var b = verts.size()
 		verts.append_array(shape[0])
 		if not (shape[1] as PackedVector3Array).is_empty():
