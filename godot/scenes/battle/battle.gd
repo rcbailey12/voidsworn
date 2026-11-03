@@ -460,6 +460,11 @@ func begin_with(a) -> void:
 
 func _begin(a) -> void:
 	api = a
+	warming = true
+	hud.loading(true)
+	if DisplayServer.get_name() != "headless":
+		await get_tree().process_frame
+		await get_tree().process_frame
 	TBL = _api_tables()
 	if ai_level != "":
 		_api_set_ai(ai_level)
@@ -525,8 +530,10 @@ func _begin(a) -> void:
 			pano = (env.sky.sky_material as ShaderMaterial).get_shader_parameter("pano")
 		var vb: Dictionary = api.view()
 		var wi: Dictionary = api.world_info()
-		world.build(vb, {"biome": wi.get("biome", {}) if wi.get("biome") is Dictionary else {}, "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
-			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1})
+		var world_opts := {"biome": wi.get("biome", {}) if wi.get("biome") is Dictionary else {}, "fac": _enemy_fac_of(vb), "hex_world": board.hex_world, "camera": cam, "environment": env,
+			"quality": str(args.get("quality", "max")), "pano": pano, "seed": int(wi.get("seed", 1)) if wi.get("seed") != null else 1}
+		if args.has("sector_setting"): world_opts["sector_setting"] = args["sector_setting"]
+		world.build(vb, world_opts)
 		for c in backdrop.get_children():
 			c.queue_free()
 	else:
@@ -708,6 +715,7 @@ var warming := false
 func _warmup() -> void:
 	warming = true
 	hud.loading(true)
+	if world != null: await world.wait_ready()
 	var keep := {"a": cam.a, "b": cam.b, "r": cam.r, "t": cam.t}
 	cam.b = 0.6
 	cam.r = maxf(cam.bounds.x, cam.bounds.y) * 2.4
@@ -716,15 +724,7 @@ func _warmup() -> void:
 	for i in 3:
 		await get_tree().process_frame
 	if gfx != null and gfx.has_method("warmup") and DisplayServer.get_name() != "headless":
-		# at most 4 s: a warm-up that never returns must never hold the battle
-		var done := [false]
-		var run := func() -> void:
-			await gfx.warmup(cam)
-			done[0] = true
-		run.call()
-		var t0 := Time.get_ticks_msec()
-		while not done[0] and Time.get_ticks_msec() - t0 < 4000:
-			await get_tree().process_frame
+		await gfx.warmup(cam)
 	for i in 2:
 		await get_tree().process_frame
 	cam.a = keep["a"]
@@ -733,6 +733,7 @@ func _warmup() -> void:
 	cam.t = keep["t"]
 	cam.snap()
 	await get_tree().process_frame
+	await load("res://main/load_screen.gd").settle(get_tree())
 	pipe_base = _pipe_count()
 	hud.loading(false)
 	warming = false
