@@ -88,6 +88,7 @@ ACT.factionVerb=()=>{ const lines=useVerb(); if(!lines) return; saveRun(); mapSc
 ACT.saveQuit=()=>{ saveRun(); titleScreen(); };
 ACT.enterNode=id=>{
   if(!availableNodes().includes(id)) return;
+  if(showBeat3()) return;
   const n=findNode(id); RUN.pos=id; RUN.curNode=id;
   tel('node',{type:n.type,col:n.col});
   if(n.type==='battle'||n.type==='elite'||n.type==='boss'){
@@ -391,8 +392,31 @@ function applyOutcome(r){
   if(!out.length && !r.fight) out.push('You move on.');
   return out;
 }
+// Beat 3 keeps the authored ids and rewards, adapting labels to the event UI.
+function beat3Text(t){ return String(t||'').replace(/\{rival\}/g,nemFull()||'the enemy commander'); }
+function beat3Card(){
+  const a=RUN&&STORY_BEAT3[RUN.fac]; if(!a||RUN.sector!==3||RUN.flags&&RUN.flags[a.id]!=null) return null;
+  return {...a,arc:true,beat:3,b:[...a.lines,a.spotlights[RUN.admiral]||''].map(beat3Text).join('\n\n'),
+    o:a.o.map((o,i)=>({...o,k:String(i),l:o.t,s:'',tx:beat3Text(o.tx)}))};
+}
+function showBeat3(){
+  const ev=beat3Card(); if(!ev) return false; curEvent=ev;
+  modal(`<h2>${esc(ev.t)}</h2><p style="white-space:pre-line">${esc(ev.b)}</p>${ev.o.map((o,i)=>`<button class="choice" data-act="eventChoice" data-arg="${i}"><b>${esc(o.l)}</b></button>`).join('')}`); return true;
+}
+ACT.beat3=()=>{ if(!showBeat3()) closeModal(); };
+function beat3Debrief(){ const a=RUN&&STORY_BEAT3[RUN.fac]; return a&&RUN.flags&&RUN.flags[a.id]!=null?a.debrief:''; }
+function applyBeat3Outcome(r){
+  const out=applyOutcome({...r,cred:r.credits,healAll:r.repair,nemIntel:r.weak,nemClock:r.clock}).filter(l=>l!=='You move on.');
+  if(r.dmgFlag){ const f=flagshipOf(); if(f){ const dmg=Math.round(derive(f).maxHp*r.dmgFlag); f.hp=Math.max(1,f.hp-dmg); out.push(`The ${f.name} takes ${dmg} hull damage.`); } }
+  return out;
+}
 ACT.eventChoice=i=>{
   const o=curEvent.o[+i]; if(!o||!eventOptOk(o)) return; eventFlags(curEvent,o,+i);
+  if(curEvent.beat===3){
+    const lines=applyBeat3Outcome(o.r); lines.unshift(o.tx);
+    saveRun(); mapScreen();
+    modal(`<h2>${esc(curEvent.t)}</h2>${lines.map(l=>`<p>${esc(l)}</p>`).join('')}<button class="primary" data-act="closeModal">Continue</button>`); return;
+  }
   if(o.r&&o.r.fight){ closeModal(); battleScreen({kind:'elite',fac:o.r.fight,col:findNode(RUN.curNode).col+1,node:RUN.curNode,eventRelic:true}); return; }
   const lines=applyOutcome(o.r);
   completeNode(); mapScreen();
@@ -431,6 +455,7 @@ function rewardFlow(summary){
   RUN.reward={kind:cfg.kind,node:cfg.node||null,rw,relics:window._relicChoice,wrecks:window._wrecks,prizes,stage:prizes.length?'prize':window._wrecks.length?'salvage':'pick',boonOffer:null,modOffer:null}; completeNode();
   const next=RUN.reward.prizes.length?`<button class="primary" data-act="prizeStep">Decide on the prize ship${RUN.reward.prizes.length>1?'s':''}</button>`:window._wrecks.length?'<button class="primary" data-act="salvageStep">Strip the wrecks</button>':rw.k==='boon'&&PATRONS[rw.p]?`<button class="primary" data-act="rewardNext" style="background:${PATRONS[rw.p].col};border-color:${PATRONS[rw.p].col};color:#0f1626">${esc(PATRONS[rw.p].short)} offers a protocol</button>`:rw.k==='mod'?'<button class="primary" data-act="rewardNext">Choose a refit</button>':'<button class="primary" data-act="rewardNext">Continue</button>';
   modal(`<h2>${cfg.kind==='boss'?'Flagship destroyed':'Victory'}</h2>
+    ${beat3Debrief()?`<p class="gilt">${esc(beat3Debrief())}</p>`:''}
     <p class="num">${summary.kills} enemy ship${summary.kills===1?'':'s'} destroyed in ${summary.rounds} round${summary.rounds===1?'':'s'}. <span class="gilt">+${credits} credits.</span></p>${lost}${extra}
     ${(()=>{ const st=summary.boonStats||{}, ks=Object.keys(st).filter(k=>BOONS[k]); return ks.length?`<p style="font-size:14px;margin:6px 0">Protocols in action: ${ks.map(k=>{ const b=BOONS[k], P=b.p?PATRONS[b.p]:PATRONS[b.duo[0]]; return `<span style="color:${P.col}">${esc(b.n)}</span> \u00d7${st[k]}`; }).join(', ')}.</p>`:(RUN.boons||[]).length?'<p class="dim" style="font-size:13.5px">No protocol triggered this battle. Check the Fleet protocols section on a ship to see what sets each one off.</p>':''; })()}
     ${flagMoved?`<p class="gilt">The admiral transfers the flag to the ${esc(flagMoved.name)}. Its aspect goes with it.</p>`:''}
@@ -553,7 +578,7 @@ function afterBattle(){
     saveRun(); mapScreen();
     const F=FACTIONS[RUN.map.fac];
     modal(`<h2>Sector ${roman(RUN.sector)}${RUN.map.region&&REGIONS[RUN.map.region]?`: ${esc(REGIONS[RUN.map.region].n)}`:''}</h2><p>With the flagship broken, the fleet jumps deeper. Fleet command expands: <b class="gilt">+3 command points</b>, and crews patch 40% of every hull during the transit.</p>
-      <p>Scanners confirm <b>${esc(F.n)}</b> ahead.</p>${na&&RUN.nem?`<p class="blood">Intelligence: ${esc(nemFull())} has adapted to you: <b>${esc(nemAdaptName(na,RUN.nem.fac))}</b> (${esc(nemAdaptWhy(na,RUN.nem.fac))}). ${esc(nemAdaptDesc(na,RUN.nem.fac))}</p>`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="closeModal">Plot a course</button>`);
+      <p>Scanners confirm <b>${esc(F.n)}</b> ahead.</p>${na&&RUN.nem?`<p class="blood">Intelligence: ${esc(nemFull())} has adapted to you: <b>${esc(nemAdaptName(na,RUN.nem.fac))}</b> (${esc(nemAdaptWhy(na,RUN.nem.fac))}). ${esc(nemAdaptDesc(na,RUN.nem.fac))}</p>`:''}${(()=>{ const c=sectorCond(); return c?`<p class="gilt">Sector condition: <b>${esc(c.n)}</b>. <span class="muted">${esc(c.d)}</span></p>`:''; })()}<p class="muted">${esc(F.blurb)}</p><button class="primary" data-act="${RUN.sector===3?'beat3':'closeModal'}">Plot a course</button>`);
     return;
   }
   mapScreen();

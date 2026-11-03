@@ -1141,6 +1141,8 @@ func act(name: String, arg = "") -> void:
 		"title": titleScreen()
 		"closeModal":
 			if not _arc_after(modal_d): close_modal()
+		"beat3":
+			if not showBeat3(): close_modal()
 		"continueRun": ACT_continueRun()
 		"newRunScreen": ACT_newRunScreen()
 		"abandonRun":
@@ -1514,6 +1516,7 @@ func mapScreen() -> void:
 	show_page("map", {"avail": avail}, acts)
 func ACT_enterNode(id: String) -> void:
 	if not availableNodes().has(id): return
+	if showBeat3(): return
 	var n = findNode(id); RUN["pos"] = id; RUN["curNode"] = id
 	tel("node", {"type": n["type"], "col": n["col"]})
 	if _is(n, ["battle", "elite", "boss"]):
@@ -2293,7 +2296,7 @@ func _arc_after(md) -> bool:
 	return true
 func _arc_choice(o, i: int) -> void:   # an arc card's choice: its outcome and flags, no map node is completed
 	var r = o["r"] if o.get("r") is Dictionary else {}
-	var lines = applyOutcome(r)
+	var lines = applyBeat3Outcome(r) if cur_event.get("beat") == 3 else applyOutcome(r)
 	var k = str(o["k"]) if jt(o.get("k")) else str(i)
 	var out = cur_event.get("outs", {}).get(k, "") if cur_event.get("outs") is Dictionary else ""
 	if str(out) != "": lines.insert(0, str(out))
@@ -2304,6 +2307,7 @@ func _arc_choice(o, i: int) -> void:   # an arc card's choice: its outcome and f
 	show_modal("event_result", {"ev": cur_event, "lines": lines}, acts)
 func _arc_played(beat: int) -> bool:
 	if RUN == null or not (RUN.get("flags") is Dictionary): return false
+	if beat == 3 and RUN["flags"].has(TB.STORY_BEAT3[RUN["fac"]]["id"]): return true
 	var pre = "arc_" + str(RUN["fac"]) + "_" + str(beat)
 	for k in RUN["flags"].keys():
 		if str(k).begins_with(pre): return true
@@ -2322,6 +2326,48 @@ func ACT_eventChoice(a: String) -> void:
 	completeNode(); mapScreen()
 	var acts = []; A(acts, "closeModal")
 	show_modal("event_result", {"ev": cur_event, "lines": lines}, acts)
+
+# Approved beat 3 content shares the browser table and existing event screens.
+func beat3Text(t: String) -> String:
+	return t.replace("{rival}", nemFull() if nemFull() != "" else "the enemy commander")
+func beat3Card() -> Dictionary:
+	if RUN == null or float(RUN["sector"]) != 3: return {}
+	var row: Dictionary = TB.STORY_BEAT3[RUN["fac"]]
+	if RUN.get("flags", {}).has(row["id"]): return {}
+	var ev = row.duplicate(true)
+	ev["arc"] = true; ev["beat"] = 3
+	var text = row["lines"].duplicate()
+	text.append(row["spotlights"].get(RUN["admiral"], ""))
+	ev["b"] = "\n\n".join(PackedStringArray(text.map(func(t): return beat3Text(t))))
+	ev["outs"] = {}; ev["labels"] = {}
+	for i in range(ev["o"].size()):
+		var o = ev["o"][i]; o["k"] = str(i); o["l"] = o["t"]; o["s"] = ""
+		ev["outs"][str(i)] = beat3Text(o["tx"]); ev["labels"][str(i)] = o["l"]
+	return ev
+func showBeat3() -> bool:
+	var ev = beat3Card()
+	if ev.is_empty(): return false
+	cur_event = ev
+	var acts = []
+	for i in range(ev["o"].size()): A(acts, "eventChoice", i)
+	show_modal("event", {"ev": ev}, acts)
+	return true
+func beat3Debrief() -> String:
+	if RUN == null: return ""
+	var row: Dictionary = TB.STORY_BEAT3[RUN["fac"]]
+	return str(row["debrief"]) if RUN.get("flags", {}).has(row["id"]) else ""
+func applyBeat3Outcome(r: Dictionary) -> Array:
+	var adapted = r.duplicate()
+	for pair in [["credits", "cred"], ["repair", "healAll"], ["weak", "nemIntel"], ["clock", "nemClock"]]:
+		if r.has(pair[0]): adapted[pair[1]] = r[pair[0]]
+	var out = applyOutcome(adapted).filter(func(l): return l != "You move on.")
+	if jt(r.get("dmgFlag")):
+		var f = flagshipOf()
+		if f != null:
+			var dmg = jsround(float(derive(f)["maxHp"]) * float(r["dmgFlag"]))
+			f["hp"] = max(1.0, float(f["hp"]) - dmg)
+			out.append("The " + str(f["name"]) + " takes " + numstr(dmg) + " hull damage.")
+	return out
 
 # ---------------- rewards ----------------
 func rewardFlow(summary: Dictionary) -> void:
@@ -2621,7 +2667,7 @@ func afterBattle() -> void:
 		for s in RUN["fleet"]:
 			var d = derive(s); s["hp"] = min(float(d["maxHp"]), float(s["hp"]) + jsround(float(d["maxHp"]) * 0.4 * repairMult()))
 		saveRun(); mapScreen()
-		var acts = []; A(acts, "closeModal")
+		var acts = []; A(acts, "beat3" if float(RUN["sector"]) == 3 else "closeModal")
 		show_modal("sector", {"fac": RUN["map"]["fac"], "cond": sectorCond(), "region": RUN["map"].get("region"), "adapt": na if jt(RUN.get("nem")) else null}, acts)
 		return
 	mapScreen()

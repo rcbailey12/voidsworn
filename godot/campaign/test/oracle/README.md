@@ -1,5 +1,9 @@
 # The campaign oracle, pinned
 
+Nov 3 2026, issue 55: re-copied data.js, campaign_run.js and campaign_meta.js
+for the six approved beat 3 decisions, spotlights and debrief learning lines.
+Mending Throng uses the name required by the issue. Re-exported campaign tables.
+
 Nov 3 2026, issue 21: re-copied campaign_meta.js for the paid inheritance
 receipt and debrief links. Campaign and rules tables were re-exported and
 keep their existing checksums. No combat rule or playtest default changed.

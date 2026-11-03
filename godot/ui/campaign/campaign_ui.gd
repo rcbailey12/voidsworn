@@ -1099,6 +1099,7 @@ func _end(d: Dictionary) -> Control:
 	elif d["abandoned"]: sub = "The fleet stands down. Its deeds are recorded."
 	else: sub = "The last hull goes dark in sector " + C.roman(R["sector"]) + ". The survivors will tell it differently."
 	var sl = lbl(sub, 20, BONE2); sl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(sl)
+	v.add_child(lbl(C.TB.STORY_BEAT3[R["fac"]]["learning"], 18, GILT))
 	var stl = _story_text()
 	if stl != "":
 		var sll = lbl(stl, 18, GILT); sll.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; v.add_child(sll)
@@ -1253,7 +1254,7 @@ func _modal(md: Dictionary) -> void:
 			if md["kind"] == "sector": p.call(F.get("blurb", ""), BONE2)
 			if md["kind"] == "intro": p.call("Pick a route across the sector map. Battles carrying a core’s signal pay out that core’s protocols, so the route you choose shapes your build. The flagship of the sector waits at the far end.", BONE2)
 			_story_line(v)
-			add(v, abtn("Plot a course", "closeModal", "", true, false, acts))
+			add(v, abtn("Plot a course", "beat3" if float(R["sector"]) == 3 else "closeModal", "", true, false, acts))
 		"abandon":
 			h2.call("Abandon the current run?"); p.call("Starting over ends your saved run. Your best result so far is kept either way.", BONE2)
 			var r = hbox(); add(r, abtn("Abandon and start over", "abandonRun", "", true, false, acts)); add(r, abtn("Keep it", "closeModal", "", false, false, acts)); v.add_child(r)
@@ -1279,6 +1280,7 @@ func _modal(md: Dictionary) -> void:
 		"victory":
 			var sm = d["summary"]; var cfg = sm["cfg"]
 			h2.call("Flagship destroyed" if cfg["kind"] == "boss" else "Victory")
+			if C.beat3Debrief() != "": p.call(C.beat3Debrief(), GILT)
 			v.add_child(rich(C.numstr(sm["kills"]) + " enemy ship" + ("" if int(sm["kills"]) == 1 else "s") + " destroyed in " + C.numstr(sm["rounds"]) + " round" + ("" if float(sm["rounds"]) == 1 else "s") + ". " + c("+" + C.numstr(d["credits"]) + " credits.", GILT), 17))
 			if sm["lost"].size() > 0:
 				var ls = []
