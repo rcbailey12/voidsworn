@@ -7,7 +7,7 @@ Screening: USED, with two limits the chair applies. First, this leg states it ha
 Leg text follows verbatim.
 
 ---
-Model verified: 4 Argon with Thinking level High — verified in both the model picker button and the prompt bar before sending, and in the prompt bar after sending.
+Model verified: 4 Argon with Thinking level High, verified in both the model picker button and the prompt bar before sending, and in the prompt bar after sending.
 
 1. Headline
 
