@@ -29,9 +29,11 @@ if errorlevel 1 goto :prepfail
 set /p EFF=<"%O%\effort.txt"
 call "%B%\tools\pc\tmo.bat" 3600 "%APPDATA%\npm\codex.cmd" exec -c model_reasoning_effort=%EFF% --approve-for-me --ephemeral --color never -C "%R%" -o "%O%\last.md" "Read CODEX_TASK.md in this folder and do exactly what it says. Do not commit." > "%O%\log.txt" 2>&1
 echo codex exit %ERRORLEVEL% >> "%O%\result.txt"
-rem Usage limit (Nov 2): leave the issue for the board to retry on a later poll instead of marking it done.
-findstr /c:"hit your usage limit" "%O%\log.txt" >nul
-if not errorlevel 1 goto :limit
+rem Usage limit: leave the issue for the board to retry on a later poll instead of marking it done.
+rem Nov 3 fix: look only at the last 40 lines. Codex often prints this script while it works, so a whole-log
+rem search matched its own text and threw away three finished jobs (66, 75, 78).
+powershell -NoProfile -Command "if ((Get-Content -LiteralPath '%O%\log.txt' -Tail 40) -match ('hit your usage'+' limit')) { exit 1 }; exit 0"
+if errorlevel 1 goto :limit
 del /q CODEX_TASK.md 2>nul
 git add -A
 git diff --cached --quiet
@@ -63,6 +65,10 @@ exit /b 6
 :limit
 echo usage limit hit, left on the board to retry >> "%O%\result.txt"
 del /q CODEX_TASK.md 2>nul
+rem Keep whatever Codex got done as a patch before resetting the checkout.
+git add -A
+git diff --cached --binary > "%O%\limit_wip.patch"
+git reset -q
 git checkout -q -f -- .
 git clean -fdq
 powershell -NoProfile -Command "$f=Join-Path $env:USERPROFILE 'Downloads\voidsworn_test\board\queued.txt'; (Get-Content $f) -ne '%N%' | Set-Content $f"
