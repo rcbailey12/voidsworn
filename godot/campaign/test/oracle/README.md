@@ -1,5 +1,9 @@
 # The campaign oracle, pinned
 
+Nov 2 2026, issue 20: re-copied core.js and campaign_meta.js for per-line
+shadow XP, debrief heirs and capped XP routing. Re-exported campaign tables.
+The R69 playtest default stays on in the Godot UI.
+
 Nov 2 2026, issue 18: re-copied core.js from this checkout for the shared
 FX_CAPS table and final-total ceilings in sumFx. Re-exported campaign tables.
 

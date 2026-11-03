@@ -2,6 +2,7 @@
 const app=document.getElementById('app');
 const tipEl=document.getElementById('tip');
 const ACT={};
+let heirDebrief=null;
 app.addEventListener('click',e=>{ const el=e.target.closest('[data-act]'); if(!el||el.disabled) return; const fn=ACT[el.dataset.act]; if(fn) fn(el.dataset.arg,el,e); });
 function show(html){ hideTip(); closeModal(); app.innerHTML=html; }
 function modal(html){ closeModal(); const m=document.createElement('div'); m.className='modal'; m.id='modal'; m.innerHTML=`<div class="box" role="dialog" aria-modal="true">${html}</div>`;
@@ -25,6 +26,7 @@ function hpBar(hp,max){ const f=clamp(hp/max,0,1); return `<div class="bar${f<.3
 
 // ---------- title ----------
 function titleScreen(){
+  heirDebrief=null;
   RUN=null; B=null;
   show(`<div class="screen title"><div class="inner">
     <h1>Embers of the Hollow Sun</h1>
@@ -59,13 +61,14 @@ let pickedAdmiral='vex';
 // R1 (PROG-6): an admiral is yours when bought or when it costs nothing (each faction's first admiral); only yours can be picked or launched
 function admiralOwned(id){ const a=ADMIRALS[id]; return !!a&&(!!META.admirals[id]||!(a.cost>0)); }
 function admiralScreen(){
+  heirDebrief=null;
   const mine=Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===pickedFaction);
   if(!mine.some(([id])=>id===pickedAdmiral)||!admiralOwned(pickedAdmiral)) pickedAdmiral=(mine.find(([id])=>admiralOwned(id))||mine[0])[0];
   const cards=mine.map(([id,a])=>{ const un=admiralOwned(id);
     const fleet=a.start.map(t=>HULLS[equivHull(t,pickedFaction)].n).join(', ');
     return `<div class="card ${pickedAdmiral===id?'sel':''} ${un?'':'locked'}">
       <h3>${esc(a.n)}</h3><p class="gilt">${esc(a.doc)}</p><p>${esc(a.d)}</p>
-      ${masteryBar(id)}${LINEAGE_TREES[id]?`<button data-act="lineage" data-arg="${id}">View lineage tree</button>`:''}
+      ${masteryBar(id)}<p class="dim">${META.heirs[a.fac||'voidsworn']===id?'Heir: 50%':'Shadow: 25%'} XP while benched</p>${LINEAGE_TREES[id]?`<button data-act="lineage" data-arg="${id}">View lineage tree</button>`:''}
       <p><span class="dim">Starting fleet:</span> ${esc(fleet)}</p>${a.cmd?`<p><span class="dim">Command:</span> <b class="gilt">${esc(a.cmd.n)}</b>. ${esc(cmdDesc(a.cmd,0,pickedFaction))} <span class="dim">Gets stronger each round you hold it.</span></p>`:''}
       <div class="foot">${un?`<button class="${pickedAdmiral===id?'primary':''}" data-act="pickAdmiral" data-arg="${id}">${pickedAdmiral===id?'Selected':'Select'}</button>`:`<button ${(META.renown||0)>=a.cost?'':'disabled'} data-act="buyAdmiral" data-arg="${id}">Unlock for ${a.cost} renown</button>`}</div></div>`; }).join('');
   show(`<div class="screen"><div class="page">
@@ -128,7 +131,7 @@ function legacyScreen(){
   if(progTab==='legacy'){ body=`<p class="lede">Spend renown on lasting advantages for every later run. <span class="gilt num">You have ${META.renown||0} renown.</span></p><div class="cards">${Object.entries(LEGACY).map(([id,u])=>{ const own=!!META.unlocked[id], lock=u.req&&!META.unlocked[u.req];
       return `<div class="card ${own?'sel':''}"><h3>${esc(u.n)}</h3><p class="dim" style="font-size:13.5px">${esc(u.group)}</p><p>${esc(u.d)}</p><div class="foot">${own?'<span class="verd">Unlocked</span>':lock?`<span class="dim">Needs ${esc(LEGACY[u.req].n)} first</span>`:`<button ${(META.renown||0)>=u.cost?'':'disabled'} data-act="buyLegacy" data-arg="${id}">Unlock for ${u.cost} renown</button>`}</div></div>`; }).join('')}</div>`; }
   if(progTab==='mastery'){ body=`<p class="lede">Every run levels up the admiral who led it: 1 per battle won, 2 per elite, 5 per flagship and 10 for a victory.</p><div class="cards">${MASTERY_PERKS.slice(1).map((m,i)=>`<div class="card"><h3>Level ${i+1}: ${esc(m.n)}</h3><p>${esc(m.d)}</p><p class="dim num">${MASTERY_XP[i+1]} mastery</p></div>`).join('')}</div>`+
-      favFirst().map(f=>`<h3 style="margin:20px 0 8px">${esc(FACTIONS[f].n)}</h3><div class="cards">${Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===f).map(([id,a])=>`<div class="card"><h3>${esc(a.n)}</h3><p class="gilt" style="font-size:14px">${esc(a.doc)}</p>${masteryBar(id)}${LINEAGE_TREES[id]?`<button data-act="lineage" data-arg="${id}">View lineage tree</button>`:''}</div>`).join('')}</div>`).join(''); }
+      favFirst().map(f=>`<h3 style="margin:20px 0 8px">${esc(FACTIONS[f].n)}</h3><div class="cards">${Object.entries(ADMIRALS).filter(([id,a])=>(a.fac||'voidsworn')===f).map(([id,a])=>`<div class="card"><h3>${esc(a.n)}</h3><p class="gilt" style="font-size:14px">${esc(a.doc)}</p>${masteryBar(id)}<p class="dim">${META.heirs[a.fac||'voidsworn']===id?'Heir: 50%':'Shadow: 25%'} XP while benched</p>${LINEAGE_TREES[id]?`<button data-act="lineage" data-arg="${id}">View lineage tree</button>`:''}</div>`).join('')}</div>`).join(''); }
   if(progTab==='favour'){ body=`<p class="lede">Every protocol you take raises your sync with that core (rare protocols count double, epic triple).</p><div class="cards">${FAVOUR_TIERS.slice(1).map(t=>`<div class="card"><h3>${esc(t.n)} <span class="dim num">${t.at}+</span></h3><p>${esc(t.d)}</p></div>`).join('')}</div><div style="margin-top:14px">`+
       Object.entries(PATRONS).map(([p,P])=>{ const f=favourOf(p), t=favourTier(p), nx=FAVOUR_TIERS[t+1]; return `<div class="favrow"><div class="sg" style="background:${P.col}">${P.glyph}</div><div><b>${esc(P.n)}</b><div class="dim" style="font-size:13px">${esc(P.theme)}</div></div><div class="num" style="text-align:right"><b style="color:${P.col}">${esc(FAVOUR_TIERS[t].n)}</b><div class="dim" style="font-size:12.5px">${f}${nx?` / ${nx.at}`:''}</div></div></div>`; }).join('')+'</div>'; }
   if(progTab==='heat'){ const wins=META.stats.wins||0; body=`<p class="lede">${wins?'Heat is open. Pick rules on the admiral screen before a run; each level adds 10% renown.':'Win a run to open Heat.'}</p><div class="cards">${Object.entries(HEAT).map(([k,h])=>`<div class="card"><h3>${esc(h.n)} <span class="dim">+${h.w}</span></h3><p>${esc(h.d)}</p></div>`).join('')}</div>
@@ -205,7 +208,38 @@ function runRecap(victory){ const s=RUN.stats, mins=RUN.t0?Math.max(1,Math.round
   const fleet=fl.length?`<h3 class="rhead">${victory?'The fleet that finished it':'Still flying'}</h3><div class="rfleet">${fl.sort((a,b)=>score(b)-score(a)).map(row).join('')}</div>`:'';
   return tiles+stand+fleet; }
 function nextFacPick(){ const won=(META.stats.wonFacs||[]), pool=RUN_FACTIONS.filter(f=>f!==RUN.fac&&!won.includes(f)); return pick(pool.length?pool:RUN_FACTIONS.filter(f=>f!==RUN.fac)); }
+// Shadow learning is per line. A full line sends its excess to the faction's
+// shadow balance; distribute it among uncapped benched lines, keeping any rest.
+function shadowAdmirals(fac, flown){ return Object.keys(ADMIRALS).filter(id=>(ADMIRALS[id].fac||'voidsworn')===fac&&id!==flown); }
+function shadowRate(id){ return META.heirs[(ADMIRALS[id].fac||'voidsworn')]===id?.5:.25; }
+function masteryCredit(id, xp){
+  const thresholds=masteryThresholds(id), cap=thresholds[thresholds.length-1], old=masteryXP(id), total=old+xp;
+  META.mastery[id]=Math.min(cap,total);
+  return {xp:Math.max(0,META.mastery[id]-old),overflow:Math.max(0,total-cap)};
+}
+function awardLineageXP(flown, fac, xp){
+  const active=masteryCredit(flown,xp), shadow=shadowAdmirals(fac,flown).map(id=>({id,xp:0,rate:shadowRate(id)}));
+  let pool=(META.shadowPool[fac]||0)+active.overflow;
+  for(const row of shadow){ const gain=masteryCredit(row.id,xp*shadowRate(row.id)); row.xp+=gain.xp; pool+=gain.overflow; }
+  while(pool>0){
+    const open=shadow.filter(row=>masteryXP(row.id)<masteryThresholds(row.id).slice(-1)[0]);
+    if(!open.length) break;
+    const weight=open.reduce((n,row)=>n+shadowRate(row.id),0), budget=pool; pool=0;
+    for(const row of open){ const gain=masteryCredit(row.id,budget*shadowRate(row.id)/weight); row.xp+=gain.xp; pool+=gain.overflow; }
+  }
+  META.shadowPool[fac]=pool;
+  return {mxGain:active.xp,mxOverflow:active.overflow,shadow,shadowBank:pool};
+}
+function heirChoiceHtml(fac, flown){
+  return `<h3>Name an heir</h3><p class="dim">Benched lines of this faction earn 25% shadow XP. Your named heir earns 50% on future runs. You can replace this faction's heir after any run.</p>${shadowAdmirals(fac,flown).map(id=>`<button data-act="nameHeir" data-arg="${id}" ${META.heirs[fac]===id?'disabled':''}>${META.heirs[fac]===id?'Heir: ':'Name '}${esc(ADMIRALS[id].n)}</button>`).join(' ')}`;
+}
+ACT.nameHeir=id=>{
+  if(!heirDebrief||RUN||SAVED_RUN||!shadowAdmirals(heirDebrief.fac,heirDebrief.admiral).includes(id)) return;
+  META.heirs[heirDebrief.fac]=id; Persist.save({meta:true});
+  document.getElementById('heirChoice').innerHTML=heirChoiceHtml(heirDebrief.fac,heirDebrief.admiral);
+};
 function endRun(victory, abandoned){
+  if(!RUN||RUN.over) return;
   const s=RUN.stats;
   if(META.stats.finishedRuns!=null&&!RUN.over) META.stats.finishedRuns++;
   const prevBest=META.stats.best||0; META.stats.best=Math.max(prevBest, RUN.sector); if(victory){ META.stats.wins++; META.stats.wonFacs=META.stats.wonFacs||[]; if(!META.stats.wonFacs.includes(RUN.fac)) META.stats.wonFacs.push(RUN.fac); }
@@ -213,16 +247,18 @@ function endRun(victory, abandoned){
   try{ tel('run_end',{victory:!!victory,abandoned:!!abandoned,fac:RUN.fac,sector:RUN.sector,stats:s,mins:RUN.t0?Math.round((Date.now()-RUN.t0)/60000):null,fleet:(RUN.fleet||[]).map(x=>x.tpl)}); }catch(e){}
   // what carries forward: renown (more with Heat), admiral mastery, and a Heat record for this faction
   const hl=heatLevel(RUN.heat), ren=Math.round((typeof runRenown==='function'?runRenown():0)*(1+.1*hl)); META.renown=(META.renown||0)+ren;
-  const mx0=masteryLevel(RUN.admiral), mxGain=(s.battles-s.elites-s.bosses)+s.elites*2+s.bosses*5+(victory?10:0); /* R1 (PROG-5): stats.battles already counts elites and flagships */ META.mastery=META.mastery||{}; META.mastery[RUN.admiral]=(META.mastery[RUN.admiral]||0)+mxGain; const mx1=masteryLevel(RUN.admiral);
+  const mx0=masteryLevel(RUN.admiral), mxEarned=(s.battles-s.elites-s.bosses)+s.elites*2+s.bosses*5+(victory?10:0); /* Keep the shipped combat weights. Heat XP is Step 10. */
+  const earnings=awardLineageXP(RUN.admiral,RUN.fac,mxEarned), mx1=masteryLevel(RUN.admiral);
   if(victory&&hl){ META.heatBest=META.heatBest||{}; META.heatBest[RUN.fac]=Math.max(META.heatBest[RUN.fac]||0,hl); }
-  RUN.carry={ren,mxGain,mx0,mx1,hl};
+  RUN.carry={ren,...earnings,mx0,mx1,hl};
   RUN.over=true; SAVED_RUN=null; Persist.save();
   const nf=victory?nextFacPick():null, NF=nf&&FACTIONS[nf];
   const cy=RUN.carry, nextLv=masteryPerk(cy.mx1+1);
   const carryHtml=`<div class="nextfac" style="border-color:var(--gilt)"><div class="dim" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Carried forward</div>
     <p style="margin:4px 0"><b class="gilt num">+${cy.ren} renown</b>${cy.hl?` <span class="dim">(Heat ${cy.hl}: +${cy.hl*10}%)</span>`:''} \u00b7 you now have ${META.renown}. Spend it on hull variants in Progression.</p>
     <p style="margin:4px 0">${esc(ADMIRALS[RUN.admiral].n)}: <b class="num">+${cy.mxGain} mastery</b>${cy.mx1>cy.mx0?` <span class="gilt">Level ${cy.mx1} reached: ${esc(masteryPerk(cy.mx1).n)}. ${esc(masteryPerk(cy.mx1).d)}</span>`:cy.mx1<masteryThresholds(RUN.admiral).length-1?` <span class="dim">(${masteryXP(RUN.admiral)}/${masteryThresholds(RUN.admiral)[cy.mx1+1]} to ${esc(nextLv.n)})</span>`:' <span class="dim">(mastered)</span>'}</p></div>`;
-  const lines=`${carryHtml}${runRecap(victory)}
+  const shadowHtml=`<div class="nextfac"><h3>Shadow learning</h3>${cy.shadow.map(row=>`<p>${esc(ADMIRALS[row.id].n)}: +${Math.round(row.xp*100)/100} shadow XP${row.rate===.5?' (heir rate)':''}</p>`).join('')}${cy.mxOverflow?`<p class="dim">${Math.round(cy.mxOverflow*100)/100} XP past this line's cap went to shadow learning.</p>`:''}${cy.shadowBank?`<p class="dim">${Math.round(cy.shadowBank*100)/100} shadow XP saved for an uncapped benched line.</p>`:''}<div id="heirChoice">${heirChoiceHtml(RUN.fac,RUN.admiral)}</div></div>`;
+  const lines=`${carryHtml}${shadowHtml}${runRecap(victory)}
     ${RUN.fallen.length?`<p class="muted">Captains lost this run: ${RUN.fallen.map(f=>esc(f.name)).join(', ')}.</p>`:''}
     ${victory?`<p class="gilt num" style="font-size:18px">${META.stats.wins>1?`Victories so far: ${META.stats.wins}`:'Your first victory.'} Won with: ${(META.stats.wonFacs||[]).map(f=>esc(FACTIONS[f].n)).join(', ')}.</p>`:`<p class="gilt num" style="font-size:20px">${RUN.sector>prevBest?`New best: sector ${roman(RUN.sector)}`:`Best so far: sector ${roman(Math.min(3,META.stats.best))}`}</p>`}
     ${NF?`<div class="nextfac"><div class="dim" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Next run</div><b>Try the ${esc(NF.n.replace(/^The /,''))}</b><p class="muted" style="margin:4px 0 0">${esc(NF.blurb||'')}</p></div>`:''}`;
@@ -232,6 +268,6 @@ function endRun(victory, abandoned){
     <div class="sub">${sub}</div>
     ${lines}
     <div class="menu" style="margin-top:22px">${NF?`<button class="primary" data-act="nextFac" data-arg="${nf}">Play as ${esc(NF.n)}</button><button data-act="newRunScreen">Pick a faction</button>`:`<button class="primary" data-act="newRunScreen">New run</button>`}<button data-act="title">Title screen</button></div></div></div>`);
-  RUN=null;
+  heirDebrief={fac:RUN.fac,admiral:RUN.admiral}; RUN=null;
 }
 ACT.nextFac=f=>{ pickedFaction=f; META.opts=META.opts||{}; META.opts.lastFac=f; admiralScreen(); };

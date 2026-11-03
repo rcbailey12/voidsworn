@@ -207,7 +207,7 @@ func nameWeapons(fac, list: Array) -> Array:
 const SAVE_VERSION := 2
 func defaultMeta() -> Dictionary:
 	return {"v": SAVE_VERSION, "renown": 0, "unlocked": {}, "admirals": {"vex": true}, "fallen": [], "stats": {"runs": 0, "best": 0, "wins": 0}, "opts": {}, "tel": [], "updated": 0,
-		"mastery": {}, "favour": {}, "variants": {}, "heatBest": {}}
+		"mastery": {}, "heirs": {}, "shadowPool": {}, "favour": {}, "variants": {}, "heatBest": {}}
 # The browser's back-fill of old run logs (backfilled, wonFix41) is not carried: a Godot profile never had a browser log (R33: old saves are not migrated).
 func migrateMeta(m: Dictionary) -> Dictionary:
 	var d = defaultMeta()
@@ -1184,6 +1184,7 @@ func act(name: String, arg = "") -> void:
 			admiralScreen()
 		"startRun": ACT_startRun()
 		"pickAspect": ACT_pickAspect(a)
+		"nameHeir": ACT_nameHeir(a)
 		"nextFac":
 			picked_faction = a; META["opts"]["lastFac"] = a; admiralScreen()
 		"saveQuit":
@@ -1383,7 +1384,46 @@ func nextFacPick() -> Variant:
 	var won = or_(META["stats"].get("wonFacs"), [])
 	var pool = RUN_FACTIONS.filter(func(f): return f != RUN["fac"] and not won.has(f))
 	return pick(pool if pool.size() > 0 else RUN_FACTIONS.filter(func(f): return f != RUN["fac"]))
+func shadowAdmirals(fac, flown) -> Array:
+	return ADMIRALS.keys().filter(func(id): return or_(ADMIRALS[id].get("fac"), "voidsworn") == fac and id != flown)
+func shadowRate(id) -> float:
+	return 0.5 if META["heirs"].get(or_(ADMIRALS[id].get("fac"), "voidsworn")) == id else 0.25
+func masteryCredit(id, xp) -> Dictionary:
+	var thresholds = masteryThresholds(id); var cap = float(thresholds[-1]); var old = masteryXP(id); var total = old + xp
+	META["mastery"][id] = min(cap, total)
+	return {"xp": max(0.0, META["mastery"][id] - old), "overflow": max(0.0, total - cap)}
+func awardLineageXP(flown, fac, xp) -> Dictionary:
+	var active = masteryCredit(flown, xp); var shadow = []
+	for id in shadowAdmirals(fac, flown): shadow.append({"id": id, "xp": 0.0, "rate": shadowRate(id)})
+	var pool = float(z0(META["shadowPool"].get(fac))) + active["overflow"]
+	for row in shadow:
+		var gain = masteryCredit(row["id"], xp * shadowRate(row["id"])); row["xp"] += gain["xp"]; pool += gain["overflow"]
+	while pool > 0:
+		var open = shadow.filter(func(row): return masteryXP(row["id"]) < float(masteryThresholds(row["id"])[-1]))
+		if open.is_empty(): break
+		var weight = 0.0
+		for row in open: weight += shadowRate(row["id"])
+		var budget = pool; pool = 0.0
+		for row in open:
+			var gain = masteryCredit(row["id"], budget * shadowRate(row["id"]) / weight); row["xp"] += gain["xp"]; pool += gain["overflow"]
+	META["shadowPool"][fac] = pool
+	return {"mxGain": active["xp"], "mxOverflow": active["overflow"], "shadow": shadow, "shadowBank": pool}
+func endActions(run, nf) -> Array:
+	var acts = []
+	for id in shadowAdmirals(run["fac"], run["admiral"]): A(acts, "nameHeir", id, META["heirs"].get(run["fac"]) != id)
+	if nf != null:
+		A(acts, "nextFac", nf); A(acts, "newRunScreen")
+	else: A(acts, "newRunScreen")
+	A(acts, "title")
+	return acts
+func ACT_nameHeir(id) -> void:
+	if page.get("kind") != "end" or RUN != null or SAVED_RUN != null: return
+	var d = page["data"]; var run = d["run"]
+	if not shadowAdmirals(run["fac"], run["admiral"]).has(id): return
+	META["heirs"][run["fac"]] = id; persist_save(true)
+	show_page("end", d, endActions(run, d["next"]))
 func endRun(victory: bool, abandoned: bool = false) -> void:
+	if RUN == null or jt(RUN.get("over")): return
 	var s = RUN["stats"]
 	if META["stats"].has("finishedRuns") and not jt(RUN.get("over")): META["stats"]["finishedRuns"] += 1
 	var prevBest = float(z0(META["stats"].get("best"))); META["stats"]["best"] = max(prevBest, float(RUN["sector"]))
@@ -1394,20 +1434,16 @@ func endRun(victory: bool, abandoned: bool = false) -> void:
 	if META["fallen"].size() > 80: META["fallen"] = META["fallen"].slice(META["fallen"].size() - 80)
 	tel("run_end", {"victory": victory, "abandoned": abandoned, "fac": RUN["fac"], "stats": s})
 	var hl = heatLevel(RUN.get("heat")); var ren = jsround(runRenown() * (1.0 + 0.1 * hl)); META["renown"] = float(z0(META.get("renown"))) + ren
-	var mx0 = masteryLevel(RUN["admiral"]); var mxGain = (float(s["battles"]) - float(s["elites"]) - float(s["bosses"])) + float(s["elites"]) * 2 + float(s["bosses"]) * 5 + (10.0 if victory else 0.0)   # R1 (PROG-5): battles already counts elites and flagships
-	META["mastery"] = or_(META.get("mastery"), {}); META["mastery"][RUN["admiral"]] = float(z0(META["mastery"].get(RUN["admiral"]))) + mxGain
-	var mx1 = masteryLevel(RUN["admiral"])
+	var mx0 = masteryLevel(RUN["admiral"]); var mxEarned = (float(s["battles"]) - float(s["elites"]) - float(s["bosses"])) + float(s["elites"]) * 2 + float(s["bosses"]) * 5 + (10.0 if victory else 0.0)
+	var earnings = awardLineageXP(RUN["admiral"], RUN["fac"], mxEarned); var mx1 = masteryLevel(RUN["admiral"])
 	if victory and hl > 0:
 		META["heatBest"] = or_(META.get("heatBest"), {}); META["heatBest"][RUN["fac"]] = max(float(z0(META["heatBest"].get(RUN["fac"]))), hl)
-	RUN["carry"] = {"ren": ren, "mxGain": mxGain, "mx0": mx0, "mx1": mx1, "hl": hl}
+	RUN["carry"] = {"ren": ren, "mx0": mx0, "mx1": mx1, "hl": hl}
+	RUN["carry"].merge(earnings)
 	if arcs_on and not abandoned and arc_end_cb is Callable and (arc_end_cb as Callable).is_valid() and _arc_played(3): arc_end_cb.call(victory)
 	RUN["over"] = true; SAVED_RUN = null; persist_save()
 	var nf = nextFacPick() if victory else null
-	var acts = []
-	if nf != null:
-		A(acts, "nextFac", nf); A(acts, "newRunScreen")
-	else: A(acts, "newRunScreen")
-	A(acts, "title")
+	var acts = endActions(RUN, nf)
 	var mins = null
 	if jt(RUN.get("t0")): mins = max(1.0, jsround((now_ms() - float(RUN["t0"])) / 60000.0))
 	show_page("end", {"victory": victory, "abandoned": abandoned, "run": RUN, "next": nf, "prevBest": prevBest, "mins": mins}, acts)

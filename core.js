@@ -47,7 +47,7 @@ function faceToward(a,b){const ang=angTo(a,b); return ((Math.round(ang/60)%6)+6)
 // ---------- persistence ----------
 const STORE_KEY='voidsworn.v1';
 const SAVE_VERSION=2;
-function defaultMeta(){return {v:SAVE_VERSION,renown:0,unlocked:{},admirals:{vex:true},fallen:[],stats:{runs:0,best:0,wins:0},opts:{},tel:[],updated:0,mastery:{},favour:{},variants:{},heatBest:{}};}
+function defaultMeta(){return {v:SAVE_VERSION,renown:0,unlocked:{},admirals:{vex:true},fallen:[],stats:{runs:0,best:0,wins:0},opts:{},tel:[],updated:0,mastery:{},heirs:{},shadowPool:{},favour:{},variants:{},heatBest:{}};}
 // older saves get the fields newer code expects
 function migrateMeta(m){ { const d=defaultMeta(); for(const k in d) if(k!=='v'&&m[k]==null) m[k]=d[k]; if(typeof m.stats!=='object'||Array.isArray(m.stats)) m.stats=d.stats; for(const k in d.stats) if(typeof m.stats[k]!=='number') m.stats[k]=d.stats[k]||0; } // B1: a null stats or opts in an old save crashed the title screen
   if(!m.v||m.v<2){ m.opts=m.opts||{}; m.tel=m.tel||[]; m.v=2; } m.mastery=m.mastery||{}; m.favour=m.favour||{}; m.variants=m.variants||{}; m.heatBest=m.heatBest||{};

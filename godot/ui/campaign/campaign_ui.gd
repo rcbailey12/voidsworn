@@ -425,6 +425,7 @@ func _mastery_bar(id) -> Control:
 	var v = vbox(3)
 	v.add_child(rich(c("Mastery " + str(l) + "/" + str(thresholds.size() - 1), GILT) + " " + c((C.numstr(x) + "/" + C.numstr(nx) + ": next " + str(C.masteryPerk(l + 1)["n"]).to_lower()) if nx != null else "mastered", BONE3), 14))
 	var b = bar(f); b.get_child(0).color = GILT; v.add_child(b)
+	v.add_child(lbl(("Heir: 50%" if C.META["heirs"].get(C.or_(C.ADMIRALS[id].get("fac"), "voidsworn")) == id else "Shadow: 25%") + " XP while benched", 13, BONE3))
 	return v
 func _run_options() -> Control:
 	var v = vbox(10)
@@ -1110,6 +1111,18 @@ func _end(d: Dictionary) -> Control:
 	else: ml = " " + c("(mastered)", BONE3)
 	cv.add_child(rich(esc(C.ADMIRALS[R["admiral"]]["n"]) + ": [b]+" + C.numstr(cy["mxGain"]) + " mastery[/b]" + ml, 16))
 	v.add_child(carry)
+	var shadow_panel = panel(GILT, GLASS, 12); var sv = vbox(6); shadow_panel.add_child(sv)
+	sv.add_child(lbl("SHADOW LEARNING", 16, GILT, font_semi))
+	for row in cy["shadow"]:
+		sv.add_child(lbl(str(C.ADMIRALS[row["id"]]["n"]) + ": +" + C.numstr(snapped(float(row["xp"]), 0.01)) + " shadow XP" + (" (heir rate)" if row["rate"] == 0.5 else ""), 15, BONE2))
+	if cy["mxOverflow"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["mxOverflow"]), 0.01)) + " XP past this line's cap went to shadow learning.", 15, BONE3))
+	if cy["shadowBank"] > 0: sv.add_child(lbl(C.numstr(snapped(float(cy["shadowBank"]), 0.01)) + " shadow XP saved for an uncapped benched line.", 15, BONE3))
+	sv.add_child(lbl("Name an heir", 20, GILT, font_semi))
+	sv.add_child(lbl("Benched lines of this faction earn 25% shadow XP. Your named heir earns 50% on future runs. You can replace this faction's heir after any run.", 15, BONE2))
+	for id in C.shadowAdmirals(R["fac"], R["admiral"]):
+		var heir = C.META["heirs"].get(R["fac"]) == id
+		add(sv, abtn(("Heir: " if heir else "Name ") + str(C.ADMIRALS[id]["n"]), "nameHeir", id, heir))
+	v.add_child(shadow_panel)
 	var tiles = flow(8)
 	var tl = [[s["battles"], "battles won"], [s["bosses"], "flagships destroyed"], [s["kills"], "enemy ships destroyed"], [C.z0(s.get("lost")), "ships lost"]]
 	if d.get("mins") != null: tl.append([(C.numstr(d["mins"]) + "m") if float(d["mins"]) < 90 else (str(snapped(float(d["mins"]) / 60.0, 0.1)) + "h"), "played"])

@@ -1,5 +1,8 @@
 # The rules oracle, pinned
 
+Nov 2 2026, issue 20: re-copied core.js for the saved heirs and shadowPool
+profile fields. Re-exported rules tables; combat rules are unchanged.
+
 Nov 2 2026, issue 18: re-copied core.js from this checkout for the shared
 FX_CAPS table and final-total ceilings in sumFx. Re-exported rules tables.
 

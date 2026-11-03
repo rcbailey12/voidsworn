@@ -2,6 +2,8 @@
   "fixture": "corrupt_output",
   "loaded": {
     "meta": {
+      "heirs": {},
+      "shadowPool": {},
       "v": 2,
       "renown": 75,
       "unlocked": {},

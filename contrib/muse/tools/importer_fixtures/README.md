@@ -1,5 +1,9 @@
 # Cutover importer test fixtures
 
+Nov 2 2026, issue 20: loaded meta expectations now include empty heirs and
+shadowPool fields. The old input saves are unchanged, so these fixtures
+also check the new fields are added when an older profile is opened.
+
 Fixtures for building and testing an importer that carries browser saves
 into the Godot build. Background: the browser game stores one JSON envelope
 at localStorage key `voidsworn.v1`, shaped `{meta, run}` at SAVE_VERSION 2.
