@@ -260,3 +260,5 @@ Q4. Use the three issue 75 bake-off hulls as the calibration set for Route C (ch
 ## Owner rulings (Ryan, Nov 3, 2026)
 
 Ryan agreed with the chair picks on Q2 (drop projected paint permanently), Q3 (merge static kit parts at export, subject to the Opus feasibility check) and Q4 (calibrate on the three issue 75 hulls) (FINDINGS R82). Q1, the fleet route, is held until the issue 75 comparison sheets land so Ryan can judge by eye.
+
+Ryan, Nov 3 after the issue 75 sheets (FINDINGS R83): route B is out for machine hulls; Q1 stays open until a second Pyre-Barge comparison of three variants (A+ rich surface, clean shell plus baked AI detail, clean hull plus reused AI parts) lands.
