@@ -141,8 +141,11 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	_dmg_root.name = "fx_damage"
 	_attach(_dmg_root)
 	_hide_placeholder_engines()
-	_build_engines(fx)
-	_build_trails(fx)
+	# Detailed wings own one stern trail per moving craft. The hull analyser's
+	# single formation-sized engine would put a giant plume between the craft.
+	if not squadron or root.get("squad_kind") == null or str(root.get("squad_kind")).is_empty():
+		_build_engines(fx)
+		_build_trails(fx)
 	if shielded:
 		_build_shield(fx)
 	_last_pos = root.global_position

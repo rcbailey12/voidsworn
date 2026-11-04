@@ -23,6 +23,8 @@ extends RefCounted
 
 const POOLS := preload("res://fx/fx_pool.gd")
 const DEATH := preload("res://fx/fx_death.gd")
+const WING := preload("res://render/squadron_wing.gd")
+const CRAFT := preload("res://render/squadron_craft.gd")
 
 const LOOK_BY_ID := {
 	"battery": "macro", "hbattery": "macro", "autocannon": "auto", "turret": "las", "laser": "plasma", "turbo": "plasma",
@@ -155,7 +157,7 @@ static func _volley(fx, A, from_c: Vector3, kind: String, Tg, to_c: Vector3, opt
 			print("[fx] shot %d %s from %s hit %s (rel %s) n %s shield %s miss %s sec %s" % [i, lk, str(from), str(tgt["p"]),
 				str((tgt["p"] as Vector3) - tp), str(tgt["n"]), str(tgt.get("shield", false)), str(tgt.get("miss", false)),
 				str(hd.get("section", ""))])
-		var r = _shot(fx, lk, kind, w, i, total, from, m["n"], tgt, T0, col, fac, A, Tg, hd, ka, kt)
+		var r = _shot(fx, lk, kind, w, i, total, from, m["n"], tgt, T0, col, fac, A, Tg, hd, ka, kt, faction)
 		impacts.append(float(r[0]) - T0)
 		done = maxf(done, float(r[1]) - T0)
 		if Tg != null and hit:
@@ -194,7 +196,7 @@ static func _target(fx, Tg, to_c: Vector3, from: Vector3, hit: bool, hd: Diction
 
 # One shot: fire, travel, impact. Returns [impact time, end time] on the effect clock.
 static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Vector3, mn: Vector3, tg: Dictionary, T0: float,
-		col: Color, fac: Dictionary, A, Tg, hd: Dictionary, ka: float, kt: float) -> Array:
+		col: Color, fac: Dictionary, A, Tg, hd: Dictionary, ka: float, kt: float, faction := "voidsworn") -> Array:
 	var to: Vector3 = tg["p"]
 	var dv = to - from
 	var dist = maxf(dv.length(), 0.01)
@@ -350,7 +352,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			fx.shake(tf, 0.08, from)
 			ti = tf + dist / (650.0 * fx.unit)
 		"guns", "bombs", "sporeb":
-			ti = _strafe(fx, lk, from, to, T0 + i * 0.15, col, fac, ka, kt, i)
+			ti = _strafe(fx, lk, from, to, T0 + i * 0.15, col, fac, ka, kt, i, faction)
 		_:
 			ti = T0 + 0.3
 	if tend < ti:
@@ -470,6 +472,7 @@ static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
 
 static func update(fx, dt: float) -> void:
 	_lanes_update(fx)
+	_craft_update(fx, dt)
 	var list: Array = fx.dstate.get("proj", [])
 	if list.is_empty():
 		return
@@ -606,7 +609,7 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 
 
 # Strike craft: a loose formation flies a strafing run past the target, firing as it goes.
-static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: Color, fac: Dictionary, ka: float, kt: float, i: int) -> float:
+static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: Color, fac: Dictionary, ka: float, kt: float, i: int, faction := "voidsworn") -> float:
 	var d = (to - from)
 	var dist = maxf(d.length(), 1.0)
 	var dir = d / dist
@@ -620,9 +623,8 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 	var timp = t0 + (to.distance_to(start) - 6.0) / spd
 	for c in 3:
 		var off = side * (c - 1) * 1.2 + Vector3(0, (c % 2) * 0.6, 0)
-		fx.spr(start + off, t0 + c * 0.04, life, eng, 4.0, 2.4, 2.4, 23, vel)
-		# a short vapour trail riding with each craft, so a wing reads as moving lights at battle zoom
-		fx.stk(start + off, t0 + c * 0.04, life, eng, 3.0, 7.0, 0.35, 0, vel)
+		var kind := "spore" if faction == "chorus" or lk == "sporeb" else ("bomber" if lk == "bombs" else "fighter")
+		_craft_run(fx, faction, kind, start + off, end + off, t0 + c * 0.04, life, 2.4)
 		# craft fire: miniature tracers, bombs or spore sacs
 		for s in 3:
 			var tsh = timp - 0.35 + s * 0.08 + c * 0.03
@@ -638,6 +640,40 @@ static func _strafe(fx, lk: String, from: Vector3, to: Vector3, t0: float, col: 
 				_:
 					fx.stk(ps, tsh, (to - ps).length() / 260.0, col.lerp(Color.WHITE, 0.3), 10.0, 3.5, 0.35, 0, dd * 260.0)
 	return timp + (0.3 if lk == "bombs" else 0.1)
+
+
+# Launch and attack passes use the same faction geometry as the parked wing.
+# fx.now owns these runs, including accelerated playback and deterministic probes.
+static func _craft_run(fx, faction: String, kind: String, from: Vector3, to: Vector3, t0: float, life: float, size: float) -> void:
+	var node := WING.new()
+	node.name = "fx_strike_craft"
+	fx.add_child(node)
+	node.setup(faction, kind, size, 1, t0 * 3.0)
+	node.set_process(false)
+	node.visible = false
+	var runs: Array = fx.dstate.get("craft_runs", [])
+	runs.append({"node": node, "a": from, "b": to, "t0": t0, "life": maxf(life, 0.05)})
+	fx.dstate["craft_runs"] = runs
+
+static func _craft_update(fx, dt: float) -> void:
+	var runs: Array = fx.dstate.get("craft_runs", [])
+	for i in range(runs.size() - 1, -1, -1):
+		var r: Dictionary = runs[i]
+		var age: float = fx.now - float(r.t0)
+		var node: Node3D = r.node
+		if age > float(r.life) + 0.65:
+			node.queue_free()
+			runs.remove_at(i)
+			continue
+		if age < 0.0: continue
+		var progress := clampf(age / float(r.life), 0.0, 1.0)
+		var dir: Vector3 = (r.b - r.a).normalized()
+		node.visible = true
+		node.active = age < float(r.life)
+		for c in node.craft: c.visible = node.active
+		node.position = (r.a as Vector3).lerp(r.b, progress)
+		node.rotation.y = atan2(-dir.z, dir.x)
+		node.step(dt)
 
 
 # ---------------------------------------------------------------- impacts
@@ -981,9 +1017,10 @@ static func launch(fx, cid: String, sid: String) -> void:
 	for i in 6:
 		var t0 = T + 0.3 + i * 0.25
 		var d = (to - from)
-		var life = d.length() / 60.0
-		fx.spr(from, t0, life, eng, 1.6, 1.2, 1.2, 23, d / life)
-		fx.stk(from, t0, life, eng, 2.0, 3.0, 0.15, 0, d.normalized() * 60.0)
+		var life = maxf(d.length() / 60.0, 0.05)
+		var kind: String = str(S.root.get("squad_kind")) if S != null and S.root.get("squad_kind") != null else CRAFT.DEFAULT_KIND.get(C.faction, "fighter")
+		var off := Vector3(0, (i % 2) * 0.3, (i % 3 - 1) * 0.65)
+		_craft_run(fx, C.faction, kind, from + off, to + off, t0, life, 2.4)
 
 
 # ---------------------------------------------------------------- travelling torpedoes (B3, API.md 3 "coming")

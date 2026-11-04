@@ -3,6 +3,9 @@ extends Node3D
 # the class length, turned to its facing, with engine glows, a selection ring, and the animation of its moves.
 
 const HT := preload("res://render/hull_table.gd")
+const CRAFT := preload("res://render/squadron_craft.gd")
+const WING := preload("res://render/squadron_wing.gd")
+var squad_kind := ""
 
 var u: Dictionary
 var hull: Node3D
@@ -66,9 +69,20 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	code = HT.code_for(fac, cls)
 	var squad := cls == "Squadron" or bool(u.get("squadron", false))
 	if squad:
-		# a strike-craft wing: the game's craft hull for its kind (fighter, bomber, spore), drawn as a small formation
-		code = HT.AI_HULLS.get("craft|" + str(u.get("tpl", "fighter")), "S1_51")
+		squad_kind = CRAFT.kind_for(u)
+		code = fac + "|" + squad_kind
 		L = HT.CLS_LEN["Squadron"] * HT.SHIP_K * 1.5
+		bob_seed = float(posmod(hash(str(u.get("id", "wing"))), 10000)) / 1000.0
+		hull = WING.new()
+		hull.name = "hull"
+		add_child(hull)
+		hull.setup(fac, squad_kind, L, 6 if fac == "chorus" else 4, bob_seed)
+		_collect(hull)
+		_ring()
+		position = world_pos
+		cur_yaw = yaw_of(u.get("facing", 0))
+		rotation.y = cur_yaw
+		return
 	if u.has("code"):
 		code = str(u["code"])
 		L = float(u.get("L", L))
@@ -112,13 +126,6 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	_collect(hull)
 	_look()
 	_fit()
-	if squad:
-		for off in [Vector3(-L * 1.3, 0.3, L * 1.1), Vector3(-L * 1.3, -0.3, -L * 1.1), Vector3(-L * 2.5, 0.0, 0.0)]:
-			var wing: Node3D = hull.duplicate()
-			wing.position = hull.position + off
-			add_child(wing)
-			wings.append([wing, wing.position])
-			_collect(wing)
 	_engines()
 	_ring()
 	position = world_pos
@@ -150,6 +157,8 @@ func _look() -> void:
 
 func _collect(n: Node) -> void:
 	for c in n.get_children():
+		if String(c.name).begins_with("fx_"):
+			continue
 		if c is MeshInstance3D:
 			meshes.append(c)
 		_collect(c)
@@ -461,7 +470,6 @@ var _prev_yaw := 0.0
 var _yaw_v := 0.0
 var _yaw_a := 0.0
 var _puff_cd := {}
-var wings: Array = []         # strike craft beside the lead hull: [node, rest offset]
 var puffs: Array = []
 
 
@@ -1236,6 +1244,8 @@ func _process(dt: float) -> void:
 		path_dur = 0.0
 		glide = false
 		thrust = 0.0
+	if not squad_kind.is_empty():
+		hull.active = not dead and visible
 	if path_dur > 0.0 and glide:
 		_glide_step(dt)
 	elif path_dur > 0.0 and not segs.is_empty():
@@ -1262,7 +1272,7 @@ func _process(dt: float) -> void:
 			visible = false
 		return
 	# Sparse matched station-keeping jets, independent of the smooth flight curve.
-	if not dead and visible and path_dur <= 0.0:
+	if not dead and visible and path_dur <= 0.0 and squad_kind.is_empty():
 		var idle_t := Time.get_ticks_msec() / 1000.0
 		if idle_t >= float(_puff_cd.get("idle_at", 0.0)):
 			_side_puffs(1.0 if sin(idle_t + bob_seed) > 0.0 else -1.0, 0.32)
@@ -1276,11 +1286,5 @@ func _process(dt: float) -> void:
 	for e in engines:
 		(e as Sprite3D).visible = not fx_engines and not dead
 		(e as Sprite3D).pixel_size = L * 0.0009 * eg
-	# strike craft trail the lead a beat behind while it moves, closing up when it stops
-	var spd := clampf(_vel.length() / maxf(L * 1.5, 1.0), 0.0, 1.0)
-	for wi in wings.size():
-		var wv: Array = wings[wi]
-		var back: Vector3 = (wv[1] as Vector3) - Vector3(1, 0, 0) * spd * L * 0.9 * (1.0 + float(wi) * 0.5)
-		(wv[0] as Node3D).position = (wv[0] as Node3D).position.lerp(back, clampf(dt * 4.0, 0.0, 1.0))
 	if ring.visible:
 		ring.rotation.y = -rotation.y
