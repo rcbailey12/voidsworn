@@ -66,3 +66,5 @@ Heavy work runs on Ryan's PC (RTX 5080) through the test runner: AI models, Blen
 runner works and its pitfalls are in `HANDOFF.md` ("Gotchas") and `docs/ship_pipeline/README.md`.
 
 `CLAUDE.md` holds the same rules for Claude. Keep the two in step.
+
+Time estimates (Ryan, Nov 4 10:40 CST, FINDINGS R99): never estimate in human hours; every human-hour estimate so far has been wildly off, because the work is done by agents, not people. Estimate in Codex runs (one run is capped at one hour; Nov 4 runs took 11 to 60 minutes, and a heavy GPU bake-off can need two), plus the number of Ryan review rounds, and base it on the board's own history (board\issue-N timestamps and PR times), not on what a human artist would spend. Say what drives the count (GPU bakes, retries, review rounds).
