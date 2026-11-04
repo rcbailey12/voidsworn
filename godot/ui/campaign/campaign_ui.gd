@@ -575,7 +575,7 @@ func _map() -> Control:
 		pv.add_child(caps(("Elite fleet" if n["type"] == "elite" else "Next fight") + " · " + str(C.FACTIONS[fac]["n"] if C.FACTIONS.has(fac) else ""), 11, fac_col(fac)))
 		pv.add_child(rich(t, 14)); prev.add_child(p)
 	main.add_child(prev)
-	var hint = c("Choose a pulsing stop to jump there. You can only move forward along the lanes.", BONE3)
+	var hint = c("Gold: next choices. Blue: still reachable. Faint: bypassed. Click a pulsing stop to fly; click again to skip.", BONE3)
 	if use_3d_map: hint += c("   ·   scroll to zoom, right-drag to pan, Home to reset", Color(BONE3, 0.8))
 	main.add_child(rich(hint, 14))
 	hb.add_child(_side())
