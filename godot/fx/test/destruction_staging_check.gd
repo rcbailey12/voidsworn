@@ -60,13 +60,16 @@ func _run() -> void:
 			_check(s._eng_cur < 0.02, "engines extinguish before split")
 			for m in s.get_meta("death_power", []):
 				_check(float(m.get_shader_parameter("fx_power")) < 0.01, "running-light emission extinguishes")
-			_check(fx.flash_log.size() == before, "no cook-off flashes before the split")
+			_check(fx.flash_log.size() - before == (0 if calm else 1), "one counted vent ignition before the split, none in calm mode")
 			if not s.death_big:
 				_check(s.meshes[0].transform != mesh_pose, "small hull spins before break")
 				_check(s.root.transform == root_pose, "death spin does not move the rules/view root")
 				_check(fx._pauses.is_empty() and fx._death_slow_left == 0.0, "small kills have no hit pause/slow motion")
 			await _advance(fx, (1.45 if s.death_big else 0.55))
-			_check(fx.flash_log.size() - before == 0 if calm else fx.flash_log.size() - before in ([1, 2, 3] if s.death_big else [1]), "bounded baked flash sequence")
+			_check(fx.flash_log.size() - before == 0 if calm else fx.flash_log.size() - before in ([2, 3, 4] if s.death_big else [2]), "bounded vent and core flash sequence")
+			var warm := {}
+			for wreck in fx.dstate.wrecks:
+				for mat in wreck.mats: warm[mat] = float(mat.get_shader_parameter("heat"))
 			await _advance(fx, 3.6)
 			_check(not s.meshes[0].visible, "live hull replaced after split")
 			_check(fx.dstate["wrecks"].size() == 1, "one lingering wreck record per kill")
@@ -85,7 +88,7 @@ func _run() -> void:
 			if s.weight > 0:
 				_check(not w["nodes"].is_empty(), "small ship retains a tumbling hull chunk")
 				for m in w["mats"]:
-					_check(float(m.get_shader_parameter("heat")) < 0.7, "wreck ember cools")
+					_check(float(m.get_shader_parameter("heat")) < float(warm.get(m, 1.0)), "wreck ember cools from its own release time")
 				for f in w["fires"]:
 					if f.has("cool"):
 						_check(float(f["mat"].get_shader_parameter("gate")) > 0.5, "slow coals survive the initial flames")

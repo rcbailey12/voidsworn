@@ -40,20 +40,32 @@ shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_opaque;
 global uniform float fx_gain;
 uniform float heat = 1.0;
+uniform bool organic = false;
+uniform float section_scale = 1.0;
 varying vec3 slag_p;
 varying vec2 slag_band;
 void vertex() { slag_p = VERTEX; slag_band = COLOR.rg; }
 float grain(vec3 p) { return fract(sin(dot(floor(p), vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
 void fragment() {
-	float n = grain(slag_p * 31.0);
-	float coarse = 0.5 + 0.25 * sin(dot(slag_p, vec3(8.7, 3.1, 6.3))) * sin(dot(slag_p, vec3(2.3, 12.1, 4.7)));
+	vec3 p = slag_p / max(section_scale, 0.001);
+	float n = grain(p * 160.0);
+	float coarse = 0.5 + 0.25 * sin(dot(p, vec3(38.7, 13.1, 26.3))) * sin(dot(p, vec3(12.3, 52.1, 24.7)));
 	float band = clamp(slag_band.x, 0.0, 1.0);
-	vec3 base = mix(vec3(0.025, 0.017, 0.012), vec3(0.006, 0.004, 0.003), band) * (0.55 + coarse * 0.65 + n * 0.25);
-	float rim = clamp(slag_band.y, 0.0, 1.0) * smoothstep(0.35, 0.8, n);
+	bool rib = band > 0.4 && band < 0.6;
+	vec3 base = mix(vec3(0.045, 0.032, 0.026), vec3(0.014, 0.011, 0.012), band);
+	if (rib) { base = vec3(0.068, 0.056, 0.048); }
+	if (organic) {
+		float fibre = pow(abs(sin(dot(p, vec3(41.0, 67.0, 29.0)) + coarse * 8.0)), 6.0);
+		base = mix(vec3(0.025, 0.005, 0.013), vec3(0.085, 0.018, 0.031), coarse * 0.7 + fibre * 0.3);
+		if (rib) { base = vec3(0.20, 0.15, 0.085) * (0.65 + coarse * 0.35); }
+	}
+	base *= 0.65 + coarse * 0.55 + n * 0.2;
+	float rim = clamp(slag_band.y, 0.0, 1.0) * smoothstep(0.25, 0.75, n);
 	float hot = clamp(heat, 0.0, 1.0);
-	vec3 metal = mix(vec3(0.38, 0.035, 0.018), vec3(0.95, 0.40, 0.09), smoothstep(0.2, 0.65, hot));
-	metal = mix(metal, vec3(0.94, 0.84, 0.64), smoothstep(0.65, 1.0, hot));
-	ALBEDO = base + metal * rim * hot * hot * 0.85 * fx_gain;
+	float temperature = hot * hot;
+	vec3 metal = mix(vec3(0.38, 0.035, 0.018), vec3(0.95, 0.40, 0.09), smoothstep(0.2, 0.65, temperature));
+	metal = mix(metal, vec3(0.94, 0.84, 0.64), smoothstep(0.65, 1.0, temperature));
+	ALBEDO = base + (organic ? vec3(0.0) : metal * rim * temperature * 3.2 * fx_gain);
 }
 """
 
@@ -156,12 +168,15 @@ static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life
 	m.set_shader_parameter("intensity", strength)
 	m.set_shader_parameter("plasma", 1.0 if kind == "flash" else 0.0)
 	m.set_shader_parameter("directional", 1.0 if kind == "vent" else 0.0)
+	# The simulation occupies only about a fifth of each baked cell. Sampling
+	# its padded cell made a nominal 70-pixel core just 13 pixels wide.
+	m.set_shader_parameter("atlas_rect", Vector4(0.36, 0.40, 0.28, 0.44) if kind == "vent" else Vector4(0.38, 0.38, 0.24, 0.24))
 	m.set_shader_parameter("tear_normal", n)
 	m.set_shader_parameter("velocity", velocity)
 	m.set_shader_parameter("min_pixels", 70.0 if kind == "flash" else 0.0)
 	mi.material_override = m
 	fx.add_child(mi)
-	mi.global_position = p + (n * size * 0.225 if kind == "vent" else Vector3.ZERO)
+	mi.global_position = p + (n * size * 0.42 if kind == "vent" else Vector3.ZERO)
 	fx.later(fx.now + life + 0.1, fx.free_effect.bind(weakref(mi)))
 	return mi
 
@@ -508,7 +523,7 @@ static func precompute(fx, s, cause := "blast") -> void:
 		for si in mi.mesh.get_surface_count():
 			var mat: Material = mi.get_active_material(si)
 			surfs.append({"arrays": s.current_arrays(mi, si), "xf": xf, "mat": mat, "fmt": (mi.mesh as ArrayMesh).surface_get_format(si) if mi.mesh is ArrayMesh else 0})
-	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "out": null}
+	var job = {"seeds": seeds, "surfs": surfs, "cause": cause, "organic": s.faction == "chorus", "out": null}
 	s.set_meta("cut_job", job)
 	_init_dirs()
 	var tid = WorkerThreadPool.add_task(func() -> void:
@@ -553,13 +568,15 @@ static func _piece_mesh(pc: Dictionary, weathered := false) -> ArrayMesh:
 	var am = ArrayMesh.new()
 	for sd in pc["surfs"]:
 		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, sd["arrays"], [], {}, int(sd.get("fmt", 0)) & Mesh.ARRAY_FLAG_COMPRESS_ATTRIBUTES)
-		var hull_mat := HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, 1.0)
+		var hull_mat := HULL.damage_material(sd["mat"], Transform3D.IDENTITY, {}, float(pc.get("section_scale", 1.0)), bool(pc.get("organic", false)))
 		hull_mat.set_shader_parameter("fx_power", 0.0)
 		hull_mat.set_shader_parameter("fx_weather", 0.8 if weathered else 0.0)
 		am.surface_set_material(am.get_surface_count() - 1, hull_mat)
 	if pc.has("cap"):
 		var mat := ShaderMaterial.new()
 		mat.shader = HULL.shared_shader(SLAG)
+		mat.set_shader_parameter("organic", pc.get("organic", false))
+		mat.set_shader_parameter("section_scale", pc.get("section_scale", 1.0))
 		am.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, pc["cap"])
 		am.surface_set_material(am.get_surface_count() - 1, mat)
 		pc["cap_mat"] = mat
@@ -571,7 +588,7 @@ static func _cut(job: Dictionary) -> Array:
 	var ns = seeds.size()
 	var pieces: Array = []
 	for c in ns:
-		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0})
+		pieces.append({"surfs": [], "pts": PackedVector3Array(), "edge": PackedVector3Array(), "n": 0, "organic": job.get("organic", false)})
 	for sd in job["surfs"]:
 		var arr: Array = sd["arrays"]
 		var xf: Transform3D = sd["xf"]
@@ -702,6 +719,7 @@ static func _seal_piece(pc: Dictionary) -> void:
 				first = false
 			else: bounds = bounds.expand(p)
 	if first: return
+	pc["section_scale"] = bounds.size.length()
 	var quantum := maxf(bounds.size.length() * 0.000001, 0.000001)
 	for sd in pc["surfs"]:
 		var pts: PackedVector3Array = sd["arrays"][Mesh.ARRAY_VERTEX]
@@ -808,14 +826,50 @@ static func _cap_outline(cap: Dictionary, outline: PackedVector3Array, bounds: A
 		_cap_tri(cap, inset[indices[i]], inset[indices[i + 1]], inset[indices[i + 2]], Color(0.9, 0.015, 0, 1))
 	for i in outline.size():
 		var j := (i + 1) % outline.size()
-		_cap_tri(cap, outline[i], outline[j], inset[j], Color(0.25, 0.18, 0, 1))
-		_cap_tri(cap, outline[i], inset[j], inset[i], Color(0.25, 0.18, 0, 1))
+		_cap_tri(cap, outline[i], outline[j], inset[j], Color(0.25, 1.0, 0, 1))
+		_cap_tri(cap, outline[i], inset[j], inset[i], Color(0.25, 1.0, 0, 1))
 		# Sparse short, offset spars. Never connect them all to a common centre.
 		if i % maxi(1, outline.size() / 4) == 0 and outline[i].distance_to(outline[j]) > quantum * 3.0:
 			var a := outline[i].lerp(outline[j], 0.42) + inward * depth * 0.45
 			var tangent := (outline[j] - outline[i]).normalized()
 			_cap_rib(cap, a, a + tangent * radius * 0.12 + inward * depth * 0.35, -inward, maxf(radius * 0.012, quantum * 2.0))
+	# Short cross members sit on the solid face. Clip each one to the real
+	# outline so decks and bone ribs cannot stick outside a narrow fragment.
+	if radius > bounds.size.length() * 0.025:
+		_section_structure(cap, polygon, centre, x, y, inward, depth, radius, bool(pc.get("organic", false)))
 	pc["cap_loops"] = int(pc["cap_loops"]) + 1
+
+
+static func _section_structure(cap: Dictionary, polygon: PackedVector2Array, centre: Vector3, x: Vector3, y: Vector3, inward: Vector3, depth: float, radius: float, organic: bool) -> void:
+	var lo := polygon[0]
+	var hi := lo
+	for p in polygon:
+		lo = lo.min(p); hi = hi.max(p)
+	for vertical in ([false] if organic else [false, true]):
+		for row in 3:
+			var level := lerpf(lo.x if vertical else lo.y, hi.x if vertical else hi.y, float(row + 1) / 4.0)
+			var hits: Array[float] = []
+			for i in polygon.size():
+				var a := polygon[i]
+				var b := polygon[(i + 1) % polygon.size()]
+				var av := a.x if vertical else a.y
+				var bv := b.x if vertical else b.y
+				if (av <= level and bv > level) or (bv <= level and av > level):
+					var p := a.lerp(b, (level - av) / (bv - av))
+					hits.append(p.y if vertical else p.x)
+			hits.sort()
+			for i in range(0, hits.size() - 1, 2):
+				var a := Vector2(level, hits[i]) if vertical else Vector2(hits[i], level)
+				var b := Vector2(level, hits[i + 1]) if vertical else Vector2(hits[i + 1], level)
+				a = a.lerp(b, 0.08); b = b.lerp(a, 0.08)
+				var pa := centre + x * a.x * 0.982 + y * a.y * 0.982 + inward * depth * 0.72
+				var pb := centre + x * b.x * 0.982 + y * b.y * 0.982 + inward * depth * 0.72
+				var width := minf(radius * 0.018, a.distance_to(b) * 0.045)
+				if organic:
+					var mid := pa.lerp(pb, 0.5) - inward * radius * 0.035
+					_cap_bone(cap, pa, mid, -inward, width, width * 1.3)
+					_cap_bone(cap, mid, pb, -inward, width * 1.3, width * 0.65)
+				else: _cap_rib(cap, pa, pb, -inward, width)
 
 
 static func _cap_tri(cap: Dictionary, a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
@@ -836,6 +890,26 @@ static func _cap_rib(cap: Dictionary, a: Vector3, b: Vector3, n: Vector3, width:
 	for f in [[0, 1, 2, 3], [4, 7, 6, 5], [0, 4, 5, 1], [1, 5, 6, 2], [2, 6, 7, 3], [3, 7, 4, 0]]:
 		_cap_tri(cap, p[f[0]], p[f[1]], p[f[2]], Color(0.45, 0.1, 0, 1))
 		_cap_tri(cap, p[f[0]], p[f[2]], p[f[3]], Color(0.45, 0.1, 0, 1))
+
+
+static func _cap_bone(cap: Dictionary, a: Vector3, b: Vector3, n: Vector3, wa: float, wb: float) -> void:
+	if a.distance_squared_to(b) < 1e-12: return
+	var side := (b - a).normalized().cross(n).normalized()
+	var up := side.cross((b - a).normalized())
+	var ra := PackedVector3Array()
+	var rb := PackedVector3Array()
+	var col := Color(0.45, 0.0, 0.0, 1.0)
+	for i in 6:
+		var radial := side * cos(TAU * i / 6.0) + up * sin(TAU * i / 6.0)
+		ra.append(a + radial * wa)
+		rb.append(b + radial * wb)
+	for i in 6:
+		var j := (i + 1) % 6
+		_cap_tri(cap, ra[i], ra[j], rb[j], col)
+		_cap_tri(cap, ra[i], rb[j], rb[i], col)
+	for i in range(1, 5):
+		_cap_tri(cap, ra[0], ra[i + 1], ra[i], col)
+		_cap_tri(cap, rb[0], rb[i], rb[i + 1], col)
 
 
 # ---------------------------------------------------------------- the death
@@ -864,6 +938,7 @@ static func _death_inner(fx, s, cause: String) -> float:
 		s.set_meta("death_hulk", false)
 		s.set_meta("death_split", T + 0.35)
 		s.set_meta("death_spore_next", T)
+		if "_vel" in s.root: s.set_meta("death_velocity", s.root.get("_vel"))
 		if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 			precompute(fx, s, "rupture")
 		fx.later(T + 0.35, func() -> void: _break_up_when_ready(fx, s, "rupture", s.fac.damage_glow, T + 2.85))
@@ -921,7 +996,7 @@ static func _power_down(s) -> void:
 			if source is ShaderMaterial and source.has_meta("fx_hull_source"):
 				mat = source.duplicate()
 			else:
-				mat = HULL.damage_material(source, inv * mi.global_transform, {}, s.hull.L)
+				mat = HULL.damage_material(source, inv * mi.global_transform, {}, s.hull.L, s.faction == "chorus")
 			mat = power_material(mat)
 			mat.set_shader_parameter("death_span", Vector2(s.hull.box.position.x, s.hull.L))
 			prepared.append(mat)
@@ -940,7 +1015,11 @@ static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
 	var p: Vector3 = pose * lp
 	var n: Vector3 = (pose.basis * ln).normalized()
 	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
-	flipbook(fx, p, n, s.hull.L * 0.70, "vent", 0.75 if s.death_big else 0.35, inherited + n * s.hull.L * 0.06, 1.0, atlas_band(s.hull.L))
+	var jet := flipbook(fx, p, n, s.hull.L * 0.85, "vent", 0.65 if s.death_big else 0.30, inherited + n * s.hull.L * 0.12, 1.3, atlas_band(s.hull.L))
+	# The ignition and its light share one booking. Calm mode keeps dark gas.
+	if fx.flash_ok(fx.now):
+		(jet.material_override as ShaderMaterial).set_shader_parameter("ignition", 1.0)
+		fx.light(p, fx.now, 0.10, 5.0, Color(0.7, 0.81, 1.0), 0)
 	tear_particles(fx, p, n, s.hull.L, inherited)
 
 
@@ -1168,7 +1247,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		var piece_mats: Array = []
 		if pc.has("cap_mat"):
 			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 0.0)
-			if fx.quality == "max" and not organic: piece_mats.append(pc["cap_mat"])
+			if fx.quality != "low" and not organic: piece_mats.append(pc["cap_mat"])
 		wreck["mats"].append_array(piece_mats)
 		wreck["nodes"].append(node)
 		var face_view := Vector3(0, 1, 1).normalized()
@@ -1243,8 +1322,9 @@ static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: 
 	if not p.is_finite() or R <= 0.0: return
 	# Only this booking can produce a bright baked flash or its event light.
 	if fx.flash_ok(fx.now):
-		flipbook(fx, p, Vector3.UP, R * 5.0, "flash", 0.32, Vector3.ZERO, 4.0, atlas_band(R / 0.16))
-		fx.light(p, fx.now, 0.16, 7.0, Color(0.65, 0.75, 0.91), 0)
+		var flash := flipbook(fx, p, Vector3.UP, R * 3.0, "flash", 0.20, Vector3.ZERO, 6.0, atlas_band(R / 0.16))
+		(flash.material_override as ShaderMaterial).set_shader_parameter("min_pixels", px)
+		fx.light(p, fx.now, 0.12, 9.0, Color(0.65, 0.75, 0.91), 0)
 	else:
 		flipbook(fx, p, Vector3.UP, R * 2.8, "cool", 0.65, Vector3.ZERO, 0.5, atlas_band(R / 0.16))
 

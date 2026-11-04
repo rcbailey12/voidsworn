@@ -60,6 +60,25 @@ func _run() -> void:
 		var c := Vector2(p[i + 2].y, p[i + 2].z)
 		area += absf((b - a).cross(c - a)) * 0.5
 	_check(absf(area - 7.0 * 0.982 * 0.982) < 0.001, "concave cap covers exactly the recessed outline")
+	# Older single-surface hulls and Chorus share the cutter, but never the
+	# same interior appearance. Real closed geometry backs their thin skin.
+	for organic in [false, true]:
+		var shell := PlaneMesh.new()
+		shell.size = Vector2(12, 6)
+		shell.subdivide_width = 11; shell.subdivide_depth = 5
+		var chunks := DEATH._cut({"seeds": PackedVector3Array([Vector3(-3, 0, 0), Vector3(3, 0, 0)]), "organic": organic,
+			"surfs": [{"arrays": shell.get_mesh_arrays(), "xf": Transform3D.IDENTITY, "mat": StandardMaterial3D.new()}]})
+		for chunk in chunks:
+			_check(chunk.has("cap"), "single-sided fragment gets a solid recessed back")
+			if not chunk.has("cap"): continue
+			var edges := {}
+			for sd in chunk.surfs: _count_edges(edges, sd.arrays)
+			_count_edges(edges, chunk.cap)
+			_check(edges.values().all(func(n): return int(n) % 2 == 0), "thin shell and internal structure have no open edges")
+			var mesh := DEATH._piece_mesh(chunk)
+			_check(chunk.cap_mat.get_shader_parameter("organic") == organic, "Chorus cap uses flesh and bone")
+			_check(mesh.surface_get_material(0).get_shader_parameter("fx_organic") == organic, "cap and hull backs agree on interior type")
+			_check(float(chunk.cap_mat.get_shader_parameter("section_scale")) > 1.0, "interior grain follows hull scale")
 	# The material keeps actual imported texture resources and never nests wrappers.
 	var material := ORMMaterial3D.new()
 	material.albedo_color = Color(0.2, 0.3, 0.4)
@@ -72,6 +91,15 @@ func _run() -> void:
 	var again := HULL.damage_material(mat, Transform3D.IDENTITY, {}, 24.0)
 	_check(again.get_meta("fx_hull_source") == material, "no wrapper stacking")
 	var hole := BREACH.hole(null, Vector3.ZERO, Vector3.UP, 1.0, 0.8, 0.1, 73.0)
+	# A deep art socket on a thin hull must not grow a visible box underneath.
+	hole.cut = 0.12
+	for wound in [0, 1, 2, 3]:
+		var inside := BREACH.Part.new()
+		BREACH._throat(inside, hole, wound)
+		var fits := true
+		for p in inside.pos:
+			if (hole.c - p).dot(hole.n) > hole.cut + 0.00001: fits = false
+		_check(fits, "breach backing and ribs stay before the far wall")
 	var mouth := BREACH._mouth_uniforms([hole])
 	var cut := HULL.damage_material(material, Transform3D.IDENTITY, mouth, 24.0)
 	_check(cut.get_shader_parameter("fx_mouth_count") == 1, "live breach has a shader cut")

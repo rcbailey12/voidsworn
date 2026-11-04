@@ -101,6 +101,11 @@ class Ent:
 	# how it was made (marks_for), so a repeat hit can rebuild it bigger instead of stacking a twin
 	var look := ""
 	var wt := 2
+
+	func recess_depth() -> float:
+		# Keep the ruled breach depth. Its solid backing must fit before the
+		# far wall, including on very thin older hulls.
+		return minf(D, cut * 0.7) if kind == K_HOLE else D
 	var ldir := Vector3.ZERO
 	var part_i := 0
 	var grow := 1.0
@@ -476,8 +481,9 @@ static func cup_at(P: Vector3, E: Ent, ents: Array) -> Vector3:
 	var d := P - E.c
 	var e := E.edge(d.dot(E.t1), d.dot(E.t2))
 	var deep := smoothstep(E.w * 0.9, -minf(E.R, E.w) * 0.45, e)
-	var rubble := E.D * 0.14 * _nz(P * (6.0 / maxf(E.R, 1e-3)) + Vector3(E.p[1], E.p[2], E.p[3])) * deep
-	return P + buckle_at(P, ents) - E.n * (E.th + E.D * deep + rubble)
+	var depth := E.recess_depth()
+	var rubble := depth * 0.14 * _nz(P * (6.0 / maxf(E.R, 1e-3)) + Vector3(E.p[1], E.p[2], E.p[3])) * deep
+	return P + buckle_at(P, ents) - E.n * (E.th + depth * deep + rubble)
 
 
 # Does the triangle centred at Q lie under E's overlay skin?
@@ -1228,7 +1234,9 @@ static func _cup_tri(pt: Part, E: Ent, ents: Array, a: Vector3, b: Vector3, c: V
 # Frames (across the ship) and deck layers (level, when the hole faces sideways) sliced through a cavity: each slice of
 # the floor stood up as a wall to just under the skin, with a ragged top, some blown away.
 static func _throat(pt: Part, E: Ent, wound_kind := 0) -> void:
-	var centre := E.c - E.n * E.D
+	var first_vertex := pt.pos.size()
+	var depth := E.recess_depth()
+	var centre := E.c - E.n * depth
 	var count := 12 if wound_kind in [2, 3] else 32
 	for i in count:
 		var rings: Array = []
@@ -1255,7 +1263,7 @@ static func _throat(pt: Part, E: Ent, wound_kind := 0) -> void:
 		_quad(pt, lipa, lipb, lipb + bend, lipa + bend, (lipa - E.c).normalized(), Color(PART_SKIN, 0.6, 0, 1))
 	# Three actual cross members: 18 triangles, seated partway down the throat.
 	for j in 3:
-		var rib := E.c - E.n * E.D * (0.3 + 0.16 * j) + E.t2 * E.R * (j - 1) * 0.38
+		var rib := E.c - E.n * depth * (0.3 + 0.16 * j) + E.t2 * E.R * (j - 1) * 0.38
 		var a := rib - E.t1 * E.R * 0.9
 		var b := rib + E.t1 * E.R * 0.9
 		if wound_kind == 1:
@@ -1270,8 +1278,11 @@ static func _throat(pt: Part, E: Ent, wound_kind := 0) -> void:
 	if wound_kind == 1:
 		_tissue(pt, E)
 		for j in 3:
-			var organ := E.c - E.n * E.D * 0.6 + E.t1 * E.R * (j - 1) * 0.35
+			var organ := E.c - E.n * depth * 0.6 + E.t1 * E.R * (j - 1) * 0.35
 			_tube(pt, PackedVector3Array([organ - E.t2 * E.R * 0.12, organ + E.n * E.R * 0.06, organ + E.t2 * E.R * 0.12]), E.R * 0.14, E.R * 0.07, Color(PART_PIPE, 0.7, 0, 1))
+	for i in range(first_vertex, pt.pos.size()):
+		var behind := (E.c - pt.pos[i]).dot(E.n)
+		if behind > E.cut: pt.pos[i] += E.n * (behind - E.cut)
 
 
 static func _patch(pt: Part, E: Ent, hull) -> void:
@@ -1489,7 +1500,7 @@ static func emitters(b: POOLS.Batch, bs: POOLS.Batch, E: Ent, ents: Array, ends:
 	for j in (3 if hot else 2):
 		var an := r.randf() * TAU
 		var p := E.c + (E.t1 * cos(an) + E.t2 * sin(an)) * R * r.randf() * 0.45
-		floor_pts.append(p - E.n * maxf(E.D * 0.65, R * 0.18))
+		floor_pts.append(p - E.n * minf(maxf(E.recess_depth() * 0.65, R * 0.18), E.cut * 0.85))
 	for fp in floor_pts:
 		var P: Vector3 = fp
 		for kk in 3:
@@ -1581,7 +1592,7 @@ static func _merged(ents: Array, parts: Array, overlay: bool):
 		c0.append_array(_rep4(Vector4(E.c.x, E.c.y, E.c.z, E.R), cnt))
 		c1.append_array(_rep4(Vector4(E.n.x, E.n.y, E.n.z, E.t0), cnt))
 		# the overlay's CUSTOM2.x is the halo extent in units of R (the interior's is the cavity depth)
-		var c2x: float = (E.halo / maxf(E.R, 1e-4)) if overlay else (E.D if not E.through else E.R * 0.2)
+		var c2x: float = (E.halo / maxf(E.R, 1e-4)) if overlay else (E.recess_depth() if not E.through else E.R * 0.2)
 		c2.append_array(_rep4(Vector4(c2x, E.heat, E.seed_v, float(E.style)), cnt))
 		c3.append_array(_rep4(Vector4(E.dir.x, E.dir.y, E.dir.z, E.hl), cnt))
 	if pos.size() < 3:
@@ -1702,7 +1713,7 @@ static func _inside_overlay(fx, s, mis: Array, ents: Array, glow: Color) -> void
 		mi.material_override = null
 		for si in mi.mesh.get_surface_count():
 			var src: Material = override if override != null else mi.get_active_material(si)
-			mi.set_surface_override_material(si, HULL.damage_material(src, frame, mouths, s.hull.L))
+			mi.set_surface_override_material(si, HULL.damage_material(src, frame, mouths, s.hull.L, s.get("faction") == "chorus"))
 		if mi.has_meta("fx_inside"):
 			mi.material_overlay = null
 			mi.remove_meta("fx_inside")
@@ -1840,5 +1851,5 @@ static func _tissue(pt: Part, e: Ent) -> void:
 		var radial := e.t1 * cos(angle) + e.t2 * sin(angle)
 		for k in 9:
 			var t := k / 8.0
-			points.append(e.c + radial * e.R * (0.15 + 0.8 * t) - e.n * (e.D * 0.5 * (1.0 - t) + e.R * 0.12 * sin(t * PI)))
+			points.append(e.c + radial * e.R * (0.15 + 0.8 * t) - e.n * (e.recess_depth() * 0.5 * (1.0 - t) + e.R * 0.12 * sin(t * PI)))
 		_tube(pt, points, e.R * 0.06, e.R * 0.018, Color(PART_BONE, 0.6, 0, 1))
