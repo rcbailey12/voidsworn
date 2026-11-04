@@ -52,6 +52,32 @@ def cyl(name, center, radius, length, mat='structure', axis='Z', group='static')
     return part(hs.cyl(name, center, radius, length, axis=axis, bevel=0.08), mat, group)
 
 
+def beam(name, start, end, width=1.2, mat='structure'):
+    a, b = Vector(start), Vector(end)
+    o = box(name, (0, 0, 0), (width, width, (b - a).length), mat)
+    o.location = (a + b) * 0.5
+    o.rotation_euler = (b - a).to_track_quat('Z', 'Y').to_euler()
+    return o
+
+
+def antenna_array(name, x, y, base):
+    # Broad flat sensor panels on paired posts, rather than a naval crossbar mast.
+    box(name + '_foot', (x, y, base + 0.4), (4, 3, 1), 'armor')
+    for side in (-1, 1):
+        box(name + '_post_%s' % side, (x + side * 1.4, y, base + 1.7), (1, 1.2, 2.8))
+        box(name + '_panel_%s' % side, (x + side * 1.4, y, base + 3.2), (2.2, 1.4, 3), 'armor')
+
+
+def service_truss(name, half_length, y, base, top):
+    # Open bays over four units high. Both feet overlap real end-cap mounts.
+    for side in (-1, 1):
+        x = side * half_length
+        box(name + '_foot_%s' % side, (x, y, base), (3, 2.4, 2), 'armor')
+        beam(name + '_upright_%s' % side, (x, y, base), (x, y, top))
+        beam(name + '_brace_%s' % side, (x, y, base), (side * 6, y, top))
+    beam(name + '_header', (-half_length, y, top), (half_length, y, top), 1.4, 'armor')
+
+
 def spine():
     # The five modules touch at their bulkheads. Blunt ends never suggest a bow.
     for i, x in enumerate((-18.4, -9.2, 0, 9.2, 18.4)):
@@ -92,6 +118,20 @@ def fleet():
                 cyl(group + '_barrel_%s' % lateral, (x + 2, -4 + lateral, s * 3.4),
                     0.3, 2.5, 'armor', axis='X', group=group)
                 GUNS.append((group, Vector((1, 0, 0))))
+    # R91 shape pass only: a high service skyline leaves the working cradle clear.
+    # Keep every tower and fin behind the battery lanes at Y=-4 +/- 0.65.
+    box('control_tower_mount', (0, -6.6, 2.4), (6, 4, 1), 'armor')
+    box('control_tower', (0, -6.6, 6.4), (4.8, 3.4, 7.2))
+    box('control_tower_crown', (0, -6.6, 10.4), (6.8, 4, 2), 'armor')
+    antenna_array('control_sensors', 0, -6.6, 11.4)
+    box('secondary_tower_mount', (-18, -5, 2.5), (5, 4.8, 1), 'armor')
+    box('secondary_sensor_tower', (-18, -5, 5.4), (3.8, 3.4, 5.2))
+    antenna_array('secondary_sensors', -18, -5, 8)
+    service_truss('fleet_service_frame', 18, -7.5, 1, 8.5)
+    for side in (-1, 1):
+        x = side * 6
+        box('radiator_saddle_%s' % side, (x, -6, 2.2), (3, 4, 1), 'armor')
+        box('radiator_fin_%s' % side, (x, -8, 5.2), (1.4, 6, 5.6), 'armor')
 
 
 def refinery():
@@ -109,6 +149,14 @@ def refinery():
     for x in (-13, 13):
         box('tank_mount_%s' % x, (x, -11, -0.7), (5, 8, 2.6))
         cyl('service_tank_%s' % x, (x, -12, 1.2), 2, 4, 'armor')
+    # A taller single processing tower, with its sensors on the same structure.
+    # The truss is a low open service frame, not a second tower or a ship bow.
+    antenna_array('process_sensors', 0, 4, 13)
+    service_truss('refinery_service_frame', 18, -7.5, 1, 9.5)
+    for side in (-1, 1):
+        x = side * 13
+        box('heat_fin_saddle_%s' % side, (x, -6, 2.2), (4, 4, 1), 'armor')
+        box('heat_radiator_%s' % side, (x, -8, 6.2), (2, 6, 7.6), 'armor')
 
 
 def audit():
@@ -145,12 +193,20 @@ def audit():
     floating = [o.name for o in PARTS if o not in connected]
     assert not floating, 'Disconnected parts: ' + ', '.join(floating)
     assert all(d.x >= 0 and d.length > 0 for _, d in GUNS), 'Backward gun'
+    # The taller skyline must not obstruct the existing forward battery lanes.
+    for barrel in [o for o in PARTS if '_barrel_' in o.name]:
+        bl, bh = bounds[barrel]
+        muzzle = Vector((bh[0] + 0.01, (bl[1] + bh[1]) / 2, (bl[2] + bh[2]) / 2))
+        for o in PARTS:
+            if o['kit_group'] == 'static':
+                assert trees[o].ray_cast(muzzle, Vector((1, 0, 0)))[0] is None, ('Blocked gun', barrel.name, o.name)
     lo = [min(bounds[o][0][i] for o in PARTS) for i in range(3)]
     hi = [max(bounds[o][1][i] for o in PARTS) for i in range(3)]
     assert abs(hi[0] - lo[0] - 46) < 0.01, (lo, hi)
+    assert hi[2] >= 15, 'R91 skyline must rise above the flat blockout'
     assert all(math.isfinite(v) for v in lo + hi)
     return {'parts': len(PARTS), 'contact_edges': len(edges), 'guns': len(GUNS),
-            'bounds': [lo, hi], 'attachment_audit': 'PASS'}
+            'bounds': [lo, hi], 'attachment_audit': 'PASS', 'gun_clearance': 'PASS'}
 
 
 def merge_export(path):
@@ -246,12 +302,19 @@ def ship(path, length, center):
 
 
 def studio(out, variant, ship_root, underside_only=False):
-    station_nodes = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'
     sc.cycles.samples = 16
     sc.cycles.use_denoising = True
-    # CPU rendering is safe when the queue's GPU is needed by another job.
+    # Lane A owns the GPU for this render job. Do not fall back to CPU silently.
+    prefs = bpy.context.preferences.addons['cycles'].preferences
+    prefs.compute_device_type = 'OPTIX'
+    prefs.get_devices()
+    devices = [d for d in prefs.devices if d.type == 'OPTIX']
+    assert devices, 'Lane A station renders require an OptiX GPU'
+    for device in prefs.devices:
+        device.use = device in devices
+    sc.cycles.device = 'GPU'
     sc.render.resolution_percentage = 100
     sc.world = bpy.data.worlds.new('studio')
     sc.world.use_nodes = True
@@ -303,16 +366,8 @@ def studio(out, variant, ship_root, underside_only=False):
         refs.append(ship(p, length, center))
     cam.data.ortho_scale = 80
     render(variant + '_ships_4k.png', 205, 48, 3840, 2160)
-    # The small two-hex cluster ships at 30. Do not stretch the geometry or
-    # rescale the reference ships to conceal the Battleship overhang here.
-    small = bpy.data.objects.new('compact_station_30', None)
-    sc.collection.objects.link(small)
-    for o in station_nodes:
-        world = o.matrix_world.copy()
-        o.parent = small
-        o.matrix_world = world
-    small.scale = Vector((30 / 46,) * 3)
-    render(variant + '_compact_ships_4k.png', 205, 48, 3840, 2160)
+    # Both cluster sizes are captured by station_preview.gd with the actual
+    # perspective battle camera, rather than an orthographic studio substitute.
     return refs
 
 
@@ -328,7 +383,7 @@ def main():
             bpy.ops.wm.open_mainfile(filepath=str(args.out / (name + '_blockout.blend')))
             studio(args.out, name, args.ships, underside_only=True)
         return
-    report = {'phase': 'blockout, awaiting owner turntable approval', 'variants': {}}
+    report = {'phase': 'R91 height and silhouette blockout, awaiting owner review', 'variants': {}}
     for name, build in (('fleet', fleet), ('refinery', refinery)):
         bpy.ops.wm.read_factory_settings(use_empty=True)
         PARTS.clear()
