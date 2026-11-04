@@ -13,6 +13,7 @@ The worked example is the Pyre-Barge (C19_51). Its chain is the template for eve
 - Guns face forward or out to the side, never backward. Bow guns may face forward along the prow.
 - Hand-built parts carry the AI hull's level of surface detail (seams, grit, worn edges).
 - Shields keep faction colours (the cyan-only rule is retired). No artificial triangle caps (retired), but keep load time in mind.
+- Breakable by design (owner, Nov 4 2026, FINDINGS R98): every new or rebuilt hull ships with real hull thickness (no single-skin shells), a few internal decks and bulkheads, and two or three authored break lines with matching interior faces and damage textures, so death and damage cuts show built insides, never an empty void. Chorus hulls get flesh and bone inside instead of metal. The game-side interior fallback (#167) covers hulls built before this rule.
 
 ## Procedure
 1. **Build in Blender from a script**, never by hand edits that cannot be re-run: `tools/blender/a1/barge_v15.py` (uses `hs_lib.py`, `detail_lib.py`). Max-detail flagships: `tools/blender/a2detail/`. Cloud checks: `pip install --break-system-packages bpy` (5.2); the PC runs Blender 4.5.14, so avoid 5.x-only API.
