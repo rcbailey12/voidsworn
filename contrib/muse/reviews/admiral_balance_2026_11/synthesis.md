@@ -74,3 +74,14 @@ Argon's review is filed with a chair header and used only in part: its arithmeti
 ## 9. Not checked
 
 The Godot port's numbers (this harness drives the browser rules build, as in #87 and the v2 baseline). Human play: the baseline bot's use of scramble timing and carrier positioning is a known weak proxy for a human carrier player, which cuts toward Ashgrove being less weak in human hands, by an amount this job cannot measure. Eclipse admiral kits were not excerpted at line level in the pack; no Eclipse admiral is an outlier or a proposal target, so no line-level claim was needed. Per-seed raw outputs are not retained by the runner beyond the summary tables filed here.
+
+## 10. Owner rulings (Ryan, 2026-11-03)
+
+Ryan ruled "Agree with all chair picks" on the four owner questions in section 6, after the questions were presented with full context. The rulings:
+
+1. Ashgrove Q1 ADOPTED: add one Warden to her starting fleet at data.js:207 (reliquary, harrow, warden, warden). This also settles the Job 3 starting-fleet recomposition question in favour of recomposition.
+2. Ashgrove Q2 NOT adopted at this time: sqHp stays .25. It remains the next lever if the Q1 confirmation rerun shows her still clearly below her faction.
+3. Thale Q3 ADOPTED: trim his passive line at data.js:208, hpPct .15 to .10, on his line only. The optional shPct pairing (.10 to .05) was not part of the chair pick and is not adopted.
+4. Thale Q4 NOT adopted: the iron Command's 40 percent hull-damage reduction stands. The sharing problem stands with it: any future iron change must be scoped per admiral first, since Maren and Brin are inside their bands.
+
+Implementation note for Opus: both adopted changes are single-line data.js edits on the admirals' own lines, deliberately scoped so no other admiral moves. This job made no data.js edits itself. The confirmation measurement, when the edits land, is a Crusade-only rerun at 200 runs per admiral under this same harness, checking Ashgrove and Thale against the faction interval again.
