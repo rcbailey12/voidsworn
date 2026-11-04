@@ -1453,7 +1453,7 @@
   "category": "admiral",
   "name": "High Admiral Oryn Thale",
   "hook": "Iron doctrine: hull and shields for everyone.",
-  "body": "Oryn Thale is the Crusade made patient: iron, endurance, and the names chalked after the battle, not before. Doctrine, Iron doctrine: All ships gain +10% hull and +10% shields. Command, Iron wall: All shields refill and your ships take 40% less hull damage this round. Opens with Bastion-class battleship, Warden-class frigate. Unlocked with 80 renown.",
+  "body": "Oryn Thale is the Crusade made patient: iron, endurance, and the names chalked after the battle, not before. Doctrine, Iron doctrine: All ships gain +10% hull and +10% shields. Command, Iron wall: All shields refill and your ships take 40% less hull damage this round. Opens with Vigil-class cruiser, two Warden-class frigates. Unlocked with 80 renown.",
   "note": "Spend it at the start of the round you expect to be hit hardest, not after.",
   "source": "data.js ADMIRALS.thale; faction Sunward Crusade"
  },
