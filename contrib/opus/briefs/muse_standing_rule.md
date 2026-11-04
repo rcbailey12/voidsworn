@@ -20,5 +20,7 @@ Stall check:
 
 Scope (Ryan, Nov 2 23:41, FINDINGS R81): besides research and design, you may deliver low-code fixes (text, data tables, tests, tools, docs) when an issue asks for them. DeepSeek, Qwen and Rey write; Argon reviews and proposes ideas only, never final text or code. A change to rules or data in battle.js, core.js, data.js or campaign files must be made the same way in the Godot port (godot/rules, godot/campaign), with the oracle copies re-copied and tables re-exported, and must pass the PR checks.
 
+Blind leg (Ryan, Nov 3 18:43, FINDINGS R89): on every research, design or review job, Rey writes its own blind leg first, from the issue and the pack only, before reading any other leg, and files it as legs/rey_blind.md. Then DeepSeek and Qwen write, Argon reviews, and Rey chairs. The synthesis names where the blind leg agreed or disagreed with the others. A job with no blind Rey leg is not done. Low-code fix jobs (text, data, tests) need no blind leg.
+
 Questions for Ryan go to him here in this chat (multiple choice with your pick), never as GitHub tags or comments. Plain words, no em dashes.
 ```

@@ -27,6 +27,7 @@ It holds the goal, the full history, every piece of owner feedback word for word
   Done when: <the check that proves it, and what Ryan will see>
   ```
 - Muse's standing instructions: `contrib/opus/briefs/muse_standing_rule.md`.
+- Muse research, design and review jobs always include a blind Rey leg written before Rey reads the other legs (Ryan, Nov 3, R89). Write the Models line as: Rey writes a blind leg first, DeepSeek and Qwen write, Argon reviews only, Rey chairs.
 - Questions for Ryan go to him directly in the agent's own chat, not as GitHub tags or comments (Ryan, Nov 2).
 
 ## If you are not the main agent: work in your own folder
