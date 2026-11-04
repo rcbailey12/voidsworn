@@ -5,6 +5,7 @@ Research commissioned by Ryan's Nov 3, 2026 playtest notes (FINDINGS R88): not 1
 ## Contents
 
 - synthesis.md: the chair synthesis. Headline leaps, the verdict on Opus's hypothesis (holds for nebulas, half for planets, fails as stated for deaths), the settled design per area with build orders for Codex, the shared art direction section (including the answer to "should fire work like that in space": no, not as the default), screening notes, and five owner questions with chair picks.
+- legs/rey_leg.md: the blind Rey leg, run as an addendum at the owner's instruction after the synthesis (see synthesis section 10). It converges with the synthesis on every settled point.
 - legs/deepseek.md: DeepSeek writer leg, filed raw. Its bibliography is the verified one (Homeworld 3 damage breakdown, EVE GDC 2024, Elite Dangerous, Star Citizen).
 - legs/qwen.md: Qwen writer leg, filed with its gate line. Used where it converges with the pack and the code; its citations were fabricated and are stripped in the synthesis (see the synthesis screening notes).
 - legs/argon_review.md: Argon review with a chair screening header. Used in large part: source audit, engine corrections, and three techniques neither writer had.
