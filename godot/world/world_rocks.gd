@@ -22,6 +22,9 @@ static var _detail: Texture3D = null
 const ROCK_SHADER := """
 shader_type spatial;
 render_mode cull_back;
+// A sphere about the pose's origin bounds every orientation of this batch's mesh.
+instance uniform float rock_radius = 1.0;
+varying flat float camera_cover;
 uniform int kind = 0;
 uniform vec3 base = vec3(0.09, 0.075, 0.062);
 uniform vec3 fresh = vec3(0.16, 0.15, 0.14);
@@ -80,6 +83,10 @@ vec3 craters(vec3 p, float dens) {
 void vertex() {
 	vL = VERTEX;
 	vScale = length(MODEL_MATRIX[0].xyz);
+	float radius = rock_radius * max(vScale, max(length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz)));
+	float clearance = distance(CAMERA_POSITION_WORLD, MODEL_MATRIX[3].xyz) - radius;
+	// The battle camera's near plane is 0.5 units out. Fade the whole instance before it can cut the surface.
+	camera_cover = smoothstep(2.0, 2.0 + max(1.0, radius * 0.25), clearance);
 	vC = COLOR;
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
@@ -101,6 +108,9 @@ vec3 bump_normal(vec3 n, vec3 pos, float h, float k) {
 	return normalize(abs(det) * n - grad * k);
 }
 void fragment() {
+	// Opaque screen-door fade: keep depth and back-face culling, never draw the inside to fill a cut.
+	float screen_dither = fract(52.9829189 * fract(dot(FRAGCOORD.xy, vec2(0.06711056, 0.00583715))));
+	if (camera_cover <= screen_dither) { discard; }
 	vec3 p = vL * 2.2 + vSeed * 13.7;
 	float n1 = texture(detail, p * 0.21).r;
 	float n2 = texture(detail, p * 0.73 + 0.31).r;
@@ -212,6 +222,8 @@ void fragment() {
 const CRYSTAL_SHADER := """
 shader_type spatial;
 render_mode cull_back;
+instance uniform float rock_radius = 1.0;
+varying flat float camera_cover;
 uniform vec3 glow = vec3(0.3, 0.8, 1.0);
 uniform vec3 edge = vec3(0.7, 0.45, 1.0);
 uniform vec3 board_c = vec3(0.0);
@@ -224,6 +236,10 @@ varying float vSeed;
 vec3 rot(vec3 v, vec3 ax, float a) { float c = cos(a); float s = sin(a); return v * c + cross(ax, v) * s + ax * dot(ax, v) * (1.0 - c); }
 void vertex() {
 	vC = COLOR;
+	float scale = max(length(MODEL_MATRIX[0].xyz), max(length(MODEL_MATRIX[1].xyz), length(MODEL_MATRIX[2].xyz)));
+	float radius = rock_radius * scale;
+	float clearance = distance(CAMERA_POSITION_WORLD, MODEL_MATRIX[3].xyz) - radius;
+	camera_cover = smoothstep(2.0, 2.0 + max(1.0, radius * 0.25), clearance);
 	vec4 ic = INSTANCE_CUSTOM;
 	vSeed = ic.w;
 	float axis_length = length(ic.xyz);
@@ -236,6 +252,8 @@ void vertex() {
 	vW = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 void fragment() {
+	float screen_dither = fract(52.9829189 * fract(dot(FRAGCOORD.xy, vec2(0.06711056, 0.00583715))));
+	if (camera_cover <= screen_dither) { discard; }
 	float up = vC.g;
 	float f = pow(1.0 - clamp(abs(dot(NORMAL, VIEW)), 0.0, 1.0), 2.0);
 	ALBEDO = vec3(0.02, 0.035, 0.05);
@@ -432,6 +450,10 @@ class Batch:
 			var mmi := MultiMeshInstance3D.new()
 			mmi.multimesh = mm
 			mmi.material_override = g["mat"]
+			# Bounds about the shader's origin, including off-center crystal clusters. A rigid seeded turn cannot escape it.
+			var box := m.get_aabb()
+			var radius := box.position.abs().max(box.end.abs()).length()
+			mmi.set_instance_shader_parameter("rock_radius", radius)
 			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if g["shadow"] else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			# Give the bounds room for the shader's fixed seeded pose.
 			mmi.extra_cull_margin = 40.0

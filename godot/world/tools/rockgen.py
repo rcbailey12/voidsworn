@@ -251,6 +251,8 @@ def crystal_cluster(seed):
             c0 = (1, 0, 0, 1)
             c1 = (1, 0.75, 0, 1)
             ct = (1, 1, 0, 1)
+            # Close the prism's foot too: freely posed clusters can show their underside.
+            add_tri(base, a1, a0, c0, c0, c0)
             add_tri(a0, a1, b1, c0, c0, c1)
             add_tri(a0, b1, b0, c0, c1, c1)
             add_tri(b0, b1, tip, c1, c1, ct)
@@ -315,15 +317,15 @@ def main():
     shapes = []
     for name, fam, seed in LIB:
         P, N, C = body(seed, fam, D, F, W)
-        # glTF faces counter-clockwise seen from outside: the icosphere's are clockwise
-        write_glb(os.path.join(out, name + ".glb"), P, N, C, F[:, [0, 2, 1]], name)
+        # The icosphere is already outward counter-clockwise, matching its normals and glTF.
+        write_glb(os.path.join(out, name + ".glb"), P, N, C, F, name)
         Pl = P[:n3]
         fl = np.cross(Pl[F3[:, 1]] - Pl[F3[:, 0]], Pl[F3[:, 2]] - Pl[F3[:, 0]])
         Nl = np.zeros_like(Pl)
         for j in range(3):
             np.add.at(Nl, F3[:, j], fl)
         Nl /= np.linalg.norm(Nl, axis=1, keepdims=True) + 1e-12
-        write_glb(os.path.join(out, name + "_lo.glb"), Pl, Nl.astype(np.float32), C[:n3], F3[:, [0, 2, 1]], name + "_lo")
+        write_glb(os.path.join(out, name + "_lo.glb"), Pl, Nl.astype(np.float32), C[:n3], F3, name + "_lo")
         ext = (P.max(0) - P.min(0)).tolist()
         man["rocks"].append({"name": name, "family": fam, "ext": [round(x, 3) for x in ext]})
         shapes.append((P, F, C))
