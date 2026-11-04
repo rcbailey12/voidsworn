@@ -752,12 +752,15 @@ func blocker(p: Vector3, kind: String) -> void:
 
 func debris_field(p: Vector3, kind: String) -> void:
 	var mat := _mat(kind)
+	var pieces: Array = []
 	for i in _rng.randi_range(8, 13):
 		var a := _rng.randf() * TAU
 		var rr := sqrt(_rng.randf()) * 7.5
 		var s := 0.35 + 1.6 * pow(_rng.randf(), 2.2)
-		_batch.add(_pick(kind, _rng) + "_lo", mat, false, Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * s), p + Vector3(cos(a) * rr, _rng.randf_range(-2.5, 3.0), sin(a) * rr)),
-			_rand_axis(_rng), _rng.randf_range(0.06, 0.35), _rng.randf())
+		pieces.append({"mesh": _pick(kind, _rng), "shadow": false,
+			"xf": Transform3D(_rand_basis(_rng).scaled(Vector3.ONE * s), p + Vector3(cos(a) * rr, _rng.randf_range(-2.5, 3.0), sin(a) * rr)),
+			"axis": _rand_axis(_rng), "rate": _rng.randf_range(0.06, 0.35), "seed": _rng.randf()})
+	LIV.add_debris_rocks(_batch, pieces, mat)
 
 
 # Is a point at the board's own height over the playable area (with a margin)? Nothing but blockers and debris goes there.

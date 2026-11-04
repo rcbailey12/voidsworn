@@ -21,6 +21,8 @@ const FLOOK := preload("res://fx/faction_look.gd")
 const HD := preload("res://world/hull_debris.gd")
 var _chunk_task := -1
 var _chunk_job := {}
+var _wreck_slots: Array = []  # one replaceable kit slot per hex for issue 49's painted hull chunks
+var _hull_spin: Array = []
 var W = null                 # the world (world.gd)
 var rng := RandomNumberGenerator.new()
 var gas_mats: Array = []     # [ShaderMaterial, base alpha gain]
@@ -566,6 +568,8 @@ func _process(dt: float) -> void:
 	if not visible:
 		return
 	clock += dt
+	for spin in _hull_spin:
+		(spin[0] as Node3D).rotate(spin[1], float(spin[2]) * dt)
 	for g in gas_mats:
 		(g[0] as ShaderMaterial).set_shader_parameter("gas_time", clock)
 	_present_storm_ticks(dt)
@@ -600,9 +604,11 @@ func _debris(ps: Array) -> void:
 	var hot := ShaderMaterial.new()
 	hot.shader = wsh
 	hot.set_shader_parameter("hot", 1.0)
-	var shards := {}     # "mesh|mat" -> [Transform3D]
+	var shards := {}     # "mesh|mat" -> [{xf, cd}]
+	var slots: Array = []
 	var n_dust := 0
 	for p in ps:
+		var rocks: Array = []
 		for i in (rng.randi_range(8, 12) if low else rng.randi_range(15, 22)):
 			var a := rng.randf() * TAU
 			var rr := sqrt(rng.randf()) * 8.6
@@ -610,10 +616,13 @@ func _debris(ps: Array) -> void:
 			var nm: String = W._pick(kind, rng)
 			if nm == "":
 				break
-			batch.add(nm + "_lo" if s < 1.2 else nm, mat, s > 1.8, Transform3D(W._rand_basis(rng).scaled(Vector3.ONE * s), (p as Vector3) + Vector3(cos(a) * rr, rng.randf_range(-3.5, 4.0), sin(a) * rr)),
-				W._rand_axis(rng), rng.randf_range(0.05, 0.3), rng.randf())
+			rocks.append({"mesh": nm, "shadow": s > 1.8,
+				"xf": Transform3D(W._rand_basis(rng).scaled(Vector3.ONE * s), (p as Vector3) + Vector3(cos(a) * rr, rng.randf_range(-3.5, 4.0), sin(a) * rr)),
+				"axis": W._rand_axis(rng), "rate": rng.randf_range(0.05, 0.3), "seed": rng.randf()})
+		add_debris_rocks(batch, rocks, mat)
 		# step 2: wreckage that reads as wreckage: mostly mid-size pieces, and often one big one that carries the patch's
 		# silhouette at battle distance
+		var last_slot := {}
 		for i in rng.randi_range(3, 5) + (1 if rng.randf() < 0.55 else 0):
 			var a := rng.randf() * TAU
 			var rr := sqrt(rng.randf()) * 7.0
@@ -624,25 +633,38 @@ func _debris(ps: Array) -> void:
 				shards[key] = []
 			var sc := rng.randf_range(1.3, 2.6) if i > 0 else rng.randf_range(2.6, 3.8)
 			var b := Basis.from_euler(Vector3(rng.randf() * TAU, rng.randf() * TAU, rng.randf() * TAU)).scaled(Vector3.ONE * sc)
-			shards[key].append(Transform3D(b, (p as Vector3) + Vector3(cos(a) * rr, rng.randf_range(-2.5, 3.0), sin(a) * rr)))
+			var xf := Transform3D(b, (p as Vector3) + Vector3(cos(a) * rr, rng.randf_range(-2.5, 3.0), sin(a) * rr))
+			# Derive the animation from the pose, without changing the seeded layout.
+			var axis := b.x.normalized() * tumble_rate(sc)
+			last_slot = {"key": key, "index": shards[key].size(), "xf": xf, "scale": sc, "axis": axis}
+			shards[key].append({"xf": xf, "cd": Color(axis.x, axis.y, axis.z, float(mk) / 6.0)})
+		slots.append(last_slot)
 		n_dust += 0 if low else 48
 	var n := batch.build(self, Callable(WR, "mesh"))
+	var instances := {}
 	for key in shards:
 		var parts: PackedStringArray = str(key).split("|")
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.use_custom_data = true
 		mm.mesh = shard_meshes[int(parts[0])]
 		var xs: Array = shards[key]
 		mm.instance_count = xs.size()
 		for i in xs.size():
-			mm.set_instance_transform(i, xs[i])
+			mm.set_instance_transform(i, xs[i].xf)
+			mm.set_instance_custom_data(i, xs[i].cd)
 		var mmi := MultiMeshInstance3D.new()
-		mmi.name = "FallbackWreck"
+		mmi.name = "WreckKit_%s_%s" % [WRECK_NAMES[int(parts[0])], parts[1]]
+		mmi.set_meta("wreck_piece", WRECK_NAMES[int(parts[0])])
 		mmi.multimesh = mm
 		mmi.material_override = hot if parts[1] == "1" else metal
 		mmi.extra_cull_margin = 8.0     # the shader tumbles each piece about its middle
 		add_child(mmi)
+		instances[key] = mmi
 		n += xs.size()
+	for slot in slots:
+		slot["mmi"] = instances[slot.key]
+		_wreck_slots.append(slot)
 	if n_dust > 0:
 		var mm := _quad_mm(n_dust)
 		var i := 0
@@ -667,14 +689,7 @@ func _debris(ps: Array) -> void:
 	W.notes.append("living debris: %d rocks and wreck pieces on %d hexes" % [n, ps.size()])
 
 
-# step 2 (Ryan's note on plain wreck pieces): real wreckage, built once per battle from the battle's seed. Four kinds,
-# two of each, about two units across before scaling:
-#   hull fragment   a curved piece of outer hull, torn at both ends, with frames and a stringer on its inside
-#   broken frame    a hull frame (a ring rib) snapped part way round, one end bent, a spoke and a scrap of plate on it
-#   truss           a three-sided lattice spar, one chord snapped short, the end bent
-#   hull section    a deck, a bulkhead and one wall still standing, the other wall torn down to stubs
-# Vertex colour: rgb the paint (outer hull lighter, insides darker, torn edges scorched); alpha how hot the torn metal
-# is, which only the "hot" material shows.
+# Six Blender ship-kit pieces. RGB stores paint; alpha marks hot torn edges.
 const WRECK_SHADER := """
 shader_type spatial;
 render_mode cull_disabled;
@@ -682,13 +697,14 @@ render_mode cull_disabled;
 uniform float hot = 0.0;
 uniform vec3 hot_col = vec3(1.0, 0.42, 0.12);
 varying vec3 lp;
-varying float tumble;
+
 void vertex() {
 	// a slow tumble, each piece its own axis and speed, about the piece's own middle
-	float h = fract(sin(float(INSTANCE_ID) * 12.9898) * 43758.5453);
-	float h2 = fract(h * 91.7 + 0.31);
-	vec3 ax = normalize(vec3(h - 0.5, 0.6, h2 - 0.5));
-	float an = TIME * mix(0.02, 0.07, h2) * (h > 0.5 ? 1.0 : -1.0) + h * 6.2831;
+	float h = INSTANCE_CUSTOM.w;
+	float rate = length(INSTANCE_CUSTOM.xyz);
+	vec3 ax = INSTANCE_CUSTOM.xyz / max(rate, 0.000001);
+	float scale_v = length(MODEL_MATRIX[0].xyz);
+	float an = TIME * min(rate, 0.10 / max(1.0, scale_v)) + h * 6.2831;
 	float c = cos(an);
 	float s = sin(an);
 	mat3 R = mat3(vec3(c + ax.x * ax.x * (1.0 - c), ax.y * ax.x * (1.0 - c) + ax.z * s, ax.z * ax.x * (1.0 - c) - ax.y * s),
@@ -701,244 +717,73 @@ void vertex() {
 void fragment() {
 	if (!FRONT_FACING) { NORMAL = -NORMAL; }
 	float g = wfbm3(lp * 2.3);
+	float dirt = wfbm3(lp * 19.0 + 7.1);
+	float pits = wfbm3(lp * 83.0);
 	// panel seams on the plates, and grime and wear
 	vec3 q = abs(fract(lp * vec3(1.6, 1.25, 1.6)) - 0.5);
 	float seam = 1.0 - 0.38 * (1.0 - smoothstep(0.0, 0.035, 0.5 - max(max(q.x, q.y), q.z)));
-	ALBEDO = COLOR.rgb * mix(0.55, 1.2, g) * seam;
+	ALBEDO = COLOR.rgb * mix(0.38, 1.05, g) * mix(0.65, 1.15, dirt) * seam;
+	// Local pitting stays attached to the metal during tumble. Fade the finest
+	// layer below a pixel rather than letting it shimmer at battle distance.
+	float fine_k = 1.0 - smoothstep(0.3, 1.2, length(fwidth(lp * 83.0)));
+	float height = dirt * 0.006 + pits * 0.002 * fine_k;
+	vec3 dx = dFdx(VERTEX);
+	vec3 dy = dFdy(VERTEX);
+	vec3 rx = cross(dy, NORMAL);
+	vec3 ry = cross(NORMAL, dx);
+	float det = dot(dx, rx);
+	vec3 bumped = abs(det) * NORMAL - sign(det) * (dFdx(height) * rx + dFdy(height) * ry);
+	if (dot(bumped, bumped) > 0.000000000001) { NORMAL = normalize(bumped); }
 	METALLIC = 0.6;
-	ROUGHNESS = clamp(0.42 + 0.4 * g, 0.0, 1.0);
+	ROUGHNESS = clamp(0.48 + 0.3 * dirt + pits * 0.12 * fine_k, 0.0, 1.0);
 	EMISSION = hot_col * COLOR.a * hot * (0.5 + 0.9 * g) * 2.2;
 }
 """
 
-const C_HULL := Color(0.3, 0.295, 0.285, 0.0)
-const C_IN := Color(0.13, 0.13, 0.135, 0.0)
-const C_FRAME := Color(0.2, 0.19, 0.18, 0.0)
-const C_TORN := Color(0.07, 0.06, 0.055, 1.0)
+const WRECK_NAMES := ["hull_fragment", "broken_frame", "truss", "hull_section", "engine_bell", "weapon_sponson"]
+static var _wreck_mesh_cache: Array = []
 
 
-func _shard_meshes() -> Array:
-	var out: Array = []
-	for v in 2:
-		out.append(_w_hull_fragment())
-		out.append(_w_frame())
-		out.append(_w_truss())
-		out.append(_w_section())
-	return out
+static func tumble_rate(scale_v: float) -> float:
+	return 0.10 / maxf(1.0, scale_v)
 
 
-func _w_commit(st: SurfaceTool) -> ArrayMesh:
-	st.generate_normals()
-	return st.commit()
+# Rank each hex by its full mesh's actual long axis, not spawn order or a size
+# threshold. Keep the three largest at blocker detail even on the low setting.
+static func add_debris_rocks(batch, pieces: Array, mat: Material) -> void:
+	for piece in pieces:
+		var size_v := WR.mesh(piece.mesh).get_aabb().size
+		piece["span"] = maxf(size_v.x, maxf(size_v.y, size_v.z)) * piece.xf.basis.get_scale().x
+	var ranked := pieces.duplicate()
+	ranked.sort_custom(func(a, b): return float(a.span) > float(b.span))
+	for i in ranked.size():
+		var piece: Dictionary = ranked[i]
+		var mesh_name := str(piece.mesh) if i < 3 else str(piece.mesh) + "_lo"
+		var scale_v: float = piece.xf.basis.get_scale().x
+		batch.add(mesh_name, mat, piece.shadow, piece.xf, piece.axis,
+			minf(float(piece.rate), tumble_rate(scale_v)), piece.seed)
 
 
-# a triangle with flat shading (generate_normals with no smoothing groups gives each face its own normal)
-func _w_tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, ca: Color, cb: Color, cc: Color) -> void:
-	st.set_smooth_group(0xFFFFFFFF)
-	st.set_color(ca)
-	st.add_vertex(a)
-	st.set_color(cb)
-	st.add_vertex(b)
-	st.set_color(cc)
-	st.add_vertex(c)
-
-
-func _w_quad(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, ca: Color, cb := Color(-1, 0, 0), cc := Color(-1, 0, 0), cd := Color(-1, 0, 0)) -> void:
-	var b2 := ca if cb.r < 0.0 else cb
-	var c2 := ca if cc.r < 0.0 else cc
-	var d2 := ca if cd.r < 0.0 else cd
-	_w_tri(st, a, b, c, ca, b2, c2)
-	_w_tri(st, a, c, d, ca, c2, d2)
-
-
-# a beam of square-ish section from p0 to p1 (w wide, t deep; up gives its roll)
-func _w_beam(st: SurfaceTool, p0: Vector3, p1: Vector3, w: float, t: float, col: Color, up := Vector3.UP) -> void:
-	var d := (p1 - p0).normalized()
-	var sx := d.cross(up)
-	if sx.length() < 0.05:
-		sx = d.cross(Vector3.RIGHT)
-	sx = sx.normalized() * w * 0.5
-	var sy := sx.cross(d).normalized() * t * 0.5
-	var c := [p0 - sx - sy, p0 + sx - sy, p0 + sx + sy, p0 - sx + sy]
-	var e := [p1 - sx - sy, p1 + sx - sy, p1 + sx + sy, p1 - sx + sy]
-	for i in 4:
-		_w_quad(st, c[i], c[(i + 1) % 4], e[(i + 1) % 4], e[i], col)
-	_w_quad(st, c[3], c[2], c[1], c[0], C_TORN)
-	_w_quad(st, e[0], e[1], e[2], e[3], C_TORN)
-
-
-func _w_hull_fragment() -> ArrayMesh:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var R := rng.randf_range(1.1, 1.6)
-	var span := rng.randf_range(1.2, 1.9)       # radians round the hull
-	var L := rng.randf_range(1.8, 2.4)
-	var th := 0.07
-	var n := 9
-	var z0: Array = []
-	var z1: Array = []
-	for i in n + 1:
-		# both ends torn: each column of the plate ends at its own length
-		z0.append(rng.randf_range(0.0, 0.35) * (1.0 if i % 2 == 0 else 0.6))
-		z1.append(L - rng.randf_range(0.0, 0.55) * (1.0 if rng.randf() < 0.7 else 0.2))
-	var pt := func(i: int, z: float, r: float) -> Vector3:
-		var an := -span * 0.5 + span * float(i) / n
-		return Vector3(sin(an) * r, cos(an) * r - R, z - L * 0.5)
-	for i in n:
-		var a0: Vector3 = pt.call(i, z0[i], R)
-		var b0: Vector3 = pt.call(i + 1, z0[i + 1], R)
-		var b1: Vector3 = pt.call(i + 1, z1[i + 1], R)
-		var a1: Vector3 = pt.call(i, z1[i], R)
-		_w_quad(st, a0, b0, b1, a1, C_HULL)
-		var ia0: Vector3 = pt.call(i, z0[i], R - th)
-		var ib0: Vector3 = pt.call(i + 1, z0[i + 1], R - th)
-		var ib1: Vector3 = pt.call(i + 1, z1[i + 1], R - th)
-		var ia1: Vector3 = pt.call(i, z1[i], R - th)
-		_w_quad(st, ia1, ib1, ib0, ia0, C_IN)
-		# the torn ends: scorched and, on hot pieces, still glowing
-		_w_quad(st, a1, b1, ib1, ia1, C_TORN)
-		_w_quad(st, ia0, ib0, b0, a0, C_TORN)
-	# the long edges
-	_w_quad(st, pt.call(0, z0[0], R), pt.call(0, z1[0], R), pt.call(0, z1[0], R - th), pt.call(0, z0[0], R - th), C_TORN)
-	_w_quad(st, pt.call(n, z0[n], R - th), pt.call(n, z1[n], R - th), pt.call(n, z1[n], R), pt.call(n, z0[n], R), C_TORN)
-	# frames inside, across the plate, each stopping where the plate is torn away
-	var fz := rng.randf_range(0.45, 0.7)
-	while fz < L - 0.3:
-		for i in n:
-			if fz > float(z0[i]) + 0.05 and fz < float(z1[i]) - 0.05 and fz > float(z0[i + 1]) + 0.05 and fz < float(z1[i + 1]) - 0.05:
-				_w_beam(st, pt.call(i, fz, R - th - 0.07), pt.call(i + 1, fz, R - th - 0.07), 0.06, 0.15, C_FRAME, Vector3(0, 0, 1))
-		fz += rng.randf_range(0.55, 0.75)
-	# a stringer along it
-	var si := rng.randi_range(2, n - 2)
-	_w_beam(st, pt.call(si, maxf(z0[si], 0.1) + 0.05, R - th - 0.05), pt.call(si, float(z1[si]) - 0.05, R - th - 0.05), 0.08, 0.1, C_FRAME)
-	return _w_commit(st)
-
-
-func _w_frame() -> ArrayMesh:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var R := rng.randf_range(1.0, 1.3)
-	var a0 := rng.randf_range(-0.4, 0.4)
-	var a1 := a0 + rng.randf_range(2.4, 3.6)
-	var n := 12
-	var pts: Array = []
-	for i in n + 1:
-		var an := lerpf(a0, a1, float(i) / n)
-		pts.append(Vector3(cos(an) * R, sin(an) * R, 0.0))
-	# the last stretch snapped and bent out of the ring
-	var kink: Vector3 = pts[n - 3]
-	for i in range(n - 2, n + 1):
-		var off := (pts[i] as Vector3) - kink
-		pts[i] = kink + off.rotated(Vector3(0.3, 1.0, 0.2).normalized(), 0.7) * 0.9
-	for i in n:
-		_w_beam(st, pts[i], pts[i + 1], 0.16, 0.24, C_FRAME, Vector3(0, 0, 1))
-	# a spoke toward the middle, broken short, and a second stub
-	var sp: Vector3 = pts[n / 3]
-	_w_beam(st, sp, sp * 0.35, 0.1, 0.1, C_FRAME)
-	var sp2: Vector3 = pts[n / 2 + 1]
-	_w_beam(st, sp2, sp2 * 0.75, 0.09, 0.09, C_FRAME)
-	# a scrap of hull plate still riveted to the outside
-	for i in range(1, 5):
-		var p0: Vector3 = (pts[i] as Vector3) * 1.09
-		var p1: Vector3 = (pts[i + 1] as Vector3) * 1.09
-		var w0 := rng.randf_range(0.25, 0.6)
-		var w1 := rng.randf_range(0.25, 0.6)
-		_w_quad(st, p0 + Vector3(0, 0, -w0), p1 + Vector3(0, 0, -w1), p1 + Vector3(0, 0, w1 * 0.7), p0 + Vector3(0, 0, w0 * 0.7), C_HULL)
-		_w_quad(st, p0 * 0.985 + Vector3(0, 0, w0 * 0.7), p1 * 0.985 + Vector3(0, 0, w1 * 0.7), p1 * 0.985 + Vector3(0, 0, -w1), p0 * 0.985 + Vector3(0, 0, -w0), C_IN)
-	var mid: Vector3 = pts[n / 2]
-	var st2 := SurfaceTool.new()
-	st2.begin(Mesh.PRIMITIVE_TRIANGLES)
-	st2.append_from(_w_commit(st), 0, Transform3D(Basis.IDENTITY, -mid * 0.5))
-	return st2.commit()
-
-
-func _w_truss() -> ArrayMesh:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var L := rng.randf_range(2.2, 2.8)
-	var r := 0.26
-	var ch: Array = []
-	for k in 3:
-		var an := TAU * k / 3.0
-		ch.append(Vector3(0, cos(an) * r, sin(an) * r))
-	var ends := [L, L * rng.randf_range(0.55, 0.75), L * rng.randf_range(0.8, 0.95)]
-	for k in 3:
-		var e: float = ends[k]
-		var p0: Vector3 = ch[k] + Vector3(-L * 0.5, 0, 0)
-		var p1: Vector3 = ch[k] + Vector3(-L * 0.5 + e, 0, 0)
-		if k == 2:
-			# this chord bent away where it broke
-			var pm: Vector3 = ch[k] + Vector3(-L * 0.5 + e * 0.7, 0, 0)
-			_w_beam(st, p0, pm, 0.07, 0.07, C_FRAME)
-			_w_beam(st, pm, pm + Vector3(e * 0.3, 0.25, 0.3), 0.07, 0.07, C_FRAME)
-		else:
-			_w_beam(st, p0, p1, 0.07, 0.07, C_FRAME)
-	# cross bracing between the chords, only where both still stand
-	var x := 0.0
-	var step := 0.42
-	var flip := false
-	while x + step < L:
-		for k in 3:
-			var k2 := (k + 1) % 3
-			if x + step < float(ends[k]) * (0.7 if k == 2 else 1.0) and x + step < float(ends[k2]) * (0.7 if k2 == 2 else 1.0):
-				var a: Vector3 = ch[k] + Vector3(-L * 0.5 + (x if not flip else x + step), 0, 0)
-				var b: Vector3 = ch[k2] + Vector3(-L * 0.5 + (x + step if not flip else x), 0, 0)
-				_w_beam(st, a, b, 0.035, 0.035, C_FRAME)
-		flip = not flip
-		x += step
-	# end plate (a triangle frame) at the root
-	for k in 3:
-		_w_beam(st, ch[k] + Vector3(-L * 0.5, 0, 0), ch[(k + 1) % 3] + Vector3(-L * 0.5, 0, 0), 0.06, 0.06, C_FRAME)
-	return _w_commit(st)
-
-
-func _w_section() -> ArrayMesh:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var L := rng.randf_range(1.8, 2.3)
-	var W := rng.randf_range(1.1, 1.4)
-	var H := rng.randf_range(0.6, 0.85)
-	var t := 0.06
-	# the deck, torn ragged at the far end
-	var n := 6
-	for i in n:
-		var x0 := -W * 0.5 + W * i / n
-		var x1 := -W * 0.5 + W * (i + 1) / n
-		var e0 := L * 0.5 - rng.randf_range(0.0, 0.5)
-		var e1 := L * 0.5 - rng.randf_range(0.0, 0.5)
-		_w_quad(st, Vector3(x0, 0, -L * 0.5), Vector3(x1, 0, -L * 0.5), Vector3(x1, 0, e1), Vector3(x0, 0, e0), C_IN)
-		_w_quad(st, Vector3(x0, -t, e0), Vector3(x1, -t, e1), Vector3(x1, -t, -L * 0.5), Vector3(x0, -t, -L * 0.5), C_HULL)
-		_w_quad(st, Vector3(x0, 0, e0), Vector3(x1, 0, e1), Vector3(x1, -t, e1), Vector3(x0, -t, e0), C_TORN)
-	# the bulkhead at the near end, with a doorway
-	var bz := -L * 0.5
-	_w_beam(st, Vector3(-W * 0.5, H * 0.5, bz), Vector3(-W * 0.18, H * 0.5, bz), H, 0.06, C_FRAME, Vector3(0, 0, 1))
-	_w_beam(st, Vector3(W * 0.18, H * 0.5, bz), Vector3(W * 0.5, H * 0.5, bz), H, 0.06, C_FRAME, Vector3(0, 0, 1))
-	_w_beam(st, Vector3(-W * 0.18, H * 0.85, bz), Vector3(W * 0.18, H * 0.85, bz), H * 0.3, 0.06, C_FRAME, Vector3(0, 0, 1))
-	# one wall standing, with its frames
-	var m := 7
-	for i in m:
-		var z0 := -L * 0.5 + L * 0.85 * i / m
-		var z1 := -L * 0.5 + L * 0.85 * (i + 1) / m
-		var h0 := H * (1.0 if i < m - 2 else rng.randf_range(0.4, 0.9))
-		var h1 := H * (1.0 if i < m - 3 else rng.randf_range(0.3, 0.8))
-		var xw := -W * 0.5
-		_w_quad(st, Vector3(xw, 0, z0), Vector3(xw, 0, z1), Vector3(xw, h1, z1), Vector3(xw, h0, z0), C_IN)
-		_w_quad(st, Vector3(xw - t, h0, z0), Vector3(xw - t, h1, z1), Vector3(xw - t, 0, z1), Vector3(xw - t, 0, z0), C_HULL)
-		_w_quad(st, Vector3(xw, h0, z0), Vector3(xw, h1, z1), Vector3(xw - t, h1, z1), Vector3(xw - t, h0, z0), C_TORN)
-		if i % 2 == 0:
-			_w_beam(st, Vector3(xw + 0.05, 0, z0), Vector3(xw + 0.05, h0 * 0.95, z0), 0.07, 0.1, C_FRAME, Vector3(1, 0, 0))
-	# the other wall torn down to stubs
-	for i in 4:
-		var z := -L * 0.5 + 0.15 + i * L * 0.2
-		var h := rng.randf_range(0.12, 0.45) * H
-		_w_beam(st, Vector3(W * 0.5, 0, z), Vector3(W * 0.5 + rng.randf_range(-0.05, 0.12), h, z + rng.randf_range(-0.1, 0.1)), 0.08, 0.1, C_FRAME, Vector3(1, 0, 0))
-	# a pipe run along the deck
-	_w_beam(st, Vector3(-W * 0.3, 0.1, -L * 0.45), Vector3(-W * 0.3, 0.1, L * 0.3), 0.08, 0.08, C_FRAME)
-	var st2 := SurfaceTool.new()
-	st2.begin(Mesh.PRIMITIVE_TRIANGLES)
-	st2.append_from(_w_commit(st), 0, Transform3D(Basis.IDENTITY, Vector3(0, -H * 0.4, 0)))
-	return st2.commit()
-
+static func _shard_meshes() -> Array:
+	if not _wreck_mesh_cache.is_empty():
+		return _wreck_mesh_cache
+	for piece in WRECK_NAMES:
+		var path: String = "res://world/wreckage/" + piece + ".glb"
+		var node: Node = null
+		if ResourceLoader.exists(path):
+			node = (load(path) as PackedScene).instantiate()
+		elif FileAccess.file_exists(path):
+			# Also work in the runner's fresh checkout before editor import.
+			var doc := GLTFDocument.new()
+			var state := GLTFState.new()
+			if doc.append_from_buffer(FileAccess.get_file_as_bytes(path), "", state) == OK:
+				node = doc.generate_scene(state)
+		assert(node != null, "Missing wreck kit: " + path)
+		var mi := WR._find_mesh(node)
+		assert(mi != null and mi.mesh != null, "Empty wreck kit: " + path)
+		_wreck_mesh_cache.append(mi.mesh)
+		node.free()
+	return _wreck_mesh_cache
 
 # ---------------------------------------------------------------- the gravity well
 
@@ -981,25 +826,54 @@ func _install_chunks() -> void:
 	var meshes := HD.meshes(_chunk_job.chunks)
 	_chunk_job = {}
 	if meshes.is_empty(): return
-	for child in get_children():
-		if str(child.name).begins_with("FallbackWreck"): child.queue_free()
 	var holder := Node3D.new()
 	holder.name = "HullDebris"
 	add_child(holder)
 	var index := 0
-	for p in W._terr_pts.debris:
-		for j in 4:
-			var mi := MeshInstance3D.new()
-			mi.mesh = meshes[index % meshes.size()]
-			index += 1
-			var box := mi.mesh.get_aabb()
-			var scale_v := rng.randf_range(3.0, 5.4) / maxf(box.size.length(), 0.01)
-			var basis: Basis = W._rand_basis(rng).scaled(Vector3.ONE * scale_v)
-			var angle := rng.randf() * TAU
-			# All chunks stay inside the original debris hex, with room for tumble.
-			var position_v: Vector3 = p + Vector3(cos(angle) * 3.8, rng.randf_range(-1, 2), sin(angle) * 3.8)
-			mi.transform = Transform3D(basis, position_v - basis * box.get_center())
-			holder.add_child(mi)
+	var replaced := {}
+	var radii := {}
+	# Replace one existing kit slot per hex, preserving its size, pose and total
+	# count. Keep the other kit shapes visible alongside the painted fleet chunks.
+	for slot in _wreck_slots:
+		var mi := MeshInstance3D.new()
+		mi.mesh = meshes[index % meshes.size()]
+		index += 1
+		var box := mi.mesh.get_aabb()
+		var mesh_id := mi.mesh.get_instance_id()
+		if not radii.has(mesh_id):
+			var radius := 0.0
+			for surface in mi.mesh.get_surface_count():
+				for v in mi.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]:
+					radius = maxf(radius, (v as Vector3).distance_to(box.get_center()))
+			radii[mesh_id] = radius
+		var scale_v := float(slot.scale) / maxf(float(radii[mesh_id]), 0.01)
+		var pivot := Node3D.new()
+		pivot.transform = Transform3D((slot.xf as Transform3D).basis.orthonormalized(), slot.xf.origin)
+		holder.add_child(pivot)
+		pivot.add_child(mi)
+		mi.scale = Vector3.ONE * scale_v
+		mi.position = -box.get_center() * scale_v
+		var id: int = slot.mmi.get_instance_id()
+		if not replaced.has(id): replaced[id] = {"mmi": slot.mmi, "indices": []}
+		replaced[id].indices.append(int(slot.index))
+		_hull_spin.append([pivot, (slot.axis as Vector3).normalized(), tumble_rate(float(slot.scale))])
+	# Compact each affected draw once. Do not hide a replaced slot with a zero
+	# scale: a singular normal matrix can feed NaNs into lighting and bloom.
+	for group in replaced.values():
+		var old: MultiMesh = group.mmi.multimesh
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.use_custom_data = true
+		mm.mesh = old.mesh
+		mm.instance_count = old.instance_count - group.indices.size()
+		var dst := 0
+		for src in old.instance_count:
+			if group.indices.has(src): continue
+			mm.set_instance_transform(dst, old.get_instance_transform(src))
+			mm.set_instance_custom_data(dst, old.get_instance_custom_data(src))
+			dst += 1
+		group.mmi.multimesh = mm
+	_wreck_slots.clear()
 	W.notes.append("painted hull debris: %d cached chunks, %d instances" % [meshes.size(), index])
 
 func _exit_tree() -> void:
