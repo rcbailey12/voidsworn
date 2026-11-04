@@ -1,0 +1,147 @@
+{
+  "quarter": {
+    "image": "quarter.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_quarter.png",
+    "seed": 146,
+    "seconds": 57.07204959995579,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "quarter_alt": {
+    "image": "quarter_alt.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_quarter.png",
+    "seed": 147,
+    "seconds": 30.062746500014327,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "side": {
+    "image": "side.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_side_reference.png",
+    "seed": 146,
+    "seconds": 45.0431262999773,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "front": {
+    "image": "front.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_front.png",
+    "seed": 146,
+    "seconds": 42.03966929996386,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "top": {
+    "image": "top.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_top_reference.png",
+    "seed": 146,
+    "seconds": 42.06810780009255,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "quarter_final": {
+    "image": "quarter_final.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_quarter.png",
+    "seed": 148,
+    "seconds": 66.21561770001426,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "side_final": {
+    "image": "side_final.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_side_reference.png",
+    "seed": 148,
+    "seconds": 45.139517699950375,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "front_final": {
+    "image": "front_final.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_front.png",
+    "seed": 148,
+    "seconds": 42.13635019992944,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "top_final": {
+    "image": "top_final.png",
+    "anchor": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\shots\\anchor_top_reference.png",
+    "seed": 148,
+    "seconds": 45.077078800066374,
+    "faction_prompt": "oil painting concept art, colossal lopsided battle barge spaceship, Warlords Pyre Barge, matte soot black and rust red brown plate, low heavy brutal silhouette, slow and deliberate, huge listening dishes and wake sniffer scoops at the bow, boarding claws folded along the forward hull, chains strung between hull sections, plates torn from other factions bolted on in their old faded colours as battle trophy plates, flagship only, armoured flat belly with chines, sensor housings, antenna arrays, equipment pods, recessed lights, thruster pods, docking hatches, heat radiators, scrap gun turrets and heavy rocket pod clusters on the forward hull aimed forward, far too many rockets, no lances, dim red running lights, red orange engine bells at the stern, few windows, thin shields in faction red, dark starfield over a cold asteroid belt, three quarter view from front below, space ship, palette soot rust #6a2c22, dried blood red #b8402a, hot red #e0402c, oil paint style, painterly brushwork",
+    "faction_negative": "naval ship, boat keel, raked stem, smokestack funnel, porthole rows, mast, sleek, clean, fast looking, symmetric, bright lighting, many windows, guns aimed backward, lances, text, watermark, signature, blurry, photograph, 3d render",
+    "model": "Qwen-Image-Edit-2511 fp8, Lightning 8 steps",
+    "status": "candidate, visual selection required"
+  },
+  "quarter_selection": {
+    "source": "quarter_final.png",
+    "image": "quarter_selected.png",
+    "edit": "remove disconnected background artifacts only; retain largest ship component and nearby parts"
+  },
+  "side_selection": {
+    "source": "side_final.png",
+    "image": "side_selected.png",
+    "edit": "remove disconnected background artifacts only; retain largest ship component and nearby parts"
+  },
+  "front_selection": {
+    "source": "front_final.png",
+    "image": "front_selected.png",
+    "edit": "remove disconnected background artifacts only; retain largest ship component and nearby parts"
+  },
+  "top_selection": {
+    "source": "top_final.png",
+    "image": "top_selected.png",
+    "edit": "remove disconnected background artifacts only; retain largest ship component and nearby parts"
+  },
+  "side_ortho": {
+    "image": "side_ortho.png",
+    "source": "quarter_selected.png",
+    "seconds": 57.137480800040066,
+    "camera": "right side view eye-level shot medium shot",
+    "model": "Qwen-Image-Edit-2511, multiple-angles .95, Lightning 8 steps"
+  },
+  "front_ortho": {
+    "image": "front_headon.png",
+    "source": "quarter_selected.png",
+    "seconds": 57.08290010003839,
+    "camera": "front view eye-level shot medium shot",
+    "model": "Qwen-Image-Edit-2511, multiple-angles .95, Lightning 8 steps"
+  },
+  "top_ortho": {
+    "image": "top_ortho.png",
+    "source": "quarter_selected.png",
+    "seconds": 33.04301959997974,
+    "camera": "top view high-angle shot bird eye view overhead shot",
+    "model": "Qwen-Image-Edit-2511, multiple-angles .95, Lightning 8 steps"
+  },
+  "battle_ortho": {
+    "image": "battle_anchor_refresh.png",
+    "source": "battle_anchor.png",
+    "seconds": 54.089701899909414,
+    "camera": "right side view high-angle shot medium shot",
+    "model": "Qwen-Image-Edit-2511, multiple-angles .95, Lightning 8 steps"
+  },
+  "battle_target": {
+    "image": "battle_target.png",
+    "source": "quarter_selected.png",
+    "seconds": 60.34508880006615,
+    "camera": "right side view high-angle shot medium shot",
+    "model": "Qwen-Image-Edit-2511, multiple-angles .95, Lightning 8 steps"
+  }
+}
