@@ -94,6 +94,38 @@ func ribbon(a: Vector3, b: Vector3, w: float) -> ArrayMesh:
 	for k in [0, 1, 2, 1, 3, 2]:
 		st.set_uv(uv[k]); st.set_normal(Vector3.UP); st.add_vertex(p[k])
 	return st.commit()
+# The lane and the fleet share this curve. Bend outward with the orbital flow,
+# including radial hops, rather than cutting straight across the system.
+static func route_curve(a: Vector3, b: Vector3) -> Curve3D:
+	var curve := Curve3D.new()
+	curve.bake_interval = 0.12
+	var middle := (a + b) * 0.5
+	var outward := Vector3(middle.x, 0, middle.z).normalized()
+	var control := middle + outward * minf(a.distance_to(b) * 0.16, 6.0)
+	curve.add_point(a, Vector3.ZERO, (control - a) * (2.0 / 3.0))
+	curve.add_point(b, (control - b) * (2.0 / 3.0), Vector3.ZERO)
+	return curve
+
+func route_ribbon(curve: Curve3D, w: float, trim_a: float, trim_b: float) -> ArrayMesh:
+	var length := curve.get_baked_length()
+	var start := minf(trim_a, length * 0.4)
+	var end := maxf(length - trim_b, length * 0.6)
+	var segments := 48 if q > 0.5 else 24
+	var st := SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in segments:
+		var vertices: Array = []
+		var uvs: Array = []
+		for j in 2:
+			var t := float(i + j) / segments
+			var distance := lerpf(start, end, t)
+			var p := curve.sample_baked(distance)
+			var tangent := curve.sample_baked(minf(length, distance + 0.1)) - curve.sample_baked(maxf(0.0, distance - 0.1))
+			var side := Vector3(-tangent.z, 0, tangent.x).normalized() * w * 0.5
+			vertices.append_array([p - side, p + side])
+			uvs.append_array([Vector2(0, t), Vector2(1, t)])
+		for k in [0, 1, 2, 1, 3, 2]:
+			st.set_uv(uvs[k]); st.set_normal(Vector3.UP); st.add_vertex(vertices[k])
+	return st.commit()
 # A small faceted rock (a lumpy low sphere with flat faces).
 func rock_mesh(seed_v: int) -> ArrayMesh:
 	var r2 = RandomNumberGenerator.new(); r2.seed = seed_v

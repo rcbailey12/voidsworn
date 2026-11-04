@@ -69,6 +69,18 @@ var _danger := {}             # id -> danger dict (cached per refresh)
 var _focus := 0
 var _t := 0.0
 var _flying := false
+const FLIGHT_SECONDS := 2.4
+var _reachable := {}          # all descendants of the choices allowed by the campaign
+var _flight_id := ""
+var _flight_curve: Curve3D
+var _flight_time := 0.0
+var _flight_rotation := Quaternion.IDENTITY
+var _arrival_tween: Tween
+var _engine_mounts: Array[Vector3] = []
+var _wake_samples: Array = []
+var _wake_mesh: ImmediateMesh
+var _wake_node: MeshInstance3D
+var _wake_material: StandardMaterial3D
 var _side_w := 380.0
 var _rng := RandomNumberGenerator.new()
 var _cam_focus := Vector3.ZERO   # where the camera leans (eased); zero = the whole chart
@@ -213,6 +225,8 @@ func _code_for(fac: String, cls: String) -> String:
 	return load(HT_PATH).code_for(fac, cls)
 func _build(sig: String) -> void:
 	_sig = sig
+	if _arrival_tween != null: _arrival_tween.kill()
+	_flying = false; _flight_id = ""; _wake_samples.clear()
 	_apply_quality()
 	var C = _C(); var m = C.RUN["map"]; var fac = m.get("fac", "hegemony")
 	if root3 != null: root3.queue_free()
@@ -240,6 +254,7 @@ func _build(sig: String) -> void:
 	_add_patrols()
 	token = _make_token(); root3.add_child(token); _token_sig = _fleet_sig()
 	token.position = _token_home()
+	_make_wake()
 	_focus = 0
 	_fit_key = ""
 
@@ -250,7 +265,7 @@ func _add_orbits() -> void:
 	for r in radii.keys(): sys.orbit(root3, r, Color(0.55, 0.66, 0.88, 0.16), 0.28)
 	for id in _nodes:
 		var d = _nodes[id]; var span = 7.5 / d["r"]
-		sys.orbit_arc(root3, d["r"], d["theta"] - span, d["theta"] + span, Color(0.7, 0.8, 1.0, 0.45), 0.36)
+		d["orbit"] = sys.orbit_arc(root3, d["r"], d["theta"] - span, d["theta"] + span, Color(0.7, 0.8, 1.0, 0.45), 0.36)
 	sys.orbit(root3, SUN_R * 4.05, Color(1.0, 0.5, 0.25, 0.12), 0.25, 90.0)   # the edge of the debris ring
 
 # ---------------- stop scenes ----------------
@@ -383,13 +398,13 @@ func _add_node(n: Dictionary) -> void:
 func _torus(r0: float, r1: float) -> TorusMesh:
 	var t = TorusMesh.new(); t.inner_radius = r0; t.outer_radius = r1; t.rings = 48; t.ring_segments = 8; return t
 func _add_lane(a: String, b: String) -> void:
-	var A = _nodes[a]["pos"]; var B = _nodes[b]["pos"]; var dv = B - A; var L = dv.length()
+	var A = _nodes[a]["pos"]; var B = _nodes[b]["pos"]
+	var curve := System.route_curve(A, B); var L := curve.get_baked_length()
 	var trim_a = _nodes[a]["ring_r"] * 1.05; var trim_b = _nodes[b]["ring_r"] * 1.05
-	var a2 = A + dv.normalized() * trim_a; var b2 = B - dv.normalized() * trim_b
 	var tb = _nodes[b]["n"]["type"]
 	var hazard = 1.0 if tb in ["elite", "boss"] else 0.0
-	var mat = sys.mat("LANE", {"col": Color(0.8, 0.85, 1.0, 0.35), "flow": 0.0, "hazard": hazard, "len": (b2 - a2).length(), "glow": 1.0})
-	var mi = sys.mi(sys.ribbon(a2, b2, 1.3), mat, Vector3(0, 0.12, 0)); mi.extra_cull_margin = L
+	var mat = sys.mat("LANE", {"col": Color(0.8, 0.85, 1.0, 0.35), "flow": 0.0, "hazard": hazard, "len": L - trim_a - trim_b, "glow": 1.0})
+	var mi = sys.mi(sys.route_ribbon(curve, 1.3, trim_a, trim_b), mat, Vector3(0, 0.12, 0)); mi.extra_cull_margin = L
 	root3.add_child(mi)
 	_lanes[a + ">" + b] = {"a": a, "b": b, "mi": mi, "mat": mat, "hazard": hazard}
 func _add_patrols() -> void:   # enemy patrols: one round each rival raider stop, two of the sector's own fleet in the far half
@@ -415,6 +430,8 @@ func _patrol(fac: String, c: Vector3, r: float, sp: float) -> void:
 	_patrols.append([node, c + Vector3(0, 2.6, 0), r, sp, _rng.randf() * TAU])
 func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real hull (A4's kit ship when it is in the build) and up to two escorts
 	var C = _C(); var t = Node3D.new(); var L = System.look(C.RUN["fac"])
+	_wake_samples.clear()
+	_engine_mounts.assign([Vector3(-4.4, 0, 0)])
 	var fs = C.flagshipOf()
 	var h = null
 	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), 8.5)
@@ -428,6 +445,7 @@ func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real h
 		var e = _hull(C.RUN["fac"], str(C.HULLS[esc[i]["tpl"]].get("cls", "Frigate")), 4.6)
 		if e != null:
 			e.position = Vector3(-3.8, -0.4, 3.0 if i == 0 else -3.0); t.add_child(e)
+			_engine_mounts.append(e.position + Vector3(-2.4, 0, 0))
 	sys.glow(t, L["light"], 3.6, Vector3(-4.4, 0, 0), 2.0, 1.4)
 	var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.4; l.omni_range = 9.0; l.position = Vector3(-4.4, 0, 0); t.add_child(l)
 	return t
@@ -444,25 +462,42 @@ func campaign_glyph(t: String) -> String:
 func _avail() -> Array:
 	var C = _C()
 	return C.page["data"]["avail"] if C.page["kind"] == "map" else []
+func _find_reachable() -> void:
+	_reachable.clear()
+	var pending: Array = _C().availableNodes().duplicate()
+	var next := {}
+	for edge in _C().RUN["map"]["edges"]:
+		if not next.has(edge[0]): next[edge[0]] = []
+		next[edge[0]].append(edge[1])
+	while not pending.is_empty():
+		var id = pending.pop_back()
+		if _reachable.has(id): continue
+		_reachable[id] = true
+		pending.append_array(next.get(id, []))
 func _refresh() -> void:
 	var C = _C(); var av = _avail(); _card_key = ""
+	_find_reachable()
 	_danger.clear()
 	for id in _nodes:
 		var d = _nodes[id]; var n = d["n"]; var done = C.jt(n.get("done"))
+		var current = C.RUN.get("pos") == id
+		var bypassed = not current and not done and not _reachable.has(id)
 		for m in d["mats"]:   # a passed stop's lights go dark
-			if m is ShaderMaterial: m.set_shader_parameter("dim", 0.12 if done else 1.0); continue
+			if m is ShaderMaterial: m.set_shader_parameter("dim", 0.1 if bypassed else (0.2 if done and not current else 1.0)); continue
 			var c0: Color = m.get_meta("c0"); var e0: float = m.get_meta("e0")
-			m.albedo_color = c0.lerp(Color(0.28, 0.28, 0.3), 0.75) if done else c0
-			if m.emission_enabled: m.emission_energy_multiplier = e0 * (0.08 if done else 1.0)
+			m.albedo_color = c0.lerp(Color(0.15, 0.17, 0.2), 0.85) if bypassed or done and not current else c0
+			if m.emission_enabled: m.emission_energy_multiplier = e0 * (0.06 if bypassed else (0.15 if done and not current else 1.0))
 		if not done: _danger[id] = intel.danger(n)
 		if d.has("threat") and _danger.has(id) and not _danger[id].is_empty(): d["threat"].set_shader_parameter("col", Color(_danger[id]["col"]))   # the marker takes the danger band's colour
 		# the ring says what you can do with the stop: gilt where you can jump now, bright where the fleet is, faint ahead, grey behind
 		var tg = Color(campaign_glyph(n["type"]))   # stops ahead: a ring in their kind's colour, so no ring is plain
-		var rc = Color(tg.lerp(Color(0.8, 0.86, 1.0), 0.45), 0.42); var dash = 0.0; var fill = 0.35
+		var rc = Color(tg.lerp(Color(0.68, 0.84, 1.0), 0.65), 0.72); var dash = 0.0; var fill = 0.5
 		if done: rc = Color(0.5, 0.5, 0.55, 0.16)
+		if bypassed: rc = Color(0.32, 0.37, 0.45, 0.08); fill = 0.0
 		if av.has(id): rc = Color(1.0, 0.76, 0.34, 0.95); dash = 1.0; fill = 1.0
 		if C.RUN.get("pos") == id: rc = Color(1.0, 0.88, 0.55, 1.0); fill = 0.6
 		d["rmat"].set_shader_parameter("col", rc); d["rmat"].set_shader_parameter("dash", dash); d["rmat"].set_shader_parameter("fill", fill)
+		d["orbit"].material_override.set_shader_parameter("col", Color(0.7, 0.8, 1.0, 0.06 if bypassed else (0.16 if done else 0.45)))
 	if _hot != "": _routes = intel.routes_through(_hot)
 	_paint_lanes()
 	var fsig = _fleet_sig()
@@ -487,21 +522,25 @@ func _paint_lanes() -> void:
 		var trav = C.jt(A.get("done")) and (C.jt(Bn.get("done")) or R.get("pos") == L["b"])
 		var nxt = R.get("pos") == L["a"] and av.has(L["b"])
 		if R.get("pos") == null and av.has(L["b"]): nxt = false
-		var col = Color(0.95, 0.72, 0.32, 0.8) if trav else (Color(1.0, 0.78, 0.38, 1.0) if nxt else Color(0.7, 0.8, 1.0, 0.32))
-		var past = C.jt(A.get("done")) and not trav   # a lane you can no longer take
-		if past: col = Color(0.5, 0.52, 0.58, 0.12)
+		var ahead = _reachable.has(L["a"]) and _reachable.has(L["b"])
+		var past = not trav and not nxt and not ahead
+		var col = Color(0.74, 0.57, 0.29, 0.4) if trav else (Color(1.0, 0.78, 0.38, 1.0) if nxt else Color(0.53, 0.74, 1.0, 0.58))
+		if past: col = Color(0.28, 0.33, 0.42, 0.055)
 		var flow = 1.0 if nxt else 0.0
-		if lit.has(k): col = Color(lit[k], 1.0); flow = 1.0
+		if lit.has(k) and not past: col = Color(lit[k], 1.0); flow = 1.0
+		if _flying and k == str(R.get("pos")) + ">" + _flight_id: col = Color(1.0, 0.9, 0.64, 1.0); flow = 1.0
 		L["mat"].set_shader_parameter("col", col); L["mat"].set_shader_parameter("flow", flow)
-		L["mat"].set_shader_parameter("glow", 1.4 if (flow > 0.0 or trav) else 0.8)
+		L["mat"].set_shader_parameter("glow", 1.4 if flow > 0.0 else (0.35 if past else 0.8))
 		L["mat"].set_shader_parameter("hazard", 0.0 if trav or past or C.jt(Bn.get("done")) else L["hazard"])
 
 func _arrive(new_sector: bool) -> void:   # the camera starts leaning on where the fleet is and settles back over the chart
 	var C = _C(); var pos = C.RUN.get("pos")
 	var at = _nodes[pos]["pos"] if pos != null and _nodes.has(pos) else _token_home()
-	_cam_focus = at; _cam_zoom = 0.62 if new_sector else 0.8; _arrive_t = 0.0
+	if new_sector: _cam_focus = at; _cam_zoom = 0.62
+	_arrive_t = 0.0
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
-	var tw = create_tween(); tw.set_trans(Tween.TRANS_SINE); tw.set_ease(Tween.EASE_IN_OUT)
+	if _arrival_tween != null: _arrival_tween.kill()
+	var tw = create_tween(); _arrival_tween = tw; tw.set_trans(Tween.TRANS_SINE); tw.set_ease(Tween.EASE_IN_OUT)
 	tw.tween_property(self, "_cam_zoom", 1.0, 1.6 if new_sector else 1.1)
 	tw.parallel().tween_property(self, "_cam_focus", Vector3.ZERO, 1.6 if new_sector else 1.1)
 
@@ -509,9 +548,12 @@ func _process(delta: float) -> void:
 	if not visible or _C() == null or _C().RUN == null or root3 == null: return
 	_t += delta
 	var mp = get_local_mouse_position() / size.max(Vector2.ONE) - Vector2(0.5, 0.5)
+	mp = mp.clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5))
 	var fr = _free_rect(); var fk = str(size) + "|" + _sig + "|" + str(fr.position.round()) + str(fr.size.round())
 	if fk != _fit_key: _fit_key = fk; _fit(fr)
 	_pan_keyboard(delta)
+	if _flying: _advance_flight(delta)
+	_update_wake()
 	# the player's zoom and pan ease in; the arrival and jump moves layer on top
 	var ke = 1.0 - exp(-delta * 7.0)
 	_uz = lerp(_uz, _uz_t, ke); _pan = _pan.lerp(_pan_t, ke)
@@ -624,14 +666,20 @@ func _draw_overlay() -> void:
 		# prints no labels (its 3D scene stays; hover still shows its card)
 		if id != _hot and not fr_lab.has_point(base): continue
 		var fight = n["type"] in ["battle", "elite", "boss"]
-		var col = ui.BONE if av.has(id) else Color(0.66, 0.64, 0.6)
+		var bypassed = not done and C.RUN.get("pos") != id and not _reachable.has(id)
+		var col = ui.BONE if av.has(id) else Color(0.74, 0.8, 0.88)
 		if done: col = Color(0.45, 0.44, 0.42)
+		if bypassed: col = Color(0.3, 0.34, 0.4)
 		var y = base.y + 30.0 * s + dy.get(id, 0.0)
 		var name = ""
 		if C.jt(n.get("enc")) and C.ENCOUNTERS.has(n["enc"]) and not done: name = str(C.ENCOUNTERS[n["enc"]]["n"])
 		elif not fight: name = str(C.NODE_INFO[n["type"]]["n"])
 		elif n["type"] == "boss": name = "Sector flagship"
 		if name != "": _text(name, Vector2(base.x, y), int(15 * s), col, ui.font_semi); y += 17.0 * s
+		if bypassed:
+			if id == _hot: _text("BYPASSED", Vector2(base.x, y), int(11 * s), col, ui.font_caps)
+			continue
+		if C.RUN.get("pos") == id and not _flying: _text("FLEET HERE", top + Vector2(0, -18.0 * s), int(11 * s), ui.GILT, ui.font_caps)
 		if fight and not done and C.nemNodeIs(n):   # B4: his fight is marked before you commit
 			var nt = ui.nem_portrait()   # his framed face beside his fight's tags (godot/portraits, R42), when the painting exists
 			if nt != null and (av.has(id) or id == _hot):   # his face beside the fights you can take now (every fight is his when the clock is full)
@@ -663,7 +711,9 @@ func _draw_overlay() -> void:
 			var rr = on_route[id]; var st = rr[1]
 			var t = "%d fight%s · %d repair%s" % [st["fights"], "" if st["fights"] == 1 else "s", st["repairs"], "" if st["repairs"] == 1 else "s"]
 			_chip(t, top + Vector2(0, -36.0 * s), int(11 * s), rr[0]["col"], true)
-	if has_focus() and av.size() > 0:
+	if _flying:
+		_text("IN FLIGHT  |  Click or press Space to skip", Vector2(_free_rect().get_center().x, _free_rect().end.y - 14.0 * s), int(16 * s), ui.BONE, ui.font_semi)
+	if has_focus() and av.size() > 0 and not _flying:
 		var fid = av[_focus % av.size()]
 		var fp = _screen(_nodes[fid]["pos"]); overlay.draw_arc(fp, 30.0 * ui.k, 0, TAU, 40, ui.GILT, 2.0, true)
 # Label stacks under the stops must not print over each other: each stack, top to bottom on screen, moves down below any
@@ -906,22 +956,103 @@ func _gui_input(e: InputEvent) -> void:
 		elif e.keycode in [KEY_LEFT, KEY_UP]:
 			_focus = (_focus - 1 + av.size()) % av.size(); _hot_by_key = true; _set_hot(av[_focus]); accept_event()
 		elif e.keycode in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE]:
-			accept_event(); fly_to(av[_focus % av.size()])
-func _flash(at: Vector3, delay: float) -> void:
-	var L = System.look(_C().RUN["fac"])
-	var g = sys.glow(root3, L["light"], 7.0, at, 2.2, 0.0)
-	var tw = create_tween(); tw.tween_interval(delay)
-	tw.tween_method(func(v): g.material_override.set_shader_parameter("gain", v), 0.0, 1.6, 0.12)
-	tw.tween_method(func(v): g.material_override.set_shader_parameter("gain", v), 1.6, 0.0, 0.7)
-	tw.tween_callback(g.queue_free)
+			if not e.echo: accept_event(); fly_to(av[_focus % av.size()])
+func _input(e: InputEvent) -> void:
+	# Consume the skip before a side-panel button can start another action.
+	if not _flying or not is_visible_in_tree(): return
+	var click = e is InputEventMouseButton and e.pressed and e.button_index == MOUSE_BUTTON_LEFT
+	var key = e is InputEventKey and e.pressed and not e.echo and e.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]
+	if click or key:
+		get_viewport().set_input_as_handled()
+		_finish_flight()
+
 func fly_to(id: String) -> void:
-	if _flying or not _nodes.has(id): return
+	if _flying or loading or backdrop or token == null or not _avail().has(id) or not _nodes.has(id) or _C().modal_d != null: return
+	if _arrival_tween != null: _arrival_tween.kill()
 	_flying = true; card.visible = false; _drag = false
+	_flight_id = id; _flight_time = 0.0; _flight_rotation = token.quaternion
 	var a = token.position; var b = _nodes[id]["pos"] + TOKEN_OFF + Vector3(0, _nodes[id]["top"], 0)
-	token.look_at(token.position + (b - a).normalized(), Vector3.UP); token.rotate_object_local(Vector3.UP, PI * 0.5)
+	_flight_curve = System.route_curve(a - TOKEN_OFF, b - TOKEN_OFF)
+	_wake_samples.clear(); _set_hot(""); _paint_lanes()
 	_uz_t = 1.0; _pan_t = Vector3.ZERO
-	_flash(a, 0.0); _flash(b, 1.15)   # the drive flare as the fleet leaves, and again where it drops in
-	var tw = create_tween(); tw.set_trans(Tween.TRANS_SINE); tw.set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(self, "_cam_zoom", 0.7, 0.35); tw.parallel().tween_property(self, "_cam_focus", (a + b) * 0.5, 0.35)
-	tw.tween_method(func(f): token.position = a.lerp(b, f) + Vector3(0, sin(f * PI) * 2.0, 0); _cam_focus = token.position, 0.0, 1.0, 1.0)
-	tw.tween_callback(func(): _flying = false; token.rotation = Vector3.ZERO; _last_pos = id; _C().act("enterNode", id))
+	grab_focus()
+
+# Cosine acceleration, constant-speed cruise, then matching braking. The
+# integral is continuous in speed and acceleration, including both endpoints.
+static func _flight_distance(t: float) -> float:
+	const RAMP := 0.24
+	if t > 1.0 - RAMP: return 1.0 - _flight_distance(1.0 - t)
+	if t < RAMP: return (t - sin(PI * t / RAMP) * RAMP / PI) * 0.5 / (1.0 - RAMP)
+	return (t - RAMP * 0.5) / (1.0 - RAMP)
+
+func _flight_point(distance: float) -> Vector3:
+	var p := _flight_curve.sample_baked(_flight_curve.get_baked_length() * distance) + TOKEN_OFF
+	p.y += pow(sin(PI * distance), 2.0) * 1.2
+	return p
+
+func _advance_flight(delta: float) -> void:
+	_flight_time = minf(_flight_time + delta, FLIGHT_SECONDS)
+	var t := _flight_time / FLIGHT_SECONDS
+	var distance := _flight_distance(t)
+	var p := _flight_point(distance)
+	var forward := (_flight_point(minf(1.0, distance + 0.005)) - _flight_point(maxf(0.0, distance - 0.005))).normalized()
+	var next_forward := (_flight_point(minf(1.0, distance + 0.04)) - p).normalized()
+	var bank := clampf(-forward.signed_angle_to(next_forward, Vector3.UP) * 4.0, -0.24, 0.24) * sin(PI * t)
+	var heading := (Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.UP, PI * 0.5) * Basis(Vector3.RIGHT, bank)).get_rotation_quaternion()
+	token.position = p
+	token.quaternion = _flight_rotation.slerp(heading, smoothstep(0.0, 0.22, t))
+	var lead := forward * 3.5 * sin(PI * t)
+	var follow := 1.0 - exp(-delta * 4.0)
+	# Keep the sun and the fleet in the fitted view while bodies at different
+	# depths pass naturally. Avoid the old close zoom that lost the whole sun.
+	_cam_focus = _cam_focus.lerp(p + lead, follow)
+	_cam_zoom = lerpf(_cam_zoom, 0.86, follow)
+	if _wake_samples.is_empty() or _t - float(_wake_samples.back()["time"]) >= (0.016 if quality != "low" else 0.033):
+		var engines: Array = []
+		for mount in _engine_mounts: engines.append(token.transform * mount)
+		_wake_samples.append({"time": _t, "engines": engines})
+	if t >= 1.0: _finish_flight()
+
+func _finish_flight() -> void:
+	if not _flying: return
+	var id := _flight_id
+	token.position = _flight_point(1.0)
+	# Keep the arrival heading; banking settles without a rotation reset.
+	var forward := (token.position - _flight_point(0.995)).normalized()
+	token.basis = Basis.looking_at(forward, Vector3.UP) * Basis(Vector3.UP, PI * 0.5)
+	_flying = false; _flight_id = ""
+	_C().act("enterNode", id)
+	_last_pos = _C().RUN.get("pos")
+	_arrive(false)
+	_refresh()
+
+func _make_wake() -> void:
+	_wake_mesh = ImmediateMesh.new()
+	_wake_material = StandardMaterial3D.new()
+	_wake_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_wake_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_wake_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	_wake_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_wake_material.vertex_color_use_as_albedo = true
+	_wake_material.albedo_color = System.look(_C().RUN["fac"])["light"]
+	_wake_node = sys.mi(_wake_mesh, _wake_material)
+	_wake_node.extra_cull_margin = R_OUT * 3.0
+	root3.add_child(_wake_node)
+
+func _update_wake() -> void:
+	if _wake_mesh == null: return
+	while not _wake_samples.is_empty() and _t - _wake_samples[0]["time"] > 0.65: _wake_samples.pop_front()
+	_wake_mesh.clear_surfaces()
+	if _wake_samples.size() < 2: return
+	for engine in _engine_mounts.size():
+		_wake_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+		for i in _wake_samples.size():
+			var p: Vector3 = _wake_samples[i]["engines"][engine]
+			var before: Vector3 = _wake_samples[maxi(0, i - 1)]["engines"][engine]
+			var after: Vector3 = _wake_samples[mini(_wake_samples.size() - 1, i + 1)]["engines"][engine]
+			var side := (after - before).cross(cam.position - p).normalized()
+			var life := clampf(1.0 - (_t - float(_wake_samples[i]["time"])) / 0.65, 0.0, 1.0)
+			_wake_mesh.surface_set_color(Color(1.5, 1.5, 1.5, life * life * 0.85))
+			_wake_mesh.surface_add_vertex(p - side * life * 0.26)
+			_wake_mesh.surface_add_vertex(p + side * life * 0.26)
+		_wake_mesh.surface_end()
