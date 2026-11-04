@@ -91,6 +91,8 @@ uniform float plasma = 0.0;
 uniform vec3 velocity = vec3(0.0);
 uniform vec3 tear_normal = vec3(0.0, 1.0, 0.0);
 uniform float directional = 0.0;
+uniform float ignition = 0.0;
+uniform vec4 atlas_rect = vec4(0.0, 0.0, 1.0, 1.0);
 uniform float min_pixels = 0.0;
 varying float elapsed;
 varying float particle_depth;
@@ -108,21 +110,22 @@ void vertex() {
 	axis = length(axis) > 0.01 ? normalize(axis) : vec2(0.0, 1.0);
 	vec2 up = mix(vec2(0.0, 1.0), axis, directional);
 	vec2 right = vec2(up.y, -up.x);
-	vec2 offset = (right * VERTEX.x + up * VERTEX.y) * size;
+	vec2 offset = (right * VERTEX.x * mix(1.0, 0.6, directional) + up * VERTEX.y) * size;
 	POSITION = PROJECTION_MATRIX * vec4(view_c + vec3(offset, 0.0), 1.0);
 }
 void fragment() {
 	float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);
-	float frame = age * 15.0;
+	float frame = mix(age * 15.0, 3.0 + sqrt(age) * 12.0, plasma);
 	float a = floor(frame); float b = min(a + 1.0, 15.0); float blend = fract(frame);
-	vec2 fa = (texture(motion, cell_uv(UV, a)).rg - 0.5) * 0.25;
-	vec2 fb = (texture(motion, cell_uv(UV, b)).ba - 0.5) * 0.25;
-	vec2 ua = cell_uv(UV - fa * blend, a);
-	vec2 ub = cell_uv(UV - fb * (1.0 - blend), b);
+	vec2 uv = atlas_rect.xy + vec2(UV.x, mix(UV.y, 1.0 - UV.y, directional)) * atlas_rect.zw;
+	vec2 fa = (texture(motion, cell_uv(uv, a)).rg - 0.5) * 0.25;
+	vec2 fb = (texture(motion, cell_uv(uv, b)).ba - 0.5) * 0.25;
+	vec2 ua = cell_uv(uv - fa * blend, a);
+	vec2 ub = cell_uv(uv - fb * (1.0 - blend), b);
 	vec4 gas = mix(texture(atlas, ua), texture(atlas, ub), blend);
 	vec3 thick = mix(texture(thickness, ua).rgb, texture(thickness, ub).rgb, blend);
 	// Thickness gradients make a coarse volume normal, shaded by the battle sun.
-	vec2 e = vec2(1.0 / 2048.0, 0.0);
+	vec2 e = vec2(1.0 / float(textureSize(thickness, 0).x), 0.0);
 	float dx = texture(thickness, ua + e.xy).r - texture(thickness, ua - e.xy).r;
 	float dy = texture(thickness, ua + e.yx).r - texture(thickness, ua - e.yx).r;
 	vec3 normal = normalize(vec3(-dx * 26.0, dy * 26.0, 0.5));
@@ -130,7 +133,11 @@ void fragment() {
 	float lit = 0.25 + 0.55 * max(dot(normal, sun), 0.0) + thick.g * 0.2;
 	vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);
 	vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);
-	ALBEDO = mix(smoke, core * (0.7 + gas.r), plasma) * intensity * fx_gain;
+	ALBEDO = smoke * (1.0 - plasma) * intensity * fx_gain;
+	// One fast ignition, then only cool gas. The caller books both bright
+	// phases through flash_ok; an unbooked vent has no emissive pulse.
+	float pulse = plasma * (1.0 - smoothstep(0.12, 0.85, age)) + ignition * exp(-elapsed / 0.055);
+	ALBEDO += core * (0.9 + gas.r * 1.6) * pulse * intensity * fx_gain;
 	float fade = 1.0 - smoothstep(0.70, 1.0, age);
 	float soft = 1.0;
 #ifndef COMPAT
@@ -1041,7 +1048,7 @@ void fragment() {
 # white, then red, then goes black; acid keeps a faint green working glow.
 const HOLE := """
 shader_type spatial;
-render_mode cull_back;
+render_mode cull_disabled;
 """ + COMMON + """
 uniform int wound_kind = 0;
 uniform vec3 glow = vec3(1.0, 0.45, 0.12);

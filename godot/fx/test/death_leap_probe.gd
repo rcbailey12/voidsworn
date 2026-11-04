@@ -13,12 +13,13 @@ var cam: Camera3D
 func _init() -> void:
 	process_frame.connect(_run, CONNECT_ONE_SHOT)
 
-func _ship(id: String, cls: String, pos: Vector3) -> Node3D:
+func _ship(id: String, cls: String, pos: Vector3, faction := "voidsworn") -> Node3D:
 	var sv := SV.new()
 	world.add_child(sv)
-	sv.setup({"id": id, "fac": "voidsworn", "cls": cls, "facing": 0, "hp": 100, "maxHp": 100, "size": 1.0}, pos, true)
+	var size := 0.55 if cls == "Frigate" else (0.8 if cls == "Cruiser" else 1.0)
+	sv.setup({"id": id, "fac": faction, "cls": cls, "facing": 0, "hp": 100, "maxHp": 100, "size": size}, pos, true)
 	sv.set_process(false)
-	fx.add_ship(id, sv, {"faction": "voidsworn", "cls": cls, "size": 1.0, "meshes": sv.meshes, "code": sv.code})
+	fx.add_ship(id, sv, {"faction": faction, "cls": cls, "size": size, "meshes": sv.meshes, "code": sv.code})
 	return sv
 
 func _step() -> void:
@@ -53,18 +54,23 @@ func _run() -> void:
 	cam = RIG.new()
 	world.add_child(cam)
 	cam.current = true
+	cam.set_process(false)
 	fx = FX.new()
 	world.add_child(fx)
 	fx.manual = true
 	fx.setup({"camera": cam, "quality": quality, "shake": 0.0, "seed": 137})
 	if profile:
 		await _profile()
+	elif OS.get_environment("DEATH_STILLS") == "1":
+		await _interiors()
 	else:
-		for cls in ["Cruiser", "Battleship", "Frigate"]:
+		for spec in [["voidsworn", "Cruiser"], ["voidsworn", "Battleship"], ["voidsworn", "Frigate"], ["chorus", "Frigate"]]:
+			var cls: String = spec[1]
 			if not OS.get_environment("DEATH_CLASS").is_empty() and cls != OS.get_environment("DEATH_CLASS"): continue
+			if not OS.get_environment("DEATH_FACTION").is_empty() and spec[0] != OS.get_environment("DEATH_FACTION"): continue
 			for zoom in ["battle", "close"]:
 				if not OS.get_environment("DEATH_ZOOM").is_empty() and zoom != OS.get_environment("DEATH_ZOOM"): continue
-				var sv := _ship("C", cls, Vector3.ZERO)
+				var sv := _ship("C", cls, Vector3.ZERO, spec[0])
 				var s = fx.ship("C")
 				for i in 300: await _step()
 				while s.has_meta("cut_task"): await _step()
@@ -72,7 +78,7 @@ func _run() -> void:
 				cam.r = 170.0 if zoom == "battle" else s.hull.L * 1.8
 				cam.t = s.to_world(s.hull.c); cam.snap()
 				await _step()
-				var folder := out.path_join(cls.to_lower() + "_" + zoom)
+				var folder := out.path_join(spec[0] + "_" + cls.to_lower() + "_" + zoom)
 				DirAccess.make_dir_recursive_absolute(folder)
 				var t: float = fx.now
 				fx.death("C", "blast")
@@ -85,7 +91,36 @@ func _run() -> void:
 				for i in 180: await _step()
 	fx.release()
 	SV.clear_static()
+	FX.clear_static()
 	quit(0)
+
+func _interiors() -> void:
+	for faction in ["voidsworn", "hegemony", "corsair", "deathless", "ithar", "chorus"]:
+		var sv := _ship("C", "Cruiser" if faction != "chorus" else "Frigate", Vector3.ZERO, faction)
+		var s = fx.ship("C")
+		for i in 300: await _step()
+		while s.has_meta("cut_task"): await _step()
+		# Same persistent stage-4 holes as battle, with no lethal damage.
+		s.set_stages(fx, [4, 4, 4])
+		while s._dmg_task >= 0:
+			s.flush_damage(fx)
+			await _step()
+		for i in 60: await _step()
+		cam.a = -0.9; cam.b = 1.1; cam.r = s.hull.L * 1.5
+		cam.t = s.to_world(s.hull.c); cam.snap()
+		await _step()
+		vp.get_texture().get_image().save_png(out.path_join(faction + "_alive.png"))
+		while s.has_meta("cut_task"): await _step()
+		for pc in s.get_meta("cut_job", {}).get("out", []):
+			print("INTERIOR faction=%s vertices=%d edges=%d loops=%d fallbacks=%d cap_vertices=%d" % [faction, pc.n, pc.get("boundary_edges", 0), pc.get("cap_loops", 0), pc.get("cap_fallbacks", 0), pc.get("cap", [PackedVector3Array()])[0].size()])
+		fx.death("C", "blast")
+		for i in 210: await _step()
+		for angle in [0, 1]:
+			cam.a = -0.5 if angle == 0 else 2.6; cam.snap()
+			await _step()
+			vp.get_texture().get_image().save_png(out.path_join(faction + "_cut%d.png" % angle))
+		fx.clear_wreck("C"); fx.remove_ship("C"); sv.queue_free()
+		for i in 180: await _step()
 
 func _profile() -> void:
 	for i in 20:

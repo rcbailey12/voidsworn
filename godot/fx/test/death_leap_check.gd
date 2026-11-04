@@ -47,7 +47,7 @@ func _run() -> void:
 		var wreck: Dictionary = fx.dstate.wrecks[0]
 		check(wreck.nodes.size() == 4 and wreck.cut_events.size() == 4, "battleship has three cuts and four sealed sections")
 		check(float(wreck.cut_events.back().t) - float(wreck.cut_events.front().t) >= 0.78, "cuts are separated over 0.8 s")
-		check(wreck.mats.is_empty() == (quality != "max"), "only max has fracture glow")
+		check(wreck.mats.is_empty() == (quality == "low"), "max and high have cooling fracture edges")
 		for node in wreck.nodes:
 			if node is RigidBody3D:
 				check(not node.freeze and node.linear_damp == 0.0 and node.angular_damp == 0.0, "released rigid sections keep momentum")

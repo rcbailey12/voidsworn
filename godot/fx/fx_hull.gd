@@ -103,6 +103,7 @@ uniform vec4 fx_shapes[64]; // round/square/slot, phases 0, 1, 2
 uniform vec4 fx_tears[64]; // square rotation, phase 3, phase 4, unused
 uniform vec3 fx_burnt_cell = vec3(1.0);
 uniform float fx_power = 1.0;
+uniform bool fx_organic = false;
 varying vec3 fx_hull_p;
 float fx_mouth_edge(int i, vec3 p) {
 	vec3 d = p - fx_mouths[i].xyz;
@@ -151,7 +152,7 @@ static func clear_shader_cache() -> void:
 	_shader_refs.clear()
 
 
-static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float) -> ShaderMaterial:
+static func damage_material(src: Material, frame: Transform3D, mouths: Dictionary, L: float, organic := false) -> ShaderMaterial:
 	if src != null and src.has_meta("fx_hull_source"):
 		src = src.get_meta("fx_hull_source")
 	if src == null:
@@ -186,6 +187,16 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 	ALBEDO = vec3(0.0); METALLIC = 0.0; SPECULAR = 0.0; ROUGHNESS = 1.0;
 	RIM = 0.0; CLEARCOAT = 0.0; SSS_STRENGTH = 0.0; BACKLIGHT = vec3(0.0);
 	EMISSION = hull_inside(fx_hull_p, vec3(0.0), 0.0, fx_burnt_cell, 0.35, vec3(1.0), 0.0);
+	vec3 section = fx_hull_p / max(fx_burnt_cell, vec3(0.001));
+	float rib = 1.0 - smoothstep(0.02, 0.065, abs(fract(section.y * 0.65) - 0.5));
+	float beam = 1.0 - smoothstep(0.015, 0.045, abs(fract(section.z * 0.5) - 0.5));
+	vec3 structure = mix(vec3(0.008, 0.006, 0.007), vec3(0.032, 0.025, 0.021), max(rib, beam));
+	if (fx_organic) {
+		float fibre = pow(abs(sin(section.x * 6.0 + sin(section.y * 3.0))), 8.0);
+		structure = mix(vec3(0.018, 0.003, 0.009), vec3(0.042, 0.009, 0.017), fibre);
+		structure = mix(structure, vec3(0.085, 0.062, 0.033), rib * 0.7);
+	}
+	EMISSION = max(EMISSION, structure);
 }
 """)
 	var mat := ShaderMaterial.new()
@@ -196,6 +207,7 @@ if (FRONT_FACING == (determinant(mat3(MODEL_MATRIX)) < 0.0)) {
 			mat.set_shader_parameter(param["name"], value)
 	mat.set_meta("fx_hull_source", src)
 	mat.set_shader_parameter("fx_hull_frame", frame)
+	mat.set_shader_parameter("fx_organic", organic)
 	mat.set_shader_parameter("fx_burnt_cell", Vector3.ONE * maxf(L * 0.05, 0.001))
 	mat.set_shader_parameter("fx_mouth_count", int(mouths.get("count", 0)))
 	for key in ["mouths", "axes", "tangents", "shapes", "tears"]:
