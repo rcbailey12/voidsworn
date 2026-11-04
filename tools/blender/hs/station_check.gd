@@ -41,13 +41,21 @@ func _run() -> void:
 				lo = lo.min(p)
 				hi = hi.max(p)
 		var dimensions := hi - lo
-		if absf(dimensions.x - 46.0) > 0.01 or batteries != (4 if variant == "fleet" else 0):
+		if absf(dimensions.x - 46.0) > 0.01 or dimensions.y < 19.0 or batteries != (4 if variant == "fleet" else 0):
 			push_error("Wrong station dimensions or turret export: " + variant)
 			quit(1)
 			return
 		for size in [30.0, 46.0]:
-			var measured: float = dimensions.x * size / 46.0
-			if absf(measured - size) > 0.01:
+			station.scale = Vector3.ONE * size / 46.0
+			var fitted_lo := Vector3.INF
+			var fitted_hi := -Vector3.INF
+			for node in meshes:
+				var mi := node as MeshInstance3D
+				for corner in 8:
+					var p := mi.global_transform * mi.get_aabb().get_endpoint(corner)
+					fitted_lo = fitted_lo.min(p)
+					fitted_hi = fitted_hi.max(p)
+			if absf((fitted_hi - fitted_lo).x - size) > 0.01:
 				quit(1)
 				return
 		print("[station-check] PASS ", variant, " dimensions=", dimensions,
