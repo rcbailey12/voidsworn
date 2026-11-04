@@ -13,7 +13,7 @@ extends RefCounted
 #            needle (Ithar needle beam turret: a thin prismatic beam)
 #   lance:   lance (Voidsworn penance lance)   ion (Hegemony: beam with crawling arcs, blue static wash)
 #            pulsar (Ithar: the beam in travelling pulses)   doom (Deathless doom arc: re-striking green lightning)
-#   torp:    torp (Voidsworn hellfire: trackable bodies, long plumes)   rockets (Corsair rattle-rocket pods: swarms of
+#   torp:    torp (Voidsworn hellfire: armoured bodies, short plumes)   rockets (Corsair rattle-rocket pods: swarms of
 #            small sooty rockets)   star (Ithar star torpedo: a little sun)
 #   flak:    airbursts in the faction's style (Hegemony picket lasers, Chorus spores, Ithar mirror glints, Deathless
 #            gauss shredder streaks, Corsair chaff)
@@ -221,10 +221,10 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				var tb = tf + b * 0.05
 				var jit = fx.rdir() * 0.3 * kt
 				# round 2: a stuttering brass muzzle flicker and fat short tracers (four to a burst: the chatter is its signature)
-				fx.spr(from + dir * 0.4 * ka, tb, 0.06, Color(1, 0.8, 0.45), 7.0, 0.8 * ka, 1.4 * ka, 5, Vector3.ZERO, 0.0, 0.0, 0.0, 14.0)
+				_burst(fx, from + dir * 0.4 * ka, dir, tb, 1.8 * ka, "flash", 0.12, Color(0.94, 0.73, 0.4), 3.8, 14.0)
 				fx.stk(from, tb, dist / spd, Color(1, 0.78, 0.4), 13.0, 4.0 * ka, 0.4 * ka, 0, (dir + jit / dist) * spd, 0.0, 0.0, 3.6, 18.0)
 				if A != null and A.faction == "corsair":
-					fx.spr(from + dir * 0.8 * ka, tb + 0.02, 0.9, Color(0.07, 0.06, 0.05), 0.4, 0.5 * ka, 1.8 * ka, 8, dir * 2.0, 0.8)
+					_burst(fx, from + dir * 0.8 * ka, dir, tb + 0.02, 2.0 * ka, "cool", 0.4, col, 0.5, 0.0, dir * 2.0, 0.4)
 			fx.light(from + mn * 1.2 * ka, tf, 0.25, 5.5, Color(1, 0.75, 0.4), 1)
 			ti = tf + dist / spd
 		"las":
@@ -238,7 +238,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 			tf = T0 + 0.12 + i * 0.16
 			var spd = SHELL_SPEED * 0.55 * fx.unit
 			var sz = (1.9 if w >= 3 else 1.5) * ka
-			fx.spr(from + dir * 0.6 * ka, tf, 0.22, col.lerp(Color.WHITE, 0.3), 4.0, sz * 1.2, sz * 2.4, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 30.0 if w >= 3 else 24.0)
+			_burst(fx, from + dir * 0.6 * ka, dir, tf, sz * 2.4, "flash", 0.22, col, 4.0, 30.0 if w >= 3 else 24.0)
 			fx.spr(from, tf, dist / spd, col, 2.0, sz * 1.6, sz * 1.6, 14, dir * spd, 0.0, 0.0, 0.0, 24.0 if w >= 3 else 19.0)
 			fx.stk(from, tf, dist / spd, col, 3.0, 4.0 * ka, sz * 0.7, 0, dir * spd)
 			# heat shimmer trailing the bolt
@@ -285,7 +285,7 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 				for s in 6:
 					fx.rib(from + fx.rdir() * 1.2 * ka, fx.rdir(), 2.5 * ka, tf - charge + s * 0.05, 0.12, col, 1.4, 0.3 * ka, 0.2 * ka, 6)
 			var rk: int = {"lance": 2, "ion": 5, "pulsar": 7, "doom": 6}[lk]
-			fx.spr(from, tf, dur, col.lerp(Color.WHITE, 0.3), 7.0, 4.5 * ka, 4.5 * ka, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 22.0)
+			_burst(fx, from, dir, tf, 4.5 * ka, "flash", 0.28, col, 3.6, 22.0)
 			fx.rib(from, dir, dist, tf, dur, col, 2.4, wd, wd * 0.85, rk)
 			fx.light(from + dir * 1.5 + mn * ka, tf, dur, 6.0, col, 1)
 			fx.dst(from + dir * dist * 0.5, tf, dur, dist * 0.3, dist * 0.35, 1, 0.6)
@@ -365,106 +365,223 @@ static func _shot(fx, lk: String, kind: String, w: int, i: int, n: int, from: Ve
 	return [ti, tend + 0.3]
 
 
+# Weapon bursts use leap 1's atlas, flow interpolation, thickness lighting and
+# soft intersections. Only the palette and aspect differ from the death recipe.
+# Keep one derived shader per FX session, with the same three cached atlas maps.
+static func _weapon_shader(fx) -> Shader:
+	if not fx.dstate.has("weapon_flipbook_shader"):
+		var code: String = SH.DEATH_FLIPBOOK.replace("uniform float intensity = 1.0;",
+			"uniform float intensity = 1.0;\nuniform vec3 weapon_tint = vec3(0.9, 0.6, 0.3);\nuniform float opacity = 1.0;\nuniform float aspect = 1.0;\nuniform float spin = 0.0;\nuniform float vent = 0.0;\nuniform float looping = 0.0;")
+		code = code.replace("vec2 up = mix(vec2(0.0, 1.0), axis, directional);",
+			"vec2 up = mix(vec2(sin(spin), cos(spin)), axis, directional);")
+		code = code.replace("up * VERTEX.y", "up * VERTEX.y * aspect")
+		code = code.replace("vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);",
+			"vec3 core = mix(weapon_tint, vec3(0.9, 0.83, 0.68), age * 0.45);")
+		code = code.replace("ALPHA = gas.a * fade * soft", "ALPHA = gas.a * fade * soft * opacity * mix(1.0, 0.55, fx_calm)")
+		# Crop the empty atlas gutters, so the pixel floor measures the gas itself.
+		code = code.replace("// Half-texel gutter", "uv = (uv - vec2(0.5)) * vec2(0.36, 0.48) + vec2(0.5, mix(0.5, mix(0.72, 0.50, smoothstep(0.0, 12.0, frame)), vent));\n\t// Half-texel gutter")
+		code = code.replace("float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);",
+			"float age = looping > 0.5 ? 0.15 + 0.55 * (0.5 + 0.5 * sin(elapsed * 9.0 * mix(1.0, 0.35, fx_calm) + spin)) : clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);")
+		code = code.replace("float fade = 1.0 - smoothstep(0.70, 1.0, age);", "float fade = mix(1.0 - smoothstep(0.70, 1.0, age), pow(clamp(UV.y, 0.0, 1.0), 0.7), looping);")
+		code = code.replace("(elapsed < lifetime ? 1.0 : 0.0)", "(elapsed < lifetime || looping > 0.5 ? 1.0 : 0.0)")
+
+		fx.dstate["weapon_flipbook_shader"] = fx.mat(code, 2, "#define COMPAT\n" if fx.compat else "").shader
+	return fx.dstate["weapon_flipbook_shader"]
+
+
+static func _burst(fx, p: Vector3, axis: Vector3, T: float, size: float, kind: String, life: float, col: Color,
+		strength := 3.0, px := 0.0, velocity := Vector3.ZERO, opacity := 1.0, aspect := 1.0) -> void:
+	var power: float = strength
+	var duration: float = life
+	if kind == "flash" and strength >= fx.FLASH_I:
+		if fx.reduce_flashing or (fx._flash_sized(p, size, px) and not fx.flash_ok(T)):
+			power = 1.25
+			duration = maxf(life, 0.4)
+	var seed: float = fx.rng.randf()
+	fx.later(T, func() -> void:
+		var node := DEATH.flipbook(fx, p, axis, size * fx.unit, kind, duration, velocity, power, "small") as MeshInstance3D
+		node.name = "fx_weapon_" + kind
+		# The vent helper offsets its atlas to put the tip on the sampled surface.
+		var mat: ShaderMaterial = node.material_override
+		mat.shader = _weapon_shader(fx)
+		mat.set_shader_parameter("born", T)
+		mat.set_shader_parameter("weapon_tint", Vector3(col.r, col.g, col.b))
+		mat.set_shader_parameter("opacity", opacity)
+		mat.set_shader_parameter("aspect", aspect)
+		mat.set_shader_parameter("vent", 1.0 if kind == "vent" else 0.0)
+		mat.set_shader_parameter("spin", seed * TAU)
+		mat.set_shader_parameter("min_pixels", px)
+	)
+
+
+# Zero drag and no gravity: hot fragments keep the outward impact vector in vacuum.
+# Sparse accents sit over the broad baked masses instead of a dense starburst.
+static func _impact_sparks(fx, p: Vector3, axis: Vector3, T: float, k: float, col: Color, count := 10, speed := 14.0) -> void:
+	if fx.quality == "low": return
+	var amount: int = count if fx.quality == "max" else maxi(3, count / 2)
+	for j in amount:
+		var v: Vector3 = fx.rcone(axis, 0.65) * fx.rng.randf_range(speed * 0.45, speed) * k * fx.unit
+		fx.stk(p, T + fx.rng.randf() * 0.035, fx.rng.randf_range(0.18, 0.42), col, 3.6,
+			0.25 * k, 0.055 * k, 1, v, 0.0, 0.0, 1.8, 4.5)
+
+
 # ---------------------------------------------------------------- fire
 
-# F3 round 2: a muzzle flash you can see from the battle camera, and a short light on the firing ship, so you see who
-# shot. kind 0 (a star-shaped flash) for guns, 2 (a round hot core) for plasma, 16 (a glint) for Ithar glass; px is the
-# flash's size on screen. Small (well under the counted-flash area at battle zoom), so it never uses the flash budget there.
+# A small baked muzzle burst and a short light identify the firing ship.
+# The pixel floor keeps it readable at battle distance; close flashes use the budget.
 static func _muzzle(fx, p: Vector3, dir: Vector3, mn: Vector3, t: float, col: Color, k: float, px: float, kind := 0, lpk := 6.0, llife := 0.2) -> void:
-	fx.spr(p + dir * 0.4 * k, t, 0.08 if kind == 0 else 0.14, col.lerp(Color.WHITE, 0.35), 8.0, 0.8 * k, 1.6 * k, kind, Vector3.ZERO, 0.0, 0.0, 0.0, px)
-	fx.spr(p + dir * 0.9 * k, t, 0.22, col, 2.2, 0.6 * k, 1.8 * k, 18, dir * 3.0 * k, 2.0, 0.0, 0.0, px * 0.9)
-	fx.light(p + mn * 1.2 * k + dir * 0.6 * k, t, llife, lpk, col.lerp(Color.WHITE, 0.3), 0)
+	_burst(fx, p + dir * 0.5 * k, dir, t, 2.6 * k, "flash", 0.18, col, 4.5, px)
+	_burst(fx, p + dir * k, dir, t + 0.035, 2.2 * k, "vent", 0.28, col, 0.7, 0.0, dir * 3.0 * k, 0.45)
+	fx.light(p + mn * 1.2 * k + dir * 0.6 * k, t, llife, lpk, col.lerp(Color(0.94, 0.87, 0.73), 0.3), 0)
 
 
 static func _muzzle_blast(fx, p: Vector3, dir: Vector3, t: float, col: Color, k: float, px := 24.0) -> void:
-	var calm: bool = fx.reduce_flashing
-	if not calm:
-		fx.spr(p + dir * 0.6 * k, t, 0.11, col.lerp(Color.WHITE, 0.25), 11.0, 3.2 * k, 5.0 * k, 0, Vector3.ZERO, 0.0, 0.0, 0.0, px)
-	else:
-		fx.spr(p + dir * 0.6 * k, t, 0.3, col, 1.5, 2.0 * k, 4.0 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
-	fx.spr(p + dir * 1.2 * k, t, 0.2, Color(1, 0.7, 0.4), 5.0 if not calm else 2.0, 1.6 * k, 3.2 * k, 2, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.6)
-	fx.stk(p, t, 0.13, col.lerp(Color.WHITE, 0.35), 5.0, 4.5 * k, 1.5 * k, 3, dir)
-	fx.ring(p + dir * 1.0 * k, dir, t + 0.02, 2.0, Color(0.24, 0.23, 0.22), 0.55, 1.0 * k, 5.5 * k, 0, 5.0 * k, 1.4)
-	for s in 3:
-		fx.spr(p + dir * (1.0 + s) * k, t + 0.03 + s * 0.03, 1.6 + fx.rng.randf() * 0.4, Color(0.20, 0.19, 0.18), 0.4, 1.2 * k,
-			(4.0 + fx.rng.randf() * 2.0) * k, 3, fx.rcone(dir, 0.5) * (2 + fx.rng.randf() * 2) * k, 1.0)
-	for s in 6:
-		fx.stk(p, t, 0.3 + fx.rng.randf() * 0.2, Color(1, 0.6, 0.25), 6.0, 0.05, 0.1 * k, 1, fx.rcone(dir, 0.5) * (10 + fx.rng.randf() * 10) * k, 2.0, 0.0, 2.4, 8.0)
+	_burst(fx, p + dir * 0.6 * k, dir, t, 4.0 * k, "flash", 0.20, Color(0.94, 0.72, 0.42), 5.0, px)
+	_burst(fx, p + dir * k, dir, t + 0.025, 3.6 * k, "vent", 0.35, col, 0.8, 0.0, dir * 4.0 * k, 0.55)
+	_impact_sparks(fx, p, dir, t, k, Color(0.91, 0.57, 0.27), 4, 9.0)
 
 
-# Torpedoes, rockets and star torpedoes: CPU-steered bodies on a curving path, with their exhaust drawn behind them.
 static func _launch(fx, lk: String, from: Vector3, mn: Vector3, to: Vector3, tf: float, ti: float, col: Color, fac: Dictionary, k: float, i: int, intercept: bool) -> void:
 	var eng: Color = fac["engine"]
-	# cold launch: gas shove, vapour ring, dim flash (no counted flash)
-	fx.spr(from + mn * 0.5 * k, tf, 0.15, eng, 2.5, 1.2 * k, 2.4 * k, 2)
-	fx.ring(from + mn * 0.6 * k, mn, tf, 1.2, Color(0.5, 0.52, 0.56), 0.5, 0.6 * k, 3.5 * k, 0, 3.0 * k, 1.6)
-	for s in 4:
-		fx.spr(from + mn * 0.8 * k, tf + s * 0.04, 1.5, Color(0.55, 0.57, 0.6), 0.3, 0.8 * k, 3.0 * k, 7, fx.rcone(mn, 0.6) * 4.0 * k, 1.2)
-	var n = 1
-	if lk == "rockets":
-		n = 4
+	_burst(fx, from + mn * 0.6 * k, mn, tf, 3.2 * k, "vent", 0.35, eng, 0.8, 0.0, mn * 4.0 * k, 0.7)
+	var n: int = 4 if lk == "rockets" else 1
 	for j in n:
 		var t0 = tf + j * 0.07
-		var side = mn * (6.0 + fx.rng.randf() * 4.0) * k + fx.rdir() * 2.0 * k
+		var side = mn * (6.0 + fx.rng.randf() * 4.0) * k + fx.rdir() * (3.0 if lk == "rockets" else 1.0) * k
 		var mid = from.lerp(to, 0.45) + side + Vector3(0, (3.0 + fx.rng.randf() * 3.0) * k, 0)
 		var end = to + (fx.rdir() * 0.6 * k if lk == "rockets" else Vector3.ZERO)
 		var p = {"lk": lk, "t0": t0, "t1": ti + j * 0.03, "a": from, "b": mid, "c": end, "col": col, "eng": eng, "k": k,
-			"seed": fx.rng.randf(), "last": t0, "mesh": null, "dead_at": INF}
-		if intercept and j == 0:
-			p["dead_at"] = lerpf(t0, ti, 0.62)
-		if lk == "torp":
-			p["mesh"] = _torp_mesh(fx, k, fac)
-		elif lk == "rockets":
-			p["mesh"] = _rocket_mesh(fx, k)
+			"seed": fx.rng.randf(), "last": t0, "mesh": _projectile_body(fx, lk, k, eng), "dead_at": INF}
+		if intercept and j == 0: p["dead_at"] = lerpf(t0, ti, 0.62)
 		var list: Array = fx.dstate.get("proj", [])
 		list.append(p)
 		fx.dstate["proj"] = list
 
 
-static func _torp_mesh(fx, k: float, fac: Dictionary) -> MeshInstance3D:
-	if not fx.dstate.has("torp_mesh"):
-		var st = SurfaceTool.new()
-		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var seg = 10
-		var prof = [[-1.0, 0.18], [-0.85, 0.26], [0.55, 0.26], [0.85, 0.16], [1.0, 0.0]]
-		for s in seg:
-			var a0 = TAU * s / seg
-			var a1 = TAU * (s + 1) / seg
-			for j in prof.size() - 1:
-				var x0: float = prof[j][0]
-				var r0: float = prof[j][1]
-				var x1: float = prof[j + 1][0]
-				var r1: float = prof[j + 1][1]
-				var v00 = Vector3(x0, cos(a0) * r0, sin(a0) * r0)
-				var v01 = Vector3(x0, cos(a1) * r0, sin(a1) * r0)
-				var v10 = Vector3(x1, cos(a0) * r1, sin(a0) * r1)
-				var v11 = Vector3(x1, cos(a1) * r1, sin(a1) * r1)
-				for v in [v00, v10, v11, v00, v11, v01]:
-					st.set_uv(Vector2((v.x + 1.0) * 0.5, 0))
-					st.add_vertex(v)
-		st.generate_normals()
-		var m = StandardMaterial3D.new()
-		m.albedo_color = Color(0.12, 0.11, 0.1)
-		m.metallic = 0.7
-		m.roughness = 0.45
-		m.emission_enabled = true
-		m.emission = Color(1, 0.4, 0.1)
-		m.emission_energy_multiplier = 0.3
-		var mesh = st.commit()
-		mesh.surface_set_material(0, m)
-		fx.dstate["torp_mesh"] = mesh
-	var mi = MeshInstance3D.new()
-	mi.mesh = fx.dstate["torp_mesh"]
-	mi.scale = Vector3(1.6, 1.0, 1.0) * 1.2 * k * fx.unit
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	fx.add_child(mi)
-	return mi
+# Compact, lit casings with a closed nose, a recessed motor and rear fins.
+# The casing has no emission: the drive is bright, the body remains readable.
+const DRIVE := """
+shader_type spatial;
+render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled;
+global uniform float scene_t;
+global uniform float fx_gain;
+global uniform float fx_calm;
+uniform vec3 tint = vec3(0.95, 0.55, 0.2);
+uniform float extent = 1.0;
+uniform float seed = 0.0;
+void vertex() {
+	vec3 centre = (VIEW_MATRIX * MODEL_MATRIX[3]).xyz;
+	float size = extent * length(MODEL_MATRIX[0].xyz);
+	POSITION = PROJECTION_MATRIX * vec4(centre + vec3(VERTEX.xy * size, 0.0), 1.0);
+}
+void fragment() {
+	float r = length(UV * 2.0 - 1.0);
+	float pulse = 0.86 + (0.10 * sin(scene_t * 23.0 + seed) + 0.04 * sin(scene_t * 37.0 + seed)) * (1.0 - fx_calm);
+	float core = exp(-r * r * 26.0);
+	float halo = exp(-r * r * 5.0) * (1.0 - smoothstep(0.65, 1.0, r));
+	ALBEDO = (mix(tint, vec3(0.94, 0.87, 0.72), 0.75) * core * 5.0 + tint * halo * 1.4) * pulse * fx_gain;
+}
+"""
+
+const STAR_BODY := """
+shader_type spatial;
+render_mode unshaded;
+global uniform float scene_t;
+global uniform float fx_gain;
+void fragment() {
+	float lobes = 0.7 + 0.15 * sin(UV.x * 18.0 + scene_t * 2.0) * sin(UV.y * 12.0 - scene_t * 3.0);
+	float face = smoothstep(0.0, 0.9, max(dot(NORMAL, VIEW), 0.0));
+	ALBEDO = mix(vec3(0.95, 0.48, 0.16), vec3(0.88, 0.92, 0.95), face * lobes) * 2.2 * fx_gain;
+}
+"""
+
+static func _casing(fx, rocket: bool) -> ArrayMesh:
+	var key := "weapon_rocket_casing" if rocket else "weapon_torp_casing"
+	if fx.dstate.has(key): return fx.dstate[key]
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var profile := [[-1.15, 0.12], [-1.02, 0.24], [-0.75, 0.29], [0.38, 0.29], [0.70, 0.21], [1.12, 0.025], [1.15, 0.0]]
+	var segments := 8
+	for j in profile.size() - 1:
+		for i in segments:
+			var a := TAU * i / segments
+			var b := TAU * (i + 1) / segments
+			var x: float = profile[j][0]; var r: float = profile[j][1]
+			var y: float = profile[j+1][0]; var t: float = profile[j+1][1]
+			var panel := Color(0.19, 0.16, 0.15) if rocket else Color(0.14, 0.13, 0.12)
+			if j == 0: panel = Color(0.08, 0.065, 0.10)
+			elif j == 2 and i % 3 == 0: panel = Color(0.30, 0.19, 0.13) if rocket else Color(0.34, 0.29, 0.21)
+			st.set_color(panel)
+			for v in [Vector3(x,cos(a)*r,sin(a)*r),Vector3(y,cos(b)*t,sin(b)*t),Vector3(y,cos(a)*t,sin(a)*t),
+				Vector3(x,cos(a)*r,sin(a)*r),Vector3(x,cos(b)*r,sin(b)*r),Vector3(y,cos(b)*t,sin(b)*t)]: st.add_vertex(v)
+	for i in 4:
+		var radial := Vector3(0, cos(i * PI / 2), sin(i * PI / 2))
+		st.set_color(Color(0.20, 0.17, 0.16) if rocket else Color(0.40, 0.36, 0.29))
+		for v in [Vector3(-0.95,0,0)+radial*0.23, Vector3(-0.90,0,0)+radial*0.63, Vector3(-0.20,0,0)+radial*0.23]:
+			st.add_vertex(v)
+	st.generate_normals()
+	var mesh := st.commit()
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.metallic = 0.45; mat.roughness = 0.72
+	mesh.surface_set_material(0, mat)
+	fx.dstate[key] = mesh
+	return mesh
 
 
-static func _rocket_mesh(fx, k: float) -> MeshInstance3D:
-	var mi = _torp_mesh(fx, k, {})
-	mi.scale = Vector3(1.4, 0.55, 0.55) * 1.0 * k * fx.unit
-	return mi
+static func _projectile_body(fx, lk: String, k: float, eng: Color) -> Node3D:
+	var node := Node3D.new()
+	node.name = "fx_projectile_" + lk
+	var body := MeshInstance3D.new()
+	if lk == "star":
+		var sphere := SphereMesh.new()
+		sphere.radius = 0.65; sphere.height = 1.3; sphere.radial_segments = 16; sphere.rings = 8
+		body.mesh = sphere
+		body.material_override = fx.mat(STAR_BODY)
+	else:
+		body.mesh = _casing(fx, lk == "rockets")
+	body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(body)
+	var drive := MeshInstance3D.new()
+	var quad := QuadMesh.new(); quad.size = Vector2.ONE
+	drive.mesh = quad
+	drive.position.x = -1.14 if lk != "star" else -0.2
+	var mat: ShaderMaterial = fx.mat(DRIVE, 1)
+	mat.set_shader_parameter("tint", Vector3(eng.r, eng.g, eng.b))
+	mat.set_shader_parameter("extent", 2.5 if lk == "star" else 1.8)
+	mat.set_shader_parameter("seed", fx.rng.randf() * TAU)
+	drive.material_override = mat
+	drive.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	drive.extra_cull_margin = 3.0
+	node.add_child(drive)
+	var plume := MeshInstance3D.new()
+	plume.name = "exhaust"
+	plume.mesh = quad
+	plume.position.x = -2.0
+	var exhaust: ShaderMaterial = DEATH.flipbook_material(fx,"vent","small")
+	exhaust.shader = _weapon_shader(fx)
+	exhaust.set_shader_parameter("born",fx.now)
+	exhaust.set_shader_parameter("looping",1.0)
+	exhaust.set_shader_parameter("vent",1.0)
+	exhaust.set_shader_parameter("extent",2.4*k*fx.unit*(0.55 if lk=="rockets" else 1.0))
+	exhaust.set_shader_parameter("aspect",3.0)
+	exhaust.set_shader_parameter("directional",1.0)
+	exhaust.set_shader_parameter("min_pixels",0.0)
+	exhaust.set_shader_parameter("intensity",2.0)
+	exhaust.set_shader_parameter("plasma",0.8)
+	exhaust.set_shader_parameter("opacity",0.75)
+	exhaust.set_shader_parameter("spin",fx.rng.randf()*TAU)
+	exhaust.set_shader_parameter("weapon_tint",Vector3(eng.r,eng.g,eng.b))
+	plume.material_override = exhaust
+	plume.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	plume.extra_cull_margin = 10.0
+	node.add_child(plume)
+	node.set_meta("exhaust",exhaust)
+	node.scale = Vector3.ONE * k * fx.unit * (0.55 if lk == "rockets" else 1.0)
+	node.visible = false
+	fx.add_child(node)
+	return node
 
 
 static func _bez(a: Vector3, b: Vector3, c: Vector3, u: float) -> Vector3:
@@ -475,8 +592,6 @@ static func update(fx, dt: float) -> void:
 	_lanes_update(fx)
 	_craft_update(fx, dt)
 	var list: Array = fx.dstate.get("proj", [])
-	if list.is_empty():
-		return
 	var keep: Array = []
 	for p in list:
 		var t0: float = p["t0"]
@@ -485,77 +600,57 @@ static func update(fx, dt: float) -> void:
 		if now < t0:
 			keep.append(p)
 			continue
-		if p.get("park", false) and now >= t1:
-			# a torpedo holding in its lane: it idles at the end of its run, engine burning
-			now = t1 - 0.001
-		var dead: bool = now >= t1 or now >= float(p["dead_at"])
-		if dead:
-			if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1 and not p.has("popped"):
-				# intercepted short of the target: an airburst
-				p["popped"] = true
-				var u0 = clampf((float(p["dead_at"]) - t0) / (t1 - t0), 0.0, 1.0)
-				var pp = _bez(p["a"], p["b"], p["c"], _ease(u0))
-				fx.pop(pp, now, Color(1, 0.75, 0.45), 4.0 * float(p["k"]), 6.0)
-				fx.spr(pp, now, 0.8, Color(1, 0.6, 0.25), 3.0, 1.0 * float(p["k"]), 4.0 * float(p["k"]), 2)
-				for s in 10:
-					fx.stk(pp, now, 0.4, Color(1, 0.6, 0.25), 6.0, 0.05, 0.12, 1, fx.rdir() * 12.0 * float(p["k"]), 2.0)
-				for s in 6:
-					fx.shd(pp, now, 2.0, fx.rdir() * 6.0 * float(p["k"]), 0.25 * float(p["k"]), 1.0)
-			if p["mesh"] != null and is_instance_valid(p["mesh"]):
-				(p["mesh"] as Node).queue_free()
+		var parked: bool = p.get("park", false) and now >= t1
+		if (now >= t1 and not parked) or now >= float(p["dead_at"]):
+			if now >= float(p["dead_at"]) and float(p["dead_at"]) < t1:
+				var u0 := clampf((float(p["dead_at"]) - t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
+				var pp := _bez(p["a"], p["b"], p["c"], _ease(u0))
+				_burst(fx, pp, Vector3.UP, now, 4.0 * float(p["k"]), "flash", 0.24, p["col"], 3.2, 24.0)
+				_impact_sparks(fx, pp, ((p["c"] as Vector3)-(p["a"] as Vector3)).normalized(), now, p["k"], Color(0.9,0.62,0.32), 6)
+			if is_instance_valid(p["mesh"]): (p["mesh"] as Node).queue_free()
 			continue
 		keep.append(p)
-		var u = clampf((now - t0) / (t1 - t0), 0.0, 1.0)
-		var e = _ease(u)
-		var pos = _bez(p["a"], p["b"], p["c"], e)
+		var u := clampf((now-t0) / maxf(t1-t0, 0.001), 0.0, 1.0)
+		var e := _ease(u)
+		var pos := _bez(p["a"],p["b"],p["c"],e)
+		var d: Vector3 = ((p["b"] as Vector3)-(p["a"] as Vector3)).lerp((p["c"] as Vector3)-(p["b"] as Vector3),e).normalized()
+		if d.length_squared() < 0.01: d = Vector3.RIGHT
 		p["pos"] = pos
-		var ahead = _bez(p["a"], p["b"], p["c"], minf(e + 0.02, 1.0))
-		var d = (ahead - pos)
-		d = d.normalized() if d.length() > 1e-4 else Vector3(1, 0, 0)
-		var k: float = p["k"]
-		var lk: String = p["lk"]
-		var eng: Color = p["eng"]
-		if p["mesh"] != null and is_instance_valid(p["mesh"]):
-			var mi: MeshInstance3D = p["mesh"]
-			var wob = Vector3(sin(now * 9.0 + float(p["seed"]) * 10.0), cos(now * 7.0), 0) * 0.15 * k
-			mi.global_transform = Transform3D(Basis.looking_at(-d, Vector3.UP).rotated(d, now * 4.0) * Basis(Vector3.UP, -PI / 2).scaled(mi.scale), pos + wob)
-		# exhaust: emitted along the swept segment since last frame (no spotty gaps at speed)
-		var last: float = p["last"]
-		var rate = 90.0 if lk == "torp" else (40.0 if lk == "rockets" else 60.0)
-		var nemit = int((now - last) * rate)
-		if nemit > 0:
-			p["last"] = last + nemit / rate
-			var tail = pos - d * 1.0 * k
-			for s in nemit:
-				var f = (s + 1.0) / nemit
-				var ps = tail - d * (1.0 - f) * maxf((now - last) * 60.0 * k, 0.0) * 0.1
-				var tt: float = last + f * (now - last)
-				if lk == "star":
-					fx.spr(ps, tt, 0.25, eng, 2.0, 2.4 * k, 1.2 * k, 17)
-					fx.spr(ps, tt, 0.6, eng, 0.6, 1.0 * k, 2.2 * k, 18)
-				else:
-					fx.spr(ps, tt, 0.14, eng, 5.0 if lk == "torp" else 4.0, (2.2 if lk == "torp" else 1.6) * k, 0.6 * k, 2)
-					if lk == "torp":
-						# A short smoke ribbon leaves the bright head easy to track along its lane.
-						fx.spr(ps, tt, 0.9, Color(0.62, 0.64, 0.7), 0.22, 1.0 * k, 2.8 * k, 7, fx.rdir() * 0.5 * k, 0.6, 0.3)
-					else:
-						# rattle-rockets: a hot streak and a dirty grey smoke trail each, so the swarm reads at a glance
-						fx.spr(ps, tt, 1.8, Color(0.34, 0.31, 0.28), 0.45, 0.6 * k, 2.8 * k, 8, fx.rdir() * 0.8 * k, 0.8, 0.5)
-						if s == nemit - 1:
-							fx.stk(pos, tt, 0.08, eng.lerp(Color(1, 0.85, 0.5), 0.4), 6.0, 0.06, 0.35 * k, 1, -d * 40.0 * k, 0.0)
-		if lk == "torp" and p.has("prev"):
-			var pv: Vector3 = p["prev"]
-			var seg = pos - pv
-			if seg.length() > 0.01:
-				fx.stk(pv - d * 1.0 * k, now, 1.4, eng, 2.2, seg.length(), 0.5 * k, 5, seg.normalized())
-		p["prev"] = pos
-		if lk != "star":
-			# round 2: the motor's bright head, with its own size on screen, so a torpedo in flight is a moving star
-			fx.spr(pos - d * 0.8 * k, now, 0.035, eng.lerp(Color.WHITE, 0.4), 6.0, 0.6 * k, 0.6 * k, 4, Vector3.ZERO, 0.0, 0.0, 0.0, 11.0 if lk == "torp" else 7.0)
-			fx.light(pos - d * k, now, 0.05, 3.0 if lk == "torp" else 0.8, eng, 1)
-		else:
-			fx.light(pos, now, 0.05, 3.0, eng, 1)
+		if is_instance_valid(p["mesh"]):
+			var node: Node3D = p["mesh"]
+			var z := d.cross(Vector3.UP if absf(d.y) < 0.95 else Vector3.FORWARD).normalized()
+			var scale: Vector3 = node.scale
+			node.global_transform = Transform3D(Basis(d, z.cross(d).normalized(), z).scaled(scale), pos)
+			node.visible = true
+			(node.get_meta("exhaust") as ShaderMaterial).set_shader_parameter("tear_normal",-d)
+		_projectile_exhaust(fx, p, d)
 	fx.dstate["proj"] = keep
+# Sample the actual curved path at fixed intervals. Cap catch-up after a hitch,
+# and let each short puff cool independently. There is no persistent hot ribbon.
+static func _projectile_exhaust(fx, p: Dictionary, dir: Vector3) -> void:
+	var lk: String = p["lk"]
+	var k: float = p["k"]
+	var last: float = p["last"]
+	var rate := 10.0 if lk == "rockets" else 14.0
+	if fx.quality == "low": rate *= 0.6
+	var count := mini(3, int((fx.now-last) * rate))
+	if count <= 0: return
+	p["last"] = fx.now
+	var eng: Color = p["eng"]
+	for i in count:
+		var tt: float = fx.now - float(count-i-1)/rate
+		var e := _ease(clampf((tt-float(p["t0"])) / maxf(float(p["t1"])-float(p["t0"]),0.001),0.0,1.0))
+		var at := _bez(p["a"],p["b"],p["c"],e)
+		var d: Vector3 = ((p["b"] as Vector3)-(p["a"] as Vector3)).lerp((p["c"] as Vector3)-(p["b"] as Vector3),e).normalized()
+		if d.length_squared() < 0.01: d = dir
+		var size: float = k * (0.65 if lk == "rockets" else 1.0)
+		var tail: Vector3 = at - d * size * 1.2 * fx.unit
+		_burst(fx, tail-d*size, -d, tt+0.04, 1.7 * size, "cool", 0.30 if lk == "rockets" else 0.22,
+			eng, 0.5, 0.0, -d*size*2.0, 0.30 if lk == "rockets" else 0.12)
+		if fx.quality == "max":
+			for j in 3:
+				var f := float(j) / 3.0
+				fx.dst(tail-d*size*(0.5+f*4.0), tt, 0.16, size*(0.4+f*0.5), size*(1.1+f), 1, 0.12*(1.0-f)*(1.0-f))
 
 
 static func _ease(u: float) -> float:
@@ -584,28 +679,15 @@ static func _flak(fx, lk: String, from: Vector3, dir: Vector3, dist: float, to: 
 				ft *= 2.2
 				fx.spr(from, tb, ft, col, 1.4, 0.7 * ka, 0.7 * ka, 15, (bp - from) / ft)
 			_:
-				fx.spr(from + dir * 0.4 * ka, tb, 0.06, Color(1, 0.85, 0.5), 5.0, 0.6 * ka, 1.0 * ka, 5, Vector3.ZERO, 0.0, 0.0, 0.0, 12.0)
+				_burst(fx,from+dir*0.4*ka,dir,tb,1.8*ka,"flash",0.14,Color(0.94,0.74,0.42),3.4,12.0)
 				fx.stk(from, tb, ft, Color(1, 0.8, 0.5), 8.0, 3.0 * ka, 0.32 * ka, 0, (bp - from).normalized() * spd, 0.0, 0.0, 3.0, 16.0)
 		var t_b = tb + ft
 		last = maxf(last, t_b)
-		match lk:
-			"spores":
-				for s in 3:
-					fx.spr(bp + fx.rdir() * 0.6 * kt, t_b + s * 0.05, 2.5, col * Color(0.5, 0.6, 0.35), 0.45, 0.8 * kt, 3.2 * kt, 20, fx.rdir() * 0.8, 0.6)
-				fx.spr(bp, t_b, 0.4, col, 1.4, 0.5 * kt, 2.0 * kt, 18)
-			"mflak":
-				for s in 5:
-					fx.spr(bp + fx.rdir() * 1.0 * kt, t_b + s * 0.03, 0.7, col, 2.2, 0.5 * kt, 0.2 * kt, 16, fx.rdir() * 2.0 * kt, 1.0)
-			_:
-				# a dirty airburst round the target, not on it (flak's signature): core pop, a pale burst ring, shrapnel
-				# flying every way, a smoke ball that hangs (round 2: each with its own size on screen)
-				fx.pop(bp, t_b, Color(1, 0.92, 0.7), 2.4 * kt, 6.0, -dir, 0.14, 24.0)
-				fx.spr(bp, t_b, 0.35, Color(1, 0.65, 0.3), 2.8, 0.6 * kt, 2.0 * kt, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 16.0)
-				fx.ring(bp, -dir, t_b, 0.3, Color(1, 0.85, 0.6), 1.0, 0.3 * kt, 2.0 * kt, 3, 0.0, 0.0, 28.0)
-				for s in 12:
-					fx.stk(bp, t_b + fx.rng.randf() * 0.02, 0.25 + fx.rng.randf() * 0.25, Color(1, 0.75, 0.4), 6.0, 0.05, 0.09 * kt, 1, fx.rdir() * (10 + fx.rng.randf() * 14) * kt, 2.5, 0.0, 2.2, 7.0)
-				var smoke = Color(0.14, 0.13, 0.12) if lk != "gflak" else Color(0.08, 0.12, 0.09)
-				fx.spr(bp, t_b + 0.03, 2.6 + fx.rng.randf(), smoke, 0.5, 0.8 * kt, 2.8 * kt, 3, fx.rdir() * 0.6, 0.8)
+		var tint: Color = col if lk != "flak" else Color(0.94, 0.69, 0.37)
+		_burst(fx,bp,-dir,t_b,3.2*kt,"flash",0.28,tint,1.4 if lk=="spores" else 3.4,22.0)
+		_burst(fx,bp,-dir,t_b+0.04,3.6*kt,"cool",0.55,tint,0.65,0.0,-dir*1.5*kt,0.5)
+		_impact_sparks(fx,bp,-dir,t_b,kt,tint,4 if lk in ["spores","mflak"] else 7,10.0)
+
 	return last
 
 
@@ -701,26 +783,16 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	if tg.has("through") and Tg != null:
 		var th: Dictionary = tg["through"]
 		Tg.shield_hit(fx, th["local"], T - 0.02, 0.5, 8.0 * k, 0.4)
-	var hc = Color(1, 0.62, 0.28)
 	# every weapon leaves its own mark in the hull itself (R43; fx_breach.marks_for): burn-throughs, craters, punctures,
 	# blast holes, pockmarks, acid pits, electrical burns
 	if Tg != null and tg.has("lp"):
 		var ld: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
 		var lp0: Vector3 = tg["lp"]
 		var ln0: Vector3 = tg["ln"]
-		fx.later(T, func() -> void: Tg.add_mark(fx, lk, w, lp0, ln0, ld))
-	# The target's substance controls the ejecta, regardless of the incoming gun.
-	if Tg != null and Tg.faction in ["chorus", "ithar"]:
-		var glow: Color = Tg.fac.damage_glow
-		for j in 5:
-			var v: Vector3 = fx.rcone(-dir, 0.8) * (1.0 + fx.rng.randf() * 3.0) * k
-			if Tg.faction == "chorus":
-				fx.spr(p, T + j * 0.03, 1.8, glow, 0.35, 0.15 * k, 1.2 * k, 20, v, 0.7)
-				fx.spr(p, T, 0.65, glow * Color(0.4, 0.5, 0.25), 0.6, 0.16 * k, 0.09 * k, 15, v * 1.4)
-			else:
-				fx.shd(p, T, 1.8, v, 0.2 * k, 0.15, 2.0, 0.3, 2.0)
-		return
-	# --- by family
+		var wound_look: String = tg.get("mark_look", lk)
+		fx.later(T, func() -> void: Tg.add_mark(fx, wound_look, w, lp0, ln0, ld))
+	# Material changes the ejecta; the incoming weapon still owns its burst shape.
+	var substance: String = Tg.faction if Tg != null else "metal"
 	if beam:
 		_beam_burn(fx, lk, Tg, tg, T, sustain, col, k)
 	elif bio:
@@ -728,68 +800,28 @@ static func _impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, col: C
 	elif lk == "gauss":
 		_gauss_punch(fx, Tg, tg, T, dir, col, k, w)
 	elif torp:
-		_big_hit(fx, Tg, tg, T, k * (1.5 if lk == "ram" else (0.7 if lk == "rockets" else 1.0)), col, lk == "star")
+		_big_hit(fx, Tg, tg, T, k * (1.5 if lk == "ram" else (0.65 if lk == "rockets" else 1.0)), col, lk == "star")
 	else:
-		# shells and bolts by weight: light pings, medium chips and a dent, heavy debris spray and a fire lick
-		var sz = (1.4 if light else (2.5 if w <= 2 else 3.4)) * k
-		var hpx: float = HIT_PX[clampi(w, 1, 3)] if not light else HIT_PX[1]
-		if lk == "plasma":
-			sz *= 1.3
-			hpx = minf(hpx + 6.0, 62.0)
-			hc = PLASMA_COL.lerp(PLASMA_HOT, 0.5)
-		elif lk == "las" or lk == "prism":
-			# energy bolts flash in their own colour (a laser hit is not a shell's orange)
-			hc = col.lerp(Color.WHITE, 0.25)
-		# F3 round 2: the hit flash has its own size on screen by weight, with a hot core under it, so a hit reads as a
-		# bright burst on the plate from the battle camera, small ships included
-		fx.pop(p + n * 0.2 * k, T, hc.lerp(Color.WHITE, 0.3), sz * 1.8, 9.0 if not light else 8.0, n, 0.3 if not light else 0.24, hpx)
-		fx.spr(p + n * 0.3 * k, T, 0.45 if not light else 0.3, hc, 5.0, sz * 0.4, sz * 1.0, 2, Vector3.ZERO, 0.0, 0.0, 0.0, hpx * 0.55)
-		if lk == "prism":
-			# glass shatters into colour: spectral glints thrown off the hit
-			for s in 4:
-				fx.spr(p + n * 0.2 * k, T + s * 0.03, 0.45, col, 3.0, 0.5 * k, 0.3 * k, 16, fx.rcone(n, 0.8) * (4 + fx.rng.randf() * 5) * k, 1.5, 0.0, 0.0, 10.0)
-		# F3: the hit lingers: a soft afterglow round the hit (below the flash budget's brightness, so never a counted
-		# flash) and a hot spot on the plate that cools over a second and a half, so a hit still reads after the pop
-		_afterglow(fx, p + n * 0.3 * k, T, hc, sz, light, hpx)
-		var ns = 14 if light else (22 if w <= 2 else 32)
-		for s in ns:
-			fx.stk(p, T + fx.rng.randf() * 0.03, 0.4 + fx.rng.randf() * 0.5, Color(1, 0.6, 0.25), 7.0, 0.04, 0.12 * k, 1,
-				fx.rcone(n + dir * -0.3, 0.9) * (9 + fx.rng.randf() * 16) * k, 1.6, 0.0, 2.4, 8.0)
-		# a little glowing debris thrown off the plate (embers with their own size, so they read far out)
-		for s in (3 if light else (6 if w <= 2 else 10)):
-			fx.spr(p + n * 0.2 * k, T + fx.rng.randf() * 0.05, 0.8 + fx.rng.randf() * 0.7, Color(1, 0.55, 0.2), 2.4, 0.2 * k, 0.08 * k, 19,
-				fx.rcone(n, 0.8) * (4 + fx.rng.randf() * 8) * k, 0.8, 0.0, 0.0, 5.5)
-		if not light:
-			for s in (4 if w <= 2 else 10):
-				fx.shd(p, T, 2.4, fx.rcone(n, 0.8) * (3 + fx.rng.randf() * 7) * k, (0.12 + fx.rng.randf() * 0.18) * k, 1.0)
-			fx.spr(p + n * 0.4 * k, T, 0.3, Color(1, 0.7, 0.4), 4.0, sz * 0.4, sz * 1.2, 2)
-			fx.spr(p + n * 0.6 * k, T + 0.08, 1.6, Color(0.12, 0.11, 0.1), 0.5, sz * 0.5, sz * 1.8, 3, n * 2.0 * k, 0.6)
-		if w >= 3:
-			for s in 3:
-				fx.spr(p + n * 0.5 * k, T + 0.03 * s, 0.6 + fx.rng.randf() * 0.4, Color(1, 0.5, 0.15), 3.0, sz * 0.3, sz * 0.9, 1, n * 2.0 * k + fx.rdir() * 0.6)
-			DEATH.spawn_debris(fx, p + n * 0.5 * k, n * 4.0 * k, 2, 0.3 * k)
-		if lk == "plasma":
-			# glowing blue-white slag on the plate, and a fan of droplets thrown out along the shot (the splash's signature)
-			var fan: Vector3 = (dir - n * dir.dot(n))
-			fan = fan.normalized() if fan.length_squared() > 1e-4 else fx.rdir().cross(n).normalized()
-			for s in 4:
-				fx.spr(p + fx.rdir() * 0.4 * k, T + 0.05, 2.0 + fx.rng.randf(), PLASMA_COL, 1.2, 0.4 * k, 0.3 * k, 21)
-				fx.stk(p, T + 0.1 + s * 0.15, 0.7, PLASMA_COL.lerp(PLASMA_HOT, 0.3), 2.0, 0.1, 0.1 * k, 7, (n + Vector3(0, -1, 0)).normalized() * 2.5 * k, 0.8)
-			for s in 10:
-				fx.stk(p + n * 0.1 * k, T + fx.rng.randf() * 0.04, 0.35 + fx.rng.randf() * 0.3, PLASMA_HOT, 4.0, 0.06, 0.09 * k, 1,
-					(fan * 1.4 + n * 0.5 + fx.rdir() * 0.35).normalized() * (8 + fx.rng.randf() * 10) * k, 2.4)
-		# the hit lights the target's own plating for a few frames (from further off the plate, so it lights a patch)
-		fx.light(p + n * 2.2 * k, T, 0.42, HULL_LIGHT if not light else 5.5, hc, 0)
-		fx.shake(T, 0.04 if light else (0.08 if w <= 2 else 0.14), p)
-	if crit:
-		_crit(fx, Tg, tg, T + 0.12, k)
+		var size := (3.8 if light else (5.6 if w <= 2 else 7.0)) * k
+		var tint: Color = col if lk in ["las", "prism", "plasma", "pflak", "mflak", "gflak"] else Color(0.94, 0.67, 0.33)
+		_burst(fx, p+n*0.35*k, n, T, size, "flash", 0.24 if light else 0.32, tint, 4.2, HIT_PX[clampi(w,1,3)])
+		_burst(fx, p+n*0.5*k, n, T+0.025, size*0.85, "vent", 0.38, tint, 0.9, 0.0, n*4.0*k, 0.55)
+		var ejecta := tint if substance == "ithar" else Color(0.91,0.56,0.25)
+		if substance == "chorus": ejecta = Tg.fac.damage_glow
+		_impact_sparks(fx,p+n*0.15*k,(n-dir*0.25).normalized(),T,k,ejecta,7 if light else 12)
+		_afterglow(fx,p+n*0.25*k,T,tint,size*0.45,light)
+		if not light and substance not in ["chorus","ithar"]:
+			for j in 3:
+				fx.shd(p,T,1.4,fx.rcone(n,0.6)*fx.rng.randf_range(3.0,7.0)*k,0.16*k,0.55,3.0,0.0)
+		fx.light(p+n*2.0*k,T,0.22,5.0 if light else HULL_LIGHT,tint,0)
+		fx.shake(T,0.04 if light else 0.08,p)
+	if crit: _crit(fx,Tg,tg,T+0.12,k)
 
 
-# F3: what a hit leaves for a second after the pop: a soft glow that rises and falls (kind 18, below the flash budget's
-# brightness), and for shells and bolts a hot spot on the plate cooling white to red (kind 21)
+# A short cooling atlas over the contact point and a dim hot spot on the plate.
 static func _afterglow(fx, p: Vector3, T: float, col: Color, sz: float, light: bool, px := 0.0) -> void:
-	fx.spr(p, T + 0.04, 0.8 if light else 1.1, col, 2.4 if light else 3.0, sz * 0.5, sz * (1.2 if light else 1.6), 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.8)
-	fx.spr(p, T, 1.0 if light else 1.6, col, 1.8, sz * 0.32, sz * 0.32, 21, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.3)
+	_burst(fx,p,Vector3.UP,T+0.08,sz*1.3,"cool",0.50 if light else 0.70,col,0.65,0.0,Vector3.ZERO,0.45)
+	fx.spr(p,T,0.7 if light else 1.0,col,1.0,sz*0.18,sz*0.13,21)
 
 
 static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float, dir: Vector3, k: float, sustain: float, torp: bool, beam: bool, bio: bool, light: bool) -> void:
@@ -829,170 +861,95 @@ static func _shield_impact(fx, lk: String, w: int, Tg, tg: Dictionary, T: float,
 	var spx: float = 36.0 if light else (46.0 if w <= 2 else 56.0)
 	if torp:
 		spx = 64.0
-	if lk in ["flak", "pflak", "gflak", "mflak", "spores", "guns"]:
-		fx.spr(p, T, 0.4, sc, 2.4, 0.8 * k, 2.0 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 22.0)
-		fx.ring(p, n, T, 0.35, sc, 1.2, 0.3 * k, 1.6 * k, 2, 0.0, 0.0, 22.0)
-		return
-	fx.pop(p, T, sc.lerp(Color.WHITE, 0.25), (4.0 if not torp else 10.0) * k, 3.8 if not torp else 9.0, n, 0.2 if not torp else 0.28, spx * 0.6)
-	fx.ring(p, n, T, 0.55 if not torp else 0.9, sc.lerp(Color.WHITE, 0.15), 1.8, 0.5 * k, (5.0 if not torp else 12.0) * k, 2, 0.0, 0.0, spx * 1.6)
-	# F3: the shield keeps glowing in its own colour where it was struck, for most of a second
-	fx.spr(p, T + 0.03, 0.8 if not torp else 1.3, sc, 2.6, 1.2 * k, (4.0 if not torp else 9.0) * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, spx)
-	var ns = 14 if not torp else 60
+	_burst(fx,p+n*0.25*k,n,T,(3.2 if light else (9.0 if torp else 5.0))*k,"flash",0.30,sc,3.2,spx)
+	fx.ring(p,n,T,0.55 if not torp else 0.8,sc,1.4,0.5*k,(5.0 if not torp else 12.0)*k,2,0.0,0.0,spx*1.3)
+	_impact_sparks(fx,p,n,T,k,sc,6 if light else (16 if torp else 10),12.0)
 	if beam:
-		ns = int(30 * maxf(sustain, 0.4))
-	for s in ns:
-		var ts = T + (fx.rng.randf() * maxf(sustain, 0.03) if beam else fx.rng.randf() * 0.03)
-		var tang = (fx.rdir() - n * fx.rdir().dot(n)).normalized()
-		var v = (tang * 0.8 + n * 0.4).normalized() if beam else fx.rcone(n, 0.9)
-		if lk == "gauss":
-			v = (dir * (1.0 if s % 2 == 0 else -1.0) + fx.rdir() * 0.25).normalized()
-		fx.stk(p, ts, 0.35 + fx.rng.randf() * 0.4, sc.lerp(Color.WHITE, 0.5), 6.0, 0.04, 0.12 * k, 1, v * (10 + fx.rng.randf() * 14) * k, 1.9, 0.0, 2.4, 7.0)
-	if bio:
-		for s in 5:
-			fx.spr(p + fx.rdir() * 0.5 * k, T + s * 0.04, 0.9, Tg.fac["weapon"] if false else Color(0.6, 0.9, 0.25), 1.2, 0.6 * k, 2.2 * k, 15, n * 0.5 + Vector3(0, -2, 0), 0.6)
+		for j in int(sustain/0.25):
+			_burst(fx,p+n*0.25*k,n,T+0.2+j*0.25,4.5*k,"flash",0.25,sc,2.4,32.0)
 	if torp:
-		fx.ring(p, n, T, 1.0, sc, 1.6, 2.0 * k, 26.0 * k, 1, 0.0, 0.0, 120.0)
-		fx.dst(p, T, 0.7, 2.0 * k, 22.0 * k, 0, 1.0)
-		fx.shake(T, 0.35, p)
-		fx.hit_pause(T, 3)
-	elif lk == "gauss":
-		fx.shake(T, 0.12, p)
-	fx.light(p + n * 2.0 * k, T, 0.5 if not beam else sustain + 0.3, HULL_LIGHT, sc, 0 if not beam else 1)
+		_burst(fx,p+n*k,n,T+0.04,9.0*k,"vent",0.45,sc,1.0,0.0,n*5.0*k,0.65)
+		fx.dst(p,T,0.4,2.0*k,14.0*k,0,0.5)
+		fx.shake(T,0.35,p); fx.hit_pause(T,3)
+	fx.light(p+n*2.0*k,T,0.3 if not beam else sustain+0.2,HULL_LIGHT,sc,0 if not beam else 1)
+
 
 
 static func _beam_burn(fx, lk: String, Tg, tg: Dictionary, T: float, sustain: float, col: Color, k: float) -> void:
-	var p: Vector3 = tg["p"]
-	var n: Vector3 = tg["n"]
-	var dur = maxf(sustain, 0.3)
-	fx.spr(p + n * 0.2 * k, T, dur, col.lerp(Color.WHITE, 0.4), 9.0, 7.0 * k, 7.0 * k, 13, Vector3.ZERO, 0.0, 0.0, 0.0, 30.0)
-	fx.pop(p, T, Color(1, 0.95, 0.85), 4.0 * k, 9.0, n, 0.1, 34.0)
-	# the molten trench: a white-hot contact point dragging across the plate, cooling white to orange to char
-	var tang = n.cross(Vector3.UP if absf(n.y) < 0.9 else Vector3.RIGHT).normalized()
-	var steps = 22
-	for s in steps:
-		var u = float(s) / steps
-		var pp = p + tang * (u - 0.5) * 2.6 * k
-		fx.spr(pp + n * 0.05, T + u * dur, 2.0 + fx.rng.randf() * 0.8, Color(1, 0.6, 0.2), 0.9, 0.5 * k, 0.35 * k, 21)
-	for s in int(44 * dur):
-		var ts = T + fx.rng.randf() * dur
-		var sd = fx.rcone(n + Vector3(0, 0.2, 0), 1.1)
-		fx.stk(p, ts, 0.35 + fx.rng.randf() * 0.5, col.lerp(Color(1, 0.8, 0.5), 0.5), 7.0, 0.05, 0.14 * k, 1, sd * (14 + fx.rng.randf() * 22) * k, 1.6, 0.0, 2.4, 8.0)
-	for s in int(6 * dur):
-		fx.stk(p, T + fx.rng.randf() * dur, 0.9, Color(1, 0.55, 0.15), 3.0, 0.12, 0.12 * k, 7, (n * 0.6 + Vector3(0, -1, 0) + fx.rdir() * 0.3).normalized() * 4.0 * k, 0.6)
-	for s in 4:
-		fx.spr(p + n * 0.6 * k, T + 0.1 + s * 0.15, 1.2, Color(0.2, 0.19, 0.18), 0.35, 2.0 * k, 6.0 * k, 3, fx.rdir() * 2.5, 0.8)
-	if lk == "ion" and Tg != null and Tg._shield_mat != null:
-		# ion leaves a blue static wash on the shield facing
-		Tg.shield_hit(fx, Tg.shield_point(p + n * 20.0)["local"], T + dur, 0.5, 18.0 * k, 1.2)
+	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
+	var dur := maxf(sustain,0.25)
+	var steps := maxi(1,int(ceil(dur/0.22)))
+	for j in steps:
+		var at := T+float(j)*dur/steps
+		_burst(fx,p+n*0.35*k,n,at,5.0*k,"flash",0.25,col,3.4,34.0)
+		_impact_sparks(fx,p,n,at,k,col.lerp(Color(0.94,0.65,0.32),0.45),5,12.0)
+	_burst(fx,p+n*0.5*k,n,T+0.1,5.0*k,"vent",dur+0.25,col,0.8,0.0,n*3.0*k,0.55)
+	_afterglow(fx,p+n*0.2*k,T+dur*0.5,col,2.2*k,false)
 	if lk == "doom":
-		for s in 10:
-			fx.rib(p, fx.rcone(n, 1.2), (2.0 + fx.rng.randf() * 3.0) * k, T + fx.rng.randf() * dur, 0.1, col, 1.2, 0.25 * k, 0.15 * k, 6)
-	fx.spr(p + n * 0.3 * k, T + dur * 0.5, dur + 0.9, col.lerp(Color(1, 0.7, 0.4), 0.4), 2.2, 2.0 * k, 5.0 * k, 18)
-	fx.light(p + n * 2.2 * k, T, dur + 0.2, 7.5, col, 1)
-	fx.shake(T, 0.12, p)
-	DEATH.spawn_debris(fx, p + n * 0.5 * k, n * 3.0 * k, 2, 0.3 * k)
+		for j in 3: fx.rib(p,fx.rcone(n,0.8),2.5*k,T+j*0.12,0.1,col,1.0,0.15*k,0.05*k,6)
+	fx.light(p+n*2.0*k,T,dur+0.15,6.5,col,1)
+	fx.shake(T,0.1,p)
 
 
 static func _bio_splat(fx, Tg, tg: Dictionary, T: float, col: Color, k: float, lash: bool) -> void:
-	var p: Vector3 = tg["p"]
-	var n: Vector3 = tg["n"]
-	# no bright flash by design: a wet splash, clinging acid, fumes, corrosion that keeps spreading
-	for s in 8:
-		fx.spr(p + fx.rdir() * 0.3 * k, T + fx.rng.randf() * 0.05, 0.6 + fx.rng.randf() * 0.4, col, 1.6, 0.5 * k, 1.4 * k, 15, (fx.rcone(n, 1.0) * 4.0 + Vector3(0, -1, 0)) * k, 1.2)
-	for s in 12:
-		fx.stk(p, T, 0.6, col, 2.0, 0.08, 0.1 * k, 6, (fx.rcone(n, 1.0) * 6.0 + Vector3(0, -2, 0)) * k, 1.2)
-	for s in 5:
-		fx.spr(p + n * 0.3 * k + fx.rdir() * 0.6 * k, T + 0.1 + s * 0.25, 2.5, Color(0.42, 0.46, 0.12), 0.45, 0.8 * k, 3.0 * k, 20, n * 1.0 * k + Vector3(0, 0.5, 0), 0.5)
-	for s in 6:
-		fx.spr(p + fx.rdir() * 0.8 * k, T + 0.2 + s * 0.2, 1.8, Color(0.66, 0.95, 0.2), 1.0, 0.5 * k, 0.4 * k, 21)
-	fx.spr(p + n * 0.3 * k, T + 0.05, 1.4, col, 2.4, 1.2 * k, 3.6 * k, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 34.0)
-	fx.light(p + n * 2.0 * k, T, 0.9, 6.0, col, 1)
-	fx.shake(T, 0.05 if not lash else 0.1, p)
+	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
+	# A dim pressure burst and drifting bile droplets, without a metal fireball.
+	_burst(fx,p+n*0.3*k,n,T,4.5*k,"flash",0.35,col,1.4,28.0)
+	_burst(fx,p+n*0.4*k,n,T,5.0*k,"vent",0.65,col,0.8,0.0,n*3.0*k,0.65)
+	for j in 6:
+		var v: Vector3 = fx.rcone(n,0.9)*fx.rng.randf_range(3.0,7.0)*k
+		fx.spr(p,T+j*0.015,0.55,col,1.2,0.25*k,0.14*k,15,v,0.0)
+	_burst(fx,p+n*k,n,T+0.12,4.5*k,"cool",0.8,col,0.5,0.0,n*k,0.45)
+	fx.light(p+n*2.0*k,T,0.55,3.0,col,1)
+	fx.shake(T,0.1 if lash else 0.05,p)
 
 
 static func _gauss_punch(fx, Tg, tg: Dictionary, T: float, dir: Vector3, col: Color, k: float, w: int) -> void:
-	var p: Vector3 = tg["p"]
-	var n: Vector3 = tg["n"]
-	fx.pop(p, T, Color(0.85, 0.95, 1.0), 3.0 * k, 10.0, n, 0.12, 40.0 if w >= 3 else 34.0)
-	fx.ring(p + n * 0.3 * k, n, T, 0.4, Color(0.8, 0.92, 1.0), 1.4, 0.4 * k, 3.0 * k, 3, 0.0, 0.0, 40.0)
-	for s in 18:
-		fx.stk(p, T, 0.3 + fx.rng.randf() * 0.3, Color(1, 0.75, 0.45), 7.0, 0.04, 0.1 * k, 1, fx.rcone(n, 0.4) * (14 + fx.rng.randf() * 18) * k, 2.0, 0.0, 2.6, 10.0)
-	# the slug goes through: an exit crater on the far side, blown outward, with hot debris contrails
+	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
+	var tint := Color(0.78,0.86,0.94)
+	_burst(fx,p+n*0.35*k,n,T,4.5*k,"flash",0.22,tint,4.5,38.0)
+	_impact_sparks(fx,p,n,T,k,Color(0.93,0.66,0.35),12,20.0)
 	if Tg != null:
 		var inv: Transform3D = Tg.xf().affine_inverse()
-		var lp = inv * p
-		var ld: Vector3 = (Tg.xf().basis.inverse() * dir).normalized()
-		var far: Dictionary = Tg.hull.ray(lp + ld * (Tg.hull.L + Tg.hull.W) * 2.0, -ld)
+		var lp: Vector3 = inv*p
+		var ld: Vector3 = (inv.basis*dir).normalized()
+		var far: Dictionary = Tg.hull.ray(lp+ld*(Tg.hull.L+Tg.hull.W)*2.0,-ld)
 		if not far.is_empty():
-			var xp: Vector3 = Tg.to_world(far["p"])
-			var xn: Vector3 = Tg.dir_world(far["n"])
-			var tx = T + 0.04
-			fx.spr(xp + xn * 0.3 * k, tx, 0.45, Color(1, 0.7, 0.4), 5.0, 1.0 * k, 3.5 * k, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 26.0)
-			for s in (20 if w >= 3 else 12):
-				var v = fx.rcone(dir * 0.7 + xn * 0.3, 0.5) * (12 + fx.rng.randf() * 20) * k
-				fx.stk(xp, tx + fx.rng.randf() * 0.04, 0.4 + fx.rng.randf() * 0.4, Color(1, 0.6, 0.25), 7.0, 0.06, 0.14 * k, 1, v, 1.2, 0.0, 2.6, 10.0)
-			for s in (8 if w >= 3 else 4):
-				fx.shd(xp, tx, 3.0, fx.rcone(dir, 0.5) * (6 + fx.rng.randf() * 10) * k, (0.15 + fx.rng.randf() * 0.25) * k, 1.0)
-			fx.spr(xp + xn * 0.8 * k, tx + 0.05, 2.0, Color(0.6, 0.65, 0.72), 0.3, 0.6 * k, 3.0 * k, 7, xn * 6.0 * k, 0.6)
-			DEATH.spawn_debris(fx, xp + xn * 0.5 * k, dir * 8.0 * k, 3, 0.35 * k)
-	_afterglow(fx, p + n * 0.3 * k, T, Color(0.85, 0.95, 1.0), 2.6 * k, false, 34.0)
-	fx.light(p + n * 2.2 * k, T, 0.42, HULL_LIGHT, Color(0.85, 0.95, 1.0), 0)
-	fx.shake(T, 0.2 if w >= 3 else 0.12, p)
-	if w >= 3:
-		fx.hit_pause(T, 3)
-		fx.punch(T, 0.008, p)
+			var xp: Vector3 = Tg.to_world(far["p"]); var xn: Vector3 = Tg.dir_world(far["n"])
+			_burst(fx,xp+xn*0.3*k,xn,T+0.04,5.5*k,"vent",0.42,tint,1.2,0.0,dir*6.0*k,0.7)
+			_impact_sparks(fx,xp,(dir+xn).normalized(),T+0.04,k,Color(0.93,0.64,0.3),10,22.0)
+			for j in 3: fx.shd(xp,T+0.04,1.8,fx.rcone(dir,0.4)*10.0*k,0.2*k,0.6,3.0,0.0)
+	_afterglow(fx,p+n*0.2*k,T,tint,2.2*k,false)
+	fx.light(p+n*2.0*k,T,0.22,HULL_LIGHT,tint,0)
+	fx.shake(T,0.2 if w>=3 else 0.12,p)
+	if w>=3: fx.hit_pause(T,3)
 
 
 static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, star: bool) -> void:
-	var p: Vector3 = tg["p"]
-	var n: Vector3 = tg["n"]
-	var R = 4.0 * k
-	var hot = Color(1, 0.6, 0.25) if not star else col.lerp(Color(1, 0.95, 0.8), 0.4)
-	# F3 round 2: the heaviest hit short of a kill: a big flash, a fireball core and a shock ring, each with its own size
-	# on screen, and burning fragments thrown wide
-	fx.pop(p + n * 0.5 * k, T, Color(1, 0.88, 0.7), R * 2.5, 14.0, n, 0.26, 60.0)
-	fx.spr(p + n * 0.8 * k, T, 0.8, hot, 7.0, R * 0.4, R * 1.4, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 40.0)
-	# two-stage: a sympathetic pop a moment later
-	fx.spr(p + n * 0.6 * k + fx.rdir() * R * 0.3, T + 0.3, 0.55, hot, 5.0, R * 0.3, R * 1.0, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
-	fireball(fx, p + n * R * 0.4, R * 2.0, T, 3.0, hot)
-	fx.ring(p, n, T, 1.1, Color(0.95, 0.8, 0.65) if not star else col, 0.7, R * 0.2, R * 3.6, 1, 0.0, 0.0, 110.0)
-	fx.dst(p, T, 0.7, R * 0.3, R * 4.0, 0, 1.0)
-	for s in 8:
-		fx.spr(p + n * 0.5 * k, T + fx.rng.randf() * 0.1, 1.0 + fx.rng.randf() * 0.6, hot, 2.6, R * 0.3, R * 0.9, 1, fx.rcone(n, 0.8) * (2 + fx.rng.randf() * 4) * k)
-	# hot fragments thrown out at mixed speeds (fewer and less regular than a burst of lines)
-	for s in 24:
-		fx.stk(p, T + fx.rng.randf() * 0.12, 0.5 + fx.rng.randf() * 0.9, Color(1, 0.6, 0.25), 6.0, 0.04, 0.1 * k, 1, fx.rcone(n, 0.9) * (6 + fx.rng.randf() * fx.rng.randf() * 30) * k, 1.8, 0.0, 2.8, 11.0)
-	for s in 14:
-		fx.shd(p, T, 3.5, fx.rcone(n, 0.9) * (3 + fx.rng.randf() * 9) * k, (0.2 + fx.rng.randf() * 0.4) * k, 1.0)
-	for s in 20:
-		fx.spr(p + fx.rdir() * 0.5 * k, T + fx.rng.randf() * 0.2, 1.5 + fx.rng.randf() * 1.5, Color(1, 0.5, 0.15), 1.8, 0.25 * k, 0.1 * k, 19, fx.rcone(n, 1.0) * (3 + fx.rng.randf() * 6) * k, 0.4, 0.0, 0.0, 6.0)
-	if fx.quality != "max":
-		for s in 4:
-			fx.spr(p + n * k, T + 0.15 + s * 0.1, 3.0, Color(0.08, 0.075, 0.07), 0.6, R * 0.5, R * 1.8, 3, n * 2.0 * k, 0.5)
-	DEATH.spawn_debris(fx, p + n * k, n * 5.0 * k, 6, 0.5 * k)
-	fx.spr(p + n * R * 0.3, T + 0.1, 2.2, hot, 2.6, R * 0.8, R * 2.6, 18, Vector3.ZERO, 0.0, 0.0, 0.0, 56.0)
-	fx.light(p + n * 2.5 * k, T, 0.7, 14.0, Color(1, 0.75, 0.45), 0)
-	fx.light(p + n * 2.5 * k, T + 0.15, 1.6, 4.0, hot, 1)
-	fx.shake(T, 0.45, p)
-	fx.hit_pause(T, 4)
-	fx.punch(T, 0.014, p)
+	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
+	var tint: Color = Color(0.88,0.90,0.94) if star else Color(0.94,0.62,0.25)
+	_burst(fx,p+n*k,n,T,12.0*k,"flash",0.32,tint,5.2,60.0)
+	_burst(fx,p+n*k,n,T+0.04,10.0*k,"vent",0.55,tint,1.1,0.0,n*7.0*k,0.8)
+	_burst(fx,p+n*1.5*k,n,T+0.20,12.0*k,"cool",0.8,tint,0.75,0.0,n*3.0*k,0.5)
+	var organic: bool = Tg != null and Tg.faction == "chorus"
+	var debris_col: Color = Tg.fac.damage_glow if organic else tint.lerp(Color(0.93,0.48,0.20),0.5)
+	_impact_sparks(fx,p+n*0.2*k,n,T,k,debris_col,18,24.0)
+	if not organic:
+		for j in 6: fx.shd(p,T,2.2,fx.rcone(n,0.8)*fx.rng.randf_range(5.0,12.0)*k,fx.rng.randf_range(0.16,0.35)*k,0.7,3.0,0.0)
+	fx.ring(p,n,T+0.03,0.45,tint,0.65,k,12.0*k,2,0.0,0.0,70.0)
+	fx.dst(p,T,0.4,k,12.0*k,0,0.45)
+	_afterglow(fx,p+n*0.4*k,T,tint,3.5*k,false)
+	fx.light(p+n*2.5*k,T,0.35,HULL_LIGHT,tint,0)
+	fx.shake(T,0.4,p); fx.hit_pause(T,4); fx.punch(T,0.012,p)
 
 
 static func _crit(fx, Tg, tg: Dictionary, T: float, k: float) -> void:
-	var p: Vector3 = tg["p"]
-	var n: Vector3 = tg["n"]
-	fx.pop(p + n * 0.6 * k, T, Color(1, 0.8, 0.5), 5.0 * k, 8.0, n, 0.16, 44.0)
-	fx.spr(p + n * 0.8 * k, T, 0.5, Color(1, 0.6, 0.25), 5.0, 1.0 * k, 3.5 * k, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
-	for s in 18:
-		fx.stk(p, T, 0.4 + fx.rng.randf() * 0.4, Color(1, 0.6, 0.25), 7.0, 0.05, 0.13 * k, 1, fx.rcone(n, 1.0) * (10 + fx.rng.randf() * 16) * k, 1.6)
-	for s in 6:
-		fx.shd(p, T, 3.0, fx.rcone(n, 0.8) * (3 + fx.rng.randf() * 7) * k, (0.15 + fx.rng.randf() * 0.3) * k, 1.0)
-	fx.light(p + n * 2.0 * k, T, 0.4, 8.0, Color(1, 0.65, 0.3), 0)
-	_afterglow(fx, p + n * 0.6 * k, T, Color(1, 0.65, 0.3), 3.0 * k, false)
-	fx.shake(T, 0.15, p)
-	fx.hit_pause(T, 2)
-	fx.punch(T, 0.006, p)
-	DEATH.spawn_debris(fx, p + n * 0.6 * k, n * 4.0 * k, 3, 0.35 * k)
+	var p: Vector3 = tg["p"]; var n: Vector3 = tg["n"]
+	_burst(fx,p+n*0.5*k,n,T,6.0*k,"flash",0.25,Color(0.94,0.71,0.4),4.5,40.0)
+	_burst(fx,p+n*k,n,T+0.05,6.0*k,"vent",0.45,Color(0.85,0.51,0.26),0.8,0.0,n*5.0*k,0.6)
+	_impact_sparks(fx,p,n,T,k,Color(0.92,0.6,0.3),10,18.0)
+	fx.light(p+n*2.0*k,T,0.3,7.5,Color(0.94,0.68,0.36),0)
+	fx.shake(T,0.15,p); fx.hit_pause(T,2); fx.punch(T,0.006,p)
 
 
 static func _miss_fade(fx, lk: String, tg: Dictionary, T: float, col: Color, dir: Vector3, k: float) -> void:
@@ -1110,7 +1067,7 @@ static func torp_lane(fx, lane_id: String, aid: String, to: Vector3, turns: int)
 	mk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	root.add_child(mk)
 	var lanes: Dictionary = fx.dstate.get("lanes", {})
-	lanes[lane_id] = {"root": root, "mats": [m, mm], "from": from, "to": to, "aid": aid, "turns": turns, "torp": null, "fac": fac, "k": A.scale_k()}
+	lanes[lane_id] = {"root": root, "mats": [m, mm], "from": from, "to": to, "aid": aid, "turns": turns, "torp": null, "projectiles": [], "look": look_of("torp", "startorp" if A.faction == "ithar" else "torp", A.faction), "fac": fac, "k": A.scale_k()}
 	fx.dstate["lanes"] = lanes
 
 
@@ -1127,11 +1084,14 @@ static func torp_launch(fx, lane_id: String) -> void:
 	var park = from.lerp(to, 0.42) + Vector3(0, 2.0 * k, 0)
 	var T: float = fx.now
 	var mn: Vector3 = A.dir_world(Vector3(1, 0, 0)) if A != null else (to - from).normalized()
-	_launch(fx, "torp", from, mn, park, T + 0.15, T + 1.15, ln["fac"]["weapon"], ln["fac"], k, 0, false)
+	var before: int = fx.dstate.get("proj", []).size()
+	_launch(fx, ln["look"], from, mn, park, T + 0.15, T + 1.15, ln["fac"]["weapon"], ln["fac"], k, 0, false)
 	var list: Array = fx.dstate.get("proj", [])
-	var p: Dictionary = list[list.size() - 1]
-	p["park"] = true            # holds at the end of its run instead of vanishing
-	ln["torp"] = p
+	var group: Array = list.slice(before)
+	for p in group: p["park"] = true
+	ln["projectiles"] = group
+	ln["torp"] = group[0]
+
 
 
 # Next turn: the lane ramps to white (two-stage warning, about 0.8 s), the torpedo closes and strikes.
@@ -1156,16 +1116,20 @@ static func torp_strike(fx, lane_id: String, tid: String, hit: Dictionary) -> Di
 	var k: float = ln["k"]
 	var dist = start.distance_to(tg["p"])
 	var ti = T + warn_t + clampf(dist / (70.0 * fx.unit), 0.85, 1.25)
-	if not p.is_empty():
-		p["park"] = false
-		p["a"] = start
-		p["b"] = start.lerp(tg["p"], 0.5) + Vector3(0, 1.5 * k, 0)
-		p["c"] = tg["p"]
-		p["t0"] = T + warn_t
-		p["t1"] = ti
-		p["last"] = T + warn_t
+	for projectile in ln.get("projectiles", []):
+		var at: Vector3 = projectile.get("pos", start)
+		projectile["park"] = false
+		projectile["a"] = at
+		projectile["b"] = at.lerp(tg["p"], 0.5) + Vector3(0, 1.5 * k, 0)
+		projectile["c"] = tg["p"]
+		projectile["t0"] = T + warn_t
+		projectile["t1"] = ti
+		projectile["last"] = T + warn_t
+
 	if not bool(tg.get("miss", false)):
-		_impact(fx, "torp", 3, Tg, tg, ti, ln["fac"]["weapon"], (tg["p"] - start).normalized(), hd, kt, 0.0)
+		# Faction lane visuals change here; the existing R80 lane wound stays torp.
+		tg["mark_look"] = "torp"
+		_impact(fx, ln["look"], 3, Tg, tg, ti, ln["fac"]["weapon"], (tg["p"] - start).normalized(), hd, kt, 0.0)
 		if Tg != null:
 			Tg.busy_until = maxf(Tg.busy_until, ti)
 	fx.later(ti + 0.2, func() -> void: torp_lane_clear(fx, lane_id, false))
@@ -1179,10 +1143,9 @@ static func torp_lane_clear(fx, lane_id: String, dodged := true) -> void:
 	var ln: Dictionary = lanes[lane_id]
 	if is_instance_valid(ln["root"]):
 		(ln["root"] as Node).queue_free()
-	if ln["torp"] != null:
-		var p: Dictionary = ln["torp"]
+	for p in ln.get("projectiles", []):
 		if dodged and p.get("park", false):
-			# the target got out of the lane: the torpedo runs on past the marker and burns out
+			# The whole swarm keeps its vector when a target clears the lane.
 			var T: float = fx.now
 			var dir: Vector3 = ((ln["to"] as Vector3) - (ln["from"] as Vector3)).normalized()
 			p["park"] = false
@@ -1192,6 +1155,7 @@ static func torp_lane_clear(fx, lane_id: String, dodged := true) -> void:
 			p["t0"] = T
 			p["t1"] = T + 2.2
 			p["last"] = T
+
 	lanes.erase(lane_id)
 
 
@@ -1206,26 +1170,3 @@ static func _lanes_update(fx) -> void:
 		var wv = 0.35 * smoothstep(0.0, 0.5, u) + 0.65 * smoothstep(0.5, 1.0, u)
 		for m in ln["mats"]:
 			(m as ShaderMaterial).set_shader_parameter("warn", wv)
-
-
-# The existing weapon-only volume. Deaths use baked flipbooks in fx_death.gd.
-static func fireball(fx, p: Vector3, size: float, t0: float, life: float, tint: Color) -> void:
-	if fx.quality != "max":
-		return
-	var box = MeshInstance3D.new()
-	box.name = "fx_fireball"
-	var bm = BoxMesh.new()
-	bm.size = Vector3.ONE
-	box.mesh = bm
-	var m: ShaderMaterial = fx.mat(SH.VOL, 2)
-	m.set_shader_parameter("vtype", 0.0)
-	m.set_shader_parameter("t0", t0)
-	m.set_shader_parameter("life", life)
-	m.set_shader_parameter("P", Vector4(0.0, 1.0, fx.rng.randf() * 10.0, 0.16 * 44.0 / maxf(size * 1.3, 1.0)))
-	m.set_shader_parameter("tint", Vector3(tint.r, tint.g, tint.b))
-	box.material_override = m
-	box.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	box.position = p
-	box.scale = Vector3.ONE * size * 1.3
-	fx.add_child(box)
-	fx.later(t0 + life + 0.1, fx.free_effect.bind(weakref(box)))
