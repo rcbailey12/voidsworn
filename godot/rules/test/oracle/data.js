@@ -204,8 +204,8 @@ const RELICS = {
 const ADMIRALS = {
   vex:{n:'Admiral Roderic Vex',doc:'Line of battle',d:'Broadside weapons deal +15% damage.',fx:{broadPct:.15},start:['penitent','harrow','warden'],cost:0},
   malek:{n:'Oath-Captain Malek Draven',doc:'Hunter-killer',d:'Torpedoes reload a turn faster. +50% damage on rear-arc hits.',fx:{torpCd:1,rearPct:.5},start:['harrow','harrow','warden','warden'],cost:30},
-  ashgrove:{n:'Commodore Sera Ashgrove',doc:'Carrier doctrine',d:'Squadrons deal +40% damage and launch ships hold +1 wing. Squadron hull +25%.',fx:{sqPct:.4,hangar:1,sqHp:.25},start:['reliquary','harrow','warden'],cost:45},
-  thale:{n:'High Admiral Oryn Thale',doc:'Iron doctrine',d:'All ships +15% hull and +10% shields.',fx:{hpPct:.15,shPct:.1},start:['cathedral','warden'],cost:80},
+  ashgrove:{n:'Commodore Sera Ashgrove',doc:'Carrier doctrine',d:'Squadrons deal +40% damage and launch ships hold +1 wing. Squadron hull +25%.',fx:{sqPct:.4,hangar:1,sqHp:.25},start:['reliquary','harrow','warden','warden'],cost:45},
+  thale:{n:'High Admiral Oryn Thale',doc:'Iron doctrine',d:'All ships +10% hull and +10% shields.',fx:{hpPct:.1,shPct:.1},start:['cathedral','warden'],cost:80},
 };
 
 // ---------- faction admirals: four per faction, own ships, own Command ----------
