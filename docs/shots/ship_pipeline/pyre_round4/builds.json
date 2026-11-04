@@ -1,0 +1,978 @@
+{
+  "V1": {
+    "triangles": 307477,
+    "reimport_triangles": 307477,
+    "reimport": "PASS",
+    "bytes": 39125468,
+    "sha256": "413cb5b5533fd3e9a1633187e10e506e21d7875a934c7a63a0bf2b5546b0f132",
+    "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\base_repair\\C19_51\\S5\\prototype.blend",
+    "source_sha256": "f5e9ace595c25a6534bb82160436ae8bf8798af670811661abdc9a2f0846d486",
+    "stage5_source_sha256": "74db5a169a274d0ac8f28131ce051f764026b2c839af84a378cbce863ee56447",
+    "retained_stage5_triangles": 305857,
+    "new_materials": {
+      "1": 144123,
+      "0": 85227,
+      "3": 46103,
+      "4": 27088,
+      "8": 2340,
+      "12": 1336,
+      "9": 30,
+      "10": 30,
+      "11": 30,
+      "6": 360
+    },
+    "material": {
+      "version": 14604,
+      "resolution": 4096,
+      "seconds": 26.663723699981347,
+      "method": "unique UV bake of geometry Pointiness wear, short-distance AO grime, position noise scorch, CC0 photo microstructure",
+      "photo": "ambientCG PaintedMetal004, installed CC0 set",
+      "projected_paint": false,
+      "maps": {
+        "base.png": "a9b5b4d98a8260c9aece1404e733218badc973c052427574319e43784020e432",
+        "emission.png": "528a034c1b3ab275a0688cd203d4e6718dabc3bc4b4a93aabcfda94281df0d79",
+        "normal.png": "93deec76c4a148950e011d2b6662d265d820ab8573e70aede3a1305064e50a92",
+        "orm.png": "d12af7e9a76c46fa1ddefc5a5d88f689c5c0e4d10f5e221e39bc38e65d83ecc4"
+      }
+    },
+    "mount_anchors": [
+      {
+        "part": "bridge_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.1899999976158142,
+          0.0,
+          0.12999999523162842
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "gap": 2.2351741790771484e-08
+      },
+      {
+        "part": "engine_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          -0.4268249273300171,
+          0.0,
+          -0.06400000303983688
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 5.961192073300481e-08
+      },
+      {
+        "part": "gun_mount",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          -0.21599996089935303,
+          -0.04500000178813934
+        ],
+        "normal": [
+          0.0,
+          -1.0,
+          -0.0
+        ],
+        "gap": 4.470348358154297e-08
+      },
+      {
+        "part": "gun_mount.001",
+        "host": "retained_hull_with_cut_closures",
+        "anchor": [
+          0.10000000149011612,
+          0.2160000205039978,
+          -0.04500000178813934
+        ],
+        "normal": [
+          -0.0,
+          1.0,
+          0.0
+        ],
+        "gap": 2.0061301952978283e-08
+      }
+    ],
+    "gun_directions": [
+      [
+        0.45107823610305786,
+        -0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        -0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        0.8921325206756592,
+        0.025059903040528297
+      ],
+      [
+        0.45107823610305786,
+        0.8921325206756592,
+        0.025059903040528297
+      ]
+    ],
+    "route": "V1",
+    "seconds": 33.51932319998741,
+    "projected_paint": false
+  },
+  "Raw": {
+    "route": "Raw",
+    "triangles": 13878546,
+    "source_triangles": 13878546,
+    "vertices": 7032432,
+    "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\reference\\mesh\\round4_2048_raw_00001_.glb",
+    "source_sha256": "413b23fd70fe7cc74b0ff3f56585c2f3dee51ff191dc520f21787c93b540be40",
+    "sha256": "3d17aa443f6980b62761411604c1aad18e1efd7ec0b97247e107c5e02c560fc6",
+    "bytes": 335321916,
+    "source_signed_volume": 9.242582207815288e-05,
+    "display_winding_reversed": false,
+    "presentation": "uniform length/axis transform, outward smooth normals, neutral material; all source faces retained",
+    "geometry_cleanup": false,
+    "seconds": 3.809571799938567
+  },
+  "V2": {
+    "triangles": 289047,
+    "reimport_triangles": 289047,
+    "reimport": "PASS",
+    "bytes": 133754168,
+    "sha256": "df6b60955fbeb5abb4e8f606d5100c904841217559e0c1856ce7d74fca77da86",
+    "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\reference\\mesh\\round4_2048_raw_00001_.glb",
+    "source_sha256": "413b23fd70fe7cc74b0ff3f56585c2f3dee51ff191dc520f21787c93b540be40",
+    "coordinate_conversion": "native glTF to Blender: X=source Z, Y=source X, Z=source Y; uniform longitudinal scale",
+    "zero_area_faces_removed": 0,
+    "validated_native_geometry": true,
+    "cleanup": "native QEM decimation without remeshing, unique UVs, 4096 tangent normal bake",
+    "new_materials": {
+      "0": 280325,
+      "1": 6290
+    },
+    "material": {
+      "version": 14604,
+      "resolution": 4096,
+      "seconds": 37.370389899937436,
+      "method": "unique UV bake of geometry Pointiness wear, short-distance AO grime, position noise scorch, CC0 photo microstructure",
+      "photo": "ambientCG PaintedMetal004, installed CC0 set",
+      "projected_paint": false,
+      "maps": {
+        "base.png": "0491a261f4996952bba9601f5fb5a3b2627784235fa73241604b4976541b4cd9",
+        "emission.png": "7d0b5e3ae052fc155706ce49bc1b43595cdb5854c24b397dbe8ae8298ff0a4f7",
+        "normal.png": "1d75a5faa5acf2d98776a1f731a2def4b46ac51bc6f11f599b04895d92feca0e",
+        "normal_filtered.png": "463633499043c31446349bdc548607798855311bf2e01f8e788ce927104c2643",
+        "normal_raw.png": "8fdb191b7db66135bdf6b9b7457a02dfbc0717abd48f193e5cc5f002349640e2",
+        "orm.png": "ee249d11857a02cf8c6f8b17466c5c07100b6972b95d94817eecef05985b9f70"
+      }
+    },
+    "proof_target_godot": [
+      -0.013129819184541702,
+      -0.016063986346125603,
+      -0.005427070427685976
+    ],
+    "proof_normal_godot": [
+      -0.002911034971475601,
+      -0.03287254646420479,
+      0.9994553327560425
+    ],
+    "bake": {
+      "raw": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\C19_51\\V2\\normal_raw.png",
+      "filtered": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\C19_51\\V2\\normal_filtered.png",
+      "method": "normalize(flat + .65*(deviation - blur(deviation))); flat=(0,0,1)",
+      "low_frequency_rms_before": 0.13301749527454376,
+      "low_frequency_rms_after": 0.06213633343577385,
+      "normal_mean_z": 0.9546251893043518
+    },
+    "mesh_validation": [
+      {
+        "mesh": "regenerated_baked_with_marks",
+        "changed": false
+      }
+    ],
+    "route": "V2",
+    "seconds": 71.13801280001644,
+    "projected_paint": false
+  },
+  "V3": {
+    "triangles": 622570,
+    "reimport_triangles": 622570,
+    "reimport": "PASS",
+    "bytes": 75238244,
+    "sha256": "0a8de79b718e86e331b26d7dc91c2b5d828f9588131b045bf42b7e1e37423a62",
+    "source": "hand construction from refreshed Qwen reference, no AI mesh input",
+    "hand_version": 14605,
+    "belly_detail_objects": 397,
+    "reference_selection": {
+      "quarter": "quarter_selected.png",
+      "side": "side_ortho.png",
+      "front": "front_headon.png",
+      "top": "top_ortho.png",
+      "battle": "battle_anchor_refresh.png"
+    },
+    "reference_sha256": "537ba9ac496339ad47a9a16bf116742084165be6912a2bea854735a4c9561284",
+    "primary_sections": {
+      "spine": [
+        [
+          -0.46,
+          0.052,
+          -0.025,
+          0.06
+        ],
+        [
+          -0.34,
+          0.078,
+          -0.025,
+          0.071
+        ],
+        [
+          -0.06,
+          0.092,
+          -0.025,
+          0.075
+        ],
+        [
+          0.22,
+          0.087,
+          -0.025,
+          0.071
+        ],
+        [
+          0.39,
+          0.068,
+          -0.025,
+          0.064
+        ],
+        [
+          0.48,
+          0.055,
+          -0.025,
+          0.061
+        ]
+      ],
+      "port": [
+        [
+          -0.45,
+          0.035,
+          -0.04,
+          0.043
+        ],
+        [
+          -0.34,
+          0.059,
+          -0.04,
+          0.052
+        ],
+        [
+          -0.1,
+          0.061,
+          -0.04,
+          0.052
+        ],
+        [
+          0.2,
+          0.057,
+          -0.04,
+          0.05
+        ],
+        [
+          0.39,
+          0.042,
+          -0.04,
+          0.043
+        ]
+      ],
+      "starboard": [
+        [
+          -0.25,
+          0.034,
+          -0.082,
+          0.04
+        ],
+        [
+          -0.15,
+          0.058,
+          -0.082,
+          0.047
+        ],
+        [
+          0.13,
+          0.061,
+          -0.082,
+          0.048
+        ],
+        [
+          0.31,
+          0.053,
+          -0.082,
+          0.045
+        ],
+        [
+          0.42,
+          0.032,
+          -0.082,
+          0.039
+        ]
+      ],
+      "upper": [
+        [
+          -0.39,
+          0.032,
+          0.079,
+          0.036
+        ],
+        [
+          -0.3,
+          0.051,
+          0.079,
+          0.04
+        ],
+        [
+          -0.09,
+          0.052,
+          0.079,
+          0.04
+        ],
+        [
+          0.12,
+          0.04,
+          0.079,
+          0.033
+        ],
+        [
+          0.25,
+          0.028,
+          0.079,
+          0.029
+        ]
+      ]
+    },
+    "primary_source": "new reference side silhouette and top/front masses, manually traced",
+    "top_reference_width_per_length": 0.32,
+    "authored_lateral_scale": 0.74,
+    "construction_seconds": 44.648735699942335,
+    "material": {
+      "version": 14604,
+      "resolution": 4096,
+      "seconds": 23.64066479995381,
+      "method": "unique UV bake of geometry Pointiness wear, short-distance AO grime, position noise scorch, CC0 photo microstructure",
+      "photo": "ambientCG PaintedMetal004, installed CC0 set",
+      "projected_paint": false,
+      "maps": {
+        "base.png": "f72bac217c0fe6ad557bc94f3516e5385ccdbf2340a7c3afac84e408132388ec",
+        "emission.png": "945802bf1b3581126d10cdac6f25d715daa1295759b399a406adb33a270a986f",
+        "normal.png": "6f33b408926316ef7b868f0ab235659b71e7f0f4b2c96cd96f53419656850dae",
+        "orm.png": "4ae8a092bf1b5d1e16b2bc79db028f6e61b491409d730aecc16d5f2a9cacc5c2"
+      }
+    },
+    "new_materials": {
+      "1": 16908,
+      "0": 81844,
+      "3": 78557,
+      "8": 180,
+      "12": 1780,
+      "4": 121284,
+      "9": 15498,
+      "2": 987,
+      "7": 2646,
+      "11": 3177,
+      "6": 36
+    },
+    "mount_anchors": [
+      {
+        "name": "bridge_visible_saddle",
+        "anchor": [
+          -0.18000000715255737,
+          0.002960000140592456,
+          0.11899995803833008
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "gap": 4.739919390317482e-08
+      },
+      {
+        "name": "engine_bank_flange",
+        "anchor": [
+          -0.4599999785423279,
+          -0.025900000110268592,
+          0.0
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 3.021061800723146e-08
+      },
+      {
+        "name": "engine_bank_flange",
+        "anchor": [
+          -0.4599999785423279,
+          -0.025900000110268592,
+          0.0
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 3.021061800723146e-08
+      },
+      {
+        "name": "aux_engine_flange",
+        "anchor": [
+          -0.2500000596046448,
+          -0.1072999969124794,
+          -0.06499999761581421
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 5.960464477539063e-08
+      },
+      {
+        "name": "engine_bank_flange",
+        "anchor": [
+          -0.46000003814697266,
+          0.025900000110268592,
+          0.0
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 2.9802322387695312e-08
+      },
+      {
+        "name": "engine_bank_flange",
+        "anchor": [
+          -0.46000003814697266,
+          0.025900000110268592,
+          0.0
+        ],
+        "normal": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "gap": 2.9802322387695312e-08
+      },
+      {
+        "name": "aux_engine_flange",
+        "anchor": [
+          -0.44999992847442627,
+          0.1072999969124794,
+          -0.06499999761581421
+        ],
+        "normal": [
+          -1.0,
+          0.0,
+          0.0
+        ],
+        "gap": 5.960464477539063e-08
+      },
+      {
+        "name": "rocket_mount",
+        "anchor": [
+          0.20999999344348907,
+          -0.05550000220537186,
+          0.026375651359558105
+        ],
+        "normal": [
+          0.01488284021615982,
+          -0.8859786987304688,
+          0.46348705887794495
+        ],
+        "gap": 2.421438694000244e-08
+      },
+      {
+        "name": "rocket_mount",
+        "anchor": [
+          0.30000001192092896,
+          -0.12210000485181809,
+          -0.03683352470397949
+        ],
+        "normal": [
+          0.016664328053593636,
+          0.0,
+          0.9998611211776733
+        ],
+        "gap": 1.8998980522155762e-07
+      },
+      {
+        "name": "rocket_mount",
+        "anchor": [
+          0.20999999344348907,
+          0.05550000220537186,
+          0.02637457847595215
+        ],
+        "normal": [
+          0.014819508418440819,
+          0.885979413986206,
+          0.46348756551742554
+        ],
+        "gap": 3.094458378427589e-08
+      },
+      {
+        "name": "rocket_mount",
+        "anchor": [
+          0.30000001192092896,
+          0.12210000485181809,
+          0.006315827369689941
+        ],
+        "normal": [
+          0.03681713342666626,
+          0.0,
+          0.9993220567703247
+        ],
+        "gap": 4.14229219813933e-08
+      },
+      {
+        "name": "gun_visible_mount",
+        "anchor": [
+          0.09000000357627869,
+          -0.1258000013232231,
+          -0.0024999380111694336
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "gap": 6.191719137405016e-08
+      },
+      {
+        "name": "gun_visible_mount",
+        "anchor": [
+          0.3199999928474426,
+          -0.1258000013232231,
+          -0.03754544258117676
+        ],
+        "normal": [
+          0.054464492946863174,
+          0.0,
+          0.9985156655311584
+        ],
+        "gap": 1.1175870895385742e-08
+      },
+      {
+        "name": "gun_visible_mount",
+        "anchor": [
+          0.09000000357627869,
+          0.1258000013232231,
+          0.010733366012573242
+        ],
+        "normal": [
+          0.006666518282145262,
+          0.0,
+          0.9999778270721436
+        ],
+        "gap": 3.259629011154175e-08
+      },
+      {
+        "name": "gun_visible_mount",
+        "anchor": [
+          0.3199999928474426,
+          0.1258000013232231,
+          0.005578875541687012
+        ],
+        "normal": [
+          0.03681713342666626,
+          0.0,
+          0.9993220567703247
+        ],
+        "gap": 7.171183824539185e-08
+      },
+      {
+        "name": "dish_visible_base",
+        "anchor": [
+          0.25,
+          -0.04587999925017357,
+          0.03984534740447998
+        ],
+        "normal": [
+          0.07083361595869064,
+          -0.884145200252533,
+          0.46181145310401917
+        ],
+        "gap": 7.450580596923828e-09
+      },
+      {
+        "name": "wake_sniffer_mount",
+        "anchor": [
+          0.4099999964237213,
+          -0.029599999338388444,
+          0.03833341598510742
+        ],
+        "normal": [
+          0.033314839005470276,
+          6.856252099396443e-08,
+          0.9994449019432068
+        ],
+        "gap": 8.728634526278256e-08
+      },
+      {
+        "name": "dish_visible_base",
+        "anchor": [
+          0.25,
+          0.04587999925017357,
+          0.039357662200927734
+        ],
+        "normal": [
+          0.07019399106502533,
+          0.9080988764762878,
+          0.412830650806427
+        ],
+        "gap": 6.064333035737945e-08
+      },
+      {
+        "name": "wake_sniffer_mount",
+        "anchor": [
+          0.4099999964237213,
+          0.029599999338388444,
+          0.03833353519439697
+        ],
+        "normal": [
+          0.033314887434244156,
+          0.0,
+          0.9994449615478516
+        ],
+        "gap": 2.0120016586133715e-07
+      },
+      {
+        "name": "boarding_claw_socket",
+        "anchor": [
+          0.28999999165534973,
+          -0.161977858543396,
+          -0.06499999761581421
+        ],
+        "normal": [
+          0.032871101051568985,
+          -0.9994595646858215,
+          0.0
+        ],
+        "gap": 1.0457387844553523e-07
+      },
+      {
+        "name": "boarding_claw_socket",
+        "anchor": [
+          0.28999999165534973,
+          0.1438191795349121,
+          -0.06499999761581421
+        ],
+        "normal": [
+          0.060035042464733124,
+          0.9209752678871155,
+          -0.38496798276901245
+        ],
+        "gap": 1.5485740334497677e-07
+      },
+      {
+        "name": "radiator_saddle",
+        "anchor": [
+          -0.3199999928474426,
+          -0.040699999779462814,
+          0.04460012912750244
+        ],
+        "normal": [
+          -0.014489619992673397,
+          1.1391662155801896e-06,
+          0.9998950362205505
+        ],
+        "gap": 3.3527612686157227e-08
+      },
+      {
+        "name": "radiator_saddle",
+        "anchor": [
+          -0.3199999928474426,
+          0.040699999779462814,
+          0.04460000991821289
+        ],
+        "normal": [
+          -0.014489592984318733,
+          -3.4174624943261733e-06,
+          0.9998950362205505
+        ],
+        "gap": 8.195638656616211e-08
+      }
+    ],
+    "gun_directions": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.8740372657775879,
+        -0.4850906729698181,
+        0.02731366455554962
+      ],
+      [
+        0.8740372657775879,
+        -0.4850906729698181,
+        0.02731366455554962
+      ],
+      [
+        0.8740372657775879,
+        -0.4850906729698181,
+        0.02731366455554962
+      ],
+      [
+        0.8740372657775879,
+        -0.4850906729698181,
+        0.02731366455554962
+      ],
+      [
+        0.8740372657775879,
+        0.4850906729698181,
+        0.02731366455554962
+      ],
+      [
+        0.8740372657775879,
+        0.4850906729698181,
+        0.02731366455554962
+      ],
+      [
+        0.8740372657775879,
+        0.4850906729698181,
+        0.02731366455554962
+      ],
+      [
+        0.8740372657775879,
+        0.4850906729698181,
+        0.02731366455554962
+      ]
+    ],
+    "kit_source": [
+      "tools/blender/hs/detail_lib.py",
+      "tools/blender/hs/c19_kit.py mount and trim conventions",
+      "tools/blender/surface_bakeoff/round2_build.py bevel and mounted primitives"
+    ],
+    "hero_objects": 1722,
+    "detail_objects": 1622,
+    "mesh_validation": [
+      {
+        "mesh": "reference_authored_dense_barge",
+        "changed": false
+      }
+    ],
+    "route": "V3",
+    "seconds": 49.98254260001704,
+    "projected_paint": false
+  }
+}

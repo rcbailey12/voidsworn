@@ -1,0 +1,36 @@
+{
+  "source": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\reference\\mesh\\round4_2048_raw_00001_.glb",
+  "resolution": 2048,
+  "views": {
+    "quarter": "quarter_selected.png",
+    "side": "side_ortho.png",
+    "front": "front_headon.png",
+    "top": "top_ortho.png"
+  },
+  "cameras": [
+    [
+      0,
+      0
+    ],
+    [
+      270,
+      0
+    ],
+    [
+      270,
+      89
+    ],
+    [
+      315,
+      -24
+    ]
+  ],
+  "seconds": 178.48014630004764,
+  "model": "installed Pixal3D multiview / TRELLIS.2 cascade",
+  "raw": true,
+  "projected_paint": false,
+  "low": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\reference\\mesh\\round4_2048_low_00001_.glb",
+  "normal": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue146\\reference\\mesh\\round4_2048_normal_00001_.png",
+  "target_triangles": 300000,
+  "cleanup": "native QEM decimation without remeshing, unique UVs, 4096 tangent normal bake"
+}
