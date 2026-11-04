@@ -1,0 +1,142 @@
+{
+  "engine": {
+    "packed_mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\engine_packed.glb",
+    "triangles": 22812022,
+    "raw_triangles": 22812022,
+    "source_mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\engine_raw_00001_.glb",
+    "pack_version": 3,
+    "source_sample_signed_volume": 0.00022398041329011408,
+    "reversed_inward_source": false,
+    "zero_area_removed": 0,
+    "vertices": 11362908,
+    "source_dimensions": [
+      0.6943270564079285,
+      0.4352967143058777,
+      0.9762634038925171
+    ],
+    "oriented_dimensions": [
+      0.9762634038925171,
+      0.4352967143058777,
+      0.6943270564079285
+    ],
+    "orientation": "X=-source Z; Y=source Y; Z=source X",
+    "fitted_godot_dimensions": [
+      0.07199999690055847,
+      0.03210338577628136,
+      0.051207028329372406
+    ],
+    "target_limits": [
+      0.072,
+      0.1,
+      0.125
+    ],
+    "uniform_scale": 0.07375058791810138,
+    "cleanup_seconds": 10.782886400003918,
+    "no_decimation": true
+  },
+  "gun": {
+    "packed_mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\gun_packed.glb",
+    "triangles": 17530382,
+    "raw_triangles": 17530382,
+    "source_mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\gun_raw_00001_.glb",
+    "pack_version": 3,
+    "source_sample_signed_volume": -0.0006391958678079648,
+    "reversed_inward_source": true,
+    "zero_area_removed": 0,
+    "vertices": 8697086,
+    "source_dimensions": [
+      0.7552056312561035,
+      0.6155039072036743,
+      0.992725133895874
+    ],
+    "oriented_dimensions": [
+      0.992725133895874,
+      0.6155039072036743,
+      0.7552056312561035
+    ],
+    "orientation": "X=-source Z; Y=source Y; Z=source X",
+    "fitted_godot_dimensions": [
+      0.04469333216547966,
+      0.027710510417819023,
+      0.03400000184774399
+    ],
+    "target_limits": [
+      0.045,
+      0.036,
+      0.034
+    ],
+    "uniform_scale": 0.04502085073630761,
+    "cleanup_seconds": 8.187054299982265,
+    "no_decimation": true
+  },
+  "midships": {
+    "packed_mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\midships_packed.glb",
+    "triangles": 19964626,
+    "raw_triangles": 19964626,
+    "source_mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\midships_raw_00001_.glb",
+    "pack_version": 3,
+    "source_sample_signed_volume": 7.708291077197001e-06,
+    "reversed_inward_source": false,
+    "zero_area_removed": 0,
+    "vertices": 9872332,
+    "source_dimensions": [
+      0.7500556111335754,
+      0.41572096943855286,
+      0.9770406484603882
+    ],
+    "oriented_dimensions": [
+      0.9770406484603882,
+      0.41572096943855286,
+      0.7500556111335754
+    ],
+    "orientation": "X=-source Z; Y=source Y; Z=source X",
+    "fitted_godot_dimensions": [
+      0.11999999731779099,
+      0.05105879157781601,
+      0.09212172776460648
+    ],
+    "target_limits": [
+      0.12,
+      0.21,
+      0.2
+    ],
+    "uniform_scale": 0.12281986444381297,
+    "cleanup_seconds": 9.345006600022316,
+    "no_decimation": true
+  },
+  "bridge": {
+    "packed_mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\bridge_packed.glb",
+    "triangles": 25057318,
+    "raw_triangles": 25057318,
+    "source_mesh": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\mesh\\bridge_retry1_raw_00001_.glb",
+    "pack_version": 3,
+    "source_sample_signed_volume": -8.613068081223165e-05,
+    "reversed_inward_source": true,
+    "zero_area_removed": 0,
+    "vertices": 11372684,
+    "source_dimensions": [
+      0.7938207387924194,
+      0.8063859939575195,
+      0.7983633875846863
+    ],
+    "oriented_dimensions": [
+      0.7983633875846863,
+      0.8063859939575195,
+      0.7938207387924194
+    ],
+    "orientation": "X=-source Z; Y=source Y; Z=source X",
+    "fitted_godot_dimensions": [
+      0.07227373123168945,
+      0.0729999989271164,
+      0.07186249643564224
+    ],
+    "target_limits": [
+      0.15,
+      0.073,
+      0.078
+    ],
+    "uniform_scale": 0.09052736598478872,
+    "cleanup_seconds": 11.869490600074641,
+    "no_decimation": true
+  }
+}

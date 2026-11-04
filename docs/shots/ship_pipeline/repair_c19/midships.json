@@ -1,0 +1,30 @@
+{
+  "triangles": 20245763,
+  "reimport_triangles": 281137,
+  "reimport": "PASS",
+  "bytes": 33096244,
+  "sha256": "ca50ff4a0fc25fbfd9470858f6caab59423fdc1353f29e59e592ae3721cb64b7",
+  "native_instances": [
+    {
+      "path": "C:\\Users\\rcbai\\AppData\\Local\\Temp\\voidsworn_issue129\\ai\\midships_packed.glb",
+      "position": [
+        0.24,
+        -0.025,
+        0
+      ],
+      "yaw": 0
+    }
+  ],
+  "hull_triangles": 281137,
+  "join_cut_planes": [
+    0.18,
+    0.3
+  ],
+  "section_dimensions": [
+    0.11999999731779099,
+    0.05105879157781601,
+    0.09212172776460648
+  ],
+  "watertight": false,
+  "verdict": "separate end contours; inspect both joins; not welded"
+}
