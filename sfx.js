@@ -329,6 +329,8 @@ SFX.MAP={
   bass_drop:[{s:'bassDrop'}], charge:[{s:'ionCharge'}], wreck:[{s:'scrape'},{s:'wreckSettle',g:.25}],
   ui_click:[{s:'uiClick'}], ui_confirm:[{s:'uiConfirm'}], ui_cancel:[{s:'uiDeny'}], ui_select:[{s:'uiSelect'}], ui_panel:[{s:'uiPanel'}], ui_reward:[{s:'reward'}],
   ui_your:[{s:'yourTurn'}], ui_alert:[{s:'enemyTurn',g:.6}], ui_enemy:[{s:'enemyTurn',g:.6}], ui_boss:[{s:'impactChord'}], sting_win:[{s:'victory'}], sting_loss:[{s:'enemyTurn',r:.8}],
+  gun_flak:[{s:'gunFlak',g:.35}], gun_tracer:[{s:'gunTracer',g:.3}], gun_spine:[{s:'gunSpine',g:.32}], gun_glob:[{s:'gunGlob',g:.35}], torp_rocket:[{s:'torpRocket',g:.34}], torp_sac:[{s:'torpSac',g:.36}],
+  hit_wet:[{s:'hitWet',g:.4}], patter_hull:[{s:'patterHull',g:.15}], patter_shield:[{s:'patterShield',g:.12}], engine:[{s:'engineLoop',g:.3}], cough:[{s:'cough',g:.2}], puff:[{s:'puff',g:.3}], ui_round:[{s:'uiRound',g:.2,r:.95}],
 };
 for(const k of ['ui_click','ui_confirm','ui_cancel','ui_round','ui_your','ui_enemy','sting_win','sting_loss']) SFX.CUES[k].spj=k.startsWith('sting')?0:.02;
 
