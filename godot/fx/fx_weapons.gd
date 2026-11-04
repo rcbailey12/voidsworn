@@ -978,6 +978,9 @@ static func launch(fx, cid: String, sid: String) -> void:
 	var k: float = C.scale_k()
 	fx.spr(from, T, 0.8, eng, 1.5, 1.0 * k, 2.5 * k, 18)
 	fx.light(from, T, 1.0, 3.0, eng, 1)
+	if S != null and S.root.has_method("squadron_launch"):
+		S.root.squadron_launch(from)
+		return
 	for i in 6:
 		var t0 = T + 0.3 + i * 0.25
 		var d = (to - from)

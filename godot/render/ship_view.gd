@@ -3,6 +3,9 @@ extends Node3D
 # the class length, turned to its facing, with engine glows, a selection ring, and the animation of its moves.
 
 const HT := preload("res://render/hull_table.gd")
+const SQ := preload("res://render/squadron_visual.gd")
+const SQ_MODELS := preload("res://render/squadron_models.gd")
+var squad_visual: Node3D
 
 var u: Dictionary
 var hull: Node3D
@@ -38,6 +41,8 @@ static func clear_static() -> void:
 	_manifest = null
 	_look_cache.clear()
 	_gt = null
+	_pm = null
+	SQ_MODELS.clear_static()
 
 
 func _exit_tree() -> void:
@@ -67,7 +72,7 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	var squad := cls == "Squadron" or bool(u.get("squadron", false))
 	if squad:
 		# a strike-craft wing: the game's craft hull for its kind (fighter, bomber, spore), drawn as a small formation
-		code = HT.AI_HULLS.get("craft|" + str(u.get("tpl", "fighter")), "S1_51")
+		code = "wing|" + fac + "|" + SQ_MODELS.kind_for(fac, str(u.get("tpl", "")))
 		L = HT.CLS_LEN["Squadron"] * HT.SHIP_K * 1.5
 	if u.has("code"):
 		code = str(u["code"])
@@ -78,8 +83,13 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 	add_child(hull)
 	var man := manifest()
 	var made := false
+	if squad:
+		squad_visual = SQ.new()
+		hull.add_child(squad_visual)
+		squad_visual.setup(fac, str(u.get("tpl", "")), L, bob_seed)
+		made = true
 	# A4's kit ship when it is built (true chirality: no mirror; keeps skin_<n> patches and hp_* hard points for fx)
-	if man.has("ships") and man["ships"].has(code):
+	if not made and man.has("ships") and man["ships"].has(code):
 		var ps0 = load(man["ships"][code]["res"])
 		if ps0 is PackedScene:
 			var inst0: Node3D = (ps0 as PackedScene).instantiate()
@@ -110,16 +120,10 @@ func setup(unit: Dictionary, world_pos: Vector3, use_hi := true) -> void:
 		mi.mesh = am
 		hull.add_child(mi)
 	_collect(hull)
-	_look()
-	_fit()
-	if squad:
-		for off in [Vector3(-L * 1.3, 0.3, L * 1.1), Vector3(-L * 1.3, -0.3, -L * 1.1), Vector3(-L * 2.5, 0.0, 0.0)]:
-			var wing: Node3D = hull.duplicate()
-			wing.position = hull.position + off
-			add_child(wing)
-			wings.append([wing, wing.position])
-			_collect(wing)
-	_engines()
+	if not squad:
+		_look()
+		_fit()
+		_engines()
 	_ring()
 	position = world_pos
 	cur_yaw = yaw_of(u["facing"])
@@ -150,7 +154,7 @@ func _look() -> void:
 
 func _collect(n: Node) -> void:
 	for c in n.get_children():
-		if c is MeshInstance3D:
+		if c is MeshInstance3D and not String(c.name).begins_with("fx_"):
 			meshes.append(c)
 		_collect(c)
 
@@ -461,7 +465,6 @@ var _prev_yaw := 0.0
 var _yaw_v := 0.0
 var _yaw_a := 0.0
 var _puff_cd := {}
-var wings: Array = []         # strike craft beside the lead hull: [node, rest offset]
 var puffs: Array = []
 
 
@@ -616,7 +619,7 @@ func _seg_step(dt: float) -> void:
 		return
 	var g: Dictionary = segs[seg_i]
 	_seg_pose(g, seg_t / float(g["T"]))
-	# the hull's real motion, in animation time (the wings' lag reads it)
+	# the hull's real motion, in animation time (the drive and RCS read it)
 	var v := (position - _prev_pos) / maxf(dts, 1e-4)
 	_acc = _acc.lerp((v - _vel) / maxf(dts, 1e-4), 0.5)
 	_vel = v
@@ -1262,7 +1265,7 @@ func _process(dt: float) -> void:
 			visible = false
 		return
 	# Sparse matched station-keeping jets, independent of the smooth flight curve.
-	if not dead and visible and path_dur <= 0.0:
+	if not dead and visible and path_dur <= 0.0 and squad_visual == null:
 		var idle_t := Time.get_ticks_msec() / 1000.0
 		if idle_t >= float(_puff_cd.get("idle_at", 0.0)):
 			_side_puffs(1.0 if sin(idle_t + bob_seed) > 0.0 else -1.0, 0.32)
@@ -1276,11 +1279,15 @@ func _process(dt: float) -> void:
 	for e in engines:
 		(e as Sprite3D).visible = not fx_engines and not dead
 		(e as Sprite3D).pixel_size = L * 0.0009 * eg
-	# strike craft trail the lead a beat behind while it moves, closing up when it stops
-	var spd := clampf(_vel.length() / maxf(L * 1.5, 1.0), 0.0, 1.0)
-	for wi in wings.size():
-		var wv: Array = wings[wi]
-		var back: Vector3 = (wv[1] as Vector3) - Vector3(1, 0, 0) * spd * L * 0.9 * (1.0 + float(wi) * 0.5)
-		(wv[0] as Node3D).position = (wv[0] as Node3D).position.lerp(back, clampf(dt * 4.0, 0.0, 1.0))
+	if squad_visual != null:
+		squad_visual.step(dt, dead or not visible)
 	if ring.visible:
 		ring.rotation.y = -rotation.y
+
+
+func owns_squadron_engines() -> bool:
+	return squad_visual != null
+
+
+func squadron_launch(from: Vector3) -> void:
+	if squad_visual != null: squad_visual.launch_from(from)

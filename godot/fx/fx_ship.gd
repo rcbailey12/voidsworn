@@ -141,8 +141,11 @@ func setup(fx, sid: String, r: Node3D, info: Dictionary) -> void:
 	_dmg_root.name = "fx_damage"
 	_attach(_dmg_root)
 	_hide_placeholder_engines()
-	_build_engines(fx)
-	_build_trails(fx)
+	# Detailed wings own the nozzles of each independently banking craft.
+	# Aggregate hull analysis would put one capital-sized plume behind the wing.
+	if not (squadron and root.has_method("owns_squadron_engines") and root.owns_squadron_engines()):
+		_build_engines(fx)
+		_build_trails(fx)
 	if shielded:
 		_build_shield(fx)
 	_last_pos = root.global_position
