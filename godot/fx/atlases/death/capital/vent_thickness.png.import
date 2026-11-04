@@ -1,0 +1,17 @@
+[remap]
+importer="texture"
+type="CompressedTexture2D"
+path="res://.godot/imported/vent_thickness.png-80c0c4d65b8fabc2e7dee1b1aa427f04.ctex"
+
+[deps]
+source_file="res://fx/atlases/death/capital/vent_thickness.png"
+dest_files=["res://.godot/imported/vent_thickness.png-80c0c4d65b8fabc2e7dee1b1aa427f04.ctex"]
+
+[params]
+compress/mode=0
+compress/normal_map=0
+mipmaps/generate=false
+process/fix_alpha_border=false
+process/premult_alpha=false
+process/hdr_as_srgb=false
+detect_3d/compress_to=0

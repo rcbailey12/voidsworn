@@ -647,6 +647,7 @@ func add_ship(id: String, root: Node3D, info := {}) -> void:
 		remove_ship(id)
 	var s = SHIP.new()
 	s.setup(self, id, root, info)
+	s.set_meta("death_cut_count", 3 if bool(info.get("flagship", false)) or String(info.get("cls", "")) in ["Battleship", "Dreadnought", "Super-dreadnought", "Battle-barge", "Ark", "Tomb-ark"] else 2)
 	ships[id] = s
 	DEATH.add_collider(self, s)
 	# cut the hull for its death on a worker thread, staggered so a battle start does not stall
@@ -856,6 +857,14 @@ func warmup(cam: Camera3D, frames := 4) -> void:
 		HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)]
 	if not compat:
 		mats.append_array([mat(SH.VOL, 2), mat(SH.SPRITE, 1, "#define SOFT\n")])
+	for band in ["small", "cruiser", "capital"]:
+		for kind in ["flash", "vent", "cool"]:
+			var baked := DEATH.flipbook_material(self, kind, band)
+			baked.set_shader_parameter("born", now)
+			baked.set_shader_parameter("intensity", 0.01)
+			mats.append(baked)
+	mats.append(DEATH.power_material(HULL.damage_material(StandardMaterial3D.new(), Transform3D.IDENTITY, {}, 1.0)))
+	DEATH.tear_particles(self, at, Vector3.UP, 0.1, Vector3.ZERO)
 	for i in mats.size():
 		# Pin generated hull shaders until release, even after the temporary warmup meshes go away.
 		_shaders["warm:" + str(mats[i].shader.code.hash())] = mats[i].shader

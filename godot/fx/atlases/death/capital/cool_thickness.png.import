@@ -1,0 +1,17 @@
+[remap]
+importer="texture"
+type="CompressedTexture2D"
+path="res://.godot/imported/cool_thickness.png-cc126406a8d19646167b779bf84b4b5b.ctex"
+
+[deps]
+source_file="res://fx/atlases/death/capital/cool_thickness.png"
+dest_files=["res://.godot/imported/cool_thickness.png-cc126406a8d19646167b779bf84b4b5b.ctex"]
+
+[params]
+compress/mode=0
+compress/normal_map=0
+mipmaps/generate=false
+process/fix_alpha_border=false
+process/premult_alpha=false
+process/hdr_as_srgb=false
+detect_3d/compress_to=0

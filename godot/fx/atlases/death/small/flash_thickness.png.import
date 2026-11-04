@@ -1,0 +1,17 @@
+[remap]
+importer="texture"
+type="CompressedTexture2D"
+path="res://.godot/imported/flash_thickness.png-769fed23109ec6feae11bb5eb9aa5c81.ctex"
+
+[deps]
+source_file="res://fx/atlases/death/small/flash_thickness.png"
+dest_files=["res://.godot/imported/flash_thickness.png-769fed23109ec6feae11bb5eb9aa5c81.ctex"]
+
+[params]
+compress/mode=0
+compress/normal_map=0
+mipmaps/generate=false
+process/fix_alpha_border=false
+process/premult_alpha=false
+process/hdr_as_srgb=false
+detect_3d/compress_to=0
