@@ -431,24 +431,43 @@ func _patrol(fac: String, c: Vector3, r: float, sp: float) -> void:
 func _make_token() -> Node3D:   # your fleet at map scale: the flagship's real hull (A4's kit ship when it is in the build) and up to two escorts
 	var C = _C(); var t = Node3D.new(); var L = System.look(C.RUN["fac"])
 	_wake_samples.clear()
-	_engine_mounts.assign([Vector3(-4.4, 0, 0)])
+	_engine_mounts.clear()
 	var fs = C.flagshipOf()
 	var h = null
 	if fs != null: h = _hull(C.RUN["fac"], str(C.HULLS[fs["tpl"]].get("cls", "Cruiser")), 8.5)
-	if h != null: t.add_child(h)
+	if h != null:
+		t.add_child(h)
+		_add_engine_mounts(h)
 	else:
 		var hull = PrismMesh.new(); hull.size = Vector3(1.4, 3.4, 0.5)
 		var hm = sys.mi(hull, sys.std(Color(0.82, 0.74, 0.58), 0.4, 0.8, 0.3)); hm.rotation_degrees = Vector3(0, 0, -90); t.add_child(hm)
+		_engine_mounts.append(Vector3(-1.7, 0, 0))
+	var stern := Vector3.ZERO
+	for mount in _engine_mounts: stern += mount
+	stern /= max(1, _engine_mounts.size())
 	var esc = C.RUN["fleet"].filter(func(x): return fs == null or x["uid"] != fs["uid"])
 	esc = C.ssort(esc, func(a, b): return float(C.or_(C.HULLS[b["tpl"]].get("cp"), 1)) - float(C.or_(C.HULLS[a["tpl"]].get("cp"), 1)))
 	for i in range(min(2, esc.size())):
 		var e = _hull(C.RUN["fac"], str(C.HULLS[esc[i]["tpl"]].get("cls", "Frigate")), 4.6)
 		if e != null:
 			e.position = Vector3(-3.8, -0.4, 3.0 if i == 0 else -3.0); t.add_child(e)
-			_engine_mounts.append(e.position + Vector3(-2.4, 0, 0))
-	sys.glow(t, L["light"], 3.6, Vector3(-4.4, 0, 0), 2.0, 1.4)
-	var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.4; l.omni_range = 9.0; l.position = Vector3(-4.4, 0, 0); t.add_child(l)
+			_add_engine_mounts(e)
+	sys.glow(t, L["light"], 3.6, stern, 2.0, 1.4)
+	var l = OmniLight3D.new(); l.light_color = L["light"]; l.light_energy = 2.4; l.omni_range = 9.0; l.position = stern; t.add_child(l)
 	return t
+
+func _add_engine_mounts(h: Node3D) -> void:
+	# _hull wraps the ship view at map scale. Read its actual engine sprites
+	# through both transforms, including the escort's formation offset.
+	var sv = h.get_child(0)
+	for engine in sv.engines:
+		_engine_mounts.append(h.transform * sv.transform * engine.position)
+
+func _engine_positions() -> Array:
+	var positions: Array = []
+	# The token and wake are siblings, so keep history in their parent's space.
+	for mount in _engine_mounts: positions.append(token.transform * mount)
+	return positions
 func _token_home() -> Vector3:
 	var C = _C(); var pos = C.RUN.get("pos")
 	if pos != null and _nodes.has(pos): return _nodes[pos]["pos"] + TOKEN_OFF + Vector3(0, _nodes[pos]["top"], 0)
@@ -553,7 +572,6 @@ func _process(delta: float) -> void:
 	if fk != _fit_key: _fit_key = fk; _fit(fr)
 	_pan_keyboard(delta)
 	if _flying: _advance_flight(delta)
-	_update_wake()
 	# the player's zoom and pan ease in; the arrival and jump moves layer on top
 	var ke = 1.0 - exp(-delta * 7.0)
 	_uz = lerp(_uz, _uz_t, ke); _pan = _pan.lerp(_pan_t, ke)
@@ -606,6 +624,7 @@ func _process(delta: float) -> void:
 		pt[0].position = p
 		if p.distance_to(nxt) > 0.001: pt[0].look_at(nxt, Vector3.UP); pt[0].rotate_object_local(Vector3.UP, PI * 0.5)
 	if token != null and not _flying: token.position.y = _token_home().y + sin(_t * 1.4) * 0.2
+	_update_wake()
 	overlay.visible = not backdrop
 	if backdrop:
 		card.visible = false; return
@@ -1007,15 +1026,15 @@ func _advance_flight(delta: float) -> void:
 	# depths pass naturally. Avoid the old close zoom that lost the whole sun.
 	_cam_focus = _cam_focus.lerp(p + lead, follow)
 	_cam_zoom = lerpf(_cam_zoom, 0.86, follow)
-	if _wake_samples.is_empty() or _t - float(_wake_samples.back()["time"]) >= (0.016 if quality != "low" else 0.033):
-		var engines: Array = []
-		for mount in _engine_mounts: engines.append(token.transform * mount)
-		_wake_samples.append({"time": _t, "engines": engines})
+	# Sample every presented frame so the head never lags behind the engines.
+	_wake_samples.append({"time": _t, "engines": _engine_positions()})
 	if t >= 1.0: _finish_flight()
 
 func _finish_flight() -> void:
 	if not _flying: return
 	var id := _flight_id
+	# A skipped hop teleports to the stop; do not stretch its old wake across it.
+	if _flight_time < FLIGHT_SECONDS: _wake_samples.clear()
 	token.position = _flight_point(1.0)
 	# Keep the arrival heading; banking settles without a rotation reset.
 	var forward := (token.position - _flight_point(0.995)).normalized()
@@ -1044,6 +1063,8 @@ func _update_wake() -> void:
 	while not _wake_samples.is_empty() and _t - _wake_samples[0]["time"] > 0.65: _wake_samples.pop_front()
 	_wake_mesh.clear_surfaces()
 	if _wake_samples.size() < 2: return
+	# Keep the fading arrival tip on the engines as the idle bob resumes.
+	_wake_samples.back()["engines"] = _engine_positions()
 	for engine in _engine_mounts.size():
 		_wake_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
 		for i in _wake_samples.size():
