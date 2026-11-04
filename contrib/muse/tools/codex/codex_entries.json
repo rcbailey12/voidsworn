@@ -1426,7 +1426,7 @@
   "category": "admiral",
   "name": "Commodore Sera Ashgrove",
   "hook": "Carrier doctrine: tougher wings that hit harder.",
-  "body": "Sera Ashgrove counts her fleet in wings, and brings every one of them home, or goes back and gets them. Doctrine, Carrier doctrine: Squadrons deal +40% damage, carriers hold +1 wing, and squadrons have +25% hull. Command, Scramble all wings: Every carrier launches an extra wing, even past its hangar limit, then all squadrons strike again at once with +50% damage this round. Opens with Hearth-class carrier, Harrow-class destroyer, Warden-class frigate. Unlocked with 45 renown.",
+  "body": "Sera Ashgrove counts her fleet in wings, and brings every one of them home, or goes back and gets them. Doctrine, Carrier doctrine: Squadrons deal +40% damage, carriers hold +1 wing, and squadrons have +25% hull. Command, Scramble all wings: Every carrier launches an extra wing, even past its hangar limit, then all squadrons strike again at once with +50% damage this round. Opens with Hearth-class carrier, Harrow-class destroyer, two Warden-class frigates. Unlocked with 45 renown.",
   "note": "Spend it when your wings are already out and in reach of targets worth striking twice.",
   "source": "data.js ADMIRALS.ashgrove; faction Sunward Crusade"
  },
@@ -1453,7 +1453,7 @@
   "category": "admiral",
   "name": "High Admiral Oryn Thale",
   "hook": "Iron doctrine: hull and shields for everyone.",
-  "body": "Oryn Thale is the Crusade made patient: iron, endurance, and the names chalked after the battle, not before. Doctrine, Iron doctrine: All ships gain +15% hull and +10% shields. Command, Iron wall: All shields refill and your ships take 40% less hull damage this round. Opens with Bastion-class battleship, Warden-class frigate. Unlocked with 80 renown.",
+  "body": "Oryn Thale is the Crusade made patient: iron, endurance, and the names chalked after the battle, not before. Doctrine, Iron doctrine: All ships gain +10% hull and +10% shields. Command, Iron wall: All shields refill and your ships take 40% less hull damage this round. Opens with Bastion-class battleship, Warden-class frigate. Unlocked with 80 renown.",
   "note": "Spend it at the start of the round you expect to be hit hardest, not after.",
   "source": "data.js ADMIRALS.thale; faction Sunward Crusade"
  },
