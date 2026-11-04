@@ -100,3 +100,13 @@ Q5. Planning basis for hours. A: budget on the DeepSeek range, 30 to 40 hours of
 - Argon's FreeSpace 2 and Empire at War accounts were not independently re-fetched.
 - The English Blender manual and Godot suffix pages Argon cites were not re-opened by the chair; the pack's Spanish-mirror manual excerpt was the seed, and Argon's API points are consistent with it and with the legs' failures.
 - Whether #167's game-side caps and this build-side method agree on hot-edge band widths is a #167/#169 coordination point, not settled here.
+
+## 10. Owner rulings (Ryan, Nov 4, 2026)
+
+Ryan agreed with all five chair picks. Recorded here; section 8 holds the full question text.
+
+1. Q1 ADOPTED: option A. The intact ship carries thickness bands at the break lines plus a decimated dark liner; full interiors live only in the break variants. The R96 ceiling stands.
+2. Q2 ADOPTED: two transverse break lines plus one longitudinal line on capital hulls.
+3. Q3 ADOPTED: damage textures extend the R96 baked-mask paint graph with a damage mask set. No second texture system.
+4. Q4 ADOPTED: first Chorus hull gets bone ribs and membranes everywhere plus one flesh mass per break piece, then a measurement before any denser flesh work.
+5. Q5 ADOPTED WITH THE OWNER'S CAVEAT: the DeepSeek range is the planning basis for issue #169's scope, but Ryan's objection is recorded with it: hour estimates in this research line keep missing because they are anchored on human studio production (the EVE and Homeworld teams were people), not on the agent pipeline that actually does this work (one scripted pass, run by agents, per hull mostly unattended compute plus owner review minutes). Future muse research should state effort in those agent terms, sourced from this board's own completed jobs where possible, and should not present human-team timelines as corroboration for an agent estimate. The chair accepts the correction; the EVE/Homeworld hours framing in section 6 is superseded by this note as a planning basis, though the method evidence from those sources stands.
