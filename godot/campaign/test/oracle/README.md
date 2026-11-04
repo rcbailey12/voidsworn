@@ -1,5 +1,10 @@
 # The campaign oracle, pinned
 
+Nov 4 2026, issue 134 (R88): re-copied battle.js, data.js and ui3d.js where held.
+Player carriers replace lost wings automatically, opening wings use the shared
+squadron AI, and launch controls and teaching text are removed. Stats unchanged.
+Re-exported both table sets; goldens regenerate from these pinned sources.
+
 Nov 3 2026, issue 22: re-copied campaign_meta.js and campaign_run.js for
 saved per-run core sync progress, tier announcements and debrief inheritance.
 Re-exported both table sets; their checksums are unchanged. No battle rule

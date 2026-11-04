@@ -133,7 +133,7 @@ const ABILITIES = {
   evasive:{n:'Evasive burn',d:'+25 evasion until your next turn and +2 movement now.',cd:3},
   reload:{n:'Reload torpedoes',d:'Torpedo tubes are ready to fire again immediately.',cd:3},
   focus:{n:'Concentrated fire',d:'All of this ship\u2019s weapons deal +30% damage this turn.',cd:3},
-  launch:{n:'Launch squadron',d:'Launch ships start with wings in flight. Replace a lost wing in an open adjacent hex; one spare per hangar slot.',cd:1},
+  launch:{n:'Automatic wings',d:'Carriers start with wings in flight. Wings move and fight on their own each round. At round start, each ready carrier automatically replaces one lost wing if an adjacent hex is open and spares remain. Replacements fight from next round; one spare per hangar slot.',cd:1},
   surge:{n:'Shield surge',d:'Every shield facing restored to full strength.',cd:4},
   nova:{n:'Spinal cannon',d:'Spinal shell: base 40 damage in a prow hex 3\u20139 away, 20 adjacent. Hits friends too.',cd:3,target:true},
   // faction abilities: every faction's line ships get something to press besides fire and brace
@@ -552,9 +552,9 @@ const HULL_VARIANTS={
   vs_harrow_t:{base:'harrow',n:'Harrow torpedo-destroyer',d:'Twin prow torpedo tubes and no turret: a one-shot assassin.',w:[['torp','F'],['torp','F']],cost:20},
   vs_penitent_g:{base:'penitent',n:'Vigil gun-cruiser',d:'Swaps the prow lance for a dorsal sear battery: guns in every arc.',w:[['battery','P'],['battery','S'],['battery','T']],cost:25},
   h_picket_i:{base:'h_picket',n:'Picket interceptor',d:'Turret laser and +6 evasion: screens wherever it points.',w:[['laser','T'],['flak','T']],mod:{ev:24},cost:15},
-  h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar and no Launch squadron ability; a third plasma lance turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
+  h_vanguard_g:{base:'h_vanguard',n:'Vanguard gunship',d:'No hangar or automatic wings; a third plasma lance turret instead.',w:[['turbo','T'],['turbo','T'],['turbo','T'],['ion','F']],mod:{ab:null,hangar:0},cost:25},
   c_reaver_t:{base:'c_reaver',n:'Turret gutship',d:'Scatter cannons on a turret instead of one broadside.',w:[['torp','F'],['scatter','T']],cost:15},
-  c_hulk_g:{base:'c_hulk',n:'Gun-hulk',d:'No hangar and no Launch squadron ability; scatter broadsides, a turret and 20 more hull.',w:[['scatter','P'],['scatter','S'],['turret','T']],mod:{ab:null,hangar:0,hp:190},cost:25},
+  c_hulk_g:{base:'c_hulk',n:'Gun-hulk',d:'No hangar or automatic wings; scatter broadsides, a turret and 20 more hull.',w:[['scatter','P'],['scatter','S'],['turret','T']],mod:{ab:null,hangar:0,hp:190},cost:25},
   b_spitter_s:{base:'b_spitter',n:'Spitter stinger',d:'Trades a prow gun for boarding tendrils: brutal up close.',w:[['bioplasma','T'],['tendril','T']],cost:15},
   b_razor_s:{base:'b_razor',n:'Bladeback stalker',d:'Trades its spine volley for a second tendril cluster: +1 speed and +8 evasion.',w:[['tendril','T'],['tendril','T']],mod:{sp:5,ev:12},cost:25},
   i_wisp_l:{base:'i_wisp',n:'Sliver lancer',d:'A prism lance in place of the prism shards.',w:[['pulsar','F']],cost:15},
@@ -1011,7 +1011,7 @@ const BOON_NEED={L_storm:'shields',h_brood:'carrier',a_mark:'lance',e_spread:'to
 // the flagship's aspect is picked at the start of a run, from three offered at random
 const ASPECTS={
   lancer:{n:'Aspect of the Spear',d:'Your flagship’s forward guns deal +50% damage and reach 1 hex further, and it can turn once more each round to bring them to bear.',fx:{prowPct:.5,prowRange:1,turns:1}},
-  hive:{n:'Aspect of the Brood',d:'Your flagship starts with a wing (+1 if it has a hangar); its wings deal +30% damage. No new Launch ability.',fx:{hive:1,sqPct:.3}},
+  hive:{n:'Aspect of the Brood',d:'Your flagship starts with a wing (+1 if it has a hangar); its wings deal +30% damage. Only a carrier flagship replaces lost wings.',fx:{hive:1,sqPct:.3}},
   ram:{n:'Aspect of the Ram',d:'Your flagship rams for +60% damage, can take up to 60% of a ship’s hull, takes no recoil, and has +1 speed.',fx:{ramPct:.6,ramCap:.2,ramGuard:1,speed:1}},
   bulwark:{n:'Aspect of the Bulwark',d:'Your flagship has +70% hull and shields, ships next to it take 25% less hull damage, and enemy ships within 4 hexes that can fire on it must.',fx:{hpPct:.7,shPct:.7,guardAura:.25,taunt:4}},
   storm:{n:'Aspect of the Storm',d:'Your flagship gains +0.5 to weapon shield damage multipliers, and shields recharge twice as fast.',fx:{ionPlus:.5,regenPct:1}},

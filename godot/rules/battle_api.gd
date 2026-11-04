@@ -189,6 +189,7 @@ func _prep() -> void: # ui3d.js prepBattle
 	for x in B["units"]: x["activated"] = false
 	if _alt:
 		R.startSideTurn("enemy"); R.flush_deferred()
+	B["busy"] = true; R.swarmPhase("player"); R.flush_deferred(); B["busy"] = false
 	phase = "over" if R.jt(B.get("over")) else "player"
 	R.emit({"t": "round", "round": int(B["round"])}); R.emit({"t": "side", "side": "player"})
 
@@ -367,7 +368,7 @@ func ability(id: String, arg = null) -> bool:
 	_enter()
 	if halted != "": var h = false; _leave(false); return h
 	var r = _i_ability(id, arg); _leave(true); return r
-func _i_ability(id: String, arg = null) -> bool:       # arg: {hex: {q, r}} for nova, blink and launch; {kind} for launch
+func _i_ability(id: String, arg = null) -> bool:       # arg: {hex: {q, r}} for nova and blink; player wings launch automatically
 	var u = unit(id)
 	if not _guard(u): return false
 	R.B["busy"] = true; var ok = R.useAbility(u, arg); _after_act(); return ok
@@ -467,7 +468,7 @@ func _i_in_reach(id: String, wi: int, target_id: String, state = null) -> bool:
 # ---------------- UI state for one ship (read-only, fresh copies) ----------------
 # ui_info(id): everything the ship's buttons, tooltips and target markers need, so the scene never reads rules.gd directly.
 #   orders {brace, full, lock, helm}: can give it; rotate, stance, command: can use; ram: the run-up {target, path, dmg, recoil, soak, section} or null;
-#   board: [{target, chance, kill, loss, capture}]; ability {id, ready, cooldown, hexes: [{q, r}] for nova, blink and launch};
+#   board: [{target, chance, kill, loss, capture}]; ability {id, ready, cooldown, hexes: [{q, r}] for nova and blink};
 #   weapons: [{i, ready, targets: [{id, can, range, inRange, inArc, los, hit, shield, hull, quad, rear, dmgMult}]}] against every living enemy.
 func ui_info(id: String) -> Dictionary:
 	_enter()
@@ -493,10 +494,9 @@ func _ui_info_raw(id: String) -> Dictionary:
 	var hx := []
 	if u.get("ab") == "nova": hx = R.novaTargets(u)
 	elif u.get("ab") == "blink": hx = R.blinkHexes(u)
-	elif u.get("ab") == "launch": hx = R.launchHexes(u)
 	var hs := []
 	for h in hx: hs.append({"q": int(h.q), "r": int(h.r)})
-	o["ability"] = {"id": u.get("ab"), "ready": R.canAbility(u) if not R.jt(u.get("dead")) else false, "cooldown": u.get("abCd"), "hexes": hs}
+	o["ability"] = {"id": null if u.get("ab") == "launch" else u.get("ab"), "ready": R.canAbility(u) if not R.jt(u.get("dead")) else false, "cooldown": u.get("abCd"), "hexes": hs}
 	var ws := []
 	var foes := []
 	for t in R.alive("enemy" if u["side"] == "player" else "player"): foes.append(t)

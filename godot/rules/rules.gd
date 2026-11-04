@@ -1414,6 +1414,7 @@ func startSideTurn(side) -> int:
 	var risen = legionTurn(side)
 	for u in B["units"]:
 		if jt(u.get("dead")) or u["side"] != side: continue
+		if jt(u.get("isSq")): u["activated"] = false
 		u["braced"] = false; u["coverBy"] = null; u["postFire"] = false; u["postMp"] = 0; u["pivotUsed"] = false; u["lockOn"] = false; u["focus"] = false; u["fullAhead"] = false; u["noTurn"] = false; u["evBuff"] = 0; u["order"] = null; u["ramBoost"] = 0
 		u["mp"] = max(1, u["speed"] - u["st"]["engine"]); u["turnsLeft"] = u["turns"]
 		for w in u["weapons"]:
@@ -1457,6 +1458,7 @@ func startSideTurn(side) -> int:
 	for u in risen:
 		for w in u["weapons"]: w["fired"] = true
 	if burned: checkEnd()
+	if side == "player" and not jt(B.get("over")): replaceWings(side)
 	hook("tick " + String(side))
 	return deaths.size()
 func queueDeath(u, dq) -> void:
@@ -3325,7 +3327,7 @@ func sqOrder(s):
 	for x in B["units"]:
 		if x["id"] == o["id"]:
 			t = x; break
-	if t == null or jt(t.get("dead")) or t["side"] == s["side"]:
+	if t == null or jt(t.get("dead")) or (t["side"] == s["side"] if o["kind"] == "strike" else t["side"] != s["side"]):
 		s["wingOrder"] = null; return null
 	return {"kind": o["kind"], "t": t}
 func sqPlan(s):
@@ -3416,11 +3418,25 @@ func squadronsOf(u) -> Array:
 	for x in alive():
 		if x.get("parent") == u["id"]: o.append(x)
 	return o
+# R88: player replacement launches use the same reserves, cooldown and next-round readiness.
+func launchReady(u) -> bool:
+	return u.get("ab") == "launch" and not jt(u.get("dead")) and not gt(u.get("abCd"), 0) and not jt(u.get("braced")) and squadronsOf(u).size() < u["hangar"] and (u.get("spare") == null or u["spare"] > 0) and launchHexes(u).size() > 0
+func launchWing(u, h, kind) -> void:
+	if u.get("spare") != null: u["spare"] = max(0, u["spare"] - 1)
+	var sq = makeWing(u, h, kind); sq["mp"] = 0
+	for w in sq["weapons"]: w["fired"] = true
+	logm(String(u["name"]) + " launches a " + String(HULLS[kind]["n"]).to_lower() + ".", pp(u))
+func replaceWings(side) -> void:
+	for u in alive(side):
+		if jt(u.get("isSq")) or not launchReady(u): continue
+		var foes = alive("enemy" if side == "player" else "player"); var hs = launchHexes(u)
+		JSM.ssort(hs, func(a, b): return _mind(a, foes, 99) - _mind(b, foes, 99))
+		launchWing(u, hs[0], wingKind(u)); u["abCd"] = abilityCd(u)
 func canAbility(u) -> bool:
 	if not jt(u.get("ab")) or jt(u.get("dead")) or u["abCd"] > 0 or jt(u.get("braced")): return false
 	var ab = u["ab"]
 	if ab == "surge" and jt(u.get("st")) and u["st"]["shieldOff"] >= 99: return false
-	if ab == "launch": return squadronsOf(u).size() < u["hangar"] and (u.get("spare") == null or u["spare"] > 0) and launchHexes(u).size() > 0
+	if ab == "launch": return u["side"] != "player" and launchReady(u)
 	if ab == "reload":
 		for w in u["weapons"]:
 			if w["k"] == "torp" and (gt(w.get("cdLeft"), 0) or jt(w.get("fired"))): return true
@@ -3536,10 +3552,7 @@ func _useAbility_raw(u, arg = null) -> bool:
 	if a == "launch":
 		var h = arg["hex"] if (arg is Dictionary and jt(arg.get("hex"))) else pick(launchHexes(u))
 		var kind = arg["kind"] if (arg is Dictionary and jt(arg.get("kind"))) else wingKind(u)
-		if u.get("spare") != null: u["spare"] = max(0, u["spare"] - 1)
-		var sq = makeWing(u, h, kind); sq["mp"] = 0
-		for w in sq["weapons"]: w["fired"] = true
-		logm(String(u["name"]) + " launches a " + String(HULLS[kind]["n"]).to_lower() + ".", pp(u))
+		launchWing(u, h, kind)
 	if a == "nova":
 		var c = arg["hex"]
 		logm(String(u["name"]) + " fires its nova cannon.", pp(u))
