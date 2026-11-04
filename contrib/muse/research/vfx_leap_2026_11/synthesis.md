@@ -161,3 +161,13 @@ The fixed block for this issue named DeepSeek and Qwen as writers with the chair
 Result: it converges with this synthesis on every settled point. Retire the raymarched fireball completely (owner question 1, same pick). Death work stays in the transients with no R80 reopen (the leg reaches the splat line independently: splats are a hull-pipeline project, not an effects project). Nebula conversion is the hybrid FogVolume plus thinned billboard layer (same pick). Storm bolt lights couple into the fog at max tier only (owner question 4, same pick). Planets get the feature model inside the existing GPU bake, erosion as a shader approximation first (same pick, and the leg's fifth owner question matches the reasoning in section 5). Its hypothesis verdict has the same shape as section 2.
 
 Two differences of granularity, neither changes a settled point. The leg sequences the death as five beats where section 3 uses four (it counts the delayed secondary pops as their own beat); Codex should treat the beat count as one timeline with the secondary pops timed inside the break beat or as a fifth beat, whichever reads better in the D3 screenshots. The leg also prefers identical flipbook language at every quality tier, where section 3 gates the fracture glow and the vent and spark emitters by tier; the tier gating stands, because R88 keeps a lower setting for weaker PCs as a ruling, and the flipbook language itself is identical across tiers under both versions.
+
+## 11. Owner rulings (Ryan, 2026-11-03)
+
+Ryan ruled "Agree with all chair picks" on all five owner questions in section 8, after the questions were re-presented with full context. The rulings:
+
+1. Fireball: REMOVED from deaths entirely. The baked plasma flash is the hero moment; the raymarched fireball does not survive even for rare reactor criticals.
+2. Flipbook style: Mantaflow sims rendered with a stylised grade. Hand-painted atlases only as an escalation if a sim still reads too real in the before and after screenshots.
+3. Death frame budget: spent on the first 2 seconds (flash, vent, break). The 14 second cooling tail stays a cheap shader.
+4. Lightning in the fog: bolt and explosion lights couple into the FogVolumes at MAX tier; the storm_flash density pulse stands in at high; the exclusion stays at low. The N4 build step carries the screenshot check for the old blocky-light failure mode.
+5. Planet scope: terran and barren/rocky first, volcanic desert next. Gas giants and ice giants stay on the current bake until the new pipeline proves out.
