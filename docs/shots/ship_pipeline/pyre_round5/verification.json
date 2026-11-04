@@ -1,0 +1,44 @@
+{
+  "result": "PASS",
+  "routes": [
+    "today",
+    "V1",
+    "V2"
+  ],
+  "source_game_unchanged": true,
+  "geometry": {
+    "V1": {
+      "round4": "56b3540bdb26c2c99a93184b9d763461e7063ea07ceefd5e1e0e4d78817a0e8a",
+      "round5": "56b3540bdb26c2c99a93184b9d763461e7063ea07ceefd5e1e0e4d78817a0e8a",
+      "unchanged": true
+    },
+    "V2": {
+      "round4": "9bdeb25d3e3ea8bcf16bc6956b7414068d91897150d020e6a24e3ef9cacc3919",
+      "round5": "9bdeb25d3e3ea8bcf16bc6956b7414068d91897150d020e6a24e3ef9cacc3919",
+      "unchanged": true
+    }
+  },
+  "ceiling": {
+    "V1": {
+      "triangles": 307477,
+      "nominal_triangle_ceiling": 306000,
+      "triangle_delta": 1477,
+      "unchanged_from_round4_count": true,
+      "gpu_ms": 4.17500019073486,
+      "gpu_ceiling_ms": 3.9,
+      "gpu_within_ceiling": false
+    },
+    "V2": {
+      "triangles": 289047,
+      "nominal_triangle_ceiling": 306000,
+      "triangle_delta": -16953,
+      "unchanged_from_round4_count": true,
+      "gpu_ms": 3.24799990653992,
+      "gpu_ceiling_ms": 3.9,
+      "gpu_within_ceiling": true
+    }
+  },
+  "verifier_sha256": "1a4641a84e9e664cb22f363085e6228cae821bb5ec07c0eebefe4cae86ce9c4b",
+  "colour_match_pass": true,
+  "brightness_within_15_levels": true
+}
