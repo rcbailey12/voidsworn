@@ -22,6 +22,7 @@ extends RefCounted
 #   sq:      guns, bombs, sporeb: craft on a strafing run
 
 const POOLS := preload("res://fx/fx_pool.gd")
+const SH := preload("res://fx/fx_shaders.gd")
 const DEATH := preload("res://fx/fx_death.gd")
 const WING := preload("res://render/squadron_wing.gd")
 const CRAFT := preload("res://render/squadron_craft.gd")
@@ -953,7 +954,7 @@ static func _big_hit(fx, Tg, tg: Dictionary, T: float, k: float, col: Color, sta
 	fx.spr(p + n * 0.8 * k, T, 0.8, hot, 7.0, R * 0.4, R * 1.4, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 40.0)
 	# two-stage: a sympathetic pop a moment later
 	fx.spr(p + n * 0.6 * k + fx.rdir() * R * 0.3, T + 0.3, 0.55, hot, 5.0, R * 0.3, R * 1.0, 2, Vector3.ZERO, 0.0, 0.0, 0.0, 28.0)
-	DEATH.fireball(fx, p + n * R * 0.4, R * 2.0, T, 3.0, hot)
+	fireball(fx, p + n * R * 0.4, R * 2.0, T, 3.0, hot)
 	fx.ring(p, n, T, 1.1, Color(0.95, 0.8, 0.65) if not star else col, 0.7, R * 0.2, R * 3.6, 1, 0.0, 0.0, 110.0)
 	fx.dst(p, T, 0.7, R * 0.3, R * 4.0, 0, 1.0)
 	for s in 8:
@@ -1205,3 +1206,26 @@ static func _lanes_update(fx) -> void:
 		var wv = 0.35 * smoothstep(0.0, 0.5, u) + 0.65 * smoothstep(0.5, 1.0, u)
 		for m in ln["mats"]:
 			(m as ShaderMaterial).set_shader_parameter("warn", wv)
+
+
+# The existing weapon-only volume. Deaths use baked flipbooks in fx_death.gd.
+static func fireball(fx, p: Vector3, size: float, t0: float, life: float, tint: Color) -> void:
+	if fx.quality != "max":
+		return
+	var box = MeshInstance3D.new()
+	box.name = "fx_fireball"
+	var bm = BoxMesh.new()
+	bm.size = Vector3.ONE
+	box.mesh = bm
+	var m: ShaderMaterial = fx.mat(SH.VOL, 2)
+	m.set_shader_parameter("vtype", 0.0)
+	m.set_shader_parameter("t0", t0)
+	m.set_shader_parameter("life", life)
+	m.set_shader_parameter("P", Vector4(0.0, 1.0, fx.rng.randf() * 10.0, 0.16 * 44.0 / maxf(size * 1.3, 1.0)))
+	m.set_shader_parameter("tint", Vector3(tint.r, tint.g, tint.b))
+	box.material_override = m
+	box.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	box.position = p
+	box.scale = Vector3.ONE * size * 1.3
+	fx.add_child(box)
+	fx.later(t0 + life + 0.1, fx.free_effect.bind(weakref(box)))

@@ -66,12 +66,15 @@ func _run() -> void:
 				_check(s.root.transform == root_pose, "death spin does not move the rules/view root")
 				_check(fx._pauses.is_empty() and fx._death_slow_left == 0.0, "small kills have no hit pause/slow motion")
 			await _advance(fx, (1.45 if s.death_big else 0.55))
-			_check(fx.flash_log.size() - before == (0 if calm else 1), "one core flash before any secondary explosions")
+			_check(fx.flash_log.size() - before == 0 if calm else fx.flash_log.size() - before in ([1, 2, 3] if s.death_big else [1]), "bounded baked flash sequence")
 			await _advance(fx, 3.6)
 			_check(not s.meshes[0].visible, "live hull replaced after split")
 			_check(fx.dstate["wrecks"].size() == 1, "one lingering wreck record per kill")
 			var w: Dictionary = fx.dstate["wrecks"][0]
-			if s.death_big: _check(w["nodes"].size() == 2, "capital splits into two halves")
+			if s.death_big:
+				_check(w["nodes"].size() == int(s.get_meta("death_cut_count")) + 1, "capital has two or three sealed cuts")
+				var cuts: Array = w["cut_events"]
+				_check(cuts.size() == w["nodes"].size() and float(cuts.back().t) - float(cuts.front().t) >= 0.78, "structural releases span 0.8 seconds")
 			var flashes: int = fx.flash_log.size() - before
 			_check(flashes == 0 if calm else flashes >= 1, "calm has zero flashes; normal keeps its core")
 			for a in fx.flash_log:

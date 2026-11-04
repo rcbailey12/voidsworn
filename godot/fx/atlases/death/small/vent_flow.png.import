@@ -1,0 +1,17 @@
+[remap]
+importer="texture"
+type="CompressedTexture2D"
+path="res://.godot/imported/vent_flow.png-31ffea98497b524e14b3b091f739ce37.ctex"
+
+[deps]
+source_file="res://fx/atlases/death/small/vent_flow.png"
+dest_files=["res://.godot/imported/vent_flow.png-31ffea98497b524e14b3b091f739ce37.ctex"]
+
+[params]
+compress/mode=0
+compress/normal_map=0
+mipmaps/generate=false
+process/fix_alpha_border=false
+process/premult_alpha=false
+process/hdr_as_srgb=false
+detect_3d/compress_to=0

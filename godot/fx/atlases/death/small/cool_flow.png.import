@@ -1,0 +1,17 @@
+[remap]
+importer="texture"
+type="CompressedTexture2D"
+path="res://.godot/imported/cool_flow.png-2aca183be396faa4f1594c3ae58dfa81.ctex"
+
+[deps]
+source_file="res://fx/atlases/death/small/cool_flow.png"
+dest_files=["res://.godot/imported/cool_flow.png-2aca183be396faa4f1594c3ae58dfa81.ctex"]
+
+[params]
+compress/mode=0
+compress/normal_map=0
+mipmaps/generate=false
+process/fix_alpha_border=false
+process/premult_alpha=false
+process/hdr_as_srgb=false
+detect_3d/compress_to=0

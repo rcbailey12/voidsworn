@@ -71,6 +71,104 @@ vec3 scene_view_pos(vec2 suv, mat4 inv_proj) {
 
 const HIDE := "POSITION = vec4(2.0, 2.0, 2.0, 1.0);"
 
+# Offline Mantaflow, 16 frames, bidirectional motion vectors and optical thickness.
+# COMPAT omits depth sampling; all tiers keep the same baked visual language.
+const DEATH_FLIPBOOK := """
+shader_type spatial;
+render_mode unshaded, cull_disabled, depth_draw_never, shadows_disabled;
+""" + COMMON + """
+uniform sampler2D atlas : source_color, filter_linear, repeat_disable;
+uniform sampler2D motion : filter_linear, repeat_disable;
+uniform sampler2D thickness : filter_linear, repeat_disable;
+#ifndef COMPAT
+uniform sampler2D death_depth : hint_depth_texture, filter_nearest;
+#endif
+uniform float born = 0.0;
+uniform float lifetime = 0.4;
+uniform float extent = 1.0;
+uniform float intensity = 1.0;
+uniform float plasma = 0.0;
+uniform vec3 velocity = vec3(0.0);
+uniform vec3 tear_normal = vec3(0.0, 1.0, 0.0);
+uniform float directional = 0.0;
+uniform float min_pixels = 0.0;
+varying float elapsed;
+varying float particle_depth;
+vec2 cell_uv(vec2 uv, float frame) {
+	// Half-texel gutter prevents neighbouring cells bleeding under interpolation.
+	return (vec2(mod(frame, 4.0), floor(frame / 4.0)) + clamp(uv, vec2(0.001), vec2(0.999))) / 4.0;
+}
+void vertex() {
+	elapsed = max(scene_t - born, 0.0);
+	vec3 centre = MODEL_MATRIX[3].xyz + velocity * elapsed;
+	vec3 view_c = (VIEW_MATRIX * vec4(centre, 1.0)).xyz;
+	particle_depth = -view_c.z;
+	float size = max(extent, px_world(min_pixels, -view_c.z, PROJECTION_MATRIX));
+	vec2 axis = (VIEW_MATRIX * vec4(tear_normal, 0.0)).xy;
+	axis = length(axis) > 0.01 ? normalize(axis) : vec2(0.0, 1.0);
+	vec2 up = mix(vec2(0.0, 1.0), axis, directional);
+	vec2 right = vec2(up.y, -up.x);
+	vec2 offset = (right * VERTEX.x + up * VERTEX.y) * size;
+	POSITION = PROJECTION_MATRIX * vec4(view_c + vec3(offset, 0.0), 1.0);
+}
+void fragment() {
+	float age = clamp(elapsed / max(lifetime, 0.001), 0.0, 1.0);
+	float frame = age * 15.0;
+	float a = floor(frame); float b = min(a + 1.0, 15.0); float blend = fract(frame);
+	vec2 fa = (texture(motion, cell_uv(UV, a)).rg - 0.5) * 0.25;
+	vec2 fb = (texture(motion, cell_uv(UV, b)).ba - 0.5) * 0.25;
+	vec2 ua = cell_uv(UV - fa * blend, a);
+	vec2 ub = cell_uv(UV - fb * (1.0 - blend), b);
+	vec4 gas = mix(texture(atlas, ua), texture(atlas, ub), blend);
+	vec3 thick = mix(texture(thickness, ua).rgb, texture(thickness, ub).rgb, blend);
+	// Thickness gradients make a coarse volume normal, shaded by the battle sun.
+	vec2 e = vec2(1.0 / 2048.0, 0.0);
+	float dx = texture(thickness, ua + e.xy).r - texture(thickness, ua - e.xy).r;
+	float dy = texture(thickness, ua + e.yx).r - texture(thickness, ua - e.yx).r;
+	vec3 normal = normalize(vec3(-dx * 26.0, dy * 26.0, 0.5));
+	vec3 sun = normalize((VIEW_MATRIX * vec4(0.45, 0.70, 0.55, 0.0)).xyz);
+	float lit = 0.25 + 0.55 * max(dot(normal, sun), 0.0) + thick.g * 0.2;
+	vec3 smoke = mix(vec3(0.12, 0.085, 0.18), vec3(0.42, 0.36, 0.50), lit);
+	vec3 core = mix(vec3(0.65, 0.76, 0.93), vec3(0.9, 0.83, 0.68), age);
+	ALBEDO = mix(smoke, core * (0.7 + gas.r), plasma) * intensity * fx_gain;
+	float fade = 1.0 - smoothstep(0.70, 1.0, age);
+	float soft = 1.0;
+#ifndef COMPAT
+	float z = texture(death_depth, SCREEN_UV).r;
+	vec4 hit = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, z, 1.0);
+	soft = clamp((-hit.z / hit.w - particle_depth) / max(extent * 0.1, 0.05), 0.0, 1.0);
+#endif
+	ALPHA = gas.a * fade * soft * (elapsed < lifetime ? 1.0 : 0.0);
+}
+"""
+
+const DEATH_PARTICLES := """
+shader_type particles;
+uniform vec3 axis = vec3(0.0, 1.0, 0.0);
+uniform vec3 inherited = vec3(0.0);
+uniform float spread = 0.3;
+uniform float speed = 4.0;
+uniform float size = 0.05;
+uniform vec4 tint : source_color = vec4(0.9, 0.6, 0.2, 1.0);
+uniform float seed_value = 1.0;
+float random_v(float n) { return fract(sin(n * 127.1 + seed_value) * 43758.5453); }
+void start() {
+	float id = float(NUMBER) + 1.0;
+	vec3 jitter = vec3(random_v(id), random_v(id + 3.0), random_v(id + 7.0)) * 2.0 - 1.0;
+	VELOCITY = normalize(axis + jitter * spread) * speed * (0.6 + random_v(id + 13.0) * 0.4) + inherited;
+	TRANSFORM = EMISSION_TRANSFORM;
+	TRANSFORM[0].xyz *= size;
+	TRANSFORM[1].xyz *= size;
+	TRANSFORM[2].xyz *= size;
+	COLOR = tint;
+	CUSTOM.y = 0.0;
+}
+void process() {
+	CUSTOM.y += DELTA / LIFETIME;
+	COLOR.a = tint.a * (1.0 - smoothstep(0.1, 1.0, CUSTOM.y));
+}
+"""
+
 # Sprites (camera-facing). kinds:
 #  0 flash   1 flame   2 fireball core   3 smoke   4 engine core   5 squib   7 vent gas   8 soot   11 sputtering core
 #  12 beam charge   13 beam impact flare   14 plasma bolt   15 bio glob   16 prism glint   17 star ball

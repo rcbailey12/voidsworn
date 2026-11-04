@@ -2,8 +2,8 @@ extends RefCounted
 # Ship deaths, drifting wrecks and the physics behind them, plus the shared hull decorations (scorch decals, breach
 # holes, bent plates, venting plumes, debris bodies). Static functions; the state lives in fx.dstate.
 #
-# Capitals lose power, vent along a thermal tear, split into two sealed halves,
-# then flash once. Small hulls spin with a pooled smoke/fire ribbon before breaking.
+# Four death beats: power loss, directional vent, staged cuts, drift and cooling.
+# Mantaflow flipbooks replace fire volumes. Small hulls have a short pop, no ribbon.
 # Triangle buckets and recessed boundary caps are prepared on a worker before death;
 # the wrecks drift, tumble and cool. No worker wait blocks a death frame.
 
@@ -16,6 +16,24 @@ const DEBRIS_LAYER := 2
 const DEBRIS_CAP := 360
 const DEBRIS_VARIANTS := 4
 const WRECK_COOL := 14.0
+
+class DeathTimeline:
+	var vent: float
+	var cut: float
+	var end: float
+	var cuts: int
+	var spacing: float
+	var beats: Array
+	func _init(big: bool, cut_count: int) -> void:
+		vent = 0.30 if big else 0.12
+		cut = 0.80 if big else 0.55
+		end = 2.05 if big else 1.15
+		cuts = cut_count if big else 1
+		spacing = 0.8 / maxf(cuts - 1, 1) if big else 0.0
+		beats = [{"name": "power_loss", "at": 0.0}, {"name": "vent", "at": vent},
+			{"name": "structural_break", "at": cut}, {"name": "drift_and_cool", "at": 1.6 if big else 0.85}]
+
+const ATLAS_DIR := "res://fx/atlases/death/"
 
 const SLAG := """
 shader_type spatial;
@@ -33,8 +51,9 @@ void fragment() {
 	vec3 base = mix(vec3(0.025, 0.017, 0.012), vec3(0.006, 0.004, 0.003), band) * (0.55 + coarse * 0.65 + n * 0.25);
 	float rim = clamp(slag_band.y, 0.0, 1.0) * smoothstep(0.35, 0.8, n);
 	float hot = clamp(heat, 0.0, 1.0);
-	ALBEDO = clamp(base + vec3(0.9, 0.19, 0.025) * rim * hot * hot * 0.65 * fx_gain
-		+ vec3(0.08, 0.013, 0.002) * smoothstep(0.985, 1.0, n) * hot, 0.0, 1.0);
+	vec3 metal = mix(vec3(0.38, 0.035, 0.018), vec3(0.95, 0.40, 0.09), smoothstep(0.2, 0.65, hot));
+	metal = mix(metal, vec3(0.94, 0.84, 0.64), smoothstep(0.65, 1.0, hot));
+	ALBEDO = base + metal * rim * hot * hot * 0.85 * fx_gain;
 }
 """
 
@@ -106,46 +125,94 @@ static func setup_physics(fx) -> void:
 
 # ---------------------------------------------------------------- hull decorations
 
-static func vent_volume(fx, parent: Node3D, p: Vector3, n: Vector3, hole: float, seed_v: float) -> Node3D:
-	var box = MeshInstance3D.new()
-	box.name = "fx_vent"
-	var bm = BoxMesh.new()
-	bm.size = Vector3.ONE
-	box.mesh = bm
-	var m: ShaderMaterial = fx.mat(SH.VOL, 2)
-	m.set_shader_parameter("vtype", 1.0)
-	m.set_shader_parameter("P", Vector4(0.6, 1.0, seed_v, 0.3))
-	box.material_override = m
-	box.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var y = n.normalized()
-	var x = y.cross(Vector3(0, 0, 1) if absf(y.z) < 0.9 else Vector3(1, 0, 0)).normalized()
-	var z = x.cross(y)
-	box.transform = Transform3D(Basis(x, y, z).scaled_local(Vector3(hole * 2.4, hole * 6.0, hole * 2.4)), p + n * (hole * 3.0 - 0.1))
-	parent.add_child(box)
-	return box
+static func atlas_band(length: float) -> String:
+	return "small" if length < 18.0 else ("cruiser" if length < 30.0 else "capital")
 
 
-# A raymarched fireball rolling into smoke (max), freed when done.
-static func fireball(fx, p: Vector3, size: float, t0: float, life: float, tint: Color) -> void:
-	if fx.quality != "max":
-		return
-	var box = MeshInstance3D.new()
-	box.name = "fx_fireball"
-	var bm = BoxMesh.new()
-	bm.size = Vector3.ONE
-	box.mesh = bm
-	var m: ShaderMaterial = fx.mat(SH.VOL, 2)
-	m.set_shader_parameter("vtype", 0.0)
-	m.set_shader_parameter("t0", t0)
-	m.set_shader_parameter("life", life)
-	m.set_shader_parameter("P", Vector4(0.0, 1.0, fx.rng.randf() * 10.0, 0.16 * 44.0 / maxf(size * 1.3, 1.0)))
-	m.set_shader_parameter("tint", Vector3(tint.r, tint.g, tint.b))
-	box.material_override = m
-	box.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	box.position = p
-	box.scale = Vector3.ONE * size * 1.3
-	fx.add_child(box)
-	fx.later(t0 + life + 0.1, fx.free_effect.bind(weakref(box)))
+# Load once per FX session. No image decode or shader compilation on a death frame.
+static func flipbook_material(fx, kind: String, band := "capital") -> ShaderMaterial:
+	var m: ShaderMaterial = fx.mat(SH.DEATH_FLIPBOOK, 2, "#define COMPAT\n" if fx.compat else "")
+	for key in ["color", "flow", "thickness"]:
+		var path: String = ATLAS_DIR + band + "/" + kind + "_" + key + ".png"
+		var textures: Dictionary = fx.dstate.get("death_atlases", {})
+		if not textures.has(path): textures[path] = load(path)
+		fx.dstate["death_atlases"] = textures
+		m.set_shader_parameter({"color": "atlas", "flow": "motion", "thickness": "thickness"}[key], textures[path])
+	return m
+
+
+static func flipbook(fx, p: Vector3, n: Vector3, size: float, kind: String, life: float, velocity := Vector3.ZERO, strength := 1.0, band := "capital") -> Node3D:
+	var mi := MeshInstance3D.new()
+	mi.name = "fx_baked_" + kind
+	var quad := QuadMesh.new()
+	quad.size = Vector2.ONE
+	mi.mesh = quad
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.extra_cull_margin = size * 3.0 + velocity.length() * life
+	var m := flipbook_material(fx, kind, band)
+	m.set_shader_parameter("born", fx.now)
+	m.set_shader_parameter("lifetime", life)
+	m.set_shader_parameter("extent", size)
+	m.set_shader_parameter("intensity", strength)
+	m.set_shader_parameter("plasma", 1.0 if kind == "flash" else 0.0)
+	m.set_shader_parameter("directional", 1.0 if kind == "vent" else 0.0)
+	m.set_shader_parameter("tear_normal", n)
+	m.set_shader_parameter("velocity", velocity)
+	m.set_shader_parameter("min_pixels", 70.0 if kind == "flash" else 0.0)
+	mi.material_override = m
+	fx.add_child(mi)
+	mi.global_position = p + (n * size * 0.225 if kind == "vent" else Vector3.ZERO)
+	fx.later(fx.now + life + 0.1, fx.free_effect.bind(weakref(mi)))
+	return mi
+
+
+# Two bounded GPU emitters. Each particle is born in world space, with zero drag,
+# zero acceleration and a cone centred on the sampled thermal-tear normal.
+static func tear_particles(fx, p: Vector3, n: Vector3, L: float, inherited: Vector3) -> void:
+	if fx.quality == "low" or DisplayServer.get_name() == "headless": return
+	for sparks in [false, true]:
+		var emitter := GPUParticles3D.new()
+		emitter.name = "fx_tear_sparks" if sparks else "fx_vent_cone"
+		emitter.amount = 32 if sparks else 12
+		emitter.lifetime = 0.65 if sparks else 0.45
+		emitter.one_shot = true
+		emitter.explosiveness = 0.95
+		emitter.local_coords = false
+		emitter.visibility_aabb = AABB(Vector3.ONE * -L, Vector3.ONE * L * 2.0)
+		var proc: ShaderMaterial = fx.mat(SH.DEATH_PARTICLES)
+		proc.set_shader_parameter("axis", n)
+		proc.set_shader_parameter("seed_value", fx.rng.randf() * 100.0)
+		proc.set_shader_parameter("inherited", inherited)
+		proc.set_shader_parameter("spread", 0.38 if sparks else 0.20)
+		proc.set_shader_parameter("speed", L * (0.6 if sparks else 0.25))
+		proc.set_shader_parameter("size", L * (0.003 if sparks else 0.009))
+		proc.set_shader_parameter("tint", Color(0.93, 0.63, 0.26, 0.9) if sparks else Color(0.53, 0.46, 0.64, 0.2))
+		emitter.process_material = proc
+		var mesh_key := "death_spark_mesh" if sparks else "death_cone_mesh"
+		if not fx.dstate.has(mesh_key):
+			var mesh := QuadMesh.new(); mesh.size = Vector2(0.28, 1.2) if sparks else Vector2.ONE
+			var mat := StandardMaterial3D.new()
+			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			mat.vertex_color_use_as_albedo = true
+			mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+			if not fx.dstate.has("tear_falloff"):
+				var gradient := Gradient.new()
+				gradient.set_color(0, Color(0.95, 0.95, 0.95, 0.95))
+				gradient.set_color(1, Color(0.95, 0.95, 0.95, 0.0))
+				var texture := GradientTexture2D.new()
+				texture.gradient = gradient
+				texture.fill = GradientTexture2D.FILL_RADIAL
+				texture.fill_from = Vector2(0.5, 0.5)
+				texture.fill_to = Vector2(0.5, 1.0)
+				fx.dstate["tear_falloff"] = texture
+			mat.albedo_texture = fx.dstate["tear_falloff"]
+			mat.albedo_color = Color(0.9, 0.75, 0.48) if sparks else Color(0.4, 0.34, 0.5, 0.3)
+			mesh.material = mat
+			fx.dstate[mesh_key] = mesh
+		emitter.draw_pass_1 = fx.dstate[mesh_key]
+		fx.add_child(emitter); emitter.global_position = p
+		fx.later(fx.now + 0.9, fx.free_effect.bind(weakref(emitter)))
 
 
 # ---------------------------------------------------------------- debris bodies (Jolt)
@@ -225,8 +292,10 @@ static func _spawn_debris_inner(fx, pos: Vector3, vel: Vector3, count: int, size
 			b.axis_lock_linear_y = true
 			b.center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 			b.mass = 0.3 + 0.4 * sc
-			b.angular_damp = 0.05
-			b.linear_damp = 0.02
+			b.angular_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
+			b.linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
+			b.angular_damp = 0.0
+			b.linear_damp = 0.0
 			b.collision_layer = DEBRIS_LAYER
 			b.collision_mask = HULL_LAYER | DEBRIS_LAYER
 			b.physics_material_override = st["bounce"]
@@ -405,10 +474,10 @@ static func seeds_for(s, cause: String, r: RandomNumberGenerator) -> PackedVecto
 		n = maxi(2, n - 1)
 	var out = PackedVector3Array()
 	if cause == "cut":
-		var nrm = Vector3(1.0, r.randf_range(-0.5, 0.5), r.randf_range(-0.6, 0.6)).normalized()
-		var at = h.c + Vector3((r.randf() - 0.5) * 0.3 * h.L, 0, 0)
-		out.append(at + nrm * h.L * 0.25)
-		out.append(at - nrm * h.L * 0.25)
+		var count: int = int(s.get_meta("death_cut_count", 2)) + 1
+		var axis := Vector3(1.0, r.randf_range(-0.12, 0.12), r.randf_range(-0.15, 0.15))
+		for i in count:
+			out.append(h.c + axis * ((float(i) + 0.5) / count - 0.5) * h.L)
 		return out
 	for i in n:
 		var u = (i + 0.5) / n + (r.randf() - 0.5) * 0.5 / n
@@ -473,6 +542,7 @@ static func _prebuild(fx, s) -> void:
 	var meshes: Array = []
 	for pc in job.get("out", []) if job.get("out") != null else []:
 		meshes.append(_piece_mesh(pc))
+		if pc.has("hull"): pc["shape"] = safe_convex(pc["hull"])
 	job["meshes"] = meshes
 	fx.pend("piece_meshes", t0)
 
@@ -805,38 +875,35 @@ static func _death_inner(fx, s, cause: String) -> float:
 		s.set_meta("death_split", T + 0.72)
 		fx.later(T + 0.72, func() -> void: _hulk(fx, s))
 		return 1.32
-	# All heavy deaths use the same two prepared halves, regardless of damage cause.
-	# Class decides this sequence and the R73 beat; draw scale does not.
-	var split := 1.38 if s.death_big else (0.72 if s.weight > 0 else 0.55)
-	s.set_meta("death_split", T + split)
+	var timeline := DeathTimeline.new(s.death_big, int(s.get_meta("death_cut_count", 2)))
+	s.set_meta("death_timeline", timeline)
+	s.set_meta("death_split", T + timeline.cut)
+	var inherited := Vector3.ZERO
+	if "_vel" in s.root: inherited = s.root.get("_vel")
+	s.set_meta("death_velocity", inherited)
 	if not s.has_meta("cut_task") and not s.has_meta("cut_job"):
 		precompute(fx, s, cause)
-	if s.death_big:
-		var job: Dictionary = s.get_meta("cut_job", {})
-		var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
-		var at: Vector3 = s.hull.c
-		var axis := Vector3.RIGHT
-		if seeds.size() >= 2:
-			at = (seeds[0] + seeds[1]) * 0.5
-			axis = (seeds[0] - seeds[1]).normalized()
-		_cracks(fx, s, T + 0.4, split - 0.4, tint, at, axis)
-		# Ray samples lie on the actual hull at its future split, not on a floating line.
-		var tangent := axis.cross(Vector3.UP if absf(axis.y) < 0.9 else Vector3.FORWARD).normalized()
-		var up := axis.cross(tangent).normalized()
-		for i in 10:
-			var angle := TAU * i / 10.0
-			var radial := tangent * cos(angle) + up * sin(angle)
-			var hit: Dictionary = s.hull.ray(at + radial * s.hull.L * 1.5, -radial)
-			if hit.is_empty(): continue
-			var lp: Vector3 = hit["p"]
-			var ln: Vector3 = hit["n"]
-			fx.later(T + 0.25 + i * 0.045, func() -> void: _split_vent(fx, s, lp, ln))
-		fx.later(T + split - 0.08, func() -> void: fx.death_slowmo())
-	else:
-		# Bounded pooled ribbon emissions follow the spinning hull each frame.
-		s.set_meta("death_ribbon_next", T)
-	fx.later(T + split, func() -> void: _break_up_when_ready(fx, s, cause, tint, T + split + 2.5))
-	return split + 0.6
+	var job: Dictionary = s.get_meta("cut_job", {})
+	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
+	var at: Vector3 = (seeds[0] + seeds[1]) * 0.5 if seeds.size() >= 2 else s.hull.c
+	var axis: Vector3 = (seeds[1] - seeds[0]).normalized() if seeds.size() >= 2 else Vector3.RIGHT
+	_cracks(fx, s, T + 0.06, timeline.vent + 0.10, Color(0.62, 0.73, 0.91), at, axis)
+	var hit: Dictionary = s.hull.ray(at + Vector3.UP * s.hull.L, Vector3.DOWN)
+	var lp: Vector3 = hit.get("p", at)
+	var ln: Vector3 = hit.get("n", Vector3.UP)
+	s.set_meta("death_tear", [lp, ln])
+	fx.later(T + timeline.vent, func() -> void: _split_vent(fx, s, lp, ln))
+	fx.later(T + timeline.cut, func() -> void: _break_up_when_ready(fx, s, cause, tint, T + timeline.end))
+	return timeline.end
+
+
+# Death-only variation of the existing surface adapter. No R80 surface state changes.
+static func power_material(mat: ShaderMaterial) -> ShaderMaterial:
+	var code: String = mat.shader.code
+	code = code.replace("uniform float fx_power = 1.0;", "uniform float fx_power = 1.0;\nuniform float death_age = 0.0;\nuniform float death_start = 0.0;\nuniform vec2 death_span = vec2(0.0, 1.0);")
+	code = code.replace("clamp(fx_power, 0.0, 1.0)", "(1.0 - smoothstep(floor(clamp((fx_hull_p.x - death_span.x) / death_span.y, 0.0, 0.999) * 3.0) * 0.055, floor(clamp((fx_hull_p.x - death_span.x) / death_span.y, 0.0, 0.999) * 3.0) * 0.055 + 0.18, death_age))")
+	mat.shader = HULL.shared_shader(code)
+	return mat
 
 
 static func _power_down(s) -> void:
@@ -855,6 +922,8 @@ static func _power_down(s) -> void:
 				mat = source.duplicate()
 			else:
 				mat = HULL.damage_material(source, inv * mi.global_transform, {}, s.hull.L)
+			mat = power_material(mat)
+			mat.set_shader_parameter("death_span", Vector2(s.hull.box.position.x, s.hull.L))
 			prepared.append(mat)
 			mats.append(mat)
 		mi.material_override = null
@@ -866,49 +935,37 @@ static func _power_down(s) -> void:
 
 
 static func _split_vent(fx, s, lp: Vector3, ln: Vector3) -> void:
-	if not is_instance_valid(s.root) or s.has_meta("death_hidden"): return
-	var p: Vector3 = s.to_world(lp)
-	var n: Vector3 = s.dir_world(ln)
-	var size: float = s.hull.L * 0.022
-	for j in 5:
-		fx.spr(p + n * size * 0.2, fx.now + j * 0.1, 1.0, Color(0.48, 0.52, 0.58), 0.65,
-			size * 0.4, size * 2.5, 7, n * size * 7.0, 0.8, 0.0, 0.0, 14.0)
-		fx.spr(p + n * size * 0.25, fx.now + j * 0.1, 0.65, Color(0.9, 0.26, 0.035), 1.8,
-			size * 0.7, size * 1.3, 25, n * size * 3.0)
-	fx.stk(p, fx.now, 0.65, Color(0.9, 0.32, 0.055), 2.5, size, size * 0.1, 1, n * size * 9.0, 1.2, 0.0, 2.5, 14.0)
+	if not is_instance_valid(s.root) or s.has_meta("death_hidden") or fx.quality == "low": return
+	var pose: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
+	var p: Vector3 = pose * lp
+	var n: Vector3 = (pose.basis * ln).normalized()
+	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
+	flipbook(fx, p, n, s.hull.L * 0.70, "vent", 0.75 if s.death_big else 0.35, inherited + n * s.hull.L * 0.06, 1.0, atlas_band(s.hull.L))
+	tear_particles(fx, p, n, s.hull.L, inherited)
 
 
 static func _update_dying(fx, s) -> void:
 	if not s.dead or s.has_meta("death_hidden") or not s.has_meta("death_start") or not is_instance_valid(s.root): return
 	var age: float = maxf(fx.now - float(s.get_meta("death_start")), 0.0)
-	var power := 1.0 - smoothstep(0.0, 0.3, age)
-	for m in s.get_meta("death_power", []):
-		(m as ShaderMaterial).set_shader_parameter("fx_power", power)
+	var mats: Array = s.get_meta("death_power", [])
+	for i in mats.size():
+		var delay := float(i % 3) * 0.055
+		(mats[i] as ShaderMaterial).set_shader_parameter("fx_power", 1.0 - smoothstep(delay, delay + 0.18, age))
+		(mats[i] as ShaderMaterial).set_shader_parameter("death_age", age)
 	if bool(s.get_meta("death_organic", false)):
 		if fx.now >= float(s.get_meta("death_spore_next", INF)):
 			s.set_meta("death_spore_next", fx.now + 0.06)
-			var glow: Color = s.fac.damage_glow
 			var point: Dictionary = s.hull.random_sample(-1, 2.0)
-			var p: Vector3 = s.to_world(point.p)
-			fx.spr(p, fx.now, 2.5, glow * Color(0.4, 0.5, 0.3), 0.35,
+			fx.spr(s.to_world(point.p), fx.now, 2.5, s.fac.damage_glow * Color(0.4, 0.5, 0.3), 0.35,
 				s.hull.L * 0.015, s.hull.L * 0.13, 20, s.dir_world(point.n) * s.hull.L * 0.1, 0.65)
 		return
-	if s.death_big or bool(s.get_meta("death_hulk", false)): return
-	var rot := Basis.from_euler(Vector3(age * 1.4, age * 0.5, age * 0.85))
-	var shift := Vector3(age * s.hull.L * 0.22, 0, 0)
-	var motion := Transform3D(rot, shift + s.hull.c - rot * s.hull.c)
+	if bool(s.get_meta("death_hulk", false)): return
+	var velocity: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
+	var rot := Basis.IDENTITY if s.death_big else Basis.from_euler(Vector3(age * 0.22, age * 0.12, age * 0.18))
+	var motion := Transform3D(rot, s.root.global_basis.inverse() * velocity * age + s.hull.c - rot * s.hull.c)
+	s.set_meta("death_motion", motion)
 	for pose in s.get_meta("death_poses", []):
-		if is_instance_valid(pose["mi"]):
-			(pose["mi"] as Node3D).global_transform = s.root.global_transform * motion * (pose["pose"] as Transform3D)
-	if fx.now >= float(s.get_meta("death_ribbon_next", INF)):
-		s.set_meta("death_ribbon_next", fx.now + 0.045)
-		var p: Vector3 = s.root.global_transform * motion * (s.hull.c + Vector3(-s.hull.L * 0.3, s.hull.H * 0.35, s.hull.W * 0.25))
-		var size: float = maxf(s.hull.L * 0.15, 0.3)
-		var back: Vector3 = -s.dir_world(Vector3.RIGHT)
-		fx.spr(p, fx.now, 1.65, Color(0.27, 0.28, 0.31), 0.85, size * 0.6, size * 2.2, 3,
-			back * maxf(s.hull.L * 1.1, 7.0) + Vector3.UP * size * 0.35, 0.3, 0.0, 0.0, 44.0)
-		fx.spr(p, fx.now, 0.65, Color(0.95, 0.29, 0.035), 2.6, size * 0.7, size * 0.3, 25,
-			back * maxf(s.hull.L * 0.65, 4.5), 0.3, 0.0, 0.0, 28.0)
+		if is_instance_valid(pose["mi"]): (pose["mi"] as Node3D).global_transform = s.root.global_transform * motion * (pose["pose"] as Transform3D)
 
 
 # An unfinished worker never blocks the death frame, even past its nominal split time.
@@ -1037,38 +1094,19 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		s.remove_meta("cut_task")
 	var pieces: Array = job.get("out", []) if job.get("out") != null else []
 	var seeds: PackedVector3Array = job.get("seeds", PackedVector3Array())
-	var xf: Transform3D = s.xf()
+	var xf: Transform3D = s.xf() * s.get_meta("death_motion", Transform3D.IDENTITY)
+	center = xf * h.c
 	_hide_ship(s)
-	# Capitals expose their break first. Small ships pop immediately at replacement,
-	# so the battle-camera frame catches an event rather than only a faint shard.
 	var R: float = h.L * 0.16
-	var kp: float = 60.0 if not s.death_big else 56.0
-	var core := center + xf.basis * Vector3(h.L * 0.12, 0, 0)
-	var core_node: Node3D = null
-	var core_local := Vector3.ZERO
-	for i in (0 if organic else (8 if not s.death_big else 14)):
-		var bv: Vector3 = fx.rdir() * (5.0 + fx.rng.randf() * 8.0) * maxf(k, 0.6)
-		var life: float = 1.1 + fx.rng.randf() * 0.9
-		fx.stk(center, T, life, Color(0.9, 0.32, 0.06), 2.0, 0.16, 0.09, 1, bv, 0.4, 0.0, 4.0, 24.0)
-		for j in 4:
-			fx.spr(center + bv * j * 0.09, T + j * 0.09, 1.2, Color(0.07, 0.075, 0.08), 0.45,
-				R * 0.06, R * 0.18, 3, bv * 0.12, 0.6, 0.0, 0.0, 9.0)
-	for i in (0 if organic else 18 + w * 5):
-		fx.stk(center, T + fx.rng.randf() * 0.12, 0.5 + fx.rng.randf(), Color(1, 0.4, 0.1), 2.2,
-			0.1, 0.08, 1, fx.rdir() * (6.0 + fx.rng.randf() * 18.0) * maxf(k, 0.6), 0.65, 0.0, 2.8, 18.0)
-	# Local smoke/debris cloud, small enough to leave the two silhouettes exposed.
-	for i in (0 if organic else (10 if s.death_big else 6)):
-		var v: Vector3 = fx.rdir() * maxf(R * 1.8, 2.5)
-		fx.spr(center + v * 0.07, T, 1.8, Color(0.24, 0.25, 0.28), 0.65,
-			R * 0.12, R * 0.7, 3, v, 0.8, 0.0, 0.0, 22.0 if s.death_big else 36.0)
+	var inherited: Vector3 = s.get_meta("death_velocity", Vector3.ZERO)
 	if organic:
 		_organic_spill(fx, center, h.L, tint)
 	else:
-		spawn_debris(fx, center, Vector3.ZERO, 4 + w * 3, h.L * 0.025)
+		spawn_debris(fx, center, inherited, 4 + w * 3, h.L * 0.025)
 	fx.punch(T, 0.018 if s.death_big else 0.006, center)
 	fx.shake(T, 0.45 if s.death_big else 0.18, center)
 	# the pieces: real parts of the hull, as rigid bodies that drift and burn
-	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic}
+	var wreck = {"id": s.id, "t0": T, "nodes": [], "mats": [], "lights": [], "fires": [], "speed": 1.0, "organic": organic, "heat_births": {}, "cut_events": []}
 	var main_i = -1
 	var main_n = -1
 	for i in pieces.size():
@@ -1096,8 +1134,11 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			# Lock altitude at the chosen piece centre while its uneven shape tumbles.
 			rb.center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
 			rb.mass = maxf(float(pc["n"]) / 400.0, 5.0)
-			rb.linear_damp = 0.06 if s.death_big or organic else (0.9 if is_main else 0.06)
-			rb.angular_damp = 0.04 if s.death_big or organic else (0.4 if is_main else 0.04)
+			rb.linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
+			rb.angular_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
+			rb.linear_damp = 0.0
+			rb.angular_damp = 0.0
+			rb.freeze = s.death_big and not organic
 			rb.collision_layer = DEBRIS_LAYER
 			rb.collision_mask = HULL_LAYER | DEBRIS_LAYER
 			rb.physics_material_override = fx.dstate["bounce"]
@@ -1107,7 +1148,7 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 					pts.append(p - cen)
 			if pts.size() >= 4:
 				var cs = CollisionShape3D.new()
-				cs.shape = safe_convex(pts)
+				cs.shape = pc["shape"] if pc.has("shape") else safe_convex(pts)
 				rb.add_child(cs)
 			node = rb
 		else:
@@ -1116,36 +1157,23 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 		fx.phys_root.add_child(node)
 		node.global_transform = Transform3D(xf.basis, xf * cen)
 		if s.death_big and not organic and seeds.size() >= 2:
-			pc["split_at"] = (seeds[0] + seeds[1]) * 0.5
-			pc["split_axis"] = (seeds[0] - seeds[1]).normalized()
+			var seam := mini(i, seeds.size() - 2)
+			pc["split_at"] = (seeds[seam] + seeds[seam + 1]) * 0.5
+			pc["split_axis"] = (seeds[seam + 1] - seeds[seam]).normalized()
 			pc["split_width"] = h.L * 0.04
-		if core_node == null and seeds.size() >= 2:
-			core_node = node
-			# Use the camera-facing lip of the actual cut, not the centre hidden
-			# behind the opaque cap. Keep a little offset outside the torn face.
-			var view := Vector3(0, 1, 1).normalized()
-			if is_instance_valid(fx.camera):
-				view = node.to_local(fx.camera.global_position).normalized()
-			core_local = _edge_sites(pc, cen, view, 1)[0] + view * h.L * 0.035
 		var mi = MeshInstance3D.new()
 		mi.mesh = am
 		mi.position = -cen
 		node.add_child(mi)
-		var cm: ShaderMaterial = fx.mat(SH.CHUNK, 1)
-		var sv: Array = []
-		for j in 8:
-			sv.append(Vector4(seeds[j].x, seeds[j].y, seeds[j].z, 0) if j < seeds.size() else Vector4.ZERO)
-		cm.set_shader_parameter("seeds", sv)
-		cm.set_shader_parameter("n_seeds", seeds.size())
-		cm.set_shader_parameter("me", i)
-		cm.set_shader_parameter("width", h.L * 0.02)
-		cm.set_shader_parameter("cell", Vector3(h.L * 0.07, h.L * 0.045, h.L * 0.06))
-		cm.set_shader_parameter("glow", Vector3(tint.r, tint.g, tint.b))
-		mi.material_overlay = cm
-		wreck["mats"].append(cm)
+		var piece_mats: Array = []
 		if pc.has("cap_mat"):
-			wreck["mats"].append(pc["cap_mat"])
+			(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 0.0)
+			if fx.quality == "max" and not organic: piece_mats.append(pc["cap_mat"])
+		wreck["mats"].append_array(piece_mats)
 		wreck["nodes"].append(node)
+		var face_view := Vector3(0, 1, 1).normalized()
+		if is_instance_valid(fx.camera): face_view = node.to_local(fx.camera.global_position).normalized()
+		node.set_meta("tear_site", _edge_sites(pc, cen, face_view, 1)[0] + face_view * h.L * 0.02)
 		# Separate on the board plane while allowing each piece to tumble freely.
 		var out: Vector3 = cen - h.c
 		out.y = 0.0
@@ -1154,16 +1182,25 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			# Alternating lateral jets open the body as well as separating its length.
 			out = (out + Vector3(0, 0, 0.9 if i % 2 == 0 else -0.9)).normalized()
 		var spd: float = (3.5 if organic else (2.8 if s.death_big else (0.7 if is_main else 2.1))) * maxf(k, 0.5)
-		var vel: Vector3 = xf.basis * (out * spd) + fx.rdir() * 0.3 * k
+		var vel: Vector3 = inherited + xf.basis * (out * spd) + fx.rdir() * 0.3 * k
 		if cause == "tidal" and fx.well != Vector3.INF:
 			vel += (fx.well - center).normalized() * 3.0 * k
 		vel.y = 0.0
 		var ang: Vector3 = fx.rdir() * ((0.22 if is_main else 0.35) if s.death_big else (1.1 if is_main else 1.6))
+		var release_delay := 0.0
+		if s.death_big and not organic:
+			var timeline: DeathTimeline = s.get_meta("death_timeline")
+			release_delay = mini(i, pieces.size() - 2) * timeline.spacing
+		var release_t := T + release_delay
 		if node is RigidBody3D:
-			(node as RigidBody3D).linear_velocity = vel
-			(node as RigidBody3D).angular_velocity = ang
+			if release_delay <= 0.0:
+				_release_section(fx, wreck, node, vel, ang, piece_mats, h.L, s.death_big, i)
+			else:
+				wreck["fires"].append({"node": node, "vel": inherited, "ang": Vector3.ZERO, "until": release_t})
+				fx.later(release_t, _release_section.bind(fx, wreck, node, vel, ang, piece_mats, h.L, true, i))
 		else:
-			wreck["fires"].append({"node": node, "vel": vel, "ang": ang})
+			wreck["fires"].append({"node": node, "vel": inherited, "ang": Vector3.ZERO, "until": release_t})
+			fx.later(release_t, _release_section.bind(fx, wreck, node, vel, ang, piece_mats, h.L, s.death_big, i))
 		if organic:
 			if pc.has("cap_mat"):
 				(pc["cap_mat"] as ShaderMaterial).set_shader_parameter("heat", 0.0)
@@ -1171,17 +1208,16 @@ static func _break_up_inner(fx, s, cause: String, tint: Color) -> void:
 			var sites := _edge_sites(pc, cen, Vector3(0, 1, 1).normalized(), 2)
 			for site in sites:
 				_organic_spill(fx, node.to_global(site), h.L * 0.35, tint)
-		else:
-			_wreck_fx(fx, wreck, node, pc, cen, h.L, k, is_main, tint, s.death_big)
+
 	fx.dstate["wrecks"].append(wreck)
 	_cap_wrecks(fx)
 	if organic:
 		return
-	if s.death_big:
-		fx.later(T + 0.28, func() -> void:
-			if is_instance_valid(core_node): _core_flash(fx, core, R, kp, tint, core_node, core_local))
-	else:
-		_core_flash(fx, center, R, kp, tint)
+	var flash_site := center
+	if not wreck["nodes"].is_empty():
+		var lip: Node3D = wreck["nodes"][0]
+		flash_site = lip.to_global(lip.get_meta("tear_site", Vector3.ZERO))
+	_core_flash(fx, flash_site, R, 70.0, tint)
 	if pieces.is_empty():
 		# Craft have no pre-cut job. Keep one pooled physical shard plus a visible ember.
 		spawn_debris(fx, center, xf.basis.x * 2.0, 1, maxf(h.L * 0.15, 0.3))
@@ -1203,16 +1239,34 @@ static func _organic_spill(fx, p: Vector3, L: float, tint: Color) -> void:
 
 
 static func _core_flash(fx, p: Vector3, R: float, px: float, tint: Color, node: Node3D = null, local_p := Vector3.ZERO) -> void:
-	# Booking and drawing share the same time. Secondary pops use this same budget.
-	var T: float = fx.now
 	if is_instance_valid(node): p = node.to_global(local_p)
-	if not p.is_finite() or not is_finite(R) or R <= 0.0: return
-	if fx.flash_ok(T):
-		fx.spr(p, T, 0.22 if node == null else 0.16, Color(1, 0.52, 0.16), 6.0, R * 0.35, R * 0.8, 24, Vector3.ZERO, 0.0, 0.0, 0.0, px)
-		fx.light(p, T, 0.18, 7.0, tint, 0)
-		fireball(fx, p, R * 0.65, T, 0.42, tint)
+	if not p.is_finite() or R <= 0.0: return
+	# Only this booking can produce a bright baked flash or its event light.
+	if fx.flash_ok(fx.now):
+		flipbook(fx, p, Vector3.UP, R * 5.0, "flash", 0.32, Vector3.ZERO, 4.0, atlas_band(R / 0.16))
+		fx.light(p, fx.now, 0.16, 7.0, Color(0.65, 0.75, 0.91), 0)
 	else:
-		fx.spr(p, T, 0.4, tint, 1.2, R * 0.2, R * 0.55, 18, Vector3.ZERO, 0.0, 0.0, 0.0, px * 0.7)
+		flipbook(fx, p, Vector3.UP, R * 2.8, "cool", 0.65, Vector3.ZERO, 0.5, atlas_band(R / 0.16))
+
+
+# A released section has its own cooling clock. Neighbouring sections remain
+# attached until their cut beat. The last cut releases the final pair together.
+static func _release_section(fx, wreck: Dictionary, node: Node3D, vel: Vector3, ang: Vector3, mats: Array, L: float, big: bool, index: int) -> void:
+	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
+	if node is RigidBody3D:
+		node.freeze = false
+		node.linear_velocity = vel * fx.anim_speed()
+		node.angular_velocity = ang * fx.anim_speed()
+	else:
+		wreck["fires"].append({"node": node, "vel": vel, "ang": ang})
+	for mat in mats: wreck["heat_births"][mat] = fx.now
+	wreck["cut_events"].append({"section": index, "t": fx.now})
+	if wreck.get("organic", false): return
+	if fx.quality != "low":
+		flipbook(fx, node.to_global(node.get_meta("tear_site", Vector3.ZERO)), vel.normalized(), L * 0.5, "cool", 1.1, vel * 0.65, 0.7, atlas_band(L))
+	# Exactly two secondary opportunities on capitals, never a per-piece fire loop.
+	if big and index in [1, 2]:
+		fx.later(fx.now + 0.08, _secondary.bind(fx, weakref(node), node.get_meta("tear_site", Vector3.ZERO), L, Color(0.65, 0.75, 0.91)))
 
 
 # Bounded samples from the actual cut, biased to its visible lip. No geometry work
@@ -1253,79 +1307,10 @@ static func _edge_sites(pc: Dictionary, cen: Vector3, view: Vector3, count: int)
 	return sites
 
 
-# Armada's staged split with EVE's class-capped fires. Batches follow each half;
-# finite pooled secondary pops run along both hulls, never as a central fireball.
-static func _wreck_fx(fx, wreck: Dictionary, node: Node3D, pc: Dictionary, cen: Vector3, L: float, k: float, is_main: bool, tint: Color, big: bool) -> void:
-	var view := Vector3(0, 1, 1).normalized()
-	if is_instance_valid(fx.camera): view = node.to_local(fx.camera.global_position).normalized()
-	var sites := _edge_sites(pc, cen, view, 3 if big else 1)
-	var b := POOLS.Batch.new()
-	var bs := POOLS.Batch.new()
-	var be := POOLS.Batch.new()
-	var q := POOLS.quad_shape()
-	var qs := POOLS.streak_shape()
-	var r := RandomNumberGenerator.new()
-	r.seed = hash(node.name)
-	var size := maxf(L * 0.027, 0.08)
-	var T: float = fx.now
-	for site in sites:
-		var p := site + view * L * 0.018
-		var n := (view + Vector3.UP * 0.35).normalized()
-		for j in 8:
-			var v := (n + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * 0.5) * size * 3.5
-			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, T - j * 0.1), Vector4(v.x, v.y, v.z, 0.8), Vector4(tint.r, tint.g, tint.b, 2.3),
-				Vector4(size * 0.8, size * 1.8, 25, r.randf()), Vector4(0.8, 0, 0.3, 0)))
-		for j in 4:
-			var v := n * size * 2.0
-			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, T - j * 0.5), Vector4(v.x, v.y, v.z, 2.0), Vector4(0.2, 0.21, 0.24, 0.55),
-				Vector4(size, size * 3.0, 3, r.randf() + 20.0), Vector4(2.0, 0, 0.6, 0.2)))
-		for j in 6:
-			var v := n * size * (7.0 + r.randf() * 3.0)
-			b.add(q, POOLS.pack(Vector4(p.x, p.y, p.z, T - j * 0.2), Vector4(v.x, v.y, v.z, 1.2), Vector4(0.58, 0.62, 0.7, 0.55),
-				Vector4(size * 0.35, size * 2.3, 7, r.randf() + 16.0), Vector4(1.2, 0, 0.6, 0)))
-		for j in 6:
-			var v := (n + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5)).normalized() * maxf(k, 0.4) * 7.0
-			bs.add(qs, POOLS.pack(Vector4(p.x, p.y, p.z, T - j * 0.3), Vector4(v.x, v.y, v.z, 0.7), Vector4(1, 0.48, 0.1, 3.0),
-				Vector4(0.08, 0.08 * k, 1.2, 1), Vector4(1.8, 0, 2.5, 12.0)))
-		# Long-lived, steady coals have their own slower cooling gate.
-		for j in 3:
-			var ep := p + Vector3(r.randf() - 0.5, r.randf() - 0.5, r.randf() - 0.5) * size
-			be.add(q, POOLS.pack(Vector4(ep.x, ep.y, ep.z, T), Vector4(0, 0, 0, 22.0), Vector4(1, 0.24, 0.025, 1.8),
-				Vector4(size * 0.45, size * 0.1, 19, r.randf() + 7.0), Vector4.ZERO))
-	var spm: ShaderMaterial = fx.mat(SH.SPRITE, 1)
-	var spark_mat: ShaderMaterial = fx.mat(SH.STREAK, 1)
-	var ember_mat: ShaderMaterial = fx.mat(SH.SPRITE, 1)
-	wreck["fires"].append({"mat": spm, "mi": b.build(spm, node, "fx_wreck_fire")})
-	wreck["fires"].append({"mat": spark_mat, "mi": bs.build(spark_mat, node, "fx_wreck_sparks")})
-	wreck["fires"].append({"mat": ember_mat, "mi": be.build(ember_mat, node, "fx_wreck_embers"), "cool": 10.0})
-	var holder := Node3D.new()
-	holder.position = sites[0] + view * size
-	node.add_child(holder)
-	wreck["lights"].append(fx.light_source(holder, Vector3.ZERO, Color(1, 0.35, 0.07), 0.7 if is_main else 0.4, 0.12))
-	if big:
-		# Prepared collider extrema give surface sites along the whole half,
-		# rather than clustering every secondary at its cut face.
-		var hull_pts: PackedVector3Array = pc.get("hull", PackedVector3Array())
-		var surface := _edge_sites({"edge": hull_pts}, Vector3.ZERO, view, 5)
-		if hull_pts.is_empty(): surface = _edge_sites(pc, cen, view, 5)
-		for j in 5:
-			var p := surface[j] + view * L * 0.025
-			fx.later(T + 0.7 + j * 0.65 + (0.2 if is_main else 0.0), _secondary.bind(fx, weakref(node), p, L, tint))
-
-
 static func _secondary(fx, node_ref: WeakRef, lp: Vector3, L: float, tint: Color) -> void:
 	var node := node_ref.get_ref() as Node3D
 	if not is_instance_valid(node) or node.is_queued_for_deletion(): return
-	var p := node.to_global(lp)
-	if not p.is_finite() or not is_finite(L): return
-	var size := maxf(L * 0.055, 0.08)
-	# pop/spr book any large flash through the shared limiter; calm substitutes a
-	# slow lift. No extra volume or decaying flash light bypasses that decision.
-	fx.pop(p, fx.now, tint, size, 5.0, Vector3.UP, 0.16, 24.0)
-	fx.spr(p, fx.now, 0.75, tint, 1.8, size * 0.6, size * 1.3, 25)
-	fx.spr(p, fx.now, 1.4, Color(0.24, 0.25, 0.28), 0.5, size * 0.4, size * 2.0, 3, Vector3.UP * size, 0.4)
-	for j in 5:
-		fx.stk(p, fx.now, 0.65, Color(1, 0.46, 0.12), 2.2, 0.08, 0.08, 1, fx.rdir() * size * 7.0, 1.0, 0.0, 2.2, 12.0)
+	_core_flash(fx, node.to_global(lp), L * 0.06, 24.0, tint)
 
 
 static func _cap_wrecks(fx) -> void:
@@ -1368,19 +1353,19 @@ static func update(fx, dt: float) -> void:
 		w["speed"] = speed
 		var age: float = fx.now - float(w["t0"])
 		# Heat fades over a few seconds. The cold opaque cap remains.
-		var heat = 0.0 if w.get("organic", false) else exp(-maxf(age, 0.0) / 1.8)
 		for m in w["mats"]:
+			var birth: float = w.get("heat_births", {}).get(m, INF)
+			var heat := 0.0 if birth == INF else clampf(1.0 - (fx.now - birth) / WRECK_COOL, 0.0, 1.0)
 			(m as ShaderMaterial).set_shader_parameter("heat", heat)
 		var gate = exp(-maxf(age, 0.0) / 3.5)
 		for f in w["fires"]:
 			if f.has("mat"):
 				(f["mat"] as ShaderMaterial).set_shader_parameter("gate", exp(-maxf(age, 0.0) / maxf(float(f.get("cool", 3.5)), 0.01)))
-			elif f.has("node") and is_instance_valid(f["node"]):
-				# no physics: the piece drifts and turns on its own, slowing down
+			elif f.has("node") and is_instance_valid(f["node"]) and fx.now < float(f.get("until", INF)):
+				# Kinematic tiers retain the same constant momentum as physics tiers.
 				var n: Node3D = f["node"]
 				var v: Vector3 = f["vel"]
 				n.global_position += v * dt
-				f["vel"] = v * (1.0 - 0.05 * dt)
 				var a: Vector3 = f["ang"]
 				if a.length() > 1e-5:
 					n.global_rotate(a.normalized(), a.length() * dt)

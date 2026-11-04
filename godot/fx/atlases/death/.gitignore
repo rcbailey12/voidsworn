@@ -1,0 +1,2 @@
+# These import settings preserve motion and thickness as exact data channels.
+!**/*.png.import
